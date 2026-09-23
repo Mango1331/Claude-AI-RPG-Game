@@ -148,6 +148,38 @@ test('retcon is limited to the latest reply: an older reply keeps its facts unti
     assert.ok(!foldChat(chat).state.entities['npc.mara'], 'now the retcon applies');
 });
 
+test('combat is shown in the reply as System lines (display only): swipes, edits and prompts stay consistent', () => {
+    const chat = newChat();
+    play(chat, 'I spot a boar.', 'A boar roots in the ferns.\n<avereth>{"new":[{"ref":"boar","kind":"creature","species":"boar","band":"MEDIUM"}]}</avereth>');
+    assert.equal(chat.at(-1).extra.display_text, undefined, 'no System block without a resolution');
+    play(chat, 'I Power Shot the boar', 'The arrow flies.\n<avereth>{}</avereth>');
+    const reply = chat.at(-1);
+    const outcome = foldChat(chat).state.last.outcome;
+    const shot = outcome.records.find((r) => r.actor === 'pc');
+    const panel = reply.extra.avereth.panel;
+    assert.equal(reply.extra.display_text, `${panel}\n\nThe arrow flies.`, 'SillyTavern shows the block above the narration');
+    assert.equal(reply.mes, 'The arrow flies.', 'the prompt text stays plain');
+    assert.match(panel, /^`COMBAT START`\n`Initiative: /);
+    const s = shot.strikes[0];
+    assert.ok(panel.includes(s.hit.success ? `HP ${s.hp_before} - ${s.final - (s.absorbed || 0)}` : `MISS (hit ${s.hit.chance}% · d100 ${s.hit.roll})`));
+    assert.match(panel, /`HP: .*Alaric \d+\/80/);
+    // a new swipe: SillyTavern clears display_text for it; the engine shows the same resolution again
+    newSwipe(reply, 'The string snaps forward.\n<avereth>{}</avereth>');
+    delete reply.extra.display_text;
+    processReply(chat, chat.length - 1, content);
+    assert.equal(reply.extra.display_text, `${panel}\n\nThe string snaps forward.`);
+    selectSwipe(reply, 0);
+    assert.equal(reply.extra.display_text, `${panel}\n\nThe arrow flies.`, 'each swipe keeps its own display');
+    // a typo edit keeps the block above the edited narration
+    reply.mes = 'The arrow flies true.';
+    assert.deepEqual(onEdited(chat, chat.length - 1, content), { changed: true, text: true });
+    assert.equal(reply.extra.display_text, `${panel}\n\nThe arrow flies true.`);
+    // the next prompt quotes the reply without the block
+    chat.push(userMsg('I shoot again.'));
+    const next = prepareGeneration(chat, content, { type: 'normal' });
+    assert.ok(!next.context.text.includes('COMBAT START'));
+});
+
 test('# commands are answered by the engine without an LLM call, once', () => {
     const chat = newChat();
     chat.push(userMsg('#status #bag'));

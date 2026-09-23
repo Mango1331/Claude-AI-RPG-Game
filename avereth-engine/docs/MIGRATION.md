@@ -48,7 +48,7 @@ Alle Inhalte wurden übernommen; ersetzt wurde nur die Technik.
 | Aufmerksamkeit `unaware`/`suspicious`/`aware` als Zustand | Engine | Ambush (Core #24) nur bei echter Ahnungslosigkeit; Testrun: Hinterhalt trotz Verdacht |
 | Detection-Default für Kreaturen (Human-Baseline PER 5) | `rules.json → checks.creature_detection` | Kreaturen haben kein PER (Core #8 braucht einen Wert) |
 | Benannte Schwierigkeiten (easy 3, moderate 6, hard 10, very_hard 15) | `rules.json → checks.difficulty_scores` | Hilfsskala; Core #7 verlangt nur einen festen Wert |
-| NPC-Verhalten nach Temperament; „nicht feindlich und unverletzt → Deckung“ | `combat.js → npcDecide` | Core #27 NPC DECISION LOCK braucht eine Entscheidungsregel |
+| NPC-Verhalten nach Temperament; „nicht feindlich, weder verletzt noch angegriffen → Deckung“; ein Angriff hebt erzählte passive Absichten auf (Testrun 2) | `combat.js → npcDecide` | Core #27 NPC DECISION LOCK braucht eine Entscheidungsregel |
 | CHECK DIE: ein vorab gezogener W100 pro Erzählzug | `engine.js` | Core #7/#9: echter Wurf ohne zweiten LLM-Aufruf |
 | Report-Schlüssel `recover` (Ruhe/Heilung außerhalb des Kampfs) | `delta.js`, `narrator.json` | Core #14 überlässt die Menge dem Narrator; ohne Schlüssel gäbe es keine Erholung |
 | Quest-XP gesperrt beim Angebot | `delta.js` | Core #25 Quest-XP; verhindert nachträgliches Aufblähen |

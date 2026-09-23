@@ -7,7 +7,12 @@ import { extractReport, tolerantJson, reportToEvents } from '../../src/delta.js'
 import { truth, knowledgeOf, statusOf } from '../../src/knowledge.js';
 
 const content = await loadContent();
-const ready = () => new Game(content).ranger();
+// a created character in story mode: reports answer a story message (a reply to the creation turn itself is System-only)
+const ready = () => {
+    const g = new Game(content).ranger();
+    g.input('I look around.');
+    return g;
+};
 const reasons = (r) => r.rejected.map((x) => x.reason).join(' | ');
 
 test('the report is found, parsed tolerantly and removed from the visible text', () => {

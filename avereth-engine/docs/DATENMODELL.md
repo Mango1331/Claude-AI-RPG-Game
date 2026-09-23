@@ -27,8 +27,11 @@
   "corrections": [ "Tracker drift: Initiative shown as 8, engine value is 9 ..." ],
   "accepted": [ "new npc the trapper (npc.trapper)" ],
   "rejected": [ { "item": {"hp": 5}, "reason": "\"hp\" is engine-owned ..." } ],
-  "report_error": null
-}}
+  "report_error": null,
+  "panel": "`COMBAT START`\n`Initiative: Alaric 9 · Bram Fenn 8 → Turn order: …`\n…"   // System-Block, nur bei Kampf/Check
+},
+  "display_text": "<panel>\n\n<mes>"  // SillyTavern zeigt diesen Text statt mes an; der Prompt nutzt weiter mes
+}
 // Begrüßung (Nachricht 0): { v, events: [campaign.started], text_hash }
 ```
 
@@ -111,14 +114,14 @@ Beispiel (Trapper-Szene aus Testrun-v1):
 | `time` | 0–10.080 Minuten; nicht während der Charaktererstellung |
 | `location` / `place` / `forced_by` | bekannter Ort oder neuer Orts-Eintrag; `location` nicht im Kampf; Szenenwechsel leert die Anwesenden; Alaric bewegt sich nur mit Reise-/Bewegungsabsicht in der Nachricht oder `forced_by` (anwesender NPC) |
 | `new` | `npc` erhält eine Vorlage (Deskriptoren → `npc_templates.json`); `creature` braucht einen Körperbau-Anker; bekannte Figuren werden nicht verdoppelt (Name global, Deskriptor nur am aktuellen Ort) |
-| `enter` / `leave` / `position` / `aware` / `concealed` | nur Anwesende; Tote kommen nicht zurück; Kämpfer-Positionen gehören der Engine; ein NPC, der Alaric bemerkt hat, wird nur durch erklärte Heimlichkeit wieder `unaware` |
+| `enter` / `leave` / `position` / `aware` / `concealed` | nur Anwesende; Tote kommen nicht zurück; Kämpfer-Positionen gehören der Engine; ein NPC, der Alaric bemerkt hat, wird nur durch erklärte Heimlichkeit wieder `unaware`; `enter` für eine im selben Report per `new` eingeführte Figur ist kein Fehler; nach einem `place`-Wechsel verlassen NPCs auf MEDIUM/LONG die Szene, außer der Report platziert sie neu |
 | `facts` | funktionale Prädikate ersetzen den alten Wert (Historie bleibt); harte Fakten nur mit `because`; keine Wiederbelebung; Geheimnisse kennt das Subjekt selbst |
 | `learn` / `believe` | Lernen widerspricht der Wahrheit nie; neuer Fakt nur durch `witnessed` eines Anwesenden; Gehörtes ohne Fakt wird ein Claim (Wahrheit `unknown`/`false`); Geheimnisse nur durch `told`/`witnessed`; falsche Ideen als `believe` |
 | `attitude` | ±50 pro Änderung, gesamt −100..100, mit Grund; mehrere Änderungen in einem Report addieren sich |
 | `memory` | Zeugen = Beteiligte (`who`) + genannte `witnesses` + bei `public` alle Anwesenden, die nicht `unaware` sind; wer Alaric dabei sah, hängt von der Tarnung ab; sein Name wird zu `{pc}` |
-| `items` / `coin` / `recover` | Besitz geprüft; Abgabe durch Alaric nur mit Geben-/Zahlabsicht oder `taken_by` (anwesender NPC); Kupfer ganzzahlig und nie negativ; Erholung nie im Kampf, nie über Maximum |
+| `items` / `coin` / `recover` | in der Antwort auf einen Erstellungszug abgelehnt (System-only, ebenso `time`, `location`, `place`, `quests`); Item-Namen auch im Plural auf die Content-ID aufgelöst; Besitz geprüft; Abgabe durch Alaric nur mit Geben-/Zahlabsicht oder `taken_by` (anwesender NPC); Kupfer ganzzahlig und nie negativ; Erholung nie im Kampf, nie über Maximum |
 | `quests` / `threads` | Statusübergänge; `active` nur mit Annahme durch den Spieler; Quest-XP bei Angebot gesperrt, einmalig beim Abschluss |
-| `combat` / `intent` | `combat` als Objekt oder Liste: jede NPC-Festlegung auf einen Angriff auf Alaric wird PENDING und im nächsten Zug aufgelöst; nur Festgelegte kämpfen (keine automatische Teilnahme per Haltung/Spezies); ein anderes Ziel wird abgelehnt (NPC gegen NPC wird erzählt) |
+| `combat` / `intent` | `combat` als Objekt oder Liste: jede NPC-Festlegung auf einen Angriff auf Alaric wird PENDING und im nächsten Zug aufgelöst; nur Festgelegte kämpfen (keine automatische Teilnahme per Haltung/Spezies); ein anderes Ziel wird abgelehnt (NPC gegen NPC wird erzählt); leere Einträge werden ignoriert; `intent` `hold`/`parley`/`take_cover` verfällt, sobald die NPC angegriffen wird |
 | `check` | nur mit dem CHECK DIE des Zuges; die Engine rechnet nach und behält ihr Ergebnis |
 | engine-owned | `hp`, `mp`, `sta`, `xp`, `level`, `stats`, `skills`, `damage`, `roll(s)`, `init`, `atk`, `def`, `mdef`, `rank`, `defeat_xp`: immer abgelehnt |
 

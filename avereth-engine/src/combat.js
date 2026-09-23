@@ -487,6 +487,8 @@ export function moveAction(ctx, actorId, dir, focusId) {
 }
 
 // ------------------------------------------------------------------------------------------ NPC policy
+const PASSIVE_INTENTS = new Set(['hold', 'parley', 'take_cover']);
+
 /** Deterministic NPC decision (Core #27 NPC DECISION LOCK: decided from the NPC's own state/temperament first). */
 export function npcDecide(ctx, npcId) {
     const { enc } = ctx;
@@ -495,15 +497,24 @@ export function npcDecide(ctx, npcId) {
     const hpPct = me.current.hp / me.fixed.max_hp;
     const band = me.current.band;
     const temper = me.fixed.temperament || (me.fixed.sapient ? 'cautious' : 'aggressive');
-    const intent = enc.intents[npcId];
+    let intent = enc.intents[npcId];
     const reach = me.model === 'creature' ? me.fixed.attack.range : npcReach(ctx, me);
     const inRange = bandIndex(band) <= bandIndex(reach);
     const wasHit = enc.log.some((r) => r.actor !== npcId && (r.strikes || []).some((s) => s.target === npcId && s.hit && s.hit.success));
+    const attackOn = (r) => r.actor !== npcId && r.kind === 'attack' && (r.target === npcId || (r.strikes || []).some((s) => s.target === npcId));
     if (!alive(pc) || pc.current.hp <= 0) return { kind: 'hold', why: 'no living opponent' };
-    // PROPOSED NPC policy: a sapient NPC that is not hostile toward Alaric and has not been hurt yet does not open
-    // with violence unless it is aggressive by temperament (it seeks cover or stays put instead).
+    // Core #27: the NPC decides from its own state. Being attacked since its last Turn outweighs a narrated passive
+    // intent (hold / parley / take cover): Testrun 2 froze a trapper for three rounds under fire because the narrator
+    // kept echoing the engine's "holds" as his next intent.
+    const ownLast = enc.log.map((r) => r.actor).lastIndexOf(npcId);
+    if (PASSIVE_INTENTS.has(intent) && enc.log.slice(ownLast + 1).some(attackOn)) {
+        delete enc.intents[npcId];
+        intent = undefined;
+    }
+    // PROPOSED NPC policy: a sapient NPC that is not hostile toward Alaric and has been neither hurt nor attacked does
+    // not open with violence unless it is aggressive by temperament (it seeks cover or stays put instead).
     const attitude = ctx.state?.relations?.[`rel.${npcId}.attitude.pc`]?.value ?? 0;
-    const harmed = me.current.hp < me.fixed.max_hp || wasHit;
+    const harmed = me.current.hp < me.fixed.max_hp || wasHit || enc.log.some(attackOn);
     if (!intent && me.fixed.sapient && attitude > -20 && !harmed && temper !== 'aggressive') {
         if (temper === 'skittish') return { kind: 'flee', why: 'not hostile, frightened' };
         return me.current.cover === 'none' && band !== 'ENGAGED' ? { kind: 'cover', why: 'not hostile, not yet harmed: seeks cover' } : { kind: 'hold', why: 'not hostile, not yet harmed' };

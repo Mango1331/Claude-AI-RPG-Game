@@ -8,6 +8,7 @@
 import { applyEvent, emptyState } from './state.js';
 import { startCampaign, playerTurn, narratorReply, turnContext } from './engine.js';
 import { extractReport } from './delta.js';
+import { turnPanel } from './display.js';
 import { hash32, clone } from './util.js';
 
 export const KEY = 'avereth';
@@ -157,11 +158,24 @@ export function processReply(chat, id, content, { seed } = {}) {
     const { state } = foldChat(chat, id);
     const result = narratorReply(state, content, msg.mes, { msg: id });
     msg.mes = result.clean;
+    const panel = turnPanel(state, content, result.state.last?.check);
+    showPanel(msg, panel);
     setRec(msg, {
         v: RECORD_VERSION, events: result.events, text_hash: hash32(msg.mes), corrections: result.corrections,
-        accepted: result.accepted, rejected: result.rejected, report_error: result.report_error,
+        accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, panel: panel || undefined,
     });
     return { changed: true, result };
+}
+
+/**
+ * Show the engine's System block (combat log, checks) above the reply: SillyTavern renders extra.display_text instead
+ * of mes, while prompts keep using mes. Only a block the engine wrote is replaced or removed.
+ */
+function showPanel(msg, panel) {
+    if (!msg.extra || typeof msg.extra !== 'object') msg.extra = {};
+    const old = rec(msg)?.panel;
+    if (panel) msg.extra.display_text = `${panel}\n\n${msg.mes}`;
+    else if (old && typeof msg.extra.display_text === 'string' && msg.extra.display_text.startsWith(old)) delete msg.extra.display_text;
 }
 
 /**
@@ -186,13 +200,16 @@ export function onEdited(chat, id, content) {
         const { state } = foldChat(chat, id);
         const result = narratorReply(state, content, msg.mes, { msg: id });
         msg.mes = result.clean;
+        const panel = turnPanel(state, content, result.state.last?.check);
+        showPanel(msg, panel);
         setRec(msg, {
             v: RECORD_VERSION, events: result.events, text_hash: hash32(msg.mes), corrections: result.corrections,
-            accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, retcon: true,
+            accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, retcon: true, panel: panel || undefined,
         });
         return { changed: true, text: true };
     }
     r.text_hash = hash32(msg.mes);
+    if (r.panel) showPanel(msg, r.panel); // the edited narration below the same System block
     setRec(msg, r);
-    return { changed: true };
+    return r.panel ? { changed: true, text: true } : { changed: true };
 }

@@ -259,6 +259,7 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction = null, c
             for (const w of perceivers(s)) if (w !== c.id && deathFact && s.scene.awareness[w] !== 'unaware') emit({ t: 'knowledge.gained', d: { who: w, about: deathFact.id, stance: 'knows', source: 'witnessed', turn: s.turn, minute: s.clock.minute } });
         }
     }
+    outcome.board = combatBoard(enc);
     if (terminal(enc)) {
         const end = endEncounterEvents(s, content, enc);
         const levelups = end.events.filter((e) => e.t === 'level.up').map((e) => `Level ${e.d.level}`);
@@ -281,6 +282,20 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction = null, c
         outcome.next = `Alaric's Turn (Round ${enc.round})`;
     }
     return outcome;
+}
+
+/** What the player is shown after this combat step (src/display.js): Initiative and Turn order, everyone's HP, Alaric's resources. */
+function combatBoard(enc) {
+    const pc = enc.combatants.pc;
+    return {
+        round: enc.round,
+        order: enc.order.map((id) => ({ id, init: enc.combatants[id].fixed.init })),
+        hp: enc.order.map((id) => {
+            const c = enc.combatants[id];
+            return { id, hp: c.current.hp, max: c.fixed.max_hp, state: c.current.hp === 0 ? 'defeated' : c.current.escaped ? 'fled' : c.current.surrendered ? 'surrendered' : null };
+        }),
+        pc: { mp: pc.current.mp, max_mp: pc.fixed.max_mp, sta: pc.current.sta, max_sta: pc.fixed.max_sta, arrows: Object.values(pc.current.ammo || {}).reduce((a, n) => a + n, 0) },
+    };
 }
 
 function fightMemory(s, content, enc, summary) {

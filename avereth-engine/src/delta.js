@@ -14,6 +14,7 @@ import { clamp, normText, slug, uniq } from './util.js';
 const TAG_RE = /<avereth>\s*([\s\S]*?)\s*<\/avereth>/gi;
 const ENGINE_OWNED = new Set(['hp', 'mp', 'sta', 'xp', 'level', 'stats', 'skills', 'damage', 'roll', 'rolls', 'init', 'initiative', 'atk', 'def', 'mdef', 'rank', 'defeat_xp']);
 export const REPORT_KEYS = new Set(['time', 'place', 'location', 'forced_by', 'new', 'enter', 'leave', 'position', 'aware', 'concealed', 'facts', 'learn', 'believe', 'attitude', 'memory', 'items', 'coin', 'quests', 'threads', 'combat', 'intent', 'check', 'recover']);
+const CREATION_FROZEN = ['time', 'location', 'place', 'items', 'coin', 'recover', 'quests'];
 const AWARE = new Set(['unaware', 'suspicious', 'aware']);
 const INTENTS = new Set(['attack', 'flee', 'surrender', 'parley', 'hold', 'take_cover']);
 const BANDS = new Set(['ENGAGED', 'SHORT', 'MEDIUM', 'LONG']);
@@ -108,6 +109,15 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         if (ENGINE_OWNED.has(k)) reject({ [k]: report[k] }, `"${k}" is engine-owned and cannot be set by narration`);
         else if (!REPORT_KEYS.has(k)) reject({ [k]: report[k] }, `unknown report key "${k}"`);
     }
+    // Character Creation replies are System-only (story time frozen): the engine grants class, Skills and kit itself and
+    // nothing moves, passes or changes hands. Testrun 2: the narrator re-reported the starter kit and Alaric carried it twice.
+    if (String(state.last?.outcome?.kind || '').startsWith('creation')) {
+        for (const k of CREATION_FROZEN) {
+            if (report[k] === undefined) continue;
+            reject({ [k]: report[k] }, 'Character Creation is System-only: the engine grants class, Skills and starter kit itself; nothing else changes (report {})');
+            report = { ...report, [k]: undefined };
+        }
+    }
     const at = { turn: state.turn, minute: state.clock.minute };
     let idc = 0;
     const mkId = (prefix) => `${prefix}.t${state.turn}${msg !== null && msg !== undefined ? `.m${msg}` : ''}.${++idc}`;
@@ -141,6 +151,7 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         else if (t > 0) { events.push({ t: 'time.advanced', d: { minutes: t, why: 'narration' } }); accepted.push(`time +${t} min`); }
     }
     // travel / place
+    let movedPlace = false;
     if (report.location) {
         const loc = content.locations.get(report.location) || locationByName(content, report.location)
             || Object.values(state.entities).find((e) => e.kind === 'location' && normText(e.name) === normText(report.location));
@@ -164,6 +175,7 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
     } else if (report.place) {
         events.push({ t: 'scene.moved', d: { place: String(report.place).slice(0, 120) } });
         accepted.push(`place: ${report.place}`);
+        movedPlace = normText(report.place) !== normText(state.scene.place);
     }
     // new entities
     for (const n of arr(report.new)) {
@@ -202,6 +214,7 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
     }
     for (const r of arr(report.enter)) {
         const id = resolve(typeof r === 'object' && r ? r.ref : r);
+        if (id && created.has(id)) continue; // introduced by "new" in this report: already in the scene
         if (!id || id === 'pc' || !state.entities[id]) { reject(r, 'enter: unknown entity (introduce new people via "new")'); continue; }
         if (state.entities[id].status === 'dead') { reject(r, `${id} is dead and cannot enter`); continue; }
         events.push({ t: 'scene.entered', d: { id, band: bandOf(r && r.band), cover: coverOf(r && r.cover) } }); present.add(id); accepted.push(`enter ${id}`);
@@ -230,6 +243,18 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         const before = state.scene.awareness[id];
         if (a.level === 'unaware' && before && before !== 'unaware' && !auth.conceal) { reject(a, `${id} already noticed ${pcName} (${before}); only declared stealth can make it lose track`); continue; }
         events.push({ t: 'scene.awareness', d: { id, level: a.level } }); accepted.push(`${id} ${a.level} of ${pcName}`);
+    }
+    // Alaric moved on within the location: people left behind at a distance (MEDIUM/LONG) are no longer in the scene
+    // unless this report places them there again. Testrun 2: a trapper left at LONG on the ridge "detected" a stealth
+    // approach at the stream a quarter mile away. Those close to him (ENGAGED/SHORT or unplaced) are assumed to follow.
+    if (movedPlace && !state.encounter) {
+        const mentioned = new Set([...arr(report.enter), ...arr(report.position).map((x) => x && x.who), ...arr(report.aware).map((x) => x && x.who)]
+            .map((r) => resolve(typeof r === 'object' && r ? r.ref : r)).filter(Boolean));
+        for (const id of state.scene.present) {
+            const band = state.scene.positions[id]?.band;
+            if (id === 'pc' || !present.has(id) || mentioned.has(id) || (band !== 'MEDIUM' && band !== 'LONG')) continue;
+            events.push({ t: 'scene.left', d: { id } }); present.delete(id); accepted.push(`${id} stays behind (${band})`);
+        }
     }
     if (report.concealed !== undefined) {
         // "unseen" is the others' perception and only limits what they know; it grants no mechanical advantage
@@ -437,7 +462,9 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
     // combat commitment by an NPC (PENDING; resolved by the engine on the next turn) and NPC intents
     // only an actual commitment makes a combatant: attitude or kinship alone never does. The engine resolves attacks on
     // Alaric; a fight between NPCs is narrated (a target other than Alaric is never silently turned into Alaric)
-    for (const cb of arr(report.combat)) {
+    const commitments = arr(report.combat).flatMap((cb) => (cb && Array.isArray(cb.by) ? cb.by.map((by) => ({ ...cb, by })) : [cb]));
+    for (const cb of commitments) {
+        if (!cb || typeof cb !== 'object' || !cb.by) continue; // an empty entry ({} or {by: []}) commits nobody
         const by = resolve(cb && cb.by);
         const target = cb && cb.target ? resolve(cb.target) : 'pc';
         if (state.mode === 'creation') reject(cb, 'no combat during Character Creation');
@@ -489,7 +516,11 @@ function coverOf(c) {
 
 function findItemId(content, name) {
     const t = normText(name);
-    for (const [id, it] of content.items) if (normText(it.name) === t || normText(it.name).replace(/^starter /, '') === t) return id;
+    for (const [id, it] of content.items) {
+        const n = normText(it.name);
+        // "Standard Arrows" is the content item standard_arrow, not a new item (Testrun 2)
+        for (const f of [n, n.replace(/^starter /, ''), normText(id.replace(/_/g, ' '))]) if (t === f || t === `${f}s` || t === `${f}es`) return id;
+    }
     return slug(name);
 }
 

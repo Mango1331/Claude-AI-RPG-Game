@@ -5,7 +5,7 @@ Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extens
 - Keine Abhängigkeiten, kein Server, keine Datenbank.
 - Läuft im Browser (SillyTavern) und in Node (Tests).
 
-**Warum diese Architektur:** [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md). **Befunde aus Testrun-v1:** [docs/TESTRUN_V1.md](docs/TESTRUN_V1.md). **Gesamtbericht:** [ABSCHLUSSBERICHT.md](ABSCHLUSSBERICHT.md). **Externe Review und Antwort:** [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md).
+**Warum diese Architektur:** [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md). **Befunde aus Testrun-v1:** [docs/TESTRUN_V1.md](docs/TESTRUN_V1.md). **Gesamtbericht:** [ABSCHLUSSBERICHT.md](ABSCHLUSSBERICHT.md). **Externe Review und Antwort:** [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md). **Erster echter Lauf:** [docs/TESTRUN_V2.md](docs/TESTRUN_V2.md).
 
 ## Was die Engine pro Zug tut
 
@@ -61,6 +61,14 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 - Kampf beginnt nur bei einem erklärten Angriff (Core #23). Zielen, Spurenlesen oder „Bogen bereit“ starten keinen Kampf.
 - **Ein** gültiges Ziel wird automatisch gewählt. Bei mehreren fragt das Spiel nach, ohne Kosten oder Würfe.
 - Warten im Kampf: `I wait` / `I hold my position`.
+- **Kampf und Proben stehen als System-Zeilen oben in der Antwort**, direkt aus den Engine-Würfen:
+  - Initiative und Zugreihenfolge;
+  - jede Aktion mit Trefferchance und W100;
+  - `HP vorher - Schaden = HP nachher`;
+  - HP aller Beteiligten, Alarics MP/STA/Pfeile;
+  - Kampfende mit XP.
+
+  Der Block ist nur Anzeige: GLM bekommt die Zahlen im Engine-Block und sieht den Block nicht im Chatverlauf.
 
 **Befehle** (antwortet die Engine direkt, ohne LLM-Aufruf und ohne Spielzeit):
 
@@ -83,7 +91,7 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 ## Für Entwickler
 
 ```
-npm test                               # 85 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Testrun-v1-Regression
+npm test                               # 98 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Testrun-v1- und Testrun-2-Regression
 node tools/testrun_compare.js          # Token-Vergleich mit Testrun-v1
 node tools/browser_smoke.mjs           # optional: index.js in echtem Chromium mit gemocktem SillyTavern-Kontext (braucht Playwright)
 python3 tools/migrate_content.py       # Content aus dem Paket v1.24 neu erzeugen (aus dem Repo-Wurzelverzeichnis)
@@ -95,7 +103,7 @@ python3 tools/migrate_content.py       # Content aus dem Paket v1.24 neu erzeuge
 | `src/` | Engine, siehe [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md) |
 | `content/` | Inhalte, siehe [docs/DATENMODELL.md](docs/DATENMODELL.md) |
 | `schemas/` | JSON-Schemas für Content, Events und Report |
-| `tests/` | `unit/`, `scenarios/`, `testrun_v1/` |
+| `tests/` | `unit/`, `scenarios/`, `testrun_v1/`, `testrun_v2/` |
 | `tools/` | Migration, Testrun-Vergleich |
 | `docs/` | Architektur, Datenmodell, Migration, WI-Bewertung, Testrun-Analyse |
 

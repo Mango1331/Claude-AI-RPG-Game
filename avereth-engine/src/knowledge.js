@@ -14,9 +14,18 @@ import { normText } from './util.js';
 const PRED_SYNONYMS = {
     state: 'status', condition: 'status', located_in: 'location', located_at: 'location', lives_in: 'residence',
     lives_at: 'residence', resides_in: 'residence', ruled_by: 'ruler', led_by: 'leader', owned_by: 'owner',
-    called: 'name', named: 'name',
+    called: 'name', named: 'name', goal: 'agenda', current_goal: 'agenda', objective: 'agenda', wants: 'agenda',
+    looks: 'appearance', look: 'appearance', speech: 'voice', speaks: 'voice', manner_of_speech: 'voice', role: 'occupation',
+    job: 'occupation', profession: 'occupation',
 };
-export const FUNCTIONAL = new Set(['status', 'location', 'residence', 'ruler', 'leader', 'owner', 'allegiance', 'occupation', 'name', 'title', 'price', 'danger', 'appearance']);
+// An NPC's minimal persistent record (Runtime V3, docs/REVIEW_V3.md 4.2) is built from ordinary facts: occupation (role),
+// appearance and voice (stable cues for a returning NPC) and agenda (what the NPC is working toward while it lasts;
+// o "none" ends it). All four hold one current value, so a new report replaces the old one.
+export const FUNCTIONAL = new Set(['status', 'location', 'residence', 'ruler', 'leader', 'owner', 'allegiance', 'occupation', 'name', 'title', 'price', 'danger', 'appearance', 'voice', 'agenda']);
+// A memory is meaningful (it enters an NPC's record and is recalled later) from this importance on; routine moments
+// ("Kest nodded", a first sighting, the player's own words) stay in the log but never become NPC canon.
+export const MEANINGFUL_IMPORTANCE = 6;
+export const isMeaningful = (m) => (m.importance ?? 5) >= MEANINGFUL_IMPORTANCE;
 // Terminal states are HARD facts automatically: a destroyed city or a dead person only changes with a stated cause.
 const TERMINAL_STATUS = /^(?:dead|destroyed|ruined|razed|burned|burnt|burned down|collapsed|sunk|annihilated|wiped out|obliterated)$/;
 

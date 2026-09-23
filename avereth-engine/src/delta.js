@@ -229,6 +229,12 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (existing && existing !== 'pc' && state.entities[existing]) {
             newRefs.set(normText(n.ref), existing);
             placed.add(existing);
+            // a person first named in prose has no look yet (Testrun 4: Fennick, Maretta): the first traits stick, later
+            // ones never overwrite them (a changed look is a fact: {s, p: "appearance", o})
+            if (n.traits && !state.entities[existing].traits) {
+                events.push({ t: 'entity.updated', d: { id: existing, set: { traits: String(n.traits).slice(0, 240) } } });
+                accepted.push(`${existing} traits: ${String(n.traits).slice(0, 60)}`);
+            }
             if (!present.has(existing) && state.entities[existing].status !== 'dead') {
                 events.push({ t: 'scene.entered', d: { id: existing, band: bandOf(n.band), cover: coverOf(n.cover) } });
                 present.add(existing);
@@ -389,6 +395,9 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         // told by Alaric in this reply: the listener is with him (Testrun 4: back in the Guild hall, Serah heard his
         // report of the cellar while the engine still had her at the counter he had left hours before)
         if (from === 'pc' && how === 'told' && person(who) && !present.has(who) && state.entities[who] && !leftNow.has(who)) bringIn(who, k);
+        // only someone who is here (or left in this very report) can have seen it, even when the fact itself is known
+        // or was established earlier in this report (an absent NPC "witnessing" Alaric's secret would leak it)
+        if (how === 'witnessed' && who !== 'pc' && !present.has(who) && !leftNow.has(who)) { reject(k, `${who} is not present and cannot have witnessed it`); continue; }
         if (!fact && how === 'witnessed') {
             // seeing it happen in the scene is the narration establishing it: only a present witness can do that
             if (!present.has(who)) { reject(k, `${who} is not present and cannot have witnessed it`); continue; }
@@ -433,6 +442,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         let delta = Number(a.delta);
         if (!Number.isFinite(delta)) { reject(a, 'attitude.delta must be a number'); continue; }
         delta = clamp(Math.round(delta), -50, 50);
+        if (delta === 0) continue; // no change is no event: attitudes never drift without a reported cause
         const rid = `rel.${who}.attitude.${toward}`;
         const cur = relNow.get(rid) || state.relations[rid];
         const why = String(a.why || '').slice(0, 160);

@@ -5,8 +5,8 @@
 import { deriveCharacter } from './derived.js';
 import { formatCoin } from './economy.js';
 import {
-    knowledgeOf, memoriesOf, memoryText, entityLabel, anyLabel, propText, currentFacts, statusOf, pcIdentityFor,
-    PC_NAME_FACT, PC_LOOK_FACT,
+    knowledgeOf, memoriesOf, memoryText, entityLabel, anyLabel, propText, currentFacts, statusOf, pcIdentityFor, truth,
+    isMeaningful, PC_NAME_FACT, PC_LOOK_FACT,
 } from './knowledge.js';
 import { rank, pack, Bm25 } from './retrieval.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
@@ -55,21 +55,44 @@ export function pcLine(state, content) {
     ].join('\n');
 }
 
-function npcCard(state, content, id, focusWords) {
+/**
+ * The established cues of a person (Runtime V3 minimal NPC record, docs/REVIEW_V3.md 4.2): role, look, voice and
+ * current agenda — only what play established (facts and the introduction's traits), never an invented biography.
+ */
+export function npcCues(state, content, id) {
+    const e = state.entities[id];
+    const fact = (p) => truth(state, id, p).map((f) => f.o).find((o) => normText(o) !== 'none') || null;
+    const tpl = e.template && e.template !== 'commoner' ? (content.templates.get(e.template)?.label || e.template).toLowerCase() : null;
+    return { role: fact('occupation') || tpl, look: [e.traits, fact('appearance')].filter(Boolean).join('; '), voice: fact('voice'), agenda: fact('agenda') };
+}
+
+/** Meaningful moments (importance >= 6) an NPC shared with Alaric, oldest first: the same threshold retrieval uses. */
+export function sharedMoments(state, id) {
+    return memoriesOf(state, id).filter((m) => isMeaningful(m) && ((m.who || []).includes('pc') || (m.witnesses || []).includes('pc')));
+}
+
+/**
+ * One NPC as the narrator sees it: its established cues, stance toward Alaric, last meaningful moment with him, what
+ * it knows and believes (ONLY its own knowledge rows: knowledge boundaries by construction), agenda and secrets.
+ * absent = named this turn but not in the scene: continuity only (no position, awareness or combat intent).
+ */
+function npcCard(state, content, id, focusWords, { absent = false } = {}) {
     const e = state.entities[id];
     const lines = [];
+    const cues = e.kind === 'creature' ? null : npcCues(state, content, id);
     const kind = e.kind === 'creature'
         ? `creature (${e.species || content.anchors.get(e.anchor)?.name || 'unknown'})`
-        : `person${e.template ? `, ${(content.templates.get(e.template)?.label || e.template).toLowerCase()}` : ''}`;
-    const pos = state.scene.positions[id];
-    const c = state.encounter && state.encounter.combatants[id];
+        : `person${cues.role ? `, ${cues.role}` : ''}`;
+    const look = cues ? cues.look : e.traits;
+    const pos = absent ? null : state.scene.positions[id];
+    const c = !absent && state.encounter && state.encounter.combatants[id];
     const hp = c ? `${conditionLabel(c.current.hp, c.fixed.max_hp)} (HP ${c.current.hp}/${c.fixed.max_hp})` : statusOf(state, id) === 'dead' ? 'dead' : '';
     const band = c ? c.current.band : pos?.band;
     const cover = c ? c.current.cover : pos?.cover;
-    lines.push(`• ${entityLabel(state, id)} — ${kind}${e.traits ? `; ${e.traits}` : ''}${hp ? `; ${hp}` : ''}${band ? `; ${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : ''}`);
+    lines.push(`• ${entityLabel(state, id)} — ${kind}${look ? `; ${look}` : ''}${cues?.voice ? `; voice: ${cues.voice}` : ''}${hp ? `; ${hp}` : ''}${band ? `; ${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : ''}${absent ? '; NOT PRESENT' : ''}`);
     if (statusOf(state, id) === 'dead') return lines[0];
-    const aware = state.scene.awareness[id];
-    const unseen = state.scene.concealed.includes('pc');
+    const aware = absent ? null : state.scene.awareness[id];
+    const unseen = !absent && state.scene.concealed.includes('pc');
     if (e.kind === 'creature') {
         lines.push(`  awareness of Alaric: ${aware || 'not established'}${unseen ? '; Alaric is currently UNSEEN' : ''}`);
     } else {
@@ -78,27 +101,33 @@ function npcCard(state, content, id, focusWords) {
         const ident = pcIdentityFor(state, id);
         const idText = ident.level === 'name' ? 'knows him by name' : ident.level === 'seen' ? 'has seen him, does NOT know his name' : 'has never seen him';
         lines.push(`  toward Alaric: ${attitudeLabel(rel?.value)}${last?.why ? ` (last change: ${last.why})` : ''}; ${idText}${aware ? `; awareness: ${aware}` : ''}${unseen ? '; Alaric is currently UNSEEN by others' : ''}`);
-        const subjects = ['pc', ...state.scene.present, state.scene.location];
+        const moments = sharedMoments(state, id);
+        const lastMoment = moments.at(-1);
+        if (lastMoment) lines.push(`  last meaningful: [${day(lastMoment.minute)}] ${memoryText(state, lastMoment, id)}`);
+        const subjects = absent ? ['pc'] : ['pc', ...state.scene.present, state.scene.location];
         const rows = knowledgeOf(state, id).filter((r) => !IDENTITY_FACTS.has(r.about) && r.visibility !== 'secret'
-            && (subjects.includes(r.s) || subjects.includes(r.o) || tokenize(propText(state, r, content)).some((w) => focusWords.has(w))));
-        const known = rows.filter((r) => r.stance === 'knows').slice(-5).map((r) => `${propText(state, r, content)}${r.outdated ? ' (OUTDATED: the world changed since)' : ''} [${r.source}]`);
+            && (subjects.includes(r.s) || subjects.includes(r.o) || (!absent && tokenize(propText(state, r, content)).some((w) => focusWords.has(w)))));
+        const known = rows.filter((r) => r.stance === 'knows').slice(absent ? -3 : -5).map((r) => `${propText(state, r, content)}${r.outdated ? ' (OUTDATED: the world changed since)' : ''} [${r.source}]`);
         const believed = rows.filter((r) => r.stance !== 'knows').slice(-3).map((r) => `${propText(state, r, content)} [${r.stance}${r.true === false ? ' — actually FALSE' : ''}]`);
         if (known.length) lines.push(`  knows: ${known.join('; ')}`);
         if (believed.length) lines.push(`  believes/suspects: ${believed.join('; ')}`);
-        const mems = memoriesOf(state, id)
-            .map((m) => {
-                const withPc = (m.who || []).includes('pc') || (m.witnesses || []).includes('pc');
-                const overlap = tokenize(m.text).filter((w) => focusWords.has(w)).length;
-                return { m, score: (m.importance || 3) + (withPc ? 3 : 0) + Math.min(3, overlap) * 2 + m.turn / 1e6 };
-            })
-            .sort((a, b) => b.score - a.score).slice(0, 3).map(({ m }) => `[${day(m.minute)}] ${memoryText(state, m, id)}`);
-        if (mems.length) lines.push(`  remembers: ${mems.join(' | ')}`);
+        // other meaningful moments that matter to this turn's words (never routine ones: "Kest nodded" is not canon)
+        const also = memoriesOf(state, id).filter((m) => isMeaningful(m) && m !== lastMoment && tokenize(m.text).some((w) => focusWords.has(w))).slice(-2);
+        if (also.length && !absent) lines.push(`  also remembers: ${also.map((m) => `[${day(m.minute)}] ${memoryText(state, m, id)}`).join(' | ')}`);
+        if (cues.agenda) lines.push(`  agenda: ${cues.agenda}`);
         const secrets = knowledgeOf(state, id).filter((r) => r.is_fact && !r.outdated && r.visibility === 'secret' && r.s !== 'pc');
         if (secrets.length) lines.push(`  keeps secret: ${secrets.map((r) => `${propText(state, r, content)} [${r.source}]`).join('; ')} (reveals it only for its own reasons)`);
     }
-    const intent = state.encounter?.intents?.[id] || state.pending_intents?.[id];
+    const intent = !absent && (state.encounter?.intents?.[id] || state.pending_intents?.[id]);
     if (intent) lines.push(`  declared intent for its next turn: ${intent}`);
     return lines.join('\n');
+}
+
+/** Known people named in the player's message or the last reply who are not in the scene (continuity, at most 3). */
+function namedAbsent(state, scan) {
+    return Object.values(state.entities)
+        .filter((e) => e.kind === 'npc' && e.name && !state.scene.present.includes(e.id) && mentioned(e.name, scan))
+        .slice(0, 3).map((e) => e.id);
 }
 
 export function combatBlock(state) {
@@ -312,6 +341,8 @@ export function buildContext(state, content, opts = {}) {
     const others = state.scene.present.filter((id) => id !== 'pc' && state.entities[id]);
     if (others.length) add('present', `PRESENT (each NPC knows ONLY what its card lists):\n${others.map((id) => npcCard(state, content, id, focusWords)).join('\n')}`, 1);
     else if (state.mode !== 'creation') add('present', 'PRESENT: nobody besides Alaric.', 1);
+    const absent = state.mode === 'creation' ? [] : namedAbsent(state, normText(queryText));
+    if (absent.length) add('named', `NAMED, NOT PRESENT (continuity only; they are elsewhere unless the story brings them in):\n${absent.map((id) => npcCard(state, content, id, focusWords, { absent: true })).join('\n')}`, 2);
     add('combat', combatBlock(state), 0);
 
     // hard facts about the current place, present people and anything named this turn are always shown (binding)
@@ -369,7 +400,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'present', 'combat', 'facts', 'relevant', 'lore', 'rules', 'corrections', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'present', 'named', 'combat', 'facts', 'relevant', 'lore', 'rules', 'corrections', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };

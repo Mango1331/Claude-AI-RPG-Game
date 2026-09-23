@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "avereth/gear.schema.json",
+  "title": "Gear, starter kits (content/gear.json)",
+  "type": "object",
+  "required": [
+    "items",
+    "starter_kits",
+    "bootstrap"
+  ],
+  "properties": {
+    "items": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "slot"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rank": {
+            "enum": [
+              "F",
+              "E",
+              "D",
+              "C",
+              "B",
+              "A",
+              "S",
+              null
+            ]
+          },
+          "slot": {
+            "enum": [
+              "weapon",
+              "armor",
+              "offhand",
+              "quiver",
+              "ammo",
+              "clothing",
+              "container"
+            ]
+          },
+          "family": {
+            "type": "string"
+          },
+          "atk": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "matk": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "def": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "mdef": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "contains": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    },
+    "starter_kits": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "bootstrap": {
+      "type": "object",
+      "required": [
+        "items",
+        "coin_cp"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "coin_cp": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

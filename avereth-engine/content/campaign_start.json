@@ -1,0 +1,43 @@
+{
+  "_source": "First Message v0.4 + Content #0/#11 + System #12 (New Campaign and Character Creation). The engine creates the initial state from this file; the start city is read from the First Message line 'Location: Public roadside verge outside <City>, <Realm>' (it is chosen by the {{pick}} macro).",
+  "pc": {
+    "id": "pc",
+    "name": "Alaric",
+    "kind": "pc",
+    "race": "Human",
+    "age": 18,
+    "origin": "Earth",
+    "level": 1,
+    "stats": {"STR": 5, "VIT": 5, "AGI": 5, "INT": 5, "PER": 5, "WIL": 5},
+    "class": null,
+    "skills": {},
+    "equipment": {"clothing": "simple_travelers_clothes"},
+    "inventory": {"small_pouch": 1},
+    "coin_cp": 50,
+    "xp": 0,
+    "free_points": 0,
+    "descriptors": ["Alaric", "stranger", "traveler"],
+    "public_facts": ["Human, about eighteen", "wears simple traveler's clothes"]
+  },
+  "start_locations": ["loc.alderwatch", "loc.glassmere", "loc.redmarch", "loc.tidecross", "loc.lumenford", "loc.ashbridge"],
+  "start_scene": {
+    "place": "public roadside verge outside the city",
+    "clock_minutes": 540,
+    "clock_note": "Day 1, 09:00 is a neutral default; the First Message states no hour. The narrator may propose the time of day in the first story turn."
+  },
+  "creation": {
+    "step": 1,
+    "choose_skills": 2,
+    "labels": {
+      "step1": "CHARACTER CREATION — STEP 1/2",
+      "step2": "CHARACTER CREATION — STEP 2/2",
+      "class_selected": "CLASS SELECTED",
+      "select_skills": "Select exactly 2 Skills",
+      "complete": "CHARACTER CREATION COMPLETE"
+    }
+  },
+  "initial_facts": [
+    {"s": "pc", "p": "origin", "o": "Earth (transmigrated; memories intact)", "visibility": "secret", "known_by": ["pc"]},
+    {"s": "pc", "p": "arrival_witnesses", "o": "none", "visibility": "secret", "known_by": ["pc"]}
+  ]
+}

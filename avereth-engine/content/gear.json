@@ -1,0 +1,200 @@
+{
+  "_source": "Content v1.13 #9 (references) + #11 (starter kits)",
+  "references_text": "GEAR MODEL\nGear has a Rank and fixed item-instance values. Normal Gear directly contributes ATK/MATK/DEF/MDEF; it does not alter Core Stats unless an exceptional item explicitly says so.\n\nF-RANK REFERENCE\nMartial Weapon ATK 4-10\nArcane Focus MATK 4-10\nLight Armor DEF 2-4, MDEF 2-5\nHeavy Armor DEF 5-8, MDEF 1-3\nShield/secondary defensive slot DEF 3-5, MDEF 2-4\n\nHIGHER-RANK GENERATION\nLet RankIndex R: F=0, E=1, D=2, C=3, B=4, A=5, S=6.\nFor ordinary higher-Rank Gear, start from an appropriate F reference/item and use:\nRanked combat value ≈ round(F value × (1 + 0.75R)).\nChoose/fix the actual item value once. Exceptional named/enchanted artifacts may deviate through explicit effects instead of a universal rarity ladder.\n\nTypical slots:\nWarrior weapon + heavy armor; Mage focus + light armor; Guardian weapon + heavy armor + shield; Duelist weapon + light armor; Ranger weapon + light armor.\nGeneric monsters do not use Gear unless the individual actually carries/equips it.\n",
+  "f_rank_reference": {
+    "martial_weapon_atk": [
+      4,
+      10
+    ],
+    "arcane_focus_matk": [
+      4,
+      10
+    ],
+    "light_armor_def": [
+      2,
+      4
+    ],
+    "light_armor_mdef": [
+      2,
+      5
+    ],
+    "heavy_armor_def": [
+      5,
+      8
+    ],
+    "heavy_armor_mdef": [
+      1,
+      3
+    ],
+    "shield_def": [
+      3,
+      5
+    ],
+    "shield_mdef": [
+      2,
+      4
+    ]
+  },
+  "rank_scaling": {
+    "per_rank_index": 0.75,
+    "rank_index": {
+      "F": 0,
+      "E": 1,
+      "D": 2,
+      "C": 3,
+      "B": 4,
+      "A": 5,
+      "S": 6
+    }
+  },
+  "items": {
+    "starter_longsword": {
+      "id": "starter_longsword",
+      "name": "Starter Longsword",
+      "rank": "F",
+      "source_line": "Starter Longsword [F]: ATK 6",
+      "atk": 6,
+      "slot": "weapon",
+      "family": "melee"
+    },
+    "starter_heavy_armor": {
+      "id": "starter_heavy_armor",
+      "name": "Starter Heavy Armor",
+      "rank": "F",
+      "source_line": "Starter Heavy Armor [F]: DEF 6, MDEF 2",
+      "def": 6,
+      "mdef": 2,
+      "slot": "armor",
+      "family": "heavy_armor"
+    },
+    "starter_arcane_staff": {
+      "id": "starter_arcane_staff",
+      "name": "Starter Arcane Staff",
+      "rank": "F",
+      "source_line": "Starter Arcane Staff [F]: MATK 6",
+      "matk": 6,
+      "slot": "weapon",
+      "family": "focus"
+    },
+    "starter_light_robes": {
+      "id": "starter_light_robes",
+      "name": "Starter Light Robes",
+      "rank": "F",
+      "source_line": "Starter Light Robes [F]: DEF 2, MDEF 3",
+      "def": 2,
+      "mdef": 3,
+      "slot": "armor",
+      "family": "light_armor"
+    },
+    "starter_mace": {
+      "id": "starter_mace",
+      "name": "Starter Mace",
+      "rank": "F",
+      "source_line": "Starter Mace [F]: ATK 5",
+      "atk": 5,
+      "slot": "weapon",
+      "family": "melee"
+    },
+    "starter_shield": {
+      "id": "starter_shield",
+      "name": "Starter Shield",
+      "rank": "F",
+      "source_line": "Starter Shield [F]: DEF 3, MDEF 2",
+      "def": 3,
+      "mdef": 2,
+      "slot": "offhand",
+      "family": "shield"
+    },
+    "starter_rapier": {
+      "id": "starter_rapier",
+      "name": "Starter Rapier",
+      "rank": "F",
+      "source_line": "Starter Rapier [F]: ATK 6",
+      "atk": 6,
+      "slot": "weapon",
+      "family": "melee"
+    },
+    "starter_light_armor": {
+      "id": "starter_light_armor",
+      "name": "Starter Light Armor",
+      "rank": "F",
+      "source_line": "Starter Light Armor [F]: DEF 2, MDEF 3",
+      "def": 2,
+      "mdef": 3,
+      "slot": "armor",
+      "family": "light_armor"
+    },
+    "starter_shortbow": {
+      "id": "starter_shortbow",
+      "name": "Starter Shortbow",
+      "rank": "F",
+      "source_line": "Starter Shortbow [F]: ATK 6",
+      "atk": 6,
+      "slot": "weapon",
+      "family": "bow"
+    },
+    "starter_quiver": {
+      "id": "starter_quiver",
+      "name": "Starter Quiver",
+      "rank": null,
+      "source_line": "Starter Quiver [unranked]: contains 20 Standard Arrows",
+      "slot": "quiver",
+      "contains": {
+        "standard_arrow": 20
+      }
+    },
+    "standard_arrow": {
+      "id": "standard_arrow",
+      "name": "Standard Arrow",
+      "rank": null,
+      "slot": "ammo",
+      "stackable": true,
+      "note": "Ordinary physical ammunition; no bonus damage or other modifier (Content #11, Core #21)."
+    },
+    "simple_travelers_clothes": {
+      "id": "simple_travelers_clothes",
+      "name": "Simple Traveler's Clothes",
+      "rank": null,
+      "slot": "clothing",
+      "note": "unranked; no combat values"
+    },
+    "small_pouch": {
+      "id": "small_pouch",
+      "name": "Small Pouch",
+      "rank": null,
+      "slot": "container"
+    }
+  },
+  "starter_kits": {
+    "warrior": [
+      "starter_longsword",
+      "starter_heavy_armor"
+    ],
+    "mage": [
+      "starter_arcane_staff",
+      "starter_light_robes"
+    ],
+    "guardian": [
+      "starter_mace",
+      "starter_heavy_armor",
+      "starter_shield"
+    ],
+    "duelist": [
+      "starter_rapier",
+      "starter_light_armor"
+    ],
+    "ranger": [
+      "starter_shortbow",
+      "starter_light_armor",
+      "starter_quiver"
+    ]
+  },
+  "bootstrap": {
+    "items": [
+      "simple_travelers_clothes",
+      "small_pouch"
+    ],
+    "coin_cp": 50
+  },
+  "kits_text": "TRANSMIGRATION STARTER KITS — ONE-TIME CAMPAIGN INITIALIZATION\n\nWhen System Character Creation is completed by selecting one Base Class and exactly 2 Base Skills, the System grants exactly one matching F-rank starter kit.\nThis is a one-time bootstrap benefit, not a repeatable Shop or Skill.\n\nAll listed values are fixed item-instance values.\n\nWARRIOR:\n- Starter Longsword [F]: ATK 6\n- Starter Heavy Armor [F]: DEF 6, MDEF 2\n\nMAGE:\n- Starter Arcane Staff [F]: MATK 6\n- Starter Light Robes [F]: DEF 2, MDEF 3\n\nGUARDIAN:\n- Starter Mace [F]: ATK 5\n- Starter Heavy Armor [F]: DEF 6, MDEF 2\n- Starter Shield [F]: DEF 3, MDEF 2\n\nDUELIST:\n- Starter Rapier [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n\nRANGER:\n- Starter Shortbow [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n- Starter Quiver [unranked]: contains 20 Standard Arrows\n- Standard Arrows are ordinary physical ammunition and grant no bonus damage or other modifier.\n\nCOMMON BOOTSTRAP ITEMS:\nBefore Class selection, the player has:\n- Simple Traveler's Clothes [unranked; no combat values]\n- Small Pouch [unranked]\n- 5 Silver\n\nCREATION-COMPLETION EFFECT:\nAfter the Class is chosen and exactly 2 Base Skills from that Class are chosen:\n1. apply the Class's one-time Level-1 Favored-Stat growth if not already applied;\n2. grant/preserve the selected Class's Basic Attack at Proficiency 1, Progress 0, plus the 2 selected Base Skills at Proficiency 1, Progress 0;\n3. materialize and equip the matching starter kit;\n4. preserve Simple Traveler's Clothes as ordinary clothing unless the player later discards/replaces them;\n5. mark the one-time starter kit as claimed.\n\nNo later Class Evolution or Class change grants another starter kit unless an explicit future rule says so.\n"
+}

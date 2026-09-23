@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "avereth/narrator.schema.json",
+  "title": "Narrator contract + fact report format (content/narrator.json)",
+  "type": "object",
+  "required": [
+    "version",
+    "contract_file",
+    "contract_text",
+    "report",
+    "outcome_rules"
+  ],
+  "properties": {
+    "contract_text": {
+      "type": "string",
+      "minLength": 1000
+    },
+    "report": {
+      "type": "object",
+      "required": [
+        "tag",
+        "instruction",
+        "keys",
+        "example"
+      ],
+      "properties": {
+        "tag": {
+          "const": "avereth"
+        },
+        "keys": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "type": "string",
+          "pattern": "^<avereth>\\{.*\\}</avereth>$"
+        }
+      }
+    },
+    "outcome_rules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

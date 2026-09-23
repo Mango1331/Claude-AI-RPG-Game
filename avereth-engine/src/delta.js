@@ -1,0 +1,449 @@
+// Narrative fact report (<avereth>{...}</avereth>) -> validated events.
+// The LLM proposes; the engine disposes. Accepted items become events; everything else is rejected with a reason
+// (kept in the audit log and fed back as a correction note). Engine-owned values (HP, XP, stats, levels, skills,
+// dice) can never enter through this channel.
+import { anchorFor, templateFor, locationByName } from './content.js';
+import { setFactEvents, truth, normPredicate, FUNCTIONAL, statusOf } from './knowledge.js';
+import { awardXp, questXp } from './progression.js';
+import { applyCoin } from './economy.js';
+import { deriveCharacter } from './derived.js';
+import { checkChance } from './checks.js';
+import { clamp, normText, slug, uniq } from './util.js';
+
+const TAG_RE = /<avereth>\s*([\s\S]*?)\s*<\/avereth>/gi;
+const ENGINE_OWNED = new Set(['hp', 'mp', 'sta', 'xp', 'level', 'stats', 'skills', 'damage', 'roll', 'rolls', 'init', 'initiative', 'atk', 'def', 'mdef', 'rank', 'defeat_xp']);
+export const REPORT_KEYS = new Set(['time', 'place', 'location', 'new', 'enter', 'leave', 'position', 'aware', 'concealed', 'facts', 'learn', 'believe', 'attitude', 'memory', 'items', 'coin', 'quests', 'threads', 'combat', 'intent', 'check', 'recover']);
+const AWARE = new Set(['unaware', 'suspicious', 'aware']);
+const INTENTS = new Set(['attack', 'flee', 'surrender', 'parley', 'hold', 'take_cover']);
+const BANDS = new Set(['ENGAGED', 'SHORT', 'MEDIUM', 'LONG']);
+const COVERS = new Set(['none', 'partial', 'full']);
+
+/** Split the reply into display text and the (last) fact report. Tolerates code fences, smart quotes, trailing commas. */
+export function extractReport(text) {
+    const src = String(text || '');
+    let last = null;
+    let m;
+    TAG_RE.lastIndex = 0;
+    while ((m = TAG_RE.exec(src))) last = m;
+    const clean = src.replace(TAG_RE, '').replace(/\s+$/, '');
+    if (!last) return { clean, report: null, error: 'no <avereth> report' };
+    const parsed = tolerantJson(last[1]);
+    return { clean, report: parsed.value, error: parsed.error, raw: last[1] };
+}
+
+export function tolerantJson(text) {
+    let s = String(text).trim().replace(/^```(?:json)?\s*|\s*```$/g, '');
+    s = s.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+    const noTrailing = s.replace(/,\s*([}\]])/g, '$1');
+    for (const attempt of [s, noTrailing, noTrailing.replace(/([{,]\s*)([A-Za-z_][\w]*)\s*:/g, '$1"$2":')]) {
+        try {
+            const v = JSON.parse(attempt);
+            if (v && typeof v === 'object' && !Array.isArray(v)) return { value: v };
+            return { value: null, error: 'report is not a JSON object' };
+        } catch { /* next repair */ }
+    }
+    return { value: null, error: 'report is not valid JSON' };
+}
+
+/**
+ * Resolve a reference to an id: entity id, 'pc'/'Alaric', entity name/descriptor, a ref introduced in this report,
+ * or a content location/faction (id or name, e.g. "Tidecross" -> loc.tidecross).
+ */
+export function makeResolver(state, newRefs, content = null) {
+    return (ref) => {
+        if (ref === undefined || ref === null || typeof ref === 'object') return null;
+        const r = normText(ref);
+        if (newRefs.has(r)) return newRefs.get(r);
+        if (state.entities[ref]) return ref;
+        if (['pc', 'alaric', 'player', 'you', 'the player'].includes(r)) return 'pc';
+        const pc = state.entities.pc;
+        if (pc && normText(pc.name) === r) return 'pc';
+        const scored = [];
+        for (const e of Object.values(state.entities)) {
+            const names = [e.name, ...(e.descriptors || [])].filter(Boolean).map(normText);
+            if (names.includes(r) || names.includes(r.replace(/^the /, ''))) scored.push([e, state.scene.present.includes(e.id) ? 2 : 1]);
+        }
+        scored.sort((a, b) => b[1] - a[1]);
+        if (scored.length) return scored[0][0].id;
+        if (content) {
+            if (content.locations.has(ref) || content.factions.has(ref)) return ref;
+            const loc = locationByName(content, ref);
+            if (loc) return loc.id;
+            for (const f of content.factions.values()) if (normText(f.name) === r) return f.id;
+        }
+        return null;
+    };
+}
+
+function uniqueId(state, prefix, base, taken) {
+    let id = `${prefix}.${slug(base) || 'unnamed'}`;
+    let n = 2;
+    while (state.entities[id] || taken.has(id)) { id = `${prefix}.${slug(base) || 'unnamed'}_${n}`; n += 1; }
+    taken.add(id);
+    return id;
+}
+
+function escapeRe(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Validate a report against the current state and convert accepted items to events.
+ * @returns {{events: object[], accepted: string[], rejected: {item: any, reason: string}[], corrections: string[]}}
+ */
+export function reportToEvents(report, state, content, { msg = null } = {}) {
+    const events = [];
+    const accepted = [];
+    const rejected = [];
+    const corrections = [];
+    const reject = (item, reason) => rejected.push({ item, reason });
+    if (!report) return { events, accepted, rejected, corrections };
+    for (const k of Object.keys(report)) {
+        if (ENGINE_OWNED.has(k)) reject({ [k]: report[k] }, `"${k}" is engine-owned and cannot be set by narration`);
+        else if (!REPORT_KEYS.has(k)) reject({ [k]: report[k] }, `unknown report key "${k}"`);
+    }
+    const at = { turn: state.turn, minute: state.clock.minute };
+    let idc = 0;
+    const mkId = (prefix) => `${prefix}.t${state.turn}${msg !== null && msg !== undefined ? `.m${msg}` : ''}.${++idc}`;
+    const newRefs = new Map();
+    const taken = new Set();
+    const resolve = makeResolver(state, newRefs, content);
+    const present = new Set(state.scene.present);
+    const src = { kind: 'narration', msg };
+    const pcName = state.entities.pc?.name || 'Alaric';
+    const inCombat = (id) => !!(state.encounter && state.encounter.combatants[id]);
+    const created = new Map(); // entities introduced by this very report (usable by its other keys)
+    const ent = (id) => (id ? state.entities[id] || created.get(id) : undefined);
+
+    // time
+    if (report.time !== undefined) {
+        const t = Number(report.time);
+        if (!Number.isInteger(t) || t < 0 || t > 10080) reject({ time: report.time }, 'time must be whole minutes between 0 and 10080 (7 days)');
+        else if (t > 0 && state.mode === 'creation') reject({ time: report.time }, 'story time is frozen during Character Creation');
+        else if (t > 0) { events.push({ t: 'time.advanced', d: { minutes: t, why: 'narration' } }); accepted.push(`time +${t} min`); }
+    }
+    // travel / place
+    if (report.location) {
+        const loc = content.locations.get(report.location) || locationByName(content, report.location)
+            || Object.values(state.entities).find((e) => e.kind === 'location' && normText(e.name) === normText(report.location));
+        if (state.encounter) reject({ location: report.location }, 'cannot travel while combat is ACTIVE');
+        else if (loc) {
+            events.push({ t: 'scene.moved', d: { location: loc.id, place: report.place ? String(report.place).slice(0, 120) : loc.name, reset_present: loc.id !== state.scene.location } });
+            if (loc.id !== state.scene.location) present.clear();
+            present.add('pc');
+            accepted.push(`location -> ${loc.name}`);
+        } else {
+            const id = uniqueId(state, 'loc', report.location, taken);
+            events.push({ t: 'entity.created', d: { entity: { id, kind: 'location', name: String(report.location).slice(0, 80), status: 'exists', realm: state.entities[state.scene.location]?.realm || content.locations.get(state.scene.location)?.realm || null, created: at, source: src } } });
+            events.push({ t: 'scene.moved', d: { location: id, place: report.place ? String(report.place).slice(0, 120) : String(report.location), reset_present: true } });
+            present.clear();
+            present.add('pc');
+            accepted.push(`new location ${report.location}`);
+        }
+    } else if (report.place) {
+        events.push({ t: 'scene.moved', d: { place: String(report.place).slice(0, 120) } });
+        accepted.push(`place: ${report.place}`);
+    }
+    // new entities
+    for (const n of arr(report.new)) {
+        if (!n || !n.ref) { reject(n, 'new entity needs a ref'); continue; }
+        const kind = n.kind === 'creature' ? 'creature' : n.kind === 'npc' ? 'npc' : null;
+        if (!kind) { reject(n, 'kind must be "npc" or "creature"'); continue; }
+        const existing = resolve(n.ref) || (n.name ? resolve(n.name) : null);
+        if (existing && existing !== 'pc' && state.entities[existing]) {
+            newRefs.set(normText(n.ref), existing);
+            if (!present.has(existing) && state.entities[existing].status !== 'dead') {
+                events.push({ t: 'scene.entered', d: { id: existing, band: bandOf(n.band), cover: coverOf(n.cover) } });
+                present.add(existing);
+            }
+            accepted.push(`known ${existing} (not duplicated)`);
+            continue;
+        }
+        const desc = uniq([...(Array.isArray(n.desc) ? n.desc : []), n.ref].map((x) => String(x).toLowerCase().slice(0, 40)));
+        const id = uniqueId(state, kind === 'npc' ? 'npc' : 'mon', n.name || n.ref, taken);
+        const entity = { id, kind, name: n.name ? String(n.name).slice(0, 60) : null, descriptors: desc, traits: n.traits ? String(n.traits).slice(0, 240) : '', status: 'alive', location: state.scene.location, created: at, source: src, card: {} };
+        if (kind === 'creature') {
+            const anchor = content.anchors.get(n.species) || anchorFor(content, [n.species, ...desc, n.traits].filter(Boolean).join(' '));
+            if (!anchor) { reject(n, 'creature needs a species that maps to an F1 body-plan anchor (or kind "npc")'); continue; }
+            entity.species = n.species ? String(n.species).slice(0, 40) : desc[0];
+            entity.anchor = anchor.id;
+        } else {
+            const tpl = content.templates.get(n.template) || templateFor(content, [...desc, n.traits].filter(Boolean).join(' '));
+            entity.template = tpl ? tpl.id : 'commoner';
+        }
+        newRefs.set(normText(n.ref), id);
+        if (n.name) newRefs.set(normText(n.name), id);
+        created.set(id, entity);
+        events.push({ t: 'entity.created', d: { entity } });
+        events.push({ t: 'scene.entered', d: { id, band: bandOf(n.band), cover: coverOf(n.cover) } });
+        present.add(id);
+        accepted.push(`new ${kind} ${n.name || n.ref} (${id})`);
+    }
+    for (const r of arr(report.enter)) {
+        const id = resolve(typeof r === 'object' && r ? r.ref : r);
+        if (!id || id === 'pc' || !state.entities[id]) { reject(r, 'enter: unknown entity (introduce new people via "new")'); continue; }
+        if (state.entities[id].status === 'dead') { reject(r, `${id} is dead and cannot enter`); continue; }
+        events.push({ t: 'scene.entered', d: { id, band: bandOf(r && r.band), cover: coverOf(r && r.cover) } }); present.add(id); accepted.push(`enter ${id}`);
+    }
+    for (const r of arr(report.leave)) {
+        const id = resolve(r);
+        if (!id || !present.has(id) || id === 'pc') { reject(r, 'leave: entity not present'); continue; }
+        if (inCombat(id)) { reject(r, `${id} is in the active encounter; leaving is resolved by the engine (flee/escape)`); continue; }
+        events.push({ t: 'scene.left', d: { id } }); present.delete(id); accepted.push(`leave ${id}`);
+    }
+    for (const p of arr(report.position)) {
+        const id = resolve(p && p.who);
+        if (!id || id === 'pc' || !present.has(id)) { reject(p, 'position: unknown or absent NPC'); continue; }
+        if (inCombat(id)) { reject(p, 'positions of combatants are engine-owned during ACTIVE combat'); continue; }
+        const band = bandOf(p.band);
+        if (!band) { reject(p, 'position.band must be ENGAGED|SHORT|MEDIUM|LONG (distance to Alaric)'); continue; }
+        events.push({ t: 'scene.position', d: { id, band, cover: coverOf(p.cover) || 'none' } }); accepted.push(`${id} at ${band}`);
+    }
+    for (const a of arr(report.aware)) {
+        const id = resolve(a && a.who);
+        if (!id || !present.has(id) || id === 'pc') { reject(a, 'aware: unknown or absent NPC'); continue; }
+        if (!AWARE.has(a.level)) { reject(a, 'aware.level must be unaware|suspicious|aware'); continue; }
+        if (inCombat(id) && a.level !== 'aware') { reject(a, 'a combatant in an ACTIVE encounter is aware'); continue; }
+        events.push({ t: 'scene.awareness', d: { id, level: a.level } }); accepted.push(`${id} ${a.level} of ${pcName}`);
+    }
+    if (report.concealed !== undefined) {
+        const ids = uniq(arr(report.concealed).map(resolve).filter(Boolean));
+        events.push({ t: 'scene.concealed', d: { ids } }); accepted.push(`concealed: ${ids.join(', ') || 'none'}`);
+    }
+    // facts (world truth). Hard facts (e.g. a destroyed city, a dead person) change only with an explicit cause.
+    for (const f of arr(report.facts)) {
+        if (!f || !f.s || !f.p || f.o === undefined || f.o === null) { reject(f, 'fact needs s, p, o'); continue; }
+        const s = resolve(f.s) || String(f.s).slice(0, 80);
+        const p = normPredicate(f.p);
+        const oRef = typeof f.o === 'string' ? resolve(f.o) : null;
+        const o = oRef && state.entities[oRef] ? oRef : String(f.o).slice(0, 200);
+        const hard = FUNCTIONAL.has(p) ? truth(state, s, p).find((x) => x.hard && normText(x.o) !== normText(o)) : null;
+        if (hard && !f.because) { reject(f, `contradicts established fact "${hard.s} ${hard.p} ${hard.o}" (since turn ${hard.since.turn}); a change needs an explicit cause ("because")`); continue; }
+        if (p === 'status' && inCombat(s)) { reject(f, `${s} is a combatant; its condition is resolved by the engine`); continue; }
+        const evs = setFactEvents(state, { id: mkId('f'), s, p, o, visibility: f.vis === 'secret' ? 'secret' : 'public', importance: clamp(Number(f.imp || 5), 1, 10) / 10, hard: !!f.hard, source: { ...src, because: f.because ? String(f.because).slice(0, 160) : null } });
+        events.push(...evs);
+        const fact = evs.find((e) => e.t === 'fact.asserted')?.d.fact;
+        if (fact && p === 'status' && ent(s) && ent(s).kind !== 'location') {
+            events.push({ t: 'entity.status', d: { id: s, status: normText(o) } });
+        }
+        // a character knows secrets about itself
+        if (fact && fact.visibility === 'secret' && ent(s) && ent(s).kind !== 'location') {
+            events.push({ t: 'knowledge.gained', d: { who: s, about: fact.id, stance: 'knows', source: 'self', ...at } });
+        }
+        accepted.push(`fact ${s} ${p} ${o}${fact?.hard ? ' (HARD)' : ''}`);
+    }
+    // knowledge / beliefs. Learning never changes world truth: a wrong "fact" must be reported as a belief.
+    for (const k of arr(report.learn)) {
+        const who = resolve(k && k.who);
+        if (!ent(who)) { reject(k, 'learn: unknown character'); continue; }
+        if (!k.s || !k.p || k.o === undefined) { reject(k, 'learn needs s, p, o'); continue; }
+        const s = resolve(k.s) || String(k.s).slice(0, 80);
+        const p = normPredicate(k.p);
+        const o = typeof k.o === 'string' ? k.o.slice(0, 200) : String(k.o);
+        // facts asserted earlier in this same report count as current truth
+        const current = [...truth(state, s, p), ...events.filter((e) => e.t === 'fact.asserted' && e.d.fact.s === s && e.d.fact.p === p).map((e) => e.d.fact)];
+        let fact = current.find((x) => normText(x.o) === normText(o) || (ent(x.o) && normText(ent(x.o).name || '') === normText(o)));
+        const how = ['witnessed', 'told', 'rumor', 'inferred', 'public'].includes(k.how) ? k.how : 'witnessed';
+        if (fact && fact.visibility === 'secret' && how !== 'told' && how !== 'witnessed') {
+            reject(k, `"${s} ${p}" is a secret; it can only be learned by being told or witnessing it`); continue;
+        }
+        if (!fact && FUNCTIONAL.has(p) && current.length) {
+            reject(k, `contradicts world truth "${current[0].s} ${current[0].p} ${current[0].o}"; report a mistaken or false idea with "believe"`); continue;
+        }
+        if (!fact) {
+            const evs = setFactEvents(state, { id: mkId('f'), s, p, o, visibility: 'public', importance: 0.4, source: src });
+            events.push(...evs);
+            fact = evs[evs.length - 1].d.fact;
+        }
+        const from = k.from ? resolve(k.from) || String(k.from).slice(0, 60) : null;
+        events.push({ t: 'knowledge.gained', d: { who, about: fact.id, stance: how === 'inferred' || how === 'rumor' ? 'suspects' : 'knows', source: from ? `told:${from}` : how, ...at } });
+        accepted.push(`${who} learns ${s} ${p} ${o}`);
+    }
+    for (const b of arr(report.believe)) {
+        const who = resolve(b && b.who);
+        if (!ent(who) || !b.s || !b.p || b.o === undefined) { reject(b, 'believe needs who, s, p, o'); continue; }
+        const s = resolve(b.s) || String(b.s).slice(0, 80);
+        const p = normPredicate(b.p);
+        const o = String(b.o).slice(0, 200);
+        const cur = truth(state, s, p);
+        const matches = cur.some((x) => normText(x.o) === normText(o));
+        const verdict = matches ? 'true' : b.true === true ? 'true' : b.true === false ? 'false' : FUNCTIONAL.has(p) && cur.length ? 'false' : 'unknown';
+        const id = mkId('c');
+        const from = b.from ? resolve(b.from) || String(b.from).slice(0, 60) : null;
+        events.push({ t: 'claim.created', d: { claim: { id, s, p, o, truth: verdict, source: src } } });
+        events.push({ t: 'knowledge.gained', d: { who, about: id, stance: 'believes', source: from ? `told:${from}` : 'belief', ...at } });
+        accepted.push(`${who} believes ${s} ${p} ${o}`);
+    }
+    // relationships
+    for (const a of arr(report.attitude)) {
+        const who = resolve(a && a.who);
+        const toward = resolve((a && a.toward) || 'pc');
+        if (!ent(who) || !ent(toward)) { reject(a, 'attitude: unknown entity'); continue; }
+        let delta = Number(a.delta);
+        if (!Number.isFinite(delta)) { reject(a, 'attitude.delta must be a number'); continue; }
+        delta = clamp(Math.round(delta), -50, 50);
+        const rid = `rel.${who}.attitude.${toward}`;
+        const cur = state.relations[rid];
+        const why = String(a.why || '').slice(0, 160);
+        if (!cur) events.push({ t: 'relation.set', d: { rel: { id: rid, a: who, type: 'attitude', b: toward, value: clamp(delta, -100, 100), since: at, history: [{ ...at, delta, why }] } } });
+        else events.push({ t: 'relation.changed', d: { id: rid, value: clamp(cur.value + delta, -100, 100), delta, why, ...at } });
+        accepted.push(`${who} attitude toward ${toward} ${delta >= 0 ? '+' : ''}${delta}`);
+    }
+    // episodic memory (witnesses = everyone present and alive; who SAW Alaric depends on concealment)
+    const witnesses = uniq([...present].filter((id) => ent(id) && ent(id).status !== 'dead'));
+    const concealed = report.concealed !== undefined ? arr(report.concealed).map(resolve).includes('pc') : state.scene.concealed.includes('pc');
+    for (const m of arr(report.memory)) {
+        if (!m || !m.text) { reject(m, 'memory needs text'); continue; }
+        const who = uniq(arr(m.who).map(resolve).filter(Boolean));
+        const text = String(m.text).slice(0, 300).replace(new RegExp(`\\b${escapeRe(pcName)}\\b`, 'g'), '{pc}');
+        events.push({ t: 'memory.recorded', d: { memory: { id: mkId('m'), ...at, text, who, witnesses, seen: concealed ? ['pc'] : witnesses.slice(), location: state.scene.location, place: state.scene.place, importance: clamp(Math.round(Number(m.imp) || 5), 1, 10), kind: 'narrated', msg } } });
+        accepted.push(`memory: ${String(m.text).slice(0, 60)}`);
+    }
+    // items and coin (Core #20: only real hand-overs; Core #22: exact whole-Copper arithmetic)
+    for (const it of arr(report.items)) {
+        const to = resolve(it && it.to);
+        const from = it && it.from ? resolve(it.from) : null;
+        const qty = Number(it && it.qty !== undefined ? it.qty : 1);
+        if (!it || !it.item || !Number.isInteger(qty) || qty <= 0) { reject(it, 'items need item and a positive whole qty'); continue; }
+        if (!to && !from) { reject(it, 'items need "to" (receiver) and/or "from" (giver)'); continue; }
+        if (inCombat('pc') && (to === 'pc' || from === 'pc')) { reject(it, 'item changes during ACTIVE combat are resolved by the engine'); continue; }
+        const itemId = content.items.has(it.item) ? it.item : findItemId(content, it.item);
+        if (from === 'pc') {
+            const have = state.entities.pc.sheet.inventory[itemId] || 0;
+            if (have < qty) { reject(it, `${pcName} does not carry ${qty} × ${it.item} (has ${have})`); continue; }
+            events.push({ t: 'item.changed', d: { id: 'pc', item: itemId, qty: -qty, why: String(it.why || 'handed over').slice(0, 120) } });
+        } else if (from && state.entities[from]?.sheet && (state.entities[from].sheet.inventory[itemId] || 0) >= qty) {
+            events.push({ t: 'item.changed', d: { id: from, item: itemId, qty: -qty, why: String(it.why || 'handed over').slice(0, 120) } });
+        }
+        if (to && ent(to)?.sheet) events.push({ t: 'item.changed', d: { id: to, item: itemId, qty, why: String(it.why || 'received').slice(0, 120) } });
+        accepted.push(`item ${it.item} ×${qty}${from ? ` from ${from}` : ''}${to ? ` to ${to}` : ''}`);
+    }
+    for (const c of arr(report.coin)) {
+        const who = resolve((c && c.who) || 'pc');
+        const cp = Number(c && c.cp);
+        if (!who || !state.entities[who]?.sheet) { reject(c, 'coin: unknown character (or no tracked purse)'); continue; }
+        const res = applyCoin(state.entities[who].sheet.coin_cp, cp);
+        if (!res.ok) { reject(c, res.error); continue; }
+        events.push({ t: 'coin.changed', d: { id: who, value: res.value, delta: cp, why: String(c.why || '').slice(0, 120) } });
+        accepted.push(`coin ${who} ${cp >= 0 ? '+' : ''}${cp} cp`);
+    }
+    // rest / healing outside combat (Core #14: the narrator decides the amount; never in combat, never above max)
+    for (const rc of arr(report.recover)) {
+        const who = resolve((rc && rc.who) || 'pc');
+        const e = ent(who);
+        if (!e?.sheet) { reject(rc, 'recover: unknown character (or no tracked resources)'); continue; }
+        if (inCombat(who)) { reject(rc, 'no natural recovery during ACTIVE combat (Core #14)'); continue; }
+        if (e.status === 'dead') { reject(rc, 'the dead do not recover (resurrection needs an explicit mechanic)'); continue; }
+        if (!rc.why) { reject(rc, 'recover needs "why" (rest, meal, healing, potion ...)'); continue; }
+        const dv = deriveCharacter(e.sheet, content);
+        const max = { hp: dv.maxHp, mp: dv.maxMp, sta: dv.maxSta };
+        const done = [];
+        for (const r of ['hp', 'mp', 'sta']) {
+            if (rc[r] === undefined) continue;
+            const n = Math.round(Number(rc[r]));
+            if (!(n > 0)) { reject(rc, `recover.${r} must be a positive amount`); continue; }
+            const value = Math.min(max[r], e.sheet[r] + n);
+            if (value === e.sheet[r]) continue;
+            events.push({ t: 'resource.changed', d: { id: who, resource: r, value, why: String(rc.why).slice(0, 120) } });
+            done.push(`${r.toUpperCase()} ${e.sheet[r]}->${value}`);
+        }
+        if (done.length) accepted.push(`${who} recovers ${done.join(', ')}`);
+    }
+    // quests and open threads. Quest XP (Core #25) is locked when the quest is offered and awarded once on completion.
+    let pcXp = state.entities.pc?.sheet ? { ...state.entities.pc.sheet } : null;
+    for (const q of arr(report.quests)) {
+        if (!q || !q.title) { reject(q, 'quest needs a title'); continue; }
+        const id = `quest.${slug(q.title)}`;
+        const cur = state.quests[id];
+        const status = ['offered', 'active', 'completed', 'failed'].includes(q.status) ? q.status : 'offered';
+        if (!cur && (status === 'completed' || status === 'failed')) { reject(q, 'cannot finish a quest that was never offered or accepted'); continue; }
+        if (cur && ['completed', 'failed'].includes(cur.status) && cur.status !== status) { reject(q, `quest already ${cur.status}`); continue; }
+        const giver = q.giver ? resolve(q.giver) || String(q.giver).slice(0, 60) : cur?.giver || null;
+        const level = Number(q.level);
+        const quest = {
+            id, title: String(q.title).slice(0, 100), status, giver,
+            rec_level: cur?.rec_level ?? (Number.isInteger(level) && level > 0 ? level : null),
+            qtype: cur?.qtype ?? (content.rules.xp.quest_type[q.type] ? q.type : null),
+            notes: [...(cur?.notes || []), ...(q.note ? [String(q.note).slice(0, 200)] : [])], history: [...(cur?.history || []), { ...at, status }],
+        };
+        events.push({ t: 'quest.set', d: { quest } });
+        accepted.push(`quest ${quest.title}: ${status}`);
+        if (status === 'completed' && cur?.status !== 'completed' && pcXp) {
+            if (quest.rec_level && quest.qtype) {
+                const xp = questXp(quest.rec_level, quest.qtype, content);
+                const evs = awardXp(pcXp, xp, content, `Quest XP: ${quest.title} (Level ${quest.rec_level}, ${quest.qtype})`);
+                events.push(...evs);
+                for (const e of evs) pcXp = e.t === 'xp.changed' ? { ...pcXp, xp: e.d.xp } : { ...pcXp, level: e.d.level, xp: e.d.xp_after };
+                accepted.push(`Quest XP +${xp}`);
+            } else corrections.push(`Quest "${quest.title}" was completed without a recommended Level and type, so it grants no Quest XP (report level and type when a quest is offered).`);
+        }
+    }
+    for (const th of arr(report.threads)) {
+        if (!th || !th.text) { reject(th, 'thread needs text'); continue; }
+        const id = `thread.${slug(th.text).slice(0, 48)}`;
+        const cur = state.threads[id];
+        const status = th.status === 'resolved' ? 'resolved' : 'open';
+        if (!cur && status === 'resolved') { reject(th, 'cannot resolve an unknown thread'); continue; }
+        events.push({ t: 'thread.set', d: { thread: { id, text: String(th.text).slice(0, 200), kind: th.kind || 'mystery', status, since: cur?.since || at, updated: at, source: src } } });
+        accepted.push(`thread ${status}: ${th.text}`);
+    }
+    // combat commitment by an NPC (PENDING; resolved by the engine on the next turn) and NPC intents
+    if (report.combat) {
+        const by = resolve(report.combat.by);
+        const target = resolve(report.combat.target || 'pc') || 'pc';
+        if (state.mode === 'creation') reject(report.combat, 'no combat during Character Creation');
+        else if (!by || by === 'pc' || !ent(by)) reject(report.combat, 'combat.by must be a present NPC or creature');
+        else if (!present.has(by)) reject(report.combat, `${by} is not present`);
+        else if (statusOf(state, by) === 'dead') reject(report.combat, `${by} is dead`);
+        else if (inCombat(by)) reject(report.combat, `${by} is already in the encounter`);
+        else { events.push({ t: 'combat.pending', d: { by, target, ...at } }); accepted.push(`combat committed by ${by} (pending)`); }
+    }
+    for (const i of arr(report.intent)) {
+        const who = resolve(i && i.who);
+        if (!ent(who) || !INTENTS.has(i.intent)) { reject(i, 'intent needs a known NPC and attack|flee|surrender|parley|hold|take_cover'); continue; }
+        events.push({ t: 'combat.intent', d: { who, intent: i.intent } });
+        accepted.push(`${who} intends ${i.intent}`);
+    }
+    // a Core #7 check resolved with this turn's engine CHECK DIE: the engine re-computes it and keeps its own result
+    if (report.check) {
+        const c = report.check;
+        const die = state.last?.outcome?.check_die;
+        const stat = c.stat ? String(c.stat).toUpperCase() : null;
+        const A = Number(c.actor);
+        const O = Number(c.opposition);
+        if (!die) reject(c, 'no CHECK DIE was issued this turn');
+        else if (stat && !content.rules.stats.includes(stat)) reject(c, `unknown stat ${c.stat}`);
+        else if (!(A > 0) || !(O > 0)) reject(c, 'check needs positive actor and opposition scores');
+        else {
+            const pcStat = stat && state.entities.pc?.sheet ? state.entities.pc.sheet.stats[stat] : null;
+            const res = checkChance(A, O, arr(c.actor_mods).map(Number), arr(c.opp_mods).map(Number));
+            const success = die <= res.chance;
+            const rec = { what: String(c.what || 'check').slice(0, 80), stat, actor: res.actor, opposition: res.opposition, chance: res.chance, roll: die, success, claimed: c.success === undefined ? null : !!c.success };
+            events.push({ t: 'check.recorded', d: rec });
+            accepted.push(`check ${rec.what}: ${rec.chance}% d100 ${die} ${success ? 'SUCCESS' : 'FAILURE'}`);
+            if (rec.claimed !== null && rec.claimed !== success) corrections.push(`Check "${rec.what}": Chance ${rec.chance}% with d100 ${die} is a ${success ? 'SUCCESS' : 'FAILURE'} — the previous reply narrated the opposite; keep the engine result from now on.`);
+            if (pcStat !== null && (c.who === undefined || resolve(c.who) === 'pc') && A < pcStat) corrections.push(`Check "${rec.what}": Alaric's Actor Score must include his current ${stat} ${pcStat} (reply used ${A}).`);
+        }
+    }
+    return { events, accepted, rejected, corrections };
+}
+
+function bandOf(b) {
+    const x = String(b || '').toUpperCase();
+    return BANDS.has(x) ? x : null;
+}
+
+function coverOf(c) {
+    return COVERS.has(c) ? c : undefined;
+}
+
+function findItemId(content, name) {
+    const t = normText(name);
+    for (const [id, it] of content.items) if (normText(it.name) === t || normText(it.name).replace(/^starter /, '') === t) return id;
+    return slug(name);
+}
+
+function arr(x) {
+    if (x === undefined || x === null) return [];
+    return Array.isArray(x) ? x : [x];
+}

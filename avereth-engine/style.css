@@ -1,0 +1,4 @@
+.avereth-settings .avereth-row { display: flex; gap: 0.5em; align-items: center; margin: 0.25em 0; }
+.avereth-settings input[type="number"] { width: 6em; }
+.avereth-settings textarea { width: 100%; min-height: 12em; font-family: monospace; font-size: 0.8em; }
+.avereth-settings .avereth-status { font-family: monospace; font-size: 0.85em; white-space: pre-wrap; }

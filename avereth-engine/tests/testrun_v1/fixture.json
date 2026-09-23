@@ -1,0 +1,112 @@
+{
+ "_source": "Branch Testrun-v1: 'RPG Test - 2026-09-23@04h36m27s796ms.jsonl' (SillyTavern chat) and 'CMD Silly Tavern Logger.md' (server console). Messages copied verbatim; usage numbers from the logger (zai-org/GLM-5.3-Flash, temperature 0.9).",
+ "messages": [
+  {
+   "is_user": false,
+   "mes": "*Cool wind moves through the rough grass around Alaric's boots.*\r\n\r\n*The last thing that belongs to Earth is still there in memory—an old life, a world without visible mana, Classes, or this impossible second beginning. The present is different: the smell of soil and distant woodsmoke, an unfamiliar sky, and stone walls beyond the public road.*\r\n\r\n*Alaric is already standing on an uncultivated roadside verge outside the nearby city. Cultivated fields and fenced holdings begin farther away. No one is close enough to have witnessed the instant of arrival.*\r\n\r\n*The body is Human, healthy, and eighteen years old. Simple traveler's clothes are already being worn; a small pouch holding five silver rests at the belt. The memories are still from Earth.*\r\n\r\n*A translucent interface opens across Alaric's vision.*\r\n\r\n`SYSTEM INITIALIZATION COMPLETE`\r\n`Origin: Earth`\r\n`World: Avereth`\r\n`Race: Human`\r\n`Age: 18`\r\n`Level: 1 | Rank: F`\r\n\r\n`BASE STATS`\r\n`STR 5 | VIT 5 | AGI 5 | INT 5 | PER 5 | WIL 5`\r\n\r\n`Location: Public roadside verge outside Tidecross, Solmere`\r\n`Arrival Witnesses: NONE`\r\n`Starting Possessions: Simple Traveler's Clothes | Small Pouch | 5 Silver`\r\n`Local Common Language: Integrated`\r\n`Mandatory Quest: NONE`\r\n\r\n`CHARACTER CREATION — STEP 1/2`\r\n`Choose your Base Class:`\r\n\r\n`Warrior   — Favored Stats: STR / VIT`\r\n`Mage      — Favored Stats: INT / WIL`\r\n`Guardian  — Favored Stats: VIT / WIL`\r\n`Duelist   — Favored Stats: STR / AGI`\r\n`Ranger    — Favored Stats: AGI / PER`\r\n\r\n`Your chosen Class immediately applies +1 to both Favored Stats at Level 1.`\r\n`After choosing a Class, select exactly 2 Skills from that Class's Base Skill Pool.`\r\n\r\n`Reply with your Class choice.`\r\n\r\n*The System waits. Story time does not move during Character Creation.*\r\n"
+  },
+  {
+   "is_user": true,
+   "mes": "Ranger"
+  },
+  {
+   "is_user": false,
+   "mes": "`CLASS SELECTED: RANGER`\n\n`Favored Stats increased: AGI +1, PER +1`\n\n`Basic Attack granted: Basic Attack [P1/PP0]`\n\n`Updated Stats:`\n`STR 5 | VIT 5 | AGI 6 | INT 5 | PER 6 | WIL 5`\n\n`Derived Values:`\n`MaxHP: 80 | MaxMP: 60 | MaxSTA: 100`\n`Init: 8 | BaseDEF: 1 | BaseMDEF: 1`\n`XP: 0/100`\n\n`CHARACTER CREATION — STEP 2/2`\n`Select exactly 2 starter Skills from the Ranger Base Skill Pool:`\n\n`Aimed Shot   [Offensive] | Cost 7 STA | Range LONG | Hit +10 | Raw = 10 + AGI × 0.625 + PER × 1.125 + ATK | Ammo: 1 arrow (bow)`\n\n`Quickstep    [Defensive / Utility] | Cost 5 STA | Reposition 1 Range Band; incoming attacks suffer -15pp Hit Chance until the start of your next turn`\n\n`Power Shot   [Offensive] | Cost 12 STA | Range LONG | Hit -10 | Raw = 16 + AGI × 0.50 + PER × 1.375 + ATK | Ammo: 1 arrow (bow)`\n\n`Quick Shot   [Offensive] | Cost 5 STA | Range MEDIUM | Hit +5 | Raw = 6 + AGI × 0.875 + PER × 0.625 + ATK | Ammo: 1 arrow (bow)`\n\n`Twin Shot    [Offensive / Multi-Hit] | Cost 11 STA | Range MEDIUM | 2 strikes, each: Hit 0; Raw = 4 + AGI × 0.4375 + PER × 0.4375 + 50% of ATK; own Hit and Crit check | Ammo: 2 arrows (bow)`\n\n`Focus Aim    [Utility] | Cost 5 STA | Next ranged attack gains +20pp Hit Chance and +10% Modified Power; consumed by that attack`\n\n`Reply with exactly 2 distinct starter Skills.`\n`Starter Gear (Shortbow, Light Armor, Quiver) will be granted upon completion.`\n`Story time remains frozen during Character Creation.`\n\n<Blocks>\n<World_State>\n**Time & Loc:** Frozen — Character Creation in progress. Public roadside verge outside Tidecross, Solmere\n**PC:** Simple Traveler's Clothes | Standing on the roadside verge\n**NPCs Present:**\n* None\n</World_State>\n<Character_Sheet>\nLevel: 1 (=) | Class: Ranger | HP: 80/80 | MP: 60/60 | STA: 100/100 | XP: 0/100 | STR: 5 (=) | INT: 5 (=) | PER: 6 (+1 Ranger favored) | WIL: 5 (=) | Free Stat Points: 0 (=) | Domain: none | Quests: none | Equipment: Simple Traveler's Clothes, Small Pouch | Inventory: 5 Silver | Skills: Basic Attack (P1/PP0) | Skill Learning: none | Active Effects: none\nRank: F\nVIT: 5 (=)\nAGI: 6 (+1 Ranger favored)\n</Character_Sheet>\n</Blocks>"
+  },
+  {
+   "is_user": true,
+   "mes": "Aimed Shot + Power Shot"
+  },
+  {
+   "is_user": false,
+   "mes": "`SKILLS SELECTED: Aimed Shot, Power Shot`\n\n`Aimed Shot granted: [P1/PP0]`\n`Power Shot granted: [P1/PP0]`\n\n`Starter Gear granted and equipped:`\n`- Starter Shortbow [F]: ATK 6`\n`- Starter Light Armor [F]: DEF 2, MDEF 3`\n`- Starter Quiver [unranked]: 20 Standard Arrows`\n\n`Possessions retained: Simple Traveler's Clothes | Small Pouch | 5 Silver`\n\n`Updated Derived Values:`\n`ATK: 6 | MATK: 0`\n`DEF: 3 | MDEF: 4`\n`MaxHP: 80 | MaxMP: 60 | MaxSTA: 100`\n`Init: 8`\n`XP: 0/100`\n\n`CHARACTER CREATION COMPLETE`\n\n`Story time resumes with your next action.`\n\n<Blocks>\n<World_State>\n**Time & Loc:** Late morning — public roadside verge outside Tidecross, Solmere\n**PC:** Simple Traveler's Clothes over Starter Light Armor, Shortbow and Quiver carried | Standing on the roadside verge\n**NPCs Present:**\n* None\n</World_State>\n<Character_Sheet>\nLevel: 1 (=) | Class: Ranger | HP: 80/80 | MP: 60/60 | STA: 100/100 | XP: 0/100 | STR: 5 (=) | INT: 5 (=) | PER: 6 (+1 Ranger favored) | WIL: 5 (=) | Free Stat Points: 0 (=) | Domain: none | Quests: none | Equipment: Simple Traveler's Clothes, Small Pouch, Starter Shortbow [F] (ATK 6), Starter Light Armor [F] (DEF 2, MDEF 3), Starter Quiver (20 Standard Arrows) | Inventory: 5 Silver | Skills: Basic Attack (P1/PP0), Aimed Shot (P1/PP0), Power Shot (P1/PP0) | Skill Learning: none | Active Effects: none\nRank: F\nVIT: 5 (=)\nAGI: 6 (+1 Ranger favored)\n</Character_Sheet>\n</Blocks>"
+  },
+  {
+   "is_user": true,
+   "mes": "*i look around and start walking to the forest in the distance away from the city in front of me*"
+  },
+  {
+   "is_user": false,
+   "mes": "*Crows first. Then the wind changing its mind.*\n\nThe road behind him runs down toward Tidecross — walls the color of old honey, a smoke-smudge over the harbor quarter, gulls working some discarded catch outside the gate. Carts go that way. Nobody comes this direction except a boy driving two goats, who passes without looking up, whip over his shoulder, humming something with no tune in it.\n\nThe forest takes the better part of an hour to reach, the way distance does. The verge narrows to a dirt track, then the track gives up on itself entirely and it's grass and old sheep-cropped heath, the ground rising gently, the soil going from brown to something rust-colored underfoot. The treeline resolves as it comes closer — oak mostly, with dark crowns of pine higher up the slope beyond, and a stream somewhere in there, audible before it's visible.\n\nAt the edge, the shade is cool enough to notice through the clothes. The light falls in coins on the leaf litter. Under the crows there are smaller sounds — something moving in dry leaves off to the left, small, probably a bird. Probably.\n\nTwenty paces in, on the trunk of a split oak, somebody has cut a mark: three horizontal lines over a circle, blade-work old and weathered, bark grown halfway back over it. No meaning announces itself. Farther along the same trunk, a lower mark — a single line, fresher.\n\nAnd in the quiet after the crows shift, from somewhere up the slope, deeper in: a knock. Wood on wood. Twice. A pause.\n\nOnce more.\n\n<Blocks>\n<World_State>\n**Time & Loc:** Midday — edge of unnamed oak forest on rising heathland, away from Tidecross\n**PC:** Simple Traveler's Clothes over Starter Light Armor, Shortbow and Quiver carried | Standing at the forest's edge, just inside the treeline\n**NPCs Present:**\n* None visible\n</World_State>\n<Character_Sheet>\nLevel: 1 (=) | Class: Ranger | HP: 80/80 | MP: 60/60 | STA: 100/100 | XP: 0/100 | STR: 5 (=) | INT: 5 (=) | PER: 6 (=) | WIL: 5 (=) | Free Stat Points: 0 (=) | Domain: none | Quests: none | Equipment: Simple Traveler's Clothes, Small Pouch, Starter Shortbow [F] (ATK 6), Starter Light Armor [F] (DEF 2, MDEF 3), Starter Quiver (20 Standard Arrows) | Inventory: 5 Silver | Skills: Basic Attack (P1/PP0), Aimed Shot (P1/PP0), Power Shot (P1/PP0) | Skill Learning: none | Active Effects: none\nRank: F\nVIT: 5 (=)\nAGI: 6 (=)\n</Character_Sheet>\n</Blocks>"
+  },
+  {
+   "is_user": true,
+   "mes": "*i get my bow ready and track the sound*"
+  },
+  {
+   "is_user": false,
+   "mes": "The forest takes the bow's appearance without comment. Underfoot the leaf litter is damp enough to quiet a boot, and the slope argues back — bracken at knee height, dead sticks, the stream getting louder wherever it wants to.\n\nThe knock comes again before he's gone thirty paces. Off to the right now, or the slope bent his sense of it. Three strikes, patient, then the pause, then the single one. Wood on wood, dry wood, the sound carrying flat through the trees.\n\nUphill the oaks thin and the pines begin, and the light changes with them — greener, dimmer, the ground soft with needles. A jay screams somewhere behind him and his own pulse answers it before his head does. He holds. The forest holds with him. Then, ahead and left: the knock, closer, and with it a smell that doesn't belong to pine — charcoal, old smoke soaked into cloth.\n\nThrough a screen of hazel the ground opens into a rough clearing, stumps around the rim like pulled teeth. A man works at the far side. Thin as a fence rail, grey stubble, a leather apron over a patched wool coat, a hand-axe tucked through his belt. He's got a dead branch in one fist and he swings it against an oak trunk — knock, knock, knock — then waits, head tilted, listening to the wood the way a man taps a wall to find the stud. Satisfied or not, he moves to the next tree. A sack hangs off his shoulder, half full of cut pegs. On the trunk he just left, low and deliberate, a fresh single line cut through the bark, pale wood showing.\n\nHe does the third knock on the next tree, and this time he doesn't finish it.\n\nThe branch stops mid-swing. He stands the way animals stand when a sound has a weight to it — weight it didn't have before. His head comes around slowly, and it's not toward Alaric. It's toward the hazel screen, ten feet left of where Alaric actually is.\n\n\"Whoever you are,\" he says, to the wrong patch of trees, voice dry as the branch, \"you walk like a dropped sack of turnips.\"\n\nHe shifts the sack off his shoulder, unhurried, and sets it down by a stump. The hand-axe stays in the belt. He doesn't reach for it. Yet.\n\n\"This is trapped ground. That's worth knowing before you take another step.\"\n\n<Blocks>\n<World_State>\n**Time & Loc:** Early afternoon — pine-shaded clearing on the forested slope above the oak edge\n**PC:** Simple Traveler's Clothes over Starter Light Armor, Shortbow ready in hand, Quiver at hip | Standing in tree cover at the clearing's lower rim, downhill of the man\n**NPCs Present:**\n* Unnamed trapper: Leather apron over patched wool coat, hand-axe at belt | Standing mid-clearing by a stump, facing the wrong patch of hazel\n</World_State>\n<Character_Sheet>\nLevel: 1 (=) | Class: Ranger | HP: 80/80 | MP: 60/60 | STA: 100/100 | XP: 0/100 | STR: 5 (=) | INT: 5 (=) | PER: 6 (=) | WIL: 5 (=) | Free Stat Points: 0 (=) | Domain: none | Quests: none | Equipment: Simple Traveler's Clothes, Small Pouch, Starter Shortbow [F] (ATK 6), Starter Light Armor [F] (DEF 2, MDEF 3), Starter Quiver (20 Standard Arrows) | Inventory: 5 Silver | Skills: Basic Attack (P1/PP0), Aimed Shot (P1/PP0), Power Shot (P1/PP0) | Skill Learning: none | Active Effects: none\nRank: F\nVIT: 5 (=)\nAGI: 6 (=)\n</Character_Sheet>\n</Blocks>"
+  },
+  {
+   "is_user": true,
+   "mes": "*i aim the bow and i Power Shot at him*"
+  },
+  {
+   "is_user": false,
+   "mes": "\"—AAAGH!\"\n\nThe arrow takes him in the meat of the left shoulder, high, punching through the patched wool and out the back of it. The sack of pegs he just set down takes a second arrow through its belly and spills them across the stump like dropped kindling. He spins with the hit and goes down behind the stump hard, knees first, and for a moment the clearing holds only the crows and the stream and the man's ragged breathing.\n\nThen his hand comes up over the stump with the hand-axe in it, knuckles white, and his voice comes around the wood with the pain still in it, cracking on the climb.\n\n\"SHOOTING— you're SHOOTING me?! I got pegs to cut, you mad — I got NOTHING worth robbing!\" A peg bounces off his boot. He flinches from the peg. \"That's my SHOOTING shoulder, you — d'you know how long a shoulder takes?!\"\n\nHe moves low and fast for a thin old man, scuttling on his heels behind the bigger stump at the clearing's edge, the one with the roots gripping the slope like fingers. More distance between them now. The axe stays in his fist. From cover he risks one eye around the root, hunting for whoever this is, and finds the hazel screen and the trees and nothing he can name.\n\n\"There's iron in this ground, boy! Snares, deadfalls, HALF this slope bites!\" His breathing whistles through it. He presses his palm hard over the shoulder and it comes away spotted red, and he looks at it like it's somebody else's problem. \"You put that bow down and WALK AWAY, and I don't set the dogs on—\"\n\nHe stops. Listens. Something in the trees below him — not the crows.\n\n\"...That'll be Brindle,\" he says, quieter, to nobody. Then, louder, back around the roots, flat and cold as a man reading terms: \"He found me twenty years gone and he's found me ever since. Big lad. Doesn't like arrows.\"\n\n<Blocks>\n<World_State>\n**Time & Loc:** Early afternoon — pine clearing on the forested slope, COMBAT ACTIVE\n**PC:** Simple Traveler's Clothes over Starter Light Armor, Shortbow in hand, Quiver at hip (19 arrows) | Standing in tree cover at the clearing's lower rim, SHORT band from the trapper's new position\n**NPCs Present:**\n* Unnamed trapper: Wounded — arrow through left shoulder, bleeding | Crouched behind the large root-gripped stump at the clearing's upper edge, MEDIUM band, partial cover, hand-axe in fist | Claiming a dog called Brindle is coming\n</World_State>\n<Character_Sheet>\nLevel: 1 (=) | Class: Ranger | HP: 80/80 | MP: 60/60 | STA: 88/100 (-12 Power Shot) | XP: 0/100 | STR: 5 (=) | INT: 5 (=) | PER: 6 (=) | WIL: 5 (=) | Free Stat Points: 0 (=) | Domain: none | Quests: none | Equipment: Simple Traveler's Clothes, Small Pouch, Starter Shortbow [F] (ATK 6), Starter Light Armor [F] (DEF 2, MDEF 3), Starter Quiver (19 Standard Arrows) | Inventory: 5 Silver | Skills: Basic Attack (P1/PP0), Aimed Shot (P1/PP0), Power Shot (P1/PP0) | Skill Learning: none | Active Effects: none\nRank: F\nVIT: 5 (=)\nAGI: 6 (=)\n</Character_Sheet>\n</Blocks>"
+  }
+ ],
+ "usage": [
+  {
+   "turn": 1,
+   "input": "Ranger",
+   "prompt_tokens": 17016,
+   "completion_tokens": 862,
+   "latency_s": 53,
+   "wi_fired": [
+    "#0 kernel",
+    "#54 creation"
+   ]
+  },
+  {
+   "turn": 2,
+   "input": "Aimed Shot + Power Shot",
+   "prompt_tokens": 18514,
+   "completion_tokens": 627,
+   "latency_s": 37,
+   "wi_fired": [
+    "#0",
+    "#54",
+    "#3 (false positive: \"Multi-Hit\" tag)",
+    "#4 (false positive: \"Frozen\" in host time line)"
+   ]
+  },
+  {
+   "turn": 3,
+   "input": "*i look around and start walking to the forest in the distance away from the city in front of me*",
+   "prompt_tokens": 15144,
+   "completion_tokens": 817,
+   "latency_s": 64,
+   "wi_fired": [
+    "#0"
+   ]
+  },
+  {
+   "turn": 4,
+   "input": "*i get my bow ready and track the sound*",
+   "prompt_tokens": 15761,
+   "completion_tokens": 1627,
+   "latency_s": 89,
+   "wi_fired": [
+    "#0",
+    "#11 (track)"
+   ]
+  },
+  {
+   "turn": 5,
+   "input": "*i aim the bow and i Power Shot at him*",
+   "prompt_tokens": 20262,
+   "completion_tokens": 2560,
+   "latency_s": 165,
+   "wi_fired": [
+    "#0",
+    "#1 START"
+   ]
+  }
+ ],
+ "avereth_owned_tokens": {
+  "note": "Avereth-owned prompt share measured in the combat turn (Testrun-v1): CD v2.3 ~3.6k + WI kernel ~1.0k + WI START ~3.4k + NPC patch ~1.0k",
+  "combat_turn": 9000,
+  "exploration_turn": 5600
+ }
+}

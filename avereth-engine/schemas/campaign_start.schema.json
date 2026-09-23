@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "avereth/campaign_start.schema.json",
+  "title": "New campaign defaults (content/campaign_start.json)",
+  "type": "object",
+  "required": [
+    "pc",
+    "start_locations",
+    "start_scene",
+    "creation",
+    "initial_facts"
+  ],
+  "properties": {
+    "pc": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "level",
+        "stats",
+        "equipment",
+        "inventory",
+        "coin_cp",
+        "xp",
+        "free_points",
+        "descriptors",
+        "public_facts"
+      ],
+      "properties": {
+        "id": {
+          "const": "pc"
+        },
+        "level": {
+          "const": 1
+        },
+        "stats": {
+          "type": "object",
+          "required": [
+            "STR",
+            "VIT",
+            "AGI",
+            "INT",
+            "PER",
+            "WIL"
+          ],
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "coin_cp": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "start_locations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^loc\\."
+      }
+    },
+    "start_scene": {
+      "type": "object",
+      "required": [
+        "place",
+        "clock_minutes"
+      ],
+      "properties": {
+        "clock_minutes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1439
+        }
+      }
+    },
+    "creation": {
+      "type": "object",
+      "required": [
+        "choose_skills"
+      ],
+      "properties": {
+        "choose_skills": {
+          "const": 2
+        }
+      }
+    },
+    "initial_facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "s",
+          "p",
+          "o",
+          "visibility"
+        ],
+        "properties": {
+          "visibility": {
+            "enum": [
+              "public",
+              "secret"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

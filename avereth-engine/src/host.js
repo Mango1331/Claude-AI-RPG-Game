@@ -1,0 +1,175 @@
+// Host adapter: maps the engine onto a chat transcript — an array of messages {mes, is_user, is_system, extra,
+// swipes, swipe_id, swipe_info} as SillyTavern stores them. It mutates only the message objects it is given, so the
+// same code runs in the browser (index.js) and in the Node tests (swipe / regenerate / delete / edit scenarios).
+//
+// Storage: every message carries its own events in message.extra.avereth. SillyTavern keeps `extra` per swipe, so
+// each alternative reply owns its own facts. ST copies `extra` into a NEW swipe before it is generated, so an
+// assistant record is only applied while its text_hash matches the message text (stale copies are ignored).
+import { applyEvent, emptyState } from './state.js';
+import { startCampaign, playerTurn, narratorReply, turnContext } from './engine.js';
+import { extractReport } from './delta.js';
+import { hash32, clone } from './util.js';
+
+export const KEY = 'avereth';
+export const RECORD_VERSION = 2;
+
+function rec(msg) {
+    return msg && msg.extra && msg.extra[KEY];
+}
+
+function setRec(msg, record) {
+    if (!msg.extra || typeof msg.extra !== 'object') msg.extra = {};
+    msg.extra[KEY] = record;
+    syncSwipe(msg);
+}
+
+/** Keep the active swipe in step with the message (ST reads swipes/swipe_info on swipe changes). */
+export function syncSwipe(msg) {
+    if (!Array.isArray(msg.swipes) || typeof msg.swipe_id !== 'number') return;
+    msg.swipes[msg.swipe_id] = msg.mes;
+    if (Array.isArray(msg.swipe_info) && msg.swipe_info[msg.swipe_id] && typeof msg.swipe_info[msg.swipe_id] === 'object') {
+        msg.swipe_info[msg.swipe_id].extra = clone(msg.extra);
+    }
+}
+
+/** Events a message contributes to the campaign (empty for stale swipe copies and foreign messages). */
+export function messageEvents(msg) {
+    const r = rec(msg);
+    if (!r || !Array.isArray(r.events)) return [];
+    if (!msg.is_user && r.text_hash && r.text_hash !== hash32(msg.mes)) return [];
+    return r.events;
+}
+
+/** Fold messages [0, end) into the campaign state. Events that no longer apply (e.g. after deletions) are skipped. */
+export function foldChat(chat, end = chat.length) {
+    const state = emptyState();
+    const errors = [];
+    for (let i = 0; i < Math.min(end, chat.length); i++) {
+        for (const e of messageEvents(chat[i])) {
+            try {
+                applyEvent(state, e);
+            } catch (err) {
+                errors.push(`message ${i}: ${e.t}: ${err.message}`);
+            }
+        }
+    }
+    return { state, errors };
+}
+
+export function hasCampaign(chat) {
+    return chat.some((m) => messageEvents(m).some((e) => e.t === 'campaign.started'));
+}
+
+export function lastUserIndex(chat, before = chat.length) {
+    for (let i = Math.min(before, chat.length) - 1; i >= 0; i--) if (chat[i].is_user && !chat[i].is_system) return i;
+    return -1;
+}
+
+/** The latest player message, including a command line the host hid from the prompt (it still carries our record). */
+function lastPlayerIndex(chat) {
+    for (let i = chat.length - 1; i >= 0; i--) if (chat[i].is_user && (!chat[i].is_system || rec(chat[i])?.command)) return i;
+    return -1;
+}
+
+function lastReplyIndex(chat, before) {
+    for (let i = before - 1; i >= 0; i--) if (!chat[i].is_user && !chat[i].is_system) return i;
+    return -1;
+}
+
+/**
+ * Start the campaign on the greeting (message 0) if none exists. A chat that already ran without the engine is left
+ * alone ('legacy') unless force is set: its history cannot be reconstructed into mechanical state.
+ * @returns {'exists'|'created'|'legacy'|'none'}
+ */
+export function ensureCampaign(chat, content, { seed, force = false } = {}) {
+    if (hasCampaign(chat)) return 'exists';
+    const first = chat[0];
+    if (!first || first.is_user) return 'none';
+    const played = chat.filter((m) => m.is_user && !m.is_system).length;
+    if (played > 1 && !force) return 'legacy';
+    const events = startCampaign(content, { seed, firstMessage: first.mes });
+    setRec(first, { v: RECORD_VERSION, events, text_hash: hash32(first.mes) });
+    return 'created';
+}
+
+/**
+ * Called right before a generation. Resolves the latest player message once (stored on that message, so swipes and
+ * regenerations reuse the same dice) and returns what the host must do.
+ * @returns {{action: 'none'|'clear'|'abort'|'panels'|'context', dirty: boolean, panels?: string[], context?: object, index?: number, errors?: string[]}}
+ */
+export function prepareGeneration(chat, content, { type = 'normal', settings = {} } = {}) {
+    if (type === 'quiet' || type === 'impersonate') return { action: 'clear', dirty: false };
+    if (!hasCampaign(chat)) return { action: 'none', dirty: false };
+    const u = lastPlayerIndex(chat);
+    if (u < 0) return { action: 'none', dirty: false };
+    const msg = chat[u];
+    let dirty = false;
+    let r = rec(msg);
+    if (type !== 'continue' && (!r || r.input_hash !== hash32(msg.mes))) {
+        const before = foldChat(chat, u);
+        const t = playerTurn(before.state, content, msg.mes, { msg: u });
+        r = { v: RECORD_VERSION, input_hash: hash32(msg.mes), events: t.events, command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
+        setRec(msg, r);
+        dirty = true;
+    }
+    if (r?.command && !r.command.llm) {
+        if (r.command.posted) return { action: 'abort', dirty }; // regenerate/continue on a command: nothing to narrate
+        r.command.posted = true;
+        setRec(msg, r);
+        return { action: 'panels', panels: r.command.panels, index: u, dirty: true };
+    }
+    const { state, errors } = foldChat(chat, u + 1);
+    const p = lastReplyIndex(chat, u);
+    const prev = p >= 0 ? rec(chat[p]) : null;
+    const context = turnContext(state, content, {
+        input: msg.mes,
+        corrections: prev && !prev.system_answer ? prev.corrections || [] : [],
+        lastReply: p >= 0 ? chat[p].mes : '',
+        budget: settings.budget,
+        rulesBudget: settings.rulesBudget,
+        recentTurns: settings.recentTurns,
+        systemQuery: r?.command?.llm ? r.command.llm.question || 'help' : null,
+    });
+    return { action: 'context', context, dirty, errors };
+}
+
+/**
+ * Called when a reply was received (or a greeting created). Validates the fact report into events on this swipe and
+ * strips the report from the visible text.
+ * @returns {{changed: boolean, result?: object}}
+ */
+export function processReply(chat, id, content, { seed } = {}) {
+    const msg = chat[id];
+    if (!msg || msg.is_user || msg.is_system) return { changed: false };
+    if (!hasCampaign(chat)) {
+        return { changed: ensureCampaign(chat, content, { seed }) === 'created' };
+    }
+    const r = rec(msg);
+    if (r && r.text_hash === hash32(msg.mes)) return { changed: false }; // already processed (this exact text)
+    const u = lastUserIndex(chat, id);
+    if (u < 0) return { changed: false };
+    const userRec = rec(chat[u]);
+    if (userRec?.command?.llm) {
+        msg.mes = extractReport(msg.mes).clean;
+        setRec(msg, { v: RECORD_VERSION, events: [], system_answer: true, text_hash: hash32(msg.mes) });
+        return { changed: true };
+    }
+    const { state } = foldChat(chat, id);
+    const result = narratorReply(state, content, msg.mes, { msg: id });
+    msg.mes = result.clean;
+    setRec(msg, {
+        v: RECORD_VERSION, events: result.events, text_hash: hash32(msg.mes), corrections: result.corrections,
+        accepted: result.accepted, rejected: result.rejected, report_error: result.report_error,
+    });
+    return { changed: true, result };
+}
+
+/** An edited reply keeps the facts it established; its record is re-stamped so it keeps applying. */
+export function onEdited(chat, id) {
+    const msg = chat[id];
+    const r = rec(msg);
+    if (!msg || msg.is_user || !r) return false;
+    r.text_hash = hash32(msg.mes);
+    setRec(msg, r);
+    return true;
+}

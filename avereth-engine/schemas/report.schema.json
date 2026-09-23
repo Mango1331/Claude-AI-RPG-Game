@@ -1,0 +1,388 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "avereth/report.schema.json",
+  "title": "Narrator fact report (<avereth>{...}</avereth>) — informative; the engine validates tolerantly and explains rejections",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "time": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10080
+    },
+    "place": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "new": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "ref",
+          "kind"
+        ],
+        "properties": {
+          "ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "npc",
+              "creature"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "desc": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "species": {
+            "type": "string"
+          },
+          "template": {
+            "type": "string"
+          },
+          "traits": {
+            "type": "string"
+          },
+          "band": {
+            "enum": [
+              "ENGAGED",
+              "SHORT",
+              "MEDIUM",
+              "LONG"
+            ]
+          },
+          "cover": {
+            "enum": [
+              "none",
+              "partial",
+              "full"
+            ]
+          }
+        }
+      }
+    },
+    "enter": {
+      "type": "array"
+    },
+    "leave": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "position": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "who",
+          "band"
+        ],
+        "properties": {
+          "who": {
+            "type": "string",
+            "minLength": 1
+          },
+          "band": {
+            "enum": [
+              "ENGAGED",
+              "SHORT",
+              "MEDIUM",
+              "LONG"
+            ]
+          },
+          "cover": {
+            "enum": [
+              "none",
+              "partial",
+              "full"
+            ]
+          }
+        }
+      }
+    },
+    "aware": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "who",
+          "level"
+        ],
+        "properties": {
+          "who": {
+            "type": "string",
+            "minLength": 1
+          },
+          "level": {
+            "enum": [
+              "unaware",
+              "suspicious",
+              "aware"
+            ]
+          }
+        }
+      }
+    },
+    "concealed": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "s",
+          "p",
+          "o"
+        ],
+        "properties": {
+          "vis": {
+            "enum": [
+              "public",
+              "secret"
+            ]
+          },
+          "because": {
+            "type": "string"
+          },
+          "hard": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "learn": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "who",
+          "s",
+          "p",
+          "o"
+        ],
+        "properties": {
+          "how": {
+            "enum": [
+              "witnessed",
+              "told",
+              "rumor",
+              "inferred",
+              "public"
+            ]
+          }
+        }
+      }
+    },
+    "believe": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "who",
+          "s",
+          "p",
+          "o"
+        ]
+      }
+    },
+    "attitude": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "who",
+          "delta"
+        ],
+        "properties": {
+          "delta": {
+            "type": "number",
+            "minimum": -100,
+            "maximum": 100
+          }
+        }
+      }
+    },
+    "memory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "imp": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          }
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "item"
+        ],
+        "properties": {
+          "qty": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "coin": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "cp"
+        ],
+        "properties": {
+          "cp": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "quests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "properties": {
+          "status": {
+            "enum": [
+              "offered",
+              "active",
+              "completed",
+              "failed"
+            ]
+          },
+          "level": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "type": {
+            "enum": [
+              "minor",
+              "standard",
+              "dangerous",
+              "major"
+            ]
+          }
+        }
+      }
+    },
+    "threads": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "status": {
+            "enum": [
+              "open",
+              "resolved"
+            ]
+          }
+        }
+      }
+    },
+    "combat": {
+      "type": "object",
+      "required": [
+        "by"
+      ]
+    },
+    "intent": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "who",
+          "intent"
+        ],
+        "properties": {
+          "intent": {
+            "enum": [
+              "attack",
+              "flee",
+              "surrender",
+              "parley",
+              "hold",
+              "take_cover"
+            ]
+          }
+        }
+      }
+    },
+    "check": {
+      "type": "object",
+      "required": [
+        "what",
+        "actor",
+        "opposition"
+      ],
+      "properties": {
+        "actor": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "opposition": {
+          "type": "number"
+        }
+      }
+    },
+    "recover": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "why"
+        ],
+        "properties": {
+          "hp": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "mp": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "sta": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "why": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "avereth/monsters.schema.json",
+  "title": "F1 body-plan anchors and scaling (content/monsters.json)",
+  "type": "object",
+  "required": [
+    "anchors",
+    "scaling",
+    "level_selection",
+    "elite",
+    "boss"
+  ],
+  "properties": {
+    "anchors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "hp",
+          "atk",
+          "def",
+          "mdef",
+          "hit",
+          "init",
+          "attack",
+          "damage_type",
+          "range",
+          "aliases",
+          "temperament",
+          "source_line"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z_]+$"
+          },
+          "hp": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "atk": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "def": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "mdef": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "hit": {
+            "type": "integer",
+            "minimum": 20,
+            "maximum": 95
+          },
+          "init": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "attack": {
+            "type": "string"
+          },
+          "damage_type": {
+            "enum": [
+              "physical",
+              "magical"
+            ]
+          },
+          "range": {
+            "enum": [
+              "ENGAGED",
+              "SHORT",
+              "MEDIUM",
+              "LONG"
+            ]
+          },
+          "aliases": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "temperament": {
+            "enum": [
+              "aggressive",
+              "cautious",
+              "skittish",
+              "defensive"
+            ]
+          },
+          "source_line": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "level_selection": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "context",
+          "min",
+          "max"
+        ],
+        "properties": {
+          "min": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "max": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "elite": {
+      "$ref": "#/$defs/mult"
+    },
+    "boss": {
+      "$ref": "#/$defs/mult"
+    }
+  },
+  "$defs": {
+    "mult": {
+      "type": "object",
+      "required": [
+        "hp",
+        "atk",
+        "def",
+        "mdef",
+        "hit_pp",
+        "init"
+      ],
+      "properties": {
+        "hp": {
+          "type": "number"
+        },
+        "atk": {
+          "type": "number"
+        },
+        "def": {
+          "type": "number"
+        },
+        "mdef": {
+          "type": "number"
+        },
+        "hit_pp": {
+          "type": "integer"
+        },
+        "init": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

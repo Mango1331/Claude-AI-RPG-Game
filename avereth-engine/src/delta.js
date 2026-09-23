@@ -490,12 +490,18 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (!cur && (status === 'completed' || status === 'failed')) { reject(q, 'cannot finish a quest that was never offered or accepted'); continue; }
         if (cur && ['completed', 'failed'].includes(cur.status) && cur.status !== status) { reject(q, `quest already ${cur.status}`); continue; }
         if (status === 'active' && cur?.status !== 'active' && !auth.accept) { reject(q, owner(`accepting the quest "${q.title}"`) + ' (report it as "offered")'); continue; }
-        const giver = q.giver ? resolve(q.giver) || String(q.giver).slice(0, 60) : cur?.giver || null;
+        // a quest's reward is fixed when it first appears: a new quest without its recommended Level and type is not
+        // recorded, and the correction asks for the complete entry (Testrun 3: the rat quest came without a level and
+        // could never have paid Quest XP). Known quests keep their locked values.
         const level = Number(q.level);
+        const types = content.rules.xp.quest_type;
+        const missing = cur ? [] : [...(Number.isInteger(level) && level > 0 ? [] : ['level']), ...(types[q.type] ? [] : ['type'])];
+        if (missing.length) { reject(q, `new quest "${String(q.title).slice(0, 100)}" needs level (its recommended Level, a whole number from 1) and type (${Object.keys(types).join('|')}), which fix its Quest XP; missing: ${missing.join(' and ')}. Report the quest again with both`); continue; }
+        const giver = q.giver ? resolve(q.giver) || String(q.giver).slice(0, 60) : cur?.giver || null;
         const quest = {
             id, title: String(q.title).slice(0, 100), status, giver,
             rec_level: cur?.rec_level ?? (Number.isInteger(level) && level > 0 ? level : null),
-            qtype: cur?.qtype ?? (content.rules.xp.quest_type[q.type] ? q.type : null),
+            qtype: cur?.qtype ?? (types[q.type] ? q.type : null),
             notes: [...(cur?.notes || []), ...(q.note ? [String(q.note).slice(0, 200)] : [])], history: [...(cur?.history || []), { ...at, status }],
         };
         events.push({ t: 'quest.set', d: { quest } });

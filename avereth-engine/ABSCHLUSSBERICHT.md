@@ -283,3 +283,5 @@ Die ChatGPT-Review wurde Punkt für Punkt per Probe gegen den Code geprüft und 
   - ein Absturz, wenn eine NPC aus dem Verborgenen angreift, ohne Alaric erreichen zu können (beim Prüfen gefunden, schon im alten Code).
 - **Setup:** Max Response Length ≥ 8.192; Kartenbeschreibung auf Vertrag 3.1 aktualisieren.
 - **Belege:** Regressionstest mit den echten Antworten, siehe [docs/TESTRUN_V3.md](docs/TESTRUN_V3.md).
+
+**Dritte Review (nach Testrun 3):** Neue Quests brauchen jetzt `level` und `type`, sonst werden sie nicht angelegt und die Korrektur fordert den vollständigen Eintrag an (die Rattenquest aus Testrun 3 hätte sonst 0 Quest-XP gebracht). Der Nachtrag nach fehlendem Report bleibt, wird aber im nächsten Test beobachtet; sein Korrekturtext bittet nur noch um die Entscheidungen des Zuges, nicht um neue Personen. Siehe [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md).

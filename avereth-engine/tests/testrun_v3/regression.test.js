@@ -51,12 +51,18 @@ test('names the narrator only put in the ref become names ("hesta" -> Hesta, "ca
     assert.equal(e['npc.hesta'].template, 'adventurer', '"adventuress" is an adventurer');
 });
 
-test('turn 8: "Hesta Gault" finds Hesta and becomes her full name; her side of the payment is rejected with the fix', () => {
+test('turn 8: "Hesta Gault" finds Hesta and becomes her full name; her side of the payment and the rat quest without a level are rejected with the fix', () => {
     const r = T(8).reply;
     assert.equal(T(8).state.entities['npc.hesta'].name, 'Hesta Gault');
     assert.ok(r.accepted.some((a) => a.startsWith('npc.hesta learns')), 'the learn entry is no longer an "unknown character"');
     assert.ok(r.accepted.includes('fact npc.hesta sponsors pc'));
-    assert.deepEqual(r.rejected.map((x) => x.reason), ['coin: only Alaric\'s purse is tracked; report his side of it ({"who":"pc","cp":-10} if the coin went between him and Hesta)']);
+    assert.deepEqual(r.rejected.map((x) => x.reason), [
+        'coin: only Alaric\'s purse is tracked; report his side of it ({"who":"pc","cp":-10} if the coin went between him and Hesta)',
+        // the rat quest came without a recommended Level: it could never have paid Quest XP (external review after Testrun 3)
+        'new quest "Rats in the cellars of Rennick\'s yard" needs level (its recommended Level, a whole number from 1) and type (minor|standard|dangerous|major), which fix its Quest XP; missing: level. Report the quest again with both',
+    ]);
+    assert.ok(!T(8).state.quests['quest.rats_in_the_cellars_of_rennicks_yard']);
+    assert.deepEqual(T(8).state.quests['quest.marsh_hag_near_southwash'].rec_level, 1, 'the complete entry is recorded');
 });
 
 test('moving on: the carter stays at the gate, the registrar and Drem stay in the Guild hall; only Hesta, placed in the cellar, comes along', () => {
@@ -120,7 +126,7 @@ test('during the fight the narrator is told who is not fighting and how little b
 
 test('coin and quests the reports changed are shown like a game log', () => {
     assert.equal(T(4).panel, '`COIN -2 Copper → 4 Silver 8 Copper · city entry toll`');
-    assert.match(T(8).panel, /^`QUEST OFFERED — Rats in the cellars of Rennick's yard \(Rennick the tanner\)`\n`QUEST OFFERED — Marsh-hag near Southwash/);
+    assert.equal(T(8).panel, '`QUEST OFFERED — Marsh-hag near Southwash (reeve of Southwash)`');
 });
 
 test('the engine block stays compact', () => {

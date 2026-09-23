@@ -87,7 +87,7 @@ test('coin, items and quests stay consistent', () => {
     assert.match(reasons(r), /does not carry 25/);
     assert.match(reasons(r), /never offered/);
     g.input('"Fine, I pay the toll. And I\'ll take the job."');
-    g.reply({ coin: [{ cp: -10, why: 'toll' }], quests: [{ title: 'Lost Ring', status: 'active', giver: 'Mara' }] });
+    g.reply({ coin: [{ cp: -10, why: 'toll' }], quests: [{ title: 'Lost Ring', status: 'active', giver: 'Mara', level: 1, type: 'minor' }] });
     assert.equal(g.state.entities.pc.sheet.coin_cp, 40);
     g.reply({ quests: [{ title: 'Lost Ring', status: 'failed' }] });
     const r2 = g.reply({ quests: [{ title: 'Lost Ring', status: 'completed' }] });
@@ -134,9 +134,13 @@ test('Quest XP (Core #25): locked when offered, awarded once on completion throu
     assert.equal(g.state.entities.pc.sheet.xp, 45); // 3 × 10 × 1.5
     g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'completed' }] });
     assert.equal(g.state.entities.pc.sheet.xp, 45, 'awarded once');
-    g.reply({ quests: [{ title: 'Escort the Carter', status: 'active' }] });
-    const r = g.reply({ quests: [{ title: 'Escort the Carter', status: 'completed' }] });
-    assert.match(r.corrections.join(' '), /grants no Quest XP/);
+    // a new quest without its Level and type is not recorded: its Quest XP could never be fixed (Testrun 3 rat quest)
+    const r = g.reply({ quests: [{ title: 'Escort the Carter', status: 'active', type: 'escort' }] });
+    assert.match(reasons(r), /^new quest "Escort the Carter" needs level \(its recommended Level, a whole number from 1\) and type \(minor\|standard\|dangerous\|major\), which fix its Quest XP; missing: level and type\. Report the quest again with both$/);
+    assert.ok(!g.state.quests['quest.escort_the_carter']);
+    assert.deepEqual(g.reply({ quests: [{ title: 'Escort the Carter', status: 'active', level: 2, type: 'standard' }] }).rejected, [], 'the complete entry goes through');
+    assert.deepEqual(g.reply({ quests: [{ title: 'Escort the Carter', status: 'active', level: 8, type: 'major' }] }).rejected, []);
+    assert.deepEqual([g.state.quests['quest.escort_the_carter'].rec_level, g.state.quests['quest.escort_the_carter'].qtype], [2, 'standard'], 'a known quest keeps its locked values');
     g.reply({ quests: [{ title: 'Big Job', status: 'offered', level: 10, type: 'dangerous' }] });
     g.reply({ quests: [{ title: 'Big Job', status: 'completed' }] });
     const s = g.state.entities.pc.sheet;

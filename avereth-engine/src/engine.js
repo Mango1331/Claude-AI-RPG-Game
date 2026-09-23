@@ -373,7 +373,7 @@ export function narratorReply(state, content, replyText, { msg = null } = {}) {
     const opened = openCommitted(s, content, dice, emit);
     const corrections = [...res.corrections, ...trackerDrift(s, content, clean)];
     for (const r of res.rejected) corrections.push(`Rejected from your fact report: ${r.reason}.`);
-    if (!report) corrections.push(`Your previous reply had no valid <avereth> fact report (${error}). Write it right after the story text, before any tracker or status blocks; this reply's report also records what that reply established (new people, hand-overs, coin, quests), {} if nothing.`);
+    if (!report) corrections.push(`Your previous reply had no valid <avereth> fact report (${error}). Write it right after the story text, before any tracker or status blocks; this reply's report may also record the player's decisions from that turn (hand-overs, coin, quests), {} if nothing.`);
     return { events, clean, report, accepted: res.accepted, rejected: res.rejected, corrections, report_error: report ? null : error, opened, state: s };
 }
 

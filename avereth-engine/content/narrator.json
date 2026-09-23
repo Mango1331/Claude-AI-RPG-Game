@@ -24,7 +24,7 @@
    "items": "[{item, qty, from?, to?, taken_by?, why}] physical hand-overs",
    "coin": "[{who?:'pc', cp, taken_by?, why}] Alaric's coin in Copper: + received, - paid or lost (only his purse is tracked)",
    "recover": "[{who?, hp?, mp?, sta?, why}] rest/healing/meals outside combat (amount by the narrative; never during combat)",
-   "quests": "[{title, status:'offered'|'active'|'completed'|'failed', giver?, note?, level?, type?:'minor'|'standard'|'dangerous'|'major'}] (level/type when offered: they fix the Quest XP)",
+   "quests": "[{title, status:'offered'|'active'|'completed'|'failed', giver?, note?, level, type:'minor'|'standard'|'dangerous'|'major'}] a quest's first report needs level (its recommended Level) and type: they fix its Quest XP",
    "threads": "[{text, kind:'promise'|'debt'|'threat'|'deadline'|'mystery', status:'open'|'resolved'}]",
    "combat": "{by} or a list: ONLY NPCs/creatures committing to attack Alaric right now (never resolve it; the engine fixes the Turn order at once)",
    "intent": "[{who, intent:'attack'|'flee'|'surrender'|'parley'|'hold'|'take_cover'}] an NPC's next combat action",

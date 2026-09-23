@@ -70,3 +70,18 @@ Die Belege stehen als Tests in `tests/scenarios/review.test.js`, `tests/unit/int
 - Items/Coin an Alaric: angenommen oder nur angeboten?
 - `delta.rejected` mit „PLAYER OWNERSHIP“: Fehlablehnungen (Spieler hatte zugestimmt, anders formuliert)?
 
+## Dritte Review (nach Testrun 3, Stand `39a5c50`)
+
+Die Review bestätigte die Testrun-3-Fixes (Kampf-Vorschau, Anwesenheit, `nearest`, Report vor den Tracker-Blöcken, Handelszeilen) und nannte einen offenen Punkt und eine Beobachtung.
+
+| Punkt | Probe | Kat. | Entscheidung |
+|---|---|---|---|
+| Eine neue Quest ohne `level`/`type` wird angelegt und bringt beim Abschluss 0 Quest-XP | bestätigt, im echten Lauf: Die Rattenquest aus Zug 8 hatte kein Level | **A** | Eine neue Quest braucht ein positives `level` und einen gültigen `type`. Fehlt eines, wird sie nicht angelegt, und die Korrektur nennt, was fehlt, und fordert den vollständigen Eintrag an. Bekannte Quests behalten ihre gesperrten Werte. Report-Text `quests` sagt das. Regression: Zug 8 von Testrun 3. |
+| Der Nachtrag nach fehlendem Report ist großzügig (bis zu 3 Spielernachrichten) | bestätigt | **B** | Für Zahlung, Übergabe und Quest-Annahme gewollt. Beobachten, ob `report.missing` mit Vertrag 3.1, Report vor den Blöcken und 8.192 Token überhaupt noch vorkommt. |
+| Ein nachgetragenes `new` würde eine Person aus der vorigen Szene in die aktuelle setzen | bestätigt, aber durch unseren eigenen Korrekturtext begünstigt | **D** | Kein Patch an der Logik; der Korrekturtext bittet nur noch um die **Entscheidungen** des Zuges ohne Report (Übergaben, Coin, Quests), nicht mehr um „new people“. Wer noch in der Szene ist, führt der Erzähler ohnehin mit `new` ein, sobald er vorkommt. |
+
+**Nächster Test:** Extension aktualisieren, Kartenbeschreibung vollständig durch Vertrag 3.1 ersetzen, „Max Response Length“ 8.192, Reasoning „high“ lassen, neuer Chat. Beobachten (Button „Export event log“):
+- Hat jede normale Antwort einen `<avereth>`-Report (kein `report.missing`)?
+- Kommen neue Quests mit `level` und `type`?
+- Falls doch ein Report fehlt: Was trägt der nächste Report nach?
+

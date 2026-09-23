@@ -32,7 +32,7 @@ test('voluntary PC changes need the player\'s own decision; theft and arrest nam
     g.input('Would you sell me a room?');
     assert.match(reasons(g.reply({ coin: [{ who: 'pc', cp: -30, why: 'room' }] })), /PLAYER OWNERSHIP/);
     g.input('"Here, thirty copper for the room." I take the caravan job.');
-    const ok = g.reply({ coin: [{ who: 'pc', cp: -30, why: 'room' }], quests: [{ title: 'Caravan escort', status: 'active' }] });
+    const ok = g.reply({ coin: [{ who: 'pc', cp: -30, why: 'room' }], quests: [{ title: 'Caravan escort', status: 'active', level: 2, type: 'standard' }] });
     assert.equal(ok.rejected.length, 0, reasons(ok));
     // taken by force: allowed only when a present NPC does it
     g.input('I sit by the fire.');

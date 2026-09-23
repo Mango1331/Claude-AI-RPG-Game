@@ -46,7 +46,7 @@ function status(state, content) {
     const fx = pcEffects(state);
     return [
         '[SYSTEM // STATUS]',
-        `${e.name} | ${e.race || 'Human'} | Level ${s.level} | XP ${s.xp}/${s.level * content.rules.progression.xp_to_next_per_level} | Rank ${dv.rank} | Class: ${cls}`,
+        `${e.name} | ${e.race || 'Human'} | Level ${s.level} | XP ${s.xp}/${s.level * content.rules.progression.xp_to_next_per_level} | Power Rank ${dv.rank} | Class: ${cls}`,
         `HP ${s.hp}/${dv.maxHp} | MP ${s.mp}/${dv.maxMp} | STA ${s.sta}/${dv.maxSta}`,
         `STR ${s.stats.STR} | VIT ${s.stats.VIT} | AGI ${s.stats.AGI} | INT ${s.stats.INT} | PER ${s.stats.PER} | WIL ${s.stats.WIL} | Free Stat Points ${s.free_points}`,
         `ATK ${dv.atk} | MATK ${dv.matk} | DEF ${dv.def} (base ${dv.baseDef}) | MDEF ${dv.mdef} (base ${dv.baseMdef}) | Initiative ${dv.init} | Base Hit ${dv.baseHit}% | Crit ${dv.crit}%`,
@@ -153,11 +153,11 @@ function quests(state, content, arg) {
     if (arg) {
         const q = list.find((x) => normText(x.title).includes(normText(arg)));
         if (!q) return `[SYSTEM // QUEST]\nNo known Quest "${arg}".`;
-        return [`[SYSTEM // QUEST] ${q.title}`, `Status: ${q.status}${q.giver ? ` | Issuer: ${entityLabel(state, q.giver)}` : ''}`, ...q.notes.map((n) => `- ${n}`),
+        return [`[SYSTEM // QUEST] ${q.title}`, `Status: ${q.status}${q.rank ? ` | Quest Rank: ${q.rank}` : ''}${q.giver ? ` | Issuer: ${entityLabel(state, q.giver)}` : ''}`, ...q.notes.map((n) => `- ${n}`),
             ...q.history.map((h) => `  ${formatClock(h.minute)}: ${h.status}`)].join('\n');
     }
     if (!list.length) return '[SYSTEM // QUESTS]\nNo Quests.';
-    return ['[SYSTEM // QUESTS]', ...list.map((q) => `${q.title} — ${q.status}${q.notes.length ? ` — ${q.notes.at(-1)}` : ''}`)].join('\n');
+    return ['[SYSTEM // QUESTS]', ...list.map((q) => `${q.title}${q.rank ? ` (${q.rank})` : ''} — ${q.status}${q.notes.length ? ` — ${q.notes.at(-1)}` : ''}`)].join('\n');
 }
 
 function pcEffects(state) {

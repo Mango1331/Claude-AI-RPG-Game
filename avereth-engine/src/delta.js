@@ -19,6 +19,8 @@ const AWARE = new Set(['unaware', 'suspicious', 'aware']);
 const INTENTS = new Set(['attack', 'flee', 'surrender', 'parley', 'hold', 'take_cover']);
 const BANDS = new Set(['ENGAGED', 'SHORT', 'MEDIUM', 'LONG']);
 const COVERS = new Set(['none', 'partial', 'full']);
+// Guild Quest Ranks, in the order of the Power Ranks F..S whose Level bands they correspond to (lorebook v0.11)
+export const QUEST_RANKS = ['Novice', 'Proven', 'Veteran', 'Elite', 'Master', 'Grandmaster', 'Legend'];
 
 /** Split the reply into display text and the (last) fact report. Tolerates code fences, smart quotes, trailing commas. */
 export function extractReport(text) {
@@ -492,15 +494,26 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (status === 'active' && cur?.status !== 'active' && !auth.accept) { reject(q, owner(`accepting the quest "${q.title}"`) + ' (report it as "offered")'); continue; }
         // a quest's reward is fixed when it first appears: a new quest without its recommended Level and type is not
         // recorded, and the correction asks for the complete entry (Testrun 3: the rat quest came without a level and
-        // could never have paid Quest XP). Known quests keep their locked values.
+        // could never have paid Quest XP). Known quests keep their locked values. The level is the engine's hidden XP
+        // basis (Core #25 "Recommended Level"); the story and the Guild speak in Quest Ranks, and a Guild contract's
+        // level lies inside its Quest Rank's band (Novice = Power Rank F = Levels 1-14, ...).
         const level = Number(q.level);
         const types = content.rules.xp.quest_type;
         const missing = cur ? [] : [...(Number.isInteger(level) && level > 0 ? [] : ['level']), ...(types[q.type] ? [] : ['type'])];
-        if (missing.length) { reject(q, `new quest "${String(q.title).slice(0, 100)}" needs level (its recommended Level, a whole number from 1) and type (${Object.keys(types).join('|')}), which fix its Quest XP; missing: ${missing.join(' and ')}. Report the quest again with both`); continue; }
+        if (missing.length) { reject(q, `new quest "${String(q.title).slice(0, 100)}" needs level (its hidden XP basis: the Level the task suits, a whole number from 1) and type (${Object.keys(types).join('|')}), which fix its Quest XP; missing: ${missing.join(' and ')}. Report the quest again with both`); continue; }
+        const rank = q.rank === undefined || q.rank === null || q.rank === '' ? null : QUEST_RANKS.find((x) => normText(x) === normText(q.rank));
+        // checked when the quest first appears; afterwards its rank is locked like level and type, so a stray rank never
+        // blocks a known quest's status change
+        if (q.rank && !rank && !cur) { reject(q, `quest rank "${q.rank}" is not a Guild Quest Rank (${QUEST_RANKS.join('|')}); omit it for work outside the Guild`); continue; }
+        if (rank && !cur) {
+            const band = content.rules.ranks.bands[QUEST_RANKS.indexOf(rank)];
+            if (level < band.min || (rank !== 'Legend' && level > band.max)) { reject(q, `quest "${String(q.title).slice(0, 100)}": a ${rank} contract's level lies in ${band.min}${rank === 'Legend' ? '+' : `-${band.max}`} (Power Rank ${band.rank}); reported level ${level}. Report it again with a matching level or rank`); continue; }
+        }
         const giver = q.giver ? resolve(q.giver) || String(q.giver).slice(0, 60) : cur?.giver || null;
         const quest = {
             id, title: String(q.title).slice(0, 100), status, giver,
             rec_level: cur?.rec_level ?? (Number.isInteger(level) && level > 0 ? level : null),
+            rank: cur ? cur.rank ?? null : rank,
             qtype: cur?.qtype ?? (types[q.type] ? q.type : null),
             notes: [...(cur?.notes || []), ...(q.note ? [String(q.note).slice(0, 200)] : [])], history: [...(cur?.history || []), { ...at, status }],
         };
@@ -509,7 +522,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (status === 'completed' && cur?.status !== 'completed' && pcXp) {
             if (quest.rec_level && quest.qtype) {
                 const xp = questXp(quest.rec_level, quest.qtype, content);
-                const evs = awardXp(pcXp, xp, content, `Quest XP: ${quest.title} (Level ${quest.rec_level}, ${quest.qtype})`);
+                const evs = awardXp(pcXp, xp, content, `Quest XP: ${quest.title} (${quest.rank ? `${quest.rank}, ` : ''}XP basis Level ${quest.rec_level}, ${quest.qtype})`);
                 events.push(...evs);
                 for (const e of evs) pcXp = e.t === 'xp.changed' ? { ...pcXp, xp: e.d.xp } : { ...pcXp, level: e.d.level, xp: e.d.xp_after };
                 accepted.push(`Quest XP +${xp}`);

@@ -58,7 +58,8 @@ function changeLines(before, after, content, events) {
             out.push(sys(`${d.resource.toUpperCase()} ${now[d.resource]} + ${d.value - now[d.resource]} = ${d.value}/${max[d.resource]}${why(d)}`));
             now[d.resource] = d.value;
         } else if (e.t === 'quest.set' && before.quests[d.quest.id]?.status !== d.quest.status) {
-            out.push(sys(`QUEST ${QUEST[d.quest.status] || d.quest.status.toUpperCase()} — ${d.quest.title}${d.quest.giver ? ` (${label(d.quest.giver)})` : ''}`));
+            const tags = [d.quest.rank, d.quest.giver ? label(d.quest.giver) : null].filter(Boolean);
+            out.push(sys(`QUEST ${QUEST[d.quest.status] || d.quest.status.toUpperCase()} — ${d.quest.title}${tags.length ? ` (${tags.join(' · ')})` : ''}`));
         } else if (e.t === 'xp.changed' && d.id === 'pc') {
             // the award and where it lands: level-ups that follow it carry the final Level and XP
             let [level, xp] = [lvl, d.xp];

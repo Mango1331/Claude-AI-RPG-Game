@@ -74,7 +74,7 @@ Alle 61 Einträge wurden einzeln bewertet (P/S/R/D/X/N; Details: [docs/WORLDINFO
 |---|---|
 | Mechanik-Engines (START/PENDING/ACTIVE, Creation, Kernel-Formeln, XP, Ökonomie, Checks) | **ableitbar**, als Engine-Code |
 | System-Befehle | **ableitbar**, Engine antwortet ohne LLM |
-| Lore | **abrufbar**, per Realm und kuratierter Schlüsselphrase |
+| Lore | **abrufbar**, per Realm und kuratierter Schlüsselphrase; seit v0.11 als Lorebook der Erzähler-Karte (siehe Nachtrag) |
 | Seltene Regeltexte (Domain, Evolution, Elemente, Loot, Ökonomie) | **situativ oder abrufbar**, wörtlich erhalten |
 | CD-Verhaltensregeln | **permanent** |
 | Megumin-NPC-Patch | mit Engine **redundant** |
@@ -167,7 +167,7 @@ Details: [docs/MIGRATION.md](docs/MIGRATION.md).
 
 ## 9. Tests
 
-`npm test`: **117 Tests, alle bestanden.** Dazu kommt `node tools/browser_smoke.mjs`: echtes Chromium mit gemocktem SillyTavern-Kontext, bestanden.
+`npm test`: **122 Tests, alle bestanden.** Dazu kommt `node tools/browser_smoke.mjs`: echtes Chromium mit gemocktem SillyTavern-Kontext, bestanden.
 
 | Gruppe | Inhalt |
 |---|---|
@@ -285,3 +285,12 @@ Die ChatGPT-Review wurde Punkt für Punkt per Probe gegen den Code geprüft und 
 - **Belege:** Regressionstest mit den echten Antworten, siehe [docs/TESTRUN_V3.md](docs/TESTRUN_V3.md).
 
 **Dritte Review (nach Testrun 3):** Neue Quests brauchen jetzt `level` und `type`, sonst werden sie nicht angelegt und die Korrektur fordert den vollständigen Eintrag an (die Rattenquest aus Testrun 3 hätte sonst 0 Quest-XP gebracht). Der Nachtrag nach fehlendem Report bleibt, wird aber im nächsten Test beobachtet; sein Korrekturtext bittet nur noch um die Entscheidungen des Zuges, nicht um neue Personen. Siehe [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md).
+
+**Vierte Review (Welt-Lore als Lorebook, Vorschlag v0.10b):**
+- **Übernommen:** Die Engine besitzt Mechanik, Zustand und den strukturellen Welt-Index; die beschreibende Lore liegt als Lorebook an der Erzähler-Karte.
+- **Umgesetzt:**
+  - Ist ein Lorebook verknüpft, lässt die Engine ihre LORE-Sektion weg.
+  - Eine Lore-Bridge liefert Realm und Stadt als reinen Scan-Text, 0 Token im Prompt.
+- **Lorebook v0.11:** Der nachgebaute World-Info-Scan über die echten Testruns 2 und 3 zeigte Fehltreffer: Der 1.000-Token-Gildeneintrag feuerte im Wald und im Rattenkampf, „trade“ und „market“ feuerten dauernd, und am Aushang schnitt das Budget die Quest-Gerüste ab. v0.11 behebt das (Ø 861 statt 1.289 Token).
+- **Quest-XP:** Das Level bleibt die versteckte XP-Basis. Gilden-Aufträge tragen zusätzlich einen Quest Rank, dessen Band die Engine prüft. Core bleibt unverändert.
+- **Details:** [docs/LOREBOOK.md](docs/LOREBOOK.md).

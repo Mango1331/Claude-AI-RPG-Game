@@ -52,7 +52,7 @@
 | `knowledge` | `knowledge[who][factOrClaimId] = {stance: knows\|suspects\|believes, source, turn, minute, previous}` |
 | `memories` | `{id, turn, minute, text (mit {pc}), who[], about[], witnesses[], seen[], location, place, importance 1–10, kind}` |
 | `relations` | `rel.<a>.attitude.<b> = {value −100..100, history[{turn, minute, delta, why}]}` |
-| `quests`, `threads` | `{id, title, status, giver, rec_level, qtype, notes, history}` bzw. `{id, text, kind, status}` |
+| `quests`, `threads` | `{id, title, status, giver, rec_level, qtype, rank, notes, history}` bzw. `{id, text, kind, status}`. `rec_level` ist die versteckte XP-Basis (Core #25), `rank` der Quest Rank eines Gilden-Auftrags (Novice … Legend, sonst `null`). |
 | `pending_combat`, `pending_intents` | Liste der NPC-Angriffsfestlegungen `[{by, target, turn, minute}]` (Core #23 PENDING) und angekündigte NPC-Aktionen. Die Engine legt den Kampf noch in derselben Antwort fest und leert die Liste (`encounter.started` mit Runde 0; die Runden laufen mit der nächsten Spielernachricht). |
 | `last` | Audit des letzten Zuges: `{outcome, situations, rejected, check, input, carry, report_missing}`. `carry` enthält die Spielernachrichten, deren Antwort keinen Report hatte (höchstens 3); der nächste Report darf deren Entscheidungen nachtragen. |
 
@@ -120,10 +120,10 @@ Beispiel (Trapper-Szene aus Testrun-v1):
 | `attitude` | ±50 pro Änderung, gesamt −100..100, mit Grund; mehrere Änderungen in einem Report addieren sich |
 | `memory` | Zeugen = Beteiligte (`who`) + genannte `witnesses` + bei `public` alle Anwesenden, die nicht `unaware` sind; wer Alaric dabei sah, hängt von der Tarnung ab; sein Name wird zu `{pc}` |
 | `items` / `coin` / `recover` | in der Antwort auf einen Erstellungszug abgelehnt (System-only, ebenso `time`, `location`, `place`, `quests`); Item-Namen auch im Plural auf die Content-ID aufgelöst; Besitz geprüft; Abgabe durch Alaric nur mit Geben-/Zahlabsicht (auch aus einer Nachricht, deren Antwort keinen Report hatte) oder `taken_by` (anwesender NPC); Kupfer ganzzahlig und nie negativ; geführt wird nur Alarics Beutel (eine Zahlung auf NPC-Seite wird mit der konkreten Korrektur abgelehnt); Erholung nie im Kampf, nie über Maximum |
-| `quests` / `threads` | Statusübergänge; `active` nur mit Annahme durch den Spieler; eine neue Quest braucht `level` (empfohlenes Level) und `type`, sonst wird sie nicht angelegt und die Korrektur fordert den vollständigen Eintrag an; Quest-XP bei Angebot gesperrt, einmalig beim Abschluss |
+| `quests` / `threads` | Statusübergänge; `active` nur mit Annahme durch den Spieler; eine neue Quest braucht `level` (versteckte XP-Basis, nie in der Erzählung) und `type`, sonst wird sie nicht angelegt und die Korrektur fordert den vollständigen Eintrag an; optional `rank` (Quest Rank eines Gilden-Auftrags): das Level muss im Band des Rangs liegen (Novice = Power Rank F = 1–14 … Legend = S = 90+, aus `rules.json` `ranks.bands`), sonst Ablehnung mit Korrektur; Level, Typ und Rang sind ab dem Angebot gesperrt; Quest-XP einmalig beim Abschluss |
 | `combat` / `intent` | `combat` als Objekt, Name oder Liste (auch `by` als Liste): jede NPC-Festlegung auf einen Angriff auf Alaric legt den Kampf noch mit dieser Antwort fest (Profile, Initiative, Reihenfolge; Runde 0) oder fügt die NPC einem laufenden Kampf hinzu; die Züge laufen mit der nächsten Spielernachricht; nur Festgelegte kämpfen (keine automatische Teilnahme per Haltung/Spezies); ein anderes Ziel wird abgelehnt (NPC gegen NPC wird erzählt); leere Einträge und Kämpfer, die erneut gemeldet werden, sind kein Fehler; `intent` `hold`/`parley`/`take_cover` verfällt, sobald die NPC angegriffen wird |
 | `check` | nur mit dem CHECK DIE des Zuges; die Engine rechnet nach und behält ihr Ergebnis |
-| engine-owned | `hp`, `mp`, `sta`, `xp`, `level`, `stats`, `skills`, `damage`, `roll(s)`, `init`, `atk`, `def`, `mdef`, `rank`, `defeat_xp`: immer abgelehnt |
+| engine-owned | `hp`, `mp`, `sta`, `xp`, `level`, `stats`, `skills`, `damage`, `roll(s)`, `init`, `atk`, `def`, `mdef`, `rank`, `defeat_xp` als Report-Schlüssel: immer abgelehnt (`level` und `rank` **in** einem Quest-Eintrag sind Quest-Felder, siehe oben) |
 
 ## Content-Dateien
 
@@ -134,7 +134,8 @@ Beispiel (Trapper-Szene aus Testrun-v1):
 | `classes.json` | 5 Basisklassen, 35 Skills (strukturiert plus `source_text` wörtlich), Affinität | Content v1.13 #0–#5 |
 | `monsters.json` | 15 F1-Anker, Skalierung, Stufenwahl, Elite/Boss | Content #7/#8 |
 | `gear.json` | Items, Starter-Kits, Referenzbereiche, Startbesitz | Content #9/#11, First Message |
-| `lore.json` | 19 Lore-Texte wörtlich, 14 Orte, 9 Fraktionen/Realms | Lore v0.8, First Message |
+| `lore.json` | struktureller Welt-Index, den der Code braucht (14 Orte, 9 Fraktionen/Realms: ID, Name, Art, Realm); 19 Lore-Texte wörtlich als Rückfall, wenn an der Erzähler-Karte kein Lorebook verknüpft ist | Lore v0.8, First Message |
+| `../lorebook/Avereth_World_Lore_v0.11.json` | beschreibende Welt-Lore als SillyTavern-Lorebook (67 Einträge, Character Lore); kein Engine-Content, die Engine liest es nicht, sondern liefert nur die Lore-Bridge ([LOREBOOK.md](LOREBOOK.md)) | ChatGPT-Vorschlag v0.10b, geprüft und korrigiert |
 | `npc_templates.json` | **PROPOSED**: menschliche NPC-Vorlagen | neu (Testrun-Lücke) |
 | `narrator.json` + `narrator/Avereth_Narrator_Contract_v3.txt` | Erzählervertrag und Report-Format | CD v2.3 + ENGINE AUTHORITY |
 | `campaign_start.json` | PC-Start, Startorte, Creation-Labels, Anfangsfakten | First Message v0.4, System #12 |

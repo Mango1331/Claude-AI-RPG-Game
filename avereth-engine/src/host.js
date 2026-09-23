@@ -7,6 +7,7 @@
 // assistant record is only applied while its text_hash matches the message text (stale copies are ignored).
 import { applyEvent, emptyState } from './state.js';
 import { startCampaign, playerTurn, narratorReply, turnContext } from './engine.js';
+import { loreKeys } from './context.js';
 import { extractReport } from './delta.js';
 import { turnPanel } from './display.js';
 import { hash32, clone } from './util.js';
@@ -96,7 +97,9 @@ export function ensureCampaign(chat, content, { seed, force = false } = {}) {
 /**
  * Called right before a generation. Resolves the latest player message once (stored on that message, so swipes and
  * regenerations reuse the same dice) and returns what the host must do.
- * @returns {{action: 'none'|'clear'|'abort'|'panels'|'context', dirty: boolean, panels?: string[], context?: object, index?: number, errors?: string[]}}
+ * settings.engineLore = false leaves the descriptive world lore to the host's lorebook (the engine block keeps
+ * mechanics and state only); loreKeys names the current realm and location for that lorebook's retrieval.
+ * @returns {{action: 'none'|'clear'|'abort'|'panels'|'context', dirty: boolean, panels?: string[], context?: object, loreKeys?: string[], index?: number, errors?: string[]}}
  */
 export function prepareGeneration(chat, content, { type = 'normal', settings = {} } = {}) {
     if (type === 'quiet' || type === 'impersonate') return { action: 'clear', dirty: false };
@@ -130,8 +133,9 @@ export function prepareGeneration(chat, content, { type = 'normal', settings = {
         rulesBudget: settings.rulesBudget,
         recentTurns: settings.recentTurns,
         systemQuery: r?.command?.llm ? r.command.llm.question || 'help' : null,
+        lore: settings.engineLore !== false,
     });
-    return { action: 'context', context, dirty, errors };
+    return { action: 'context', context, loreKeys: loreKeys(state, content), dirty, errors };
 }
 
 /**

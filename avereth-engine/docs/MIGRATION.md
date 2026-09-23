@@ -36,7 +36,7 @@ Alle Inhalte wurden übernommen; ersetzt wurde nur die Technik.
 | #18–#23 | Basisklassen | `classes.json` |
 | #25, #26 | Monster, Elite/Boss | `monsters.json`, `src/npcgen.js` |
 | #29 | Starter-Kits | `gear.json`, `src/creation.js` |
-| #30–#44, #57–#60 | Lore, Realms | `lore.json` (Retrieval im Context Builder) |
+| #30–#44, #57–#60 | Lore, Realms | Lorebook `lorebook/Avereth_World_Lore_v0.11.json` als Character Lore der Erzähler-Karte ([LOREBOOK.md](LOREBOOK.md)); `lore.json` als struktureller Index und als Rückfall ohne Lorebook (Retrieval im Context Builder) |
 | #45–#53, #61 | Befehle, Query Guard | `src/commands.js`; `#system` mit Absatz-Retrieval |
 | #54 | Charaktererstellung | `src/creation.js`, Labels in `campaign_start.json` |
 
@@ -70,4 +70,5 @@ Kurzfassung; Details im [README](../README.md).
 1. Den Ordner `avereth-engine/` als Third-Party-Extension installieren (Ordnername beliebig).
 2. In der Charakterkarte die Beschreibung durch `content/narrator/Avereth_Narrator_Contract_v3.txt` ersetzen. Die Begrüßung bleibt die First Message v0.4.
 3. Die Avereth-WorldInfo v1.23 **deaktivieren**. Der Megumin-NPC-Patch ist optional und mit Engine nicht nötig.
-4. Neuen Chat starten. Die Engine legt die Kampagne an der Begrüßung an. **Empfehlung:** zuerst einen wegwerfbaren Testchat spielen (Report-Format, Streaming, Swipes mit dem eigenen Modell prüfen), erst danach die Langzeitkampagne.
+4. `lorebook/Avereth_World_Lore_v0.11.json` importieren und an der Erzähler-Karte als **Character Lore** verknüpfen. World-Info-Einstellungen: Scan Depth 2, Budget Cap 1.800, Recursive Scan aus ([LOREBOOK.md](LOREBOOK.md)). Das Lorebook enthält nur beschreibende Welt, keine Regeln; es ersetzt die v1.23 nicht.
+5. Neuen Chat starten. Die Engine legt die Kampagne an der Begrüßung an. **Empfehlung:** zuerst einen wegwerfbaren Testchat spielen (Report-Format, Streaming, Swipes mit dem eigenen Modell prüfen), erst danach die Langzeitkampagne.

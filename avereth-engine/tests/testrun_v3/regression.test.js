@@ -59,7 +59,7 @@ test('turn 8: "Hesta Gault" finds Hesta and becomes her full name; her side of t
     assert.deepEqual(r.rejected.map((x) => x.reason), [
         'coin: only Alaric\'s purse is tracked; report his side of it ({"who":"pc","cp":-10} if the coin went between him and Hesta)',
         // the rat quest came without a recommended Level: it could never have paid Quest XP (external review after Testrun 3)
-        'new quest "Rats in the cellars of Rennick\'s yard" needs level (its recommended Level, a whole number from 1) and type (minor|standard|dangerous|major), which fix its Quest XP; missing: level. Report the quest again with both',
+        'new quest "Rats in the cellars of Rennick\'s yard" needs level (its hidden XP basis: the Level the task suits, a whole number from 1) and type (minor|standard|dangerous|major), which fix its Quest XP; missing: level. Report the quest again with both',
     ]);
     assert.ok(!T(8).state.quests['quest.rats_in_the_cellars_of_rennicks_yard']);
     assert.deepEqual(T(8).state.quests['quest.marsh_hag_near_southwash'].rec_level, 1, 'the complete entry is recorded');

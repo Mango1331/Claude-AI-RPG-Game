@@ -49,7 +49,7 @@ export function pcLine(state, content) {
     const inv = Object.entries(s.inventory).filter(([k]) => k !== 'standard_arrow').map(([k, q]) => `${content.items.get(k)?.name || k}${q > 1 ? ` ×${q}` : ''}`);
     const equip = Object.values(s.equipment).map((r) => (typeof r === 'string' ? content.items.get(r)?.name || r : r.name));
     return [
-        `${e.name} — Level ${s.level} Rank ${dv.rank} ${cls} | HP ${s.hp}/${dv.maxHp} MP ${s.mp}/${dv.maxMp} STA ${s.sta}/${dv.maxSta} | XP ${s.xp}/${s.level * content.rules.progression.xp_to_next_per_level}${s.free_points ? ` | Free Stat Points ${s.free_points}` : ''}${e.status === 'dead' ? ' | DEAD' : ''}`,
+        `${e.name} — Level ${s.level} Power Rank ${dv.rank} ${cls} | HP ${s.hp}/${dv.maxHp} MP ${s.mp}/${dv.maxMp} STA ${s.sta}/${dv.maxSta} | XP ${s.xp}/${s.level * content.rules.progression.xp_to_next_per_level}${s.free_points ? ` | Free Stat Points ${s.free_points}` : ''}${e.status === 'dead' ? ' | DEAD' : ''}`,
         `STR ${s.stats.STR} VIT ${s.stats.VIT} AGI ${s.stats.AGI} INT ${s.stats.INT} PER ${s.stats.PER} WIL ${s.stats.WIL} | ATK ${dv.atk} MATK ${dv.matk} DEF ${dv.def} MDEF ${dv.mdef} | Init ${dv.init} | Base Hit ${dv.baseHit}% | Crit ${dv.crit}%`,
         `Skills: ${joinList(skills)} | Equipped: ${joinList(equip)}${arrows !== undefined ? ` | Arrows ${arrows}` : ''} | Carried: ${joinList(inv)} | Coin ${formatCoin(s.coin_cp, content)}`,
     ].join('\n');
@@ -230,7 +230,7 @@ function retrievalItems(state, content, pinnedIds, recentTurns) {
     }
     for (const q of Object.values(state.quests)) {
         if (q.status !== 'active' && q.status !== 'offered') continue;
-        items.push({ kind: 'quest', text: `${q.title} ${q.notes.join(' ')}`, entities: [q.giver].filter(Boolean), quests: [q.id], turn: q.history.at(-1)?.turn ?? 0, importance: 0.8, label: `Quest (${q.status}): ${q.title}${q.giver ? ` — from ${anyLabel(state, content, q.giver)}` : ''}${q.notes.length ? ` — ${q.notes.at(-1)}` : ''}` });
+        items.push({ kind: 'quest', text: `${q.title} ${q.notes.join(' ')}`, entities: [q.giver].filter(Boolean), quests: [q.id], turn: q.history.at(-1)?.turn ?? 0, importance: 0.8, label: `Quest (${q.status}${q.rank ? `, ${q.rank}` : ''}): ${q.title}${q.giver ? ` — from ${anyLabel(state, content, q.giver)}` : ''}${q.notes.length ? ` — ${q.notes.at(-1)}` : ''}` });
     }
     for (const t of Object.values(state.threads)) if (t.status === 'open') items.push({ kind: 'thread', text: t.text, entities: [], turn: t.updated?.turn ?? 0, importance: 0.7, label: `Open thread (${t.kind}): ${t.text}` });
     return items;
@@ -328,8 +328,9 @@ export function buildContext(state, content, opts = {}) {
     const ranked = rank(retrievalItems(state, content, new Set(pinned.map((f) => f.id)), opts.recentTurns ?? DEFAULT_RECENT_TURNS), focus, { weights: opts.weights });
     const rel = pack(ranked.filter((s) => s.score > 1.2), Math.max(120, Math.floor(budget * 0.25)), (t) => estimateTokens(t) + 4);
     if (rel.items.length) add('relevant', `RELEVANT (retrieved from the campaign record):\n${rel.items.map((s) => `- ${s.item.label}`).join('\n')}`, 2);
-    // lore: the current realm entry + entries whose key phrases occur in this turn's text
-    const lorePicked = pickLore(content, realmId, scan, Math.max(100, Math.floor(budget * 0.2)));
+    // lore: the current realm entry + entries whose key phrases occur in this turn's text. Off when the descriptive
+    // world lore comes from the narrator card's SillyTavern lorebook (docs/LOREBOOK.md): one copy, not two
+    const lorePicked = opts.lore === false ? [] : pickLore(content, realmId, scan, Math.max(100, Math.floor(budget * 0.2)));
     if (lorePicked.length) add('lore', `LORE:\n${lorePicked.join('\n---\n')}`, 3);
     // situational rules text (own allowance so they never crowd out scene state)
     const rulesIds = [...new Set((opts.situations || []).flatMap((s) => SITUATION_RULES[s] || []))];
@@ -369,6 +370,17 @@ export function buildContext(state, content, opts = {}) {
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };
+}
+
+/**
+ * Retrieval keys for the host's lorebook (the "Lore Bridge"): the current realm and the current location by name, so
+ * their World Info entries activate even when no recent message names them. Keys only, never engine state.
+ */
+export function loreKeys(state, content) {
+    const loc = state.entities[state.scene.location] || content.locations.get(state.scene.location);
+    const realmId = loc?.realm || null;
+    const keys = [content.factions.get(realmId)?.name, content.locations.has(state.scene.location) ? loc.name : null];
+    return keys.filter(Boolean);
 }
 
 export function reportInstruction(content) {

@@ -67,6 +67,9 @@ result.combatShown = /^\`COMBAT START\`\\n\`Initiative: /.test(last.extra.displa
 chat.push({ is_user: true, is_system: false, mes: '#status', extra: {} });
 await globalThis.averethInterceptor(chat, 8000, () => { aborted = true; }, 'normal');
 result.command = aborted && /SYSTEM \\/\\/ STATUS/.test((window.__panels || []).join('')) && chat.at(-1).is_system === true;
+// an NPC's attack reported by the reply: the fight is fixed at once and shown above that reply (Testrun 3)
+await turn('I look around again.', 'A wolf lunges out of the brush.\\n<avereth>{"new":[{"ref":"wolf","kind":"creature","species":"wolf","band":"SHORT"}],"combat":{"by":"wolf"}}</avereth>');
+result.commitShown = /\`COMBAT( START)? — the wolf (attacks|joins)/.test(chat.at(-1).extra.display_text || '') && /\`Next: /.test(chat.at(-1).extra.display_text || '');
 result.settingsUi = !!document.getElementById('avereth_enabled');
 result.log = window.__log;
 window.__result = result;
@@ -74,7 +77,7 @@ window.__result = result;
 
 const server = http.createServer(async (req, res) => {
     try {
-        if (req.url === '/' || req.url === '/smoke.html') { res.writeHead(200, { 'content-type': 'text/html' }); res.end(PAGE); return; }
+        if (req.url === '/' || req.url === '/smoke.html') { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(PAGE); return; }
         const file = path.join(ROOT, decodeURIComponent(req.url.split('?')[0]));
         if (!file.startsWith(ROOT)) throw new Error('outside root');
         const type = file.endsWith('.js') ? 'text/javascript' : file.endsWith('.json') ? 'application/json' : 'text/plain';
@@ -97,6 +100,6 @@ const result = await page.evaluate(() => window.__result);
 await browser.close();
 server.close();
 console.log(JSON.stringify({ ...result, errors }, null, 1));
-const ok = result.campaign && result.step2 && result.stripped && result.retcon && result.combatShown && result.command && result.settingsUi && !errors.length;
+const ok = result.campaign && result.step2 && result.stripped && result.retcon && result.combatShown && result.command && result.commitShown && result.settingsUi && !errors.length;
 console.log(ok ? 'BROWSER SMOKE: OK' : 'BROWSER SMOKE: FAILED');
 process.exit(ok ? 0 : 1);

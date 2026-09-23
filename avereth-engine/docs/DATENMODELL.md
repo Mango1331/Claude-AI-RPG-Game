@@ -53,8 +53,8 @@
 | `memories` | `{id, turn, minute, text (mit {pc}), who[], about[], witnesses[], seen[], location, place, importance 1–10, kind}` |
 | `relations` | `rel.<a>.attitude.<b> = {value −100..100, history[{turn, minute, delta, why}]}` |
 | `quests`, `threads` | `{id, title, status, giver, rec_level, qtype, notes, history}` bzw. `{id, text, kind, status}` |
-| `pending_combat`, `pending_intents` | Liste der NPC-Angriffsfestlegungen `[{by, target, turn, minute}]` (Core #23 PENDING) und angekündigte NPC-Aktionen |
-| `last` | Audit des letzten Zuges: `{outcome, situations, rejected, check, input}` |
+| `pending_combat`, `pending_intents` | Liste der NPC-Angriffsfestlegungen `[{by, target, turn, minute}]` (Core #23 PENDING) und angekündigte NPC-Aktionen. Die Engine legt den Kampf noch in derselben Antwort fest und leert die Liste (`encounter.started` mit Runde 0; die Runden laufen mit der nächsten Spielernachricht). |
+| `last` | Audit des letzten Zuges: `{outcome, situations, rejected, check, input, carry, report_missing}`. `carry` enthält die Spielernachrichten, deren Antwort keinen Report hatte (höchstens 3); der nächste Report darf deren Entscheidungen nachtragen. |
 
 **Charakterbogen** (`entities[id].sheet`, PC und menschliche NPCs):
 
@@ -81,7 +81,7 @@ Abgeleitete Werte (MaxHP, Init, DEF …) werden **nie gespeichert**, sondern mit
 | Kampf | `encounter.started`, `encounter.updated`, `encounter.ended`, `combat.pending`, `combat.pending_cleared`, `combat.intent` | Engine / Report (Festlegung, Absicht) |
 | Epistemik | `fact.asserted`, `fact.ended`, `claim.created`, `knowledge.gained`, `memory.recorded`, `relation.set`, `relation.changed` | Report / Engine (Wahrnehmung, Tod, Kampf-Erinnerung) |
 | Quests | `quest.set`, `thread.set` | Report |
-| Audit | `outcome.recorded`, `delta.rejected`, `check.recorded`, `note` | Engine |
+| Audit | `outcome.recorded`, `delta.rejected`, `check.recorded`, `report.missing`, `note` | Engine |
 
 ## IDs
 
@@ -113,15 +113,15 @@ Beispiel (Trapper-Szene aus Testrun-v1):
 |---|---|
 | `time` | 0–10.080 Minuten; nicht während der Charaktererstellung |
 | `location` / `place` / `forced_by` | bekannter Ort oder neuer Orts-Eintrag; `location` nicht im Kampf; Szenenwechsel leert die Anwesenden; Alaric bewegt sich nur mit Reise-/Bewegungsabsicht in der Nachricht oder `forced_by` (anwesender NPC) |
-| `new` | `npc` erhält eine Vorlage (Deskriptoren → `npc_templates.json`); `creature` braucht einen Körperbau-Anker; bekannte Figuren werden nicht verdoppelt (Name global, Deskriptor nur am aktuellen Ort) |
-| `enter` / `leave` / `position` / `aware` / `concealed` | nur Anwesende; Tote kommen nicht zurück; Kämpfer-Positionen gehören der Engine; ein NPC, der Alaric bemerkt hat, wird nur durch erklärte Heimlichkeit wieder `unaware`; `enter` für eine im selben Report per `new` eingeführte Figur ist kein Fehler; nach einem `place`-Wechsel verlassen NPCs auf MEDIUM/LONG die Szene, außer der Report platziert sie neu |
+| `new` | `npc` erhält eine Vorlage (Deskriptoren → `npc_templates.json`); `creature` braucht einen Körperbau-Anker; bekannte Figuren werden nicht verdoppelt (Name global, Deskriptor nur am aktuellen Ort); ohne `name` wird ein Ref-Wort zum Namen, das die Antwort nur großgeschrieben verwendet und das kein Deskriptor ist („hesta“ → Hesta). Ein Vollname, dessen erster Teil der bekannte Name einer anwesenden Person ist, findet sie und wird ihr Name („Hesta Gault“); ein Namensteil findet eine Person mit mehrteiligem Namen. |
+| `enter` / `leave` / `position` / `aware` / `concealed` | nur bekannte Personen (sonst Hinweis auf `new`); eine bekannte, abwesende Person, die der Report platziert, kommt zurück in die Szene; Tote kommen nicht zurück; Kämpfer-Positionen gehören der Engine; ein NPC, der Alaric bemerkt hat, wird nur durch erklärte Heimlichkeit wieder `unaware`; `enter` für eine im selben Report per `new` eingeführte Figur ist kein Fehler; `position`/`aware` für jemanden, der im selben Report geht, wird still übergangen; **nach einem `place`-Wechsel bleibt nur, wen der Report am neuen Ort platziert** (`new`, `enter`, `position`, `aware`, Angriff; Testrun 3), ein genauerer Name für denselben Ort ist kein Wechsel |
 | `facts` | funktionale Prädikate ersetzen den alten Wert (Historie bleibt); harte Fakten nur mit `because`; keine Wiederbelebung; Geheimnisse kennt das Subjekt selbst |
 | `learn` / `believe` | Lernen widerspricht der Wahrheit nie; neuer Fakt nur durch `witnessed` eines Anwesenden; Gehörtes ohne Fakt wird ein Claim (Wahrheit `unknown`/`false`); Geheimnisse nur durch `told`/`witnessed`; falsche Ideen als `believe` |
 | `attitude` | ±50 pro Änderung, gesamt −100..100, mit Grund; mehrere Änderungen in einem Report addieren sich |
 | `memory` | Zeugen = Beteiligte (`who`) + genannte `witnesses` + bei `public` alle Anwesenden, die nicht `unaware` sind; wer Alaric dabei sah, hängt von der Tarnung ab; sein Name wird zu `{pc}` |
-| `items` / `coin` / `recover` | in der Antwort auf einen Erstellungszug abgelehnt (System-only, ebenso `time`, `location`, `place`, `quests`); Item-Namen auch im Plural auf die Content-ID aufgelöst; Besitz geprüft; Abgabe durch Alaric nur mit Geben-/Zahlabsicht oder `taken_by` (anwesender NPC); Kupfer ganzzahlig und nie negativ; Erholung nie im Kampf, nie über Maximum |
-| `quests` / `threads` | Statusübergänge; `active` nur mit Annahme durch den Spieler; Quest-XP bei Angebot gesperrt, einmalig beim Abschluss |
-| `combat` / `intent` | `combat` als Objekt oder Liste: jede NPC-Festlegung auf einen Angriff auf Alaric wird PENDING und im nächsten Zug aufgelöst; nur Festgelegte kämpfen (keine automatische Teilnahme per Haltung/Spezies); ein anderes Ziel wird abgelehnt (NPC gegen NPC wird erzählt); leere Einträge werden ignoriert; `intent` `hold`/`parley`/`take_cover` verfällt, sobald die NPC angegriffen wird |
+| `items` / `coin` / `recover` | in der Antwort auf einen Erstellungszug abgelehnt (System-only, ebenso `time`, `location`, `place`, `quests`); Item-Namen auch im Plural auf die Content-ID aufgelöst; Besitz geprüft; Abgabe durch Alaric nur mit Geben-/Zahlabsicht (auch aus einer Nachricht, deren Antwort keinen Report hatte) oder `taken_by` (anwesender NPC); Kupfer ganzzahlig und nie negativ; geführt wird nur Alarics Beutel (eine Zahlung auf NPC-Seite wird mit der konkreten Korrektur abgelehnt); Erholung nie im Kampf, nie über Maximum |
+| `quests` / `threads` | Statusübergänge; `active` nur mit Annahme durch den Spieler; eine neue Quest braucht `level` (empfohlenes Level) und `type`, sonst wird sie nicht angelegt und die Korrektur fordert den vollständigen Eintrag an; Quest-XP bei Angebot gesperrt, einmalig beim Abschluss |
+| `combat` / `intent` | `combat` als Objekt, Name oder Liste (auch `by` als Liste): jede NPC-Festlegung auf einen Angriff auf Alaric legt den Kampf noch mit dieser Antwort fest (Profile, Initiative, Reihenfolge; Runde 0) oder fügt die NPC einem laufenden Kampf hinzu; die Züge laufen mit der nächsten Spielernachricht; nur Festgelegte kämpfen (keine automatische Teilnahme per Haltung/Spezies); ein anderes Ziel wird abgelehnt (NPC gegen NPC wird erzählt); leere Einträge und Kämpfer, die erneut gemeldet werden, sind kein Fehler; `intent` `hold`/`parley`/`take_cover` verfällt, sobald die NPC angegriffen wird |
 | `check` | nur mit dem CHECK DIE des Zuges; die Engine rechnet nach und behält ihr Ergebnis |
 | engine-owned | `hp`, `mp`, `sta`, `xp`, `level`, `stats`, `skills`, `damage`, `roll(s)`, `init`, `atk`, `def`, `mdef`, `rank`, `defeat_xp`: immer abgelehnt |
 

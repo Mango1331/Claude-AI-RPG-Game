@@ -135,7 +135,7 @@ Kampagnendaten stehen pro Nachricht in `message.extra.avereth`. Der Zustand ist 
 | Schemas | 11 JSON-Schemas |
 | Tests | 13 Testdateien plus 2 Fixtures |
 | Werkzeuge | 3 (Migration, Token-Vergleich, Browser-Smoke-Test) |
-| Doku | 9 Dokumente: README, Abschlussbericht, 7 Fachdokumente (inkl. Review-Antwort und Testrun-2-Auswertung) |
+| Doku | 10 Dokumente: README, Abschlussbericht, 8 Fachdokumente (inkl. Review-Antwort und Auswertungen der Testruns 2 und 3) |
 
 ## 8. Migration
 
@@ -167,7 +167,7 @@ Details: [docs/MIGRATION.md](docs/MIGRATION.md).
 
 ## 9. Tests
 
-`npm test`: **98 Tests, alle bestanden.** Dazu kommt `node tools/browser_smoke.mjs`: echtes Chromium mit gemocktem SillyTavern-Kontext, bestanden.
+`npm test`: **117 Tests, alle bestanden.** Dazu kommt `node tools/browser_smoke.mjs`: echtes Chromium mit gemocktem SillyTavern-Kontext, bestanden.
 
 | Gruppe | Inhalt |
 |---|---|
@@ -272,3 +272,16 @@ Die ChatGPT-Review wurde Punkt für Punkt per Probe gegen den Code geprüft und 
 
 **Kampfanzeige (Wunsch nach Testrun 2):** Die Engine zeigt jeden Kampf- und Probenzug als System-Zeilen oben in der Antwort. Der Block enthält Initiative, Zugreihenfolge, Würfe, `HP - Schaden = HP` und die HP aller Beteiligten und kommt direkt aus den Engine-Records. Er ist nur Anzeige (`extra.display_text`); der Prompt bleibt unverändert.
 
+**Testrun 3 (zweiter Lauf, 14 Züge bis zum Rattenkeller):**
+- **Was lief:** Mechanik exakt nach Core (Initiative, Bisse, Power Shot 37, Basic Attack 17, +20 XP), Kampfanzeige vom Spieler gelobt, kein doppeltes Starter-Kit mehr. Der Lauf ist per Replay exakt reproduzierbar (29 von 29 Records).
+- **Behoben:**
+  - Anwesenheit nach Ortswechsel: nur wer am neuen Ort platziert wird, ist dort (Fuhrmann und Registrarin hatten den Kampf „bezeugt“);
+  - Alarics Aktion ging beim Kampfstart verloren; „the nearest one“ löst nach Entfernung auf;
+  - Kampf-Vorschau: Initiative, Reihenfolge, HP und Entfernung stehen fest und sichtbar, sobald jemand angreift;
+  - Report direkt nach der Erzählung (zwei Antworten wurden am Token-Limit im Dossier abgeschnitten), fehlende Reports dürfen im nächsten Zug nachgetragen werden;
+  - Namen aus Refs und Vollnamen, Zahlung auf NPC-Seite, „Im Alaric“, Band-Legende, Zuschauer im Kampf, Handelszeilen (Coin, Items, Quests, XP);
+  - ein Absturz, wenn eine NPC aus dem Verborgenen angreift, ohne Alaric erreichen zu können (beim Prüfen gefunden, schon im alten Code).
+- **Setup:** Max Response Length ≥ 8.192; Kartenbeschreibung auf Vertrag 3.1 aktualisieren.
+- **Belege:** Regressionstest mit den echten Antworten, siehe [docs/TESTRUN_V3.md](docs/TESTRUN_V3.md).
+
+**Dritte Review (nach Testrun 3):** Neue Quests brauchen jetzt `level` und `type`, sonst werden sie nicht angelegt und die Korrektur fordert den vollständigen Eintrag an (die Rattenquest aus Testrun 3 hätte sonst 0 Quest-XP gebracht). Der Nachtrag nach fehlendem Report bleibt, wird aber im nächsten Test beobachtet; sein Korrekturtext bittet nur noch um die Entscheidungen des Zuges, nicht um neue Personen. Siehe [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md).

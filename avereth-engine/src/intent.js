@@ -3,7 +3,7 @@
 // The attack phrasing regexes are ported from the v1.24 WorldInfo triggers, where they were validated with 234
 // tests (see Avereth_RPG_v1.24_PERFEKTIONIERT/tools/validate/regex_tests.js); here they detect intent instead of
 // routing WorldInfo entries.
-import { normText } from './util.js';
+import { bandIndex, normText } from './util.js';
 
 const ATTACK_VERBS = String.raw`attack(?:s|ed|ing)?|shoot(?:s|ing)?(?!\s+(?:(?:him|her|them|me|us|it)\s+)?(?:a|an)\s+(?:look|glance|glare|smile|grin|wink|question)\b)|stab(?:s|bed|bing)?|slash(?:es|ed|ing)?|(?:strike|strikes|struck|striking)(?!\s+(?:up|out|a\s+(?:deal|bargain|match|pose|chord|balance|light))\b)|hit(?:s|ting)?(?!\s+(?:it\s+off|the\s+(?:road|trail|hay|sack|books|bottle|town|streets|tavern|inn|market))\b)|punch(?:es|ed|ing)?(?!\s+in\b)|kick(?:s|ed|ing)?(?!\s+(?:off|back|in)\b)|smash(?:es|ed|ing)?|kill(?:s|ed|ing)?(?!\s+time\b)|bash(?:es|ed|ing)?|pierce(?:s|d)?|swing(?:s|ing)?(?!\s+by\b)|swung(?!\s+by\b)`;
 const DIRECTED = String.raw`(?:fire|fires|fired|firing|loose|looses|loosed|loosing|throw|throws|threw|thrown|throwing|cast|casts|casting|release|releases|released|releasing|hurl|hurls|hurled)\b(?!\s+(?:(?:a|an|my|his|her|the|one|another|quick|last|long|wary|sidelong)\s+){0,2}(?:glance|glances|look|looks|line|lines|net|nets|eye|eyes|shadow|shadows|vote|votes|doubt|light|dice|lots|anchor)\b)(?:\s+\w+){0,4}?\s+(?:at|on|into|against|toward|towards)\b`;
@@ -24,6 +24,7 @@ const AWAY_RE = /\b(?:retreat|retreats|back\s+(?:away|off|up)|step\s+back|fall\s
 const FLEE_RE = /\b(?:flee|flees|run\s+away|escape|make\s+a\s+run\s+for\s+it|bolt\s+(?:away|off))\b/i;
 const STEALTH_RE = /\b(?:sneak|sneaks|sneaking|creep|creeps|creeping|hide|hides|hiding|stay\s+hidden|move\s+quietly|stalk|stalks|stalking|crouch\s+low)\b/i;
 const PRONOUN_RE = /\b(?:him|her|it|them|the\s+(?:man|woman|creature|beast|animal|thing))\b/i;
+const NEAREST_RE = /\b(?:nearest|closest)\b/i;
 const INTERROGATIVE_RE = /^[\s*_"“]*(?:what|how|can|could|would|should|is|are|does|do|did|will|which|why|when|where|who|may|might|shall)\b/i;
 const USE_RE = /\b(?:use|uses|using|cast|casts|casting|activate|activates|perform|performs)\s+(?:my\s+|a\s+|the\s+)?$/i;
 
@@ -77,6 +78,15 @@ export function resolveTarget(text, state, content, { hostileOnly = false } = {}
         ? present.filter((id) => state.encounter.combatants[id] && state.encounter.combatants[id].side === 'hostile' && !state.encounter.combatants[id].current.defeated)
         : present;
     if (hits.length === 1) return { id: hits[0], how: 'named' };
+    // "the nearest one": the player chooses by distance, so the closest Range Band decides among the targets he named
+    // ("the nearest wolf") or, in a fight, among the hostiles; equally close targets remain his choice (Core #23).
+    // Outside a fight "the nearest one" could be anyone present, so it stays his choice as well.
+    const pool = hits.length > 1 ? hits : hostileOnly && state.encounter ? valid : [];
+    if (NEAREST_RE.test(t) && pool.length > 1) {
+        const band = (id) => bandIndex(state.encounter?.combatants[id]?.current.band || state.scene.positions[id]?.band || 'MEDIUM');
+        const near = pool.filter((id) => band(id) === Math.min(...pool.map(band)));
+        return near.length === 1 ? { id: near[0], how: 'nearest' } : { ambiguous: near };
+    }
     if (hits.length > 1) return { ambiguous: hits };
     // pronoun or no target words: the sole valid target (Core #23 sole-hostile default); 2+ -> the player chooses
     if (valid.length === 1) return { id: valid[0], how: PRONOUN_RE.test(t) ? 'pronoun' : 'sole target' };

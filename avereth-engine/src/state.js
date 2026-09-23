@@ -157,9 +157,17 @@ export function applyEvent(state, e) {
         case 'time.advanced':
             state.clock.minute += d.minutes;
             break;
-        case 'turn.begun':
+        case 'turn.begun': {
+            // carry: the player's messages whose replies had no fact report; the next report may still record what
+            // they decided (their payments, hand-overs, accepted quests), see delta.js PLAYER OWNERSHIP
+            const old = state.last || {};
+            const carry = old.report_missing ? [...(old.carry || []), old.input].filter(Boolean).slice(-3) : [];
             state.turn = d.turn;
-            state.last = { outcome: null, rejected: [], check: null, input: d.input ?? null, situations: [] };
+            state.last = { outcome: null, rejected: [], check: null, input: d.input ?? null, situations: [], carry };
+            break;
+        }
+        case 'report.missing': // the narrator's reply to this turn had no (valid) fact report
+            state.last.report_missing = true;
             break;
         // ------------------------------------------------------------------ character sheet deltas
         case 'resource.changed': {

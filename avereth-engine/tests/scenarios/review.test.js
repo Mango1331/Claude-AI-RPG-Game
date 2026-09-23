@@ -32,7 +32,7 @@ test('voluntary PC changes need the player\'s own decision; theft and arrest nam
     g.input('Would you sell me a room?');
     assert.match(reasons(g.reply({ coin: [{ who: 'pc', cp: -30, why: 'room' }] })), /PLAYER OWNERSHIP/);
     g.input('"Here, thirty copper for the room." I take the caravan job.');
-    const ok = g.reply({ coin: [{ who: 'pc', cp: -30, why: 'room' }], quests: [{ title: 'Caravan escort', status: 'active' }] });
+    const ok = g.reply({ coin: [{ who: 'pc', cp: -30, why: 'room' }], quests: [{ title: 'Caravan escort', status: 'active', level: 2, type: 'standard' }] });
     assert.equal(ok.rejected.length, 0, reasons(ok));
     // taken by force: allowed only when a present NPC does it
     g.input('I sit by the fire.');
@@ -63,10 +63,13 @@ test('only committed NPCs fight: a hostile spectator or a second bandit does not
     h.reply({ new: [{ ref: 'bandit A', kind: 'npc', desc: ['bandit'], band: 'SHORT' }, { ref: 'brigand B', kind: 'npc', desc: ['brigand'], band: 'SHORT' }] });
     h.input('"Stand aside."');
     h.reply({ combat: [{ by: 'bandit A' }, { by: 'brigand B' }] });
-    assert.deepEqual(h.state.pending_combat.map((p) => p.by).sort(), ['npc.bandit_a', 'npc.brigand_b']);
-    h.input('I hold my position.');
+    // the encounter is fixed right after the reporting reply (both committers, Turn order); nobody has acted yet
     assert.deepEqual(Object.keys(h.state.encounter.combatants).sort(), ['npc.bandit_a', 'npc.brigand_b', 'pc']);
+    assert.deepEqual([h.state.encounter.round, h.state.encounter.log.length], [0, 0]);
     assert.deepEqual(h.state.pending_combat, []);
+    h.input('I grip my bow.');
+    assert.deepEqual(Object.keys(h.state.encounter.combatants).sort(), ['npc.bandit_a', 'npc.brigand_b', 'pc']);
+    assert.equal(h.state.encounter.current, 'pc', 'both acted in Round 1; the fight stops at Alaric\'s decision');
 });
 
 test('being present is not witnessing: an unaware bystander is no witness; "public" means everyone who notices', () => {
@@ -219,5 +222,17 @@ test('an NPC attacking someone other than Alaric is narrated, never turned into 
     assert.ok(!g.state.encounter, 'Mara did not become Alaric\'s enemy');
     const ok = g.reply({ combat: [{ by: 'bandit', target: 'Alaric' }] });
     assert.equal(ok.rejected.length, 0, reasons(ok));
-    assert.deepEqual(g.state.pending_combat.map((x) => x.by), ['npc.bandit']);
+    assert.deepEqual(Object.keys(g.state.encounter.combatants).sort(), ['npc.bandit', 'pc']);
+});
+
+test('an NPC ambusher with no attack that reaches Alaric holds its Opening Action instead of crashing the turn', () => {
+    const g = new Game(content).ranger();
+    g.input('I walk along the road.');
+    g.reply({ new: [{ ref: 'bandit', kind: 'npc', desc: ['bandit'], band: 'MEDIUM' }], concealed: ['bandit'] });
+    g.input('I keep walking.');
+    g.reply({ combat: { by: 'bandit' } });
+    assert.equal(g.state.encounter.ambush, true);
+    const t = g.input('I shoot the bandit');
+    assert.match(t.outcome.records[0].why, /^ambush attack impossible: the bandit has no attack that reaches Alaric from MEDIUM/);
+    assert.ok(t.outcome.records.some((r) => r.actor === 'pc' && r.kind === 'attack'), 'the fight goes on normally');
 });

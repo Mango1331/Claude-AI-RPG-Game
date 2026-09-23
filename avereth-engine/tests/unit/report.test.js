@@ -87,7 +87,7 @@ test('coin, items and quests stay consistent', () => {
     assert.match(reasons(r), /does not carry 25/);
     assert.match(reasons(r), /never offered/);
     g.input('"Fine, I pay the toll. And I\'ll take the job."');
-    g.reply({ coin: [{ cp: -10, why: 'toll' }], quests: [{ title: 'Lost Ring', status: 'active', giver: 'Mara' }] });
+    g.reply({ coin: [{ cp: -10, why: 'toll' }], quests: [{ title: 'Lost Ring', status: 'active', giver: 'Mara', level: 1, type: 'minor' }] });
     assert.equal(g.state.entities.pc.sheet.coin_cp, 40);
     g.reply({ quests: [{ title: 'Lost Ring', status: 'failed' }] });
     const r2 = g.reply({ quests: [{ title: 'Lost Ring', status: 'completed' }] });
@@ -109,11 +109,13 @@ test('CHECK DIE: the engine recomputes the check and corrects a narrated result 
     assert.equal(r2.accepted.filter((a) => a.startsWith('check')).length, 1, 'the same die is not a new roll');
 });
 
-test('combat commitment by an NPC becomes PENDING and is resolved by the engine next turn', () => {
+test('combat commitment by an NPC is fixed at once (Initiative, Turn order) and its Turns resolve next turn', () => {
     const g = ready();
     g.reply({ new: [{ ref: 'wolf', kind: 'creature', species: 'wolf', band: 'MEDIUM' }] });
     g.reply({ combat: { by: 'wolf' } });
-    assert.deepEqual(g.state.pending_combat.map((p) => p.by), ['mon.wolf']);
+    assert.deepEqual(g.state.pending_combat, []);
+    assert.deepEqual(Object.keys(g.state.encounter.combatants).sort(), ['mon.wolf', 'pc']);
+    assert.deepEqual([g.state.encounter.round, g.state.encounter.log.length], [0, 0], 'nobody acted yet (Core #24 pending trigger)');
     const t = g.input('I shout at it to go away');
     assert.equal(t.outcome.kind, 'combat');
     assert.equal(g.state.mode, 'combat');
@@ -132,11 +134,53 @@ test('Quest XP (Core #25): locked when offered, awarded once on completion throu
     assert.equal(g.state.entities.pc.sheet.xp, 45); // 3 × 10 × 1.5
     g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'completed' }] });
     assert.equal(g.state.entities.pc.sheet.xp, 45, 'awarded once');
-    g.reply({ quests: [{ title: 'Escort the Carter', status: 'active' }] });
-    const r = g.reply({ quests: [{ title: 'Escort the Carter', status: 'completed' }] });
-    assert.match(r.corrections.join(' '), /grants no Quest XP/);
+    // a new quest without its Level and type is not recorded: its Quest XP could never be fixed (Testrun 3 rat quest)
+    const r = g.reply({ quests: [{ title: 'Escort the Carter', status: 'active', type: 'escort' }] });
+    assert.match(reasons(r), /^new quest "Escort the Carter" needs level \(its recommended Level, a whole number from 1\) and type \(minor\|standard\|dangerous\|major\), which fix its Quest XP; missing: level and type\. Report the quest again with both$/);
+    assert.ok(!g.state.quests['quest.escort_the_carter']);
+    assert.deepEqual(g.reply({ quests: [{ title: 'Escort the Carter', status: 'active', level: 2, type: 'standard' }] }).rejected, [], 'the complete entry goes through');
+    assert.deepEqual(g.reply({ quests: [{ title: 'Escort the Carter', status: 'active', level: 8, type: 'major' }] }).rejected, []);
+    assert.deepEqual([g.state.quests['quest.escort_the_carter'].rec_level, g.state.quests['quest.escort_the_carter'].qtype], [2, 'standard'], 'a known quest keeps its locked values');
     g.reply({ quests: [{ title: 'Big Job', status: 'offered', level: 10, type: 'dangerous' }] });
     g.reply({ quests: [{ title: 'Big Job', status: 'completed' }] });
     const s = g.state.entities.pc.sheet;
     assert.deepEqual([s.level, s.xp], [3, 45 + 300 - 100 - 200], '345 XP: Level 1 -> 3 with carry-over');
+});
+
+test('a reply without a report: the next report may still record what the player decided in that turn (Testrun 3)', () => {
+    const g = ready();
+    g.reply({ quests: [{ title: 'Cellar Rats', status: 'offered', giver: 'innkeeper', level: 1, type: 'minor' }] });
+    g.input('"I\'ll take the job." *I pay the innkeeper two copper for a candle.*');
+    const miss = g.reply('The innkeeper nods and hands over a stub of candle.'); // no fact report
+    assert.equal(miss.report_error, 'no <avereth> report');
+    assert.match(miss.corrections.join(' '), /Write it right after the story text, before any tracker or status blocks/);
+    g.input('I head for the cellar door.');
+    const r = g.reply({ quests: [{ title: 'Cellar Rats', status: 'active' }], coin: [{ who: 'pc', cp: -2, why: 'candle' }] });
+    assert.deepEqual(r.rejected, [], 'accepting and paying were the player\'s decisions one message earlier');
+    assert.equal(g.state.quests['quest.cellar_rats'].status, 'active');
+    g.input('I look around the cellar.');
+    assert.match(reasons(g.reply({ coin: [{ who: 'pc', cp: -3, why: 'more candles' }] })), /PLAYER OWNERSHIP: spending coin/, 'only the turn without a report carries over');
+});
+
+test('names in refs, full names, bare combat names and people placed again (Testrun 3 report shapes)', () => {
+    const g = ready();
+    g.reply({ new: [{ ref: 'hesta', kind: 'npc', desc: ['adventuress'], band: 'SHORT' }, { ref: 'gate_guard', kind: 'npc', desc: ['guard'] }] }, 'Hesta laughs. The guard yawns. "Hesta, again?"');
+    assert.equal(g.state.entities['npc.hesta'].name, 'Hesta');
+    assert.equal(g.state.entities['npc.gate_guard'].name, null, 'a descriptor ref is no name');
+    const r = g.reply({ attitude: [{ who: 'Hesta Gault', delta: 5, why: 'polite' }] });
+    assert.deepEqual(r.rejected, []);
+    assert.equal(g.state.entities['npc.hesta'].name, 'Hesta Gault');
+    assert.deepEqual(g.reply({ attitude: [{ who: 'Gault', delta: 1, why: 'x' }] }).rejected, [], 'a part of a known name finds the person');
+    // someone known but not in the scene is brought back by a report that places them here
+    g.reply({ leave: ['gate_guard'] });
+    g.reply({ position: [{ who: 'gate_guard', band: 'MEDIUM' }] });
+    assert.ok(g.state.scene.present.includes('npc.gate_guard'));
+    // an unknown person points to "new"; a bare name commits like {by}
+    assert.match(reasons(g.reply({ position: [{ who: 'Rennick', band: 'SHORT' }] })), /unknown person \(introduce new people via "new"\)/);
+    g.reply({ new: [{ ref: 'wolf', kind: 'creature', species: 'wolf', band: 'MEDIUM' }] });
+    g.input('I watch the wolf.');
+    const c = g.reply({ combat: ['wolf'] });
+    assert.deepEqual(c.rejected, []);
+    assert.ok(g.state.encounter.combatants['mon.wolf']);
+    assert.ok(g.reply({ combat: { by: ['wolf'] } }).accepted.includes('mon.wolf fights on'), 'a combatant committing again is no error');
 });

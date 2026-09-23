@@ -86,19 +86,22 @@ test('report robustness seen in Testrun 2: plural item names, empty combat entri
     assert.ok(!('standard_arrows' in g.state.entities.pc.sheet.inventory));
 });
 
-test('moving on keeps company close by: an NPC at SHORT walks along, one at LONG stays behind', () => {
+test('moving on: only the company the report places at the new spot comes along (Testrun 3 replaced "SHORT follows")', () => {
     const g = new Game(content).ranger();
     g.input('I look around.');
     g.reply({ new: [{ ref: 'Mara', name: 'Mara', kind: 'npc', desc: ['guide'], band: 'SHORT' }, { ref: 'Brom', name: 'Brom', kind: 'npc', desc: ['woodcutter'], band: 'LONG' }] });
-    g.input('I walk down to the river.');
-    g.reply({ place: 'river bank' });
-    assert.ok(g.state.scene.present.includes('npc.mara'));
+    g.input('I walk down to the river with Mara.');
+    g.reply({ place: 'river bank', position: [{ who: 'Mara', band: 'SHORT' }] });
+    assert.ok(g.state.scene.present.includes('npc.mara'), 'placed at the river bank: she came along');
     assert.ok(!g.state.scene.present.includes('npc.brom'));
-    // mentioned again in the same report: still there
-    g.reply({ new: [{ ref: 'Ilsa', name: 'Ilsa', kind: 'npc', band: 'LONG' }] });
     g.input('I walk to the ford.');
-    g.reply({ place: 'the ford', position: [{ who: 'Ilsa', band: 'MEDIUM' }] });
-    assert.ok(g.state.scene.present.includes('npc.ilsa'));
+    g.reply({ place: 'the ford' });
+    assert.ok(!g.state.scene.present.includes('npc.mara'), 'not placed at the ford: she stayed at the river bank');
+    // a more precise name for the same spot is no move; someone known who is placed here again is back in the scene
+    g.input('I step down to the water.');
+    g.reply({ place: 'the ford, shallow crossing', aware: [{ who: 'Mara', level: 'aware' }] });
+    assert.ok(g.state.scene.present.includes('npc.mara'));
+    assert.deepEqual(g.state.last.rejected, []);
 });
 
 test('the player sees the combat in the reply: Initiative, Turn order, rolls and HP arithmetic straight from the records', () => {

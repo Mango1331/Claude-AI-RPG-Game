@@ -76,3 +76,43 @@ test('checks show chance and roll; nothing resolved shows nothing', () => {
     assert.equal(turnPanel(told, content), '');
     assert.equal(turnPanel(told, content, { what: 'climb the wall', chance: 60, roll: 40, success: true }), '`CHECK — climb the wall: 60% · d100 40 → SUCCESS`');
 });
+
+test('coin, items, rest, quests and Quest XP a reply changed read like a game log (Testrun 3 request)', () => {
+    const g = new Game(content).ranger();
+    g.input('I look around.');
+    g.reply({ new: [{ ref: 'Mara', name: 'Mara', kind: 'npc', desc: ['fletcher'] }], quests: [{ title: 'Rats in the Cellar', status: 'offered', giver: 'Mara', level: 10, type: 'minor' }] });
+    g.input('"Deal." *I buy three arrows from her for 6 copper.*');
+    const before = g.state;
+    const r = g.reply({
+        quests: [{ title: 'Rats in the Cellar', status: 'active' }], coin: [{ who: 'pc', cp: -6, why: 'three arrows' }],
+        items: [{ item: 'Standard Arrow', qty: 3, from: 'Mara', to: 'pc', why: 'bought' }],
+    });
+    assert.deepEqual(turnPanel(before, content, null, r).split('\n'), [
+        '`ITEM +3 Standard Arrow → 23 carried · bought`',
+        '`COIN -6 Copper → 4 Silver 4 Copper · three arrows`',
+        '`QUEST ACCEPTED — Rats in the Cellar (Mara)`',
+    ]);
+    g.input('I clear out the cellar and rest.');
+    const b2 = g.state;
+    const r2 = g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'completed' }], recover: [{ sta: 5, why: 'short rest' }] }, 'Mara pays.');
+    const lines = turnPanel(b2, content, null, r2).split('\n');
+    // 10 × 10 × 1.5 = 150 Quest XP: Level 1 -> 2 with 50 carried over
+    assert.deepEqual(lines, ['`QUEST COMPLETED — Rats in the Cellar (Mara)`', '`+150 XP → XP 50/200 · Quest XP: Rats in the Cellar (Level 10, minor)`', '`LEVEL UP → Level 2 (+5 free Stat Points)`']);
+    assert.equal(turnPanel(b2, content, null, { ...r2, events: [] }), '', 'nothing changed, nothing shown');
+});
+
+test('an attack the reply reported is fixed and shown before anyone acts: Initiative, Turn order, HP, Range, who goes first', () => {
+    const g = new Game(content).ranger();
+    g.input('I look around.');
+    g.reply({ new: [{ ref: 'wolf', kind: 'creature', species: 'wolf', band: 'MEDIUM' }] });
+    g.input('I watch the wolf.');
+    const before = g.state;
+    const r = g.reply({ combat: { by: 'wolf' } });
+    const lines = turnPanel(before, content, null, r).split('\n');
+    const init = r.state.encounter.combatants['mon.wolf'].fixed.init;
+    assert.equal(lines[0], '`COMBAT START — the wolf attacks Alaric`');
+    assert.match(lines[1], new RegExp(`^\`Initiative: .*the wolf ${init}.* → Turn order: `));
+    assert.match(lines.join('\n'), /`Range: the wolf MEDIUM`/);
+    assert.match(lines.at(-1), init > 9 ? /^`Next: Round 1 — the wolf acts before Alaric`$/ : /^`Next: Round 1 — Alaric acts first`$/);
+    assert.equal(r.state.encounter.round, 0, 'nothing resolved yet');
+});

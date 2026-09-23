@@ -86,7 +86,7 @@ Primärquellen, soweit erreichbar. arXiv und einige Doku-Seiten waren durch die 
 | Skalierbarkeit (1.000+ Züge) | niedrig | **hoch**: Fold linear, Kontext budgetiert | mittel | hoch | mittel |
 | Tokenverbrauch pro Zug | hoch: 5,6–9k Avereth-Anteil | **niedrig**: Contract ~4,0k + Block ~1,0–1,3k | mittel | mittel | mittel bis hoch (Tool-Schemas, Runden) |
 | Retrieval-Qualität | niedrig: lexikalisch, Fehltreffer | **hoch**: zustandsgesteuert plus kuratierte Schlüssel | niedrig | hoch | – |
-| Wartbarkeit | mittel: 124k Zeichen Prompt-Regeln | **hoch**: Daten mit Schema, Code mit 68 Tests | mittel | niedrig: Betrieb | mittel |
+| Wartbarkeit | mittel: 124k Zeichen Prompt-Regeln | **hoch**: Daten mit Schema, Code mit 82 Tests | mittel | niedrig: Betrieb | mittel |
 | Erweiterbarkeit | niedrig: jede Regel kostet Prompt | **hoch**: Daten und Code | mittel | hoch | mittel |
 | Debugging | niedrig: Reasoning lesen | **hoch**: #audit, Event-Export, deterministische Replays | mittel | mittel | mittel |
 | Komplexität | niedrig | **mittel**: etwa 4.000 Zeilen JS, keine Abhängigkeiten | mittel: zwei Fremd-Extensions | hoch | mittel |
@@ -170,14 +170,14 @@ flowchart TD
 | **Weltwahrheit** | `facts` {s, p, o, since, until, visibility, hard}; `entities` (Status, Profil) | Erzähler (ESTABLISHED FACTS, RELEVANT); NPCs **nicht** |
 | **Figurenwissen** | `knowledge[who][factId]` mit Haltung `knows`/`suspects` und Quelle | nur die jeweilige NPC-Karte |
 | **Überzeugung** | `claims` (können falsch sein) plus `knowledge` mit Haltung `believes` | NPC-Karte, markiert „actually FALSE“ |
-| **Erinnerung** | `memories` mit `who`, `witnesses`, `seen` (wer Alaric dabei sah) und `{pc}`-Platzhalter | nur Zeugen; Formulierung je Betrachter („someone unseen“, „the stranger“, „Alaric“) |
+| **Erinnerung** | `memories` mit `who`, `witnesses`, `seen` (wer Alaric dabei sah) und `{pc}`-Platzhalter. Zeugen sind die Beteiligten (`who`), vom Erzähler genannte (`witnesses`) oder bei `public` alle Anwesenden, die nicht `unaware` sind. **Anwesend ist nicht wahrnehmend.** | nur Zeugen; Formulierung je Betrachter („someone unseen“, „the stranger“, „Alaric“) |
 | **Erzählung** | der Chattext selbst | wird nie als Wahrheit gelesen, nur über validierte Reports |
 
 Folgen:
 - Ein NPC kennt Alarics Namen nur, wenn er ihn gesagt bekam, per Selbstvorstellung oder als `learn` mit Quelle.
 - Er kennt sein Aussehen nur, wenn er ihn unverdeckt sah (Wahrnehmung am Zugende).
 - Geheimnisse verbreiten sich nur durch Erzählen oder Beobachten, nicht als Gerücht.
-- Lernen kann die Weltwahrheit nie ändern. Falsches geht als `believe` in die Claims.
+- Lernen kann die Weltwahrheit nie ändern. Nur `witnessed` durch einen Anwesenden legt einen neuen Fakt an. Gehörtes (`told`, `rumor`, `public`) ohne bekannten Fakt wird ein **Claim** mit Wahrheit `unknown` (oder `false`, wenn es einem funktionalen Fakt widerspricht); die Figur glaubt oder vermutet ihn.
 - Weltänderungen machen altes Wissen „OUTDATED“, statt es zu löschen.
 
 ## 9. Event-System
@@ -187,7 +187,7 @@ Alle 42 Event-Typen sind in `schemas/event.schema.json` und [DATENMODELL.md](DAT
 - Der Reducer würfelt nie; Würfe stehen in den Events (`rng_to`).
 - Ein Swipe hat eigene Events.
 - Ein Delete entfernt die Events der gelöschten Nachricht.
-- Eine editierte Antwort behält ihre Fakten.
+- Eine editierte Antwort behält ihre Fakten (Tippfehler, Umformulierung). **Retcon:** Enthält der editierte Text einen neuen `<avereth>`-Block, wird die Antwort neu validiert und ihre Events ersetzt (`{}` = keine Fakten).
 - Ein Replay ist deterministisch: Test „fold(event log) === live state“.
 
 ## 10. Retrieval und Context Builder
@@ -219,28 +219,44 @@ Der `<avereth>`-Report ist absichtlich tolerant:
 
 Jede Ablehnung wird mit Grund protokolliert und im nächsten Zug als Korrektur gemeldet.
 
+**Spieler-Hoheit (PLAYER OWNERSHIP).** Freiwillige Änderungen an Alaric brauchen die Entscheidung des Spielers in der aktuellen Nachricht. `authorization(input)` in `intent.js` liest daraus `travel`, `move`, `pay`, `give`, `accept`, `conceal` und `rest`. Fragen autorisieren nichts; wörtliche Rede schon („Deal, I'll do it.“).
+
+| Report-Teil | braucht |
+|---|---|
+| `location` / `place` | `travel` / `move`, oder `forced_by` (ein anwesender NPC: Festnahme, Verschleppung); im Kampf besitzt die Engine die Position |
+| Items oder Coin **von** Alaric | `give` / `pay`, oder `taken_by` (anwesender NPC: Diebstahl, Beschlagnahme) |
+| Quest `active` | `accept`; sonst als `offered` melden |
+| `time` > 2 h außerhalb des Kampfs | `rest` oder `travel` |
+| NPC verliert Alaric (`aware` → `unaware`) | `conceal` (erklärte Heimlichkeit) |
+
+Welt- und NPC-Handlungen (NPC gibt Alaric etwas, NPC geht, Wetter) brauchen keine Zustimmung. **Kampf** beginnt nur durch Alarics Angriff oder durch NPCs, die sich per `combat` (Objekt oder Liste) festlegen; Haltung, Spezies oder Gruppenzugehörigkeit ziehen niemanden automatisch hinein.
+
 | Fehlerklasse aus dem Auftrag | Wo verhindert |
 |---|---|
 | ungültige Stats | HP, XP, Level, Stats, Skills, Schaden und Würfe sind engine-owned; Report-Schlüssel dafür werden abgelehnt; `validateState` prüft Grenzen |
-| doppelte Items / Figuren | Inventar als Menge pro Item-ID; bekannte Figuren werden per Name/Deskriptor erkannt und nicht neu angelegt |
+| doppelte Items / Figuren | Inventar als Menge pro Item-ID; bekannte Figuren werden per Name global erkannt, per Deskriptor („guard“) nur, wenn sie anwesend oder am aktuellen Ort sind |
 | widersprüchliche Positionen | eine Position pro Entität (`scene.positions`); im Kampf besitzt die Engine die Bänder |
 | ungültige Skills | nur bekannte Skill-IDs; Intent ordnet Namen bekannten Skills zu; unbekannte Skills werden gemeldet, nicht ausgeführt |
 | falsche Queststatus | kein Abschluss ohne Angebot; abgeschlossen/gescheitert ist final; Quest-XP gesperrt bei Angebot und einmalig |
 | fehlende Referenzen | Resolver lehnt unbekannte Referenzen ab; der Reducer wirft bei unbekannten Entitäten/Relationen; `validateState` prüft Wissensreferenzen |
 | ungültige Ressourcen | Coin nur ganzzahlig und nie negativ; `recover` nie im Kampf und nie über Maximum; Kosten und Munition vor dem Wurf geprüft |
-| widersprüchlicher Weltzustand | funktionale Prädikate (Status, Ort, Herrscher …) haben einen aktuellen Wert; harte Fakten (tot, zerstört) kippen nur mit `because`; Lernen darf Wahrheit nicht widersprechen |
+| widersprüchlicher Weltzustand | funktionale Prädikate (Status, Ort, Herrscher …) haben einen aktuellen Wert; harte Fakten (tot, zerstört) kippen nur mit `because`; Tote kehren nicht per Report zurück (Wiederbelebung braucht eine Mechanik, Core #14); Lernen darf Wahrheit nicht widersprechen |
 | Tracker-Drift in der Erzählung | `trackerDrift` vergleicht Zahlen in der Antwort (Init, HP, STA, MP, XP, Pfeile, Coin) mit der Engine und meldet Korrekturen |
 
 ## 12. Grenzen und Risiken
 
 - **Die Absichtserkennung ist regelbasiert.** Sehr ungewöhnliche Formulierungen landen als „narrative“. Folge: kein Kampf. Der Spieler formuliert klarer oder nutzt Skill-Namen. Der Korpus-Test sichert die bekannten Muster.
-- **Der CHECK DIE ist vor dem Check sichtbar.** Das LLM könnte die Entscheidung, ob gewürfelt wird, vom Wert abhängig machen. Gegenmittel: Check-Gate-Regel im Contract, Audit per `#audit`. Die Alternative (ein zweiter Aufruf) wurde wegen Latenz verworfen.
+- **Der CHECK DIE ist vor dem Check sichtbar.** Das LLM könnte die Entscheidung, ob gewürfelt wird, vom Wert abhängig machen. Gegenmittel: Check-Gate-Regel im Contract, Audit per `#audit`. Die Alternativen (zweiter Aufruf, Tool-Calling) kosten Latenz. Tool-Calling verschiebt zudem nur die Frage, *ob* gewürfelt wird, zum LLM. Nach dem Live-Test ist ein „Pending Check“ die nächste Stufe: Das LLM meldet den Check, die Engine würfelt im nächsten Zug.
+- **NPC↔NPC-Distanz ist abgeleitet** (|Band A − Band B| relativ zu Alaric). Für den PC-zentrierten Kampf reicht das. Für Verbündete, Beschwörungen oder Mehrparteienkämpfe braucht es später eine echte Geometrie.
+- **Lange Logs:** 1.000 Züge (≈ 5.200 Events) werden in etwa 20 ms gefaltet; der Kontextbau braucht etwa 100 ms. Snapshots/Checkpoints sind erst bei deutlich längeren Kampagnen nötig.
 - **Die Report-Qualität hängt vom Modell ab.** Fehlt der Report, verliert die Welt nur neue Erzählfakten. Mechanik und Wissen bleiben korrekt. Der nächste Zug erhält eine Korrektur. Option für später: ein Extraktionspass per `generateRaw` mit JSON-Schema.
 - **Vorgeschlagene Inhalte** (als PROPOSED markiert, zur Autorenbestätigung):
   - menschliche NPC-Vorlagen;
   - Detection-Default für Kreaturen;
   - Difficulty-Skala;
-  - NPC-Verhalten nach Temperament und „nicht feindlich, unverletzt → Deckung“.
+  - NPC-Verhalten nach Temperament und „nicht feindlich, unverletzt → Deckung“;
+  - Basic Attack nach Waffenfamilie, wenn die Waffe nicht zur Klasse passt (z. B. Ranger mit Handaxt → Warrior Basic Attack);
+  - Klasse eines Abenteurer-NPCs aus genannter Waffe oder Klassenwort („archer“ = Ranger).
 - **Nicht modelliert** (Regeltexte bleiben abrufbar):
   - Proficiency-Fortschritt (PP), Skill-Lernen, Klassen-Evolution, Domains, Elemente und Resistenzen;
   - Statuseffekte mit Dauer über den eigenen Zug hinaus;

@@ -9,7 +9,7 @@
 // re-running a turn from the same state (swipe/regenerate) yields the same results — dice are never rerolled.
 import { Dice, newSeed } from './rng.js';
 import { applyEvent, fold } from './state.js';
-import { anchorFor, templateFor, locationByName } from './content.js';
+import { anchorFor, templateFor, locationByName, weaponFamily } from './content.js';
 import { deriveCharacter } from './derived.js';
 import { selectClass, selectSkills } from './creation.js';
 import { scaleCreature, chooseCreatureLevel, humanSheet } from './npcgen.js';
@@ -25,6 +25,7 @@ import { clone, hash32, normText, uniq } from './util.js';
 
 export const ENGINE_VERSION = '2.0.0';
 
+const GROUP_RE = /\b(?:everyone|everybody|all of you|you all|the (?:group|room|crowd|table|company))\b/i;
 const SELF_INTRO_RE = /\b(?:my name(?:'s| is)|i am|i'm|call me|name's|they call me)\s+alaric\b/i;
 const HOLD_RE = /\b(?:i\s+)?(?:wait|hold (?:my )?(?:position|ground|fire)|do nothing|pass (?:my )?turn|end (?:my )?turn|stay put)\b/i;
 const TRADE_RE = /\b(?:buy|buys|bought|sell|sells|sold|pay|pays|paid|price|cost|costs|haggle|coin|coins|copper|silver|gold)\b/i;
@@ -116,12 +117,10 @@ function creationTurn(s, content, intent, emit) {
 function storyTurn(s, content, text, intent, dice, emit, situations) {
     const pcAction = pcActionOf(s, intent, text);
     // 1) an NPC commitment reported last turn resolves first; player input cannot erase it (Core #23 PENDING)
-    if (s.pending_combat) {
-        const { by } = s.pending_combat;
-        emit({ t: 'combat.pending_cleared', d: { by } });
-        if (s.entities[by] && s.entities[by].status !== 'dead' && s.scene.present.includes(by)) {
-            return combatTurn(s, content, dice, emit, { trigger: { actor: by, target: 'pc' }, pcAction: pcAction?.kind ? pcAction : null, joiner: by }, situations);
-        }
+    const committed = (s.pending_combat || []).map((p) => p.by).filter((by) => s.entities[by] && s.entities[by].status !== 'dead' && s.scene.present.includes(by));
+    if ((s.pending_combat || []).length) emit({ t: 'combat.pending_cleared', d: {} });
+    if (committed.length) {
+        return combatTurn(s, content, dice, emit, { trigger: { actor: committed[0], target: 'pc' }, committed, pcAction: pcAction?.kind ? pcAction : null }, situations);
     }
     // 2) combat: an ACTIVE encounter continues; a declared attack starts one
     if (s.encounter) {
@@ -161,21 +160,18 @@ function pcActionOf(s, intent, text) {
 }
 
 // ------------------------------------------------------------------------------------------------ combat
-function combatants(s, leadId) {
-    const lead = s.entities[leadId];
-    const out = [leadId];
-    for (const id of s.scene.present) {
-        if (id === 'pc' || id === leadId || out.includes(id)) continue;
-        const e = s.entities[id];
-        if (!e || e.status === 'dead' || e.kind === 'location') continue;
-        const hostile = (s.relations[`rel.${id}.attitude.pc`]?.value ?? 0) <= -60;
-        const pack = e.kind === 'creature' && lead.kind === 'creature' && e.anchor && e.anchor === lead.anchor;
-        if (hostile || pack) out.push(id);
-    }
-    return out;
+/**
+ * Who fights: only actual commitment — the target Alaric attacks, and every NPC/creature the narrator reported as
+ * committing to an attack. Bystanders are never combatants because of attitude or kinship; if they join later, the
+ * narrator reports their commitment and they are inserted into the fixed Turn Order.
+ */
+function combatants(s, leadId, committed = []) {
+    return uniq([leadId, ...committed]).filter((id) => s.entities[id] && s.entities[id].status !== 'dead');
 }
 
 /** Give an NPC/creature its locked combat profile once (Content #7 anchors / proposed human templates). */
+const FAMILY_CLASS = { bow: 'ranger', focus: 'mage', precision: 'duelist', heavy_melee: 'guardian', melee: 'warrior' };
+
 function materialise(s, content, dice, emit, id) {
     const e = s.entities[id];
     if (e.sheet || e.profile) return;
@@ -186,11 +182,14 @@ function materialise(s, content, dice, emit, id) {
         emit({ t: 'entity.updated', d: { id, set: { profile: scaleCreature(anchor, level, e.type || 'normal', content) } } });
         return;
     }
-    let tpl = content.templates.get(e.template) || templateFor(content, [...(e.descriptors || []), e.traits || ''].join(' ')) || content.templates.get('commoner');
+    const words = [...(e.descriptors || []), e.traits || ''].join(' ');
+    let tpl = content.templates.get(e.template) || templateFor(content, words) || content.templates.get('commoner');
     const overrides = {};
     if (e.level) overrides.level = e.level;
     if (tpl.gear_from_starter_kit) {
-        const cls = content.classes.get(e.class) || content.classes.get('warrior');
+        // an adventurer's Class follows what the narration shows: a named weapon, else a class word ("archer" = ranger)
+        const byWord = normText(words).split(' ').map((w) => (w === 'archer' ? 'ranger' : w)).find((w) => content.classes.has(w));
+        const cls = content.classes.get(e.class) || content.classes.get(FAMILY_CLASS[weaponFamily(content, words)]) || content.classes.get(byWord) || content.classes.get('warrior');
         const kit = content.kits[cls.id].map((i) => content.items.get(i));
         const w = kit.find((i) => i.slot === 'weapon');
         const a = kit.find((i) => i.slot === 'armor');
@@ -201,6 +200,8 @@ function materialise(s, content, dice, emit, id) {
     }
     const sheet = humanSheet(tpl, overrides, content);
     sheet.generated.temperament = tpl.temperament;
+    // kit containers (quiver) fill the inventory: an NPC archer carries real, finite arrows like Alaric
+    if (tpl.gear_from_starter_kit) for (const i of content.kits[overrides.class].map((x) => content.items.get(x))) for (const [item, qty] of Object.entries(i?.contains || {})) sheet.inventory[item] = (sheet.inventory[item] || 0) + qty;
     emit({ t: 'entity.sheet_set', d: { id, sheet } });
 }
 
@@ -208,12 +209,12 @@ function materialise(s, content, dice, emit, id) {
  * One combat step for this player message: start (PC attack or pending NPC commitment), let a new attacker join,
  * run NPC Turns until Alaric's Turn / terminal state, and emit every resulting state change as events.
  */
-function combatTurn(s, content, dice, emit, { trigger = null, pcAction = null, joiner = null }, situations) {
+function combatTurn(s, content, dice, emit, { trigger = null, pcAction = null, committed = [] }, situations) {
     let started = null;
     let enc;
     if (!s.encounter) {
         const lead = trigger.actor === 'pc' ? trigger.target : trigger.actor;
-        const ids = combatants(s, lead);
+        const ids = combatants(s, lead, committed);
         // legality first: an attack that is impossible from the start begins nothing and costs nothing (Core #24)
         if (trigger.actor === 'pc') {
             const trial = clone(s);
@@ -229,11 +230,12 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction = null, j
         started = { reason: enc.ambush_reason, order: enc.order.map((id) => entityLabel(s, id)).join(' > '), ambush: enc.ambush };
     } else {
         enc = clone(s.encounter);
-        if (joiner && !enc.combatants[joiner]) {
-            materialise(s, content, dice, emit, joiner);
-            addCombatant(enc, s, content, joiner, 'hostile', 'attack');
-            started = { reason: `${entityLabel(s, joiner)} joins the fight`, order: enc.order.map((id) => entityLabel(s, id)).join(' > '), joined: joiner };
+        const joiners = committed.filter((id) => !enc.combatants[id]);
+        for (const id of joiners) {
+            materialise(s, content, dice, emit, id);
+            addCombatant(enc, s, content, id, 'hostile', 'attack');
         }
+        if (joiners.length) started = { reason: `${joiners.map((id) => entityLabel(s, id)).join(', ')} ${joiners.length > 1 ? 'join' : 'joins'} the fight`, order: enc.order.map((id) => entityLabel(s, id)).join(' > '), joined: joiners };
         if (pcAction?.kind === 'attack' && pcAction.target && !enc.combatants[pcAction.target]) {
             materialise(s, content, dice, emit, pcAction.target);
             addCombatant(enc, s, content, pcAction.target, 'hostile', null);
@@ -244,10 +246,10 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction = null, j
     const outcome = { kind: 'combat', started, records: res.records, illegal: res.illegal || null, next: null };
     emit({ t: started && !s.encounter ? 'encounter.started' : 'encounter.updated', d: { encounter: enc } });
     for (const id of Object.keys(enc.combatants)) if (id !== 'pc' && s.scene.awareness[id] !== 'aware') emit({ t: 'scene.awareness', d: { id, level: 'aware' } });
-    // mirror the PC's resources and ammunition into the sheet (the snapshot stays authoritative for NPCs)
+    // mirror the PC's resources and every sheet-bearer's ammunition into the sheet (the snapshot stays authoritative for NPCs)
     const pcC = enc.combatants.pc;
     for (const r of ['hp', 'mp', 'sta']) if (pcC.current[r] !== s.entities.pc.sheet[r]) emit({ t: 'resource.changed', d: { id: 'pc', resource: r, value: pcC.current[r] } });
-    for (const r of res.records) if (r.actor === 'pc' && r.ammo) emit({ t: 'item.changed', d: { id: 'pc', item: r.ammo.item, qty: -r.ammo.used, why: r.skill_name } });
+    for (const r of res.records) if (r.ammo && s.entities[r.actor]?.sheet) emit({ t: 'item.changed', d: { id: r.actor, item: r.ammo.item, qty: -r.ammo.used, why: r.skill_name } });
     // deaths are world truth (hard facts) witnessed by everyone present
     for (const c of Object.values(enc.combatants)) {
         if (c.current.hp === 0 && s.entities[c.id].status !== 'dead') {
@@ -311,6 +313,7 @@ export function narratorReply(state, content, replyText, { msg = null } = {}) {
         // perception: an NPC that can see Alaric now knows his appearance and remembers the first sight of him
         for (const id of perceivers(s)) {
             if (id === 'pc' || s.entities[id].kind !== 'npc' || s.scene.concealed.includes('pc') || knows(s, id, PC_LOOK_FACT)) continue;
+            if (s.scene.awareness[id] === 'unaware') continue; // present but has not noticed him
             emit({ t: 'knowledge.gained', d: { who: id, about: PC_LOOK_FACT, stance: 'knows', source: 'witnessed', turn: s.turn, minute: s.clock.minute } });
             emit({ t: 'memory.recorded', d: { memory: {
                 id: `m.t${s.turn}.seen.${id}`, turn: s.turn, minute: s.clock.minute, text: `first saw {pc} at ${s.scene.place || entityLabel(s, s.scene.location)}`,
@@ -320,8 +323,12 @@ export function narratorReply(state, content, replyText, { msg = null } = {}) {
         // speech: introducing himself by name tells every NPC present at the end of the turn (including people the
         // reply just introduced) that can see him — knowledge by perception, not by the narrator's say-so
         if (SELF_INTRO_RE.test(s.last.input || '') && !s.scene.concealed.includes('pc')) {
-            for (const id of perceivers(s)) {
-                if (id === 'pc' || s.entities[id].kind !== 'npc' || knows(s, id, PC_NAME_FACT)) continue;
+            // only those he speaks to hear his name: NPCs named in the message, or the only NPC who notices him
+            const listeners = perceivers(s).filter((id) => id !== 'pc' && s.entities[id].kind === 'npc' && s.scene.awareness[id] !== 'unaware');
+            const addressed = listeners.filter((id) => [s.entities[id].name, ...(s.entities[id].descriptors || [])].filter(Boolean).some((n) => new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(s.last.input)));
+            const toAll = GROUP_RE.test(s.last.input) || listeners.length === 1;
+            for (const id of addressed.length ? addressed : toAll ? listeners : []) {
+                if (knows(s, id, PC_NAME_FACT)) continue;
                 emit({ t: 'knowledge.gained', d: { who: id, about: PC_NAME_FACT, stance: 'knows', source: 'told:pc', turn: s.turn, minute: s.clock.minute } });
             }
         }

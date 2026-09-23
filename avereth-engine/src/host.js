@@ -164,12 +164,28 @@ export function processReply(chat, id, content, { seed } = {}) {
     return { changed: true, result };
 }
 
-/** An edited reply keeps the facts it established; its record is re-stamped so it keeps applying. */
-export function onEdited(chat, id) {
+/**
+ * An edited reply keeps the facts it established (typo fixes, rewording): its record is re-stamped so it keeps
+ * applying. To retcon, the player edits in a new report block (`<avereth>{...}</avereth>`, `{}` = no facts): the
+ * reply is then re-validated against the state before it and its events are replaced. Later messages were validated
+ * against the old facts; events that no longer apply are skipped by foldChat.
+ * @returns {{changed: boolean, text?: boolean}} text = the visible message text changed (host re-renders it)
+ */
+export function onEdited(chat, id, content) {
     const msg = chat[id];
     const r = rec(msg);
-    if (!msg || msg.is_user || !r) return false;
+    if (!msg || msg.is_user || !r) return { changed: false };
+    if (content && !r.system_answer && extractReport(msg.mes).report !== null && hasCampaign(chat) && !r.events?.some((e) => e.t === 'campaign.started')) {
+        const { state } = foldChat(chat, id);
+        const result = narratorReply(state, content, msg.mes, { msg: id });
+        msg.mes = result.clean;
+        setRec(msg, {
+            v: RECORD_VERSION, events: result.events, text_hash: hash32(msg.mes), corrections: result.corrections,
+            accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, retcon: true,
+        });
+        return { changed: true, text: true };
+    }
     r.text_hash = hash32(msg.mes);
     setRec(msg, r);
-    return true;
+    return { changed: true };
 }

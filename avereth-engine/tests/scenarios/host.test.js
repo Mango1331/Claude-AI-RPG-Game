@@ -106,12 +106,28 @@ test('deleting messages removes their facts; an edited reply keeps its facts', (
     assert.ok(foldChat(chat).state.entities['npc.mara']);
     chat.at(-1).mes = 'Warm light, and a tired innkeeper.';
     assert.ok(!foldChat(chat).state.entities['npc.mara'], 'text changed: not applied until re-stamped');
-    onEdited(chat, chat.length - 1);
+    assert.deepEqual(onEdited(chat, chat.length - 1, content), { changed: true });
     assert.ok(foldChat(chat).state.entities['npc.mara'], 'MESSAGE_EDITED keeps the established facts');
     chat.splice(chat.length - 2, 2);
     const { state, errors } = foldChat(chat);
     assert.ok(!state.entities['npc.mara']);
     assert.deepEqual(errors, []);
+});
+
+test('retcon: an edited reply with a new report block replaces its facts; {} drops them', () => {
+    const chat = newChat();
+    play(chat, 'I enter the inn.', 'Warm light.\n<avereth>{"new":[{"ref":"innkeeper","name":"Mara","kind":"npc","desc":["innkeeper"]}]}</avereth>');
+    const id = chat.length - 1;
+    chat[id].mes = 'Warm light. A cook named Oda nods.\n<avereth>{"new":[{"ref":"cook","name":"Oda","kind":"npc","desc":["cook"]}]}</avereth>';
+    assert.deepEqual(onEdited(chat, id, content), { changed: true, text: true });
+    assert.equal(chat[id].mes, 'Warm light. A cook named Oda nods.', 'report stripped again');
+    let st = foldChat(chat).state;
+    assert.ok(st.entities['npc.oda'] && !st.entities['npc.mara']);
+    chat[id].mes = 'Warm light.\n<avereth>{}</avereth>';
+    onEdited(chat, id, content);
+    st = foldChat(chat).state;
+    assert.ok(!st.entities['npc.oda'] && !st.entities['npc.mara'], '{} retcons the facts away');
+    assert.equal(chat[id].extra.avereth.retcon, true);
 });
 
 test('# commands are answered by the engine without an LLM call, once', () => {

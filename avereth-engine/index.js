@@ -122,7 +122,16 @@ async function onMessageReceived(messageId) {
 async function onMessageEdited(messageId) {
     if (!settings().enabled) return;
     const c = ctx();
-    if (onEdited(c.chat, Number(messageId))) await c.saveChat();
+    try {
+        const r = onEdited(c.chat, Number(messageId), content);
+        if (!r.changed) return;
+        if (r.text) c.updateMessageBlock(Number(messageId), c.chat[messageId]);
+        await c.saveChat();
+        renderDebug();
+    } catch (err) {
+        console.error('[Avereth] edit processing failed', err);
+        toastr.error(`Avereth Engine: ${err.message}`);
+    }
 }
 
 // ------------------------------------------------------------------------------------------ settings UI

@@ -25,8 +25,20 @@ export function characterCombatant(state, id, content, side) {
             temperament: e.card?.temperament || s.generated?.temperament || null,
             sapient: true,
         },
-        current: { hp: s.hp, mp: s.mp, sta: s.sta, band: null, cover: 'none', effects: [], defeated: false, escaped: false, surrendered: false },
+        current: { hp: s.hp, mp: s.mp, sta: s.sta, ammo: ammoOf(s, content), band: null, cover: 'none', effects: [], defeated: false, escaped: false, surrendered: false },
     };
+}
+
+/** Carried ammunition (from the sheet's inventory): every archer, PC or NPC, shoots only what it carries. */
+function ammoOf(sheet, content) {
+    const out = {};
+    for (const [item, qty] of Object.entries(sheet.inventory || {})) if (content.items.get(item)?.slot === 'ammo') out[item] = qty;
+    return out;
+}
+
+/** Opponents are on different sides of the hostile line (future allies/summons stay on Alaric's side). */
+export function isOpponent(a, b) {
+    return a.id !== b.id && (a.side === 'hostile') !== (b.side === 'hostile');
 }
 
 export function creatureCombatant(state, id) {
@@ -187,12 +199,9 @@ function rangeReaches(listedBand, targetBand) {
     return bandIndex(targetBand) <= bandIndex(listedBand);
 }
 
-function pcAmmoCount(state, item) {
-    return state.entities.pc.sheet.inventory[item] || 0;
-}
-
 // ------------------------------------------------------------------------------------------ attack resolution
 function resolveStrike(ctx, attacker, target, attack, opts) {
+    const shared = opts.shared; // area attack: one Hit roll and one Crit roll shared by all targets (Core #12)
     const { dice, content } = ctx;
     const rec = { target: target.id, rolls: [] };
     // HIT (Core #10)
@@ -206,14 +215,15 @@ function resolveStrike(ctx, attacker, target, attack, opts) {
     for (const e of effectsOf(target, 'incoming_hit_penalty')) mods.push([-e.pp, e.name || 'defensive effect']);
     if (target.current.cover === 'partial') mods.push([content.rules.hit.partial_cover_pp, 'Partial Cover']);
     const chance = clamp(num(base + mods.reduce((a, m) => a + m[0], 0)), content.rules.hit.clamp_min, content.rules.hit.clamp_max);
-    const hitRoll = dice.d100(`hit ${attacker.id}->${target.id}`);
+    const hitRoll = shared ? (shared.hit ??= dice.d100(`hit ${attacker.id} (area)`)) : dice.d100(`hit ${attacker.id}->${target.id}`);
     rec.hit = { base, mods: mods.map(([v, why]) => ({ v, why })), chance, roll: hitRoll, success: hitRoll <= chance };
+    if (shared) rec.shared = true;
     if (!rec.hit.success) return rec;
     // CRIT (Core #11): Character Crit model only; Ambush Opening Action +25pp
     rec.crit = { chance: 0, roll: null, success: false };
     if (attacker.model === 'character') {
         const critChance = num(attacker.fixed.crit + (opts.ambush ? content.rules.crit.ambush_bonus_pp : 0));
-        const critRoll = dice.d100(`crit ${attacker.id}->${target.id}`);
+        const critRoll = shared ? (shared.crit ??= dice.d100(`crit ${attacker.id} (area)`)) : dice.d100(`crit ${attacker.id}->${target.id}`);
         rec.crit = { chance: critChance, roll: critRoll, success: critRoll <= critChance, ambush_bonus: opts.ambush ? content.rules.crit.ambush_bonus_pp : 0 };
     }
     // DAMAGE (Core #11 central order)
@@ -226,7 +236,7 @@ function resolveStrike(ctx, attacker, target, attack, opts) {
     const defense = (magical ? target.fixed.mdef : target.fixed.def) + tempDefense(target, magical);
     const postDef = num(Math.max(power - defense, power * content.rules.damage.defense_floor_share));
     steps.push(`${magical ? 'MDEF' : 'DEF'} ${defense}: max(${power}-${defense}, ${power}×0.10) = ${postDef}`);
-    const variance = dice.variance(`variance ${attacker.id}->${target.id}`);
+    const variance = dice.variance(`variance ${attacker.id}->${target.id}`); // variance is per target
     let dmg = num(postDef * variance);
     steps.push(`×${variance} variance = ${dmg}`);
     if (rec.crit.success) { dmg = num(dmg * content.rules.crit.multiplier); steps.push(`×${content.rules.crit.multiplier} Crit = ${dmg}`); }
@@ -299,6 +309,9 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         if (!rangeReaches(skill.range.band, band)) {
             return { illegal: `${target.name} is at ${bandBefore}; ${skill.name} reaches ${skill.range.band} at most and no declared movement brings it into range` };
         }
+        const isArea = skill.effects.some((e) => e.kind === 'area');
+        const areaTargets = isArea ? Object.values(enc.combatants).filter((c) => isOpponent(actor, c) && alive(c) && !c.current.surrendered && distance(enc, actorId, c.id) === 'ENGAGED').map((c) => c.id) : [];
+        if (isArea && !areaTargets.length) return { illegal: `${skill.name} needs a valid target ENGAGED with ${actor.name}` };
         // resources (after legality of target/range, before RNG): Cost + Ammo committed together (Core #21)
         const costMult = prof.cost;
         const cost = skill.cost ? roundHalfUp(skill.cost.amount * costMult) : 0;
@@ -307,7 +320,7 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         }
         let ammoUsed = 0;
         if (skill.ammo && actor.fixed.weapon_family === 'bow') {
-            const have = actorId === 'pc' ? pcAmmoCount(state, skill.ammo.item) : (actor.current.ammo ?? 99);
+            const have = actor.current.ammo?.[skill.ammo.item] || 0;
             if (have < skill.ammo.qty) return { illegal: `${actor.name} has ${have} arrow(s); ${skill.name} needs ${skill.ammo.qty}` };
             ammoUsed = skill.ammo.qty;
         }
@@ -322,7 +335,10 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
             actor.current[skill.cost.resource] -= cost;
             record.cost.after = actor.current[skill.cost.resource];
         }
-        if (ammoUsed) record.ammo = { item: skill.ammo.item, used: ammoUsed };
+        if (ammoUsed) {
+            record.ammo = { item: skill.ammo.item, used: ammoUsed };
+            actor.current.ammo[skill.ammo.item] -= ammoUsed;
+        }
         // prepared-attack buffs (Feint / Focus Aim) are consumed by this attack
         let buffHit = 0;
         let buffPowerPct = 0;
@@ -339,20 +355,11 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         record.raw = raw;
         record.raw_text = rawPowerText(skill, actor.fixed.stats, { atk: actor.fixed.atk, matk: actor.fixed.matk });
         const opts = { raw, profHit: prof.hit_pp, profPower: prof.power, buffHit, buffPowerPct, ambush: !!extra.opening };
-        const targets = skill.effects.some((e) => e.kind === 'area')
-            ? Object.values(enc.combatants).filter((c) => c.side !== actor.side && c.side !== 'pc' && alive(c) && c.current.band === 'ENGAGED').map((c) => c.id)
-            : [targetId];
         record.strikes = [];
-        if (targets.length > 1 || skill.effects.some((e) => e.kind === 'area')) {
-            // AoE: one shared Hit roll and one shared Crit roll, per-target damage (Core #12)
-            const first = resolveStrike(ctx, actor, enc.combatants[targets[0]], skill.attack, opts);
-            record.strikes.push(first);
-            for (const tid of targets.slice(1)) {
-                if (!first.hit.success) { record.strikes.push({ target: tid, hit: first.hit, shared: true }); continue; }
-                const t = enc.combatants[tid];
-                const r = resolveSharedAoe(ctx, actor, t, skill.attack, opts, first);
-                record.strikes.push(r);
-            }
+        if (isArea) {
+            // area: shared Hit and Crit rolls, but the full per-target pipeline (DEF, variance, Endure, Barrier, HP)
+            const shared = {};
+            for (const tid of areaTargets) record.strikes.push(resolveStrike(ctx, actor, enc.combatants[tid], skill.attack, { ...opts, shared }));
         } else {
             for (let i = 0; i < (skill.strikes || 1); i++) {
                 if (!alive(target)) break; // stop resolving strikes once the target is dead (Core #12)
@@ -383,25 +390,6 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
     record.strikes = [resolveStrike(ctx, actor, target, attack, { raw: actor.fixed.atk })];
     for (const s of record.strikes) if (s.defeated) onDefeat(ctx, enc.combatants[s.target], record);
     return record;
-}
-
-function resolveSharedAoe(ctx, attacker, target, attack, opts, first) {
-    const { dice, content } = ctx;
-    const magical = attack.damage_type === 'magical';
-    let power = opts.raw;
-    if (opts.profPower && opts.profPower !== 1) power = num(power * opts.profPower);
-    if (opts.buffPowerPct) power = num(power * (1 + opts.buffPowerPct / 100));
-    const defense = (magical ? target.fixed.mdef : target.fixed.def) + tempDefense(target, magical);
-    const postDef = num(Math.max(power - defense, power * content.rules.damage.defense_floor_share));
-    const variance = dice.variance(`variance ${attacker.id}->${target.id}`);
-    let dmg = num(postDef * variance);
-    if (first.crit && first.crit.success) dmg = num(dmg * content.rules.crit.multiplier);
-    const final = Math.max(1, roundHalfUp(dmg));
-    const hpBefore = target.current.hp;
-    target.current.hp = Math.max(0, hpBefore - final);
-    const rec = { target: target.id, shared: true, hit: first.hit, crit: first.crit, power, defense, post_def: postDef, variance, final, absorbed: 0, hp_before: hpBefore, hp_after: target.current.hp };
-    if (target.current.hp === 0) { target.current.defeated = true; rec.defeated = true; }
-    return rec;
 }
 
 function addEffect(c, eff) {
@@ -549,13 +537,15 @@ export function npcDecide(ctx, npcId) {
     return { kind: 'close_and_attack' };
 }
 
+const hasAmmo = (me, s) => (me.current.ammo?.[s.ammo.item] || 0) >= s.ammo.qty;
+
 function npcReach(ctx, me) {
     if (me.model !== 'character') return 'ENGAGED';
     let best = 'ENGAGED';
     for (const sid of Object.keys(me.fixed.actions)) {
         const s = ctx.content.skills.get(sid);
         if (s && s.attack && s.range && !s.range.extra_band && bandIndex(s.range.band) > bandIndex(best)) {
-            if (s.ammo && me.fixed.weapon_family !== 'bow') continue;
+            if (s.ammo && (me.fixed.weapon_family !== 'bow' || !hasAmmo(me, s))) continue;
             best = s.range.band;
         }
     }
@@ -569,7 +559,7 @@ function npcAttackSkill(ctx, me) {
     for (const sid of Object.keys(me.fixed.actions)) {
         const s = ctx.content.skills.get(sid);
         if (!s || !s.attack) continue;
-        if (s.ammo && me.fixed.weapon_family !== 'bow') continue;
+        if (s.ammo && (me.fixed.weapon_family !== 'bow' || !hasAmmo(me, s))) continue;
         const cost = s.cost ? s.cost.amount : 0;
         if (s.cost && me.current[s.cost.resource] < cost) continue;
         const reach = s.range.extra_band ? 'SHORT' : s.range.band;
@@ -666,6 +656,8 @@ export function runCombat(ctx, pcAction) {
     const { enc } = ctx;
     const records = [];
     const push = (r) => { enc.log.push(r); records.push(r); };
+    // snapshots saved before carried ammunition was tracked per combatant: take it from the sheet once
+    for (const c of Object.values(enc.combatants)) if (c.model === 'character' && !c.current.ammo) c.current.ammo = ammoOf(ctx.state?.entities[c.id]?.sheet || {}, ctx.content);
     let pcActed = false;
     // Opening Action (true Ambush) before Round 1
     if (enc.round === 0 && enc.ambush && !enc.opening) {

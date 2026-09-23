@@ -8,11 +8,12 @@ import { awardXp, questXp } from './progression.js';
 import { applyCoin } from './economy.js';
 import { deriveCharacter } from './derived.js';
 import { checkChance } from './checks.js';
+import { authorization } from './intent.js';
 import { clamp, normText, slug, uniq } from './util.js';
 
 const TAG_RE = /<avereth>\s*([\s\S]*?)\s*<\/avereth>/gi;
 const ENGINE_OWNED = new Set(['hp', 'mp', 'sta', 'xp', 'level', 'stats', 'skills', 'damage', 'roll', 'rolls', 'init', 'initiative', 'atk', 'def', 'mdef', 'rank', 'defeat_xp']);
-export const REPORT_KEYS = new Set(['time', 'place', 'location', 'new', 'enter', 'leave', 'position', 'aware', 'concealed', 'facts', 'learn', 'believe', 'attitude', 'memory', 'items', 'coin', 'quests', 'threads', 'combat', 'intent', 'check', 'recover']);
+export const REPORT_KEYS = new Set(['time', 'place', 'location', 'forced_by', 'new', 'enter', 'leave', 'position', 'aware', 'concealed', 'facts', 'learn', 'believe', 'attitude', 'memory', 'items', 'coin', 'quests', 'threads', 'combat', 'intent', 'check', 'recover']);
 const AWARE = new Set(['unaware', 'suspicious', 'aware']);
 const INTENTS = new Set(['attack', 'flee', 'surrender', 'parley', 'hold', 'take_cover']);
 const BANDS = new Set(['ENGAGED', 'SHORT', 'MEDIUM', 'LONG']);
@@ -58,10 +59,15 @@ export function makeResolver(state, newRefs, content = null) {
         if (['pc', 'alaric', 'player', 'you', 'the player'].includes(r)) return 'pc';
         const pc = state.entities.pc;
         if (pc && normText(pc.name) === r) return 'pc';
+        // names identify globally; generic descriptors ("guard", "trapper") only within the current scene/location,
+        // so the gate guard of another city is never merged with this one
+        const bare = r.replace(/^the /, '');
         const scored = [];
         for (const e of Object.values(state.entities)) {
-            const names = [e.name, ...(e.descriptors || [])].filter(Boolean).map(normText);
-            if (names.includes(r) || names.includes(r.replace(/^the /, ''))) scored.push([e, state.scene.present.includes(e.id) ? 2 : 1]);
+            const here = state.scene.present.includes(e.id);
+            const local = here || (e.location && e.location === state.scene.location);
+            if (e.name && normText(e.name) === bare) scored.push([e, here ? 3 : 2]);
+            else if (local && (e.descriptors || []).map(normText).includes(bare)) scored.push([e, here ? 2 : 1]);
         }
         scored.sort((a, b) => b[1] - a[1]);
         if (scored.length) return scored[0][0].id;
@@ -114,12 +120,24 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
     const inCombat = (id) => !!(state.encounter && state.encounter.combatants[id]);
     const created = new Map(); // entities introduced by this very report (usable by its other keys)
     const ent = (id) => (id ? state.entities[id] || created.get(id) : undefined);
+    // PLAYER OWNERSHIP: voluntary changes to Alaric need the player's own decision in the current message
+    const auth = authorization(state.last?.input || '');
+    const owner = (what) => `PLAYER OWNERSHIP: ${what} needs the player's own decision in the current message`;
+    // the one who forces it must be present, or be introduced by this very report (a pickpocket, an arresting patrol)
+    const introduced = new Set(arr(report.new).flatMap((n) => [n?.ref, n?.name]).filter(Boolean).map(normText));
+    const forcedBy = (x) => {
+        if (!x) return null;
+        if (introduced.has(normText(x))) return String(x);
+        const id = resolve(x);
+        return id && id !== 'pc' && (state.scene.present.includes(id) || present.has(id)) ? id : null;
+    };
 
     // time
     if (report.time !== undefined) {
         const t = Number(report.time);
         if (!Number.isInteger(t) || t < 0 || t > 10080) reject({ time: report.time }, 'time must be whole minutes between 0 and 10080 (7 days)');
         else if (t > 0 && state.mode === 'creation') reject({ time: report.time }, 'story time is frozen during Character Creation');
+        else if (t > 120 && !auth.rest && !state.encounter) reject({ time: report.time }, owner('skipping more than two hours (rest, travel, waiting)'));
         else if (t > 0) { events.push({ t: 'time.advanced', d: { minutes: t, why: 'narration' } }); accepted.push(`time +${t} min`); }
     }
     // travel / place
@@ -127,6 +145,7 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         const loc = content.locations.get(report.location) || locationByName(content, report.location)
             || Object.values(state.entities).find((e) => e.kind === 'location' && normText(e.name) === normText(report.location));
         if (state.encounter) reject({ location: report.location }, 'cannot travel while combat is ACTIVE');
+        else if (!auth.travel && !forcedBy(report.forced_by)) reject({ location: report.location }, owner('travelling to another location'));
         else if (loc) {
             events.push({ t: 'scene.moved', d: { location: loc.id, place: report.place ? String(report.place).slice(0, 120) : loc.name, reset_present: loc.id !== state.scene.location } });
             if (loc.id !== state.scene.location) present.clear();
@@ -140,6 +159,8 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
             present.add('pc');
             accepted.push(`new location ${report.location}`);
         }
+    } else if (report.place && !auth.move && !forcedBy(report.forced_by) && !state.encounter) {
+        reject({ place: report.place }, owner('moving Alaric to another spot'));
     } else if (report.place) {
         events.push({ t: 'scene.moved', d: { place: String(report.place).slice(0, 120) } });
         accepted.push(`place: ${report.place}`);
@@ -204,9 +225,14 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         if (!id || !present.has(id) || id === 'pc') { reject(a, 'aware: unknown or absent NPC'); continue; }
         if (!AWARE.has(a.level)) { reject(a, 'aware.level must be unaware|suspicious|aware'); continue; }
         if (inCombat(id) && a.level !== 'aware') { reject(a, 'a combatant in an ACTIVE encounter is aware'); continue; }
+        // Core #24: unawareness (which enables an Ambush) must rest on established facts or declared stealth; an NPC
+        // that already noticed Alaric does not become unaware again by narration
+        const before = state.scene.awareness[id];
+        if (a.level === 'unaware' && before && before !== 'unaware' && !auth.conceal) { reject(a, `${id} already noticed ${pcName} (${before}); only declared stealth can make it lose track`); continue; }
         events.push({ t: 'scene.awareness', d: { id, level: a.level } }); accepted.push(`${id} ${a.level} of ${pcName}`);
     }
     if (report.concealed !== undefined) {
+        // "unseen" is the others' perception and only limits what they know; it grants no mechanical advantage
         const ids = uniq(arr(report.concealed).map(resolve).filter(Boolean));
         events.push({ t: 'scene.concealed', d: { ids } }); accepted.push(`concealed: ${ids.join(', ') || 'none'}`);
     }
@@ -218,6 +244,7 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         const oRef = typeof f.o === 'string' ? resolve(f.o) : null;
         const o = oRef && state.entities[oRef] ? oRef : String(f.o).slice(0, 200);
         const hard = FUNCTIONAL.has(p) ? truth(state, s, p).find((x) => x.hard && normText(x.o) !== normText(o)) : null;
+        if (hard && hard.o === 'dead' && ent(s) && ent(s).kind !== 'location') { reject(f, `${s} is dead; revival needs an explicit resurrection mechanic (Core #14)`); continue; }
         if (hard && !f.because) { reject(f, `contradicts established fact "${hard.s} ${hard.p} ${hard.o}" (since turn ${hard.since.turn}); a change needs an explicit cause ("because")`); continue; }
         if (p === 'status' && inCombat(s)) { reject(f, `${s} is a combatant; its condition is resolved by the engine`); continue; }
         const evs = setFactEvents(state, { id: mkId('f'), s, p, o, visibility: f.vis === 'secret' ? 'secret' : 'public', importance: clamp(Number(f.imp || 5), 1, 10) / 10, hard: !!f.hard, source: { ...src, because: f.because ? String(f.because).slice(0, 160) : null } });
@@ -247,16 +274,26 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         if (fact && fact.visibility === 'secret' && how !== 'told' && how !== 'witnessed') {
             reject(k, `"${s} ${p}" is a secret; it can only be learned by being told or witnessing it`); continue;
         }
-        if (!fact && FUNCTIONAL.has(p) && current.length) {
-            reject(k, `contradicts world truth "${current[0].s} ${current[0].p} ${current[0].o}"; report a mistaken or false idea with "believe"`); continue;
-        }
-        if (!fact) {
+        const from = k.from ? resolve(k.from) || String(k.from).slice(0, 60) : null;
+        const source = from ? `told:${from}` : how;
+        if (!fact && how === 'witnessed') {
+            // seeing it happen in the scene is the narration establishing it: only a present witness can do that
+            if (!present.has(who)) { reject(k, `${who} is not present and cannot have witnessed it`); continue; }
+            if (FUNCTIONAL.has(p) && current.length) { reject(k, `contradicts world truth "${current[0].s} ${current[0].p} ${current[0].o}"; change the world with "facts" (hard facts need "because")`); continue; }
             const evs = setFactEvents(state, { id: mkId('f'), s, p, o, visibility: 'public', importance: 0.4, source: src });
             events.push(...evs);
             fact = evs[evs.length - 1].d.fact;
         }
-        const from = k.from ? resolve(k.from) || String(k.from).slice(0, 60) : null;
-        events.push({ t: 'knowledge.gained', d: { who, about: fact.id, stance: how === 'inferred' || how === 'rumor' ? 'suspects' : 'knows', source: from ? `told:${from}` : how, ...at } });
+        if (!fact) {
+            // hearsay, rumour and inference never create world truth: they create a claim whose truth the world decides
+            const truthVal = FUNCTIONAL.has(p) && current.length ? 'false' : 'unknown';
+            const cid = mkId('c');
+            events.push({ t: 'claim.created', d: { claim: { id: cid, s, p, o, truth: truthVal, source: src } } });
+            events.push({ t: 'knowledge.gained', d: { who, about: cid, stance: how === 'told' || how === 'public' ? 'believes' : 'suspects', source, ...at } });
+            accepted.push(`${who} heard ${s} ${p} ${o} (claim, truth ${truthVal})`);
+            continue;
+        }
+        events.push({ t: 'knowledge.gained', d: { who, about: fact.id, stance: how === 'inferred' || how === 'rumor' ? 'suspects' : 'knows', source, ...at } });
         accepted.push(`${who} learns ${s} ${p} ${o}`);
     }
     for (const b of arr(report.believe)) {
@@ -275,6 +312,7 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         accepted.push(`${who} believes ${s} ${p} ${o}`);
     }
     // relationships
+    const relNow = new Map(); // several changes to one relation in the same report add up
     for (const a of arr(report.attitude)) {
         const who = resolve(a && a.who);
         const toward = resolve((a && a.toward) || 'pc');
@@ -283,18 +321,23 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         if (!Number.isFinite(delta)) { reject(a, 'attitude.delta must be a number'); continue; }
         delta = clamp(Math.round(delta), -50, 50);
         const rid = `rel.${who}.attitude.${toward}`;
-        const cur = state.relations[rid];
+        const cur = relNow.get(rid) || state.relations[rid];
         const why = String(a.why || '').slice(0, 160);
+        relNow.set(rid, { value: clamp((cur?.value ?? 0) + delta, -100, 100) });
         if (!cur) events.push({ t: 'relation.set', d: { rel: { id: rid, a: who, type: 'attitude', b: toward, value: clamp(delta, -100, 100), since: at, history: [{ ...at, delta, why }] } } });
         else events.push({ t: 'relation.changed', d: { id: rid, value: clamp(cur.value + delta, -100, 100), delta, why, ...at } });
         accepted.push(`${who} attitude toward ${toward} ${delta >= 0 ? '+' : ''}${delta}`);
     }
-    // episodic memory (witnesses = everyone present and alive; who SAW Alaric depends on concealment)
-    const witnesses = uniq([...present].filter((id) => ent(id) && ent(id).status !== 'dead'));
+    // episodic memory. Being present is not perceiving: witnesses are the participants ("who"), those the narrator
+    // names as having seen/heard it ("witnesses"), or with "public" everyone present who is not unaware of the scene.
+    const alivePresent = (id) => present.has(id) && ent(id) && ent(id).status !== 'dead';
     const concealed = report.concealed !== undefined ? arr(report.concealed).map(resolve).includes('pc') : state.scene.concealed.includes('pc');
     for (const m of arr(report.memory)) {
         if (!m || !m.text) { reject(m, 'memory needs text'); continue; }
         const who = uniq(arr(m.who).map(resolve).filter(Boolean));
+        const named = arr(m.witnesses).map(resolve).filter(Boolean);
+        const publicly = m.public === true ? [...present].filter((id) => (state.scene.awareness[id] || 'aware') !== 'unaware') : [];
+        const witnesses = uniq(['pc', ...who, ...named, ...publicly].filter(alivePresent));
         const text = String(m.text).slice(0, 300).replace(new RegExp(`\\b${escapeRe(pcName)}\\b`, 'g'), '{pc}');
         events.push({ t: 'memory.recorded', d: { memory: { id: mkId('m'), ...at, text, who, witnesses, seen: concealed ? ['pc'] : witnesses.slice(), location: state.scene.location, place: state.scene.place, importance: clamp(Math.round(Number(m.imp) || 5), 1, 10), kind: 'narrated', msg } } });
         accepted.push(`memory: ${String(m.text).slice(0, 60)}`);
@@ -308,6 +351,8 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         if (!to && !from) { reject(it, 'items need "to" (receiver) and/or "from" (giver)'); continue; }
         if (inCombat('pc') && (to === 'pc' || from === 'pc')) { reject(it, 'item changes during ACTIVE combat are resolved by the engine'); continue; }
         const itemId = content.items.has(it.item) ? it.item : findItemId(content, it.item);
+        const taker = forcedBy(it.taken_by);
+        if (from === 'pc' && !auth.give && !auth.pay && !taker) { reject(it, owner(`handing over ${it.item}`) + ' (a theft or seizure names the taker in "taken_by")'); continue; }
         if (from === 'pc') {
             const have = state.entities.pc.sheet.inventory[itemId] || 0;
             if (have < qty) { reject(it, `${pcName} does not carry ${qty} × ${it.item} (has ${have})`); continue; }
@@ -322,6 +367,7 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         const who = resolve((c && c.who) || 'pc');
         const cp = Number(c && c.cp);
         if (!who || !state.entities[who]?.sheet) { reject(c, 'coin: unknown character (or no tracked purse)'); continue; }
+        if (who === 'pc' && cp < 0 && !auth.pay && !forcedBy(c.taken_by)) { reject(c, owner('spending coin') + ' (a theft names the taker in "taken_by")'); continue; }
         const res = applyCoin(state.entities[who].sheet.coin_cp, cp);
         if (!res.ok) { reject(c, res.error); continue; }
         events.push({ t: 'coin.changed', d: { id: who, value: res.value, delta: cp, why: String(c.why || '').slice(0, 120) } });
@@ -358,6 +404,7 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         const status = ['offered', 'active', 'completed', 'failed'].includes(q.status) ? q.status : 'offered';
         if (!cur && (status === 'completed' || status === 'failed')) { reject(q, 'cannot finish a quest that was never offered or accepted'); continue; }
         if (cur && ['completed', 'failed'].includes(cur.status) && cur.status !== status) { reject(q, `quest already ${cur.status}`); continue; }
+        if (status === 'active' && cur?.status !== 'active' && !auth.accept) { reject(q, owner(`accepting the quest "${q.title}"`) + ' (report it as "offered")'); continue; }
         const giver = q.giver ? resolve(q.giver) || String(q.giver).slice(0, 60) : cur?.giver || null;
         const level = Number(q.level);
         const quest = {
@@ -388,14 +435,15 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         accepted.push(`thread ${status}: ${th.text}`);
     }
     // combat commitment by an NPC (PENDING; resolved by the engine on the next turn) and NPC intents
-    if (report.combat) {
-        const by = resolve(report.combat.by);
-        const target = resolve(report.combat.target || 'pc') || 'pc';
-        if (state.mode === 'creation') reject(report.combat, 'no combat during Character Creation');
-        else if (!by || by === 'pc' || !ent(by)) reject(report.combat, 'combat.by must be a present NPC or creature');
-        else if (!present.has(by)) reject(report.combat, `${by} is not present`);
-        else if (statusOf(state, by) === 'dead') reject(report.combat, `${by} is dead`);
-        else if (inCombat(by)) reject(report.combat, `${by} is already in the encounter`);
+    // only an actual commitment makes a combatant: attitude or kinship alone never does
+    for (const cb of arr(report.combat)) {
+        const by = resolve(cb && cb.by);
+        const target = resolve((cb && cb.target) || 'pc') || 'pc';
+        if (state.mode === 'creation') reject(cb, 'no combat during Character Creation');
+        else if (!by || by === 'pc' || !ent(by)) reject(cb, 'combat.by must be a present NPC or creature');
+        else if (!present.has(by)) reject(cb, `${by} is not present`);
+        else if (statusOf(state, by) === 'dead') reject(cb, `${by} is dead`);
+        else if (inCombat(by)) reject(cb, `${by} is already in the encounter`);
         else { events.push({ t: 'combat.pending', d: { by, target, ...at } }); accepted.push(`combat committed by ${by} (pending)`); }
     }
     for (const i of arr(report.intent)) {

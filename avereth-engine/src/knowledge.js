@@ -84,7 +84,7 @@ export function knowledgeOf(state, who, subjects = null) {
         if (subjects && !subjects.includes(prop.s) && !subjects.includes(prop.o)) continue;
         rows.push({
             about, s: prop.s, p: prop.p, o: prop.o, stance: k.stance, source: k.source, turn: k.turn,
-            minute: k.minute, is_fact: !!f, true: f ? true : c.truth === 'true', outdated: !!(f && f.until),
+            minute: k.minute, is_fact: !!f, true: f ? true : c.truth === 'true' ? true : c.truth === 'false' ? false : null /* null = unknown */, outdated: !!(f && f.until),
             visibility: prop.visibility || 'public',
         });
     }

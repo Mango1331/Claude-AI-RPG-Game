@@ -183,7 +183,7 @@ function effectText(x) {
 
 function combat(state) {
     const enc = state.encounter;
-    if (!enc) return `[SYSTEM // COMBAT]\nCombat: INACTIVE${state.pending_combat ? ` (PENDING: ${entityLabel(state, state.pending_combat.by)} committed an attack; resolved on the next story message)` : ''}. A dangerous scene stays INACTIVE until a hostile commitment.`;
+    if (!enc) return `[SYSTEM // COMBAT]\nCombat: INACTIVE${state.pending_combat?.length ? ` (PENDING: ${state.pending_combat.map((p) => entityLabel(state, p.by)).join(', ')} committed an attack; resolved on the next story message)` : ''}. A dangerous scene stays INACTIVE until a hostile commitment.`;
     const lines = [`[SYSTEM // COMBAT] ${enc.id} | ACTIVE | Round ${enc.round} | Current actor: ${entityLabel(state, enc.current)}`, `Turn order: ${enc.order.map((id) => entityLabel(state, id)).join(' > ')}`];
     for (const c of Object.values(enc.combatants)) {
         const f = c.fixed;

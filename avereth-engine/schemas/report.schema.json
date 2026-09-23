@@ -16,6 +16,10 @@
     "location": {
       "type": "string"
     },
+    "forced_by": {
+      "type": "string",
+      "minLength": 1
+    },
     "new": {
       "type": "array",
       "items": {
@@ -231,6 +235,21 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 10
+          },
+          "who": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "witnesses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "public": {
+            "type": "boolean"
           }
         }
       }
@@ -246,6 +265,9 @@
           "qty": {
             "type": "integer",
             "minimum": 1
+          },
+          "taken_by": {
+            "type": "string"
           }
         }
       }
@@ -260,6 +282,9 @@
         "properties": {
           "cp": {
             "type": "integer"
+          },
+          "taken_by": {
+            "type": "string"
           }
         }
       }
@@ -313,9 +338,38 @@
       }
     },
     "combat": {
-      "type": "object",
-      "required": [
-        "by"
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "by"
+          ],
+          "properties": {
+            "by": {
+              "type": "string"
+            },
+            "target": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "by"
+            ],
+            "properties": {
+              "by": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              }
+            }
+          }
+        }
       ]
     },
     "intent": {

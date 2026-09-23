@@ -50,7 +50,7 @@
 | `memories` | `{id, turn, minute, text (mit {pc}), who[], about[], witnesses[], seen[], location, place, importance 1–10, kind}` |
 | `relations` | `rel.<a>.attitude.<b> = {value −100..100, history[{turn, minute, delta, why}]}` |
 | `quests`, `threads` | `{id, title, status, giver, rec_level, qtype, notes, history}` bzw. `{id, text, kind, status}` |
-| `pending_combat`, `pending_intents` | Festlegung eines NPC-Angriffs (Core #23 PENDING) und angekündigte NPC-Aktionen |
+| `pending_combat`, `pending_intents` | Liste der NPC-Angriffsfestlegungen `[{by, target, turn, minute}]` (Core #23 PENDING) und angekündigte NPC-Aktionen |
 | `last` | Audit des letzten Zuges: `{outcome, situations, rejected, check, input}` |
 
 **Charakterbogen** (`entities[id].sheet`, PC und menschliche NPCs):
@@ -109,16 +109,16 @@ Beispiel (Trapper-Szene aus Testrun-v1):
 | Schlüssel | Validierung (Auszug) |
 |---|---|
 | `time` | 0–10.080 Minuten; nicht während der Charaktererstellung |
-| `location` / `place` | bekannter Ort oder neuer Orts-Eintrag; nicht im Kampf; Szenenwechsel leert die Anwesenden |
-| `new` | `npc` erhält eine Vorlage (Deskriptoren → `npc_templates.json`); `creature` braucht einen Körperbau-Anker; bekannte Figuren werden nicht verdoppelt |
-| `enter` / `leave` / `position` / `aware` / `concealed` | nur Anwesende; Tote kommen nicht zurück; Kämpfer-Positionen gehören der Engine |
-| `facts` | funktionale Prädikate ersetzen den alten Wert (Historie bleibt); harte Fakten nur mit `because`; Geheimnisse kennt das Subjekt selbst |
-| `learn` / `believe` | Lernen widerspricht der Wahrheit nie; Geheimnisse nur durch `told`/`witnessed`; falsche Ideen als `believe` |
-| `attitude` | ±50 pro Änderung, gesamt −100..100, mit Grund |
-| `memory` | Zeugen = Anwesende; wer Alaric dabei sah, hängt von der Tarnung ab; sein Name wird zu `{pc}` |
-| `items` / `coin` / `recover` | Besitz geprüft; Kupfer ganzzahlig und nie negativ; Erholung nie im Kampf, nie über Maximum |
-| `quests` / `threads` | Statusübergänge; Quest-XP bei Angebot gesperrt, einmalig beim Abschluss |
-| `combat` / `intent` | NPC-Festlegung wird PENDING und im nächsten Zug von der Engine aufgelöst |
+| `location` / `place` / `forced_by` | bekannter Ort oder neuer Orts-Eintrag; `location` nicht im Kampf; Szenenwechsel leert die Anwesenden; Alaric bewegt sich nur mit Reise-/Bewegungsabsicht in der Nachricht oder `forced_by` (anwesender NPC) |
+| `new` | `npc` erhält eine Vorlage (Deskriptoren → `npc_templates.json`); `creature` braucht einen Körperbau-Anker; bekannte Figuren werden nicht verdoppelt (Name global, Deskriptor nur am aktuellen Ort) |
+| `enter` / `leave` / `position` / `aware` / `concealed` | nur Anwesende; Tote kommen nicht zurück; Kämpfer-Positionen gehören der Engine; ein NPC, der Alaric bemerkt hat, wird nur durch erklärte Heimlichkeit wieder `unaware` |
+| `facts` | funktionale Prädikate ersetzen den alten Wert (Historie bleibt); harte Fakten nur mit `because`; keine Wiederbelebung; Geheimnisse kennt das Subjekt selbst |
+| `learn` / `believe` | Lernen widerspricht der Wahrheit nie; neuer Fakt nur durch `witnessed` eines Anwesenden; Gehörtes ohne Fakt wird ein Claim (Wahrheit `unknown`/`false`); Geheimnisse nur durch `told`/`witnessed`; falsche Ideen als `believe` |
+| `attitude` | ±50 pro Änderung, gesamt −100..100, mit Grund; mehrere Änderungen in einem Report addieren sich |
+| `memory` | Zeugen = Beteiligte (`who`) + genannte `witnesses` + bei `public` alle Anwesenden, die nicht `unaware` sind; wer Alaric dabei sah, hängt von der Tarnung ab; sein Name wird zu `{pc}` |
+| `items` / `coin` / `recover` | Besitz geprüft; Abgabe durch Alaric nur mit Geben-/Zahlabsicht oder `taken_by` (anwesender NPC); Kupfer ganzzahlig und nie negativ; Erholung nie im Kampf, nie über Maximum |
+| `quests` / `threads` | Statusübergänge; `active` nur mit Annahme durch den Spieler; Quest-XP bei Angebot gesperrt, einmalig beim Abschluss |
+| `combat` / `intent` | `combat` als Objekt oder Liste: jede NPC-Festlegung wird PENDING und im nächsten Zug aufgelöst; nur Festgelegte kämpfen (keine automatische Teilnahme per Haltung/Spezies) |
 | `check` | nur mit dem CHECK DIE des Zuges; die Engine rechnet nach und behält ihr Ergebnis |
 | engine-owned | `hp`, `mp`, `sta`, `xp`, `level`, `stats`, `skills`, `damage`, `roll(s)`, `init`, `atk`, `def`, `mdef`, `rank`, `defeat_xp`: immer abgelehnt |
 

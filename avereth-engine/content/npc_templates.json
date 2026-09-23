@@ -79,7 +79,7 @@
     },
     {
       "id": "adventurer", "label": "Adventurer (by Base Class)",
-      "descriptors": ["adventurer", "mercenary", "sellsword"],
+      "descriptors": ["adventurer", "mercenary", "sellsword", "archer", "bowman", "ranger", "swordsman"],
       "class": null, "level": {"default": 3, "min": 1, "max": 14},
       "priority_by_class": {"warrior": ["STR", "VIT", "AGI"], "mage": ["INT", "WIL", "PER"], "guardian": ["VIT", "WIL", "STR"], "duelist": ["STR", "AGI", "PER"], "ranger": ["AGI", "PER", "VIT"]},
       "gear_from_starter_kit": true,

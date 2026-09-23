@@ -5,7 +5,7 @@ Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extens
 - Keine Abhängigkeiten, kein Server, keine Datenbank.
 - Läuft im Browser (SillyTavern) und in Node (Tests).
 
-**Warum diese Architektur:** [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md). **Befunde aus Testrun-v1:** [docs/TESTRUN_V1.md](docs/TESTRUN_V1.md). **Gesamtbericht:** [ABSCHLUSSBERICHT.md](ABSCHLUSSBERICHT.md).
+**Warum diese Architektur:** [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md). **Befunde aus Testrun-v1:** [docs/TESTRUN_V1.md](docs/TESTRUN_V1.md). **Gesamtbericht:** [ABSCHLUSSBERICHT.md](ABSCHLUSSBERICHT.md). **Externe Review und Antwort:** [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md).
 
 ## Was die Engine pro Zug tut
 
@@ -22,6 +22,7 @@ Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extens
 5. **Nach der Antwort** prüft die Engine den Report:
    - neue Figuren, Orte, Fakten, Wissen, Erinnerungen, Beziehungen, Quests, Items und Coin werden übernommen;
    - Ungültiges wird mit Grund abgelehnt;
+   - freiwillige Änderungen an Alaric (reisen, bezahlen, abgeben, Quest annehmen) nur, wenn deine Nachricht sie gewählt hat; Diebstahl oder Festnahme muss einen anwesenden NPC nennen;
    - der Report wird aus der Anzeige entfernt;
    - Zahlen in der Antwort, die der Engine widersprechen (z. B. „Init 8“), werden im nächsten Zug korrigiert.
 
@@ -29,6 +30,7 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
 - **Swipe:** Jede Alternative hat eigene Fakten.
 - **Regenerieren:** gleiche Würfel; es wird nie neu gewürfelt.
 - **Löschen:** nimmt die Fakten der gelöschten Nachrichten mit.
+- **Bearbeiten:** Eine editierte Antwort behält ihre Fakten. **Retcon:** einen neuen `<avereth>{…}</avereth>`-Block in die Antwort schreiben; sie wird neu geprüft (`{}` verwirft ihre Fakten).
 
 ## Installation
 
@@ -38,7 +40,7 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
    - Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v3.txt`;
    - Begrüßung = First Message v0.4 (unverändert; die Zeile `Location: … outside <City>, <Realm>` legt den Startort fest).
 4. **Die Avereth-WorldInfo v1.23 deaktivieren.** Die Engine ersetzt sie; beides zusammen doppelt Regeln. Der Megumin-NPC-Patch ist optional.
-5. **Neuen Chat starten.** Die Kampagne entsteht an der Begrüßung. Ein Chat, der ohne Engine begonnen wurde, bleibt unberührt.
+5. **Neuen Chat starten.** Die Kampagne entsteht an der Begrüßung. Ein Chat, der ohne Engine begonnen wurde, bleibt unberührt. **Zuerst einen wegwerfbaren Testchat spielen** (Report-Format, Streaming und Swipes mit deinem Modell prüfen), erst dann die Langzeitkampagne.
 
 **Einstellungen** (Extensions → Avereth Engine):
 
@@ -81,7 +83,7 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 ## Für Entwickler
 
 ```
-npm test                               # 68 Tests: Unit, Szenarien, SillyTavern-Verhalten, Testrun-v1-Regression
+npm test                               # 82 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Testrun-v1-Regression
 node tools/testrun_compare.js          # Token-Vergleich mit Testrun-v1
 node tools/browser_smoke.mjs           # optional: index.js in echtem Chromium mit gemocktem SillyTavern-Kontext (braucht Playwright)
 python3 tools/migrate_content.py       # Content aus dem Paket v1.24 neu erzeugen (aus dem Repo-Wurzelverzeichnis)

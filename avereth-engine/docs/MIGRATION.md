@@ -52,6 +52,10 @@ Alle Inhalte wurden übernommen; ersetzt wurde nur die Technik.
 | CHECK DIE: ein vorab gezogener W100 pro Erzählzug | `engine.js` | Core #7/#9: echter Wurf ohne zweiten LLM-Aufruf |
 | Report-Schlüssel `recover` (Ruhe/Heilung außerhalb des Kampfs) | `delta.js`, `narrator.json` | Core #14 überlässt die Menge dem Narrator; ohne Schlüssel gäbe es keine Erholung |
 | Quest-XP gesperrt beim Angebot | `delta.js` | Core #25 Quest-XP; verhindert nachträgliches Aufblähen |
+| Basic Attack nach Waffenfamilie, wenn die Waffe nicht zur Klasse passt (Ranger-Trapper mit Handaxt → Warrior Basic Attack) | `npcgen.js`, `npc_templates.json → weapon_family_basic` | Avereth bindet Skills nicht absolut an Klassen; ohne Regel hätte ein NPC mit „fremder“ Waffe keinen Angriff |
+| Klasse eines Abenteurer-NPCs aus genannter Waffe oder Klassenwort („archer“/„bowman“ = Ranger); Köcher-Inhalt aus dem Starter-Kit | `engine.js → materialise`, `npc_templates.json` | Ohne Ableitung war jeder Abenteurer Warrior; NPC-Pfeile sind endlich wie Alarics |
+| Spieler-Hoheit über freiwillige PC-Änderungen im Report (`authorization`, `taken_by`, `forced_by`) | `intent.js`, `delta.js` | setzt den CD-Abschnitt PLAYER OWNERSHIP als Validierung um (externe Review) |
+| Wiederbelebung nur über eine explizite Mechanik | `delta.js` | Core #14 kennt keine Wiederbelebung per Erzählung |
 
 ## Bestehende Kampagnen
 
@@ -66,4 +70,4 @@ Kurzfassung; Details im [README](../README.md).
 1. Den Ordner `avereth-engine/` als Third-Party-Extension installieren (Ordnername beliebig).
 2. In der Charakterkarte die Beschreibung durch `content/narrator/Avereth_Narrator_Contract_v3.txt` ersetzen. Die Begrüßung bleibt die First Message v0.4.
 3. Die Avereth-WorldInfo v1.23 **deaktivieren**. Der Megumin-NPC-Patch ist optional und mit Engine nicht nötig.
-4. Neuen Chat starten. Die Engine legt die Kampagne an der Begrüßung an.
+4. Neuen Chat starten. Die Engine legt die Kampagne an der Begrüßung an. **Empfehlung:** zuerst einen wegwerfbaren Testchat spielen (Report-Format, Streaming, Swipes mit dem eigenen Modell prüfen), erst danach die Langzeitkampagne.

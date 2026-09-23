@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent, Game } from '../helpers.js';
-import { parseIntent } from '../../src/intent.js';
+import { authorization, parseIntent } from '../../src/intent.js';
 
 const content = await loadContent();
 
@@ -79,4 +79,25 @@ test('declared stealth is resolved by an opposed check (or automatically with no
     assert.equal(t.outcome.kind, 'check');
     assert.match(t.outcome.check.label, /Stealth \(AGI 6\) vs Detection .* \(PER/);
     assert.equal(g.state.scene.concealed.includes('pc'), t.outcome.check.success);
+});
+
+test('player authorization: voluntary PC changes are licensed by what the player declares or says, not by questions', () => {
+    const yes = (t, k) => assert.equal(authorization(t)[k], true, `${k}: ${t}`);
+    const no = (t, k) => assert.equal(authorization(t)[k], false, `${k}: ${t}`);
+    yes('I take the coast road.', 'travel');
+    yes('I take the coast road.', 'move');
+    no('I look at the notice board.', 'travel');
+    no('Where does the north road lead?', 'travel');
+    yes('"Here, thirty copper for the room."', 'pay');
+    yes('I buy a loaf of bread.', 'pay');
+    no('Would you sell me a room?', 'pay');
+    no('How much is a room?', 'pay');
+    yes('"Deal, I\'ll do it."', 'accept');
+    yes('I take the caravan job.', 'accept');
+    no('What does the job pay?', 'accept');
+    yes('I hand her the letter.', 'give');
+    no('I read the letter.', 'give');
+    yes('I duck behind the barrels.', 'conceal');
+    no('I watch the barrels.', 'conceal');
+    yes('I rest by the fire until dawn.', 'rest');
 });

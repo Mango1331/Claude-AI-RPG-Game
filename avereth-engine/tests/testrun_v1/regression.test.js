@@ -30,7 +30,7 @@ function msg(m) {
 }
 
 /** Replays the Testrun chat; returns per-turn engine blocks. */
-function replay() {
+function replay({ reports = true } = {}) {
     const chat = [msg(M[0])];
     processReply(chat, 0, content, { seed: 20260923 });
     const turns = [];
@@ -38,7 +38,7 @@ function replay() {
         chat.push(msg(M[i]));
         const gen = prepareGeneration(chat, content, { type: 'normal' });
         const reply = msg(M[i + 1]);
-        reply.mes = `${M[i + 1].mes}\n<avereth>${JSON.stringify(REPORTS[i + 1] || {})}</avereth>`;
+        reply.mes = reports ? `${M[i + 1].mes}\n<avereth>${JSON.stringify(REPORTS[i + 1] || {})}</avereth>` : M[i + 1].mes;
         reply.swipes = [reply.mes];
         chat.push(reply);
         const res = processReply(chat, chat.length - 1, content);
@@ -124,4 +124,17 @@ test('context economy: the engine block is a fraction of the Testrun\'s Avereth-
     }
     const combat = turns[4].context.tokens;
     assert.ok(combat < fx.avereth_owned_tokens.combat_turn / 4, `combat turn engine block ${combat} vs WI+CD share ${fx.avereth_owned_tokens.combat_turn}`);
+});
+
+test('the raw Testrun replies without any fact report: the engine degrades safely and asks for the report', () => {
+    const raw = replay({ reports: false }).turns;
+    for (const t of raw) assert.deepEqual(validateState(t.state, content), [], t.input);
+    assert.match(raw[0].context.text, /Init 9/);
+    assert.equal(raw[1].state.entities.pc.sheet.inventory.standard_arrow, 20, 'creation mechanics need no report');
+    for (const t of raw.slice(1)) assert.ok(t.reply.corrections.some((c) => /no valid <avereth> fact report/.test(c)));
+    // the trapper was never reported, so the shot has no target: nothing is invented, no arrow is spent
+    const outcome = raw[4].record.events.find((e) => e.t === 'outcome.recorded').d.outcome;
+    assert.notEqual(outcome.kind, 'combat');
+    assert.equal(raw[4].state.entities.pc.sheet.inventory.standard_arrow, 20);
+    assert.equal(Object.keys(raw[4].state.entities).filter((id) => id.startsWith('npc.')).length, 0);
 });

@@ -133,9 +133,9 @@ Kampagnendaten stehen pro Nachricht in `message.extra.avereth`. Der Zustand ist 
 | SillyTavern-Anbindung | `index.js`, `manifest.json`, `style.css` |
 | Content | 10 JSON-Dateien und der Narrator Contract v3; 5 davon reproduzierbar per Migration erzeugt |
 | Schemas | 11 JSON-Schemas |
-| Tests | 10 Testdateien plus Fixture |
+| Tests | 11 Testdateien plus Fixture |
 | Werkzeuge | 3 (Migration, Token-Vergleich, Browser-Smoke-Test) |
-| Doku | 7 Dokumente: README, Abschlussbericht, 5 Fachdokumente |
+| Doku | 8 Dokumente: README, Abschlussbericht, 6 Fachdokumente (inkl. Review-Antwort) |
 
 ## 8. Migration
 
@@ -152,7 +152,9 @@ Details: [docs/MIGRATION.md](docs/MIGRATION.md).
   - NPC-Verhalten;
   - CHECK DIE;
   - `recover`-Schlüssel;
-  - Quest-XP-Sperre.
+  - Quest-XP-Sperre;
+  - Basic Attack nach Waffenfamilie und Klassenableitung für Abenteurer-NPCs;
+  - Spieler-Hoheit im Report (`authorization`, `taken_by`, `forced_by`) und keine Wiederbelebung per Report.
 
   Diese Punkte bitte als Autor bestätigen.
 - Laufende Kampagnen ohne Engine werden nicht automatisch konvertiert (neuer Chat nötig). Das v1.24-Paket bleibt als Legacy-Modus.
@@ -165,7 +167,7 @@ Details: [docs/MIGRATION.md](docs/MIGRATION.md).
 
 ## 9. Tests
 
-`npm test`: **68 Tests, alle bestanden.** Dazu kommt `node tools/browser_smoke.mjs`: echtes Chromium mit gemocktem SillyTavern-Kontext, bestanden.
+`npm test`: **82 Tests, alle bestanden.** Dazu kommt `node tools/browser_smoke.mjs`: echtes Chromium mit gemocktem SillyTavern-Kontext, bestanden.
 
 | Gruppe | Inhalt |
 |---|---|
@@ -175,7 +177,8 @@ Details: [docs/MIGRATION.md](docs/MIGRATION.md).
 | Report | tolerantes JSON; engine-owned Werte; Figuren; Geheimnisse; harte Fakten; Coin, Items, Quests; CHECK DIE; Quest-XP; NPC-Festlegung |
 | **Langzeit-Szenarien** | **Wiedersehen nach 200 Zügen** (Mara erinnert Name, Versprechen, Haltung); **Geheimwissen A vs. B** (Brom weiß, Mara nicht, bis es ihr erzählt wird; Alaric nicht); **zerstörte Stadt** (harter Fakt, Ortsstatus, veraltetes NPC-Wissen markiert, Widerspruch abgelehnt); **Beziehungen** über Zeit mit Gründen; **Identität** (unsichtbar → gesehen → Name); **Progression** über 35 echte Kämpfe (XP, Level, Punkte, Replay = Live-Zustand); **große Historie** (12.000 Events; die eine relevante Erinnerung wird gefunden; Fold etwa 30–50 ms) |
 | SillyTavern-Verhalten | Swipes mit eigenen Fakten; veraltete Swipe-Kopien ignoriert; Regenerate mit gleichen Würfeln; Edit und Delete; Befehle ohne LLM; `#system`; Legacy-Chats |
-| **Testrun-v1-Regression** | die echten Eingaben und Antworten: Init 9 plus Drift-Korrektur; keine Fehltreffer-Regeln; kein Kampf beim Spurenlesen; RNG-Würfel; Trapper L2/HP 90 aus Vorlage; DefeatXP 20 gesperrt; kein falscher Ambush; ein Pfeil pro Schuss; STA 88; Snapshot erhalten; „has never seen him“; Tokenbudget |
+| **Review-Fälle** (externe Review) | unautorisierte Reise/Zahlung/Abgabe/Quest-Annahme abgelehnt, Diebstahl/Festnahme mit Täter erlaubt; nur festgelegte NPCs kämpfen, mehrere Festlegungen; Zeugen ≠ Anwesende, `public`; Hörensagen → Claim; keine Wiederbelebung; Aufmerksamkeit nur durch Heimlichkeit verloren; NPC-AoE trifft Alaric; AoE-Ziel 2 mit Barrier; NPC-Bogenschütze mit endlichen Pfeilen; Wache anderer Stadt ≠ alte Wache; Selbstvorstellung nur an Angesprochene; Retcon per Edit; Zustimmungserkennung |
+| **Testrun-v1-Regression** | die echten Eingaben und Antworten: Init 9 plus Drift-Korrektur; keine Fehltreffer-Regeln; kein Kampf beim Spurenlesen; RNG-Würfel; Trapper L2/HP 90 aus Vorlage; DefeatXP 20 gesperrt; kein falscher Ambush; ein Pfeil pro Schuss; STA 88; Snapshot erhalten; „has never seen him“; Tokenbudget; **Replay ganz ohne Report** (Mechanik korrekt, nichts erfunden, Korrektur angefordert) |
 
 **Nicht getestet:** ein Live-Lauf mit GLM in deinem SillyTavern. Dafür gab es aus dieser Umgebung keinen Zugang. Beim ersten echten Lauf bitte prüfen:
 - Hängt GLM-5.3-Flash den Report zuverlässig an?
@@ -195,7 +198,8 @@ Details: [docs/MIGRATION.md](docs/MIGRATION.md).
   - Statuseffekte mit Mehr-Zug-Dauer;
   - Loot-Instanzen und Läden.
 - **Welt:** Fraktionsruf als Relationen, NPC-Tagesabläufe, Fristen und Threads mit Weltuhr.
-- **Komfort:** UI-Panel (Charakterbogen, Journal), Kampagnen-Export und -Import, ein Retcon-Befehl.
+- **Komfort:** UI-Panel (Charakterbogen, Journal), Kampagnen-Export und -Import. (Retcon geht bereits per Edit mit neuem Report-Block.)
+- **Aus der externen Review, bewusst später:** NPC↔NPC-Geometrie für Verbündete und Beschwörungen; „Pending Check“ statt sichtbarem CHECK DIE; Snapshots für sehr lange Logs.
 
 ## Unabhängiger finaler Review
 
@@ -238,3 +242,19 @@ Die Prüfung erfolgte gegen die im Auftrag genannten Kriterien. Die Befunde stam
 - Die Report-Qualität hängt vom Modell ab; fehlt der Report, gehen nur neue Erzählfakten verloren.
 - Absichtserkennung per Regeln: Ungewöhnliche Formulierungen werden als Erzählung behandelt, nie als falscher Kampf.
 - Beim Streaming ist der Report kurz sichtbar, bis er entfernt wird.
+
+## Nachtrag: externe Architektur-Review
+
+Die ChatGPT-Review wurde Punkt für Punkt per Probe gegen den Code geprüft und entschieden (A übernommen / B beibehalten / C dritte Lösung). Details, Belege und die unabhängige Nachprüfung: [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md).
+
+- **Übernommen (A):** nur festgelegte NPCs kämpfen; AoE mit voller Schadenskette pro Ziel; feindliche AoE trifft Alaric; endliche NPC-Munition; Deskriptoren nur lokal; adversariale Tests; Testchat vor der Langzeitkampagne.
+- **Dritte Lösung (C):**
+  - Spieler-Hoheit per `authorization` plus `taken_by`/`forced_by`;
+  - quellenbasiertes `learn` (Gehörtes wird Claim);
+  - explizite Zeugen (`witnesses`/`public`);
+  - Retcon per Edit mit neuem Report-Block;
+  - Aufmerksamkeit fällt nur durch Heimlichkeit zurück;
+  - keine Wiederbelebung per Report.
+- **Beibehalten (B):** NPC↔NPC-Distanz (als Grenze dokumentiert), CHECK DIE (nächste Stufe „Pending Check“ dokumentiert), keine Snapshots (gemessen: 1.000 Züge ≈ 20 ms Fold).
+- **Kosten:** ein neuer Report-Schlüssel (`forced_by`), etwa +70 Token pro Zug, keine neue Kontextsektion.
+

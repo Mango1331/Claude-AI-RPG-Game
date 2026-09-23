@@ -50,9 +50,12 @@ test('learning never rewrites world truth; secrets spread only by telling or wit
     assert.ok(knowledgeOf(g.state, brom).some((k) => k.o === 'the Black Hand'), 'Brom knows his own secret');
     const r1 = g.reply({ learn: [{ who: 'Mara', s: 'Brom', p: 'member_of', o: 'the Black Hand', how: 'rumor' }] });
     assert.match(reasons(r1), /secret/);
-    const r2 = g.reply({ learn: [{ who: 'Mara', s: 'Tidecross', p: 'status', o: 'peaceful', how: 'told' }] });
-    assert.match(reasons(r2), /contradicts world truth/);
-    assert.equal(statusOf(g.state, 'loc.tidecross'), 'besieged');
+    g.reply({ learn: [{ who: 'Mara', s: 'Tidecross', p: 'status', o: 'peaceful', how: 'told' }] });
+    assert.equal(statusOf(g.state, 'loc.tidecross'), 'besieged', 'being told never changes the world');
+    assert.equal(knowledgeOf(g.state, 'npc.mara').find((k) => k.o === 'peaceful').true, false, 'she now holds a false belief');
+    g.reply({ learn: [{ who: 'Mara', s: 'King Aldren', p: 'status', o: 'dead', how: 'told' }] });
+    assert.deepEqual(truth(g.state, 'King Aldren', 'status'), [], 'hearsay about an unknown matter creates no world fact');
+    assert.equal(knowledgeOf(g.state, 'npc.mara').find((k) => k.o === 'dead').stance, 'believes');
     g.reply({ believe: [{ who: 'Mara', s: 'Tidecross', p: 'status', o: 'peaceful' }] });
     const belief = knowledgeOf(g.state, 'npc.mara').find((k) => k.stance === 'believes');
     assert.equal(belief.true, false, 'a belief contradicting the world is recorded as false');
@@ -73,10 +76,12 @@ test('hard facts (destroyed, dead) change only with a stated cause', () => {
 
 test('coin, items and quests stay consistent', () => {
     const g = ready();
+    g.input('"Here is your coin for the room, and take these arrows."');
     const r = g.reply({ coin: [{ who: 'pc', cp: -60, why: 'room' }], items: [{ from: 'pc', to: 'innkeeper', item: 'standard_arrow', qty: 25 }], quests: [{ title: 'Lost Ring', status: 'completed' }] });
     assert.match(reasons(r), /insufficient coin/);
     assert.match(reasons(r), /does not carry 25/);
     assert.match(reasons(r), /never offered/);
+    g.input('"Fine, I pay the toll. And I\'ll take the job."');
     g.reply({ coin: [{ cp: -10, why: 'toll' }], quests: [{ title: 'Lost Ring', status: 'active', giver: 'Mara' }] });
     assert.equal(g.state.entities.pc.sheet.coin_cp, 40);
     g.reply({ quests: [{ title: 'Lost Ring', status: 'failed' }] });
@@ -103,17 +108,18 @@ test('combat commitment by an NPC becomes PENDING and is resolved by the engine 
     const g = ready();
     g.reply({ new: [{ ref: 'wolf', kind: 'creature', species: 'wolf', band: 'MEDIUM' }] });
     g.reply({ combat: { by: 'wolf' } });
-    assert.equal(g.state.pending_combat.by, 'mon.wolf');
+    assert.deepEqual(g.state.pending_combat.map((p) => p.by), ['mon.wolf']);
     const t = g.input('I shout at it to go away');
     assert.equal(t.outcome.kind, 'combat');
     assert.equal(g.state.mode, 'combat');
-    assert.equal(g.state.pending_combat, null);
+    assert.deepEqual(g.state.pending_combat, []);
     assert.ok(t.outcome.records.some((r) => r.actor === 'mon.wolf'), 'the wolf acted on its turn');
 });
 
 test('Quest XP (Core #25): locked when offered, awarded once on completion through the Level-up loop', () => {
     const g = ready();
     g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'offered', giver: 'innkeeper', level: 3, type: 'minor' }] });
+    g.input('"Deal, I\'ll do it."');
     g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'active', level: 9, type: 'major' }] });
     const q = g.state.quests['quest.rats_in_the_cellar'];
     assert.deepEqual([q.rec_level, q.qtype], [3, 'minor'], 'rewards cannot be inflated after the offer');

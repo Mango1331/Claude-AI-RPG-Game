@@ -1,5 +1,5 @@
 // Optional real-browser smoke test of the SillyTavern binding (index.js): serves this folder, loads index.js in
-// Chromium with a minimal mock of SillyTavern.getContext(), and plays greeting -> creation -> reply -> #command.
+// Chromium with a minimal mock of SillyTavern.getContext(), and plays greeting -> creation -> reply -> retcon edit -> #command.
 // Requires Playwright (not a project dependency). Usage: node tools/browser_smoke.mjs
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -43,6 +43,9 @@ result.step2 = /CLASS SELECTED: RANGER/.test(window.__prompt) && /Init 9/.test(w
 chat.push({ is_user: false, is_system: false, mes: 'Step 2 shown.\\n<avereth>{}</avereth>', swipe_id: 0, swipes: ['x'], swipe_info: [{ extra: {} }], extra: {} });
 await handlers.mr(2);
 result.stripped = chat[2].mes === 'Step 2 shown.';
+chat[2].mes = 'Step 2 shown, retold.\\n<avereth>{}</avereth>';
+await handlers.me(2);
+result.retcon = chat[2].mes === 'Step 2 shown, retold.' && chat[2].extra.avereth.retcon === true;
 chat.push({ is_user: true, is_system: false, mes: '#status', extra: {} });
 await globalThis.averethInterceptor(chat, 8000, () => { aborted = true; }, 'normal');
 result.command = aborted && /SYSTEM \\/\\/ STATUS/.test((window.__panels || []).join('')) && chat[3].is_system === true;
@@ -76,6 +79,6 @@ const result = await page.evaluate(() => window.__result);
 await browser.close();
 server.close();
 console.log(JSON.stringify({ ...result, errors }, null, 1));
-const ok = result.campaign && result.step2 && result.stripped && result.command && result.settingsUi && !errors.length;
+const ok = result.campaign && result.step2 && result.stripped && result.retcon && result.command && result.settingsUi && !errors.length;
 console.log(ok ? 'BROWSER SMOKE: OK' : 'BROWSER SMOKE: FAILED');
 process.exit(ok ? 0 : 1);

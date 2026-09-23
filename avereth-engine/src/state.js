@@ -34,7 +34,7 @@ export function emptyState() {
         quests: {},
         threads: {},
         last: { outcome: null, rejected: [], check: null, input: null, situations: [] },
-        pending_combat: null,
+        pending_combat: [], // NPC commitments reported by the narrator (Core #23 PENDING), resolved next turn
         pending_intents: {},
     };
 }
@@ -256,10 +256,10 @@ export function applyEvent(state, e) {
             state.threads[d.thread.id] = clone(d.thread);
             break;
         case 'combat.pending':
-            state.pending_combat = clone(d);
+            state.pending_combat = [...(state.pending_combat || []).filter((p) => p.by !== d.by), clone(d)];
             break;
         case 'combat.pending_cleared':
-            state.pending_combat = null;
+            state.pending_combat = d.by ? (state.pending_combat || []).filter((p) => p.by !== d.by) : [];
             break;
         case 'combat.intent':
             if (state.encounter) state.encounter.intents[d.who] = d.intent;

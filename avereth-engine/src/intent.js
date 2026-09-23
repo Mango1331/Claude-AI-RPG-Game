@@ -25,6 +25,10 @@ const FLEE_RE = /\b(?:flee|flees|run\s+away|escape|make\s+a\s+run\s+for\s+it|bol
 const STEALTH_RE = /\b(?:sneak|sneaks|sneaking|creep|creeps|creeping|hide|hides|hiding|stay\s+hidden|move\s+quietly|stalk|stalks|stalking|crouch\s+low)\b/i;
 const PRONOUN_RE = /\b(?:him|her|it|them|the\s+(?:man|woman|creature|beast|animal|thing))\b/i;
 const NEAREST_RE = /\b(?:nearest|closest)\b/i;
+// the player tells targets apart ("at the second one", "the other one", "the left one"): not a pronoun, so the sole
+// valid target is no answer (Testrun 4: "aimed shot at the second one" hit the only combatant). "another one" is an
+// arrow as often as a target, so only "at another one" counts.
+const EXPLICIT_REF_RE = /\b(?:the\s+(?:first|second|third|fourth|fifth|other|left|right)|at\s+another)\s+ones?\b/i;
 const INTERROGATIVE_RE = /^[\s*_"“]*(?:what|how|can|could|would|should|is|are|does|do|did|will|which|why|when|where|who|may|might|shall)\b/i;
 const USE_RE = /\b(?:use|uses|using|cast|casts|casting|activate|activates|perform|performs)\s+(?:my\s+|a\s+|the\s+)?$/i;
 
@@ -88,7 +92,10 @@ export function resolveTarget(text, state, content, { hostileOnly = false } = {}
         return near.length === 1 ? { id: near[0], how: 'nearest' } : { ambiguous: near };
     }
     if (hits.length > 1) return { ambiguous: hits };
-    // pronoun or no target words: the sole valid target (Core #23 sole-hostile default); 2+ -> the player chooses
+    // pronoun or no target words: the sole valid target (Core #23 sole-hostile default); 2+ -> the player chooses.
+    // A target he tells apart but that is not in the fight is his decision, never silently the only combatant.
+    const explicit = String(text).match(EXPLICIT_REF_RE);
+    if (valid.length === 1 && explicit) return { none: true, ref: explicit[0].replace(/^at\s+/i, '') };
     if (valid.length === 1) return { id: valid[0], how: PRONOUN_RE.test(t) ? 'pronoun' : 'sole target' };
     if (valid.length > 1) return { ambiguous: valid };
     return { none: true };
@@ -148,7 +155,7 @@ export function parseIntent(text, state, content) {
         if (!skill) return { kind: 'narrative', flags: { attack_without_class: true } };
         const target = resolveTarget(raw, state, content, { hostileOnly: !!state.encounter });
         if (target.ambiguous) return { kind: 'ambiguous_target', skill: skill.id, candidates: target.ambiguous };
-        if (target.none) return { kind: 'no_target', skill: skill.id };
+        if (target.none) return { kind: 'no_target', skill: skill.id, ...(target.ref ? { ref: target.ref } : {}) };
         return { kind: 'attack', skill: skill.id, target: target.id, target_how: target.how, move };
     }
     if (nonOffensive) {

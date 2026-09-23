@@ -135,3 +135,22 @@ test('a step back with the attack is the Turn\'s one-band move away (Core #12/#2
     assert.equal(parseIntent('I Power Shot the wolf', g.state, content).move, null);
 });
 
+test('a target the player tells apart ("the second one") is never the sole-hostile default: nothing spent, nothing rolled', () => {
+    const g = scene();
+    for (const t of ['I shoot the second one', 'I Power Shot the other one', 'I shoot at another one', 'I aim at the left one and shoot']) {
+        const i = parseIntent(t, g.state, content);
+        assert.equal(i.kind, 'no_target', t);
+        assert.match(i.ref, /^the (?:second|other|left) one$|^another one$/, t);
+    }
+    // pronouns, no target words, "the last one" and a second arrow still take the only valid target
+    for (const t of ['I shoot it', 'I Power Shot', 'I shoot the last one', 'I nock another one and shoot']) assert.equal(parseIntent(t, g.state, content).target, 'mon.wolf', t);
+    // in a running fight (Testrun 4, turn 13): Alaric keeps his Turn, STA and arrows
+    g.input('I Power Shot the wolf');
+    g.reply({});
+    const [sta, arrows] = [g.state.entities.pc.sheet.sta, g.state.entities.pc.sheet.inventory.standard_arrow];
+    g.input('fuck *i curse and jump backwards as i aimed shot at the second one*');
+    const o = g.state.last.outcome;
+    assert.equal(o.notice, 'Alaric\'s attack needs a target: "the second one" is not in the fight (nothing spent, nothing rolled)');
+    assert.deepEqual([o.records.length, g.state.encounter.current, g.state.entities.pc.sheet.sta, g.state.entities.pc.sheet.inventory.standard_arrow], [0, 'pc', sta, arrows]);
+});
+

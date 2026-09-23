@@ -354,10 +354,13 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (hard && hard.o === 'dead' && ent(s) && ent(s).kind !== 'location') { reject(f, `${s} is dead; revival needs an explicit resurrection mechanic (Core #14)`); continue; }
         if (hard && !f.because) { reject(f, `contradicts established fact "${hard.s} ${hard.p} ${hard.o}" (since turn ${hard.since.turn}); a change needs an explicit cause ("because")`); continue; }
         if (p === 'status' && inCombat(s)) { reject(f, `${s} is a combatant; its condition is resolved by the engine`); continue; }
+        if (p === 'status' && s === 'pc' && LIFE_STATUS.has(normText(o))) { reject(f, `${pcName}'s life is engine-owned (0 HP = dead, Core #14)`); continue; }
         const evs = setFactEvents(state, { id: mkId('f'), s, p, o, visibility: f.vis === 'secret' ? 'secret' : 'public', importance: clamp(Number(f.imp || 5), 1, 10) / 10, hard: !!f.hard, source: { ...src, because: f.because ? String(f.because).slice(0, 160) : null } });
         events.push(...evs);
         const fact = evs.find((e) => e.t === 'fact.asserted')?.d.fact;
-        if (fact && p === 'status' && ent(s) && ent(s).kind !== 'location') {
+        // a person's or creature's entity status is physical (alive/dead); any other "status" stays an ordinary fact
+        // (Testrun 4: "registered Guild member, Rank F / Novice" replaced Alaric's "alive")
+        if (fact && p === 'status' && ent(s) && ent(s).kind !== 'location' && LIFE_STATUS.has(normText(o))) {
             events.push({ t: 'entity.status', d: { id: s, status: normText(o) } });
         }
         // a character knows secrets about itself
@@ -654,6 +657,8 @@ function sameValue(p, a, b) {
     const core = (v) => (p === 'name' ? normText(v).replace(/\b(?:with )?(?:no|without) (?:family name|family|surname|last name)\b/g, ' ').replace(/\s+/g, ' ').trim() : normText(v));
     return core(a) === core(b);
 }
+
+const LIFE_STATUS = new Set(['alive', 'dead']);
 
 const MONEY_RE = /^(?:\d+ )?(?:(?:copper|silver|gold)(?: (?:coins?|pieces?|crowns?|marks?|bits?))?|coins?|money|cash)$/;
 

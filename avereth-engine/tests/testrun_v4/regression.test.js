@@ -139,6 +139,11 @@ test('"Alaric, no family name" is his name: the clerk knows it instead of holdin
     assert.doesNotMatch(T(7).context.text, /actually FALSE/);
 });
 
+test('turn 6: "registered Guild member, Rank F / Novice" is a fact, not Alaric\'s entity status', () => {
+    assert.ok(T(6).reply.accepted.includes('fact pc status registered Guild member, Rank F / Novice'));
+    assert.equal(T(6).state.entities.pc.status, 'alive');
+});
+
 test('an item the content pack does not know keeps the narrator\'s name', () => {
     assert.equal(T(6).panel.split('\n')[0], '`ITEM +1 Guild registration tag → 1 carried · registration completed`');
     assert.match(T(7).context.text, /Carried: Small Pouch, Guild registration tag \|/);

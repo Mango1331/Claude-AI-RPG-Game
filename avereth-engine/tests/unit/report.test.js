@@ -220,3 +220,17 @@ test('a person the reply names with a capitalised name is adopted, a descriptor 
     assert.deepEqual(r.rejected.map((x) => x.reason), ['aware: unknown person (introduce new people via "new")'], 'a lower-case word stays unknown');
 });
 
+test('a "status" fact sets the entity status of a person only to alive/dead; Alaric\'s life stays the engine\'s', () => {
+    const g = ready();
+    g.reply({ new: [{ ref: 'guard', kind: 'npc', desc: ['guard'], band: 'SHORT' }] });
+    // Testrun 4: "registered Guild member, Rank F / Novice" replaced Alaric's "alive"
+    const r = g.reply({ facts: [{ s: 'Alaric', p: 'status', o: 'registered Guild member, Rank F / Novice' }, { s: 'guard', p: 'status', o: 'off duty' }] });
+    assert.deepEqual(r.rejected, []);
+    assert.deepEqual([g.state.entities.pc.status, g.state.entities['npc.guard'].status], ['alive', 'alive']);
+    assert.ok(Object.values(g.state.facts).some((f) => f.s === 'pc' && f.p === 'status' && f.o === 'registered Guild member, Rank F / Novice'), 'kept as an ordinary fact');
+    assert.match(reasons(g.reply({ facts: [{ s: 'Alaric', p: 'status', o: 'dead' }] })), /Alaric's life is engine-owned/);
+    assert.equal(g.state.entities.pc.status, 'alive');
+    g.reply({ facts: [{ s: 'guard', p: 'status', o: 'dead', because: 'a crossbow bolt from the wall' }] });
+    assert.equal(g.state.entities['npc.guard'].status, 'dead');
+});
+

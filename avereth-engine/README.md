@@ -69,7 +69,7 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 
 - Handlungen normal schreiben: `*I aim the bow and Power Shot at him*`, `I sneak along the hedge`, `"My name is Alaric."`.
 - Kampf beginnt nur bei einem erklärten Angriff (Core #23). Zielen, Spurenlesen oder „Bogen bereit“ starten keinen Kampf.
-- **Ein** gültiges Ziel wird automatisch gewählt. Bei mehreren fragt das Spiel nach, ohne Kosten oder Würfe. „the nearest one“ nimmt im Kampf den nächsten Gegner nach Entfernung; stehen zwei gleich nah, fragt das Spiel.
+- **Ein** gültiges Ziel wird automatisch gewählt. Bei mehreren fragt das Spiel nach, ohne Kosten oder Würfe. Unterscheidest du Ziele („the second one“, „the other one“) und passt keines, wählt die Engine nicht für dich. „the nearest one“ nimmt im Kampf den nächsten Gegner nach Entfernung; stehen zwei gleich nah, fragt das Spiel.
 - Warten im Kampf: `I wait` / `I hold my position`.
 - Bewegung plus Angriff (Core #12/#24: ein Band plus eine Hauptaktion): `I step back and shoot`, `I kite backwards and Power Shot`. Alaric schießt und tritt danach ein Band zurück.
 - **Im Kampf redet niemand** (Kampfstille). Nur wer aufgibt oder verhandelt, darf einen kurzen Satz sagen. Hält sich die Erzählung nicht daran, korrigiert der nächste Engine-Block.
@@ -106,7 +106,7 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 ## Für Entwickler
 
 ```
-npm test                               # 140 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Regression der Testruns 1–4
+npm test                               # 143 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Regression der Testruns 1–4
 node tools/testrun_compare.js          # Token-Vergleich mit Testrun-v1
 node tools/browser_smoke.mjs           # optional: index.js in echtem Chromium mit gemocktem SillyTavern-Kontext (braucht Playwright)
 node tools/lorebook_audit.mjs          # welche Lorebook-Einträge in den Testruns 2–4 feuern (World-Info-Nachbau, gegen Testrun 4 bestätigt)

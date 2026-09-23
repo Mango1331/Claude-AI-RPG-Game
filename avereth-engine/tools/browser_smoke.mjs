@@ -27,7 +27,8 @@ const ctx = {
   chat, extensionSettings: {}, saveSettingsDebounced() {}, saveChat: async () => { window.__saved = (window.__saved || 0) + 1; },
   // like SillyTavern: updateMessageBlock on a message that is not rendered yet throws inside its reasoning UI
   updateMessageBlock(id) { const el = document.querySelector('#chat [mesid="' + id + '"]'); el.getAttribute('mesid'); window.__rerendered = (window.__rerendered || []).concat(id); },
-  setExtensionPrompt(key, value) { window.__prompt = value; },
+  setExtensionPrompt(key, value, position, depth, scan) { (window.__ext ||= {})[key] = { value, position, scan }; if (key === 'avereth_engine') window.__prompt = value; },
+  characters: [{ name: 'Avereth', data: { extensions: { world: '' } } }], characterId: 0,
   addOneMessage(m) { window.__panels = (window.__panels || []).concat(m.mes); },
   getCurrentChatId: () => 'smoke', eventTypes: { MESSAGE_RECEIVED: 'mr', MESSAGE_EDITED: 'me', CHAT_CHANGED: 'cc', MESSAGE_DELETED: 'md', MESSAGE_SWIPED: 'ms' },
   eventSource: { on(t, f) { handlers[t] = f; } },
@@ -61,7 +62,12 @@ const turn = async (input, reply) => {
 };
 await turn('Aimed Shot + Power Shot', 'Creation complete.\\n<avereth>{}</avereth>');
 await turn('I look around.', 'A boar.\\n<avereth>{"new":[{"ref":"boar","kind":"creature","species":"boar","band":"MEDIUM"}]}</avereth>');
+// Lore Bridge: realm and city as World Info scan text, never inserted (position NONE); engine lore until a lorebook is linked
+const bridge = window.__ext.avereth_lore_keys;
+result.loreBridge = bridge && bridge.value === 'Solmere\\nTidecross' && bridge.position === -1 && bridge.scan === true && /\\nLORE:\\n/.test(window.__prompt);
+ctx.characters[0].data.extensions.world = 'Avereth World Lore v0.11'; // linked as Character Lore: descriptive lore comes from it
 await turn('I Power Shot the boar', 'The arrow flies.\\n<avereth>{}</avereth>');
+result.loreBridge = result.loreBridge && !/\\nLORE:\\n/.test(window.__prompt) && window.__ext.avereth_lore_keys.value === 'Solmere\\nTidecross';
 const last = chat.at(-1);
 result.combatShown = /^\`COMBAT START\`\\n\`Initiative: /.test(last.extra.display_text || '') && last.mes === 'The arrow flies.' && /\`HP: /.test(last.extra.display_text);
 chat.push({ is_user: true, is_system: false, mes: '#status', extra: {} });
@@ -100,6 +106,6 @@ const result = await page.evaluate(() => window.__result);
 await browser.close();
 server.close();
 console.log(JSON.stringify({ ...result, errors }, null, 1));
-const ok = result.campaign && result.step2 && result.stripped && result.retcon && result.combatShown && result.command && result.commitShown && result.settingsUi && !errors.length;
+const ok = result.campaign && result.step2 && result.stripped && result.retcon && result.combatShown && result.command && result.commitShown && result.loreBridge && result.settingsUi && !errors.length;
 console.log(ok ? 'BROWSER SMOKE: OK' : 'BROWSER SMOKE: FAILED');
 process.exit(ok ? 0 : 1);

@@ -97,7 +97,7 @@ test('coin, items, rest, quests and Quest XP a reply changed read like a game lo
     const r2 = g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'completed' }], recover: [{ sta: 5, why: 'short rest' }] }, 'Mara pays.');
     const lines = turnPanel(b2, content, null, r2).split('\n');
     // 10 × 10 × 1.5 = 150 Quest XP: Level 1 -> 2 with 50 carried over
-    assert.deepEqual(lines, ['`QUEST COMPLETED — Rats in the Cellar (Mara)`', '`+150 XP → XP 50/200 · Quest XP: Rats in the Cellar (Level 10, minor)`', '`LEVEL UP → Level 2 (+5 free Stat Points)`']);
+    assert.deepEqual(lines, ['`QUEST COMPLETED — Rats in the Cellar (Mara)`', '`+150 XP → XP 50/200 · Quest XP: Rats in the Cellar (XP basis Level 10, minor)`', '`LEVEL UP → Level 2 (+5 free Stat Points)`']);
     assert.equal(turnPanel(b2, content, null, { ...r2, events: [] }), '', 'nothing changed, nothing shown');
 });
 

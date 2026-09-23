@@ -5,7 +5,7 @@ Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extens
 - Keine Abhängigkeiten, kein Server, keine Datenbank.
 - Läuft im Browser (SillyTavern) und in Node (Tests).
 
-**Warum diese Architektur:** [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md). **Befunde aus Testrun-v1:** [docs/TESTRUN_V1.md](docs/TESTRUN_V1.md). **Gesamtbericht:** [ABSCHLUSSBERICHT.md](ABSCHLUSSBERICHT.md). **Externe Review und Antwort:** [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md). **Erster echter Lauf:** [docs/TESTRUN_V2.md](docs/TESTRUN_V2.md). **Zweiter Lauf:** [docs/TESTRUN_V3.md](docs/TESTRUN_V3.md).
+**Warum diese Architektur:** [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md). **Befunde aus Testrun-v1:** [docs/TESTRUN_V1.md](docs/TESTRUN_V1.md). **Gesamtbericht:** [ABSCHLUSSBERICHT.md](ABSCHLUSSBERICHT.md). **Externe Review und Antwort:** [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md). **Erster echter Lauf:** [docs/TESTRUN_V2.md](docs/TESTRUN_V2.md). **Zweiter Lauf:** [docs/TESTRUN_V3.md](docs/TESTRUN_V3.md). **Welt-Lore als Lorebook:** [docs/LOREBOOK.md](docs/LOREBOOK.md).
 
 ## Was die Engine pro Zug tut
 
@@ -17,7 +17,7 @@ Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extens
    - Level-ups und DefeatXP;
    - Schleichen gegen Wahrnehmung;
    - die Charaktererstellung.
-3. **Sie injiziert einen kompakten Engine-Block** (in den Testruns 1.100–2.500 Token): Zustand, NPC-Karten mit **nur deren Wissen**, relevante Erinnerungen und Fakten, Lore und zuletzt „RESOLVED THIS TURN“ mit allen Würfen.
+3. **Sie injiziert einen kompakten Engine-Block** (in den Testruns 1.100–2.500 Token): Zustand, NPC-Karten mit **nur deren Wissen**, relevante Erinnerungen und Fakten, Lore (nur ohne verknüpftes Lorebook) und zuletzt „RESOLVED THIS TURN“ mit allen Würfen. Dazu kommt die **Lore-Bridge**: Realm und Stadt als reiner Scan-Text für World Info (0 Token im Prompt), damit das Lorebook der Karte die passenden Einträge aktiviert.
 4. **Das Modell erzählt** und schreibt direkt nach der Erzählung, vor den Tracker-Blöcken des Presets, einen Fakten-Report: `<avereth>{…}</avereth>`.
 5. **Nach der Antwort** prüft die Engine den Report:
    - neue Figuren, Orte, Fakten, Wissen, Erinnerungen, Beziehungen, Quests, Items und Coin werden übernommen;
@@ -42,8 +42,13 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
    - Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v3.txt` (Stand 3.1; nach jedem Update neu einfügen);
    - Begrüßung = First Message v0.4 (unverändert; die Zeile `Location: … outside <City>, <Realm>` legt den Startort fest).
 4. **Die Avereth-WorldInfo v1.23 deaktivieren.** Die Engine ersetzt sie; beides zusammen doppelt Regeln. Der Megumin-NPC-Patch ist optional.
-5. **Antwortlänge:** „Max Response Length“ mindestens 8.192 Token, oder den Reasoning-Aufwand senken. Mit 4.096 Token und Reasoning „high“ schnitt GLM in Testrun 3 zwei Antworten mitten in den NPC-Dossiers ab.
-6. **Neuen Chat starten.** Die Kampagne entsteht an der Begrüßung. Ein Chat, der ohne Engine begonnen wurde, bleibt unberührt. **Zuerst einen wegwerfbaren Testchat spielen** (Report-Format, Streaming und Swipes mit deinem Modell prüfen), erst dann die Langzeitkampagne.
+5. **Welt-Lore-Lorebook** (empfohlen, [docs/LOREBOOK.md](docs/LOREBOOK.md)):
+   - World Info → Import → `lorebook/Avereth_World_Lore_v0.11.json`;
+   - an der Erzähler-Karte (Globus-Symbol) als **Character Lore** verknüpfen, nicht global aktivieren;
+   - World-Info-Einstellungen: Scan Depth 2, Budget Cap 1.800, Recursive Scan aus, Match whole words an;
+   - die Engine lässt dann ihre eigene LORE-Sektion weg (Einstellung „World lore“ = Auto).
+6. **Antwortlänge:** „Max Response Length“ mindestens 8.192 Token, oder den Reasoning-Aufwand senken. Mit 4.096 Token und Reasoning „high“ schnitt GLM in Testrun 3 zwei Antworten mitten in den NPC-Dossiers ab.
+7. **Neuen Chat starten.** Die Kampagne entsteht an der Begrüßung. Ein Chat, der ohne Engine begonnen wurde, bleibt unberührt. **Zuerst einen wegwerfbaren Testchat spielen** (Report-Format, Streaming und Swipes mit deinem Modell prüfen), erst dann die Langzeitkampagne.
 
 **Einstellungen** (Extensions → Avereth Engine):
 
@@ -54,6 +59,7 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
 | Rules allowance | 800 Token | situative Regeltexte (Schleichen, Loot, Handel, `#system`) |
 | Recent turns not re-retrieved | 4 | was noch im Chatverlauf steht, wird nicht doppelt injiziert |
 | Injection depth | 0 | 0 = direkt vor der Generierung |
+| World lore | Auto | Auto: Lorebook der Karte, falls verknüpft, sonst die Lore der Engine. „Card lorebook“ oder „Engine“ erzwingen eine Quelle. Die Statuszeile zeigt die aktive. |
 | Show last engine block | aus | zeigt den zuletzt injizierten Engine-Block (Debugging) |
 
 Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log als JSON herunterlädt.
@@ -96,9 +102,10 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 ## Für Entwickler
 
 ```
-npm test                               # 117 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Regression der Testruns 1–3
+npm test                               # 122 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Regression der Testruns 1–3
 node tools/testrun_compare.js          # Token-Vergleich mit Testrun-v1
 node tools/browser_smoke.mjs           # optional: index.js in echtem Chromium mit gemocktem SillyTavern-Kontext (braucht Playwright)
+node tools/lorebook_audit.mjs          # welche Lorebook-Einträge in den Testruns 2 und 3 feuern (World-Info-Nachbau)
 python3 tools/migrate_content.py       # Content aus dem Paket v1.24 neu erzeugen (aus dem Repo-Wurzelverzeichnis)
 ```
 
@@ -107,10 +114,11 @@ python3 tools/migrate_content.py       # Content aus dem Paket v1.24 neu erzeuge
 | `index.js`, `manifest.json`, `style.css` | SillyTavern-Anbindung |
 | `src/` | Engine, siehe [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md) |
 | `content/` | Inhalte, siehe [docs/DATENMODELL.md](docs/DATENMODELL.md) |
+| `lorebook/` | Welt-Lore als SillyTavern-Lorebook (Character Lore), siehe [docs/LOREBOOK.md](docs/LOREBOOK.md) |
 | `schemas/` | JSON-Schemas für Content, Events und Report |
 | `tests/` | `unit/`, `scenarios/`, `testrun_v1/`, `testrun_v2/`, `testrun_v3/` |
-| `tools/` | Migration, Testrun-Vergleich |
-| `docs/` | Architektur, Datenmodell, Migration, WI-Bewertung, Testrun-Analyse |
+| `tools/` | Migration, Testrun-Vergleich, Lorebook-Audit |
+| `docs/` | Architektur, Datenmodell, Migration, WI-Bewertung, Lorebook, Testrun-Analyse |
 
 **Engine-API** (`src/engine.js`; Adapter für Chat-Arrays in `src/host.js`):
 

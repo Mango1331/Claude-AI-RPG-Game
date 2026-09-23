@@ -136,7 +136,7 @@ test('Quest XP (Core #25): locked when offered, awarded once on completion throu
     assert.equal(g.state.entities.pc.sheet.xp, 45, 'awarded once');
     // a new quest without its Level and type is not recorded: its Quest XP could never be fixed (Testrun 3 rat quest)
     const r = g.reply({ quests: [{ title: 'Escort the Carter', status: 'active', type: 'escort' }] });
-    assert.match(reasons(r), /^new quest "Escort the Carter" needs level \(its recommended Level, a whole number from 1\) and type \(minor\|standard\|dangerous\|major\), which fix its Quest XP; missing: level and type\. Report the quest again with both$/);
+    assert.match(reasons(r), /^new quest "Escort the Carter" needs level \(its hidden XP basis: the Level the task suits, a whole number from 1\) and type \(minor\|standard\|dangerous\|major\), which fix its Quest XP; missing: level and type\. Report the quest again with both$/);
     assert.ok(!g.state.quests['quest.escort_the_carter']);
     assert.deepEqual(g.reply({ quests: [{ title: 'Escort the Carter', status: 'active', level: 2, type: 'standard' }] }).rejected, [], 'the complete entry goes through');
     assert.deepEqual(g.reply({ quests: [{ title: 'Escort the Carter', status: 'active', level: 8, type: 'major' }] }).rejected, []);
@@ -183,4 +183,21 @@ test('names in refs, full names, bare combat names and people placed again (Test
     assert.deepEqual(c.rejected, []);
     assert.ok(g.state.encounter.combatants['mon.wolf']);
     assert.ok(g.reply({ combat: { by: ['wolf'] } }).accepted.includes('mon.wolf fights on'), 'a combatant committing again is no error');
+});
+
+test('Guild contracts carry a Quest Rank; the hidden XP level must lie in that rank\'s band (lorebook v0.11)', () => {
+    const g = ready();
+    assert.deepEqual(g.reply({ quests: [{ title: 'Cellar Rats', status: 'offered', level: 2, type: 'minor', rank: 'novice' }] }).rejected, []);
+    assert.equal(g.state.quests['quest.cellar_rats'].rank, 'Novice');
+    assert.match(reasons(g.reply({ quests: [{ title: 'Wyvern Nest', status: 'offered', level: 20, type: 'dangerous', rank: 'Novice' }] })),
+        /^quest "Wyvern Nest": a Novice contract's level lies in 1-14 \(Power Rank F\); reported level 20/);
+    assert.match(reasons(g.reply({ quests: [{ title: 'Odd Job', status: 'offered', level: 2, type: 'minor', rank: 'Copper' }] })), /is not a Guild Quest Rank/);
+    assert.deepEqual(g.reply({ quests: [{ title: 'Border Patrol', status: 'offered', level: 17, type: 'standard', rank: 'Proven' }] }).rejected, []);
+    assert.deepEqual(g.reply({ quests: [{ title: 'Private Errand', status: 'offered', level: 1, type: 'minor' }] }).rejected, [], 'work outside the Guild has no rank');
+    g.input('"I\'ll take the rat job."');
+    g.reply({ quests: [{ title: 'Cellar Rats', status: 'active', rank: 'Master', level: 70 }] });
+    assert.deepEqual([g.state.quests['quest.cellar_rats'].rank, g.state.quests['quest.cellar_rats'].rec_level], ['Novice', 2], 'locked when offered');
+    assert.deepEqual(g.reply({ quests: [{ title: 'Cellar Rats', status: 'completed', rank: 'F' }] }).rejected, [], 'a stray rank never blocks a known quest');
+    assert.equal(g.state.quests['quest.cellar_rats'].status, 'completed');
+    assert.match(reasons(g.reply({ quests: [{ title: 'Dragon Hunt', status: 'offered', level: 40, type: 'major', rank: 'Legend' }] })), /a Legend contract's level lies in 90\+ \(Power Rank S\)/);
 });

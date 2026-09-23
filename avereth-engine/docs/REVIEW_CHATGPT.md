@@ -85,3 +85,32 @@ Die Review bestätigte die Testrun-3-Fixes (Kampf-Vorschau, Anwesenheit, `neares
 - Kommen neue Quests mit `level` und `type`?
 - Falls doch ein Report fehlt: Was trägt der nächste Report nach?
 
+
+## Vierte Review: Welt-Lore als Lorebook (Vorschlag v0.10b)
+
+ChatGPT schlug vor, die beschreibende Welt-Lore in ein SillyTavern-Lorebook zu verlagern (66 Einträge), und stellte dazu 7 Architekturfragen. Geprüft wurde gegen drei Quellen:
+- den Engine-Code;
+- den SillyTavern-Quellcode (World-Info-Aktivierung);
+- die echten Testruns 2 und 3, mit nachgebauter Aktivierung (`tools/wi_sim.mjs`, `tools/lorebook_audit.mjs`).
+
+Details, Zahlen und Einrichtung: [LOREBOOK.md](LOREBOOK.md).
+
+| Punkt | Probe | Kat. | Entscheidung |
+|---|---|---|---|
+| Autoritäts-Aufteilung: Engine = Mechanik und Zustand, Lorebook = beschreibende Welt, Erzähler = Prosa | Code: Die 19 Lore-Texte nutzt nur `pickLore()`; Orte und Realms braucht der Code als Index | **A** | übernommen; `lore.json` bleibt struktureller Index und Rückfall |
+| `pickLore()` reduzieren | – | **D** | nicht löschen: automatisch aus, sobald an der Karte ein Lorebook verknüpft ist (Einstellung „World lore“ = Auto) |
+| Bridge zwischen Engine und World Info? | Testrun 3: 5 von 14 Antworten ohne Tracker-Box, also ohne Ortsnamen im Scan | **D** | nur Realm und Stadt, als Extension-Prompt mit Position NONE und `scan`: 0 Token im Prompt, trotzdem gescannt. Kein Engine-Zustand, weil „Rank“, „Quest“ und „Coin“ sonst dauernd Einträge auslösten. |
+| Feuern Schlüssel auf Tracker- und Erzähltext? | bestätigt: „until **proven** otherwise“ (Wald) und „**Master** tanner“ (Megumin-Dossier) zogen den 1.000-Token-Gildeneintrag; „trade“ und „market“ feuerten dauernd; die Stadt-Einträge zogen per Rekursion Währung und Rang nach | **A** | v0.11: Gildeneintrag in drei kurze Einträge geteilt, nur auf Gilden-Phrasen; Allerweltsschlüssel entfernt; keine Rekursion. Im Schnitt 861 statt 1.289 Token. |
+| Budget | am Aushang (Testrun 3, Zug 8) schnitt das Budget die Quest-Gerüste ab | **A** | Budget Cap 1.800 Token, Scan Depth 2; gemessen 616–1.710 Token; Quest-Gerüste aktiv |
+| Beansprucht ein Eintrag veränderlichen Zustand? | ein Hinweis zur Quest-XP | **A** | ersetzt durch die Regel zum versteckten Level |
+| Quest-XP braucht ein Level, die Lore streicht das sichtbare Recommended Level (Optionen A/B/C) | Core #25 braucht `level`; der Guard aus der dritten Review lehnt Quests ohne Level ab | **D** (Option B plus Prüfung) | Level bleibt die versteckte XP-Basis im Report und erscheint nie in der Geschichte. Neu ist `rank` (Quest Rank eines Gilden-Auftrags): Die Engine prüft, dass das Level im Band des Rangs liegt (Novice = 1–14 … Legend = 90+). Core bleibt unverändert. |
+| Tagesaushang als Engine-Zustand | – | **B** | erst, wenn der Test zeigt, dass GLM gesehene Aushänge neu würfelt; bis dahin verlangt der Eintrag Stabilität, und nur Aufträge des eigenen Gilden-Rangs werden beschrieben |
+
+**Nächster Test:**
+- Das Lorebook importieren und als Character Lore verknüpfen (README, Installation Schritt 5).
+- Die Statuszeile muss `lore: World Info (Avereth World Lore v0.11)` zeigen.
+- Beobachten:
+  - Toasts „World info budget reached“ (Alert on overflow an);
+  - neue Gilden-Aufträge mit `rank` und passendem `level`;
+  - kein Level oder Recommended Level in der Erzählung;
+  - bleibt ein gelesener Aushang beim zweiten Blick gleich?

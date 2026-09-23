@@ -50,6 +50,7 @@ Primärquellen, soweit erreichbar. arXiv und einige Doku-Seiten waren durch die 
 | **Graphiti / Zep** (arXiv 2501.13956) | temporaler Wissensgraph; Fakten mit Gültigkeitsfenster; ungültig machen statt löschen | Fakten mit `since`/`until`; Historie bleibt; Graph aus Fakten und Relationen | Graph-DB (Neo4j), LLM-basierte Widerspruchserkennung |
 | **Mem0** | Extraktion, Entity-Linking, hybrides Retrieval (semantisch, BM25, Entität) | hybrides Scoring mit BM25 und Entitäten | Cloud/Vector-DB |
 | „Verbatim Chunks Beat Extracted Artifacts“ (arXiv 2601.00821) | Wörtliche Textstücke schlagen reine LLM-Extraktion | Episoden-Einträge mit dem wörtlichen Spielertext ergänzen die strukturierten Fakten | reine Extraktion |
+| **SillyTavern World Info** (Quellcode `world-info.js`: `checkWorldInfo`, `WorldInfoBuffer`; Doku-Repo `SillyTavern-Docs`) | Schlüssel-Aktivierung über die letzten n Nachrichten; Order, Rekursion, hartes Budget (der erste Überlauf beendet die Liste); Extension-Prompts mit `scan` werden mitdurchsucht | beschreibende Welt-Lore als Character Lore der Erzähler-Karte; Lore-Bridge (Realm und Stadt, Position NONE, `scan`); Trigger-Audit gegen die echten Testruns ([LOREBOOK.md](LOREBOOK.md)) | Regeln und Zustand per Schlüsselwort; Rekursion |
 | **AI Dungeon** (Memory System, Story Cards), **NovelAI** (Lorebook) | Auto-Zusammenfassung, Memory Bank; Keyword-Karten mit Budget | Budgetierung pro Sektion | reine Keyword-Aktivierung (siehe Testrun-Fehltreffer) |
 | **Inworld**, **Convai** | Figurenwissen persönlich oder allgemein; Knowledge Bank pro Figur; Narrative Design als Zustandsmaschine | Wissenskarten pro NPC; Quests und Threads als Zustand | proprietäre Plattform |
 | **Talemate** | mehrere Agenten, World-State-Manager, Zeitverfolgung | Zeit und Weltzustand als Daten | mehrere LLM-Aufrufe pro Zug |
@@ -86,7 +87,7 @@ Primärquellen, soweit erreichbar. arXiv und einige Doku-Seiten waren durch die 
 | Skalierbarkeit (1.000+ Züge) | niedrig | **hoch**: Fold linear, Kontext budgetiert | mittel | hoch | mittel |
 | Tokenverbrauch pro Zug | hoch: 5,6–9k Avereth-Anteil | **niedrig**: Contract ~4,0k + Block ~1,0–1,3k | mittel | mittel | mittel bis hoch (Tool-Schemas, Runden) |
 | Retrieval-Qualität | niedrig: lexikalisch, Fehltreffer | **hoch**: zustandsgesteuert plus kuratierte Schlüssel | niedrig | hoch | – |
-| Wartbarkeit | mittel: 124k Zeichen Prompt-Regeln | **hoch**: Daten mit Schema, Code mit 117 Tests | mittel | niedrig: Betrieb | mittel |
+| Wartbarkeit | mittel: 124k Zeichen Prompt-Regeln | **hoch**: Daten mit Schema, Code mit 122 Tests | mittel | niedrig: Betrieb | mittel |
 | Erweiterbarkeit | niedrig: jede Regel kostet Prompt | **hoch**: Daten und Code | mittel | hoch | mittel |
 | Debugging | niedrig: Reasoning lesen | **hoch**: #audit, Event-Export, deterministische Replays | mittel | mittel | mittel |
 | Komplexität | niedrig | **mittel**: etwa 4.000 Zeilen JS, keine Abhängigkeiten | mittel: zwei Fremd-Extensions | hoch | mittel |
@@ -206,10 +207,16 @@ Alle 42 Event-Typen sind in `schemas/event.schema.json` und [DATENMODELL.md](DAT
 | 0 (immer) | Header (Zeit, Ort, Realm, Modus, Ortsstatus, Setting-Zeile), PC-Zeilen, Creation, Kampf, gepinnte harte Fakten, **RESOLVED** |
 | 1 | NPC-Karten, Korrekturen |
 | 2 | RELEVANT (Retrieval, 25 % Budget, ohne die letzten 4 Züge, die ohnehin im Chat stehen) |
-| 3 | Lore (aktueller Realm plus kuratierte Schlüsselphrasen, 20 %) |
+| 3 | Lore (aktueller Realm plus kuratierte Schlüsselphrasen, 20 %); entfällt, wenn an der Erzähler-Karte ein Lorebook verknüpft ist |
 | eigenes Kontingent | situative Regeltexte (800 Token), Report-Format |
 
 **Reihenfolge im Prompt:** Header → PC → NPCs → Kampf → Fakten → RELEVANT → Lore → Regeln → Korrekturen → **RESOLVED** → Report-Format. Das Bindende steht am Ende, direkt vor der Generierung („Lost in the Middle“).
+
+**Welt-Lore** ([LOREBOOK.md](LOREBOOK.md)):
+- **Beschreibende Lore** (Realms, Städte, Gesellschaft, Gilde, Generierungsgerüste) liegt im SillyTavern-Lorebook `lorebook/`, als Character Lore der Erzähler-Karte.
+- **Die Engine behält** in `lore.json` nur den strukturellen Index (Orte und Realms mit ID, Name, Art, Realm) und die 19 Texte als Rückfall ohne Lorebook.
+- **Lore-Bridge:** Vor jeder Generierung setzt die Extension Realm und Stadt als Extension-Prompt mit Position NONE und `scan = true`. SillyTavern fügt ihn nie ein, World Info durchsucht ihn aber. Die Einträge von Realm und Stadt sind so in jedem Zug aktiv, auch ohne Tracker-Box. Engine-Zustand geht bewusst nicht mit.
+- **Vorrang:** Engine-Block und Erzählervertrag gehen dem Lorebook vor. Kein Eintrag beansprucht veränderlichen Zustand.
 
 ## 11. Strukturierter Output und Validierungsschicht
 

@@ -316,6 +316,17 @@
               "dangerous",
               "major"
             ]
+          },
+          "rank": {
+            "enum": [
+              "Novice",
+              "Proven",
+              "Veteran",
+              "Elite",
+              "Master",
+              "Grandmaster",
+              "Legend"
+            ]
           }
         }
       }

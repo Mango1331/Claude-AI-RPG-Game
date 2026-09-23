@@ -14,7 +14,7 @@ import { parseSwaps } from './src/util.js';
 const MODULE = 'avereth';
 const PROMPT_KEY = 'avereth_engine';
 const LORE_KEY = 'avereth_lore_keys';
-const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: 'ledger=register' };
+const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: 'ledger=register', hud: 'closed' };
 
 let content = null;
 let lastContext = null;
@@ -144,7 +144,7 @@ async function onMessageReceived(messageId) {
     if (!settings().enabled || !content) return;
     const c = ctx();
     try {
-        const r = processReply(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps) });
+        const r = processReply(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud });
         if (!r.changed) return;
         rerender(c, Number(messageId));
         await c.saveChat();
@@ -215,6 +215,11 @@ function mountSettings() {
         <option value="engine">Engine</option>
       </select></label>
       <label class="avereth-row" title="whole words the narrator overuses, replaced in its replies: from=to, comma-separated">Word replacements <input type="text" id="avereth_swaps" placeholder="ledger=register"></label>
+      <label class="avereth-row" title="Character and World panels under each reply, rendered from the engine state (never sent to the narrator)">HUD under replies <select id="avereth_hud">
+        <option value="closed">Folded (summary line)</option>
+        <option value="open">Open</option>
+        <option value="off">Off</option>
+      </select></label>
       <label class="avereth-row"><input type="checkbox" id="avereth_debug_toggle"> Show last engine block</label>
       <div class="avereth-status" id="avereth_status"></div>
       <textarea id="avereth_debug" readonly></textarea>
@@ -241,6 +246,7 @@ function mountSettings() {
     bind('avereth_depth', 'depth', Number);
     bind('avereth_lore', 'loreSource', String);
     bind('avereth_swaps', 'wordSwaps', String);
+    bind('avereth_hud', 'hud', String);
     bind('avereth_debug_toggle', 'showDebug');
     document.getElementById('avereth_export')?.addEventListener('click', exportLog);
 }

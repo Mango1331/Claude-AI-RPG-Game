@@ -2,3 +2,7 @@
 .avereth-settings input[type="number"] { width: 6em; }
 .avereth-settings textarea { width: 100%; min-height: 12em; font-family: monospace; font-size: 0.8em; }
 .avereth-settings .avereth-status { font-family: monospace; font-size: 0.85em; white-space: pre-wrap; }
+/* Runtime V3 player HUD under each reply (src/hud.js): rendered from the engine state, display only */
+.mes_text details.avereth-hud { margin: 0.35em 0 0; border: 1px solid var(--SmartThemeBorderColor, #555); border-radius: 6px; padding: 0.2em 0.6em; font-size: 0.85em; opacity: 0.9; }
+.mes_text details.avereth-hud summary { cursor: pointer; font-family: monospace; }
+.mes_text details.avereth-hud .avereth-hud-body { font-family: monospace; line-height: 1.45; padding: 0.3em 0 0.2em; }

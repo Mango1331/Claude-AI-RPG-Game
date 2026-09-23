@@ -10,6 +10,7 @@ import { startCampaign, playerTurn, narratorReply, turnContext } from './engine.
 import { loreKeys } from './context.js';
 import { extractReport } from './delta.js';
 import { turnPanel } from './display.js';
+import { renderHud } from './hud.js';
 import { hash32, clone, swapWords } from './util.js';
 
 export const KEY = 'avereth';
@@ -140,10 +141,12 @@ export function prepareGeneration(chat, content, { type = 'normal', settings = {
 
 /**
  * Called when a reply was received (or a greeting created). Validates the fact report into events on this swipe and
- * strips the report from the visible text.
+ * strips the report from the visible text. The System block (what was resolved) goes above the reply and the player
+ * HUD (Character + World, rendered from the state after this reply) below it: display only, never in a prompt.
+ * hud: 'closed' | 'open' | 'off'.
  * @returns {{changed: boolean, result?: object}}
  */
-export function processReply(chat, id, content, { seed, swaps = [] } = {}) {
+export function processReply(chat, id, content, { seed, swaps = [], hud = 'closed' } = {}) {
     const msg = chat[id];
     if (!msg || msg.is_user || msg.is_system) return { changed: false };
     if (!hasCampaign(chat)) {
@@ -163,23 +166,25 @@ export function processReply(chat, id, content, { seed, swaps = [] } = {}) {
     const result = narratorReply(state, content, msg.mes, { msg: id });
     msg.mes = swapWords(result.clean, swaps);
     const panel = turnPanel(state, content, result.state.last?.check, result);
-    showPanel(msg, panel);
+    const view = renderHud(result.state, content, hud);
+    showPanel(msg, panel, view);
     setRec(msg, {
         v: RECORD_VERSION, events: result.events, text_hash: hash32(msg.mes), corrections: result.corrections,
-        accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, panel: panel || undefined,
+        accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, panel: panel || undefined, hud: view || undefined,
     });
     return { changed: true, result };
 }
 
 /**
- * Show the engine's System block (combat log, checks) above the reply: SillyTavern renders extra.display_text instead
- * of mes, while prompts keep using mes. Only a block the engine wrote is replaced or removed.
+ * Show the engine's System block (combat log, checks) above the reply and the player HUD below it: SillyTavern
+ * renders extra.display_text instead of mes, while prompts keep using mes. Only what the engine wrote is replaced or
+ * removed.
  */
-function showPanel(msg, panel) {
+function showPanel(msg, panel, hud = '') {
     if (!msg.extra || typeof msg.extra !== 'object') msg.extra = {};
-    const old = rec(msg)?.panel;
-    if (panel) msg.extra.display_text = `${panel}\n\n${msg.mes}`;
-    else if (old && typeof msg.extra.display_text === 'string' && msg.extra.display_text.startsWith(old)) delete msg.extra.display_text;
+    const r = rec(msg);
+    if (panel || hud) msg.extra.display_text = [panel, msg.mes, hud].filter(Boolean).join('\n\n');
+    else if ((r?.panel || r?.hud) && typeof msg.extra.display_text === 'string') delete msg.extra.display_text;
 }
 
 /**
@@ -205,15 +210,16 @@ export function onEdited(chat, id, content) {
         const result = narratorReply(state, content, msg.mes, { msg: id });
         msg.mes = result.clean;
         const panel = turnPanel(state, content, result.state.last?.check, result);
-        showPanel(msg, panel);
+        const view = r.hud ? renderHud(result.state, content, /<details class="avereth-hud" open>/.test(r.hud) ? 'open' : 'closed') : '';
+        showPanel(msg, panel, view);
         setRec(msg, {
             v: RECORD_VERSION, events: result.events, text_hash: hash32(msg.mes), corrections: result.corrections,
-            accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, retcon: true, panel: panel || undefined,
+            accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, retcon: true, panel: panel || undefined, hud: view || undefined,
         });
         return { changed: true, text: true };
     }
     r.text_hash = hash32(msg.mes);
-    if (r.panel) showPanel(msg, r.panel); // the edited narration below the same System block
+    if (r.panel || r.hud) showPanel(msg, r.panel, r.hud); // the edited narration between the same System block and HUD
     setRec(msg, r);
-    return r.panel ? { changed: true, text: true } : { changed: true };
+    return r.panel || r.hud ? { changed: true, text: true } : { changed: true };
 }

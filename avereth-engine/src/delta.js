@@ -361,7 +361,16 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (hard && !f.because) { reject(f, `contradicts established fact "${hard.s} ${hard.p} ${hard.o}" (since turn ${hard.since.turn}); a change needs an explicit cause ("because")`); continue; }
         if (p === 'status' && inCombat(s)) { reject(f, `${s} is a combatant; its condition is resolved by the engine`); continue; }
         if (p === 'status' && s === 'pc' && LIFE_STATUS.has(normText(o))) { reject(f, `${pcName}'s life is engine-owned (0 HP = dead, Core #14)`); continue; }
-        const evs = setFactEvents(state, { id: mkId('f'), s, p, o, visibility: f.vis === 'secret' ? 'secret' : 'public', importance: clamp(Number(f.imp || 5), 1, 10) / 10, hard: !!f.hard, source: { ...src, because: f.because ? String(f.because).slice(0, 160) : null } });
+        let value = o;
+        if (p === 'guild_rank') {
+            // institutional standing (lorebook v0.11): one of the Guild Ranks, never above the Power Rank it requires
+            const gr = QUEST_RANKS.find((r) => normText(r) === normText(o));
+            if (!gr) { reject(f, `guild_rank must be one of ${QUEST_RANKS.join('|')}`); continue; }
+            const power = ent(s)?.sheet ? QUEST_RANKS[Math.max(0, content.rules.ranks.order.indexOf(deriveCharacter(ent(s).sheet, content).rank))] : null;
+            if (power && QUEST_RANKS.indexOf(gr) > QUEST_RANKS.indexOf(power)) { reject(f, `Guild Rank ${gr} needs Power Rank ${content.rules.ranks.order[QUEST_RANKS.indexOf(gr)]} (a promotion minimum)`); continue; }
+            value = gr;
+        }
+        const evs = setFactEvents(state, { id: mkId('f'), s, p, o: value, visibility: f.vis === 'secret' ? 'secret' : 'public', importance: clamp(Number(f.imp || 5), 1, 10) / 10, hard: !!f.hard, source: { ...src, because: f.because ? String(f.because).slice(0, 160) : null } });
         events.push(...evs);
         const fact = evs.find((e) => e.t === 'fact.asserted')?.d.fact;
         // a person's or creature's entity status is physical (alive/dead); any other "status" stays an ordinary fact
@@ -491,6 +500,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (to && ent(to)?.sheet) events.push({ t: 'item.changed', d: { id: to, item: itemId, qty, ...named, why: String(it.why || 'received').slice(0, 120) } });
         accepted.push(`item ${it.item} ×${qty}${from ? ` from ${from}` : ''}${to ? ` to ${to}` : ''}`);
     }
+    const purse = new Map(); // several coin entries in one report add up (they used to each start from the old purse)
     for (const c of arr(report.coin)) {
         const who = resolve((c && c.who) || 'pc');
         const cp = Number(c && c.cp);
@@ -501,8 +511,9 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
             continue;
         }
         if (who === 'pc' && cp < 0 && !auth.pay && !forcedBy(c.taken_by)) { reject(c, owner('spending coin') + ' (a theft names the taker in "taken_by")'); continue; }
-        const res = applyCoin(state.entities[who].sheet.coin_cp, cp);
+        const res = applyCoin(purse.has(who) ? purse.get(who) : state.entities[who].sheet.coin_cp, cp);
         if (!res.ok) { reject(c, res.error); continue; }
+        purse.set(who, res.value);
         events.push({ t: 'coin.changed', d: { id: who, value: res.value, delta: cp, why: String(c.why || '').slice(0, 120) } });
         accepted.push(`coin ${who} ${cp >= 0 ? '+' : ''}${cp} cp`);
     }

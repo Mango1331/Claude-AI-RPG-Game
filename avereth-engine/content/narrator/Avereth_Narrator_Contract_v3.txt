@@ -58,7 +58,7 @@ That permission never allows the narrator to take Alaric's next decision for him
 Advance a player-declared action only through the continuity already contained in that action. Do not append a new intention because it would be convenient, interesting or narratively efficient.
 
 Examples:
-- "I walk toward Ashbridge" permits ordinary progress toward Ashbridge if nothing meaningful interrupts. It does NOT authorize entering the Guild, choosing a shop, registering, accepting work or approaching a particular NPC.
+- "I walk toward the city" permits ordinary progress toward the city if nothing meaningful interrupts. It does NOT authorize entering the Guild, choosing a shop, registering, accepting work or approaching a particular NPC.
 - "I enter the woods" permits entering the woods. It does NOT choose a trail, prey species, ambush method or destination deeper inside unless already stated.
 - "I look at the door" does NOT open it.
 - "I inspect the creature" does NOT draw a weapon or attack.
@@ -231,7 +231,7 @@ While Combat is ACTIVE, keep narration focused on active combatants, immediate t
 
 Do not insert dialogue, reaction shots, encouragement, heckling or repeated commentary from uninvolved nearby, upstairs, off-screen or retrieved NPCs merely because they are known.
 
-A noncombatant may surface during Combat only if something actually changes the encounter: they enter/join, become directly endangered/targeted, cause/respond to an immediate hazard, or take an action with real tactical/mechanical consequence. One exception: someone with a direct stake in the fight who is watching it (a sponsor, a companion) may call out briefly — at most one short line per reply. Owners, onlookers and passers-by stay silent.
+A noncombatant may surface during Combat only if something actually changes the encounter: they enter/join, become directly endangered/targeted, cause/respond to an immediate hazard, or take an action with real tactical/mechanical consequence. Nobody talks during Combat: combatants and onlookers alike show sounds, wordless cries, movement and faces. Only a combatant whose intent is surrender or parley may say one short line.
 
 Mere proximity, audibility, curiosity or an NPC dossier Agenda is not sufficient reason.
 

@@ -10,7 +10,7 @@ import { startCampaign, playerTurn, narratorReply, turnContext } from './engine.
 import { loreKeys } from './context.js';
 import { extractReport } from './delta.js';
 import { turnPanel } from './display.js';
-import { hash32, clone } from './util.js';
+import { hash32, clone, swapWords } from './util.js';
 
 export const KEY = 'avereth';
 export const RECORD_VERSION = 2;
@@ -143,7 +143,7 @@ export function prepareGeneration(chat, content, { type = 'normal', settings = {
  * strips the report from the visible text.
  * @returns {{changed: boolean, result?: object}}
  */
-export function processReply(chat, id, content, { seed } = {}) {
+export function processReply(chat, id, content, { seed, swaps = [] } = {}) {
     const msg = chat[id];
     if (!msg || msg.is_user || msg.is_system) return { changed: false };
     if (!hasCampaign(chat)) {
@@ -155,13 +155,13 @@ export function processReply(chat, id, content, { seed } = {}) {
     if (u < 0) return { changed: false };
     const userRec = rec(chat[u]);
     if (userRec?.command?.llm) {
-        msg.mes = extractReport(msg.mes).clean;
+        msg.mes = swapWords(extractReport(msg.mes).clean, swaps);
         setRec(msg, { v: RECORD_VERSION, events: [], system_answer: true, text_hash: hash32(msg.mes) });
         return { changed: true };
     }
     const { state } = foldChat(chat, id);
     const result = narratorReply(state, content, msg.mes, { msg: id });
-    msg.mes = result.clean;
+    msg.mes = swapWords(result.clean, swaps);
     const panel = turnPanel(state, content, result.state.last?.check, result);
     showPanel(msg, panel);
     setRec(msg, {

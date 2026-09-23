@@ -91,6 +91,31 @@ export function formatClock(minute) {
     return `Day ${day}, ${hh}:${mm} (${part})`;
 }
 
+/**
+ * Word replacements for the narrator's text ("ledger=register, tapestry=weave"): whole words, plural -s kept, case
+ * kept. A word the model overuses stays overused when a ban list names it (priming); replacing it keeps it out of the
+ * chat and so out of the next prompt (Testrun 4: "ledger" three times in a Guild hall despite the preset's ban list).
+ */
+export function parseSwaps(spec) {
+    return String(spec || '').split(/[,;\n]+/).map((x) => x.split('=').map((w) => w.trim())).filter(([a, b]) => /^[A-Za-z][A-Za-z' -]*$/.test(a || '') && /^[A-Za-z][A-Za-z' -]*$/.test(b || ''));
+}
+
+export function swapWords(text, swaps = []) {
+    let out = String(text);
+    for (const [from, to] of swaps) {
+        out = out.replace(new RegExp(`\\b(${from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(s?)\\b`, 'gi'), (m, w, plural) => {
+            const cased = w.length > 1 && w === w.toUpperCase() ? to.toUpperCase() : w[0] === w[0].toUpperCase() ? to[0].toUpperCase() + to.slice(1) : to;
+            return cased + plural;
+        });
+    }
+    return out;
+}
+
+/** Display name of an item: the content pack's, else the name the narrator gave it (state.item_names), else its id. */
+export function itemLabel(state, content, id) {
+    return content.items.get(id)?.name || state?.item_names?.[id] || String(id).replace(/_/g, ' ');
+}
+
 export function uniq(list) {
     return [...new Set(list)];
 }

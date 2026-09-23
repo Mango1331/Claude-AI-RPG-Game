@@ -7,7 +7,7 @@ import { findSkill } from './content.js';
 import { assignStat } from './progression.js';
 import { knowledgeOf, memoriesOf, memoryText, propText, entityLabel, statusOf } from './knowledge.js';
 import { applyEvent } from './state.js';
-import { clone, joinList, normText, formatClock, roundHalfUp } from './util.js';
+import { clone, itemLabel, joinList, normText, formatClock, roundHalfUp } from './util.js';
 
 const HELP = [
     ['#status', 'full current status (alias #stats)'], ['#skills', 'all known Skills'], ['#skill <name>', 'full Skill definition with current values'],
@@ -125,7 +125,7 @@ function bag(state, content) {
     const lines = ['[SYSTEM // BAG]'];
     for (const [id, q] of Object.entries(s.inventory)) {
         const it = content.items.get(id);
-        lines.push(`${it?.name || id}${it?.rank ? ` [${it.rank}]` : ''} ×${q}${id === 'standard_arrow' && s.equipment.quiver ? ' (in quiver)' : ''}`);
+        lines.push(`${itemLabel(state, content, id)}${it?.rank ? ` [${it.rank}]` : ''} ×${q}${id === 'standard_arrow' && s.equipment.quiver ? ' (in quiver)' : ''}`);
     }
     if (lines.length === 1) lines.push('empty');
     lines.push(`Coin: ${formatCoin(s.coin_cp, content)} (${s.coin_cp} Copper)`);

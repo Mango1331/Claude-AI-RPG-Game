@@ -7,6 +7,8 @@
 import { entityLabel } from './knowledge.js';
 import { deriveCharacter } from './derived.js';
 import { formatCoin } from './economy.js';
+import { bandIndex, itemLabel } from './util.js';
+import { hitPreview } from './combat.js';
 
 const sys = (text) => `\`${text}\``;
 
@@ -27,7 +29,7 @@ export function turnPanel(state, content, narratorCheck = null, reply = null) {
     if (o?.kind === 'note' && o.notice) lines.push(sys(o.notice));
     if (narratorCheck) lines.push(sys(`CHECK — ${narratorCheck.what}: ${narratorCheck.chance}% · d100 ${narratorCheck.roll} → ${narratorCheck.success ? 'SUCCESS' : 'FAILURE'}`));
     if (reply?.events && reply.state) lines.push(...changeLines(state, reply.state, content, reply.events));
-    if (reply?.opened && reply.state) lines.push(...openedLines(reply.state, reply.opened));
+    if (reply?.opened && reply.state) lines.push(...openedLines(reply.state, content, reply.opened));
     return lines.join('\n');
 }
 
@@ -53,7 +55,7 @@ function changeLines(before, after, content, events) {
         if (e.t === 'coin.changed' && d.id === 'pc') out.push(sys(`COIN ${d.delta < 0 ? '-' : '+'}${formatCoin(Math.abs(d.delta), content)} → ${formatCoin(d.value, content)}${why(d)}`));
         else if (e.t === 'item.changed' && d.id === 'pc') {
             inv[d.item] = (inv[d.item] || 0) + d.qty;
-            out.push(sys(`ITEM ${d.qty < 0 ? '-' : '+'}${Math.abs(d.qty)} ${content.items.get(d.item)?.name || String(d.item).replace(/_/g, ' ')} → ${Math.max(0, inv[d.item])} carried${why(d)}`));
+            out.push(sys(`ITEM ${d.qty < 0 ? '-' : '+'}${Math.abs(d.qty)} ${d.name || itemLabel(after, content, d.item)} → ${Math.max(0, inv[d.item])} carried${why(d)}`));
         } else if (e.t === 'resource.changed' && d.id === 'pc' && now[d.resource] !== undefined) {
             out.push(sys(`${d.resource.toUpperCase()} ${now[d.resource]} + ${d.value - now[d.resource]} = ${d.value}/${max[d.resource]}${why(d)}`));
             now[d.resource] = d.value;
@@ -77,7 +79,7 @@ function changeLines(before, after, content, events) {
 }
 
 /** A fight the reply's report started (or someone joining it): the fixed order and everyone's HP before anyone acts. */
-function openedLines(state, op) {
+function openedLines(state, content, op) {
     const name = (id) => entityLabel(state, id);
     const b = op.board;
     const out = [];
@@ -94,7 +96,19 @@ function openedLines(state, op) {
         const before = b.first.before;
         out.push(sys(`Next: ${pre}Round 1 — ${before.length ? `${before.map(name).join(' › ')} ${before.length > 1 ? 'act' : 'acts'} before ${name('pc')}` : `${name('pc')} acts first`}`));
     }
+    out.push(...optionsLine(state, content));
     return out;
+}
+
+/** Alaric's usable attacks and the Hit Chance each rolls against the nearest opponent (display only, nothing rolled). */
+function optionsLine(state, content) {
+    const enc = state.encounter;
+    if (!enc) return [];
+    const foes = Object.values(enc.combatants).filter((c) => c.side === 'hostile' && !c.current.defeated && !c.current.escaped && !c.current.surrendered && c.current.band);
+    if (!foes.length) return [];
+    const near = foes.sort((a, b) => bandIndex(a.current.band) - bandIndex(b.current.band))[0];
+    const opts = hitPreview(enc, content, near.id);
+    return opts.length ? [sys(`${entityLabel(state, 'pc')}'s attacks vs ${entityLabel(state, near.id)}: ${opts.map((o) => `${o.name} ${o.chance}%`).join(' · ')}`)] : [];
 }
 
 /** Everyone's HP, the distance of each opponent to Alaric (Range Band, cover) and Alaric's resources. */
@@ -142,7 +156,10 @@ function combatLines(state, content, o) {
         const xp = e.xp_awarded ? ` · +${e.xp_awarded} XP → XP ${sheet.xp}/${sheet.level * content.rules.progression.xp_to_next_per_level}` : '';
         out.push(sys(`COMBAT END${fates.length ? ` — ${fates.join(', ')}` : ''}${xp}`));
         for (const lv of o.levelups || []) out.push(sys(`LEVEL UP → ${lv} (+5 free Stat Points)`));
-    } else if (o.next) out.push(sys(`Next: ${o.next}`));
+    } else if (o.next) {
+        out.push(sys(`Next: ${o.next}`));
+        if (state.encounter?.current === 'pc') out.push(...optionsLine(state, content));
+    }
     return out;
 }
 
@@ -154,7 +171,8 @@ function recordLines(state, content, r) {
     const ammo = r.ammo ? ` · ${r.ammo.used} arrow${r.ammo.used > 1 ? 's' : ''}` : '';
     if (r.kind === 'attack') {
         const move = r.move ? ` (moves ${r.move.from} → ${r.move.to})` : '';
-        const lines = [sys(`${who}${move}: ${r.skill_name}${r.opening ? ' (AMBUSH opening)' : ''} → ${name(r.strikes?.[0]?.target || r.target)}${cost}${ammo}`)];
+        const back = r.after_move ? ` · then steps back (${String(r.after_move.change).replace(/ -> /g, ' → ')})` : '';
+        const lines = [sys(`${who}${move}: ${r.skill_name}${r.opening ? ' (AMBUSH opening)' : ''} → ${name(r.strikes?.[0]?.target || r.target)}${cost}${ammo}${back}`)];
         const many = (r.strikes || []).length > 1;
         for (const [i, s] of (r.strikes || []).entries()) {
             const pre = many ? `${name(s.target)}${r.strikes.every((x) => x.target === s.target) ? ` #${i + 1}` : ''}: ` : '';

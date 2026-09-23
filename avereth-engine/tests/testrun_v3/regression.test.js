@@ -65,14 +65,17 @@ test('turn 8: "Hesta Gault" finds Hesta and becomes her full name; her side of t
     assert.deepEqual(T(8).state.quests['quest.marsh_hag_near_southwash'].rec_level, 1, 'the complete entry is recorded');
 });
 
-test('moving on: the carter stays at the gate, the registrar and Drem stay in the Guild hall; only Hesta, placed in the cellar, comes along', () => {
+test('moving on: the carter stays at the gate, the registrar and Drem stay in the Guild hall; Hesta and Rennick, placed at the cellar stairs, are there', () => {
     assert.ok(!present(5).includes('npc.carter_muller'));
-    assert.deepEqual(present(10).filter((id) => id.startsWith('npc.')), ['npc.hesta']);
-    // and so only Hesta saw the rats die (Testrun 3: the carter, the registrar and Drem "witnessed" it from the city)
+    // Rennick holds the lantern at the stairhead; the report placed him ("position"/"aware") without introducing him,
+    // and since Testrun 4 a person the reply names with a capitalised name becomes known instead of being refused
+    assert.deepEqual(present(10).filter((id) => id.startsWith('npc.')), ['npc.hesta', 'npc.rennick']);
+    assert.equal(T(10).state.entities['npc.rennick'].name, 'Rennick');
+    // and so only the two at the stairs saw the rats die (Testrun 3: the carter, the registrar and Drem "witnessed" it from the city)
     const death = truth(T(13).state, 'mon.big_rat', 'status')[0];
     for (const id of ['npc.carter_muller', 'npc.odile_ferran', 'npc.drem']) assert.ok(!knows(T(13).state, id, death.id), id);
     assert.ok(knows(T(13).state, 'npc.hesta', death.id));
-    assert.deepEqual(T(13).state.memories.find((m) => m.kind === 'combat').witnesses.sort(), ['npc.hesta', 'pc']);
+    assert.deepEqual(T(13).state.memories.find((m) => m.kind === 'combat').witnesses.sort(), ['npc.hesta', 'npc.rennick', 'pc']);
 });
 
 test('turn 4: the gate sergeant reported as leaving is no "unknown or absent NPC" error for the same report\'s position and awareness', () => {
@@ -100,6 +103,7 @@ test('turn 10: the rats commit and the fight is fixed at once: Initiative, Turn 
         '`Range: Cellar rat pack ENGAGED · Big rat ENGAGED`',
         '`Alaric: MP 60/60 · STA 100/100 · Arrows 20`',
         '`Next: Round 1 — Cellar rat pack › Big rat act before Alaric`',
+        '`Alaric\'s attacks vs Cellar rat pack: Basic Attack 73% · Aimed Shot 83% · Power Shot 63%`',
     ]);
     assert.ok(chat[20].extra.display_text.startsWith(T(10).panel), 'shown above the reply that reported the attack');
 });
@@ -120,8 +124,10 @@ test('turns 12-13: the named target is resolved; a combatant reported again is n
     assert.match(T(13).panel, /`COMBAT END — Big rat defeated, Cellar rat pack defeated · \+20 XP → XP 20\/100`/);
 });
 
-test('during the fight the narrator is told who is not fighting and how little bystanders may say', () => {
-    for (const n of [11, 12]) assert.match(T(n).context.text, /Combat focus: Hesta Gault \(not fighting\) stays in the background — no running commentary; at most one short call per reply from someone with a direct stake/);
+test('during the fight the narrator is told who is not fighting, and that nobody talks (combat silence since Testrun 4)', () => {
+    for (const n of [11, 12]) assert.match(T(n).context.text, /Combat silence: nobody talks while the fight runs — neither combatants nor Hesta Gault, Rennick \(not fighting\)/);
+    // Hesta and Rennick kept talking through the rounds: the next engine block names it
+    assert.match(T(13).context.text, /Combat silence broken: \d+ spoken lines in your last reply/);
 });
 
 test('coin and quests the reports changed are shown like a game log', () => {
@@ -130,5 +136,6 @@ test('coin and quests the reports changed are shown like a game log', () => {
 });
 
 test('the engine block stays compact', () => {
-    for (const t of turns) assert.ok(t.context.tokens < 2600, `${t.input}: ${t.context.tokens} tokens`);
+    // turn 13 (the fight ends): loot rules, the combat-silence correction and Rennick's card, about 2,700 tokens
+    for (const t of turns) assert.ok(t.context.tokens < 2800, `${t.input}: ${t.context.tokens} tokens`);
 });

@@ -20,7 +20,7 @@ const ACTION_RE = new RegExp(String.raw`(?:${SUBJECT_LED}|\b(?:${PUT_ARROW}|${WE
 const INFO_RE = /\b(?:what\s+(?:does|do|is|are|would)|how\s+(?:does|do|much|many|would)|explain|describe|tell me about|compare|difference between)\b[^.!?]{0,60}?\b(?:skill|skills)\b/i;
 const AIM_RE = /\b(?:aim|aims|aiming|take\s+aim|draw\s+(?:my\s+)?bow|nock|ready\s+(?:my\s+)?bow)\b/i;
 const CLOSER_RE = /\b(?:approach|approaches|advance|advances|close\s+(?:in|the\s+distance)|move\s+(?:closer|toward|towards|in)|step\s+(?:closer|toward|towards|forward|in)|rush\s+(?:at|toward|towards|in)|run\s+(?:at|toward|towards))\b/i;
-const AWAY_RE = /\b(?:retreat|retreats|back\s+(?:away|off|up)|step\s+back|fall\s+back|withdraw|move\s+(?:away|back)|put\s+distance|keep\s+(?:my\s+)?distance)\b/i;
+const AWAY_RE = /\b(?:retreat|retreats|back\s+(?:away|off|up)|(?:step|steps|jump|jumps|leap|leaps|hop|hops|spring|springs|dart|darts|skip|skips|scramble|scrambles|stumble|stumbles|fall|falls|move|moves|pull|pulls|ease|eases)\s+back(?:wards?)?|backwards?|kite|kites|kiting|withdraw|withdraws|move\s+away|put\s+distance|keep\s+(?:my\s+)?distance|open\s+(?:up\s+)?(?:the\s+)?distance)\b/i;
 const FLEE_RE = /\b(?:flee|flees|run\s+away|escape|make\s+a\s+run\s+for\s+it|bolt\s+(?:away|off))\b/i;
 const STEALTH_RE = /\b(?:sneak|sneaks|sneaking|creep|creeps|creeping|hide|hides|hiding|stay\s+hidden|move\s+quietly|stalk|stalks|stalking|crouch\s+low)\b/i;
 const PRONOUN_RE = /\b(?:him|her|it|them|the\s+(?:man|woman|creature|beast|animal|thing))\b/i;
@@ -173,17 +173,44 @@ const AUTH_RE = {
     move: /\b(?:go|walk|head|travel|ride|return|journey|leave|enter|follow|track|tracks|tracking|approach|approaches|climb|climbs|cross|crosses|step|steps|search|explore|sneak|creep|crawl|run|move|moves|continue|wander|wanders|circle|descend|ascend|jump|swim|push through|make (?:my|our) way|take the (?:road|path|trail|stairs))\w*\b/i,
     pay: /\b(?:pay|pays|paid|paying|buy|buys|bought|buying|purchase|rent|rents|tip|tips|bribe|bribes|hire|hires|spend|spends|donate|settle the bill|trade|trades|sell|sells|sold|here(?:'s| is|,) (?:\w+ ){0,2}(?:coins?|money|silver|copper|gold|payment)|(?:coins?|copper|silver|gold|crowns?) (?:for|to cover) (?:the|your|my|a) \w+)\b/i,
     give: /\b(?:give|gives|gave|giving|hand|hands|handed|offer|offers|lend|lends|trade|trades|sell|sells|sold|drop|drops|toss|tosses|throw|throws|deliver|delivers|return (?:the|his|her|their|it)|leave (?:the|my) \w+|take (?:it|this|these|them))\b/i,
-    accept: /\b(?:accept|accepts|accepted|agree|agrees|agreed|deal|i'll do it|i will do it|i'?ll take (?:it|the (?:\w+ )?(?:job|work|contract|quest|task))|take the (?:\w+ )?(?:job|work|contract|quest|task)|sign (?:up|on)|count me in|i'm in|i will help|i'll help|yes|sure|very well|fine,)\b/i,
+    accept: /\b(?:accept|accepts|accepted|agree|agrees|agreed|deal|i'll do it|i will do it|i'?ll take (?:it|the (?:[\w'-]+ ){0,6}(?:job|work|contract|quest|task|bill|bounty))|take the (?:[\w'-]+ ){0,6}(?:job|work|contract|quest|task|bill|bounty)|sign (?:up|on)|count me in|i'm in|i will help|i'll help|yes|sure|very well|fine,)\b/i,
     conceal: /\b(?:hide|hides|hiding|sneak|sneaks|sneaking|creep|creeps|creeping|conceal|stay hidden|duck (?:behind|into|down)|take cover|crouch (?:low|behind)|hold still)\b/i,
     rest: /\b(?:rest|rests|resting|sleep|sleeps|sleeping|wait|waits|waiting|camp|camps|spend the (?:night|day|evening)|stay the night|train|trains|work|works|meditate|recover|eat|drink)\b/i,
 };
 
+/** The parts of a message that can authorize: questions do not; quoted speech does (commitments are often spoken). */
+function said(text) {
+    return String(text || '').split(/(?<=[.!?])\s+|\n+/).filter((p) => !(/\?[\s*_"”]*$/.test(p) && INTERROGATIVE_RE.test(p))).join(' ');
+}
+
+// A quest is named by the distinctive words of its title ("Vermin in the Malthouse Cellar": vermin, malthouse,
+// cellar); two of them (or the only one) must occur in the message, so "the cellar" alone names no quest.
+const TITLE_FILLER = new Set(['the', 'a', 'an', 'in', 'on', 'at', 'of', 'to', 'for', 'near', 'by', 'with', 'from', 'and', 'or', 'into', 'off', 'quest', 'job', 'bill', 'contract', 'task', 'work', 'bounty']);
+const stem = (w) => (w.length > 3 && w.endsWith('s') ? w.slice(0, -1) : w);
+const titleWords = (title) => [...new Set(normText(title).split(' ').filter((w) => w && !TITLE_FILLER.has(w)).map(stem))];
+
+export function namesQuest(text, title) {
+    const words = titleWords(title);
+    if (!words.length) return false;
+    const have = new Set(normText(text).split(' ').map(stem));
+    return words.filter((w) => have.has(w)).length >= Math.min(2, words.length);
+}
+
+// taking a quest by name: "I take the Vermin in the Malthouse Cellar Quest", "I'll pick the drake bill" (not "take a look")
+const TAKE_RE = /\b(?:accept|accepts|accepted|choose|chooses|chose|pick|picks|picked|grab|grabs|grabbed|claim|claims|claimed|sign(?:s|ed)?\s+(?:up\s+)?for|take|takes|taking|took)\b(?!\s+(?:a|another|one)\s+(?:look|peek|glance|breath|seat|moment|step|rest|break|walk|shot)\b)(?!\s+(?:cover|aim)\b)/i;
+
+/** Whether the message takes this quest by name (its reply may record it "active" even a few turns later). */
+export function takesQuest(text, title) {
+    const t = said(text);
+    return TAKE_RE.test(t) && namesQuest(t, title);
+}
+
 export function authorization(text) {
     const raw = String(text || '');
     // questions do not authorize; quoted speech does (commitments are often spoken)
-    const said = raw.split(/(?<=[.!?])\s+|\n+/).filter((p) => !(/\?[\s*_"”]*$/.test(p) && INTERROGATIVE_RE.test(p))).join(' ');
+    const said_ = said(raw);
     const out = {};
-    for (const [k, re] of Object.entries(AUTH_RE)) out[k] = re.test(said);
+    for (const [k, re] of Object.entries(AUTH_RE)) out[k] = re.test(said_);
     out.travel = out.travel || false;
     out.move = out.move || out.travel;
     out.rest = out.rest || out.travel;

@@ -5,7 +5,7 @@ Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extens
 - Keine Abhängigkeiten, kein Server, keine Datenbank.
 - Läuft im Browser (SillyTavern) und in Node (Tests).
 
-**Warum diese Architektur:** [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md). **Befunde aus Testrun-v1:** [docs/TESTRUN_V1.md](docs/TESTRUN_V1.md). **Gesamtbericht:** [ABSCHLUSSBERICHT.md](ABSCHLUSSBERICHT.md). **Externe Review und Antwort:** [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md). **Erster echter Lauf:** [docs/TESTRUN_V2.md](docs/TESTRUN_V2.md). **Zweiter Lauf:** [docs/TESTRUN_V3.md](docs/TESTRUN_V3.md). **Welt-Lore als Lorebook:** [docs/LOREBOOK.md](docs/LOREBOOK.md).
+**Warum diese Architektur:** [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md). **Befunde aus Testrun-v1:** [docs/TESTRUN_V1.md](docs/TESTRUN_V1.md). **Gesamtbericht:** [ABSCHLUSSBERICHT.md](ABSCHLUSSBERICHT.md). **Externe Review und Antwort:** [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md). **Erster echter Lauf:** [docs/TESTRUN_V2.md](docs/TESTRUN_V2.md). **Zweiter Lauf:** [docs/TESTRUN_V3.md](docs/TESTRUN_V3.md). **Dritter Lauf:** [docs/TESTRUN_V4.md](docs/TESTRUN_V4.md). **Welt-Lore als Lorebook:** [docs/LOREBOOK.md](docs/LOREBOOK.md).
 
 ## Was die Engine pro Zug tut
 
@@ -22,7 +22,7 @@ Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extens
 5. **Nach der Antwort** prüft die Engine den Report:
    - neue Figuren, Orte, Fakten, Wissen, Erinnerungen, Beziehungen, Quests, Items und Coin werden übernommen;
    - Ungültiges wird mit Grund abgelehnt;
-   - freiwillige Änderungen an Alaric (reisen, bezahlen, abgeben, Quest annehmen) nur, wenn deine Nachricht sie gewählt hat; Diebstahl oder Festnahme muss einen anwesenden NPC nennen;
+   - freiwillige Änderungen an Alaric (reisen, bezahlen, abgeben, Quest annehmen) nur, wenn deine Nachricht sie gewählt hat; Diebstahl oder Festnahme muss einen anwesenden NPC nennen; eine Quest, die du beim Namen nimmst („I take the Vermin in the Malthouse Cellar quest“), darf auch ein späterer Report aktiv setzen, eine andere nicht;
    - der Report wird aus der Anzeige entfernt;
    - Zahlen in der Antwort, die der Engine widersprechen (z. B. „Init 8“), werden im nächsten Zug korrigiert;
    - fehlt der Report, bittet der nächste Engine-Block darum, und der nächste Report darf die Entscheidungen des Zuges ohne Report nachtragen;
@@ -39,7 +39,7 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
 1. Den Ordner `avereth-engine/` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren, oder über „Install extension“ aus einem Git-Repository installieren.
 2. SillyTavern neu laden. Unter Extensions erscheint **Avereth Engine**.
 3. **Charakterkarte:**
-   - Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v3.txt` (Stand 3.1; nach jedem Update neu einfügen);
+   - Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v3.txt` (Stand 3.2; nach jedem Update neu einfügen);
    - Begrüßung = First Message v0.4 (unverändert; die Zeile `Location: … outside <City>, <Realm>` legt den Startort fest).
 4. **Die Avereth-WorldInfo v1.23 deaktivieren.** Die Engine ersetzt sie; beides zusammen doppelt Regeln. Der Megumin-NPC-Patch ist optional.
 5. **Welt-Lore-Lorebook** (empfohlen, [docs/LOREBOOK.md](docs/LOREBOOK.md)):
@@ -60,6 +60,7 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
 | Recent turns not re-retrieved | 4 | was noch im Chatverlauf steht, wird nicht doppelt injiziert |
 | Injection depth | 0 | 0 = direkt vor der Generierung |
 | World lore | Auto | Auto: Lorebook der Karte, falls verknüpft, sonst die Lore der Engine. „Card lorebook“ oder „Engine“ erzwingen eine Quelle. Die Statuszeile zeigt die aktive. |
+| Word replacements | `ledger=register` | Wörter, die der Erzähler überstrapaziert, werden in seinen Antworten ersetzt: ganze Wörter, Plural und Großschreibung bleiben; Paare mit Komma trennen (`ledger=register, tapestry=weave`). Das Wort steht so auch nicht mehr im nächsten Prompt. Eine Bann-Liste im Preset nennt das Wort und macht es eher wahrscheinlicher. |
 | Show last engine block | aus | zeigt den zuletzt injizierten Engine-Block (Debugging) |
 
 Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log als JSON herunterlädt.
@@ -70,11 +71,14 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 - Kampf beginnt nur bei einem erklärten Angriff (Core #23). Zielen, Spurenlesen oder „Bogen bereit“ starten keinen Kampf.
 - **Ein** gültiges Ziel wird automatisch gewählt. Bei mehreren fragt das Spiel nach, ohne Kosten oder Würfe. „the nearest one“ nimmt im Kampf den nächsten Gegner nach Entfernung; stehen zwei gleich nah, fragt das Spiel.
 - Warten im Kampf: `I wait` / `I hold my position`.
+- Bewegung plus Angriff (Core #12/#24: ein Band plus eine Hauptaktion): `I step back and shoot`, `I kite backwards and Power Shot`. Alaric schießt und tritt danach ein Band zurück.
+- **Im Kampf redet niemand** (Kampfstille). Nur wer aufgibt oder verhandelt, darf einen kurzen Satz sagen. Hält sich die Erzählung nicht daran, korrigiert der nächste Engine-Block.
 - **Kampf und Proben stehen als System-Zeilen oben in der Antwort**, direkt aus den Engine-Würfen:
   - Initiative und Zugreihenfolge;
   - jede Aktion mit Trefferchance und W100;
   - `HP vorher - Schaden = HP nachher`;
   - HP aller Beteiligten, ihre Entfernung zu Alaric (`Range:`), Alarics MP/STA/Pfeile;
+  - vor Alarics Zug seine Angriffe mit der Trefferchance gegen das nächste Ziel: `Alaric's attacks vs cellar vermin: Basic Attack 73% · Aimed Shot 83% · Power Shot 63%`;
   - Kampfende mit XP;
   - greift jemand Alaric an, steht die Reihenfolge schon über dieser Antwort (`COMBAT START`, Initiative, HP, Entfernung, wer vor Alaric handelt), bevor du deine Aktion schreibst;
   - Handel und Beute als eigene Zeilen: `COIN -2 Copper → 4 Silver 8 Copper`, `ITEM +3 Standard Arrow → 23 carried`, `QUEST ACCEPTED — …`, Quest-XP und Level-up, Erholung.
@@ -102,10 +106,10 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 ## Für Entwickler
 
 ```
-npm test                               # 122 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Regression der Testruns 1–3
+npm test                               # 140 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Regression der Testruns 1–4
 node tools/testrun_compare.js          # Token-Vergleich mit Testrun-v1
 node tools/browser_smoke.mjs           # optional: index.js in echtem Chromium mit gemocktem SillyTavern-Kontext (braucht Playwright)
-node tools/lorebook_audit.mjs          # welche Lorebook-Einträge in den Testruns 2 und 3 feuern (World-Info-Nachbau)
+node tools/lorebook_audit.mjs          # welche Lorebook-Einträge in den Testruns 2–4 feuern (World-Info-Nachbau, gegen Testrun 4 bestätigt)
 python3 tools/migrate_content.py       # Content aus dem Paket v1.24 neu erzeugen (aus dem Repo-Wurzelverzeichnis)
 ```
 
@@ -116,7 +120,7 @@ python3 tools/migrate_content.py       # Content aus dem Paket v1.24 neu erzeuge
 | `content/` | Inhalte, siehe [docs/DATENMODELL.md](docs/DATENMODELL.md) |
 | `lorebook/` | Welt-Lore als SillyTavern-Lorebook (Character Lore), siehe [docs/LOREBOOK.md](docs/LOREBOOK.md) |
 | `schemas/` | JSON-Schemas für Content, Events und Report |
-| `tests/` | `unit/`, `scenarios/`, `testrun_v1/`, `testrun_v2/`, `testrun_v3/` |
+| `tests/` | `unit/`, `scenarios/`, `testrun_v1/` bis `testrun_v4/` |
 | `tools/` | Migration, Testrun-Vergleich, Lorebook-Audit |
 | `docs/` | Architektur, Datenmodell, Migration, WI-Bewertung, Lorebook, Testrun-Analyse |
 

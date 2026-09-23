@@ -68,7 +68,7 @@ Das Paket v1.24 (WorldInfo v1.23 + CD v2.3) bleibt als **Legacy-Modus ohne Engin
 Kurzfassung; Details im [README](../README.md).
 
 1. Den Ordner `avereth-engine/` als Third-Party-Extension installieren (Ordnername beliebig).
-2. In der Charakterkarte die Beschreibung durch `content/narrator/Avereth_Narrator_Contract_v3.txt` ersetzen. Die Begrüßung bleibt die First Message v0.4.
+2. In der Charakterkarte die Beschreibung durch `content/narrator/Avereth_Narrator_Contract_v3.txt` ersetzen (Stand 3.2). Die Begrüßung bleibt die First Message v0.4.
 3. Die Avereth-WorldInfo v1.23 **deaktivieren**. Der Megumin-NPC-Patch ist optional und mit Engine nicht nötig.
 4. `lorebook/Avereth_World_Lore_v0.11.json` importieren und an der Erzähler-Karte als **Character Lore** verknüpfen. World-Info-Einstellungen: Scan Depth 2, Budget Cap 1.800, Recursive Scan aus ([LOREBOOK.md](LOREBOOK.md)). Das Lorebook enthält nur beschreibende Welt, keine Regeln; es ersetzt die v1.23 nicht.
 5. Neuen Chat starten. Die Engine legt die Kampagne an der Begrüßung an. **Empfehlung:** zuerst einen wegwerfbaren Testchat spielen (Report-Format, Streaming, Swipes mit dem eigenen Modell prüfen), erst danach die Langzeitkampagne.

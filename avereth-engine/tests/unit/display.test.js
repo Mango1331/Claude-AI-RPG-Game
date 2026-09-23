@@ -113,6 +113,8 @@ test('an attack the reply reported is fixed and shown before anyone acts: Initia
     assert.equal(lines[0], '`COMBAT START — the wolf attacks Alaric`');
     assert.match(lines[1], new RegExp(`^\`Initiative: .*the wolf ${init}.* → Turn order: `));
     assert.match(lines.join('\n'), /`Range: the wolf MEDIUM`/);
-    assert.match(lines.at(-1), init > 9 ? /^`Next: Round 1 — the wolf acts before Alaric`$/ : /^`Next: Round 1 — Alaric acts first`$/);
+    assert.match(lines.at(-2), init > 9 ? /^`Next: Round 1 — the wolf acts before Alaric`$/ : /^`Next: Round 1 — Alaric acts first`$/);
+    // what each of Alaric's attacks rolls against: Base Hit 73% (PER 6) with the Skill's Hit modifier (Testrun 4)
+    assert.equal(lines.at(-1), '`Alaric\'s attacks vs the wolf: Basic Attack 73% · Aimed Shot 83% · Power Shot 63%`');
     assert.equal(r.state.encounter.round, 0, 'nothing resolved yet');
 });

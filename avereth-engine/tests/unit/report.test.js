@@ -201,3 +201,22 @@ test('Guild contracts carry a Quest Rank; the hidden XP level must lie in that r
     assert.equal(g.state.quests['quest.cellar_rats'].status, 'completed');
     assert.match(reasons(g.reply({ quests: [{ title: 'Dragon Hunt', status: 'offered', level: 40, type: 'major', rank: 'Legend' }] })), /a Legend contract's level lies in 90\+ \(Power Rank S\)/);
 });
+
+test('money is never an item (Testrun 4: three silver came as an item and as coin); unknown items keep their name', () => {
+    const g = ready();
+    for (const item of ['silver', '3 silver', 'copper coins', 'gold', 'coins']) {
+        assert.match(reasons(g.reply({ items: [{ item, qty: 3, from: 'guard', to: 'pc' }] })), /money is not an item/, item);
+    }
+    g.reply({ items: [{ item: 'Guild registration tag (lead, stamped, numbered)', qty: 1, to: 'pc', why: 'registration' }] });
+    assert.equal(g.state.item_names.guild_registration_tag, 'Guild registration tag');
+    assert.equal(g.state.entities.pc.sheet.inventory.guild_registration_tag, 1);
+});
+
+test('a person the reply names with a capitalised name is adopted, a descriptor is not (Testrun 4: "Fennick")', () => {
+    const g = ready();
+    const r = g.reply({ aware: [{ who: 'fennick', level: 'aware' }, { who: 'guard2', level: 'aware' }] }, 'From the stairs Fennick calls down. The guard watches.');
+    assert.ok(r.accepted.includes('named in the story: Fennick (npc.fennick)'));
+    assert.ok(g.state.scene.present.includes('npc.fennick'));
+    assert.deepEqual(r.rejected.map((x) => x.reason), ['aware: unknown person (introduce new people via "new")'], 'a lower-case word stays unknown');
+});
+

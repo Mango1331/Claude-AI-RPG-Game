@@ -64,6 +64,16 @@ Der Engine-Block sagt jetzt „Power Rank F“ statt „Rank F“. Das ist dasse
 | Quest-Gerüste am Aushang (Testrun 3, Zug 8) | vom Budget **abgeschnitten**, weil der Gildeneintrag es verbrauchte | beide aktiv (Complete quest body, Causal rule) |
 | Währung / Rang | feuerten in 16 von 25 Zügen, meist per Rekursion aus den Stadt-Einträgen („trade“, „S-rank“ im Text) | 2 Züge |
 
+## Bestätigung im echten Lauf (Testrun 4)
+
+Der erste Lauf mit dem Lorebook ([TESTRUN_V4.md](TESTRUN_V4.md)):
+- **Nachbau stimmt:** In 14 von 15 Zügen standen genau die Einträge im Prompt, die `tools/wi_sim.mjs` aus dem Chat berechnet. Einmal passte beim echten Tokenizer ein Eintrag mehr ins Budget.
+- **Bridge:** Realm Ilyrion und Lumenford waren in jedem Zug aktiv, auch in den kurzen Kampfantworten ohne Tracker-Box.
+- **Gilde:** Die Gildeneinträge waren nur in der Gilde aktiv. Am Aushang kamen Quest-Gerüste und Aushang-Eintrag dazu. GLM beschrieb fünf Aufträge des eigenen Rangs, ohne Level; die Engine prüfte die Rang-Bänder.
+- **Realm-Flair:** Tempel, Pilger und Wächter passen zu Ilyrion.
+- **Ein Leck, nicht aus dem Lorebook:** Das Vertragsbeispiel „I walk toward Ashbridge“ brachte GLM dazu, eine Stadt aus Duskreach zum Nachbarort zu machen. Das zog Realm Duskreach und Ashbridge in 9 von 16 Prompts (≈ 400 Token). Vertrag 3.2 nennt keine Stadt mehr.
+- **Last:** im Schnitt etwa 960 Token World Info über alle drei Testruns (`node tools/lorebook_audit.mjs`), Höchstwert 1.714.
+
 ## Änderungen v0.10b → v0.11 (nur kritische)
 
 1. **Gildeneintrag geteilt:**

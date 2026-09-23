@@ -167,7 +167,7 @@ Details: [docs/MIGRATION.md](docs/MIGRATION.md).
 
 ## 9. Tests
 
-`npm test`: **82 Tests, alle bestanden.** Dazu kommt `node tools/browser_smoke.mjs`: echtes Chromium mit gemocktem SillyTavern-Kontext, bestanden.
+`npm test`: **85 Tests, alle bestanden.** Dazu kommt `node tools/browser_smoke.mjs`: echtes Chromium mit gemocktem SillyTavern-Kontext, bestanden.
 
 | Gruppe | Inhalt |
 |---|---|
@@ -252,9 +252,10 @@ Die ChatGPT-Review wurde Punkt für Punkt per Probe gegen den Code geprüft und 
   - Spieler-Hoheit per `authorization` plus `taken_by`/`forced_by`;
   - quellenbasiertes `learn` (Gehörtes wird Claim);
   - explizite Zeugen (`witnesses`/`public`);
-  - Retcon per Edit mit neuem Report-Block;
+  - Retcon per Edit mit neuem Report-Block (nur neueste Antwort);
   - Aufmerksamkeit fällt nur durch Heimlichkeit zurück;
   - keine Wiederbelebung per Report.
 - **Beibehalten (B):** NPC↔NPC-Distanz (als Grenze dokumentiert), CHECK DIE (nächste Stufe „Pending Check“ dokumentiert), keine Snapshots (gemessen: 1.000 Züge ≈ 20 ms Fold).
 - **Kosten:** ein neuer Report-Schlüssel (`forced_by`), etwa +70 Token pro Zug, keine neue Kontextsektion.
 
+**Zweite Review (vor Testrun 2):** Die Schwelle war „nur, was den Test verfälschen oder State beschädigen kann“. Umgesetzt wurden drei kleine Engine-Fixes: Unbemerkte Zuschauer erfahren keinen Kampftod, Retcon gilt nur für die neueste Antwort, und NPC-gegen-NPC wird nicht mehr zu einem Angriff auf Alaric. Alles Weitere steht im Backlog mit Messpunkten für den Testrun: [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md).

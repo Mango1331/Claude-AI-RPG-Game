@@ -118,7 +118,7 @@ Beispiel (Trapper-Szene aus Testrun-v1):
 | `memory` | Zeugen = Beteiligte (`who`) + genannte `witnesses` + bei `public` alle Anwesenden, die nicht `unaware` sind; wer Alaric dabei sah, hängt von der Tarnung ab; sein Name wird zu `{pc}` |
 | `items` / `coin` / `recover` | Besitz geprüft; Abgabe durch Alaric nur mit Geben-/Zahlabsicht oder `taken_by` (anwesender NPC); Kupfer ganzzahlig und nie negativ; Erholung nie im Kampf, nie über Maximum |
 | `quests` / `threads` | Statusübergänge; `active` nur mit Annahme durch den Spieler; Quest-XP bei Angebot gesperrt, einmalig beim Abschluss |
-| `combat` / `intent` | `combat` als Objekt oder Liste: jede NPC-Festlegung wird PENDING und im nächsten Zug aufgelöst; nur Festgelegte kämpfen (keine automatische Teilnahme per Haltung/Spezies) |
+| `combat` / `intent` | `combat` als Objekt oder Liste: jede NPC-Festlegung auf einen Angriff auf Alaric wird PENDING und im nächsten Zug aufgelöst; nur Festgelegte kämpfen (keine automatische Teilnahme per Haltung/Spezies); ein anderes Ziel wird abgelehnt (NPC gegen NPC wird erzählt) |
 | `check` | nur mit dem CHECK DIE des Zuges; die Engine rechnet nach und behält ihr Ergebnis |
 | engine-owned | `hp`, `mp`, `sta`, `xp`, `level`, `stats`, `skills`, `damage`, `roll(s)`, `init`, `atk`, `def`, `mdef`, `rank`, `defeat_xp`: immer abgelehnt |
 

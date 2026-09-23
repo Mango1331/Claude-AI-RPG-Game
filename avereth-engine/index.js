@@ -126,6 +126,7 @@ async function onMessageEdited(messageId) {
         const r = onEdited(c.chat, Number(messageId), content);
         if (!r.changed) return;
         if (r.text) c.updateMessageBlock(Number(messageId), c.chat[messageId]);
+        if (r.refused) toastr.warning(`Avereth Engine: ${r.refused}`);
         await c.saveChat();
         renderDebug();
     } catch (err) {

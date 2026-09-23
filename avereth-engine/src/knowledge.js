@@ -125,7 +125,10 @@ export function memoryText(state, m, viewer = null) {
     return m.text.split('{pc}').join(label);
 }
 
-/** Present, perceiving entities (for witness sets). Unaware NPCs still perceive; the dead and the absent do not. */
+/**
+ * Present, living entities (physical presence only; the dead and the absent are excluded). Present is not perceiving:
+ * callers that grant knowledge or memories also drop NPCs that are unaware of the scene.
+ */
 export function perceivers(state) {
     return state.scene.present.filter((id) => state.entities[id] && state.entities[id].status !== 'dead');
 }

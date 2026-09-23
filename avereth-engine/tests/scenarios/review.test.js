@@ -7,7 +7,7 @@ import { loadContent, Game, scriptedDice } from '../helpers.js';
 import { applyEvent } from '../../src/state.js';
 import { humanSheet } from '../../src/npcgen.js';
 import { initEncounter, attackAction } from '../../src/combat.js';
-import { knows, PC_NAME_FACT } from '../../src/knowledge.js';
+import { knows, truth, PC_NAME_FACT } from '../../src/knowledge.js';
 
 const content = await loadContent();
 const inn = () => {
@@ -192,4 +192,32 @@ test('an encounter saved before per-combatant ammunition still lets Alaric shoot
     const t = g.input('I Power Shot the boar');
     assert.ok(!t.outcome.illegal, t.outcome.illegal);
     assert.ok(t.outcome.records.some((r) => r.actor === 'pc' && r.ammo));
+});
+
+test('an unaware bystander neither learns of a combat death nor remembers the fight; an attentive one does', () => {
+    const g = new Game(content, { seed: 5 }).ranger();
+    g.reply({
+        new: [{ ref: 'wolf', kind: 'creature', species: 'wolf', band: 'SHORT' }, { ref: 'goatherd', kind: 'npc', desc: ['goatherd'], band: 'MEDIUM' }, { ref: 'Mara', name: 'Mara', kind: 'npc', band: 'MEDIUM' }],
+        aware: [{ who: 'goatherd', level: 'unaware' }],
+    });
+    for (let i = 0; i < 8 && g.state.entities['mon.wolf'].status !== 'dead' && g.state.entities.pc.status !== 'dead'; i++) g.input('I Power Shot the wolf');
+    assert.equal(g.state.entities['mon.wolf'].status, 'dead');
+    const death = truth(g.state, 'mon.wolf', 'status')[0];
+    assert.ok(knows(g.state, 'npc.mara', death.id), 'Mara noticed the fight');
+    assert.ok(!knows(g.state, 'npc.goatherd', death.id), 'the unaware goatherd did not');
+    const fight = g.state.memories.filter((m) => m.kind === 'combat').at(-1);
+    assert.ok(fight.witnesses.includes('npc.mara') && !fight.witnesses.includes('npc.goatherd'));
+});
+
+test('an NPC attacking someone other than Alaric is narrated, never turned into an attack on Alaric', () => {
+    const g = inn();
+    g.reply({ new: [{ ref: 'bandit', kind: 'npc', desc: ['bandit'], band: 'SHORT' }] });
+    g.input('I watch.');
+    assert.match(reasons(g.reply({ combat: { by: 'Mara', target: 'bandit' } })), /combat target "bandit" is not Alaric: only an attack on Alaric starts engine combat/);
+    assert.deepEqual(g.state.pending_combat, []);
+    g.input('I keep watching.');
+    assert.ok(!g.state.encounter, 'Mara did not become Alaric\'s enemy');
+    const ok = g.reply({ combat: [{ by: 'bandit', target: 'Alaric' }] });
+    assert.equal(ok.rejected.length, 0, reasons(ok));
+    assert.deepEqual(g.state.pending_combat.map((x) => x.by), ['npc.bandit']);
 });

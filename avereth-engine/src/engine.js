@@ -250,13 +250,13 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction = null, c
     const pcC = enc.combatants.pc;
     for (const r of ['hp', 'mp', 'sta']) if (pcC.current[r] !== s.entities.pc.sheet[r]) emit({ t: 'resource.changed', d: { id: 'pc', resource: r, value: pcC.current[r] } });
     for (const r of res.records) if (r.ammo && s.entities[r.actor]?.sheet) emit({ t: 'item.changed', d: { id: r.actor, item: r.ammo.item, qty: -r.ammo.used, why: r.skill_name } });
-    // deaths are world truth (hard facts) witnessed by everyone present
+    // deaths are world truth (hard facts) witnessed by everyone present who noticed the fight (not the unaware)
     for (const c of Object.values(enc.combatants)) {
         if (c.current.hp === 0 && s.entities[c.id].status !== 'dead') {
             emit({ t: 'entity.status', d: { id: c.id, status: 'dead' } });
             setFactEvents(s, { id: `f.${c.id}.status.t${s.turn}`, s: c.id, p: 'status', o: 'dead', hard: true, importance: 0.9, source: { kind: 'engine', encounter: enc.id } }).forEach(emit);
             const deathFact = truth(s, c.id, 'status')[0];
-            for (const w of perceivers(s)) if (w !== c.id && deathFact) emit({ t: 'knowledge.gained', d: { who: w, about: deathFact.id, stance: 'knows', source: 'witnessed', turn: s.turn, minute: s.clock.minute } });
+            for (const w of perceivers(s)) if (w !== c.id && deathFact && s.scene.awareness[w] !== 'unaware') emit({ t: 'knowledge.gained', d: { who: w, about: deathFact.id, stance: 'knows', source: 'witnessed', turn: s.turn, minute: s.clock.minute } });
         }
     }
     if (terminal(enc)) {
@@ -288,7 +288,7 @@ function fightMemory(s, content, enc, summary) {
     const fate = (c) => (s.entities[c.id].status === 'dead' ? 'killed' : c.current.escaped ? 'fled' : c.current.surrendered ? 'surrendered' : 'survived');
     const skills = uniq(enc.log.filter((r) => r.actor === 'pc' && r.skill_name).map((r) => r.skill_name));
     const text = `Fight at ${s.scene.place || entityLabel(s, s.scene.location)}: {pc}${skills.length ? ` (${skills.join(', ')})` : ''} vs ${foes.map((c) => `${entityLabel(s, c.id)} — ${fate(c)}`).join('; ')}${summary.pc_dead ? '; {pc} died' : ''}.`;
-    const witnesses = uniq([...perceivers(s), ...foes.filter((c) => s.entities[c.id].status !== 'dead').map((c) => c.id)]);
+    const witnesses = uniq([...perceivers(s).filter((id) => s.scene.awareness[id] !== 'unaware'), ...foes.filter((c) => s.entities[c.id].status !== 'dead').map((c) => c.id)]);
     return {
         id: `m.${enc.id}`, turn: s.turn, minute: s.clock.minute, text, who: ['pc', ...foes.map((c) => c.id)], witnesses,
         seen: s.scene.concealed.includes('pc') ? ['pc'] : witnesses.slice(), location: s.scene.location, place: s.scene.place,

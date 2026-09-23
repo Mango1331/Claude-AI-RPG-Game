@@ -130,6 +130,24 @@ test('retcon: an edited reply with a new report block replaces its facts; {} dro
     assert.equal(chat[id].extra.avereth.retcon, true);
 });
 
+test('retcon is limited to the latest reply: an older reply keeps its facts until the later turns are deleted', () => {
+    const chat = newChat();
+    play(chat, 'I enter the inn.', 'Warm light.\n<avereth>{"new":[{"ref":"innkeeper","name":"Mara","kind":"npc","desc":["innkeeper"]}]}</avereth>');
+    const id = chat.length - 1;
+    play(chat, 'I greet Mara.', 'She nods.\n<avereth>{"attitude":[{"who":"Mara","delta":5,"why":"polite"}]}</avereth>');
+    chat[id].mes = 'Warm light.\n<avereth>{}</avereth>';
+    const r = onEdited(chat, id, content);
+    assert.equal(r.changed, true);
+    assert.match(r.refused, /latest reply/);
+    const { state, errors } = foldChat(chat);
+    assert.ok(state.entities['npc.mara'], 'the older reply keeps its facts');
+    assert.equal(state.relations['rel.npc.mara.attitude.pc'].value, 5, 'later turns stay consistent');
+    assert.deepEqual(errors, []);
+    chat.splice(id + 1); // delete the later turn, then save the edit again
+    assert.deepEqual(onEdited(chat, id, content), { changed: true, text: true });
+    assert.ok(!foldChat(chat).state.entities['npc.mara'], 'now the retcon applies');
+});
+
 test('# commands are answered by the engine without an LLM call, once', () => {
     const chat = newChat();
     chat.push(userMsg('#status #bag'));

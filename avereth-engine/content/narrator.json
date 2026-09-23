@@ -26,7 +26,7 @@
    "recover": "[{who?, hp?, mp?, sta?, why}] rest/healing/meals outside combat (amount by the narrative; never during combat)",
    "quests": "[{title, status:'offered'|'active'|'completed'|'failed', giver?, note?, level?, type?:'minor'|'standard'|'dangerous'|'major'}] (level/type when offered: they fix the Quest XP)",
    "threads": "[{text, kind:'promise'|'debt'|'threat'|'deadline'|'mystery', status:'open'|'resolved'}]",
-   "combat": "{by, target?} or a list: ONLY NPCs/creatures committing to an attack right now (never resolve it)",
+   "combat": "{by} or a list: ONLY NPCs/creatures committing to attack Alaric right now (never resolve it)",
    "intent": "[{who, intent:'attack'|'flee'|'surrender'|'parley'|'hold'|'take_cover'}] an NPC's next combat action",
    "check": "{what, stat, actor, opposition, actor_mods?:[pct], opp_mods?:[pct], success} only when the CHECK DIE was used"
   },

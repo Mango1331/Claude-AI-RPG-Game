@@ -167,15 +167,22 @@ export function processReply(chat, id, content, { seed } = {}) {
 /**
  * An edited reply keeps the facts it established (typo fixes, rewording): its record is re-stamped so it keeps
  * applying. To retcon, the player edits in a new report block (`<avereth>{...}</avereth>`, `{}` = no facts): the
- * reply is then re-validated against the state before it and its events are replaced. Later messages were validated
- * against the old facts; events that no longer apply are skipped by foldChat.
- * @returns {{changed: boolean, text?: boolean}} text = the visible message text changed (host re-renders it)
+ * reply is then re-validated against the state before it and its events are replaced. Only the latest reply can be
+ * retconned: later turns were resolved against its facts (rolls, XP, knowledge) and are not replayed, so an older
+ * reply keeps its facts and the host is told to delete the later messages first.
+ * @returns {{changed: boolean, text?: boolean, refused?: string}} text = the visible message text changed (host
+ *   re-renders it); refused = a retcon that was not applied (host shows it)
  */
 export function onEdited(chat, id, content) {
     const msg = chat[id];
     const r = rec(msg);
     if (!msg || msg.is_user || !r) return { changed: false };
     if (content && !r.system_answer && extractReport(msg.mes).report !== null && hasCampaign(chat) && !r.events?.some((e) => e.t === 'campaign.started')) {
+        if (chat.slice(id + 1).some((m) => messageEvents(m).length)) {
+            r.text_hash = hash32(msg.mes);
+            setRec(msg, r);
+            return { changed: true, refused: 'Retcon works only on the latest reply: delete the later messages first, then save this edit again. The reply keeps its facts for now.' };
+        }
         const { state } = foldChat(chat, id);
         const result = narratorReply(state, content, msg.mes, { msg: id });
         msg.mes = result.clean;

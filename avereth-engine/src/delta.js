@@ -435,14 +435,16 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         accepted.push(`thread ${status}: ${th.text}`);
     }
     // combat commitment by an NPC (PENDING; resolved by the engine on the next turn) and NPC intents
-    // only an actual commitment makes a combatant: attitude or kinship alone never does
+    // only an actual commitment makes a combatant: attitude or kinship alone never does. The engine resolves attacks on
+    // Alaric; a fight between NPCs is narrated (a target other than Alaric is never silently turned into Alaric)
     for (const cb of arr(report.combat)) {
         const by = resolve(cb && cb.by);
-        const target = resolve((cb && cb.target) || 'pc') || 'pc';
+        const target = cb && cb.target ? resolve(cb.target) : 'pc';
         if (state.mode === 'creation') reject(cb, 'no combat during Character Creation');
         else if (!by || by === 'pc' || !ent(by)) reject(cb, 'combat.by must be a present NPC or creature');
         else if (!present.has(by)) reject(cb, `${by} is not present`);
         else if (statusOf(state, by) === 'dead') reject(cb, `${by} is dead`);
+        else if (target !== 'pc') reject(cb, `combat target "${cb.target}" is not ${pcName}: only an attack on ${pcName} starts engine combat (omit "target"); a fight between NPCs is narrated, not resolved`);
         else if (inCombat(by)) reject(cb, `${by} is already in the encounter`);
         else { events.push({ t: 'combat.pending', d: { by, target, ...at } }); accepted.push(`combat committed by ${by} (pending)`); }
     }

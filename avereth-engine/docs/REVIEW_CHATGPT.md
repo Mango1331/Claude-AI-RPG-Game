@@ -44,3 +44,29 @@ Die Belege stehen als Tests in `tests/scenarios/review.test.js`, `tests/unit/int
 - Neu im Report-Format ist genau ein Schlüssel (`forced_by`); dazu kommen optionale Felder in `memory`, `items`, `coin` und `combat`.
 - Die Zustimmungsregel steht einmal in der Report-Anweisung.
 - Der Engine-Block wächst dadurch um rund 70 Token pro Zug (`tools/testrun_compare.js`: 1.100–1.390 statt 1.030–1.320).
+
+## Zweite Review (vor Testrun 2)
+
+**Schwelle:** Geändert wurde nur, was den nächsten Test verfälschen, State oder Wissen beschädigen oder zentrale RPG-Logik brechen kann. Jeder Punkt wurde per Probe am Code geprüft.
+- **A:** jetzt beheben.
+- **B:** verschieben.
+- **C:** nicht übernehmen.
+- **D:** dritte Lösung.
+
+| Punkt | Probe | Kat. | Entscheidung |
+|---|---|---|---|
+| Kampftod und Kampferinnerung erreichen auch `unaware`-Zuschauer (`perceivers`) | bestätigt | **A** | Die Engine selbst leckt Wissen (Fehlerklasse „boy“ aus Testrun-v1); das bricht Schleich- und Fernkampf-Spiel und würde GLM zugeschrieben. Fix: Filter `awareness !== 'unaware'` an den zwei Stellen; Test. |
+| Retcon einer älteren Antwort lässt spätere Mechanik stehen (XP für einen Wolf, den es nie gab; Fold-Fehler) | bestätigt | **A** | Beworbenes Feature beschädigt State still. Fix: Retcon nur für die neueste Antwort, sonst bleiben die Fakten und ein Hinweis erscheint; Test. |
+| `combat` mit Ziel ≠ Alaric wird zum Angriff auf Alaric (Mara greift den Banditen an → Mara wird Alarics Gegnerin) | bestätigt | **A** | Grob falsche Kampfauflösung bei häufiger Fiktion (Schlägerei, Wache gegen Dieb). Fix: ablehnen; Report-Text „attack Alaric“ (tokenneutral); Test. |
+| Zustimmung nur pro Kategorie (Brot kaufen → falsche Zahlung erlaubt; „I should pay you?“ zählt als Zahlung) | bestätigt | **B** | Zweite Verteidigungslinie. Das Risiko entsteht nur, wenn der Erzähler innerhalb einer vom Spieler geöffneten Kategorie überzieht. Typisierte Extraktion (Betrag, Item, Empfänger, Quest, Ziel) aus Freitext ist spröde; Fehlablehnungen würden den Test ebenso verfälschen. Erst messen. |
+| `recover` ohne Ruhe; Items/Coin **an** Alaric ohne Annahme | bestätigt | **B** | Gleiche Abwägung. Das Ruhe-Vokabular („catch my breath“, „nap“) und die Regeln für Heilung/Beute/Belohnung durch NPCs brauchen reale Daten. |
+| `learn` mit `witnessed` legt Weltwahrheit an | bestätigt, aber nicht spezifisch | **C** | Der `facts`-Schlüssel legt dieselbe Wahrheit ebenso an (Probe: sogar als harter Fakt). `learn` verlangt zusätzlich Anwesenheit und lehnt Widersprüche ab. Die Trennung brächte keinen Schutz, kostete Report-Token und verlöre Fakten, wenn der Erzähler nur `learn` meldet. |
+
+**Dritte Lösung (Backlog, falls der Test Überziehen zeigt):** Statt voll typisierter Autorisierung zuerst eine Nennprüfung. Abgegebene Items und neue Ziele (`location`) müssten dann in der Spielernachricht vorkommen, und `recover` für Alaric bräuchte `rest`. Das ist klein und lokal, braucht aber ein Vokabular, das die echten Eingaben abdeckt.
+
+**Im Testrun beobachten** (Button „Export event log“: Events je Nachricht; die Spielereingabe steht in `turn.begun`, Coin-, Item- und Ressourcen-Events tragen `why`):
+- `coin.changed` / `item.changed` / `quest.set active` / `scene.moved` mit Ortswechsel: Passt der konkrete Gegenstand zur Spielernachricht?
+- `resource.changed` aus `recover`: Hat der Spieler geruht, gegessen oder getrunken?
+- Items/Coin an Alaric: angenommen oder nur angeboten?
+- `delta.rejected` mit „PLAYER OWNERSHIP“: Fehlablehnungen (Spieler hatte zugestimmt, anders formuliert)?
+

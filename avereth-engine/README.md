@@ -30,7 +30,7 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
 - **Swipe:** Jede Alternative hat eigene Fakten.
 - **Regenerieren:** gleiche Würfel; es wird nie neu gewürfelt.
 - **Löschen:** nimmt die Fakten der gelöschten Nachrichten mit.
-- **Bearbeiten:** Eine editierte Antwort behält ihre Fakten. **Retcon:** einen neuen `<avereth>{…}</avereth>`-Block in die Antwort schreiben; sie wird neu geprüft (`{}` verwirft ihre Fakten).
+- **Bearbeiten:** Eine editierte Antwort behält ihre Fakten. **Retcon:** einen neuen `<avereth>{…}</avereth>`-Block in die **neueste** Antwort schreiben; sie wird neu geprüft (`{}` verwirft ihre Fakten). Bei älteren Antworten erst die späteren Nachrichten löschen.
 
 ## Installation
 
@@ -83,7 +83,7 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 ## Für Entwickler
 
 ```
-npm test                               # 82 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Testrun-v1-Regression
+npm test                               # 85 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Testrun-v1-Regression
 node tools/testrun_compare.js          # Token-Vergleich mit Testrun-v1
 node tools/browser_smoke.mjs           # optional: index.js in echtem Chromium mit gemocktem SillyTavern-Kontext (braucht Playwright)
 python3 tools/migrate_content.py       # Content aus dem Paket v1.24 neu erzeugen (aus dem Repo-Wurzelverzeichnis)

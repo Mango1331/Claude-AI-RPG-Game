@@ -111,6 +111,24 @@ export function swapWords(text, swaps = []) {
     return out;
 }
 
+/**
+ * The presentation layer's retired state blocks (Megumin <Blocks>, <World_State>, <Character_Sheet>, <New_NPC>,
+ * <NPC_Update>): the engine owns that state and renders the HUD (Runtime V3). A block cut off at the end of a reply
+ * (no closing tag) is removed too.
+ */
+export const TRACKER_TAGS = ['Blocks', 'World_State', 'Character_Sheet', 'New_NPC', 'NPC_Update'];
+const TRACKER_RES = TRACKER_TAGS.map((t) => new RegExp(`<${t}\\b[^>]*>[\\s\\S]*?(?:</${t}>|$)`, 'g'));
+
+export function hasTrackerBlocks(text) {
+    return TRACKER_TAGS.some((t) => new RegExp(`<${t}\\b`).test(String(text || '')));
+}
+
+export function stripTrackerBlocks(text) {
+    let out = String(text || '');
+    for (const re of TRACKER_RES) out = out.replace(re, '');
+    return out.replace(/\n{3,}/g, '\n\n').trim();
+}
+
 /** Display name of an item: the content pack's, else the name the narrator gave it (state.item_names), else its id. */
 export function itemLabel(state, content, id) {
     return content.items.get(id)?.name || state?.item_names?.[id] || String(id).replace(/_/g, ' ');

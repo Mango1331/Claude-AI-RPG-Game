@@ -21,7 +21,7 @@ import { extractReport, reportToEvents } from './delta.js';
 import { truth, knows, perceivers, entityLabel, setFactEvents, PC_NAME_FACT, PC_LOOK_FACT } from './knowledge.js';
 import { buildContext } from './context.js';
 import { parseCoin } from './economy.js';
-import { clone, hash32, normText, uniq } from './util.js';
+import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks } from './util.js';
 
 export const ENGINE_VERSION = '2.0.0';
 
@@ -330,9 +330,11 @@ function fightMemory(s, content, enc, summary) {
 // ------------------------------------------------------------------------------------------------ narrator reply
 /**
  * Validate the narrator's reply: fact report -> events, perception (who has now seen Alaric), an episodic trace of
- * the turn, and tracker drift detection (numbers in the reply that contradict the engine -> corrections).
+ * the turn, and drift detection (numbers in the reply that contradict the engine -> corrections). Runtime V3: tracker
+ * blocks the presentation layer still writes (<World_State>, <Character_Sheet>, <New_NPC>, <NPC_Update>) are removed
+ * (stripTrackers) and never become state: the engine owns that state and renders the player's HUD.
  */
-export function narratorReply(state, content, replyText, { msg = null } = {}) {
+export function narratorReply(state, content, replyText, { msg = null, stripTrackers = true } = {}) {
     const s = clone(state);
     const events = [];
     const dice = Dice.from(s);
@@ -341,7 +343,9 @@ export function narratorReply(state, content, replyText, { msg = null } = {}) {
         applyEvent(s, e);
         events.push(e);
     };
-    const { clean, report, error } = extractReport(replyText);
+    const { clean: raw, report, error } = extractReport(replyText);
+    const trackers = hasTrackerBlocks(raw);
+    const clean = stripTrackers ? stripTrackerBlocks(raw) : raw;
     const res = reportToEvents(report, s, content, { msg, prose: clean });
     res.events.forEach(emit);
     for (const r of res.rejected) emit({ t: 'delta.rejected', d: r });
@@ -374,8 +378,9 @@ export function narratorReply(state, content, replyText, { msg = null } = {}) {
     }
     const opened = openCommitted(s, content, dice, emit);
     const corrections = [...res.corrections, ...trackerDrift(s, content, clean), ...combatSpeech(state, clean)];
+    if (trackers && stripTrackers) corrections.push('Your last reply wrote tracker blocks (<World_State>, <Character_Sheet>, <New_NPC>, <NPC_Update>): they are retired and were removed. The engine keeps that state and shows the player its HUD; write only the story and the fact report.');
     for (const r of res.rejected) corrections.push(`Rejected from your fact report: ${r.reason}.`);
-    if (!report) corrections.push(`Your previous reply had no valid <avereth> fact report (${error}). Write it right after the story text, before any tracker or status blocks; this reply's report may also record the player's decisions from that turn (hand-overs, coin, quests), {} if nothing.`);
+    if (!report) corrections.push(`Your previous reply had no valid <avereth> fact report (${error}). Write it right after the story text; this reply's report may also record the player's decisions from that turn (hand-overs, coin, quests), {} if nothing.`);
     return { events, clean, report, accepted: res.accepted, rejected: res.rejected, corrections, report_error: report ? null : error, opened, state: s };
 }
 

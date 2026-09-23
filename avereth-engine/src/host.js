@@ -11,7 +11,7 @@ import { loreKeys } from './context.js';
 import { extractReport } from './delta.js';
 import { turnPanel } from './display.js';
 import { renderHud } from './hud.js';
-import { hash32, clone, swapWords } from './util.js';
+import { hash32, clone, swapWords, hasTrackerBlocks, stripTrackerBlocks } from './util.js';
 
 export const KEY = 'avereth';
 export const RECORD_VERSION = 2;
@@ -146,7 +146,7 @@ export function prepareGeneration(chat, content, { type = 'normal', settings = {
  * hud: 'closed' | 'open' | 'off'.
  * @returns {{changed: boolean, result?: object}}
  */
-export function processReply(chat, id, content, { seed, swaps = [], hud = 'closed' } = {}) {
+export function processReply(chat, id, content, { seed, swaps = [], hud = 'closed', stripTrackers = true } = {}) {
     const msg = chat[id];
     if (!msg || msg.is_user || msg.is_system) return { changed: false };
     if (!hasCampaign(chat)) {
@@ -163,7 +163,7 @@ export function processReply(chat, id, content, { seed, swaps = [], hud = 'close
         return { changed: true };
     }
     const { state } = foldChat(chat, id);
-    const result = narratorReply(state, content, msg.mes, { msg: id });
+    const result = narratorReply(state, content, msg.mes, { msg: id, stripTrackers });
     msg.mes = swapWords(result.clean, swaps);
     const panel = turnPanel(state, content, result.state.last?.check, result);
     const view = renderHud(result.state, content, hud);
@@ -222,4 +222,33 @@ export function onEdited(chat, id, content) {
     if (r.panel || r.hud) showPanel(msg, r.panel, r.hud); // the edited narration between the same System block and HUD
     setRec(msg, r);
     return r.panel || r.hud ? { changed: true, text: true } : { changed: true };
+}
+
+/**
+ * Prompt-only projection of the chat history (Runtime V3), applied by the generate interceptor to SillyTavern's prompt
+ * copy of the chat (coreChat: shallow copies of the messages, so the saved chat, its swipes and what the player sees
+ * are never touched):
+ *  - the presentation layer's retired tracker blocks (<Blocks>, <World_State>, <Character_Sheet>, <New_NPC>,
+ *    <NPC_Update>) are removed from every earlier reply, so old saves stop feeding them back to the narrator;
+ *  - only the last `keepTurns` exchanges (player message + reply) stay; older turns reach the narrator through the
+ *    engine block (NPC cards, retrieved memories, facts, quests, threads). keepTurns 0 keeps the whole history.
+ * @returns {{removed: number, stripped: number}}
+ */
+export function projectPromptHistory(messages, { keepTurns = 4 } = {}) {
+    let stripped = 0;
+    for (let i = 0; i < messages.length; i++) {
+        const m = messages[i];
+        if (!m || m.is_user || typeof m.mes !== 'string' || !hasTrackerBlocks(m.mes)) continue;
+        messages[i] = { ...m, mes: stripTrackerBlocks(m.mes) };
+        stripped += 1;
+    }
+    let removed = 0;
+    if (keepTurns > 0) {
+        const users = messages.map((m, i) => (m?.is_user ? i : -1)).filter((i) => i >= 0);
+        if (users.length > keepTurns) {
+            removed = users[users.length - keepTurns];
+            messages.splice(0, removed);
+        }
+    }
+    return { removed, stripped };
 }

@@ -51,7 +51,10 @@ test('turn 2: the creation reply cannot grant the starter kit a second time (the
 test('turn 4: "enter" for someone the same report introduces is no error (no misleading correction)', () => {
     assert.ok(turns[3].state.scene.present.includes('npc.bram_fenn'));
     assert.deepEqual(turns[3].reply.rejected, []);
-    assert.doesNotMatch(turns[4].context.text, /CORRECTIONS/);
+    // the only correction left is the Runtime V3 notice about the retired tracker blocks this old session still wrote
+    const corrections = (turns[4].context.text.split('CORRECTIONS')[1] || '').split('\n\n')[0];
+    assert.doesNotMatch(corrections, /enter|unknown person|Rejected/);
+    assert.match(corrections, /tracker blocks \(<World_State>, <Character_Sheet>, <New_NPC>, <NPC_Update>\): they are retired/);
 });
 
 test('turns 6-7: the trapper left behind at LONG is no longer present, so the stealth approach meets nobody', () => {

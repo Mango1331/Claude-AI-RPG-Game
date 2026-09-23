@@ -39,20 +39,31 @@ function day(minute) {
     return formatClock(minute).split(' (')[0];
 }
 
-export function pcLine(state, content) {
+const ITEM_RE = /\b(?:give|gives|hand|hands|show|shows|take|takes|buy|buys|sell|sells|pay|pays|paid|coin|coins|money|purse|pouch|bag|pack|inventory|item|items|carry|carries|drop|drops|pick up|loot|trade|price|cost)\b/i;
+
+/**
+ * Alaric as the narrator needs him this turn (Context Projector, Runtime V3): who he is and how he looks, his
+ * resources and the stats a Core #7 check may use, visible gear. Combat adds ATK/DEF/Initiative and Skills; trade,
+ * loot or talk of items adds what he carries and his coin. The player sees everything in the HUD instead.
+ * opts: {combat, items}
+ */
+export function pcLine(state, content, { combat = !!state.encounter, items = true, skills = combat } = {}) {
     const e = state.entities.pc;
     const s = e.sheet;
     const dv = deriveCharacter(s, content);
     const cls = s.class ? content.classes.get(s.class).name : 'no Class yet';
-    const skills = Object.entries(s.skills).map(([id, v]) => `${content.skills.get(id)?.name || id} P${v.prof}`);
+    const guild = truth(state, 'pc', 'guild_rank')[0]?.o;
+    const skillList = Object.entries(s.skills).map(([id, v]) => `${content.skills.get(id)?.name || id} P${v.prof}`);
     const arrows = s.inventory.standard_arrow;
     const inv = Object.entries(s.inventory).filter(([k]) => k !== 'standard_arrow').map(([k, q]) => `${itemLabel(state, content, k)}${q > 1 ? ` ×${q}` : ''}`);
     const equip = Object.values(s.equipment).map((r) => (typeof r === 'string' ? content.items.get(r)?.name || r : r.name));
-    return [
-        `${e.name} — Level ${s.level} Power Rank ${dv.rank} ${cls} | HP ${s.hp}/${dv.maxHp} MP ${s.mp}/${dv.maxMp} STA ${s.sta}/${dv.maxSta} | XP ${s.xp}/${s.level * content.rules.progression.xp_to_next_per_level}${s.free_points ? ` | Free Stat Points ${s.free_points}` : ''}${e.status === 'dead' ? ' | DEAD' : ''}`,
-        `STR ${s.stats.STR} VIT ${s.stats.VIT} AGI ${s.stats.AGI} INT ${s.stats.INT} PER ${s.stats.PER} WIL ${s.stats.WIL} | ATK ${dv.atk} MATK ${dv.matk} DEF ${dv.def} MDEF ${dv.mdef} | Init ${dv.init}`,
-        `Skills: ${joinList(skills)} | Equipped: ${joinList(equip)}${arrows !== undefined ? ` | Arrows ${arrows}` : ''} | Carried: ${joinList(inv)} | Coin ${formatCoin(s.coin_cp, content)}`,
-    ].join('\n');
+    const lines = [
+        `${e.name} — Level ${s.level} ${cls}, Power Rank ${dv.rank}${guild ? `, Guild ${guild}` : ''} | HP ${s.hp}/${dv.maxHp} (${conditionLabel(s.hp, dv.maxHp)}) MP ${s.mp}/${dv.maxMp} STA ${s.sta}/${dv.maxSta}${s.free_points ? ` | Free Stat Points ${s.free_points}` : ''}${e.status === 'dead' ? ' | DEAD' : ''}`,
+        `STR ${s.stats.STR} VIT ${s.stats.VIT} AGI ${s.stats.AGI} INT ${s.stats.INT} PER ${s.stats.PER} WIL ${s.stats.WIL}${combat ? ` | ATK ${dv.atk} MATK ${dv.matk} DEF ${dv.def} MDEF ${dv.mdef} | Init ${dv.init}` : ''} | Equipped: ${joinList(equip)}${arrows !== undefined ? ` | Arrows ${arrows}` : ''}`,
+    ];
+    if (skills) lines.push(`Skills: ${joinList(skillList)}`);
+    if (items) lines.push(`Carried: ${joinList(inv)} | Coin ${formatCoin(s.coin_cp, content)}`);
+    return lines.join('\n');
 }
 
 /**
@@ -333,7 +344,14 @@ export function buildContext(state, content, opts = {}) {
     const add = (name, text, priority, own = false) => text && sections.push({ name, text, priority, own, tokens: estimateTokens(text) });
 
     add('header', `[AVERETH ENGINE — authoritative game state, turn ${state.turn}. Numbers, rolls, positions and knowledge below are binding; narrate, never recalculate.]\n${formatClock(state.clock.minute)} | ${loc ? `${loc.name}${realm ? `, ${realm}` : ''}` : 'unknown location'}${state.scene.place ? ` — ${state.scene.place}` : ''} | mode: ${state.mode}${locStatus !== 'exists' && locStatus !== 'alive' ? ` | LOCATION STATUS: ${String(locStatus).toUpperCase()}` : ''}\nSetting: Western-fantasy medieval material culture with mana/high magic; letters and messengers for distance; no modern technology.`, 0);
-    add('pc', pcLine(state, content), 0);
+    // what Alaric's line carries depends on the turn: items and coin only when trade, loot or items are in play
+    const itemScan = `${input} ${lastReply}`;
+    const skillNamed = Object.keys(state.entities.pc.sheet?.skills || {}).some((id) => mentioned(content.skills.get(id)?.name || id, normText(input)));
+    add('pc', pcLine(state, content, {
+        combat: !!state.encounter || opts.outcome?.kind === 'combat',
+        items: state.mode === 'creation' || ITEM_RE.test(itemScan) || (opts.situations || []).some((x) => x === 'trade' || x === 'loot'),
+        skills: state.mode === 'creation' || !!state.encounter || opts.outcome?.kind === 'combat' || skillNamed,
+    }), 0);
     if (state.mode === 'creation') add('creation', `CHARACTER CREATION — STEP ${state.creation.step}/2 in progress. Story time is frozen.${state.creation.step === 1 ? ` Base Classes: ${[...content.classes.values()].map((c) => `${c.name} (${c.favored.join('/')})`).join(', ')}.` : ''}`, 0);
 
     const queryText = `${input} ${lastReply}`;
@@ -391,7 +409,7 @@ export function buildContext(state, content, opts = {}) {
         add('resolved', `SYSTEM QUERY (#system): ${opts.systemQuery}\nAnswer ONLY as the System (neutral, private, computer-like): no narration, no NPC reactions, story time and combat stay frozen. Use the state above, Core rules and player-known content; show formulas and arithmetic when useful; say INSUFFICIENT INFORMATION when data is missing. Never reveal hidden NPC data.`, 0);
     } else {
         add('resolved', opts.outcome ? `RESOLVED THIS TURN (binding):\n${outcomeBlock(state, content, opts.outcome)}` : '', 0);
-        add('report', reportInstruction(content), 0, true);
+        add('report', reportInstruction(content, reportKeys(state, content, { outcome: opts.outcome, scan: `${input} ${lastReply}` })), 0, true);
     }
 
     // pack by priority under budget (priority 0 always kept; sections with their own allowance don't count)
@@ -417,7 +435,32 @@ export function loreKeys(state, content) {
     return keys.filter(Boolean);
 }
 
-export function reportInstruction(content) {
+// Situational fact-report schema (Runtime V3): the parser accepts every key on every turn, but the prompt lists only
+// the keys that can matter now — the full list cost ~800 tokens on every turn, including combat rounds.
+const STORY_KEYS = ['time', 'place', 'location', 'forced_by', 'new', 'enter', 'leave', 'position', 'aware', 'concealed', 'facts', 'learn', 'believe', 'attitude', 'memory', 'items', 'coin', 'threads', 'combat'];
+const COMBAT_KEYS = ['time', 'new', 'enter', 'leave', 'concealed', 'facts', 'memory', 'combat', 'intent'];
+const QUEST_RE = /\b(?:quests?|jobs?|bills?|bount\w*|contracts?|guild|board|notices?|postings?|rewards?|tasks?|commissions?|hire\w*|work)\b/i;
+const REST_RE = /\b(?:rest\w*|sleep\w*|eat\w*|meal|drink\w*|heal\w*|bandag\w*|potion|tend\w*|camp\w*|inn)\b/i;
+
+/** The report keys this turn can use: none in character creation, the combat set while a fight runs, else story. */
+export function reportKeys(state, content, { outcome = null, scan = '' } = {}) {
+    if (state.mode === 'creation' || String(outcome?.kind || '').startsWith('creation')) return [];
+    if (state.encounter && !outcome?.ended) return COMBAT_KEYS;
+    const keys = [...STORY_KEYS];
+    const quests = Object.values(state.quests).some((q) => q.status === 'offered' || q.status === 'active');
+    if (quests || QUEST_RE.test(`${scan} ${state.scene.place || ''}`)) keys.push('quests');
+    const s = state.entities.pc?.sheet;
+    const dv = s ? deriveCharacter(s, content) : null;
+    if (REST_RE.test(scan) || (dv && (s.hp < dv.maxHp || s.mp < dv.maxMp || s.sta < dv.maxSta))) keys.push('recover');
+    if (outcome?.kind === 'narrative' && outcome.check_die) keys.push('check');
+    if ((state.pending_combat || []).length) keys.push('intent');
+    return keys;
+}
+
+export function reportInstruction(content, keys = Object.keys(content.narrator.report.keys)) {
     const r = content.narrator.report;
-    return `FACT REPORT: ${r.instruction}\n${Object.entries(r.keys).map(([k, v]) => `${k}: ${v}`).join(' | ')}\nExample: ${r.example}`;
+    if (!keys.length) return 'FACT REPORT: end the reply with <avereth>{}</avereth> (character creation: nothing to report).';
+    const all = r.keys;
+    const listed = Object.keys(all).filter((k) => keys.includes(k));
+    return `FACT REPORT: ${r.instruction}\n${listed.map((k) => `${k}: ${all[k]}`).join(' | ')}${listed.includes('new') && listed.includes('aware') ? `\nExample: ${r.example}` : ''}`;
 }

@@ -88,7 +88,7 @@ test('turn 6: "Im Alaric", said to the three of them, tells all three his name',
 
 test('a reply without a report: the next engine block asks for it right after the story text, and may still record that turn\'s decisions', () => {
     for (const n of [6, 7, 9, 13, 14]) assert.equal(T(n).reply.report_error, 'no <avereth> report', `turn ${n}`);
-    assert.match(T(10).context.text, /no valid <avereth> fact report[^\n]*Write it right after the story text, before any tracker or status blocks/);
+    assert.match(T(10).context.text, /no valid <avereth> fact report[^\n]*Write it right after the story text;/);
     assert.deepEqual(T(10).state.last.carry, [T(9).input], 'turn 9 (taking the rat quest) may still be reported with turn 10');
     assert.deepEqual(T(11).state.last.carry, [], 'turn 10 had a report');
 });

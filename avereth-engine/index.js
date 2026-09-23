@@ -6,7 +6,7 @@
 //   * Lore Bridge           -> the current realm and location as World Info scan text (never part of the prompt), so
 //                              the narrator card's lorebook (lorebook/, docs/LOREBOOK.md) activates the right entries
 import { loadContentPack } from './src/content.js';
-import { prepareGeneration, processReply, onEdited, foldChat, ensureCampaign, hasCampaign } from './src/host.js';
+import { prepareGeneration, processReply, onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory } from './src/host.js';
 import { validateState } from './src/validate.js';
 import { newSeed } from './src/rng.js';
 import { parseSwaps } from './src/util.js';
@@ -14,10 +14,11 @@ import { parseSwaps } from './src/util.js';
 const MODULE = 'avereth';
 const PROMPT_KEY = 'avereth_engine';
 const LORE_KEY = 'avereth_lore_keys';
-const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: 'ledger=register', hud: 'closed' };
+const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: 'ledger=register', hud: 'closed', historyTurns: 4, stripTrackers: true };
 
 let content = null;
 let lastContext = null;
+let lastProjection = null;
 let legacyWarned = null;
 
 function ctx() {
@@ -90,7 +91,9 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
                 return;
             }
         }
-        const r = prepareGeneration(c.chat, content, { type, settings: { ...s, engineLore: !loreFromWorldInfo() } });
+        // turns still in the prompt's history window are not retrieved again; turns before it are
+        const recentTurns = s.historyTurns > 0 ? Math.min(s.recentTurns, s.historyTurns) : s.recentTurns;
+        const r = prepareGeneration(c.chat, content, { type, settings: { ...s, recentTurns, engineLore: !loreFromWorldInfo() } });
         setLoreKeys(r.loreKeys);
         if (r.action === 'clear' || r.action === 'none') {
             // 'clear': quiet/impersonate generations get no engine block; 'none': no campaign or no player message yet
@@ -115,6 +118,8 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         }
         lastContext = r.context;
         setPrompt(r.context.text);
+        // prompt-only: retired tracker blocks out of the history, and only the last exchanges (the saved chat is untouched)
+        lastProjection = projectPromptHistory(chat, { keepTurns: Number(s.historyTurns) || 0 });
         if (r.errors?.length) console.warn('[Avereth] fold errors', r.errors);
         if (r.dirty) await c.saveChat();
         renderDebug();
@@ -144,7 +149,7 @@ async function onMessageReceived(messageId) {
     if (!settings().enabled || !content) return;
     const c = ctx();
     try {
-        const r = processReply(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud });
+        const r = processReply(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers });
         if (!r.changed) return;
         rerender(c, Number(messageId));
         await c.saveChat();
@@ -181,7 +186,7 @@ function renderDebug() {
     const { state, errors } = foldChat(c.chat);
     const problems = state.meta.started ? validateState(state, content) : [];
     el.textContent = state.meta.started
-        ? `turn ${state.turn} | mode ${state.mode} | events ${c.chat.reduce((a, m) => a + (m.extra?.avereth?.events?.length || 0), 0)} | integrity: ${problems.length || errors.length ? `${problems.length + errors.length} problem(s)` : 'OK'}${lastContext ? ` | last block ~${lastContext.tokens} tokens` : ''} | lore: ${loreFromWorldInfo() ? `World Info${cardLorebook() ? ` (${cardLorebook()})` : ''}` : 'engine'}`
+        ? `turn ${state.turn} | mode ${state.mode} | events ${c.chat.reduce((a, m) => a + (m.extra?.avereth?.events?.length || 0), 0)} | integrity: ${problems.length || errors.length ? `${problems.length + errors.length} problem(s)` : 'OK'}${lastContext ? ` | last block ~${lastContext.tokens} tokens` : ''}${lastProjection ? ` | history: ${lastProjection.removed} older message(s) left out, ${lastProjection.stripped} tracker block(s) removed` : ''} | lore: ${loreFromWorldInfo() ? `World Info${cardLorebook() ? ` (${cardLorebook()})` : ''}` : 'engine'}`
         : 'no campaign in this chat';
     const dbg = document.getElementById('avereth_debug');
     if (dbg) dbg.value = settings().showDebug ? [lastContext?.text || '', ...problems, ...errors].join('\n') : '';
@@ -208,6 +213,8 @@ function mountSettings() {
       <label class="avereth-row">Context budget (tokens) <input type="number" id="avereth_budget" min="400" max="6000" step="100"></label>
       <label class="avereth-row">Rules allowance (tokens) <input type="number" id="avereth_rules" min="0" max="3000" step="100"></label>
       <label class="avereth-row">Recent turns not re-retrieved <input type="number" id="avereth_recent" min="0" max="50" step="1"></label>
+      <label class="avereth-row" title="exchanges (player message + reply) kept in the prompt; older ones reach the narrator through the engine block. 0 = whole history. The saved chat is never changed.">History window (exchanges) <input type="number" id="avereth_history" min="0" max="100" step="1"></label>
+      <label class="avereth-row" title="remove World_State / Character_Sheet / New_NPC / NPC_Update blocks from new replies (the engine HUD replaces them)"><input type="checkbox" id="avereth_strip"> Remove tracker blocks from new replies</label>
       <label class="avereth-row">Injection depth <input type="number" id="avereth_depth" min="0" max="20" step="1"></label>
       <label class="avereth-row">World lore <select id="avereth_lore">
         <option value="auto">Auto: card lorebook if linked, else engine</option>
@@ -243,6 +250,8 @@ function mountSettings() {
     bind('avereth_budget', 'budget', Number);
     bind('avereth_rules', 'rulesBudget', Number);
     bind('avereth_recent', 'recentTurns', Number);
+    bind('avereth_history', 'historyTurns', Number);
+    bind('avereth_strip', 'stripTrackers');
     bind('avereth_depth', 'depth', Number);
     bind('avereth_lore', 'loreSource', String);
     bind('avereth_swaps', 'wordSwaps', String);
@@ -266,7 +275,7 @@ function mountSettings() {
     c.eventSource.on(ev.MESSAGE_EDITED, onMessageEdited);
     // state is always re-folded from the chat, so these events only refresh the status line; the interceptor sets
     // the engine block before every generation (normal, swipe, regenerate, continue)
-    c.eventSource.on(ev.CHAT_CHANGED, () => { lastContext = null; setPrompt(''); setLoreKeys([]); renderDebug(); });
+    c.eventSource.on(ev.CHAT_CHANGED, () => { lastContext = null; lastProjection = null; setPrompt(''); setLoreKeys([]); renderDebug(); });
     for (const t of [ev.MESSAGE_DELETED, ev.MESSAGE_SWIPED]) c.eventSource.on(t, () => renderDebug());
     mountSettings();
     renderDebug();

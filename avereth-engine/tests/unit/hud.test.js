@@ -153,6 +153,9 @@ test('drift: a narrator that writes wrong coin, HP, STA, quest status or positio
     assert.match(hud, /Rats \(offered\)/);
     assert.doesNotMatch(hud, /Guild hall|Lumenford|38|50\/80/);
     // and the next engine block names the contradictions for the narrator
-    assert.ok(r.result.corrections.some((c) => /Coin \(Copper\) shown as 38, engine value is 30/.test(c)), r.result.corrections.join(' | '));
-    assert.ok(r.result.corrections.some((c) => /HP shown as 50, engine value is 80/.test(c)));
+    assert.ok(r.result.corrections.some((c) => /HP shown as 50, engine value is 80/.test(c)), r.result.corrections.join(' | '));
+    assert.ok(r.result.corrections.some((c) => /STA shown as 10, engine value is 100/.test(c)));
+    // the retired tracker blocks are removed from the reply (never shown, never quoted in later prompts) and named
+    assert.doesNotMatch(chat.at(-1).mes, /World_State|Character_Sheet/);
+    assert.ok(r.result.corrections.some((c) => /tracker blocks .* are retired and were removed/.test(c)));
 });

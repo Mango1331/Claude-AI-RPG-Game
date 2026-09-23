@@ -1,5 +1,6 @@
 // Optional real-browser smoke test of the SillyTavern binding (index.js): serves this folder, loads index.js in
-// Chromium with a minimal mock of SillyTavern.getContext(), and plays greeting -> creation -> reply -> retcon edit -> #command.
+// Chromium with a minimal mock of SillyTavern.getContext(), and plays greeting -> creation -> reply -> retcon edit -> #command
+// -> Runtime V3 (HUD under replies, tracker blocks removed, prompt-only history projection).
 // Requires Playwright (not a project dependency). Usage: node tools/browser_smoke.mjs
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -54,9 +55,12 @@ await handlers.me(2);
 await new Promise((r) => setTimeout(r, 0)); // SillyTavern redraws from mes after MESSAGE_EDITED; the engine redraws after that
 result.retcon = chat[2].mes === 'Step 2 shown, retold.' && chat[2].extra.avereth.retcon === true && (window.__rerendered || []).includes(2);
 // a combat turn: the reply shows the engine's System block (display_text), the prompt text stays plain
+// like SillyTavern, the interceptor gets coreChat: a new array of shallow copies (the saved chat stays untouched)
+let core = null;
 const turn = async (input, reply) => {
   chat.push({ is_user: true, is_system: false, mes: input, extra: {} });
-  await globalThis.averethInterceptor(chat, 8000, () => {}, 'normal');
+  core = chat.filter((m) => !m.is_system).map((m) => ({ ...m }));
+  await globalThis.averethInterceptor(core, 8000, () => {}, 'normal');
   chat.push({ is_user: false, is_system: false, mes: reply, swipe_id: 0, swipes: [reply], swipe_info: [{ extra: {} }], extra: {} });
   await handlers.mr(chat.length - 1);
 };
@@ -78,7 +82,21 @@ result.command = aborted && /SYSTEM \\/\\/ STATUS/.test((window.__panels || []).
 // an NPC's attack reported by the reply: the fight is fixed at once and shown above that reply (Testrun 3)
 await turn('I look around again.', 'A wolf lunges out of the brush.\\n<avereth>{"new":[{"ref":"wolf","kind":"creature","species":"wolf","band":"SHORT"}],"combat":{"by":"wolf"}}</avereth>');
 result.commitShown = /\`COMBAT( START)? — the wolf (attacks|joins)/.test(chat.at(-1).extra.display_text || '') && /\`Next: /.test(chat.at(-1).extra.display_text || '');
-result.settingsUi = !!document.getElementById('avereth_enabled') && document.getElementById('avereth_swaps')?.value === 'ledger=register';
+// Runtime V3: a reply that still writes Megumin tracker blocks — removed from the text, the engine HUD below it
+const BLOCKS = '\\n<Blocks>\\n<World_State>**Loc:** nowhere</World_State>\\n<Character_Sheet>HP: 1/80 | Coin: 99 Gold</Character_Sheet>\\n<New_NPC name="Brom">**Background:** invented</New_NPC>\\n</Blocks>';
+await turn('I wait.', 'The wind turns.\\n<avereth>{}</avereth>' + BLOCKS);
+const v3 = chat.at(-1);
+const probe = document.createElement('div');
+probe.innerHTML = v3.extra.display_text || '';
+result.hud = probe.querySelectorAll('details.avereth-hud').length === 2 && /Alaric/.test(probe.querySelector('details.avereth-hud summary').textContent)
+  && /HP \\d+\\/80/.test(probe.textContent) && !/99 Gold|1\\/80|nowhere/.test(probe.textContent);
+result.trackersRemoved = v3.mes === 'The wind turns.' && !chat.some((m) => /<World_State>|<Character_Sheet>|<New_NPC>/.test(m.mes));
+// the prompt never carries the HUD; the next interceptor call trims its coreChat copy to the history window
+await turn('I walk on.', 'The road bends.\\n<avereth>{}</avereth>');
+result.hudNotInPrompt = !/avereth-hud/.test(window.__prompt) && core.every((m) => !/avereth-hud/.test(m.mes));
+result.historyWindow = core.filter((m) => m.is_user).length === 4 && chat.filter((m) => m.is_user && !m.is_system).length > 4;
+result.settingsUi = !!document.getElementById('avereth_enabled') && document.getElementById('avereth_swaps')?.value === 'ledger=register'
+  && document.getElementById('avereth_hud')?.value === 'closed' && document.getElementById('avereth_history')?.value === '4' && document.getElementById('avereth_strip')?.checked === true;
 result.log = window.__log;
 window.__result = result;
 </script></body></html>`;
@@ -103,11 +121,12 @@ const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
 page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
 await page.goto(`http://127.0.0.1:${port}/smoke.html`);
-await page.waitForFunction(() => window.__result, null, { timeout: 15000 });
+await page.waitForFunction(() => window.__result, null, { timeout: 15000 }).catch((e) => { console.log('page errors:', errors); throw e; });
 const result = await page.evaluate(() => window.__result);
 await browser.close();
 server.close();
 console.log(JSON.stringify({ ...result, errors }, null, 1));
-const ok = result.campaign && result.step2 && result.stripped && result.retcon && result.combatShown && result.command && result.commitShown && result.loreBridge && result.wordSwap && result.settingsUi && !errors.length;
+const ok = result.campaign && result.step2 && result.stripped && result.retcon && result.combatShown && result.command && result.commitShown && result.loreBridge && result.wordSwap && result.settingsUi
+    && result.hud && result.trackersRemoved && result.hudNotInPrompt && result.historyWindow && !errors.length;
 console.log(ok ? 'BROWSER SMOKE: OK' : 'BROWSER SMOKE: FAILED');
 process.exit(ok ? 0 : 1);

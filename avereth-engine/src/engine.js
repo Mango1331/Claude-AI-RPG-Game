@@ -23,7 +23,7 @@ import { buildContext } from './context.js';
 import { parseCoin } from './economy.js';
 import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks } from './util.js';
 
-export const ENGINE_VERSION = '2.0.0';
+export const ENGINE_VERSION = '3.0.0';
 
 const GROUP_RE = /\b(?:everyone|everybody|all of you|you all|the (?:group|room|crowd|table|company)|(?:to|at|toward|towards) them)\b/i;
 const SELF_INTRO_RE = /\b(?:my name(?:'s| is)|i am|i'?m|call me|name's|they call me)\s+alaric\b/i;
@@ -378,7 +378,8 @@ export function narratorReply(state, content, replyText, { msg = null, stripTrac
     }
     const opened = openCommitted(s, content, dice, emit);
     const corrections = [...res.corrections, ...trackerDrift(s, content, clean), ...combatSpeech(state, clean)];
-    if (trackers && stripTrackers) corrections.push('Your last reply wrote tracker blocks (<World_State>, <Character_Sheet>, <New_NPC>, <NPC_Update>): they are retired and were removed. The engine keeps that state and shows the player its HUD; write only the story and the fact report.');
+    // named without tag syntax: a tag in the prompt would only invite the model to write it again
+    if (trackers && stripTrackers) corrections.push('Your last reply wrote tracker blocks (world state, character sheet, NPC dossier or update): they are retired and were removed. The engine keeps that state and shows the player its HUD; write only the story and the fact report.');
     for (const r of res.rejected) corrections.push(`Rejected from your fact report: ${r.reason}.`);
     if (!report) corrections.push(`Your previous reply had no valid <avereth> fact report (${error}). Write it right after the story text; this reply's report may also record the player's decisions from that turn (hand-overs, coin, quests), {} if nothing.`);
     return { events, clean, report, accepted: res.accepted, rejected: res.rejected, corrections, report_error: report ? null : error, opened, state: s };

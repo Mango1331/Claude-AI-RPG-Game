@@ -1,0 +1,15 @@
+{
+  "id": "avereth-hide-fact-report",
+  "scriptName": "Avereth: hide the fact report (streaming)",
+  "findRegex": "/<avereth>[\\s\\S]*?(?:<\\/avereth>|$)|<(?:a(?:v(?:e(?:r(?:e(?:t(?:h>?)?)?)?)?)?)?)?$/g",
+  "replaceString": "",
+  "trimStrings": [],
+  "placement": [2],
+  "disabled": false,
+  "markdownOnly": true,
+  "promptOnly": false,
+  "runOnEdit": true,
+  "substituteRegex": 0,
+  "minDepth": null,
+  "maxDepth": null
+}

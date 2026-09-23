@@ -54,7 +54,8 @@ test('turn 4: "enter" for someone the same report introduces is no error (no mis
     // the only correction left is the Runtime V3 notice about the retired tracker blocks this old session still wrote
     const corrections = (turns[4].context.text.split('CORRECTIONS')[1] || '').split('\n\n')[0];
     assert.doesNotMatch(corrections, /enter|unknown person|Rejected/);
-    assert.match(corrections, /tracker blocks \(<World_State>, <Character_Sheet>, <New_NPC>, <NPC_Update>\): they are retired/);
+    assert.match(corrections, /tracker blocks \(world state, character sheet, NPC dossier or update\): they are retired/);
+    assert.doesNotMatch(turns[4].context.text, /<World_State>|<Character_Sheet>|<New_NPC>|<NPC_Update>/, 'no tag syntax in the prompt');
 });
 
 test('turns 6-7: the trapper left behind at LONG is no longer present, so the stealth approach meets nobody', () => {

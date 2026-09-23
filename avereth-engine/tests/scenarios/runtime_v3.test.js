@@ -123,3 +123,56 @@ test('the engine block of an ordinary turn stays small with the minimal NPC reco
     const c = g.context();
     assert.ok(c.tokens < 1400, `${c.tokens} tokens`);
 });
+
+test('RELEVANT carries no card facts (role, look, voice, agenda, Guild Rank) and at most three of the player\'s old lines', () => {
+    const g = new Game(content).ranger();
+    g.turn('I walk to the Guild hall.', {
+        place: 'Guild hall', new: [{ ref: 'Kest', name: 'Kest', kind: 'npc', desc: ['veteran'] }],
+        facts: [{ s: 'Kest', p: 'occupation', o: 'veteran adventurer' }, { s: 'Kest', p: 'agenda', o: 'get the Greyhowl posting taken down' }, { s: 'Kest', p: 'voice', o: 'low rasp' }, { s: 'pc', p: 'guild_rank', o: 'Novice' }, { s: 'Guild hall', p: 'owner', o: 'the Lumen Guild' }],
+    });
+    g.turn('I leave.', { place: 'harbour road', leave: ['Kest'] });
+    for (let i = 0; i < 8; i++) g.turn(`I walk the harbour, stretch ${i}.`, { time: 30 });
+    g.input('I think about the Guild hall.');
+    const rel = (g.context().text.split('RELEVANT (retrieved from the campaign record):\n')[1] || '').split('\n\n')[0];
+    assert.doesNotMatch(rel, /occupation|agenda|voice|guild rank/i);
+    assert.ok(rel.split('\n').filter((l) => /: Alaric: "/.test(l)).length <= 3, rel);
+});
+
+test('a fight saved mid-round before Combat V3 folds and continues: old Hit/Crit fields are ignored, an old Hit penalty keeps its strength', () => {
+    const chat = [ai(FIRST_MESSAGE)];
+    processReply(chat, 0, content, { seed: 11 });
+    const play = (input, reply) => {
+        chat.push(user(input));
+        prepareGeneration(chat, content, { type: 'normal' });
+        chat.push(ai(reply));
+        processReply(chat, chat.length - 1, content);
+    };
+    play('Ranger', 'CLASS SELECTED <avereth>{}</avereth>');
+    play('Quickstep and Aimed Shot', 'DONE <avereth>{}</avereth>');
+    play('I look around the clearing.', 'A bear rises from the brush.\n<avereth>{"new":[{"ref":"bear","kind":"creature","species":"bear","band":"SHORT"}],"aware":[{"who":"bear","level":"aware"}]}</avereth>');
+    play('I Aimed Shot the bear', 'The arrow bites.\n<avereth>{}</avereth>');
+    assert.ok(foldChat(chat).state.encounter, 'the bear fight is running');
+    // turn the stored snapshot into what Combat V2 saved: Hit/Crit in the profiles, a MISS record, and Alaric's
+    // Quickstep as the old Hit penalty (15 pp), sourced from the bear's side so it is still up when the bear strikes
+    const snap = chat.map((m) => m.extra?.avereth?.events || []).flat().filter((e) => e.d?.encounter).at(-1).d.encounter;
+    for (const c of Object.values(snap.combatants)) Object.assign(c.fixed, { hit: 75, crit: 5 });
+    snap.log.push({ actor: 'mon.bear', kind: 'attack', target: 'pc', strikes: [{ target: 'pc', hit: { chance: 63, roll: 89, success: false }, final: 0 }] });
+    snap.combatants.pc.current.effects.push({ kind: 'incoming_hit_penalty', pp: 15, source: 'mon.bear', expires: 'start_of_source_next_turn', name: 'Quickstep', round: 99 });
+    const { state, errors } = foldChat(chat);
+    assert.deepEqual(errors, []);
+    assert.deepEqual(validateState(state, content), []);
+    // the next exchange resolves under V3: Alaric's shot lands without a Hit roll, the bear's blow is reduced by 20%
+    const before = state.encounter.log.length;
+    chat.push(user('I Aimed Shot the bear'));
+    const gen = prepareGeneration(chat, content, { type: 'normal' });
+    assert.equal(gen.action, 'context');
+    const after = foldChat(chat).state;
+    const fresh = (after.encounter || after.last_encounter)?.log?.slice(before) || [];
+    const [shot, blow] = [fresh.find((r) => r.actor === 'pc' && r.kind === 'attack'), fresh.find((r) => r.actor === 'mon.bear' && r.kind === 'attack')];
+    assert.ok(shot && blow, JSON.stringify(fresh.map((r) => [r.actor, r.kind])));
+    for (const s of [...shot.strikes, ...blow.strikes]) assert.ok(!('hit' in s) && !s.crit && s.final > 0, JSON.stringify(s));
+    assert.deepEqual(blow.strikes[0].reduced, ['Quickstep -20%']);
+    assert.equal(blow.strikes[0].final, Math.round(11 * blow.strikes[0].variance * 0.8)); // bear ATK 14 - DEF 3
+    assert.match(gen.context.text, /RESOLVED THIS TURN/);
+    assert.doesNotMatch(gen.context.text, /Hit chance|hit \d+%|MISS \(|d100 \d+ vs/);
+});

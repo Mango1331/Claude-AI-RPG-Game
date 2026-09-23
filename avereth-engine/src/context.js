@@ -15,6 +15,8 @@ export const DEFAULT_BUDGET = 1400;
 export const DEFAULT_RULES_BUDGET = 800;
 export const DEFAULT_RECENT_TURNS = 4; // turns still visible in the chat history are not retrieved again
 const IDENTITY_FACTS = new Set([PC_NAME_FACT, PC_LOOK_FACT]);
+const RECORD_PREDICATES = new Set(['occupation', 'appearance', 'voice', 'agenda']);
+const MAX_EPISODES = 3; // the player's own words from before the history window: the most relevant three
 
 function attitudeLabel(v) {
     if (v === undefined || v === null) return 'no established attitude';
@@ -265,9 +267,11 @@ function retrievalItems(state, content, pinnedIds, recentTurns) {
         if (m.turn > state.turn - recentTurns) continue; // still visible in the recent chat: do not duplicate it
         if (m.kind === 'meeting') continue; // "first saw Alaric" belongs on that NPC's card, not in the narrator's record
         const text = memoryText(state, m, null);
-        items.push({ kind: 'memory', text, entities: [...(m.who || []), ...(m.about || [])], location: m.location, turn: m.turn, importance: (m.importance || 5) / 10, label: `[${day(m.minute)}] ${text}` });
+        items.push({ kind: m.kind === 'episode' ? 'episode' : 'memory', text, entities: [...(m.who || []), ...(m.about || [])], location: m.location, turn: m.turn, importance: (m.importance || 5) / 10, label: `[${day(m.minute)}] ${text}` });
     }
-    for (const f of currentFacts(state, (x) => x.visibility !== 'secret' && !IDENTITY_FACTS.has(x.id) && !pinnedIds.has(x.id))) {
+    // a person's record facts live on that person's card (shown when present or named), Alaric's Guild Rank in his line
+    const onCard = (x) => (RECORD_PREDICATES.has(x.p) && state.entities[x.s]?.kind === 'npc') || (x.s === 'pc' && x.p === 'guild_rank');
+    for (const f of currentFacts(state, (x) => x.visibility !== 'secret' && !IDENTITY_FACTS.has(x.id) && !pinnedIds.has(x.id) && !onCard(x))) {
         const txt = propText(state, f, content);
         items.push({ kind: 'fact', text: txt, entities: [f.s, f.o].filter((x) => state.entities[x]), location: isLocationId(state, content, f.s) ? f.s : null, turn: f.since?.turn ?? 0, importance: f.importance ?? 0.5, label: `${f.hard ? 'HARD FACT: ' : ''}${txt}` });
     }
@@ -325,8 +329,9 @@ function ruleParagraphs(content, query, k) {
     return idx.paras.map((p, i) => [p.text, idx.bm.score(query, i)]).filter(([, sc]) => sc > 0).sort((a, b) => b[1] - a[1]).slice(0, k).map(([t]) => t);
 }
 
-// situational rule texts (state-triggered by the engine, never keyword-triggered by prose)
-const SITUATION_RULES = { stealth: ['core.8'], loot: ['core.20'], trade: ['core.22'] };
+// situational rules (state-triggered by the engine, never keyword-triggered by prose). Runtime V3: the short narrator
+// texts of narrator.json; the full Core texts (written for a narrator that kept the tracker) answer #system questions.
+const SITUATIONS = ['stealth', 'loot', 'trade'];
 
 /**
  * Build the per-turn engine block.
@@ -377,7 +382,9 @@ export function buildContext(state, content, opts = {}) {
         quests: Object.values(state.quests).filter((q) => q.status === 'active').map((q) => q.id), turn: state.turn,
         query: `${queryText} ${others.map((id) => entityLabel(state, id)).join(' ')}`, relationStrength: relStrength,
     };
-    const ranked = rank(retrievalItems(state, content, new Set(pinned.map((f) => f.id)), opts.recentTurns ?? DEFAULT_RECENT_TURNS), focus, { weights: opts.weights });
+    let episodes = 0;
+    const ranked = rank(retrievalItems(state, content, new Set(pinned.map((f) => f.id)), opts.recentTurns ?? DEFAULT_RECENT_TURNS), focus, { weights: opts.weights })
+        .filter((x) => x.item.kind !== 'episode' || (episodes += 1) <= MAX_EPISODES);
     const rel = pack(ranked.filter((s) => s.score > 1.2), Math.max(120, Math.floor(budget * 0.25)), (t) => estimateTokens(t) + 4);
     if (rel.items.length) add('relevant', `RELEVANT (retrieved from the campaign record):\n${rel.items.map((s) => `- ${s.item.label}`).join('\n')}`, 2);
     // lore: the current realm entry + entries whose key phrases occur in this turn's text. Off when the descriptive
@@ -385,7 +392,7 @@ export function buildContext(state, content, opts = {}) {
     const lorePicked = opts.lore === false ? [] : pickLore(content, realmId, scan, Math.max(100, Math.floor(budget * 0.2)));
     if (lorePicked.length) add('lore', `LORE:\n${lorePicked.join('\n---\n')}`, 3);
     // situational rules text (own allowance so they never crowd out scene state)
-    const rulesIds = [...new Set((opts.situations || []).flatMap((s) => SITUATION_RULES[s] || []))];
+    const rulesIds = [...new Set((opts.situations || []).filter((s) => SITUATIONS.includes(s)))];
     let rulesUsed = 0;
     const rulesTexts = [];
     const rulesCap = opts.rulesBudget ?? DEFAULT_RULES_BUDGET;
@@ -398,7 +405,7 @@ export function buildContext(state, content, opts = {}) {
         }
     }
     for (const id of rulesIds) {
-        const t = content.rulesText.get(id)?.text;
+        const t = content.narrator.situational_rules?.[id];
         if (!t || rulesUsed + estimateTokens(t) > rulesCap) continue;
         rulesTexts.push(t);
         rulesUsed += estimateTokens(t);

@@ -146,7 +146,7 @@ function combatLines(state, content, o) {
     for (const r of o.records) {
         if (r.round !== round) {
             round = r.round;
-            out.push(sys(`— Round ${round} —`));
+            out.push(sys(round === 0 ? '— Opening Action (Ambush) —' : `— Round ${round} —`));
         }
         out.push(...recordLines(state, content, r));
     }

@@ -63,12 +63,21 @@ Eine Kampagne, die ohne Engine gespielt wurde, lässt sich nicht automatisch in 
 
 Das Paket v1.24 (WorldInfo v1.23 + CD v2.3) bleibt als **Legacy-Modus ohne Engine** unverändert nutzbar.
 
+**Engine 2.x → 3.0 (Runtime V3, [RUNTIME_V3.md](RUNTIME_V3.md)):** Laufende Engine-Chats spielen ohne Umbau weiter.
+- Alte Antworten mit Megumin-Blöcken falten unverändert. Ihre Blöcke werden nie Zustand und fehlen in der Prompt-Kopie des Verlaufs.
+- Ein Kampf, der mitten in der Runde gespeichert wurde, läuft unter den neuen Regeln weiter:
+  - alte Hit- und Crit-Felder werden ignoriert;
+  - ein aktiver Hit-Malus wird zur Schadensminderung gleicher Stärke;
+  - alte `MISS`-Zeilen bleiben sichtbar.
+- Swipes und gespeicherte Anzeigen werden nicht verändert.
+
 ## Umstieg in SillyTavern
 
 Kurzfassung; Details im [README](../README.md).
 
 1. Den Ordner `avereth-engine/` als Third-Party-Extension installieren (Ordnername beliebig).
-2. In der Charakterkarte die Beschreibung durch `content/narrator/Avereth_Narrator_Contract_v3.txt` ersetzen (Stand 3.2). Die Begrüßung bleibt die First Message v0.4.
-3. Die Avereth-WorldInfo v1.23 **deaktivieren**. Der Megumin-NPC-Patch ist optional und mit Engine nicht nötig.
+2. In der Charakterkarte die Beschreibung durch `content/narrator/Avereth_Narrator_Contract_v3.txt` ersetzen (Stand 3.3). Die Begrüßung bleibt die First Message v0.4.
+3. Die Avereth-WorldInfo v1.23 **deaktivieren**. Den Megumin-NPC-Patch nicht verwenden. Im Megumin-Preset NPC-Dossier, NPC-Updates, NPC-Bank und `<Blocks>` entfernen (Checkliste: [RUNTIME_V3.md §9](RUNTIME_V3.md#9-megumin-v10-shura-manuelle-änderungen)).
 4. `lorebook/Avereth_World_Lore_v0.11.json` importieren und an der Erzähler-Karte als **Character Lore** verknüpfen. World-Info-Einstellungen: Scan Depth 2, Budget Cap 1.800, Recursive Scan aus ([LOREBOOK.md](LOREBOOK.md)). Das Lorebook enthält nur beschreibende Welt, keine Regeln; es ersetzt die v1.23 nicht.
-5. Neuen Chat starten. Die Engine legt die Kampagne an der Begrüßung an. **Empfehlung:** zuerst einen wegwerfbaren Testchat spielen (Report-Format, Streaming, Swipes mit dem eigenen Modell prüfen), erst danach die Langzeitkampagne.
+5. Streaming anschalten und die Regex-Skripte aus `regex/` importieren ([RUNTIME_V3.md §5](RUNTIME_V3.md#5-streaming)).
+6. Neuen Chat starten. Die Engine legt die Kampagne an der Begrüßung an. **Empfehlung:** zuerst einen wegwerfbaren Testchat spielen (Report-Format, Streaming, Swipes mit dem eigenen Modell prüfen), erst danach die Langzeitkampagne.

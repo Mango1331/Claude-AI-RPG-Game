@@ -1,5 +1,12 @@
 # Avereth – Deep Review: Kampf-Vereinfachung + Runtime V3
 
+> **Umgesetzt** in Engine 3.0.0; Umsetzung, Messungen und Megumin-Checkliste in [RUNTIME_V3.md](RUNTIME_V3.md).
+> Die Umsetzung folgt dem Vorschlag. Unterschiede:
+> - Die optionale Monster-ATK-Korrektur bleibt bis nach Test 5 aus (Entscheidung im Auftrag).
+> - Die Schlüssel heißen anders: `rules.cover.partial_damage_reduction_pct` statt `damage.partial_cover_pct`, die Minderung steht pro Skill als `incoming_damage_reduction`.
+>
+> Dieses Dokument bleibt als Stand vor der Umsetzung erhalten.
+
 Stand: nach Testrun 4 (Commit `1bb632b`). Dieses Dokument ist **Review und Vorschlag**, keine Umsetzung: Engine, Inhalte und
 Tests sind unverändert. Umgesetzt wird erst nach Freigabe (Reihenfolge in Abschnitt 8).
 

@@ -142,9 +142,16 @@ flowchart TD
   LLM --> R[Antwort + &lt;avereth&gt;-Report]
   R --> V[MESSAGE_RECEIVED<br/>processReply: Report validieren, Wahrnehmung, Episode, Tracker-Drift]
   V -->|Events auf dieser Swipe| E2[(message.extra.avereth)]
-  V -->|Report entfernt| D[Anzeige]
+  V -->|Report und Tracker-Blöcke entfernt| D[Anzeige: System-Block + Prosa + HUD]
   E2 --> N[nächster Zug: Korrekturen + Zustand]
+  I -->|projectPromptHistory: letzte 4 Wechsel, ohne Tracker-Blöcke| LLM
 ```
+
+**Runtime V3** ([RUNTIME_V3.md](RUNTIME_V3.md)):
+- Der Zustand hat eine einzige Quelle, den Fold der Events.
+- Charakter- und Welt-HUD sind reine Ansichten davon (`hud.js`, `extra.display_text`). Sie gehen nie in den Prompt.
+- Das Modell schreibt keine Tracker, Charakterbögen, World-States oder NPC-Dossiers mehr. Der Fakten-Report meldet nur Deltas.
+- Der Interceptor kürzt die Prompt-Kopie des Verlaufs (`coreChat`) auf ein Fenster und entfernt alte Blöcke. Der gespeicherte Chat bleibt unverändert.
 
 **Komponenten** (`src/`):
 
@@ -153,16 +160,17 @@ flowchart TD
 | `state.js` | Reducer: Zustand = fold(Events); würfelt nie; unbekannte Events werfen einen Fehler |
 | `rng.js` | zählerbasierter Zufall `uniform(seed, n)`: dieselbe Eingabe ergibt dieselben Würfe; Regenerieren würfelt nicht neu |
 | `content.js`, `derived.js`, `creation.js`, `npcgen.js`, `progression.js`, `economy.js` | Regeln und Inhalte |
-| `combat.js` | Initiative, Zugschleife, Treffer, Crit, Schadenskette (Core #11), Reichweiten, Munition, Effekte, NPC-Verhalten, Kampfende |
+| `combat.js` | Initiative (⌊1,5 × AGI⌋), Zugschleife, Schadenskette (Core #11; jeder legale Angriff trifft, Crit nur im echten Hinterhalt, Partial Cover und Verteidigungs-Minderung), Reichweiten, Munition, Effekte, NPC-Verhalten, Kampfende |
 | `checks.js` | Checks (Core #7/#8), Schleichen gegen Wahrnehmung |
 | `intent.js` | Absicht aus der Spielernachricht |
 | `knowledge.js` | Fakten mit Gültigkeit, Wissen, Claims, Erinnerungen, Identität |
 | `delta.js` | Fakten-Report parsen und validieren |
-| `retrieval.js`, `context.js` | Scoring, Packen, Engine-Block |
+| `retrieval.js`, `context.js` | Scoring, Packen, Engine-Block (NPC-Karten, situatives Report-Schema) |
+| `hud.js` | Charakter- und Welt-HUD aus dem Zustand (nur Anzeige) |
 | `commands.js` | #-Befehle |
 | `validate.js` | Invarianten, JSON-Schema |
 | `engine.js` | Fassade |
-| `host.js` | SillyTavern-Chat-Adapter |
+| `host.js` | SillyTavern-Chat-Adapter, Prompt-Projektion des Verlaufs |
 
 ## 8. Trennung von Weltwahrheit, Wissen, Überzeugung, Erinnerung und Erzählung
 

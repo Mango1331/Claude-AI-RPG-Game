@@ -101,3 +101,18 @@ test('player authorization: voluntary PC changes are licensed by what the player
     no('I watch the barrels.', 'conceal');
     yes('I rest by the fire until dawn.', 'rest');
 });
+
+test('"the nearest one" picks the closest Range Band; equally close targets stay the player\'s choice (Core #23)', () => {
+    const g = new Game(content).ranger();
+    g.input('I look around.');
+    g.reply({ new: [{ ref: 'grey wolf', kind: 'creature', species: 'wolf', band: 'SHORT' }, { ref: 'black wolf', kind: 'creature', species: 'wolf', band: 'MEDIUM' }] });
+    const i = parseIntent('I shoot the nearest wolf', g.state, content);
+    assert.deepEqual([i.kind, i.target, i.target_how], ['attack', 'mon.grey_wolf', 'nearest']);
+    g.reply({ position: [{ who: 'black wolf', band: 'SHORT' }] });
+    assert.deepEqual(parseIntent('I shoot the closest wolf', g.state, content).candidates.sort(), ['mon.black_wolf', 'mon.grey_wolf']);
+    // in a fight "the nearest one" means the nearest hostile
+    g.reply({ new: [{ ref: 'Mara', name: 'Mara', kind: 'npc', desc: ['guide'], band: 'ENGAGED' }], position: [{ who: 'black wolf', band: 'MEDIUM' }] });
+    g.input('I shoot the grey wolf');
+    const f = parseIntent('I shoot the nearest one', g.state, content);
+    assert.deepEqual([f.kind, f.target], ['attack', g.state.encounter.combatants['mon.grey_wolf'].current.defeated ? 'mon.black_wolf' : 'mon.grey_wolf']);
+});

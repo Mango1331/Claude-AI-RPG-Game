@@ -346,7 +346,17 @@
           ],
           "properties": {
             "by": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
             },
             "target": {
               "type": "string"
@@ -354,20 +364,40 @@
           }
         },
         {
+          "type": "string"
+        },
+        {
           "type": "array",
           "items": {
-            "type": "object",
-            "required": [
-              "by"
-            ],
-            "properties": {
-              "by": {
-                "type": "string"
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "by"
+                ],
+                "properties": {
+                  "by": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  },
+                  "target": {
+                    "type": "string"
+                  }
+                }
               },
-              "target": {
+              {
                 "type": "string"
               }
-            }
+            ]
           }
         }
       ]

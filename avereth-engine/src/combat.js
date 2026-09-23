@@ -681,7 +681,9 @@ export function runCombat(ctx, pcAction) {
         } else {
             const me = enc.combatants[t.actor];
             const sid = me.model === 'creature' ? null : npcAttackSkill(ctx, me);
-            r = attackAction(ctx, t.actor, 'pc', sid, { opening: true, move: 'closer', autoNormalMove: true });
+            // a character with no attack that reaches Alaric from where it hides cannot open (it used to crash here)
+            r = me.model !== 'creature' && !sid ? { illegal: `${me.name} has no attack that reaches ${enc.combatants.pc.name} from ${me.current.band}` }
+                : attackAction(ctx, t.actor, 'pc', sid, { opening: true, move: 'closer', autoNormalMove: true });
             if (r.illegal) r = { round: 0, actor: t.actor, kind: 'hold', why: `ambush attack impossible: ${r.illegal}` };
         }
         r.note = 'Opening Action (true Ambush: +25pp Crit for Characters, no Hit/Damage bonus)';

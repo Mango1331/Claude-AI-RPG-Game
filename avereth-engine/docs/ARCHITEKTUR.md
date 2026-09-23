@@ -86,7 +86,7 @@ Primärquellen, soweit erreichbar. arXiv und einige Doku-Seiten waren durch die 
 | Skalierbarkeit (1.000+ Züge) | niedrig | **hoch**: Fold linear, Kontext budgetiert | mittel | hoch | mittel |
 | Tokenverbrauch pro Zug | hoch: 5,6–9k Avereth-Anteil | **niedrig**: Contract ~4,0k + Block ~1,0–1,3k | mittel | mittel | mittel bis hoch (Tool-Schemas, Runden) |
 | Retrieval-Qualität | niedrig: lexikalisch, Fehltreffer | **hoch**: zustandsgesteuert plus kuratierte Schlüssel | niedrig | hoch | – |
-| Wartbarkeit | mittel: 124k Zeichen Prompt-Regeln | **hoch**: Daten mit Schema, Code mit 98 Tests | mittel | niedrig: Betrieb | mittel |
+| Wartbarkeit | mittel: 124k Zeichen Prompt-Regeln | **hoch**: Daten mit Schema, Code mit 117 Tests | mittel | niedrig: Betrieb | mittel |
 | Erweiterbarkeit | niedrig: jede Regel kostet Prompt | **hoch**: Daten und Code | mittel | hoch | mittel |
 | Debugging | niedrig: Reasoning lesen | **hoch**: #audit, Event-Export, deterministische Replays | mittel | mittel | mittel |
 | Komplexität | niedrig | **mittel**: etwa 4.000 Zeilen JS, keine Abhängigkeiten | mittel: zwei Fremd-Extensions | hoch | mittel |
@@ -170,7 +170,7 @@ flowchart TD
 | **Weltwahrheit** | `facts` {s, p, o, since, until, visibility, hard}; `entities` (Status, Profil) | Erzähler (ESTABLISHED FACTS, RELEVANT); NPCs **nicht** |
 | **Figurenwissen** | `knowledge[who][factId]` mit Haltung `knows`/`suspects` und Quelle | nur die jeweilige NPC-Karte |
 | **Überzeugung** | `claims` (können falsch sein) plus `knowledge` mit Haltung `believes` | NPC-Karte, markiert „actually FALSE“ |
-| **Erinnerung** | `memories` mit `who`, `witnesses`, `seen` (wer Alaric dabei sah) und `{pc}`-Platzhalter. Zeugen sind die Beteiligten (`who`), vom Erzähler genannte (`witnesses`) oder bei `public` alle Anwesenden, die nicht `unaware` sind. **Anwesend ist nicht wahrnehmend**, auch bei Kampftod und Kampferinnerung. Wer nach einem Ortswechsel (`place`) auf MEDIUM/LONG zurückbleibt und nicht neu platziert wird, verlässt die Szene (Testrun 2). | nur Zeugen; Formulierung je Betrachter („someone unseen“, „the stranger“, „Alaric“) |
+| **Erinnerung** | `memories` mit `who`, `witnesses`, `seen` (wer Alaric dabei sah) und `{pc}`-Platzhalter. Zeugen sind die Beteiligten (`who`), vom Erzähler genannte (`witnesses`) oder bei `public` alle Anwesenden, die nicht `unaware` sind. **Anwesend ist nicht wahrnehmend**, auch bei Kampftod und Kampferinnerung. Nach einem Ortswechsel (`place`) bleibt nur in der Szene, wen der Report dort platziert; alle anderen bleiben zurück (Testrun 2: ein Trapper auf LONG; Testrun 3: Fuhrmann und Registrarin „folgten“ in einen Keller und bezeugten dort einen Kampf). | nur Zeugen; Formulierung je Betrachter („someone unseen“, „the stranger“, „Alaric“) |
 | **Erzählung** | der Chattext selbst | wird nie als Wahrheit gelesen, nur über validierte Reports |
 
 Folgen:
@@ -229,7 +229,7 @@ Jede Ablehnung wird mit Grund protokolliert und im nächsten Zug als Korrektur g
 | `time` > 2 h außerhalb des Kampfs | `rest` oder `travel` |
 | NPC verliert Alaric (`aware` → `unaware`) | `conceal` (erklärte Heimlichkeit) |
 
-Welt- und NPC-Handlungen (NPC gibt Alaric etwas, NPC geht, Wetter) brauchen keine Zustimmung. **Kampf** beginnt nur durch Alarics Angriff oder durch NPCs, die sich per `combat` (Objekt oder Liste) auf einen Angriff **auf Alaric** festlegen; Haltung, Spezies oder Gruppenzugehörigkeit ziehen niemanden automatisch hinein. Kämpfe zwischen NPCs werden erzählt, nicht aufgelöst (ein anderes Ziel wird abgelehnt, nie auf Alaric umgelenkt). Im Kampf entscheidet jede NPC nach eigenem Zustand (Core #27): Angegriffen zu werden provoziert auch ohne Treffer, und ein Angriff seit ihrem letzten Zug hebt einen erzählten passiven Intent (`hold`/`parley`/`take_cover`) auf. Das gespiegelte „holds“ hatte in Testrun 2 eine NPC drei Runden eingefroren.
+Welt- und NPC-Handlungen (NPC gibt Alaric etwas, NPC geht, Wetter) brauchen keine Zustimmung. **Kampf** beginnt nur durch Alarics Angriff oder durch NPCs, die sich per `combat` (Objekt oder Liste) auf einen Angriff **auf Alaric** festlegen; Haltung, Spezies oder Gruppenzugehörigkeit ziehen niemanden automatisch hinein. Kämpfe zwischen NPCs werden erzählt, nicht aufgelöst (ein anderes Ziel wird abgelehnt, nie auf Alaric umgelenkt). Eine Festlegung legt den Kampf noch mit der meldenden Antwort fest (Core #26: Profile, Initiative, Reihenfolge; der Spieler sieht sie vor seiner Aktion); die Züge laufen mit der nächsten Spielernachricht (Core #23/#24). Im Kampf entscheidet jede NPC nach eigenem Zustand (Core #27): Angegriffen zu werden provoziert auch ohne Treffer, und ein Angriff seit ihrem letzten Zug hebt einen erzählten passiven Intent (`hold`/`parley`/`take_cover`) auf. Das gespiegelte „holds“ hatte in Testrun 2 eine NPC drei Runden eingefroren.
 
 | Fehlerklasse aus dem Auftrag | Wo verhindert |
 |---|---|

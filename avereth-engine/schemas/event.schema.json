@@ -52,6 +52,7 @@
         "outcome.recorded",
         "delta.rejected",
         "check.recorded",
+        "report.missing",
         "note"
       ]
     },

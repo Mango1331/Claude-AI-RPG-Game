@@ -49,10 +49,12 @@ export function tolerantJson(text) {
 
 /**
  * Resolve a reference to an id: entity id, 'pc'/'Alaric', entity name/descriptor, a ref introduced in this report,
- * or a content location/faction (id or name, e.g. "Tidecross" -> loc.tidecross).
+ * or a content location/faction (id or name, e.g. "Tidecross" -> loc.tidecross). A part of a known person's name
+ * finds that person among those present ("Ferran" for Odile Ferran); a full name whose first part is the only name
+ * the engine knows finds that person too ("Hesta Gault" for Hesta, Testrun 3) and is kept in resolve.fullNames.
  */
-export function makeResolver(state, newRefs, content = null) {
-    return (ref) => {
+export function makeResolver(state, newRefs, content = null, created = null) {
+    const resolve = (ref) => {
         if (ref === undefined || ref === null || typeof ref === 'object') return null;
         const r = normText(ref);
         if (newRefs.has(r)) return newRefs.get(r);
@@ -78,8 +80,36 @@ export function makeResolver(state, newRefs, content = null) {
             if (loc) return loc.id;
             for (const f of content.factions.values()) if (normText(f.name) === r) return f.id;
         }
-        return null;
+        const words = bare.split(' ').filter(Boolean);
+        const hits = new Set();
+        for (const id of [...state.scene.present, ...(created ? created.keys() : [])]) {
+            const e = state.entities[id] || created?.get(id);
+            const name = e?.name ? normText(e.name).split(' ') : [];
+            if (id === 'pc' || !name.length) continue;
+            if (words.length === 1 && words[0].length >= 3 && name.length > 1 && name.includes(words[0])) hits.add(id);
+            if (words.length > 1 && name.length === 1 && name[0] === words[0] && /^[A-Z]/.test(String(ref).trim())) hits.add(id);
+        }
+        if (hits.size !== 1) return null;
+        const id = [...hits][0];
+        if (words.length > 1) resolve.fullNames.set(id, String(ref).trim().slice(0, 60));
+        return id;
     };
+    resolve.fullNames = new Map();
+    return resolve;
+}
+
+/**
+ * A name for a person the report introduces without one: GLM often puts the name in the ref only ("hesta",
+ * "carter_muller"). A ref word that the reply writes capitalised and never in lower case, and that is not one of the
+ * descriptors, is a name ("Hesta", "Muller"); descriptor refs ("gate_sergeant", "trapper") stay unnamed.
+ */
+function nameFromRef(n, prose) {
+    if (!prose) return null;
+    const desc = new Set((Array.isArray(n.desc) ? n.desc : []).flatMap((d) => normText(d).split(' ')));
+    const cap = (w) => w.charAt(0).toUpperCase() + w.slice(1);
+    const named = String(n.ref).replace(/[_.]+/g, ' ').trim().split(/\s+/).map((w) => w.toLowerCase()).filter((w) => /^[a-z][a-z'-]+$/.test(w)
+        && !desc.has(w) && new RegExp(`\\b${escapeRe(cap(w))}\\b`).test(prose) && !new RegExp(`\\b${escapeRe(w)}\\b`).test(prose));
+    return named.length ? named.map(cap).join(' ') : null;
 }
 
 function uniqueId(state, prefix, base, taken) {
@@ -96,9 +126,10 @@ function escapeRe(s) {
 
 /**
  * Validate a report against the current state and convert accepted items to events.
+ * @param {object} [opts] msg = chat index of the reply; prose = the reply's text (names written in it)
  * @returns {{events: object[], accepted: string[], rejected: {item: any, reason: string}[], corrections: string[]}}
  */
-export function reportToEvents(report, state, content, { msg = null } = {}) {
+export function reportToEvents(report, state, content, { msg = null, prose = '' } = {}) {
     const events = [];
     const accepted = [];
     const rejected = [];
@@ -123,15 +154,17 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
     const mkId = (prefix) => `${prefix}.t${state.turn}${msg !== null && msg !== undefined ? `.m${msg}` : ''}.${++idc}`;
     const newRefs = new Map();
     const taken = new Set();
-    const resolve = makeResolver(state, newRefs, content);
+    const created = new Map(); // entities introduced by this very report (usable by its other keys)
+    const resolve = makeResolver(state, newRefs, content, created);
     const present = new Set(state.scene.present);
     const src = { kind: 'narration', msg };
     const pcName = state.entities.pc?.name || 'Alaric';
     const inCombat = (id) => !!(state.encounter && state.encounter.combatants[id]);
-    const created = new Map(); // entities introduced by this very report (usable by its other keys)
     const ent = (id) => (id ? state.entities[id] || created.get(id) : undefined);
-    // PLAYER OWNERSHIP: voluntary changes to Alaric need the player's own decision in the current message
-    const auth = authorization(state.last?.input || '');
+    const entityName = (id) => ent(id)?.name || (ent(id)?.descriptors?.[0] ? `the ${ent(id).descriptors[0]}` : id);
+    // PLAYER OWNERSHIP: voluntary changes to Alaric need the player's own decision in the current message (or in a
+    // message whose reply had no fact report: this report may still record what the player decided there)
+    const auth = authorization([...(state.last?.carry || []), state.last?.input || ''].join('\n'));
     const owner = (what) => `PLAYER OWNERSHIP: ${what} needs the player's own decision in the current message`;
     // the one who forces it must be present, or be introduced by this very report (a pickpocket, an arresting patrol)
     const introduced = new Set(arr(report.new).flatMap((n) => [n?.ref, n?.name]).filter(Boolean).map(normText));
@@ -175,8 +208,11 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
     } else if (report.place) {
         events.push({ t: 'scene.moved', d: { place: String(report.place).slice(0, 120) } });
         accepted.push(`place: ${report.place}`);
-        movedPlace = normText(report.place) !== normText(state.scene.place);
+        // a more precise name for the same spot ("Guild hall" -> "Guild hall, front desk") is no move
+        const [a, b] = [normText(report.place), normText(state.scene.place)];
+        movedPlace = !!b && !a.includes(b) && !b.includes(a);
     }
+    const placed = new Set(); // people this report places in the (new) scene
     // new entities
     for (const n of arr(report.new)) {
         if (!n || !n.ref) { reject(n, 'new entity needs a ref'); continue; }
@@ -185,6 +221,7 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         const existing = resolve(n.ref) || (n.name ? resolve(n.name) : null);
         if (existing && existing !== 'pc' && state.entities[existing]) {
             newRefs.set(normText(n.ref), existing);
+            placed.add(existing);
             if (!present.has(existing) && state.entities[existing].status !== 'dead') {
                 events.push({ t: 'scene.entered', d: { id: existing, band: bandOf(n.band), cover: coverOf(n.cover) } });
                 present.add(existing);
@@ -194,7 +231,9 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         }
         const desc = uniq([...(Array.isArray(n.desc) ? n.desc : []), n.ref].map((x) => String(x).toLowerCase().slice(0, 40)));
         const id = uniqueId(state, kind === 'npc' ? 'npc' : 'mon', n.name || n.ref, taken);
-        const entity = { id, kind, name: n.name ? String(n.name).slice(0, 60) : null, descriptors: desc, traits: n.traits ? String(n.traits).slice(0, 240) : '', status: 'alive', location: state.scene.location, created: at, source: src, card: {} };
+        const name = n.name ? String(n.name).slice(0, 60) : kind === 'npc' ? nameFromRef(n, prose) : null;
+        if (name) newRefs.set(normText(name), id);
+        const entity = { id, kind, name, descriptors: desc, traits: n.traits ? String(n.traits).slice(0, 240) : '', status: 'alive', location: state.scene.location, created: at, source: src, card: {} };
         if (kind === 'creature') {
             const anchor = content.anchors.get(n.species) || anchorFor(content, [n.species, ...desc, n.traits].filter(Boolean).join(' '));
             if (!anchor) { reject(n, 'creature needs a species that maps to an F1 body-plan anchor (or kind "npc")'); continue; }
@@ -210,33 +249,47 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         events.push({ t: 'entity.created', d: { entity } });
         events.push({ t: 'scene.entered', d: { id, band: bandOf(n.band), cover: coverOf(n.cover) } });
         present.add(id);
-        accepted.push(`new ${kind} ${n.name || n.ref} (${id})`);
+        accepted.push(`new ${kind} ${name || n.ref} (${id})`);
     }
+    const UNKNOWN = 'unknown person (introduce new people via "new")';
+    const person = (id) => !!id && id !== 'pc' && ['npc', 'creature'].includes(ent(id)?.kind);
+    // someone known who is not in the scene yet: a report that places them here (enter, position, aware) brings them in
+    const bringIn = (id, item, band, cover) => {
+        if (state.entities[id].status === 'dead') { reject(item, `${id} is dead and cannot enter`); return false; }
+        events.push({ t: 'scene.entered', d: { id, band, cover } }); present.add(id); accepted.push(`enter ${id}`);
+        return true;
+    };
     for (const r of arr(report.enter)) {
         const id = resolve(typeof r === 'object' && r ? r.ref : r);
         if (id && created.has(id)) continue; // introduced by "new" in this report: already in the scene
-        if (!id || id === 'pc' || !state.entities[id]) { reject(r, 'enter: unknown entity (introduce new people via "new")'); continue; }
-        if (state.entities[id].status === 'dead') { reject(r, `${id} is dead and cannot enter`); continue; }
-        events.push({ t: 'scene.entered', d: { id, band: bandOf(r && r.band), cover: coverOf(r && r.cover) } }); present.add(id); accepted.push(`enter ${id}`);
+        if (!person(id) || !state.entities[id]) { reject(r, `enter: ${UNKNOWN}`); continue; }
+        if (bringIn(id, r, bandOf(r && r.band), coverOf(r && r.cover))) placed.add(id);
     }
+    const leftNow = new Set();
     for (const r of arr(report.leave)) {
         const id = resolve(r);
         if (!id || !present.has(id) || id === 'pc') { reject(r, 'leave: entity not present'); continue; }
         if (inCombat(id)) { reject(r, `${id} is in the active encounter; leaving is resolved by the engine (flee/escape)`); continue; }
-        events.push({ t: 'scene.left', d: { id } }); present.delete(id); accepted.push(`leave ${id}`);
+        events.push({ t: 'scene.left', d: { id } }); present.delete(id); leftNow.add(id); accepted.push(`leave ${id}`);
     }
     for (const p of arr(report.position)) {
         const id = resolve(p && p.who);
-        if (!id || id === 'pc' || !present.has(id)) { reject(p, 'position: unknown or absent NPC'); continue; }
+        if (leftNow.has(id)) continue; // reported as leaving in this same report: where he stood no longer matters
+        if (!person(id)) { reject(p, `position: ${UNKNOWN}`); continue; }
         if (inCombat(id)) { reject(p, 'positions of combatants are engine-owned during ACTIVE combat'); continue; }
         const band = bandOf(p.band);
         if (!band) { reject(p, 'position.band must be ENGAGED|SHORT|MEDIUM|LONG (distance to Alaric)'); continue; }
+        placed.add(id);
+        if (!present.has(id)) { if (!bringIn(id, p, band, coverOf(p.cover) || 'none')) placed.delete(id); continue; }
         events.push({ t: 'scene.position', d: { id, band, cover: coverOf(p.cover) || 'none' } }); accepted.push(`${id} at ${band}`);
     }
     for (const a of arr(report.aware)) {
         const id = resolve(a && a.who);
-        if (!id || !present.has(id) || id === 'pc') { reject(a, 'aware: unknown or absent NPC'); continue; }
+        if (leftNow.has(id)) continue;
+        if (!person(id)) { reject(a, `aware: ${UNKNOWN}`); continue; }
         if (!AWARE.has(a.level)) { reject(a, 'aware.level must be unaware|suspicious|aware'); continue; }
+        if (!present.has(id) && !bringIn(id, a)) continue;
+        placed.add(id);
         if (inCombat(id) && a.level !== 'aware') { reject(a, 'a combatant in an ACTIVE encounter is aware'); continue; }
         // Core #24: unawareness (which enables an Ambush) must rest on established facts or declared stealth; an NPC
         // that already noticed Alaric does not become unaware again by narration
@@ -244,16 +297,18 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         if (a.level === 'unaware' && before && before !== 'unaware' && !auth.conceal) { reject(a, `${id} already noticed ${pcName} (${before}); only declared stealth can make it lose track`); continue; }
         events.push({ t: 'scene.awareness', d: { id, level: a.level } }); accepted.push(`${id} ${a.level} of ${pcName}`);
     }
-    // Alaric moved on within the location: people left behind at a distance (MEDIUM/LONG) are no longer in the scene
-    // unless this report places them there again. Testrun 2: a trapper left at LONG on the ridge "detected" a stealth
-    // approach at the stream a quarter mile away. Those close to him (ENGAGED/SHORT or unplaced) are assumed to follow.
+    // combat commitments ({by} or a list; "by" may itself be a list; a bare name is a {by}); empty entries commit nobody
+    const commitments = arr(report.combat).flatMap((cb) => (typeof cb === 'string' ? [{ by: cb }] : cb && Array.isArray(cb.by) ? cb.by.map((by) => ({ ...cb, by })) : [cb]));
+    // Alaric moved on to another spot within the location: only the people this report places there (new, enter,
+    // position, aware, an attack) are with him; everyone else stayed behind. Testrun 2: a trapper left on the ridge
+    // "detected" a stealth approach at the stream. Testrun 3: the carter from the gate and the Guild registrar
+    // "followed" Alaric into a tannery cellar and witnessed the rat fight, because people close by were assumed to
+    // follow. Company that comes along is reported (e.g. position), so presence never rests on a guess.
     if (movedPlace && !state.encounter) {
-        const mentioned = new Set([...arr(report.enter), ...arr(report.position).map((x) => x && x.who), ...arr(report.aware).map((x) => x && x.who)]
-            .map((r) => resolve(typeof r === 'object' && r ? r.ref : r)).filter(Boolean));
+        for (const cb of commitments) if (cb && typeof cb === 'object' && cb.by) placed.add(resolve(cb.by));
         for (const id of state.scene.present) {
-            const band = state.scene.positions[id]?.band;
-            if (id === 'pc' || !present.has(id) || mentioned.has(id) || (band !== 'MEDIUM' && band !== 'LONG')) continue;
-            events.push({ t: 'scene.left', d: { id } }); present.delete(id); accepted.push(`${id} stays behind (${band})`);
+            if (id === 'pc' || !present.has(id) || placed.has(id)) continue;
+            events.push({ t: 'scene.left', d: { id } }); present.delete(id); accepted.push(`${id} stays behind`);
         }
     }
     if (report.concealed !== undefined) {
@@ -391,7 +446,12 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
     for (const c of arr(report.coin)) {
         const who = resolve((c && c.who) || 'pc');
         const cp = Number(c && c.cp);
-        if (!who || !state.entities[who]?.sheet) { reject(c, 'coin: unknown character (or no tracked purse)'); continue; }
+        if (!who || !state.entities[who]?.sheet) {
+            // Testrun 3: the narrator booked Alaric's payment to Hesta on her side, so it never left his purse
+            const other = person(who) && Number.isInteger(cp) && cp !== 0;
+            reject(c, other ? `coin: only ${pcName}'s purse is tracked; report his side of it ({"who":"pc","cp":${-cp}} if the coin went between him and ${entityName(who)})` : "coin: unknown character (only Alaric's purse is tracked)");
+            continue;
+        }
         if (who === 'pc' && cp < 0 && !auth.pay && !forcedBy(c.taken_by)) { reject(c, owner('spending coin') + ' (a theft names the taker in "taken_by")'); continue; }
         const res = applyCoin(state.entities[who].sheet.coin_cp, cp);
         if (!res.ok) { reject(c, res.error); continue; }
@@ -459,20 +519,20 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
         events.push({ t: 'thread.set', d: { thread: { id, text: String(th.text).slice(0, 200), kind: th.kind || 'mystery', status, since: cur?.since || at, updated: at, source: src } } });
         accepted.push(`thread ${status}: ${th.text}`);
     }
-    // combat commitment by an NPC (PENDING; resolved by the engine on the next turn) and NPC intents
-    // only an actual commitment makes a combatant: attitude or kinship alone never does. The engine resolves attacks on
-    // Alaric; a fight between NPCs is narrated (a target other than Alaric is never silently turned into Alaric)
-    const commitments = arr(report.combat).flatMap((cb) => (cb && Array.isArray(cb.by) ? cb.by.map((by) => ({ ...cb, by })) : [cb]));
+    // combat commitment by an NPC (PENDING: the engine fixes the encounter after this reply and resolves the Turns
+    // with the next player message) and NPC intents. Only an actual commitment makes a combatant: attitude or kinship
+    // alone never does. The engine resolves attacks on Alaric; a fight between NPCs is narrated (a target other than
+    // Alaric is never silently turned into Alaric)
     for (const cb of commitments) {
         if (!cb || typeof cb !== 'object' || !cb.by) continue; // an empty entry ({} or {by: []}) commits nobody
         const by = resolve(cb && cb.by);
         const target = cb && cb.target ? resolve(cb.target) : 'pc';
         if (state.mode === 'creation') reject(cb, 'no combat during Character Creation');
-        else if (!by || by === 'pc' || !ent(by)) reject(cb, 'combat.by must be a present NPC or creature');
-        else if (!present.has(by)) reject(cb, `${by} is not present`);
+        else if (!person(by)) reject(cb, `combat.by must be a present NPC or creature: ${UNKNOWN}`);
+        else if (inCombat(by)) accepted.push(`${by} fights on`); // already a combatant: nothing to commit
+        else if (!present.has(by)) reject(cb, `${by} is not in the scene (report "enter" for someone who arrives)`);
         else if (statusOf(state, by) === 'dead') reject(cb, `${by} is dead`);
         else if (target !== 'pc') reject(cb, `combat target "${cb.target}" is not ${pcName}: only an attack on ${pcName} starts engine combat (omit "target"); a fight between NPCs is narrated, not resolved`);
-        else if (inCombat(by)) reject(cb, `${by} is already in the encounter`);
         else { events.push({ t: 'combat.pending', d: { by, target, ...at } }); accepted.push(`combat committed by ${by} (pending)`); }
     }
     for (const i of arr(report.intent)) {
@@ -501,6 +561,14 @@ export function reportToEvents(report, state, content, { msg = null } = {}) {
             if (rec.claimed !== null && rec.claimed !== success) corrections.push(`Check "${rec.what}": Chance ${rec.chance}% with d100 ${die} is a ${success ? 'SUCCESS' : 'FAILURE'} — the previous reply narrated the opposite; keep the engine result from now on.`);
             if (pcStat !== null && (c.who === undefined || resolve(c.who) === 'pc') && A < pcStat) corrections.push(`Check "${rec.what}": Alaric's Actor Score must include his current ${stat} ${pcStat} (reply used ${A}).`);
         }
+    }
+    // a full name the narrator now uses for someone the engine knew only by its first part ("Hesta Gault" for Hesta)
+    for (const [id, full] of resolve.fullNames) {
+        const e = ent(id);
+        if (!e?.name || normText(full).split(' ')[0] !== normText(e.name)) continue;
+        if (created.has(id)) { e.name = full; continue; }
+        events.push({ t: 'entity.updated', d: { id, set: { name: full } } });
+        accepted.push(`${id} is ${full}`);
     }
     return { events, accepted, rejected, corrections };
 }

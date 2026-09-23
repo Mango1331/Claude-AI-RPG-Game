@@ -158,7 +158,7 @@ export function processReply(chat, id, content, { seed } = {}) {
     const { state } = foldChat(chat, id);
     const result = narratorReply(state, content, msg.mes, { msg: id });
     msg.mes = result.clean;
-    const panel = turnPanel(state, content, result.state.last?.check);
+    const panel = turnPanel(state, content, result.state.last?.check, result);
     showPanel(msg, panel);
     setRec(msg, {
         v: RECORD_VERSION, events: result.events, text_hash: hash32(msg.mes), corrections: result.corrections,
@@ -200,7 +200,7 @@ export function onEdited(chat, id, content) {
         const { state } = foldChat(chat, id);
         const result = narratorReply(state, content, msg.mes, { msg: id });
         msg.mes = result.clean;
-        const panel = turnPanel(state, content, result.state.last?.check);
+        const panel = turnPanel(state, content, result.state.last?.check, result);
         showPanel(msg, panel);
         setRec(msg, {
             v: RECORD_VERSION, events: result.events, text_hash: hash32(msg.mes), corrections: result.corrections,

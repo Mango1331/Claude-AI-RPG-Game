@@ -104,7 +104,8 @@ function npcCard(state, content, id, focusWords) {
 export function combatBlock(state) {
     const enc = state.encounter;
     if (!enc) return '';
-    const lines = [`COMBAT ACTIVE — Round ${enc.round}; current actor: ${entityLabel(state, enc.current)}; Turn order: ${enc.order.map((id) => entityLabel(state, id)).join(' > ')}`];
+    const order = enc.order.map((id) => entityLabel(state, id)).join(' > ');
+    const lines = [enc.round === 0 ? `COMBAT STARTING — Turn order fixed: ${order}; Round 1 resolves with the next player message` : `COMBAT ACTIVE — Round ${enc.round}; current actor: ${entityLabel(state, enc.current)}; Turn order: ${order}`];
     for (const c of Object.values(enc.combatants)) {
         if (c.id === 'pc') continue;
         const st = c.current.defeated ? 'DEFEATED' : c.current.escaped ? 'ESCAPED' : c.current.surrendered ? 'SURRENDERED' : `HP ${c.current.hp}/${c.fixed.max_hp}, ${c.current.band}${c.current.cover !== 'none' ? `, ${c.current.cover} cover` : ''}`;
@@ -114,6 +115,10 @@ export function combatBlock(state) {
     const pcfx = enc.combatants.pc.current.effects;
     if (pcfx.length) lines.push(`  Alaric effects: ${pcfx.map((x) => x.name).join(', ')}`);
     lines.push(`  Pending Combat XP: ${enc.pending_xp} (awarded only when the fight ends)`);
+    // Testrun 3: bystanders kept up a running commentary during the rat fight (the player: the sponsor's calls made
+    // sense, the building owner's did not)
+    const bystanders = state.scene.present.filter((id) => id !== 'pc' && !enc.combatants[id] && state.entities[id]?.kind === 'npc' && state.entities[id].status !== 'dead');
+    lines.push(`  Combat focus: ${bystanders.length ? `${bystanders.map((id) => entityLabel(state, id)).join(', ')} (not fighting) ${bystanders.length > 1 ? 'stay' : 'stays'}` : 'anyone outside the Turn order stays'} in the background — no running commentary; at most one short call per reply from someone with a direct stake in the fight (a sponsor, a companion); owners, onlookers and passers-by stay silent.`);
     return lines.join('\n');
 }
 
@@ -215,6 +220,7 @@ function retrievalItems(state, content, pinnedIds, recentTurns) {
     const items = [];
     for (const m of state.memories) {
         if (m.turn > state.turn - recentTurns) continue; // still visible in the recent chat: do not duplicate it
+        if (m.kind === 'meeting') continue; // "first saw Alaric" belongs on that NPC's card, not in the narrator's record
         const text = memoryText(state, m, null);
         items.push({ kind: 'memory', text, entities: [...(m.who || []), ...(m.about || [])], location: m.location, turn: m.turn, importance: (m.importance || 5) / 10, label: `[${day(m.minute)}] ${text}` });
     }

@@ -139,7 +139,8 @@ async function onMessageEdited(messageId) {
     try {
         const r = onEdited(c.chat, Number(messageId), content);
         if (!r.changed) return;
-        if (r.text) rerender(c, Number(messageId));
+        // SillyTavern redraws the edited message from mes right after this event: draw ours (System block) after that
+        if (r.text) setTimeout(() => rerender(c, Number(messageId)), 0);
         if (r.refused) toastr.warning(`Avereth Engine: ${r.refused}`);
         await c.saveChat();
         renderDebug();

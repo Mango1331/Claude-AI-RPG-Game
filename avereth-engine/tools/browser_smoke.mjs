@@ -50,10 +50,23 @@ result.stripped = chat[2].mes === 'Step 2 shown.' && (window.__saved || 0) > sav
 document.getElementById('chat').insertAdjacentHTML('beforeend', '<div class="mes" mesid="2"><div class="mes_text"></div></div>');
 chat[2].mes = 'Step 2 shown, retold.\\n<avereth>{}</avereth>';
 await handlers.me(2);
+await new Promise((r) => setTimeout(r, 0)); // SillyTavern redraws from mes after MESSAGE_EDITED; the engine redraws after that
 result.retcon = chat[2].mes === 'Step 2 shown, retold.' && chat[2].extra.avereth.retcon === true && (window.__rerendered || []).includes(2);
+// a combat turn: the reply shows the engine's System block (display_text), the prompt text stays plain
+const turn = async (input, reply) => {
+  chat.push({ is_user: true, is_system: false, mes: input, extra: {} });
+  await globalThis.averethInterceptor(chat, 8000, () => {}, 'normal');
+  chat.push({ is_user: false, is_system: false, mes: reply, swipe_id: 0, swipes: [reply], swipe_info: [{ extra: {} }], extra: {} });
+  await handlers.mr(chat.length - 1);
+};
+await turn('Aimed Shot + Power Shot', 'Creation complete.\\n<avereth>{}</avereth>');
+await turn('I look around.', 'A boar.\\n<avereth>{"new":[{"ref":"boar","kind":"creature","species":"boar","band":"MEDIUM"}]}</avereth>');
+await turn('I Power Shot the boar', 'The arrow flies.\\n<avereth>{}</avereth>');
+const last = chat.at(-1);
+result.combatShown = /^\`COMBAT START\`\\n\`Initiative: /.test(last.extra.display_text || '') && last.mes === 'The arrow flies.' && /\`HP: /.test(last.extra.display_text);
 chat.push({ is_user: true, is_system: false, mes: '#status', extra: {} });
 await globalThis.averethInterceptor(chat, 8000, () => { aborted = true; }, 'normal');
-result.command = aborted && /SYSTEM \\/\\/ STATUS/.test((window.__panels || []).join('')) && chat[3].is_system === true;
+result.command = aborted && /SYSTEM \\/\\/ STATUS/.test((window.__panels || []).join('')) && chat.at(-1).is_system === true;
 result.settingsUi = !!document.getElementById('avereth_enabled');
 result.log = window.__log;
 window.__result = result;
@@ -84,6 +97,6 @@ const result = await page.evaluate(() => window.__result);
 await browser.close();
 server.close();
 console.log(JSON.stringify({ ...result, errors }, null, 1));
-const ok = result.campaign && result.step2 && result.stripped && result.retcon && result.command && result.settingsUi && !errors.length;
+const ok = result.campaign && result.step2 && result.stripped && result.retcon && result.combatShown && result.command && result.settingsUi && !errors.length;
 console.log(ok ? 'BROWSER SMOKE: OK' : 'BROWSER SMOKE: FAILED');
 process.exit(ok ? 0 : 1);

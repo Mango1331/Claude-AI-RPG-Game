@@ -27,8 +27,11 @@
   "corrections": [ "Tracker drift: Initiative shown as 8, engine value is 9 ..." ],
   "accepted": [ "new npc the trapper (npc.trapper)" ],
   "rejected": [ { "item": {"hp": 5}, "reason": "\"hp\" is engine-owned ..." } ],
-  "report_error": null
-}}
+  "report_error": null,
+  "panel": "`COMBAT START`\n`Initiative: Alaric 9 · Bram Fenn 8 → Turn order: …`\n…"   // System-Block, nur bei Kampf/Check
+},
+  "display_text": "<panel>\n\n<mes>"  // SillyTavern zeigt diesen Text statt mes an; der Prompt nutzt weiter mes
+}
 // Begrüßung (Nachricht 0): { v, events: [campaign.started], text_hash }
 ```
 

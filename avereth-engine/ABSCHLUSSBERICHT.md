@@ -133,7 +133,7 @@ Kampagnendaten stehen pro Nachricht in `message.extra.avereth`. Der Zustand ist 
 | SillyTavern-Anbindung | `index.js`, `manifest.json`, `style.css` |
 | Content | 10 JSON-Dateien und der Narrator Contract v3; 5 davon reproduzierbar per Migration erzeugt |
 | Schemas | 11 JSON-Schemas |
-| Tests | 12 Testdateien plus 2 Fixtures |
+| Tests | 13 Testdateien plus 2 Fixtures |
 | Werkzeuge | 3 (Migration, Token-Vergleich, Browser-Smoke-Test) |
 | Doku | 9 Dokumente: README, Abschlussbericht, 7 Fachdokumente (inkl. Review-Antwort und Testrun-2-Auswertung) |
 
@@ -167,7 +167,7 @@ Details: [docs/MIGRATION.md](docs/MIGRATION.md).
 
 ## 9. Tests
 
-`npm test`: **93 Tests, alle bestanden.** Dazu kommt `node tools/browser_smoke.mjs`: echtes Chromium mit gemocktem SillyTavern-Kontext, bestanden.
+`npm test`: **98 Tests, alle bestanden.** Dazu kommt `node tools/browser_smoke.mjs`: echtes Chromium mit gemocktem SillyTavern-Kontext, bestanden.
 
 | Gruppe | Inhalt |
 |---|---|
@@ -269,4 +269,6 @@ Die ChatGPT-Review wurde Punkt für Punkt per Probe gegen den Code geprüft und 
   - NPC wehrte sich im Kampf nie (gespiegeltes „hold“);
   - irreführende Korrekturen.
 - **Belege:** Regressionstest mit den echten Antworten, siehe [docs/TESTRUN_V2.md](docs/TESTRUN_V2.md).
+
+**Kampfanzeige (Wunsch nach Testrun 2):** Die Engine zeigt jeden Kampf- und Probenzug als System-Zeilen oben in der Antwort. Der Block enthält Initiative, Zugreihenfolge, Würfe, `HP - Schaden = HP` und die HP aller Beteiligten und kommt direkt aus den Engine-Records. Er ist nur Anzeige (`extra.display_text`); der Prompt bleibt unverändert.
 

@@ -1,0 +1,155 @@
+{
+ "WARRIOR": {
+  "stats": {
+   "STR": 6,
+   "VIT": 6,
+   "AGI": 5,
+   "INT": 5,
+   "PER": 5,
+   "WIL": 5
+  },
+  "derived": {
+   "MaxHP": 85,
+   "MaxMP": 60,
+   "MaxSTA": 100,
+   "Init": 7,
+   "BaseDEF": 1,
+   "BaseMDEF": 1,
+   "TOTAL_DEF": 7,
+   "TOTAL_MDEF": 3,
+   "ATK": 6,
+   "MATK": 0,
+   "BaseHit": 72.5,
+   "Crit%": 5.5
+  },
+  "raw": {
+   "Basic Attack": 17.5,
+   "Heavy Slash": 25.0,
+   "Power Strike": 33.25,
+   "Quick Slash": 20.375,
+   "Charge": 23.375
+  }
+ },
+ "MAGE": {
+  "stats": {
+   "STR": 5,
+   "VIT": 5,
+   "AGI": 5,
+   "INT": 6,
+   "PER": 5,
+   "WIL": 6
+  },
+  "derived": {
+   "MaxHP": 80,
+   "MaxMP": 72,
+   "MaxSTA": 100,
+   "Init": 7,
+   "BaseDEF": 1,
+   "BaseMDEF": 1,
+   "TOTAL_DEF": 3,
+   "TOTAL_MDEF": 4,
+   "ATK": 0,
+   "MATK": 6,
+   "BaseHit": 72.5,
+   "Crit%": 5.5
+  },
+  "raw": {
+   "Basic Attack": 17.5,
+   "Arcane Bolt": 27.25,
+   "Flame Lance": 36.25,
+   "Arcane Burst": 21.5
+  }
+ },
+ "GUARDIAN": {
+  "stats": {
+   "STR": 5,
+   "VIT": 6,
+   "AGI": 5,
+   "INT": 5,
+   "PER": 5,
+   "WIL": 6
+  },
+  "derived": {
+   "MaxHP": 85,
+   "MaxMP": 64,
+   "MaxSTA": 100,
+   "Init": 7,
+   "BaseDEF": 1,
+   "BaseMDEF": 1,
+   "TOTAL_DEF": 10,
+   "TOTAL_MDEF": 5,
+   "ATK": 5,
+   "MATK": 0,
+   "BaseHit": 72.5,
+   "Crit%": 5.5
+  },
+  "raw": {
+   "Basic Attack": 15.875,
+   "Shield Strike": 21.25,
+   "Heavy Bash": 28.125,
+   "Shield Charge": 21.75
+  }
+ },
+ "DUELIST": {
+  "stats": {
+   "STR": 6,
+   "VIT": 5,
+   "AGI": 6,
+   "INT": 5,
+   "PER": 5,
+   "WIL": 5
+  },
+  "derived": {
+   "MaxHP": 80,
+   "MaxMP": 60,
+   "MaxSTA": 100,
+   "Init": 8,
+   "BaseDEF": 1,
+   "BaseMDEF": 1,
+   "TOTAL_DEF": 3,
+   "TOTAL_MDEF": 4,
+   "ATK": 6,
+   "MATK": 0,
+   "BaseHit": 72.5,
+   "Crit%": 5.5
+  },
+  "raw": {
+   "Basic Attack": 17.5,
+   "Precision Thrust": 24.5,
+   "Lunge": 30.0,
+   "Flurry": 13.0,
+   "Guarded Thrust": 21.0
+  }
+ },
+ "RANGER": {
+  "stats": {
+   "STR": 5,
+   "VIT": 5,
+   "AGI": 6,
+   "INT": 5,
+   "PER": 6,
+   "WIL": 5
+  },
+  "derived": {
+   "MaxHP": 80,
+   "MaxMP": 60,
+   "MaxSTA": 100,
+   "Init": 9,
+   "BaseDEF": 1,
+   "BaseMDEF": 1,
+   "TOTAL_DEF": 3,
+   "TOTAL_MDEF": 4,
+   "ATK": 6,
+   "MATK": 0,
+   "BaseHit": 73.0,
+   "Crit%": 5.6
+  },
+  "raw": {
+   "Basic Attack": 17.5,
+   "Aimed Shot": 26.5,
+   "Power Shot": 33.25,
+   "Quick Shot": 21.0,
+   "Twin Shot": 12.25
+  }
+ }
+}

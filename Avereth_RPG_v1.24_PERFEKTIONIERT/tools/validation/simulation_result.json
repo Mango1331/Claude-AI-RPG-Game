@@ -1,0 +1,767 @@
+[
+ {
+  "id": "S01",
+  "name": "Creation step 1: user picks Ranger after First Message",
+  "old": {
+   "phase": 54,
+   "uids": [
+    0,
+    54
+   ],
+   "chars": 15590,
+   "ok": true,
+   "dropped": []
+  },
+  "new": {
+   "phase": 54,
+   "uids": [
+    0,
+    54
+   ],
+   "chars": 14262,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S02",
+  "name": "Creation step 2: user picks two skills (Power Shot must not start combat)",
+  "old": {
+   "phase": 54,
+   "uids": [
+    0,
+    54,
+    3
+   ],
+   "chars": 16736,
+   "ok": true,
+   "dropped": []
+  },
+  "new": {
+   "phase": 54,
+   "uids": [
+    0,
+    54
+   ],
+   "chars": 14262,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S03",
+  "name": "First story turn after CHARACTER CREATION COMPLETE",
+  "old": {
+   "phase": null,
+   "uids": [
+    0,
+    3
+   ],
+   "chars": 4459,
+   "ok": true,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0
+   ],
+   "chars": 4061,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S04",
+  "name": "Tracking with bow ready (no combat)",
+  "old": {
+   "phase": null,
+   "uids": [
+    0,
+    3
+   ],
+   "chars": 4459,
+   "ok": true,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0
+   ],
+   "chars": 4061,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S05",
+  "name": "Aim only (no combat)",
+  "old": {
+   "phase": null,
+   "uids": [
+    0,
+    3,
+    25
+   ],
+   "chars": 10367,
+   "ok": true,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0
+   ],
+   "chars": 4061,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S06",
+  "name": "Attack declaration (START)",
+  "old": {
+   "phase": 1,
+   "uids": [
+    0,
+    1,
+    3
+   ],
+   "chars": 20334,
+   "ok": true,
+   "dropped": []
+  },
+  "new": {
+   "phase": 1,
+   "uids": [
+    0,
+    1
+   ],
+   "chars": 18518,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S07",
+  "name": "Attack naming the species (START; monster DB should not load)",
+  "old": {
+   "phase": 1,
+   "uids": [
+    0,
+    1,
+    3,
+    25
+   ],
+   "chars": 26242,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": 1,
+   "uids": [
+    0,
+    1
+   ],
+   "chars": 18518,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S08",
+  "name": "ACTIVE turn, user says only \"again\"",
+  "old": {
+   "phase": 2,
+   "uids": [
+    0,
+    2,
+    3
+   ],
+   "chars": 8254,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": 2,
+   "uids": [
+    0,
+    2
+   ],
+   "chars": 8223,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S09",
+  "name": "ACTIVE turn with \"Combat: ACTIVE (Pending XP 10)\" tracker + Power Shot",
+  "old": {
+   "phase": 1,
+   "uids": [
+    0,
+    1,
+    3
+   ],
+   "chars": 20334,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": 2,
+   "uids": [
+    0,
+    2
+   ],
+   "chars": 8223,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S10",
+  "name": "ACTIVE turn with \"Combat: ACTIVE, Pending XP 10\"",
+  "old": {
+   "phase": 1,
+   "uids": [
+    0,
+    1,
+    3,
+    25
+   ],
+   "chars": 26242,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": 2,
+   "uids": [
+    0,
+    2
+   ],
+   "chars": 8223,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S11",
+  "name": "PENDING marker (Megumin style) + user attacks",
+  "old": {
+   "phase": 55,
+   "uids": [
+    0,
+    55,
+    3
+   ],
+   "chars": 18352,
+   "ok": true,
+   "dropped": []
+  },
+  "new": {
+   "phase": 55,
+   "uids": [
+    0,
+    55
+   ],
+   "chars": 18523,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S12",
+  "name": "Transition line \"Combat: PENDING -> ACTIVE\"",
+  "old": {
+   "phase": 55,
+   "uids": [
+    0,
+    55,
+    3
+   ],
+   "chars": 18352,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": 2,
+   "uids": [
+    0,
+    2
+   ],
+   "chars": 8223,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S13",
+  "name": "Post-combat harvest after \"Combat: ACTIVE -> INACTIVE\"",
+  "old": {
+   "phase": null,
+   "uids": [
+    0,
+    3,
+    13
+   ],
+   "chars": 7737,
+   "ok": true,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0,
+    13
+   ],
+   "chars": 7339,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S14",
+  "name": "#skill Power Shot outside combat",
+  "old": {
+   "phase": null,
+   "uids": [
+    0,
+    45,
+    61,
+    47,
+    3,
+    66
+   ],
+   "chars": 10469,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0,
+    45,
+    61,
+    47,
+    23
+   ],
+   "chars": 10208,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S15",
+  "name": "#skill Power Shot during ACTIVE combat (System query freezes combat)",
+  "old": {
+   "phase": 2,
+   "uids": [
+    0,
+    2,
+    45,
+    61,
+    47,
+    3,
+    66
+   ],
+   "chars": 14264,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0,
+    45,
+    61,
+    47,
+    23
+   ],
+   "chars": 10208,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S16",
+  "name": "Info question \"what does Twin Shot do?\"",
+  "old": {
+   "phase": null,
+   "uids": [
+    0,
+    3,
+    66
+   ],
+   "chars": 6308,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0,
+    3,
+    23
+   ],
+   "chars": 7198,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S17",
+  "name": "Quest tracker \"Status: ACTIVE\" while exploring",
+  "old": {
+   "phase": 2,
+   "uids": [
+    0,
+    2,
+    3
+   ],
+   "chars": 8254,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0
+   ],
+   "chars": 4061,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S18",
+  "name": "Mid-combat question mentioning character creation",
+  "old": {
+   "phase": 54,
+   "uids": [
+    0,
+    54,
+    45,
+    61,
+    52,
+    3
+   ],
+   "chars": 20677,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0,
+    45,
+    61,
+    52
+   ],
+   "chars": 7997,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S19",
+  "name": "Mage tracker lists Arcane Ward (exploration)",
+  "old": {
+   "phase": null,
+   "uids": [
+    0,
+    6
+   ],
+   "chars": 4533,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0
+   ],
+   "chars": 4061,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S20",
+  "name": "Narration with smoke/wet/frozen (exploration)",
+  "old": {
+   "phase": null,
+   "uids": [
+    0,
+    3,
+    4,
+    7
+   ],
+   "chars": 8298,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0
+   ],
+   "chars": 4061,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S21",
+  "name": "Birds mentioned (Wren's geese)",
+  "old": {
+   "phase": null,
+   "uids": [
+    0,
+    3
+   ],
+   "chars": 4459,
+   "ok": true,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0
+   ],
+   "chars": 4061,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S22",
+  "name": "Toll: \"I pay the charge\"",
+  "old": {
+   "phase": 1,
+   "uids": [
+    0,
+    1,
+    3,
+    14
+   ],
+   "chars": 22930,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0,
+    14
+   ],
+   "chars": 6657,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S23",
+  "name": "\"I take a bite of bread\"",
+  "old": {
+   "phase": 1,
+   "uids": [
+    0,
+    1,
+    3
+   ],
+   "chars": 20334,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0
+   ],
+   "chars": 4061,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S24",
+  "name": "Attack plus exclamation question",
+  "old": {
+   "phase": null,
+   "uids": [
+    0,
+    3,
+    25
+   ],
+   "chars": 10367,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": 1,
+   "uids": [
+    0,
+    1
+   ],
+   "chars": 18518,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S25",
+  "name": "Twin Shot used in ACTIVE combat (multi-hit detail wanted)",
+  "old": {
+   "phase": 2,
+   "uids": [
+    0,
+    2,
+    3,
+    25
+   ],
+   "chars": 14162,
+   "ok": true,
+   "dropped": []
+  },
+  "new": {
+   "phase": 2,
+   "uids": [
+    0,
+    2,
+    3
+   ],
+   "chars": 9369,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S26",
+  "name": "Lore question about Veyrhold",
+  "old": {
+   "phase": null,
+   "uids": [
+    0,
+    3,
+    39
+   ],
+   "chars": 4969,
+   "ok": true,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0,
+    39
+   ],
+   "chars": 4571,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S27",
+  "name": "#combat during ACTIVE",
+  "old": {
+   "phase": 2,
+   "uids": [
+    0,
+    2,
+    45,
+    61,
+    51,
+    3
+   ],
+   "chars": 12844,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0,
+    45,
+    61,
+    51
+   ],
+   "chars": 8646,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S28",
+  "name": "Duelist: lowercase \"I lunge at the wolf\" (START; v1.22 plaintext key, regex regression guard)",
+  "old": {
+   "phase": 1,
+   "uids": [
+    0,
+    1,
+    25
+   ],
+   "chars": 25096,
+   "ok": true,
+   "dropped": []
+  },
+  "new": {
+   "phase": 1,
+   "uids": [
+    0,
+    1
+   ],
+   "chars": 18518,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S29",
+  "name": "Archer phrasing \"I put an arrow in its eye\" (START)",
+  "old": {
+   "phase": null,
+   "uids": [
+    0,
+    3
+   ],
+   "chars": 4459,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": 1,
+   "uids": [
+    0,
+    1
+   ],
+   "chars": 18518,
+   "ok": true,
+   "problems": []
+  }
+ },
+ {
+  "id": "S30",
+  "name": "Idiom \"I strike a deal with the merchant\" (no combat)",
+  "old": {
+   "phase": 1,
+   "uids": [
+    0,
+    1,
+    3
+   ],
+   "chars": 20334,
+   "ok": false,
+   "dropped": []
+  },
+  "new": {
+   "phase": null,
+   "uids": [
+    0
+   ],
+   "chars": 4061,
+   "ok": true,
+   "problems": []
+  }
+ }
+]

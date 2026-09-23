@@ -1,0 +1,54 @@
+{
+ "core#11": [
+  "Base Crit Chance = 5% + (PER ÷10) percentage points, with the PER-derived portion capped as already defined by Core."
+ ],
+ "core#18": [
+  "V1.3 DELIBERATE NON-DEFINITIONS:",
+  "The following are intentionally NOT hard-coded in this Core file yet:",
+  "- starting stat totals / character-creation point budget",
+  "- concrete class catalog and class-specific automatic growth",
+  "- concrete skill catalog",
+  "- loot tables, economy, quest rewards, Guild progression, crafting, or world lore",
+  "- specific monster stat blocks",
+  "The default XP threshold curve is defined in the Level/XP entry, but the amount of XP granted by particular monsters, quests, discoveries, achievements, or other rewards belongs to later content/reward modules."
+ ],
+ "core#21": [
+  "- A bow attack consumes the number of arrows it explicitly fires.",
+  "- Twin Shot consumes 2 arrows.",
+  "- If the character lacks enough arrows for the declared attack, that attack cannot be performed."
+ ],
+ "core#26": [
+  "True successful Ambush -> resolve Opening Action under Ambush rules."
+ ],
+ "content#5": [
+  "Effect: none. With a bow, consumes 1 physical arrow."
+ ],
+ "system#1": [
+  "V0.1 COMMANDS ARE READ-ONLY:"
+ ],
+ "system#5": [
+  "- path-specific Growth currently gained per Level,",
+  "If the character has reached B-rank and the old passive evolved into a Domain, do not display the obsolete Stage-III passive as simultaneously active.",
+  "- Radius"
+ ],
+ "system#10": [
+  "V0.1 canonical commands:",
+  "While Creation_State is not READY, ordinary replies are handled by the System creation flow."
+ ],
+ "system#12": [
+  "- grant/equip exact starter kit only now;",
+  "- the response that completes Step2 remains System/creation-only;",
+  "DERIVED VALIDATION",
+  "Level1 Ranger after favored growth:",
+  "STR5 VIT5 AGI6 INT5 PER6 WIL5",
+  "HP80 MP60 STA100 Init9 BaseDEF1 BaseMDEF1",
+  "Starter Light Armor -> TOTAL DEF3/MDEF4",
+  "Shortbow -> ATK6.",
+  "STARTER KIT MAP",
+  "Warrior: Longsword[F] ATK6; Heavy Armor[F] DEF6/MDEF2.",
+  "Mage: Arcane Staff[F] MATK6; Light Robes[F] DEF2/MDEF3.",
+  "Guardian: Mace[F] ATK5; Heavy Armor[F] DEF6/MDEF2; Shield[F] DEF3/MDEF2.",
+  "Duelist: Rapier[F] ATK6; Light Armor[F] DEF2/MDEF3.",
+  "Ranger: Shortbow[F] ATK6; Light Armor[F] DEF2/MDEF3; Quiver[unranked], 20 Standard Arrows."
+ ]
+}

@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "avereth/event.schema.json",
+  "title": "Campaign event (stored per chat message in message.extra.avereth.events)",
+  "type": "object",
+  "required": [
+    "t",
+    "d"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "t": {
+      "enum": [
+        "campaign.started",
+        "creation.class_selected",
+        "creation.completed",
+        "entity.created",
+        "entity.updated",
+        "entity.sheet_set",
+        "scene.moved",
+        "scene.entered",
+        "scene.left",
+        "scene.position",
+        "scene.awareness",
+        "scene.concealed",
+        "time.advanced",
+        "turn.begun",
+        "resource.changed",
+        "item.changed",
+        "item.equipped",
+        "coin.changed",
+        "stat.assigned",
+        "xp.changed",
+        "level.up",
+        "skill.learned",
+        "entity.status",
+        "encounter.started",
+        "encounter.updated",
+        "encounter.ended",
+        "fact.asserted",
+        "fact.ended",
+        "claim.created",
+        "knowledge.gained",
+        "memory.recorded",
+        "relation.set",
+        "relation.changed",
+        "quest.set",
+        "thread.set",
+        "combat.pending",
+        "combat.pending_cleared",
+        "combat.intent",
+        "outcome.recorded",
+        "delta.rejected",
+        "check.recorded",
+        "note"
+      ]
+    },
+    "d": {
+      "type": "object"
+    },
+    "rng_to": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "seq_to": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "$defs": {
+    "fact": {
+      "type": "object",
+      "required": [
+        "id",
+        "s",
+        "p",
+        "o",
+        "since",
+        "until",
+        "visibility",
+        "hard"
+      ],
+      "properties": {
+        "visibility": {
+          "enum": [
+            "public",
+            "secret"
+          ]
+        },
+        "hard": {
+          "type": "boolean"
+        }
+      }
+    },
+    "memory": {
+      "type": "object",
+      "required": [
+        "id",
+        "turn",
+        "minute",
+        "text",
+        "who",
+        "witnesses",
+        "importance",
+        "kind"
+      ],
+      "properties": {
+        "importance": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "kind": {
+          "enum": [
+            "narrated",
+            "episode",
+            "meeting",
+            "combat"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "_status": "PROPOSED content (new in v2). Fills the gap exposed by Testrun-v1: no rule defined how a human NPC combatant is built, so the model improvised a trapper profile (\"Level 2, HP maybe ~60 ... let's just make him HP 70\"). Everything here is derived from existing canon; only default Levels, free-point emphasis and concrete gear values inside the Content #9 F-rank reference ranges are new choices and should be confirmed by the author.",
+  "_derivation": [
+    "Lore #1: most humans receive a Base Class around adulthood -> an adult human NPC is a core-stat character with a Base Class.",
+    "Lore #3: most people remain F/E -> default Levels 1-3 (F-rank).",
+    "Content #0 + Core #3: Human baseline 5/5/5/5/5/5, class favored +1/+1 at Level 1 and on each later Level, +5 free Stat Points per later Level.",
+    "Core #2: MaxHP = 50 + Level*5 + VIT*5, MaxSTA 100, Init = AGI + floor(PER/2), Base DEF/MDEF = floor(VIT/4)/floor(WIL/4).",
+    "Content #9: F-rank gear references (Martial Weapon ATK 4-10, Light Armor DEF 2-4 / MDEF 2-5, ...).",
+    "Basic Attack: the Base Class Basic Attack (Content #1-#5). If the NPC's weapon does not fit that attack (e.g. a Ranger fighting with a hand-axe), the engine uses the Basic Attack whose weapon family matches (weapon_family_basic below) — PROPOSED rule."
+  ],
+  "free_point_rule": "Per Level gained after 1: distribute 5 free points in priority order 2/2/1 over the first three stats of 'priority'.",
+  "weapon_family_basic": {
+    "melee": "warrior.basic_attack",
+    "heavy_melee": "guardian.basic_attack",
+    "precision": "duelist.basic_attack",
+    "bow": "ranger.basic_attack",
+    "focus": "mage.basic_attack",
+    "unarmed": "warrior.basic_attack"
+  },
+  "weapon_words": {
+    "melee": ["axe", "hand-axe", "hatchet", "sword", "longsword", "club", "cudgel", "spear", "pitchfork", "hammer", "machete", "knife", "tool", "billhook", "sickle"],
+    "heavy_melee": ["mace", "flail", "maul"],
+    "precision": ["rapier", "dagger", "stiletto", "short blade", "shortsword"],
+    "bow": ["bow", "shortbow", "longbow", "hunting bow"],
+    "focus": ["staff", "wand", "focus", "orb"],
+    "unarmed": ["fists", "unarmed", "bare hands"]
+  },
+  "templates": [
+    {
+      "id": "commoner", "label": "Commoner / townsfolk",
+      "descriptors": ["commoner", "townsfolk", "villager", "farmer", "peasant", "merchant", "trader", "servant", "shopkeeper", "innkeeper", "barmaid", "boy", "girl", "woman", "man", "traveler", "pilgrim", "carter", "shepherd", "goatherd"],
+      "class": "warrior", "level": {"default": 1, "min": 1, "max": 3},
+      "priority": ["VIT", "STR", "AGI"],
+      "weapon": {"name": "Improvised tool", "family": "unarmed", "atk": 0},
+      "armor": null, "skills": [], "temperament": "skittish"
+    },
+    {
+      "id": "laborer", "label": "Laborer / woodsman",
+      "descriptors": ["woodsman", "woodcutter", "charcoal burner", "laborer", "miner", "dockhand", "smith", "blacksmith", "porter", "farmhand"],
+      "class": "warrior", "level": {"default": 2, "min": 1, "max": 4},
+      "priority": ["STR", "VIT", "AGI"],
+      "weapon": {"name": "Hand-axe", "family": "melee", "atk": 5},
+      "armor": null, "skills": [], "temperament": "cautious"
+    },
+    {
+      "id": "hunter", "label": "Hunter / trapper",
+      "descriptors": ["hunter", "trapper", "forester", "poacher", "tracker", "gamekeeper"],
+      "class": "ranger", "level": {"default": 2, "min": 1, "max": 5},
+      "priority": ["AGI", "PER", "VIT"],
+      "weapon": {"name": "Hand-axe", "family": "melee", "atk": 5},
+      "armor": null, "skills": [], "temperament": "cautious"
+    },
+    {
+      "id": "guard", "label": "Guard / watchman / soldier",
+      "descriptors": ["guard", "town guard", "gate guard", "watchman", "sentry", "soldier", "militia", "patrol", "guardsman"],
+      "class": "warrior", "level": {"default": 3, "min": 2, "max": 8},
+      "priority": ["STR", "VIT", "AGI"],
+      "weapon": {"name": "Guard's sword", "family": "melee", "atk": 6},
+      "armor": {"name": "Guard's light armor", "def": 3, "mdef": 2},
+      "skills": ["warrior.heavy_slash", "warrior.guard"], "temperament": "aggressive"
+    },
+    {
+      "id": "bandit", "label": "Bandit / brigand",
+      "descriptors": ["bandit", "brigand", "highwayman", "robber", "thug", "cutthroat", "raider", "outlaw"],
+      "class": "duelist", "level": {"default": 2, "min": 1, "max": 6},
+      "priority": ["STR", "AGI", "VIT"],
+      "weapon": {"name": "Short blade", "family": "precision", "atk": 5},
+      "armor": {"name": "Worn light armor", "def": 2, "mdef": 2},
+      "skills": ["duelist.precision_thrust"], "temperament": "aggressive"
+    },
+    {
+      "id": "hedge_mage", "label": "Hedge mage / apprentice / scholar",
+      "descriptors": ["mage", "apprentice", "scholar", "hedge mage", "wizard", "sorcerer", "arcanist"],
+      "class": "mage", "level": {"default": 2, "min": 1, "max": 6},
+      "priority": ["INT", "WIL", "PER"],
+      "weapon": {"name": "Wooden staff", "family": "focus", "matk": 5},
+      "armor": {"name": "Robes", "def": 2, "mdef": 3},
+      "skills": ["mage.arcane_bolt"], "temperament": "cautious"
+    },
+    {
+      "id": "adventurer", "label": "Adventurer (by Base Class)",
+      "descriptors": ["adventurer", "mercenary", "sellsword", "archer", "bowman", "ranger", "swordsman"],
+      "class": null, "level": {"default": 3, "min": 1, "max": 14},
+      "priority_by_class": {"warrior": ["STR", "VIT", "AGI"], "mage": ["INT", "WIL", "PER"], "guardian": ["VIT", "WIL", "STR"], "duelist": ["STR", "AGI", "PER"], "ranger": ["AGI", "PER", "VIT"]},
+      "gear_from_starter_kit": true,
+      "skills_rule": "first two Offensive/Defensive entries of the class skill pool",
+      "temperament": "cautious"
+    }
+  ],
+  "temperaments": {
+    "aggressive": "closes in and attacks; retreats only at <=15% HP if sapient; beasts fight on",
+    "cautious": "attacks when it can reach; a melee-only NPC shot from range takes cover or closes in; retreats at <=35% HP",
+    "skittish": "flees once threatened or hurt; attacks only when cornered (ENGAGED with no retreat)",
+    "defensive": "holds position, attacks only targets that are ENGAGED, otherwise keeps cover"
+  }
+}

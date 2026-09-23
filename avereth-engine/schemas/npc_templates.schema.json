@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "avereth/npc_templates.schema.json",
+  "title": "PROPOSED human NPC templates (content/npc_templates.json)",
+  "type": "object",
+  "required": [
+    "weapon_family_basic",
+    "weapon_words",
+    "templates",
+    "temperaments"
+  ],
+  "properties": {
+    "weapon_family_basic": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-z_]+\\.basic_attack$"
+      }
+    },
+    "weapon_words": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "templates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "descriptors",
+          "class",
+          "level",
+          "temperament"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "descriptors": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "class": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "level": {
+            "type": "object",
+            "required": [
+              "default",
+              "min",
+              "max"
+            ],
+            "properties": {
+              "default": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "min": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "max": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          },
+          "priority": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "STR",
+                "VIT",
+                "AGI",
+                "INT",
+                "PER",
+                "WIL"
+              ]
+            }
+          },
+          "weapon": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "armor": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "temperament": {
+            "enum": [
+              "aggressive",
+              "cautious",
+              "skittish",
+              "defensive"
+            ]
+          }
+        }
+      }
+    },
+    "temperaments": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  }
+}

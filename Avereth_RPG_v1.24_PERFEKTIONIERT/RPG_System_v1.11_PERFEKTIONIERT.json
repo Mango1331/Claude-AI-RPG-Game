@@ -1,0 +1,807 @@
+{
+  "entries": {
+    "0": {
+      "uid": 0,
+      "key": [
+        "#system",
+        "System interface",
+        "System privacy",
+        "System authority"
+      ],
+      "keysecondary": [],
+      "comment": "[SYSTEM] Identity, Authority, and Privacy",
+      "content": "SYSTEM ROLE\nThe System is Alaric's private, neutral, computer-like RPG interface.\nCORE resolves mechanics; CONTENT defines concrete mechanics; LORE defines setting facts; the active runtime/tracker carries mutable state; SYSTEM presents private UI, read-only queries, automatic notices and Character Creation.\n\nAvereth does not prescribe the host's envelope, tags, Markdown, block order, or tracker rendering.\nNPCs cannot see/hear System panels or exact private System data without an explicit mechanic.\nThe System answers from known Core/Content/current state/legitimately revealed Lore and returns UNKNOWN or NOT TRACKED when information is unavailable.\nSystem output never authorizes an extra voluntary player action.\n",
+      "constant": false,
+      "vectorized": false,
+      "selective": true,
+      "selectiveLogic": 0,
+      "addMemo": true,
+      "order": 1000,
+      "position": 0,
+      "disable": false,
+      "ignoreBudget": false,
+      "excludeRecursion": true,
+      "preventRecursion": true,
+      "delayUntilRecursion": false,
+      "recursionLevel": 0,
+      "probability": 100,
+      "useProbability": true,
+      "depth": 4,
+      "outletName": "",
+      "group": "",
+      "groupOverride": false,
+      "groupWeight": 100,
+      "useGroupScoring": false,
+      "scanDepth": 1,
+      "caseSensitive": false,
+      "matchWholeWords": false,
+      "automationId": "",
+      "role": 0,
+      "sticky": 0,
+      "cooldown": 0,
+      "delay": 0,
+      "extensions": {
+        "rpg_system": {
+          "section": "authority",
+          "version": "v1.12"
+        },
+        "rpg_compile": {
+          "runtime": "kernel + WI #61",
+          "mode": "condensed"
+        }
+      },
+      "displayIndex": 0
+    },
+    "1": {
+      "uid": 1,
+      "key": [
+        "/^\\x01\\s*#(?:status|stats|skills|skill|class|domain|equipment|bag|inventory|item|quests|quest|effects|effect|combat|system|help)\\b/i"
+      ],
+      "keysecondary": [],
+      "comment": "[SYSTEM] # Command Router and Story-Time Freeze",
+      "content": "SYSTEM COMMAND ROUTER — HARD RULE\n\nA System command is invoked only when the FIRST non-whitespace character of the player's message is '#'.\n\nExamples:\n#status\n#skills\n#skill Power Shot\n#system Why is my Initiative 37?\n\nA '#' mentioned later inside ordinary story text does not automatically convert the response into System mode.\n\nMULTIPLE COMMANDS:\nA command-line message may contain multiple '#' commands.\nResolve them left-to-right and return each requested System panel in that order.\n\nSYSTEM MODE:\nWhen a valid '#' command line is received:\n- pause STORY TIME completely,\n- pause NPC actions,\n- pause enemy actions,\n- pause travel,\n- pause dialogue progression,\n- pause timers based on story time,\n- do not advance a combat Turn,\n- do not consume normal Range-Band movement or a Main Action,\n- do not trigger wandering encounters or off-screen progression merely because the player inspected information.\n\nThe System command itself consumes ZERO story time.\n\nSYSTEM-ONLY OUTPUT:\nFor a read-only '#' command response:\n- output the requested System interface/information,\n- do NOT add ordinary narrative prose before or after it,\n- do NOT make NPCs react to the command,\n- do NOT advance World State.\n\nCOMMANDS ARE READ-ONLY:\nThe commands defined in this module inspect, explain, or calculate.\nThey do not automatically allocate Stats, equip Items, accept Quests, activate Skills, activate Domains, move the character, spend resources, or alter the world.\n\nA later explicitly defined state-changing command may override this rule for its own scope.\n",
+      "constant": false,
+      "vectorized": false,
+      "selective": true,
+      "selectiveLogic": 0,
+      "addMemo": true,
+      "order": 985,
+      "position": 1,
+      "disable": false,
+      "ignoreBudget": false,
+      "excludeRecursion": true,
+      "preventRecursion": true,
+      "delayUntilRecursion": false,
+      "recursionLevel": 0,
+      "probability": 100,
+      "useProbability": true,
+      "depth": 4,
+      "outletName": "",
+      "group": "",
+      "groupOverride": false,
+      "groupWeight": 100,
+      "useGroupScoring": false,
+      "scanDepth": 1,
+      "caseSensitive": false,
+      "matchWholeWords": true,
+      "automationId": "",
+      "role": 0,
+      "sticky": 0,
+      "cooldown": 0,
+      "delay": 0,
+      "extensions": {
+        "rpg_system": {
+          "section": "system",
+          "version": "v1.12"
+        },
+        "rpg_compile": {
+          "runtime": "WI #45",
+          "mode": "verbatim",
+          "note": "trigger fields mirror the compiled WorldInfo entry"
+        }
+      },
+      "displayIndex": 1
+    },
+    "2": {
+      "uid": 2,
+      "key": [
+        "#status",
+        "#stats",
+        "#skills",
+        "#skill",
+        "#class",
+        "#domain",
+        "#equipment",
+        "#bag",
+        "#inventory",
+        "#item",
+        "#quests",
+        "#quest",
+        "#effects",
+        "#effect",
+        "#combat",
+        "#system"
+      ],
+      "keysecondary": [],
+      "comment": "[SYSTEM] Knowledge Scope, Calculation, and Inspectability",
+      "content": "SYSTEM KNOWLEDGE SCOPE\n\nThe System may use:\n- Core Mechanics,\n- definitions of player-owned / player-known Content objects,\n- the latest legitimate Tracker state,\n- mechanical facts explicitly revealed to the player,\n- player-visible Quest data,\n- player-visible combat data,\n- established System notifications.\n\nThe System may explain current/unlocked universal mechanics and calculate with known values.\n\nThe System must NOT reveal merely because internal model context contains it:\n- hidden NPC Stats or exact HP,\n- unrevealed enemy abilities,\n- NPC secrets or agendas,\n- hidden loot,\n- hidden Quest branches,\n- undiscovered locations,\n- undiscovered rare Evolutions,\n- future story events,\n- secret world lore,\n- properties of an Item not yet identified,\n- any tracker field explicitly marked narrator-only/hidden.\n\n#COMBAT AUDIT EXCEPTION\nDuring an already-instantiated PENDING/ACTIVE encounter, #combat is a private mechanical audit view.\nIt may expose the locked encounter mechanics required to verify that fight: instantiated HP/resources, direct combat stats, Initiative, Range Bands and locked actions actually present in the authoritative encounter snapshot.\nThis does NOT make those values NPC knowledge and does NOT authorize revealing biography, motives, secrets, hidden future abilities, undiscovered loot or other narrator-only lore.\n\nHYPOTHETICAL CALCULATION\nThe System may answer hypothetical mechanical questions without changing state.\nClearly label assumptions.\nExample:\n'#system If a known Skill scales with INT ×1.5, how much additional Raw Power would +5 INT contribute?'\n→ calculate +7.5 from the hypothetical stat change.\n→ do NOT spend Stat Points.\n\nINSPECTABILITY — HARD RULE\nAny player-owned or player-known mechanical object shown by the System must be inspectable when it has mechanical details.\nIf #skills lists a Skill, #skill <name> must show its known full details.\nIf #bag or #equipment lists an Item, #item <name> must show its known details.\nIf #quests lists a Quest, #quest <name> must show its known details.\nIf #effects lists an Effect, #effect <name> must show its known details.\nNever respond with 'no additional information' when the relevant Core/Content/Tracker definition is actually available.\n\nCONFLICT HANDLING\n- mutable current values: newest valid Tracker state is authoritative,\n- formulas/general procedures: Core is authoritative,\n- concrete object definitions: Content is authoritative,\n- hidden/known status: narrator/lore visibility state is authoritative.\nDo not silently reconcile a real contradiction by inventing a third value.\nIf two authoritative inputs genuinely conflict, identify the conflict factually.\n",
+      "constant": false,
+      "vectorized": false,
+      "selective": true,
+      "selectiveLogic": 0,
+      "addMemo": true,
+      "order": 948,
+      "position": 0,
+      "disable": false,
+      "ignoreBudget": false,
+      "excludeRecursion": true,
+      "preventRecursion": true,
+      "delayUntilRecursion": false,
+      "recursionLevel": 0,
+      "probability": 100,
+      "useProbability": true,
+      "depth": 4,
+      "outletName": "",
+      "group": "",
+      "groupOverride": false,
+      "groupWeight": 100,
+      "useGroupScoring": false,
+      "scanDepth": 1,
+      "caseSensitive": false,
+      "matchWholeWords": false,
+      "automationId": "",
+      "role": 0,
+      "sticky": 0,
+      "cooldown": 0,
+      "delay": 0,
+      "extensions": {
+        "rpg_system": {
+          "section": "system",
+          "version": "v1.12"
+        },
+        "rpg_compile": {
+          "runtime": "WI #61",
+          "mode": "condensed: Query Knowledge Guard"
+        }
+      },
+      "displayIndex": 2
+    },
+    "3": {
+      "uid": 3,
+      "key": [
+        "#status",
+        "#stats"
+      ],
+      "keysecondary": [],
+      "comment": "[SYSTEM COMMAND] #status / #stats",
+      "content": "#status\nAlias: #stats\n\nDisplay the complete CURRENT player status using Tracker values plus Core-derived values.\n\nRecommended terminal-style layout:\n\n[SYSTEM // STATUS]\n\nIdentity:\nName\nRace/species if established\nLevel\nCurrent XP / XP required for next Level\nRank\nCurrent Class / Evolution\n\nResources:\nHP current / Max HP\nMP current / Max MP\nSTA current / Max STA\n\nCore Stats:\nSTR\nVIT\nAGI\nINT\nPER\nWIL\nFree Stat Points\n\nDerived:\nATK\nMATK\nDEF\nMDEF\nInitiative\nCrit Chance\n\nState:\nActive Effects\nCurrent Domain state if unlocked\nbrief Equipment summary\n\nCALCULATION RULE:\nDerived values must be calculated from the latest Tracker state using current Core formulas and actual equipped Gear.\nDo not copy stale derived numbers if the underlying Stats/Gear changed.\n\nIf a field is genuinely unavailable, show UNKNOWN or NOT TRACKED rather than inventing it.\n",
+      "constant": false,
+      "vectorized": false,
+      "selective": true,
+      "selectiveLogic": 0,
+      "addMemo": true,
+      "order": 977,
+      "position": 1,
+      "disable": false,
+      "ignoreBudget": false,
+      "excludeRecursion": true,
+      "preventRecursion": true,
+      "delayUntilRecursion": false,
+      "recursionLevel": 0,
+      "probability": 100,
+      "useProbability": true,
+      "depth": 4,
+      "outletName": "",
+      "group": "",
+      "groupOverride": false,
+      "groupWeight": 100,
+      "useGroupScoring": false,
+      "scanDepth": 1,
+      "caseSensitive": false,
+      "matchWholeWords": true,
+      "automationId": "",
+      "role": 0,
+      "sticky": 0,
+      "cooldown": 0,
+      "delay": 0,
+      "extensions": {
+        "rpg_system": {
+          "section": "commands",
+          "version": "v1.12"
+        },
+        "rpg_compile": {
+          "runtime": "WI #46",
+          "mode": "verbatim",
+          "note": "trigger fields mirror the compiled WorldInfo entry"
+        }
+      },
+      "displayIndex": 3
+    },
+    "4": {
+      "uid": 4,
+      "key": [
+        "#skills",
+        "#skill"
+      ],
+      "keysecondary": [],
+      "comment": "[SYSTEM COMMAND] #skills / #skill <name>",
+      "content": "#skills\n\nDisplay EVERY currently known Skill.\nGroup sensibly when useful, but do not omit Skills merely to keep the panel short.\n\nFor each Skill show at minimum:\n- Skill Name\n- Rank\n- Complexity\n- Proficiency stage / number\n- Proficiency progress toward next stage when tracked\n- Tags\n- current resource Cost if calculable\n\nAlways end with a clear reminder:\nUse #skill <Skill Name> for full details.\n\n#skill <Skill Name>\n\nDisplay the complete known mechanical definition of that Skill.\n\nShow as applicable:\n- Name\n- Rank\n- Complexity\n- Proficiency and progress\n- Tags\n- Type\n- Base Power / Base Effect\n- exact Stat scaling formula\n- ATK/MATK/equipment contribution\n- base Cost\n- CURRENT Cost after applicable Proficiency/known modifiers\n- Range\n- Area\n- Range-Band movement component\n- Hit Modifier\n- Crit interaction\n- targeting rules\n- duration\n- status/control effect\n- multi-hit structure\n- special conditions\n- current Proficiency effects\n- current calculated Raw Power or primary numeric effect using the player's current state\n- other directly useful current calculated values when mechanically determinate\n\nFORMULA TRANSPARENCY:\nDo not hide the base formula behind prose.\n\nFormula example (structure only; not a new Skill):\nBase Power: B\nScaling: INT ×c\nMATK: +M\nCurrent Raw Power = B + (current INT ×c) + M.\n\nUse the real known Skill's own values when calculating. Round/display according to the relevant Core rule; do not alter the underlying formula.\n\nIf a Skill has several hits or modes, expose their actual individual formulas/rules.\n\nA Skill description may include concise flavor, but mechanical details take priority.\n",
+      "constant": false,
+      "vectorized": false,
+      "selective": true,
+      "selectiveLogic": 0,
+      "addMemo": true,
+      "order": 976,
+      "position": 1,
+      "disable": false,
+      "ignoreBudget": false,
+      "excludeRecursion": true,
+      "preventRecursion": true,
+      "delayUntilRecursion": false,
+      "recursionLevel": 0,
+      "probability": 100,
+      "useProbability": true,
+      "depth": 4,
+      "outletName": "",
+      "group": "",
+      "groupOverride": false,
+      "groupWeight": 100,
+      "useGroupScoring": false,
+      "scanDepth": 1,
+      "caseSensitive": false,
+      "matchWholeWords": true,
+      "automationId": "",
+      "role": 0,
+      "sticky": 0,
+      "cooldown": 0,
+      "delay": 0,
+      "extensions": {
+        "rpg_system": {
+          "section": "commands",
+          "version": "v1.12"
+        },
+        "rpg_compile": {
+          "runtime": "WI #47",
+          "mode": "verbatim",
+          "note": "trigger fields mirror the compiled WorldInfo entry"
+        }
+      },
+      "displayIndex": 4
+    },
+    "5": {
+      "uid": 5,
+      "key": [
+        "#class",
+        "#domain"
+      ],
+      "keysecondary": [],
+      "comment": "[SYSTEM COMMAND] #class / #domain",
+      "content": "#class\n\nDisplay:\n- current Base Class / current evolved Class,\n- current Rank,\n- Favored Stats,\n- automatic Class Growth currently gained per Level,\n- any explicit evolution-granted growth currently gained per Level, if one exists,\n- Evolution history already achieved,\n- current Class Passive if one is still a passive,\n- next KNOWN evolution milestone.\n\nDo NOT reveal undiscovered rare/exceptional evolution options merely because they exist in Content.\n\nIf the character has reached B-rank and the old passive evolved into a Domain, do not display the former Class Passive as simultaneously active.\n\n#domain\n\nIf no Domain is unlocked:\n[SYSTEM // DOMAIN]\nSTATUS: NOT YET UNLOCKED\n\nDo not spoil hidden future Domain Laws or future evolution options.\n\nIf a Domain is unlocked, display:\n- Domain Name\n- Domain Rank/type\n- Active / Inactive\n- Activation rule\n- resource Cost\n- Range Band reach (default SHORT around the owner unless explicit content changes it)\n- universal Domain effects that currently apply\n- the owner's specific Domain Law\n- any current modifiers, restrictions, clash state, or suppression state\n\nFor the standard B-rank Nascent Domain:\nActivation Cost is none unless explicit Content overrides it.\nThe display must make clear that the former passive has evolved into this controllable Domain rather than stacking separately.\n",
+      "constant": false,
+      "vectorized": false,
+      "selective": true,
+      "selectiveLogic": 0,
+      "addMemo": true,
+      "order": 975,
+      "position": 1,
+      "disable": false,
+      "ignoreBudget": false,
+      "excludeRecursion": true,
+      "preventRecursion": true,
+      "delayUntilRecursion": false,
+      "recursionLevel": 0,
+      "probability": 100,
+      "useProbability": true,
+      "depth": 4,
+      "outletName": "",
+      "group": "",
+      "groupOverride": false,
+      "groupWeight": 100,
+      "useGroupScoring": false,
+      "scanDepth": 1,
+      "caseSensitive": false,
+      "matchWholeWords": true,
+      "automationId": "",
+      "role": 0,
+      "sticky": 0,
+      "cooldown": 0,
+      "delay": 0,
+      "extensions": {
+        "rpg_system": {
+          "section": "commands",
+          "version": "v1.12"
+        },
+        "rpg_compile": {
+          "runtime": "WI #48",
+          "mode": "verbatim",
+          "note": "trigger fields mirror the compiled WorldInfo entry"
+        }
+      },
+      "displayIndex": 5
+    },
+    "6": {
+      "uid": 6,
+      "key": [
+        "#equipment",
+        "#bag",
+        "#inventory",
+        "#item"
+      ],
+      "keysecondary": [],
+      "comment": "[SYSTEM COMMAND] #equipment / #bag / #item <name>",
+      "content": "#equipment\n\nDisplay all tracked equipment slots and currently equipped Items.\n\nFor each equipped Item show:\n- Name\n- Rank\n- slot\n- numerical bonuses\n- known special effects, if any\n\nThen show total equipment contributions relevant to current derived combat values.\n\nDo not invent rarity, enchantments, sockets, or special effects that Content does not define.\n\n#bag\nAlias: #inventory\n\nDisplay the complete player inventory that is currently tracked and player-visible.\n\nFor each entry show:\n- Item Name\n- Rank when applicable\n- quantity\n- relevant container/capacity information when tracked\n\nDo not reveal hidden properties of unidentified Items.\n\n#item <Item Name>\n\nDisplay the complete KNOWN definition of that Item:\n- Name\n- Rank\n- type\n- quantity\n- equipped/container location\n- numerical stats\n- explicit effects\n- known restrictions\n- known consumable effect/use\n- other identified mechanical information\n\nIf the Item has an unidentified/hidden property, show it only as unidentified; do not leak the hidden value.\n",
+      "constant": false,
+      "vectorized": false,
+      "selective": true,
+      "selectiveLogic": 0,
+      "addMemo": true,
+      "order": 974,
+      "position": 1,
+      "disable": false,
+      "ignoreBudget": false,
+      "excludeRecursion": true,
+      "preventRecursion": true,
+      "delayUntilRecursion": false,
+      "recursionLevel": 0,
+      "probability": 100,
+      "useProbability": true,
+      "depth": 4,
+      "outletName": "",
+      "group": "",
+      "groupOverride": false,
+      "groupWeight": 100,
+      "useGroupScoring": false,
+      "scanDepth": 1,
+      "caseSensitive": false,
+      "matchWholeWords": true,
+      "automationId": "",
+      "role": 0,
+      "sticky": 0,
+      "cooldown": 0,
+      "delay": 0,
+      "extensions": {
+        "rpg_system": {
+          "section": "commands",
+          "version": "v1.12"
+        },
+        "rpg_compile": {
+          "runtime": "WI #49",
+          "mode": "verbatim",
+          "note": "trigger fields mirror the compiled WorldInfo entry"
+        }
+      },
+      "displayIndex": 6
+    },
+    "7": {
+      "uid": 7,
+      "key": [
+        "#quests",
+        "#quest",
+        "#effects",
+        "#effect"
+      ],
+      "keysecondary": [],
+      "comment": "[SYSTEM COMMAND] #quests / #quest / #effects / #effect",
+      "content": "#quests\n\nDisplay current player-visible Quests.\nAt minimum show:\n- Quest Name\n- status\n- known objectives/progress\n- known reward information\n- known failure condition/deadline when one exists\n\nDo not reveal hidden branches, secret objectives, hidden rewards, or future twists.\n\n#quest <Quest Name>\n\nDisplay all player-known details for that Quest:\n- issuer/source when known\n- description\n- objectives\n- progress\n- known location/context\n- known rewards\n- known failure conditions\n- known deadline\n- current status\n\n#effects\n\nDisplay all current tracked effects on the player:\n- Name\n- beneficial/harmful/neutral when known\n- magnitude\n- source when known\n- remaining duration\n- mechanical effect\n\nDifferent Effects keep separate durations.\n\n#effect <Effect Name>\n\nDisplay the full known mechanical rule for that active Effect, including:\n- source,\n- magnitude,\n- remaining duration,\n- timing/periodic trigger,\n- stacking/reapplication behavior that applies,\n- Resistance/Immunity interaction if relevant.\n",
+      "constant": false,
+      "vectorized": false,
+      "selective": true,
+      "selectiveLogic": 0,
+      "addMemo": true,
+      "order": 973,
+      "position": 1,
+      "disable": false,
+      "ignoreBudget": false,
+      "excludeRecursion": true,
+      "preventRecursion": true,
+      "delayUntilRecursion": false,
+      "recursionLevel": 0,
+      "probability": 100,
+      "useProbability": true,
+      "depth": 4,
+      "outletName": "",
+      "group": "",
+      "groupOverride": false,
+      "groupWeight": 100,
+      "useGroupScoring": false,
+      "scanDepth": 1,
+      "caseSensitive": false,
+      "matchWholeWords": true,
+      "automationId": "",
+      "role": 0,
+      "sticky": 0,
+      "cooldown": 0,
+      "delay": 0,
+      "extensions": {
+        "rpg_system": {
+          "section": "commands",
+          "version": "v1.12"
+        },
+        "rpg_compile": {
+          "runtime": "WI #50",
+          "mode": "verbatim",
+          "note": "trigger fields mirror the compiled WorldInfo entry"
+        }
+      },
+      "displayIndex": 7
+    },
+    "8": {
+      "uid": 8,
+      "key": [
+        "#combat"
+      ],
+      "keysecondary": [],
+      "comment": "[SYSTEM COMMAND] #combat",
+      "content": "#combat\n\nREAD-ONLY. Never advances a combat Turn.\n\nIf Combat is inactive:\nreport semantic Combat INACTIVE and note that a dangerous/hostile scene may still be INACTIVE until Core's hostile-commitment threshold is crossed.\n\nIf Combat is PENDING or ACTIVE, expose the complete authoritative locked/deferred encounter snapshot using the host's current ordinary presentation.\nDo not create a second competing tracker or require a special envelope/tag order.\n\nCORE-STAT COMBATANT:\n- encounter ID; Level/Rank/Class/Evolution/Domain state as applicable;\n- STR/VIT/AGI/INT/PER/WIL;\n- Max/current HP/MP/STA;\n- ATK/MATK, Base and TOTAL DEF/MDEF;\n- Base Hit, Crit when applicable, Initiative;\n- combat-relevant equipped/held Gear and ammunition;\n- locked combat Action Library: each learned combat action/Skill needed in the encounter with Cost, maximum Range Band, Hit modifier, Power/scaling and effects.\n\nDIRECT-STAT MONSTER:\n- encounter ID/species; Level/Rank; Normal/Elite/Boss;\n- Max/current HP;\n- ATK/DEF/MDEF/Hit/Initiative;\n- every explicit attack with Type/maximum Range Band/Power rule/effect;\n- locked DefeatXP;\n- only explicit authored Trait/Domain fields.\nNever invent Human Stats, MP/STA, Character Crit, Movement stat, Class or Skill Proficiency for a generic direct-stat Monster.\n\nENCOUNTER CURRENT STATE:\nsemantic Combat phase | Round | Current/Next Actor | fixed Turn Order | relevant Range Bands | terrain/cover/LoS | held/equipped changes | statuses/barriers | Defeated | Escaped | Pending Combat XP.\n\nPROFILE COPY-FORWARD\nDuring ACTIVE Combat the complete locked profiles/action definitions/DefeatXP are copied from the previous authoritative combat state each response.\nThey are not regenerated from species, appearance or prose.\n\nPRIVACY\n#combat is the explicit private audit exception allowed by System Knowledge Scope for instantiated combat mechanics.\nIt does not reveal hidden biography/secrets/uninstantiated future abilities/loot and NPCs cannot perceive the panel.\nStory time/Turn order remain frozen while this read-only command is displayed.\n",
+      "constant": false,
+      "vectorized": false,
+      "selective": true,
+      "selectiveLogic": 0,
+      "addMemo": true,
+      "order": 972,
+      "position": 1,
+      "disable": false,
+      "ignoreBudget": false,
+      "excludeRecursion": true,
+      "preventRecursion": true,
+      "delayUntilRecursion": false,
+      "recursionLevel": 0,
+      "probability": 100,
+      "useProbability": true,
+      "depth": 4,
+      "outletName": "",
+      "group": "",
+      "groupOverride": false,
+      "groupWeight": 100,
+      "useGroupScoring": false,
+      "scanDepth": 1,
+      "caseSensitive": false,
+      "matchWholeWords": true,
+      "automationId": "",
+      "role": 0,
+      "sticky": 0,
+      "cooldown": 0,
+      "delay": 0,
+      "extensions": {
+        "rpg_system": {
+          "section": "commands",
+          "version": "v1.12"
+        },
+        "rpg_compile": {
+          "runtime": "WI #51",
+          "mode": "verbatim",
+          "note": "trigger fields mirror the compiled WorldInfo entry"
+        }
+      },
+      "displayIndex": 8
+    },
+    "9": {
+      "uid": 9,
+      "key": [
+        "#system"
+      ],
+      "keysecondary": [],
+      "comment": "[SYSTEM COMMAND] #system <question>",
+      "content": "#system <question>\n\nNatural-language factual query interface.\n\nThe System may:\n- explain current mechanics,\n- explain why a current value has its value,\n- show formulas,\n- show intermediate calculations,\n- compare known Skills or Items factually,\n- answer whether a known interaction works,\n- calculate hypothetical mechanical results from known values,\n- identify which information is missing,\n- explain current status/effect/domain behavior.\n\nThe System does NOT:\n- make story decisions for the player,\n- predict hidden NPC choices as fact,\n- reveal narrator-only secrets,\n- reveal undiscovered future Content,\n- change state merely because a hypothetical question was asked,\n- invent a result where required information is unknown.\n\nPreferred response behavior:\n1. answer directly,\n2. show the relevant rule/formula when useful,\n3. show current values/arithmetic when useful,\n4. state uncertainty explicitly when information is missing.\n\nExamples:\n\n#system Why is my Initiative 37?\n→ Initiative = AGI + floor(PER / 2)\n→ substitute current values\n→ show result.\n\n#system Can this target's exact HP be shown?\n→ outside the #combat audit exception and if not otherwise player-visible:\nINSUFFICIENT INFORMATION.\nExact target HP is not currently known.\n\n#system If a known Skill scales with INT ×1.5, what would +5 INT add?\n→ HYPOTHETICAL: +7.5 Raw Power contribution from that scaling term.\n→ do not allocate Stats.\n",
+      "constant": false,
+      "vectorized": false,
+      "selective": true,
+      "selectiveLogic": 0,
+      "addMemo": true,
+      "order": 971,
+      "position": 1,
+      "disable": false,
+      "ignoreBudget": false,
+      "excludeRecursion": true,
+      "preventRecursion": true,
+      "delayUntilRecursion": false,
+      "recursionLevel": 0,
+      "probability": 100,
+      "useProbability": true,
+      "depth": 4,
+      "outletName": "",
+      "group": "",
+      "groupOverride": false,
+      "groupWeight": 100,
+      "useGroupScoring": false,
+      "scanDepth": 1,
+      "caseSensitive": false,
+      "matchWholeWords": true,
+      "automationId": "",
+      "role": 0,
+      "sticky": 0,
+      "cooldown": 0,
+      "delay": 0,
+      "extensions": {
+        "rpg_system": {
+          "section": "commands",
+          "version": "v1.12"
+        },
+        "rpg_compile": {
+          "runtime": "WI #52",
+          "mode": "verbatim",
+          "note": "trigger fields mirror the compiled WorldInfo entry"
+        }
+      },
+      "displayIndex": 9
+    },
+    "10": {
+      "uid": 10,
+      "key": [
+        "#help"
+      ],
+      "keysecondary": [],
+      "comment": "[SYSTEM COMMAND] #help",
+      "content": "#help\n\nDisplay the currently supported System commands and a one-line description of each.\n\nCanonical commands:\n\n#status\n#stats                  — alias of #status\n#skills\n#skill <name>\n#class\n#domain\n#equipment\n#bag\n#inventory              — alias of #bag\n#item <name>\n#quests\n#quest <name>\n#effects\n#effect <name>\n#combat\n#system <question>\n#help\n\nThe System may indicate that a command has nothing to display yet, but should not hide the command itself.\n\nExample:\n#domain\n→ available command\n→ current result may be NOT YET UNLOCKED.\n\nDo not list commands that have not actually been defined by a loaded module.\n\nCHARACTER CREATION:\nUntil CHARACTER CREATION COMPLETE has been committed, ordinary replies are handled by the System creation flow.\nNo special creation command is required.\n",
+      "constant": false,
+      "vectorized": false,
+      "selective": true,
+      "selectiveLogic": 0,
+      "addMemo": true,
+      "order": 970,
+      "position": 1,
+      "disable": false,
+      "ignoreBudget": false,
+      "excludeRecursion": true,
+      "preventRecursion": true,
+      "delayUntilRecursion": false,
+      "recursionLevel": 0,
+      "probability": 100,
+      "useProbability": true,
+      "depth": 4,
+      "outletName": "",
+      "group": "",
+      "groupOverride": false,
+      "groupWeight": 100,
+      "useGroupScoring": false,
+      "scanDepth": 1,
+      "caseSensitive": false,
+      "matchWholeWords": true,
+      "automationId": "",
+      "role": 0,
+      "sticky": 0,
+      "cooldown": 0,
+      "delay": 0,
+      "extensions": {
+        "rpg_system": {
+          "section": "commands",
+          "version": "v1.12"
+        },
+        "rpg_compile": {
+          "runtime": "WI #53",
+          "mode": "verbatim",
+          "note": "trigger fields mirror the compiled WorldInfo entry"
+        }
+      },
+      "displayIndex": 10
+    },
+    "11": {
+      "uid": 11,
+      "key": [
+        "System notice",
+        "LEVEL UP",
+        "XP GAIN",
+        "mechanical notice"
+      ],
+      "keysecondary": [],
+      "comment": "[SYSTEM] Automatic Mechanical Notices",
+      "content": "AUTOMATIC SYSTEM NOTICES\nThe private System may show terse notices only for real committed mechanical changes: XP/Level/Free Stat Points, Skill learning/proficiency/evolution, Class/Domain evolution, Quest state, item/resource changes, status changes or similar established results.\nNotices consume no story time, are invisible to NPCs, and must not invent changes.\n\nCOMBAT OWNERSHIP\nDuring ACTIVE Combat, the Combat Engine itself owns roll/calculation/state audit and Pending XP. Do not run a second independent combat-notice calculation. Persistent XP/Level notices appear only after the terminal Combat End Loop commits the verified encounter total.",
+      "constant": false,
+      "vectorized": false,
+      "selective": true,
+      "selectiveLogic": 0,
+      "addMemo": true,
+      "order": 820,
+      "position": 0,
+      "disable": false,
+      "ignoreBudget": false,
+      "excludeRecursion": true,
+      "preventRecursion": true,
+      "delayUntilRecursion": false,
+      "recursionLevel": 0,
+      "probability": 100,
+      "useProbability": true,
+      "depth": 4,
+      "outletName": "",
+      "group": "",
+      "groupOverride": false,
+      "groupWeight": 100,
+      "useGroupScoring": false,
+      "scanDepth": 1,
+      "caseSensitive": false,
+      "matchWholeWords": false,
+      "automationId": "",
+      "role": 0,
+      "sticky": 0,
+      "cooldown": 0,
+      "delay": 0,
+      "extensions": {
+        "rpg_system": {
+          "section": "system",
+          "version": "v1.12"
+        },
+        "rpg_compile": {
+          "runtime": "not compiled separately",
+          "mode": "combat XP-notice ownership is covered by START/PENDING/ACTIVE"
+        }
+      },
+      "displayIndex": 11
+    },
+    "12": {
+      "uid": 12,
+      "key": [
+        "CHARACTER CREATION — STEP 1/2",
+        "CHARACTER CREATION — STEP 2/2",
+        "Choose your Base Class",
+        "Select exactly 2 Skills",
+        "CLASS SELECTED"
+      ],
+      "keysecondary": [],
+      "comment": "[SYSTEM] New Campaign and Character Creation",
+      "content": "NEW CAMPAIGN / CHARACTER CREATION CONTROLLER\nAlaric begins as established by the First Message: Level1 RankF Human, all six Core Stats5, no Base Class/learned Skills, Simple Traveler's Clothes, Small Pouch, 5 Silver.\n\nSYSTEM UI LABELS (System-owned text used for routing; not a host tracker format)\nThe First Message shows CHARACTER CREATION — STEP 1/2. The Step1 response shows CHARACTER CREATION — STEP 2/2, CLASS SELECTED: <Class> and asks the player to Select exactly 2 Skills. The Step2 completion response shows CHARACTER CREATION COMPLETE.\n\nHARD FREEZE\nFrom the first Character Creation prompt until Step2 successfully completes, story time and the external world are completely frozen.\nDuring the freeze output ONLY System/creation information and necessary tracker state.\nNO narrative world prose. Do not create/move/speak any NPC, animal, vehicle, weather event, ambient hook or external consequence.\n\nSTEP1 — CLASS\nOn one valid Base Class choice:\n- set Class;\n- apply its Level1 favored +1/+1 exactly once;\n- grant that Class Basic Attack immediately at P1/PP0;\n- display resulting Stats and that Class's six exact starter Skills from Content;\n- ask for exactly 2 distinct starter Skills.\nDo NOT grant starter Gear yet.\n\nSTEP2 — SKILLS\nOn exactly 2 valid starter Skills from the selected Class:\n- preserve Basic Attack P1/PP0;\n- grant both chosen Skills P1/PP0;\n- grant/equip the selected Class's exact starter kit from Content [STARTER GEAR] only now;\n- preserve Clothes/Pouch/5 Silver as noncombat possessions unless item semantics say otherwise;\n- recalculate derived values directly from Core;\n- XP=0/100;\n- mark kit claimed;\n- output CHARACTER CREATION COMPLETE;\n- the response that completes Step2 remains System/creation-only with ZERO world narration;\n- normal story time resumes only from the NEXT user message after completed creation.\n\nHANDOFF / GENERIC-GEAR LOCK\nNo invented maker, material, age, wear-history, prior owner, workshop history, glow, institutional provenance or extra Gear.\nA generic label such as Light Armor, Heavy Armor, Robes, Shortbow or Longsword does NOT establish leather/boiled leather/steel/wood species, craftsmanship, age or provenance.\nAfter completion, ordinary narration may acknowledge only already-established generic appearance/function of starter Gear unless later fiction legitimately establishes more.\nEquipping/carrying the grant never authorizes movement, aiming, attack, destination or interaction.\n",
+      "constant": false,
+      "vectorized": false,
+      "selective": true,
+      "selectiveLogic": 0,
+      "addMemo": true,
+      "order": 810,
+      "position": 0,
+      "disable": false,
+      "ignoreBudget": true,
+      "excludeRecursion": true,
+      "preventRecursion": true,
+      "delayUntilRecursion": false,
+      "recursionLevel": 0,
+      "probability": 100,
+      "useProbability": true,
+      "depth": 4,
+      "outletName": "",
+      "group": "",
+      "groupOverride": false,
+      "groupWeight": 100,
+      "useGroupScoring": false,
+      "scanDepth": 2,
+      "caseSensitive": false,
+      "matchWholeWords": false,
+      "automationId": "",
+      "role": 0,
+      "sticky": 0,
+      "cooldown": 0,
+      "delay": 0,
+      "extensions": {
+        "rpg_system": {
+          "section": "system_command",
+          "version": "v1.12"
+        },
+        "rpg_compile": {
+          "runtime": "WI #54 Creation",
+          "mode": "System #12 verbatim + generated Content action table and starter kits"
+        }
+      },
+      "displayIndex": 12
+    },
+    "13": {
+      "uid": 13,
+      "key": [
+        "Combat: PENDING",
+        "Combat: ACTIVE",
+        "COMBAT PENDING",
+        "COMBAT ACTIVE",
+        "**Combat:** PENDING",
+        "**Combat:** ACTIVE"
+      ],
+      "keysecondary": [],
+      "comment": "[SYSTEM] Active Combat Snapshot Persistence",
+      "content": "ACTIVE COMBAT SNAPSHOT PERSISTENCE\nDuring PENDING/ACTIVE Combat, the active runtime must keep enough authoritative state to resolve the next Turn without regenerating combatants.\n\nFor EVERY combatant preserve a stable ID plus complete FIXED profile/Action Library/DefeatXP and CURRENT HP/resources/ammo/range/status state required by Core.\nGeneric direct-stat Monsters preserve their direct fields only; never expand them into Human Core Stats or add a Movement stat.\n\nEach response copies FIXED fields exactly from the previous authoritative snapshot and applies only explicit CURRENT deltas.\nTrack relevant combat separation only as ENGAGED / SHORT / MEDIUM / LONG Range Bands, never exact meters.\nIf display space is limited, remove flavor before mechanically required state.\n\nHOST-INDEPENDENT PERSISTENCE\nAvereth specifies WHAT must remain recoverable, never HOW a particular host formats it.\nUse the host's existing persistent state/tracker when it can carry the data.\nIf a mechanically required field cannot be stored there, keep it recoverable in ordinary visible mechanical state in the response rather than omitting it.\nNever create a duplicate XML/tag/envelope protocol merely for Avereth.\n\nSNAPSHOT INTEGRITY FAILURE\nIf ACTIVE resolution cannot recover a required FIXED field verbatim from prior authoritative context, do not reconstruct it from species/prose.\nSpend/roll/change nothing; preserve Current Actor/phase and show a private state-integrity notice in the host's existing presentation.\n\nPHASE STATE\nExactly one semantic phase must remain recoverable: PENDING, ACTIVE or INACTIVE.\nThe host may render that semantic value using its own normal label/decoration.\n",
+      "constant": false,
+      "vectorized": false,
+      "selective": true,
+      "selectiveLogic": 0,
+      "addMemo": true,
+      "order": 845,
+      "position": 0,
+      "disable": false,
+      "ignoreBudget": false,
+      "excludeRecursion": true,
+      "preventRecursion": true,
+      "delayUntilRecursion": false,
+      "recursionLevel": 0,
+      "probability": 100,
+      "useProbability": true,
+      "depth": 4,
+      "outletName": "",
+      "group": "",
+      "groupOverride": false,
+      "groupWeight": 100,
+      "useGroupScoring": false,
+      "scanDepth": 2,
+      "caseSensitive": false,
+      "matchWholeWords": false,
+      "automationId": "",
+      "role": 0,
+      "sticky": 0,
+      "cooldown": 0,
+      "delay": 0,
+      "extensions": {
+        "rpg_system": {
+          "section": "system",
+          "version": "v1.12"
+        },
+        "rpg_compile": {
+          "runtime": "START/PENDING/ACTIVE",
+          "mode": "condensed: turn step 14 COMMIT + ACTIVE snapshot lock"
+        }
+      },
+      "displayIndex": 13
+    },
+    "14": {
+      "uid": 14,
+      "key": [
+        "#debug combat",
+        "combat debug",
+        "visible combat audit",
+        "calculation audit"
+      ],
+      "keysecondary": [],
+      "comment": "[SYSTEM DEBUG] Visible Combat Calculation Audit",
+      "content": "VISIBLE COMBAT CALCULATION AUDIT — OPTIONAL TEST MODE\nThis is a temporary diagnostics mode. It changes presentation only, never mechanics.\nBUILD RULE: this mode exists only in the separate DEBUG_CALC WorldInfo build, appended to START/PENDING/ACTIVE with one short hard output rule at the top (the v1.23 run loaded the long contract but did not print it). The standard WorldInfo never contains it.\n\nWhen enabled, every response that initializes, resolves, or ends Combat must make the committed mechanical calculation facts visible to the player in the same response, using the host's ordinary presentation style.\nDo NOT reveal hidden chain-of-thought, deliberation, discarded drafts, or private reasoning prose.\nShow only authoritative inputs, rolls, arithmetic and committed results.\n\nSTART / SNAPSHOT FACTS\n- semantic phase;\n- stable combatant IDs;\n- each complete FIXED profile needed for later resolution, including locked Action Library and hostile DefeatXP;\n- CURRENT HP/MP/STA/ammo/status and relevant Range Bands;\n- Turn Order, Round, Current Actor, Pending trigger/action.\n\nEACH RESOLVED ACTION\n- Actor -> Target; action;\n- start Range Band; movement transition if any; end Range Band;\n- resource/ammo before -> after;\n- Hit calculation: Base Hit + explicit modifiers = Final Hit; d100 roll; HIT/MISS;\n- Crit chance/modifiers; d100 roll; CRIT/NO CRIT when eligible;\n- Raw equation with every scaling term at full precision;\n- applicable TOTAL DEF/MDEF and post-defense value;\n- Resistance/Weakness if any;\n- exact variance;\n- Crit multiplier/final modifiers if any;\n- final rounded damage; Barrier if any; HP before -> after;\n- statuses/effects created/consumed;\n- Pending XP change if a target is defeated;\n- next Round/Current Actor or terminal state.\n\nCOMBAT END\n- Defeated/Escaped targets;\n- each defeated target's LOCKED DefeatXP;\n- Pending XP total;\n- persistent XP before -> after;\n- any Level-Up loop deltas;\n- final semantic phase INACTIVE.\n\nIf a value is not applicable, mark it N/A rather than inventing one.\nThis diagnostics mode never defines XML/tags/block ordering and never overrides the host's existing formatting.\n",
+      "constant": false,
+      "vectorized": false,
+      "selective": false,
+      "selectiveLogic": 0,
+      "addMemo": true,
+      "order": 839,
+      "position": 0,
+      "disable": false,
+      "ignoreBudget": false,
+      "excludeRecursion": true,
+      "preventRecursion": true,
+      "delayUntilRecursion": false,
+      "recursionLevel": 0,
+      "probability": 100,
+      "useProbability": true,
+      "depth": 4,
+      "outletName": "",
+      "group": "",
+      "groupOverride": false,
+      "groupWeight": 100,
+      "useGroupScoring": false,
+      "scanDepth": 1,
+      "caseSensitive": false,
+      "matchWholeWords": false,
+      "automationId": "",
+      "role": 0,
+      "sticky": 0,
+      "cooldown": 0,
+      "delay": 0,
+      "extensions": {
+        "rpg_system": {
+          "section": "debug",
+          "version": "v1.12"
+        },
+        "rpg_compile": {
+          "runtime": "DEBUG_CALC build only",
+          "mode": "appended to START/PENDING/ACTIVE with a hard output rule"
+        }
+      },
+      "displayIndex": 14
+    }
+  },
+  "extensions": {
+    "rpg_system": {
+      "version": "v1.12",
+      "purpose": "Private RPG System/UI semantics and commands. Host presentation/tracker format remains external.",
+      "supersedes": "RPG_System_v1.11",
+      "import_note": "Do not import separately while using the compiled Avereth World Info.",
+      "changes": [
+        "#1/#10 stale 'V0.1' labels and stale 'Creation_State READY' field name replaced",
+        "#5 stale concepts fixed: 'path-specific Growth', 'Stage-III passive', Domain 'Radius' -> Range-Band reach",
+        "#11 stale key 'combat overlay' removed (combat overlays were removed in v1.15)",
+        "#12 Creation: explicit System UI labels (routing), kit taken from Content, test oracle (DERIVED VALIDATION) and duplicate STARTER KIT MAP removed; keys aligned with runtime labels",
+        "#14 debug audit: bound to the separate DEBUG_CALC build; hard output rule documented",
+        "Source trigger metadata synchronised with the compiled runtime"
+      ]
+    },
+    "rpg_system_version": "v1.12"
+  }
+}

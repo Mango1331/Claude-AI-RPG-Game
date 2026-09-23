@@ -1,0 +1,354 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "avereth/classes.schema.json",
+  "title": "Base Classes, Skills and Affinity (content/classes.json)",
+  "type": "object",
+  "required": [
+    "classes",
+    "skills",
+    "affinity"
+  ],
+  "properties": {
+    "classes": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "$ref": "#/$defs/class"
+      }
+    },
+    "skills": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/skill"
+      }
+    },
+    "affinity": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "$defs": {
+    "class": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "favored",
+        "basic_attack",
+        "skill_pool",
+        "growth_text"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z_]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "favored": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "enum": [
+              "STR",
+              "VIT",
+              "AGI",
+              "INT",
+              "PER",
+              "WIL"
+            ]
+          }
+        },
+        "growth_text": {
+          "type": "string"
+        },
+        "basic_attack": {
+          "type": "string",
+          "pattern": "^[a-z_]+\\.basic_attack$"
+        },
+        "skill_pool": {
+          "type": "array",
+          "minItems": 6,
+          "items": {
+            "type": "string"
+          }
+        },
+        "source": {
+          "type": "string"
+        }
+      }
+    },
+    "skill": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "class",
+        "category",
+        "cost",
+        "attack",
+        "strikes",
+        "effects",
+        "source_text"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z_]+\\.[a-z_]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "class": {
+          "type": "string"
+        },
+        "basic": {
+          "type": "boolean"
+        },
+        "category": {
+          "type": "string"
+        },
+        "rank": {
+          "enum": [
+            "F",
+            "E",
+            "D",
+            "C",
+            "B",
+            "A",
+            "S",
+            null
+          ]
+        },
+        "complexity": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "type_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cost": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "required": [
+                "resource",
+                "amount"
+              ],
+              "properties": {
+                "resource": {
+                  "enum": [
+                    "sta",
+                    "mp"
+                  ]
+                },
+                "amount": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            }
+          ]
+        },
+        "ammo": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "required": [
+                "item",
+                "qty"
+              ],
+              "properties": {
+                "item": {
+                  "type": "string"
+                },
+                "qty": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "condition": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "range": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "required": [
+                "band"
+              ],
+              "properties": {
+                "band": {
+                  "enum": [
+                    "ENGAGED",
+                    "SHORT",
+                    "MEDIUM",
+                    "LONG"
+                  ]
+                },
+                "extra_band": {
+                  "type": "boolean"
+                },
+                "area": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "attack": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/attack"
+            }
+          ]
+        },
+        "strikes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "temp_def",
+                  "temp_mdef",
+                  "incoming_hit_penalty",
+                  "barrier",
+                  "extra_band",
+                  "reposition",
+                  "damage_reduction_next",
+                  "next_attack_buff",
+                  "post_attack_temp_def",
+                  "area"
+                ]
+              }
+            }
+          }
+        },
+        "effect_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_text": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "attack": {
+      "type": "object",
+      "required": [
+        "base",
+        "scaling",
+        "uses",
+        "share",
+        "damage_type",
+        "hit_mod"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "base": {
+          "type": "number"
+        },
+        "scaling": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "stat",
+              "coef"
+            ],
+            "properties": {
+              "stat": {
+                "enum": [
+                  "STR",
+                  "VIT",
+                  "AGI",
+                  "INT",
+                  "PER",
+                  "WIL"
+                ]
+              },
+              "coef": {
+                "type": "number"
+              },
+              "text": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "uses": {
+          "enum": [
+            "ATK",
+            "MATK"
+          ]
+        },
+        "share": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "damage_type": {
+          "enum": [
+            "physical",
+            "magical"
+          ]
+        },
+        "hit_mod": {
+          "type": "number"
+        }
+      }
+    }
+  }
+}

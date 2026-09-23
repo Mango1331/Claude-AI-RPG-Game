@@ -1,0 +1,1557 @@
+{
+  "_source": "Content v1.13 #0-#6 (migrated by tools/migrate_content.py)",
+  "human_baseline_text": "HUMAN BASELINE\nLevel-1 Human before Class selection:\nSTR 5 | VIT 5 | AGI 5 | INT 5 | PER 5 | WIL 5.\nNormal Human MaxSTA is the Core fixed value 100; it is not derived from these Stats.\n\nBASE-CLASS FAVORED STATS\nWarrior: STR, VIT\nMage: INT, WIL\nGuardian: VIT, WIL\nDuelist: STR, AGI\nRanger: AGI, PER\n\nWhen the initial Base Class is selected, apply +1 to each of its two Favored Stats exactly once.\nOn every later Level gained, Core grants +5 free Stat Points and the Base Class again grants +1/+1 to its Favored Stats.\n\nThe final Level-1 values are derived from the Human baseline plus that Class growth; do not store a second hard-coded stat table.\nBase Class selection also grants that Class's Basic Attack at P1/PP0. Character Creation then chooses exactly 2 of that Class's listed starter Skills at P1/PP0.\n\n\nCOMBAT ACTION EXPORT\nWhen Combat START requires a core-stat character profile, copy that character's exact currently learned combat action formulas from Content into the encounter's locked Action Library. Once locked, later turns use the encounter copy rather than regenerating/paraphrasing the formulas.",
+  "classes": [
+    {
+      "id": "warrior",
+      "name": "Warrior",
+      "favored": [
+        "STR",
+        "VIT"
+      ],
+      "growth_text": "Automatic Class Growth: apply once at initial Level-1 Class selection, then on each later Level gained: STR +1 and VIT +1.",
+      "basic_attack": "warrior.basic_attack",
+      "skill_pool": [
+        "warrior.heavy_slash",
+        "warrior.guard",
+        "warrior.power_strike",
+        "warrior.quick_slash",
+        "warrior.charge",
+        "warrior.deflect"
+      ],
+      "source": "Content v1.13 #1"
+    },
+    {
+      "id": "mage",
+      "name": "Mage",
+      "favored": [
+        "INT",
+        "WIL"
+      ],
+      "growth_text": "Automatic Class Growth: apply once at initial Level-1 Class selection, then on each later Level gained: INT +1 and WIL +1.",
+      "basic_attack": "mage.basic_attack",
+      "skill_pool": [
+        "mage.arcane_bolt",
+        "mage.arcane_ward",
+        "mage.flame_lance",
+        "mage.arcane_burst",
+        "mage.blink",
+        "mage.focused_ward"
+      ],
+      "source": "Content v1.13 #2"
+    },
+    {
+      "id": "guardian",
+      "name": "Guardian",
+      "favored": [
+        "VIT",
+        "WIL"
+      ],
+      "growth_text": "Automatic Class Growth: apply once at initial Level-1 Class selection, then on each later Level gained: VIT +1 and WIL +1.",
+      "basic_attack": "guardian.basic_attack",
+      "skill_pool": [
+        "guardian.shield_strike",
+        "guardian.brace",
+        "guardian.heavy_bash",
+        "guardian.bulwark",
+        "guardian.shield_charge",
+        "guardian.endure"
+      ],
+      "source": "Content v1.13 #3"
+    },
+    {
+      "id": "duelist",
+      "name": "Duelist",
+      "favored": [
+        "STR",
+        "AGI"
+      ],
+      "growth_text": "Automatic Class Growth: apply once at initial Level-1 Class selection, then on each later Level gained: STR +1 and AGI +1.",
+      "basic_attack": "duelist.basic_attack",
+      "skill_pool": [
+        "duelist.precision_thrust",
+        "duelist.evasive_step",
+        "duelist.lunge",
+        "duelist.flurry",
+        "duelist.feint",
+        "duelist.guarded_thrust"
+      ],
+      "source": "Content v1.13 #4"
+    },
+    {
+      "id": "ranger",
+      "name": "Ranger",
+      "favored": [
+        "AGI",
+        "PER"
+      ],
+      "growth_text": "Automatic Class Growth: apply once at initial Level-1 Class selection, then on each later Level gained: AGI +1 and PER +1.",
+      "basic_attack": "ranger.basic_attack",
+      "skill_pool": [
+        "ranger.aimed_shot",
+        "ranger.quickstep",
+        "ranger.power_shot",
+        "ranger.quick_shot",
+        "ranger.twin_shot",
+        "ranger.focus_aim"
+      ],
+      "source": "Content v1.13 #5"
+    }
+  ],
+  "skills": [
+    {
+      "id": "warrior.basic_attack",
+      "name": "Basic Attack",
+      "class": "warrior",
+      "basic": true,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": 1,
+      "tags": [
+        "Martial"
+      ],
+      "type_text": "Physical / Melee",
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 4.0,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 1.25,
+            "text": "1.25"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": 0
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none.",
+      "source_text": "Basic Attack\nRank: F\nComplexity: 1\nTags: Martial\nType: Physical / Melee\nBase Power: 4\nScaling: STR × 1.25\nUses: ATK\nCost: 5 STA\nRange: ENGAGED\nHit Modifier: +0\nEffect: none.\nGranted automatically at P1/PP0 when Warrior is selected. It is tracked as a Skill and gains normal Proficiency. It does not count toward the exactly 2 Base Skills chosen during Character Creation."
+    },
+    {
+      "id": "warrior.heavy_slash",
+      "name": "Heavy Slash",
+      "class": "warrior",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Physical / Melee",
+      "cost": {
+        "resource": "sta",
+        "amount": 7
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 10.0,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 1.5,
+            "text": "1.50"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": 0
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none.",
+      "source_text": "Heavy Slash [Offensive]\nType: Physical / Melee\nBase Power: 10\nScaling: STR × 1.50\nUses: ATK\nCost: 7 STA\nRange: ENGAGED\nHit Modifier: 0\nEffect: none."
+    },
+    {
+      "id": "warrior.guard",
+      "name": "Guard",
+      "class": "warrior",
+      "basic": false,
+      "category": "Defensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Defensive",
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": null,
+      "range": null,
+      "attack": null,
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "temp_def",
+          "base": 3,
+          "stat": "VIT",
+          "coef": 0.5,
+          "floor": true,
+          "until": "own_next_turn"
+        }
+      ],
+      "effect_text": "until the start of the Warrior's next turn, gain temporary DEF equal to: 3 + floor(VIT × 0.50). This is an explicit temporary DEF bonus and does not alter VIT.",
+      "source_text": "Guard [Defensive]\nType: Defensive\nCost: 5 STA\nEffect: until the start of the Warrior's next turn, gain temporary DEF equal to:\n3 + floor(VIT × 0.50).\nThis is an explicit temporary DEF bonus and does not alter VIT."
+    },
+    {
+      "id": "warrior.power_strike",
+      "name": "Power Strike",
+      "class": "warrior",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 12
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 16.0,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 1.875,
+            "text": "1.875"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": -10
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none.",
+      "source_text": "Power Strike [Offensive]\nBase Power: 16\nScaling: STR × 1.875\nUses: ATK\nCost: 12 STA\nRange: ENGAGED\nHit Modifier: -10\nEffect: none."
+    },
+    {
+      "id": "warrior.quick_slash",
+      "name": "Quick Slash",
+      "class": "warrior",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 6.0,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 0.875,
+            "text": "0.875"
+          },
+          {
+            "stat": "AGI",
+            "coef": 0.625,
+            "text": "0.625"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": 10
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none.",
+      "source_text": "Quick Slash [Offensive]\nBase Power: 6\nScaling: STR × 0.875 + AGI × 0.625\nUses: ATK\nCost: 5 STA\nRange: ENGAGED\nHit Modifier: +10\nEffect: none."
+    },
+    {
+      "id": "warrior.charge",
+      "name": "Charge",
+      "class": "warrior",
+      "basic": false,
+      "category": "Offensive / Utility",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 8
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": true,
+        "area": null
+      },
+      "attack": {
+        "base": 8.0,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 1.25,
+            "text": "1.25"
+          },
+          {
+            "stat": "AGI",
+            "coef": 0.375,
+            "text": "0.375"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": 5
+      },
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "extra_band"
+        }
+      ],
+      "effect_text": "as part of this Skill, close 1 additional Range Band before the attack. This explicit extra shift may combine with the normal one-band Turn movement. The target must be ENGAGED when the attack resolves.",
+      "source_text": "Charge [Offensive / Utility]\nBase Power: 8\nScaling: STR × 1.25 + AGI × 0.375\nUses: ATK\nCost: 8 STA\nRange: ENGAGED after movement\nHit Modifier: +5\nEffect: as part of this Skill, close 1 additional Range Band before the attack. This explicit extra shift may combine with the normal one-band Turn movement. The target must be ENGAGED when the attack resolves."
+    },
+    {
+      "id": "warrior.deflect",
+      "name": "Deflect",
+      "class": "warrior",
+      "basic": false,
+      "category": "Defensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 6
+      },
+      "ammo": null,
+      "range": null,
+      "attack": null,
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "incoming_hit_penalty",
+          "pp": 20,
+          "until": "own_next_turn"
+        }
+      ],
+      "effect_text": "until the start of the Warrior's next turn, incoming attacks suffer -20 percentage points Hit Chance.",
+      "source_text": "Deflect [Defensive]\nCost: 6 STA\nEffect: until the start of the Warrior's next turn, incoming attacks suffer -20 percentage points Hit Chance."
+    },
+    {
+      "id": "mage.basic_attack",
+      "name": "Basic Attack",
+      "class": "mage",
+      "basic": true,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": 1,
+      "tags": [
+        "Arcane"
+      ],
+      "type_text": "Magical / Ranged / Projectile",
+      "cost": {
+        "resource": "mp",
+        "amount": 0
+      },
+      "ammo": null,
+      "range": {
+        "band": "MEDIUM",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 4.0,
+        "scaling": [
+          {
+            "stat": "INT",
+            "coef": 1.25,
+            "text": "1.25"
+          }
+        ],
+        "uses": "MATK",
+        "share": 1.0,
+        "damage_type": "magical",
+        "hit_mod": 0
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none. This is a minimal class cantrip/arcane discharge.",
+      "source_text": "Basic Attack\nRank: F\nComplexity: 1\nTags: Arcane\nType: Magical / Ranged / Projectile\nBase Power: 4\nScaling: INT × 1.25\nUses: MATK\nCost: 0 MP\nRange: MEDIUM\nHit Modifier: +0\nEffect: none. This is a minimal class cantrip/arcane discharge.\nGranted automatically at P1/PP0 when Mage is selected. It is tracked as a Skill and gains normal Proficiency. It does not count toward the exactly 2 Base Skills chosen during Character Creation."
+    },
+    {
+      "id": "mage.arcane_bolt",
+      "name": "Arcane Bolt",
+      "class": "mage",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Magical / Projectile",
+      "cost": {
+        "resource": "mp",
+        "amount": 10
+      },
+      "ammo": null,
+      "range": {
+        "band": "MEDIUM",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 10.0,
+        "scaling": [
+          {
+            "stat": "INT",
+            "coef": 1.875,
+            "text": "1.875"
+          }
+        ],
+        "uses": "MATK",
+        "share": 1.0,
+        "damage_type": "magical",
+        "hit_mod": 5
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none.",
+      "source_text": "Arcane Bolt [Offensive]\nType: Magical / Projectile\nBase Power: 10\nScaling: INT × 1.875\nUses: MATK\nCost: 10 MP\nRange: MEDIUM\nHit Modifier: +5\nEffect: none."
+    },
+    {
+      "id": "mage.arcane_ward",
+      "name": "Arcane Ward",
+      "class": "mage",
+      "basic": false,
+      "category": "Defensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Barrier",
+      "cost": {
+        "resource": "mp",
+        "amount": 10
+      },
+      "ammo": null,
+      "range": null,
+      "attack": null,
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "barrier",
+          "base": 6,
+          "stat": "WIL",
+          "coef": 1.5,
+          "floor": false,
+          "until": "destroyed_or_own_next_turn"
+        }
+      ],
+      "effect_text": "create a Barrier with Barrier HP equal to: 6 + (WIL × 1.50). The Barrier absorbs physical or magical damage and lasts until destroyed or until the start of the Mage's next turn.",
+      "source_text": "Arcane Ward [Defensive]\nType: Barrier\nCost: 10 MP\nEffect: create a Barrier with Barrier HP equal to:\n6 + (WIL × 1.50).\nThe Barrier absorbs physical or magical damage and lasts until destroyed or until the start of the Mage's next turn."
+    },
+    {
+      "id": "mage.flame_lance",
+      "name": "Flame Lance",
+      "class": "mage",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Magical / Projectile / Fire",
+      "cost": {
+        "resource": "mp",
+        "amount": 16
+      },
+      "ammo": null,
+      "range": {
+        "band": "LONG",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 16.0,
+        "scaling": [
+          {
+            "stat": "INT",
+            "coef": 2.375,
+            "text": "2.375"
+          }
+        ],
+        "uses": "MATK",
+        "share": 1.0,
+        "damage_type": "magical",
+        "hit_mod": -5
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "no additional status effect.",
+      "source_text": "Flame Lance [Offensive]\nType: Magical / Projectile / Fire\nBase Power: 16\nScaling: INT × 2.375\nUses: MATK\nCost: 16 MP\nRange: LONG\nHit Modifier: -5\nEffect: no additional status effect."
+    },
+    {
+      "id": "mage.arcane_burst",
+      "name": "Arcane Burst",
+      "class": "mage",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Magical / Area",
+      "cost": {
+        "resource": "mp",
+        "amount": 14
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": "caster_engaged"
+      },
+      "attack": {
+        "base": 8.0,
+        "scaling": [
+          {
+            "stat": "INT",
+            "coef": 1.25,
+            "text": "1.25"
+          }
+        ],
+        "uses": "MATK",
+        "share": 1.0,
+        "damage_type": "magical",
+        "hit_mod": 0
+      },
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "area",
+          "shape": "caster_engaged",
+          "shared_rolls": true
+        }
+      ],
+      "effect_text": "resolve damage separately against each valid target ENGAGED with the caster. No additional status effect.",
+      "source_text": "Arcane Burst [Offensive]\nType: Magical / Area\nBase Power: 8\nScaling: INT × 1.25\nUses: MATK\nCost: 14 MP\nRange: ENGAGED AREA centered on caster\nHit Modifier: 0\nEffect: resolve damage separately against each valid target ENGAGED with the caster. No additional status effect."
+    },
+    {
+      "id": "mage.blink",
+      "name": "Blink",
+      "class": "mage",
+      "basic": false,
+      "category": "Utility",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Magical / Movement",
+      "cost": {
+        "resource": "mp",
+        "amount": 8
+      },
+      "ammo": null,
+      "range": null,
+      "attack": null,
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "reposition",
+          "bands": 1,
+          "extra": true
+        }
+      ],
+      "effect_text": "instantly reposition by up to 1 Range Band to a plausible visible unoccupied position. No attack is included.",
+      "source_text": "Blink [Utility]\nType: Magical / Movement\nCost: 8 MP\nEffect: instantly reposition by up to 1 Range Band to a plausible visible unoccupied position. No attack is included."
+    },
+    {
+      "id": "mage.focused_ward",
+      "name": "Focused Ward",
+      "class": "mage",
+      "basic": false,
+      "category": "Defensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Barrier",
+      "cost": {
+        "resource": "mp",
+        "amount": 14
+      },
+      "ammo": null,
+      "range": null,
+      "attack": null,
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "barrier",
+          "base": 10,
+          "stat": "WIL",
+          "coef": 2.0,
+          "floor": false,
+          "until": "destroyed_or_own_next_turn"
+        }
+      ],
+      "effect_text": "create a Barrier with Barrier HP equal to: 10 + (WIL × 2.00). The Barrier absorbs physical or magical damage and lasts until destroyed or until the start of the Mage's next turn.",
+      "source_text": "Focused Ward [Defensive]\nType: Barrier\nCost: 14 MP\nEffect: create a Barrier with Barrier HP equal to:\n10 + (WIL × 2.00).\nThe Barrier absorbs physical or magical damage and lasts until destroyed or until the start of the Mage's next turn."
+    },
+    {
+      "id": "guardian.basic_attack",
+      "name": "Basic Attack",
+      "class": "guardian",
+      "basic": true,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": 1,
+      "tags": [
+        "Martial"
+      ],
+      "type_text": "Physical / Melee",
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 4.0,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 0.625,
+            "text": "0.625"
+          },
+          {
+            "stat": "VIT",
+            "coef": 0.625,
+            "text": "0.625"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": 0
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none.",
+      "source_text": "Basic Attack\nRank: F\nComplexity: 1\nTags: Martial\nType: Physical / Melee\nBase Power: 4\nScaling: STR × 0.625 + VIT × 0.625\nUses: ATK\nCost: 5 STA\nRange: ENGAGED\nHit Modifier: +0\nEffect: none.\nGranted automatically at P1/PP0 when Guardian is selected. It is tracked as a Skill and gains normal Proficiency. It does not count toward the exactly 2 Base Skills chosen during Character Creation."
+    },
+    {
+      "id": "guardian.shield_strike",
+      "name": "Shield Strike",
+      "class": "guardian",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Physical / Melee",
+      "cost": {
+        "resource": "sta",
+        "amount": 6
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 8.0,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 0.75,
+            "text": "0.75"
+          },
+          {
+            "stat": "VIT",
+            "coef": 0.75,
+            "text": "0.75"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": 5
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none.",
+      "source_text": "Shield Strike [Offensive]\nType: Physical / Melee\nBase Power: 8\nScaling: STR × 0.75 + VIT × 0.75\nUses: ATK\nCost: 6 STA\nRange: ENGAGED\nHit Modifier: +5\nEffect: none."
+    },
+    {
+      "id": "guardian.brace",
+      "name": "Brace",
+      "class": "guardian",
+      "basic": false,
+      "category": "Defensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Defensive",
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": null,
+      "range": null,
+      "attack": null,
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "temp_def",
+          "base": 4,
+          "stat": "VIT",
+          "coef": 0.6,
+          "floor": true,
+          "until": "own_next_turn"
+        },
+        {
+          "kind": "temp_mdef",
+          "base": 2,
+          "stat": "WIL",
+          "coef": 0.4,
+          "floor": true,
+          "until": "own_next_turn"
+        }
+      ],
+      "effect_text": "until the start of the Guardian's next turn, gain: temporary DEF = 4 + floor(VIT × 0.60) temporary MDEF = 2 + floor(WIL × 0.40).",
+      "source_text": "Brace [Defensive]\nType: Defensive\nCost: 5 STA\nEffect: until the start of the Guardian's next turn, gain:\ntemporary DEF = 4 + floor(VIT × 0.60)\ntemporary MDEF = 2 + floor(WIL × 0.40)."
+    },
+    {
+      "id": "guardian.heavy_bash",
+      "name": "Heavy Bash",
+      "class": "guardian",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 10
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 12.0,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 0.875,
+            "text": "0.875"
+          },
+          {
+            "stat": "VIT",
+            "coef": 1.125,
+            "text": "1.125"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": -5
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none.",
+      "source_text": "Heavy Bash [Offensive]\nBase Power: 12\nScaling: STR × 0.875 + VIT × 1.125\nUses: ATK\nCost: 10 STA\nRange: ENGAGED\nHit Modifier: -5\nEffect: none."
+    },
+    {
+      "id": "guardian.bulwark",
+      "name": "Bulwark",
+      "class": "guardian",
+      "basic": false,
+      "category": "Defensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 8
+      },
+      "ammo": null,
+      "range": null,
+      "attack": null,
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "temp_def",
+          "base": 6,
+          "stat": "VIT",
+          "coef": 0.8,
+          "floor": true,
+          "until": "own_next_turn"
+        },
+        {
+          "kind": "temp_mdef",
+          "base": 4,
+          "stat": "WIL",
+          "coef": 0.6,
+          "floor": true,
+          "until": "own_next_turn"
+        }
+      ],
+      "effect_text": "until the start of the Guardian's next turn, gain: temporary DEF = 6 + floor(VIT × 0.80) temporary MDEF = 4 + floor(WIL × 0.60).",
+      "source_text": "Bulwark [Defensive]\nCost: 8 STA\nEffect: until the start of the Guardian's next turn, gain:\ntemporary DEF = 6 + floor(VIT × 0.80)\ntemporary MDEF = 4 + floor(WIL × 0.60)."
+    },
+    {
+      "id": "guardian.shield_charge",
+      "name": "Shield Charge",
+      "class": "guardian",
+      "basic": false,
+      "category": "Offensive / Utility",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 8
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": true,
+        "area": null
+      },
+      "attack": {
+        "base": 8.0,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 0.625,
+            "text": "0.625"
+          },
+          {
+            "stat": "VIT",
+            "coef": 0.625,
+            "text": "0.625"
+          },
+          {
+            "stat": "AGI",
+            "coef": 0.375,
+            "text": "0.375"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": 5
+      },
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "extra_band"
+        }
+      ],
+      "effect_text": "as part of this Skill, close 1 additional Range Band before the attack. This explicit extra shift may combine with the normal one-band Turn movement. The target must be ENGAGED when the attack resolves.",
+      "source_text": "Shield Charge [Offensive / Utility]\nBase Power: 8\nScaling: STR × 0.625 + VIT × 0.625 + AGI × 0.375\nUses: ATK\nCost: 8 STA\nRange: ENGAGED after movement\nHit Modifier: +5\nEffect: as part of this Skill, close 1 additional Range Band before the attack. This explicit extra shift may combine with the normal one-band Turn movement. The target must be ENGAGED when the attack resolves."
+    },
+    {
+      "id": "guardian.endure",
+      "name": "Endure",
+      "class": "guardian",
+      "basic": false,
+      "category": "Defensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 7
+      },
+      "ammo": null,
+      "range": null,
+      "attack": null,
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "damage_reduction_next",
+          "pct": 25,
+          "until": "own_next_turn"
+        }
+      ],
+      "effect_text": "reduce the next instance of positive Final Damage taken before the start of the Guardian's next turn by 25%. This reduction is applied after normal damage resolution.",
+      "source_text": "Endure [Defensive]\nCost: 7 STA\nEffect: reduce the next instance of positive Final Damage taken before the start of the Guardian's next turn by 25%. This reduction is applied after normal damage resolution."
+    },
+    {
+      "id": "duelist.basic_attack",
+      "name": "Basic Attack",
+      "class": "duelist",
+      "basic": true,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": 1,
+      "tags": [
+        "Precision",
+        "Martial"
+      ],
+      "type_text": "Physical / Melee",
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 4.0,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 0.5,
+            "text": "0.50"
+          },
+          {
+            "stat": "AGI",
+            "coef": 0.75,
+            "text": "0.75"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": 0
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none.",
+      "source_text": "Basic Attack\nRank: F\nComplexity: 1\nTags: Precision, Martial\nType: Physical / Melee\nBase Power: 4\nScaling: STR × 0.50 + AGI × 0.75\nUses: ATK\nCost: 5 STA\nRange: ENGAGED\nHit Modifier: +0\nEffect: none.\nGranted automatically at P1/PP0 when Duelist is selected. It is tracked as a Skill and gains normal Proficiency. It does not count toward the exactly 2 Base Skills chosen during Character Creation."
+    },
+    {
+      "id": "duelist.precision_thrust",
+      "name": "Precision Thrust",
+      "class": "duelist",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Physical / Melee",
+      "cost": {
+        "resource": "sta",
+        "amount": 6
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 8.0,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 0.75,
+            "text": "0.75"
+          },
+          {
+            "stat": "AGI",
+            "coef": 1.0,
+            "text": "1.00"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": 10
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none.",
+      "source_text": "Precision Thrust [Offensive]\nType: Physical / Melee\nBase Power: 8\nScaling: STR × 0.75 + AGI × 1.00\nUses: ATK\nCost: 6 STA\nRange: ENGAGED\nHit Modifier: +10\nEffect: none."
+    },
+    {
+      "id": "duelist.evasive_step",
+      "name": "Evasive Step",
+      "class": "duelist",
+      "basic": false,
+      "category": "Defensive / Utility",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": null,
+      "range": null,
+      "attack": null,
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "reposition",
+          "bands": 1,
+          "extra": true
+        },
+        {
+          "kind": "incoming_hit_penalty",
+          "pp": 20,
+          "until": "own_next_turn"
+        }
+      ],
+      "effect_text": "may reposition by 1 Range Band in a plausible chosen direction and, until the start of the Duelist's next turn, incoming attacks suffer -20 percentage points Hit Chance.",
+      "source_text": "Evasive Step [Defensive / Utility]\nCost: 5 STA\nEffect: may reposition by 1 Range Band in a plausible chosen direction and, until the start of the Duelist's next turn, incoming attacks suffer -20 percentage points Hit Chance."
+    },
+    {
+      "id": "duelist.lunge",
+      "name": "Lunge",
+      "class": "duelist",
+      "basic": false,
+      "category": "Offensive / Utility",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 9
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": true,
+        "area": null
+      },
+      "attack": {
+        "base": 12.0,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 0.875,
+            "text": "0.875"
+          },
+          {
+            "stat": "AGI",
+            "coef": 1.125,
+            "text": "1.125"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": 5
+      },
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "extra_band"
+        }
+      ],
+      "effect_text": "as part of this Skill, close 1 additional Range Band before the attack. This explicit extra shift may combine with the normal one-band Turn movement. The target must be ENGAGED when the attack resolves.",
+      "source_text": "Lunge [Offensive / Utility]\nBase Power: 12\nScaling: STR × 0.875 + AGI × 1.125\nUses: ATK\nCost: 9 STA\nRange: ENGAGED after movement\nHit Modifier: +5\nEffect: as part of this Skill, close 1 additional Range Band before the attack. This explicit extra shift may combine with the normal one-band Turn movement. The target must be ENGAGED when the attack resolves."
+    },
+    {
+      "id": "duelist.flurry",
+      "name": "Flurry",
+      "class": "duelist",
+      "basic": false,
+      "category": "Offensive / Multi-Hit",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 12
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 4.0,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 0.375,
+            "text": "0.375"
+          },
+          {
+            "stat": "AGI",
+            "coef": 0.625,
+            "text": "0.625"
+          }
+        ],
+        "uses": "ATK",
+        "share": 0.5,
+        "damage_type": "physical",
+        "hit_mod": 0
+      },
+      "strikes": 2,
+      "effects": [],
+      "effect_text": null,
+      "source_text": "Flurry [Offensive / Multi-Hit]\nCost: 12 STA\nRange: ENGAGED\nResolve 2 separate strikes.\nEach strike:\nBase Power: 4\nScaling: STR × 0.375 + AGI × 0.625\nUses: 50% of ATK\nHit Modifier: 0\nEach strike performs its own hit and critical check."
+    },
+    {
+      "id": "duelist.feint",
+      "name": "Feint",
+      "class": "duelist",
+      "basic": false,
+      "category": "Utility",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": null,
+      "range": null,
+      "attack": null,
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "next_attack_buff",
+          "hit_pp": 20,
+          "power_pct": 10,
+          "scope": "attack",
+          "expires": "end_of_next_turn"
+        }
+      ],
+      "effect_text": "the Duelist's next attack made before the end of the next turn gains +20 percentage points Hit Chance and +10% Modified Power. The effect is consumed by that attack.",
+      "source_text": "Feint [Utility]\nCost: 5 STA\nEffect: the Duelist's next attack made before the end of the next turn gains +20 percentage points Hit Chance and +10% Modified Power. The effect is consumed by that attack."
+    },
+    {
+      "id": "duelist.guarded_thrust",
+      "name": "Guarded Thrust",
+      "class": "duelist",
+      "basic": false,
+      "category": "Offensive / Defensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 8
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 6.0,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 0.625,
+            "text": "0.625"
+          },
+          {
+            "stat": "AGI",
+            "coef": 0.875,
+            "text": "0.875"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": 5
+      },
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "post_attack_temp_def",
+          "flat": 4,
+          "until": "own_next_turn"
+        }
+      ],
+      "effect_text": "after resolving the attack, gain +4 temporary DEF until the start of the Duelist's next turn.",
+      "source_text": "Guarded Thrust [Offensive / Defensive]\nBase Power: 6\nScaling: STR × 0.625 + AGI × 0.875\nUses: ATK\nCost: 8 STA\nRange: ENGAGED\nHit Modifier: +5\nEffect: after resolving the attack, gain +4 temporary DEF until the start of the Duelist's next turn."
+    },
+    {
+      "id": "ranger.basic_attack",
+      "name": "Basic Attack",
+      "class": "ranger",
+      "basic": true,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": 1,
+      "tags": [
+        "Precision"
+      ],
+      "type_text": "Physical / Ranged / Projectile",
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": {
+        "item": "standard_arrow",
+        "qty": 1,
+        "condition": "bow"
+      },
+      "range": {
+        "band": "MEDIUM",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 4.0,
+        "scaling": [
+          {
+            "stat": "AGI",
+            "coef": 0.625,
+            "text": "0.625"
+          },
+          {
+            "stat": "PER",
+            "coef": 0.625,
+            "text": "0.625"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": 0
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none.",
+      "source_text": "Basic Attack\nRank: F\nComplexity: 1\nTags: Precision\nType: Physical / Ranged / Projectile\nBase Power: 4\nScaling: AGI × 0.625 + PER × 0.625\nUses: ATK\nCost: 5 STA\nAmmo: 1 arrow when fired from a bow\nRange: MEDIUM\nHit Modifier: +0\nEffect: none.\nGranted automatically at P1/PP0 when Ranger is selected. It is tracked as a Skill and gains normal Proficiency. It does not count toward the exactly 2 Base Skills chosen during Character Creation."
+    },
+    {
+      "id": "ranger.aimed_shot",
+      "name": "Aimed Shot",
+      "class": "ranger",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Physical / Ranged / Projectile",
+      "cost": {
+        "resource": "sta",
+        "amount": 7
+      },
+      "ammo": {
+        "item": "standard_arrow",
+        "qty": 1,
+        "condition": "bow"
+      },
+      "range": {
+        "band": "LONG",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 10.0,
+        "scaling": [
+          {
+            "stat": "AGI",
+            "coef": 0.625,
+            "text": "0.625"
+          },
+          {
+            "stat": "PER",
+            "coef": 1.125,
+            "text": "1.125"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": 10
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none.",
+      "source_text": "Aimed Shot [Offensive]\nType: Physical / Ranged / Projectile\nBase Power: 10\nScaling: AGI × 0.625 + PER × 1.125\nUses: ATK\nCost: 7 STA\nAmmo: 1 arrow when fired from a bow\nRange: LONG\nHit Modifier: +10\nEffect: none."
+    },
+    {
+      "id": "ranger.quickstep",
+      "name": "Quickstep",
+      "class": "ranger",
+      "basic": false,
+      "category": "Defensive / Utility",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": null,
+      "range": null,
+      "attack": null,
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "reposition",
+          "bands": 1,
+          "extra": true
+        },
+        {
+          "kind": "incoming_hit_penalty",
+          "pp": 15,
+          "until": "own_next_turn"
+        }
+      ],
+      "effect_text": "may reposition by 1 Range Band in a plausible chosen direction and, until the start of the Ranger's next turn, incoming attacks suffer -15 percentage points Hit Chance.",
+      "source_text": "Quickstep [Defensive / Utility]\nCost: 5 STA\nEffect: may reposition by 1 Range Band in a plausible chosen direction and, until the start of the Ranger's next turn, incoming attacks suffer -15 percentage points Hit Chance."
+    },
+    {
+      "id": "ranger.power_shot",
+      "name": "Power Shot",
+      "class": "ranger",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 12
+      },
+      "ammo": {
+        "item": "standard_arrow",
+        "qty": 1,
+        "condition": "bow"
+      },
+      "range": {
+        "band": "LONG",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 16.0,
+        "scaling": [
+          {
+            "stat": "AGI",
+            "coef": 0.5,
+            "text": "0.50"
+          },
+          {
+            "stat": "PER",
+            "coef": 1.375,
+            "text": "1.375"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": -10
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none.",
+      "source_text": "Power Shot [Offensive]\nBase Power: 16\nScaling: AGI × 0.50 + PER × 1.375\nUses: ATK\nCost: 12 STA\nAmmo: 1 arrow when fired from a bow\nRange: LONG\nHit Modifier: -10\nEffect: none."
+    },
+    {
+      "id": "ranger.quick_shot",
+      "name": "Quick Shot",
+      "class": "ranger",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": {
+        "item": "standard_arrow",
+        "qty": 1,
+        "condition": "bow"
+      },
+      "range": {
+        "band": "MEDIUM",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 6.0,
+        "scaling": [
+          {
+            "stat": "AGI",
+            "coef": 0.875,
+            "text": "0.875"
+          },
+          {
+            "stat": "PER",
+            "coef": 0.625,
+            "text": "0.625"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1.0,
+        "damage_type": "physical",
+        "hit_mod": 5
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none.",
+      "source_text": "Quick Shot [Offensive]\nBase Power: 6\nScaling: AGI × 0.875 + PER × 0.625\nUses: ATK\nCost: 5 STA\nAmmo: 1 arrow when fired from a bow\nRange: MEDIUM\nHit Modifier: +5\nEffect: none."
+    },
+    {
+      "id": "ranger.twin_shot",
+      "name": "Twin Shot",
+      "class": "ranger",
+      "basic": false,
+      "category": "Offensive / Multi-Hit",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 11
+      },
+      "ammo": {
+        "item": "standard_arrow",
+        "qty": 2,
+        "condition": "bow"
+      },
+      "range": {
+        "band": "MEDIUM",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 4.0,
+        "scaling": [
+          {
+            "stat": "AGI",
+            "coef": 0.4375,
+            "text": "0.4375"
+          },
+          {
+            "stat": "PER",
+            "coef": 0.4375,
+            "text": "0.4375"
+          }
+        ],
+        "uses": "ATK",
+        "share": 0.5,
+        "damage_type": "physical",
+        "hit_mod": 0
+      },
+      "strikes": 2,
+      "effects": [],
+      "effect_text": null,
+      "source_text": "Twin Shot [Offensive / Multi-Hit]\nCost: 11 STA\nAmmo: 2 arrows when fired from a bow\nRange: MEDIUM\nResolve 2 separate strikes.\nEach strike:\nBase Power: 4\nScaling: AGI × 0.4375 + PER × 0.4375\nUses: 50% of ATK\nHit Modifier: 0\nEach strike performs its own hit and critical check."
+    },
+    {
+      "id": "ranger.focus_aim",
+      "name": "Focus Aim",
+      "class": "ranger",
+      "basic": false,
+      "category": "Utility",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": null,
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": null,
+      "range": null,
+      "attack": null,
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "next_attack_buff",
+          "hit_pp": 20,
+          "power_pct": 10,
+          "scope": "ranged",
+          "expires": "end_of_next_turn"
+        }
+      ],
+      "effect_text": "the Ranger's next ranged attack made before the end of the next turn gains +20 percentage points Hit Chance and +10% Modified Power. The effect is consumed by that attack.",
+      "source_text": "Focus Aim [Utility]\nCost: 5 STA\nEffect: the Ranger's next ranged attack made before the end of the next turn gains +20 percentage points Hit Chance and +10% Modified Power. The effect is consumed by that attack."
+    }
+  ],
+  "affinity": {
+    "warrior": {
+      "Martial": 1.5,
+      "Defense": 1.25,
+      "Arcane": 0.75,
+      "otherwise": 1.0
+    },
+    "mage": {
+      "Arcane": 1.5,
+      "Control": 1.25,
+      "Martial": 0.75,
+      "otherwise": 1.0
+    },
+    "guardian": {
+      "Defense": 1.5,
+      "Martial": 1.25,
+      "Precision": 0.9,
+      "Mobility": 0.9,
+      "Arcane": 0.75,
+      "otherwise": 1.0
+    },
+    "duelist": {
+      "Precision": 1.5,
+      "Mobility": 1.25,
+      "Martial": 1.25,
+      "Arcane": 0.75,
+      "otherwise": 1.0
+    },
+    "ranger": {
+      "Precision": 1.5,
+      "Mobility": 1.25,
+      "Arcane": 0.75,
+      "otherwise": 1.0
+    }
+  },
+  "affinity_text": "SKILL ACQUISITION\nSkills are open-learn, not class-exclusive. A new Skill needs a legitimate source: teacher, Skill Stone, reward/evolution, established self-development or another explicit source.\nStarting Character Creation is the exception: choose exactly 2 starter Skills from the selected Base Class; Basic Attack is automatic.\n\nDISCIPLINE AFFINITY\nUse the single highest relevant multiplier:\nWarrior — Martial 1.50, Defense 1.25, Arcane 0.75, otherwise 1.00.\nMage — Arcane 1.50, Control 1.25, Martial 0.75, otherwise 1.00.\nGuardian — Defense 1.50, Martial 1.25, Precision/Mobility 0.90, Arcane 0.75, otherwise 1.00.\nDuelist — Precision 1.50, Mobility/Martial 1.25, Arcane 0.75, otherwise 1.00.\nRanger — Precision 1.50, Mobility 1.25, Arcane 0.75, otherwise 1.00.\nAffinity changes Learning/Proficiency progress only.\n\nAI SKILL DESIGN — DO NOT USE PREBUILT HIGHER-RANK BANKS\nCreate Skills from established fiction when a valid acquisition path exists.\n- First choose role, Rank, Complexity (1 foundation / 2 intermediate / 3 advanced), Tags, damage type and trade-offs.\n- F-rank offensive P1 calibration:\n  C1 Base 6-12, total stat coefficients about 1.25-1.90, Cost about 5-10.\n  C2 Base 8-16, coefficients about 1.50-2.40, Cost about 8-16.\n  C3 Base 10-18, coefficients about 1.75-2.60, Cost about 12-22.\n- Pure single-target damage may spend most of its budget on Power. Accuracy, LONG range, extra Range-Band movement, AoE, multi-hit, penetration, defense, healing, control, reactions and high reliability consume that same budget.\n- Use Core Range Bands only: ENGAGED / SHORT / MEDIUM / LONG. Do not generate meter-based combat ranges.\n- Multi-hit splits its budget across strikes; AoE per-target output should normally be below a same-Complexity dedicated single-target technique.\n- Higher-Rank Skills are generated from the closest existing technique and current same-Rank benchmarks. Keep similar stat coefficients when the technique relationship is unchanged; put most Rank growth into Base Power, Cost and/or explicit effects.\n- Do not simultaneously inflate Base Power, scaling, range, accuracy, area and control with no trade-off.\n- A normal new Skill should not trivially one-shot a healthy same-Rank peer without a major condition, drawback or exceptional premise.\n- Fix the generated Skill once learned. Later changes require real Skill evolution, not silent rewriting.\n"
+}

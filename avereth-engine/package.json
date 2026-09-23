@@ -1,0 +1,16 @@
+{
+  "name": "avereth-engine",
+  "version": "2.0.0",
+  "description": "Deterministic RPG engine for the Avereth campaign (SillyTavern extension + Node test suite). Zero runtime dependencies.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/unit/*.test.js tests/scenarios/*.test.js tests/testrun_v1/*.test.js",
+    "migrate": "python3 tools/migrate_content.py",
+    "compare": "node tools/testrun_compare.js",
+    "smoke:browser": "node tools/browser_smoke.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

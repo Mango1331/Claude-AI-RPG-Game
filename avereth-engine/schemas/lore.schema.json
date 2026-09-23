@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "avereth/lore.schema.json",
+  "title": "Lore entries, locations, factions (content/lore.json)",
+  "type": "object",
+  "required": [
+    "entries",
+    "locations",
+    "factions"
+  ],
+  "properties": {
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "kind",
+          "text",
+          "keys",
+          "importance",
+          "baseline",
+          "source"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^(lore|realm)\\.[a-z_]+$"
+          },
+          "kind": {
+            "enum": [
+              "topic",
+              "realm"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "keys": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "entities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "importance": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "baseline": {
+            "type": "boolean"
+          },
+          "source": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "locations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "realm"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^loc\\.[a-z_]+$"
+          },
+          "kind": {
+            "enum": [
+              "city",
+              "capital",
+              "seat"
+            ]
+          },
+          "realm": {
+            "type": "string",
+            "pattern": "^realm\\.[a-z_]+$"
+          }
+        }
+      }
+    },
+    "factions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

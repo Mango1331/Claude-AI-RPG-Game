@@ -1,0 +1,24 @@
+{
+  "id": "avereth",
+  "version": "2.0.0",
+  "title": "Avereth RPG — content pack for the Avereth Engine",
+  "migrated_from": {
+    "core": "RPG_Core_Mechanics v1.21",
+    "content": "RPG_Content v1.13",
+    "lore": "RPG_Lore v0.8",
+    "system": "RPG_System v1.12",
+    "character_description": "v2.3",
+    "first_message": "v0.4"
+  },
+  "files": {
+    "rules": "rules.json",
+    "classes": "classes.json",
+    "monsters": "monsters.json",
+    "npc_templates": "npc_templates.json",
+    "gear": "gear.json",
+    "lore": "lore.json",
+    "rules_text": "rules_text.json",
+    "narrator": "narrator.json",
+    "campaign_start": "campaign_start.json"
+  }
+}

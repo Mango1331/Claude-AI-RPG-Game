@@ -1,0 +1,243 @@
+{
+  "_source": "Numeric rule constants transcribed from Core v1.21 (entry numbers in 'src'); the engine code implements the procedures. tests/unit/rules_consistency.test.js asserts that every constant still appears in the verbatim Core text (content/rules_text.json).",
+  "stats": [
+    "STR",
+    "VIT",
+    "AGI",
+    "INT",
+    "PER",
+    "WIL"
+  ],
+  "human_baseline": {
+    "STR": 5,
+    "VIT": 5,
+    "AGI": 5,
+    "INT": 5,
+    "PER": 5,
+    "WIL": 5,
+    "src": "Content #0"
+  },
+  "derived": {
+    "src": "Core #2",
+    "max_hp": {
+      "base": 50,
+      "per_level": 5,
+      "per_vit": 5
+    },
+    "max_mp": {
+      "per_int": 8,
+      "per_wil": 4
+    },
+    "max_sta_human": 100,
+    "init": {
+      "agi": 1,
+      "per_half_floor": true
+    },
+    "base_def_divisor": 4,
+    "base_mdef_divisor": 4
+  },
+  "progression": {
+    "src": "Core #3, Content #0",
+    "xp_to_next_per_level": 100,
+    "free_points_per_level": 5,
+    "favored_growth_per_level": 1,
+    "refill_on_level_up": false
+  },
+  "ranks": {
+    "src": "Content #7 (Rank bands), Content #10 (milestones)",
+    "bands": [
+      {
+        "rank": "F",
+        "min": 1,
+        "max": 14
+      },
+      {
+        "rank": "E",
+        "min": 15,
+        "max": 29
+      },
+      {
+        "rank": "D",
+        "min": 30,
+        "max": 44
+      },
+      {
+        "rank": "C",
+        "min": 45,
+        "max": 59
+      },
+      {
+        "rank": "B",
+        "min": 60,
+        "max": 74
+      },
+      {
+        "rank": "A",
+        "min": 75,
+        "max": 89
+      },
+      {
+        "rank": "S",
+        "min": 90,
+        "max": 104
+      }
+    ],
+    "order": [
+      "F",
+      "E",
+      "D",
+      "C",
+      "B",
+      "A",
+      "S"
+    ]
+  },
+  "hit": {
+    "src": "Core #10, #12",
+    "character_base": 70,
+    "per_factor": 0.5,
+    "clamp_min": 20,
+    "clamp_max": 95,
+    "partial_cover_pp": -20,
+    "tactical_pp": {
+      "minor": 10,
+      "strong": 20,
+      "extreme": 35
+    }
+  },
+  "crit": {
+    "src": "Core #11, #12, #24",
+    "character_base": 5,
+    "per_divisor": 10,
+    "multiplier": 1.5,
+    "ambush_bonus_pp": 25
+  },
+  "damage": {
+    "src": "Core #11",
+    "defense_floor_share": 0.1,
+    "variance_min": 0.9,
+    "variance_max": 1.1,
+    "resistance_factor": 0.5,
+    "tactical_power_pct": [
+      10,
+      20,
+      35
+    ]
+  },
+  "proficiency": {
+    "src": "Core #5",
+    "levels": {
+      "1": {
+        "cost": 1.0,
+        "hit_pp": 0,
+        "power": 1.0
+      },
+      "2": {
+        "cost": 0.95,
+        "hit_pp": 0,
+        "power": 1.0
+      },
+      "3": {
+        "cost": 0.95,
+        "hit_pp": 5,
+        "power": 1.0
+      },
+      "4": {
+        "cost": 0.925,
+        "hit_pp": 5,
+        "power": 1.1
+      },
+      "5": {
+        "cost": 0.9,
+        "hit_pp": 5,
+        "power": 1.15
+      }
+    },
+    "promotion_progress": {
+      "1": 75,
+      "2": 100,
+      "3": 150
+    },
+    "learning_progress": {
+      "1": 100,
+      "2": 200,
+      "3": 300
+    }
+  },
+  "xp": {
+    "src": "Core #25",
+    "base_per_level": 10,
+    "rank_gap": {
+      "-2": 0.25,
+      "-1": 0.5,
+      "0": 1,
+      "1": 2,
+      "2": 4,
+      "3": 8
+    },
+    "target_type": {
+      "normal": 1,
+      "elite": 1.5,
+      "boss": 2.5
+    },
+    "quest_base_per_level": 10,
+    "quest_type": {
+      "minor": 1.5,
+      "standard": 2,
+      "dangerous": 3,
+      "major": 5
+    }
+  },
+  "range": {
+    "src": "Core #12",
+    "bands": [
+      "ENGAGED",
+      "SHORT",
+      "MEDIUM",
+      "LONG"
+    ],
+    "max_normal_shift": 1
+  },
+  "checks": {
+    "src": "Core #7, #8",
+    "modifier_pct": {
+      "minor": 10,
+      "strong": 20,
+      "extreme": 35
+    },
+    "difficulty_scores": {
+      "_note": "PROPOSED helper scale (not in Core): named Difficulty Scores for Difficulty Checks; Core #7 only requires a fixed Difficulty Score.",
+      "easy": 3,
+      "moderate": 6,
+      "hard": 10,
+      "very_hard": 15,
+      "status": "proposed"
+    },
+    "creature_detection": {
+      "value": 5,
+      "status": "proposed",
+      "_note": "PROPOSED: direct-stat creatures have no PER; their Detection Score for Core #8 Stealth vs Detection defaults to the Human baseline PER 5 unless Content gives the species a detection value."
+    },
+    "stealth": {
+      "actor": "AGI",
+      "opposition": "PER",
+      "src": "Core #8"
+    }
+  },
+  "currency": {
+    "src": "Core #22, Lore #15",
+    "copper_per_silver": 10,
+    "silver_per_gold": 10
+  },
+  "combat": {
+    "src": "Core #23, #24, #26-#28",
+    "phases": [
+      "INACTIVE",
+      "PENDING",
+      "ACTIVE",
+      "TERMINAL"
+    ],
+    "no_in_combat_regeneration": true,
+    "death_at_zero_hp": true
+  }
+}

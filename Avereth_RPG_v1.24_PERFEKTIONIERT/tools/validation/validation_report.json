@@ -1,0 +1,400 @@
+{
+ "ok": true,
+ "results": [
+  {
+   "check": "core: valid JSON + strict UTF-8, no BOM, same serialisation style",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "content: valid JSON + strict UTF-8, no BOM, same serialisation style",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "lore: valid JSON + strict UTF-8, no BOM, same serialisation style",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "system: valid JSON + strict UTF-8, no BOM, same serialisation style",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "wi: valid JSON + strict UTF-8, no BOM, same serialisation style",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "core: every entry has the identical complete field set",
+   "ok": true,
+   "detail": "30 entries"
+  },
+  {
+   "check": "core: uid==key, field types valid, no empty keys",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "core: displayIndex unique",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "content: every entry has the identical complete field set",
+   "ok": true,
+   "detail": "12 entries"
+  },
+  {
+   "check": "content: uid==key, field types valid, no empty keys",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "content: displayIndex unique",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "lore: every entry has the identical complete field set",
+   "ok": true,
+   "detail": "19 entries"
+  },
+  {
+   "check": "lore: uid==key, field types valid, no empty keys",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "lore: displayIndex unique",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "system: every entry has the identical complete field set",
+   "ok": true,
+   "detail": "15 entries"
+  },
+  {
+   "check": "system: uid==key, field types valid, no empty keys",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "system: displayIndex unique",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "wi: every entry has the identical complete field set",
+   "ok": true,
+   "detail": "61 entries"
+  },
+  {
+   "check": "wi: uid==key, field types valid, no empty keys",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "wi: displayIndex unique",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "wi_debug: every entry has the identical complete field set",
+   "ok": true,
+   "detail": "61 entries"
+  },
+  {
+   "check": "wi_debug: uid==key, field types valid, no empty keys",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "wi_debug: displayIndex unique",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "WI: every regex-style key is accepted by SillyTavern's parseRegexFromString",
+   "ok": true,
+   "detail": "94 regex keys; invalid: []"
+  },
+  {
+   "check": "WI: exactly one constant entry (kernel #0, ignoreBudget)",
+   "ok": true,
+   "detail": "['0']"
+  },
+  {
+   "check": "WI: runtime phase group = Creation 1003 > ACTIVE 1002 > PENDING 1001 > START 1000, all prioritised",
+   "ok": true,
+   "detail": "{'1': (1000, True), '2': (1002, True), '54': (1003, True), '55': (1001, True)}"
+  },
+  {
+   "check": "WI: no sticky/cooldown/delay anywhere, recursion flags unchanged",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "WI: removed entries are exactly #62-#67",
+   "ok": true,
+   "detail": "['62', '63', '64', '65', '66', '67']"
+  },
+  {
+   "check": "WI: no new uids introduced",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "WI: removed #62 was byte-identical to class entry #19 (lossless)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "WI: removed #63 was byte-identical to class entry #20 (lossless)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "WI: removed #64 was byte-identical to class entry #21 (lossless)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "WI: removed #65 was byte-identical to class entry #22 (lossless)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "WI: removed #66 was byte-identical to class entry #23 (lossless)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "WI: removed #67 debug text survives in System #14 and in the DEBUG_CALC build",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "Source<->WI: every 'verbatim' WI entry equals its perfected source entry",
+   "ok": true,
+   "detail": "53 verbatim entries; mismatches []"
+  },
+  {
+   "check": "Source<->WI: verbatim sources mirror the runtime trigger fields",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "check": "Sources: every entry documents its runtime target (extensions.rpg_compile)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "Sources: no source entry claims constant=true (only the WI kernel is constant at runtime)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "Core: content changed only in #11 #12 #18 #21 #23 #24 #26 #27",
+   "ok": true,
+   "detail": "[11, 12, 18, 21, 23, 24, 26, 27]"
+  },
+  {
+   "check": "Content: content changed only in #5 (Ranger Ammo fields)",
+   "ok": true,
+   "detail": "[5]"
+  },
+  {
+   "check": "Lore: world text byte-identical",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "check": "System: content changed only in #1 #5 #10 #12 #14",
+   "ok": true,
+   "detail": "[1, 5, 10, 12, 14]"
+  },
+  {
+   "check": "core: same entry uids as the original",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "content: same entry uids as the original",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "lore: same entry uids as the original",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "system: same entry uids as the original",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "Removed/reworded source lines are confined to the documented patches",
+   "ok": true,
+   "detail": "34 lines, see removed_lines.json"
+  },
+  {
+   "check": "Content #5: every original number preserved after the Ammo patch",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "check": "stale/unsafe text removed: 'V0.1' labels",
+   "ok": true,
+   "detail": "V0\\.1"
+  },
+  {
+   "check": "stale/unsafe text removed: 'Creation_State'",
+   "ok": true,
+   "detail": "Creation_State"
+  },
+  {
+   "check": "stale/unsafe text removed: 'Stage-III passive'",
+   "ok": true,
+   "detail": "Stage-III"
+  },
+  {
+   "check": "stale/unsafe text removed: 'combat overlay' key",
+   "ok": true,
+   "detail": "combat overlay"
+  },
+  {
+   "check": "stale/unsafe text removed: dangling crit cap",
+   "ok": true,
+   "detail": "capped as already defined by Core"
+  },
+  {
+   "check": "stale/unsafe text removed: v1.3 non-definitions header",
+   "ok": true,
+   "detail": "V1\\.3 DELIBERATE"
+  },
+  {
+   "check": "stale/unsafe text removed: test oracle in runtime/System",
+   "ok": true,
+   "detail": "DERIVED VALIDATION"
+  },
+  {
+   "check": "stale/unsafe text removed: duplicate kit map",
+   "ok": true,
+   "detail": "STARTER KIT MAP"
+  },
+  {
+   "check": "stale/unsafe text removed: generic 'STATUS: ACTIVE' trigger",
+   "ok": true,
+   "detail": "STATUS: ACTIVE"
+  },
+  {
+   "check": "Host independence: no Megumin/SillyTavern envelope or tag prescriptions in any perfected file",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "check": "Core #27/#28/#29 keys match their own phase",
+   "ok": true,
+   "detail": "COMBAT ACTIVE / COMBAT END / combat audit"
+  },
+  {
+   "check": "Creation labels consistent: First Message <-> System #12 <-> WI #54 keys",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "Version metadata",
+   "ok": true,
+   "detail": "{'core': 'v1.21', 'core2': 'v1.21', 'content': 'v1.13', 'lore': 'v0.8', 'system': 'v1.12', 'wi': 'v1.23'}"
+  },
+  {
+   "check": "Per-entry version tags unified",
+   "ok": true,
+   "detail": "{'core': {'v1.21'}, 'content': {'v1.13'}, 'lore': {'v0.8'}, 'system': {'v1.12'}}"
+  },
+  {
+   "check": "WI sources reference the perfected versions",
+   "ok": true,
+   "detail": "['RPG_Core_Mechanics_v1.21', 'RPG_Content_v1.13', 'RPG_Lore_v0.8', 'RPG_System_v1.12']"
+  },
+  {
+   "check": "DEBUG_CALC differs from standard only in START/ACTIVE/PENDING content+comment",
+   "ok": true,
+   "detail": "['1.comment', '1.content', '2.comment', '2.content', '55.comment', '55.content']"
+  },
+  {
+   "check": "DEBUG_CALC #1: standard text fully preserved (debug text only inserted)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "DEBUG_CALC #2: standard text fully preserved (debug text only inserted)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "DEBUG_CALC #55: standard text fully preserved (debug text only inserted)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "Character Description: v2.2 text fully preserved, only additions",
+   "ok": true,
+   "detail": "14432 -> 15254 chars"
+  },
+  {
+   "check": "Character Description: PC STATE DELTA CHECK + final check item 10 present",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "Character Description: still host-independent",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "Fixture Ranger L1 (test setup v2.6): STR5 VIT5 AGI6 INT5 PER6 WIL5, HP80 MP60 STA100 Init9, DEF3/MDEF4, ATK6, BaseHit73, Crit5.6%",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "Fixture raw values: Basic 17.5, Aimed 26.5, Power 33.25, Quick 21.0, Twin 12.25 per strike",
+   "ok": true,
+   "detail": "{'Basic Attack': 17.5, 'Aimed Shot': 26.5, 'Power Shot': 33.25, 'Quick Shot': 21.0, 'Twin Shot': 12.25}"
+  },
+  {
+   "check": "Worked examples (Core #11): 17.5 vs DEF2 var0.94 -> 15; 12.25 vs DEF2 var1.08 crit -> 17",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "Damage order: DEF before variance (Power Shot 33.25 vs Boar DEF2, var1.10 -> 34; variance-first would give 35); the v1.23 run hit a Deer with DEF0 at var0.97 -> 32 either way, so the wrong order stayed latent",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "Monster fixture: Boar F1 = HP41 ATK11 DEF2 MDEF0 Hit70 Init7; DefeatXP 10",
+   "ok": true,
+   "detail": "{'HP': 41, 'ATK': 11, 'DEF': 2, 'MDEF': 0, 'Hit': 70, 'Init': 7}"
+  },
+  {
+   "check": "Monster fixture: Wolf L2 = HP28 ATK11 DEF0 Hit80 Init13, DefeatXP 20 (chat-2 example '34/9/1/67/12/12' was wrong)",
+   "ok": true,
+   "detail": "{'HP': 28, 'ATK': 11, 'DEF': 0, 'MDEF': 0, 'Hit': 80, 'Init': 13}"
+  },
+  {
+   "check": "Activation simulation: all scenarios pass with the perfected WorldInfo",
+   "ok": true,
+   "detail": "NEW: 30 scenarios pass, 0 fail | OLD passes 12/30"
+  },
+  {
+   "check": "Regex unit tests",
+   "ok": true,
+   "detail": "regex tests: 234 passed, 0 failed"
+  }
+ ]
+}

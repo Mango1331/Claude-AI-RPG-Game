@@ -1,4 +1,5 @@
-// Derived character values (Core #2, #6, #10, #11). Pure functions of a character sheet + content.
+// Derived character values (Core #2, #6). Pure functions of a character sheet + content. Combat V3: no Base Hit and
+// no Crit Chance (legal attacks connect; only a true Ambush crits), and PER is not part of Initiative.
 import { num } from './util.js';
 
 export function rankOf(level, content) {
@@ -17,6 +18,13 @@ export function itemOf(ref, content) {
     return ref;
 }
 
+/** Core #24 (V3): Initiative = floor(1.5 × AGI). */
+export function initiativeOf(agi, content) {
+    const r = content.rules.derived.init;
+    const v = agi * r.agi_factor;
+    return r.floor ? Math.floor(v) : v;
+}
+
 /**
  * Derived values for a core-stat character sheet.
  * sheet: {level, stats, equipment: {slot: itemRef}, bonuses?: {atk, matk, def, mdef}, temp?: {def, mdef}}
@@ -28,12 +36,10 @@ export function deriveCharacter(sheet, content) {
         maxHp: r.max_hp.base + sheet.level * r.max_hp.per_level + s.VIT * r.max_hp.per_vit,
         maxMp: s.INT * r.max_mp.per_int + s.WIL * r.max_mp.per_wil,
         maxSta: r.max_sta_human,
-        init: s.AGI + Math.floor(s.PER / 2),
+        init: initiativeOf(s.AGI, content),
         baseDef: Math.floor(s.VIT / r.base_def_divisor),
         baseMdef: Math.floor(s.WIL / r.base_mdef_divisor),
         atk: 0, matk: 0, gearDef: 0, gearMdef: 0,
-        baseHit: num(content.rules.hit.character_base + s.PER * content.rules.hit.per_factor),
-        crit: num(content.rules.crit.character_base + s.PER / content.rules.crit.per_divisor),
         rank: rankOf(sheet.level, content),
     };
     for (const ref of Object.values(sheet.equipment || {})) {
@@ -61,7 +67,7 @@ export function rawPower(skill, stats, derived) {
     return num(raw);
 }
 
-/** Human readable Raw formula with the actual numbers, e.g. "16 + AGI 6×0.5 + PER 6×1.375 + ATK 6 = 33.25". */
+/** Human readable Raw formula with the actual numbers, e.g. "16 + AGI 6×1.875 + ATK 6 = 33.25". */
 export function rawPowerText(skill, stats, derived) {
     const a = skill.attack;
     const parts = [String(a.base)];

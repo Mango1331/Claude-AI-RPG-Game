@@ -49,7 +49,7 @@ function status(state, content) {
         `${e.name} | ${e.race || 'Human'} | Level ${s.level} | XP ${s.xp}/${s.level * content.rules.progression.xp_to_next_per_level} | Power Rank ${dv.rank} | Class: ${cls}`,
         `HP ${s.hp}/${dv.maxHp} | MP ${s.mp}/${dv.maxMp} | STA ${s.sta}/${dv.maxSta}`,
         `STR ${s.stats.STR} | VIT ${s.stats.VIT} | AGI ${s.stats.AGI} | INT ${s.stats.INT} | PER ${s.stats.PER} | WIL ${s.stats.WIL} | Free Stat Points ${s.free_points}`,
-        `ATK ${dv.atk} | MATK ${dv.matk} | DEF ${dv.def} (base ${dv.baseDef}) | MDEF ${dv.mdef} (base ${dv.baseMdef}) | Initiative ${dv.init} | Base Hit ${dv.baseHit}% | Crit ${dv.crit}%`,
+        `ATK ${dv.atk} | MATK ${dv.matk} | DEF ${dv.def} (base ${dv.baseDef}) | MDEF ${dv.mdef} (base ${dv.baseMdef}) | Initiative ${dv.init} (floor(1.5 × AGI))`,
         `Active Effects: ${fx.length ? fx.map((x) => x.name).join(', ') : 'none'} | Domain: NOT YET UNLOCKED`,
         `Equipment: ${equipmentList(s, content).join(', ') || 'none'}`,
     ].join('\n');
@@ -91,7 +91,7 @@ function skill(state, content, arg) {
     if (sk.range) lines.push(`Range: ${sk.range.band}${sk.range.extra_band ? ' (EXTRA-BAND movement: may move one additional band and must end ENGAGED)' : ''}${sk.range.area ? ` | Area: ${sk.range.area}` : ''}`);
     if (sk.attack) {
         lines.push(`Base Power ${sk.attack.base} | Scaling ${sk.attack.scaling.map((t) => `${t.stat} ×${t.text ?? t.coef}`).join(' + ')} | Uses ${sk.attack.share === 1 ? '' : `${sk.attack.share * 100}% of `}${sk.attack.uses} | ${sk.attack.damage_type}`);
-        lines.push(`Hit Modifier ${sk.attack.hit_mod >= 0 ? '+' : ''}${sk.attack.hit_mod}${prof.hit_pp ? ` (+${prof.hit_pp} Proficiency)` : ''} -> Hit ${Math.min(95, Math.max(20, dv.baseHit + sk.attack.hit_mod + prof.hit_pp))}% before target modifiers | Crit ${dv.crit}%${sk.strikes > 1 ? ` | ${sk.strikes} strikes (separate Hit/Crit/damage each)` : ''}`);
+        lines.push(`A legal attack always lands (no Hit or Crit roll; only a true Ambush Opening Action crits ×${content.rules.crit.multiplier})${sk.attack.ignores_partial_cover ? ' | ignores Partial Cover' : ''}${sk.strikes > 1 ? ` | ${sk.strikes} strikes (separate damage each)` : ''}`);
         lines.push(`Current Raw Power: ${rawPowerText(sk, s.stats, dv)}${prof.power !== 1 ? ` (×${prof.power} Proficiency on Modified Power)` : ''}`);
     }
     if (sk.effect_text && !/^none\.?$/i.test(sk.effect_text)) lines.push(`Effect: ${sk.effect_text}`);
@@ -175,9 +175,9 @@ function effectText(x) {
     if (x.kind === 'temp_def') return `DEF +${x.value}`;
     if (x.kind === 'temp_mdef') return `MDEF +${x.value}`;
     if (x.kind === 'barrier') return `Barrier ${x.hp} HP`;
-    if (x.kind === 'incoming_hit_penalty') return `incoming attacks -${x.pp}pp Hit`;
+    if (x.kind === 'incoming_damage_reduction') return `incoming damage -${x.pct}%`;
     if (x.kind === 'damage_reduction_next') return `next damage taken -${x.pct}%`;
-    if (x.kind === 'next_attack_buff') return `next ${x.scope === 'ranged' ? 'ranged ' : ''}attack +${x.hit_pp}pp Hit, +${x.power_pct}% power`;
+    if (x.kind === 'next_attack_buff') return `next ${x.scope === 'ranged' ? 'ranged ' : ''}attack +${x.power_pct}% power`;
     return x.kind;
 }
 
@@ -191,10 +191,10 @@ function combat(state) {
         const cur = c.current;
         const st = cur.defeated ? 'DEFEATED' : cur.escaped ? 'ESCAPED' : cur.surrendered ? 'SURRENDERED' : 'active';
         if (c.model === 'character') {
-            lines.push(`${c.name} (${c.side}) L${f.level} ${f.rank} ${f.class || ''} | STR ${f.stats.STR} VIT ${f.stats.VIT} AGI ${f.stats.AGI} INT ${f.stats.INT} PER ${f.stats.PER} WIL ${f.stats.WIL} | HP ${cur.hp}/${f.max_hp} MP ${cur.mp}/${f.max_mp} STA ${cur.sta}/${f.max_sta} | ATK ${f.atk} MATK ${f.matk} DEF ${f.def} MDEF ${f.mdef} | Hit ${f.base_hit}% Crit ${f.crit}% Init ${f.init} | ${cur.band || 'PC'}${cur.cover !== 'none' ? ` ${cur.cover} cover` : ''} | ${st}${f.defeat_xp !== undefined ? ` | DefeatXP ${f.defeat_xp}` : ''}`);
+            lines.push(`${c.name} (${c.side}) L${f.level} ${f.rank} ${f.class || ''} | STR ${f.stats.STR} VIT ${f.stats.VIT} AGI ${f.stats.AGI} INT ${f.stats.INT} PER ${f.stats.PER} WIL ${f.stats.WIL} | HP ${cur.hp}/${f.max_hp} MP ${cur.mp}/${f.max_mp} STA ${cur.sta}/${f.max_sta} | ATK ${f.atk} MATK ${f.matk} DEF ${f.def} MDEF ${f.mdef} | Init ${f.init} | ${cur.band || 'PC'}${cur.cover !== 'none' ? ` ${cur.cover} cover` : ''} | ${st}${f.defeat_xp !== undefined ? ` | DefeatXP ${f.defeat_xp}` : ''}`);
             lines.push(`   actions: ${Object.entries(f.actions).map(([id, v]) => `${id} P${v.prof}`).join(', ')}`);
         } else {
-            lines.push(`${c.name} (${f.body_plan}) L${f.level} ${f.rank} ${f.type} | HP ${cur.hp}/${f.max_hp} | ATK ${f.atk} DEF ${f.def} MDEF ${f.mdef} Hit ${f.hit}% Init ${f.init} | ${f.attack.name} (${f.attack.damage_type}, ${f.attack.range}) | ${cur.band}${cur.cover !== 'none' ? ` ${cur.cover} cover` : ''} | ${st} | DefeatXP ${f.defeat_xp}`);
+            lines.push(`${c.name} (${f.body_plan}) L${f.level} ${f.rank} ${f.type} | HP ${cur.hp}/${f.max_hp} | ATK ${f.atk} DEF ${f.def} MDEF ${f.mdef} Init ${f.init} | ${f.attack.name} (${f.attack.damage_type}, ${f.attack.range}) | ${cur.band}${cur.cover !== 'none' ? ` ${cur.cover} cover` : ''} | ${st} | DefeatXP ${f.defeat_xp}`);
         }
         if (cur.effects.length) lines.push(`   effects: ${cur.effects.map((x) => `${x.name} (${effectText(x)})`).join(', ')}`);
     }
@@ -224,7 +224,7 @@ function log(state, content, arg) {
 function audit(state, content) {
     const o = state.last.outcome;
     const lines = ['[SYSTEM // AUDIT] last resolved turn'];
-    if (o?.records) for (const r of o.records) for (const s of r.strikes || []) lines.push(`${entityLabel(state, r.actor)} ${r.skill_name || ''} -> ${entityLabel(state, s.target)}: hit ${s.hit.chance}% d100 ${s.hit.roll}${s.crit?.roll ? ` | crit ${s.crit.chance}% d100 ${s.crit.roll}` : ''}${s.steps ? ` | ${s.steps.join(' → ')}` : ''}`);
+    if (o?.records) for (const r of o.records) for (const s of r.strikes || []) lines.push(`${entityLabel(state, r.actor)} ${r.skill_name || ''} -> ${entityLabel(state, s.target)}: ${s.hit ? `hit ${s.hit.chance}% d100 ${s.hit.roll} | ` : ''}${s.crit?.ambush ? 'AMBUSH CRIT | ' : ''}${s.steps ? s.steps.join(' → ') : `${s.final} damage`}`);
     if (o?.check) lines.push(`${o.check.label}: ${o.check.chance ?? '-'}% d100 ${o.check.roll ?? '-'} ${o.check.success ? 'SUCCESS' : 'FAILURE'}`);
     if (o?.check_die) lines.push(`Check die issued: d100 ${o.check_die}${state.last.check ? ` (used for "${state.last.check.what}": ${state.last.check.chance}% -> ${state.last.check.success ? 'SUCCESS' : 'FAILURE'})` : ' (unused)'}`);
     for (const r of state.last.rejected) lines.push(`Rejected report item: ${r.reason}`);

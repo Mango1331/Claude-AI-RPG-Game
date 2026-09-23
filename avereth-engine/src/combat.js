@@ -1,9 +1,11 @@
-// Combat engine: Core #10-#12 (hit, damage, range), #13 (effects), #21 (ammo), #23-#28 (gate, turns, ambush,
-// XP, START/ACTIVE/END loops). Every roll comes from the seeded Dice; every step is written into the encounter
-// snapshot (the FIXED+CURRENT snapshot that Testrun-v1 lost), so the next turn copies it instead of re-guessing.
+// Combat engine: Core #10-#12 (legality, damage, range), #13 (effects), #21 (ammo), #23-#28 (gate, turns, ambush,
+// XP, START/ACTIVE/END loops). Combat V3 (docs/REVIEW_V3.md): a legal attack connects — no Hit roll, no random
+// Crit, no PER in combat math; only a true Ambush Opening Action crits (×1.5, every strike, PC and creatures alike).
+// The only roll left in an attack is the damage variance. Every step is written into the encounter snapshot (the
+// FIXED+CURRENT snapshot that Testrun-v1 lost), so the next turn copies it instead of re-guessing.
 import { deriveCharacter, rawPower, rawPowerText } from './derived.js';
 import { defeatXp, awardXp } from './progression.js';
-import { bandIndex, bandName, clamp, clone, num, roundHalfUp } from './util.js';
+import { bandIndex, bandName, clone, num, roundHalfUp } from './util.js';
 
 const PROF = (content, level) => content.rules.proficiency.levels[String(level || 1)];
 const label = (e) => e.name || (e.descriptors && e.descriptors[0] ? `the ${e.descriptors[0]}` : e.id);
@@ -17,8 +19,7 @@ export function characterCombatant(state, id, content, side) {
         id, name: label(e), side, model: 'character',
         fixed: {
             level: s.level, rank: dv.rank, class: s.class, stats: { ...s.stats }, max_hp: dv.maxHp, max_mp: dv.maxMp,
-            max_sta: dv.maxSta, atk: dv.atk, matk: dv.matk, def: dv.def, mdef: dv.mdef, base_hit: dv.baseHit,
-            crit: dv.crit, init: dv.init, type: 'normal',
+            max_sta: dv.maxSta, atk: dv.atk, matk: dv.matk, def: dv.def, mdef: dv.mdef, init: dv.init, type: 'normal',
             actions: Object.fromEntries(Object.entries(s.skills).filter(([sid]) => content.skills.has(sid))),
             weapon_family: (Object.values(s.equipment || {}).map((r) => (typeof r === 'string' ? content.items.get(r) : r))
                 .find((it) => it && it.slot === 'weapon') || {}).family || null,
@@ -48,7 +49,7 @@ export function creatureCombatant(state, id) {
         id, name: label(e), side: 'hostile', model: 'creature',
         fixed: {
             level: p.level, rank: p.rank, type: p.type, body_plan: p.body_plan, max_hp: p.max_hp, atk: p.atk, def: p.def,
-            mdef: p.mdef, hit: p.hit, init: p.init, attack: p.attack, crit: 'none', temperament: p.temperament,
+            mdef: p.mdef, init: p.init, attack: p.attack, temperament: p.temperament,
             sapient: false,
         },
         current: { hp: p.hp ?? p.max_hp, band: null, cover: 'none', effects: [], defeated: false, escaped: false, surrendered: false },
@@ -98,11 +99,11 @@ export function initEncounter(state, content, dice, trigger, participants, encId
     if (trigger.actor === 'pc') {
         const awareness = state.scene.awareness[trigger.target] || 'aware';
         enc.ambush = !!combatants[trigger.target] && awareness === 'unaware';
-        enc.ambush_reason = `target awareness: ${awareness}${enc.ambush ? ' -> true Ambush (Opening Action, +25pp Crit)' : " -> no Ambush; the trigger action waits for Alaric's Turn"}`;
+        enc.ambush_reason = `target awareness: ${awareness}${enc.ambush ? ' -> true Ambush (Opening Action: guaranteed Critical Hit ×1.5)' : " -> no Ambush; the trigger action waits for Alaric's Turn"}`;
     } else {
         // an NPC/creature ambushes Alaric only if it was concealed from him when it committed
         enc.ambush = state.scene.concealed.includes(trigger.actor);
-        enc.ambush_reason = enc.ambush ? `${combatants[trigger.actor].name} attacked from concealment -> true Ambush (Opening Action)` : `${combatants[trigger.actor].name} attacks openly; its trigger action waits for its Turn`;
+        enc.ambush_reason = enc.ambush ? `${combatants[trigger.actor].name} attacked from concealment -> true Ambush (Opening Action: guaranteed Critical Hit ×1.5)` : `${combatants[trigger.actor].name} attacks openly; its trigger action waits for its Turn`;
         if (!enc.ambush) enc.intents[trigger.actor] = 'attack';
     }
     enc.order = initiativeOrder(enc, dice);
@@ -129,7 +130,7 @@ export function addCombatant(enc, state, content, id, side, intent = 'attack') {
 export function initiativeOrder(enc, dice) {
     const list = Object.values(enc.combatants).filter(alive);
     list.sort((a, b) => b.fixed.init - a.fixed.init);
-    // Core #24 ties: higher PER when both profiles possess PER; otherwise resolve the tie once without bias
+    // Core #24 (V3) ties: resolved once without bias (PER no longer breaks them) and locked in the order
     const unbiased = (group) => {
         const pool = group.map((c) => c.id);
         const out = [];
@@ -153,10 +154,7 @@ export function initiativeOrder(enc, dice) {
     const order = [];
     for (const group of runs(list, (c) => c.fixed.init)) {
         if (group.length === 1) order.push(group[0].id);
-        else if (group.every((c) => c.fixed.stats)) {
-            group.sort((a, b) => b.fixed.stats.PER - a.fixed.stats.PER);
-            for (const g of runs(group, (c) => c.fixed.stats.PER)) order.push(...(g.length === 1 ? [g[0].id] : unbiased(g)));
-        } else order.push(...unbiased(group));
+        else order.push(...unbiased(group));
     }
     return order;
 }
@@ -200,35 +198,27 @@ function rangeReaches(listedBand, targetBand) {
 }
 
 // ------------------------------------------------------------------------------------------ attack resolution
+/**
+ * Incoming-damage reduction of a defensive effect in percent (Deflect 25, Quickstep 20, ...). An encounter snapshot
+ * saved before Combat V3 may still hold the old Hit penalty: it keeps the same strength (20pp -> 25%, 15pp -> 20%).
+ */
+function reductionPct(e) {
+    if (e.kind === 'incoming_damage_reduction') return e.pct || 0;
+    if (e.kind === 'incoming_hit_penalty') return Math.round((e.pp * 4) / 3 / 5) * 5;
+    return 0;
+}
+
+/**
+ * One strike of a legal attack (Core #10/#11, Combat V3): it connects, nothing is rolled but the damage variance.
+ * Only a true Ambush Opening Action crits (guaranteed ×1.5 on every strike). Partial Cover (-25% unless the attack
+ * ignores it) and defensive reductions are Final Damage modifiers (Core #11 step 11), applied after the Crit.
+ */
 function resolveStrike(ctx, attacker, target, attack, opts) {
-    const shared = opts.shared; // area attack: one Hit roll and one Crit roll shared by all targets (Core #12)
     const { dice, content } = ctx;
-    const rec = { target: target.id, rolls: [] };
-    // HIT (Core #10)
-    let base;
-    if (attacker.model === 'character') base = attacker.fixed.base_hit;
-    else base = attacker.fixed.hit;
-    const mods = [];
-    if (attack.hit_mod) mods.push([attack.hit_mod, 'Skill Hit Modifier']);
-    if (opts.profHit) mods.push([opts.profHit, 'Proficiency']);
-    if (opts.buffHit) mods.push([opts.buffHit, 'prepared attack']);
-    for (const e of effectsOf(target, 'incoming_hit_penalty')) mods.push([-e.pp, e.name || 'defensive effect']);
-    if (target.current.cover === 'partial') mods.push([content.rules.hit.partial_cover_pp, 'Partial Cover']);
-    const chance = clamp(num(base + mods.reduce((a, m) => a + m[0], 0)), content.rules.hit.clamp_min, content.rules.hit.clamp_max);
-    const hitRoll = shared ? (shared.hit ??= dice.d100(`hit ${attacker.id} (area)`)) : dice.d100(`hit ${attacker.id}->${target.id}`);
-    rec.hit = { base, mods: mods.map(([v, why]) => ({ v, why })), chance, roll: hitRoll, success: hitRoll <= chance };
-    if (shared) rec.shared = true;
-    if (!rec.hit.success) return rec;
-    // CRIT (Core #11): Character Crit model only; Ambush Opening Action +25pp
-    rec.crit = { chance: 0, roll: null, success: false };
-    if (attacker.model === 'character') {
-        const critChance = num(attacker.fixed.crit + (opts.ambush ? content.rules.crit.ambush_bonus_pp : 0));
-        const critRoll = shared ? (shared.crit ??= dice.d100(`crit ${attacker.id} (area)`)) : dice.d100(`crit ${attacker.id}->${target.id}`);
-        rec.crit = { chance: critChance, roll: critRoll, success: critRoll <= critChance, ambush_bonus: opts.ambush ? content.rules.crit.ambush_bonus_pp : 0 };
-    }
-    // DAMAGE (Core #11 central order)
+    const rec = { target: target.id };
     const magical = attack.damage_type === 'magical';
     // Core #11 order: Raw -> Proficiency Power (step 3) -> other attacker buffs (step 4) -> Defense -> Variance -> Crit
+    // -> Final Damage modifiers -> round once
     let power = opts.raw;
     const steps = [`Raw ${num(power)}`];
     if (opts.profPower && opts.profPower !== 1) { power = num(power * opts.profPower); steps.push(`×${opts.profPower} Proficiency = ${power}`); }
@@ -236,10 +226,33 @@ function resolveStrike(ctx, attacker, target, attack, opts) {
     const defense = (magical ? target.fixed.mdef : target.fixed.def) + tempDefense(target, magical);
     const postDef = num(Math.max(power - defense, power * content.rules.damage.defense_floor_share));
     steps.push(`${magical ? 'MDEF' : 'DEF'} ${defense}: max(${power}-${defense}, ${power}×0.10) = ${postDef}`);
-    const variance = dice.variance(`variance ${attacker.id}->${target.id}`); // variance is per target
+    const variance = dice.variance(`variance ${attacker.id}->${target.id}`); // variance is per target and strike
     let dmg = num(postDef * variance);
     steps.push(`×${variance} variance = ${dmg}`);
-    if (rec.crit.success) { dmg = num(dmg * content.rules.crit.multiplier); steps.push(`×${content.rules.crit.multiplier} Crit = ${dmg}`); }
+    if (opts.ambush) {
+        const m = content.rules.crit.multiplier;
+        rec.crit = { ambush: true, multiplier: m };
+        dmg = num(dmg * m);
+        steps.push(`×${m} Ambush Crit = ${dmg}`);
+    }
+    if (target.current.cover === 'partial') {
+        if (attack.ignores_partial_cover) {
+            rec.cover = 'ignored';
+            steps.push('Partial Cover ignored');
+        } else {
+            const pct = content.rules.cover.partial_damage_reduction_pct;
+            rec.cover = `-${pct}%`;
+            dmg = num(dmg * (1 - pct / 100));
+            steps.push(`Partial Cover -${pct}% = ${dmg}`);
+        }
+    }
+    for (const e of target.current.effects) {
+        const pct = reductionPct(e);
+        if (!pct) continue;
+        dmg = num(dmg * (1 - pct / 100));
+        rec.reduced = (rec.reduced || []).concat(`${e.name || 'defence'} -${pct}%`);
+        steps.push(`${e.name || 'defensive effect'} -${pct}% = ${dmg}`);
+    }
     const endure = effectsOf(target, 'damage_reduction_next')[0];
     if (endure && dmg > 0) {
         dmg = num(dmg * (1 - endure.pct / 100));
@@ -340,12 +353,11 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
             actor.current.ammo[skill.ammo.item] -= ammoUsed;
         }
         // prepared-attack buffs (Feint / Focus Aim) are consumed by this attack
-        let buffHit = 0;
         let buffPowerPct = 0;
         const isRanged = skill.range.band !== 'ENGAGED';
         for (const b of effectsOf(actor, 'next_attack_buff')) {
             if (b.scope === 'ranged' && !isRanged) continue;
-            buffHit += b.hit_pp; buffPowerPct += b.power_pct;
+            buffPowerPct += b.power_pct;
             actor.current.effects = actor.current.effects.filter((e) => e !== b);
             record.consumed = (record.consumed || []).concat(b.name);
         }
@@ -354,12 +366,11 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         const raw = rawPower(skill, actor.fixed.stats, { atk: actor.fixed.atk, matk: actor.fixed.matk });
         record.raw = raw;
         record.raw_text = rawPowerText(skill, actor.fixed.stats, { atk: actor.fixed.atk, matk: actor.fixed.matk });
-        const opts = { raw, profHit: prof.hit_pp, profPower: prof.power, buffHit, buffPowerPct, ambush: !!extra.opening };
+        const opts = { raw, profPower: prof.power, buffPowerPct, ambush: !!extra.opening };
         record.strikes = [];
         if (isArea) {
-            // area: shared Hit and Crit rolls, but the full per-target pipeline (DEF, variance, Endure, Barrier, HP)
-            const shared = {};
-            for (const tid of areaTargets) record.strikes.push(resolveStrike(ctx, actor, enc.combatants[tid], skill.attack, { ...opts, shared }));
+            // area: every target in the area is hit, each with its own pipeline (DEF, variance, cover, Barrier, HP)
+            for (const tid of areaTargets) record.strikes.push(resolveStrike(ctx, actor, enc.combatants[tid], skill.attack, opts));
         } else {
             for (let i = 0; i < (skill.strikes || 1); i++) {
                 if (!alive(target)) break; // stop resolving strikes once the target is dead (Core #12)
@@ -392,8 +403,8 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
     record.skill_name = actor.fixed.attack.name;
     record.raw = actor.fixed.atk;
     record.raw_text = `natural attack Raw = ATK ${actor.fixed.atk}`;
-    const attack = { hit_mod: 0, damage_type: actor.fixed.attack.damage_type };
-    record.strikes = [resolveStrike(ctx, actor, target, attack, { raw: actor.fixed.atk })];
+    const attack = { damage_type: actor.fixed.attack.damage_type };
+    record.strikes = [resolveStrike(ctx, actor, target, attack, { raw: actor.fixed.atk, ambush: !!extra.opening })];
     for (const s of record.strikes) if (s.defeated) onDefeat(ctx, enc.combatants[s.target], record);
     return record;
 }
@@ -430,9 +441,9 @@ export function skillAction(ctx, actorId, skillId, extra = {}) {
             const v = val(eff.base, eff.stat, eff.coef, eff.floor);
             addEffect(actor, { kind: eff.kind, value: v, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
             record.effects.push(`${eff.kind === 'temp_def' ? 'DEF' : 'MDEF'} +${v} until the start of ${actor.name}'s next turn`);
-        } else if (eff.kind === 'incoming_hit_penalty') {
-            addEffect(actor, { kind: 'incoming_hit_penalty', pp: eff.pp, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
-            record.effects.push(`incoming attacks -${eff.pp}pp Hit until the start of ${actor.name}'s next turn`);
+        } else if (eff.kind === 'incoming_damage_reduction') {
+            addEffect(actor, { kind: 'incoming_damage_reduction', pct: eff.pct, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
+            record.effects.push(`incoming damage -${eff.pct}% until the start of ${actor.name}'s next turn`);
         } else if (eff.kind === 'barrier') {
             const v = val(eff.base, eff.stat, eff.coef, eff.floor);
             addEffect(actor, { kind: 'barrier', hp: v, value: v, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
@@ -441,8 +452,8 @@ export function skillAction(ctx, actorId, skillId, extra = {}) {
             addEffect(actor, { kind: 'damage_reduction_next', pct: eff.pct, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
             record.effects.push(`next positive damage taken -${eff.pct}%`);
         } else if (eff.kind === 'next_attack_buff') {
-            addEffect(actor, { kind: 'next_attack_buff', hit_pp: eff.hit_pp, power_pct: eff.power_pct, scope: eff.scope, source: actorId, expires: 'end_of_source_next_turn', name: skill.name, round: enc.round });
-            record.effects.push(`next ${eff.scope === 'ranged' ? 'ranged ' : ''}attack +${eff.hit_pp}pp Hit and +${eff.power_pct}% Modified Power`);
+            addEffect(actor, { kind: 'next_attack_buff', power_pct: eff.power_pct, scope: eff.scope, source: actorId, expires: 'end_of_source_next_turn', name: skill.name, round: enc.round });
+            record.effects.push(`next ${eff.scope === 'ranged' ? 'ranged ' : ''}attack +${eff.power_pct}% Modified Power`);
         } else if (eff.kind === 'reposition') {
             const dir = extra.dir === 'closer' ? -1 : 1;
             record.reposition = repositionPc(enc, actorId, dir, extra.target);
@@ -493,16 +504,18 @@ export function moveAction(ctx, actorId, dir, focusId) {
 }
 
 /**
- * Alaric's attack options against one opponent, with the Hit Chance each would roll against right now (Core #10: the
- * same base, Skill modifier, Proficiency, prepared-attack bonus, defensive effects and cover as resolveStrike), so the
- * player can choose knowingly (Testrun 4: three Power Shots at 63% felt like "very many misses" next to Aimed Shot 83%).
- * Attacks that cannot be used now (range after one move, cost, arrows) are left out.
+ * Alaric's attack options against one opponent with the damage each would deal right now (the same Raw, Proficiency,
+ * prepared-attack bonus, DEF, cover and defensive effects as resolveStrike; the range is the damage variance), so
+ * the player can choose knowingly. Nothing is rolled. Attacks that cannot be used now (range after one move, cost,
+ * arrows) are left out.
+ * @returns {{skill, name, min, max, strikes, cover: null|'ignored'|'applies'}[]}
  */
-export function hitPreview(enc, content, targetId) {
+export function damagePreview(enc, content, targetId) {
     const pc = enc?.combatants?.pc;
     const target = enc?.combatants?.[targetId];
     if (!pc || !target || !alive(target) || target.current.cover === 'full') return [];
     const out = [];
+    const d = content.rules.damage;
     for (const [sid, known] of Object.entries(pc.fixed.actions || {})) {
         const skill = content.skills.get(sid);
         if (!skill?.attack || skill.effects?.some((e) => e.kind === 'area')) continue;
@@ -513,11 +526,21 @@ export function hitPreview(enc, content, targetId) {
         const arrows = skill.ammo && pc.fixed.weapon_family === 'bow' ? (pc.current.ammo?.[skill.ammo.item] || 0) >= skill.ammo.qty : true;
         if (!reach || (skill.cost && pc.current[skill.cost.resource] < cost) || !arrows) continue;
         const isRanged = skill.range.band !== 'ENGAGED';
-        let pp = (skill.attack.hit_mod || 0) + (prof.hit_pp || 0);
-        for (const b of effectsOf(pc, 'next_attack_buff')) if (b.scope !== 'ranged' || isRanged) pp += b.hit_pp;
-        for (const e of effectsOf(target, 'incoming_hit_penalty')) pp -= e.pp;
-        if (target.current.cover === 'partial') pp += content.rules.hit.partial_cover_pp;
-        out.push({ skill: sid, name: skill.name, chance: clamp(num(pc.fixed.base_hit + pp), content.rules.hit.clamp_min, content.rules.hit.clamp_max) });
+        const magical = skill.attack.damage_type === 'magical';
+        let power = rawPower(skill, pc.fixed.stats, { atk: pc.fixed.atk, matk: pc.fixed.matk }) * (prof.power || 1);
+        for (const b of effectsOf(pc, 'next_attack_buff')) if (b.scope !== 'ranged' || isRanged) power *= 1 + b.power_pct / 100;
+        const defense = (magical ? target.fixed.mdef : target.fixed.def) + tempDefense(target, magical);
+        let factor = 1;
+        let cover = null;
+        if (target.current.cover === 'partial') {
+            cover = skill.attack.ignores_partial_cover ? 'ignored' : 'applies';
+            if (cover === 'applies') factor *= 1 - content.rules.cover.partial_damage_reduction_pct / 100;
+        }
+        for (const e of target.current.effects) factor *= 1 - reductionPct(e) / 100;
+        const post = Math.max(power - defense, power * d.defense_floor_share) * factor;
+        const min = Math.max(1, roundHalfUp(num(post * d.variance_min)));
+        const max = Math.max(1, roundHalfUp(num(post * d.variance_max)));
+        out.push({ skill: sid, name: skill.name, min, max, strikes: skill.strikes || 1, cover });
     }
     return out;
 }
@@ -536,7 +559,8 @@ export function npcDecide(ctx, npcId) {
     let intent = enc.intents[npcId];
     const reach = me.model === 'creature' ? me.fixed.attack.range : npcReach(ctx, me);
     const inRange = bandIndex(band) <= bandIndex(reach);
-    const wasHit = enc.log.some((r) => r.actor !== npcId && (r.strikes || []).some((s) => s.target === npcId && s.hit && s.hit.success));
+    // a strike on it (every legal V3 strike lands; records from before Combat V3 carry a Hit roll)
+    const wasHit = enc.log.some((r) => r.actor !== npcId && (r.strikes || []).some((s) => s.target === npcId && (!s.hit || s.hit.success)));
     const attackOn = (r) => r.actor !== npcId && r.kind === 'attack' && (r.target === npcId || (r.strikes || []).some((s) => s.target === npcId));
     if (!alive(pc) || pc.current.hp <= 0) return { kind: 'hold', why: 'no living opponent' };
     // Core #27: the NPC decides from its own state. Being attacked since its last Turn outweighs a narrated passive
@@ -722,7 +746,7 @@ export function runCombat(ctx, pcAction) {
                 : attackAction(ctx, t.actor, 'pc', sid, { opening: true, move: 'closer', autoNormalMove: true });
             if (r.illegal) r = { round: 0, actor: t.actor, kind: 'hold', why: `ambush attack impossible: ${r.illegal}` };
         }
-        r.note = 'Opening Action (true Ambush: +25pp Crit for Characters, no Hit/Damage bonus)';
+        r.note = 'Opening Action (true Ambush: every strike is a Critical Hit ×1.5)';
         enc.opening = true;
         enc.trigger_done = true;
         push(r);

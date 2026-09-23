@@ -50,7 +50,7 @@ export function pcLine(state, content) {
     const equip = Object.values(s.equipment).map((r) => (typeof r === 'string' ? content.items.get(r)?.name || r : r.name));
     return [
         `${e.name} — Level ${s.level} Power Rank ${dv.rank} ${cls} | HP ${s.hp}/${dv.maxHp} MP ${s.mp}/${dv.maxMp} STA ${s.sta}/${dv.maxSta} | XP ${s.xp}/${s.level * content.rules.progression.xp_to_next_per_level}${s.free_points ? ` | Free Stat Points ${s.free_points}` : ''}${e.status === 'dead' ? ' | DEAD' : ''}`,
-        `STR ${s.stats.STR} VIT ${s.stats.VIT} AGI ${s.stats.AGI} INT ${s.stats.INT} PER ${s.stats.PER} WIL ${s.stats.WIL} | ATK ${dv.atk} MATK ${dv.matk} DEF ${dv.def} MDEF ${dv.mdef} | Init ${dv.init} | Base Hit ${dv.baseHit}% | Crit ${dv.crit}%`,
+        `STR ${s.stats.STR} VIT ${s.stats.VIT} AGI ${s.stats.AGI} INT ${s.stats.INT} PER ${s.stats.PER} WIL ${s.stats.WIL} | ATK ${dv.atk} MATK ${dv.matk} DEF ${dv.def} MDEF ${dv.mdef} | Init ${dv.init}`,
         `Skills: ${joinList(skills)} | Equipped: ${joinList(equip)}${arrows !== undefined ? ` | Arrows ${arrows}` : ''} | Carried: ${joinList(inv)} | Coin ${formatCoin(s.coin_cp, content)}`,
     ].join('\n');
 }
@@ -135,9 +135,10 @@ export function recordLine(state, r) {
         if (r.after_move) parts.push(`then steps back: ${r.after_move.change}`);
         const strikes = (r.strikes || []).map((s, i) => {
             const pre = r.strikes.length > 1 ? `strike ${i + 1}: ` : '';
-            if (!s.hit.success) return `${pre}MISS (hit ${s.hit.chance}%, d100 ${s.hit.roll})`;
-            const crit = s.crit && s.crit.roll !== null ? `, crit ${s.crit.chance}% d100 ${s.crit.roll}${s.crit.success ? ' CRIT' : ''}` : '';
-            return `${pre}HIT (hit ${s.hit.chance}%, d100 ${s.hit.roll}${crit}) ${s.final} damage${s.absorbed ? ` (${s.absorbed} absorbed)` : ''} -> ${entityLabel(state, s.target)} HP ${s.hp_before}->${s.hp_after}${s.defeated ? ' DEFEATED (dead)' : ''}`;
+            if (s.hit && !s.hit.success) return `${pre}MISS (hit ${s.hit.chance}%, d100 ${s.hit.roll})`; // pre-V3 record
+            const crit = s.crit?.ambush ? ' (AMBUSH CRITICAL HIT)' : '';
+            const cover = s.cover === 'ignored' ? ', through cover' : s.cover ? ', cover softened it' : '';
+            return `${pre}lands${crit}${cover}: ${s.final} damage${s.absorbed ? ` (${s.absorbed} absorbed)` : ''} -> ${entityLabel(state, s.target)} HP ${s.hp_before}->${s.hp_after}${s.defeated ? ' DEFEATED (dead)' : ''}`;
         });
         return `${head}${parts.length ? ` [${parts.join('; ')}]` : ''}: ${strikes.join('; ')}${r.pending_xp_added ? ` (Pending XP +${r.pending_xp_added})` : ''}`;
     }
@@ -165,7 +166,7 @@ function outcomeBlock(state, content, outcome) {
             const s = outcome.ended;
             lines.push(`- Combat is over.${s.pc_dead ? ' Alaric is dead.' : ''}${s.xp_awarded ? ` Alaric gains ${s.xp_awarded} XP.` : ''}${outcome.levelups?.length ? ` LEVEL UP -> ${outcome.levelups.join(', ')} (+5 free Stat Points each; resources are not refilled).` : ''} Loot is only what the defeated actually carried or what can be harvested; nothing is taken automatically.`);
         } else if (outcome.next) lines.push(`- Next: ${outcome.next}. Stop the narration at Alaric's decision.`);
-        if (outcome.records.length) lines.push(`Narrate exactly these resolved steps in order: the same number of attacks/projectiles, the same hits and misses, no extra movement, attacks or combatants${outcome.ended ? '' : ', and no dialogue (combat silence; it overrides any habit of opening with speech)'}. Then write the fact report.`);
+        if (outcome.records.length) lines.push(`Narrate exactly these resolved steps in order: the same number of attacks/projectiles, every one landing with the damage given (no misses, grazes or dodges), no extra movement, attacks or combatants${outcome.ended ? '' : ', and no dialogue (combat silence; it overrides any habit of opening with speech)'}. Then write the fact report.`);
     } else if (outcome.kind === 'creation.step2') {
         const cls = content.classes.get(outcome.class);
         const s = state.entities.pc.sheet;
@@ -202,7 +203,7 @@ export function skillSummary(skill) {
     if (skill.range) bits.push(`Range ${skill.range.band}${skill.range.extra_band ? ' after movement (EXTRA-BAND)' : ''}${skill.range.area ? ' AREA around caster' : ''}`);
     if (skill.attack) {
         const f = `${skill.attack.base} + ${skill.attack.scaling.map((t) => `${t.stat} × ${t.text ?? t.coef}`).join(' + ')} + ${skill.attack.share === 1 ? skill.attack.uses : `${skill.attack.share * 100}% of ${skill.attack.uses}`}`;
-        bits.push(`Hit ${skill.attack.hit_mod >= 0 ? '+' : ''}${skill.attack.hit_mod}`);
+        if (skill.attack.ignores_partial_cover) bits.push('ignores Partial Cover');
         bits.push(skill.strikes > 1 ? `${skill.strikes} strikes, each Raw = ${f}` : `Raw = ${f}`);
     }
     if (skill.effect_text && !/^none\.?$/i.test(skill.effect_text) && skill.effect_text !== 'no additional status effect.') bits.push(`Effect: ${skill.effect_text}`);

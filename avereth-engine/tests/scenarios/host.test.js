@@ -161,7 +161,7 @@ test('combat is shown in the reply as System lines (display only): swipes, edits
     assert.equal(reply.mes, 'The arrow flies.', 'the prompt text stays plain');
     assert.match(panel, /^`COMBAT START`\n`Initiative: /);
     const s = shot.strikes[0];
-    assert.ok(panel.includes(s.hit.success ? `HP ${s.hp_before} - ${s.final - (s.absorbed || 0)}` : `MISS (hit ${s.hit.chance}% · d100 ${s.hit.roll})`));
+    assert.ok(panel.includes(`${s.final} damage → the boar HP ${s.hp_before} - ${s.final - (s.absorbed || 0)}`), panel);
     assert.match(panel, /`HP: .*Alaric \d+\/80/);
     // a new swipe: SillyTavern clears display_text for it; the engine shows the same resolution again
     newSwipe(reply, 'The string snaps forward.\n<avereth>{}</avereth>');

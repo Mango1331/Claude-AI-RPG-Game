@@ -464,7 +464,7 @@ export function trackerDrift(s, content, text) {
     };
     for (const l of lines) {
         let m;
-        if ((m = /\bInit(?:iative)?\s*[:=]?\s*(\d+)/i.exec(l))) flag('Initiative', m[1], dv.init, ` (AGI ${sh.stats.AGI} + floor(PER ${sh.stats.PER}/2))`);
+        if ((m = /\bInit(?:iative)?\s*[:=]?\s*(\d+)/i.exec(l))) flag('Initiative', m[1], dv.init, ` (floor(1.5 × AGI ${sh.stats.AGI}))`);
         if ((m = /\bHP\s*[:=]?\s*(\d+)\s*\/\s*(\d+)/i.exec(l)) && Number(m[2]) === dv.maxHp) flag('HP', m[1], sh.hp);
         if ((m = /\bSTA\s*[:=]?\s*(\d+)\s*\/\s*(\d+)/i.exec(l)) && Number(m[2]) === dv.maxSta) flag('STA', m[1], sh.sta);
         if ((m = /\bMP\s*[:=]?\s*(\d+)\s*\/\s*(\d+)/i.exec(l)) && Number(m[2]) === dv.maxMp) flag('MP', m[1], sh.mp);

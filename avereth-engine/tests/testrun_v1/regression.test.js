@@ -89,7 +89,9 @@ test('turn 5 combat: engine-rolled dice, locked human profile, no false ambush, 
     const shot = outcome.records.find((r) => r.actor === 'pc');
     assert.equal(shot.skill, 'ranger.power_shot');
     assert.equal(shot.ammo.used, 1);
-    assert.ok(Number.isInteger(shot.strikes[0].hit.roll), 'the d100 comes from the engine RNG (Testrun: "say 44")');
+    // Combat V3: the shot lands (no Hit roll); the only roll is the engine's damage variance (Testrun: "say 44")
+    assert.equal(shot.strikes[0].hit, undefined);
+    assert.ok(shot.strikes[0].variance >= 0.9 && shot.strikes[0].variance <= 1.1 && shot.strikes[0].final > 0);
     assert.equal(t.state.entities.pc.sheet.inventory.standard_arrow, 19);
     assert.equal(t.state.entities.pc.sheet.sta, 88);
     assert.match(t.context.text, /1 arrow fired/);

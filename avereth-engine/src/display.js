@@ -8,7 +8,7 @@ import { entityLabel } from './knowledge.js';
 import { deriveCharacter } from './derived.js';
 import { formatCoin } from './economy.js';
 import { bandIndex, itemLabel } from './util.js';
-import { hitPreview } from './combat.js';
+import { damagePreview } from './combat.js';
 
 const sys = (text) => `\`${text}\``;
 
@@ -100,15 +100,21 @@ function openedLines(state, content, op) {
     return out;
 }
 
-/** Alaric's usable attacks and the Hit Chance each rolls against the nearest opponent (display only, nothing rolled). */
+/**
+ * Alaric's usable attacks and the damage each deals to the nearest opponent right now (display only, nothing rolled):
+ * every legal attack lands (Combat V3), so the choice is about damage, cost and cover.
+ */
 function optionsLine(state, content) {
     const enc = state.encounter;
     if (!enc) return [];
     const foes = Object.values(enc.combatants).filter((c) => c.side === 'hostile' && !c.current.defeated && !c.current.escaped && !c.current.surrendered && c.current.band);
     if (!foes.length) return [];
     const near = foes.sort((a, b) => bandIndex(a.current.band) - bandIndex(b.current.band))[0];
-    const opts = hitPreview(enc, content, near.id);
-    return opts.length ? [sys(`${entityLabel(state, 'pc')}'s attacks vs ${entityLabel(state, near.id)}: ${opts.map((o) => `${o.name} ${o.chance}%`).join(' · ')}`)] : [];
+    const opts = damagePreview(enc, content, near.id);
+    if (!opts.length) return [];
+    const dmg = (o) => `${o.strikes > 1 ? `${o.strikes}×` : ''}${o.min === o.max ? o.min : `${o.min}–${o.max}`}${o.cover === 'ignored' ? ' (ignores cover)' : ''}`;
+    const cover = near.current.cover === 'partial' ? ' (partial cover: -25%)' : '';
+    return [sys(`${entityLabel(state, 'pc')}'s attacks vs ${entityLabel(state, near.id)}${cover}: ${opts.map((o) => `${o.name} ${dmg(o)}`).join(' · ')} damage`)];
 }
 
 /** Everyone's HP, the distance of each opponent to Alaric (Range Band, cover) and Alaric's resources. */
@@ -176,13 +182,15 @@ function recordLines(state, content, r) {
         const many = (r.strikes || []).length > 1;
         for (const [i, s] of (r.strikes || []).entries()) {
             const pre = many ? `${name(s.target)}${r.strikes.every((x) => x.target === s.target) ? ` #${i + 1}` : ''}: ` : '';
-            if (!s.hit?.success) { lines.push(sys(`  ${pre}MISS (hit ${s.hit?.chance}% · d100 ${s.hit?.roll})`)); continue; }
-            const crit = s.crit?.success ? ` CRIT ×${content.rules.crit.multiplier} (crit ${s.crit.chance}% · d100 ${s.crit.roll})` : '';
+            // a record from before Combat V3 may still carry a missed Hit roll
+            if (s.hit && !s.hit.success) { lines.push(sys(`  ${pre}MISS (hit ${s.hit.chance}% · d100 ${s.hit.roll})`)); continue; }
+            const crit = s.crit?.ambush ? ` AMBUSH CRIT ×${s.crit.multiplier}` : '';
+            const mods = [s.cover === 'ignored' ? 'cover ignored' : s.cover ? `cover ${s.cover}` : null, ...(s.reduced || [])].filter(Boolean);
             // HP before - damage = HP after; a Barrier takes its share first, and HP never go below 0 (shown as "→ 0")
             const toHp = s.final - (s.absorbed || 0);
             const barrier = s.absorbed ? ` (${s.absorbed} absorbed by Barrier)` : '';
             const hp = s.hp_before - toHp < 0 ? `${s.hp_before} - ${toHp} → ${s.hp_after}` : `${s.hp_before} - ${toHp} = ${s.hp_after}`;
-            lines.push(sys(`  ${pre}HIT (hit ${s.hit.chance}% · d100 ${s.hit.roll})${crit} → ${s.final} damage${barrier} → ${name(s.target)} HP ${hp}${s.defeated ? ' DEFEATED' : ''}`));
+            lines.push(sys(`  ${pre}${s.final} damage${crit}${mods.length ? ` (${mods.join(', ')})` : ''}${barrier} → ${name(s.target)} HP ${hp}${s.defeated ? ' DEFEATED' : ''}`));
         }
         return lines;
     }

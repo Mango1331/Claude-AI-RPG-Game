@@ -9,7 +9,7 @@
     "derived",
     "progression",
     "ranks",
-    "hit",
+    "cover",
     "crit",
     "damage",
     "proficiency",
@@ -34,24 +34,38 @@
         ]
       }
     },
-    "hit": {
+    "cover": {
       "type": "object",
       "required": [
-        "character_base",
-        "per_factor",
-        "clamp_min",
-        "clamp_max",
-        "partial_cover_pp"
-      ]
+        "partial_damage_reduction_pct"
+      ],
+      "properties": {
+        "partial_damage_reduction_pct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
     },
     "crit": {
       "type": "object",
       "required": [
-        "character_base",
-        "per_divisor",
-        "multiplier",
-        "ambush_bonus_pp"
-      ]
+        "multiplier"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "src": {
+          "type": "string"
+        },
+        "multiplier": {
+          "type": "number"
+        },
+        "only": {
+          "enum": [
+            "true_ambush_opening_action"
+          ]
+        }
+      }
     },
     "damage": {
       "type": "object",
@@ -80,7 +94,6 @@
             "type": "object",
             "required": [
               "cost",
-              "hit_pp",
               "power"
             ]
           }

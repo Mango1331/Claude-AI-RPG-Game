@@ -108,12 +108,13 @@ test('the player sees the combat in the reply: Initiative, Turn order, rolls and
     const replies = chat.filter((m) => !m.is_user && m.extra?.avereth?.panel);
     assert.ok(replies.length >= 4, 'the stealth check and the three combat turns show a System block');
     const turn9 = chat[18].extra.display_text;
-    assert.match(turn9, /^`COMBAT START`\n`Initiative: Alaric 9 · Bram Fenn 8 → Turn order: Alaric › Bram Fenn`/);
+    // Initiative = floor(1.5 × AGI): Bram Fenn (AGI 6) ties Alaric at 9; the tie was resolved once without bias
+    assert.match(turn9, /^`COMBAT START`\n`Initiative: Alaric 9 · Bram Fenn 9 → Turn order: Alaric › Bram Fenn`/);
     for (const [i, t] of turns.entries()) {
         const panel = chat[2 * i + 2].extra.avereth.panel || ''; // the reply to turn i: greeting, then user/reply pairs
         for (const r of t.outcome.records || []) for (const s of r.strikes || []) {
-            assert.ok(panel.includes(`hit ${s.hit.chance}% · d100 ${s.hit.roll}`), `turn ${i + 1}: roll ${s.hit.roll} is shown`);
-            if (s.hit.success) assert.ok(panel.includes(`HP ${s.hp_before} - ${s.final - (s.absorbed || 0)}`), `turn ${i + 1}: HP ${s.hp_before} -> ${s.hp_after}`);
+            assert.ok(!s.hit && panel.includes(`${s.final} damage`), `turn ${i + 1}: every legal attack lands with its damage shown`);
+            assert.ok(panel.includes(`HP ${s.hp_before} - ${s.final - (s.absorbed || 0)}`), `turn ${i + 1}: HP ${s.hp_before} -> ${s.hp_after}`);
         }
         for (const x of t.outcome.board?.hp || []) assert.ok(panel.includes(`${x.hp}/${x.max}`), `turn ${i + 1}: HP overview ${x.id}`);
     }

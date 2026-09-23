@@ -260,7 +260,7 @@
                 "enum": [
                   "temp_def",
                   "temp_mdef",
-                  "incoming_hit_penalty",
+                  "incoming_damage_reduction",
                   "barrier",
                   "extra_band",
                   "reposition",
@@ -292,8 +292,7 @@
         "scaling",
         "uses",
         "share",
-        "damage_type",
-        "hit_mod"
+        "damage_type"
       ],
       "additionalProperties": false,
       "properties": {
@@ -315,9 +314,9 @@
                   "VIT",
                   "AGI",
                   "INT",
-                  "PER",
                   "WIL"
-                ]
+                ],
+                "description": "Combat V3: PER never scales attack damage (docs/REVIEW_V3.md)"
               },
               "coef": {
                 "type": "number"
@@ -345,8 +344,8 @@
             "magical"
           ]
         },
-        "hit_mod": {
-          "type": "number"
+        "ignores_partial_cover": {
+          "type": "boolean"
         }
       }
     }

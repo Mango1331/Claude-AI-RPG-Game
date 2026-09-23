@@ -47,16 +47,18 @@ test('#system questions switch the block to System-only mode with the matching r
     const c = g.context({ systemQuery: 'Why is my Initiative 9?' });
     assert.match(c.text, /SYSTEM QUERY/);
     assert.doesNotMatch(c.text, /FACT REPORT/);
-    assert.match(c.text, /Initiative = AGI \+ floor\(PER\/2\)/);
+    assert.match(c.text, /Initiative = floor\(1\.5 × AGI\)/);
 });
 
 test('command panels are computed from state (no LLM) and #assign is the only state change', () => {
     const g = new Game(content).ranger();
     let r = runCommands(g.state, content, '#status #bag #skill Power Shot #combat');
     assert.equal(r.panels.length, 4);
-    assert.match(r.panels[0], /Initiative 9 \| Base Hit 73% \| Crit 5.6%/);
+    assert.match(r.panels[0], /Initiative 9 \(floor\(1\.5 × AGI\)\)/);
+    assert.doesNotMatch(r.panels[0], /Base Hit|Crit/);
     assert.match(r.panels[1], /Standard Arrow ×20[\s\S]*Coin: 5 Silver \(50 Copper\)/);
-    assert.match(r.panels[2], /16 \+ AGI 6×0.50 \+ PER 6×1.375 \+ ATK 6 = 33.25/);
+    assert.match(r.panels[2], /16 \+ AGI 6×1\.875 \+ ATK 6 = 33\.25/);
+    assert.match(r.panels[2], /A legal attack always lands \(no Hit or Crit roll/);
     assert.match(r.panels[3], /INACTIVE/);
     assert.equal(r.events.length, 0);
     for (const e of awardXp(g.state.entities.pc.sheet, 100, content, 'test')) applyEvent(g.state, e);

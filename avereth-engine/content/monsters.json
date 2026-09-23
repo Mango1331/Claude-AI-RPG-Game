@@ -8,7 +8,6 @@
       "atk": 6,
       "def": 0,
       "mdef": 0,
-      "hit": 75,
       "init": 10,
       "attack": "Bite",
       "damage_type": "physical",
@@ -23,7 +22,7 @@
         "rodent"
       ],
       "temperament": "skittish",
-      "source_line": "16 / 6 / 0 / 0 / 75 / 10 | Bite | Physical | ENGAGED"
+      "source_line": "16 / 6 / 0 / 0 / 10 | Bite | Physical | ENGAGED"
     },
     {
       "id": "wolf",
@@ -32,7 +31,6 @@
       "atk": 9,
       "def": 0,
       "mdef": 0,
-      "hit": 80,
       "init": 12,
       "attack": "Bite",
       "damage_type": "physical",
@@ -51,7 +49,7 @@
         "fox"
       ],
       "temperament": "aggressive",
-      "source_line": "23 / 9 / 0 / 0 / 80 / 12 | Bite | Physical | ENGAGED"
+      "source_line": "23 / 9 / 0 / 0 / 12 | Bite | Physical | ENGAGED"
     },
     {
       "id": "boar",
@@ -60,7 +58,6 @@
       "atk": 11,
       "def": 2,
       "mdef": 0,
-      "hit": 70,
       "init": 7,
       "attack": "Gore",
       "damage_type": "physical",
@@ -75,7 +72,7 @@
         "swine"
       ],
       "temperament": "aggressive",
-      "source_line": "41 / 11 / 2 / 0 / 70 / 7 | Gore | Physical | ENGAGED"
+      "source_line": "41 / 11 / 2 / 0 / 7 | Gore | Physical | ENGAGED"
     },
     {
       "id": "deer",
@@ -84,7 +81,6 @@
       "atk": 7,
       "def": 0,
       "mdef": 0,
-      "hit": 65,
       "init": 14,
       "attack": "Kick/Antler",
       "damage_type": "physical",
@@ -100,7 +96,7 @@
         "goat"
       ],
       "temperament": "skittish",
-      "source_line": "27 / 7 / 0 / 0 / 65 / 14 | Kick/Antler | Physical | ENGAGED"
+      "source_line": "27 / 7 / 0 / 0 / 14 | Kick/Antler | Physical | ENGAGED"
     },
     {
       "id": "horse",
@@ -109,7 +105,6 @@
       "atk": 8,
       "def": 1,
       "mdef": 0,
-      "hit": 68,
       "init": 12,
       "attack": "Kick",
       "damage_type": "physical",
@@ -127,7 +122,7 @@
         "bull"
       ],
       "temperament": "skittish",
-      "source_line": "38 / 8 / 1 / 0 / 68 / 12 | Kick | Physical | ENGAGED"
+      "source_line": "38 / 8 / 1 / 0 / 12 | Kick | Physical | ENGAGED"
     },
     {
       "id": "bear",
@@ -136,7 +131,6 @@
       "atk": 14,
       "def": 2,
       "mdef": 1,
-      "hit": 70,
       "init": 5,
       "attack": "Claw/Bite",
       "damage_type": "physical",
@@ -147,7 +141,7 @@
         "bears"
       ],
       "temperament": "aggressive",
-      "source_line": "63 / 14 / 2 / 1 / 70 / 5 | Claw/Bite | Physical | ENGAGED"
+      "source_line": "63 / 14 / 2 / 1 / 5 | Claw/Bite | Physical | ENGAGED"
     },
     {
       "id": "feline",
@@ -156,7 +150,6 @@
       "atk": 10,
       "def": 0,
       "mdef": 0,
-      "hit": 82,
       "init": 13,
       "attack": "Claw/Bite",
       "damage_type": "physical",
@@ -173,7 +166,7 @@
         "feline"
       ],
       "temperament": "aggressive",
-      "source_line": "30 / 10 / 0 / 0 / 82 / 13 | Claw/Bite | Physical | ENGAGED"
+      "source_line": "30 / 10 / 0 / 0 / 13 | Claw/Bite | Physical | ENGAGED"
     },
     {
       "id": "serpent",
@@ -182,7 +175,6 @@
       "atk": 8,
       "def": 0,
       "mdef": 1,
-      "hit": 78,
       "init": 11,
       "attack": "Bite",
       "damage_type": "physical",
@@ -195,7 +187,7 @@
         "adder"
       ],
       "temperament": "defensive",
-      "source_line": "20 / 8 / 0 / 1 / 78 / 11 | Bite | Physical | ENGAGED"
+      "source_line": "20 / 8 / 0 / 1 / 11 | Bite | Physical | ENGAGED"
     },
     {
       "id": "raptor",
@@ -204,7 +196,6 @@
       "atk": 7,
       "def": 0,
       "mdef": 0,
-      "hit": 78,
       "init": 15,
       "attack": "Talons/Beak",
       "damage_type": "physical",
@@ -222,7 +213,7 @@
         "raven"
       ],
       "temperament": "skittish",
-      "source_line": "18 / 7 / 0 / 0 / 78 / 15 | Talons/Beak | Physical | ENGAGED"
+      "source_line": "18 / 7 / 0 / 0 / 15 | Talons/Beak | Physical | ENGAGED"
     },
     {
       "id": "arthropod",
@@ -231,7 +222,6 @@
       "atk": 8,
       "def": 2,
       "mdef": 0,
-      "hit": 72,
       "init": 8,
       "attack": "Bite/Sting",
       "damage_type": "physical",
@@ -247,7 +237,7 @@
         "wasp"
       ],
       "temperament": "aggressive",
-      "source_line": "24 / 8 / 2 / 0 / 72 / 8 | Bite/Sting | Physical | ENGAGED"
+      "source_line": "24 / 8 / 2 / 0 / 8 | Bite/Sting | Physical | ENGAGED"
     },
     {
       "id": "aquatic",
@@ -256,7 +246,6 @@
       "atk": 11,
       "def": 1,
       "mdef": 0,
-      "hit": 75,
       "init": 10,
       "attack": "Bite",
       "damage_type": "physical",
@@ -272,7 +261,7 @@
         "alligator"
       ],
       "temperament": "aggressive",
-      "source_line": "36 / 11 / 1 / 0 / 75 / 10 | Bite | Physical | ENGAGED"
+      "source_line": "36 / 11 / 1 / 0 / 10 | Bite | Physical | ENGAGED"
     },
     {
       "id": "goblin",
@@ -281,7 +270,6 @@
       "atk": 11,
       "def": 1,
       "mdef": 1,
-      "hit": 75,
       "init": 8,
       "attack": "Natural/unarmed strike",
       "damage_type": "physical",
@@ -295,7 +283,7 @@
         "kobold"
       ],
       "temperament": "cautious",
-      "source_line": "45 / 11 / 1 / 1 / 75 / 8 | Natural/unarmed strike | Physical | ENGAGED"
+      "source_line": "45 / 11 / 1 / 1 / 8 | Natural/unarmed strike | Physical | ENGAGED"
     },
     {
       "id": "ogre",
@@ -304,7 +292,6 @@
       "atk": 18,
       "def": 2,
       "mdef": 0,
-      "hit": 60,
       "init": 3,
       "attack": "Slam",
       "damage_type": "physical",
@@ -316,7 +303,7 @@
         "troll"
       ],
       "temperament": "aggressive",
-      "source_line": "90 / 18 / 2 / 0 / 60 / 3 | Slam | Physical | ENGAGED"
+      "source_line": "90 / 18 / 2 / 0 / 3 | Slam | Physical | ENGAGED"
     },
     {
       "id": "armored_beast",
@@ -325,7 +312,6 @@
       "atk": 12,
       "def": 5,
       "mdef": 1,
-      "hit": 70,
       "init": 5,
       "attack": "Body strike/Bite",
       "damage_type": "physical",
@@ -338,7 +324,7 @@
         "turtle"
       ],
       "temperament": "defensive",
-      "source_line": "70 / 12 / 5 / 1 / 70 / 5 | Body strike/Bite | Physical | ENGAGED"
+      "source_line": "70 / 12 / 5 / 1 / 5 | Body strike/Bite | Physical | ENGAGED"
     },
     {
       "id": "spirit",
@@ -347,7 +333,6 @@
       "atk": 14,
       "def": 0,
       "mdef": 5,
-      "hit": 80,
       "init": 10,
       "attack": "Magical discharge",
       "damage_type": "magical",
@@ -359,7 +344,7 @@
         "ghost"
       ],
       "temperament": "aggressive",
-      "source_line": "40 / 14 / 0 / 5 / 80 / 10 | Magical discharge | Magical | MEDIUM"
+      "source_line": "40 / 14 / 0 / 5 / 10 | Magical discharge | Magical | MEDIUM"
     }
   ],
   "scaling": {
@@ -377,14 +362,10 @@
       "coef": 0.2,
       "offset": 1
     },
-    "hit": {
-      "per_15_levels": 2,
-      "cap": 95
-    },
     "init": {
       "coef": 0.05
     },
-    "text": "LEVEL SCALING\nLet g = Level - 1.\n\nHP = round(HP1 × (1 + 0.20g))\nATK = round(ATK1 × (1 + 0.22g))\nDEF = max(0, round((DEF1 + 1) × (1 + 0.20g) - 1))\nMDEF = max(0, round((MDEF1 + 1) × (1 + 0.20g) - 1))\nHit = min(95, Hit1 + 2×floor(g/15))\nInit = round(Init1 × (1 + 0.05g))\n"
+    "text": "LEVEL SCALING\nLet g = Level - 1.\n\nHP = round(HP1 × (1 + 0.20g))\nATK = round(ATK1 × (1 + 0.22g))\nDEF = max(0, round((DEF1 + 1) × (1 + 0.20g) - 1))\nMDEF = max(0, round((MDEF1 + 1) × (1 + 0.20g) - 1))\nInit = round(Init1 × (1 + 0.05g))\n"
   },
   "level_selection": [
     {
@@ -421,7 +402,6 @@
   "variation": {
     "hp_atk_pct": 20,
     "def_mdef": 1,
-    "hit_pp": 5,
     "init": 2,
     "rule": "only when established body condition/size reasonably supports it; fix once"
   },
@@ -430,7 +410,6 @@
     "atk": 1.15,
     "def": 1.1,
     "mdef": 1.1,
-    "hit_pp": 5,
     "init": 2
   },
   "boss": {
@@ -438,9 +417,8 @@
     "atk": 1.3,
     "def": 1.2,
     "mdef": 1.2,
-    "hit_pp": 5,
     "init": 3
   },
-  "elite_boss_text": "ELITE / BOSS MONSTER DESIGN\nElite and Boss are encounter types layered onto a valid fixed Monster profile; they are not separate species databases.\n\nDESIGNATION LOCK\nDo not infer Elite/Boss from mere size, scars, age, aggression, reputation-flavored prose or because a fight should be dramatic.\nElite/Boss status must be explicitly authored, established by a Quest/area/encounter premise, or intentionally generated as the encounter type before Combat resolution.\n\nDEFAULT MODIFIERS after normal Level scaling and individual variation:\nElite: HP ×1.75; ATK ×1.15; DEF/MDEF ×1.10; Hit +5pp; Init +2.\nBoss: HP ×2.50; ATK ×1.30; DEF/MDEF ×1.20; Hit +5pp; Init +3.\nRound final direct stats and fix them.\n\nAn Elite may gain one explicit defining species-fitting Trait/attack/reaction.\nA Boss may gain several coherent mechanics tied to species, environment, Dungeon role or established history.\nDo not add abilities merely to counter the player.\n\nAll such mechanics must be explicit in the fixed profile before first use.\nAt B-rank and above, an exceptional Monster may receive a Domain when established; use Core Domain rules.\n\nRecoverable materials depend on actual species/body state and are never auto-collected.",
-  "fauna_text": "AVERETH MONSTER FAUNA\nAll native non-sapient fauna on the continent of Avereth are mechanically Monsters.\n\"Animal\", \"beast\", \"wolf\", \"deer\", \"horse\", \"boar\", etc. describe ecology/body plan, NOT a separate non-Monster rules category.\nWild, domestic, docile and hostile fauna all have Level/Rank and use Monster mechanics.\nDomestication or peaceful behavior does not turn a creature into a Human-stat character.\n\nDIRECT-STAT MONSTER MODEL\nGeneric Monsters use only:\nLevel | Rank | HP | ATK | DEF | MDEF | Hit | Initiative | Attack Type | Attack Range Band.\n\nThey do NOT use STR/VIT/AGI/INT/PER/WIL, MP, STA, Character Crit, Classes, Skill Proficiency, a Movement stat or Gear unless an explicit authored profile specifically grants those systems.\n\nGeneric natural attack:\n- Raw Power = ATK\n- Base Hit Chance = Hit\n- Crit:none\n- no MP/STA cost\n- Physical, Range ENGAGED unless the body-plan line says otherwise.\n\nGeneric Monsters use Core's universal normal one-band movement. Extra movement exists only when an explicit authored Skill/Trait says so.\n\nRANK BANDS\nF 1-14 | E 15-29 | D 30-44 | C 45-59 | B 60-74 | A 75-89 | S 90-104.\nThe same direct-stat formulas continue across Ranks; do not build separate numeric databases for E/D/C/B/A/S.\nMost ordinary settled-region fauna are F-rank. Higher-Rank fauna are increasingly rare evolved Monsters, not a different mechanical species.\n\nF1 BODY-PLAN ANCHORS\nFormat: HP / ATK / DEF / MDEF / Hit / Init | default natural attack\n\nRat / small vermin:\n16 / 6 / 0 / 0 / 75 / 10 | Bite | Physical | ENGAGED\n\nWolf / canid:\n23 / 9 / 0 / 0 / 80 / 12 | Bite | Physical | ENGAGED\n\nBoar / wild pig:\n41 / 11 / 2 / 0 / 70 / 7 | Gore | Physical | ENGAGED\n\nDeer / elk / light hoofed:\n27 / 7 / 0 / 0 / 65 / 14 | Kick/Antler | Physical | ENGAGED\n\nHorse / large grazer:\n38 / 8 / 1 / 0 / 68 / 12 | Kick | Physical | ENGAGED\n\nBear-like:\n63 / 14 / 2 / 1 / 70 / 5 | Claw/Bite | Physical | ENGAGED\n\nFeline predator:\n30 / 10 / 0 / 0 / 82 / 13 | Claw/Bite | Physical | ENGAGED\n\nSerpent / snake-like:\n20 / 8 / 0 / 1 / 78 / 11 | Bite | Physical | ENGAGED\n\nRaptor / predatory bird:\n18 / 7 / 0 / 0 / 78 / 15 | Talons/Beak | Physical | ENGAGED\nFlight is ecological access/positioning; it does not grant extra Range-Band movement unless an explicit capability says so.\n\nArthropod / insectoid:\n24 / 8 / 2 / 0 / 72 / 8 | Bite/Sting | Physical | ENGAGED\n\nAquatic predator:\n36 / 11 / 1 / 0 / 75 / 10 | Bite | Physical | ENGAGED\nThis body-plan assumes functional movement in water. Do not invent a hidden numeric movement penalty/bonus from terrain; use only established environmental or explicit mechanics.\n\nGoblin-like:\n45 / 11 / 1 / 1 / 75 / 8 | Natural/unarmed strike | Physical | ENGAGED\nIf a real individual visibly carries Gear, authored Gear may replace/modify the attack normally.\n\nOgre-like:\n90 / 18 / 2 / 0 / 60 / 3 | Slam | Physical | ENGAGED\n\nArmored Beast:\n70 / 12 / 5 / 1 / 70 / 5 | Body strike/Bite | Physical | ENGAGED\n\nSpirit:\n40 / 14 / 0 / 5 / 80 / 10 | Magical discharge | Magical | MEDIUM\n\nLEVEL SCALING\nLet g = Level - 1.\n\nHP = round(HP1 × (1 + 0.20g))\nATK = round(ATK1 × (1 + 0.22g))\nDEF = max(0, round((DEF1 + 1) × (1 + 0.20g) - 1))\nMDEF = max(0, round((MDEF1 + 1) × (1 + 0.20g) - 1))\nHit = min(95, Hit1 + 2×floor(g/15))\nInit = round(Init1 × (1 + 0.05g))\n\nRank is determined by Level band after scaling.\nDo not apply an additional hidden Rank multiplier on top of these formulas.\n\nF-RANK ENCOUNTER LEVEL SELECTION\nUse an already-authored/Quest/area Level when one exists.\nIf a natural encounter is generated without an established Level:\n- settled road/farm/town outskirts: Level 1;\n- ordinary nearby wilderness: F1-F3;\n- explicitly remote/deep dangerous wilderness: F4-F7;\n- explicitly established dangerous F-rank hunting/Quest territory: use its established range, never above F14.\nIf the area's danger is not established, use F1.\n\nChoose/roll inside an allowed band without using appearance as the reason.\nLarge size, scars, old age, aggression, calmness, unusual coloration or \"looks dangerous\" never independently raise Level.\n\nINDIVIDUAL VARIATION\nAfter Level scaling, ordinary individuals may vary:\n- HP/ATK roughly ±20%;\n- DEF/MDEF ±1;\n- Hit ±5 percentage points;\n- Initiative ±2;\nonly when established body condition/size reasonably supports it.\n\nVariation changes the individual, not its Level/Rank.\nFix all values once instantiated.\n\nNO FREE TRAITS\nNormal generic Monsters receive no invented Skills, Traits, resource pools, Crit, enrages, wound phases, combo attacks, armor passives, movement exceptions or status mechanics merely from narration.\nA scarred boar is still the Boar profile unless an explicit authored Elite/Boss/special profile says otherwise.\n\nHIGHER-RANK EVOLUTION — FEW RULES, NOT DATABASES\nDirect stats continue the same formulas through E-S.\nAt a real Rank evolution, an authored or narratively established Monster MAY gain a species-fitting evolved capability; it is not automatic.\nUse restraint:\n- E/D: normally at most one defining evolved capability at a time unless explicitly authored;\n- C/A: additional coherent capabilities may emerge through established evolution/history;\n- B+: a Domain becomes possible under Core rules when established;\n- S: remains exceptional and setting-significant.\nNever generate abilities specifically to counter Alaric.\n\nUNLISTED SPECIES\nUse the nearest ecological/body-plan F1 anchor, then Level scaling and bounded individual variation.\nFix the resulting direct-stat profile for the encounter.\n\nPROFILE INSTANTIATION TIMING\nMere sight, tracks, hunting, or non-hostile observation does not require a full combat profile.\nInstantiate/fix exact mechanical Monster values when mechanics actually need them (Combat START, explicit appraisal/system inspection, or another real mechanical interaction).\nOnce instantiated for an encounter, copy the locked profile forward; never reroll Level/variation each round.\n"
+  "elite_boss_text": "ELITE / BOSS MONSTER DESIGN\nElite and Boss are encounter types layered onto a valid fixed Monster profile; they are not separate species databases.\n\nDESIGNATION LOCK\nDo not infer Elite/Boss from mere size, scars, age, aggression, reputation-flavored prose or because a fight should be dramatic.\nElite/Boss status must be explicitly authored, established by a Quest/area/encounter premise, or intentionally generated as the encounter type before Combat resolution.\n\nDEFAULT MODIFIERS after normal Level scaling and individual variation:\nElite: HP ×1.75; ATK ×1.15; DEF/MDEF ×1.10; Init +2.\nBoss: HP ×2.50; ATK ×1.30; DEF/MDEF ×1.20; Init +3.\nRound final direct stats and fix them.\n\nAn Elite may gain one explicit defining species-fitting Trait/attack/reaction.\nA Boss may gain several coherent mechanics tied to species, environment, Dungeon role or established history.\nDo not add abilities merely to counter the player.\n\nAll such mechanics must be explicit in the fixed profile before first use.\nAt B-rank and above, an exceptional Monster may receive a Domain when established; use Core Domain rules.\n\nRecoverable materials depend on actual species/body state and are never auto-collected.",
+  "fauna_text": "AVERETH MONSTER FAUNA\nAll native non-sapient fauna on the continent of Avereth are mechanically Monsters.\n\"Animal\", \"beast\", \"wolf\", \"deer\", \"horse\", \"boar\", etc. describe ecology/body plan, NOT a separate non-Monster rules category.\nWild, domestic, docile and hostile fauna all have Level/Rank and use Monster mechanics.\nDomestication or peaceful behavior does not turn a creature into a Human-stat character.\n\nDIRECT-STAT MONSTER MODEL\nGeneric Monsters use only:\nLevel | Rank | HP | ATK | DEF | MDEF | Initiative | Attack Type | Attack Range Band.\n\nThey do NOT use STR/VIT/AGI/INT/PER/WIL, MP, STA, Character Crit, Classes, Skill Proficiency, a Movement stat or Gear unless an explicit authored profile specifically grants those systems.\n\nGeneric natural attack:\n- Raw Power = ATK\n- a legal attack connects (no Hit roll)\n- Crit:none\n- no MP/STA cost\n- Physical, Range ENGAGED unless the body-plan line says otherwise.\n\nGeneric Monsters use Core's universal normal one-band movement. Extra movement exists only when an explicit authored Skill/Trait says so.\n\nRANK BANDS\nF 1-14 | E 15-29 | D 30-44 | C 45-59 | B 60-74 | A 75-89 | S 90-104.\nThe same direct-stat formulas continue across Ranks; do not build separate numeric databases for E/D/C/B/A/S.\nMost ordinary settled-region fauna are F-rank. Higher-Rank fauna are increasingly rare evolved Monsters, not a different mechanical species.\n\nF1 BODY-PLAN ANCHORS\nFormat: HP / ATK / DEF / MDEF / Init | default natural attack\n\nRat / small vermin:\n16 / 6 / 0 / 0 / 10 | Bite | Physical | ENGAGED\n\nWolf / canid:\n23 / 9 / 0 / 0 / 12 | Bite | Physical | ENGAGED\n\nBoar / wild pig:\n41 / 11 / 2 / 0 / 7 | Gore | Physical | ENGAGED\n\nDeer / elk / light hoofed:\n27 / 7 / 0 / 0 / 14 | Kick/Antler | Physical | ENGAGED\n\nHorse / large grazer:\n38 / 8 / 1 / 0 / 12 | Kick | Physical | ENGAGED\n\nBear-like:\n63 / 14 / 2 / 1 / 5 | Claw/Bite | Physical | ENGAGED\n\nFeline predator:\n30 / 10 / 0 / 0 / 13 | Claw/Bite | Physical | ENGAGED\n\nSerpent / snake-like:\n20 / 8 / 0 / 1 / 11 | Bite | Physical | ENGAGED\n\nRaptor / predatory bird:\n18 / 7 / 0 / 0 / 15 | Talons/Beak | Physical | ENGAGED\nFlight is ecological access/positioning; it does not grant extra Range-Band movement unless an explicit capability says so.\n\nArthropod / insectoid:\n24 / 8 / 2 / 0 / 8 | Bite/Sting | Physical | ENGAGED\n\nAquatic predator:\n36 / 11 / 1 / 0 / 10 | Bite | Physical | ENGAGED\nThis body-plan assumes functional movement in water. Do not invent a hidden numeric movement penalty/bonus from terrain; use only established environmental or explicit mechanics.\n\nGoblin-like:\n45 / 11 / 1 / 1 / 8 | Natural/unarmed strike | Physical | ENGAGED\nIf a real individual visibly carries Gear, authored Gear may replace/modify the attack normally.\n\nOgre-like:\n90 / 18 / 2 / 0 / 3 | Slam | Physical | ENGAGED\n\nArmored Beast:\n70 / 12 / 5 / 1 / 5 | Body strike/Bite | Physical | ENGAGED\n\nSpirit:\n40 / 14 / 0 / 5 / 10 | Magical discharge | Magical | MEDIUM\n\nLEVEL SCALING\nLet g = Level - 1.\n\nHP = round(HP1 × (1 + 0.20g))\nATK = round(ATK1 × (1 + 0.22g))\nDEF = max(0, round((DEF1 + 1) × (1 + 0.20g) - 1))\nMDEF = max(0, round((MDEF1 + 1) × (1 + 0.20g) - 1))\nInit = round(Init1 × (1 + 0.05g))\n\nRank is determined by Level band after scaling.\nDo not apply an additional hidden Rank multiplier on top of these formulas.\n\nF-RANK ENCOUNTER LEVEL SELECTION\nUse an already-authored/Quest/area Level when one exists.\nIf a natural encounter is generated without an established Level:\n- settled road/farm/town outskirts: Level 1;\n- ordinary nearby wilderness: F1-F3;\n- explicitly remote/deep dangerous wilderness: F4-F7;\n- explicitly established dangerous F-rank hunting/Quest territory: use its established range, never above F14.\nIf the area's danger is not established, use F1.\n\nChoose/roll inside an allowed band without using appearance as the reason.\nLarge size, scars, old age, aggression, calmness, unusual coloration or \"looks dangerous\" never independently raise Level.\n\nINDIVIDUAL VARIATION\nAfter Level scaling, ordinary individuals may vary:\n- HP/ATK roughly ±20%;\n- DEF/MDEF ±1;\n- Initiative ±2;\nonly when established body condition/size reasonably supports it.\n\nVariation changes the individual, not its Level/Rank.\nFix all values once instantiated.\n\nNO FREE TRAITS\nNormal generic Monsters receive no invented Skills, Traits, resource pools, Crit, enrages, wound phases, combo attacks, armor passives, movement exceptions or status mechanics merely from narration.\nA scarred boar is still the Boar profile unless an explicit authored Elite/Boss/special profile says otherwise.\n\nHIGHER-RANK EVOLUTION — FEW RULES, NOT DATABASES\nDirect stats continue the same formulas through E-S.\nAt a real Rank evolution, an authored or narratively established Monster MAY gain a species-fitting evolved capability; it is not automatic.\nUse restraint:\n- E/D: normally at most one defining evolved capability at a time unless explicitly authored;\n- C/A: additional coherent capabilities may emerge through established evolution/history;\n- B+: a Domain becomes possible under Core rules when established;\n- S: remains exceptional and setting-significant.\nNever generate abilities specifically to counter Alaric.\n\nUNLISTED SPECIES\nUse the nearest ecological/body-plan F1 anchor, then Level scaling and bounded individual variation.\nFix the resulting direct-stat profile for the encounter.\n\nPROFILE INSTANTIATION TIMING\nMere sight, tracks, hunting, or non-hostile observation does not require a full combat profile.\nInstantiate/fix exact mechanical Monster values when mechanics actually need them (Combat START, explicit appraisal/system inspection, or another real mechanical interaction).\nOnce instantiated for an encounter, copy the locked profile forward; never reroll Level/variation each round.\n"
 }

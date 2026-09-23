@@ -103,7 +103,7 @@ test('turn 10: the rats commit and the fight is fixed at once: Initiative, Turn 
         '`Range: Cellar rat pack ENGAGED · Big rat ENGAGED`',
         '`Alaric: MP 60/60 · STA 100/100 · Arrows 20`',
         '`Next: Round 1 — Cellar rat pack › Big rat act before Alaric`',
-        '`Alaric\'s attacks vs Cellar rat pack: Basic Attack 73% · Aimed Shot 83% · Power Shot 63%`',
+        '`Alaric\'s attacks vs Cellar rat pack: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`',
     ]);
     assert.ok(chat[20].extra.display_text.startsWith(T(10).panel), 'shown above the reply that reported the attack');
 });

@@ -371,6 +371,12 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         for (const eff of skill.effects) {
             if (eff.kind === 'post_attack_temp_def') addEffect(actor, { kind: 'temp_def', value: eff.flat, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
         }
+        // a declared step back ("I kite backwards and Power Shot", Testrun 4) is the Turn's normal one-band move (Core
+        // #12/#24: one move + one Main Action, either order); taken after the attack, so the attack keeps its range
+        if (extra.move === 'away' && actorId === 'pc' && !moved) {
+            const change = repositionPc(enc, 'pc', 1, null);
+            if (change) record.after_move = { dir: 'away', change };
+        }
         return record;
     }
     // ---- creature natural attack
@@ -459,7 +465,7 @@ function repositionPc(enc, actorId, dir, focusId) {
         if (c.id === 'pc' || !alive(c) || (focusId && c.id !== focusId)) continue;
         const before = c.current.band;
         c.current.band = bandName(bandIndex(before) + dir); // Alaric moved: the others keep their own cover
-        moved.push(`${c.name} ${before} -> ${c.current.band}`);
+        if (c.current.band !== before) moved.push(`${c.name} ${before} -> ${c.current.band}`);
     }
     return moved.join('; ');
 }
@@ -484,6 +490,36 @@ export function moveAction(ctx, actorId, dir, focusId) {
     c.current.cover = 'none'; // leaving a position leaves its cover
     record.change = `${before} -> ${c.current.band}`;
     return record;
+}
+
+/**
+ * Alaric's attack options against one opponent, with the Hit Chance each would roll against right now (Core #10: the
+ * same base, Skill modifier, Proficiency, prepared-attack bonus, defensive effects and cover as resolveStrike), so the
+ * player can choose knowingly (Testrun 4: three Power Shots at 63% felt like "very many misses" next to Aimed Shot 83%).
+ * Attacks that cannot be used now (range after one move, cost, arrows) are left out.
+ */
+export function hitPreview(enc, content, targetId) {
+    const pc = enc?.combatants?.pc;
+    const target = enc?.combatants?.[targetId];
+    if (!pc || !target || !alive(target) || target.current.cover === 'full') return [];
+    const out = [];
+    for (const [sid, known] of Object.entries(pc.fixed.actions || {})) {
+        const skill = content.skills.get(sid);
+        if (!skill?.attack || skill.effects?.some((e) => e.kind === 'area')) continue;
+        const band = target.current.band;
+        const reach = rangeReaches(skill.range.band, band) || (bandIndex(band) > 0 && rangeReaches(skill.range.band, bandName(bandIndex(band) - 1)));
+        const prof = PROF(content, known.prof);
+        const cost = skill.cost ? roundHalfUp(skill.cost.amount * prof.cost) : 0;
+        const arrows = skill.ammo && pc.fixed.weapon_family === 'bow' ? (pc.current.ammo?.[skill.ammo.item] || 0) >= skill.ammo.qty : true;
+        if (!reach || (skill.cost && pc.current[skill.cost.resource] < cost) || !arrows) continue;
+        const isRanged = skill.range.band !== 'ENGAGED';
+        let pp = (skill.attack.hit_mod || 0) + (prof.hit_pp || 0);
+        for (const b of effectsOf(pc, 'next_attack_buff')) if (b.scope !== 'ranged' || isRanged) pp += b.hit_pp;
+        for (const e of effectsOf(target, 'incoming_hit_penalty')) pp -= e.pp;
+        if (target.current.cover === 'partial') pp += content.rules.hit.partial_cover_pp;
+        out.push({ skill: sid, name: skill.name, chance: clamp(num(pc.fixed.base_hit + pp), content.rules.hit.clamp_min, content.rules.hit.clamp_max) });
+    }
+    return out;
 }
 
 // ------------------------------------------------------------------------------------------ NPC policy

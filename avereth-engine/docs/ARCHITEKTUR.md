@@ -87,7 +87,7 @@ Primärquellen, soweit erreichbar. arXiv und einige Doku-Seiten waren durch die 
 | Skalierbarkeit (1.000+ Züge) | niedrig | **hoch**: Fold linear, Kontext budgetiert | mittel | hoch | mittel |
 | Tokenverbrauch pro Zug | hoch: 5,6–9k Avereth-Anteil | **niedrig**: Contract ~4,0k + Block ~1,0–1,3k | mittel | mittel | mittel bis hoch (Tool-Schemas, Runden) |
 | Retrieval-Qualität | niedrig: lexikalisch, Fehltreffer | **hoch**: zustandsgesteuert plus kuratierte Schlüssel | niedrig | hoch | – |
-| Wartbarkeit | mittel: 124k Zeichen Prompt-Regeln | **hoch**: Daten mit Schema, Code mit 122 Tests | mittel | niedrig: Betrieb | mittel |
+| Wartbarkeit | mittel: 124k Zeichen Prompt-Regeln | **hoch**: Daten mit Schema, Code mit 143 Tests | mittel | niedrig: Betrieb | mittel |
 | Erweiterbarkeit | niedrig: jede Regel kostet Prompt | **hoch**: Daten und Code | mittel | hoch | mittel |
 | Debugging | niedrig: Reasoning lesen | **hoch**: #audit, Event-Export, deterministische Replays | mittel | mittel | mittel |
 | Komplexität | niedrig | **mittel**: etwa 4.000 Zeilen JS, keine Abhängigkeiten | mittel: zwei Fremd-Extensions | hoch | mittel |
@@ -212,6 +212,8 @@ Alle 42 Event-Typen sind in `schemas/event.schema.json` und [DATENMODELL.md](DAT
 
 **Reihenfolge im Prompt:** Header → PC → NPCs → Kampf → Fakten → RELEVANT → Lore → Regeln → Korrekturen → **RESOLVED** → Report-Format. Das Bindende steht am Ende, direkt vor der Generierung („Lost in the Middle“).
 
+**Kampfstille** (Testrun 4): Solange ein Kampf läuft, sagt der Kampfblock „nobody talks“, und die Schlusszeile der aufgelösten Schritte wiederholt es. Beides übersteuert die Dialog-Eröffnung des Presets. Enthält eine Kampfantwort trotzdem wörtliche Rede, nennt der nächste Block das als Korrektur. Mechanische Ausnahme: ein Kämpfer mit Intent `surrender`/`parley`.
+
 **Welt-Lore** ([LOREBOOK.md](LOREBOOK.md)):
 - **Beschreibende Lore** (Realms, Städte, Gesellschaft, Gilde, Generierungsgerüste) liegt im SillyTavern-Lorebook `lorebook/`, als Character Lore der Erzähler-Karte.
 - **Die Engine behält** in `lore.json` nur den strukturellen Index (Orte und Realms mit ID, Name, Art, Realm) und die 19 Texte als Rückfall ohne Lorebook.
@@ -232,7 +234,7 @@ Jede Ablehnung wird mit Grund protokolliert und im nächsten Zug als Korrektur g
 |---|---|
 | `location` / `place` | `travel` / `move`, oder `forced_by` (ein anwesender NPC: Festnahme, Verschleppung); im Kampf besitzt die Engine die Position |
 | Items oder Coin **von** Alaric | `give` / `pay`, oder `taken_by` (anwesender NPC: Diebstahl, Beschlagnahme) |
-| Quest `active` | `accept`; sonst als `offered` melden |
+| Quest `active` | `accept` in der Nachricht; nimmt die Nachricht Quests **beim Namen**, nur diese. Ein späterer Report darf eine Quest aktiv setzen, die eine Spielernachricht seit dem Angebot beim Namen genommen hat (Testrun 4: Antwort ohne Report). Sonst als `offered` melden. |
 | `time` > 2 h außerhalb des Kampfs | `rest` oder `travel` |
 | NPC verliert Alaric (`aware` → `unaware`) | `conceal` (erklärte Heimlichkeit) |
 

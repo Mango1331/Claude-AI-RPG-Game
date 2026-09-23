@@ -42,10 +42,10 @@ test('no key is an everyday word that fired on ordinary narration or tracker tex
     assert.deepEqual(entries.filter((e) => !e.constant && e.key.some((k) => matchKey(prose, k))).map((e) => e.comment), []);
 });
 
-test('Testrun 2 and 3 replayed: realm and city always present, no Guild rules in the forest, quest scaffolds at the quest board', async () => {
+test('Testrun 2, 3 and 4 replayed: realm and city always present, no Guild rules in the forest, quest scaffolds at the quest board', async () => {
     const load = [];
     const has = (r, comment) => r.kept.some((x) => x.e.comment === comment);
-    for (const [fixture, realm, city] of [['tests/testrun_v2/fixture.json', 'Solmere', 'Tidecross'], ['tests/testrun_v3/fixture.json', 'Duskreach', 'Ashbridge']]) {
+    for (const [fixture, realm, city] of [['tests/testrun_v2/fixture.json', 'Solmere', 'Tidecross'], ['tests/testrun_v3/fixture.json', 'Duskreach', 'Ashbridge'], ['tests/testrun_v4/fixture.json', 'Ilyrion', 'Lumenford']]) {
         const turns = (await scanWindows(content, fixture)).map((w) => activate(entries, w.messages, { ...SETTINGS, inject: w.keys }));
         for (const [i, r] of turns.entries()) {
             assert.ok(has(r, `REALM — ${realm}`) && has(r, `LOCATION SEED — ${city}`), `${fixture} turn ${i + 1}: current realm and city`);
@@ -53,7 +53,11 @@ test('Testrun 2 and 3 replayed: realm and city always present, no Guild rules in
             load.push(r.tokens);
         }
         if (realm === 'Solmere') for (const r of turns) assert.ok(!r.kept.some((x) => x.e.comment.startsWith('GUILD')), 'a forest hunt without any Guild');
-        else {
+        else if (realm === 'Ilyrion') {
+            // Testrun 4 (the real prompts had the same entries in 14 of 15 turns; turn 7 fit one more by the real tokenizer)
+            assert.ok(has(turns[6], 'QUEST — Complete quest body') && has(turns[6], 'GUILD — Contract boards'), 'turn 7 at the quest board');
+            for (const n of [10, 11]) assert.deepEqual(turns[n - 1].kept.filter((x) => x.how !== 'constant').map((x) => x.e.comment), ['REALM — Ilyrion', 'LOCATION SEED — Lumenford'], `turn ${n}: the cellar fight`);
+        } else {
             assert.ok(has(turns[7], 'QUEST — Complete quest body') && has(turns[7], 'QUEST — Causal generation rule'), 'turn 8 at the quest board');
             for (const n of [11, 12]) assert.ok(!has(turns[n - 1], 'GUILD — Promotion and placement') && !has(turns[n - 1], 'GUILD — Contract boards'), `turn ${n}: the rat fight`);
         }

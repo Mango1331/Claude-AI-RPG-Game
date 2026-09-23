@@ -153,7 +153,9 @@ function pcActionOf(s, intent, text) {
             notice: `Alaric: which target? ${intent.candidates.map(name).join(' or ')} (nothing spent, nothing rolled)`,
         };
         case 'unknown_skill': return { note: `Alaric does not know ${intent.name}. Nothing was spent or rolled.`, notice: `Alaric does not know ${intent.name} (nothing spent, nothing rolled)` };
-        case 'no_target': return { note: 'There is no valid target for an attack here. Nothing was spent or rolled.', notice: 'No valid target here (nothing spent, nothing rolled)' };
+        case 'no_target': return intent.ref
+            ? { note: `Alaric's attack needs a target: "${intent.ref}" is no one in this fight. Nothing was spent or rolled; stop at his decision and let the player name one.`, notice: `Alaric's attack needs a target: "${intent.ref}" is not in the fight (nothing spent, nothing rolled)` }
+            : { note: 'There is no valid target for an attack here. Nothing was spent or rolled.', notice: 'No valid target here (nothing spent, nothing rolled)' };
         default:
             if (s.encounter && HOLD_RE.test(text)) return { kind: 'hold' };
             return null;
@@ -371,10 +373,26 @@ export function narratorReply(state, content, replyText, { msg = null } = {}) {
         if (ep) emit({ t: 'memory.recorded', d: { memory: ep } });
     }
     const opened = openCommitted(s, content, dice, emit);
-    const corrections = [...res.corrections, ...trackerDrift(s, content, clean)];
+    const corrections = [...res.corrections, ...trackerDrift(s, content, clean), ...combatSpeech(state, clean)];
     for (const r of res.rejected) corrections.push(`Rejected from your fact report: ${r.reason}.`);
     if (!report) corrections.push(`Your previous reply had no valid <avereth> fact report (${error}). Write it right after the story text, before any tracker or status blocks; this reply's report may also record the player's decisions from that turn (hand-overs, coin, quests), {} if nothing.`);
     return { events, clean, report, accepted: res.accepted, rejected: res.rejected, corrections, report_error: report ? null : error, opened, state: s };
+}
+
+/**
+ * Combat silence (the player after Testrun 4: NPC talk during a fight is only noise): a reply to a Round that leaves
+ * the fight running must carry no dialogue; if it does, the next engine block says so. Only the story part counts,
+ * not the tracker blocks after it (NPC dossiers quote sample lines).
+ */
+function combatSpeech(state, clean) {
+    if (!state.encounter) return [];
+    const story = String(clean).split(/<(?:Blocks|World_State|Character_Sheet|New_NPC|NPC_Update)\b/)[0];
+    // Alaric's own words, as the player declared them ("fuck *i curse*"), are the player's, not the narrator's
+    const said = normText(state.last?.input || '');
+    const lines = (story.match(/"[^"\n]{2,}"|“[^”\n]{2,}”/g) || []).filter((q) => !(said && normText(q) && said.includes(normText(q))));
+    if (!lines.length) return [];
+    const first = lines[0].slice(1, -1).trim();
+    return [`Combat silence broken: ${lines.length} spoken line${lines.length > 1 ? 's' : ''} in your last reply (e.g. "${first.length > 40 ? `${first.slice(0, 37)}...` : first}"). While combat is ACTIVE nobody talks.`];
 }
 
 /**

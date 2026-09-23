@@ -36,7 +36,7 @@ async function main() {
     const content = await loadContentPack((name) => json(`content/${name}`));
     const entries = loadLorebook(path.join(ROOT, book));
     const all = [];
-    for (const fixture of ['tests/testrun_v2/fixture.json', 'tests/testrun_v3/fixture.json']) {
+    for (const fixture of ['tests/testrun_v2/fixture.json', 'tests/testrun_v3/fixture.json', 'tests/testrun_v4/fixture.json']) {
         console.log(`\n${fixture} — budget ${budget}, scan depth ${depth}, Lore Bridge on`);
         console.log('| Turn | Input | Tokens | Entries (besides the two constant ones) | Dropped by budget |');
         console.log('|---|---|---|---|---|');

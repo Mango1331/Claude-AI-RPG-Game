@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent, Game } from '../helpers.js';
-import { authorization, parseIntent } from '../../src/intent.js';
+import { authorization, parseIntent, takesQuest } from '../../src/intent.js';
 
 const content = await loadContent();
 
@@ -116,3 +116,41 @@ test('"the nearest one" picks the closest Range Band; equally close targets stay
     const f = parseIntent('I shoot the nearest one', g.state, content);
     assert.deepEqual([f.kind, f.target], ['attack', g.state.encounter.combatants['mon.grey_wolf'].current.defeated ? 'mon.black_wolf' : 'mon.grey_wolf']);
 });
+
+test('taking a quest by name (Testrun 4); a look, a question or a single shared word takes nothing', () => {
+    const vermin = 'Vermin in the Malthouse Cellar';
+    assert.ok(takesQuest('*I take the Vermin in the Malthouse Cellar Quest and register it with by the desk*', vermin));
+    assert.ok(takesQuest("I'll pick the malthouse vermin bill", vermin));
+    assert.ok(authorization('I take the Vermin in the Malthouse Cellar Quest').accept, 'a long title between "take the" and "quest"');
+    for (const t of ['I take a look at the malthouse cellar', 'Should I take the vermin in the malthouse cellar job?',
+        'I take the cellar stairs down', '*i get the corpse and go back to the guild to turn the quest in*']) assert.ok(!takesQuest(t, vermin), t);
+    assert.ok(!takesQuest('I take the Vermin in the Malthouse Cellar Quest', 'Wolves Near the Ashbridge Ford'));
+});
+
+test('a step back with the attack is the Turn\'s one-band move away (Core #12/#24)', () => {
+    const g = scene();
+    for (const t of ['*i kite backwards and Power Shot again at it*', 'I jump back and shoot the wolf', 'I step back and loose an arrow at the wolf']) {
+        assert.equal(parseIntent(t, g.state, content).move, 'away', t);
+    }
+    assert.equal(parseIntent('I Power Shot the wolf', g.state, content).move, null);
+});
+
+test('a target the player tells apart ("the second one") is never the sole-hostile default: nothing spent, nothing rolled', () => {
+    const g = scene();
+    for (const t of ['I shoot the second one', 'I Power Shot the other one', 'I shoot at another one', 'I aim at the left one and shoot']) {
+        const i = parseIntent(t, g.state, content);
+        assert.equal(i.kind, 'no_target', t);
+        assert.match(i.ref, /^the (?:second|other|left) one$|^another one$/, t);
+    }
+    // pronouns, no target words, "the last one" and a second arrow still take the only valid target
+    for (const t of ['I shoot it', 'I Power Shot', 'I shoot the last one', 'I nock another one and shoot']) assert.equal(parseIntent(t, g.state, content).target, 'mon.wolf', t);
+    // in a running fight (Testrun 4, turn 13): Alaric keeps his Turn, STA and arrows
+    g.input('I Power Shot the wolf');
+    g.reply({});
+    const [sta, arrows] = [g.state.entities.pc.sheet.sta, g.state.entities.pc.sheet.inventory.standard_arrow];
+    g.input('fuck *i curse and jump backwards as i aimed shot at the second one*');
+    const o = g.state.last.outcome;
+    assert.equal(o.notice, 'Alaric\'s attack needs a target: "the second one" is not in the fight (nothing spent, nothing rolled)');
+    assert.deepEqual([o.records.length, g.state.encounter.current, g.state.entities.pc.sheet.sta, g.state.entities.pc.sheet.inventory.standard_arrow], [0, 'pc', sta, arrows]);
+});
+

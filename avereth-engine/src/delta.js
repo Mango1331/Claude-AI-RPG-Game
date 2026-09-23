@@ -8,7 +8,7 @@ import { awardXp, questXp } from './progression.js';
 import { applyCoin } from './economy.js';
 import { deriveCharacter } from './derived.js';
 import { checkChance } from './checks.js';
-import { authorization } from './intent.js';
+import { authorization, takesQuest } from './intent.js';
 import { clamp, normText, slug, uniq } from './util.js';
 
 const TAG_RE = /<avereth>\s*([\s\S]*?)\s*<\/avereth>/gi;
@@ -187,9 +187,11 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     }
     // travel / place
     let movedPlace = false;
-    if (report.location) {
-        const loc = content.locations.get(report.location) || locationByName(content, report.location)
-            || Object.values(state.entities).find((e) => e.kind === 'location' && normText(e.name) === normText(report.location));
+    const loc = report.location ? content.locations.get(report.location) || locationByName(content, report.location)
+        || Object.values(state.entities).find((e) => e.kind === 'location' && normText(e.name) === normText(report.location)) : null;
+    // the current city named again ("location":"Lumenford" while in Lumenford) is no travel: only its place counts
+    // (Testrun 4: the move from the malthouse cellar to the Guild hall left the dead vermin "present" in the hall)
+    if (report.location && !(loc && loc.id === state.scene.location)) {
         if (state.encounter) reject({ location: report.location }, 'cannot travel while combat is ACTIVE');
         else if (!auth.travel && !forcedBy(report.forced_by)) reject({ location: report.location }, owner('travelling to another location'));
         else if (loc) {
@@ -205,14 +207,17 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
             present.add('pc');
             accepted.push(`new location ${report.location}`);
         }
-    } else if (report.place && !auth.move && !forcedBy(report.forced_by) && !state.encounter) {
-        reject({ place: report.place }, owner('moving Alaric to another spot'));
     } else if (report.place) {
-        events.push({ t: 'scene.moved', d: { place: String(report.place).slice(0, 120) } });
-        accepted.push(`place: ${report.place}`);
-        // a more precise name for the same spot ("Guild hall" -> "Guild hall, front desk") is no move
+        // a more precise name for the same spot ("Guild hall" -> "Guild hall, front desk") is no move; another spot of
+        // the same site is one and needs the player's decision (Testrun 3: queue -> gate tunnel)
         const [a, b] = [normText(report.place), normText(state.scene.place)];
-        movedPlace = !!b && !a.includes(b) && !b.includes(a);
+        const refinement = !b || a.includes(b) || b.includes(a);
+        if (!refinement && !auth.move && !forcedBy(report.forced_by) && !state.encounter) reject({ place: report.place }, owner('moving Alaric to another spot'));
+        else {
+            events.push({ t: 'scene.moved', d: { place: String(report.place).slice(0, 120) } });
+            accepted.push(`place: ${report.place}`);
+            movedPlace = !refinement;
+        }
     }
     const placed = new Set(); // people this report places in the (new) scene
     // new entities
@@ -255,27 +260,47 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     }
     const UNKNOWN = 'unknown person (introduce new people via "new")';
     const person = (id) => !!id && id !== 'pc' && ['npc', 'creature'].includes(ent(id)?.kind);
+    // someone the story names but no report introduced: the reply that brought him in had no report (Testrun 4: the
+    // malthouse master "Fennick" and the huntress "Maretta" stayed unknown, so every later "aware", "leave" and quest
+    // giver naming them was refused). A ref this reply writes only as a capitalised name becomes that person.
+    const adopt = (ref) => {
+        if (typeof ref !== 'string' || !ref.trim()) return null;
+        const name = nameFromRef({ ref, desc: [] }, prose);
+        if (!name) return null;
+        const known = resolve(name);
+        if (known) return known;
+        const id = uniqueId(state, 'npc', name, taken);
+        const entity = { id, kind: 'npc', name, descriptors: [normText(ref)], traits: '', status: 'alive', location: state.scene.location, created: at, source: src, card: {}, template: 'commoner' };
+        created.set(id, entity);
+        newRefs.set(normText(ref), id);
+        newRefs.set(normText(name), id);
+        events.push({ t: 'entity.created', d: { entity } });
+        accepted.push(`named in the story: ${name} (${id})`);
+        return id;
+    };
+    const who_ = (ref) => resolve(ref) || adopt(ref);
     // someone known who is not in the scene yet: a report that places them here (enter, position, aware) brings them in
     const bringIn = (id, item, band, cover) => {
-        if (state.entities[id].status === 'dead') { reject(item, `${id} is dead and cannot enter`); return false; }
+        if (ent(id)?.status === 'dead') { reject(item, `${id} is dead and cannot enter`); return false; }
         events.push({ t: 'scene.entered', d: { id, band, cover } }); present.add(id); accepted.push(`enter ${id}`);
         return true;
     };
     for (const r of arr(report.enter)) {
-        const id = resolve(typeof r === 'object' && r ? r.ref : r);
+        const id = who_(typeof r === 'object' && r ? r.ref : r);
         if (id && created.has(id)) continue; // introduced by "new" in this report: already in the scene
         if (!person(id) || !state.entities[id]) { reject(r, `enter: ${UNKNOWN}`); continue; }
         if (bringIn(id, r, bandOf(r && r.band), coverOf(r && r.cover))) placed.add(id);
     }
     const leftNow = new Set();
     for (const r of arr(report.leave)) {
-        const id = resolve(r);
+        const id = who_(r);
+        if (id && created.has(id) && !present.has(id)) continue; // named for the first time on his way out: known, not here
         if (!id || !present.has(id) || id === 'pc') { reject(r, 'leave: entity not present'); continue; }
         if (inCombat(id)) { reject(r, `${id} is in the active encounter; leaving is resolved by the engine (flee/escape)`); continue; }
         events.push({ t: 'scene.left', d: { id } }); present.delete(id); leftNow.add(id); accepted.push(`leave ${id}`);
     }
     for (const p of arr(report.position)) {
-        const id = resolve(p && p.who);
+        const id = who_(p && p.who);
         if (leftNow.has(id)) continue; // reported as leaving in this same report: where he stood no longer matters
         if (!person(id)) { reject(p, `position: ${UNKNOWN}`); continue; }
         if (inCombat(id)) { reject(p, 'positions of combatants are engine-owned during ACTIVE combat'); continue; }
@@ -286,7 +311,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         events.push({ t: 'scene.position', d: { id, band, cover: coverOf(p.cover) || 'none' } }); accepted.push(`${id} at ${band}`);
     }
     for (const a of arr(report.aware)) {
-        const id = resolve(a && a.who);
+        const id = who_(a && a.who);
         if (leftNow.has(id)) continue;
         if (!person(id)) { reject(a, `aware: ${UNKNOWN}`); continue; }
         if (!AWARE.has(a.level)) { reject(a, 'aware.level must be unaware|suspicious|aware'); continue; }
@@ -329,10 +354,13 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (hard && hard.o === 'dead' && ent(s) && ent(s).kind !== 'location') { reject(f, `${s} is dead; revival needs an explicit resurrection mechanic (Core #14)`); continue; }
         if (hard && !f.because) { reject(f, `contradicts established fact "${hard.s} ${hard.p} ${hard.o}" (since turn ${hard.since.turn}); a change needs an explicit cause ("because")`); continue; }
         if (p === 'status' && inCombat(s)) { reject(f, `${s} is a combatant; its condition is resolved by the engine`); continue; }
+        if (p === 'status' && s === 'pc' && LIFE_STATUS.has(normText(o))) { reject(f, `${pcName}'s life is engine-owned (0 HP = dead, Core #14)`); continue; }
         const evs = setFactEvents(state, { id: mkId('f'), s, p, o, visibility: f.vis === 'secret' ? 'secret' : 'public', importance: clamp(Number(f.imp || 5), 1, 10) / 10, hard: !!f.hard, source: { ...src, because: f.because ? String(f.because).slice(0, 160) : null } });
         events.push(...evs);
         const fact = evs.find((e) => e.t === 'fact.asserted')?.d.fact;
-        if (fact && p === 'status' && ent(s) && ent(s).kind !== 'location') {
+        // a person's or creature's entity status is physical (alive/dead); any other "status" stays an ordinary fact
+        // (Testrun 4: "registered Guild member, Rank F / Novice" replaced Alaric's "alive")
+        if (fact && p === 'status' && ent(s) && ent(s).kind !== 'location' && LIFE_STATUS.has(normText(o))) {
             events.push({ t: 'entity.status', d: { id: s, status: normText(o) } });
         }
         // a character knows secrets about itself
@@ -343,7 +371,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     }
     // knowledge / beliefs. Learning never changes world truth: a wrong "fact" must be reported as a belief.
     for (const k of arr(report.learn)) {
-        const who = resolve(k && k.who);
+        const who = who_(k && k.who);
         if (!ent(who)) { reject(k, 'learn: unknown character'); continue; }
         if (!k.s || !k.p || k.o === undefined) { reject(k, 'learn needs s, p, o'); continue; }
         const s = resolve(k.s) || String(k.s).slice(0, 80);
@@ -351,13 +379,16 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         const o = typeof k.o === 'string' ? k.o.slice(0, 200) : String(k.o);
         // facts asserted earlier in this same report count as current truth
         const current = [...truth(state, s, p), ...events.filter((e) => e.t === 'fact.asserted' && e.d.fact.s === s && e.d.fact.p === p).map((e) => e.d.fact)];
-        let fact = current.find((x) => normText(x.o) === normText(o) || (ent(x.o) && normText(ent(x.o).name || '') === normText(o)));
+        let fact = current.find((x) => sameValue(p, x.o, o) || (ent(x.o) && normText(ent(x.o).name || '') === normText(o)));
         const how = ['witnessed', 'told', 'rumor', 'inferred', 'public'].includes(k.how) ? k.how : 'witnessed';
         if (fact && fact.visibility === 'secret' && how !== 'told' && how !== 'witnessed') {
             reject(k, `"${s} ${p}" is a secret; it can only be learned by being told or witnessing it`); continue;
         }
         const from = k.from ? resolve(k.from) || String(k.from).slice(0, 60) : null;
         const source = from ? `told:${from}` : how;
+        // told by Alaric in this reply: the listener is with him (Testrun 4: back in the Guild hall, Serah heard his
+        // report of the cellar while the engine still had her at the counter he had left hours before)
+        if (from === 'pc' && how === 'told' && person(who) && !present.has(who) && state.entities[who] && !leftNow.has(who)) bringIn(who, k);
         if (!fact && how === 'witnessed') {
             // seeing it happen in the scene is the narration establishing it: only a present witness can do that
             if (!present.has(who)) { reject(k, `${who} is not present and cannot have witnessed it`); continue; }
@@ -385,7 +416,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         const p = normPredicate(b.p);
         const o = String(b.o).slice(0, 200);
         const cur = truth(state, s, p);
-        const matches = cur.some((x) => normText(x.o) === normText(o));
+        const matches = cur.some((x) => sameValue(p, x.o, o));
         const verdict = matches ? 'true' : b.true === true ? 'true' : b.true === false ? 'false' : FUNCTIONAL.has(p) && cur.length ? 'false' : 'unknown';
         const id = mkId('c');
         const from = b.from ? resolve(b.from) || String(b.from).slice(0, 60) : null;
@@ -416,8 +447,8 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     const concealed = report.concealed !== undefined ? arr(report.concealed).map(resolve).includes('pc') : state.scene.concealed.includes('pc');
     for (const m of arr(report.memory)) {
         if (!m || !m.text) { reject(m, 'memory needs text'); continue; }
-        const who = uniq(arr(m.who).map(resolve).filter(Boolean));
-        const named = arr(m.witnesses).map(resolve).filter(Boolean);
+        const who = uniq(arr(m.who).map(who_).filter(Boolean));
+        const named = arr(m.witnesses).map(who_).filter(Boolean);
         const publicly = m.public === true ? [...present].filter((id) => (state.scene.awareness[id] || 'aware') !== 'unaware') : [];
         const witnesses = uniq(['pc', ...who, ...named, ...publicly].filter(alivePresent));
         const text = String(m.text).slice(0, 300).replace(new RegExp(`\\b${escapeRe(pcName)}\\b`, 'g'), '{pc}');
@@ -432,7 +463,12 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (!it || !it.item || !Number.isInteger(qty) || qty <= 0) { reject(it, 'items need item and a positive whole qty'); continue; }
         if (!to && !from) { reject(it, 'items need "to" (receiver) and/or "from" (giver)'); continue; }
         if (inCombat('pc') && (to === 'pc' || from === 'pc')) { reject(it, 'item changes during ACTIVE combat are resolved by the engine'); continue; }
-        const itemId = content.items.has(it.item) ? it.item : findItemId(content, it.item);
+        // money is Coin, never an item (Testrun 4: Fennick's three silver came both as an item and as coin)
+        if (MONEY_RE.test(normText(it.item))) { reject(it, 'money is not an item: report it once in "coin" (Copper; + received, - paid)'); continue; }
+        // an item the content pack does not know keeps the narrator's name, without its parenthesised description
+        const label = String(it.item).replace(/\s*\([^)]*\)/g, '').trim().slice(0, 60) || String(it.item).slice(0, 60);
+        const itemId = content.items.has(it.item) ? it.item : findItemId(content, label);
+        const named = content.items.has(itemId) ? {} : { name: label };
         const taker = forcedBy(it.taken_by);
         if (from === 'pc' && !auth.give && !auth.pay && !taker) { reject(it, owner(`handing over ${it.item}`) + ' (a theft or seizure names the taker in "taken_by")'); continue; }
         if (from === 'pc') {
@@ -442,7 +478,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         } else if (from && state.entities[from]?.sheet && (state.entities[from].sheet.inventory[itemId] || 0) >= qty) {
             events.push({ t: 'item.changed', d: { id: from, item: itemId, qty: -qty, why: String(it.why || 'handed over').slice(0, 120) } });
         }
-        if (to && ent(to)?.sheet) events.push({ t: 'item.changed', d: { id: to, item: itemId, qty, why: String(it.why || 'received').slice(0, 120) } });
+        if (to && ent(to)?.sheet) events.push({ t: 'item.changed', d: { id: to, item: itemId, qty, ...named, why: String(it.why || 'received').slice(0, 120) } });
         accepted.push(`item ${it.item} ×${qty}${from ? ` from ${from}` : ''}${to ? ` to ${to}` : ''}`);
     }
     for (const c of arr(report.coin)) {
@@ -484,6 +520,20 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     }
     // quests and open threads. Quest XP (Core #25) is locked when the quest is offered and awarded once on completion.
     let pcXp = state.entities.pc?.sheet ? { ...state.entities.pc.sheet } : null;
+    // PLAYER OWNERSHIP for quests: the current message accepts, in words or by taking a quest by its name, or an
+    // earlier message since the quest was offered took this very quest by name and the reply of that turn missed it
+    // (Testrun 4: "I take the Vermin in the Malthouse Cellar Quest" got a reply without report and the quest stayed
+    // "offered" for good). A message that takes quests by name licenses only those (Testrun 4, discarded first
+    // attempt: the player took the vermin bill, the reply signed him onto the wolf contract).
+    const nowText = [...(state.last?.carry || []), state.last?.input || ''].join('\n');
+    const takenNow = uniq([...Object.values(state.quests).map((x) => x.title), ...arr(report.quests).map((x) => x?.title).filter(Boolean).map(String)])
+        .filter((t) => takesQuest(nowText, t));
+    const acceptance = (title, cur) => {
+        if (takenNow.length) return takenNow.some((t) => normText(t) === normText(title)) ? null : `the player's message takes ${takenNow.map((t) => `"${t}"`).join(', ')}, not "${title}"`;
+        if (auth.accept) return null;
+        const since = cur?.history?.[0]?.turn ?? state.turn - 3;
+        return (state.inputs || []).some((x) => x.turn >= since && takesQuest(x.input, title)) ? null : `accepting the quest "${title}"`;
+    };
     for (const q of arr(report.quests)) {
         if (!q || !q.title) { reject(q, 'quest needs a title'); continue; }
         const id = `quest.${slug(q.title)}`;
@@ -491,7 +541,8 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         const status = ['offered', 'active', 'completed', 'failed'].includes(q.status) ? q.status : 'offered';
         if (!cur && (status === 'completed' || status === 'failed')) { reject(q, 'cannot finish a quest that was never offered or accepted'); continue; }
         if (cur && ['completed', 'failed'].includes(cur.status) && cur.status !== status) { reject(q, `quest already ${cur.status}`); continue; }
-        if (status === 'active' && cur?.status !== 'active' && !auth.accept) { reject(q, owner(`accepting the quest "${q.title}"`) + ' (report it as "offered")'); continue; }
+        const refused = status === 'active' && cur?.status !== 'active' ? acceptance(String(q.title), cur) : null;
+        if (refused) { reject(q, (refused.startsWith('accepting') ? owner(refused) : `PLAYER OWNERSHIP: ${refused}`) + ' (report it as "offered")'); continue; }
         // a quest's reward is fixed when it first appears: a new quest without its recommended Level and type is not
         // recorded, and the correction asks for the complete entry (Testrun 3: the rat quest came without a level and
         // could never have paid Quest XP). Known quests keep their locked values. The level is the engine's hidden XP
@@ -600,6 +651,16 @@ function bandOf(b) {
 function coverOf(c) {
     return COVERS.has(c) ? c : undefined;
 }
+
+/** The same value; for a name, "Alaric, no family name" is Alaric (Testrun 4: it became a FALSE belief of the clerk). */
+function sameValue(p, a, b) {
+    const core = (v) => (p === 'name' ? normText(v).replace(/\b(?:with )?(?:no|without) (?:family name|family|surname|last name)\b/g, ' ').replace(/\s+/g, ' ').trim() : normText(v));
+    return core(a) === core(b);
+}
+
+const LIFE_STATUS = new Set(['alive', 'dead']);
+
+const MONEY_RE = /^(?:\d+ )?(?:(?:copper|silver|gold)(?: (?:coins?|pieces?|crowns?|marks?|bits?))?|coins?|money|cash)$/;
 
 function findItemId(content, name) {
     const t = normText(name);

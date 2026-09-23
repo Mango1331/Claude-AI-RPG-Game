@@ -34,6 +34,7 @@ export function emptyState() {
         quests: {},
         threads: {},
         last: { outcome: null, rejected: [], check: null, input: null, situations: [] },
+        inputs: [], // the player's recent messages {turn, input}: a decision whose reply missed it can still be recorded
         pending_combat: [], // NPC commitments reported by the narrator (Core #23 PENDING), resolved next turn
         pending_intents: {},
     };
@@ -164,6 +165,7 @@ export function applyEvent(state, e) {
             const carry = old.report_missing ? [...(old.carry || []), old.input].filter(Boolean).slice(-3) : [];
             state.turn = d.turn;
             state.last = { outcome: null, rejected: [], check: null, input: d.input ?? null, situations: [], carry };
+            state.inputs = [...(state.inputs || []), { turn: d.turn, input: d.input ?? '' }].slice(-12);
             break;
         }
         case 'report.missing': // the narrator's reply to this turn had no (valid) fact report
@@ -178,6 +180,10 @@ export function applyEvent(state, e) {
         case 'item.changed': {
             const s = sheetOf(state, d.id);
             addItem(s, d.item, d.qty);
+            if (d.name) {
+                if (!state.item_names) state.item_names = {};
+                state.item_names[d.item] = d.name;
+            }
             break;
         }
         case 'item.equipped': {

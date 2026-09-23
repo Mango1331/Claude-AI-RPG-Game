@@ -61,7 +61,9 @@ const turn = async (input, reply) => {
   await handlers.mr(chat.length - 1);
 };
 await turn('Aimed Shot + Power Shot', 'Creation complete.\\n<avereth>{}</avereth>');
-await turn('I look around.', 'A boar.\\n<avereth>{"new":[{"ref":"boar","kind":"creature","species":"boar","band":"MEDIUM"}]}</avereth>');
+await turn('I look around.', 'A boar. A hunter writes in his ledger.\\n<avereth>{"new":[{"ref":"boar","kind":"creature","species":"boar","band":"MEDIUM"}]}</avereth>');
+// Word replacements (default ledger=register): the reply text in the chat, and so in the next prompt, no longer has it
+result.wordSwap = chat.at(-1).mes === 'A boar. A hunter writes in his register.';
 // Lore Bridge: realm and city as World Info scan text, never inserted (position NONE); engine lore until a lorebook is linked
 const bridge = window.__ext.avereth_lore_keys;
 result.loreBridge = bridge && bridge.value === 'Solmere\\nTidecross' && bridge.position === -1 && bridge.scan === true && /\\nLORE:\\n/.test(window.__prompt);
@@ -76,7 +78,7 @@ result.command = aborted && /SYSTEM \\/\\/ STATUS/.test((window.__panels || []).
 // an NPC's attack reported by the reply: the fight is fixed at once and shown above that reply (Testrun 3)
 await turn('I look around again.', 'A wolf lunges out of the brush.\\n<avereth>{"new":[{"ref":"wolf","kind":"creature","species":"wolf","band":"SHORT"}],"combat":{"by":"wolf"}}</avereth>');
 result.commitShown = /\`COMBAT( START)? — the wolf (attacks|joins)/.test(chat.at(-1).extra.display_text || '') && /\`Next: /.test(chat.at(-1).extra.display_text || '');
-result.settingsUi = !!document.getElementById('avereth_enabled');
+result.settingsUi = !!document.getElementById('avereth_enabled') && document.getElementById('avereth_swaps')?.value === 'ledger=register';
 result.log = window.__log;
 window.__result = result;
 </script></body></html>`;
@@ -106,6 +108,6 @@ const result = await page.evaluate(() => window.__result);
 await browser.close();
 server.close();
 console.log(JSON.stringify({ ...result, errors }, null, 1));
-const ok = result.campaign && result.step2 && result.stripped && result.retcon && result.combatShown && result.command && result.commitShown && result.loreBridge && result.settingsUi && !errors.length;
+const ok = result.campaign && result.step2 && result.stripped && result.retcon && result.combatShown && result.command && result.commitShown && result.loreBridge && result.wordSwap && result.settingsUi && !errors.length;
 console.log(ok ? 'BROWSER SMOKE: OK' : 'BROWSER SMOKE: FAILED');
 process.exit(ok ? 0 : 1);

@@ -114,3 +114,17 @@ Details, Zahlen und Einrichtung: [LOREBOOK.md](LOREBOOK.md).
   - neue Gilden-Aufträge mit `rank` und passendem `level`;
   - kein Level oder Recommended Level in der Erzählung;
   - bleibt ein gelesener Aushang beim zweiten Blick gleich?
+
+## Fünfte Review (nach Testrun 4, Stand `4e4c69a`)
+
+Die Review übernahm die Testrun-4-Fixes und nannte zwei kleine, klar begrenzte Punkte vor Test 5. Beide sind am Code bestätigt.
+
+| Punkt | Probe | Kat. | Entscheidung |
+|---|---|---|---|
+| „aimed shot at the second one“ nimmt stillschweigend den einzigen Gegner | bestätigt: `resolveTarget()` fällt ohne Namenstreffer auf das einzige gültige Ziel zurück, auch bei „the second one“ | **A** | Der Rückfall auf das einzige Ziel gilt nicht mehr, wenn die Nachricht Ziele unterscheidet („the first/second/third/other/left/right one“, „at another one“) und keines passt. Dann meldet die Engine „Alaric's attack needs a target“; nichts wird ausgegeben oder gewürfelt, Alaric bleibt am Zug. Pronomen, „the last one“ und „another one“ ohne „at“ (ein zweiter Pfeil) bleiben beim einzigen Ziel. |
+| Ein `status`-Fakt überschreibt den Entity-Status einer Person („registered Guild member, Rank F / Novice“ statt „alive“) | bestätigt: im echten Lauf, Zug 6 | **A** | Bei Personen und Kreaturen setzt ein `status`-Fakt den Entity-Status nur auf `alive` oder `dead`; alles andere bleibt ein normaler Fakt. Dazu kommt ein kleiner Punkt vom selben Code-Pfad: Alarics Tod per Fakt wird abgelehnt, weil sein Leben der Engine gehört (0 HP, Core #14). |
+| Megumin-Tracker „Power Rank: F / Guild Rank: Novice“ statt „Rank: F“ | – | **B** (Host-Preset) | Das ist eine Einstellung im Megumin-Preset, kein Engine-Code. Die Engine zeigt „Power Rank“ schon. Der Gilden-Rang ist noch kein Engine-Zustand; der Tracker soll ihn nur spiegeln, wenn er etabliert ist (Registrierung). |
+| Fehlende Reports erst live beobachten, keinen Retry-Mechanismus bauen | – | **B** | einverstanden |
+
+**Test 5:** freigegeben. Es gibt keine neue Architektur-Runde.
+

@@ -9,7 +9,7 @@ import {
     PC_NAME_FACT, PC_LOOK_FACT,
 } from './knowledge.js';
 import { rank, pack, Bm25 } from './retrieval.js';
-import { estimateTokens, formatClock, joinList, normText, tokenize } from './util.js';
+import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
 
 export const DEFAULT_BUDGET = 1400;
 export const DEFAULT_RULES_BUDGET = 800;
@@ -46,7 +46,7 @@ export function pcLine(state, content) {
     const cls = s.class ? content.classes.get(s.class).name : 'no Class yet';
     const skills = Object.entries(s.skills).map(([id, v]) => `${content.skills.get(id)?.name || id} P${v.prof}`);
     const arrows = s.inventory.standard_arrow;
-    const inv = Object.entries(s.inventory).filter(([k]) => k !== 'standard_arrow').map(([k, q]) => `${content.items.get(k)?.name || k}${q > 1 ? ` ×${q}` : ''}`);
+    const inv = Object.entries(s.inventory).filter(([k]) => k !== 'standard_arrow').map(([k, q]) => `${itemLabel(state, content, k)}${q > 1 ? ` ×${q}` : ''}`);
     const equip = Object.values(s.equipment).map((r) => (typeof r === 'string' ? content.items.get(r)?.name || r : r.name));
     return [
         `${e.name} — Level ${s.level} Power Rank ${dv.rank} ${cls} | HP ${s.hp}/${dv.maxHp} MP ${s.mp}/${dv.maxMp} STA ${s.sta}/${dv.maxSta} | XP ${s.xp}/${s.level * content.rules.progression.xp_to_next_per_level}${s.free_points ? ` | Free Stat Points ${s.free_points}` : ''}${e.status === 'dead' ? ' | DEAD' : ''}`,
@@ -115,10 +115,11 @@ export function combatBlock(state) {
     const pcfx = enc.combatants.pc.current.effects;
     if (pcfx.length) lines.push(`  Alaric effects: ${pcfx.map((x) => x.name).join(', ')}`);
     lines.push(`  Pending Combat XP: ${enc.pending_xp} (awarded only when the fight ends)`);
-    // Testrun 3: bystanders kept up a running commentary during the rat fight (the player: the sponsor's calls made
-    // sense, the building owner's did not)
+    // Testrun 3: bystanders kept up a running commentary during the rat fight; Testrun 4: allowed "one short call"
+    // from someone with a stake, the malthouse owner counted his losses aloud every round. The player: no talking
+    // in a fight. A line is mechanics only when a combatant surrenders or parleys (its engine intent).
     const bystanders = state.scene.present.filter((id) => id !== 'pc' && !enc.combatants[id] && state.entities[id]?.kind === 'npc' && state.entities[id].status !== 'dead');
-    lines.push(`  Combat focus: ${bystanders.length ? `${bystanders.map((id) => entityLabel(state, id)).join(', ')} (not fighting) ${bystanders.length > 1 ? 'stay' : 'stays'}` : 'anyone outside the Turn order stays'} in the background — no running commentary; at most one short call per reply from someone with a direct stake in the fight (a sponsor, a companion); owners, onlookers and passers-by stay silent.`);
+    lines.push(`  Combat silence: nobody talks while the fight runs — neither combatants nor ${bystanders.length ? `${bystanders.map((id) => entityLabel(state, id)).join(', ')} (not fighting)` : 'onlookers'}; show sounds, wordless cries, movement and faces. Only a combatant whose intent is surrender or parley may say one short line.`);
     return lines.join('\n');
 }
 
@@ -131,6 +132,7 @@ export function recordLine(state, r) {
         const head = `${who}: ${r.skill_name}${r.opening ? ' (AMBUSH Opening Action)' : ''} -> ${entityLabel(state, r.strikes?.[0]?.target || r.target)}`;
         if (r.cost) parts.push(`${r.cost.resource.toUpperCase()} ${r.cost.before}->${r.cost.after}`);
         if (r.ammo) parts.push(`${r.ammo.used} arrow${r.ammo.used > 1 ? 's' : ''} fired`);
+        if (r.after_move) parts.push(`then steps back: ${r.after_move.change}`);
         const strikes = (r.strikes || []).map((s, i) => {
             const pre = r.strikes.length > 1 ? `strike ${i + 1}: ` : '';
             if (!s.hit.success) return `${pre}MISS (hit ${s.hit.chance}%, d100 ${s.hit.roll})`;
@@ -163,7 +165,7 @@ function outcomeBlock(state, content, outcome) {
             const s = outcome.ended;
             lines.push(`- Combat is over.${s.pc_dead ? ' Alaric is dead.' : ''}${s.xp_awarded ? ` Alaric gains ${s.xp_awarded} XP.` : ''}${outcome.levelups?.length ? ` LEVEL UP -> ${outcome.levelups.join(', ')} (+5 free Stat Points each; resources are not refilled).` : ''} Loot is only what the defeated actually carried or what can be harvested; nothing is taken automatically.`);
         } else if (outcome.next) lines.push(`- Next: ${outcome.next}. Stop the narration at Alaric's decision.`);
-        if (outcome.records.length) lines.push('Narrate exactly these resolved steps in order: the same number of attacks/projectiles, the same hits and misses, no extra movement, attacks or combatants.');
+        if (outcome.records.length) lines.push(`Narrate exactly these resolved steps in order: the same number of attacks/projectiles, the same hits and misses, no extra movement, attacks or combatants${outcome.ended ? '' : ', and no dialogue (combat silence; it overrides any habit of opening with speech)'}. Then write the fact report.`);
     } else if (outcome.kind === 'creation.step2') {
         const cls = content.classes.get(outcome.class);
         const s = state.entities.pc.sheet;

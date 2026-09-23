@@ -167,7 +167,7 @@ Details: [docs/MIGRATION.md](docs/MIGRATION.md).
 
 ## 9. Tests
 
-`npm test`: **122 Tests, alle bestanden.** Dazu kommt `node tools/browser_smoke.mjs`: echtes Chromium mit gemocktem SillyTavern-Kontext, bestanden.
+`npm test`: **143 Tests, alle bestanden.** Dazu kommt `node tools/browser_smoke.mjs`: echtes Chromium mit gemocktem SillyTavern-Kontext, bestanden.
 
 | Gruppe | Inhalt |
 |---|---|
@@ -294,3 +294,28 @@ Die ChatGPT-Review wurde Punkt für Punkt per Probe gegen den Code geprüft und 
 - **Lorebook v0.11:** Der nachgebaute World-Info-Scan über die echten Testruns 2 und 3 zeigte Fehltreffer: Der 1.000-Token-Gildeneintrag feuerte im Wald und im Rattenkampf, „trade“ und „market“ feuerten dauernd, und am Aushang schnitt das Budget die Quest-Gerüste ab. v0.11 behebt das (Ø 861 statt 1.289 Token).
 - **Quest-XP:** Das Level bleibt die versteckte XP-Basis. Gilden-Aufträge tragen zusätzlich einen Quest Rank, dessen Band die Engine prüft. Core bleibt unverändert.
 - **Details:** [docs/LOREBOOK.md](docs/LOREBOOK.md).
+
+**Testrun 4 (dritter Lauf, 15 Züge bis zum Malzhauskeller und zurück zur Gilde):**
+- **Was lief:**
+  - Kampfrechnung exakt nach Core #10/#11; die Fehlschüsse waren Pech, der Würfel ist gleichverteilt (Chi² 102 bei 1 Mio. Würfen).
+  - Lorebook und Lore-Bridge wirkten in jedem Zug, der Aushang hielt sich an den neuen Eintrag.
+  - Der World-Info-Nachbau traf 14 von 15 echten Prompts exakt.
+  - Keine abgeschnittene Antwort mehr (8.192 Token).
+  - Der Lauf ist per Replay exakt reproduzierbar (29 von 29 Records).
+- **Spielerwünsche:**
+  - Kampfstille statt „ein kurzer Zuruf“: Engine-Block, Schlusszeile und Vertrag 3.2; Verstöße korrigiert der nächste Block.
+  - Wortersatz „Word replacements“ (Standard `ledger=register`), weil die Bann-Liste des Presets das Wort eher hervorrief.
+  - Trefferchancen aller Angriffe vor Alarics Zug.
+- **Behoben:**
+  - Quest-Annahme beim Namen, auch nach einer Antwort ohne Report; nur die genannte Quest;
+  - Geld nie als Item (Doppelbuchung);
+  - dieselbe Stadt plus neuer Platz ist ein Ortswechsel (die tote Ratte „stand“ in der Gilde);
+  - wem Alaric etwas erzählt, der ist anwesend;
+  - Personen, die nur mit Namen vorkommen, werden bekannt (Fennick, Maretta);
+  - Rückschritt mit Angriff (Core #12/#24);
+  - „no family name“ ist kein falscher Name;
+  - Item-Namen;
+  - Vertragsbeispiel ohne Stadtnamen (Ashbridge war als Nachbarort von Lumenford eingesickert);
+  - Report-Text für Proben.
+- **Belege:** Regressionstest mit den echten Antworten, siehe [docs/TESTRUN_V4.md](docs/TESTRUN_V4.md).
+

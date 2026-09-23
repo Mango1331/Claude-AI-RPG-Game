@@ -24,7 +24,9 @@ const handlers = {};
 window.__log = [];
 window.toastr = { warning: (m) => window.__log.push('warn ' + m), error: (m) => window.__log.push('error ' + m), info: () => {} };
 const ctx = {
-  chat, extensionSettings: {}, saveSettingsDebounced() {}, saveChat: async () => {}, updateMessageBlock() {},
+  chat, extensionSettings: {}, saveSettingsDebounced() {}, saveChat: async () => { window.__saved = (window.__saved || 0) + 1; },
+  // like SillyTavern: updateMessageBlock on a message that is not rendered yet throws inside its reasoning UI
+  updateMessageBlock(id) { const el = document.querySelector('#chat [mesid="' + id + '"]'); el.getAttribute('mesid'); window.__rerendered = (window.__rerendered || []).concat(id); },
   setExtensionPrompt(key, value) { window.__prompt = value; },
   addOneMessage(m) { window.__panels = (window.__panels || []).concat(m.mes); },
   getCurrentChatId: () => 'smoke', eventTypes: { MESSAGE_RECEIVED: 'mr', MESSAGE_EDITED: 'me', CHAT_CHANGED: 'cc', MESSAGE_DELETED: 'md', MESSAGE_SWIPED: 'ms' },
@@ -41,11 +43,14 @@ let aborted = false;
 await globalThis.averethInterceptor(chat, 8000, () => { aborted = true; }, 'normal');
 result.step2 = /CLASS SELECTED: RANGER/.test(window.__prompt) && /Init 9/.test(window.__prompt);
 chat.push({ is_user: false, is_system: false, mes: 'Step 2 shown.\\n<avereth>{}</avereth>', swipe_id: 0, swipes: ['x'], swipe_info: [{ extra: {} }], extra: {} });
+// without streaming SillyTavern emits MESSAGE_RECEIVED before it renders the message (Testrun 2)
+const savedBefore = window.__saved || 0;
 await handlers.mr(2);
-result.stripped = chat[2].mes === 'Step 2 shown.';
+result.stripped = chat[2].mes === 'Step 2 shown.' && (window.__saved || 0) > savedBefore && !(window.__rerendered || []).includes(2);
+document.getElementById('chat').insertAdjacentHTML('beforeend', '<div class="mes" mesid="2"><div class="mes_text"></div></div>');
 chat[2].mes = 'Step 2 shown, retold.\\n<avereth>{}</avereth>';
 await handlers.me(2);
-result.retcon = chat[2].mes === 'Step 2 shown, retold.' && chat[2].extra.avereth.retcon === true;
+result.retcon = chat[2].mes === 'Step 2 shown, retold.' && chat[2].extra.avereth.retcon === true && (window.__rerendered || []).includes(2);
 chat.push({ is_user: true, is_system: false, mes: '#status', extra: {} });
 await globalThis.averethInterceptor(chat, 8000, () => { aborted = true; }, 'normal');
 result.command = aborted && /SYSTEM \\/\\/ STATUS/.test((window.__panels || []).join('')) && chat[3].is_system === true;

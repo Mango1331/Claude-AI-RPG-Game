@@ -12,7 +12,7 @@
    "forced_by": "ref of the NPC who moved Alaric against his will",
    "new": "[{ref, kind:'npc'|'creature', name?, desc:[words], species?, template?, traits?, band?, cover?}] every newly introduced person/creature",
    "enter": "[refs] known people who came into the scene",
-   "leave": "[refs] who left the scene",
+   "leave": "[refs] who left the scene or stayed behind as Alaric moved on",
    "position": "[{who, band:'ENGAGED'|'SHORT'|'MEDIUM'|'LONG', cover?}] distance to Alaric outside combat",
    "aware": "[{who, level:'unaware'|'suspicious'|'aware'}] an NPC's awareness of Alaric",
    "concealed": "[refs] who is now unseen by the others (e.g. 'pc'); [] when nobody is",

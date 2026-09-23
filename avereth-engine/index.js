@@ -103,13 +103,27 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
 };
 
 // ------------------------------------------------------------------------------------------ events
+/**
+ * Re-draw a message SillyTavern has already rendered. Without streaming, MESSAGE_RECEIVED fires before the message is
+ * drawn: SillyTavern then renders our cleaned text itself, and updateMessageBlock on the missing element throws inside
+ * its reasoning UI (Testrun 2). A display problem must never stop the engine from saving its record.
+ */
+function rerender(c, id) {
+    if (!document.querySelector(`#chat [mesid="${id}"]`)) return;
+    try {
+        c.updateMessageBlock(id, c.chat[id]);
+    } catch (err) {
+        console.warn('[Avereth] could not re-render message', id, err);
+    }
+}
+
 async function onMessageReceived(messageId) {
     if (!settings().enabled || !content) return;
     const c = ctx();
     try {
         const r = processReply(c.chat, Number(messageId), content, { seed: newSeed() });
         if (!r.changed) return;
-        c.updateMessageBlock(Number(messageId), c.chat[messageId]);
+        rerender(c, Number(messageId));
         await c.saveChat();
         if (r.result?.rejected?.length) console.info('[Avereth] rejected report items', r.result.rejected);
         renderDebug();
@@ -125,7 +139,7 @@ async function onMessageEdited(messageId) {
     try {
         const r = onEdited(c.chat, Number(messageId), content);
         if (!r.changed) return;
-        if (r.text) c.updateMessageBlock(Number(messageId), c.chat[messageId]);
+        if (r.text) rerender(c, Number(messageId));
         if (r.refused) toastr.warning(`Avereth Engine: ${r.refused}`);
         await c.saveChat();
         renderDebug();

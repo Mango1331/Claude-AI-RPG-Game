@@ -133,9 +133,9 @@ Kampagnendaten stehen pro Nachricht in `message.extra.avereth`. Der Zustand ist 
 | SillyTavern-Anbindung | `index.js`, `manifest.json`, `style.css` |
 | Content | 10 JSON-Dateien und der Narrator Contract v3; 5 davon reproduzierbar per Migration erzeugt |
 | Schemas | 11 JSON-Schemas |
-| Tests | 11 Testdateien plus Fixture |
+| Tests | 12 Testdateien plus 2 Fixtures |
 | Werkzeuge | 3 (Migration, Token-Vergleich, Browser-Smoke-Test) |
-| Doku | 8 Dokumente: README, Abschlussbericht, 6 Fachdokumente (inkl. Review-Antwort) |
+| Doku | 9 Dokumente: README, Abschlussbericht, 7 Fachdokumente (inkl. Review-Antwort und Testrun-2-Auswertung) |
 
 ## 8. Migration
 
@@ -167,7 +167,7 @@ Details: [docs/MIGRATION.md](docs/MIGRATION.md).
 
 ## 9. Tests
 
-`npm test`: **85 Tests, alle bestanden.** Dazu kommt `node tools/browser_smoke.mjs`: echtes Chromium mit gemocktem SillyTavern-Kontext, bestanden.
+`npm test`: **93 Tests, alle bestanden.** Dazu kommt `node tools/browser_smoke.mjs`: echtes Chromium mit gemocktem SillyTavern-Kontext, bestanden.
 
 | Gruppe | Inhalt |
 |---|---|
@@ -259,3 +259,14 @@ Die ChatGPT-Review wurde Punkt für Punkt per Probe gegen den Code geprüft und 
 - **Kosten:** ein neuer Report-Schlüssel (`forced_by`), etwa +70 Token pro Zug, keine neue Kontextsektion.
 
 **Zweite Review (vor Testrun 2):** Die Schwelle war „nur, was den Test verfälschen oder State beschädigen kann“. Umgesetzt wurden drei kleine Engine-Fixes: Unbemerkte Zuschauer erfahren keinen Kampftod, Retcon gilt nur für die neueste Antwort, und NPC-gegen-NPC wird nicht mehr zu einem Angriff auf Alaric. Alles Weitere steht im Backlog mit Messpunkten für den Testrun: [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md).
+
+**Testrun 2 (erster echter Lauf, GLM-5.3-Flash):**
+- **Was lief:** Report 11/11 vorhanden, Mechanik exakt nach Core, Wissen und Agency sauber. Der Lauf ist per Replay exakt reproduzierbar.
+- **Fünf Engine- und Host-Fehler behoben:**
+  - Fehlermeldung bei jeder Antwort durch zu frühes Neuzeichnen;
+  - Starter-Kit doppelt;
+  - Anwesenheit nach Ortswechsel (Schleichwurf gegen eine abwesende Figur);
+  - NPC wehrte sich im Kampf nie (gespiegeltes „hold“);
+  - irreführende Korrekturen.
+- **Belege:** Regressionstest mit den echten Antworten, siehe [docs/TESTRUN_V2.md](docs/TESTRUN_V2.md).
+

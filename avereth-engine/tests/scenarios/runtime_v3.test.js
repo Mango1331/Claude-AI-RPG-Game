@@ -188,7 +188,7 @@ test('Test-5 scenario: Kest\'s promise leaves the history window and still reach
     const ask = (input) => {
         chat.push(user(input));
         const gen = prepareGeneration(chat, content, { type: 'normal' });
-        const core = chat.map((m) => ({ ...m }));
+        const core = chat.filter((m) => !m.is_system).map((m) => ({ ...m })); // SillyTavern's coreChat leaves hidden lines out
         projectPromptHistory(core, { keepTurns: 4 });
         return { engine: gen.context.text, history: core.map((m) => m.mes).join('\n'), users: core.filter((m) => m.is_user).length };
     };
@@ -196,8 +196,12 @@ test('Test-5 scenario: Kest\'s promise leaves the history window and still reach
         ask(input);
         reply(report, prose);
     };
-    play('Ranger', {}, 'CLASS SELECTED');
-    play('Aimed Shot + Power Shot', {}, 'CHARACTER CREATION COMPLETE');
+    // character creation: the System answers with a panel, no narrator; the extension hides the line from prompts
+    for (const input of ['Ranger', 'Aimed Shot + Power Shot']) {
+        chat.push(user(input));
+        assert.equal(prepareGeneration(chat, content, { type: 'normal' }).action, 'panels');
+        chat.at(-1).is_system = true;
+    }
     play('I walk into town to the Guild hall.', {
         time: 30, place: 'Guild hall, Novice board',
         new: [{ ref: 'Kest', name: 'Kest', kind: 'npc', desc: ['veteran adventurer'], traits: 'one-eyed, grey braid', band: 'SHORT' }],

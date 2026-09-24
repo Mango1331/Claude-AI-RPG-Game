@@ -1,5 +1,5 @@
 // Optional real-browser smoke test of the SillyTavern binding (index.js): serves this folder, loads index.js in
-// Chromium with a minimal mock of SillyTavern.getContext(), and plays greeting -> creation -> reply -> retcon edit -> #command
+// Chromium with a minimal mock of SillyTavern.getContext(), and plays greeting -> creation (System panels) -> reply -> retcon edit -> #command
 // -> Runtime V3 (HUD under replies, tracker blocks removed, prompt-only history projection).
 // Requires Playwright (not a project dependency). Usage: node tools/browser_smoke.mjs
 import http from 'node:http';
@@ -43,28 +43,39 @@ result.campaign = !!chat[0].extra.avereth;
 chat.push({ is_user: true, is_system: false, mes: 'Ranger', extra: {} });
 let aborted = false;
 await globalThis.averethInterceptor(chat, 8000, () => { aborted = true; }, 'normal');
-result.step2 = /CLASS SELECTED: RANGER/.test(window.__prompt) && /Init 9/.test(window.__prompt);
-chat.push({ is_user: false, is_system: false, mes: 'Step 2 shown.\\n<avereth>{}</avereth>', swipe_id: 0, swipes: ['x'], swipe_info: [{ extra: {} }], extra: {} });
-// without streaming SillyTavern emits MESSAGE_RECEIVED before it renders the message (Testrun 2)
-const savedBefore = window.__saved || 0;
-await handlers.mr(2);
-result.stripped = chat[2].mes === 'Step 2 shown.' && (window.__saved || 0) > savedBefore && !(window.__rerendered || []).includes(2);
-document.getElementById('chat').insertAdjacentHTML('beforeend', '<div class="mes" mesid="2"><div class="mes_text"></div></div>');
-chat[2].mes = 'Step 2 shown, retold.\\n<avereth>{}</avereth>';
-await handlers.me(2);
-await new Promise((r) => setTimeout(r, 0)); // SillyTavern redraws from mes after MESSAGE_EDITED; the engine redraws after that
-result.retcon = chat[2].mes === 'Step 2 shown, retold.' && chat[2].extra.avereth.retcon === true && (window.__rerendered || []).includes(2);
-// a combat turn: the reply shows the engine's System block (display_text), the prompt text stays plain
-// like SillyTavern, the interceptor gets coreChat: a new array of shallow copies (the saved chat stays untouched)
+// character creation is answered by the engine's System panel without a narrator call (Pre-Test-5); the line is hidden
+const panelText = () => (window.__panels || []).join('\\n');
+result.step2 = aborted && /CLASS SELECTED: RANGER[\\s\\S]*Initiative 9[\\s\\S]*- Aimed Shot \\[/.test(panelText()) && chat[1].is_system === true;
+aborted = false;
+chat.push({ is_user: true, is_system: false, mes: 'Aimed Shot + Power Shot', extra: {} });
+await globalThis.averethInterceptor(chat, 8000, () => { aborted = true; }, 'normal');
+result.creation = aborted && /CHARACTER CREATION COMPLETE[\\s\\S]*Starter Shortbow/.test(panelText());
+// like SillyTavern, the interceptor gets coreChat: a new array of shallow copies without hidden lines (the saved chat stays untouched)
 let core = null;
-const turn = async (input, reply) => {
+const ask = async (input) => {
   chat.push({ is_user: true, is_system: false, mes: input, extra: {} });
   core = chat.filter((m) => !m.is_system).map((m) => ({ ...m }));
   await globalThis.averethInterceptor(core, 8000, () => {}, 'normal');
+};
+await ask('I walk along the road.');
+result.firstStory = /mode: story/.test(window.__prompt) && /CHARACTER CREATION is complete/.test(window.__prompt) && core.every((m) => !/^(Ranger|Aimed Shot \\+ Power Shot)$/.test(m.mes));
+// without streaming SillyTavern emits MESSAGE_RECEIVED before it renders the message (Testrun 2)
+const r1 = chat.length;
+chat.push({ is_user: false, is_system: false, mes: 'A quiet road.\\n<avereth>{}</avereth>', swipe_id: 0, swipes: ['x'], swipe_info: [{ extra: {} }], extra: {} });
+const savedBefore = window.__saved || 0;
+await handlers.mr(r1);
+result.stripped = chat[r1].mes === 'A quiet road.' && (window.__saved || 0) > savedBefore && !(window.__rerendered || []).includes(r1);
+document.getElementById('chat').insertAdjacentHTML('beforeend', '<div class="mes" mesid="' + r1 + '"><div class="mes_text"></div></div>');
+chat[r1].mes = 'A quiet road, retold.\\n<avereth>{}</avereth>';
+await handlers.me(r1);
+await new Promise((r) => setTimeout(r, 0)); // SillyTavern redraws from mes after MESSAGE_EDITED; the engine redraws after that
+result.retcon = chat[r1].mes === 'A quiet road, retold.' && chat[r1].extra.avereth.retcon === true && (window.__rerendered || []).includes(r1);
+// a combat turn: the reply shows the engine's System block (display_text), the prompt text stays plain
+const turn = async (input, reply) => {
+  await ask(input);
   chat.push({ is_user: false, is_system: false, mes: reply, swipe_id: 0, swipes: [reply], swipe_info: [{ extra: {} }], extra: {} });
   await handlers.mr(chat.length - 1);
 };
-await turn('Aimed Shot + Power Shot', 'Creation complete.\\n<avereth>{}</avereth>');
 await turn('I look around.', 'A boar. A hunter writes in his ledger.\\n<avereth>{"new":[{"ref":"boar","kind":"creature","species":"boar","band":"MEDIUM"}]}</avereth>');
 // Word replacements (default ledger=register): the reply text in the chat, and so in the next prompt, no longer has it
 result.wordSwap = chat.at(-1).mes === 'A boar. A hunter writes in his register.';
@@ -126,7 +137,7 @@ const result = await page.evaluate(() => window.__result);
 await browser.close();
 server.close();
 console.log(JSON.stringify({ ...result, errors }, null, 1));
-const ok = result.campaign && result.step2 && result.stripped && result.retcon && result.combatShown && result.command && result.commitShown && result.loreBridge && result.wordSwap && result.settingsUi
+const ok = result.campaign && result.step2 && result.creation && result.firstStory && result.stripped && result.retcon && result.combatShown && result.command && result.commitShown && result.loreBridge && result.wordSwap && result.settingsUi
     && result.hud && result.trackersRemoved && result.hudNotInPrompt && result.historyWindow && !errors.length;
 console.log(ok ? 'BROWSER SMOKE: OK' : 'BROWSER SMOKE: FAILED');
 process.exit(ok ? 0 : 1);

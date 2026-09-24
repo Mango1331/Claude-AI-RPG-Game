@@ -123,7 +123,9 @@ function boardLines(state, b) {
     const out = [sys(`HP: ${b.hp.map((x) => `${name(x.id)} ${x.hp}/${x.max}${x.state ? ` (${x.state})` : ''}`).join(' · ')}`)];
     const range = b.hp.filter((x) => x.band && !x.state);
     if (range.length) out.push(sys(`Range: ${range.map((x) => `${name(x.id)} ${x.band}${x.cover && x.cover !== 'none' ? ` (${x.cover} cover)` : ''}`).join(' · ')}`));
-    out.push(sys(`${name('pc')}: MP ${b.pc.mp}/${b.pc.max_mp} · STA ${b.pc.sta}/${b.pc.max_sta} · Arrows ${b.pc.arrows}`));
+    // arrows only for someone who carries a quiver or arrows (the Pre-Test-5 Warrior's fight showed "Arrows 0")
+    const arrows = state.entities.pc?.sheet?.equipment?.quiver || b.pc.arrows > 0 ? ` · Arrows ${b.pc.arrows}` : '';
+    out.push(sys(`${name('pc')}: MP ${b.pc.mp}/${b.pc.max_mp} · STA ${b.pc.sta}/${b.pc.max_sta}${arrows}`));
     return out;
 }
 

@@ -137,5 +137,5 @@ test('coin and quests the reports changed are shown like a game log', () => {
 
 test('the engine block stays compact', () => {
     // turn 13 (the fight ends): loot rules, the combat-silence correction and Rennick's card, about 2,700 tokens
-    for (const t of turns) assert.ok(t.context.tokens < 2800, `${t.input}: ${t.context.tokens} tokens`);
+    for (const t of turns.filter((x) => x.context)) assert.ok(t.context.tokens < 2800, `${t.input}: ${t.context.tokens} tokens`); // creation: System panels, no prompt
 });

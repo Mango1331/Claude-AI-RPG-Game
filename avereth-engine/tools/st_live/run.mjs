@@ -1,5 +1,6 @@
 // Live SillyTavern smoke, step 2 (optional, docs/RUNTIME_V3.md): a real SillyTavern (tested with 1.19.0) with this
-// extension and a scripted, streaming mock narrator (OpenAI-compatible, port 5001). Plays creation, an incidental NPC,
+// extension and a scripted, streaming mock narrator (OpenAI-compatible, port 5001). Plays a Warrior's creation (answered by
+// System panels, including the Pre-Test-5 run's invented Skill pick and a story message sent too early), an incidental NPC,
 // a recurring NPC, the quest board, registration and coin, an ambush fight, the report back, Kest again after his
 // exchange has left the history window, and travel to another realm; it checks the Runtime V3 goals in the real host:
 // prompt assembly, history window, NPC record, Lore Bridge, streaming, display, HUD. It judges no prose (scripted mock).
@@ -25,8 +26,8 @@ fs.rmSync(path.join(ST, 'data/default-user/chats/Avereth'), { recursive: true, f
 // ------------------------------------------------------------------------------------------------ scripted narrator
 const MEGUMIN_BLOCKS = '\n\n<Blocks>\n<World_State>\n**Time:** Day 9 | **Loc:** Somewhere else\n</World_State>\n<Character_Sheet>\nHP: 12/80 | Coin: 99 Gold | Quests: none\n</Character_Sheet>\n<New_NPC name="Gate Guard">\n**Background:** an invented biography\n</New_NPC>\n</Blocks>';
 const SCRIPT = [
-    ['Ranger', '`CLASS SELECTED: RANGER` — choose two Skills from the pool shown.\n<avereth>{}</avereth>'],
-    ['Aimed Shot + Power Shot', '`CHARACTER CREATION COMPLETE`\n<avereth>{}</avereth>'],
+    // a trap: creation must never reach the narrator (the Pre-Test-5 narrator answered "Warrior" with an invented pool)
+    ['Warrior', 'BASE CLASS: WARRIOR — CONFIRMED. Choose 2: Cleave, Iron Guard, War Step, Shield Bash, Battle Cry.'],
     ['city gate', 'The south gate of Tidecross stands open to the morning carts. A gate guard with a bored face and a boar-spear waves the traffic through, then looks you over once.\n\n"Pass\'s free on foot," he says, already watching the next cart.\n<avereth>{"time":20,"place":"Tidecross south gate","new":[{"ref":"gate guard","kind":"npc","desc":["gate guard","bored"],"band":"SHORT"}],"aware":[{"who":"gate guard","level":"aware"}]}</avereth>' + MEGUMIN_BLOCKS],
     ['rats are done', '"Heard." Kest glances at the ear pail, then back at you. "Start there. Keep starting there."\n<avereth>{"time":2,"attitude":[{"who":"Kest","delta":10,"why":"the Novice took the rat job first, as told"}]}</avereth>'],
     ['long road east', 'Three days of road dust later, a walled city of black stone rises over the river crossing. The guards at the east gate wave carts through without a glance.\n<avereth>{"time":4320,"location":"Ashbridge","place":"east gate"}</avereth>'],
@@ -35,8 +36,8 @@ const SCRIPT = [
     ['Guild hall', 'The Guild hall smells of wet wool and ink. At the Novice board a one-eyed man with a grey braid leans on the wall; behind the counter a clerk with pale eyes and an ink-smudged jaw sorts slips.\n\n"New face," the one-eyed man rasps. "Board\'s there."\n<avereth>{"time":25,"place":"Guild hall, Novice board","leave":["gate guard"],"new":[{"ref":"Kest","name":"Kest","kind":"npc","desc":["veteran adventurer"],"traits":"one-eyed, grey braid, gruff","band":"SHORT"},{"ref":"Serah","name":"Serah","kind":"npc","desc":["guild clerk"],"traits":"pale eyes, ink-smudged jaw","band":"MEDIUM"}],"facts":[{"s":"Kest","p":"occupation","o":"veteran adventurer"},{"s":"Kest","p":"voice","o":"low rasp, clipped sentences"},{"s":"Serah","p":"occupation","o":"Guild clerk"}],"quests":[{"title":"Rats in the Salt Cellar","status":"offered","giver":"Serah","level":1,"type":"minor","rank":"Novice"}]}</avereth>'],
     ['Greyhowl', '"Greyhowl." Kest\'s one eye narrows. "Took two Wardens last spring. You leave that bill alone, Novice." He taps the lower slip instead. "Rats. Start there."\n<avereth>{"time":5,"memory":[{"text":"Kest warned Alaric that Greyhowl killed two Wardens and told him to leave the posting alone","who":["Kest","pc"],"imp":7}],"attitude":[{"who":"Kest","delta":-15,"why":"a green Novice eyeing the Greyhowl bill"}],"facts":[{"s":"Kest","p":"agenda","o":"get the Greyhowl posting taken down"}]}</avereth>'],
     ['register', 'Serah takes the two silver, stamps a lead tag and slides it across. "Rats in the Salt Cellar. Under the fish docks. Bring an ear."\n<avereth>{"time":10,"coin":[{"cp":-20,"why":"Guild registration"}],"facts":[{"s":"pc","p":"guild_rank","o":"Novice"}],"items":[{"item":"Guild registration tag","qty":1,"from":"Serah","to":"pc","why":"registration"}],"quests":[{"title":"Rats in the Salt Cellar","status":"active"}]}</avereth>'],
-    ['salt cellar', 'The salt cellar under the fish docks is cold and briny. Past the stacked barrels a rat the size of a cat gnaws at a sack, its back to the stairs, unaware of you.\n<avereth>{"time":30,"place":"salt cellar under the fish docks","new":[{"ref":"rat","kind":"creature","species":"rat","desc":["big rat"],"band":"MEDIUM"}],"aware":[{"who":"rat","level":"unaware"}]}</avereth>'],
-    ['Power Shot the rat', 'The string sings once. The arrow takes the rat behind the shoulder and pins it to the sack; it kicks twice and is still. Brine drips somewhere in the dark.\n<avereth>{"time":1}</avereth>'],
+    ['salt cellar', 'The salt cellar under the fish docks is cold and briny. Past the stacked barrels a rat the size of a cat gnaws at a sack, its back to the stairs, unaware of you.\n<avereth>{"time":30,"place":"salt cellar under the fish docks","new":[{"ref":"rat","kind":"creature","species":"rat","desc":["big rat"],"band":"SHORT"}],"aware":[{"who":"rat","level":"unaware"}]}</avereth>'],
+    ['Heavy Slash the rat', 'Two quiet steps, then the blade comes down behind the rat\'s shoulder and pins it to the sack; it kicks twice and is still. Brine drips somewhere in the dark.\n<avereth>{"time":1}</avereth>'],
 ];
 const replyFor = (input) => (SCRIPT.find(([k]) => input.includes(k)) || [null, 'The world waits.\n<avereth>{}</avereth>'])[1];
 
@@ -132,6 +133,7 @@ async function send(text) {
         const els = document.querySelectorAll('#chat .mes');
         const last = els[els.length - 1];
         return {
+            system: !!m.is_system, panelText: m.is_system ? m.mes : '',
             mes: m.mes, display: m.extra?.display_text || '', rec: !!m.extra?.avereth, rejected: (m.extra?.avereth?.rejected || []).map((r) => r.reason),
             accepted: m.extra?.avereth?.accepted || [], corrections: m.extra?.avereth?.corrections || [],
             huds: last?.querySelectorAll('details.custom-avereth-hud, details.avereth-hud').length || 0, hudText: [...(last?.querySelectorAll('details.custom-avereth-hud, details.avereth-hud') || [])].map((d) => d.textContent).join('\n'),
@@ -145,13 +147,15 @@ async function send(text) {
 
 const turns = [];
 for (const input of [
-    'Ranger', 'Aimed Shot + Power Shot',
+    // character creation, answered by System panels: the real pool, the invented pick rejected with its reason, a story
+    // message sent before creation is done (the Pre-Test-5 run), then a real choice and the player's #equipment check
+    'Warrior', 'Cleave + Iron Guard', '*i Walk towards the gate of the city*', 'Heavy Slash + Guard', '#equipment',
     '*I walk up to the city gate and nod to the guard.*',
     '*I walk into town and look for the Guild hall.*',
     '"What about the Greyhowl posting?" *I ask Kest.*',
     '*I register with Serah, pay the 2 silver fee and take the Rats in the Salt Cellar job.*',
     '*I head to the salt cellar under the fish docks.*',
-    '*I Power Shot the rat.*',
+    '*I creep up and Heavy Slash the rat.*',
     '*I cut an ear off the rat and walk back to the Guild hall to report to Serah.*',
     // Kest again: his Greyhowl exchange (turn 5) is outside the history window now, his record is not
     '"Kest. The rats are done, like you said."',
@@ -181,18 +185,32 @@ st.kill();
 mock.close();
 const checks = {
     noLeakWhileStreaming: turns.every((t) => !t.leakedWhileStreaming),
-    hudUnderEveryReply: turns.every((t) => t.huds === 2 && t.hudStyled === 'solid'),
+    hudUnderEveryReply: turns.filter((t) => !t.system).every((t) => t.huds === 2 && t.hudStyled === 'solid'),
     noTrackerTextStored: turns.every((t) => !/<World_State>|<Character_Sheet>|<New_NPC>|<NPC_Update>/.test(t.mes)),
     engineBlockEveryRequest: out.requests.every((q) => q.engine),
     noTrackersOrHudInPrompts: out.requests.every((q) => !q.trackers && !q.hud),
     historyWindow: out.requests.every((q) => q.historyUsers <= 4),
-    ambushCrit: /AMBUSH CRIT ×1\.5/.test(turns.find((t) => /Power Shot the rat/.test(t.text))?.shown || ''),
+    ambushCrit: /AMBUSH CRIT ×1\.5/.test(turns.find((t) => /Heavy Slash the rat/.test(t.text))?.shown || ''),
     commandWithoutLlm: out.status.llmCalls === 0 && /SYSTEM \/\/ STATUS/.test(out.status.panel),
     noPageErrors: pageErrors.length === 0,
 };
 // Runtime V3 in a longer run: the NPC record, the history window, travel and the Lore Bridge
 const reqFor = (needle) => requests.find((r) => String(r.lastUser).includes(needle));
 const engineOf = (r) => String((r?.messages || []).find((m) => String(m.content).startsWith('[AVERETH ENGINE'))?.content || '');
+// character creation by the System (Pre-Test-5): the real pool, visible rejections, the Warrior's kit, no narrator call
+const T = (needle) => turns.find((t) => t.text.includes(needle)) || {};
+const CREATION = ['Warrior', 'Cleave + Iron Guard', '*i Walk towards the gate of the city*', 'Heavy Slash + Guard', '#equipment'];
+checks.creationBySystem = CREATION.every((c) => T(c).system)
+    && /CLASS SELECTED: WARRIOR[\s\S]*- Heavy Slash \[[\s\S]*- Deflect \[/.test(T('Warrior').panelText) && !/Cleave|Iron Guard|War Step/.test(T('Warrior').panelText)
+    && /Starter Longsword \[F\] \(ATK 6\), Starter Heavy Armor \[F\] \(DEF 6, MDEF 2\)/.test(T('Warrior').panelText)
+    && /Not a valid Skill choice: Select exactly 2 distinct Skills\. Recognized: Guard\./.test(T('Cleave + Iron Guard').panelText)
+    && /Not a valid Skill choice: no Skill from the pool named\./.test(T('Walk towards the gate').panelText)
+    && /CHARACTER CREATION COMPLETE[\s\S]*HP 85\/85 \| MP 60\/60 \| STA 100\/100/.test(T('Heavy Slash + Guard').panelText)
+    && /Starter Longsword \[F\] — ATK 6[\s\S]*Starter Heavy Armor \[F\] — DEF 6, MDEF 2/.test(T('#equipment').panelText);
+checks.noLlmForCreation = !requests.some((r) => CREATION.includes(String(r.lastUser)))
+    && /mode: story/.test(engineOf(requests[0])) && /CHARACTER CREATION is complete/.test(engineOf(requests[0]));
+checks.warriorHud = /HP 85\/85 \(unhurt\)/.test(T('city gate').hudText || '') && /Starter Longsword · Starter Heavy Armor/.test(T('city gate').hudText || '')
+    && /ATK 6 · MATK 0 · DEF 7 · MDEF 3/.test(T('city gate').hudText || '');
 const chatOf = (r) => (r?.messages || []).filter((m) => m.role === 'user' || m.role === 'assistant').map((m) => String(m.content));
 const kestReq = reqFor('rats are done');
 const kestCard = (engineOf(kestReq).split('PRESENT (each NPC knows ONLY what its card lists):\n')[1] || '').split('\n\n')[0];
@@ -207,7 +225,7 @@ checks.travel = /Location: Ashbridge, Duskreach — east gate/.test(travelTurn?.
 // World Info scans the last two messages (Scan Depth 2): neither names the new realm, only the Lore Bridge does
 checks.loreBridgeTravel = (lookReq?.messages || []).some((m) => /DUSKREACH \[CANON/.test(String(m.content)))
     && !chatOf(lookReq).slice(-2).some((c) => /Ashbridge|Duskreach|Blackgate/i.test(c));
-out.v3 = { kestCard, travelHud: travelTurn?.hudText || '', lookEngineHead: engineOf(lookReq).split('\n').slice(0, 3).join('\n') };
+out.v3 = { kestCard, travelHud: travelTurn?.hudText || '', lookEngineHead: engineOf(lookReq).split('\n').slice(0, 3).join('\n'), creation: CREATION.map((c) => ({ input: c, panel: T(c).panelText })), firstRequestEngine: engineOf(requests[0]).split('\n').slice(0, 12).join('\n'), firstHud: T('city gate').hudText };
 fs.writeFileSync(path.join(HERE, 'result.json'), JSON.stringify(out, null, 1));
 console.log(JSON.stringify(checks, null, 1));
 console.log(Object.values(checks).every(Boolean) ? 'LIVE SILLYTAVERN SMOKE: OK' : 'LIVE SILLYTAVERN SMOKE: FAILED');

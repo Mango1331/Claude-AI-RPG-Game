@@ -24,7 +24,8 @@ export async function scanWindows(content, fixture) {
     for (const t of fx.turns) {
         chat.push(msg(t.input, true));
         const gen = prepareGeneration(chat, content, { type: 'normal', settings: { engineLore: false } });
-        out.push({ input: t.input, messages: chat.map((m) => m.mes), keys: gen.loreKeys || [] });
+        // character creation is answered by a System panel: no generation, so no World Info scan
+        out.push({ input: t.input, messages: chat.map((m) => m.mes), keys: gen.loreKeys || [], system: gen.action === 'panels' });
         chat.push(msg(t.reply));
         processReply(chat, chat.length - 1, content);
     }
@@ -41,6 +42,10 @@ async function main() {
         console.log('| Turn | Input | Tokens | Entries (besides the two constant ones) | Dropped by budget |');
         console.log('|---|---|---|---|---|');
         for (const [i, w] of (await scanWindows(content, fixture)).entries()) {
+            if (w.system) {
+                console.log(`| ${i + 1} | ${w.input.slice(0, 36).replace(/\|/g, '/')} | – | System panel, no generation | |`);
+                continue;
+            }
             const r = activate(entries, w.messages, { depth: Number(depth), budget: Number(budget), inject: w.keys });
             all.push(r.tokens);
             const name = (x) => x.e.comment.replace(/^[A-Z ]+— /, '');

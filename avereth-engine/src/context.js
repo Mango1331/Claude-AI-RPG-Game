@@ -358,6 +358,8 @@ export function buildContext(state, content, opts = {}) {
         skills: state.mode === 'creation' || !!state.encounter || opts.outcome?.kind === 'combat' || skillNamed,
     }), 0);
     if (state.mode === 'creation') add('creation', `CHARACTER CREATION — STEP ${state.creation.step}/2 in progress. Story time is frozen.${state.creation.step === 1 ? ` Base Classes: ${[...content.classes.values()].map((c) => `${c.name} (${c.favored.join('/')})`).join(', ')}.` : ''}`, 0);
+    // the System answered creation without the narrator: the first story reply must not reopen the greeting's menu
+    else if (state.creation?.turn != null && state.turn === state.creation.turn + 1) add('creation', 'CHARACTER CREATION is complete (the System handled it; its menu at the start of the chat is closed). Begin the story with the player\'s action; do not repeat a class or Skill choice.', 0);
 
     const queryText = `${input} ${lastReply}`;
     const focusWords = new Set(tokenize(queryText));

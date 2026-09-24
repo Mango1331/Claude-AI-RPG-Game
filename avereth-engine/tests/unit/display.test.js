@@ -43,6 +43,15 @@ test('combat start: Initiative, Turn order, each action with its damage, HP befo
     ]);
 });
 
+test('a fighter without a bow or quiver sees no arrow count (the Warrior\'s fight showed "Arrows 0")', () => {
+    const g = new Game(content);
+    g.turn('Warrior');
+    g.turn('Power Strike + Guard');
+    g.state.last = { ...g.state.last, outcome: { kind: 'combat', started: { reason: 'x', order: 'Alaric', ambush: false }, board: { ...board(71), pc: { mp: 60, max_mp: 60, sta: 88, max_sta: 100, arrows: 0 } }, records: [] } };
+    applyEvent(g.state, { t: 'entity.created', d: { entity: { id: 'npc.bram', kind: 'npc', name: 'Bram', descriptors: [], status: 'alive', location: g.state.scene.location } } });
+    assert.ok(turnPanel(g.state, content).split('\n').includes('`Alaric: MP 60/60 · STA 88/100`'));
+});
+
 test('Ambush crits, cover, defensive reductions, Barrier, overkill and multi-hit read like a game log', () => {
     const state = withOutcome({
         kind: 'combat', started: null, next: null, board: board(0), ended: { defeated: ['npc.bram'], escaped: [], xp_awarded: 20, pc_dead: false, pc_escaped: false }, levelups: [],

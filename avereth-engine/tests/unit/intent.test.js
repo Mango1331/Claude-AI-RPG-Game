@@ -135,6 +135,21 @@ test('a step back with the attack is the Turn\'s one-band move away (Core #12/#2
     assert.equal(parseIntent('I Power Shot the wolf', g.state, content).move, null);
 });
 
+test('creeping or sneaking up with the attack is the Turn\'s one-band move closer: a Warrior\'s melee Ambush from SHORT lands', () => {
+    const g = new Game(content);
+    g.turn('Warrior');
+    g.turn('Power Strike + Guard');
+    g.reply({ new: [{ ref: 'rat', kind: 'creature', species: 'rat', desc: ['big rat'], band: 'SHORT' }], aware: [{ who: 'rat', level: 'unaware' }] });
+    for (const t of ['*I creep up and Power Strike the rat.*', 'I sneak closer and Power Strike the rat', 'I edge closer and strike the rat', 'I get closer and attack the rat']) {
+        assert.equal(parseIntent(t, g.state, content).move, 'closer', t);
+    }
+    for (const t of ['I get up and attack the rat', 'I get in position and strike the rat']) assert.equal(parseIntent(t, g.state, content).move, null, t);
+    g.input('*I sneak closer and Power Strike the rat.*');
+    const opening = g.state.last.outcome.records.find((r) => r.actor === 'pc');
+    assert.equal(opening.opening, true);
+    assert.equal(opening.strikes[0].crit.multiplier, 1.5, 'the true Ambush crit (Core #24)');
+});
+
 test('a target the player tells apart ("the second one") is never the sole-hostile default: nothing spent, nothing rolled', () => {
     const g = scene();
     for (const t of ['I shoot the second one', 'I Power Shot the other one', 'I shoot at another one', 'I aim at the left one and shoot']) {

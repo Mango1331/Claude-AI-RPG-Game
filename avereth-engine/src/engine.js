@@ -15,7 +15,7 @@ import { selectClass, selectSkills } from './creation.js';
 import { scaleCreature, chooseCreatureLevel, humanSheet } from './npcgen.js';
 import { initEncounter, addCombatant, runCombat, endEncounterEvents, terminal } from './combat.js';
 import { parseIntent } from './intent.js';
-import { runCommands } from './commands.js';
+import { runCommands, creationPanel } from './commands.js';
 import { stealthEvents } from './checks.js';
 import { extractReport, reportToEvents } from './delta.js';
 import { truth, knows, perceivers, entityLabel, setFactEvents, PC_NAME_FACT, PC_LOOK_FACT } from './knowledge.js';
@@ -86,16 +86,19 @@ export function playerTurn(state, content, input, { msg = null } = {}) {
     emit({ t: 'turn.begun', d: { turn: s.turn + 1, input_hash: hash32(text), input: text.slice(0, 240) } });
     const situations = [];
     let outcome;
+    const creation = s.mode === 'creation' && s.entities.pc.status !== 'dead';
     if (s.entities.pc.status === 'dead') {
         outcome = { kind: 'note', text: 'Alaric is dead (0 HP). The campaign has ended; nothing further is resolved. (Swipe/delete messages to revise the last turn.)' };
-    } else if (s.mode === 'creation') {
+    } else if (creation) {
         outcome = creationTurn(s, content, intent, emit);
     } else {
         outcome = storyTurn(s, content, text, intent, dice, emit, situations);
     }
     if (TRADE_RE.test(text) && s.mode !== 'creation') situations.push('trade');
     emit({ t: 'outcome.recorded', d: { outcome, situations } });
-    return { events, outcome, command: null, intent, situations, state: s };
+    // character creation is a menu: the engine answers it with a System panel, the narrator is not called
+    const command = creation ? { panels: [creationPanel(s, content, outcome)], llm: null } : null;
+    return { events, outcome, command, intent, situations, state: s };
 }
 
 function creationTurn(s, content, intent, emit) {
@@ -107,7 +110,7 @@ function creationTurn(s, content, intent, emit) {
     }
     if (intent.kind === 'creation.skills') {
         const r = selectSkills(s, content, intent.skills);
-        if (r.errors) return { kind: 'creation.invalid', reason: r.errors.join(' ') };
+        if (r.errors) return { kind: 'creation.invalid', reason: r.errors.join(' '), recognized: intent.skills };
         r.events.forEach(emit);
         return r.outcome;
     }

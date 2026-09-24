@@ -24,7 +24,7 @@
       "items": "[{item, qty, from?, to?, taken_by?, why}] physical hand-overs",
       "coin": "[{who?:'pc', cp, taken_by?, why}] Alaric's purse in Copper: + received, - paid or lost",
       "recover": "[{who?, hp?, mp?, sta?, why}] rest/healing outside combat",
-      "quests": "[{title, status:'offered'|'active'|'completed'|'failed', giver?, note?, level, type:'minor'|'standard'|'dangerous'|'major', rank?}] first report needs level + type (hidden XP basis, never named); rank = Guild Quest Rank: Novice 1-14, Proven 15-29, Veteran 30-44, Elite 45-59, Master 60-74, Grandmaster 75-89, Legend 90+",
+      "quests": "[{title, status:'offered'|'active'|'completed'|'failed', giver?, note?, reward? (what it pays, as posted), level, type:'minor'|'standard'|'dangerous'|'major', rank?}] first report needs level + type (hidden XP basis, never named); rank = Guild Quest Rank: Novice 1-14, Proven 15-29, Veteran 30-44, Elite 45-59, Master 60-74, Grandmaster 75-89, Legend 90+",
       "threads": "[{text, kind:'promise'|'debt'|'threat'|'deadline'|'mystery', status:'open'|'resolved'}]",
       "combat": "{by} or a list: who commits to attack Alaric right now (never resolve it)",
       "intent": "[{who, intent:'attack'|'flee'|'surrender'|'parley'|'hold'|'take_cover'}] an NPC's next combat action",

@@ -305,6 +305,12 @@
               "failed"
             ]
           },
+          "reward": {
+            "type": [
+              "string",
+              "number"
+            ]
+          },
           "level": {
             "type": "integer",
             "minimum": 1

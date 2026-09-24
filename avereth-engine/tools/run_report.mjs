@@ -82,10 +82,17 @@ export function parseServerLog(text) {
         }
         seq.push({ kind: m[1], obj, error });
     }
-    // a response belongs to the request right before it; a streamed request has none
+    // a response belongs to the request right before it; a streamed request has none. A response id seen before is an
+    // old reply handed back again (Test 5, first run: request 4 got request 3's reply, same id and time), which measures
+    // nothing about this request.
     const pairs = [];
+    const seen = new Map();
     for (const [i, x] of seq.entries()) {
-        if (x.kind === 'request' && x.obj) pairs.push({ req: x.obj, resp: seq[i + 1]?.kind === 'response' ? seq[i + 1].obj : null });
+        if (x.kind !== 'request' || !x.obj) continue;
+        const resp = seq[i + 1]?.kind === 'response' ? seq[i + 1].obj : null;
+        const repeatOf = resp?.id != null ? seen.get(resp.id) ?? null : null;
+        if (resp?.id != null && repeatOf == null) seen.set(resp.id, pairs.length + 1);
+        pairs.push({ req: x.obj, resp: repeatOf ? null : resp, repeatOf });
     }
     return { pairs, errors: seq.filter((x) => x.error).map((x) => `${x.kind}: ${x.error}`) };
 }
@@ -222,7 +229,7 @@ export function measure(pairs, { lore = [], gens = [] } = {}) {
         const outChars = out ? Object.values(out).reduce((a, b) => a + b, 0) : 0;
         const outTokens = usage?.completion_tokens ?? null;
         const input = lastInput(messages);
-        const gen = matchGeneration(gens, normInput(input), p.resp ? String(p.resp.choices?.[0]?.message?.content ?? '') : null);
+        const gen = p.repeatOf ? null : matchGeneration(gens, normInput(input), p.resp ? String(p.resp.choices?.[0]?.message?.content ?? '') : null);
         return {
             n: i + 1, input, chars, ratio, estimated: !usage?.prompt_tokens,
             prompt: usage?.prompt_tokens ?? Math.round(total / CHARS_PER_TOKEN),
@@ -230,6 +237,7 @@ export function measure(pairs, { lore = [], gens = [] } = {}) {
             completion: outTokens,
             output: out && outTokens ? Object.fromEntries(Object.entries(out).map(([k, v]) => [k, outChars ? Math.round((outTokens * v) / outChars) : 0])) : null,
             seconds: gen?.seconds ?? null, effort: p.req.reasoning_effort ?? null, stream: !!p.req.stream, finish: p.resp?.choices?.[0]?.finish_reason ?? null,
+            repeatOf: p.repeatOf ?? null,
         };
     });
 }
@@ -259,7 +267,7 @@ function printReport(rows, replay) {
     console.log('|---|---|---:|---:|---:|---:|---:|---:|---|---|---|');
     for (const r of rows) {
         const o = r.output || {};
-        console.log(`| ${r.n} | ${short(r.input)} | ${fmt(r.completion)} | ${fmt(o.reasoning)} | ${fmt(o.prose)} | ${fmt(o.report)} | ${fmt(o.tracker)} | ${r.seconds == null ? '–' : r.seconds.toFixed(1)} | ${r.effort ?? '–'} | ${r.stream ? 'ja' : 'nein'} | ${r.finish ?? '–'} |`);
+        console.log(`| ${r.n} | ${short(r.input)} | ${fmt(r.completion)} | ${fmt(o.reasoning)} | ${fmt(o.prose)} | ${fmt(o.report)} | ${fmt(o.tracker)} | ${r.seconds == null ? '–' : r.seconds.toFixed(1)} | ${r.effort ?? '–'} | ${r.stream ? 'ja' : 'nein'} | ${r.repeatOf ? `alte Antwort von #${r.repeatOf}` : r.finish ?? '–'} |`);
     }
     const withOut = rows.filter((r) => r.output);
     if (withOut.length) {
@@ -301,7 +309,8 @@ async function main() {
     const gens = chatFile ? chatGenerations(fs.readFileSync(chatFile, 'utf8')) : [];
     const rows = measure(pairs, { lore, gens });
     const replay = replayFile ? await replayFixture(JSON.parse(fs.readFileSync(replayFile, 'utf8'))) : null;
-    console.log(`${pairs.length} Anfragen, ${pairs.filter((p) => p.resp).length} mit Antwort im Log${errors.length ? `, ${errors.length} nicht lesbar: ${errors.slice(0, 3).join('; ')}` : ''}\n`);
+    const repeats = pairs.map((p, i) => (p.repeatOf ? `#${i + 1} = #${p.repeatOf}` : null)).filter(Boolean);
+    console.log(`${pairs.length} Anfragen, ${pairs.filter((p) => p.resp).length} mit Antwort im Log${repeats.length ? `, ${repeats.length} mit der alten Antwort einer früheren Anfrage (gleiche ID, nicht mitgezählt: ${repeats.join(', ')})` : ''}${errors.length ? `, ${errors.length} nicht lesbar: ${errors.slice(0, 3).join('; ')}` : ''}\n`);
     printReport(rows, replay);
     for (const n of detailTurns) {
         const r = rows.find((x) => x.n === n);

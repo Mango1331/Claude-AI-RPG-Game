@@ -26,6 +26,15 @@ test('the report is found, parsed tolerantly and removed from the visible text',
     assert.equal(tolerantJson('{broken').error, 'report is not valid JSON');
 });
 
+test('JSON a model got almost right is repaired: a root closed too early, brackets left open, a stray closer', () => {
+    // Test 5 run, turn 11: one "}" too many closed the report before "check", and the whole report was lost
+    assert.deepEqual(tolerantJson('{"time":12,"combat":{"by":"rats"}},"check":{"what":"x","success":true}').value, { time: 12, combat: { by: 'rats' }, check: { what: 'x', success: true } });
+    assert.deepEqual(tolerantJson('{"time":5,"new":[{"ref":"boy","kind":"npc"').value, { time: 5, new: [{ ref: 'boy', kind: 'npc' }] }, 'a reply cut off after a value');
+    assert.deepEqual(tolerantJson('{"time":5}}').value, { time: 5 });
+    assert.equal(tolerantJson('{"memory":[{"text":"he said \\"{no}\\", then left","imp":6}]}').value.memory[0].text, 'he said "{no}", then left', 'brackets inside strings are text');
+    assert.equal(tolerantJson('{"memory":[{"text":"cut off mid-sent').error, 'report is not valid JSON', 'an unterminated string is not guessed');
+});
+
 test('engine-owned values and unknown keys are rejected with a reason', () => {
     const g = ready();
     const r = reportToEvents({ hp: 10, xp: 500, damage: 30, rolls: [3], mood: 'grim', time: 5 }, g.state, content);

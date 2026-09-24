@@ -5,7 +5,7 @@ Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extens
 - Keine Abhängigkeiten, kein Server, keine Datenbank.
 - Läuft im Browser (SillyTavern) und in Node (Tests).
 
-**Warum diese Architektur:** [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md). **Befunde aus Testrun-v1:** [docs/TESTRUN_V1.md](docs/TESTRUN_V1.md). **Gesamtbericht:** [ABSCHLUSSBERICHT.md](ABSCHLUSSBERICHT.md). **Externe Review und Antwort:** [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md). **Erster echter Lauf:** [docs/TESTRUN_V2.md](docs/TESTRUN_V2.md). **Zweiter Lauf:** [docs/TESTRUN_V3.md](docs/TESTRUN_V3.md). **Dritter Lauf:** [docs/TESTRUN_V4.md](docs/TESTRUN_V4.md). **Welt-Lore als Lorebook:** [docs/LOREBOOK.md](docs/LOREBOOK.md). **Deep Review Kampf + Runtime V3 (Vorschlag):** [docs/REVIEW_V3.md](docs/REVIEW_V3.md). **Runtime V3 (umgesetzt: einfacher Kampf, NPC-Record, HUD, Prompt-Projektion, Megumin-Checkliste):** [docs/RUNTIME_V3.md](docs/RUNTIME_V3.md). **Plan für Test 5:** [docs/TEST5_PLAN.md](docs/TEST5_PLAN.md). **Pre-Test-5-Diagnoselauf:** [docs/PRETEST5_DIAGNOSE.md](docs/PRETEST5_DIAGNOSE.md).
+**Warum diese Architektur:** [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md). **Befunde aus Testrun-v1:** [docs/TESTRUN_V1.md](docs/TESTRUN_V1.md). **Gesamtbericht:** [ABSCHLUSSBERICHT.md](ABSCHLUSSBERICHT.md). **Externe Review und Antwort:** [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md). **Erster echter Lauf:** [docs/TESTRUN_V2.md](docs/TESTRUN_V2.md). **Zweiter Lauf:** [docs/TESTRUN_V3.md](docs/TESTRUN_V3.md). **Dritter Lauf:** [docs/TESTRUN_V4.md](docs/TESTRUN_V4.md). **Welt-Lore als Lorebook:** [docs/LOREBOOK.md](docs/LOREBOOK.md). **Deep Review Kampf + Runtime V3 (Vorschlag):** [docs/REVIEW_V3.md](docs/REVIEW_V3.md). **Runtime V3 (umgesetzt: einfacher Kampf, NPC-Record, HUD, Prompt-Projektion, Megumin-Checkliste):** [docs/RUNTIME_V3.md](docs/RUNTIME_V3.md). **Plan für Test 5:** [docs/TEST5_PLAN.md](docs/TEST5_PLAN.md). **Pre-Test-5-Diagnoselauf:** [docs/PRETEST5_DIAGNOSE.md](docs/PRETEST5_DIAGNOSE.md). **Erster Test-5-Lauf:** [docs/TESTRUN_V5.md](docs/TESTRUN_V5.md).
 
 ## Was die Engine pro Zug tut
 
@@ -114,6 +114,7 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
   | Welt | Zeit, Ort, Wetter, Anwesende mit Entfernung, Kampf und Zugreihenfolge, aktive Quests, Fristen, offene Fäden, bekannte Fakten zum Ort |
 
   Das HUD zeigt immer den Engine-Stand, auch wenn die Erzählung sich verzählt. Haltungen, Agenden und Geheimnisse von NPCs zeigt es nie. Screenshot: [docs/img/hud_live_sillytavern.png](docs/img/hud_live_sillytavern.png).
+- **`NO FACT REPORT` über einer Antwort:** Der Erzähler hat keinen gültigen Fakten-Report geschrieben. Was diese Antwort erzählt (Ort, Personen, Quest), kennt die Engine nicht, und das HUD kann hinter der Geschichte zurückbleiben. Neu generieren (Swipe) oder weiterspielen; der nächste Report kann es nachholen.
 
 **Befehle** (antwortet die Engine direkt, ohne LLM-Aufruf und ohne Spielzeit):
 
@@ -136,7 +137,7 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 ## Für Entwickler
 
 ```
-npm test                               # 181 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Runtime V3, Pre-Test-5, Regression der Testruns 1–4
+npm test                               # 190 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Runtime V3, Pre-Test-5, Regression der Testruns 1–5
 node tools/testrun_compare.js          # Token-Vergleich mit Testrun-v1
 node tools/browser_smoke.mjs           # optional: index.js in echtem Chromium mit gemocktem SillyTavern-Kontext (braucht Playwright)
 AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st   # optional: Live-Smoke in echtem SillyTavern mit streamendem Mock-Erzähler (docs/RUNTIME_V3.md §8)

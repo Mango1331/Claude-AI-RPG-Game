@@ -162,6 +162,6 @@ export function anyLabel(state, content, id) {
 /** Human-readable proposition "s p o" with entity names. */
 export function propText(state, prop, content = null) {
     const s = anyLabel(state, content, prop.s);
-    const o = anyLabel(state, content, prop.o);
+    const o = String(prop.o).toLowerCase() === 'true' ? '' : anyLabel(state, content, prop.o);
     return `${s} ${String(prop.p).replace(/_/g, ' ')} ${o}`.trim();
 }

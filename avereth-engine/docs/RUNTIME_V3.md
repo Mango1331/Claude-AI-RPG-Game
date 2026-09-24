@@ -594,7 +594,16 @@ Grundlage ist der sichtbare Prompt aus Testrun 4, die Anfrage zu Zug 9 (die zehn
 5. **Im Thinking-Prompt** (System-Nachricht in Tiefe 1, beginnt mit `## your thinking steps:`):
    - Den Abschnitt von `## At the end of your response, output exactly one <Blocks> section.` bis einschließlich `</Blocks>` löschen.
    - Das sind die Templates für `<World_State>`, `<Character_Sheet>` (mit Carry-forward- und Zahlenregeln), `<New_NPC>` und `<NPC_Update>`.
-   - `## final reminder:` direkt danach bleibt.
+   - **An seine Stelle**, also zwischen `</config>` und `## final reminder:`, diese zwei Zeilen setzen:
+     ```
+     ## At the end of your response:
+     Write exactly one <avereth>{…}</avereth> fact report, as the [AVERETH ENGINE] block describes — every reply, {} if nothing new. Nothing comes after it.
+     ```
+   - `## final reminder:` bleibt. Unter „2. Follow every output rule. …“ einen dritten Punkt ergänzen:
+     ```
+     3. The reply ends with the <avereth> fact report, {} if nothing new.
+     ```
+   - Warum nicht nur löschen: In Testrun 4 hing der Report an der Pflicht am Antwortende (13 von 15 Antworten mit Report). Im ersten Test-5-Lauf fehlte sie, und nur 3 von 9 Story-Antworten hatten einen Report ([TESTRUN_V5.md](TESTRUN_V5.md)).
 6. **Megumin-Regex-Skripte, die `<Blocks>` einklappen oder rendern:** Deaktivieren ist optional, denn es kommen keine Blöcke mehr.
    - Das Avereth-Übergangsskript (`avereth_hide_tracker_blocks.json`) kann danach auch aus.
 7. **Max Response Length senken.** Ohne Blöcke reichen meist 4.096 Token, bei Reasoning „high“ 6.000.

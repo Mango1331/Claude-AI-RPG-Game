@@ -127,6 +127,11 @@ test('taking a quest by name (Testrun 4); a look, a question or a single shared 
     assert.ok(!takesQuest('I take the Vermin in the Malthouse Cellar Quest', 'Wolves Near the Ashbridge Ford'));
 });
 
+test('handing over money is paying ("*i give her one Silver*", Test 5 run); handing over a thing is not', () => {
+    for (const t of ['*i give her one Silver and say* the registration for now', 'I hand him two copper', 'I put a silver on the counter', 'I count out five copper']) assert.ok(authorization(t).pay, t);
+    for (const t of ['I give her the letter', 'I hand him my sword']) assert.ok(!authorization(t).pay && authorization(t).give, t);
+});
+
 test('a step back with the attack is the Turn\'s one-band move away (Core #12/#24)', () => {
     const g = scene();
     for (const t of ['*i kite backwards and Power Shot again at it*', 'I jump back and shoot the wolf', 'I step back and loose an arrow at the wolf']) {

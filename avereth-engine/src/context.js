@@ -231,7 +231,7 @@ function outcomeBlock(state, content, outcome) {
         if (c.automatic) lines.push(`${c.label}: automatic success — ${c.note}. Alaric is now concealed.`);
         else lines.push(`${c.label}: chance ${c.chance}% (d100 ${c.roll}) -> ${c.success ? 'SUCCESS: Alaric is concealed' : 'FAILURE: he is noticed'}. Narrate this result; do not change it.`);
     } else if (outcome.kind === 'narrative') {
-        lines.push(`No mechanic was triggered by the player's message. CHECK DIE for this reply: d100 = ${outcome.check_die}. Use it only if a Core #7 check is genuinely needed (uncertain AND consequential): Chance% = Actor ÷ (Actor + Opposition) × 100 (Actor = relevant stat + explicit bonuses; situational ±10/20/35 %); success if ${outcome.check_die} ≤ Chance%. Then add "check" to the fact report. Otherwise ignore the die.`);
+        lines.push(`No mechanic was triggered by the player's message (the fact report is still due). CHECK DIE for this reply: d100 = ${outcome.check_die}. Use it only if a Core #7 check is genuinely needed (uncertain AND consequential): Chance% = Actor ÷ (Actor + Opposition) × 100 (Actor = relevant stat + explicit bonuses; situational ±10/20/35 %); success if ${outcome.check_die} ≤ Chance%. Then add "check" to the fact report. Otherwise ignore the die.`);
     } else if (outcome.kind === 'note') {
         lines.push(outcome.text);
     }
@@ -471,5 +471,6 @@ export function reportInstruction(content, keys = Object.keys(content.narrator.r
     if (!keys.length) return 'FACT REPORT: end the reply with <avereth>{}</avereth> (character creation: nothing to report).';
     const all = r.keys;
     const listed = Object.keys(all).filter((k) => keys.includes(k));
-    return `FACT REPORT: ${r.instruction}\n${listed.map((k) => `${k}: ${all[k]}`).join(' | ')}${listed.includes('new') && listed.includes('aware') ? `\nExample: ${r.example}` : ''}`;
+    // the last line before generation (Test 5 run: without the Megumin <Blocks> duty at the end, 6 of 9 replies had none)
+    return `FACT REPORT: ${r.instruction}\n${listed.map((k) => `${k}: ${all[k]}`).join(' | ')}${listed.includes('new') && listed.includes('aware') ? `\nExample: ${r.example}` : ''}\nEnd EVERY reply with <avereth>{…}</avereth>, {} if nothing new.`;
 }

@@ -14,7 +14,7 @@ import { normText } from './util.js';
 const PRED_SYNONYMS = {
     state: 'status', condition: 'status', located_in: 'location', located_at: 'location', lives_in: 'residence',
     lives_at: 'residence', resides_in: 'residence', ruled_by: 'ruler', led_by: 'leader', owned_by: 'owner',
-    called: 'name', named: 'name', goal: 'agenda', current_goal: 'agenda', objective: 'agenda', wants: 'agenda',
+    called: 'name', named: 'name', has_name: 'name', name_is: 'name', full_name: 'name', gave_name_as: 'name', knows_name: 'name', knows_name_of: 'name', goal: 'agenda', current_goal: 'agenda', objective: 'agenda', wants: 'agenda',
     looks: 'appearance', look: 'appearance', speech: 'voice', speaks: 'voice', manner_of_speech: 'voice', role: 'occupation',
     job: 'occupation', profession: 'occupation', guild_standing: 'guild_rank', guild_rank_of: 'guild_rank',
 };

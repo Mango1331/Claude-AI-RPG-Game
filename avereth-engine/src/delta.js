@@ -224,8 +224,9 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     }
     // travel / place
     let movedPlace = false;
-    const loc = report.location ? content.locations.get(report.location) || locationByName(content, report.location)
-        || Object.values(state.entities).find((e) => e.kind === 'location' && normText(e.name) === normText(report.location)) : null;
+    const where = report.location ? findLocation(state, content, report.location) : null;
+    const loc = where?.loc || null;
+    if (where?.spot && !report.place) report = { ...report, place: where.spot };
     // the current city named again ("location":"Lumenford" while in Lumenford) is no travel: only its place counts
     // (Testrun 4: the move from the malthouse cellar to the Guild hall left the dead vermin "present" in the hall)
     if (report.location && !(loc && loc.id === state.scene.location)) {
@@ -237,12 +238,12 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
             present.add('pc');
             accepted.push(`location -> ${loc.name}`);
         } else {
-            const id = uniqueId(state, 'loc', report.location, taken);
-            events.push({ t: 'entity.created', d: { entity: { id, kind: 'location', name: String(report.location).slice(0, 80), status: 'exists', realm: state.entities[state.scene.location]?.realm || content.locations.get(state.scene.location)?.realm || null, created: at, source: src } } });
-            events.push({ t: 'scene.moved', d: { location: id, place: report.place ? String(report.place).slice(0, 120) : String(report.location), reset_present: true } });
+            const id = uniqueId(state, 'loc', where.name, taken);
+            events.push({ t: 'entity.created', d: { entity: { id, kind: 'location', name: String(where.name).slice(0, 80), status: 'exists', realm: state.entities[state.scene.location]?.realm || content.locations.get(state.scene.location)?.realm || null, created: at, source: src } } });
+            events.push({ t: 'scene.moved', d: { location: id, place: report.place ? String(report.place).slice(0, 120) : String(where.name), reset_present: true } });
             present.clear();
             present.add('pc');
-            accepted.push(`new location ${report.location}`);
+            accepted.push(`new location ${where.name}`);
         }
     } else if (report.place) {
         // a more precise name for the same spot ("Guild hall" -> "Guild hall, front desk") is no move; another spot of
@@ -713,9 +714,32 @@ function coverOf(c) {
 }
 
 /** The same value; for a name, "Alaric, no family name" is Alaric (Testrun 4: it became a FALSE belief of the clerk). */
+/**
+ * The location a report names. The engine block names it "Alderwatch, Valedorn Crown" (city, realm) and narrators echo
+ * that, or name a spot inside it ("Salt Gate customshouse, Alderwatch"): every comma part is tried, a realm is never a
+ * location, and the parts before the known location are the spot (live run 24.09. 23:23: both made a second
+ * Alderwatch). name: the location's name without realm, for a new one.
+ */
+function findLocation(state, content, name) {
+    const byName = (n) => content.locations.get(n) || locationByName(content, n)
+        || Object.values(state.entities).find((e) => e.kind === 'location' && normText(e.name) === normText(n)) || null;
+    const whole = byName(name);
+    if (whole) return { loc: whole, spot: null, name: String(name) };
+    const realms = new Set([...content.factions.values()].filter((f) => f.kind === 'realm').map((f) => normText(f.name)));
+    const parts = String(name).split(',').map((x) => x.trim()).filter((x) => x && !realms.has(normText(x)));
+    for (const [i, part] of parts.entries()) {
+        const l = byName(part);
+        if (l) return { loc: l, spot: parts.slice(0, i).join(', ') || null, name: part };
+    }
+    return { loc: null, spot: null, name: parts.join(', ') || String(name) };
+}
+
 function sameValue(p, a, b) {
     const core = (v) => (p === 'name' ? normText(v).replace(/\b(?:with )?(?:no|without) (?:family name|family|surname|last name)\b/g, ' ').replace(/\s+/g, ' ').trim() : normText(v));
-    return core(a) === core(b);
+    const [x, y] = [core(a), core(b)];
+    // a name with a family name added is the same name: "Alaric Red" is Alaric (live run 24.09. 23:23: the clerk
+    // "believed" it as a false name and did not know his name)
+    return x === y || (p === 'name' && !!x && !!y && (y.startsWith(`${x} `) || x.startsWith(`${y} `)));
 }
 
 const LIFE_STATUS = new Set(['alive', 'dead']);

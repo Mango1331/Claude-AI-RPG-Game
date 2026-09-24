@@ -1,7 +1,8 @@
 // Live SillyTavern smoke, step 2 (optional, docs/RUNTIME_V3.md): a real SillyTavern (tested with 1.19.0) with this
 // extension and a scripted, streaming mock narrator (OpenAI-compatible, port 5001). Plays creation, an incidental NPC,
-// a recurring NPC, the quest board, registration and coin, travel, an ambush fight and the report back, and checks the
-// Runtime V3 goals in the real host: prompt assembly, streaming, display, HUD. It judges no prose (the mock is scripted).
+// a recurring NPC, the quest board, registration and coin, an ambush fight, the report back, Kest again after his
+// exchange has left the history window, and travel to another realm; it checks the Runtime V3 goals in the real host:
+// prompt assembly, history window, NPC record, Lore Bridge, streaming, display, HUD. It judges no prose (scripted mock).
 // Usage: AVERETH_ST_DIR=/path/to/SillyTavern node tools/st_live/run.mjs   (after setup.mjs; Playwright + Chromium)
 import http from 'node:http';
 import fs from 'node:fs';
@@ -27,6 +28,9 @@ const SCRIPT = [
     ['Ranger', '`CLASS SELECTED: RANGER` — choose two Skills from the pool shown.\n<avereth>{}</avereth>'],
     ['Aimed Shot + Power Shot', '`CHARACTER CREATION COMPLETE`\n<avereth>{}</avereth>'],
     ['city gate', 'The south gate of Tidecross stands open to the morning carts. A gate guard with a bored face and a boar-spear waves the traffic through, then looks you over once.\n\n"Pass\'s free on foot," he says, already watching the next cart.\n<avereth>{"time":20,"place":"Tidecross south gate","new":[{"ref":"gate guard","kind":"npc","desc":["gate guard","bored"],"band":"SHORT"}],"aware":[{"who":"gate guard","level":"aware"}]}</avereth>' + MEGUMIN_BLOCKS],
+    ['rats are done', '"Heard." Kest glances at the ear pail, then back at you. "Start there. Keep starting there."\n<avereth>{"time":2,"attitude":[{"who":"Kest","delta":10,"why":"the Novice took the rat job first, as told"}]}</avereth>'],
+    ['long road east', 'Three days of road dust later, a walled city of black stone rises over the river crossing. The guards at the east gate wave carts through without a glance.\n<avereth>{"time":4320,"location":"Ashbridge","place":"east gate"}</avereth>'],
+    ['look around the market', 'Beyond the gate the market smells of smoke and tar; a tinker sharpens knives under a grey awning.\n<avereth>{"time":10}</avereth>'],
     ['back to the Guild', 'Serah takes the ear with two fingers and drops it in a pail. "Cellar\'s clear, then." She counts out five silver. At the board, Kest watches you without a word.\n<avereth>{"time":35,"place":"Guild hall, counter","enter":["Serah","Kest"],"quests":[{"title":"Rats in the Salt Cellar","status":"completed"}],"coin":[{"cp":50,"why":"quest reward"}],"learn":[{"who":"Serah","s":"pc","p":"cleared","o":"the salt cellar rats","how":"told","from":"pc"}]}</avereth>'],
     ['Guild hall', 'The Guild hall smells of wet wool and ink. At the Novice board a one-eyed man with a grey braid leans on the wall; behind the counter a clerk with pale eyes and an ink-smudged jaw sorts slips.\n\n"New face," the one-eyed man rasps. "Board\'s there."\n<avereth>{"time":25,"place":"Guild hall, Novice board","leave":["gate guard"],"new":[{"ref":"Kest","name":"Kest","kind":"npc","desc":["veteran adventurer"],"traits":"one-eyed, grey braid, gruff","band":"SHORT"},{"ref":"Serah","name":"Serah","kind":"npc","desc":["guild clerk"],"traits":"pale eyes, ink-smudged jaw","band":"MEDIUM"}],"facts":[{"s":"Kest","p":"occupation","o":"veteran adventurer"},{"s":"Kest","p":"voice","o":"low rasp, clipped sentences"},{"s":"Serah","p":"occupation","o":"Guild clerk"}],"quests":[{"title":"Rats in the Salt Cellar","status":"offered","giver":"Serah","level":1,"type":"minor","rank":"Novice"}]}</avereth>'],
     ['Greyhowl', '"Greyhowl." Kest\'s one eye narrows. "Took two Wardens last spring. You leave that bill alone, Novice." He taps the lower slip instead. "Rats. Start there."\n<avereth>{"time":5,"memory":[{"text":"Kest warned Alaric that Greyhowl killed two Wardens and told him to leave the posting alone","who":["Kest","pc"],"imp":7}],"attitude":[{"who":"Kest","delta":-15,"why":"a green Novice eyeing the Greyhowl bill"}],"facts":[{"s":"Kest","p":"agenda","o":"get the Greyhowl posting taken down"}]}</avereth>'],
@@ -149,6 +153,11 @@ for (const input of [
     '*I head to the salt cellar under the fish docks.*',
     '*I Power Shot the rat.*',
     '*I cut an ear off the rat and walk back to the Guild hall to report to Serah.*',
+    // Kest again: his Greyhowl exchange (turn 5) is outside the history window now, his record is not
+    '"Kest. The rats are done, like you said."',
+    // travel to another realm; the next request's World Info must follow the Lore Bridge, not the chat text
+    '*I travel the long road east to Ashbridge.*',
+    '*I look around the market.*',
 ]) turns.push(await send(input));
 
 // # command: answered by the engine, no LLM request
@@ -181,6 +190,25 @@ const checks = {
     commandWithoutLlm: out.status.llmCalls === 0 && /SYSTEM \/\/ STATUS/.test(out.status.panel),
     noPageErrors: pageErrors.length === 0,
 };
+// Runtime V3 in a longer run: the NPC record, the history window, travel and the Lore Bridge
+const reqFor = (needle) => requests.find((r) => String(r.lastUser).includes(needle));
+const engineOf = (r) => String((r?.messages || []).find((m) => String(m.content).startsWith('[AVERETH ENGINE'))?.content || '');
+const chatOf = (r) => (r?.messages || []).filter((m) => m.role === 'user' || m.role === 'assistant').map((m) => String(m.content));
+const kestReq = reqFor('rats are done');
+const kestCard = (engineOf(kestReq).split('PRESENT (each NPC knows ONLY what its card lists):\n')[1] || '').split('\n\n')[0];
+checks.recurringNpcCard = /• Kest — person, veteran adventurer; one-eyed, grey braid, gruff; voice: low rasp, clipped sentences/.test(kestCard)
+    && /\(-15\) \(last change: a green Novice eyeing the Greyhowl bill\)/.test(kestCard) && /agenda: get the Greyhowl posting taken down/.test(kestCard)
+    && /last meaningful: [^\n]*warned/.test(kestCard);
+checks.recallBeyondWindow = !chatOf(kestReq).some((c) => /Took two Wardens/.test(c)) && /Greyhowl killed two Wardens/.test(engineOf(kestReq));
+const travelTurn = turns.find((t) => /long road east/.test(t.text));
+const lookReq = reqFor('look around the market');
+checks.travel = /Location: Ashbridge, Duskreach — east gate/.test(travelTurn?.hudText || '') && /Present: nobody besides Alaric/.test(travelTurn?.hudText || '')
+    && /Ashbridge, Duskreach — east gate/.test(engineOf(lookReq));
+// World Info scans the last two messages (Scan Depth 2): neither names the new realm, only the Lore Bridge does
+checks.loreBridgeTravel = (lookReq?.messages || []).some((m) => /DUSKREACH \[CANON/.test(String(m.content)))
+    && !chatOf(lookReq).slice(-2).some((c) => /Ashbridge|Duskreach|Blackgate/i.test(c));
+out.v3 = { kestCard, travelHud: travelTurn?.hudText || '', lookEngineHead: engineOf(lookReq).split('\n').slice(0, 3).join('\n') };
+fs.writeFileSync(path.join(HERE, 'result.json'), JSON.stringify(out, null, 1));
 console.log(JSON.stringify(checks, null, 1));
 console.log(Object.values(checks).every(Boolean) ? 'LIVE SILLYTAVERN SMOKE: OK' : 'LIVE SILLYTAVERN SMOKE: FAILED');
 console.log(JSON.stringify({ turns: turns.map((t) => ({ text: t.text.slice(0, 40), leaked: t.leakedWhileStreaming, frames: t.streamedFrames, huds: t.huds, styled: t.hudStyled, rejected: t.rejected, mes: t.mes.slice(0, 60) })), requests: out.requests, status: out.status, pageErrors }, null, 1));

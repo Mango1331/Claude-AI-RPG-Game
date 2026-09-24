@@ -213,7 +213,7 @@ function mountSettings() {
       <label class="avereth-row">Context budget (tokens) <input type="number" id="avereth_budget" min="400" max="6000" step="100"></label>
       <label class="avereth-row">Rules allowance (tokens) <input type="number" id="avereth_rules" min="0" max="3000" step="100"></label>
       <label class="avereth-row">Recent turns not re-retrieved <input type="number" id="avereth_recent" min="0" max="50" step="1"></label>
-      <label class="avereth-row" title="exchanges (player message + reply) kept in the prompt; older ones reach the narrator through the engine block. 0 = whole history. The saved chat is never changed.">History window (exchanges) <input type="number" id="avereth_history" min="0" max="100" step="1"></label>
+      <label class="avereth-row" title="player messages kept in the prompt with their replies, the current one included (4 = the current message and the 3 exchanges before it); older turns reach the narrator through the engine block. 0 = whole history. The saved chat is never changed.">History window (exchanges) <input type="number" id="avereth_history" min="0" max="100" step="1"></label>
       <label class="avereth-row" title="remove World_State / Character_Sheet / New_NPC / NPC_Update blocks from new replies (the engine HUD replaces them)"><input type="checkbox" id="avereth_strip"> Remove tracker blocks from new replies</label>
       <label class="avereth-row">Injection depth <input type="number" id="avereth_depth" min="0" max="20" step="1"></label>
       <label class="avereth-row">World lore <select id="avereth_lore">

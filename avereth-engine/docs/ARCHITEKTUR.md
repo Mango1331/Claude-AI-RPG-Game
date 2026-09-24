@@ -144,7 +144,7 @@ flowchart TD
   V -->|Events auf dieser Swipe| E2[(message.extra.avereth)]
   V -->|Report und Tracker-Blöcke entfernt| D[Anzeige: System-Block + Prosa + HUD]
   E2 --> N[nächster Zug: Korrekturen + Zustand]
-  I -->|projectPromptHistory: letzte 4 Wechsel, ohne Tracker-Blöcke| LLM
+  I -->|projectPromptHistory: aktuelle Nachricht + 3 Wechsel, ohne Tracker-Blöcke| LLM
 ```
 
 **Runtime V3** ([RUNTIME_V3.md](RUNTIME_V3.md)):

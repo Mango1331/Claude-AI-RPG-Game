@@ -176,3 +176,57 @@ test('a fight saved mid-round before Combat V3 folds and continues: old Hit/Crit
     assert.match(gen.context.text, /RESOLVED THIS TURN/);
     assert.doesNotMatch(gen.context.text, /Hit chance|hit \d+%|MISS \(|d100 \d+ vs/);
 });
+
+test('Test-5 scenario: Kest\'s promise leaves the history window and still reaches the narrator, with his stance and agenda', () => {
+    const chat = [ai(FIRST_MESSAGE)];
+    processReply(chat, 0, content, { seed: 5 });
+    const reply = (report, prose) => {
+        chat.push(ai(`${prose}\n<avereth>${JSON.stringify(report)}</avereth>`));
+        processReply(chat, chat.length - 1, content);
+    };
+    /** The request as the extension builds it: the engine block and the history window (4 player messages). */
+    const ask = (input) => {
+        chat.push(user(input));
+        const gen = prepareGeneration(chat, content, { type: 'normal' });
+        const core = chat.map((m) => ({ ...m }));
+        projectPromptHistory(core, { keepTurns: 4 });
+        return { engine: gen.context.text, history: core.map((m) => m.mes).join('\n'), users: core.filter((m) => m.is_user).length };
+    };
+    const play = (input, report = {}, prose = 'The narration continues.') => {
+        ask(input);
+        reply(report, prose);
+    };
+    play('Ranger', {}, 'CLASS SELECTED');
+    play('Aimed Shot + Power Shot', {}, 'CHARACTER CREATION COMPLETE');
+    play('I walk into town to the Guild hall.', {
+        time: 30, place: 'Guild hall, Novice board',
+        new: [{ ref: 'Kest', name: 'Kest', kind: 'npc', desc: ['veteran adventurer'], traits: 'one-eyed, grey braid', band: 'SHORT' }],
+        facts: [{ s: 'Kest', p: 'occupation', o: 'veteran adventurer' }, { s: 'Kest', p: 'voice', o: 'low rasp' }],
+    }, 'A one-eyed man with a grey braid leans by the board.');
+    // the meaningful exchange: a distinctive line, a change of stance, an agenda and a promise worth remembering
+    play('"What about the Greyhowl posting?" I ask Kest.', {
+        time: 5, attitude: [{ who: 'Kest', delta: -15, why: 'a green Novice eyeing the Greyhowl bill' }],
+        facts: [{ s: 'Kest', p: 'agenda', o: 'get the Greyhowl posting taken down' }],
+        memory: [{ text: 'Kest promised Alaric the first drink if he brings back a Greyhowl fang', who: ['Kest', 'pc'], imp: 7 }],
+    }, 'Kest snorts. "Bring me a Greyhowl fang and the first drink is mine, Novice."');
+    // six turns elsewhere
+    play('I leave the hall and walk down to the harbour.', { time: 20, place: 'harbour front', leave: ['Kest'] });
+    for (const t of ['I buy bread at a stall.', 'I watch the fishing boats.', 'I ask a dock hand about work.', 'I walk the sea wall.', 'I rest on a bollard.']) play(t, { time: 30 });
+    // Alaric refers to it while Kest is elsewhere: the line itself is gone from the history, the promise is on his card
+    let p = ask('I think about what Kest promised me.');
+    assert.equal(p.users, 4);
+    assert.doesNotMatch(p.history, /first drink is mine/);
+    const named = (p.engine.split('NAMED, NOT PRESENT')[1] || '').split('\n\n')[0];
+    assert.match(named, /Kest — person, veteran adventurer; one-eyed, grey braid; voice: low rasp; NOT PRESENT/);
+    assert.match(named, /last meaningful: \[Day 1, [\d:]+\] Kest promised the stranger the first drink if he brings back a Greyhowl fang/);
+    reply({}, 'The gulls wheel over the harbour.');
+    // back at the Guild: the same record, now as a present person
+    play('I walk back to the Guild hall.', { time: 20, place: 'Guild hall, Novice board', enter: ['Kest'] }, 'Kest is still by the board.');
+    p = ask('"Kest. About that drink for a Greyhowl fang."');
+    assert.doesNotMatch(p.history, /first drink is mine/);
+    const card = (p.engine.split('PRESENT (each NPC knows ONLY what its card lists):\n')[1] || '').split('\n\n')[0];
+    assert.match(card, /^• Kest — person, veteran adventurer; one-eyed, grey braid; voice: low rasp$/m);
+    assert.match(card, /toward Alaric: neutral \(-15\) \(last change: a green Novice eyeing the Greyhowl bill\)/);
+    assert.match(card, /last meaningful: [^\n]*promised the stranger the first drink if he brings back a Greyhowl fang/);
+    assert.match(card, /agenda: get the Greyhowl posting taken down/);
+});

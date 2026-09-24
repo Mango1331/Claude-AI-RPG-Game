@@ -29,14 +29,15 @@ Entscheidungen aus dem Auftrag:
    - Sie ersetzen `<Character_Sheet>` und `<World_State>`, gehen nie in den Prompt und können nicht vom Engine-Zustand abweichen.
 4. **Prompt:**
    - Alte Tracker-Blöcke werden aus dem Verlauf entfernt, nur für die Prompt-Kopie.
-   - Nur die letzten 4 Wechsel bleiben wörtlich im Prompt.
+   - Wörtlich im Prompt stehen nur die aktuelle Spielernachricht und die 3 Wechsel davor (Einstellung „History window“ = 4 Spielernachrichten).
    - Das Report-Schema und Alarics Zeile richten sich nach dem Zugtyp.
-   - In Testrun 4 sinkt der Prompt von **20.093 → 14.802 Token (−26 %)** in Zug 7 und von **25.097 → 14.786 Token (−41 %)** in Zug 10.
+   - In Testrun 4 sinkt der Prompt mit Engine V3 **und** der Megumin-Checkliste von **20.092 → 14.788 Token (−26 %)** in Zug 7 und von **25.099 → 14.826 Token (−41 %)** in Zug 9.
+   - Die Engine allein, ohne die Megumin-Änderung, spart nur 2–24 %. Den größeren Teil bringt erst die Checkliste (Abschnitt 6.1).
 5. **Output:**
    - Ohne Tracker-Blöcke fallen ≈ 800 von 2.304 Output-Token pro Zug weg (−35 %). Die modellierte Dauer sinkt von ≈ 134 s auf ≈ 85 s.
    - Das ist gerechnet, nicht mit einem echten Modell gemessen. Der volle Effekt setzt voraus, dass Megumin die Blöcke nicht mehr anfordert (Abschnitt 9).
 6. **Tests:**
-   - 172 Tests grün;
+   - 176 Tests grün;
    - Browser-Smoke gegen gemockten Host grün;
    - **Live-Smoke in echtem SillyTavern 1.19.0** mit Streaming grün.
 
@@ -151,7 +152,7 @@ Elite und Boss verlieren ihre +5 pp Hit (≈ −6 % relativ). Ausgleich wäre op
 
 ## 2. NPC-Record statt Megumin-Dossier
 
-Das Dossier kostete in Testrun 4 bis zu **6.167 Prompt-Token** pro Zug (3.081 Anweisungen + 3.086 NPC-Bank). Dazu kamen im Schnitt ≈ 200 Output-Token, in Vorstellungszügen ≈ 850. Außerdem trug es falschen Kanon aus einem verworfenen Swipe weiter.
+Das Dossier kostete in Testrun 4 ab Zug 8 rund **5.200 Prompt-Token** pro Zug (Zug 9: 2.958 Anweisungen + 2.266 NPC-Bank), dazu die Dossier-Blöcke im Verlauf. Im Output kamen im Schnitt ≈ 200 Token dazu, in Vorstellungszügen ≈ 850. Außerdem trug es falschen Kanon aus einem verworfenen Swipe weiter.
 
 Der Ersatz braucht **keine neuen Event-Typen und keine neuen Felder**. Aussehen, Stimme und Agenda passen als **funktionale Fakten**: Ein neuer Wert beendet den alten, sie sind swipe-sicher und haben ein „seit“. Die Wissensgrenzen gelten auch für sie.
 
@@ -303,13 +304,15 @@ Zeilen ohne Inhalt entfallen.
 
 Die Funktion:
 - entfernt `<Blocks>`, `<World_State>`, `<Character_Sheet>`, `<New_NPC>` und `<NPC_Update>`, auch wenn der Block nicht geschlossen wurde (`stripTrackerBlocks`);
-- lässt nur die letzten `keepTurns` Wechsel wörtlich stehen (Einstellung „History window“, Standard 4; 0 = ganzer Verlauf).
+- lässt nur die letzten `keepTurns` Spielernachrichten mit ihren Antworten wörtlich stehen (Einstellung „History window“, Standard 4; 0 = ganzer Verlauf). Die aktuelle Nachricht zählt mit: Bei 4 sieht der Erzähler sie und die 3 vorherigen Wechsel.
 
 Ältere Wechsel erreichen den Erzähler über den Engine-Block:
 - RELEVANT;
 - Erinnerungen;
 - Fakten;
 - NPC-Karten.
+
+Beispiel: Kests Versprechen (Test „Test-5 scenario …“, Zug 4) bzw. seine Warnung (Live-Smoke, Zug 5) liegt nach vier weiteren Zügen außerhalb des Fensters. Es erreicht den Erzähler trotzdem als „last meaningful“ auf seiner Karte, zusammen mit Haltung und Grund sowie Agenda, egal ob Kest anwesend ist oder nur genannt wird. Den genauen Wortlaut trägt nur, was der Erzähler als Erinnerung gemeldet hat.
 
 „Recent turns not re-retrieved“ wird auf das Fenster begrenzt, damit nichts durch die Lücke fällt. Die Statuszeile zeigt, wie viele Nachrichten die Projektion weggelassen und wie viele sie bereinigt hat.
 
@@ -377,48 +380,88 @@ Der Live-Smoke prüft das in jedem Frame (`noLeakWhileStreaming`): 14–52 Frame
 
 ### 6.1 Prompt-Token vorher / nachher
 
-**Methode:**
-- **Vorher** sind die echten Requests aus Testrun 4 (Logger), zerlegt nach Abschnitten.
-- **Nachher** ist derselbe Zug mit der aktuellen Engine nachgespielt:
-  - Engine-Block;
-  - projizierter Verlauf, 4 Wechsel ohne Blöcke;
-  - Vertrag 3.3;
-  - der Megumin-Prompt ohne die Teile aus Abschnitt 9.
-- Die Zeichen werden mit dem Zeichen/Token-Verhältnis des echten Requests umgerechnet (4,35 bzw. 4,27).
+**Methode** (reproduzierbar mit `node tools/run_report.mjs <Server-Log von Testrun 4> --replay tests/testrun_v4/fixture.json --detail 7,10,11`):
+- **Vorher** sind die echten Anfragen aus Testrun 4 (Server-Log), zerlegt nach Kategorien. Die Token-Zahl stammt aus der Usage der Antwort; die Kategorien werden mit dem Zeichen/Token-Verhältnis derselben Anfrage umgerechnet (4,27–4,35).
+- **Engine V3 allein:** dieselbe Anfrage mit dem Engine-Block und dem Verlaufsfenster dieser Version und Vertrag 3.3. Megumin bleibt unverändert, also mit Dossier-Anweisungen, NPC-Bank (in der Größe aus Testrun 4) und `<Blocks>`-Templates.
+- **V3 + Megumin-Checkliste:** zusätzlich ohne die Teile aus Abschnitt 9.
+- Jede Anfrage wird ihrem Spielzug **über die Spielernachricht** zugeordnet, nicht über die Position. Der Log enthält einen verworfenen Versuch („Wolves Near the Ashbridge Ford“), der kein Spielzug ist.
 
-**Zug 7 (Gilde, Questbrett):**
+**Korrektur gegenüber der ersten Fassung** (Commit `c0ea7ce`): Dort stand „Zug 10 (Kellerkampf): 25.097 → 14.786“. Der Wert vorher gehörte zu Zug 9 (Abstieg in den Keller), der Wert nachher zu Zug 10, weil ich Anfragen nach ihrer Position gezählt hatte und der verworfene Versuch mitzählte. Richtig zugeordnet: Zug 9 25.099 → 14.826 (−41 %) und Zug 10 23.201 → 13.993 (−40 %). An der Aussage ändert das nichts. Das neue Werkzeug ordnet über die Spielernachricht zu und schreibt sie in jede Zeile.
 
-| Kategorie | Vorher | Nachher |
-|---|---:|---:|
-| Megumin-Basis (Stil, Bannliste, Thinking, Rahmen) | 5.755 | 5.755 |
-| NPC-Dossier/Update-Anweisungen | 2.641 | 0 |
-| NPC-Bank / Dossier-Verlauf | 0 | 0 |
-| Character Sheet (Anweisung + Verlauf) | 442 | 0 |
-| World State (Anweisung + Verlauf) | 875 | 0 |
-| Erzähler-Vertrag | 4.021 | 4.243 |
-| Lore (World Info) | 1.837 | 1.837 |
-| Engine-Block | 1.368 | 1.166 |
-| Chat-Prosa + Spielernachrichten | 3.154 | 1.801 |
-| **Summe** | **20.093** | **14.802 (74 %)** |
+**Alle Züge von Testrun 4:**
 
-**Zug 10 (Kellerkampf):**
+| Zug | Spielernachricht (gekürzt) | Vorher | Engine V3 allein | V3 + Megumin-Checkliste |
+|---|---|---:|---:|---:|
+| 1 | Ranger | 15.351 | 14.759 (−4 %) | 11.500 (−25 %) |
+| 2 | Aimed Shot + Power Shot | 15.829 | 15.026 (−5 %) | 11.747 (−26 %) |
+| 3 | zum Stadttor | 15.813 | 15.473 (−2 %) | 12.187 (−23 %) |
+| 4 | Gildenhalle suchen | 17.391 | 16.922 (−3 %) | 13.632 (−22 %) |
+| 5 | zur Schreiberin | 18.762 | 17.411 (−7 %) | 14.117 (−25 %) |
+| 6 | Registrierung, 2 Silber | 19.298 | 17.390 (−10 %) | 14.100 (−27 %) |
+| 7 | zum Questbrett | 20.092 | 18.096 (−10 %) | 14.788 (−26 %) |
+| – | verworfener Versuch (Wolves Near the Ashbridge Ford) | 22.828 | – | – |
+| 8 | Vermin-Quest annehmen | 23.631 | 19.979 (−15 %) | 14.660 (−38 %) |
+| 9 | in den Keller, Bogen bereit | 25.099 | 20.853 (−17 %) | 14.826 (−41 %) |
+| 10 | Power Shot | 23.201 | 19.999 (−14 %) | 13.993 (−40 %) |
+| 11 | zurückweichen, Power Shot | 23.565 | 19.636 (−17 %) | 13.623 (−42 %) |
+| 12 | Power Shot | 25.434 | 20.094 (−21 %) | 14.047 (−45 %) |
+| 13 | Aimed Shot auf die zweite Kreatur | 26.377 | 19.966 (−24 %) | 13.939 (−47 %) |
+| 14 | Kadaver hoch, zurück zur Gilde | 26.043 | 20.098 (−23 %) | 14.031 (−46 %) |
+| 15 | Bericht bei Serah | ~26.275 | 20.140 (−23 %) | 14.105 (−46 %) |
 
-| Kategorie | Vorher | Nachher |
-|---|---:|---:|
-| Megumin-Basis | 5.852 | 5.852 |
-| NPC-Dossier/Update-Anweisungen | 3.081 | 0 |
-| NPC-Bank / Dossier-Verlauf | 3.086 | 0 |
-| Character Sheet | 456 | 0 |
-| World State | 916 | 0 |
-| Erzähler-Vertrag | 4.088 | 4.315 |
-| Lore | 1.366 | 1.366 |
-| Engine-Block | 1.709 | 1.461 |
-| Chat-Prosa | 4.543 | 1.792 |
-| **Summe** | **25.097** | **14.786 (59 %)** |
+- Zu Zug 15 fehlt die Antwort im Log, der Wert vorher ist aus Zeichen geschätzt.
+- Ab Zug 11 spielt der Nachbau einen anderen Kampf: In V3 stirbt die Kreatur schon in Zug 10. Vergleichbar ist dort nur der Aufbau des Prompts, nicht der Spielinhalt.
+- **Engine allein** spart 2–24 %, vor allem über das Verlaufsfenster.
+- **Mit der Megumin-Checkliste** sind es 22–47 %, und der Prompt bleibt bei 11.500–14.800 Token, statt mit jedem Zug zu wachsen.
 
-Die Einsparung wächst mit der Kampagnenlänge. Die NPC-Bank und der Chatverlauf wuchsen vorher mit jedem Zug; jetzt sind beide begrenzt.
+**Zug 7 (Questbrett):**
 
-Im Live-Lauf mit dem SillyTavern-Standard-Preset (ohne Megumin) waren die Requests 22.700–27.800 Zeichen lang (≈ 5.300–6.500 Token), stabil ab Zug 4.
+| Kategorie | Vorher | Engine V3 allein | V3 + Megumin-Checkliste |
+|---|---:|---:|---:|
+| Preset (Megumin-Basis) | 5.771 | 5.771 | 5.771 |
+| NPC-Dossier/Update-Anweisungen | 2.571 | 2.571 | 0 |
+| NPC-Bank (Injektion) | 0 | 0 | 0 |
+| Tracker-Templates (`<Blocks>`) | 737 | 737 | 0 |
+| Tracker-Blöcke im Verlauf | 658 | 0 | 0 |
+| Erzähler-Vertrag | 4.029 | 4.242 | 4.242 |
+| Lore (World Info) | 1.808 | 1.808 | 1.808 |
+| Engine-Block | 1.368 | 1.166 | 1.166 |
+| Chat-Verlauf | 3.150 | 1.801 | 1.801 |
+| **Summe** | **20.092** | **18.096 (−10 %)** | **14.788 (−26 %)** |
+
+**Zug 9 (Abstieg in den Keller):**
+
+| Kategorie | Vorher | Engine V3 allein | V3 + Megumin-Checkliste |
+|---|---:|---:|---:|
+| Preset (Megumin-Basis) | 5.869 | 5.869 | 5.869 |
+| NPC-Dossier/Update-Anweisungen | 2.958 | 2.958 | 0 |
+| NPC-Bank (Injektion) | 2.266 | 2.266 | 0 |
+| Tracker-Templates (`<Blocks>`) | 803 | 803 | 0 |
+| Tracker-Blöcke im Verlauf | 1.522 | 0 | 0 |
+| Erzähler-Vertrag | 4.097 | 4.314 | 4.314 |
+| Lore (World Info) | 1.338 | 1.338 | 1.338 |
+| Engine-Block | 1.709 | 1.423 | 1.423 |
+| Chat-Verlauf | 4.537 | 1.882 | 1.882 |
+| **Summe** | **25.099** | **20.853 (−17 %)** | **14.826 (−41 %)** |
+
+**Zug 10 (Power Shot im Keller):**
+
+| Kategorie | Vorher | Engine V3 allein | V3 + Megumin-Checkliste |
+|---|---:|---:|---:|
+| Preset (Megumin-Basis) | 5.848 | 5.848 | 5.848 |
+| NPC-Dossier/Update-Anweisungen | 2.948 | 2.948 | 0 |
+| NPC-Bank (Injektion) | 2.258 | 2.258 | 0 |
+| Tracker-Templates (`<Blocks>`) | 800 | 800 | 0 |
+| Tracker-Blöcke im Verlauf | 4 | 0 | 0 |
+| Erzähler-Vertrag | 4.083 | 4.299 | 4.299 |
+| Lore (World Info) | 604 | 604 | 604 |
+| Engine-Block | 1.688 | 1.456 | 1.456 |
+| Chat-Verlauf | 4.968 | 1.786 | 1.786 |
+| **Summe** | **23.201** | **19.999 (−14 %)** | **13.993 (−40 %)** |
+
+Die NPC-Bank, die Dossier-Blöcke und der Chatverlauf wuchsen vorher mit jedem Zug; mit V3 und der Checkliste sind alle drei begrenzt oder weg.
+
+Im Live-Lauf mit dem SillyTavern-Standard-Preset (ohne Megumin) waren die Anfragen 22.700–27.900 Zeichen lang (≈ 5.300–6.500 Token) und ab Zug 4 stabil, auch nach 12 Zügen und einer Reise.
 
 ### 6.2 Output-Token vorher / nachher
 
@@ -436,13 +479,16 @@ Davon betrafen 77 Reasoning-Token (8,3 % des Reasonings) die Tracker.
 
 **Nachher** (dieselben Antworten ohne Blöcke und ohne Tracker-Reasoning): ≈ **1.502 Token** pro Zug (−35 %). Prosa ist dann ≈ 82 % des sichtbaren Outputs, vorher 39 %.
 
-**Dauer** (Regression aus Testrun 2–4: −9,5 s + 53,2 s je 1.000 Output-Token + 1,01 s je 1.000 Prompt-Token, R² 0,96): ≈ 134 s → ≈ 85 s pro Zug.
+**Dauer:**
+- Gemessen in Testrun 4: Median 134 s. Der Mittelwert liegt bei 148 s, weil ein Zug 555 s brauchte.
+- Das Modell aus Testrun 2–4 (−9,5 s + 53,2 s je 1.000 Output-Token + 1,01 s je 1.000 Prompt-Token, R² 0,96) ergibt ≈ 134 s vorher und ≈ 85 s nachher.
+- Ohne die Megumin-Änderung schreibt das Modell die Blöcke weiter: Der Output bleibt dann bei ≈ 2.300 Token, und nur der kleinere Prompt spart ≈ 5 s.
 
-**Einschränkung:** Das ist gerechnet. Ein echtes Modell wurde nach V3 nicht gemessen, denn der Live-Smoke nutzt einen geskripteten Erzähler. Der Output-Gewinn entsteht erst, wenn Megumin die Blöcke nicht mehr anfordert. Bis dahin entfernt die Engine sie nur; geschrieben (und bezahlt) werden sie trotzdem. Test 5 misst das.
+**Einschränkung:** Das ist gerechnet. Ein echtes Modell wurde nach V3 nicht gemessen, denn der Live-Smoke nutzt einen geskripteten Erzähler. Der Output-Gewinn entsteht erst, wenn Megumin die Blöcke nicht mehr anfordert. Bis dahin entfernt die Engine sie nur; geschrieben (und bezahlt) werden sie trotzdem. Test 5 misst das; Ablauf und Messung stehen in [TEST5_PLAN.md](TEST5_PLAN.md).
 
 ---
 
-## 7. Tests (172, alle grün)
+## 7. Tests (176, alle grün)
 
 | Auftrag | Tests |
 |---|---|
@@ -452,7 +498,8 @@ Davon betrafen 77 Reasoning-Token (8,3 % des Reasonings) die Tracker.
 | §35 Welt-HUD | `hud.test.js`:<br>- Zeit, Ort, Wetter<br>- Kommen und Gehen<br>- Quests, Fristen<br>- Ortsstatus<br>- Kampf Anfang und Ende<br>- Spoiler-Regel |
 | §36 Drift | `hud.test.js`: falsche Coins, HP, STA, Queststatus und Position in Prosa und altem Block ändern nichts; Korrekturen werden genannt |
 | §37 Rückwärtskompatibilität | `tests/scenarios/runtime_v3.test.js`:<br>- Testrun-4-Chat mit Megumin-Blöcken faltet und läuft weiter<br>- Kampf mitten in der Runde vor V3 gespeichert<br>- Projektion lässt den gespeicherten Chat unberührt<br><br>`display.test.js`: alte MISS-Zeilen |
-| Prompt | `runtime_v3.test.js`:<br>- Projektion und Fenster<br>- neue Antwort mit Blöcken<br>- situatives Schema<br>- Alarics Zeile je Zugtyp<br>- Engine-Block < 1.400 Token<br>- RELEVANT ohne Kartenfakten |
+| Prompt | `runtime_v3.test.js`:<br>- Projektion und Fenster<br>- neue Antwort mit Blöcken<br>- situatives Schema<br>- Alarics Zeile je Zugtyp<br>- Engine-Block < 1.400 Token<br>- RELEVANT ohne Kartenfakten<br>- Test-5-Szenario: Kests Versprechen verlässt das Fenster und kommt über seine Karte zurück, abwesend und anwesend, mit Haltung und Agenda |
+| Messwerkzeug | `tests/unit/run_report.test.js`: Server-Log im util.inspect-Format, Kategorien, Output-Aufteilung, Zuordnung über die Spielernachricht, V3-Nachbau |
 | Regression | Testrun 1–4 auf V3 umgestellt. Der TR4-Kellerkampf endet jetzt in Runde 1: Ratte beißt 3, Power Shot 35. |
 
 ## 8. Browser-Smoke
@@ -484,7 +531,10 @@ Gespielte Züge:
 7. Weg in den Salzkeller: Ratte ahnungslos;
 8. Hinterhalt mit Power Shot: `48 damage AMBUSH CRIT ×1.5 → the big rat HP 16 - 48 → 0 DEFEATED`;
 9. Rückkehr zur Gilde: +5 Silber, Quest erledigt, +15 XP;
-10. `#status`.
+10. wieder bei Kest: Seine Greyhowl-Warnung aus Zug 5 liegt jetzt außerhalb des Verlaufsfensters;
+11. Reise nach Ashbridge (anderes Reich, Duskreach), 3 Tage;
+12. Blick über den Markt: Weder die letzte Antwort noch die Eingabe nennt Ort oder Reich;
+13. `#status`.
 
 | Check | Ergebnis |
 |---|---|
@@ -497,6 +547,10 @@ Gespielte Züge:
 | Hinterhalt-Crit angezeigt | ✓ |
 | `#status` ohne LLM-Aufruf | ✓ |
 | keine Seitenfehler | ✓ |
+| Kests Karte nach dem Fenster: Rolle, Aussehen, Stimme, Haltung −15 mit Grund, „last meaningful“ (die Warnung), Agenda | ✓ |
+| Kests Satz aus Zug 5 fehlt im Verlauf des Prompts, die Warnung steht im Engine-Block | ✓ |
+| Reise: Welt-HUD `Ashbridge, Duskreach — east gate`, niemand anwesend; Engine-Block am neuen Ort | ✓ |
+| Lore-Bridge: Die World-Info-Einträge Duskreach und Ashbridge stehen im Prompt, Solmere nicht mehr, obwohl die letzten zwei Nachrichten den Ort nicht nennen | ✓ |
 
 Ausführen:
 ```
@@ -510,7 +564,7 @@ Der Live-Smoke prüft Host, Prompt-Aufbau, Streaming und Anzeige. Prosaqualität
 
 ## 9. Megumin V10 Shura: manuelle Änderungen
 
-Grundlage ist der sichtbare Prompt aus Testrun 4, Request zu Zug 10. Die Positionen gelten für das Preset „Megumin V10 Shura“ in dieser Kampagne.
+Grundlage ist der sichtbare Prompt aus Testrun 4, die Anfrage zu Zug 9 (die zehnte im Log). Die Positionen gelten für das Preset „Megumin V10 Shura“ in dieser Kampagne.
 
 ### ENTFERNEN / DEAKTIVIEREN
 
@@ -526,8 +580,9 @@ Grundlage ist der sichtbare Prompt aus Testrun 4, Request zu Zug 10. Die Positio
    - Von dort bis vor `<banlist>`, ≈ 1.300 Zeichen.
    - Enthält `trigger`, `updatable_fields`, `operations`, `locked_fields` und das `<NPC_Update>`-Template.
 4. **Die NPC-Bank.**
-   - Sie fügt `[RELEVANT NPCs] The following are details of known NPCs … <retrieved_npcs> … </retrieved_npcs>` ein, in Testrun 4 innerhalb von `<character_sheet>` nach dem Vertrag.
-   - Deaktivieren, und dazu alles, was `<New_NPC>`/`<NPC_Update>` in diese Bank schreibt: das Megumin-NPC-Lorebook oder das Skript bzw. die Extension dazu.
+   - Das ist eine Funktion der Megumin-Extension. Sie speichert die Dossiers im Chat unter `chat_metadata.megumin_npc_bank` (Testrun 4: Warden Ansel, Maretta, Fennick). Sie fügt `[RELEVANT NPCs] The following are details of known NPCs … <retrieved_npcs> … </retrieved_npcs>` ein, in Testrun 4 innerhalb von `<character_sheet>` nach dem Vertrag, und liefert auch die Zeile aus Punkt 2.
+   - In der Megumin-Extension die NPC-Bank bzw. Dossier-Funktion für diese Karte abschalten.
+   - In einem neuen Chat bleibt die Bank ohne Punkt 1, 3 und 5 ohnehin leer, weil niemand mehr `<New_NPC>` schreibt. Ein alter Chat trägt seine gespeicherten Dossiers aber weiter in jeden Prompt, solange die Funktion an ist.
    - Die Engine-Karten ersetzen sie.
 5. **Im Thinking-Prompt** (System-Nachricht in Tiefe 1, beginnt mit `## your thinking steps:`):
    - Den Abschnitt von `## At the end of your response, output exactly one <Blocks> section.` bis einschließlich `</Blocks>` löschen.
@@ -552,7 +607,9 @@ Grundlage ist der sichtbare Prompt aus Testrun 4, Request zu Zug 10. Die Positio
   - `## final reminder:`;
   - `[LANGUAGE RULE]`.
 - `<user_persona>` (Alaric).
-- In `<character_sheet>`: die Kartenbeschreibung (Vertrag 3.3) und die Lore.
+- **Den Container `<character_sheet>`.** So heißt im Megumin-Preset die Hülle um die Beschreibung der SillyTavern-Karte und die World Info. Im Prompt von Testrun 4 beginnt er mit „here is the lore and character's, Avereth Engine Test:“. Darin stehen die Welt-Lore (Lorebook) und der Vertrag 3.3 (die Kartenbeschreibung); beides bleibt. Nur die NPC-Bank darin fällt weg (Punkt 4).
+  - Der Container hat nichts mit dem generierten `<Character_Sheet>`-Tracker zu tun. Dieser stammt aus dem `<Blocks>`-Template (Punkt 5) und fällt weg.
+  - Auch „the character sheet“ in `<Characters>` und `<world>` meint die Karte und bleibt so.
 
 **Kein neues Megumin-Ersatzmonster:** Es gibt kein neues Preset, keinen neuen Dossier-Ersatz im Prompt und kein zweites Tracker-Format. Die Engine hält den Zustand, das HUD zeigt ihn, der Report meldet nur Deltas.
 
@@ -562,16 +619,17 @@ Grundlage ist der sichtbare Prompt aus Testrun 4, Request zu Zug 10. Die Positio
 
 1. **Output nicht mit echtem Modell gemessen.** Die −35 % sind gerechnet. Solange Megumin die Blöcke anfordert, schreibt das Modell sie weiter; die Engine entfernt sie nur. Test 5 misst mit geänderter Preset-Datei.
 2. **NPC-Karten sind nur so reich wie die Reports.** Meldet der Erzähler `traits`, `occupation`, `voice` oder `agenda` nicht, bleibt die Karte dünn. Die Engine erfindet nichts. NPC CONTINUITY im Vertrag fordert die Meldungen an; ob GLM oder Gemini das zuverlässig tun, zeigt erst Test 5.
-3. **Verlaufsfenster 4.**
-   - Wörtliche Rückgriffe auf ältere Dialoge gehen verloren. Inhaltlich tragen Erinnerungen, Fakten, Karten und RELEVANT.
-   - Einstellbar; 0 = ganzer Verlauf.
+3. **Verlaufsfenster 4** (die aktuelle Spielernachricht plus 3 Wechsel).
+   - Wörtliche Rückgriffe auf ältere Dialoge gehen verloren. Inhaltlich tragen Erinnerungen, Fakten, Karten und RELEVANT, soweit der Erzähler sie gemeldet hat.
+   - Einstellbar; 0 = ganzer Verlauf. Nicht vor Test 5 ändern; Test 5 prüft genau das (Kontrollpunkt 2 in [TEST5_PLAN.md](TEST5_PLAN.md)).
    - Wer Prompt-Caching nutzt: Das Fenster verschiebt sich jeden Zug, der Präfix bleibt nur bis zum Verlauf stabil.
 4. **RELEVANT kann triviale Spielerzeilen enthalten** („I walk into town …“), höchstens 3.
 5. **Der Report-Teil des Engine-Blocks bleibt der größte Posten** (≈ 560 Token in Geschichtszügen, ≈ 280 im Kampf).
-6. **Vertrag +5 %** durch NPC CONTINUITY. Netto spart der Prompt trotzdem 26–41 %.
+6. **Vertrag +5 %** durch NPC CONTINUITY. Netto spart der Prompt mit der Megumin-Checkliste trotzdem 22–47 %.
 7. **Alte Nachrichten behalten ihren Blocktext** in `mes`: gespeichert und angezeigt wie vorher. Aus dem Prompt verschwindet er; aus der Anzeige nur mit dem Übergangs-Regex.
 8. **Monster-Ausreißer** Oger, Hirsch und Pferd (Abschnitt 1.9) sind bewusst nicht korrigiert.
 9. **Ohne die Regex-Skripte** ist der Report während des Streamings kurz sichtbar, bis die Antwort fertig ist.
+10. **Streaming und Messung:** Bei Streaming schreibt SillyTavern nur die Anfrage ins Server-Log, nicht die Antwort mit ihrer Token-Zählung. Für Messläufe deshalb Streaming aus.
 
 ## 11. Zurückgestellt
 

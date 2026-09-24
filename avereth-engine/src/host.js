@@ -230,8 +230,9 @@ export function onEdited(chat, id, content) {
  * are never touched):
  *  - the presentation layer's retired tracker blocks (<Blocks>, <World_State>, <Character_Sheet>, <New_NPC>,
  *    <NPC_Update>) are removed from every earlier reply, so old saves stop feeding them back to the narrator;
- *  - only the last `keepTurns` exchanges (player message + reply) stay; older turns reach the narrator through the
- *    engine block (NPC cards, retrieved memories, facts, quests, threads). keepTurns 0 keeps the whole history.
+ *  - only the last `keepTurns` player messages stay, each with its reply; the current message counts (4 keeps it and
+ *    the three exchanges before it). Older turns reach the narrator through the engine block (NPC cards, retrieved
+ *    memories, facts, quests, threads). keepTurns 0 keeps the whole history.
  * @returns {{removed: number, stripped: number}}
  */
 export function projectPromptHistory(messages, { keepTurns = 4 } = {}) {

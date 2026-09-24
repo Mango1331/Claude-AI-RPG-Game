@@ -5,7 +5,7 @@ Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extens
 - Keine Abhängigkeiten, kein Server, keine Datenbank.
 - Läuft im Browser (SillyTavern) und in Node (Tests).
 
-**Warum diese Architektur:** [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md). **Befunde aus Testrun-v1:** [docs/TESTRUN_V1.md](docs/TESTRUN_V1.md). **Gesamtbericht:** [ABSCHLUSSBERICHT.md](ABSCHLUSSBERICHT.md). **Externe Review und Antwort:** [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md). **Erster echter Lauf:** [docs/TESTRUN_V2.md](docs/TESTRUN_V2.md). **Zweiter Lauf:** [docs/TESTRUN_V3.md](docs/TESTRUN_V3.md). **Dritter Lauf:** [docs/TESTRUN_V4.md](docs/TESTRUN_V4.md). **Welt-Lore als Lorebook:** [docs/LOREBOOK.md](docs/LOREBOOK.md). **Deep Review Kampf + Runtime V3 (Vorschlag):** [docs/REVIEW_V3.md](docs/REVIEW_V3.md). **Runtime V3 (umgesetzt: einfacher Kampf, NPC-Record, HUD, Prompt-Projektion, Megumin-Checkliste):** [docs/RUNTIME_V3.md](docs/RUNTIME_V3.md).
+**Warum diese Architektur:** [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md). **Befunde aus Testrun-v1:** [docs/TESTRUN_V1.md](docs/TESTRUN_V1.md). **Gesamtbericht:** [ABSCHLUSSBERICHT.md](ABSCHLUSSBERICHT.md). **Externe Review und Antwort:** [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md). **Erster echter Lauf:** [docs/TESTRUN_V2.md](docs/TESTRUN_V2.md). **Zweiter Lauf:** [docs/TESTRUN_V3.md](docs/TESTRUN_V3.md). **Dritter Lauf:** [docs/TESTRUN_V4.md](docs/TESTRUN_V4.md). **Welt-Lore als Lorebook:** [docs/LOREBOOK.md](docs/LOREBOOK.md). **Deep Review Kampf + Runtime V3 (Vorschlag):** [docs/REVIEW_V3.md](docs/REVIEW_V3.md). **Runtime V3 (umgesetzt: einfacher Kampf, NPC-Record, HUD, Prompt-Projektion, Megumin-Checkliste):** [docs/RUNTIME_V3.md](docs/RUNTIME_V3.md). **Plan für Test 5:** [docs/TEST5_PLAN.md](docs/TEST5_PLAN.md).
 
 ## Was die Engine pro Zug tut
 
@@ -24,7 +24,7 @@ Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extens
    - Lore (nur ohne verknüpftes Lorebook);
    - zuletzt „RESOLVED THIS TURN“ mit allen Würfen.
 
-   Dazu kommt die **Lore-Bridge**: Realm und Stadt als reiner Scan-Text für World Info (0 Token im Prompt), damit das Lorebook der Karte die passenden Einträge aktiviert. Im Prompt stehen vom Chatverlauf nur die letzten 4 Wechsel, ohne alte Tracker-Blöcke; der gespeicherte Chat bleibt unverändert.
+   Dazu kommt die **Lore-Bridge**: Realm und Stadt als reiner Scan-Text für World Info (0 Token im Prompt), damit das Lorebook der Karte die passenden Einträge aktiviert. Vom Chatverlauf stehen im Prompt nur deine aktuelle Nachricht und die 3 Wechsel davor, ohne alte Tracker-Blöcke; der gespeicherte Chat bleibt unverändert.
 4. **Das Modell erzählt** und schreibt direkt nach der Erzählung einen Fakten-Report mit den Neuerungen dieser Antwort: `<avereth>{…}</avereth>`. Tracker, Charakterbögen, World-State und NPC-Dossiers schreibt es nicht mehr; das übernimmt die Engine.
 5. **Nach der Antwort** prüft die Engine den Report:
    - neue Figuren, Orte, Fakten, Wissen, Erinnerungen, Beziehungen, Quests, Items und Coin werden übernommen;
@@ -74,7 +74,7 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
 | Context budget | 1.400 Token | für Szene, NPCs, Retrieval und Lore; RESOLVED und Header werden nie gekürzt |
 | Rules allowance | 800 Token | situative Regeltexte (Schleichen, Loot, Handel, `#system`) |
 | Recent turns not re-retrieved | 4 | was noch im Chatverlauf steht, wird nicht doppelt injiziert (höchstens das History window) |
-| History window (exchanges) | 4 | so viele Wechsel (Spielernachricht plus Antwort) stehen wörtlich im Prompt; ältere erreichen den Erzähler über den Engine-Block. 0 = ganzer Verlauf. Der gespeicherte Chat bleibt unverändert. |
+| History window (exchanges) | 4 | so viele Spielernachrichten stehen mit ihren Antworten wörtlich im Prompt, die aktuelle mitgezählt (4 = aktuelle Nachricht plus 3 Wechsel); ältere erreichen den Erzähler über den Engine-Block. 0 = ganzer Verlauf. Der gespeicherte Chat bleibt unverändert. |
 | Remove tracker blocks from new replies | an | entfernt `World_State`, `Character_Sheet`, `New_NPC` und `NPC_Update` aus neuen Antworten; alte Antworten verlieren sie nur in der Prompt-Kopie |
 | HUD under replies | Folded | Charakter- und Welt-Panel unter jeder Antwort: eingeklappt mit Zusammenfassung, offen oder aus |
 | Injection depth | 0 | 0 = direkt vor der Generierung |
@@ -133,10 +133,11 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 ## Für Entwickler
 
 ```
-npm test                               # 172 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Runtime V3, Regression der Testruns 1–4
+npm test                               # 176 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Runtime V3, Regression der Testruns 1–4
 node tools/testrun_compare.js          # Token-Vergleich mit Testrun-v1
 node tools/browser_smoke.mjs           # optional: index.js in echtem Chromium mit gemocktem SillyTavern-Kontext (braucht Playwright)
 AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st   # optional: Live-Smoke in echtem SillyTavern mit streamendem Mock-Erzähler (docs/RUNTIME_V3.md §8)
+node tools/run_report.mjs <Server-Log> [<Chat.jsonl>]   # Messung eines Laufs: Prompt je Kategorie, Output-Aufteilung, Dauer (docs/TEST5_PLAN.md §4)
 node tools/lorebook_audit.mjs          # welche Lorebook-Einträge in den Testruns 2–4 feuern (World-Info-Nachbau, gegen Testrun 4 bestätigt)
 python3 tools/migrate_content.py       # Content aus dem Paket v1.24 neu erzeugen (aus dem Repo-Wurzelverzeichnis)
 node tools/v3_combat.mjs               # danach: Combat V3 auf den Content anwenden (idempotent)
@@ -151,8 +152,8 @@ node tools/v3_combat.mjs               # danach: Combat V3 auf den Content anwen
 | `regex/` | Regex-Skripte für SillyTavern (Report und alte Tracker-Blöcke beim Streaming verstecken) |
 | `schemas/` | JSON-Schemas für Content, Events und Report |
 | `tests/` | `unit/`, `scenarios/`, `testrun_v1/` bis `testrun_v4/` |
-| `tools/` | Migration, Combat-V3-Migration, Testrun-Vergleich, Lorebook-Audit, Browser-Smoke, Live-Smoke (`st_live/`) |
-| `docs/` | Architektur, Datenmodell, Migration, WI-Bewertung, Lorebook, Testrun-Analyse, Runtime V3 |
+| `tools/` | Migration, Combat-V3-Migration, Testrun-Vergleich, Lorebook-Audit, Browser-Smoke, Live-Smoke (`st_live/`), Lauf-Messung (`run_report.mjs`) |
+| `docs/` | Architektur, Datenmodell, Migration, WI-Bewertung, Lorebook, Testrun-Analyse, Runtime V3, Test-5-Plan |
 
 **Engine-API** (`src/engine.js`; Adapter für Chat-Arrays in `src/host.js`):
 

@@ -42,7 +42,8 @@ const MARK = {
     trackerTemplate: ['## At the end of your response, output exactly one <Blocks> section.', '</Blocks>'],
     contract: ['ROLE & PURPOSE', 'Correct any violation before output.'],
 };
-const CONTRACT_TITLE = 'AVERETH RPG — SANDBOX NARRATOR CONTRACT';
+export const CONTRACT_TITLE = 'AVERETH RPG — SANDBOX NARRATOR CONTRACT';
+export const CONTRACT_END = MARK.contract[1];
 
 // ------------------------------------------------------------------------------------------------ server log
 function literalAt(text, from) {
@@ -217,11 +218,17 @@ export async function replayFixture(fixture) {
     const ai = (mes) => ({ is_user: false, is_system: false, mes, swipe_id: 0, swipes: [mes], swipe_info: [{ extra: {} }], extra: {} });
     const chat = [ai(fixture.greeting)];
     processReply(chat, 0, content, { seed: fixture.seed, swaps });
+    // as the extension runs it: recent turns bounded by the window, world lore from the card's lorebook
+    const settings = { recentTurns: 4, engineLore: false };
+    for (const input of fixture.creation || []) { // Test 5 on: creation by System panels before the story
+        chat.push({ is_user: true, is_system: false, mes: input, extra: {} });
+        prepareGeneration(chat, content, { type: 'normal', settings });
+        chat.at(-1).is_system = true; // the extension hides a line the System answered
+    }
     const turns = new Map();
     for (const t of fixture.turns) {
         chat.push({ is_user: true, is_system: false, mes: t.input, extra: {} });
-        // as the extension runs it: recent turns bounded by the window, world lore from the card's lorebook
-        const gen = prepareGeneration(chat, content, { type: 'normal', settings: { recentTurns: 4, engineLore: false } });
+        const gen = prepareGeneration(chat, content, { type: 'normal', settings });
         const core = chat.map((m) => ({ ...m }));
         projectPromptHistory(core, { keepTurns: 4 });
         turns.set(normInput(t.input), { engine: gen.context?.text?.length || 0, history: core.reduce((a, m) => a + m.mes.length, 0) });

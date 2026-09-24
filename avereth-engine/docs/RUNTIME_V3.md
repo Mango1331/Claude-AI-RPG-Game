@@ -580,6 +580,8 @@ AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st
 ```
 Voraussetzungen: SillyTavern einmal gestartet, Playwright. Ergebnis, Requests, letzter Prompt und `hud.png` landen in `<ST>/avereth_live_smoke/` oder in `AVERETH_ST_OUT`.
 
+Mit `AVERETH_ST_PRESET="Avereth Narrator"` läuft derselbe Smoke mit dem eigenen Preset: in der UI gewählt, ohne Streaming, drei Prüfungen mehr (Payload, Parameter, Nachforderung). Ergebnis: 21 von 21, siehe [NARRATOR_AB.md §2.4](NARRATOR_AB.md#24-geprüft-in-echtem-sillytavern-1190).
+
 Der Live-Smoke prüft Host, Prompt-Aufbau, Streaming und Anzeige. Prosaqualität und das Verhalten eines echten Modells prüft er nicht; das ist Test 5.
 
 ---

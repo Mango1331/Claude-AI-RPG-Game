@@ -153,6 +153,8 @@ Sonst bleibt Megumin, und nur die Widersprüche aus Abschnitt 2 werden per Check
 
 ## 6. Entwurf: eigener Erzähl-Layer (v0, ungetestet)
 
+> **Überholt.** Der fertige Layer, das Preset und der A/B/C-Vergleich stehen in [NARRATOR_AB.md](NARRATOR_AB.md). Was sich gegenüber diesem Entwurf geändert hat und warum, steht dort in §1.3. Unter anderem bleibt `squash_system_messages` aus, und der Denkschritt „BEFORE YOU WRITE“ entfällt.
+
 **Prompt-Reihenfolge** (ST Prompt Manager):
 
 | # | Eintrag | Rolle | Inhalt |

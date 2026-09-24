@@ -6,6 +6,8 @@
 // report request: once answered, once not); it checks the Runtime V3 goals in the real host: prompt assembly, history
 // window, NPC record, Lore Bridge, streaming, display, HUD, report requests. It judges no prose (scripted mock).
 // Usage: AVERETH_ST_DIR=/path/to/SillyTavern node tools/st_live/run.mjs   (after setup.mjs; Playwright + Chromium)
+// AVERETH_ST_PRESET="Avereth Narrator" plays the same run with that Chat Completion preset instead of Default, as a
+// player selects it (its own streaming setting included), and checks its payload (docs/NARRATOR_AB.md).
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -17,6 +19,12 @@ try { ({ chromium } = require('playwright')); } catch { ({ chromium } = require(
 
 const ST = process.env.AVERETH_ST_DIR;
 if (!ST) throw new Error('set AVERETH_ST_DIR to a SillyTavern checkout');
+const PRESET = process.env.AVERETH_ST_PRESET || 'Default';
+// the connection's Additional Parameters (Custom source) of Test 5: GLM's reasoning settings travel there, since
+// SillyTavern forwards the preset's reasoning effort to a Custom endpoint only for OpenAI and KoboldCpp models
+const INCLUDE_BODY = PRESET === 'Default' ? '' : 'clear_thinking: true\nreasoning_effort: low';
+const presetFile = JSON.parse(fs.readFileSync(path.join(ST, 'data/default-user/OpenAI Settings', `${PRESET}.json`), 'utf8'));
+const presetText = (id) => presetFile.prompts.find((p) => p.identifier === id)?.content ?? '';
 const ENGINE = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const HERE = process.env.AVERETH_ST_OUT || path.join(ST, 'avereth_live_smoke');
 fs.mkdirSync(HERE, { recursive: true });
@@ -59,7 +67,7 @@ const mock = http.createServer(async (req, res) => {
     const msgs = j.messages || [];
     const lastUser = [...msgs].reverse().find((m) => m.role === 'user')?.content || '';
     const text = isReportRequest(msgs) ? (REPORTS.find(([k]) => String(lastUser).includes(k)) || [null, '{}'])[1] : replyFor(String(lastUser));
-    fs.appendFileSync(LOG, `${JSON.stringify({ stream: !!j.stream, messages: msgs, lastUser, reply: text })}\n`);
+    fs.appendFileSync(LOG, `${JSON.stringify({ stream: !!j.stream, params: Object.fromEntries(Object.entries(j).filter(([k]) => k !== 'messages')), messages: msgs, lastUser, reply: text })}\n`);
     const promptChars = msgs.reduce((a, m) => a + String(m.content).length, 0);
     if (j.stream) {
         res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', connection: 'keep-alive' });
@@ -86,8 +94,8 @@ for (let i = 0; i < 120 && !/listening on/.test(stOut); i++) await new Promise((
 const browser = await chromium.launch();
 const page = await browser.newPage();
 const pageErrors = [];
-page.on('pageerror', (e) => pageErrors.push(e.message));
-page.on('console', (m) => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) pageErrors.push(m.text()); });
+page.on('pageerror', (e) => pageErrors.push(`${e.message} ${String(e.stack || '').split('\n').slice(1, 4).join(' ')}`));
+page.on('console', (m) => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) pageErrors.push(`${m.text()} @ ${m.location()?.url?.split('/').pop()}:${m.location()?.lineNumber}`); });
 await page.goto('http://127.0.0.1:8123/', { waitUntil: 'domcontentloaded' });
 // first run: SillyTavern asks for a persona name
 await page.waitForSelector('dialog[open]', { timeout: 30000 }).catch(() => {});
@@ -103,18 +111,29 @@ await page.waitForTimeout(1500);
 // close first-run popups if any
 await page.evaluate(() => document.querySelectorAll('dialog[open] .popup-button-ok, dialog[open] .popup-button-cancel').forEach((b) => b.click()));
 const regexScripts = ['avereth_hide_fact_report.json', 'avereth_hide_tracker_blocks.json'].map((f) => JSON.parse(fs.readFileSync(path.join(ENGINE, 'regex', f), 'utf8')));
-await page.evaluate(async (scripts) => {
+await page.evaluate(async ({ scripts, stream, includeBody }) => {
     const ctx = SillyTavern.getContext();
     $('#main_api').val('openai').trigger('change');
     $('#chat_completion_source').val('custom').trigger('change');
     $('#custom_api_url_text').val('http://127.0.0.1:5001/v1').trigger('input');
     $('#custom_model_id').val('mock-narrator').trigger('input');
-    $('#stream_toggle').prop('checked', true).trigger('change');
+    ctx.chatCompletionSettings.custom_include_body = includeBody; // what its popup's input handler sets
+    if (stream) $('#stream_toggle').prop('checked', true).trigger('change');
     ctx.extensionSettings.regex = [...(ctx.extensionSettings.regex || []).filter((s) => !String(s.id).startsWith('avereth')), ...scripts];
     ctx.saveSettingsDebounced();
     $('#api_button_openai').trigger('click');
-}, regexScripts);
+}, { scripts: regexScripts, stream: PRESET === 'Default', includeBody: INCLUDE_BODY });
 await page.waitForFunction(() => SillyTavern.getContext().onlineStatus && SillyTavern.getContext().onlineStatus !== 'no_connection', null, { timeout: 30000 });
+if (PRESET !== 'Default') {
+    // chosen in the UI as a player does: every prompt and setting the preset holds applies, the connection stays
+    await page.evaluate((name) => {
+        const opt = [...document.querySelectorAll('#settings_preset_openai option')].find((o) => o.textContent === name);
+        if (!opt) throw new Error(`no Chat Completion preset "${name}"`);
+        $('#settings_preset_openai').val(opt.value).trigger('change');
+    }, PRESET);
+    await page.waitForFunction((main) => SillyTavern.getContext().chatCompletionSettings.prompts.find((p) => p.identifier === 'main')?.content === main, presetText('main'), { timeout: 10000 });
+    await page.waitForTimeout(1000);
+}
 const chid = await page.evaluate(() => SillyTavern.getContext().characters.findIndex((c) => c.name === 'Avereth'));
 await page.evaluate(async (id) => { await SillyTavern.getContext().selectCharacterById(String(id)); }, chid);
 await page.waitForFunction(() => SillyTavern.getContext().chat.length >= 1, null, { timeout: 30000 });
@@ -252,8 +271,30 @@ checks.travel = /Location: Ashbridge, Duskreach — east gate/.test(travelTurn?.
 // World Info scans the last two messages (Scan Depth 2): neither names the new realm, only the Lore Bridge does
 checks.loreBridgeTravel = (lookReq?.messages || []).some((m) => /DUSKREACH \[CANON/.test(String(m.content)))
     && !chatOf(lookReq).slice(-2).some((c) => /Ashbridge|Duskreach|Blackgate/i.test(c));
+// the Avereth Narrator preset (docs/NARRATOR_AB.md): its style first, the engine block second to last, its output
+// contract last, the card's contract and the lore in between, no Megumin text; the Test 5 parameters without streaming;
+// the separate report request carries neither of its texts
+if (PRESET !== 'Default') {
+    const story = requests.filter((r) => !isReportRequest(r.messages));
+    const megumin = /<character_sheet>|<user_persona>|<history>|## your thinking steps:|never stop or refuse|\[\[/;
+    // exactly the parameters of the Test 5 requests (docs/TESTRUN_V5_2.md), the model aside
+    const expected = { model: 'mock-narrator', temperature: 0.9, max_tokens: 4096, stream: false, presence_penalty: 0, frequency_penalty: 0, top_p: 0.95, clear_thinking: true, reasoning_effort: 'low' };
+    checks.presetPayload = story.length > 10 && story.every((r) => {
+        const m = r.messages;
+        return m[0].role === 'system' && m[0].content === presetText('main')
+            && m.at(-1).role === 'system' && m.at(-1).content === presetText('jailbreak')
+            && m.at(-2).role === 'system' && String(m.at(-2).content).startsWith('[AVERETH ENGINE')
+            && m.some((x) => x.role === 'system' && String(x.content).startsWith('AVERETH RPG — SANDBOX NARRATOR CONTRACT'))
+            && !m.some((x) => megumin.test(String(x.content)));
+    });
+    checks.presetParams = story.every((r) => JSON.stringify(r.params) === JSON.stringify(expected));
+    checks.reportRequestWithoutPreset = reportReqs.length > 0 && reportReqs.every((r) => !r.messages.some((x) => x.content === presetText('main') || x.content === presetText('jailbreak')));
+    out.preset = { name: PRESET, params: story[0]?.params, firstRequest: story[0]?.messages.map((m) => `${m.role} (${String(m.content).length}): ${String(m.content).slice(0, 70).replace(/\n/g, ' ⏎ ')}`), reportRequest: reportReqs[0]?.messages.map((m) => `${m.role} (${String(m.content).length}): ${String(m.content).slice(0, 70).replace(/\n/g, ' ⏎ ')}`) };
+    fs.writeFileSync(path.join(HERE, 'preset_first_request.json'), JSON.stringify({ params: story[0]?.params, messages: story[0]?.messages }, null, 1));
+}
 out.v3 = { kestCard, travelHud: travelTurn?.hudText || '', lookEngineHead: engineOf(lookReq).split('\n').slice(0, 3).join('\n'), creation: CREATION.map((c) => ({ input: c, panel: T(c).panelText })), firstRequestEngine: engineOf(requests[0]).split('\n').slice(0, 12).join('\n'), firstHud: T('city gate').hudText };
 fs.writeFileSync(path.join(HERE, 'result.json'), JSON.stringify(out, null, 1));
 console.log(JSON.stringify(checks, null, 1));
-console.log(Object.values(checks).every(Boolean) ? 'LIVE SILLYTAVERN SMOKE: OK' : 'LIVE SILLYTAVERN SMOKE: FAILED');
+if (out.preset) console.log(JSON.stringify(out.preset, null, 1));
+console.log(Object.values(checks).every(Boolean) ? `LIVE SILLYTAVERN SMOKE (${PRESET}): OK` : `LIVE SILLYTAVERN SMOKE (${PRESET}): FAILED`);
 console.log(JSON.stringify({ turns: turns.map((t) => ({ text: t.text.slice(0, 40), leaked: t.leakedWhileStreaming, frames: t.streamedFrames, huds: t.huds, styled: t.hudStyled, rejected: t.rejected, mes: t.mes.slice(0, 60) })), requests: out.requests, status: out.status, pageErrors }, null, 1));

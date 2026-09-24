@@ -1,6 +1,7 @@
 // Live SillyTavern smoke, step 1 (optional, docs/RUNTIME_V3.md): prepare a real SillyTavern checkout — the narrator
 // card (contract as description, the world lorebook as Character Lore), the lorebook in worlds/, this extension as a
-// user extension, and settings that skip the first-run onboarding and allow a realistic context size.
+// user extension, the Avereth Narrator preset (docs/NARRATOR_AB.md; run.mjs selects it with AVERETH_ST_PRESET), and
+// settings that skip the first-run onboarding and allow a realistic context size.
 // Usage: AVERETH_ST_DIR=/path/to/SillyTavern node tools/st_live/setup.mjs   (start SillyTavern once before, so that
 // data/default-user exists)
 import fs from 'node:fs';
@@ -30,6 +31,7 @@ const png = Buffer.concat([
 ]);
 fs.writeFileSync(path.join(USER, 'characters/Avereth.png'), png);
 fs.copyFileSync(path.join(ENGINE, 'lorebook/Avereth_World_Lore_v0.11.json'), path.join(USER, 'worlds', `${WORLD}.json`));
+fs.copyFileSync(path.join(ENGINE, 'presets/Avereth Narrator.json'), path.join(USER, 'OpenAI Settings/Avereth Narrator.json'));
 const ext = path.join(USER, 'extensions/avereth-engine');
 fs.rmSync(ext, { recursive: true, force: true });
 fs.mkdirSync(ext, { recursive: true });
@@ -40,5 +42,8 @@ const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
 settings.firstRun = false;
 settings.username = 'Alaric';
 Object.assign(settings.oai_settings, { openai_max_context: 32000, openai_max_tokens: 1200, max_context_unlocked: true });
+// the prompts of SillyTavern's Default preset, whatever preset an earlier run left selected (run.mjs AVERETH_ST_PRESET)
+const byDefault = JSON.parse(fs.readFileSync(path.join(USER, 'OpenAI Settings/Default.json'), 'utf8'));
+Object.assign(settings.oai_settings, { preset_settings_openai: 'Default', prompts: byDefault.prompts, prompt_order: byDefault.prompt_order });
 fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 4));
-console.log('card, lorebook, extension and settings installed');
+console.log('card, lorebook, extension, narrator preset and settings installed');

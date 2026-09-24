@@ -26,7 +26,7 @@ import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks } f
 export const ENGINE_VERSION = '3.0.0';
 
 const GROUP_RE = /\b(?:everyone|everybody|all of you|you all|the (?:group|room|crowd|table|company)|(?:to|at|toward|towards) them)\b/i;
-const SELF_INTRO_RE = /\b(?:my name(?:'s| is)|i am|i'?m|call me|name's|they call me)\s+alaric\b/i;
+const SELF_INTRO_RE = /\b(?:(?:my )?name(?:'s| is)|i am|i'?m|call me|they call me)\s+alaric\b/i; // "Name is Alaric" (Test 5 run 2)
 const HOLD_RE = /\b(?:i\s+)?(?:wait|hold (?:my )?(?:position|ground|fire)|do nothing|pass (?:my )?turn|end (?:my )?turn|stay put)\b/i;
 const TRADE_RE = /\b(?:buy|buys|bought|sell|sells|sold|pay|pays|paid|price|cost|costs|haggle|coin|coins|copper|silver|gold)\b/i;
 

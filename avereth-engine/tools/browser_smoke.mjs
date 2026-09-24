@@ -1,6 +1,7 @@
 // Optional real-browser smoke test of the SillyTavern binding (index.js): serves this folder, loads index.js in
 // Chromium with a minimal mock of SillyTavern.getContext(), and plays greeting -> creation (System panels) -> reply -> retcon edit -> #command
-// -> Runtime V3 (HUD under replies, tracker blocks removed, prompt-only history projection).
+// -> Runtime V3 (HUD under replies, tracker blocks removed, prompt-only history projection) -> a reply without a fact
+// report, asked for separately (generateRaw) before the next message is resolved.
 // Requires Playwright (not a project dependency). Usage: node tools/browser_smoke.mjs
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -31,6 +32,8 @@ const ctx = {
   setExtensionPrompt(key, value, position, depth, scan) { (window.__ext ||= {})[key] = { value, position, scan }; if (key === 'avereth_engine') window.__prompt = value; },
   characters: [{ name: 'Avereth', data: { extensions: { world: '' } } }], characterId: 0,
   addOneMessage(m) { window.__panels = (window.__panels || []).concat(m.mes); },
+  // the separate request for a missing fact report (Test 5 run 2); answered after a delay, like a real model
+  async generateRaw({ systemPrompt, prompt }) { window.__raw = { systemPrompt, prompt }; window.__rawCount = (window.__rawCount || 0) + 1; await new Promise((r) => setTimeout(r, 300)); return '<avereth>{"time":5,"place":"the old mill"}</avereth>'; },
   getCurrentChatId: () => 'smoke', eventTypes: { MESSAGE_RECEIVED: 'mr', MESSAGE_EDITED: 'me', CHAT_CHANGED: 'cc', MESSAGE_DELETED: 'md', MESSAGE_SWIPED: 'ms' },
   eventSource: { on(t, f) { handlers[t] = f; } },
 };
@@ -106,8 +109,25 @@ result.trackersRemoved = v3.mes === 'The wind turns.' && !chat.some((m) => /<Wor
 await turn('I walk on.', 'The road bends.\\n<avereth>{}</avereth>');
 result.hudNotInPrompt = !/avereth-hud/.test(window.__prompt) && core.every((m) => !/avereth-hud/.test(m.mes));
 result.historyWindow = core.filter((m) => m.is_user).length === 4 && chat.filter((m) => m.is_user && !m.is_system).length > 4;
+// a reply without a report: asked for separately while the player reads; a message sent at once waits for its facts
+await turn('I walk to the old mill.', 'The mill wheel creaks in the stream.');
+const millId = chat.length - 1;
+const pending = /NO FACT REPORT: asking for it separately/.test(chat[millId].extra.display_text || '') && chat[millId].extra.avereth.recovery === 'pending';
+await ask('I look around the mill.');
+result.reportRequest = pending && (window.__raw?.systemPrompt || '').startsWith('[AVERETH ENGINE — FACT REPORT REQUEST]') && (window.__raw?.prompt || '').includes("NARRATOR'S REPLY:" + String.fromCharCode(10) + 'The mill wheel creaks')
+  && (chat[millId].extra.display_text || '').includes('REPORT RECOVERED') && window.__prompt.includes('— the old mill | mode: ') && chat[millId].extra.avereth.recovery.from === 'no <avereth> report';
+// a swipe while the request still runs: the new text is asked for again; the answer for the old text is refused
+await turn('I cross the bridge.', 'The bridge sways.');
+const bridgeId = chat.length - 1;
+const asked = window.__rawCount;
+const swiped = 'The bridge holds, barely.';
+Object.assign(chat[bridgeId], { mes: swiped, swipes: [...chat[bridgeId].swipes, swiped], swipe_id: 1, swipe_info: [...chat[bridgeId].swipe_info, { extra: {} }] });
+await handlers.mr(bridgeId);
+await new Promise((r) => setTimeout(r, 800));
+result.reportRequest = result.reportRequest && window.__rawCount === asked + 1 && chat[bridgeId].mes === swiped && (chat[bridgeId].extra.display_text || '').includes('REPORT RECOVERED');
 result.settingsUi = !!document.getElementById('avereth_enabled') && document.getElementById('avereth_swaps')?.value === 'ledger=register'
-  && document.getElementById('avereth_hud')?.value === 'closed' && document.getElementById('avereth_history')?.value === '4' && document.getElementById('avereth_strip')?.checked === true;
+  && document.getElementById('avereth_hud')?.value === 'closed' && document.getElementById('avereth_history')?.value === '4' && document.getElementById('avereth_strip')?.checked === true
+  && document.getElementById('avereth_recover')?.checked === true;
 result.log = window.__log;
 window.__result = result;
 </script></body></html>`;
@@ -138,6 +158,6 @@ await browser.close();
 server.close();
 console.log(JSON.stringify({ ...result, errors }, null, 1));
 const ok = result.campaign && result.step2 && result.creation && result.firstStory && result.stripped && result.retcon && result.combatShown && result.command && result.commitShown && result.loreBridge && result.wordSwap && result.settingsUi
-    && result.hud && result.trackersRemoved && result.hudNotInPrompt && result.historyWindow && !errors.length;
+    && result.hud && result.trackersRemoved && result.hudNotInPrompt && result.historyWindow && result.reportRequest && !errors.length;
 console.log(ok ? 'BROWSER SMOKE: OK' : 'BROWSER SMOKE: FAILED');
 process.exit(ok ? 0 : 1);

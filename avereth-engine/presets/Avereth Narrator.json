@@ -1,0 +1,236 @@
+{
+    "temperature": 0.9,
+    "frequency_penalty": 0,
+    "presence_penalty": 0,
+    "top_p": 0.95,
+    "top_k": 0,
+    "top_a": 0,
+    "min_p": 0,
+    "repetition_penalty": 1,
+    "openai_max_context": 131072,
+    "openai_max_tokens": 4096,
+    "max_context_unlocked": true,
+    "reasoning_effort": "low",
+    "show_thoughts": true,
+    "verbosity": "auto",
+    "enable_web_search": false,
+    "function_calling": false,
+    "stream_openai": false,
+    "seed": -1,
+    "n": 1,
+    "squash_system_messages": false,
+    "names_behavior": 0,
+    "send_if_empty": "",
+    "continue_prefill": false,
+    "continue_postfix": " ",
+    "assistant_prefill": "",
+    "assistant_impersonation": "",
+    "use_sysprompt": false,
+    "media_inlining": false,
+    "request_images": false,
+    "wi_format": "{0}",
+    "scenario_format": "{{scenario}}",
+    "personality_format": "{{personality}}",
+    "impersonation_prompt": "[Write your next reply from the point of view of {{user}}, using the chat history so far as a guideline for the writing style of {{user}}. Don't write as {{char}} or system. Don't describe actions of {{char}}.]",
+    "new_chat_prompt": "[Start a new Chat]",
+    "new_group_chat_prompt": "[Start a new group chat. Group members: {{group}}]",
+    "new_example_chat_prompt": "[Example Chat]",
+    "continue_nudge_prompt": "[Continue your last message without repeating its original content.]",
+    "group_nudge_prompt": "[Write the next reply only as {{char}}.]",
+    "prompts": [
+        {
+            "identifier": "main",
+            "name": "Avereth Narrator — Style",
+            "system_prompt": true,
+            "role": "system",
+            "content": "AVERETH NARRATOR — STYLE\nThis part only sets how the story is written. Rules, world and game state come from the contract, the lore and the [AVERETH ENGINE] block.\n\nWrite in English, third person, past tense.\n\nProse\n- Render scenes through concrete action, sensation and detail, and let the reader infer feelings and meaning instead of naming them.\n- Prefer specific things to generic ones, and use more senses than sight: sound, smell, temperature, touch.\n- Vary sentence length and openings. One precise adjective beats three.\n- Background enters through the scene (a remark, an object, a habit), not as a summary.\n- Open with the world's response to the player's message instead of restating what Alaric just did or said.\n- Let length follow the moment: a short exchange stays short; a new place or a turning point may run to about 350 words.\n- Plain story text only: no headings, lists, menus of options or out-of-character notes.\n\nPeople and dialogue\n- Give each person a recognisable way of speaking, shaped by background and mood, and keep it consistent.\n- Dialogue sounds spoken: uneven lines, interruptions, self-corrections, everyday words. Avoid speeches, aphorisms and polished punchlines unless the person talks that way.\n- Strong emotion roughens speech; a calm, practised speaker stays clear.\n- People answer from their own interests and temperament: they do not explain their motives unprompted, and they are not evasive by default.\n- When someone's mood or stance shifts, the reader can see why.\n\nAvoid\n- \"not X, but Y\" framing; naming feelings with felt, realized, knew or sensed; stock phrases such as \"a breath he didn't know he was holding\", \"silence stretched\" or \"the air grew heavy\".\n- Repeating a gesture, image or description from the last two replies.\n\nTone\n- Mature fantasy: violence, injury and death are shown plainly, without disclaimers or moralizing. Intimate content only between adults.",
+            "injection_position": 0,
+            "injection_depth": 4,
+            "forbid_overrides": true
+        },
+        {
+            "identifier": "nsfw",
+            "name": "Auxiliary Prompt",
+            "system_prompt": true,
+            "role": "system",
+            "content": "",
+            "injection_position": 0,
+            "injection_depth": 4
+        },
+        {
+            "identifier": "jailbreak",
+            "name": "Output Contract (Post-History)",
+            "system_prompt": true,
+            "role": "system",
+            "content": "OUTPUT FORMAT (final instruction): the story text, then exactly one <avereth>{…}</avereth> fact report as the [AVERETH ENGINE] block defines it ({} if nothing new). Nothing after </avereth>.",
+            "injection_position": 0,
+            "injection_depth": 4,
+            "forbid_overrides": true
+        },
+        {
+            "identifier": "enhanceDefinitions",
+            "name": "Enhance Definitions",
+            "system_prompt": true,
+            "role": "system",
+            "content": "",
+            "injection_position": 0,
+            "injection_depth": 4
+        },
+        {
+            "identifier": "worldInfoBefore",
+            "name": "World Info (before)",
+            "system_prompt": true,
+            "marker": true
+        },
+        {
+            "identifier": "charDescription",
+            "name": "Char Description",
+            "system_prompt": true,
+            "marker": true
+        },
+        {
+            "identifier": "charPersonality",
+            "name": "Char Personality",
+            "system_prompt": true,
+            "marker": true
+        },
+        {
+            "identifier": "scenario",
+            "name": "Scenario",
+            "system_prompt": true,
+            "marker": true
+        },
+        {
+            "identifier": "worldInfoAfter",
+            "name": "World Info (after)",
+            "system_prompt": true,
+            "marker": true
+        },
+        {
+            "identifier": "personaDescription",
+            "name": "Persona Description",
+            "system_prompt": true,
+            "marker": true
+        },
+        {
+            "identifier": "dialogueExamples",
+            "name": "Chat Examples",
+            "system_prompt": true,
+            "marker": true
+        },
+        {
+            "identifier": "chatHistory",
+            "name": "Chat History",
+            "system_prompt": true,
+            "marker": true
+        }
+    ],
+    "prompt_order": [
+        {
+            "character_id": 100000,
+            "order": [
+                {
+                    "identifier": "main",
+                    "enabled": true
+                },
+                {
+                    "identifier": "worldInfoBefore",
+                    "enabled": true
+                },
+                {
+                    "identifier": "charDescription",
+                    "enabled": true
+                },
+                {
+                    "identifier": "charPersonality",
+                    "enabled": true
+                },
+                {
+                    "identifier": "scenario",
+                    "enabled": true
+                },
+                {
+                    "identifier": "worldInfoAfter",
+                    "enabled": true
+                },
+                {
+                    "identifier": "personaDescription",
+                    "enabled": true
+                },
+                {
+                    "identifier": "nsfw",
+                    "enabled": false
+                },
+                {
+                    "identifier": "enhanceDefinitions",
+                    "enabled": false
+                },
+                {
+                    "identifier": "dialogueExamples",
+                    "enabled": true
+                },
+                {
+                    "identifier": "chatHistory",
+                    "enabled": true
+                },
+                {
+                    "identifier": "jailbreak",
+                    "enabled": true
+                }
+            ]
+        },
+        {
+            "character_id": 100001,
+            "order": [
+                {
+                    "identifier": "main",
+                    "enabled": true
+                },
+                {
+                    "identifier": "worldInfoBefore",
+                    "enabled": true
+                },
+                {
+                    "identifier": "charDescription",
+                    "enabled": true
+                },
+                {
+                    "identifier": "charPersonality",
+                    "enabled": true
+                },
+                {
+                    "identifier": "scenario",
+                    "enabled": true
+                },
+                {
+                    "identifier": "worldInfoAfter",
+                    "enabled": true
+                },
+                {
+                    "identifier": "personaDescription",
+                    "enabled": true
+                },
+                {
+                    "identifier": "nsfw",
+                    "enabled": false
+                },
+                {
+                    "identifier": "enhanceDefinitions",
+                    "enabled": false
+                },
+                {
+                    "identifier": "dialogueExamples",
+                    "enabled": true
+                },
+                {
+                    "identifier": "chatHistory",
+                    "enabled": true
+                },
+                {
+                    "identifier": "jailbreak",
+                    "enabled": true
+                }
+            ]
+        }
+    ]
+}

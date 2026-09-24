@@ -4,7 +4,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import util from 'node:util';
-import { parseServerLog, measure, promptParts, outputParts, chatGenerations, v3Columns } from '../../tools/run_report.mjs';
+import { parseServerLog, measure, promptParts, outputParts, chatGenerations, v3Columns, replayFixture } from '../../tools/run_report.mjs';
+import { REPORT_REQUEST_HEAD } from '../../src/host.js';
+import { readJson } from '../helpers.js';
 
 // what SillyTavern's console.debug prints (server-main.js: maxStringLength null, depth 4)
 const log = (kind, obj) => `Chat Completion ${kind}: ${util.inspect(obj, { depth: 4, maxStringLength: null, maxArrayLength: null })}\n`;
@@ -102,4 +104,31 @@ test('an old reply handed back again (same response id) is not measured, and the
     assert.equal(rows[1].seconds, null);
     assert.equal(rows[2].completion, 44);
     assert.equal(rows[2].seconds, 33, 'the regenerated reply is matched to the request that produced it');
+});
+
+test('a report request is a row of its own: its player message, its time from the reply\'s record, no V3 row', () => {
+    const noReport = { ...reply, id: 'n1', choices: [{ message: { role: 'assistant', content: 'The fishwife takes two coppers.' }, finish_reason: 'stop' }] };
+    const req = { messages: [{ role: 'system', content: `${REPORT_REQUEST_HEAD}\n\n${ENGINE}` }, { role: 'user', content: "PLAYER'S MESSAGE:\nI buy a fish.\n\nNARRATOR'S REPLY:\nThe fishwife takes two coppers.\n\nWrite the fact report for this reply now: exactly one <avereth>{…}</avereth>, nothing else." }], model: 'glm', stream: false, reasoning_effort: 'low' };
+    const answer = { id: 'r1', choices: [{ message: { role: 'assistant', reasoning: 'Coin -2.', content: '<avereth>{"coin":[{"cp":-2,"why":"fish"}]}</avereth>' }, finish_reason: 'stop' }], usage: { prompt_tokens: 900, completion_tokens: 40 } };
+    const text = log('request', request('I buy a fish.', false)) + log('response', noReport) + log('request', req) + log('response', answer);
+    const chat = [JSON.stringify({ chat_metadata: {} }),
+        JSON.stringify({ is_user: true, mes: 'I buy a fish.' }),
+        JSON.stringify({ is_user: false, mes: 'The fishwife takes two coppers.', gen_started: '2026-09-24T10:00:00.000Z', gen_finished: '2026-09-24T10:00:20.000Z', extra: { avereth: { recovery: { from: 'no <avereth> report', ms: 8500 } } } }),
+    ].join('\n');
+    const rows = measure(parseServerLog(text).pairs, { lore: [LORE], gens: chatGenerations(chat) });
+    assert.deepEqual(rows.map((r) => r.request), [false, true]);
+    assert.equal(rows[0].seconds, 20, 'the narration keeps its own time');
+    assert.equal(rows[1].input, 'I buy a fish.');
+    assert.equal(rows[1].seconds, 8.5);
+    assert.equal(rows[1].parts.engine > 0 && rows[1].parts.history > 0, true);
+    assert.equal(v3Columns(rows[1], { turns: new Map([['i buy a fish.', { engine: 1, history: 1 }]]), contract: 1 }), null);
+});
+
+test('the replay plays a fixture\'s creation inputs first (Test 5): every story turn has its engine block, not the creation panel', async () => {
+    for (const f of ['tests/testrun_v5/fixture.json', 'tests/testrun_v5/fixture_run2.json']) {
+        const fx = await readJson(f);
+        const { turns } = await replayFixture(fx);
+        assert.equal(turns.size, fx.turns.length);
+        for (const [input, t] of turns) assert.ok(t.engine > 3000, `${f} "${input}": engine block ${t.engine} chars`);
+    }
 });

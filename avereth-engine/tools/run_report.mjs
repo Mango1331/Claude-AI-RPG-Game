@@ -9,6 +9,9 @@
 // docs/RUNTIME_V3.md §9 applied. The before/after tables in RUNTIME_V3 §6 come from:
 //   node tools/run_report.mjs <Testrun-4 server log> --replay tests/testrun_v4/fixture.json
 //
+// A report request (host.js reportRequest: the separate request for a reply's missing fact report) is a row of its own,
+// marked [Report], and kept out of the narration averages; its time comes from the reply's record in the chat file.
+//
 // Usage: node tools/run_report.mjs <server log> [<chat .jsonl>] [--replay <fixture.json>]
 //   <server log>: SillyTavern's console output with "Chat Completion request:" / "Chat Completion response:" lines.
 //   A streamed reply is not logged there (only its request): prompt tokens are then estimated from characters (~) and
@@ -18,6 +21,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { stripTrackerBlocks } from '../src/util.js';
+import { REPORT_REQUEST_HEAD } from '../src/host.js';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const CHARS_PER_TOKEN = 4.3; // GLM on the Testruns (4.27-4.35); only used when a request has no usage
@@ -38,7 +42,8 @@ const MARK = {
     trackerTemplate: ['## At the end of your response, output exactly one <Blocks> section.', '</Blocks>'],
     contract: ['ROLE & PURPOSE', 'Correct any violation before output.'],
 };
-const CONTRACT_TITLE = 'AVERETH RPG — SANDBOX NARRATOR CONTRACT';
+export const CONTRACT_TITLE = 'AVERETH RPG — SANDBOX NARRATOR CONTRACT';
+export const CONTRACT_END = MARK.contract[1];
 
 // ------------------------------------------------------------------------------------------------ server log
 function literalAt(text, from) {
@@ -100,6 +105,14 @@ export function parseServerLog(text) {
 const trackerChars = (text) => text.length - stripTrackerBlocks(text).length;
 export const lastInput = (messages) => String([...messages].reverse().find((m) => m.role === 'user')?.content ?? '');
 const normInput = (s) => String(s).toLowerCase().replace(/\s+/g, ' ').trim();
+/** A report request: its system prompt starts with the request head; the player's message and the reply are quoted. */
+export const isReportRequest = (messages) => String(messages?.[0]?.content ?? '').startsWith(REPORT_REQUEST_HEAD.slice(0, 40));
+const quoted = (messages, from, to) => {
+    const t = lastInput(messages);
+    const a = t.indexOf(from);
+    const b = t.indexOf(to, a + from.length);
+    return a < 0 ? '' : t.slice(a + from.length, b < 0 ? undefined : b);
+};
 
 /** Characters per prompt category. lore: the lorebook entry texts to look for. */
 export function promptParts(messages, lore = []) {
@@ -167,6 +180,9 @@ export function chatGenerations(jsonlText) {
         for (const s of swipes) {
             const seconds = (Date.parse(s.info.gen_finished) - Date.parse(s.info.gen_started)) / 1000;
             if (Number.isFinite(seconds)) gens.push({ input: normInput(input), key: letters(s.text), seconds, used: false });
+            // the separate request for this reply's missing report, timed by the engine
+            const ms = s.info.extra?.avereth?.recovery?.ms;
+            if (Number.isFinite(ms)) gens.push({ input: `report:${normInput(input)}`, key: letters(s.text), seconds: ms / 1000, used: false });
         }
     }
     return gens;
@@ -202,11 +218,17 @@ export async function replayFixture(fixture) {
     const ai = (mes) => ({ is_user: false, is_system: false, mes, swipe_id: 0, swipes: [mes], swipe_info: [{ extra: {} }], extra: {} });
     const chat = [ai(fixture.greeting)];
     processReply(chat, 0, content, { seed: fixture.seed, swaps });
+    // as the extension runs it: recent turns bounded by the window, world lore from the card's lorebook
+    const settings = { recentTurns: 4, engineLore: false };
+    for (const input of fixture.creation || []) { // Test 5 on: creation by System panels before the story
+        chat.push({ is_user: true, is_system: false, mes: input, extra: {} });
+        prepareGeneration(chat, content, { type: 'normal', settings });
+        chat.at(-1).is_system = true; // the extension hides a line the System answered
+    }
     const turns = new Map();
     for (const t of fixture.turns) {
         chat.push({ is_user: true, is_system: false, mes: t.input, extra: {} });
-        // as the extension runs it: recent turns bounded by the window, world lore from the card's lorebook
-        const gen = prepareGeneration(chat, content, { type: 'normal', settings: { recentTurns: 4, engineLore: false } });
+        const gen = prepareGeneration(chat, content, { type: 'normal', settings });
         const core = chat.map((m) => ({ ...m }));
         projectPromptHistory(core, { keepTurns: 4 });
         turns.set(normInput(t.input), { engine: gen.context?.text?.length || 0, history: core.reduce((a, m) => a + m.mes.length, 0) });
@@ -228,8 +250,11 @@ export function measure(pairs, { lore = [], gens = [] } = {}) {
         const out = p.resp ? outputParts(p.resp) : null;
         const outChars = out ? Object.values(out).reduce((a, b) => a + b, 0) : 0;
         const outTokens = usage?.completion_tokens ?? null;
-        const input = lastInput(messages);
-        const gen = p.repeatOf ? null : matchGeneration(gens, normInput(input), p.resp ? String(p.resp.choices?.[0]?.message?.content ?? '') : null);
+        const request = isReportRequest(messages);
+        const input = request ? quoted(messages, "PLAYER'S MESSAGE:\n", "\n\nNARRATOR'S REPLY:") : lastInput(messages);
+        const gen = p.repeatOf ? null : request
+            ? matchGeneration(gens, `report:${normInput(input)}`, quoted(messages, "NARRATOR'S REPLY:\n", '\n\nWrite the fact report'))
+            : matchGeneration(gens, normInput(input), p.resp ? String(p.resp.choices?.[0]?.message?.content ?? '') : null);
         return {
             n: i + 1, input, chars, ratio, estimated: !usage?.prompt_tokens,
             prompt: usage?.prompt_tokens ?? Math.round(total / CHARS_PER_TOKEN),
@@ -237,13 +262,14 @@ export function measure(pairs, { lore = [], gens = [] } = {}) {
             completion: outTokens,
             output: out && outTokens ? Object.fromEntries(Object.entries(out).map(([k, v]) => [k, outChars ? Math.round((outTokens * v) / outChars) : 0])) : null,
             seconds: gen?.seconds ?? null, effort: p.req.reasoning_effort ?? null, stream: !!p.req.stream, finish: p.resp?.choices?.[0]?.finish_reason ?? null,
-            repeatOf: p.repeatOf ?? null,
+            repeatOf: p.repeatOf ?? null, request,
         };
     });
 }
 
 /** The same request as this engine version would send it: Megumin unchanged, and with the RUNTIME_V3 §9 checklist. */
 export function v3Columns(row, replay) {
+    if (row.request) return null;
     const t = replay.turns.get(normInput(row.input));
     if (!t) return null;
     const tok = (c) => Math.round(c / row.ratio);
@@ -255,26 +281,35 @@ export function v3Columns(row, replay) {
 const sum = (o) => Object.values(o).reduce((a, b) => a + b, 0);
 const fmt = (v) => (v == null ? '–' : Math.round(v).toLocaleString('de-DE'));
 const short = (s) => JSON.stringify(s.replace(/\s+/g, ' ').slice(0, 48));
+const label = (r) => `${r.request ? '[Report] ' : ''}${short(r.input)}`;
 
 function printReport(rows, replay) {
     const cats = Object.keys(CATEGORIES);
     console.log('## Prompt je Anfrage (Token; ~ = aus Zeichen geschätzt, kein Usage im Log)\n');
     console.log(`| # | Eingabe | Prompt | ${cats.map((c) => CATEGORIES[c]).join(' | ')} |`);
     console.log(`|---|---|---:|${cats.map(() => '---:').join('|')}|`);
-    for (const r of rows) console.log(`| ${r.n} | ${short(r.input)} | ${r.estimated ? '~' : ''}${fmt(r.prompt)} | ${cats.map((c) => fmt(r.parts[c])).join(' | ')} |`);
+    for (const r of rows) console.log(`| ${r.n} | ${label(r)} | ${r.estimated ? '~' : ''}${fmt(r.prompt)} | ${cats.map((c) => fmt(r.parts[c])).join(' | ')} |`);
     console.log('\n## Output je Antwort (Token, nach Zeichenanteil aufgeteilt) und Dauer\n');
     console.log('| # | Eingabe | Output | Reasoning | Prosa | Report | Tracker | Dauer s | Reasoning-Stufe | Stream | Ende |');
     console.log('|---|---|---:|---:|---:|---:|---:|---:|---|---|---|');
     for (const r of rows) {
         const o = r.output || {};
-        console.log(`| ${r.n} | ${short(r.input)} | ${fmt(r.completion)} | ${fmt(o.reasoning)} | ${fmt(o.prose)} | ${fmt(o.report)} | ${fmt(o.tracker)} | ${r.seconds == null ? '–' : r.seconds.toFixed(1)} | ${r.effort ?? '–'} | ${r.stream ? 'ja' : 'nein'} | ${r.repeatOf ? `alte Antwort von #${r.repeatOf}` : r.finish ?? '–'} |`);
+        console.log(`| ${r.n} | ${label(r)} | ${fmt(r.completion)} | ${fmt(o.reasoning)} | ${fmt(o.prose)} | ${fmt(o.report)} | ${fmt(o.tracker)} | ${r.seconds == null ? '–' : r.seconds.toFixed(1)} | ${r.effort ?? '–'} | ${r.stream ? 'ja' : 'nein'} | ${r.repeatOf ? `alte Antwort von #${r.repeatOf}` : r.finish ?? '–'} |`);
     }
-    const withOut = rows.filter((r) => r.output);
+    const timing = (list) => {
+        const secs = list.filter((r) => r.seconds != null).map((r) => r.seconds).sort((x, y) => x - y);
+        const median = secs.length ? (secs[(secs.length - 1) >> 1] + secs[secs.length >> 1]) / 2 : null;
+        return secs.length ? ` · Dauer Mittel ${(secs.reduce((x, y) => x + y, 0) / secs.length).toFixed(1)} s, Median ${median.toFixed(1)} s (${secs.length} zugeordnet)` : '';
+    };
+    const withOut = rows.filter((r) => r.output && !r.request);
     if (withOut.length) {
         const avg = (f) => withOut.reduce((a, r) => a + f(r), 0) / withOut.length;
-        const secs = rows.filter((r) => r.seconds != null).map((r) => r.seconds).sort((x, y) => x - y);
-        const median = secs.length ? (secs[(secs.length - 1) >> 1] + secs[secs.length >> 1]) / 2 : null;
-        console.log(`\nMittel über ${withOut.length} Antworten: Prompt ${fmt(avg((r) => r.prompt))} · Output ${fmt(avg((r) => r.completion))} (Reasoning ${fmt(avg((r) => r.output.reasoning))}, Prosa ${fmt(avg((r) => r.output.prose))}, Report ${fmt(avg((r) => r.output.report))}, Tracker ${fmt(avg((r) => r.output.tracker))})${secs.length ? ` · Dauer Mittel ${(secs.reduce((x, y) => x + y, 0) / secs.length).toFixed(1)} s, Median ${median.toFixed(1)} s (${secs.length} zugeordnet)` : ''}`);
+        console.log(`\nMittel über ${withOut.length} Antworten: Prompt ${fmt(avg((r) => r.prompt))} · Output ${fmt(avg((r) => r.completion))} (Reasoning ${fmt(avg((r) => r.output.reasoning))}, Prosa ${fmt(avg((r) => r.output.prose))}, Report ${fmt(avg((r) => r.output.report))}, Tracker ${fmt(avg((r) => r.output.tracker))})${timing(rows.filter((r) => !r.request))}`);
+    }
+    const requests = rows.filter((r) => r.request && r.output);
+    if (requests.length) {
+        const avg = (f) => requests.reduce((a, r) => a + f(r), 0) / requests.length;
+        console.log(`Report-Nachforderungen (${requests.length}): Prompt ${fmt(avg((r) => r.prompt))} · Output ${fmt(avg((r) => r.completion))} (Reasoning ${fmt(avg((r) => r.output.reasoning))}, Report ${fmt(avg((r) => r.output.report))})${timing(rows.filter((r) => r.request))}`);
     }
     if (!replay) return;
     console.log('\n## Runtime-V3-Nachbau derselben Anfragen (Token)\n');

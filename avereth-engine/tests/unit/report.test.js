@@ -243,3 +243,21 @@ test('a "status" fact sets the entity status of a person only to alive/dead; Ala
     assert.equal(g.state.entities['npc.guard'].status, 'dead');
 });
 
+
+test('Alaric under a full name the story gave him is Alaric (his Guild Rank is his), and an id-like ref finds its name', () => {
+    // Test 5 run 2: the player said "put down Red"; the registration report said {"s":"Alaric Red","p":"guild_rank"}
+    // and the rank went to a stranger called "Alaric Red": the HUD kept "(not registered)"
+    const g = ready();
+    const r = g.reply({ facts: [{ s: 'Alaric Red', p: 'guild_rank', o: 'Novice' }] });
+    assert.deepEqual(r.rejected, []);
+    assert.equal(truth(g.state, 'pc', 'guild_rank')[0].o, 'Novice');
+    assert.equal(g.state.entities.pc.name, 'Alaric', 'the story\'s full name never renames the player\'s character');
+    assert.deepEqual(truth(g.state, 'Alaric Red', 'guild_rank'), []);
+    // "lean_guard" for the Lean Guard (the same run: the fact stayed on an unknown subject "lean_guard")
+    g.reply({ new: [{ ref: 'guard_lean', kind: 'npc', name: 'Lean Guard', desc: ['gate guard'], band: 'SHORT' }] });
+    g.reply({ facts: [{ s: 'lean_guard', p: 'voice', o: 'mild as milk' }] });
+    assert.equal(truth(g.state, 'npc.lean_guard', 'voice')[0].o, 'mild as milk');
+    // someone else of that first name present: "Alaric Red" is ambiguous and finds nobody
+    g.reply({ new: [{ ref: 'Alaric', kind: 'npc', name: 'Alaric', desc: ['farmhand'], band: 'SHORT' }] });
+    assert.match(reasons(g.reply({ attitude: [{ who: 'Alaric Red', delta: 5, why: 'x' }] })), /unknown/);
+});

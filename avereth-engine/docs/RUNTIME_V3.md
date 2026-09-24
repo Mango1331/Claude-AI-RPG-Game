@@ -346,6 +346,16 @@ Der Report bleibt das einzige Ausgabeformat, das Avereth besitzt. Er ist kein Tr
 
 Vertrag, ENGINE AUTHORITY: „no trackers, character sheets, world-state or NPC dossiers; the engine keeps that state and shows it to the player“.
 
+**Fehlt der Report, fordert die Engine ihn nach** (seit Test 5, Lauf 2; [TESTRUN_V5_2.md](TESTRUN_V5_2.md)):
+- **Anlass:** Mit Reasoning low schrieb GLM nur in 5 von 15 Antworten einen Report. Zwei Prompt-Varianten haben daran nichts geändert. Das Reasoning plante den Report fast nie.
+- **Anfrage:** Eine Antwort ohne gültigen Report bekommt eine eigene, kurze Anfrage an dasselbe Modell (`host.js reportRequest`, SillyTavern `generateRaw`). Sie enthält den Engine-Block dieses Zugs ohne Lore, die Spielernachricht und die Antwort.
+- **Anwendung:** Die Antwort darauf wird angewendet, als hätte der Erzähler sie geschrieben: dieselben Regeln, dieselben Würfel, dieselben Events (`applyReportAnswer`). Der sichtbare Text bleibt.
+- **Timing:** Sie läuft, während der Spieler liest. Die nächste Spielernachricht wartet höchstens 60 s darauf.
+- **Keine Nachforderung:** nach einer Änderung der Antwort (Swipe, Bearbeitung, Continue) und nach einem schon aufgelösten späteren Zug.
+- **Anzeige:** `NO FACT REPORT: asking for it separately …`, dann `REPORT RECOVERED … (s)`, `NO FACT REPORT, and the separate request brought none …` oder, nach der Wartezeit, `… came too late …`.
+- **Event:** `report.requested`.
+- **Einstellung:** „Ask for a missing fact report separately“ (Standard an).
+
 ### 4.4 Vertrag 3.3
 
 - Neu ist **NPC CONTINUITY** (≈ 990 Zeichen). Der Abschnitt sagt, wann `new` mit `traits`, `occupation`/`voice`, `attitude` mit Grund, `learn`, `agenda` und `memory` mit imp 6–10 zu melden sind.
@@ -501,6 +511,7 @@ Davon betrafen 77 Reasoning-Token (8,3 % des Reasonings) die Tracker.
 | Prompt | `runtime_v3.test.js`:<br>- Projektion und Fenster<br>- neue Antwort mit Blöcken<br>- situatives Schema<br>- Alarics Zeile je Zugtyp<br>- Engine-Block < 1.400 Token<br>- RELEVANT ohne Kartenfakten<br>- Test-5-Szenario: Kests Versprechen verlässt das Fenster und kommt über seine Karte zurück, abwesend und anwesend, mit Haltung und Agenda |
 | Messwerkzeug | `tests/unit/run_report.test.js`: Server-Log im util.inspect-Format, Kategorien, Output-Aufteilung, Zuordnung über die Spielernachricht, V3-Nachbau |
 | Pre-Test-5 | `tests/scenarios/creation_panel.test.js`: Erstellung per System-Panel mit den Eingaben des Diagnoselaufs, Warrior-Kit, erster Story-Zug, Erholung eines hängenden Chats; Nahkampf-Annäherung (`intent.test.js`); keine Pfeilanzeige ohne Köcher (`display.test.js`) |
+| Report-Nachforderung | `tests/unit/report_request.test.js`:<br>- Antwortformate<br>- gleiche Events und gleicher Zustand wie ein Report des Erzählers<br>- verweigert nach Swipe/Bearbeitung und nach einem späteren Zug<br>- keine Nachforderung bei vorhandenem Report und `#system`<br>- keine Antwort<br>- zu spät: Die Fakten bleiben, die Anzeige sagt es<br>- der Hinweis auf Tracker-Blöcke bleibt<br><br>`tests/testrun_v5/run2.test.js`: der zweite Test-5-Lauf mit Antworten auf die Nachforderung |
 | Regression | Testrun 1–4 auf V3 umgestellt. Der TR4-Kellerkampf endet jetzt in Runde 1: Ratte beißt 3, Power Shot 35. |
 
 ## 8. Browser-Smoke
@@ -512,9 +523,10 @@ Davon betrafen 77 Reasoning-Token (8,3 % des Reasonings) die Tracker.
   - `trackersRemoved`;
   - `hudNotInPrompt`;
   - `historyWindow`;
-  - `settingsUi`.
+  - `settingsUi`;
+  - `reportRequest`: Eine Antwort ohne Report bekommt die Nachforderung (gemocktes `generateRaw`, 300 ms). Die sofort gesendete nächste Nachricht wartet darauf, und ihr Engine-Block kennt schon den nachgeforderten Ort. Ein Swipe während der Anfrage bekommt eine eigene Nachforderung; die Antwort für den alten Text wird verworfen.
 
-**Live in echtem SillyTavern 1.19.0** (`tools/st_live/`): **LIVE SILLYTAVERN SMOKE: OK**, 16 von 16 Prüfungen.
+**Live in echtem SillyTavern 1.19.0** (`tools/st_live/`): **LIVE SILLYTAVERN SMOKE: OK**, 18 von 18 Prüfungen.
 
 Setup:
 - echte Karte (Vertrag 3.3 als Beschreibung, Lorebook v0.11 als Character Lore);
@@ -537,8 +549,9 @@ Gespielte Züge (seit dem Pre-Test-5-Lauf als Warrior):
 12. Rückkehr zur Gilde: +5 Silber, Quest erledigt, +15 XP;
 13. wieder bei Kest: Seine Greyhowl-Warnung liegt jetzt außerhalb des Verlaufsfensters;
 14. Reise nach Ashbridge (anderes Reich, Duskreach), 3 Tage;
-15. Blick über den Markt: Weder die letzte Antwort noch die Eingabe nennt Ort oder Reich;
-16. `#status`.
+15. Blick über den Markt: Weder die letzte Antwort noch die Eingabe nennt Ort oder Reich. Die Antwort hat keinen Report. Die Nachforderung liefert Zeit, Ort und den Tinker. Den Ortswechsel lehnt die Engine ab, weil der Spieler nur schaut (PLAYER OWNERSHIP wie beim Erzähler);
+16. Aal-Spieß kaufen: Antwort ohne Report, und auch die Nachforderung bringt keinen;
+17. `#status`.
 
 | Check | Ergebnis |
 |---|---|
@@ -558,12 +571,16 @@ Gespielte Züge (seit dem Pre-Test-5-Lauf als Warrior):
 | Erstellung per System-Panel: echter Pool, sichtbare Ablehnungen, fertiger Warrior, `#equipment` | ✓ |
 | keine LLM-Anfrage für die Erstellung; die erste Anfrage ist im Story-Modus mit dem Hinweis „creation complete“ | ✓ |
 | Warrior-HUD nach der ersten Antwort: HP 85/85, Starter Longsword · Starter Heavy Armor, ATK 6 · DEF 7 · MDEF 3 | ✓ |
+| Nachforderung beim Markt: eine eigene Anfrage mit Engine-Block und Antwort, `REPORT RECOVERED (… s)`, Tinker im HUD, Ortswechsel abgelehnt; die erste Anfrage endet mit der Report-Zeile | ✓ |
+| Nachforderung ohne Report (Aal): `NO FACT REPORT, and the separate request brought none` | ✓ |
 
 Ausführen:
 ```
 AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st
 ```
 Voraussetzungen: SillyTavern einmal gestartet, Playwright. Ergebnis, Requests, letzter Prompt und `hud.png` landen in `<ST>/avereth_live_smoke/` oder in `AVERETH_ST_OUT`.
+
+Mit `AVERETH_ST_PRESET="Avereth Narrator"` läuft derselbe Smoke mit dem eigenen Preset: in der UI gewählt, ohne Streaming, drei Prüfungen mehr (Payload, Parameter, Nachforderung). Ergebnis: 21 von 21, siehe [NARRATOR_AB.md §2.4](NARRATOR_AB.md#24-geprüft-in-echtem-sillytavern-1190).
 
 Der Live-Smoke prüft Host, Prompt-Aufbau, Streaming und Anzeige. Prosaqualität und das Verhalten eines echten Modells prüft er nicht; das ist Test 5.
 
@@ -603,7 +620,9 @@ Grundlage ist der sichtbare Prompt aus Testrun 4, die Anfrage zu Zug 9 (die zehn
      ```
      3. The reply ends with the <avereth> fact report, {} if nothing new.
      ```
-   - Warum nicht nur löschen: In Testrun 4 hing der Report an der Pflicht am Antwortende (13 von 15 Antworten mit Report). Im ersten Test-5-Lauf fehlte sie, und nur 3 von 9 Story-Antworten hatten einen Report ([TESTRUN_V5.md](TESTRUN_V5.md)).
+   - Warum nicht nur löschen: Nach dem ersten Test-5-Lauf (3 von 9 Story-Antworten mit Report, [TESTRUN_V5.md](TESTRUN_V5.md)) schien die fehlende Pflicht am Antwortende die Ursache zu sein.
+   - Der zweite Lauf hat das widerlegt: Mit dem Nachtrag hatten 2 von 6 Antworten einen Report ([TESTRUN_V5_2.md](TESTRUN_V5_2.md)). Den Unterschied zu Testrun 4 (12 von 15) macht Reasoning high.
+   - Der Nachtrag bleibt trotzdem (≈ 60 Token, schadet nicht). Fehlende Reports fordert die Engine seit dem zweiten Lauf selbst nach (§4.3).
 6. **Megumin-Regex-Skripte, die `<Blocks>` einklappen oder rendern:** Deaktivieren ist optional, denn es kommen keine Blöcke mehr.
    - Das Avereth-Übergangsskript (`avereth_hide_tracker_blocks.json`) kann danach auch aus.
 7. **Max Response Length senken.** Ohne Blöcke reichen meist 4.096 Token, bei Reasoning „high“ 6.000.
@@ -646,6 +665,10 @@ Grundlage ist der sichtbare Prompt aus Testrun 4, die Anfrage zu Zug 9 (die zehn
 8. **Monster-Ausreißer** Oger, Hirsch und Pferd (Abschnitt 1.9) sind bewusst nicht korrigiert.
 9. **Ohne die Regex-Skripte** ist der Report während des Streamings kurz sichtbar, bis die Antwort fertig ist.
 10. **Streaming und Messung:** Bei Streaming schreibt SillyTavern nur die Anfrage ins Server-Log, nicht die Antwort mit ihrer Token-Zählung. Für Messläufe deshalb Streaming aus.
+11. **Report-Nachforderung kostet eine zweite Anfrage**, jedes Mal, wenn der Erzähler den Report weglässt; mit GLM und Reasoning low bisher in ≈ 2 von 3 Antworten.
+    - Umfang: Prompt ≈ 1,4–1,6k Token, Output mit Inhalt ≈ 200–350 Token (Report plus Reasoning), also ≈ 15–25 s.
+    - Sie läuft, während der Spieler liest; schreibt er schneller, wartet die nächste Nachricht auf sie.
+    - Ob GLM die Nachforderung zuverlässig beantwortet, zeigt erst der nächste Lauf. Bringt sie nichts, bleibt `NO FACT REPORT` stehen wie vorher.
 
 ## 11. Zurückgestellt
 

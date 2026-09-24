@@ -2,9 +2,12 @@
 // extension and a scripted, streaming mock narrator (OpenAI-compatible, port 5001). Plays a Warrior's creation (answered by
 // System panels, including the Pre-Test-5 run's invented Skill pick and a story message sent too early), an incidental NPC,
 // a recurring NPC, the quest board, registration and coin, an ambush fight, the report back, Kest again after his
-// exchange has left the history window, and travel to another realm; it checks the Runtime V3 goals in the real host:
-// prompt assembly, history window, NPC record, Lore Bridge, streaming, display, HUD. It judges no prose (scripted mock).
+// exchange has left the history window, travel to another realm, and two replies without a fact report (the separate
+// report request: once answered, once not); it checks the Runtime V3 goals in the real host: prompt assembly, history
+// window, NPC record, Lore Bridge, streaming, display, HUD, report requests. It judges no prose (scripted mock).
 // Usage: AVERETH_ST_DIR=/path/to/SillyTavern node tools/st_live/run.mjs   (after setup.mjs; Playwright + Chromium)
+// AVERETH_ST_PRESET="Avereth Narrator" plays the same run with that Chat Completion preset instead of Default, as a
+// player selects it (its own streaming setting included), and checks its payload (docs/NARRATOR_AB.md).
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,6 +19,12 @@ try { ({ chromium } = require('playwright')); } catch { ({ chromium } = require(
 
 const ST = process.env.AVERETH_ST_DIR;
 if (!ST) throw new Error('set AVERETH_ST_DIR to a SillyTavern checkout');
+const PRESET = process.env.AVERETH_ST_PRESET || 'Default';
+// the connection's Additional Parameters (Custom source) of Test 5: GLM's reasoning settings travel there, since
+// SillyTavern forwards the preset's reasoning effort to a Custom endpoint only for OpenAI and KoboldCpp models
+const INCLUDE_BODY = PRESET === 'Default' ? '' : 'clear_thinking: true\nreasoning_effort: low';
+const presetFile = JSON.parse(fs.readFileSync(path.join(ST, 'data/default-user/OpenAI Settings', `${PRESET}.json`), 'utf8'));
+const presetText = (id) => presetFile.prompts.find((p) => p.identifier === id)?.content ?? '';
 const ENGINE = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const HERE = process.env.AVERETH_ST_OUT || path.join(ST, 'avereth_live_smoke');
 fs.mkdirSync(HERE, { recursive: true });
@@ -31,8 +40,9 @@ const SCRIPT = [
     ['city gate', 'The south gate of Tidecross stands open to the morning carts. A gate guard with a bored face and a boar-spear waves the traffic through, then looks you over once.\n\n"Pass\'s free on foot," he says, already watching the next cart.\n<avereth>{"time":20,"place":"Tidecross south gate","new":[{"ref":"gate guard","kind":"npc","desc":["gate guard","bored"],"band":"SHORT"}],"aware":[{"who":"gate guard","level":"aware"}]}</avereth>' + MEGUMIN_BLOCKS],
     ['rats are done', '"Heard." Kest glances at the ear pail, then back at you. "Start there. Keep starting there."\n<avereth>{"time":2,"attitude":[{"who":"Kest","delta":10,"why":"the Novice took the rat job first, as told"}]}</avereth>'],
     ['long road east', 'Three days of road dust later, a walled city of black stone rises over the river crossing. The guards at the east gate wave carts through without a glance.\n<avereth>{"time":4320,"location":"Ashbridge","place":"east gate"}</avereth>'],
-    // no fact report (Test 5 run: six of nine replies had none): the player must see that nothing was recorded
+    // no fact report (Test 5 runs 1 and 2: 5 of 15 replies had one): the engine asks for it separately (REPORTS)
     ['look around the market', 'Beyond the gate the market smells of smoke and tar; a tinker sharpens knives under a grey awning.'],
+    ['grilled eel', 'The eel seller wraps a skewer in a leaf and takes a copper without a word.'],
     ['back to the Guild', 'Serah takes the ear with two fingers and drops it in a pail. "Cellar\'s clear, then." She counts out five silver. At the board, Kest watches you without a word.\n<avereth>{"time":35,"place":"Guild hall, counter","enter":["Serah","Kest"],"quests":[{"title":"Rats in the Salt Cellar","status":"completed"}],"coin":[{"cp":50,"why":"quest reward"}],"learn":[{"who":"Serah","s":"pc","p":"cleared","o":"the salt cellar rats","how":"told","from":"pc"}]}</avereth>'],
     ['Guild hall', 'The Guild hall smells of wet wool and ink. At the Novice board a one-eyed man with a grey braid leans on the wall; behind the counter a clerk with pale eyes and an ink-smudged jaw sorts slips.\n\n"New face," the one-eyed man rasps. "Board\'s there."\n<avereth>{"time":25,"place":"Guild hall, Novice board","leave":["gate guard"],"new":[{"ref":"Kest","name":"Kest","kind":"npc","desc":["veteran adventurer"],"traits":"one-eyed, grey braid, gruff","band":"SHORT"},{"ref":"Serah","name":"Serah","kind":"npc","desc":["guild clerk"],"traits":"pale eyes, ink-smudged jaw","band":"MEDIUM"}],"facts":[{"s":"Kest","p":"occupation","o":"veteran adventurer"},{"s":"Kest","p":"voice","o":"low rasp, clipped sentences"},{"s":"Serah","p":"occupation","o":"Guild clerk"}],"quests":[{"title":"Rats in the Salt Cellar","status":"offered","giver":"Serah","level":1,"type":"minor","rank":"Novice"}]}</avereth>'],
     ['Greyhowl', '"Greyhowl." Kest\'s one eye narrows. "Took two Wardens last spring. You leave that bill alone, Novice." He taps the lower slip instead. "Rats. Start there."\n<avereth>{"time":5,"memory":[{"text":"Kest warned Alaric that Greyhowl killed two Wardens and told him to leave the posting alone","who":["Kest","pc"],"imp":7}],"attitude":[{"who":"Kest","delta":-15,"why":"a green Novice eyeing the Greyhowl bill"}],"facts":[{"s":"Kest","p":"agenda","o":"get the Greyhowl posting taken down"}]}</avereth>'],
@@ -41,6 +51,13 @@ const SCRIPT = [
     ['Heavy Slash the rat', 'Two quiet steps, then the blade comes down behind the rat\'s shoulder and pins it to the sack; it kicks twice and is still. Brine drips somewhere in the dark.\n<avereth>{"time":1}</avereth>'],
 ];
 const replyFor = (input) => (SCRIPT.find(([k]) => input.includes(k)) || [null, 'The world waits.\n<avereth>{}</avereth>'])[1];
+// answers to the engine's report requests (host.js reportRequest), by the player's message they quote
+const REPORTS = [
+    // "place" is refused like in a narrator report: looking around moves nobody
+    ['look around the market', '<avereth>{"time":10,"place":"Ashbridge market","new":[{"ref":"tinker","kind":"npc","desc":["tinker","knife-grinder"],"band":"MEDIUM"}]}</avereth>'],
+    ['grilled eel', 'The eel is good, hot and salty.'], // no report in the answer: the reply keeps NO FACT REPORT
+];
+const isReportRequest = (msgs) => String(msgs[0]?.content || '').startsWith('[AVERETH ENGINE — FACT REPORT REQUEST]');
 
 const mock = http.createServer(async (req, res) => {
     if (req.url.endsWith('/models')) { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ object: 'list', data: [{ id: 'mock-narrator', object: 'model' }] })); return; }
@@ -49,8 +66,8 @@ const mock = http.createServer(async (req, res) => {
     const j = JSON.parse(body || '{}');
     const msgs = j.messages || [];
     const lastUser = [...msgs].reverse().find((m) => m.role === 'user')?.content || '';
-    const text = replyFor(String(lastUser));
-    fs.appendFileSync(LOG, `${JSON.stringify({ stream: !!j.stream, messages: msgs, lastUser, reply: text })}\n`);
+    const text = isReportRequest(msgs) ? (REPORTS.find(([k]) => String(lastUser).includes(k)) || [null, '{}'])[1] : replyFor(String(lastUser));
+    fs.appendFileSync(LOG, `${JSON.stringify({ stream: !!j.stream, params: Object.fromEntries(Object.entries(j).filter(([k]) => k !== 'messages')), messages: msgs, lastUser, reply: text })}\n`);
     const promptChars = msgs.reduce((a, m) => a + String(m.content).length, 0);
     if (j.stream) {
         res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', connection: 'keep-alive' });
@@ -77,8 +94,8 @@ for (let i = 0; i < 120 && !/listening on/.test(stOut); i++) await new Promise((
 const browser = await chromium.launch();
 const page = await browser.newPage();
 const pageErrors = [];
-page.on('pageerror', (e) => pageErrors.push(e.message));
-page.on('console', (m) => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) pageErrors.push(m.text()); });
+page.on('pageerror', (e) => pageErrors.push(`${e.message} ${String(e.stack || '').split('\n').slice(1, 4).join(' ')}`));
+page.on('console', (m) => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) pageErrors.push(`${m.text()} @ ${m.location()?.url?.split('/').pop()}:${m.location()?.lineNumber}`); });
 await page.goto('http://127.0.0.1:8123/', { waitUntil: 'domcontentloaded' });
 // first run: SillyTavern asks for a persona name
 await page.waitForSelector('dialog[open]', { timeout: 30000 }).catch(() => {});
@@ -94,18 +111,29 @@ await page.waitForTimeout(1500);
 // close first-run popups if any
 await page.evaluate(() => document.querySelectorAll('dialog[open] .popup-button-ok, dialog[open] .popup-button-cancel').forEach((b) => b.click()));
 const regexScripts = ['avereth_hide_fact_report.json', 'avereth_hide_tracker_blocks.json'].map((f) => JSON.parse(fs.readFileSync(path.join(ENGINE, 'regex', f), 'utf8')));
-await page.evaluate(async (scripts) => {
+await page.evaluate(async ({ scripts, stream, includeBody }) => {
     const ctx = SillyTavern.getContext();
     $('#main_api').val('openai').trigger('change');
     $('#chat_completion_source').val('custom').trigger('change');
     $('#custom_api_url_text').val('http://127.0.0.1:5001/v1').trigger('input');
     $('#custom_model_id').val('mock-narrator').trigger('input');
-    $('#stream_toggle').prop('checked', true).trigger('change');
+    ctx.chatCompletionSettings.custom_include_body = includeBody; // what its popup's input handler sets
+    if (stream) $('#stream_toggle').prop('checked', true).trigger('change');
     ctx.extensionSettings.regex = [...(ctx.extensionSettings.regex || []).filter((s) => !String(s.id).startsWith('avereth')), ...scripts];
     ctx.saveSettingsDebounced();
     $('#api_button_openai').trigger('click');
-}, regexScripts);
+}, { scripts: regexScripts, stream: PRESET === 'Default', includeBody: INCLUDE_BODY });
 await page.waitForFunction(() => SillyTavern.getContext().onlineStatus && SillyTavern.getContext().onlineStatus !== 'no_connection', null, { timeout: 30000 });
+if (PRESET !== 'Default') {
+    // chosen in the UI as a player does: every prompt and setting the preset holds applies, the connection stays
+    await page.evaluate((name) => {
+        const opt = [...document.querySelectorAll('#settings_preset_openai option')].find((o) => o.textContent === name);
+        if (!opt) throw new Error(`no Chat Completion preset "${name}"`);
+        $('#settings_preset_openai').val(opt.value).trigger('change');
+    }, PRESET);
+    await page.waitForFunction((main) => SillyTavern.getContext().chatCompletionSettings.prompts.find((p) => p.identifier === 'main')?.content === main, presetText('main'), { timeout: 10000 });
+    await page.waitForTimeout(1000);
+}
 const chid = await page.evaluate(() => SillyTavern.getContext().characters.findIndex((c) => c.name === 'Avereth'));
 await page.evaluate(async (id) => { await SillyTavern.getContext().selectCharacterById(String(id)); }, chid);
 await page.waitForFunction(() => SillyTavern.getContext().chat.length >= 1, null, { timeout: 30000 });
@@ -126,6 +154,11 @@ async function send(text) {
         seen.push(s.txt);
         if (s.n >= before + 2 && !s.streaming) break;
         await page.waitForTimeout(25);
+    }
+    // a reply without a fact report: the engine's separate request settles before anything is read
+    for (let i = 0; i < 150; i++) {
+        if (await page.evaluate(() => SillyTavern.getContext().chat.at(-1)?.extra?.avereth?.recovery !== 'pending')) break;
+        await page.waitForTimeout(100);
     }
     await page.waitForTimeout(700); // MESSAGE_RECEIVED processing + save + re-render
     const state = await page.evaluate(() => {
@@ -163,6 +196,7 @@ for (const input of [
     // travel to another realm; the next request's World Info must follow the Lore Bridge, not the chat text
     '*I travel the long road east to Ashbridge.*',
     '*I look around the market.*',
+    '*I buy a skewer of grilled eel.*',
 ]) turns.push(await send(input));
 
 // # command: answered by the engine, no LLM request
@@ -210,8 +244,17 @@ checks.creationBySystem = CREATION.every((c) => T(c).system)
     && /Starter Longsword \[F\] — ATK 6[\s\S]*Starter Heavy Armor \[F\] — DEF 6, MDEF 2/.test(T('#equipment').panelText);
 checks.noLlmForCreation = !requests.some((r) => CREATION.includes(String(r.lastUser)))
     && /mode: story/.test(engineOf(requests[0])) && /CHARACTER CREATION is complete/.test(engineOf(requests[0]));
-checks.noReportShown = /NO FACT REPORT: nothing this reply established was recorded/.test(T('look around the market').shown || '')
+// replies without a fact report (Test 5 runs 1 and 2): the engine asks for it separately with the turn's engine block;
+// an answered request counts as the narrator's report, an unanswered one leaves NO FACT REPORT above the reply
+const reportReqs = requests.filter((r) => isReportRequest(r.messages));
+const marketReq = reportReqs.find((r) => String(r.lastUser).includes('look around the market'));
+checks.reportRecovered = reportReqs.length === 2 && /REPORT RECOVERED: the reply had no fact report, a separate request supplied it \(\d+\.\d s\)\./.test(T('look around the market').shown || '')
+    && /Present: the tinker \(MEDIUM\)/.test(T('look around the market').hudText || '')
+    // validated like the narrator's own report: "look around" moves nobody, so its "place" is refused (PLAYER OWNERSHIP)
+    && /Location: Ashbridge, Duskreach — east gate/.test(T('look around the market').hudText || '') && (T('look around the market').rejected || []).some((r) => /PLAYER OWNERSHIP: moving Alaric/.test(r))
+    && /\[AVERETH ENGINE — authoritative game state, turn \d+\./.test(String(marketReq?.messages?.[0]?.content || '')) && /NARRATOR'S REPLY:\nBeyond the gate the market smells/.test(String(marketReq?.lastUser || ''))
     && !/NO FACT REPORT/.test(T('city gate').shown || '') && /End EVERY reply with <avereth>\{…\}<\/avereth>, \{\} if nothing new\.$/.test(engineOf(requests[0]));
+checks.reportRequestFailed = /NO FACT REPORT, and the separate request brought none \(\d+\.\d s\): nothing this reply established was recorded/.test(T('grilled eel').shown || '');
 checks.warriorHud = /HP 85\/85 \(unhurt\)/.test(T('city gate').hudText || '') && /Starter Longsword · Starter Heavy Armor/.test(T('city gate').hudText || '')
     && /ATK 6 · MATK 0 · DEF 7 · MDEF 3/.test(T('city gate').hudText || '');
 const chatOf = (r) => (r?.messages || []).filter((m) => m.role === 'user' || m.role === 'assistant').map((m) => String(m.content));
@@ -228,8 +271,30 @@ checks.travel = /Location: Ashbridge, Duskreach — east gate/.test(travelTurn?.
 // World Info scans the last two messages (Scan Depth 2): neither names the new realm, only the Lore Bridge does
 checks.loreBridgeTravel = (lookReq?.messages || []).some((m) => /DUSKREACH \[CANON/.test(String(m.content)))
     && !chatOf(lookReq).slice(-2).some((c) => /Ashbridge|Duskreach|Blackgate/i.test(c));
+// the Avereth Narrator preset (docs/NARRATOR_AB.md): its style first, the engine block second to last, its output
+// contract last, the card's contract and the lore in between, no Megumin text; the Test 5 parameters without streaming;
+// the separate report request carries neither of its texts
+if (PRESET !== 'Default') {
+    const story = requests.filter((r) => !isReportRequest(r.messages));
+    const megumin = /<character_sheet>|<user_persona>|<history>|## your thinking steps:|never stop or refuse|\[\[/;
+    // exactly the parameters of the Test 5 requests (docs/TESTRUN_V5_2.md), the model aside
+    const expected = { model: 'mock-narrator', temperature: 0.9, max_tokens: 4096, stream: false, presence_penalty: 0, frequency_penalty: 0, top_p: 0.95, clear_thinking: true, reasoning_effort: 'low' };
+    checks.presetPayload = story.length > 10 && story.every((r) => {
+        const m = r.messages;
+        return m[0].role === 'system' && m[0].content === presetText('main')
+            && m.at(-1).role === 'system' && m.at(-1).content === presetText('jailbreak')
+            && m.at(-2).role === 'system' && String(m.at(-2).content).startsWith('[AVERETH ENGINE')
+            && m.some((x) => x.role === 'system' && String(x.content).startsWith('AVERETH RPG — SANDBOX NARRATOR CONTRACT'))
+            && !m.some((x) => megumin.test(String(x.content)));
+    });
+    checks.presetParams = story.every((r) => JSON.stringify(r.params) === JSON.stringify(expected));
+    checks.reportRequestWithoutPreset = reportReqs.length > 0 && reportReqs.every((r) => !r.messages.some((x) => x.content === presetText('main') || x.content === presetText('jailbreak')));
+    out.preset = { name: PRESET, params: story[0]?.params, firstRequest: story[0]?.messages.map((m) => `${m.role} (${String(m.content).length}): ${String(m.content).slice(0, 70).replace(/\n/g, ' ⏎ ')}`), reportRequest: reportReqs[0]?.messages.map((m) => `${m.role} (${String(m.content).length}): ${String(m.content).slice(0, 70).replace(/\n/g, ' ⏎ ')}`) };
+    fs.writeFileSync(path.join(HERE, 'preset_first_request.json'), JSON.stringify({ params: story[0]?.params, messages: story[0]?.messages }, null, 1));
+}
 out.v3 = { kestCard, travelHud: travelTurn?.hudText || '', lookEngineHead: engineOf(lookReq).split('\n').slice(0, 3).join('\n'), creation: CREATION.map((c) => ({ input: c, panel: T(c).panelText })), firstRequestEngine: engineOf(requests[0]).split('\n').slice(0, 12).join('\n'), firstHud: T('city gate').hudText };
 fs.writeFileSync(path.join(HERE, 'result.json'), JSON.stringify(out, null, 1));
 console.log(JSON.stringify(checks, null, 1));
-console.log(Object.values(checks).every(Boolean) ? 'LIVE SILLYTAVERN SMOKE: OK' : 'LIVE SILLYTAVERN SMOKE: FAILED');
+if (out.preset) console.log(JSON.stringify(out.preset, null, 1));
+console.log(Object.values(checks).every(Boolean) ? `LIVE SILLYTAVERN SMOKE (${PRESET}): OK` : `LIVE SILLYTAVERN SMOKE (${PRESET}): FAILED`);
 console.log(JSON.stringify({ turns: turns.map((t) => ({ text: t.text.slice(0, 40), leaked: t.leakedWhileStreaming, frames: t.streamedFrames, huds: t.huds, styled: t.hudStyled, rejected: t.rejected, mes: t.mes.slice(0, 60) })), requests: out.requests, status: out.status, pageErrors }, null, 1));

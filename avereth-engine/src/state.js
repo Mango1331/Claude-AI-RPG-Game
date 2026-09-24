@@ -171,6 +171,8 @@ export function applyEvent(state, e) {
         case 'report.missing': // the narrator's reply to this turn had no (valid) fact report
             state.last.report_missing = true;
             break;
+        case 'report.requested': // the missing report was asked for separately (host.js reportRequest); a record only
+            break;
         // ------------------------------------------------------------------ character sheet deltas
         case 'resource.changed': {
             const s = sheetOf(state, d.id);

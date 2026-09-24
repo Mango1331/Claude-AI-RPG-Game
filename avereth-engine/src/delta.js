@@ -83,12 +83,14 @@ export function tolerantJson(text) {
  * or a content location/faction (id or name, e.g. "Tidecross" -> loc.tidecross). A part of a known person's name
  * finds that person among those present ("Ferran" for Odile Ferran); a full name whose first part is the only name
  * the engine knows finds that person too ("Hesta Gault" for Hesta, Testrun 3) and is kept in resolve.fullNames.
+ * Alaric's own full name ("Alaric Red") finds him, but never renames him.
  */
 export function makeResolver(state, newRefs, content = null, created = null) {
     const resolve = (ref) => {
         if (ref === undefined || ref === null || typeof ref === 'object') return null;
         const r = normText(ref);
         if (newRefs.has(r)) return newRefs.get(r);
+        if (newRefs.has(r.replace(/_/g, ' '))) return newRefs.get(r.replace(/_/g, ' ')); // "lean_guard" for "Lean Guard"
         if (state.entities[ref]) return ref;
         if (['pc', 'alaric', 'player', 'you', 'the player'].includes(r)) return 'pc';
         const pc = state.entities.pc;
@@ -96,12 +98,14 @@ export function makeResolver(state, newRefs, content = null, created = null) {
         // names identify globally; generic descriptors ("guard", "trapper") only within the current scene/location,
         // so the gate guard of another city is never merged with this one
         const bare = r.replace(/^the /, '');
+        const spaced = bare.replace(/_/g, ' '); // a name written like an id ("lean_guard" for the Lean Guard, Test 5 run 2)
         const scored = [];
         for (const e of Object.values(state.entities)) {
             const here = state.scene.present.includes(e.id);
             const local = here || (e.location && e.location === state.scene.location);
-            if (e.name && normText(e.name) === bare) scored.push([e, here ? 3 : 2]);
-            else if (local && (e.descriptors || []).map(normText).includes(bare)) scored.push([e, here ? 2 : 1]);
+            const name = e.name ? normText(e.name) : null;
+            if (name && (name === bare || name === spaced)) scored.push([e, here ? 3 : 2]);
+            else if (local && (e.descriptors || []).map(normText).some((d) => d === bare || d === spaced)) scored.push([e, here ? 2 : 1]);
         }
         scored.sort((a, b) => b[1] - a[1]);
         if (scored.length) return scored[0][0].id;
@@ -112,14 +116,18 @@ export function makeResolver(state, newRefs, content = null, created = null) {
             for (const f of content.factions.values()) if (normText(f.name) === r) return f.id;
         }
         const words = bare.split(' ').filter(Boolean);
+        const fullName = (name) => words.length > 1 && name.length === 1 && name[0] === words[0] && /^[A-Z]/.test(String(ref).trim());
         const hits = new Set();
         for (const id of [...state.scene.present, ...(created ? created.keys() : [])]) {
             const e = state.entities[id] || created?.get(id);
             const name = e?.name ? normText(e.name).split(' ') : [];
             if (id === 'pc' || !name.length) continue;
             if (words.length === 1 && words[0].length >= 3 && name.length > 1 && name.includes(words[0])) hits.add(id);
-            if (words.length > 1 && name.length === 1 && name[0] === words[0] && /^[A-Z]/.test(String(ref).trim())) hits.add(id);
+            if (fullName(name)) hits.add(id);
         }
+        // Alaric under a full name the story gave him ("Alaric Red", Test 5 run 2: his Guild Rank went to a stranger);
+        // his name itself stays the player's
+        if (pc?.name && fullName(normText(pc.name).split(' '))) return hits.size ? null : 'pc';
         if (hits.size !== 1) return null;
         const id = [...hits][0];
         if (words.length > 1) resolve.fullNames.set(id, String(ref).trim().slice(0, 60));

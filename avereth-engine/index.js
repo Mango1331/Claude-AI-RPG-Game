@@ -1,12 +1,13 @@
 // SillyTavern binding for the Avereth Engine. All game logic lives in src/ (pure ES modules, tested in Node);
 // this file only wires SillyTavern events to src/host.js:
 //   * generate interceptor  -> resolve the player's message, inject the engine block (setExtensionPrompt)
-//   * MESSAGE_RECEIVED      -> validate the narrator's fact report, strip it from the visible text
+//   * MESSAGE_RECEIVED      -> validate the narrator's fact report, strip it from the visible text; a missing report is
+//                              asked for in a separate report-only request while the player reads (generateRaw)
 //   * '#' commands          -> answered by the engine as a hidden System panel, no LLM call
 //   * Lore Bridge           -> the current realm and location as World Info scan text (never part of the prompt), so
 //                              the narrator card's lorebook (lorebook/, docs/LOREBOOK.md) activates the right entries
 import { loadContentPack } from './src/content.js';
-import { prepareGeneration, processReply, onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory } from './src/host.js';
+import { prepareGeneration, processReply, onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory, reportRequest, applyReportAnswer } from './src/host.js';
 import { validateState } from './src/validate.js';
 import { newSeed } from './src/rng.js';
 import { parseSwaps } from './src/util.js';
@@ -14,12 +15,14 @@ import { parseSwaps } from './src/util.js';
 const MODULE = 'avereth';
 const PROMPT_KEY = 'avereth_engine';
 const LORE_KEY = 'avereth_lore_keys';
-const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: 'ledger=register', hud: 'closed', historyTurns: 4, stripTrackers: true };
+const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: 'ledger=register', hud: 'closed', historyTurns: 4, stripTrackers: true, recoverReports: true };
+const REPORT_WAIT_MS = 60000; // the next turn waits this long at most for a report still being asked for
 
 let content = null;
 let lastContext = null;
 let lastProjection = null;
 let legacyWarned = null;
+let pendingReport = null; // {chatId, id, hash, job}: the report request of the latest reply, while it runs
 
 function ctx() {
     return SillyTavern.getContext();
@@ -63,6 +66,13 @@ function loreFromWorldInfo() {
     return src === 'worldinfo' || (src === 'auto' && !!cardLorebook());
 }
 
+/** Settings for the engine block. Turns still in the prompt's history window are not retrieved again, turns before it are. */
+function engineSettings() {
+    const s = settings();
+    const recentTurns = s.historyTurns > 0 ? Math.min(s.recentTurns, s.historyTurns) : s.recentTurns;
+    return { ...s, recentTurns, engineLore: !loreFromWorldInfo() };
+}
+
 function postPanel(text) {
     const c = ctx();
     const message = {
@@ -91,9 +101,11 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
                 return;
             }
         }
-        // turns still in the prompt's history window are not retrieved again; turns before it are
-        const recentTurns = s.historyTurns > 0 ? Math.min(s.recentTurns, s.historyTurns) : s.recentTurns;
-        const r = prepareGeneration(c.chat, content, { type, settings: { ...s, recentTurns, engineLore: !loreFromWorldInfo() } });
+        // the report still being asked for belongs to the turn before this new message: its facts come first
+        if (pendingReport && pendingReport.chatId === c.getCurrentChatId() && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingReport.id) {
+            await Promise.race([pendingReport.job, new Promise((done) => setTimeout(done, REPORT_WAIT_MS))]);
+        }
+        const r = prepareGeneration(c.chat, content, { type, settings: engineSettings() });
         setLoreKeys(r.loreKeys);
         if (r.action === 'clear' || r.action === 'none') {
             // 'clear': quiet/impersonate generations get no engine block; 'none': no campaign or no player message yet
@@ -149,16 +161,57 @@ async function onMessageReceived(messageId) {
     if (!settings().enabled || !content) return;
     const c = ctx();
     try {
-        const r = processReply(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers });
+        const recover = settings().recoverReports && typeof c.generateRaw === 'function';
+        const r = processReply(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover });
         if (!r.changed) return;
         rerender(c, Number(messageId));
         await c.saveChat();
         if (r.result?.rejected?.length) console.info('[Avereth] rejected report items', r.result.rejected);
         renderDebug();
+        if (r.recover) requestReport(Number(messageId));
     } catch (err) {
         console.error('[Avereth] reply processing failed', err);
         toastr.error(`Avereth Engine: ${err.message}`);
     }
+}
+
+/**
+ * The reply had no valid fact report: ask for it in a separate report-only request (host.js reportRequest) while the
+ * player reads, and apply the answer as if the narrator had written it. The next player message waits for it.
+ */
+function requestReport(id) {
+    const c = ctx();
+    const chatId = c.getCurrentChatId();
+    if (typeof c.generateRaw !== 'function') return;
+    const req = reportRequest(c.chat, id, content, { settings: engineSettings() });
+    // the same text is asked for once; a new swipe of the same message is a new request
+    if (!req || (pendingReport?.chatId === chatId && pendingReport.id === id && pendingReport.hash === req.hash)) return;
+    const started = Date.now();
+    const job = (async () => {
+        let answer = null;
+        try {
+            answer = await c.generateRaw({ systemPrompt: req.systemPrompt, prompt: req.prompt, responseLength: 1024 });
+        } catch (err) {
+            console.warn('[Avereth] report request failed', err);
+        }
+        const now = ctx();
+        if (now.getCurrentChatId() !== chatId) return;
+        const res = applyReportAnswer(now.chat, id, content, answer, { hash: req.hash, ms: Date.now() - started, hud: settings().hud, stripTrackers: settings().stripTrackers });
+        if (!res.changed) return;
+        rerender(now, id);
+        await now.saveChat();
+        renderDebug();
+    })().catch((err) => console.error('[Avereth] report request failed', err));
+    pendingReport = { chatId, id, hash: req.hash, job };
+    job.finally(() => { if (pendingReport?.job === job) pendingReport = null; });
+}
+
+/** A report request cut off by a reload or a chat switch: the latest reply asks again. */
+function resumeReport() {
+    const c = ctx();
+    if (!settings().enabled || !settings().recoverReports || !content || !c.chat?.length) return;
+    const id = c.chat.findLastIndex((m) => !m.is_user && !m.is_system);
+    if (id >= 0 && c.chat[id].extra?.avereth?.recovery === 'pending') requestReport(id);
 }
 
 async function onMessageEdited(messageId) {
@@ -215,6 +268,7 @@ function mountSettings() {
       <label class="avereth-row">Recent turns not re-retrieved <input type="number" id="avereth_recent" min="0" max="50" step="1"></label>
       <label class="avereth-row" title="player messages kept in the prompt with their replies, the current one included (4 = the current message and the 3 exchanges before it); older turns reach the narrator through the engine block. 0 = whole history. The saved chat is never changed.">History window (exchanges) <input type="number" id="avereth_history" min="0" max="100" step="1"></label>
       <label class="avereth-row" title="remove World_State / Character_Sheet / New_NPC / NPC_Update blocks from new replies (the engine HUD replaces them)"><input type="checkbox" id="avereth_strip"> Remove tracker blocks from new replies</label>
+      <label class="avereth-row" title="a reply without a valid fact report gets a separate, short report-only request while you read it (same API and model); the next message waits for it"><input type="checkbox" id="avereth_recover"> Ask for a missing fact report separately</label>
       <label class="avereth-row">Injection depth <input type="number" id="avereth_depth" min="0" max="20" step="1"></label>
       <label class="avereth-row">World lore <select id="avereth_lore">
         <option value="auto">Auto: card lorebook if linked, else engine</option>
@@ -252,6 +306,7 @@ function mountSettings() {
     bind('avereth_recent', 'recentTurns', Number);
     bind('avereth_history', 'historyTurns', Number);
     bind('avereth_strip', 'stripTrackers');
+    bind('avereth_recover', 'recoverReports');
     bind('avereth_depth', 'depth', Number);
     bind('avereth_lore', 'loreSource', String);
     bind('avereth_swaps', 'wordSwaps', String);
@@ -275,7 +330,7 @@ function mountSettings() {
     c.eventSource.on(ev.MESSAGE_EDITED, onMessageEdited);
     // state is always re-folded from the chat, so these events only refresh the status line; the interceptor sets
     // the engine block before every generation (normal, swipe, regenerate, continue)
-    c.eventSource.on(ev.CHAT_CHANGED, () => { lastContext = null; lastProjection = null; setPrompt(''); setLoreKeys([]); renderDebug(); });
+    c.eventSource.on(ev.CHAT_CHANGED, () => { lastContext = null; lastProjection = null; setPrompt(''); setLoreKeys([]); renderDebug(); resumeReport(); });
     for (const t of [ev.MESSAGE_DELETED, ev.MESSAGE_SWIPED]) c.eventSource.on(t, () => renderDebug());
     mountSettings();
     renderDebug();

@@ -35,11 +35,40 @@ export function extractReport(text) {
     return { clean, report: parsed.value, error: parsed.error, raw: last[1] };
 }
 
+/**
+ * Bracket repair outside strings: a closing bracket that ends the root while more keys follow ("…}},\"check\":{…}",
+ * Test 5 run, turn 11: the whole report was lost) is dropped, a stray closer is dropped, and brackets still open at
+ * the end are closed.
+ */
+function balanced(s) {
+    let out = '';
+    const open = [];
+    let quote = false;
+    for (let i = 0; i < s.length; i++) {
+        const ch = s[i];
+        if (quote) {
+            out += ch;
+            if (ch === '\\') out += s[++i] ?? '';
+            else if (ch === '"') quote = false;
+            continue;
+        }
+        if (ch === '"') quote = true;
+        else if (ch === '{' || ch === '[') open.push(ch === '{' ? '}' : ']');
+        else if (ch === '}' || ch === ']') {
+            if (!open.length || (open.length === 1 && /^\s*,/.test(s.slice(i + 1)))) continue;
+            open.pop();
+        }
+        out += ch;
+    }
+    return out + open.reverse().join('');
+}
+
 export function tolerantJson(text) {
     let s = String(text).trim().replace(/^```(?:json)?\s*|\s*```$/g, '');
     s = s.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
     const noTrailing = s.replace(/,\s*([}\]])/g, '$1');
-    for (const attempt of [s, noTrailing, noTrailing.replace(/([{,]\s*)([A-Za-z_][\w]*)\s*:/g, '$1"$2":')]) {
+    const quotedKeys = noTrailing.replace(/([{,]\s*)([A-Za-z_][\w]*)\s*:/g, '$1"$2":');
+    for (const attempt of [s, noTrailing, quotedKeys, balanced(noTrailing), balanced(quotedKeys)]) {
         try {
             const v = JSON.parse(attempt);
             if (v && typeof v === 'object' && !Array.isArray(v)) return { value: v };
@@ -364,7 +393,9 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         let value = o;
         if (p === 'guild_rank') {
             // institutional standing (lorebook v0.11): one of the Guild Ranks, never above the Power Rank it requires
-            const gr = QUEST_RANKS.find((r) => normText(r) === normText(o));
+            // exactly one Guild Rank named in a longer value counts ("Novice, registered (F claimed)", Test 5 run)
+            const named = QUEST_RANKS.filter((r) => new RegExp(`(^|[^a-z])${normText(r)}($|[^a-z])`).test(normText(o)));
+            const gr = QUEST_RANKS.find((r) => normText(r) === normText(o)) || (named.length === 1 ? named[0] : null);
             if (!gr) { reject(f, `guild_rank must be one of ${QUEST_RANKS.join('|')}`); continue; }
             const power = ent(s)?.sheet ? QUEST_RANKS[Math.max(0, content.rules.ranks.order.indexOf(deriveCharacter(ent(s).sheet, content).rank))] : null;
             if (power && QUEST_RANKS.indexOf(gr) > QUEST_RANKS.indexOf(power)) { reject(f, `Guild Rank ${gr} needs Power Rank ${content.rules.ranks.order[QUEST_RANKS.indexOf(gr)]} (a promotion minimum)`); continue; }

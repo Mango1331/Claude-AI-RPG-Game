@@ -78,3 +78,28 @@ test('rows: tokens from usage (or estimated), output split, duration matched by 
     assert.equal(v.withMegumin.contract, Math.round(4300 / rows[0].ratio));
     assert.equal(v3Columns(rows[1], replay), null, 'a message the fixture does not have (a discarded attempt) gets no V3 row');
 });
+
+test('an old reply handed back again (same response id) is not measured, and the regenerated reply keeps its duration', () => {
+    // Test 5, first run: request 4 ("Alaric 18 Warrior F Rank") got request 3's reply again, with its id and time; the
+    // player regenerated (request 5, the same request)
+    const old = { ...reply, id: 'r-3', created: 100 };
+    const text = log('request', request('I go into the Guild hall.', false)) + log('response', old)
+        + log('request', request('Alaric 18 Warrior F Rank', false)) + log('response', old)
+        + log('request', request('Alaric 18 Warrior F Rank', false)) + log('response', { ...reply, id: 'r-5', created: 900, usage: { prompt_tokens: 320, completion_tokens: 44 } });
+    const { pairs } = parseServerLog(text);
+    assert.deepEqual(pairs.map((p) => p.repeatOf), [null, 1, null]);
+    assert.equal(pairs[1].resp, null);
+    const chat = [JSON.stringify({ chat_metadata: {} }),
+        JSON.stringify({ is_user: true, mes: 'I go into the Guild hall.' }),
+        JSON.stringify({ is_user: false, mes: '"Board\'s there," Kest says.', gen_started: '2026-09-24T11:15:54.000Z', gen_finished: '2026-09-24T11:16:27.000Z' }),
+        JSON.stringify({ is_user: true, mes: 'Alaric 18 Warrior F Rank' }),
+        JSON.stringify({ is_user: false, mes: '"Board\'s there," Kest says.', gen_started: '2026-09-24T14:04:04.000Z', gen_finished: '2026-09-24T14:04:37.000Z' }),
+    ].join('\n');
+    const rows = measure(pairs, { lore: [LORE], gens: chatGenerations(chat) });
+    assert.equal(rows[1].repeatOf, 1);
+    assert.equal(rows[1].estimated, true, 'the old usage belongs to request 1');
+    assert.equal(rows[1].output, null);
+    assert.equal(rows[1].seconds, null);
+    assert.equal(rows[2].completion, 44);
+    assert.equal(rows[2].seconds, 33, 'the regenerated reply is matched to the request that produced it');
+});

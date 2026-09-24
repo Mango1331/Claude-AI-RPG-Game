@@ -10,13 +10,18 @@ Dazu kommen zwei Beobachtungen, die sich nur mit einem echten Erzähler prüfen 
 
 Für beide ist die Engine-Seite schon geprüft: der Test „Test-5 scenario …“ in `tests/scenarios/runtime_v3.test.js` und der Live-Smoke in SillyTavern (Kests Karte nach dem Fenster). Offen ist nur, ob der Erzähler meldet und die Karte nutzt.
 
-Vorlauf: Der Pre-Test-5-Diagnoselauf ([PRETEST5_DIAGNOSE.md](PRETEST5_DIAGNOSE.md)) hing in der Charaktererstellung fest. Seitdem beantwortet die Engine die Erstellung selbst. **Test 5 in einem frischen Chat starten.**
+Vorlauf:
+- Der Pre-Test-5-Diagnoselauf ([PRETEST5_DIAGNOSE.md](PRETEST5_DIAGNOSE.md)) hing in der Charaktererstellung fest. Seitdem beantwortet die Engine die Erstellung selbst.
+- Im ersten Test-5-Lauf ([TESTRUN_V5.md](TESTRUN_V5.md)) lief die Erstellung sauber. Aber nur 3 von 9 Story-Antworten hatten einen Fakten-Report: Mit den Megumin-Blöcken war auch die Pflicht am Antwortende weggefallen. Die Checkliste hat dafür einen Nachtrag (Punkt 5).
+
+**Test 5 in einem frischen Chat starten.**
 
 ---
 
 ## 1. Vorbereitung
 
 1. **Megumin V10 Shura** nach [RUNTIME_V3.md §9](RUNTIME_V3.md#9-megumin-v10-shura-manuelle-änderungen) ändern. Vorher das Preset exportieren (Sicherung).
+   - Wer die Checkliste schon umgesetzt hat: nur den Nachtrag in Punkt 5 eintragen. Er ersetzt den `<Blocks>`-Abschnitt durch zwei Zeilen zur Report-Pflicht und ergänzt einen dritten Punkt im `## final reminder:`.
 2. **Karte:**
    - Beschreibung = `content/narrator/Avereth_Narrator_Contract_v3.txt` (Stand 3.3).
    - Lorebook v0.11 als Character Lore verknüpft.
@@ -38,6 +43,8 @@ Vorlauf: Der Pre-Test-5-Diagnoselauf ([PRETEST5_DIAGNOSE.md](PRETEST5_DIAGNOSE.m
 ## 2. Ablauf (≈ 15–20 Züge)
 
 Frei spielen, aber diese Stationen einbauen. Die Zugnummern der Kontrollpunkte notieren.
+
+**In jedem Zug:** Steht über der Antwort `NO FACT REPORT`, hat der Erzähler keinen gültigen Report geschrieben. Was diese Antwort erzählt, kennt die Engine dann nicht. Bei Ortswechsel, Quest, Kauf oder Kampfbeginn neu generieren (Swipe), sonst weiterspielen. Wie oft der Report fehlte, zeigt hinterher die Report-Spalte von `run_report.mjs` für jede Anfrage, auch für weggeswipte Antworten (0 = kein Report). Ungültige Reports stehen mit Grund im Event-Export (`report.missing`).
 
 | Phase | Was | Worauf achten |
 |---|---|---|
@@ -81,6 +88,12 @@ Das Werkzeug ordnet jede Anfrage über die Spielernachricht ihrem Zug zu und zei
 
 Das Reasoning ist der größte Hebel: 100 Token Reasoning kosten ≈ 5 s.
 
+**Vergleichswerte erster Test-5-Lauf** (GLM-5.3-Flash, Reasoning low, Megumin nach Checkliste ohne den Nachtrag, [TESTRUN_V5.md](TESTRUN_V5.md)):
+- Prompt 11.806–13.766 Token;
+- Output im Mittel 538 Token (Reasoning 62, Prosa 413, Report 63, Tracker 0);
+- Dauer Median 32,5 s; Dauer = 2,4 s + 61,7 s je 1.000 Output-Token (≈ 16 Token/s);
+- Fakten-Report in 3 von 9 Story-Antworten. Ein Report mit Inhalt kostete 172–225 Token, also ≈ 11–14 s; ein leerer Report `{}` kostet fast nichts. Kommen die Reports mit dem Nachtrag zuverlässig, steigt die mittlere Dauer entsprechend.
+
 **Vergleichswerte Testrun 4** (GLM, Reasoning high, Megumin mit Dossier und Blöcken):
 - Prompt 15.351–26.377 Token (Mittel 21.248);
 - Output 2.304 Token (Reasoning 923, Prosa 539, Report 115, Tracker 727);
@@ -105,4 +118,5 @@ Das Reasoning ist der größte Hebel: 100 Token Reasoning kosten ≈ 5 s.
 | Schnell genug und konsistent | V3 steht, nur noch Feinschliff |
 | Zu langsam | Nächster Kandidat ist die Megumin-Basis (≈ 5.800 Token Stil, Bannliste, Thinking) |
 | Kontrollpunkt 2 scheitert | Ursache nach Abschnitt 3 zuordnen; das Fenster nur nach einer Messung ändern |
+| Reports fehlen trotz Nachtrag oft (`NO FACT REPORT` in mehr als jeder fünften Antwort) | Server-Log und Chat-Datei mitschicken: Steht der Report im Reasoning als Plan und fehlt dann in der Antwort, oder wird er gar nicht erwähnt? Danach entscheiden, zum Beispiel ein Vergleichslauf mit Reasoning „medium“ |
 | Kampf fühlt sich falsch an | Monster-ATK (Oger, Hirsch, Pferd) und die Schadensvarianz nach Test 5 entscheiden ([RUNTIME_V3.md §1.9](RUNTIME_V3.md#19-monster-keine-neubalance-vor-test-5)) |

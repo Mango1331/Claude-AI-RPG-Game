@@ -65,6 +65,11 @@ test('Guild Rank is institutional: a report may set a Guild Rank, never one abov
     const r = g.reply({ facts: [{ s: 'pc', p: 'guild rank', o: 'Proven' }, { s: 'pc', p: 'guild_rank', o: 'Captain' }] });
     assert.deepEqual(r.rejected.map((x) => x.reason), ['Guild Rank Proven needs Power Rank E (a promotion minimum)', 'guild_rank must be one of Novice|Proven|Veteran|Elite|Master|Grandmaster|Legend']);
     assert.match(char(g).Level, /Guild Rank — \(not registered\)/);
+    // one Guild Rank inside a longer value is that rank (Test 5 run); two different ones stay a question
+    const r2 = g.reply({ facts: [{ s: 'pc', p: 'guild_rank', o: 'Novice or Proven' }] });
+    assert.deepEqual(r2.rejected.map((x) => x.reason), ['guild_rank must be one of Novice|Proven|Veteran|Elite|Master|Grandmaster|Legend']);
+    g.reply({ facts: [{ s: 'pc', p: 'guild_rank', o: 'Novice, registered (F claimed)' }] });
+    assert.match(char(g).Level, /Guild Rank Novice$/);
 });
 
 test('World HUD: time, place, spot, people coming and going, quests, deadlines, weather, world events and the fight', () => {

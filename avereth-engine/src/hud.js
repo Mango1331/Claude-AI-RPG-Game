@@ -39,7 +39,7 @@ export function characterRows(state, content) {
     const equip = Object.values(s.equipment || {}).map((r) => (typeof r === 'string' ? content.items.get(r)?.name || r : r.name));
     const inv = Object.entries(s.inventory || {}).map(([k, q]) => `${itemLabel(state, content, k)}${q > 1 ? ` ×${q}` : ''}`);
     const quests = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered')
-        .map((q) => `${q.title} (${[q.status, q.rank, q.giver ? entityLabel(state, q.giver) : null].filter(Boolean).join(' · ')})`);
+        .map((q) => `${q.title} (${[q.status, q.rank, q.giver ? entityLabel(state, q.giver) : null, q.reward ? `reward ${q.reward}` : null].filter(Boolean).join(' · ')})`);
     const fx = state.encounter?.combatants?.pc?.current?.effects || [];
     return [
         ['Level', `${s.level} ${cls} · Power Rank ${dv.rank} · Guild Rank ${guildRankOf(state) || '— (not registered)'}${e.status === 'dead' ? ' · DEAD' : ''}`],

@@ -206,7 +206,11 @@ export function applyReportAnswer(chat, id, content, answer, { hash, ms = null, 
     const late = laterTurns(chat, id);
     const got = late ? { report: null, error: 'too late: a later turn was resolved without it' } : answer == null ? { report: null, error: 'no answer' } : reportFromAnswer(answer);
     const { state } = foldChat(chat, id);
-    const result = narratorReply(state, content, got.report ? `${msg.mes}\n<avereth>${JSON.stringify(got.report)}</avereth>` : msg.mes, { msg: id, stripTrackers });
+    // the request records what the reply established; an open story thread is the narrator's to set (live run 24.09.
+    // 23:23: the request made the clerk's pending questions a deadline thread "registration … fee due" that nobody
+    // closed, and seven turns after the registration the clerk asked for the paid fee again)
+    const report = got.report ? { ...got.report, threads: undefined } : null;
+    const result = narratorReply(state, content, report ? `${msg.mes}\n<avereth>${JSON.stringify(report)}</avereth>` : msg.mes, { msg: id, stripTrackers });
     // the visible text is already clean: the note about tracker blocks the reply had written comes from its first pass
     const trackerNote = (r.corrections || []).find((c) => c.startsWith('Your last reply wrote tracker blocks'));
     if (trackerNote && !result.corrections.includes(trackerNote)) result.corrections.unshift(trackerNote);

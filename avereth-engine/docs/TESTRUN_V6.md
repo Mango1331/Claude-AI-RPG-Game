@@ -46,7 +46,8 @@
 | 10 | Die Nachforderung meldete `"location": "Salt Gate customshouse, Alderwatch"`. Die Engine legte einen neuen Ort an und leerte die Szene. In den Anfragen 13 und 14 fehlte deshalb die Welt-Lore von Alderwatch. | Nur der ganze Name wurde als Ort gesucht. | **behoben** |
 | 14 | Der Erzähler meldete `"location": "Alderwatch, Valedorn Crown"`, also genau die Form, in der der Engine-Block den Ort schreibt. Die Engine legte ein zweites Alderwatch an. | Wie oben: Die Engine erkannte ihre eigene Schreibweise nicht. | **behoben** |
 | 14 | „turn in the signature slip“ wurde abgelehnt: PLAYER OWNERSHIP. Die Quittung blieb im Inventar. | „turn in“ fehlte in der Liste der Übergabe-Wörter. | **behoben** |
-| 14 | Die Schreiberin sagte, die Registrierung sei nicht abgeschlossen und die Gebühr stehe noch aus. Die Questbelohnung (4 Silber) blieb deshalb aus. | Die Nachforderung in Zug 5 legte einen Thread an: „Alaric's registration: … fee of two silver due“ (deadline). Die Antwort in Zug 7 schloss die Registrierung ab, schloss den Thread aber nicht. Er stand weiter als „Open thread“ im Engine-Block, die Registrierung selbst lag schon außerhalb des Verlaufsfensters. Der Erzähler folgte dem Thread statt dem Rang „Guild Novice“ in Alarics Zeile. | **offen, Entscheidung nötig** (Abschnitt 4) |
+| 14 | Die Schreiberin sagte, die Registrierung sei nicht abgeschlossen und die Gebühr stehe noch aus. Die Questbelohnung (4 Silber) blieb deshalb aus. | Die Nachforderung in Zug 5 legte einen Thread an: „Alaric's registration: … fee of two silver due“ (deadline). Die Antwort in Zug 7 schloss die Registrierung ab, schloss den Thread aber nicht. Er stand weiter als „Open thread“ im Engine-Block, die Registrierung selbst lag schon außerhalb des Verlaufsfensters. Der Erzähler folgte dem Thread statt dem Rang „Guild Novice“ in Alarics Zeile. | **behoben an der Quelle** (Abschnitt 4) |
+| 8, 14 | Das Questbrett nannte für die Lieferquest 5 Silber, die Schreiberin bei der Abgabe 4. | Die Engine speicherte keine Belohnung. Das Schema kannte sie nicht, und ein gemeldetes `reward` wurde verworfen (Night Watch: „25 silver from owner via Guild“). Die 5 Silber standen nur in der Prosa des Bretts, und die lag bei der Abgabe längst außerhalb des Verlaufsfensters. | **behoben** |
 | 12 | Der Satchel blieb nach der Übergabe im Inventar. | Der Report meldete die Übergabe nicht. Der Spieler hatte nur „Ring once and then wait“ geschrieben; die Übergabe erzählte der Erzähler selbst („He waits until Alaric has done it“). | offen, beobachten |
 | 1–14 | Die Erzählung stand im Präsens, obwohl der Stil „past tense“ verlangt. | Die Begrüßung der Karte steht im Präsens; das erste Beispiel im Kontext setzt sich durch. Das war nach dem Offline-Vergleich erwartet. | offen, beobachten |
 | 8 | Das Questbrett erzeugte sieben angebotene Quests auf einmal. | Richtig nach Schema, füllt aber die Questliste. | offen, beobachten |
@@ -59,20 +60,67 @@
   - Der erste bekannte Ort gilt. Was davor steht, wird zum Platz, wenn der Report keinen eigenen `place` hat.
   - Ein wirklich neuer Ort heißt ohne Reichszusatz.
 - **Übergabe:** „turn in …“, „turn … in“ und „submit“ zählen als Übergabe. „turn in for the night“ zählt nicht.
+- **Quest-Belohnung:**
+  - Das Schema hat ein optionales `reward` („what it pays, as posted“).
+  - Die Engine hält die Belohnung fest, sobald sie zum ersten Mal gemeldet wird; wie Level und Typ lässt sie sich danach nicht mehr ändern.
+  - Engine-Block und HUD zeigen sie bei der Quest.
+- **Nachforderung ohne Threads:** Die Antwort auf die Nachforderung wird ohne `threads` angewandt. Sie hält fest, was die Antwort festgelegt hat. Ein offener Erzählfaden ist Sache des Erzählers.
 
-**Tests:** `tests/testrun_v6/live.test.js` spielt den Lauf mit den echten Antworten nach, einschließlich der drei Nachforderungen. Die drei Fehler-Tests schlagen mit dem alten Code fehl.
+**Tests:**
+- `tests/testrun_v6/live.test.js` spielt den Lauf mit den echten Antworten nach, einschließlich der drei Nachforderungen.
+- Dazu kommt ein Unit-Test: Die Belohnung bleibt so, wie sie zuerst gemeldet wurde.
+- Alle Fehler-Tests schlagen mit dem alten Code fehl.
 
-**Stand:** 219 Tests grün, Browser-Smoke und Live-Smoke (Default 18/18, Avereth Narrator 21/21) grün.
+**Stand:** 221 Tests grün, Browser-Smoke und Live-Smoke (Default 18/18, Avereth Narrator 21/21) grün.
 
-## 4. Offen: Threads schließen sich nicht von selbst
+## 4. Threads: an der Quelle behoben, der Rest wird beobachtet
 
-**Das Problem:** Ein Thread bleibt offen, bis ein Report ihn mit genau demselben Text als `resolved` meldet. Das hat in diesem Lauf keiner getan. Kurzlebige „deadline“-Threads wie „Gebühr fällig“ bleiben so stehen, auch wenn die Sache längst erledigt ist, und führen den Erzähler später in die Irre.
+**Das Problem:** Ein Thread bleibt offen, bis ein Report ihn mit genau demselben Text als `resolved` meldet. Das hat in diesem Lauf keiner getan. Der schädliche Thread stammte aus der Nachforderung: Sie machte aus den offenen Fragen der Schreiberin eine Frist.
 
-**Mögliche kleine Lösungen**, noch nicht umgesetzt, weil es eine Designfrage ist:
-1. Die Nachforderung legt keine Threads an. Sie soll nur festhalten, was die Antwort festgelegt hat, und ein Thread ist eine Erzählentscheidung.
-2. Die Engine zeigt offene Threads nur, solange sie jung sind, zum Beispiel ≤ 5 Züge seit der letzten Änderung. Danach bleiben sie im Log, aber nicht im Prompt.
-3. Beides.
+**Entscheidung:** Die Nachforderung legt keine Threads mehr an (Abschnitt 3).
 
-## 5. Was du nach einem Update beachten musst
+**Verworfen: eine Altersgrenze für Threads im Prompt.** Sie hätte diesen Fall ebenfalls verhindert. Sie würde aber auch echte Schulden, Versprechen und Drohungen nach ein paar Zügen aus dem Engine-Block nehmen, und genau die soll ein Thread über das Verlaufsfenster hinaus tragen.
+
+**Beobachten:**
+- Der Erzähler selbst legte in diesem Lauf einen Thread an („protection contract: next of kin form awaits a name“). Offline waren es 0 in 12 Reports.
+- Schadet ein veralteter Thread aus seiner eigenen Hand, wird das Thema wieder aufgemacht.
+
+## 5. Abgleich mit dem zweiten ChatGPT-Review
+
+**Übereinstimmend:**
+- Narrator und Nachforderung bestehen.
+- Kein Grund für Megumin und keine weiteren Report-Erinnerungen im Prompt.
+- „turn in“ ist ein Fehler der Autorisierung, kein Verstoß des Erzählers.
+- Doppeltes Alderwatch, Namens-Claim und veralteter Registrierungs-Thread sind Fehler auf der Seite des Zustands.
+- Die Ownership-Regeln nicht weiter verschärfen.
+
+**Von ChatGPT gefunden, von mir unterschätzt:** Die Belohnung war nirgends gespeichert. Ich hatte die 4 Silber nur als Folge des Threads gelesen.
+
+**Anders gesehen:**
+- **Namen:** „Alaric Red“ fest in die Inhalte zu schreiben, ist nicht nötig. Der Name kommt aus der Persona des Spielers, und die Engine behandelt „Alaric Red“ jetzt als Alarics Namen. Ein Familienname, der erst im Spiel entsteht wie in Test 5 Lauf 2, funktioniert so ebenfalls.
+- **Satchel:** Keine Korrektur ohne neue Regel. Der Report meldete die Übergabe gar nicht. Hätte er es getan, hätte die Engine sie abgelehnt, weil der Spieler nur klingelte und wartete. Eine Übergabe, die sich aus einer angenommenen Lieferquest „ergibt“, bräuchte eine Verknüpfung von Quest und Gegenstand, die es nicht gibt. Nächster Lauf: die Übergabe ausdrücklich spielen.
+- **Orte:** ChatGPT nennt nur das zweite Duplikat (Rückweg). Schwerer wog das erste aus der Nachforderung in Zug 10 („Salt Gate customshouse, Alderwatch“): Danach fehlte die Alderwatch-Lore.
+- **Präsens:** Die Begrüßung liegt in der Karte des Spielers, nicht im Repo. Sie wird angepasst, wenn die Karte ohnehin geändert wird.
+
+## 6. Nächster Lauf
+
+Frischer Chat. In dieser Reihenfolge:
+1. Registrierung;
+2. eine Quest mit genannter Belohnung annehmen;
+3. einen Gegenstand ausdrücklich übergeben;
+4. die Quest mit „turn in“ abgeben;
+5. an denselben Ort zu denselben NPCs zurückkehren;
+6. danach Kampf und Checks.
+
+**Prüfen:**
+- Die Belohnung bleibt gleich, im HUD und im Gespräch.
+- Übergebene Gegenstände verschwinden aus dem Inventar.
+- Queststatus und XP passen zusammen.
+- Es gibt kein zweites Alderwatch.
+- Nach einer Registrierung verlangt niemand die Gebühr erneut.
+- Bekannte NPCs bleiben dieselben.
+- Die Nachforderung bringt ihre Reports weiter.
+
+## 7. Was du nach einem Update beachten musst
 
 Der aktuelle Chat enthält schon die zwei falschen Orte und den falschen Namens-Claim. Die Events sind aufgezeichnet und bleiben. Für den nächsten Lauf einen neuen Chat beginnen.

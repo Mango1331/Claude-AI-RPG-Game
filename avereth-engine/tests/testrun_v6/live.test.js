@@ -3,13 +3,17 @@
 // separate report requests; 8 of 11 replies carried a report, the three requests brought the rest. Three engine faults:
 // the clerk "believed" the name "Alaric Red" as FALSE and did not know his name; "Salt Gate customshouse, Alderwatch"
 // and "Alderwatch, Valedorn Crown" (the engine block's own header form) each made a second Alderwatch; "turn in the
-// signature slip" was refused as a hand-over the player had not chosen.
+// signature slip" was refused as a hand-over the player had not chosen. Two gaps the replay also shows: a quest's reward
+// was never kept (the board said 5 silver, the clerk at the hand-in 4), and the separate report request made the
+// clerk's pending questions a deadline thread nobody closed, so seven turns after the registration she asked for
+// the paid fee again.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent, readJson } from '../helpers.js';
 import { prepareGeneration, processReply, foldChat, reportRequest, applyReportAnswer } from '../../src/host.js';
 import { knows, PC_NAME_FACT } from '../../src/knowledge.js';
 import { validateState } from '../../src/validate.js';
+import { characterRows } from '../../src/hud.js';
 
 const content = await loadContent();
 const fx = await readJson('tests/testrun_v6/fixture.json');
@@ -77,6 +81,26 @@ test('the city named with its realm or with a spot in it is still Alderwatch: no
     assert.equal(back.scene.place, 'Alderwatch Adventurers\' Guild hall front desk');
     assert.deepEqual(locations(back), [], 'no location entity was created');
     assert.match(run.turns.at(-1).context.text, /\| Alderwatch, Valedorn Crown — canal-side scribe's window outside the Salt Gate customshouse \|/);
+});
+
+test('a quest keeps the reward it was posted with, and the engine block and the HUD show it', () => {
+    const q = run.turns.at(-1).state.quests['quest.night_watch_tanners_row_storehouse'];
+    assert.equal(q.reward, '25 silver from owner via Guild');
+    assert.match(T('Alaric Red Sir').context.text, /Quest \(offered, Novice\): Night Watch, Tanner's Row Storehouse — from [^\n]* — reward: 25 silver from owner via Guild/);
+    const hudQuests = characterRows(run.turns.at(-1).state, content).find(([k]) => k === 'Quests')[1];
+    assert.match(hudQuests, /Night Watch, Tanner's Row Storehouse \(offered · Novice · [^)]*reward 25 silver from owner via Guild\)/);
+});
+
+test('the separate report request sets no story thread: the registration was never left "fee due" in the engine block', () => {
+    // its answer for "Hello im Alaric Red" carried {"threads":[{"text":"Alaric's registration: … fee of two silver due"}]}
+    assert.match(fx.turns.find((t) => t.input.startsWith('Hello im Alaric Red')).answer, /"threads":\[\{"text":"Alaric's registration/);
+    for (const t of run.turns.slice(0, -1)) assert.ok(!Object.values(t.state.threads).some((th) => /registration/.test(th.text)), t.input);
+    // the hand-in turn: Alaric is a Novice and no open thread says otherwise
+    const last = run.turns.at(-1).context.text;
+    assert.match(last, /Alaric — Level 1 Warrior, Power Rank F, Guild Novice/);
+    assert.doesNotMatch(last, /Open thread \(deadline\): Alaric's registration/);
+    // the narrator's own thread stays (next of kin), the narrator's report still counts
+    assert.ok(Object.values(T('Im a Warrior at F-Rank').state.threads).some((th) => /next of kin/.test(th.text)));
 });
 
 test('"turn in the signature slip" is the player handing it over', () => {

@@ -627,6 +627,9 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
             rec_level: cur?.rec_level ?? (Number.isInteger(level) && level > 0 ? level : null),
             rank: cur ? cur.rank ?? null : rank,
             qtype: cur?.qtype ?? (types[q.type] ? q.type : null),
+            // the reward as first posted stays (live run 24.09. 23:23: the board's 5 silver lived only in the prose; at
+            // the hand-in, the board long out of the history window, the clerk said four)
+            reward: cur?.reward ?? (typeof q.reward === 'string' || typeof q.reward === 'number' ? String(q.reward).slice(0, 120) : null),
             notes: [...(cur?.notes || []), ...(q.note ? [String(q.note).slice(0, 200)] : [])], history: [...(cur?.history || []), { ...at, status }],
         };
         events.push({ t: 'quest.set', d: { quest } });

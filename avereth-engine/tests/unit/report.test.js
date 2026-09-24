@@ -134,11 +134,14 @@ test('combat commitment by an NPC is fixed at once (Initiative, Turn order) and 
 
 test('Quest XP (Core #25): locked when offered, awarded once on completion through the Level-up loop', () => {
     const g = ready();
-    g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'offered', giver: 'innkeeper', level: 3, type: 'minor' }] });
+    g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'offered', giver: 'innkeeper', level: 3, type: 'minor', reward: '5 silver' }] });
     g.input('"Deal, I\'ll do it."');
-    g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'active', level: 9, type: 'major' }] });
+    g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'active', level: 9, type: 'major', reward: '4 silver' }] });
     const q = g.state.quests['quest.rats_in_the_cellar'];
     assert.deepEqual([q.rec_level, q.qtype], [3, 'minor'], 'rewards cannot be inflated after the offer');
+    // the posted reward stays as posted (live run 24.09. 23:23: 5 silver on the board, "four" at the hand-in)
+    assert.equal(q.reward, '5 silver');
+    assert.match(g.context().text, /Quest \(active\): Rats in the Cellar — from [^\n]* — reward: 5 silver/);
     g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'completed' }] });
     assert.equal(g.state.entities.pc.sheet.xp, 45); // 3 × 10 × 1.5
     g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'completed' }] });

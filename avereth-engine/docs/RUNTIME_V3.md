@@ -37,7 +37,7 @@ Entscheidungen aus dem Auftrag:
    - Ohne Tracker-Blöcke fallen ≈ 800 von 2.304 Output-Token pro Zug weg (−35 %). Die modellierte Dauer sinkt von ≈ 134 s auf ≈ 85 s.
    - Das ist gerechnet, nicht mit einem echten Modell gemessen. Der volle Effekt setzt voraus, dass Megumin die Blöcke nicht mehr anfordert (Abschnitt 9).
 6. **Tests:**
-   - 176 Tests grün;
+   - 181 Tests grün (Stand nach dem Pre-Test-5-Lauf);
    - Browser-Smoke gegen gemockten Host grün;
    - **Live-Smoke in echtem SillyTavern 1.19.0** mit Streaming grün.
 
@@ -336,7 +336,7 @@ Beispiel: Kests Versprechen (Test „Test-5 scenario …“, Zug 4) bzw. seine W
 | LORE | nur ohne verknüpftes Lorebook; mit Lorebook nur die Lore-Bridge (0 Token) | wie sozial | wie sozial, der neue Ort aktiviert die passenden Einträge |
 | RESOLVED | CHECK DIE | alle Aktionen, Schäden, Kosten, nächster Akteur | CHECK DIE |
 | FACT REPORT Schlüssel (≈ 560 Token) | Story-Satz mit `place`/`location`/`new`/…; `quests` nur mit Quest-Anlass, `recover` nur bei Rast oder fehlenden Ressourcen, `check` nur mit Würfel, `intent` nur bei festgelegtem Angriff | nur `time, new, enter, leave, concealed, facts, memory, combat, intent` (≈ 280 Token) | wie sozial |
-| Charaktererstellung | `{}` | — | — |
+| Charaktererstellung | kein Engine-Block: Die Engine antwortet mit einem System-Panel, ohne Erzähler ([PRETEST5_DIAGNOSE.md](PRETEST5_DIAGNOSE.md)). Der erste Story-Zug sagt dem Erzähler, dass die Erstellung abgeschlossen ist. | — | — |
 
 Der Parser nimmt immer alle Schlüssel an. Die Liste spart nur Prompt-Token, sie verbietet nichts.
 
@@ -488,7 +488,7 @@ Davon betrafen 77 Reasoning-Token (8,3 % des Reasonings) die Tracker.
 
 ---
 
-## 7. Tests (176, alle grün)
+## 7. Tests (181, alle grün)
 
 | Auftrag | Tests |
 |---|---|
@@ -500,6 +500,7 @@ Davon betrafen 77 Reasoning-Token (8,3 % des Reasonings) die Tracker.
 | §37 Rückwärtskompatibilität | `tests/scenarios/runtime_v3.test.js`:<br>- Testrun-4-Chat mit Megumin-Blöcken faltet und läuft weiter<br>- Kampf mitten in der Runde vor V3 gespeichert<br>- Projektion lässt den gespeicherten Chat unberührt<br><br>`display.test.js`: alte MISS-Zeilen |
 | Prompt | `runtime_v3.test.js`:<br>- Projektion und Fenster<br>- neue Antwort mit Blöcken<br>- situatives Schema<br>- Alarics Zeile je Zugtyp<br>- Engine-Block < 1.400 Token<br>- RELEVANT ohne Kartenfakten<br>- Test-5-Szenario: Kests Versprechen verlässt das Fenster und kommt über seine Karte zurück, abwesend und anwesend, mit Haltung und Agenda |
 | Messwerkzeug | `tests/unit/run_report.test.js`: Server-Log im util.inspect-Format, Kategorien, Output-Aufteilung, Zuordnung über die Spielernachricht, V3-Nachbau |
+| Pre-Test-5 | `tests/scenarios/creation_panel.test.js`: Erstellung per System-Panel mit den Eingaben des Diagnoselaufs, Warrior-Kit, erster Story-Zug, Erholung eines hängenden Chats; Nahkampf-Annäherung (`intent.test.js`); keine Pfeilanzeige ohne Köcher (`display.test.js`) |
 | Regression | Testrun 1–4 auf V3 umgestellt. Der TR4-Kellerkampf endet jetzt in Runde 1: Ratte beißt 3, Power Shot 35. |
 
 ## 8. Browser-Smoke
@@ -513,7 +514,7 @@ Davon betrafen 77 Reasoning-Token (8,3 % des Reasonings) die Tracker.
   - `historyWindow`;
   - `settingsUi`.
 
-**Live in echtem SillyTavern 1.19.0** (`tools/st_live/`): **LIVE SILLYTAVERN SMOKE: OK**.
+**Live in echtem SillyTavern 1.19.0** (`tools/st_live/`): **LIVE SILLYTAVERN SMOKE: OK**, 16 von 16 Prüfungen.
 
 Setup:
 - echte Karte (Vertrag 3.3 als Beschreibung, Lorebook v0.11 als Character Lore);
@@ -521,20 +522,23 @@ Setup:
 - Streaming an;
 - ein geskripteter, streamender OpenAI-kompatibler Erzähler auf Port 5001.
 
-Gespielte Züge:
-1. Klassenwahl;
-2. Skills;
-3. Torwache: beiläufiger NPC; die Antwort enthält absichtlich Megumin-Blöcke;
-4. Gildenhalle: Kest und Serah, Questbrett;
-5. Gespräch mit Kest: Agenda, Haltung −15, bedeutsame Erinnerung;
-6. Registrierung: −2 Silber, Gildenrang Novice, Quest angenommen;
-7. Weg in den Salzkeller: Ratte ahnungslos;
-8. Hinterhalt mit Power Shot: `48 damage AMBUSH CRIT ×1.5 → the big rat HP 16 - 48 → 0 DEFEATED`;
-9. Rückkehr zur Gilde: +5 Silber, Quest erledigt, +15 XP;
-10. wieder bei Kest: Seine Greyhowl-Warnung aus Zug 5 liegt jetzt außerhalb des Verlaufsfensters;
-11. Reise nach Ashbridge (anderes Reich, Duskreach), 3 Tage;
-12. Blick über den Markt: Weder die letzte Antwort noch die Eingabe nennt Ort oder Reich;
-13. `#status`.
+Gespielte Züge (seit dem Pre-Test-5-Lauf als Warrior):
+1. `Warrior`: System-Panel mit dem echten Pool, kein Erzähler-Aufruf;
+2. `Cleave + Iron Guard` (die erfundene Wahl aus dem Diagnoselauf): Panel „Not a valid Skill choice … Recognized: Guard“;
+3. eine Story-Nachricht vor dem Abschluss: Panel „no Skill from the pool named“;
+4. `Heavy Slash + Guard`: Panel mit HP 85/85, Starter Longsword und Starter Heavy Armor;
+5. `#equipment`;
+6. Torwache: beiläufiger NPC; die Antwort enthält absichtlich Megumin-Blöcke;
+7. Gildenhalle: Kest und Serah, Questbrett;
+8. Gespräch mit Kest: Agenda, Haltung −15, bedeutsame Erinnerung;
+9. Registrierung: −2 Silber, Gildenrang Novice, Quest angenommen;
+10. Weg in den Salzkeller: Ratte ahnungslos auf SHORT;
+11. Hinterhalt mit `I creep up and Heavy Slash the rat`: `39 damage AMBUSH CRIT ×1.5 → the big rat HP 16 - 39 → 0 DEFEATED`;
+12. Rückkehr zur Gilde: +5 Silber, Quest erledigt, +15 XP;
+13. wieder bei Kest: Seine Greyhowl-Warnung liegt jetzt außerhalb des Verlaufsfensters;
+14. Reise nach Ashbridge (anderes Reich, Duskreach), 3 Tage;
+15. Blick über den Markt: Weder die letzte Antwort noch die Eingabe nennt Ort oder Reich;
+16. `#status`.
 
 | Check | Ergebnis |
 |---|---|
@@ -551,6 +555,9 @@ Gespielte Züge:
 | Kests Satz aus Zug 5 fehlt im Verlauf des Prompts, die Warnung steht im Engine-Block | ✓ |
 | Reise: Welt-HUD `Ashbridge, Duskreach — east gate`, niemand anwesend; Engine-Block am neuen Ort | ✓ |
 | Lore-Bridge: Die World-Info-Einträge Duskreach und Ashbridge stehen im Prompt, Solmere nicht mehr, obwohl die letzten zwei Nachrichten den Ort nicht nennen | ✓ |
+| Erstellung per System-Panel: echter Pool, sichtbare Ablehnungen, fertiger Warrior, `#equipment` | ✓ |
+| keine LLM-Anfrage für die Erstellung; die erste Anfrage ist im Story-Modus mit dem Hinweis „creation complete“ | ✓ |
+| Warrior-HUD nach der ersten Antwort: HP 85/85, Starter Longsword · Starter Heavy Armor, ATK 6 · DEF 7 · MDEF 3 | ✓ |
 
 Ausführen:
 ```

@@ -42,7 +42,8 @@ function replay({ reports = true } = {}) {
         reply.swipes = [reply.mes];
         chat.push(reply);
         const res = processReply(chat, chat.length - 1, content);
-        turns.push({ input: M[i].mes, context: gen.context, record: chat.at(-2).extra.avereth, reply: res.result, state: foldChat(chat).state });
+        // character creation is answered by the engine's System panel (gen.panels), without an engine block for a narrator
+        turns.push({ input: M[i].mes, context: gen.context, panels: gen.panels, record: chat.at(-2).extra.avereth, reply: res.result, state: foldChat(chat).state });
     }
     return { chat, turns };
 }
@@ -55,15 +56,16 @@ test('the campaign starts where the First Message says (Tidecross, Solmere) and 
 });
 
 test('turn 1 "Ranger": Initiative is 9, and the reply\'s "Init: 8" is caught as tracker drift', () => {
-    assert.match(turns[0].context.text, /Init 9/);
+    assert.match(turns[0].panels.join('\n'), /CLASS SELECTED: RANGER[\s\S]*Initiative 9/);
     assert.ok(turns[0].reply.corrections.some((c) => /Initiative shown as 8, engine value is 9/.test(c)));
     const pc = turns[0].state.entities.pc.sheet;
     assert.deepEqual([pc.stats.AGI, pc.stats.PER, pc.hp, pc.mp, pc.sta], [6, 6, 80, 60, 100]);
 });
 
 test('turn 2 creation: no false-positive rule loading (Testrun loaded "Multi-Hit" and "Frozen" WI entries)', () => {
-    const c = turns[1].context;
-    assert.ok(!c.sections.some((s) => s.name === 'rules'), 'no rule text is loaded by words in host text');
+    // the System answers creation itself: no engine block and no narrator call, so no rule text can be loaded at all
+    assert.equal(turns[1].context, undefined);
+    assert.match(turns[1].panels.join('\n'), /CHARACTER CREATION COMPLETE[\s\S]*Starter Shortbow/);
     assert.equal(turns[1].state.entities.pc.sheet.inventory.standard_arrow, 20);
     assert.equal(turns[1].state.mode, 'story');
 });
@@ -122,6 +124,7 @@ test('the combat snapshot survives into the next turn (Testrun lost HP, profile 
 
 test('context economy: the engine block is a fraction of the Testrun\'s Avereth-owned prompt share', () => {
     for (const [i, t] of turns.entries()) {
+        if (t.panels) continue; // character creation: a System panel, no prompt
         assert.ok(t.context.tokens < 1800, `turn ${i + 1}: ${t.context.tokens} tokens`);
     }
     const combat = turns[4].context.tokens;
@@ -131,7 +134,7 @@ test('context economy: the engine block is a fraction of the Testrun\'s Avereth-
 test('the raw Testrun replies without any fact report: the engine degrades safely and asks for the report', () => {
     const raw = replay({ reports: false }).turns;
     for (const t of raw) assert.deepEqual(validateState(t.state, content), [], t.input);
-    assert.match(raw[0].context.text, /Init 9/);
+    assert.match(raw[0].panels.join('\n'), /Initiative 9/);
     assert.equal(raw[1].state.entities.pc.sheet.inventory.standard_arrow, 20, 'creation mechanics need no report');
     for (const t of raw.slice(1)) assert.ok(t.reply.corrections.some((c) => /no valid <avereth> fact report/.test(c)));
     // the trapper was never reported, so the shot has no target: nothing is invented, no arrow is spent

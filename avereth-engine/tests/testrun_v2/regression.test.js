@@ -76,7 +76,7 @@ test('turns 9-11: an NPC who is shot at fights back; the narrator echoing "hold"
 });
 
 test('turn 9 prompt: the combat engine block stays compact', () => {
-    for (const t of turns) assert.ok(t.context.tokens < 2300, `${t.input}: ${t.context.tokens} tokens`);
+    for (const t of turns.filter((x) => x.context)) assert.ok(t.context.tokens < 2300, `${t.input}: ${t.context.tokens} tokens`); // creation: System panels, no prompt
 });
 
 test('report robustness seen in Testrun 2: plural item names, empty combat entries', () => {

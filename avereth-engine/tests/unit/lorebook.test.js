@@ -46,8 +46,10 @@ test('Testrun 2, 3 and 4 replayed: realm and city always present, no Guild rules
     const load = [];
     const has = (r, comment) => r.kept.some((x) => x.e.comment === comment);
     for (const [fixture, realm, city] of [['tests/testrun_v2/fixture.json', 'Solmere', 'Tidecross'], ['tests/testrun_v3/fixture.json', 'Duskreach', 'Ashbridge'], ['tests/testrun_v4/fixture.json', 'Ilyrion', 'Lumenford']]) {
-        const turns = (await scanWindows(content, fixture)).map((w) => activate(entries, w.messages, { ...SETTINGS, inject: w.keys }));
+        const windows = await scanWindows(content, fixture);
+        const turns = windows.map((w) => activate(entries, w.messages, { ...SETTINGS, inject: w.keys }));
         for (const [i, r] of turns.entries()) {
+            if (windows[i].system) continue; // character creation: a System panel, no generation and no World Info scan
             assert.ok(has(r, `REALM — ${realm}`) && has(r, `LOCATION SEED — ${city}`), `${fixture} turn ${i + 1}: current realm and city`);
             assert.ok(r.tokens < SETTINGS.budget);
             load.push(r.tokens);

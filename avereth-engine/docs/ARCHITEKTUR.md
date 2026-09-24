@@ -152,6 +152,7 @@ flowchart TD
 - Charakter- und Welt-HUD sind reine Ansichten davon (`hud.js`, `extra.display_text`). Sie gehen nie in den Prompt.
 - Das Modell schreibt keine Tracker, Charakterbögen, World-States oder NPC-Dossiers mehr. Der Fakten-Report meldet nur Deltas.
 - Der Interceptor kürzt die Prompt-Kopie des Verlaufs (`coreChat`) auf ein Fenster und entfernt alte Blöcke. Der gespeicherte Chat bleibt unverändert.
+- Die Charaktererstellung ist ein Menü. Die Engine beantwortet sie wie einen `#`-Befehl als System-Panel, ohne Erzähler ([PRETEST5_DIAGNOSE.md](PRETEST5_DIAGNOSE.md)).
 
 **Komponenten** (`src/`):
 

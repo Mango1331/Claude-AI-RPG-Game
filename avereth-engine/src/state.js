@@ -104,7 +104,7 @@ export function applyEvent(state, e) {
             for (const [slot, ref] of Object.entries(d.equip)) s.equipment[slot] = clone(ref);
             for (const [item, qty] of Object.entries(d.items || {})) addItem(s, item, qty);
             s.hp = d.hp; s.mp = d.mp; s.sta = d.sta;
-            state.creation = { step: 3, class: s.class, skills: d.skills.slice() };
+            state.creation = { step: 3, class: s.class, skills: d.skills.slice(), turn: state.turn };
             state.mode = 'story';
             break;
         }

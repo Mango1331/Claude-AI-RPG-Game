@@ -19,7 +19,8 @@ const ATTACK_RE = new RegExp(String.raw`\b(?:${ATTACK_VERBS}|${DIRECTED}|${FIRE_
 const ACTION_RE = new RegExp(String.raw`(?:${SUBJECT_LED}|\b(?:${PUT_ARROW}|${WEAPON_INTO}|${LET_FLY}|${OTHER}))`, 'i');
 const INFO_RE = /\b(?:what\s+(?:does|do|is|are|would)|how\s+(?:does|do|much|many|would)|explain|describe|tell me about|compare|difference between)\b[^.!?]{0,60}?\b(?:skill|skills)\b/i;
 const AIM_RE = /\b(?:aim|aims|aiming|take\s+aim|draw\s+(?:my\s+)?bow|nock|ready\s+(?:my\s+)?bow)\b/i;
-const CLOSER_RE = /\b(?:approach|approaches|advance|advances|close\s+(?:in|the\s+distance)|move\s+(?:closer|toward|towards|in)|step\s+(?:closer|toward|towards|forward|in)|rush\s+(?:at|toward|towards|in)|run\s+(?:at|toward|towards))\b/i;
+// creep/sneak up and get closer: the natural words for a melee Ambush (found building the Warrior's live smoke)
+const CLOSER_RE = /\b(?:approach|approaches|advance|advances|close\s+(?:in|the\s+distance)|move\s+(?:closer|toward|towards|in|up)|step\s+(?:closer|toward|towards|forward|in)|rush\s+(?:at|toward|towards|in)|run\s+(?:at|toward|towards)|(?:creep|creeps|sneak|sneaks|edge|edges|inch|slip)\s+(?:closer|up|in|toward|towards)|(?:get|gets|come|comes)\s+(?:closer|toward|towards))\b/i;
 const AWAY_RE = /\b(?:retreat|retreats|back\s+(?:away|off|up)|(?:step|steps|jump|jumps|leap|leaps|hop|hops|spring|springs|dart|darts|skip|skips|scramble|scrambles|stumble|stumbles|fall|falls|move|moves|pull|pulls|ease|eases)\s+back(?:wards?)?|backwards?|kite|kites|kiting|withdraw|withdraws|move\s+away|put\s+distance|keep\s+(?:my\s+)?distance|open\s+(?:up\s+)?(?:the\s+)?distance)\b/i;
 const FLEE_RE = /\b(?:flee|flees|run\s+away|escape|make\s+a\s+run\s+for\s+it|bolt\s+(?:away|off))\b/i;
 const STEALTH_RE = /\b(?:sneak|sneaks|sneaking|creep|creeps|creeping|hide|hides|hiding|stay\s+hidden|move\s+quietly|stalk|stalks|stalking|crouch\s+low)\b/i;

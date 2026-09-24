@@ -10,6 +10,8 @@ Dazu kommen zwei Beobachtungen, die sich nur mit einem echten Erzähler prüfen 
 
 Für beide ist die Engine-Seite schon geprüft: der Test „Test-5 scenario …“ in `tests/scenarios/runtime_v3.test.js` und der Live-Smoke in SillyTavern (Kests Karte nach dem Fenster). Offen ist nur, ob der Erzähler meldet und die Karte nutzt.
 
+Vorlauf: Der Pre-Test-5-Diagnoselauf ([PRETEST5_DIAGNOSE.md](PRETEST5_DIAGNOSE.md)) hing in der Charaktererstellung fest. Seitdem beantwortet die Engine die Erstellung selbst. **Test 5 in einem frischen Chat starten.**
+
 ---
 
 ## 1. Vorbereitung
@@ -23,7 +25,7 @@ Für beide ist die Engine-Seite schon geprüft: der Test „Test-5 scenario …�
    - Einstellungen auf Standard: HUD Folded, History window 4, Remove tracker blocks an, Context budget 1.400.
    - Zusätzlich **„Show last engine block“ an**. Das Textfeld zeigt den Engine-Block der letzten Anfrage; es ist das Werkzeug für die Kontrollpunkte.
 4. **API:**
-   - Modell wie in Testrun 4 (GLM-5.3-Flash), damit die Zahlen vergleichbar sind.
+   - Ein Modell für den ganzen Lauf. Vergleichswerte gibt es für GLM-5.3-Flash (Testrun 4) und für Qwen3.8-27B (Diagnoselauf, Abschnitt 4).
    - Reasoning effort **low**.
    - Max Response Length 4.096.
 5. **Streaming aus für den gemessenen Lauf.**
@@ -39,11 +41,11 @@ Frei spielen, aber diese Stationen einbauen. Die Zugnummern der Kontrollpunkte n
 
 | Phase | Was | Worauf achten |
 |---|---|---|
-| A | Klasse und Skills | HUD erscheint unter jeder Antwort; keine Tracker-Blöcke im Text |
+| A | Klasse und Skills | Die Engine antwortet sofort mit System-Panels, ohne Erzähler. Warrior-Pool: Heavy Slash, Guard, Power Strike, Quick Slash, Charge, Deflect. Nach der Wahl: HP 85/85, Starter Longsword [F] (ATK 6), Starter Heavy Armor [F] (DEF 6, MDEF 2); `#equipment` zeigt beides. |
 | B | Stadt: ein beiläufiger NPC (Torwache, Händler), dann die Gilde | Welt-HUD: Ort, Anwesende. Der beiläufige NPC bekommt kein Dossier. |
 | C | **Kontrollpunkt 1:** ein bedeutsames Gespräch mit einem NPC, der wiederkommen soll (z. B. der Veteran am Questbrett). Nach einem gefährlichen Auftrag fragen, eine Warnung oder ein Versprechen herauslocken. **Den markanten Satz wörtlich notieren.** | Im nächsten Zug im Engine-Block (Textfeld) auf der Karte des NPCs: `toward Alaric: … (last change: …)`, `last meaningful: …`, gegebenenfalls `agenda: …`. Außerdem `#npc <Name>` → „Shared moments“. |
 | D | Registrieren (Coin), Quest annehmen | HUD-Coin und Quest stimmen mit der Erzählung überein |
-| E | Mindestens 6 Züge woanders: Weg zum Auftrag, Kampf, Beute, Rast. Wenn möglich unbemerkt nähern und aus dem Hinterhalt angreifen. | Kampf: kein erfundener Fehlschuss, `AMBUSH CRIT ×1.5` in der Opening Action, Kampfstille. HUD-Werte (HP, STA, Pfeile) gegen die Erzählung. |
+| E | Mindestens 6 Züge woanders: Weg zum Auftrag, Kampf, Beute, Rast. Wenn möglich unbemerkt nähern und aus dem Hinterhalt angreifen. Nahkampf: aus SHORT mit „I creep up / sneak closer / step in and Power Strike …“; aus MEDIUM reicht ein Band nicht. | Kampf: kein erfundener Fehlschuss, `AMBUSH CRIT ×1.5` in der Opening Action, Kampfstille. HUD-Werte (HP, STA) gegen die Erzählung. |
 | F | **Kontrollpunkt 2:** zurück zum NPC aus C und sich ausdrücklich auf den alten Satz beziehen („You said …“) | Engine-Block: Karte mit Haltung, Grund, Agenda und `last meaningful`. Erinnert sich der NPC? Tritt er konsistent auf, im Ton und in der Haltung? |
 | G | Reise in eine andere Stadt, am besten ein anderes Reich | Welt-HUD zeigt den neuen Ort, niemand anwesend; die Erzählung kennt die neue Region |
 
@@ -71,6 +73,13 @@ Das Werkzeug ordnet jede Anfrage über die Spielernachricht ihrem Zug zu und zei
   - Nach der Megumin-Änderung müssen Dossier, NPC-Bank und beide Tracker-Spalten 0 sein. Steht dort etwas, ist die Checkliste unvollständig umgesetzt.
 - **Output je Antwort:** Reasoning, Prosa, Report, Tracker. Tracker muss 0 sein.
 - **Dauer je Antwort**, aus der Chat-Datei, mit Mittelwert und Median.
+
+**Vergleichswerte Diagnoselauf** (Qwen3.8-27B, Reasoning low, Megumin nach Checkliste, nur Erstellungsmodus):
+- Prompt 10.299–11.769 Token;
+- Output im Mittel 1.404 Token, davon Reasoning 857 (61 %);
+- Dauer Median 83 s bei ≈ 19 Token/s.
+
+Das Reasoning ist der größte Hebel: 100 Token Reasoning kosten ≈ 5 s.
 
 **Vergleichswerte Testrun 4** (GLM, Reasoning high, Megumin mit Dossier und Blöcken):
 - Prompt 15.351–26.377 Token (Mittel 21.248);

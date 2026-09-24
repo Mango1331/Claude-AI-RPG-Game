@@ -7,6 +7,7 @@ import { findSkill } from './content.js';
 import { assignStat } from './progression.js';
 import { knowledgeOf, memoriesOf, memoryText, propText, entityLabel, statusOf } from './knowledge.js';
 import { applyEvent } from './state.js';
+import { skillSummary } from './context.js';
 import { clone, itemLabel, joinList, normText, formatClock, roundHalfUp } from './util.js';
 
 const HELP = [
@@ -53,6 +54,63 @@ function status(state, content) {
         `Active Effects: ${fx.length ? fx.map((x) => x.name).join(', ') : 'none'} | Domain: NOT YET UNLOCKED`,
         `Equipment: ${equipmentList(s, content).join(', ') || 'none'}`,
     ].join('\n');
+}
+
+/**
+ * Character creation answered by the engine as a System panel, like a command: no narrator call (System #12 is a
+ * menu, not a scene). Pre-Test-5 run: a narrator shown the real Warrior pool presented an invented one, then narrated
+ * "CHARACTER CREATION COMPLETE" over the engine's rejection; the campaign stayed in creation without anyone seeing it.
+ * The panel shows the real step, the real pool with values, what was recognized and, at the end, the finished sheet.
+ */
+export function creationPanel(state, content, outcome) {
+    const s = pcSheet(state);
+    const dv = deriveCharacter(s, content);
+    const step = state.mode === 'creation' ? state.creation.step : 3;
+    const cls = s.class ? content.classes.get(s.class) : null;
+    const classMenu = () => [
+        'Choose your Base Class (reply with its name, for example "Warrior"):',
+        ...[...content.classes.values()].map((c) => `- ${c.name} — Favored Stats ${c.favored.join(' / ')}`),
+    ];
+    const poolMenu = () => {
+        const pool = cls.skill_pool.map((id) => content.skills.get(id));
+        return [
+            `Choose exactly ${content.start.creation.choose_skills} Skills from the ${cls.name} Base Pool (for example "${pool[0].name} + ${pool[1].name}"):`,
+            ...pool.map((sk) => `- ${skillSummary(sk)}`),
+            `Starter Gear, equipped when Step 2 is complete: ${content.kits[cls.id].map((id) => gearText(content.items.get(id))).join(', ')}.`,
+        ];
+    };
+    if (outcome?.kind === 'creation.complete') {
+        const st = status(state, content).split('\n').slice(1);
+        return [
+            '[SYSTEM // CHARACTER CREATION COMPLETE]',
+            `SKILLS SELECTED: ${outcome.skills.map((id) => `${content.skills.get(id).name} (P1)`).join(', ')}`,
+            `STARTER GEAR EQUIPPED: ${outcome.kit.map((id) => gearText(content.items.get(id))).join(', ')}`,
+            ...st,
+            `Carried: ${Object.entries(s.inventory).map(([k, q]) => `${itemLabel(state, content, k)}${q > 1 ? ` ×${q}` : ''}`).join(', ') || 'nothing'} | Coin ${formatCoin(s.coin_cp, content)}`,
+            'The story begins with your next message: write what Alaric does.',
+        ].join('\n');
+    }
+    if (outcome?.kind === 'creation.step2') {
+        return [
+            '[SYSTEM // CHARACTER CREATION — STEP 2/2]',
+            `CLASS SELECTED: ${cls.name.toUpperCase()} — favored ${cls.favored.join(' +1, ')} +1 · Basic Attack granted (P1)`,
+            `STR ${s.stats.STR} | VIT ${s.stats.VIT} | AGI ${s.stats.AGI} | INT ${s.stats.INT} | PER ${s.stats.PER} | WIL ${s.stats.WIL} | Max HP ${dv.maxHp} | Max MP ${dv.maxMp} | Max STA ${dv.maxSta} | Initiative ${dv.init}`,
+            ...poolMenu(),
+        ].join('\n');
+    }
+    // not a valid choice: say why and show the current step again
+    const recognized = outcome?.recognized?.length ? ` Recognized: ${outcome.recognized.map((id) => content.skills.get(id)?.name || id).join(', ')}.` : '';
+    return [
+        `[SYSTEM // CHARACTER CREATION — STEP ${step}/2]`,
+        `Not a valid ${step === 1 ? 'Base Class' : 'Skill'} choice: ${String(outcome?.reason || 'nothing chosen').replace(/\.$/, '')}.${recognized}`,
+        ...(step === 1 ? classMenu() : poolMenu()),
+        'The story begins once character creation is complete.',
+    ].join('\n');
+}
+
+function gearText(it) {
+    const bits = ['atk', 'matk', 'def', 'mdef'].filter((k) => it[k]).map((k) => `${k.toUpperCase()} ${it[k]}`);
+    return `${it.name}${it.rank ? ` [${it.rank}]` : ''}${bits.length ? ` (${bits.join(', ')})` : ''}`;
 }
 
 function equipmentList(s, content) {

@@ -10,7 +10,8 @@ import { startCampaign, playerTurn, narratorReply, turnContext } from './engine.
 import { loreKeys } from './context.js';
 import { extractReport } from './delta.js';
 import { turnPanel } from './display.js';
-import { hash32, clone, swapWords } from './util.js';
+import { renderHud } from './hud.js';
+import { hash32, clone, swapWords, hasTrackerBlocks, stripTrackerBlocks } from './util.js';
 
 export const KEY = 'avereth';
 export const RECORD_VERSION = 2;
@@ -140,10 +141,12 @@ export function prepareGeneration(chat, content, { type = 'normal', settings = {
 
 /**
  * Called when a reply was received (or a greeting created). Validates the fact report into events on this swipe and
- * strips the report from the visible text.
+ * strips the report from the visible text. The System block (what was resolved) goes above the reply and the player
+ * HUD (Character + World, rendered from the state after this reply) below it: display only, never in a prompt.
+ * hud: 'closed' | 'open' | 'off'.
  * @returns {{changed: boolean, result?: object}}
  */
-export function processReply(chat, id, content, { seed, swaps = [] } = {}) {
+export function processReply(chat, id, content, { seed, swaps = [], hud = 'closed', stripTrackers = true } = {}) {
     const msg = chat[id];
     if (!msg || msg.is_user || msg.is_system) return { changed: false };
     if (!hasCampaign(chat)) {
@@ -160,26 +163,28 @@ export function processReply(chat, id, content, { seed, swaps = [] } = {}) {
         return { changed: true };
     }
     const { state } = foldChat(chat, id);
-    const result = narratorReply(state, content, msg.mes, { msg: id });
+    const result = narratorReply(state, content, msg.mes, { msg: id, stripTrackers });
     msg.mes = swapWords(result.clean, swaps);
     const panel = turnPanel(state, content, result.state.last?.check, result);
-    showPanel(msg, panel);
+    const view = renderHud(result.state, content, hud);
+    showPanel(msg, panel, view);
     setRec(msg, {
         v: RECORD_VERSION, events: result.events, text_hash: hash32(msg.mes), corrections: result.corrections,
-        accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, panel: panel || undefined,
+        accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, panel: panel || undefined, hud: view || undefined,
     });
     return { changed: true, result };
 }
 
 /**
- * Show the engine's System block (combat log, checks) above the reply: SillyTavern renders extra.display_text instead
- * of mes, while prompts keep using mes. Only a block the engine wrote is replaced or removed.
+ * Show the engine's System block (combat log, checks) above the reply and the player HUD below it: SillyTavern
+ * renders extra.display_text instead of mes, while prompts keep using mes. Only what the engine wrote is replaced or
+ * removed.
  */
-function showPanel(msg, panel) {
+function showPanel(msg, panel, hud = '') {
     if (!msg.extra || typeof msg.extra !== 'object') msg.extra = {};
-    const old = rec(msg)?.panel;
-    if (panel) msg.extra.display_text = `${panel}\n\n${msg.mes}`;
-    else if (old && typeof msg.extra.display_text === 'string' && msg.extra.display_text.startsWith(old)) delete msg.extra.display_text;
+    const r = rec(msg);
+    if (panel || hud) msg.extra.display_text = [panel, msg.mes, hud].filter(Boolean).join('\n\n');
+    else if ((r?.panel || r?.hud) && typeof msg.extra.display_text === 'string') delete msg.extra.display_text;
 }
 
 /**
@@ -205,15 +210,46 @@ export function onEdited(chat, id, content) {
         const result = narratorReply(state, content, msg.mes, { msg: id });
         msg.mes = result.clean;
         const panel = turnPanel(state, content, result.state.last?.check, result);
-        showPanel(msg, panel);
+        const view = r.hud ? renderHud(result.state, content, /<details class="avereth-hud" open>/.test(r.hud) ? 'open' : 'closed') : '';
+        showPanel(msg, panel, view);
         setRec(msg, {
             v: RECORD_VERSION, events: result.events, text_hash: hash32(msg.mes), corrections: result.corrections,
-            accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, retcon: true, panel: panel || undefined,
+            accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, retcon: true, panel: panel || undefined, hud: view || undefined,
         });
         return { changed: true, text: true };
     }
     r.text_hash = hash32(msg.mes);
-    if (r.panel) showPanel(msg, r.panel); // the edited narration below the same System block
+    if (r.panel || r.hud) showPanel(msg, r.panel, r.hud); // the edited narration between the same System block and HUD
     setRec(msg, r);
-    return r.panel ? { changed: true, text: true } : { changed: true };
+    return r.panel || r.hud ? { changed: true, text: true } : { changed: true };
+}
+
+/**
+ * Prompt-only projection of the chat history (Runtime V3), applied by the generate interceptor to SillyTavern's prompt
+ * copy of the chat (coreChat: shallow copies of the messages, so the saved chat, its swipes and what the player sees
+ * are never touched):
+ *  - the presentation layer's retired tracker blocks (<Blocks>, <World_State>, <Character_Sheet>, <New_NPC>,
+ *    <NPC_Update>) are removed from every earlier reply, so old saves stop feeding them back to the narrator;
+ *  - only the last `keepTurns` player messages stay, each with its reply; the current message counts (4 keeps it and
+ *    the three exchanges before it). Older turns reach the narrator through the engine block (NPC cards, retrieved
+ *    memories, facts, quests, threads). keepTurns 0 keeps the whole history.
+ * @returns {{removed: number, stripped: number}}
+ */
+export function projectPromptHistory(messages, { keepTurns = 4 } = {}) {
+    let stripped = 0;
+    for (let i = 0; i < messages.length; i++) {
+        const m = messages[i];
+        if (!m || m.is_user || typeof m.mes !== 'string' || !hasTrackerBlocks(m.mes)) continue;
+        messages[i] = { ...m, mes: stripTrackerBlocks(m.mes) };
+        stripped += 1;
+    }
+    let removed = 0;
+    if (keepTurns > 0) {
+        const users = messages.map((m, i) => (m?.is_user ? i : -1)).filter((i) => i >= 0);
+        if (users.length > keepTurns) {
+            removed = users[users.length - keepTurns];
+            messages.splice(0, removed);
+        }
+    }
+    return { removed, stripped };
 }

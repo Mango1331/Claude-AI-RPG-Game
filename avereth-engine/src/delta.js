@@ -229,6 +229,12 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (existing && existing !== 'pc' && state.entities[existing]) {
             newRefs.set(normText(n.ref), existing);
             placed.add(existing);
+            // a person first named in prose has no look yet (Testrun 4: Fennick, Maretta): the first traits stick, later
+            // ones never overwrite them (a changed look is a fact: {s, p: "appearance", o})
+            if (n.traits && !state.entities[existing].traits) {
+                events.push({ t: 'entity.updated', d: { id: existing, set: { traits: String(n.traits).slice(0, 240) } } });
+                accepted.push(`${existing} traits: ${String(n.traits).slice(0, 60)}`);
+            }
             if (!present.has(existing) && state.entities[existing].status !== 'dead') {
                 events.push({ t: 'scene.entered', d: { id: existing, band: bandOf(n.band), cover: coverOf(n.cover) } });
                 present.add(existing);
@@ -355,7 +361,16 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (hard && !f.because) { reject(f, `contradicts established fact "${hard.s} ${hard.p} ${hard.o}" (since turn ${hard.since.turn}); a change needs an explicit cause ("because")`); continue; }
         if (p === 'status' && inCombat(s)) { reject(f, `${s} is a combatant; its condition is resolved by the engine`); continue; }
         if (p === 'status' && s === 'pc' && LIFE_STATUS.has(normText(o))) { reject(f, `${pcName}'s life is engine-owned (0 HP = dead, Core #14)`); continue; }
-        const evs = setFactEvents(state, { id: mkId('f'), s, p, o, visibility: f.vis === 'secret' ? 'secret' : 'public', importance: clamp(Number(f.imp || 5), 1, 10) / 10, hard: !!f.hard, source: { ...src, because: f.because ? String(f.because).slice(0, 160) : null } });
+        let value = o;
+        if (p === 'guild_rank') {
+            // institutional standing (lorebook v0.11): one of the Guild Ranks, never above the Power Rank it requires
+            const gr = QUEST_RANKS.find((r) => normText(r) === normText(o));
+            if (!gr) { reject(f, `guild_rank must be one of ${QUEST_RANKS.join('|')}`); continue; }
+            const power = ent(s)?.sheet ? QUEST_RANKS[Math.max(0, content.rules.ranks.order.indexOf(deriveCharacter(ent(s).sheet, content).rank))] : null;
+            if (power && QUEST_RANKS.indexOf(gr) > QUEST_RANKS.indexOf(power)) { reject(f, `Guild Rank ${gr} needs Power Rank ${content.rules.ranks.order[QUEST_RANKS.indexOf(gr)]} (a promotion minimum)`); continue; }
+            value = gr;
+        }
+        const evs = setFactEvents(state, { id: mkId('f'), s, p, o: value, visibility: f.vis === 'secret' ? 'secret' : 'public', importance: clamp(Number(f.imp || 5), 1, 10) / 10, hard: !!f.hard, source: { ...src, because: f.because ? String(f.because).slice(0, 160) : null } });
         events.push(...evs);
         const fact = evs.find((e) => e.t === 'fact.asserted')?.d.fact;
         // a person's or creature's entity status is physical (alive/dead); any other "status" stays an ordinary fact
@@ -389,6 +404,9 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         // told by Alaric in this reply: the listener is with him (Testrun 4: back in the Guild hall, Serah heard his
         // report of the cellar while the engine still had her at the counter he had left hours before)
         if (from === 'pc' && how === 'told' && person(who) && !present.has(who) && state.entities[who] && !leftNow.has(who)) bringIn(who, k);
+        // only someone who is here (or left in this very report) can have seen it, even when the fact itself is known
+        // or was established earlier in this report (an absent NPC "witnessing" Alaric's secret would leak it)
+        if (how === 'witnessed' && who !== 'pc' && !present.has(who) && !leftNow.has(who)) { reject(k, `${who} is not present and cannot have witnessed it`); continue; }
         if (!fact && how === 'witnessed') {
             // seeing it happen in the scene is the narration establishing it: only a present witness can do that
             if (!present.has(who)) { reject(k, `${who} is not present and cannot have witnessed it`); continue; }
@@ -433,6 +451,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         let delta = Number(a.delta);
         if (!Number.isFinite(delta)) { reject(a, 'attitude.delta must be a number'); continue; }
         delta = clamp(Math.round(delta), -50, 50);
+        if (delta === 0) continue; // no change is no event: attitudes never drift without a reported cause
         const rid = `rel.${who}.attitude.${toward}`;
         const cur = relNow.get(rid) || state.relations[rid];
         const why = String(a.why || '').slice(0, 160);
@@ -481,6 +500,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (to && ent(to)?.sheet) events.push({ t: 'item.changed', d: { id: to, item: itemId, qty, ...named, why: String(it.why || 'received').slice(0, 120) } });
         accepted.push(`item ${it.item} ×${qty}${from ? ` from ${from}` : ''}${to ? ` to ${to}` : ''}`);
     }
+    const purse = new Map(); // several coin entries in one report add up (they used to each start from the old purse)
     for (const c of arr(report.coin)) {
         const who = resolve((c && c.who) || 'pc');
         const cp = Number(c && c.cp);
@@ -491,8 +511,9 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
             continue;
         }
         if (who === 'pc' && cp < 0 && !auth.pay && !forcedBy(c.taken_by)) { reject(c, owner('spending coin') + ' (a theft names the taker in "taken_by")'); continue; }
-        const res = applyCoin(state.entities[who].sheet.coin_cp, cp);
+        const res = applyCoin(purse.has(who) ? purse.get(who) : state.entities[who].sheet.coin_cp, cp);
         if (!res.ok) { reject(c, res.error); continue; }
+        purse.set(who, res.value);
         events.push({ t: 'coin.changed', d: { id: who, value: res.value, delta: cp, why: String(c.why || '').slice(0, 120) } });
         accepted.push(`coin ${who} ${cp >= 0 ? '+' : ''}${cp} cp`);
     }

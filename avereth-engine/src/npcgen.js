@@ -1,5 +1,6 @@
 // Deterministic combat profiles for NPCs and creatures.
-//  * Creatures: Content #7 F1 anchors + Level scaling (+ Elite/Boss #8). No Human stats, no Crit, no STA.
+//  * Creatures: Content #7 F1 anchors + Level scaling (+ Elite/Boss #8). No Human stats, no STA, no Hit value
+//    (Combat V3: legal attacks connect; a true Ambush crits for creatures too).
 //  * Humans: core-stat characters built from the PROPOSED npc_templates.json (Lore #1: most adults have a Base
 //    Class; Content #0 class growth; Core #3 +5 free points per Level). This replaces the ad-hoc improvisation
 //    observed in Testrun-v1.
@@ -15,7 +16,6 @@ export function scaleCreature(anchor, level, type, content) {
         atk: roundHalfUp(anchor.atk * (1 + sc.atk.coef * g)),
         def: Math.max(0, roundHalfUp((anchor.def + 1) * (1 + sc.def.coef * g) - 1)),
         mdef: Math.max(0, roundHalfUp((anchor.mdef + 1) * (1 + sc.mdef.coef * g) - 1)),
-        hit: Math.min(sc.hit.cap, anchor.hit + sc.hit.per_15_levels * Math.floor(g / 15)),
         init: roundHalfUp(anchor.init * (1 + sc.init.coef * g)),
     };
     if (type === 'elite' || type === 'boss') {
@@ -24,13 +24,12 @@ export function scaleCreature(anchor, level, type, content) {
         p.atk = roundHalfUp(p.atk * m.atk);
         p.def = roundHalfUp(p.def * m.def);
         p.mdef = roundHalfUp(p.mdef * m.mdef);
-        p.hit = Math.min(95, p.hit + m.hit_pp);
         p.init = p.init + m.init;
     }
     return {
         model: 'creature', anchor: anchor.id, body_plan: anchor.name, level, rank: rankOf(level, content), type: type || 'normal',
-        max_hp: p.hp, atk: p.atk, def: p.def, mdef: p.mdef, hit: p.hit, init: p.init,
-        attack: { name: anchor.attack, damage_type: anchor.damage_type, range: anchor.range }, crit: 'none',
+        max_hp: p.hp, atk: p.atk, def: p.def, mdef: p.mdef, init: p.init,
+        attack: { name: anchor.attack, damage_type: anchor.damage_type, range: anchor.range },
         temperament: anchor.temperament,
     };
 }

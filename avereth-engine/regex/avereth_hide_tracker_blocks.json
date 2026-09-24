@@ -1,0 +1,15 @@
+{
+  "id": "avereth-hide-tracker-blocks",
+  "scriptName": "Avereth: hide retired tracker blocks (streaming, transition only)",
+  "findRegex": "/<(Blocks|World_State|Character_Sheet|New_NPC|NPC_Update)\\b[^>]*>[\\s\\S]*?(?:<\\/\\1>|$)/g",
+  "replaceString": "",
+  "trimStrings": [],
+  "placement": [2],
+  "disabled": false,
+  "markdownOnly": true,
+  "promptOnly": false,
+  "runOnEdit": true,
+  "substituteRegex": 0,
+  "minDepth": null,
+  "maxDepth": null
+}

@@ -5,7 +5,8 @@
 // session has an assertion here; docs/TESTRUN_V4.md explains them.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loadContent, readJson } from '../helpers.js';
+import { loadContent, readJson, Game } from '../helpers.js';
+import { turnPanel } from '../../src/display.js';
 import { prepareGeneration, processReply, foldChat } from '../../src/host.js';
 import { validateState } from '../../src/validate.js';
 import { parseSwaps } from '../../src/util.js';
@@ -48,44 +49,58 @@ test('the whole session replays with the invariants intact, every report strippe
     assert.match(chat[10].mes, /She pulls a register across the counter/);
 });
 
-test('the real fight follows Core #10/#11: Base Hit 70 + PER×0.5, the Skill modifiers, direct-stat Bite, DEF 3', () => {
+test('Combat V3 on the real fight: every attack lands — the Bite for 3 (6 vs DEF 3), then the Power Shot ends it in Round 1', () => {
+    // Testrun 4 rolled 63% three times and missed three times ("felt like very many misses"); a legal attack now connects
     const recs = T(10).outcome.records;
-    assert.deepEqual(recs.map((r) => [r.actor, r.strikes[0].hit.chance, r.strikes[0].hit.roll, r.strikes[0].hit.success]), [
-        ['mon.cellar_vermin', 75, 77, false], ['pc', 63, 68, false], ['mon.cellar_vermin', 75, 63, true],
-    ]);
-    assert.equal(T(10).state.encounter.combatants.pc.fixed.base_hit, 73);
-    assert.equal(recs[1].raw_text, '16 + AGI 6×0.50 + PER 6×1.375 + ATK 6 = 33.25');
-    assert.deepEqual([recs[2].strikes[0].power, recs[2].strikes[0].defense, recs[2].strikes[0].final], [6, 3, 3]);
-    // the dice: uniform d100, and a 63% shot hits 63% of the time (three misses in a row: 0.37³ ≈ 5%)
+    assert.deepEqual(recs.map((r) => [r.actor, r.strikes[0].final, r.strikes[0].hp_after]), [['mon.cellar_vermin', 3, 77], ['pc', 35, 0]]);
+    assert.ok(recs.every((r) => r.strikes.every((x) => x.hit === undefined && x.crit === undefined)), 'no Hit roll, no random Crit');
+    assert.equal(recs[1].raw_text, '16 + AGI 6×1.875 + ATK 6 = 33.25', 'the Ranger\'s PER share moved onto AGI: the same Raw at Level 1');
+    assert.deepEqual([recs[0].strikes[0].power, recs[0].strikes[0].defense, recs[0].strikes[0].final], [6, 3, 3]);
+    assert.equal(T(10).outcome.ended.xp_awarded, 10);
+    assert.equal(T(10).state.encounter, null);
+    // the dice that remain (damage variance, the CHECK DIE): uniform d100, a 63% chance succeeds 63% of the time
     const d = new Dice(fx.seed, 0);
     let hits = 0;
     const counts = new Array(101).fill(0);
     for (let i = 0; i < 50000; i++) { const v = d.d100(); counts[v] += 1; if (v <= 63) hits += 1; }
     assert.ok(Math.abs(hits / 50000 - 0.63) < 0.01, `hit rate ${hits / 50000}`);
     assert.ok(counts.slice(1).every((c) => c > 400 && c < 600), 'every face of the d100 comes up about 500 times');
+    // the recorded replies narrated the old misses; with the vermin dead, the next shots have no target and cost nothing
+    for (const n of [11, 12, 13]) assert.equal(T(n).outcome.notice, 'No valid target here (nothing spent, nothing rolled)', `turn ${n}`);
+    assert.equal(T(13).state.entities.pc.sheet.sta, 88);
+    assert.equal(T(13).state.entities.pc.sheet.inventory.standard_arrow, 19);
 });
 
-test('Alaric\'s attack options and their Hit Chance are shown before he picks one', () => {
-    assert.equal(T(9).panel.split('\n').at(-1), '`Alaric\'s attacks vs cellar vermin: Basic Attack 73% · Aimed Shot 83% · Power Shot 63%`');
-    assert.equal(T(10).panel.split('\n').at(-1), '`Alaric\'s attacks vs cellar vermin: Basic Attack 73% · Aimed Shot 83% · Power Shot 63%`');
+test('Alaric\'s attack options show the damage each deals before he picks one (every legal attack lands)', () => {
+    assert.equal(T(9).panel.split('\n').at(-1), '`Alaric\'s attacks vs cellar vermin: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`');
 });
 
-test('"I kite backwards and Power Shot": the shot, then the Turn\'s one-band step back (Core #12/#24)', () => {
-    const shot = T(11).outcome.records.find((r) => r.actor === 'pc');
-    assert.deepEqual(shot.after_move, { dir: 'away', change: 'cellar vermin ENGAGED -> SHORT' });
-    assert.match(T(11).panel, /`Alaric: Power Shot → cellar vermin · STA 88 - 12 = 76 · 1 arrow · then steps back \(cellar vermin ENGAGED → SHORT\)`/);
-    // the skittish vermin, no longer cornered, backs off instead of biting (PROPOSED NPC policy, temperament)
-    assert.deepEqual(T(11).outcome.records.filter((r) => r.actor === 'mon.cellar_vermin').map((r) => r.kind), ['move']);
+/** The turn-10/11 inputs and reply against a foe that survives a Power Shot (the vermin now dies to the first one). */
+function ogreFight() {
+    const g = new Game(content).ranger();
+    g.reply({ new: [{ ref: 'ogre', kind: 'creature', species: 'ogre', band: 'SHORT' }] });
+    g.input(fx.turns[9].input); // "*i aim and Power Shot at it*"
+    g.reply(fx.turns[9].reply); // Fennick at the stairhead: "That's it eating you, lad."
+    return g;
+}
+
+test('"I kite backwards and Power Shot" (turn 11): the shot, then the Turn\'s one-band step back (Core #12/#24)', () => {
+    const g = ogreFight();
+    g.input(fx.turns[10].input);
+    const shot = g.state.last.outcome.records.find((r) => r.actor === 'pc');
+    assert.deepEqual(shot.after_move, { dir: 'away', change: 'the ogre ENGAGED -> SHORT' });
+    assert.ok(shot.strikes[0].final > 0 && !shot.strikes[0].hit);
+    assert.match(turnPanel(g.state, content), /`Alaric: Power Shot → the ogre · STA 88 - 12 = 76 · 1 arrow · then steps back \(the ogre ENGAGED → SHORT\)`/);
 });
 
-test('combat silence: nobody talks during the fight, and a reply that did is named in the next engine block', () => {
-    for (const n of [10, 11]) {
-        assert.match(T(n).context.text, /Combat silence: nobody talks while the fight runs — neither combatants nor onlookers/);
-        assert.match(T(n).context.text, /no dialogue \(combat silence; it overrides any habit of opening with speech\)\. Then write the fact report\./);
-    }
-    // turn 10's reply: Fennick at the stairhead ("That's it eating you, lad.") in the middle of Round 2
-    assert.match(T(11).context.text, /Combat silence broken: 2 spoken lines in your last reply \(e\.g\. "That's it eating you, lad\."\)/);
-    // after the fight ended, talking is fine again
+test('combat silence: nobody talks while a fight runs, and a reply that did is named in the next engine block', () => {
+    // the cellar fight ended inside turn 10, so the talk afterwards was allowed
+    assert.doesNotMatch(T(10).context.text, /Combat silence/);
+    assert.doesNotMatch(T(11).context.text, /Combat silence broken/);
+    // the same turn-10 reply in a fight that is still running
+    const g = ogreFight();
+    assert.match(g.context().text, /Combat silence: nobody talks while the fight runs — neither combatants nor onlookers/);
+    assert.ok(g.corrections.some((c) => /Combat silence broken: 2 spoken lines in your last reply \(e\.g\. "That's it eating you, lad\."\)/.test(c)), g.corrections.join(' | '));
     assert.doesNotMatch(T(14).context.text, /Combat silence/);
 });
 

@@ -56,29 +56,35 @@ test('every numeric rule constant is stated in the verbatim Core text it came fr
     has('core.2', `Max HP = ${r.derived.max_hp.base} + Level×${r.derived.max_hp.per_level} + VIT×${r.derived.max_hp.per_vit}`);
     has('core.2', `Max MP = INT×${r.derived.max_mp.per_int} + WIL×${r.derived.max_mp.per_wil}`);
     has('core.2', `Max STA = ${r.derived.max_sta_human}`);
-    has('core.2', 'Initiative = AGI + floor(PER/2)');
+    has('core.2', 'Initiative = floor(1.5 × AGI)');
+    assert.deepEqual(r.derived.init, { agi_factor: 1.5, floor: true });
     has('core.2', `Base DEF = floor(VIT/${r.derived.base_def_divisor})`);
     has('core.2', `Base MDEF = floor(WIL/${r.derived.base_mdef_divisor})`);
     has('core.3', `XP_TO_NEXT = Current Level × ${r.progression.xp_to_next_per_level}`);
     has('core.3', `grant ${r.progression.free_points_per_level} free Stat Points`);
     has('core.3', 'Level-up does not refill');
-    has('core.10', `Base Hit Chance% = ${r.hit.character_base} + (PER × 0.50)`);
-    assert.equal(r.hit.per_factor, 0.5);
-    has('core.10', `${r.hit.clamp_min}%-${r.hit.clamp_max}%`);
-    has('core.12', `${r.hit.partial_cover_pp} percentage points Hit`);
-    has('core.11', `Base Crit Chance = ${r.crit.character_base}% + (PER ÷${r.crit.per_divisor})`);
-    has('core.11', 'Default Critical Damage = ×1.50');
+    // Combat V3 (docs/REVIEW_V3.md): no Hit Chance, no Crit Chance, Partial Cover -25% damage, Ambush Crit ×1.50
+    assert.equal(r.hit, undefined);
+    has('core.10', 'There is no generic Hit Chance and no Hit roll. A legal attack connects');
+    has('core.10', `the covered target takes -${r.cover.partial_damage_reduction_pct}% damage`);
+    has('core.12', `deal -${r.cover.partial_damage_reduction_pct}% damage (Aimed Shot and Precision Thrust ignore it)`);
+    has('core.11', 'There is no Crit Chance and no Crit roll.');
+    has('core.11', 'deals Critical Damage ×1.50');
     assert.equal(r.crit.multiplier, 1.5);
+    assert.deepEqual(Object.keys(r.crit).sort(), ['multiplier', 'only', 'src']);
     has('core.11', `Modified Power ×${r.damage.defense_floor_share.toFixed(2)}`);
     has('core.11', `${r.damage.variance_min.toFixed(2)} to ${r.damage.variance_max.toFixed(2)}`);
     has('core.11', `${r.damage.resistance_factor * 100}%`);
-    has('core.24', `+${r.crit.ambush_bonus_pp} percentage points Crit`);
+    has('core.24', 'guaranteed Critical Hit (×1.50), for Alaric and for Monsters/NPCs alike');
+    has('core.24', 'Initiative = floor(1.5 × AGI)');
     has('core.25', `Base XP = defeated target Level*${r.xp.base_per_level}`);
     has('core.25', 'same x1; +1 x2; +2 x4; +3+ x8; -1 x0.5; -2 or lower x0.25');
     assert.deepEqual(r.xp.rank_gap, { '-2': 0.25, '-1': 0.5, 0: 1, 1: 2, 2: 4, 3: 8 });
     has('core.25', 'Normal x1; Elite x1.5; Boss x2.5');
     has('core.25', 'Minor/routine x1.5; Standard x2; Dangerous x3; Major/Dungeon/major objective x5');
-    for (const [p, v] of Object.entries({ 2: 'P2: Cost ×0.95', 3: 'P3: Cost ×0.95; attacks +5pp Hit' })) has('core.5', v);
+    for (const v of ['P2: Cost ×0.95', 'P3: Cost ×0.95; damaging Modified Power ×1.05', 'P4: Cost ×0.925; damaging Modified Power ×1.15', 'P5: Cost ×0.90; damaging Modified Power ×1.20']) has('core.5', v);
+    assert.deepEqual(Object.values(r.proficiency.levels).map((l) => l.power), [1, 1, 1.05, 1.15, 1.2]);
+    assert.ok(Object.values(r.proficiency.levels).every((l) => !('hit_pp' in l)));
     for (const pct of Object.values(r.checks.modifier_pct)) has('core.8', `±${pct}%`);
     has('core.22', `${r.currency.copper_per_silver} Copper = 1 Silver`);
     has('core.22', `${r.currency.silver_per_gold} Silver = 1 Gold`);
@@ -95,4 +101,25 @@ test('skill numbers equal their verbatim source text (no transcription drift)', 
             for (const t of s.attack.scaling) assert.ok(s.source_text.includes(`${t.stat} × ${t.text}`), `${s.id} ${t.stat} × ${t.text}`);
         }
     }
+});
+
+test('Combat V3 content: no Hit or Crit value anywhere, no PER damage scaling, defensive Skills reduce damage', async () => {
+    const c = await loadContent();
+    for (const s of c.skills.values()) {
+        if (s.attack) {
+            assert.equal(s.attack.hit_mod, undefined, s.id);
+            assert.ok(s.attack.scaling.every((t) => t.stat !== 'PER'), `${s.id}: PER never scales damage`);
+        }
+        for (const e of s.effects) {
+            assert.notEqual(e.kind, 'incoming_hit_penalty', s.id);
+            assert.equal(e.hit_pp, undefined, s.id);
+        }
+        assert.doesNotMatch(`${s.source_text}\n${s.effect_text || ''}`, /Hit Chance|Hit Modifier|Crit Chance|hit and critical check/i, s.id);
+    }
+    assert.deepEqual([...c.skills.values()].filter((s) => s.attack?.ignores_partial_cover).map((s) => s.id).sort(), ['duelist.precision_thrust', 'ranger.aimed_shot']);
+    for (const a of c.anchors.values()) assert.equal(a.hit, undefined, a.id);
+    assert.equal(c.monsters.scaling.hit, undefined);
+    for (const k of ['elite', 'boss', 'variation']) assert.equal(c.monsters[k].hit_pp, undefined, k);
+    assert.doesNotMatch(c.monsters.fauna_text, /Base Hit|Hit1|Hit ±|\/ Hit \/|\| Hit \|/);
+    for (const r of c.rulesText.values()) assert.doesNotMatch(r.text, /PER\s*[×x*]\s*0\.5|PER\s*\/\s*10|floor\(PER|\+25 percentage points Crit|Base Hit Chance/, r.id);
 });

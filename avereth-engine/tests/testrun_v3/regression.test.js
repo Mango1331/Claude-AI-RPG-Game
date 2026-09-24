@@ -88,7 +88,7 @@ test('turn 6: "Im Alaric", said to the three of them, tells all three his name',
 
 test('a reply without a report: the next engine block asks for it right after the story text, and may still record that turn\'s decisions', () => {
     for (const n of [6, 7, 9, 13, 14]) assert.equal(T(n).reply.report_error, 'no <avereth> report', `turn ${n}`);
-    assert.match(T(10).context.text, /no valid <avereth> fact report[^\n]*Write it right after the story text, before any tracker or status blocks/);
+    assert.match(T(10).context.text, /no valid <avereth> fact report[^\n]*Write it right after the story text;/);
     assert.deepEqual(T(10).state.last.carry, [T(9).input], 'turn 9 (taking the rat quest) may still be reported with turn 10');
     assert.deepEqual(T(11).state.last.carry, [], 'turn 10 had a report');
 });
@@ -103,7 +103,7 @@ test('turn 10: the rats commit and the fight is fixed at once: Initiative, Turn 
         '`Range: Cellar rat pack ENGAGED · Big rat ENGAGED`',
         '`Alaric: MP 60/60 · STA 100/100 · Arrows 20`',
         '`Next: Round 1 — Cellar rat pack › Big rat act before Alaric`',
-        '`Alaric\'s attacks vs Cellar rat pack: Basic Attack 73% · Aimed Shot 83% · Power Shot 63%`',
+        '`Alaric\'s attacks vs Cellar rat pack: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`',
     ]);
     assert.ok(chat[20].extra.display_text.startsWith(T(10).panel), 'shown above the reply that reported the attack');
 });

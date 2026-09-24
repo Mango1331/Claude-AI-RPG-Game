@@ -106,8 +106,10 @@ test('deleting messages removes their facts; an edited reply keeps its facts', (
     assert.ok(foldChat(chat).state.entities['npc.mara']);
     chat.at(-1).mes = 'Warm light, and a tired innkeeper.';
     assert.ok(!foldChat(chat).state.entities['npc.mara'], 'text changed: not applied until re-stamped');
-    assert.deepEqual(onEdited(chat, chat.length - 1, content), { changed: true });
+    // text: true — the edited narration is redrawn between the engine's System block / HUD
+    assert.deepEqual(onEdited(chat, chat.length - 1, content), { changed: true, text: true });
     assert.ok(foldChat(chat).state.entities['npc.mara'], 'MESSAGE_EDITED keeps the established facts');
+    assert.match(chat.at(-1).extra.display_text, /^Warm light, and a tired innkeeper\.\n\n<details class="avereth-hud">/);
     chat.splice(chat.length - 2, 2);
     const { state, errors } = foldChat(chat);
     assert.ok(!state.entities['npc.mara']);
@@ -151,33 +153,35 @@ test('retcon is limited to the latest reply: an older reply keeps its facts unti
 test('combat is shown in the reply as System lines (display only): swipes, edits and prompts stay consistent', () => {
     const chat = newChat();
     play(chat, 'I spot a boar.', 'A boar roots in the ferns.\n<avereth>{"new":[{"ref":"boar","kind":"creature","species":"boar","band":"MEDIUM"}]}</avereth>');
-    assert.equal(chat.at(-1).extra.display_text, undefined, 'no System block without a resolution');
+    assert.ok(chat.at(-1).extra.display_text.startsWith('A boar roots in the ferns.\n\n<details class="avereth-hud">'), 'no System block without a resolution; the HUD below');
     play(chat, 'I Power Shot the boar', 'The arrow flies.\n<avereth>{}</avereth>');
     const reply = chat.at(-1);
     const outcome = foldChat(chat).state.last.outcome;
     const shot = outcome.records.find((r) => r.actor === 'pc');
     const panel = reply.extra.avereth.panel;
-    assert.equal(reply.extra.display_text, `${panel}\n\nThe arrow flies.`, 'SillyTavern shows the block above the narration');
+    const hud = () => reply.extra.avereth.hud;
+    assert.equal(reply.extra.display_text, `${panel}\n\nThe arrow flies.\n\n${hud()}`, 'SillyTavern shows the block above the narration and the HUD below it');
     assert.equal(reply.mes, 'The arrow flies.', 'the prompt text stays plain');
     assert.match(panel, /^`COMBAT START`\n`Initiative: /);
     const s = shot.strikes[0];
-    assert.ok(panel.includes(s.hit.success ? `HP ${s.hp_before} - ${s.final - (s.absorbed || 0)}` : `MISS (hit ${s.hit.chance}% · d100 ${s.hit.roll})`));
+    assert.ok(panel.includes(`${s.final} damage → the boar HP ${s.hp_before} - ${s.final - (s.absorbed || 0)}`), panel);
     assert.match(panel, /`HP: .*Alaric \d+\/80/);
     // a new swipe: SillyTavern clears display_text for it; the engine shows the same resolution again
     newSwipe(reply, 'The string snaps forward.\n<avereth>{}</avereth>');
     delete reply.extra.display_text;
     processReply(chat, chat.length - 1, content);
-    assert.equal(reply.extra.display_text, `${panel}\n\nThe string snaps forward.`);
+    assert.equal(reply.extra.display_text, `${panel}\n\nThe string snaps forward.\n\n${hud()}`);
     selectSwipe(reply, 0);
-    assert.equal(reply.extra.display_text, `${panel}\n\nThe arrow flies.`, 'each swipe keeps its own display');
+    assert.equal(reply.extra.display_text, `${panel}\n\nThe arrow flies.\n\n${hud()}`, 'each swipe keeps its own display');
     // a typo edit keeps the block above the edited narration
     reply.mes = 'The arrow flies true.';
     assert.deepEqual(onEdited(chat, chat.length - 1, content), { changed: true, text: true });
-    assert.equal(reply.extra.display_text, `${panel}\n\nThe arrow flies true.`);
-    // the next prompt quotes the reply without the block
+    assert.equal(reply.extra.display_text, `${panel}\n\nThe arrow flies true.\n\n${hud()}`);
+    // the next prompt quotes the reply without the block and without the HUD
     chat.push(userMsg('I shoot again.'));
     const next = prepareGeneration(chat, content, { type: 'normal' });
     assert.ok(!next.context.text.includes('COMBAT START'));
+    assert.ok(!next.context.text.includes('avereth-hud') && chat.every((m) => !m.mes.includes('avereth-hud')), 'the HUD is never prompt text');
 });
 
 test('# commands are answered by the engine without an LLM call, once', () => {

@@ -144,8 +144,9 @@ test('a target the player tells apart ("the second one") is never the sole-hosti
     }
     // pronouns, no target words, "the last one" and a second arrow still take the only valid target
     for (const t of ['I shoot it', 'I Power Shot', 'I shoot the last one', 'I nock another one and shoot']) assert.equal(parseIntent(t, g.state, content).target, 'mon.wolf', t);
-    // in a running fight (Testrun 4, turn 13): Alaric keeps his Turn, STA and arrows
-    g.input('I Power Shot the wolf');
+    // in a running fight (Testrun 4, turn 13): Alaric keeps his Turn, STA and arrows (a Basic Attack, 16-19 damage,
+    // leaves the 23-HP wolf standing now that every legal shot lands)
+    g.input('I shoot the wolf');
     g.reply({});
     const [sta, arrows] = [g.state.entities.pc.sheet.sta, g.state.entities.pc.sheet.inventory.standard_arrow];
     g.input('fuck *i curse and jump backwards as i aimed shot at the second one*');

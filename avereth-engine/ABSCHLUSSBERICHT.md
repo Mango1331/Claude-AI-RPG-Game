@@ -2,6 +2,8 @@
 
 Stand: 23.09.2026. Ergebnis im Ordner `avereth-engine/` (SillyTavern-Extension). Das Paket v1.24 aus Phase 1 bleibt als Legacy-Modus unverändert.
 
+> Dieser Bericht beschreibt Engine 2.0. Runtime V3 (Engine 3.0: Kampf ohne Treffer-Wurf, NPC-Record statt Megumin-Dossier, HUD, Prompt-Projektion) steht in [docs/RUNTIME_V3.md](docs/RUNTIME_V3.md).
+
 ## 1. Architekturentscheidung
 
 **Die Architektur wird in ihrem technischen Kern neu gebaut. Inhalte und Erzählverhalten bleiben.**

@@ -153,7 +153,7 @@ test('a reply without a report: the next report may still record what the player
     g.input('"I\'ll take the job." *I pay the innkeeper two copper for a candle.*');
     const miss = g.reply('The innkeeper nods and hands over a stub of candle.'); // no fact report
     assert.equal(miss.report_error, 'no <avereth> report');
-    assert.match(miss.corrections.join(' '), /Write it right after the story text, before any tracker or status blocks/);
+    assert.match(miss.corrections.join(' '), /Write it right after the story text;/);
     g.input('I head for the cellar door.');
     const r = g.reply({ quests: [{ title: 'Cellar Rats', status: 'active' }], coin: [{ who: 'pc', cp: -2, why: 'candle' }] });
     assert.deepEqual(r.rejected, [], 'accepting and paying were the player\'s decisions one message earlier');

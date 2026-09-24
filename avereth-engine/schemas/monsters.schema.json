@@ -23,7 +23,6 @@
           "atk",
           "def",
           "mdef",
-          "hit",
           "init",
           "attack",
           "damage_type",
@@ -52,11 +51,6 @@
           "mdef": {
             "type": "integer",
             "minimum": 0
-          },
-          "hit": {
-            "type": "integer",
-            "minimum": 20,
-            "maximum": 95
           },
           "init": {
             "type": "integer",
@@ -136,7 +130,6 @@
         "atk",
         "def",
         "mdef",
-        "hit_pp",
         "init"
       ],
       "properties": {
@@ -151,9 +144,6 @@
         },
         "mdef": {
           "type": "number"
-        },
-        "hit_pp": {
-          "type": "integer"
         },
         "init": {
           "type": "integer"

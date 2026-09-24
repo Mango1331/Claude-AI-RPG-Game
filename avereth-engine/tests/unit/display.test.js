@@ -20,12 +20,12 @@ const board = (bramHp, pcHp = 80) => ({
 });
 const shot = (strikes, extra = {}) => ({ round: 1, actor: 'pc', kind: 'attack', target: 'npc.bram', skill_name: 'Power Shot', cost: { resource: 'sta', amount: 12, before: 88, after: 76 }, ammo: { item: 'standard_arrow', used: 1 }, strikes, ...extra });
 
-test('combat start: Initiative, Turn order, each action with its roll, HP before - damage = after, everyone\'s HP', () => {
+test('combat start: Initiative, Turn order, each action with its damage, HP before - damage = after, everyone\'s HP', () => {
     const state = withOutcome({
         kind: 'combat', started: { reason: 'x', order: 'Alaric > Bram', ambush: false }, next: "Alaric's Turn (Round 2)", board: board(71, 64),
         records: [
-            shot([{ target: 'npc.bram', hit: { chance: 63, roll: 32, success: true }, crit: { chance: 5.6, roll: 53, success: false }, final: 34, absorbed: 0, hp_before: 105, hp_after: 71 }]),
-            { round: 1, actor: 'npc.bram', kind: 'attack', target: 'pc', skill_name: 'Basic Attack', cost: { resource: 'sta', amount: 5, before: 100, after: 95 }, strikes: [{ target: 'pc', hit: { chance: 72.5, roll: 53, success: true }, final: 16, absorbed: 0, hp_before: 80, hp_after: 64 }] },
+            shot([{ target: 'npc.bram', final: 34, absorbed: 0, hp_before: 105, hp_after: 71 }]),
+            { round: 1, actor: 'npc.bram', kind: 'attack', target: 'pc', skill_name: 'Basic Attack', cost: { resource: 'sta', amount: 5, before: 100, after: 95 }, strikes: [{ target: 'pc', final: 16, absorbed: 0, hp_before: 80, hp_after: 64 }] },
         ],
     });
     const lines = turnPanel(state, content).split('\n');
@@ -34,37 +34,40 @@ test('combat start: Initiative, Turn order, each action with its roll, HP before
         '`Initiative: Alaric 9 · Bram 8 → Turn order: Alaric › Bram`',
         '`— Round 1 —`',
         '`Alaric: Power Shot → Bram · STA 88 - 12 = 76 · 1 arrow`',
-        '`  HIT (hit 63% · d100 32) → 34 damage → Bram HP 105 - 34 = 71`',
+        '`  34 damage → Bram HP 105 - 34 = 71`',
         '`Bram: Basic Attack → Alaric`',
-        '`  HIT (hit 72.5% · d100 53) → 16 damage → Alaric HP 80 - 16 = 64`',
+        '`  16 damage → Alaric HP 80 - 16 = 64`',
         '`HP: Alaric 64/80 · Bram 71/105`',
         '`Alaric: MP 60/60 · STA 76/100 · Arrows 18`',
         "`Next: Alaric's Turn (Round 2)`",
     ]);
 });
 
-test('misses, crits, Barrier, overkill and multi-hit read like a game log', () => {
+test('Ambush crits, cover, defensive reductions, Barrier, overkill and multi-hit read like a game log', () => {
     const state = withOutcome({
         kind: 'combat', started: null, next: null, board: board(0), ended: { defeated: ['npc.bram'], escaped: [], xp_awarded: 20, pc_dead: false, pc_escaped: false }, levelups: [],
         records: [
-            shot([{ target: 'npc.bram', hit: { chance: 63, roll: 89, success: false } }]),
-            shot([{ target: 'npc.bram', hit: { chance: 63, roll: 5, success: true }, crit: { chance: 5.6, roll: 3, success: true }, final: 51, absorbed: 10, hp_before: 71, hp_after: 30 }], { round: 2 }),
+            shot([{ target: 'npc.bram', crit: { ambush: true, multiplier: 1.5 }, final: 51, absorbed: 10, hp_before: 105, hp_after: 64 }], { opening: true, round: 0 }),
+            shot([{ target: 'npc.bram', cover: '-25%', reduced: ['Deflect -25%'], final: 17, absorbed: 0, hp_before: 64, hp_after: 47 }], { round: 1 }),
             { ...shot([
-                { target: 'npc.bram', hit: { chance: 73, roll: 10, success: true }, final: 12, absorbed: 0, hp_before: 30, hp_after: 18 },
-                { target: 'npc.bram', hit: { chance: 73, roll: 20, success: true }, final: 25, absorbed: 0, hp_before: 18, hp_after: 0, defeated: true },
-            ], { round: 3 }), skill_name: 'Twin Shot', ammo: { item: 'standard_arrow', used: 2 } },
+                { target: 'npc.bram', cover: 'ignored', final: 12, absorbed: 0, hp_before: 47, hp_after: 35 },
+                { target: 'npc.bram', final: 40, absorbed: 0, hp_before: 35, hp_after: 0, defeated: true },
+            ], { round: 2 }), skill_name: 'Twin Shot', ammo: { item: 'standard_arrow', used: 2 } },
         ],
     });
     state.entities.pc.sheet.xp = 20; // the award is already applied when the reply is processed
     const text = turnPanel(state, content);
-    assert.match(text, /`— Round 1 —`\n`Alaric: Power Shot → Bram · STA 88 - 12 = 76 · 1 arrow`\n` {2}MISS \(hit 63% · d100 89\)`/);
-    assert.match(text, /HIT \(hit 63% · d100 5\) CRIT ×1\.5 \(crit 5\.6% · d100 3\) → 51 damage \(10 absorbed by Barrier\) → Bram HP 71 - 41 = 30/);
+    assert.match(text, /`Alaric: Power Shot \(AMBUSH opening\) → Bram · STA 88 - 12 = 76 · 1 arrow`\n` {2}51 damage AMBUSH CRIT ×1\.5 \(10 absorbed by Barrier\) → Bram HP 105 - 41 = 64`/);
+    assert.match(text, /` {2}17 damage \(cover -25%, Deflect -25%\) → Bram HP 64 - 17 = 47`/);
     assert.match(text, /Twin Shot → Bram · STA 88 - 12 = 76 · 2 arrows/);
-    assert.match(text, /Bram #1: HIT \(hit 73% · d100 10\) → 12 damage → Bram HP 30 - 12 = 18/);
-    assert.match(text, /Bram #2: HIT \(hit 73% · d100 20\) → 25 damage → Bram HP 18 - 25 → 0 DEFEATED/);
+    assert.match(text, /Bram #1: 12 damage \(cover ignored\) → Bram HP 47 - 12 = 35/);
+    assert.match(text, /Bram #2: 40 damage → Bram HP 35 - 40 → 0 DEFEATED/);
     assert.match(text, /`HP: Alaric 80\/80 · Bram 0\/105 \(defeated\)`/);
     assert.match(text, /`COMBAT END — Bram defeated · \+20 XP → XP 20\/100`/);
-    assert.doesNotMatch(text, /Next:/);
+    assert.doesNotMatch(text, /MISS|HIT \(|d100|Next:/);
+    // a record saved before Combat V3 (an encounter continued from an old chat) still reads correctly
+    const old = withOutcome({ kind: 'combat', started: null, next: null, board: board(105), records: [shot([{ target: 'npc.bram', hit: { chance: 63, roll: 89, success: false } }])] });
+    assert.match(turnPanel(old, content), /` {2}MISS \(hit 63% · d100 89\)`/);
 });
 
 test('checks show chance and roll; nothing resolved shows nothing', () => {
@@ -114,7 +117,7 @@ test('an attack the reply reported is fixed and shown before anyone acts: Initia
     assert.match(lines[1], new RegExp(`^\`Initiative: .*the wolf ${init}.* → Turn order: `));
     assert.match(lines.join('\n'), /`Range: the wolf MEDIUM`/);
     assert.match(lines.at(-2), init > 9 ? /^`Next: Round 1 — the wolf acts before Alaric`$/ : /^`Next: Round 1 — Alaric acts first`$/);
-    // what each of Alaric's attacks rolls against: Base Hit 73% (PER 6) with the Skill's Hit modifier (Testrun 4)
-    assert.equal(lines.at(-1), '`Alaric\'s attacks vs the wolf: Basic Attack 73% · Aimed Shot 83% · Power Shot 63%`');
+    // every legal attack lands (Combat V3): the choice is shown as the damage each deals to the wolf (DEF 0, variance ±10%)
+    assert.equal(lines.at(-1), '`Alaric\'s attacks vs the wolf: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`');
     assert.equal(r.state.encounter.round, 0, 'nothing resolved yet');
 });

@@ -1,12 +1,15 @@
-// Core rules executed by the engine: derived values, hit/crit/damage chain (Core #11 worked examples), range and
-// ammunition legality, ambush, initiative ties, effects, NPC policy, DefeatXP lock and the Level-up loop.
+// Core rules executed by the engine: derived values, the damage chain (Core #11 worked examples), Combat V3 (legal
+// attacks connect, no random Crit, true Ambush ×1.5, cover and defensive reductions, Initiative without PER), range
+// and ammunition legality, effects, NPC policy, DefeatXP lock and the Level-up loop.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent, Game, scriptedDice } from '../helpers.js';
 import { deriveCharacter, rawPower } from '../../src/derived.js';
 import { applyEvent } from '../../src/state.js';
 import { scaleCreature, humanSheet } from '../../src/npcgen.js';
-import { initEncounter, initiativeOrder, attackAction, skillAction, runCombat, npcDecide } from '../../src/combat.js';
+import { initEncounter, initiativeOrder, attackAction, skillAction, runCombat, npcDecide, damagePreview } from '../../src/combat.js';
+import { detectionScore } from '../../src/checks.js';
+import { Dice } from '../../src/rng.js';
 import { awardXp, defeatXp } from '../../src/progression.js';
 import { clone } from '../../src/util.js';
 
@@ -31,11 +34,12 @@ function encounter(g, dice, trigger, ids) {
 
 test('derived values for all five Base Classes at Level 1 with their starter kit (Core #2, Content #0/#11)', () => {
     const expected = {
-        warrior: { maxHp: 85, maxMp: 60, maxSta: 100, init: 7, def: 7, mdef: 3, atk: 6, matk: 0, baseHit: 72.5, crit: 5.5 },
-        mage: { maxHp: 80, maxMp: 72, maxSta: 100, init: 7, def: 3, mdef: 4, atk: 0, matk: 6, baseHit: 72.5, crit: 5.5 },
-        guardian: { maxHp: 85, maxMp: 64, maxSta: 100, init: 7, def: 10, mdef: 5, atk: 5, matk: 0, baseHit: 72.5, crit: 5.5 },
-        duelist: { maxHp: 80, maxMp: 60, maxSta: 100, init: 8, def: 3, mdef: 4, atk: 6, matk: 0, baseHit: 72.5, crit: 5.5 },
-        ranger: { maxHp: 80, maxMp: 60, maxSta: 100, init: 9, def: 3, mdef: 4, atk: 6, matk: 0, baseHit: 73, crit: 5.6 },
+        // Initiative = floor(1.5 × AGI): the same Level-1 values as AGI + floor(PER/2) except the Duelist (AGI 6, PER 5: 8 -> 9)
+        warrior: { maxHp: 85, maxMp: 60, maxSta: 100, init: 7, def: 7, mdef: 3, atk: 6, matk: 0 },
+        mage: { maxHp: 80, maxMp: 72, maxSta: 100, init: 7, def: 3, mdef: 4, atk: 0, matk: 6 },
+        guardian: { maxHp: 85, maxMp: 64, maxSta: 100, init: 7, def: 10, mdef: 5, atk: 5, matk: 0 },
+        duelist: { maxHp: 80, maxMp: 60, maxSta: 100, init: 9, def: 3, mdef: 4, atk: 6, matk: 0 },
+        ranger: { maxHp: 80, maxMp: 60, maxSta: 100, init: 9, def: 3, mdef: 4, atk: 6, matk: 0 },
     };
     for (const [cls, exp] of Object.entries(expected)) {
         const g = new Game(content);
@@ -46,12 +50,13 @@ test('derived values for all five Base Classes at Level 1 with their starter kit
         const s = g.state.entities.pc.sheet;
         const dv = deriveCharacter(s, content);
         for (const [k, v] of Object.entries(exp)) assert.equal(dv[k], v, `${cls} ${k}`);
+        assert.ok(!('baseHit' in dv) && !('crit' in dv), 'no Base Hit, no Crit Chance (Combat V3)');
         assert.equal(s.hp, exp.maxHp);
         assert.equal(Object.keys(s.skills).length, 3, `${cls}: Basic Attack + 2 Skills`);
     }
 });
 
-test('Ranger Raw Power at full precision (never rounded before the end)', () => {
+test('Ranger Raw Power at full precision; the PER share moved onto AGI, so Level 1 (AGI = PER = 6) is unchanged', () => {
     const g = newRanger('Twin Shot + Quick Shot');
     const s = g.state.entities.pc.sheet;
     const dv = deriveCharacter(s, content);
@@ -61,16 +66,26 @@ test('Ranger Raw Power at full precision (never rounded before the end)', () => 
     assert.equal(raw('ranger.power_shot'), 33.25);
     assert.equal(raw('ranger.quick_shot'), 21);
     assert.equal(raw('ranger.twin_shot'), 12.25);
+    for (const id of ['ranger.basic_attack', 'ranger.aimed_shot', 'ranger.power_shot', 'ranger.quick_shot', 'ranger.twin_shot']) {
+        assert.deepEqual(content.skills.get(id).attack.scaling.map((t) => t.stat), ['AGI'], id);
+    }
+    assert.equal(content.skills.get('ranger.power_shot').attack.scaling[0].coef, 1.875);
+    // PER no longer changes an attack; AGI carries the whole former AGI+PER share
+    const perHigh = { ...s.stats, PER: 20 };
+    assert.equal(rawPower(content.skills.get('ranger.power_shot'), perHigh, dv), 33.25);
+    assert.equal(rawPower(content.skills.get('ranger.power_shot'), { ...s.stats, AGI: 7 }, dv), 35.125);
 });
 
-test('Core #11 worked example: 17.5 Raw vs DEF 2, variance 0.94 -> 15', () => {
+test('Core #11 worked example: 17.5 Raw vs DEF 2, variance 0.94 -> 15 (the attack connects; only the variance is rolled)', () => {
     const g = newRanger();
     spawn(g, 'mon.boar');
-    const dice = scriptedDice({ d100: [10, 99], variance: [0.94] });
+    const dice = scriptedDice({ variance: [0.94] });
     const ctx = encounter(g, dice, { actor: 'pc', target: 'mon.boar', skill: 'ranger.basic_attack' }, ['mon.boar']);
     const r = attackAction(ctx, 'pc', 'mon.boar', 'ranger.basic_attack');
     const s = r.strikes[0];
-    assert.equal(s.hit.chance, 73);
+    assert.equal(dice.n, 1, 'no Hit roll, no Crit roll');
+    assert.equal(s.hit, undefined);
+    assert.equal(s.crit, undefined);
     assert.equal(s.post_def, 15.5);
     assert.equal(s.final, 15);
     assert.equal(s.hp_after, 41 - 15);
@@ -78,17 +93,24 @@ test('Core #11 worked example: 17.5 Raw vs DEF 2, variance 0.94 -> 15', () => {
     assert.deepEqual(r.ammo, { item: 'standard_arrow', used: 1 });
 });
 
-test('Core #11 worked example: 12.25 Raw vs DEF 2, variance 1.08, Crit ×1.5 -> 17 (Twin Shot strike)', () => {
+test('Core #11 worked example: 12.25 Raw vs DEF 2, variance 1.08, Ambush Crit ×1.5 -> 17; a multi-hit Opening Action crits every strike', () => {
     const g = newRanger('Twin Shot + Quick Shot');
     spawn(g, 'mon.boar');
-    const dice = scriptedDice({ d100: [10, 1, 90], variance: [1.08] });
+    const dice = scriptedDice({ variance: [1.08, 1] });
     const ctx = encounter(g, dice, { actor: 'pc', target: 'mon.boar', skill: 'ranger.twin_shot' }, ['mon.boar']);
-    const r = attackAction(ctx, 'pc', 'mon.boar', 'ranger.twin_shot');
+    const r = attackAction(ctx, 'pc', 'mon.boar', 'ranger.twin_shot', { opening: true });
     assert.equal(r.strikes.length, 2);
-    assert.equal(r.strikes[0].crit.success, true);
+    assert.deepEqual(r.strikes.map((s) => s.crit?.multiplier), [1.5, 1.5], 'both strikes of the one Opening Action crit');
     assert.equal(r.strikes[0].final, 17);
-    assert.equal(r.strikes[1].hit.success, false); // d100 90 > 73
+    assert.equal(r.strikes[1].final, 15); // (12.25 - 2) × 1.00 × 1.5 = 15.375
     assert.deepEqual(r.ammo, { item: 'standard_arrow', used: 2 });
+    assert.equal(dice.n, 2, 'one variance per strike, nothing else');
+    // the same Skill outside an Ambush: both strikes land, neither crits
+    const g2 = newRanger('Twin Shot + Quick Shot');
+    spawn(g2, 'mon.boar');
+    const ctx2 = encounter(g2, scriptedDice({ variance: [1.08, 1] }), { actor: 'pc', target: 'mon.boar', skill: 'ranger.twin_shot' }, ['mon.boar']);
+    const plain = attackAction(ctx2, 'pc', 'mon.boar', 'ranger.twin_shot');
+    assert.deepEqual(plain.strikes.map((s) => [s.final, s.crit]), [[11, undefined], [10, undefined]]);
 });
 
 test('defense floor: damage never drops below 10% of Modified Power before variance (min 1 after rounding)', () => {
@@ -101,23 +123,135 @@ test('defense floor: damage never drops below 10% of Modified Power before varia
     assert.equal(s.final, 2); // 1.75 × 0.90 = 1.575 -> 2
 });
 
-test('hit chance modifiers and clamp: partial cover -20pp, clamp 20..95; creatures never roll Crit', () => {
+test('an ordinary legal attack always connects and never crits: 300 seeded attacks, every strike deals damage', () => {
+    let strikes = 0;
+    for (let seed = 1; seed <= 100; seed++) {
+        for (const skill of ['ranger.basic_attack', 'ranger.aimed_shot', 'ranger.power_shot']) {
+            const g = newRanger();
+            spawn(g, 'mon.boar');
+            const ctx = encounter(g, new Dice(seed, 0), { actor: 'pc', target: 'mon.boar', skill }, ['mon.boar']);
+            const r = attackAction(ctx, 'pc', 'mon.boar', skill);
+            for (const s of r.strikes) {
+                strikes += 1;
+                assert.ok(s.final >= 1 && s.hp_after < s.hp_before, `seed ${seed} ${skill}`);
+                assert.equal(s.crit, undefined, `seed ${seed} ${skill}: no random Crit`);
+            }
+        }
+    }
+    assert.equal(strikes, 300);
+    // creatures too: the boar's Gore lands every time, with no Hit value in its profile
+    for (let seed = 1; seed <= 50; seed++) {
+        const g = newRanger();
+        spawn(g, 'mon.boar', { band: 'ENGAGED' });
+        const ctx = encounter(g, new Dice(seed, 0), { actor: 'mon.boar', target: 'pc' }, ['mon.boar']);
+        assert.equal(ctx.enc.combatants['mon.boar'].fixed.hit, undefined);
+        const w = attackAction(ctx, 'mon.boar', 'pc', null);
+        assert.ok(w.strikes[0].final >= 1 && !w.strikes[0].crit, `seed ${seed}`);
+    }
+});
+
+test('Partial Cover: -25% damage for that attack; Aimed Shot and Precision Thrust ignore it; Full Cover blocks', () => {
+    const shot = (skill, cover, cls = 'ranger', skills = 'Aimed Shot + Power Shot', band = 'SHORT') => {
+        const g = cls === 'ranger' ? newRanger(skills) : new Game(content);
+        if (cls !== 'ranger') { g.turn(cls); g.turn(skills); }
+        spawn(g, 'mon.boar', { cover, band });
+        const dice = scriptedDice({ variance: [1] });
+        const ctx = encounter(g, dice, { actor: 'pc', target: 'mon.boar', skill }, ['mon.boar']);
+        return { r: attackAction(ctx, 'pc', 'mon.boar', skill), dice, ctx };
+    };
+    // Power Shot 33.25 vs DEF 2 = 31.25; behind partial cover × 0.75 = 23.4375 -> 23
+    assert.equal(shot('ranger.power_shot', 'none').r.strikes[0].final, 31);
+    const covered = shot('ranger.power_shot', 'partial').r.strikes[0];
+    assert.equal(covered.final, 23);
+    assert.equal(covered.cover, '-25%');
+    assert.ok(covered.steps.includes('Partial Cover -25% = 23.4375'), covered.steps.join(' | '));
+    // Aimed Shot 26.5 vs DEF 2 = 24.5, with or without partial cover
+    assert.equal(shot('ranger.aimed_shot', 'none').r.strikes[0].final, 25);
+    const through = shot('ranger.aimed_shot', 'partial').r.strikes[0];
+    assert.equal(through.final, 25);
+    assert.equal(through.cover, 'ignored');
+    const thrust = shot('duelist.precision_thrust', 'partial', 'Duelist', 'Precision Thrust and Lunge', 'ENGAGED').r.strikes[0];
+    assert.equal(thrust.cover, 'ignored');
+    assert.equal(shot('duelist.basic_attack', 'partial', 'Duelist', 'Precision Thrust and Lunge', 'ENGAGED').r.strikes[0].cover, '-25%');
+    // Full Cover: no line of sight, nothing spent, nothing rolled
+    const blocked = shot('ranger.power_shot', 'full');
+    assert.match(blocked.r.illegal, /behind full cover/);
+    assert.equal(blocked.dice.n, 0);
+    assert.equal(blocked.ctx.enc.combatants.pc.current.sta, 100);
+    // the preview the player sees uses the same numbers
+    const p = shot('ranger.power_shot', 'partial');
+    const opts = damagePreview(p.ctx.enc, content, 'mon.boar');
+    assert.deepEqual(opts.map((o) => [o.name, o.cover]), [['Basic Attack', 'applies'], ['Aimed Shot', 'ignored'], ['Power Shot', 'applies']]);
+});
+
+test('an invalid target is rejected before any cost or roll: not in the fight, dead, or the attacker\'s unknown Skill', () => {
     const g = newRanger();
-    spawn(g, 'mon.boar', { cover: 'partial' });
-    const dice = scriptedDice({ d100: [53, 99], variance: [1] });
-    const ctx = encounter(g, dice, { actor: 'pc', target: 'mon.boar', skill: 'ranger.power_shot' }, ['mon.boar']);
-    const r = attackAction(ctx, 'pc', 'mon.boar', 'ranger.power_shot');
-    assert.equal(r.strikes[0].hit.chance, 43); // 73 - 10 (Power Shot) - 20 (partial cover)
-    assert.equal(r.strikes[0].hit.success, false);
+    spawn(g, 'mon.boar');
+    const dice = scriptedDice();
+    const ctx = encounter(g, dice, { actor: 'pc', target: 'mon.boar', skill: 'ranger.aimed_shot' }, ['mon.boar']);
+    assert.match(attackAction(ctx, 'pc', 'mon.nobody', 'ranger.aimed_shot').illegal, /not an active combatant/);
+    ctx.enc.combatants['mon.boar'].current.defeated = true;
+    assert.match(attackAction(ctx, 'pc', 'mon.boar', 'ranger.aimed_shot').illegal, /not an active combatant/);
+    ctx.enc.combatants['mon.boar'].current.defeated = false;
+    assert.match(attackAction(ctx, 'pc', 'mon.boar', 'ranger.twin_shot').illegal, /does not know Twin Shot/);
+    assert.equal(dice.n, 0);
+    assert.equal(ctx.enc.combatants.pc.current.sta, 100);
+});
+
+test('defensive Skills reduce incoming damage by their former strength: Deflect / Evasive Step -25%, Quickstep -20%', () => {
+    const cases = [['Warrior', 'Deflect and Heavy Slash', 'warrior.deflect', 25], ['Duelist', 'Evasive Step and Lunge', 'duelist.evasive_step', 25], ['Ranger', 'Quickstep and Aimed Shot', 'ranger.quickstep', 20]];
+    for (const [cls, skills, sid, pct] of cases) {
+        assert.deepEqual(content.skills.get(sid).effects.find((e) => e.kind === 'incoming_damage_reduction').pct, pct, sid);
+        const g = new Game(content);
+        g.turn(cls);
+        g.turn(skills);
+        spawn(g, 'mon.bear', { anchor: 'bear', band: 'ENGAGED' });
+        const ctx = encounter(g, scriptedDice({ variance: [1, 1] }), { actor: 'mon.bear', target: 'pc' }, ['mon.bear']);
+        const def = ctx.enc.combatants.pc.fixed.def;
+        const plain = attackAction(ctx, 'mon.bear', 'pc', null).strikes[0];
+        assert.equal(plain.final, Math.round(14 - def));
+        skillAction(ctx, 'pc', sid, { dir: 'away' });
+        ctx.enc.combatants['mon.bear'].current.band = 'ENGAGED';
+        const reduced = attackAction(ctx, 'mon.bear', 'pc', null).strikes[0];
+        assert.equal(reduced.final, Math.max(1, Math.round((14 - def) * (1 - pct / 100))), `${sid}: ${reduced.steps.join(' | ')}`);
+        assert.deepEqual(reduced.reduced, [`${content.skills.get(sid).name} -${pct}%`]);
+    }
+});
+
+test('prepared attacks (Focus Aim, Feint) give +35% Modified Power and no Hit bonus', () => {
+    const g = newRanger('Focus Aim + Power Shot');
+    spawn(g, 'mon.boar');
+    const ctx = encounter(g, scriptedDice({ variance: [1] }), { actor: 'pc', target: 'mon.boar', skill: 'ranger.power_shot' }, ['mon.boar']);
+    assert.deepEqual(skillAction(ctx, 'pc', 'ranger.focus_aim').effects, ['next ranged attack +35% Modified Power']);
+    const s = attackAction(ctx, 'pc', 'mon.boar', 'ranger.power_shot').strikes[0];
+    assert.equal(s.power, 44.8875); // 33.25 × 1.35
+    assert.equal(s.final, 43); // 44.8875 - 2
+    assert.equal(content.skills.get('duelist.feint').effects[0].power_pct, 35);
+    assert.equal(content.skills.get('duelist.feint').effects[0].hit_pp, undefined);
+});
+
+test('a monster\'s true Ambush (it was concealed when it committed) gives its Opening Action the same guaranteed ×1.5', () => {
+    const g = newRanger();
+    spawn(g, 'mon.wolf', { anchor: 'wolf', band: 'ENGAGED' });
+    applyEvent(g.state, { t: 'scene.concealed', d: { ids: ['mon.wolf'] } });
+    const dice = scriptedDice({ variance: [1, 1] });
+    const ctx = encounter(g, dice, { actor: 'mon.wolf', target: 'pc' }, ['mon.wolf']);
+    assert.equal(ctx.enc.ambush, true);
+    assert.match(ctx.enc.ambush_reason, /guaranteed Critical Hit ×1.5/);
+    const res = runCombat(ctx, null);
+    const opening = res.records[0];
+    assert.equal(opening.actor, 'mon.wolf');
+    assert.equal(opening.opening, true);
+    assert.equal(opening.strikes[0].crit.multiplier, 1.5);
+    assert.equal(opening.strikes[0].final, 9); // (9 - 3) × 1.0 × 1.5
+    // its later Turns are ordinary: they land and do not crit
+    const later = res.records.slice(1).filter((r) => r.actor === 'mon.wolf' && r.kind === 'attack');
+    for (const r of later) assert.equal(r.strikes[0].crit, undefined);
+    // the same wolf attacking openly: no Opening Action, no crit
     const g2 = newRanger();
-    spawn(g2, 'mon.wolf', { anchor: 'wolf', band: 'ENGAGED', profile: { hit: 99 } });
-    const dice2 = scriptedDice({ d100: [95, 96], variance: [1] });
-    const ctx2 = encounter(g2, dice2, { actor: 'mon.wolf', target: 'pc' }, ['mon.wolf']);
-    const w = attackAction(ctx2, 'mon.wolf', 'pc', null);
-    assert.equal(w.strikes[0].hit.chance, 95);
-    assert.equal(w.strikes[0].hit.success, true);
-    assert.equal(w.strikes[0].crit.roll, null, 'direct-stat creature has Crit: none');
-    assert.equal(dice2.n, 2, 'hit roll + variance only');
+    spawn(g2, 'mon.wolf', { anchor: 'wolf', band: 'ENGAGED' });
+    const ctx2 = encounter(g2, scriptedDice(), { actor: 'mon.wolf', target: 'pc' }, ['mon.wolf']);
+    assert.equal(ctx2.enc.ambush, false);
 });
 
 test('an out-of-range attack is illegal before any cost, ammunition or roll (Core #21, #24)', () => {
@@ -144,40 +278,60 @@ test('ammunition: no arrows -> the bow Skill is illegal (nothing spent, nothing 
     assert.equal(dice.n, 0);
 });
 
-test('ambush only against a genuinely unaware target; Opening Action gets +25pp Crit and nothing else', () => {
+test('Alaric\'s Ambush only against a genuinely unaware target; its Opening Action is a guaranteed Critical Hit ×1.5', () => {
     for (const [aware, ambush] of [['unaware', true], ['suspicious', false], ['aware', false]]) {
         const g = newRanger();
         spawn(g, 'mon.boar', { aware });
-        const dice = scriptedDice({ d100: [10, 20, 99], variance: [1] });
+        const dice = scriptedDice({ variance: [1] });
         const ctx = encounter(g, dice, { actor: 'pc', target: 'mon.boar', skill: 'ranger.aimed_shot' }, ['mon.boar']);
         assert.equal(ctx.enc.ambush, ambush, aware);
         if (!ambush) continue;
         const res = runCombat(ctx, null);
         const opening = res.records[0];
         assert.equal(opening.opening, true);
-        assert.equal(opening.strikes[0].hit.chance, 83); // 73 + 10 (Aimed Shot): no ambush Hit bonus
-        assert.equal(opening.strikes[0].crit.chance, 30.6); // 5.6 + 25
-        assert.equal(opening.strikes[0].crit.success, true); // d100 20 <= 30.6
+        assert.equal(opening.strikes[0].crit.multiplier, 1.5);
+        assert.equal(opening.strikes[0].final, 37); // (26.5 - 2) × 1.0 × 1.5 = 36.75
+        assert.equal(dice.log.filter((x) => x.kind === 'd100').length, 0, 'no Hit or Crit roll');
     }
 });
 
-test('initiative: fixed order by Init; ties -> higher PER, equal PER -> one unbiased pick', () => {
+test('Initiative = floor(1.5 × AGI) without PER; ties are resolved once without bias (PER does not break them)', () => {
     const g = newRanger();
-    const sheet = (per) => { const s = humanSheet(content.templates.get('laborer'), { level: 1 }, content); s.stats.PER = per; return s; };
-    for (const [id, per] of [['npc.a', 6], ['npc.b', 7], ['npc.c', 7]]) {
+    assert.equal(deriveCharacter(g.state.entities.pc.sheet, content).init, 9); // AGI 6
+    const sheet = (agi, per) => { const s = humanSheet(content.templates.get('laborer'), { level: 1 }, content); s.stats.AGI = agi; s.stats.PER = per; return s; };
+    for (const [id, agi, per] of [['npc.a', 6, 1], ['npc.b', 6, 20], ['npc.c', 5, 20]]) {
         applyEvent(g.state, { t: 'entity.created', d: { entity: { id, kind: 'npc', name: id, descriptors: [], status: 'alive', location: g.state.scene.location } } });
-        const s = sheet(per);
-        s.stats.AGI = 9 - Math.floor(per / 2); // Init 9 for everyone
-        applyEvent(g.state, { t: 'entity.sheet_set', d: { id, sheet: s } });
+        applyEvent(g.state, { t: 'entity.sheet_set', d: { id, sheet: sheet(agi, per) } });
         applyEvent(g.state, { t: 'scene.entered', d: { id, band: 'MEDIUM' } });
     }
-    const dice = scriptedDice({ pick: ['npc.c', 'npc.b'] });
+    const dice = scriptedDice({ pick: ['npc.a', 'pc'] });
     const ctx = encounter(g, dice, { actor: 'npc.a', target: 'pc' }, ['npc.a', 'npc.b', 'npc.c']);
-    // all Init 9: PER 7 (b, c) before PER 6 (pc, a); b/c tie resolved by the pick, pc/a (PER 6) by the next pick
-    assert.deepEqual(ctx.enc.order.slice(0, 2), ['npc.c', 'npc.b']);
-    assert.deepEqual(new Set(ctx.enc.order.slice(2)), new Set(['pc', 'npc.a']));
-    assert.equal(dice.n, 2, 'one pick per tied pair');
-    assert.deepEqual(initiativeOrder(ctx.enc, scriptedDice({ pick: ['npc.b', 'pc'] })).slice(0, 2), ['npc.b', 'npc.c']);
+    const init = Object.fromEntries(Object.values(ctx.enc.combatants).map((c) => [c.id, c.fixed.init]));
+    assert.deepEqual(init, { pc: 9, 'npc.a': 9, 'npc.b': 9, 'npc.c': 7 }, 'PER 1 and PER 20 give the same Initiative');
+    // pc, a and b tie at 9: PER 20 (b) gets no priority; the unbiased picks decide (a, then pc), c (7) acts last
+    assert.deepEqual(ctx.enc.order, ['npc.a', 'pc', 'npc.b', 'npc.c']);
+    assert.equal(dice.n, 2, 'three tied: two picks');
+    assert.deepEqual(initiativeOrder(ctx.enc, scriptedDice({ pick: ['npc.b', 'pc'] })), ['npc.b', 'pc', 'npc.a', 'npc.c']);
+});
+
+test('PER stays out of combat math (the same fight with PER 1 and PER 20 is identical) and keeps its non-combat checks', () => {
+    const fight = (per) => {
+        const g = newRanger('Twin Shot + Quick Shot');
+        g.state.entities.pc.sheet.stats.PER = per;
+        spawn(g, 'mon.wolf', { anchor: 'wolf', band: 'SHORT' });
+        const ctx = encounter(g, new Dice(99, 0), { actor: 'pc', target: 'mon.wolf', skill: 'ranger.quick_shot' }, ['mon.wolf']);
+        const res = runCombat(ctx, null);
+        return { order: ctx.enc.order, init: ctx.enc.combatants.pc.fixed.init, records: res.records.map((r) => (r.strikes || []).map((s) => s.final)) };
+    };
+    assert.deepEqual(fight(1), fight(20));
+    // Core #8: Detection Score = PER (stealth vs detection, tracking, noticing ambushers) is unchanged
+    const g = newRanger();
+    applyEvent(g.state, { t: 'entity.created', d: { entity: { id: 'npc.watch', kind: 'npc', name: 'Watch', descriptors: ['watchman'], status: 'alive', location: g.state.scene.location } } });
+    const s = humanSheet(content.templates.get('guard'), { level: 1 }, content);
+    s.stats.PER = 11;
+    applyEvent(g.state, { t: 'entity.sheet_set', d: { id: 'npc.watch', sheet: s } });
+    assert.equal(detectionScore(g.state, content, 'npc.watch'), 11);
+    assert.equal(detectionScore(g.state, content, 'pc'), 6);
 });
 
 test('multi-hit stops once the target is dead; DefeatXP enters Pending XP exactly once', () => {

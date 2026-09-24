@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent, Game } from '../helpers.js';
-import { statusOf, knowledgeOf } from '../../src/knowledge.js';
+import { statusOf, knowledgeOf, memoryText } from '../../src/knowledge.js';
 
 const content = await loadContent();
 
@@ -117,7 +117,10 @@ test('identity knowledge: an NPC who never saw Alaric cannot name or describe hi
     g.input('"Easy, I mean no harm."');
     card = cardOf(g.context().text, 'the trapper');
     assert.match(card, /has seen him, does NOT know his name/);
-    assert.match(card, /first saw the stranger/);
+    // the first sighting is routine (importance 4): it stays in the log, told from his view, but is no NPC canon
+    assert.doesNotMatch(card, /first saw/);
+    const seen = g.state.memories.find((m) => m.kind === 'meeting' && m.who.includes('npc.trapper'));
+    assert.match(memoryText(g.state, seen, 'npc.trapper'), /^first saw the stranger at /);
     g.reply({});
     g.input('"I\'m Alaric."');
     assert.match(cardOf(g.context().text, 'the trapper'), /does NOT know his name/, 'he hears the name during this reply');

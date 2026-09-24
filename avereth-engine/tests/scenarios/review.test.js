@@ -130,7 +130,7 @@ test('an NPC\'s area Skill hits Alaric (not itself) with one shared Hit roll and
     assert.ok(r.strikes[0].hp_after < r.strikes[0].hp_before);
 });
 
-test('Alaric\'s area strike shares one Hit roll but respects each target\'s own Barrier', () => {
+test('Alaric\'s area strike hits every engaged opponent (no Hit roll) and respects each target\'s own Barrier', () => {
     const g = new Game(content);
     g.turn('Mage');
     g.turn('Arcane Bolt + Arcane Burst');
@@ -138,7 +138,7 @@ test('Alaric\'s area strike shares one Hit roll but respects each target\'s own 
         applyEvent(g.state, { t: 'entity.created', d: { entity: { id, kind: 'npc', name: id, descriptors: ['bandit'], status: 'alive', location: g.state.scene.location } } });
         applyEvent(g.state, { t: 'entity.sheet_set', d: { id, sheet: humanSheet(content.templates.get('bandit'), { level: 1 }, content) } });
     }
-    const dice = scriptedDice({ d100: [5, 99, 5, 99] });
+    const dice = scriptedDice();
     const enc = initEncounter(g.state, content, dice, { actor: 'pc', target: 'npc.a' }, [{ id: 'npc.a', side: 'hostile' }, { id: 'npc.b', side: 'hostile' }], 'e');
     for (const c of Object.values(enc.combatants)) if (c.id !== 'pc') c.current.band = 'ENGAGED';
     enc.combatants['npc.b'].current.effects.push({ kind: 'barrier', hp: 500, value: 500, source: 'npc.b', expires: 'start_of_source_next_turn', name: 'Test Barrier', round: enc.round });
@@ -146,7 +146,7 @@ test('Alaric\'s area strike shares one Hit roll but respects each target\'s own 
     assert.ok(!r.illegal, r.illegal);
     const hit = Object.fromEntries(r.strikes.map((x) => [x.target, x]));
     assert.ok(hit['npc.a'] && hit['npc.b'], 'both engaged opponents are struck');
-    assert.equal(dice.log.filter((x) => x.label.startsWith('hit')).length, 1, 'one shared Hit roll');
+    assert.deepEqual(dice.log.filter((x) => x.kind !== 'pick').map((x) => x.kind), ['variance', 'variance'], 'no Hit or Crit roll, one variance per target (picks: Initiative ties)');
     assert.ok(hit['npc.a'].hp_after < hit['npc.a'].hp_before);
     assert.equal(hit['npc.b'].hp_after, hit['npc.b'].hp_before, 'the Barrier absorbs the whole hit on target 2');
     assert.ok(hit['npc.b'].absorbed > 0);

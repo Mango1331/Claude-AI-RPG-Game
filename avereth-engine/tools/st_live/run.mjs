@@ -2,8 +2,9 @@
 // extension and a scripted, streaming mock narrator (OpenAI-compatible, port 5001). Plays a Warrior's creation (answered by
 // System panels, including the Pre-Test-5 run's invented Skill pick and a story message sent too early), an incidental NPC,
 // a recurring NPC, the quest board, registration and coin, an ambush fight, the report back, Kest again after his
-// exchange has left the history window, and travel to another realm; it checks the Runtime V3 goals in the real host:
-// prompt assembly, history window, NPC record, Lore Bridge, streaming, display, HUD. It judges no prose (scripted mock).
+// exchange has left the history window, travel to another realm, and two replies without a fact report (the separate
+// report request: once answered, once not); it checks the Runtime V3 goals in the real host: prompt assembly, history
+// window, NPC record, Lore Bridge, streaming, display, HUD, report requests. It judges no prose (scripted mock).
 // Usage: AVERETH_ST_DIR=/path/to/SillyTavern node tools/st_live/run.mjs   (after setup.mjs; Playwright + Chromium)
 import http from 'node:http';
 import fs from 'node:fs';
@@ -31,8 +32,9 @@ const SCRIPT = [
     ['city gate', 'The south gate of Tidecross stands open to the morning carts. A gate guard with a bored face and a boar-spear waves the traffic through, then looks you over once.\n\n"Pass\'s free on foot," he says, already watching the next cart.\n<avereth>{"time":20,"place":"Tidecross south gate","new":[{"ref":"gate guard","kind":"npc","desc":["gate guard","bored"],"band":"SHORT"}],"aware":[{"who":"gate guard","level":"aware"}]}</avereth>' + MEGUMIN_BLOCKS],
     ['rats are done', '"Heard." Kest glances at the ear pail, then back at you. "Start there. Keep starting there."\n<avereth>{"time":2,"attitude":[{"who":"Kest","delta":10,"why":"the Novice took the rat job first, as told"}]}</avereth>'],
     ['long road east', 'Three days of road dust later, a walled city of black stone rises over the river crossing. The guards at the east gate wave carts through without a glance.\n<avereth>{"time":4320,"location":"Ashbridge","place":"east gate"}</avereth>'],
-    // no fact report (Test 5 run: six of nine replies had none): the player must see that nothing was recorded
+    // no fact report (Test 5 runs 1 and 2: 5 of 15 replies had one): the engine asks for it separately (REPORTS)
     ['look around the market', 'Beyond the gate the market smells of smoke and tar; a tinker sharpens knives under a grey awning.'],
+    ['grilled eel', 'The eel seller wraps a skewer in a leaf and takes a copper without a word.'],
     ['back to the Guild', 'Serah takes the ear with two fingers and drops it in a pail. "Cellar\'s clear, then." She counts out five silver. At the board, Kest watches you without a word.\n<avereth>{"time":35,"place":"Guild hall, counter","enter":["Serah","Kest"],"quests":[{"title":"Rats in the Salt Cellar","status":"completed"}],"coin":[{"cp":50,"why":"quest reward"}],"learn":[{"who":"Serah","s":"pc","p":"cleared","o":"the salt cellar rats","how":"told","from":"pc"}]}</avereth>'],
     ['Guild hall', 'The Guild hall smells of wet wool and ink. At the Novice board a one-eyed man with a grey braid leans on the wall; behind the counter a clerk with pale eyes and an ink-smudged jaw sorts slips.\n\n"New face," the one-eyed man rasps. "Board\'s there."\n<avereth>{"time":25,"place":"Guild hall, Novice board","leave":["gate guard"],"new":[{"ref":"Kest","name":"Kest","kind":"npc","desc":["veteran adventurer"],"traits":"one-eyed, grey braid, gruff","band":"SHORT"},{"ref":"Serah","name":"Serah","kind":"npc","desc":["guild clerk"],"traits":"pale eyes, ink-smudged jaw","band":"MEDIUM"}],"facts":[{"s":"Kest","p":"occupation","o":"veteran adventurer"},{"s":"Kest","p":"voice","o":"low rasp, clipped sentences"},{"s":"Serah","p":"occupation","o":"Guild clerk"}],"quests":[{"title":"Rats in the Salt Cellar","status":"offered","giver":"Serah","level":1,"type":"minor","rank":"Novice"}]}</avereth>'],
     ['Greyhowl', '"Greyhowl." Kest\'s one eye narrows. "Took two Wardens last spring. You leave that bill alone, Novice." He taps the lower slip instead. "Rats. Start there."\n<avereth>{"time":5,"memory":[{"text":"Kest warned Alaric that Greyhowl killed two Wardens and told him to leave the posting alone","who":["Kest","pc"],"imp":7}],"attitude":[{"who":"Kest","delta":-15,"why":"a green Novice eyeing the Greyhowl bill"}],"facts":[{"s":"Kest","p":"agenda","o":"get the Greyhowl posting taken down"}]}</avereth>'],
@@ -41,6 +43,13 @@ const SCRIPT = [
     ['Heavy Slash the rat', 'Two quiet steps, then the blade comes down behind the rat\'s shoulder and pins it to the sack; it kicks twice and is still. Brine drips somewhere in the dark.\n<avereth>{"time":1}</avereth>'],
 ];
 const replyFor = (input) => (SCRIPT.find(([k]) => input.includes(k)) || [null, 'The world waits.\n<avereth>{}</avereth>'])[1];
+// answers to the engine's report requests (host.js reportRequest), by the player's message they quote
+const REPORTS = [
+    // "place" is refused like in a narrator report: looking around moves nobody
+    ['look around the market', '<avereth>{"time":10,"place":"Ashbridge market","new":[{"ref":"tinker","kind":"npc","desc":["tinker","knife-grinder"],"band":"MEDIUM"}]}</avereth>'],
+    ['grilled eel', 'The eel is good, hot and salty.'], // no report in the answer: the reply keeps NO FACT REPORT
+];
+const isReportRequest = (msgs) => String(msgs[0]?.content || '').startsWith('[AVERETH ENGINE — FACT REPORT REQUEST]');
 
 const mock = http.createServer(async (req, res) => {
     if (req.url.endsWith('/models')) { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ object: 'list', data: [{ id: 'mock-narrator', object: 'model' }] })); return; }
@@ -49,7 +58,7 @@ const mock = http.createServer(async (req, res) => {
     const j = JSON.parse(body || '{}');
     const msgs = j.messages || [];
     const lastUser = [...msgs].reverse().find((m) => m.role === 'user')?.content || '';
-    const text = replyFor(String(lastUser));
+    const text = isReportRequest(msgs) ? (REPORTS.find(([k]) => String(lastUser).includes(k)) || [null, '{}'])[1] : replyFor(String(lastUser));
     fs.appendFileSync(LOG, `${JSON.stringify({ stream: !!j.stream, messages: msgs, lastUser, reply: text })}\n`);
     const promptChars = msgs.reduce((a, m) => a + String(m.content).length, 0);
     if (j.stream) {
@@ -127,6 +136,11 @@ async function send(text) {
         if (s.n >= before + 2 && !s.streaming) break;
         await page.waitForTimeout(25);
     }
+    // a reply without a fact report: the engine's separate request settles before anything is read
+    for (let i = 0; i < 150; i++) {
+        if (await page.evaluate(() => SillyTavern.getContext().chat.at(-1)?.extra?.avereth?.recovery !== 'pending')) break;
+        await page.waitForTimeout(100);
+    }
     await page.waitForTimeout(700); // MESSAGE_RECEIVED processing + save + re-render
     const state = await page.evaluate(() => {
         const ctx = SillyTavern.getContext();
@@ -163,6 +177,7 @@ for (const input of [
     // travel to another realm; the next request's World Info must follow the Lore Bridge, not the chat text
     '*I travel the long road east to Ashbridge.*',
     '*I look around the market.*',
+    '*I buy a skewer of grilled eel.*',
 ]) turns.push(await send(input));
 
 // # command: answered by the engine, no LLM request
@@ -210,8 +225,17 @@ checks.creationBySystem = CREATION.every((c) => T(c).system)
     && /Starter Longsword \[F\] — ATK 6[\s\S]*Starter Heavy Armor \[F\] — DEF 6, MDEF 2/.test(T('#equipment').panelText);
 checks.noLlmForCreation = !requests.some((r) => CREATION.includes(String(r.lastUser)))
     && /mode: story/.test(engineOf(requests[0])) && /CHARACTER CREATION is complete/.test(engineOf(requests[0]));
-checks.noReportShown = /NO FACT REPORT: nothing this reply established was recorded/.test(T('look around the market').shown || '')
+// replies without a fact report (Test 5 runs 1 and 2): the engine asks for it separately with the turn's engine block;
+// an answered request counts as the narrator's report, an unanswered one leaves NO FACT REPORT above the reply
+const reportReqs = requests.filter((r) => isReportRequest(r.messages));
+const marketReq = reportReqs.find((r) => String(r.lastUser).includes('look around the market'));
+checks.reportRecovered = reportReqs.length === 2 && /REPORT RECOVERED: the reply had no fact report, a separate request supplied it \(\d+\.\d s\)\./.test(T('look around the market').shown || '')
+    && /Present: the tinker \(MEDIUM\)/.test(T('look around the market').hudText || '')
+    // validated like the narrator's own report: "look around" moves nobody, so its "place" is refused (PLAYER OWNERSHIP)
+    && /Location: Ashbridge, Duskreach — east gate/.test(T('look around the market').hudText || '') && (T('look around the market').rejected || []).some((r) => /PLAYER OWNERSHIP: moving Alaric/.test(r))
+    && /\[AVERETH ENGINE — authoritative game state, turn \d+\./.test(String(marketReq?.messages?.[0]?.content || '')) && /NARRATOR'S REPLY:\nBeyond the gate the market smells/.test(String(marketReq?.lastUser || ''))
     && !/NO FACT REPORT/.test(T('city gate').shown || '') && /End EVERY reply with <avereth>\{…\}<\/avereth>, \{\} if nothing new\.$/.test(engineOf(requests[0]));
+checks.reportRequestFailed = /NO FACT REPORT, and the separate request brought none \(\d+\.\d s\): nothing this reply established was recorded/.test(T('grilled eel').shown || '');
 checks.warriorHud = /HP 85\/85 \(unhurt\)/.test(T('city gate').hudText || '') && /Starter Longsword · Starter Heavy Armor/.test(T('city gate').hudText || '')
     && /ATK 6 · MATK 0 · DEF 7 · MDEF 3/.test(T('city gate').hudText || '');
 const chatOf = (r) => (r?.messages || []).filter((m) => m.role === 'user' || m.role === 'assistant').map((m) => String(m.content));

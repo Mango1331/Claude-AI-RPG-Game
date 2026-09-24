@@ -7,8 +7,8 @@
 // assistant record is only applied while its text_hash matches the message text (stale copies are ignored).
 import { applyEvent, emptyState } from './state.js';
 import { startCampaign, playerTurn, narratorReply, turnContext } from './engine.js';
-import { loreKeys } from './context.js';
-import { extractReport } from './delta.js';
+import { loreKeys, reportKeys } from './context.js';
+import { extractReport, tolerantJson } from './delta.js';
 import { turnPanel } from './display.js';
 import { renderHud } from './hud.js';
 import { hash32, clone, swapWords, hasTrackerBlocks, stripTrackerBlocks } from './util.js';
@@ -123,11 +123,18 @@ export function prepareGeneration(chat, content, { type = 'normal', settings = {
         setRec(msg, r);
         return { action: 'panels', panels: r.command.panels, index: u, dirty: true };
     }
+    const { state, errors, context } = turnBlock(chat, u, content, settings);
+    return { action: 'context', context, loreKeys: loreKeys(state, content), dirty, errors };
+}
+
+/** The engine block for player message u: the state after that message, the reply before it, the host's settings. */
+function turnBlock(chat, u, content, settings = {}) {
+    const r = rec(chat[u]);
     const { state, errors } = foldChat(chat, u + 1);
     const p = lastReplyIndex(chat, u);
     const prev = p >= 0 ? rec(chat[p]) : null;
     const context = turnContext(state, content, {
-        input: msg.mes,
+        input: chat[u].mes,
         corrections: prev && !prev.system_answer ? prev.corrections || [] : [],
         lastReply: p >= 0 ? chat[p].mes : '',
         budget: settings.budget,
@@ -136,17 +143,94 @@ export function prepareGeneration(chat, content, { type = 'normal', settings = {
         systemQuery: r?.command?.llm ? r.command.llm.question || 'help' : null,
         lore: settings.engineLore !== false,
     });
-    return { action: 'context', context, loreKeys: loreKeys(state, content), dirty, errors };
+    return { state, errors, context };
+}
+
+const laterTurns = (chat, id) => chat.slice(id + 1).some((m) => messageEvents(m).length);
+
+// ------------------------------------------------------------------------------------------ report request
+// Test 5, runs 1 and 2: with Reasoning low, GLM ended only 5 of 15 replies with the fact report. The prompt's wording
+// (the engine block's last line, the Megumin checklist addendum) made no difference; the reasoning mostly never planned
+// the report, and once dropped it after planning it. A reply without a valid report therefore gets one separate,
+// report-only request while the player reads it. The answer is applied as if the narrator had written it.
+export const REPORT_REQUEST_HEAD = "[AVERETH ENGINE — FACT REPORT REQUEST] The narrator's reply below came without its fact report. Here you are the engine's bookkeeper, not the narrator: write no story. Read the player's message and the reply, and write the fact report the reply owed, measured against the game state that follows: only what the reply itself newly established, with the keys and rules under FACT REPORT; {} if it established nothing new.";
+
+/**
+ * The separate request for the missing report of reply `id`: the engine block the narrator had for this turn (without
+ * lore), the player's message and the reply as the player sees it. Null when there is nothing to ask: the reply has a
+ * report, is a System answer, belongs to character creation (no report keys), changed since, or a later turn was
+ * already resolved without it.
+ * @returns {null|{systemPrompt: string, prompt: string, hash: string}}
+ */
+export function reportRequest(chat, id, content, { settings = {} } = {}) {
+    const msg = chat[id];
+    const r = rec(msg);
+    if (!msg || msg.is_user || msg.is_system || !r || r.system_answer || !r.report_error || r.text_hash !== hash32(msg.mes)) return null;
+    const u = lastUserIndex(chat, id);
+    if (u < 0 || laterTurns(chat, id)) return null;
+    const { state, context } = turnBlock(chat, u, content, { ...settings, engineLore: false });
+    if (!reportKeys(state, content, { outcome: state.last.outcome }).length) return null;
+    return {
+        systemPrompt: `${REPORT_REQUEST_HEAD}\n\n${context.text}`,
+        prompt: `PLAYER'S MESSAGE:\n${chat[u].mes}\n\nNARRATOR'S REPLY:\n${msg.mes}\n\nWrite the fact report for this reply now: exactly one <avereth>{…}</avereth>, nothing else.`,
+        hash: r.text_hash,
+    };
+}
+
+/** The report in the answer to a report request: tagged like the narrator's, or a bare JSON object. */
+export function reportFromAnswer(text) {
+    const s = String(text ?? '');
+    const tagged = extractReport(s);
+    if (tagged.report) return { report: tagged.report };
+    const a = s.indexOf('{');
+    const b = s.lastIndexOf('}');
+    if (!/<avereth>/i.test(s) && a >= 0 && b > a) {
+        const bare = tolerantJson(s.slice(a, b + 1));
+        if (bare.value) return { report: bare.value };
+    }
+    return { report: null, error: /<avereth>/i.test(s) ? tagged.error : 'no report in the answer' };
+}
+
+/**
+ * Apply the answer to reportRequest. The reply is validated again, now with the recovered report, against the state
+ * before it: the same rules and dice as if the narrator had written it; its events and display are replaced, the
+ * visible text stays. Refused when the reply changed meanwhile (swipe, edit, continue) or a later turn was resolved
+ * without it. An answer without a usable report (or none: answer null) leaves the facts as they were and says so.
+ * @returns {{changed: boolean, applied?: boolean, error?: string, result?: object}}
+ */
+export function applyReportAnswer(chat, id, content, answer, { hash, ms = null, hud = 'closed', stripTrackers = true } = {}) {
+    const msg = chat[id];
+    const r = rec(msg);
+    if (!msg || !r || !r.report_error || r.text_hash !== hash || hash32(msg.mes) !== hash) return { changed: false, error: 'the reply changed' };
+    // too late (the next turn was resolved without it): the facts stay as they were, the notice above the reply says so
+    const late = laterTurns(chat, id);
+    const got = late ? { report: null, error: 'too late: a later turn was resolved without it' } : answer == null ? { report: null, error: 'no answer' } : reportFromAnswer(answer);
+    const { state } = foldChat(chat, id);
+    const result = narratorReply(state, content, got.report ? `${msg.mes}\n<avereth>${JSON.stringify(got.report)}</avereth>` : msg.mes, { msg: id, stripTrackers });
+    // the visible text is already clean: the note about tracker blocks the reply had written comes from its first pass
+    const trackerNote = (r.corrections || []).find((c) => c.startsWith('Your last reply wrote tracker blocks'));
+    if (trackerNote && !result.corrections.includes(trackerNote)) result.corrections.unshift(trackerNote);
+    const recovery = got.report ? { from: r.report_error, ms } : { from: r.report_error, failed: got.error, ...(late ? { late: true } : {}), ms };
+    const events = late ? r.events : [...result.events, { t: 'report.requested', d: { ok: !!got.report, error: r.report_error, ...(got.report ? {} : { failed: got.error }), ms } }];
+    const panel = turnPanel(state, content, result.state.last?.check, { ...result, recovery });
+    const view = renderHud(result.state, content, hud);
+    showPanel(msg, panel, view);
+    setRec(msg, {
+        v: RECORD_VERSION, events, text_hash: hash32(msg.mes), corrections: late ? r.corrections : result.corrections, accepted: late ? r.accepted : result.accepted,
+        rejected: late ? r.rejected : result.rejected, report_error: result.report_error, recovery, panel: panel || undefined, hud: view || undefined,
+    });
+    return { changed: true, applied: !!got.report, error: got.error, result };
 }
 
 /**
  * Called when a reply was received (or a greeting created). Validates the fact report into events on this swipe and
  * strips the report from the visible text. The System block (what was resolved) goes above the reply and the player
  * HUD (Character + World, rendered from the state after this reply) below it: display only, never in a prompt.
- * hud: 'closed' | 'open' | 'off'.
- * @returns {{changed: boolean, result?: object}}
+ * hud: 'closed' | 'open' | 'off'. recover: a missing report will be asked for separately (reportRequest); the reply's
+ * record says so (recovery 'pending') until the answer is applied.
+ * @returns {{changed: boolean, result?: object, recover?: boolean}}
  */
-export function processReply(chat, id, content, { seed, swaps = [], hud = 'closed', stripTrackers = true } = {}) {
+export function processReply(chat, id, content, { seed, swaps = [], hud = 'closed', stripTrackers = true, recover = false } = {}) {
     const msg = chat[id];
     if (!msg || msg.is_user || msg.is_system) return { changed: false };
     if (!hasCampaign(chat)) {
@@ -165,14 +249,16 @@ export function processReply(chat, id, content, { seed, swaps = [], hud = 'close
     const { state } = foldChat(chat, id);
     const result = narratorReply(state, content, msg.mes, { msg: id, stripTrackers });
     msg.mes = swapWords(result.clean, swaps);
-    const panel = turnPanel(state, content, result.state.last?.check, result);
+    const pending = recover && !!result.report_error && !laterTurns(chat, id) && reportKeys(state, content, { outcome: state.last.outcome }).length > 0;
+    const panel = turnPanel(state, content, result.state.last?.check, { ...result, recovery: pending ? 'pending' : null });
     const view = renderHud(result.state, content, hud);
     showPanel(msg, panel, view);
     setRec(msg, {
         v: RECORD_VERSION, events: result.events, text_hash: hash32(msg.mes), corrections: result.corrections,
-        accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, panel: panel || undefined, hud: view || undefined,
+        accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, recovery: pending ? 'pending' : undefined,
+        panel: panel || undefined, hud: view || undefined,
     });
-    return { changed: true, result };
+    return { changed: true, result, recover: pending };
 }
 
 /**

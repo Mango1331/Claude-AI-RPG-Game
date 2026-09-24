@@ -12,7 +12,8 @@ Für beide ist die Engine-Seite schon geprüft: der Test „Test-5 scenario …�
 
 Vorlauf:
 - Der Pre-Test-5-Diagnoselauf ([PRETEST5_DIAGNOSE.md](PRETEST5_DIAGNOSE.md)) hing in der Charaktererstellung fest. Seitdem beantwortet die Engine die Erstellung selbst.
-- Im ersten Test-5-Lauf ([TESTRUN_V5.md](TESTRUN_V5.md)) lief die Erstellung sauber. Aber nur 3 von 9 Story-Antworten hatten einen Fakten-Report: Mit den Megumin-Blöcken war auch die Pflicht am Antwortende weggefallen. Die Checkliste hat dafür einen Nachtrag (Punkt 5).
+- Im ersten Test-5-Lauf ([TESTRUN_V5.md](TESTRUN_V5.md)) lief die Erstellung sauber. Aber nur 3 von 9 Story-Antworten hatten einen Fakten-Report. Die Checkliste bekam einen Nachtrag (Punkt 5): die Report-Pflicht am Antwortende.
+- Im zweiten Lauf ([TESTRUN_V5_2.md](TESTRUN_V5_2.md)) stand der Nachtrag im Prompt, und trotzdem hatten nur 2 von 6 Antworten einen Report. Mit Reasoning low lässt GLM ihn weg, egal wie der Prompt ihn verlangt. Seitdem fordert die Engine einen fehlenden Report selbst nach.
 
 **Test 5 in einem frischen Chat starten.**
 
@@ -27,7 +28,7 @@ Vorlauf:
    - Lorebook v0.11 als Character Lore verknüpft.
    - World Info: Scan Depth 2, Budget Cap 1.800, Recursive Scan aus.
 3. **Avereth Engine 3.0.0:**
-   - Einstellungen auf Standard: HUD Folded, History window 4, Remove tracker blocks an, Context budget 1.400.
+   - Einstellungen auf Standard: HUD Folded, History window 4, Remove tracker blocks an, **Ask for a missing fact report separately an**, Context budget 1.400.
    - Zusätzlich **„Show last engine block“ an**. Das Textfeld zeigt den Engine-Block der letzten Anfrage; es ist das Werkzeug für die Kontrollpunkte.
 4. **API:**
    - Ein Modell für den ganzen Lauf. Vergleichswerte gibt es für GLM-5.3-Flash (Testrun 4) und für Qwen3.8-27B (Diagnoselauf, Abschnitt 4).
@@ -44,7 +45,13 @@ Vorlauf:
 
 Frei spielen, aber diese Stationen einbauen. Die Zugnummern der Kontrollpunkte notieren.
 
-**In jedem Zug:** Steht über der Antwort `NO FACT REPORT`, hat der Erzähler keinen gültigen Report geschrieben. Was diese Antwort erzählt, kennt die Engine dann nicht. Bei Ortswechsel, Quest, Kauf oder Kampfbeginn neu generieren (Swipe), sonst weiterspielen. Wie oft der Report fehlte, zeigt hinterher die Report-Spalte von `run_report.mjs` für jede Anfrage, auch für weggeswipte Antworten (0 = kein Report). Ungültige Reports stehen mit Grund im Event-Export (`report.missing`).
+**In jedem Zug:** Hat der Erzähler keinen gültigen Report geschrieben, fordert die Engine ihn im Hintergrund nach. Über der Antwort steht erst `NO FACT REPORT: asking for it separately, the HUD follows in a moment.`, dann:
+- `REPORT RECOVERED: … (12.3 s)`: Die Nachforderung hat den Report geliefert. Er zählt wie der des Erzählers, das HUD folgt.
+- `NO FACT REPORT, and the separate request brought none …` (oder `… came too late`): Auch die Nachforderung brachte keinen Report, oder er kam erst nach der nächsten Nachricht. Was diese Antwort erzählt, kennt die Engine dann nicht. Bei Ortswechsel, Quest, Kauf oder Kampfbeginn neu generieren (Swipe), sonst weiterspielen.
+
+Mit der nächsten Nachricht nicht warten müssen: Sie wartet selbst auf die Nachforderung (höchstens 60 s).
+
+Wie oft der Report fehlte, zeigt hinterher die Report-Spalte von `run_report.mjs` für jede Anfrage, auch für weggeswipte Antworten (0 = kein Report). Die Nachforderungen stehen dort als eigene `[Report]`-Zeilen. Im Event-Export stehen fehlende und ungültige Reports als `report.missing`, Nachforderungen als `report.requested` (mit Erfolg und Dauer).
 
 | Phase | Was | Worauf achten |
 |---|---|---|
@@ -80,6 +87,7 @@ Das Werkzeug ordnet jede Anfrage über die Spielernachricht ihrem Zug zu und zei
   - Nach der Megumin-Änderung müssen Dossier, NPC-Bank und beide Tracker-Spalten 0 sein. Steht dort etwas, ist die Checkliste unvollständig umgesetzt.
 - **Output je Antwort:** Reasoning, Prosa, Report, Tracker. Tracker muss 0 sein.
 - **Dauer je Antwort**, aus der Chat-Datei, mit Mittelwert und Median.
+- **Report-Nachforderungen** als `[Report]`-Zeilen: Prompt, Output, Dauer. Die Dauer kommt aus dem Record der Antwort. Sie haben eine eigene Mittelwertzeile und zählen nicht zu den Erzähler-Antworten.
 
 **Vergleichswerte Diagnoselauf** (Qwen3.8-27B, Reasoning low, Megumin nach Checkliste, nur Erstellungsmodus):
 - Prompt 10.299–11.769 Token;
@@ -93,6 +101,12 @@ Das Reasoning ist der größte Hebel: 100 Token Reasoning kosten ≈ 5 s.
 - Output im Mittel 538 Token (Reasoning 62, Prosa 413, Report 63, Tracker 0);
 - Dauer Median 32,5 s; Dauer = 2,4 s + 61,7 s je 1.000 Output-Token (≈ 16 Token/s);
 - Fakten-Report in 3 von 9 Story-Antworten. Ein Report mit Inhalt kostete 172–225 Token, also ≈ 11–14 s; ein leerer Report `{}` kostet fast nichts. Kommen die Reports mit dem Nachtrag zuverlässig, steigt die mittlere Dauer entsprechend.
+
+**Vergleichswerte zweiter Test-5-Lauf** (wie der erste, Megumin mit Nachtrag, [TESTRUN_V5_2.md](TESTRUN_V5_2.md)):
+- Prompt 11.859–13.247 Token;
+- Output im Mittel 476 Token (Reasoning 68, Prosa 353, Report 54);
+- Dauer Median 38,8 s. Der Anbieter war langsamer: 10–16 Token/s;
+- Fakten-Report in 2 von 6 Antworten. Nachforderungen gab es noch nicht.
 
 **Vergleichswerte Testrun 4** (GLM, Reasoning high, Megumin mit Dossier und Blöcken):
 - Prompt 15.351–26.377 Token (Mittel 21.248);
@@ -118,5 +132,6 @@ Das Reasoning ist der größte Hebel: 100 Token Reasoning kosten ≈ 5 s.
 | Schnell genug und konsistent | V3 steht, nur noch Feinschliff |
 | Zu langsam | Nächster Kandidat ist die Megumin-Basis (≈ 5.800 Token Stil, Bannliste, Thinking) |
 | Kontrollpunkt 2 scheitert | Ursache nach Abschnitt 3 zuordnen; das Fenster nur nach einer Messung ändern |
-| Reports fehlen trotz Nachtrag oft (`NO FACT REPORT` in mehr als jeder fünften Antwort) | Server-Log und Chat-Datei mitschicken: Steht der Report im Reasoning als Plan und fehlt dann in der Antwort, oder wird er gar nicht erwähnt? Danach entscheiden, zum Beispiel ein Vergleichslauf mit Reasoning „medium“ |
+| Auch die Nachforderung bringt oft keinen Report (`the separate request brought none` in mehr als jeder zehnten Antwort) | Server-Log, Chat-Datei und Event-Export mitschicken: Was antwortet das Modell auf die Nachforderung? Danach entscheiden, zum Beispiel ein Vergleichslauf mit Reasoning „medium“ |
+| Die Nachforderung hält zu lange auf (die nächste Nachricht wartet spürbar) | Dauer der `[Report]`-Zeilen ansehen; Vergleich mit Reasoning „medium“, wo der Report öfter im ersten Anlauf kommt |
 | Kampf fühlt sich falsch an | Monster-ATK (Oger, Hirsch, Pferd) und die Schadensvarianz nach Test 5 entscheiden ([RUNTIME_V3.md §1.9](RUNTIME_V3.md#19-monster-keine-neubalance-vor-test-5)) |

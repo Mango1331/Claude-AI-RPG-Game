@@ -186,6 +186,13 @@ test('a self-introduction reaches only the NPC he speaks to', () => {
     assert.ok(knows(g.state, 'npc.brom', PC_NAME_FACT), 'addressing the whole room reaches everyone who notices him');
 });
 
+test('"Name is Alaric" introduces him too (Test 5 run 2, at the gate toll)', () => {
+    const g = inn();
+    g.input('*i hand over a copper as i say* Name is Alaric');
+    g.reply({});
+    assert.ok(knows(g.state, 'npc.mara', PC_NAME_FACT), 'the only NPC who notices him hears it');
+});
+
 test('an encounter saved before per-combatant ammunition still lets Alaric shoot (snapshot migration)', () => {
     const g = new Game(content).ranger();
     g.reply({ new: [{ ref: 'boar', kind: 'creature', species: 'boar', band: 'MEDIUM' }] });

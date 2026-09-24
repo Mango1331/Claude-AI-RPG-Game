@@ -28,7 +28,7 @@
 
 | Zug | Befund | Ursache |
 |---|---|---|
-| 5, 6, 7, 9, 10, 12 | **Kein Fakten-Report.** Die Engine blieb am Tor bzw. in der Gilde, obwohl die Geschichte in der Gilde, auf der Tannery Row und im Keller spielte. Die Quest-Annahme in Zug 9 ging verloren. Das HUD zeigte den alten Ort und die alten Personen. | Das Modell hat den Report nicht geschrieben (alle Antworten enden mit `stop`, nichts wurde abgeschnitten). Das Reasoning erwähnt ihn nur in den Zügen, in denen er auch kam; einmal steht dort „No engine mechanics triggered“, weil der Engine-Block so beginnt. In Testrun 4 hing der Report an der `<Blocks>`-Pflicht am Antwortende (13 von 15 Antworten mit Report). Diese Pflicht hat die Megumin-Checkliste entfernt, ohne einen Ersatz für den Report vorzusehen. |
+| 5, 6, 7, 9, 10, 12 | **Kein Fakten-Report.** Die Engine blieb am Tor bzw. in der Gilde, obwohl die Geschichte in der Gilde, auf der Tannery Row und im Keller spielte. Die Quest-Annahme in Zug 9 ging verloren. Das HUD zeigte den alten Ort und die alten Personen. | Das Modell hat den Report nicht geschrieben (alle Antworten enden mit `stop`, nichts wurde abgeschnitten). Das Reasoning erwähnt ihn nur in den Zügen, in denen er auch kam; einmal steht dort „No engine mechanics triggered“, weil der Engine-Block so beginnt. In Testrun 4 hatten 12 von 15 Antworten einen Report; die `<Blocks>`-Pflicht am Antwortende hat die Megumin-Checkliste entfernt, ohne Ersatz für den Report. **Nachtrag nach Lauf 2:** Diese Erklärung stimmt nicht. Mit wieder eingefügter Pflicht blieb die Quote gleich; der Unterschied zu Testrun 4 ist Reasoning high ([TESTRUN_V5_2.md](TESTRUN_V5_2.md)). |
 | 11 | **Report ungültig:** `…"combat":{"by":"cellar_rats"}},"check":{…}`. Eine überzählige `}` schloss das Objekt vor `check`. | Der Parser verwarf den ganzen Report. Damit waren Keller, aktive Quest, Rattenrudel und dessen Angriff verloren. |
 | 12 | Die Engine fragte „which target? Brissa or the woman in fish-stained apron“. Der Erzähler hielt den Engine-Block für veraltet („stale … Ignore“) und löste den Kampf selbst. | Eine Folge der beiden Befunde darüber: Der Zustand stand noch in der Gildenhalle. |
 | 8 | **„\*i give her one Silver\*“ abgelehnt** („spending coin needs the player's own decision“). | Die Zahlungserkennung kannte „pay/buy …“, aber nicht das Hergeben von Geld. |
@@ -68,5 +68,6 @@ Derselbe Lauf mit denselben Antworten (`tests/testrun_v5/regression.test.js`):
 ## 5. Offen für den nächsten Lauf
 
 - **Report-Treue** ist die wichtigste Beobachtung. Vor dem nächsten Lauf den Checklisten-Nachtrag in Megumin eintragen. Dann zählen: Wie viele Antworten zeigen `NO FACT REPORT`?
+  - Ergebnis im zweiten Lauf: 4 von 6, trotz Nachtrag. Seitdem fordert die Engine einen fehlenden Report selbst nach ([TESTRUN_V5_2.md](TESTRUN_V5_2.md)).
 - Kontrollpunkt 2 aus dem Test-5-Plan (NPC nach sechs Zügen, markanter Satz) wurde in diesem Lauf nicht erreicht.
 - Kommt wieder eine alte Antwort zurück: neu generieren. Passiert das öfter, liegt ein Antwort-Cache auf dem API-Weg nahe (Anbieter oder Proxy).

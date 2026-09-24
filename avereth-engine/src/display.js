@@ -32,9 +32,15 @@ export function turnPanel(state, content, narratorCheck = null, reply = null) {
     if (reply?.opened && reply.state) lines.push(...openedLines(reply.state, content, reply.opened));
     // Test 5 run: six replies without a report left place, people and the quest behind the story, unseen by the player
     // (never the tag itself in display text: the streaming regex hides everything from "<avereth>" on, the HUD included)
+    // Test 5 run 2: the missing report is asked for separately (host.js reportRequest) while the player reads
+    const secs = reply?.recovery?.ms ? ` (${(reply.recovery.ms / 1000).toFixed(1)} s)` : '';
     if (reply && reply.report_error) {
         const why = reply.report_error === 'no <avereth> report' ? '' : ` (${String(reply.report_error).replace(/[<>]/g, '')})`;
-        lines.push(sys(`NO FACT REPORT${why}: nothing this reply established was recorded, the HUD may lag behind the story. Swipe to retry, or go on: the next report may add it.`));
+        if (reply.recovery === 'pending') lines.push(sys(`NO FACT REPORT${why}: asking for it separately, the HUD follows in a moment.`));
+        else if (reply.recovery?.late) lines.push(sys(`NO FACT REPORT${why}, and the separate request came too late${secs}: the next turn had started without it. Nothing this reply established was recorded; the next report may add it.`));
+        else lines.push(sys(`NO FACT REPORT${why}${reply.recovery?.failed ? `, and the separate request brought none${secs}` : ''}: nothing this reply established was recorded, the HUD may lag behind the story. Swipe to retry, or go on: the next report may add it.`));
+    } else if (reply?.recovery?.from) {
+        lines.push(sys(`REPORT RECOVERED: the reply had no fact report, a separate request supplied it${secs}.`));
     }
     return lines.join('\n');
 }

@@ -7,7 +7,8 @@
 // message text. It shows only what the player may know: no NPC attitudes, agendas, secrets or hidden numbers.
 import { deriveCharacter } from './derived.js';
 import { formatCoin } from './economy.js';
-import { entityLabel, statusOf, truth, currentFacts, propText } from './knowledge.js';
+import { playerLabel, statusOf, truth, currentFacts, propText } from './knowledge.js';
+import { targetLabel } from './combat.js';
 import { formatClock, itemLabel } from './util.js';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -39,7 +40,7 @@ export function characterRows(state, content) {
     const equip = Object.values(s.equipment || {}).map((r) => (typeof r === 'string' ? content.items.get(r)?.name || r : r.name));
     const inv = Object.entries(s.inventory || {}).map(([k, q]) => `${itemLabel(state, content, k)}${q > 1 ? ` ×${q}` : ''}`);
     const quests = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered')
-        .map((q) => `${q.title} (${[q.status, q.rank, q.giver ? entityLabel(state, q.giver) : null, q.reward ? `reward ${q.reward}` : null].filter(Boolean).join(' · ')})`);
+        .map((q) => `${q.title} (${[q.status, q.rank, q.giver ? playerLabel(state, q.giver) : null, q.reward ? `reward ${q.reward}` : null].filter(Boolean).join(' · ')})`);
     const fx = state.encounter?.combatants?.pc?.current?.effects || [];
     return [
         ['Level', `${s.level} ${cls} · Power Rank ${dv.rank} · Guild Rank ${guildRankOf(state) || '— (not registered)'}${e.status === 'dead' ? ' · DEAD' : ''}`],
@@ -67,6 +68,8 @@ export function worldRows(state, content) {
     const weather = truth(state, state.scene.location, 'weather')[0];
     if (weather) rows.push(['Weather', weather.o]);
     const enc = state.encounter;
+    // in a fight everyone by the target label the combat panel shows (Cellar Rat A), else as the player knows them
+    const label = (id) => targetLabel(state, id, (x) => playerLabel(state, x));
     const present = state.scene.present.filter((id) => id !== 'pc' && state.entities[id]).map((id) => {
         const e = state.entities[id];
         const c = enc?.combatants?.[id];
@@ -74,14 +77,14 @@ export function worldRows(state, content) {
         const band = c?.current?.band || state.scene.positions[id]?.band;
         const cover = c?.current?.cover || state.scene.positions[id]?.cover;
         const bits = [role, statusOf(state, id) === 'dead' ? 'dead' : c ? `HP ${c.current.hp}/${c.fixed.max_hp}` : null, band ? `${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : null].filter(Boolean);
-        return `${entityLabel(state, id)}${bits.length ? ` (${bits.join(', ')})` : ''}`;
+        return `${label(id)}${bits.length ? ` (${bits.join(', ')})` : ''}`;
     });
     rows.push(['Present', list(present, 'nobody besides Alaric')]);
     if (enc) {
-        const current = enc.round === 0 ? 'starting' : `Round ${enc.round}, ${entityLabel(state, enc.current)} to act`;
-        rows.push(['Combat', `${current} · Turn order ${enc.order.map((id) => entityLabel(state, id)).join(' › ')}`]);
+        const current = enc.round === 0 ? 'starting' : `Round ${enc.round}, ${label(enc.current)} to act`;
+        rows.push(['Combat', `${current} · Turn order ${enc.order.map(label).join(' › ')}`]);
     } else if ((state.pending_combat || []).length) {
-        rows.push(['Combat', `${state.pending_combat.map((p) => entityLabel(state, p.by)).join(', ')} committed to attack`]);
+        rows.push(['Combat', `${state.pending_combat.map((p) => label(p.by)).join(', ')} committed to attack`]);
     }
     const quests = Object.values(state.quests).filter((q) => q.status === 'active').map((q) => q.title);
     if (quests.length) rows.push(['Active quests', list(quests)]);

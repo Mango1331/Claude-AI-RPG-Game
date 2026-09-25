@@ -18,8 +18,9 @@ import { parseIntent } from './intent.js';
 import { runCommands, creationPanel } from './commands.js';
 import { stealthEvents } from './checks.js';
 import { extractReport, reportToEvents } from './delta.js';
-import { truth, knows, perceivers, entityLabel, setFactEvents, PC_NAME_FACT, PC_LOOK_FACT } from './knowledge.js';
+import { truth, knows, perceivers, entityLabel, playerLabel, setFactEvents, PC_NAME_FACT, PC_LOOK_FACT } from './knowledge.js';
 import { buildContext } from './context.js';
+import { targetQuestion } from './display.js';
 import { parseCoin } from './economy.js';
 import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks } from './util.js';
 
@@ -82,6 +83,12 @@ export function playerTurn(state, content, input, { msg = null } = {}) {
         const r = runCommands(s, content, text);
         for (const e of r.events) emit(e);
         return { events, outcome: null, command: { panels: r.panels, llm: r.llm }, intent, situations: [], state: s };
+    }
+    // in a fight, an attack whose target is unclear is the engine's question, not a story turn: nothing resolves, is
+    // rolled or spent, and the narrator is not called (live run 25.09. 01:31: "which target? Brede or Osney" went to
+    // the narrator as a story turn). The System panel lists the targets by label; the fight waits for the choice.
+    if (s.encounter && s.entities.pc.status !== 'dead' && (intent.kind === 'ambiguous_target' || intent.kind === 'no_target')) {
+        return { events, outcome: null, command: { panels: [targetQuestion(s, content, intent)], llm: null }, intent, situations: [], state: s };
     }
     emit({ t: 'turn.begun', d: { turn: s.turn + 1, input_hash: hash32(text), input: text.slice(0, 240) } });
     const situations = [];
@@ -153,7 +160,7 @@ function pcActionOf(s, intent, text) {
         case 'flee': return { kind: 'flee' };
         case 'ambiguous_target': return {
             note: `Alaric's attack needs a target: ${intent.candidates.map(name).join(' or ')}. Nothing was spent or rolled for it; stop at his decision and let the player name one (Core #23: never choose among several targets for him).`,
-            notice: `Alaric: which target? ${intent.candidates.map(name).join(' or ')} (nothing spent, nothing rolled)`,
+            notice: `Alaric: which target? ${intent.candidates.map((id) => playerLabel(s, id)).join(' or ')} (nothing spent, nothing rolled)`,
         };
         case 'unknown_skill': return { note: `Alaric does not know ${intent.name}. Nothing was spent or rolled.`, notice: `Alaric does not know ${intent.name} (nothing spent, nothing rolled)` };
         case 'no_target': return intent.ref
@@ -219,6 +226,8 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
     const pcAction = declared?.kind ? declared : null;
     let started = null;
     let enc;
+    // the fight's own names: every combatant by its target label (Cellar Rat A), others as the engine names them
+    const named = (id) => enc?.combatants[id]?.label || entityLabel(s, id);
     if (!s.encounter) {
         const lead = trigger.actor === 'pc' ? trigger.target : trigger.actor;
         const ids = combatants(s, lead, committed);
@@ -234,18 +243,18 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
         for (const id of ids) materialise(s, content, dice, emit, id);
         enc = initEncounter(s, content, dice, trigger, ids.map((id) => ({ id, side: 'hostile' })), `enc.t${s.turn}`);
         Object.assign(enc.intents, s.pending_intents || {});
-        started = { reason: enc.ambush_reason, order: enc.order.map((id) => entityLabel(s, id)).join(' > '), ambush: enc.ambush };
+        started = { reason: enc.ambush_reason, order: enc.order.map(named).join(' > '), ambush: enc.ambush };
     } else {
         enc = clone(s.encounter);
         // fixed after the reply that reported the commitment (see openCommitted): Round 1 starts now; the player
         // already saw Initiative and Turn order, the narrator hears of the start here
-        if (enc.round === 0) started = { reason: enc.ambush_reason, order: enc.order.map((id) => entityLabel(s, id)).join(' > '), ambush: enc.ambush, previewed: true };
+        if (enc.round === 0) started = { reason: enc.ambush_reason, order: enc.order.map(named).join(' > '), ambush: enc.ambush, previewed: true };
         const joiners = committed.filter((id) => !enc.combatants[id]);
         for (const id of joiners) {
             materialise(s, content, dice, emit, id);
             addCombatant(enc, s, content, id, 'hostile', 'attack');
         }
-        if (joiners.length) started = { reason: `${joiners.map((id) => entityLabel(s, id)).join(', ')} ${joiners.length > 1 ? 'join' : 'joins'} the fight`, order: enc.order.map((id) => entityLabel(s, id)).join(' > '), joined: joiners };
+        if (joiners.length) started = { reason: `${joiners.map(named).join(', ')} ${joiners.length > 1 ? 'join' : 'joins'} the fight`, order: enc.order.map(named).join(' > '), joined: joiners };
         if (pcAction?.kind === 'attack' && pcAction.target && !enc.combatants[pcAction.target]) {
             materialise(s, content, dice, emit, pcAction.target);
             addCombatant(enc, s, content, pcAction.target, 'hostile', null);
@@ -313,6 +322,8 @@ function combatBoard(enc) {
         }),
         // before Round 1: who acts before Alaric (an Ambush Opening Action comes first)
         ...(enc.round === 0 ? { first: { ambush: enc.ambush ? enc.trigger.actor : null, before: enc.order.slice(0, enc.order.indexOf('pc')) } } : {}),
+        // the target labels, in the order the combatants entered (display.js: COMBAT TARGETS, HP and Range lines)
+        labels: Object.fromEntries(Object.values(enc.combatants).filter((c) => c.label).map((c) => [c.id, c.label])),
         pc: { mp: pc.current.mp, max_mp: pc.fixed.max_mp, sta: pc.current.sta, max_sta: pc.fixed.max_sta, arrows: Object.values(pc.current.ammo || {}).reduce((a, n) => a + n, 0) },
     };
 }

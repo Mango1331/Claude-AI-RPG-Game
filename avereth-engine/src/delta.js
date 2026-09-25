@@ -198,6 +198,15 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     const present = new Set(state.scene.present);
     const src = { kind: 'narration', msg };
     const pcName = state.entities.pc?.name || 'Alaric';
+    // the part of a person's name the player has read or said (in this reply or his message, as written, or before)
+    const told = `${prose}\n${state.last?.input || ''}`;
+    const said = (w) => new RegExp(`(^|[^\\p{L}\\p{N}])${escapeRe(w)}($|[^\\p{L}\\p{N}])`, /^\p{Lu}/u.test(w) ? 'u' : 'iu').test(told);
+    const namePart = (name, before = '') => {
+        const had = new Set(String(before).split(' '));
+        const words = String(name).split(/\s+/).filter(Boolean);
+        const part = words.filter((w) => had.has(w) || said(w));
+        return part.length === words.length ? null : part.join(' '); // null: all of it
+    };
     const inCombat = (id) => !!(state.encounter && state.encounter.combatants[id]);
     const ent = (id) => (id ? state.entities[id] || created.get(id) : undefined);
     const entityName = (id) => ent(id)?.name || (ent(id)?.descriptors?.[0] ? `the ${ent(id).descriptors[0]}` : id);
@@ -285,6 +294,12 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         const name = n.name ? String(n.name).slice(0, 60) : kind === 'npc' ? nameFromRef(n, prose) : null;
         if (name) newRefs.set(normText(name), id);
         const entity = { id, kind, name, descriptors: desc, traits: n.traits ? String(n.traits).slice(0, 240) : '', status: 'alive', location: state.scene.location, created: at, source: src, card: {} };
+        // Test 5 run: "Sergeant Hobb" and "Wick" came in "new" a reply before the story said their names (Testrun 2:
+        // "Bram" was said five turns before "Fenn"); the player's views (combat target labels, HUD) show only the
+        // part said so far, or the look (knowledge.js playerLabel). Only a person's proper name: a creature's "name"
+        // is what it is ("cellar vermin"), and so is a lower-case one
+        const part = name && kind === 'npc' && /\p{Lu}/u.test(name) ? namePart(name) : null;
+        if (part !== null) entity.known_name = part;
         if (kind === 'creature') {
             const anchor = content.anchors.get(n.species) || anchorFor(content, [n.species, ...desc, n.traits].filter(Boolean).join(' '));
             if (!anchor) { reject(n, 'creature needs a species that maps to an F1 body-plan anchor (or kind "npc")'); continue; }
@@ -657,9 +672,32 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     // with the next player message) and NPC intents. Only an actual commitment makes a combatant: attitude or kinship
     // alone never does. The engine resolves attacks on Alaric; a fight between NPCs is narrated (a target other than
     // Alaric is never silently turned into Alaric)
+    // An attacker no report introduced (live run 25.09. 01:31: "combat":{"by":"rat pack — first rat charging toward the
+    // stairs, two more bolting along the walls, more following from the wall gaps"} and no "new"; the rats never
+    // existed and "the first one" offered the two bystanders): the reply shows the fight, so its attackers must
+    // exist. A creature named by its kind (an F1 body-plan anchor) in the head of the entry ("rat pack", before the
+    // dash) that is not in the scene yet comes in as "new" would have brought it: one entry, one combatant, a pack
+    // being one as in every earlier rat fight. A person still needs "new": a head that names one ("a hooded man
+    // riding a horse") brings nobody, a name or look in free text being no safe identity.
+    const fromCombat = new Set();
+    const attacker = (ref) => {
+        if (typeof ref !== 'string' || !ref.trim() || state.mode === 'creation') return null;
+        const look = normText(ref).split(/\s+-\s+|[,;:(]/)[0].replace(/^(?:the|a|an)\s+/, '').trim().slice(0, 40);
+        const anchor = look && !templateFor(content, look) ? anchorFor(content, look) : null;
+        if (!anchor || [...present].some((id) => !fromCombat.has(id) && ent(id)?.kind === 'creature' && ent(id).anchor === anchor.id && ent(id).status !== 'dead')) return null;
+        const id = uniqueId(state, 'mon', look, taken);
+        const entity = { id, kind: 'creature', name: null, descriptors: [look], traits: '', status: 'alive', location: state.scene.location, created: at, source: src, card: {}, species: anchor.aliases[0], anchor: anchor.id };
+        created.set(id, entity);
+        fromCombat.add(id);
+        newRefs.set(normText(ref), id);
+        events.push({ t: 'entity.created', d: { entity } }, { t: 'scene.entered', d: { id } });
+        present.add(id);
+        accepted.push(`new creature ${entity.descriptors[0]} (${id}): the attacker in "combat"`);
+        return id;
+    };
     for (const cb of commitments) {
         if (!cb || typeof cb !== 'object' || !cb.by) continue; // an empty entry ({} or {by: []}) commits nobody
-        const by = resolve(cb && cb.by);
+        const by = resolve(cb && cb.by) || attacker(cb.by);
         const target = cb && cb.target ? resolve(cb.target) : 'pc';
         if (state.mode === 'creation') reject(cb, 'no combat during Character Creation');
         else if (!person(by)) reject(cb, `combat.by must be a present NPC or creature: ${UNKNOWN}`);
@@ -703,6 +741,14 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (created.has(id)) { e.name = full; continue; }
         events.push({ t: 'entity.updated', d: { id, set: { name: full } } });
         accepted.push(`${id} is ${full}`);
+    }
+    // a name the story says now ("Sergeant Hobb says it back flat"): the player's views use it from here on
+    for (const e of Object.values(state.entities)) {
+        if (e.known_name === undefined || e.known_name === null || !e.name) continue;
+        const part = namePart(e.name, e.known_name);
+        if (part === e.known_name) continue;
+        events.push({ t: 'entity.updated', d: { id: e.id, set: { known_name: part } } });
+        accepted.push(`${e.id}: the story names ${part ?? e.name}`);
     }
     return { events, accepted, rejected, corrections };
 }

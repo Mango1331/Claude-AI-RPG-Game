@@ -92,7 +92,7 @@ test('checks show chance and roll; nothing resolved shows nothing', () => {
 test('coin, items, rest, quests and Quest XP a reply changed read like a game log (Testrun 3 request)', () => {
     const g = new Game(content).ranger();
     g.input('I look around.');
-    g.reply({ new: [{ ref: 'Mara', name: 'Mara', kind: 'npc', desc: ['fletcher'] }], quests: [{ title: 'Rats in the Cellar', status: 'offered', giver: 'Mara', level: 10, type: 'minor' }] });
+    g.reply({ new: [{ ref: 'Mara', name: 'Mara', kind: 'npc', desc: ['fletcher'] }], quests: [{ title: 'Rats in the Cellar', status: 'offered', giver: 'Mara', level: 10, type: 'minor' }] }, 'Mara the fletcher has work.');
     g.input('"Deal." *I buy three arrows from her for 6 copper.*');
     const before = g.state;
     const r = g.reply({
@@ -122,11 +122,13 @@ test('an attack the reply reported is fixed and shown before anyone acts: Initia
     const r = g.reply({ combat: { by: 'wolf' } });
     const lines = turnPanel(before, content, null, r).split('\n');
     const init = r.state.encounter.combatants['mon.wolf'].fixed.init;
-    assert.equal(lines[0], '`COMBAT START — the wolf attacks Alaric`');
-    assert.match(lines[1], new RegExp(`^\`Initiative: .*the wolf ${init}.* → Turn order: `));
-    assert.match(lines.join('\n'), /`Range: the wolf MEDIUM`/);
-    assert.match(lines.at(-2), init > 9 ? /^`Next: Round 1 — the wolf acts before Alaric`$/ : /^`Next: Round 1 — Alaric acts first`$/);
+    // the wolf by its target label for this fight: an unnamed creature, its look and a letter
+    assert.equal(lines[0], '`COMBAT START — Wolf A attacks Alaric`');
+    assert.match(lines[1], new RegExp(`^\`Initiative: .*Wolf A ${init}.* → Turn order: `));
+    assert.equal(lines[2], '`COMBAT TARGETS — Wolf A [MEDIUM]`');
+    assert.match(lines.join('\n'), /`Range: Wolf A MEDIUM`/);
+    assert.match(lines.at(-2), init > 9 ? /^`Next: Round 1 — Wolf A acts before Alaric`$/ : /^`Next: Round 1 — Alaric acts first`$/);
     // every legal attack lands (Combat V3): the choice is shown as the damage each deals to the wolf (DEF 0, variance ±10%)
-    assert.equal(lines.at(-1), '`Alaric\'s attacks vs the wolf: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`');
+    assert.equal(lines.at(-1), '`Alaric\'s attacks vs Wolf A: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`');
     assert.equal(r.state.encounter.round, 0, 'nothing resolved yet');
 });

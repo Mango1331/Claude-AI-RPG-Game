@@ -67,7 +67,7 @@ test('turn 11: a report whose root closed too early is repaired: cellar, quest, 
     assert.equal(st.scene.place, "cellar beneath Mol's drying loft, Tannery Row");
     assert.equal(Object.values(st.quests).find((q) => q.title === 'Boletus Clearing')?.status, 'active', 'taken by name in turn 9');
     assert.ok(st.encounter, 'the rats committed to attack: the fight is fixed at once');
-    assert.match(T(11).panel, /QUEST ACCEPTED — Boletus Clearing[\s\S]*COMBAT START — cellar rats attacks Alaric/);
+    assert.match(T(11).panel, /QUEST ACCEPTED — Boletus Clearing[\s\S]*COMBAT START — Cellar Rats attacks Alaric/);
 });
 
 test('turn 12: "dash at the nearest one" attacks the rats in the cellar, not the Guild clerk', () => {
@@ -75,7 +75,7 @@ test('turn 12: "dash at the nearest one" attacks the rats in the cellar, not the
     assert.doesNotMatch(T(12).panel, /Brissa|which target/);
     const mine = T(12).outcome.records.find((r) => r.actor === 'pc');
     assert.equal(mine.target, 'mon.cellar_rats');
-    assert.match(T(12).panel, /COMBAT END — cellar rats defeated/);
+    assert.match(T(12).panel, /COMBAT END — Cellar Rats defeated/);
 });
 
 test('a reply without a fact report is shown to the player, and the engine block ends with the report duty', () => {

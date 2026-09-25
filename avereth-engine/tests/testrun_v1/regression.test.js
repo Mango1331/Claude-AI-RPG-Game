@@ -109,9 +109,10 @@ test('the combat snapshot survives into the next turn (Testrun lost HP, profile 
     const state = foldChat(chat).state;
     assert.equal(state.mode, 'combat');
     const panel = runCommands(state, content, '#combat').panels[0];
-    assert.match(panel, /the trapper|npc\.trapper/i);
+    // the combat panel names him by his target label for this fight (an unnamed trapper: Trapper A)
+    assert.match(panel, /Trapper A \(hostile\)/);
     assert.match(panel, /DefeatXP 20/);
-    assert.match(panel, /Turn order: the trapper > Alaric/);
+    assert.match(panel, /Turn order: Trapper A > Alaric/);
     chat.push(msg({ is_user: true, mes: 'I shoot him again with Power Shot' }));
     const hpBefore = state.encounter.combatants['npc.trapper'].current.hp;
     const next = prepareGeneration(chat, content, { type: 'normal' });

@@ -396,7 +396,9 @@ export function narratorReply(state, content, replyText, { msg = null, stripTrac
     if (trackers && stripTrackers) corrections.push('Your last reply wrote tracker blocks (world state, character sheet, NPC dossier or update): they are retired and were removed. The engine keeps that state and shows the player its HUD; write only the story and the fact report.');
     for (const r of res.rejected) corrections.push(`Rejected from your fact report: ${r.reason}.`);
     if (!report) corrections.push(`Your previous reply had no valid <avereth> fact report (${error}). Write it right after the story text; this reply's report may also record the player's decisions from that turn (hand-overs, coin, quests), {} if nothing.`);
-    return { events, clean, report, accepted: res.accepted, rejected: res.rejected, corrections, report_error: report ? null : error, opened, state: s };
+    // attackers the report committed that the engine could not tell apart (delta.js): host.js asks for them separately
+    const attackers = res.unidentified?.length ? res.unidentified : null;
+    return { events, clean, report, accepted: res.accepted, rejected: res.rejected, corrections, report_error: report ? null : error, attackers, opened, state: s };
 }
 
 /**

@@ -95,6 +95,7 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 - **Ziele im Kampf:** Jeder Gegner hat für diesen Kampf ein festes Label, und die Zeile `COMBAT TARGETS — Cellar Rat A [ENGAGED] · Cellar Rat B [SHORT]` listet sie.
   - Ein bekannter Name ist das Label (`Brede`). Unbenannte Gegner heißen nach ihrem Aussehen mit Buchstaben. Einen Namen, den die Geschichte noch nicht gesagt hat, zeigt die Liste nicht.
   - Mit dem Label triffst du genau diesen Gegner: `*I use Quick Slash on Cellar Rat B*`. Stirbt A, bleibt B B; ein Nachzügler bekommt den nächsten Buchstaben.
+  - Mehrere Gegner sind mehrere Kämpfer. Meldet der Erzähler sie nur als Gruppe („rat pack“, „rats“), fordert die Engine sie einzeln nach (`ATTACKERS NOT IDENTIFIED YET`); ein Rudel wird nie still eine einzelne Ratte.
   - **Ein** gültiges Ziel wird automatisch gewählt. Bei mehreren antwortet im Kampf das System selbst mit der Zielliste, ohne Erzähler, Kosten oder Würfe. Umstehende sind keine Kandidaten; angreifen kannst du sie nur beim Namen.
   - Unterscheidest du Ziele („the second one“, „the other one“) und passt keines, wählt die Engine nicht für dich. „the nearest one“ nimmt den nächsten Gegner nach Entfernung; stehen zwei gleich nah, fragt das System.
 - Warten im Kampf: `I wait` / `I hold my position`.

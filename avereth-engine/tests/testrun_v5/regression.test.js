@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent, readJson } from '../helpers.js';
-import { prepareGeneration, processReply, foldChat } from '../../src/host.js';
+import { prepareGeneration, processReply, foldChat, reportRequest, applyReportAnswer } from '../../src/host.js';
 import { tolerantJson, extractReport } from '../../src/delta.js';
 import { authorization } from '../../src/intent.js';
 import { truth } from '../../src/knowledge.js';
@@ -16,6 +16,14 @@ const content = await loadContent();
 const fx = await readJson('tests/testrun_v5/fixture.json');
 const ai = (mes) => ({ is_user: false, is_system: false, mes, swipe_id: 0, swipes: [mes], swipe_info: [{ extra: {} }], extra: {} });
 const user = (mes) => ({ is_user: true, is_system: false, mes, extra: {} });
+
+// Turn 11 reported the rats as one creature, "cellar rats", and committed it. Since the live run of 25.09. a pack is
+// never one combatant: the engine asks for its individual attackers (host.js reportRequest). The run had no such
+// request; this answer is synthetic: the one rat the reply shows coming ("The nearest one doesn't run"), the others
+// "unmoving" behind it.
+const ATTACKERS = {
+    11: '<avereth>{"new":[{"ref":"lead_rat","kind":"creature","species":"rat","desc":["cat-sized cellar rat"],"band":"SHORT","cover":"partial"}],"combat":{"by":["lead_rat"]}}</avereth>',
+};
 
 function replay() {
     const chat = [ai(fx.greeting)];
@@ -32,7 +40,10 @@ function replay() {
         const gen = prepareGeneration(chat, content, { type: 'normal' });
         const outcome = chat.at(-1).extra.avereth.events.find((e) => e.t === 'outcome.recorded').d.outcome;
         chat.push(ai(t.reply));
-        const reply = processReply(chat, chat.length - 1, content).result;
+        const id = chat.length - 1;
+        const n = turns.length + 4;
+        const got = processReply(chat, id, content, { recover: !!ATTACKERS[n] });
+        const reply = got.recover ? applyReportAnswer(chat, id, content, ATTACKERS[n], { hash: reportRequest(chat, id, content).hash, ms: 9000 }).result : got.result;
         turns.push({ input: t.input, context: gen.context, outcome, reply, panel: chat.at(-1).extra.avereth.panel || '', state: foldChat(chat).state });
     }
     return { chat, creation, turns };
@@ -67,15 +78,17 @@ test('turn 11: a report whose root closed too early is repaired: cellar, quest, 
     assert.equal(st.scene.place, "cellar beneath Mol's drying loft, Tannery Row");
     assert.equal(Object.values(st.quests).find((q) => q.title === 'Boletus Clearing')?.status, 'active', 'taken by name in turn 9');
     assert.ok(st.encounter, 'the rats committed to attack: the fight is fixed at once');
-    assert.match(T(11).panel, /QUEST ACCEPTED — Boletus Clearing[\s\S]*COMBAT START — Cellar Rats attacks Alaric/);
+    // the pack ("cellar rats") is no combatant: asked for, its attacking rat came in (a synthetic answer, see ATTACKERS)
+    assert.ok(!st.entities['mon.cellar_rats'], 'no creature "cellar rats" with a single rat\'s profile');
+    assert.match(T(11).panel, /QUEST ACCEPTED — Boletus Clearing[\s\S]*COMBAT START — Cat-Sized Cellar Rat A attacks Alaric[\s\S]*ATTACKERS IDENTIFIED/);
 });
 
 test('turn 12: "dash at the nearest one" attacks the rats in the cellar, not the Guild clerk', () => {
     assert.equal(T(12).outcome.kind, 'combat');
     assert.doesNotMatch(T(12).panel, /Brissa|which target/);
     const mine = T(12).outcome.records.find((r) => r.actor === 'pc');
-    assert.equal(mine.target, 'mon.cellar_rats');
-    assert.match(T(12).panel, /COMBAT END — Cellar Rats defeated/);
+    assert.equal(mine.target, 'mon.lead_rat');
+    assert.match(T(12).panel, /COMBAT END — Cat-Sized Cellar Rat A defeated/);
 });
 
 test('a reply without a fact report is shown to the player, and the engine block ends with the report duty', () => {

@@ -11,7 +11,7 @@ import { loreKeys, reportKeys } from './context.js';
 import { extractReport, tolerantJson } from './delta.js';
 import { turnPanel } from './display.js';
 import { renderHud } from './hud.js';
-import { hash32, clone, swapWords, hasTrackerBlocks, stripTrackerBlocks } from './util.js';
+import { hash32, clone, normText, swapWords, hasTrackerBlocks, stripTrackerBlocks } from './util.js';
 
 export const KEY = 'avereth';
 export const RECORD_VERSION = 2;
@@ -155,6 +155,25 @@ const laterTurns = (chat, id) => chat.slice(id + 1).some((m) => messageEvents(m)
 // report-only request while the player reads it. The answer is applied as if the narrator had written it.
 export const REPORT_REQUEST_HEAD = "[AVERETH ENGINE — FACT REPORT REQUEST] The narrator's reply below came without its fact report. Here you are the engine's bookkeeper, not the narrator: write no story. Read the player's message and the reply, and write the fact report the reply owed, measured against the game state that follows: only what the reply itself newly established, with the keys and rules under FACT REPORT; {} if it established nothing new.";
 
+// Live run 25.09. 01:31: a reply showed several rats and reported them as one free text in "combat" ("rat pack — first
+// rat …, two more …"). Attackers the engine cannot take as individual combatants (delta.js) are asked for the same way:
+// only the attackers the reply has established, one "new" entry each, their refs in "combat"; no story.
+export const ATTACKERS_REQUEST_HEAD = "[AVERETH ENGINE — COMBAT ATTACKERS REQUEST] The narrator's reply below established attackers, but its fact report did not identify them as individual combatants. Here you are the engine's bookkeeper, not the narrator: write no story and do not continue it. Return only one <avereth> report with two keys: \"new\", one entry for each distinct attacker the reply has already established that the game state below does not list yet (kind \"creature\" with its species, or \"npc\"; a pack or swarm is its individual animals, as many as the reply shows; band = its distance to Alaric), and \"combat\" {\"by\": [...]} naming every attacker by its ref, or by its name or label if the game state already lists it.";
+
+const listOf = (x) => (x === undefined || x === null ? [] : Array.isArray(x) ? x : [x]);
+const commitmentsOf = (x) => listOf(x).flatMap((cb) => (typeof cb === 'string' ? [{ by: cb }] : cb && Array.isArray(cb.by) ? cb.by.map((by) => ({ ...cb, by })) : cb ? [cb] : []));
+
+/** The reply's own report with the attackers the request named: the unidentified entries out, the answer's "new" and "combat" in. */
+function withAttackers(report, attackers, answer) {
+    const out = new Set(attackers.map((a) => normText(a.by)));
+    const drop = new Set(attackers.map((a) => a.ref && normText(a.ref)).filter(Boolean)); // a pack the report introduced
+    return {
+        ...report,
+        new: [...listOf(report.new).filter((n) => !drop.has(normText(n?.ref))), ...listOf(answer.new)],
+        combat: [...commitmentsOf(report.combat).filter((cb) => !out.has(normText(cb?.by))), ...commitmentsOf(answer.combat)],
+    };
+}
+
 /**
  * The separate request for the missing report of reply `id`: the engine block the narrator had for this turn (without
  * lore), the player's message and the reply as the player sees it. Null when there is nothing to ask: the reply has a
@@ -165,10 +184,17 @@ export const REPORT_REQUEST_HEAD = "[AVERETH ENGINE — FACT REPORT REQUEST] The
 export function reportRequest(chat, id, content, { settings = {} } = {}) {
     const msg = chat[id];
     const r = rec(msg);
-    if (!msg || msg.is_user || msg.is_system || !r || r.system_answer || !r.report_error || r.text_hash !== hash32(msg.mes)) return null;
+    if (!msg || msg.is_user || msg.is_system || !r || r.system_answer || !(r.report_error || r.attackers?.length) || r.text_hash !== hash32(msg.mes)) return null;
     const u = lastUserIndex(chat, id);
     if (u < 0 || laterTurns(chat, id)) return null;
     const { state, context } = turnBlock(chat, u, content, { ...settings, engineLore: false });
+    if (!r.report_error) {
+        return {
+            systemPrompt: `${ATTACKERS_REQUEST_HEAD}\n\n${context.text}`,
+            prompt: `PLAYER'S MESSAGE:\n${chat[u].mes}\n\nNARRATOR'S REPLY:\n${msg.mes}\n\nIts "combat" named: ${r.attackers.map((a) => `"${a.by}"`).join(', ')}. Write the attackers now: exactly one <avereth>{"new":[…],"combat":{"by":[…]}}</avereth>, nothing else. Do not continue the story.`,
+            hash: r.text_hash,
+        };
+    }
     if (!reportKeys(state, content, { outcome: state.last.outcome }).length) return null;
     return {
         systemPrompt: `${REPORT_REQUEST_HEAD}\n\n${context.text}`,
@@ -201,7 +227,8 @@ export function reportFromAnswer(text) {
 export function applyReportAnswer(chat, id, content, answer, { hash, ms = null, hud = 'closed', stripTrackers = true } = {}) {
     const msg = chat[id];
     const r = rec(msg);
-    if (!msg || !r || !r.report_error || r.text_hash !== hash || hash32(msg.mes) !== hash) return { changed: false, error: 'the reply changed' };
+    const attackers = !r?.report_error && r?.attackers?.length ? r.attackers : null; // the reply's report stands, its attackers were asked for
+    if (!msg || !r || !(r.report_error || attackers) || r.text_hash !== hash || hash32(msg.mes) !== hash) return { changed: false, error: 'the reply changed' };
     // too late (the next turn was resolved without it): the facts stay as they were, the notice above the reply says so
     const late = laterTurns(chat, id);
     const got = late ? { report: null, error: 'too late: a later turn was resolved without it' } : answer == null ? { report: null, error: 'no answer' } : reportFromAnswer(answer);
@@ -209,21 +236,31 @@ export function applyReportAnswer(chat, id, content, answer, { hash, ms = null, 
     // the request records what the reply established; an open story thread is the narrator's to set (live run 24.09.
     // 23:23: the request made the clerk's pending questions a deadline thread "registration … fee due" that nobody
     // closed, and seven turns after the registration the clerk asked for the paid fee again)
-    const report = got.report ? { ...got.report, threads: undefined } : null;
-    const result = narratorReply(state, content, report ? `${msg.mes}\n<avereth>${JSON.stringify(report)}</avereth>` : msg.mes, { msg: id, stripTrackers });
+    // for attackers, the reply's own report stays and only its unidentified attackers are replaced by the answer's
+    const report = attackers ? (got.report ? withAttackers(r.attackers_report || {}, attackers, got.report) : r.attackers_report || null)
+        : got.report ? { ...got.report, threads: undefined } : null;
+    let result = narratorReply(state, content, report ? `${msg.mes}\n<avereth>${JSON.stringify(report)}</avereth>` : msg.mes, { msg: id, stripTrackers });
+    // an answer that still names attackers the game cannot tell apart (a pack again) is not used at all: the reply keeps
+    // its own report, and no pack of the answer's stays behind as one creature
+    const unusable = !!(attackers && got.report && result.attackers);
+    if (unusable) result = narratorReply(state, content, r.attackers_report ? `${msg.mes}\n<avereth>${JSON.stringify(r.attackers_report)}</avereth>` : msg.mes, { msg: id, stripTrackers });
     // the visible text is already clean: the note about tracker blocks the reply had written comes from its first pass
     const trackerNote = (r.corrections || []).find((c) => c.startsWith('Your last reply wrote tracker blocks'));
     if (trackerNote && !result.corrections.includes(trackerNote)) result.corrections.unshift(trackerNote);
-    const recovery = got.report ? { from: r.report_error, ms } : { from: r.report_error, failed: got.error, ...(late ? { late: true } : {}), ms };
-    const events = late ? r.events : [...result.events, { t: 'report.requested', d: { ok: !!got.report, error: r.report_error, ...(got.report ? {} : { failed: got.error }), ms } }];
+    const from = r.report_error || 'attackers';
+    // an answer that still names no individual attackers brought nothing either
+    const failed = !got.report ? got.error : unusable ? 'the answer named no attackers the game can tell apart' : null;
+    const recovery = !failed ? { from, ms } : { from, failed, ...(late ? { late: true } : {}), ms };
+    const events = late ? r.events : [...result.events, { t: 'report.requested', d: { ok: !failed, error: from, ...(failed ? { failed } : {}), ms } }];
     const panel = turnPanel(state, content, result.state.last?.check, { ...result, recovery });
     const view = renderHud(result.state, content, hud);
     showPanel(msg, panel, view);
     setRec(msg, {
         v: RECORD_VERSION, events, text_hash: hash32(msg.mes), corrections: late ? r.corrections : result.corrections, accepted: late ? r.accepted : result.accepted,
-        rejected: late ? r.rejected : result.rejected, report_error: result.report_error, recovery, panel: panel || undefined, hud: view || undefined,
+        rejected: late ? r.rejected : result.rejected, report_error: result.report_error, attackers: (late ? r.attackers : result.attackers) || undefined,
+        recovery, panel: panel || undefined, hud: view || undefined,
     });
-    return { changed: true, applied: !!got.report, error: got.error, result };
+    return { changed: true, applied: !failed, error: failed || undefined, result };
 }
 
 /**
@@ -253,13 +290,16 @@ export function processReply(chat, id, content, { seed, swaps = [], hud = 'close
     const { state } = foldChat(chat, id);
     const result = narratorReply(state, content, msg.mes, { msg: id, stripTrackers });
     msg.mes = swapWords(result.clean, swaps);
-    const pending = recover && !!result.report_error && !laterTurns(chat, id) && reportKeys(state, content, { outcome: state.last.outcome }).length > 0;
+    // a missing report, or attackers the report did not identify (delta.js): asked for separately while the player reads
+    const pending = recover && (!!result.report_error || !!result.attackers) && !laterTurns(chat, id)
+        && (!!result.attackers || reportKeys(state, content, { outcome: state.last.outcome }).length > 0);
     const panel = turnPanel(state, content, result.state.last?.check, { ...result, recovery: pending ? 'pending' : null });
     const view = renderHud(result.state, content, hud);
     showPanel(msg, panel, view);
     setRec(msg, {
         v: RECORD_VERSION, events: result.events, text_hash: hash32(msg.mes), corrections: result.corrections,
         accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, recovery: pending ? 'pending' : undefined,
+        attackers: result.attackers || undefined, attackers_report: result.attackers ? result.report : undefined,
         panel: panel || undefined, hud: view || undefined,
     });
     return { changed: true, result, recover: pending };

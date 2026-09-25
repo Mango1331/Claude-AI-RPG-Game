@@ -169,9 +169,12 @@ test('a target the player tells apart ("the second one") is never the sole-hosti
     g.input('I shoot the wolf');
     g.reply({});
     const [sta, arrows] = [g.state.entities.pc.sheet.sta, g.state.entities.pc.sheet.inventory.standard_arrow];
-    g.input('fuck *i curse and jump backwards as i aimed shot at the second one*');
-    const o = g.state.last.outcome;
-    assert.equal(o.notice, 'Alaric\'s attack needs a target: "the second one" is not in the fight (nothing spent, nothing rolled)');
-    assert.deepEqual([o.records.length, g.state.encounter.current, g.state.entities.pc.sheet.sta, g.state.entities.pc.sheet.inventory.standard_arrow], [0, 'pc', sta, arrows]);
+    // since the live run of 25.09.: the engine answers it alone, a System panel with the targets, no story turn
+    const before = g.state;
+    const t = g.input('fuck *i curse and jump backwards as i aimed shot at the second one*');
+    assert.deepEqual([t.events, t.command.llm], [[], null]);
+    assert.match(t.command.panels[0], /^\[SYSTEM \/\/ COMBAT — TARGET NEEDED\]\nAlaric's Aimed Shot: "the second one" is not a target in this fight\. Nothing was spent or rolled\.\nCOMBAT TARGETS — Wolf A \[\w+\]/);
+    assert.deepEqual(g.state, before, 'nothing resolved, rolled or spent');
+    assert.deepEqual([g.state.encounter.current, g.state.entities.pc.sheet.sta, g.state.entities.pc.sheet.inventory.standard_arrow], ['pc', sta, arrows]);
 });
 

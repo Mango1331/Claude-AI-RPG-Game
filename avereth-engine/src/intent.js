@@ -19,8 +19,9 @@ const ATTACK_RE = new RegExp(String.raw`\b(?:${ATTACK_VERBS}|${DIRECTED}|${FIRE_
 const ACTION_RE = new RegExp(String.raw`(?:${SUBJECT_LED}|\b(?:${PUT_ARROW}|${WEAPON_INTO}|${LET_FLY}|${OTHER}))`, 'i');
 const INFO_RE = /\b(?:what\s+(?:does|do|is|are|would)|how\s+(?:does|do|much|many|would)|explain|describe|tell me about|compare|difference between)\b[^.!?]{0,60}?\b(?:skill|skills)\b/i;
 const AIM_RE = /\b(?:aim|aims|aiming|take\s+aim|draw\s+(?:my\s+)?bow|nock|ready\s+(?:my\s+)?bow)\b/i;
-// creep/sneak up and get closer: the natural words for a melee Ambush (found building the Warrior's live smoke)
-const CLOSER_RE = /\b(?:approach|approaches|advance|advances|close\s+(?:in|the\s+distance)|move\s+(?:closer|toward|towards|in|up)|step\s+(?:closer|toward|towards|forward|in)|rush\s+(?:at|toward|towards|in)|run\s+(?:at|toward|towards)|(?:creep|creeps|sneak|sneaks|edge|edges|inch|slip)\s+(?:closer|up|in|toward|towards)|(?:get|gets|come|comes)\s+(?:closer|toward|towards))\b/i;
+// creep/sneak up and get closer: the natural words for a melee Ambush (found building the Warrior's live smoke);
+// "dash at" (live run 25.09. 01:31: "*i dash at the first one and basic attack it*")
+const CLOSER_RE = /\b(?:approach|approaches|advance|advances|close\s+(?:in|the\s+distance)|move\s+(?:closer|toward|towards|in|up)|step\s+(?:closer|toward|towards|forward|in)|(?:rush|dash|dashes)\s+(?:at|toward|towards|in)|run\s+(?:at|toward|towards)|(?:creep|creeps|sneak|sneaks|edge|edges|inch|slip)\s+(?:closer|up|in|toward|towards)|(?:get|gets|come|comes)\s+(?:closer|toward|towards))\b/i;
 const AWAY_RE = /\b(?:retreat|retreats|back\s+(?:away|off|up)|(?:step|steps|jump|jumps|leap|leaps|hop|hops|spring|springs|dart|darts|skip|skips|scramble|scrambles|stumble|stumbles|fall|falls|move|moves|pull|pulls|ease|eases)\s+back(?:wards?)?|backwards?|kite|kites|kiting|withdraw|withdraws|move\s+away|put\s+distance|keep\s+(?:my\s+)?distance|open\s+(?:up\s+)?(?:the\s+)?distance)\b/i;
 const FLEE_RE = /\b(?:flee|flees|run\s+away|escape|make\s+a\s+run\s+for\s+it|bolt\s+(?:away|off))\b/i;
 const STEALTH_RE = /\b(?:sneak|sneaks|sneaking|creep|creeps|creeping|hide|hides|hiding|stay\s+hidden|move\s+quietly|stalk|stalks|stalking|crouch\s+low)\b/i;
@@ -63,30 +64,49 @@ export function mentionedSkills(text, content) {
     return found;
 }
 
-/** Resolve a target among present entities by name, descriptor, species word or pronoun. */
+/**
+ * Resolve a target among present entities by target label, name, descriptor, species word or pronoun. In a fight
+ * (hostileOnly) the opponents' labels come first and decide exactly ("Quick Slash on Cellar Rat B"); every other
+ * reference and every "which one?" only looks at the opponents still fighting: people standing by are no candidates
+ * (live run 25.09. 01:31: "the first one" offered the merchant and the ratcatcher), only named they become targets.
+ */
 export function resolveTarget(text, state, content, { hostileOnly = false } = {}) {
     const t = normText(text);
-    const present = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && state.entities[id].status !== 'dead');
-    // named targets; the most specific match wins ("the grey wolf" beats another plain "wolf")
-    let hits = [];
-    let best = 0;
-    for (const id of present) {
-        const e = state.entities[id];
-        const words = [e.name, ...(e.descriptors || [])].filter(Boolean).map(normText);
-        const anchor = content.anchors.get(e.anchor || e.profile?.anchor);
-        if (anchor) words.push(...anchor.aliases);
-        const len = Math.max(0, ...words.filter((w) => w && wordRe(w).test(t)).map((w) => w.length));
-        if (!len) continue;
-        if (len > best) { best = len; hits = [id]; } else if (len === best) hits.push(id);
+    const enc = hostileOnly ? state.encounter : null;
+    if (enc) {
+        // the longest label named wins ("Cellar Rat B" over a plain "Cellar Rat"); one that is out of the fight is no target
+        const named = Object.values(enc.combatants).filter((c) => c.id !== 'pc' && c.label && wordRe(normText(c.label)).test(t));
+        const top = named.filter((c) => c.label.length === Math.max(...named.map((x) => x.label.length)));
+        const fighting = top.filter((c) => c.side === 'hostile' && !c.current.defeated && !c.current.escaped && !c.current.surrendered);
+        if (fighting.length === 1) return { id: fighting[0].id, how: 'label' };
+        if (fighting.length > 1) return { ambiguous: fighting.map((c) => c.id) };
+        if (top.length) return { none: true, ref: top[0].label };
     }
-    const valid = hostileOnly && state.encounter
-        ? present.filter((id) => state.encounter.combatants[id] && state.encounter.combatants[id].side === 'hostile' && !state.encounter.combatants[id].current.defeated)
-        : present;
+    const present = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && state.entities[id].status !== 'dead');
+    const valid = enc ? present.filter((id) => enc.combatants[id]?.side === 'hostile' && !enc.combatants[id].current.defeated && !enc.combatants[id].current.escaped && !enc.combatants[id].current.surrendered) : present;
+    // named targets; the most specific match wins ("the grey wolf" beats another plain "wolf"). In a fight the
+    // opponents first; someone standing by only when no opponent is named
+    const namedAmong = (ids) => {
+        let hits = [];
+        let best = 0;
+        for (const id of ids) {
+            const e = state.entities[id];
+            const words = [e.name, ...(e.descriptors || [])].filter(Boolean).map(normText);
+            const anchor = content.anchors.get(e.anchor || e.profile?.anchor);
+            if (anchor) words.push(...anchor.aliases);
+            const len = Math.max(0, ...words.filter((w) => w && wordRe(w).test(t)).map((w) => w.length));
+            if (!len) continue;
+            if (len > best) { best = len; hits = [id]; } else if (len === best) hits.push(id);
+        }
+        return hits;
+    };
+    let hits = namedAmong(valid);
+    if (enc && !hits.length) hits = namedAmong(present.filter((id) => !valid.includes(id)));
     if (hits.length === 1) return { id: hits[0], how: 'named' };
     // "the nearest one": the player chooses by distance, so the closest Range Band decides among the targets he named
     // ("the nearest wolf") or, in a fight, among the hostiles; equally close targets remain his choice (Core #23).
     // Outside a fight "the nearest one" could be anyone present, so it stays his choice as well.
-    const pool = hits.length > 1 ? hits : hostileOnly && state.encounter ? valid : [];
+    const pool = hits.length > 1 ? hits : enc ? valid : [];
     if (NEAREST_RE.test(t) && pool.length > 1) {
         const band = (id) => bandIndex(state.encounter?.combatants[id]?.current.band || state.scene.positions[id]?.band || 'MEDIUM');
         const near = pool.filter((id) => band(id) === Math.min(...pool.map(band)));

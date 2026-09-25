@@ -149,6 +149,29 @@ export function entityLabel(state, id) {
     return e.name || (e.descriptors && e.descriptors[0] ? `the ${e.descriptors[0]}` : id);
 }
 
+/**
+ * The look an entity is known by without its name: its first descriptor that is more than the name ("gate sergeant"
+ * for Sergeant Hobb; never the ref "hobb" or "sergeant_hobb" that spells it), or null.
+ */
+export function lookOf(e) {
+    const own = new Set(normText(e.name || '').split(' ').filter(Boolean));
+    return (e.descriptors || []).map((d) => String(d).replace(/[_.]+/g, ' ').replace(/\s*\d+$/, '').trim())
+        .find((d) => d && !normText(d).split(' ').every((w) => own.has(w))) || null;
+}
+
+/**
+ * How the player can name an entity: its name as far as the story has said it (known_name: the part said so far, ''
+ * none yet; absent = all of it), else its look (Test 5 run: "Sergeant Hobb" and "Wick" came in a report a reply
+ * before the story named them; see delta.js). Player views only: the narrator's own block keeps the name.
+ */
+export function playerLabel(state, id) {
+    const e = state.entities[id];
+    if (!e || e.known_name === undefined || e.known_name === null) return entityLabel(state, id);
+    if (e.known_name) return e.known_name;
+    const look = lookOf(e);
+    return look ? `the ${look}` : e.kind === 'creature' ? 'a creature' : 'a stranger';
+}
+
 /** Label for an entity id OR a content location/faction id (used when rendering facts). */
 export function anyLabel(state, content, id) {
     if (state.entities[id]) return entityLabel(state, id);

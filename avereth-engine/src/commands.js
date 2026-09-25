@@ -5,7 +5,7 @@ import { deriveCharacter, rawPowerText, itemOf } from './derived.js';
 import { formatCoin } from './economy.js';
 import { findSkill } from './content.js';
 import { assignStat } from './progression.js';
-import { knowledgeOf, memoriesOf, memoryText, propText, entityLabel, statusOf } from './knowledge.js';
+import { knowledgeOf, memoriesOf, memoryText, propText, playerLabel, statusOf } from './knowledge.js';
 import { applyEvent } from './state.js';
 import { skillSummary } from './context.js';
 import { clone, itemLabel, joinList, normText, formatClock, roundHalfUp } from './util.js';
@@ -211,7 +211,7 @@ function quests(state, content, arg) {
     if (arg) {
         const q = list.find((x) => normText(x.title).includes(normText(arg)));
         if (!q) return `[SYSTEM // QUEST]\nNo known Quest "${arg}".`;
-        return [`[SYSTEM // QUEST] ${q.title}`, `Status: ${q.status}${q.rank ? ` | Quest Rank: ${q.rank}` : ''}${q.giver ? ` | Issuer: ${entityLabel(state, q.giver)}` : ''}`, ...q.notes.map((n) => `- ${n}`),
+        return [`[SYSTEM // QUEST] ${q.title}`, `Status: ${q.status}${q.rank ? ` | Quest Rank: ${q.rank}` : ''}${q.giver ? ` | Issuer: ${playerLabel(state, q.giver)}` : ''}`, ...q.notes.map((n) => `- ${n}`),
             ...q.history.map((h) => `  ${formatClock(h.minute)}: ${h.status}`)].join('\n');
     }
     if (!list.length) return '[SYSTEM // QUESTS]\nNo Quests.';
@@ -241,9 +241,10 @@ function effectText(x) {
 
 function combat(state) {
     const enc = state.encounter;
-    if (!enc) return `[SYSTEM // COMBAT]\nCombat: INACTIVE${state.pending_combat?.length ? ` (PENDING: ${state.pending_combat.map((p) => entityLabel(state, p.by)).join(', ')} committed an attack; resolved on the next story message)` : ''}. A dangerous scene stays INACTIVE until a hostile commitment.`;
-    const phase = enc.round === 0 ? 'STARTING | Turn order fixed; Round 1 resolves with the next story message' : `ACTIVE | Round ${enc.round} | Current actor: ${entityLabel(state, enc.current)}`;
-    const lines = [`[SYSTEM // COMBAT] ${enc.id} | ${phase}`, `Turn order: ${enc.order.map((id) => entityLabel(state, id)).join(' > ')}`];
+    if (!enc) return `[SYSTEM // COMBAT]\nCombat: INACTIVE${state.pending_combat?.length ? ` (PENDING: ${state.pending_combat.map((p) => playerLabel(state, p.by)).join(', ')} committed an attack; resolved on the next story message)` : ''}. A dangerous scene stays INACTIVE until a hostile commitment.`;
+    const name = (id) => enc.combatants[id]?.label || playerLabel(state, id); // the target labels of the combat panel
+    const phase = enc.round === 0 ? 'STARTING | Turn order fixed; Round 1 resolves with the next story message' : `ACTIVE | Round ${enc.round} | Current actor: ${name(enc.current)}`;
+    const lines = [`[SYSTEM // COMBAT] ${enc.id} | ${phase}`, `Turn order: ${enc.order.map(name).join(' > ')}`];
     for (const c of Object.values(enc.combatants)) {
         const f = c.fixed;
         const cur = c.current;
@@ -256,7 +257,7 @@ function combat(state) {
         }
         if (cur.effects.length) lines.push(`   effects: ${cur.effects.map((x) => `${x.name} (${effectText(x)})`).join(', ')}`);
     }
-    lines.push(`Defeated: ${joinList(enc.defeated.map((id) => entityLabel(state, id)))} | Escaped: ${joinList(enc.escaped.map((id) => entityLabel(state, id)))} | Pending Combat XP: ${enc.pending_xp}`);
+    lines.push(`Defeated: ${joinList(enc.defeated.map(name))} | Escaped: ${joinList(enc.escaped.map(name))} | Pending Combat XP: ${enc.pending_xp}`);
     return lines.join('\n');
 }
 
@@ -268,7 +269,8 @@ function npc(state, content, arg) {
     const mems = memoriesOf(state, 'pc').filter((m) => (m.who || []).includes(e.id) || (m.witnesses || []).includes(e.id)).slice(-5)
         .map((m) => `- [${formatClock(m.minute).split(' (')[0]}] ${memoryText(state, m, 'pc')}`);
     const st = statusOf(state, e.id);
-    return [`[SYSTEM // NPC] ${entityLabel(state, e.id)}`, `Known as: ${[e.name, ...(e.descriptors || [])].filter(Boolean).join(', ')}${st === 'dead' ? ' | DEAD' : ''}${state.scene.present.includes(e.id) ? ' | present' : ''}`,
+    // only as much of a name as the story has said (delta.js known_name)
+    return [`[SYSTEM // NPC] ${playerLabel(state, e.id)}`, `Known as: ${[e.known_name ?? e.name, ...(e.descriptors || [])].filter(Boolean).join(', ')}${st === 'dead' ? ' | DEAD' : ''}${state.scene.present.includes(e.id) ? ' | present' : ''}`,
         rows.length ? `Alaric knows:\n${rows.join('\n')}` : 'Alaric knows nothing beyond what he has seen.', mems.length ? `Shared moments:\n${mems.join('\n')}` : ''].filter(Boolean).join('\n');
 }
 
@@ -282,7 +284,8 @@ function log(state, content, arg) {
 function audit(state, content) {
     const o = state.last.outcome;
     const lines = ['[SYSTEM // AUDIT] last resolved turn'];
-    if (o?.records) for (const r of o.records) for (const s of r.strikes || []) lines.push(`${entityLabel(state, r.actor)} ${r.skill_name || ''} -> ${entityLabel(state, s.target)}: ${s.hit ? `hit ${s.hit.chance}% d100 ${s.hit.roll} | ` : ''}${s.crit?.ambush ? 'AMBUSH CRIT | ' : ''}${s.steps ? s.steps.join(' → ') : `${s.final} damage`}`);
+    const name = (id) => o?.board?.labels?.[id] || playerLabel(state, id);
+    if (o?.records) for (const r of o.records) for (const s of r.strikes || []) lines.push(`${name(r.actor)} ${r.skill_name || ''} -> ${name(s.target)}: ${s.hit ? `hit ${s.hit.chance}% d100 ${s.hit.roll} | ` : ''}${s.crit?.ambush ? 'AMBUSH CRIT | ' : ''}${s.steps ? s.steps.join(' → ') : `${s.final} damage`}`);
     if (o?.check) lines.push(`${o.check.label}: ${o.check.chance ?? '-'}% d100 ${o.check.roll ?? '-'} ${o.check.success ? 'SUCCESS' : 'FAILURE'}`);
     if (o?.check_die) lines.push(`Check die issued: d100 ${o.check_die}${state.last.check ? ` (used for "${state.last.check.what}": ${state.last.check.chance}% -> ${state.last.check.success ? 'SUCCESS' : 'FAILURE'})` : ' (unused)'}`);
     for (const r of state.last.rejected) lines.push(`Rejected report item: ${r.reason}`);

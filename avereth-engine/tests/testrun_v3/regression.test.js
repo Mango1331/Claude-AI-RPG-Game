@@ -25,6 +25,13 @@ function replay() {
     for (const t of fx.turns) {
         chat.push({ is_user: true, is_system: false, mes: t.input, extra: {} });
         const gen = prepareGeneration(chat, content, { type: 'normal' });
+        if (gen.action === 'panels' && gen.panels[0].startsWith('[SYSTEM // COMBAT')) {
+            // since the live run of 25.09.: the engine answers it alone (a target to name in a fight), the narrator is
+            // not called and the line is hidden like a command; the reply recorded for it in Testrun 3 never happens
+            chat.at(-1).is_system = true;
+            turns.push({ input: t.input, panels: gen.panels, engineOnly: true, state: foldChat(chat).state });
+            continue;
+        }
         const outcome = chat.at(-1).extra.avereth.events.find((e) => e.t === 'outcome.recorded').d.outcome;
         chat.push(aiMsg(t.reply));
         const reply = processReply(chat, chat.length - 1, content).result;
@@ -90,42 +97,50 @@ test('a reply without a report: the next engine block asks for it right after th
     for (const n of [6, 7, 9, 13, 14]) assert.equal(T(n).reply.report_error, 'no <avereth> report', `turn ${n}`);
     assert.match(T(10).context.text, /no valid <avereth> fact report[^\n]*Write it right after the story text;/);
     assert.deepEqual(T(10).state.last.carry, [T(9).input], 'turn 9 (taking the rat quest) may still be reported with turn 10');
-    assert.deepEqual(T(11).state.last.carry, [], 'turn 10 had a report');
+    assert.deepEqual(T(12).state.last.carry, [], 'turn 10 had a report (turn 11 was the engine\'s own question)');
 });
 
 test('turn 10: the rats commit and the fight is fixed at once: Initiative, Turn order, HP and distance before anyone acts', () => {
     const enc = T(10).state.encounter;
     assert.deepEqual([enc.round, enc.log.length, enc.order], [0, 0, ['mon.cellar_rat_pack', 'mon.big_rat', 'pc']]);
+    // both are named creatures: their names are their target labels
     assert.deepEqual(T(10).panel.split('\n'), [
-        '`COMBAT START — Cellar rat pack, Big rat attack Alaric`',
-        '`Initiative: Cellar rat pack 10 · Big rat 10 · Alaric 9 → Turn order: Cellar rat pack › Big rat › Alaric`',
-        '`HP: Cellar rat pack 16/16 · Big rat 16/16 · Alaric 80/80`',
-        '`Range: Cellar rat pack ENGAGED · Big rat ENGAGED`',
+        '`COMBAT START — Cellar Rat Pack, Big Rat attack Alaric`',
+        '`Initiative: Cellar Rat Pack 10 · Big Rat 10 · Alaric 9 → Turn order: Cellar Rat Pack › Big Rat › Alaric`',
+        '`COMBAT TARGETS — Cellar Rat Pack [ENGAGED] · Big Rat [ENGAGED]`',
+        '`HP: Cellar Rat Pack 16/16 · Big Rat 16/16 · Alaric 80/80`',
+        '`Range: Cellar Rat Pack ENGAGED · Big Rat ENGAGED`',
         '`Alaric: MP 60/60 · STA 100/100 · Arrows 20`',
-        '`Next: Round 1 — Cellar rat pack › Big rat act before Alaric`',
-        '`Alaric\'s attacks vs Cellar rat pack: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`',
+        '`Next: Round 1 — Cellar Rat Pack › Big Rat act before Alaric`',
+        '`Alaric\'s attacks vs Cellar Rat Pack: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`',
     ]);
     assert.ok(chat[20].extra.display_text.startsWith(T(10).panel), 'shown above the reply that reported the attack');
 });
 
-test('turn 11: "the nearest one" between two ENGAGED rats is still Alaric\'s choice, and it is shown instead of silently dropped', () => {
-    const o = T(11).outcome;
-    assert.deepEqual(o.records.map((r) => r.actor), ['mon.cellar_rat_pack', 'mon.big_rat'], 'the faster rats act first (Core #24)');
-    assert.match(o.note, /needs a target: Cellar rat pack or Big rat/);
-    assert.match(T(11).context.text, /Alaric's attack needs a target: Cellar rat pack or Big rat\. Nothing was spent or rolled for it; stop at his decision/);
-    assert.ok(T(11).panel.includes('`Alaric: which target? Cellar rat pack or Big rat (nothing spent, nothing rolled)`'));
-    assert.doesNotMatch(T(11).panel, /COMBAT START/, 'the start was shown with turn 10');
-    assert.match(T(11).context.text, /Combat starts \(/, 'the narrator hears of the start with the first Round');
+test('turn 11: "the nearest one" between two ENGAGED rats is still Alaric\'s choice: the engine asks, nothing resolves, no narration', () => {
+    // live run 25.09. 01:31: in a fight the target question is the System's, not a story turn
+    assert.ok(T(11).engineOnly);
+    assert.deepEqual(T(11).panels, [[
+        '[SYSTEM // COMBAT — TARGET NEEDED]',
+        'Alaric\'s Basic Attack: which target — Cellar Rat Pack or Big Rat? Nothing was spent or rolled.',
+        'COMBAT TARGETS — Cellar Rat Pack [ENGAGED] · Big Rat [ENGAGED]',
+        'Name one, for example: *Basic Attack on Cellar Rat Pack*',
+    ].join('\n')]);
+    assert.deepEqual(T(11).state.encounter, T(10).state.encounter, 'the fight waits: the rats\' first Round comes with the next declaration');
+    assert.equal(T(11).state.rng.n, T(10).state.rng.n, 'nothing rolled');
 });
 
 test('turns 12-13: the named target is resolved; a combatant reported again is no error; the fight ends with its XP', () => {
-    assert.equal(T(12).outcome.records[0].target, 'mon.big_rat');
+    // Round 1 runs with turn 12 now: the faster rats first (Core #24), then Alaric's Power Shot at the Big rat
+    assert.deepEqual(T(12).outcome.records.map((r) => r.actor).slice(0, 2), ['mon.cellar_rat_pack', 'mon.big_rat']);
+    assert.match(T(12).context.text, /Combat starts \(/, 'the narrator hears of the start with the first Round');
+    assert.equal(T(12).outcome.records.find((r) => r.actor === 'pc').target, 'mon.big_rat');
     assert.deepEqual(T(12).reply.rejected, []);
-    assert.match(T(13).panel, /`COMBAT END — Big rat defeated, Cellar rat pack defeated · \+20 XP → XP 20\/100`/);
+    assert.match(T(13).panel, /`COMBAT END — Big Rat defeated, Cellar Rat Pack defeated · \+20 XP → XP 20\/100`/);
 });
 
 test('during the fight the narrator is told who is not fighting, and that nobody talks (combat silence since Testrun 4)', () => {
-    for (const n of [11, 12]) assert.match(T(n).context.text, /Combat silence: nobody talks while the fight runs — neither combatants nor Hesta Gault, Rennick \(not fighting\)/);
+    assert.match(T(12).context.text, /Combat silence: nobody talks while the fight runs — neither combatants nor Hesta Gault, Rennick \(not fighting\)/);
     // Hesta and Rennick kept talking through the rounds: the next engine block names it
     assert.match(T(13).context.text, /Combat silence broken: \d+ spoken lines in your last reply/);
 });

@@ -112,8 +112,12 @@ test('the player sees the combat in the reply: Initiative, Turn order, rolls and
     const replies = chat.filter((m) => !m.is_user && m.extra?.avereth?.panel);
     assert.ok(replies.length >= 4, 'the stealth check and the three combat turns show a System block');
     const turn9 = chat[18].extra.display_text;
-    // Initiative = floor(1.5 × AGI): Bram Fenn (AGI 6) ties Alaric at 9; the tie was resolved once without bias
-    assert.match(turn9, /^`COMBAT START`\n`Initiative: Alaric 9 · Bram Fenn 9 → Turn order: Alaric › Bram Fenn`/);
+    // Initiative = floor(1.5 × AGI): Bram Fenn (AGI 6) ties Alaric at 9; the tie was resolved once without bias. The
+    // story had said "Bram" since turn 5 but "Fenn" only in the narrator's retired tracker blocks: the player targets
+    // "Bram", and no System line tells him the family name before the story does (turn 10)
+    assert.match(turn9, /^`COMBAT START`\n`Initiative: Alaric 9 · Bram 9 → Turn order: Alaric › Bram`/);
+    assert.match(turn9, /`COMBAT TARGETS — Bram \[ENGAGED\]`/);
+    assert.ok(turn9.split('\n').filter((l) => l.startsWith('`')).every((l) => !l.includes('Fenn')), 'no System line names "Fenn"');
     for (const [i, t] of turns.entries()) {
         const panel = chat[2 * i + 2].extra.avereth.panel || ''; // the reply to turn i: greeting, then user/reply pairs
         for (const r of t.outcome.records || []) for (const s of r.strikes || []) {

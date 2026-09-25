@@ -27,6 +27,18 @@ function attitudeLabel(v) {
     return `trusting (+${v})`;
 }
 
+// in a fight the narrator names every combatant by the player's target label ("Cellar Rat B": the player writes
+// "Quick Slash on Cellar Rat B"); the combat block and the card add who that is ("Trapper A (the trapper)"), with a
+// name the story has not said yet marked as such
+const fightLabel = (state, id, labels = null) => labels?.[id] || state.encounter?.combatants?.[id]?.label || entityLabel(state, id);
+function fightName(state, id) {
+    const label = state.encounter?.combatants?.[id]?.label;
+    const natural = entityLabel(state, id);
+    if (!label || normText(label) === normText(natural)) return label || natural;
+    const known = state.entities[id]?.known_name;
+    return `${label} (${natural}${known === '' ? '; the story has not said this name yet' : known ? `; the story has said only "${known}"` : ''})`;
+}
+
 function conditionLabel(hp, max) {
     const r = hp / max;
     if (hp <= 0) return 'dead';
@@ -102,7 +114,7 @@ function npcCard(state, content, id, focusWords, { absent = false } = {}) {
     const hp = c ? `${conditionLabel(c.current.hp, c.fixed.max_hp)} (HP ${c.current.hp}/${c.fixed.max_hp})` : statusOf(state, id) === 'dead' ? 'dead' : '';
     const band = c ? c.current.band : pos?.band;
     const cover = c ? c.current.cover : pos?.cover;
-    lines.push(`• ${entityLabel(state, id)} — ${kind}${look ? `; ${look}` : ''}${cues?.voice ? `; voice: ${cues.voice}` : ''}${hp ? `; ${hp}` : ''}${band ? `; ${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : ''}${absent ? '; NOT PRESENT' : ''}`);
+    lines.push(`• ${c ? fightName(state, id) : entityLabel(state, id)} — ${kind}${look ? `; ${look}` : ''}${cues?.voice ? `; voice: ${cues.voice}` : ''}${hp ? `; ${hp}` : ''}${band ? `; ${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : ''}${absent ? '; NOT PRESENT' : ''}`);
     if (statusOf(state, id) === 'dead') return lines[0];
     const aware = absent ? null : state.scene.awareness[id];
     const unseen = !absent && state.scene.concealed.includes('pc');
@@ -146,13 +158,13 @@ function namedAbsent(state, scan) {
 export function combatBlock(state) {
     const enc = state.encounter;
     if (!enc) return '';
-    const order = enc.order.map((id) => entityLabel(state, id)).join(' > ');
-    const lines = [enc.round === 0 ? `COMBAT STARTING — Turn order fixed: ${order}; Round 1 resolves with the next player message` : `COMBAT ACTIVE — Round ${enc.round}; current actor: ${entityLabel(state, enc.current)}; Turn order: ${order}`];
+    const order = enc.order.map((id) => fightLabel(state, id)).join(' > ');
+    const lines = [enc.round === 0 ? `COMBAT STARTING — Turn order fixed: ${order}; Round 1 resolves with the next player message` : `COMBAT ACTIVE — Round ${enc.round}; current actor: ${fightLabel(state, enc.current)}; Turn order: ${order}`];
     for (const c of Object.values(enc.combatants)) {
         if (c.id === 'pc') continue;
         const st = c.current.defeated ? 'DEFEATED' : c.current.escaped ? 'ESCAPED' : c.current.surrendered ? 'SURRENDERED' : `HP ${c.current.hp}/${c.fixed.max_hp}, ${c.current.band}${c.current.cover !== 'none' ? `, ${c.current.cover} cover` : ''}`;
         const fx = c.current.effects.length ? `; effects: ${c.current.effects.map((x) => x.name).join(', ')}` : '';
-        lines.push(`  ${entityLabel(state, c.id)}: L${c.fixed.level} ${c.fixed.rank} ${c.model === 'creature' ? c.fixed.body_plan : 'core-stat'}; ${st}; locked DefeatXP ${c.fixed.defeat_xp ?? '-'}${fx}`);
+        lines.push(`  ${fightName(state, c.id)}: L${c.fixed.level} ${c.fixed.rank} ${c.model === 'creature' ? c.fixed.body_plan : 'core-stat'}; ${st}; locked DefeatXP ${c.fixed.defeat_xp ?? '-'}${fx}`);
     }
     const pcfx = enc.combatants.pc.current.effects;
     if (pcfx.length) lines.push(`  Alaric effects: ${pcfx.map((x) => x.name).join(', ')}`);
@@ -166,12 +178,12 @@ export function combatBlock(state) {
 }
 
 /** One line per resolved step, with rolls, so the narration can follow exactly (and the player can audit). */
-export function recordLine(state, r) {
-    const who = entityLabel(state, r.actor);
+export function recordLine(state, r, name = (id) => fightLabel(state, id)) {
+    const who = name(r.actor);
     if (r.kind === 'attack') {
         const parts = [];
         if (r.move) parts.push(`moves ${r.move.from} -> ${r.move.to}`);
-        const head = `${who}: ${r.skill_name}${r.opening ? ' (AMBUSH Opening Action)' : ''} -> ${entityLabel(state, r.strikes?.[0]?.target || r.target)}`;
+        const head = `${who}: ${r.skill_name}${r.opening ? ' (AMBUSH Opening Action)' : ''} -> ${name(r.strikes?.[0]?.target || r.target)}`;
         if (r.cost) parts.push(`${r.cost.resource.toUpperCase()} ${r.cost.before}->${r.cost.after}`);
         if (r.ammo) parts.push(`${r.ammo.used} arrow${r.ammo.used > 1 ? 's' : ''} fired`);
         if (r.after_move) parts.push(`then steps back: ${r.after_move.change}`);
@@ -180,7 +192,7 @@ export function recordLine(state, r) {
             if (s.hit && !s.hit.success) return `${pre}MISS (hit ${s.hit.chance}%, d100 ${s.hit.roll})`; // pre-V3 record
             const crit = s.crit?.ambush ? ' (AMBUSH CRITICAL HIT)' : '';
             const cover = s.cover === 'ignored' ? ', through cover' : s.cover ? ', cover softened it' : '';
-            return `${pre}lands${crit}${cover}: ${s.final} damage${s.absorbed ? ` (${s.absorbed} absorbed)` : ''} -> ${entityLabel(state, s.target)} HP ${s.hp_before}->${s.hp_after}${s.defeated ? ' DEFEATED (dead)' : ''}`;
+            return `${pre}lands${crit}${cover}: ${s.final} damage${s.absorbed ? ` (${s.absorbed} absorbed)` : ''} -> ${name(s.target)} HP ${s.hp_before}->${s.hp_after}${s.defeated ? ' DEFEATED (dead)' : ''}`;
         });
         return `${head}${parts.length ? ` [${parts.join('; ')}]` : ''}: ${strikes.join('; ')}${r.pending_xp_added ? ` (Pending XP +${r.pending_xp_added})` : ''}`;
     }
@@ -201,7 +213,7 @@ function outcomeBlock(state, content, outcome) {
             return lines.join('\n');
         }
         if (outcome.started) lines.push(`${outcome.started.joined ? outcome.started.reason : `Combat starts (${outcome.started.reason})`}. Turn order: ${outcome.started.order}.`);
-        for (const r of outcome.records) lines.push(`- ${recordLine(state, r)}`);
+        for (const r of outcome.records) lines.push(`- ${recordLine(state, r, (id) => fightLabel(state, id, outcome.board?.labels))}`);
         if (outcome.note) lines.push(`- ${outcome.note}`);
         if (outcome.illegal) lines.push(`- Alaric's declared action is NOT possible now: ${outcome.illegal}. Nothing was spent or rolled for it; it is still Alaric's decision.`);
         if (outcome.ended) {

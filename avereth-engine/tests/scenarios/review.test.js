@@ -240,6 +240,6 @@ test('an NPC ambusher with no attack that reaches Alaric holds its Opening Actio
     g.reply({ combat: { by: 'bandit' } });
     assert.equal(g.state.encounter.ambush, true);
     const t = g.input('I shoot the bandit');
-    assert.match(t.outcome.records[0].why, /^ambush attack impossible: the bandit has no attack that reaches Alaric from MEDIUM/);
+    assert.match(t.outcome.records[0].why, /^ambush attack impossible: Bandit A has no attack that reaches Alaric from MEDIUM/);
     assert.ok(t.outcome.records.some((r) => r.actor === 'pc' && r.kind === 'attack'), 'the fight goes on normally');
 });

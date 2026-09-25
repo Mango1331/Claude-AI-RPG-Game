@@ -35,7 +35,7 @@ test('Character HUD: every value comes from the state and changes the moment the
         items: [{ item: 'Standard Arrow', qty: 3, from: 'Serah', to: 'pc', why: 'bought' }],
         facts: [{ s: 'pc', p: 'guild_rank', o: 'novice' }],
         quests: [{ title: 'Vermin in the Malthouse Cellar', status: 'active', giver: 'Serah', level: 1, type: 'minor', rank: 'Novice' }],
-    });
+    }, 'Serah, the guild clerk, counts the coin.');
     c = char(g);
     assert.equal(c.Coin, '2 Silver 4 Copper');
     assert.equal(c.Carried, 'Small Pouch · Standard Arrow ×23');
@@ -82,7 +82,7 @@ test('World HUD: time, place, spot, people coming and going, quests, deadlines, 
         time: 40, place: 'Guild hall, front desk', new: [{ ref: 'clerk', name: 'Serah', kind: 'npc', desc: ['guild clerk'] }],
         facts: [{ s: 'Serah', p: 'occupation', o: 'Guild clerk' }, { s: 'Tidecross', p: 'weather', o: 'steady rain' }],
         quests: [{ title: 'Rats in the Salt Cellar', status: 'offered', giver: 'Serah', level: 1, type: 'minor', rank: 'Novice' }],
-    });
+    }, 'Serah, the Guild clerk, looks up from the ledger.');
     assert.equal(world(g)['Active quests'], undefined, 'an offered quest is not active yet');
     g.turn('I take the Rats in the Salt Cellar job.', {
         quests: [{ title: 'Rats in the Salt Cellar', status: 'active' }],
@@ -111,19 +111,24 @@ test('World HUD: time, place, spot, people coming and going, quests, deadlines, 
     while (g.state.encounter) { g.input('I Power Shot the wolf'); g.reply({}); }
     w = world(g);
     assert.equal(w.Combat, undefined);
-    assert.match(w.Present, /the wolf \(dead/);
+    assert.match(w.Present, /the wolf \(dead/, 'after the fight: the look again, the target label ended with it');
 });
 
 test('the HUD shows only what the player may know: no attitudes, agendas, secrets or hidden numbers of NPCs', () => {
     const g = new Game(content).ranger();
     g.turn('I greet the smith.', {
-        new: [{ ref: 'Brom', name: 'Brom', kind: 'npc', desc: ['smith'] }],
+        new: [{ ref: 'Brom', name: 'Brom', kind: 'npc', desc: ['smith'] }, { ref: 'captain', name: 'Garrick Voss', kind: 'npc', desc: ['mercenary captain'] }],
         facts: [{ s: 'Brom', p: 'member_of', o: 'the Black Hand', vis: 'secret' }, { s: 'Brom', p: 'agenda', o: 'smuggle blades past the gate' }],
         attitude: [{ who: 'Brom', delta: -30, why: 'a Guild snoop' }],
-    });
+    }, '"Brom," the smith grunts. A mercenary captain watches from the door.');
     const html = renderHud(g.state, content, 'open');
     assert.match(html, /Brom/);
     assert.doesNotMatch(html, /Black Hand|smuggle|snoop|-30|wary|hostile/);
+    // a name the report gave but the story never said (Test 5 run: "Sergeant Hobb", "Wick") is not the player's yet
+    assert.match(html, /the mercenary captain/);
+    assert.doesNotMatch(html, /Garrick|Voss/);
+    g.turn('I nod to the captain.', {}, '"Garrick Voss," the captain says.');
+    assert.match(renderHud(g.state, content, 'open'), /Garrick Voss/, 'once the story says it, it is his name');
 });
 
 test('drift: a narrator that writes wrong coin, HP, STA, quest status or position changes neither the state nor the HUD', () => {

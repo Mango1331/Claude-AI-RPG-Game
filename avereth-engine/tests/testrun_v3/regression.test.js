@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent, readJson } from '../helpers.js';
-import { prepareGeneration, processReply, foldChat } from '../../src/host.js';
+import { prepareGeneration, processReply, foldChat, reportRequest, applyReportAnswer } from '../../src/host.js';
 import { validateState } from '../../src/validate.js';
 import { truth, knows, PC_NAME_FACT } from '../../src/knowledge.js';
 
@@ -16,6 +16,15 @@ const fx = await readJson('tests/testrun_v3/fixture.json');
 function aiMsg(mes) {
     return { is_user: false, is_system: false, mes, swipe_id: 0, swipes: [mes], swipe_info: [{ extra: {} }], extra: {} };
 }
+
+// Turn 10 reported the rats as one creature, "Cellar rat pack" ("A dozen. More."), next to the Big rat, and committed
+// it. Since the live run of 25.09. a pack is never one combatant: the engine asks for its individual attackers
+// (host.js reportRequest). Testrun 3 had no such request; these answers are synthetic: three of the pack's rats, and in
+// turn 12, where the narrator committed "Cellar rat pack" again, the rats by their target labels.
+const ATTACKERS = {
+    10: '<avereth>{"new":[{"ref":"pack_rat_1","kind":"creature","species":"rat","desc":["fat cellar rat"],"band":"ENGAGED"},{"ref":"pack_rat_2","kind":"creature","species":"rat","desc":["fat cellar rat"],"band":"ENGAGED"},{"ref":"pack_rat_3","kind":"creature","species":"rat","desc":["fat cellar rat"],"band":"SHORT"}],"combat":{"by":["pack_rat_1","pack_rat_2","pack_rat_3","ratking"]}}</avereth>',
+    12: '<avereth>{"combat":{"by":["Fat Cellar Rat A","Fat Cellar Rat B"]}}</avereth>',
+};
 
 /** Replays the session like the extension does; returns what each turn produced. */
 function replay() {
@@ -34,8 +43,13 @@ function replay() {
         }
         const outcome = chat.at(-1).extra.avereth.events.find((e) => e.t === 'outcome.recorded').d.outcome;
         chat.push(aiMsg(t.reply));
-        const reply = processReply(chat, chat.length - 1, content).result;
-        turns.push({ input: t.input, context: gen.context, outcome, reply, panel: chat.at(-1).extra.avereth.panel || '', state: foldChat(chat).state });
+        const id = chat.length - 1;
+        const n = turns.length + 1;
+        const got = processReply(chat, id, content, { recover: !!ATTACKERS[n] });
+        let reply = got.result;
+        const first = chat[id].extra.avereth.panel || '';
+        if (got.recover) reply = applyReportAnswer(chat, id, content, ATTACKERS[n], { hash: reportRequest(chat, id, content).hash, ms: 9000 }).result;
+        turns.push({ input: t.input, context: gen.context, outcome, reply, first, rec: chat[id].extra.avereth, panel: chat[id].extra.avereth.panel || '', state: foldChat(chat).state });
     }
     return { chat, turns };
 }
@@ -78,11 +92,10 @@ test('moving on: the carter stays at the gate, the registrar and Drem stay in th
     // and since Testrun 4 a person the reply names with a capitalised name becomes known instead of being refused
     assert.deepEqual(present(10).filter((id) => id.startsWith('npc.')), ['npc.hesta', 'npc.rennick']);
     assert.equal(T(10).state.entities['npc.rennick'].name, 'Rennick');
-    // and so only the two at the stairs saw the rats die (Testrun 3: the carter, the registrar and Drem "witnessed" it from the city)
-    const death = truth(T(13).state, 'mon.big_rat', 'status')[0];
-    for (const id of ['npc.carter_muller', 'npc.odile_ferran', 'npc.drem']) assert.ok(!knows(T(13).state, id, death.id), id);
-    assert.ok(knows(T(13).state, 'npc.hesta', death.id));
-    assert.deepEqual(T(13).state.memories.find((m) => m.kind === 'combat').witnesses.sort(), ['npc.hesta', 'npc.rennick', 'pc']);
+    // and so only the two at the stairs saw the Big rat die (Testrun 3: the carter, the registrar and Drem "witnessed" it from the city)
+    const death = truth(T(12).state, 'mon.big_rat', 'status')[0];
+    for (const id of ['npc.carter_muller', 'npc.odile_ferran', 'npc.drem']) assert.ok(!knows(T(12).state, id, death.id), id);
+    for (const id of ['npc.hesta', 'npc.rennick']) assert.ok(knows(T(12).state, id, death.id), id);
 });
 
 test('turn 4: the gate sergeant reported as leaving is no "unknown or absent NPC" error for the same report\'s position and awareness', () => {
@@ -94,55 +107,67 @@ test('turn 6: "Im Alaric", said to the three of them, tells all three his name',
 });
 
 test('a reply without a report: the next engine block asks for it right after the story text, and may still record that turn\'s decisions', () => {
-    for (const n of [6, 7, 9, 13, 14]) assert.equal(T(n).reply.report_error, 'no <avereth> report', `turn ${n}`);
+    for (const n of [6, 7, 9, 14]) assert.equal(T(n).reply.report_error, 'no <avereth> report', `turn ${n}`);
     assert.match(T(10).context.text, /no valid <avereth> fact report[^\n]*Write it right after the story text;/);
     assert.deepEqual(T(10).state.last.carry, [T(9).input], 'turn 9 (taking the rat quest) may still be reported with turn 10');
     assert.deepEqual(T(12).state.last.carry, [], 'turn 10 had a report (turn 11 was the engine\'s own question)');
 });
 
-test('turn 10: the rats commit and the fight is fixed at once: Initiative, Turn order, HP and distance before anyone acts', () => {
+test('turn 10: the rat pack is never one combatant: the engine asks for its rats, then the fight is fixed with each of them', () => {
+    // the first pass: the Big rat commits, the pack ("Cellar rat pack", committed as "ratpack") is asked for
+    assert.match(T(10).first, /^`COMBAT START — Big Rat attacks Alaric`/);
+    assert.match(T(10).first, /`ATTACKERS NOT IDENTIFIED YET — "ratpack": asking for them separately; the fight and its target list follow in a moment\.`$/);
+    // with the answer: its three rats instead of the pack; no creature "Cellar rat pack" with a single rat's profile
+    assert.ok(!T(10).state.entities['mon.cellar_rat_pack'], 'the pack is not a creature');
     const enc = T(10).state.encounter;
-    assert.deepEqual([enc.round, enc.log.length, enc.order], [0, 0, ['mon.cellar_rat_pack', 'mon.big_rat', 'pc']]);
-    // both are named creatures: their names are their target labels
+    assert.deepEqual([enc.round, enc.log.length, Object.keys(enc.combatants).sort()], [0, 0, ['mon.big_rat', 'mon.pack_rat_1', 'mon.pack_rat_2', 'mon.pack_rat_3', 'pc']]);
     assert.deepEqual(T(10).panel.split('\n'), [
-        '`COMBAT START — Cellar Rat Pack, Big Rat attack Alaric`',
-        '`Initiative: Cellar Rat Pack 10 · Big Rat 10 · Alaric 9 → Turn order: Cellar Rat Pack › Big Rat › Alaric`',
-        '`COMBAT TARGETS — Cellar Rat Pack [ENGAGED] · Big Rat [ENGAGED]`',
-        '`HP: Cellar Rat Pack 16/16 · Big Rat 16/16 · Alaric 80/80`',
-        '`Range: Cellar Rat Pack ENGAGED · Big Rat ENGAGED`',
+        '`COMBAT START — Fat Cellar Rat A, Fat Cellar Rat B, Fat Cellar Rat C, Big Rat attack Alaric`',
+        '`Initiative: Fat Cellar Rat A 10 · Fat Cellar Rat B 10 · Fat Cellar Rat C 10 · Big Rat 10 · Alaric 9 → Turn order: Fat Cellar Rat A › Fat Cellar Rat B › Fat Cellar Rat C › Big Rat › Alaric`',
+        '`COMBAT TARGETS — Fat Cellar Rat A [ENGAGED] · Fat Cellar Rat B [ENGAGED] · Fat Cellar Rat C [SHORT] · Big Rat [ENGAGED]`',
+        '`HP: Fat Cellar Rat A 16/16 · Fat Cellar Rat B 16/16 · Fat Cellar Rat C 16/16 · Big Rat 16/16 · Alaric 80/80`',
+        '`Range: Fat Cellar Rat A ENGAGED · Fat Cellar Rat B ENGAGED · Fat Cellar Rat C SHORT · Big Rat ENGAGED`',
         '`Alaric: MP 60/60 · STA 100/100 · Arrows 20`',
-        '`Next: Round 1 — Cellar Rat Pack › Big Rat act before Alaric`',
-        '`Alaric\'s attacks vs Cellar Rat Pack: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`',
+        '`Next: Round 1 — Fat Cellar Rat A › Fat Cellar Rat B › Fat Cellar Rat C › Big Rat act before Alaric`',
+        '`Alaric\'s attacks vs Fat Cellar Rat A: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`',
+        '`ATTACKERS IDENTIFIED: a separate request named them (9.0 s).`',
     ]);
     assert.ok(chat[20].extra.display_text.startsWith(T(10).panel), 'shown above the reply that reported the attack');
 });
 
-test('turn 11: "the nearest one" between two ENGAGED rats is still Alaric\'s choice: the engine asks, nothing resolves, no narration', () => {
+test('turn 11: "the nearest one" among the ENGAGED rats is still Alaric\'s choice: the engine asks, nothing resolves, no narration', () => {
     // live run 25.09. 01:31: in a fight the target question is the System's, not a story turn
     assert.ok(T(11).engineOnly);
     assert.deepEqual(T(11).panels, [[
         '[SYSTEM // COMBAT — TARGET NEEDED]',
-        'Alaric\'s Basic Attack: which target — Cellar Rat Pack or Big Rat? Nothing was spent or rolled.',
-        'COMBAT TARGETS — Cellar Rat Pack [ENGAGED] · Big Rat [ENGAGED]',
-        'Name one, for example: *Basic Attack on Cellar Rat Pack*',
+        'Alaric\'s Basic Attack: which target — Big Rat or Fat Cellar Rat A or Fat Cellar Rat B? Nothing was spent or rolled.',
+        'COMBAT TARGETS — Fat Cellar Rat A [ENGAGED] · Fat Cellar Rat B [ENGAGED] · Fat Cellar Rat C [SHORT] · Big Rat [ENGAGED]',
+        'Name one, for example: *Basic Attack on Fat Cellar Rat A*',
     ].join('\n')]);
     assert.deepEqual(T(11).state.encounter, T(10).state.encounter, 'the fight waits: the rats\' first Round comes with the next declaration');
     assert.equal(T(11).state.rng.n, T(10).state.rng.n, 'nothing rolled');
 });
 
-test('turns 12-13: the named target is resolved; a combatant reported again is no error; the fight ends with its XP', () => {
+test('turns 12-13: the Big rat by name; the pack named again is resolved by the labels; "the pack" is no target', () => {
     // Round 1 runs with turn 12 now: the faster rats first (Core #24), then Alaric's Power Shot at the Big rat
-    assert.deepEqual(T(12).outcome.records.map((r) => r.actor).slice(0, 2), ['mon.cellar_rat_pack', 'mon.big_rat']);
+    assert.deepEqual(T(12).outcome.records.map((r) => r.actor).slice(0, 4), ['mon.pack_rat_1', 'mon.pack_rat_2', 'mon.pack_rat_3', 'mon.big_rat']);
     assert.match(T(12).context.text, /Combat starts \(/, 'the narrator hears of the start with the first Round');
-    assert.equal(T(12).outcome.records.find((r) => r.actor === 'pc').target, 'mon.big_rat');
+    const shot = T(12).outcome.records.find((r) => r.actor === 'pc');
+    assert.deepEqual([shot.target, shot.strikes[0].defeated], ['mon.big_rat', true]);
+    // the reply committed "Cellar rat pack" again: asked for, answered with the rats' labels, who fight on
+    assert.match(T(12).first, /ATTACKERS NOT IDENTIFIED YET — "Cellar rat pack"/);
     assert.deepEqual(T(12).reply.rejected, []);
-    assert.match(T(13).panel, /`COMBAT END — Big Rat defeated, Cellar Rat Pack defeated · \+20 XP → XP 20\/100`/);
+    assert.deepEqual(T(12).reply.accepted, ['mon.pack_rat_1 fights on', 'mon.pack_rat_2 fights on']);
+    assert.match(T(12).panel, /`COMBAT TARGETS — Fat Cellar Rat A \[MEDIUM\] · Fat Cellar Rat B \[MEDIUM\]`/, 'the Big rat down, the third rat fled');
+    // "*i am at the pack and shoot*": the pack is no combatant, the engine asks which rat
+    assert.ok(T(13).engineOnly);
+    assert.match(T(13).panels[0], /^\[SYSTEM \/\/ COMBAT — TARGET NEEDED\]\nAlaric's Basic Attack: which target — Fat Cellar Rat A or Fat Cellar Rat B\?/);
 });
 
 test('during the fight the narrator is told who is not fighting, and that nobody talks (combat silence since Testrun 4)', () => {
     assert.match(T(12).context.text, /Combat silence: nobody talks while the fight runs — neither combatants nor Hesta Gault, Rennick \(not fighting\)/);
-    // Hesta and Rennick kept talking through the rounds: the next engine block names it
-    assert.match(T(13).context.text, /Combat silence broken: \d+ spoken lines in your last reply/);
+    // Hesta and Rennick kept talking through the rounds: the next engine block names it (turn 13 was the engine's question)
+    assert.match(T(14).context.text, /Combat silence broken: \d+ spoken lines in your last reply/);
 });
 
 test('coin and quests the reports changed are shown like a game log', () => {

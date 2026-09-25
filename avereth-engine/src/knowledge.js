@@ -155,7 +155,8 @@ export function entityLabel(state, id) {
  */
 export function lookOf(e) {
     const own = new Set(normText(e.name || '').split(' ').filter(Boolean));
-    return (e.descriptors || []).map((d) => String(d).replace(/[_.]+/g, ' ').replace(/\s*\d+$/, '').trim())
+    // a ref's index is no look: "rat_a", "rat_2" are a rat
+    return (e.descriptors || []).map((d) => String(d).replace(/[_.]+/g, ' ').replace(/\s*\d+$/, '').replace(/\s+[a-z]$/i, '').trim())
         .find((d) => d && !normText(d).split(' ').every((w) => own.has(w))) || null;
 }
 

@@ -6,7 +6,7 @@ import { loadContent, Game } from '../helpers.js';
 import { parseIntent } from '../../src/intent.js';
 import { turnPanel } from '../../src/display.js';
 import { worldRows, renderHud } from '../../src/hud.js';
-import { prepareGeneration, foldChat } from '../../src/host.js';
+import { prepareGeneration, processReply, foldChat, reportRequest, applyReportAnswer } from '../../src/host.js';
 import { propText } from '../../src/knowledge.js';
 import { hash32 } from '../../src/util.js';
 
@@ -165,24 +165,106 @@ test('labels are combat state only: the fight ends and they are gone; no fact, c
     assert.doesNotMatch(Object.fromEntries(worldRows(g.state, content)).Present, /Cellar Rat A/);
 });
 
-test('an attacker the report commits without "new": a creature named by its kind comes in; a person or Alaric stays refused', () => {
+// the three rats the user asked for as the request's answer (docs/TESTRUN_V7.md)
+const RATS = '<avereth>{"new":[{"ref":"rat_a","kind":"creature","species":"rat","band":"ENGAGED"},{"ref":"rat_b","kind":"creature","species":"rat","band":"SHORT"},{"ref":"rat_c","kind":"creature","species":"rat","band":"SHORT"}],"combat":{"by":["rat_a","rat_b","rat_c"]}}</avereth>';
+
+/** The game so far as one message, then a player message and a reply as the extension handles them (report requests on). */
+function hostTurn(g, input, reply, answer) {
+    const chat = [{ is_user: false, is_system: false, mes: 'start', swipe_id: 0, swipes: ['start'], swipe_info: [{ extra: {} }], extra: { avereth: { v: 2, events: g.log, text_hash: hash32('start') } } }];
+    chat.push({ is_user: true, is_system: false, mes: input, extra: {} });
+    prepareGeneration(chat, content, { type: 'normal' });
+    chat.push({ is_user: false, is_system: false, mes: reply, swipe_id: 0, swipes: [reply], swipe_info: [{ extra: {} }], extra: {} });
+    const got = processReply(chat, 2, content, { recover: true });
+    const first = { ...chat[2].extra.avereth };
+    if (got.recover && answer !== undefined) applyReportAnswer(chat, 2, content, answer, { hash: reportRequest(chat, 2, content).hash, ms: 5000 });
+    return { got, first, rec: chat[2].extra.avereth, state: foldChat(chat).state };
+}
+const foes = (state) => Object.values(state.encounter?.combatants || {}).filter((c) => c.id !== 'pc').map((c) => [c.id, c.label]);
+
+test('one unknown creature in "combat" still comes in at once: "a grey wolf" is Grey Wolf A, no request', () => {
     const g = warrior();
     g.input('I walk into the woods.');
-    const r = g.reply({ combat: { by: 'wolf pack — three grey shapes loping out of the pines' } }, 'Three grey shapes lope out of the pines.');
-    assert.deepEqual(r.rejected, []);
-    const wolf = g.state.entities['mon.wolf_pack'];
-    assert.deepEqual([wolf.kind, wolf.anchor, wolf.descriptors], ['creature', 'wolf', ['wolf pack']]);
-    assert.equal(g.state.encounter.combatants['mon.wolf_pack'].label, 'Wolf Pack A');
-    // a loose name for a kind already here is no new creature
-    const again = g.reply({ combat: { by: 'the wolves' } });
-    assert.equal(Object.values(g.state.entities).filter((e) => e.anchor === 'wolf').length, 1);
-    assert.match(again.rejected.map((x) => x.reason).join(' '), /combat\.by must be a present NPC or creature/);
-    const h = warrior();
-    h.input('I wait at the gate.');
-    const p = h.reply({ combat: [{ by: 'a hooded man with a knife' }, { by: 'a hooded man riding a horse' }, { by: 'pc' }] });
+    const r = g.reply({ combat: { by: 'a grey wolf' } }, 'A grey wolf lopes out of the pines.');
+    assert.deepEqual([r.rejected, r.attackers], [[], null]);
+    const wolf = g.state.entities['mon.grey_wolf'];
+    assert.deepEqual([wolf.kind, wolf.anchor, wolf.descriptors], ['creature', 'wolf', ['grey wolf']]);
+    assert.deepEqual(foes(g.state), [['mon.grey_wolf', 'Grey Wolf A']]);
+});
+
+test('a group in "combat" is never one creature: "rat pack — …", "rats", "three cellar rats", one text twice, a pack the report introduces', () => {
+    for (const combat of [{ by: 'rat pack — first rat charging toward the stairs, two more bolting along the walls' }, { by: 'rats' }, { by: 'three cellar rats' }, { by: ['rat', 'rat'] }]) {
+        const g = warrior();
+        g.input('I go down into the cellar.');
+        const r = g.reply({ combat });
+        const t = JSON.stringify(combat);
+        assert.equal(g.state.encounter, null, t);
+        assert.ok(!Object.values(g.state.entities).some((e) => e.kind === 'creature'), `${t}: no creature with a single rat's profile`);
+        assert.equal(r.attackers.length, 1, t);
+        assert.match(r.rejected.map((x) => x.reason).join(' '), /names no attacker the game can tell apart: introduce each attacker as its own "new" entry/, t);
+    }
+    // Testrun 3 "Cellar rat pack", Test 5 "cellar rats": a pack the report introduces itself and commits
+    for (const name of ['Cellar rat pack', 'cellar rats']) {
+        const g = warrior();
+        g.input('I go down into the cellar.');
+        const r = g.reply({ new: [{ ref: 'pack', kind: 'creature', name, species: 'rat', band: 'SHORT' }], combat: { by: 'pack' } });
+        assert.equal(g.state.encounter, null, name);
+        assert.deepEqual(r.attackers, [{ by: 'pack', ref: 'pack' }], name);
+        assert.match(r.rejected.map((x) => x.reason).join(' '), /combat\.by "pack" is a group/, name);
+    }
+    // a pack leader, a Big rat and an indexed ref are one creature each
+    const g = warrior();
+    g.input('I go down into the cellar.');
+    g.reply({ new: [{ ref: 'pack_leader', kind: 'creature', species: 'wolf', band: 'SHORT' }, { ref: 'big', kind: 'creature', name: 'Big rat', species: 'rat', band: 'SHORT' }, { ref: 'rat_2', kind: 'creature', species: 'rat', band: 'SHORT' }], combat: { by: ['pack_leader', 'big', 'rat_2'] } });
+    assert.deepEqual(foes(g.state), [['mon.pack_leader', 'Pack Leader A'], ['mon.big_rat', 'Big Rat'], ['mon.rat_2', 'Rat A']]);
+});
+
+test('the host asks for the group\'s attackers: the answer brings Rat A, Rat B, Rat C; meanwhile and on failure the reply says so', () => {
+    const reply = 'The first rat clears the hole. Two more pour out behind it.\n<avereth>{"time":5,"combat":{"by":"rat pack — first rat charging, two more behind"}}</avereth>';
+    const g = warrior();
+    const ok = hostTurn(g, 'I go down into the cellar.', reply, RATS);
+    assert.equal(ok.first.recovery, 'pending');
+    assert.match(ok.first.panel, /^`ATTACKERS NOT IDENTIFIED YET — "rat pack — first rat charging, two more behind": asking for them separately/);
+    assert.deepEqual(foes(ok.state), [['mon.rat_a', 'Rat A'], ['mon.rat_b', 'Rat B'], ['mon.rat_c', 'Rat C']]);
+    assert.deepEqual([ok.rec.recovery, ok.rec.attackers, ok.rec.rejected], [{ from: 'attackers', ms: 5000 }, undefined, []]);
+    assert.ok(ok.rec.accepted.includes('time +5 min'), 'the reply\'s own report stays');
+    assert.match(ok.rec.panel, /`COMBAT TARGETS — Rat A \[ENGAGED\] · Rat B \[SHORT\] · Rat C \[SHORT\]`[\s\S]*`ATTACKERS IDENTIFIED: a separate request named them \(5\.0 s\)\.`/);
+    // an answer that is again a pack brings nothing: no single rat, the reply says so
+    const again = hostTurn(warrior(), 'I go down into the cellar.', reply, '<avereth>{"new":[{"ref":"rats","kind":"creature","species":"rat"}],"combat":{"by":"rats"}}</avereth>');
+    assert.equal(again.state.encounter, null);
+    assert.ok(!Object.values(again.state.entities).some((e) => e.kind === 'creature'), 'the answer\'s pack is not kept as one creature');
+    assert.ok(again.rec.accepted.includes('time +5 min'), 'the reply keeps its own report');
+    assert.equal(again.rec.recovery.failed, 'the answer named no attackers the game can tell apart');
+    assert.match(again.rec.panel, /`ATTACKERS NOT IDENTIFIED — "rat pack — first rat charging, two more behind", and the separate request named none \(5\.0 s\): they are not in the fight/);
+});
+
+test('a later rat of a kind already fighting is never lost: asked for, it joins with the next free letter (A fell, the newcomer is C)', () => {
+    const g = warrior();
+    g.input('I go down into the cellar.');
+    g.reply({ new: [{ ref: 'rat_a', kind: 'creature', species: 'rat', band: 'ENGAGED' }, { ref: 'rat_b', kind: 'creature', species: 'rat', band: 'SHORT' }], combat: { by: ['rat_a', 'rat_b'] } });
+    assert.deepEqual(foes(g.state), [['mon.rat_a', 'Rat A'], ['mon.rat_b', 'Rat B']]);
+    // Rat A falls to this turn's blow; the reply brings "another rat" while Rat B still fights: B or a newcomer? the
+    // request tells (a kind already fighting is never silently one more, nor dropped)
+    const late = hostTurn(g, '*I basic attack Rat A*', 'Rat A goes down. Another rat scrabbles out of the wall.\n<avereth>{"combat":{"by":"another rat"}}</avereth>',
+        '<avereth>{"new":[{"ref":"rat_3","kind":"creature","species":"rat","band":"MEDIUM"}],"combat":{"by":["rat_3"]}}</avereth>');
+    assert.deepEqual(late.first.attackers, [{ by: 'another rat', ref: null }]);
+    assert.equal(late.first.recovery, 'pending');
+    const c = late.state.encounter.combatants;
+    assert.deepEqual([c['mon.rat_a'].current.defeated, c['mon.rat_b'].current.defeated], [true, false], 'A fell, B still fights');
+    assert.deepEqual(foes(late.state), [['mon.rat_a', 'Rat A'], ['mon.rat_b', 'Rat B'], ['mon.rat_3', 'Rat C']]);
+    // the narrator names a fighting rat by its label in a report: it resolves
+    const byLabel = g.reply({ intent: [{ who: 'Rat B', intent: 'flee' }] });
+    assert.deepEqual([byLabel.rejected, byLabel.accepted], [[], ['mon.rat_b intends flee']]);
+});
+
+test('a person or Alaric in "combat": a person is asked for like a group; Alaric is refused, nothing asked', () => {
+    const g = warrior();
+    g.input('I wait at the gate.');
+    const p = g.reply({ combat: [{ by: 'a hooded man with a knife' }, { by: 'a hooded man riding a horse' }, { by: 'pc' }] });
+    assert.deepEqual(p.attackers.map((a) => a.by), ['a hooded man with a knife', 'a hooded man riding a horse']);
     assert.equal(p.rejected.length, 3);
-    assert.equal(h.state.encounter, null);
-    assert.ok(!Object.values(h.state.entities).some((e) => e.kind === 'npc'));
+    assert.match(p.rejected[2].reason, /combat\.by must be a present NPC or creature/);
+    assert.equal(g.state.encounter, null);
+    assert.ok(!Object.values(g.state.entities).some((e) => e.kind === 'npc' || e.kind === 'creature'), 'no horse, no man');
 });
 
 test('the host: an unclear target in a fight posts the System panel, hides the line and never generates; a regenerate aborts', () => {

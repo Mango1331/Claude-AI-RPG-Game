@@ -95,6 +95,9 @@ export function makeResolver(state, newRefs, content = null, created = null) {
         if (['pc', 'alaric', 'player', 'you', 'the player'].includes(r)) return 'pc';
         const pc = state.entities.pc;
         if (pc && normText(pc.name) === r) return 'pc';
+        // a combatant by its target label ("Cellar Rat B"), as the engine block names the fight's combatants
+        const labelled = state.encounter && Object.values(state.encounter.combatants).find((c) => c.label && normText(c.label) === r);
+        if (labelled) return labelled.id;
         // names identify globally; generic descriptors ("guard", "trapper") only within the current scene/location,
         // so the gate guard of another city is never merged with this one
         const bare = r.replace(/^the /, '');
@@ -163,6 +166,37 @@ function escapeRe(s) {
     return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+// Attackers the engine can take as individual combatants (live run 25.09. 01:31, docs/TESTRUN_V7.md). A word that is
+// the plural of a creature kind ("rats", "wolves") or a collective ("pack", "swarm") makes a group; counts are never
+// read from the text.
+const GROUP_WORDS = new Set(['pack', 'swarm', 'horde', 'flock', 'herd', 'colony', 'brood', 'troop', 'mob', 'group', 'gang']);
+const wordsOf = (text) => normText(text).replace(/[_.]+/g, ' ').split(' ').filter(Boolean);
+const pluralKind = (content, w) => [...content.anchors.values()].some((a) => a.aliases.map(normText)
+    .some((x) => x !== w && (w === `${x}s` || w === `${x}es` || (x.endsWith('f') && w === `${x.slice(0, -1)}ves`))));
+
+/**
+ * A designation that names several: its last word is a collective or a creature kind in the plural ("Cellar rat pack",
+ * "cellar rats", "wolves"). "pack leader", "Big rat" and an indexed ref ("pack_rat_1", "rat_b") name one.
+ */
+function isGroup(content, text) {
+    const last = wordsOf(text).at(-1);
+    return !!last && (GROUP_WORDS.has(last) || pluralKind(content, last));
+}
+
+/**
+ * The anchor of one individual creature named in free text ("a wolf", "the big grey wolf", "another rat"): its kind is
+ * the last word, singular, with at most two words before it, no other kind and no person. Else null ("rat pack",
+ * "rats", "first rat charging toward the stairs", "a rat and a wolf", "a hooded man riding a horse").
+ */
+function oneCreature(content, text) {
+    const w = wordsOf(String(text).replace(/^\s*(?:the|a|an|another|one)\s+/i, ''));
+    const kind = w.at(-1);
+    const anchor = kind ? anchorFor(content, kind) : null;
+    if (!anchor || w.length > 3 || !anchor.aliases.map(normText).includes(kind) || isGroup(content, kind)) return null;
+    if (w.slice(0, -1).some((x) => /\d/.test(x) || anchorFor(content, x) || GROUP_WORDS.has(x)) || templateFor(content, w.join(' '))) return null;
+    return anchor;
+}
+
 /**
  * Validate a report against the current state and convert accepted items to events.
  * @param {object} [opts] msg = chat index of the reply; prose = the reply's text (names written in it)
@@ -194,6 +228,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     const newRefs = new Map();
     const taken = new Set();
     const created = new Map(); // entities introduced by this very report (usable by its other keys)
+    const groupNew = new Map(); // creatures this report introduced as a group ("Cellar rat pack"): id -> their "new" ref
     const resolve = makeResolver(state, newRefs, content, created);
     const present = new Set(state.scene.present);
     const src = { kind: 'narration', msg };
@@ -312,6 +347,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         newRefs.set(normText(n.ref), id);
         if (n.name) newRefs.set(normText(n.name), id);
         created.set(id, entity);
+        if (kind === 'creature' && isGroup(content, n.name || n.ref)) groupNew.set(id, String(n.ref));
         events.push({ t: 'entity.created', d: { entity } });
         events.push({ t: 'scene.entered', d: { id, band: bandOf(n.band), cover: coverOf(n.cover) } });
         present.add(id);
@@ -674,30 +710,42 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     // Alaric is never silently turned into Alaric)
     // An attacker no report introduced (live run 25.09. 01:31: "combat":{"by":"rat pack — first rat charging toward the
     // stairs, two more bolting along the walls, more following from the wall gaps"} and no "new"; the rats never
-    // existed and "the first one" offered the two bystanders): the reply shows the fight, so its attackers must
-    // exist. A creature named by its kind (an F1 body-plan anchor) in the head of the entry ("rat pack", before the
-    // dash) that is not in the scene yet comes in as "new" would have brought it: one entry, one combatant, a pack
-    // being one as in every earlier rat fight. A person still needs "new": a head that names one ("a hooded man
-    // riding a horse") brings nobody, a name or look in free text being no safe identity.
+    // existed and "the first one" offered the two bystanders): the reply shows the fight, so its attackers must exist.
+    // One individual creature named by its kind ("a wolf", "the big rat") that is not in the scene yet comes in as
+    // "new" would have brought it. Everything else is never one silent combatant: a group ("rat pack", "rats", the
+    // same text twice), a creature this report introduced as a pack ("Cellar rat pack", Testrun 3; "cellar rats",
+    // Test 5), a person in free text, or a kind already here (the one there, or a latecomer?). Those are left
+    // unidentified: host.js asks for each attacker separately (one "new" entry per individual, their refs in
+    // "combat"), and the reply says so until then.
     const fromCombat = new Set();
+    const unidentified = [];
     const attacker = (ref) => {
-        if (typeof ref !== 'string' || !ref.trim() || state.mode === 'creation') return null;
-        const look = normText(ref).split(/\s+-\s+|[,;:(]/)[0].replace(/^(?:the|a|an)\s+/, '').trim().slice(0, 40);
-        const anchor = look && !templateFor(content, look) ? anchorFor(content, look) : null;
+        const look = normText(ref).split(/\s+-\s+|[,;:(]/)[0].trim().slice(0, 40);
+        const anchor = oneCreature(content, look);
         if (!anchor || [...present].some((id) => !fromCombat.has(id) && ent(id)?.kind === 'creature' && ent(id).anchor === anchor.id && ent(id).status !== 'dead')) return null;
-        const id = uniqueId(state, 'mon', look, taken);
-        const entity = { id, kind: 'creature', name: null, descriptors: [look], traits: '', status: 'alive', location: state.scene.location, created: at, source: src, card: {}, species: anchor.aliases[0], anchor: anchor.id };
+        const desc = look.replace(/^(?:the|a|an|another|one)\s+/, '');
+        const id = uniqueId(state, 'mon', desc, taken);
+        const entity = { id, kind: 'creature', name: null, descriptors: [desc], traits: '', status: 'alive', location: state.scene.location, created: at, source: src, card: {}, species: anchor.aliases[0], anchor: anchor.id };
         created.set(id, entity);
         fromCombat.add(id);
         newRefs.set(normText(ref), id);
         events.push({ t: 'entity.created', d: { entity } }, { t: 'scene.entered', d: { id } });
         present.add(id);
-        accepted.push(`new creature ${entity.descriptors[0]} (${id}): the attacker in "combat"`);
+        accepted.push(`new creature ${desc} (${id}): the attacker in "combat"`);
         return id;
     };
+    const unknownTexts = commitments.filter((cb) => cb && typeof cb.by === 'string' && cb.by.trim() && !resolve(cb.by)).map((cb) => normText(cb.by));
+    const repeated = new Set(unknownTexts.filter((t, i) => unknownTexts.indexOf(t) !== i)); // one text for several attackers
     for (const cb of commitments) {
         if (!cb || typeof cb !== 'object' || !cb.by) continue; // an empty entry ({} or {by: []}) commits nobody
-        const by = resolve(cb && cb.by) || attacker(cb.by);
+        const known = resolve(cb.by);
+        const free = !known && typeof cb.by === 'string' && cb.by.trim() && state.mode !== 'creation';
+        const by = known || (free && !repeated.has(normText(cb.by)) ? attacker(cb.by) : null);
+        if ((free && !by) || groupNew.has(by)) {
+            if (!unidentified.some((u) => normText(u.by) === normText(cb.by))) unidentified.push({ by: String(cb.by).slice(0, 200), ref: groupNew.get(by) || null });
+            reject(cb, `combat.by "${String(cb.by).slice(0, 80)}" ${groupNew.has(by) ? 'is a group' : 'names no attacker the game can tell apart'}: introduce each attacker as its own "new" entry (one per individual creature or person) and name their refs in "combat"`);
+            continue;
+        }
         const target = cb && cb.target ? resolve(cb.target) : 'pc';
         if (state.mode === 'creation') reject(cb, 'no combat during Character Creation');
         else if (!person(by)) reject(cb, `combat.by must be a present NPC or creature: ${UNKNOWN}`);
@@ -750,7 +798,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         events.push({ t: 'entity.updated', d: { id: e.id, set: { known_name: part } } });
         accepted.push(`${e.id}: the story names ${part ?? e.name}`);
     }
-    return { events, accepted, rejected, corrections };
+    return { events, accepted, rejected, corrections, unidentified };
 }
 
 function bandOf(b) {

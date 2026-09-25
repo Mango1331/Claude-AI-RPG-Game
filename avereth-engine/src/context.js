@@ -5,7 +5,7 @@
 import { deriveCharacter } from './derived.js';
 import { formatCoin } from './economy.js';
 import {
-    knowledgeOf, memoriesOf, memoryText, entityLabel, anyLabel, propText, currentFacts, statusOf, pcIdentityFor, truth,
+    knowledgeOf, memoriesOf, memoryText, entityLabel, anyLabel, propText, currentFacts, statusOf, pcIdentityFor, truth, lookOf,
     isMeaningful, PC_NAME_FACT, PC_LOOK_FACT,
 } from './knowledge.js';
 import { rank, pack, Bm25 } from './retrieval.js';
@@ -33,7 +33,8 @@ function attitudeLabel(v) {
 const fightLabel = (state, id, labels = null) => labels?.[id] || state.encounter?.combatants?.[id]?.label || entityLabel(state, id);
 function fightName(state, id) {
     const label = state.encounter?.combatants?.[id]?.label;
-    const natural = entityLabel(state, id);
+    const e = state.entities[id];
+    const natural = !e?.name && lookOf(e || {}) ? `the ${lookOf(e)}` : entityLabel(state, id); // "the rat", never the ref "rat_a"
     if (!label || normText(label) === normText(natural)) return label || natural;
     const known = state.entities[id]?.known_name;
     return `${label} (${natural}${known === '' ? '; the story has not said this name yet' : known ? `; the story has said only "${known}"` : ''})`;

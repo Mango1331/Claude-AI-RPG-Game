@@ -1,0 +1,271 @@
+{
+ "source": "Live run 26.09.2026 23:09 (GLM-5.3-Flash, Avereth Narrator preset, lore from World Info, word swap ledger=register): the chat JSONL, the narrator replies with their reports and the report-request answers from the Chat Completion log",
+ "swaps": "ledger=register",
+ "chat": [
+  {
+   "i": 0,
+   "greeting": true,
+   "mes": "*Cool wind moves through the rough grass around Alaric Red's boots.*\r\n\r\n*The last thing that belongs to Earth is still there in memory—an old life, a world without visible mana, Classes, or this impossible second beginning. The present is different: the smell of soil and distant woodsmoke, an unfamiliar sky, and stone walls beyond the public road.*\r\n\r\n*Alaric Red is already standing on an uncultivated roadside verge outside the nearby city. Cultivated fields and fenced holdings begin farther away. No one is close enough to have witnessed the instant of arrival.*\r\n\r\n*The body is Human, healthy, and eighteen years old. Simple traveler's clothes are already being worn; a small pouch holding five silver rests at the belt. The memories are still from Earth.*\r\n\r\n*A translucent interface opens across Alaric Red's vision.*\r\n\r\n`SYSTEM INITIALIZATION COMPLETE`\r\n`Origin: Earth`\r\n`World: Avereth`\r\n`Race: Human`\r\n`Age: 18`\r\n`Level: 1 | Rank: F`\r\n\r\n`BASE STATS`\r\n`STR 5 | VIT 5 | AGI 5 | INT 5 | PER 5 | WIL 5`\r\n\r\n`Location: Public roadside verge outside Tidecross, Solmere`\r\n`Arrival Witnesses: NONE`\r\n`Starting Possessions: Simple Traveler's Clothes | Small Pouch | 5 Silver`\r\n`Local Common Language: Integrated`\r\n`Mandatory Quest: NONE`\r\n\r\n`CHARACTER CREATION — STEP 1/2`\r\n`Choose your Base Class:`\r\n\r\n`Warrior   — Favored Stats: STR / VIT`\r\n`Mage      — Favored Stats: INT / WIL`\r\n`Guardian  — Favored Stats: VIT / WIL`\r\n`Duelist   — Favored Stats: STR / AGI`\r\n`Ranger    — Favored Stats: AGI / PER`\r\n\r\n`Your chosen Class immediately applies +1 to both Favored Stats at Level 1.`\r\n`After choosing a Class, select exactly 2 Skills from that Class's Base Skill Pool.`\r\n\r\n`Reply with your Class choice.`\r\n\r\n*The System waits. Story time does not move during Character Creation.*\r\n",
+   "events": [
+    {
+     "t": "campaign.started",
+     "d": {
+      "seed": 908367984,
+      "minute": 540,
+      "entities": [
+       {
+        "id": "pc",
+        "kind": "pc",
+        "name": "Alaric",
+        "race": "Human",
+        "age": 18,
+        "origin": "Earth",
+        "descriptors": [
+         "alaric",
+         "stranger",
+         "traveler"
+        ],
+        "status": "alive",
+        "location": "loc.tidecross",
+        "sheet": {
+         "level": 1,
+         "class": null,
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 5,
+          "INT": 5,
+          "PER": 5,
+          "WIL": 5
+         },
+         "skills": {},
+         "equipment": {
+          "clothing": "simple_travelers_clothes"
+         },
+         "inventory": {
+          "small_pouch": 1
+         },
+         "coin_cp": 50,
+         "xp": 0,
+         "free_points": 0,
+         "hp": 80,
+         "mp": 60,
+         "sta": 100
+        }
+       }
+      ],
+      "location": "loc.tidecross",
+      "place": "public roadside verge outside Tidecross",
+      "facts": [
+       {
+        "id": "f.pc.name",
+        "s": "pc",
+        "p": "name",
+        "o": "Alaric",
+        "visibility": "public",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.appearance",
+        "s": "pc",
+        "p": "appearance",
+        "o": "Human, about eighteen; wears simple traveler's clothes",
+        "visibility": "public",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.origin",
+        "s": "pc",
+        "p": "origin",
+        "o": "Earth (transmigrated; memories intact)",
+        "visibility": "secret",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.arrival_witnesses",
+        "s": "pc",
+        "p": "arrival_witnesses",
+        "o": "none",
+        "visibility": "secret",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       }
+      ],
+      "knowledge": [
+       {
+        "who": "pc",
+        "about": "f.pc.name",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.appearance",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.origin",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.arrival_witnesses",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       }
+      ],
+      "campaign": "avereth",
+      "content_version": "3.0.0",
+      "engine_version": "3.0.0"
+     }
+    }
+   ]
+  },
+  {
+   "i": 1,
+   "user": true,
+   "mes": "Warrior"
+  },
+  {
+   "i": 2,
+   "system": true,
+   "mes": "```\n[SYSTEM // CHARACTER CREATION — STEP 2/2]\nCLASS SELECTED: WARRIOR — favored STR +1, VIT +1 · Basic Attack granted (P1)\nSTR 6 | VIT 6 | AGI 5 | INT 5 | PER 5 | WIL 5 | Max HP 85 | Max MP 60 | Max STA 100 | Initiative 7\nChoose exactly 2 Skills from the Warrior Base Pool (for example \"Heavy Slash + Guard\"):\n- Heavy Slash [Offensive] | Cost 7 STA | Range ENGAGED | Raw = 10 + STR × 1.50 + ATK\n- Guard [Defensive] | Cost 5 STA | Effect: until the start of the Warrior's next turn, gain temporary DEF equal to: 3 + floor(VIT × 0.50). This is an explicit temporary DEF bonus and does not alter VIT.\n- Power Strike [Offensive] | Cost 12 STA | Range ENGAGED | Raw = 16 + STR × 1.875 + ATK\n- Quick Slash [Offensive] | Cost 5 STA | Range ENGAGED | Raw = 6 + STR × 0.875 + AGI × 0.625 + ATK\n- Charge [Offensive / Utility] | Cost 8 STA | Range ENGAGED after movement (EXTRA-BAND) | Raw = 8 + STR × 1.25 + AGI × 0.375 + ATK | Effect: as part of this Skill, close 1 additional Range Band before the attack. This explicit extra shift may combine with the normal one-band Turn movement. The target must be ENGAGED when the attack resolves.\n- Deflect [Defensive] | Cost 6 STA | Effect: until the start of the Warrior's next turn, incoming damage is reduced by 25%.\nStarter Gear, equipped when Step 2 is complete: Starter Longsword [F] (ATK 6), Starter Heavy Armor [F] (DEF 6, MDEF 2).\n```"
+  },
+  {
+   "i": 3,
+   "user": true,
+   "mes": "Heavy Slash + Charge"
+  },
+  {
+   "i": 4,
+   "system": true,
+   "mes": "```\n[SYSTEM // CHARACTER CREATION COMPLETE]\nSKILLS SELECTED: Heavy Slash (P1), Charge (P1)\nSTARTER GEAR EQUIPPED: Starter Longsword [F] (ATK 6), Starter Heavy Armor [F] (DEF 6, MDEF 2)\nAlaric | Human | Level 1 | XP 0/100 | Power Rank F | Class: Warrior\nHP 85/85 | MP 60/60 | STA 100/100\nSTR 6 | VIT 6 | AGI 5 | INT 5 | PER 5 | WIL 5 | Free Stat Points 0\nATK 6 | MATK 0 | DEF 7 (base 1) | MDEF 3 (base 1) | Initiative 7 (floor(1.5 × AGI))\nActive Effects: none | Domain: NOT YET UNLOCKED\nEquipment: Simple Traveler's Clothes, Starter Longsword [F] (ATK 6), Starter Heavy Armor [F] (DEF 6, MDEF 2)\nCarried: Small Pouch | Coin 5 Silver\nThe story begins with your next message: write what Alaric does.\n```"
+  },
+  {
+   "i": 5,
+   "user": true,
+   "mes": "*i walk forward into the city ahead and look for the adventurers guild before i walk inside the guild hall*"
+  },
+  {
+   "i": 6,
+   "reply": "The road dips toward Tidecross through a gap in the fields, and the walls grow with every step — grey stone, salt-stained near the base, tall enough that carts entering the gate look like beetles crawling under a doorframe. Traffic thickens: a fish cart, two women with bundles of washing, a boy leading a mule loaded with barrels. Nobody gives the blond stranger a second look beyond the usual glance at his sword.\n\nInside the gate the noise changes. Gulls. Rope creaking somewhere. A crier calling prices on haddock by the barrel. The main street runs downhill toward docks that smell of tar and brine, and side lanes branch off into warehouse shadows.\n\nThe Guild is not hard to find. A carved wooden sign hangs from an iron bracket two streets down on the left — crossed sword and arrow beneath a shield — and the building behind it is broad, timber-fronted, with tall windows and a steady stream of muddy boots going in and out. A pair of armed men lean against the wall by the door, chatting; one nods idly as the door swings.\n\nInside, warmth and noise. A long hearth burns on the left wall. The right side is a bar counter stacked with ledgers, and behind it a broad woman with iron-grey braids sorts papers. Boards along the back wall carry pinned notices, some vellum, some scrap. A dozen or so adventurers sit at trestle tables — a woman in oiled leather fletching arrows, two men arguing over a map, a young fellow asleep on his arms.\n\nA clerk at the counter, a thin man with ink-stained fingers, looks up as Alaric approaches.\n\n\"Morning. Registering, or taking work? If it's work, I'll need to see a Guild plate first.\"\n\n<avereth>{\"time\":30,\"place\":\"Adventurers' Guild hall, Tidecross\",\"new\":[{\"ref\":\"clerk\",\"kind\":\"npc\",\"desc\":[\"guild clerk\",\"thin man\",\"ink-stained fingers\"],\"traits\":\"brisk, impersonal\",\"band\":\"ENGAGED\"},{\"ref\":\"counterwoman\",\"kind\":\"npc\",\"desc\":[\"guild staff\",\"broad woman\",\"iron-grey braids\"],\"traits\":\"behind bar counter with ledgers\",\"band\":\"SHORT\"},{\"ref\":\"fletcher\",\"kind\":\"npc\",\"desc\":[\"adventurer\",\"woman in oiled leather\"],\"traits\":\"fletching arrows at a trestle table\",\"band\":\"SHORT\"}],\"facts\":[{\"s\":\"clerk\",\"p\":\"occupation\",\"o\":\"Adventurers' Guild registration and contract clerk\"}],\"aware\":[{\"who\":\"clerk\",\"level\":\"aware\"},{\"who\":\"counterwoman\",\"level\":\"aware\"},{\"who\":\"fletcher\",\"level\":\"unaware\"}]}</avereth>"
+  },
+  {
+   "i": 7,
+   "user": true,
+   "mes": "Morning im here to Register *i say smiling politely*"
+  },
+  {
+   "i": 8,
+   "reply": "\"Ink's on the table there.\" The clerk turns a heavy register sideways and slides it across the counter, along with a quill worn down to a stub. \"Name — whatever name you mean to work under. Age. And a hand on the line confirming you've no standing feud with the Guild, the city, or the crown.\"\n\nWhile Alaric writes, he pulls a blank copper plate from a drawer and stamps it with a small hammer blow, quick and practised. \"Registration fee is two silver. Covers your plate, the first stamp, and access to the Novice board. You can leave the name field blank on the plate itself if you'd rather — plenty do — but the ledger keeps the true entry.\"\n\nDown the hall, the two men at the map table raise their voices — \"…no, the tide turns at midday, we'd be wading out…\" — and the woman fletching arrows glances over once, then back to her work.\n\nThe clerk holds out a flat palm for the coin. \"Two silver, and we're done. Quests post on the board by rank. Novice work only until your plate earns a stamp — rats, escorts, weed-cutting, that kind of thing. Questions, ask now, not after you've signed.\"",
+   "answer": "<avereth>{\"time\":3}</avereth>",
+   "ms": 6723
+  },
+  {
+   "i": 9,
+   "user": true,
+   "mes": "*i write down Alaric Red - 18 - no feud. I then push 2 silver over the counter paying the fee* thank you *i say and take the plate. I then walk to the Novice Quest Board looking at the Quests*"
+  },
+  {
+   "i": 10,
+   "reply": "The clerk takes the coins, marks the register, and stamps the copper plate with a second, cleaner blow. \"Plate's your proof. Don't lose it — replacement's another silver. Board's on the back wall. Take a listing to the counter if you mean to take it, and we'll log it under your name.\"\n\nThe Novice board holds perhaps fifteen slips of paper and a few older notices gone brown at the edges. Five sit near enough to fresh to read plainly:\n\n**RATS IN THE SALT CELLAR** — Novice. The Gull's Rest tavern, Harbor Lane. Cellar rats grown bold and big; keep out of the ale stocks. 8 silver on completion. See Keeper Dagny.\n\n**GATE ESCORT: WOOL WAGON** — Novice. Farmer Hedwin Rool needs two blades to walk his wagon from the south gate to the market square, morning of next market day. Bandits unlikely, drunks likely. 5 silver each.\n\n**WEED-CLEARING, FISH WEIRS** — Novice. Harbormaster's office. Kelp fouling the weir posts at the east shallows; cutting work, waist-deep, two days. 12 silver for the pair of hands. Bring your own knife.\n\n**LOST DOG — REWARD** — Novice. Butcher's boy's dog, brown and white, last seen by the tannery ditches. 2 silver. May bite.\n\n**STANDING: DOCK NIGHT WATCH** — Novice. Warehouse row, nights. Walk the row, report trouble, raise the watch bell. 4 silver a night, recurring. Guild logs attendance.\n\nBehind, the clerk calls out to the room at large, \"Anyone finished with the Gull's Rest slip? Dagny's asking.\" Nobody answers. The sleeping fellow doesn't move.\n\n<avereth>{\"time\":4,\"coin\":[{\"cp\":-20,\"taken_by\":\"clerk\",\"why\":\"registration fee\"}],\"learn\":[{\"who\":\"clerk\",\"s\":\"alaric_red\",\"p\":\"registered_name\",\"o\":\"Alaric Red\",\"how\":\"witnessed\"}],\"facts\":[{\"s\":\"alaric_red\",\"p\":\"guild_rank\",\"o\":\"Novice\"}],\"quests\":[{\"title\":\"Rats in the Salt Cellar\",\"status\":\"offered\",\"giver\":\"Keeper Dagny, the Gull's Rest tavern\",\"note\":\"cellar rats; posted on Novice board\",\"reward\":\"8 silver\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"},{\"title\":\"Gate Escort: Wool Wagon\",\"status\":\"offered\",\"giver\":\"Farmer Hedwin Rool\",\"note\":\"escort wagon from south gate to market square next market day\",\"reward\":\"5 silver each\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"},{\"title\":\"Weed-Clearing, Fish Weirs\",\"status\":\"offered\",\"giver\":\"Harbormaster's office\",\"note\":\"cut kelp from weir posts, two days, waist-deep\",\"reward\":\"12 silver\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"},{\"title\":\"Lost Dog\",\"status\":\"offered\",\"giver\":\"butcher's boy\",\"note\":\"brown and white dog, tannery ditches\",\"reward\":\"2 silver\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"},{\"title\":\"Dock Night Watch\",\"status\":\"offered\",\"giver\":\"Adventurers' Guild, Tidecross\",\"note\":\"recurring warehouse-row night watch\",\"reward\":\"4 silver a night\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"}]}</avereth>"
+  },
+  {
+   "i": 11,
+   "user": true,
+   "mes": "*i take the Rats in the Salt Cellar Quest and go to the front desk to register it. I then walk to the Gulls Rest ravern*"
+  },
+  {
+   "i": 12,
+   "reply": "The clerk takes the slip, copies the title into a ledger, and stamps the corner. \"Gull's Rest — down Harbor Lane, third building past the chandlery, you'll smell it before you see it. Quest's logged under Red. Report back to Dagny when it's done, and bring the slip or your plate.\" He hands the marked paper back and turns to the next customer.\n\nHarbor Lane runs steep toward the water, cobbles slick with fish gut and morning dew. The chandlery announces itself with the reek of tallow and rope, and the third building past it is a squat timber tavern with a gull carved over the door, one wing chipped. Smoke curls from the chimney; a barrel of brine sits by the step.\n\nInside is dim and mostly empty at this hour. A woman with forearms like a smith's is hauling a crate onto the bar — Keeper Dagny, presumably, grey-streaked hair tied back with string. She sets the crate down and sizes up the newcomer, gaze dropping to the copper plate in his hand.\n\n\"Guild's sent someone already, then. About time.\" She jerks a thumb toward a low door behind the bar. \"Cellar's through there. Rats have been at the grain sacks and one of the maids swears she saw one the size of her boot. You go down, you kill what's down there, and you don't crack my ale barrels doing it. Eight silver when the cellar's clean.\" She leans on the bar. \"Anything bite you down there, that's your own affair. Still eight silver.\"\n\n<avereth>{\"time\":20,\"place\":\"Gull's Rest tavern, Harbor Lane\",\"new\":[{\"ref\":\"dagny\",\"kind\":\"npc\",\"name\":\"Dagny\",\"desc\":[\"tavern keeper\",\"forearms like a smith's\",\"grey-streaked hair tied with string\"],\"traits\":\"brusque, direct\",\"band\":\"SHORT\"}],\"aware\":[{\"who\":\"dagny\",\"level\":\"aware\"}],\"learn\":[{\"who\":\"dagny\",\"s\":\"alaric_red\",\"p\":\"registered_name\",\"o\":\"Alaric Red\",\"how\":\"told\",\"from\":\"guild plate/quest slip\"}],\"quests\":[{\"title\":\"Rats in the Salt Cellar\",\"status\":\"active\",\"giver\":\"Keeper Dagny\",\"note\":\"clear cellar rats without breaking ale barrels\",\"reward\":\"8 silver\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"}]}</avereth>"
+  },
+  {
+   "i": 13,
+   "user": true,
+   "mes": "*i nod and get my sword ready. I then walk down the stairs*"
+  },
+  {
+   "i": 14,
+   "reply": "The stairs drop steep, each step worn hollow in the middle. Below, the dark smells of brine, spilled ale and grain dust, and it is colder down here by half.\n\nDagny's voice follows him down. \"Lamp's on the hook by the door if you want it. Or don't. Your eyes.\"\n\nThe cellar is low-ceilinged, barrels stacked two deep along the left wall, burlap sacks of grain and salt pork slung from ceiling hooks on the right. Something has already been at the sacks — three of them sag where they've been gnawed through, a fan of pale grain spilled across the dirt floor. Small prints track through the spill in all directions, and one trail, deeper-pawed than the rest, runs along the base of the wall and vanishes behind the barrel stack.\n\nFrom the dark behind those barrels comes a scrabble of claws on dirt. Then another, off toward the grain sacks. A pair of small eyes catches what little light leaks down the stairway — and holds there, fixed on him, unblinking.\n\nThe big one doesn't wait. It comes around the barrels at a dead run, a rat the length of a man's forearm, teeth bared, and the scrabble behind the grain sacks turns into movement too.\n\n<avereth>{\"time\":3,\"place\":\"salt cellar beneath the Gull's Rest (Alaric descends, Dagny stays above)\",\"new\":[{\"ref\":\"cellar_rat_1\",\"kind\":\"creature\",\"name\":\"Big Cellar Rat\",\"species\":\"giant rat\",\"desc\":[\"forearm-length rat\",\"yellow teeth\",\"fast\"],\"band\":\"ENGAGED\"},{\"ref\":\"cellar_rat_2\",\"kind\":\"creature\",\"name\":\"Cellar Rat\",\"species\":\"rat\",\"desc\":[\"smaller rat\",\"bold\"],\"band\":\"ENGAGED\"},{\"ref\":\"cellar_rat_3\",\"kind\":\"creature\",\"name\":\"Cellar Rat\",\"species\":\"rat\",\"desc\":[\"smaller rat\"],\"band\":\"ENGAGED\"}],\"aware\":[{\"who\":\"cellar_rat_1\",\"level\":\"aware\"},{\"who\":\"cellar_rat_2\",\"level\":\"aware\"},{\"who\":\"cellar_rat_3\",\"level\":\"aware\"}],\"combat\":{\"by\":[\"cellar_rat_1\",\"cellar_rat_2\",\"cellar_rat_3\"]}}</avereth>"
+  },
+  {
+   "i": 15,
+   "user": true,
+   "mes": "*i get ready for the impact and then Heavy Slash the Big Cellar Rat*"
+  },
+  {
+   "i": 16,
+   "reply": "The first rat hits low, teeth finding the back of his calf through a gap in the armor before he can turn — a sharp pinch, a wet warmth of blood in the boot. The big one slams into his shin a heartbeat later, jaws crunching down, and the third comes off the grain sacks and snaps at his other ankle.\n\nHe swings through all of it. The longsword comes down two-handed, and the Heavy Slash shears through the big rat's spine mid-bite — it goes loose all at once, thumps against the dirt, and lies kicking, then still, its teeth locked open.\n\nThe other two don't so much as slow. One worries at his heel where it already bit, the other scrambles up over the dead one's carcass and latches onto the edge of his greave, gnawing at leather and strap, beady eyes fixed upward. Grain dust drifts in the lamplight. Behind the barrels, somewhere, nothing else stirs — yet.\n\n<avereth>{\"combat\":{\"by\":[\"Cellar Rat\",\"Cellar Rat\"]},\"new\":[{\"ref\":\"big_rat\",\"kind\":\"creature\",\"name\":\"Big Cellar Rat\",\"species\":\"giant rat\",\"desc\":[\"forearm-length\",\"teeth locked open\",\"dead\"]},{\"ref\":\"rat1\",\"kind\":\"creature\",\"species\":\"rat\",\"desc\":[\"bit his calf\"]},{\"ref\":\"rat2\",\"kind\":\"creature\",\"species\":\"rat\",\"desc\":[\"gnawing at his greave\"]}]}</avereth>"
+  },
+  {
+   "i": 17,
+   "user": true,
+   "mes": "*i turn to Basic Attack the Cellar Rat that gnaws at my leather and strap*"
+  },
+  {
+   "i": 18,
+   "reply": "The one at his greave keeps grinding at the strap, jaws working, while the other hangs off the back of his calf, worrying the bite wider. Both are within reach of a short step and a downward cut.\n\nTwo rats, one swing's worth of time. Which one?",
+   "answer": "<avereth>{}</avereth>",
+   "ms": 1650
+  }
+ ],
+ "recorded": {
+  "build": "8132a25 (main): the replay on 8132a25 reproduces every event, panel and HUD of the run byte for byte",
+  "panel14": "`COMBAT START — Big Cellar Rat, Cellar Rat, Cellar Rat attack Alaric`\n`Initiative: Cellar Rat 10 · Big Cellar Rat 10 · Cellar Rat 10 · Alaric 7 → Turn order: Cellar Rat › Big Cellar Rat › Cellar Rat › Alaric`\n`HP: Cellar Rat 16/16 · Big Cellar Rat 16/16 · Cellar Rat 16/16 · Alaric 85/85`\n`Range: Cellar Rat ENGAGED · Big Cellar Rat ENGAGED · Cellar Rat ENGAGED`\n`Alaric: MP 60/60 · STA 100/100`\n`Next: Round 1 — Cellar Rat › Big Cellar Rat › Cellar Rat act before Alaric`\n`Alaric's attacks vs Big Cellar Rat: Basic Attack 16–19 · Heavy Slash 23–28 · Charge 21–26 damage`",
+  "accepted16": [
+   "known mon.big_cellar_rat (not duplicated)",
+   "new creature rat1 (mon.rat1)",
+   "new creature rat2 (mon.rat2)",
+   "mon.cellar_rat fights on",
+   "mon.cellar_rat fights on"
+  ],
+  "panel18": "`Alaric: which target? Cellar Rat or Cellar Rat (nothing spent, nothing rolled)`\n`HP: Cellar Rat 16/16 · Big Cellar Rat 0/16 (defeated) · Cellar Rat 16/16 · Alaric 80/85`\n`Range: Cellar Rat ENGAGED · Cellar Rat ENGAGED`\n`Alaric: MP 60/60 · STA 93/100`\n`Next: Alaric's Turn (Round 2)`\n`Alaric's attacks vs Cellar Rat: Basic Attack 16–19 · Heavy Slash 23–28 · Charge 21–26 damage`\n`REPORT RECOVERED: the reply had no fact report, a separate request supplied it (1.6 s).`",
+  "hud16_present": "<b>Present</b>: Big Cellar Rat (dead, ENGAGED) · Cellar Rat (HP 16/16, ENGAGED) · Cellar Rat (HP 16/16, ENGAGED) · the bit his calf · the gnawing at his greave"
+ }
+}

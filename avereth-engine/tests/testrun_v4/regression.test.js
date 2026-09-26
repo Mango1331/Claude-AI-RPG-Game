@@ -72,7 +72,7 @@ test('Combat V3 on the real fight: every attack lands — the Bite for 3 (6 vs D
 });
 
 test('Alaric\'s attack options show the damage each deals before he picks one (every legal attack lands)', () => {
-    assert.equal(T(9).panel.split('\n').at(-1), '`Alaric\'s attacks vs cellar vermin: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`');
+    assert.equal(T(9).panel.split('\n').at(-1), '`Alaric\'s attacks vs Cellar Vermin: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`');
 });
 
 /** The turn-10/11 inputs and reply against a foe that survives a Power Shot (the vermin now dies to the first one). */
@@ -88,9 +88,9 @@ test('"I kite backwards and Power Shot" (turn 11): the shot, then the Turn\'s on
     const g = ogreFight();
     g.input(fx.turns[10].input);
     const shot = g.state.last.outcome.records.find((r) => r.actor === 'pc');
-    assert.deepEqual(shot.after_move, { dir: 'away', change: 'the ogre ENGAGED -> SHORT' });
+    assert.deepEqual(shot.after_move, { dir: 'away', change: 'Ogre A ENGAGED -> SHORT' });
     assert.ok(shot.strikes[0].final > 0 && !shot.strikes[0].hit);
-    assert.match(turnPanel(g.state, content), /`Alaric: Power Shot → the ogre · STA 88 - 12 = 76 · 1 arrow · then steps back \(the ogre ENGAGED → SHORT\)`/);
+    assert.match(turnPanel(g.state, content), /`Alaric: Power Shot → Ogre A · STA 88 - 12 = 76 · 1 arrow · then steps back \(Ogre A ENGAGED → SHORT\)`/);
 });
 
 test('combat silence: nobody talks while a fight runs, and a reply that did is named in the next engine block', () => {

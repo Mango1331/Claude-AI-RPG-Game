@@ -4,13 +4,16 @@
 // coin, items, quests, XP, rest). host.js shows it through SillyTavern's extra.display_text: display only; the prompt
 // keeps the plain reply (the model already gets these numbers in the engine block, and a numbers block in the chat
 // history would invite it to write its own).
-import { entityLabel } from './knowledge.js';
+import { playerLabel } from './knowledge.js';
 import { deriveCharacter } from './derived.js';
 import { formatCoin } from './economy.js';
 import { bandIndex, itemLabel } from './util.js';
-import { damagePreview } from './combat.js';
+import { damagePreview, combatTargets, targetLabel } from './combat.js';
 
 const sys = (text) => `\`${text}\``;
+// a combatant by its target label (from the board of that step, which outlives the fight), anyone else as the player knows them
+const namer = (state, board) => (id) => board?.labels?.[id] || targetLabel(state, id, (x) => playerLabel(state, x));
+const targetsText = (targets) => `COMBAT TARGETS — ${targets.map((x) => `${x.label} [${x.band}${x.cover && x.cover !== 'none' ? `, ${x.cover} cover` : ''}]`).join(' · ')}`;
 
 /**
  * The System block for the reply to this player turn ('' when nothing was resolved).
@@ -28,7 +31,8 @@ export function turnPanel(state, content, narratorCheck = null, reply = null) {
     if (o?.kind === 'check' && o.check) lines.push(checkLine(o.check));
     if (o?.kind === 'note' && o.notice) lines.push(sys(o.notice));
     if (narratorCheck) lines.push(sys(`CHECK — ${narratorCheck.what}: ${narratorCheck.chance}% · d100 ${narratorCheck.roll} → ${narratorCheck.success ? 'SUCCESS' : 'FAILURE'}`));
-    if (reply?.events && reply.state) lines.push(...changeLines(state, reply.state, content, reply.events));
+    // what the report changed; the fight it opened shows its own steps and HP below
+    if (reply?.events && reply.state) lines.push(...changeLines(state, reply.state, content, reply.opened ? reply.events.slice(0, reply.opened.from) : reply.events));
     if (reply?.opened && reply.state) lines.push(...openedLines(reply.state, content, reply.opened));
     // Test 5 run: six replies without a report left place, people and the quest behind the story, unseen by the player
     // (never the tag itself in display text: the streaming regex hides everything from "<avereth>" on, the HUD included)
@@ -39,10 +43,35 @@ export function turnPanel(state, content, narratorCheck = null, reply = null) {
         if (reply.recovery === 'pending') lines.push(sys(`NO FACT REPORT${why}: asking for it separately, the HUD follows in a moment.`));
         else if (reply.recovery?.late) lines.push(sys(`NO FACT REPORT${why}, and the separate request came too late${secs}: the next turn had started without it. Nothing this reply established was recorded; the next report may add it.`));
         else lines.push(sys(`NO FACT REPORT${why}${reply.recovery?.failed ? `, and the separate request brought none${secs}` : ''}: nothing this reply established was recorded, the HUD may lag behind the story. Swipe to retry, or go on: the next report may add it.`));
-    } else if (reply?.recovery?.from) {
+    } else if (reply?.recovery?.from && reply.recovery.from !== 'attackers') {
         lines.push(sys(`REPORT RECOVERED: the reply had no fact report, a separate request supplied it${secs}.`));
     }
+    // attackers the report committed without identifying them (delta.js: "rat pack — …"): never one silent combatant
+    if (reply?.attackers?.length) {
+        const cut = (t) => (t.length > 80 ? `${t.slice(0, 80).replace(/\s+\S*$/, '')} …` : t);
+        const who = reply.attackers.map((a) => `"${cut(String(a.by).replace(/[<>]/g, ''))}"`).join(', ');
+        if (reply.recovery === 'pending') lines.push(sys(`ATTACKERS NOT IDENTIFIED YET — ${who}: asking for them separately; the fight and its target list follow in a moment.`));
+        else lines.push(sys(`ATTACKERS NOT IDENTIFIED — ${who}${reply.recovery?.from === 'attackers' ? `, and the separate request named none${reply.recovery.late ? ' in time' : ''}${secs}` : ''}: they are not in the fight. The next report may introduce them.`));
+    } else if (reply?.recovery?.from === 'attackers') lines.push(sys(`ATTACKERS IDENTIFIED: a separate request named them${secs}.`));
     return lines.join('\n');
+}
+
+/**
+ * The engine's own answer to an attack in a fight whose target is unclear (engine.js playerTurn): a System panel in
+ * place of a story turn. Nothing was spent or rolled; the fight waits for the player to name a target by its label.
+ */
+export function targetQuestion(state, content, intent) {
+    const targets = combatTargets(state.encounter);
+    const name = namer(state, null);
+    const skill = content.skills.get(intent.skill)?.name || 'Attack';
+    const ask = intent.kind === 'ambiguous_target' ? `which target — ${intent.candidates.map(name).join(' or ')}?`
+        : intent.ref ? `"${intent.ref}" is not a target in this fight.` : 'no target in this fight.';
+    return [
+        '[SYSTEM // COMBAT — TARGET NEEDED]',
+        `${name('pc')}'s ${skill}: ${ask} Nothing was spent or rolled.`,
+        targets.length ? targetsText(targets) : 'COMBAT TARGETS — none left',
+        targets.length ? `Name one, for example: *${skill} on ${targets[0].label}*` : '',
+    ].filter(Boolean).join('\n');
 }
 
 /**
@@ -59,7 +88,7 @@ function changeLines(before, after, content, events) {
     const dv = deriveCharacter(after.entities.pc.sheet, content);
     const max = { hp: dv.maxHp, mp: dv.maxMp, sta: dv.maxSta };
     const per = content.rules.progression.xp_to_next_per_level;
-    const label = (id) => (after.entities[id] ? entityLabel(after, id) : String(id));
+    const label = (id) => (after.entities[id] ? playerLabel(after, id) : String(id));
     const why = (d) => (d.why ? ` · ${d.why}` : '');
     const QUEST = { offered: 'OFFERED', active: 'ACCEPTED', completed: 'COMPLETED', failed: 'FAILED' };
     for (const [i, e] of events.entries()) {
@@ -90,19 +119,25 @@ function changeLines(before, after, content, events) {
     return out;
 }
 
-/** A fight the reply's report started (or someone joining it): the fixed order and everyone's HP before anyone acts. */
+/**
+ * A fight the reply's report started (or someone joining it): the fixed order, the Turns before Alaric's first one
+ * (engine.js openCommitted), everyone's HP, and who acts next.
+ */
 function openedLines(state, content, op) {
-    const name = (id) => entityLabel(state, id);
     const b = op.board;
+    const name = namer(state, b);
     const out = [];
     const order = b.order.map((x) => name(x.id)).join(' › ');
     const who = op.ids.map(name).join(', ');
+    const ambush = b.first?.ambush || op.records?.some((r) => r.opening);
     if (op.kind === 'started') {
-        out.push(sys(`COMBAT START${b.first?.ambush ? ' — AMBUSH' : ''} — ${who} ${op.ids.length > 1 ? 'attack' : 'attacks'} ${name('pc')}`));
+        out.push(sys(`COMBAT START${ambush ? ' — AMBUSH' : ''} — ${who} ${op.ids.length > 1 ? 'attack' : 'attacks'} ${name('pc')}`));
         out.push(sys(`Initiative: ${b.order.map((x) => `${name(x.id)} ${x.init}`).join(' · ')} → Turn order: ${order}`));
     } else out.push(sys(`COMBAT — ${who} ${op.ids.length > 1 ? 'join' : 'joins'} the fight (Initiative ${op.ids.map((id) => b.order.find((x) => x.id === id)?.init).join(', ')}) → Turn order: ${order}`));
-    out.push(...boardLines(state, b));
-    if (!b.first) out.push(sys(`Next: ${name('pc')}'s Turn (Round ${b.round})`));
+    // the Turns before Alaric's first one, then the targets and positions as he meets them
+    out.push(...roundLines(name, op.records || []), ...targetsLine(b), ...boardLines(state, b));
+    if (op.ended) out.push(...endLines(state, content, name, op.ended, op.levelups));
+    else if (!b.first) out.push(sys(`Next: ${name('pc')}'s Turn (Round ${b.round})`));
     else {
         const pre = b.first.ambush ? `${name(b.first.ambush)}'s Opening Action (Ambush), then ` : '';
         const before = b.first.before;
@@ -126,12 +161,22 @@ function optionsLine(state, content) {
     if (!opts.length) return [];
     const dmg = (o) => `${o.strikes > 1 ? `${o.strikes}×` : ''}${o.min === o.max ? o.min : `${o.min}–${o.max}`}${o.cover === 'ignored' ? ' (ignores cover)' : ''}`;
     const cover = near.current.cover === 'partial' ? ' (partial cover: -25%)' : '';
-    return [sys(`${entityLabel(state, 'pc')}'s attacks vs ${entityLabel(state, near.id)}${cover}: ${opts.map((o) => `${o.name} ${dmg(o)}`).join(' · ')} damage`)];
+    return [sys(`${playerLabel(state, 'pc')}'s attacks vs ${near.label || playerLabel(state, near.id)}${cover}: ${opts.map((o) => `${o.name} ${dmg(o)}`).join(' · ')} damage`)];
+}
+
+/**
+ * The opponents still fighting, by the labels the player targets them with, in the order they entered the fight
+ * ("COMBAT TARGETS — Cellar Rat A [ENGAGED] · Cellar Rat B [SHORT]"): at the start, when someone joins or drops out.
+ */
+function targetsLine(b) {
+    const hp = new Map(b.hp.map((x) => [x.id, x]));
+    const targets = Object.entries(b.labels || {}).map(([id, label]) => ({ id, label, ...hp.get(id) })).filter((x) => x.hp !== undefined && !x.state);
+    return targets.length ? [sys(targetsText(targets))] : [];
 }
 
 /** Everyone's HP, the distance of each opponent to Alaric (Range Band, cover) and Alaric's resources. */
 function boardLines(state, b) {
-    const name = (id) => entityLabel(state, id);
+    const name = namer(state, b);
     const out = [sys(`HP: ${b.hp.map((x) => `${name(x.id)} ${x.hp}/${x.max}${x.state ? ` (${x.state})` : ''}`).join(' · ')}`)];
     const range = b.hp.filter((x) => x.band && !x.state);
     if (range.length) out.push(sys(`Range: ${range.map((x) => `${name(x.id)} ${x.band}${x.cover && x.cover !== 'none' ? ` (${x.cover} cover)` : ''}`).join(' · ')}`));
@@ -147,44 +192,56 @@ function checkLine(c) {
 }
 
 function combatLines(state, content, o) {
-    const name = (id) => entityLabel(state, id);
     if (o.not_started) return [sys(`COMBAT — not possible: ${o.illegal}. Nothing spent, nothing rolled.`)];
     const b = o.board;
+    const name = namer(state, b);
     const out = [];
     // a start the previous reply already showed (the fight its report opened) is not repeated
     if (o.started && b && !o.started.previewed) {
         out.push(sys(o.started.joined ? `COMBAT — ${o.started.reason}` : `COMBAT START${o.started.ambush ? ' — AMBUSH' : ''}`));
         out.push(sys(`Initiative: ${b.order.map((x) => `${name(x.id)} ${x.init}`).join(' · ')} → Turn order: ${b.order.map((x) => name(x.id)).join(' › ')}`));
     }
-    let round = null;
-    for (const r of o.records) {
-        if (r.round !== round) {
-            round = r.round;
-            out.push(sys(round === 0 ? '— Opening Action (Ambush) —' : `— Round ${round} —`));
-        }
-        out.push(...recordLines(state, content, r));
-    }
+    // the Turns the reply that opened the fight already showed (o.shown) are the narrator's to tell, not shown again
+    const records = o.records.slice(o.shown || 0);
+    out.push(...roundLines(name, records));
     if (o.note) out.push(sys(o.notice || o.note));
     if (o.illegal) out.push(sys(`${name('pc')}: not possible — ${o.illegal} (nothing spent, nothing rolled)`));
+    // the targets again when the set changed: the start, a joiner, someone down, fled or surrendered
+    const changed = (o.started && !o.started.previewed) || o.started?.joined || records.some((r) => r.escaped || r.kind === 'surrender' || (r.strikes || []).some((x) => x.defeated));
+    if (b && !o.ended && changed) out.push(...targetsLine(b));
     if (b) out.push(...boardLines(state, b));
-    if (o.ended) {
-        const e = o.ended;
-        const fates = [...e.defeated.map((id) => `${name(id)} defeated`), ...e.escaped.filter((id) => id !== 'pc').map((id) => `${name(id)} escaped`)];
-        if (e.pc_dead) fates.push(`${name('pc')} is dead`);
-        if (e.pc_escaped) fates.push(`${name('pc')} escaped`);
-        const sheet = state.entities.pc.sheet;
-        const xp = e.xp_awarded ? ` · +${e.xp_awarded} XP → XP ${sheet.xp}/${sheet.level * content.rules.progression.xp_to_next_per_level}` : '';
-        out.push(sys(`COMBAT END${fates.length ? ` — ${fates.join(', ')}` : ''}${xp}`));
-        for (const lv of o.levelups || []) out.push(sys(`LEVEL UP → ${lv} (+5 free Stat Points)`));
-    } else if (o.next) {
+    if (o.ended) out.push(...endLines(state, content, name, o.ended, o.levelups));
+    else if (o.next) {
         out.push(sys(`Next: ${o.next}`));
         if (state.encounter?.current === 'pc') out.push(...optionsLine(state, content));
     }
     return out;
 }
 
-function recordLines(state, content, r) {
-    const name = (id) => entityLabel(state, id);
+/** Resolved steps under their Round headers ("— Round 1 —"; an Ambush Opening Action is Round 0). */
+function roundLines(name, records) {
+    const out = [];
+    let round = null;
+    for (const r of records) {
+        if (r.round !== round) {
+            round = r.round;
+            out.push(sys(round === 0 ? '— Opening Action (Ambush) —' : `— Round ${round} —`));
+        }
+        out.push(...recordLines(name, r));
+    }
+    return out;
+}
+
+function endLines(state, content, name, e, levelups = []) {
+    const fates = [...e.defeated.map((id) => `${name(id)} defeated`), ...e.escaped.filter((id) => id !== 'pc').map((id) => `${name(id)} escaped`)];
+    if (e.pc_dead) fates.push(`${name('pc')} is dead`);
+    if (e.pc_escaped) fates.push(`${name('pc')} escaped`);
+    const sheet = state.entities.pc.sheet;
+    const xp = e.xp_awarded ? ` · +${e.xp_awarded} XP → XP ${sheet.xp}/${sheet.level * content.rules.progression.xp_to_next_per_level}` : '';
+    return [sys(`COMBAT END${fates.length ? ` — ${fates.join(', ')}` : ''}${xp}`), ...levelups.map((lv) => sys(`LEVEL UP → ${lv} (+5 free Stat Points)`))];
+}
+
+function recordLines(name, r) {
     const who = name(r.actor);
     // only Alaric's resources are shown; NPC costs stay in #combat / #audit
     const cost = r.actor === 'pc' && r.cost ? ` · ${r.cost.resource.toUpperCase()} ${r.cost.before} - ${r.cost.amount} = ${r.cost.after}` : '';

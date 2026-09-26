@@ -10,7 +10,7 @@ import { loadContentPack } from './src/content.js';
 import { prepareGeneration, processReply, onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory, reportRequest, applyReportAnswer } from './src/host.js';
 import { validateState } from './src/validate.js';
 import { newSeed } from './src/rng.js';
-import { parseSwaps } from './src/util.js';
+import { parseSwaps, ENGINE_VERSION } from './src/util.js';
 
 const MODULE = 'avereth';
 const PROMPT_KEY = 'avereth_engine';
@@ -238,16 +238,17 @@ function renderDebug() {
     const c = ctx();
     const { state, errors } = foldChat(c.chat);
     const problems = state.meta.started ? validateState(state, content) : [];
-    el.textContent = state.meta.started
+    el.textContent = `Avereth Engine ${ENGINE_VERSION} | ` + (state.meta.started
         ? `turn ${state.turn} | mode ${state.mode} | events ${c.chat.reduce((a, m) => a + (m.extra?.avereth?.events?.length || 0), 0)} | integrity: ${problems.length || errors.length ? `${problems.length + errors.length} problem(s)` : 'OK'}${lastContext ? ` | last block ~${lastContext.tokens} tokens` : ''}${lastProjection ? ` | history: ${lastProjection.removed} older message(s) left out, ${lastProjection.stripped} tracker block(s) removed` : ''} | lore: ${loreFromWorldInfo() ? `World Info${cardLorebook() ? ` (${cardLorebook()})` : ''}` : 'engine'}`
-        : 'no campaign in this chat';
+        : 'no campaign in this chat');
     const dbg = document.getElementById('avereth_debug');
     if (dbg) dbg.value = settings().showDebug ? [lastContext?.text || '', ...problems, ...errors].join('\n') : '';
 }
 
 function exportLog() {
     const c = ctx();
-    const log = c.chat.map((m, i) => ({ i, user: !!m.is_user, events: m.extra?.avereth?.events || [] })).filter((x) => x.events.length);
+    // build: the engine build that wrote the message's record (none: written before 3.1.0)
+    const log = c.chat.map((m, i) => ({ i, user: !!m.is_user, build: m.extra?.avereth?.build, events: m.extra?.avereth?.events || [] })).filter((x) => x.events.length);
     const blob = new Blob([JSON.stringify(log, null, 1)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);

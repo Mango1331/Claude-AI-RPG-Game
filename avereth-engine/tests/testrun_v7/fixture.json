@@ -1,0 +1,2144 @@
+{
+ "note": "Live run 25.09.2026 01:31 (GLM-5.3-Flash, Avereth Narrator preset). chat: messages 0-19 as recorded (text and the engine's events), the state before the rat reply. rat_reply: message 20, the prose as recorded and its fact report as the reply's record kept it (accepted: time +5; rejected: the combat entry). dash: message 21. recorded: what the engine did with them in the run.",
+ "seed": 3496414246,
+ "chat": [
+  {
+   "user": false,
+   "system": false,
+   "mes": "*Cool wind moves through the rough grass around Alaric Red's boots.*\r\n\r\n*The last thing that belongs to Earth is still there in memory—an old life, a world without visible mana, Classes, or this impossible second beginning. The present is different: the smell of soil and distant woodsmoke, an unfamiliar sky, and stone walls beyond the public road.*\r\n\r\n*Alaric Red is already standing on an uncultivated roadside verge outside the nearby city. Cultivated fields and fenced holdings begin farther away. No one is close enough to have witnessed the instant of arrival.*\r\n\r\n*The body is Human, healthy, and eighteen years old. Simple traveler's clothes are already being worn; a small pouch holding five silver rests at the belt. The memories are still from Earth.*\r\n\r\n*A translucent interface opens across Alaric Red's vision.*\r\n\r\n`SYSTEM INITIALIZATION COMPLETE`\r\n`Origin: Earth`\r\n`World: Avereth`\r\n`Race: Human`\r\n`Age: 18`\r\n`Level: 1 | Rank: F`\r\n\r\n`BASE STATS`\r\n`STR 5 | VIT 5 | AGI 5 | INT 5 | PER 5 | WIL 5`\r\n\r\n`Location: Public roadside verge outside Glassmere, Caelreth`\r\n`Arrival Witnesses: NONE`\r\n`Starting Possessions: Simple Traveler's Clothes | Small Pouch | 5 Silver`\r\n`Local Common Language: Integrated`\r\n`Mandatory Quest: NONE`\r\n\r\n`CHARACTER CREATION — STEP 1/2`\r\n`Choose your Base Class:`\r\n\r\n`Warrior   — Favored Stats: STR / VIT`\r\n`Mage      — Favored Stats: INT / WIL`\r\n`Guardian  — Favored Stats: VIT / WIL`\r\n`Duelist   — Favored Stats: STR / AGI`\r\n`Ranger    — Favored Stats: AGI / PER`\r\n\r\n`Your chosen Class immediately applies +1 to both Favored Stats at Level 1.`\r\n`After choosing a Class, select exactly 2 Skills from that Class's Base Skill Pool.`\r\n\r\n`Reply with your Class choice.`\r\n\r\n*The System waits. Story time does not move during Character Creation.*\r\n",
+   "events": [
+    {
+     "t": "campaign.started",
+     "d": {
+      "seed": 3496414246,
+      "minute": 540,
+      "entities": [
+       {
+        "id": "pc",
+        "kind": "pc",
+        "name": "Alaric",
+        "race": "Human",
+        "age": 18,
+        "origin": "Earth",
+        "descriptors": [
+         "alaric",
+         "stranger",
+         "traveler"
+        ],
+        "status": "alive",
+        "location": "loc.glassmere",
+        "sheet": {
+         "level": 1,
+         "class": null,
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 5,
+          "INT": 5,
+          "PER": 5,
+          "WIL": 5
+         },
+         "skills": {},
+         "equipment": {
+          "clothing": "simple_travelers_clothes"
+         },
+         "inventory": {
+          "small_pouch": 1
+         },
+         "coin_cp": 50,
+         "xp": 0,
+         "free_points": 0,
+         "hp": 80,
+         "mp": 60,
+         "sta": 100
+        }
+       }
+      ],
+      "location": "loc.glassmere",
+      "place": "public roadside verge outside Glassmere",
+      "facts": [
+       {
+        "id": "f.pc.name",
+        "s": "pc",
+        "p": "name",
+        "o": "Alaric",
+        "visibility": "public",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.appearance",
+        "s": "pc",
+        "p": "appearance",
+        "o": "Human, about eighteen; wears simple traveler's clothes",
+        "visibility": "public",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.origin",
+        "s": "pc",
+        "p": "origin",
+        "o": "Earth (transmigrated; memories intact)",
+        "visibility": "secret",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.arrival_witnesses",
+        "s": "pc",
+        "p": "arrival_witnesses",
+        "o": "none",
+        "visibility": "secret",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       }
+      ],
+      "knowledge": [
+       {
+        "who": "pc",
+        "about": "f.pc.name",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.appearance",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.origin",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.arrival_witnesses",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       }
+      ],
+      "campaign": "avereth",
+      "content_version": "3.0.0",
+      "engine_version": "3.0.0"
+     }
+    }
+   ]
+  },
+  {
+   "user": true,
+   "system": true,
+   "mes": "Warrior",
+   "events": [
+    {
+     "t": "turn.begun",
+     "d": {
+      "turn": 1,
+      "input_hash": "33c476a9",
+      "input": "Warrior"
+     }
+    },
+    {
+     "t": "creation.class_selected",
+     "d": {
+      "class": "warrior",
+      "favored": [
+       "STR",
+       "VIT"
+      ],
+      "basic_attack": "warrior.basic_attack"
+     }
+    },
+    {
+     "t": "outcome.recorded",
+     "d": {
+      "outcome": {
+       "kind": "creation.step2",
+       "class": "warrior"
+      },
+      "situations": []
+     }
+    }
+   ]
+  },
+  {
+   "user": false,
+   "system": true,
+   "mes": "```\n[SYSTEM // CHARACTER CREATION — STEP 2/2]\nCLASS SELECTED: WARRIOR — favored STR +1, VIT +1 · Basic Attack granted (P1)\nSTR 6 | VIT 6 | AGI 5 | INT 5 | PER 5 | WIL 5 | Max HP 85 | Max MP 60 | Max STA 100 | Initiative 7\nChoose exactly 2 Skills from the Warrior Base Pool (for example \"Heavy Slash + Guard\"):\n- Heavy Slash [Offensive] | Cost 7 STA | Range ENGAGED | Raw = 10 + STR × 1.50 + ATK\n- Guard [Defensive] | Cost 5 STA | Effect: until the start of the Warrior's next turn, gain temporary DEF equal to: 3 + floor(VIT × 0.50). This is an explicit temporary DEF bonus and does not alter VIT.\n- Power Strike [Offensive] | Cost 12 STA | Range ENGAGED | Raw = 16 + STR × 1.875 + ATK\n- Quick Slash [Offensive] | Cost 5 STA | Range ENGAGED | Raw = 6 + STR × 0.875 + AGI × 0.625 + ATK\n- Charge [Offensive / Utility] | Cost 8 STA | Range ENGAGED after movement (EXTRA-BAND) | Raw = 8 + STR × 1.25 + AGI × 0.375 + ATK | Effect: as part of this Skill, close 1 additional Range Band before the attack. This explicit extra shift may combine with the normal one-band Turn movement. The target must be ENGAGED when the attack resolves.\n- Deflect [Defensive] | Cost 6 STA | Effect: until the start of the Warrior's next turn, incoming damage is reduced by 25%.\nStarter Gear, equipped when Step 2 is complete: Starter Longsword [F] (ATK 6), Starter Heavy Armor [F] (DEF 6, MDEF 2).\n```",
+   "events": []
+  },
+  {
+   "user": true,
+   "system": true,
+   "mes": "Quick Slash + Charge",
+   "events": [
+    {
+     "t": "turn.begun",
+     "d": {
+      "turn": 2,
+      "input_hash": "a38bbf78",
+      "input": "Quick Slash + Charge"
+     }
+    },
+    {
+     "t": "creation.completed",
+     "d": {
+      "skills": [
+       "warrior.quick_slash",
+       "warrior.charge"
+      ],
+      "equip": {
+       "weapon": "starter_longsword",
+       "armor": "starter_heavy_armor"
+      },
+      "items": {},
+      "hp": 85,
+      "mp": 60,
+      "sta": 100
+     }
+    },
+    {
+     "t": "outcome.recorded",
+     "d": {
+      "outcome": {
+       "kind": "creation.complete",
+       "class": "warrior",
+       "skills": [
+        "warrior.quick_slash",
+        "warrior.charge"
+       ],
+       "kit": [
+        "starter_longsword",
+        "starter_heavy_armor"
+       ]
+      },
+      "situations": []
+     }
+    }
+   ]
+  },
+  {
+   "user": false,
+   "system": true,
+   "mes": "```\n[SYSTEM // CHARACTER CREATION COMPLETE]\nSKILLS SELECTED: Quick Slash (P1), Charge (P1)\nSTARTER GEAR EQUIPPED: Starter Longsword [F] (ATK 6), Starter Heavy Armor [F] (DEF 6, MDEF 2)\nAlaric | Human | Level 1 | XP 0/100 | Power Rank F | Class: Warrior\nHP 85/85 | MP 60/60 | STA 100/100\nSTR 6 | VIT 6 | AGI 5 | INT 5 | PER 5 | WIL 5 | Free Stat Points 0\nATK 6 | MATK 0 | DEF 7 (base 1) | MDEF 3 (base 1) | Initiative 7 (floor(1.5 × AGI))\nActive Effects: none | Domain: NOT YET UNLOCKED\nEquipment: Simple Traveler's Clothes, Starter Longsword [F] (ATK 6), Starter Heavy Armor [F] (DEF 6, MDEF 2)\nCarried: Small Pouch | Coin 5 Silver\nThe story begins with your next message: write what Alaric does.\n```",
+   "events": []
+  },
+  {
+   "user": true,
+   "system": false,
+   "mes": "*i walk to the gate of the City ahead of me*",
+   "events": [
+    {
+     "t": "turn.begun",
+     "d": {
+      "turn": 3,
+      "input_hash": "b5324079",
+      "input": "*i walk to the gate of the City ahead of me*"
+     }
+    },
+    {
+     "t": "outcome.recorded",
+     "d": {
+      "outcome": {
+       "kind": "narrative",
+       "check_die": 58,
+       "flags": {
+        "aim": false
+       }
+      },
+      "situations": []
+     },
+     "rng_to": 1
+    }
+   ]
+  },
+  {
+   "user": false,
+   "system": false,
+   "mes": "The verge gives way to packed earth, then to the worn stones of the road proper. Cart ruts run deep and parallel toward the walls, which grow as Alaric walks — grey granite, mottled with pale lichen, tall enough that the banners hanging from the nearest tower hang limp and small-looking from this distance.\n\nThe morning traffic thickens near the gate: a carter swearing at an ox, two women with baskets of root vegetables, a boy trotting beside a mule loaded with firewood. The smell of the road is dust and animal dung; beneath it, faintly, woodsmoke from the city's chimneys.\n\nThe gate itself is an arched passage through the wall, maybe three carts wide, with a timber-and-iron gate pulled back against the stone on either side. A squat guardhouse sits beside it, and two men in mail shirts and kettle helms lean in its shade, watching the trickle of traffic. Neither wears the look of someone searching for anything in particular. One scratches at his jaw; the other holds a slate and marks a tally with chalk whenever a cart passes.\n\nA short line has formed where the road narrows to the arch — the carter with the ox at its head, waiting his turn while one of the guards checks something written on a wax tablet. The queue moves slowly. Nobody is being turned away.\n\nThe boy with the mule glances at Alaric's sword and armor, decides he is not interesting, and looks back at his mule.",
+   "events": [
+    {
+     "t": "time.advanced",
+     "d": {
+      "minutes": 20,
+      "why": "narration"
+     }
+    },
+    {
+     "t": "scene.moved",
+     "d": {
+      "place": "gate queue outside Glassmere's gate"
+     }
+    },
+    {
+     "t": "entity.created",
+     "d": {
+      "entity": {
+       "id": "npc.slate_guard",
+       "kind": "npc",
+       "name": "Slate Guard",
+       "descriptors": [
+        "city gate guard",
+        "guard_slate"
+       ],
+       "traits": "kettle helm, mail shirt, chalk slate, unhurried",
+       "status": "alive",
+       "location": "loc.glassmere",
+       "created": {
+        "turn": 3,
+        "minute": 540
+       },
+       "source": {
+        "kind": "narration",
+        "msg": 6
+       },
+       "card": {},
+       "template": "guard"
+      }
+     }
+    },
+    {
+     "t": "scene.entered",
+     "d": {
+      "id": "npc.slate_guard",
+      "band": null
+     }
+    },
+    {
+     "t": "entity.created",
+     "d": {
+      "entity": {
+       "id": "npc.jaw_guard",
+       "kind": "npc",
+       "name": "Jaw Guard",
+       "descriptors": [
+        "city gate guard",
+        "guard_jaw"
+       ],
+       "traits": "kettle helm, mail shirt, scratches jaw, bored",
+       "status": "alive",
+       "location": "loc.glassmere",
+       "created": {
+        "turn": 3,
+        "minute": 540
+       },
+       "source": {
+        "kind": "narration",
+        "msg": 6
+       },
+       "card": {},
+       "template": "guard"
+      }
+     }
+    },
+    {
+     "t": "scene.entered",
+     "d": {
+      "id": "npc.jaw_guard",
+      "band": null
+     }
+    },
+    {
+     "t": "scene.awareness",
+     "d": {
+      "id": "npc.slate_guard",
+      "level": "unaware"
+     }
+    },
+    {
+     "t": "scene.awareness",
+     "d": {
+      "id": "npc.jaw_guard",
+      "level": "unaware"
+     }
+    },
+    {
+     "t": "memory.recorded",
+     "d": {
+      "memory": {
+       "id": "m.t3.m6.ep",
+       "turn": 3,
+       "minute": 560,
+       "text": "gate queue outside Glassmere's gate: {pc}: \"*i walk to the gate of the City ahead of me*\"",
+       "who": [
+        "pc"
+       ],
+       "about": [
+        "npc.slate_guard",
+        "npc.jaw_guard"
+       ],
+       "witnesses": [
+        "pc"
+       ],
+       "seen": [
+        "pc"
+       ],
+       "location": "loc.glassmere",
+       "place": "gate queue outside Glassmere's gate",
+       "importance": 3,
+       "kind": "episode",
+       "msg": 6
+      }
+     }
+    }
+   ]
+  },
+  {
+   "user": true,
+   "system": false,
+   "mes": "*i quietly join the queue and follow it inisde the City where i then go to the adventurers guild and enter the guild hall*",
+   "events": [
+    {
+     "t": "turn.begun",
+     "d": {
+      "turn": 4,
+      "input_hash": "b4aaa553",
+      "input": "*i quietly join the queue and follow it inisde the City where i then go to the adventurers guild and enter the guild hall*"
+     }
+    },
+    {
+     "t": "outcome.recorded",
+     "d": {
+      "outcome": {
+       "kind": "narrative",
+       "check_die": 7,
+       "flags": {
+        "aim": false
+       }
+      },
+      "situations": []
+     },
+     "rng_to": 2
+    }
+   ]
+  },
+  {
+   "user": false,
+   "system": false,
+   "mes": "The queue shuffles forward at the carter's pace. When his turn comes, the slate guard reads something from his tablet, waves the ox through, and chalks a fresh mark. When Alaric reaches the arch, the same guard glances up once — face, sword, armor — and loses interest.\n\n\"Fresh in?\" he asks, flat with routine.\n\nWhatever the answer, the chalk already has its mark and the man's attention has moved to the mule behind. The passage is cool and smells of old iron; hooves and boots clap off the stone on either side.\n\nInside, Glassmere opens out in a cobbled square lined with plaster-fronted houses, awnings, a well with a line of buckets. The noise is ordinary: shutters opening, a woman calling a price, gulls somewhere over the rooftops. Signs hang from brackets — a smith, a chandler, a moneyer's scales. One bracket near the square's far corner carries a crossed sword and lantern over a broad door, and people with packs and weapons drift in and out of it in a loose pattern that marks the Guild hall.\n\nThe door opens onto a long room with a timber counter across its width, whitewashed walls hung with notice boards and a large painted map of the region. Morning light falls through high windows onto a flagstone floor scuffed by boots. A dozen people occupy the benches and standing space: two mud-caked men talking over a folded pelt, a woman in a quilted jack reading notices, a young clerk arguing numbers with somebody at the counter's far end.\n\nBehind the counter, a broad-shouldered woman with grey-streaked hair and a leather eyepatch over her left eye sorts contract sheets into a rack. She finishes the stack, sets it down, and looks along the counter at the people waiting, Alaric among them.\n\n\"Right,\" she says to the counter generally. \"Who's next?\"",
+   "events": [
+    {
+     "t": "time.advanced",
+     "d": {
+      "minutes": 30,
+      "why": "narration"
+     }
+    },
+    {
+     "t": "scene.moved",
+     "d": {
+      "place": "inside Glassmere — cobbled square, then the Adventurers' Guild hall (Alaric alone moves in)"
+     }
+    },
+    {
+     "t": "entity.created",
+     "d": {
+      "entity": {
+       "id": "npc.counterwoman",
+       "kind": "npc",
+       "name": "Counterwoman",
+       "descriptors": [
+        "guild receptionist",
+        "broad-shouldered",
+        "grey-streaked hair",
+        "leather eyepatch over left eye",
+        "counterwoman"
+       ],
+       "traits": "sorts contract sheets, brisk, runs the counter",
+       "status": "alive",
+       "location": "loc.glassmere",
+       "created": {
+        "turn": 4,
+        "minute": 560
+       },
+       "source": {
+        "kind": "narration",
+        "msg": 8
+       },
+       "card": {},
+       "template": "commoner"
+      }
+     }
+    },
+    {
+     "t": "scene.entered",
+     "d": {
+      "id": "npc.counterwoman",
+      "band": null
+     }
+    },
+    {
+     "t": "entity.created",
+     "d": {
+      "entity": {
+       "id": "npc.clerk",
+       "kind": "npc",
+       "name": null,
+       "descriptors": [
+        "young clerk",
+        "arguing numbers at the counter's far end",
+        "clerk"
+       ],
+       "traits": "",
+       "status": "alive",
+       "location": "loc.glassmere",
+       "created": {
+        "turn": 4,
+        "minute": 560
+       },
+       "source": {
+        "kind": "narration",
+        "msg": 8
+       },
+       "card": {},
+       "template": "commoner"
+      }
+     }
+    },
+    {
+     "t": "scene.entered",
+     "d": {
+      "id": "npc.clerk",
+      "band": null
+     }
+    },
+    {
+     "t": "entity.created",
+     "d": {
+      "entity": {
+       "id": "npc.peltmen",
+       "kind": "npc",
+       "name": null,
+       "descriptors": [
+        "two mud-caked men",
+        "talking over a folded pelt",
+        "peltmen"
+       ],
+       "traits": "",
+       "status": "alive",
+       "location": "loc.glassmere",
+       "created": {
+        "turn": 4,
+        "minute": 560
+       },
+       "source": {
+        "kind": "narration",
+        "msg": 8
+       },
+       "card": {},
+       "template": "commoner"
+      }
+     }
+    },
+    {
+     "t": "scene.entered",
+     "d": {
+      "id": "npc.peltmen",
+      "band": null
+     }
+    },
+    {
+     "t": "entity.created",
+     "d": {
+      "entity": {
+       "id": "npc.quiltedwoman",
+       "kind": "npc",
+       "name": null,
+       "descriptors": [
+        "woman in a quilted jack",
+        "reading the notice boards",
+        "quiltedwoman"
+       ],
+       "traits": "",
+       "status": "alive",
+       "location": "loc.glassmere",
+       "created": {
+        "turn": 4,
+        "minute": 560
+       },
+       "source": {
+        "kind": "narration",
+        "msg": 8
+       },
+       "card": {},
+       "template": "commoner"
+      }
+     }
+    },
+    {
+     "t": "scene.entered",
+     "d": {
+      "id": "npc.quiltedwoman",
+      "band": null
+     }
+    },
+    {
+     "t": "scene.awareness",
+     "d": {
+      "id": "npc.slate_guard",
+      "level": "aware"
+     }
+    },
+    {
+     "t": "scene.awareness",
+     "d": {
+      "id": "npc.counterwoman",
+      "level": "aware"
+     }
+    },
+    {
+     "t": "scene.awareness",
+     "d": {
+      "id": "npc.clerk",
+      "level": "unaware"
+     }
+    },
+    {
+     "t": "scene.awareness",
+     "d": {
+      "id": "npc.peltmen",
+      "level": "unaware"
+     }
+    },
+    {
+     "t": "scene.awareness",
+     "d": {
+      "id": "npc.quiltedwoman",
+      "level": "unaware"
+     }
+    },
+    {
+     "t": "scene.left",
+     "d": {
+      "id": "npc.jaw_guard"
+     }
+    },
+    {
+     "t": "fact.asserted",
+     "d": {
+      "fact": {
+       "id": "f.t4.m8.1",
+       "s": "npc.counterwoman",
+       "p": "occupation",
+       "o": "Adventurers' Guild counter keeper",
+       "since": {
+        "turn": 4,
+        "minute": 560
+       },
+       "until": null,
+       "visibility": "public",
+       "importance": 0.5,
+       "hard": false,
+       "source": {
+        "kind": "narration",
+        "msg": 8,
+        "because": null
+       }
+      }
+     }
+    },
+    {
+     "t": "knowledge.gained",
+     "d": {
+      "who": "npc.slate_guard",
+      "about": "f.pc.appearance",
+      "stance": "knows",
+      "source": "witnessed",
+      "turn": 4,
+      "minute": 590
+     }
+    },
+    {
+     "t": "memory.recorded",
+     "d": {
+      "memory": {
+       "id": "m.t4.seen.npc.slate_guard",
+       "turn": 4,
+       "minute": 590,
+       "text": "first saw {pc} at inside Glassmere — cobbled square, then the Adventurers' Guild hall (Alaric alone moves in)",
+       "who": [
+        "npc.slate_guard",
+        "pc"
+       ],
+       "witnesses": [
+        "npc.slate_guard"
+       ],
+       "seen": [
+        "npc.slate_guard"
+       ],
+       "location": "loc.glassmere",
+       "place": "inside Glassmere — cobbled square, then the Adventurers' Guild hall (Alaric alone moves in)",
+       "importance": 4,
+       "kind": "meeting"
+      }
+     }
+    },
+    {
+     "t": "knowledge.gained",
+     "d": {
+      "who": "npc.counterwoman",
+      "about": "f.pc.appearance",
+      "stance": "knows",
+      "source": "witnessed",
+      "turn": 4,
+      "minute": 590
+     }
+    },
+    {
+     "t": "memory.recorded",
+     "d": {
+      "memory": {
+       "id": "m.t4.seen.npc.counterwoman",
+       "turn": 4,
+       "minute": 590,
+       "text": "first saw {pc} at inside Glassmere — cobbled square, then the Adventurers' Guild hall (Alaric alone moves in)",
+       "who": [
+        "npc.counterwoman",
+        "pc"
+       ],
+       "witnesses": [
+        "npc.counterwoman"
+       ],
+       "seen": [
+        "npc.counterwoman"
+       ],
+       "location": "loc.glassmere",
+       "place": "inside Glassmere — cobbled square, then the Adventurers' Guild hall (Alaric alone moves in)",
+       "importance": 4,
+       "kind": "meeting"
+      }
+     }
+    },
+    {
+     "t": "memory.recorded",
+     "d": {
+      "memory": {
+       "id": "m.t4.m8.ep",
+       "turn": 4,
+       "minute": 590,
+       "text": "inside Glassmere — cobbled square, then the Adventurers' Guild hall (Alaric alone moves in): {pc}: \"*i quietly join the queue and follow it inisde the City where i then go to the adventurers guild and enter the guild hall*\"",
+       "who": [
+        "pc"
+       ],
+       "about": [
+        "npc.slate_guard",
+        "npc.counterwoman",
+        "npc.clerk",
+        "npc.peltmen",
+        "npc.quiltedwoman"
+       ],
+       "witnesses": [
+        "pc"
+       ],
+       "seen": [
+        "pc"
+       ],
+       "location": "loc.glassmere",
+       "place": "inside Glassmere — cobbled square, then the Adventurers' Guild hall (Alaric alone moves in)",
+       "importance": 3,
+       "kind": "episode",
+       "msg": 8
+      }
+     }
+    },
+    {
+     "t": "report.requested",
+     "d": {
+      "ok": true,
+      "error": "no <avereth> report",
+      "ms": 15036
+     }
+    }
+   ]
+  },
+  {
+   "user": true,
+   "system": false,
+   "mes": "*i walk up and say* Hello Im Alaric and i want to register",
+   "events": [
+    {
+     "t": "turn.begun",
+     "d": {
+      "turn": 5,
+      "input_hash": "3eacce70",
+      "input": "*i walk up and say* Hello Im Alaric and i want to register"
+     }
+    },
+    {
+     "t": "outcome.recorded",
+     "d": {
+      "outcome": {
+       "kind": "narrative",
+       "check_die": 84,
+       "flags": {
+        "aim": false
+       }
+      },
+      "situations": []
+     },
+     "rng_to": 3
+    }
+   ]
+  },
+  {
+   "user": false,
+   "system": false,
+   "mes": "\"Alaric.\" The counterwoman sets the rack straight and pulls a register toward herself. \"Registration's one silver, and it's blood on the stone — Guild crystal takes a prick from your thumb and that's your mark. Means one registration per person, ever, so don't go losing your tag.\"\n\nShe slides a shallow stone dish across the counter — a grey oval the size of a palm, plain except for an engraved border of swords and lanterns. From under the counter she produces a short iron bodkin with a wooden grip, and a paper form with ruled columns.\n\n\"Name as you want it read out. Age. Class if you've one, or 'untested' if you don't know. Any Guild standing elsewhere — that carries over if it's real.\" She uncaps a small inkwell and dips a nib. \"Where you from, and what's pushed you toward the work? The second part's short, mind. 'Money' is an acceptable answer, I've heard it four times this morning.\"\n\nThe bench behind Alaric creaks as the two mud-caked men shift their pelt aside to give him room. From the notice boards, the woman in the quilted jack glances over — a moment, then back to her reading.\n\nThe counterwoman waits, nib poised, one eyebrow up above her eyepatch.",
+   "events": [
+    {
+     "t": "time.advanced",
+     "d": {
+      "minutes": 2,
+      "why": "narration"
+     }
+    },
+    {
+     "t": "scene.position",
+     "d": {
+      "id": "npc.counterwoman",
+      "band": "ENGAGED",
+      "cover": "none"
+     }
+    },
+    {
+     "t": "fact.asserted",
+     "d": {
+      "fact": {
+       "id": "f.t5.m10.1",
+       "s": "Guild registration",
+       "p": "costs",
+       "o": "one silver",
+       "since": {
+        "turn": 5,
+        "minute": 590
+       },
+       "until": null,
+       "visibility": "public",
+       "importance": 0.5,
+       "hard": false,
+       "source": {
+        "kind": "narration",
+        "msg": 10,
+        "because": "counterwoman stated the fee"
+       }
+      }
+     }
+    },
+    {
+     "t": "fact.asserted",
+     "d": {
+      "fact": {
+       "id": "f.t5.m10.2",
+       "s": "Guild registration",
+       "p": "requires",
+       "o": "a thumb-prick blood mark on the Guild crystal, one per person ever",
+       "since": {
+        "turn": 5,
+        "minute": 590
+       },
+       "until": null,
+       "visibility": "public",
+       "importance": 0.5,
+       "hard": false,
+       "source": {
+        "kind": "narration",
+        "msg": 10,
+        "because": null
+       }
+      }
+     }
+    },
+    {
+     "t": "fact.asserted",
+     "d": {
+      "fact": {
+       "id": "f.t5.m10.3",
+       "s": "npc.counterwoman",
+       "p": "requests",
+       "o": "name, age, class or untested, any Guild standing, origin, and reason for the work",
+       "since": {
+        "turn": 5,
+        "minute": 590
+       },
+       "until": null,
+       "visibility": "public",
+       "importance": 0.5,
+       "hard": false,
+       "source": {
+        "kind": "narration",
+        "msg": 10,
+        "because": null
+       }
+      }
+     }
+    },
+    {
+     "t": "knowledge.gained",
+     "d": {
+      "who": "npc.counterwoman",
+      "about": "f.pc.name",
+      "stance": "knows",
+      "source": "witnessed",
+      "turn": 5,
+      "minute": 590
+     }
+    },
+    {
+     "t": "item.changed",
+     "d": {
+      "id": "pc",
+      "item": "registration_form",
+      "qty": 1,
+      "name": "registration form",
+      "why": "to fill in for registration"
+     }
+    },
+    {
+     "t": "memory.recorded",
+     "d": {
+      "memory": {
+       "id": "m.t5.m10.ep",
+       "turn": 5,
+       "minute": 592,
+       "text": "inside Glassmere — cobbled square, then the Adventurers' Guild hall (Alaric alone moves in): {pc}: \"*i walk up and say* Hello Im Alaric and i want to register\"",
+       "who": [
+        "pc"
+       ],
+       "about": [
+        "npc.slate_guard",
+        "npc.counterwoman",
+        "npc.clerk",
+        "npc.peltmen",
+        "npc.quiltedwoman"
+       ],
+       "witnesses": [
+        "pc"
+       ],
+       "seen": [
+        "pc"
+       ],
+       "location": "loc.glassmere",
+       "place": "inside Glassmere — cobbled square, then the Adventurers' Guild hall (Alaric alone moves in)",
+       "importance": 3,
+       "kind": "episode",
+       "msg": 10
+      }
+     }
+    },
+    {
+     "t": "report.requested",
+     "d": {
+      "ok": true,
+      "error": "no <avereth> report",
+      "ms": 11513
+     }
+    }
+   ]
+  },
+  {
+   "user": true,
+   "system": false,
+   "mes": "*I write down Alaric Red 18 Warrior no guild standings from a Village in the Kingdom and traveling the World* here *i say and give her the registration form back*",
+   "events": [
+    {
+     "t": "turn.begun",
+     "d": {
+      "turn": 6,
+      "input_hash": "6938247a",
+      "input": "*I write down Alaric Red 18 Warrior no guild standings from a Village in the Kingdom and traveling the World* here *i say and give her the registration form back*"
+     }
+    },
+    {
+     "t": "outcome.recorded",
+     "d": {
+      "outcome": {
+       "kind": "narrative",
+       "check_die": 67,
+       "flags": {
+        "aim": false
+       }
+      },
+      "situations": []
+     },
+     "rng_to": 4
+    }
+   ]
+  },
+  {
+   "user": false,
+   "system": false,
+   "mes": "\"'From a village in the Kingdom.'\" She reads it back without inflection. \"That's most of Caelreth, that is.\" The nib scratches through the columns anyway. \"Alaric Red, eighteen, Warrior, no standing. Traveling the world.\" A grunt. \"The road does that to people.\"\n\nShe flips the form around to check his hand, then holds it up to the light for a moment, squinting with her one eye. \"Hand's steady. That's something.\"\n\n\"One silver for the registry.\"\n\nThe coin goes into a locked drawer with a rattle of others. In exchange she sets a thin wooden tag on the counter, blank except for the Guild's crossed sword and lantern burned into one face.\n\n\"Thumb on the crystal, then.\" She turns the stone dish so its engraved border faces him and taps the center of the oval with the bodkin's tip. \"Press hard enough to bleed. The crystal does the rest — you'll feel a pull, don't fight it. And mind it's the one registration. If the tag's lost, a new one costs, but the mark remembers you.\"\n\nThe two mud-caked men have drifted along the counter to watch, pelt folded over the counter's edge between them. The older one spits into a spittoon by the counter's foot and says, to nobody in particular, \"Another one for the meat grinder.\"\n\nThe counterwoman ignores him. She holds the bodkin ready, waiting for Alaric's thumb to touch the stone.",
+   "events": [
+    {
+     "t": "time.advanced",
+     "d": {
+      "minutes": 2,
+      "why": "narration"
+     }
+    },
+    {
+     "t": "scene.position",
+     "d": {
+      "id": "npc.peltmen",
+      "band": "ENGAGED",
+      "cover": "none"
+     }
+    },
+    {
+     "t": "scene.awareness",
+     "d": {
+      "id": "npc.peltmen",
+      "level": "aware"
+     }
+    },
+    {
+     "t": "fact.ended",
+     "d": {
+      "id": "f.t4.m8.1",
+      "until": {
+       "turn": 6,
+       "minute": 592
+      },
+      "reason": "superseded by npc.counterwoman occupation runs Guild registrations at the counter"
+     }
+    },
+    {
+     "t": "fact.asserted",
+     "d": {
+      "fact": {
+       "id": "f.t6.m12.1",
+       "s": "npc.counterwoman",
+       "p": "occupation",
+       "o": "runs Guild registrations at the counter",
+       "since": {
+        "turn": 6,
+        "minute": 592
+       },
+       "until": null,
+       "visibility": "public",
+       "importance": 0.5,
+       "hard": false,
+       "source": {
+        "kind": "narration",
+        "msg": 12,
+        "because": null
+       }
+      }
+     }
+    },
+    {
+     "t": "fact.asserted",
+     "d": {
+      "fact": {
+       "id": "f.t6.m12.2",
+       "s": "npc.counterwoman",
+       "p": "voice",
+       "o": "brisk, dry",
+       "since": {
+        "turn": 6,
+        "minute": 592
+       },
+       "until": null,
+       "visibility": "public",
+       "importance": 0.5,
+       "hard": false,
+       "source": {
+        "kind": "narration",
+        "msg": 12,
+        "because": null
+       }
+      }
+     }
+    },
+    {
+     "t": "fact.asserted",
+     "d": {
+      "fact": {
+       "id": "f.t6.m12.3",
+       "s": "the older mud-caked man",
+       "p": "agenda",
+       "o": "none",
+       "since": {
+        "turn": 6,
+        "minute": 592
+       },
+       "until": null,
+       "visibility": "public",
+       "importance": 0.5,
+       "hard": false,
+       "source": {
+        "kind": "narration",
+        "msg": 12,
+        "because": null
+       }
+      }
+     }
+    },
+    {
+     "t": "knowledge.gained",
+     "d": {
+      "who": "npc.counterwoman",
+      "about": "f.pc.name",
+      "stance": "knows",
+      "source": "told:pc",
+      "turn": 6,
+      "minute": 592
+     }
+    },
+    {
+     "t": "claim.created",
+     "d": {
+      "claim": {
+       "id": "c.t6.m12.4",
+       "s": "pc",
+       "p": "age",
+       "o": "18",
+       "truth": "unknown",
+       "source": {
+        "kind": "narration",
+        "msg": 12
+       }
+      }
+     }
+    },
+    {
+     "t": "knowledge.gained",
+     "d": {
+      "who": "npc.counterwoman",
+      "about": "c.t6.m12.4",
+      "stance": "believes",
+      "source": "told:pc",
+      "turn": 6,
+      "minute": 592
+     }
+    },
+    {
+     "t": "claim.created",
+     "d": {
+      "claim": {
+       "id": "c.t6.m12.5",
+       "s": "pc",
+       "p": "class",
+       "o": "Warrior",
+       "truth": "unknown",
+       "source": {
+        "kind": "narration",
+        "msg": 12
+       }
+      }
+     }
+    },
+    {
+     "t": "knowledge.gained",
+     "d": {
+      "who": "npc.counterwoman",
+      "about": "c.t6.m12.5",
+      "stance": "believes",
+      "source": "told:pc",
+      "turn": 6,
+      "minute": 592
+     }
+    },
+    {
+     "t": "claim.created",
+     "d": {
+      "claim": {
+       "id": "c.t6.m12.6",
+       "s": "pc",
+       "p": "origin",
+       "o": "a village in the Kingdom",
+       "truth": "unknown",
+       "source": {
+        "kind": "narration",
+        "msg": 12
+       }
+      }
+     }
+    },
+    {
+     "t": "knowledge.gained",
+     "d": {
+      "who": "npc.counterwoman",
+      "about": "c.t6.m12.6",
+      "stance": "believes",
+      "source": "told:pc",
+      "turn": 6,
+      "minute": 592
+     }
+    },
+    {
+     "t": "claim.created",
+     "d": {
+      "claim": {
+       "id": "c.t6.m12.7",
+       "s": "pc",
+       "p": "guild_rank",
+       "o": "none",
+       "truth": "unknown",
+       "source": {
+        "kind": "narration",
+        "msg": 12
+       }
+      }
+     }
+    },
+    {
+     "t": "knowledge.gained",
+     "d": {
+      "who": "npc.counterwoman",
+      "about": "c.t6.m12.7",
+      "stance": "believes",
+      "source": "told:pc",
+      "turn": 6,
+      "minute": 592
+     }
+    },
+    {
+     "t": "item.changed",
+     "d": {
+      "id": "pc",
+      "item": "registration_form",
+      "qty": -1,
+      "why": "submitted with details"
+     }
+    },
+    {
+     "t": "coin.changed",
+     "d": {
+      "id": "pc",
+      "value": 40,
+      "delta": -10,
+      "why": "Guild registration fee"
+     }
+    },
+    {
+     "t": "knowledge.gained",
+     "d": {
+      "who": "npc.peltmen",
+      "about": "f.pc.appearance",
+      "stance": "knows",
+      "source": "witnessed",
+      "turn": 6,
+      "minute": 594
+     }
+    },
+    {
+     "t": "memory.recorded",
+     "d": {
+      "memory": {
+       "id": "m.t6.seen.npc.peltmen",
+       "turn": 6,
+       "minute": 594,
+       "text": "first saw {pc} at inside Glassmere — cobbled square, then the Adventurers' Guild hall (Alaric alone moves in)",
+       "who": [
+        "npc.peltmen",
+        "pc"
+       ],
+       "witnesses": [
+        "npc.peltmen"
+       ],
+       "seen": [
+        "npc.peltmen"
+       ],
+       "location": "loc.glassmere",
+       "place": "inside Glassmere — cobbled square, then the Adventurers' Guild hall (Alaric alone moves in)",
+       "importance": 4,
+       "kind": "meeting"
+      }
+     }
+    },
+    {
+     "t": "memory.recorded",
+     "d": {
+      "memory": {
+       "id": "m.t6.m12.ep",
+       "turn": 6,
+       "minute": 594,
+       "text": "inside Glassmere — cobbled square, then the Adventurers' Guild hall (Alaric alone moves in): {pc}: \"*I write down Alaric Red 18 Warrior no guild standings from a Village in the Kingdom and traveling the World* here *i say and give her the registration form bac\"",
+       "who": [
+        "pc"
+       ],
+       "about": [
+        "npc.slate_guard",
+        "npc.counterwoman",
+        "npc.clerk",
+        "npc.peltmen",
+        "npc.quiltedwoman"
+       ],
+       "witnesses": [
+        "pc"
+       ],
+       "seen": [
+        "pc"
+       ],
+       "location": "loc.glassmere",
+       "place": "inside Glassmere — cobbled square, then the Adventurers' Guild hall (Alaric alone moves in)",
+       "importance": 3,
+       "kind": "episode",
+       "msg": 12
+      }
+     }
+    },
+    {
+     "t": "report.requested",
+     "d": {
+      "ok": true,
+      "error": "no <avereth> report",
+      "ms": 17791
+     }
+    }
+   ]
+  },
+  {
+   "user": true,
+   "system": false,
+   "mes": "*i press until i bleed and then wait for the result*",
+   "events": [
+    {
+     "t": "turn.begun",
+     "d": {
+      "turn": 7,
+      "input_hash": "0a6485f8",
+      "input": "*i press until i bleed and then wait for the result*"
+     }
+    },
+    {
+     "t": "outcome.recorded",
+     "d": {
+      "outcome": {
+       "kind": "narrative",
+       "check_die": 24,
+       "flags": {
+        "aim": false
+       }
+      },
+      "situations": []
+     },
+     "rng_to": 5
+    }
+   ]
+  },
+  {
+   "user": false,
+   "system": false,
+   "mes": "The needle's bite is quick — a bead of welling red at the thumb's pad. He presses it to the stone.\n\nThe pull is strange, like something drawing along under the skin, and the grey oval drinks the blood without leaving a smear. For a heartbeat the engraved border of swords and lanterns glows dull copper, then fades. In the crystal's center, faint as a watermark, a small mark sits where there was none before.\n\nThe counterwoman lifts the stone, tilts it to the window light, and nods.\n\n\"Takes.\" She sets it back, pulls the wooden tag toward her, and presses the crystal's face against the tag's blank side. The crossed sword and lantern flare briefly, and beside them letters surface in the wood grain, burned dark: *ALARIC RED — F*.\n\n\"There's your tag.\" She pushes it across the counter with two fingers. \"Rank F, Novice board, bottom left as you face the map. F-rank contracts are vermin culls, escorts, herb gathering, digging things out of cellars — posted rates, posted pay, no negotiating. Bring proof of the work back here and it's stamped, and the coin comes same day.\"\n\n\"You rank up on completed contracts and standing, not on what you think you are. Twelve clean F's and you test for E.\" She taps the register shut. \"Don't take anything above your rank without asking me first, because if it goes wrong, the paperwork lands on my desk.\"\n\nThe older mud-caked man snorts and drags his pelt back off the counter. The younger one lingers a moment, looking Alaric over — the sword, the armor, the red eyes — then follows.\n\n\"Questions, ask now,\" the counterwoman says. \"Otherwise the Novice board's that way, and there's a cellar job paying eight silver that's been sitting a week.\"",
+   "events": [
+    {
+     "t": "time.advanced",
+     "d": {
+      "minutes": 6,
+      "why": "narration"
+     }
+    },
+    {
+     "t": "fact.asserted",
+     "d": {
+      "fact": {
+       "id": "f.t7.m14.1",
+       "s": "pc",
+       "p": "guild_rank",
+       "o": "Novice",
+       "since": {
+        "turn": 7,
+        "minute": 594
+       },
+       "until": null,
+       "visibility": "public",
+       "importance": 0.5,
+       "hard": false,
+       "source": {
+        "kind": "narration",
+        "msg": 14,
+        "because": null
+       }
+      }
+     }
+    },
+    {
+     "t": "item.changed",
+     "d": {
+      "id": "pc",
+      "item": "guild_tag",
+      "qty": 1,
+      "name": "Guild tag",
+      "why": "registration"
+     }
+    },
+    {
+     "t": "delta.rejected",
+     "d": {
+      "item": {
+       "who": "Counterwoman",
+       "s": "Alaric",
+       "p": "guild_rank",
+       "o": "F (Novice)",
+       "how": "witnessed"
+      },
+      "reason": "contradicts world truth \"pc guild_rank Novice\"; change the world with \"facts\" (hard facts need \"because\")"
+     }
+    },
+    {
+     "t": "memory.recorded",
+     "d": {
+      "memory": {
+       "id": "m.t7.m14.ep",
+       "turn": 7,
+       "minute": 600,
+       "text": "inside Glassmere — cobbled square, then the Adventurers' Guild hall (Alaric alone moves in): {pc}: \"*i press until i bleed and then wait for the result*\"",
+       "who": [
+        "pc"
+       ],
+       "about": [
+        "npc.slate_guard",
+        "npc.counterwoman",
+        "npc.clerk",
+        "npc.peltmen",
+        "npc.quiltedwoman"
+       ],
+       "witnesses": [
+        "pc"
+       ],
+       "seen": [
+        "pc"
+       ],
+       "location": "loc.glassmere",
+       "place": "inside Glassmere — cobbled square, then the Adventurers' Guild hall (Alaric alone moves in)",
+       "importance": 3,
+       "kind": "episode",
+       "msg": 14
+      }
+     }
+    }
+   ]
+  },
+  {
+   "user": true,
+   "system": false,
+   "mes": "*i shake my head and walk to the Novice board and look at the quests on it*",
+   "events": [
+    {
+     "t": "turn.begun",
+     "d": {
+      "turn": 8,
+      "input_hash": "16bc002f",
+      "input": "*i shake my head and walk to the Novice board and look at the quests on it*"
+     }
+    },
+    {
+     "t": "outcome.recorded",
+     "d": {
+      "outcome": {
+       "kind": "narrative",
+       "check_die": 32,
+       "flags": {
+        "aim": false
+       }
+      },
+      "situations": []
+     },
+     "rng_to": 6
+    }
+   ]
+  },
+  {
+   "user": false,
+   "system": false,
+   "mes": "The Novice board sits in the hall's corner, a wide slate panel divided into rows of nailed-up sheets. Most are written on cheap paper in several different hands; a few are printed. The bottom-left quarter, as the counterwoman said, carries the F-rank work — the paper there is older, thumbed, some sheets gone brown at the corners.\n\nThe woman in the quilted jack stands near it, arms crossed, reading. She doesn't move aside, but there's room.\n\nThe F-rank postings, roughly in order:\n\n**RATS — THE SALT CELLAR OF THE WOOLSACK TAVERN.** Cull rats in the under-cellar; seven coppers per tail, tavern keeps the cellar sound. Two nights' work at most. *Six silver offered as flat rate if the nest is cleared whole.*\n\n**HERB CONTRACT — NETTLEWORT & REDMOSS.** Gather twelve bundles nettlewort, six redmoss, from the riverbanks east of the walls. One silver ten per full set. Drying shed provided. *Posted by Halloway's Physic, Candle Street.*\n\n**LOST GOAT — ELM ROW.** A brown nanny goat, horn caught in a broke tether, last seen toward the east drainage ditch. One silver on return, alive. *Signed: Wendel Cooper.*\n\n**CELLAR DIG — COLLAPSED ROOT STORE, TANNER'S LANE.** Clear a collapsed root cellar and dig out what's worth saving. Eight silver. *Sitting a week. Note pinned under the nail: \"Take a shovel. Possibly take a friend.\"*\n\n**ESCORT — CART TO HARLOW'S MILL, HALF-DAY.** Wool cart needs two armed escorts, leaves tomorrow dawn, back by dusk. Nine silver each.\n\nSome sheets higher up the board — D-rank, by the color of their header slips — mention things like *east drainage, gnaw marks, do not go alone*, but the paper is dense and at this distance the smaller print doesn't read itself.\n\nThe woman in the quilted jack pulls the herb contract sheet off the board, folds it, and leaves through the side door.\n\nThe eight-silver cellar sheet flutters slightly as the door swings shut behind her.",
+   "events": [
+    {
+     "t": "time.advanced",
+     "d": {
+      "minutes": 5,
+      "why": "narration"
+     }
+    },
+    {
+     "t": "scene.moved",
+     "d": {
+      "place": "Novice board, Guild hall corner"
+     }
+    },
+    {
+     "t": "scene.left",
+     "d": {
+      "id": "npc.slate_guard"
+     }
+    },
+    {
+     "t": "scene.left",
+     "d": {
+      "id": "npc.counterwoman"
+     }
+    },
+    {
+     "t": "scene.left",
+     "d": {
+      "id": "npc.clerk"
+     }
+    },
+    {
+     "t": "scene.left",
+     "d": {
+      "id": "npc.peltmen"
+     }
+    },
+    {
+     "t": "scene.left",
+     "d": {
+      "id": "npc.quiltedwoman"
+     }
+    },
+    {
+     "t": "fact.asserted",
+     "d": {
+      "fact": {
+       "id": "f.t8.m16.1",
+       "s": "D-rank postings",
+       "p": "warn_of",
+       "o": "gnaw marks in the east drainage, do not go alone",
+       "since": {
+        "turn": 8,
+        "minute": 600
+       },
+       "until": null,
+       "visibility": "secret",
+       "importance": 0.5,
+       "hard": false,
+       "source": {
+        "kind": "narration",
+        "msg": 16,
+        "because": null
+       }
+      }
+     }
+    },
+    {
+     "t": "quest.set",
+     "d": {
+      "quest": {
+       "id": "quest.rats_the_salt_cellar_of_the_woolsack_tavern",
+       "title": "Rats — the Salt Cellar of the Woolsack Tavern",
+       "status": "offered",
+       "giver": "Woolsack Tavern",
+       "rec_level": 1,
+       "rank": "Novice",
+       "qtype": "minor",
+       "reward": "6 silver flat / 7cp per tail",
+       "notes": [
+        "cull rats, 6sp flat if nest cleared whole"
+       ],
+       "history": [
+        {
+         "turn": 8,
+         "minute": 600,
+         "status": "offered"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "t": "quest.set",
+     "d": {
+      "quest": {
+       "id": "quest.herb_contract_nettlewort_redmoss",
+       "title": "Herb Contract — Nettlewort & Redmoss",
+       "status": "offered",
+       "giver": "Halloway's Physic, Candle Street",
+       "rec_level": 1,
+       "rank": "Novice",
+       "qtype": "minor",
+       "reward": "1 silver 10 per full set",
+       "notes": [
+        "12 nettlewort, 6 redmoss, riverbanks east"
+       ],
+       "history": [
+        {
+         "turn": 8,
+         "minute": 600,
+         "status": "offered"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "t": "quest.set",
+     "d": {
+      "quest": {
+       "id": "quest.lost_goat_elm_row",
+       "title": "Lost Goat — Elm Row",
+       "status": "offered",
+       "giver": "Wendel Cooper",
+       "rec_level": 1,
+       "rank": "Novice",
+       "qtype": "minor",
+       "reward": "1 silver, alive",
+       "notes": [
+        "brown nanny goat, east drainage ditch"
+       ],
+       "history": [
+        {
+         "turn": 8,
+         "minute": 600,
+         "status": "offered"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "t": "quest.set",
+     "d": {
+      "quest": {
+       "id": "quest.cellar_dig_collapsed_root_store_tanners_lane",
+       "title": "Cellar Dig — Collapsed Root Store, Tanner's Lane",
+       "status": "offered",
+       "giver": "Tanner's Lane property owner",
+       "rec_level": 1,
+       "rank": "Novice",
+       "qtype": "standard",
+       "reward": "8 silver",
+       "notes": [
+        "clear collapsed root cellar; sitting a week"
+       ],
+       "history": [
+        {
+         "turn": 8,
+         "minute": 600,
+         "status": "offered"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "t": "quest.set",
+     "d": {
+      "quest": {
+       "id": "quest.escort_cart_to_harlows_mill",
+       "title": "Escort — Cart to Harlow's Mill",
+       "status": "offered",
+       "giver": "wool merchant",
+       "rec_level": 1,
+       "rank": "Novice",
+       "qtype": "standard",
+       "reward": "9 silver each",
+       "notes": [
+        "leaves tomorrow dawn, back by dusk, two escorts wanted"
+       ],
+       "history": [
+        {
+         "turn": 8,
+         "minute": 600,
+         "status": "offered"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "t": "memory.recorded",
+     "d": {
+      "memory": {
+       "id": "m.t8.m16.ep",
+       "turn": 8,
+       "minute": 605,
+       "text": "Novice board, Guild hall corner: {pc}: \"*i shake my head and walk to the Novice board and look at the quests on it*\"",
+       "who": [
+        "pc"
+       ],
+       "about": [],
+       "witnesses": [
+        "pc"
+       ],
+       "seen": [
+        "pc"
+       ],
+       "location": "loc.glassmere",
+       "place": "Novice board, Guild hall corner",
+       "importance": 2,
+       "kind": "episode",
+       "msg": 16
+      }
+     }
+    }
+   ]
+  },
+  {
+   "user": true,
+   "system": false,
+   "mes": "*i take the Rats Quest and register it at the front desk. I then travel to the Woolsack Tavern*",
+   "events": [
+    {
+     "t": "turn.begun",
+     "d": {
+      "turn": 9,
+      "input_hash": "06fb2efc",
+      "input": "*i take the Rats Quest and register it at the front desk. I then travel to the Woolsack Tavern*"
+     }
+    },
+    {
+     "t": "outcome.recorded",
+     "d": {
+      "outcome": {
+       "kind": "narrative",
+       "check_die": 21,
+       "flags": {
+        "aim": false
+       }
+      },
+      "situations": []
+     },
+     "rng_to": 7
+    }
+   ]
+  },
+  {
+   "user": false,
+   "system": false,
+   "mes": "The counterwoman stamps the rat sheet without looking up from her register. \"Woolsack. Down Candle Street, past the physic, follow the smell of the vats. Ask for Osney — he keeps the cellar. Bring the tails back here or to him, either's fine.\" A second stamp. \"Next.\"\n\nCandle Street runs downhill from the Guild square, cobbles greasy with morning drizzle. A knot of students in grey college cloaks crowd the physic's doorway ahead, arguing over a Skill-Stone receipt; Alaric steps around them. The Woolsack announces itself before it's visible — a thick, sour smell of tanning lye and wet wool drifting up the lane. The tavern squats at the bottom, low-beamed, its sign a fat ram on a green field, and beside it a wide cellar door stands open on stone steps going down into lamplight.\n\nInside the common room it's mostly empty: a boy sweeping sawdust, two old men splitting a jug by the window. Behind the counter, a barrel-chested man with forearms dyed blue to the elbow is hauling on a tap wrench. He glances up at the sword and armor.\n\n\"Guild, is it?\" He lets the wrench go. \"You'll be for the rats, then. Osney's down — through there, mind the third step, it's cracked. I'm Brede, this is my house. Seven coppers the tail, or six silver if you clear the nest whole. Osney counts the tails, I pay the coin. Off you go.\"\n\nThe third step gives underfoot, gritty. Below, by lamplight, a wiry old man in a leather apron sits on an upturned barrel beside a sack of salt, whittling a peg. Salt barrels line one wall; gnawed grain sacks and a broken cask litter the rest. Two beady eyes catch the lamplight along the far wall, and vanish into a gap in the stone.\n\nOsney looks up, peg knife still moving. \"Door's been open since dawn. They'll be back in the walls by now. You wanting them out, or just the tails?\"",
+   "events": [
+    {
+     "t": "time.advanced",
+     "d": {
+      "minutes": 25,
+      "why": "narration"
+     }
+    },
+    {
+     "t": "scene.moved",
+     "d": {
+      "place": "Woolsack Tavern common room, then its salt cellar"
+     }
+    },
+    {
+     "t": "entity.created",
+     "d": {
+      "entity": {
+       "id": "npc.brede",
+       "kind": "npc",
+       "name": "Brede",
+       "descriptors": [
+        "tavern keeper of the woolsack",
+        "barrel-chested",
+        "blue-dyed forearms",
+        "brede"
+       ],
+       "traits": "",
+       "status": "alive",
+       "location": "loc.glassmere",
+       "created": {
+        "turn": 9,
+        "minute": 605
+       },
+       "source": {
+        "kind": "narration",
+        "msg": 18
+       },
+       "card": {},
+       "template": "commoner"
+      }
+     }
+    },
+    {
+     "t": "scene.entered",
+     "d": {
+      "id": "npc.brede",
+      "band": null
+     }
+    },
+    {
+     "t": "entity.created",
+     "d": {
+      "entity": {
+       "id": "npc.osney",
+       "kind": "npc",
+       "name": "Osney",
+       "descriptors": [
+        "cellar keeper",
+        "wiry old man",
+        "leather apron",
+        "whittles pegs",
+        "osney"
+       ],
+       "traits": "",
+       "status": "alive",
+       "location": "loc.glassmere",
+       "created": {
+        "turn": 9,
+        "minute": 605
+       },
+       "source": {
+        "kind": "narration",
+        "msg": 18
+       },
+       "card": {},
+       "template": "commoner"
+      }
+     }
+    },
+    {
+     "t": "scene.entered",
+     "d": {
+      "id": "npc.osney",
+      "band": null
+     }
+    },
+    {
+     "t": "scene.position",
+     "d": {
+      "id": "npc.osney",
+      "band": "MEDIUM",
+      "cover": "none"
+     }
+    },
+    {
+     "t": "scene.position",
+     "d": {
+      "id": "npc.brede",
+      "band": "MEDIUM",
+      "cover": "none"
+     }
+    },
+    {
+     "t": "scene.awareness",
+     "d": {
+      "id": "npc.brede",
+      "level": "aware"
+     }
+    },
+    {
+     "t": "scene.awareness",
+     "d": {
+      "id": "npc.osney",
+      "level": "aware"
+     }
+    },
+    {
+     "t": "fact.asserted",
+     "d": {
+      "fact": {
+       "id": "f.t9.m18.1",
+       "s": "third cellar step",
+       "p": "status",
+       "o": "cracked",
+       "since": {
+        "turn": 9,
+        "minute": 605
+       },
+       "until": null,
+       "visibility": "public",
+       "importance": 0.5,
+       "hard": false,
+       "source": {
+        "kind": "narration",
+        "msg": 18,
+        "because": null
+       }
+      }
+     }
+    },
+    {
+     "t": "fact.asserted",
+     "d": {
+      "fact": {
+       "id": "f.t9.m18.2",
+       "s": "rat",
+       "p": "location",
+       "o": "gap in cellar wall, aware of Alaric",
+       "since": {
+        "turn": 9,
+        "minute": 605
+       },
+       "until": null,
+       "visibility": "public",
+       "importance": 0.5,
+       "hard": false,
+       "source": {
+        "kind": "narration",
+        "msg": 18,
+        "because": null
+       }
+      }
+     }
+    },
+    {
+     "t": "fact.asserted",
+     "d": {
+      "fact": {
+       "id": "f.t9.m18.3",
+       "s": "npc.osney",
+       "p": "occupation",
+       "o": "keeps the Woolsack salt cellar",
+       "since": {
+        "turn": 9,
+        "minute": 605
+       },
+       "until": null,
+       "visibility": "public",
+       "importance": 0.5,
+       "hard": false,
+       "source": {
+        "kind": "narration",
+        "msg": 18,
+        "because": null
+       }
+      }
+     }
+    },
+    {
+     "t": "claim.created",
+     "d": {
+      "claim": {
+       "id": "c.t9.m18.4",
+       "s": "pc",
+       "p": "intent",
+       "o": "here for the rat cull",
+       "truth": "unknown",
+       "source": {
+        "kind": "narration",
+        "msg": 18
+       }
+      }
+     }
+    },
+    {
+     "t": "knowledge.gained",
+     "d": {
+      "who": "npc.brede",
+      "about": "c.t9.m18.4",
+      "stance": "suspects",
+      "source": "inferred",
+      "turn": 9,
+      "minute": 605
+     }
+    },
+    {
+     "t": "quest.set",
+     "d": {
+      "quest": {
+       "id": "quest.rats_the_salt_cellar_of_the_woolsack_tavern",
+       "title": "Rats — the Salt Cellar of the Woolsack Tavern",
+       "status": "active",
+       "giver": "Woolsack Tavern",
+       "rec_level": 1,
+       "rank": "Novice",
+       "qtype": "minor",
+       "reward": "6 silver flat / 7cp per tail",
+       "notes": [
+        "cull rats, 6sp flat if nest cleared whole",
+        "registered at Guild desk; tails to Osney or Guild, pay from Brede"
+       ],
+       "history": [
+        {
+         "turn": 8,
+         "minute": 600,
+         "status": "offered"
+        },
+        {
+         "turn": 9,
+         "minute": 605,
+         "status": "active"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "t": "knowledge.gained",
+     "d": {
+      "who": "npc.brede",
+      "about": "f.pc.appearance",
+      "stance": "knows",
+      "source": "witnessed",
+      "turn": 9,
+      "minute": 630
+     }
+    },
+    {
+     "t": "memory.recorded",
+     "d": {
+      "memory": {
+       "id": "m.t9.seen.npc.brede",
+       "turn": 9,
+       "minute": 630,
+       "text": "first saw {pc} at Woolsack Tavern common room, then its salt cellar",
+       "who": [
+        "npc.brede",
+        "pc"
+       ],
+       "witnesses": [
+        "npc.brede"
+       ],
+       "seen": [
+        "npc.brede"
+       ],
+       "location": "loc.glassmere",
+       "place": "Woolsack Tavern common room, then its salt cellar",
+       "importance": 4,
+       "kind": "meeting"
+      }
+     }
+    },
+    {
+     "t": "knowledge.gained",
+     "d": {
+      "who": "npc.osney",
+      "about": "f.pc.appearance",
+      "stance": "knows",
+      "source": "witnessed",
+      "turn": 9,
+      "minute": 630
+     }
+    },
+    {
+     "t": "memory.recorded",
+     "d": {
+      "memory": {
+       "id": "m.t9.seen.npc.osney",
+       "turn": 9,
+       "minute": 630,
+       "text": "first saw {pc} at Woolsack Tavern common room, then its salt cellar",
+       "who": [
+        "npc.osney",
+        "pc"
+       ],
+       "witnesses": [
+        "npc.osney"
+       ],
+       "seen": [
+        "npc.osney"
+       ],
+       "location": "loc.glassmere",
+       "place": "Woolsack Tavern common room, then its salt cellar",
+       "importance": 4,
+       "kind": "meeting"
+      }
+     }
+    },
+    {
+     "t": "memory.recorded",
+     "d": {
+      "memory": {
+       "id": "m.t9.m18.ep",
+       "turn": 9,
+       "minute": 630,
+       "text": "Woolsack Tavern common room, then its salt cellar: {pc}: \"*i take the Rats Quest and register it at the front desk. I then travel to the Woolsack Tavern*\"",
+       "who": [
+        "pc"
+       ],
+       "about": [
+        "npc.brede",
+        "npc.osney"
+       ],
+       "witnesses": [
+        "pc"
+       ],
+       "seen": [
+        "pc"
+       ],
+       "location": "loc.glassmere",
+       "place": "Woolsack Tavern common room, then its salt cellar",
+       "importance": 3,
+       "kind": "episode",
+       "msg": 18
+      }
+     }
+    },
+    {
+     "t": "report.requested",
+     "d": {
+      "ok": true,
+      "error": "no <avereth> report",
+      "ms": 18781
+     }
+    }
+   ]
+  },
+  {
+   "user": true,
+   "system": false,
+   "mes": "If you can get them out so i can cull them that would be most helpful *i say calmly as i get my sword ready*",
+   "events": [
+    {
+     "t": "turn.begun",
+     "d": {
+      "turn": 10,
+      "input_hash": "cbfd6385",
+      "input": "If you can get them out so i can cull them that would be most helpful *i say calmly as i get my sword ready*"
+     }
+    },
+    {
+     "t": "outcome.recorded",
+     "d": {
+      "outcome": {
+       "kind": "narrative",
+       "check_die": 57,
+       "flags": {
+        "aim": false
+       }
+      },
+      "situations": []
+     },
+     "rng_to": 8
+    }
+   ]
+  }
+ ],
+ "rat_reply": "Osney pockets the peg knife and gets up off the barrel, joints cracking. \"Out, is it. Aye, that we can do.\" He shuffles along the salt barrels to the back wall, hauls aside a rotten grain sack, and uncovers a low iron brazier with a fistful of grey-green dried leaves beside it. \"Wormwood and old pepper mash. They hate it worse than a cat.\"\n\nHe strikes flint twice, curses the damp, third time catches. Acrid smoke climbs off the brazier in a slow blue ribbon, and he crouches to swing it toward the wall gaps, fanning it with a broken cask lid.\n\n\"Blade low, lad, they come at the knee. And mind the salt — you scuff a barrel over, Brede takes it out of your coin, not mine.\"\n\nSmoke rolls along the wall. Somewhere inside the stone there's a scrabbling, then more of it, a dry shifting chorus moving away from the brazier — and then toward it, the gaps in the far wall emptying.\n\nThe first rat clears the hole at a dead run, big as a man's boot, wet-eyed, heading straight along the floor for the darkness under the stairs.\n\nTwo more pour out behind it, splitting left and right along the wall, and behind those the scrabbling keeps coming.\n<avereth>{\"time\": 5, \"combat\": {\"by\": \"rat pack — first rat charging toward the stairs, two more bolting along the walls, more following from the wall gaps\"}}</avereth>",
+ "dash": "*i dash at the first one and basic attack it*",
+ "recorded": {
+  "rat_reply_rejected": [
+   "combat.by must be a present NPC or creature: unknown person (introduce new people via \"new\")"
+  ],
+  "dash_outcome": {
+   "kind": "note",
+   "text": "Alaric's attack needs a target: Brede or Osney. Nothing was spent or rolled for it; stop at his decision and let the player name one (Core #23: never choose among several targets for him).",
+   "notice": "Alaric: which target? Brede or Osney (nothing spent, nothing rolled)"
+  },
+  "dash_panel": "`Alaric: which target? Brede or Osney (nothing spent, nothing rolled)`"
+ }
+}

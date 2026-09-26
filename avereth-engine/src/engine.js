@@ -18,12 +18,11 @@ import { parseIntent } from './intent.js';
 import { runCommands, creationPanel } from './commands.js';
 import { stealthEvents } from './checks.js';
 import { extractReport, reportToEvents } from './delta.js';
-import { truth, knows, perceivers, entityLabel, setFactEvents, PC_NAME_FACT, PC_LOOK_FACT } from './knowledge.js';
+import { truth, knows, perceivers, entityLabel, playerLabel, setFactEvents, PC_NAME_FACT, PC_LOOK_FACT } from './knowledge.js';
 import { buildContext } from './context.js';
+import { targetQuestion } from './display.js';
 import { parseCoin } from './economy.js';
-import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks } from './util.js';
-
-export const ENGINE_VERSION = '3.0.0';
+import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, ENGINE_VERSION } from './util.js';
 
 const GROUP_RE = /\b(?:everyone|everybody|all of you|you all|the (?:group|room|crowd|table|company)|(?:to|at|toward|towards) them)\b/i;
 const SELF_INTRO_RE = /\b(?:(?:my )?name(?:'s| is)|i am|i'?m|call me|they call me)\s+alaric\b/i; // "Name is Alaric" (Test 5 run 2)
@@ -82,6 +81,12 @@ export function playerTurn(state, content, input, { msg = null } = {}) {
         const r = runCommands(s, content, text);
         for (const e of r.events) emit(e);
         return { events, outcome: null, command: { panels: r.panels, llm: r.llm }, intent, situations: [], state: s };
+    }
+    // in a fight, an attack whose target is unclear is the engine's question, not a story turn: nothing resolves, is
+    // rolled or spent, and the narrator is not called (live run 25.09. 01:31: "which target? Brede or Osney" went to
+    // the narrator as a story turn). The System panel lists the targets by label; the fight waits for the choice.
+    if (s.encounter && s.entities.pc.status !== 'dead' && (intent.kind === 'ambiguous_target' || intent.kind === 'no_target')) {
+        return { events, outcome: null, command: { panels: [targetQuestion(s, content, intent)], llm: null }, intent, situations: [], state: s };
     }
     emit({ t: 'turn.begun', d: { turn: s.turn + 1, input_hash: hash32(text), input: text.slice(0, 240) } });
     const situations = [];
@@ -153,7 +158,7 @@ function pcActionOf(s, intent, text) {
         case 'flee': return { kind: 'flee' };
         case 'ambiguous_target': return {
             note: `Alaric's attack needs a target: ${intent.candidates.map(name).join(' or ')}. Nothing was spent or rolled for it; stop at his decision and let the player name one (Core #23: never choose among several targets for him).`,
-            notice: `Alaric: which target? ${intent.candidates.map(name).join(' or ')} (nothing spent, nothing rolled)`,
+            notice: `Alaric: which target? ${intent.candidates.map((id) => playerLabel(s, id)).join(' or ')} (nothing spent, nothing rolled)`,
         };
         case 'unknown_skill': return { note: `Alaric does not know ${intent.name}. Nothing was spent or rolled.`, notice: `Alaric does not know ${intent.name} (nothing spent, nothing rolled)` };
         case 'no_target': return intent.ref
@@ -219,6 +224,8 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
     const pcAction = declared?.kind ? declared : null;
     let started = null;
     let enc;
+    // the fight's own names: every combatant by its target label (Cellar Rat A), others as the engine names them
+    const named = (id) => enc?.combatants[id]?.label || entityLabel(s, id);
     if (!s.encounter) {
         const lead = trigger.actor === 'pc' ? trigger.target : trigger.actor;
         const ids = combatants(s, lead, committed);
@@ -234,18 +241,19 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
         for (const id of ids) materialise(s, content, dice, emit, id);
         enc = initEncounter(s, content, dice, trigger, ids.map((id) => ({ id, side: 'hostile' })), `enc.t${s.turn}`);
         Object.assign(enc.intents, s.pending_intents || {});
-        started = { reason: enc.ambush_reason, order: enc.order.map((id) => entityLabel(s, id)).join(' > '), ambush: enc.ambush };
+        started = { reason: enc.ambush_reason, order: enc.order.map(named).join(' > '), ambush: enc.ambush };
     } else {
         enc = clone(s.encounter);
-        // fixed after the reply that reported the commitment (see openCommitted): Round 1 starts now; the player
-        // already saw Initiative and Turn order, the narrator hears of the start here
-        if (enc.round === 0) started = { reason: enc.ambush_reason, order: enc.order.map((id) => entityLabel(s, id)).join(' > '), ambush: enc.ambush, previewed: true };
+        // opened by the reply that reported the commitment (see openCommitted): the player already saw Initiative,
+        // Turn order and the Turns before Alaric's (enc.preface); the narrator hears of the start and of those Turns
+        // here. Round 0: a fight fixed without them (older chats, attackers still unidentified) starts Round 1 now.
+        if (enc.round === 0 || enc.preface) started = { reason: enc.ambush_reason, order: enc.order.map(named).join(' > '), ambush: enc.ambush, previewed: true };
         const joiners = committed.filter((id) => !enc.combatants[id]);
         for (const id of joiners) {
             materialise(s, content, dice, emit, id);
             addCombatant(enc, s, content, id, 'hostile', 'attack');
         }
-        if (joiners.length) started = { reason: `${joiners.map((id) => entityLabel(s, id)).join(', ')} ${joiners.length > 1 ? 'join' : 'joins'} the fight`, order: enc.order.map((id) => entityLabel(s, id)).join(' > '), joined: joiners };
+        if (joiners.length) started = { reason: `${joiners.map(named).join(', ')} ${joiners.length > 1 ? 'join' : 'joins'} the fight`, order: enc.order.map(named).join(' > '), joined: joiners };
         if (pcAction?.kind === 'attack' && pcAction.target && !enc.combatants[pcAction.target]) {
             materialise(s, content, dice, emit, pcAction.target);
             addCombatant(enc, s, content, pcAction.target, 'hostile', null);
@@ -253,14 +261,36 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
     }
     const res = runCombat({ enc, content, dice, state: s }, pcAction);
     if (enc.log.length > 20) enc.log = enc.log.slice(-20);
-    const outcome = { kind: 'combat', started, records: res.records, illegal: res.illegal || null, next: null };
+    // the Turns resolved when the reply opened the fight come first for the narrator; the panel showed them already
+    const preface = enc.preface || [];
+    delete enc.preface;
+    const outcome = { kind: 'combat', started, records: [...preface, ...res.records], ...(preface.length ? { shown: preface.length } : {}), illegal: res.illegal || null, next: null };
     if (declared?.note) Object.assign(outcome, { note: declared.note, notice: declared.notice });
-    emit({ t: started && !s.encounter ? 'encounter.started' : 'encounter.updated', d: { encounter: enc } });
+    const done = persistCombat(s, content, emit, enc, res.records, !!started && !s.encounter);
+    outcome.board = done.board;
+    if (done.ended) {
+        outcome.ended = done.ended;
+        outcome.levelups = done.levelups;
+        situations.push('loot');
+    } else {
+        outcome.next = done.next;
+    }
+    return outcome;
+}
+
+/**
+ * Persist a combat step (combatTurn, and the Turns before Alaric's first one when a reply opens a fight): the
+ * encounter snapshot, awareness, Alaric's resources, ammunition, deaths as world truth and, when the fight is over,
+ * its end (XP, the survivors' condition, the fight's memory).
+ * @returns {{board: object, ended: object|null, levelups: string[], next: string|null}}
+ */
+function persistCombat(s, content, emit, enc, records, isNew) {
+    emit({ t: isNew ? 'encounter.started' : 'encounter.updated', d: { encounter: enc } });
     for (const id of Object.keys(enc.combatants)) if (id !== 'pc' && s.scene.awareness[id] !== 'aware') emit({ t: 'scene.awareness', d: { id, level: 'aware' } });
     // mirror the PC's resources and every sheet-bearer's ammunition into the sheet (the snapshot stays authoritative for NPCs)
     const pcC = enc.combatants.pc;
     for (const r of ['hp', 'mp', 'sta']) if (pcC.current[r] !== s.entities.pc.sheet[r]) emit({ t: 'resource.changed', d: { id: 'pc', resource: r, value: pcC.current[r] } });
-    for (const r of res.records) if (r.ammo && s.entities[r.actor]?.sheet) emit({ t: 'item.changed', d: { id: r.actor, item: r.ammo.item, qty: -r.ammo.used, why: r.skill_name } });
+    for (const r of records) if (r.ammo && s.entities[r.actor]?.sheet) emit({ t: 'item.changed', d: { id: r.actor, item: r.ammo.item, qty: -r.ammo.used, why: r.skill_name } });
     // deaths are world truth (hard facts) witnessed by everyone present who noticed the fight (not the unaware)
     for (const c of Object.values(enc.combatants)) {
         if (c.current.hp === 0 && s.entities[c.id].status !== 'dead') {
@@ -270,10 +300,10 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
             for (const w of perceivers(s)) if (w !== c.id && deathFact && s.scene.awareness[w] !== 'unaware') emit({ t: 'knowledge.gained', d: { who: w, about: deathFact.id, stance: 'knows', source: 'witnessed', turn: s.turn, minute: s.clock.minute } });
         }
     }
-    outcome.board = combatBoard(enc);
+    const out = { board: combatBoard(enc), ended: null, levelups: [], next: null };
     if (terminal(enc)) {
         const end = endEncounterEvents(s, content, enc);
-        const levelups = end.events.filter((e) => e.t === 'level.up').map((e) => `Level ${e.d.level}`);
+        out.levelups = end.events.filter((e) => e.t === 'level.up').map((e) => `Level ${e.d.level}`);
         end.events.forEach(emit);
         // write the survivors' condition back to their persistent profiles/sheets and positions
         for (const c of Object.values(enc.combatants)) {
@@ -286,13 +316,11 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
             if (c.current.surrendered) emit({ t: 'entity.updated', d: { id: c.id, set: { surrendered_to: 'pc' } } });
         }
         emit({ t: 'memory.recorded', d: { memory: fightMemory(s, content, enc, end.summary) } });
-        outcome.ended = end.summary;
-        outcome.levelups = levelups;
-        situations.push('loot');
+        out.ended = end.summary;
     } else {
-        outcome.next = `Alaric's Turn (Round ${enc.round})`;
+        out.next = `Alaric's Turn (Round ${enc.round})`;
     }
-    return outcome;
+    return out;
 }
 
 /**
@@ -313,6 +341,8 @@ function combatBoard(enc) {
         }),
         // before Round 1: who acts before Alaric (an Ambush Opening Action comes first)
         ...(enc.round === 0 ? { first: { ambush: enc.ambush ? enc.trigger.actor : null, before: enc.order.slice(0, enc.order.indexOf('pc')) } } : {}),
+        // the target labels, in the order the combatants entered (display.js: COMBAT TARGETS, HP and Range lines)
+        labels: Object.fromEntries(Object.values(enc.combatants).filter((c) => c.label).map((c) => [c.id, c.label])),
         pc: { mp: pc.current.mp, max_mp: pc.fixed.max_mp, sta: pc.current.sta, max_sta: pc.fixed.max_sta, arrows: Object.values(pc.current.ammo || {}).reduce((a, n) => a + n, 0) },
     };
 }
@@ -379,13 +409,17 @@ export function narratorReply(state, content, replyText, { msg = null, stripTrac
         const ep = episode(s, msg);
         if (ep) emit({ t: 'memory.recorded', d: { memory: ep } });
     }
-    const opened = openCommitted(s, content, dice, emit);
+    const fightFrom = events.length;
+    const opened = openCommitted(s, content, dice, emit, { hold: !!res.unidentified?.length });
+    if (opened) opened.from = fightFrom; // the reply's own changes are the events before (display.js)
     const corrections = [...res.corrections, ...trackerDrift(s, content, clean), ...combatSpeech(state, clean)];
     // named without tag syntax: a tag in the prompt would only invite the model to write it again
     if (trackers && stripTrackers) corrections.push('Your last reply wrote tracker blocks (world state, character sheet, NPC dossier or update): they are retired and were removed. The engine keeps that state and shows the player its HUD; write only the story and the fact report.');
     for (const r of res.rejected) corrections.push(`Rejected from your fact report: ${r.reason}.`);
     if (!report) corrections.push(`Your previous reply had no valid <avereth> fact report (${error}). Write it right after the story text; this reply's report may also record the player's decisions from that turn (hand-overs, coin, quests), {} if nothing.`);
-    return { events, clean, report, accepted: res.accepted, rejected: res.rejected, corrections, report_error: report ? null : error, opened, state: s };
+    // attackers the report committed that the engine could not tell apart (delta.js): host.js asks for them separately
+    const attackers = res.unidentified?.length ? res.unidentified : null;
+    return { events, clean, report, accepted: res.accepted, rejected: res.rejected, corrections, report_error: report ? null : error, attackers, opened, state: s };
 }
 
 /**
@@ -406,13 +440,16 @@ function combatSpeech(state, clean) {
 
 /**
  * An NPC/creature committed to attack Alaric in this reply: fix the encounter right away — profiles, Initiative,
- * Turn order (Core #26 initialization; Core #23 AUTONOMOUS NPC START: persist it and resolve it on the next
- * mechanical pass) — so the player sees who acts first and everyone's HP before declaring anything. No Turn resolves
- * here: the trigger action stays pending until its actor's Turn (Core #24), and Round 1 runs with the next player
- * message. A commitment during an ACTIVE encounter joins the fixed Turn order the same way.
- * @returns {null|{kind: 'started'|'joined', ids: string[], board: object}}
+ * Turn order (Core #26 initialization; Core #23 AUTONOMOUS NPC START) — and resolve every Turn before Alaric's first
+ * one (an Ambush Opening Action included; the trigger action on its actor's Turn, Core #24), so the player sees what
+ * already happened and everyone's HP before declaring anything (live run 26.09. 23:09: the rats' first bites waited
+ * for his declaration). Alaric's own Turn is never played for him: runCombat stops there. The narrator hears of the
+ * start and of these Turns with the next combat step (enc.preface). While the reply named attackers the engine could
+ * not identify yet (hold), the fight is only fixed: its combatants are not settled, Round 1 runs with the next player
+ * message. A commitment during an ACTIVE encounter joins the fixed Turn order.
+ * @returns {null|{kind: 'started'|'joined', ids: string[], board: object, records?: object[], ended?: object, levelups?: string[]}}
  */
-function openCommitted(s, content, dice, emit) {
+function openCommitted(s, content, dice, emit, { hold = false } = {}) {
     if (s.mode === 'creation' || s.entities.pc?.status === 'dead' || !(s.pending_combat || []).length) return null;
     const committed = s.pending_combat.map((p) => p.by).filter((by) => s.entities[by] && s.entities[by].status !== 'dead' && s.scene.present.includes(by));
     if (!committed.length) return null;
@@ -424,6 +461,12 @@ function openCommitted(s, content, dice, emit) {
         for (const id of ids) materialise(s, content, dice, emit, id);
         enc = initEncounter(s, content, dice, { actor: committed[0], target: 'pc' }, ids.map((id) => ({ id, side: 'hostile' })), `enc.t${s.turn}r`);
         Object.assign(enc.intents, s.pending_intents || {});
+        if (!hold) {
+            const res = runCombat({ enc, content, dice, state: s }, null);
+            enc.preface = res.records;
+            const done = persistCombat(s, content, emit, enc, res.records, true);
+            return { kind: 'started', ids, board: done.board, records: res.records, ...(done.ended ? { ended: done.ended, levelups: done.levelups } : {}) };
+        }
         emit({ t: 'encounter.started', d: { encounter: enc } });
     } else {
         enc = clone(s.encounter);

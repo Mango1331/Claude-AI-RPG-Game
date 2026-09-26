@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent, Game } from '../helpers.js';
 import { extractReport, tolerantJson, reportToEvents } from '../../src/delta.js';
-import { truth, knowledgeOf, statusOf } from '../../src/knowledge.js';
+import { truth, knowledgeOf, statusOf, knows, PC_NAME_FACT, pcIdentityFor } from '../../src/knowledge.js';
 
 const content = await loadContent();
 // a created character in story mode: reports answer a story message (a reply to the creation turn itself is System-only)
@@ -118,18 +118,23 @@ test('CHECK DIE: the engine recomputes the check and corrects a narrated result 
     assert.equal(r2.accepted.filter((a) => a.startsWith('check')).length, 1, 'the same die is not a new roll');
 });
 
-test('combat commitment by an NPC is fixed at once (Initiative, Turn order) and its Turns resolve next turn', () => {
+test('combat commitment by an NPC is fixed at once (Initiative, Turn order); the Turns before Alaric\'s resolve with it', () => {
     const g = ready();
     g.reply({ new: [{ ref: 'wolf', kind: 'creature', species: 'wolf', band: 'MEDIUM' }] });
     g.reply({ combat: { by: 'wolf' } });
     assert.deepEqual(g.state.pending_combat, []);
     assert.deepEqual(Object.keys(g.state.encounter.combatants).sort(), ['mon.wolf', 'pc']);
-    assert.deepEqual([g.state.encounter.round, g.state.encounter.log.length], [0, 0], 'nobody acted yet (Core #24 pending trigger)');
+    // the wolf is faster: its Round 1 Turn (the trigger action on its Turn, Core #24) is played now, Alaric's waits
+    const enc = g.state.encounter;
+    assert.ok(enc.combatants['mon.wolf'].fixed.init > enc.combatants.pc.fixed.init);
+    assert.deepEqual([enc.round, enc.current, enc.log.map((r) => r.actor)], [1, 'pc', ['mon.wolf']]);
     const t = g.input('I shout at it to go away');
     assert.equal(t.outcome.kind, 'combat');
     assert.equal(g.state.mode, 'combat');
     assert.deepEqual(g.state.pending_combat, []);
-    assert.ok(t.outcome.records.some((r) => r.actor === 'mon.wolf'), 'the wolf acted on its turn');
+    // the narrator hears of the start and of the wolf's Turn now; the panel showed it with the reply already
+    assert.deepEqual([t.outcome.started?.previewed, t.outcome.records.map((r) => r.actor), t.outcome.shown], [true, ['mon.wolf'], 1]);
+    assert.equal(g.state.encounter.log.length, 1, 'no Turn is played twice');
 });
 
 test('Quest XP (Core #25): locked when offered, awarded once on completion through the Level-up loop', () => {
@@ -263,4 +268,56 @@ test('Alaric under a full name the story gave him is Alaric (his Guild Rank is h
     // someone else of that first name present: "Alaric Red" is ambiguous and finds nobody
     g.reply({ new: [{ ref: 'Alaric', kind: 'npc', name: 'Alaric', desc: ['farmhand'], band: 'SHORT' }] });
     assert.match(reasons(g.reply({ attitude: [{ who: 'Alaric Red', delta: 5, why: 'x' }] })), /unknown/);
+});
+
+test('"Alaric", "Alaric Red" and "alaric_red" are Alaric in facts and learn; whoever learns a fact naming him knows his name', () => {
+    // live run 26.09. 23:09: {"s":"alaric_red","p":"guild_rank"} and the clerk's {"s":"alaric_red","p":"registered_name",
+    // "o":"Alaric Red"} stayed on a subject "alaric_red": no Guild Rank in the HUD, and the clerk "did not know his name"
+    for (const ref of ['Alaric', 'Alaric Red', 'alaric_red']) {
+        const g = ready();
+        g.reply({ new: [{ ref: 'clerk', kind: 'npc', desc: ['guild clerk'], band: 'ENGAGED' }] });
+        const r = g.reply({ facts: [{ s: ref, p: 'guild_rank', o: 'Novice' }], learn: [{ who: 'clerk', s: ref, p: 'registered_name', o: 'Alaric Red', how: 'witnessed' }] });
+        assert.deepEqual(r.rejected, [], ref);
+        assert.equal(truth(g.state, 'pc', 'guild_rank')[0]?.o, 'Novice', ref);
+        assert.equal(truth(g.state, 'pc', 'registered_name')[0]?.o, 'Alaric Red', ref);
+        assert.ok(knows(g.state, 'npc.clerk', PC_NAME_FACT), ref);
+        assert.deepEqual(Object.values(g.state.facts).filter((f) => f.s !== 'pc' && /alaric/i.test(f.s)), [], `${ref}: no stranger subject`);
+        assert.equal(g.state.entities.pc.name, 'Alaric', ref);
+    }
+    // a name he may not go by is no knowledge of his name: an alias stays the fact it is
+    const g = ready();
+    g.reply({ new: [{ ref: 'clerk', kind: 'npc', desc: ['guild clerk'], band: 'ENGAGED' }] });
+    g.reply({ learn: [{ who: 'clerk', s: 'alaric_red', p: 'registered_name', o: 'John Smith', how: 'witnessed' }] });
+    assert.equal(truth(g.state, 'pc', 'registered_name')[0]?.o, 'John Smith');
+    assert.ok(!knows(g.state, 'npc.clerk', PC_NAME_FACT));
+    // a person's name written like an id finds that person and never renames her ("hesta_gault" for Hesta)
+    g.reply({ new: [{ ref: 'Hesta', kind: 'npc', name: 'Hesta', desc: ['guild sponsor'], band: 'SHORT' }] });
+    const h = g.reply({ facts: [{ s: 'hesta_gault', p: 'occupation', o: 'sponsor' }] });
+    assert.deepEqual(h.rejected, []);
+    assert.equal(truth(g.state, 'npc.hesta', 'occupation')[0]?.o, 'sponsor');
+    assert.equal(g.state.entities['npc.hesta'].name, 'Hesta');
+});
+
+test('Alaric\'s name fact stays the player\'s: his full name keeps it, another name is refused, whoever knew his name still does', () => {
+    // {"s":"Alaric","p":"full_name","o":"Alaric Red"} used to end f.pc.name (on which every "knows his name" rests) and
+    // set "pc name pc" (the object resolved to Alaric)
+    const g = ready();
+    g.reply({ new: [{ ref: 'clerk', kind: 'npc', desc: ['guild clerk'], band: 'ENGAGED' }] });
+    g.reply({ learn: [{ who: 'clerk', s: 'alaric_red', p: 'registered_name', o: 'Alaric Red', how: 'witnessed' }] });
+    for (const f of [{ s: 'Alaric', p: 'full_name', o: 'Alaric Red' }, { s: 'alaric_red', p: 'name', o: 'Alaric Red' }, { s: 'pc', p: 'called', o: 'Alaric' }]) {
+        const r = g.reply({ facts: [f] });
+        assert.deepEqual(r.rejected, [], JSON.stringify(f));
+        assert.deepEqual(r.events.filter((e) => e.t.startsWith('fact.')), [], `${JSON.stringify(f)}: the same name changes nothing`);
+    }
+    const other = g.reply({ facts: [{ s: 'Alaric', p: 'name', o: 'John Smith' }] });
+    assert.match(reasons(other), /^Alaric's name is the player's and stays as it is; a name he goes by is a fact of its own \(p "alias"\)/);
+    assert.equal(g.state.facts[PC_NAME_FACT].until, null);
+    assert.deepEqual(truth(g.state, 'pc', 'name').map((f) => [f.id, f.o]), [[PC_NAME_FACT, 'Alaric']]);
+    assert.ok(knows(g.state, 'npc.clerk', PC_NAME_FACT));
+    assert.equal(pcIdentityFor(g.state, 'npc.clerk').level, 'name', 'the clerk knows him by name');
+    assert.equal(g.state.entities.pc.name, 'Alaric');
+    // a name he goes by is a fact of its own
+    g.reply({ facts: [{ s: 'Alaric', p: 'alias', o: 'John Smith' }] });
+    assert.equal(truth(g.state, 'pc', 'alias')[0]?.o, 'John Smith');
+    assert.equal(truth(g.state, 'pc', 'name')[0].id, PC_NAME_FACT);
 });

@@ -5,6 +5,7 @@
 // FIXED+CURRENT snapshot that Testrun-v1 lost), so the next turn copies it instead of re-guessing.
 import { deriveCharacter, rawPower, rawPowerText } from './derived.js';
 import { defeatXp, awardXp } from './progression.js';
+import { lookOf } from './knowledge.js';
 import { bandIndex, bandName, clone, num, roundHalfUp } from './util.js';
 
 const PROF = (content, level) => content.rules.proficiency.levels[String(level || 1)];
@@ -67,6 +68,57 @@ export function activeHostiles(enc) {
     return Object.values(enc.combatants).filter((c) => c.side === 'hostile' && !c.current.defeated && !c.current.escaped && !c.current.surrendered);
 }
 
+// ------------------------------------------------------------------------------------------ target labels
+// The names the player targets with (live run 25.09. 01:31: "at the first one" among rats the engine did not tell
+// apart). A combatant gets its label when it enters the encounter and keeps it: Cellar Rat B stays B after A falls,
+// a latecomer takes the next free letter. A name the player knows stays the label (Brede); an unnamed opponent, or
+// one whose name the story has not said yet (known_name ''), gets its look plus a letter (Cellar Rat A, Gate
+// Sergeant A), so the list never tells the player a name. Labels live in the encounter snapshot only: they end with
+// the fight and never become world facts or memories.
+const titleCase = (s) => s.replace(/(^|[\s-])(\p{Ll})/gu, (_, a, b) => a + b.toUpperCase());
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+/** [base, lettered]: the known name as it is, else the plain look ("cellar_rat_2" -> Cellar Rat), always lettered. */
+function targetBase(e) {
+    const name = e.known_name ?? e.name; // only as much of a name as the story has said
+    if (name) return [titleCase(String(name).replace(/^the\s+/i, '').trim()), false];
+    const look = lookOf(e) || e.species || (e.kind === 'creature' ? 'creature' : 'stranger');
+    return [titleCase(String(look).replace(/^(?:the|a|an)\s+/i, '')), true];
+}
+
+function assignLabels(enc, state, ids) {
+    const groups = new Map();
+    for (const id of ids) {
+        const [base, lettered] = targetBase(state.entities[id]);
+        if (!groups.has(base)) groups.set(base, { lettered, ids: [] });
+        const g = groups.get(base);
+        g.lettered ||= lettered;
+        g.ids.push(id);
+    }
+    for (const [base, g] of groups) {
+        // letters already given under this base, dead or alive (a plain "Brede" counts as A)
+        const used = Object.values(enc.combatants).filter((c) => c.label && !g.ids.includes(c.id))
+            .map((c) => (c.label === base ? 0 : c.label.startsWith(`${base} `) ? LETTERS.indexOf(c.label.slice(base.length + 1)) : -1)).filter((n) => n >= 0);
+        let next = used.length ? Math.max(...used) + 1 : 0;
+        for (const id of g.ids) {
+            const c = enc.combatants[id];
+            c.label = !g.lettered && g.ids.length === 1 && !used.length ? base : `${base} ${LETTERS[next] || next + 1}`;
+            c.name = c.label; // the fight's own lines (not possible: ..., XP reasons) use it too
+            next += 1;
+        }
+    }
+}
+
+/** The label of a combatant in the current fight, else how the engine names the entity. */
+export function targetLabel(state, id, fallback = (x) => x) {
+    return state.encounter?.combatants?.[id]?.label || fallback(id);
+}
+
+/** The opponents the player can target now, in the order they entered: [{id, label, band, cover}]. */
+export function combatTargets(enc) {
+    return activeHostiles(enc).map((c) => ({ id: c.id, label: c.label || c.name, band: c.current.band, cover: c.current.cover }));
+}
+
 export function alive(c) {
     return !c.current.defeated && !c.current.escaped;
 }
@@ -94,6 +146,7 @@ export function initEncounter(state, content, dice, trigger, participants, encId
         pc_rank: pcRank, pending_xp: 0, defeated: [], escaped: [], trigger: clone(trigger), log: [], opening: null,
         started: { turn: state.turn, minute: state.clock.minute }, intents: {},
     };
+    assignLabels(enc, state, Object.keys(combatants).filter((id) => id !== 'pc'));
     // Ambush (Core #24): only a genuinely unaware target grants an Opening Action. Awareness is engine state (set by a
     // stealth check or an established narration report), never a posture the narrator invents at commitment time.
     if (trigger.actor === 'pc') {
@@ -118,6 +171,7 @@ export function addCombatant(enc, state, content, id, side, intent = 'attack') {
     c.current.cover = pos.cover || 'none';
     if (side === 'hostile') c.fixed.defeat_xp = defeatXp(c.fixed.level, c.fixed.type, enc.pc_rank, content);
     enc.combatants[id] = c;
+    assignLabels(enc, state, [id]);
     // insert after all combatants with higher or equal Initiative (existing ties keep their locked order)
     let idx = enc.order.findIndex((x) => enc.combatants[x].fixed.init < c.fixed.init);
     if (idx < 0) idx = enc.order.length;

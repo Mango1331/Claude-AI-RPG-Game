@@ -95,7 +95,8 @@ await globalThis.averethInterceptor(chat, 8000, () => { aborted = true; }, 'norm
 result.command = aborted && /SYSTEM \\/\\/ STATUS/.test((window.__panels || []).join('')) && chat.at(-1).is_system === true;
 // an NPC's attack reported by the reply: the fight is fixed at once and shown above that reply (Testrun 3)
 await turn('I look around again.', 'A wolf lunges out of the brush.\\n<avereth>{"new":[{"ref":"wolf","kind":"creature","species":"wolf","band":"SHORT"}],"combat":{"by":"wolf"}}</avereth>');
-result.commitShown = /\`COMBAT( START)? — the wolf (attacks|joins)/.test(chat.at(-1).extra.display_text || '') && /\`Next: /.test(chat.at(-1).extra.display_text || '');
+// the wolf by its target label for the fight (live run 25.09.: "Wolf A"), listed among the targets
+result.commitShown = /\`COMBAT( START)? — Wolf A (attacks|joins)/.test(chat.at(-1).extra.display_text || '') && /\`COMBAT TARGETS — [^\`]*Wolf A \\[/.test(chat.at(-1).extra.display_text || '') && /\`Next: /.test(chat.at(-1).extra.display_text || '');
 // Runtime V3: a reply that still writes Megumin tracker blocks — removed from the text, the engine HUD below it
 const BLOCKS = '\\n<Blocks>\\n<World_State>**Loc:** nowhere</World_State>\\n<Character_Sheet>HP: 1/80 | Coin: 99 Gold</Character_Sheet>\\n<New_NPC name="Brom">**Background:** invented</New_NPC>\\n</Blocks>';
 await turn('I wait.', 'The wind turns.\\n<avereth>{}</avereth>' + BLOCKS);

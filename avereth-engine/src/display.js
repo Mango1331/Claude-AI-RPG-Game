@@ -31,7 +31,8 @@ export function turnPanel(state, content, narratorCheck = null, reply = null) {
     if (o?.kind === 'check' && o.check) lines.push(checkLine(o.check));
     if (o?.kind === 'note' && o.notice) lines.push(sys(o.notice));
     if (narratorCheck) lines.push(sys(`CHECK — ${narratorCheck.what}: ${narratorCheck.chance}% · d100 ${narratorCheck.roll} → ${narratorCheck.success ? 'SUCCESS' : 'FAILURE'}`));
-    if (reply?.events && reply.state) lines.push(...changeLines(state, reply.state, content, reply.events));
+    // what the report changed; the fight it opened shows its own steps and HP below
+    if (reply?.events && reply.state) lines.push(...changeLines(state, reply.state, content, reply.opened ? reply.events.slice(0, reply.opened.from) : reply.events));
     if (reply?.opened && reply.state) lines.push(...openedLines(reply.state, content, reply.opened));
     // Test 5 run: six replies without a report left place, people and the quest behind the story, unseen by the player
     // (never the tag itself in display text: the streaming regex hides everything from "<avereth>" on, the HUD included)
@@ -118,19 +119,25 @@ function changeLines(before, after, content, events) {
     return out;
 }
 
-/** A fight the reply's report started (or someone joining it): the fixed order and everyone's HP before anyone acts. */
+/**
+ * A fight the reply's report started (or someone joining it): the fixed order, the Turns before Alaric's first one
+ * (engine.js openCommitted), everyone's HP, and who acts next.
+ */
 function openedLines(state, content, op) {
     const b = op.board;
     const name = namer(state, b);
     const out = [];
     const order = b.order.map((x) => name(x.id)).join(' › ');
     const who = op.ids.map(name).join(', ');
+    const ambush = b.first?.ambush || op.records?.some((r) => r.opening);
     if (op.kind === 'started') {
-        out.push(sys(`COMBAT START${b.first?.ambush ? ' — AMBUSH' : ''} — ${who} ${op.ids.length > 1 ? 'attack' : 'attacks'} ${name('pc')}`));
+        out.push(sys(`COMBAT START${ambush ? ' — AMBUSH' : ''} — ${who} ${op.ids.length > 1 ? 'attack' : 'attacks'} ${name('pc')}`));
         out.push(sys(`Initiative: ${b.order.map((x) => `${name(x.id)} ${x.init}`).join(' · ')} → Turn order: ${order}`));
     } else out.push(sys(`COMBAT — ${who} ${op.ids.length > 1 ? 'join' : 'joins'} the fight (Initiative ${op.ids.map((id) => b.order.find((x) => x.id === id)?.init).join(', ')}) → Turn order: ${order}`));
-    out.push(...targetsLine(b), ...boardLines(state, b));
-    if (!b.first) out.push(sys(`Next: ${name('pc')}'s Turn (Round ${b.round})`));
+    // the Turns before Alaric's first one, then the targets and positions as he meets them
+    out.push(...roundLines(name, op.records || []), ...targetsLine(b), ...boardLines(state, b));
+    if (op.ended) out.push(...endLines(state, content, name, op.ended, op.levelups));
+    else if (!b.first) out.push(sys(`Next: ${name('pc')}'s Turn (Round ${b.round})`));
     else {
         const pre = b.first.ambush ? `${name(b.first.ambush)}'s Opening Action (Ambush), then ` : '';
         const before = b.first.before;
@@ -194,34 +201,44 @@ function combatLines(state, content, o) {
         out.push(sys(o.started.joined ? `COMBAT — ${o.started.reason}` : `COMBAT START${o.started.ambush ? ' — AMBUSH' : ''}`));
         out.push(sys(`Initiative: ${b.order.map((x) => `${name(x.id)} ${x.init}`).join(' · ')} → Turn order: ${b.order.map((x) => name(x.id)).join(' › ')}`));
     }
+    // the Turns the reply that opened the fight already showed (o.shown) are the narrator's to tell, not shown again
+    const records = o.records.slice(o.shown || 0);
+    out.push(...roundLines(name, records));
+    if (o.note) out.push(sys(o.notice || o.note));
+    if (o.illegal) out.push(sys(`${name('pc')}: not possible — ${o.illegal} (nothing spent, nothing rolled)`));
+    // the targets again when the set changed: the start, a joiner, someone down, fled or surrendered
+    const changed = (o.started && !o.started.previewed) || o.started?.joined || records.some((r) => r.escaped || r.kind === 'surrender' || (r.strikes || []).some((x) => x.defeated));
+    if (b && !o.ended && changed) out.push(...targetsLine(b));
+    if (b) out.push(...boardLines(state, b));
+    if (o.ended) out.push(...endLines(state, content, name, o.ended, o.levelups));
+    else if (o.next) {
+        out.push(sys(`Next: ${o.next}`));
+        if (state.encounter?.current === 'pc') out.push(...optionsLine(state, content));
+    }
+    return out;
+}
+
+/** Resolved steps under their Round headers ("— Round 1 —"; an Ambush Opening Action is Round 0). */
+function roundLines(name, records) {
+    const out = [];
     let round = null;
-    for (const r of o.records) {
+    for (const r of records) {
         if (r.round !== round) {
             round = r.round;
             out.push(sys(round === 0 ? '— Opening Action (Ambush) —' : `— Round ${round} —`));
         }
         out.push(...recordLines(name, r));
     }
-    if (o.note) out.push(sys(o.notice || o.note));
-    if (o.illegal) out.push(sys(`${name('pc')}: not possible — ${o.illegal} (nothing spent, nothing rolled)`));
-    // the targets again when the set changed: the start, a joiner, someone down, fled or surrendered
-    const changed = (o.started && !o.started.previewed) || o.started?.joined || o.records.some((r) => r.escaped || r.kind === 'surrender' || (r.strikes || []).some((x) => x.defeated));
-    if (b && !o.ended && changed) out.push(...targetsLine(b));
-    if (b) out.push(...boardLines(state, b));
-    if (o.ended) {
-        const e = o.ended;
-        const fates = [...e.defeated.map((id) => `${name(id)} defeated`), ...e.escaped.filter((id) => id !== 'pc').map((id) => `${name(id)} escaped`)];
-        if (e.pc_dead) fates.push(`${name('pc')} is dead`);
-        if (e.pc_escaped) fates.push(`${name('pc')} escaped`);
-        const sheet = state.entities.pc.sheet;
-        const xp = e.xp_awarded ? ` · +${e.xp_awarded} XP → XP ${sheet.xp}/${sheet.level * content.rules.progression.xp_to_next_per_level}` : '';
-        out.push(sys(`COMBAT END${fates.length ? ` — ${fates.join(', ')}` : ''}${xp}`));
-        for (const lv of o.levelups || []) out.push(sys(`LEVEL UP → ${lv} (+5 free Stat Points)`));
-    } else if (o.next) {
-        out.push(sys(`Next: ${o.next}`));
-        if (state.encounter?.current === 'pc') out.push(...optionsLine(state, content));
-    }
     return out;
+}
+
+function endLines(state, content, name, e, levelups = []) {
+    const fates = [...e.defeated.map((id) => `${name(id)} defeated`), ...e.escaped.filter((id) => id !== 'pc').map((id) => `${name(id)} escaped`)];
+    if (e.pc_dead) fates.push(`${name('pc')} is dead`);
+    if (e.pc_escaped) fates.push(`${name('pc')} escaped`);
+    const sheet = state.entities.pc.sheet;
+    const xp = e.xp_awarded ? ` · +${e.xp_awarded} XP → XP ${sheet.xp}/${sheet.level * content.rules.progression.xp_to_next_per_level}` : '';
+    return [sys(`COMBAT END${fates.length ? ` — ${fates.join(', ')}` : ''}${xp}`), ...levelups.map((lv) => sys(`LEVEL UP → ${lv} (+5 free Stat Points)`))];
 }
 
 function recordLines(name, r) {

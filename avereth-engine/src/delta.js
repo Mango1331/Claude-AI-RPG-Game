@@ -92,9 +92,11 @@ export function makeResolver(state, newRefs, content = null, created = null) {
         if (newRefs.has(r)) return newRefs.get(r);
         if (newRefs.has(r.replace(/_/g, ' '))) return newRefs.get(r.replace(/_/g, ' ')); // "lean_guard" for "Lean Guard"
         if (state.entities[ref]) return ref;
-        if (['pc', 'alaric', 'player', 'you', 'the player'].includes(r)) return 'pc';
+        // a name written like an id counts as the name ("alaric_red" for Alaric Red, live run 26.09. 23:09)
+        const idName = /^[a-z]+(?:_[a-z]+)+$/.test(r) ? r.replace(/_/g, ' ') : null;
+        if (['pc', 'alaric', 'player', 'you', 'the player'].includes(idName || r)) return 'pc';
         const pc = state.entities.pc;
-        if (pc && normText(pc.name) === r) return 'pc';
+        if (pc && normText(pc.name) === (idName || r)) return 'pc';
         // a combatant by its target label ("Cellar Rat B"), as the engine block names the fight's combatants
         const labelled = state.encounter && Object.values(state.encounter.combatants).find((c) => c.label && normText(c.label) === r);
         if (labelled) return labelled.id;
@@ -118,8 +120,8 @@ export function makeResolver(state, newRefs, content = null, created = null) {
             if (loc) return loc.id;
             for (const f of content.factions.values()) if (normText(f.name) === r) return f.id;
         }
-        const words = bare.split(' ').filter(Boolean);
-        const fullName = (name) => words.length > 1 && name.length === 1 && name[0] === words[0] && /^[A-Z]/.test(String(ref).trim());
+        const words = (idName || bare).split(' ').filter(Boolean);
+        const fullName = (name) => words.length > 1 && name.length === 1 && name[0] === words[0] && (!!idName || /^[A-Z]/.test(String(ref).trim()));
         const hits = new Set();
         for (const id of [...state.scene.present, ...(created ? created.keys() : [])]) {
             const e = state.entities[id] || created?.get(id);
@@ -133,7 +135,7 @@ export function makeResolver(state, newRefs, content = null, created = null) {
         if (pc?.name && fullName(normText(pc.name).split(' '))) return hits.size ? null : 'pc';
         if (hits.size !== 1) return null;
         const id = [...hits][0];
-        if (words.length > 1) resolve.fullNames.set(id, String(ref).trim().slice(0, 60));
+        if (words.length > 1 && !idName) resolve.fullNames.set(id, String(ref).trim().slice(0, 60)); // an id is no spelling of the name
         return id;
     };
     resolve.fullNames = new Map();
@@ -302,6 +304,10 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         }
     }
     const placed = new Set(); // people this report places in the (new) scene
+    // combat commitments ({by} or a list; "by" may itself be a list; a bare name is a {by}); empty entries commit nobody
+    const commitments = arr(report.combat).flatMap((cb) => (typeof cb === 'string' ? [{ by: cb }] : cb && Array.isArray(cb.by) ? cb.by.map((by) => ({ ...cb, by })) : [cb]));
+    const refKey = (x) => normText(x).replace(/_/g, ' ');
+    const committedRefs = new Set(commitments.filter((cb) => cb && typeof cb.by === 'string').map((cb) => refKey(cb.by)));
     // new entities
     for (const n of arr(report.new)) {
         if (!n || !n.ref) { reject(n, 'new entity needs a ref'); continue; }
@@ -322,6 +328,13 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
                 present.add(existing);
             }
             accepted.push(`known ${existing} (not duplicated)`);
+            continue;
+        }
+        // in a fight a new creature is one that joins it, committed in this report's "combat"; the fighting ones described
+        // again under new refs are no new creatures (live run 26.09. 23:09: "rat1 bit his calf", "rat2 gnawing at his
+        // greave" became two more rats beside Cellar Rat A and B)
+        if (kind === 'creature' && state.encounter && !committedRefs.has(refKey(n.ref)) && !(n.name && committedRefs.has(refKey(n.name)))) {
+            reject(n, `new creature "${String(n.ref).slice(0, 40)}" during the fight: the creatures fighting are named by their labels (as in the engine block), and a creature that joins is introduced in "new" and named in "combat"`);
             continue;
         }
         const desc = uniq([...(Array.isArray(n.desc) ? n.desc : []), n.ref].map((x) => String(x).toLowerCase().slice(0, 40)));
@@ -419,8 +432,6 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (a.level === 'unaware' && before && before !== 'unaware' && !auth.conceal) { reject(a, `${id} already noticed ${pcName} (${before}); only declared stealth can make it lose track`); continue; }
         events.push({ t: 'scene.awareness', d: { id, level: a.level } }); accepted.push(`${id} ${a.level} of ${pcName}`);
     }
-    // combat commitments ({by} or a list; "by" may itself be a list; a bare name is a {by}); empty entries commit nobody
-    const commitments = arr(report.combat).flatMap((cb) => (typeof cb === 'string' ? [{ by: cb }] : cb && Array.isArray(cb.by) ? cb.by.map((by) => ({ ...cb, by })) : [cb]));
     // Alaric moved on to another spot within the location: only the people this report places there (new, enter,
     // position, aware, an attack) are with him; everyone else stayed behind. Testrun 2: a trapper left on the ridge
     // "detected" a stealth approach at the stream. Testrun 3: the carter from the gate and the Guild registrar
@@ -515,8 +526,16 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
             accepted.push(`${who} heard ${s} ${p} ${o} (claim, truth ${truthVal})`);
             continue;
         }
-        events.push({ t: 'knowledge.gained', d: { who, about: fact.id, stance: how === 'inferred' || how === 'rumor' ? 'suspects' : 'knows', source, ...at } });
+        const stance = how === 'inferred' || how === 'rumor' ? 'suspects' : 'knows';
+        events.push({ t: 'knowledge.gained', d: { who, about: fact.id, stance, source, ...at } });
         accepted.push(`${who} learns ${s} ${p} ${o}`);
+        // a fact about Alaric whose value is his name ("registered_name Alaric Red", live run 26.09. 23:09: the clerk
+        // watched him write it and still "did not know his name"): whoever knows it knows his name
+        const pcName = s === 'pc' && p !== 'name' && stance === 'knows' ? truth(state, 'pc', 'name')[0] : null;
+        if (pcName && sameValue('name', pcName.o, o) && !state.knowledge[who]?.[pcName.id]) {
+            events.push({ t: 'knowledge.gained', d: { who, about: pcName.id, stance, source, ...at } });
+            accepted.push(`${who} learns pc name ${pcName.o}`);
+        }
     }
     for (const b of arr(report.believe)) {
         const who = resolve(b && b.who);

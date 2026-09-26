@@ -119,16 +119,26 @@ test('turn 10: the rat pack is never one combatant: the engine asks for its rats
     assert.match(T(10).first, /`ATTACKERS NOT IDENTIFIED YET — "ratpack": asking for them separately; the fight and its target list follow in a moment\.`$/);
     // with the answer: its three rats instead of the pack; no creature "Cellar rat pack" with a single rat's profile
     assert.ok(!T(10).state.entities['mon.cellar_rat_pack'], 'the pack is not a creature');
+    // the first pass (attackers still asked for) only fixed the fight; with them known, the four rats, all faster than
+    // Alaric, take their Round 1 Turns with the reply (live run 26.09. 23:09), and his own Turn waits for the player
     const enc = T(10).state.encounter;
-    assert.deepEqual([enc.round, enc.log.length, Object.keys(enc.combatants).sort()], [0, 0, ['mon.big_rat', 'mon.pack_rat_1', 'mon.pack_rat_2', 'mon.pack_rat_3', 'pc']]);
+    assert.deepEqual([enc.round, enc.current, enc.log.length, Object.keys(enc.combatants).sort()], [1, 'pc', 4, ['mon.big_rat', 'mon.pack_rat_1', 'mon.pack_rat_2', 'mon.pack_rat_3', 'pc']]);
     assert.deepEqual(T(10).panel.split('\n'), [
         '`COMBAT START — Fat Cellar Rat A, Fat Cellar Rat B, Fat Cellar Rat C, Big Rat attack Alaric`',
         '`Initiative: Fat Cellar Rat A 10 · Fat Cellar Rat B 10 · Fat Cellar Rat C 10 · Big Rat 10 · Alaric 9 → Turn order: Fat Cellar Rat A › Fat Cellar Rat B › Fat Cellar Rat C › Big Rat › Alaric`',
-        '`COMBAT TARGETS — Fat Cellar Rat A [ENGAGED] · Fat Cellar Rat B [ENGAGED] · Fat Cellar Rat C [SHORT] · Big Rat [ENGAGED]`',
-        '`HP: Fat Cellar Rat A 16/16 · Fat Cellar Rat B 16/16 · Fat Cellar Rat C 16/16 · Big Rat 16/16 · Alaric 80/80`',
-        '`Range: Fat Cellar Rat A ENGAGED · Fat Cellar Rat B ENGAGED · Fat Cellar Rat C SHORT · Big Rat ENGAGED`',
+        '`— Round 1 —`',
+        '`Fat Cellar Rat A: Bite → Alaric`',
+        '`  3 damage → Alaric HP 80 - 3 = 77`',
+        '`Fat Cellar Rat B: Bite → Alaric`',
+        '`  3 damage → Alaric HP 77 - 3 = 74`',
+        '`Fat Cellar Rat C: moves away (SHORT → MEDIUM) — skittish`',
+        '`Big Rat: Bite → Alaric`',
+        '`  3 damage → Alaric HP 74 - 3 = 71`',
+        '`COMBAT TARGETS — Fat Cellar Rat A [ENGAGED] · Fat Cellar Rat B [ENGAGED] · Fat Cellar Rat C [MEDIUM] · Big Rat [ENGAGED]`',
+        '`HP: Fat Cellar Rat A 16/16 · Fat Cellar Rat B 16/16 · Fat Cellar Rat C 16/16 · Big Rat 16/16 · Alaric 71/80`',
+        '`Range: Fat Cellar Rat A ENGAGED · Fat Cellar Rat B ENGAGED · Fat Cellar Rat C MEDIUM · Big Rat ENGAGED`',
         '`Alaric: MP 60/60 · STA 100/100 · Arrows 20`',
-        '`Next: Round 1 — Fat Cellar Rat A › Fat Cellar Rat B › Fat Cellar Rat C › Big Rat act before Alaric`',
+        '`Next: Alaric\'s Turn (Round 1)`',
         '`Alaric\'s attacks vs Fat Cellar Rat A: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`',
         '`ATTACKERS IDENTIFIED: a separate request named them (9.0 s).`',
     ]);
@@ -141,17 +151,20 @@ test('turn 11: "the nearest one" among the ENGAGED rats is still Alaric\'s choic
     assert.deepEqual(T(11).panels, [[
         '[SYSTEM // COMBAT — TARGET NEEDED]',
         'Alaric\'s Basic Attack: which target — Big Rat or Fat Cellar Rat A or Fat Cellar Rat B? Nothing was spent or rolled.',
-        'COMBAT TARGETS — Fat Cellar Rat A [ENGAGED] · Fat Cellar Rat B [ENGAGED] · Fat Cellar Rat C [SHORT] · Big Rat [ENGAGED]',
+        'COMBAT TARGETS — Fat Cellar Rat A [ENGAGED] · Fat Cellar Rat B [ENGAGED] · Fat Cellar Rat C [MEDIUM] · Big Rat [ENGAGED]',
         'Name one, for example: *Basic Attack on Fat Cellar Rat A*',
     ].join('\n')]);
-    assert.deepEqual(T(11).state.encounter, T(10).state.encounter, 'the fight waits: the rats\' first Round comes with the next declaration');
+    assert.deepEqual(T(11).state.encounter, T(10).state.encounter, 'the fight waits for Alaric\'s declaration');
     assert.equal(T(11).state.rng.n, T(10).state.rng.n, 'nothing rolled');
 });
 
 test('turns 12-13: the Big rat by name; the pack named again is resolved by the labels; "the pack" is no target', () => {
-    // Round 1 runs with turn 12 now: the faster rats first (Core #24), then Alaric's Power Shot at the Big rat
-    assert.deepEqual(T(12).outcome.records.map((r) => r.actor).slice(0, 4), ['mon.pack_rat_1', 'mon.pack_rat_2', 'mon.pack_rat_3', 'mon.big_rat']);
-    assert.match(T(12).context.text, /Combat starts \(/, 'the narrator hears of the start with the first Round');
+    // turn 12 goes on from Alaric's Turn: the narrator hears of the start and of the rats' Turns the reply of turn 10
+    // already showed (Core #24 order), then his Power Shot at the Big rat; the panel shows only what is new
+    assert.deepEqual(T(12).outcome.records.map((r) => r.actor).slice(0, 5), ['mon.pack_rat_1', 'mon.pack_rat_2', 'mon.pack_rat_3', 'mon.big_rat', 'pc']);
+    assert.equal(T(12).outcome.shown, 4);
+    assert.match(T(12).context.text, /Combat starts \([^\n]*\n- Fat Cellar Rat A: Bite -> Alaric: lands: 3 damage -> Alaric HP 80->77\n/, 'the narrator hears of the start with the first Round');
+    assert.match(T(12).panel, /^`— Round 1 —`\n`Alaric: Power Shot → Big Rat/);
     const shot = T(12).outcome.records.find((r) => r.actor === 'pc');
     assert.deepEqual([shot.target, shot.strikes[0].defeated], ['mon.big_rat', true]);
     // the reply committed "Cellar rat pack" again: asked for, answered with the rats' labels, who fight on

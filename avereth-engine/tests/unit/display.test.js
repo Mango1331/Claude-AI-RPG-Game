@@ -113,22 +113,27 @@ test('coin, items, rest, quests and Quest XP a reply changed read like a game lo
     assert.equal(turnPanel(b2, content, null, { ...r2, events: [] }), '', 'nothing changed, nothing shown');
 });
 
-test('an attack the reply reported is fixed and shown before anyone acts: Initiative, Turn order, HP, Range, who goes first', () => {
+test('an attack the reply reported is fixed and shown with it: Initiative, Turn order, the Turns before Alaric\'s, HP, Range', () => {
     const g = new Game(content).ranger();
     g.input('I look around.');
     g.reply({ new: [{ ref: 'wolf', kind: 'creature', species: 'wolf', band: 'MEDIUM' }] });
     g.input('I watch the wolf.');
     const before = g.state;
     const r = g.reply({ combat: { by: 'wolf' } });
-    const lines = turnPanel(before, content, null, r).split('\n');
-    const init = r.state.encounter.combatants['mon.wolf'].fixed.init;
-    // the wolf by its target label for this fight: an unnamed creature, its look and a letter
-    assert.equal(lines[0], '`COMBAT START — Wolf A attacks Alaric`');
-    assert.match(lines[1], new RegExp(`^\`Initiative: .*Wolf A ${init}.* → Turn order: `));
-    assert.equal(lines[2], '`COMBAT TARGETS — Wolf A [MEDIUM]`');
-    assert.match(lines.join('\n'), /`Range: Wolf A MEDIUM`/);
-    assert.match(lines.at(-2), init > 9 ? /^`Next: Round 1 — Wolf A acts before Alaric`$/ : /^`Next: Round 1 — Alaric acts first`$/);
-    // every legal attack lands (Combat V3): the choice is shown as the damage each deals to the wolf (DEF 0, variance ±10%)
-    assert.equal(lines.at(-1), '`Alaric\'s attacks vs Wolf A: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`');
-    assert.equal(r.state.encounter.round, 0, 'nothing resolved yet');
+    // the wolf by its target label for this fight (an unnamed creature: its look and a letter); faster than Alaric, its
+    // first Turn is played with the reply (it closes in), his own waits for the player
+    assert.deepEqual(turnPanel(before, content, null, r).split('\n'), [
+        '`COMBAT START — Wolf A attacks Alaric`',
+        '`Initiative: Wolf A 12 · Alaric 9 → Turn order: Wolf A › Alaric`',
+        '`— Round 1 —`',
+        '`Wolf A: moves closer (MEDIUM → SHORT) — closing distance`',
+        '`COMBAT TARGETS — Wolf A [SHORT]`',
+        '`HP: Wolf A 23/23 · Alaric 80/80`',
+        '`Range: Wolf A SHORT`',
+        '`Alaric: MP 60/60 · STA 100/100 · Arrows 20`',
+        '`Next: Alaric\'s Turn (Round 1)`',
+        // every legal attack lands (Combat V3): the choice is shown as the damage each deals to the wolf (DEF 0, variance ±10%)
+        '`Alaric\'s attacks vs Wolf A: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`',
+    ]);
+    assert.deepEqual([r.state.encounter.round, r.state.encounter.current], [1, 'pc']);
 });

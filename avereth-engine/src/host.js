@@ -11,7 +11,7 @@ import { loreKeys, reportKeys } from './context.js';
 import { extractReport, tolerantJson } from './delta.js';
 import { turnPanel } from './display.js';
 import { renderHud } from './hud.js';
-import { hash32, clone, normText, swapWords, hasTrackerBlocks, stripTrackerBlocks } from './util.js';
+import { hash32, clone, normText, swapWords, hasTrackerBlocks, stripTrackerBlocks, ENGINE_VERSION } from './util.js';
 
 export const KEY = 'avereth';
 export const RECORD_VERSION = 2;
@@ -22,6 +22,7 @@ function rec(msg) {
 
 function setRec(msg, record) {
     if (!msg.extra || typeof msg.extra !== 'object') msg.extra = {};
+    record.build = ENGINE_VERSION; // which build wrote this record (display only; the fold never reads it)
     msg.extra[KEY] = record;
     syncSwipe(msg);
 }

@@ -39,13 +39,14 @@ const sys = (panel) => panel.split('\n').filter((l) => l.startsWith('`'));
 test('several opponents of one kind: Cellar Rat A, B, C in the order they came, in the target list, HP, Range and the HUD', () => {
     const { g, panel } = ratFight();
     assert.deepEqual(labels(g), { 'mon.rat1': 'Cellar Rat A', 'mon.rat2': 'Cellar Rat B', 'mon.rat3': 'Cellar Rat C' });
-    assert.ok(panel.includes('`COMBAT TARGETS — Cellar Rat A [ENGAGED] · Cellar Rat B [SHORT] · Cellar Rat C [SHORT]`'), panel);
+    // the rats are faster: their first Turns resolved with the reply (B and C, skittish, backed off from SHORT)
+    assert.ok(panel.includes('`COMBAT TARGETS — Cellar Rat A [ENGAGED] · Cellar Rat B [MEDIUM] · Cellar Rat C [MEDIUM]`'), panel);
     // HP and Range in Turn order, by the same labels
     const hp = sys(panel).find((l) => l.startsWith('`HP: '));
     const range = sys(panel).find((l) => l.startsWith('`Range: '));
     for (const x of ['A', 'B', 'C']) assert.match(hp, new RegExp(`Cellar Rat ${x} \\d+/\\d+`));
     assert.match(range, /Cellar Rat A ENGAGED/);
-    assert.match(range, /Cellar Rat B SHORT/);
+    assert.match(range, /Cellar Rat B MEDIUM/);
     assert.doesNotMatch(panel.split('`COMBAT TARGETS')[1].split('\n')[0], /Brede/, 'the merchant is no target');
     const w = Object.fromEntries(worldRows(g.state, content));
     assert.match(w.Present, /Cellar Rat A \(HP \d+\/\d+, ENGAGED\)/);
@@ -81,7 +82,7 @@ test('in a fight an unclear target is the engine\'s question: a System panel, no
     assert.equal(t.command.panels[0], [
         '[SYSTEM // COMBAT — TARGET NEEDED]',
         'Alaric\'s Basic Attack: which target — Cellar Rat A or Cellar Rat B or Cellar Rat C? Nothing was spent or rolled.',
-        'COMBAT TARGETS — Cellar Rat A [ENGAGED] · Cellar Rat B [SHORT] · Cellar Rat C [SHORT]',
+        'COMBAT TARGETS — Cellar Rat A [ENGAGED] · Cellar Rat B [MEDIUM] · Cellar Rat C [MEDIUM]',
         'Name one, for example: *Basic Attack on Cellar Rat A*',
     ].join('\n'));
     assert.deepEqual(g.state, before);
@@ -227,7 +228,7 @@ test('the host asks for the group\'s attackers: the answer brings Rat A, Rat B, 
     assert.deepEqual(foes(ok.state), [['mon.rat_a', 'Rat A'], ['mon.rat_b', 'Rat B'], ['mon.rat_c', 'Rat C']]);
     assert.deepEqual([ok.rec.recovery, ok.rec.attackers, ok.rec.rejected], [{ from: 'attackers', ms: 5000 }, undefined, []]);
     assert.ok(ok.rec.accepted.includes('time +5 min'), 'the reply\'s own report stays');
-    assert.match(ok.rec.panel, /`COMBAT TARGETS — Rat A \[ENGAGED\] · Rat B \[SHORT\] · Rat C \[SHORT\]`[\s\S]*`ATTACKERS IDENTIFIED: a separate request named them \(5\.0 s\)\.`/);
+    assert.match(ok.rec.panel, /`COMBAT TARGETS — Rat A \[ENGAGED\] · Rat B \[MEDIUM\] · Rat C \[MEDIUM\]`[\s\S]*`ATTACKERS IDENTIFIED: a separate request named them \(5\.0 s\)\.`/);
     // an answer that is again a pack brings nothing: no single rat, the reply says so
     const again = hostTurn(warrior(), 'I go down into the cellar.', reply, '<avereth>{"new":[{"ref":"rats","kind":"creature","species":"rat"}],"combat":{"by":"rats"}}</avereth>');
     assert.equal(again.state.encounter, null);

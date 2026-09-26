@@ -81,11 +81,12 @@ test('with the answer: Rat A, Rat B, Rat C as three combatants, the fight fixed 
     assert.deepEqual(run.rat.recovery, { from: 'attackers', ms: 12000 });
     assert.ok(run.rat.accepted.includes('time +5 min'));
     const enc = state.encounter;
-    assert.equal(enc.round, 0);
+    // the rats are faster: their Round 1 Turns come with the reply (B and C, skittish, back off), Alaric's waits
+    assert.deepEqual([enc.round, enc.current], [1, 'pc']);
     assert.deepEqual(Object.values(enc.combatants).filter((c) => c.id !== 'pc').map((c) => [c.id, c.label, c.fixed.max_hp]),
         [['mon.rat_a', 'Rat A', 16], ['mon.rat_b', 'Rat B', 16], ['mon.rat_c', 'Rat C', 16]]);
     assert.ok(!enc.combatants['npc.brede'] && !enc.combatants['npc.osney'], 'Brede and Osney stand by');
-    assert.match(run.ratText, /^`COMBAT START — Rat A, Rat B, Rat C attack Alaric`\n`Initiative: [^\n]*`\n`COMBAT TARGETS — Rat A \[ENGAGED\] · Rat B \[SHORT\] · Rat C \[SHORT\]`\n`HP: /);
+    assert.match(run.ratText, /^`COMBAT START — Rat A, Rat B, Rat C attack Alaric`\n`Initiative: [^\n]*`\n`— Round 1 —`\n[\s\S]*`COMBAT TARGETS — Rat A \[ENGAGED\] · Rat B \[MEDIUM\] · Rat C \[MEDIUM\]`\n`HP: /);
     assert.match(run.ratText, /`ATTACKERS IDENTIFIED: a separate request named them \(12\.0 s\)\.`/);
 });
 
@@ -94,7 +95,7 @@ test('"*i dash at the first one and basic attack it*": the engine asks among the
     assert.equal(run.dash.panels[0], [
         '[SYSTEM // COMBAT — TARGET NEEDED]',
         'Alaric\'s Basic Attack: which target — Rat A or Rat B or Rat C? Nothing was spent or rolled.',
-        'COMBAT TARGETS — Rat A [ENGAGED] · Rat B [SHORT] · Rat C [SHORT]',
+        'COMBAT TARGETS — Rat A [ENGAGED] · Rat B [MEDIUM] · Rat C [MEDIUM]',
         'Name one, for example: *Basic Attack on Rat A*',
     ].join('\n'));
     assert.doesNotMatch(run.dash.panels[0], /Brede|Osney/);

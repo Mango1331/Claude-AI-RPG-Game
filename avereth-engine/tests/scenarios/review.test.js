@@ -63,13 +63,15 @@ test('only committed NPCs fight: a hostile spectator or a second bandit does not
     h.reply({ new: [{ ref: 'bandit A', kind: 'npc', desc: ['bandit'], band: 'SHORT' }, { ref: 'brigand B', kind: 'npc', desc: ['brigand'], band: 'SHORT' }] });
     h.input('"Stand aside."');
     h.reply({ combat: [{ by: 'bandit A' }, { by: 'brigand B' }] });
-    // the encounter is fixed right after the reporting reply (both committers, Turn order); nobody has acted yet
+    // the encounter is fixed right after the reporting reply (both committers, Turn order), and both, faster than
+    // Alaric, take their Round 1 Turns with it; his own Turn waits for the player
     assert.deepEqual(Object.keys(h.state.encounter.combatants).sort(), ['npc.bandit_a', 'npc.brigand_b', 'pc']);
-    assert.deepEqual([h.state.encounter.round, h.state.encounter.log.length], [0, 0]);
+    assert.deepEqual([h.state.encounter.round, h.state.encounter.log.map((r) => r.actor), h.state.encounter.current], [1, ['npc.brigand_b', 'npc.bandit_a'], 'pc']);
     assert.deepEqual(h.state.pending_combat, []);
     h.input('I grip my bow.');
     assert.deepEqual(Object.keys(h.state.encounter.combatants).sort(), ['npc.bandit_a', 'npc.brigand_b', 'pc']);
-    assert.equal(h.state.encounter.current, 'pc', 'both acted in Round 1; the fight stops at Alaric\'s decision');
+    assert.equal(h.state.encounter.current, 'pc', 'no action declared: the fight stops at Alaric\'s decision');
+    assert.equal(h.state.encounter.log.length, 2, 'their Round 1 Turns are not played again');
 });
 
 test('being present is not witnessing: an unaware bystander is no witness; "public" means everyone who notices', () => {

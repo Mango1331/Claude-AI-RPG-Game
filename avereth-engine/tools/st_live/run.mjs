@@ -49,6 +49,9 @@ const SCRIPT = [
     ['register', 'Serah takes the two silver, stamps a lead tag and slides it across. "Rats in the Salt Cellar. Under the fish docks. Bring an ear."\n<avereth>{"time":10,"coin":[{"cp":-20,"why":"Guild registration"}],"facts":[{"s":"pc","p":"guild_rank","o":"Novice"}],"items":[{"item":"Guild registration tag","qty":1,"from":"Serah","to":"pc","why":"registration"}],"quests":[{"title":"Rats in the Salt Cellar","status":"active"}]}</avereth>'],
     ['salt cellar', 'The salt cellar under the fish docks is cold and briny. Past the stacked barrels a rat the size of a cat gnaws at a sack, its back to the stairs, unaware of you.\n<avereth>{"time":30,"place":"salt cellar under the fish docks","new":[{"ref":"rat","kind":"creature","species":"rat","desc":["big rat"],"band":"SHORT"}],"aware":[{"who":"rat","level":"unaware"}]}</avereth>'],
     ['Heavy Slash the rat', 'Two quiet steps, then the blade comes down behind the rat\'s shoulder and pins it to the sack; it kicks twice and is still. Brine drips somewhere in the dark.\n<avereth>{"time":1}</avereth>'],
+    // a fight the report opens (live run 26.09. 23:09): the wolf, faster than Alaric, acts with this reply
+    ['river bank', 'The reeds part. A grey wolf comes out low and fast, straight at you.\n<avereth>{"time":15,"place":"river bank below Ashbridge","new":[{"ref":"wolf","kind":"creature","species":"wolf","band":"SHORT"}],"combat":{"by":"wolf"}}</avereth>'],
+    ['Heavy Slash Wolf A', 'Steel meets fur and the wolf reels back into the reeds, snarling.\n<avereth>{}</avereth>'],
 ];
 const replyFor = (input) => (SCRIPT.find(([k]) => input.includes(k)) || [null, 'The world waits.\n<avereth>{}</avereth>'])[1];
 // answers to the engine's report requests (host.js reportRequest), by the player's message they quote
@@ -197,6 +200,8 @@ for (const input of [
     '*I travel the long road east to Ashbridge.*',
     '*I look around the market.*',
     '*I buy a skewer of grilled eel.*',
+    '*I leave the market and walk down to the river bank.*',
+    '*I Heavy Slash Wolf A*',
 ]) turns.push(await send(input));
 
 // # command: answered by the engine, no LLM request
@@ -254,6 +259,13 @@ checks.reportRecovered = reportReqs.length === 2 && /REPORT RECOVERED: the reply
     && /Location: Ashbridge, Duskreach — east gate/.test(T('look around the market').hudText || '') && (T('look around the market').rejected || []).some((r) => /PLAYER OWNERSHIP: moving Alaric/.test(r))
     && /\[AVERETH ENGINE — authoritative game state, turn \d+\./.test(String(marketReq?.messages?.[0]?.content || '')) && /NARRATOR'S REPLY:\nBeyond the gate the market smells/.test(String(marketReq?.lastUser || ''))
     && !/NO FACT REPORT/.test(T('city gate').shown || '') && /End EVERY reply with <avereth>\{…\}<\/avereth>, \{\} if nothing new\.$/.test(engineOf(requests[0]));
+// a fight the narrator's report opens: the wolf's Turn before Alaric's comes with that reply; the narrator hears the
+// start and that Turn with his first one; the next panel does not show it again (live run 26.09. 23:09)
+const wolfShown = T('river bank').shown || '';
+const slashShown = T('Heavy Slash Wolf A').shown || '';
+checks.npcTurnsBeforeAlaric = /COMBAT START — Wolf A attacks Alaric\n[^\n]*\n— Round 1 —\nWolf A[^\n]*→ Alaric/.test(wolfShown) && /Next: Alaric's Turn \(Round 1\)/.test(wolfShown)
+    && /Combat starts \([^\n]*\n- Wolf A[^\n]*\n- Alaric: Heavy Slash -> Wolf A/.test(engineOf(reqFor('Heavy Slash Wolf A')))
+    && /^— Round 1 —\nAlaric: Heavy Slash → Wolf A/.test(slashShown);
 checks.reportRequestFailed = /NO FACT REPORT, and the separate request brought none \(\d+\.\d s\): nothing this reply established was recorded/.test(T('grilled eel').shown || '');
 checks.warriorHud = /HP 85\/85 \(unhurt\)/.test(T('city gate').hudText || '') && /Starter Longsword · Starter Heavy Armor/.test(T('city gate').hudText || '')
     && /ATK 6 · MATK 0 · DEF 7 · MDEF 3/.test(T('city gate').hudText || '');
@@ -292,7 +304,7 @@ if (PRESET !== 'Default') {
     out.preset = { name: PRESET, params: story[0]?.params, firstRequest: story[0]?.messages.map((m) => `${m.role} (${String(m.content).length}): ${String(m.content).slice(0, 70).replace(/\n/g, ' ⏎ ')}`), reportRequest: reportReqs[0]?.messages.map((m) => `${m.role} (${String(m.content).length}): ${String(m.content).slice(0, 70).replace(/\n/g, ' ⏎ ')}`) };
     fs.writeFileSync(path.join(HERE, 'preset_first_request.json'), JSON.stringify({ params: story[0]?.params, messages: story[0]?.messages }, null, 1));
 }
-out.v3 = { kestCard, travelHud: travelTurn?.hudText || '', lookEngineHead: engineOf(lookReq).split('\n').slice(0, 3).join('\n'), creation: CREATION.map((c) => ({ input: c, panel: T(c).panelText })), firstRequestEngine: engineOf(requests[0]).split('\n').slice(0, 12).join('\n'), firstHud: T('city gate').hudText };
+out.v3 = { kestCard, travelHud: travelTurn?.hudText || '', lookEngineHead: engineOf(lookReq).split('\n').slice(0, 3).join('\n'), creation: CREATION.map((c) => ({ input: c, panel: T(c).panelText })), firstRequestEngine: engineOf(requests[0]).split('\n').slice(0, 12).join('\n'), firstHud: T('city gate').hudText, wolfShown, slashShown };
 fs.writeFileSync(path.join(HERE, 'result.json'), JSON.stringify(out, null, 1));
 console.log(JSON.stringify(checks, null, 1));
 if (out.preset) console.log(JSON.stringify(out.preset, null, 1));

@@ -8,7 +8,7 @@ import { assignStat } from './progression.js';
 import { knowledgeOf, memoriesOf, memoryText, propText, playerLabel, statusOf } from './knowledge.js';
 import { applyEvent } from './state.js';
 import { skillSummary } from './context.js';
-import { clone, itemLabel, joinList, normText, formatClock, roundHalfUp } from './util.js';
+import { clone, itemLabel, joinList, normText, formatClock, roundHalfUp, ENGINE_VERSION } from './util.js';
 
 const HELP = [
     ['#status', 'full current status (alias #stats)'], ['#skills', 'all known Skills'], ['#skill <name>', 'full Skill definition with current values'],
@@ -290,7 +290,7 @@ function audit(state, content) {
     if (o?.check_die) lines.push(`Check die issued: d100 ${o.check_die}${state.last.check ? ` (used for "${state.last.check.what}": ${state.last.check.chance}% -> ${state.last.check.success ? 'SUCCESS' : 'FAILURE'})` : ' (unused)'}`);
     for (const r of state.last.rejected) lines.push(`Rejected report item: ${r.reason}`);
     if (lines.length === 1) lines.push('No rolls or rejections recorded for the last turn.');
-    lines.push(`RNG: seed ${state.rng.seed} | draws ${state.rng.n}`);
+    lines.push(`RNG: seed ${state.rng.seed} | draws ${state.rng.n} | Engine ${ENGINE_VERSION}`);
     return lines.join('\n');
 }
 

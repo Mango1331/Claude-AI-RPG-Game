@@ -1,11 +1,11 @@
-# Avereth Engine (v3.0.0)
+# Avereth Engine (v3.1.0)
 
 Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extension**. Sie besitzt Regeln, Würfel, Kampagnenzustand und Figurenwissen. Das Sprachmodell erzählt.
 
 - Keine Abhängigkeiten, kein Server, keine Datenbank.
 - Läuft im Browser (SillyTavern) und in Node (Tests).
 
-**Warum diese Architektur:** [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md). **Befunde aus Testrun-v1:** [docs/TESTRUN_V1.md](docs/TESTRUN_V1.md). **Gesamtbericht:** [ABSCHLUSSBERICHT.md](ABSCHLUSSBERICHT.md). **Externe Review und Antwort:** [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md). **Erster echter Lauf:** [docs/TESTRUN_V2.md](docs/TESTRUN_V2.md). **Zweiter Lauf:** [docs/TESTRUN_V3.md](docs/TESTRUN_V3.md). **Dritter Lauf:** [docs/TESTRUN_V4.md](docs/TESTRUN_V4.md). **Welt-Lore als Lorebook:** [docs/LOREBOOK.md](docs/LOREBOOK.md). **Deep Review Kampf + Runtime V3 (Vorschlag):** [docs/REVIEW_V3.md](docs/REVIEW_V3.md). **Runtime V3 (umgesetzt: einfacher Kampf, NPC-Record, HUD, Prompt-Projektion, Megumin-Checkliste):** [docs/RUNTIME_V3.md](docs/RUNTIME_V3.md). **Plan für Test 5:** [docs/TEST5_PLAN.md](docs/TEST5_PLAN.md). **Pre-Test-5-Diagnoselauf:** [docs/PRETEST5_DIAGNOSE.md](docs/PRETEST5_DIAGNOSE.md). **Test 5, Lauf 1:** [docs/TESTRUN_V5.md](docs/TESTRUN_V5.md). **Test 5, Lauf 2 (Report-Nachforderung):** [docs/TESTRUN_V5_2.md](docs/TESTRUN_V5_2.md). **Ohne Megumin? Analyse und Entwurf eines eigenen Erzähl-Layers:** [docs/MEGUMIN_ANALYSE.md](docs/MEGUMIN_ANALYSE.md). **Erzähl-Layer „Avereth Narrator“ (Preset) und A/B/C-Vergleich mit Megumin:** [docs/NARRATOR_AB.md](docs/NARRATOR_AB.md). **Erster Live-Lauf mit dem Avereth Narrator:** [docs/TESTRUN_V6.md](docs/TESTRUN_V6.md). **Live-Lauf 25.09. (Ratten ohne Zustand, Kampf-Labels, Zielfrage durch die Engine):** [docs/TESTRUN_V7.md](docs/TESTRUN_V7.md).
+**Warum diese Architektur:** [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md). **Befunde aus Testrun-v1:** [docs/TESTRUN_V1.md](docs/TESTRUN_V1.md). **Gesamtbericht:** [ABSCHLUSSBERICHT.md](ABSCHLUSSBERICHT.md). **Externe Review und Antwort:** [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md). **Erster echter Lauf:** [docs/TESTRUN_V2.md](docs/TESTRUN_V2.md). **Zweiter Lauf:** [docs/TESTRUN_V3.md](docs/TESTRUN_V3.md). **Dritter Lauf:** [docs/TESTRUN_V4.md](docs/TESTRUN_V4.md). **Welt-Lore als Lorebook:** [docs/LOREBOOK.md](docs/LOREBOOK.md). **Deep Review Kampf + Runtime V3 (Vorschlag):** [docs/REVIEW_V3.md](docs/REVIEW_V3.md). **Runtime V3 (umgesetzt: einfacher Kampf, NPC-Record, HUD, Prompt-Projektion, Megumin-Checkliste):** [docs/RUNTIME_V3.md](docs/RUNTIME_V3.md). **Plan für Test 5:** [docs/TEST5_PLAN.md](docs/TEST5_PLAN.md). **Pre-Test-5-Diagnoselauf:** [docs/PRETEST5_DIAGNOSE.md](docs/PRETEST5_DIAGNOSE.md). **Test 5, Lauf 1:** [docs/TESTRUN_V5.md](docs/TESTRUN_V5.md). **Test 5, Lauf 2 (Report-Nachforderung):** [docs/TESTRUN_V5_2.md](docs/TESTRUN_V5_2.md). **Ohne Megumin? Analyse und Entwurf eines eigenen Erzähl-Layers:** [docs/MEGUMIN_ANALYSE.md](docs/MEGUMIN_ANALYSE.md). **Erzähl-Layer „Avereth Narrator“ (Preset) und A/B/C-Vergleich mit Megumin:** [docs/NARRATOR_AB.md](docs/NARRATOR_AB.md). **Erster Live-Lauf mit dem Avereth Narrator:** [docs/TESTRUN_V6.md](docs/TESTRUN_V6.md). **Live-Lauf 25.09. (Ratten ohne Zustand, Kampf-Labels, Zielfrage durch die Engine):** [docs/TESTRUN_V7.md](docs/TESTRUN_V7.md). **Live-Lauf 26.09. (lief den Stand von `main`; Züge vor Alarics erstem Zug, Phantom-Ratten, `alaric_red`, Build-Kennung):** [docs/TESTRUN_V8.md](docs/TESTRUN_V8.md).
 
 ## Was die Engine pro Zug tut
 
@@ -33,7 +33,8 @@ Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extens
    - der Report wird aus der Anzeige entfernt;
    - Zahlen in der Antwort, die der Engine widersprechen (z. B. „Init 8“), werden im nächsten Zug korrigiert;
    - fehlt der Report, bittet der nächste Engine-Block darum, und der nächste Report darf die Entscheidungen des Zuges ohne Report nachtragen;
-   - meldet der Report einen Angriff auf Alaric, legt die Engine den Kampf sofort fest (Initiative, Reihenfolge) und zeigt ihn über dieser Antwort; die Runde läuft mit deiner nächsten Nachricht;
+   - meldet der Report einen Angriff auf Alaric, legt die Engine den Kampf sofort fest (Initiative, Reihenfolge) und spielt gleich alle Züge vor Alarics erstem Zug (im echten Hinterhalt zuerst die Opening Action). Das steht über dieser Antwort; Alarics Zug wartet auf deine Nachricht, und der Erzähler erzählt die Züge davor mit ihm. Sind die Angreifer noch unklar (Nachforderung läuft), wird der Kampf nur festgelegt;
+   - während eines Kampfes legt ein Report keine neue Kreatur an, die er nicht im selben Report in `combat` angreifen lässt: Die Kämpfenden heißen mit ihrem Label (Cellar Rat A), ein Neuzugang kommt über `new` und `combat`;
    - schreibt das Modell trotzdem `<World_State>`, `<Character_Sheet>`, `<New_NPC>` oder `<NPC_Update>`, werden die Blöcke entfernt und nie zu Zustand.
 6. **Unter der Antwort zeigt das HUD** zwei einklappbare Panels, Charakter und Welt. Beide werden aus dem Engine-Zustand gerendert, gehen nie in den Prompt und zeigen nichts, was Alaric nicht wissen kann.
 
@@ -45,8 +46,11 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
 
 ## Installation
 
-1. Den Ordner `avereth-engine/` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren, oder über „Install extension“ aus einem Git-Repository installieren.
+1. Den Ordner `avereth-engine/` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren. „Install extension“ mit der Repository-Adresse geht nicht: SillyTavern erwartet `manifest.json` im Wurzelverzeichnis des Repositorys, hier liegt sie im Unterordner.
+   - **Welcher Stand?** Neue Änderungen liegen zuerst auf dem Branch `claude/happy-wright-1a4y19` und kommen erst mit dem Merge nach `main`. Den Ordner aus dem Stand kopieren, den du testen willst.
+   - **Nur eine Kopie:** Liegt zusätzlich ein gleichnamiger Ordner unter `public/scripts/extensions/third-party/`, liefert SillyTavern pro Datei die Kopie aus `data/<user>/extensions/`. Alte Kopien löschen.
 2. SillyTavern neu laden. Unter Extensions erscheint **Avereth Engine**.
+   - **Build prüfen:** „Manage extensions“ zeigt die Version aus `manifest.json` (jetzt **3.1.0**). Dieselbe Nummer steht in der Statuszeile des Engine-Panels, in der letzten Zeile von `#audit` und bei jeder Nachricht im Event-Export (`build`). Nachrichten ohne `build` stammen von einem Stand vor 3.1.0.
 3. **Charakterkarte:**
    - Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v3.txt` (Stand 3.3; nach jedem Update neu einfügen);
    - Begrüßung = First Message v0.4 (unverändert; die Zeile `Location: … outside <City>, <Realm>` legt den Startort fest).
@@ -108,7 +112,7 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
   - HP aller Beteiligten, ihre Entfernung zu Alaric (`Range:`), Alarics MP/STA/Pfeile;
   - vor Alarics Zug seine Angriffe mit dem Schadensbereich gegen das nächste Ziel: `Alaric's attacks vs Cellar Vermin: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`;
   - Kampfende mit XP;
-  - greift jemand Alaric an, steht die Reihenfolge schon über dieser Antwort (`COMBAT START`, Initiative, HP, Entfernung, wer vor Alaric handelt), bevor du deine Aktion schreibst;
+  - greift jemand Alaric an, steht der Kampf schon über dieser Antwort, bevor du deine Aktion schreibst: `COMBAT START`, Initiative, die Züge aller, die vor Alaric dran sind (`— Round 1 —`), Zielliste, HP, Entfernung, `Next: Alaric's Turn (Round 1)`. Das Panel deines nächsten Zuges zeigt nur, was danach geschieht;
   - Handel und Beute als eigene Zeilen: `COIN -2 Copper → 4 Silver 8 Copper`, `ITEM +3 Standard Arrow → 23 carried`, `QUEST ACCEPTED — …`, Quest-XP und Level-up, Erholung.
 
   Der Block ist nur Anzeige: GLM bekommt die Zahlen im Engine-Block und sieht den Block nicht im Chatverlauf.
@@ -146,7 +150,7 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 ## Für Entwickler
 
 ```
-npm test                               # 219 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Runtime V3, Pre-Test-5, Regression der Testruns 1–4 und beider Test-5-Läufe, Narrator-Vergleich
+npm test                               # 256 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Runtime V3, Pre-Test-5, Regression der Testruns 1–4, beider Test-5-Läufe und der Live-Läufe 6–8, Narrator-Vergleich
 node tools/testrun_compare.js          # Token-Vergleich mit Testrun-v1
 node tools/browser_smoke.mjs           # optional: index.js in echtem Chromium mit gemocktem SillyTavern-Kontext (braucht Playwright)
 AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st   # optional: Live-Smoke in echtem SillyTavern mit streamendem Mock-Erzähler (docs/RUNTIME_V3.md §8); mit AVERETH_ST_PRESET="Avereth Narrator" für das eigene Preset (docs/NARRATOR_AB.md §2.4)
@@ -156,6 +160,8 @@ node tools/lorebook_audit.mjs          # welche Lorebook-Einträge in den Testru
 python3 tools/migrate_content.py       # Content aus dem Paket v1.24 neu erzeugen (aus dem Repo-Wurzelverzeichnis)
 node tools/v3_combat.mjs               # danach: Combat V3 auf den Content anwenden (idempotent)
 ```
+
+**Build-Kennung:** Bei jeder Engine-Änderung `ENGINE_VERSION` in `src/util.js` erhöhen, dazu `version` in `manifest.json` und `package.json`. Ein Test prüft, dass alle drei gleich sind.
 
 | Ordner | Inhalt |
 |---|---|

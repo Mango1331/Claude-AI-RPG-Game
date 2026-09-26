@@ -3,7 +3,7 @@
 // The build: manifest.json "version" matches (SillyTavern shows it under Manage extensions). Shown in the extension's
 // settings, in #audit and on every message record it writes, so a chat export says which build handled each turn
 // (live run 26.09. 23:09 ran 8132a25, the state of main, while the fixes were on the branch). Raise it with every change.
-export const ENGINE_VERSION = '3.1.0';
+export const ENGINE_VERSION = '3.1.1';
 
 export const BANDS = ['ENGAGED', 'SHORT', 'MEDIUM', 'LONG'];
 

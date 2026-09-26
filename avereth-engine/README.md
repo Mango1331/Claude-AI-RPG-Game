@@ -1,4 +1,4 @@
-# Avereth Engine (v3.1.0)
+# Avereth Engine (v3.1.1)
 
 Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extension**. Sie besitzt Regeln, Würfel, Kampagnenzustand und Figurenwissen. Das Sprachmodell erzählt.
 
@@ -34,7 +34,8 @@ Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extens
    - Zahlen in der Antwort, die der Engine widersprechen (z. B. „Init 8“), werden im nächsten Zug korrigiert;
    - fehlt der Report, bittet der nächste Engine-Block darum, und der nächste Report darf die Entscheidungen des Zuges ohne Report nachtragen;
    - meldet der Report einen Angriff auf Alaric, legt die Engine den Kampf sofort fest (Initiative, Reihenfolge) und spielt gleich alle Züge vor Alarics erstem Zug (im echten Hinterhalt zuerst die Opening Action). Das steht über dieser Antwort; Alarics Zug wartet auf deine Nachricht, und der Erzähler erzählt die Züge davor mit ihm. Sind die Angreifer noch unklar (Nachforderung läuft), wird der Kampf nur festgelegt;
-   - während eines Kampfes legt ein Report keine neue Kreatur an, die er nicht im selben Report in `combat` angreifen lässt: Die Kämpfenden heißen mit ihrem Label (Cellar Rat A), ein Neuzugang kommt über `new` und `combat`;
+   - während eines Kampfes legt ein Report keine neue Kreatur an, die er nicht im selben Report in `combat` angreifen lässt: Die Kämpfenden heißen mit ihrem Label (Cellar Rat A), ein Neuzugang kommt über `new` und seine Ref in `combat`, auch wenn er wie die Kämpfenden „Cellar Rat“ heißt (er wird Cellar Rat C);
+   - Alarics Name gehört dem Spieler: Ein Report ersetzt ihn nie. Sein voller Name („Alaric Red“) ändert nichts, ein anderer Name wird abgelehnt (ein Name, unter dem er auftritt, ist ein eigener Fakt, z. B. `alias`);
    - schreibt das Modell trotzdem `<World_State>`, `<Character_Sheet>`, `<New_NPC>` oder `<NPC_Update>`, werden die Blöcke entfernt und nie zu Zustand.
 6. **Unter der Antwort zeigt das HUD** zwei einklappbare Panels, Charakter und Welt. Beide werden aus dem Engine-Zustand gerendert, gehen nie in den Prompt und zeigen nichts, was Alaric nicht wissen kann.
 
@@ -50,7 +51,7 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
    - **Welcher Stand?** Neue Änderungen liegen zuerst auf dem Branch `claude/happy-wright-1a4y19` und kommen erst mit dem Merge nach `main`. Den Ordner aus dem Stand kopieren, den du testen willst.
    - **Nur eine Kopie:** Liegt zusätzlich ein gleichnamiger Ordner unter `public/scripts/extensions/third-party/`, liefert SillyTavern pro Datei die Kopie aus `data/<user>/extensions/`. Alte Kopien löschen.
 2. SillyTavern neu laden. Unter Extensions erscheint **Avereth Engine**.
-   - **Build prüfen:** „Manage extensions“ zeigt die Version aus `manifest.json` (jetzt **3.1.0**). Dieselbe Nummer steht in der Statuszeile des Engine-Panels, in der letzten Zeile von `#audit` und bei jeder Nachricht im Event-Export (`build`). Nachrichten ohne `build` stammen von einem Stand vor 3.1.0.
+   - **Build prüfen:** „Manage extensions“ zeigt die Version aus `manifest.json` (jetzt **3.1.1**). Dieselbe Nummer steht in der Statuszeile des Engine-Panels, in der letzten Zeile von `#audit` und bei jeder Nachricht im Event-Export (`build`). Nachrichten ohne `build` stammen von einem Stand vor 3.1.0.
 3. **Charakterkarte:**
    - Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v3.txt` (Stand 3.3; nach jedem Update neu einfügen);
    - Begrüßung = First Message v0.4 (unverändert; die Zeile `Location: … outside <City>, <Realm>` legt den Startort fest).
@@ -150,7 +151,7 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 ## Für Entwickler
 
 ```
-npm test                               # 256 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Runtime V3, Pre-Test-5, Regression der Testruns 1–4, beider Test-5-Läufe und der Live-Läufe 6–8, Narrator-Vergleich
+npm test                               # 258 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Runtime V3, Pre-Test-5, Regression der Testruns 1–4, beider Test-5-Läufe und der Live-Läufe 6–8, Narrator-Vergleich
 node tools/testrun_compare.js          # Token-Vergleich mit Testrun-v1
 node tools/browser_smoke.mjs           # optional: index.js in echtem Chromium mit gemocktem SillyTavern-Kontext (braucht Playwright)
 AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st   # optional: Live-Smoke in echtem SillyTavern mit streamendem Mock-Erzähler (docs/RUNTIME_V3.md §8); mit AVERETH_ST_PRESET="Avereth Narrator" für das eigene Preset (docs/NARRATOR_AB.md §2.4)

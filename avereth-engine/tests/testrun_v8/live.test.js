@@ -175,12 +175,30 @@ test('"Basic Attack Cellar Rat A" hits exactly A; the System panel, the HUD and 
     assert.match(renderHud(s, content, 'open'), /Cellar Rat B \(HP \d+\/16/);
 });
 
-test('a real newcomer still joins: introduced in "new" and named in "combat", it is Cellar Rat C', () => {
+test('a real newcomer still joins: introduced in "new" and its ref named in "combat", it is Cellar Rat C, also by the same name', () => {
+    const rat3 = (entry) => {
+        const c = chat.slice();
+        say(c, '*i Basic Attack Cellar Rat A*');
+        return answer(c, `A third rat drops from the grain sacks and goes for his boot.\n<avereth>{"new":[${JSON.stringify(entry)}],"combat":{"by":["rat_3"]}}</avereth>`);
+    };
+    const bySpecies = rat3({ ref: 'rat_3', kind: 'creature', species: 'rat', desc: ['cellar rat'], band: 'ENGAGED' });
+    assert.deepEqual([bySpecies.rec.rejected, bySpecies.rec.accepted], [[], ['new creature rat_3 (mon.rat_3)', 'combat committed by mon.rat_3 (pending)']]);
+    assert.equal(bySpecies.state.encounter.combatants['mon.rat_3']?.label, 'Cellar Rat C');
+    assert.match(bySpecies.panel, /`COMBAT — Cellar Rat C joins the fight/);
+    // named like the fighters, as the run's own report named its rats: its new ref, committed, makes it a newcomer; the
+    // name "Cellar Rat" does not merge it with Cellar Rat A (it did: "known mon.cellar_rat", and the rat was lost)
+    const byName = rat3({ ref: 'rat_3', kind: 'creature', name: 'Cellar Rat', species: 'rat', band: 'ENGAGED' });
+    assert.deepEqual([byName.rec.rejected, byName.rec.accepted], [[], ['new creature Cellar Rat (mon.cellar_rat_3)', 'combat committed by mon.cellar_rat_3 (pending)']]);
+    assert.deepEqual(Object.values(byName.state.encounter.combatants).filter((x) => x.id !== 'pc').map((x) => x.label), ['Big Cellar Rat', 'Cellar Rat A', 'Cellar Rat B', 'Cellar Rat C']);
+    assert.match(byName.panel, /`COMBAT — Cellar Rat C joins the fight/);
+});
+
+test('fighters re-described under new refs while the report names them by label make no new creatures either', () => {
     const c = chat.slice();
     say(c, '*i Basic Attack Cellar Rat A*');
-    const r = answer(c, 'A third rat drops from the grain sacks and goes for his boot.\n<avereth>{"new":[{"ref":"rat_3","kind":"creature","species":"rat","desc":["cellar rat"],"band":"ENGAGED"}],"combat":{"by":["rat_3"]}}</avereth>');
-    assert.deepEqual(r.rec.rejected, []);
-    assert.deepEqual(r.rec.accepted, ['new creature rat_3 (mon.rat_3)', 'combat committed by mon.rat_3 (pending)']);
-    assert.equal(r.state.encounter.combatants['mon.rat_3']?.label, 'Cellar Rat C');
-    assert.match(r.panel, /`COMBAT — Cellar Rat C joins the fight/);
+    const r = answer(c, 'The rats keep at his legs.\n<avereth>{"combat":{"by":["Cellar Rat A","Cellar Rat B"]},"new":[{"ref":"rat1","kind":"creature","species":"rat","desc":["bit his calf"]},{"ref":"rat2","kind":"creature","species":"rat","desc":["gnawing at his greave"]}]}</avereth>');
+    assert.deepEqual(r.rec.rejected.map((x) => x.item.ref), ['rat1', 'rat2']);
+    assert.deepEqual(r.rec.accepted, ['mon.cellar_rat fights on', 'mon.cellar_rat_2 fights on']);
+    assert.ok(!r.state.entities['mon.rat1'] && !r.state.entities['mon.rat2']);
+    assert.deepEqual(Object.values(r.state.encounter.combatants).filter((x) => x.id !== 'pc').map((x) => x.label), ['Big Cellar Rat', 'Cellar Rat A', 'Cellar Rat B']);
 });

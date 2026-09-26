@@ -313,7 +313,10 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (!n || !n.ref) { reject(n, 'new entity needs a ref'); continue; }
         const kind = n.kind === 'creature' ? 'creature' : n.kind === 'npc' ? 'npc' : null;
         if (!kind) { reject(n, 'kind must be "npc" or "creature"'); continue; }
-        const existing = resolve(n.ref) || (n.name ? resolve(n.name) : null);
+        // in a fight, a creature whose new ref this report commits is a newcomer: its name ("Cellar Rat") is its kind,
+        // shared with the fighters, who are named by their labels; it neither merges it with one of them nor names it
+        const joins = kind === 'creature' && !!state.encounter && committedRefs.has(refKey(n.ref));
+        const existing = resolve(n.ref) || (n.name && !joins ? resolve(n.name) : null);
         if (existing && existing !== 'pc' && state.entities[existing]) {
             newRefs.set(normText(n.ref), existing);
             placed.add(existing);
@@ -340,7 +343,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         const desc = uniq([...(Array.isArray(n.desc) ? n.desc : []), n.ref].map((x) => String(x).toLowerCase().slice(0, 40)));
         const id = uniqueId(state, kind === 'npc' ? 'npc' : 'mon', n.name || n.ref, taken);
         const name = n.name ? String(n.name).slice(0, 60) : kind === 'npc' ? nameFromRef(n, prose) : null;
-        if (name) newRefs.set(normText(name), id);
+        if (name && !joins) newRefs.set(normText(name), id);
         const entity = { id, kind, name, descriptors: desc, traits: n.traits ? String(n.traits).slice(0, 240) : '', status: 'alive', location: state.scene.location, created: at, source: src, card: {} };
         // Test 5 run: "Sergeant Hobb" and "Wick" came in "new" a reply before the story said their names (Testrun 2:
         // "Bram" was said five turns before "Fenn"); the player's views (combat target labels, HUD) show only the
@@ -358,7 +361,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
             entity.template = tpl ? tpl.id : 'commoner';
         }
         newRefs.set(normText(n.ref), id);
-        if (n.name) newRefs.set(normText(n.name), id);
+        if (n.name && !joins) newRefs.set(normText(n.name), id);
         created.set(id, entity);
         if (kind === 'creature' && isGroup(content, n.name || n.ref)) groupNew.set(id, String(n.ref));
         events.push({ t: 'entity.created', d: { entity } });
@@ -454,6 +457,14 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (!f || !f.s || !f.p || f.o === undefined || f.o === null) { reject(f, 'fact needs s, p, o'); continue; }
         const s = resolve(f.s) || String(f.s).slice(0, 80);
         const p = normPredicate(f.p);
+        // Alaric's name is the player's, and every "knows his name" rests on it (f.pc.name): a report never replaces it.
+        // His full name ("Alaric Red") is the same name and changes nothing; any other is refused
+        if (s === 'pc' && p === 'name') {
+            const own = truth(state, 'pc', 'name')[0];
+            if (own && sameValue('name', own.o, String(f.o))) accepted.push(`pc name ${String(f.o).slice(0, 60)}: his own name, kept`);
+            else reject(f, `${pcName}'s name is the player's and stays as it is; a name he goes by is a fact of its own (p "alias"), and who learns his name goes in "learn"`);
+            continue;
+        }
         const oRef = typeof f.o === 'string' ? resolve(f.o) : null;
         const o = oRef && state.entities[oRef] ? oRef : String(f.o).slice(0, 200);
         const hard = FUNCTIONAL.has(p) ? truth(state, s, p).find((x) => x.hard && normText(x.o) !== normText(o)) : null;

@@ -140,12 +140,11 @@ Siehe §1.
   - Szenenpräsenz, Kampfkern, Kampfstille;
   - Report-Nachforderung (6,7 s und 1,65 s).
 - **Niedrige Priorität, ohne Änderung:** Vergangenheitsform und der erzählerische `place`-Text. Der Erzähler-Prompt ist nicht gewachsen.
-- **Beobachtung ohne Änderung (kein Befund im Lauf), gleichnamiger Neuzugang:** Führt der Erzähler einen Neuzugang mit genau dem Namen eines kämpfenden Tiers ein (`new: {"ref":"rat_4","name":"Cellar Rat"}` plus `combat: rat_4`), legt ihn die bestehende Namensprüfung mit diesem Tier zusammen („fights on“). Über Art und Beschreibung, wie es die Angreifer-Nachforderung verlangt, kommt er herein.
-- **Beobachtung ohne Änderung (kein Befund im Lauf), Name als Fakt:** Ein `facts`-Eintrag `{s:"Alaric", p:"full_name", o:"Alaric Red"}` löst das Objekt zu `pc` auf und ersetzt Alarics Namensfakt durch „pc name pc“. Bisher hat kein Report so etwas geschrieben.
+- Die zwei Beobachtungen der ersten Fassung (gleichnamiger Neuzugang, Alarics Name als Fakt) sind mit 3.1.1 behoben, siehe §6.
 
 ## 5. Tests
 
-**`tests/testrun_v8/live.test.js`** (9 Tests, Replay des Laufs auf 3.1.0):
+**`tests/testrun_v8/live.test.js`** (10 Tests, Replay des Laufs auf dem aktuellen Stand):
 - Der Lauf spielt fehlerfrei; jeder Record trägt `build`.
 - manifest, package.json und Engine zeigen dieselbe Version; `#audit`, Statuszeile und Export zeigen sie ebenfalls.
 - `alaric_red` ergibt `pc`; Clerk und Dagny kennen seinen Namen.
@@ -154,7 +153,8 @@ Siehe §1.
 - Phantom-Ratten werden abgelehnt; das HUD zeigt nur die echten Ratten; die Korrektur steht im nächsten Engine-Block.
 - Unklares Ziel: nur ein System-Panel, kein Erzähler.
 - „Basic Attack Cellar Rat A“ trifft genau A, und Panel, HUD und Engine-Block benennen gleich.
-- Ein echter Neuzugang wird Cellar Rat C.
+- Ein echter Neuzugang wird Cellar Rat C, auch mit dem Namen „Cellar Rat“ (3.1.1).
+- Kämpfende, die der Report unter neuen Refs beschreibt und per Label angreifen lässt, ergeben keine neuen Kreaturen (3.1.1).
 
 **`tests/unit/combat_start.test.js`** (6 Tests):
 - NPC > NPC > Alaric;
@@ -164,7 +164,9 @@ Siehe §1.
 - dieselbe Antwort ergibt denselben Kampf;
 - solange die Angreifer nachgefordert werden, läuft kein Vorlauf.
 
-**`tests/unit/report.test.js`:** „Alaric“, „Alaric Red“ und „alaric_red“ ergeben `pc` in `facts` und `learn`. Dazu die Gegenprobe mit einem Alias und `hesta_gault`.
+**`tests/unit/report.test.js`:**
+- „Alaric“, „Alaric Red“ und „alaric_red“ ergeben `pc` in `facts` und `learn`. Dazu die Gegenprobe mit einem Alias und `hesta_gault`.
+- Alarics Namensfakt bleibt (3.1.1): `full_name` „Alaric Red“ ändert nichts, ein anderer Name wird abgelehnt, der Clerk kennt ihn weiter mit Namen, `alias` bleibt möglich.
 
 **Angepasst** an den Vorlauf: die Erwartungen in Testrun 3, Testrun 7, `combat_targets`, `display`, `review` und `report`. Die gerufenen Züge stehen jetzt schon in der Antwort des Kampfbeginns; schreckhafte Ratten stehen deshalb auf MEDIUM statt SHORT.
 
@@ -172,3 +174,20 @@ Siehe §1.
 - Die Antwort zeigt seinen ersten Zug und `Next: Alaric's Turn (Round 1)`.
 - Die Anfrage zu „Heavy Slash Wolf A“ enthält „Combat starts“ mit dem Wolfszug vor Alarics Schlag.
 - Das Panel danach beginnt mit Alarics Zug.
+
+## 6. 3.1.1: zwei Restpunkte vor dem Merge
+
+Beide kamen aus der Prüfung von 6e90cba (externe Review) und waren in §4 der ersten Fassung als Beobachtung vermerkt. Beide sind reproduziert und minimal behoben.
+
+**Gleichnamiger Neuzugang im Kampf (`delta.js`):**
+- **Fehler:** `new: {"ref":"rat_3","name":"Cellar Rat"}` plus `combat: {"by":"rat_3"}` wurde über den Namen mit Cellar Rat A zusammengelegt („known mon.cellar_rat“, „fights on“), und die Ratte fehlte. Die Namensprüfung lief, bevor die Kampfregel entschied.
+- **Regel:** Im Kampf ist eine Kreatur, deren neue Ref derselbe Report in `combat` angreifen lässt, ein Neuzugang. Ihr Name („Cellar Rat“) ist ihre Art, die sie mit den Kämpfenden teilt. Er legt sie mit keinem von ihnen zusammen, und über ihn wird sie in diesem Report auch nicht angesprochen.
+- Eine Ref, die selbst schon einen Kämpfer bezeichnet (Label, frühere Ref), bleibt dieser Kämpfer.
+- Ergebnis: Cellar Rat C. Der Phantom-Fall bleibt abgelehnt, auch wenn der Report die Kämpfenden per Label (`Cellar Rat A`, `Cellar Rat B`) angreifen lässt.
+
+**Alarics Namensfakt (`delta.js`):**
+- **Fehler:** `full_name` wird zu `name`, und `name` hält nur einen Wert. `{s:"Alaric", p:"full_name", o:"Alaric Red"}` beendete deshalb `f.pc.name` (an dem jedes „knows his name“ hängt) und setzte „pc name pc“.
+- **Regel:** Ein Report ersetzt Alarics Namensfakt nie. Eine verträgliche Form („Alaric Red“, nach derselben Namensregel wie beim Lernen) ändert nichts; jeder andere Name wird mit Hinweis abgelehnt. Ein Name, unter dem er auftritt, ist ein eigener Fakt (`alias`), und wer seinen Namen erfährt, steht in `learn`.
+- Einen Weg, Alaric umzubenennen, gibt es nicht: Sein Name kommt aus dem Kampagnenstart.
+
+**Version:** 3.1.1, nach der Regel „jede Engine-Änderung erhöht die Build-Kennung“.

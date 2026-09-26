@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent, Game } from '../helpers.js';
 import { extractReport, tolerantJson, reportToEvents } from '../../src/delta.js';
-import { truth, knowledgeOf, statusOf, knows, PC_NAME_FACT } from '../../src/knowledge.js';
+import { truth, knowledgeOf, statusOf, knows, PC_NAME_FACT, pcIdentityFor } from '../../src/knowledge.js';
 
 const content = await loadContent();
 // a created character in story mode: reports answer a story message (a reply to the creation turn itself is System-only)
@@ -296,4 +296,28 @@ test('"Alaric", "Alaric Red" and "alaric_red" are Alaric in facts and learn; who
     assert.deepEqual(h.rejected, []);
     assert.equal(truth(g.state, 'npc.hesta', 'occupation')[0]?.o, 'sponsor');
     assert.equal(g.state.entities['npc.hesta'].name, 'Hesta');
+});
+
+test('Alaric\'s name fact stays the player\'s: his full name keeps it, another name is refused, whoever knew his name still does', () => {
+    // {"s":"Alaric","p":"full_name","o":"Alaric Red"} used to end f.pc.name (on which every "knows his name" rests) and
+    // set "pc name pc" (the object resolved to Alaric)
+    const g = ready();
+    g.reply({ new: [{ ref: 'clerk', kind: 'npc', desc: ['guild clerk'], band: 'ENGAGED' }] });
+    g.reply({ learn: [{ who: 'clerk', s: 'alaric_red', p: 'registered_name', o: 'Alaric Red', how: 'witnessed' }] });
+    for (const f of [{ s: 'Alaric', p: 'full_name', o: 'Alaric Red' }, { s: 'alaric_red', p: 'name', o: 'Alaric Red' }, { s: 'pc', p: 'called', o: 'Alaric' }]) {
+        const r = g.reply({ facts: [f] });
+        assert.deepEqual(r.rejected, [], JSON.stringify(f));
+        assert.deepEqual(r.events.filter((e) => e.t.startsWith('fact.')), [], `${JSON.stringify(f)}: the same name changes nothing`);
+    }
+    const other = g.reply({ facts: [{ s: 'Alaric', p: 'name', o: 'John Smith' }] });
+    assert.match(reasons(other), /^Alaric's name is the player's and stays as it is; a name he goes by is a fact of its own \(p "alias"\)/);
+    assert.equal(g.state.facts[PC_NAME_FACT].until, null);
+    assert.deepEqual(truth(g.state, 'pc', 'name').map((f) => [f.id, f.o]), [[PC_NAME_FACT, 'Alaric']]);
+    assert.ok(knows(g.state, 'npc.clerk', PC_NAME_FACT));
+    assert.equal(pcIdentityFor(g.state, 'npc.clerk').level, 'name', 'the clerk knows him by name');
+    assert.equal(g.state.entities.pc.name, 'Alaric');
+    // a name he goes by is a fact of its own
+    g.reply({ facts: [{ s: 'Alaric', p: 'alias', o: 'John Smith' }] });
+    assert.equal(truth(g.state, 'pc', 'alias')[0]?.o, 'John Smith');
+    assert.equal(truth(g.state, 'pc', 'name')[0].id, PC_NAME_FACT);
 });

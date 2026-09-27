@@ -168,10 +168,12 @@ const commitmentsOf = (x) => listOf(x).flatMap((cb) => (typeof cb === 'string' ?
 function withAttackers(report, attackers, answer) {
     const out = new Set(attackers.map((a) => normText(a.by)));
     const drop = new Set(attackers.map((a) => a.ref && normText(a.ref)).filter(Boolean)); // a pack the report introduced
+    const held = attackers.map((a) => a.group).filter(Boolean); // a group held as one creature: its animals take its place
     return {
         ...report,
         new: [...listOf(report.new).filter((n) => !drop.has(normText(n?.ref))), ...listOf(answer.new)],
         combat: [...commitmentsOf(report.combat).filter((cb) => !out.has(normText(cb?.by))), ...commitmentsOf(answer.combat)],
+        ...(held.length ? { leave: [...listOf(report.leave), ...held] } : {}),
     };
 }
 
@@ -192,7 +194,7 @@ export function reportRequest(chat, id, content, { settings = {} } = {}) {
     if (!r.report_error) {
         return {
             systemPrompt: `${ATTACKERS_REQUEST_HEAD}\n\n${context.text}`,
-            prompt: `PLAYER'S MESSAGE:\n${chat[u].mes}\n\nNARRATOR'S REPLY:\n${msg.mes}\n\nIts "combat" named: ${r.attackers.map((a) => `"${a.by}"`).join(', ')}. Write the attackers now: exactly one <avereth>{"new":[…],"combat":{"by":[…]}}</avereth>, nothing else. Do not continue the story.`,
+            prompt: `PLAYER'S MESSAGE:\n${chat[u].mes}\n\nNARRATOR'S REPLY:\n${msg.mes}\n\nIts "combat" named: ${r.attackers.map((a) => `"${a.by}"${a.group ? ' (a group the game state lists as one creature: its animals are the attackers, each a "new" entry)' : ''}`).join(', ')}. Write the attackers now: exactly one <avereth>{"new":[…],"combat":{"by":[…]}}</avereth>, nothing else. Do not continue the story.`,
             hash: r.text_hash,
         };
     }

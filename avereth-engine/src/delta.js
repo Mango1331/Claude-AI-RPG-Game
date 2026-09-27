@@ -178,11 +178,17 @@ const pluralKind = (content, w) => [...content.anchors.values()].some((a) => a.a
 
 /**
  * A designation that names several: its last word is a collective or a creature kind in the plural ("Cellar rat pack",
- * "cellar rats", "wolves"). "pack leader", "Big rat" and an indexed ref ("pack_rat_1", "rat_b") name one.
+ * "cellar rats", "wolves"); a qualifier in parentheses is no part of it ("cellar rats (dark)"). "pack leader", "Big rat"
+ * and an indexed ref ("pack_rat_1", "rat_b") name one.
  */
 function isGroup(content, text) {
-    const last = wordsOf(text).at(-1);
+    const last = wordsOf(String(text ?? '').replace(/\([^)]*\)/g, ' ')).at(-1);
     return !!last && (GROUP_WORDS.has(last) || pluralKind(content, last));
+}
+
+/** A creature the story holds as one entity whose designation names several ("cellar rats", live run 27.09. 01:19). */
+export function isGroupCreature(content, e) {
+    return e?.kind === 'creature' && isGroup(content, e.name || e.descriptors?.at(-1) || '');
 }
 
 /**
@@ -764,6 +770,10 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         accepted.push(`new creature ${desc} (${id}): the attacker in "combat"`);
         return id;
     };
+    // a group the story brought in earlier as one creature, as scenery ("cellar rats", "cellar rats (dark)", live run
+    // 27.09. 01:19: both became one 16-HP rat each while "a dozen at least" attacked), is asked for animal by animal like a
+    // pack this report introduces; one already fighting stays what it is
+    const heldGroup = (id) => !!id && !groupNew.has(id) && !inCombat(id) && isGroupCreature(content, state.entities[id]);
     const unknownTexts = commitments.filter((cb) => cb && typeof cb.by === 'string' && cb.by.trim() && !resolve(cb.by)).map((cb) => normText(cb.by));
     const repeated = new Set(unknownTexts.filter((t, i) => unknownTexts.indexOf(t) !== i)); // one text for several attackers
     for (const cb of commitments) {
@@ -771,9 +781,10 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         const known = resolve(cb.by);
         const free = !known && typeof cb.by === 'string' && cb.by.trim() && state.mode !== 'creation';
         const by = known || (free && !repeated.has(normText(cb.by)) ? attacker(cb.by) : null);
-        if ((free && !by) || groupNew.has(by)) {
-            if (!unidentified.some((u) => normText(u.by) === normText(cb.by))) unidentified.push({ by: String(cb.by).slice(0, 200), ref: groupNew.get(by) || null });
-            reject(cb, `combat.by "${String(cb.by).slice(0, 80)}" ${groupNew.has(by) ? 'is a group' : 'names no attacker the game can tell apart'}: introduce each attacker as its own "new" entry (one per individual creature or person) and name their refs in "combat"`);
+        const group = groupNew.has(by) || heldGroup(by);
+        if ((free && !by) || group) {
+            if (!unidentified.some((u) => normText(u.by) === normText(cb.by))) unidentified.push({ by: String(cb.by).slice(0, 200), ref: groupNew.get(by) || null, ...(heldGroup(by) ? { group: by } : {}) });
+            reject(cb, `combat.by "${String(cb.by).slice(0, 80)}" ${group ? 'is a group' : 'names no attacker the game can tell apart'}: introduce each attacker as its own "new" entry (one per individual creature or person) and name their refs in "combat"`);
             continue;
         }
         const target = cb && cb.target ? resolve(cb.target) : 'pc';

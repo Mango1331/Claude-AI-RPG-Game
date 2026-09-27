@@ -1,8 +1,9 @@
 # Runtime V4 / Engine 4.0: Plan zur gemeinsamen Review (Revision 2)
 
-**Status:** Plan, kein Code. Revision 2 nach dem externen Review von ChatGPT auf Revision 1 (Commit `52ed696`).
-- Review: [CHATGPT_REVIEW_RUNTIME_V4_PLAN.md](CHATGPT_REVIEW_RUNTIME_V4_PLAN.md).
-- Was sich ändert: Abschnitt [R](#r-revision-2-was-sich-gegenüber-revision-1-ändert).
+**Status:** Plan, für P0 freigegeben (27.09.2026). Kein Produktcode.
+- **Revision 2** nach dem externen Review von ChatGPT auf Revision 1 (Commit `52ed696`). Review: [CHATGPT_REVIEW_RUNTIME_V4_PLAN.md](CHATGPT_REVIEW_RUNTIME_V4_PLAN.md). Was sich ändert: Abschnitt [R](#r-revision-2-was-sich-gegenüber-revision-1-ändert).
+- **Revision 2.1**, Bedingung der Freigabe: Offizielle Gildenaushänge sind *canonical first, prose second*. Scheitert der Board-Generator, gibt es keinen Erzähler-Rückfall mehr (D3, §3.4, §6.4).
+- **P0 (Spikes):** Werkzeuge und Anleitung in [P0_SPIKES.md](P0_SPIKES.md). Was P0 am Plan präzisiert hat (Befehle `drop`/`use`, Erwartungsfeld `priced`, Anwesenheit bei Ankunft), steht dort in §8 und ist hier in §4.1, §5.3 und §6.2 nachgetragen; die Messwerte mit dem echten Provider stehen aus.
 
 **Grundlage:**
 - der Live-Lauf vom 27.09.2026, 07:10, auf 3.1.7 byte-gleich reproduziert ([TESTRUN_V12.md](TESTRUN_V12.md));
@@ -276,7 +277,7 @@ flowchart TD
 | Interpreter | einmal: mit Fehlerliste; im Modus `json_schema` beim zweiten Mal ohne Schema | `cmd.interpreted {failed}`: keine Spielerhandlung gebucht. Der Erzähler bekommt „nothing Alaric decided could be read; narrate only what changes nothing about him“. Der System-Block sagt „INTERPRETER FAILED — Regenerate versucht es erneut“. Ein Fehlschlag wird nicht gecacht. |
 | Delta-Block (B) | – | fehlt, ungültig oder unvollständig → Recovery-Extraktor, mit der Fehlerliste des Validators |
 | Recovery-Extraktor | einmal | `deltas.failed`: keine Weltänderung gebucht. Der System-Block meldet es; der nächste Zug bekommt eine Korrektur (wie heute bei fehlendem Report). |
-| Board-Generator | einmal | Rückfall D3-b: Der Erzähler beschreibt das Brett, Block bzw. Recovery kanonisieren die Listings. Das ist nicht der Normalweg (§6.4). |
+| Board-Generator | einmal | **Kein Erzähler-Rückfall** (D3, §6.4). Bestehende kanonische Listings bleiben sichtbar. Werden neue gebraucht, zeigt der System-Block `BOARD GENERATION FAILED`. Der Erzähler bekommt „no new official contracts can be shown; invent none“. Regenerate versucht es erneut; ein Fehlschlag wird nicht gecacht. |
 
 **Kein Regex-Rückfall für Spielerentscheidungen (D1):**
 - Eine zweite Bedeutungsquelle „nur für Notfälle“ wäre genau RC1.
@@ -298,6 +299,8 @@ Kleine, generische Menge. Jede Quest-, Handels- oder Tätigkeitsart ist ein *Arg
 | `activity` | `kind` ∈ rest, sleep, wait, work, train, study, craft, search, gather, errand; `what?`; `minutes?`; `until?` ∈ done, noon, evening, end_of_day, night, dawn, morning | nicht im Kampf | `authorized` mit Zeitdeckel (§6.7) |
 | `take` | `object`: Objekt-Ref oder `{new: Text}`; `qty?`; `from?` | Objekt liegt hier oder wird angeboten; ein NPC-Besitz ist kein `take` | `resolved` (bekanntes Objekt) oder `authorized` (der Block legt es an) |
 | `give` | `object`, `qty?`, `to` | Alaric hält es; Empfänger anwesend | `resolved` |
+| `drop` *(P0)* | `object`, `qty?` | Alaric hält es | `resolved`: liegt danach am Ort („leave the heads on the floor“, V11) |
+| `use` *(P0)* | `object`, `qty?` | Alaric hält es; verbrauchbar | `resolved`: Trank, Ration, Öl verbraucht |
 | `pay` | `to`, `amount_cp?`, `for?` | Empfänger anwesend; Betrag aus dem Befehl, einem offenen Angebot oder einer Canon-Gebühr; Coin reicht | `resolved` oder `pending` (Betrag unbekannt) |
 | `buy` | `what`, `from?`, `qty?`, `max_cp?`, `any_price?` | offenes Angebot mit Preis → Kauf; sonst Deckel oder `any_price` speichern | `resolved`, `conditional` (Deckel) oder `pending` |
 | `sell` | `object`, `qty?`, `to?`, `min_cp?` | Alaric hält es | `resolved` (Angebot vorhanden) oder `pending` |
@@ -456,7 +459,7 @@ Block und Recovery melden nur **äußere** Weltänderungen, in der Reihenfolge d
 | | `check.request` *(4.1, reserviert)* | `what`, `actor`, `stat`, `against\|difficulty` | Pending Check für den nächsten Zug (§6.8) |
 | Sonst | `recover` | `who`, `hp?`, `mp?`, `sta?` | Alaric nur mit rest oder sleep oder einem Dienst lodging oder healing |
 | | `thread` | `text`, `kind`, `status` | wie heute |
-| Audit | `overreach` | `kind` (payment, purchase, travel, accept, take …), `what` | kein Zustand: Korrektur und System-Zeile (§5.4) |
+| Audit | `overreach` | `kind` (payment, purchase, travel, accept, take, guild_listing …), `what` | kein Zustand: Korrektur und System-Zeile (§5.4). `guild_listing`: Die Antwort zeigte einen offiziellen Gildenvertrag, den das Brett nicht hat |
 
 **`seq` ist Pflicht:** Block und Recovery nummerieren in Erzählreihenfolge.
 
@@ -492,7 +495,7 @@ perception/episode per Schritt (nicht am Zugende)
 | `go` | `{arrived: bool, at: ref\|new\|null}` |
 | `activity` | `{minutes: int, done: bool}` |
 | `take` (neues Objekt) | `{taken: bool, qty?}` |
-| `buy` / `pay` (pending) | `{offer: {…}\|null}`: hat jemand einen Preis genannt? |
+| `buy` / `pay` (pending) | `{priced: bool}`: hat jemand einen Preis genannt? Die Preise selbst stehen im `offer`-Delta (P0) |
 | Gildenbefehl (conditional) | beantwortet über `go.arrived` mit `at` = Gildenhalle |
 
 **Fehlt eine Antwort:**
@@ -595,7 +598,7 @@ perception/episode per Schritt (nicht am Zugende)
 |---|---|---|
 | Existenz | `entities[id]` | `person.new`, `creature.new`, Content |
 | Aufenthalt | `entities[id].at` (Ortsknoten oder unbekannt) | `person.new.at`, Bewegungen |
-| Präsenz | `scene.present` | `person.new {present: true}`, `enter`, Ankunft an einem Ort mit dort Anwesenden |
+| Präsenz | `scene.present` | `person.new {present: true}`, `enter`. Eine Ankunft leert die Szene; wer am neuen Ort da ist, meldet der Block (P0/S3: sonst stünde Kulisse bei der Rückkehr wieder im Raum) |
 | Begegnung | Erinnerung „first saw“ und `knowledge f.pc.appearance` | erste **Ko-Präsenz mit Wahrnehmung zu diesem Schritt** |
 
 **Beispiele aus dem Lauf:**
@@ -688,7 +691,16 @@ perception/episode per Schritt (nicht am Zugende)
   - Richtwerte je Rang stehen in der Generator-Anweisung.
   - Ein Payout außerhalb erzeugt eine Warnung in `#audit` und dient als Testheuristik; das Listing wird **nicht** abgelehnt. Es gibt kein Wirtschaftsmodell, und Entfernung, Gefahr, Auftraggeber und Region verschieben den Preis.
   - Einmal gebucht, ist der Payout unveränderlich.
-- **Der Erzähler rendert nur kanonische Listings** (BOARD im Engine-Block, ≈ 40 Token je Listing). Er erfindet an einem Brett keine offiziellen Verträge.
+- **Canonical first, prose second (hart).** Offizielle Gildenverträge entstehen nur aus dem Board-Generator, validiert und gebucht, *bevor* der Erzähler das Brett beschreibt. Der Erzähler rendert nur diese kanonischen Listings (BOARD im Engine-Block, ≈ 40 Token je Listing).
+  - Kein Delta-Typ kann ein offizielles Listing anlegen. `quest.offer` mit Gilde als Geber oder mit Quest-Rang wird abgelehnt.
+  - Zeigt eine Antwort trotzdem einen Vertrag, den das Brett nicht hat, meldet der Block bzw. die Recovery `overreach {kind: guild_listing}`. Das ergibt Korrektur und System-Zeile, aber keinen Zustand.
+- **Wenn der Generator nach einem Retry scheitert:**
+  - Der Erzähler erfindet keine neuen offiziellen Listings.
+  - Bereits kanonische Listings bleiben sichtbar und nehmbar.
+  - Werden neue gebraucht (Lücken, neuer Tag, erster Blick), zeigt der System-Block `BOARD GENERATION FAILED`. Der Engine-Block sagt dem Erzähler: „no new official contracts can be shown right now; invent none“.
+  - Regenerate oder ein erneutes `board.read` versucht es wieder; ein Fehlschlag wird nicht gecacht.
+  - Es gibt **keinen Erzähler-first-Rückfall** mit nachträglicher Kanonisierung. Er würde genau die V12-Klasse zurückbringen: sichtbarer offizieller Vertrag ≠ kanonischer Vertrag.
+- **Private und Welt-Quests sind davon nicht betroffen.** Sie dürfen weiter in der Erzählung entstehen und über `quest.offer` kanonisiert werden. Die harte Regel gilt nur für offizielle Gildenaushänge, weil sie bewusst engine-gestützter Dauerzustand sind.
 - **Stabilität:** Gesehene Listings bleiben, bis sie genommen, erledigt, abgelaufen oder zurückgezogen sind. Der Tageswechsel ist kein Neuwurf.
   - Beim ersten Blick eines neuen Tages entfernt die Engine Erledigtes.
   - **Andere Abenteurer nehmen Arbeit** (D9). Der Mechanismus ist Canon (UID 66). Die Wahrscheinlichkeit ist datengetrieben: `rules.guild.board.taken_by_others_pct_per_day`, PROPOSED 20, gilt ab Tag 2 je Listing und wird per Engine-Würfel entschieden. Das Lorebook nennt keine Zahl.
@@ -991,6 +1003,7 @@ Damit spätere Mechanik keinen zweiten Umbau braucht, bekommen diese Strukturen 
 | Migration alter Chats | Fold-Fehler, Zustandsverlust | Upcaster; Fold-Kompatibilitätstests über alle Fixtures; nie umschreiben |
 | Kampf-Regression | ungewollte Mechanikänderung | Kampfpfad unangetastet; byte-gleiche Kampf-Replays als Gate |
 | Qualität oder Kosten des Board-Generators | unplausible oder teure Listings | Schema + weiche Payout-Leitlinie (Warnung, keine Ablehnung) + Retry; Vorab-Erzeugung |
+| Board-Generator fällt aus | keine neuen Listings | bewusst kein Erzähler-Rückfall. Bestehende Listings bleiben; `BOARD GENERATION FAILED` sichtbar; Regenerate. Besser ein leeres Brett als ein nicht kanonischer offizieller Vertrag |
 | Umfang | Verzögerung, Instabilität | Phasen mit eigenen Gates; P0 als Go/No-Go; Pending Check nicht im 4.0-Gate |
 | zwei neue Prompts | Drift | generiert aus Vokabeldateien; Version im Cache-Schlüssel |
 | Parallelität, Rate-Limits | Fehler bei schnellem Tippen | Interpreter wartet auf die laufende Recovery; Aufrufe serialisiert |
@@ -1037,6 +1050,7 @@ Beide müssen denselben Domänenzustand ergeben. Damit bleiben A und B austausch
 **Zusätzlich geprüft:**
 - Registrierung: Nachricht 7 `guild.register` → `pending` (Canon-Gebühr 20 cp); Nachricht 9 „pay the 2 Silver“ → −20 cp, `guild.registered` Novice, Plakette.
 - Gildenhalle: Eine Abgabe außerhalb der Halle ohne `go` wird `refused`, mit `go` `conditional`.
+- Generator-Ausfall (Rev. 2.1): Scheitert der Generator beim ersten Blick auf das Brett (Nachricht 9), entsteht kein Listing. Der System-Block zeigt `BOARD GENERATION FAILED`. Die fünf Aufträge aus der Prosa von Antwort 10 werden **nicht** kanonisiert, sondern als `overreach {guild_listing}` gemeldet.
 
 **Endzustand:**
 - Uhr Tag 1, 18:45 statt 13:45;
@@ -1087,6 +1101,7 @@ Handler- und Guard-Tests je Befehl und Delta:
 - Aktivitätsdeckel;
 - Beförderung abgeleitet;
 - Aushang (Refresh, andere Abenteurer aus `rules.json`, Stabilität, konfigurierbare Ränge, weiche Payout-Warnung);
+- Board-Generator-Ausfall (kein Erzähler-Rückfall, `BOARD GENERATION FAILED`, bestehende Listings bleiben, kein Delta legt offizielle Listings an);
 - `check`-Delta mit CHECK DIE (wie heute);
 - Upcaster;
 - Reducer der reservierten Events.
@@ -1132,7 +1147,7 @@ Handler- und Guard-Tests je Befehl und Delta:
 | `tests/testrun_v12/` | Fixture, Gold-Daten (S3) und Golden-V4-Test |
 | `tests/eval/*.jsonl` | Korpora (§11.2, §11.3) |
 | `tests/unit/v4_*.test.js` | Handler-, Guard- und Upcaster-Tests |
-| `tools/spike_structured.mjs`, `tools/eval_interpreter.mjs`, `tools/eval_deltas.mjs` | Messwerkzeuge (S0–S2) |
+| `tools/p0/` (`s0_structured.mjs`, `s1_interpreter.mjs`, `s2_deltas.mjs`, `s3_prototype.mjs`, `check.mjs`, `report.mjs`) | Messwerkzeuge und Prototyp von P0 ([P0_SPIKES.md](P0_SPIKES.md)); die Entwürfe `tools/p0/draft/commands.json` und `deltas.json` gehen in P1/P3 nach `content/` |
 | `docs/RUNTIME_V4.md` | endgültiges Design nach der Umsetzung |
 
 **Ersetzt:**
@@ -1334,7 +1349,7 @@ Jede Phase endet mit:
 - Fold-Kompatibilität;
 - byte-gleichem Kampf.
 
-**P0: Spikes und Gold-Daten.** Kein Produktcode; Messwerkzeuge und Daten sind erlaubt.
+**P0: Spikes und Gold-Daten.** Kein Produktcode; Messwerkzeuge und Daten sind erlaubt. Werkzeuge, Aufrufzahlen und Anleitung: [P0_SPIKES.md](P0_SPIKES.md).
 
 | Spike | Inhalt | Ergebnis |
 |---|---|---|
@@ -1363,7 +1378,7 @@ Jede Phase endet mit:
 |---|---|---|
 | D1 | Semantic Interpreter für Story-Agency; kein Regex-Rückfall. Bei Ausfall ein Retry, dann sichtbarer Fehler, keine gebuchte Handlung, Regenerate interpretiert neu. `#`, Erstellung und Kampf bleiben deterministisch | entschieden |
 | D2 | **Bevorzugt B:** kleiner geordneter Delta-Block in der Antwort, Extraktion nur als Recovery. S2 vergleicht empirisch mit A (immer Extraktion) | **offen bis S2** (Regel §5.6) |
-| D3 | Aushang zuerst kanonisch vom Generator; der Erzähler beschreibt nur diese Listings; erzählerseitiges Kanonisieren nur als Rückfall | entschieden |
+| D3 | **Canonical first, prose second:** Offizielle Aushänge kommen nur vom Generator; der Erzähler beschreibt nur diese Listings. Scheitert der Generator nach einem Retry: kein Erzähler-Rückfall; bestehende Listings bleiben; `BOARD GENERATION FAILED`; Regenerate. Private und Welt-Quests entstehen weiter in der Erzählung (`quest.offer`) | entschieden (Rev. 2.1) |
 | D4 | Unbekannter Preis bleibt `pending`, außer der Spieler setzt ein Preislimit (`max_cp`) oder autorisiert jeden Preis (`any_price`) | entschieden |
 | D5 | Eigenes Verbindungsprofil optional; Standard ist das Hauptprofil mit Reasoning aus; nichts setzt mehrere Provider voraus | entschieden |
 | D6 | Pending Check vorbereitet (Events, Zustand, Schema); 4.0 hängt nicht davon ab; Umsetzung 4.1 | entschieden |

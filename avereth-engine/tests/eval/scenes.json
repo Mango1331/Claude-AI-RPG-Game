@@ -1,0 +1,534 @@
+{
+ "version": "scenes-0.1",
+ "note": "Runtime V4, P0 / S1: catalogs (plan §4.2) for the command corpus tests/eval/commands.jsonl. Situations of the live runs V2–V12 in V4 form, plus a few for synthetic cases. Ids are the references the interpreter may use.",
+ "scenes": {
+  "verge": {
+   "here": {"id": "loc.redmarch.verge", "path": "Veyrhold › public roadside verge outside Redmarch"},
+   "time": "day 1, 07:40",
+   "alaric": "not a Guild member · 50 cp",
+   "present": [],
+   "places": [
+    {"id": "loc.redmarch", "name": "Redmarch, city"},
+    {"id": "loc.redmarch.west_gate", "name": "west gate of Redmarch"},
+    {"id": "loc.redmarch.guild_hall", "name": "Adventurers' Guild hall, Redmarch"},
+    {"id": "loc.greenfold", "name": "Greenfold forest, across the road"}
+   ],
+   "objects": [
+    {"id": "obj.pouch", "name": "small coin pouch"},
+    {"id": "obj.weapon", "name": "starter weapon", "state": "equipped"}
+   ]
+  },
+  "gate": {
+   "here": {"id": "loc.redmarch.west_gate", "path": "Veyrhold › Redmarch › west gate"},
+   "time": "day 1, 08:00",
+   "alaric": "not a Guild member · 50 cp",
+   "present": [{"id": "npc.gate_guard", "label": "gate guard"}],
+   "places": [
+    {"id": "loc.redmarch", "name": "Redmarch, city"},
+    {"id": "loc.redmarch.verge", "name": "roadside verge outside the gate"},
+    {"id": "loc.redmarch.guild_hall", "name": "Adventurers' Guild hall, Redmarch"}
+   ],
+   "offers": [
+    {"id": "offer.gate_toll", "seller": "gate guard", "lines": [{"id": "l1", "what": "entry toll", "price_cp": 1}]}
+   ],
+   "objects": [
+    {"id": "obj.pouch", "name": "small coin pouch"},
+    {"id": "obj.weapon", "name": "starter weapon", "state": "equipped"}
+   ]
+  },
+  "hall_new": {
+   "here": {"id": "loc.redmarch.guild_hall", "path": "Veyrhold › Redmarch › Adventurers' Guild hall"},
+   "time": "day 1, 08:20",
+   "alaric": "not a Guild member · 50 cp",
+   "present": [{"id": "npc.guild_clerk", "label": "Guild clerk"}],
+   "places": [{"id": "loc.redmarch", "name": "Redmarch, city"}],
+   "objects": [{"id": "obj.pouch", "name": "small coin pouch"}]
+  },
+  "hall_fee": {
+   "here": {"id": "loc.redmarch.guild_hall", "path": "Veyrhold › Redmarch › Adventurers' Guild hall"},
+   "time": "day 1, 08:25",
+   "alaric": "not a Guild member · 50 cp",
+   "present": [{"id": "npc.guild_clerk", "label": "Guild clerk"}],
+   "places": [{"id": "loc.redmarch", "name": "Redmarch, city"}],
+   "offers": [
+    {"id": "offer.registration", "seller": "Guild clerk", "lines": [{"id": "l1", "what": "Guild registration fee", "price_cp": 20}]}
+   ],
+   "objects": [
+    {"id": "obj.pouch", "name": "small coin pouch"},
+    {"id": "obj.registration_form", "name": "blank registration form", "holder": "here"}
+   ],
+   "open": ["the registration fee (20 cp) waits for Alaric's consent"]
+  },
+  "hall_plate": {
+   "here": {"id": "loc.redmarch.guild_hall", "path": "Veyrhold › Redmarch › Adventurers' Guild hall"},
+   "time": "day 1, 08:40",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [{"id": "npc.guild_clerk", "label": "Guild clerk"}],
+   "places": [{"id": "loc.redmarch", "name": "Redmarch, city"}],
+   "board_label": "Novice board, on the far wall",
+   "board": [
+    {"id": "quest.millers_run_escort", "title": "Miller's Run Escort", "info": "Novice · 80 cp"},
+    {"id": "quest.herb_run_marshmint", "title": "Herb Run — Marshmint", "info": "Novice · 40 cp"}
+   ],
+   "objects": [
+    {"id": "obj.guild_plate", "name": "Guild registration plate with Alaric's name", "holder": "here"},
+    {"id": "obj.pouch", "name": "small coin pouch"}
+   ]
+  },
+  "hall_board": {
+   "here": {"id": "loc.redmarch.guild_hall", "path": "Veyrhold › Redmarch › Adventurers' Guild hall"},
+   "time": "day 1, 08:50",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [{"id": "npc.guild_clerk", "label": "Guild clerk"}],
+   "places": [
+    {"id": "loc.redmarch", "name": "Redmarch, city"},
+    {"id": "loc.redmarch.harrows_yard", "name": "Harrow's mill yard, Grainmarket Row"}
+   ],
+   "board_label": "Novice board, on the far wall",
+   "board": [
+    {"id": "quest.millers_run_escort", "title": "Miller's Run Escort", "info": "Novice · 80 cp · cart to the south-road waystation"},
+    {"id": "quest.weasel_fenwick", "title": "Weasel Sign at Fenwick's Coop", "info": "Novice · 150 cp"},
+    {"id": "quest.herb_run_marshmint", "title": "Herb Run — Marshmint", "info": "Novice · 40 cp · reedbeds east of the mill leat"},
+    {"id": "quest.missing_dog", "title": "Missing Dog, Tanner's Row", "info": "Novice · 20 cp"},
+    {"id": "quest.fence_repair", "title": "Fence Repair, Widow Marsh", "info": "Novice · 50 cp"}
+   ],
+   "objects": [
+    {"id": "obj.guild_plate", "name": "Guild registration plate"},
+    {"id": "obj.pouch", "name": "small coin pouch"}
+   ]
+  },
+  "hall_board_nonmember": {
+   "here": {"id": "loc.redmarch.guild_hall", "path": "Veyrhold › Redmarch › Adventurers' Guild hall"},
+   "time": "day 1, 08:30",
+   "alaric": "not a Guild member · 50 cp",
+   "present": [{"id": "npc.guild_clerk", "label": "Guild clerk"}],
+   "places": [{"id": "loc.redmarch", "name": "Redmarch, city"}],
+   "board_label": "Novice board, on the far wall",
+   "board": [
+    {"id": "quest.missing_dog", "title": "Missing Dog, Tanner's Row", "info": "Novice · 20 cp"},
+    {"id": "quest.fence_repair", "title": "Fence Repair, Widow Marsh", "info": "Novice · 50 cp"}
+   ],
+   "objects": [{"id": "obj.pouch", "name": "small coin pouch"}]
+  },
+  "hall_board_b": {
+   "here": {"id": "loc.redmarch.guild_hall", "path": "Veyrhold › Redmarch › Adventurers' Guild hall"},
+   "time": "day 1, 09:00",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [{"id": "npc.guild_clerk", "label": "Guild clerk"}],
+   "places": [
+    {"id": "loc.redmarch", "name": "Redmarch, city"},
+    {"id": "loc.redmarch.woolsack", "name": "Woolsack Tavern"},
+    {"id": "loc.millbrook", "name": "Millbrook Hamlet, north of Redmarch"},
+    {"id": "loc.redmarch.salt_gate", "name": "Salt Gate customshouse"},
+    {"id": "loc.redmarch.tannery_row", "name": "Tannery Row"},
+    {"id": "loc.redmarch.granary", "name": "east granary"},
+    {"id": "loc.redmarch.malthouse", "name": "Malthouse"}
+   ],
+   "board_label": "Novice board, on the far wall",
+   "board": [
+    {"id": "quest.rats_woolsack", "title": "Rats in the Woolsack Tavern cellar", "info": "Novice · 30 cp"},
+    {"id": "quest.wolf_problem", "title": "Wolf Problem — Millbrook Hamlet", "info": "Novice · 150 cp"},
+    {"id": "quest.sealed_satchel", "title": "Delivery: Sealed Satchel to the Salt Gate customshouse", "info": "Novice · 40 cp"},
+    {"id": "quest.boletus_tannery", "title": "Boletus Clearing — Tannery Row", "info": "Novice · 50 cp"},
+    {"id": "quest.granary_vermin", "title": "Granary Vermin Control", "info": "Novice · 60 cp"},
+    {"id": "quest.vermin_malthouse", "title": "Vermin in the Malthouse Cellar", "info": "Novice · 50 cp"}
+   ],
+   "objects": [
+    {"id": "obj.guild_plate", "name": "Guild registration plate"},
+    {"id": "obj.pouch", "name": "small coin pouch"}
+   ]
+  },
+  "hall_board_c": {
+   "here": {"id": "loc.redmarch.guild_hall", "path": "Veyrhold › Redmarch › Adventurers' Guild hall"},
+   "time": "day 1, 09:00",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [{"id": "npc.guild_clerk", "label": "Guild clerk"}],
+   "places": [
+    {"id": "loc.redmarch", "name": "Redmarch, city"},
+    {"id": "loc.redmarch.blue_ox", "name": "Blue Ox Tavern"},
+    {"id": "loc.redmarch.rennicks_yard", "name": "Rennick's yard"}
+   ],
+   "board_label": "Novice board, on the far wall",
+   "board": [
+    {"id": "quest.rats_salt_cellar", "title": "Rats in the Salt Cellar", "info": "Novice · 30 cp"},
+    {"id": "quest.rats_blue_ox", "title": "Rats at the Blue Ox Tavern", "info": "Novice · 30 cp"},
+    {"id": "quest.rats_rennick", "title": "Rats in the cellars of Rennick's yard", "info": "Novice · 30 cp"}
+   ],
+   "objects": [
+    {"id": "obj.guild_plate", "name": "Guild registration plate"},
+    {"id": "obj.pouch", "name": "small coin pouch"}
+   ]
+  },
+  "hall_active_one": {
+   "here": {"id": "loc.redmarch.guild_hall", "path": "Veyrhold › Redmarch › Adventurers' Guild hall"},
+   "time": "day 1, 09:20",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [{"id": "npc.guild_clerk", "label": "Guild clerk"}],
+   "places": [
+    {"id": "loc.redmarch", "name": "Redmarch, city"},
+    {"id": "loc.redmarch.harrows_yard", "name": "Harrow's mill yard, Grainmarket Row"},
+    {"id": "loc.redmarch.mill_leat", "name": "eastern mill leat"}
+   ],
+   "quests": [
+    {"id": "quest.millers_run_escort", "title": "Miller's Run Escort", "info": "Guild contract · active · starts day 2 at first light, Harrow's yard · proof: the waystation master's signature on the plate"}
+   ],
+   "board_label": "Novice board, on the far wall",
+   "board": [
+    {"id": "quest.weasel_fenwick", "title": "Weasel Sign at Fenwick's Coop", "info": "Novice · 150 cp"},
+    {"id": "quest.herb_run_marshmint", "title": "Herb Run — Marshmint", "info": "Novice · 40 cp · reedbeds east of the mill leat"},
+    {"id": "quest.missing_dog", "title": "Missing Dog, Tanner's Row", "info": "Novice · 20 cp"},
+    {"id": "quest.fence_repair", "title": "Fence Repair, Widow Marsh", "info": "Novice · 50 cp"}
+   ],
+   "objects": [
+    {"id": "obj.guild_plate", "name": "Guild registration plate"},
+    {"id": "obj.pouch", "name": "small coin pouch"}
+   ]
+  },
+  "hall_active_two": {
+   "here": {"id": "loc.redmarch.guild_hall", "path": "Veyrhold › Redmarch › Adventurers' Guild hall"},
+   "time": "day 1, 17:30",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [{"id": "npc.guild_clerk", "label": "Guild clerk"}],
+   "places": [
+    {"id": "loc.redmarch", "name": "Redmarch, city"},
+    {"id": "loc.redmarch.harrows_yard", "name": "Harrow's mill yard, Grainmarket Row"},
+    {"id": "loc.redmarch.reedbeds", "name": "reedbeds east of the mill leat"}
+   ],
+   "quests": [
+    {"id": "quest.millers_run_escort", "title": "Miller's Run Escort", "info": "Guild contract · active · starts day 2 at first light · proof: the waystation master's signature on the plate"},
+    {"id": "quest.herb_run_marshmint", "title": "Herb Run — Marshmint", "info": "Guild contract · active · proof: 1 basket of marshmint"}
+   ],
+   "board_label": "Novice board, on the far wall",
+   "board": [
+    {"id": "quest.missing_dog", "title": "Missing Dog, Tanner's Row", "info": "Novice · 20 cp"},
+    {"id": "quest.fence_repair", "title": "Fence Repair, Widow Marsh", "info": "Novice · 50 cp"}
+   ],
+   "objects": [
+    {"id": "obj.marshmint", "name": "marshmint", "qty": 1, "unit": "basket"},
+    {"id": "obj.guild_plate", "name": "Guild registration plate"},
+    {"id": "obj.pouch", "name": "small coin pouch"}
+   ]
+  },
+  "hall_turnin_ready": {
+   "here": {"id": "loc.redmarch.guild_hall", "path": "Veyrhold › Redmarch › Adventurers' Guild hall"},
+   "time": "day 1, 17:30",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [{"id": "npc.guild_clerk", "label": "Guild clerk"}],
+   "places": [
+    {"id": "loc.redmarch", "name": "Redmarch, city"},
+    {"id": "loc.redmarch.reedbeds", "name": "reedbeds east of the mill leat"}
+   ],
+   "quests": [
+    {"id": "quest.herb_run_marshmint", "title": "Herb Run — Marshmint", "info": "Guild contract · active · proof: 1 basket of marshmint"}
+   ],
+   "objects": [
+    {"id": "obj.marshmint", "name": "marshmint", "qty": 1, "unit": "basket"},
+    {"id": "obj.guild_plate", "name": "Guild registration plate"}
+   ]
+  },
+  "hall_turnin_done": {
+   "here": {"id": "loc.redmarch.guild_hall", "path": "Veyrhold › Redmarch › Adventurers' Guild hall"},
+   "time": "day 1, 18:00",
+   "alaric": "Guild member, Novice · 70 cp",
+   "present": [{"id": "npc.guild_clerk", "label": "Guild clerk"}],
+   "places": [
+    {"id": "loc.redmarch", "name": "Redmarch, city"},
+    {"id": "loc.redmarch.harrows_yard", "name": "Harrow's mill yard, Grainmarket Row"}
+   ],
+   "quests": [
+    {"id": "quest.millers_run_escort", "title": "Miller's Run Escort", "info": "Guild contract · active · starts day 2 at first light · proof: the waystation master's signature on the plate"}
+   ],
+   "completed": [
+    {"id": "quest.herb_run_marshmint", "title": "Herb Run — Marshmint", "info": "turned in and paid in this hall"}
+   ],
+   "objects": [
+    {"id": "obj.guild_plate", "name": "Guild registration plate"},
+    {"id": "obj.pouch", "name": "coin pouch"}
+   ]
+  },
+  "street": {
+   "here": {"id": "loc.redmarch.grainmarket_row", "path": "Veyrhold › Redmarch › Grainmarket Row"},
+   "time": "day 1, 16:40",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [],
+   "places": [
+    {"id": "loc.redmarch", "name": "Redmarch, city"},
+    {"id": "loc.redmarch.guild_hall", "name": "Adventurers' Guild hall"},
+    {"id": "loc.redmarch.harrows_yard", "name": "Harrow's mill yard"},
+    {"id": "loc.redmarch.mill_leat", "name": "eastern mill leat"},
+    {"id": "loc.redmarch.reedbeds", "name": "reedbeds east of the mill leat"},
+    {"id": "loc.redmarch.market", "name": "market square"},
+    {"id": "loc.redmarch.tannery_row", "name": "Tannery Row"},
+    {"id": "loc.redmarch.salt_gate", "name": "Salt Gate customshouse"},
+    {"id": "loc.redmarch.east_gate", "name": "east gate"}
+   ],
+   "quests": [
+    {"id": "quest.millers_run_escort", "title": "Miller's Run Escort", "info": "Guild contract · active · starts day 2 at first light"},
+    {"id": "quest.herb_run_marshmint", "title": "Herb Run — Marshmint", "info": "Guild contract · active · proof: 1 basket of marshmint"}
+   ],
+   "objects": [
+    {"id": "obj.marshmint", "name": "marshmint", "qty": 1, "unit": "basket"},
+    {"id": "obj.guild_plate", "name": "Guild registration plate"},
+    {"id": "obj.pouch", "name": "coin pouch"}
+   ]
+  },
+  "reedbeds": {
+   "here": {"id": "loc.redmarch.reedbeds", "path": "Veyrhold › Redmarch › eastern mill leat › reedbeds"},
+   "time": "day 1, 10:40",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [],
+   "places": [
+    {"id": "loc.redmarch.mill_leat", "name": "eastern mill leat"},
+    {"id": "loc.redmarch", "name": "Redmarch, city"},
+    {"id": "loc.redmarch.guild_hall", "name": "Adventurers' Guild hall"}
+   ],
+   "quests": [
+    {"id": "quest.herb_run_marshmint", "title": "Herb Run — Marshmint", "info": "Guild contract · active · gather 1 basket of marshmint here · proof: 1 basket of marshmint"}
+   ],
+   "objects": [{"id": "obj.pouch", "name": "coin pouch"}]
+  },
+  "reedbeds_pile": {
+   "here": {"id": "loc.redmarch.reedbeds", "path": "Veyrhold › Redmarch › eastern mill leat › reedbeds"},
+   "time": "day 1, 16:10",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [],
+   "places": [
+    {"id": "loc.redmarch.mill_leat", "name": "eastern mill leat"},
+    {"id": "loc.redmarch", "name": "Redmarch, city"},
+    {"id": "loc.redmarch.guild_hall", "name": "Adventurers' Guild hall"}
+   ],
+   "quests": [
+    {"id": "quest.millers_run_escort", "title": "Miller's Run Escort", "info": "Guild contract · active · starts day 2 at first light"},
+    {"id": "quest.herb_run_marshmint", "title": "Herb Run — Marshmint", "info": "Guild contract · active · proof: 1 basket of marshmint"}
+   ],
+   "objects": [
+    {"id": "obj.marshmint_pile", "name": "gathered marshmint", "qty": 1, "unit": "basket", "holder": "here"},
+    {"id": "obj.pouch", "name": "coin pouch"}
+   ]
+  },
+  "inn_no_offer": {
+   "here": {"id": "loc.redmarch.marsh_bell", "path": "Veyrhold › Redmarch › lane behind the cooper's yard › Marsh Bell, common room"},
+   "time": "day 1, 18:40",
+   "alaric": "Guild member, Novice · 70 cp",
+   "present": [{"id": "npc.innkeeper", "label": "innkeeper"}],
+   "places": [{"id": "loc.redmarch", "name": "Redmarch, city"}, {"id": "loc.redmarch.guild_hall", "name": "Adventurers' Guild hall"}],
+   "objects": [{"id": "obj.pouch", "name": "coin pouch"}]
+  },
+  "inn_offer": {
+   "here": {"id": "loc.redmarch.marsh_bell", "path": "Veyrhold › Redmarch › lane behind the cooper's yard › Marsh Bell, common room"},
+   "time": "day 1, 18:45",
+   "alaric": "Guild member, Novice · 70 cp",
+   "present": [{"id": "npc.innkeeper", "label": "innkeeper"}],
+   "places": [{"id": "loc.redmarch", "name": "Redmarch, city"}, {"id": "loc.redmarch.guild_hall", "name": "Adventurers' Guild hall"}],
+   "offers": [
+    {"id": "offer.inn_services", "seller": "innkeeper", "lines": [
+     {"id": "l1", "what": "room for the night", "price_cp": 4},
+     {"id": "l2", "what": "hot bath", "price_cp": 2},
+     {"id": "l3", "what": "laundry", "price_cp": 1},
+     {"id": "l4", "what": "bowl of stew", "price_cp": 2}
+    ]}
+   ],
+   "objects": [{"id": "obj.pouch", "name": "coin pouch"}]
+  },
+  "inn_room": {
+   "here": {"id": "loc.redmarch.marsh_bell.room", "path": "Veyrhold › Redmarch › Marsh Bell › rented room upstairs"},
+   "time": "day 1, 20:10",
+   "alaric": "Guild member, Novice · 63 cp · lodging here tonight",
+   "present": [],
+   "places": [{"id": "loc.redmarch.marsh_bell", "name": "Marsh Bell, common room"}, {"id": "loc.redmarch", "name": "Redmarch, city"}],
+   "objects": [
+    {"id": "obj.weapon", "name": "starter sword", "state": "equipped"},
+    {"id": "obj.light_armor", "name": "starter light armor", "state": "equipped"},
+    {"id": "obj.pouch", "name": "coin pouch"}
+   ]
+  },
+  "market": {
+   "here": {"id": "loc.redmarch.market", "path": "Veyrhold › Redmarch › market square"},
+   "time": "day 3, 11:00",
+   "alaric": "Guild member, Novice · 45 cp",
+   "present": [{"id": "npc.stallkeeper", "label": "hardware stallkeeper"}, {"id": "npc.furrier", "label": "fur trader"}],
+   "places": [{"id": "loc.redmarch", "name": "Redmarch, city"}, {"id": "loc.redmarch.guild_hall", "name": "Adventurers' Guild hall"}],
+   "offers": [
+    {"id": "offer.stall", "seller": "hardware stallkeeper", "lines": [
+     {"id": "l1", "what": "whetstone", "price_cp": 3},
+     {"id": "l2", "what": "coil of rope", "price_cp": 5},
+     {"id": "l3", "what": "flask of lantern oil", "price_cp": 2}
+    ]}
+   ],
+   "objects": [
+    {"id": "obj.wolf_pelts", "name": "wolf pelts", "qty": 3, "unit": "pelts"},
+    {"id": "obj.pouch", "name": "coin pouch"}
+   ]
+  },
+  "village_reeve": {
+   "here": {"id": "loc.millbrook", "path": "Veyrhold › Millbrook Hamlet › village green"},
+   "time": "day 2, 15:20",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [{"id": "npc.reeve_aldous", "label": "Reeve Aldous"}],
+   "places": [
+    {"id": "loc.redmarch", "name": "Redmarch, city"},
+    {"id": "loc.redmarch.guild_hall", "name": "Adventurers' Guild hall, Redmarch"},
+    {"id": "loc.millbrook.woods", "name": "woods north of Millbrook"}
+   ],
+   "quests": [
+    {"id": "quest.wolf_problem", "title": "Wolf Problem — Millbrook Hamlet", "info": "Guild contract · active · proof: 3 wolf heads and the reeve's signature on the contract slip"},
+    {"id": "quest.old_well", "title": "Clear the old well", "info": "private job offered by Reeve Aldous · 30 cp · not accepted"}
+   ],
+   "objects": [
+    {"id": "obj.wolf_heads", "name": "wolf heads", "qty": 3, "unit": "heads"},
+    {"id": "obj.contract_slip", "name": "Guild contract slip for the Wolf Problem"},
+    {"id": "obj.pouch", "name": "coin pouch"}
+   ]
+  },
+  "wolves_dead": {
+   "here": {"id": "loc.millbrook.woods", "path": "Veyrhold › woods north of Millbrook"},
+   "time": "day 2, 13:40",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [],
+   "places": [
+    {"id": "loc.millbrook", "name": "Millbrook Hamlet"},
+    {"id": "loc.redmarch", "name": "Redmarch, city"},
+    {"id": "loc.redmarch.guild_hall", "name": "Adventurers' Guild hall, Redmarch"}
+   ],
+   "quests": [
+    {"id": "quest.wolf_problem", "title": "Wolf Problem — Millbrook Hamlet", "info": "Guild contract · active · proof: 3 wolf heads and the reeve's signature"}
+   ],
+   "objects": [
+    {"id": "obj.wolf_corpses", "name": "dead wolves", "qty": 3, "unit": "corpses", "holder": "here"},
+    {"id": "obj.weapon", "name": "starter sword", "state": "equipped"}
+   ]
+  },
+  "forest": {
+   "here": {"id": "loc.greenfold", "path": "Veyrhold › Greenfold forest › game trail"},
+   "time": "day 1, 10:30",
+   "alaric": "not a Guild member · 50 cp",
+   "present": [],
+   "places": [{"id": "loc.redmarch", "name": "Redmarch, city"}, {"id": "loc.greenfold.river", "name": "river bank"}],
+   "objects": [{"id": "obj.bow", "name": "hunting bow", "state": "equipped"}, {"id": "obj.pouch", "name": "coin pouch"}]
+  },
+  "camp": {
+   "here": {"id": "loc.greenfold.camp", "path": "Veyrhold › Greenfold forest › camp by the stream"},
+   "time": "day 4, 19:30",
+   "alaric": "Guild member, Novice · 40 cp · HP 52/80",
+   "present": [],
+   "places": [{"id": "loc.greenfold", "name": "Greenfold forest"}, {"id": "loc.redmarch", "name": "Redmarch, city"}],
+   "objects": [
+    {"id": "obj.rapier", "name": "starter rapier", "state": "equipped, weapon"},
+    {"id": "obj.dagger", "name": "spare dagger", "state": "in the pack"},
+    {"id": "obj.leather_armor", "name": "leather armor", "state": "worn"},
+    {"id": "obj.torch", "name": "torch", "state": "in the pack"},
+    {"id": "obj.rations", "name": "travel rations", "qty": 3, "unit": "days"},
+    {"id": "obj.healing_potion", "name": "healing potion", "qty": 1, "unit": "flask"}
+   ]
+  },
+  "cellar_after": {
+   "here": {"id": "loc.redmarch.rennicks_yard.cellar", "path": "Veyrhold › Redmarch › Rennick's yard › cellar"},
+   "time": "day 1, 13:10",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [{"id": "npc.rennick", "label": "Rennick, yard owner"}],
+   "places": [
+    {"id": "loc.redmarch.rennicks_yard", "name": "Rennick's yard"},
+    {"id": "loc.redmarch.guild_hall", "name": "Adventurers' Guild hall"}
+   ],
+   "quests": [
+    {"id": "quest.rats_rennick", "title": "Rats in the cellars of Rennick's yard", "info": "Guild contract · active · proof: rat ears"}
+   ],
+   "objects": [
+    {"id": "obj.rat_corpses", "name": "dead rats", "qty": 5, "unit": "corpses", "holder": "here"},
+    {"id": "obj.arrows_spent", "name": "spent arrows", "qty": 6, "unit": "arrows", "holder": "here"},
+    {"id": "obj.bow", "name": "hunting bow", "state": "equipped"}
+   ]
+  },
+  "river_stranger": {
+   "here": {"id": "loc.greenfold.river", "path": "Veyrhold › Greenfold forest › river bank"},
+   "time": "day 1, 11:20",
+   "alaric": "not a Guild member · 50 cp",
+   "present": [{"id": "npc.stranger", "label": "poacher across the water"}],
+   "places": [{"id": "loc.greenfold", "name": "Greenfold forest"}, {"id": "loc.redmarch", "name": "Redmarch, city"}],
+   "objects": [
+    {"id": "obj.pouch", "name": "coin pouch"},
+    {"id": "obj.bow", "name": "hunting bow", "state": "equipped"},
+    {"id": "obj.dagger", "name": "spare dagger"}
+   ]
+  },
+  "tavern_client": {
+   "here": {"id": "loc.redmarch.woolsack", "path": "Veyrhold › Redmarch › Woolsack Tavern, taproom"},
+   "time": "day 1, 10:10",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [{"id": "npc.tavern_owner", "label": "tavern owner, the client"}],
+   "places": [
+    {"id": "loc.redmarch.woolsack.cellar", "name": "Woolsack cellar, down the stairs"},
+    {"id": "loc.redmarch", "name": "Redmarch, city"},
+    {"id": "loc.redmarch.guild_hall", "name": "Adventurers' Guild hall"}
+   ],
+   "quests": [
+    {"id": "quest.rats_woolsack", "title": "Rats in the Woolsack Tavern cellar", "info": "Guild contract · active · proof: the owner's word on the slip"}
+   ],
+   "objects": [{"id": "obj.weapon", "name": "starter sword", "state": "equipped"}]
+  },
+  "malthouse_cellar": {
+   "here": {"id": "loc.redmarch.malthouse.cellar", "path": "Veyrhold › Redmarch › Malthouse › cellar"},
+   "time": "day 1, 12:30",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [{"id": "npc.maltster", "label": "maltster, the client"}],
+   "places": [
+    {"id": "loc.redmarch.malthouse", "name": "Malthouse yard"},
+    {"id": "loc.redmarch.guild_hall", "name": "Adventurers' Guild hall"}
+   ],
+   "quests": [
+    {"id": "quest.vermin_malthouse", "title": "Vermin in the Malthouse Cellar", "info": "Guild contract · active · proof: the maltster's word"}
+   ],
+   "objects": [
+    {"id": "obj.vermin_corpse", "name": "dead cellar vermin", "qty": 1, "holder": "here"},
+    {"id": "obj.bow", "name": "hunting bow", "state": "equipped"}
+   ]
+  },
+  "customshouse": {
+   "here": {"id": "loc.redmarch.salt_gate", "path": "Veyrhold › Redmarch › Salt Gate customshouse, front door"},
+   "time": "day 1, 11:00",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [],
+   "places": [{"id": "loc.redmarch", "name": "Redmarch, city"}, {"id": "loc.redmarch.guild_hall", "name": "Adventurers' Guild hall"}],
+   "quests": [
+    {"id": "quest.sealed_satchel", "title": "Delivery: Sealed Satchel to the Salt Gate customshouse", "info": "Guild contract · active · proof: signed receipt"}
+   ],
+   "objects": [{"id": "obj.sealed_satchel", "name": "sealed satchel"}]
+  },
+  "street_receipt": {
+   "here": {"id": "loc.redmarch.salt_gate", "path": "Veyrhold › Redmarch › Salt Gate customshouse, outside"},
+   "time": "day 1, 11:40",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [],
+   "places": [{"id": "loc.redmarch", "name": "Redmarch, city"}, {"id": "loc.redmarch.guild_hall", "name": "Adventurers' Guild hall"}],
+   "quests": [
+    {"id": "quest.sealed_satchel", "title": "Delivery: Sealed Satchel to the Salt Gate customshouse", "info": "Guild contract · active · proof: signed receipt"}
+   ],
+   "objects": [{"id": "obj.signature_slip", "name": "signed receipt slip"}]
+  },
+  "granary_yard": {
+   "here": {"id": "loc.redmarch.granary", "path": "Veyrhold › Redmarch › east granary, yard"},
+   "time": "day 1, 10:00",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [{"id": "npc.granary_keeper", "label": "granary keeper"}],
+   "places": [
+    {"id": "loc.redmarch.granary.cellars", "name": "granary cellars, down the stairs"},
+    {"id": "loc.redmarch", "name": "Redmarch, city"}
+   ],
+   "quests": [
+    {"id": "quest.granary_vermin", "title": "Granary Vermin Control", "info": "Guild contract · active"}
+   ],
+   "objects": [{"id": "obj.weapon", "name": "starter sword", "state": "equipped"}]
+  },
+  "blue_ox_cellar": {
+   "here": {"id": "loc.redmarch.blue_ox.cellar", "path": "Veyrhold › Redmarch › Blue Ox Tavern › cellar"},
+   "time": "day 1, 11:30",
+   "alaric": "Guild member, Novice · 30 cp",
+   "present": [{"id": "npc.bren", "label": "Bren, the tavern's cellarman"}],
+   "places": [{"id": "loc.redmarch.blue_ox", "name": "Blue Ox Tavern"}, {"id": "loc.redmarch", "name": "Redmarch, city"}],
+   "quests": [
+    {"id": "quest.rats_blue_ox", "title": "Rats at the Blue Ox Tavern", "info": "Guild contract · active"}
+   ],
+   "objects": [{"id": "obj.weapon", "name": "starter sword", "state": "equipped"}]
+  }
+ }
+}

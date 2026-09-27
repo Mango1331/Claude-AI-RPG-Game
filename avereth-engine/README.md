@@ -164,6 +164,7 @@ AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st   # optional: Live-Smoke in
 node tools/run_report.mjs <Server-Log> [<Chat.jsonl>]   # Messung eines Laufs: Prompt je Kategorie, Output-Aufteilung, Dauer (docs/TEST5_PLAN.md §4)
 node tools/narrator_ab.mjs --log <Server-Log> --chat <Chat.jsonl> [--log … --chat …] --dry-run   # Narrator-Vergleich A/B/C; ohne --dry-run mit AVERETH_AB_API_BASE/_KEY (docs/NARRATOR_AB.md §3)
 node tools/lorebook_audit.mjs          # welche Lorebook-Einträge in den Testruns 2–4 feuern (World-Info-Nachbau, gegen Testrun 4 bestätigt)
+node tools/p0/check.mjs --ping         # Runtime V4, P0: Spikes S0–S3 über das laufende SillyTavern (Key bleibt dort; docs/P0_SPIKES.md)
 python3 tools/migrate_content.py       # Content aus dem Paket v1.24 neu erzeugen (aus dem Repo-Wurzelverzeichnis)
 node tools/v3_combat.mjs               # danach: Combat V3 auf den Content anwenden (idempotent)
 ```
@@ -180,7 +181,7 @@ node tools/v3_combat.mjs               # danach: Combat V3 auf den Content anwen
 | `presets/` | Chat-Completion-Preset „Avereth Narrator“, siehe [docs/NARRATOR_AB.md](docs/NARRATOR_AB.md) |
 | `schemas/` | JSON-Schemas für Content, Events und Report |
 | `tests/` | `unit/`, `scenarios/`, `testrun_v1/` bis `testrun_v4/` |
-| `tools/` | Migration, Combat-V3-Migration, Testrun-Vergleich, Lorebook-Audit, Browser-Smoke, Live-Smoke (`st_live/`), Lauf-Messung (`run_report.mjs`), Narrator-Vergleich (`narrator_ab.mjs`) |
+| `tools/` | Migration, Combat-V3-Migration, Testrun-Vergleich, Lorebook-Audit, Browser-Smoke, Live-Smoke (`st_live/`), Lauf-Messung (`run_report.mjs`), Narrator-Vergleich (`narrator_ab.mjs`), Runtime-V4-Spikes (`p0/`, [docs/P0_SPIKES.md](docs/P0_SPIKES.md)) |
 | `docs/` | Architektur, Datenmodell, Migration, WI-Bewertung, Lorebook, Testrun-Analyse, Runtime V3, Test-5-Plan, Runtime-V4-Plan |
 
 **Engine-API** (`src/engine.js`; Adapter für Chat-Arrays in `src/host.js`):

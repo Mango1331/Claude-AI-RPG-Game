@@ -1,0 +1,269 @@
+{
+ "source": "Live run 27.09.2026 07:10 (build 3.1.7; GLM-5.3-Flash, Avereth Narrator preset, lore from World Info, word swap ledger=register): the chat JSONL, the narrator replies with their reports and the report-request answers from the Chat Completion log",
+ "swaps": "ledger=register",
+ "chat": [
+  {
+   "i": 0,
+   "greeting": true,
+   "mes": "*Cool wind moves through the rough grass around Alaric Red's boots.*\r\n\r\n*The last thing that belongs to Earth is still there in memory—an old life, a world without visible mana, Classes, or this impossible second beginning. The present is different: the smell of soil and distant woodsmoke, an unfamiliar sky, and stone walls beyond the public road.*\r\n\r\n*Alaric Red is already standing on an uncultivated roadside verge outside the nearby city. Cultivated fields and fenced holdings begin farther away. No one is close enough to have witnessed the instant of arrival.*\r\n\r\n*The body is Human, healthy, and eighteen years old. Simple traveler's clothes are already being worn; a small pouch holding five silver rests at the belt. The memories are still from Earth.*\r\n\r\n*A translucent interface opens across Alaric Red's vision.*\r\n\r\n`SYSTEM INITIALIZATION COMPLETE`\r\n`Origin: Earth`\r\n`World: Avereth`\r\n`Race: Human`\r\n`Age: 18`\r\n`Level: 1 | Rank: F`\r\n\r\n`BASE STATS`\r\n`STR 5 | VIT 5 | AGI 5 | INT 5 | PER 5 | WIL 5`\r\n\r\n`Location: Public roadside verge outside Redmarch, Veyrhold`\r\n`Arrival Witnesses: NONE`\r\n`Starting Possessions: Simple Traveler's Clothes | Small Pouch | 5 Silver`\r\n`Local Common Language: Integrated`\r\n`Mandatory Quest: NONE`\r\n\r\n`CHARACTER CREATION — STEP 1/2`\r\n`Choose your Base Class:`\r\n\r\n`Warrior   — Favored Stats: STR / VIT`\r\n`Mage      — Favored Stats: INT / WIL`\r\n`Guardian  — Favored Stats: VIT / WIL`\r\n`Duelist   — Favored Stats: STR / AGI`\r\n`Ranger    — Favored Stats: AGI / PER`\r\n\r\n`Your chosen Class immediately applies +1 to both Favored Stats at Level 1.`\r\n`After choosing a Class, select exactly 2 Skills from that Class's Base Skill Pool.`\r\n\r\n`Reply with your Class choice.`\r\n\r\n*The System waits. Story time does not move during Character Creation.*\r\n",
+   "events": [
+    {
+     "t": "campaign.started",
+     "d": {
+      "seed": 1939360568,
+      "minute": 540,
+      "entities": [
+       {
+        "id": "pc",
+        "kind": "pc",
+        "name": "Alaric",
+        "race": "Human",
+        "age": 18,
+        "origin": "Earth",
+        "descriptors": [
+         "alaric",
+         "stranger",
+         "traveler"
+        ],
+        "status": "alive",
+        "location": "loc.redmarch",
+        "sheet": {
+         "level": 1,
+         "class": null,
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 5,
+          "INT": 5,
+          "PER": 5,
+          "WIL": 5
+         },
+         "skills": {},
+         "equipment": {
+          "clothing": "simple_travelers_clothes"
+         },
+         "inventory": {
+          "small_pouch": 1
+         },
+         "coin_cp": 50,
+         "xp": 0,
+         "free_points": 0,
+         "hp": 80,
+         "mp": 60,
+         "sta": 100
+        }
+       }
+      ],
+      "location": "loc.redmarch",
+      "place": "public roadside verge outside Redmarch",
+      "facts": [
+       {
+        "id": "f.pc.name",
+        "s": "pc",
+        "p": "name",
+        "o": "Alaric",
+        "visibility": "public",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.appearance",
+        "s": "pc",
+        "p": "appearance",
+        "o": "Human, about eighteen; wears simple traveler's clothes",
+        "visibility": "public",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.origin",
+        "s": "pc",
+        "p": "origin",
+        "o": "Earth (transmigrated; memories intact)",
+        "visibility": "secret",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.arrival_witnesses",
+        "s": "pc",
+        "p": "arrival_witnesses",
+        "o": "none",
+        "visibility": "secret",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       }
+      ],
+      "knowledge": [
+       {
+        "who": "pc",
+        "about": "f.pc.name",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.appearance",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.origin",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.arrival_witnesses",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       }
+      ],
+      "campaign": "avereth",
+      "content_version": "3.0.0",
+      "engine_version": "3.1.7"
+     }
+    }
+   ]
+  },
+  {
+   "i": 1,
+   "user": true,
+   "mes": "Duelist"
+  },
+  {
+   "i": 2,
+   "system": true,
+   "mes": "```\n[SYSTEM // CHARACTER CREATION — STEP 2/2]\nCLASS SELECTED: DUELIST — favored STR +1, AGI +1 · Basic Attack granted (P1)\nSTR 6 | VIT 5 | AGI 6 | INT 5 | PER 5 | WIL 5 | Max HP 80 | Max MP 60 | Max STA 100 | Initiative 9\nChoose exactly 2 Skills from the Duelist Base Pool (for example \"Precision Thrust + Evasive Step\"):\n- Precision Thrust [Offensive] | Cost 6 STA | Range ENGAGED | ignores Partial Cover | Raw = 8 + STR × 0.75 + AGI × 1.00 + ATK | Effect: ignores Partial Cover.\n- Evasive Step [Defensive / Utility] | Cost 5 STA | Effect: may reposition by 1 Range Band in a plausible chosen direction and, until the start of the Duelist's next turn, incoming damage is reduced by 25%.\n- Lunge [Offensive / Utility] | Cost 9 STA | Range ENGAGED after movement (EXTRA-BAND) | Raw = 12 + STR × 0.875 + AGI × 1.125 + ATK | Effect: as part of this Skill, close 1 additional Range Band before the attack. This explicit extra shift may combine with the normal one-band Turn movement. The target must be ENGAGED when the attack resolves.\n- Flurry [Offensive / Multi-Hit] | Cost 12 STA | Range ENGAGED | 2 strikes, each Raw = 4 + STR × 0.375 + AGI × 0.625 + 50% of ATK\n- Feint [Utility] | Cost 5 STA | Effect: the Duelist's next attack made before the end of the next turn gains +35% Modified Power. The effect is consumed by that attack.\n- Guarded Thrust [Offensive / Defensive] | Cost 8 STA | Range ENGAGED | Raw = 6 + STR × 0.625 + AGI × 0.875 + ATK | Effect: after resolving the attack, gain +4 temporary DEF until the start of the Duelist's next turn.\nStarter Gear, equipped when Step 2 is complete: Starter Rapier [F] (ATK 6), Starter Light Armor [F] (DEF 2, MDEF 3).\n```"
+  },
+  {
+   "i": 3,
+   "user": true,
+   "mes": "Precision Thrust + Evasive Step"
+  },
+  {
+   "i": 4,
+   "system": true,
+   "mes": "```\n[SYSTEM // CHARACTER CREATION COMPLETE]\nSKILLS SELECTED: Precision Thrust (P1), Evasive Step (P1)\nSTARTER GEAR EQUIPPED: Starter Rapier [F] (ATK 6), Starter Light Armor [F] (DEF 2, MDEF 3)\nAlaric | Human | Level 1 | XP 0/100 | Power Rank F | Class: Duelist\nHP 80/80 | MP 60/60 | STA 100/100\nSTR 6 | VIT 5 | AGI 6 | INT 5 | PER 5 | WIL 5 | Free Stat Points 0\nATK 6 | MATK 0 | DEF 3 (base 1) | MDEF 4 (base 1) | Initiative 9 (floor(1.5 × AGI))\nActive Effects: none | Domain: NOT YET UNLOCKED\nEquipment: Simple Traveler's Clothes, Starter Rapier [F] (ATK 6), Starter Light Armor [F] (DEF 2, MDEF 3)\nCarried: Small Pouch | Coin 5 Silver\nThe story begins with your next message: write what Alaric does.\n```"
+  },
+  {
+   "i": 5,
+   "user": true,
+   "mes": "*i walk into the city ahead of me and go to the adventurer guild and enter the guild building*"
+  },
+  {
+   "i": 6,
+   "reply": "The road takes him in through the western gate with a trickle of carts and foot traffic. A guard in Veyrhold grey glances at the rapier on his hip, finds nothing worth a question in it, and waves him on with the rest. Beyond the gate the street narrows between timber-framed buildings — a farrier's hammer ringing somewhere to the left, the smell of hot iron and wet straw, a woman arguing with a fishmonger about the smell of his stall.\n\nHe passes a notice board plastered with levy notices and grain prices, follows a painted sign — crossed swords over a huntsman's horn — down a side lane, and the Guildhall stands at the end of it: older stone than its neighbors, a wide door propped open to the morning.\n\nInside, the noise changes. Boots on flagstone, the scrape of a whetstone, low talk around long tables. A hearth burns at one end; a wall of wooden Quest slips lines the other, ranks marked in painted bands. A few heads turn as he enters — the natural, brief assessment strangers get in a border town — then go back to their breakfasts.\n\nA long counter runs along the right side. Behind it stands a woman in her thirties with close-cropped brown hair and a Guild tabard over a mail shirt, sorting slips into a pigeonhole rack. She clocks him as he crosses the threshold, takes in the sword, the clothes, the lack of any Guild mark.\n\n\"Morning.\" She sets down the stack of slips. \"Looking to post something, take something, or register?\"\n\n<avereth>{\"time\":20,\"place\":\"Redmarch — Guildhall entrance hall\",\"new\":[{\"ref\":\"clerk\",\"kind\":\"npc\",\"name\":\"Guild Clerk\",\"desc\":[\"receptionist\",\"thirties\",\"close-cropped brown hair\",\"mail shirt under tabard\"],\"traits\":\"brisk, assessing, professional\",\"band\":\"SHORT\"}],\"position\":[{\"who\":\"clerk\",\"band\":\"SHORT\"}],\"aware\":[{\"who\":\"clerk\",\"level\":\"aware\"}],\"facts\":[{\"s\":\"clerk\",\"p\":\"occupation\",\"o\":\"Redmarch Guildhall front-desk clerk\"}]}</avereth>"
+  },
+  {
+   "i": 7,
+   "user": true,
+   "mes": "Im here to Register *i say politely*"
+  },
+  {
+   "i": 8,
+   "reply": "\"Registration.\" She nods, already reaching under the counter. \"Name?\"\n\nWhatever he answers, she scratches it onto a fresh form in a quick, practiced hand. \"Right. Redmarch branch, so this goes in the Veyrhold rolls. Rules are short: you start Novice rank, you take Novice contracts, you don't take work above your rank without a waiver from a desk clerk. Contracts pay as posted. Falsifying a completion gets you expelled, and in a border town we do check.\"\n\nShe produces a palm-sized sphere of cloudy grey crystal from a drawer and sets it on the counter between them.\n\n\"Hand on this. It reads Rank and general condition — nothing else, and it doesn't hurt. It's how we keep the Novice board honest.\"\n\nWhile she waits, she pulls a second slip toward her. \"Registration fee is two silver, one-time. That covers your plate, your first stamp, and board access. After that the Guild takes a cut of contract payouts, not out of your pocket.\" She glances up at him, pen poised. \"So — two silver and a hand on the stone, and you're in the book. Questions first, if you have them.\"",
+   "answer": "<avereth>{\"facts\":[{\"s\":\"Redmarch Guild\",\"p\":\"registration fee\",\"o\":\"two silver one-time, covering plate, first stamp, and board access\"},{\"s\":\"Redmarch Guild\",\"p\":\"novice rule\",\"o\":\"Novice-rank registrants may only take Novice contracts without a desk-clerk waiver\"},{\"s\":\"Redmarch Guild\",\"p\":\"rank reading\",\"o\":\"registration requires a hand on a grey crystal sphere that reads Rank and general condition\"},{\"s\":\"Redmarch Guild\",\"p\":\"fraud rule\",\"o\":\"falsifying a completion means expulsion, and completions are checked in border towns\"}],\"learn\":[{\"who\":\"guild_clerk\",\"s\":\"pc\",\"p\":\"intent\",\"o\":\"register with the Guild\",\"how\":\"witnessed\"}]}</avereth>",
+   "ms": 12451
+  },
+  {
+   "i": 9,
+   "user": true,
+   "mes": "*i not and pay the 2 Silver. I then put my hand on the Stone and let it mess my Rank. After all is done i go and look at the Novice Quest Board*"
+  },
+  {
+   "i": 10,
+   "reply": "The clerk counts the two silver, stamps the form, and slides a wooden plate across the counter — fresh-cut, his name burned into it in the same quick hand, a Novice stamp in the corner still wet.\n\n\"Press when you're ready.\"\n\nThe crystal is cool under his palm. Clouds turn inside it, slow, then settle into a flat grey. \"F-rank, condition's clean,\" she says, reading it the way a farrier reads a hoof. \"Fine. Board's on the far wall, Novice band's the bottom row in blue. Take a slip, bring it back here and I'll log it under your name.\"\n\nThe plate goes into his hand; she's already back to her pigeonholes before he turns away.\n\nThe Novice band holds a dozen slips. Most are the standing sort — wood-hauling for the palisade works, night watch at the east granary, rat-clearing in the tannery cellars at four copper a head. Five are pinned newer, ink still dark:\n\n**Miller's Run Escort** — Cart of flour to the waystation on the south road. Two days' there and back. Novice. 8 silver.\n\n**Weasel Sign at Fenwick's Coop** — Something small and toothy has been in the henhouses three nights running. Find it, kill it, bring the pelt. Novice. 15 silver.\n\n**Herb Run — Marshmint** — Gather a full basket of marshmint from the reedbeds east of the mill leat. Wet work. Novice. 4 silver.\n\n**Missing Dog, Tanner's Row** — Brown bitch, lame left foreleg, gone since the market day. Find and return. Novice. 2 silver.\n\n**Fence Repair, Widow Marsh** — Beast-broken palings on the north paddock. Hammer and nails provided. Novice. 5 silver.\n\nTwo adventurers in mud-caked boots stand at the board; one pulls the weasel slip off its nail without looking at anyone and carries it to the counter.\n\n<avereth>{\"time\":10,\"coin\":[{\"who\":\"pc\",\"cp\":-20,\"taken_by\":\"Guild Clerk\",\"why\":\"Guild registration fee\"}],\"learn\":[{\"who\":\"Guild Clerk\",\"s\":\"Alaric\",\"p\":\"measured_rank\",\"o\":\"F, clean condition\",\"how\":\"witnessed\"}],\"facts\":[{\"s\":\"Alaric\",\"p\":\"guild_rank\",\"o\":\"Novice\"}],\"items\":[{\"item\":\"Guild registration plate (Novice)\",\"from\":\"Guild Clerk\",\"to\":\"pc\",\"why\":\"registration\"}],\"new\":[{\"ref\":\"weasel_taker\",\"kind\":\"npc\",\"desc\":[\"mud-booted adventurer\",\"took weasel contract slip\"],\"traits\":\"muddy boots, weathered coat\",\"band\":\"SHORT\"}]}</avereth>"
+  },
+  {
+   "i": 11,
+   "user": true,
+   "mes": "*i take the Millers Run Escort Quest and go to the front desk and register it*"
+  },
+  {
+   "i": 12,
+   "reply": "The clerk takes the slip, checks the nail it came from against her rack, and writes his name into a ledger beside it.\n\n\"Miller's Run. Cart leaves from the miller's yard — Grainmarket Row, the big yard behind Harrow's mill — tomorrow at first light. You'll be walking beside the carter, Ossler, and one other Novice took the second escort slot last evening, so you won't be alone if anything four-legged takes an interest in the flour.\" She stamps the slip. \"Waystation master signs your plate at delivery. Bring it back here for payout — eight silver.\"\n\nShe slides the stamped slip across the counter. \"Anything above F shows up on that road now and then, so keep your eyes open, but it's been quiet all season.\" Her attention is already moving to the next person in line, a farmhand with a basket of complaints.\n\nBehind him, the mud-booted adventurer is still at the counter, unrolling the weasel pelt question backward — no, bargaining over where to buy a snare. The hearth pops. Rain has started outside, fine and hissing against the shutters.\n\nThe morning is his: Grainmarket Row to find the miller's yard, the rest of the board, or whatever else Redmarch holds until first light tomorrow.\n\n<avereth>{\"time\":10,\"quests\":[{\"title\":\"Miller's Run Escort\",\"status\":\"active\",\"giver\":\"Redmarch Guildhall board (client: Harrow's mill)\",\"note\":\"Cart leaves Harrow's mill yard, Grainmarket Row, Day 2 first light; carter Ossler; another Novice took the second escort slot; waystation master signs the plate at delivery\",\"reward\":\"8 silver\",\"level\":1,\"type\":\"standard\",\"rank\":\"Novice 1-14\"}],\"new\":[{\"ref\":\"ossler\",\"kind\":\"npc\",\"name\":\"Ossler\",\"desc\":[\"carter\"],\"traits\":\"carter for Harrow's mill, not yet met\",\"band\":\"LONG\"}],\"learn\":[{\"who\":\"Guild Clerk\",\"s\":\"Alaric\",\"p\":\"takes\",\"o\":\"Miller's Run Escort quest\",\"how\":\"witnessed\"}],\"facts\":[{\"s\":\"Millers Run road\",\"p\":\"has been\",\"o\":\"quiet of anything above F-rank this season\"}]}</avereth>"
+  },
+  {
+   "i": 13,
+   "user": true,
+   "mes": "*since i have time untill tomorrow i register the Herb Run Quest too and travel to the reedbeds east of the mill leat*"
+  },
+  {
+   "i": 14,
+   "reply": "\"Herb Run as well.\" The clerk logs the second slip without ceremony. \"Full basket, mind — a handful of sprigs won't pass. Reedbeds start past the mill leat, east side; follow the drainage path and you'll hear the marsh before you see it. Bring the basket back for weighing.\"\n\nThe walk out takes the better part of an hour. Grainmarket Row gives way to cart tracks, then to a raised drainage path of packed earth running beside the leat, where the millrace's spill churns pale and cold. The rain has thinned to mist. Reed hisses in the wind off the water, and the smell changes — mud, cut grass, something green and rotting underneath.\n\nThe beds open out where the leat slackens: black water veined with reeds, hummocks of tussock grass, thin sheets of standing water that reflect the grey sky. Marshmint shows itself easily enough once he knows to look — low stems with squared corners and dark leaves, growing in clumps at the waterline, some reachable from the path, others out on the hummocks where the footing will be mud to the shin. A heretofore unnoticed detail: something has beaten a flat trail through the reeds out toward open water, wide as a badger, the stems bent rather than cut.\n\nA wading bird startles somewhere out in the beds and flaps away. Otherwise, only wind and water.\n\nThe basket problem is immediate — he carries none. The clumps nearest the path can be picked and carried in an armful, but a full basket will want a container from town or a good deal of trips.",
+   "answer": "<avereth>{\"time\":60,\"location\":\"Redmarch — reedbeds east of the mill leat\",\"quests\":[{\"title\":\"Herb Run\",\"status\":\"active\",\"giver\":\"Redmarch Guildhall clerk\",\"note\":\"full basket of marshmint required, weighed on return; reedbeds east of the mill leat\",\"type\":\"minor\"}],\"facts\":[{\"s\":\"reedbeds trail\",\"p\":\"beaten by\",\"o\":\"some animal (stems bent, badger-wide, toward open water)\",\"because\":\"unexplained detail at the beds\"},{\"s\":\"marshmint\",\"p\":\"grows at\",\"o\":\"the waterline of the reedbeds, in clumps\"},{\"s\":\"Alaric\",\"p\":\"lacks\",\"o\":\"a basket or container for the herb collection\"}],\"learn\":[{\"who\":\"Guild Clerk\",\"s\":\"Alaric\",\"p\":\"takes\",\"o\":\"Herb Run quest\",\"how\":\"witnessed\"}],\"threads\":[{\"text\":\"Something large has beaten a trail through the reeds toward open water\",\"kind\":\"mystery\",\"status\":\"open\"}]}</avereth>",
+   "ms": 14362
+  },
+  {
+   "i": 15,
+   "user": true,
+   "mes": "*since i have the whole day i start carrying armfulls down the path*"
+  },
+  {
+   "i": 16,
+   "reply": "The first armful is easy — clumps within reach of the path, stems snapping clean, mint smell sharp on his hands. He lays it on the dry boards of the drainage path and wades out for more.\n\nThe second and third armfuls cost wet boots. The hummock clumps grow out over black mud that takes each step to the shin and tries to keep the foot on the pull-back. By the fourth trip he has learned to read the tussocks — step on the grass mounds, not between them — and his pace improves. The rain holds at mist. Somewhere behind the reeds the leat keeps up its low constant chatter.\n\nHe works through the morning and into early afternoon, shuttling armfuls back to a growing pile on the path. The beaten trail in the reeds stays quiet each time he passes it; whatever made it has come and gone in the night, and the only fresh sign is a scatter of small tracks near the waterline — webbed, bird-sized.\n\nBy mid-afternoon the pile is respectable: a dense green heap the size of a meal sack, maybe more, maybe short of a full basket's worth — hard to judge without the basket. His back and forearms ache from bending, his clothes are mud to the knee, and the beds ahead have been picked over along the path's reach. The fuller clumps remaining lie out toward open water — near that flattened trail — or a good walk further down the drainage path, where the reedbeds widen past a bend.\n\nThe light is still good for two or three hours. Town is an hour back, and the Guild takes weigh-ins before dusk closes.",
+   "answer": "<avereth>{\"time\":300,\"facts\":[{\"s\":\"marshmint near the drainage path\",\"p\":\"picked over\",\"o\":\"remaining clumps lie toward open water near the flattened trail or past the bend\",\"because\":\"Alaric gathered the reachable clumps\"},{\"s\":\"waterline near the reedbeds\",\"p\":\"shows fresh tracks\",\"o\":\"small webbed bird-sized tracks\"},{\"s\":\"beaten trail in the reeds\",\"p\":\"shows no fresh use\",\"o\":\"none\",\"because\":\"whatever made it passed in the night\"},{\"s\":\"Alaric\",\"p\":\"condition\",\"o\":\"mud to the knees, aching back and forearms from the gathering work\"},{\"s\":\"Alaric's gathered pile\",\"p\":\"size\",\"o\":\"roughly a meal sack of marshmint, hard to judge without a basket\"}]}</avereth>",
+   "ms": 12114
+  },
+  {
+   "i": 17,
+   "user": true,
+   "mes": "*i start carrying it all back to the guild to turn it in and the Quest with it*"
+  },
+  {
+   "i": 18,
+   "reply": "Hauling it means improvising. He strips off his outer shirt, lays it on the path, and rakes the pile onto it, bundling the corners into a rough sling that drips mint smell and mud. The load rides heavy against his chest, wet stems cold through the cloth, and the hour's walk back along the drainage path is slow — the aching forearms complain every few hundred paces, and twice he has to stop and shift the bundle to keep the bottom from spilling.\n\nThe leat's noise falls behind. Grainmarket Row takes him in with its late-afternoon traffic — carters, a woman arguing over a sack of onions, steam off a cookshop vent — and mud-tracked, shirtless in the drizzle, he draws a look or two and nothing more.\n\nThe Guildhall is warmer than the street. The same clerk glances up, takes in the bundle, and comes around the counter to weigh it on the trade scales by the hearth, cutting the sling open and stacking the mint in the pan while water drips onto the stone flags.\n\n\"Stems are clean, leaves whole.\" The needle settles. She adds a last handful. \"That'll pass.\" She marks the Herb Run slip complete in her register. \"Payout's yours — say the word at the desk and she'll count it out. And you're on the Miller's Run cart tomorrow, first light, Harrow's yard.\" She wipes her hands on a rag. \"You'll want dry boots before then. That mud will give you a fever, and dead escorts don't get paid.\"\n\nThe hearth hisses. Out the window the light is going copper over the rooftops, and there is still the matter of the evening — food, boots, a basket for nothing, and whatever else Redmarch does after dark.\n\n<avereth>{\"time\":95,\"location\":\"Redmarch\",\"quests\":[{\"title\":\"Herb Run\",\"status\":\"completed\",\"giver\":\"Redmarch Guild\",\"reward\":\"posted payout\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice 1-14\"}],\"items\":[{\"item\":\"marshmint (full basket's worth)\",\"qty\":1,\"from\":\"Alaric\",\"to\":\"Redmarch Guild\",\"why\":\"quest delivery\"}],\"facts\":[{\"s\":\"Alaric\",\"p\":\"guild_rank\",\"o\":\"Guild Novice\"}]}</avereth>"
+  },
+  {
+   "i": 19,
+   "user": true,
+   "mes": "*i turn the Quest in at the front desk and then i go walk around the City looking for an Inn to sleep and wash my clothes and myself*"
+  },
+  {
+   "i": 20,
+   "reply": "The desk clerk — a different one, thick-armed with ink-stained fingers — counts the payout out in copper and a single silver bit, stamps the Herb Run slip, and files it. \"Both done clean. Cart at Harrow's yard, first light. Don't be late for it.\"\n\nThe evening streets are filling up. Lamplighters work down the row with long poles; a smith's apprentice drags a barrow of scrap; somewhere fiddles tune up through a shuttered window. He walks a few streets, reading signs — the Gilded Sow, too fine, a doorman in livery; the Anchor and Cleaver, loud with caravan crews — until he finds the Marsh Bell on a lane behind the cooper's yard: a low timbered building with a reed-thatched sign, warm light in the windows, and a smell of onions and boiled mutton that argues well for the kitchen.\n\nInside, the common room is half full — two carter families eating early, an old man asleep by the fire with a mug still in his hand. The innkeeper, a broad woman with flour on her forearms and a voice that carries without rising, looks him over: mud to the knee, hair matted, a sword at his hip.\n\n\"Room's four copper, hot bath two more, and I'll take the muddy clothes tonight and have them dry by morning — another copper for the wash.\" She jerks her chin at the state of him. \"Reedbeds, by the look. You Guild lads always come back the same color. Kitchen's open till the bell; stew's two.\"\n\nThe room upstairs, when he gets to it after the bath, is small and clean — a straw pallet, a washstand, a hook for the sword, a candle stub. Through the wall, the old man's snore. His clothes hang drying by the kitchen fire below, and the pallet takes him like a debt paid.\n\n<avereth>{\"time\":90,\"place\":\"Marsh Bell inn (lane behind the cooper's yard)\",\"new\":[{\"ref\":\"innkeeper\",\"kind\":\"npc\",\"name\":\"Marsh Bell innkeeper\",\"desc\":[\"innkeeper\",\"broad woman\"],\"traits\":\"broad, flour on forearms, carrying voice\",\"band\":\"ENGAGED\"}],\"facts\":[{\"s\":\"innkeeper\",\"p\":\"occupation\",\"o\":\"innkeeper of the Marsh Bell\"},{\"s\":\"Marsh Bell\",\"p\":\"located\",\"o\":\"lane behind the cooper's yard, Redmarch\"}],\"items\":[{\"item\":\"hot bath, room, laundry\",\"qty\":1,\"from\":\"pc\",\"to\":\"innkeeper\",\"why\":\"lodging and wash\"}],\"coin\":[{\"who\":\"pc\",\"cp\":-7,\"taken_by\":\"innkeeper\",\"why\":\"room (4), bath (2), laundry (1)\"}],\"quests\":[{\"title\":\"Herb Run\",\"status\":\"completed\",\"giver\":\"Redmarch Guild\",\"note\":\"marshmint weighed and accepted\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"}]}</avereth>"
+  }
+ ]
+}

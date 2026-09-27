@@ -1,0 +1,276 @@
+{
+ "version": "gold-v4-0.1",
+ "note": "Runtime V4, P0 / S3: the critical path of the live run 27.09.2026 07:10 (docs/TESTRUN_V12.md) as V4 gold data, still without a runtime (plan §16 S3, §11.1). Per turn: the interpreter's commands, their resolutions, the inline delta block of variant B, the recovery answer of variant A, the expected domain events and state excerpts. The replies are the unchanged 3.1.7 replies of fixture.json (their old reports removed). tools/p0/s3_prototype.mjs replays both paths and checks the twelve expectations of plan §11.1. P3 turns this into the Golden-V4-Test.",
+ "fixture": "tests/testrun_v12/fixture.json",
+ "initial": {
+  "clock": 540,
+  "coin_cp": 50,
+  "xp": 0,
+  "level": 1,
+  "power_rank": "F",
+  "locations": {
+   "realm.veyrhold": {"name": "Veyrhold", "kind": "realm", "parent": null},
+   "loc.redmarch": {"name": "Redmarch", "kind": "settlement", "sub": "city", "parent": "realm.veyrhold"},
+   "loc.redmarch.verge": {"name": "public roadside verge outside the city", "kind": "site", "parent": "loc.redmarch"}
+  },
+  "scene_at": "loc.redmarch.verge"
+ },
+ "board_generator": {
+  "branch": "loc.redmarch",
+  "rank": "Novice",
+  "day": 1,
+  "listings": [
+   {"id": "quest.millers_run_escort", "title": "Miller's Run Escort", "client": "Harrow's mill", "rank": "Novice", "level": 3, "qtype": "standard", "payout_cp": 80,
+    "desired_end_state": "the flour cart delivered to the south-road waystation",
+    "objectives": [{"id": "o1", "verb": "ESCORT", "what": "flour cart", "where": "south-road waystation"}],
+    "proof": [{"id": "p1", "kind": "mark", "what": "signed by the waystation master", "on": "Guild plate"}]},
+   {"id": "quest.weasel_fenwick", "title": "Weasel Sign at Fenwick's Coop", "client": "Fenwick", "rank": "Novice", "level": 2, "qtype": "standard", "payout_cp": 150,
+    "desired_end_state": "the henhouse raider dead",
+    "objectives": [{"id": "o1", "verb": "FIND", "what": "the weasel"}, {"id": "o2", "verb": "DEFEAT", "what": "the weasel"}],
+    "proof": [{"id": "p1", "kind": "object", "what": "weasel pelt", "qty": 1, "unit": "pelt", "consume": true}]},
+   {"id": "quest.herb_run_marshmint", "title": "Herb Run — Marshmint", "client": "Redmarch apothecaries", "rank": "Novice", "level": 1, "qtype": "minor", "payout_cp": 40,
+    "desired_end_state": "a full basket of marshmint at the Guild",
+    "objectives": [{"id": "o1", "verb": "GATHER", "what": "marshmint", "qty": 1, "unit": "basket", "where": "reedbeds east of the mill leat"}],
+    "proof": [{"id": "p1", "kind": "object", "what": "marshmint", "qty": 1, "unit": "basket", "consume": true}]},
+   {"id": "quest.missing_dog", "title": "Missing Dog, Tanner's Row", "client": "a tanner of Tanner's Row", "rank": "Novice", "level": 1, "qtype": "minor", "payout_cp": 20,
+    "desired_end_state": "the lame brown bitch back with her owner",
+    "objectives": [{"id": "o1", "verb": "FIND", "what": "the missing dog"}, {"id": "o2", "verb": "DELIVER", "what": "the dog", "where": "Tanner's Row"}],
+    "proof": [{"id": "p1", "kind": "mark", "what": "signed by the owner", "on": "contract slip"}]},
+   {"id": "quest.fence_repair", "title": "Fence Repair, Widow Marsh", "client": "Widow Marsh", "rank": "Novice", "level": 1, "qtype": "minor", "payout_cp": 50,
+    "desired_end_state": "the north paddock fence whole again",
+    "objectives": [{"id": "o1", "verb": "REPAIR", "what": "beast-broken palings", "where": "Widow Marsh's north paddock"}],
+    "proof": [{"id": "p1", "kind": "mark", "what": "signed by Widow Marsh", "on": "contract slip"}]}
+  ]
+ },
+ "turns": [
+  {
+   "id": "t1", "msg": 5, "reply": 6,
+   "player": "*i walk into the city ahead of me and go to the adventurer guild and enter the guild building*",
+   "commands": [{"seq": 1, "type": "go", "to": "loc.redmarch.guild_hall", "quote": "go to the adventurer guild and enter the guild building"}],
+   "resolutions": [{"seq": 1, "status": "authorized"}],
+   "actions_contains": ["GOES — to Adventurers' Guild hall"],
+   "expected_keys": {"1": "go"},
+   "block": {"expected": {"1": {"arrived": true, "at": "loc.redmarch.guild_hall"}}, "deltas": [
+    {"seq": 1, "type": "time", "minutes": 20},
+    {"seq": 2, "type": "arrive", "at": "loc.redmarch.guild_hall"},
+    {"seq": 3, "type": "person.new", "ref": "clerk", "name": null, "role": "Guild clerk", "desc": ["woman in her thirties", "close-cropped brown hair", "Guild tabard over a mail shirt"], "present": true, "at": null}
+   ]},
+   "recovery": {"expected": {"1": {"arrived": true, "at": "loc.redmarch.guild_hall"}}, "deltas": [
+    {"seq": 1, "type": "time", "minutes": 20},
+    {"seq": 2, "type": "arrive", "at": "loc.redmarch.guild_hall"},
+    {"seq": 3, "type": "person.new", "ref": "guild_clerk", "name": null, "role": "Guild clerk", "desc": ["thirties", "close-cropped brown hair", "tabard over mail"], "present": true, "at": null},
+    {"seq": 4, "type": "fact", "s": "Adventurers' Guild hall, Redmarch", "p": "layout", "o": "long counter on the right, a wall of Quest slips marked in rank bands"}
+   ]},
+   "events_player": ["cmd.interpreted", "cmd.resolved"],
+   "events_reply": ["time.advanced", "scene.arrived", "entity.created", "scene.entered", "knowledge.gained", "memory.added", "board.generated", "quest.created", "board.refreshed"],
+   "after_reply": {"clock": "Day 1, 09:20", "coin_cp": 50, "scene_at": "loc.redmarch.guild_hall", "present": ["npc.guild_clerk"], "listings": {"quest.millers_run_escort": "listed", "quest.weasel_fenwick": "listed", "quest.herb_run_marshmint": "listed", "quest.missing_dog": "listed", "quest.fence_repair": "listed"}}
+  },
+  {
+   "id": "t2", "msg": 7, "reply": 8,
+   "player": "Im here to Register *i say politely*",
+   "commands": [{"seq": 1, "type": "guild.register", "quote": "Im here to Register"}],
+   "resolutions": [{"seq": 1, "status": "pending", "reason": "fee"}],
+   "actions_contains": ["REGISTERS — pending", "20 cp", "stop there"],
+   "expected_keys": {},
+   "block": {"expected": {}, "deltas": [
+    {"seq": 1, "type": "fact", "s": "Adventurers' Guild", "p": "rule", "o": "Novices take Novice contracts; higher work only with a desk waiver"},
+    {"seq": 2, "type": "fact", "s": "Adventurers' Guild", "p": "rule", "o": "a falsified completion means expulsion; completions are checked"}
+   ]},
+   "recovery": {"expected": {}, "deltas": [
+    {"seq": 1, "type": "fact", "s": "Redmarch Guild branch", "p": "rule", "o": "Novices may take only Novice contracts without a desk-clerk waiver"},
+    {"seq": 2, "type": "fact", "s": "Redmarch Guild branch", "p": "rule", "o": "falsifying a completion means expulsion"},
+    {"seq": 3, "type": "fact", "s": "Redmarch Guild branch", "p": "procedure", "o": "a grey crystal reads a registrant's Rank and general condition"}
+   ]},
+   "events_player": ["cmd.interpreted", "offer.created", "decision.opened", "cmd.resolved"],
+   "events_reply": ["fact.added"],
+   "after_reply": {"clock": "Day 1, 09:20", "coin_cp": 50, "member": null, "offers": {"offer.registration": "open"}, "decisions": ["registration"]}
+  },
+  {
+   "id": "t3", "msg": 9, "reply": 10,
+   "player": "*i not and pay the 2 Silver. I then put my hand on the Stone and let it mess my Rank. After all is done i go and look at the Novice Quest Board*",
+   "commands": [
+    {"seq": 1, "type": "offer.accept", "offer": "offer.registration", "lines": null, "quote": "pay the 2 Silver"},
+    {"seq": 2, "type": "board.read", "rank": "Novice", "quote": "look at the Novice Quest Board"}
+   ],
+   "resolutions": [{"seq": 1, "status": "resolved"}, {"seq": 2, "status": "resolved"}],
+   "actions_contains": ["PAYS — the Guild registration fee, 20 cp", "Guild Rank Novice", "BOARD", "Miller's Run Escort · 80 cp", "Weasel Sign at Fenwick's Coop · 150 cp"],
+   "expected_keys": {},
+   "block": {"expected": {}, "deltas": [
+    {"seq": 1, "type": "time", "minutes": 10},
+    {"seq": 2, "type": "person.new", "ref": "mud_booted", "name": null, "role": "mud-booted adventurer", "desc": ["muddy boots", "weathered coat"], "present": true, "at": null},
+    {"seq": 3, "type": "listing.gone", "listing": "quest.weasel_fenwick", "why": "taken_by_other"}
+   ]},
+   "recovery": {"expected": {}, "deltas": [
+    {"seq": 1, "type": "time", "minutes": 10},
+    {"seq": 2, "type": "person.new", "ref": "adventurer", "name": null, "role": "mud-booted adventurer", "desc": ["mud-booted"], "present": true, "at": null},
+    {"seq": 3, "type": "listing.gone", "listing": "quest.weasel_fenwick", "why": "taken_by_other"},
+    {"seq": 4, "type": "fact", "s": "Novice board", "p": "standing work", "o": "palisade wood-hauling, granary night watch, tannery rat-clearing"}
+   ]},
+   "events_player": ["cmd.interpreted", "transaction.completed", "coin.changed", "guild.registered", "object.created", "knowledge.gained", "offer.closed", "decision.closed", "cmd.resolved", "board.shown", "cmd.resolved"],
+   "events_reply": ["time.advanced", "entity.created", "scene.entered", "quest.status"],
+   "after_player": {"coin_cp": 30, "member": "Novice", "objects": {"obj.guild_plate": "pc"}, "offers": {"offer.registration": "accepted"}, "decisions": []},
+   "after_reply": {"clock": "Day 1, 09:30", "listings": {"quest.millers_run_escort": "listed", "quest.weasel_fenwick": "taken_by_other", "quest.herb_run_marshmint": "listed", "quest.missing_dog": "listed", "quest.fence_repair": "listed"}}
+  },
+  {
+   "id": "t4", "msg": 11, "reply": 12,
+   "player": "*i take the Millers Run Escort Quest and go to the front desk and register it*",
+   "commands": [{"seq": 1, "type": "quest.accept", "quest": "quest.millers_run_escort", "quote": "i take the Millers Run Escort Quest"}],
+   "resolutions": [{"seq": 1, "status": "resolved"}],
+   "actions_contains": ["ACCEPTS — \"Miller's Run Escort\""],
+   "expected_keys": {},
+   "block": {"expected": {}, "deltas": [
+    {"seq": 1, "type": "time", "minutes": 10},
+    {"seq": 2, "type": "quest.detail", "quest": "quest.millers_run_escort", "note": "the cart leaves the miller's yard behind Harrow's mill, Grainmarket Row; carter Ossler; a second Novice escorts too", "schedule": "day 2, first light"},
+    {"seq": 3, "type": "person.new", "ref": "ossler", "name": "Ossler", "role": "carter for Harrow's mill", "desc": ["carter"], "present": false, "at": {"new": {"name": "Harrow's mill yard", "kind": "site", "parent": "loc.redmarch"}}},
+    {"seq": 4, "type": "fact", "s": "south road", "p": "danger", "o": "quiet all season; above-F trouble now and then"}
+   ]},
+   "recovery": {"expected": {}, "deltas": [
+    {"seq": 1, "type": "time", "minutes": 10},
+    {"seq": 2, "type": "person.new", "ref": "ossler", "name": "Ossler", "role": "carter of Harrow's mill", "desc": ["carter"], "present": false, "at": {"new": {"name": "Harrow's mill yard", "kind": "site", "parent": "loc.redmarch"}}},
+    {"seq": 3, "type": "quest.detail", "quest": "quest.millers_run_escort", "note": "cart from the miller's yard behind Harrow's mill; the waystation master signs the plate at delivery", "schedule": "day 2, first light"}
+   ]},
+   "events_player": ["cmd.interpreted", "quest.status", "knowledge.gained", "cmd.resolved"],
+   "events_reply": ["time.advanced", "quest.detailed", "location.created", "entity.created"],
+   "after_reply": {"clock": "Day 1, 09:40", "quests": {"quest.millers_run_escort": "active"}, "present": ["npc.guild_clerk", "npc.mud_booted_adventurer"]}
+  },
+  {
+   "id": "t5", "msg": 13, "reply": 14,
+   "player": "*since i have time untill tomorrow i register the Herb Run Quest too and travel to the reedbeds east of the mill leat*",
+   "commands": [
+    {"seq": 1, "type": "quest.accept", "quest": "quest.herb_run_marshmint", "quote": "i register the Herb Run Quest too"},
+    {"seq": 2, "type": "go", "to": {"new": "reedbeds east of the mill leat"}, "quote": "travel to the reedbeds east of the mill leat"}
+   ],
+   "resolutions": [{"seq": 1, "status": "resolved"}, {"seq": 2, "status": "authorized"}],
+   "actions_contains": ["ACCEPTS — \"Herb Run — Marshmint\"", "GOES — to reedbeds east of the mill leat"],
+   "expected_keys": {"2": "go"},
+   "block": {"expected": {"2": {"arrived": true, "at": {"new": {"name": "reedbeds", "kind": "site", "parent": {"new": {"name": "eastern mill leat", "kind": "site", "parent": "loc.redmarch"}}}}}}, "deltas": [
+    {"seq": 1, "type": "time", "minutes": 60},
+    {"seq": 2, "type": "arrive", "at": {"new": {"name": "reedbeds", "kind": "site", "parent": {"new": {"name": "eastern mill leat", "kind": "site", "parent": "loc.redmarch"}}}}},
+    {"seq": 3, "type": "fact", "s": "reedbeds", "p": "sign", "o": "a badger-wide trail beaten through the reeds toward open water"}
+   ]},
+   "recovery": {"expected": {"2": {"arrived": true, "at": {"new": {"name": "reedbeds", "kind": "site", "parent": {"new": {"name": "eastern mill leat", "kind": "site", "parent": "loc.redmarch"}}}}}}, "deltas": [
+    {"seq": 1, "type": "time", "minutes": 60},
+    {"seq": 2, "type": "arrive", "at": {"new": {"name": "reedbeds", "kind": "site", "parent": {"new": {"name": "eastern mill leat", "kind": "site", "parent": "loc.redmarch"}}}}},
+    {"seq": 3, "type": "fact", "s": "reedbeds", "p": "sign", "o": "something badger-wide has beaten a trail toward open water"},
+    {"seq": 4, "type": "fact", "s": "marshmint", "p": "grows", "o": "in clumps at the waterline of the reedbeds"}
+   ]},
+   "events_player": ["cmd.interpreted", "quest.status", "knowledge.gained", "cmd.resolved", "cmd.resolved"],
+   "events_reply": ["time.advanced", "location.created", "location.created", "scene.arrived", "fact.added"],
+   "after_player": {"quests": {"quest.herb_run_marshmint": "active"}},
+   "after_reply": {"clock": "Day 1, 10:40", "scene_path": ["reedbeds", "eastern mill leat", "Redmarch", "Veyrhold"], "present": []}
+  },
+  {
+   "id": "t6", "msg": 15, "reply": 16,
+   "player": "*since i have the whole day i start carrying armfulls down the path*",
+   "commands": [{"seq": 1, "type": "activity", "kind": "gather", "what": "marshmint", "minutes": null, "until": "end_of_day", "quote": "since i have the whole day i start carrying armfulls down the path"}],
+   "resolutions": [{"seq": 1, "status": "authorized", "cap": 560}],
+   "actions_contains": ["GATHERS marshmint until the end of the day", "at most 560 minutes"],
+   "expected_keys": {"1": "activity"},
+   "block": {"expected": {"1": {"minutes": 300, "done": false}}, "deltas": [
+    {"seq": 1, "type": "time", "minutes": 300},
+    {"seq": 2, "type": "object.new", "name": "marshmint", "kind": "resource", "qty": 1, "unit": "basket", "holder": "here", "for_quest": "quest.herb_run_marshmint"},
+    {"seq": 3, "type": "fact", "s": "reedbeds", "p": "state", "o": "picked over along the drainage path"}
+   ]},
+   "recovery": {"expected": {"1": {"minutes": 300, "done": false}}, "deltas": [
+    {"seq": 1, "type": "time", "minutes": 300},
+    {"seq": 2, "type": "object.new", "name": "marshmint", "kind": "resource", "qty": 1, "unit": "basket", "holder": "loc.redmarch.eastern_mill_leat.reedbeds", "for_quest": "quest.herb_run_marshmint"}
+   ]},
+   "events_player": ["cmd.interpreted", "cmd.resolved"],
+   "events_reply": ["time.advanced", "object.created"],
+   "after_reply": {"clock": "Day 1, 15:40", "objects": {"obj.t16.marshmint": "loc.redmarch.eastern_mill_leat.reedbeds"}}
+  },
+  {
+   "id": "t7", "msg": 17, "reply": 18,
+   "player": "*i start carrying it all back to the guild to turn it in and the Quest with it*",
+   "commands": [
+    {"seq": 1, "type": "take", "object": "obj.t16.marshmint", "qty": null, "quote": "carrying it all"},
+    {"seq": 2, "type": "go", "to": "loc.redmarch.guild_hall", "quote": "back to the guild"},
+    {"seq": 3, "type": "quest.turn_in", "quest": "quest.herb_run_marshmint", "quote": "to turn it in and the Quest with it"}
+   ],
+   "resolutions": [{"seq": 1, "status": "resolved"}, {"seq": 2, "status": "authorized"}, {"seq": 3, "status": "conditional", "condition": "arrive_guild_hall"}],
+   "actions_contains": ["TAKES — marshmint (1 basket)", "GOES — to Adventurers' Guild hall", "TURNS IN, when he reaches the Guild hall", "the Guild pays 40 cp", "If the reply does not reach the hall, nothing is turned in"],
+   "expected_keys": {"2": "go"},
+   "block": {"expected": {"2": {"arrived": true, "at": "loc.redmarch.guild_hall"}}, "deltas": [
+    {"seq": 1, "type": "time", "minutes": 95},
+    {"seq": 2, "type": "arrive", "at": "loc.redmarch.guild_hall"},
+    {"seq": 3, "type": "enter", "who": "npc.guild_clerk"}
+   ]},
+   "recovery": {"expected": {"2": {"arrived": true, "at": "loc.redmarch.guild_hall"}}, "deltas": [
+    {"seq": 1, "type": "time", "minutes": 95},
+    {"seq": 2, "type": "arrive", "at": "loc.redmarch.guild_hall"},
+    {"seq": 3, "type": "enter", "who": "the same clerk"},
+    {"seq": 4, "type": "fact", "s": "Alaric", "p": "condition", "o": "mud to the knee, shirtless in the drizzle"}
+   ]},
+   "events_player": ["cmd.interpreted", "object.moved", "cmd.resolved", "cmd.resolved", "cmd.resolved"],
+   "events_reply": ["time.advanced", "scene.arrived", "proof.checked", "object.consumed", "coin.changed", "xp.gained", "quest.status", "cmd.completed", "scene.entered"],
+   "after_player": {"objects": {"obj.t16.marshmint": "pc"}},
+   "after_reply": {"clock": "Day 1, 17:15", "coin_cp": 70, "xp": 15, "quests": {"quest.herb_run_marshmint": "completed", "quest.millers_run_escort": "active"}, "objects": {"obj.t16.marshmint": "consumed"}, "novice_contracts_done": 1, "scene_at": "loc.redmarch.guild_hall"}
+  },
+  {
+   "id": "t8", "msg": 19, "reply": 20,
+   "player": "*i turn the Quest in at the front desk and then i go walk around the City looking for an Inn to sleep and wash my clothes and myself*",
+   "commands": [
+    {"seq": 1, "type": "quest.turn_in", "quest": "quest.herb_run_marshmint", "quote": "i turn the Quest in at the front desk"},
+    {"seq": 2, "type": "go", "to": {"new": "an inn"}, "quote": "i go walk around the City looking for an Inn"},
+    {"seq": 3, "type": "buy", "what": "a room for the night, a bath and laundry", "from": null, "qty": null, "max_cp": null, "any_price": false, "quote": "to sleep and wash my clothes and myself"}
+   ],
+   "resolutions": [{"seq": 1, "status": "refused", "reason": "already_completed"}, {"seq": 2, "status": "authorized"}, {"seq": 3, "status": "pending", "reason": "no_price"}],
+   "actions_contains": ["NOTHING TO DO — \"Herb Run — Marshmint\" is already turned in", "GOES — to an inn", "OPEN DECISION", "has not agreed to pay"],
+   "expected_keys": {"2": "go", "3": "buy"},
+   "block": {"expected": {"2": {"arrived": true, "at": {"new": {"name": "Marsh Bell", "kind": "interior", "parent": {"new": {"name": "lane behind the cooper's yard", "kind": "site", "parent": "loc.redmarch"}}}}}, "3": {"priced": true}}, "deltas": [
+    {"seq": 1, "type": "person.new", "ref": "desk_clerk", "name": null, "role": "Guild desk clerk", "desc": ["thick-armed", "ink-stained fingers"], "present": true, "at": null},
+    {"seq": 2, "type": "time", "minutes": 90},
+    {"seq": 3, "type": "arrive", "at": {"new": {"name": "Marsh Bell", "kind": "interior", "parent": {"new": {"name": "lane behind the cooper's yard", "kind": "site", "parent": "loc.redmarch"}}}}},
+    {"seq": 4, "type": "person.new", "ref": "innkeeper", "name": null, "role": "innkeeper of the Marsh Bell", "desc": ["broad woman", "flour on her forearms", "carrying voice"], "present": true, "at": null},
+    {"seq": 5, "type": "offer", "seller": "innkeeper", "lines": [
+     {"what": "room for the night", "kind": "service", "service": "lodging", "qty": 1, "price_cp": 4},
+     {"what": "hot bath", "kind": "service", "service": "bath", "qty": 1, "price_cp": 2},
+     {"what": "laundry", "kind": "service", "service": "laundry", "qty": 1, "price_cp": 1},
+     {"what": "bowl of stew", "kind": "goods", "service": "meal", "qty": 1, "price_cp": 2}
+    ]},
+    {"seq": 6, "type": "overreach", "kind": "purchase", "what": "the reply has Alaric use the room and the bath although he had not agreed to the prices"}
+   ]},
+   "recovery": {"expected": {"2": {"arrived": true, "at": {"new": {"name": "Marsh Bell", "kind": "interior", "parent": {"new": {"name": "lane behind the cooper's yard", "kind": "site", "parent": "loc.redmarch"}}}}}, "3": {"priced": true}}, "deltas": [
+    {"seq": 1, "type": "person.new", "ref": "second_clerk", "name": null, "role": "Guild desk clerk", "desc": ["thick-armed"], "present": true, "at": null},
+    {"seq": 2, "type": "time", "minutes": 90},
+    {"seq": 3, "type": "arrive", "at": {"new": {"name": "Marsh Bell", "kind": "interior", "parent": {"new": {"name": "lane behind the cooper's yard", "kind": "site", "parent": "loc.redmarch"}}}}},
+    {"seq": 4, "type": "person.new", "ref": "innkeeper", "name": null, "role": "innkeeper of the Marsh Bell", "desc": ["broad woman"], "present": true, "at": null},
+    {"seq": 5, "type": "offer", "seller": "innkeeper", "lines": [
+     {"what": "room", "kind": "service", "service": "lodging", "qty": 1, "price_cp": 4},
+     {"what": "hot bath", "kind": "service", "service": "bath", "qty": 1, "price_cp": 2},
+     {"what": "wash of the muddy clothes", "kind": "service", "service": "laundry", "qty": 1, "price_cp": 1},
+     {"what": "stew", "kind": "goods", "service": "meal", "qty": 1, "price_cp": 2}
+    ]},
+    {"seq": 6, "type": "overreach", "kind": "payment", "what": "room and bath taken without Alaric agreeing to pay"}
+   ]},
+   "events_player": ["cmd.interpreted", "cmd.resolved", "cmd.resolved", "decision.opened", "cmd.resolved"],
+   "events_reply": ["entity.created", "scene.entered", "time.advanced", "location.created", "location.created", "scene.arrived", "entity.created", "scene.entered", "offer.created", "overreach.noted"],
+   "after_reply": {"clock": "Day 1, 18:45", "coin_cp": 70, "xp": 15, "scene_at": "loc.redmarch.lane_behind_the_coopers_yard.marsh_bell", "scene_path": ["Marsh Bell", "lane behind the cooper's yard", "Redmarch", "Veyrhold"], "offers_open_lines": [4, 2, 1, 2], "decisions": ["purchase"], "corrections": 1}
+  }
+ ],
+ "end_state": {
+  "clock": "Day 1, 18:45",
+  "coin_cp": 70,
+  "xp": 15,
+  "scene_at": "loc.redmarch.lane_behind_the_coopers_yard.marsh_bell",
+  "quests": {"quest.millers_run_escort": "active", "quest.herb_run_marshmint": "completed"},
+  "open_proofs": {"quest.millers_run_escort": ["signed by the waystation master"]}
+ },
+ "variants": {
+  "generator_failure": {
+   "note": "Rev. 2.1: the board generator fails at arrival and again at the first look (message 9). No listing may exist; the reply's five prose contracts are reported as overreach guild_listing, and an attempt to canonize them via quest.offer is rejected.",
+   "reply10_recovery": {"expected": {}, "deltas": [
+    {"seq": 1, "type": "time", "minutes": 10},
+    {"seq": 2, "type": "overreach", "kind": "guild_listing", "what": "the reply shows five official contracts the BOARD does not have: Miller's Run Escort, Weasel Sign at Fenwick's Coop, Herb Run — Marshmint, Missing Dog, Fence Repair"},
+    {"seq": 3, "type": "quest.offer", "title": "Miller's Run Escort", "giver": "Redmarch Guild board", "reward_cp": 80, "objectives": ["escort the flour cart"], "proof": ["waystation master's signature"]}
+   ]},
+   "msg11_commands": [{"seq": 1, "type": "quest.accept", "quest": {"new": "Millers Run Escort"}, "quote": "i take the Millers Run Escort Quest"}]
+  },
+  "coerce_by_seller": {"seq": 7, "type": "coerce", "kind": "fine", "by": "innkeeper", "coin_cp": 7, "object": null, "because": "room, bath and laundry"},
+  "old_report_key": {"seq": 7, "type": "coin.gift", "from": "innkeeper", "cp": -7, "why": "room", "taken_by": "innkeeper"},
+  "pay_for_registration": [{"seq": 1, "type": "pay", "to": "npc.guild_clerk", "amount_cp": 20, "for": "registration", "quote": "pay the 2 Silver"}, {"seq": 2, "type": "board.read", "rank": "Novice", "quote": "look at the Novice Quest Board"}],
+  "turn_in_outside": [{"seq": 1, "type": "quest.turn_in", "quest": "quest.herb_run_marshmint", "quote": "i turn the quest in"}],
+  "reply18_not_arrived": {"expected": {"2": {"arrived": false, "at": null}}, "deltas": [{"seq": 1, "type": "time", "minutes": 60}]},
+  "reply18_missing_expected": {"expected": {}, "deltas": [{"seq": 1, "type": "time", "minutes": 95}, {"seq": 2, "type": "arrive", "at": "loc.redmarch.guild_hall"}]}
+ }
+}

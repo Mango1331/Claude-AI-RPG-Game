@@ -1,1 +1,6 @@
 narrator_ab_out/
+# Runtime V4, P0 spikes: local results (docs/P0_SPIKES.md) and never a key file
+p0_out/
+.env
+*.env
+.env.*

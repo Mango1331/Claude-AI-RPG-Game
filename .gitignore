@@ -1,0 +1,5 @@
+# Runtime V4, P0 spikes: never commit a key file or local results (avereth-engine/docs/P0_SPIKES.md)
+.env
+*.env
+.env.*
+p0_out/

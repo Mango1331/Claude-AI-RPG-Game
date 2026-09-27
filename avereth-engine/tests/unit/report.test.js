@@ -321,3 +321,72 @@ test('Alaric\'s name fact stays the player\'s: his full name keeps it, another n
     assert.equal(truth(g.state, 'pc', 'alias')[0]?.o, 'John Smith');
     assert.equal(truth(g.state, 'pc', 'name')[0].id, PC_NAME_FACT);
 });
+
+test('the city reached from the start: by the player\'s decision he left the verge for the city; anywhere else the city named again says nothing (live run 27.09. 02:30)', () => {
+    const g = ready(); // at the public roadside verge outside Tidecross
+    g.reply({ new: [{ ref: 'carter', kind: 'npc', desc: ['carter'], band: 'SHORT' }] });
+    // the city named without anyone going anywhere changes nothing
+    g.input('I wait by the road.');
+    assert.deepEqual(g.reply({ location: 'Tidecross, Solmere' }).accepted, []);
+    assert.equal(g.state.scene.place, 'public roadside verge outside Tidecross');
+    // he goes into the city and the Guild; the report names the city and no spot: the spot is asked for (host.js)
+    g.input('*I walk into the city and go to the adventurers guild*');
+    const r = g.reply({ location: 'Tidecross, Solmere', new: [{ ref: 'marta', kind: 'npc', name: 'Marta', desc: ['guild receptionist'] }] });
+    assert.deepEqual(r.accepted.slice(0, 2), ['place: Tidecross', 'new npc Marta (npc.marta)']);
+    assert.ok(r.accepted.includes('npc.carter stays behind'));
+    assert.deepEqual(r.unplaced, { city: 'Tidecross' });
+    assert.deepEqual([g.state.scene.place, g.state.scene.present], ['Tidecross', ['pc', 'npc.marta']]);
+    assert.match(g.context().text, /\| Tidecross, Solmere — Tidecross \| mode: story/);
+    // in the Guild hall, the city named again with no spot is no move: "I walk over to the quest board" keeps the hall
+    g.input('Hello, I am here to register.');
+    g.reply({ place: "Adventurers' Guild hall" });
+    g.input('*I walk over to the quest board*');
+    const e = g.reply({ location: 'Tidecross' });
+    assert.deepEqual([e.accepted, e.unplaced], [[], null]);
+    assert.deepEqual([g.state.scene.place, g.state.scene.present], ["Adventurers' Guild hall", ['pc', 'npc.marta']]);
+});
+
+test('a place that is only the city names no spot: the spot a report names is where he is, or after a move a new one that the others do not follow into', () => {
+    const inCity = () => {
+        const g = ready();
+        g.input('*I walk into the city*');
+        g.reply({ location: 'Tidecross', new: [{ ref: 'marta', kind: 'npc', name: 'Marta', desc: ['guild receptionist'] }] });
+        return g;
+    };
+    const g = inCity();
+    g.input('Hello, I am here to register.');
+    assert.deepEqual(g.reply({ place: "Adventurers' Guild hall, Tidecross" }).rejected, []);
+    assert.deepEqual([g.state.scene.place, g.state.scene.present], ["Adventurers' Guild hall, Tidecross", ['pc', 'npc.marta']]);
+    const h = inCity();
+    h.input('*I walk to the Blue Ox Tavern*');
+    const r = h.reply({ place: 'Blue Ox Tavern cellar (Tidecross, Copperlane)', new: [{ ref: 'bren', kind: 'npc', name: 'Bren', desc: ['cellarman'] }] });
+    assert.ok(r.accepted.includes('npc.marta stays behind'));
+    assert.deepEqual(h.state.scene.present, ['pc', 'npc.bren']);
+});
+
+test('a quest rank given as a number is the Quest Rank of the quest\'s level; the quest is kept and taken later offered → active (live run 27.09. 02:30)', () => {
+    const g = ready();
+    const r = g.reply({ quests: [
+        { title: 'Rats — Cellar of the Blue Ox Tavern', status: 'offered', giver: 'Blue Ox Tavern', reward: '4 silver and a hot meal', level: 1, type: 'minor', rank: 1 },
+        { title: 'Wormhole Delve', status: 'offered', level: 2, type: 'standard', rank: '1' },
+        { title: 'Border Patrol', status: 'offered', level: 17, type: 'standard', rank: 2 },
+    ] });
+    assert.deepEqual(r.rejected, []);
+    assert.deepEqual(Object.values(g.state.quests).map((q) => [q.title, q.rank]), [['Rats — Cellar of the Blue Ox Tavern', 'Novice'], ['Wormhole Delve', 'Novice'], ['Border Patrol', 'Proven']]);
+    assert.ok(r.accepted.includes('quest Border Patrol: offered (rank 2: Proven, by its level)'));
+    // a rank that is neither a rank name nor a number is still refused
+    assert.match(reasons(g.reply({ quests: [{ title: 'Odd Job', status: 'offered', level: 2, type: 'minor', rank: 'Copper' }] })), /is not a Guild Quest Rank/);
+    g.input('*I take the Rats quest and go to the front desk*');
+    g.reply({ quests: [{ title: 'Rats — Cellar of the Blue Ox Tavern', status: 'active', rank: 'Novice', level: 1, type: 'minor' }] });
+    const q = g.state.quests['quest.rats_cellar_of_the_blue_ox_tavern'];
+    assert.deepEqual([q.status, q.history.map((h) => h.status), q.reward], ['active', ['offered', 'active'], '4 silver and a hot meal']);
+});
+
+test('a creature the report could not create names nothing: a fact about it keeps its words (live run 27.09. 02:30: mon.cellar_gnawer_pups)', () => {
+    const g = ready();
+    const r = g.reply({ new: [{ ref: 'pups', kind: 'creature', name: 'Cellar Gnawer pups', species: 'Cellar Gnawer', desc: ['blind nestlings, pink-bellied, fist-sized'] }],
+        facts: [{ s: 'Cellar Gnawer pups', p: 'alive in nest at end of', o: 'right-hand passage' }] });
+    assert.match(reasons(r), /^creature needs a species that maps to an F1 body-plan anchor/);
+    assert.ok(r.accepted.includes('fact Cellar Gnawer pups alive_in_nest_at_end_of right-hand passage'));
+    assert.deepEqual(Object.values(g.state.facts).filter((f) => f.s.startsWith('mon.')), []);
+});

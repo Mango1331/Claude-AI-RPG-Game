@@ -43,7 +43,7 @@ export function turnPanel(state, content, narratorCheck = null, reply = null) {
         if (reply.recovery === 'pending') lines.push(sys(`NO FACT REPORT${why}: asking for it separately, the HUD follows in a moment.`));
         else if (reply.recovery?.late) lines.push(sys(`NO FACT REPORT${why}, and the separate request came too late${secs}: the next turn had started without it. Nothing this reply established was recorded; the next report may add it.`));
         else lines.push(sys(`NO FACT REPORT${why}${reply.recovery?.failed ? `, and the separate request brought none${secs}` : ''}: nothing this reply established was recorded, the HUD may lag behind the story. Swipe to retry, or go on: the next report may add it.`));
-    } else if (reply?.recovery?.from && reply.recovery.from !== 'attackers') {
+    } else if (reply?.recovery?.from && reply.recovery.from !== 'attackers' && reply.recovery.from !== 'place') {
         lines.push(sys(`REPORT RECOVERED: the reply had no fact report, a separate request supplied it${secs}.`));
     }
     // attackers the report committed without identifying them (delta.js: "rat pack — …"): never one silent combatant
@@ -53,6 +53,12 @@ export function turnPanel(state, content, narratorCheck = null, reply = null) {
         if (reply.recovery === 'pending') lines.push(sys(`ATTACKERS NOT IDENTIFIED YET — ${who}: asking for them separately; the fight and its target list follow in a moment.`));
         else lines.push(sys(`ATTACKERS NOT IDENTIFIED — ${who}${reply.recovery?.from === 'attackers' ? `, and the separate request named none${reply.recovery.late ? ' in time' : ''}${secs}` : ''}: they are not in the fight. The next report may introduce them.`));
     } else if (reply?.recovery?.from === 'attackers') lines.push(sys(`ATTACKERS IDENTIFIED: a separate request named them${secs}.`));
+    // the city reached from the start without a spot in it (delta.js): where the reply ends is asked for separately
+    if (reply?.unplaced) {
+        const city = String(reply.unplaced.city).replace(/[<>]/g, '');
+        if (reply.recovery === 'pending') lines.push(sys(`PLACE NOT REPORTED YET — the report named ${city}, not the spot Alaric is at: asking for it separately; the HUD follows in a moment.`));
+        else lines.push(sys(`PLACE NOT REPORTED — the report named ${city}, not the spot${reply.recovery?.from === 'place' ? `, and the separate request named none${reply.recovery.late ? ' in time' : ''}${secs}` : ''}: Alaric's place is ${city}, and everyone the reply met is listed with him. The next report may name the spot.`));
+    } else if (reply?.recovery?.from === 'place') lines.push(sys(`PLACE REPORTED: ${String(reply.state?.scene.place || '').replace(/[<>]/g, '')}, named by a separate request${secs}.`));
     return lines.join('\n');
 }
 

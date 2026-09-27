@@ -1,10 +1,11 @@
 // Live SillyTavern smoke, step 2 (optional, docs/RUNTIME_V3.md): a real SillyTavern (tested with 1.19.0) with this
 // extension and a scripted, streaming mock narrator (OpenAI-compatible, port 5001). Plays a Warrior's creation (answered by
-// System panels, including the Pre-Test-5 run's invented Skill pick and a story message sent too early), an incidental NPC,
-// a recurring NPC, the quest board, registration and coin, an ambush fight, the report back, Kest again after his
-// exchange has left the history window, travel to another realm, and two replies without a fact report (the separate
-// report request: once answered, once not); it checks the Runtime V3 goals in the real host: prompt assembly, history
-// window, NPC record, Lore Bridge, streaming, display, HUD, report requests. It judges no prose (scripted mock).
+// System panels, including the Pre-Test-5 run's invented Skill pick and a story message sent too early), an incidental NPC
+// at the city gate (the report names only the city: the place request), a recurring NPC, the quest board, registration
+// and coin, an ambush fight, the report back, Kest again after his exchange has left the history window, travel to
+// another realm, and two replies without a fact report (the separate report request: once answered, once not); it checks
+// the Runtime V3 goals in the real host: prompt assembly, history window, NPC record, Lore Bridge, streaming, display, HUD,
+// report requests. It judges no prose (scripted mock).
 // Usage: AVERETH_ST_DIR=/path/to/SillyTavern node tools/st_live/run.mjs   (after setup.mjs; Playwright + Chromium)
 // AVERETH_ST_PRESET="Avereth Narrator" plays the same run with that Chat Completion preset instead of Default, as a
 // player selects it (its own streaming setting included), and checks its payload (docs/NARRATOR_AB.md).
@@ -37,7 +38,9 @@ const MEGUMIN_BLOCKS = '\n\n<Blocks>\n<World_State>\n**Time:** Day 9 | **Loc:** 
 const SCRIPT = [
     // a trap: creation must never reach the narrator (the Pre-Test-5 narrator answered "Warrior" with an invented pool)
     ['Warrior', 'BASE CLASS: WARRIOR — CONFIRMED. Choose 2: Cleave, Iron Guard, War Step, Shield Bash, Battle Cry.'],
-    ['city gate', 'The south gate of Tidecross stands open to the morning carts. A gate guard with a bored face and a boar-spear waves the traffic through, then looks you over once.\n\n"Pass\'s free on foot," he says, already watching the next cart.\n<avereth>{"time":20,"place":"Tidecross south gate","new":[{"ref":"gate guard","kind":"npc","desc":["gate guard","bored"],"band":"SHORT"}],"aware":[{"who":"gate guard","level":"aware"}]}</avereth>' + MEGUMIN_BLOCKS],
+    // from the verge the campaign begins at, the report names the city and no spot (live run 27.09. 02:30): the engine
+    // asks where the reply ends (PLACES)
+    ['city gate', 'The south gate of Tidecross stands open to the morning carts. A gate guard with a bored face and a boar-spear waves the traffic through, then looks you over once.\n\n"Pass\'s free on foot," he says, already watching the next cart.\n<avereth>{"time":20,"location":"Tidecross","new":[{"ref":"gate guard","kind":"npc","desc":["gate guard","bored"],"band":"SHORT"}],"aware":[{"who":"gate guard","level":"aware"}]}</avereth>' + MEGUMIN_BLOCKS],
     ['rats are done', '"Heard." Kest glances at the ear pail, then back at you. "Start there. Keep starting there."\n<avereth>{"time":2,"attitude":[{"who":"Kest","delta":10,"why":"the Novice took the rat job first, as told"}]}</avereth>'],
     ['long road east', 'Three days of road dust later, a walled city of black stone rises over the river crossing. The guards at the east gate wave carts through without a glance.\n<avereth>{"time":4320,"location":"Ashbridge","place":"east gate"}</avereth>'],
     // no fact report (Test 5 runs 1 and 2: 5 of 15 replies had one): the engine asks for it separately (REPORTS)
@@ -61,6 +64,9 @@ const REPORTS = [
     ['grilled eel', 'The eel is good, hot and salty.'], // no report in the answer: the reply keeps NO FACT REPORT
 ];
 const isReportRequest = (msgs) => String(msgs[0]?.content || '').startsWith('[AVERETH ENGINE — FACT REPORT REQUEST]');
+// answers to the engine's place requests: where the reply ends, and who of the people it met is not there
+const PLACES = [['city gate', '<avereth>{"place":"Tidecross south gate","leave":[]}</avereth>']];
+const isPlaceRequest = (msgs) => String(msgs[0]?.content || '').startsWith('[AVERETH ENGINE — PLACE REQUEST]');
 
 const mock = http.createServer(async (req, res) => {
     if (req.url.endsWith('/models')) { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ object: 'list', data: [{ id: 'mock-narrator', object: 'model' }] })); return; }
@@ -69,7 +75,8 @@ const mock = http.createServer(async (req, res) => {
     const j = JSON.parse(body || '{}');
     const msgs = j.messages || [];
     const lastUser = [...msgs].reverse().find((m) => m.role === 'user')?.content || '';
-    const text = isReportRequest(msgs) ? (REPORTS.find(([k]) => String(lastUser).includes(k)) || [null, '{}'])[1] : replyFor(String(lastUser));
+    const answers = isReportRequest(msgs) ? REPORTS : isPlaceRequest(msgs) ? PLACES : null;
+    const text = answers ? (answers.find(([k]) => String(lastUser).includes(k)) || [null, '{}'])[1] : replyFor(String(lastUser));
     fs.appendFileSync(LOG, `${JSON.stringify({ stream: !!j.stream, params: Object.fromEntries(Object.entries(j).filter(([k]) => k !== 'messages')), messages: msgs, lastUser, reply: text })}\n`);
     const promptChars = msgs.reduce((a, m) => a + String(m.content).length, 0);
     if (j.stream) {
@@ -266,6 +273,12 @@ const slashShown = T('Heavy Slash Wolf A').shown || '';
 checks.npcTurnsBeforeAlaric = /COMBAT START — Wolf A attacks Alaric\n[^\n]*\n— Round 1 —\nWolf A[^\n]*→ Alaric/.test(wolfShown) && /Next: Alaric's Turn \(Round 1\)/.test(wolfShown)
     && /Combat starts \([^\n]*\n- Wolf A[^\n]*\n- Alaric: Heavy Slash -> Wolf A/.test(engineOf(reqFor('Heavy Slash Wolf A')))
     && /^— Round 1 —\nAlaric: Heavy Slash → Wolf A/.test(slashShown);
+// the city reached from the verge without a spot (live run 27.09. 02:30): the place request names it, the HUD follows
+const placeReqs = requests.filter((r) => isPlaceRequest(r.messages));
+checks.placeRequested = placeReqs.length === 1 && /NARRATOR'S REPLY:\nThe south gate of Tidecross/.test(String(placeReqs[0].lastUser))
+    && /Its report named the city reached \("Tidecross"\) but no spot in it, and introduced "gate guard"/.test(String(placeReqs[0].lastUser))
+    && /PLACE REPORTED: Tidecross south gate, named by a separate request \(\d+\.\d s\)\./.test(T('city gate').shown || '')
+    && /Location: Tidecross, \w+ — Tidecross south gate/.test(T('city gate').hudText || '') && /Present: [^\n]*gate guard/.test(T('city gate').hudText || '');
 checks.reportRequestFailed = /NO FACT REPORT, and the separate request brought none \(\d+\.\d s\): nothing this reply established was recorded/.test(T('grilled eel').shown || '');
 checks.warriorHud = /HP 85\/85 \(unhurt\)/.test(T('city gate').hudText || '') && /Starter Longsword · Starter Heavy Armor/.test(T('city gate').hudText || '')
     && /ATK 6 · MATK 0 · DEF 7 · MDEF 3/.test(T('city gate').hudText || '');
@@ -287,7 +300,7 @@ checks.loreBridgeTravel = (lookReq?.messages || []).some((m) => /DUSKREACH \[CAN
 // contract last, the card's contract and the lore in between, no Megumin text; the Test 5 parameters without streaming;
 // the separate report request carries neither of its texts
 if (PRESET !== 'Default') {
-    const story = requests.filter((r) => !isReportRequest(r.messages));
+    const story = requests.filter((r) => !isReportRequest(r.messages) && !isPlaceRequest(r.messages));
     const megumin = /<character_sheet>|<user_persona>|<history>|## your thinking steps:|never stop or refuse|\[\[/;
     // exactly the parameters of the Test 5 requests (docs/TESTRUN_V5_2.md), the model aside
     const expected = { model: 'mock-narrator', temperature: 0.9, max_tokens: 4096, stream: false, presence_penalty: 0, frequency_penalty: 0, top_p: 0.95, clear_thinking: true, reasoning_effort: 'low' };
@@ -300,7 +313,7 @@ if (PRESET !== 'Default') {
             && !m.some((x) => megumin.test(String(x.content)));
     });
     checks.presetParams = story.every((r) => JSON.stringify(r.params) === JSON.stringify(expected));
-    checks.reportRequestWithoutPreset = reportReqs.length > 0 && reportReqs.every((r) => !r.messages.some((x) => x.content === presetText('main') || x.content === presetText('jailbreak')));
+    checks.reportRequestWithoutPreset = reportReqs.length > 0 && [...reportReqs, ...placeReqs].every((r) => !r.messages.some((x) => x.content === presetText('main') || x.content === presetText('jailbreak')));
     out.preset = { name: PRESET, params: story[0]?.params, firstRequest: story[0]?.messages.map((m) => `${m.role} (${String(m.content).length}): ${String(m.content).slice(0, 70).replace(/\n/g, ' ⏎ ')}`), reportRequest: reportReqs[0]?.messages.map((m) => `${m.role} (${String(m.content).length}): ${String(m.content).slice(0, 70).replace(/\n/g, ' ⏎ ')}`) };
     fs.writeFileSync(path.join(HERE, 'preset_first_request.json'), JSON.stringify({ params: story[0]?.params, messages: story[0]?.messages }, null, 1));
 }

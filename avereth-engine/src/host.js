@@ -161,6 +161,11 @@ export const REPORT_REQUEST_HEAD = "[AVERETH ENGINE — FACT REPORT REQUEST] The
 // only the attackers the reply has established, one "new" entry each, their refs in "combat"; no story.
 export const ATTACKERS_REQUEST_HEAD = "[AVERETH ENGINE — COMBAT ATTACKERS REQUEST] The narrator's reply below established attackers, but its fact report did not identify them as individual combatants. Here you are the engine's bookkeeper, not the narrator: write no story and do not continue it. Return only one <avereth> report with two keys: \"new\", one entry for each distinct attacker the reply has already established that the game state below does not list yet (kind \"creature\" with its species, or \"npc\"; a pack or swarm is its individual animals, as many as the reply shows; band = its distance to Alaric), and \"combat\" {\"by\": [...]} naming every attacker by its ref, or by its name or label if the game state already lists it.";
 
+// Live run 27.09. 02:30: the player walked from the roadside verge outside Redmarch into the city and the Guild; the
+// reply passed the gate guard and found Marta at the Guild's desk, and its report named the city ("location") and no
+// spot. Where the reply ends and who is there is asked for the same way: only "place" and "leave"; no story.
+export const PLACE_REQUEST_HEAD = "[AVERETH ENGINE — PLACE REQUEST] The narrator's reply below took Alaric from where the game began, outside the city, into the city, and its fact report named the city but not the spot where he is when the reply ends. Here you are the engine's bookkeeper, not the narrator: write no story and do not continue it. Return only one <avereth> report with two keys: \"place\", the spot where Alaric is when the reply ends (a short name, e.g. \"Adventurers' Guild hall\"), and \"leave\", everyone the reply or the game state below has with him who is not at that spot when the reply ends (someone he passed on the way, someone who walked off), by ref; [] if everyone is.";
+
 const listOf = (x) => (x === undefined || x === null ? [] : Array.isArray(x) ? x : [x]);
 const commitmentsOf = (x) => listOf(x).flatMap((cb) => (typeof cb === 'string' ? [{ by: cb }] : cb && Array.isArray(cb.by) ? cb.by.map((by) => ({ ...cb, by })) : cb ? [cb] : []));
 
@@ -177,6 +182,11 @@ function withAttackers(report, attackers, answer) {
     };
 }
 
+/** The reply's own report with the spot the request named: its place, and who is not there with him. */
+function withPlace(report, answer) {
+    return { ...report, place: answer.place, leave: [...listOf(report.leave), ...listOf(answer.leave)] };
+}
+
 /**
  * The separate request for the missing report of reply `id`: the engine block the narrator had for this turn (without
  * lore), the player's message and the reply as the player sees it. Null when there is nothing to ask: the reply has a
@@ -187,14 +197,22 @@ function withAttackers(report, attackers, answer) {
 export function reportRequest(chat, id, content, { settings = {} } = {}) {
     const msg = chat[id];
     const r = rec(msg);
-    if (!msg || msg.is_user || msg.is_system || !r || r.system_answer || !(r.report_error || r.attackers?.length) || r.text_hash !== hash32(msg.mes)) return null;
+    if (!msg || msg.is_user || msg.is_system || !r || r.system_answer || !(r.report_error || r.attackers?.length || r.unplaced) || r.text_hash !== hash32(msg.mes)) return null;
     const u = lastUserIndex(chat, id);
     if (u < 0 || laterTurns(chat, id)) return null;
     const { state, context } = turnBlock(chat, u, content, { ...settings, engineLore: false });
-    if (!r.report_error) {
+    if (!r.report_error && r.attackers?.length) {
         return {
             systemPrompt: `${ATTACKERS_REQUEST_HEAD}\n\n${context.text}`,
             prompt: `PLAYER'S MESSAGE:\n${chat[u].mes}\n\nNARRATOR'S REPLY:\n${msg.mes}\n\nIts "combat" named: ${r.attackers.map((a) => `"${a.by}"${a.group ? ' (a group the game state lists as one creature: its animals are the attackers, each a "new" entry)' : ''}`).join(', ')}. Write the attackers now: exactly one <avereth>{"new":[…],"combat":{"by":[…]}}</avereth>, nothing else. Do not continue the story.`,
+            hash: r.text_hash,
+        };
+    }
+    if (!r.report_error) {
+        const met = listOf(r.unplaced_report?.new).filter((n) => n && n.ref).map((n) => `"${n.ref}"${n.name && normText(n.name) !== normText(n.ref) ? ` (${n.name})` : ''}`);
+        return {
+            systemPrompt: `${PLACE_REQUEST_HEAD}\n\n${context.text}`,
+            prompt: `PLAYER'S MESSAGE:\n${chat[u].mes}\n\nNARRATOR'S REPLY:\n${msg.mes}\n\nIts report named the city reached ("${r.unplaced.city}") but no spot in it${met.length ? `, and introduced ${met.join(', ')}` : ''}. Write the place now: exactly one <avereth>{"place":"…","leave":[…]}</avereth>, nothing else. Do not continue the story.`,
             hash: r.text_hash,
         };
     }
@@ -231,7 +249,8 @@ export function applyReportAnswer(chat, id, content, answer, { hash, ms = null, 
     const msg = chat[id];
     const r = rec(msg);
     const attackers = !r?.report_error && r?.attackers?.length ? r.attackers : null; // the reply's report stands, its attackers were asked for
-    if (!msg || !r || !(r.report_error || attackers) || r.text_hash !== hash || hash32(msg.mes) !== hash) return { changed: false, error: 'the reply changed' };
+    const unplaced = !r?.report_error && !attackers && r?.unplaced ? r.unplaced : null; // the reply's report stands, its spot was asked for
+    if (!msg || !r || !(r.report_error || attackers || unplaced) || r.text_hash !== hash || hash32(msg.mes) !== hash) return { changed: false, error: 'the reply changed' };
     // too late (the next turn was resolved without it): the facts stay as they were, the notice above the reply says so
     const late = laterTurns(chat, id);
     const got = late ? { report: null, error: 'too late: a later turn was resolved without it' } : answer == null ? { report: null, error: 'no answer' } : reportFromAnswer(answer);
@@ -239,8 +258,11 @@ export function applyReportAnswer(chat, id, content, answer, { hash, ms = null, 
     // the request records what the reply established; an open story thread is the narrator's to set (live run 24.09.
     // 23:23: the request made the clerk's pending questions a deadline thread "registration … fee due" that nobody
     // closed, and seven turns after the registration the clerk asked for the paid fee again)
-    // for attackers, the reply's own report stays and only its unidentified attackers are replaced by the answer's
+    // for attackers, the reply's own report stays and only its unidentified attackers are replaced by the answer's; for
+    // the spot, the reply's own report stays and gets the answer's place and who is not there (leave)
+    const spot = unplaced && typeof got.report?.place === 'string' && got.report.place.trim() ? got.report : null;
     const report = attackers ? (got.report ? withAttackers(r.attackers_report || {}, attackers, got.report) : r.attackers_report || null)
+        : unplaced ? (spot ? withPlace(r.unplaced_report || {}, spot) : r.unplaced_report || null)
         : got.report ? { ...got.report, threads: undefined } : null;
     let result = narratorReply(state, content, report ? `${msg.mes}\n<avereth>${JSON.stringify(report)}</avereth>` : msg.mes, { msg: id, stripTrackers });
     // an answer that still names attackers the game cannot tell apart (a pack again) is not used at all: the reply keeps
@@ -250,9 +272,9 @@ export function applyReportAnswer(chat, id, content, answer, { hash, ms = null, 
     // the visible text is already clean: the note about tracker blocks the reply had written comes from its first pass
     const trackerNote = (r.corrections || []).find((c) => c.startsWith('Your last reply wrote tracker blocks'));
     if (trackerNote && !result.corrections.includes(trackerNote)) result.corrections.unshift(trackerNote);
-    const from = r.report_error || 'attackers';
-    // an answer that still names no individual attackers brought nothing either
-    const failed = !got.report ? got.error : unusable ? 'the answer named no attackers the game can tell apart' : null;
+    const from = r.report_error || (attackers ? 'attackers' : 'place');
+    // an answer that still names no individual attackers, or no spot, brought nothing either
+    const failed = !got.report ? got.error : unusable ? 'the answer named no attackers the game can tell apart' : unplaced && !spot ? 'the answer named no place' : null;
     const recovery = !failed ? { from, ms } : { from, failed, ...(late ? { late: true } : {}), ms };
     const events = late ? r.events : [...result.events, { t: 'report.requested', d: { ok: !failed, error: from, ...(failed ? { failed } : {}), ms } }];
     const panel = turnPanel(state, content, result.state.last?.check, { ...result, recovery });
@@ -261,7 +283,7 @@ export function applyReportAnswer(chat, id, content, answer, { hash, ms = null, 
     setRec(msg, {
         v: RECORD_VERSION, events, text_hash: hash32(msg.mes), corrections: late ? r.corrections : result.corrections, accepted: late ? r.accepted : result.accepted,
         rejected: late ? r.rejected : result.rejected, report_error: result.report_error, attackers: (late ? r.attackers : result.attackers) || undefined,
-        recovery, panel: panel || undefined, hud: view || undefined,
+        unplaced: (late ? r.unplaced : result.unplaced) || undefined, recovery, panel: panel || undefined, hud: view || undefined,
     });
     return { changed: true, applied: !failed, error: failed || undefined, result };
 }
@@ -293,9 +315,10 @@ export function processReply(chat, id, content, { seed, swaps = [], hud = 'close
     const { state } = foldChat(chat, id);
     const result = narratorReply(state, content, msg.mes, { msg: id, stripTrackers });
     msg.mes = swapWords(result.clean, swaps);
-    // a missing report, or attackers the report did not identify (delta.js): asked for separately while the player reads
-    const pending = recover && (!!result.report_error || !!result.attackers) && !laterTurns(chat, id)
-        && (!!result.attackers || reportKeys(state, content, { outcome: state.last.outcome }).length > 0);
+    // a missing report, attackers the report did not identify, or the city reached from the start without a spot in it
+    // (delta.js): asked for separately while the player reads
+    const pending = recover && (!!result.report_error || !!result.attackers || !!result.unplaced) && !laterTurns(chat, id)
+        && (!!result.attackers || !!result.unplaced || reportKeys(state, content, { outcome: state.last.outcome }).length > 0);
     const panel = turnPanel(state, content, result.state.last?.check, { ...result, recovery: pending ? 'pending' : null });
     const view = renderHud(result.state, content, hud);
     showPanel(msg, panel, view);
@@ -303,6 +326,7 @@ export function processReply(chat, id, content, { seed, swaps = [], hud = 'close
         v: RECORD_VERSION, events: result.events, text_hash: hash32(msg.mes), corrections: result.corrections,
         accepted: result.accepted, rejected: result.rejected, report_error: result.report_error, recovery: pending ? 'pending' : undefined,
         attackers: result.attackers || undefined, attackers_report: result.attackers ? result.report : undefined,
+        unplaced: result.unplaced || undefined, unplaced_report: result.unplaced ? result.report : undefined,
         panel: panel || undefined, hud: view || undefined,
     });
     return { changed: true, result, recover: pending };

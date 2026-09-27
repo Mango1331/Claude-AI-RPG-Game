@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../helpers.js';
-import { prepareGeneration, processReply, foldChat, reportRequest, reportFromAnswer, applyReportAnswer } from '../../src/host.js';
+import { prepareGeneration, processReply, foldChat, reportRequest, reportFromAnswer, applyReportAnswer, PLACE_REQUEST_HEAD } from '../../src/host.js';
 
 const content = await loadContent();
 const ai = (mes) => ({ is_user: false, is_system: false, mes, swipe_id: 0, swipes: [mes], swipe_info: [{ extra: {} }], extra: {} });
@@ -114,4 +114,50 @@ test('no request for a reply that has its report or answers #system; no answer a
     assert.match(m.chat[m.id].extra.display_text, /NO FACT REPORT, and the separate request brought none \(60\.0 s\)/);
     assert.deepEqual(m.chat[m.id].extra.avereth.events.at(-1), { t: 'report.requested', d: { ok: false, error: 'no <avereth> report', failed: 'no answer', ms: 60000 } });
     assert.equal(m.chat[m.id].extra.avereth.recovery.failed, 'no answer', 'settled: a reload resumes only a pending request');
+});
+
+// Live run 27.09. 02:30: from the verge the player walked into the city and the Guild; the reply passed the gate guard
+// and ended at the clerk's desk, and its report named the city and no spot
+const INTO = { time: 30, location: 'Tidecross, Solmere', new: [{ ref: 'gate_guard', kind: 'npc', name: 'gate guard', desc: ['gate guard'] }, { ref: 'clerk', kind: 'npc', name: 'Serah', desc: ['guild clerk'] }], aware: [{ who: 'gate_guard', level: 'aware' }, { who: 'clerk', level: 'aware' }] };
+
+/** The reply into the city, its place request, and `answer` applied to it. */
+function intoTheCity(answer) {
+    const chat = [ai('Arrival.\n`Location: Public roadside verge outside Tidecross, Solmere`')];
+    processReply(chat, 0, content, { seed: 11 });
+    for (const input of ['Warrior', 'Heavy Slash + Guard']) {
+        chat.push(user(input));
+        prepareGeneration(chat, content, { type: 'normal' });
+        chat.at(-1).is_system = true;
+    }
+    chat.push(user('*I walk into the city and go to the adventurers guild*'));
+    prepareGeneration(chat, content, { type: 'normal' });
+    chat.push(ai(`At the gate a guard waves him through. In the Guild hall the clerk looks up from her ledger.\n<avereth>${JSON.stringify(INTO)}</avereth>`));
+    const id = chat.length - 1;
+    const r = processReply(chat, id, content, { recover: true });
+    const first = { ...chat[id].extra.avereth };
+    const req = reportRequest(chat, id, content);
+    const got = applyReportAnswer(chat, id, content, answer, { hash: req.hash, ms: 5200 });
+    return { r, first, req, got, rec: chat[id].extra.avereth, state: foldChat(chat).state };
+}
+
+test('the city reached from the start without a spot: the place request; the guard passed on the way is not with him at the clerk\'s desk', () => {
+    const t = intoTheCity('<avereth>{"place":"Adventurers\' Guild hall, front desk","leave":["gate_guard"]}</avereth>');
+    // meanwhile: the city, everyone the reply met, and the reply says the spot is being asked for
+    assert.equal(t.r.recover, true);
+    assert.deepEqual([t.first.recovery, t.first.unplaced, t.first.unplaced_report], ['pending', { city: 'Tidecross' }, INTO]);
+    assert.match(t.first.panel, /^`PLACE NOT REPORTED YET — the report named Tidecross, not the spot Alaric is at: asking for it separately/);
+    assert.ok(t.req.systemPrompt.startsWith(PLACE_REQUEST_HEAD));
+    assert.match(t.req.prompt, /Its report named the city reached \("Tidecross"\) but no spot in it, and introduced "gate_guard" \(gate guard\), "clerk" \(Serah\)\. Write the place now: exactly one <avereth>\{"place":"…","leave":\[…\]\}<\/avereth>/);
+    // the answer: the Guild's front desk with the clerk; the guard is known, but not there
+    assert.deepEqual([t.state.scene.place, t.state.scene.present], ["Adventurers' Guild hall, front desk", ['pc', 'npc.serah']]);
+    assert.equal(t.state.entities['npc.gate_guard'].kind, 'npc');
+    assert.deepEqual([t.got.applied, t.rec.recovery, t.rec.unplaced], [true, { from: 'place', ms: 5200 }, undefined]);
+    assert.equal(t.rec.panel, "`PLACE REPORTED: Adventurers' Guild hall, front desk, named by a separate request (5.2 s).`");
+    // an answer without a place, or none: the city stays his place, everyone the reply met stays listed, the reply says so
+    for (const [answer, why] of [['<avereth>{"leave":["gate_guard"]}</avereth>', 'the answer named no place'], [null, 'no answer']]) {
+        const f = intoTheCity(answer);
+        assert.deepEqual([f.state.scene.place, f.state.scene.present], ['Tidecross', ['pc', 'npc.gate_guard', 'npc.serah']]);
+        assert.deepEqual(f.rec.recovery, { from: 'place', failed: why, ms: 5200 });
+        assert.match(f.rec.panel, /`PLACE NOT REPORTED — the report named Tidecross, not the spot, and the separate request named none \(5\.2 s\): Alaric's place is Tidecross/);
+    }
 });

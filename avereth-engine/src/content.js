@@ -100,3 +100,8 @@ export function locationByName(content, name) {
     for (const l of content.locations.values()) if (normText(l.name) === t) return l;
     return null;
 }
+
+/** The spot a campaign begins at, outside its city (campaign_start.json: "public roadside verge outside Redmarch"). */
+export function startPlace(content, loc) {
+    return content.start.start_scene.place.replace(/the city$/, loc.name);
+}

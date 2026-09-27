@@ -178,3 +178,28 @@ test('a target the player tells apart ("the second one") is never the sole-hosti
     assert.deepEqual([g.state.encounter.current, g.state.entities.pc.sheet.sta, g.state.entities.pc.sheet.inventory.standard_arrow], ['pc', sta, arrows]);
 });
 
+
+test('"the creature", "the beast": a word for any creature names the creatures present, never the people standing by (live run 27.09. 02:30)', () => {
+    const g = new Game(content).ranger();
+    g.input('I look around.');
+    g.reply({ new: [{ ref: 'bren', kind: 'npc', name: 'Bren', desc: ['cellarman'], band: 'ENGAGED' }, { ref: 'barkeep', kind: 'npc', name: 'Blue Ox barkeep', desc: ['barkeep'], band: 'SHORT' },
+        { ref: 'cellarbeast', kind: 'creature', name: 'Cellar Gnawer', species: 'giant rat', desc: ['oversized rat-like beast'], band: 'MEDIUM' }] });
+    for (const t of ['*i lower my sword and dash forward with a Basic Attack at the creature*', 'I shoot the beast', 'I Power Shot the animal', 'I attack the monster']) {
+        const i = parseIntent(t, g.state, content);
+        assert.deepEqual([i.kind, i.target], ['attack', 'mon.cellar_gnawer'], t);
+    }
+    // a person named is that person; a pronoun alone leaves everyone present to the player (Core #23)
+    assert.equal(parseIntent('I shoot Bren', g.state, content).target, 'npc.bren');
+    assert.deepEqual(parseIntent('I shoot at it', g.state, content).candidates, ['npc.bren', 'npc.blue_ox_barkeep', 'mon.cellar_gnawer']);
+    // two creatures: the choice is between them
+    g.reply({ new: [{ ref: 'rat', kind: 'creature', species: 'rat', desc: ['fat rat'], band: 'SHORT' }] });
+    assert.deepEqual(parseIntent('I shoot the creature', g.state, content).candidates, ['mon.cellar_gnawer', 'mon.rat']);
+    // in a fight against a man and a wolf, "the beast" is the wolf
+    const f = new Game(content);
+    f.turn('Warrior');
+    f.turn('Quick Slash + Charge');
+    f.input('I walk into the yard.');
+    f.reply({ new: [{ ref: 'thug', kind: 'npc', desc: ['thug'], band: 'SHORT' }, { ref: 'wolf', kind: 'creature', species: 'wolf', band: 'SHORT' }], combat: [{ by: 'thug' }, { by: 'wolf' }] });
+    assert.ok(f.state.encounter);
+    assert.deepEqual([parseIntent('I Quick Slash the beast', f.state, content).target, parseIntent('I Quick Slash him', f.state, content).kind], ['mon.wolf', 'ambiguous_target']);
+});

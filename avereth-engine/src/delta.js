@@ -299,15 +299,26 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         }
     } else if (report.place) {
         // a more precise name for the same spot ("Guild hall" -> "Guild hall, front desk") is no move; another spot of
-        // the same site is one and needs the player's decision (Testrun 3: queue -> gate tunnel)
+        // the same site is one and needs the player's decision (Testrun 3: queue -> gate tunnel). A place that is only
+        // the location's name knows no spot: the spot named now is where he is, or, when the player moved him, a new one
+        // (else everyone he met in the city would come along into every spot named after it)
         const [a, b] = [normText(report.place), normText(state.scene.place)];
-        const refinement = !b || a.includes(b) || b.includes(a);
+        const city = b === normText((content.locations.get(state.scene.location) || state.entities[state.scene.location])?.name);
+        const refinement = !b || a === b || (city ? !auth.move : a.includes(b) || b.includes(a));
         if (!refinement && !auth.move && !forcedBy(report.forced_by) && !state.encounter) reject({ place: report.place }, owner('moving Alaric to another spot'));
         else {
             events.push({ t: 'scene.moved', d: { place: String(report.place).slice(0, 120) } });
             accepted.push(`place: ${report.place}`);
             movedPlace = !refinement;
         }
+    } else if (loc && (auth.travel || forcedBy(report.forced_by)) && !state.encounter && normText(state.scene.place) !== normText(loc.name)) {
+        // the city reached is the one he is at, and the report names no spot (live run 27.09. 02:30: the player walked
+        // from the roadside verge outside Redmarch into the city and the Guild, the report said "location":"Redmarch,
+        // Veyrhold", and the verge stayed his place through the registration and the board): he left the spot he was at
+        // for somewhere in the city, and whoever the report does not place there stays behind
+        events.push({ t: 'scene.moved', d: { place: String(loc.name).slice(0, 120) } });
+        accepted.push(`place: ${loc.name}`);
+        movedPlace = true;
     }
     const placed = new Set(); // people this report places in the (new) scene
     // combat commitments ({by} or a list; "by" may itself be a list; a bare name is a {by}); empty entries commit nobody
@@ -349,7 +360,6 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         const desc = uniq([...(Array.isArray(n.desc) ? n.desc : []), n.ref].map((x) => String(x).toLowerCase().slice(0, 40)));
         const id = uniqueId(state, kind === 'npc' ? 'npc' : 'mon', n.name || n.ref, taken);
         const name = n.name ? String(n.name).slice(0, 60) : kind === 'npc' ? nameFromRef(n, prose) : null;
-        if (name && !joins) newRefs.set(normText(name), id);
         const entity = { id, kind, name, descriptors: desc, traits: n.traits ? String(n.traits).slice(0, 240) : '', status: 'alive', location: state.scene.location, created: at, source: src, card: {} };
         // Test 5 run: "Sergeant Hobb" and "Wick" came in "new" a reply before the story said their names (Testrun 2:
         // "Bram" was said five turns before "Fenn"); the player's views (combat target labels, HUD) show only the
@@ -366,7 +376,10 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
             const tpl = content.templates.get(n.template) || templateFor(content, [...desc, n.traits].filter(Boolean).join(' '));
             entity.template = tpl ? tpl.id : 'commoner';
         }
+        // only an entity that is created names anything (live run 27.09. 02:30: the pups were refused for their species,
+        // and a fact about "Cellar Gnawer pups" went to mon.cellar_gnawer_pups, which never existed)
         newRefs.set(normText(n.ref), id);
+        if (name && !joins) newRefs.set(normText(name), id);
         if (n.name && !joins) newRefs.set(normText(n.name), id);
         created.set(id, entity);
         if (kind === 'creature' && isGroup(content, n.name || n.ref)) groupNew.set(id, String(n.ref));
@@ -700,7 +713,12 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         const types = content.rules.xp.quest_type;
         const missing = cur ? [] : [...(Number.isInteger(level) && level > 0 ? [] : ['level']), ...(types[q.type] ? [] : ['type'])];
         if (missing.length) { reject(q, `new quest "${String(q.title).slice(0, 100)}" needs level (its hidden XP basis: the Level the task suits, a whole number from 1) and type (${Object.keys(types).join('|')}), which fix its Quest XP; missing: ${missing.join(' and ')}. Report the quest again with both`); continue; }
-        const rank = q.rank === undefined || q.rank === null || q.rank === '' ? null : QUEST_RANKS.find((x) => normText(x) === normText(q.rank));
+        // a rank given as a number is no rank name, and a Guild contract's rank is the one whose level band holds its level
+        // (live run 27.09. 02:30: the four quests of the Novice board came with "rank":1 and were all refused; the one the
+        // player took came back later as a new quest, already active)
+        const bands = content.rules.ranks.bands;
+        const numbered = /^\d+$/.test(String(q.rank ?? '').trim()) ? QUEST_RANKS[bands.findIndex((b, i) => level >= b.min && (i === bands.length - 1 || level <= b.max))] : null;
+        const rank = q.rank === undefined || q.rank === null || q.rank === '' ? null : QUEST_RANKS.find((x) => normText(x) === normText(q.rank)) || numbered;
         // checked when the quest first appears; afterwards its rank is locked like level and type, so a stray rank never
         // blocks a known quest's status change
         if (q.rank && !rank && !cur) { reject(q, `quest rank "${q.rank}" is not a Guild Quest Rank (${QUEST_RANKS.join('|')}); omit it for work outside the Guild`); continue; }
@@ -720,7 +738,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
             notes: [...(cur?.notes || []), ...(q.note ? [String(q.note).slice(0, 200)] : [])], history: [...(cur?.history || []), { ...at, status }],
         };
         events.push({ t: 'quest.set', d: { quest } });
-        accepted.push(`quest ${quest.title}: ${status}`);
+        accepted.push(`quest ${quest.title}: ${status}${numbered && !cur ? ` (rank ${q.rank}: ${numbered}, by its level)` : ''}`);
         if (status === 'completed' && cur?.status !== 'completed' && pcXp) {
             if (quest.rec_level && quest.qtype) {
                 const xp = questXp(quest.rec_level, quest.qtype, content);

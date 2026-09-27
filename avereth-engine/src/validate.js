@@ -68,10 +68,12 @@ export function validateState(state, content) {
         const pcC = enc.combatants.pc;
         if (pcC && (pcC.current.hp !== pc.sheet.hp || pcC.current.sta !== pc.sheet.sta || pcC.current.mp !== pc.sheet.mp)) p.push('PC sheet resources differ from encounter snapshot');
     }
-    // world truth: one current value per functional predicate
+    // world truth: one current value per functional predicate; a fact about an entity is about one that exists (live run
+    // 27.09. 02:30: a fact about mon.cellar_gnawer_pups, a creature the report could not create)
     const seen = new Map();
     for (const f of Object.values(state.facts)) {
         if (f.until && f.since && f.until.minute < f.since.minute) p.push(`fact ${f.id} ends before it starts`);
+        if (/^(?:npc|mon|loc)\.\w+$/.test(f.s) && !state.entities[f.s] && !content.locations.has(f.s)) p.push(`fact ${f.id} about missing entity ${f.s}`);
         if (f.until || !FUNCTIONAL.has(f.p)) continue;
         const k = `${f.s}|${f.p}`;
         if (seen.has(k)) p.push(`two current values for ${k}: ${seen.get(k)} / ${f.id}`);

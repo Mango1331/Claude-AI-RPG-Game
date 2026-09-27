@@ -1,0 +1,351 @@
+{
+ "source": "Live run 27.09.2026 02:30 (build 3.1.2; GLM-5.3-Flash, Avereth Narrator preset, lore from World Info, word swap ledger=register): the chat JSONL, the narrator replies with their reports and the report-request answers from the Chat Completion log",
+ "swaps": "ledger=register",
+ "chat": [
+  {
+   "i": 0,
+   "greeting": true,
+   "mes": "*Cool wind moves through the rough grass around Alaric Red's boots.*\r\n\r\n*The last thing that belongs to Earth is still there in memory—an old life, a world without visible mana, Classes, or this impossible second beginning. The present is different: the smell of soil and distant woodsmoke, an unfamiliar sky, and stone walls beyond the public road.*\r\n\r\n*Alaric Red is already standing on an uncultivated roadside verge outside the nearby city. Cultivated fields and fenced holdings begin farther away. No one is close enough to have witnessed the instant of arrival.*\r\n\r\n*The body is Human, healthy, and eighteen years old. Simple traveler's clothes are already being worn; a small pouch holding five silver rests at the belt. The memories are still from Earth.*\r\n\r\n*A translucent interface opens across Alaric Red's vision.*\r\n\r\n`SYSTEM INITIALIZATION COMPLETE`\r\n`Origin: Earth`\r\n`World: Avereth`\r\n`Race: Human`\r\n`Age: 18`\r\n`Level: 1 | Rank: F`\r\n\r\n`BASE STATS`\r\n`STR 5 | VIT 5 | AGI 5 | INT 5 | PER 5 | WIL 5`\r\n\r\n`Location: Public roadside verge outside Redmarch, Veyrhold`\r\n`Arrival Witnesses: NONE`\r\n`Starting Possessions: Simple Traveler's Clothes | Small Pouch | 5 Silver`\r\n`Local Common Language: Integrated`\r\n`Mandatory Quest: NONE`\r\n\r\n`CHARACTER CREATION — STEP 1/2`\r\n`Choose your Base Class:`\r\n\r\n`Warrior   — Favored Stats: STR / VIT`\r\n`Mage      — Favored Stats: INT / WIL`\r\n`Guardian  — Favored Stats: VIT / WIL`\r\n`Duelist   — Favored Stats: STR / AGI`\r\n`Ranger    — Favored Stats: AGI / PER`\r\n\r\n`Your chosen Class immediately applies +1 to both Favored Stats at Level 1.`\r\n`After choosing a Class, select exactly 2 Skills from that Class's Base Skill Pool.`\r\n\r\n`Reply with your Class choice.`\r\n\r\n*The System waits. Story time does not move during Character Creation.*\r\n",
+   "events": [
+    {
+     "t": "campaign.started",
+     "d": {
+      "seed": 2778854135,
+      "minute": 540,
+      "entities": [
+       {
+        "id": "pc",
+        "kind": "pc",
+        "name": "Alaric",
+        "race": "Human",
+        "age": 18,
+        "origin": "Earth",
+        "descriptors": [
+         "alaric",
+         "stranger",
+         "traveler"
+        ],
+        "status": "alive",
+        "location": "loc.redmarch",
+        "sheet": {
+         "level": 1,
+         "class": null,
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 5,
+          "INT": 5,
+          "PER": 5,
+          "WIL": 5
+         },
+         "skills": {},
+         "equipment": {
+          "clothing": "simple_travelers_clothes"
+         },
+         "inventory": {
+          "small_pouch": 1
+         },
+         "coin_cp": 50,
+         "xp": 0,
+         "free_points": 0,
+         "hp": 80,
+         "mp": 60,
+         "sta": 100
+        }
+       }
+      ],
+      "location": "loc.redmarch",
+      "place": "public roadside verge outside Redmarch",
+      "facts": [
+       {
+        "id": "f.pc.name",
+        "s": "pc",
+        "p": "name",
+        "o": "Alaric",
+        "visibility": "public",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.appearance",
+        "s": "pc",
+        "p": "appearance",
+        "o": "Human, about eighteen; wears simple traveler's clothes",
+        "visibility": "public",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.origin",
+        "s": "pc",
+        "p": "origin",
+        "o": "Earth (transmigrated; memories intact)",
+        "visibility": "secret",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.arrival_witnesses",
+        "s": "pc",
+        "p": "arrival_witnesses",
+        "o": "none",
+        "visibility": "secret",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       }
+      ],
+      "knowledge": [
+       {
+        "who": "pc",
+        "about": "f.pc.name",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.appearance",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.origin",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.arrival_witnesses",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       }
+      ],
+      "campaign": "avereth",
+      "content_version": "3.0.0",
+      "engine_version": "3.1.2"
+     }
+    }
+   ]
+  },
+  {
+   "i": 1,
+   "user": true,
+   "mes": "Warrior"
+  },
+  {
+   "i": 2,
+   "system": true,
+   "mes": "```\n[SYSTEM // CHARACTER CREATION — STEP 2/2]\nCLASS SELECTED: WARRIOR — favored STR +1, VIT +1 · Basic Attack granted (P1)\nSTR 6 | VIT 6 | AGI 5 | INT 5 | PER 5 | WIL 5 | Max HP 85 | Max MP 60 | Max STA 100 | Initiative 7\nChoose exactly 2 Skills from the Warrior Base Pool (for example \"Heavy Slash + Guard\"):\n- Heavy Slash [Offensive] | Cost 7 STA | Range ENGAGED | Raw = 10 + STR × 1.50 + ATK\n- Guard [Defensive] | Cost 5 STA | Effect: until the start of the Warrior's next turn, gain temporary DEF equal to: 3 + floor(VIT × 0.50). This is an explicit temporary DEF bonus and does not alter VIT.\n- Power Strike [Offensive] | Cost 12 STA | Range ENGAGED | Raw = 16 + STR × 1.875 + ATK\n- Quick Slash [Offensive] | Cost 5 STA | Range ENGAGED | Raw = 6 + STR × 0.875 + AGI × 0.625 + ATK\n- Charge [Offensive / Utility] | Cost 8 STA | Range ENGAGED after movement (EXTRA-BAND) | Raw = 8 + STR × 1.25 + AGI × 0.375 + ATK | Effect: as part of this Skill, close 1 additional Range Band before the attack. This explicit extra shift may combine with the normal one-band Turn movement. The target must be ENGAGED when the attack resolves.\n- Deflect [Defensive] | Cost 6 STA | Effect: until the start of the Warrior's next turn, incoming damage is reduced by 25%.\nStarter Gear, equipped when Step 2 is complete: Starter Longsword [F] (ATK 6), Starter Heavy Armor [F] (DEF 6, MDEF 2).\n```"
+  },
+  {
+   "i": 3,
+   "user": true,
+   "mes": "Heavy Slash + Charge"
+  },
+  {
+   "i": 4,
+   "system": true,
+   "mes": "```\n[SYSTEM // CHARACTER CREATION COMPLETE]\nSKILLS SELECTED: Heavy Slash (P1), Charge (P1)\nSTARTER GEAR EQUIPPED: Starter Longsword [F] (ATK 6), Starter Heavy Armor [F] (DEF 6, MDEF 2)\nAlaric | Human | Level 1 | XP 0/100 | Power Rank F | Class: Warrior\nHP 85/85 | MP 60/60 | STA 100/100\nSTR 6 | VIT 6 | AGI 5 | INT 5 | PER 5 | WIL 5 | Free Stat Points 0\nATK 6 | MATK 0 | DEF 7 (base 1) | MDEF 3 (base 1) | Initiative 7 (floor(1.5 × AGI))\nActive Effects: none | Domain: NOT YET UNLOCKED\nEquipment: Simple Traveler's Clothes, Starter Longsword [F] (ATK 6), Starter Heavy Armor [F] (DEF 6, MDEF 2)\nCarried: Small Pouch | Coin 5 Silver\nThe story begins with your next message: write what Alaric does.\n```"
+  },
+  {
+   "i": 5,
+   "user": true,
+   "mes": "*i walk into the city ahead of me and go to the adventurers guild and enter the building*"
+  },
+  {
+   "i": 6,
+   "reply": "The road dips and rises with cart ruts dried hard as brick, and the walls of Redmarch grow as he walks—grey stone, high enough that the walkway on top shows the heads of two guards, the squat towers spaced along it dark-slit like arrow loops. Traffic thickens near the gate: a drover with six geese in a wicker crate, a woman leading a mule heaped with bundled fleeces, two boys arguing over a handcart with one cracked wheel. Woodsmoke and dung and something frying drift out on the wind.\n\nAt the gate a guard in Veyrhold's black-and-red checks the drover with a look and waves him through. When Alaric comes up, the guard's eyes go to the longsword at his hip, then to his face, and settle there a moment longer.\n\n\"Trading or looking for work?\" the guard asks. Flat voice, bored, but the question has the rhythm of habit.\n\nWhatever Alaric's answer, the man jerks his chin toward the gate. \"In you go. Keep steel peace-bonded if you've got temper. Guild hall's up Coppergate, left side, the one with the antler over the door. Can't miss it.\"\n\nInside, the street noise changes—cloistered, echoey, loud with its own business. Stalls selling bread and bootlaces, a smith hammering somewhere out of sight, the smell of wet stone where runoff runs along a gutter. Coppergate climbs gently between timber-framed buildings leaning toward each other overhead.\n\nThe guild hall's antler is a full elk rack, iron-shod, mounted above double doors. Inside: a long hall smelling of tallow and old leather, benches scarred with knife-marks, a great board of pinned notices near the back, and a counter where a broad woman with a burn-scarred forearm is counting coins into a ledger while a lean man in a mud-caked hunting coat waits ahead of Alaric, arguing quietly about a bounty payout.\n\n\"—three days' work, Marta, and you're shorting me two silver on—\"\n\n\"I'm shorting you nothing. The bounty said intact tusks. Yours came back chipped. Two silver or nothing, Corvan, and there's a queue behind you.\"\n\nThe man mutters, snatches coins off the counter, and shoulders past Alaric toward the door. The woman at the counter finishes her ledger line, looks up, and takes Alaric in—the sword, the armor, the face—with a practiced, unhurried eye.\n\n\"New face,\" she says. \"Guild business?\"\n\n<avereth>{\"time\":40,\"location\":\"Redmarch, Veyrhold\",\"new\":[{\"ref\":\"gate_guard\",\"kind\":\"npc\",\"name\":\"gate guard\",\"desc\":[\"city gate guard\",\"Veyrhold black-and-red\"],\"traits\":\"bored, flat voice, close-cropped beard\"},{\"ref\":\"marta\",\"kind\":\"npc\",\"name\":\"Marta\",\"desc\":[\"guild receptionist\",\"broad, burn-scarred forearm\"],\"traits\":\"practiced, unhurried, no-nonsense\"},{\"ref\":\"corvan\",\"kind\":\"npc\",\"name\":\"Corvan\",\"desc\":[\"hunter\",\"mud-caked coat\"],\"traits\":\"lean, aggrieved, terse\"}],\"facts\":[{\"s\":\"Redmarch\",\"p\":\"has\",\"o\":\"city gate on western public road with peace-bonding rule\"},{\"s\":\"Marta\",\"p\":\"occupation\",\"o\":\"guild receptionist at Redmarch adventurers guild\"},{\"s\":\"Corvan\",\"p\":\"occupation\",\"o\":\"independent Monster hunter\"},{\"s\":\"Redmarch adventurers guild\",\"p\":\"pays bounties by\",\"o\":\"condition of trophies as posted\"}],\"aware\":[{\"who\":\"gate_guard\",\"level\":\"aware\"},{\"who\":\"marta\",\"level\":\"aware\"},{\"who\":\"corvan\",\"level\":\"unaware\"}]}</avereth>"
+  },
+  {
+   "i": 7,
+   "user": true,
+   "mes": "Hello im here to register *i say politely*"
+  },
+  {
+   "i": 8,
+   "reply": "\"Registration.\" Marta says the word like she's filing it before he's finished. \"Right. Corner bench, second inkwell that actually has ink. Form's the short one—name, age, home settlement if you've got one, next of kin optional. Bring it back and I'll do the rest.\"\n\nShe turns to a shelf behind her, pulls a single sheet and a stiff board to lean it on, and sets both on the counter. \"Read the back. It's the liability clause—Guild doesn't carry you out of a Dungeon, doesn't pay your funeral, doesn't avenge you. Some people sign without reading and then get loud about it later. Don't be one of them.\"\n\nBehind him, the hall goes on with its own morning. Two women at the notice board pull down a pinned sheet and argue over the reward split. A boy sweeps sand across the flagstones near the door, unhurried. Somewhere past the counter a door swings and the smell of stew comes through—a kitchen somewhere in the back.\n\nMarta leans a forearm on the counter, the burn-scar side. \"One silver for the registration. That covers your Guild badge, the notice board, and the mediation rules—means if another member robs you, you come to us instead of finding a knife. After that, you take what contracts you like. Novice work only, at your level, and there's no shame in it. Everyone in this hall started there, whatever they claim now.\"\n\nShe glances at the sword on his hip, then back to his face.\n\n\"So. Name for the register, and your silver whenever you're ready.\"",
+   "answer": "<avereth>{\"facts\":[{\"s\":\"Marta\",\"p\":\"has\",\"o\":\"burn scar on one forearm\",\"vis\":\"secret\"}]}</avereth>",
+   "ms": 4543
+  },
+  {
+   "i": 9,
+   "user": true,
+   "mes": "*i take the ink and write down Alaric Red 18 none none. I then come back and give her the form and pay the 1 silver*"
+  },
+  {
+   "i": 10,
+   "reply": "Marta takes the form, holds it at arm's length, and reads it the way she counted coins—thoroughly, without hurry. \"Alaric Red. Eighteen. No settlement, no kin.\" She dips a pen and copies the entries into a thick register with a worn leather spine, the page already crowded with other names in a dozen hands.\n\n\"One silver.\"\n\nThe coin crosses the counter. She bites it out of habit, drops it into the register drawer, and reaches under the counter for something else: a small badge of dull pewter, a stamped antler on its face, cold and lighter than it looks.\n\n\"Novice badge. Wear it or keep it on you—other members will want to see it before they trust you at their backs, and some contracts pay out only against the badge.\" She slides it across. \"Badge number goes in the ledger with your name. If you're found dead, someone reads it off you and we know who to write to. You wrote nobody, so we'd write nobody. Worth thinking about someday.\"\n\nShe closes the ledger. \"The board's that way, back wall. Novice work is on the low rows—anything without a colored ribbon is open to your rank. Red ribbon means Proven and up; don't pull those, the clerks get sour about it. Contracts pay on return, same counter as today. Anything with a Dungeon in it, you read twice and ask questions before you sign out.\"\n\nThe two women at the board have gone, leaving the pinned notices to flutter faintly in the draft from the door. The stew smell has thickened; someone behind the counter door calls out an order in a bored shout.\n\n\"That's you registered.\" Marta is already looking past him at the next arrival, a farm-handed boy hovering by the door with a dead fox over his shoulder. \"Board's back there. Next!\"\n\n<avereth>{\"time\":8,\"items\":[{\"item\":\"novice guild badge\",\"qty\":1,\"from\":\"Marta\",\"to\":\"pc\",\"why\":\"registration\"}],\"coin\":[{\"who\":\"pc\",\"cp\":-10,\"taken_by\":\"Marta\",\"why\":\"guild registration fee\"}],\"learn\":[{\"who\":\"Marta\",\"s\":\"Alaric Red\",\"p\":\"registered as\",\"o\":\"novice guild member\",\"how\":\"told\",\"from\":\"registration form\"}],\"facts\":[{\"s\":\"Alaric Red\",\"p\":\"guild_rank\",\"o\":\"Novice\"}]}</avereth>"
+  },
+  {
+   "i": 11,
+   "user": true,
+   "mes": "*i take my badge and then i walk to the Novice Board to look at the Quests*"
+  },
+  {
+   "i": 12,
+   "reply": "The notice board is a wall of overlapping paper, layered like feathers—new sheets nailed over old, corners curling, some so sun-bleached the ink has gone to ghosts. The low rows, unribboned, hold perhaps a dozen contracts. The handwriting varies with whoever posted them; the wax seals at the bottom of each vary too, some official, some just a thumbprint in candle drippings.\n\nThe nearest reads:\n\n**BOAR DAMAGE — EASTFIELDS.** *Tusker rooting up barley plots near the mill. Tracks known. Farmer will add two silver from his own purse if the beast is brought down before the next full moon.* Guild bounty: 8 silver. Trophy: intact tusks.\n\nBelow it, in a clerk's neat hand:\n\n**HERB GATHERING — GREYFEN.** *Fenroot and bitterleaf wanted, dried or fresh. Gathered from the fen edge only; the deep fen is posted off-limits by order of the Reeve.* Pays by weight, up to 6 silver.\n\nA third, written in a lurching script with two blots:\n\n**RATS — CELLAR OF THE BLUE OX TAVERN.** *Something's been at the grain cellar. Big, by the droppings. Get it out.* 4 silver and a hot meal. *(The \"hot meal\" is underlined twice.)*\n\nOthers further along: a lost goat, a caravan guard run to Ironward that wants two people, a notice about a Dungeon out past the mill roads—*Wormhole Delve, status: mapped, first three chambers open to Novice parties of three or more*—with a red ribbon tied at its corner anyway, and someone's charcoal scrawl beneath it: *asking for trouble, novices*.\n\nA narrow man with ink-stained fingers and a clerk's cap is refilling the board's candle-lamp behind the notices, and he glances past the pinned sheets at the pewter badge in Alaric's hand.\n\n\"New blood,\" he says, without particular interest. \"Take a sheet you mean to do, mind. Some of them pull the contract off the board when they sign it out. If you're only browsing, don't pull the nails.\"\n\n<avereth>{\"time\":8,\"position\":[{\"who\":\"clerk\",\"band\":\"SHORT\"}],\"new\":[{\"ref\":\"clerk\",\"kind\":\"npc\",\"name\":\"Clerk\",\"desc\":[\"guild clerk\",\"narrow man\",\"ink-stained fingers\",\"clerk's cap\"],\"band\":\"SHORT\"}],\"quests\":[{\"title\":\"Boar Damage — Eastfields\",\"status\":\"offered\",\"giver\":\"Eastfields farmer\",\"note\":\"Tusker rooting barley near the mill; intact tusks required\",\"reward\":\"8 silver (+2 silver farmer's purse before full moon)\",\"level\":1,\"type\":\"minor\",\"rank\":1},{\"title\":\"Herb Gathering — Greyfen\",\"status\":\"offered\",\"giver\":\"Guild\",\"note\":\"Fenroot and bitterleaf, fen edge only; deep fen off-limits by Reeve's order\",\"reward\":\"up to 6 silver, by weight\",\"level\":1,\"type\":\"minor\",\"rank\":1},{\"title\":\"Rats — Cellar of the Blue Ox Tavern\",\"status\":\"offered\",\"giver\":\"Blue Ox Tavern\",\"note\":\"Something big at the grain cellar; get it out\",\"reward\":\"4 silver and a hot meal\",\"level\":1,\"type\":\"minor\",\"rank\":1},{\"title\":\"Wormhole Delve — first three chambers\",\"status\":\"offered\",\"giver\":\"Guild\",\"note\":\"Mapped Dungeon past the mill roads; Novice parties of three or more\",\"reward\":\"posted on contract\",\"level\":2,\"type\":\"standard\",\"rank\":1}]}</avereth>"
+  },
+  {
+   "i": 13,
+   "user": true,
+   "mes": "*i take the Rats Quest and go to the front desk to register it. I then walk to the Blue Ox Tavern*"
+  },
+  {
+   "i": 14,
+   "reply": "Marta takes the rat sheet, checks the wax blot at the bottom against a ledger, and writes his badge number beside the listing. \"Blue Ox. Down Copperlane, third turning past the well—follow the smell of frying fish and you'll see the sign. Ask for Bren the cellarman; it's his grain.\" She copies the contract, stamps it, and hands him his half of the paper. \"Don't lose that. It's your proof of taking.\"\n\nThe walk is ten minutes through waking streets: a baker raking coals, two soldiers in Veyrhold grey laughing about something at a corner, a dog asleep in a doorway and uninterested in the world. The Blue Ox announces itself with a painted ox, blue-ish, over a wide door and a cellar hatch open in the cobbles beside it, breathing out a smell of damp stone and old grain.\n\nInside, the morning crowd is three carts' worth of drovers and a woman mending a net by the window. A heavy man behind the barrels—apron, forearms like hams—looks up.\n\n\"Guild?\" He squints at the paper. \"Rats, is it. Ha. Talk to Bren, down the hatch.\" He jerks a thumb. \"Mind the third step. It's a liar.\"\n\nThe cellar stairs drop into cold dimness. Below, a stooped man with a lantern and a grain scoop is standing very still, staring at a heap of sacked barley against the far wall—where a corner of one sack has been torn open, and the spill beneath it is scattered in a way that suggests something dragged, not gnawed.\n\n\"Bout time,\" Bren says without turning. \"It's not rats. Rats don't pull a sack off a stack.\"\n\n<avereth>{\"time\":25,\"place\":\"Blue Ox Tavern cellar (Redmarch, Copperlane)\",\"quests\":[{\"title\":\"Rats — Cellar of the Blue Ox Tavern\",\"status\":\"active\",\"giver\":\"Blue Ox Tavern\",\"note\":\"Ask for Bren the cellarman; something bigger than rats at the grain\",\"reward\":\"4 silver and a hot meal\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"}],\"new\":[{\"ref\":\"bren\",\"kind\":\"npc\",\"name\":\"Bren\",\"desc\":[\"stooped cellarman\",\"lantern\",\"grain scoop\"],\"traits\":\"stooped, lantern, grain scoop\",\"band\":\"ENGAGED\"},{\"ref\":\"barkeep\",\"kind\":\"npc\",\"name\":\"Blue Ox barkeep\",\"desc\":[\"heavy man\",\"hams for forearms\",\"apron\"],\"traits\":\"heavy, apron\",\"band\":\"SHORT\"}],\"learn\":[{\"who\":\"bren\",\"s\":\"Alaric\",\"p\":\"sent_by_guild_for\",\"o\":\"the cellar pest\",\"how\":\"told\",\"from\":\"contract paper\"}],\"facts\":[{\"s\":\"Blue Ox cellar\",\"p\":\"has\",\"o\":\"torn grain sack, spill dragged not gnawed; Bren says it is not rats\",\"because\":\"witnessed damage\"}]}</avereth>"
+  },
+  {
+   "i": 15,
+   "user": true,
+   "mes": "then ill find out what it is *i say calmly and step forward pulling my sword ready*"
+  },
+  {
+   "i": 16,
+   "reply": "Bren lifts the lantern higher without arguing, the light throwing long shadows down the ranks of sacks.\n\nAlaric's boots crunch on spilled barley. The grain trail leads along the wall, past the stack, into the darker corner where the cellar meets the foundation stone—and there the wall is not wall. A gap yawns where the stones have buckled outward, earth showing through, a hole the width of a big dog's shoulders. Fresh dirt fans out from it across the floor.\n\nThe trail doesn't stop there. Something has scraped a shallow trough through the spill toward the cold corner behind the water cask, and as the lantern-light swings across it, Alaric catches the shape crouched there: low, bristled, grey-brown, built like a rat grown wrong—long of body, heavy in the shoulder, easily the size of a terrier, maybe bigger. Its eyes throw back two green coins. It is chewing on something, and it goes still the moment the light touches it, whiskers working, tail thick as a man's thumb lashing once against the stone.\n\nBehind Alaric, Bren says, very quietly, \"That'd be it, then,\" and starts backing toward the stairs without any hurry he doesn't absolutely need.\n\nThe creature's hindquarters coil. Its mouth opens on yellow teeth and a hiss like a kettle coming to the boil.\n\n<avereth>{\"time\":4,\"position\":[{\"who\":\"pc\",\"band\":\"ENGAGED\"}],\"new\":[{\"ref\":\"cellarbeast\",\"kind\":\"creature\",\"name\":\"Cellar Gnawer\",\"desc\":[\"oversized rat-like beast\",\"terrier-sized\",\"grey-brown bristled fur\",\"green eyeshine\",\"yellow teeth\"],\"species\":\"giant rat\",\"band\":\"ENGAGED\",\"cover\":null}],\"aware\":[{\"who\":\"cellarbeast\",\"level\":\"aware\"}],\"learn\":[{\"who\":\"Bren\",\"s\":\"cellar pest\",\"p\":\"is\",\"o\":\"giant rat-like creature nesting in breached foundation wall\",\"how\":\"witnessed\"}],\"facts\":[{\"s\":\"Blue Ox cellar wall\",\"p\":\"has\",\"o\":\"breached gap into earth behind foundation\",\"vis\":\"secret\"}],\"check\":{\"what\":\"spotting the creature in the dark corner\",\"stat\":\"PER\",\"actor\":5,\"opposition\":5,\"success\":true}}</avereth>"
+  },
+  {
+   "i": 17,
+   "user": true,
+   "mes": "*i lower my sword and dash forward with a Basic Attack at the creature*"
+  },
+  {
+   "i": 18,
+   "reply": "Bren's lantern steadies in his fist as Alaric moves, boots loud on the stone, sword coming level.\n\nThe Gnawer doesn't wait to see how the charge ends. It springs sideways off the cold corner, a low skittering scramble, and puts the water cask between itself and the oncoming blade—tail lashing, teeth bared, a chittering hiss boiling out of its throat. Grain scatters under its claws. It is fast, faster than its bulk suggests, and it circles the cask's far side with its head low, tracking the sword's point.\n\nBehind, at the stairs, Bren's voice comes down flat and quick: \"Mind the wall—there's more than one hole down here. Where there's one of them—\" He doesn't finish it. The lantern light trembles at the edge of vision, and the scratch of claws on stone has gone quiet, the creature holding still somewhere behind the cask.\n\n<avereth>{\"combat\":{\"by\":\"pc\"}}</avereth>"
+  },
+  {
+   "i": 19,
+   "user": true,
+   "mes": "*i basic attack the Cellar Gnawer*"
+  },
+  {
+   "i": 20,
+   "reply": "The Gnawer explodes out from behind the cask before the sword can come around—low, fast, teeth first. It catches Alaric's shin through the boot leather, a sharp pinch and grind of yellow teeth, and then it is past him, scrambling for the breached wall.\n\nBut the blade is already swinging. The longsword comes down across its back mid-scramble, steel ringing on bone, and the Gnawer is driven flat into the grain spill with a crunch. It kicks twice, tail spasming against the stone, and goes still. A dark smear spreads slowly through the scattered barley.\n\nThe cellar is quiet again except for Bren's breathing at the top of the stairs. The lantern comes back down a step at a time.\n\n\"Dead, then.\" Bren leans over the rail to look, and lets out a long breath through his nose. \"Where there's one of them there's a nest—mind you're not done yet, is all. That hole in the wall didn't dig itself.\" He comes the rest of the way down, scoop in hand like a weapon he forgot to put away, and crouches by the carcass, poking it once with the scoop's edge. \"Terrier-sized. Marta'll want proof. Whole, if you can carry it.\"\n\n<avereth>{\"combat\":null}</avereth>"
+  },
+  {
+   "i": 21,
+   "user": true,
+   "mes": "stay here *i say to Bren and then walk into the hole in the wall sword ready for more*"
+  },
+  {
+   "i": 22,
+   "reply": "Bren stays put at the foot of the stairs, scoop held two-handed, lantern raised. \"Right you are,\" he mutters. \"I'll mind the light.\"\n\nThe hole is tighter than it looked. Alaric turns sideways and eases through, stone rasping against his armor, sword leading. Beyond the breach the earth opens into a dug passage—claw-scored walls, a ceiling of packed dirt braced here and there by gnawed cellar joists the creature has dragged in. The smell is thick and animal: musk, urine, rotted grain. The air is cooler than the cellar and damp, and each breath stirs dust that tickles the throat.\n\nTen paces in, the passage forks. The left branch slopes down and goes dark past the reach of light spilling through the breach behind. The right branch is littered with plunder—shreds of burlap sack, a chicken bone, a child's-sized knuckle of wood that might once have been a toy, chewed on both ends—and along its wall, a mound of shredded cloth and dry grass matted flat in the shape of something that sleeps there.\n\nFrom somewhere up the right-hand branch comes a sound: a soft, rhythmic nestling, then a second sound answering it. Small. Alive. More than one.\n\nBehind him, faint through the hole, Bren's voice carries down the passage, hushed: \"You living, stranger?\"",
+   "answer": "<avereth>{\"time\":3,\"place\":\"dug passage behind breached foundation wall, ten paces to a fork\",\"new\":[{\"ref\":\"gnawer_nest\",\"kind\":\"creature\",\"name\":\"Gnawer nest\",\"desc\":[\"nest of shredded cloth and dry grass in right branch\",\"sounds of multiple living creatures within\"]}],\"facts\":[{\"s\":\"behind Blue Ox cellar breach\",\"p\":\"leads to\",\"o\":\"dug passage with claw-scored walls, gnawed joist braces, forking after ten paces\"}],\"position\":[{\"who\":\"Bren\",\"band\":\"LONG\"}],\"learn\":[{\"who\":\"Bren\",\"s\":\"the stranger\",\"p\":\"entered\",\"o\":\"the hole in the foundation wall\",\"how\":\"witnessed\"}],\"memory\":[{\"text\":\"The stranger crawled sword-first into the breached foundation wall while Bren held the lantern back at the stairs\",\"who\":[\"Bren\"],\"imp\":7}]}</avereth>",
+   "ms": 12261
+  },
+  {
+   "i": 23,
+   "user": true,
+   "mes": "*i go down the right path as i move deeper*"
+  },
+  {
+   "i": 24,
+   "reply": "The passage narrows going up the right-hand branch, ceiling low enough that the sword has to angle down. The plunder thickens underfoot: sackcloth, bone, a corroded belt buckle, all of it gnawed. The nest-mound resolves as he nears it—stripped sacking packed into a shallow bowl, and in the bowl, two pups. Pink-bellied, blind, no bigger than a man's fist, writhing against each other for warmth. The sounds he heard were them.\n\nBeyond the nest the passage runs another few paces and ends at a second hole, wider than the first, bored upward at a slant. Faint daylight bleeds down it, grey through packed earth, and with the light comes a smell of old hay and something sweeter— spilled ale, maybe, from somewhere above. A way out to the yard, or the stable side.\n\nThe pups go silent at the vibration of boots, squirming blindly toward the sound of him.\n\nBack at the fork, Bren's voice again, louder this time, strained: \"Stranger. Anything? Say something, I can't hear nothing down there.\" A pause, then, muttering, more to himself: \"Marta'll have my hide if the whole wall goes.\"\n\nThe passage holds still around him. No claws, no hissing—only the two blind creatures in the nest and the pale thread of daylight at the burrow's mouth.\n\n<avereth>{\"time\":3,\"place\":\"nest chamber at end of right-hand passage (Alaric alone; Bren behind at fork)\",\"new\":[{\"ref\":\"pups\",\"kind\":\"creature\",\"name\":\"Cellar Gnawer pups\",\"desc\":[\"blind nestlings, pink-bellied, fist-sized\"],\"species\":\"Cellar Gnawer\",\"band\":\"ENGAGED\",\"cover\":null}],\"facts\":[{\"s\":\"second burrow\",\"p\":\"leads up toward\",\"o\":\"daylight above, likely stable yard side\",\"because\":\"visible sloped hole with grey light and hay smell\"},{\"s\":\"Cellar Gnawer pups\",\"p\":\"alive in nest at end of\",\"o\":\"right-hand passage\",\"because\":\"seen\"}],\"position\":[{\"who\":\"Bren\",\"band\":\"LONG\"}]}</avereth>"
+  },
+  {
+   "i": 25,
+   "user": true,
+   "mes": "*i aim my sword and get ready for combat*"
+  },
+  {
+   "i": 26,
+   "reply": "He holds at the nest, blade angled down into the tight space, breath shallow, dust settling on his shoulders. The passage offers nothing back. No claws on earth, no hiss, no second adult bursting from the upward burrow. Only the pale thread of daylight, the stink of the nest, and the two pups nosing blind circles in the sacking, mewling thin and soft.\n\nThe stillness stretches long enough for the cold of the dirt wall to seep through his sleeve.\n\n\"It's a warren, then,\" Bren calls from the fork, closer now—he has edged a few steps up the passage, lantern light wobbling on the claw-scored wall. \"You found the nest? Here's the thing, stranger. The big one you cut down, that'd be the bitch or the dog, one of 'em. Other one's likely out foraging, and it'll come home sooner or later if you're set on waiting.\" A pause. \"Or you put those squeakers to the sword now and be done with it. Marta wants proof the nest's dealt with, not a story.\"\n\nThe lantern light creeps nearer. Bren's shadow lies long across the nest-mound, over the two blind shapes squirming toward Alaric's boots.\n\n\"Your call. You're the one with the steel.\"",
+   "answer": "<avereth>{\"position\":[{\"who\":\"Bren\",\"band\":\"MEDIUM\"}],\"believe\":[{\"who\":\"Bren\",\"s\":\"second adult cellar gnawer\",\"p\":\"status\",\"o\":\"out foraging\",\"from\":\"inferred\"}],\"learn\":[{\"who\":\"Bren\",\"s\":\"cellar gnawer pups\",\"p\":\"status\",\"o\":\"alive in nest at end of right-hand passage\",\"how\":\"witnessed\"},{\"who\":\"Bren\",\"s\":\"cellar gnawer (adult)\",\"p\":\"status\",\"o\":\"dead\",\"how\":\"witnessed\",\"from\":\"Alaric's handiwork in the nest\"}],\"memory\":[{\"text\":\"Bren edged up the passage and told the stranger the nest's proof was the pups — kill them or wait for the forager\",\"who\":[\"Bren\"],\"witnesses\":[\"Bren\"],\"imp\":6}]}</avereth>",
+   "ms": 16827
+  }
+ ],
+ "recorded": {
+  "accepted6": [
+   "time +40 min",
+   "new npc gate guard (npc.gate_guard)",
+   "new npc Marta (npc.marta)",
+   "new npc Corvan (npc.corvan)",
+   "npc.gate_guard aware of Alaric",
+   "npc.marta aware of Alaric",
+   "npc.corvan unaware of Alaric",
+   "fact loc.redmarch has city gate on western public road with peace-bonding rule",
+   "fact npc.marta occupation guild receptionist at Redmarch adventurers guild",
+   "fact npc.corvan occupation independent Monster hunter",
+   "fact Redmarch adventurers guild pays_bounties_by condition of trophies as posted"
+  ],
+  "accepted12": [
+   "time +8 min",
+   "new npc Clerk (npc.clerk)",
+   "npc.clerk at SHORT"
+  ],
+  "rejected12": [
+   "quest rank \"1\" is not a Guild Quest Rank (Novice|Proven|Veteran|Elite|Master|Grandmaster|Legend); omit it for work outside the Guild",
+   "quest rank \"1\" is not a Guild Quest Rank (Novice|Proven|Veteran|Elite|Master|Grandmaster|Legend); omit it for work outside the Guild",
+   "quest rank \"1\" is not a Guild Quest Rank (Novice|Proven|Veteran|Elite|Master|Grandmaster|Legend); omit it for work outside the Guild",
+   "quest rank \"1\" is not a Guild Quest Rank (Novice|Proven|Veteran|Elite|Master|Grandmaster|Legend); omit it for work outside the Guild"
+  ],
+  "accepted14": [
+   "time +25 min",
+   "place: Blue Ox Tavern cellar (Redmarch, Copperlane)",
+   "new npc Bren (npc.bren)",
+   "new npc Blue Ox barkeep (npc.blue_ox_barkeep)",
+   "npc.gate_guard stays behind",
+   "npc.marta stays behind",
+   "npc.corvan stays behind",
+   "npc.clerk stays behind",
+   "fact Blue Ox cellar has torn grain sack, spill dragged not gnawed; Bren says it is not rats",
+   "npc.bren heard pc sent_by_guild_for the cellar pest (claim, truth unknown)",
+   "quest Rats — Cellar of the Blue Ox Tavern: active"
+  ],
+  "accepted24": [
+   "time +3 min",
+   "place: nest chamber at end of right-hand passage (Alaric alone; Bren behind at fork)",
+   "npc.bren at LONG",
+   "fact second burrow leads_up_toward daylight above, likely stable yard side",
+   "fact mon.cellar_gnawer_pups alive_in_nest_at_end_of right-hand passage"
+  ],
+  "rejected24": [
+   "creature needs a species that maps to an F1 body-plan anchor (or kind \"npc\")"
+  ],
+  "outcome17": {
+   "kind": "note",
+   "text": "Alaric's attack needs a target: Bren or Blue Ox barkeep or Cellar Gnawer. Nothing was spent or rolled for it; stop at his decision and let the player name one (Core #23: never choose among several targets for him).",
+   "notice": "Alaric: which target? Bren or Blue Ox or Cellar Gnawer (nothing spent, nothing rolled)"
+  },
+  "panel19": "`COMBAT START`\n`Initiative: Cellar Gnawer 10 · Alaric 7 → Turn order: Cellar Gnawer › Alaric`\n`— Round 1 —`\n`Cellar Gnawer: Bite → Alaric`\n`  1 damage → Alaric HP 85 - 1 = 84`\n`Alaric: Basic Attack → Cellar Gnawer · STA 100 - 5 = 95`\n`  18 damage → Cellar Gnawer HP 16 - 18 → 0 DEFEATED`\n`HP: Cellar Gnawer 0/16 (defeated) · Alaric 84/85`\n`Alaric: MP 60/60 · STA 95/100`\n`COMBAT END — Cellar Gnawer defeated · +10 XP → XP 10/100`"
+ }
+}

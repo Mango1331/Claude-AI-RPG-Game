@@ -26,6 +26,8 @@ const AWAY_RE = /\b(?:retreat|retreats|back\s+(?:away|off|up)|(?:step|steps|jump
 const FLEE_RE = /\b(?:flee|flees|run\s+away|escape|make\s+a\s+run\s+for\s+it|bolt\s+(?:away|off))\b/i;
 const STEALTH_RE = /\b(?:sneak|sneaks|sneaking|creep|creeps|creeping|hide|hides|hiding|stay\s+hidden|move\s+quietly|stalk|stalks|stalking|crouch\s+low)\b/i;
 const PRONOUN_RE = /\b(?:him|her|it|them|the\s+(?:man|woman|creature|beast|animal|thing))\b/i;
+// a word for any creature: it names the creatures present, never the people standing by
+const CREATURE_RE = /\b(?:creature|creatures|beast|beasts|animal|animals|monster|monsters)\b/i;
 const NEAREST_RE = /\b(?:nearest|closest)\b/i;
 // the player tells targets apart ("at the second one", "the other one", "the left one"): not a pronoun, so the sole
 // valid target is no answer (Testrun 4: "aimed shot at the second one" hit the only combatant). "another one" is an
@@ -102,6 +104,9 @@ export function resolveTarget(text, state, content, { hostileOnly = false } = {}
     };
     let hits = namedAmong(valid);
     if (enc && !hits.length) hits = namedAmong(present.filter((id) => !valid.includes(id)));
+    // "the creature", "the beast": the creatures among the targets (live run 27.09. 02:30: "a Basic Attack at the
+    // creature" asked "Bren or Blue Ox barkeep or Cellar Gnawer", two people and the one creature in the cellar)
+    if (!hits.length && CREATURE_RE.test(t)) hits = valid.filter((id) => state.entities[id].kind === 'creature');
     if (hits.length === 1) return { id: hits[0], how: 'named' };
     // "the nearest one": the player chooses by distance, so the closest Range Band decides among the targets he named
     // ("the nearest wolf") or, in a fight, among the hostiles; equally close targets remain his choice (Core #23).

@@ -9,7 +9,7 @@
 // re-running a turn from the same state (swipe/regenerate) yields the same results — dice are never rerolled.
 import { Dice, newSeed } from './rng.js';
 import { applyEvent, fold } from './state.js';
-import { anchorFor, templateFor, locationByName, weaponFamily } from './content.js';
+import { anchorFor, templateFor, locationByName, weaponFamily, startPlace } from './content.js';
 import { deriveCharacter } from './derived.js';
 import { selectClass, selectSkills } from './creation.js';
 import { scaleCreature, chooseCreatureLevel, humanSheet } from './npcgen.js';
@@ -54,7 +54,7 @@ export function startCampaign(content, { seed = newSeed(), firstMessage = '' } =
     return [{
         t: 'campaign.started',
         d: {
-            seed: seed >>> 0, minute: at.minute, entities: [pc], location: loc.id, place: `${st.start_scene.place.replace(/the city$/, loc.name)}`,
+            seed: seed >>> 0, minute: at.minute, entities: [pc], location: loc.id, place: startPlace(content, loc),
             facts, knowledge, campaign: content.manifest.id, content_version: content.manifest.version, engine_version: ENGINE_VERSION,
         },
     }];
@@ -426,7 +426,8 @@ export function narratorReply(state, content, replyText, { msg = null, stripTrac
     if (!report) corrections.push(`Your previous reply had no valid <avereth> fact report (${error}). Write it right after the story text; this reply's report may also record the player's decisions from that turn (hand-overs, coin, quests), {} if nothing.`);
     // attackers the report committed that the engine could not tell apart (delta.js): host.js asks for them separately
     const attackers = res.unidentified?.length ? res.unidentified : null;
-    return { events, clean, report, accepted: res.accepted, rejected: res.rejected, corrections, report_error: report ? null : error, attackers, opened, state: s };
+    // the city reached from the start without a spot in it (delta.js): host.js asks for the spot and who is there
+    return { events, clean, report, accepted: res.accepted, rejected: res.rejected, corrections, report_error: report ? null : error, attackers, unplaced: res.unplaced || null, opened, state: s };
 }
 
 /**

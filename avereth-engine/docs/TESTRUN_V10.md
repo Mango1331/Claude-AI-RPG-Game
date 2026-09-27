@@ -36,7 +36,7 @@ Der Lauf wurde nach Nachricht 26 abgebrochen.
 
 | Nachricht | Report oder Eingabe | Folge (3.1.2) |
 |---|---|---|
-| 6 | `"location":"Redmarch, Veyrhold"`, kein `place`; Wache, Marta und Corvan neu | Der Ort bleibt „public roadside verge outside Redmarch“, bis Nachricht 14 den Keller meldet. Das betrifft den Engine-Block bei Registrierung und Brett und die Erinnerungen („first saw {pc} at public roadside verge outside Redmarch“). |
+| 6 | `"location":"Redmarch, Veyrhold"`, kein `place`; Wache, Marta und Corvan neu | Der Ort bleibt „public roadside verge outside Redmarch“, bis Nachricht 14 den Keller meldet. Das betrifft den Engine-Block bei Registrierung und Brett und die Erinnerungen („first saw {pc} at public roadside verge outside Redmarch“). Der Torwächter, an dem Alaric vorbeiging, steht als anwesend neben Marta. |
 | 12 | vier Quests mit `"rank":1` | Alle vier werden abgelehnt (`quest rank "1" is not a Guild Quest Rank`). Einen Report gab es, deshalb keine Nachforderung. |
 | 14 | Rats-Quest mit `"status":"active"`, `"rank":"Novice"` | Die Quest entsteht neu, gleich als aktiv, ohne offered. Die drei anderen Angebote fehlen im Zustand. |
 | 17 | „*i lower my sword and dash forward with a Basic Attack at the creature*“ | `which target? Bren or Blue Ox or Cellar Gnawer`, nichts gewürfelt. Der Erzähler folgt der Engine und lässt den Gnawer hinter das Fass ausweichen, obwohl er im Reasoning schreibt: „only the Gnawer is a creature; Bren and barkeep are people. Alaric obviously means the creature“. |
@@ -51,24 +51,36 @@ Der Lauf wurde nach Nachricht 26 abgebrochen.
 - **Ziel:** „the creature“ ist kein Name, keine Beschreibung und kein Alias einer Art. Ohne Treffer galten alle Anwesenden als Kandidaten.
 - **Jungtiere:** Die Engine meldete den Namen einer neuen Kreatur an, bevor sie prüfte, ob sie die Kreatur anlegen kann. Der Fakt fand danach diesen Namen.
 
-## 3. Änderungen (3.1.3)
+## 3. Änderungen (3.1.3 und 3.1.4)
 
-**Die Stadt erreicht (`delta.js`):**
-- Nennt ein Report als erreichte Stadt die, in der Alaric schon ist, aber keinen Ort darin, und hat deine Nachricht ihn gehen lassen (walk, go, enter …), ist sein Ort jetzt die Stadt.
-- Wer am alten Platz war und vom Report nicht platziert wird, bleibt zurück.
-- Ohne deine Entscheidung ändert eine genannte Stadt nichts, wie bisher.
-- Ein Ort, der nur der Stadtname ist, kennt keinen Platz. Nennt ein späterer Report einen Ort in der Stadt, gilt:
+**Die Stadt erreicht (`delta.js`, `host.js`; so seit 3.1.4):**
+- **Der Fall aus dem Lauf:** Alaric steht am Startplatz vor der Stadt, deine Nachricht lässt ihn hineingehen, und der Report nennt nur die Stadt (`location`), keinen Ort darin.
+  - Sein Ort ist sofort die Stadt („Redmarch“), nicht mehr der Platz davor. Wer dort war und vom Report nicht platziert wird, bleibt zurück.
+  - Wo die Antwort endet und wer dort nicht bei ihm ist, weiß die Engine nicht. Sie fragt es separat nach, wie bei unklaren Angreifern: nur `place` und `leave`, keine Geschichte. Bis dahin steht über der Antwort `PLACE NOT REPORTED YET — the report named Redmarch, not the spot Alaric is at: asking for it separately`.
+  - Die Antwort geht in den eigenen Report des Erzählers: Sein Ort ist der genannte Platz, und wen `leave` nennt, ist nicht mehr anwesend. Danach steht dort `PLACE REPORTED: Adventurers' Guild hall, front counter, named by a separate request (… s)`.
+  - Bringt die Nachfrage nichts, bleibt die Stadt sein Ort, und alle aus der Antwort bleiben gelistet. Auch das steht über der Antwort (`PLACE NOT REPORTED — … everyone the reply met is listed with him`). Wer wo steht, erfindet die Engine nicht.
+- **Nur dieser Fall:** Den Startplatz hat die Engine selbst angelegt („…outside <City>“), und nur von ihm weiß sie, dass er vor der Stadt liegt.
+  - An jedem anderen Ort ändert eine nochmals genannte Stadt nichts, auch nicht mit Reise-Wörtern.
+  - In der Gilde bleibt nach „*I walk over to the quest board*“ mit `{"location":"Redmarch"}` die Gilde, und niemand bleibt zurück.
+- **Ohne deine Entscheidung** ändert eine genannte Stadt nichts, wie bisher.
+- **Ein Ort, der nur der Stadtname ist** (nach einer Nachfrage ohne Antwort), kennt keinen Platz. Nennt ein späterer Report einen Ort in der Stadt, gilt:
   - ohne Bewegung ist es der Platz, an dem Alaric schon ist;
   - nach einer Bewegung ist es ein neuer Platz, und wer bei ihm war, kommt nicht mit.
-  - Sonst wären Marta und der Clerk in den Keller „mitgekommen“, weil „Blue Ox Tavern cellar (Redmarch, Copperlane)“ den Stadtnamen enthält.
+  - Sonst wären die Leute der Gilde in den Keller „mitgekommen“, weil „Blue Ox Tavern cellar (Redmarch, Copperlane)“ den Stadtnamen enthält.
 
-Im Lauf steht von Nachricht 7 bis 13 im Engine-Block:
+Im Replay mit der Antwort `{"place":"Adventurers' Guild hall, front counter","leave":["gate_guard","corvan"]}` steht von Nachricht 7 bis 13 im Engine-Block (die Antwort ist synthetisch, der Lauf hatte keine solche Nachfrage):
 
 ```
-Day 1, 09:40 (morning) | Redmarch, Veyrhold — Redmarch | mode: story
+Day 1, 09:40 (morning) | Redmarch, Veyrhold — Adventurers' Guild hall, front counter | mode: story
 ```
 
-Marta und die Wache erinnern sich an „first saw {pc} at Redmarch“. Den Namen der Gilde kennt die Engine nicht, denn der Report hat ihn nicht gemeldet.
+- Anwesend sind Alaric und Marta. Der Torwächter und Corvan sind bekannt, aber nicht dabei.
+- Marta erinnert sich an „first saw {pc} at Adventurers' Guild hall, front counter“.
+- Der Torwächter hat dadurch keine Erinnerung an Alaric: Die Engine hält den ersten Blick nur für die fest, die Alaric am Ende der Antwort sehen.
+
+**Was 3.1.3 noch falsch machte (Review von b4df3bf, nachgestellt):**
+- Die Regel galt überall in der Stadt, sobald deine Nachricht ein Reise-Wort enthielt. In der Gilde setzten „*I walk over to the quest board*“ und ein überflüssiges `location` den Ort auf die Stadt zurück, und Marta „blieb zurück“.
+- Nach dem Weg in die Stadt stand der Torwächter weiter neben Marta in der Gilde.
 
 **Quest-Rang als Zahl (`delta.js`):**
 - Die Engine nimmt den Rang, in dessen Level-Band die Quest liegt (Level 1: Novice).
@@ -105,8 +117,16 @@ Marta und die Wache erinnern sich an „first saw {pc} at Redmarch“. Den Namen
 
 ## 5. Tests
 
-**`tests/testrun_v10/live.test.js`** (4 Tests, Replay des Laufs):
-- Nachricht 6: Der Ort ist Redmarch. Der Kopf des Engine-Blocks bei 7, 9, 11 und 13 und die Erinnerung „first saw {pc} at Redmarch“ stimmen. Bei 14 bleiben die Leute der Gilde zurück.
+**`tests/testrun_v10/live.test.js`** (5 Tests, Replay des Laufs):
+- Nachricht 6 mit Antwort auf die Nachfrage:
+  - Die Anfrage nennt Redmarch und die Refs, die der Report eingeführt hat.
+  - Danach steht Alaric an Martas Theke, nur mit Marta.
+  - Bei 7, 9, 11 und 13 nennt der Engine-Block die Theke.
+  - Bei 14 bleiben Marta und der Clerk zurück.
+- Nachricht 6 ohne Antwort:
+  - Der Ort ist Redmarch, nie der Platz vor der Stadt.
+  - Alle aus der Antwort bleiben gelistet, und die Antwort sagt es.
+  - Bei 14 kommt niemand aus der Stadt mit in den Keller.
 - Nachricht 12: vier Quests offered, Novice. Bei 14 wird die Rats-Quest active, offered → active, mit der Belohnung.
 - Nachricht 17: Der Kampf beginnt. Das Panel ist dasselbe wie im Lauf bei Nachricht 19.
 - Nachricht 24: Der Fakt über „Cellar Gnawer pups“ bleibt Text, es gibt keine Entity `mon.cellar_gnawer_pups`, und die Integritätsprüfung erkennt so einen Fakt.
@@ -119,14 +139,23 @@ Ab Nachricht 17 verläuft der Replay anders als der Lauf: Der Kampf kommt zwei Z
 - Im Kampf gegen einen Mann und einen Wolf ist „the beast“ der Wolf.
 
 **`tests/unit/report.test.js`:**
-- Die Stadt erreicht, mit und ohne deine Entscheidung.
+- Die Stadt erreicht vom Startplatz, mit und ohne deine Entscheidung. In der Gilde ändert „*I walk over to the quest board*“ mit `location` nichts.
 - Ein Ort, der nur die Stadt ist: ein Platz ohne Bewegung, dann einer nach einer Bewegung.
 - Der Rang als Zahl.
 - Eine abgelehnte Kreatur benennt nichts.
 
-**Gegenproben:**
-- Alle 9 neuen Tests scheitern auf 3.1.2.
-- Die übrigen 263 Tests schreiben auf 3.1.3 dieselben Records wie auf 3.1.2 (aufgezeichnet und verglichen).
-- Die Läufe vom 26.09. 23:09 und 27.09. 01:19 spielen auf 3.1.3 wie auf 3.1.2.
+**`tests/unit/report_request.test.js`:**
+- Die Orts-Nachfrage: Der Torwächter, an dem Alaric unterwegs vorbeigeht, ist am Ende nicht anwesend, die Schreiberin an der Theke schon.
+- Ohne Platz in der Antwort oder ganz ohne Antwort bleibt die Stadt sein Ort.
 
-**Version:** 3.1.3.
+**Live-Smoke (`tools/st_live/run.mjs`):**
+- Die erste Szene („city gate“) meldet nur `location`.
+- Die Orts-Nachfrage läuft durch echtes SillyTavern, und der Mock nennt „Tidecross south gate“ (Prüfung `placeRequested`).
+
+**Gegenproben:**
+- Die 9 Tests von 3.1.3 scheitern auf 3.1.2.
+- Die neuen Orts-Tests scheitern auf 3.1.3 (b4df3bf).
+- Alle übrigen Tests schreiben auf 3.1.4 dieselben Records wie auf 3.1.3, und auf 3.1.3 dieselben wie auf 3.1.2 (aufgezeichnet und verglichen).
+- Die Läufe vom 26.09. 23:09 und 27.09. 01:19 spielen auf 3.1.4, 3.1.3 und 3.1.2 gleich.
+
+**Version:** 3.1.4.

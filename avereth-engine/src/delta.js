@@ -2,7 +2,7 @@
 // The LLM proposes; the engine disposes. Accepted items become events; everything else is rejected with a reason
 // (kept in the audit log and fed back as a correction note). Engine-owned values (HP, XP, stats, levels, skills,
 // dice) can never enter through this channel.
-import { anchorFor, templateFor, locationByName } from './content.js';
+import { anchorFor, templateFor, locationByName, startPlace } from './content.js';
 import { setFactEvents, truth, normPredicate, FUNCTIONAL, statusOf } from './knowledge.js';
 import { awardXp, questXp } from './progression.js';
 import { applyCoin } from './economy.js';
@@ -276,6 +276,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     }
     // travel / place
     let movedPlace = false;
+    let unplaced = null; // the city reached from the start, no spot in it: host.js asks for the spot
     const where = report.location ? findLocation(state, content, report.location) : null;
     const loc = where?.loc || null;
     if (where?.spot && !report.place) report = { ...report, place: where.spot };
@@ -311,14 +312,17 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
             accepted.push(`place: ${report.place}`);
             movedPlace = !refinement;
         }
-    } else if (loc && (auth.travel || forcedBy(report.forced_by)) && !state.encounter && normText(state.scene.place) !== normText(loc.name)) {
-        // the city reached is the one he is at, and the report names no spot (live run 27.09. 02:30: the player walked
-        // from the roadside verge outside Redmarch into the city and the Guild, the report said "location":"Redmarch,
-        // Veyrhold", and the verge stayed his place through the registration and the board): he left the spot he was at
-        // for somewhere in the city, and whoever the report does not place there stays behind
+    } else if (loc && (auth.travel || forcedBy(report.forced_by)) && !state.encounter && normText(state.scene.place) === normText(startPlace(content, loc))) {
+        // the city reached from the spot the campaign began at, outside it, and the report names no spot in it (live run
+        // 27.09. 02:30: the player walked from the roadside verge outside Redmarch into the city and the Guild, the report
+        // said "location":"Redmarch, Veyrhold", and the verge stayed his place through the registration and the board):
+        // he is in the city now, and whoever the report does not place there stays behind. Where in it, and who of the
+        // people the reply met on the way is with him there, host.js asks separately. Anywhere else the city named again
+        // says nothing: he may be in it already (the Guild hall, "I walk to the quest board")
         events.push({ t: 'scene.moved', d: { place: String(loc.name).slice(0, 120) } });
         accepted.push(`place: ${loc.name}`);
         movedPlace = true;
+        unplaced = { city: String(loc.name) };
     }
     const placed = new Set(); // people this report places in the (new) scene
     // combat commitments ({by} or a list; "by" may itself be a list; a bare name is a {by}); empty entries commit nobody
@@ -857,7 +861,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         events.push({ t: 'entity.updated', d: { id: e.id, set: { known_name: part } } });
         accepted.push(`${e.id}: the story names ${part ?? e.name}`);
     }
-    return { events, accepted, rejected, corrections, unidentified };
+    return { events, accepted, rejected, corrections, unidentified, unplaced };
 }
 
 function bandOf(b) {

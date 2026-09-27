@@ -322,20 +322,28 @@ test('Alaric\'s name fact stays the player\'s: his full name keeps it, another n
     assert.equal(truth(g.state, 'pc', 'name')[0].id, PC_NAME_FACT);
 });
 
-test('the city reached is the one he is at: by the player\'s decision he left his spot for the city, and who stays there stays behind (live run 27.09. 02:30)', () => {
+test('the city reached from the start: by the player\'s decision he left the verge for the city; anywhere else the city named again says nothing (live run 27.09. 02:30)', () => {
     const g = ready(); // at the public roadside verge outside Tidecross
     g.reply({ new: [{ ref: 'carter', kind: 'npc', desc: ['carter'], band: 'SHORT' }] });
     // the city named without anyone going anywhere changes nothing
     g.input('I wait by the road.');
     assert.deepEqual(g.reply({ location: 'Tidecross, Solmere' }).accepted, []);
     assert.equal(g.state.scene.place, 'public roadside verge outside Tidecross');
-    // he goes into the city and the Guild; the report names the city and no spot
+    // he goes into the city and the Guild; the report names the city and no spot: the spot is asked for (host.js)
     g.input('*I walk into the city and go to the adventurers guild*');
     const r = g.reply({ location: 'Tidecross, Solmere', new: [{ ref: 'marta', kind: 'npc', name: 'Marta', desc: ['guild receptionist'] }] });
     assert.deepEqual(r.accepted.slice(0, 2), ['place: Tidecross', 'new npc Marta (npc.marta)']);
     assert.ok(r.accepted.includes('npc.carter stays behind'));
+    assert.deepEqual(r.unplaced, { city: 'Tidecross' });
     assert.deepEqual([g.state.scene.place, g.state.scene.present], ['Tidecross', ['pc', 'npc.marta']]);
     assert.match(g.context().text, /\| Tidecross, Solmere — Tidecross \| mode: story/);
+    // in the Guild hall, the city named again with no spot is no move: "I walk over to the quest board" keeps the hall
+    g.input('Hello, I am here to register.');
+    g.reply({ place: "Adventurers' Guild hall" });
+    g.input('*I walk over to the quest board*');
+    const e = g.reply({ location: 'Tidecross' });
+    assert.deepEqual([e.accepted, e.unplaced], [[], null]);
+    assert.deepEqual([g.state.scene.place, g.state.scene.present], ["Adventurers' Guild hall", ['pc', 'npc.marta']]);
 });
 
 test('a place that is only the city names no spot: the spot a report names is where he is, or after a move a new one that the others do not follow into', () => {

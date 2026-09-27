@@ -239,6 +239,19 @@ export function takesQuest(text, title) {
     return TAKE_RE.test(t) && namesQuest(t, title);
 }
 
+// turning a quest in: "I turn in the Wolf Problem quest", "I hand in Wolf Problem", "turn the Quest in", "report the
+// completed Wolf Problem" (not "turn around in the doorway", "turned in for the night"). A Guild contract is completed only
+// when the player turns it in (live run 27.09. 04:11); "I return to Alderwatch" or "I killed the wolves" turns nothing in.
+const TURN_IN_RE = /\b(?:turn|hand)(?:s|ed|ing)?\s+in\b(?!\s+for\b)|\b(?:turn|hand)(?:s|ed|ing)?\s+(?:[\w'’-]+\s+){1,6}?in\b(?!\s+(?:the|a|an|this|that|his|her|my|their|its|for)\b)|\bsubmit(?:s|ted|ting)?\b|\breport(?:s|ed|ing)?\b/i;
+// a quest named by what it is, not by its title: "turn the Quest in", "hand in the job", "turn it in"
+const QUEST_NOUN_RE = /\b(?:quests?|contracts?|jobs?|bount(?:y|ies)|tasks?|bills?)\b|\b(?:turn|hand)(?:s|ed|ing)?\s+(?:it|them)\s+in\b/i;
+
+/** Whether the message turns this quest in by name ("I hand in Wolf Problem." with its full stop). */
+export function turnsInQuest(text, title) {
+    const t = said(text);
+    return TURN_IN_RE.test(t) && namesQuest(t.replace(/[^\p{L}\p{N}']+/gu, ' '), title);
+}
+
 export function authorization(text) {
     const raw = String(text || '');
     // questions do not authorize; quoted speech does (commitments are often spoken)
@@ -248,5 +261,7 @@ export function authorization(text) {
     out.travel = out.travel || false;
     out.move = out.move || out.travel;
     out.rest = out.rest || out.travel;
+    // turning in a quest it does not name ("I go back to the guild to turn the Quest in"): any quest the reply completes
+    out.turnIn = TURN_IN_RE.test(said_) && QUEST_NOUN_RE.test(said_);
     return out;
 }

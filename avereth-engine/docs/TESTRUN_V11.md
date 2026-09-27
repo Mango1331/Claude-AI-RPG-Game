@@ -119,20 +119,30 @@ Quest (active, Novice Guild contract): Wolf Problem — Millbrook Hamlet — …
 - Der Lauf zeigt, dass das Modell dem Lorebook folgt. Wenn das Lorebook etwas Falsches sagt, tut das Modell also Falsches.
 - Umgekehrt zeigt er, dass Belohnung und Abschluss nicht am Wortlaut des Modells hängen dürfen.
 
-## 4. Änderungen in 3.1.5
+## 4. Änderungen in 3.1.5 und 3.1.6
 
 ### Gildenverträge (`delta.js`)
 
 - **Was ein Gildenvertrag ist:** eine Quest mit Quest-Rang. Ohne Rang ist die Arbeit privat und läuft wie bisher.
-- **Abschluss nur am Schalter:**
-  - Als Gildenstelle gilt eine Stadt oder Hauptstadt des Contents (`rules.json` `guild.branch_kinds`).
-  - Meldet ein Report den Vertrag anderswo als completed, bleibt er aktiv. `accepted` zeigt `quest …: active (turned in only at a Guild front desk)`, über der Antwort steht `QUEST STILL ACTIVE — …: a Guild contract is completed when it is turned in at a Guild front desk`, und der Erzähler bekommt eine Korrektur.
+- **Abschluss nur bei der Abgabe durch den Spieler.** Seit 3.1.6 müssen beide Bedingungen gelten:
+  - Alaric ist am Ende der Antwort in einer Stadt oder Hauptstadt des Contents (`rules.json` `guild.branch_kinds`). Dort hat die Gilde eine Stelle.
+  - Deine aktuelle Nachricht gibt den Vertrag ab (`intent.js`, gebaut wie `takesQuest`):
+    - Mit Namen gilt nur der genannte Vertrag: „I turn in the Wolf Problem quest“, „I hand in Wolf Problem“, „I report the completed Wolf Problem at the Guild“.
+    - Ohne Namen gilt jeder Vertrag, den die Antwort abschließt: „I return to the Guild and turn the quest in“, „turn it in“.
+    - Wie bei der Annahme zählt auch eine Nachricht, deren Antwort keinen Report hatte.
+  - Nicht genug sind „I killed the wolves“, „I return to Alderwatch“, „I show Aldous the heads“ und die Worte eines NPC.
+- **Sonst bleibt der Vertrag aktiv:**
+  - `accepted` zeigt `quest …: active (turned in only at a Guild front desk)`.
+  - Über der Antwort steht `QUEST STILL ACTIVE — …: a Guild contract is completed when it is turned in at a Guild front desk`.
+  - Der Erzähler bekommt eine Korrektur: außerhalb einer Stadt „…completed only when Alaric turns it in at a Guild front desk…“, in der Stadt ohne Abgabe „PLAYER OWNERSHIP: turning in a Guild contract needs the player's own decision in the current message ("I turn in the … quest")…“.
   - Notiz und Items bleiben: „two wolf heads delivered as proof, signature pending“, das gesiegelte Papier.
+- **Warum der Nachtrag:** 3.1.5 prüfte nur die Stadt. Im Review fiel auf: Im Keller unter Alderwatch hätte ein fälschliches „completed“ nach den Ratten den Vertrag abgeschlossen und bezahlt. Eine Stadt mit Gildenstelle ist noch keine Abgabe am Schalter.
 - **Nicht genommen:** Ein Vertrag, der nie aktiv war, wird nicht abgegeben. Der Report wird abgelehnt: „was never taken“.
 - **Belohnung:**
   - Beim Abschluss am Schalter zahlt die Engine den ersten Betrag der ausgehängten Belohnung. Aus „8 silver on proof of at least two wolves“ werden +80 Copper, im Panel als `COIN +8 Silver → … · Guild reward: Wolf Problem — Millbrook Hamlet`.
   - Aus „6 silver plus a meal“ werden 60, der Rest geht an den Auftraggeber.
   - Eine Belohnung ohne Betrag („a hot meal and a bunk“) zahlt die Engine nicht.
+  - Kanon seit 3.1.6: Ein Vertrag hat eine feste Gilden-Auszahlung. Was variabel ist, pro Stück oder nach Ermessen, ist ein eigener Bonus des Auftraggebers („Guild payout: 6 silver. Client bonus: +1 silver per intact pelt.“). So steht es im Lorebook (uid 34, 29, 31), in der Engine-Lore und im Report-Schema. Die Engine zahlt nur die feste Auszahlung; einen Parser für Belohnungsausdrücke gibt es nicht.
 - **Coin für den Vertrag wird nie gebucht.** Abgelehnt wird positives Coin für Alaric in zwei Fällen:
   - Das `why` nennt einen Gildenvertrag mit Betrag, über dessen Titelwörter wie bei „I take the … quest“. Das gilt vor, bei und nach der Abgabe.
   - Der Report meldet einen solchen Vertrag als completed. Das war der Fall im Lauf: Aldous zahlt in demselben Report.
@@ -167,9 +177,9 @@ Quest (active, Novice Guild contract): Wolf Problem — Millbrook Hamlet — …
 - Sie darf nicht der Name eines Orts sein, auch nicht das erste Wort eines Orts: „Millbrook“ von „Millbrook Hamlet“.
 - „Millbrook villagers“ bleibt unbekannt und wird mit „introduce new people via "new"“ abgelehnt. „Harl“ wird wie bisher übernommen.
 
-## 5. Der Lauf auf 3.1.5 (Replay)
+## 5. Der Lauf auf 3.1.5 und 3.1.6 (Replay)
 
-| Nachricht | 3.1.4 (Lauf) | 3.1.5 |
+| Nachricht | 3.1.4 (Lauf) | 3.1.5 und 3.1.6 (gleiche Records) |
 |---|---|---|
 | 6 | Die Schreiber verlassen die Szene. | Mit `present` bleiben beide, die Theke ist ihr Ort, und der Engine-Block listet sie. |
 | 8, 10 | Quest „Guild registration“, completed, +15 Quest-XP | Abgelehnt, 0 XP. Rang, Gebühr (–20 Copper) und Abzeichen stehen im Zustand. |
@@ -195,19 +205,20 @@ Quest (active, Novice Guild contract): Wolf Problem — Millbrook Hamlet — …
 - **Kein fünfter Status nötig.** Beweis steht in Notiz und Items. Das stimmt: Der Lauf hatte beides schon.
 
 **Wo die Regel an Grenzen stößt:**
-1. **Der Schalter ist eine Näherung.** Die Engine kennt keinen Schalter, nur Städte und Hauptstädte.
-   - Ein Abschluss irgendwo in Alderwatch zählt, auch in der Taverne oder auf dem Platz vor der Stadt.
-   - „Guild“ im Ortsnamen zu verlangen, wäre Freitext-Erkennung. Das habe ich bewusst nicht gebaut.
-2. **Welche Orte eine Gildenstelle haben, habe ich festgelegt, und das ist Kanon für dich zum Bestätigen:**
-   - jede Stadt und Hauptstadt der Welt, nicht die Sitze der Monsterreiche, nicht vom Erzähler angelegte Orte;
+1. **Stadt und Schalter.** 3.1.5 nahm die Stadt als Schalter; das war zu breit (Review).
+   - Seit 3.1.6 schließt nur deine Abgabe den Vertrag ab, in einer Stadt mit Gildenstelle.
+   - Wo in der Stadt du abgibst, prüft die Engine weiter nicht: Taverne oder Theke. „Guild“ oder „front desk“ im Ortsnamen zu verlangen, wäre Freitext-Erkennung und bleibt ausgeschlossen.
+   - Die Abgabe ist aber deine ausdrückliche Handlung und kein Wort des Erzählers.
+2. **Welche Orte eine Gildenstelle haben (von dir bestätigt):**
+   - jede menschliche Stadt und Hauptstadt;
+   - keine Dörfer, keine Sitze der Monsterreiche, keine vom Erzähler angelegten Orte;
    - Abgabe an jeder Stelle, nicht nur dort, wo der Vertrag genommen wurde („branches share the rolls“).
-   - Eine Gildenstelle in einem Dorf kennt die Engine nicht.
 3. **Beweise prüft die Engine nicht.** Sie verlangt kein Beweis-Item, denn Beweise sind zu verschieden: Köpfe, Siegel, Zeugen, eine Begleitung. Das Prüfen ist Sache der Erzählung am Schalter.
-4. **Belohnungen ohne festen Betrag:**
+4. **Belohnungen ohne festen Betrag.** Seit 3.1.6 legt der Kanon fest: eine feste Gilden-Auszahlung; Variables ist ein eigener Bonus des Auftraggebers. Für Aushänge, die das Modell trotzdem anders schreibt, gilt:
    - „up to 6 silver, by weight“ zahlt 60 (den Höchstbetrag).
-   - Bei „6 silver flat / 7cp per tail“ zahlt die Engine die 60; die Zahlung pro Schwanz entfällt.
+   - Bei „6 silver flat / 7cp per tail“ zahlt die Engine die 60; die Zahlung pro Schwanz ist Bonus des Auftraggebers.
    - „4 silver a night“ zahlt einmal 40.
-   - Solche Anteile lassen sich auch nicht als Coin nachbuchen, wenn das `why` den Vertrag nennt.
+   - Solche Anteile lassen sich nicht als Coin nachbuchen, wenn das `why` den Vertrag nennt.
    - Eine Belohnung ohne Betrag zahlt die Engine nicht; der Erzähler darf sie dann wie bisher melden.
 5. **Geschenke und Zahlungen ohne Vertragsnamen:**
    - Das Lorebook sagt, ein Zusatz des Auftraggebers sei sein Geschenk. Nennt die Buchung den Vertrag, lehnt die Engine sie trotzdem ab; ein Geschenk muss ohne den Vertragsnamen gebucht werden.
@@ -218,16 +229,18 @@ Quest (active, Novice Guild contract): Wolf Problem — Millbrook Hamlet — …
    - Nennt der Erzähler das Ziel nur beschreibend, bleibt Alaric in der Engine am alten Ort.
    - Ein späterer Report kann die Stadt nur mit einer Reise-Entscheidung in deiner Nachricht nachtragen.
    - Im Lauf wäre die Abgabe in Nachricht 30 deshalb „noch aktiv“ geblieben, obwohl die Geschichte schon an der Theke war. Für die Engine ist das richtig, für dich sichtbar (`QUEST STILL ACTIVE`).
-8. **Private Arbeit und Quest-XP:**
-   - ChatGPT schreibt, private Aufträge bekommen „keine Guild Quest XP“. Ich habe das als „keine Gilden-Anrechnung“ gelesen: Core #25 vergibt Quest-XP für jede Quest mit Level und Typ, nicht nur für Gildenverträge.
-   - Private Arbeit bekommt deshalb weiter Quest-XP.
-   - Sollen private Aufträge gar keine Quest-XP geben, ist das eine Designentscheidung für dich.
+8. **Private Arbeit und Quest-XP (von dir bestätigt):**
+   - Private Aufträge geben Quest-XP nach Core #25 und werden direkt bezahlt.
+   - Sie haben keinen Quest-Rang, bekommen keine Gilden-Auszahlung und zählen nicht für die Beförderung.
 9. **Scheitern:** Ein Vertrag darf überall als failed gemeldet werden. Aufgeben muss man nicht am Schalter.
 10. **Ob ein Auftrag ein Gildenvertrag ist, entscheidet der Report.** Ein Brett-Auftrag ohne `rank` wäre private Arbeit. Das Schema verlangt den Rang für Verträge, und der Lauf hatte ihn bei allen fünf.
 
 ## 7. Was die Engine erzwingt (Invarianten)
 
-- Ein Gildenvertrag wird nur completed, wenn er active war und Alaric am Ende der Antwort in einer Stadt oder Hauptstadt ist.
+- Ein Gildenvertrag wird nur completed, wenn drei Dinge gelten:
+  - Er war active.
+  - Alaric ist am Ende der Antwort in einer Stadt oder Hauptstadt.
+  - Deine Nachricht gibt ihn ab, beim Namen oder als „the quest“ (3.1.6).
 - Seine Belohnung zahlt nur die Engine, genau einmal: mit dem Abschluss und in Höhe des ersten ausgehängten Betrags.
 - Kein Report bucht positives Coin für Alaric, das einen Gildenvertrag mit Betrag nennt oder im Abschluss-Report eines solchen Vertrags steht.
 - Quest-XP gibt es einmal, beim Abschluss.
@@ -239,7 +252,15 @@ Quest (active, Novice Guild contract): Wolf Problem — Millbrook Hamlet — …
 
 ## 8. Bekannte Grenzen (bewusst offen)
 
-- Der Schalter ist nur als Stadt oder Hauptstadt erkannt; Beweise werden nicht geprüft; Belohnungen ohne festen Betrag und Geschenke unter dem Vertragsnamen (Abschnitt 6).
+- **Aus Abschnitt 6:**
+  - Wo in der Stadt du abgibst, prüft die Engine nicht.
+  - Beweise werden nicht geprüft.
+  - Belohnungen ohne festen Betrag und Geschenke unter dem Vertragsnamen sind nicht abgedeckt.
+- **Abgabe über zwei Antworten:** Die Abgabe gilt für die Antwort auf deine Abgabe-Nachricht und für eine Nachricht davor, deren Antwort keinen Report hatte.
+  - Prüft der Schreiber erst und schließt in der nächsten Antwort ab, muss deine nächste Nachricht wieder abgeben.
+  - Bis dahin steht `QUEST STILL ACTIVE`.
+  - In den bisherigen Läufen kam der Abschluss immer in der Antwort auf die Abgabe (24.09. 23:23: „turn in the signature slip and the Quest overall“).
+- **„the quest“ ohne Namen** gibt jeden Vertrag ab, den die Antwort abschließt.
 - **Hessa und die tagwoman:** keine Zusammenführung über Beschreibungen.
 - **Namenswissen** der Registrierung: nicht gelöst, Alarics Name bleibt geschützt.
 - **Nachricht 8 ist kontrafaktisch:** Der aufgezeichnete Report wurde ohne die beiden Schreiber im Engine-Block geschrieben und legt den Registrierungsschreiber neu an. Ob das Modell mit ihnen im Block ihre Refs nutzt, zeigt erst ein neuer Lauf.
@@ -259,12 +280,20 @@ Quest (active, Novice Guild contract): Wolf Problem — Millbrook Hamlet — …
 - H: Der Kampf ist der des Laufs (Events, Würfel, Panels); nur der XP-Stand ist 20 statt 35.
 - „Millbrook villagers“ ist keine Person.
 
-**`tests/unit/report.test.js`** (5 Tests):
+**`tests/unit/report.test.js`** (6 Tests):
 - der Lebenszyklus eines Vertrags;
+- die Abgabe durch den Spieler (3.1.6), Fälle A–D aus dem Review in Alderwatch:
+  - A: im Keller erledigt gemeldet, er bleibt aktiv;
+  - B: nur nach Alderwatch zurückgekehrt, er bleibt aktiv;
+  - C: „I return to the Guild and turn in Wolf Problem“ schließt nur diesen Vertrag ab, mit 8 Silber und Quest-XP;
+  - D: eine zweite Abgabe zahlt nichts;
+  - danach „turn the quest in“ ohne Namen;
 - erster Betrag, eine Belohnung ohne Betrag, private Arbeit;
 - Quest-Identität: kürzerer Titel, mehrdeutig, längerer Titel, abgeschlossene Quest;
 - Registrierung;
 - Ortsname und Sammelbezeichnung.
+
+**`tests/unit/intent.test.js`:** Formulierungen, die abgeben (mit Namen, ohne Namen, aus den Läufen vom 24.09. und 27.09.), und solche, die es nicht tun (Rückkehr, Töten, Zeigen, die Worte des Reeve, „turned in for the night“, Fragen).
 
 **`tests/unit/report_request.test.js`:**
 - die Orts-Nachfrage mit `present`: per Ref oder Name, `[]`, unbekannte Refs;
@@ -272,12 +301,16 @@ Quest (active, Novice Guild contract): Wolf Problem — Millbrook Hamlet — …
 
 **Live-Smoke (`tools/st_live/run.mjs`):**
 - Der Mock antwortet auf die Orts-Nachfrage mit `present`.
-- Der Rattenvertrag hat jetzt eine Belohnung („5 silver“). Bei der Abgabe zahlt die Engine 5 Silber, und die 50 Copper des Reports werden abgelehnt (Prüfung `guildTurnIn`).
+- Der Rattenvertrag hat jetzt eine Belohnung („5 silver“).
+- Im Keller meldet der Report ihn als erledigt; er bleibt aktiv (`QUEST STILL ACTIVE`).
+- Bei der Abgabe („turn in the rat job with Serah“) zahlt die Engine 5 Silber, und die 50 Copper des Reports werden abgelehnt.
+- Beides prüft `guildTurnIn`.
 
 **Gegenproben:**
-- Alle 15 neuen oder geänderten Tests scheitern auf 3.1.4.
+- Alle 15 neuen oder geänderten Tests von 3.1.5 scheitern auf 3.1.4. Die beiden neuen Tests von 3.1.6 scheitern auf 3.1.5.
+- Alle Tests über den Host schreiben auf 3.1.6 dieselben Records wie auf 3.1.5.
 - Alle übrigen Tests schreiben auf 3.1.5 dieselben Records wie auf 3.1.4 (aufgezeichnet und verglichen). Unterschiede gibt es nur bei der Build-Nummer im Kampagnenstart und in `#audit` sowie in der Reihenfolge der Records des Narrator-Vergleichs.
 - Die Läufe v8, v9 und v10 spielen unverändert.
 - Der Lauf von 04:11 spielt auf 3.1.4 byte-gleich. Auf 3.1.5 weicht er nur an den gewollten Stellen ab (Abschnitt 5).
 
-**Version:** 3.1.5.
+**Version:** 3.1.6 (3.1.5 plus die Abgabe durch den Spieler).

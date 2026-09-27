@@ -51,7 +51,8 @@ const SCRIPT = [
     ['Greyhowl', '"Greyhowl." Kest\'s one eye narrows. "Took two Wardens last spring. You leave that bill alone, Novice." He taps the lower slip instead. "Rats. Start there."\n<avereth>{"time":5,"memory":[{"text":"Kest warned Alaric that Greyhowl killed two Wardens and told him to leave the posting alone","who":["Kest","pc"],"imp":7}],"attitude":[{"who":"Kest","delta":-15,"why":"a green Novice eyeing the Greyhowl bill"}],"facts":[{"s":"Kest","p":"agenda","o":"get the Greyhowl posting taken down"}]}</avereth>'],
     ['register', 'Serah takes the two silver, stamps a lead tag and slides it across. "Rats in the Salt Cellar. Under the fish docks. Bring an ear."\n<avereth>{"time":10,"coin":[{"cp":-20,"why":"Guild registration"}],"facts":[{"s":"pc","p":"guild_rank","o":"Novice"}],"items":[{"item":"Guild registration tag","qty":1,"from":"Serah","to":"pc","why":"registration"}],"quests":[{"title":"Rats in the Salt Cellar","status":"active"}]}</avereth>'],
     ['salt cellar', 'The salt cellar under the fish docks is cold and briny. Past the stacked barrels a rat the size of a cat gnaws at a sack, its back to the stairs, unaware of you.\n<avereth>{"time":30,"place":"salt cellar under the fish docks","new":[{"ref":"rat","kind":"creature","species":"rat","desc":["big rat"],"band":"SHORT"}],"aware":[{"who":"rat","level":"unaware"}]}</avereth>'],
-    ['Heavy Slash the rat', 'Two quiet steps, then the blade comes down behind the rat\'s shoulder and pins it to the sack; it kicks twice and is still. Brine drips somewhere in the dark.\n<avereth>{"time":1}</avereth>'],
+    // the rat dead in the cellar, the report calls the contract completed: it stays active until the player turns it in
+    ['Heavy Slash the rat', 'Two quiet steps, then the blade comes down behind the rat\'s shoulder and pins it to the sack; it kicks twice and is still. Brine drips somewhere in the dark.\n<avereth>{"time":1,"quests":[{"title":"Rats in the Salt Cellar","status":"completed"}]}</avereth>'],
     // a fight the report opens (live run 26.09. 23:09): the wolf, faster than Alaric, acts with this reply
     ['river bank', 'The reeds part. A grey wolf comes out low and fast, straight at you.\n<avereth>{"time":15,"place":"river bank below Ashbridge","new":[{"ref":"wolf","kind":"creature","species":"wolf","band":"SHORT"}],"combat":{"by":"wolf"}}</avereth>'],
     ['Heavy Slash Wolf A', 'Steel meets fur and the wolf reels back into the reeds, snarling.\n<avereth>{}</avereth>'],
@@ -200,7 +201,7 @@ for (const input of [
     '*I register with Serah, pay the 2 silver fee and take the Rats in the Salt Cellar job.*',
     '*I head to the salt cellar under the fish docks.*',
     '*I creep up and Heavy Slash the rat.*',
-    '*I cut an ear off the rat and walk back to the Guild hall to report to Serah.*',
+    '*I cut an ear off the rat, walk back to the Guild hall and turn in the rat job with Serah.*',
     // Kest again: his Greyhowl exchange (turn 5) is outside the history window now, his record is not
     '"Kest. The rats are done, like you said."',
     // travel to another realm; the next request's World Info must follow the Lore Bridge, not the chat text
@@ -279,10 +280,11 @@ checks.placeRequested = placeReqs.length === 1 && /NARRATOR'S REPLY:\nThe south 
     && /Its report named the city reached \("Tidecross"\) but no spot in it\. The people its report introduced: "gate guard" \(gate guard, bored\)/.test(String(placeReqs[0].lastUser))
     && /PLACE REPORTED: Tidecross south gate, named by a separate request \(\d+\.\d s\)\./.test(T('city gate').shown || '')
     && /Location: Tidecross, \w+ — Tidecross south gate/.test(T('city gate').hudText || '') && /Present: [^\n]*gate guard/.test(T('city gate').hudText || '');
-// a Guild contract turned in at the front desk (live run 27.09. 04:11): the engine pays its posted reward, and the coin
-// the report books for it is refused
+// a Guild contract (live run 27.09. 04:11): reported completed in the cellar it stays active; turned in by the player at
+// the Guild, the engine pays its posted reward, and the coin the report books for it is refused
 const turnIn = T('back to the Guild');
-checks.guildTurnIn = /QUEST COMPLETED — Rats in the Salt Cellar/.test(turnIn.shown || '') && /COIN \+5 Silver → 8 Silver · Guild reward: Rats in the Salt Cellar/.test(turnIn.shown || '')
+checks.guildTurnIn = /QUEST STILL ACTIVE — Rats in the Salt Cellar/.test(T('Heavy Slash the rat').shown || '')
+    && /QUEST COMPLETED — Rats in the Salt Cellar/.test(turnIn.shown || '') && /COIN \+5 Silver → 8 Silver · Guild reward: Rats in the Salt Cellar/.test(turnIn.shown || '')
     && (turnIn.rejected || []).some((r) => r.startsWith('the Guild pays the posted 5 Silver of the Guild contract "Rats in the Salt Cellar" with this turn-in'));
 checks.reportRequestFailed = /NO FACT REPORT, and the separate request brought none \(\d+\.\d s\): nothing this reply established was recorded/.test(T('grilled eel').shown || '');
 checks.warriorHud = /HP 85\/85 \(unhurt\)/.test(T('city gate').hudText || '') && /Starter Longsword · Starter Heavy Armor/.test(T('city gate').hudText || '')

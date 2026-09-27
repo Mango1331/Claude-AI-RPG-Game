@@ -93,7 +93,7 @@
       "id": "lore.guild_contracts",
       "title": "[LORE] Guild contracts",
       "kind": "topic",
-      "text": "GUILD CONTRACTS\nA Guild contract is posted, taken and closed at the Guild: the client deposits the posted reward with it and need not appear. Clients, witnesses and local authorities inform, give access and confirm proof (a signature, a seal, trophies); they neither complete the contract nor pay it. Alaric turns it in at the front desk of any Guild branch, which checks the proof and pays the posted reward; only then is it a completed Guild Quest. Registration and other Guild procedures are not contracts; work agreed directly with a person is private and settled between them.",
+      "text": "GUILD CONTRACTS\nA Guild contract is posted, taken and closed at the Guild: the client deposits the posted reward with it and need not appear. Clients, witnesses and local authorities inform, give access and confirm proof (a signature, a seal, trophies); they neither complete the contract nor pay it. Alaric turns it in himself at the front desk of any Guild branch (every human city and capital has one), which checks the proof and pays the posted reward; reaching the city or finishing the work turns nothing in, and only the turn-in makes it a completed Guild Quest. A contract posts one fixed Guild payout; anything variable or per unit is the client's separate bonus. Registration and other Guild procedures are not contracts; work agreed directly with a person is private and settled between them.",
       "keys": [
         "Guild quest",
         "Guild contract",

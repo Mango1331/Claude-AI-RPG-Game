@@ -98,10 +98,11 @@ Nur drei Einträge ändern ihren Text, Schlüssel und Einstellungen bleiben glei
    - Ein Gildenvertrag wird an der Gilde ausgehängt, angenommen und abgeschlossen. Der Auftraggeber hinterlegt die Belohnung bei der Gilde und muss selbst nicht vorkommen.
    - Die Arbeit findet draußen statt. Auftraggeber, Zeugen und örtliche Obrigkeit geben Auskunft, gewähren Zugang, prüfen Trophäen und stellen Nachweise aus (Unterschrift, Siegel, Quittung).
    - Eine örtliche Bestätigung ist Beweis, kein Abschluss: Außerhalb der Gilde schließt niemand einen Gildenvertrag ab oder zahlt seine Belohnung.
-   - Abgabe am Schalter jeder Gildenstelle. Der Schalter prüft den Beweis, schließt ab und zahlt die ausgeschriebene Belohnung; erst dann zählt der Auftrag für die Beförderung.
+   - Alaric gibt den Vertrag selbst ab, mit Beweis, am Schalter jeder Gildenstelle; jede menschliche Stadt und Hauptstadt hat eine. Der Schalter prüft den Beweis, schließt ab und zahlt die ausgeschriebene Belohnung; erst dann zählt der Auftrag für die Beförderung. Die Stadt zu erreichen oder die Arbeit zu beenden, gibt nichts ab.
+   - Auszahlung: Ein Vertrag hat eine feste, sichere Gilden-Auszahlung („6 silver“). Was variabel ist, pro Stück oder nach Ermessen, ist ein eigener Bonus des Auftraggebers („Guild payout: 6 silver. Client bonus: +1 silver per intact pelt.“).
    - Registrierung und andere Verfahren der Gilde sind keine Verträge. Private Arbeit ohne Gilde wird direkt beglichen und bringt keine Gilden-Anrechnung.
-2. **„Complete quest body“ (uid 29):** Beweis und Quelle der Belohnung nennen für Gildenverträge den Schalter und die hinterlegte Belohnung.
-3. **„Quest rewards“ (uid 31):** Die ausgeschriebene Belohnung eines Gildenvertrags zahlt die Gilde bei der Abgabe, nie der Auftraggeber draußen. Was ein Auftraggeber zusätzlich gibt (eine Mahlzeit, ein Bonus), ist sein eigenes Geschenk.
+2. **„Complete quest body“ (uid 29):** Für Gildenverträge nennen der Beweis den Schalter und die Quelle der Belohnung die hinterlegte feste Auszahlung; Anteile pro Stück sind ein eigener Bonus.
+3. **„Quest rewards“ (uid 31):** Die ausgeschriebene Belohnung eines Gildenvertrags ist eine feste Gilden-Auszahlung. Die Gilde zahlt sie bei der Abgabe, nie der Auftraggeber draußen. Was variabel ist und was ein Auftraggeber zusätzlich gibt (eine Mahlzeit, ein Bonus), gehört ihm und nicht zum Vertrag.
 
 Die Engine setzt dieselbe Regel mechanisch durch: `docs/TESTRUN_V11.md`, `content/rules.json` (`guild`).
 

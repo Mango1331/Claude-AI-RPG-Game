@@ -1,6 +1,6 @@
 {
   "name": "avereth-engine",
-  "version": "3.1.5",
+  "version": "3.1.6",
   "description": "Deterministic RPG engine for the Avereth campaign (SillyTavern extension + Node test suite). Zero runtime dependencies.",
   "type": "module",
   "private": true,

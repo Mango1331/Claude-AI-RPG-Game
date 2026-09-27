@@ -8,7 +8,7 @@ import { awardXp, questXp } from './progression.js';
 import { applyCoin, parseCoin, formatCoin } from './economy.js';
 import { deriveCharacter } from './derived.js';
 import { checkChance } from './checks.js';
-import { authorization, takesQuest, namesQuest, titleWords } from './intent.js';
+import { authorization, takesQuest, turnsInQuest, namesQuest, titleWords } from './intent.js';
 import { clamp, normText, slug, uniq } from './util.js';
 
 const TAG_RE = /<avereth>\s*([\s\S]*?)\s*<\/avereth>/gi;
@@ -664,6 +664,12 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     const contracts = Object.values(state.quests).filter((q) => q.rank && postedCoin(q.reward, content) !== null);
     const closing = arr(report.quests).map((q) => (q?.status === 'completed' && q.title ? state.quests[questId(state, q.title)] : null))
         .find((cur) => cur && cur.status === 'active' && contracts.includes(cur)) || null;
+    // turning a Guild contract in is Alaric's act (PLAYER OWNERSHIP): the player's message turns in the contracts it names,
+    // or, naming none ("I go back to the guild to turn the Quest in"), any. A city has a Guild branch; that alone is no
+    // turn-in (review of 3.1.5: in a cellar of Alderwatch, the rats killed, "completed" paid the contract)
+    const nowText = [...(state.last?.carry || []), state.last?.input || ''].join('\n');
+    const turnedInNow = Object.values(state.quests).filter((q) => q.rank && q.status === 'active' && turnsInQuest(nowText, q.title)).map((q) => q.id);
+    const turnsIn = (cur) => (turnedInNow.length ? turnedInNow.includes(cur.id) : auth.turnIn);
     for (const c of arr(report.coin)) {
         const who = resolve((c && c.who) || 'pc');
         const cp = Number(c && c.cp);
@@ -671,7 +677,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (contract) {
             const amount = formatCoin(postedCoin(contract.reward, content), content);
             reject(c, contract.status === 'completed' ? `the Guild paid the posted ${amount} of the Guild contract "${contract.title}" when it was turned in, and the engine booked it: no coin is reported for it`
-                : contract === closing && guildDesk ? `the Guild pays the posted ${amount} of the Guild contract "${contract.title}" with this turn-in, and the engine books it: no coin is reported for it`
+                : contract === closing && guildDesk && turnsIn(contract) ? `the Guild pays the posted ${amount} of the Guild contract "${contract.title}" with this turn-in, and the engine books it: no coin is reported for it`
                 : `the reward of the Guild contract "${contract.title}" is paid by the Guild when ${pcName} turns it in at a Guild front desk: the engine books the posted ${amount} then, so no coin is reported for it`);
             continue;
         }
@@ -717,7 +723,6 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     // (Testrun 4: "I take the Vermin in the Malthouse Cellar Quest" got a reply without report and the quest stayed
     // "offered" for good). A message that takes quests by name licenses only those (Testrun 4, discarded first
     // attempt: the player took the vermin bill, the reply signed him onto the wolf contract).
-    const nowText = [...(state.last?.carry || []), state.last?.input || ''].join('\n');
     const takenNow = uniq([...Object.values(state.quests).map((x) => x.title), ...arr(report.quests).map((x) => x?.title).filter(Boolean).map(String)])
         .filter((t) => takesQuest(nowText, t));
     const acceptance = (title, cur) => {
@@ -746,6 +751,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         if (status === 'completed' && cur?.rank && cur.status !== 'completed') {
             if (cur.status !== 'active') { reject(q, `the Guild contract "${cur.title}" was never taken: it is taken at the Guild ("active") before it is turned in`); continue; }
             if (!guildDesk) held = `quest "${cur.title}" stays active: a Guild contract is completed only when ${pcName} turns it in at a Guild front desk, which checks the proof and pays the posted reward; proof he gains on the way goes in its note or his items`;
+            else if (!turnsIn(cur)) held = `quest "${cur.title}" stays active: ${owner('turning in a Guild contract')} ("I turn in the … quest"); only then does a Guild front desk check the proof and pay the posted reward`;
         }
         if (held) corrections.push(`${held}.`);
         // a quest's reward is fixed when it first appears: a new quest without its recommended Level and type is not

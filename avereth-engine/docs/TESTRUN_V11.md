@@ -119,7 +119,7 @@ Quest (active, Novice Guild contract): Wolf Problem — Millbrook Hamlet — …
 - Der Lauf zeigt, dass das Modell dem Lorebook folgt. Wenn das Lorebook etwas Falsches sagt, tut das Modell also Falsches.
 - Umgekehrt zeigt er, dass Belohnung und Abschluss nicht am Wortlaut des Modells hängen dürfen.
 
-## 4. Änderungen in 3.1.5 und 3.1.6
+## 4. Änderungen in 3.1.5, 3.1.6 und 3.1.7
 
 ### Gildenverträge (`delta.js`)
 
@@ -127,8 +127,10 @@ Quest (active, Novice Guild contract): Wolf Problem — Millbrook Hamlet — …
 - **Abschluss nur bei der Abgabe durch den Spieler.** Seit 3.1.6 müssen beide Bedingungen gelten:
   - Alaric ist am Ende der Antwort in einer Stadt oder Hauptstadt des Contents (`rules.json` `guild.branch_kinds`). Dort hat die Gilde eine Stelle.
   - Deine aktuelle Nachricht gibt den Vertrag ab (`intent.js`, gebaut wie `takesQuest`):
-    - Mit Namen gilt nur der genannte Vertrag: „I turn in the Wolf Problem quest“, „I hand in Wolf Problem“, „I report the completed Wolf Problem at the Guild“.
-    - Ohne Namen gilt jeder Vertrag, den die Antwort abschließt: „I return to the Guild and turn the quest in“, „turn it in“.
+    - Mit Namen gilt nur der genannte Vertrag: „I turn in the Wolf Problem quest“, „I hand in Wolf Problem“, „I report the completed Wolf Problem at the Guild“. Nennt die Nachricht irgendeine bekannte Quest, auch eine erledigte, gibt sie keinen anderen Vertrag ab.
+    - Ohne Namen („I return to the Guild and turn the quest in“, „turn it in“) gilt die Abgabe seit 3.1.7 nur, wenn genau ein Gildenvertrag aktiv ist. Dann ist es dieser.
+    - Sind mehrere aktiv, gibt eine Abgabe ohne Namen keinen ab. Der Vertrag bleibt aktiv, über der Antwort steht `QUEST STILL ACTIVE — …: more than one Guild contract is active; one is turned in by its name`, und der Spieler muss ihn benennen.
+    - Ein Titel gilt als genannt, wenn zwei seiner unterscheidenden Wörter vorkommen, bei einem Titel mit nur einem solchen Wort dieses eine. „turn in the rat job“ nennt „Rats in the Grain Cellars“ also nicht und ist eine Abgabe ohne Namen.
     - Wie bei der Annahme zählt auch eine Nachricht, deren Antwort keinen Report hatte.
   - Nicht genug sind „I killed the wolves“, „I return to Alderwatch“, „I show Aldous the heads“ und die Worte eines NPC.
 - **Sonst bleibt der Vertrag aktiv:**
@@ -136,7 +138,10 @@ Quest (active, Novice Guild contract): Wolf Problem — Millbrook Hamlet — …
   - Über der Antwort steht `QUEST STILL ACTIVE — …: a Guild contract is completed when it is turned in at a Guild front desk`.
   - Der Erzähler bekommt eine Korrektur: außerhalb einer Stadt „…completed only when Alaric turns it in at a Guild front desk…“, in der Stadt ohne Abgabe „PLAYER OWNERSHIP: turning in a Guild contract needs the player's own decision in the current message ("I turn in the … quest")…“.
   - Notiz und Items bleiben: „two wolf heads delivered as proof, signature pending“, das gesiegelte Papier.
-- **Warum der Nachtrag:** 3.1.5 prüfte nur die Stadt. Im Review fiel auf: Im Keller unter Alderwatch hätte ein fälschliches „completed“ nach den Ratten den Vertrag abgeschlossen und bezahlt. Eine Stadt mit Gildenstelle ist noch keine Abgabe am Schalter.
+- **Warum die Nachträge:**
+  - 3.1.5 prüfte nur die Stadt. Im Review fiel auf: Im Keller unter Alderwatch hätte ein fälschliches „completed“ nach den Ratten den Vertrag abgeschlossen und bezahlt. Eine Stadt mit Gildenstelle ist noch keine Abgabe am Schalter.
+  - In 3.1.6 gab „I turn the quest in“ jeden Vertrag ab, den der Report abschloss, bei zwei aktiven Verträgen also beide (Review von 3.1.6).
+  - Außerdem galt eine Nachricht, die eine nicht aktive Quest nannte, als Abgabe ohne Namen.
 - **Nicht genommen:** Ein Vertrag, der nie aktiv war, wird nicht abgegeben. Der Report wird abgelehnt: „was never taken“.
 - **Belohnung:**
   - Beim Abschluss am Schalter zahlt die Engine den ersten Betrag der ausgehängten Belohnung. Aus „8 silver on proof of at least two wolves“ werden +80 Copper, im Panel als `COIN +8 Silver → … · Guild reward: Wolf Problem — Millbrook Hamlet`.
@@ -240,7 +245,7 @@ Quest (active, Novice Guild contract): Wolf Problem — Millbrook Hamlet — …
 - Ein Gildenvertrag wird nur completed, wenn drei Dinge gelten:
   - Er war active.
   - Alaric ist am Ende der Antwort in einer Stadt oder Hauptstadt.
-  - Deine Nachricht gibt ihn ab, beim Namen oder als „the quest“ (3.1.6).
+  - Deine Nachricht gibt ihn ab (3.1.6): beim Namen, oder als „the quest“, wenn er der einzige aktive Vertrag ist (3.1.7).
 - Seine Belohnung zahlt nur die Engine, genau einmal: mit dem Abschluss und in Höhe des ersten ausgehängten Betrags.
 - Kein Report bucht positives Coin für Alaric, das einen Gildenvertrag mit Betrag nennt oder im Abschluss-Report eines solchen Vertrags steht.
 - Quest-XP gibt es einmal, beim Abschluss.
@@ -260,7 +265,9 @@ Quest (active, Novice Guild contract): Wolf Problem — Millbrook Hamlet — …
   - Prüft der Schreiber erst und schließt in der nächsten Antwort ab, muss deine nächste Nachricht wieder abgeben.
   - Bis dahin steht `QUEST STILL ACTIVE`.
   - In den bisherigen Läufen kam der Abschluss immer in der Antwort auf die Abgabe (24.09. 23:23: „turn in the signature slip and the Quest overall“).
-- **„the quest“ ohne Namen** gibt jeden Vertrag ab, den die Antwort abschließt.
+- **Abgabe ohne Namen:** Sie gilt nur für den einzigen aktiven Vertrag.
+  - Wer mehrere Verträge zugleich abgeben will, nennt jeden beim Namen („I turn in the Cart Guard, the Boar Damage and the Night Watch quests“).
+  - „turn them all in“ gibt es bewusst nicht.
 - **Hessa und die tagwoman:** keine Zusammenführung über Beschreibungen.
 - **Namenswissen** der Registrierung: nicht gelöst, Alarics Name bleibt geschützt.
 - **Nachricht 8 ist kontrafaktisch:** Der aufgezeichnete Report wurde ohne die beiden Schreiber im Engine-Block geschrieben und legt den Registrierungsschreiber neu an. Ob das Modell mit ihnen im Block ihre Refs nutzt, zeigt erst ein neuer Lauf.
@@ -280,14 +287,19 @@ Quest (active, Novice Guild contract): Wolf Problem — Millbrook Hamlet — …
 - H: Der Kampf ist der des Laufs (Events, Würfel, Panels); nur der XP-Stand ist 20 statt 35.
 - „Millbrook villagers“ ist keine Person.
 
-**`tests/unit/report.test.js`** (6 Tests):
+**`tests/unit/report.test.js`** (7 Tests):
 - der Lebenszyklus eines Vertrags;
 - die Abgabe durch den Spieler (3.1.6), Fälle A–D aus dem Review in Alderwatch:
   - A: im Keller erledigt gemeldet, er bleibt aktiv;
   - B: nur nach Alderwatch zurückgekehrt, er bleibt aktiv;
   - C: „I return to the Guild and turn in Wolf Problem“ schließt nur diesen Vertrag ab, mit 8 Silber und Quest-XP;
   - D: eine zweite Abgabe zahlt nichts;
-  - danach „turn the quest in“ ohne Namen;
+  - danach „turn the quest in“ ohne Namen, als der Rattenvertrag der einzige aktive ist;
+- die Abgabe ohne Namen (3.1.7), Regressionen 1–4 aus dem Review:
+  - 1: ein aktiver Vertrag und „turn the quest in“: er wird abgeschlossen;
+  - 2: zwei aktive Verträge, „turn the quest in“, der Report schließt beide ab: keiner, mit dem Hinweis auf den Namen;
+  - 3: zwei aktive Verträge und „turn in Wolf Problem“: nur der Wolfsvertrag;
+  - 4: eine zweite Abgabe zahlt nichts, und eine Nachricht, die eine Quest nennt, gibt auch den einzigen anderen aktiven Vertrag nicht ab;
 - erster Betrag, eine Belohnung ohne Betrag, private Arbeit;
 - Quest-Identität: kürzerer Titel, mehrdeutig, längerer Titel, abgeschlossene Quest;
 - Registrierung;
@@ -307,10 +319,11 @@ Quest (active, Novice Guild contract): Wolf Problem — Millbrook Hamlet — …
 - Beides prüft `guildTurnIn`.
 
 **Gegenproben:**
-- Alle 15 neuen oder geänderten Tests von 3.1.5 scheitern auf 3.1.4. Die beiden neuen Tests von 3.1.6 scheitern auf 3.1.5.
-- Alle Tests über den Host schreiben auf 3.1.6 dieselben Records wie auf 3.1.5.
+- Alle 15 neuen oder geänderten Tests von 3.1.5 scheitern auf 3.1.4.
+- Die beiden neuen Tests von 3.1.6 scheitern auf 3.1.5, der neue Test von 3.1.7 auf 3.1.6.
+- Alle Tests über den Host schreiben auf 3.1.6 und 3.1.7 dieselben Records wie auf 3.1.5.
 - Alle übrigen Tests schreiben auf 3.1.5 dieselben Records wie auf 3.1.4 (aufgezeichnet und verglichen). Unterschiede gibt es nur bei der Build-Nummer im Kampagnenstart und in `#audit` sowie in der Reihenfolge der Records des Narrator-Vergleichs.
 - Die Läufe v8, v9 und v10 spielen unverändert.
 - Der Lauf von 04:11 spielt auf 3.1.4 byte-gleich. Auf 3.1.5 weicht er nur an den gewollten Stellen ab (Abschnitt 5).
 
-**Version:** 3.1.6 (3.1.5 plus die Abgabe durch den Spieler).
+**Version:** 3.1.7 (3.1.5, dazu die Abgabe durch den Spieler in 3.1.6 und die Abgabe ohne Namen nur beim einzigen aktiven Vertrag in 3.1.7).

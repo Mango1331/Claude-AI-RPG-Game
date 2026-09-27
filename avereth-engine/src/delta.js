@@ -664,12 +664,15 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     const contracts = Object.values(state.quests).filter((q) => q.rank && postedCoin(q.reward, content) !== null);
     const closing = arr(report.quests).map((q) => (q?.status === 'completed' && q.title ? state.quests[questId(state, q.title)] : null))
         .find((cur) => cur && cur.status === 'active' && contracts.includes(cur)) || null;
-    // turning a Guild contract in is Alaric's act (PLAYER OWNERSHIP): the player's message turns in the contracts it names,
-    // or, naming none ("I go back to the guild to turn the Quest in"), any. A city has a Guild branch; that alone is no
-    // turn-in (review of 3.1.5: in a cellar of Alderwatch, the rats killed, "completed" paid the contract)
+    // turning a Guild contract in is Alaric's act (PLAYER OWNERSHIP): a message that turns in quests by name turns in only
+    // those; one that names none ("I go back to the guild to turn the Quest in") only the one active contract, never one of
+    // several (review of 3.1.6). A city has a Guild branch; that alone is no turn-in (review of 3.1.5: in a cellar of
+    // Alderwatch, the rats killed, "completed" paid the contract)
     const nowText = [...(state.last?.carry || []), state.last?.input || ''].join('\n');
-    const turnedInNow = Object.values(state.quests).filter((q) => q.rank && q.status === 'active' && turnsInQuest(nowText, q.title)).map((q) => q.id);
-    const turnsIn = (cur) => (turnedInNow.length ? turnedInNow.includes(cur.id) : auth.turnIn);
+    const activeContracts = Object.values(state.quests).filter((q) => q.rank && q.status === 'active');
+    const namedNow = Object.values(state.quests).filter((q) => turnsInQuest(nowText, q.title)).map((q) => q.id);
+    const unnamed = !namedNow.length && auth.turnIn;
+    const turnsIn = (cur) => (namedNow.length ? namedNow.includes(cur.id) : unnamed && activeContracts.length === 1);
     for (const c of arr(report.coin)) {
         const who = resolve((c && c.who) || 'pc');
         const cp = Number(c && c.cp);
@@ -748,9 +751,12 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         // reeve's signature still to come, the wolf contract was reported completed and paid its Quest XP). Proof found
         // on the way is noted; the contract stays active until the turn-in
         let held = null;
+        let byName = false; // "turn the quest in" with several contracts active: the player names the one he turns in
         if (status === 'completed' && cur?.rank && cur.status !== 'completed') {
             if (cur.status !== 'active') { reject(q, `the Guild contract "${cur.title}" was never taken: it is taken at the Guild ("active") before it is turned in`); continue; }
+            byName = guildDesk && unnamed && activeContracts.length > 1;
             if (!guildDesk) held = `quest "${cur.title}" stays active: a Guild contract is completed only when ${pcName} turns it in at a Guild front desk, which checks the proof and pays the posted reward; proof he gains on the way goes in its note or his items`;
+            else if (byName) held = `quest "${cur.title}" stays active: the player's message turns in a quest without naming it while ${activeContracts.length} Guild contracts are active, so it turns in none of them; he names the one he turns in ("I turn in the ${cur.title} quest")`;
             else if (!turnsIn(cur)) held = `quest "${cur.title}" stays active: ${owner('turning in a Guild contract')} ("I turn in the … quest"); only then does a Guild front desk check the proof and pay the posted reward`;
         }
         if (held) corrections.push(`${held}.`);
@@ -787,7 +793,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
             reward: cur?.reward ?? (typeof q.reward === 'string' || typeof q.reward === 'number' ? String(q.reward).slice(0, 120) : null),
             notes: [...(cur?.notes || []), ...(q.note ? [String(q.note).slice(0, 200)] : [])], history: [...(cur?.history || []), { ...at, status: held ? 'active' : status }],
         };
-        events.push({ t: 'quest.set', d: { quest, ...(held ? { held: 'turn-in at a Guild front desk' } : {}) } });
+        events.push({ t: 'quest.set', d: { quest, ...(held ? { held: byName ? 'turn-in by name' : 'turn-in at a Guild front desk' } : {}) } });
         accepted.push(`quest ${quest.title}: ${quest.status}${numbered && !cur ? ` (rank ${q.rank}: ${numbered}, by its level)` : ''}${held ? ' (turned in only at a Guild front desk)' : ''}`);
         // the Guild pays a contract's posted reward at the turn-in: the first amount it names (the rest of it, a meal or a
         // client's purse, is the client's own)

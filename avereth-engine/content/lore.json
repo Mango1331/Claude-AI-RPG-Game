@@ -90,6 +90,27 @@
       "source": "Lore v0.8 #4"
     },
     {
+      "id": "lore.guild_contracts",
+      "title": "[LORE] Guild contracts",
+      "kind": "topic",
+      "text": "GUILD CONTRACTS\nA Guild contract is posted, taken and closed at the Guild: the client deposits the posted reward with it and need not appear. Clients, witnesses and local authorities inform, give access and confirm proof (a signature, a seal, trophies); they neither complete the contract nor pay it. Alaric turns it in himself at the front desk of any Guild branch (every human city and capital has one), which checks the proof and pays the posted reward; reaching the city or finishing the work turns nothing in, and only the turn-in makes it a completed Guild Quest. A contract posts one fixed Guild payout; anything variable or per unit is the client's separate bonus. Registration and other Guild procedures are not contracts; work agreed directly with a person is private and settled between them.",
+      "keys": [
+        "Guild quest",
+        "Guild contract",
+        "quest reward",
+        "turn in",
+        "turn the quest in",
+        "front desk",
+        "bounty"
+      ],
+      "entities": [
+        "fac.adventurers_guild"
+      ],
+      "importance": 0.5,
+      "baseline": false,
+      "source": "Live run 27.09.2026 04:11 (Guild contract lifecycle); lorebook v0.12 uid 34"
+    },
+    {
       "id": "lore.monster_ecology",
       "title": "[LORE] Monster Ecology and Fauna",
       "kind": "topic",

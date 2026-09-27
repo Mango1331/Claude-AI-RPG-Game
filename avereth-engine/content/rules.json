@@ -209,6 +209,11 @@
     "copper_per_silver": 10,
     "silver_per_gold": 10
   },
+  "guild": {
+    "src": "Lorebook v0.12 GUILD — Contract lifecycle (live run 27.09.2026 04:11)",
+    "contract": "A Guild contract (a quest with a Guild Quest Rank) is taken at the Guild and completed only when the player turns it in (his message says so: by name, or unnamed when it is the one active contract) in a city or capital with a Guild branch; the Guild checks the proof and pays the posted reward, one fixed payout (the engine books its first amount), then Quest XP. Local clients inform, give access and confirm proof; they neither complete nor pay it. Work without a Quest Rank is private and settles directly (Quest XP, no Guild credit). The Guild registration is a procedure, not a contract.",
+    "branch_kinds": ["city", "capital"]
+  },
   "combat": {
     "src": "Core #23, #24, #26-#28",
     "phases": [

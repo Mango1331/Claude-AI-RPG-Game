@@ -339,7 +339,7 @@ async function main() {
         process.exit(2);
     }
     const { pairs, errors } = parseServerLog(fs.readFileSync(logFile, 'utf8'));
-    const lorebook = JSON.parse(fs.readFileSync(path.join(ROOT, 'lorebook/Avereth_World_Lore_v0.11.json'), 'utf8'));
+    const lorebook = JSON.parse(fs.readFileSync(path.join(ROOT, 'lorebook/Avereth_World_Lore_v0.12.json'), 'utf8'));
     const lore = Object.values(lorebook.entries).map((e) => String(e.content || '').trim()).filter((s) => s.length > 40);
     const gens = chatFile ? chatGenerations(fs.readFileSync(chatFile, 'utf8')) : [];
     const rows = measure(pairs, { lore, gens });

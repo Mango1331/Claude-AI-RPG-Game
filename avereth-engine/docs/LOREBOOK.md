@@ -1,4 +1,4 @@
-# Welt-Lore als SillyTavern-Lorebook (v0.11)
+# Welt-Lore als SillyTavern-Lorebook (v0.12)
 
 **Ausgangspunkt:** ChatGPTs Architekturvorschlag v0.10b (66 World-Info-Einträge und ein Handoff mit 7 Architekturfragen). Er wurde als externe Review behandelt und gegen drei Quellen geprüft:
 - den Engine-Code;
@@ -90,9 +90,25 @@ Der erste Lauf mit dem Lorebook ([TESTRUN_V4.md](TESTRUN_V4.md)):
 
 Alles andere ist unverändert übernommen: Inhalte, Realms, Stadt-Seeds, Generatoren, Klassen-Körper. Die Kanon-Zahlen sind gegen Core und Content geprüft und stimmen: Rang-Bänder, favorisierte Stats, Währung, Lebensspannen, S-Ränge je Realm.
 
+## Änderungen v0.11 → v0.12 (Gildenverträge, Live-Lauf 27.09.2026 04:11)
+
+Nur drei Einträge ändern ihren Text, Schlüssel und Einstellungen bleiben gleich:
+
+1. **„Adventurers' Guild and rank systems“ (uid 34)** bekommt den Abschnitt `GUILD CONTRACTS [CANON]`:
+   - Ein Gildenvertrag wird an der Gilde ausgehängt, angenommen und abgeschlossen. Der Auftraggeber hinterlegt die Belohnung bei der Gilde und muss selbst nicht vorkommen.
+   - Die Arbeit findet draußen statt. Auftraggeber, Zeugen und örtliche Obrigkeit geben Auskunft, gewähren Zugang, prüfen Trophäen und stellen Nachweise aus (Unterschrift, Siegel, Quittung).
+   - Eine örtliche Bestätigung ist Beweis, kein Abschluss: Außerhalb der Gilde schließt niemand einen Gildenvertrag ab oder zahlt seine Belohnung.
+   - Alaric gibt den Vertrag selbst ab, mit Beweis, am Schalter jeder Gildenstelle; jede menschliche Stadt und Hauptstadt hat eine. Der Schalter prüft den Beweis, schließt ab und zahlt die ausgeschriebene Belohnung; erst dann zählt der Auftrag für die Beförderung. Die Stadt zu erreichen oder die Arbeit zu beenden, gibt nichts ab.
+   - Auszahlung: Ein Vertrag hat eine feste, sichere Gilden-Auszahlung („6 silver“). Was variabel ist, pro Stück oder nach Ermessen, ist ein eigener Bonus des Auftraggebers („Guild payout: 6 silver. Client bonus: +1 silver per intact pelt.“).
+   - Registrierung und andere Verfahren der Gilde sind keine Verträge. Private Arbeit ohne Gilde wird direkt beglichen und bringt keine Gilden-Anrechnung.
+2. **„Complete quest body“ (uid 29):** Für Gildenverträge nennen der Beweis den Schalter und die Quelle der Belohnung die hinterlegte feste Auszahlung; Anteile pro Stück sind ein eigener Bonus.
+3. **„Quest rewards“ (uid 31):** Die ausgeschriebene Belohnung eines Gildenvertrags ist eine feste Gilden-Auszahlung. Die Gilde zahlt sie bei der Abgabe, nie der Auftraggeber draußen. Was variabel ist und was ein Auftraggeber zusätzlich gibt (eine Mahlzeit, ein Bonus), gehört ihm und nicht zum Vertrag.
+
+Die Engine setzt dieselbe Regel mechanisch durch: `docs/TESTRUN_V11.md`, `content/rules.json` (`guild`).
+
 ## Einrichtung in SillyTavern
 
-1. World Info → Import → `lorebook/Avereth_World_Lore_v0.11.json`.
+1. World Info → Import → `lorebook/Avereth_World_Lore_v0.12.json` (eine ältere Version vorher löschen).
 2. Charakterkarte → Globus-Symbol → das Lorebook als **Character Lore** verknüpfen, also nicht global aktivieren.
 3. World-Info-Einstellungen:
 
@@ -107,7 +123,7 @@ Alles andere ist unverändert übernommen: Inhalte, Realms, Stadt-Seeds, Generat
    | Alert on overflow | im Test an |
    | Vektor-Suche | aus |
 
-4. Avereth-Einstellung „World lore“ auf `Auto` lassen. Die Statuszeile zeigt dann `lore: World Info (Avereth World Lore v0.11)`.
+4. Avereth-Einstellung „World lore“ auf `Auto` lassen. Die Statuszeile zeigt dann `lore: World Info (Avereth World Lore v0.12)`.
 
 ## Nach Änderungen am Lorebook
 

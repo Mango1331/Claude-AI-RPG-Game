@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent, Game } from '../helpers.js';
-import { authorization, parseIntent, takesQuest } from '../../src/intent.js';
+import { authorization, parseIntent, takesQuest, turnsInQuest } from '../../src/intent.js';
 
 const content = await loadContent();
 
@@ -202,4 +202,21 @@ test('"the creature", "the beast": a word for any creature names the creatures p
     f.reply({ new: [{ ref: 'thug', kind: 'npc', desc: ['thug'], band: 'SHORT' }, { ref: 'wolf', kind: 'creature', species: 'wolf', band: 'SHORT' }], combat: [{ by: 'thug' }, { by: 'wolf' }] });
     assert.ok(f.state.encounter);
     assert.deepEqual([parseIntent('I Quick Slash the beast', f.state, content).target, parseIntent('I Quick Slash him', f.state, content).kind], ['mon.wolf', 'ambiguous_target']);
+});
+
+test('turning a quest in is the player\'s act: by its name, or as "the quest"; returning, killing and a reeve\'s word turn nothing in (review of 3.1.5)', () => {
+    const wolf = 'Wolf Problem — Millbrook Hamlet';
+    for (const t of ['I turn in the Wolf Problem quest.', 'I hand in Wolf Problem.', 'I report the completed Wolf Problem at the Guild.',
+        "*I walk back to the guild in Alderwatch and turn in the Wolf Problem quest at the front desk with the reeve's sealed paper*"]) assert.ok(turnsInQuest(t, wolf), t);
+    // no name: any quest the reply completes (the runs of 24.09. and 27.09.: "turn the Quest in")
+    for (const t of ['I return to the Guild and turn the quest in.', '*i make my way back to the guilds front desk and turn in the signature slip and the Quest overall*',
+        '*I then walk back to the guild to turn the Quest in*', 'I turn it in at the desk.']) {
+        assert.ok(!turnsInQuest(t, wolf) && authorization(t).turnIn, t);
+    }
+    for (const t of ['I killed the wolves.', 'I return to Alderwatch.', 'I show Aldous the heads.', 'The reeve says the job is done.', '*I walk back to Alderwatch*',
+        'I turn around in the doorway and think about the Wolf Problem quest.', 'I turned in for the night after the Wolf Problem job.', 'Should I turn in the Wolf Problem quest?',
+        '*I stamp on the last rat and look around the cellar*']) {
+        assert.ok(!turnsInQuest(t, wolf) && !authorization(t).turnIn, t);
+    }
+    assert.ok(!turnsInQuest('I turn in the Herb Run quest.', wolf));
 });

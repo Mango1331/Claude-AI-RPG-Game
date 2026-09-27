@@ -5,10 +5,10 @@
 import { anchorFor, templateFor, locationByName, startPlace } from './content.js';
 import { setFactEvents, truth, normPredicate, FUNCTIONAL, statusOf } from './knowledge.js';
 import { awardXp, questXp } from './progression.js';
-import { applyCoin } from './economy.js';
+import { applyCoin, parseCoin, formatCoin } from './economy.js';
 import { deriveCharacter } from './derived.js';
 import { checkChance } from './checks.js';
-import { authorization, takesQuest } from './intent.js';
+import { authorization, takesQuest, turnsInQuest, namesQuest, titleWords } from './intent.js';
 import { clamp, normText, slug, uniq } from './util.js';
 
 const TAG_RE = /<avereth>\s*([\s\S]*?)\s*<\/avereth>/gi;
@@ -277,6 +277,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     // travel / place
     let movedPlace = false;
     let unplaced = null; // the city reached from the start, no spot in it: host.js asks for the spot
+    let here = state.scene.location; // where he is when the reply ends
     const where = report.location ? findLocation(state, content, report.location) : null;
     const loc = where?.loc || null;
     if (where?.spot && !report.place) report = { ...report, place: where.spot };
@@ -289,13 +290,19 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
             events.push({ t: 'scene.moved', d: { location: loc.id, place: report.place ? String(report.place).slice(0, 120) : loc.name, reset_present: loc.id !== state.scene.location } });
             if (loc.id !== state.scene.location) present.clear();
             present.add('pc');
+            here = loc.id;
             accepted.push(`location -> ${loc.name}`);
+        } else if (!/\p{Lu}/u.test(where.name)) {
+            // a new location has a name (live run 27.09. 04:11: "town with guild hall" became a city of its own, for the
+            // walk back to the Guild of Alderwatch)
+            reject({ location: report.location }, `location "${String(report.location).slice(0, 60)}" names no known city or region and no new one: a location is reported by its name; a spot inside the current one is "place"`);
         } else {
             const id = uniqueId(state, 'loc', where.name, taken);
             events.push({ t: 'entity.created', d: { entity: { id, kind: 'location', name: String(where.name).slice(0, 80), status: 'exists', realm: state.entities[state.scene.location]?.realm || content.locations.get(state.scene.location)?.realm || null, created: at, source: src } } });
             events.push({ t: 'scene.moved', d: { location: id, place: report.place ? String(report.place).slice(0, 120) : String(where.name), reset_present: true } });
             present.clear();
             present.add('pc');
+            here = id;
             accepted.push(`new location ${where.name}`);
         }
     } else if (report.place) {
@@ -397,10 +404,15 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     // someone the story names but no report introduced: the reply that brought him in had no report (Testrun 4: the
     // malthouse master "Fennick" and the huntress "Maretta" stayed unknown, so every later "aware", "leave" and quest
     // giver naming them was refused). A ref this reply writes only as a capitalised name becomes that person.
+    // a place's name ("Millbrook" of Millbrook Hamlet) is no person's
+    const places = [...content.locations.values(), ...Object.values(state.entities).filter((e) => e.kind === 'location')].map((l) => normText(l.name));
+    const placeName = (name) => places.some((l) => l === normText(name) || l.split(' ')[0] === normText(name));
     const adopt = (ref) => {
         if (typeof ref !== 'string' || !ref.trim()) return null;
         const name = nameFromRef({ ref, desc: [] }, prose);
-        if (!name) return null;
+        // only a ref that is a name and nothing else becomes that person: "Millbrook villagers" are villagers, not a man
+        // called Millbrook (live run 27.09. 04:11: npc.millbrook, who then "witnessed" the heads at the well)
+        if (!name || normText(name) !== normText(ref.replace(/[_.]+/g, ' ')) || placeName(name)) return null;
         const known = resolve(name);
         if (known) return known;
         const id = uniqueId(state, 'npc', name, taken);
@@ -645,9 +657,33 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         accepted.push(`item ${it.item} ×${qty}${from ? ` from ${from}` : ''}${to ? ` to ${to}` : ''}`);
     }
     const purse = new Map(); // several coin entries in one report add up (they used to each start from the old purse)
+    // a Guild contract's reward is the Guild's to pay, at its front desk, and the engine pays the posted amount (live run
+    // 27.09. 04:11: the reeve of Millbrook paid "8 silver" as 800 Copper): coin naming a Guild contract whose posted reward
+    // has an amount is never the narrator's, nor any coin Alaric gains in the report that says such a contract is completed
+    const guildDesk = isGuildBranch(here, content);
+    const contracts = Object.values(state.quests).filter((q) => q.rank && postedCoin(q.reward, content) !== null);
+    const closing = arr(report.quests).map((q) => (q?.status === 'completed' && q.title ? state.quests[questId(state, q.title)] : null))
+        .find((cur) => cur && cur.status === 'active' && contracts.includes(cur)) || null;
+    // turning a Guild contract in is Alaric's act (PLAYER OWNERSHIP): a message that turns in quests by name turns in only
+    // those; one that names none ("I go back to the guild to turn the Quest in") only the one active contract, never one of
+    // several (review of 3.1.6). A city has a Guild branch; that alone is no turn-in (review of 3.1.5: in a cellar of
+    // Alderwatch, the rats killed, "completed" paid the contract)
+    const nowText = [...(state.last?.carry || []), state.last?.input || ''].join('\n');
+    const activeContracts = Object.values(state.quests).filter((q) => q.rank && q.status === 'active');
+    const namedNow = Object.values(state.quests).filter((q) => turnsInQuest(nowText, q.title)).map((q) => q.id);
+    const unnamed = !namedNow.length && auth.turnIn;
+    const turnsIn = (cur) => (namedNow.length ? namedNow.includes(cur.id) : unnamed && activeContracts.length === 1);
     for (const c of arr(report.coin)) {
         const who = resolve((c && c.who) || 'pc');
         const cp = Number(c && c.cp);
+        const contract = who === 'pc' && cp > 0 ? contracts.find((q) => namesQuest(plain(c.why), q.title)) || closing : null;
+        if (contract) {
+            const amount = formatCoin(postedCoin(contract.reward, content), content);
+            reject(c, contract.status === 'completed' ? `the Guild paid the posted ${amount} of the Guild contract "${contract.title}" when it was turned in, and the engine booked it: no coin is reported for it`
+                : contract === closing && guildDesk && turnsIn(contract) ? `the Guild pays the posted ${amount} of the Guild contract "${contract.title}" with this turn-in, and the engine books it: no coin is reported for it`
+                : `the reward of the Guild contract "${contract.title}" is paid by the Guild when ${pcName} turns it in at a Guild front desk: the engine books the posted ${amount} then, so no coin is reported for it`);
+            continue;
+        }
         if (!who || !state.entities[who]?.sheet) {
             // Testrun 3: the narrator booked Alaric's payment to Hesta on her side, so it never left his purse
             const other = person(who) && Number.isInteger(cp) && cp !== 0;
@@ -690,7 +726,6 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     // (Testrun 4: "I take the Vermin in the Malthouse Cellar Quest" got a reply without report and the quest stayed
     // "offered" for good). A message that takes quests by name licenses only those (Testrun 4, discarded first
     // attempt: the player took the vermin bill, the reply signed him onto the wolf contract).
-    const nowText = [...(state.last?.carry || []), state.last?.input || ''].join('\n');
     const takenNow = uniq([...Object.values(state.quests).map((x) => x.title), ...arr(report.quests).map((x) => x?.title).filter(Boolean).map(String)])
         .filter((t) => takesQuest(nowText, t));
     const acceptance = (title, cur) => {
@@ -701,13 +736,30 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     };
     for (const q of arr(report.quests)) {
         if (!q || !q.title) { reject(q, 'quest needs a title'); continue; }
-        const id = `quest.${slug(q.title)}`;
+        const id = questId(state, q.title);
         const cur = state.quests[id];
         const status = ['offered', 'active', 'completed', 'failed'].includes(q.status) ? q.status : 'offered';
+        // joining the Guild is its procedure, not one of its contracts (live run 27.09. 04:11: "Guild registration" went
+        // offered -> completed and paid 15 Quest XP)
+        if (!cur && /\bregistration\b/i.test(q.title)) { reject(q, 'the Guild registration is no quest: it is recorded by its facts (guild_rank), coin and items'); continue; }
         if (!cur && (status === 'completed' || status === 'failed')) { reject(q, 'cannot finish a quest that was never offered or accepted'); continue; }
         if (cur && ['completed', 'failed'].includes(cur.status) && cur.status !== status) { reject(q, `quest already ${cur.status}`); continue; }
-        const refused = status === 'active' && cur?.status !== 'active' ? acceptance(String(q.title), cur) : null;
+        const refused = status === 'active' && cur?.status !== 'active' ? acceptance(String(cur?.title ?? q.title), cur) : null;
         if (refused) { reject(q, (refused.startsWith('accepting') ? owner(refused) : `PLAYER OWNERSHIP: ${refused}`) + ' (report it as "offered")'); continue; }
+        // a Guild contract (it carries a Quest Rank) is taken at the Guild and completed only when Alaric turns it in at a
+        // Guild front desk, which checks the proof and pays the posted reward (live run 27.09. 04:11: in Millbrook, the
+        // reeve's signature still to come, the wolf contract was reported completed and paid its Quest XP). Proof found
+        // on the way is noted; the contract stays active until the turn-in
+        let held = null;
+        let byName = false; // "turn the quest in" with several contracts active: the player names the one he turns in
+        if (status === 'completed' && cur?.rank && cur.status !== 'completed') {
+            if (cur.status !== 'active') { reject(q, `the Guild contract "${cur.title}" was never taken: it is taken at the Guild ("active") before it is turned in`); continue; }
+            byName = guildDesk && unnamed && activeContracts.length > 1;
+            if (!guildDesk) held = `quest "${cur.title}" stays active: a Guild contract is completed only when ${pcName} turns it in at a Guild front desk, which checks the proof and pays the posted reward; proof he gains on the way goes in its note or his items`;
+            else if (byName) held = `quest "${cur.title}" stays active: the player's message turns in a quest without naming it while ${activeContracts.length} Guild contracts are active, so it turns in none of them; he names the one he turns in ("I turn in the ${cur.title} quest")`;
+            else if (!turnsIn(cur)) held = `quest "${cur.title}" stays active: ${owner('turning in a Guild contract')} ("I turn in the … quest"); only then does a Guild front desk check the proof and pay the posted reward`;
+        }
+        if (held) corrections.push(`${held}.`);
         // a quest's reward is fixed when it first appears: a new quest without its recommended Level and type is not
         // recorded, and the correction asks for the complete entry (Testrun 3: the rat quest came without a level and
         // could never have paid Quest XP). Known quests keep their locked values. The level is the engine's hidden XP
@@ -732,18 +784,27 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
         }
         const giver = q.giver ? resolve(q.giver) || String(q.giver).slice(0, 60) : cur?.giver || null;
         const quest = {
-            id, title: String(q.title).slice(0, 100), status, giver,
+            id, title: cur?.title ?? String(q.title).slice(0, 100), status: held ? 'active' : status, giver,
             rec_level: cur?.rec_level ?? (Number.isInteger(level) && level > 0 ? level : null),
             rank: cur ? cur.rank ?? null : rank,
             qtype: cur?.qtype ?? (types[q.type] ? q.type : null),
             // the reward as first posted stays (live run 24.09. 23:23: the board's 5 silver lived only in the prose; at
             // the hand-in, the board long out of the history window, the clerk said four)
             reward: cur?.reward ?? (typeof q.reward === 'string' || typeof q.reward === 'number' ? String(q.reward).slice(0, 120) : null),
-            notes: [...(cur?.notes || []), ...(q.note ? [String(q.note).slice(0, 200)] : [])], history: [...(cur?.history || []), { ...at, status }],
+            notes: [...(cur?.notes || []), ...(q.note ? [String(q.note).slice(0, 200)] : [])], history: [...(cur?.history || []), { ...at, status: held ? 'active' : status }],
         };
-        events.push({ t: 'quest.set', d: { quest } });
-        accepted.push(`quest ${quest.title}: ${status}${numbered && !cur ? ` (rank ${q.rank}: ${numbered}, by its level)` : ''}`);
-        if (status === 'completed' && cur?.status !== 'completed' && pcXp) {
+        events.push({ t: 'quest.set', d: { quest, ...(held ? { held: byName ? 'turn-in by name' : 'turn-in at a Guild front desk' } : {}) } });
+        accepted.push(`quest ${quest.title}: ${quest.status}${numbered && !cur ? ` (rank ${q.rank}: ${numbered}, by its level)` : ''}${held ? ' (turned in only at a Guild front desk)' : ''}`);
+        // the Guild pays a contract's posted reward at the turn-in: the first amount it names (the rest of it, a meal or a
+        // client's purse, is the client's own)
+        const reward = quest.status === 'completed' && cur?.status !== 'completed' && quest.rank ? postedCoin(quest.reward, content) : null;
+        if (reward) {
+            const value = (purse.has('pc') ? purse.get('pc') : state.entities.pc.sheet.coin_cp) + reward;
+            purse.set('pc', value);
+            events.push({ t: 'coin.changed', d: { id: 'pc', value, delta: reward, why: `Guild reward: ${quest.title}`.slice(0, 120) } });
+            accepted.push(`Guild reward +${reward} cp`);
+        }
+        if (quest.status === 'completed' && cur?.status !== 'completed' && pcXp) {
             if (quest.rec_level && quest.qtype) {
                 const xp = questXp(quest.rec_level, quest.qtype, content);
                 const evs = awardXp(pcXp, xp, content, `Quest XP: ${quest.title} (${quest.rank ? `${quest.rank}, ` : ''}XP basis Level ${quest.rec_level}, ${quest.qtype})`);
@@ -892,6 +953,37 @@ function findLocation(state, content, name) {
         if (l) return { loc: l, spot: parts.slice(0, i).join(', ') || null, name: part };
     }
     return { loc: null, spot: null, name: parts.join(', ') || String(name) };
+}
+
+/**
+ * The quest a report names: the one with this title, or, if none, the one open quest (offered or active) whose title holds
+ * all of its distinctive words (live run 27.09. 04:11: "Wolf Problem" for the board's "Wolf Problem — Millbrook Hamlet"
+ * made a second quest, already active, beside the one offered). Anything else is a new quest.
+ */
+function questId(state, title) {
+    const id = `quest.${slug(title)}`;
+    if (state.quests[id]) return id;
+    const words = (t) => titleWords(plain(t));
+    const mine = words(title);
+    const hits = mine.length ? Object.values(state.quests).filter((q) => (q.status === 'offered' || q.status === 'active') && mine.every((w) => words(q.title).includes(w))) : [];
+    return hits.length === 1 ? hits[0].id : id;
+}
+
+/** Words only: "Wolf Problem — Millbrook Hamlet" -> "Wolf Problem Millbrook Hamlet", "reward for the Wolf Problem, 8 silver". */
+const plain = (text) => String(text ?? '').replace(/[^\p{L}\p{N}']+/gu, ' ');
+
+/**
+ * The coin a Guild contract pays: the first amount its posted reward names ("8 silver on proof of at least two wolves" ->
+ * 80 Copper, "6 silver plus a meal" -> 60, "8 silver (+2 silver farmer's purse)" -> 80); null when it names none.
+ */
+function postedCoin(reward, content) {
+    const m = /\d+\s*(?:gold|g|silver|s|copper|c|cp)\b(?:[\s,]+(?:and\s+)?\d+\s*(?:gold|g|silver|s|copper|c|cp)\b)*/i.exec(String(reward ?? ''));
+    return m ? parseCoin(m[0], content) : null;
+}
+
+/** A location with a Guild branch and its front desk: a city or capital of the content (rules.json guild.branch_kinds). */
+function isGuildBranch(location, content) {
+    return (content.rules.guild?.branch_kinds || []).includes(content.locations.get(location)?.kind);
 }
 
 function sameValue(p, a, b) {

@@ -106,6 +106,10 @@ function changeLines(before, after, content, events) {
         } else if (e.t === 'resource.changed' && d.id === 'pc' && now[d.resource] !== undefined) {
             out.push(sys(`${d.resource.toUpperCase()} ${now[d.resource]} + ${d.value - now[d.resource]} = ${d.value}/${max[d.resource]}${why(d)}`));
             now[d.resource] = d.value;
+        } else if (e.t === 'quest.set' && d.held) {
+            // reported completed, not turned in: the contract stays active until it is (delta.js)
+            out.push(sys(d.held === 'turn-in by name' ? `QUEST STILL ACTIVE — ${d.quest.title}: more than one Guild contract is active; one is turned in by its name`
+                : `QUEST STILL ACTIVE — ${d.quest.title}: a Guild contract is completed when it is turned in at a Guild front desk`));
         } else if (e.t === 'quest.set' && before.quests[d.quest.id]?.status !== d.quest.status) {
             const tags = [d.quest.rank, d.quest.giver ? label(d.quest.giver) : null].filter(Boolean);
             out.push(sys(`QUEST ${QUEST[d.quest.status] || d.quest.status.toUpperCase()} — ${d.quest.title}${tags.length ? ` (${tags.join(' · ')})` : ''}`));

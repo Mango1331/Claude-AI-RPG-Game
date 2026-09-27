@@ -219,6 +219,29 @@ test('a group in "combat" is never one creature: "rat pack — …", "rats", "th
     assert.deepEqual(foes(g.state), [['mon.pack_leader', 'Pack Leader A'], ['mon.big_rat', 'Big Rat'], ['mon.rat_2', 'Rat A']]);
 });
 
+test('a group the story brought in earlier as scenery is never one combatant when it attacks later; one creature is', () => {
+    // live run 27.09. 01:19: "cellar rats" and "cellar rats (dark)" came in as scenery and attacked two replies later
+    for (const name of ['cellar rats', 'cellar rats (dark)', 'rat pack']) {
+        const g = warrior();
+        g.input('I go down into the cellar.');
+        g.reply({ new: [{ ref: 'rats1', kind: 'creature', name, species: 'rat', band: 'SHORT' }] });
+        g.input('I wait.');
+        const r = g.reply({ combat: { by: name } });
+        const id = g.state.scene.present.find((x) => x !== 'pc');
+        assert.equal(g.state.encounter, null, name);
+        assert.deepEqual(r.attackers, [{ by: name, ref: null, group: id }], name);
+        assert.match(r.rejected.map((x) => x.reason).join(' '), new RegExp(`combat\\.by "${name.replace(/[()]/g, '\\$&')}" is a group`), name);
+        assert.ok(!g.state.entities[id].profile, `${name}: no single rat's profile`);
+    }
+    // one creature the story brought in earlier fights as one when it attacks
+    const g = warrior();
+    g.input('I go down into the cellar.');
+    g.reply({ new: [{ ref: 'big', kind: 'creature', name: 'Big rat', species: 'rat', band: 'SHORT' }] });
+    g.input('I wait.');
+    const r = g.reply({ combat: { by: 'Big rat' } });
+    assert.deepEqual([r.attackers, foes(g.state)], [null, [['mon.big_rat', 'Big Rat']]]);
+});
+
 test('the host asks for the group\'s attackers: the answer brings Rat A, Rat B, Rat C; meanwhile and on failure the reply says so', () => {
     const reply = 'The first rat clears the hole. Two more pour out behind it.\n<avereth>{"time":5,"combat":{"by":"rat pack — first rat charging, two more behind"}}</avereth>';
     const g = warrior();

@@ -17,7 +17,7 @@ import { initEncounter, addCombatant, runCombat, endEncounterEvents, terminal } 
 import { parseIntent } from './intent.js';
 import { runCommands, creationPanel } from './commands.js';
 import { stealthEvents } from './checks.js';
-import { extractReport, reportToEvents } from './delta.js';
+import { extractReport, reportToEvents, isGroupCreature } from './delta.js';
 import { truth, knows, perceivers, entityLabel, playerLabel, setFactEvents, PC_NAME_FACT, PC_LOOK_FACT } from './knowledge.js';
 import { buildContext } from './context.js';
 import { targetQuestion } from './display.js';
@@ -123,7 +123,7 @@ function creationTurn(s, content, intent, emit) {
 }
 
 function storyTurn(s, content, text, intent, dice, emit, situations) {
-    const pcAction = pcActionOf(s, intent, text);
+    const pcAction = pcActionOf(s, content, intent, text);
     // 1) an NPC commitment reported last turn resolves first; player input cannot erase it (Core #23 PENDING)
     const committed = (s.pending_combat || []).map((p) => p.by).filter((by) => s.entities[by] && s.entities[by].status !== 'dead' && s.scene.present.includes(by));
     if ((s.pending_combat || []).length) emit({ t: 'combat.pending_cleared', d: {} });
@@ -149,10 +149,17 @@ function storyTurn(s, content, text, intent, dice, emit, situations) {
 }
 
 /** Map the parsed intent to a combat action, or a note when the declared action cannot be resolved. */
-function pcActionOf(s, intent, text) {
+function pcActionOf(s, content, intent, text) {
     const name = (id) => entityLabel(s, id);
     switch (intent.kind) {
-        case 'attack': return { kind: 'attack', skill: intent.skill, target: intent.target, move: intent.move };
+        case 'attack':
+            // a group the story holds as one creature ("cellar rats") is never fought as one: the story shows its animals
+            // first, as it would for a group that attacks (live run 27.09. 01:19)
+            if (isGroupCreature(content, s.entities[intent.target]) && !s.encounter?.combatants[intent.target]) return {
+                note: `Alaric attacks ${name(intent.target)}, a group the game holds as one creature: nothing was spent or rolled. Show its animals: each one that fights as its own "new" entry, their refs in "combat". Alaric acts on his next Turn.`,
+                notice: `Alaric's attack: ${playerLabel(s, intent.target)} is a group; the story shows its animals first (nothing spent, nothing rolled)`,
+            };
+            return { kind: 'attack', skill: intent.skill, target: intent.target, move: intent.move };
         case 'skill': return { kind: 'skill', skill: intent.skill, dir: intent.dir, target: intent.target };
         case 'move': return { kind: 'move', dir: intent.dir, target: intent.target };
         case 'flee': return { kind: 'flee' };

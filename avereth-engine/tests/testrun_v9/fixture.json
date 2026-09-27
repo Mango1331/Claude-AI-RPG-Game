@@ -1,0 +1,303 @@
+{
+ "source": "Live run 27.09.2026 01:19 (build 3.1.1; GLM-5.3-Flash, Avereth Narrator preset, lore from World Info, word swap ledger=register): the chat JSONL, the narrator replies with their reports and the report-request answer from the Chat Completion log",
+ "swaps": "ledger=register",
+ "chat": [
+  {
+   "i": 0,
+   "greeting": true,
+   "mes": "*Cool wind moves through the rough grass around Alaric Red's boots.*\r\n\r\n*The last thing that belongs to Earth is still there in memory—an old life, a world without visible mana, Classes, or this impossible second beginning. The present is different: the smell of soil and distant woodsmoke, an unfamiliar sky, and stone walls beyond the public road.*\r\n\r\n*Alaric Red is already standing on an uncultivated roadside verge outside the nearby city. Cultivated fields and fenced holdings begin farther away. No one is close enough to have witnessed the instant of arrival.*\r\n\r\n*The body is Human, healthy, and eighteen years old. Simple traveler's clothes are already being worn; a small pouch holding five silver rests at the belt. The memories are still from Earth.*\r\n\r\n*A translucent interface opens across Alaric Red's vision.*\r\n\r\n`SYSTEM INITIALIZATION COMPLETE`\r\n`Origin: Earth`\r\n`World: Avereth`\r\n`Race: Human`\r\n`Age: 18`\r\n`Level: 1 | Rank: F`\r\n\r\n`BASE STATS`\r\n`STR 5 | VIT 5 | AGI 5 | INT 5 | PER 5 | WIL 5`\r\n\r\n`Location: Public roadside verge outside Alderwatch, Valedorn Crown`\r\n`Arrival Witnesses: NONE`\r\n`Starting Possessions: Simple Traveler's Clothes | Small Pouch | 5 Silver`\r\n`Local Common Language: Integrated`\r\n`Mandatory Quest: NONE`\r\n\r\n`CHARACTER CREATION — STEP 1/2`\r\n`Choose your Base Class:`\r\n\r\n`Warrior   — Favored Stats: STR / VIT`\r\n`Mage      — Favored Stats: INT / WIL`\r\n`Guardian  — Favored Stats: VIT / WIL`\r\n`Duelist   — Favored Stats: STR / AGI`\r\n`Ranger    — Favored Stats: AGI / PER`\r\n\r\n`Your chosen Class immediately applies +1 to both Favored Stats at Level 1.`\r\n`After choosing a Class, select exactly 2 Skills from that Class's Base Skill Pool.`\r\n\r\n`Reply with your Class choice.`\r\n\r\n*The System waits. Story time does not move during Character Creation.*\r\n",
+   "events": [
+    {
+     "t": "campaign.started",
+     "d": {
+      "seed": 2260313780,
+      "minute": 540,
+      "entities": [
+       {
+        "id": "pc",
+        "kind": "pc",
+        "name": "Alaric",
+        "race": "Human",
+        "age": 18,
+        "origin": "Earth",
+        "descriptors": [
+         "alaric",
+         "stranger",
+         "traveler"
+        ],
+        "status": "alive",
+        "location": "loc.alderwatch",
+        "sheet": {
+         "level": 1,
+         "class": null,
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 5,
+          "INT": 5,
+          "PER": 5,
+          "WIL": 5
+         },
+         "skills": {},
+         "equipment": {
+          "clothing": "simple_travelers_clothes"
+         },
+         "inventory": {
+          "small_pouch": 1
+         },
+         "coin_cp": 50,
+         "xp": 0,
+         "free_points": 0,
+         "hp": 80,
+         "mp": 60,
+         "sta": 100
+        }
+       }
+      ],
+      "location": "loc.alderwatch",
+      "place": "public roadside verge outside Alderwatch",
+      "facts": [
+       {
+        "id": "f.pc.name",
+        "s": "pc",
+        "p": "name",
+        "o": "Alaric",
+        "visibility": "public",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.appearance",
+        "s": "pc",
+        "p": "appearance",
+        "o": "Human, about eighteen; wears simple traveler's clothes",
+        "visibility": "public",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.origin",
+        "s": "pc",
+        "p": "origin",
+        "o": "Earth (transmigrated; memories intact)",
+        "visibility": "secret",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.arrival_witnesses",
+        "s": "pc",
+        "p": "arrival_witnesses",
+        "o": "none",
+        "visibility": "secret",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       }
+      ],
+      "knowledge": [
+       {
+        "who": "pc",
+        "about": "f.pc.name",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.appearance",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.origin",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.arrival_witnesses",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       }
+      ],
+      "campaign": "avereth",
+      "content_version": "3.0.0",
+      "engine_version": "3.1.1"
+     }
+    }
+   ]
+  },
+  {
+   "i": 1,
+   "user": true,
+   "mes": "#audit"
+  },
+  {
+   "i": 2,
+   "system": true,
+   "mes": "```\n[SYSTEM // AUDIT] last resolved turn\nNo rolls or rejections recorded for the last turn.\nRNG: seed 2260313780 | draws 0 | Engine 3.1.1\n```"
+  },
+  {
+   "i": 3,
+   "user": true,
+   "mes": "Warrior"
+  },
+  {
+   "i": 4,
+   "system": true,
+   "mes": "```\n[SYSTEM // CHARACTER CREATION — STEP 2/2]\nCLASS SELECTED: WARRIOR — favored STR +1, VIT +1 · Basic Attack granted (P1)\nSTR 6 | VIT 6 | AGI 5 | INT 5 | PER 5 | WIL 5 | Max HP 85 | Max MP 60 | Max STA 100 | Initiative 7\nChoose exactly 2 Skills from the Warrior Base Pool (for example \"Heavy Slash + Guard\"):\n- Heavy Slash [Offensive] | Cost 7 STA | Range ENGAGED | Raw = 10 + STR × 1.50 + ATK\n- Guard [Defensive] | Cost 5 STA | Effect: until the start of the Warrior's next turn, gain temporary DEF equal to: 3 + floor(VIT × 0.50). This is an explicit temporary DEF bonus and does not alter VIT.\n- Power Strike [Offensive] | Cost 12 STA | Range ENGAGED | Raw = 16 + STR × 1.875 + ATK\n- Quick Slash [Offensive] | Cost 5 STA | Range ENGAGED | Raw = 6 + STR × 0.875 + AGI × 0.625 + ATK\n- Charge [Offensive / Utility] | Cost 8 STA | Range ENGAGED after movement (EXTRA-BAND) | Raw = 8 + STR × 1.25 + AGI × 0.375 + ATK | Effect: as part of this Skill, close 1 additional Range Band before the attack. This explicit extra shift may combine with the normal one-band Turn movement. The target must be ENGAGED when the attack resolves.\n- Deflect [Defensive] | Cost 6 STA | Effect: until the start of the Warrior's next turn, incoming damage is reduced by 25%.\nStarter Gear, equipped when Step 2 is complete: Starter Longsword [F] (ATK 6), Starter Heavy Armor [F] (DEF 6, MDEF 2).\n```"
+  },
+  {
+   "i": 5,
+   "user": true,
+   "mes": "Heavy Slash + Charge"
+  },
+  {
+   "i": 6,
+   "system": true,
+   "mes": "```\n[SYSTEM // CHARACTER CREATION COMPLETE]\nSKILLS SELECTED: Heavy Slash (P1), Charge (P1)\nSTARTER GEAR EQUIPPED: Starter Longsword [F] (ATK 6), Starter Heavy Armor [F] (DEF 6, MDEF 2)\nAlaric | Human | Level 1 | XP 0/100 | Power Rank F | Class: Warrior\nHP 85/85 | MP 60/60 | STA 100/100\nSTR 6 | VIT 6 | AGI 5 | INT 5 | PER 5 | WIL 5 | Free Stat Points 0\nATK 6 | MATK 0 | DEF 7 (base 1) | MDEF 3 (base 1) | Initiative 7 (floor(1.5 × AGI))\nActive Effects: none | Domain: NOT YET UNLOCKED\nEquipment: Simple Traveler's Clothes, Starter Longsword [F] (ATK 6), Starter Heavy Armor [F] (DEF 6, MDEF 2)\nCarried: Small Pouch | Coin 5 Silver\nThe story begins with your next message: write what Alaric does.\n```"
+  },
+  {
+   "i": 7,
+   "user": true,
+   "mes": "*I walk into the city ahead of me and look for the adventurer guild. I then walk inside the guild building and to the front desk*"
+  },
+  {
+   "i": 8,
+   "reply": "The road dipped toward Alderwatch's gate between hedged fields, and cart traffic thickened as it neared — turnips, firewood, a tanner's wagon that souring the air long before the wall did. Two guards in Crown colors worked the gate, waving through locals with a nod and taking a longer look at anyone with a weapon. One of them glanced at the sword at Alaric's hip, then at his face, and jerked his thumb toward the gatehouse stair.\n\n\"Adventurer, are you? Guild's registration's through the Guild, not here. Walk on. Don't draw it inside the walls.\"\n\nInside, the city opened into morning noise: cobbles slick from last night's washing, a bell somewhere, women arguing prices over baskets of eels. Alderwatch was busier than its walls had promised — three streets braided together at the gate square, signage in wood and painted iron. The Guild's crest, a crossed sword and arrow over a shield, hung from an iron bracket two streets up on the left, above a heavy door left open to the morning.\n\nThe hall inside smelled of lamp oil, leather and old ale. Long boards covered one wall with nailed-up notices, most stamped with red wax seals. A kill-board of sorts ran along another — horned skulls, a shed scale the size of a dinner plate, a claw. A dozen people milled about: a scarred woman restringing a bow in the corner, two men in mud-stiffened mail leaning at the rail by the quest boards, a robed figure reading at a table.\n\nThe front desk ran half the length of the room. Behind it sat a broad-shouldered man with a grey queue and a clerk's quill tucked behind one ear, tallying something in a ledger. He finished his line before he looked up.\n\n\"Morning. Registration, posting, or payout?\"\n\n<avereth>{\"time\":30,\"location\":\"Alderwatch, Valedorn Crown\",\"place\":\"Adventurers' Guild hall (entered by pc)\",\"new\":[{\"ref\":\"guildclerk\",\"kind\":\"npc\",\"name\":\"desk clerk\",\"desc\":[\"Guild desk clerk\"],\"traits\":\"broad-shouldered, grey hair in a queue, quill behind ear, ledger\"}],\"position\":[{\"who\":\"guildclerk\",\"band\":\"ENGAGED\"}],\"aware\":[{\"who\":\"guildclerk\",\"level\":\"aware\"}],\"facts\":[{\"s\":\"guildclerk\",\"p\":\"occupation\",\"o\":\"Alderwatch Adventurers' Guild desk clerk\"}]}</avereth>"
+  },
+  {
+   "i": 9,
+   "user": true,
+   "mes": "Hello Registration please *i say politely*"
+  },
+  {
+   "i": 10,
+   "reply": "\"Registration.\" The clerk set the quill down and pulled a fresh sheet from a stack, along with an inkwell whose lid was already cracked. \"Right. Name?\"\n\nHe dipped the quill and held it ready over the line, then looked up properly — a slow pass over the sword, the armor, the red eyes, cataloguing without comment.\n\n\"Here's how it goes. Five questions, your mark at the bottom, and one silver for the slate and the plate. That's the whole ceremony.\" He tapped the register. \"New intake starts at Novice Rank. Novice takes contracts off the left half of that board there — escorts, pest work, deliveries, the like. Nothing on the right half until you've climbed, and the Guild checks the climbing itself, not me.\"\n\nHe smoothed the sheet flat with the side of his hand.\n\n\"Now. One — full name, spelled how you'd have me carve it. Two — age. Three — Class, if it's settled, and don't embellish; the plate reads what the assessor reads. Four — any Guild memberships elsewhere, Valedorn or foreign, yes or no. Five—\" he nodded at the sword, \"—armed work before, or is this your first? Answer honest. If you've never taken a contract, the Gate Assessors will know inside a week, and it goes worse for you then than it does being green now.\"\n\nBehind Alaric, the two mailed men at the board rail drifted toward the desk's far end, one dropping a wax-sealed tag on the counter with a clack. The clerk held up a finger to them without turning his head.\n\n\"You're first in line. Go on.\"",
+   "answer": "<avereth>{\"time\":3,\"position\":[{\"who\":\"mail-clad men\",\"band\":\"SHORT\"}],\"new\":[{\"ref\":\"mail_men\",\"kind\":\"npc\",\"desc\":[\"two mailed men\",\"quest-board patrons\"],\"traits\":\"mail shirts, wax-sealed quest tag\"}],\"aware\":[{\"who\":\"mail_men\",\"level\":\"aware\"}],\"facts\":[{\"s\":\"clerk\",\"p\":\"states_fee\",\"o\":\"one silver for guild registration, Novice start rank\"}]}</avereth>",
+   "ms": 7555
+  },
+  {
+   "i": 11,
+   "user": true,
+   "mes": "Alaric Red 18 Warrior no other Guild memberships elsewhere Valedorn yes first armed work *i say calmly and push 1 silver over the counter to pay the fee*"
+  },
+  {
+   "i": 12,
+   "reply": "\"Alaric Red.\" The clerk wrote it out slow, quill scratching. \"Eighteen. Warrior. No prior memberships. First armed work.\" Each answer got its own line; on the last he glanced up once more, and this time there was a flicker of something like approval. \"Good. Honest's rarer than skilled.\"\n\nHe swept the silver off the counter into a drawer, then turned to a rack behind him and thumbed through stamped brass plates until he found a blank. He set it in a small press, wound a handle, and the room filled with a brief squeal of metal on metal. When he drew it out, the plate read ALARIC RED — WARRIOR — NOVICE, with the Guild's crest stamped above.\n\n\"Your plate. Don't lose it — replacement's another silver, and a plate found lying around is a plate someone else can use.\" He slid it across along with the register, spinning the book to face Alaric, quill offered handle-first. \"Mark at the bottom. The line says you take contracts at your own risk, the Guild mediates disputes but doesn't avenge deaths, and rates are set by the posting party. Standard everywhere in Valedorn.\"\n\nHe waited for the mark, then blotted the page and closed the book.\n\n\"There. You're Novice, plate's live as of now.\" He tipped his chin toward the left half of the notice board. \"Red wax seals mean the Guild's verified the poster. No seal, no contract — some fool posts a bounty on his neighbor's dog and expects us to enforce it. Contracts pay out here at this desk on return, and you bring proof — ears, tags, a receipt from the party you escorted.\"\n\nBehind Alaric, one of the mailed men cleared his throat and rapped his knuckles on the counter.\n\n\"A moment, if you would. Fresh blood can read a board without me holding his hand.\"\n\nThe clerk's mouth twitched, but he turned to the men and picked up their wax-sealed tag, unrolling it against the wood.\n\n<avereth>{\"time\":12,\"facts\":[{\"s\":\"Alaric Red\",\"p\":\"guild_rank\",\"o\":\"Novice\"}],\"items\":[{\"item\":\"Guild registration plate (ALARIC RED — WARRIOR — NOVICE)\",\"qty\":1,\"from\":\"desk clerk\",\"to\":\"pc\",\"why\":\"registration completed\"}],\"coin\":[{\"who\":\"pc\",\"cp\":-10,\"taken_by\":\"desk clerk\",\"why\":\"registration fee\"}],\"learn\":[{\"who\":\"desk clerk\",\"s\":\"Alaric Red\",\"p\":\"registered as\",\"o\":\"Novice Warrior, age 18, no prior memberships, first armed work\",\"how\":\"told\",\"from\":\"Alaric\"}]}</avereth>"
+  },
+  {
+   "i": 13,
+   "user": true,
+   "mes": "*i walk over to the Novice Rank Quest Board and look at the Quests there*"
+  },
+  {
+   "i": 14,
+   "reply": "The Novice board held the left half of the wall, and most of it was routine: standing notices for rat work in the granaries, a delivery run to a river village, grain-cart escort that repeated weekly. Paper had yellowed on some; a few carried fresh ink. The clerk's voice murmured behind at the counter, \"—six hornwort, delivered whole, or it's half pay—\" as Alaric read.\n\n**GRANARY VERMIN CONTROL — Novice.** The Millwright's Row granary association wanted rats and whatever else was nesting under the floorboards cleared, three cellars, poison provided at cost. Pay: 8 silver. Proof: the cellarmaster's mark on the completion tag.\n\n**ESCORT — CLOTH CART TO FERRY CROSSING — Novice.** Two days' road upriver, leaving tomorrow at dawn from the weavers' gate. A merchant's man would ride along. Pay: 12 silver each, up to four takers, meal at journey's end included.\n\n**LOST DRAFT HORSE — Novice.** A carter's bay gelding had slipped its picket near the south pasture three days back, shod all four, a white blaze down the nose. Find it, bring it home or bring word where it fell. Pay: 5 silver.\n\n**HERB PROCUREMENT — Novice.** An apothecary on Tanner's Lane wanted six bundles of hornwort gathered from the river shallows east of the walls, roots intact. Pay: 6 silver, baskets lent on deposit.\n\n**WOLF SIGHTINGS, NORTH ROAD — Novice.** The caution slip was newer than the rest, red wax bright. Shepherds had lost two lambs near the north road mile-marker; tracks reported. The Guild wanted the sighting confirmed and the animals run off or killed if fewer than four. Pay: 15 silver, ears for proof. Someone had pinned a strip of paper beneath it in a different hand: *taken — J. Vess & partner, back by week's end.*\n\nA young woman with ink-stained fingers came up beside the board, scanned past Alaric without a glance, and pulled the hornwort slip off its nail, tucking it into her sleeve before walking out.\n\n<avereth>{\"time\":8,\"quests\":[{\"title\":\"Granary Vermin Control\",\"status\":\"offered\",\"giver\":\"Millwright's Row granary association\",\"reward\":\"8 silver, cellarmaster's mark as proof\",\"level\":2,\"type\":\"minor\",\"rank\":\"Novice\"},{\"title\":\"Escort — Cloth Cart to Ferry Crossing\",\"status\":\"offered\",\"giver\":\"Alderwatch cloth merchant\",\"reward\":\"12 silver each, up to four takers, meal included\",\"level\":3,\"type\":\"standard\",\"rank\":\"Novice\"},{\"title\":\"Lost Draft Horse\",\"status\":\"offered\",\"giver\":\"Alderwatch carter\",\"reward\":\"5 silver\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"},{\"title\":\"Herb Procurement — Hornwort\",\"status\":\"offered\",\"giver\":\"Alderwatch apothecary on Tanner's Lane\",\"reward\":\"6 silver, baskets on deposit\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"},{\"title\":\"Wolf Sightings, North Road\",\"status\":\"offered\",\"giver\":\"Alderwatch Adventurers' Guild\",\"note\":\"taken by J. Vess & partner, back by week's end\",\"reward\":\"15 silver, ears as proof\",\"level\":4,\"type\":\"standard\",\"rank\":\"Novice\"}],\"new\":[{\"ref\":\"inkwoman\",\"kind\":\"npc\",\"desc\":[\"young woman\",\"ink-stained fingers\"],\"traits\":\"young, ink-stained fingers, took the hornwort contract\",\"band\":\"SHORT\"}],\"leave\":[\"inkwoman\"]}</avereth>"
+  },
+  {
+   "i": 15,
+   "user": true,
+   "mes": "*i take the Granary Vermin Control Quest and register it with the front deskt. I then walk over to the granary*"
+  },
+  {
+   "i": 16,
+   "reply": "The clerk was alone at the desk again — the mailed men had gone, their tag with them. He took the vermin slip, glanced at it, and pulled a smaller tag from a drawer.\n\n\"Granary work. Romantic, isn't it.\" He wrote Alaric's name on the tag, stamped it, and slid it over with the quest slip. \"Take this to the cellarmaster at the Millwright's Row association — big granary with the sloped roof, can't miss it, follow the smell of grain. He marks it done, you bring it back here, eight silver. Poison's offered at cost if you want it, but that's between you and him.\" He was already looking past Alaric to the next arrival. \"Next.\"\n\nMillwright's Row sat south of the Guild hall, and the way there was all cart ruts and flour dust. Men hauled sacks up ramps; a boy swept spillage into a pail; somewhere a millstone droned through the wall. The association granary was the largest of the buildings, its foundation stones furred white at the joints, and a set of double doors stood open on the shade of the ground floor.\n\nInside, the air was cool and thick with grain and something else underneath — a sharp, sour note of nests and droppings. A barrel-chested man with sawdust in his eyebrows was nailing a board over a gap in the far wall, hammer swinging in slow, practiced strokes. He finished the nail before he turned.\n\n\"Guild?\" He looked at the tag in Alaric's hand, then wiped his palms on his apron and came over. \"Three cellars, all under this floor. Rats mostly, but there's something bigger working the west one — sacks torn open from below, that's no rat's teeth. Poison's in the green crocks if you want it. Or you've got a sword, I see.\" He jerked his thumb at a trapdoor by the stair. \"Lantern's on the hook. Mind the third cellar ladder — bottom rung's cracked.\"\n\n<avereth>{\"time\":20,\"place\":\"Millwright's Row granary (ground floor)\",\"location\":\"Alderwatch\",\"quests\":[{\"title\":\"Granary Vermin Control\",\"status\":\"active\",\"giver\":\"Millwright's Row granary association\",\"reward\":\"8 silver, cellarmaster's mark as proof\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"}],\"new\":[{\"ref\":\"cellarmaster\",\"kind\":\"npc\",\"name\":\"cellarmaster\",\"desc\":[\"granary cellarmaster\",\"barrel-chested, sawdust in eyebrows, apron\"],\"traits\":\"practical, brief\",\"band\":\"ENGAGED\"}],\"facts\":[{\"s\":\"cellarmaster\",\"p\":\"occupation\",\"o\":\"cellarmaster of the Millwright's Row granary association\"},{\"s\":\"west cellar\",\"p\":\"harbors\",\"o\":\"something bigger than rats tearing sacks from below\"}],\"items\":[{\"item\":\"guild quest tag (Granary Vermin Control)\",\"qty\":1,\"from\":\"desk clerk\",\"to\":\"pc\",\"why\":\"quest registration\"}],\"learn\":[{\"who\":\"cellarmaster\",\"s\":\"Alaric\",\"p\":\"took\",\"o\":\"Granary Vermin Control quest\",\"how\":\"told\"}],\"aware\":[{\"who\":\"cellarmaster\",\"level\":\"aware\"}]}</avereth>"
+  },
+  {
+   "i": 17,
+   "user": true,
+   "mes": "*i nod get my sword ready and go downstairs into the first of three cellars*"
+  },
+  {
+   "i": 18,
+   "reply": "The trapdoor swung back on leather hinges, and a ladder led down into lamplight and shadow. The first cellar ran the length of the building overhead — low ceiling, floor packed earth, sacks stacked in rows with walkways between. Grain dust hung in the lantern's glow. It was warmer than the ground floor, close, and the sour nest-smell was stronger down here.\n\nSigns of the work were everywhere. Droppings scattered along the base of the sack rows. Gnawed corners on the burlap, some sacks nibbled through at the bottom so a trickle of grain had fanned out onto the dirt like spilled sand. A wooden plank laid across two barrels — somebody's old attempt at a shelf — had been chewed along one edge.\n\nQuiet, though. Whatever lived here had heard the trapdoor and gone still.\n\nAlaric's boots crunched on spilled grain as he moved. Halfway down the cellar, along the wall furthest from the ladder, a heap of torn burlap sat shoved into the corner — pulled-down sacking, shredded fine, woven into something like a nest. A dark shape slipped between two sack rows as the lantern light swung toward it, low and quick, gone before it could be counted. Somewhere behind the stacked sacks came a faint, continuous sound: soft, busy scratching, many small feet, unhurried.\n\nThe walkways between the rows were narrow — shoulder-width, the sacks stacked chest-high on either side. From here, three ways led deeper: straight back toward the nest corner, left along the outer wall where the droppings thickened, or right, toward a darker stretch where the lamplight didn't reach and the sacks stood in taller stacks.\n\n<avereth>{\"time\":4,\"place\":\"Millwright's Row granary, first cellar (pc alone)\",\"new\":[{\"ref\":\"rats1\",\"kind\":\"creature\",\"name\":\"cellar rats\",\"desc\":[\"numerous rats nesting under the sack rows\",\"one large shape slipped between rows\"],\"species\":\"rat\",\"band\":\"SHORT\"}],\"facts\":[{\"s\":\"first cellar rats\",\"p\":\"nested among\",\"o\":\"sack rows, nest corner of torn burlap\",\"because\":\"observed gnawing, droppings, nest\"}]}</avereth>"
+  },
+  {
+   "i": 19,
+   "user": true,
+   "mes": "*i walk deeper following the sounds of things moving*"
+  },
+  {
+   "i": 20,
+   "reply": "The scratching led him right, into the tall stacks where the lantern's circle shrank to a weak pool around his boots. The sound thickened as he went — not one place but many, a low rustle running along the tops of the sacks like wind through dry leaves, stopping when his light passed over it, starting again behind him.\n\nHalfway along the row the droppings turned from scattered to heaped, a dark crust ground into the earth where the rats had worn their own path. Grain dust clung to it in greasy tufts of fur. The trail ran toward the outer wall, and there, at floor level, a gnawed hole the width of a fist opened into the foundation stones — the sour smell rolled out of it, thick enough to taste.\n\nRats worked that stretch openly. Two froze mid-step in the walkway ahead, blot-gray, each the length of a forearm with tail. A third sat on a torn sack at chest height, methodically dragging grain kernels into a gap between the burlap folds. None of them ran. They held still, black eyes fixed on the lantern, bodies tensed, and more shapes waited in the dark beyond the lantern's edge — the rustle of them never quite ceasing, all along the wall, close enough to hear breathing now.\n\nThe one on the sack shifted its grip on the kernel and bared its teeth, a small wet gleam, its weight rocking back onto its haunches.\n\n<avereth>{\"time\":5,\"place\":\"first cellar, deep row along outer wall\",\"new\":[{\"ref\":\"rat1\",\"kind\":\"creature\",\"name\":\"cellar rats\",\"desc\":[\"plump gray rats\",\"forearm-length\"],\"species\":\"rat\",\"band\":\"ENGAGED\"},{\"ref\":\"rat2\",\"kind\":\"creature\",\"name\":\"cellar rats (dark)\",\"desc\":[\"more rats in the dark along the wall\"],\"species\":\"rat\",\"band\":\"SHORT\"}],\"position\":[{\"who\":\"rat1\",\"band\":\"ENGAGED\"},{\"who\":\"rat2\",\"band\":\"SHORT\"}],\"aware\":[{\"who\":\"rat1\",\"level\":\"aware\"},{\"who\":\"rat2\",\"level\":\"aware\"}],\"facts\":[{\"s\":\"rat warren\",\"p\":\"opens through\",\"o\":\"gnawed hole in foundation stones\",\"vis\":\"secret\"}]}</avereth>"
+  },
+  {
+   "i": 21,
+   "user": true,
+   "mes": "*I get into a combat pose holding my sword low and ready*"
+  },
+  {
+   "i": 22,
+   "reply": "Blade low, edge angled forward, weight settled over his back foot — the stance of someone who had done this drill before, even if not down here, in the dark, against teeth.\n\nThe rats read it for what it was. The one on the sack dropped its kernel and flowed down off the burlap in one motion, landing without a sound. The two in the walkway spread apart — not fleeing, spreading, one sliding left toward the wall, one holding the middle. Along the outer wall the rustle swelled, shapes detaching from the dark beyond the lantern's edge, low bodies moving with a loose, confident gait that said they had never needed to fear anything in this cellar before.\n\nFrom the gnawed hole in the foundation came more of them, and from the nest corner behind, a thinner, higher squeal answered a squeal — the sound running down the rows like a lit fuse. A dozen at least now in the lantern's reach, tails dragging through the grain spill, and the count still climbing as the dark stretch behind Alaric filled with movement he could hear but not see.\n\nThe nearest one — the middle rat of the walkway — stopped a body-length away, swayed once, and gathered its haunches under it, teeth bared, the whole cellar holding its breath around the moment.\n\n<avereth>{\"time\":1,\"combat\":{\"by\":[\"cellar rats\",\"cellar rats (dark)\"]},\"position\":[{\"who\":\"cellar rats\",\"band\":\"ENGAGED\"},{\"who\":\"cellar rats (dark)\",\"band\":\"SHORT\"}]}</avereth>"
+  }
+ ],
+ "recorded": {
+  "accepted18": [
+   "time +4 min",
+   "place: Millwright's Row granary, first cellar (pc alone)",
+   "new creature cellar rats (mon.cellar_rats)",
+   "npc.cellarmaster stays behind",
+   "fact first cellar rats nested_among sack rows, nest corner of torn burlap"
+  ],
+  "accepted20": [
+   "time +5 min",
+   "place: first cellar, deep row along outer wall",
+   "known mon.cellar_rats (not duplicated)",
+   "new creature cellar rats (dark) (mon.cellar_rats_dark)",
+   "mon.cellar_rats at ENGAGED",
+   "mon.cellar_rats_dark at SHORT",
+   "mon.cellar_rats aware of Alaric",
+   "mon.cellar_rats_dark aware of Alaric",
+   "fact rat warren opens_through gnawed hole in foundation stones"
+  ],
+  "accepted22": [
+   "time +1 min",
+   "mon.cellar_rats at ENGAGED",
+   "mon.cellar_rats_dark at SHORT",
+   "combat committed by mon.cellar_rats (pending)",
+   "combat committed by mon.cellar_rats_dark (pending)"
+  ],
+  "panel22": "`COMBAT START — Cellar Rats, Cellar Rats (dark) attack Alaric`\n`Initiative: Cellar Rats (dark) 10 · Cellar Rats 10 · Alaric 7 → Turn order: Cellar Rats (dark) › Cellar Rats › Alaric`\n`— Round 1 —`\n`Cellar Rats (dark): moves away (SHORT → MEDIUM) — skittish`\n`Cellar Rats: Bite → Alaric`\n`  1 damage → Alaric HP 85 - 1 = 84`\n`COMBAT TARGETS — Cellar Rats [ENGAGED] · Cellar Rats (dark) [MEDIUM]`\n`HP: Cellar Rats (dark) 16/16 · Cellar Rats 16/16 · Alaric 84/85`\n`Range: Cellar Rats (dark) MEDIUM · Cellar Rats ENGAGED`\n`Alaric: MP 60/60 · STA 100/100`\n`Next: Alaric's Turn (Round 1)`\n`Alaric's attacks vs Cellar Rats: Basic Attack 16–19 · Heavy Slash 23–28 · Charge 21–26 damage`"
+ }
+}

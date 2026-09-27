@@ -231,7 +231,7 @@ async function runA(provider, turns, vocab, o, note) {
 async function runB(provider, turns, vocab, requests, o, note) {
     let done = 0;
     const total = turns.length * 2;
-    const gen = pool(turns.map((t) => async () => {
+    const gen = await pool(turns.map((t) => async () => {
         const { messages, params } = v4Messages(requests, t, vocab);
         const r = await chatWithRetry(provider, { messages, maxTokens: params.max_tokens, temperature: params.temperature, topP: params.top_p, timeoutMs: o.timeoutMs }, o.retry);
         const rec = { id: t.id, ok: r.ok, error: r.ok ? null : scrub(r.error, o.secrets), ms: r.ms ?? null, usage: r.usage ?? null, finish: r.finish ?? null };
@@ -258,7 +258,7 @@ async function runB(provider, turns, vocab, requests, o, note) {
         note(`[B ${++done}/${total}] ${t.id} Erzähler: ${!r.ok ? `Fehler (${rec.error})` : rec.recovery_reason ? `Block ${rec.recovery_reason} → Recovery ${rec.recovery?.valid_final ? 'ok' : 'gescheitert'}` : 'Block gültig und vollständig'} · ${round((rec.ms ?? 0) / 1000, 1)} s`);
         return rec;
     }), o.concurrency);
-    const blockOnly = pool(turns.map((t) => async () => {
+    const blockOnly = await pool(turns.map((t) => async () => {
         const { messages, params } = v4Messages(requests, t, vocab);
         const r = await chatWithRetry(provider, { messages: [...messages, { role: 'assistant', content: t.reply }, { role: 'user', content: BLOCK_ONLY }], maxTokens: 2500, temperature: params.temperature, topP: params.top_p, timeoutMs: o.timeoutMs }, o.retry);
         const rec = { id: t.id, ok: r.ok, error: r.ok ? null : scrub(r.error, o.secrets), ms: r.ms ?? null, usage: r.usage ?? null, items: goldItems(t) };
@@ -270,7 +270,7 @@ async function runB(provider, turns, vocab, requests, o, note) {
         note(`[B ${++done}/${total}] ${t.id} Block zur aufgezeichneten Prosa: ${!r.ok ? `Fehler (${rec.error})` : rec.score ? `Semantik ${round(rec.score.semantic * 100, 0)} %` : 'kein gültiger Block'} · ${round((rec.ms ?? 0) / 1000, 1)} s`);
         return rec;
     }), Math.max(1, Math.floor(o.concurrency / 2)));
-    return { gen: await gen, block: await blockOnly };
+    return { gen, block: blockOnly };
 }
 
 function agreement(a, b) {

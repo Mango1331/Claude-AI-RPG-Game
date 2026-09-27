@@ -1,0 +1,5505 @@
+{
+ "meta": {
+  "tool": "s1_interpreter",
+  "version": 1,
+  "started": "2026-09-27T19:12:29.129Z",
+  "finished": "2026-09-27T19:20:48.928Z",
+  "duration_s": 500,
+  "node": "v24.19.0",
+  "provider": {
+   "backend": "SillyTavern",
+   "source": "custom",
+   "model": "zai-org/GLM-5.3-Flash",
+   "profile": null,
+   "include_body_keys": [
+    "clear_thinking",
+    "reasoning_effort"
+   ],
+   "reasoning_effort": "low"
+  },
+  "mode": "plain",
+  "reasoning": null,
+  "mode_source": "Kommandozeile",
+  "temperature": 0.1,
+  "max_tokens": 2500,
+  "examples": true,
+  "vocab_version": "cmd-0.1-draft",
+  "corpus_cases": 256,
+  "cases": 80,
+  "sampled": true,
+  "reps": 1,
+  "calls": 80,
+  "repairs": 0,
+  "prompt_tokens_est": 1611
+ },
+ "gates": {
+  "negative": false,
+  "recall": true,
+  "p50": true
+ },
+ "agg": {
+  "cases": 80,
+  "answered": 80,
+  "failed": 0,
+  "negative_cases": 33,
+  "negative_ok": 30,
+  "negative_precision_pct": 90.9,
+  "positive_cases": 47,
+  "gold_commands": 61,
+  "recall_pct": 95.1,
+  "type_recall_pct": 98.4,
+  "predicted_commands": 67,
+  "false_commands": 3,
+  "false_commitments": 2,
+  "command_precision_pct": 92.1,
+  "exact_cases_pct": 92.5,
+  "order_cases": 9,
+  "order_ok_pct": 100,
+  "reference_args": 45,
+  "reference_ok_pct": 97.8,
+  "per_type": {
+   "go": {
+    "gold": 9,
+    "full": 9,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 1
+   },
+   "activity": {
+    "gold": 4,
+    "full": 4,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   },
+   "pay|give": {
+    "gold": 1,
+    "full": 1,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   },
+   "offer.accept|pay": {
+    "gold": 2,
+    "full": 2,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   },
+   "quest.accept": {
+    "gold": 3,
+    "full": 3,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   },
+   "take": {
+    "gold": 4,
+    "full": 4,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   },
+   "quest.turn_in": {
+    "gold": 6,
+    "full": 5,
+    "wrong_args": 1,
+    "missing": 0,
+    "false": 1
+   },
+   "guild.register": {
+    "gold": 3,
+    "full": 3,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 1
+   },
+   "board.read": {
+    "gold": 4,
+    "full": 3,
+    "wrong_args": 0,
+    "missing": 1,
+    "false": 0
+   },
+   "give|drop": {
+    "gold": 1,
+    "full": 1,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   },
+   "activity|go": {
+    "gold": 1,
+    "full": 0,
+    "wrong_args": 1,
+    "missing": 0,
+    "false": 0
+   },
+   "drop": {
+    "gold": 3,
+    "full": 3,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   },
+   "offer.accept": {
+    "gold": 2,
+    "full": 2,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   },
+   "offer.decline": {
+    "gold": 2,
+    "full": 2,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   },
+   "buy": {
+    "gold": 2,
+    "full": 2,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   },
+   "sell": {
+    "gold": 2,
+    "full": 2,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   },
+   "give": {
+    "gold": 2,
+    "full": 2,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   },
+   "use": {
+    "gold": 2,
+    "full": 2,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   },
+   "guild.promote": {
+    "gold": 2,
+    "full": 2,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   },
+   "equip": {
+    "gold": 2,
+    "full": 2,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   },
+   "unequip": {
+    "gold": 2,
+    "full": 2,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   },
+   "quest.abandon": {
+    "gold": 2,
+    "full": 2,
+    "wrong_args": 0,
+    "missing": 0,
+    "false": 0
+   }
+  }
+ },
+ "lat": {
+  "p50_s": 3.7,
+  "p90_s": 11.5,
+  "mean_s": 6.2
+ },
+ "tok": {
+  "prompt": 1705,
+  "completion": 48,
+  "reasoning": null
+ },
+ "valid": {
+  "first_pct": 100,
+  "final_pct": 100
+ },
+ "records": [
+  {
+   "id": "real_v2_02",
+   "rep": 1,
+   "scene": "verge",
+   "text": "*i open my eyes and wander to the forest opposite of the big city in front of me*",
+   "tags": [
+    "real",
+    "go"
+   ],
+   "expect": [
+    {
+     "type": "go",
+     "to": [
+      "loc.greenfold",
+      {
+       "new": "/forest|wood/i"
+      }
+     ]
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": {
+      "new": "Greenfold forest"
+     },
+     "quote": "i open my eyes and wander to the forest opposite of the big city in front of me"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "go",
+       "to": [
+        "loc.greenfold",
+        {
+         "new": "/forest|wood/i"
+        }
+       ]
+      },
+      "types": [
+       "go"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 3320,
+   "tokens": {
+    "prompt": 1664,
+    "completion": 43,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v2_03",
+   "rep": 1,
+   "scene": "forest",
+   "text": "*i follow the sounds bow ready as i openly walk towards the voice*",
+   "tags": [
+    "real",
+    "neutral"
+   ],
+   "expect": [],
+   "allow": [
+    {
+     "type": "go"
+    },
+    {
+     "type": "equip"
+    },
+    {
+     "type": "activity"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": {
+      "new": "the voice"
+     },
+     "quote": "i follow the sounds bow ready as i openly walk towards the voice"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 1,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 4950,
+   "tokens": {
+    "prompt": 1617,
+    "completion": 77,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v2_04",
+   "rep": 1,
+   "scene": "forest",
+   "text": "Lost *i say calmly as i lower my Bow ready to turn around and continue hunting*",
+   "tags": [
+    "real",
+    "neutral",
+    "speech"
+   ],
+   "expect": [],
+   "allow": [
+    {
+     "type": "activity"
+    },
+    {
+     "type": "unequip"
+    },
+    {
+     "type": "go"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 2461,
+   "tokens": {
+    "prompt": 1621,
+    "completion": 38,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v2_05",
+   "rep": 1,
+   "scene": "forest",
+   "text": "*i continue to track game trails*",
+   "tags": [
+    "real",
+    "activity"
+   ],
+   "expect": [
+    {
+     "type": "activity",
+     "kind": [
+      "search",
+      "gather",
+      "work"
+     ]
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "activity",
+     "kind": "search",
+     "what": "tracking game trails",
+     "minutes": null,
+     "until": null,
+     "quote": "i continue to track game trails"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "activity",
+       "kind": [
+        "search",
+        "gather",
+        "work"
+       ]
+      },
+      "types": [
+       "activity"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 2740,
+   "tokens": {
+    "prompt": 1610,
+    "completion": 41,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v2_06",
+   "rep": 1,
+   "scene": "forest",
+   "text": "*i follow the tracks towards teh smoke sneaking as i crouch and walk silently*",
+   "tags": [
+    "real",
+    "neutral",
+    "typo"
+   ],
+   "expect": [],
+   "allow": [
+    {
+     "type": "go"
+    },
+    {
+     "type": "activity"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 985,
+   "tokens": {
+    "prompt": 1620,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v2_07",
+   "rep": 1,
+   "scene": "river_stranger",
+   "text": "*i turn and say* how about you take that here and leave me alone and i leave your side of the water alone *i say and throw a silver coint to him*",
+   "tags": [
+    "real",
+    "pay",
+    "typo"
+   ],
+   "expect": [
+    {
+     "anyOf": [
+      {
+       "type": "pay",
+       "to": "npc.stranger"
+      },
+      {
+       "type": "give",
+       "to": "npc.stranger"
+      }
+     ]
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "pay",
+     "to": "npc.stranger",
+     "amount_cp": 10,
+     "for": "to leave him alone",
+     "quote": "how about you take that here and leave me alone and i leave your side of the water alone *i say and throw a silver coint to him*"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "anyOf": [
+        {
+         "type": "pay",
+         "to": "npc.stranger"
+        },
+        {
+         "type": "give",
+         "to": "npc.stranger"
+        }
+       ]
+      },
+      "types": [
+       "pay",
+       "give"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 4578,
+   "tokens": {
+    "prompt": 1659,
+    "completion": 78,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v3_02",
+   "rep": 1,
+   "scene": "verge",
+   "text": "*i open my eyes and walk towards the big city gate ahead of me*",
+   "tags": [
+    "real",
+    "go"
+   ],
+   "expect": [
+    {
+     "type": "go",
+     "to": [
+      "loc.redmarch.west_gate",
+      "loc.redmarch",
+      {
+       "new": "/gate|city/i"
+      }
+     ]
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": "loc.redmarch.west_gate",
+     "quote": "walk towards the big city gate ahead of me"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "go",
+       "to": [
+        "loc.redmarch.west_gate",
+        "loc.redmarch",
+        {
+         "new": "/gate|city/i"
+        }
+       ]
+      },
+      "types": [
+       "go"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 8644,
+   "tokens": {
+    "prompt": 1660,
+    "completion": 36,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v3_03",
+   "rep": 1,
+   "scene": "gate",
+   "text": "*i put the bow on my back and give him one silver waiting for my change back* Can you point me to the adventurer guild?",
+   "tags": [
+    "real",
+    "pay",
+    "offer.accept"
+   ],
+   "expect": [
+    {
+     "anyOf": [
+      {
+       "type": "offer.accept",
+       "offer": "offer.gate_toll"
+      },
+      {
+       "type": "pay",
+       "to": "npc.gate_guard"
+      }
+     ]
+    }
+   ],
+   "allow": [
+    {
+     "type": "unequip"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "unequip",
+     "object": "obj.weapon",
+     "quote": "i put the bow on my back"
+    },
+    {
+     "seq": 2,
+     "type": "pay",
+     "to": "npc.gate_guard",
+     "amount_cp": 10,
+     "for": "entry toll",
+     "quote": "give him one silver waiting for my change back"
+    }
+   ],
+   "predicted_count": 2,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "anyOf": [
+        {
+         "type": "offer.accept",
+         "offer": "offer.gate_toll"
+        },
+        {
+         "type": "pay",
+         "to": "npc.gate_guard"
+        }
+       ]
+      },
+      "types": [
+       "offer.accept",
+       "pay"
+      ],
+      "kind": "full",
+      "pred_index": 1,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 1,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 8411,
+   "tokens": {
+    "prompt": 1680,
+    "completion": 145,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v3_04",
+   "rep": 1,
+   "scene": "gate",
+   "text": "*i follow his directions and enter the Guild hall*",
+   "tags": [
+    "real",
+    "go",
+    "ref_guild"
+   ],
+   "expect": [
+    {
+     "type": "go",
+     "to": [
+      "loc.redmarch.guild_hall"
+     ]
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": "loc.redmarch.guild_hall",
+     "quote": "i follow his directions and enter the Guild hall"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "go",
+       "to": [
+        "loc.redmarch.guild_hall"
+       ]
+      },
+      "types": [
+       "go"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 3288,
+   "tokens": {
+    "prompt": 1663,
+    "completion": 36,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v3_08",
+   "rep": 1,
+   "scene": "hall_board_c",
+   "text": "*i take the Rats in the cellars of Rennicks yard Quest and go back to the desk to register it* Ill see you later then Sponsor *i say and then start making my way to the cellar*",
+   "tags": [
+    "real",
+    "quest.accept",
+    "go",
+    "multi"
+   ],
+   "expect": [
+    {
+     "type": "quest.accept",
+     "quest": "quest.rats_rennick"
+    },
+    {
+     "type": "go",
+     "to": [
+      "loc.redmarch.rennicks_yard",
+      {
+       "new": "/cellar|rennick/i"
+      }
+     ]
+    }
+   ],
+   "allow": [
+    {
+     "type": "go",
+     "to": [
+      "loc.redmarch.guild_hall"
+     ]
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "quest.accept",
+     "quest": "quest.rats_rennick",
+     "quote": "i take the Rats in the cellars of Rennicks yard Quest and go back to the desk to register it"
+    },
+    {
+     "seq": 2,
+     "type": "go",
+     "to": "loc.redmarch.rennicks_yard",
+     "quote": "start making my way to the cellar"
+    }
+   ],
+   "predicted_count": 2,
+   "score": {
+    "gold": 2,
+    "full": 2,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "quest.accept",
+       "quest": "quest.rats_rennick"
+      },
+      "types": [
+       "quest.accept"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     },
+     {
+      "gold": {
+       "type": "go",
+       "to": [
+        "loc.redmarch.rennicks_yard",
+        {
+         "new": "/cellar|rennick/i"
+        }
+       ]
+      },
+      "types": [
+       "go"
+      ],
+      "kind": "full",
+      "pred_index": 1,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": true,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 7206,
+   "tokens": {
+    "prompt": 1760,
+    "completion": 132,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v3_13",
+   "rep": 1,
+   "scene": "cellar_after",
+   "text": "*i nod at her words and then get my arrows back. I then take the ears and make my way up again saying* ill leave the corpses to you Rennick *i then make my way back to the guild to turn the Quest in*",
+   "tags": [
+    "real",
+    "take",
+    "go",
+    "quest.turn_in",
+    "multi"
+   ],
+   "expect": [
+    {
+     "type": "take",
+     "object": "obj.arrows_spent"
+    },
+    {
+     "type": "take",
+     "object": [
+      "obj.rat_corpses",
+      {
+       "new": "/ear/i"
+      }
+     ]
+    },
+    {
+     "type": "go",
+     "to": [
+      "loc.redmarch.guild_hall"
+     ]
+    },
+    {
+     "type": "quest.turn_in",
+     "quest": "quest.rats_rennick"
+    }
+   ],
+   "allow": [
+    {
+     "type": "go"
+    },
+    {
+     "type": "activity"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "take",
+     "object": "obj.arrows_spent",
+     "qty": 6,
+     "quote": "get my arrows back"
+    },
+    {
+     "seq": 2,
+     "type": "take",
+     "object": {
+      "new": "rat ears"
+     },
+     "qty": null,
+     "quote": "I then take the ears"
+    },
+    {
+     "seq": 3,
+     "type": "go",
+     "to": "loc.redmarch.guild_hall",
+     "quote": "make my way back to the guild to turn the Quest in"
+    },
+    {
+     "seq": 4,
+     "type": "quest.turn_in",
+     "quest": "quest.rats_rennick",
+     "quote": "make my way back to the guild to turn the Quest in"
+    }
+   ],
+   "predicted_count": 4,
+   "score": {
+    "gold": 4,
+    "full": 4,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "take",
+       "object": "obj.arrows_spent"
+      },
+      "types": [
+       "take"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     },
+     {
+      "gold": {
+       "type": "take",
+       "object": [
+        "obj.rat_corpses",
+        {
+         "new": "/ear/i"
+        }
+       ]
+      },
+      "types": [
+       "take"
+      ],
+      "kind": "full",
+      "pred_index": 1,
+      "bad": []
+     },
+     {
+      "gold": {
+       "type": "go",
+       "to": [
+        "loc.redmarch.guild_hall"
+       ]
+      },
+      "types": [
+       "go"
+      ],
+      "kind": "full",
+      "pred_index": 2,
+      "bad": []
+     },
+     {
+      "gold": {
+       "type": "quest.turn_in",
+       "quest": "quest.rats_rennick"
+      },
+      "types": [
+       "quest.turn_in"
+      ],
+      "kind": "full",
+      "pred_index": 3,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": true,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 8715,
+   "tokens": {
+    "prompt": 1738,
+    "completion": 160,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v4_04",
+   "rep": 1,
+   "scene": "hall_new",
+   "text": "*i walk to the Clerk* Hello im Alaric no family name and im new to the guild and want to register",
+   "tags": [
+    "real",
+    "guild.register"
+   ],
+   "expect": [
+    {
+     "type": "guild.register"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "guild.register",
+     "quote": "im new to the guild and want to register"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "guild.register"
+      },
+      "types": [
+       "guild.register"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 2016,
+   "tokens": {
+    "prompt": 1610,
+    "completion": 27,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v4_05",
+   "rep": 1,
+   "scene": "hall_fee",
+   "text": "18 and Ranger *i say as i pay the 2 silver and put my hand on the slate*",
+   "tags": [
+    "real",
+    "pay",
+    "offer.accept"
+   ],
+   "expect": [
+    {
+     "anyOf": [
+      {
+       "type": "offer.accept",
+       "offer": "offer.registration"
+      },
+      {
+       "type": "pay",
+       "to": "npc.guild_clerk",
+       "amount_cp": 20
+      }
+     ]
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "offer.accept",
+     "offer": "offer.registration",
+     "lines": null,
+     "quote": "i pay the 2 silver and put my hand on the slate"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "anyOf": [
+        {
+         "type": "offer.accept",
+         "offer": "offer.registration"
+        },
+        {
+         "type": "pay",
+         "to": "npc.guild_clerk",
+         "amount_cp": 20
+        }
+       ]
+      },
+      "types": [
+       "offer.accept",
+       "pay"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 3186,
+   "tokens": {
+    "prompt": 1657,
+    "completion": 49,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v4_06",
+   "rep": 1,
+   "scene": "hall_board",
+   "text": "*i nod and walk to the F-Rank quest board*",
+   "tags": [
+    "real",
+    "board.read"
+   ],
+   "expect": [
+    {
+     "type": "board.read"
+    }
+   ],
+   "allow": [
+    {
+     "type": "go"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 1,
+    "full": 0,
+    "type_only": 0,
+    "missing": 1,
+    "matches": [
+     {
+      "gold": {
+       "type": "board.read"
+      },
+      "types": [
+       "board.read"
+      ],
+      "kind": "missing",
+      "pred_index": -1,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": false,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 960,
+   "tokens": {
+    "prompt": 1774,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v4_07",
+   "rep": 1,
+   "scene": "hall_board_b",
+   "text": "*I take the Vermin in the Malthouse Cellar Quest and register it with by the desk and then travel there*",
+   "tags": [
+    "real",
+    "quest.accept",
+    "go",
+    "multi",
+    "typo"
+   ],
+   "expect": [
+    {
+     "type": "quest.accept",
+     "quest": "quest.vermin_malthouse"
+    },
+    {
+     "type": "go",
+     "to": [
+      "loc.redmarch.malthouse",
+      {
+       "new": "/malthouse/i"
+      }
+     ]
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "quest.accept",
+     "quest": "quest.vermin_malthouse",
+     "quote": "I take the Vermin in the Malthouse Cellar Quest"
+    },
+    {
+     "seq": 2,
+     "type": "go",
+     "to": "loc.redmarch.malthouse",
+     "quote": "then travel there"
+    }
+   ],
+   "predicted_count": 2,
+   "score": {
+    "gold": 2,
+    "full": 2,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "quest.accept",
+       "quest": "quest.vermin_malthouse"
+      },
+      "types": [
+       "quest.accept"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     },
+     {
+      "gold": {
+       "type": "go",
+       "to": [
+        "loc.redmarch.malthouse",
+        {
+         "new": "/malthouse/i"
+        }
+       ]
+      },
+      "types": [
+       "go"
+      ],
+      "kind": "full",
+      "pred_index": 1,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": true,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 3755,
+   "tokens": {
+    "prompt": 1874,
+    "completion": 64,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v4_13",
+   "rep": 1,
+   "scene": "malthouse_cellar",
+   "text": "*i get the corpse and drag it with up. I then leave it with him and go back to the guild to turn the quest in*",
+   "tags": [
+    "real",
+    "take",
+    "give",
+    "go",
+    "quest.turn_in",
+    "multi"
+   ],
+   "expect": [
+    {
+     "type": "take",
+     "object": "obj.vermin_corpse"
+    },
+    {
+     "anyOf": [
+      {
+       "type": "give",
+       "object": "obj.vermin_corpse",
+       "to": "npc.maltster"
+      },
+      {
+       "type": "drop",
+       "object": "obj.vermin_corpse"
+      }
+     ]
+    },
+    {
+     "type": "go",
+     "to": [
+      "loc.redmarch.guild_hall"
+     ]
+    },
+    {
+     "type": "quest.turn_in",
+     "quest": "quest.vermin_malthouse"
+    }
+   ],
+   "allow": [
+    {
+     "type": "go"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "take",
+     "object": "obj.vermin_corpse",
+     "qty": 1,
+     "quote": "i get the corpse"
+    },
+    {
+     "seq": 2,
+     "type": "give",
+     "object": "obj.vermin_corpse",
+     "qty": 1,
+     "to": "npc.maltster",
+     "quote": "I then leave it with him"
+    },
+    {
+     "seq": 3,
+     "type": "go",
+     "to": "loc.redmarch.guild_hall",
+     "quote": "go back to the guild"
+    },
+    {
+     "seq": 4,
+     "type": "quest.turn_in",
+     "quest": "quest.vermin_malthouse",
+     "quote": "to turn the quest in"
+    }
+   ],
+   "predicted_count": 4,
+   "score": {
+    "gold": 4,
+    "full": 4,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "take",
+       "object": "obj.vermin_corpse"
+      },
+      "types": [
+       "take"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     },
+     {
+      "gold": {
+       "anyOf": [
+        {
+         "type": "give",
+         "object": "obj.vermin_corpse",
+         "to": "npc.maltster"
+        },
+        {
+         "type": "drop",
+         "object": "obj.vermin_corpse"
+        }
+       ]
+      },
+      "types": [
+       "give",
+       "drop"
+      ],
+      "kind": "full",
+      "pred_index": 1,
+      "bad": []
+     },
+     {
+      "gold": {
+       "type": "go",
+       "to": [
+        "loc.redmarch.guild_hall"
+       ]
+      },
+      "types": [
+       "go"
+      ],
+      "kind": "full",
+      "pred_index": 2,
+      "bad": []
+     },
+     {
+      "gold": {
+       "type": "quest.turn_in",
+       "quest": "quest.vermin_malthouse"
+      },
+      "types": [
+       "quest.turn_in"
+      ],
+      "kind": "full",
+      "pred_index": 3,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": true,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 7895,
+   "tokens": {
+    "prompt": 1693,
+    "completion": 139,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v4_14",
+   "rep": 1,
+   "scene": "malthouse_cellar",
+   "text": "Partly one dead one fled *i say* he paid a bit under half its fair",
+   "tags": [
+    "real",
+    "negative",
+    "speech"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 10068,
+   "tokens": {
+    "prompt": 1683,
+    "completion": 54,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v5_01",
+   "rep": 1,
+   "scene": "gate",
+   "text": "Hello im Alaric and im newly awakend. The sword was a gift and im here to register with the adventurer guild *i say smiling politely*",
+   "tags": [
+    "real",
+    "negative",
+    "plan",
+    "speech"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "guild.register",
+     "quote": "im here to register with the adventurer guild"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [
+     {
+      "seq": 1,
+      "type": "guild.register",
+      "quote": "im here to register with the adventurer guild"
+     }
+    ],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": false,
+    "negative": true,
+    "negative_ok": false
+   },
+   "ms": 3478,
+   "tokens": {
+    "prompt": 1685,
+    "completion": 41,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v5_05",
+   "rep": 1,
+   "scene": "hall_board_b",
+   "text": "*i take the Boletus Clearing Tannery Row Quest and register it at the front desk*",
+   "tags": [
+    "real",
+    "quest.accept"
+   ],
+   "expect": [
+    {
+     "type": "quest.accept",
+     "quest": "quest.boletus_tannery"
+    }
+   ],
+   "allow": [
+    {
+     "type": "go"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "quest.accept",
+     "quest": "quest.boletus_tannery",
+     "quote": "i take the Boletus Clearing Tannery Row Quest and register it at the front desk"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "quest.accept",
+       "quest": "quest.boletus_tannery"
+      },
+      "types": [
+       "quest.accept"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 4770,
+   "tokens": {
+    "prompt": 1870,
+    "completion": 48,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v6_03",
+   "rep": 1,
+   "scene": "hall_new",
+   "text": "Hello im Alaric Red im 18 and i want to register ",
+   "tags": [
+    "real",
+    "guild.register"
+   ],
+   "expect": [
+    {
+     "type": "guild.register"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "guild.register",
+     "quote": "i want to register"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "guild.register"
+      },
+      "types": [
+       "guild.register"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 2238,
+   "tokens": {
+    "prompt": 1601,
+    "completion": 22,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v6_05",
+   "rep": 1,
+   "scene": "hall_board",
+   "text": "*i shake my head and walk to the Quest board to look at the F-Rank Quests*",
+   "tags": [
+    "real",
+    "board.read"
+   ],
+   "expect": [
+    {
+     "type": "board.read"
+    }
+   ],
+   "allow": [
+    {
+     "type": "go"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "board.read",
+     "rank": "Novice",
+     "quote": "walk to the Quest board to look at the F-Rank Quests"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "board.read"
+      },
+      "types": [
+       "board.read"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 3059,
+   "tokens": {
+    "prompt": 1782,
+    "completion": 45,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v6_08",
+   "rep": 1,
+   "scene": "customshouse",
+   "text": "*i Ring once and then wait*",
+   "tags": [
+    "real",
+    "activity"
+   ],
+   "expect": [
+    {
+     "type": "activity",
+     "kind": "wait"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "activity",
+     "kind": "wait",
+     "what": "waiting after ringing the bell",
+     "minutes": null,
+     "until": null,
+     "quote": "i Ring once and then wait"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "activity",
+       "kind": "wait"
+      },
+      "types": [
+       "activity"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 6269,
+   "tokens": {
+    "prompt": 1650,
+    "completion": 105,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v7_04",
+   "rep": 1,
+   "scene": "hall_new",
+   "text": "*i walk up and say* Hello Im Alaric and i want to register",
+   "tags": [
+    "real",
+    "guild.register"
+   ],
+   "expect": [
+    {
+     "type": "guild.register"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "guild.register",
+     "quote": "Hello Im Alaric and i want to register"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "guild.register"
+      },
+      "types": [
+       "guild.register"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 2125,
+   "tokens": {
+    "prompt": 1602,
+    "completion": 28,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v7_07",
+   "rep": 1,
+   "scene": "hall_board",
+   "text": "*i shake my head and walk to the Novice board and look at the quests on it*",
+   "tags": [
+    "real",
+    "board.read"
+   ],
+   "expect": [
+    {
+     "type": "board.read"
+    }
+   ],
+   "allow": [
+    {
+     "type": "go"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "board.read",
+     "rank": "Novice",
+     "quote": "walk to the Novice board and look at the quests on it"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "board.read"
+      },
+      "types": [
+       "board.read"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 2885,
+   "tokens": {
+    "prompt": 1781,
+    "completion": 44,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v7_09",
+   "rep": 1,
+   "scene": "tavern_client",
+   "text": "If you can get them out so i can cull them that would be most helpful *i say calmly as i get my sword ready*",
+   "tags": [
+    "real",
+    "negative",
+    "speech",
+    "hypothetical"
+   ],
+   "expect": [],
+   "allow": [
+    {
+     "type": "equip"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 4979,
+   "tokens": {
+    "prompt": 1694,
+    "completion": 23,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v9_10",
+   "rep": 1,
+   "scene": "blue_ox_cellar",
+   "text": "*I get into a combat pose holding my sword low and ready*",
+   "tags": [
+    "real",
+    "negative"
+   ],
+   "expect": [],
+   "allow": [
+    {
+     "type": "equip"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 1562,
+   "tokens": {
+    "prompt": 1643,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v10_05",
+   "rep": 1,
+   "scene": "hall_plate",
+   "text": "*i take my badge and then i walk to the Novice Board to look at the Quests*",
+   "tags": [
+    "real",
+    "take",
+    "board.read",
+    "multi"
+   ],
+   "expect": [
+    {
+     "type": "take",
+     "object": "obj.guild_plate"
+    },
+    {
+     "type": "board.read"
+    }
+   ],
+   "allow": [
+    {
+     "type": "go"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "take",
+     "object": "obj.guild_plate",
+     "qty": null,
+     "quote": "i take my badge"
+    },
+    {
+     "seq": 2,
+     "type": "board.read",
+     "rank": "Novice",
+     "quote": "i walk to the Novice Board to look at the Quests"
+    }
+   ],
+   "predicted_count": 2,
+   "score": {
+    "gold": 2,
+    "full": 2,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "take",
+       "object": "obj.guild_plate"
+      },
+      "types": [
+       "take"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     },
+     {
+      "gold": {
+       "type": "board.read"
+      },
+      "types": [
+       "board.read"
+      ],
+      "kind": "full",
+      "pred_index": 1,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": true,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 3692,
+   "tokens": {
+    "prompt": 1679,
+    "completion": 61,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v10_12",
+   "rep": 1,
+   "scene": "blue_ox_cellar",
+   "text": "*i aim my sword and get ready for combat*",
+   "tags": [
+    "real",
+    "negative"
+   ],
+   "expect": [],
+   "allow": [
+    {
+     "type": "equip"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 1075,
+   "tokens": {
+    "prompt": 1640,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v11_07",
+   "rep": 1,
+   "scene": "village_reeve",
+   "text": "Yes lets go. just bring me to the side and ill investigate and track them from there",
+   "tags": [
+    "real",
+    "negative",
+    "speech"
+   ],
+   "expect": [],
+   "allow": [
+    {
+     "type": "go"
+    },
+    {
+     "type": "activity"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "activity",
+     "kind": "search",
+     "what": "investigate and track the wolves",
+     "minutes": null,
+     "until": null,
+     "quote": "ill investigate and track them from there"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 1,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 11542,
+   "tokens": {
+    "prompt": 1742,
+    "completion": 199,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v11_08",
+   "rep": 1,
+   "scene": "forest",
+   "text": "yes *i say and start following the trail i found before turning and saying* go back it will be dangerous i got it *i then continue tracking the wolves alone",
+   "tags": [
+    "real",
+    "activity"
+   ],
+   "expect": [
+    {
+     "anyOf": [
+      {
+       "type": "activity",
+       "kind": "search"
+      },
+      {
+       "type": "go"
+      }
+     ]
+    }
+   ],
+   "allow": [
+    {
+     "type": "activity"
+    },
+    {
+     "type": "go"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "activity",
+     "kind": "errand",
+     "what": "tracking the wolves",
+     "minutes": null,
+     "until": null,
+     "quote": "i then continue tracking the wolves alone"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 0,
+    "type_only": 1,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "anyOf": [
+        {
+         "type": "activity",
+         "kind": "search"
+        },
+        {
+         "type": "go"
+        }
+       ]
+      },
+      "types": [
+       "activity",
+       "go"
+      ],
+      "kind": "type",
+      "pred_index": 0,
+      "bad": [
+       "kind"
+      ]
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": false,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 4879,
+   "tokens": {
+    "prompt": 1636,
+    "completion": 43,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v11_13",
+   "rep": 1,
+   "scene": "village_reeve",
+   "text": "Proof *i say dryly and put them on the floor* ill need a signature so i can get my silver at the guild",
+   "tags": [
+    "real",
+    "drop",
+    "plan"
+   ],
+   "expect": [
+    {
+     "type": "drop",
+     "object": "obj.wolf_heads"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "drop",
+     "object": "obj.wolf_heads",
+     "qty": 3,
+     "quote": "i say dryly and put them on the floor"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "drop",
+       "object": "obj.wolf_heads"
+      },
+      "types": [
+       "drop"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 6589,
+   "tokens": {
+    "prompt": 1750,
+    "completion": 100,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v11_14",
+   "rep": 1,
+   "scene": "village_reeve",
+   "text": "*i leave the heads there on the floor and find Reeve Aldous to get my signature and silver. I then walk back to the guild to turn the Quest in*",
+   "tags": [
+    "real",
+    "drop",
+    "go",
+    "quest.turn_in",
+    "multi"
+   ],
+   "expect": [
+    {
+     "type": "drop",
+     "object": "obj.wolf_heads"
+    },
+    {
+     "type": "go",
+     "to": [
+      "loc.redmarch.guild_hall"
+     ]
+    },
+    {
+     "type": "quest.turn_in",
+     "quest": "quest.wolf_problem"
+    }
+   ],
+   "allow": [
+    {
+     "type": "go",
+     "to": {
+      "new": "/reeve|aldous/i"
+     }
+    },
+    {
+     "type": "activity"
+    },
+    {
+     "type": "give"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "drop",
+     "object": "obj.wolf_heads",
+     "qty": 3,
+     "quote": "i leave the heads there on the floor"
+    },
+    {
+     "seq": 2,
+     "type": "give",
+     "object": "obj.contract_slip",
+     "qty": 1,
+     "to": "npc.reeve_aldous",
+     "quote": "find Reeve Aldous to get my signature and silver"
+    },
+    {
+     "seq": 3,
+     "type": "go",
+     "to": "loc.redmarch.guild_hall",
+     "quote": "I then walk back to the guild to turn the Quest in"
+    },
+    {
+     "seq": 4,
+     "type": "quest.turn_in",
+     "quest": "quest.wolf_problem",
+     "quote": "turn the Quest in"
+    }
+   ],
+   "predicted_count": 4,
+   "score": {
+    "gold": 3,
+    "full": 3,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "drop",
+       "object": "obj.wolf_heads"
+      },
+      "types": [
+       "drop"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     },
+     {
+      "gold": {
+       "type": "go",
+       "to": [
+        "loc.redmarch.guild_hall"
+       ]
+      },
+      "types": [
+       "go"
+      ],
+      "kind": "full",
+      "pred_index": 2,
+      "bad": []
+     },
+     {
+      "gold": {
+       "type": "quest.turn_in",
+       "quest": "quest.wolf_problem"
+      },
+      "types": [
+       "quest.turn_in"
+      ],
+      "kind": "full",
+      "pred_index": 3,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 1,
+    "order_ok": true,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 10183,
+   "tokens": {
+    "prompt": 1758,
+    "completion": 172,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "real_v12_19",
+   "rep": 1,
+   "scene": "hall_turnin_done",
+   "text": "*i turn the Quest in at the front desk and then i go walk around the City looking for an Inn to sleep and wash my clothes and myself*",
+   "tags": [
+    "real",
+    "quest.turn_in",
+    "go",
+    "multi",
+    "ref_completed",
+    "plan"
+   ],
+   "expect": [
+    {
+     "type": "quest.turn_in",
+     "quest": [
+      "quest.herb_run_marshmint",
+      null
+     ]
+    },
+    {
+     "type": "go",
+     "to": [
+      "loc.redmarch",
+      {
+       "new": "/inn/i"
+      }
+     ]
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "quest.turn_in",
+     "quest": "quest.millers_run_escort",
+     "quote": "i turn the Quest in at the front desk"
+    },
+    {
+     "seq": 2,
+     "type": "go",
+     "to": {
+      "new": "an inn"
+     },
+     "quote": "i go walk around the City looking for an Inn to sleep and wash my clothes and myself"
+    }
+   ],
+   "predicted_count": 2,
+   "score": {
+    "gold": 2,
+    "full": 1,
+    "type_only": 1,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "quest.turn_in",
+       "quest": [
+        "quest.herb_run_marshmint",
+        null
+       ]
+      },
+      "types": [
+       "quest.turn_in"
+      ],
+      "kind": "type",
+      "pred_index": 0,
+      "bad": [
+       "quest"
+      ]
+     },
+     {
+      "gold": {
+       "type": "go",
+       "to": [
+        "loc.redmarch",
+        {
+         "new": "/inn/i"
+        }
+       ]
+      },
+      "types": [
+       "go"
+      ],
+      "kind": "full",
+      "pred_index": 1,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": true,
+    "exact": false,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 8851,
+   "tokens": {
+    "prompt": 1719,
+    "completion": 160,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_accept_01",
+   "rep": 1,
+   "scene": "hall_board",
+   "text": "Could I take the escort job too?",
+   "tags": [
+    "synthetic",
+    "negative",
+    "question"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 9819,
+   "tokens": {
+    "prompt": 1770,
+    "completion": 59,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_accept_02",
+   "rep": 1,
+   "scene": "hall_board",
+   "text": "*maybe the Herb Run would suit me... i keep reading*",
+   "tags": [
+    "synthetic",
+    "negative",
+    "thought"
+   ],
+   "expect": [],
+   "allow": [
+    {
+     "type": "board.read"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 3737,
+   "tokens": {
+    "prompt": 1775,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_accept_03",
+   "rep": 1,
+   "scene": "hall_board",
+   "text": "If I took the weasel job, how long would it take?",
+   "tags": [
+    "synthetic",
+    "negative",
+    "hypothetical"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 1971,
+   "tokens": {
+    "prompt": 1776,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_accept_04",
+   "rep": 1,
+   "scene": "hall_board",
+   "text": "Tomorrow I'll take the Fence Repair job.",
+   "tags": [
+    "synthetic",
+    "negative",
+    "plan"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 28364,
+   "tokens": {
+    "prompt": 1771,
+    "completion": 14,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_accept_05",
+   "rep": 1,
+   "scene": "hall_active_one",
+   "text": "I already took the Miller's Run this morning, remember?",
+   "tags": [
+    "synthetic",
+    "negative",
+    "memory"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 2549,
+   "tokens": {
+    "prompt": 1807,
+    "completion": 14,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_accept_06",
+   "rep": 1,
+   "scene": "hall_board",
+   "text": "*the clerk pins a new slip and says* someone should really take the dog job",
+   "tags": [
+    "synthetic",
+    "negative",
+    "npc_action"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 1636,
+   "tokens": {
+    "prompt": 1779,
+    "completion": 19,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_accept_07",
+   "rep": 1,
+   "scene": "hall_board",
+   "text": "I won't take the Weasel job, too dangerous for me.",
+   "tags": [
+    "synthetic",
+    "negative",
+    "negation"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 1228,
+   "tokens": {
+    "prompt": 1776,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_accept_08",
+   "rep": 1,
+   "scene": "village_reeve",
+   "text": "\"Will you clear the old well for me?\" *the reeve asks, twisting his cap*",
+   "tags": [
+    "synthetic",
+    "negative",
+    "quoted_speech",
+    "npc_action"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 6701,
+   "tokens": {
+    "prompt": 1744,
+    "completion": 13,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_accept_09",
+   "rep": 1,
+   "scene": "village_reeve",
+   "text": "What does the well job pay?",
+   "tags": [
+    "synthetic",
+    "negative",
+    "question"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 2547,
+   "tokens": {
+    "prompt": 1731,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_accept_10",
+   "rep": 1,
+   "scene": "village_reeve",
+   "text": "Let me think about your well. I'll tell you tonight.",
+   "tags": [
+    "synthetic",
+    "negative",
+    "plan"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 1454,
+   "tokens": {
+    "prompt": 1737,
+    "completion": 14,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_turnin_01",
+   "rep": 1,
+   "scene": "hall_turnin_ready",
+   "text": "*i put the basket on the counter* Herb Run, done.",
+   "tags": [
+    "synthetic",
+    "quest.turn_in"
+   ],
+   "expect": [
+    {
+     "type": "quest.turn_in",
+     "quest": "quest.herb_run_marshmint"
+    }
+   ],
+   "allow": [
+    {
+     "type": "give"
+    },
+    {
+     "type": "drop"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "quest.turn_in",
+     "quest": "quest.herb_run_marshmint",
+     "quote": "Herb Run, done."
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "quest.turn_in",
+       "quest": "quest.herb_run_marshmint"
+      },
+      "types": [
+       "quest.turn_in"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 4599,
+   "tokens": {
+    "prompt": 1671,
+    "completion": 39,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_turnin_02",
+   "rep": 1,
+   "scene": "hall_turnin_ready",
+   "text": "I'd like to hand in the marshmint contract.",
+   "tags": [
+    "synthetic",
+    "quest.turn_in"
+   ],
+   "expect": [
+    {
+     "type": "quest.turn_in",
+     "quest": "quest.herb_run_marshmint"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "quest.turn_in",
+     "quest": "quest.herb_run_marshmint",
+     "quote": "I'd like to hand in the marshmint contract."
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "quest.turn_in",
+       "quest": "quest.herb_run_marshmint"
+      },
+      "types": [
+       "quest.turn_in"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 3091,
+   "tokens": {
+    "prompt": 1669,
+    "completion": 40,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_turnin_01",
+   "rep": 1,
+   "scene": "hall_turnin_ready",
+   "text": "Can I turn this in already, or do you need more?",
+   "tags": [
+    "synthetic",
+    "negative",
+    "question"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 1925,
+   "tokens": {
+    "prompt": 1671,
+    "completion": 11,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_turnin_02",
+   "rep": 1,
+   "scene": "hall_turnin_ready",
+   "text": "*i think about turning in the herbs but want to gather a bit more first*",
+   "tags": [
+    "synthetic",
+    "negative",
+    "thought",
+    "plan"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 1019,
+   "tokens": {
+    "prompt": 1674,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_turnin_04",
+   "rep": 1,
+   "scene": "hall_turnin_done",
+   "text": "I turned in the herb run earlier, so what else is there?",
+   "tags": [
+    "synthetic",
+    "negative",
+    "memory",
+    "question"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 16712,
+   "tokens": {
+    "prompt": 1703,
+    "completion": 12,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_turnin_05",
+   "rep": 1,
+   "scene": "hall_turnin_ready",
+   "text": "*the clerk takes the basket from me and marks the herb run complete*",
+   "tags": [
+    "synthetic",
+    "negative",
+    "npc_action"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "quest.turn_in",
+     "quest": "quest.herb_run_marshmint",
+     "quote": "the clerk takes the basket from me and marks the herb run complete"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [
+     {
+      "seq": 1,
+      "type": "quest.turn_in",
+      "quest": "quest.herb_run_marshmint",
+      "quote": "the clerk takes the basket from me and marks the herb run complete"
+     }
+    ],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": false,
+    "negative": true,
+    "negative_ok": false
+   },
+   "ms": 5654,
+   "tokens": {
+    "prompt": 1673,
+    "completion": 73,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_turnin_06",
+   "rep": 1,
+   "scene": "hall_turnin_ready",
+   "text": "I'm not handing anything in yet.",
+   "tags": [
+    "synthetic",
+    "negative",
+    "negation"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 1048,
+   "tokens": {
+    "prompt": 1666,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_go_02",
+   "rep": 1,
+   "scene": "street",
+   "text": "*i consider heading to the mill but it's getting dark*",
+   "tags": [
+    "synthetic",
+    "negative",
+    "thought"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 1219,
+   "tokens": {
+    "prompt": 1808,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_go_04",
+   "rep": 1,
+   "scene": "street",
+   "text": "*i stay where i am and watch the carts go by*",
+   "tags": [
+    "synthetic",
+    "negative",
+    "negation"
+   ],
+   "expect": [],
+   "allow": [
+    {
+     "type": "activity"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 1124,
+   "tokens": {
+    "prompt": 1808,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_go_05",
+   "rep": 1,
+   "scene": "street",
+   "text": "I came here from the reedbeds this afternoon.",
+   "tags": [
+    "synthetic",
+    "negative",
+    "memory"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": "loc.redmarch.grainmarket_row",
+     "quote": "I came here from the reedbeds this afternoon."
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [
+     {
+      "seq": 1,
+      "type": "go",
+      "to": "loc.redmarch.grainmarket_row",
+      "quote": "I came here from the reedbeds this afternoon."
+     }
+    ],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": false,
+    "negative": true,
+    "negative_ok": false
+   },
+   "ms": 10753,
+   "tokens": {
+    "prompt": 1808,
+    "completion": 202,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_go_06",
+   "rep": 1,
+   "scene": "inn_no_offer",
+   "text": "*the innkeeper walks off to the kitchen*",
+   "tags": [
+    "synthetic",
+    "negative",
+    "npc_action"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 975,
+   "tokens": {
+    "prompt": 1620,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_go_07",
+   "rep": 1,
+   "scene": "verge",
+   "text": "If I went into the city now, would the gate be open?",
+   "tags": [
+    "synthetic",
+    "negative",
+    "hypothetical"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 16884,
+   "tokens": {
+    "prompt": 1659,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_pay_03",
+   "rep": 1,
+   "scene": "hall_fee",
+   "text": "If I pay the fee now, do I get my plate today?",
+   "tags": [
+    "synthetic",
+    "negative",
+    "hypothetical"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 17765,
+   "tokens": {
+    "prompt": 1650,
+    "completion": 16,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_offer_01",
+   "rep": 1,
+   "scene": "inn_offer",
+   "text": "All three, please: room, bath and laundry.",
+   "tags": [
+    "synthetic",
+    "offer.accept"
+   ],
+   "expect": [
+    {
+     "type": "offer.accept",
+     "offer": "offer.inn_services"
+    }
+   ],
+   "allow": [
+    {
+     "type": "buy"
+    },
+    {
+     "type": "offer.accept"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "offer.accept",
+     "offer": "offer.inn_services",
+     "lines": [
+      "l1",
+      "l2",
+      "l3"
+     ],
+     "quote": "All three, please: room, bath and laundry."
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "offer.accept",
+       "offer": "offer.inn_services"
+      },
+      "types": [
+       "offer.accept"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 12052,
+   "tokens": {
+    "prompt": 1666,
+    "completion": 47,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_offer_02",
+   "rep": 1,
+   "scene": "inn_offer",
+   "text": "Deal.",
+   "tags": [
+    "synthetic",
+    "offer.accept"
+   ],
+   "expect": [
+    {
+     "type": "offer.accept",
+     "offer": "offer.inn_services"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "offer.accept",
+     "offer": "offer.inn_services",
+     "lines": null,
+     "quote": "Deal."
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "offer.accept",
+       "offer": "offer.inn_services"
+      },
+      "types": [
+       "offer.accept"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 4273,
+   "tokens": {
+    "prompt": 1657,
+    "completion": 57,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_decline_01",
+   "rep": 1,
+   "scene": "inn_offer",
+   "text": "Too expensive, I'll pass.",
+   "tags": [
+    "synthetic",
+    "offer.decline"
+   ],
+   "expect": [
+    {
+     "type": "offer.decline",
+     "offer": "offer.inn_services"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "offer.decline",
+     "offer": "offer.inn_services",
+     "quote": "Too expensive, I'll pass."
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "offer.decline",
+       "offer": "offer.inn_services"
+      },
+      "types": [
+       "offer.decline"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 2548,
+   "tokens": {
+    "prompt": 1662,
+    "completion": 37,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_decline_02",
+   "rep": 1,
+   "scene": "market",
+   "text": "Not interested, thanks.",
+   "tags": [
+    "synthetic",
+    "offer.decline"
+   ],
+   "expect": [
+    {
+     "type": "offer.decline",
+     "offer": "offer.stall"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "offer.decline",
+     "offer": "offer.stall",
+     "quote": "Not interested, thanks."
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "offer.decline",
+       "offer": "offer.stall"
+      },
+      "types": [
+       "offer.decline"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 20588,
+   "tokens": {
+    "prompt": 1673,
+    "completion": 34,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_buy_01",
+   "rep": 1,
+   "scene": "inn_no_offer",
+   "text": "I'd like a room for the night.",
+   "tags": [
+    "synthetic",
+    "buy"
+   ],
+   "expect": [
+    {
+     "type": "buy",
+     "what": "/room/i",
+     "any_price": false
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "buy",
+     "what": "a room for the night",
+     "from": "npc.innkeeper",
+     "qty": null,
+     "max_cp": null,
+     "any_price": false,
+     "quote": "I'd like a room for the night."
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "buy",
+       "what": "/room/i",
+       "any_price": false
+      },
+      "types": [
+       "buy"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 4658,
+   "tokens": {
+    "prompt": 1619,
+    "completion": 63,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_buy_02",
+   "rep": 1,
+   "scene": "inn_no_offer",
+   "text": "Room, bath and laundry, whatever it costs.",
+   "tags": [
+    "synthetic",
+    "buy",
+    "condition"
+   ],
+   "expect": [
+    {
+     "type": "buy",
+     "any_price": true
+    }
+   ],
+   "allow": [
+    {
+     "type": "buy",
+     "any_price": true
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "buy",
+     "what": "room, bath and laundry",
+     "from": "npc.innkeeper",
+     "qty": null,
+     "max_cp": null,
+     "any_price": true,
+     "quote": "Room, bath and laundry, whatever it costs."
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "buy",
+       "any_price": true
+      },
+      "types": [
+       "buy"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 4188,
+   "tokens": {
+    "prompt": 1620,
+    "completion": 66,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_sell_01",
+   "rep": 1,
+   "scene": "market",
+   "text": "*i offer the wolf pelts to the furrier*",
+   "tags": [
+    "synthetic",
+    "sell"
+   ],
+   "expect": [
+    {
+     "type": "sell",
+     "object": "obj.wolf_pelts",
+     "to": "npc.furrier"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "sell",
+     "object": "obj.wolf_pelts",
+     "qty": 3,
+     "to": "npc.furrier",
+     "min_cp": null,
+     "quote": "i offer the wolf pelts to the furrier"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "sell",
+       "object": "obj.wolf_pelts",
+       "to": "npc.furrier"
+      },
+      "types": [
+       "sell"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 3360,
+   "tokens": {
+    "prompt": 1679,
+    "completion": 51,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_sell_02",
+   "rep": 1,
+   "scene": "market",
+   "text": "I'll sell you these three pelts, but not under 30 copper.",
+   "tags": [
+    "synthetic",
+    "sell",
+    "condition"
+   ],
+   "expect": [
+    {
+     "type": "sell",
+     "object": "obj.wolf_pelts",
+     "min_cp": 30
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "sell",
+     "object": "obj.wolf_pelts",
+     "qty": 3,
+     "to": "npc.furrier",
+     "min_cp": 30,
+     "quote": "I'll sell you these three pelts, but not under 30 copper."
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "sell",
+       "object": "obj.wolf_pelts",
+       "min_cp": 30
+      },
+      "types": [
+       "sell"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 5557,
+   "tokens": {
+    "prompt": 1684,
+    "completion": 57,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_sell_03",
+   "rep": 1,
+   "scene": "market",
+   "text": "\"I'll buy your pelts for twenty copper,\" *says the furrier*",
+   "tags": [
+    "synthetic",
+    "negative",
+    "quoted_speech"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 5793,
+   "tokens": {
+    "prompt": 1684,
+    "completion": 22,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_give_01",
+   "rep": 1,
+   "scene": "village_reeve",
+   "text": "*i hand the wolf heads to the reeve*",
+   "tags": [
+    "synthetic",
+    "give"
+   ],
+   "expect": [
+    {
+     "type": "give",
+     "object": "obj.wolf_heads",
+     "to": "npc.reeve_aldous"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "give",
+     "object": "obj.wolf_heads",
+     "qty": 3,
+     "to": "npc.reeve_aldous",
+     "quote": "i hand the wolf heads to the reeve"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "give",
+       "object": "obj.wolf_heads",
+       "to": "npc.reeve_aldous"
+      },
+      "types": [
+       "give"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 3335,
+   "tokens": {
+    "prompt": 1734,
+    "completion": 54,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_give_02",
+   "rep": 1,
+   "scene": "village_reeve",
+   "text": "*i give the contract slip to Aldous so he can sign it*",
+   "tags": [
+    "synthetic",
+    "give"
+   ],
+   "expect": [
+    {
+     "type": "give",
+     "object": "obj.contract_slip",
+     "to": "npc.reeve_aldous"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "give",
+     "object": "obj.contract_slip",
+     "qty": 1,
+     "to": "npc.reeve_aldous",
+     "quote": "i give the contract slip to Aldous so he can sign it"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "give",
+       "object": "obj.contract_slip",
+       "to": "npc.reeve_aldous"
+      },
+      "types": [
+       "give"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 6920,
+   "tokens": {
+    "prompt": 1738,
+    "completion": 51,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_drop_01",
+   "rep": 1,
+   "scene": "village_reeve",
+   "text": "*i put the heads down on the table*",
+   "tags": [
+    "synthetic",
+    "drop"
+   ],
+   "expect": [
+    {
+     "type": "drop",
+     "object": "obj.wolf_heads"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "drop",
+     "object": "obj.wolf_heads",
+     "qty": 3,
+     "quote": "i put the heads down on the table"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "drop",
+       "object": "obj.wolf_heads"
+      },
+      "types": [
+       "drop"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 2407,
+   "tokens": {
+    "prompt": 1733,
+    "completion": 36,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_use_01",
+   "rep": 1,
+   "scene": "camp",
+   "text": "*i drink the healing potion*",
+   "tags": [
+    "synthetic",
+    "use"
+   ],
+   "expect": [
+    {
+     "type": "use",
+     "object": "obj.healing_potion"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "use",
+     "object": "obj.healing_potion",
+     "qty": 1,
+     "quote": "i drink the healing potion"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "use",
+       "object": "obj.healing_potion"
+      },
+      "types": [
+       "use"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 6951,
+   "tokens": {
+    "prompt": 1702,
+    "completion": 34,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_use_02",
+   "rep": 1,
+   "scene": "camp",
+   "text": "*i eat a day of rations and then go to sleep*",
+   "tags": [
+    "synthetic",
+    "use",
+    "activity",
+    "multi"
+   ],
+   "expect": [
+    {
+     "type": "use",
+     "object": "obj.rations"
+    },
+    {
+     "type": "activity",
+     "kind": "sleep"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "use",
+     "object": "obj.rations",
+     "qty": 1,
+     "quote": "i eat a day of rations"
+    },
+    {
+     "seq": 2,
+     "type": "activity",
+     "kind": "sleep",
+     "what": null,
+     "minutes": null,
+     "until": null,
+     "quote": "then go to sleep"
+    }
+   ],
+   "predicted_count": 2,
+   "score": {
+    "gold": 2,
+    "full": 2,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "use",
+       "object": "obj.rations"
+      },
+      "types": [
+       "use"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     },
+     {
+      "gold": {
+       "type": "activity",
+       "kind": "sleep"
+      },
+      "types": [
+       "activity"
+      ],
+      "kind": "full",
+      "pred_index": 1,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": true,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 3871,
+   "tokens": {
+    "prompt": 1709,
+    "completion": 65,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_promote_01",
+   "rep": 1,
+   "scene": "hall_board",
+   "text": "I'd like to take the promotion exam to Proven.",
+   "tags": [
+    "synthetic",
+    "guild.promote"
+   ],
+   "expect": [
+    {
+     "type": "guild.promote"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "guild.promote",
+     "quote": "I'd like to take the promotion exam to Proven."
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "guild.promote"
+      },
+      "types": [
+       "guild.promote"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 4204,
+   "tokens": {
+    "prompt": 1774,
+    "completion": 31,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_promote_02",
+   "rep": 1,
+   "scene": "hall_board",
+   "text": "*i ask the clerk to promote me to the next rank*",
+   "tags": [
+    "synthetic",
+    "guild.promote"
+   ],
+   "expect": [
+    {
+     "type": "guild.promote"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "guild.promote",
+     "quote": "i ask the clerk to promote me to the next rank"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "guild.promote"
+      },
+      "types": [
+       "guild.promote"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 2384,
+   "tokens": {
+    "prompt": 1774,
+    "completion": 30,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_equip_01",
+   "rep": 1,
+   "scene": "camp",
+   "text": "*i swap my rapier for the dagger*",
+   "tags": [
+    "synthetic",
+    "equip"
+   ],
+   "expect": [
+    {
+     "type": "equip",
+     "object": "obj.dagger"
+    }
+   ],
+   "allow": [
+    {
+     "type": "unequip",
+     "object": "obj.rapier"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "equip",
+     "object": "obj.dagger",
+     "slot": "weapon",
+     "quote": "i swap my rapier for the dagger"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "equip",
+       "object": "obj.dagger"
+      },
+      "types": [
+       "equip"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 2536,
+   "tokens": {
+    "prompt": 1705,
+    "completion": 35,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_equip_02",
+   "rep": 1,
+   "scene": "camp",
+   "text": "*i put my armor back on*",
+   "tags": [
+    "synthetic",
+    "equip"
+   ],
+   "expect": [
+    {
+     "type": "equip",
+     "object": "obj.leather_armor"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "equip",
+     "object": "obj.leather_armor",
+     "slot": null,
+     "quote": "i put my armor back on"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "equip",
+       "object": "obj.leather_armor"
+      },
+      "types": [
+       "equip"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 3686,
+   "tokens": {
+    "prompt": 1703,
+    "completion": 34,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_unequip_01",
+   "rep": 1,
+   "scene": "camp",
+   "text": "*i take off my leather armor and lie down to sleep*",
+   "tags": [
+    "synthetic",
+    "unequip",
+    "activity",
+    "multi"
+   ],
+   "expect": [
+    {
+     "type": "unequip",
+     "object": "obj.leather_armor"
+    },
+    {
+     "type": "activity",
+     "kind": "sleep"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "unequip",
+     "object": "obj.leather_armor",
+     "quote": "i take off my leather armor"
+    },
+    {
+     "seq": 2,
+     "type": "activity",
+     "kind": "sleep",
+     "what": null,
+     "minutes": null,
+     "until": null,
+     "quote": "lie down to sleep"
+    }
+   ],
+   "predicted_count": 2,
+   "score": {
+    "gold": 2,
+    "full": 2,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "unequip",
+       "object": "obj.leather_armor"
+      },
+      "types": [
+       "unequip"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     },
+     {
+      "gold": {
+       "type": "activity",
+       "kind": "sleep"
+      },
+      "types": [
+       "activity"
+      ],
+      "kind": "full",
+      "pred_index": 1,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": true,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 59403,
+   "tokens": {
+    "prompt": 1708,
+    "completion": 62,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_unequip_02",
+   "rep": 1,
+   "scene": "inn_room",
+   "text": "*i unbuckle my armor and hang it on the hook*",
+   "tags": [
+    "synthetic",
+    "unequip"
+   ],
+   "expect": [
+    {
+     "type": "unequip",
+     "object": "obj.light_armor"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "unequip",
+     "object": "obj.light_armor",
+     "quote": "i unbuckle my armor and hang it on the hook"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "unequip",
+       "object": "obj.light_armor"
+      },
+      "types": [
+       "unequip"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 2453,
+   "tokens": {
+    "prompt": 1651,
+    "completion": 35,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_equip_03",
+   "rep": 1,
+   "scene": "camp",
+   "text": "*i draw my rapier and listen*",
+   "tags": [
+    "synthetic",
+    "negative"
+   ],
+   "expect": [],
+   "allow": [
+    {
+     "type": "equip"
+    }
+   ],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 957,
+   "tokens": {
+    "prompt": 1704,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_abandon_01",
+   "rep": 1,
+   "scene": "hall_active_one",
+   "text": "*i tell the clerk i'm dropping the Miller's Run*",
+   "tags": [
+    "synthetic",
+    "quest.abandon"
+   ],
+   "expect": [
+    {
+     "type": "quest.abandon",
+     "quest": "quest.millers_run_escort"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "quest.abandon",
+     "quest": "quest.millers_run_escort",
+     "quote": "i'm dropping the Miller's Run"
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "quest.abandon",
+       "quest": "quest.millers_run_escort"
+      },
+      "types": [
+       "quest.abandon"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 6231,
+   "tokens": {
+    "prompt": 1807,
+    "completion": 36,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "syn_abandon_02",
+   "rep": 1,
+   "scene": "hall_active_one",
+   "text": "I quit the escort contract.",
+   "tags": [
+    "synthetic",
+    "quest.abandon"
+   ],
+   "expect": [
+    {
+     "type": "quest.abandon",
+     "quest": "quest.millers_run_escort"
+    }
+   ],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [
+    {
+     "seq": 1,
+     "type": "quest.abandon",
+     "quest": "quest.millers_run_escort",
+     "quote": "I quit the escort contract."
+    }
+   ],
+   "predicted_count": 1,
+   "score": {
+    "gold": 1,
+    "full": 1,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [
+     {
+      "gold": {
+       "type": "quest.abandon",
+       "quest": "quest.millers_run_escort"
+      },
+      "types": [
+       "quest.abandon"
+      ],
+      "kind": "full",
+      "pred_index": 0,
+      "bad": []
+     }
+    ],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": false,
+    "negative_ok": null
+   },
+   "ms": 3059,
+   "tokens": {
+    "prompt": 1801,
+    "completion": 35,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  },
+  {
+   "id": "neg_mix_03",
+   "rep": 1,
+   "scene": "market",
+   "text": "\"Two copper for the oil and it's yours,\" *the stallkeeper says. i shrug*",
+   "tags": [
+    "synthetic",
+    "negative",
+    "quoted_speech"
+   ],
+   "expect": [],
+   "allow": [],
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_final": [],
+   "predicted": [],
+   "predicted_count": 0,
+   "score": {
+    "gold": 0,
+    "full": 0,
+    "type_only": 0,
+    "missing": 0,
+    "matches": [],
+    "false_commands": [],
+    "tolerated": 0,
+    "order_ok": null,
+    "exact": true,
+    "negative": true,
+    "negative_ok": true
+   },
+   "ms": 24099,
+   "tokens": {
+    "prompt": 1689,
+    "completion": 24,
+    "reasoning": 0,
+    "reported": true
+   },
+   "finish": "stop"
+  }
+ ]
+}

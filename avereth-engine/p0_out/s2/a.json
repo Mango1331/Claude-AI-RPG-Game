@@ -1,0 +1,3605 @@
+{
+ "meta": {
+  "tool": "s2_deltas",
+  "version": 1,
+  "started": "2026-09-27T21:58:12.531Z",
+  "finished": "2026-09-27T22:14:08.901Z",
+  "node": "v24.19.0",
+  "provider": {
+   "backend": "SillyTavern",
+   "source": "custom",
+   "model": "zai-org/GLM-5.3-Flash",
+   "profile": null,
+   "include_body_keys": [
+    "clear_thinking",
+    "reasoning_effort"
+   ],
+   "reasoning_effort": "low"
+  },
+  "mode": "plain",
+  "reasoning": null,
+  "mode_source": "Kommandozeile",
+  "turns": [
+   "v8_01",
+   "v8_02",
+   "v8_03",
+   "v8_04",
+   "v8_05",
+   "v9_01",
+   "v9_02",
+   "v9_03",
+   "v9_04",
+   "v9_05",
+   "v9_06",
+   "v9_07",
+   "v9_08",
+   "v10_01",
+   "v10_02",
+   "v10_03",
+   "v10_04",
+   "v10_05",
+   "v10_06",
+   "v10_07",
+   "v10_08",
+   "v10_09",
+   "v11_01",
+   "v11_02",
+   "v11_03",
+   "v11_04",
+   "v11_05",
+   "v11_06",
+   "v11_07",
+   "v11_08",
+   "v11_09",
+   "v11_10",
+   "v11_11",
+   "v12_01",
+   "v12_02",
+   "v12_03",
+   "v12_04",
+   "v12_05",
+   "v12_06",
+   "v12_07",
+   "v12_08"
+  ],
+  "variant": "a"
+ },
+ "records": [
+  {
+   "id": "v8_01",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 3,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 5
+   },
+   "items": 4,
+   "ms": 15113,
+   "tokens": {
+    "prompt": 2057,
+    "completion": 279,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": "loc.tidecross.guild_hall"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 20
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": "loc.tidecross.guild_hall"
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "person.guild_clerk_tidecross",
+      "name": null,
+      "role": "Guild clerk at the Tidecross hall counter",
+      "desc": [
+       "thin man",
+       "ink-stained fingers"
+      ],
+      "present": true,
+      "at": null
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "person.guild_counterwoman_tidecross",
+      "name": null,
+      "role": "woman sorting papers behind the bar counter",
+      "desc": [
+       "broad woman",
+       "iron-grey braids"
+      ],
+      "present": true,
+      "at": null
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "Tidecross Guild hall",
+      "p": "requires a Guild plate to take work",
+      "o": "non-members cannot take contracts"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v8_02",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 5
+   },
+   "items": 0,
+   "ms": 32879,
+   "tokens": {
+    "prompt": 1947,
+    "completion": 442,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 3
+     },
+     {
+      "seq": 2,
+      "type": "object.new",
+      "name": "blank copper guild plate",
+      "kind": "item",
+      "qty": 1,
+      "unit": null,
+      "holder": "loc.tidecross.guild_hall",
+      "for_quest": null
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "npc.map_table_men",
+      "name": null,
+      "role": "adventurers arguing over a tide schedule",
+      "desc": [
+       "two men at the map table debating wading out at midday tide"
+      ],
+      "present": true,
+      "at": "loc.tidecross.guild_hall"
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "npc.fletching_woman",
+      "name": null,
+      "role": "adventurer fletching arrows",
+      "desc": [
+       "a woman fletching arrows who glances over at the arguing men"
+      ],
+      "present": true,
+      "at": "loc.tidecross.guild_hall"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "npc.guild_clerk",
+      "p": "explains_registration_terms",
+      "o": "fee is two silver covering plate, first stamp and Novice board access; Novice work only until the plate earns a stamp"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v8_03",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [
+     {
+      "pattern": {
+       "type": "offer"
+      },
+      "delta": {
+       "seq": 3,
+       "type": "offer",
+       "seller": "npc.guild_clerk",
+       "lines": [
+        {
+         "what": "replacement Guild plate",
+         "kind": "service",
+         "service": "other",
+         "qty": 1,
+         "price_cp": 100
+        }
+       ]
+      }
+     }
+    ],
+    "semantic": 0,
+    "deltas": 4
+   },
+   "items": 0,
+   "ms": 16573,
+   "tokens": {
+    "prompt": 2254,
+    "completion": 272,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 5
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "Guild plate",
+      "p": "replacement_cost",
+      "o": "1 silver"
+     },
+     {
+      "seq": 3,
+      "type": "offer",
+      "seller": "npc.guild_clerk",
+      "lines": [
+       {
+        "what": "replacement Guild plate",
+        "kind": "service",
+        "service": "other",
+        "qty": 1,
+        "price_cp": 100
+       }
+      ]
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Guild clerk",
+      "p": "announced",
+      "o": "Dagny at the Gull's Rest is asking about the Gull's Rest rats slip; nobody answered"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v8_04",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 3,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 7
+   },
+   "items": 4,
+   "ms": 35374,
+   "tokens": {
+    "prompt": 2179,
+    "completion": 641,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Gull's Rest",
+        "kind": "site",
+        "parent": "loc.tidecross"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 15
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Gull's Rest",
+        "kind": "site",
+        "parent": "loc.tidecross"
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "npc.dagny",
+      "name": "Dagny",
+      "role": "Keeper of the Gull's Rest tavern",
+      "desc": [
+       "woman with forearms like a smith's",
+       "grey-streaked hair tied back with string"
+      ],
+      "present": true,
+      "at": null
+     },
+     {
+      "seq": 4,
+      "type": "quest.detail",
+      "quest": "quest.rats_salt_cellar",
+      "note": "Report back to Dagny at the Gull's Rest when done; bring the slip or the Guild plate; kill the rats without cracking her ale barrels; she pays eight silver on a clean cellar",
+      "schedule": null
+     },
+     {
+      "seq": 5,
+      "type": "object.new",
+      "name": "Quest slip for Rats in the Salt Cellar",
+      "kind": "document",
+      "qty": 1,
+      "unit": null,
+      "holder": "pc",
+      "for_quest": "quest.rats_salt_cellar"
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "npc.guild_clerk",
+      "p": "logged quest under",
+      "o": "Red"
+     },
+     {
+      "seq": 7,
+      "type": "fact",
+      "s": "npc.dagny",
+      "p": "offers",
+      "o": "eight silver (80 cp) for clearing the rat-infested cellar of the Gull's Rest"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v8_05",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 3,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 4
+   },
+   "items": 4,
+   "ms": 14318,
+   "tokens": {
+    "prompt": 1992,
+    "completion": 258,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Gull's Rest cellar",
+        "kind": "interior",
+        "parent": "loc.tidecross.gulls_rest"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 2
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Gull's Rest cellar",
+        "kind": "interior",
+        "parent": "loc.tidecross.gulls_rest"
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "creature.new",
+      "ref": "creature.rats_cellar",
+      "species": "rat",
+      "desc": [
+       "one rat the length of a man's forearm, teeth bared, charging from behind the barrel stack",
+       "a second rat moving behind the grain sacks",
+       "small prints and gnawed-through sacks of grain"
+      ],
+      "count": 2,
+      "present": true
+     },
+     {
+      "seq": 4,
+      "type": "hostile",
+      "by": [
+       "creature.rats_cellar"
+      ]
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v9_01",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 2,
+    "critical_missing": [
+     {
+      "type": "time",
+      "minutes": {
+       "$range": [
+        5,
+        120
+       ]
+      }
+     }
+    ],
+    "forbidden_hits": [],
+    "semantic": 0.75,
+    "deltas": 3
+   },
+   "items": 4,
+   "ms": 24662,
+   "tokens": {
+    "prompt": 2088,
+    "completion": 295,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": "loc.alderwatch.guild_hall"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "arrive",
+      "at": "loc.alderwatch.guild_hall"
+     },
+     {
+      "seq": 2,
+      "type": "person.new",
+      "ref": "person.alderwatch.gate_guard",
+      "name": null,
+      "role": "city gate guard",
+      "desc": [
+       "Two guards in Crown colors working Alderwatch's gate",
+       "One noticed Alaric's sword and directed him to the Guild for registration, warning him not to draw it inside the walls"
+      ],
+      "present": false,
+      "at": "loc.alderwatch"
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "person.guild.desk_clerk",
+      "name": null,
+      "role": "Guild hall desk clerk",
+      "desc": [
+       "Broad-shouldered man with a grey queue and a clerk's quill tucked behind one ear",
+       "Tallying a ledger behind the long front desk",
+       "Greeted Alaric asking whether he wanted registration, posting, or payout"
+      ],
+      "present": true,
+      "at": null
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v9_02",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 8
+   },
+   "items": 0,
+   "ms": 23317,
+   "tokens": {
+    "prompt": 2020,
+    "completion": 452,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 3
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "Guild registration",
+      "p": "costs",
+      "o": "one silver (10 cp) one-time fee"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "New Guild registrants",
+      "p": "start at rank",
+      "o": "Novice"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Novice-rank Guild members",
+      "p": "may take contracts only from",
+      "o": "the left half of the contract board (escorts, pest work, deliveries)"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "Registration",
+      "p": "requires",
+      "o": "five questions (full name, age, Class, prior Guild memberships, prior armed work) plus the registrant's mark"
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "Gate Assessors",
+      "p": "verify",
+      "o": "registrants' answers about prior contract work within about a week"
+     },
+     {
+      "seq": 7,
+      "type": "person.new",
+      "ref": "npc.mailed_men",
+      "name": null,
+      "role": "mailed men at the Guild board",
+      "desc": [
+       "two men in mail",
+       "drifted to the desk's far end",
+       "one dropped a wax-sealed tag on the counter"
+      ],
+      "present": true,
+      "at": "loc.alderwatch.guild_hall"
+     },
+     {
+      "seq": 8,
+      "type": "fact",
+      "s": "The clerk",
+      "p": "told the two mailed men to wait, saying",
+      "o": "'You're first in line. Go on.' to Alaric"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v9_03",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [
+     {
+      "pattern": {
+       "type": "object.new",
+       "$any": "/plate/i"
+      },
+      "delta": {
+       "seq": 2,
+       "type": "object.new",
+       "name": "brass Guild plate (ALARIC RED — WARRIOR — NOVICE)",
+       "kind": "item",
+       "qty": 1,
+       "unit": null,
+       "holder": "pc",
+       "for_quest": null
+      }
+     }
+    ],
+    "semantic": 0,
+    "deltas": 6
+   },
+   "items": 0,
+   "ms": 27115,
+   "tokens": {
+    "prompt": 2110,
+    "completion": 372,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 10
+     },
+     {
+      "seq": 2,
+      "type": "object.new",
+      "name": "brass Guild plate (ALARIC RED — WARRIOR — NOVICE)",
+      "kind": "item",
+      "qty": 1,
+      "unit": null,
+      "holder": "pc",
+      "for_quest": null
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Guild plate replacement",
+      "p": "costs",
+      "o": "10 cp (one silver)"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Guild notice board",
+      "p": "red wax seals mark",
+      "o": "verified posters; unsealed postings are not contracts"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "Guild contracts",
+      "p": "pay out at",
+      "o": "the Guild hall desk on return with proof (ears, tags, or a receipt)"
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "Guild register",
+      "p": "states",
+      "o": "contracts are taken at one's own risk; the Guild mediates disputes but does not avenge deaths; rates are set by the posting party"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v9_04",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 1,
+    "critical_found": 1,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 4
+   },
+   "items": 1,
+   "ms": 22558,
+   "tokens": {
+    "prompt": 2286,
+    "completion": 217,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 10
+     },
+     {
+      "seq": 2,
+      "type": "person.new",
+      "ref": "npc.inkstained_woman",
+      "name": null,
+      "role": "young woman taking a board listing",
+      "desc": [
+       "young woman with ink-stained fingers",
+       "scanned past Alaric without a glance",
+       "pulled the hornwort slip off the board and tucked it into her sleeve"
+      ],
+      "present": false,
+      "at": null
+     },
+     {
+      "seq": 3,
+      "type": "listing.gone",
+      "listing": "quest.hornwort",
+      "why": "taken_by_other"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "quest.wolf_sightings",
+      "p": "taken_by",
+      "o": "J. Vess & partner, back by week's end"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v9_05",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 1,
+    "critical_missing": [
+     {
+      "type": "arrive",
+      "at": "/granary|millwright/i"
+     }
+    ],
+    "forbidden_hits": [],
+    "semantic": 0.6666666666666666,
+    "deltas": 10
+   },
+   "items": 3,
+   "ms": 36556,
+   "tokens": {
+    "prompt": 2220,
+    "completion": 700,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Millwright's Row association granary",
+        "kind": "site",
+        "parent": {
+         "new": {
+          "name": "Millwright's Row",
+          "kind": "district",
+          "parent": "loc.alderwatch"
+         }
+        }
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "object.move",
+      "object": {
+       "new": "stamped vermin work tag"
+      },
+      "qty": 1,
+      "to": "pc"
+     },
+     {
+      "seq": 2,
+      "type": "quest.detail",
+      "quest": "quest.granary_vermin",
+      "note": "Take the stamped tag to the cellarmaster at the Millwright's Row association granary; he marks it done, then return it to the Guild hall for the 80 cp payout.",
+      "schedule": null
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Millwright's Row",
+      "p": "is a district of",
+      "o": "loc.alderwatch"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Millwright's Row association granary",
+      "p": "is the large granary with the sloped roof in",
+      "o": "Millwright's Row"
+     },
+     {
+      "seq": 5,
+      "type": "person.new",
+      "ref": "npc.cellarmaster",
+      "name": null,
+      "role": "cellarmaster of the Millwright's Row association granary",
+      "desc": [
+       "barrel-chested",
+       "sawdust in his eyebrows",
+       "wears an apron"
+      ],
+      "present": true,
+      "at": null
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "association granary",
+      "p": "has",
+      "o": "three cellars under the ground floor, reached via a trapdoor by the stair"
+     },
+     {
+      "seq": 7,
+      "type": "fact",
+      "s": "west cellar",
+      "p": "shows",
+      "o": "sacks torn open from below by something bigger than rats"
+     },
+     {
+      "seq": 8,
+      "type": "fact",
+      "s": "third cellar ladder",
+      "p": "has",
+      "o": "a cracked bottom rung"
+     },
+     {
+      "seq": 9,
+      "type": "fact",
+      "s": "rat poison",
+      "p": "is kept in",
+      "o": "green crocks in the granary, offered at cost"
+     },
+     {
+      "seq": 10,
+      "type": "object.new",
+      "name": "lantern on the hook by the trapdoor",
+      "kind": "item",
+      "qty": 1,
+      "unit": null,
+      "holder": "loc.alderwatch.millwrights_row.granary",
+      "for_quest": "quest.granary_vermin"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v9_06",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 2,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 2
+   },
+   "items": 3,
+   "ms": 20529,
+   "tokens": {
+    "prompt": 2098,
+    "completion": 163,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "first cellar",
+        "kind": "interior",
+        "parent": "loc.alderwatch.granary"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "first cellar",
+        "kind": "interior",
+        "parent": "loc.alderwatch.granary"
+       }
+      }
+     },
+     {
+      "seq": 2,
+      "type": "creature.new",
+      "ref": "creature.granary_vermin",
+      "species": "rats",
+      "desc": [
+       "dark shape slipped between sack rows, low and quick",
+       "many small feet scratching behind stacked sacks"
+      ],
+      "count": 1,
+      "present": true
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v9_07",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 1,
+    "critical_found": 1,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 5
+   },
+   "items": 2,
+   "ms": 22722,
+   "tokens": {
+    "prompt": 2028,
+    "completion": 401,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": "loc.alderwatch.granary.first_cellar"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 5
+     },
+     {
+      "seq": 2,
+      "type": "creature.new",
+      "ref": "creature.granary_rats",
+      "species": "rat",
+      "desc": [
+       "blot-gray rats each the length of a forearm with tail",
+       "unafraid of the lantern, holding still and watching",
+       "many more waiting in the dark along the outer wall"
+      ],
+      "count": 3,
+      "present": true
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "loc.alderwatch.granary.first_cellar",
+      "p": "has gnawed rat hole",
+      "o": "fist-wide hole at floor level in the outer wall's foundation stones, sour smell rolling from it"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "loc.alderwatch.granary.first_cellar",
+      "p": "has rat run",
+      "o": "heaped droppings and a worn rat trail along the sack rows toward the outer wall"
+     },
+     {
+      "seq": 5,
+      "type": "hostile",
+      "by": [
+       "creature.granary_rats"
+      ]
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v9_08",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 1,
+    "critical_found": 1,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 1
+   },
+   "items": 1,
+   "ms": 3382,
+   "tokens": {
+    "prompt": 1989,
+    "completion": 52,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "hostile",
+      "by": [
+       "mon.cellar_rats"
+      ]
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v10_01",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 3,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 7
+   },
+   "items": 4,
+   "ms": 58894,
+   "tokens": {
+    "prompt": 2243,
+    "completion": 428,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": "loc.redmarch.guild_hall"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 30
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": "loc.redmarch.guild_hall"
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "person.redmarch.gate_guard",
+      "name": null,
+      "role": "city gate guard",
+      "desc": [
+       "wears Veyrhold's black-and-red",
+       "bored, flat-voiced",
+       "warned Alaric to keep steel peace-bonded"
+      ],
+      "present": false,
+      "at": "loc.redmarch"
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "person.marta",
+      "name": "Marta",
+      "role": "Guild counter clerk",
+      "desc": [
+       "broad woman with a burn-scarred forearm",
+       "counts coins into a ledger",
+       "firm about bounty terms"
+      ],
+      "present": true,
+      "at": "loc.redmarch.guild_hall"
+     },
+     {
+      "seq": 5,
+      "type": "person.new",
+      "ref": "person.corvan",
+      "name": "Corvan",
+      "role": "hunter",
+      "desc": [
+       "lean man in a mud-caked hunting coat",
+       "argued about a shorted bounty payout",
+       "left with his coins"
+      ],
+      "present": false,
+      "at": null
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "person.marta",
+      "p": "works at",
+      "o": "loc.redmarch.guild_hall"
+     },
+     {
+      "seq": 7,
+      "type": "fact",
+      "s": "person.corvan",
+      "p": "was paid two silver short",
+      "o": "because his bounty tusks came back chipped"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v10_02",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 5
+   },
+   "items": 0,
+   "ms": 17348,
+   "tokens": {
+    "prompt": 2008,
+    "completion": 333,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 5
+     },
+     {
+      "seq": 2,
+      "type": "object.new",
+      "name": "Guild registration form",
+      "kind": "document",
+      "qty": 1,
+      "unit": null,
+      "holder": "loc.redmarch.guild_hall",
+      "for_quest": null
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Guild registration",
+      "p": "covers",
+      "o": "Guild badge, notice board access, and mediation rules"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Guild registration form",
+      "p": "includes liability clause on back",
+      "o": "Guild does not rescue members from Dungeons, pay funerals, or avenge them"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "new Guild members",
+      "p": "restricted to",
+      "o": "novice contracts at their level"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v10_03",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [
+     {
+      "pattern": {
+       "type": "object.new",
+       "$any": "/badge/i"
+      },
+      "delta": {
+       "seq": 1,
+       "type": "object.new",
+       "name": "pewter Novice badge",
+       "kind": "item",
+       "qty": 1,
+       "unit": null,
+       "holder": "pc",
+       "for_quest": null
+      }
+     }
+    ],
+    "semantic": 0,
+    "deltas": 8
+   },
+   "items": 0,
+   "ms": 31652,
+   "tokens": {
+    "prompt": 2084,
+    "completion": 412,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "object.new",
+      "name": "pewter Novice badge",
+      "kind": "item",
+      "qty": 1,
+      "unit": null,
+      "holder": "pc",
+      "for_quest": null
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "Alaric Red",
+      "p": "registered as Guild Novice",
+      "o": "Adventurers' Guild, Redmarch"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Alaric Red",
+      "p": "Power Rank recorded as",
+      "o": "F"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Alaric Red",
+      "p": "badge number entered in ledger with",
+      "o": "no next of kin listed"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "Adventurers' Guild, Redmarch",
+      "p": "contracts pay out on return only against the member's",
+      "o": "Novice badge"
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "Adventurers' Guild, Redmarch",
+      "p": "board rules: unribboned notices open to Novices, red ribbon means Proven and up",
+      "o": "Marta"
+     },
+     {
+      "seq": 7,
+      "type": "leave",
+      "who": "npc.marta"
+     },
+     {
+      "seq": 8,
+      "type": "person.new",
+      "ref": "npc.fox_boy",
+      "name": null,
+      "role": "farm-handed boy with a dead fox",
+      "desc": [
+       "hovering by the door",
+       "carrying a dead fox over his shoulder"
+      ],
+      "present": true,
+      "at": "loc.redmarch.guild_hall"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v10_04",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 9
+   },
+   "items": 0,
+   "ms": 33937,
+   "tokens": {
+    "prompt": 2301,
+    "completion": 595,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 5
+     },
+     {
+      "seq": 2,
+      "type": "person.new",
+      "ref": "npc.board_clerk",
+      "name": null,
+      "role": "board clerk",
+      "desc": [
+       "narrow man with ink-stained fingers",
+       "wears a clerk's cap",
+       "refills the notice board's candle-lamp",
+       "advises novices to only pull a contract sheet if they mean to sign it out"
+      ],
+      "present": true,
+      "at": "loc.redmarch.guild_hall"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "quest.boar_eastfields",
+      "p": "farmer_bonus",
+      "o": "the farmer will add two silver from his own purse if the boar is brought down before the next full moon"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "quest.boar_eastfields",
+      "p": "trophy",
+      "o": "intact tusks"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "quest.herb_greyfen",
+      "p": "terms",
+      "o": "fenroot and bitterleaf wanted, dried or fresh, gathered from the fen edge only; the deep fen is posted off-limits by order of the Reeve; pays by weight up to 6 silver"
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "quest.rats_blue_ox",
+      "p": "terms",
+      "o": "something big has been at the grain cellar; 4 silver and a hot meal"
+     },
+     {
+      "seq": 7,
+      "type": "fact",
+      "s": "quest.caravan_ironward",
+      "p": "requirement",
+      "o": "wants two people"
+     },
+     {
+      "seq": 8,
+      "type": "learn",
+      "who": "pc",
+      "s": "guild_contracts",
+      "p": "procedure",
+      "o": "some adventurers pull the contract off the board when they sign it out; browsing visitors should not pull the nails",
+      "how": "told"
+     },
+     {
+      "seq": 9,
+      "type": "overreach",
+      "kind": "guild_listing",
+      "what": "the reply shows an extra official notice on the board (Wormhole Delve dungeon, Novice parties of three or more) that the BOARD does not list"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v10_05",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 2,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 7
+   },
+   "items": 3,
+   "ms": 42653,
+   "tokens": {
+    "prompt": 2209,
+    "completion": 547,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Blue Ox Tavern",
+        "kind": "site",
+        "parent": "loc.redmarch"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 10
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Blue Ox Tavern",
+        "kind": "site",
+        "parent": "loc.redmarch"
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "npc.blue_ox_barman",
+      "name": null,
+      "role": "barman of the Blue Ox Tavern",
+      "desc": [
+       "heavy man",
+       "apron",
+       "forearms like hams",
+       "stands behind the barrels"
+      ],
+      "present": true,
+      "at": {
+       "new": {
+        "name": "Blue Ox Tavern",
+        "kind": "site",
+        "parent": "loc.redmarch"
+       }
+      }
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "npc.bren_cellarman",
+      "name": "Bren",
+      "role": "cellarman of the Blue Ox Tavern",
+      "desc": [
+       "stooped",
+       "carries a lantern and a grain scoop",
+       "minds the grain in the cellar"
+      ],
+      "present": true,
+      "at": {
+       "new": {
+        "name": "Blue Ox Tavern",
+        "kind": "site",
+        "parent": "loc.redmarch"
+       }
+      }
+     },
+     {
+      "seq": 5,
+      "type": "object.new",
+      "name": "stamped contract half (Rats — Cellar of the Blue Ox Tavern)",
+      "kind": "document",
+      "qty": 1,
+      "unit": null,
+      "holder": "here",
+      "for_quest": "quest.rats_blue_ox"
+     },
+     {
+      "seq": 6,
+      "type": "quest.detail",
+      "quest": "quest.rats_blue_ox",
+      "note": "Ask for Bren the cellarman in the cellar; the torn barley sack suggests something dragged the sack, not gnawed it — Bren says it is not rats.",
+      "schedule": null
+     },
+     {
+      "seq": 7,
+      "type": "fact",
+      "s": "Blue Ox Tavern cellar",
+      "p": "hazard",
+      "o": "the third step of the cellar stairs is broken ('a liar')"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v10_06",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 1,
+    "critical_found": 1,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 3
+   },
+   "items": 1,
+   "ms": 11976,
+   "tokens": {
+    "prompt": 1983,
+    "completion": 206,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "creature.new",
+      "ref": "creature.giant_rat_blue_ox",
+      "species": "giant rat",
+      "desc": [
+       "rat grown wrong, long of body, heavy in the shoulder",
+       "size of a terrier or bigger",
+       "green eyeshine, thick tail, yellow teeth",
+       "crouched behind the water cask chewing, hissing"
+      ],
+      "count": 1,
+      "present": true
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "loc.redmarch.blue_ox.cellar",
+      "p": "has_buckled_hole",
+      "o": "a gap in the foundation wall the width of a big dog's shoulders, with fresh dirt fanned across the floor"
+     },
+     {
+      "seq": 3,
+      "type": "leave",
+      "who": "npc.bren"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v10_07",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 1,
+    "critical_found": 1,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 4
+   },
+   "items": 2,
+   "ms": 14008,
+   "tokens": {
+    "prompt": 2055,
+    "completion": 244,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Dug passage behind the cellar wall",
+        "kind": "interior",
+        "parent": "loc.redmarch.blue_ox.cellar"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Dug passage behind the cellar wall",
+        "kind": "interior",
+        "parent": "loc.redmarch.blue_ox.cellar"
+       }
+      }
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "dug passage",
+      "p": "has fork",
+      "o": "left branch slopes down into darkness, right branch leads to a nest"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "right branch of the dug passage",
+      "p": "contains",
+      "o": "a nest of shredded cloth and dry grass and sounds of more than one small living creature"
+     },
+     {
+      "seq": 4,
+      "type": "leave",
+      "who": "npc.bren"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v10_08",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 2,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 5
+   },
+   "items": 3,
+   "ms": 22253,
+   "tokens": {
+    "prompt": 2038,
+    "completion": 431,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Rat nest dead-end",
+        "kind": "interior",
+        "parent": "loc.redmarch.blue_ox.cellar.passage"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Rat nest dead-end",
+        "kind": "interior",
+        "parent": "loc.redmarch.blue_ox.cellar.passage"
+       }
+      }
+     },
+     {
+      "seq": 2,
+      "type": "creature.new",
+      "ref": "creature.rat_pups_blue_ox",
+      "species": "rat pups",
+      "desc": [
+       "two pink-bellied, blind rat pups no bigger than a man's fist, writhing in a nest-mound of stripped sacking"
+      ],
+      "count": 2,
+      "present": true
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "loc.redmarch.blue_ox.cellar.passage",
+      "p": "has upward burrow at right-branch dead-end",
+      "o": "a second, wider hole bored upward at a slant, bleeding faint daylight, likely leading to the yard or stable side above"
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "person.bren_blue_ox",
+      "name": "Bren",
+      "role": "Blue Ox Tavern man",
+      "desc": [
+       "calls down the cellar passage to Alaric, strained, worried the whole wall will go",
+       "mentions Marta will have his hide"
+      ],
+      "present": false,
+      "at": "loc.redmarch.blue_ox.cellar"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "person.bren_blue_ox",
+      "p": "answers to",
+      "o": "Marta"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v10_09",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 4
+   },
+   "items": 0,
+   "ms": 23291,
+   "tokens": {
+    "prompt": 2003,
+    "completion": 238,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 5
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "Bren",
+      "p": "moved",
+      "o": "a few steps up the passage toward the nest, lantern in hand"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "quest.rats_blue_ox",
+      "p": "proof_required",
+      "o": "Marta wants proof the nest is dealt with, not just a story"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "nest chamber",
+      "p": "contains",
+      "o": "an upward burrow; one adult gnawer was slain and a second is likely out foraging and may return"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_01",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 3,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 4
+   },
+   "items": 4,
+   "ms": 14771,
+   "tokens": {
+    "prompt": 2162,
+    "completion": 273,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": "loc.alderwatch.guild_hall"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 20
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": "loc.alderwatch.guild_hall"
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "npc.guild_clerk_grey",
+      "name": null,
+      "role": "Guild clerk",
+      "desc": [
+       "grey-haired man behind the counter with an open ledger, stamps pages and calls names without looking up"
+      ],
+      "present": true,
+      "at": "loc.alderwatch.guild_hall"
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "npc.guild_clerk_young_woman",
+      "name": null,
+      "role": "Guild clerk",
+      "desc": [
+       "young woman clerk at the far end of the counter sorting a stack of wooden Quest tags"
+      ],
+      "present": true,
+      "at": "loc.alderwatch.guild_hall"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_02",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [
+     {
+      "pattern": {
+       "type": "offer"
+      },
+      "delta": {
+       "seq": 4,
+       "type": "offer",
+       "seller": "npc.guild_clerk",
+       "lines": [
+        {
+         "what": "Novice's medallion and entry in the Guild rolls (lifetime registration)",
+         "kind": "service",
+         "service": "other",
+         "qty": 1,
+         "price_cp": 20
+        }
+       ]
+      }
+     }
+    ],
+    "semantic": 0,
+    "deltas": 5
+   },
+   "items": 0,
+   "ms": 17447,
+   "tokens": {
+    "prompt": 2003,
+    "completion": 291,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "Guild registration",
+      "p": "requires",
+      "o": "name, age, literacy, a blood-pressed signature confirmed by the Guild stone, and a one-time fee of two silver for a lifetime Novice's medallion honored at every branch"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "Guild registration",
+      "p": "takes",
+      "o": "about a quarter hour"
+     },
+     {
+      "seq": 3,
+      "type": "object.new",
+      "name": "fat iron blood pin",
+      "kind": "item",
+      "qty": 1,
+      "unit": null,
+      "holder": "loc.alderwatch.guild_hall",
+      "for_quest": null
+     },
+     {
+      "seq": 4,
+      "type": "offer",
+      "seller": "npc.guild_clerk",
+      "lines": [
+       {
+        "what": "Novice's medallion and entry in the Guild rolls (lifetime registration)",
+        "kind": "service",
+        "service": "other",
+        "qty": 1,
+        "price_cp": 20
+       }
+      ]
+     },
+     {
+      "seq": 5,
+      "type": "time",
+      "minutes": 2
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_03",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 7
+   },
+   "items": 0,
+   "ms": 23234,
+   "tokens": {
+    "prompt": 2145,
+    "completion": 456,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 10
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "npc.guild_clerk",
+      "p": "registered_member",
+      "o": "Alaric Red, age eighteen, Guild Rank Novice"
+     },
+     {
+      "seq": 3,
+      "type": "learn",
+      "who": "npc.guild_clerk",
+      "s": "Alaric",
+      "p": "power_rank",
+      "o": "F",
+      "how": "witnessed"
+     },
+     {
+      "seq": 4,
+      "type": "object.new",
+      "name": "blood-signed Guild register entry",
+      "kind": "document",
+      "qty": 1,
+      "unit": null,
+      "holder": "loc.alderwatch.guild_hall",
+      "for_quest": null
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "npc.young_clerk",
+      "p": "name",
+      "o": "Hessa"
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "npc.young_clerk",
+      "p": "role",
+      "o": "handles Quest tags at her end of the counter"
+     },
+     {
+      "seq": 7,
+      "type": "fact",
+      "s": "npc.guild_clerk",
+      "p": "stated_rule",
+      "o": "medallion must be worn inside Guild halls; Novice-tagged Quests only; two abandonments have consequences"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_04",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 7
+   },
+   "items": 0,
+   "ms": 28469,
+   "tokens": {
+    "prompt": 2292,
+    "completion": 482,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 5
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "npc.young_clerk",
+      "p": "name",
+      "o": "Hessa"
+     },
+     {
+      "seq": 3,
+      "type": "quest.detail",
+      "quest": "quest.wolf_problem",
+      "note": "Sheep kills over the past week, likely a small pack out of the eastern woods; the hamlet will guide to the last kill site; pay 8 silver on proof of at least two wolves.",
+      "schedule": null
+     },
+     {
+      "seq": 4,
+      "type": "quest.detail",
+      "quest": "quest.herb_run_hollows",
+      "note": "A gatheror wants fresh marshmallow root and yarrow, ten bundles each, roots not blades, before the week is out.",
+      "schedule": null
+     },
+     {
+      "seq": 5,
+      "type": "quest.detail",
+      "quest": "quest.cart_guard_ferry",
+      "note": "Wool merchant needs a spear or sword on the bench; two days out, one day back; pay 6 silver plus a meal.",
+      "schedule": "departure tomorrow at dawn"
+     },
+     {
+      "seq": 6,
+      "type": "quest.detail",
+      "quest": "quest.rats_grain_cellars",
+      "note": "The tally-house on Chandler Street wants cellars cleared; bring tails as proof; someone scrawled beneath the notice: 'bring a lantern and no pride.'",
+      "schedule": null
+     },
+     {
+      "seq": 7,
+      "type": "quest.detail",
+      "quest": "quest.lost_dog_pip",
+      "note": "Reward posted by Marta Hale; brown bitch with one crooked ear, answers to Pip; last seen by the south gate.",
+      "schedule": null
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_05",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 3,
+    "critical_missing": [],
+    "forbidden_hits": [
+     {
+      "pattern": {
+       "type": "quest.offer"
+      },
+      "delta": {
+       "seq": 6,
+       "type": "quest.offer",
+       "title": "Walk to the kill site",
+       "giver": "npc.tomas_miller",
+       "reward_cp": null,
+       "objectives": [
+        "Tomas will guide Alaric up the sheep trail through the alders to the kill site before rain destroys the sign"
+       ],
+       "proof": []
+      }
+     }
+    ],
+    "semantic": 0.8,
+    "deltas": 7
+   },
+   "items": 4,
+   "ms": 27095,
+   "tokens": {
+    "prompt": 2322,
+    "completion": 512,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": "loc.millbrook"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 180
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": "loc.millbrook"
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "npc.tomas_miller",
+      "name": "Tomas",
+      "role": "mill operator at Millbrook Hamlet",
+      "desc": [
+       "broad man with miller's dust on his forearms",
+       "wipes his hands on his apron",
+       "skeptical of the young Novice but says nothing"
+      ],
+      "present": true,
+      "at": "loc.millbrook"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "wolves",
+      "p": "killed sheep at Millbrook Hamlet",
+      "o": "third kill this week at Tomas's pens, neighbor lost five, always at night, latest found at dawn"
+     },
+     {
+      "seq": 5,
+      "type": "quest.detail",
+      "quest": "quest.wolf_problem",
+      "note": "proof required: two wolf carcasses or pelts; turn in at the Guild counter's far end; don't bring bloody carcasses through the front door",
+      "schedule": null
+     },
+     {
+      "seq": 6,
+      "type": "quest.offer",
+      "title": "Walk to the kill site",
+      "giver": "npc.tomas_miller",
+      "reward_cp": null,
+      "objectives": [
+       "Tomas will guide Alaric up the sheep trail through the alders to the kill site before rain destroys the sign"
+      ],
+      "proof": []
+     },
+     {
+      "seq": 7,
+      "type": "fact",
+      "s": "Millbrook kill site",
+      "p": "lies up the sheep trail through the alders",
+      "o": "on the wooded ridge slope behind the sheep pens"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_06",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 2,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 5
+   },
+   "items": 3,
+   "ms": 19952,
+   "tokens": {
+    "prompt": 2103,
+    "completion": 336,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Kill site above the pens",
+        "kind": "wilderness",
+        "parent": "loc.millbrook"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 20
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Kill site above the pens",
+        "kind": "wilderness",
+        "parent": "loc.millbrook"
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "creature.new",
+      "ref": "creature.wolves",
+      "species": "wolf",
+      "desc": [
+       "two sets of broad-padded paw prints, one animal noticeably larger",
+       "dragged a ewe carcass uphill north-by-northeast",
+       "working wolves, not starving strays; at least one large leader"
+      ],
+      "count": 2,
+      "present": false
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "wolf pack",
+      "p": "likely denned",
+      "o": "north of the kill site, no more than a couple miles off"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "wolf tracks at the kill site",
+      "p": "softening",
+      "o": "rain is erasing the prints"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_07",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 3,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 7
+   },
+   "items": 4,
+   "ms": 19870,
+   "tokens": {
+    "prompt": 2087,
+    "completion": 384,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "minutes": 90,
+      "done": true
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "leave",
+      "who": "npc.tomas"
+     },
+     {
+      "seq": 2,
+      "type": "time",
+      "minutes": 90
+     },
+     {
+      "seq": 3,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Wolf Den Ravine",
+        "kind": "wilderness",
+        "parent": {
+         "new": {
+          "name": "Pine Woods North of Millbrook",
+          "kind": "wilderness",
+          "parent": "loc.millbrook"
+         }
+        }
+       }
+      }
+     },
+     {
+      "seq": 4,
+      "type": "creature.new",
+      "ref": "creature.wolf_bitch",
+      "species": "wolf",
+      "desc": [
+       "big deep-chested bitch",
+       "fresh nick across her muzzle",
+       "standing at the hollow's mouth, testing the wind"
+      ],
+      "count": 1,
+      "present": true
+     },
+     {
+      "seq": 5,
+      "type": "creature.new",
+      "ref": "creature.wolf_yearling",
+      "species": "wolf",
+      "desc": [
+       "yearling by its size",
+       "dozing, flank twitching, ears flat"
+      ],
+      "count": 1,
+      "present": true
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "wolf den ravine",
+      "p": "is site of",
+      "o": "old kills, gnawed sheep bones and rank musk"
+     },
+     {
+      "seq": 7,
+      "type": "fact",
+      "s": "wind",
+      "p": "drifts downhill from",
+      "o": "Alaric's side of the ridge toward the ravine"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_08",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 1,
+    "critical_found": 1,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 2
+   },
+   "items": 1,
+   "ms": 5417,
+   "tokens": {
+    "prompt": 1930,
+    "completion": 76,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "hostile",
+      "by": [
+       "mon.wolf_leader",
+       "mon.wolf_yearling"
+      ]
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "mon.wolf_leader",
+      "p": "has",
+      "o": "a wounded muzzle"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_09",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 2,
+    "expected_ok": 2,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 3,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 6
+   },
+   "items": 5,
+   "ms": 21662,
+   "tokens": {
+    "prompt": 2268,
+    "completion": 370,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "taken": true
+     },
+     "2": {
+      "arrived": true,
+      "at": "loc.millbrook"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "object.new",
+      "name": "two wolf heads (proof)",
+      "kind": "trophy",
+      "qty": 2,
+      "unit": "heads",
+      "holder": "pc",
+      "for_quest": "quest.wolf_problem"
+     },
+     {
+      "seq": 2,
+      "type": "time",
+      "minutes": 40
+     },
+     {
+      "seq": 3,
+      "type": "arrive",
+      "at": "loc.millbrook"
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "person.millbrook.shepherd",
+      "name": null,
+      "role": "shepherd",
+      "desc": [
+       "thickset man in a wet shepherd's cloak",
+       "recognizes the black-eared leader bitch on sight"
+      ],
+      "present": true,
+      "at": "loc.millbrook"
+     },
+     {
+      "seq": 5,
+      "type": "learn",
+      "who": "person.millbrook.shepherd",
+      "s": "person.millbrook.shepherd",
+      "p": "knows",
+      "o": "Alaric killed the black-eared leader bitch",
+      "how": "witnessed"
+     },
+     {
+      "seq": 6,
+      "type": "attitude",
+      "who": "person.millbrook.shepherd",
+      "delta": 15,
+      "why": "relief and disbelief at seeing the wolf bitch dead"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_10",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 1,
+    "critical_found": 1,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 9
+   },
+   "items": 1,
+   "ms": 34072,
+   "tokens": {
+    "prompt": 2124,
+    "completion": 649,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "wolf head",
+      "p": "identified as",
+      "o": "the black-eared wolf the shepherd knows"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "yearling wolf",
+      "p": "identified as",
+      "o": "the grey wolf that took the Hollis lamb on Tuesday"
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "npc.reeve_aldous",
+      "name": "Aldous",
+      "role": "reeve of Millbrook Hamlet",
+      "desc": [
+       "does the hamlet's tallying",
+       "honest, will grumble but pay the posted bounty",
+       "can write and mark papers"
+      ],
+      "present": false,
+      "at": {
+       "new": {
+        "name": "reeve's longhouse",
+        "kind": "site",
+        "parent": "loc.millbrook"
+       }
+      }
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "npc.marta",
+      "name": "Marta",
+      "role": "stitcher/healer in Millbrook",
+      "desc": [
+       "boils her needles for stitching"
+      ],
+      "present": false,
+      "at": "loc.millbrook"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "reeve Aldous",
+      "p": "posted bounty of",
+      "o": "eight silver for the wolves"
+     },
+     {
+      "seq": 6,
+      "type": "quest.detail",
+      "quest": "quest.wolf_problem",
+      "note": "Reeve Aldous will count the wolf heads as proof and put his name to the contract slip at his longhouse",
+      "schedule": null
+     },
+     {
+      "seq": 7,
+      "type": "person.new",
+      "ref": "npc.runner_boy",
+      "name": null,
+      "role": "boy who ran ahead to raise the hamlet",
+      "desc": [
+       "talking fast to a knot of three men outside the alehouse, gesturing toward the well"
+      ],
+      "present": false,
+      "at": "loc.millbrook"
+     },
+     {
+      "seq": 8,
+      "type": "person.new",
+      "ref": "npc.alehouse_men",
+      "name": null,
+      "role": "three men outside the alehouse",
+      "desc": [
+       "one of them starts walking over toward the well"
+      ],
+      "present": false,
+      "at": "loc.millbrook"
+     },
+     {
+      "seq": 9,
+      "type": "time",
+      "minutes": 5
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_11",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 2,
+    "expected_ok": 2,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 2,
+    "critical_missing": [
+     {
+      "type": "object.mark",
+      "object": "obj.contract_slip",
+      "mark": "/seal|sign|mark/i"
+     }
+    ],
+    "forbidden_hits": [
+     {
+      "pattern": {
+       "type": "coin.gift",
+       "$any": "/aldous|reeve|hamlet|millbrook/i"
+      },
+      "delta": {
+       "seq": 5,
+       "type": "coin.gift",
+       "from": "npc.reeve_aldous",
+       "cp": 80,
+       "why": "hamlet payment for the Wolf Problem, counted from the hamlet's winter fund"
+      }
+     }
+    ],
+    "semantic": 0.6666666666666666,
+    "deltas": 9
+   },
+   "items": 5,
+   "ms": 40483,
+   "tokens": {
+    "prompt": 2324,
+    "completion": 866,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Reeve Aldous's longhouse",
+        "kind": "interior",
+        "parent": "loc.millbrook"
+       }
+      }
+     },
+     "3": {
+      "arrived": true,
+      "at": "loc.alderwatch.guild_hall"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 90
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Reeve Aldous's longhouse",
+        "kind": "interior",
+        "parent": "loc.millbrook"
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "npc.reeve_aldous",
+      "name": "Aldous",
+      "role": "reeve of Millbrook",
+      "desc": [
+       "narrow man with ink-stained fingers",
+       "keeps a locked coin box",
+       "grumbles about paying"
+      ],
+      "present": true,
+      "at": null
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "reeve_aldous",
+      "p": "sealed",
+      "o": "contract_slip with a worn brass stamp pressed into candle soot"
+     },
+     {
+      "seq": 5,
+      "type": "coin.gift",
+      "from": "npc.reeve_aldous",
+      "cp": 80,
+      "why": "hamlet payment for the Wolf Problem, counted from the hamlet's winter fund"
+     },
+     {
+      "seq": 6,
+      "type": "leave",
+      "who": "npc.shepherd"
+     },
+     {
+      "seq": 7,
+      "type": "arrive",
+      "at": "loc.alderwatch.guild_hall"
+     },
+     {
+      "seq": 8,
+      "type": "quest.progress",
+      "quest": "quest.wolf_problem",
+      "objective": "deliver two wolf heads verified by the reeve",
+      "status": "done"
+     },
+     {
+      "seq": 9,
+      "type": "fact",
+      "s": "guild_clerk",
+      "p": "recorded in ledger",
+      "o": "Wolf Problem closed; reward paid by the hamlet, nothing owed by the Guild"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v12_01",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 3,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 3
+   },
+   "items": 4,
+   "ms": 21009,
+   "tokens": {
+    "prompt": 2009,
+    "completion": 179,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": "loc.redmarch.guild_hall"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 20
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": "loc.redmarch.guild_hall"
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "guild_clerk_brown",
+      "name": null,
+      "role": "Guild hall counter clerk",
+      "desc": [
+       "woman in her thirties",
+       "close-cropped brown hair",
+       "Guild tabard over a mail shirt",
+       "sorting quest slips behind the long counter"
+      ],
+      "present": true,
+      "at": null
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v12_02",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 5
+   },
+   "items": 0,
+   "ms": 13800,
+   "tokens": {
+    "prompt": 2036,
+    "completion": 259,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 3
+     },
+     {
+      "seq": 2,
+      "type": "object.new",
+      "name": "cloudy grey crystal sphere",
+      "kind": "item",
+      "qty": 1,
+      "unit": null,
+      "holder": "loc.redmarch.guild_hall",
+      "for_quest": null
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "guild_registration",
+      "p": "fee",
+      "o": "two silver, one-time, covering plate, first stamp and board access"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "guild_rules",
+      "p": "novice_rank",
+      "o": "new members start at Novice rank, may take only Novice contracts, and need a desk clerk waiver for higher-rank work; falsifying a completion means expulsion"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "guild_rank_sphere",
+      "p": "function",
+      "o": "a palm-sized cloudy grey crystal that reads Rank and general condition when touched"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v12_03",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 2,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 3
+   },
+   "items": 2,
+   "ms": 11660,
+   "tokens": {
+    "prompt": 2286,
+    "completion": 204,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 10
+     },
+     {
+      "seq": 2,
+      "type": "person.new",
+      "ref": "npc.muddy_adventurers",
+      "name": null,
+      "role": "adventurers at the Novice board",
+      "desc": [
+       "two adventurers in mud-caked boots standing at the Novice board"
+      ],
+      "present": true,
+      "at": "loc.redmarch.guild_hall"
+     },
+     {
+      "seq": 3,
+      "type": "listing.gone",
+      "listing": "quest.weasel_fenwick",
+      "why": "taken_by_other"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v12_04",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 1,
+    "critical_missing": [
+     {
+      "type": "person.new",
+      "$any": "/ossler/i",
+      "present": false
+     }
+    ],
+    "forbidden_hits": [],
+    "semantic": 0.5,
+    "deltas": 5
+   },
+   "items": 2,
+   "ms": 16650,
+   "tokens": {
+    "prompt": 2045,
+    "completion": 317,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "quest.detail",
+      "quest": "quest.millers_run_escort",
+      "note": "Cart leaves from the miller's yard behind Harrow's mill on Grainmarket Row; waystation master signs the Guild plate at delivery; payout eight silver on return to the Guild hall.",
+      "schedule": "tomorrow at first light"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "Ossler",
+      "p": "is",
+      "o": "the carter on the Miller's Run escort"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Miller's Run Escort",
+      "p": "second escort slot taken by",
+      "o": "another Novice who accepted last evening"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "the road to Miller's Run",
+      "p": "has",
+      "o": "occasional threats above rank F, though the season has been quiet"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "Redmarch",
+      "p": "weather",
+      "o": "fine rain has started falling"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v12_05",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 2,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 5
+   },
+   "items": 3,
+   "ms": 25577,
+   "tokens": {
+    "prompt": 2192,
+    "completion": 357,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Reedbeds east of the mill leat",
+        "kind": "wilderness",
+        "parent": "loc.redmarch"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "quest.detail",
+      "quest": "quest.herb_run_marshmint",
+      "note": "Clerk: a full basket of marshmint is required — a handful of sprigs won't pass; bring the basket back for weighing.",
+      "schedule": null
+     },
+     {
+      "seq": 2,
+      "type": "time",
+      "minutes": 60
+     },
+     {
+      "seq": 3,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Reedbeds east of the mill leat",
+        "kind": "wilderness",
+        "parent": "loc.redmarch"
+       }
+      }
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "reedbeds_trail",
+      "p": "has",
+      "o": "a flat trail wide as a badger, stems bent rather than cut, beaten through the reeds toward open water"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "marshmint",
+      "p": "grows in",
+      "o": "clumps at the waterline of the reedbeds, some reachable from the drainage path, others out on hummocks"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v12_06",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 2,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 4
+   },
+   "items": 3,
+   "ms": 20590,
+   "tokens": {
+    "prompt": 2155,
+    "completion": 383,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "minutes": 360,
+      "done": true
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 360
+     },
+     {
+      "seq": 2,
+      "type": "object.new",
+      "name": "marshmint",
+      "kind": "resource",
+      "qty": 1,
+      "unit": "pile (roughly a meal-sack-sized heap)",
+      "holder": "here",
+      "for_quest": "quest.herb_run_marshmint"
+     },
+     {
+      "seq": 3,
+      "type": "creature.new",
+      "ref": "creature.webbed_tracks",
+      "species": "unknown webbed, bird-sized creature",
+      "desc": [
+       "fresh small webbed tracks near the waterline in the reedbeds",
+       "not seen; only tracks, near the flattened trail"
+      ],
+      "count": 1,
+      "present": false
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "eastern mill leat reedbeds",
+      "p": "marshmint along the path's reach",
+      "o": "picked over; fuller clumps remain toward open water near the flattened trail or further down the drainage path"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v12_07",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 2,
+    "critical_missing": [],
+    "forbidden_hits": [
+     {
+      "pattern": {
+       "type": "quest.progress",
+       "status": "done"
+      },
+      "delta": {
+       "seq": 3,
+       "type": "quest.progress",
+       "quest": "quest.herb_run_marshmint",
+       "objective": "deliver 1 basket of marshmint to the Guild",
+       "status": "done"
+      }
+     }
+    ],
+    "semantic": 0.75,
+    "deltas": 4
+   },
+   "items": 3,
+   "ms": 15303,
+   "tokens": {
+    "prompt": 2272,
+    "completion": 270,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": "loc.redmarch.guild_hall"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 60
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": "loc.redmarch.guild_hall"
+     },
+     {
+      "seq": 3,
+      "type": "quest.progress",
+      "quest": "quest.herb_run_marshmint",
+      "objective": "deliver 1 basket of marshmint to the Guild",
+      "status": "done"
+     },
+     {
+      "seq": 4,
+      "type": "quest.detail",
+      "quest": "quest.millers_run_escort",
+      "note": "Alaric is on the Miller's Run cart departing at first light from Harrow's yard",
+      "schedule": "tomorrow, first light, Harrow's mill yard"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v12_08",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 2,
+    "expected_ok": 2,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 2,
+    "critical_missing": [
+     {
+      "type": "overreach",
+      "kind": [
+       "purchase",
+       "payment"
+      ]
+     }
+    ],
+    "forbidden_hits": [],
+    "semantic": 0.8,
+    "deltas": 6
+   },
+   "items": 5,
+   "ms": 28021,
+   "tokens": {
+    "prompt": 2317,
+    "completion": 515,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Marsh Bell",
+        "kind": "site",
+        "parent": "loc.redmarch"
+       }
+      }
+     },
+     "3": {
+      "priced": true
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 60
+     },
+     {
+      "seq": 2,
+      "type": "quest.detail",
+      "quest": "quest.millers_run_escort",
+      "note": "Cart departs Harrow's yard at first light; clerk warns not to be late.",
+      "schedule": "first light"
+     },
+     {
+      "seq": 3,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Marsh Bell",
+        "kind": "site",
+        "parent": "loc.redmarch"
+       }
+      }
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "npc.marsh_bell_innkeeper",
+      "name": null,
+      "role": "innkeeper",
+      "desc": [
+       "broad woman",
+       "flour on her forearms",
+       "voice that carries without rising"
+      ],
+      "present": true,
+      "at": null
+     },
+     {
+      "seq": 5,
+      "type": "offer",
+      "seller": "npc.marsh_bell_innkeeper",
+      "lines": [
+       {
+        "what": "room for the night",
+        "kind": "service",
+        "service": "lodging",
+        "qty": 1,
+        "price_cp": 4
+       },
+       {
+        "what": "hot bath",
+        "kind": "service",
+        "service": "bath",
+        "qty": 1,
+        "price_cp": 2
+       },
+       {
+        "what": "laundry of muddy clothes, dry by morning",
+        "kind": "service",
+        "service": "laundry",
+        "qty": 1,
+        "price_cp": 1
+       },
+       {
+        "what": "stew",
+        "kind": "goods",
+        "service": "meal",
+        "qty": 1,
+        "price_cp": 2
+       }
+      ]
+     },
+     {
+      "seq": 6,
+      "type": "time",
+      "minutes": 480
+     }
+    ]
+   },
+   "errors": []
+  }
+ ]
+}

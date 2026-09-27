@@ -1,0 +1,732 @@
+{
+ "meta": {
+  "tool": "s2_deltas",
+  "version": 1,
+  "started": "2026-09-27T21:38:05.846Z",
+  "finished": "2026-09-27T21:42:15.338Z",
+  "node": "v24.19.0",
+  "provider": {
+   "backend": "SillyTavern",
+   "source": "custom",
+   "model": "zai-org/GLM-5.3-Flash",
+   "profile": null,
+   "include_body_keys": [
+    "clear_thinking",
+    "reasoning_effort"
+   ],
+   "reasoning_effort": "low"
+  },
+  "mode": "plain",
+  "reasoning": null,
+  "mode_source": "Kommandozeile",
+  "turns": [
+   "v11_01",
+   "v11_03",
+   "v11_08",
+   "v11_11",
+   "v12_02",
+   "v12_05",
+   "v12_06",
+   "v12_08"
+  ],
+  "variant": "a"
+ },
+ "records": [
+  {
+   "id": "v11_01",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 2,
+    "critical_missing": [
+     {
+      "type": "time",
+      "minutes": {
+       "$range": [
+        5,
+        120
+       ]
+      }
+     }
+    ],
+    "forbidden_hits": [],
+    "semantic": 0.75,
+    "deltas": 3
+   },
+   "items": 4,
+   "ms": 31532,
+   "tokens": {
+    "prompt": 2162,
+    "completion": 313,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": "loc.alderwatch.guild_hall"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "arrive",
+      "at": "loc.alderwatch.guild_hall"
+     },
+     {
+      "seq": 2,
+      "type": "person.new",
+      "ref": "npc.guild_clerk_grey",
+      "name": null,
+      "role": "Guild clerk",
+      "desc": [
+       "grey-haired man behind the counter with a ledger open",
+       "stamps pages and calls names for payouts without looking up"
+      ],
+      "present": true,
+      "at": null
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "npc.guild_clerk_young_woman",
+      "name": null,
+      "role": "Guild clerk",
+      "desc": [
+       "young woman clerk at the far end of the counter",
+       "taps through a stack of wooden Quest tags, sorting them"
+      ],
+      "present": true,
+      "at": null
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_03",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 6
+   },
+   "items": 0,
+   "ms": 27017,
+   "tokens": {
+    "prompt": 2145,
+    "completion": 369,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 10
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "npc.young_clerk",
+      "p": "name",
+      "o": "Hessa"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "npc.young_clerk",
+      "p": "role",
+      "o": "handles Quest tags at her end of the Guild counter"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "npc.guild_clerk",
+      "p": "handles",
+      "o": "payouts at his end of the Guild counter"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "loc.alderwatch.guild_hall",
+      "p": "has",
+      "o": "a grey rank-reading stone set into the counter that reads a member's Power Rank"
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "npc.guild_clerk",
+      "p": "warns",
+      "o": "abandoning a taken Quest twice has consequences"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_08",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 1,
+    "critical_found": 1,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 1
+   },
+   "items": 1,
+   "ms": 3154,
+   "tokens": {
+    "prompt": 1930,
+    "completion": 48,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "hostile",
+      "by": [
+       "mon.wolf_leader",
+       "mon.wolf_yearling"
+      ]
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_11",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 2,
+    "expected_ok": 2,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 3,
+    "critical_missing": [],
+    "forbidden_hits": [
+     {
+      "pattern": {
+       "type": "coin.gift",
+       "$any": "/aldous|reeve|hamlet|millbrook/i"
+      },
+      "delta": {
+       "seq": 4,
+       "type": "coin.gift",
+       "from": "npc.aldous",
+       "cp": 80,
+       "why": "payment for the Wolf Problem, counted from the hamlet's winter fund"
+      }
+     },
+     {
+      "pattern": {
+       "type": "quest.close"
+      },
+      "delta": {
+       "seq": 7,
+       "type": "quest.close",
+       "quest": "quest.wolf_problem",
+       "status": "completed",
+       "by": "Guild front-desk clerk"
+      }
+     }
+    ],
+    "semantic": 0.7142857142857143,
+    "deltas": 9
+   },
+   "items": 5,
+   "ms": 41111,
+   "tokens": {
+    "prompt": 2324,
+    "completion": 689,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Reeve Aldous's longhouse",
+        "kind": "interior",
+        "parent": "loc.millbrook"
+       }
+      }
+     },
+     "3": {
+      "arrived": true,
+      "at": "loc.alderwatch.guild_hall"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Reeve Aldous's longhouse",
+        "kind": "interior",
+        "parent": "loc.millbrook"
+       }
+      }
+     },
+     {
+      "seq": 2,
+      "type": "person.new",
+      "ref": "npc.aldous",
+      "name": "Aldous",
+      "role": "reeve of Millbrook Hamlet",
+      "desc": [
+       "narrow man with ink-stained fingers",
+       "keeps a locked coin box",
+       "grumbles while paying"
+      ],
+      "present": true,
+      "at": null
+     },
+     {
+      "seq": 3,
+      "type": "object.mark",
+      "object": "obj.contract_slip",
+      "mark": "reeve's seal — a worn brass stamp pressed into a dab of candle soot",
+      "by": "npc.aldous"
+     },
+     {
+      "seq": 4,
+      "type": "coin.gift",
+      "from": "npc.aldous",
+      "cp": 80,
+      "why": "payment for the Wolf Problem, counted from the hamlet's winter fund"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "Millbrook Hamlet",
+      "p": "paid the Wolf Problem reward from",
+      "o": "a third of the hamlet's winter fund"
+     },
+     {
+      "seq": 6,
+      "type": "arrive",
+      "at": "loc.alderwatch.guild_hall"
+     },
+     {
+      "seq": 7,
+      "type": "quest.close",
+      "quest": "quest.wolf_problem",
+      "status": "completed",
+      "by": "Guild front-desk clerk"
+     },
+     {
+      "seq": 8,
+      "type": "object.move",
+      "object": "obj.contract_slip",
+      "qty": null,
+      "to": "pc"
+     },
+     {
+      "seq": 9,
+      "type": "time",
+      "minutes": 80
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v12_02",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 8
+   },
+   "items": 0,
+   "ms": 20835,
+   "tokens": {
+    "prompt": 2036,
+    "completion": 396,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 3
+     },
+     {
+      "seq": 2,
+      "type": "object.new",
+      "name": "Guild registration form",
+      "kind": "document",
+      "qty": 1,
+      "unit": null,
+      "holder": "loc.redmarch.guild_hall",
+      "for_quest": null
+     },
+     {
+      "seq": 3,
+      "type": "object.new",
+      "name": "Rank-reading crystal sphere",
+      "kind": "item",
+      "qty": 1,
+      "unit": null,
+      "holder": "loc.redmarch.guild_hall",
+      "for_quest": null
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Guild",
+      "p": "starting_rank",
+      "o": "Novice"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "Guild",
+      "p": "rank_rule",
+      "o": "members may not take work above their rank without a desk clerk's waiver"
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "Guild",
+      "p": "fraud_rule",
+      "o": "falsifying a completion leads to expulsion, and the border town branch verifies completions"
+     },
+     {
+      "seq": 7,
+      "type": "fact",
+      "s": "Guild",
+      "p": "fee_covers",
+      "o": "registration plate, first stamp, and board access; the Guild takes a cut of contract payouts rather than charging members directly"
+     },
+     {
+      "seq": 8,
+      "type": "fact",
+      "s": "Guild rank-reading crystal",
+      "p": "reads",
+      "o": "Rank and general condition only, painlessly"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v12_05",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 2,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 5
+   },
+   "items": 3,
+   "ms": 46517,
+   "tokens": {
+    "prompt": 2192,
+    "completion": 340,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Reedbeds east of the mill leat",
+        "kind": "wilderness",
+        "parent": "loc.redmarch"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "quest.detail",
+      "quest": "quest.herb_run_marshmint",
+      "note": "Clerk: a full basket is required — a handful of sprigs won't pass; bring the basket back for weighing.",
+      "schedule": null
+     },
+     {
+      "seq": 2,
+      "type": "time",
+      "minutes": 60
+     },
+     {
+      "seq": 3,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Reedbeds east of the mill leat",
+        "kind": "wilderness",
+        "parent": "loc.redmarch"
+       }
+      }
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "reedbeds_trail",
+      "p": "has",
+      "o": "a flat beaten trail through the reeds toward open water, wide as a badger, stems bent rather than cut"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "marshmint",
+      "p": "grows in",
+      "o": "clumps at the waterline of the reedbeds, some reachable from the drainage path, others out on hummocks"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v12_06",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 2,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 3
+   },
+   "items": 3,
+   "ms": 45996,
+   "tokens": {
+    "prompt": 2155,
+    "completion": 379,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "minutes": 330,
+      "done": true
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 330
+     },
+     {
+      "seq": 2,
+      "type": "object.new",
+      "name": "marshmint",
+      "kind": "resource",
+      "qty": 1,
+      "unit": "heap",
+      "holder": "here",
+      "for_quest": "quest.herb_run_marshmint"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "eastern mill leat reedbeds",
+      "p": "fresh_tracks",
+      "o": "small webbed bird-sized tracks near the waterline"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v12_08",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 2,
+    "expected_ok": 2,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 3,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 6
+   },
+   "items": 5,
+   "ms": 33202,
+   "tokens": {
+    "prompt": 2317,
+    "completion": 643,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Marsh Bell",
+        "kind": "site",
+        "parent": "loc.redmarch"
+       }
+      }
+     },
+     "3": {
+      "priced": true
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 30
+     },
+     {
+      "seq": 2,
+      "type": "quest.detail",
+      "quest": "quest.millers_run_escort",
+      "note": "Cart departs Harrow's mill yard at first light; don't be late.",
+      "schedule": "first light"
+     },
+     {
+      "seq": 3,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Marsh Bell",
+        "kind": "site",
+        "parent": "loc.redmarch"
+       }
+      }
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "npc.marsh_bell_innkeeper",
+      "name": null,
+      "role": "innkeeper",
+      "desc": [
+       "broad woman",
+       "flour on her forearms",
+       "voice that carries without rising"
+      ],
+      "present": true,
+      "at": null
+     },
+     {
+      "seq": 5,
+      "type": "offer",
+      "seller": "npc.marsh_bell_innkeeper",
+      "lines": [
+       {
+        "what": "room for the night",
+        "kind": "service",
+        "service": "lodging",
+        "qty": 1,
+        "price_cp": 4
+       },
+       {
+        "what": "hot bath",
+        "kind": "service",
+        "service": "bath",
+        "qty": 1,
+        "price_cp": 2
+       },
+       {
+        "what": "laundry, dry by morning",
+        "kind": "service",
+        "service": "laundry",
+        "qty": 1,
+        "price_cp": 1
+       },
+       {
+        "what": "stew",
+        "kind": "goods",
+        "service": "meal",
+        "qty": 1,
+        "price_cp": 2
+       }
+      ]
+     },
+     {
+      "seq": 6,
+      "type": "overreach",
+      "kind": "purchase",
+      "what": "Alaric took the room, bath and laundry without agreeing to the named prices"
+     }
+    ]
+   },
+   "errors": []
+  }
+ ]
+}

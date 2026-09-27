@@ -1,0 +1,1292 @@
+{
+ "meta": {
+  "tool": "s0_structured",
+  "version": 1,
+  "started": "2026-09-27T18:59:06.742Z",
+  "finished": "2026-09-27T19:04:08.599Z",
+  "duration_s": 302,
+  "node": "v24.19.0",
+  "provider": {
+   "backend": "SillyTavern",
+   "source": "custom",
+   "model": "zai-org/GLM-5.3-Flash",
+   "profile": null,
+   "include_body_keys": [
+    "clear_thinking",
+    "reasoning_effort"
+   ],
+   "reasoning_effort": "low"
+  },
+  "reps": 3,
+  "concurrency": 1,
+  "max_tokens": 2000,
+  "temperature": 0.2,
+  "cases": [
+   "mode_question",
+   "interp_go_guild",
+   "interp_turnin_then_inn",
+   "interp_negative_thought",
+   "interp_price_limit",
+   "interp_gather_day",
+   "extract_arrival",
+   "extract_absent_person",
+   "extract_offer_overreach",
+   "board_two_listings"
+  ],
+  "modes": [
+   "plain_keep"
+  ],
+  "calls_total": 33,
+  "calls_preflight": 3,
+  "calls_repair": 0
+ },
+ "preflight": {
+  "ping": {
+   "ok": true,
+   "ms": 1580,
+   "error": null
+  },
+  "reasoning": [
+   {
+    "value": "none",
+    "ok": true,
+    "ms": 2546,
+    "error": null,
+    "override": {
+     "reasoning_effort": "none"
+    }
+   }
+  ],
+  "schema": {
+   "ok": true,
+   "ms": 3103,
+   "valid": true,
+   "error": null
+  }
+ },
+ "modes": [
+  "plain_keep"
+ ],
+ "stats": {
+  "plain_keep": {
+   "planned": 30,
+   "run": 30,
+   "skipped": 0,
+   "errors": 0,
+   "error_pct": 0,
+   "answered": 30,
+   "valid_first": 30,
+   "valid_first_pct": 100,
+   "raw_json_pct": 100,
+   "valid_final_pct": 100,
+   "repaired": 0,
+   "semantic_pct": 100,
+   "truncated": 0,
+   "p50_s": 4.8,
+   "p90_s": 19.3,
+   "mean_s": 9.8,
+   "tokens_reported": 30,
+   "prompt_tok": 1187,
+   "completion_tok": 157,
+   "reasoning_tok": null,
+   "reasoning_chars": 70,
+   "by_role": {
+    "interpreter": {
+     "answered": 18,
+     "valid_first_pct": 100,
+     "p50_s": 4.1
+    },
+    "extractor": {
+     "answered": 9,
+     "valid_first_pct": 100,
+     "p50_s": 16.7
+    },
+    "board": {
+     "answered": 3,
+     "valid_first_pct": 100,
+     "p50_s": 19.3
+    }
+   }
+  }
+ },
+ "decision": {
+  "structured_mode": "plain",
+  "reasoning": null,
+  "chosen_mode": "plain_keep",
+  "notes": [
+   "Strukturierter Modus: JSON per Anweisung (Modus C). json_schema wurde vom Provider abgelehnt."
+  ]
+ },
+ "records": [
+  {
+   "case": "mode_question",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 1,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 1643,
+     "usage": {
+      "prompt_tokens": 208,
+      "completion_tokens": 18,
+      "total_tokens": 226,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 41,
+     "reasoning_chars": 17,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 208,
+    "completion": 18,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"mode\": \"question\", \"speech_only\": true}"
+  },
+  {
+   "case": "interp_go_guild",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 1,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 4159,
+     "usage": {
+      "prompt_tokens": 1202,
+      "completion_tokens": 63,
+      "total_tokens": 1265,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 218,
+     "reasoning_chars": 0,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1202,
+    "completion": 63,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"commands\":[{\"seq\":1,\"type\":\"go\",\"to\":\"loc.redmarch\",\"quote\":\"i walk into the city ahead of me\"},{\"seq\":2,\"type\":\"go\",\"to\":\"loc.redmarch.guild_hall\",\"quote\":\"go to the adventurer guild and enter the guild building\"}]}"
+  },
+  {
+   "case": "interp_turnin_then_inn",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 1,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 4249,
+     "usage": {
+      "prompt_tokens": 1306,
+      "completion_tokens": 74,
+      "total_tokens": 1380,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 266,
+     "reasoning_chars": 0,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1306,
+    "completion": 74,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"commands\":[{\"seq\":1,\"type\":\"quest.turn_in\",\"quest\":\"quest.herb_run_marshmint\",\"quote\":\"i turn the Quest in at the front desk\"},{\"seq\":2,\"type\":\"go\",\"to\":{\"new\":\"Inn\"},\"quote\":\"i go walk around the City looking for an Inn to sleep and wash my clothes and myself\"}]}"
+  },
+  {
+   "case": "interp_negative_thought",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 1,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 1352,
+     "usage": {
+      "prompt_tokens": 1338,
+      "completion_tokens": 6,
+      "total_tokens": 1344,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 15,
+     "reasoning_chars": 0,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1338,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"commands\":[]}"
+  },
+  {
+   "case": "interp_price_limit",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 1,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 3954,
+     "usage": {
+      "prompt_tokens": 1241,
+      "completion_tokens": 65,
+      "total_tokens": 1306,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 183,
+     "reasoning_chars": 23,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1241,
+    "completion": 65,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"commands\":[{\"seq\":1,\"type\":\"buy\",\"what\":\"a room for the night\",\"from\":\"npc.innkeeper\",\"max_cp\":5,\"any_price\":false,\"quote\":\"I'll take a room for the night if it's under 5 copper\"}]}"
+  },
+  {
+   "case": "interp_gather_day",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 1,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 5716,
+     "usage": {
+      "prompt_tokens": 1271,
+      "completion_tokens": 73,
+      "total_tokens": 1344,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 199,
+     "reasoning_chars": 81,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1271,
+    "completion": 73,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"commands\":[{\"seq\":1,\"type\":\"activity\",\"kind\":\"gather\",\"what\":\"marshmint, carrying armfuls down the path\",\"until\":null,\"quote\":\"since i have the whole day i start carrying armfulls down the path\"}]}"
+  },
+  {
+   "case": "extract_arrival",
+   "role": "extractor",
+   "mode": "plain_keep",
+   "rep": 1,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 13652,
+     "usage": {
+      "prompt_tokens": 1624,
+      "completion_tokens": 225,
+      "total_tokens": 1849,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 541,
+     "reasoning_chars": 211,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1624,
+    "completion": 225,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"expected\":{\"2\":{\"arrived\":true,\"at\":{\"new\":{\"name\":\"Reedbeds east of the mill leat\",\"parent\":\"loc.redmarch\"}}}},\"deltas\":[{\"seq\":1,\"type\":\"time\",\"minutes\":60},{\"seq\":2,\"type\":\"arrive\",\"at\":{\"new\":{\"name\":\"Reedbeds east of the mill leat\",\"parent\":\"loc.redmarch\"}}},{\"seq\":3,\"type\":\"fact\",\"s\":\"reedbeds\",\"p\":\"has trail\",\"o\":\"a flat trail wide as a badger, stems bent not cut, beaten through the reeds toward open water\"},{\"seq\":4,\"type\":\"fact\",\"s\":\"guild clerk\",\"p\":\"requires\",\"o\":\"a full basket of marshmint for the Herb Run job to pass\"}]}"
+  },
+  {
+   "case": "extract_absent_person",
+   "role": "extractor",
+   "mode": "plain_keep",
+   "rep": 1,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 16744,
+     "usage": {
+      "prompt_tokens": 1403,
+      "completion_tokens": 303,
+      "total_tokens": 1706,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 1055,
+     "reasoning_chars": 0,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1403,
+    "completion": 303,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"expected\":{},\"deltas\":[\n{\"seq\":1,\"type\":\"fact\",\"s\":\"Miller's Run Escort\",\"p\":\"payout\",\"o\":\"eight silver (80 cp) on return of signed plate to the Guild hall\"},\n{\"seq\":2,\"type\":\"fact\",\"s\":\"Miller's Run Escort\",\"p\":\"departure\",\"o\":\"cart leaves the miller's yard behind Harrow's mill on Grainmarket Row at first light tomorrow\"},\n{\"seq\":3,\"type\":\"fact\",\"s\":\"Ossler\",\"p\":\"role\",\"o\":\"carter on the Miller's Run escort\"},\n{\"seq\":4,\"type\":\"fact\",\"s\":\"Miller's Run Escort\",\"p\":\"delivery procedure\",\"o\":\"waystation master signs the plate at delivery\"},\n{\"seq\":5,\"type\":\"fact\",\"s\":\"the road to Miller's Run\",\"p\":\"danger\",\"o\":\"creatures above F rank appear now and then, but the road has been quiet all season\"},\n{\"seq\":6,\"type\":\"person.new\",\"ref\":\"person.ossler\",\"name\":\"Ossler\",\"role\":\"carter\",\"present\":false},\n{\"seq\":7,\"type\":\"person.new\",\"ref\":\"person.novice_escort\",\"name\":null,\"role\":\"Novice taking the second escort slot\",\"present\":false},\n{\"seq\":8,\"type\":\"object.new\",\"name\":\"stamped escort slip\",\"kind\":\"document\",\"qty\":1,\"unit\":null,\"holder\":\"Alaric\"}\n]}"
+  },
+  {
+   "case": "extract_offer_overreach",
+   "role": "extractor",
+   "mode": "plain_keep",
+   "rep": 1,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 18642,
+     "usage": {
+      "prompt_tokens": 1636,
+      "completion_tokens": 307,
+      "total_tokens": 1943,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 873,
+     "reasoning_chars": 166,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1636,
+    "completion": 307,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"expected\":{\"1\":{\"arrived\":true,\"at\":{\"new\":{\"name\":\"The Marsh Bell\",\"parent\":\"loc.redmarch\"}}}},\"deltas\":[{\"seq\":1,\"type\":\"time\",\"minutes\":90},{\"seq\":2,\"type\":\"arrive\",\"at\":{\"new\":{\"name\":\"The Marsh Bell\",\"parent\":\"loc.redmarch\"}}},{\"seq\":3,\"type\":\"person.new\",\"ref\":\"per.marsh_bell.innkeeper\",\"name\":null,\"role\":\"innkeeper\",\"present\":true},{\"seq\":4,\"type\":\"offer\",\"seller\":\"per.marsh_bell.innkeeper\",\"lines\":[{\"what\":\"room for the night\",\"kind\":\"service\",\"qty\":1,\"price_cp\":4},{\"what\":\"hot bath\",\"kind\":\"service\",\"qty\":1,\"price_cp\":2},{\"what\":\"laundry\",\"kind\":\"service\",\"qty\":1,\"price_cp\":1},{\"what\":\"stew\",\"kind\":\"goods\",\"qty\":1,\"price_cp\":2}]},{\"seq\":5,\"type\":\"overreach\",\"kind\":\"accept\",\"what\":\"took the room, bath, and laundry without agreeing to pay\"},{\"seq\":6,\"type\":\"fact\",\"s\":\"The Marsh Bell\",\"p\":\"located\",\"o\":\"on a lane behind the cooper's yard in Redmarch\"}]}"
+  },
+  {
+   "case": "board_two_listings",
+   "role": "board",
+   "mode": "plain_keep",
+   "rep": 1,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 42465,
+     "usage": {
+      "prompt_tokens": 641,
+      "completion_tokens": 398,
+      "total_tokens": 1039,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 1481,
+     "reasoning_chars": 0,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 641,
+    "completion": 398,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"listings\":[{\"title\":\"Fence Posts for the Sheep Pasture\",\"client\":\"Hedda Ostran, shepherd\",\"rank\":\"Novice\",\"level\":3,\"qtype\":\"minor\",\"payout_cp\":60,\"summary\":\"A stretch of pasture fence on the Ostran farm was knocked down by stray livestock. The Guild needs someone handy with a hammer to set it right before the sheep are moved.\",\"objectives\":[{\"verb\":\"GO\",\"what\":\"Ostran farmstead east of Redmarch\",\"qty\":1,\"unit\":null,\"where\":\"Redmarch outskirts\"},{\"verb\":\"REPAIR\",\"what\":\"broken fence posts and rails along the pasture line\",\"qty\":6,\"unit\":\"posts\",\"where\":\"Ostran pasture\"},{\"verb\":\"TALK\",\"what\":\"Hedda Ostran to confirm the work is done\",\"qty\":1,\"unit\":null,\"where\":\"Ostran farmstead\"}],\"proof\":[{\"kind\":\"mark\",\"what\":\"work slip signed by Hedda Ostran\",\"qty\":1,\"unit\":null}]},{\"title\":\"Lost Delivery: Tallow Candles\",\"client\":\"Bram of the Chandler's Cart\",\"rank\":\"Novice\",\"level\":2,\"qtype\":\"minor\",\"payout_cp\":45,\"summary\":\"A chandler's cart dropped a crate of tallow candles on the cart road between Redmarch and the mill ford. Fetch the crate before rain ruins the stock.\",\"objectives\":[{\"verb\":\"FIND\",\"what\":\"dropped crate of tallow candles along the cart road\",\"qty\":1,\"unit\":\"crate\",\"where\":\"cart road toward the mill ford\"},{\"verb\":\"DELIVER\",\"what\":\"crate of tallow candles to the chandler's stall\",\"qty\":1,\"unit\":\"crate\",\"where\":\"Redmarch market row\"}],\"proof\":[{\"kind\":\"object\",\"what\":\"crate of tallow candles bearing the chandler's stamp\",\"qty\":1,\"unit\":\"crate\"}]}]}"
+  },
+  {
+   "case": "mode_question",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 2,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 1209,
+     "usage": {
+      "prompt_tokens": 208,
+      "completion_tokens": 14,
+      "total_tokens": 222,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 41,
+     "reasoning_chars": 0,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 208,
+    "completion": 14,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"mode\": \"question\", \"speech_only\": true}"
+  },
+  {
+   "case": "interp_go_guild",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 2,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 6722,
+     "usage": {
+      "prompt_tokens": 1202,
+      "completion_tokens": 63,
+      "total_tokens": 1265,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 218,
+     "reasoning_chars": 0,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1202,
+    "completion": 63,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"commands\":[{\"seq\":1,\"type\":\"go\",\"to\":\"loc.redmarch\",\"quote\":\"i walk into the city ahead of me\"},{\"seq\":2,\"type\":\"go\",\"to\":\"loc.redmarch.guild_hall\",\"quote\":\"go to the adventurer guild and enter the guild building\"}]}"
+  },
+  {
+   "case": "interp_turnin_then_inn",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 2,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 4830,
+     "usage": {
+      "prompt_tokens": 1306,
+      "completion_tokens": 74,
+      "total_tokens": 1380,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 269,
+     "reasoning_chars": 0,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1306,
+    "completion": 74,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"commands\":[{\"seq\":1,\"type\":\"quest.turn_in\",\"quest\":\"quest.herb_run_marshmint\",\"quote\":\"i turn the Quest in at the front desk\"},{\"seq\":2,\"type\":\"go\",\"to\":{\"new\":\"an Inn\"},\"quote\":\"i go walk around the City looking for an Inn to sleep and wash my clothes and myself\"}]}"
+  },
+  {
+   "case": "interp_negative_thought",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 2,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 1012,
+     "usage": {
+      "prompt_tokens": 1338,
+      "completion_tokens": 6,
+      "total_tokens": 1344,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 15,
+     "reasoning_chars": 0,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1338,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"commands\":[]}"
+  },
+  {
+   "case": "interp_price_limit",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 2,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 4783,
+     "usage": {
+      "prompt_tokens": 1241,
+      "completion_tokens": 65,
+      "total_tokens": 1306,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 183,
+     "reasoning_chars": 23,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1241,
+    "completion": 65,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"commands\":[{\"seq\":1,\"type\":\"buy\",\"what\":\"a room for the night\",\"from\":\"npc.innkeeper\",\"max_cp\":5,\"any_price\":false,\"quote\":\"I'll take a room for the night if it's under 5 copper\"}]}"
+  },
+  {
+   "case": "interp_gather_day",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 2,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 4908,
+     "usage": {
+      "prompt_tokens": 1271,
+      "completion_tokens": 65,
+      "total_tokens": 1336,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 167,
+     "reasoning_chars": 81,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1271,
+    "completion": 65,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"commands\":[{\"seq\":1,\"type\":\"activity\",\"kind\":\"gather\",\"what\":\"marshmint\",\"until\":null,\"quote\":\"since i have the whole day i start carrying armfulls down the path\"}]}"
+  },
+  {
+   "case": "extract_arrival",
+   "role": "extractor",
+   "mode": "plain_keep",
+   "rep": 2,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 13369,
+     "usage": {
+      "prompt_tokens": 1624,
+      "completion_tokens": 232,
+      "total_tokens": 1856,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 544,
+     "reasoning_chars": 211,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1624,
+    "completion": 232,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"expected\":{\"2\":{\"arrived\":true,\"at\":{\"new\":{\"name\":\"Reedbeds east of the mill leat\",\"parent\":\"loc.redmarch\"}}}},\"deltas\":[{\"seq\":1,\"type\":\"time\",\"minutes\":60},{\"seq\":2,\"type\":\"arrive\",\"at\":{\"new\":{\"name\":\"Reedbeds east of the mill leat\",\"parent\":\"loc.redmarch\"}}},{\"seq\":3,\"type\":\"fact\",\"s\":\"reedbeds trail\",\"p\":\"is\",\"o\":\"a flat trail wide as a badger, stems bent not cut, beaten through the reeds toward open water\"},{\"seq\":4,\"type\":\"fact\",\"s\":\"marshmint\",\"p\":\"grows\",\"o\":\"in clumps at the waterline in the reedbeds east of the mill leat\"}]}"
+  },
+  {
+   "case": "extract_absent_person",
+   "role": "extractor",
+   "mode": "plain_keep",
+   "rep": 2,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 19854,
+     "usage": {
+      "prompt_tokens": 1403,
+      "completion_tokens": 377,
+      "total_tokens": 1780,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 1034,
+     "reasoning_chars": 245,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1403,
+    "completion": 377,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"expected\":{},\"deltas\":[\n{\"seq\":1,\"type\":\"time\",\"minutes\":5},\n{\"seq\":2,\"type\":\"person.new\",\"ref\":\"person.clerk\",\"name\":null,\"role\":\"guild clerk\",\"present\":true},\n{\"seq\":3,\"type\":\"person.new\",\"ref\":\"person.ossler\",\"name\":\"Ossler\",\"role\":\"carter\",\"present\":false},\n{\"seq\":4,\"type\":\"person.new\",\"ref\":\"person.novice_escort\",\"name\":null,\"role\":\"Novice escort\",\"present\":false},\n{\"seq\":5,\"type\":\"fact\",\"s\":\"Miller's Run Escort\",\"p\":\"departs\",\"o\":\"first light tomorrow from the miller's yard behind Harrow's mill on Grainmarket Row\"},\n{\"seq\":6,\"type\":\"fact\",\"s\":\"Miller's Run Escort\",\"p\":\"payout\",\"o\":\"eight silver, paid at the guild hall after the waystation master signs the plate\"},\n{\"seq\":7,\"type\":\"fact\",\"s\":\"Miller's Run Escort\",\"p\":\"personnel\",\"o\":\"Alaric, the carter Ossler, and one other Novice\"},\n{\"seq\":8,\"type\":\"fact\",\"s\":\"the road to Miller's Run\",\"p\":\"threat level\",\"o\":\"nothing above F, quiet all season\"},\n{\"seq\":9,\"type\":\"object.new\",\"name\":\"stamped escort slip\",\"kind\":\"document\",\"qty\":1,\"unit\":null,\"holder\":\"Alaric\"}\n]}"
+  },
+  {
+   "case": "extract_offer_overreach",
+   "role": "extractor",
+   "mode": "plain_keep",
+   "rep": 2,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 16504,
+     "usage": {
+      "prompt_tokens": 1636,
+      "completion_tokens": 319,
+      "total_tokens": 1955,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 905,
+     "reasoning_chars": 183,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1636,
+    "completion": 319,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"expected\":{\"1\":{\"arrived\":true,\"at\":{\"new\":{\"name\":\"Marsh Bell inn\",\"parent\":\"loc.redmarch\"}}}},\"deltas\":[{\"seq\":1,\"type\":\"time\",\"minutes\":30},{\"seq\":2,\"type\":\"arrive\",\"at\":{\"new\":{\"name\":\"Marsh Bell inn\",\"parent\":\"loc.redmarch\"}}},{\"seq\":3,\"type\":\"person.new\",\"ref\":\"innkeeper.marsh_bell\",\"name\":null,\"role\":\"innkeeper\",\"present\":true},{\"seq\":4,\"type\":\"offer\",\"seller\":\"innkeeper.marsh_bell\",\"lines\":[{\"what\":\"room for the night\",\"kind\":\"service\",\"qty\":1,\"price_cp\":4},{\"what\":\"hot bath\",\"kind\":\"service\",\"qty\":1,\"price_cp\":2},{\"what\":\"laundry, dry by morning\",\"kind\":\"service\",\"qty\":1,\"price_cp\":1},{\"what\":\"stew\",\"kind\":\"goods\",\"qty\":1,\"price_cp\":2}]},{\"seq\":5,\"type\":\"overreach\",\"kind\":\"accept\",\"what\":\"took the room, hot bath, and laundry for 7 copper without agreeing to a price\"},{\"seq\":6,\"type\":\"fact\",\"s\":\"Marsh Bell inn\",\"p\":\"is located\",\"o\":\"on a lane behind the cooper's yard in Redmarch\"}]}"
+  },
+  {
+   "case": "board_two_listings",
+   "role": "board",
+   "mode": "plain_keep",
+   "rep": 2,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 19284,
+     "usage": {
+      "prompt_tokens": 641,
+      "completion_tokens": 339,
+      "total_tokens": 980,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 1173,
+     "reasoning_chars": 0,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 641,
+    "completion": 339,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"listings\":[{\"title\":\"Rat Cull in the Tannery Cellar\",\"client\":\"Bodrin the Tanner\",\"rank\":\"Novice\",\"level\":3,\"qtype\":\"standard\",\"payout_cp\":90,\"summary\":\"Bodrin's cellar is overrun with rats gnawing his hides. Clear them out and bring back their tails as proof.\",\"objectives\":[{\"verb\":\"GO\",\"what\":\"the tannery cellar\",\"qty\":1,\"unit\":null,\"where\":\"Redmarch tannery row\"},{\"verb\":\"DEFEAT\",\"what\":\"cellar rats\",\"qty\":8,\"unit\":\"rats\",\"where\":\"tannery cellar\"},{\"verb\":\"GATHER\",\"what\":\"rat tails\",\"qty\":8,\"unit\":\"tails\",\"where\":\"tannery cellar\"}],\"proof\":[{\"kind\":\"object\",\"what\":\"rat tails\",\"qty\":8,\"unit\":\"tails\"}]},{\"title\":\"Deliver a Ledger to the Tollhouse\",\"client\":\"Clerk Marris, Redmarch Guild\",\"rank\":\"Novice\",\"level\":2,\"qtype\":\"minor\",\"payout_cp\":40,\"summary\":\"Carry a sealed toll ledger to the east road tollhouse and have the toll-keeper sign the receipt slip.\",\"objectives\":[{\"verb\":\"DELIVER\",\"what\":\"sealed toll ledger\",\"qty\":1,\"unit\":null,\"where\":\"east road tollhouse\"},{\"verb\":\"TALK\",\"what\":\"toll-keeper Hesta\",\"qty\":1,\"unit\":null,\"where\":\"east road tollhouse\"}],\"proof\":[{\"kind\":\"mark\",\"what\":\"receipt slip signed by toll-keeper Hesta\",\"qty\":1,\"unit\":null}]}]}"
+  },
+  {
+   "case": "mode_question",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 3,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 1676,
+     "usage": {
+      "prompt_tokens": 208,
+      "completion_tokens": 19,
+      "total_tokens": 227,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 41,
+     "reasoning_chars": 22,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 208,
+    "completion": 19,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"mode\": \"question\", \"speech_only\": true}"
+  },
+  {
+   "case": "interp_go_guild",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 3,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 4075,
+     "usage": {
+      "prompt_tokens": 1202,
+      "completion_tokens": 63,
+      "total_tokens": 1265,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 218,
+     "reasoning_chars": 0,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1202,
+    "completion": 63,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"commands\":[{\"seq\":1,\"type\":\"go\",\"to\":\"loc.redmarch\",\"quote\":\"i walk into the city ahead of me\"},{\"seq\":2,\"type\":\"go\",\"to\":\"loc.redmarch.guild_hall\",\"quote\":\"go to the adventurer guild and enter the guild building\"}]}"
+  },
+  {
+   "case": "interp_turnin_then_inn",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 3,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 4259,
+     "usage": {
+      "prompt_tokens": 1306,
+      "completion_tokens": 74,
+      "total_tokens": 1380,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 269,
+     "reasoning_chars": 0,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1306,
+    "completion": 74,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"commands\":[{\"seq\":1,\"type\":\"quest.turn_in\",\"quest\":\"quest.herb_run_marshmint\",\"quote\":\"i turn the Quest in at the front desk\"},{\"seq\":2,\"type\":\"go\",\"to\":{\"new\":\"an Inn\"},\"quote\":\"i go walk around the City looking for an Inn to sleep and wash my clothes and myself\"}]}"
+  },
+  {
+   "case": "interp_negative_thought",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 3,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 946,
+     "usage": {
+      "prompt_tokens": 1338,
+      "completion_tokens": 6,
+      "total_tokens": 1344,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 15,
+     "reasoning_chars": 0,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1338,
+    "completion": 6,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"commands\":[]}"
+  },
+  {
+   "case": "interp_price_limit",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 3,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 4282,
+     "usage": {
+      "prompt_tokens": 1241,
+      "completion_tokens": 65,
+      "total_tokens": 1306,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 183,
+     "reasoning_chars": 23,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1241,
+    "completion": 65,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"commands\":[{\"seq\":1,\"type\":\"buy\",\"what\":\"a room for the night\",\"from\":\"npc.innkeeper\",\"max_cp\":5,\"any_price\":false,\"quote\":\"I'll take a room for the night if it's under 5 copper\"}]}"
+  },
+  {
+   "case": "interp_gather_day",
+   "role": "interpreter",
+   "mode": "plain_keep",
+   "rep": 3,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 3440,
+     "usage": {
+      "prompt_tokens": 1271,
+      "completion_tokens": 53,
+      "total_tokens": 1324,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 199,
+     "reasoning_chars": 0,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1271,
+    "completion": 53,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"commands\":[{\"seq\":1,\"type\":\"activity\",\"kind\":\"gather\",\"what\":\"marshmint, carrying armfuls down the path\",\"until\":null,\"quote\":\"since i have the whole day i start carrying armfulls down the path\"}]}"
+  },
+  {
+   "case": "extract_arrival",
+   "role": "extractor",
+   "mode": "plain_keep",
+   "rep": 3,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 11898,
+     "usage": {
+      "prompt_tokens": 1624,
+      "completion_tokens": 225,
+      "total_tokens": 1849,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 537,
+     "reasoning_chars": 199,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1624,
+    "completion": 225,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"expected\":{\"2\":{\"arrived\":true,\"at\":{\"new\":{\"name\":\"Reedbeds east of the mill leat\",\"parent\":\"loc.redmarch\"}}}},\"deltas\":[{\"seq\":1,\"type\":\"time\",\"minutes\":60},{\"seq\":2,\"type\":\"arrive\",\"at\":{\"new\":{\"name\":\"Reedbeds east of the mill leat\",\"parent\":\"loc.redmarch\"}}},{\"seq\":3,\"type\":\"fact\",\"s\":\"reedbeds trail\",\"p\":\"beaten trail through reeds toward open water\",\"o\":\"wide as a badger, stems bent rather than cut\"},{\"seq\":4,\"type\":\"fact\",\"s\":\"marshmint\",\"p\":\"grows\",\"o\":\"in clumps at the waterline in the reedbeds east of the mill leat\"}]}"
+  },
+  {
+   "case": "extract_absent_person",
+   "role": "extractor",
+   "mode": "plain_keep",
+   "rep": 3,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 22010,
+     "usage": {
+      "prompt_tokens": 1403,
+      "completion_tokens": 425,
+      "total_tokens": 1828,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 984,
+     "reasoning_chars": 337,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1403,
+    "completion": 425,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"expected\": {}, \"deltas\": [\n{\"seq\": 1, \"type\": \"time\", \"minutes\": 5},\n{\"seq\": 2, \"type\": \"person.new\", \"ref\": \"clerk\", \"name\": null, \"role\": \"guild clerk\", \"present\": true},\n{\"seq\": 3, \"type\": \"person.new\", \"ref\": \"ossler\", \"name\": \"Ossler\", \"role\": \"carter\", \"present\": false},\n{\"seq\": 4, \"type\": \"person.new\", \"ref\": \"second_novice\", \"name\": null, \"role\": \"Novice escort\", \"present\": false},\n{\"seq\": 5, \"type\": \"fact\", \"s\": \"Miller's Run Escort job\", \"p\": \"departs\", \"o\": \"tomorrow at first light from the miller's yard behind Harrow's mill on Grainmarket Row\"},\n{\"seq\": 6, \"type\": \"fact\", \"s\": \"Miller's Run Escort job\", \"p\": \"pays\", \"o\": \"eight silver upon returning the signed plate to the guild hall\"},\n{\"seq\": 7, \"type\": \"fact\", \"s\": \"Miller's Run Escort job\", \"p\": \"requires\", \"o\": \"the waystation master's signature on the plate at delivery\"},\n{\"seq\": 8, \"type\": \"object.new\", \"name\": \"stamped escort slip\", \"kind\": \"document\", \"qty\": 1, \"unit\": null, \"holder\": \"Alaric\"}\n]}"
+  },
+  {
+   "case": "extract_offer_overreach",
+   "role": "extractor",
+   "mode": "plain_keep",
+   "rep": 3,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 18975,
+     "usage": {
+      "prompt_tokens": 1636,
+      "completion_tokens": 339,
+      "total_tokens": 1975,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 901,
+     "reasoning_chars": 275,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 1636,
+    "completion": 339,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"expected\":{\"1\":{\"arrived\":true,\"at\":{\"new\":{\"name\":\"Marsh Bell inn\",\"parent\":\"loc.redmarch\"}}}},\"deltas\":[{\"seq\":1,\"type\":\"time\",\"minutes\":40},{\"seq\":2,\"type\":\"arrive\",\"at\":{\"new\":{\"name\":\"Marsh Bell inn\",\"parent\":\"loc.redmarch\"}}},{\"seq\":3,\"type\":\"person.new\",\"ref\":\"per.innkeeper_marsh_bell\",\"name\":null,\"role\":\"innkeeper of the Marsh Bell\",\"present\":true},{\"seq\":4,\"type\":\"offer\",\"seller\":\"per.innkeeper_marsh_bell\",\"lines\":[{\"what\":\"room for the night\",\"kind\":\"service\",\"qty\":1,\"price_cp\":4},{\"what\":\"hot bath\",\"kind\":\"service\",\"qty\":1,\"price_cp\":2},{\"what\":\"laundry, dry by morning\",\"kind\":\"service\",\"qty\":1,\"price_cp\":1},{\"what\":\"stew\",\"kind\":\"goods\",\"qty\":1,\"price_cp\":2}]},{\"seq\":5,\"type\":\"overreach\",\"kind\":\"accept\",\"what\":\"took the room, hot bath, and laundry service without agreeing to pay\"},{\"seq\":6,\"type\":\"overreach\",\"kind\":\"payment\",\"what\":\"paid 7 copper for room, bath, and wash\"}]}"
+  },
+  {
+   "case": "board_two_listings",
+   "role": "board",
+   "mode": "plain_keep",
+   "rep": 3,
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "repaired": false,
+   "errors_first": [],
+   "semantic_ok": true,
+   "semantic_note": null,
+   "attempts": [
+    {
+     "status": "ok",
+     "ms": 17894,
+     "usage": {
+      "prompt_tokens": 641,
+      "completion_tokens": 345,
+      "total_tokens": 986,
+      "reasoning_tokens": null
+     },
+     "finish": "stop",
+     "content_chars": 1184,
+     "reasoning_chars": 0,
+     "transport_retries": 0,
+     "raw_json": true,
+     "valid": true
+    }
+   ],
+   "tokens": {
+    "prompt": 641,
+    "completion": 345,
+    "reasoning": 0,
+    "reported": true
+   },
+   "answer": "{\"listings\":[{\"title\":\"Rat Cull in the Tannery Cellar\",\"client\":\"Bram Holt, tanner of Redmarch\",\"rank\":\"Novice\",\"level\":3,\"qtype\":\"standard\",\"payout_cp\":85,\"summary\":\"Bram's cellar is overrun with rats gnawing his hides. Clear them out and bring back their tails as proof.\",\"objectives\":[{\"verb\":\"GO\",\"what\":\"the tannery cellar\",\"qty\":1,\"unit\":null,\"where\":\"Redmarch tannery row\"},{\"verb\":\"DEFEAT\",\"what\":\"cellar rats\",\"qty\":8,\"unit\":\"rats\",\"where\":\"tannery cellar\"},{\"verb\":\"GET\",\"what\":\"rat tails\",\"qty\":8,\"unit\":\"tails\",\"where\":\"tannery cellar\"}],\"proof\":[{\"kind\":\"object\",\"what\":\"rat tails\",\"qty\":8,\"unit\":\"tails\"}]},{\"title\":\"Deliver a Ledger to the Tollhouse\",\"client\":\"Clerk Odwin, Redmarch Guild office\",\"rank\":\"Novice\",\"level\":2,\"qtype\":\"minor\",\"payout_cp\":40,\"summary\":\"Carry a sealed toll ledger to the east tollhouse and have the tollman sign the Guild receipt.\",\"objectives\":[{\"verb\":\"DELIVER\",\"what\":\"sealed toll ledger\",\"qty\":1,\"unit\":null,\"where\":\"east tollhouse on the Veyrhold road\"},{\"verb\":\"TALK\",\"what\":\"tollman Harl\",\"qty\":1,\"unit\":null,\"where\":\"east tollhouse\"}],\"proof\":[{\"kind\":\"mark\",\"what\":\"tollman's signature on the Guild receipt\",\"qty\":1,\"unit\":null}]}]}"
+  }
+ ]
+}

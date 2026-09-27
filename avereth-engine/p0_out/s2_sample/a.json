@@ -1,0 +1,711 @@
+{
+ "meta": {
+  "tool": "s2_deltas",
+  "version": 1,
+  "started": "2026-09-27T19:53:20.047Z",
+  "finished": "2026-09-27T20:11:03.256Z",
+  "node": "v24.19.0",
+  "provider": {
+   "backend": "SillyTavern",
+   "source": "custom",
+   "model": "zai-org/GLM-5.3-Flash",
+   "profile": null,
+   "include_body_keys": [
+    "clear_thinking",
+    "reasoning_effort"
+   ],
+   "reasoning_effort": "low"
+  },
+  "mode": "plain",
+  "reasoning": null,
+  "mode_source": "Kommandozeile",
+  "turns": [
+   "v11_01",
+   "v11_02",
+   "v11_03",
+   "v11_04",
+   "v11_05",
+   "v11_06",
+   "v11_07",
+   "v11_08",
+   "v11_09",
+   "v11_10",
+   "v11_11",
+   "v12_01",
+   "v12_02",
+   "v12_03",
+   "v12_04",
+   "v12_05",
+   "v12_06",
+   "v12_07",
+   "v12_08"
+  ],
+  "variant": "a"
+ },
+ "records": [
+  {
+   "id": "v11_01",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 1,
+    "critical_missing": [
+     {
+      "type": "person.new",
+      "$any": "/clerk/i",
+      "present": true
+     },
+     {
+      "type": "time",
+      "minutes": {
+       "$range": [
+        5,
+        120
+       ]
+      }
+     }
+    ],
+    "forbidden_hits": [],
+    "semantic": 0.5,
+    "deltas": 1
+   },
+   "items": 4,
+   "ms": 5438,
+   "tokens": {
+    "prompt": 1608,
+    "completion": 86,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": "loc.alderwatch.guild_hall"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "arrive",
+      "at": "loc.alderwatch.guild_hall"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_02",
+   "ok": true,
+   "error": null,
+   "valid_first": false,
+   "valid_final": false,
+   "complete": false,
+   "score": null,
+   "items": 0,
+   "ms": 12063,
+   "tokens": {
+    "prompt": 3074,
+    "completion": 376,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": null,
+   "errors": [
+    "$.deltas[1]: matches none of anyOf"
+   ]
+  },
+  {
+   "id": "v11_03",
+   "ok": true,
+   "error": null,
+   "valid_first": false,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 8
+   },
+   "items": 0,
+   "ms": 29656,
+   "tokens": {
+    "prompt": 3655,
+    "completion": 1058,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "npc.guild_clerk",
+      "p": "recorded",
+      "o": "Alaric Red, age eighteen, signed in blood in the Guild register"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "npc.young_clerk",
+      "p": "name",
+      "o": "Hessa"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "npc.young_clerk",
+      "p": "role",
+      "o": "handles Quest tags at her end of the Guild counter"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "loc.alderwatch.guild_hall",
+      "p": "has",
+      "o": "a grey rank-reading stone set into the counter's end that reads a registrant's Power Rank"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "npc.guild_clerk",
+      "p": "knows",
+      "o": "Alaric's Power Rank is F, read from the rank-reading stone"
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "npc.guild_clerk",
+      "p": "knows",
+      "o": "Alaric has steady hands and did not flinch at the blood pin"
+     },
+     {
+      "seq": 7,
+      "type": "fact",
+      "s": "npc.guild_clerk",
+      "p": "stated_rules",
+      "o": "medallion must be worn inside Guild halls; Novice-tagged Quests only until rank up; Quests completed and paid at the counter; abandoning a taken Quest twice has consequences"
+     },
+     {
+      "seq": 8,
+      "type": "attitude",
+      "who": "npc.guild_clerk",
+      "delta": 1,
+      "why": "approving of Alaric's steady hands during the blood signature"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_04",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 7
+   },
+   "items": 0,
+   "ms": 28777,
+   "tokens": {
+    "prompt": 1738,
+    "completion": 459,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 5
+     },
+     {
+      "seq": 2,
+      "type": "quest.detail",
+      "quest": "quest.cart_guard_ferry",
+      "note": "Wool merchant needs a spear or sword on the bench; two days out, one day back; pay 6 silver plus a meal",
+      "schedule": "departure tomorrow at dawn"
+     },
+     {
+      "seq": 3,
+      "type": "quest.detail",
+      "quest": "quest.lost_dog_pip",
+      "note": "Reward posted by Marta Hale; brown bitch with one crooked ear, answers to Pip; last seen by the south gate",
+      "schedule": null
+     },
+     {
+      "seq": 4,
+      "type": "quest.detail",
+      "quest": "quest.wolf_problem",
+      "note": "Sheep kills over the past week, likely a small pack out of the eastern woods; hamlet will guide to the last kill site; pay 8 silver on proof of at least two wolves",
+      "schedule": null
+     },
+     {
+      "seq": 5,
+      "type": "quest.detail",
+      "quest": "quest.herb_run_hollows",
+      "note": "Gatheror wants fresh marshmallow root and yarrow, ten bundles each, roots not blades, before the week is out",
+      "schedule": null
+     },
+     {
+      "seq": 6,
+      "type": "quest.detail",
+      "quest": "quest.rats_grain_cellars",
+      "note": "Tally-house on Chandler Street wants cellars cleared; bring proof—tails; someone scrawled beneath: 'bring a lantern and no pride'",
+      "schedule": null
+     },
+     {
+      "seq": 7,
+      "type": "fact",
+      "s": "npc.young_clerk",
+      "p": "is",
+      "o": "facing the board's end of the counter with arms crossed, watching the room"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_05",
+   "ok": true,
+   "error": null,
+   "valid_first": false,
+   "valid_final": false,
+   "complete": false,
+   "score": null,
+   "items": 4,
+   "ms": 47560,
+   "tokens": {
+    "prompt": 4041,
+    "completion": 1880,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": null,
+   "errors": [
+    "$.deltas[3]: matches none of anyOf",
+    "$.deltas[4]: matches none of anyOf"
+   ]
+  },
+  {
+   "id": "v11_06",
+   "ok": true,
+   "error": null,
+   "valid_first": false,
+   "valid_final": false,
+   "complete": false,
+   "score": null,
+   "items": 3,
+   "ms": 18264,
+   "tokens": {
+    "prompt": 3443,
+    "completion": 1082,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": null,
+   "errors": [
+    "$.expected.1.at: matches none of anyOf",
+    "$.deltas[1]: matches none of anyOf",
+    "$.deltas[2]: matches none of anyOf"
+   ]
+  },
+  {
+   "id": "v11_07",
+   "ok": true,
+   "error": null,
+   "valid_first": false,
+   "valid_final": false,
+   "complete": false,
+   "score": null,
+   "items": 4,
+   "ms": 21203,
+   "tokens": {
+    "prompt": 3401,
+    "completion": 1007,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": null,
+   "errors": [
+    "$.deltas[3]: matches none of anyOf",
+    "$.deltas[4]: matches none of anyOf"
+   ]
+  },
+  {
+   "id": "v11_08",
+   "ok": true,
+   "error": null,
+   "valid_first": false,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 1,
+    "critical_found": 1,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 2
+   },
+   "items": 1,
+   "ms": 4164,
+   "tokens": {
+    "prompt": 2851,
+    "completion": 175,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "hostile",
+      "by": [
+       "mon.wolf_leader"
+      ]
+     },
+     {
+      "seq": 2,
+      "type": "hostile",
+      "by": [
+       "mon.wolf_yearling"
+      ]
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v11_09",
+   "ok": true,
+   "error": null,
+   "valid_first": false,
+   "valid_final": false,
+   "complete": false,
+   "score": null,
+   "items": 5,
+   "ms": 18198,
+   "tokens": {
+    "prompt": 3814,
+    "completion": 1472,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": null,
+   "errors": [
+    "$.deltas[0]: matches none of anyOf",
+    "$.deltas[3]: matches none of anyOf",
+    "$.deltas[5]: matches none of anyOf"
+   ]
+  },
+  {
+   "id": "v11_10",
+   "ok": true,
+   "error": null,
+   "valid_first": false,
+   "valid_final": false,
+   "complete": false,
+   "score": null,
+   "items": 1,
+   "ms": 29622,
+   "tokens": {
+    "prompt": 3603,
+    "completion": 1147,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": null,
+   "errors": [
+    "$.deltas[2]: matches none of anyOf",
+    "$.deltas[3]: matches none of anyOf",
+    "$.deltas[4]: matches none of anyOf",
+    "$.deltas[5]: matches none of anyOf"
+   ]
+  },
+  {
+   "id": "v11_11",
+   "ok": true,
+   "error": null,
+   "valid_first": false,
+   "valid_final": false,
+   "complete": false,
+   "score": null,
+   "items": 5,
+   "ms": 44688,
+   "tokens": {
+    "prompt": 4031,
+    "completion": 1547,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": null,
+   "errors": [
+    "$.expected.2.at: matches none of anyOf",
+    "$.deltas[0]: matches none of anyOf",
+    "$.deltas[1]: matches none of anyOf",
+    "$.deltas[2]: matches none of anyOf"
+   ]
+  },
+  {
+   "id": "v12_01",
+   "ok": true,
+   "error": null,
+   "valid_first": false,
+   "valid_final": false,
+   "complete": false,
+   "score": null,
+   "items": 4,
+   "ms": 10627,
+   "tokens": {
+    "prompt": 3100,
+    "completion": 408,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": null,
+   "errors": [
+    "$.deltas[2]: matches none of anyOf"
+   ]
+  },
+  {
+   "id": "v12_02",
+   "ok": true,
+   "error": null,
+   "valid_first": false,
+   "valid_final": false,
+   "complete": false,
+   "score": null,
+   "items": 0,
+   "ms": 13767,
+   "tokens": {
+    "prompt": 3239,
+    "completion": 539,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": null,
+   "errors": [
+    "$.deltas[0]: matches none of anyOf",
+    "$.deltas[2]: matches none of anyOf"
+   ]
+  },
+  {
+   "id": "v12_03",
+   "ok": true,
+   "error": null,
+   "valid_first": false,
+   "valid_final": false,
+   "complete": false,
+   "score": null,
+   "items": 2,
+   "ms": 16976,
+   "tokens": {
+    "prompt": 3659,
+    "completion": 690,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": null,
+   "errors": [
+    "$.deltas[1]: matches none of anyOf",
+    "$.deltas[2]: matches none of anyOf"
+   ]
+  },
+  {
+   "id": "v12_04",
+   "ok": true,
+   "error": null,
+   "valid_first": false,
+   "valid_final": false,
+   "complete": false,
+   "score": null,
+   "items": 2,
+   "ms": 25476,
+   "tokens": {
+    "prompt": 3337,
+    "completion": 956,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": null,
+   "errors": [
+    "$.deltas[2]: matches none of anyOf",
+    "$.deltas[3]: matches none of anyOf"
+   ]
+  },
+  {
+   "id": "v12_05",
+   "ok": true,
+   "error": null,
+   "valid_first": true,
+   "valid_final": true,
+   "complete": true,
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 2,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 5
+   },
+   "items": 3,
+   "ms": 21612,
+   "tokens": {
+    "prompt": 1638,
+    "completion": 336,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Reedbeds east of the mill leat",
+        "kind": "wilderness",
+        "parent": "loc.redmarch"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 60
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Reedbeds east of the mill leat",
+        "kind": "wilderness",
+        "parent": "loc.redmarch"
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "quest.detail",
+      "quest": "quest.herb_run_marshmint",
+      "note": "A full basket of marshmint is required — a handful of sprigs won't pass; bring the basket back to the Guild desk for weighing.",
+      "schedule": null
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "reedbeds trail",
+      "p": "is",
+      "o": "a flat beaten trail wide as a badger, stems bent not cut, leading through the reeds toward open water"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "marshmint",
+      "p": "grows",
+      "o": "in clumps at the waterline of the reedbeds, some reachable from the drainage path, others out on muddy hummocks"
+     }
+    ]
+   },
+   "errors": []
+  },
+  {
+   "id": "v12_06",
+   "ok": true,
+   "error": null,
+   "valid_first": false,
+   "valid_final": false,
+   "complete": false,
+   "score": null,
+   "items": 3,
+   "ms": 15210,
+   "tokens": {
+    "prompt": 3463,
+    "completion": 715,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": null,
+   "errors": [
+    "$.deltas[1]: matches none of anyOf"
+   ]
+  },
+  {
+   "id": "v12_07",
+   "ok": true,
+   "error": null,
+   "valid_first": false,
+   "valid_final": false,
+   "complete": false,
+   "score": null,
+   "items": 3,
+   "ms": 28570,
+   "tokens": {
+    "prompt": 3667,
+    "completion": 475,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": null,
+   "errors": [
+    "$.deltas[2]: matches none of anyOf"
+   ]
+  },
+  {
+   "id": "v12_08",
+   "ok": true,
+   "error": null,
+   "valid_first": false,
+   "valid_final": false,
+   "complete": false,
+   "score": null,
+   "items": 5,
+   "ms": 29752,
+   "tokens": {
+    "prompt": 4132,
+    "completion": 3078,
+    "reasoning": 0,
+    "reported": true
+   },
+   "value": null,
+   "errors": [
+    "report is not valid JSON"
+   ]
+  }
+ ]
+}

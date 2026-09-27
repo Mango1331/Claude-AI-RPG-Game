@@ -1,0 +1,29 @@
+{
+ "tool": "s2_deltas",
+ "version": 1,
+ "created": "2026-09-27T23:05:05.879Z",
+ "d2": "A",
+ "choice": "A",
+ "block_ok_pct": 43.9,
+ "semantic_a_pct": 87.4,
+ "semantic_b_pct": 67.3,
+ "reasons": [
+  "Block gültig und vollständig in 43.9 % der B-Antworten (Schwelle ≥ 80 %): nicht erfüllt",
+  "Semantische Genauigkeit B 67.3 % gegen A 87.4 % (B darf höchstens 5 Punkte darunter liegen): nicht erfüllt"
+ ],
+ "costs": {
+  "recovery_rate_pct": 56.1,
+  "tokens_a": 9911,
+  "tokens_b": 10570,
+  "narrator_prompt_b": 8547,
+  "narrator_out_b": 541,
+  "block_tokens": 114,
+  "instruction_tokens": 1561,
+  "extraction_tokens": 2498,
+  "recovery_tokens": 2642,
+  "blocking_a_s": 26.6,
+  "blocking_b_s": 33.7,
+  "background_a_s": 22.3,
+  "background_b_s": 18.8
+ }
+}

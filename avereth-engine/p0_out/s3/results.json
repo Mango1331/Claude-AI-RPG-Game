@@ -1,0 +1,2174 @@
+{
+ "tool": "s3_prototype",
+ "version": 1,
+ "created": "2026-09-27T16:47:47.269Z",
+ "gold": "gold-v4-0.1",
+ "checks": [
+  {
+   "id": "gold_B_t1",
+   "title": "Pfad B, t1 (Nachricht 5 → Antwort 6): Gold-Auflösungen, PLAYER ACTIONS, Events, Zustand",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "gold_B_t2",
+   "title": "Pfad B, t2 (Nachricht 7 → Antwort 8): Gold-Auflösungen, PLAYER ACTIONS, Events, Zustand",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "gold_B_t3",
+   "title": "Pfad B, t3 (Nachricht 9 → Antwort 10): Gold-Auflösungen, PLAYER ACTIONS, Events, Zustand",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "gold_B_t4",
+   "title": "Pfad B, t4 (Nachricht 11 → Antwort 12): Gold-Auflösungen, PLAYER ACTIONS, Events, Zustand",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "gold_B_t5",
+   "title": "Pfad B, t5 (Nachricht 13 → Antwort 14): Gold-Auflösungen, PLAYER ACTIONS, Events, Zustand",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "gold_B_t6",
+   "title": "Pfad B, t6 (Nachricht 15 → Antwort 16): Gold-Auflösungen, PLAYER ACTIONS, Events, Zustand",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "gold_B_t7",
+   "title": "Pfad B, t7 (Nachricht 17 → Antwort 18): Gold-Auflösungen, PLAYER ACTIONS, Events, Zustand",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "gold_B_t8",
+   "title": "Pfad B, t8 (Nachricht 19 → Antwort 20): Gold-Auflösungen, PLAYER ACTIONS, Events, Zustand",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "gold_A_t1",
+   "title": "Pfad A, t1 (Nachricht 5 → Antwort 6): Gold-Auflösungen, PLAYER ACTIONS, Events, Zustand",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "gold_A_t2",
+   "title": "Pfad A, t2 (Nachricht 7 → Antwort 8): Gold-Auflösungen, PLAYER ACTIONS, Events, Zustand",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "gold_A_t3",
+   "title": "Pfad A, t3 (Nachricht 9 → Antwort 10): Gold-Auflösungen, PLAYER ACTIONS, Events, Zustand",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "gold_A_t4",
+   "title": "Pfad A, t4 (Nachricht 11 → Antwort 12): Gold-Auflösungen, PLAYER ACTIONS, Events, Zustand",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "gold_A_t5",
+   "title": "Pfad A, t5 (Nachricht 13 → Antwort 14): Gold-Auflösungen, PLAYER ACTIONS, Events, Zustand",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "gold_A_t6",
+   "title": "Pfad A, t6 (Nachricht 15 → Antwort 16): Gold-Auflösungen, PLAYER ACTIONS, Events, Zustand",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "gold_A_t7",
+   "title": "Pfad A, t7 (Nachricht 17 → Antwort 18): Gold-Auflösungen, PLAYER ACTIONS, Events, Zustand",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "gold_A_t8",
+   "title": "Pfad A, t8 (Nachricht 19 → Antwort 20): Gold-Auflösungen, PLAYER ACTIONS, Events, Zustand",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "E1",
+   "title": "Fünf sichtbare Verträge sind kanonisch (nach Nachricht 9: 5 × listed, Novice, 80/150/40/20/50 cp; nach Antwort 10: Weasel taken_by_other)",
+   "ok": true,
+   "detail": "{\"quest.millers_run_escort\":\"listed\",\"quest.weasel_fenwick\":\"taken_by_other\",\"quest.herb_run_marshmint\":\"listed\",\"quest.missing_dog\":\"listed\",\"quest.fence_repair\":\"listed\"}"
+  },
+  {
+   "id": "E2",
+   "title": "Miller's Run bleibt nach Nachricht 11 aktiv, Rang Novice aus dem Listing, kein delta.rejected",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "E3",
+   "title": "Ossler existiert, ist nicht da und nicht getroffen",
+   "ok": true,
+   "detail": "at loc.redmarch.harrows_mill_yard"
+  },
+  {
+   "id": "E4",
+   "title": "„register the Herb Run“ ist Annahme in der Gildenhalle",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "E5",
+   "title": "Der Clerk hat die Annahme vor der Reise bezeugt (witnessed, Schritt 1, Nachricht 13)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "E6",
+   "title": "Reedbeds haben den richtigen Elternort (reedbeds › eastern mill leat › Redmarch › Veyrhold)",
+   "ok": true,
+   "detail": "[\"reedbeds\",\"eastern mill leat\",\"Redmarch\",\"Veyrhold\"]"
+  },
+  {
+   "id": "E7",
+   "title": "Langes Sammeln ist autorisiert (Deckel 560 min, time 300 angenommen)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "E8",
+   "title": "Marshmint existiert physisch (nach Antwort 16 in den Reedbeds, nach Nachricht 17 bei Alaric)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "E9",
+   "title": "„carry it back to the Guild“ = take + go + bedingte Abgabe",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "E10",
+   "title": "Abgabe prüft den Beweis: Marshmint abgegeben, +40 cp, +15 XP, Herb Run completed, 1/5 Novice-Verträge",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "E11",
+   "title": "Gasthaussuche nimmt keinen Preis an: buy pending, Angebot 4/2/1 cp, Coin unverändert, overreach → Korrektur",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "E12",
+   "title": "`coerce` durch den Anbieter eines offenen Angebots wird abgelehnt; ein alter `taken_by`-Schlüssel scheitert am Schema",
+   "ok": true,
+   "detail": "the other side of a sale or an open offer cannot coerce (a sale is never a confiscation) | $.deltas[6]: matches none of anyOf"
+  },
+  {
+   "id": "X1",
+   "title": "Registrierung: Nachricht 7 → pending mit Canon-Gebühr 20 cp; Nachricht 9 → −20 cp, Novice, Plakette",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "X2",
+   "title": "`pay` an den Clerk bei offener Registrierung = Annahme der Canon-Gebühr",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "X3",
+   "title": "Gildenhalle: Abgabe in den Reedbeds ohne go → refused; mit take + go → conditional (E9)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "X4",
+   "title": "Erreicht die Antwort die Halle nicht, wird nichts abgegeben (Quest aktiv, keine Auszahlung, cmd.expired)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "X5",
+   "title": "Fehlt ein expected-Feld, ist der Block unvollständig (Variante B ruft dann die Recovery)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "id": "X6",
+   "title": "Generator-Ausfall (Rev. 2.1): kein Listing, BOARD GENERATION FAILED, „invent none“, Prosa-Verträge nur overreach guild_listing, quest.offer der Gilde abgelehnt, keine Annahme",
+   "ok": true,
+   "detail": "BOARD GENERATION FAILED | official Guild contracts come only from the board generator (canonical first, prose second)"
+  },
+  {
+   "id": "END",
+   "title": "Endzustand: Day 1, 18:45, 70 cp, 15 XP, Marsh Bell unter Redmarch, Miller's Run aktiv mit offenem Beweis",
+   "ok": true,
+   "detail": "the mark \"signed by the waystation master\" is missing"
+  },
+  {
+   "id": "AB",
+   "title": "Pfad A (Recovery) und Pfad B (Block) ergeben nach jedem Zug denselben Domänenzustand",
+   "ok": true,
+   "detail": ""
+  }
+ ],
+ "B": [
+  {
+   "id": "t1",
+   "resolutions": [
+    {
+     "seq": 1,
+     "status": "authorized"
+    }
+   ],
+   "actions": [
+    "1. GOES — to Adventurers' Guild hall (report whether he arrives and where)."
+   ],
+   "after_player": {
+    "clock": "Day 1, 09:00",
+    "coin_cp": 50,
+    "xp": 0,
+    "member": null,
+    "scene_at": "loc.redmarch.verge",
+    "scene_path": [
+     "public roadside verge outside the city",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [],
+    "quests": {},
+    "listings": {},
+    "objects": {},
+    "offers": {},
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "after_reply": {
+    "clock": "Day 1, 09:20",
+    "coin_cp": 50,
+    "xp": 0,
+    "member": null,
+    "scene_at": "loc.redmarch.guild_hall",
+    "scene_path": [
+     "Adventurers' Guild hall",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.guild_clerk"
+    ],
+    "quests": {},
+    "listings": {
+     "quest.millers_run_escort": "listed",
+     "quest.weasel_fenwick": "listed",
+     "quest.herb_run_marshmint": "listed",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {},
+    "offers": {},
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "rejected": []
+  },
+  {
+   "id": "t2",
+   "resolutions": [
+    {
+     "seq": 1,
+     "status": "pending",
+     "reason": "fee"
+    }
+   ],
+   "actions": [
+    "1. REGISTERS — pending: the Guild's registration fee is 2 silver (20 cp), one-time. Let the clerk name it and explain; stop there: he has not agreed to pay."
+   ],
+   "after_player": {
+    "clock": "Day 1, 09:20",
+    "coin_cp": 50,
+    "xp": 0,
+    "member": null,
+    "scene_at": "loc.redmarch.guild_hall",
+    "scene_path": [
+     "Adventurers' Guild hall",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.guild_clerk"
+    ],
+    "quests": {},
+    "listings": {
+     "quest.millers_run_escort": "listed",
+     "quest.weasel_fenwick": "listed",
+     "quest.herb_run_marshmint": "listed",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {},
+    "offers": {
+     "offer.registration": "open"
+    },
+    "offers_open_lines": [],
+    "decisions": [
+     "registration"
+    ],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "after_reply": {
+    "clock": "Day 1, 09:20",
+    "coin_cp": 50,
+    "xp": 0,
+    "member": null,
+    "scene_at": "loc.redmarch.guild_hall",
+    "scene_path": [
+     "Adventurers' Guild hall",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.guild_clerk"
+    ],
+    "quests": {},
+    "listings": {
+     "quest.millers_run_escort": "listed",
+     "quest.weasel_fenwick": "listed",
+     "quest.herb_run_marshmint": "listed",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {},
+    "offers": {
+     "offer.registration": "open"
+    },
+    "offers_open_lines": [],
+    "decisions": [
+     "registration"
+    ],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "rejected": []
+  },
+  {
+   "id": "t3",
+   "resolutions": [
+    {
+     "seq": 1,
+     "status": "resolved"
+    },
+    {
+     "seq": 2,
+     "status": "resolved"
+    }
+   ],
+   "actions": [
+    "1. PAYS — the Guild registration fee, 20 cp: registered, Guild Rank Novice; the crystal reads Power Rank F; he receives his Guild plate.",
+    "2. READS the Novice board — BOARD (canonical; show exactly these, invent no other official contract): Miller's Run Escort · 80 cp | Weasel Sign at Fenwick's Coop · 150 cp | Herb Run — Marshmint · 40 cp | Missing Dog, Tanner's Row · 20 cp | Fence Repair, Widow Marsh · 50 cp."
+   ],
+   "after_player": {
+    "clock": "Day 1, 09:20",
+    "coin_cp": 30,
+    "xp": 0,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.guild_hall",
+    "scene_path": [
+     "Adventurers' Guild hall",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.guild_clerk"
+    ],
+    "quests": {},
+    "listings": {
+     "quest.millers_run_escort": "listed",
+     "quest.weasel_fenwick": "listed",
+     "quest.herb_run_marshmint": "listed",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc"
+    },
+    "offers": {
+     "offer.registration": "accepted"
+    },
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "after_reply": {
+    "clock": "Day 1, 09:30",
+    "coin_cp": 30,
+    "xp": 0,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.guild_hall",
+    "scene_path": [
+     "Adventurers' Guild hall",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.guild_clerk",
+     "npc.mud_booted_adventurer"
+    ],
+    "quests": {},
+    "listings": {
+     "quest.millers_run_escort": "listed",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "listed",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc"
+    },
+    "offers": {
+     "offer.registration": "accepted"
+    },
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "rejected": []
+  },
+  {
+   "id": "t4",
+   "resolutions": [
+    {
+     "seq": 1,
+     "status": "resolved"
+    }
+   ],
+   "actions": [
+    "1. ACCEPTS — \"Miller's Run Escort\" at the Guild desk; the clerk logs it (the Guild pays 80 cp on completion)."
+   ],
+   "after_player": {
+    "clock": "Day 1, 09:30",
+    "coin_cp": 30,
+    "xp": 0,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.guild_hall",
+    "scene_path": [
+     "Adventurers' Guild hall",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.guild_clerk",
+     "npc.mud_booted_adventurer"
+    ],
+    "quests": {
+     "quest.millers_run_escort": "active"
+    },
+    "listings": {
+     "quest.millers_run_escort": "active",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "listed",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc"
+    },
+    "offers": {
+     "offer.registration": "accepted"
+    },
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "after_reply": {
+    "clock": "Day 1, 09:40",
+    "coin_cp": 30,
+    "xp": 0,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.guild_hall",
+    "scene_path": [
+     "Adventurers' Guild hall",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.guild_clerk",
+     "npc.mud_booted_adventurer"
+    ],
+    "quests": {
+     "quest.millers_run_escort": "active"
+    },
+    "listings": {
+     "quest.millers_run_escort": "active",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "listed",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc"
+    },
+    "offers": {
+     "offer.registration": "accepted"
+    },
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "rejected": []
+  },
+  {
+   "id": "t5",
+   "resolutions": [
+    {
+     "seq": 1,
+     "status": "resolved"
+    },
+    {
+     "seq": 2,
+     "status": "authorized"
+    }
+   ],
+   "actions": [
+    "1. ACCEPTS — \"Herb Run — Marshmint\" at the Guild desk; the clerk logs it (the Guild pays 40 cp on completion).",
+    "2. GOES — to reedbeds east of the mill leat (report whether he arrives and where)."
+   ],
+   "after_player": {
+    "clock": "Day 1, 09:40",
+    "coin_cp": 30,
+    "xp": 0,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.guild_hall",
+    "scene_path": [
+     "Adventurers' Guild hall",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.guild_clerk",
+     "npc.mud_booted_adventurer"
+    ],
+    "quests": {
+     "quest.millers_run_escort": "active",
+     "quest.herb_run_marshmint": "active"
+    },
+    "listings": {
+     "quest.millers_run_escort": "active",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "active",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc"
+    },
+    "offers": {
+     "offer.registration": "accepted"
+    },
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "after_reply": {
+    "clock": "Day 1, 10:40",
+    "coin_cp": 30,
+    "xp": 0,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.eastern_mill_leat.reedbeds",
+    "scene_path": [
+     "reedbeds",
+     "eastern mill leat",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [],
+    "quests": {
+     "quest.millers_run_escort": "active",
+     "quest.herb_run_marshmint": "active"
+    },
+    "listings": {
+     "quest.millers_run_escort": "active",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "active",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc"
+    },
+    "offers": {
+     "offer.registration": "accepted"
+    },
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "rejected": []
+  },
+  {
+   "id": "t6",
+   "resolutions": [
+    {
+     "seq": 1,
+     "status": "authorized",
+     "cap": 560
+    }
+   ],
+   "actions": [
+    "1. GATHERS marshmint until the end of the day (at most 560 minutes; the story decides how long it takes and what it yields)."
+   ],
+   "after_player": {
+    "clock": "Day 1, 10:40",
+    "coin_cp": 30,
+    "xp": 0,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.eastern_mill_leat.reedbeds",
+    "scene_path": [
+     "reedbeds",
+     "eastern mill leat",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [],
+    "quests": {
+     "quest.millers_run_escort": "active",
+     "quest.herb_run_marshmint": "active"
+    },
+    "listings": {
+     "quest.millers_run_escort": "active",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "active",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc"
+    },
+    "offers": {
+     "offer.registration": "accepted"
+    },
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "after_reply": {
+    "clock": "Day 1, 15:40",
+    "coin_cp": 30,
+    "xp": 0,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.eastern_mill_leat.reedbeds",
+    "scene_path": [
+     "reedbeds",
+     "eastern mill leat",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [],
+    "quests": {
+     "quest.millers_run_escort": "active",
+     "quest.herb_run_marshmint": "active"
+    },
+    "listings": {
+     "quest.millers_run_escort": "active",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "active",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc",
+     "obj.t16.marshmint": "loc.redmarch.eastern_mill_leat.reedbeds"
+    },
+    "offers": {
+     "offer.registration": "accepted"
+    },
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "rejected": []
+  },
+  {
+   "id": "t7",
+   "resolutions": [
+    {
+     "seq": 1,
+     "status": "resolved"
+    },
+    {
+     "seq": 2,
+     "status": "authorized"
+    },
+    {
+     "seq": 3,
+     "status": "conditional",
+     "condition": "arrive_guild_hall"
+    }
+   ],
+   "actions": [
+    "1. TAKES — marshmint (1 basket) along.",
+    "2. GOES — to Adventurers' Guild hall (report whether he arrives and where).",
+    "3. TURNS IN, when he reaches the Guild hall — \"Herb Run — Marshmint\": the desk checks 1 basket of marshmint → accepted; the Guild pays 40 cp. If the reply does not reach the hall, nothing is turned in."
+   ],
+   "after_player": {
+    "clock": "Day 1, 15:40",
+    "coin_cp": 30,
+    "xp": 0,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.eastern_mill_leat.reedbeds",
+    "scene_path": [
+     "reedbeds",
+     "eastern mill leat",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [],
+    "quests": {
+     "quest.millers_run_escort": "active",
+     "quest.herb_run_marshmint": "active"
+    },
+    "listings": {
+     "quest.millers_run_escort": "active",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "active",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc",
+     "obj.t16.marshmint": "pc"
+    },
+    "offers": {
+     "offer.registration": "accepted"
+    },
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "after_reply": {
+    "clock": "Day 1, 17:15",
+    "coin_cp": 70,
+    "xp": 15,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.guild_hall",
+    "scene_path": [
+     "Adventurers' Guild hall",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.guild_clerk"
+    ],
+    "quests": {
+     "quest.millers_run_escort": "active",
+     "quest.herb_run_marshmint": "completed"
+    },
+    "listings": {
+     "quest.millers_run_escort": "active",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "completed",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc",
+     "obj.t16.marshmint": "consumed"
+    },
+    "offers": {
+     "offer.registration": "accepted"
+    },
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 1
+   },
+   "rejected": []
+  },
+  {
+   "id": "t8",
+   "resolutions": [
+    {
+     "seq": 1,
+     "status": "refused",
+     "reason": "already_completed"
+    },
+    {
+     "seq": 2,
+     "status": "authorized"
+    },
+    {
+     "seq": 3,
+     "status": "pending",
+     "reason": "no_price"
+    }
+   ],
+   "actions": [
+    "1. NOTHING TO DO — \"Herb Run — Marshmint\" is already turned in.",
+    "2. GOES — to an inn (report whether he arrives and where).",
+    "3. WANTS — a room for the night, a bath and laundry; no price is known.",
+    "OPEN DECISION — Alaric wants a room for the night, a bath and laundry; no price is known. Let the seller name the prices, then stop: he has not agreed to pay."
+   ],
+   "after_player": {
+    "clock": "Day 1, 17:15",
+    "coin_cp": 70,
+    "xp": 15,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.guild_hall",
+    "scene_path": [
+     "Adventurers' Guild hall",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.guild_clerk"
+    ],
+    "quests": {
+     "quest.millers_run_escort": "active",
+     "quest.herb_run_marshmint": "completed"
+    },
+    "listings": {
+     "quest.millers_run_escort": "active",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "completed",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc",
+     "obj.t16.marshmint": "consumed"
+    },
+    "offers": {
+     "offer.registration": "accepted"
+    },
+    "offers_open_lines": [],
+    "decisions": [
+     "purchase"
+    ],
+    "corrections": 0,
+    "novice_contracts_done": 1
+   },
+   "after_reply": {
+    "clock": "Day 1, 18:45",
+    "coin_cp": 70,
+    "xp": 15,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.lane_behind_the_coopers_yard.marsh_bell",
+    "scene_path": [
+     "Marsh Bell",
+     "lane behind the cooper's yard",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.innkeeper_of_the_marsh_bell"
+    ],
+    "quests": {
+     "quest.millers_run_escort": "active",
+     "quest.herb_run_marshmint": "completed"
+    },
+    "listings": {
+     "quest.millers_run_escort": "active",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "completed",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc",
+     "obj.t16.marshmint": "consumed"
+    },
+    "offers": {
+     "offer.registration": "accepted",
+     "offer.t20.2": "open"
+    },
+    "offers_open_lines": [
+     4,
+     2,
+     1,
+     2
+    ],
+    "decisions": [
+     "purchase"
+    ],
+    "corrections": 1,
+    "novice_contracts_done": 1
+   },
+   "rejected": []
+  }
+ ],
+ "A": [
+  {
+   "id": "t1",
+   "after_reply": {
+    "clock": "Day 1, 09:20",
+    "coin_cp": 50,
+    "xp": 0,
+    "member": null,
+    "scene_at": "loc.redmarch.guild_hall",
+    "scene_path": [
+     "Adventurers' Guild hall",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.guild_clerk"
+    ],
+    "quests": {},
+    "listings": {
+     "quest.millers_run_escort": "listed",
+     "quest.weasel_fenwick": "listed",
+     "quest.herb_run_marshmint": "listed",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {},
+    "offers": {},
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "rejected": []
+  },
+  {
+   "id": "t2",
+   "after_reply": {
+    "clock": "Day 1, 09:20",
+    "coin_cp": 50,
+    "xp": 0,
+    "member": null,
+    "scene_at": "loc.redmarch.guild_hall",
+    "scene_path": [
+     "Adventurers' Guild hall",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.guild_clerk"
+    ],
+    "quests": {},
+    "listings": {
+     "quest.millers_run_escort": "listed",
+     "quest.weasel_fenwick": "listed",
+     "quest.herb_run_marshmint": "listed",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {},
+    "offers": {
+     "offer.registration": "open"
+    },
+    "offers_open_lines": [],
+    "decisions": [
+     "registration"
+    ],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "rejected": []
+  },
+  {
+   "id": "t3",
+   "after_reply": {
+    "clock": "Day 1, 09:30",
+    "coin_cp": 30,
+    "xp": 0,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.guild_hall",
+    "scene_path": [
+     "Adventurers' Guild hall",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.guild_clerk",
+     "npc.mud_booted_adventurer"
+    ],
+    "quests": {},
+    "listings": {
+     "quest.millers_run_escort": "listed",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "listed",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc"
+    },
+    "offers": {
+     "offer.registration": "accepted"
+    },
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "rejected": []
+  },
+  {
+   "id": "t4",
+   "after_reply": {
+    "clock": "Day 1, 09:40",
+    "coin_cp": 30,
+    "xp": 0,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.guild_hall",
+    "scene_path": [
+     "Adventurers' Guild hall",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.guild_clerk",
+     "npc.mud_booted_adventurer"
+    ],
+    "quests": {
+     "quest.millers_run_escort": "active"
+    },
+    "listings": {
+     "quest.millers_run_escort": "active",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "listed",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc"
+    },
+    "offers": {
+     "offer.registration": "accepted"
+    },
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "rejected": []
+  },
+  {
+   "id": "t5",
+   "after_reply": {
+    "clock": "Day 1, 10:40",
+    "coin_cp": 30,
+    "xp": 0,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.eastern_mill_leat.reedbeds",
+    "scene_path": [
+     "reedbeds",
+     "eastern mill leat",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [],
+    "quests": {
+     "quest.millers_run_escort": "active",
+     "quest.herb_run_marshmint": "active"
+    },
+    "listings": {
+     "quest.millers_run_escort": "active",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "active",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc"
+    },
+    "offers": {
+     "offer.registration": "accepted"
+    },
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "rejected": []
+  },
+  {
+   "id": "t6",
+   "after_reply": {
+    "clock": "Day 1, 15:40",
+    "coin_cp": 30,
+    "xp": 0,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.eastern_mill_leat.reedbeds",
+    "scene_path": [
+     "reedbeds",
+     "eastern mill leat",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [],
+    "quests": {
+     "quest.millers_run_escort": "active",
+     "quest.herb_run_marshmint": "active"
+    },
+    "listings": {
+     "quest.millers_run_escort": "active",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "active",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc",
+     "obj.t16.marshmint": "loc.redmarch.eastern_mill_leat.reedbeds"
+    },
+    "offers": {
+     "offer.registration": "accepted"
+    },
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 0
+   },
+   "rejected": []
+  },
+  {
+   "id": "t7",
+   "after_reply": {
+    "clock": "Day 1, 17:15",
+    "coin_cp": 70,
+    "xp": 15,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.guild_hall",
+    "scene_path": [
+     "Adventurers' Guild hall",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.guild_clerk"
+    ],
+    "quests": {
+     "quest.millers_run_escort": "active",
+     "quest.herb_run_marshmint": "completed"
+    },
+    "listings": {
+     "quest.millers_run_escort": "active",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "completed",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc",
+     "obj.t16.marshmint": "consumed"
+    },
+    "offers": {
+     "offer.registration": "accepted"
+    },
+    "offers_open_lines": [],
+    "decisions": [],
+    "corrections": 0,
+    "novice_contracts_done": 1
+   },
+   "rejected": []
+  },
+  {
+   "id": "t8",
+   "after_reply": {
+    "clock": "Day 1, 18:45",
+    "coin_cp": 70,
+    "xp": 15,
+    "member": "Novice",
+    "scene_at": "loc.redmarch.lane_behind_the_coopers_yard.marsh_bell",
+    "scene_path": [
+     "Marsh Bell",
+     "lane behind the cooper's yard",
+     "Redmarch",
+     "Veyrhold"
+    ],
+    "present": [
+     "npc.innkeeper_of_the_marsh_bell"
+    ],
+    "quests": {
+     "quest.millers_run_escort": "active",
+     "quest.herb_run_marshmint": "completed"
+    },
+    "listings": {
+     "quest.millers_run_escort": "active",
+     "quest.weasel_fenwick": "taken_by_other",
+     "quest.herb_run_marshmint": "completed",
+     "quest.missing_dog": "listed",
+     "quest.fence_repair": "listed"
+    },
+    "objects": {
+     "obj.guild_plate": "pc",
+     "obj.t16.marshmint": "consumed"
+    },
+    "offers": {
+     "offer.registration": "accepted",
+     "offer.t20.2": "open"
+    },
+    "offers_open_lines": [
+     4,
+     2,
+     1,
+     2
+    ],
+    "decisions": [
+     "purchase"
+    ],
+    "corrections": 1,
+    "novice_contracts_done": 1
+   },
+   "rejected": []
+  }
+ ],
+ "end_state": {
+  "clock": "Day 1, 18:45",
+  "coin_cp": 70,
+  "xp": 15,
+  "member": "Novice",
+  "scene_at": "loc.redmarch.lane_behind_the_coopers_yard.marsh_bell",
+  "scene_path": [
+   "Marsh Bell",
+   "lane behind the cooper's yard",
+   "Redmarch",
+   "Veyrhold"
+  ],
+  "present": [
+   "npc.innkeeper_of_the_marsh_bell"
+  ],
+  "quests": {
+   "quest.millers_run_escort": "active",
+   "quest.herb_run_marshmint": "completed"
+  },
+  "listings": {
+   "quest.millers_run_escort": "active",
+   "quest.weasel_fenwick": "taken_by_other",
+   "quest.herb_run_marshmint": "completed",
+   "quest.missing_dog": "listed",
+   "quest.fence_repair": "listed"
+  },
+  "objects": {
+   "obj.guild_plate": "pc",
+   "obj.t16.marshmint": "consumed"
+  },
+  "offers": {
+   "offer.registration": "accepted",
+   "offer.t20.2": "open"
+  },
+  "offers_open_lines": [
+   4,
+   2,
+   1,
+   2
+  ],
+  "decisions": [
+   "purchase"
+  ],
+  "corrections": 1,
+  "novice_contracts_done": 1
+ },
+ "events_B": [
+  {
+   "t": "location.created",
+   "turn": 0,
+   "d": {
+    "id": "loc.redmarch.guild_hall",
+    "name": "Adventurers' Guild hall",
+    "parent": "loc.redmarch",
+    "by": "engine"
+   }
+  },
+  {
+   "t": "cmd.interpreted",
+   "turn": 5,
+   "d": {
+    "commands": 1
+   }
+  },
+  {
+   "t": "cmd.resolved",
+   "turn": 5,
+   "d": {
+    "seq": 1,
+    "type": "go",
+    "status": "authorized",
+    "reason": null
+   }
+  },
+  {
+   "t": "time.advanced",
+   "turn": 6,
+   "d": {
+    "minutes": 20
+   }
+  },
+  {
+   "t": "scene.arrived",
+   "turn": 6,
+   "d": {
+    "at": "loc.redmarch.guild_hall"
+   }
+  },
+  {
+   "t": "entity.created",
+   "turn": 6,
+   "d": {
+    "id": "npc.guild_clerk",
+    "present": true,
+    "at": "loc.redmarch.guild_hall"
+   }
+  },
+  {
+   "t": "scene.entered",
+   "turn": 6,
+   "d": {
+    "id": "npc.guild_clerk",
+    "at": "loc.redmarch.guild_hall"
+   }
+  },
+  {
+   "t": "knowledge.gained",
+   "turn": 6,
+   "d": {
+    "who": "npc.guild_clerk",
+    "s": "pc",
+    "p": "appearance",
+    "how": "witnessed"
+   }
+  },
+  {
+   "t": "memory.added",
+   "turn": 6,
+   "d": {
+    "who": "npc.guild_clerk",
+    "text": "first saw Alaric"
+   }
+  },
+  {
+   "t": "board.generated",
+   "turn": 6,
+   "d": {
+    "branch": "loc.redmarch",
+    "rank": "Novice",
+    "count": 5,
+    "rejected": 0
+   }
+  },
+  {
+   "t": "quest.created",
+   "turn": 6,
+   "d": {
+    "id": "quest.millers_run_escort",
+    "status": "listed",
+    "rank": "Novice",
+    "payout_cp": 80
+   }
+  },
+  {
+   "t": "quest.created",
+   "turn": 6,
+   "d": {
+    "id": "quest.weasel_fenwick",
+    "status": "listed",
+    "rank": "Novice",
+    "payout_cp": 150
+   }
+  },
+  {
+   "t": "quest.created",
+   "turn": 6,
+   "d": {
+    "id": "quest.herb_run_marshmint",
+    "status": "listed",
+    "rank": "Novice",
+    "payout_cp": 40
+   }
+  },
+  {
+   "t": "quest.created",
+   "turn": 6,
+   "d": {
+    "id": "quest.missing_dog",
+    "status": "listed",
+    "rank": "Novice",
+    "payout_cp": 20
+   }
+  },
+  {
+   "t": "quest.created",
+   "turn": 6,
+   "d": {
+    "id": "quest.fence_repair",
+    "status": "listed",
+    "rank": "Novice",
+    "payout_cp": 50
+   }
+  },
+  {
+   "t": "board.refreshed",
+   "turn": 6,
+   "d": {
+    "branch": "loc.redmarch",
+    "rank": "Novice",
+    "listings": [
+     "quest.millers_run_escort",
+     "quest.weasel_fenwick",
+     "quest.herb_run_marshmint",
+     "quest.missing_dog",
+     "quest.fence_repair"
+    ]
+   }
+  },
+  {
+   "t": "cmd.interpreted",
+   "turn": 7,
+   "d": {
+    "commands": 1
+   }
+  },
+  {
+   "t": "offer.created",
+   "turn": 7,
+   "d": {
+    "id": "offer.registration",
+    "canon": true,
+    "price_cp": 20
+   }
+  },
+  {
+   "t": "decision.opened",
+   "turn": 7,
+   "d": {
+    "id": "dec.registration",
+    "kind": "registration"
+   }
+  },
+  {
+   "t": "cmd.resolved",
+   "turn": 7,
+   "d": {
+    "seq": 1,
+    "type": "guild.register",
+    "status": "pending",
+    "reason": "fee"
+   }
+  },
+  {
+   "t": "fact.added",
+   "turn": 8,
+   "d": {
+    "s": "Adventurers' Guild",
+    "p": "rule"
+   }
+  },
+  {
+   "t": "fact.added",
+   "turn": 8,
+   "d": {
+    "s": "Adventurers' Guild",
+    "p": "rule"
+   }
+  },
+  {
+   "t": "cmd.interpreted",
+   "turn": 9,
+   "d": {
+    "commands": 2
+   }
+  },
+  {
+   "t": "transaction.completed",
+   "turn": 9,
+   "d": {
+    "offer": "offer.registration",
+    "lines": [
+     "l1"
+    ],
+    "cp": 20
+   }
+  },
+  {
+   "t": "coin.changed",
+   "turn": 9,
+   "d": {
+    "delta": -20,
+    "why": "Guild registration fee"
+   }
+  },
+  {
+   "t": "guild.registered",
+   "turn": 9,
+   "d": {
+    "rank": "Novice",
+    "branch": "loc.redmarch",
+    "power_rank": "F"
+   }
+  },
+  {
+   "t": "object.created",
+   "turn": 9,
+   "d": {
+    "id": "obj.guild_plate",
+    "holder": "pc"
+   }
+  },
+  {
+   "t": "knowledge.gained",
+   "turn": 9,
+   "d": {
+    "who": "npc.guild_clerk",
+    "s": "pc",
+    "p": "registered",
+    "o": "Novice",
+    "how": "witnessed",
+    "step": 1
+   }
+  },
+  {
+   "t": "offer.closed",
+   "turn": 9,
+   "d": {
+    "id": "offer.registration",
+    "status": "accepted"
+   }
+  },
+  {
+   "t": "decision.closed",
+   "turn": 9,
+   "d": {
+    "id": "dec.registration"
+   }
+  },
+  {
+   "t": "cmd.resolved",
+   "turn": 9,
+   "d": {
+    "seq": 1,
+    "type": "offer.accept",
+    "status": "resolved",
+    "reason": null
+   }
+  },
+  {
+   "t": "board.shown",
+   "turn": 9,
+   "d": {
+    "branch": "loc.redmarch",
+    "rank": "Novice",
+    "listings": [
+     "quest.millers_run_escort",
+     "quest.weasel_fenwick",
+     "quest.herb_run_marshmint",
+     "quest.missing_dog",
+     "quest.fence_repair"
+    ]
+   }
+  },
+  {
+   "t": "cmd.resolved",
+   "turn": 9,
+   "d": {
+    "seq": 2,
+    "type": "board.read",
+    "status": "resolved",
+    "reason": null
+   }
+  },
+  {
+   "t": "time.advanced",
+   "turn": 10,
+   "d": {
+    "minutes": 10
+   }
+  },
+  {
+   "t": "entity.created",
+   "turn": 10,
+   "d": {
+    "id": "npc.mud_booted_adventurer",
+    "present": true,
+    "at": "loc.redmarch.guild_hall"
+   }
+  },
+  {
+   "t": "scene.entered",
+   "turn": 10,
+   "d": {
+    "id": "npc.mud_booted_adventurer",
+    "at": "loc.redmarch.guild_hall"
+   }
+  },
+  {
+   "t": "knowledge.gained",
+   "turn": 10,
+   "d": {
+    "who": "npc.mud_booted_adventurer",
+    "s": "pc",
+    "p": "appearance",
+    "how": "witnessed"
+   }
+  },
+  {
+   "t": "memory.added",
+   "turn": 10,
+   "d": {
+    "who": "npc.mud_booted_adventurer",
+    "text": "first saw Alaric"
+   }
+  },
+  {
+   "t": "quest.status",
+   "turn": 10,
+   "d": {
+    "id": "quest.weasel_fenwick",
+    "from": "listed",
+    "to": "taken_by_other"
+   }
+  },
+  {
+   "t": "cmd.interpreted",
+   "turn": 11,
+   "d": {
+    "commands": 1
+   }
+  },
+  {
+   "t": "quest.status",
+   "turn": 11,
+   "d": {
+    "id": "quest.millers_run_escort",
+    "from": "listed",
+    "to": "active",
+    "at": "loc.redmarch.guild_hall",
+    "step": 1
+   }
+  },
+  {
+   "t": "knowledge.gained",
+   "turn": 11,
+   "d": {
+    "who": "npc.guild_clerk",
+    "s": "pc",
+    "p": "accepted",
+    "o": "quest.millers_run_escort",
+    "how": "witnessed",
+    "step": 1
+   }
+  },
+  {
+   "t": "knowledge.gained",
+   "turn": 11,
+   "d": {
+    "who": "npc.mud_booted_adventurer",
+    "s": "pc",
+    "p": "accepted",
+    "o": "quest.millers_run_escort",
+    "how": "witnessed",
+    "step": 1
+   }
+  },
+  {
+   "t": "cmd.resolved",
+   "turn": 11,
+   "d": {
+    "seq": 1,
+    "type": "quest.accept",
+    "status": "resolved",
+    "reason": null
+   }
+  },
+  {
+   "t": "time.advanced",
+   "turn": 12,
+   "d": {
+    "minutes": 10
+   }
+  },
+  {
+   "t": "quest.detailed",
+   "turn": 12,
+   "d": {
+    "id": "quest.millers_run_escort",
+    "schedule": "day 2, first light"
+   }
+  },
+  {
+   "t": "location.created",
+   "turn": 12,
+   "d": {
+    "id": "loc.redmarch.harrows_mill_yard",
+    "name": "Harrow's mill yard",
+    "parent": "loc.redmarch",
+    "by": "reply"
+   }
+  },
+  {
+   "t": "entity.created",
+   "turn": 12,
+   "d": {
+    "id": "npc.ossler",
+    "present": false,
+    "at": "loc.redmarch.harrows_mill_yard"
+   }
+  },
+  {
+   "t": "fact.added",
+   "turn": 12,
+   "d": {
+    "s": "south road",
+    "p": "danger"
+   }
+  },
+  {
+   "t": "cmd.interpreted",
+   "turn": 13,
+   "d": {
+    "commands": 2
+   }
+  },
+  {
+   "t": "quest.status",
+   "turn": 13,
+   "d": {
+    "id": "quest.herb_run_marshmint",
+    "from": "listed",
+    "to": "active",
+    "at": "loc.redmarch.guild_hall",
+    "step": 1
+   }
+  },
+  {
+   "t": "knowledge.gained",
+   "turn": 13,
+   "d": {
+    "who": "npc.guild_clerk",
+    "s": "pc",
+    "p": "accepted",
+    "o": "quest.herb_run_marshmint",
+    "how": "witnessed",
+    "step": 1
+   }
+  },
+  {
+   "t": "knowledge.gained",
+   "turn": 13,
+   "d": {
+    "who": "npc.mud_booted_adventurer",
+    "s": "pc",
+    "p": "accepted",
+    "o": "quest.herb_run_marshmint",
+    "how": "witnessed",
+    "step": 1
+   }
+  },
+  {
+   "t": "cmd.resolved",
+   "turn": 13,
+   "d": {
+    "seq": 1,
+    "type": "quest.accept",
+    "status": "resolved",
+    "reason": null
+   }
+  },
+  {
+   "t": "cmd.resolved",
+   "turn": 13,
+   "d": {
+    "seq": 2,
+    "type": "go",
+    "status": "authorized",
+    "reason": null
+   }
+  },
+  {
+   "t": "time.advanced",
+   "turn": 14,
+   "d": {
+    "minutes": 60
+   }
+  },
+  {
+   "t": "location.created",
+   "turn": 14,
+   "d": {
+    "id": "loc.redmarch.eastern_mill_leat",
+    "name": "eastern mill leat",
+    "parent": "loc.redmarch",
+    "by": "reply"
+   }
+  },
+  {
+   "t": "location.created",
+   "turn": 14,
+   "d": {
+    "id": "loc.redmarch.eastern_mill_leat.reedbeds",
+    "name": "reedbeds",
+    "parent": "loc.redmarch.eastern_mill_leat",
+    "by": "reply"
+   }
+  },
+  {
+   "t": "scene.arrived",
+   "turn": 14,
+   "d": {
+    "at": "loc.redmarch.eastern_mill_leat.reedbeds"
+   }
+  },
+  {
+   "t": "fact.added",
+   "turn": 14,
+   "d": {
+    "s": "reedbeds",
+    "p": "sign"
+   }
+  },
+  {
+   "t": "cmd.interpreted",
+   "turn": 15,
+   "d": {
+    "commands": 1
+   }
+  },
+  {
+   "t": "cmd.resolved",
+   "turn": 15,
+   "d": {
+    "seq": 1,
+    "type": "activity",
+    "status": "authorized",
+    "reason": null
+   }
+  },
+  {
+   "t": "time.advanced",
+   "turn": 16,
+   "d": {
+    "minutes": 300
+   }
+  },
+  {
+   "t": "object.created",
+   "turn": 16,
+   "d": {
+    "id": "obj.t16.marshmint",
+    "holder": {
+     "loc": "loc.redmarch.eastern_mill_leat.reedbeds"
+    }
+   }
+  },
+  {
+   "t": "fact.added",
+   "turn": 16,
+   "d": {
+    "s": "reedbeds",
+    "p": "state"
+   }
+  },
+  {
+   "t": "cmd.interpreted",
+   "turn": 17,
+   "d": {
+    "commands": 3
+   }
+  },
+  {
+   "t": "object.moved",
+   "turn": 17,
+   "d": {
+    "id": "obj.t16.marshmint",
+    "to": "pc"
+   }
+  },
+  {
+   "t": "cmd.resolved",
+   "turn": 17,
+   "d": {
+    "seq": 1,
+    "type": "take",
+    "status": "resolved",
+    "reason": null
+   }
+  },
+  {
+   "t": "cmd.resolved",
+   "turn": 17,
+   "d": {
+    "seq": 2,
+    "type": "go",
+    "status": "authorized",
+    "reason": null
+   }
+  },
+  {
+   "t": "cmd.resolved",
+   "turn": 17,
+   "d": {
+    "seq": 3,
+    "type": "quest.turn_in",
+    "status": "conditional",
+    "reason": null
+   }
+  },
+  {
+   "t": "time.advanced",
+   "turn": 18,
+   "d": {
+    "minutes": 95
+   }
+  },
+  {
+   "t": "scene.arrived",
+   "turn": 18,
+   "d": {
+    "at": "loc.redmarch.guild_hall"
+   }
+  },
+  {
+   "t": "proof.checked",
+   "turn": 18,
+   "d": {
+    "quest": "quest.herb_run_marshmint",
+    "ok": true,
+    "reason": null
+   }
+  },
+  {
+   "t": "object.consumed",
+   "turn": 18,
+   "d": {
+    "id": "obj.t16.marshmint",
+    "by": "guild"
+   }
+  },
+  {
+   "t": "coin.changed",
+   "turn": 18,
+   "d": {
+    "delta": 40,
+    "why": "Guild payout: Herb Run — Marshmint",
+    "by": "guild"
+   }
+  },
+  {
+   "t": "xp.gained",
+   "turn": 18,
+   "d": {
+    "xp": 15,
+    "why": "Quest XP: Herb Run — Marshmint"
+   }
+  },
+  {
+   "t": "quest.status",
+   "turn": 18,
+   "d": {
+    "id": "quest.herb_run_marshmint",
+    "from": "active",
+    "to": "completed",
+    "at": "loc.redmarch.guild_hall",
+    "step": 3
+   }
+  },
+  {
+   "t": "cmd.completed",
+   "turn": 18,
+   "d": {
+    "seq": 3,
+    "ok": true
+   }
+  },
+  {
+   "t": "scene.entered",
+   "turn": 18,
+   "d": {
+    "id": "npc.guild_clerk",
+    "at": "loc.redmarch.guild_hall"
+   }
+  },
+  {
+   "t": "cmd.interpreted",
+   "turn": 19,
+   "d": {
+    "commands": 3
+   }
+  },
+  {
+   "t": "cmd.resolved",
+   "turn": 19,
+   "d": {
+    "seq": 1,
+    "type": "quest.turn_in",
+    "status": "refused",
+    "reason": "already_completed"
+   }
+  },
+  {
+   "t": "cmd.resolved",
+   "turn": 19,
+   "d": {
+    "seq": 2,
+    "type": "go",
+    "status": "authorized",
+    "reason": null
+   }
+  },
+  {
+   "t": "decision.opened",
+   "turn": 19,
+   "d": {
+    "id": "dec.t19.3",
+    "kind": "purchase",
+    "what": "a room for the night, a bath and laundry"
+   }
+  },
+  {
+   "t": "cmd.resolved",
+   "turn": 19,
+   "d": {
+    "seq": 3,
+    "type": "buy",
+    "status": "pending",
+    "reason": "no_price"
+   }
+  },
+  {
+   "t": "entity.created",
+   "turn": 20,
+   "d": {
+    "id": "npc.guild_desk_clerk",
+    "present": true,
+    "at": "loc.redmarch.guild_hall"
+   }
+  },
+  {
+   "t": "scene.entered",
+   "turn": 20,
+   "d": {
+    "id": "npc.guild_desk_clerk",
+    "at": "loc.redmarch.guild_hall"
+   }
+  },
+  {
+   "t": "knowledge.gained",
+   "turn": 20,
+   "d": {
+    "who": "npc.guild_desk_clerk",
+    "s": "pc",
+    "p": "appearance",
+    "how": "witnessed"
+   }
+  },
+  {
+   "t": "memory.added",
+   "turn": 20,
+   "d": {
+    "who": "npc.guild_desk_clerk",
+    "text": "first saw Alaric"
+   }
+  },
+  {
+   "t": "time.advanced",
+   "turn": 20,
+   "d": {
+    "minutes": 90
+   }
+  },
+  {
+   "t": "location.created",
+   "turn": 20,
+   "d": {
+    "id": "loc.redmarch.lane_behind_the_coopers_yard",
+    "name": "lane behind the cooper's yard",
+    "parent": "loc.redmarch",
+    "by": "reply"
+   }
+  },
+  {
+   "t": "location.created",
+   "turn": 20,
+   "d": {
+    "id": "loc.redmarch.lane_behind_the_coopers_yard.marsh_bell",
+    "name": "Marsh Bell",
+    "parent": "loc.redmarch.lane_behind_the_coopers_yard",
+    "by": "reply"
+   }
+  },
+  {
+   "t": "scene.arrived",
+   "turn": 20,
+   "d": {
+    "at": "loc.redmarch.lane_behind_the_coopers_yard.marsh_bell"
+   }
+  },
+  {
+   "t": "entity.created",
+   "turn": 20,
+   "d": {
+    "id": "npc.innkeeper_of_the_marsh_bell",
+    "present": true,
+    "at": "loc.redmarch.lane_behind_the_coopers_yard.marsh_bell"
+   }
+  },
+  {
+   "t": "scene.entered",
+   "turn": 20,
+   "d": {
+    "id": "npc.innkeeper_of_the_marsh_bell",
+    "at": "loc.redmarch.lane_behind_the_coopers_yard.marsh_bell"
+   }
+  },
+  {
+   "t": "knowledge.gained",
+   "turn": 20,
+   "d": {
+    "who": "npc.innkeeper_of_the_marsh_bell",
+    "s": "pc",
+    "p": "appearance",
+    "how": "witnessed"
+   }
+  },
+  {
+   "t": "memory.added",
+   "turn": 20,
+   "d": {
+    "who": "npc.innkeeper_of_the_marsh_bell",
+    "text": "first saw Alaric"
+   }
+  },
+  {
+   "t": "offer.created",
+   "turn": 20,
+   "d": {
+    "id": "offer.t20.2",
+    "seller": "npc.innkeeper_of_the_marsh_bell",
+    "lines": 4
+   }
+  },
+  {
+   "t": "overreach.noted",
+   "turn": 20,
+   "d": {
+    "kind": "purchase",
+    "what": "the reply has Alaric use the room and the bath although he had not agreed to the prices"
+   }
+  }
+ ]
+}

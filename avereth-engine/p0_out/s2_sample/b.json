@@ -1,0 +1,3158 @@
+{
+ "meta": {
+  "tool": "s2_deltas",
+  "version": 1,
+  "started": "2026-09-27T20:32:41.505Z",
+  "finished": "2026-09-27T21:03:29.143Z",
+  "node": "v24.19.0",
+  "provider": {
+   "backend": "SillyTavern",
+   "source": "custom",
+   "model": "zai-org/GLM-5.3-Flash",
+   "profile": null,
+   "include_body_keys": [
+    "clear_thinking",
+    "reasoning_effort"
+   ],
+   "reasoning_effort": "low"
+  },
+  "mode": "plain",
+  "reasoning": null,
+  "mode_source": "Kommandozeile",
+  "turns": [
+   "v11_01",
+   "v11_02",
+   "v11_03",
+   "v11_04",
+   "v11_05",
+   "v11_06",
+   "v11_07",
+   "v11_08",
+   "v11_09",
+   "v11_10",
+   "v11_11",
+   "v12_01",
+   "v12_02",
+   "v12_03",
+   "v12_04",
+   "v12_05",
+   "v12_06",
+   "v12_07",
+   "v12_08"
+  ],
+  "variant": "b"
+ },
+ "gen": [
+  {
+   "id": "v11_01",
+   "ok": true,
+   "error": null,
+   "ms": 52007,
+   "usage": {
+    "prompt_tokens": 6984,
+    "completion_tokens": 754,
+    "total_tokens": 7738,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 2113,
+   "block_chars": 758,
+   "block_tokens_est": 190,
+   "block": {
+    "present": true,
+    "valid": false,
+    "complete": true,
+    "errors": [
+     "$.expected.1.at: matches none of anyOf",
+     "$.deltas[1]: matches none of anyOf"
+    ],
+    "missing": []
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Adventurers' Guild Hall, Alderwatch",
+        "kind": "guild hall",
+        "parent": {
+         "new": {
+          "name": "Alderwatch",
+          "kind": "city",
+          "parent": null
+         }
+        }
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 30
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Adventurers' Guild Hall, Alderwatch",
+        "kind": "guild hall",
+        "parent": {
+         "new": {
+          "name": "Alderwatch",
+          "kind": "city",
+          "parent": null
+         }
+        }
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "guild_clerk_a",
+      "name": null,
+      "role": "Guild counter clerk",
+      "desc": [
+       "middle-aged woman",
+       "ledger and quill",
+       "practical manner"
+      ],
+      "present": true,
+      "at": null
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "dozing_hunter",
+      "name": null,
+      "role": "dozing old hunter",
+      "desc": [
+       "old man",
+       "hunting bow propped by his chair"
+      ],
+      "present": true,
+      "at": null
+     }
+    ]
+   },
+   "prose": "The road takes him. It is the only thing to do with an unfamiliar morning: follow the ruts toward the walls.\n\nAlderwatch grows as he walks. Cart traffic thickens near the gate—a man leading two shaggy ponies loaded with turnips, a woman walking beside a handcart of bundled firewood, both of them passing him without a second look. The gate itself is old stone, darkened at the base by decades of rain, and two guards stand under the arch in quilted jerkins, talking quietly between themselves. One glances at the sword on Alaric's hip, then back to his conversation. Armed travelers are not worth comment here.\n\nInside, the noise of the city closes over him like water: hammering from somewhere down a side street, a vendor calling prices in bread-seller's rhythm, gulls somewhere overhead despite the distance to any sea. The streets are cobbled near the gate, packed dirt farther in, and the buildings lean toward each other across the lanes, upper floors jutting out over timber-framed shopfronts.\n\nHe asks directions once—a woman stacking crates outside a chandler's—and she jerks her chin up the hill without stopping her work. \"Guild? End of Tanner's Row, the big stone one with the antlers over the door. Can't miss it.\"\n\nShe is right. The Guild hall is two stories of grey stone, older than the shops around it, with a wide set of steps and heavy oak doors standing open to the morning. A wooden board hangs beside the entrance, papered with notices in several hands.\n\nInside, the air smells of candle wax, old wood, and faintly of leather and rain. The hall runs deep—a long counter along the left wall, a board of contracts pinned with slats on the far wall, a handful of tables where a few early risers sit over bowls of porridge and low conversation. A woman behind the counter is tallying something in a ledger, quick scratching the only steady sound. Near the hearth an old man dozes in a chair with a hunting bow propped beside him.\n\nNobody looks up when the door swings shut. The woman behind the counter finishes her line of figures before lifting her head.\n\n\"Morning. Registration or business?\"",
+   "recovery_reason": "invalid",
+   "recovery": {
+    "ok": true,
+    "valid_final": false,
+    "complete": false,
+    "ms": 14769,
+    "tokens": {
+     "prompt": 3522,
+     "completion": 532,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": null,
+    "error": null
+   }
+  },
+  {
+   "id": "v11_02",
+   "ok": true,
+   "error": null,
+   "ms": 23504,
+   "usage": {
+    "prompt_tokens": 7717,
+    "completion_tokens": 450,
+    "total_tokens": 8167,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 1232,
+   "block_chars": 483,
+   "block_tokens_est": 121,
+   "block": {
+    "present": true,
+    "valid": true,
+    "complete": true,
+    "errors": [],
+    "missing": []
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 10
+     },
+     {
+      "seq": 2,
+      "type": "person.new",
+      "ref": "hessel",
+      "name": "Hessel",
+      "role": "Guild registration clerk",
+      "desc": [
+       "grey-haired",
+       "ink-stained fingers",
+       "flat practised voice"
+      ],
+      "present": true,
+      "at": null
+     },
+     {
+      "seq": 3,
+      "type": "offer",
+      "seller": "hessel",
+      "lines": [
+       {
+        "what": "Guild registration",
+        "kind": "service",
+        "service": null,
+        "qty": 1,
+        "price_cp": 20
+       }
+      ]
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "hessel",
+      "p": "knows",
+      "o": "Alaric wants to register with the Guild"
+     }
+    ]
+   },
+   "prose": "*The young woman with the Quest tags looks up first, then passes him down the counter with a nod toward the grey-haired man. \"New registrations are Hessel.\"*\n\n*Hessel closes the register he was stamping and turns it sideways. Up close he has ink on the first two fingers of his right hand and a voice worn flat by repetition.*\n\n\"Registration. Right.\" *He pulls a fresh sheet toward himself and dips a pen.* \"Name?\"\n\n*He writes as he talks, not waiting on ceremony.* \"Guild takes anyone F-rank and able-bodied. Rules are simple: contracts carry a Quest Rank, you take your own Rank and below, you don't poach another member's tag, and payouts come when proof comes back over this counter. Fake proof gets you barred in every branch from here to the coast.\"\n\n*He sets the pen down and taps the counter once.*\n\n\"Fee's two silver. One-time. That gets you a Guild plate with your Rank on it, and you're on the books here at Alderwatch. You can take work at any branch, but this one's where your record starts.\"\n\n*Behind him, the hunters at the map table shove back their benches and head for the door, one clapping the other on the shoulder about a drain northwest of town.*\n\n\"So. Two silver and your name, and we'll see about the rest.\"",
+   "recovery_reason": null
+  },
+  {
+   "id": "v11_03",
+   "ok": true,
+   "error": null,
+   "ms": 38801,
+   "usage": {
+    "prompt_tokens": 7946,
+    "completion_tokens": 748,
+    "total_tokens": 8694,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 2081,
+   "block_chars": 595,
+   "block_tokens_est": 149,
+   "block": {
+    "present": true,
+    "valid": false,
+    "complete": true,
+    "errors": [
+     "$.deltas[1]: matches none of anyOf",
+     "$.deltas[3]: matches none of anyOf",
+     "$.deltas[4]: matches none of anyOf"
+    ],
+    "missing": []
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 12
+     },
+     {
+      "seq": 2,
+      "type": "learn",
+      "who": "reg_clerk",
+      "s": "Alaric Red",
+      "p": "name",
+      "o": "Alaric Red, age 18, literate",
+      "how": "stated during registration"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Alaric Red",
+      "p": "guild_rank",
+      "o": "Novice, Power Rank F, registered at Alderwatch branch"
+     },
+     {
+      "seq": 4,
+      "type": "object.new",
+      "name": "Iron Novice Medallion",
+      "kind": "medallion",
+      "qty": 1,
+      "unit": "cord-threaded iron disc",
+      "holder": "pc"
+     },
+     {
+      "seq": 5,
+      "type": "memory",
+      "text": "Registered a fresh Novice named Alaric Red; the stone read F plain and quick",
+      "who": "reg_clerk",
+      "imp": 4
+     }
+    ]
+   },
+   "prose": "*The clerk counts out the two silver without hurry—one, two, into the till—and writes as he repeats it.*\n\n\"Alaric Red. Eighteen. Letters, yes.\" *The nib scratches through three lines, quick and even.* \"Rolls won't care about the rest. Rank's what speaks.\"\n\n*The pin takes the pad of Alaric's finger with a sting smaller than a nettle. One dark drop falls on the sheet and the paper drinks it, the blot spreading faintly outward rather than drying. The clerk blots the page with a square of felt and turns the register to face the wall.*\n\n\"Stone's here.\"\n\n*A slab of grey crystal sits in a wooden cradle at the counter's end, about the size of a loaf, worn smooth where hundreds of hands have rested. The clerk nods at it. Alaric's palm touches the surface—cool, then warming under his skin like a stone left in the sun—and pale light gathers beneath his fingers, circulating in slow bands. Somewhere inside the crystal, a low tone sounds, felt more than heard.*\n\n\"F.\" *The clerk reads it off the glow the way another man reads a ledger.* \"Iron, same as every fresh hand. Nothing to be ashamed of—everyone starts there, half of them die there, and the other half stop being iron.\" *He sets a small iron medallion on the counter: a thumb-sized disc stamped with the crossed sword and arrow, threaded on a cord.* \"Wear it or pocket it, but have it on you at any branch. It's your proof and your payout token. Lose it and you'll pay for a new one and wait a week.\"\n\n*He closes the register, done with ceremony.*\n\n\"That's you in the rolls, Alaric Red, Novice of the Adventurers' Guild, Alderwatch branch.\" *He tips his chin toward the notice board across the hall, thick with posted sheets.* \"Quests are posted there. Irons take what irons can survive—rat culls in the granaries, herb gathering, delivery work. Pay's posted on the sheet. Take one to that counter there—\" *a nod at the young woman with the tags* \"—she logs it under your name. Bring proof back, get paid.\" *He picks up his stamp and turns to the next page in the register.* \"Anything else, ask. Otherwise, that counter.\"",
+   "recovery_reason": "invalid",
+   "recovery": {
+    "ok": true,
+    "valid_final": true,
+    "complete": true,
+    "ms": 68609,
+    "tokens": {
+     "prompt": 3774,
+     "completion": 711,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": {
+     "expected": {},
+     "deltas": [
+      {
+       "seq": 1,
+       "type": "time",
+       "minutes": 15
+      },
+      {
+       "seq": 2,
+       "type": "fact",
+       "s": "npc.young_clerk",
+       "p": "role",
+       "o": "logs quest takings under adventurers' names at her counter and pays out on proof"
+      }
+     ]
+    },
+    "error": null
+   }
+  },
+  {
+   "id": "v11_04",
+   "ok": true,
+   "error": null,
+   "ms": 30929,
+   "usage": {
+    "prompt_tokens": 8675,
+    "completion_tokens": 416,
+    "total_tokens": 9091,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 1622,
+   "block_chars": 0,
+   "block_tokens_est": 0,
+   "block": {
+    "present": false,
+    "valid": false,
+    "complete": false,
+    "errors": [
+     "no <avereth> block"
+    ],
+    "missing": []
+   },
+   "value": null,
+   "prose": "*The Novice board hangs at eye level, a broad cork rectangle framed in oak, and its sheets are pinned close enough to overlap. A few are smudged with old thumbprints; two corners curl where the paper has dried out. He reads.*\n\n**Wolf Problem — Millbrook Hamlet.** *Farmers losing sheep at the treeline. Two, maybe three wolves, inexperienced ones by the sign. 80 cp. Handwritten addition:* \"Bring proof: ears or head. Ask for Hedra at the mill.\"\n\n**Herb Run — damp hollows south of the river.** *Gather frostwort, a moss that grows on north-facing stone.* *40 cp.* *A tidy clerk's hand. No danger noted.*\n\n**Cart Guard — Alderwatch to Ferry Crossing.** *Two days' work walking beside a merchant's cart. 60 cp.* *Someone has added in pencil:* \"boring but steady.\"\n\n**Rats in the Grain Cellars.** *A cellar under a warehouse near the river. Rats grown bold and large. 30 cp.* *The paper is stained with something brown and old.*\n\n**Lost Dog (Pip).** *Brown-and-white dog, answers to Pip. Last seen at the south market. 10 cp. A child's drawing of the dog is pinned beneath the sheet—stick legs, a huge smiling mouth, the name pip in careful, uneven letters.*\n\n*A half-elf with a shaved head and a bow slung across his back comes and stands at the board too, reading over the same sheets. He plucks the Herb Run tag off its hook, glances at it, and hangs it back.*\n\n\"Take the herb run if you're new,\" *he says, unprompted, to the board more than to Alaric.* \"Frostwort's easy coin if you don't mind wet boots. Wolves'll wait till you've had a fight or two.\"\n\n*He wanders off toward the counter without waiting for an answer.*",
+   "recovery_reason": "missing",
+   "recovery": {
+    "ok": true,
+    "valid_final": false,
+    "complete": false,
+    "ms": 22107,
+    "tokens": {
+     "prompt": 3774,
+     "completion": 663,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": null,
+    "error": null
+   }
+  },
+  {
+   "id": "v11_05",
+   "ok": true,
+   "error": null,
+   "ms": 31218,
+   "usage": {
+    "prompt_tokens": 8439,
+    "completion_tokens": 599,
+    "total_tokens": 9038,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 1623,
+   "block_chars": 555,
+   "block_tokens_est": 139,
+   "block": {
+    "present": true,
+    "valid": false,
+    "complete": true,
+    "errors": [
+     "$.expected.2.at: matches none of anyOf",
+     "$.deltas[1]: matches none of anyOf"
+    ],
+    "missing": []
+   },
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Millbrook Hamlet",
+        "kind": "hamlet",
+        "parent": null
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 205
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Millbrook Hamlet",
+        "kind": "hamlet",
+        "parent": null
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "bren",
+      "name": "Bren",
+      "role": "Millbrook shepherd",
+      "desc": [
+       "grey-bearded",
+       "apron",
+       "mending fence"
+      ],
+      "present": true,
+      "at": null
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Millbrook Hamlet",
+      "p": "condition",
+      "o": "wolf pack has made four sheep kills this week, last one in Old Serra's yard"
+     }
+    ]
+   },
+   "prose": "*The clerk takes the wooden tag, matches it to the sheet, and writes Alaric's new name onto the Quest ledger with a scratch of the nib.*\n\n\"Millbrook's a half-day east on the river road. Hamlet will guide you to the kill site—knock anywhere, they'll know why you've come.\" *He hangs the tag on a nail behind the counter.* \"Proof on the counter when you're back. Good hunting.\"\n\n*The road east runs out of Alderwatch between fields gone stubbly with the season, cart ruts baked hard by dry weeks. Traffic thins after the first mile: a tinker's cart, a woman driving geese, then nothing but the creak of insects and heat rising off the stones. By midday the river shows itself through the trees, brown and slow, and where a tributary forks in there sits the hamlet—a dozen buildings of timber and thatch, a watermill clacking at the fork, sheep pens on the near slope.*\n\n*The pens are the first wrong thing. Two of them stand empty, gates open, and the flock that remains huddles tight against the barn wall instead of grazing. A dog lies flat under a cart, chin on its paws, watching the road.*\n\n*A grey-bearded man is mending fence rail near the nearest pen, hammer going in tired, even strokes. He hears boots on the road and stops, hammer held, looking Alaric over—the sword, the armor, the iron medallion.*\n\n\"Guild, then.\" *He sets the hammer down on the rail.* \"Took you long enough. Four kills this week, and last night they got into Old Serra's yard itself.\" *He wipes his hands on his apron, leaving grey smears.* \"I'm Bren. I found the last kill—I'll walk you out to it, if you've come to work and not just to look.\"",
+   "recovery_reason": "invalid",
+   "recovery": {
+    "ok": true,
+    "valid_final": false,
+    "complete": false,
+    "ms": 24241,
+    "tokens": {
+     "prompt": 3939,
+     "completion": 1211,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": null,
+    "error": null
+   }
+  },
+  {
+   "id": "v11_06",
+   "ok": true,
+   "error": null,
+   "ms": 49741,
+   "usage": {
+    "prompt_tokens": 8276,
+    "completion_tokens": 852,
+    "total_tokens": 9128,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 1609,
+   "block_chars": 855,
+   "block_tokens_est": 214,
+   "block": {
+    "present": true,
+    "valid": false,
+    "complete": true,
+    "errors": [
+     "$.expected.1.at: matches none of anyOf",
+     "$.deltas[1]: matches none of anyOf",
+     "$.deltas[6]: matches none of anyOf"
+    ],
+    "missing": []
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Wolf Kill Hollow",
+        "kind": "site",
+        "parent": "loc.millbrook_hamlet"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 30
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Wolf Kill Hollow",
+        "kind": "site",
+        "parent": "loc.millbrook_hamlet"
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "leave",
+      "who": "tomas"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "wolf pack at Millbrook",
+      "p": "size",
+      "o": "three wolves, one large"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "wolf pack at Millbrook",
+      "p": "trail",
+      "o": "runs north uphill from the kill hollow into thick woods, route used for days"
+     },
+     {
+      "seq": 6,
+      "type": "check",
+      "what": "reading wolf tracks and trail at the kill site",
+      "stat": "PER",
+      "actor": 5,
+      "opposition": 5,
+      "success": true
+     },
+     {
+      "seq": 7,
+      "type": "quest.progress",
+      "quest": "quest.wolf_problem",
+      "objective": "track the wolf pack",
+      "status": "trail found leading north into the eastern woods"
+     }
+    ]
+   },
+   "prose": "*Tomas leads him up the sheep trail at a trudge, one hand on a walking staff, saying little until the tree line.*\n\n\"Wolves went over the rise here. Dog chased 'em off the first night, that's why we only lost the one. Since then he won't go up past the fence at all.\"\n\n*The kill site sits in a cleared hollow where the alders thin. Grass flattened in a wide oval, wool pulled and scattered, the ewe's carcass opened at the flank and haunch—fed on, not just killed. Ravens lift off the trees and circle, complaining.*\n\n*Tomas stops at the edge.* \"I'll wait here. Don't care for what's up there myself.\"\n\n*The sign is plain enough. Tracks in the soft ground at the hollow's rim—four-toed, claw marks showing, bigger than a dog's stride and laid in a businesslike line, none of the wandering a dog does. Three different animals by the size of the prints, one noticeably heavier than the others, its prints sinking deeper. Drag marks and scuffed earth where the second sheep went somewhere on its own feet, alive. Blood in a thin trail heading north along the slope, into thicker wood.*\n\n*A check of the ground where the trail enters the trees turns up something else: a scat pile, days old by the dryness, with hair and a sliver of pale bone in it. They've been using this route a while. This isn't a first pass through.*\n\n*The trail runs north, uphill, under a canopy gone dark with the coming rain. From somewhere up that slope, faint through the trees, a bird goes silent mid-song.*\n\n*Tomas calls softly from below, not moving from his spot.* \"Weather's turning. Whatever you mean to do, the light won't last.\"",
+   "recovery_reason": "invalid",
+   "recovery": {
+    "ok": true,
+    "valid_final": false,
+    "complete": false,
+    "ms": 58452,
+    "tokens": {
+     "prompt": 3712,
+     "completion": 1867,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": null,
+    "error": null
+   }
+  },
+  {
+   "id": "v11_07",
+   "ok": true,
+   "error": null,
+   "ms": 33536,
+   "usage": {
+    "prompt_tokens": 8295,
+    "completion_tokens": 617,
+    "total_tokens": 8912,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 1652,
+   "block_chars": 590,
+   "block_tokens_est": 148,
+   "block": {
+    "present": true,
+    "valid": false,
+    "complete": true,
+    "errors": [
+     "$.deltas[4]: matches none of anyOf"
+    ],
+    "missing": []
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "minutes": 130,
+      "done": true
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 130
+     },
+     {
+      "seq": 2,
+      "type": "check",
+      "what": "tracking the wolf pack to its den",
+      "stat": "PER",
+      "actor": 10,
+      "opposition": 10,
+      "success": true
+     },
+     {
+      "seq": 3,
+      "type": "creature.new",
+      "ref": "wolf_pack",
+      "species": "wolf",
+      "desc": [
+       "small pack, at least two, one large leader with a slightly rolled left forepaw print"
+      ],
+      "count": 2,
+      "present": true
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "wolf pack dens in a hollow under a windfall spruce in the pine woods above Millbrook",
+      "p": "location",
+      "o": "den"
+     },
+     {
+      "seq": 5,
+      "type": "hostile",
+      "by": "wolf_pack"
+     }
+    ]
+   },
+   "prose": "*Tomas doesn't argue. He gives one nod, taps the stick twice against his palm, and heads back down the trail. His footsteps fade into the rain, and then it's just Alaric, the wool-snagged bracken, and the dark pines ahead.*\n\n*The trail holds. Drag marks, wool tufts, the deep prints—the bigger animal favors its left forepaw slightly, the print a touch rolled on that side. Every quarter hour the rain works harder at the sign, softening edges, filling prints with water, and Alaric reads faster where he has to. The tracks bend along a fern-choked gully, climb a shelf of rock, and somewhere past the second hour the wool stops appearing and the prints alone carry on.*\n\n*The pines close overhead, dry and dim under the canopy, rain drumming on needles far above. The tracks lead toward a hollow where the hillside folds in—a dark throat of rock and root, half-shielded by a windfall spruce. The smell reaches him before the sight: musk, old blood, and the sourness of a used den. Bone splinters litter the approach, chewed pale. Two fresh-bedded patches of flattened needles sit just outside the hollow's mouth, still holding shape—wolves at rest, close, maybe inside the hollow itself, maybe deeper.*\n\n*Then the wind shifts.*\n\n*From somewhere in the gloom under the windfall comes a low sound, barely more than a breath—a growl with no end to it. A shape resolves in the shadow: grey flanks, ears forward, head low. Behind it, in the dark of the hollow, a second pair of eyes catches what little light there is.*\n\n*The big one has come out to stand between Alaric and the den. It doesn't charge. It holds, muscles bunched, the growl steady as rain.*",
+   "recovery_reason": "invalid",
+   "recovery": {
+    "ok": true,
+    "valid_final": false,
+    "complete": false,
+    "ms": 55993,
+    "tokens": {
+     "prompt": 3476,
+     "completion": 952,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": null,
+    "error": null
+   }
+  },
+  {
+   "id": "v11_08",
+   "ok": true,
+   "error": null,
+   "ms": 15452,
+   "usage": {
+    "prompt_tokens": 7995,
+    "completion_tokens": 277,
+    "total_tokens": 8272,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 640,
+   "block_chars": 131,
+   "block_tokens_est": 33,
+   "block": {
+    "present": true,
+    "valid": false,
+    "complete": true,
+    "errors": [
+     "$.deltas[0]: matches none of anyOf",
+     "$.deltas[1]: matches none of anyOf"
+    ],
+    "missing": []
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "hostile",
+      "by": "wolf pack leader bitch"
+     },
+     {
+      "seq": 2,
+      "type": "hostile",
+      "by": "wolf yearling"
+     }
+    ]
+   },
+   "prose": "*Steel rasps out of the scabbard and the rain drums louder on the exposed blade. His boots break a pine branch on the slope, and the sound carries.*\n\n*The bitch's head snaps around. No crouching, no hackle-flattened slink—she comes up the ravine side at a trot, then a run, straight toward him, and the yearling scrambles awake behind her and follows, snarling. She doesn't break stride. Two hundred pounds of wet fur and muscle closing the distance through the pines, teeth bared, the nick across her muzzle twisting as her lips peel back. The yearling swings wide, flanking to his left through the bracken.*\n\n*She's on him in heartbeats.*",
+   "recovery_reason": "invalid",
+   "recovery": {
+    "ok": true,
+    "valid_final": false,
+    "complete": false,
+    "ms": 5357,
+    "tokens": {
+     "prompt": 2819,
+     "completion": 220,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": null,
+    "error": null
+   }
+  },
+  {
+   "id": "v11_09",
+   "ok": true,
+   "error": null,
+   "ms": 55072,
+   "usage": {
+    "prompt_tokens": 7812,
+    "completion_tokens": 449,
+    "total_tokens": 8261,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 1129,
+   "block_chars": 453,
+   "block_tokens_est": 114,
+   "block": {
+    "present": true,
+    "valid": false,
+    "complete": true,
+    "errors": [
+     "$.expected.2.at: matches none of anyOf",
+     "$.deltas[1]: matches none of anyOf",
+     "$.deltas[2]: matches none of anyOf"
+    ],
+    "missing": []
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "taken": true
+     },
+     "2": {
+      "arrived": true,
+      "at": "loc.millbrook_hamlet"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 55
+     },
+     {
+      "seq": 2,
+      "type": "object.new",
+      "name": "wolf ears, wrapped in cloth",
+      "kind": "proof of kill",
+      "qty": 2,
+      "unit": "pair",
+      "holder": "pc",
+      "for_quest": true
+     },
+     {
+      "seq": 3,
+      "type": "arrive",
+      "at": "loc.millbrook_hamlet"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Millbrook Hamlet",
+      "p": "sees",
+      "o": "a bloodied armed adventurer limping in from the eastern woods"
+     }
+    ]
+   },
+   "prose": "*The knife work is ugly but simple. He takes an ear from each—the yearling's comes off clean, the bitch's is stiff with dried blood and takes two sawing strokes—and wraps them in a strip of cloth cut from his own ruined trouser leg. The rest he leaves for the crows and the rain. Proof is proof; nobody at the hamlet wants a wolf head on a rope in the afternoon heat.*\n\n*The walk back is slower than the walk out. His thigh stiffens with every downhill step, and by the time the pines thin into the sheep pasture his trouser leg is stuck to the wound and his forearm has soaked through the rag he tied around it. The rain eases to a drizzle somewhere behind the ridge.*\n\n*Millbrook comes up out of the grey: a dozen stone cottages, a mill wheel turning slow and brown, sheep huddled under a drystone wall. A woman stacking firewood under an eave straightens and stares at him—the blood, the sword, the limping walk—then calls something toward a neighboring door. By the time Alaric reaches the mill bridge, a boy is running ahead of him up the lane, shouting the way boys do when a stranger walks out of the woods wearing blood.*",
+   "recovery_reason": "invalid",
+   "recovery": {
+    "ok": true,
+    "valid_final": false,
+    "complete": false,
+    "ms": 17142,
+    "tokens": {
+     "prompt": 3496,
+     "completion": 1014,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": null,
+    "error": null
+   }
+  },
+  {
+   "id": "v11_10",
+   "ok": true,
+   "error": null,
+   "ms": 33107,
+   "usage": {
+    "prompt_tokens": 7890,
+    "completion_tokens": 555,
+    "total_tokens": 8445,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 1305,
+   "block_chars": 0,
+   "block_tokens_est": 0,
+   "block": {
+    "present": false,
+    "valid": false,
+    "complete": false,
+    "errors": [
+     "no <avereth> block"
+    ],
+    "missing": []
+   },
+   "value": null,
+   "prose": "*The heads come down on the wet cobbles with two dull thuds. A loose tongue lolls; rain pools in an open eye. The shepherd doesn't step back, but his jaw works once, like a man chewing on the fact that it's really her.*\n\n\"Black-eared devil took three lambs off Hedley's field this month alone.\" He crouches, turns the bigger head half over with one finger, and looks at the teeth. \"Aye. That's her.\"\n\n*At \"signature\" he grunts and straightens.*\n\n\"I can't write so much as my own name. But the reeve can.\" He raises his voice toward the lane. \"Osric! Get down here, man. Bring your ink.\"\n\n*The boy who ran ahead has already gathered a small crowd at the alehouse eaves—two carters, an old woman leaning on a stick. Osric turns out to be a narrow, grey-stubbled man in a good wool coat, too long for him at the wrist, carrying a board, a stoppered pot and a stub of quill like they're unfamiliar tools. He looks at the heads, then at Alaric's bloody arm, and asks no questions.*\n\n\"Millbrook reeve,\" the shepherd says. \"Osric Fenn.\"\n\n*Osric sets the board on the well's flat cap, writes in a cramped, careful hand—two wolves, one a large leader bitch, taken in the eastern pines, this day—dries it with a puff, and folds it once.*\n\n\"Name?\" he says, quill hovering. \"For the note. The Guild pays on the name.\"",
+   "recovery_reason": "missing",
+   "recovery": {
+    "ok": true,
+    "valid_final": false,
+    "complete": false,
+    "ms": 34169,
+    "tokens": {
+     "prompt": 3442,
+     "completion": 821,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": null,
+    "error": null
+   }
+  },
+  {
+   "id": "v11_11",
+   "ok": true,
+   "error": null,
+   "ms": 32918,
+   "usage": {
+    "prompt_tokens": 8329,
+    "completion_tokens": 606,
+    "total_tokens": 8935,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 1647,
+   "block_chars": 0,
+   "block_tokens_est": 0,
+   "block": {
+    "present": false,
+    "valid": false,
+    "complete": false,
+    "errors": [
+     "no <avereth> block"
+    ],
+    "missing": [
+     "2",
+     "3"
+    ]
+   },
+   "value": null,
+   "prose": "*Aldous's longhouse smells of smoke and wet wool. The reeve is a lean man with ink-stained fingers and a ledger open on his table, and he listens to Alaric's account with his chin down, grunting at the parts that cost him attention. When Alaric lays the contract slip on the table, Aldous reads it twice, lips moving.*\n\n\"Two heads, Hamble says. Black-eared bitch and the yearling.\" He dips his pen, scratches the tally, then stamps the slip with a lump of wax and his seal ring pressed hard into it. \"There. Signed and sealed.\" He looks up, and the grumble arrives on schedule. \"Eight silver's a week's mutton, that. You youngsters don't know what coin costs.\" But he says it already turning back to his ledger, done with it. \"Gate's south, road runs straight to Alderwatch. Mind the arm.\"\n\n*The walk back is longer uphill than it felt downhill, or perhaps the leg just says so. The rain thins to drizzle by the second mile. The road carries cart ruts full of water and a wool merchant's wagon going the other way, driver hunched under oilcloth. Alderwatch's walls resolve out of the grey at the second hour's turn, and the Guild hall's lantern-lit windows sit just inside the gate as they always do.*\n\n*Inside, the hall is warm and half-full—two veterans dicing at a corner table, a pair of muddy rangers arguing softly over a map. The desk clerk looks up from her ledger, then at the contract slip Alaric sets down. She turns it, finds Aldous's seal, and nods.*\n\n\"Wolf Problem, Millbrook. Confirmed.\" She counts the coin out onto the wood, piece by piece. \"Eight silver. Anything else on the board tonight, or are you done bleeding for the day?\"",
+   "recovery_reason": "missing",
+   "recovery": {
+    "ok": true,
+    "valid_final": false,
+    "complete": false,
+    "ms": 67820,
+    "tokens": {
+     "prompt": 4099,
+     "completion": 1346,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": null,
+    "error": null
+   }
+  },
+  {
+   "id": "v12_01",
+   "ok": true,
+   "error": null,
+   "ms": 33842,
+   "usage": {
+    "prompt_tokens": 6945,
+    "completion_tokens": 612,
+    "total_tokens": 7557,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 1837,
+   "block_chars": 578,
+   "block_tokens_est": 145,
+   "block": {
+    "present": true,
+    "valid": false,
+    "complete": true,
+    "errors": [
+     "$.expected.1.at: matches none of anyOf",
+     "$.deltas[1]: matches none of anyOf"
+    ],
+    "missing": []
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Redmarch Adventurers' Guild Hall",
+        "kind": "guild_hall",
+        "parent": {
+         "new": {
+          "name": "Redmarch",
+          "kind": "city",
+          "parent": null
+         }
+        }
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 35
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Redmarch Adventurers' Guild Hall",
+        "kind": "guild_hall",
+        "parent": {
+         "new": {
+          "name": "Redmarch",
+          "kind": "city",
+          "parent": null
+         }
+        }
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "guild_clerk",
+      "name": null,
+      "role": "Guild desk clerk",
+      "desc": [
+       "woman with spectacles",
+       "ink-stained fingers",
+       "keeps a ledger"
+      ],
+      "present": true,
+      "at": null
+     }
+    ]
+   },
+   "prose": "The road takes him down through open ground toward the walls. Redmarch announces itself long before its gate: the smell of tanneries and horses, the sound of a smith's hammer carried on the wind, carts lined up on the packed mud before the barbican. The walls themselves are high and dark with age, patched in places with newer, paler stone, and a banner hangs slack above the gatehouse — a black boar on grey.\n\nThe guards at the gate barely look at him. One is arguing with a carter about a wheel tax; the other watches the road behind, hand resting on a spear shaft. Traffic flows through without ceremony. Alaric walks in among farmers and a woman leading two mules loaded with turnips, and the noise of the city closes over him — hawkers, a dog barking at nothing, the clatter of a shutter being opened somewhere overhead.\n\nInside, Redmarch is a working city. Timber-framed houses lean over a cobbled main street, gutters running down the middle. A squad of soldiers in Veyrhold grey passes in the opposite direction, boots in step, and no one gives them a second glance. He passes a grain market, a shrine with a fat candle burning in its niche, a smithy throwing orange sparks into the street.\n\nThe Guild hall is not hard to find. A painted board beside the door shows a crossed sword and arrow, and the building itself is broader than its neighbors, two stories of grey stone with wide windows. Through the open door comes the smell of ink, lamp oil and old stew. Inside, a long counter runs along the left wall; a great board of pinned contracts covers the back one. A handful of people sit at benches — a scarred woman cleaning her nails with a knife, two young men arguing quietly over a map — and a clerk with spectacles looks up from her ledger as the door swings.\n\n\"You registering or turning in?\" she calls across the room.",
+   "recovery_reason": "invalid",
+   "recovery": {
+    "ok": true,
+    "valid_final": false,
+    "complete": false,
+    "ms": 9626,
+    "tokens": {
+     "prompt": 3287,
+     "completion": 336,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": null,
+    "error": null
+   }
+  },
+  {
+   "id": "v12_02",
+   "ok": true,
+   "error": null,
+   "ms": 16887,
+   "usage": {
+    "prompt_tokens": 7460,
+    "completion_tokens": 264,
+    "total_tokens": 7724,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 886,
+   "block_chars": 0,
+   "block_tokens_est": 0,
+   "block": {
+    "present": false,
+    "valid": false,
+    "complete": false,
+    "errors": [
+     "no <avereth> block"
+    ],
+    "missing": []
+   },
+   "value": null,
+   "prose": "\"Register. Right.\" She pulls a ledger across the counter and flips it open. \"Name?\"\n\nShe writes what he gives, quill scratching on coarse paper, then looks up again. \"Rules are short. You take contracts at your rank and below — F for you, going by the feel of you, and the orb confirms it proper before your first take. Board's on the far wall, slips with the red band are F work. You bring proof of a kill or a task done, desk verifies, you get paid. You abandon a contract you've signed for twice, we suspend you.\"\n\nShe taps the ledger. \"Fee's two silver, one time. Covers your Guild plate, the assessment, and ledger keep. That leaves you three in your pouch, so think on whether you're eating tonight.\"\n\nSomewhere behind him a chair scrapes and a man laughs at something; the whetstone keeps up its slow rhythm.\n\n\"So. Two silver and a mark in the book, and you're Guild. Yes or no?\"",
+   "recovery_reason": "missing",
+   "recovery": {
+    "ok": true,
+    "valid_final": true,
+    "complete": true,
+    "ms": 26178,
+    "tokens": {
+     "prompt": 1458,
+     "completion": 308,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": {
+     "expected": {},
+     "deltas": [
+      {
+       "seq": 1,
+       "type": "fact",
+       "s": "Guild registration",
+       "p": "fee",
+       "o": "2 silver (20 cp), one-time, covering Guild plate, assessment, and ledger keep"
+      },
+      {
+       "seq": 2,
+       "type": "fact",
+       "s": "Guild rules",
+       "p": "state",
+       "o": "members take contracts at their rank and below; proof of kill or completed task is verified at the desk for payment; abandoning a signed contract twice means suspension"
+      },
+      {
+       "seq": 3,
+       "type": "fact",
+       "s": "Alaric",
+       "p": "assigned rank",
+       "o": "F by the clerk's judgment, to be confirmed by an orb before his first contract take"
+      },
+      {
+       "seq": 4,
+       "type": "fact",
+       "s": "Guild board",
+       "p": "marks",
+       "o": "slips with a red band are F-rank work"
+      }
+     ]
+    },
+    "error": null
+   }
+  },
+  {
+   "id": "v12_03",
+   "ok": true,
+   "error": null,
+   "ms": 27255,
+   "usage": {
+    "prompt_tokens": 8707,
+    "completion_tokens": 526,
+    "total_tokens": 9233,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 1588,
+   "block_chars": 396,
+   "block_tokens_est": 99,
+   "block": {
+    "present": true,
+    "valid": false,
+    "complete": true,
+    "errors": [
+     "$.deltas[2]: matches none of anyOf",
+     "$.deltas[3]: matches none of anyOf"
+    ],
+    "missing": []
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 15
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "Alaric Red",
+      "p": "guild_rank",
+      "o": "Novice"
+     },
+     {
+      "seq": 3,
+      "type": "object.new",
+      "name": "Guild plate",
+      "kind": "identification plate",
+      "qty": 1,
+      "unit": null,
+      "holder": "pc",
+      "for_quest": false
+     },
+     {
+      "seq": 4,
+      "type": "learn",
+      "who": "guild_clerk",
+      "s": "Alaric Red",
+      "p": "power_rank",
+      "o": "F",
+      "how": "the registration crystal read him"
+     }
+    ]
+   },
+   "prose": "The clerk counts the two silver into the drawer, then nods at the crystal. \"Hand on.\"\n\nThe sphere is cool under his palm, then briefly warm, a faint pulse like a second heartbeat in his fingertips. The cloudiness inside it stirs, settles. The clerk reads it with a glance.\n\n\"Rank F. Fresh, then.\" No surprise in it; most people who walk through that door start there. She stamps a thin wooden plate — his name burned into one face, the Guild's mark on the other — and slides it across the counter. \"Keep that on you. Front desk or any contract turn-in, they'll want to see it. Welcome to the Guild.\"\n\nThe Novice board hangs at eye level on the near wall, a shallow rack of paper slips behind a painted green band. Half the hooks are empty; a few adventurers drift past it without stopping, already committed elsewhere. The slips that remain, in a clerk's careful print:\n\n**Miller's Run Escort** — 80 cp. Guard a grain cart to the Miller's Run waystation, half a day out and back.\n\n**Weasel Sign at Fenwick's Coop** — 150 cp. Something's been getting into the hens. Track and deal with it.\n\n**Herb Run — Marshmint** — 40 cp. Pick a bundle of marshmint where the stream bends below the south fen; the herbalist's own boy is sick and she can't go.\n\n**Missing Dog, Tanner's Row** — 20 cp. Brown and white bitch, answers to Pippa, last seen two days ago near the tanneries.\n\n**Fence Repair, Widow Marsh** — 50 cp. A day's honest hammering; posts down along her east field after the last storm.\n\nThe nearest table's occupants pay him no mind. The clerk has already gone back to her pigeonholes.",
+   "recovery_reason": "invalid",
+   "recovery": {
+    "ok": true,
+    "valid_final": true,
+    "complete": true,
+    "ms": 3025,
+    "tokens": {
+     "prompt": 1722,
+     "completion": 45,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": {
+     "expected": {},
+     "deltas": []
+    },
+    "error": null
+   }
+  },
+  {
+   "id": "v12_04",
+   "ok": true,
+   "error": null,
+   "ms": 21181,
+   "usage": {
+    "prompt_tokens": 8236,
+    "completion_tokens": 388,
+    "total_tokens": 8624,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 1125,
+   "block_chars": 387,
+   "block_tokens_est": 97,
+   "block": {
+    "present": true,
+    "valid": false,
+    "complete": true,
+    "errors": [
+     "$.deltas[1]: matches none of anyOf"
+    ],
+    "missing": []
+   },
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 10
+     },
+     {
+      "seq": 2,
+      "type": "quest.detail",
+      "quest": "quest.millers_run_escort",
+      "note": "Collect at the miller's yard on Cooper's Lane; cart leaves within the hour; two days out to the south road waystation, overnight, two days back; Guild pays 80 cp on completion; guard the cart, report anything above Novice rank rather than fight it"
+     }
+    ]
+   },
+   "prose": "The clerk takes the slip, matches it against her ledger, and writes his name beside the entry.\n\n\"Miller's Run. Right.\" She pulls a second sheet and copies the terms onto it. \"You collect at the miller's yard — it's on Cooper's Lane, follow the flour smell, you won't miss it. Cart leaves when it's loaded, likely within the hour. It's two days out to the waystation on the south road, overnight there, two days back with the cart empty. The miller pays the Guild on your return and the Guild pays you — eight silver posted.\"\n\nShe stamps the slip and holds out the copy. \"Guard the cart, not the flour. If something hits you on the road, you report what you saw at the waystation and the Guild upgrades the contract — you're not expected to fight off anything above your rank for eight silver. Any injury on the road, you still get paid if the cart arrives.\" She glances at the rapier at his hip, then at his unmarked hands, and apparently decides that's the whole assessment.\n\n\"Cooper's Lane is back the way you came, then left at the farrier's. Don't keep the miller waiting — he's short-tempered and his carters are worse.\"",
+   "recovery_reason": "invalid",
+   "recovery": {
+    "ok": true,
+    "valid_final": true,
+    "complete": true,
+    "ms": 11190,
+    "tokens": {
+     "prompt": 1505,
+     "completion": 184,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": {
+     "expected": {},
+     "deltas": [
+      {
+       "seq": 1,
+       "type": "quest.detail",
+       "quest": "quest.millers_run_escort",
+       "note": "Collect at the miller's yard on Cooper's Lane (back the way Alaric came, then left at the farrier's); cart leaves when loaded, likely within the hour; two days out to the waystation on the south road, overnight there, two days back with the cart empty; guard the cart, not the flour; report anything seen at the waystation to upgrade the contract; paid even if injured as long as the cart arrives",
+       "schedule": "cart leaves when loaded, likely within the hour"
+      }
+     ]
+    },
+    "error": null
+   }
+  },
+  {
+   "id": "v12_05",
+   "ok": true,
+   "error": null,
+   "ms": 28639,
+   "usage": {
+    "prompt_tokens": 7758,
+    "completion_tokens": 514,
+    "total_tokens": 8272,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 1400,
+   "block_chars": 476,
+   "block_tokens_est": 119,
+   "block": {
+    "present": true,
+    "valid": true,
+    "complete": true,
+    "errors": [],
+    "missing": []
+   },
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Reedbeds east of the mill leat",
+        "kind": "wilderness",
+        "parent": "loc.redmarch"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 45
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Reedbeds east of the mill leat",
+        "kind": "wilderness",
+        "parent": "loc.redmarch"
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Reedbeds east of the mill leat",
+      "p": "terrain",
+      "o": "wet sedge and drainage ditches, standing water, marshmint grows thick along ditch edges"
+     }
+    ]
+   },
+   "prose": "\"Two in one day,\" the clerk says, but not unkindly — she logs the herb run beneath the escort slip and stamps a second copy. \"Reedbeds are past the mill leat, east side. Mind the soft ground; the mint grows where your boots sink. Basket's your own problem. Delivery here, four silver when the basket's full and the mint's not rotted.\"\n\nThe rain has thinned to mist by the time he's out the door. Redmarch's east quarter smells of grain dust and wet straw; the mill leat runs beside the road, a fast brown channel turning the great wheel, and a footbridge of planks crosses it below the millpond. Two millhands hauling sacks nod at him without stopping.\n\nBeyond the leat the ground opens into rush and sedge. The reedbeds stretch off toward a grey treeline, cut through with drainage ditches and the odd willow. Water sits everywhere between the tussocks — an inch of standing rainwater over mud, hissing quietly where the reeds lean against each other. Somewhere in the middle distance a moorhen screams and shuts up.\n\nThe mint is easy to find once he's off the firmer bank: dark green patches with the square stems and the sharp cold smell of it, growing thick along the ditch edges. A full basket means an hour or more of stooping in the wet, and wet boots are a given — the ground gives under every step.\n\nNothing moves in the reeds that isn't a bird. The mist is thinning toward a proper morning.",
+   "recovery_reason": null
+  },
+  {
+   "id": "v12_06",
+   "ok": true,
+   "error": null,
+   "ms": 31467,
+   "usage": {
+    "prompt_tokens": 7684,
+    "completion_tokens": 599,
+    "total_tokens": 8283,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 1836,
+   "block_chars": 0,
+   "block_tokens_est": 0,
+   "block": {
+    "present": false,
+    "valid": false,
+    "complete": false,
+    "errors": [
+     "no <avereth> block"
+    ],
+    "missing": [
+     "1"
+    ]
+   },
+   "value": null,
+   "prose": "The first armful is easy — the clumps by the path come up with a wet rip, roots and all, mud black under the fingernails. He lays them on the drainage path where the ground is driest and goes back for more.\n\nBy the third trip he has a method: twist the stem, shake the water off, keep the leaves from bruising. By the sixth he has stopped noticing the cold in his boots. The mist burns off toward midday and the sun comes through thin and pale, and the reedbeds go on being reedbeds — wind, water, the flat animal trail out toward open water that nothing emerges from all morning.\n\nHe works through the afternoon. The pile on the path grows into a green mound the size of a folded cloak, then bigger. His back learns the bend. STA burns down slow and steady, the ache settling into his lower back and thighs the way a day's honest labor does. Twice the footing on a hummock gives under him and he ends shin-deep in black water, cold to the knee, and climbs out and keeps picking. A cart passes on the far bank once, the driver too far off to hail and probably too deaf to care.\n\nBy the time the light goes long and gold across the water, the pile is unquestionably more than a basket's worth — a serious heap of marshmint, fragrant where the sun has warmed it, waiting on the path a mile and more from town.\n\nThat is the problem standing at the end of it: the Guild wants a full basket brought back for weighing, and what he has is a heap on a drainage path with no container anywhere in reach. Night comes down over the marsh at a walk. He can haul it to town in loads tonight, come back with a basket in the morning before the escort, or leave it here and hope the marsh keeps it — though the thing that beat that trail through the reeds may have opinions about unattended green piles.\n\nThe first stars are out when the choice is his.",
+   "recovery_reason": "missing",
+   "recovery": {
+    "ok": true,
+    "valid_final": false,
+    "complete": false,
+    "ms": 16577,
+    "tokens": {
+     "prompt": 3657,
+     "completion": 565,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": null,
+    "error": null
+   }
+  },
+  {
+   "id": "v12_07",
+   "ok": true,
+   "error": null,
+   "ms": 48788,
+   "usage": {
+    "prompt_tokens": 7711,
+    "completion_tokens": 551,
+    "total_tokens": 8262,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 1376,
+   "block_chars": 679,
+   "block_tokens_est": 170,
+   "block": {
+    "present": true,
+    "valid": false,
+    "complete": false,
+    "errors": [
+     "$.expected: unexpected property \"1\"",
+     "$.deltas[1]: matches none of anyOf",
+     "$.deltas[2]: matches none of anyOf",
+     "$.deltas[3]: matches none of anyOf",
+     "$.deltas[4]: matches none of anyOf",
+     "$.deltas[5]: matches none of anyOf"
+    ],
+    "missing": [
+     "2"
+    ]
+   },
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": "loc.guildhall_redmarch"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 75
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": "loc.guildhall_redmarch"
+     },
+     {
+      "seq": 3,
+      "type": "object.new",
+      "name": "Woven basket",
+      "kind": "container",
+      "qty": 1,
+      "unit": null,
+      "holder": "pc",
+      "for_quest": true
+     },
+     {
+      "seq": 4,
+      "type": "object.move",
+      "object": "obj_guild_basket",
+      "qty": 1,
+      "to": "pc"
+     },
+     {
+      "seq": 5,
+      "type": "quest.progress",
+      "quest": "quest_herb_run",
+      "objective": "deliver full basket of marshmint",
+      "status": "completed"
+     },
+     {
+      "seq": 6,
+      "type": "quest.close",
+      "quest": "quest_herb_run",
+      "status": "completed",
+      "by": "guild_desk"
+     },
+     {
+      "seq": 7,
+      "type": "fact",
+      "s": "Alaric",
+      "p": "completed",
+      "o": "Herb Run — Marshmint on day 1"
+     }
+    ]
+   },
+   "prose": "He gathers the heap into his arms in three loads, stacking it against his chest and chin, mint smell thick enough to taste. The pile holds together well enough on the dry path, but the walk back is slow — every few hundred paces a fistful of stems slides loose and he stops to jam them back in. By the time the drainage path meets the cart track his arms have stopped aching and gone simply heavy, and the mud on his legs has dried to a pale crust.\n\nThe mill's wheel turns its usual racket as he passes the leat, and Grainmarket Row takes him in among carters and women with egg baskets. A boy selling roasted chestnuts gives the armful of weeds a long look.\n\nThe Guildhall is warm and smells of woodsmoke and wet wool. The same clerk looks up from her register, glances at the green mass in his arms, and pulls a woven basket from under the counter.\n\n\"Pack it in here.\"\n\nHe fills it — the mint compresses down, and the heap fills the basket flush to the rim, with a small bundle left over. She presses it down with both hands, checks the stems, and nods once.\n\n\"Marshmint, decent quality, full basket. Herb Run's done.\" She writes in the register, counts out four copper from the till and sets them on the counter. \"Miller's Run still tomorrow, first light, Harrow's yard. Don't be late — Ossler won't wait.\"\n\nThe coins sit warm on the counter beside the stamped escort slip.",
+   "recovery_reason": "invalid",
+   "recovery": {
+    "ok": true,
+    "valid_final": false,
+    "complete": false,
+    "ms": 24241,
+    "tokens": {
+     "prompt": 3701,
+     "completion": 687,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": null,
+    "error": null
+   }
+  },
+  {
+   "id": "v12_08",
+   "ok": true,
+   "error": null,
+   "ms": 41386,
+   "usage": {
+    "prompt_tokens": 7925,
+    "completion_tokens": 736,
+    "total_tokens": 8661,
+    "reasoning_tokens": null
+   },
+   "finish": "stop",
+   "prose_chars": 1637,
+   "block_chars": 844,
+   "block_tokens_est": 211,
+   "block": {
+    "present": true,
+    "valid": false,
+    "complete": false,
+    "errors": [
+     "$: unexpected property \"3\"",
+     "$.expected.2.at: matches none of anyOf",
+     "$.deltas[1]: matches none of anyOf"
+    ],
+    "missing": [
+     "3"
+    ]
+   },
+   "value": {
+    "3": {
+     "priced": true
+    },
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Pike and Pail",
+        "kind": "inn",
+        "parent": "loc.redmarch"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 50
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Pike and Pail",
+        "kind": "inn",
+        "parent": "loc.redmarch"
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "pikelandlord",
+      "name": null,
+      "role": "innkeeper",
+      "desc": [
+       "grey-whiskered man",
+       "bar towel over shoulder",
+       "unhurried"
+      ],
+      "present": true,
+      "at": null
+     },
+     {
+      "seq": 4,
+      "type": "offer",
+      "seller": "pikelandlord",
+      "lines": [
+       {
+        "what": "room for the night",
+        "kind": "service",
+        "service": "lodging",
+        "qty": 1,
+        "price_cp": 5
+       },
+       {
+        "what": "hot bath",
+        "kind": "service",
+        "service": "bath",
+        "qty": 1,
+        "price_cp": 2
+       },
+       {
+        "what": "laundry, whole lot",
+        "kind": "service",
+        "service": "laundry",
+        "qty": 1,
+        "price_cp": 2
+       },
+       {
+        "what": "stew and bread",
+        "kind": "goods",
+        "service": "meal",
+        "qty": 1,
+        "price_cp": 3
+       }
+      ]
+     }
+    ]
+   },
+   "prose": "The desk clerk — a broad man with ink-stained fingers, different from the one at the scales — finds the marked slip in the register and counts the payout out in copper and a couple of small silver pieces, sliding them across the worn counter in a little stack. \"Sign here. Herb Run's closed. You're on the cart tomorrow, first light, Harrow's yard — don't make them wait.\" The pen scratches; the stamp thuds; that's that.\n\nEvening is settling over Redmarch as he walks. Lamps are being lit along Grainmarket Row one by one, a lamplighter working up the street with a pole and a shuttered flame. The cookshop vents breathe out onion and dripping. He passes a tavern with noise spilling out its door — fiddle, laughter, someone's chair scraping — and keeps on, and two streets further finds a quieter prospect: a low timbered building with a painted sign of a pike and a bucket, the Pike and Pail. Steam and the smell of lye soap leak from a rear doorway where a woman is scrubbing pots, and the common room beyond the front door is half-full and mild — carters mostly, eating, nobody loud.\n\nThe innkeeper is a grey-whiskered man with a bar towel over his shoulder, wiping down the counter in slow circles. He looks Alaric up and down — mud to the knee, hair damp, the smell of marshmint coming off him — and doesn't remark on any of it.\n\n\"Room's five copper. Bath's two, drawn hot from the kettle. Laundry's one copper a piece, or two for the lot if it's all you're wearing.\" He nods at the bundle of the situation generally. \"Stew and bread's three, if you haven't eaten.\"\n\nHe goes back to his wiping and waits, unhurried, for an answer.",
+   "recovery_reason": "invalid",
+   "recovery": {
+    "ok": true,
+    "valid_final": false,
+    "complete": false,
+    "ms": 36041,
+    "tokens": {
+     "prompt": 4276,
+     "completion": 1836,
+     "reasoning": 0,
+     "reported": true
+    },
+    "value": null,
+    "error": null
+   }
+  }
+ ],
+ "block": [
+  {
+   "id": "v11_01",
+   "ok": true,
+   "error": null,
+   "ms": 12622,
+   "usage": {
+    "prompt_tokens": 7501,
+    "completion_tokens": 235,
+    "total_tokens": 7736,
+    "reasoning_tokens": null
+   },
+   "items": 4,
+   "present": true,
+   "valid": false,
+   "complete": true,
+   "errors": [
+    "$.expected.1.at: matches none of anyOf",
+    "$.deltas[1]: matches none of anyOf",
+    "$.deltas[2]: matches none of anyOf",
+    "$.deltas[3]: matches none of anyOf",
+    "$.deltas[4]: matches none of anyOf"
+   ],
+   "missing": [],
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Adventurers' Guild Hall, Alderwatch",
+        "kind": "guild_hall",
+        "parent": null
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 35
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Alderwatch",
+        "kind": "city",
+        "parent": null
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Adventurers' Guild Hall, Alderwatch",
+        "kind": "guild_hall",
+        "parent": "loc.alderwatch"
+       }
+      }
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "clerk_greybeard",
+      "name": null,
+      "role": "Guild clerk",
+      "desc": [
+       "grey-haired man",
+       "ledger",
+       "counter duty"
+      ],
+      "present": true,
+      "at": "loc.alderwatch_guild"
+     },
+     {
+      "seq": 5,
+      "type": "person.new",
+      "ref": "clerk_young_woman",
+      "name": null,
+      "role": "Guild clerk",
+      "desc": [
+       "young woman",
+       "sorting quest tags"
+      ],
+      "present": true,
+      "at": "loc.alderwatch_guild"
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 0,
+    "expected_wrong": [
+     "1"
+    ],
+    "critical_total": 3,
+    "critical_found": 2,
+    "critical_missing": [
+     {
+      "type": "arrive",
+      "at": "loc.alderwatch.guild_hall"
+     }
+    ],
+    "forbidden_hits": [],
+    "semantic": 0.5,
+    "deltas": 5
+   }
+  },
+  {
+   "id": "v11_02",
+   "ok": true,
+   "error": null,
+   "ms": 20928,
+   "usage": {
+    "prompt_tokens": 8099,
+    "completion_tokens": 138,
+    "total_tokens": 8237,
+    "reasoning_tokens": null
+   },
+   "items": 0,
+   "present": true,
+   "valid": false,
+   "complete": true,
+   "errors": [
+    "$.expected: unexpected property \"1\""
+   ],
+   "missing": [],
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": null
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "person.new",
+      "ref": "clerk_ald",
+      "name": null,
+      "role": "registration clerk, Alderwatch Adventurers' Guild",
+      "desc": [
+       "grey-haired man",
+       "pipe smoke and ink smell",
+       "unhurried, practised manner"
+      ],
+      "present": true,
+      "at": null
+     },
+     {
+      "seq": 2,
+      "type": "offer",
+      "seller": "clerk_ald",
+      "lines": [
+       {
+        "what": "Novice registration (medallion and entry in Guild rolls)",
+        "kind": "service",
+        "service": null,
+        "qty": 1,
+        "price_cp": 20
+       }
+      ]
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [
+     {
+      "pattern": {
+       "type": "offer"
+      },
+      "delta": {
+       "seq": 2,
+       "type": "offer",
+       "seller": "clerk_ald",
+       "lines": [
+        {
+         "what": "Novice registration (medallion and entry in Guild rolls)",
+         "kind": "service",
+         "service": null,
+         "qty": 1,
+         "price_cp": 20
+        }
+       ]
+      }
+     }
+    ],
+    "semantic": 0,
+    "deltas": 2
+   }
+  },
+  {
+   "id": "v11_03",
+   "ok": true,
+   "error": null,
+   "ms": 15287,
+   "usage": {
+    "prompt_tokens": 8446,
+    "completion_tokens": 273,
+    "total_tokens": 8719,
+    "reasoning_tokens": null
+   },
+   "items": 0,
+   "present": true,
+   "valid": false,
+   "complete": true,
+   "errors": [
+    "$.deltas[1]: matches none of anyOf",
+    "$.deltas[3]: matches none of anyOf",
+    "$.deltas[4]: matches none of anyOf"
+   ],
+   "missing": [],
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 15
+     },
+     {
+      "seq": 2,
+      "type": "learn",
+      "who": "guild_registration_clerk",
+      "s": "Alaric Red",
+      "p": "name",
+      "o": "Alaric Red, age 18, literate, Power Rank F",
+      "how": "registration interview and Guild stone"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Alaric Red",
+      "p": "guild_rank",
+      "o": "Registered Novice, Rank F, Alderwatch Guild"
+     },
+     {
+      "seq": 4,
+      "type": "object.new",
+      "name": "Iron Novice medallion",
+      "kind": "medallion",
+      "qty": 1,
+      "holder": "pc"
+     },
+     {
+      "seq": 5,
+      "type": "memory",
+      "text": "Registered a steady-handed F-rank Novice named Alaric Red",
+      "who": "guild_registration_clerk",
+      "imp": 5
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "young woman clerk at the counter",
+      "p": "name",
+      "o": "Hessa"
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [
+     {
+      "pattern": {
+       "type": "object.new",
+       "$any": "/medallion/i"
+      },
+      "delta": {
+       "seq": 4,
+       "type": "object.new",
+       "name": "Iron Novice medallion",
+       "kind": "medallion",
+       "qty": 1,
+       "holder": "pc"
+      }
+     }
+    ],
+    "semantic": 0,
+    "deltas": 6
+   }
+  },
+  {
+   "id": "v11_04",
+   "ok": true,
+   "error": null,
+   "ms": 4611,
+   "usage": {
+    "prompt_tokens": 9148,
+    "completion_tokens": 57,
+    "total_tokens": 9205,
+    "reasoning_tokens": null
+   },
+   "items": 0,
+   "present": true,
+   "valid": true,
+   "complete": true,
+   "errors": [],
+   "missing": [],
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 3
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 1
+   }
+  },
+  {
+   "id": "v11_05",
+   "ok": true,
+   "error": null,
+   "ms": 16091,
+   "usage": {
+    "prompt_tokens": 8941,
+    "completion_tokens": 237,
+    "total_tokens": 9178,
+    "reasoning_tokens": null
+   },
+   "items": 4,
+   "present": true,
+   "valid": false,
+   "complete": false,
+   "errors": [
+    "$.expected: unexpected property \"1\"",
+    "$.deltas[1]: matches none of anyOf",
+    "$.deltas[4]: matches none of anyOf"
+   ],
+   "missing": [
+    "2"
+   ],
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Millbrook Hamlet",
+        "kind": "hamlet",
+        "parent": null
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 185
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Millbrook Hamlet",
+        "kind": "hamlet",
+        "parent": null
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "tomas",
+      "name": "Tomas",
+      "role": "miller of Millbrook Hamlet",
+      "desc": [
+       "broad man",
+       "mill dust on forearms",
+       "wipes hands on apron"
+      ],
+      "present": true,
+      "at": null
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Millbrook Hamlet",
+      "p": "suffers",
+      "o": "nightly wolf kills, third this week, found at dawn by the sheep pens"
+     },
+     {
+      "seq": 5,
+      "type": "quest.detail",
+      "quest": "quest.wolf_problem_millbrook",
+      "note": "Tomas the miller will guide Alaric to the last kill site up the sheep trail through the alders; rain threatens to take the sign"
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 0,
+    "expected_wrong": [
+     "2"
+    ],
+    "critical_total": 3,
+    "critical_found": 3,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 0.75,
+    "deltas": 5
+   }
+  },
+  {
+   "id": "v11_06",
+   "ok": true,
+   "error": null,
+   "ms": 10335,
+   "usage": {
+    "prompt_tokens": 8668,
+    "completion_tokens": 138,
+    "total_tokens": 8806,
+    "reasoning_tokens": null
+   },
+   "items": 3,
+   "present": true,
+   "valid": false,
+   "complete": false,
+   "errors": [
+    "block is not JSON: report is not valid JSON"
+   ],
+   "missing": [
+    "1"
+   ],
+   "value": null,
+   "score": null
+  },
+  {
+   "id": "v11_07",
+   "ok": true,
+   "error": null,
+   "ms": 32516,
+   "usage": {
+    "prompt_tokens": 8690,
+    "completion_tokens": 199,
+    "total_tokens": 8889,
+    "reasoning_tokens": null
+   },
+   "items": 4,
+   "present": true,
+   "valid": false,
+   "complete": true,
+   "errors": [
+    "$.deltas[2]: matches none of anyOf"
+   ],
+   "missing": [],
+   "value": {
+    "expected": {
+     "1": {
+      "minutes": 55,
+      "done": true
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "leave",
+      "who": "tomas"
+     },
+     {
+      "seq": 2,
+      "type": "time",
+      "minutes": 55
+     },
+     {
+      "seq": 3,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Wolf Ravine",
+        "kind": "site",
+        "parent": "loc.eastern_woods"
+       }
+      }
+     },
+     {
+      "seq": 4,
+      "type": "creature.new",
+      "ref": "wolf_pack",
+      "species": "wolves",
+      "desc": [
+       "small pack denned in the ravine: one large deep-chested bitch with a nicked muzzle, one yearling"
+      ],
+      "count": 2,
+      "present": true
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "wolf_pack",
+      "p": "den",
+      "o": "shallow ravine with dark hollow, north of the sheep kill site in the eastern pine woods"
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 3,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 5
+   }
+  },
+  {
+   "id": "v11_08",
+   "ok": true,
+   "error": null,
+   "ms": 8122,
+   "usage": {
+    "prompt_tokens": 8260,
+    "completion_tokens": 138,
+    "total_tokens": 8398,
+    "reasoning_tokens": null
+   },
+   "items": 1,
+   "present": true,
+   "valid": false,
+   "complete": true,
+   "errors": [
+    "$.deltas[2]: matches none of anyOf",
+    "$.deltas[3]: matches none of anyOf"
+   ],
+   "missing": [],
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "creature.new",
+      "ref": "wolf_leader",
+      "species": "wolf",
+      "desc": [
+       "large deep-chested leader bitch",
+       "fresh nick across muzzle"
+      ],
+      "count": 1,
+      "present": true
+     },
+     {
+      "seq": 2,
+      "type": "creature.new",
+      "ref": "wolf_yearling",
+      "species": "wolf",
+      "desc": [
+       "yearling",
+       "smaller and noisier"
+      ],
+      "count": 1,
+      "present": true
+     },
+     {
+      "seq": 3,
+      "type": "hostile",
+      "by": "wolf_leader"
+     },
+     {
+      "seq": 4,
+      "type": "hostile",
+      "by": "wolf_yearling"
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 1,
+    "critical_found": 1,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 4
+   }
+  },
+  {
+   "id": "v11_09",
+   "ok": true,
+   "error": null,
+   "ms": 17204,
+   "usage": {
+    "prompt_tokens": 8326,
+    "completion_tokens": 286,
+    "total_tokens": 8612,
+    "reasoning_tokens": null
+   },
+   "items": 5,
+   "present": true,
+   "valid": false,
+   "complete": true,
+   "errors": [
+    "$.expected.2.at: matches none of anyOf",
+    "$.deltas[1]: matches none of anyOf",
+    "$.deltas[2]: matches none of anyOf",
+    "$.deltas[5]: matches none of anyOf"
+   ],
+   "missing": [],
+   "value": {
+    "expected": {
+     "1": {
+      "taken": true
+     },
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Millbrook Hamlet",
+        "kind": "hamlet",
+        "parent": null
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 50
+     },
+     {
+      "seq": 2,
+      "type": "object.new",
+      "name": "wolf heads (proof)",
+      "kind": "trophy",
+      "qty": 2,
+      "unit": "head",
+      "holder": "pc",
+      "for_quest": true
+     },
+     {
+      "seq": 3,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Millbrook Hamlet",
+        "kind": "hamlet",
+        "parent": null
+       }
+      }
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "millbrook_shepherd",
+      "name": null,
+      "role": "Millbrook shepherd",
+      "desc": [
+       "thickset",
+       "wet shepherd's cloak"
+      ],
+      "present": true,
+      "at": null
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "wolf pack",
+      "p": "status",
+      "o": "two wolves slain by Alaric above Millbrook"
+     },
+     {
+      "seq": 6,
+      "type": "memory",
+      "text": "the shepherd saw Alaric return alone carrying the heads of the leader bitch and a yearling",
+      "who": "millbrook_shepherd",
+      "imp": 7
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 2,
+    "expected_ok": 2,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 3,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 6
+   }
+  },
+  {
+   "id": "v11_10",
+   "ok": true,
+   "error": null,
+   "ms": 23578,
+   "usage": {
+    "prompt_tokens": 8315,
+    "completion_tokens": 339,
+    "total_tokens": 8654,
+    "reasoning_tokens": null
+   },
+   "items": 1,
+   "present": true,
+   "valid": false,
+   "complete": true,
+   "errors": [
+    "$.deltas[0]: matches none of anyOf",
+    "$.deltas[1]: matches none of anyOf",
+    "$.deltas[2]: matches none of anyOf",
+    "$.deltas[3]: matches none of anyOf",
+    "$.deltas[4]: matches none of anyOf"
+   ],
+   "missing": [],
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "object.move",
+      "object": "wolf heads",
+      "qty": 2,
+      "to": "here"
+     },
+     {
+      "seq": 2,
+      "type": "learn",
+      "who": "shepherd",
+      "s": "wolf heads on the cobbles",
+      "p": "identified as",
+      "o": "the pack leader bitch and the yearling from the sheep kills",
+      "how": "direct observation"
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "reeve_aldous",
+      "name": "Aldous",
+      "role": "reeve of Millbrook",
+      "desc": [
+       "does the hamlet's tallying",
+       "honest, grumbles about coin",
+       "keeps to the longhouse with the lantern"
+      ],
+      "present": false,
+      "at": "Millbrook Hamlet"
+     },
+     {
+      "seq": 4,
+      "type": "learn",
+      "who": "shepherd",
+      "s": "Alaric",
+      "p": "is a",
+      "o": "Guild adventurer claiming the wolf bounty, wanting written proof",
+      "how": "Alaric's words and Guild medallion"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "Marta Hale",
+      "p": "offers",
+      "o": "needle stitching for wounds in Millbrook",
+      "how": ""
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 1,
+    "critical_found": 1,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 5
+   }
+  },
+  {
+   "id": "v11_11",
+   "ok": true,
+   "error": null,
+   "ms": 20351,
+   "usage": {
+    "prompt_tokens": 8766,
+    "completion_tokens": 382,
+    "total_tokens": 9148,
+    "reasoning_tokens": null
+   },
+   "items": 5,
+   "present": true,
+   "valid": false,
+   "complete": true,
+   "errors": [
+    "$.expected.2.at: matches none of anyOf",
+    "$.expected.3.at: matches none of anyOf",
+    "$.deltas[1]: matches none of anyOf",
+    "$.deltas[2]: matches none of anyOf",
+    "$.deltas[3]: matches none of anyOf",
+    "$.deltas[5]: matches none of anyOf",
+    "$.deltas[6]: matches none of anyOf",
+    "$.deltas[7]: matches none of anyOf"
+   ],
+   "missing": [],
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Reeve Aldous's Longhouse",
+        "kind": "building",
+        "parent": "loc.millbrook"
+       }
+      }
+     },
+     "3": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Alderwatch Adventurers' Guild Hall",
+        "kind": "guild hall",
+        "parent": "loc.alderwatch"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 90
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Reeve Aldous's Longhouse",
+        "kind": "building",
+        "parent": "loc.millbrook"
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "object.new",
+      "name": "signed wolf proof slip",
+      "kind": "document",
+      "qty": 1,
+      "unit": null,
+      "holder": "pc",
+      "for_quest": true
+     },
+     {
+      "seq": 4,
+      "type": "object.mark",
+      "object": "signed wolf proof slip",
+      "mark": "signed and soot-sealed by Reeve Aldous",
+      "by": "Aldous"
+     },
+     {
+      "seq": 5,
+      "type": "coin.gift",
+      "from": "Aldous",
+      "cp": 80,
+      "why": "Millbrook's posted reward for proof of two dead wolves"
+     },
+     {
+      "seq": 6,
+      "type": "memory",
+      "text": "A lone novice adventurer killed the black-eared pack bitch and a yearling in a day and collected a third of the winter fund",
+      "who": "Aldous",
+      "imp": 7
+     },
+     {
+      "seq": 7,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Alderwatch Adventurers' Guild Hall",
+        "kind": "guild hall",
+        "parent": "loc.alderwatch"
+       }
+      }
+     },
+     {
+      "seq": 8,
+      "type": "quest.progress",
+      "quest": "Wolf Problem",
+      "objective": "deliver proof to Millbrook",
+      "status": "complete"
+     },
+     {
+      "seq": 9,
+      "type": "quest.close",
+      "quest": "Wolf Problem",
+      "status": "paid by hamlet and filed",
+      "by": "guild desk clerk"
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 2,
+    "expected_ok": 1,
+    "expected_wrong": [
+     "3"
+    ],
+    "critical_total": 3,
+    "critical_found": 1,
+    "critical_missing": [
+     {
+      "type": "object.mark",
+      "object": "obj.contract_slip",
+      "mark": "/seal|sign|mark/i"
+     },
+     {
+      "type": "arrive",
+      "at": "loc.alderwatch.guild_hall"
+     }
+    ],
+    "forbidden_hits": [
+     {
+      "pattern": {
+       "type": "coin.gift",
+       "$any": "/aldous|reeve|hamlet|millbrook/i"
+      },
+      "delta": {
+       "seq": 5,
+       "type": "coin.gift",
+       "from": "Aldous",
+       "cp": 80,
+       "why": "Millbrook's posted reward for proof of two dead wolves"
+      }
+     },
+     {
+      "pattern": {
+       "type": "quest.close"
+      },
+      "delta": {
+       "seq": 9,
+       "type": "quest.close",
+       "quest": "Wolf Problem",
+       "status": "paid by hamlet and filed",
+       "by": "guild desk clerk"
+      }
+     }
+    ],
+    "semantic": 0.2857142857142857,
+    "deltas": 9
+   }
+  },
+  {
+   "id": "v12_01",
+   "ok": true,
+   "error": null,
+   "ms": 13231,
+   "usage": {
+    "prompt_tokens": 7323,
+    "completion_tokens": 162,
+    "total_tokens": 7485,
+    "reasoning_tokens": null
+   },
+   "items": 4,
+   "present": true,
+   "valid": false,
+   "complete": true,
+   "errors": [
+    "$.expected.1.at: matches none of anyOf",
+    "$.deltas[1]: matches none of anyOf"
+   ],
+   "missing": [],
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Redmarch Adventurers' Guild Hall",
+        "kind": "guild_hall",
+        "parent": "loc.redmarch"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 30
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Redmarch Adventurers' Guild Hall",
+        "kind": "guild_hall",
+        "parent": "loc.redmarch"
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "guild_clerk",
+      "name": null,
+      "role": "Guild desk clerk",
+      "desc": [
+       "woman in her thirties",
+       "close-cropped brown hair",
+       "mail shirt under a Guild tabard"
+      ],
+      "present": true,
+      "at": null
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 0,
+    "expected_wrong": [
+     "1"
+    ],
+    "critical_total": 3,
+    "critical_found": 2,
+    "critical_missing": [
+     {
+      "type": "arrive",
+      "at": "loc.redmarch.guild_hall"
+     }
+    ],
+    "forbidden_hits": [],
+    "semantic": 0.5,
+    "deltas": 3
+   }
+  },
+  {
+   "id": "v12_02",
+   "ok": true,
+   "error": null,
+   "ms": 8384,
+   "usage": {
+    "prompt_tokens": 7761,
+    "completion_tokens": 130,
+    "total_tokens": 7891,
+    "reasoning_tokens": null
+   },
+   "items": 0,
+   "present": true,
+   "valid": true,
+   "complete": true,
+   "errors": [],
+   "missing": [],
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 3
+     },
+     {
+      "seq": 2,
+      "type": "offer",
+      "seller": "guild_clerk",
+      "lines": [
+       {
+        "what": "Guild registration (plate, first stamp, board access)",
+        "kind": "service",
+        "service": "other",
+        "qty": 1,
+        "price_cp": 20
+       }
+      ]
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 0,
+    "critical_found": 0,
+    "critical_missing": [],
+    "forbidden_hits": [
+     {
+      "pattern": {
+       "type": "offer"
+      },
+      "delta": {
+       "seq": 2,
+       "type": "offer",
+       "seller": "guild_clerk",
+       "lines": [
+        {
+         "what": "Guild registration (plate, first stamp, board access)",
+         "kind": "service",
+         "service": "other",
+         "qty": 1,
+         "price_cp": 20
+        }
+       ]
+      }
+     }
+    ],
+    "semantic": 0,
+    "deltas": 2
+   }
+  },
+  {
+   "id": "v12_03",
+   "ok": true,
+   "error": null,
+   "ms": 7949,
+   "usage": {
+    "prompt_tokens": 9186,
+    "completion_tokens": 132,
+    "total_tokens": 9318,
+    "reasoning_tokens": null
+   },
+   "items": 2,
+   "present": true,
+   "valid": false,
+   "complete": true,
+   "errors": [
+    "$.expected: unexpected property \"1\"",
+    "$.expected: unexpected property \"2\"",
+    "$.deltas[1]: matches none of anyOf",
+    "$.deltas[2]: matches none of anyOf"
+   ],
+   "missing": [],
+   "value": {
+    "expected": {
+     "1": {
+      "arrived": false
+     },
+     "2": {
+      "boardShown": true
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 10
+     },
+     {
+      "seq": 2,
+      "type": "object.move",
+      "object": "Guild Plate (Novice)",
+      "qty": 1,
+      "to": "pc"
+     },
+     {
+      "seq": 3,
+      "type": "listing.gone",
+      "listing": "Weasel Sign at Fenwick's Coop",
+      "why": "taken by another adventurer"
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 0,
+    "critical_missing": [
+     {
+      "type": "listing.gone",
+      "listing": "quest.weasel_fenwick",
+      "why": "taken_by_other"
+     },
+     {
+      "type": "person.new",
+      "$any": "/adventurer|mud/i",
+      "present": true
+     }
+    ],
+    "forbidden_hits": [],
+    "semantic": 0,
+    "deltas": 3
+   }
+  },
+  {
+   "id": "v12_04",
+   "ok": true,
+   "error": null,
+   "ms": 7628,
+   "usage": {
+    "prompt_tokens": 8558,
+    "completion_tokens": 125,
+    "total_tokens": 8683,
+    "reasoning_tokens": null
+   },
+   "items": 2,
+   "present": true,
+   "valid": false,
+   "complete": true,
+   "errors": [
+    "$.deltas[1]: matches none of anyOf"
+   ],
+   "missing": [],
+   "value": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 5
+     },
+     {
+      "seq": 2,
+      "type": "quest.detail",
+      "quest": "Miller's Run Escort",
+      "note": "Cart leaves Harrow's mill yard on Grainmarket Row at first light tomorrow; carter Ossler and one other Novice escort already signed; waystation master signs the plate at delivery for payout of 8 silver",
+      "schedule": "first light, Day 2"
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 0,
+    "expected_ok": 0,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 0,
+    "critical_missing": [
+     {
+      "type": "person.new",
+      "$any": "/ossler/i",
+      "present": false
+     },
+     {
+      "type": "quest.detail",
+      "quest": "quest.millers_run_escort"
+     }
+    ],
+    "forbidden_hits": [],
+    "semantic": 0,
+    "deltas": 2
+   }
+  },
+  {
+   "id": "v12_05",
+   "ok": true,
+   "error": null,
+   "ms": 13056,
+   "usage": {
+    "prompt_tokens": 8150,
+    "completion_tokens": 153,
+    "total_tokens": 8303,
+    "reasoning_tokens": null
+   },
+   "items": 3,
+   "present": true,
+   "valid": false,
+   "complete": true,
+   "errors": [
+    "$.expected.2.at: matches none of anyOf",
+    "$.deltas[1]: matches none of anyOf"
+   ],
+   "missing": [],
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Reedbeds east of the mill leat",
+        "kind": "wilderness site",
+        "parent": "loc.redmarch"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 60
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Reedbeds east of the mill leat",
+        "kind": "wilderness site",
+        "parent": "loc.redmarch"
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "reedbeds east of the mill leat",
+      "p": "trail",
+      "o": "a badger-wide flattened trail beaten through the reeds toward open water"
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 2,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 3
+   }
+  },
+  {
+   "id": "v12_06",
+   "ok": true,
+   "error": null,
+   "ms": 6747,
+   "usage": {
+    "prompt_tokens": 8077,
+    "completion_tokens": 110,
+    "total_tokens": 8187,
+    "reasoning_tokens": null
+   },
+   "items": 3,
+   "present": true,
+   "valid": false,
+   "complete": true,
+   "errors": [
+    "$.deltas[2]: matches none of anyOf"
+   ],
+   "missing": [],
+   "value": {
+    "expected": {
+     "1": {
+      "minutes": 300,
+      "done": false
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 300
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "reedbeds",
+      "p": "waterline tracks",
+      "o": "fresh webbed bird-sized tracks near the waterline"
+     },
+     {
+      "seq": 3,
+      "type": "object.new",
+      "name": "marshmint pile",
+      "kind": "gathered herb pile",
+      "qty": 1,
+      "unit": "pile",
+      "holder": "here",
+      "for_quest": true
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 1,
+    "expected_wrong": [],
+    "critical_total": 2,
+    "critical_found": 2,
+    "critical_missing": [],
+    "forbidden_hits": [],
+    "semantic": 1,
+    "deltas": 3
+   }
+  },
+  {
+   "id": "v12_07",
+   "ok": true,
+   "error": null,
+   "ms": 7766,
+   "usage": {
+    "prompt_tokens": 8139,
+    "completion_tokens": 134,
+    "total_tokens": 8273,
+    "reasoning_tokens": null
+   },
+   "items": 3,
+   "present": true,
+   "valid": false,
+   "complete": true,
+   "errors": [
+    "$.expected.2.at: matches none of anyOf",
+    "$.deltas[1]: matches none of anyOf",
+    "$.deltas[2]: matches none of anyOf"
+   ],
+   "missing": [],
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": "loc.redmarch_guildhall"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 115
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": "loc.redmarch_guildhall"
+     },
+     {
+      "seq": 3,
+      "type": "quest.progress",
+      "quest": "quest.herb_run",
+      "objective": "gather marshmint",
+      "status": "complete"
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 1,
+    "expected_ok": 0,
+    "expected_wrong": [
+     "2"
+    ],
+    "critical_total": 2,
+    "critical_found": 1,
+    "critical_missing": [
+     {
+      "type": "arrive",
+      "at": "loc.redmarch.guild_hall"
+     }
+    ],
+    "forbidden_hits": [],
+    "semantic": 0.3333333333333333,
+    "deltas": 3
+   }
+  },
+  {
+   "id": "v12_08",
+   "ok": true,
+   "error": null,
+   "ms": 16644,
+   "usage": {
+    "prompt_tokens": 8378,
+    "completion_tokens": 303,
+    "total_tokens": 8681,
+    "reasoning_tokens": null
+   },
+   "items": 5,
+   "present": true,
+   "valid": false,
+   "complete": true,
+   "errors": [
+    "$.expected.2.at: matches none of anyOf",
+    "$.deltas[1]: matches none of anyOf",
+    "$.deltas[2]: matches none of anyOf"
+   ],
+   "missing": [],
+   "value": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Marsh Bell Inn",
+        "kind": "inn",
+        "parent": "loc.redmarch"
+       }
+      }
+     },
+     "3": {
+      "priced": true
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 75
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Marsh Bell Inn",
+        "kind": "inn",
+        "parent": "loc.redmarch"
+       }
+      }
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "marshbell_innkeeper",
+      "name": null,
+      "role": "innkeeper",
+      "desc": [
+       "broad woman",
+       "flour on her forearms",
+       "carrying voice"
+      ],
+      "present": true
+     },
+     {
+      "seq": 4,
+      "type": "offer",
+      "seller": "marshbell_innkeeper",
+      "lines": [
+       {
+        "what": "room for the night",
+        "kind": "service",
+        "service": "lodging",
+        "qty": 1,
+        "price_cp": 4
+       },
+       {
+        "what": "hot bath",
+        "kind": "service",
+        "service": "bath",
+        "qty": 1,
+        "price_cp": 2
+       },
+       {
+        "what": "clothes washed and dried by morning",
+        "kind": "service",
+        "service": "laundry",
+        "qty": 1,
+        "price_cp": 1
+       },
+       {
+        "what": "stew",
+        "kind": "goods",
+        "service": "meal",
+        "qty": 1,
+        "price_cp": 2
+       }
+      ]
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "Marsh Bell Inn",
+      "p": "charges",
+      "o": "4 cp lodging, 2 cp bath, 1 cp laundry, 2 cp stew"
+     }
+    ]
+   },
+   "score": {
+    "expected_total": 2,
+    "expected_ok": 2,
+    "expected_wrong": [],
+    "critical_total": 3,
+    "critical_found": 2,
+    "critical_missing": [
+     {
+      "type": "overreach",
+      "kind": [
+       "purchase",
+       "payment"
+      ]
+     }
+    ],
+    "forbidden_hits": [],
+    "semantic": 0.8,
+    "deltas": 5
+   }
+  }
+ ]
+}

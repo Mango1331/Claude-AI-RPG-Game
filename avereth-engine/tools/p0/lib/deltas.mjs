@@ -68,9 +68,47 @@ export function deltaSchema(vocab, catalog = {}, expectedKeys = {}) {
     return O({ expected: O(expected), deltas: A({ anyOf: variants }) });
 }
 
-function fieldList(d) {
-    return Object.entries(d.fields).map(([k, spec]) => (spec.nullable ? `${k}?` : k)).join(', ');
+function fieldType(spec) {
+    if (spec.ref) return `${spec.ref}-ref`;
+
+    if (spec.enum) {
+        return spec.enum.map((v) => JSON.stringify(v)).join('|');
+    }
+
+    if (spec.array === 'offer_line') return 'offer_line[]';
+    if (spec.array) return 'string[]';
+
+    if (spec.type === 'integer') {
+        const limits = [
+            spec.min !== undefined ? `>=${spec.min}` : null,
+            spec.max !== undefined ? `<=${spec.max}` : null,
+        ].filter(Boolean);
+
+        return limits.length
+            ? `integer(${limits.join(',')})`
+            : 'integer';
+    }
+
+    if (spec.type === 'boolean') return 'boolean';
+
+    return 'string';
 }
+
+function fieldList(d) {
+    return Object.entries(d.fields)
+        .map(([k, spec]) => `${k}:${fieldType(spec)}${spec.nullable ? '|null' : ''}`)
+        .join(', ');
+}
+
+const FORMAT_RULES = [
+    'Every field printed for a delta is required. A field that allows null must still be present; use null when it is unknown.',
+    'string[] is always a JSON array, even when it contains only one value.',
+    `place-ref is an exact known place id from the CATALOG, or {"new":{"name":"...","kind":"...","parent":...}}. For a new place, kind must be exactly one of: ${PLACE_KINDS.join(', ')}. Use settlement for a city, town, village or hamlet; site for a building, inn or Guild hall; interior for a room; wilderness for natural outdoor terrain.`,
+    'When the CATALOG already contains the place, quest or object, copy its id exactly. Never rewrite an id, invent another id for it, or substitute its title/name.',
+    'quest-ref and object-ref mean the exact matching CATALOG id; use {"new":"..."} only when the thing is genuinely new and that reference type permits it.',
+    'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0}.',
+    'expected must contain exactly the keys requested below, no other keys.',
+];
 
 /** The delta list as prompt text (the same lines for the narrator block and the recovery extractor). */
 export function deltaVocabularyText(vocab, only) {
@@ -91,6 +129,8 @@ export function blockInstruction(vocab, expectedKeys) {
     return [
         'WORLD DELTAS (after the story, exactly one <avereth>{"expected":{…},"deltas":[…]}</avereth>; only what this reply established, in the order it happens):',
         ...vocab.rules.map((r) => `- ${r}`),
+        'FORMAT RULES (schema-critical):',
+        ...FORMAT_RULES.map((r) => `- ${r}`),
         expectedText(vocab, expectedKeys),
         'deltas — use only:',
         deltaVocabularyText(vocab),
@@ -98,7 +138,7 @@ export function blockInstruction(vocab, expectedKeys) {
     ].join('\n');
 }
 
-export const BLOCK_FINAL = 'OUTPUT FORMAT (final instruction): the story text, then exactly one <avereth>{"expected":{…},"deltas":[…]}</avereth> block as WORLD DELTAS defines it ({"expected":{},"deltas":[]} if nothing changed). Nothing after </avereth>.';
+export const BLOCK_FINAL = 'OUTPUT FORMAT (mandatory final instruction): Write the story text, then ALWAYS end with exactly one <avereth>{"expected":{…},"deltas":[…]}</avereth> block as WORLD DELTAS defines it. Even when nothing changed, you MUST write <avereth>{"expected":{},"deltas":[]}</avereth>. Never omit the block. Nothing may follow </avereth>.';
 
 /** System prompt of the recovery extractor (variant A always; variant B only for a missing, invalid or incomplete block). */
 export function recoverySystem(vocab) {
@@ -107,6 +147,9 @@ export function recoverySystem(vocab) {
         '',
         'Rules:',
         ...vocab.rules.map((r) => `- ${r}`),
+        '',
+        'FORMAT RULES (schema-critical):',
+        ...FORMAT_RULES.map((r) => `- ${r}`),
         '',
         'Deltas:',
         deltaVocabularyText(vocab),

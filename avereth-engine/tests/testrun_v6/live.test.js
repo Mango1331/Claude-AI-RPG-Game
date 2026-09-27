@@ -86,7 +86,7 @@ test('the city named with its realm or with a spot in it is still Alderwatch: no
 test('a quest keeps the reward it was posted with, and the engine block and the HUD show it', () => {
     const q = run.turns.at(-1).state.quests['quest.night_watch_tanners_row_storehouse'];
     assert.equal(q.reward, '25 silver from owner via Guild');
-    assert.match(T('Alaric Red Sir').context.text, /Quest \(offered, Novice\): Night Watch, Tanner's Row Storehouse — from [^\n]* — reward: 25 silver from owner via Guild/);
+    assert.match(T('Alaric Red Sir').context.text, /Quest \(offered, Novice Guild contract\): Night Watch, Tanner's Row Storehouse — from [^\n]* — reward: 25 silver from owner via Guild/);
     const hudQuests = characterRows(run.turns.at(-1).state, content).find(([k]) => k === 'Quests')[1];
     assert.match(hudQuests, /Night Watch, Tanner's Row Storehouse \(offered · Novice · [^)]*reward 25 silver from owner via Guild\)/);
 });

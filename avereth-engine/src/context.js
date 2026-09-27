@@ -290,7 +290,8 @@ function retrievalItems(state, content, pinnedIds, recentTurns) {
     }
     for (const q of Object.values(state.quests)) {
         if (q.status !== 'active' && q.status !== 'offered') continue;
-        items.push({ kind: 'quest', text: `${q.title} ${q.notes.join(' ')}`, entities: [q.giver].filter(Boolean), quests: [q.id], turn: q.history.at(-1)?.turn ?? 0, importance: 0.8, label: `Quest (${q.status}${q.rank ? `, ${q.rank}` : ''}): ${q.title}${q.giver ? ` — from ${anyLabel(state, content, q.giver)}` : ''}${q.reward ? ` — reward: ${q.reward}` : ''}${q.notes.length ? ` — ${q.notes.at(-1)}` : ''}` });
+        // a Guild contract says where it ends: its reward is the Guild's to pay at a front desk (delta.js)
+        items.push({ kind: 'quest', text: `${q.title} ${q.notes.join(' ')}`, entities: [q.giver].filter(Boolean), quests: [q.id], turn: q.history.at(-1)?.turn ?? 0, importance: 0.8, label: `Quest (${q.status}${q.rank ? `, ${q.rank} Guild contract` : ''}): ${q.title}${q.giver ? ` — from ${anyLabel(state, content, q.giver)}` : ''}${q.reward ? ` — reward: ${q.reward}` : ''}${q.rank && q.status === 'active' ? ' (paid by the Guild when turned in at a front desk; locals confirm, never pay)' : ''}${q.notes.length ? ` — ${q.notes.at(-1)}` : ''}` });
     }
     for (const t of Object.values(state.threads)) if (t.status === 'open') items.push({ kind: 'thread', text: t.text, entities: [], turn: t.updated?.turn ?? 0, importance: 0.7, label: `Open thread (${t.kind}): ${t.text}` });
     return items;

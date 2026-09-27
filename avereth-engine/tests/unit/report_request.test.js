@@ -141,23 +141,33 @@ function intoTheCity(answer) {
 }
 
 test('the city reached from the start without a spot: the place request; the guard passed on the way is not with him at the clerk\'s desk', () => {
-    const t = intoTheCity('<avereth>{"place":"Adventurers\' Guild hall, front desk","leave":["gate_guard"]}</avereth>');
+    const t = intoTheCity('<avereth>{"place":"Adventurers\' Guild hall, front desk","present":["clerk"]}</avereth>');
     // meanwhile: the city, everyone the reply met, and the reply says the spot is being asked for
     assert.equal(t.r.recover, true);
     assert.deepEqual([t.first.recovery, t.first.unplaced, t.first.unplaced_report], ['pending', { city: 'Tidecross' }, INTO]);
     assert.match(t.first.panel, /^`PLACE NOT REPORTED YET — the report named Tidecross, not the spot Alaric is at: asking for it separately/);
     assert.ok(t.req.systemPrompt.startsWith(PLACE_REQUEST_HEAD));
-    assert.match(t.req.prompt, /Its report named the city reached \("Tidecross"\) but no spot in it, and introduced "gate_guard" \(gate guard\), "clerk" \(Serah\)\. Write the place now: exactly one <avereth>\{"place":"…","leave":\[…\]\}<\/avereth>/);
+    assert.match(t.req.prompt, /Its report named the city reached \("Tidecross"\) but no spot in it\. The people its report introduced: "gate_guard" \(gate guard, gate guard\), "clerk" \(Serah, guild clerk\)\. Write the place now: exactly one <avereth>\{"place":"…","present":\[…\]\}<\/avereth>/);
     // the answer: the Guild's front desk with the clerk; the guard is known, but not there
     assert.deepEqual([t.state.scene.place, t.state.scene.present], ["Adventurers' Guild hall, front desk", ['pc', 'npc.serah']]);
     assert.equal(t.state.entities['npc.gate_guard'].kind, 'npc');
     assert.deepEqual([t.got.applied, t.rec.recovery, t.rec.unplaced], [true, { from: 'place', ms: 5200 }, undefined]);
     assert.equal(t.rec.panel, "`PLACE REPORTED: Adventurers' Guild hall, front desk, named by a separate request (5.2 s).`");
     // an answer without a place, or none: the city stays his place, everyone the reply met stays listed, the reply says so
-    for (const [answer, why] of [['<avereth>{"leave":["gate_guard"]}</avereth>', 'the answer named no place'], [null, 'no answer']]) {
+    for (const [answer, why] of [['<avereth>{"present":["clerk"]}</avereth>', 'the answer named no place'], [null, 'no answer']]) {
         const f = intoTheCity(answer);
         assert.deepEqual([f.state.scene.place, f.state.scene.present], ['Tidecross', ['pc', 'npc.gate_guard', 'npc.serah']]);
         assert.deepEqual(f.rec.recovery, { from: 'place', failed: why, ms: 5200 });
         assert.match(f.rec.panel, /`PLACE NOT REPORTED — the report named Tidecross, not the spot, and the separate request named none \(5\.2 s\): Alaric's place is Tidecross/);
     }
+});
+
+test('the place request\'s "present": the refs or names of the people the reply introduced who are there; [] is none of them; an answer without it (the old "leave") sends nobody away (live run 27.09. 04:11)', () => {
+    assert.deepEqual(intoTheCity('<avereth>{"place":"Adventurers\' Guild hall","present":["Serah"]}</avereth>').state.scene.present, ['pc', 'npc.serah']);
+    assert.deepEqual(intoTheCity('<avereth>{"place":"Adventurers\' Guild hall","present":[]}</avereth>').state.scene.present, ['pc']);
+    // a ref the reply did not introduce changes nothing
+    assert.deepEqual(intoTheCity('<avereth>{"place":"Adventurers\' Guild hall","present":["clerk","watchmen"]}</avereth>').state.scene.present, ['pc', 'npc.serah']);
+    // the run: asked who was not there, the answer named everyone, the clerk at the desk included
+    const old = intoTheCity('<avereth>{"place":"Adventurers\' Guild hall","leave":["gate_guard","clerk"]}</avereth>');
+    assert.deepEqual([old.state.scene.place, old.state.scene.present], ["Adventurers' Guild hall", ['pc', 'npc.gate_guard', 'npc.serah']]);
 });

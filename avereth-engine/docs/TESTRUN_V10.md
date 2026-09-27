@@ -68,7 +68,9 @@ Der Lauf wurde nach Nachricht 26 abgebrochen.
   - nach einer Bewegung ist es ein neuer Platz, und wer bei ihm war, kommt nicht mit.
   - Sonst wären die Leute der Gilde in den Keller „mitgekommen“, weil „Blue Ox Tavern cellar (Redmarch, Copperlane)“ den Stadtnamen enthält.
 
-Im Replay mit der Antwort `{"place":"Adventurers' Guild hall, front counter","leave":["gate_guard","corvan"]}` steht von Nachricht 7 bis 13 im Engine-Block (die Antwort ist synthetisch, der Lauf hatte keine solche Nachfrage):
+> **Seit 3.1.5** fragt die Nachforderung positiv: `present` statt `leave`, also wer von den Personen, die der Report eingeführt hat, dort bei Alaric ist. Im Lauf vom 27.09. 04:11 nannte die Antwort auf die Frage nach den Abwesenden auch die beiden Schreiber an der Theke ([TESTRUN_V11.md](TESTRUN_V11.md)). Der Replay antwortet jetzt `{"place":"Adventurers' Guild hall, front counter","present":["marta"]}`, mit demselben Ergebnis.
+
+Im Replay mit der Antwort `{"place":"Adventurers' Guild hall, front counter","leave":["gate_guard","corvan"]}` (3.1.4) steht von Nachricht 7 bis 13 im Engine-Block (die Antwort ist synthetisch, der Lauf hatte keine solche Nachfrage):
 
 ```
 Day 1, 09:40 (morning) | Redmarch, Veyrhold — Adventurers' Guild hall, front counter | mode: story

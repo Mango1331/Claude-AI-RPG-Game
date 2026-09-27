@@ -225,7 +225,7 @@ Alle 42 Event-Typen sind in `schemas/event.schema.json` und [DATENMODELL.md](DAT
 
 **Welt-Lore** ([LOREBOOK.md](LOREBOOK.md)):
 - **Beschreibende Lore** (Realms, Städte, Gesellschaft, Gilde, Generierungsgerüste) liegt im SillyTavern-Lorebook `lorebook/`, als Character Lore der Erzähler-Karte.
-- **Die Engine behält** in `lore.json` nur den strukturellen Index (Orte und Realms mit ID, Name, Art, Realm) und die 19 Texte als Rückfall ohne Lorebook.
+- **Die Engine behält** in `lore.json` nur den strukturellen Index (Orte und Realms mit ID, Name, Art, Realm) und die Lore-Texte als Rückfall ohne Lorebook (19, seit 3.1.5 dazu „Guild contracts“).
 - **Lore-Bridge:** Vor jeder Generierung setzt die Extension Realm und Stadt als Extension-Prompt mit Position NONE und `scan = true`. SillyTavern fügt ihn nie ein, World Info durchsucht ihn aber. Die Einträge von Realm und Stadt sind so in jedem Zug aktiv, auch ohne Tracker-Box. Engine-Zustand geht bewusst nicht mit.
 - **Vorrang:** Engine-Block und Erzählervertrag gehen dem Lorebook vor. Kein Eintrag beansprucht veränderlichen Zustand.
 

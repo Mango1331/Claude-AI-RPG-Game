@@ -2,10 +2,10 @@
 // extension and a scripted, streaming mock narrator (OpenAI-compatible, port 5001). Plays a Warrior's creation (answered by
 // System panels, including the Pre-Test-5 run's invented Skill pick and a story message sent too early), an incidental NPC
 // at the city gate (the report names only the city: the place request), a recurring NPC, the quest board, registration
-// and coin, an ambush fight, the report back, Kest again after his exchange has left the history window, travel to
-// another realm, and two replies without a fact report (the separate report request: once answered, once not); it checks
-// the Runtime V3 goals in the real host: prompt assembly, history window, NPC record, Lore Bridge, streaming, display, HUD,
-// report requests. It judges no prose (scripted mock).
+// and coin, an ambush fight, the report back (the Guild pays the contract), Kest again after his exchange has left the
+// history window, travel to another realm, and two replies without a fact report (the separate report request: once
+// answered, once not); it checks the Runtime V3 goals in the real host: prompt assembly, history window, NPC record, Lore
+// Bridge, streaming, display, HUD, report requests. It judges no prose (scripted mock).
 // Usage: AVERETH_ST_DIR=/path/to/SillyTavern node tools/st_live/run.mjs   (after setup.mjs; Playwright + Chromium)
 // AVERETH_ST_PRESET="Avereth Narrator" plays the same run with that Chat Completion preset instead of Default, as a
 // player selects it (its own streaming setting included), and checks its payload (docs/NARRATOR_AB.md).
@@ -47,7 +47,7 @@ const SCRIPT = [
     ['look around the market', 'Beyond the gate the market smells of smoke and tar; a tinker sharpens knives under a grey awning.'],
     ['grilled eel', 'The eel seller wraps a skewer in a leaf and takes a copper without a word.'],
     ['back to the Guild', 'Serah takes the ear with two fingers and drops it in a pail. "Cellar\'s clear, then." She counts out five silver. At the board, Kest watches you without a word.\n<avereth>{"time":35,"place":"Guild hall, counter","enter":["Serah","Kest"],"quests":[{"title":"Rats in the Salt Cellar","status":"completed"}],"coin":[{"cp":50,"why":"quest reward"}],"learn":[{"who":"Serah","s":"pc","p":"cleared","o":"the salt cellar rats","how":"told","from":"pc"}]}</avereth>'],
-    ['Guild hall', 'The Guild hall smells of wet wool and ink. At the Novice board a one-eyed man with a grey braid leans on the wall; behind the counter a clerk with pale eyes and an ink-smudged jaw sorts slips.\n\n"New face," the one-eyed man rasps. "Board\'s there."\n<avereth>{"time":25,"place":"Guild hall, Novice board","leave":["gate guard"],"new":[{"ref":"Kest","name":"Kest","kind":"npc","desc":["veteran adventurer"],"traits":"one-eyed, grey braid, gruff","band":"SHORT"},{"ref":"Serah","name":"Serah","kind":"npc","desc":["guild clerk"],"traits":"pale eyes, ink-smudged jaw","band":"MEDIUM"}],"facts":[{"s":"Kest","p":"occupation","o":"veteran adventurer"},{"s":"Kest","p":"voice","o":"low rasp, clipped sentences"},{"s":"Serah","p":"occupation","o":"Guild clerk"}],"quests":[{"title":"Rats in the Salt Cellar","status":"offered","giver":"Serah","level":1,"type":"minor","rank":"Novice"}]}</avereth>'],
+    ['Guild hall', 'The Guild hall smells of wet wool and ink. At the Novice board a one-eyed man with a grey braid leans on the wall; behind the counter a clerk with pale eyes and an ink-smudged jaw sorts slips.\n\n"New face," the one-eyed man rasps. "Board\'s there."\n<avereth>{"time":25,"place":"Guild hall, Novice board","leave":["gate guard"],"new":[{"ref":"Kest","name":"Kest","kind":"npc","desc":["veteran adventurer"],"traits":"one-eyed, grey braid, gruff","band":"SHORT"},{"ref":"Serah","name":"Serah","kind":"npc","desc":["guild clerk"],"traits":"pale eyes, ink-smudged jaw","band":"MEDIUM"}],"facts":[{"s":"Kest","p":"occupation","o":"veteran adventurer"},{"s":"Kest","p":"voice","o":"low rasp, clipped sentences"},{"s":"Serah","p":"occupation","o":"Guild clerk"}],"quests":[{"title":"Rats in the Salt Cellar","status":"offered","giver":"Serah","reward":"5 silver","level":1,"type":"minor","rank":"Novice"}]}</avereth>'],
     ['Greyhowl', '"Greyhowl." Kest\'s one eye narrows. "Took two Wardens last spring. You leave that bill alone, Novice." He taps the lower slip instead. "Rats. Start there."\n<avereth>{"time":5,"memory":[{"text":"Kest warned Alaric that Greyhowl killed two Wardens and told him to leave the posting alone","who":["Kest","pc"],"imp":7}],"attitude":[{"who":"Kest","delta":-15,"why":"a green Novice eyeing the Greyhowl bill"}],"facts":[{"s":"Kest","p":"agenda","o":"get the Greyhowl posting taken down"}]}</avereth>'],
     ['register', 'Serah takes the two silver, stamps a lead tag and slides it across. "Rats in the Salt Cellar. Under the fish docks. Bring an ear."\n<avereth>{"time":10,"coin":[{"cp":-20,"why":"Guild registration"}],"facts":[{"s":"pc","p":"guild_rank","o":"Novice"}],"items":[{"item":"Guild registration tag","qty":1,"from":"Serah","to":"pc","why":"registration"}],"quests":[{"title":"Rats in the Salt Cellar","status":"active"}]}</avereth>'],
     ['salt cellar', 'The salt cellar under the fish docks is cold and briny. Past the stacked barrels a rat the size of a cat gnaws at a sack, its back to the stairs, unaware of you.\n<avereth>{"time":30,"place":"salt cellar under the fish docks","new":[{"ref":"rat","kind":"creature","species":"rat","desc":["big rat"],"band":"SHORT"}],"aware":[{"who":"rat","level":"unaware"}]}</avereth>'],
@@ -64,8 +64,8 @@ const REPORTS = [
     ['grilled eel', 'The eel is good, hot and salty.'], // no report in the answer: the reply keeps NO FACT REPORT
 ];
 const isReportRequest = (msgs) => String(msgs[0]?.content || '').startsWith('[AVERETH ENGINE — FACT REPORT REQUEST]');
-// answers to the engine's place requests: where the reply ends, and who of the people it met is not there
-const PLACES = [['city gate', '<avereth>{"place":"Tidecross south gate","leave":[]}</avereth>']];
+// answers to the engine's place requests: where the reply ends, and who of the people it introduced is there
+const PLACES = [['city gate', '<avereth>{"place":"Tidecross south gate","present":["gate guard"]}</avereth>']];
 const isPlaceRequest = (msgs) => String(msgs[0]?.content || '').startsWith('[AVERETH ENGINE — PLACE REQUEST]');
 
 const mock = http.createServer(async (req, res) => {
@@ -276,9 +276,14 @@ checks.npcTurnsBeforeAlaric = /COMBAT START — Wolf A attacks Alaric\n[^\n]*\n�
 // the city reached from the verge without a spot (live run 27.09. 02:30): the place request names it, the HUD follows
 const placeReqs = requests.filter((r) => isPlaceRequest(r.messages));
 checks.placeRequested = placeReqs.length === 1 && /NARRATOR'S REPLY:\nThe south gate of Tidecross/.test(String(placeReqs[0].lastUser))
-    && /Its report named the city reached \("Tidecross"\) but no spot in it, and introduced "gate guard"/.test(String(placeReqs[0].lastUser))
+    && /Its report named the city reached \("Tidecross"\) but no spot in it\. The people its report introduced: "gate guard" \(gate guard, bored\)/.test(String(placeReqs[0].lastUser))
     && /PLACE REPORTED: Tidecross south gate, named by a separate request \(\d+\.\d s\)\./.test(T('city gate').shown || '')
     && /Location: Tidecross, \w+ — Tidecross south gate/.test(T('city gate').hudText || '') && /Present: [^\n]*gate guard/.test(T('city gate').hudText || '');
+// a Guild contract turned in at the front desk (live run 27.09. 04:11): the engine pays its posted reward, and the coin
+// the report books for it is refused
+const turnIn = T('back to the Guild');
+checks.guildTurnIn = /QUEST COMPLETED — Rats in the Salt Cellar/.test(turnIn.shown || '') && /COIN \+5 Silver → 8 Silver · Guild reward: Rats in the Salt Cellar/.test(turnIn.shown || '')
+    && (turnIn.rejected || []).some((r) => r.startsWith('the Guild pays the posted 5 Silver of the Guild contract "Rats in the Salt Cellar" with this turn-in'));
 checks.reportRequestFailed = /NO FACT REPORT, and the separate request brought none \(\d+\.\d s\): nothing this reply established was recorded/.test(T('grilled eel').shown || '');
 checks.warriorHud = /HP 85\/85 \(unhurt\)/.test(T('city gate').hudText || '') && /Starter Longsword · Starter Heavy Armor/.test(T('city gate').hudText || '')
     && /ATK 6 · MATK 0 · DEF 7 · MDEF 3/.test(T('city gate').hudText || '');

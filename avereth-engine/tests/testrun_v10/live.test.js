@@ -20,8 +20,9 @@ const swaps = parseSwaps(fx.swaps);
 const ai = (mes, extra = {}) => ({ is_user: false, is_system: false, mes, swipe_id: 0, swipes: [mes], swipe_info: [{ extra: {} }], extra });
 
 // the answer to the place request of message 6 as the request asks for it: where the reply ends (Marta's counter) and
-// who is not there (the gate guard he passed, Corvan on his way out). Synthetic: the run had no such request.
-const PLACE = '<avereth>{"place":"Adventurers\' Guild hall, front counter","leave":["gate_guard","corvan"]}</avereth>';
+// who of the people the report introduced is there (Marta; not the gate guard he passed, nor Corvan on his way out).
+// Synthetic: the run had no such request.
+const PLACE = '<avereth>{"place":"Adventurers\' Guild hall, front counter","present":["marta"]}</avereth>';
 
 /** The run as the extension plays it; `answers` stand in for requests the run did not make. */
 function replay(answers = {}) {
@@ -65,7 +66,7 @@ test('Alaric walks into Redmarch and the Guild: the engine asks where the reply 
     // the request: the bookkeeper, the reply, and the refs its report introduced
     const req = run.at[6].request;
     assert.ok(req.systemPrompt.startsWith(PLACE_REQUEST_HEAD));
-    assert.match(req.prompt, /Its report named the city reached \("Redmarch"\) but no spot in it, and introduced "gate_guard" \(gate guard\), "marta", "corvan"\./);
+    assert.match(req.prompt, /Its report named the city reached \("Redmarch"\) but no spot in it\. The people its report introduced: "gate_guard" \(gate guard, city gate guard, Veyrhold black-and-red\), "marta" \(Marta, guild receptionist, [^)]*\), "corvan" \(Corvan, hunter, mud-caked coat\)\./);
     // with the answer: Marta's counter, and nobody the reply met on the way
     const s = run.at[6].state;
     assert.deepEqual([s.scene.place, s.scene.present], ["Adventurers' Guild hall, front counter", ['pc', 'npc.marta']]);

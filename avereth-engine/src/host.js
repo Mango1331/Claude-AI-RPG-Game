@@ -163,8 +163,10 @@ export const ATTACKERS_REQUEST_HEAD = "[AVERETH ENGINE — COMBAT ATTACKERS REQU
 
 // Live run 27.09. 02:30: the player walked from the roadside verge outside Redmarch into the city and the Guild; the
 // reply passed the gate guard and found Marta at the Guild's desk, and its report named the city ("location") and no
-// spot. Where the reply ends and who is there is asked for the same way: only "place" and "leave"; no story.
-export const PLACE_REQUEST_HEAD = "[AVERETH ENGINE — PLACE REQUEST] The narrator's reply below took Alaric from where the game began, outside the city, into the city, and its fact report named the city but not the spot where he is when the reply ends. Here you are the engine's bookkeeper, not the narrator: write no story and do not continue it. Return only one <avereth> report with two keys: \"place\", the spot where Alaric is when the reply ends (a short name, e.g. \"Adventurers' Guild hall\"), and \"leave\", everyone the reply or the game state below has with him who is not at that spot when the reply ends (someone he passed on the way, someone who walked off), by ref; [] if everyone is.";
+// spot. Where the reply ends and who is there is asked for the same way: only "place" and who of the people it introduced
+// is there ("present"); no story. Live run 27.09. 04:11: asked who was NOT there ("leave"), the answer named everyone in
+// the reply, the two clerks at the desk included, and the next reply brought two new clerks.
+export const PLACE_REQUEST_HEAD = "[AVERETH ENGINE — PLACE REQUEST] The narrator's reply below took Alaric from where the game began, outside the city, into the city, and its fact report named the city but not the spot where he is when the reply ends. Here you are the engine's bookkeeper, not the narrator: write no story and do not continue it. Return only one <avereth> report with two keys: \"place\", the spot where Alaric is when the reply ends (a short name, e.g. \"Adventurers' Guild hall\"), and \"present\", the refs of the people listed below who are with him at that spot when the reply ends ([] if none of them is).";
 
 const listOf = (x) => (x === undefined || x === null ? [] : Array.isArray(x) ? x : [x]);
 const commitmentsOf = (x) => listOf(x).flatMap((cb) => (typeof cb === 'string' ? [{ by: cb }] : cb && Array.isArray(cb.by) ? cb.by.map((by) => ({ ...cb, by })) : cb ? [cb] : []));
@@ -182,9 +184,12 @@ function withAttackers(report, attackers, answer) {
     };
 }
 
-/** The reply's own report with the spot the request named: its place, and who is not there with him. */
+/** The reply's own report with the spot the request named: its place; whom the reply introduced and the answer does not
+ * name as present stays where the reply met them. No "present" list: nobody is sent away. */
 function withPlace(report, answer) {
-    return { ...report, place: answer.place, leave: [...listOf(report.leave), ...listOf(answer.leave)] };
+    const here = new Set(listOf(answer.present).map((x) => normText(x)));
+    const gone = Array.isArray(answer.present) ? listOf(report.new).filter((n) => n && n.ref && !here.has(normText(n.ref)) && !(n.name && here.has(normText(n.name)))).map((n) => n.ref) : [];
+    return { ...report, place: answer.place, leave: [...listOf(report.leave), ...gone] };
 }
 
 /**
@@ -209,10 +214,10 @@ export function reportRequest(chat, id, content, { settings = {} } = {}) {
         };
     }
     if (!r.report_error) {
-        const met = listOf(r.unplaced_report?.new).filter((n) => n && n.ref).map((n) => `"${n.ref}"${n.name && normText(n.name) !== normText(n.ref) ? ` (${n.name})` : ''}`);
+        const met = listOf(r.unplaced_report?.new).filter((n) => n && n.ref).map((n) => `"${n.ref}" (${[n.name, ...listOf(n.desc)].filter(Boolean).map(String).join(', ').slice(0, 80)})`);
         return {
             systemPrompt: `${PLACE_REQUEST_HEAD}\n\n${context.text}`,
-            prompt: `PLAYER'S MESSAGE:\n${chat[u].mes}\n\nNARRATOR'S REPLY:\n${msg.mes}\n\nIts report named the city reached ("${r.unplaced.city}") but no spot in it${met.length ? `, and introduced ${met.join(', ')}` : ''}. Write the place now: exactly one <avereth>{"place":"…","leave":[…]}</avereth>, nothing else. Do not continue the story.`,
+            prompt: `PLAYER'S MESSAGE:\n${chat[u].mes}\n\nNARRATOR'S REPLY:\n${msg.mes}\n\nIts report named the city reached ("${r.unplaced.city}") but no spot in it. ${met.length ? `The people its report introduced: ${met.join(', ')}.` : 'Its report introduced nobody.'} Write the place now: exactly one <avereth>{"place":"…","present":[…]}</avereth>, nothing else. Do not continue the story.`,
             hash: r.text_hash,
         };
     }

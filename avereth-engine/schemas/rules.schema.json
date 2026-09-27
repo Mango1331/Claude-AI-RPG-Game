@@ -106,6 +106,31 @@
         "bands",
         "order"
       ]
+    },
+    "guild": {
+      "type": "object",
+      "required": [
+        "branch_kinds"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "src": {
+          "type": "string"
+        },
+        "contract": {
+          "type": "string"
+        },
+        "branch_kinds": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "city",
+              "capital",
+              "seat"
+            ]
+          }
+        }
+      }
     }
   }
 }

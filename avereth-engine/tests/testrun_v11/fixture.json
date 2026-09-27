@@ -1,0 +1,2029 @@
+{
+ "source": "Live run 27.09.2026 04:11 (build 3.1.4; GLM-5.3-Flash, Avereth Narrator preset, lore from World Info, word swap ledger=register): the chat JSONL (second swipes of messages 8 and 10), the narrator replies with their reports and the report-request answers from the Chat Completion log",
+ "swaps": "ledger=register",
+ "chat": [
+  {
+   "i": 0,
+   "greeting": true,
+   "mes": "*Cool wind moves through the rough grass around Alaric Red's boots.*\r\n\r\n*The last thing that belongs to Earth is still there in memory—an old life, a world without visible mana, Classes, or this impossible second beginning. The present is different: the smell of soil and distant woodsmoke, an unfamiliar sky, and stone walls beyond the public road.*\r\n\r\n*Alaric Red is already standing on an uncultivated roadside verge outside the nearby city. Cultivated fields and fenced holdings begin farther away. No one is close enough to have witnessed the instant of arrival.*\r\n\r\n*The body is Human, healthy, and eighteen years old. Simple traveler's clothes are already being worn; a small pouch holding five silver rests at the belt. The memories are still from Earth.*\r\n\r\n*A translucent interface opens across Alaric Red's vision.*\r\n\r\n`SYSTEM INITIALIZATION COMPLETE`\r\n`Origin: Earth`\r\n`World: Avereth`\r\n`Race: Human`\r\n`Age: 18`\r\n`Level: 1 | Rank: F`\r\n\r\n`BASE STATS`\r\n`STR 5 | VIT 5 | AGI 5 | INT 5 | PER 5 | WIL 5`\r\n\r\n`Location: Public roadside verge outside Alderwatch, Valedorn Crown`\r\n`Arrival Witnesses: NONE`\r\n`Starting Possessions: Simple Traveler's Clothes | Small Pouch | 5 Silver`\r\n`Local Common Language: Integrated`\r\n`Mandatory Quest: NONE`\r\n\r\n`CHARACTER CREATION — STEP 1/2`\r\n`Choose your Base Class:`\r\n\r\n`Warrior   — Favored Stats: STR / VIT`\r\n`Mage      — Favored Stats: INT / WIL`\r\n`Guardian  — Favored Stats: VIT / WIL`\r\n`Duelist   — Favored Stats: STR / AGI`\r\n`Ranger    — Favored Stats: AGI / PER`\r\n\r\n`Your chosen Class immediately applies +1 to both Favored Stats at Level 1.`\r\n`After choosing a Class, select exactly 2 Skills from that Class's Base Skill Pool.`\r\n\r\n`Reply with your Class choice.`\r\n\r\n*The System waits. Story time does not move during Character Creation.*\r\n",
+   "events": [
+    {
+     "t": "campaign.started",
+     "d": {
+      "seed": 2911761863,
+      "minute": 540,
+      "entities": [
+       {
+        "id": "pc",
+        "kind": "pc",
+        "name": "Alaric",
+        "race": "Human",
+        "age": 18,
+        "origin": "Earth",
+        "descriptors": [
+         "alaric",
+         "stranger",
+         "traveler"
+        ],
+        "status": "alive",
+        "location": "loc.alderwatch",
+        "sheet": {
+         "level": 1,
+         "class": null,
+         "stats": {
+          "STR": 5,
+          "VIT": 5,
+          "AGI": 5,
+          "INT": 5,
+          "PER": 5,
+          "WIL": 5
+         },
+         "skills": {},
+         "equipment": {
+          "clothing": "simple_travelers_clothes"
+         },
+         "inventory": {
+          "small_pouch": 1
+         },
+         "coin_cp": 50,
+         "xp": 0,
+         "free_points": 0,
+         "hp": 80,
+         "mp": 60,
+         "sta": 100
+        }
+       }
+      ],
+      "location": "loc.alderwatch",
+      "place": "public roadside verge outside Alderwatch",
+      "facts": [
+       {
+        "id": "f.pc.name",
+        "s": "pc",
+        "p": "name",
+        "o": "Alaric",
+        "visibility": "public",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.appearance",
+        "s": "pc",
+        "p": "appearance",
+        "o": "Human, about eighteen; wears simple traveler's clothes",
+        "visibility": "public",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.origin",
+        "s": "pc",
+        "p": "origin",
+        "o": "Earth (transmigrated; memories intact)",
+        "visibility": "secret",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       },
+       {
+        "id": "f.pc.arrival_witnesses",
+        "s": "pc",
+        "p": "arrival_witnesses",
+        "o": "none",
+        "visibility": "secret",
+        "since": {
+         "turn": 0,
+         "minute": 540
+        },
+        "until": null,
+        "importance": 0.9,
+        "hard": false,
+        "source": {
+         "kind": "campaign_start"
+        }
+       }
+      ],
+      "knowledge": [
+       {
+        "who": "pc",
+        "about": "f.pc.name",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.appearance",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.origin",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       },
+       {
+        "who": "pc",
+        "about": "f.pc.arrival_witnesses",
+        "stance": "knows",
+        "source": "self",
+        "turn": 0,
+        "minute": 540
+       }
+      ],
+      "campaign": "avereth",
+      "content_version": "3.0.0",
+      "engine_version": "3.1.4"
+     }
+    }
+   ]
+  },
+  {
+   "i": 1,
+   "user": true,
+   "mes": "Warrior"
+  },
+  {
+   "i": 2,
+   "system": true,
+   "mes": "```\n[SYSTEM // CHARACTER CREATION — STEP 2/2]\nCLASS SELECTED: WARRIOR — favored STR +1, VIT +1 · Basic Attack granted (P1)\nSTR 6 | VIT 6 | AGI 5 | INT 5 | PER 5 | WIL 5 | Max HP 85 | Max MP 60 | Max STA 100 | Initiative 7\nChoose exactly 2 Skills from the Warrior Base Pool (for example \"Heavy Slash + Guard\"):\n- Heavy Slash [Offensive] | Cost 7 STA | Range ENGAGED | Raw = 10 + STR × 1.50 + ATK\n- Guard [Defensive] | Cost 5 STA | Effect: until the start of the Warrior's next turn, gain temporary DEF equal to: 3 + floor(VIT × 0.50). This is an explicit temporary DEF bonus and does not alter VIT.\n- Power Strike [Offensive] | Cost 12 STA | Range ENGAGED | Raw = 16 + STR × 1.875 + ATK\n- Quick Slash [Offensive] | Cost 5 STA | Range ENGAGED | Raw = 6 + STR × 0.875 + AGI × 0.625 + ATK\n- Charge [Offensive / Utility] | Cost 8 STA | Range ENGAGED after movement (EXTRA-BAND) | Raw = 8 + STR × 1.25 + AGI × 0.375 + ATK | Effect: as part of this Skill, close 1 additional Range Band before the attack. This explicit extra shift may combine with the normal one-band Turn movement. The target must be ENGAGED when the attack resolves.\n- Deflect [Defensive] | Cost 6 STA | Effect: until the start of the Warrior's next turn, incoming damage is reduced by 25%.\nStarter Gear, equipped when Step 2 is complete: Starter Longsword [F] (ATK 6), Starter Heavy Armor [F] (DEF 6, MDEF 2).\n```"
+  },
+  {
+   "i": 3,
+   "user": true,
+   "mes": "Heavy Slash + Charge"
+  },
+  {
+   "i": 4,
+   "system": true,
+   "mes": "```\n[SYSTEM // CHARACTER CREATION COMPLETE]\nSKILLS SELECTED: Heavy Slash (P1), Charge (P1)\nSTARTER GEAR EQUIPPED: Starter Longsword [F] (ATK 6), Starter Heavy Armor [F] (DEF 6, MDEF 2)\nAlaric | Human | Level 1 | XP 0/100 | Power Rank F | Class: Warrior\nHP 85/85 | MP 60/60 | STA 100/100\nSTR 6 | VIT 6 | AGI 5 | INT 5 | PER 5 | WIL 5 | Free Stat Points 0\nATK 6 | MATK 0 | DEF 7 (base 1) | MDEF 3 (base 1) | Initiative 7 (floor(1.5 × AGI))\nActive Effects: none | Domain: NOT YET UNLOCKED\nEquipment: Simple Traveler's Clothes, Starter Longsword [F] (ATK 6), Starter Heavy Armor [F] (DEF 6, MDEF 2)\nCarried: Small Pouch | Coin 5 Silver\nThe story begins with your next message: write what Alaric does.\n```"
+  },
+  {
+   "i": 5,
+   "user": true,
+   "mes": "*i walk into the city ahead and to the adventurers guild and walk inside the guild building*"
+  },
+  {
+   "i": 6,
+   "reply": "*The road takes him through open fields, then between two stone gateposts where a rutted track joins the king's road. Cart wheels creak somewhere ahead. The walls of Alderwatch rise grey and mortared, higher than they looked from the verge, and the morning sun throws their shadow partway across the road.*\n\n*The gate is busy but unhurried. A line of farmers' carts, a drover prodding geese along with a switch, two watchmen in dull mail leaning on spears by the arch. One of them looks Alaric over—the sword at his hip, the armor—and loses interest when nothing about him demands a second glance. Nobody asks his name or business. The archway swallows the light for a few strides, cold stone breathing around him, and then the city opens up.*\n\n*Inside: cobbles worn smooth, the smell of bread and horse dung and woodsmoke all at once. A street of shops angles away from the gate, signage hanging on iron brackets—a farrier, an apothecary with bundles of dried herbs strung in its window, a chandler. Voices overlap in the local tongue, which his own understands without effort. A woman scolds a boy for dropping a basket of apples; apples roll and are chased.*\n\n*The Guild hall is easy to find, a broad two-story building of timber and stone set back from the street, its doors standing open. A painted shield above the lintel shows a crossed sword and arrow.*\n\n*Inside, the noise changes—boot heels on floorboards, low talk, the scrape of a whetstone. The hall runs deep: long tables with benches, a notice board thick with posted sheets, a wide counter along the right wall where three clerks work. A pair of hunters in oiled leather argue over a map at the nearest table. Behind the counter, a grey-haired man with a ledger open in front of him stamps a page and calls the next name without looking up—\"Torv, your payout's ready\"—while a young woman clerk at the far end of the counter taps through a stack of wooden Quest tags, sorting them.*\n\n*The floor is his to cross. Nobody has marked him yet beyond a flick of a hunter's eyes at the sword.*\n\n<avereth>{\"time\":40,\"location\":\"Alderwatch, Valedorn Crown\",\"new\":[{\"ref\":\"clerk_old\",\"kind\":\"npc\",\"desc\":[\"guild clerk\",\"grey-haired\"],\"traits\":\"grey hair, ledger, ink-stained fingers, brisk voice\"},{\"ref\":\"clerk_young\",\"kind\":\"npc\",\"desc\":[\"guild clerk\",\"young woman\"],\"traits\":\"young woman, sorting wooden Quest tags, quick hands\"}],\"facts\":[{\"s\":\"guild hall (Alderwatch)\",\"p\":\"contains\",\"o\":\"long tables, notice board, staffed counter\"}]}</avereth>",
+   "answer": "<avereth>{\"place\":\"Adventurers' Guild hall\",\"leave\":[\"watchmen\",\"drover\",\"woman\",\"boy\",\"hunters\",\"clerk_old\",\"clerk_young\"]}</avereth>",
+   "ms": 2748
+  },
+  {
+   "i": 7,
+   "user": true,
+   "mes": "*i walk to the front desk and say* Hello im here to register"
+  },
+  {
+   "i": 8,
+   "reply": "*The young woman with the Quest tags looks up first—then the grey-haired man lifts a hand and she goes back to her sorting.*\n\n\"Registration's over here with me.\" *He turns the register sideways on the counter, unhurried.* \"Name?\"\n\n*He's already pulling a fresh sheet of paper toward himself, dipping a nib. The inkwell leaves a dark ring on the worn wood. Up close he smells of pipe smoke and stamp ink, and his eyes do a quick, practised pass over Alaric—the sword, the armor, the hands.*\n\n\"Fair warning on how this runs. Name, age, whether you can read and write. Then you press blood to the sheet—a pin prick, nothing worse—and the Guild stone confirms your Rank. Whole thing takes a quarter hour.\" *He sets a fat iron pin on the counter beside the register, its point fine as a needle.* \"There's the matter of the fee. Two silver for a Novice's medallion and entry in the rolls. Paid once, yours for life, every branch honors it.\"\n\n*He glances at the sword again, then back to the blank line on the page.*\n\n\"Two silver, and I write your name down. That's the whole bargain. So—name and age, and we'll begin.\"\n\n*Behind him the woman with the tags calls out a Quest number to a waiting pair of hunters; a bench scrapes somewhere in the hall's depths. The counter between them holds the pen, the pin, the open page—everything waiting on him.*",
+   "answer": "<avereth>{\"time\":2,\"place\":\"front desk of the guild hall\",\"new\":[{\"ref\":\"clerk\",\"kind\":\"npc\",\"name\":\"Guild registration clerk\",\"desc\":[\"guild clerk\",\"grey-haired\"],\"traits\":\"grey-haired, smells of pipe smoke and stamp ink, unhurried, practised observer\",\"band\":\"ENGAGED\"},{\"ref\":\"tagwoman\",\"kind\":\"npc\",\"desc\":[\"guild staff\",\"handles Quest tags\"],\"traits\":\"young woman sorting Quest tags\",\"band\":\"SHORT\"}],\"position\":[{\"who\":\"clerk\",\"band\":\"ENGAGED\"},{\"who\":\"tagwoman\",\"band\":\"SHORT\"}],\"aware\":[{\"who\":\"clerk\",\"level\":\"aware\"},{\"who\":\"tagwoman\",\"level\":\"aware\"}],\"facts\":[{\"s\":\"guild registration\",\"p\":\"requires\",\"o\":\"name, age, literacy, blood signature, and a Guild stone rank confirmation, taking about a quarter hour\"},{\"s\":\"novice medallion and guild entry\",\"p\":\"costs\",\"o\":\"two silver, paid once for life across all branches\"},{\"s\":\"clerk\",\"p\":\"has prepared\",\"o\":\"a fresh registration sheet, nib, and iron blood pin on the counter\"},{\"s\":\"clerk\",\"p\":\"occupation is\",\"o\":\"guild registration clerk at Alderwatch\"}],\"quests\":[{\"title\":\"Guild registration\",\"status\":\"offered\",\"giver\":\"clerk\",\"note\":\"name, age, literacy, blood pin, Guild stone confirmation\",\"reward\":\"Novice medallion and entry in the rolls\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"}]}</avereth>",
+   "ms": 27719
+  },
+  {
+   "i": 9,
+   "user": true,
+   "mes": "Alaric Red 18 i can read and write *i say and pay the 2 silver and then put my finger on the iron pin and let my blood drip on the sheet before i put my hand on the stone*"
+  },
+  {
+   "i": 10,
+   "reply": "*The clerk takes the two silver coins off the counter with a swipe of his thumb, bites one out of old habit, and drops both into a locked drawer beneath the register.*\n\n\"Alaric Red. Eighteen. Letters.\" *The nib scratches it all down in a cramped, quick hand.* \"Word of advice—hold the pin like you mean it. First-timers flinch and I have to blot the page.\"\n\n*Alaric doesn't flinch. The pin's point bites the pad of his finger, a sting no deeper than a nettle, and dark drops fall onto the sheet. The clerk watches the blood soak into the paper with mild approval.*\n\n\"Steady hands. Good.\"\n\n*He turns the register to face a squat block of grey stone set into the counter's end, worn smooth where thousands of palms have rested before. Alaric puts his hand on it. The stone is cool at first, then warms under his palm—a slow pulse, like something with a heartbeat turning over in its sleep. A faint line of light travels the length of the block and dies.*\n\n\"Rank F,\" *the clerk reads off the surface, unsurprised.* \"Novice. Everyone starts there. Warrior's build on you, but the stone doesn't care what I think.\"\n\n*He stamps the page, blows on the ink, and reaches under the counter. What comes out is a wooden case, and inside it a medallion—a dull iron disc stamped with the crossed sword and arrow, a fresh F scored beneath. He slides the case across.*\n\n\"Rules you'll actually use: medallion stays on you inside Guild halls. Quests come off that board there, Novice-tagged only until you rank up. Complete them at the counter, get paid here, same counter. Abandon a Quest you've taken twice and we'll have a different conversation.\" *He's already turning the register back around for the next name.* \"Congratulations and welcome to the Guild, Alaric Red. Counter's this end for payouts, Hessa's end for Quest tags.\"\n\n*The young woman down the counter—Hessa, presumably—doesn't look up from her sorting.*\n\n<avereth>{\"time\":12,\"coin\":[{\"who\":\"pc\",\"cp\":-20,\"taken_by\":\"Guild registration clerk\",\"why\":\"Novice registration fee\"}],\"items\":[{\"item\":\"Novice Guild medallion (iron, Rank F)\",\"qty\":1,\"from\":\"Guild registration clerk\",\"to\":\"pc\",\"why\":\"registration completed\"}],\"facts\":[{\"s\":\"Alaric Red\",\"p\":\"guild_rank\",\"o\":\"F Novice\"}],\"learn\":[{\"who\":\"Guild registration clerk\",\"s\":\"Alaric Red\",\"p\":\"registered as\",\"o\":\"Rank F Novice adventurer\",\"how\":\"witnessed\"}],\"new\":[{\"ref\":\"hessa\",\"kind\":\"npc\",\"name\":\"Hessa\",\"desc\":[\"young woman\",\"Guild clerk\",\"sorts Quest tags\"],\"band\":\"ENGAGED\"}],\"quests\":[{\"title\":\"Guild registration\",\"status\":\"completed\",\"giver\":\"Guild registration clerk\",\"reward\":\"Novice medallion and entry in the rolls\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"}]}</avereth>"
+  },
+  {
+   "i": 11,
+   "user": true,
+   "mes": "*i nod and then i walk over to the Novice Rank Board looking at the Quests*"
+  },
+  {
+   "i": 12,
+   "reply": "*The notice board stands chest-high, a frame of oak crowded with sheets of varying age. The newest ones sit at eye level, each tagged with a wooden chip stamped F in white paint. Ink has faded on the older postings; one corner sheet is so sun-bleached its words have gone ghost-grey.*\n\n*The Novice-tagged selection, this morning:*\n\n**WOLF PROBLEM — MILLBROOK HAMLET.** Sheep kills over the past week, likely a small pack out of the eastern woods. Hamlet will guide to the last kill site. Pay: 8 silver on proof of at least two wolves. Novice.\n\n**HERB RUN — damp hollows south of the river.** Gatheror wants fresh marshmallow root and yarrow, ten bundles each, before the week is out. Roots, not blades. Pay: 4 silver. Novice.\n\n**CART GUARD — ALDERWATCH TO FERRY CROSSING.** Wool merchant needs a spear or sword on the bench, two days out, one day back. Departure tomorrow at dawn. Pay: 6 silver plus a meal. Novice.\n\n**RATS IN THE GRAIN CELLARS.** The tally-house on Chandler Street wants cellars cleared. Bring proof—tails. Pay: 3 silver. Novice. *Someone has written beneath it, in a different hand: \"bring a lantern and no pride.\"*\n\n**LOST DOG — reward posted by name, Marta Hale.** Brown bitch, one crooked ear, answers to Pip. Last seen by the south gate. Pay: 1 silver. Novice.\n\n*Wooden tags hang from nails beside each sheet. Take the tag, take the Quest.*\n\n*Around him the hall goes on with its morning: the two hunters at the map table have stopped arguing and started rolling the map up; someone laughs near the hearth; the whetstone keeps its slow rhythm. Hessa's sorting has ended—she's now facing the board's end of the counter, arms crossed, watching the room with the patience of someone paid by the hour.*",
+   "answer": "<avereth>{\"time\":2,\"facts\":[{\"s\":\"Millbrook Hamlet\",\"p\":\"offers quest\",\"o\":\"Wolf Problem, 8 silver on proof of at least two wolves, Novice\"},{\"s\":\"a gatheror\",\"p\":\"offers quest\",\"o\":\"Herb Run, marshmallow root and yarrow, ten bundles each, 4 silver, due within the week, Novice\"},{\"s\":\"a wool merchant\",\"p\":\"offers quest\",\"o\":\"Cart Guard Alderwatch to Ferry Crossing, 6 silver plus a meal, departs tomorrow at dawn, Novice\"},{\"s\":\"the tally-house on Chandler Street\",\"p\":\"offers quest\",\"o\":\"Rats in the Grain Cellars, 3 silver on proof of tails, Novice\"},{\"s\":\"Marta Hale\",\"p\":\"offers quest\",\"o\":\"Lost Dog Pip, brown bitch with crooked ear, last seen by the south gate, 1 silver, Novice\"}],\"quests\":[{\"title\":\"Wolf Problem — Millbrook Hamlet\",\"status\":\"offered\",\"giver\":\"Millbrook Hamlet\",\"note\":\"sheep kills, small pack out of the eastern woods, hamlet guides to last kill site\",\"reward\":\"8 silver on proof of at least two wolves\",\"level\":1,\"type\":\"standard\",\"rank\":\"Novice\"},{\"title\":\"Herb Run\",\"status\":\"offered\",\"giver\":\"a gatheror\",\"note\":\"fresh marshmallow root and yarrow, ten bundles each, before week's end\",\"reward\":\"4 silver\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"},{\"title\":\"Cart Guard — Alderwatch to Ferry Crossing\",\"status\":\"offered\",\"giver\":\"wool merchant\",\"note\":\"two days out, one day back, departure tomorrow at dawn\",\"reward\":\"6 silver plus a meal\",\"level\":1,\"type\":\"standard\",\"rank\":\"Novice\"},{\"title\":\"Rats in the Grain Cellars\",\"status\":\"offered\",\"giver\":\"tally-house on Chandler Street\",\"note\":\"clear the cellars, bring proof—tails\",\"reward\":\"3 silver\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"},{\"title\":\"Lost Dog\",\"status\":\"offered\",\"giver\":\"Marta Hale\",\"note\":\"brown bitch, crooked ear, answers to Pip, last seen by south gate\",\"reward\":\"1 silver\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"}],\"position\":[{\"who\":\"hessa\",\"band\":\"SHORT\"}]}</avereth>",
+   "ms": 27413
+  },
+  {
+   "i": 13,
+   "user": true,
+   "mes": "*i take the Wolf Problem quest and register it at the front desk. I then travel to the Millbrook Hamlet*"
+  },
+  {
+   "i": 14,
+   "reply": "*Hessa takes the wolf tag off its nail, copies the Quest number into a ledger, and stamps the sheet against Alaric's medallion without ceremony.*\n\n\"Proof's two carcasses or pelts. Counter's this end when you're back. Don't drag them through the front door bloody.\"\n\n*The eastern road leaves Alderwatch through the wool gate, past pens and bleating, then runs between hedgerows and turnip fields. It's a good three hours on foot. Cart traffic thins after the second mile; a raven follows the ditch for a while, then gives up on him. By late morning the land starts to lift into wooded ridges, and the road dips toward a stream where a hamlet sits—two dozen buildings, a mill with its wheel turning, sheep pens on the near side.*\n\n*The pens are the thing everyone's talking about. A knot of villagers stands at the fence, and the smell carries before the sight: blood and opened wool. One ewe dead in the trampled grass, another gone entirely, and an old dog pacing the fence line with its hackles up.*\n\n*A broad man with a miller's dust still on his forearms sees the sword and the medallion and comes down the lane to meet him, wiping his hands on his apron.*\n\n\"Guild, then? For the wolves?\" *He looks Alaric over—armor, youth, the F stamped on the iron—and his mouth pulls sideways, but he doesn't say what he's thinking.* \"Tomas. I run the mill. Third kill this week, and my neighbor's lost five. Happens at night, always at night. We found this one at dawn.\"\n\n*He turns and points up the slope behind the pens, toward a dark line of trees.*\n\n\"Sheep trail runs up through the alders to where it happened. I'll walk you to the kill site if you're ready now—sheep don't wait on anybody's schedule. You want to see it before the rain comes in and takes the sign.\"\n\n*Overhead the sky has gone a flat, heavy white. The dog at the fence has stopped pacing and is watching the tree line.*\n\n<avereth>{\"time\":215,\"location\":\"Millbrook Hamlet\",\"quests\":[{\"title\":\"Wolf Problem\",\"status\":\"active\",\"giver\":\"Millbrook Hamlet\",\"reward\":\"8 silver on proof of at least two wolves\",\"level\":1,\"type\":\"standard\",\"rank\":\"Novice\"}],\"new\":[{\"ref\":\"tomas\",\"kind\":\"npc\",\"name\":\"Tomas\",\"desc\":[\"miller\",\"broad man\",\"mill dust on forearms\",\"skeptical of young adventurers\"],\"traits\":\"practical, blunt\",\"band\":\"ENGAGED\"}],\"facts\":[{\"s\":\"Millbrook Hamlet\",\"p\":\"suffers\",\"o\":\"wolf kills, third this week, always at night\"}],\"learn\":[{\"who\":\"tomas\",\"s\":\"Alaric\",\"p\":\"is\",\"o\":\"a Guild adventurer here for the wolves\",\"how\":\"witnessed\"}]}</avereth>"
+  },
+  {
+   "i": 15,
+   "user": true,
+   "mes": "Yes lets go. just bring me to the side and ill investigate and track them from there"
+  },
+  {
+   "i": 16,
+   "reply": "*Tomas grabs a crook-handled walking stick from beside his door and leads him up the sheep trail. The alders close in overhead, wet leaves slapping at their shoulders, and the pen noise falls away behind them. Twenty minutes up the slope he stops and points with the stick.*\n\n\"Here. This is where we found the ewe.\"\n\n*The site is a churned mess of mud and wool. Tomas hangs back by a tree, arms folded, saying nothing more—he said he'd bring him, and he's a man who keeps to what he said.*\n\n*The ground tells its story plainly. Two sets of paw prints pressed deep, hind claws dug in where they braced to drag. Drag marks in the mud run uphill, north-by-northeast, with tufts of bloody wool snagged on the bracken every few strides. The prints are broad-padded, one animal noticeably larger than the other. Scat near the trail edge, still soft—a day old at most, fur in it. They fed here or near here, then pulled the carcass higher up, into the deeper wood where the alders give way to dark pine.*\n\n*Rain patters down through the canopy, fat first drops, and the prints are already beginning to soften at the edges. Whatever the pack is, it's denned or resting north of here, likely no more than a couple miles off. Given the depth of the sign and the size of the bigger animal, these are no starving strays—they're working wolves, and there's at least one big bitch or dog leading them.*\n\n*Tomas shifts his weight against the tree.* \"Well? You read anything off it?\"\n\n<avereth>{\"time\":40,\"location\":\"eastern woods above Millbrook Hamlet\",\"position\":[{\"who\":\"tomas\",\"band\":\"ENGAGED\"}],\"check\":{\"what\":\"tracking the wolf pack from the kill site\",\"stat\":\"PER\",\"actor\":5,\"opposition\":7,\"success\":true},\"facts\":[{\"s\":\"wolf pack\",\"p\":\"operates in\",\"o\":\"the pine woods north-northeast of the kill site, at least two wolves with one large leader\",\"because\":\"drag marks, prints and day-old scat tracked from the kill site\"},{\"s\":\"weather\",\"p\":\"is\",\"o\":\"rain setting in over the eastern woods\"}],\"learn\":[{\"who\":\"tomas\",\"s\":\"alaric\",\"p\":\"tracked the pack toward\",\"o\":\"the pine woods north of the kill site\",\"how\":\"witnessed\"}]}</avereth>"
+  },
+  {
+   "i": 17,
+   "user": true,
+   "mes": "yes *i say and start following the trail i found before turning and saying* go back it will be dangerous i got it *i then continue tracking the wolves alone"
+  },
+  {
+   "i": 18,
+   "reply": "*Tomas doesn't argue. He looks at the trees, then at the boy with the sword, and nods once.*\n\n\"Suit yourself. I'll tell the others the Guild's on it. If you're not back by dark we'll come looking—maybe.\" *He turns and starts down the trail, stick tapping on stone, and is gone below the alders within a minute.*\n\n*The rain settles in properly after that, a steady hiss through the leaves. The trail is easy to hold—drag marks, wool, the deep prints—climbing through alder into pine, where the light goes grey-green and the needle floor swallows the mud but not the story: a smeared blood streak on a root, a scuffed patch where the carcass was set down and dragged again.*\n\n*Maybe a mile and a half north the wood changes character. Bones under a deadfall—sheep, older, gnawed pale. More scat. And then, on a slope looking down into a shallow ravine with a dark hollow at its base, the smell hits: musk, rank wet fur, old kills.*\n\n*Two wolves are in the ravine. One is dozing, flank twitching, ears flat—a yearling by its size. The other stands at the hollow's mouth, head up, rain dripping off its jaw. It's a big bitch, deep-chested, a fresh nick across her muzzle. She isn't looking upslope yet, but her nose works the air, and the wind has been drifting downhill from Alaric's side of the ridge.*\n\n*She takes one step out of the hollow, tests the air again, and holds still.*\n\n<avereth>{\"time\":55,\"place\":\"pine woods north of the kill site, ridge above a ravine den\",\"leave\":[\"Tomas\"],\"facts\":[{\"s\":\"wolf pack\",\"p\":\"dens in\",\"o\":\"ravine hollow in the pine woods north of Millbrook, at least two wolves including a large leader bitch\"}],\"position\":[{\"who\":\"Tomas\",\"band\":\"LONG\"}],\"check\":{} }</avereth>"
+  },
+  {
+   "i": 19,
+   "user": true,
+   "mes": "*i draw my sword and walk up openly ready to fight*"
+  },
+  {
+   "i": 20,
+   "reply": "*Steel scrapes free of the scabbard and the sound carries down the ravine like a thrown stone.*\n\n*The yearling's head snaps up, sleep gone. The bitch drops into a crouch in the same heartbeat—no hesitation, no test of nerve. Her lip peels off yellowed teeth and a growl rolls up the slope, low and even, the sound of an animal that has killed before and expects to again. She doesn't run. She comes out of the hollow at a lope, angled, flanking toward the ridge—using the ground, cutting the slope between Alaric and the open pine—and the yearling boils up out of the ravine behind her, younger, noisier, yelping as it scrambles over a deadfall.*\n\n*Rain on the needles. Rain on Alaric's shoulders. The bitch closes the distance in long, eating strides, ears pinned, her wounded muzzle wrinkled, and the moment her haunches bunch the thing is no longer a standoff at all—*\n\n<avereth>{\"time\":1,\"combat\":{\"by\":[\"leader bitch\",\"yearling wolf\"]},\"new\":[{\"ref\":\"leader bitch\",\"kind\":\"creature\",\"name\":\"Pack Leader Bitch\",\"desc\":[\"large deep-chested wolf\",\"nick across muzzle\"],\"species\":\"wolf\",\"traits\":\"battle-scarred veteran, unhurried, tactical\",\"band\":\"ENGAGED\"},{\"ref\":\"yearling wolf\",\"kind\":\"creature\",\"desc\":[\"yearling wolf\",\"smaller\"],\"species\":\"wolf\",\"traits\":\"young, excitable\",\"band\":\"SHORT\"}],\"aware\":[{\"who\":\"leader bitch\",\"level\":\"aware\"},{\"who\":\"yearling wolf\",\"level\":\"aware\"}],\"concealed\":[]}</avereth>"
+  },
+  {
+   "i": 21,
+   "user": true,
+   "mes": "*i Heavy Slash the Pack Leader Bitch*"
+  },
+  {
+   "i": 22,
+   "reply": "*The yearling reaches him first—low, fast, teeth closing on his forearm above the bracer. Pain flares hot and shallow, and then the bitch is there, hitting his thigh like a thrown sack of grain, jaws punching through cloth into muscle. He staggers under the doubled weight of two bodies wrenching in opposite directions.*\n\n*He wrenches the sword free of the yearling's grip and swings it down in one heavy, committed arc into the bitch's neck. The blade goes deep. Her jaws tear loose as she falls, taking a mouthful of trouser and flesh with her, and she rolls sideways down the slope, kicks twice against a root, and goes still. Rain fills the open red line across her back.*\n\n*The yearling lunges again while his arm is still coming up—teeth raking his shoulder, a shallow rip through armor leather—and then it leaps back a stride, hackles up, circling onto the pine needles between him and the ravine. Its eyes flick to the bitch's body, back to him, and it yelps once, high and cracked, pawing the ground.*\n\n*Blood runs warm down Alaric's forearm and thigh, thinned by rain. The yearling's haunches coil. It is still coming.*\n\n<avereth>{\"combat\": {\"by\": \"Yearling Wolf A\"}}</avereth>"
+  },
+  {
+   "i": 23,
+   "user": true,
+   "mes": "*I Heavy Slash the Yearling Wolf A*"
+  },
+  {
+   "i": 24,
+   "reply": "*It comes in low and fast, the same line as before—and Alaric is already swinging. The blade catches it mid-leap, across the shoulder and through the ribs, and the yearling's yelp cuts off into a wet, coughing sound. It hits the needles at his feet, legs scrabbling once against a root, and then it stops moving. Rain beads on its grey flank.*\n\n*Then there is only rain. Rain on pine, rain running off his blade and dripping pink into the needles, rain filling the tracks the wolves churned into the slope.*\n\n*Alaric's forearm bleeds steadily where the yearling's teeth went in above the bracer—shallow, ugly, a tooth-marked crescent. His thigh burns where the bitch's jaws punched through trouser and skin, and his shoulder carries a long rake through armor leather that has opened the skin beneath. Nothing is broken. He can stand, and he can walk, but every step sends a dull throb through the leg.*\n\n*The bitch lies rolled against a root a few yards downhill, her neck at a wrong angle, rain pooling red in the fur beneath her. The hollow at the ravine's base is dark and silent. No more shapes come out of it. Whatever else the pack was, it isn't here.*\n\n*Two wolves. Two bodies. Proof for Millbrook, eight silver, if he can carry it back.*\n\n<avereth>{\"combat\":{}}</avereth>"
+  },
+  {
+   "i": 25,
+   "user": true,
+   "mes": "*I butcher the Wolves to loot them and take that loot as Proof. I then walk back to Millbrook*"
+  },
+  {
+   "i": 26,
+   "reply": "*The bitch first. Kneeling costs his thigh a protest, a hot pull with every shift of weight, but the work itself is simple and ugly. The starter blade is sharper than it has any right to be for the price; it parts hide and sinew in rough strokes, and rain keeps washing the blood off his hands faster than he can wipe them. He takes the head at the neck joints, sawing through gristle until the spine grinds apart, and does the same for the yearling where it lies. Two heads, heavy and wet, tongues lolling, eyes already glazing with rain in them. Proof enough for any hamlet that has been losing sheep.*\n\n*He wraps them in a square of canvas cut from the yearling's bedding ground—pine boughs and a scrap of oiled cloth from his pack—and ties the bundle to his belt hook. The rest he leaves to the crows and the ravine. By the time he straightens, his knee is stiff with cold and his forearm has glued itself to the bracer in a tacky film of blood.*\n\n*The walk down is slow. The pine needles give way to bracken and then to the trampled mud of the kill site, and from there the hamlet's guides' path is easy to find even in the rain. Forty minutes of it, downhill, bundle swinging at his hip, leg throbbing in time with his steps.*\n\n*Millbrook comes up out of the grey in ones and twos: slate roofs, smoke bending from chimneys, a dog barking itself hoarse behind a fence. Two women under an eave see him first—the bundle, then the blood—and one pulls the other back a step. A boy goes running up the lane, shouting something toward the alehouse.*\n\n*By the time Alaric reaches the well at the lane's center, a thickset man in a wet shepherd's cloak is already striding toward him, squinting at what hangs at his hip.*\n\n\"That's—\" He stops an arm's length off, rain dripping off his hood. \"That's the big one. The black-eared bitch.\" He looks up, and there's something between relief and disbelief in his face. \"You went up there alone?\"",
+   "answer": "<avereth>{\"time\":60,\"location\":\"Millbrook Hamlet\",\"items\":[{\"item\":\"wolf heads (proof)\",\"qty\":2,\"from\":\"Pack Leader Bitch; the yearling wolf\",\"to\":\"pc\",\"why\":\"butchered and taken as proof for the quest\"}],\"new\":[{\"ref\":\"shepherd\",\"kind\":\"npc\",\"name\":\"shepherd\",\"desc\":[\"thickset man\",\"wet shepherd's cloak\"],\"band\":\"ENGAGED\"}],\"position\":[{\"who\":\"shepherd\",\"band\":\"ENGAGED\"}],\"aware\":[{\"who\":\"shepherd\",\"level\":\"aware\"},{\"who\":\"Millbrook villagers\",\"level\":\"aware\"}],\"quests\":[{\"title\":\"Wolf Problem\",\"status\":\"active\",\"giver\":\"Millbrook Hamlet\",\"reward\":\"8 silver on proof of at least two wolves\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\",\"note\":\"proof (two wolf heads) obtained, return to giver\"}]}</avereth>",
+   "ms": 11877
+  },
+  {
+   "i": 27,
+   "user": true,
+   "mes": "Proof *i say dryly and put them on the floor* ill need a signature so i can get my silver at the guild"
+  },
+  {
+   "i": 28,
+   "reply": "*The heads thump onto the wet cobbles by the well, canvas unwinding. The shepherd takes a half-step back, then leans in again, crouching to look. His calloused hand hovers over the black-eared skull without touching it.*\n\n\"That's her, all right.\" He looks up. \"And the other?\"\n\n\"Yearling,\" one of the women under the eaves calls. \"Grey, isn't it? That's the one that took the Hollis lamb Tuesday.\"\n\nThe shepherd straightens, wiping rain off his chin. \"Aye. That'll do.\" He squints at Alaric, at the medallion chain just visible at his collar, then at the blood caking his forearm. \"You want it written. Right. Only I don't hold a pen worth spit, and neither does most here.\" He jerks a thumb back up the lane, toward a longhouse with a lantern already lit in its window despite the hour. \"Reeve Aldous does the hamlet's tallying. He'll mark your paper—count the heads as proof, put his name to it. That's all you'll want, I'd take it.\"\n\nHe glances at the heads again, then back up. \"You'll want that arm looked at too, before it turns bad. Marta boils her needles for stitching.\" A pause, and something less businesslike enters his voice. \"Eight silver, is what the reeve posted? He'll grumble at the coin, but he'll pay it. He's honest, Aldous. Grumbling's free.\"\n\nSomewhere down the lane, the dog is still barking. The boy who ran ahead is talking fast to a knot of three men outside the alehouse, gesturing toward the well, and one of them starts walking over.\n\n<avereth>{\"time\":5,\"new\":[{\"ref\":\"reeve\",\"kind\":\"npc\",\"name\":\"Aldous\",\"desc\":[\"hamlet reeve\",\"keeps the tally\",\"can write\"]}],\"facts\":[{\"s\":\"Aldous\",\"p\":\"occupation\",\"o\":\"reeve of Millbrook\"},{\"s\":\"Aldous\",\"p\":\"voice\",\"o\":\"honest, grumbles about coin\"}],\"learn\":[{\"who\":\"shepherd\",\"s\":\"pc\",\"p\":\"is guild adventurer\",\"o\":\"novice medallion\",\"how\":\"witnessed\"}],\"memory\":[{\"text\":\"the black-eared pack leader bitch and a yearling were killed; a bloodied young adventurer brought both heads in\",\"who\":[\"shepherd\"],\"witnesses\":[\"Millbrook\"],\"public\":true,\"imp\":7}],\"quests\":[{\"title\":\"Wolf Problem\",\"status\":\"completed\",\"giver\":\"Millbrook Hamlet\",\"note\":\"two wolf heads delivered as proof, signature pending from reeve Aldous\",\"reward\":\"8 silver\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"}]}</avereth>"
+  },
+  {
+   "i": 29,
+   "user": true,
+   "mes": "*i leave the heads there on the floor and find Reeve Aldous to get my signature and silver. I then walk back to the guild to turn the Quest in*"
+  },
+  {
+   "i": 30,
+   "reply": "*Aldous turns out to be a narrow man with ink-stained fingers and a longhouse that smells of tallow and wet wool. He examines the medallion, then Alaric's bloodied arm, then the written posting with a frown, as if suspecting it of something.*\n\n\"Two heads, verified by Harl—\" he nods toward the shepherd, who followed Alaric up the lane, \"—that'll stand.\" The pen scratches. The seal—just a worn brass stamp pressed into a dab of candle soot—goes on after. \"Eight silver.\" He counts it out of a locked box, coin by coin, grumbling under his breath exactly as promised. \"Third of the hamlet's winter fund, that is. Hope you've a strong arm when the rest of that pack comes hungry.\"\n\n*The walk back eats better than an hour, the rain thinning to drizzle as the pines give way to hedged fields. The town's guild hall is lamplit and warm when Alaric pushes through the door, water dripping off him onto the stone floor. The same front-desk clerk looks up from her ledger, takes in the mud, the blood, the soot-sealed paper.*\n\n\"Back same day.\" She takes the paper, reads the reeve's mark, holds it near the lamp. \"Wolf Problem, Millbrook. Two heads, payment received, reeve's seal.\" She dips her pen, makes an entry in the ledger. \"That closes it. Reward came from the hamlet directly, so the Guild's cut is just the filing—nothing owed here.\" She slides the paper back across the desk. \"You'll want the medic's corner for that arm before you take anything else on. And if you're after work tomorrow, there's postings on the board. Nothing for the squeamish today, mind.\"\n\n<avereth>{\"time\":105,\"location\":\"town with guild hall\",\"coin\":[{\"who\":\"pc\",\"cp\":800,\"taken_by\":\"Aldous\",\"why\":\"Wolf Problem reward, 8 silver\"}],\"learn\":[{\"who\":\"Aldous\",\"s\":\"Millbrook\",\"p\":\"pack leader\",\"o\":\"dead, proof verified and paid\",\"how\":\"witnessed\",\"from\":\"Harl\"}],\"items\":[{\"item\":\"signed and sealed quest completion paper\",\"qty\":1,\"from\":\"Aldous\",\"to\":\"pc\",\"why\":\"proof for guild records\"}],\"quests\":[{\"title\":\"Wolf Problem\",\"status\":\"completed\",\"giver\":\"Millbrook Hamlet\",\"reward\":\"8 silver on proof of at least two wolves\",\"level\":1,\"type\":\"minor\",\"rank\":\"Novice\"}]}</avereth>"
+  }
+ ],
+ "recorded": {
+  "accepted6": [
+   "time +40 min",
+   "place: Adventurers' Guild hall",
+   "new npc clerk_old (npc.clerk_old)",
+   "new npc clerk_young (npc.clerk_young)",
+   "leave npc.clerk_old",
+   "leave npc.clerk_young",
+   "fact guild hall (Alderwatch) contains long tables, notice board, staffed counter"
+  ],
+  "accepted10": [
+   "time +12 min",
+   "new npc Hessa (npc.hessa)",
+   "fact pc guild_rank F Novice",
+   "npc.guild_registration_clerk learns pc registered_as Rank F Novice adventurer",
+   "item Novice Guild medallion (iron, Rank F) ×1 from npc.guild_registration_clerk to pc",
+   "coin pc -20 cp",
+   "quest Guild registration: completed",
+   "Quest XP +15",
+   "npc.guild_registration_clerk: the story names Guild registration clerk"
+  ],
+  "accepted14": [
+   "time +215 min",
+   "new location Millbrook Hamlet",
+   "new npc Tomas (npc.tomas)",
+   "fact Millbrook Hamlet suffers wolf kills, third this week, always at night",
+   "npc.tomas learns pc is a Guild adventurer here for the wolves",
+   "quest Wolf Problem: active"
+  ],
+  "accepted26": [
+   "time +60 min",
+   "location -> Millbrook Hamlet",
+   "new npc shepherd (npc.shepherd)",
+   "npc.shepherd at ENGAGED",
+   "npc.shepherd aware of Alaric",
+   "named in the story: Millbrook (npc.millbrook)",
+   "enter npc.millbrook",
+   "npc.millbrook aware of Alaric",
+   "item wolf heads (proof) ×2 to pc",
+   "quest Wolf Problem: active"
+  ],
+  "accepted28": [
+   "time +5 min",
+   "new npc Aldous (npc.aldous)",
+   "fact npc.aldous occupation reeve of Millbrook",
+   "fact npc.aldous voice honest, grumbles about coin",
+   "npc.shepherd learns pc is_guild_adventurer novice medallion",
+   "memory: the black-eared pack leader bitch and a yearling were killed",
+   "quest Wolf Problem: completed",
+   "Quest XP +20"
+  ],
+  "accepted30": [
+   "time +105 min",
+   "new location town with guild hall",
+   "item signed and sealed quest completion paper ×1 from npc.aldous to pc",
+   "coin pc +800 cp",
+   "quest Wolf Problem: completed"
+  ],
+  "fight": {
+   "events20": [
+    {
+     "t": "time.advanced",
+     "d": {
+      "minutes": 1,
+      "why": "narration"
+     }
+    },
+    {
+     "t": "entity.created",
+     "d": {
+      "entity": {
+       "id": "mon.pack_leader_bitch",
+       "kind": "creature",
+       "name": "Pack Leader Bitch",
+       "descriptors": [
+        "large deep-chested wolf",
+        "nick across muzzle",
+        "leader bitch"
+       ],
+       "traits": "battle-scarred veteran, unhurried, tactical",
+       "status": "alive",
+       "location": "loc.eastern_woods_above_millbrook_hamlet",
+       "created": {
+        "turn": 10,
+        "minute": 906
+       },
+       "source": {
+        "kind": "narration",
+        "msg": 20
+       },
+       "card": {},
+       "species": "wolf",
+       "anchor": "wolf"
+      }
+     }
+    },
+    {
+     "t": "scene.entered",
+     "d": {
+      "id": "mon.pack_leader_bitch",
+      "band": "ENGAGED"
+     }
+    },
+    {
+     "t": "entity.created",
+     "d": {
+      "entity": {
+       "id": "mon.yearling_wolf",
+       "kind": "creature",
+       "name": null,
+       "descriptors": [
+        "yearling wolf",
+        "smaller"
+       ],
+       "traits": "young, excitable",
+       "status": "alive",
+       "location": "loc.eastern_woods_above_millbrook_hamlet",
+       "created": {
+        "turn": 10,
+        "minute": 906
+       },
+       "source": {
+        "kind": "narration",
+        "msg": 20
+       },
+       "card": {},
+       "species": "wolf",
+       "anchor": "wolf"
+      }
+     }
+    },
+    {
+     "t": "scene.entered",
+     "d": {
+      "id": "mon.yearling_wolf",
+      "band": "SHORT"
+     }
+    },
+    {
+     "t": "scene.awareness",
+     "d": {
+      "id": "mon.pack_leader_bitch",
+      "level": "aware"
+     }
+    },
+    {
+     "t": "scene.awareness",
+     "d": {
+      "id": "mon.yearling_wolf",
+      "level": "aware"
+     }
+    },
+    {
+     "t": "scene.concealed",
+     "d": {
+      "ids": []
+     }
+    },
+    {
+     "t": "combat.pending",
+     "d": {
+      "by": "mon.pack_leader_bitch",
+      "target": "pc",
+      "turn": 10,
+      "minute": 906
+     }
+    },
+    {
+     "t": "combat.pending",
+     "d": {
+      "by": "mon.yearling_wolf",
+      "target": "pc",
+      "turn": 10,
+      "minute": 906
+     }
+    },
+    {
+     "t": "memory.recorded",
+     "d": {
+      "memory": {
+       "id": "m.t10.m20.ep",
+       "turn": 10,
+       "minute": 907,
+       "text": "pine woods north of the kill site, ridge above a ravine den: {pc}: \"*i draw my sword and walk up openly ready to fight*\"",
+       "who": [
+        "pc"
+       ],
+       "about": [
+        "mon.pack_leader_bitch",
+        "mon.yearling_wolf"
+       ],
+       "witnesses": [
+        "pc"
+       ],
+       "seen": [
+        "pc"
+       ],
+       "location": "loc.eastern_woods_above_millbrook_hamlet",
+       "place": "pine woods north of the kill site, ridge above a ravine den",
+       "importance": 3,
+       "kind": "episode",
+       "msg": 20
+      }
+     }
+    },
+    {
+     "t": "combat.pending_cleared",
+     "d": {}
+    },
+    {
+     "t": "entity.updated",
+     "d": {
+      "id": "mon.pack_leader_bitch",
+      "set": {
+       "profile": {
+        "model": "creature",
+        "anchor": "wolf",
+        "body_plan": "Wolf / canid",
+        "level": 1,
+        "rank": "F",
+        "type": "normal",
+        "max_hp": 23,
+        "atk": 9,
+        "def": 0,
+        "mdef": 0,
+        "init": 12,
+        "attack": {
+         "name": "Bite",
+         "damage_type": "physical",
+         "range": "ENGAGED"
+        },
+        "temperament": "aggressive"
+       }
+      }
+     }
+    },
+    {
+     "t": "entity.updated",
+     "d": {
+      "id": "mon.yearling_wolf",
+      "set": {
+       "profile": {
+        "model": "creature",
+        "anchor": "wolf",
+        "body_plan": "Wolf / canid",
+        "level": 1,
+        "rank": "F",
+        "type": "normal",
+        "max_hp": 23,
+        "atk": 9,
+        "def": 0,
+        "mdef": 0,
+        "init": 12,
+        "attack": {
+         "name": "Bite",
+         "damage_type": "physical",
+         "range": "ENGAGED"
+        },
+        "temperament": "aggressive"
+       }
+      }
+     }
+    },
+    {
+     "t": "encounter.started",
+     "d": {
+      "encounter": {
+       "id": "enc.t10r",
+       "phase": "ACTIVE",
+       "round": 1,
+       "order": [
+        "mon.yearling_wolf",
+        "mon.pack_leader_bitch",
+        "pc"
+       ],
+       "turn_index": 2,
+       "current": "pc",
+       "combatants": {
+        "pc": {
+         "id": "pc",
+         "name": "Alaric",
+         "side": "pc",
+         "model": "character",
+         "fixed": {
+          "level": 1,
+          "rank": "F",
+          "class": "warrior",
+          "stats": {
+           "STR": 6,
+           "VIT": 6,
+           "AGI": 5,
+           "INT": 5,
+           "PER": 5,
+           "WIL": 5
+          },
+          "max_hp": 85,
+          "max_mp": 60,
+          "max_sta": 100,
+          "atk": 6,
+          "matk": 0,
+          "def": 7,
+          "mdef": 3,
+          "init": 7,
+          "type": "normal",
+          "actions": {
+           "warrior.basic_attack": {
+            "prof": 1,
+            "pp": 0
+           },
+           "warrior.heavy_slash": {
+            "prof": 1,
+            "pp": 0
+           },
+           "warrior.charge": {
+            "prof": 1,
+            "pp": 0
+           }
+          },
+          "weapon_family": "melee",
+          "temperament": null,
+          "sapient": true
+         },
+         "current": {
+          "hp": 81,
+          "mp": 60,
+          "sta": 100,
+          "ammo": {},
+          "band": null,
+          "cover": "none",
+          "effects": [],
+          "defeated": false,
+          "escaped": false,
+          "surrendered": false
+         }
+        },
+        "mon.pack_leader_bitch": {
+         "id": "mon.pack_leader_bitch",
+         "name": "Pack Leader Bitch",
+         "side": "hostile",
+         "model": "creature",
+         "fixed": {
+          "level": 1,
+          "rank": "F",
+          "type": "normal",
+          "body_plan": "Wolf / canid",
+          "max_hp": 23,
+          "atk": 9,
+          "def": 0,
+          "mdef": 0,
+          "init": 12,
+          "attack": {
+           "name": "Bite",
+           "damage_type": "physical",
+           "range": "ENGAGED"
+          },
+          "temperament": "aggressive",
+          "sapient": false,
+          "defeat_xp": 10
+         },
+         "current": {
+          "hp": 23,
+          "band": "ENGAGED",
+          "cover": "none",
+          "effects": [],
+          "defeated": false,
+          "escaped": false,
+          "surrendered": false
+         },
+         "label": "Pack Leader Bitch"
+        },
+        "mon.yearling_wolf": {
+         "id": "mon.yearling_wolf",
+         "name": "Yearling Wolf A",
+         "side": "hostile",
+         "model": "creature",
+         "fixed": {
+          "level": 1,
+          "rank": "F",
+          "type": "normal",
+          "body_plan": "Wolf / canid",
+          "max_hp": 23,
+          "atk": 9,
+          "def": 0,
+          "mdef": 0,
+          "init": 12,
+          "attack": {
+           "name": "Bite",
+           "damage_type": "physical",
+           "range": "ENGAGED"
+          },
+          "temperament": "aggressive",
+          "sapient": false,
+          "defeat_xp": 10
+         },
+         "current": {
+          "hp": 23,
+          "band": "ENGAGED",
+          "cover": "none",
+          "effects": [],
+          "defeated": false,
+          "escaped": false,
+          "surrendered": false
+         },
+         "label": "Yearling Wolf A"
+        }
+       },
+       "pc_rank": "F",
+       "pending_xp": 0,
+       "defeated": [],
+       "escaped": [],
+       "trigger": {
+        "actor": "mon.pack_leader_bitch",
+        "target": "pc"
+       },
+       "log": [
+        {
+         "round": 1,
+         "actor": "mon.yearling_wolf",
+         "kind": "attack",
+         "target": "pc",
+         "opening": false,
+         "move": {
+          "bands": 1,
+          "from": "SHORT",
+          "to": "ENGAGED"
+         },
+         "skill_name": "Bite",
+         "raw": 9,
+         "raw_text": "natural attack Raw = ATK 9",
+         "strikes": [
+          {
+           "target": "pc",
+           "power": 9,
+           "defense": 7,
+           "post_def": 2,
+           "variance": 0.93,
+           "final": 2,
+           "absorbed": 0,
+           "hp_before": 85,
+           "hp_after": 83,
+           "steps": [
+            "Raw 9",
+            "DEF 7: max(9-7, 9×0.10) = 2",
+            "×0.93 variance = 1.86",
+            "round once = 2"
+           ]
+          }
+         ]
+        },
+        {
+         "round": 1,
+         "actor": "mon.pack_leader_bitch",
+         "kind": "attack",
+         "target": "pc",
+         "opening": false,
+         "skill_name": "Bite",
+         "raw": 9,
+         "raw_text": "natural attack Raw = ATK 9",
+         "strikes": [
+          {
+           "target": "pc",
+           "power": 9,
+           "defense": 7,
+           "post_def": 2,
+           "variance": 1.08,
+           "final": 2,
+           "absorbed": 0,
+           "hp_before": 83,
+           "hp_after": 81,
+           "steps": [
+            "Raw 9",
+            "DEF 7: max(9-7, 9×0.10) = 2",
+            "×1.08 variance = 2.16",
+            "round once = 2"
+           ]
+          }
+         ]
+        }
+       ],
+       "opening": null,
+       "started": {
+        "turn": 10,
+        "minute": 907
+       },
+       "intents": {},
+       "ambush": false,
+       "ambush_reason": "Pack Leader Bitch attacks openly; its trigger action waits for its Turn",
+       "round_marker": 1.02,
+       "preface": [
+        {
+         "round": 1,
+         "actor": "mon.yearling_wolf",
+         "kind": "attack",
+         "target": "pc",
+         "opening": false,
+         "move": {
+          "bands": 1,
+          "from": "SHORT",
+          "to": "ENGAGED"
+         },
+         "skill_name": "Bite",
+         "raw": 9,
+         "raw_text": "natural attack Raw = ATK 9",
+         "strikes": [
+          {
+           "target": "pc",
+           "power": 9,
+           "defense": 7,
+           "post_def": 2,
+           "variance": 0.93,
+           "final": 2,
+           "absorbed": 0,
+           "hp_before": 85,
+           "hp_after": 83,
+           "steps": [
+            "Raw 9",
+            "DEF 7: max(9-7, 9×0.10) = 2",
+            "×0.93 variance = 1.86",
+            "round once = 2"
+           ]
+          }
+         ]
+        },
+        {
+         "round": 1,
+         "actor": "mon.pack_leader_bitch",
+         "kind": "attack",
+         "target": "pc",
+         "opening": false,
+         "skill_name": "Bite",
+         "raw": 9,
+         "raw_text": "natural attack Raw = ATK 9",
+         "strikes": [
+          {
+           "target": "pc",
+           "power": 9,
+           "defense": 7,
+           "post_def": 2,
+           "variance": 1.08,
+           "final": 2,
+           "absorbed": 0,
+           "hp_before": 83,
+           "hp_after": 81,
+           "steps": [
+            "Raw 9",
+            "DEF 7: max(9-7, 9×0.10) = 2",
+            "×1.08 variance = 2.16",
+            "round once = 2"
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "rng_to": 11
+    },
+    {
+     "t": "resource.changed",
+     "d": {
+      "id": "pc",
+      "resource": "hp",
+      "value": 81
+     }
+    }
+   ],
+   "events21": [
+    {
+     "t": "turn.begun",
+     "d": {
+      "turn": 11,
+      "input_hash": "eaa998d3",
+      "input": "*i Heavy Slash the Pack Leader Bitch*"
+     }
+    },
+    {
+     "t": "encounter.updated",
+     "d": {
+      "encounter": {
+       "id": "enc.t10r",
+       "phase": "ACTIVE",
+       "round": 2,
+       "order": [
+        "mon.yearling_wolf",
+        "mon.pack_leader_bitch",
+        "pc"
+       ],
+       "turn_index": 2,
+       "current": "pc",
+       "combatants": {
+        "pc": {
+         "id": "pc",
+         "name": "Alaric",
+         "side": "pc",
+         "model": "character",
+         "fixed": {
+          "level": 1,
+          "rank": "F",
+          "class": "warrior",
+          "stats": {
+           "STR": 6,
+           "VIT": 6,
+           "AGI": 5,
+           "INT": 5,
+           "PER": 5,
+           "WIL": 5
+          },
+          "max_hp": 85,
+          "max_mp": 60,
+          "max_sta": 100,
+          "atk": 6,
+          "matk": 0,
+          "def": 7,
+          "mdef": 3,
+          "init": 7,
+          "type": "normal",
+          "actions": {
+           "warrior.basic_attack": {
+            "prof": 1,
+            "pp": 0
+           },
+           "warrior.heavy_slash": {
+            "prof": 1,
+            "pp": 0
+           },
+           "warrior.charge": {
+            "prof": 1,
+            "pp": 0
+           }
+          },
+          "weapon_family": "melee",
+          "temperament": null,
+          "sapient": true
+         },
+         "current": {
+          "hp": 79,
+          "mp": 60,
+          "sta": 93,
+          "ammo": {},
+          "band": null,
+          "cover": "none",
+          "effects": [],
+          "defeated": false,
+          "escaped": false,
+          "surrendered": false
+         }
+        },
+        "mon.pack_leader_bitch": {
+         "id": "mon.pack_leader_bitch",
+         "name": "Pack Leader Bitch",
+         "side": "hostile",
+         "model": "creature",
+         "fixed": {
+          "level": 1,
+          "rank": "F",
+          "type": "normal",
+          "body_plan": "Wolf / canid",
+          "max_hp": 23,
+          "atk": 9,
+          "def": 0,
+          "mdef": 0,
+          "init": 12,
+          "attack": {
+           "name": "Bite",
+           "damage_type": "physical",
+           "range": "ENGAGED"
+          },
+          "temperament": "aggressive",
+          "sapient": false,
+          "defeat_xp": 10
+         },
+         "current": {
+          "hp": 0,
+          "band": "ENGAGED",
+          "cover": "none",
+          "effects": [],
+          "defeated": true,
+          "escaped": false,
+          "surrendered": false
+         },
+         "label": "Pack Leader Bitch"
+        },
+        "mon.yearling_wolf": {
+         "id": "mon.yearling_wolf",
+         "name": "Yearling Wolf A",
+         "side": "hostile",
+         "model": "creature",
+         "fixed": {
+          "level": 1,
+          "rank": "F",
+          "type": "normal",
+          "body_plan": "Wolf / canid",
+          "max_hp": 23,
+          "atk": 9,
+          "def": 0,
+          "mdef": 0,
+          "init": 12,
+          "attack": {
+           "name": "Bite",
+           "damage_type": "physical",
+           "range": "ENGAGED"
+          },
+          "temperament": "aggressive",
+          "sapient": false,
+          "defeat_xp": 10
+         },
+         "current": {
+          "hp": 23,
+          "band": "ENGAGED",
+          "cover": "none",
+          "effects": [],
+          "defeated": false,
+          "escaped": false,
+          "surrendered": false
+         },
+         "label": "Yearling Wolf A"
+        }
+       },
+       "pc_rank": "F",
+       "pending_xp": 10,
+       "defeated": [
+        "mon.pack_leader_bitch"
+       ],
+       "escaped": [],
+       "trigger": {
+        "actor": "mon.pack_leader_bitch",
+        "target": "pc"
+       },
+       "log": [
+        {
+         "round": 1,
+         "actor": "mon.yearling_wolf",
+         "kind": "attack",
+         "target": "pc",
+         "opening": false,
+         "move": {
+          "bands": 1,
+          "from": "SHORT",
+          "to": "ENGAGED"
+         },
+         "skill_name": "Bite",
+         "raw": 9,
+         "raw_text": "natural attack Raw = ATK 9",
+         "strikes": [
+          {
+           "target": "pc",
+           "power": 9,
+           "defense": 7,
+           "post_def": 2,
+           "variance": 0.93,
+           "final": 2,
+           "absorbed": 0,
+           "hp_before": 85,
+           "hp_after": 83,
+           "steps": [
+            "Raw 9",
+            "DEF 7: max(9-7, 9×0.10) = 2",
+            "×0.93 variance = 1.86",
+            "round once = 2"
+           ]
+          }
+         ]
+        },
+        {
+         "round": 1,
+         "actor": "mon.pack_leader_bitch",
+         "kind": "attack",
+         "target": "pc",
+         "opening": false,
+         "skill_name": "Bite",
+         "raw": 9,
+         "raw_text": "natural attack Raw = ATK 9",
+         "strikes": [
+          {
+           "target": "pc",
+           "power": 9,
+           "defense": 7,
+           "post_def": 2,
+           "variance": 1.08,
+           "final": 2,
+           "absorbed": 0,
+           "hp_before": 83,
+           "hp_after": 81,
+           "steps": [
+            "Raw 9",
+            "DEF 7: max(9-7, 9×0.10) = 2",
+            "×1.08 variance = 2.16",
+            "round once = 2"
+           ]
+          }
+         ]
+        },
+        {
+         "round": 1,
+         "actor": "pc",
+         "kind": "attack",
+         "target": "mon.pack_leader_bitch",
+         "opening": false,
+         "cost": {
+          "resource": "sta",
+          "amount": 7,
+          "before": 100,
+          "after": 93
+         },
+         "skill": "warrior.heavy_slash",
+         "skill_name": "Heavy Slash",
+         "raw": 25,
+         "raw_text": "10 + STR 6×1.50 + ATK 6 = 25",
+         "strikes": [
+          {
+           "target": "mon.pack_leader_bitch",
+           "power": 25,
+           "defense": 0,
+           "post_def": 25,
+           "variance": 1,
+           "final": 25,
+           "absorbed": 0,
+           "hp_before": 23,
+           "hp_after": 0,
+           "steps": [
+            "Raw 25",
+            "DEF 0: max(25-0, 25×0.10) = 25",
+            "×1 variance = 25",
+            "round once = 25"
+           ],
+           "defeated": true
+          }
+         ],
+         "pending_xp_added": 10
+        },
+        {
+         "round": 2,
+         "actor": "mon.yearling_wolf",
+         "kind": "attack",
+         "target": "pc",
+         "opening": false,
+         "skill_name": "Bite",
+         "raw": 9,
+         "raw_text": "natural attack Raw = ATK 9",
+         "strikes": [
+          {
+           "target": "pc",
+           "power": 9,
+           "defense": 7,
+           "post_def": 2,
+           "variance": 0.96,
+           "final": 2,
+           "absorbed": 0,
+           "hp_before": 81,
+           "hp_after": 79,
+           "steps": [
+            "Raw 9",
+            "DEF 7: max(9-7, 9×0.10) = 2",
+            "×0.96 variance = 1.92",
+            "round once = 2"
+           ]
+          }
+         ]
+        }
+       ],
+       "opening": null,
+       "started": {
+        "turn": 10,
+        "minute": 907
+       },
+       "intents": {},
+       "ambush": false,
+       "ambush_reason": "Pack Leader Bitch attacks openly; its trigger action waits for its Turn",
+       "round_marker": 2.02
+      }
+     },
+     "rng_to": 13
+    },
+    {
+     "t": "resource.changed",
+     "d": {
+      "id": "pc",
+      "resource": "hp",
+      "value": 79
+     }
+    },
+    {
+     "t": "resource.changed",
+     "d": {
+      "id": "pc",
+      "resource": "sta",
+      "value": 93
+     }
+    },
+    {
+     "t": "entity.status",
+     "d": {
+      "id": "mon.pack_leader_bitch",
+      "status": "dead"
+     }
+    },
+    {
+     "t": "fact.asserted",
+     "d": {
+      "fact": {
+       "id": "f.mon.pack_leader_bitch.status.t11",
+       "s": "mon.pack_leader_bitch",
+       "p": "status",
+       "o": "dead",
+       "since": {
+        "turn": 11,
+        "minute": 907
+       },
+       "until": null,
+       "visibility": "public",
+       "importance": 0.9,
+       "hard": true,
+       "source": {
+        "kind": "engine",
+        "encounter": "enc.t10r"
+       }
+      }
+     }
+    },
+    {
+     "t": "knowledge.gained",
+     "d": {
+      "who": "pc",
+      "about": "f.mon.pack_leader_bitch.status.t11",
+      "stance": "knows",
+      "source": "witnessed",
+      "turn": 11,
+      "minute": 907
+     }
+    },
+    {
+     "t": "knowledge.gained",
+     "d": {
+      "who": "mon.yearling_wolf",
+      "about": "f.mon.pack_leader_bitch.status.t11",
+      "stance": "knows",
+      "source": "witnessed",
+      "turn": 11,
+      "minute": 907
+     }
+    },
+    {
+     "t": "outcome.recorded",
+     "d": {
+      "outcome": {
+       "kind": "combat",
+       "started": {
+        "reason": "Pack Leader Bitch attacks openly; its trigger action waits for its Turn",
+        "order": "Yearling Wolf A > Pack Leader Bitch > Alaric",
+        "ambush": false,
+        "previewed": true
+       },
+       "records": [
+        {
+         "round": 1,
+         "actor": "mon.yearling_wolf",
+         "kind": "attack",
+         "target": "pc",
+         "opening": false,
+         "move": {
+          "bands": 1,
+          "from": "SHORT",
+          "to": "ENGAGED"
+         },
+         "skill_name": "Bite",
+         "raw": 9,
+         "raw_text": "natural attack Raw = ATK 9",
+         "strikes": [
+          {
+           "target": "pc",
+           "power": 9,
+           "defense": 7,
+           "post_def": 2,
+           "variance": 0.93,
+           "final": 2,
+           "absorbed": 0,
+           "hp_before": 85,
+           "hp_after": 83,
+           "steps": [
+            "Raw 9",
+            "DEF 7: max(9-7, 9×0.10) = 2",
+            "×0.93 variance = 1.86",
+            "round once = 2"
+           ]
+          }
+         ]
+        },
+        {
+         "round": 1,
+         "actor": "mon.pack_leader_bitch",
+         "kind": "attack",
+         "target": "pc",
+         "opening": false,
+         "skill_name": "Bite",
+         "raw": 9,
+         "raw_text": "natural attack Raw = ATK 9",
+         "strikes": [
+          {
+           "target": "pc",
+           "power": 9,
+           "defense": 7,
+           "post_def": 2,
+           "variance": 1.08,
+           "final": 2,
+           "absorbed": 0,
+           "hp_before": 83,
+           "hp_after": 81,
+           "steps": [
+            "Raw 9",
+            "DEF 7: max(9-7, 9×0.10) = 2",
+            "×1.08 variance = 2.16",
+            "round once = 2"
+           ]
+          }
+         ]
+        },
+        {
+         "round": 1,
+         "actor": "pc",
+         "kind": "attack",
+         "target": "mon.pack_leader_bitch",
+         "opening": false,
+         "cost": {
+          "resource": "sta",
+          "amount": 7,
+          "before": 100,
+          "after": 93
+         },
+         "skill": "warrior.heavy_slash",
+         "skill_name": "Heavy Slash",
+         "raw": 25,
+         "raw_text": "10 + STR 6×1.50 + ATK 6 = 25",
+         "strikes": [
+          {
+           "target": "mon.pack_leader_bitch",
+           "power": 25,
+           "defense": 0,
+           "post_def": 25,
+           "variance": 1,
+           "final": 25,
+           "absorbed": 0,
+           "hp_before": 23,
+           "hp_after": 0,
+           "steps": [
+            "Raw 25",
+            "DEF 0: max(25-0, 25×0.10) = 25",
+            "×1 variance = 25",
+            "round once = 25"
+           ],
+           "defeated": true
+          }
+         ],
+         "pending_xp_added": 10
+        },
+        {
+         "round": 2,
+         "actor": "mon.yearling_wolf",
+         "kind": "attack",
+         "target": "pc",
+         "opening": false,
+         "skill_name": "Bite",
+         "raw": 9,
+         "raw_text": "natural attack Raw = ATK 9",
+         "strikes": [
+          {
+           "target": "pc",
+           "power": 9,
+           "defense": 7,
+           "post_def": 2,
+           "variance": 0.96,
+           "final": 2,
+           "absorbed": 0,
+           "hp_before": 81,
+           "hp_after": 79,
+           "steps": [
+            "Raw 9",
+            "DEF 7: max(9-7, 9×0.10) = 2",
+            "×0.96 variance = 1.92",
+            "round once = 2"
+           ]
+          }
+         ]
+        }
+       ],
+       "shown": 2,
+       "illegal": null,
+       "next": "Alaric's Turn (Round 2)",
+       "board": {
+        "round": 2,
+        "order": [
+         {
+          "id": "mon.yearling_wolf",
+          "init": 12
+         },
+         {
+          "id": "mon.pack_leader_bitch",
+          "init": 12
+         },
+         {
+          "id": "pc",
+          "init": 7
+         }
+        ],
+        "hp": [
+         {
+          "id": "mon.yearling_wolf",
+          "hp": 23,
+          "max": 23,
+          "state": null,
+          "band": "ENGAGED",
+          "cover": "none"
+         },
+         {
+          "id": "mon.pack_leader_bitch",
+          "hp": 0,
+          "max": 23,
+          "state": "defeated",
+          "band": "ENGAGED",
+          "cover": "none"
+         },
+         {
+          "id": "pc",
+          "hp": 79,
+          "max": 85,
+          "state": null
+         }
+        ],
+        "labels": {
+         "mon.pack_leader_bitch": "Pack Leader Bitch",
+         "mon.yearling_wolf": "Yearling Wolf A"
+        },
+        "pc": {
+         "mp": 60,
+         "max_mp": 60,
+         "sta": 93,
+         "max_sta": 100,
+         "arrows": 0
+        }
+       }
+      },
+      "situations": []
+     }
+    }
+   ],
+   "events23": [
+    {
+     "t": "turn.begun",
+     "d": {
+      "turn": 12,
+      "input_hash": "b570f775",
+      "input": "*I Heavy Slash the Yearling Wolf A*"
+     }
+    },
+    {
+     "t": "encounter.updated",
+     "d": {
+      "encounter": {
+       "id": "enc.t10r",
+       "phase": "ACTIVE",
+       "round": 3,
+       "order": [
+        "mon.yearling_wolf",
+        "mon.pack_leader_bitch",
+        "pc"
+       ],
+       "turn_index": 2,
+       "current": "pc",
+       "combatants": {
+        "pc": {
+         "id": "pc",
+         "name": "Alaric",
+         "side": "pc",
+         "model": "character",
+         "fixed": {
+          "level": 1,
+          "rank": "F",
+          "class": "warrior",
+          "stats": {
+           "STR": 6,
+           "VIT": 6,
+           "AGI": 5,
+           "INT": 5,
+           "PER": 5,
+           "WIL": 5
+          },
+          "max_hp": 85,
+          "max_mp": 60,
+          "max_sta": 100,
+          "atk": 6,
+          "matk": 0,
+          "def": 7,
+          "mdef": 3,
+          "init": 7,
+          "type": "normal",
+          "actions": {
+           "warrior.basic_attack": {
+            "prof": 1,
+            "pp": 0
+           },
+           "warrior.heavy_slash": {
+            "prof": 1,
+            "pp": 0
+           },
+           "warrior.charge": {
+            "prof": 1,
+            "pp": 0
+           }
+          },
+          "weapon_family": "melee",
+          "temperament": null,
+          "sapient": true
+         },
+         "current": {
+          "hp": 79,
+          "mp": 60,
+          "sta": 86,
+          "ammo": {},
+          "band": null,
+          "cover": "none",
+          "effects": [],
+          "defeated": false,
+          "escaped": false,
+          "surrendered": false
+         }
+        },
+        "mon.pack_leader_bitch": {
+         "id": "mon.pack_leader_bitch",
+         "name": "Pack Leader Bitch",
+         "side": "hostile",
+         "model": "creature",
+         "fixed": {
+          "level": 1,
+          "rank": "F",
+          "type": "normal",
+          "body_plan": "Wolf / canid",
+          "max_hp": 23,
+          "atk": 9,
+          "def": 0,
+          "mdef": 0,
+          "init": 12,
+          "attack": {
+           "name": "Bite",
+           "damage_type": "physical",
+           "range": "ENGAGED"
+          },
+          "temperament": "aggressive",
+          "sapient": false,
+          "defeat_xp": 10
+         },
+         "current": {
+          "hp": 0,
+          "band": "ENGAGED",
+          "cover": "none",
+          "effects": [],
+          "defeated": true,
+          "escaped": false,
+          "surrendered": false
+         },
+         "label": "Pack Leader Bitch"
+        },
+        "mon.yearling_wolf": {
+         "id": "mon.yearling_wolf",
+         "name": "Yearling Wolf A",
+         "side": "hostile",
+         "model": "creature",
+         "fixed": {
+          "level": 1,
+          "rank": "F",
+          "type": "normal",
+          "body_plan": "Wolf / canid",
+          "max_hp": 23,
+          "atk": 9,
+          "def": 0,
+          "mdef": 0,
+          "init": 12,
+          "attack": {
+           "name": "Bite",
+           "damage_type": "physical",
+           "range": "ENGAGED"
+          },
+          "temperament": "aggressive",
+          "sapient": false,
+          "defeat_xp": 10
+         },
+         "current": {
+          "hp": 0,
+          "band": "ENGAGED",
+          "cover": "none",
+          "effects": [],
+          "defeated": true,
+          "escaped": false,
+          "surrendered": false
+         },
+         "label": "Yearling Wolf A"
+        }
+       },
+       "pc_rank": "F",
+       "pending_xp": 20,
+       "defeated": [
+        "mon.pack_leader_bitch",
+        "mon.yearling_wolf"
+       ],
+       "escaped": [],
+       "trigger": {
+        "actor": "mon.pack_leader_bitch",
+        "target": "pc"
+       },
+       "log": [
+        {
+         "round": 1,
+         "actor": "mon.yearling_wolf",
+         "kind": "attack",
+         "target": "pc",
+         "opening": false,
+         "move": {
+          "bands": 1,
+          "from": "SHORT",
+          "to": "ENGAGED"
+         },
+         "skill_name": "Bite",
+         "raw": 9,
+         "raw_text": "natural attack Raw = ATK 9",
+         "strikes": [
+          {
+           "target": "pc",
+           "power": 9,
+           "defense": 7,
+           "post_def": 2,
+           "variance": 0.93,
+           "final": 2,
+           "absorbed": 0,
+           "hp_before": 85,
+           "hp_after": 83,
+           "steps": [
+            "Raw 9",
+            "DEF 7: max(9-7, 9×0.10) = 2",
+            "×0.93 variance = 1.86",
+            "round once = 2"
+           ]
+          }
+         ]
+        },
+        {
+         "round": 1,
+         "actor": "mon.pack_leader_bitch",
+         "kind": "attack",
+         "target": "pc",
+         "opening": false,
+         "skill_name": "Bite",
+         "raw": 9,
+         "raw_text": "natural attack Raw = ATK 9",
+         "strikes": [
+          {
+           "target": "pc",
+           "power": 9,
+           "defense": 7,
+           "post_def": 2,
+           "variance": 1.08,
+           "final": 2,
+           "absorbed": 0,
+           "hp_before": 83,
+           "hp_after": 81,
+           "steps": [
+            "Raw 9",
+            "DEF 7: max(9-7, 9×0.10) = 2",
+            "×1.08 variance = 2.16",
+            "round once = 2"
+           ]
+          }
+         ]
+        },
+        {
+         "round": 1,
+         "actor": "pc",
+         "kind": "attack",
+         "target": "mon.pack_leader_bitch",
+         "opening": false,
+         "cost": {
+          "resource": "sta",
+          "amount": 7,
+          "before": 100,
+          "after": 93
+         },
+         "skill": "warrior.heavy_slash",
+         "skill_name": "Heavy Slash",
+         "raw": 25,
+         "raw_text": "10 + STR 6×1.50 + ATK 6 = 25",
+         "strikes": [
+          {
+           "target": "mon.pack_leader_bitch",
+           "power": 25,
+           "defense": 0,
+           "post_def": 25,
+           "variance": 1,
+           "final": 25,
+           "absorbed": 0,
+           "hp_before": 23,
+           "hp_after": 0,
+           "steps": [
+            "Raw 25",
+            "DEF 0: max(25-0, 25×0.10) = 25",
+            "×1 variance = 25",
+            "round once = 25"
+           ],
+           "defeated": true
+          }
+         ],
+         "pending_xp_added": 10
+        },
+        {
+         "round": 2,
+         "actor": "mon.yearling_wolf",
+         "kind": "attack",
+         "target": "pc",
+         "opening": false,
+         "skill_name": "Bite",
+         "raw": 9,
+         "raw_text": "natural attack Raw = ATK 9",
+         "strikes": [
+          {
+           "target": "pc",
+           "power": 9,
+           "defense": 7,
+           "post_def": 2,
+           "variance": 0.96,
+           "final": 2,
+           "absorbed": 0,
+           "hp_before": 81,
+           "hp_after": 79,
+           "steps": [
+            "Raw 9",
+            "DEF 7: max(9-7, 9×0.10) = 2",
+            "×0.96 variance = 1.92",
+            "round once = 2"
+           ]
+          }
+         ]
+        },
+        {
+         "round": 2,
+         "actor": "pc",
+         "kind": "attack",
+         "target": "mon.yearling_wolf",
+         "opening": false,
+         "cost": {
+          "resource": "sta",
+          "amount": 7,
+          "before": 93,
+          "after": 86
+         },
+         "skill": "warrior.heavy_slash",
+         "skill_name": "Heavy Slash",
+         "raw": 25,
+         "raw_text": "10 + STR 6×1.50 + ATK 6 = 25",
+         "strikes": [
+          {
+           "target": "mon.yearling_wolf",
+           "power": 25,
+           "defense": 0,
+           "post_def": 25,
+           "variance": 1,
+           "final": 25,
+           "absorbed": 0,
+           "hp_before": 23,
+           "hp_after": 0,
+           "steps": [
+            "Raw 25",
+            "DEF 0: max(25-0, 25×0.10) = 25",
+            "×1 variance = 25",
+            "round once = 25"
+           ],
+           "defeated": true
+          }
+         ],
+         "pending_xp_added": 10
+        }
+       ],
+       "opening": null,
+       "started": {
+        "turn": 10,
+        "minute": 907
+       },
+       "intents": {},
+       "ambush": false,
+       "ambush_reason": "Pack Leader Bitch attacks openly; its trigger action waits for its Turn",
+       "round_marker": 3.02
+      }
+     },
+     "rng_to": 14
+    },
+    {
+     "t": "resource.changed",
+     "d": {
+      "id": "pc",
+      "resource": "sta",
+      "value": 86
+     }
+    },
+    {
+     "t": "entity.status",
+     "d": {
+      "id": "mon.yearling_wolf",
+      "status": "dead"
+     }
+    },
+    {
+     "t": "fact.asserted",
+     "d": {
+      "fact": {
+       "id": "f.mon.yearling_wolf.status.t12",
+       "s": "mon.yearling_wolf",
+       "p": "status",
+       "o": "dead",
+       "since": {
+        "turn": 12,
+        "minute": 907
+       },
+       "until": null,
+       "visibility": "public",
+       "importance": 0.9,
+       "hard": true,
+       "source": {
+        "kind": "engine",
+        "encounter": "enc.t10r"
+       }
+      }
+     }
+    },
+    {
+     "t": "knowledge.gained",
+     "d": {
+      "who": "pc",
+      "about": "f.mon.yearling_wolf.status.t12",
+      "stance": "knows",
+      "source": "witnessed",
+      "turn": 12,
+      "minute": 907
+     }
+    },
+    {
+     "t": "xp.changed",
+     "d": {
+      "id": "pc",
+      "xp": 35,
+      "amount": 20,
+      "reason": "Combat XP (Pack Leader Bitch 10, Yearling Wolf A 10)"
+     }
+    },
+    {
+     "t": "encounter.ended",
+     "d": {
+      "id": "enc.t10r",
+      "summary": {
+       "defeated": [
+        "mon.pack_leader_bitch",
+        "mon.yearling_wolf"
+       ],
+       "escaped": [],
+       "xp_awarded": 20,
+       "pc_dead": false,
+       "pc_escaped": false
+      }
+     }
+    },
+    {
+     "t": "memory.recorded",
+     "d": {
+      "memory": {
+       "id": "m.enc.t10r",
+       "turn": 12,
+       "minute": 907,
+       "text": "Fight at pine woods north of the kill site, ridge above a ravine den: {pc} (Heavy Slash) vs Pack Leader Bitch — killed; the yearling wolf — killed.",
+       "who": [
+        "pc",
+        "mon.pack_leader_bitch",
+        "mon.yearling_wolf"
+       ],
+       "witnesses": [
+        "pc"
+       ],
+       "seen": [
+        "pc"
+       ],
+       "location": "loc.eastern_woods_above_millbrook_hamlet",
+       "place": "pine woods north of the kill site, ridge above a ravine den",
+       "importance": 7,
+       "kind": "combat"
+      }
+     }
+    },
+    {
+     "t": "outcome.recorded",
+     "d": {
+      "outcome": {
+       "kind": "combat",
+       "started": null,
+       "records": [
+        {
+         "round": 2,
+         "actor": "pc",
+         "kind": "attack",
+         "target": "mon.yearling_wolf",
+         "opening": false,
+         "cost": {
+          "resource": "sta",
+          "amount": 7,
+          "before": 93,
+          "after": 86
+         },
+         "skill": "warrior.heavy_slash",
+         "skill_name": "Heavy Slash",
+         "raw": 25,
+         "raw_text": "10 + STR 6×1.50 + ATK 6 = 25",
+         "strikes": [
+          {
+           "target": "mon.yearling_wolf",
+           "power": 25,
+           "defense": 0,
+           "post_def": 25,
+           "variance": 1,
+           "final": 25,
+           "absorbed": 0,
+           "hp_before": 23,
+           "hp_after": 0,
+           "steps": [
+            "Raw 25",
+            "DEF 0: max(25-0, 25×0.10) = 25",
+            "×1 variance = 25",
+            "round once = 25"
+           ],
+           "defeated": true
+          }
+         ],
+         "pending_xp_added": 10
+        }
+       ],
+       "illegal": null,
+       "next": null,
+       "board": {
+        "round": 3,
+        "order": [
+         {
+          "id": "mon.yearling_wolf",
+          "init": 12
+         },
+         {
+          "id": "mon.pack_leader_bitch",
+          "init": 12
+         },
+         {
+          "id": "pc",
+          "init": 7
+         }
+        ],
+        "hp": [
+         {
+          "id": "mon.yearling_wolf",
+          "hp": 0,
+          "max": 23,
+          "state": "defeated",
+          "band": "ENGAGED",
+          "cover": "none"
+         },
+         {
+          "id": "mon.pack_leader_bitch",
+          "hp": 0,
+          "max": 23,
+          "state": "defeated",
+          "band": "ENGAGED",
+          "cover": "none"
+         },
+         {
+          "id": "pc",
+          "hp": 79,
+          "max": 85,
+          "state": null
+         }
+        ],
+        "labels": {
+         "mon.pack_leader_bitch": "Pack Leader Bitch",
+         "mon.yearling_wolf": "Yearling Wolf A"
+        },
+        "pc": {
+         "mp": 60,
+         "max_mp": 60,
+         "sta": 86,
+         "max_sta": 100,
+         "arrows": 0
+        }
+       },
+       "ended": {
+        "defeated": [
+         "mon.pack_leader_bitch",
+         "mon.yearling_wolf"
+        ],
+        "escaped": [],
+        "xp_awarded": 20,
+        "pc_dead": false,
+        "pc_escaped": false
+       },
+       "levelups": []
+      },
+      "situations": [
+       "loot"
+      ]
+     }
+    }
+   ],
+   "panel20": "`COMBAT START — Pack Leader Bitch, Yearling Wolf A attack Alaric`\n`Initiative: Yearling Wolf A 12 · Pack Leader Bitch 12 · Alaric 7 → Turn order: Yearling Wolf A › Pack Leader Bitch › Alaric`\n`— Round 1 —`\n`Yearling Wolf A (moves SHORT → ENGAGED): Bite → Alaric`\n`  2 damage → Alaric HP 85 - 2 = 83`\n`Pack Leader Bitch: Bite → Alaric`\n`  2 damage → Alaric HP 83 - 2 = 81`\n`COMBAT TARGETS — Pack Leader Bitch [ENGAGED] · Yearling Wolf A [ENGAGED]`\n`HP: Yearling Wolf A 23/23 · Pack Leader Bitch 23/23 · Alaric 81/85`\n`Range: Yearling Wolf A ENGAGED · Pack Leader Bitch ENGAGED`\n`Alaric: MP 60/60 · STA 100/100`\n`Next: Alaric's Turn (Round 1)`\n`Alaric's attacks vs Pack Leader Bitch: Basic Attack 16–19 · Heavy Slash 23–28 · Charge 21–26 damage`",
+   "panel22": "`— Round 1 —`\n`Alaric: Heavy Slash → Pack Leader Bitch · STA 100 - 7 = 93`\n`  25 damage → Pack Leader Bitch HP 23 - 25 → 0 DEFEATED`\n`— Round 2 —`\n`Yearling Wolf A: Bite → Alaric`\n`  2 damage → Alaric HP 81 - 2 = 79`\n`COMBAT TARGETS — Yearling Wolf A [ENGAGED]`\n`HP: Yearling Wolf A 23/23 · Pack Leader Bitch 0/23 (defeated) · Alaric 79/85`\n`Range: Yearling Wolf A ENGAGED`\n`Alaric: MP 60/60 · STA 93/100`\n`Next: Alaric's Turn (Round 2)`\n`Alaric's attacks vs Yearling Wolf A: Basic Attack 16–19 · Heavy Slash 23–28 · Charge 21–26 damage`",
+   "panel24": "`— Round 2 —`\n`Alaric: Heavy Slash → Yearling Wolf A · STA 93 - 7 = 86`\n`  25 damage → Yearling Wolf A HP 23 - 25 → 0 DEFEATED`\n`HP: Yearling Wolf A 0/23 (defeated) · Pack Leader Bitch 0/23 (defeated) · Alaric 79/85`\n`Alaric: MP 60/60 · STA 86/100`\n`COMBAT END — Pack Leader Bitch defeated, Yearling Wolf A defeated · +20 XP → XP 35/100`"
+  }
+ }
+}

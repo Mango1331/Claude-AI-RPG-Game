@@ -221,7 +221,7 @@ function said(text) {
 // cellar); two of them (or the only one) must occur in the message, so "the cellar" alone names no quest.
 const TITLE_FILLER = new Set(['the', 'a', 'an', 'in', 'on', 'at', 'of', 'to', 'for', 'near', 'by', 'with', 'from', 'and', 'or', 'into', 'off', 'quest', 'job', 'bill', 'contract', 'task', 'work', 'bounty']);
 const stem = (w) => (w.length > 3 && w.endsWith('s') ? w.slice(0, -1) : w);
-const titleWords = (title) => [...new Set(normText(title).split(' ').filter((w) => w && !TITLE_FILLER.has(w)).map(stem))];
+export const titleWords = (title) => [...new Set(normText(title).split(' ').filter((w) => w && !TITLE_FILLER.has(w)).map(stem))];
 
 export function namesQuest(text, title) {
     const words = titleWords(title);

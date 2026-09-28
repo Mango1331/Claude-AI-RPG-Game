@@ -13,7 +13,7 @@ import { hallOf, settlementOf, heldBy, membership, listingsOf, boardKey, today, 
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
-export const BOARD_VERSION = 'board-4.2';
+export const BOARD_VERSION = 'board-4.3';
 const QTYPES = ['minor', 'standard', 'dangerous', 'major'];
 const VERBS = ['GO', 'FIND', 'TALK', 'GET', 'GATHER', 'GIVE', 'DELIVER', 'USE', 'REPAIR', 'DEFEND', 'ESCORT', 'ATTACK', 'DEFEAT'];
 
@@ -151,13 +151,15 @@ export function objectiveText(q) {
 /** Turn a contract in at a Guild hall: story-readiness (or legacy exact proof), then deterministic payout/XP/count. */
 export function completeContract(s, content, q, emit, { step } = {}) {
     const legacy = checkProof(s, q);
-    const ready = !!q.ready || legacy.ok;
+    const hasLegacyProof = (q.proof || []).length > 0;
+    const legacyReady = hasLegacyProof && legacy.ok;
+    const ready = !!q.ready || legacyReady;
     const reason = ready ? null : 'the contract outcome has not yet been established as achieved in the world';
-    emit({ t: 'proof.checked', d: { quest: q.id, ok: ready, reason, mode: q.ready ? 'story_outcome' : legacy.ok ? 'legacy_verification' : 'not_ready' } });
+    emit({ t: 'proof.checked', d: { quest: q.id, ok: ready, reason, mode: q.ready ? 'story_outcome' : legacyReady ? 'legacy_verification' : 'not_ready' } });
     if (!ready) return { ok: false, reason };
     // Exact generated proof is only a backwards-compatible path. When story-readiness exists, items/marks are
     // continuity evidence, not mandatory tokens and are not auto-consumed by string matching.
-    if (!q.ready && legacy.ok) for (const x of legacy.consume) emit({ t: 'object.consumed', d: { id: typeof x === 'string' ? x : x.id, by: 'guild', ...(typeof x === 'object' ? { qty: x.qty } : {}) } });
+    if (!q.ready && legacyReady) for (const x of legacy.consume) emit({ t: 'object.consumed', d: { id: typeof x === 'string' ? x : x.id, by: 'guild', ...(typeof x === 'object' ? { qty: x.qty } : {}) } });
     const sheet = s.entities.pc.sheet;
     const pay = q.payout_cp || 0;
     if (pay) emit({ t: 'coin.changed', d: { id: 'pc', value: sheet.coin_cp + pay, delta: pay, why: `Guild payout: ${q.title}` } });
@@ -195,7 +197,7 @@ export function listingSchema(content) {
     return O({
         listings: A(O({
             title: S(), client: S(), rank: E(ranksOf(content)), level: I(1, 104), qtype: E(QTYPES), payout_cp: I(0),
-            desired_end_state: S(), objectives: A(OBJECTIVE, 1), proof: A(PROOF, 1),
+            desired_end_state: S(), objectives: A(OBJECTIVE, 1), proof: A(PROOF),
         })),
     });
 }
@@ -221,7 +223,7 @@ export function boardRequest(s, content, need) {
         `- rank is "${need.rank}"; level is the quest level, an integer from ${lo} to ${hi}; qtype is minor, standard, dangerous or major.`,
         `- payout_cp is the Guild's one fixed payout in copper (1 silver = 10 copper)${guide ? `; for ${need.rank} work ${guide[0]}–${guide[1]} cp is usual (a guide, not a limit)` : ''}.`,
         '- 1 to 4 objectives: {verb, what, qty, unit, where}; verb is one of GO, FIND, TALK, GET, GATHER, GIVE, DELIVER, USE, REPAIR, DEFEND, ESCORT, ATTACK, DEFEAT.',
-        '- Give at least one plausible verification example in proof: an object, witness-linked token, field mark or document mark the Guild could recognize. This is story guidance, NOT the only legal way to finish the quest; credible alternative evidence may emerge during play.',
+        '- proof contains 0–2 optional verification examples (object/mark) the Guild could recognize. Use [] when the result can be established naturally by return, witnesses or a credible report. These are story guidance, NOT exclusive completion tokens.',
         '- Do not use GO merely as a travel checklist item. Objectives should describe meaningful work/outcomes (find, rescue, repair, defend, escort, investigate through FIND/TALK/GET, defeat, deliver, etc.); travel itself is normally just how play reaches them.',
         '- client is who posted the work (a person, a trade, a hamlet); titles differ from the listings already on the board.',
         '',
@@ -246,7 +248,7 @@ export function parseBoard(answer, content, need) {
     const ok = [];
     const refused = [];
     for (const l of value.listings) {
-        const why = l.rank !== need.rank ? `rank ${l.rank} is not ${need.rank}` : l.level < lo || l.level > hi ? `level ${l.level} outside ${lo}–${hi}` : l.objectives.length > 4 ? 'more than 4 objectives' : null;
+        const why = l.rank !== need.rank ? `rank ${l.rank} is not ${need.rank}` : l.level < lo || l.level > hi ? `level ${l.level} outside ${lo}–${hi}` : l.objectives.length > 4 ? 'more than 4 objectives' : l.proof.length > 2 ? 'more than 2 verification examples' : null;
         if (why) refused.push({ title: l.title, why });
         else ok.push(l);
     }

@@ -13,7 +13,9 @@ import { knows, PC_NAME_FACT, currentFacts } from '../../src/knowledge.js';
 import { interpreterSystem } from '../../src/v4/interpret.js';
 import { sceneHandle } from '../../src/v4/scene_handles.js';
 import { parseIntent } from '../../src/intent.js';
-import { boardRequest } from '../../src/v4/guild.js';
+import { boardRequest, checkProof } from '../../src/v4/guild.js';
+import { worldPanel } from '../../src/display.js';
+import { playerTurn } from '../../src/engine.js';
 
 const contentPack = await loadContent();
 
@@ -271,4 +273,103 @@ test('Guild board prompt uses structural quest design instead of the old chore c
     assert.match(req.system, /wolves, goblins or feral dogs/);
     assert.match(req.system, /Do not preferentially default to rats/);
     assert.match(req.system, /examples demonstrate structure only/i);
+});
+
+
+test('free fantasy species uses an explicit F1 anchor, materialises at reveal, and shows HP/Range before combat', async () => {
+    const g = await created();
+    const st = structuredClone(g.state());
+    st.last.outcome = {
+        kind: 'v4', actions: [], expected_keys: {}, conditionals: [],
+        booked: { registration: false, grants: [], turnIns: [], accepted: [] },
+        auth: { go: null, gos: [], roam: true, take: [], gather: false, rest: false, timeCap: 120 },
+        search_checks: [], check_die: null,
+    };
+    const a = applyWorld(st, contentPack, { expected: {}, deltas: [{
+        seq: 1, type: 'creature.new', ref: 'c1', species: 'plated wallow beast', anchor: 'armored_beast',
+        desc: ['low and long, like a giant badger crossed with a lizard', 'back plated in overlapping grey hide'],
+        count: 1, present: true, band: 'SHORT',
+    }] }, { msg: 99, prose: 'The thing stood in the wallow ten paces off, plated in grey hide.' });
+    assert.deepEqual(a.rejected, []);
+    const beast = Object.values(a.state.entities).find((e) => e.kind === 'creature' && e.species === 'plated wallow beast');
+    assert.ok(beast, 'creative species becomes a canonical creature');
+    assert.equal(beast.anchor, 'armored_beast');
+    assert.ok(beast.profile, 'profile is locked at visible reveal, before combat');
+    assert.equal(beast.profile.max_hp, 70);
+    assert.equal(a.state.scene.positions[beast.id].band, 'SHORT');
+    assert.equal(a.state.encounter, null, 'reveal alone does not roll Initiative or start Combat');
+    const panel = worldPanel(st, contentPack, a);
+    assert.match(panel, /ACTIVE SCENE — Plated Wallow Beast A · HP 70\/70 · SHORT/);
+    assert.doesNotMatch(panel, /Initiative|COMBAT START/);
+
+    const intent = parseIntent('*I Basic Attack the creature*', a.state, contentPack);
+    assert.equal(intent.kind, 'attack');
+    assert.equal(intent.target, beast.id);
+    const attack = playerTurn(a.state, contentPack, '*I Basic Attack the creature*', { msg: 100 });
+    assert.equal(attack.outcome.kind, 'combat');
+    assert.ok(attack.state.encounter, 'first actual attack starts the encounter');
+    assert.ok(attack.outcome.board.order.some((x) => x.id === beast.id), 'Initiative board now contains the revealed creature');
+});
+
+test('creature.new extractor contract separates display species from mechanical anchor', () => {
+    const d = contentPack.deltaVocab.deltas.find((x) => x.type === 'creature.new');
+    assert.ok(d.fields.anchor);
+    assert.ok(d.fields.anchor.enum.includes('armored_beast'));
+    assert.match(contentPack.deltaVocab.rules.join('\n'), /species is the creature's actual in-world name\/type.*anchor as the nearest ecological\/mechanical F1 body-plan/s);
+});
+
+test('invalid attack outside combat is System-only and never handed to the narrator', async () => {
+    const g = await created();
+    const r = playerTurn(g.state(), contentPack, '*I Basic Attack the creature*', { msg: 99 });
+    assert.equal(r.intent.kind, 'no_target');
+    assert.equal(r.outcome, null);
+    assert.equal(r.command.llm, null);
+    assert.match(r.command.panels[0], /SYSTEM \/\/ ATTACK — TARGET NEEDED/);
+    assert.match(r.command.panels[0], /Nothing was spent or rolled/);
+});
+
+test('equipped starter weapon is in the V4 catalog and readying it cannot become a missing-item equip', async () => {
+    const g = await created();
+    const st = g.state();
+    const cat = buildCatalog(st, contentPack);
+    const sword = cat.objects.find((o) => o.id === 'item.starter_longsword');
+    assert.ok(sword);
+    assert.equal(sword.state, 'equipped: weapon');
+    assert.match(interpreterSystem(contentPack.commandVocab), /I get my sword out and hold it ready/);
+});
+
+test('Guild proof sums separate gathered resource stacks and consumes only the required quantity', async () => {
+    const g = await created();
+    const st = structuredClone(g.state());
+    st.objects['obj.mint.1'] = { id: 'obj.mint.1', name: 'marshmint root', kind: 'resource', stack: true, qty: 4, unit: 'handfuls', holder: { entity: 'pc' }, marks: [], for_quests: ['quest.mint'] };
+    st.objects['obj.mint.2'] = { id: 'obj.mint.2', name: 'marshmint root', kind: 'resource', stack: true, qty: 3, unit: 'handfuls', holder: { entity: 'pc' }, marks: [], for_quests: ['quest.mint'] };
+    const q = { id: 'quest.mint', proof: [{ kind: 'object', what: 'marshmint root', qty: 6, unit: 'handfuls', consume: true }] };
+    const p = checkProof(st, q);
+    assert.equal(p.ok, true);
+    assert.deepEqual(p.consume, [{ id: 'obj.mint.1', qty: 4 }, { id: 'obj.mint.2', qty: 2 }]);
+    assert.match(contentPack.deltaVocab.rules.join('\n'), /concrete amount actually gathered.*emit object\.new/s);
+});
+
+test('invented Guild plate replacement fee is engine-owned canon and is rejected', () => {
+    const ctx = {
+        inGuildHall: true, contracts: [],
+        booked: { registration: false, grants: [], turnIns: [], accepted: [] },
+        auth: {}, isGuildPerson: () => true,
+    };
+    const r = firewall([{ seq: 1, type: 'fact', s: 'Guild plate', p: 'replacement_fee', o: '1 silver (10 cp)' }], ctx);
+    assert.equal(r.accept.length, 0);
+    assert.equal(r.reject[0].rule, 'guild_canon');
+});
+
+test('pending V4 extraction does not expose final prose before its scene state is committed', async () => {
+    const g = await created();
+    await g.player('I look toward the reeds.', []);
+    const prose = 'A plated beast steps into view.';
+    g.chat.push({ mes: prose, is_user: false, is_system: false, extra: {} });
+    const id = g.chat.length - 1;
+    const p = processReplyAny(g.chat, id, contentPack);
+    assert.equal(p.extract, true);
+    assert.equal(g.chat[id].mes, prose, 'extractor evidence remains byte-faithful');
+    assert.ok(!String(g.chat[id].extra.display_text || '').includes(prose), 'visible final narration waits for extraction');
+    assert.match(String(g.chat[id].extra.display_text || ''), /engine is reading the reply/i);
 });

@@ -208,7 +208,7 @@ export function worldPanel(state, content, reply = {}) {
     else if (o?.kind === 'combat') lines.push(...combatLines(state, content, o));
     else if (o?.kind === 'check' && o.check) lines.push(checkLine(o.check));
     else if (o?.kind === 'note' && o.notice) lines.push(sys(o.notice));
-    if (reply.pending) lines.push(sys('WORLD — the engine is reading the reply; the HUD follows in a moment.'));
+    if (reply.pending) lines.push(sys('WORLD — recording continuity in the background; the story is readable now, and the next turn waits for the update.'));
     else if (reply.failed) lines.push(sys(`WORLD NOT RECORDED — ${String(reply.failed).replace(/[<>`]/g, '')}. Nothing of this reply changed the game state; swipe to retry, or go on.`));
     if (reply.events && reply.state) {
         lines.push(...changeLines(state, reply.state, content, reply.opened ? reply.events.slice(0, reply.opened.from) : reply.events));

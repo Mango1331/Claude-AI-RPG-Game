@@ -174,9 +174,15 @@ export function firewall(deltas, ctx = {}) {
                     no(d, 'engine_booked', 'the engine already created/handed over this object with its own resolution');
                     continue;
                 }
-                if (isPc(d.holder) && guildContract(d.for_quest) && CONTRACT_DOC.test(text(d.name))) {
-                    no(d, 'engine_booked', 'a Guild contract\'s slip is the engine\'s: it hands it over when the contract is accepted');
-                    continue;
+                if (isPc(d.holder)) {
+                    if (guildContract(d.for_quest) && CONTRACT_DOC.test(text(d.name))) {
+                        no(d, 'engine_booked', 'a Guild contract\'s slip is the engine\'s: it hands it over when the contract is accepted');
+                        continue;
+                    }
+                    if (!auth.take && !auth.gather) {
+                        no(d, 'pc_inventory', 'a newly introduced object enters Alaric\'s inventory only from his TAKE/GATHER; an NPC gift is created on the NPC and then object.move to pc');
+                        continue;
+                    }
                 }
                 break;
             }

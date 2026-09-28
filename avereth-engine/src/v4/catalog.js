@@ -130,18 +130,29 @@ export function buildCatalog(state, content, { extraPlaces = [] } = {}) {
         .map((id) => ({ id, handle: sceneHandle(state, content, id), label: personLabel(state, content, id) }));
     const activeRaw = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered');
     const quests = activeRaw.map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) }));
-    const escort = activeRaw.find((q) => q.status === 'active' && (q.objectives || []).some((o) => String(o.verb || '').toUpperCase() === 'ESCORT'));
-    const escortText = escort ? normText([escort.title, escort.client, escort.desired_end_state, ...(escort.details || []), ...(escort.notes || []),
-        ...(escort.objectives || []).flatMap((o) => [o.what, o.where])].filter(Boolean).join(' ')) : '';
-    const escortContact = escort ? state.scene.present.find((id) => {
-        if (id === 'pc' || !state.entities[id] || state.entities[id].kind !== 'npc') return false;
-        const e = state.entities[id];
-        const labels = [e.name, truth(state, id, 'occupation')[0]?.o, ...(e.descriptors || [])].filter(Boolean).map(normText);
-        return labels.some((x) => x.length >= 3 && escortText.includes(x));
-    }) : null;
-    const journey_ready = escort && escortContact
-        ? `${escort.id} with ${sceneHandle(state, content, escortContact)} — the established escort/journey can depart or continue now if Alaric clearly agrees`
-        : undefined;
+    const travelRe = /\b(?:escort|journey|travel|road|cart|wagon|caravan|ship|boat|ferry|ride|guide|lead|depart|leave|deliver|destination|route|waystation)\b/i;
+    const journeySources = [
+        ...activeRaw.filter((q) => q.status === 'active').map((q) => ({
+            id: q.id, label: q.title,
+            text: [q.title, q.client, q.desired_end_state, ...(q.details || []), ...(q.notes || []), ...(q.objectives || []).flatMap((o) => [o.verb, o.what, o.where])].filter(Boolean).join(' '),
+        })),
+        ...Object.values(state.threads || {}).filter((t) => t.status === 'open').map((t) => ({ id: t.id, label: t.text, text: t.text })),
+    ];
+    let journey_ready;
+    for (const src of journeySources) {
+        if (!travelRe.test(src.text)) continue;
+        const text = normText(src.text);
+        const contact = state.scene.present.find((id) => {
+            if (id === 'pc' || !state.entities[id] || state.entities[id].kind !== 'npc') return false;
+            const e = state.entities[id];
+            const labels = [e.name, truth(state, id, 'occupation')[0]?.o, ...(e.descriptors || [])].filter(Boolean).map(normText);
+            return labels.some((x) => x.length >= 3 && text.includes(x));
+        });
+        if (contact) {
+            journey_ready = `${src.id} with ${sceneHandle(state, content, contact)} — an established journey/departure is ready to continue if Alaric clearly agrees`;
+            break;
+        }
+    }
     const day = today(state);
     const completed = Object.values(state.quests).filter((q) => q.status === 'completed' && (q.history || []).some((h) => h.status === 'completed' && Math.floor((h.minute ?? 0) / 1440) + 1 === day))
         .map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) }));

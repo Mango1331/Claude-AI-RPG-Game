@@ -137,13 +137,26 @@ test('S1 run with the mock: a perfect interpreter meets the gates; one that book
         assert.equal(res.agg.negative_precision_pct, 100);
         assert.equal(res.agg.recall_pct, 100);
         assert.deepEqual(res.gates, { negative: true, recall: true, p50: true });
+        assert.equal(res.meta.prompt, 'v4');
+        assert.equal(res.meta.guard, true);
+        // a mock that books a payment with no evidence in the message ("quote": "x") on five negatives
         const wrong = corpus.filter((c) => !c.expect.length).slice(0, 5).map((c) => c.id);
         const bad = await openProvider({ backend: 'mock', mock: s1MockResponder(corpus, scenes, commandsVocab, { wrong }) });
         assert.equal(await s1main(['--out', out, '--concurrency', '16'], { ...quiet, provider: bad, decision: null }), 0);
         res = JSON.parse(fs.readFileSync(path.join(out, 'results.json'), 'utf8'));
+        assert.equal(res.agg_raw.false_commitments, 5, 'the interpreter alone');
+        assert.equal(res.agg.false_commitments, 0, 'the guard drops a commitment whose quote is not in the message');
+        assert.ok(res.records.some((r) => r.dropped?.some((d) => d.rule === 'no_evidence')));
+        assert.match(fs.readFileSync(path.join(out, 'summary.md'), 'utf8'), /Interpreter allein gegen Interpreter \+ Agency-Guard/);
+        assert.equal(await s1main(['--out', out, '--concurrency', '16', '--guard', 'off'], { ...quiet, provider: bad, decision: null }), 0);
+        res = JSON.parse(fs.readFileSync(path.join(out, 'results.json'), 'utf8'));
         assert.equal(res.agg.false_commitments, 5);
         assert.equal(res.gates.negative, false);
         assert.match(fs.readFileSync(path.join(out, 'summary.md'), 'utf8'), /NEIN/);
+        // the P0 prompt of 27.09. stays runnable for comparison
+        assert.equal(await s1main(['--out', out, '--concurrency', '16', '--prompt', 'p0'], { ...quiet, provider, decision: null }), 0);
+        res = JSON.parse(fs.readFileSync(path.join(out, 'results.json'), 'utf8'));
+        assert.deepEqual([res.meta.prompt, res.meta.guard, res.meta.vocab_version], ['p0', false, 'cmd-0.1-draft']);
     } finally {
         fs.rmSync(out, { recursive: true, force: true });
     }

@@ -22,6 +22,7 @@
 7. [Werkzeugfehler und ihre Korrektur](#7-werkzeugfehler-und-ihre-korrektur)
 8. [Das externe Review: Zustimmung und Widerspruch](#8-das-externe-review-zustimmung-und-widerspruch)
 9. [Folgen für Runtime V4](#9-folgen-für-runtime-v4)
+10. [Nach P0: S1 mit Agency-Guard (offline gemessen)](#10-nach-p0-s1-mit-agency-guard-offline-gemessen)
 
 ---
 
@@ -289,3 +290,67 @@ S3 spricht für das Domänenmodell. Für B als Erzähler-Protokoll spricht es ni
   - dann ein kleiner deterministischer Guard an Evidenz und Zustand.
 - Gemessen wird offline an den aufgezeichneten Antworten, Schicht für Schicht, und danach live mit demselben 256er-Korpus.
 - Wie weit diese Schritte in diesem Durchlauf umgesetzt und gemessen sind, steht im Plan (Revision 3) und im Abschlussbericht dieses Durchlaufs.
+
+---
+
+## 10. Nach P0: S1 mit Agency-Guard (offline gemessen)
+
+**Was geändert wurde.** Drei Teile, einzeln messbar:
+
+1. **Vokabular cmd-0.2** (`content/commands.json`, Produkt):
+   - `guild.register` lehrt die Phrase „I'm here to register“ nicht mehr;
+   - `quest.turn_in` lehrt keinen Zweck-Nebensatz mehr als Abgabe;
+   - Brett lesen ist `board.read`, nicht „looking around“;
+   - „take the slip and register it“ ist eine einzige `quest.accept`.
+   - Eine neue Regel sagt: Zweck oder Bedarf ist keine Handlung, außer dort, wo die Handlung stattfinden kann.
+   - Die Regelbeispiele wiederholen keinen Korpusfall.
+2. **Neun kontrastive Beispiele** (`src/v4/interpret.js`), in einer anderen Stadt, entlang der Fehlercluster.
+   - Ein Test stellt sicher, dass keins davon ein Fall aus Korpus oder Prüfsätzen ist.
+3. **Agency-Guard** (`src/v4/agency.js`): eine deterministische zweite Linie, klein gehalten.
+   - Er entfernt nur, er ergänzt nie.
+   - Er prüft die mitgelieferte Evidenz (`quote`) auf Frage, Rückblick, Plan, Zweck, Verneinung, fremde Handlung und fremde Rede.
+   - Er prüft den Zustand: Besitz; Abgabe eines im selben Satz genommenen Vertrags; laufende Registrierung.
+
+**Messung an den aufgezeichneten Antworten vom 27.09.** (`node tools/p0/rescore.mjs`; der Interpreter-Prompt ist dabei der von P0):
+
+| Stufe | Negativ-Präzision | Recall | falsche Befehle / Festlegungen | exakt | Reihenfolge | Refs |
+|---|---|---|---|---|---|---|
+| Interpreter wie gemessen | 93,1 % (81/87) | 94,2 % | 13 / 11 | 90,2 % | 100 % | 99,3 % |
+| + Zustandsprüfung allein | 94,3 % | 94,2 % | 8 / 6 | 92,2 % | 100 % | 99,3 % |
+| + Evidenz-Guard allein | 98,9 % | 94,2 % | 6 / 5 | 93,0 % | 100 % | 99,3 % |
+| **+ Agency-Guard (beides)** | **100 % (87/87)** | **94,2 %** | **1 / 0** | 94,9 % | 100 % | 99,3 % |
+
+**Ehrliche Einordnung:**
+- Der Guard ist an genau diesen Fehlern entworfen worden. Die 100 % sind deshalb optimistisch.
+- Um das abzuschätzen, entstanden zwei **getrennte Prüfsätze**, vor ihrer ersten Messung geschrieben (`tests/eval/commands_holdout.jsonl`, `commands_holdout2.jsonl`).
+  - Jeder Negativfall trägt einen „verlockenden“ Fehlbefehl.
+  - Jeder Positivfall trägt seine Evidenz.
+
+| Prüfsatz | erster Lauf | danach, nach der jeweils einen Änderung, die er auslöste |
+|---|---|---|
+| 1 (36 Negativ- in den Guard-Klassen, 41 Positivbefehle) | 32/36 abgefangen, 39/41 erhalten | 35/36, 40/41 |
+| 2 (28 / 34) | 25/28 abgefangen, 33/34 erhalten | 27/28, 34/34 |
+
+- Belastbar für ungesehene Formulierungen ist der **erste Lauf von Satz 2**: 25/28 = 89 % der verlockenden Fehlbefehle abgefangen, 33/34 = 97 % der richtigen Befehle erhalten.
+- Die Lücken sind lexikalisch:
+  - „the furrier“, obwohl der Katalog „fur trader“ nennt;
+  - „cut the heads off“ als Vergangenheit von *take* nicht erkannt;
+  - Fragen ohne Fragezeichen mit fremdem Subjekt; das ist inzwischen behoben.
+- Außerhalb der Klassen (bloßer Kommentar, Anstarren) fängt der Guard nichts. Das bleibt Aufgabe des Interpreters.
+
+**Bewusste Policy:** Eine als Frage gestellte Annahme („Can I get the room and a bath?“) wird nicht gebucht.
+- Der Verkäufer bestätigt in der Geschichte; das nächste „yes“ bucht.
+- `buy` (Wunsch ohne Preis) und höfliche Aufforderungen („Register me, please?“, „Can you register me?“) bleiben erhalten.
+
+**Schätzung, keine Messung:**
+- Der Interpreter erzeugte auf 6,9 % der Negativfälle einen falschen Befehl.
+- Fängt der Guard davon ~89 % ab, bleiben ≈ 0,8 %, also eine Negativ-Präzision von ≈ 99 %.
+- **Das Gate gilt erst als erfüllt, wenn der Live-Lauf es zeigt:**
+
+```
+node tools/p0/s1_interpreter.mjs                                         (256 Fälle, Prompt v4, Guard an)
+node tools/p0/s1_interpreter.mjs --corpus tests/eval/commands_holdout2.jsonl --out p0_out/s1_holdout2
+```
+
+- Die Zusammenfassung zeigt beide Schichten nebeneinander: den Interpreter allein und den Interpreter mit Guard.
+- `--prompt p0 --guard off` wiederholt den P0-Lauf zum Vergleich.

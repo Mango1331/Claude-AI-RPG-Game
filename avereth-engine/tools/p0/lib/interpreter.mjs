@@ -120,3 +120,22 @@ export function interpreterSchema(vocab, scene) {
     });
     return O({ commands: A({ anyOf: variants }) });
 }
+
+/**
+ * The agency guard's view of an S1 scene (src/v4/agency.js guardCommands): where Alaric is, who is present, what he
+ * holds, whether a registration is open. The product builds the same context from its state.
+ */
+export function guardContextFromScene(scene) {
+    const hallRe = /guild_hall/;
+    const places = [scene.here?.id, ...(scene.places || []).map((p) => p.id)].filter(Boolean);
+    const objects = new Map((scene.objects || []).map((o) => [o.id, { held: !o.holder || o.holder === 'Alaric', name: o.name }]));
+    const reg = (scene.offers || []).find((o) => o.id === 'offer.registration' || (o.lines || []).some((l) => /registration/i.test(l.what)));
+    return {
+        inGuildHall: hallRe.test(scene.here?.id || ''),
+        guildHalls: new Set(places.filter((p) => hallRe.test(p))),
+        present: (scene.present || []).map((p) => ({ id: p.id, names: [p.label] })),
+        objects,
+        registrationPending: !!reg,
+        registrationOffer: reg ? reg.id : null,
+    };
+}

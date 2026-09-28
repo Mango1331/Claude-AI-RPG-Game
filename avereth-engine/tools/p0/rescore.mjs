@@ -148,6 +148,25 @@ export function summaryMarkdown(res) {
     return L.join('\n');
 }
 
+/** The layers of the product's agency guard (src/v4/agency.js), as the recorded interpreter answers go through them. */
+export async function guardLayers() {
+    const { guardCommands } = await import('../../src/v4/agency.js');
+    const { guardContextFromScene } = await import('./lib/interpreter.mjs');
+    const scenes = loadScenes();
+    const layer = (name, opts) => ({
+        name,
+        apply: (kase, predicted) => {
+            const r = guardCommands(kase.text, predicted, guardContextFromScene(scenes[kase.scene]), opts);
+            return { kept: r.kept, dropped: r.dropped.map((d) => ({ command: d.command, why: `${d.rule}: ${d.why}` })) };
+        },
+    });
+    return [
+        layer('+ Zustandsprüfung allein', { language: false, state: true }),
+        layer('+ Evidenz-Guard (Sprache) allein', { language: true, state: false }),
+        layer('+ Agency-Guard (Evidenz + Zustand)', { language: true, state: true }),
+    ];
+}
+
 export async function main(argv = process.argv.slice(2), deps = {}) {
     const a = parseArgs(argv);
     const log = deps.log ?? ((t) => console.log(t));
@@ -158,7 +177,7 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     if (fs.existsSync(path.join(root, 's2', 'a.json'))) res.s2 = rescoreS2(path.join(root, 's2'), turns);
     if (deps.firewall && fs.existsSync(path.join(root, 's2', 'a.json'))) res.firewall = await deps.firewall(readJson(path.join(root, 's2', 'a.json')), turns);
     const s1file = path.join(root, 's1', 'results.json');
-    if (fs.existsSync(s1file)) res.s1 = rescoreS1(s1file, readJsonl(CORPUS_FILE), deps.s1Layers ?? []);
+    if (fs.existsSync(s1file)) res.s1 = rescoreS1(s1file, readJsonl(CORPUS_FILE), deps.s1Layers ?? await guardLayers());
     writeJson(path.join(outDir, 'results.json'), res);
     writeText(path.join(outDir, 'summary.md'), summaryMarkdown(res));
     log(summaryMarkdown(res));

@@ -6,6 +6,11 @@
 //   node tools/p0/s1_interpreter.mjs --dry-run            no calls: prompt sizes and three sample requests
 //
 // Options: --mode json_schema|plain  --reasoning <value>|keep  (default: the S0 decision in p0_out/s0/decision.json)
+//          --prompt v4|p0   v4 (default): the product's interpreter (src/v4/interpret.js, content/commands.json cmd-0.2);
+//                           p0: the P0 prompt of 27.09. (tools/p0/lib/interpreter.mjs, draft cmd-0.1), to compare
+//          --guard on|off   the product's agency guard (src/v4/agency.js) on the answers; on by default with v4.
+//                           The summary shows the interpreter alone and interpreter + guard; the gates use the latter.
+//          --corpus <file>  another corpus, e.g. tests/eval/commands_holdout.jsonl or commands_holdout2.jsonl
 //          --concurrency 3  --max-tokens 2500  --temperature 0.1  --timeout 120 (s)  --reps 1
 //          --cases id,id  --tags tag,tag  --limit N  --no-examples  --out <dir>  --st-url <url>  --profile "<name>"
 // One call per case (+ at most one repair call for an invalid answer). Output: p0_out/s1/summary.md (to send back),
@@ -14,7 +19,9 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { openProvider } from './lib/provider.mjs';
 import { structuredCall, callTokens } from './lib/structured.mjs';
-import { loadVocabulary, loadScenes, interpreterSystem, interpreterUser, interpreterSchema, PLAIN_FORMAT } from './lib/interpreter.mjs';
+import { loadVocabulary, loadScenes, interpreterSystem, interpreterUser, interpreterSchema, PLAIN_FORMAT, guardContextFromScene } from './lib/interpreter.mjs';
+import * as v4 from '../../src/v4/interpret.js';
+import { guardCommands } from '../../src/v4/agency.js';
 import { scoreCase, aggregate, COMMITMENTS } from './lib/score.mjs';
 import {
     ENGINE_ROOT, OUT_ROOT, parseArgs, intArg, pool, percentile, mean, round, pct, readJsonl, readDecision, writeJson, writeText,
@@ -24,6 +31,17 @@ import {
 export const TOOL = 's1_interpreter';
 export const TOOL_VERSION = 1;
 export const CORPUS_FILE = path.join(ENGINE_ROOT, 'tests', 'eval', 'commands.jsonl');
+export const PRODUCT_VOCAB_FILE = path.join(ENGINE_ROOT, 'content', 'commands.json');
+
+/** The two prompt versions: v4 = the product's interpreter (cmd-0.2), p0 = the P0 run of 27.09. (cmd-0.1-draft). */
+export function promptKit(which, vocabOverride = null) {
+    if (which === 'p0') {
+        const vocab = vocabOverride ?? loadVocabulary();
+        return { name: 'p0', vocab, system: (o) => interpreterSystem(vocab, o), user: interpreterUser, schema: (scene) => interpreterSchema(vocab, scene), plain: PLAIN_FORMAT };
+    }
+    const vocab = vocabOverride ?? loadVocabulary(PRODUCT_VOCAB_FILE);
+    return { name: 'v4', vocab, system: (o) => v4.interpreterSystem(vocab, o), user: v4.interpreterUser, schema: (scene) => v4.interpreterSchema(vocab, scene), plain: v4.PLAIN_FORMAT };
+}
 export const GATES = { negative_precision_pct: 98, recall_pct: 90, p50_s: 6 };
 
 const NEG_CATEGORIES = ['question', 'thought', 'hypothetical', 'plan', 'memory', 'negation', 'npc_action', 'quoted_speech', 'speech', 'neutral'];
@@ -92,8 +110,8 @@ export function goldAnswer(vocab, kase) {
     return { commands };
 }
 
-export function s1MockResponder(cases, scenes, vocab, { wrong = [], invalid = [] } = {}) {
-    const byUser = new Map(cases.map((c) => [interpreterUser(scenes[c.scene], c.text), c]));
+export function s1MockResponder(cases, scenes, vocab, { wrong = [], invalid = [], user = interpreterUser } = {}) {
+    const byUser = new Map(cases.map((c) => [user(scenes[c.scene], c.text), c]));
     return async (req) => {
         const users = req.messages.filter((m) => m.role === 'user');
         const c = byUser.get(users[0]?.content);
@@ -120,6 +138,7 @@ function summaryMarkdown(run) {
     L.push('# P0 / S1 Interpreter: Ergebnis', '');
     L.push(`- Datum: ${meta.finished} · Dauer ${meta.duration_s} s · Werkzeug ${TOOL} v${TOOL_VERSION} · Vokabular ${meta.vocab_version} · Korpus ${meta.corpus_cases} Fälle${meta.sampled ? `, davon ${meta.cases} ausgewählt` : ''}`);
     L.push(`- Backend: ${meta.provider.backend} · Modell: ${meta.provider.model}${meta.provider.profile ? ` · Profil: ${meta.provider.profile}` : ''}`);
+    L.push(`- Prompt: ${meta.prompt ?? 'p0'} · Agency-Guard: ${meta.guard ? 'an (Kennzahlen unten nach dem Guard; der Interpreter allein steht in der Vergleichstabelle)' : 'aus'}`);
     L.push(`- Modus: ${meta.mode} · Reasoning: ${meta.reasoning ?? 'wie konfiguriert'} (${meta.mode_source}) · temperature ${meta.temperature} · Beispiele im Prompt: ${meta.examples ? 'ja' : 'nein'}`);
     L.push(`- Aufrufe: ${meta.calls} (davon ${meta.repairs} Reparatur) · Prompt ≈ ${meta.prompt_tokens_est} Token (Schätzung, System + Katalog + Nachricht)`);
     L.push('', '## Schwellen (Go/No-Go P0, Plan §16)', '');
@@ -128,6 +147,22 @@ function summaryMarkdown(run) {
         ['Recall (Typ und Argumente)', `${agg.recall_pct ?? '–'} % von ${agg.gold_commands} Befehlen`, `≥ ${GATES.recall_pct} %`, gates.recall ? 'ja' : 'NEIN'],
         ['p50 Latenz', `${lat.p50_s ?? '–'} s`, `≤ ${GATES.p50_s} s`, gates.p50 ? 'ja' : 'NEIN'],
     ]));
+    if (run.agg_raw) {
+        const r = run.agg_raw;
+        L.push('', '## Interpreter allein gegen Interpreter + Agency-Guard', '');
+        L.push(mdTable(['Kennzahl', 'Interpreter allein', '+ Guard'], [
+            ['Negativ-Präzision', `${r.negative_precision_pct} % (${r.negative_ok}/${r.negative_cases})`, `${agg.negative_precision_pct} % (${agg.negative_ok}/${agg.negative_cases})`],
+            ['Recall Typ + Argumente', `${r.recall_pct} %`, `${agg.recall_pct} %`],
+            ['falsche Befehle / Festlegungen', `${r.false_commands} / ${r.false_commitments}`, `${agg.false_commands} / ${agg.false_commitments}`],
+            ['Fälle exakt', `${r.exact_cases_pct} %`, `${agg.exact_cases_pct} %`],
+            ['Reihenfolge / Referenzen', `${r.order_ok_pct} % / ${r.reference_ok_pct} %`, `${agg.order_ok_pct} % / ${agg.reference_ok_pct} %`],
+        ]));
+        const dropped = records.flatMap((x) => (x.dropped || []).map((d) => ({ id: x.id, ...d })));
+        if (dropped.length) {
+            L.push('', `Vom Guard verworfen (${dropped.length}):`);
+            for (const d of dropped.slice(0, 40)) L.push(`- ${d.id}: ${d.type} „${String(d.quote || '').slice(0, 80)}“ → ${d.rule}`);
+        }
+    }
     L.push('', '## Weitere Kennzahlen', '');
     L.push(mdTable(['Kennzahl', 'Wert'], [
         ['Recall nur Befehlstyp', `${agg.type_recall_pct ?? '–'} %`],
@@ -178,7 +213,11 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     const started = Date.now();
     const log = deps.log ?? ((t) => console.log(t));
     const note = deps.progress ?? progress;
-    const vocab = deps.vocab ?? loadVocabulary();
+    const which = a.prompt && a.prompt !== true ? String(a.prompt) : 'v4';
+    if (!['v4', 'p0'].includes(which)) throw new Error('--prompt ist v4 oder p0');
+    const kit = promptKit(which, deps.vocab ?? null);
+    const vocab = kit.vocab;
+    const guardOn = a.guard !== undefined ? String(a.guard) !== 'off' : which === 'v4';
     const scenes = deps.scenes ?? loadScenes();
     const corpus = deps.corpus ?? readJsonl(a.corpus ? path.resolve(String(a.corpus)) : CORPUS_FILE);
     for (const c of corpus) if (!scenes[c.scene]) throw new Error(`Fall ${c.id}: Szene ${c.scene} fehlt`);
@@ -201,13 +240,13 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     if (a.reasoning !== undefined && a.reasoning !== true) reasoning = String(a.reasoning) === 'keep' ? undefined : String(a.reasoning);
     else reasoning = decision?.reasoning ?? undefined;
     const modeSource = a.mode || a.reasoning !== undefined ? 'Kommandozeile' : decision ? 'aus S0' : 'Standard, S0 nicht gefunden';
-    const system = interpreterSystem(vocab, { examples });
-    const promptTokensEst = Math.round(mean(cases.map((c) => estimateTokens(system) + estimateTokens(interpreterUser(scenes[c.scene], c.text)) + (mode === 'plain' ? estimateTokens(PLAIN_FORMAT) : 0))) || 0);
+    const system = kit.system({ examples });
+    const promptTokensEst = Math.round(mean(cases.map((c) => estimateTokens(system) + estimateTokens(kit.user(scenes[c.scene], c.text)) + (mode === 'plain' ? estimateTokens(kit.plain) : 0))) || 0);
 
     if (a['dry-run']) {
         const sample = cases.slice(0, 3).map((c) => {
-            const schema = interpreterSchema(vocab, scenes[c.scene]);
-            return { case: c.id, messages: [{ role: 'system', content: mode === 'plain' ? `${system}\n\n${PLAIN_FORMAT}` : system }, { role: 'user', content: interpreterUser(scenes[c.scene], c.text) }], json_schema: mode === 'json_schema' ? { name: 'interpreter', strict: true, schema } : null };
+            const schema = kit.schema(scenes[c.scene]);
+            return { case: c.id, messages: [{ role: 'system', content: mode === 'plain' ? `${system}\n\n${kit.plain}` : system }, { role: 'user', content: kit.user(scenes[c.scene], c.text) }], json_schema: mode === 'json_schema' ? { name: 'interpreter', strict: true, schema } : null };
         });
         writeJson(path.join(outDir, 'requests_sample.json'), { tool: TOOL, version: TOOL_VERSION, created: nowIso(), note: 'dry run: no call was made', mode, reasoning: reasoning ?? 'keep', sample });
         log(`S1 Probelauf: ${cases.length} Fälle × ${reps} = ${cases.length * reps} Aufrufe geplant (+ höchstens 1 Reparatur je ungültiger Antwort). Modus ${mode}, Reasoning ${reasoning ?? 'wie konfiguriert'} (${modeSource}).`);
@@ -220,7 +259,7 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     try {
         provider = deps.provider ?? await openProvider({
             backend: a.backend || 'st', stUrl: a['st-url'], profile: a.profile, timeoutMs,
-            mock: a.backend === 'mock' ? s1MockResponder(corpus, scenes, vocab) : undefined,
+            mock: a.backend === 'mock' ? s1MockResponder(corpus, scenes, vocab, { user: kit.user }) : undefined,
         });
     } catch (err) {
         log(`FEHLER: ${err.message}`);
@@ -229,7 +268,7 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     const secrets = provider.secrets || [];
     const d = provider.describe();
     const total = cases.length * reps;
-    log(`S1 Interpreter · Backend ${d.backend} · Modell ${d.model} · Modus ${mode} · Reasoning ${reasoning ?? 'wie konfiguriert'} (${modeSource})`);
+    log(`S1 Interpreter · Prompt ${kit.name} (${vocab.version}) · Guard ${guardOn ? 'an' : 'aus'} · Backend ${d.backend} · Modell ${d.model} · Modus ${mode} · Reasoning ${reasoning ?? 'wie konfiguriert'} (${modeSource})`);
     log(`Plan: ${cases.length} Fälle × ${reps} = ${total} Aufrufe, ${concurrency} gleichzeitig; Prompt ≈ ${promptTokensEst} Token je Aufruf.`);
     let done = 0;
     let calls = 0;
@@ -239,17 +278,22 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
             tasks.push(async () => {
                 const scene = scenes[c.scene];
                 const r = await structuredCall(provider, {
-                    name: 'interpreter', schema: interpreterSchema(vocab, scene), system, user: interpreterUser(scene, c.text), mode,
-                    plainInstruction: PLAIN_FORMAT, reasoning, maxTokens, temperature, timeoutMs, ...deps.retry,
+                    name: 'interpreter', schema: kit.schema(scene), system, user: kit.user(scene, c.text), mode,
+                    plainInstruction: kit.plain, reasoning, maxTokens, temperature, timeoutMs, ...deps.retry,
                 });
                 calls += r.attempts.length;
-                const predicted = r.valid_final && Array.isArray(r.value?.commands) ? r.value.commands : null;
+                const raw = r.valid_final && Array.isArray(r.value?.commands) ? r.value.commands : null;
+                // the product's agency guard (src/v4/agency.js) on the answer: what the engine would go on to resolve
+                const guarded = raw && guardOn ? guardCommands(c.text, raw, guardContextFromScene(scene)) : null;
+                const predicted = guarded ? guarded.kept : raw;
                 const score = predicted ? scoreCase(c, predicted) : null;
+                const scoreRaw = raw && guarded ? scoreCase(c, raw) : null;
                 const predicted_sorted = predicted ? [...predicted].sort((x, y) => (x.seq ?? 0) - (y.seq ?? 0)) : null;
                 const rec = {
                     id: c.id, rep, scene: c.scene, text: c.text, tags: c.tags, expect: c.expect, allow: c.allow || [],
                     ok: r.ok, error: r.ok ? null : scrub(r.error, secrets), valid_first: r.valid_first, valid_final: r.valid_final, repaired: r.repaired,
                     errors_final: r.errors_final, predicted: predicted_sorted, predicted_count: predicted ? predicted.length : 0, score,
+                    ...(guarded ? { raw: [...raw].sort((x, y) => (x.seq ?? 0) - (y.seq ?? 0)), raw_count: raw.length, score_raw: scoreRaw, dropped: guarded.dropped.map((x) => ({ type: x.command.type, rule: x.rule, quote: x.command.quote })) } : {}),
                     ms: r.attempts[0]?.ms ?? null, tokens: callTokens(r), finish: r.attempts[0]?.finish ?? null,
                     answer: r.ok && !predicted ? String(r.content).slice(0, 1500) : undefined,
                 };
@@ -261,6 +305,7 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     }
     const records = await pool(tasks, concurrency);
     const agg = aggregate(records.map((r) => ({ score: r.score, predicted_count: r.predicted_count })));
+    const aggRaw = guardOn ? aggregate(records.map((r) => ({ score: r.score_raw ?? r.score, predicted_count: r.raw_count ?? r.predicted_count }))) : null;
     const answered = records.filter((r) => r.ok);
     const lats = answered.map((r) => r.ms).filter(Number.isFinite);
     const lat = { p50_s: s(percentile(lats, 50)), p90_s: s(percentile(lats, 90)), mean_s: s(mean(lats)) };
@@ -278,10 +323,11 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     const meta = {
         tool: TOOL, version: TOOL_VERSION, started: new Date(started).toISOString(), finished: nowIso(), duration_s: round((Date.now() - started) / 1000, 0),
         node: process.version, provider: d, mode, reasoning: reasoning ?? null, mode_source: modeSource, temperature, max_tokens: maxTokens, examples,
+        prompt: kit.name, guard: guardOn,
         vocab_version: vocab.version, corpus_cases: corpus.length, cases: cases.length, sampled: cases.length !== corpus.length, reps,
         calls, repairs: records.filter((r) => r.repaired).length, prompt_tokens_est: promptTokensEst,
     };
-    const run = { meta, gates, agg, lat, tok, valid, records };
+    const run = { meta, gates, agg, agg_raw: aggRaw, lat, tok, valid, records };
     const summary = summaryMarkdown(run);
     for (const text of [JSON.stringify(run), summary]) assertNoSecrets(text, secrets);
     writeJson(path.join(outDir, 'results.json'), run);

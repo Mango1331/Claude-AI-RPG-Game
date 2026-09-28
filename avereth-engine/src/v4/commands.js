@@ -89,21 +89,33 @@ function pickQuest(s, ref, statuses, kind = null) {
 const HANDLERS = {
     'journey.continue'(s, content, c, ctx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
-        const q = Object.values(s.quests).find((x) => x.status === 'active' && (x.objectives || []).some((o) => String(o.verb || '').toUpperCase() === 'ESCORT'));
-        if (!q) return { status: 'refused', reason: 'no established journey', line: 'NOTHING TO DEPART ON — no active escort journey is established here.' };
-        const qtext = normText([q.title, q.client, q.desired_end_state, ...(q.details || []), ...(q.notes || []), ...(q.objectives || []).flatMap((o) => [o.what, o.where])].filter(Boolean).join(' '));
-        const contact = s.scene.present.find((id) => {
-            if (id === 'pc' || s.entities[id]?.kind !== 'npc') return false;
-            const e = s.entities[id];
-            return [e.name, truth(s, id, 'occupation')[0]?.o, ...(e.descriptors || [])].filter(Boolean).map(normText).some((x) => x.length >= 3 && qtext.includes(x));
-        });
-        if (!contact) return { status: 'refused', reason: 'journey not ready here', line: 'NOTHING TO DEPART ON — the established escort is not ready with him here.' };
-        const go = { seq: c.seq, to: null, name: `the established journey for "${q.title}"`, hall: false, newName: 'the established journey' };
+        const travelRe = /\b(?:escort|journey|travel|road|cart|wagon|caravan|ship|boat|ferry|ride|guide|lead|depart|leave|deliver|destination|route|waystation)\b/i;
+        const sources = [
+            ...Object.values(s.quests).filter((q) => q.status === 'active').map((q) => ({
+                label: q.title,
+                text: [q.title, q.client, q.desired_end_state, ...(q.details || []), ...(q.notes || []), ...(q.objectives || []).flatMap((o) => [o.verb, o.what, o.where])].filter(Boolean).join(' '),
+            })),
+            ...Object.values(s.threads || {}).filter((t) => t.status === 'open').map((t) => ({ label: t.text, text: t.text })),
+        ];
+        let ready = null;
+        for (const src of sources) {
+            if (!travelRe.test(src.text)) continue;
+            const text = normText(src.text);
+            const contact = s.scene.present.find((id) => {
+                if (id === 'pc' || s.entities[id]?.kind !== 'npc') return false;
+                const e = s.entities[id];
+                return [e.name, truth(s, id, 'occupation')[0]?.o, ...(e.descriptors || [])].filter(Boolean).map(normText)
+                    .some((x) => x.length >= 3 && text.includes(x));
+            });
+            if (contact) { ready = { ...src, contact }; break; }
+        }
+        if (!ready) return { status: 'refused', reason: 'no established journey', line: 'NOTHING TO DEPART ON — no stored journey/departure with someone here is ready to continue.' };
+        const go = { seq: c.seq, to: null, name: `the established journey for "${ready.label}"`, hall: false, newName: 'the established journey' };
         ctx.auth.go = go;
         ctx.auth.gos.push(go);
         ctx.auth.roam = true;
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, content.rules.time.travel_cap_min);
-        return { status: 'authorized', line: `DEPARTS/CONTINUES — the already-established escort journey for "${q.title}" with ${entityLabel(s, contact)}; the story may advance that journey and establish where they reach.` };
+        return { status: 'authorized', line: `DEPARTS/CONTINUES — the already-established journey with ${entityLabel(s, ready.contact)}; the story may advance it and establish where they reach.` };
     },
     go(s, content, c, ctx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT GO — not while the fight runs.' };

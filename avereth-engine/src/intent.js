@@ -4,6 +4,7 @@
 // tests (see Avereth_RPG_v1.24_PERFEKTIONIERT/tools/validate/regex_tests.js); here they detect intent instead of
 // routing WorldInfo entries.
 import { bandIndex, normText } from './util.js';
+import { sceneHandle } from './v4/scene_handles.js';
 
 const ATTACK_VERBS = String.raw`attack(?:s|ed|ing)?|shoot(?:s|ing)?(?!\s+(?:(?:him|her|them|me|us|it)\s+)?(?:a|an)\s+(?:look|glance|glare|smile|grin|wink|question)\b)|stab(?:s|bed|bing)?|slash(?:es|ed|ing)?|(?:strike|strikes|struck|striking)(?!\s+(?:up|out|a\s+(?:deal|bargain|match|pose|chord|balance|light))\b)|hit(?:s|ting)?(?!\s+(?:it\s+off|the\s+(?:road|trail|hay|sack|books|bottle|town|streets|tavern|inn|market))\b)|punch(?:es|ed|ing)?(?!\s+in\b)|kick(?:s|ed|ing)?(?!\s+(?:off|back|in)\b)|smash(?:es|ed|ing)?|kill(?:s|ed|ing)?(?!\s+time\b)|bash(?:es|ed|ing)?|pierce(?:s|d)?|swing(?:s|ing)?(?!\s+by\b)|swung(?!\s+by\b)`;
 const DIRECTED = String.raw`(?:fire|fires|fired|firing|loose|looses|loosed|loosing|throw|throws|threw|thrown|throwing|cast|casts|casting|release|releases|released|releasing|hurl|hurls|hurled)\b(?!\s+(?:(?:a|an|my|his|her|the|one|another|quick|last|long|wary|sidelong)\s+){0,2}(?:glance|glances|look|looks|line|lines|net|nets|eye|eyes|shadow|shadows|vote|votes|doubt|light|dice|lots|anchor)\b)(?:\s+\w+){0,4}?\s+(?:at|on|into|against|toward|towards)\b`;
@@ -19,6 +20,7 @@ const ATTACK_RE = new RegExp(String.raw`\b(?:${ATTACK_VERBS}|${DIRECTED}|${FIRE_
 const ACTION_RE = new RegExp(String.raw`(?:${SUBJECT_LED}|\b(?:${PUT_ARROW}|${WEAPON_INTO}|${LET_FLY}|${OTHER}))`, 'i');
 const INFO_RE = /\b(?:what\s+(?:does|do|is|are|would)|how\s+(?:does|do|much|many|would)|explain|describe|tell me about|compare|difference between)\b[^.!?]{0,60}?\b(?:skill|skills)\b/i;
 const AIM_RE = /\b(?:aim|aims|aiming|take\s+aim|draw\s+(?:my\s+)?bow|nock|ready\s+(?:my\s+)?bow)\b/i;
+const ENGAGE_RE = /\b(?:(?:get|getting|be|am|stand|standing)\s+(?:myself\s+)?ready\s+for\s+(?:combat|a\s+fight|the\s+fight)|prepare(?:s|d|ing)?\s+(?:myself\s+)?to\s+fight|square(?:s|d|ing)?\s+up(?:\s+to\s+fight)?|(?:take|takes|taking)\s+(?:a\s+)?fighting\s+stance)\b/i;
 // creep/sneak up and get closer: the natural words for a melee Ambush (found building the Warrior's live smoke);
 // "dash at" (live run 25.09. 01:31: "*i dash at the first one and basic attack it*")
 const CLOSER_RE = /\b(?:approach|approaches|advance|advances|close\s+(?:in|the\s+distance)|move\s+(?:closer|toward|towards|in|up)|step\s+(?:closer|toward|towards|forward|in)|(?:rush|dash|dashes)\s+(?:at|toward|towards|in)|run\s+(?:at|toward|towards)|(?:creep|creeps|sneak|sneaks|edge|edges|inch|slip)\s+(?:closer|up|in|toward|towards)|(?:get|gets|come|comes)\s+(?:closer|toward|towards))\b/i;
@@ -86,6 +88,11 @@ export function resolveTarget(text, state, content, { hostileOnly = false } = {}
     }
     const present = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && state.entities[id].status !== 'dead');
     const valid = enc ? present.filter((id) => enc.combatants[id]?.side === 'hostile' && !enc.combatants[id].current.defeated && !enc.combatants[id].current.escaped && !enc.combatants[id].current.surrendered) : present;
+    if (!enc) {
+        const byHandle = valid.filter((id) => wordRe(normText(sceneHandle(state, content, id))).test(t));
+        if (byHandle.length === 1) return { id: byHandle[0], how: 'scene handle' };
+        if (byHandle.length > 1) return { ambiguous: byHandle };
+    }
     // named targets; the most specific match wins ("the grey wolf" beats another plain "wolf"). In a fight the
     // opponents first; someone standing by only when no opponent is named
     const namedAmong = (ids) => {
@@ -183,6 +190,11 @@ export function parseIntent(text, state, content) {
         if (target.ambiguous) return { kind: 'ambiguous_target', skill: skill.id, candidates: target.ambiguous };
         if (target.none) return { kind: 'no_target', skill: skill.id, ...(target.ref ? { ref: target.ref } : {}) };
         return { kind: 'attack', skill: skill.id, target: target.id, target_how: target.how, move };
+    }
+    if (!state.encounter && ENGAGE_RE.test(d) && !attackWords && !offensive) {
+        const targets = state.scene.present.filter((id) => id !== 'pc' && state.entities[id]?.status !== 'dead'
+            && ['attack', 'flee', 'surrender', 'parley', 'hold', 'take_cover'].includes(state.pending_intents?.[id]));
+        if (targets.length) return { kind: 'engage', targets };
     }
     if (nonOffensive) {
         const target = resolveTarget(raw, state, content, {});

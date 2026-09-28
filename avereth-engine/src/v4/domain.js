@@ -35,7 +35,7 @@ export const V4_EVENTS = new Set([
     'place.created',
     'object.created', 'object.moved', 'object.marked', 'object.consumed',
     'offer.created', 'offer.closed', 'transaction.completed', 'service.granted',
-    'quest.created', 'quest.status', 'quest.detailed', 'quest.progressed', 'proof.checked',
+    'quest.created', 'quest.status', 'quest.detailed', 'quest.progressed', 'quest.ready', 'proof.checked',
     'board.refreshed', 'board.failed', 'board.shown',
     'guild.registered', 'guild.promoted',
     'decision.opened', 'decision.closed',
@@ -137,6 +137,14 @@ export function applyDomainEvent(state, e) {
             if (!q) throw new Error(`unknown quest ${d.id}`);
             q.progress = [...(q.progress || []), { objective: d.objective, status: d.status, turn: state.turn }];
             q.notes = [...(q.notes || []), `${d.objective}: ${d.status}`].slice(-6);
+            break;
+        }
+        case 'quest.ready': {
+            const q = state.quests[d.id];
+            if (!q) throw new Error(`unknown quest ${d.id}`);
+            q.ready = true;
+            q.ready_note = d.note || null;
+            q.notes = [...(q.notes || []), `Outcome achieved: ${d.note || q.desired_end_state || 'ready for turn-in'}`].slice(-6);
             break;
         }
         case 'board.refreshed':

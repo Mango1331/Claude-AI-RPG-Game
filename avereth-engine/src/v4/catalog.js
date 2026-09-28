@@ -85,8 +85,14 @@ export function alaricLine(state, content) {
 
 /** What Alaric's own sheet carries (template items: pouch, arrows) as catalog objects "item.<template>". */
 function sheetObjects(state, content) {
-    const inv = state.entities.pc?.sheet?.inventory || {};
-    return Object.entries(inv).filter(([k]) => !k.startsWith('obj.')).map(([k, q]) => ({ id: `item.${k}`, name: content.items.get(k)?.name || state.item_names?.[k] || k, qty: q > 1 ? q : undefined }));
+    const sheet = state.entities.pc?.sheet || {};
+    const inv = sheet.inventory || {};
+    const carried = Object.entries(inv).filter(([k]) => !k.startsWith('obj.')).map(([k, q]) => ({ id: `item.${k}`, name: content.items.get(k)?.name || state.item_names?.[k] || k, qty: q > 1 ? q : undefined }));
+    const equipped = Object.entries(sheet.equipment || {}).map(([slot, ref]) => {
+        if (typeof ref !== 'string') return ref?.id ? { id: `item.${ref.id}`, name: ref.name || ref.id, state: `equipped: ${slot}` } : null;
+        return { id: `item.${ref}`, name: content.items.get(ref)?.name || ref, state: `equipped: ${slot}` };
+    }).filter(Boolean);
+    return [...equipped, ...carried.filter((o) => !equipped.some((e) => e.id === o.id))];
 }
 
 function objectEntry(state, content, o) {

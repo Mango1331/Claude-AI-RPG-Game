@@ -45,5 +45,7 @@ Object.assign(settings.oai_settings, { openai_max_context: 32000, openai_max_tok
 // the prompts of SillyTavern's Default preset, whatever preset an earlier run left selected (run.mjs AVERETH_ST_PRESET)
 const byDefault = JSON.parse(fs.readFileSync(path.join(USER, 'OpenAI Settings/Default.json'), 'utf8'));
 Object.assign(settings.oai_settings, { preset_settings_openai: 'Default', prompts: byDefault.prompts, prompt_order: byDefault.prompt_order });
+// this smoke plays a V3 campaign (fact report in the reply); new campaigns run V4 by default since 4.0 (run_v4.mjs)
+settings.extension_settings = { ...(settings.extension_settings || {}), avereth: { ...(settings.extension_settings?.avereth || {}), runtime: 'v3' } };
 fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 4));
 console.log('card, lorebook, extension, narrator preset and settings installed');

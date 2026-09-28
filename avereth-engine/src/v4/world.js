@@ -477,7 +477,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (!holder) { reject(d, 'object', `unknown holder ${String(d.holder).slice(0, 40)}`); return; }
         const q = d.for_quest ? questRef(d.for_quest) : null;
         const id = uniqueObjectId(s, tag, d.name);
-        emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, holder, marks: [], for_quests: q ? [q.id] : [], source: { turn: s.turn, how: holder.entity === 'pc' ? 'taken' : 'story' } } } });
+        emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, holder, marks: [], for_quests: q ? [q.id] : [], source: { turn: s.turn, how: holder.entity === 'pc' ? (((auth.take || []).length || auth.gather) ? 'taken' : 'world_gift') : 'story' } } } });
         objectsNew.set(normText(d.name), id);
     }
 

@@ -103,3 +103,21 @@ Implemented in 4.0.3:
 - Guild Board generator redesigned around cause -> stakeholder -> problem -> desired end state -> objectives -> proof -> reward, with rank controlling scope/risk rather than mundane-vs-fantasy and rats no longer the default low-rank combat example.
 
 Not changed: damage/Skill math, XP, initiative policy or class balance. The 17:25 live run never reached actual combat resolution, so those existing mechanics remain untouched pending the next live test.
+
+
+## 4.0.4 — 20:45 live-run: visible Monster → targetable actor
+
+The 4.0.3 run reached the intended Quest-friction Monster reveal but exposed a hard handoff failure: the extractor correctly reported a visible "plated wallow beast" at SHORT range, yet the world rejected the free fantasy species name because it did not itself match an F1 anchor. The following Basic Attack therefore had no canonical target.
+
+4.0.4 changes:
+- creature.new now separates the in-world species/display name from an explicit mechanical F1 body-plan anchor;
+- a visible creature is materialised immediately at reveal, locking Level/profile/HP before the player's next decision;
+- the same reply's System panel shows the canonical scene handle + HP + Range, but does not roll Initiative or begin Combat;
+- the first actual player attack then starts the existing deterministic Combat resolver and fixes Initiative;
+- final V4 prose is not exposed as final display until its extraction is committed, so a new Monster does not visibly appear seconds before its engine identity/HP;
+- unresolved pre-combat attacks are System-only; the narrator is not called to invent movement or an attack after "no valid target";
+- equipped starter gear is included in the V4 catalog and readying/drawing an already-equipped weapon cannot become "he does not hold it";
+- Guild proof checks sum multiple gathered resource stacks and consume only the required quantity; extractor guidance requires concrete quest GATHER yields to become canonical resource objects;
+- invented Guild plate replacement fees are rejected as Guild canon.
+
+Inventory containers/capacity and sack aliases are intentionally out of scope for this patch.

@@ -107,14 +107,15 @@ flowchart TD
 
 | Regel | verwirft |
 |---|---|
-| `guild_canon_price` | einen Preis für die Registrierung, der nicht die Canon-Gebühr ist |
-| `guild_payout` | Coin von einer Person für einen Gildenvertrag; die Gilde zahlt am Schalter (mit Korrektur) |
-| `engine_booked` | was die Engine in diesem Zug schon gebucht hat (Plakette, Vertragszettel, Registrierungsfakten) |
-| `pc_inventory` | Besitzänderungen Alarics ohne seinen Befehl |
-| `guild_listing` | offizielle Verträge aus der Prosa statt vom Brett |
-| `guild_completion` | eine Gildenabgabe, die nicht über `quest.turn_in` lief |
-| `domain_fact`, `engine_owned_fact` | Fakten über Zustand, den nur die Engine führt (Ort, Rang, Mitgliedschaft) |
-| `no_go` | eine Ankunft Alarics ohne sein `go` (Suchen, Sammeln und Botengänge erlauben Bewegung) |
+| `guild_canon_price` | ein Angebot der Gilde für ihre Gebühren oder Dokumente (Registrierung, Plakette), zu welchem Preis auch immer: Das ist Canon der Engine, kein gewöhnliches Angebot |
+| `guild_payout` | eine Zahlung der Gilde außerhalb einer Abgabe und die Belohnung eines Gildenvertrags von jemand anderem als der Gilde (mit Korrektur) |
+| `engine_booked` | was die Engine in diesem Zug selbst übergeben hat (Plakette, Vertragszettel) oder was Alaric schon hält |
+| `pc_inventory` | Besitzänderungen Alarics ohne seinen Befehl: neu nur nach `take` oder Sammeln, weg nur über `give`, `drop`, `sell`, `use` |
+| `guild_listing` | offizielle Gildenverträge aus der Prosa statt vom Board-Generator |
+| `guild_completion` | den Abschluss eines Gildenvertrags ohne Abgabe am Schalter, auch als abgehaktes Ziel („deliver … to the Guild“) |
+| `domain_fact` | Fakten über Zustand, der eigene Deltas hat (Ort, Anwesenheit, Absicht, Gildenrang) |
+| `engine_owned_fact` | Fakten über Alarics Besitz, Stand, Coin und Fortschritt |
+| `no_go` | eine Ankunft Alarics ohne sein `go` oder Zwang; Suchen, Sammeln und Botengänge erlauben Bewegung |
 
 Was die Firewall nicht prüft (Zeitdeckel, Ortsbaum, Anwesenheit, Gegenpartei eines Kaufs), prüft der World-Applier beim schrittweisen Anwenden; `expected.taken_anyway` und ein Verkauf ohne vereinbarten Preis werden dort zu Overreach. Vokabular `content/deltas.json` **delta-0.3**: 29 Delta-Typen wie delta-0.2; neu ist nur `expected.sell` {sold, price_cp}.
 

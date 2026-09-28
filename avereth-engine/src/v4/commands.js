@@ -319,7 +319,7 @@ const HANDLERS = {
             acceptContract(s, content, q, emit, { step: c.seq });
             ctx.booked.accepted.push(q.id);
             ctx.booked.grants.push('contract slip');
-            return { status: 'resolved', line: `ACCEPTS — ${questLine(q)} at the Guild desk; the clerk logs it and hands him its contract slip. Canonical objective: ${objectiveText(q)}. Required proof for turn-in: ${proofText(q)}. The Guild pays ${q.payout_cp} cp on completion.` };
+            return { status: 'resolved', line: `ACCEPTS — ${questLine(q)} at the Guild desk; the clerk logs it and hands him its contract slip. Story goal: ${q.desired_end_state || objectiveText(q)}. Objectives to remember: ${objectiveText(q)}. Suggested verification: ${proofText(q)}. Verification is flexible in play; payout (${q.payout_cp} cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in.` };
         }
         // private work: its giver must be here
         if (q.status !== 'offered') return { status: 'refused', reason: `the job is ${q.status}`, line: `NOTHING TO DO — ${questLine(q)} is ${q.status}.` };
@@ -345,16 +345,16 @@ const HANDLERS = {
             const r = completeContract(s, content, q, emit, { step: c.seq });
             if (!r.ok) return { status: 'refused', reason: r.reason, line: `TURNS IN — ${questLine(q)}: the desk refuses it, ${r.reason}.` };
             ctx.booked.turnIns.push(q.id);
-            return { status: 'resolved', line: `TURNS IN — ${questLine(q)}: the desk checks ${proofText(q)} → accepted; the Guild pays ${q.payout_cp} cp.` };
+            return { status: 'resolved', line: `TURNS IN — ${questLine(q)}: the world has established the contract outcome; the Guild accepts the turn-in and pays ${q.payout_cp} cp.` };
         }
         const go = ctx.auth.gos.filter((g) => g.hall && g.seq < c.seq).at(-1);
         if (go) {
-            const pre = checkProof(s, q);
+            const ready = !!q.ready || checkProof(s, q).ok;
             ctx.conditionals.push({ seq: c.seq, kind: 'turn_in', quest: q.id, condition: 'arrive_guild_hall', hall: go.to });
             ctx.booked.turnIns.push(q.id);
             return {
                 status: 'conditional', condition: 'arrive_guild_hall',
-                line: `TURNS IN, when he reaches the Guild hall — ${questLine(q)}: the desk checks ${proofText(q)} → ${pre.ok ? `accepted; the Guild pays ${q.payout_cp} cp` : `refused: ${pre.reason}`}. If the reply does not reach the hall, nothing is turned in.`,
+                line: `TURNS IN, when he reaches the Guild hall — ${questLine(q)}: ${ready ? `the achieved outcome is ready for desk acceptance; the Guild pays ${q.payout_cp} cp` : 'the story has not yet established the contract outcome as achieved'}. If the reply does not reach the hall, nothing is turned in.`,
             };
         }
         return { status: 'refused', reason: 'not at a Guild hall', line: `CANNOT TURN IN — ${questLine(q)}: contracts are turned in at a Guild hall.` };
@@ -398,7 +398,7 @@ const HANDLERS = {
         }
         emit({ t: 'board.shown', d: { branch, rank, listings: listed.map((q) => q.id) } });
         ctx.boardShown = { branch, rank, listings: listed.map((q) => q.id) };
-        return { status: 'resolved', line: `READS the ${rank} board — BOARD (canonical; show exactly these, invent no other official contract, objective or proof): ${listed.map((q) => `${q.title} · ${q.payout_cp} cp · objective: ${objectiveText(q)} · proof: ${proofText(q)}`).join(' | ')}.` };
+        return { status: 'resolved', line: `READS the ${rank} board — BOARD (canonical listings, payout and broad job content; verification examples are guidance, not exclusive tokens): ${listed.map((q) => `${q.title} · ${q.payout_cp} cp · goal: ${q.desired_end_state || objectiveText(q)} · objectives: ${objectiveText(q)} · verification example: ${proofText(q)}`).join(' | ')}.` };
     },
     equip(s, content, c, ctx, emit) {
         const eq = s.entities.pc.sheet.equipment || {};

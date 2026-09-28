@@ -22,7 +22,7 @@
   "When PLAYER ACTIONS contains a GATHERS activity and the reply establishes a concrete amount actually gathered for an active Quest GATHER objective, emit object.new for the amount gained THIS reply: kind:\"resource\", holder:\"pc\", for_quest:<that quest id>, name matching the objective/proof resource, qty the amount gained, unit matching the objective/proof. A progress fact alone is not enough. Do not emit resources the reply did not say were gathered.",
   "Guild contract proof/verification is narrative guidance, not an exact inventory-string gate. Store the expected verification so the narrator remembers what the job is about, but alternative credible in-world evidence may satisfy the fiction.",
   "For an active Guild contract, emit quest.ready only when THIS reply clearly establishes that the contract's desired end state has been substantively achieved in the world. Partial progress, merely finding a clue, traveling to the site, or planning the next step is not enough. quest.ready does not complete or pay the quest; the player must still explicitly turn it in at a Guild hall.",
-  "A known object voluntarily handed to Alaric by an NPC is object.move to:\"pc\", even if Alaric only asked for it and did not issue a TAKE command. That is NPC/world agency, not overreach. An unattended object lying in the world still requires Alaric's own TAKE if he picks it up."
+  "A known object voluntarily handed to Alaric by an NPC is object.move to:\"pc\", even if Alaric only asked for it and did not issue a TAKE command. For a newly introduced gift, emit object.new with the giver/NPC as holder and then object.move to:\"pc\". These are NPC/world agency, not overreach. An unattended object lying in the world still requires Alaric's own TAKE if he picks it up."
  ],
  "expected": {
   "go": {
@@ -295,7 +295,7 @@
      "nullable": true
     }
    },
-   "summary": "a physical thing the reply establishes; holder may be a place, person or \"pc\" when the world/NPC genuinely gives it to Alaric; do not use this to invent a voluntary pick-up by Alaric"
+   "summary": "a physical thing the reply establishes; for a new NPC gift create it with the NPC as holder, then object.move it to \"pc\"; Alaric directly holds a newly introduced object only after his TAKE/GATHER"
   },
   {
    "type": "object.move",

@@ -79,6 +79,11 @@ function loreFromWorldInfo() {
 }
 
 /** Settings for the engine block. Turns still in the prompt's history window are not retrieved again, turns before it are. */
+/** The runtime a campaign started in this chat gets (the setting applies to new campaigns only). */
+function newRuntime() {
+    return settings().runtime === 'v3' ? 'v3' : 'v4';
+}
+
 function engineSettings() {
     const s = settings();
     const recentTurns = s.historyTurns > 0 ? Math.min(s.recentTurns, s.historyTurns) : s.recentTurns;
@@ -164,7 +169,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
     const c = ctx();
     try {
         if (!hasCampaign(c.chat)) {
-            const created = ensureCampaign(c.chat, content, { seed: newSeed(), runtime: s.runtime === 'v3' ? 'v3' : 'v4' });
+            const created = ensureCampaign(c.chat, content, { seed: newSeed(), runtime: newRuntime() });
             if (created === 'legacy') {
                 if (legacyWarned !== c.getCurrentChatId()) toastr.warning('Avereth Engine: this chat was played without the engine. Start a new chat to use it.');
                 legacyWarned = c.getCurrentChatId();
@@ -237,7 +242,8 @@ async function onMessageReceived(messageId) {
     const c = ctx();
     try {
         const recover = settings().recoverReports && typeof c.generateRaw === 'function';
-        const r = processReplyAny(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover });
+        // the greeting of a new chat arrives here too (SillyTavern: MESSAGE_RECEIVED 'first_message') and starts the campaign
+        const r = processReplyAny(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover, runtime: newRuntime() });
         if (!r.changed) return;
         rerender(c, Number(messageId));
         await c.saveChat();

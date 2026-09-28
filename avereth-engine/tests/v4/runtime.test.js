@@ -50,6 +50,16 @@ test('the campaign runtime: new V4 campaigns carry it; a V3 chat stays V3 and ne
     assert.equal(called, 0);
 });
 
+test('the greeting of a new chat starts the campaign in the runtime set for new campaigns (SillyTavern 1.19 sends MESSAGE_RECEIVED "first_message" for it)', () => {
+    const v4 = [{ mes: GREETING, is_user: false, is_system: false, extra: {} }];
+    assert.equal(processReplyAny(v4, 0, content, { seed: 7, runtime: 'v4' }).changed, true);
+    assert.equal(campaignRuntime(v4), 'v4');
+    assert.equal(foldChat(v4).state.scene.at, 'loc.redmarch.verge');
+    const v3 = [{ mes: GREETING, is_user: false, is_system: false, extra: {} }];
+    processReplyAny(v3, 0, content, { seed: 7 });
+    assert.equal(campaignRuntime(v3), 'v3', 'no runtime given: V3, as before');
+});
+
 test('the router: commands, creation, combat and stealth stay with the V3 engine; everything else is a story turn', async () => {
     const g = await created();
     const s = g.state();

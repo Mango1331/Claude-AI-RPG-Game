@@ -301,11 +301,13 @@ export function applyReportAnswer(chat, id, content, answer, { hash, ms = null, 
  * record says so (recovery 'pending') until the answer is applied.
  * @returns {{changed: boolean, result?: object, recover?: boolean}}
  */
-export function processReply(chat, id, content, { seed, swaps = [], hud = 'closed', stripTrackers = true, recover = false } = {}) {
+export function processReply(chat, id, content, { seed, swaps = [], hud = 'closed', stripTrackers = true, recover = false, runtime = 'v3' } = {}) {
     const msg = chat[id];
     if (!msg || msg.is_user || msg.is_system) return { changed: false };
+    // the greeting of a new chat (SillyTavern sends MESSAGE_RECEIVED for it) starts the campaign, in the runtime set
+    // for new campaigns
     if (!hasCampaign(chat)) {
-        return { changed: ensureCampaign(chat, content, { seed }) === 'created' };
+        return { changed: ensureCampaign(chat, content, { seed, runtime }) === 'created' };
     }
     const r = rec(msg);
     if (r && r.text_hash === hash32(msg.mes)) return { changed: false }; // already processed (this exact text)

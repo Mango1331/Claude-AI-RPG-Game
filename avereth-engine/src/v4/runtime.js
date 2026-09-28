@@ -250,8 +250,8 @@ export function extractionRequest(chat, id, content) {
 }
 
 /**
- * Read reply id with the extractor (one repair; one more call if still invalid) and commit its world: firewall, world
- * handlers, display. A reply that changed meanwhile, or a later turn already resolved, is left alone.
+ * Read reply id with the extractor: exactly one primary call and at most one repair, then commit whatever valid
+ * persistence we have. A reply that changed meanwhile, or a later turn already resolved, is left alone.
  * @returns {{changed: boolean, applied?: boolean, failed?: string, boardNeeded?: boolean, late?: boolean}}
  */
 export async function runExtraction(chat, id, content, llm, { hud = 'closed' } = {}) {
@@ -262,24 +262,27 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed' } =
     let parsed = null;
     let repaired = false;
     let error = null;
-    for (let attempt = 0; attempt < 2 && !(parsed?.valid && parsed.complete); attempt++) {
-        const a = await ask(llm, req.messages, 'extract');
-        ms += a.ms;
-        if (!a.ok) { error = a.error; continue; }
-        let p = parseExtraction(a.content, vocab, req.ids, req.expectedKeys);
-        if (!(p.valid && p.complete)) {
-            const rep = extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player, expectedKeys: req.expectedKeys, reply: chat[id].mes }, { previous: a.content, errors: p.errors });
-            const b = await ask(llm, rep.messages, 'extract_repair');
-            ms += b.ms;
+
+    const first = await ask(llm, req.messages, 'extract');
+    ms += first.ms;
+    if (first.ok) {
+        const p1 = parseExtraction(first.content, vocab, req.ids, req.expectedKeys);
+        if (p1.valid) parsed = p1;
+        else error = p1.errors.join('; ').slice(0, 200);
+
+        if (!(p1.valid && p1.complete)) {
+            const rep = extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player, expectedKeys: req.expectedKeys, reply: chat[id].mes }, { previous: first.content, errors: p1.errors });
+            const second = await ask(llm, rep.messages, 'extract_repair');
+            ms += second.ms;
             repaired = true;
-            if (b.ok) {
-                const p2 = parseExtraction(b.content, vocab, req.ids, req.expectedKeys);
-                if (p2.valid && (p2.complete || !p.valid)) p = p2;
-            }
+            if (second.ok) {
+                const p2 = parseExtraction(second.content, vocab, req.ids, req.expectedKeys);
+                if (p2.valid && (!parsed || p2.complete || p2.missing.length < parsed.missing.length)) parsed = p2;
+                else if (!p2.valid && !parsed) error = p2.errors.join('; ').slice(0, 200);
+            } else if (!parsed) error = second.error;
         }
-        if (p.valid) parsed = p;
-        else error = p.errors.join('; ').slice(0, 200);
-    }
+    } else error = first.error;
+
     return applyExtraction(chat, id, content, parsed, { hash: req.hash, ms, repaired, error, hud });
 }
 

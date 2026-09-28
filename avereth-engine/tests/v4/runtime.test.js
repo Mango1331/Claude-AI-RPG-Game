@@ -98,14 +98,14 @@ test('barrier: a reply not read before the next message is a recorded gap; its l
     assert.deepEqual(validateState(g.state(), content), []);
 });
 
-test('an extractor that answers nothing valid (twice, with repairs): no world change, the failure is on record and corrected', async () => {
+test('an extractor that answers nothing valid gets one primary call plus one repair, then fails closed', async () => {
     const g = await created();
     const t = T('t1');
     await g.player(t.player, t.commands);
     const r = await g.reply('He walks up to the Guild hall.', 'Sure! He arrived at the hall and met a clerk.');
     assert.equal(r.record.extraction.status, 'failed');
     assert.deepEqual(r.record.events.map((e) => e.t), ['extract.failed']);
-    assert.equal(g.calls.filter((c) => c.purpose.startsWith('extract')).length, 4, 'two calls, each with its repair');
+    assert.equal(g.calls.filter((c) => c.purpose.startsWith('extract')).length, 2, 'one primary extraction plus one repair only');
     assert.equal(g.state().scene.at, 'loc.redmarch.verge', 'nothing moved');
     assert.match(g.chat[r.id].extra.display_text, /WORLD NOT RECORDED/);
     const next = await g.player(T('t2').player, []);

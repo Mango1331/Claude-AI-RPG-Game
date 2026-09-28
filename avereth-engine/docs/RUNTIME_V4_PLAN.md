@@ -1,6 +1,6 @@
-# Runtime V4 / Engine 4.0: Plan zur gemeinsamen Review (Revision 2)
+# Runtime V4 / Engine 4.0: Plan zur gemeinsamen Review (Revision 3)
 
-**Status:** Plan, für P0 freigegeben (27.09.2026). Kein Produktcode.
+**Status:** **Revision 3 (28.09.2026): umgesetzt als Engine 4.0.0**, Branch `claude/happy-wright-1a4y19`. Was P0 entschieden hat, was wie umgesetzt ist, wo die Umsetzung abweicht und welche Gates offen sind: Abschnitt [R3](#r3-revision-3-stand-nach-p0-und-umsetzung-40). Die Abschnitte 0–16 sind die Revisionen 2 und 2.1 (Plan, für P0 freigegeben am 27.09.2026) und bleiben als Historie stehen.
 - **Revision 2** nach dem externen Review von ChatGPT auf Revision 1 (Commit `52ed696`). Review: [CHATGPT_REVIEW_RUNTIME_V4_PLAN.md](CHATGPT_REVIEW_RUNTIME_V4_PLAN.md). Was sich ändert: Abschnitt [R](#r-revision-2-was-sich-gegenüber-revision-1-ändert).
 - **Revision 2.1**, Bedingung der Freigabe: Offizielle Gildenaushänge sind *canonical first, prose second*. Scheitert der Board-Generator, gibt es keinen Erzähler-Rückfall mehr (D3, §3.4, §6.4).
 - **P0 (Spikes):** Werkzeuge und Anleitung in [P0_SPIKES.md](P0_SPIKES.md). Was P0 am Plan präzisiert hat (Befehle `drop`/`use`, Erwartungsfeld `priced`, Anwesenheit bei Ankunft), steht dort in §8 und ist hier in §4.1, §5.3 und §6.2 nachgetragen; die Messwerte mit dem echten Provider stehen aus.
@@ -18,6 +18,7 @@
 
 ## Inhalt
 
+- R3. [Revision 3: Stand nach P0 und Umsetzung 4.0](#r3-revision-3-stand-nach-p0-und-umsetzung-40)
 - R. [Revision 2](#r-revision-2-was-sich-gegenüber-revision-1-ändert)
 - 0. [Kurzfassung](#0-kurzfassung)
 - 1. [Root Causes](#1-root-causes)
@@ -36,6 +37,145 @@
 - 14. [Mechanik-Support-Matrix (N)](#14-mechanik-support-matrix-n)
 - 15. [Content- und Lore-Review](#15-content--und-lore-review)
 - 16. [Phasen und Entscheidungen](#16-phasen-und-entscheidungen)
+
+---
+
+## R3. Revision 3: Stand nach P0 und Umsetzung 4.0
+
+**Stand 28.09.2026, Branch `claude/happy-wright-1a4y19`, Engine 4.0.0.** Revision 3 hält fest, was P0 entschieden hat, was davon wie umgesetzt ist und wo die Umsetzung vom Plan abweicht. Die Abschnitte 0–16 bleiben als Historie der Revisionen 2 und 2.1 stehen; wo R3 einen Abschnitt ersetzt, steht dort ein Verweis. Messwerte: [P0_BERICHT.md](P0_BERICHT.md). Einrichtung und erster Live-Test: [LIVETEST_V4.md](LIVETEST_V4.md).
+
+### R3.1 Entscheidungen nach P0
+
+| # | Entscheidung | Beleg |
+|---|---|---|
+| S0 | **Reines JSON per Anweisung**, lokaler Validator, eine Reparatur mit Fehlerliste; Reasoning wie konfiguriert (low). Kein `json_schema`: Der Provider nimmt es an, erzwingt es aber nicht. | P0 §3: 30/30 gültig, p50 4,8 s |
+| D2 | **= A.** Der Erzähler schreibt nur Prosa; der Extraktor liest jede Antwort danach. B verfehlte die Regel §5.6 deutlich. | P0 §4: A 100 % gültig und vollständig, Semantik 87,4 %; B-Block 43,9 % gültig und vollständig, Semantik 67,3 %; A auch günstiger (9.911 gegen 10.570 Token je Zug) |
+| Agency | **Agency-Guard** hinter dem Interpreter (R3.3): deterministisch, entfernt nur. | P0 §10: Negativ-Präzision 93,1 % → 100 % (optimistisch, am Korpus entworfen); ungesehener Prüfsatz 2, erster Lauf: 89 % der Fehlbefehle abgefangen, 97 % der richtigen erhalten |
+| Autorität | **Domänen-/Autoritäts-Firewall** zwischen Extraktor und Welt (R3.4). | P0 §11: verbotene Deltas A 7 → 1, B 8 → 0 (nach der Namens-Kanonisierung), kritische Deltas unverändert (58/58, 27/27) |
+| S3 | Das Domänenmodell trägt. Es ist das Golden-Fixture des Produkts. | S3 36/36; Produkt: `tests/v4/golden_v12.test.js` mit E1–E12 und X1–X6 |
+| Runtime | **Pro Kampagne** (`campaign.started.d.runtime`); neue Kampagnen laufen in V4 (Einstellung „Runtime for new campaigns“), laufende V3-Kampagnen bleiben V3. **Keine Upcaster** (Abweichung von §8, R3.6). | – |
+| D1, D3–D13 | unverändert entschieden und umgesetzt, D6 (Pending Check) weiter 4.1 | §16 |
+
+### R3.2 Ablauf eines Zuges in 4.0 (ersetzt §3.1)
+
+```mermaid
+flowchart TD
+  P[Spielernachricht] --> R{Router, deterministisch}
+  R -->|'#', Charaktererstellung, Kampf, Angriff, Schleichen| V3[V3-Engine unverändert]
+  R -->|Story| I[Interpreter: LLM, JSON, T 0,1<br/>+ eine Reparatur]
+  I --> AG[Agency-Guard: entfernt, ergänzt nie]
+  AG -->|board.read ohne Aushang| BG[Board-Generator: LLM, JSON, T 0,6<br/>canonical first]
+  AG --> H[Handler: resolved · authorized · conditional · pending · refused · clarify]
+  BG --> H
+  H -->|Events auf der Spielernachricht| E1[(extra.avereth)]
+  H --> B[Engine-Block: Zustand + PLAYER ACTIONS + OPEN DECISIONS + CHECK DIE<br/>zuletzt: write only the story]
+  B --> N[Erzähler: nur Prosa]
+  N --> X[Extraktor: LLM, JSON, T 0,1, im Hintergrund<br/>Reparatur, ein zweiter Aufruf]
+  X --> F[Firewall: Autorität je Delta]
+  F --> W[World-Applier: schrittweise; V3-Regeln über Mini-Reports]
+  W -->|Events auf dieser Swipe| E2[(extra.avereth)]
+  W --> D[System-Block + HUD]
+  W -.->|Ankunft in einer Gildenhalle| BG2[Board vorab erzeugen]
+  E2 -.->|Commit-Barriere| P
+```
+
+**Die drei LLM-Aufrufe der Engine** laufen bei der Quelle Custom über SillyTavern (`/api/backends/chat-completions/generate`, derselbe Weg wie die P0-Werkzeuge): Die Engine sieht den Schlüssel nie, die Include-Body-Parameter gelten mit. Bei jeder anderen Quelle nimmt sie `generateRaw` mit der Temperatur des Presets (nicht gemessen). SillyTavern 1.19 bietet `ChatCompletionService` im Kontext; ein quellenunabhängiger Weg mit eigener Temperatur ist damit möglich, aber nicht live geprüft und deshalb nicht Teil von 4.0.
+
+**Speicherung pro Nachricht (ersetzt §3.3), Record v3:**
+- Spielernachricht: `input_hash`, `route` (`v4`|`v3`), `interp` {version, ms, failed, repaired, commands}, `board` {branch, rank, ms, failed, listings}, `events` (Befehle, Auflösungen, Domain-Events, `outcome.recorded`).
+- Antwort (pro Swipe): `text_hash`, `extraction` {status `pending`|`applied`|`failed`|`late`, version, ms, repaired, deltas, missing, raw, board `pending`|`booked`|`failed`}, `events`, `rejected` (Regel und Grund je verworfener Delta), `system`, `corrections`, `panel`, `hud`.
+
+### R3.3 Befehlsschicht: Agency-Guard (neu, ergänzt §4)
+
+- **Vokabular** `content/commands.json` (cmd-0.2): 19 Befehle wie §4.1; `attempt` bleibt 4.1.
+- **Agency-Guard** (`src/v4/agency.js`) nach jeder Interpretation:
+  - Evidenz: Das `quote` jedes Befehls muss eine Handlung oder Festlegung Alarics sein, keine Frage, kein Rückblick, kein Plan, kein Zweck („I'm here to register“), keine Verneinung, keine Handlung oder Rede Dritter.
+  - Zustand: Besitz beim Geben/Ablegen, Abgabe eines im selben Satz genommenen Vertrags, laufende Registrierung.
+  - Entfernte Befehle zeigt der System-Block als `NOT A DECISION`.
+- **Registrierung und Zahlung in einer Nachricht:** in beiden Reihenfolgen genau eine Zahlung der Canon-Gebühr und `resolved` (§4.1).
+
+### R3.4 Autoritätsmatrix und Firewall (neu, ergänzt §5 und §7)
+
+| Autorität | darf | Beispiele |
+|---|---|---|
+| `player_command` (Interpreter → Guard → Handler) | Alarics Entscheidungen | gehen, zahlen, kaufen mit Zustimmung, annehmen, abgeben, registrieren, nehmen, geben, ablegen, benutzen |
+| `engine_resolution` | alles, was Regeln bucht | Gebühr und Mitgliedschaft, Vertragszettel, Beweisprüfung, Auszahlung und XP, Zeitdeckel, Kampf |
+| `board_generator` | offizielle Aushänge | fünf Listings je Brett und Tag, kanonisch, bevor sie gezeigt werden |
+| `narrator_delta` (Extraktor liest die Prosa) | die Welt um Alaric | Personen, Orte unter bekannten Eltern, Fakten, Wissen, Haltung, Erinnerung, Gegenstände in der Welt, Angebote mit Preisen, private Aufträge, vergangene Zeit, Ankunft nach seinem `go`, Überschreitungen |
+
+**Firewall** (`src/v4/firewall.js`) verwirft je Delta mit Regel und Grund, bevor etwas gebucht wird:
+
+| Regel | verwirft |
+|---|---|
+| `guild_canon_price` | einen Preis für die Registrierung, der nicht die Canon-Gebühr ist |
+| `guild_payout` | Coin von einer Person für einen Gildenvertrag; die Gilde zahlt am Schalter (mit Korrektur) |
+| `engine_booked` | was die Engine in diesem Zug schon gebucht hat (Plakette, Vertragszettel, Registrierungsfakten) |
+| `pc_inventory` | Besitzänderungen Alarics ohne seinen Befehl |
+| `guild_listing` | offizielle Verträge aus der Prosa statt vom Brett |
+| `guild_completion` | eine Gildenabgabe, die nicht über `quest.turn_in` lief |
+| `domain_fact`, `engine_owned_fact` | Fakten über Zustand, den nur die Engine führt (Ort, Rang, Mitgliedschaft) |
+| `no_go` | eine Ankunft Alarics ohne sein `go` (Suchen, Sammeln und Botengänge erlauben Bewegung) |
+
+Was die Firewall nicht prüft (Zeitdeckel, Ortsbaum, Anwesenheit, Gegenpartei eines Kaufs), prüft der World-Applier beim schrittweisen Anwenden; `expected.taken_anyway` und ein Verkauf ohne vereinbarten Preis werden dort zu Overreach. Vokabular `content/deltas.json` **delta-0.3**: 29 Delta-Typen wie delta-0.2; neu ist nur `expected.sell` {sold, price_cp}.
+
+### R3.5 Barriere und Fehlerpolitik (ersetzt §3.4)
+
+| Stelle | Retry | endgültig |
+|---|---|---|
+| Interpreter | eine Reparatur mit Fehlerliste | `NOTHING TO BOOK`, System-Block `INTERPRETER FAILED`; nicht gecacht: Regenerate fragt neu |
+| Agency-Guard | – | entfernt nur; `NOT A DECISION` |
+| Board-Generator | ein Retry | keine Listings, „invent none“, kein Erzähler-Rückfall (D3). Nicht gecacht: Regenerate oder Swipe fragt erneut, mit derselben Interpretation und denselben Würfeln. Nach Ankunft in einer Halle vorab im Hintergrund; ein Fehlschlag dort wird nur vermerkt |
+| Extraktor | je Aufruf eine Reparatur, dann ein zweiter Aufruf | `extract.failed`, `WORLD NOT RECORDED`, Korrektur im nächsten Zug; nichts gebucht |
+| **Commit-Barriere** | – | Die nächste normale Nachricht wartet auf Extraktion und Board der letzten Antwort, höchstens 90 s (P0: Extraktion p50 22,3 s, p90 35,4 s). Danach ist die Antwort `late`: eine sichtbare Lücke mit Korrektur; eine spätere Antwort des Extraktors wird verworfen |
+| LLM-Aufruf | – | Zeitlimit 120 s |
+
+**Swipe:** eine neue Antwort mit eigener Extraktion; Befehle, Auflösungen und Würfel der Spielernachricht bleiben. **Bearbeitete Antwort:** behält, was ihre Extraktion gebucht hat (kein Retcon über Tags in V4). **Neu laden oder Chat wechseln:** Eine unterbrochene Extraktion läuft wieder an.
+
+### R3.6 Umfang von 4.0 und Abweichungen vom Plan
+
+**Umgesetzt wie geplant:** §4.1 (alle 19 Befehle), §5 (Deltas, Erwartungsfelder, Overreach, eine Quelle für Prompt, Schema und Validator), §6.1–6.7 (Orte mit Gildenhallen als feste Knoten, Präsenz, Quest-Aggregat, Gilde mit Brett und Beförderung, Objekte, Angebote und Dienste, Tätigkeiten mit Zeitdeckel), §7, Vertrag v4, Preset V4, Lorebook v0.13 (§15, fünf laufzeitneutrale Sätze).
+
+**Bewusst anders als geplant:**
+- **Keine Upcaster (§8):** Eine Kampagne behält ihre Runtime; V3-Chats laufen unverändert mit der V3-Engine weiter. Grund: Der V3-Pfad bleibt byte-gleich und live bewährt; ein Wechsel mitten in der Kampagne müsste Quest-, Orts- und Besitzstand aus Reports rekonstruieren, die das nie sauber trugen (P0/S2). Ein Wechsel ist ein neuer Chat.
+- **Kein Event-Schema v2 mit `v`:** Die Versionierung tragen `STATE_VERSION` 3, Record v3 und die Versionen von Interpreter (`interp-4.0`), Extraktor (`extract-4.0`) und Vokabularen in jedem Record.
+- **Strukturierter Output:** kein `json_schema` (S0).
+
+**Grundlegend in 4.0, ausbaufähig:**
+- `sell`: bedingt mit Mindestpreis oder offen; kein direkter Verkauf gegen ein vorhandenes Kaufangebot.
+- `equip`/`unequip`: nur Vorlagen-Gegenstände.
+- **Quest-XP für private Aufträge fehlt in 4.0** (V3 vergab sie). Ihr verborgenes Level kam in V3 aus dem Report des Erzählers; in V4 trägt die Prosa keines (Lore: „never show a Recommended Level“), und `quest.offer` hat kein Level-Feld. **Offene Entscheidung:** Entweder leitet die Engine ein Level ab (eine PROPOSED-Regel in `rules.json`, z. B. Alarics Level, Typ `minor`), oder der Board-Generator-Weg wird für private Arbeit genutzt, oder der Extraktor schätzt eines (eine Vokabularänderung mit Nachmessung). Gildenverträge sind nicht betroffen: Ihr Level setzt der Board-Generator.
+
+**Bei der Umsetzung gefunden und behoben** (je mit Regressionstest, der ohne den Fix fehlschlägt):
+
+| Commit | Fehler |
+|---|---|
+| `671ee98` | IDs von Fakten aus mehreren Deltas einer Antwort kollidierten; „Guild clerk“ als Beruf wurde als Verweis auf den Schreiber gelesen; kurze Wörter („bed“) zählten beim Zuordnen von Wunsch und Angebot nicht |
+| `a6aa155` | SillyTavern 1.19 sendet `MESSAGE_RECEIVED` für die Begrüßung; dieser Weg startete jede neue Kampagne als V3 |
+| `4e51f70` | `sell` fragte den Extraktor nur „did it happen“; ein Verkauf ließ sich nie buchen (delta-0.3) |
+| `d6ba4f2` | ein gescheitertes Brett wurde gecacht; Regenerate fragte nicht neu (§3.4, D3) |
+| `a603b54` | „Register me, here are the 2 silver“: widersprüchliche PLAYER ACTIONS; in umgekehrter Reihenfolge eine gewöhnliche Zahlung an den Schreiber statt der Gebühr |
+
+### R3.7 Teststand und Freigabe-Gates (ersetzt §11.6 und den Status von §11.7)
+
+| Gate (§11.7, §16) | Stand |
+|---|---|
+| alle Tests grün | **383/383** (`npm test`) |
+| Golden-V4-Test: alle 12 Erwartungen | **erfüllt** im Pfad A, am Produkt über den echten Host-Pfad (E1–E12, X1–X6, Endzustand) |
+| Cluster-Regressionen P0 | **erfüllt** (`tests/v4/clusters.test.js`) |
+| Barriere, Fehler, Swipe, Edit, Reload, Kampf in V4 | **erfüllt** (`tests/v4/runtime.test.js`) |
+| Vokabular ↔ Code | **erfüllt** (`tests/v4/coverage.test.js`) |
+| Kampf byte-gleich, Alt-Fixtures falten | **erfüllt**: alle Testrun-Regressionen V1–V11 unverändert grün; Kampf in einer V4-Kampagne über die V3-Engine |
+| Smokes | Browser (V3 + V4) **OK**; echtes SillyTavern 1.19 mit Mock-Provider: V4 **17/17**, V3 **21/21** |
+| Interpreter live: Negativ-Präzision ≥ 98 %, Recall ≥ 90 %, p50 ≤ 6 s | **offen**: P0 roh 93,1 % / 94,2 % / 3,7 s; mit Guard offline 100 % (optimistisch) und auf ungesehenen Fällen 89 % abgefangen. Nachmessung live: [LIVETEST_V4.md §3](LIVETEST_V4.md#3-nachmessung-s1s2-optional-vor-dem-spiel) |
+| Deltas live ≥ 95 % gültig und vollständig | P0: A 100 %; **Produktpfad (Extraktor + Firewall) live offen** |
+| Live-Spieltest mit dem echten Modell | **offen**: [LIVETEST_V4.md §4](LIVETEST_V4.md#4-der-spieltest) |
+| Tag `v3.1.7` vor dem Merge | Schritt des Eigentümers beim Merge nach `main` |
+
+### R3.8 Dateien (ergänzt §12)
+
+- **Neu:** `src/v4/` (agency, catalog, commands, domain, extract, firewall, guild, interpret, json, runtime, schema, turn, world; ≈ 3.000 Zeilen), `content/commands.json`, `content/deltas.json`, `content/narrator/Avereth_Narrator_Contract_v4.txt`, `presets/Avereth Narrator V4.json`, `lorebook/Avereth_World_Lore_v0.13.json` (ersetzt v0.12), `tests/v4/`, `tests/testrun_v12/gold_v4.json`, `tests/eval/`, `tools/p0/`, `tools/st_live/run_v4.mjs`, `docs/P0_BERICHT.md`, `docs/LIVETEST_V4.md`.
+- **Geändert:** `src/state.js` (Zustand v3, V4-Domänen), `src/engine.js` (Kampagnenstart mit Runtime; Wahrnehmung, Episode und Kampfbeginn als gemeinsame Bausteine), `src/host.js`, `src/context.js` (PLAYER ACTIONS, Prosa-Zeile), `src/display.js` (WORLD-Zeilen), `src/validate.js` (V4-Invarianten), `src/delta.js` (ID-Tag je Delta), `index.js` (Runtime, LLM-Weg, Barriere), `content/rules.json` (`guild`, `time`), `content/manifest.json` 4.0.0.
+- **Unverändert:** Kampf (`combat.js`), Charaktererstellung, `#`-Befehle, Schleichen, V3-Report-Pfad.
 
 ---
 
@@ -197,6 +337,8 @@ PLAYER TEXT → Interpreter (LLM, JSON) → PlayerCommand[] → Guards (Engine) 
 
 ### 3.1 Ablauf eines Zuges (Variante B)
 
+> **Rev. 3:** D2 = A. Der Ablauf in 4.0 steht in [R3.2](#r32-ablauf-eines-zuges-in-40-ersetzt-31); Variante B ist nicht umgesetzt.
+
 ```mermaid
 flowchart TD
   P[Spielernachricht] --> R{Router, deterministisch}
@@ -245,6 +387,8 @@ flowchart TD
 
 ### 3.3 Speicherung pro Nachricht (Record v3)
 
+> **Rev. 3:** Die Felder in 4.0 (`interp`, `board`, `extraction`) stehen in [R3.2](#r32-ablauf-eines-zuges-in-40-ersetzt-31).
+
 ```jsonc
 // Spielernachricht
 "avereth": {
@@ -271,6 +415,8 @@ flowchart TD
 - Eine bearbeitete Spielernachricht wird neu interpretiert.
 
 ### 3.4 Fehlerverhalten
+
+> **Rev. 3:** ersetzt durch [R3.5](#r35-barriere-und-fehlerpolitik-ersetzt-34) (ohne Delta-Block, mit Commit-Barriere).
 
 | Stelle | Retry | Wenn sie endgültig scheitert |
 |---|---|---|
@@ -369,6 +515,8 @@ Kleine, generische Menge. Jede Quest-, Handels- oder Tätigkeitsart ist ein *Arg
 
 ### 4.3 Strukturierter Output und Rückfall
 
+> **Rev. 3:** S0 entschied Weg C: reines JSON per Anweisung, lokaler Validator, eine Reparatur ([R3.1](#r31-entscheidungen-nach-p0)).
+
 | Aufruf | Weg | Bedingung |
 |---|---|---|
 | Interpreter, Recovery-Extraktor, Board-Generator | **A: `json_schema`**: `generateRaw({systemPrompt, prompt, jsonSchema: {name, value}})`; ST reicht es bei der Quelle Custom als `response_format` weiter | nur wenn S0 zeigt, dass der Provider es einhält |
@@ -396,6 +544,8 @@ Kleine, generische Menge. Jede Quest-, Handels- oder Tätigkeitsart ist ein *Arg
 - „Unbenannt nur bei genau einem aktiven Vertrag“ wird zu Referenzauflösung plus `clarify`, statt stiller Ablehnung.
 
 ### 4.5 Engine-Block: PLAYER ACTIONS und Delta-Anweisung
+
+> **Rev. 3:** PLAYER ACTIONS wie hier; die Delta-Anweisung entfällt (D2 = A). Der Block endet mit „write only the story“.
 
 Beide stehen am Ende des Blocks, also am bindenden Platz (Lost in the Middle). Beispiel für Nachricht 17:
 
@@ -426,6 +576,8 @@ then stop: he has not agreed to pay.
 ---
 
 ## 5. World Deltas: Inline-Block und Recovery (B, G, L)
+
+> **Rev. 3:** D2 = A: kein Inline-Block; der Extraktor liest jede Antwort. Vokabular, schrittweise Anwendung, Erwartungsfelder und Overreach gelten wie beschrieben; dazu die Firewall ([R3.4](#r34-autoritätsmatrix-und-firewall-neu-ergänzt-5-und-7)).
 
 ### 5.1 Vokabular
 
@@ -896,6 +1048,8 @@ Damit spätere Mechanik keinen zweiten Umbau braucht, bekommen diese Strukturen 
 
 ## 8. Migration und Versionierung
 
+> **Rev. 3:** Upcaster sind nicht gebaut: Eine Kampagne behält ihre Runtime, V3-Chats bleiben V3 ([R3.6](#r36-umfang-von-40-und-abweichungen-vom-plan)).
+
 **Versionen:**
 
 | Element | 3.1.7 | 4.0 |
@@ -929,6 +1083,8 @@ Damit spätere Mechanik keinen zweiten Umbau braucht, bekommen diese Strukturen 
 ---
 
 ## 9. Latenz und Token: Variante A und B
+
+> **Rev. 3:** gemessen in P0 ([P0_BERICHT.md §4](P0_BERICHT.md#4-s2-world-deltas-a-gegen-b)): A 9.911 Token je Zug, blockierend p50 26,6 s, Extraktion im Hintergrund p50 22,3 s.
 
 **Basis 3.1.7** (Lauf 07:10, [TESTRUN_V12 §6](TESTRUN_V12.md#6-latenz-und-token-anfrage-log-und-chat-zeitstempel)):
 
@@ -1113,12 +1269,16 @@ Handler- und Guard-Tests je Befehl und Delta:
 
 ### 11.6 Smokes
 
+> **Rev. 3:** Stand in [R3.7](#r37-teststand-und-freigabe-gates-ersetzt-116-und-den-status-von-117).
+
 - `tools/st_live/run.mjs` auf die neue Aufruffolge (Interpreter → Erzähler mit Block → Validator → Recovery bei Bedarf):
   - deterministisch mit einem Mock-Provider, der nach Anfragetyp antwortet, auch mit absichtlich fehlendem Block;
   - dazu ein Smoke gegen den echten Provider.
 - `tools/browser_smoke.mjs` angepasst.
 
 ### 11.7 Freigabe-Gates 4.0
+
+> **Rev. 3:** Status je Gate in [R3.7](#r37-teststand-und-freigabe-gates-ersetzt-116-und-den-status-von-117).
 
 - Alle Tests grün; Golden-V4-Test erfüllt alle 12 Erwartungen in beiden Pfaden.
 - Interpreter live: Präzision auf Negativen ≥ 98 %, Recall ≥ 90 %.
@@ -1130,6 +1290,8 @@ Handler- und Guard-Tests je Befehl und Delta:
 ---
 
 ## 12. Dateien: neu, ersetzt, generiert, entfällt
+
+> **Rev. 3:** wie umgesetzt in [R3.8](#r38-dateien-ergänzt-12).
 
 **Neu:**
 
@@ -1377,7 +1539,7 @@ Jede Phase endet mit:
 | # | Festlegung | Status |
 |---|---|---|
 | D1 | Semantic Interpreter für Story-Agency; kein Regex-Rückfall. Bei Ausfall ein Retry, dann sichtbarer Fehler, keine gebuchte Handlung, Regenerate interpretiert neu. `#`, Erstellung und Kampf bleiben deterministisch | entschieden |
-| D2 | **Bevorzugt B:** kleiner geordneter Delta-Block in der Antwort, Extraktion nur als Recovery. S2 vergleicht empirisch mit A (immer Extraktion) | **offen bis S2** (Regel §5.6) |
+| D2 | **Bevorzugt B:** kleiner geordneter Delta-Block in der Antwort, Extraktion nur als Recovery. S2 vergleicht empirisch mit A (immer Extraktion) | **entschieden nach S2: A** (Rev. 3, R3.1) |
 | D3 | **Canonical first, prose second:** Offizielle Aushänge kommen nur vom Generator; der Erzähler beschreibt nur diese Listings. Scheitert der Generator nach einem Retry: kein Erzähler-Rückfall; bestehende Listings bleiben; `BOARD GENERATION FAILED`; Regenerate. Private und Welt-Quests entstehen weiter in der Erzählung (`quest.offer`) | entschieden (Rev. 2.1) |
 | D4 | Unbekannter Preis bleibt `pending`, außer der Spieler setzt ein Preislimit (`max_cp`) oder autorisiert jeden Preis (`any_price`) | entschieden |
 | D5 | Eigenes Verbindungsprofil optional; Standard ist das Hauptprofil mit Reasoning aus; nichts setzt mehrere Provider voraus | entschieden |

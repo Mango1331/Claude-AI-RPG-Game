@@ -1,13 +1,26 @@
-# Avereth Engine (v3.1.7)
+# Avereth Engine (v4.0.0)
 
 Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extension**. Sie besitzt Regeln, Würfel, Kampagnenzustand und Figurenwissen. Das Sprachmodell erzählt.
 
 - Keine Abhängigkeiten, kein Server, keine Datenbank.
 - Läuft im Browser (SillyTavern) und in Node (Tests).
 
-**Warum diese Architektur:** [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md). **Befunde aus Testrun-v1:** [docs/TESTRUN_V1.md](docs/TESTRUN_V1.md). **Gesamtbericht:** [ABSCHLUSSBERICHT.md](ABSCHLUSSBERICHT.md). **Externe Review und Antwort:** [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md). **Erster echter Lauf:** [docs/TESTRUN_V2.md](docs/TESTRUN_V2.md). **Zweiter Lauf:** [docs/TESTRUN_V3.md](docs/TESTRUN_V3.md). **Dritter Lauf:** [docs/TESTRUN_V4.md](docs/TESTRUN_V4.md). **Welt-Lore als Lorebook:** [docs/LOREBOOK.md](docs/LOREBOOK.md). **Deep Review Kampf + Runtime V3 (Vorschlag):** [docs/REVIEW_V3.md](docs/REVIEW_V3.md). **Runtime V3 (umgesetzt: einfacher Kampf, NPC-Record, HUD, Prompt-Projektion, Megumin-Checkliste):** [docs/RUNTIME_V3.md](docs/RUNTIME_V3.md). **Plan für Test 5:** [docs/TEST5_PLAN.md](docs/TEST5_PLAN.md). **Pre-Test-5-Diagnoselauf:** [docs/PRETEST5_DIAGNOSE.md](docs/PRETEST5_DIAGNOSE.md). **Test 5, Lauf 1:** [docs/TESTRUN_V5.md](docs/TESTRUN_V5.md). **Test 5, Lauf 2 (Report-Nachforderung):** [docs/TESTRUN_V5_2.md](docs/TESTRUN_V5_2.md). **Ohne Megumin? Analyse und Entwurf eines eigenen Erzähl-Layers:** [docs/MEGUMIN_ANALYSE.md](docs/MEGUMIN_ANALYSE.md). **Erzähl-Layer „Avereth Narrator“ (Preset) und A/B/C-Vergleich mit Megumin:** [docs/NARRATOR_AB.md](docs/NARRATOR_AB.md). **Erster Live-Lauf mit dem Avereth Narrator:** [docs/TESTRUN_V6.md](docs/TESTRUN_V6.md). **Live-Lauf 25.09. (Ratten ohne Zustand, Kampf-Labels, Zielfrage durch die Engine):** [docs/TESTRUN_V7.md](docs/TESTRUN_V7.md). **Live-Lauf 26.09. (lief den Stand von `main`; Züge vor Alarics erstem Zug, Phantom-Ratten, `alaric_red`, Build-Kennung):** [docs/TESTRUN_V8.md](docs/TESTRUN_V8.md). **Live-Lauf 27.09. (Ratten als Kulisse, die später angreifen):** [docs/TESTRUN_V9.md](docs/TESTRUN_V9.md). **Live-Lauf 27.09., 02:30 (Stadt ohne Ort und Orts-Nachfrage, Quest-Rang als Zahl, „the creature“, Fakt über eine abgelehnte Kreatur):** [docs/TESTRUN_V10.md](docs/TESTRUN_V10.md). **Live-Lauf 27.09., 04:11 (Gildenverträge: Abschluss und Belohnung nur über die Gilde; Quest-Identität, Registrierung, Orts-Nachfrage mit `present`, Phantom-Stadt):** [docs/TESTRUN_V11.md](docs/TESTRUN_V11.md). **Live-Lauf 27.09., 07:10 (Architektur-Stresstest auf 3.1.7):** [docs/TESTRUN_V12.md](docs/TESTRUN_V12.md). **Runtime V4 / Engine 4.0 (Plan zur Review, Revision 2, noch nicht umgesetzt):** [docs/RUNTIME_V4_PLAN.md](docs/RUNTIME_V4_PLAN.md); **externes Review dazu:** [docs/CHATGPT_REVIEW_RUNTIME_V4_PLAN.md](docs/CHATGPT_REVIEW_RUNTIME_V4_PLAN.md).
+**Warum diese Architektur:** [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md). **Befunde aus Testrun-v1:** [docs/TESTRUN_V1.md](docs/TESTRUN_V1.md). **Gesamtbericht:** [ABSCHLUSSBERICHT.md](ABSCHLUSSBERICHT.md). **Externe Review und Antwort:** [docs/REVIEW_CHATGPT.md](docs/REVIEW_CHATGPT.md). **Erster echter Lauf:** [docs/TESTRUN_V2.md](docs/TESTRUN_V2.md). **Zweiter Lauf:** [docs/TESTRUN_V3.md](docs/TESTRUN_V3.md). **Dritter Lauf:** [docs/TESTRUN_V4.md](docs/TESTRUN_V4.md). **Welt-Lore als Lorebook:** [docs/LOREBOOK.md](docs/LOREBOOK.md). **Deep Review Kampf + Runtime V3 (Vorschlag):** [docs/REVIEW_V3.md](docs/REVIEW_V3.md). **Runtime V3 (umgesetzt: einfacher Kampf, NPC-Record, HUD, Prompt-Projektion, Megumin-Checkliste):** [docs/RUNTIME_V3.md](docs/RUNTIME_V3.md). **Plan für Test 5:** [docs/TEST5_PLAN.md](docs/TEST5_PLAN.md). **Pre-Test-5-Diagnoselauf:** [docs/PRETEST5_DIAGNOSE.md](docs/PRETEST5_DIAGNOSE.md). **Test 5, Lauf 1:** [docs/TESTRUN_V5.md](docs/TESTRUN_V5.md). **Test 5, Lauf 2 (Report-Nachforderung):** [docs/TESTRUN_V5_2.md](docs/TESTRUN_V5_2.md). **Ohne Megumin? Analyse und Entwurf eines eigenen Erzähl-Layers:** [docs/MEGUMIN_ANALYSE.md](docs/MEGUMIN_ANALYSE.md). **Erzähl-Layer „Avereth Narrator“ (Preset) und A/B/C-Vergleich mit Megumin:** [docs/NARRATOR_AB.md](docs/NARRATOR_AB.md). **Erster Live-Lauf mit dem Avereth Narrator:** [docs/TESTRUN_V6.md](docs/TESTRUN_V6.md). **Live-Lauf 25.09. (Ratten ohne Zustand, Kampf-Labels, Zielfrage durch die Engine):** [docs/TESTRUN_V7.md](docs/TESTRUN_V7.md). **Live-Lauf 26.09. (lief den Stand von `main`; Züge vor Alarics erstem Zug, Phantom-Ratten, `alaric_red`, Build-Kennung):** [docs/TESTRUN_V8.md](docs/TESTRUN_V8.md). **Live-Lauf 27.09. (Ratten als Kulisse, die später angreifen):** [docs/TESTRUN_V9.md](docs/TESTRUN_V9.md). **Live-Lauf 27.09., 02:30 (Stadt ohne Ort und Orts-Nachfrage, Quest-Rang als Zahl, „the creature“, Fakt über eine abgelehnte Kreatur):** [docs/TESTRUN_V10.md](docs/TESTRUN_V10.md). **Live-Lauf 27.09., 04:11 (Gildenverträge: Abschluss und Belohnung nur über die Gilde; Quest-Identität, Registrierung, Orts-Nachfrage mit `present`, Phantom-Stadt):** [docs/TESTRUN_V11.md](docs/TESTRUN_V11.md). **Live-Lauf 27.09., 07:10 (Architektur-Stresstest auf 3.1.7):** [docs/TESTRUN_V12.md](docs/TESTRUN_V12.md). **Runtime V4 / Engine 4.0 (umgesetzt; Plan Rev. 3 mit den Entscheidungen nach P0):** [docs/RUNTIME_V4_PLAN.md](docs/RUNTIME_V4_PLAN.md); **externes Review dazu:** [docs/CHATGPT_REVIEW_RUNTIME_V4_PLAN.md](docs/CHATGPT_REVIEW_RUNTIME_V4_PLAN.md); **P0-Messungen:** [docs/P0_BERICHT.md](docs/P0_BERICHT.md); **Live-Test 4.0 (Einrichtung, Ablauf, was zurückschicken):** [docs/LIVETEST_V4.md](docs/LIVETEST_V4.md).
 
-## Was die Engine pro Zug tut
+## Runtime V4 (Standard für neue Kampagnen seit 4.0)
+
+*LLM interprets and narrates. Engine validates and commits.* Jede Kampagne behält die Runtime, mit der sie begann: Neue Chats laufen in V4 (Einstellung „Runtime for new campaigns“), laufende V3-Chats bleiben V3.
+
+1. **Vor der Erzählung** übersetzt ein kleiner LLM-Aufruf (Interpreter, reines JSON, Temperatur 0,1) deine Nachricht einmal in typisierte Befehle: `go`, `activity`, `take`, `give`, `pay`, `buy`, `guild.register`, `quest.accept`, `quest.turn_in`, `board.read` und weitere (`content/commands.json`). Fragen, Rückblicke, Pläne und Absichten („I'm here to register“) sind keine Befehle; ein deterministischer Agency-Guard entfernt, was die Nachricht nicht trägt.
+2. **Die Engine prüft und bucht** jeden Befehl: *resolved* (jetzt gebucht: Gebühr, Annahme, Abgabe am Schalter mit Beweisprüfung), *authorized* (Reise, Tätigkeit mit Zeitdeckel), *conditional* („wenn er die Halle erreicht“), *pending* (Preis unbekannt: der Erzähler nennt ihn und hält an), *refused*, *clarify*. Offizielle Gildenaushänge erzeugt ein Board-Generator, bevor sie gezeigt werden (*canonical first*); die Registrierung kostet die Canon-Gebühr 20 cp, nur die Gilde zahlt Verträge aus.
+3. **Der Erzähler** bekommt PLAYER ACTIONS und schreibt **nur Prosa**: keinen Block, keinen Report (Vertrag v4, Preset „Avereth Narrator V4“).
+4. **Nach der Antwort** liest ein Extraktor (LLM, JSON) sie im Hintergrund als geordnete Weltänderungen. Eine **Autoritäts-Firewall** verwirft, was nur die Engine buchen darf (Gildenzahlungen, Registrierung, Aushänge, Besitz Alarics ohne seinen Befehl, Reisen ohne sein `go`), und schreibt eine Korrektur für den nächsten Zug.
+5. **Commit-Barriere:** Die nächste Nachricht wartet, bis die Welt der vorigen Antwort gebucht ist (höchstens 90 s; sonst eine sichtbare Lücke mit Korrektur).
+6. **Kampf, Charaktererstellung, `#`-Befehle und Schleichen** laufen unverändert über die V3-Engine.
+
+Einrichtung und Ablauf des ersten Live-Tests: [docs/LIVETEST_V4.md](docs/LIVETEST_V4.md). Architektur, Entscheidungen und Grenzen: [docs/RUNTIME_V4_PLAN.md](docs/RUNTIME_V4_PLAN.md), Rev. 3.
+
+## Was die Engine pro Zug tut (Runtime V3)
 
 1. **Vor der Generierung** (Prompt-Interceptor) liest sie deine Nachricht:
    - Angriff, Skill, Bewegung, Flucht, Schleichen, Charaktererstellung oder `#`-Befehl;
@@ -56,9 +69,10 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
    - **Welcher Stand?** Neue Änderungen liegen zuerst auf dem Branch `claude/happy-wright-1a4y19` und kommen erst mit dem Merge nach `main`. Den Ordner aus dem Stand kopieren, den du testen willst.
    - **Nur eine Kopie:** Liegt zusätzlich ein gleichnamiger Ordner unter `public/scripts/extensions/third-party/`, liefert SillyTavern pro Datei die Kopie aus `data/<user>/extensions/`. Alte Kopien löschen.
 2. SillyTavern neu laden. Unter Extensions erscheint **Avereth Engine**.
-   - **Build prüfen:** „Manage extensions“ zeigt die Version aus `manifest.json` (jetzt **3.1.7**). Dieselbe Nummer steht in der Statuszeile des Engine-Panels, in der letzten Zeile von `#audit` und bei jeder Nachricht im Event-Export (`build`). Nachrichten ohne `build` stammen von einem Stand vor 3.1.0.
+   - **Build prüfen:** „Manage extensions“ zeigt die Version aus `manifest.json` (jetzt **4.0.0**). Dieselbe Nummer steht in der Statuszeile des Engine-Panels, in der letzten Zeile von `#audit` und bei jeder Nachricht im Event-Export (`build`). Nachrichten ohne `build` stammen von einem Stand vor 3.1.0.
 3. **Charakterkarte:**
-   - Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v3.txt` (Stand 3.3; nach jedem Update neu einfügen);
+   - **Runtime V4 (Standard):** Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v4.txt`; dazu das Preset `presets/Avereth Narrator V4.json` und die API-Quelle **Custom (OpenAI-compatible)**. Schritt für Schritt: [docs/LIVETEST_V4.md §2](docs/LIVETEST_V4.md#2-einrichtung-in-sillytavern). Am besten eine eigene Karte für V4, damit laufende V3-Chats ihre behalten.
+   - **Runtime V3:** Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v3.txt` (Stand 3.3; nach jedem Update neu einfügen);
    - Begrüßung = First Message v0.4 (unverändert; die Zeile `Location: … outside <City>, <Realm>` legt den Startort fest).
 4. **Die Avereth-WorldInfo v1.23 deaktivieren.** Die Engine ersetzt sie; beides zusammen doppelt Regeln.
    - **Megumin-Preset:** NPC-Dossier, NPC-Updates, NPC-Bank und die `<Blocks>`-Anweisung entfernen. Die genaue Checkliste mit allem, was bleibt, steht in [docs/RUNTIME_V3.md §9](docs/RUNTIME_V3.md#9-megumin-v10-shura-manuelle-änderungen).
@@ -70,7 +84,7 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
    - die Engine lässt dann ihre eigene LORE-Sektion weg (Einstellung „World lore“ = Auto).
 6. **Antwortlänge:** Ohne Megumin-Blöcke reichen meist 4.096 Token, mit Reasoning „high“ 6.000. Solange das Preset noch Blöcke anfordert, mindestens 8.192. In Testrun 3 schnitt GLM mit 4.096 Token zwei Antworten mitten in den NPC-Dossiers ab.
 7. **Streaming** (empfohlen): in den API-Einstellungen anschalten.
-   - Unter Extensions → Regex die Skripte aus `regex/` importieren:
+   - **Nur Runtime V3:** unter Extensions → Regex die Skripte aus `regex/` importieren (V4-Antworten enthalten keinen Block):
      - `avereth_hide_fact_report.json` versteckt den Report schon während des Streamings;
      - `avereth_hide_tracker_blocks.json` braucht es nur, solange Megumin noch Blöcke anfordert.
    - Beide ändern nur die Anzeige, weder den gespeicherten Text noch den Prompt. Details: [docs/RUNTIME_V3.md §5](docs/RUNTIME_V3.md#5-streaming).
@@ -81,12 +95,13 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
 | Einstellung | Standard | Wirkung |
 |---|---|---|
 | Engine active | an | Schaltet die Engine an oder aus |
+| Runtime for new campaigns | V4 | V4: Interpreter vor und Extraktor nach der Erzählung, der Erzähler schreibt nur Prosa (Vertrag v4, Preset V4). V3: Fakten-Report in der Antwort. Gilt für neu gestartete Kampagnen; eine laufende behält ihre Runtime. |
 | Context budget | 1.400 Token | für Szene, NPCs, Retrieval und Lore; RESOLVED und Header werden nie gekürzt |
 | Rules allowance | 800 Token | situative Regeltexte (Schleichen, Loot, Handel, `#system`) |
 | Recent turns not re-retrieved | 4 | was noch im Chatverlauf steht, wird nicht doppelt injiziert (höchstens das History window) |
 | History window (exchanges) | 4 | so viele Spielernachrichten stehen mit ihren Antworten wörtlich im Prompt, die aktuelle mitgezählt (4 = aktuelle Nachricht plus 3 Wechsel); ältere erreichen den Erzähler über den Engine-Block. 0 = ganzer Verlauf. Der gespeicherte Chat bleibt unverändert. |
 | Remove tracker blocks from new replies | an | entfernt `World_State`, `Character_Sheet`, `New_NPC` und `NPC_Update` aus neuen Antworten; alte Antworten verlieren sie nur in der Prompt-Kopie |
-| Ask for a missing fact report separately | an | Hat eine Antwort keinen gültigen Fakten-Report, fragt die Engine dasselbe Modell in einer kurzen, eigenen Anfrage nur nach dem Report (≈ 1,5k Token Prompt), während du liest. Die Antwort zählt wie der Report des Erzählers. Die nächste Nachricht wartet darauf, höchstens 60 s. |
+| Ask for a missing fact report separately (nur V3) | an | Hat eine Antwort keinen gültigen Fakten-Report, fragt die Engine dasselbe Modell in einer kurzen, eigenen Anfrage nur nach dem Report (≈ 1,5k Token Prompt), während du liest. Die Antwort zählt wie der Report des Erzählers. Die nächste Nachricht wartet darauf, höchstens 60 s. |
 | HUD under replies | Folded | Charakter- und Welt-Panel unter jeder Antwort: eingeklappt mit Zusammenfassung, offen oder aus |
 | Injection depth | 0 | 0 = direkt vor der Generierung |
 | World lore | Auto | Auto: Lorebook der Karte, falls verknüpft, sonst die Lore der Engine. „Card lorebook“ oder „Engine“ erzwingen eine Quelle. Die Statuszeile zeigt die aktive. |
@@ -157,10 +172,11 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 ## Für Entwickler
 
 ```
-npm test                               # 291 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Runtime V3, Pre-Test-5, Regression der Testruns 1–4, beider Test-5-Läufe und der Live-Läufe 6–11, Narrator-Vergleich
+npm test                               # 383 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Runtime V3, Pre-Test-5, Regression der Testruns 1–4, beider Test-5-Läufe und der Live-Läufe 6–11, Narrator-Vergleich, P0-Werkzeuge, Runtime V4 (tests/v4: Golden V12, Cluster, Laufzeit, Abdeckung)
 node tools/testrun_compare.js          # Token-Vergleich mit Testrun-v1
-node tools/browser_smoke.mjs           # optional: index.js in echtem Chromium mit gemocktem SillyTavern-Kontext (braucht Playwright)
-AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st   # optional: Live-Smoke in echtem SillyTavern mit streamendem Mock-Erzähler (docs/RUNTIME_V3.md §8); mit AVERETH_ST_PRESET="Avereth Narrator" für das eigene Preset (docs/NARRATOR_AB.md §2.4)
+node tools/browser_smoke.mjs           # optional: index.js in echtem Chromium mit gemocktem SillyTavern-Kontext, eine V3- und eine V4-Kampagne (braucht Playwright)
+AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st   # optional: Live-Smoke (V3) in echtem SillyTavern mit streamendem Mock-Erzähler (docs/RUNTIME_V3.md §8); mit AVERETH_ST_PRESET="Avereth Narrator" für das eigene Preset (docs/NARRATOR_AB.md §2.4)
+AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st:v4   # optional: Live-Smoke Runtime V4 in echtem SillyTavern, Mock-Provider hinter der Quelle Custom (docs/LIVETEST_V4.md §1); nur gegen ein Wegwerf-SillyTavern
 node tools/run_report.mjs <Server-Log> [<Chat.jsonl>]   # Messung eines Laufs: Prompt je Kategorie, Output-Aufteilung, Dauer (docs/TEST5_PLAN.md §4)
 node tools/narrator_ab.mjs --log <Server-Log> --chat <Chat.jsonl> [--log … --chat …] --dry-run   # Narrator-Vergleich A/B/C; ohne --dry-run mit AVERETH_AB_API_BASE/_KEY (docs/NARRATOR_AB.md §3)
 node tools/lorebook_audit.mjs          # welche Lorebook-Einträge in den Testruns 2–4 feuern (World-Info-Nachbau, gegen Testrun 4 bestätigt)
@@ -177,12 +193,12 @@ node tools/v3_combat.mjs               # danach: Combat V3 auf den Content anwen
 | `src/` | Engine, siehe [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md) |
 | `content/` | Inhalte, siehe [docs/DATENMODELL.md](docs/DATENMODELL.md) |
 | `lorebook/` | Welt-Lore als SillyTavern-Lorebook (Character Lore), siehe [docs/LOREBOOK.md](docs/LOREBOOK.md) |
-| `regex/` | Regex-Skripte für SillyTavern (Report und alte Tracker-Blöcke beim Streaming verstecken) |
-| `presets/` | Chat-Completion-Preset „Avereth Narrator“, siehe [docs/NARRATOR_AB.md](docs/NARRATOR_AB.md) |
+| `regex/` | Regex-Skripte für SillyTavern (Runtime V3: Report und alte Tracker-Blöcke beim Streaming verstecken) |
+| `presets/` | Chat-Completion-Presets „Avereth Narrator“ (V3) und „Avereth Narrator V4“ (nur Prosa), siehe [docs/NARRATOR_AB.md](docs/NARRATOR_AB.md) |
 | `schemas/` | JSON-Schemas für Content, Events und Report |
-| `tests/` | `unit/`, `scenarios/`, `testrun_v1/` bis `testrun_v4/` |
+| `tests/` | `unit/`, `scenarios/`, `testrun_v1/` bis `testrun_v4/`, `testrun_v12/` (Gold V4), `eval/` (Korpora S1/S2), `v4/` (Runtime V4) |
 | `tools/` | Migration, Combat-V3-Migration, Testrun-Vergleich, Lorebook-Audit, Browser-Smoke, Live-Smoke (`st_live/`), Lauf-Messung (`run_report.mjs`), Narrator-Vergleich (`narrator_ab.mjs`), Runtime-V4-Spikes (`p0/`, [docs/P0_SPIKES.md](docs/P0_SPIKES.md)) |
-| `docs/` | Architektur, Datenmodell, Migration, WI-Bewertung, Lorebook, Testrun-Analyse, Runtime V3, Test-5-Plan, Runtime-V4-Plan |
+| `docs/` | Architektur, Datenmodell, Migration, WI-Bewertung, Lorebook, Testrun-Analyse, Runtime V3, Test-5-Plan, Runtime-V4-Plan (Rev. 3), P0-Bericht, Live-Test V4 |
 
 **Engine-API** (`src/engine.js`; Adapter für Chat-Arrays in `src/host.js`):
 

@@ -24,6 +24,7 @@
 9. [Folgen für Runtime V4](#9-folgen-für-runtime-v4)
 10. [Nach P0: S1 mit Agency-Guard (offline gemessen)](#10-nach-p0-s1-mit-agency-guard-offline-gemessen)
 11. [Nach P0: S2 mit Autoritäts-Firewall (offline gemessen)](#11-nach-p0-s2-mit-autoritäts-firewall-offline-gemessen)
+12. [Nachtrag: vom Prototyp ins Produkt (4.0.0)](#12-nachtrag-vom-prototyp-ins-produkt-400)
 
 ---
 
@@ -425,3 +426,26 @@ node tools/p0/s2_deltas.mjs --variant a --vocab v4 --out p0_out/s2_v4
 - `expected.taken_anyway` wird dort zum Overreach.
 - Lesefehler wie v11_05 erkennt sie nicht; dafür bleibt die Semantik des Extraktors maßgeblich.
 
+---
+
+## 12. Nachtrag: vom Prototyp ins Produkt (4.0.0)
+
+Die Abschnitte 1–11 bleiben, wie sie gemessen wurden. Dieser Nachtrag sagt, was aus P0 im Produkt steht und was davon noch mit dem echten Modell zu messen ist ([RUNTIME_V4_PLAN.md, R3](RUNTIME_V4_PLAN.md#r3-revision-3-stand-nach-p0-und-umsetzung-40)).
+
+**Im Produkt:**
+- Der Interpreter mit Prompt v4, der Agency-Guard (§10), der Extraktor mit der Firewall (§11) und der Board-Generator laufen in `src/v4/` über den Host-Pfad der Extension.
+- S3 ist das Golden-Fixture des Produkts: `tests/v4/golden_v12.test.js` spielt den V12-Pfad mit der aufgezeichneten Prosa und den Gold-Antworten durch den echten Host-Pfad. Alle Erwartungen E1–E12 und X1–X6 sowie der Endzustand gelten.
+- Die Fehlerklassen aus §5 und §11 stehen als Regressionen in `tests/v4/clusters.test.js`.
+
+**Vokabular delta-0.3:** Gegenüber delta-0.2 kommt nur `expected.sell` {sold, price_cp} hinzu; vorher ließ sich ein Verkauf nicht buchen. Der S2-Korpus enthält keinen Verkauf; die Messwerte in §4 und §11 gelten unverändert.
+
+**Beim Einbau gefunden, ohne Einfluss auf die P0-Zahlen:** Die Messwerkzeuge riefen Interpreter und Extraktor direkt auf. Die Fehler lagen in der Einbindung (SillyTavern startete neue Kampagnen über die Begrüßung als V3; Registrierung und Zahlung in einer Nachricht; ein gescheitertes Brett blieb gecacht) und sind mit Regressionstests behoben (Plan R3.6).
+
+**Mit dem echten Modell noch offen** ([LIVETEST_V4.md](LIVETEST_V4.md)):
+
+| Messung | Befehl | Stand ohne Modell |
+|---|---|---|
+| S1 Produkt (Prompt v4 + Guard), 256 Fälle | `node tools/p0/s1_interpreter.mjs` | Guard auf den P0-Antworten: Negativ-Präzision 100 % (optimistisch), Recall 94,2 % |
+| S1 ungesehen, Prüfsatz 2 (58 Fälle) | `node tools/p0/s1_interpreter.mjs --corpus tests/eval/commands_holdout2.jsonl --out p0_out/s1_holdout2` | erster Lauf: 89 % der Fehlbefehle abgefangen, 97 % der richtigen erhalten |
+| S2 Produktpfad, 41 Züge | `node tools/p0/s2_deltas.mjs --variant a --vocab v4 --out p0_out/s2_v4` | Firewall auf den P0-Antworten: verbotene Deltas A 7 → 1, B 8 → 0; kritische unverändert |
+| Spieltest in SillyTavern | [LIVETEST_V4.md §4](LIVETEST_V4.md#4-der-spieltest) | echtes SillyTavern 1.19 mit Mock-Provider: V4 17/17 Prüfungen |

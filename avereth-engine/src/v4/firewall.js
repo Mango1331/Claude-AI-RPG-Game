@@ -34,7 +34,7 @@ const PAYOUT_WHY = /\b(?:reward|bounty|payout|pay(?:ment)?\s+for|contract|quest|
 const TURN_IN_OBJECTIVE = /\b(?:turn(?:ed|s|ing)?|hand(?:ed|s|ing)?)\s+(?:it\s+|them\s+|the\s+\w+\s+)?in\b|\b(?:deliver\w*|return\w*|report\w*|bring\w*|brought|tak(?:e|es|ing)|hand\w*)\b[^.;]*\b(?:guild|desk|hall|clerk)\b/i;
 const PC_REF = /^(?:pc|alaric(?: red)?)$/i;
 const ENGINE_FACT = /\b(?:regist\w*|guild rank|member\w*|novice|proven|veteran|power rank|coin|copper|silver|paid|reward|payout|xp|level)\b/i;
-const GUILD_QUEST_STATE = /\b(?:status|state|complete\w*|done|closed|cleared|turn(?:ed|ing)?\s+in|paid|payment|payout|reward|mark|stamp|proof)\b/i;
+const GUILD_QUEST_STATE = /\b(?:status|state|complete\w*|done|closed|cleared|turn(?:ed|ing)?\s+in|paid|payment|payout|reward)\b/i;
 const GUILD_COMPLETION_MARK = /\b(?:cleared|complete\w*|closed|paid|turned?\s+in|accepted|settled)\b/i;
 const GUILD_DETAIL_MECHANIC = /\b(?:fees?|costs?|prices?|pay(?:s|ing|ment)?|paid|payouts?|rewards?|copper|silver|gold|complete\w*|cleared|guild\s+rank|promotion)\b/i;
 

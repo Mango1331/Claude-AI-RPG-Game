@@ -211,7 +211,7 @@
   },
   "guild": {
     "src": "Lorebook v0.12 GUILD — Contract lifecycle (live run 27.09.2026 04:11)",
-    "contract": "A Guild contract (a quest with a Guild Quest Rank) is taken at the Guild and completed only when the player turns it in (his message says so: by name, or unnamed when it is the one active contract) in a city or capital with a Guild branch; the Guild checks the proof and pays the posted reward, one fixed payout (the engine books its first amount), then Quest XP. Local clients inform, give access and confirm proof; they neither complete nor pay it. Work without a Quest Rank is private and settles directly (Quest XP, no Guild credit). The Guild registration is a procedure, not a contract.",
+    "contract": "A Guild contract (a quest with a Guild Quest Rank) is taken at the Guild and completed only when the player turns it in (his message says so: by name, or unnamed when it is the one active contract) in a city or capital with a Guild branch; the Guild accepts a turn-in once the story has credibly achieved the contract's desired outcome; posted proof is expected verification/world guidance, not an exclusive token checklist. The engine then pays the posted reward, one fixed payout, and Quest XP. Local clients inform, give access and confirm proof; they neither complete nor pay it. Work without a Quest Rank is private and settles directly (Quest XP, no Guild credit). The Guild registration is a procedure, not a contract.",
     "branch_kinds": ["city", "capital"],
     "registration_fee_cp": 20,
     "registration_fee_src": "Canon decision 27.09.2026: 2 silver = 20 cp at every branch (docs/RUNTIME_V4_PLAN.md §6.4)",

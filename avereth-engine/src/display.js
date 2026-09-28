@@ -68,9 +68,24 @@ export function turnPanel(state, content, narratorCheck = null, reply = null) {
  * place of a story turn. Nothing was spent or rolled; the fight waits for the player to name a target by its label.
  */
 export function targetQuestion(state, content, intent) {
-    const targets = combatTargets(state.encounter);
     const name = namer(state, null);
     const skill = content.skills.get(intent.skill)?.name || 'Attack';
+    if (!state.encounter) {
+        const scene = (state.scene?.present || []).filter((id) => id !== 'pc' && state.entities[id]?.status !== 'dead').map((id) => {
+            const e = state.entities[id];
+            const pos = state.scene.positions?.[id];
+            return { id, label: sceneHandle(state, content, id), band: pos?.band || null, hp: e.profile?.hp ?? e.sheet?.hp ?? null, max: e.profile?.max_hp ?? null };
+        });
+        const ask = intent.kind === 'ambiguous_target'
+            ? `which target — ${intent.candidates.map((id) => sceneHandle(state, content, id)).join(' or ')}?`
+            : intent.ref ? `"${intent.ref}" is not a valid target in the active scene.` : 'there is no valid target in the active scene.';
+        return [
+            '[SYSTEM // ATTACK — TARGET NEEDED]',
+            `${name('pc')}'s ${skill}: ${ask} Nothing was spent or rolled.`,
+            scene.length ? `ACTIVE SCENE — ${scene.map((x) => `${x.label}${x.hp !== null ? ` · HP ${x.hp}/${x.max ?? x.hp}` : ''}${x.band ? ` · ${x.band}` : ''}`).join(' | ')}` : 'ACTIVE SCENE — no targetable actor',
+        ].join('\n');
+    }
+    const targets = combatTargets(state.encounter);
     const ask = intent.kind === 'ambiguous_target' ? `which target — ${intent.candidates.map(name).join(' or ')}?`
         : intent.ref ? `"${intent.ref}" is not a target in this fight.` : 'no target in this fight.';
     return [

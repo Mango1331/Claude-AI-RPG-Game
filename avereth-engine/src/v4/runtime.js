@@ -222,7 +222,13 @@ export function processReplyAny(chat, id, content, opts = {}) {
         return { changed: true };
     }
     const { state } = foldChat(chat, id);
-    const view = display(msg, content, state, { pending: true }, opts.hud || 'closed');
+    // Do not expose the final V4 prose without the state it establishes. In particular, a just-revealed Monster must
+    // arrive together with its canonical handle/HP/Range, not several seconds before the extractor creates it.
+    // display_text is presentation only; msg.mes stays intact for extraction and prompt history.
+    const pendingPanel = worldPanel(state, content, { pending: true });
+    if (!msg.extra || typeof msg.extra !== 'object') msg.extra = {};
+    msg.extra.display_text = pendingPanel || '`WORLD — the engine is reading the reply.`';
+    const view = { panel: pendingPanel || undefined, hud: undefined };
     setRec(msg, { v: RECORD_V4, events: [], text_hash: hash32(msg.mes), extraction: { status: 'pending', version: EXTRACTOR_VERSION }, corrections: [], ...view });
     return { changed: true, extract: true };
 }

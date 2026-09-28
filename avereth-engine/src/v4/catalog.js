@@ -6,6 +6,7 @@
 import { truth, entityLabel, statusOf } from '../knowledge.js';
 import { deriveCharacter } from '../derived.js';
 import { formatClock, normText } from '../util.js';
+import { sceneHandle } from './scene_handles.js';
 import {
     placePath, placeName, settlementOf, realmOf, hallOf, hallOfSettlement, childrenOf, heldBy, lyingAt, openOffers,
     membership, listingsOf, today,
@@ -112,8 +113,21 @@ export function openDecisionTexts(state) {
 export function buildCatalog(state, content, { extraPlaces = [] } = {}) {
     const at = state.scene.at;
     const present = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && statusOf(state, id) !== 'dead')
-        .map((id) => ({ id, label: personLabel(state, content, id) }));
-    const quests = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered').map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) }));
+        .map((id) => ({ id, handle: sceneHandle(state, content, id), label: personLabel(state, content, id) }));
+    const activeRaw = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered');
+    const quests = activeRaw.map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) }));
+    const escort = activeRaw.find((q) => q.status === 'active' && (q.objectives || []).some((o) => String(o.verb || '').toUpperCase() === 'ESCORT'));
+    const escortText = escort ? normText([escort.title, escort.client, escort.desired_end_state, ...(escort.details || []), ...(escort.notes || []),
+        ...(escort.objectives || []).flatMap((o) => [o.what, o.where])].filter(Boolean).join(' ')) : '';
+    const escortContact = escort ? state.scene.present.find((id) => {
+        if (id === 'pc' || !state.entities[id] || state.entities[id].kind !== 'npc') return false;
+        const e = state.entities[id];
+        const labels = [e.name, truth(state, id, 'occupation')[0]?.o, ...(e.descriptors || [])].filter(Boolean).map(normText);
+        return labels.some((x) => x.length >= 3 && escortText.includes(x));
+    }) : null;
+    const journey_ready = escort && escortContact
+        ? `${escort.id} with ${sceneHandle(state, content, escortContact)} — the established escort/journey can depart or continue now if Alaric clearly agrees`
+        : undefined;
     const day = today(state);
     const completed = Object.values(state.quests).filter((q) => q.status === 'completed' && (q.history || []).some((h) => h.status === 'completed' && Math.floor((h.minute ?? 0) / 1440) + 1 === day))
         .map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) }));
@@ -136,6 +150,7 @@ export function buildCatalog(state, content, { extraPlaces = [] } = {}) {
         present,
         places: catalogPlaces(state, extraPlaces),
         quests,
+        journey_ready,
         completed,
         board_label: hall ? `${rank} board of this hall` : undefined,
         board,
@@ -165,7 +180,7 @@ export function guardContext(state, content, catalog = buildCatalog(state, conte
     return {
         inGuildHall: !!hallOf(state, state.scene.at),
         guildHalls: new Set([catalog.here.id, ...catalog.places.map((p) => p.id)].filter((id) => hallOf(state, id) === id)),
-        present: catalog.present.map((p) => ({ id: p.id, names: [p.label, state.entities[p.id]?.name].filter(Boolean) })),
+        present: catalog.present.map((p) => ({ id: p.id, names: [p.handle, p.label, state.entities[p.id]?.name].filter(Boolean) })),
         objects,
         registrationPending: !!reg,
         registrationOffer: reg ? reg.id : null,

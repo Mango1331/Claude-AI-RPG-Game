@@ -69,7 +69,15 @@ function objectiveText(q) {
 }
 
 function questInfo(state, content, q) {
-    if (q.kind === 'guild_contract') return ['Guild contract', q.status, q.rank, q.payout_cp !== null && q.payout_cp !== undefined ? `${q.payout_cp} cp` : null, (q.objectives || []).length ? `objective: ${objectiveText(q)}` : null, (q.proof || []).length ? `proof: ${proofText(q)}` : null].filter(Boolean).join(' · ');
+    if (q.kind === 'guild_contract') {
+        const progress = (q.progress || []).slice(-3).map((p) => `${p.objective}: ${p.status}`).join('; ');
+        return ['Guild contract', q.status, q.rank, q.payout_cp !== null && q.payout_cp !== undefined ? `${q.payout_cp} cp` : null,
+            q.desired_end_state ? `desired outcome: ${q.desired_end_state}` : null,
+            (q.objectives || []).length ? `job memory: ${objectiveText(q)}` : null,
+            progress ? `progress: ${progress}` : null,
+            q.ready ? `READY FOR TURN-IN: ${q.ready_note || 'desired outcome achieved'}` : null,
+            (q.proof || []).length ? `verification example: ${proofText(q)}` : null].filter(Boolean).join(' · ');
+    }
     const giver = q.giver && state.entities[q.giver] ? personLabel(state, content, q.giver) : q.giver;
     return ['private', q.status, giver ? `from ${giver}` : null, q.payout_cp ? `reward ${q.payout_cp} cp` : null].filter(Boolean).join(' · ');
 }

@@ -111,9 +111,19 @@ export function checkProof(s, q) {
     const words = (x) => String(x || '').toLowerCase();
     for (const p of q.proof || []) {
         if (p.kind === 'object') {
-            const o = held.find((x) => words(x.name).includes(words(p.what)) && (x.unit || null) === (p.unit || null) && (x.qty ?? 1) >= (p.qty ?? 1));
-            if (!o) return { ok: false, reason: `${p.qty ?? 1} ${p.unit ?? ''} of ${p.what} missing`.replace(/\s+/g, ' ') };
-            if (p.consume !== false) consume.push(o.id);
+            const need = p.qty ?? 1;
+            const matches = held.filter((x) => words(x.name).includes(words(p.what)) && (x.unit || null) === (p.unit || null));
+            const have = matches.reduce((n, x) => n + (x.qty ?? 1), 0);
+            if (have < need) return { ok: false, reason: `${need} ${p.unit ?? ''} of ${p.what} missing (has ${have})`.replace(/\s+/g, ' ') };
+            if (p.consume !== false) {
+                let left = need;
+                for (const o of matches) {
+                    if (left <= 0) break;
+                    const qty = Math.min(left, o.qty ?? 1);
+                    consume.push({ id: o.id, qty });
+                    left -= qty;
+                }
+            }
         } else if (p.kind === 'mark') {
             const doc = held.find((x) => (x.marks || []).some((m) => words(m.text).includes(words(p.what)) || words(p.what).includes(words(m.text))));
             if (!doc) return { ok: false, reason: `the mark "${p.what}" is missing` };
@@ -143,7 +153,7 @@ export function completeContract(s, content, q, emit, { step } = {}) {
     const pr = checkProof(s, q);
     emit({ t: 'proof.checked', d: { quest: q.id, ok: pr.ok, reason: pr.reason ?? null } });
     if (!pr.ok) return pr;
-    for (const id of pr.consume) emit({ t: 'object.consumed', d: { id, by: 'guild' } });
+    for (const x of pr.consume) emit({ t: 'object.consumed', d: { id: typeof x === 'string' ? x : x.id, by: 'guild', ...(typeof x === 'object' ? { qty: x.qty } : {}) } });
     const sheet = s.entities.pc.sheet;
     const pay = q.payout_cp || 0;
     if (pay) emit({ t: 'coin.changed', d: { id: 'pc', value: sheet.coin_cp + pay, delta: pay, why: `Guild payout: ${q.title}` } });

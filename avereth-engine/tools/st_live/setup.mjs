@@ -12,7 +12,7 @@ if (!ST) throw new Error('set AVERETH_ST_DIR to a SillyTavern checkout');
 const ENGINE = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
 const USER = path.join(ST, 'data/default-user');
 const narrator = JSON.parse(fs.readFileSync(path.join(ENGINE, 'content/narrator.json'), 'utf8'));
-const WORLD = 'Avereth World Lore v0.12';
+const WORLD = 'Avereth World Lore v0.13';
 const first = 'SYSTEM INITIALIZATION COMPLETE\n\n`Location: Public roadside verge outside Tidecross, Solmere`\n\nCHARACTER CREATION — STEP 1/2: choose a Base Class (Warrior, Mage, Guardian, Duelist, Ranger).';
 const card = {
     spec: 'chara_card_v2', spec_version: '2.0',
@@ -30,7 +30,7 @@ const png = Buffer.concat([
     chunk('IDAT', zlib.deflateSync(Buffer.from([0, 60, 60, 90, 255]))), chunk('IEND', Buffer.alloc(0)),
 ]);
 fs.writeFileSync(path.join(USER, 'characters/Avereth.png'), png);
-fs.copyFileSync(path.join(ENGINE, 'lorebook/Avereth_World_Lore_v0.12.json'), path.join(USER, 'worlds', `${WORLD}.json`));
+fs.copyFileSync(path.join(ENGINE, 'lorebook/Avereth_World_Lore_v0.13.json'), path.join(USER, 'worlds', `${WORLD}.json`));
 fs.copyFileSync(path.join(ENGINE, 'presets/Avereth Narrator.json'), path.join(USER, 'OpenAI Settings/Avereth Narrator.json'));
 const ext = path.join(USER, 'extensions/avereth-engine');
 fs.rmSync(ext, { recursive: true, force: true });

@@ -12,7 +12,7 @@ import { loadLorebook, activate } from './wi_sim.mjs';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const json = async (rel) => JSON.parse(await readFile(path.join(ROOT, rel), 'utf8'));
-export const LOREBOOK = 'lorebook/Avereth_World_Lore_v0.12.json';
+export const LOREBOOK = 'lorebook/Avereth_World_Lore_v0.13.json';
 
 /** For every turn of a fixture: the scan messages and the Lore Bridge keys SillyTavern would see. */
 export async function scanWindows(content, fixture) {

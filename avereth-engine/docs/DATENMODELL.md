@@ -138,7 +138,7 @@ Beispiel (Trapper-Szene aus Testrun-v1):
 | `monsters.json` | 15 F1-Anker, Skalierung, Stufenwahl, Elite/Boss (Combat V3: ohne Hit) | Content #7/#8 |
 | `gear.json` | Items, Starter-Kits, Referenzbereiche, Startbesitz | Content #9/#11, First Message |
 | `lore.json` | struktureller Welt-Index, den der Code braucht (14 Orte, 9 Fraktionen/Realms: ID, Name, Art, Realm); 20 Lore-Texte als Rückfall, wenn an der Erzähler-Karte kein Lorebook verknüpft ist (19 wörtlich aus Lore v0.8, dazu „Guild contracts“ seit 3.1.5) | Lore v0.8, First Message, Lorebook v0.12 |
-| `../lorebook/Avereth_World_Lore_v0.12.json` | beschreibende Welt-Lore als SillyTavern-Lorebook (67 Einträge, Character Lore); kein Engine-Content, die Engine liest es nicht, sondern liefert nur die Lore-Bridge ([LOREBOOK.md](LOREBOOK.md)) | ChatGPT-Vorschlag v0.10b, geprüft und korrigiert |
+| `../lorebook/Avereth_World_Lore_v0.13.json` | beschreibende Welt-Lore als SillyTavern-Lorebook (67 Einträge, Character Lore); kein Engine-Content, die Engine liest es nicht, sondern liefert nur die Lore-Bridge ([LOREBOOK.md](LOREBOOK.md)) | ChatGPT-Vorschlag v0.10b, geprüft und korrigiert |
 | `npc_templates.json` | **PROPOSED**: menschliche NPC-Vorlagen | neu (Testrun-Lücke) |
 | `narrator.json` + `narrator/Avereth_Narrator_Contract_v3.txt` | Erzählervertrag (3.3), Report-Format, kurze situative Regeln (`situational_rules`: Schleichen, Beute, Handel) | CD v2.3 + ENGINE AUTHORITY + NPC CONTINUITY |
 | `campaign_start.json` | PC-Start, Startorte, Creation-Labels, Anfangsfakten | First Message v0.4, System #12 |

@@ -64,7 +64,7 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
    - **Megumin-Preset:** NPC-Dossier, NPC-Updates, NPC-Bank und die `<Blocks>`-Anweisung entfernen. Die genaue Checkliste mit allem, was bleibt, steht in [docs/RUNTIME_V3.md §9](docs/RUNTIME_V3.md#9-megumin-v10-shura-manuelle-änderungen).
    - Bis dahin entfernt die Engine die Blöcke aus Antworten und Prompt. Das Modell schreibt sie aber weiter und braucht dafür Zeit.
 5. **Welt-Lore-Lorebook** (empfohlen, [docs/LOREBOOK.md](docs/LOREBOOK.md)):
-   - World Info → Import → `lorebook/Avereth_World_Lore_v0.12.json`;
+   - World Info → Import → `lorebook/Avereth_World_Lore_v0.13.json`;
    - an der Erzähler-Karte (Globus-Symbol) als **Character Lore** verknüpfen, nicht global aktivieren;
    - World-Info-Einstellungen: Scan Depth 2, Budget Cap 1.800, Recursive Scan aus, Match whole words an;
    - die Engine lässt dann ihre eigene LORE-Sektion weg (Einstellung „World lore“ = Auto).

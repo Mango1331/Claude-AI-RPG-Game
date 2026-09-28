@@ -96,7 +96,7 @@ result.wordSwap = chat.at(-1).mes === 'A boar. A hunter writes in his register.'
 // Lore Bridge: realm and city as World Info scan text, never inserted (position NONE); engine lore until a lorebook is linked
 const bridge = window.__ext.avereth_lore_keys;
 result.loreBridge = bridge && bridge.value === 'Solmere\\nTidecross' && bridge.position === -1 && bridge.scan === true && /\\nLORE:\\n/.test(window.__prompt);
-ctx.characters[0].data.extensions.world = 'Avereth World Lore v0.12'; // linked as Character Lore: descriptive lore comes from it
+ctx.characters[0].data.extensions.world = 'Avereth World Lore v0.13'; // linked as Character Lore: descriptive lore comes from it
 await turn('I Power Shot the boar', 'The arrow flies.\\n<avereth>{}</avereth>');
 result.loreBridge = result.loreBridge && !/\\nLORE:\\n/.test(window.__prompt) && window.__ext.avereth_lore_keys.value === 'Solmere\\nTidecross';
 const last = chat.at(-1);

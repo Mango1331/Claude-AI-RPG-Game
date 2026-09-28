@@ -1,4 +1,4 @@
-# Welt-Lore als SillyTavern-Lorebook (v0.12)
+# Welt-Lore als SillyTavern-Lorebook (v0.13)
 
 **Ausgangspunkt:** ChatGPTs Architekturvorschlag v0.10b (66 World-Info-Einträge und ein Handoff mit 7 Architekturfragen). Er wurde als externe Review behandelt und gegen drei Quellen geprüft:
 - den Engine-Code;
@@ -106,9 +106,19 @@ Nur drei Einträge ändern ihren Text, Schlüssel und Einstellungen bleiben glei
 
 Die Engine setzt dieselbe Regel mechanisch durch: `docs/TESTRUN_V11.md`, `content/rules.json` (`guild`).
 
+## Änderungen v0.12 → v0.13 (Runtime V4, Engine 4.0)
+
+Fünf Einträge bekommen je einen Satz; Schlüssel, Einstellungen und alles andere bleiben gleich. Jeder Satz gilt für V3- und V4-Kampagnen, denn beide lesen dasselbe Lorebook (`docs/RUNTIME_V4_PLAN.md` §15, Rev. 3):
+
+1. **„Complete quest body“ (uid 29):** Die ENGINE NOTE sagte „The <avereth> fact report still carries the Quest's hidden level …“. In V4 schreibt der Erzähler nur Prosa; der Satz forderte dort einen Block, den die Engine wieder entfernen müsste. Neu: Die Engine führt Level und Typ; Aushänge, die die Engine zeigt, tragen sie schon; ein Report oder Tag nur, wenn der Engine-Block einen verlangt (V3: ja, V4: nein).
+2. **„Adventurers' Guild and rank systems“ (uid 34):** Die Registrierung kostet an jeder Filiale die einmalige Standardgebühr von 2 Silber (Canon D7, `rules.guild.registration_fee_cp` = 20).
+3. **„Contract boards“ (uid 66):** Zeigt der Engine-Block ein Brett, beschreibt der Erzähler genau dessen Aushänge und erfindet keinen weiteren offiziellen Vertrag (V4: *canonical first*, D3).
+4. **„Causal generation rule“ (uid 25):** dasselbe am Absatz über die Mindestzahl je Rang, damit sie nicht als Auftrag zum Auffüllen gelesen wird.
+5. **„Promotion and placement“ (uid 65):** Nennt der Engine-Block Eignung oder Beförderung, gilt das; die Geschichte befördert nie von sich aus.
+
 ## Einrichtung in SillyTavern
 
-1. World Info → Import → `lorebook/Avereth_World_Lore_v0.12.json` (eine ältere Version vorher löschen).
+1. World Info → Import → `lorebook/Avereth_World_Lore_v0.13.json` (eine ältere Version vorher löschen).
 2. Charakterkarte → Globus-Symbol → das Lorebook als **Character Lore** verknüpfen, also nicht global aktivieren.
 3. World-Info-Einstellungen:
 
@@ -123,7 +133,7 @@ Die Engine setzt dieselbe Regel mechanisch durch: `docs/TESTRUN_V11.md`, `conten
    | Alert on overflow | im Test an |
    | Vektor-Suche | aus |
 
-4. Avereth-Einstellung „World lore“ auf `Auto` lassen. Die Statuszeile zeigt dann `lore: World Info (Avereth World Lore v0.12)`.
+4. Avereth-Einstellung „World lore“ auf `Auto` lassen. Die Statuszeile zeigt dann `lore: World Info (Avereth World Lore v0.13)`.
 
 ## Nach Änderungen am Lorebook
 
@@ -135,6 +145,6 @@ Die Engine setzt dieselbe Regel mechanisch durch: `docs/TESTRUN_V11.md`, `conten
 
 ## Bewusst offen
 
-- **Aushang als Engine-Zustand** (Zweig + Tag + Aufträge): Erst bauen, wenn der Test zeigt, dass GLM gesehene Aushänge neu würfelt. Bis dahin hält der Chatverlauf die Konsistenz, und der Eintrag verlangt sie ausdrücklich.
-- **Gilden-Rang als Zustand und Beförderungsprüfung:** Novice → Proven braucht E-Rang (Level 15). Das ist für die nächsten Tests irrelevant; eine Prüfung (Power-Rang-Minimum) wäre dann klein.
+- ~~**Aushang als Engine-Zustand**~~: in Runtime V4 (4.0) gebaut: Aushänge sind kanonische Quests der Engine, vom Board-Generator erzeugt, bevor sie gezeigt werden (`src/v4/guild.js`).
+- ~~**Gilden-Rang als Zustand und Beförderungsprüfung**~~: in Runtime V4 gebaut: Mitgliedschaft, Rang und abgeleitete Eignung (fünf Verträge des Rangs, Power-Rang-Minimum) in `src/v4/guild.js`.
 - **Themen-Schlüssel in der Bridge:** erst, wenn Einträge nachweislich fehlen.

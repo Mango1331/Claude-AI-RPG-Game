@@ -23,6 +23,7 @@ import { buildContext } from './context.js';
 import { targetQuestion } from './display.js';
 import { parseCoin } from './economy.js';
 import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, ENGINE_VERSION } from './util.js';
+import { seedPlaces } from './v4/domain.js';
 
 const GROUP_RE = /\b(?:everyone|everybody|all of you|you all|the (?:group|room|crowd|table|company)|(?:to|at|toward|towards) them)\b/i;
 const SELF_INTRO_RE = /\b(?:(?:my )?name(?:'s| is)|i am|i'?m|call me|they call me)\s+alaric\b/i; // "Name is Alaric" (Test 5 run 2)
@@ -30,8 +31,11 @@ const HOLD_RE = /\b(?:i\s+)?(?:wait|hold (?:my )?(?:position|ground|fire)|do not
 const TRADE_RE = /\b(?:buy|buys|bought|sell|sells|sold|pay|pays|paid|price|cost|costs|haggle|coin|coins|copper|silver|gold)\b/i;
 
 // ------------------------------------------------------------------------------------------------ campaign start
-/** Initial campaign events from content/campaign_start.json and the First Message's location line. */
-export function startCampaign(content, { seed = newSeed(), firstMessage = '' } = {}) {
+/**
+ * Initial campaign events from content/campaign_start.json and the First Message's location line. runtime 'v4' starts
+ * a Runtime V4 campaign (docs/RUNTIME_V4_PLAN.md): the same start, plus the place tree and the start node.
+ */
+export function startCampaign(content, { seed = newSeed(), firstMessage = '', runtime = 'v3' } = {}) {
     const st = content.start;
     const m = /Location:\s*[^\n`]*?\boutside\s+([A-Z][\w' -]*?)\s*,\s*([A-Z][\w' -]*)/.exec(String(firstMessage));
     let loc = m ? locationByName(content, m[1].trim()) : null;
@@ -51,11 +55,13 @@ export function startCampaign(content, { seed = newSeed(), firstMessage = '' } =
         ...st.initial_facts.map((f) => ({ id: `f.pc.${f.p}`, s: f.s, p: f.p, o: f.o, visibility: f.visibility })),
     ].map((f) => ({ ...f, since: at, until: null, importance: 0.9, hard: false, source: { kind: 'campaign_start' } }));
     const knowledge = facts.map((f) => ({ who: 'pc', about: f.id, stance: 'knows', source: 'self', ...at }));
+    const v4 = runtime === 'v4' ? seedPlaces(content, loc, startPlace(content, loc)) : null;
     return [{
         t: 'campaign.started',
         d: {
             seed: seed >>> 0, minute: at.minute, entities: [pc], location: loc.id, place: startPlace(content, loc),
             facts, knowledge, campaign: content.manifest.id, content_version: content.manifest.version, engine_version: ENGINE_VERSION,
+            ...(v4 ? { runtime: 'v4', places: v4.places, at: v4.at } : {}),
         },
     }];
 }
@@ -391,28 +397,8 @@ export function narratorReply(state, content, replyText, { msg = null, stripTrac
     for (const r of res.rejected) emit({ t: 'delta.rejected', d: r });
     if (!report && s.meta.started) emit({ t: 'report.missing', d: { error } });
     if (s.mode !== 'creation' && s.meta.started && !String(s.last.outcome?.kind || '').startsWith('creation')) {
-        // perception: an NPC that can see Alaric now knows his appearance and remembers the first sight of him
-        for (const id of perceivers(s)) {
-            if (id === 'pc' || s.entities[id].kind !== 'npc' || s.scene.concealed.includes('pc') || knows(s, id, PC_LOOK_FACT)) continue;
-            if (s.scene.awareness[id] === 'unaware') continue; // present but has not noticed him
-            emit({ t: 'knowledge.gained', d: { who: id, about: PC_LOOK_FACT, stance: 'knows', source: 'witnessed', turn: s.turn, minute: s.clock.minute } });
-            emit({ t: 'memory.recorded', d: { memory: {
-                id: `m.t${s.turn}.seen.${id}`, turn: s.turn, minute: s.clock.minute, text: `first saw {pc} at ${s.scene.place || entityLabel(s, s.scene.location)}`,
-                who: [id, 'pc'], witnesses: [id], seen: [id], location: s.scene.location, place: s.scene.place, importance: 4, kind: 'meeting',
-            } } });
-        }
-        // speech: introducing himself by name tells every NPC present at the end of the turn (including people the
-        // reply just introduced) that can see him — knowledge by perception, not by the narrator's say-so
-        if (SELF_INTRO_RE.test(s.last.input || '') && !s.scene.concealed.includes('pc')) {
-            // only those he speaks to hear his name: NPCs named in the message, or the only NPC who notices him
-            const listeners = perceivers(s).filter((id) => id !== 'pc' && s.entities[id].kind === 'npc' && s.scene.awareness[id] !== 'unaware');
-            const addressed = listeners.filter((id) => [s.entities[id].name, ...(s.entities[id].descriptors || [])].filter(Boolean).some((n) => new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(s.last.input)));
-            const toAll = GROUP_RE.test(s.last.input) || listeners.length === 1;
-            for (const id of addressed.length ? addressed : toAll ? listeners : []) {
-                if (knows(s, id, PC_NAME_FACT)) continue;
-                emit({ t: 'knowledge.gained', d: { who: id, about: PC_NAME_FACT, stance: 'knows', source: 'told:pc', turn: s.turn, minute: s.clock.minute } });
-            }
-        }
+        perceiveAll(s, emit);
+        selfIntro(s, emit);
         const ep = episode(s, msg);
         if (ep) emit({ t: 'memory.recorded', d: { memory: ep } });
     }
@@ -428,6 +414,38 @@ export function narratorReply(state, content, replyText, { msg = null, stripTrac
     const attackers = res.unidentified?.length ? res.unidentified : null;
     // the city reached from the start without a spot in it (delta.js): host.js asks for the spot and who is there
     return { events, clean, report, accepted: res.accepted, rejected: res.rejected, corrections, report_error: report ? null : error, attackers, unplaced: res.unplaced || null, opened, state: s };
+}
+
+/**
+ * Perception: an NPC that can see Alaric now knows his appearance and remembers the first sight of him. Runtime V4
+ * calls it at every step that changes who is with him (src/v4/world.js), V3 at the end of the reply.
+ */
+export function perceiveAll(s, emit) {
+    for (const id of perceivers(s)) {
+        if (id === 'pc' || s.entities[id].kind !== 'npc' || s.scene.concealed.includes('pc') || knows(s, id, PC_LOOK_FACT)) continue;
+        if (s.scene.awareness[id] === 'unaware') continue; // present but has not noticed him
+        emit({ t: 'knowledge.gained', d: { who: id, about: PC_LOOK_FACT, stance: 'knows', source: 'witnessed', turn: s.turn, minute: s.clock.minute } });
+        emit({ t: 'memory.recorded', d: { memory: {
+            id: `m.t${s.turn}.seen.${id}`, turn: s.turn, minute: s.clock.minute, text: `first saw {pc} at ${s.scene.place || entityLabel(s, s.scene.location)}`,
+            who: [id, 'pc'], witnesses: [id], seen: [id], location: s.scene.location, place: s.scene.place, importance: 4, kind: 'meeting',
+        } } });
+    }
+}
+
+/**
+ * Speech: introducing himself by name tells every NPC present at the end of the turn (including people the reply just
+ * introduced) that can see him — knowledge by perception, not by the narrator's say-so.
+ */
+export function selfIntro(s, emit) {
+    if (!SELF_INTRO_RE.test(s.last.input || '') || s.scene.concealed.includes('pc')) return;
+    // only those he speaks to hear his name: NPCs named in the message, or the only NPC who notices him
+    const listeners = perceivers(s).filter((id) => id !== 'pc' && s.entities[id].kind === 'npc' && s.scene.awareness[id] !== 'unaware');
+    const addressed = listeners.filter((id) => [s.entities[id].name, ...(s.entities[id].descriptors || [])].filter(Boolean).some((n) => new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(s.last.input)));
+    const toAll = GROUP_RE.test(s.last.input) || listeners.length === 1;
+    for (const id of addressed.length ? addressed : toAll ? listeners : []) {
+        if (knows(s, id, PC_NAME_FACT)) continue;
+        emit({ t: 'knowledge.gained', d: { who: id, about: PC_NAME_FACT, stance: 'knows', source: 'told:pc', turn: s.turn, minute: s.clock.minute } });
+    }
 }
 
 /**
@@ -457,7 +475,7 @@ function combatSpeech(state, clean) {
  * message. A commitment during an ACTIVE encounter joins the fixed Turn order.
  * @returns {null|{kind: 'started'|'joined', ids: string[], board: object, records?: object[], ended?: object, levelups?: string[]}}
  */
-function openCommitted(s, content, dice, emit, { hold = false } = {}) {
+export function openCommitted(s, content, dice, emit, { hold = false } = {}) {
     if (s.mode === 'creation' || s.entities.pc?.status === 'dead' || !(s.pending_combat || []).length) return null;
     const committed = s.pending_combat.map((p) => p.by).filter((by) => s.entities[by] && s.entities[by].status !== 'dead' && s.scene.present.includes(by));
     if (!committed.length) return null;
@@ -495,7 +513,7 @@ function openCommitted(s, content, dice, emit, { hold = false } = {}) {
  * record only — the player's words describe intentions NPCs did not perceive; NPC memories come from narration
  * reports, first sight and fights. The people present are kept in `about` so retrieval can find the episode.
  */
-function episode(s, msg) {
+export function episode(s, msg) {
     const input = s.last.input;
     if (!input || s.encounter || s.last.outcome?.kind === 'combat') return null;
     const others = s.scene.present.filter((id) => id !== 'pc' && s.entities[id] && s.entities[id].status !== 'dead');

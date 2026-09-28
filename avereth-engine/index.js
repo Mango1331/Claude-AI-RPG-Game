@@ -1,5 +1,12 @@
 // SillyTavern binding for the Avereth Engine. All game logic lives in src/ (pure ES modules, tested in Node);
-// this file only wires SillyTavern events to src/host.js:
+// this file only wires SillyTavern events to src/host.js (V3 campaigns) and src/v4/runtime.js (Runtime V4 campaigns,
+// docs/RUNTIME_V4_PLAN.md: interpreter before the narrator, extractor after it, the narrator writes prose only).
+// Runtime V4:
+//   * generate interceptor  -> the previous reply's world is committed first (barrier), then the player's message is
+//                              interpreted (LLM), guarded and resolved; the engine block carries PLAYER ACTIONS
+//   * MESSAGE_RECEIVED      -> the reply is prose; the extractor (LLM) reads it in the background, the firewall and the
+//                              world handlers commit it, the HUD follows
+// Runtime V3 (campaigns started before 4.0, or with the setting "V3"):
 //   * generate interceptor  -> resolve the player's message, inject the engine block (setExtensionPrompt)
 //   * MESSAGE_RECEIVED      -> validate the narrator's fact report, strip it from the visible text; a missing report is
 //                              asked for in a separate report-only request while the player reads (generateRaw)
@@ -7,7 +14,8 @@
 //   * Lore Bridge           -> the current realm and location as World Info scan text (never part of the prompt), so
 //                              the narrator card's lorebook (lorebook/, docs/LOREBOOK.md) activates the right entries
 import { loadContentPack } from './src/content.js';
-import { prepareGeneration, processReply, onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory, reportRequest, applyReportAnswer } from './src/host.js';
+import { onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory, reportRequest, applyReportAnswer } from './src/host.js';
+import { prepareGenerationAsync, processReplyAny, runExtraction, runBoardAfterArrival, pendingExtraction, campaignRuntime, onEditedV4 } from './src/v4/runtime.js';
 import { validateState } from './src/validate.js';
 import { newSeed } from './src/rng.js';
 import { parseSwaps, ENGINE_VERSION } from './src/util.js';
@@ -15,14 +23,18 @@ import { parseSwaps, ENGINE_VERSION } from './src/util.js';
 const MODULE = 'avereth';
 const PROMPT_KEY = 'avereth_engine';
 const LORE_KEY = 'avereth_lore_keys';
-const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: 'ledger=register', hud: 'closed', historyTurns: 4, stripTrackers: true, recoverReports: true };
+const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: 'ledger=register', hud: 'closed', historyTurns: 4, stripTrackers: true, recoverReports: true, runtime: 'v4' };
 const REPORT_WAIT_MS = 60000; // the next turn waits this long at most for a report still being asked for
+const EXTRACT_WAIT_MS = 90000; // Runtime V4 barrier: the next turn waits this long at most for the last reply's world
+const LLM_TIMEOUT_MS = 120000;
 
 let content = null;
 let lastContext = null;
 let lastProjection = null;
 let legacyWarned = null;
 let pendingReport = null; // {chatId, id, hash, job}: the report request of the latest reply, while it runs
+let pendingWorld = null; // Runtime V4: {chatId, id, job}: the extraction (and board) of the latest reply, while it runs
+let llmPath = null; // Runtime V4: which call the last LLM request used ('custom endpoint' | 'generateRaw')
 
 function ctx() {
     return SillyTavern.getContext();
@@ -83,6 +95,65 @@ function postPanel(text) {
     c.addOneMessage(message);
 }
 
+// ------------------------------------------------------------------------------------------ Runtime V4 LLM calls
+/**
+ * One structured LLM call of Runtime V4 (interpreter, extractor, Board generator): plain JSON per instruction, low
+ * temperature (P0/S0, S1, S2). With the Chat Completion source "Custom (OpenAI-compatible)" the request goes to
+ * SillyTavern's own endpoint exactly as the P0 tools sent it (tools/p0/lib/provider.mjs, verified against ST 1.19):
+ * SillyTavern adds the API key, the extension never sees it. Any other source uses generateRaw (temperature as the
+ * active preset sets it).
+ */
+async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500 }) {
+    const c = ctx();
+    const oai = c.chatCompletionSettings;
+    if (c.mainApi === 'openai' && oai?.chat_completion_source === 'custom' && typeof c.getRequestHeaders === 'function') {
+        llmPath = 'custom endpoint';
+        const ctl = new AbortController();
+        const timer = setTimeout(() => ctl.abort(), LLM_TIMEOUT_MS);
+        try {
+            const body = {
+                chat_completion_source: 'custom', custom_url: oai.custom_url, model: oai.custom_model, messages, max_tokens: maxTokens, temperature, stream: false,
+                custom_include_body: String(oai.custom_include_body || ''), custom_exclude_body: String(oai.custom_exclude_body || ''),
+                custom_include_headers: String(oai.custom_include_headers || ''), custom_prompt_post_processing: oai.custom_prompt_post_processing || '',
+            };
+            const res = await fetch('/api/backends/chat-completions/generate', { method: 'POST', headers: c.getRequestHeaders(), body: JSON.stringify(body), signal: ctl.signal });
+            const json = await res.json().catch(() => null);
+            if (!res.ok || !json || json.error || !json.choices) throw new Error(`the LLM call failed (HTTP ${res.status}${json?.error?.message ? `: ${String(json.error.message).slice(0, 120)}` : ''})`);
+            const m = json.choices[0]?.message || {};
+            return typeof m.content === 'string' ? m.content : Array.isArray(m.content) ? m.content.map((x) => x?.text || '').join('') : '';
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+    llmPath = 'generateRaw';
+    if (typeof c.generateRaw !== 'function') throw new Error('SillyTavern offers no generateRaw');
+    // generateRaw takes one prompt: a repair's earlier answer and error list follow the request as text
+    const [system, ...rest] = messages;
+    const prompt = rest.map((m) => (m.role === 'assistant' ? `YOUR PREVIOUS ANSWER:\n${m.content}` : m.content)).join('\n\n');
+    return c.generateRaw({ systemPrompt: system?.content || '', prompt, responseLength: maxTokens });
+}
+
+/** Runtime V4: read the latest reply's world in the background (extractor, firewall, world, then its board). */
+function startWorld(id) {
+    const c = ctx();
+    const chatId = c.getCurrentChatId();
+    if (pendingWorld?.chatId === chatId && pendingWorld.id === id && pendingWorld.hash === c.chat[id]?.extra?.avereth?.text_hash) return;
+    const hash = c.chat[id]?.extra?.avereth?.text_hash;
+    const job = (async () => {
+        const now = () => ctx();
+        let res = await runExtraction(now().chat, id, content, v4Llm, { hud: settings().hud });
+        if (now().getCurrentChatId() !== chatId) return;
+        if (res.changed) { rerender(now(), id); await now().saveChat(); renderDebug(); }
+        if (res.boardNeeded || now().chat[id]?.extra?.avereth?.extraction?.board === 'pending') {
+            res = await runBoardAfterArrival(now().chat, id, content, v4Llm, { hud: settings().hud });
+            if (now().getCurrentChatId() !== chatId) return;
+            if (res.changed) { rerender(now(), id); await now().saveChat(); renderDebug(); }
+        }
+    })().catch((err) => console.error('[Avereth] world extraction failed', err));
+    pendingWorld = { chatId, id, hash, job };
+    job.finally(() => { if (pendingWorld?.job === job) pendingWorld = null; });
+}
+
 // ------------------------------------------------------------------------------------------ interceptor
 globalThis.averethInterceptor = async function (chat, contextSize, abort, type) {
     const s = settings();
@@ -93,7 +164,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
     const c = ctx();
     try {
         if (!hasCampaign(c.chat)) {
-            const created = ensureCampaign(c.chat, content, { seed: newSeed() });
+            const created = ensureCampaign(c.chat, content, { seed: newSeed(), runtime: s.runtime === 'v3' ? 'v3' : 'v4' });
             if (created === 'legacy') {
                 if (legacyWarned !== c.getCurrentChatId()) toastr.warning('Avereth Engine: this chat was played without the engine. Start a new chat to use it.');
                 legacyWarned = c.getCurrentChatId();
@@ -105,7 +176,11 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         if (pendingReport && pendingReport.chatId === c.getCurrentChatId() && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingReport.id) {
             await Promise.race([pendingReport.job, new Promise((done) => setTimeout(done, REPORT_WAIT_MS))]);
         }
-        const r = prepareGeneration(c.chat, content, { type, settings: engineSettings() });
+        // Runtime V4 barrier: the last reply's world is committed before the next player turn is resolved
+        if (pendingWorld && pendingWorld.chatId === c.getCurrentChatId() && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingWorld.id) {
+            await Promise.race([pendingWorld.job, new Promise((done) => setTimeout(done, EXTRACT_WAIT_MS))]);
+        }
+        const r = await prepareGenerationAsync(c.chat, content, { type, settings: engineSettings(), llm: v4Llm });
         setLoreKeys(r.loreKeys);
         if (r.action === 'clear' || r.action === 'none') {
             // 'clear': quiet/impersonate generations get no engine block; 'none': no campaign or no player message yet
@@ -162,13 +237,14 @@ async function onMessageReceived(messageId) {
     const c = ctx();
     try {
         const recover = settings().recoverReports && typeof c.generateRaw === 'function';
-        const r = processReply(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover });
+        const r = processReplyAny(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover });
         if (!r.changed) return;
         rerender(c, Number(messageId));
         await c.saveChat();
         if (r.result?.rejected?.length) console.info('[Avereth] rejected report items', r.result.rejected);
         renderDebug();
         if (r.recover) requestReport(Number(messageId));
+        if (r.extract) startWorld(Number(messageId));
     } catch (err) {
         console.error('[Avereth] reply processing failed', err);
         toastr.error(`Avereth Engine: ${err.message}`);
@@ -206,10 +282,16 @@ function requestReport(id) {
     job.finally(() => { if (pendingReport?.job === job) pendingReport = null; });
 }
 
-/** A report request cut off by a reload or a chat switch: the latest reply asks again. */
+/** A report request (V3) or a world extraction (V4) cut off by a reload or a chat switch: the latest reply asks again. */
 function resumeReport() {
     const c = ctx();
-    if (!settings().enabled || !settings().recoverReports || !content || !c.chat?.length) return;
+    if (!settings().enabled || !content || !c.chat?.length) return;
+    if (campaignRuntime(c.chat) === 'v4') {
+        const id = pendingExtraction(c.chat);
+        if (id >= 0) startWorld(id);
+        return;
+    }
+    if (!settings().recoverReports) return;
     const id = c.chat.findLastIndex((m) => !m.is_user && !m.is_system);
     if (id >= 0 && c.chat[id].extra?.avereth?.recovery === 'pending') requestReport(id);
 }
@@ -218,7 +300,7 @@ async function onMessageEdited(messageId) {
     if (!settings().enabled) return;
     const c = ctx();
     try {
-        const r = onEdited(c.chat, Number(messageId), content);
+        const r = campaignRuntime(c.chat) === 'v4' ? onEditedV4(c.chat, Number(messageId)) : onEdited(c.chat, Number(messageId), content);
         if (!r.changed) return;
         // SillyTavern redraws the edited message from mes right after this event: draw ours (System block) after that
         if (r.text) setTimeout(() => rerender(c, Number(messageId)), 0);
@@ -239,7 +321,7 @@ function renderDebug() {
     const { state, errors } = foldChat(c.chat);
     const problems = state.meta.started ? validateState(state, content) : [];
     el.textContent = `Avereth Engine ${ENGINE_VERSION} | ` + (state.meta.started
-        ? `turn ${state.turn} | mode ${state.mode} | events ${c.chat.reduce((a, m) => a + (m.extra?.avereth?.events?.length || 0), 0)} | integrity: ${problems.length || errors.length ? `${problems.length + errors.length} problem(s)` : 'OK'}${lastContext ? ` | last block ~${lastContext.tokens} tokens` : ''}${lastProjection ? ` | history: ${lastProjection.removed} older message(s) left out, ${lastProjection.stripped} tracker block(s) removed` : ''} | lore: ${loreFromWorldInfo() ? `World Info${cardLorebook() ? ` (${cardLorebook()})` : ''}` : 'engine'}`
+        ? `runtime ${state.meta.runtime || 'v3'}${state.meta.runtime === 'v4' && llmPath ? ` (LLM: ${llmPath})` : ''} | turn ${state.turn} | mode ${state.mode} | events ${c.chat.reduce((a, m) => a + (m.extra?.avereth?.events?.length || 0), 0)} | integrity: ${problems.length || errors.length ? `${problems.length + errors.length} problem(s)` : 'OK'}${lastContext ? ` | last block ~${lastContext.tokens} tokens` : ''}${lastProjection ? ` | history: ${lastProjection.removed} older message(s) left out, ${lastProjection.stripped} tracker block(s) removed` : ''} | lore: ${loreFromWorldInfo() ? `World Info${cardLorebook() ? ` (${cardLorebook()})` : ''}` : 'engine'}`
         : 'no campaign in this chat');
     const dbg = document.getElementById('avereth_debug');
     if (dbg) dbg.value = settings().showDebug ? [lastContext?.text || '', ...problems, ...errors].join('\n') : '';
@@ -264,6 +346,10 @@ function mountSettings() {
     <div class="inline-drawer-toggle inline-drawer-header"><b>Avereth Engine</b><div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div></div>
     <div class="inline-drawer-content">
       <label class="avereth-row"><input type="checkbox" id="avereth_enabled"> Engine active</label>
+      <label class="avereth-row" title="V4: the engine interprets the player's message, the narrator writes prose only, the engine reads the reply afterwards (needs the V4 narrator contract and preset). V3: the narrator writes an <avereth> fact report. Applies to campaigns started from now on; a running campaign keeps its runtime.">Runtime for new campaigns <select id="avereth_runtime">
+        <option value="v4">V4 (interpreter + extractor, prose only)</option>
+        <option value="v3">V3 (fact report in the reply)</option>
+      </select></label>
       <label class="avereth-row">Context budget (tokens) <input type="number" id="avereth_budget" min="400" max="6000" step="100"></label>
       <label class="avereth-row">Rules allowance (tokens) <input type="number" id="avereth_rules" min="0" max="3000" step="100"></label>
       <label class="avereth-row">Recent turns not re-retrieved <input type="number" id="avereth_recent" min="0" max="50" step="1"></label>
@@ -302,6 +388,7 @@ function mountSettings() {
         });
     };
     bind('avereth_enabled', 'enabled');
+    bind('avereth_runtime', 'runtime', String);
     bind('avereth_budget', 'budget', Number);
     bind('avereth_rules', 'rulesBudget', Number);
     bind('avereth_recent', 'recentTurns', Number);

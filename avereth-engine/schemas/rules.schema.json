@@ -129,7 +129,37 @@
               "seat"
             ]
           }
+        },
+        "registration_fee_cp": { "type": "integer", "minimum": 0 },
+        "registration_fee_src": { "type": "string" },
+        "ranks": { "type": "array", "items": { "type": "string" } },
+        "rank_levels": { "type": "object", "additionalProperties": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 } },
+        "rank_power": { "type": "object", "additionalProperties": { "type": "string" } },
+        "promotion_contracts": { "type": "integer", "minimum": 1 },
+        "supported_ranks": { "type": "object" },
+        "board": {
+          "type": "object",
+          "properties": {
+            "_status": { "type": "string" },
+            "size": { "type": "integer", "minimum": 1 },
+            "taken_by_others_pct_per_day": { "type": "integer", "minimum": 0, "maximum": 100 },
+            "payout_guide_cp": { "type": "object" }
+          }
         }
+      }
+    },
+    "time": {
+      "type": "object",
+      "required": ["default_cap_min", "travel_cap_min", "until"],
+      "properties": {
+        "src": { "type": "string" },
+        "default_cap_min": { "type": "integer", "minimum": 1 },
+        "unknown_place_cap_min": { "type": "integer", "minimum": 1 },
+        "travel_cap_min": { "type": "integer", "minimum": 1 },
+        "minutes_factor": { "type": "number", "minimum": 1 },
+        "done_min": { "type": "integer", "minimum": 1 },
+        "combat_cap_min": { "type": "integer", "minimum": 1 },
+        "until": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 1439 } }
       }
     }
   }

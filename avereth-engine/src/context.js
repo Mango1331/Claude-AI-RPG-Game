@@ -205,9 +205,22 @@ export function recordLine(state, r, name = (id) => fightLabel(state, id)) {
     return `${who}: ${r.kind}`;
 }
 
-function outcomeBlock(state, content, outcome) {
+/** Runtime V4: the narrator writes only prose; the engine reads the reply afterwards (src/v4/extract.js). */
+export const V4_OUTPUT_LINE = 'OUTPUT: write only the story. No <avereth> block, no fact report, no tags, no tracker, sheet or status block: the engine reads the reply afterwards.';
+
+/** The engine's instructions to the narrator for a V4 story turn: PLAYER ACTIONS, open decisions, the CHECK DIE. */
+export function playerActionsBlock(outcome) {
+    const lines = ['PLAYER ACTIONS (the engine resolved Alaric\'s message; narrate exactly these, in this order; he decides nothing else):', ...(outcome.actions || [])];
+    for (const x of outcome.extra || []) lines.push(x);
+    if (outcome.check_die) lines.push(`CHECK DIE for this reply: d100 = ${outcome.check_die}. Use it only if a Core #7 check is genuinely needed (uncertain AND consequential): Chance% = Actor ÷ (Actor + Opposition) × 100 (Actor = relevant stat + explicit bonuses; situational ±10/20/35 %); success if ${outcome.check_die} ≤ Chance%. Otherwise ignore the die.`);
+    return lines.join('\n');
+}
+
+function outcomeBlock(state, content, outcome, { v4 = false } = {}) {
     if (!outcome) return '';
+    if (outcome.kind === 'v4') return playerActionsBlock(outcome);
     const lines = [];
+    const report = (text) => (v4 ? '' : text); // V4 campaigns: no fact report, the extractor reads the reply
     if (outcome.kind === 'combat') {
         if (outcome.not_started) {
             lines.push(`Alaric's declared attack is NOT possible: ${outcome.illegal}. No combat started; nothing was spent or rolled. It is still Alaric's decision.`);
@@ -221,7 +234,7 @@ function outcomeBlock(state, content, outcome) {
             const s = outcome.ended;
             lines.push(`- Combat is over.${s.pc_dead ? ' Alaric is dead.' : ''}${s.xp_awarded ? ` Alaric gains ${s.xp_awarded} XP.` : ''}${outcome.levelups?.length ? ` LEVEL UP -> ${outcome.levelups.join(', ')} (+5 free Stat Points each; resources are not refilled).` : ''} Loot is only what the defeated actually carried or what can be harvested; nothing is taken automatically.`);
         } else if (outcome.next) lines.push(`- Next: ${outcome.next}. Stop the narration at Alaric's decision.`);
-        if (outcome.records.length) lines.push(`Narrate exactly these resolved steps in order: the same number of attacks/projectiles, every one landing with the damage given (no misses, grazes or dodges), no extra movement, attacks or combatants${outcome.ended ? '' : ', and no dialogue (combat silence; it overrides any habit of opening with speech)'}. Then write the fact report.`);
+        if (outcome.records.length) lines.push(`Narrate exactly these resolved steps in order: the same number of attacks/projectiles, every one landing with the damage given (no misses, grazes or dodges), no extra movement, attacks or combatants${outcome.ended ? '' : ', and no dialogue (combat silence; it overrides any habit of opening with speech)'}.${report(' Then write the fact report.')}`);
     } else if (outcome.kind === 'creation.step2') {
         const cls = content.classes.get(outcome.class);
         const s = state.entities.pc.sheet;
@@ -244,7 +257,7 @@ function outcomeBlock(state, content, outcome) {
         if (c.automatic) lines.push(`${c.label}: automatic success — ${c.note}. Alaric is now concealed.`);
         else lines.push(`${c.label}: chance ${c.chance}% (d100 ${c.roll}) -> ${c.success ? 'SUCCESS: Alaric is concealed' : 'FAILURE: he is noticed'}. Narrate this result; do not change it.`);
     } else if (outcome.kind === 'narrative') {
-        lines.push(`No mechanic was triggered by the player's message (the fact report is still due). CHECK DIE for this reply: d100 = ${outcome.check_die}. Use it only if a Core #7 check is genuinely needed (uncertain AND consequential): Chance% = Actor ÷ (Actor + Opposition) × 100 (Actor = relevant stat + explicit bonuses; situational ±10/20/35 %); success if ${outcome.check_die} ≤ Chance%. Then add "check" to the fact report. Otherwise ignore the die.`);
+        lines.push(`No mechanic was triggered by the player's message${report(' (the fact report is still due)')}. CHECK DIE for this reply: d100 = ${outcome.check_die}. Use it only if a Core #7 check is genuinely needed (uncertain AND consequential): Chance% = Actor ÷ (Actor + Opposition) × 100 (Actor = relevant stat + explicit bonuses; situational ±10/20/35 %); success if ${outcome.check_die} ≤ Chance%.${report(' Then add "check" to the fact report.')} Otherwise ignore the die.`);
     } else if (outcome.kind === 'note') {
         lines.push(outcome.text);
     }
@@ -355,7 +368,7 @@ export function buildContext(state, content, opts = {}) {
     const budget = opts.budget ?? DEFAULT_BUDGET;
     const input = opts.input || '';
     const lastReply = proseOnly(opts.lastReply).slice(-1500);
-    const loc = state.entities[state.scene.location] || content.locations.get(state.scene.location);
+    const loc = state.entities[state.scene.location] || content.locations.get(state.scene.location) || state.places?.[state.scene.location];
     const realmId = loc?.realm || null;
     const realm = realmId ? content.factions.get(realmId)?.name || realmId : null;
     const locStatus = statusOf(state, state.scene.location);
@@ -430,6 +443,11 @@ export function buildContext(state, content, opts = {}) {
     if (opts.corrections && opts.corrections.length) add('corrections', `CORRECTIONS (the previous reply conflicted with the engine; keep the engine's version):\n${opts.corrections.map((c) => `- ${c}`).join('\n')}`, 1);
     if (opts.systemQuery) {
         add('resolved', `SYSTEM QUERY (#system): ${opts.systemQuery}\nAnswer ONLY as the System (neutral, private, computer-like): no narration, no NPC reactions, story time and combat stay frozen. Use the state above, Core rules and player-known content; show formulas and arithmetic when useful; say INSUFFICIENT INFORMATION when data is missing. Never reveal hidden NPC data.`, 0);
+    } else if (state.meta?.runtime === 'v4') {
+        // Runtime V4: PLAYER ACTIONS (a story turn) or the V3 resolution (combat, stealth), then prose only
+        const o = opts.outcome;
+        add('resolved', o ? (o.kind === 'v4' ? outcomeBlock(state, content, o) : `RESOLVED THIS TURN (binding):\n${outcomeBlock(state, content, o, { v4: true })}`) : '', 0);
+        if (state.mode !== 'creation') add('report', V4_OUTPUT_LINE, 0, true);
     } else {
         add('resolved', opts.outcome ? `RESOLVED THIS TURN (binding):\n${outcomeBlock(state, content, opts.outcome)}` : '', 0);
         add('report', reportInstruction(content, reportKeys(state, content, { outcome: opts.outcome, scan: `${input} ${lastReply}` })), 0, true);
@@ -452,7 +470,7 @@ export function buildContext(state, content, opts = {}) {
  * their World Info entries activate even when no recent message names them. Keys only, never engine state.
  */
 export function loreKeys(state, content) {
-    const loc = state.entities[state.scene.location] || content.locations.get(state.scene.location);
+    const loc = state.entities[state.scene.location] || content.locations.get(state.scene.location) || state.places?.[state.scene.location];
     const realmId = loc?.realm || null;
     const keys = [content.factions.get(realmId)?.name, content.locations.has(state.scene.location) ? loc.name : null];
     return keys.filter(Boolean);

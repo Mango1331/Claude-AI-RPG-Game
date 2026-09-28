@@ -16,11 +16,11 @@ import { hash32, clone, normText, swapWords, hasTrackerBlocks, stripTrackerBlock
 export const KEY = 'avereth';
 export const RECORD_VERSION = 2;
 
-function rec(msg) {
+export function rec(msg) {
     return msg && msg.extra && msg.extra[KEY];
 }
 
-function setRec(msg, record) {
+export function setRec(msg, record) {
     if (!msg.extra || typeof msg.extra !== 'object') msg.extra = {};
     record.build = ENGINE_VERSION; // which build wrote this record (display only; the fold never reads it)
     msg.extra[KEY] = record;
@@ -70,12 +70,12 @@ export function lastUserIndex(chat, before = chat.length) {
 }
 
 /** The latest player message, including a command line the host hid from the prompt (it still carries our record). */
-function lastPlayerIndex(chat) {
+export function lastPlayerIndex(chat) {
     for (let i = chat.length - 1; i >= 0; i--) if (chat[i].is_user && (!chat[i].is_system || rec(chat[i])?.command)) return i;
     return -1;
 }
 
-function lastReplyIndex(chat, before) {
+export function lastReplyIndex(chat, before) {
     for (let i = before - 1; i >= 0; i--) if (!chat[i].is_user && !chat[i].is_system) return i;
     return -1;
 }
@@ -85,13 +85,13 @@ function lastReplyIndex(chat, before) {
  * alone ('legacy') unless force is set: its history cannot be reconstructed into mechanical state.
  * @returns {'exists'|'created'|'legacy'|'none'}
  */
-export function ensureCampaign(chat, content, { seed, force = false } = {}) {
+export function ensureCampaign(chat, content, { seed, force = false, runtime = 'v3' } = {}) {
     if (hasCampaign(chat)) return 'exists';
     const first = chat[0];
     if (!first || first.is_user) return 'none';
     const played = chat.filter((m) => m.is_user && !m.is_system).length;
     if (played > 1 && !force) return 'legacy';
-    const events = startCampaign(content, { seed, firstMessage: first.mes });
+    const events = startCampaign(content, { seed, firstMessage: first.mes, runtime });
     setRec(first, { v: RECORD_VERSION, events, text_hash: hash32(first.mes) });
     return 'created';
 }
@@ -129,7 +129,7 @@ export function prepareGeneration(chat, content, { type = 'normal', settings = {
 }
 
 /** The engine block for player message u: the state after that message, the reply before it, the host's settings. */
-function turnBlock(chat, u, content, settings = {}) {
+export function turnBlock(chat, u, content, settings = {}) {
     const r = rec(chat[u]);
     const { state, errors } = foldChat(chat, u + 1);
     const p = lastReplyIndex(chat, u);
@@ -147,7 +147,7 @@ function turnBlock(chat, u, content, settings = {}) {
     return { state, errors, context };
 }
 
-const laterTurns = (chat, id) => chat.slice(id + 1).some((m) => messageEvents(m).length);
+export const laterTurns = (chat, id) => chat.slice(id + 1).some((m) => messageEvents(m).length);
 
 // ------------------------------------------------------------------------------------------ report request
 // Test 5, runs 1 and 2: with Reasoning low, GLM ended only 5 of 15 replies with the fact report. The prompt's wording
@@ -342,7 +342,7 @@ export function processReply(chat, id, content, { seed, swaps = [], hud = 'close
  * renders extra.display_text instead of mes, while prompts keep using mes. Only what the engine wrote is replaced or
  * removed.
  */
-function showPanel(msg, panel, hud = '') {
+export function showPanel(msg, panel, hud = '') {
     if (!msg.extra || typeof msg.extra !== 'object') msg.extra = {};
     const r = rec(msg);
     if (panel || hud) msg.extra.display_text = [panel, msg.mes, hud].filter(Boolean).join('\n\n');

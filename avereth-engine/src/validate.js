@@ -8,7 +8,8 @@ import { deriveCharacter } from './derived.js';
 import { FUNCTIONAL } from './knowledge.js';
 
 const AWARENESS = new Set(['unaware', 'suspicious', 'aware']);
-const QUEST_STATUS = new Set(['offered', 'active', 'completed', 'failed']);
+// V3: offered|active|completed|failed; Runtime V4 adds the listing states of a Guild board and giving up
+const QUEST_STATUS = new Set(['offered', 'active', 'completed', 'failed', 'listed', 'taken_by_other', 'withdrawn', 'abandoned', 'expired']);
 
 function isInt(x) {
     return Number.isInteger(x);
@@ -84,6 +85,21 @@ export function validateState(state, content) {
     }
     for (const r of Object.values(state.relations)) if (r.value < -100 || r.value > 100) p.push(`relation ${r.id} value ${r.value}`);
     for (const q of Object.values(state.quests)) if (!QUEST_STATUS.has(q.status)) p.push(`quest ${q.id} status ${q.status}`);
+    // Runtime V4 domains: the scene is a place node; every object has a holder that exists; what Alaric holds is exactly
+    // what his sheet's inventory mirrors; a listed contract is on a board
+    if (state.meta?.runtime === 'v4') {
+        if (!state.places?.[state.scene.at]) p.push(`scene at unknown place ${state.scene.at}`);
+        for (const o of Object.values(state.objects || {})) {
+            if (o.holder?.entity && !state.entities[o.holder.entity]) p.push(`object ${o.id} held by missing ${o.holder.entity}`);
+            if (o.holder?.loc && !state.places[o.holder.loc]) p.push(`object ${o.id} at missing place ${o.holder.loc}`);
+            const inv = pc?.sheet?.inventory?.[o.id];
+            if (o.holder?.entity === 'pc' && inv !== (o.qty ?? 1)) p.push(`object ${o.id} held by Alaric but inventory shows ${inv}`);
+            if (o.holder?.entity !== 'pc' && inv !== undefined) p.push(`object ${o.id} in Alaric's inventory but not held by him`);
+        }
+        const onBoard = new Set(Object.values(state.guild?.boards || {}).flatMap((b) => b.listings || []));
+        for (const q of Object.values(state.quests)) if (q.status === 'listed' && !onBoard.has(q.id)) p.push(`listed ${q.id} is on no board`);
+        for (const o of Object.values(state.offers || {})) if (!['open', 'accepted', 'declined', 'expired'].includes(o.status)) p.push(`offer ${o.id} status ${o.status}`);
+    }
     if (!isInt(state.rng.n) || state.rng.n < 0) p.push(`rng counter ${state.rng.n}`);
     return p;
 }

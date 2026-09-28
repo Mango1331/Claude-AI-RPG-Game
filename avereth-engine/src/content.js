@@ -38,6 +38,9 @@ export function indexContent(pack) {
         rulesText: new Map(pack.rules_text.entries.map((r) => [r.id, r])),
         narrator: pack.narrator,
         start: pack.campaign_start,
+        // Runtime V4: the interpreter's command vocabulary and the extractor's delta vocabulary (src/v4/)
+        commandVocab: pack.commands || null,
+        deltaVocab: pack.deltas || null,
     };
     for (const cls of pack.classes.classes) c.classes.set(cls.id, cls);
     for (const s of pack.classes.skills) {

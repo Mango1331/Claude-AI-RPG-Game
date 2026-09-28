@@ -96,7 +96,7 @@ function changeLines(before, after, content, events) {
     const per = content.rules.progression.xp_to_next_per_level;
     const label = (id) => (after.entities[id] ? playerLabel(after, id) : String(id));
     const why = (d) => (d.why ? ` · ${d.why}` : '');
-    const QUEST = { offered: 'OFFERED', active: 'ACCEPTED', completed: 'COMPLETED', failed: 'FAILED' };
+    const QUEST = { offered: 'OFFERED', active: 'ACCEPTED', completed: 'COMPLETED', failed: 'FAILED', abandoned: 'GIVEN UP' };
     for (const [i, e] of events.entries()) {
         const d = e.d || {};
         if (e.t === 'coin.changed' && d.id === 'pc') out.push(sys(`COIN ${d.delta < 0 ? '-' : '+'}${formatCoin(Math.abs(d.delta), content)} → ${formatCoin(d.value, content)}${why(d)}`));
@@ -124,9 +124,69 @@ function changeLines(before, after, content, events) {
         } else if (e.t === 'level.up' && d.id === 'pc') {
             lvl = d.level;
             out.push(sys(`LEVEL UP → Level ${d.level} (+${d.free_points} free Stat Points)`));
+        } else if (e.t === 'quest.status' && QUEST[d.to] && d.to !== 'offered') {
+            const q = after.quests[d.id];
+            out.push(sys(`QUEST ${QUEST[d.to]} — ${q?.title || d.id}${q?.rank ? ` (${q.rank})` : ''}`));
+        } else if (e.t === 'quest.created' && d.quest.status === 'offered') {
+            out.push(sys(`QUEST OFFERED — ${d.quest.title}${d.quest.giver ? ` (${label(d.quest.giver)})` : ''}`));
+        } else if (e.t === 'guild.registered') {
+            out.push(sys(`GUILD — registered, Guild Rank ${d.rank} · Power Rank ${d.power_rank}`));
+        } else if (e.t === 'guild.promoted') {
+            out.push(sys(`GUILD — promoted to ${d.rank}`));
+        } else if (e.t === 'object.created' && d.object.holder?.entity === 'pc') {
+            out.push(sys(`ITEM + ${d.object.name}${d.object.qty > 1 || d.object.unit ? ` (${d.object.qty}${d.object.unit ? ` ${d.object.unit}` : ''})` : ''}`));
+        } else if (e.t === 'object.moved' && (d.to?.entity === 'pc' || before.objects?.[d.id]?.holder?.entity === 'pc')) {
+            const o = after.objects[d.split || d.id] || before.objects?.[d.id];
+            out.push(sys(d.to?.entity === 'pc' ? `ITEM + ${o?.name || d.id}` : `ITEM - ${o?.name || d.id} → ${d.to?.entity ? label(d.to.entity) : 'left here'}`));
+        } else if (e.t === 'object.consumed' && before.objects?.[d.id]?.holder?.entity === 'pc') {
+            out.push(sys(`ITEM - ${before.objects[d.id].name}${d.by === 'guild' ? ' → handed in at the desk' : ' (used)'}`));
+        } else if (e.t === 'service.granted') {
+            out.push(sys(`SERVICE — ${d.what || d.service}${d.by ? ` (${label(d.by)})` : ''}`));
         }
     }
     return out;
+}
+
+const STATUS_WORD = { resolved: 'booked', authorized: 'allowed', conditional: 'if', pending: 'open', refused: 'refused', clarify: 'unclear' };
+
+/**
+ * Runtime V4: what the engine understood of the player's message and how it resolved each command (with the words it
+ * rests on), what it did not take as a decision, and what the reply's world changes were (src/v4/runtime.js).
+ */
+function commandLines(o) {
+    const out = [];
+    if (o.interp_failed) out.push(sys('INTERPRETER FAILED — nothing Alaric decided could be read; Regenerate tries again.'));
+    for (const r of o.resolutions || []) {
+        const quote = r.quote ? `"${String(r.quote).replace(/[<>`]/g, '').slice(0, 70)}" → ` : '';
+        out.push(sys(`UNDERSTOOD — ${quote}${r.type} (${STATUS_WORD[r.status] || r.status}${r.reason ? `: ${r.reason}` : ''})`));
+    }
+    for (const x of o.dropped || []) out.push(sys(`NOT A DECISION — ${x.quote ? `"${String(x.quote).replace(/[<>`]/g, '').slice(0, 70)}" ` : ''}(${x.type}: ${x.rule})`));
+    return out;
+}
+
+/**
+ * The System block of a reply in a V4 campaign: the commands of the turn (or the V3 resolution of a fight or a check),
+ * then what the reply changed once the extractor has read it, what the engine refused, a fight the reply opened.
+ * reply: {pending} while the extractor reads, {failed} when it could not, else the world result (src/v4/world.js).
+ */
+export function worldPanel(state, content, reply = {}) {
+    const o = state.last?.outcome;
+    const lines = [];
+    if (o?.kind === 'v4') lines.push(...commandLines(o));
+    else if (o?.kind === 'combat') lines.push(...combatLines(state, content, o));
+    else if (o?.kind === 'check' && o.check) lines.push(checkLine(o.check));
+    else if (o?.kind === 'note' && o.notice) lines.push(sys(o.notice));
+    if (reply.pending) lines.push(sys('WORLD — the engine is reading the reply; the HUD follows in a moment.'));
+    else if (reply.failed) lines.push(sys(`WORLD NOT RECORDED — ${String(reply.failed).replace(/[<>`]/g, '')}. Nothing of this reply changed the game state; swipe to retry, or go on.`));
+    if (reply.events && reply.state) {
+        lines.push(...changeLines(state, reply.state, content, reply.opened ? reply.events.slice(0, reply.opened.from) : reply.events));
+        const check = reply.events.find((e) => e.t === 'check.recorded' && e.d.by === 'narrator');
+        if (check) lines.push(sys(`CHECK — ${check.d.what}${check.d.stat ? ` (${check.d.stat})` : ''}: d100 ${check.d.roll} → ${check.d.success ? 'SUCCESS' : 'FAILURE'} (as the story judged it)`));
+    }
+    for (const x of reply.system || []) lines.push(sys(String(x).replace(/[<>`]/g, '')));
+    if (reply.rejected?.length) lines.push(sys(`ENGINE REFUSED ${reply.rejected.length} reported change${reply.rejected.length > 1 ? 's' : ''} (${[...new Set(reply.rejected.map((r) => r.rule))].join(', ')}): see #audit or the event export`));
+    if (reply.opened && reply.state) lines.push(...openedLines(reply.state, content, reply.opened));
+    return lines.join('\n');
 }
 
 /**

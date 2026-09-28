@@ -1,0 +1,545 @@
+// Runtime V4: applying the extractor's world deltas (docs/RUNTIME_V4_PLAN.md §5.2). After the narrator's reply the
+// extractor reported, in story order, what the reply established (src/v4/extract.js); the domain/authority firewall
+// removed what the story may not decide (src/v4/firewall.js). Here the engine applies the rest step by step, each delta
+// checked against the state at its step, and fires what waited for the reply (a turn-in on arrival at a Guild hall).
+//
+// World deltas without a V4 domain (people, creatures, scene, facts, knowledge, attitudes, memories, threads, combat
+// commitments, intents) go through the V3 rules of src/delta.js as one-item reports: the same resolver, the same entity
+// creation (names, templates, body-plan anchors), the same witness and fact rules, the same combat commitments; a fight
+// opens exactly as in V3 (engine.js openCommitted). Places, time, objects, offers, coin, coercion and quests are V4
+// handlers. Nothing here can change what the player's commands resolved.
+import { Dice } from '../rng.js';
+import { applyEvent } from '../state.js';
+import { clone, normText, slug } from '../util.js';
+import { deriveCharacter } from '../derived.js';
+import { reportToEvents, makeResolver } from '../delta.js';
+import { truth, entityLabel } from '../knowledge.js';
+import { perceiveAll, selfIntro, episode, openCommitted } from '../engine.js';
+import { firewall } from './firewall.js';
+import {
+    PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, placeName, contracts, heldBy, openOffers, membership,
+} from './domain.js';
+import { completeContract, REGISTRATION_OFFER } from './guild.js';
+
+const AUTHORITY_ROLE = /\b(?:guard|watch(?:man)?|sergeant|captain|constable|reeve|bailiff|magistrate|official|officer|toll ?keeper|tax|customs|steward|marshal|warden)\b/i;
+const HOSTILE_ROLE = /\b(?:bandit|thief|robber|brigand|cutpurse|pickpocket|thug|highwayman)\b/i;
+
+/** The firewall's view of the state after the player's turn (src/v4/firewall.js FirewallContext). */
+export function firewallContext(s, content) {
+    const o = s.last?.outcome || {};
+    const guildish = (id) => {
+        const e = s.entities[id];
+        if (!e) return false;
+        const role = [truth(s, id, 'occupation')[0]?.o, e.traits, ...(e.descriptors || [])].filter(Boolean).join(' ');
+        return /\bguild\b/i.test(role) || (!!hallOf(s, e.at || s.scene.at) && s.scene.present.includes(id) && /\b(?:clerk|registrar|receptionist|desk)\b/i.test(role));
+    };
+    const names = new Map();
+    for (const e of Object.values(s.entities)) if (e.name) names.set(normText(e.name), e.id);
+    const auth = o.auth || {};
+    return {
+        isGuildPerson: (ref) => guildish(ref) || guildish(names.get(normText(ref))),
+        inGuildHall: !!hallOf(s, s.scene.at),
+        contracts: contracts(s).map((q) => ({ id: q.id, title: q.title, payout_cp: q.payout_cp ?? null, client: q.client || null, status: q.status })),
+        booked: o.booked || { registration: false, grants: [], turnIns: [], accepted: [] },
+        auth: { go: !!(auth.gos || []).length || !!auth.go, roam: !!auth.roam, take: !!(auth.take || []).length, gather: !!auth.gather, forced: false },
+        heldByPc: (ref) => s.objects?.[ref]?.holder?.entity === 'pc' || (typeof ref === 'string' && ref.startsWith('item.') && !!s.entities.pc.sheet.inventory[ref.slice(5)]),
+    };
+}
+
+// ------------------------------------------------------------------------------------------------ places
+/** Resolve a place ref; {new: {name, kind, parent}} creates it (the same name under the same parent is the same place). */
+function resolvePlace(s, ref, emit, depth = 0) {
+    if (typeof ref === 'string') return s.places[ref] ? { id: ref } : { error: `unknown place ${ref}` };
+    const n = ref?.new;
+    if (!n || typeof n !== 'object' || !n.name) return { error: 'a place needs an id or {new: {name, kind, parent}}' };
+    if (depth > 1) return { error: 'at most one level of new parents' };
+    if (/\bguild\b/i.test(n.name) && /\b(?:hall|house|office|lodge)\b/i.test(n.name)) {
+        // the Guild hall is the engine's node: a reply that names it again means that node
+        const town = typeof n.parent === 'string' ? settlementOf(s, n.parent) : settlementOf(s, s.scene.at);
+        const hall = town && `${town}.guild_hall`;
+        return hall && s.places[hall] ? { id: hall } : { error: 'Guild halls are engine nodes; there is no branch in this settlement' };
+    }
+    const parent = n.parent === null || n.parent === undefined ? { id: s.scene.at } : resolvePlace(s, n.parent, emit, depth + 1);
+    if (parent.error) return parent;
+    let pid = parent.id;
+    // a kind that cannot lie in its parent climbs to the first ancestor where it can (a hamlet named inside a site of
+    // the town lies in the realm or region, not in the site)
+    for (let i = 0; i < 6 && pid && !(PLACE_PARENTS[n.kind] || []).includes(s.places[pid]?.kind); i++) pid = s.places[pid]?.parent;
+    if (!pid) return { error: `a ${n.kind} cannot lie in ${placeName(s, parent.id)}` };
+    const same = Object.values(s.places).find((p) => p.parent === pid && normText(p.name) === normText(n.name));
+    if (same) return { id: same.id };
+    let id = `${pid.startsWith('loc.') ? pid : 'loc'}.${slug(n.name) || 'place'}`;
+    for (let k = 2; s.places[id]; k++) id = `${pid.startsWith('loc.') ? pid : 'loc'}.${slug(n.name)}_${k}`;
+    const p = s.places[pid];
+    emit({ t: 'place.created', d: { place: { id, name: String(n.name).slice(0, 80), kind: n.kind, parent: pid, realm: p?.realm ?? null, tags: [], by: 'reply', created: { turn: s.turn, minute: s.clock.minute } } } });
+    return { id };
+}
+
+/** The content or V4 settlement a node belongs to: the scene's "location" for the V3 views (HUD, lore, facts). */
+function locationOf(s, id) {
+    return settlementOf(s, id) || s.places[id]?.realm || s.scene.location;
+}
+
+// ------------------------------------------------------------------------------------------------ apply
+/**
+ * Apply one valid extractor answer to the state after the player's turn.
+ * @param {object} state state after the player's turn (its outcome carries auth, expected keys and conditionals)
+ * @param {{expected: object, deltas: object[]}} answer schema-valid extractor answer
+ * @param {{msg?: number|null, prose?: string}} opts msg: the reply's chat index (ids); prose: the reply's text
+ * @returns {{events, rejected, corrections, system, opened, state, arrivedHall}}
+ */
+export function applyWorld(state, content, answer, { msg = null, prose = '' } = {}) {
+    const s = clone(state);
+    const dice = Dice.from(s);
+    const events = [];
+    const emit = (e) => {
+        if (dice.n !== s.rng.n) e.rng_to = dice.n;
+        applyEvent(s, e);
+        events.push(e);
+    };
+    const rejected = [];
+    const corrections = [];
+    const system = [];
+    const reject = (d, rule, why) => {
+        rejected.push({ seq: d?.seq ?? 0, type: d?.type ?? 'expected', rule, why });
+        emit({ t: 'delta.rejected', d: { item: d, rule, reason: why } });
+    };
+    const outcome = s.last?.outcome || {};
+    const auth = outcome.auth || {};
+    const expected = answer.expected || {};
+    const tag = msg !== null && msg !== undefined ? msg : s.turn;
+
+    // 1. authority first: what the story may not decide is never applied
+    const fw = firewall(answer.deltas, firewallContext(s, content));
+    for (const x of fw.reject) reject(x.delta, x.rule, x.why);
+    corrections.push(...fw.corrections);
+
+    // 2. world deltas in story order, each against the state at its step
+    const refs = new Map(); // a delta's ref -> the entity it names (person.new, creature.new of this answer)
+    const groups = new Map(); // a creature.new ref with count > 1 -> its individual ids
+    const objectsNew = new Map(); // name -> object id, for object.move {new: name} of this answer
+    const hostileRefs = new Set(fw.accept.filter((d) => d.type === 'hostile').flatMap((d) => d.by || []).map((x) => normText(x)));
+    const joinedByNew = new Set();
+    const cap = s.encounter ? content.rules.time.combat_cap_min : auth.timeCap ?? content.rules.time.default_cap_min;
+    let timeUsed = 0;
+    let arrived = null;
+    let arrivedHall = null;
+    const conditionals = (outcome.conditionals || []).map((c) => ({ ...c, done: false }));
+    const idOf = (ref) => {
+        if (ref === null || ref === undefined || typeof ref !== 'string') return null;
+        const k = normText(ref);
+        if (refs.has(k)) return refs.get(k);
+        if (s.entities[ref]) return ref;
+        const hit = makeResolver(s, new Map(), content)(ref);
+        if (hit) return hit;
+        // "the same clerk", "the clerk": the one person here (or met at this place) whose role ends in that word
+        const last = k.replace(/^(?:the |a |an )?(?:same |other |first |second )?/, '').split(' ').at(-1);
+        if (!last || last.length < 3) return null;
+        const local = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.status !== 'dead' && (s.scene.present.includes(e.id) || (e.location === s.scene.location && (!e.at || e.at === s.scene.at)))
+            && [...(e.descriptors || []), truth(s, e.id, 'occupation')[0]?.o].filter(Boolean).some((x) => normText(x).split(' ').at(-1) === last));
+        return local.length === 1 ? local[0].id : null;
+    };
+    const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
+    const v3 = (report, d) => {
+        const r = reportToEvents(report, s, content, { msg, prose });
+        r.events.forEach(emit);
+        for (const x of r.rejected) reject(d, 'world_rule', x.reason);
+        return r;
+    };
+    const newEntity = (d, kind) => {
+        const before = new Set(Object.keys(s.entities));
+        const entries = [];
+        const count = kind === 'creature' ? Math.max(1, Math.min(12, d.count || 1)) : 1;
+        for (let i = 1; i <= count; i++) {
+            const ref = count > 1 ? `${d.ref} ${i}` : d.ref;
+            entries.push(kind === 'npc'
+                ? { ref, kind: 'npc', name: d.name || undefined, desc: [...(d.role ? [d.role] : []), ...(d.desc || [])], traits: (d.desc || []).join(', '), band: d.band || undefined }
+                : { ref, kind: 'creature', name: undefined, species: d.species, desc: d.desc || [], band: d.band || undefined });
+        }
+        const joins = kind === 'creature' && s.encounter && hostileRefs.has(normText(d.ref));
+        const r = v3({ new: entries, ...(joins ? { combat: entries.map((e) => ({ by: e.ref })) } : {}) }, d);
+        if (joins) joinedByNew.add(normText(d.ref));
+        const created = r.events.filter((e) => e.t === 'entity.created').map((e) => e.d.entity.id).filter((id) => !before.has(id));
+        const known = r.accepted.map((a) => /^known (\S+) \(not duplicated\)$/.exec(a)?.[1]).filter(Boolean);
+        const ids = [...created, ...known];
+        if (ids.length) refs.set(normText(d.ref), ids[0]);
+        if (d.name && ids.length) refs.set(normText(d.name), ids[0]);
+        if (count > 1) groups.set(normText(d.ref), ids);
+        // who the person is shows on their card (occupation); a person the reply only mentions is not here
+        if (kind === 'npc' && d.role && created.length && !truth(s, created[0], 'occupation').length) v3({ facts: [{ s: created[0], p: 'occupation', o: d.role }] }, d);
+        return ids;
+    };
+
+    for (const d of [...fw.accept].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0))) {
+        switch (d.type) {
+            case 'time': {
+                const room = Math.max(0, cap - timeUsed);
+                const m = Math.min(d.minutes, room);
+                if (m < d.minutes) reject(d, 'time_cap', `${d.minutes} min exceed what this turn allows (${cap} min${auth.go ? '' : ' without travel or an activity'}); ${m} applied`);
+                if (m > 0) { emit({ t: 'time.advanced', d: { minutes: m, why: 'narration' } }); timeUsed += m; }
+                break;
+            }
+            case 'arrive': {
+                if (s.encounter) { reject(d, 'combat', 'no travel while combat is ACTIVE'); break; }
+                const at = resolvePlace(s, d.at, emit);
+                if (at.error) { reject(d, 'place', at.error); break; }
+                if (at.id === s.scene.at) break;
+                perceiveAll(s, emit);
+                arrive(at.id);
+                break;
+            }
+            case 'person.new': {
+                if (d.present === false) {
+                    // someone the reply mentions who is elsewhere: exists, not here, not met (P0/S3 E3, Ossler)
+                    const known = idOf(d.name || d.ref);
+                    if (known && s.entities[known]) { refs.set(normText(d.ref), known); break; }
+                    let where = null;
+                    if (d.at) {
+                        const p = resolvePlace(s, d.at, emit);
+                        if (!p.error) where = p.id;
+                    }
+                    const id = uniqueEntityId(s, d.name || d.role || d.ref);
+                    emit({ t: 'entity.created', d: { entity: { id, kind: 'npc', name: d.name ? String(d.name).slice(0, 60) : null, descriptors: [...new Set([...(d.role ? [d.role] : []), ...(d.desc || []), d.ref].map((x) => String(x).toLowerCase().slice(0, 40)))], traits: (d.desc || []).join(', ').slice(0, 240), status: 'alive', location: where ? locationOf(s, where) : s.scene.location, at: where, created: { turn: s.turn, minute: s.clock.minute }, source: { kind: 'narration', msg }, card: {}, template: 'commoner' } } });
+                    refs.set(normText(d.ref), id);
+                    if (d.name) refs.set(normText(d.name), id);
+                    if (d.role) v3({ facts: [{ s: id, p: 'occupation', o: d.role }] }, d);
+                    break;
+                }
+                newEntity(d, 'npc');
+                break;
+            }
+            case 'creature.new':
+                newEntity(d, 'creature');
+                break;
+            case 'enter':
+                v3({ enter: [mapRef(d.who)] }, d);
+                break;
+            case 'leave':
+                perceiveAll(s, emit);
+                v3({ leave: [mapRef(d.who)] }, d);
+                break;
+            case 'position':
+                v3({ position: [{ who: mapRef(d.who), band: d.band, cover: d.cover || undefined }] }, d);
+                break;
+            case 'aware':
+                v3({ aware: [{ who: mapRef(d.who), level: d.level }] }, d);
+                break;
+            case 'intent':
+                v3({ intent: [{ who: mapRef(d.who), intent: d.intent }] }, d);
+                break;
+            case 'hostile': {
+                const by = (d.by || []).flatMap((x) => (groups.get(normText(x)) || [mapRef(x)])).filter((x) => !joinedByNew.has(normText(x)));
+                const left = by.filter((x) => !(typeof x === 'string' && s.encounter?.combatants?.[x]));
+                if (left.length) v3({ combat: left.map((x) => ({ by: x })) }, d);
+                break;
+            }
+            case 'fact':
+                v3({ facts: [{ s: mapRef(d.s), p: d.p, o: mapRef(d.o) }] }, d);
+                break;
+            case 'learn':
+                v3({ learn: [{ who: mapRef(d.who), s: mapRef(d.s), p: d.p, o: mapRef(d.o), how: d.how }] }, d);
+                break;
+            case 'attitude':
+                v3({ attitude: [{ who: mapRef(d.who), delta: d.delta, why: d.why }] }, d);
+                break;
+            case 'memory':
+                v3({ memory: [{ text: d.text, who: (d.who || []).map(mapRef), imp: d.imp }] }, d);
+                break;
+            case 'thread':
+                v3({ threads: [{ text: d.text, kind: d.kind, status: d.status }] }, d);
+                break;
+            case 'check': {
+                const die = outcome.check_die;
+                if (!die) { reject(d, 'check', 'no CHECK DIE was issued this turn'); break; }
+                emit({ t: 'check.recorded', d: { what: String(d.what || 'check').slice(0, 80), stat: d.stat ? String(d.stat).toUpperCase() : null, roll: die, success: !!d.success, claimed: !!d.success, by: 'narrator' } });
+                break;
+            }
+            case 'recover': {
+                const who = idOf(d.who) || 'pc';
+                const serviced = (s.services || []).some((x) => x.turn === s.turn && ['lodging', 'healing', 'meal'].includes(x.service));
+                if (who === 'pc' && !auth.rest && !serviced) { reject(d, 'recover', 'Alaric recovers only while resting or sleeping, or with lodging or healing he paid for'); break; }
+                const amounts = {};
+                if (d.hp) amounts.hp = d.hp;
+                if (d.sta) amounts.sta = d.sta;
+                if (Object.keys(amounts).length) v3({ recover: [{ who, ...amounts, why: who === 'pc' ? (serviced ? 'lodging or healing' : 'rest') : 'rest' }] }, d);
+                break;
+            }
+            case 'object.new':
+                objectNew(d);
+                break;
+            case 'object.move':
+                objectMove(d);
+                break;
+            case 'object.mark': {
+                const o = objectRef(d.object);
+                if (!o) { reject(d, 'object', 'unknown object'); break; }
+                emit({ t: 'object.marked', d: { id: o.id, mark: String(d.mark).slice(0, 120), by: idOf(d.by) || String(d.by || '').slice(0, 60) || null, turn: s.turn } });
+                break;
+            }
+            case 'offer':
+                offer(d);
+                break;
+            case 'coin.gift': {
+                const from = idOf(d.from);
+                if (from === 'pc') { reject(d, 'coin', 'Alaric does not gift himself coin'); break; }
+                const coin = s.entities.pc.sheet.coin_cp;
+                emit({ t: 'coin.changed', d: { id: 'pc', value: coin + d.cp, delta: d.cp, why: `${from ? entityLabel(s, from) : d.from}: ${String(d.why || 'a gift').slice(0, 80)}` } });
+                break;
+            }
+            case 'coerce':
+                coerce(d);
+                break;
+            case 'quest.offer':
+                questOffer(d);
+                break;
+            case 'quest.detail': {
+                const q = questRef(d.quest);
+                if (!q) { reject(d, 'quest', 'unknown quest'); break; }
+                emit({ t: 'quest.detailed', d: { id: q.id, note: String(d.note).slice(0, 200), schedule: d.schedule ? String(d.schedule).slice(0, 80) : null } });
+                break;
+            }
+            case 'quest.progress': {
+                const q = questRef(d.quest);
+                if (!q) { reject(d, 'quest', 'unknown quest'); break; }
+                emit({ t: 'quest.progressed', d: { id: q.id, objective: String(d.objective).slice(0, 160), status: d.status } });
+                break;
+            }
+            case 'quest.close': {
+                const q = questRef(d.quest);
+                if (!q) { reject(d, 'quest', 'unknown quest'); break; }
+                if (q.status !== 'active' && q.status !== 'offered') { reject(d, 'quest', `the quest is ${q.status}`); break; }
+                if (q.kind === 'private' && d.status === 'completed' && q.giver && idOf(d.by) !== q.giver) { reject(d, 'quest', 'private work is closed by its giver'); break; }
+                emit({ t: 'quest.status', d: { id: q.id, from: q.status, to: d.status, by: idOf(d.by) || null } });
+                break;
+            }
+            case 'listing.gone': {
+                const q = questRef(d.listing);
+                if (!q || q.status !== 'listed') { reject(d, 'quest', 'no such listing on the board'); break; }
+                emit({ t: 'quest.status', d: { id: q.id, from: 'listed', to: d.why, by: 'world' } });
+                const key = Object.keys(s.guild.boards).find((k) => s.guild.boards[k].listings.includes(q.id));
+                if (key) emit({ t: 'board.refreshed', d: { key, ...s.guild.boards[key], listings: s.guild.boards[key].listings.filter((x) => x !== q.id) } });
+                break;
+            }
+            case 'overreach':
+                overreach(d.kind, d.what);
+                break;
+            default:
+                reject(d, 'unknown', `the engine has no handler for ${d.type}`);
+        }
+    }
+
+    // 3. what the extractor answered about the player's commands
+    for (const [k, type] of Object.entries(outcome.expected_keys || {})) {
+        const e = expected[k];
+        if (!e) continue;
+        if (type === 'go' && e.arrived === true && !arrived && !s.encounter) {
+            // the arrival the story showed without an arrive delta: where the answer says, else where he set off to
+            const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
+            const at = e.at ? resolvePlace(s, e.at, emit) : go?.to ? { id: go.to } : { error: 'no place' };
+            if (!at.error && at.id !== s.scene.at) { perceiveAll(s, emit); arrive(at.id); }
+        }
+        if (type === 'activity' && !timeUsed && Number.isInteger(e.minutes) && e.minutes > 0) {
+            const m = Math.min(e.minutes, Math.max(0, cap - timeUsed));
+            if (m > 0) { emit({ t: 'time.advanced', d: { minutes: m, why: 'activity' } }); timeUsed += m; }
+        }
+        if (type === 'take' && e.taken === true && !events.some((x) => x.t === 'object.created' && x.d.object.holder?.entity === 'pc') && !events.some((x) => x.t === 'object.moved' && x.d.to?.entity === 'pc')) {
+            const name = (auth.takeNames || {})[k];
+            if (name) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
+        }
+        if ((type === 'buy' || type === 'pay') && e.taken_anyway === true) overreach(type === 'buy' ? 'purchase' : 'payment', `the reply had Alaric ${type === 'buy' ? 'take or use what he had not bought' : 'pay'} although he had not agreed`);
+        if ((type === 'buy' || type === 'pay') && e.priced === true) {
+            for (const dec of s.decisions.filter((x) => x.seq === Number(k) && x.turn === s.turn && !x.priced)) emit({ t: 'decision.opened', d: { decision: { ...dec, priced: true } } });
+        }
+        if (type === 'sell') sale(k, e);
+    }
+
+    // 4. what waited for the reply and did not happen
+    for (const c of conditionals.filter((x) => !x.done)) emit({ t: 'cmd.expired', d: { seq: c.seq, reason: 'the condition did not happen in this reply' } });
+
+    // 5. who noticed him, his introduction, his own record of the turn, a fight the reply committed to
+    perceiveAll(s, emit);
+    selfIntro(s, emit);
+    const ep = episode(s, msg);
+    if (ep) emit({ t: 'memory.recorded', d: { memory: ep } });
+    const fightFrom = events.length;
+    const opened = openCommitted(s, content, dice, emit, { hold: false });
+    if (opened) opened.from = fightFrom;
+    return { events, rejected, corrections, system, opened, state: s, arrivedHall };
+
+    // ---------------------------------------------------------------------------------------------- step helpers
+    function arrive(id) {
+        const town = locationOf(s, id);
+        emit({ t: 'scene.moved', d: { at: id, location: town, place: placeName(s, id), reset_present: true } });
+        arrived = id;
+        // a decision belongs to the place it was opened at: leaving it closes it; one opened in this very turn goes
+        // with him ("look for an inn to sleep": the room is bought where he arrives)
+        for (const dec of s.decisions.filter((x) => x.at && x.at !== id && x.kind !== 'registration')) {
+            if (dec.turn === s.turn) emit({ t: 'decision.opened', d: { decision: { ...dec, at: id } } });
+            else emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } });
+        }
+        const hall = hallOf(s, id);
+        if (hall) {
+            arrivedHall = hall;
+            for (const k of conditionals.filter((x) => !x.done && x.condition === 'arrive_guild_hall')) {
+                k.done = true;
+                const q = s.quests[k.quest];
+                const r = q && q.status === 'active' ? completeContract(s, content, q, emit, { step: k.seq }) : { ok: false, reason: 'the contract is no longer active' };
+                emit({ t: 'cmd.completed', d: { seq: k.seq, ok: r.ok, reason: r.reason ?? null } });
+                if (!r.ok) system.push(`TURN-IN REFUSED — ${q?.title || k.quest}: ${r.reason}`);
+            }
+        }
+    }
+
+    function objectRef(ref) {
+        if (typeof ref === 'string') return s.objects[ref] || null;
+        if (ref && typeof ref.new === 'string') {
+            const id = objectsNew.get(normText(ref.new));
+            if (id) return s.objects[id];
+            const here = Object.values(s.objects).filter((o) => normText(o.name) === normText(ref.new) && (o.holder?.loc === s.scene.at || s.scene.present.includes(o.holder?.entity)));
+            return here.length === 1 ? here[0] : null;
+        }
+        return null;
+    }
+
+    function holderOf(h) {
+        const t = String(h ?? '').trim();
+        if (!t || normText(t) === 'here') return { loc: s.scene.at };
+        if (s.places[t]) return { loc: t };
+        const id = idOf(t);
+        if (id === 'pc') return { entity: 'pc' };
+        if (id && s.entities[id]) return { entity: id };
+        return null;
+    }
+
+    function objectNew(d) {
+        const holder = holderOf(d.holder);
+        if (!holder) { reject(d, 'object', `unknown holder ${String(d.holder).slice(0, 40)}`); return; }
+        const q = d.for_quest ? questRef(d.for_quest) : null;
+        const id = uniqueObjectId(s, tag, d.name);
+        emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, holder, marks: [], for_quests: q ? [q.id] : [], source: { turn: s.turn, how: holder.entity === 'pc' ? 'taken' : 'story' } } } });
+        objectsNew.set(normText(d.name), id);
+    }
+
+    function objectMove(d) {
+        const o = objectRef(d.object);
+        if (!o) { reject(d, 'object', 'unknown object'); return; }
+        const to = holderOf(d.to);
+        if (!to) { reject(d, 'object', `unknown receiver ${String(d.to).slice(0, 40)}`); return; }
+        if (to.entity === 'pc' && o.holder?.loc && !(auth.take || []).length) { reject(d, 'pc_inventory', 'what lies here becomes his only by his own take'); return; }
+        const part = d.qty && d.qty < (o.qty ?? 1) ? d.qty : null;
+        emit({ t: 'object.moved', d: { id: o.id, to, ...(part ? { qty: part, split: `${o.id}_${tag}` } : {}) } });
+    }
+
+    function offer(d) {
+        const seller = idOf(d.seller);
+        if (!seller || seller === 'pc' || !s.scene.present.includes(seller)) { reject(d, 'offer', `the seller ${String(d.seller).slice(0, 40)} is not present`); return; }
+        const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
+        emit({ t: 'offer.created', d: { offer: { id, seller, at: s.scene.at, status: 'open', canon: false, turn: s.turn, lines: d.lines.map((l, i) => ({ id: `l${i + 1}`, ...l })) } } });
+        // a purchase Alaric agreed to in advance, within his limit (buy with max_cp or any_price)
+        const words = (t) => normText(t).split(/[^a-z0-9]+/).filter((w) => w.length > 3);
+        for (const dec of s.decisions.filter((x) => x.kind === 'purchase' && (x.max_cp !== null || x.any_price) && x.at === s.scene.at && (!x.seller || x.seller === seller))) {
+            const lines = d.lines.map((l, i) => ({ id: `l${i + 1}`, ...l })).filter((l) => words(dec.what).some((w) => normText(l.what).includes(w)));
+            if (!lines.length) continue;
+            const price = lines.reduce((n, l) => n + l.price_cp * (l.qty || 1), 0);
+            const coin = s.entities.pc.sheet.coin_cp;
+            if (!dec.any_price && price > dec.max_cp) { system.push(`NOT BOUGHT — ${lines.map((l) => l.what).join(', ')}: ${price} cp is above his limit of ${dec.max_cp} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'too_expensive' } }); continue; }
+            if (coin < price) { system.push(`NOT BOUGHT — ${price} cp needed, he has ${coin} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'no_coin' } }); continue; }
+            emit({ t: 'transaction.completed', d: { offer: id, lines: lines.map((l) => l.id), cp: price, seller } });
+            emit({ t: 'coin.changed', d: { id: 'pc', value: coin - price, delta: -price, why: lines.map((l) => l.what).join(', ') } });
+            for (const l of lines.filter((x) => x.kind === 'goods')) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, l.what), name: l.what, kind: 'item', stack: (l.qty || 1) > 1, qty: l.qty || 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'bought', from: seller } } } });
+            for (const l of lines.filter((x) => x.kind === 'service')) emit({ t: 'service.granted', d: { service: l.service || 'other', what: l.what, by: seller, at: s.scene.at, turn: s.turn } });
+            emit({ t: 'offer.closed', d: { id, status: 'accepted' } });
+            emit({ t: 'decision.closed', d: { id: dec.id, status: 'accepted' } });
+            emit({ t: 'cmd.completed', d: { seq: dec.seq, ok: true } });
+        }
+    }
+
+    function coerce(d) {
+        const by = idOf(d.by);
+        if (!by || by === 'pc' || !s.scene.present.includes(by)) { reject(d, 'coerce', 'the one who takes it is not here'); return; }
+        const counterpart = openOffers(s).some((o) => o.seller === by) || events.some((e) => e.t === 'transaction.completed' && e.d.seller === by);
+        if (counterpart) { reject(d, 'coerce', 'the other side of a sale or an open offer cannot coerce (a sale is never a confiscation)'); return; }
+        if (!d.because) { reject(d, 'coerce', 'coercion needs a because'); return; }
+        const e = s.entities[by];
+        const role = [truth(s, by, 'occupation')[0]?.o, ...(e?.descriptors || []), e?.traits, e?.template].filter(Boolean).join(' ');
+        if ((d.kind === 'confiscation' || d.kind === 'fine') && !AUTHORITY_ROLE.test(role)) { reject(d, 'coerce', `${d.kind} needs an authority (a guard, an official)`); return; }
+        if (d.kind === 'robbery' && !(HOSTILE_ROLE.test(role) || s.pending_combat?.some((p) => p.by === by) || s.encounter)) { reject(d, 'coerce', 'a robbery needs a hostile robber'); return; }
+        const sheet = s.entities.pc.sheet;
+        if (d.coin_cp) {
+            const cp = Math.min(d.coin_cp, sheet.coin_cp);
+            if (cp > 0) emit({ t: 'coin.changed', d: { id: 'pc', value: sheet.coin_cp - cp, delta: -cp, why: `${d.kind} by ${entityLabel(s, by)}: ${String(d.because).slice(0, 80)}` } });
+        }
+        if (d.object) {
+            const o = objectRef(d.object) || heldBy(s, 'pc').find((x) => normText(x.name).includes(normText(d.object)));
+            if (o && o.holder?.entity === 'pc') emit({ t: 'object.moved', d: { id: o.id, to: { entity: by } } });
+        }
+        system.push(`${d.kind.toUpperCase()} — ${entityLabel(s, by)}: ${String(d.because).slice(0, 120)}`);
+    }
+
+    function questRef(ref) {
+        if (typeof ref === 'string') return s.quests[ref] || null;
+        if (ref && typeof ref.new === 'string') return Object.values(s.quests).find((q) => normText(q.title) === normText(ref.new)) || null;
+        return null;
+    }
+
+    function questOffer(d) {
+        const giver = idOf(d.giver);
+        let id = `quest.${slug(d.title) || 'job'}`;
+        for (let k = 2; s.quests[id]; k++) id = `quest.${slug(d.title)}_${k}`;
+        emit({ t: 'quest.created', d: { quest: {
+            id, title: String(d.title).slice(0, 80), kind: 'private', giver: giver && giver !== 'pc' ? giver : null, client: null, rank: null,
+            payout_cp: d.reward_cp ?? null, reward: d.reward_cp !== null && d.reward_cp !== undefined ? `${d.reward_cp} cp` : null,
+            objectives: (d.objectives || []).map((o, i) => ({ id: `o${i + 1}`, what: String(o).slice(0, 160), status: 'open' })),
+            proof: (d.proof || []).map((p, i) => ({ id: `p${i + 1}`, kind: 'note', what: String(p).slice(0, 120) })),
+            status: 'offered', taker: null, history: [{ turn: s.turn, minute: s.clock.minute, status: 'offered' }], details: [], notes: [], schedule: { starts_at: null, deadline: null },
+            source: { giver: giver || null, turn: s.turn },
+        } } });
+    }
+
+    function overreach(kind, what) {
+        emit({ t: 'overreach.noted', d: { kind, what: String(what).slice(0, 160) } });
+        system.push(`NOT APPLIED — ${String(what).slice(0, 160)} (Alaric had not decided that)`);
+        const c = kind === 'guild_listing'
+            ? 'Official Guild contracts come only from the board the engine shows; the contract the last reply showed does not exist.'
+            : `Your last reply had Alaric decide something he had not decided (${String(what).slice(0, 120)}); it did not happen. Alaric decides only what PLAYER ACTIONS list.`;
+        if (!corrections.includes(c)) corrections.push(c);
+    }
+
+    function sale(k, e) {
+        const dec = s.decisions.find((x) => x.kind === 'sale' && String(x.seq) === String(k) && x.turn === s.turn);
+        if (!dec) return;
+        if (e.sold !== true) return;
+        const price = Number.isInteger(e.price_cp) ? e.price_cp : null;
+        if (dec.min_cp === null || dec.min_cp === undefined || price === null || price < dec.min_cp) {
+            overreach('other', `the reply sold ${dec.what}${price !== null ? ` for ${price} cp` : ''} although Alaric had not agreed to that price`);
+            return;
+        }
+        const buyer = dec.seller || null;
+        const o = s.objects[dec.object];
+        if (o?.holder?.entity === 'pc') emit({ t: 'object.moved', d: { id: o.id, to: buyer ? { entity: buyer } : { loc: s.scene.at } } });
+        else if (dec.object?.startsWith('item.')) emit({ t: 'item.changed', d: { id: 'pc', item: dec.object.slice(5), qty: -(dec.qty || 1), why: 'sold' } });
+        emit({ t: 'coin.changed', d: { id: 'pc', value: s.entities.pc.sheet.coin_cp + price, delta: price, why: `sold ${dec.what}` } });
+        emit({ t: 'decision.closed', d: { id: dec.id, status: 'sold' } });
+        emit({ t: 'cmd.completed', d: { seq: dec.seq, ok: true } });
+    }
+}
+
+function uniqueEntityId(s, base) {
+    let id = `npc.${slug(base) || 'unnamed'}`;
+    for (let n = 2; s.entities[id]; n++) id = `npc.${slug(base) || 'unnamed'}_${n}`;
+    return id;
+}
+
+/** "obj.t<reply index>.<name>" (the P0/S3 ids: obj.t16.marshmint), unique. */
+function uniqueObjectId(s, tag, name) {
+    let id = `obj.t${tag}.${slug(name) || 'thing'}`;
+    for (let n = 2; s.objects[id]; n++) id = `obj.t${tag}.${slug(name)}_${n}`;
+    return id;
+}
+
+/** A missing extractor answer: nothing of the reply was recorded (plan §3.4); the audit and the next block say so. */
+export function extractionFailedEvents(error, ms = null) {
+    return [{ t: 'extract.failed', d: { error: String(error || 'unknown').slice(0, 200), ms } }];
+}
+
+export { HALL_NAME, REGISTRATION_OFFER, membership, deriveCharacter };

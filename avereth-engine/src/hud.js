@@ -58,7 +58,7 @@ export function characterRows(state, content) {
 
 /** Where and when, who is here, the fight, the open threads: as rows [label, value]. Only player-knowable things. */
 export function worldRows(state, content) {
-    const loc = state.entities[state.scene.location] || content.locations.get(state.scene.location);
+    const loc = state.entities[state.scene.location] || content.locations.get(state.scene.location) || state.places?.[state.scene.location];
     const realm = loc?.realm ? content.factions.get(loc.realm)?.name || null : null;
     const status = statusOf(state, state.scene.location);
     const rows = [
@@ -114,7 +114,7 @@ export function renderHud(state, content, mode = 'closed') {
     const dv = deriveCharacter(s, content);
     const open = mode === 'open';
     const cls = s.class ? content.classes.get(s.class)?.name || s.class : 'no Class';
-    const loc = state.entities[state.scene.location] || content.locations.get(state.scene.location);
+    const loc = state.entities[state.scene.location] || content.locations.get(state.scene.location) || state.places?.[state.scene.location];
     const others = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && statusOf(state, id) !== 'dead').length;
     const charSummary = `L${s.level} ${cls} · HP ${s.hp}/${dv.maxHp} · MP ${s.mp}/${dv.maxMp} · STA ${s.sta}/${dv.maxSta} · ${formatCoin(s.coin_cp, content)}`;
     const worldSummary = `${formatClock(state.clock.minute).split(' (')[0]} · ${loc?.name || 'unknown'}${state.scene.place ? ` — ${state.scene.place}` : ''}${state.encounter ? ' · COMBAT' : ''}${others ? ` · ${others} present` : ''}`;

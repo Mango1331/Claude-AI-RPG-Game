@@ -104,7 +104,8 @@ export function expectedText(vocab, expectedKeys) {
     if (!keys.length) return 'expected: {} (nothing to answer this turn)';
     return `expected — answer every key: ${keys.map(([k, t]) => {
         const e = vocab.expected[t];
-        return `"${k}" (${t}: ${e ? e.summary : 'did it happen'}): ${e ? JSON.stringify(e.shape).replace(/"/g, '') : '{done: true|false}'}`;
+        const shape = e ? `{${Object.entries(e.shape).map(([f, v]) => `"${f}": ${v}`).join(', ')}}` : '{"done": true|false}';
+        return `"${k}" (${t}: ${e ? e.summary : 'did it happen'}): ${shape}`;
     }).join(' · ')}`;
 }
 

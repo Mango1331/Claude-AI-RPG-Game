@@ -9,9 +9,11 @@
 //   memories  – episodic memories with participants + witnesses (Character Memory is witness-scoped)
 //   relations – graph edges (attitude, membership, ownership, ...) with history
 //   quests, threads, scene, encounter, clock, rng
+//   places, objects, offers, guild, decisions, services – Runtime V4 domains (src/v4/domain.js); empty in a V3 campaign
 import { clone, uniq } from './util.js';
+import { emptyDomains, applyDomainEvent, V4_EVENTS } from './v4/domain.js';
 
-export const STATE_VERSION = 2;
+export const STATE_VERSION = 3;
 
 export function emptyState() {
     return {
@@ -24,7 +26,7 @@ export function emptyState() {
         mode: 'setup',
         creation: { step: 0, class: null, skills: [] },
         entities: {},
-        scene: { location: null, place: '', present: [], positions: {}, awareness: {}, concealed: [] },
+        scene: { location: null, place: '', at: null, present: [], positions: {}, awareness: {}, concealed: [] },
         encounter: null,
         facts: {},
         claims: {},
@@ -37,6 +39,7 @@ export function emptyState() {
         inputs: [], // the player's recent messages {turn, input}: a decision whose reply missed it can still be recorded
         pending_combat: [], // NPC commitments reported by the narrator (Core #23 PENDING), resolved next turn
         pending_intents: {},
+        ...emptyDomains(),
     };
 }
 
@@ -78,13 +81,16 @@ export function applyEvent(state, e) {
     switch (e.t) {
         // ------------------------------------------------------------------ campaign / creation
         case 'campaign.started': {
-            state.meta = { started: true, campaign: d.campaign, content_version: d.content_version };
+            // runtime: 'v4' for a campaign started under Runtime V4 (its story turns go through the interpreter and the
+            // extractor); a campaign without it is a V3 campaign and stays one
+            state.meta = { started: true, campaign: d.campaign, content_version: d.content_version, runtime: d.runtime || 'v3' };
             state.rng = { seed: d.seed >>> 0, n: 0 };
             state.clock.minute = d.minute;
             state.mode = 'creation';
             state.creation = { step: 1, class: null, skills: [] };
             for (const ent of d.entities) state.entities[ent.id] = clone(ent);
-            state.scene = { location: d.location, place: d.place, present: ['pc'], positions: {}, awareness: {}, concealed: [] };
+            state.scene = { location: d.location, place: d.place, at: d.at ?? null, present: ['pc'], positions: {}, awareness: {}, concealed: [] };
+            for (const p of d.places || []) state.places[p.id] = clone(p);
             for (const f of d.facts || []) state.facts[f.id] = clone(f);
             for (const k of d.knowledge || []) ensureKnowledge(state, k.who)[k.about] = clone(k);
             break;
@@ -128,6 +134,7 @@ export function applyEvent(state, e) {
         case 'scene.moved':
             state.scene.location = d.location ?? state.scene.location;
             state.scene.place = d.place ?? state.scene.place;
+            if (d.at !== undefined) state.scene.at = d.at; // V4: the place node
             if (d.reset_present) {
                 state.scene.present = ['pc'];
                 state.scene.positions = {};
@@ -298,6 +305,10 @@ export function applyEvent(state, e) {
         case 'note':
             break;
         default:
+            if (V4_EVENTS.has(e.t)) {
+                applyDomainEvent(state, e);
+                break;
+            }
             throw new Error(`unknown event type: ${e.t}`);
     }
     if (typeof e.rng_to === 'number') state.rng.n = e.rng_to;

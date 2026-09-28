@@ -26,8 +26,8 @@ const T = (id) => gold.turns.find((t) => t.id === id);
 
 /**
  * The gold answer in the product's vocabulary. The gold was written in the P0 draft (delta-0.1); delta-0.2 added
- * fields that are nullable or have a neutral value (person.new/creature.new band, creature.new count, buy/pay
- * taken_anyway): they are filled with null, 1 and false, nothing else changes.
+ * fields that are nullable or have a neutral value (person.new/creature.new band, creature.new count/anchor, buy/pay
+ * taken_anyway): they are filled from the established species/body-plan where needed, nothing else changes.
  */
 export function toProduct(answer, expectedKeys = {}) {
     const a = structuredClone(answer);
@@ -38,6 +38,9 @@ export function toProduct(answer, expectedKeys = {}) {
             if (d[k] !== undefined) continue;
             if (f.nullable) d[k] = null;
             else if (k === 'count') d[k] = 1;
+            else if (k === 'anchor' && d.type === 'creature.new') {
+                d[k] = [...content.anchors.values()].find((a) => a.aliases.some((x) => x.toLowerCase() === String(d.species || '').toLowerCase()))?.id || 'rat';
+            }
         }
     }
     for (const [k, t] of Object.entries(expectedKeys)) if ((t === 'buy' || t === 'pay') && a.expected?.[k] && a.expected[k].taken_anyway === undefined) a.expected[k].taken_anyway = false;

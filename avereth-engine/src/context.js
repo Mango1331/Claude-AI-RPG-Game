@@ -127,9 +127,12 @@ function npcCard(state, content, id, focusWords, { absent = false } = {}) {
     } else {
         const rel = state.relations[`rel.${id}.attitude.pc`];
         const last = rel?.history?.at(-1);
+        const ties = currentFacts(state, (f) => f.s === id && f.visibility !== 'secret'
+            && /\b(?:relationship|related|family|kin|parent|child|daughter|son|sibling|spouse|partner|friend|ally|serves|works_for|employer|member_of|affiliation)\b/i.test(String(f.p || '').replace(/_/g, ' '))).slice(-3);
         const ident = pcIdentityFor(state, id);
         const idText = ident.level === 'name' ? 'knows him by name' : ident.level === 'seen' ? 'has seen him, does NOT know his name' : 'has never seen him';
         lines.push(`  toward Alaric: ${attitudeLabel(rel?.value)}${last?.why ? ` (last change: ${last.why})` : ''}; ${idText}${aware ? `; awareness: ${aware}` : ''}${unseen ? '; Alaric is currently UNSEEN by others' : ''}`);
+        if (ties.length) lines.push(`  established ties: ${ties.map((f) => propText(state, f, content)).join('; ')}`);
         const moments = sharedMoments(state, id);
         const lastMoment = moments.at(-1);
         if (lastMoment) lines.push(`  last meaningful: [${day(lastMoment.minute)}] ${memoryText(state, lastMoment, id)}`);

@@ -20,7 +20,7 @@
 import { normText } from '../util.js';
 
 /** Fact predicates that are state with their own delta or domain (plan §5.1): never a free fact. */
-export const STATE_PREDICATES = new Set(['located', 'intent', 'guild_rank']);
+export const STATE_PREDICATES = new Set(['located', 'intent', 'guild_rank', 'power_rank']);
 /** Possession predicates: about Alaric they are the engine's inventory, never a fact. */
 export const POSSESSION_PREDICATES = new Set(['takes', 'took', 'carries', 'has', 'holds', 'lacks', 'owns', 'receives', 'received', 'pays', 'paid']);
 
@@ -169,8 +169,12 @@ export function firewall(deltas, ctx = {}) {
                 break;
             }
             case 'object.new': {
+                if (granted(d.name) || (booked.registration && GUILD_CANON_ITEM.test(text(d.name)))) {
+                    no(d, 'engine_booked', 'the engine already created/handed over this object with its own resolution');
+                    continue;
+                }
                 if (isPc(d.holder)) {
-                    if (granted(d.name) || (booked.registration && GUILD_CANON_ITEM.test(text(d.name)))) {
+                    if (false) {
                         no(d, 'engine_booked', 'the engine already handed Alaric this with its own resolution');
                         continue;
                     }

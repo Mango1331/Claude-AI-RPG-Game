@@ -36,7 +36,7 @@ const PC_REF = /^(?:pc|alaric(?: red)?)$/i;
 const ENGINE_FACT = /\b(?:regist\w*|guild rank|member\w*|novice|proven|veteran|power rank|coin|copper|silver|paid|reward|payout|xp|level)\b/i;
 const GUILD_QUEST_STATE = /\b(?:status|state|complete\w*|done|closed|cleared|turn(?:ed|ing)?\s+in|paid|payment|payout|reward|mark|stamp|proof)\b/i;
 const GUILD_COMPLETION_MARK = /\b(?:cleared|complete\w*|closed|paid|turned?\s+in|accepted|settled)\b/i;
-const GUILD_DETAIL_MECHANIC = /\b(?:fees?|costs?|prices?|pay(?:s|ing|ment)?|paid|payouts?|rewards?|copper|silver|gold|proof|turn[- ]?in|hand[- ]?in|complete\w*|cleared|guild\s+rank|promotion)\b/i;
+const GUILD_DETAIL_MECHANIC = /\b(?:fees?|costs?|prices?|pay(?:s|ing|ment)?|paid|payouts?|rewards?|copper|silver|gold|complete\w*|cleared|guild\s+rank|promotion)\b/i;
 
 // The Guild's mechanics are the engine's (live run 28.09.2026: the clerk's "F-Rank to start, for everyone" became the fact
 // "new Guild members start at F-Rank" and came back in the next engine block): what registration costs or requires,
@@ -174,15 +174,9 @@ export function firewall(deltas, ctx = {}) {
                     no(d, 'engine_booked', 'the engine already created/handed over this object with its own resolution');
                     continue;
                 }
-                if (isPc(d.holder)) {
-                    if (guildContract(d.for_quest) && CONTRACT_DOC.test(text(d.name))) {
-                        no(d, 'engine_booked', 'a Guild contract\'s slip is the engine\'s: it hands it over when the contract is accepted');
-                        continue;
-                    }
-                    if (!auth.take && !auth.gather) {
-                        no(d, 'pc_inventory', 'Alaric holds a new thing only after his own take or gather; a hand-over is object.new with the giver as holder, then object.move to him');
-                        continue;
-                    }
+                if (isPc(d.holder) && guildContract(d.for_quest) && CONTRACT_DOC.test(text(d.name))) {
+                    no(d, 'engine_booked', 'a Guild contract\'s slip is the engine\'s: it hands it over when the contract is accepted');
+                    continue;
                 }
                 break;
             }
@@ -221,10 +215,14 @@ export function firewall(deltas, ctx = {}) {
                 }
                 break;
             }
+            case 'quest.ready':
+                // Story-owned readiness: the world may establish that the desired outcome has been achieved.
+                // Completion/payout/XP still belong to the explicit Guild turn-in.
+                break;
             case 'quest.close': {
                 const q = questOf(d.quest);
                 if (q && d.status === 'completed') {
-                    no(d, 'guild_completion', 'a Guild contract is completed only when Alaric turns it in at a Guild hall (the engine checks the proof and pays)', q.status === 'active' && !booked.turnIns.includes(q.id) ? `"${q.title}" is completed only when Alaric turns it in at a Guild hall; it is still open.` : null);
+                    no(d, 'guild_completion', 'a Guild contract is completed only when Alaric explicitly turns it in at a Guild hall; payout, XP and contract credit are engine-owned', q.status === 'active' && !booked.turnIns.includes(q.id) ? `"${q.title}" is still active until Alaric turns it in.` : null);
                     continue;
                 }
                 break;

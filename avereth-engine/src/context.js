@@ -410,12 +410,13 @@ export function buildContext(state, content, opts = {}) {
     if (pinned.length) add('facts', `ESTABLISHED FACTS (binding; they change only with an in-world cause):\n${pinned.map((f) => `- ${propText(state, f, content)} (since ${day(f.since.minute)}${f.source?.because ? `; cause: ${f.source.because}` : ''})`).join('\n')}`, 0);
 
     const activeQuests = Object.values(state.quests).filter((q) => q.status === 'active');
-    if (activeQuests.length) add('quests', `ACTIVE QUESTS (canonical; these requirements are binding and must be conveyed in-world before they are needed; mechanical numbers are literal — repeat the exact copper amount, never convert or recalculate it):\n${activeQuests.map((q) => {
+    if (activeQuests.length) add('quests', `ACTIVE QUEST MEMORY — use this to preserve continuity, not as a word-for-word checklist. For Guild contracts only payout, active/completed status, Quest XP/credit and Guild rank mechanics are hard engine state; objectives, witnesses and verification are story guidance and may be satisfied by credible alternatives:\n${activeQuests.map((q) => {
+        const progress = (q.progress || []).slice(-4).map((p) => `${p.objective}: ${p.status}`).join('; ');
         const req = q.kind === 'guild_contract'
-            ? ` | objective: ${objectiveText(q)} | proof required for Guild turn-in: ${guildProofText(q) || 'none'} | payout: ${q.payout_cp ?? 0} cp (paid only by the Guild at accepted turn-in; contacts/stewards may confirm proof but never alter or pay this payout)`
-            : q.objectives?.length ? ` | objective: ${objectiveText(q)}` : '';
+            ? ` | desired outcome: ${q.desired_end_state || objectiveText(q)} | remembered work: ${objectiveText(q)}${progress ? ` | progress: ${progress}` : ''}${q.ready ? ` | READY FOR TURN-IN: ${q.ready_note || 'desired outcome achieved'}` : ''} | verification examples: ${guildProofText(q) || 'none listed'} | payout: ${q.payout_cp ?? 0} cp (paid only by the Guild on explicit accepted turn-in)`
+            : q.objectives?.length ? ` | remembered work: ${objectiveText(q)}` : '';
         return `- ${q.title}${req}`;
-    }).join('\n')}\nQUEST FRICTION: if an active Quest is a nontrivial adventure task, it must develop at least one causal, meaningful complication or active situation before normal resolution. Combat is not required; trivial safe local errands are exempt. This guarantees playable development, not success.`, 0);
+    }).join('\n')}\nQUEST FRICTION: a nontrivial active Quest should still develop at least one causal, meaningful complication or active situation before ordinary resolution. Combat is not required. Once the desired outcome is genuinely achieved, let the extractor store quest.ready; do not manufacture extra bureaucracy merely to satisfy a generated proof phrase.`, 0);
 
     // relevant memories / facts / quests / threads
     const relStrength = new Map();

@@ -36,7 +36,7 @@ const PC_REF = /^(?:pc|alaric(?: red)?)$/i;
 const ENGINE_FACT = /\b(?:regist\w*|guild rank|member\w*|novice|proven|veteran|power rank|coin|copper|silver|paid|reward|payout|xp|level)\b/i;
 const GUILD_QUEST_STATE = /\b(?:status|state|complete\w*|done|closed|cleared|turn(?:ed|ing)?\s+in|paid|payment|payout|reward)\b/i;
 const GUILD_COMPLETION_MARK = /\b(?:cleared|complete\w*|closed|paid|turned?\s+in|accepted|settled)\b/i;
-const GUILD_DETAIL_MECHANIC = /\b(?:fees?|costs?|prices?|pay(?:s|ing|ment)?|paid|payouts?|rewards?|copper|silver|gold|complete\w*|cleared|guild\s+rank|promotion)\b/i;
+const GUILD_DETAIL_MECHANIC = /\b(?:fees?|costs?|prices?|pay(?:s|ing|ment)?|paid|payouts?|rewards?|copper|silver|gold|guild\s+rank|promotion)\b/i;
 
 // The Guild's mechanics are the engine's (live run 28.09.2026: the clerk's "F-Rank to start, for everyone" became the fact
 // "new Guild members start at F-Rank" and came back in the next engine block): what registration costs or requires,
@@ -188,9 +188,9 @@ export function firewall(deltas, ctx = {}) {
             }
             case 'object.mark': {
                 const q = ctx.guildContractForObject?.(text(d.object));
-                if (q && (guildy(d.by) || GUILD_COMPLETION_MARK.test(text(d.mark)))) {
-                    no(d, 'guild_completion', 'a Guild contract slip may receive field proof from the world, but Guild completion/clearance is booked only by the engine at turn-in',
-                        q.status === 'active' ? `"${q.title}" is still active until the engine accepts its proof at a Guild turn-in.` : null);
+                if (q && GUILD_COMPLETION_MARK.test(text(d.mark))) {
+                    no(d, 'guild_completion', 'a Guild contract document may carry ordinary notes, witness marks and verification; only a mark that itself claims completion/payment/clearance is engine-owned',
+                        q.status === 'active' ? `"${q.title}" remains active until Alaric explicitly turns it in.` : null);
                     continue;
                 }
                 break;
@@ -278,8 +278,8 @@ export function firewall(deltas, ctx = {}) {
                 break;
             }
             case 'arrive': {
-                if (!auth.go && !auth.forced && !auth.roam) {
-                    no(d, 'no_go', 'Alaric arrives somewhere only after his own go (or when forced)', 'Alaric did not travel in the last reply: he had not decided to go anywhere; he is still where he was.');
+                if (!auth.go && !auth.roam && !text(d.forced_by).trim()) {
+                    no(d, 'no_go', 'Alaric arrives somewhere only after his own travel/roaming action or an explicit external involuntary cause', 'Alaric did not voluntarily travel in the last reply, and no external event moved him; he remains where he was.');
                     continue;
                 }
                 break;

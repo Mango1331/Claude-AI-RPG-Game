@@ -10,6 +10,7 @@ import { formatCoin } from './economy.js';
 import { playerLabel, statusOf, truth, currentFacts, propText } from './knowledge.js';
 import { targetLabel } from './combat.js';
 import { formatClock, itemLabel, normText } from './util.js';
+import { sceneHandle } from './v4/scene_handles.js';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const list = (xs, none = '—') => (xs.length ? xs.join(' · ') : none);
@@ -69,7 +70,7 @@ export function worldRows(state, content) {
     if (weather) rows.push(['Weather', weather.o]);
     const enc = state.encounter;
     // in a fight everyone by the target label the combat panel shows (Cellar Rat A), else as the player knows them
-    const label = (id) => targetLabel(state, id, (x) => playerLabel(state, x));
+    const label = (id) => enc ? targetLabel(state, id, (x) => playerLabel(state, x)) : sceneHandle(state, content, id);
     const present = state.scene.present.filter((id) => id !== 'pc' && state.entities[id]).map((id) => {
         const e = state.entities[id];
         const c = enc?.combatants?.[id];

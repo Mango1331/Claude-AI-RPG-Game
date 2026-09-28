@@ -128,7 +128,7 @@ export function extractorSystem(vocab) {
     ].join('\n');
 }
 
-export const EXTRACT_PLAIN_FORMAT = 'Return only one JSON object, no prose before or after it, no code fences: {"expected": {<every key asked>}, "deltas": [{"seq": 1, "type": "<delta>", <every field of that delta; null where allowed and unknown>}]}.';
+export const EXTRACT_PLAIN_FORMAT = 'Return only one JSON object, no prose before or after it, no code fences: {"expected": {<every key asked>}, "deltas": [{"seq": 1, "type": "<delta>", <required fields; fields marked |null may be omitted when unknown>}]}.';
 
 export function extractorUser({ catalog, actions, player = null, expectedKeys, vocab, reply }) {
     return [

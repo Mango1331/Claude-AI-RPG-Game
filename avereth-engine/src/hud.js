@@ -9,7 +9,7 @@ import { deriveCharacter } from './derived.js';
 import { formatCoin } from './economy.js';
 import { playerLabel, statusOf, truth, currentFacts, propText } from './knowledge.js';
 import { targetLabel } from './combat.js';
-import { formatClock, itemLabel } from './util.js';
+import { formatClock, itemLabel, normText } from './util.js';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const list = (xs, none = '—') => (xs.length ? xs.join(' · ') : none);

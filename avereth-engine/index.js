@@ -23,7 +23,7 @@ import { parseSwaps, ENGINE_VERSION } from './src/util.js';
 const MODULE = 'avereth';
 const PROMPT_KEY = 'avereth_engine';
 const LORE_KEY = 'avereth_lore_keys';
-const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: 'ledger=register', hud: 'closed', historyTurns: 4, stripTrackers: true, recoverReports: true, runtime: 'v4' };
+const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: '', hud: 'closed', historyTurns: 4, stripTrackers: true, recoverReports: true, runtime: 'v4' };
 const REPORT_WAIT_MS = 60000; // the next turn waits this long at most for a report still being asked for
 const EXTRACT_WAIT_MS = 90000; // Runtime V4 barrier: the next turn waits this long at most for the last reply's world
 const LLM_TIMEOUT_MS = 120000;
@@ -368,7 +368,7 @@ function mountSettings() {
         <option value="worldinfo">Card lorebook (World Info)</option>
         <option value="engine">Engine</option>
       </select></label>
-      <label class="avereth-row" title="whole words the narrator overuses, replaced in its replies: from=to, comma-separated">Word replacements <input type="text" id="avereth_swaps" placeholder="ledger=register"></label>
+      <label class="avereth-row" title="V3 only: whole words the narrator overuses, replaced in its replies. Runtime V4 leaves narrator prose unchanged because it is also extractor evidence.">Word replacements (V3 only) <input type="text" id="avereth_swaps" placeholder="from=to"></label>
       <label class="avereth-row" title="Character and World panels under each reply, rendered from the engine state (never sent to the narrator)">HUD under replies <select id="avereth_hud">
         <option value="closed">Folded (summary line)</option>
         <option value="open">Open</option>

@@ -36,6 +36,7 @@ const PC_REF = /^(?:pc|alaric(?: red)?)$/i;
 const ENGINE_FACT = /\b(?:regist\w*|guild rank|member\w*|novice|proven|veteran|power rank|coin|copper|silver|paid|reward|payout|xp|level)\b/i;
 const GUILD_QUEST_STATE = /\b(?:status|state|complete\w*|done|closed|cleared|turn(?:ed|ing)?\s+in|paid|payment|payout|reward|mark|stamp|proof)\b/i;
 const GUILD_COMPLETION_MARK = /\b(?:cleared|complete\w*|closed|paid|turned?\s+in|accepted|settled)\b/i;
+const GUILD_DETAIL_MECHANIC = /\b(?:fees?|costs?|prices?|pay(?:s|ing|ment)?|paid|payouts?|rewards?|copper|silver|gold|proof|turn[- ]?in|hand[- ]?in|complete\w*|cleared|guild\s+rank|promotion)\b/i;
 
 // The Guild's mechanics are the engine's (live run 28.09.2026: the clerk's "F-Rank to start, for everyone" became the fact
 // "new Guild members start at F-Rank" and came back in the next engine block): what registration costs or requires,
@@ -207,6 +208,14 @@ export function firewall(deltas, ctx = {}) {
             case 'quest.offer': {
                 if (guildy(d.giver)) {
                     no(d, 'guild_listing', 'official Guild contracts come only from the Board generator (canonical first)', 'Official Guild contracts come only from the board the engine shows; the contract the last reply mentioned does not exist.');
+                    continue;
+                }
+                break;
+            }
+            case 'quest.detail': {
+                const q = questOf(d.quest);
+                if (q && GUILD_DETAIL_MECHANIC.test(`${text(d.note)} ${text(d.schedule)}`)) {
+                    no(d, 'guild_quest_detail', 'a Guild contract detail may add contacts, route, meeting place or schedule, but may not invent or alter payout/payment, proof, completion/turn-in, rank or fee mechanics');
                     continue;
                 }
                 break;

@@ -1,4 +1,4 @@
-# Avereth Engine (v4.0.1)
+# Avereth Engine (v4.0.2)
 
 Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extension**. Sie besitzt Regeln, Würfel, Kampagnenzustand und Figurenwissen. Das Sprachmodell erzählt.
 
@@ -69,7 +69,7 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
    - **Welcher Stand?** Neue Änderungen liegen zuerst auf dem Branch `claude/happy-wright-1a4y19` und kommen erst mit dem Merge nach `main`. Den Ordner aus dem Stand kopieren, den du testen willst.
    - **Nur eine Kopie:** Liegt zusätzlich ein gleichnamiger Ordner unter `public/scripts/extensions/third-party/`, liefert SillyTavern pro Datei die Kopie aus `data/<user>/extensions/`. Alte Kopien löschen.
 2. SillyTavern neu laden. Unter Extensions erscheint **Avereth Engine**.
-   - **Build prüfen:** „Manage extensions“ zeigt die Version aus `manifest.json` (jetzt **4.0.0**). Dieselbe Nummer steht in der Statuszeile des Engine-Panels, in der letzten Zeile von `#audit` und bei jeder Nachricht im Event-Export (`build`). Nachrichten ohne `build` stammen von einem Stand vor 3.1.0.
+   - **Build prüfen:** „Manage extensions“ zeigt die Version aus `manifest.json` (jetzt **4.0.2**). Dieselbe Nummer steht in der Statuszeile des Engine-Panels, in der letzten Zeile von `#audit` und bei jeder Nachricht im Event-Export (`build`). Nachrichten ohne `build` stammen von einem Stand vor 3.1.0.
 3. **Charakterkarte:**
    - **Runtime V4 (Standard):** Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v4.txt`; dazu das Preset `presets/Avereth Narrator V4.json` und die API-Quelle **Custom (OpenAI-compatible)**. Schritt für Schritt: [docs/LIVETEST_V4.md §2](docs/LIVETEST_V4.md#2-einrichtung-in-sillytavern). Am besten eine eigene Karte für V4, damit laufende V3-Chats ihre behalten.
    - **Runtime V3:** Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v3.txt` (Stand 3.3; nach jedem Update neu einfügen);

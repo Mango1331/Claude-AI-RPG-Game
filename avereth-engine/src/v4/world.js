@@ -278,6 +278,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 v3({ threads: [{ text: d.text, kind: d.kind, status: d.status }] }, d);
                 break;
             case 'check': {
+                const searches = outcome.search_checks || [];
+                if (searches.length === 1) {
+                    const sc = searches[0];
+                    if (!!d.success !== !!sc.success) corrections.push(`Search "${sc.what}": the engine resolved it as ${sc.success ? 'SUCCESS' : 'FAILURE'}; keep that result.`);
+                    break; // already booked on the player turn; an extractor echo is harmless and silent
+                }
                 const die = outcome.check_die;
                 if (!die) { reject(d, 'check', 'no CHECK DIE was issued this turn'); break; }
                 emit({ t: 'check.recorded', d: { what: String(d.what || 'check').slice(0, 80), stat: d.stat ? String(d.stat).toUpperCase() : null, roll: die, success: !!d.success, claimed: !!d.success, by: 'narrator' } });

@@ -214,7 +214,9 @@ export function processReplyAny(chat, id, content, opts = {}) {
     const u = lastUserIndex(chat, id);
     if (u < 0) return { changed: false };
     const clean = extractReport(msg.mes).clean;
-    msg.mes = swapWords(opts.stripTrackers === false ? clean : stripTrackerBlocks(clean), opts.swaps || []);
+    // V4 prose is also the extractor's evidence. Post-generation word swaps can corrupt canonical names/content
+    // (live 28.09.: "Deliver a Ledger" became "Deliver a Register"). Keep V4 text byte-faithful apart from retired blocks.
+    msg.mes = opts.stripTrackers === false ? clean : stripTrackerBlocks(clean);
     if (rec(chat[u])?.command?.llm) {
         setRec(msg, { v: RECORD_V4, events: [], system_answer: true, text_hash: hash32(msg.mes) });
         return { changed: true };

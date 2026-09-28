@@ -370,14 +370,16 @@ export function buildContext(state, content, opts = {}) {
     const budget = opts.budget ?? DEFAULT_BUDGET;
     const input = opts.input || '';
     const lastReply = proseOnly(opts.lastReply).slice(-1500);
-    const loc = state.entities[state.scene.location] || content.locations.get(state.scene.location) || state.places?.[state.scene.location];
+    const sceneNode = state.meta?.runtime === 'v4' && state.scene.at ? state.scene.at : state.scene.location;
+    const loc = state.entities[sceneNode] || content.locations.get(sceneNode) || state.places?.[sceneNode];
     const realmId = loc?.realm || null;
     const realm = realmId ? content.factions.get(realmId)?.name || realmId : null;
     const locStatus = statusOf(state, state.scene.location);
+    const placeSuffix = state.scene.place && normText(state.scene.place) !== normText(loc?.name || '') ? ` — ${state.scene.place}` : '';
     const sections = [];
     const add = (name, text, priority, own = false) => text && sections.push({ name, text, priority, own, tokens: estimateTokens(text) });
 
-    add('header', `[AVERETH ENGINE — authoritative game state, turn ${state.turn}. Numbers, rolls, positions and knowledge below are binding; narrate, never recalculate.]\n${formatClock(state.clock.minute)} | ${loc ? `${loc.name}${realm ? `, ${realm}` : ''}` : 'unknown location'}${state.scene.place ? ` — ${state.scene.place}` : ''} | mode: ${state.mode}${locStatus !== 'exists' && locStatus !== 'alive' ? ` | LOCATION STATUS: ${String(locStatus).toUpperCase()}` : ''}\nSetting: Western-fantasy medieval material culture with mana/high magic; letters and messengers for distance; no modern technology.`, 0);
+    add('header', `[AVERETH ENGINE — authoritative game state, turn ${state.turn}. Numbers, rolls, positions and knowledge below are binding; narrate, never recalculate.]\n${formatClock(state.clock.minute)} | ${loc ? `${loc.name}${realm && normText(realm) !== normText(loc.name) ? `, ${realm}` : ''}` : 'unknown location'}${placeSuffix} | mode: ${state.mode}${locStatus !== 'exists' && locStatus !== 'alive' ? ` | LOCATION STATUS: ${String(locStatus).toUpperCase()}` : ''}\nSetting: Western-fantasy medieval material culture with mana/high magic; letters and messengers for distance; no modern technology.`, 0);
     // what Alaric's line carries depends on the turn: items and coin only when trade, loot or items are in play
     const itemScan = `${input} ${lastReply}`;
     const skillNamed = Object.keys(state.entities.pc.sheet?.skills || {}).some((id) => mentioned(content.skills.get(id)?.name || id, normText(input)));
@@ -401,14 +403,14 @@ export function buildContext(state, content, opts = {}) {
 
     // hard facts about the current place, present people and anything named this turn are always shown (binding)
     const scan = normText(queryText);
-    const pinned = currentFacts(state, (f) => f.hard && f.visibility !== 'secret').filter((f) => f.s === state.scene.location
+    const pinned = currentFacts(state, (f) => f.hard && f.visibility !== 'secret').filter((f) => f.s === sceneNode || f.s === state.scene.location
         || state.scene.present.includes(f.s) || mentioned(anyLabel(state, content, f.s), scan)).slice(-6);
     if (pinned.length) add('facts', `ESTABLISHED FACTS (binding; they change only with an in-world cause):\n${pinned.map((f) => `- ${propText(state, f, content)} (since ${day(f.since.minute)}${f.source?.because ? `; cause: ${f.source.because}` : ''})`).join('\n')}`, 0);
 
     const activeQuests = Object.values(state.quests).filter((q) => q.status === 'active');
     if (activeQuests.length) add('quests', `ACTIVE QUESTS (canonical; these requirements are binding and must be conveyed in-world before they are needed):\n${activeQuests.map((q) => {
         const req = q.kind === 'guild_contract'
-            ? ` | objective: ${objectiveText(q)} | proof required for Guild turn-in: ${guildProofText(q) || 'none'} | payout: ${q.payout_cp ?? 0} cp`
+            ? ` | objective: ${objectiveText(q)} | proof required for Guild turn-in: ${guildProofText(q) || 'none'} | payout: ${q.payout_cp ?? 0} cp (paid only by the Guild at accepted turn-in; contacts/stewards may confirm proof but never alter or pay this payout)`
             : q.objectives?.length ? ` | objective: ${objectiveText(q)}` : '';
         return `- ${q.title}${req}`;
     }).join('\n')}\nQUEST FRICTION: if an active Quest is a nontrivial adventure task, it must develop at least one causal, meaningful complication or active situation before normal resolution. Combat is not required; trivial safe local errands are exempt. This guarantees playable development, not success.`, 0);
@@ -417,7 +419,7 @@ export function buildContext(state, content, opts = {}) {
     const relStrength = new Map();
     for (const r of Object.values(state.relations)) if (r.b === 'pc' || r.a === 'pc') relStrength.set(r.a === 'pc' ? r.b : r.a, Math.min(1, Math.abs(r.value) / 100));
     const focus = {
-        entities: [...others, 'pc'], location: state.scene.location, realm: realmId,
+        entities: [...others, 'pc'], location: sceneNode, realm: realmId,
         quests: Object.values(state.quests).filter((q) => q.status === 'active').map((q) => q.id), turn: state.turn,
         query: `${queryText} ${others.map((id) => entityLabel(state, id)).join(' ')}`, relationStrength: relStrength,
     };
@@ -469,7 +471,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'present', 'named', 'combat', 'facts', 'relevant', 'lore', 'rules', 'corrections', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'present', 'named', 'combat', 'facts', 'quests', 'relevant', 'lore', 'rules', 'corrections', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };
@@ -480,9 +482,10 @@ export function buildContext(state, content, opts = {}) {
  * their World Info entries activate even when no recent message names them. Keys only, never engine state.
  */
 export function loreKeys(state, content) {
-    const loc = state.entities[state.scene.location] || content.locations.get(state.scene.location) || state.places?.[state.scene.location];
+    const sceneNode = state.meta?.runtime === 'v4' && state.scene.at ? state.scene.at : state.scene.location;
+    const loc = state.entities[sceneNode] || content.locations.get(sceneNode) || state.places?.[sceneNode];
     const realmId = loc?.realm || null;
-    const keys = [content.factions.get(realmId)?.name, content.locations.has(state.scene.location) ? loc.name : null];
+    const keys = [content.factions.get(realmId)?.name, loc?.name || null];
     return keys.filter(Boolean);
 }
 

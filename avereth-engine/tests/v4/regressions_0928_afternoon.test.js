@@ -7,6 +7,8 @@ import { Chat4 } from './harness.js';
 import { firewall } from '../../src/v4/firewall.js';
 import { applyWorld } from '../../src/v4/world.js';
 import { buildCatalog } from '../../src/v4/catalog.js';
+import { buildContext } from '../../src/context.js';
+import { processReplyAny } from '../../src/v4/runtime.js';
 import { knows, PC_NAME_FACT, currentFacts } from '../../src/knowledge.js';
 import { interpreterSystem } from '../../src/v4/interpret.js';
 
@@ -131,6 +133,11 @@ test('active Guild quest catalog carries exact objective and proof; V4 contract 
     const info = c.quests.find((x) => x.id === 'quest.escort')?.info || '';
     assert.match(info, /objective: ESCORT Old Hew's fish cart at Market Gate/);
     assert.match(info, /proof: "delivery confirmed by Old Hew" on the Guild contract slip/);
+    const ctx = buildContext(s, contentPack, { input: 'I wait.', outcome: { kind: 'v4', actions: ['NOTHING TO BOOK'], extra: [], check_die: 1 } }).text;
+    assert.match(ctx, /ACTIVE QUESTS \(canonical/);
+    assert.match(ctx, /proof required for Guild turn-in: "delivery confirmed by Old Hew"/);
+    assert.match(ctx, /QUEST FRICTION:/);
+    assert.match(ctx, /paid only by the Guild at accepted turn-in/);
     const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
     assert.match(contract, /GAMEPLAY RESOLUTION — SEARCH & QUEST FRICTION/);
     assert.match(contract, /Repeated searches in the same situation must advance or close the situation/);
@@ -142,4 +149,57 @@ test('interpreter contract explicitly treats walking toward a sound/track/direct
     const go = contentPack.commandVocab.commands.find((x) => x.type === 'go');
     assert.match(go.summary, /walks toward a sound\/tracks\/direction/);
     assert.match(interpreterSystem(contentPack.commandVocab), /walk toward the sound/);
+});
+
+test('search-check echoes are silent duplicates; opposite narration gets a correction, not ENGINE REFUSED', async () => {
+    const g = await created();
+    const s = structuredClone(g.state());
+    s.last.outcome = {
+        kind: 'v4', actions: [], expected_keys: {}, conditionals: [],
+        booked: { registration: false, grants: [], turnIns: [], accepted: [] },
+        auth: { go: null, gos: [], roam: true, take: [], gather: true, rest: false, timeCap: 120 },
+        search_checks: [{ what: 'large animal tracks', stat: 'PER', actor: 5, opposition: 6, chance: 45.45, roll: 11, success: true, by: 'engine', seq: 1 }],
+        check_die: null,
+    };
+    const ok = applyWorld(s, contentPack, { expected: {}, deltas: [
+        { seq: 1, type: 'check', what: 'large animal tracks', stat: 'PER', success: true },
+    ] }, { msg: 99, prose: 'He found fresh tracks.' });
+    assert.deepEqual(ok.rejected, []);
+    assert.equal(ok.events.filter((e) => e.t === 'check.recorded').length, 0, 'engine search check is not booked twice');
+
+    const bad = applyWorld(s, contentPack, { expected: {}, deltas: [
+        { seq: 1, type: 'check', what: 'large animal tracks', stat: 'PER', success: false },
+    ] }, { msg: 99, prose: 'He found nothing.' });
+    assert.deepEqual(bad.rejected, []);
+    assert.ok(bad.corrections.some((x) => /resolved it as SUCCESS/.test(x)));
+});
+
+test('extractor contract treats tracks as evidence and never re-reports engine search checks', () => {
+    const rules = contentPack.deltaVocab.rules.join('\n');
+    assert.match(rules, /engine-resolved SEARCH CHECK.*Never emit a check delta/s);
+    assert.match(rules, /Tracks, spoor, hair, a wallow, sounds, shadows.*not creature\.new/s);
+});
+
+test('Guild quest.detail cannot alter payout/proof/completion mechanics but may add an operational schedule', () => {
+    const q = { id: 'quest.watch', title: 'Night Watch', payout_cp: 90, status: 'active' };
+    const ctx = {
+        inGuildHall: true, contracts: [q],
+        booked: { registration: false, grants: [], turnIns: [], accepted: [] },
+        auth: {}, isGuildPerson: () => true,
+    };
+    const bad = firewall([{ seq: 1, type: 'quest.detail', quest: q.id, note: "The steward won't pay for early arrival.", schedule: 'after sundown' }], ctx);
+    assert.equal(bad.accept.length, 0);
+    assert.equal(bad.reject[0].rule, 'guild_quest_detail');
+    const good = firewall([{ seq: 1, type: 'quest.detail', quest: q.id, note: 'Meet steward Hobb Martt at the west door.', schedule: 'after sundown' }], ctx);
+    assert.equal(good.accept.length, 1);
+});
+
+test('Runtime V4 does not mutate narrator prose with style word replacements', async () => {
+    const g = await created();
+    await g.player('I read the notice.', []);
+    g.chat.push({ mes: 'Deliver a Ledger to the Saltwharf Counting House.', is_user: false, is_system: false, extra: {} });
+    const id = g.chat.length - 1;
+    const p = processReplyAny(g.chat, id, contentPack, { swaps: [['ledger', 'register']] });
+    assert.equal(p.extract, true);
+    assert.equal(g.chat[id].mes, 'Deliver a Ledger to the Saltwharf Counting House.');
 });

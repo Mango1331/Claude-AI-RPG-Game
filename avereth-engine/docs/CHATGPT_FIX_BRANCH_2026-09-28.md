@@ -69,3 +69,19 @@ The existing extractor prompt test is updated for delta-0.5.
 - Older creature identity/target-clarification issues should still be re-tested and only changed if reproduced on this branch.
 
 The next intended live run remains a Warrior baseline: normal Guild use, a nontrivial Quest, purposeful wilderness Search, then one larger opponent if the world/search result produces one.
+
+## Live run 15:17 — follow-up findings (Engine 4.0.1)
+
+The real SillyTavern run confirmed the new Search design: a purposeful search produced one engine-owned PER check (5 vs 6, d100 11, SUCCESS) and the narrator turned it into a concrete fresh large-animal trail leading downstream instead of another atmospheric non-result.
+
+It also exposed five follow-up issues now fixed in 4.0.2:
+
+- the extractor echoed that already-booked Search check as a `check` delta, which produced a visible `ENGINE REFUSED: no CHECK DIE`; Search-check echoes are now explicitly forbidden and are silently deduplicated defensively;
+- tracks/hair/wallow of an unseen unknown beast were incorrectly proposed as `creature.new`; extractor canon now treats signs as evidence/fact/thread until the creature itself is established;
+- the ACTIVE QUESTS / QUEST FRICTION section had been built but accidentally omitted from the final context-section order, so Quest Friction was not actually present in the live narrator prompt; it is now included as priority-0 context;
+- V4 word replacement `ledger=register` changed the model's correct canonical title “Deliver a Ledger…” into visible “Deliver a Register…” before extraction; V4 now leaves narrator prose unchanged by style word swaps (V3 retains the feature);
+- a Guild `quest.detail` persisted the sentence “he won't pay for early” even though Guild payout is engine-owned. Guild details may now add contacts/routes/schedules but the extractor and firewall forbid payout/payment/reward/proof/completion/rank/fee mechanics.
+
+The same run also exposed a V4 location-view issue: a wilderness leaf could display as `Caelreth, Caelreth — Unnamed Wood...` because context/HUD used the V3 compatibility `scene.location` instead of the V4 leaf `scene.at`. V4 context/HUD/lore keys now prefer `scene.at` while leaving compatibility state unchanged.
+
+Quest Friction itself remains untested by this run because Alaric accepted Night Watch and then left for unrelated free exploration before undertaking the quest.

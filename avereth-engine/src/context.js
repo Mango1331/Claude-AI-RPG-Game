@@ -211,12 +211,12 @@ export function recordLine(state, r, name = (id) => fightLabel(state, id)) {
 /** Runtime V4: the narrator writes only prose; the engine reads the reply afterwards (src/v4/extract.js). */
 export const V4_OUTPUT_LINE = 'OUTPUT: write only the story. No <avereth> block, no fact report, no tags, no tracker, sheet or status block: the engine reads the reply afterwards.';
 
-/** The engine's instructions to the narrator for a V4 story turn: PLAYER ACTIONS, open decisions, the CHECK DIE. */
+/** The engine's instructions to the narrator for a V4 story turn. Search/combat checks are engine-owned; ordinary fiction is narrated plausibly and then stored. */
 export function playerActionsBlock(outcome) {
     const lines = ['PLAYER ACTIONS (the engine resolved Alaric\'s message; narrate exactly these, in this order; he decides nothing else):', ...(outcome.actions || [])];
     for (const x of outcome.extra || []) lines.push(x);
     if (outcome.search_checks?.length) lines.push('SEARCH RESOLUTION is already rolled and binding in PLAYER ACTIONS above. Do not reroll it, replace it with another check, or turn a concrete result into another vague teaser.');
-    if (outcome.check_die) lines.push(`CHECK DIE for this reply: d100 = ${outcome.check_die}. Use it only if a Core #7 check is genuinely needed (uncertain AND consequential): Chance% = Actor ÷ (Actor + Opposition) × 100 (Actor = relevant stat + explicit bonuses; situational ±10/20/35 %); success if ${outcome.check_die} ≤ Chance%. Otherwise ignore the die.`);
+    if (!outcome.search_checks?.length) lines.push('ORDINARY WORLD FICTION: resolve non-combat physical/social uncertainty plausibly from established fiction; do not invent rolls. Combat, Stealth and explicit SEARCH are the engine-owned mechanical exceptions.');
     return lines.join('\n');
 }
 

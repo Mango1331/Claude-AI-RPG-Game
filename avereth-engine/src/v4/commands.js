@@ -14,7 +14,7 @@
 // reply (conditionals) go into the turn's outcome; the world applier (src/v4/world.js) reads them from there.
 import { formatCoin } from '../economy.js';
 import { resolveCheck } from '../checks.js';
-import { entityLabel, setFactEvents } from '../knowledge.js';
+import { entityLabel, setFactEvents, truth } from '../knowledge.js';
 import { normText, slug } from '../util.js';
 import {
     placeName, hallOf, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey,
@@ -87,6 +87,24 @@ function pickQuest(s, ref, statuses, kind = null) {
 // ------------------------------------------------------------------------------------------------ handlers
 // Each handler: (s, content, c, ctx, emit, env) -> {status, reason?, line?, extra?, cap?, condition?}
 const HANDLERS = {
+    'journey.continue'(s, content, c, ctx) {
+        if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
+        const q = Object.values(s.quests).find((x) => x.status === 'active' && (x.objectives || []).some((o) => String(o.verb || '').toUpperCase() === 'ESCORT'));
+        if (!q) return { status: 'refused', reason: 'no established journey', line: 'NOTHING TO DEPART ON — no active escort journey is established here.' };
+        const qtext = normText([q.title, q.client, q.desired_end_state, ...(q.details || []), ...(q.notes || []), ...(q.objectives || []).flatMap((o) => [o.what, o.where])].filter(Boolean).join(' '));
+        const contact = s.scene.present.find((id) => {
+            if (id === 'pc' || s.entities[id]?.kind !== 'npc') return false;
+            const e = s.entities[id];
+            return [e.name, truth(s, id, 'occupation')[0]?.o, ...(e.descriptors || [])].filter(Boolean).map(normText).some((x) => x.length >= 3 && qtext.includes(x));
+        });
+        if (!contact) return { status: 'refused', reason: 'journey not ready here', line: 'NOTHING TO DEPART ON — the established escort is not ready with him here.' };
+        const go = { seq: c.seq, to: null, name: `the established journey for "${q.title}"`, hall: false, newName: 'the established journey' };
+        ctx.auth.go = go;
+        ctx.auth.gos.push(go);
+        ctx.auth.roam = true;
+        ctx.auth.timeCap = Math.max(ctx.auth.timeCap, content.rules.time.travel_cap_min);
+        return { status: 'authorized', line: `DEPARTS/CONTINUES — the already-established escort journey for "${q.title}" with ${entityLabel(s, contact)}; the story may advance that journey and establish where they reach.` };
+    },
     go(s, content, c, ctx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT GO — not while the fight runs.' };
         const known = typeof c.to === 'string';

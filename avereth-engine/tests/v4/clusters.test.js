@@ -58,6 +58,26 @@ test('"I\'m here to register" at the roadside is a purpose, not a registration; 
     assert.equal(h.state().offers['offer.registration'].lines[0].price_cp, 20, 'the canon fee, not a narrated price');
 });
 
+test('"Register me, here are the 2 silver" registers once, in either order: the canon fee, one payment, no "he has not agreed to pay"', async () => {
+    for (const commands of [
+        [{ seq: 1, type: 'guild.register', quote: 'Register me' }, { seq: 2, type: 'pay', to: 'npc.guild_clerk', amount_cp: 20, for: 'the fee', quote: 'here are the 2 silver' }],
+        [{ seq: 1, type: 'pay', to: 'npc.guild_clerk', amount_cp: 20, for: 'the fee', quote: 'here are the 2 silver' }, { seq: 2, type: 'guild.register', quote: 'register me' }],
+    ]) {
+        const g = await atHall();
+        const coin = g.state().entities.pc.sheet.coin_cp;
+        const p = await g.player('Register me, please; here are the 2 silver.', commands);
+        const s = g.state();
+        assert.deepEqual(statuses(g), ['resolved', 'resolved']);
+        assert.equal(s.guild.membership?.rank, 'Novice');
+        assert.equal(s.entities.pc.sheet.coin_cp, coin - 20, 'one payment of the canon fee');
+        assert.equal(s.offers['offer.registration'].status, 'accepted');
+        assert.deepEqual(s.decisions, []);
+        assert.doesNotMatch(p.context.text, /has not agreed to pay|REGISTERS — pending/);
+        assert.match(p.context.text, /PAYS — the Guild registration fee, 20 cp: registered/);
+        assert.deepEqual(validateState(s, content), []);
+    }
+});
+
 test('"I came here from the reedbeds" is no go; "I gave you the heads" is no give (memories, not decisions)', async () => {
     const g = await atHall();
     await g.player('I came here from the reedbeds this morning.', [{ seq: 1, type: 'go', to: { new: 'the reedbeds' }, quote: 'I came here from the reedbeds this morning.' }]);

@@ -162,7 +162,15 @@ const HANDLERS = {
     pay(s, content, c, ctx, emit) {
         const reg = s.offers[REGISTRATION_OFFER];
         const fee = feeOf(content);
-        if (reg?.status === 'open' && hallOf(s, s.scene.at) && (c.amount_cp === null || c.amount_cp === undefined || c.amount_cp === fee)) {
+        const theFee = c.amount_cp === null || c.amount_cp === undefined || c.amount_cp === fee;
+        if (reg?.status === 'open' && hallOf(s, s.scene.at) && theFee) {
+            return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: REGISTRATION_OFFER, lines: null }, ctx, emit);
+        }
+        // "Here are the 2 silver, register me": the fee of a registration this message asks for (or names) is the Guild's
+        // canon fee, paid at the desk; never an ordinary payment to the clerk
+        const asks = (env(ctx).commands || []).some((x) => x.type === 'guild.register') || /\b(?:regist\w*|membership|guild)\b/i.test(c.for || '');
+        if (asks && theFee && hallOf(s, s.scene.at) && !membership(s)) {
+            openRegistration(s, content, emit);
             return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: REGISTRATION_OFFER, lines: null }, ctx, emit);
         }
         // an open offer of the one he pays: paying it is accepting it
@@ -325,6 +333,7 @@ const HANDLERS = {
     },
     'guild.register'(s, content, c, ctx, emit) {
         if (!hallOf(s, s.scene.at)) return { status: 'refused', reason: 'not at a Guild hall', line: 'CANNOT REGISTER — only at a Guild hall.' };
+        if (membership(s) && ctx.booked.registration) return { status: 'resolved', line: 'REGISTERS — done: the fee he paid above registered him.' };
         if (membership(s)) return { status: 'refused', reason: 'already a member', line: 'NOTHING TO DO — he is already a member.' };
         const fee = openRegistration(s, content, emit);
         return { status: 'pending', reason: 'fee', line: `REGISTERS — pending: the Guild's registration fee is ${fee % 10 === 0 ? `${fee / 10} silver (${fee} cp)` : `${fee} cp`}, one-time. Let the clerk name it and explain; stop there: he has not agreed to pay.` };
@@ -398,15 +407,27 @@ export const COMMAND_TYPES = Object.keys(HANDLERS);
  */
 export function resolveCommands(s, content, commands, emit, envx = {}) {
     const ctx = newTurnContext(content);
-    ctx.env = { msg: envx.msg ?? s.turn };
-    for (const c of [...commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0))) {
+    const ordered = [...commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0));
+    ctx.env = { msg: envx.msg ?? s.turn, commands: ordered };
+    const lines = new Map();
+    for (const c of ordered) {
         const h = HANDLERS[c.type];
         const r = h ? h(s, content, c, ctx, emit, envx) : { status: 'refused', reason: `unknown command ${c.type}`, line: null };
-        const res = { seq: c.seq, type: c.type, status: r.status, ...(r.reason ? { reason: r.reason } : {}), ...(r.cap ? { cap: r.cap } : {}), ...(r.condition ? { condition: r.condition } : {}), quote: c.quote ?? null };
-        ctx.resolutions.push(res);
-        emit({ t: 'cmd.resolved', d: res });
-        if (r.line) ctx.actions.push(`${c.seq}. ${r.line}`);
+        ctx.resolutions.push({ seq: c.seq, type: c.type, status: r.status, ...(r.reason ? { reason: r.reason } : {}), ...(r.cap ? { cap: r.cap } : {}), ...(r.condition ? { condition: r.condition } : {}), quote: c.quote ?? null });
+        if (r.line) lines.set(c.seq, r.line);
         if (r.extra) ctx.extra.push(...r.extra);
+    }
+    // "Register me, here is the fee": a registration a later command of the same message paid is no open decision
+    if (ctx.booked.registration) {
+        for (const res of ctx.resolutions.filter((x) => x.type === 'guild.register' && x.status === 'pending')) {
+            res.status = 'resolved';
+            delete res.reason;
+            lines.set(res.seq, 'REGISTERS — he asks to be registered and pays the fee at once (below).');
+        }
+    }
+    for (const res of ctx.resolutions) {
+        emit({ t: 'cmd.resolved', d: res });
+        if (lines.has(res.seq)) ctx.actions.push(`${res.seq}. ${lines.get(res.seq)}`);
     }
     delete ctx.env;
     return ctx;

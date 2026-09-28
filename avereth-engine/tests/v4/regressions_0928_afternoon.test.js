@@ -13,7 +13,7 @@ import { knows, PC_NAME_FACT, currentFacts } from '../../src/knowledge.js';
 import { interpreterSystem } from '../../src/v4/interpret.js';
 import { sceneHandle } from '../../src/v4/scene_handles.js';
 import { parseIntent } from '../../src/intent.js';
-import { boardRequest, checkProof } from '../../src/v4/guild.js';
+import { boardRequest, checkProof, completeContract } from '../../src/v4/guild.js';
 import { worldPanel } from '../../src/display.js';
 import { playerTurn } from '../../src/engine.js';
 
@@ -361,7 +361,7 @@ test('invented Guild plate replacement fee is engine-owned canon and is rejected
     assert.equal(r.reject[0].rule, 'guild_canon');
 });
 
-test('pending V4 extraction does not expose final prose before its scene state is committed', async () => {
+test('pending V4 extraction leaves narrator prose visible while continuity is recorded', async () => {
     const g = await created();
     await g.player('I look toward the reeds.', []);
     const prose = 'A plated beast steps into view.';
@@ -370,6 +370,94 @@ test('pending V4 extraction does not expose final prose before its scene state i
     const p = processReplyAny(g.chat, id, contentPack);
     assert.equal(p.extract, true);
     assert.equal(g.chat[id].mes, prose, 'extractor evidence remains byte-faithful');
-    assert.ok(!String(g.chat[id].extra.display_text || '').includes(prose), 'visible final narration waits for extraction');
-    assert.match(String(g.chat[id].extra.display_text || ''), /engine is reading the reply/i);
+    assert.match(String(g.chat[id].extra.display_text || ''), /A plated beast steps into view/, 'story is readable immediately');
+    assert.doesNotMatch(String(g.chat[id].extra.display_text || ''), /engine is reading|recording continuity/i);
+});
+
+
+test('NPC voluntarily handing a known quest item to Alaric is world agency, not overreach', async () => {
+    const g = await created();
+    const st = structuredClone(g.state());
+    st.entities['npc.sella'] = { id:'npc.sella', kind:'npc', name:'Sella', descriptors:['rescuer'], traits:'', status:'alive', created:{turn:3,minute:0}, template:'commoner', card:{} };
+    st.scene.present.push('npc.sella');
+    st.objects['obj.hook'] = { id:'obj.hook', name:"Ossry's brass ladder-hook", kind:'item', stack:false, qty:1, unit:null, holder:{entity:'npc.sella'}, marks:[], for_quests:['quest.lamp'] };
+    st.last.outcome = {
+        kind:'v4', actions:['NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; narrate what he says and does, and the world\'s response.'],
+        expected_keys:{}, conditionals:[], booked:{registration:false,grants:[],turnIns:[],accepted:[]},
+        auth:{go:null,gos:[],roam:false,take:[],gather:false,rest:false,timeCap:120}, search_checks:[], check_die:null,
+    };
+    const r = applyWorld(st, contentPack, { expected:{}, deltas:[
+        {seq:1,type:'object.move',object:'obj.hook',qty:null,to:'pc'}
+    ]}, {msg:99, prose:'Sella presses Ossry\'s brass ladder-hook into Alaric\'s hand.'});
+    assert.deepEqual(r.rejected, []);
+    assert.equal(r.state.objects['obj.hook'].holder.entity, 'pc');
+    assert.ok(!r.events.some((e)=>e.t==='overreach.noted'));
+});
+
+test('quest.ready stores achieved story outcome and allows flexible Guild turn-in without exact proof token', async () => {
+    const g = await created();
+    const st = structuredClone(g.state());
+    st.quests['quest.lamp'] = {
+        id:'quest.lamp', title:'Missing Lamplighter', kind:'guild_contract', client:'Ward', rank:'Novice', level:1, qtype:'standard',
+        payout_cp:120, desired_end_state:'Ossry is found and his fate is credibly resolved for the Ward',
+        objectives:[{id:'o1',verb:'FIND',what:'Ossry',qty:1,unit:null,where:'Weeping Stair',status:'open'}],
+        proof:[{id:'p1',kind:'object',what:"Ossry's brass ladder-hook",qty:1,unit:null,consume:true}],
+        source:{branch:'loc.test'}, schedule:{starts_at:null,deadline:null}, status:'active', taker:'pc', history:[], details:[], notes:[],
+    };
+    st.last.outcome = {kind:'v4',actions:[],expected_keys:{},conditionals:[],booked:{registration:false,grants:[],turnIns:[],accepted:[]},auth:{go:null,gos:[],roam:false,take:[],gather:false,rest:false,timeCap:120},search_checks:[],check_die:null};
+    const r = applyWorld(st, contentPack, {expected:{},deltas:[
+        {seq:1,type:'quest.ready',quest:'quest.lamp',note:'Ossry was found alive, rescued from the collapse and returned to the Ward.'}
+    ]},{msg:99,prose:'Ossry reaches the city alive with witnesses.'});
+    assert.equal(r.state.quests['quest.lamp'].ready, true);
+    assert.match(r.state.quests['quest.lamp'].ready_note, /rescued/);
+    const events=[];
+    const done = completeContract(r.state, contentPack, r.state.quests['quest.lamp'], (e)=>events.push(e), {step:1});
+    assert.equal(done.ok, true);
+    assert.ok(events.some((e)=>e.t==='quest.status' && e.d.to==='completed'));
+    assert.ok(events.some((e)=>e.t==='coin.changed' && e.d.delta===120));
+    assert.ok(!events.some((e)=>e.t==='object.consumed'), 'no exact proof token is required/consumed when story outcome is ready');
+});
+
+test('Guild turn-in still refuses an untouched contract with neither readiness nor legacy proof', async () => {
+    const g = await created();
+    const st = structuredClone(g.state());
+    const q = {
+        id:'quest.untouched', title:'Untouched Job', kind:'guild_contract', rank:'Novice', level:1, qtype:'standard', payout_cp:50,
+        desired_end_state:'the work is actually done', objectives:[{id:'o1',verb:'REPAIR',what:'bridge',status:'open'}],
+        proof:[{id:'p1',kind:'mark',what:'signed by foreman',on:'slip'}], status:'active', history:[], notes:[], details:[],
+    };
+    st.quests[q.id]=q;
+    const events=[];
+    const done=completeContract(st,contentPack,q,(e)=>events.push(e),{step:1});
+    assert.equal(done.ok,false);
+    assert.match(done.reason,/outcome has not yet been established/);
+    assert.ok(!events.some((e)=>e.t==='coin.changed'));
+});
+
+test('ordinary V4 story turns no longer consume an unused generic CHECK DIE', async () => {
+    const g = await created();
+    const before=g.state().rng.n;
+    const r=await g.player('I brace my shoulder against the stuck door and push.', []);
+    const o=g.state().last.outcome;
+    assert.equal(o.kind,'v4');
+    assert.equal(o.check_die,null);
+    assert.equal(o.search_checks.length,0);
+    assert.equal(g.state().rng.n,before, 'no random number is spent merely because ordinary fiction may be uncertain');
+});
+
+test('active quest narrator context treats objectives/proof as memory and verification guidance, not literal gate', async () => {
+    const g=await created();
+    const st=structuredClone(g.state());
+    st.quests['quest.soft']={
+        id:'quest.soft', title:'Find the Carter', kind:'guild_contract', rank:'Novice', level:1, qtype:'standard', payout_cp:80,
+        desired_end_state:'the missing carter is found and the client learns what happened',
+        objectives:[{id:'o1',verb:'FIND',what:'missing carter',status:'open'}],
+        proof:[{id:'p1',kind:'object',what:'carter badge',qty:1,unit:null,consume:false}],
+        status:'active', history:[], notes:['Tracks lead north'], progress:[{objective:'follow the tracks',status:'done',turn:3}], details:[],
+    };
+    const ctx=buildContext(st,contentPack,{input:'I continue looking.',lastReply:'',outcome:{kind:'v4',actions:['NOTHING TO BOOK'],extra:[],search_checks:[]}});
+    assert.match(ctx.text,/ACTIVE QUEST MEMORY/);
+    assert.match(ctx.text,/verification examples:/);
+    assert.match(ctx.text,/not as a word-for-word checklist/);
+    assert.doesNotMatch(ctx.text,/proof required for Guild turn-in/);
 });

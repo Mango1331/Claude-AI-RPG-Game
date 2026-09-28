@@ -22,7 +22,13 @@ const fill = (answer) => {
     const a = structuredClone(answer);
     for (const d of a.deltas || []) {
         const spec = content.deltaVocab.deltas.find((x) => x.type === d.type);
-        for (const [k, f] of Object.entries(spec?.fields || {})) if (d[k] === undefined) d[k] = f.nullable ? null : k === 'count' ? 1 : d[k];
+        for (const [k, f] of Object.entries(spec?.fields || {})) if (d[k] === undefined) {
+            if (f.nullable) d[k] = null;
+            else if (k === 'count') d[k] = 1;
+            else if (k === 'anchor' && d.type === 'creature.new') {
+                d[k] = [...content.anchors.values()].find((a) => a.aliases.some((x) => x.toLowerCase() === String(d.species || '').toLowerCase()))?.id || 'rat';
+            }
+        }
     }
     return a;
 };
@@ -195,7 +201,7 @@ test('a fight in a V4 campaign: an attack goes to the V3 combat engine; a commit
     await g.player('*i walk down into the cellar*', [{ seq: 1, type: 'go', to: { new: 'cellar' }, quote: 'i walk down into the cellar' }]);
     const r1 = await g.reply('Two rats rush at him from the dark.', fill({ expected: { 1: { arrived: true, at: { new: { name: 'cellar', kind: 'site', parent: 'loc.redmarch' } } } }, deltas: [
         { seq: 1, type: 'arrive', at: { new: { name: 'cellar', kind: 'site', parent: 'loc.redmarch' } } },
-        { seq: 2, type: 'creature.new', ref: 'cellar rat', species: 'rat', desc: ['grey'], count: 2, present: true, band: 'SHORT' },
+        { seq: 2, type: 'creature.new', ref: 'cellar rat', species: 'rat', anchor: 'rat', desc: ['grey'], count: 2, present: true, band: 'SHORT' },
         { seq: 3, type: 'hostile', by: ['cellar rat'] },
     ] }));
     assert.equal(r1.record.extraction.status, 'applied');

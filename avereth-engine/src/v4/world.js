@@ -21,9 +21,6 @@ import {
 } from './domain.js';
 import { completeContract, REGISTRATION_OFFER } from './guild.js';
 
-const AUTHORITY_ROLE = /\b(?:guard|watch(?:man)?|sergeant|captain|constable|reeve|bailiff|magistrate|official|officer|toll ?keeper|tax|customs|steward|marshal|warden)\b/i;
-const HOSTILE_ROLE = /\b(?:bandit|thief|robber|brigand|cutpurse|pickpocket|thug|highwayman)\b/i;
-
 /** The firewall's view of the state after the player's turn (src/v4/firewall.js FirewallContext). */
 export function firewallContext(s, content) {
     const o = s.last?.outcome || {};
@@ -292,18 +289,6 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'thread':
                 v3({ threads: [{ text: d.text, kind: d.kind, status: d.status }] }, d);
                 break;
-            case 'check': {
-                const searches = outcome.search_checks || [];
-                if (searches.length === 1) {
-                    const sc = searches[0];
-                    if (!!d.success !== !!sc.success) corrections.push(`Search "${sc.what}": the engine resolved it as ${sc.success ? 'SUCCESS' : 'FAILURE'}; keep that result.`);
-                    break; // already booked on the player turn; an extractor echo is harmless and silent
-                }
-                const die = outcome.check_die;
-                if (!die) { reject(d, 'check', 'no CHECK DIE was issued this turn'); break; }
-                emit({ t: 'check.recorded', d: { what: String(d.what || 'check').slice(0, 80), stat: d.stat ? String(d.stat).toUpperCase() : null, roll: die, success: !!d.success, claimed: !!d.success, by: 'narrator' } });
-                break;
-            }
             case 'recover': {
                 const who = idOf(d.who) || 'pc';
                 const serviced = (s.services || []).some((x) => x.turn === s.turn && ['lodging', 'healing', 'meal'].includes(x.service));
@@ -520,10 +505,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const counterpart = openOffers(s).some((o) => o.seller === by) || events.some((e) => e.t === 'transaction.completed' && e.d.seller === by);
         if (counterpart) { reject(d, 'coerce', 'the other side of a sale or an open offer cannot coerce (a sale is never a confiscation)'); return; }
         if (!d.because) { reject(d, 'coerce', 'coercion needs a because'); return; }
-        const e = s.entities[by];
-        const role = [truth(s, by, 'occupation')[0]?.o, ...(e?.descriptors || []), e?.traits, e?.template].filter(Boolean).join(' ');
-        if ((d.kind === 'confiscation' || d.kind === 'fine') && !AUTHORITY_ROLE.test(role)) { reject(d, 'coerce', `${d.kind} needs an authority (a guard, an official)`); return; }
-        if (d.kind === 'robbery' && !(HOSTILE_ROLE.test(role) || s.pending_combat?.some((p) => p.by === by) || s.encounter)) { reject(d, 'coerce', 'a robbery needs a hostile robber'); return; }
+        // Whether this coercion is lawful, wise or socially justified is fiction, not a mechanical role-name check.
+        // The engine only requires a present external actor and an explicit causal reason, then stores the consequence.
         const sheet = s.entities.pc.sheet;
         if (d.coin_cp) {
             const cp = Math.min(d.coin_cp, sheet.coin_cp);

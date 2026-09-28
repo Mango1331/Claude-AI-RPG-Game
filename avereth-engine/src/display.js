@@ -140,6 +140,9 @@ function changeLines(before, after, content, events) {
         } else if (e.t === 'level.up' && d.id === 'pc') {
             lvl = d.level;
             out.push(sys(`LEVEL UP → Level ${d.level} (+${d.free_points} free Stat Points)`));
+        } else if (e.t === 'quest.ready') {
+            const q = after.quests[d.id];
+            out.push(sys(`QUEST READY FOR TURN-IN — ${q?.title || d.id}${d.note ? ` · ${d.note}` : ''}`));
         } else if (e.t === 'quest.status' && QUEST[d.to] && d.to !== 'offered') {
             const q = after.quests[d.id];
             out.push(sys(`QUEST ${QUEST[d.to]} — ${q?.title || d.id}${q?.rank ? ` (${q.rank})` : ''}`));

@@ -6,10 +6,13 @@
 //
 // Options: --reps 3  --concurrency 2  --max-tokens 2000  --temperature 0.2  --timeout 180 (s)
 //          --reasoning-off auto|none|minimal|<value>|skip   (auto: try "none", then "minimal")
-//          --cases id,id  --out <dir>  --st-url <url>  --profile "<Connection Profile>"
+//          --modes schema_keep,schema_off,plain_keep,plain_off  --cases id,id  --out <dir>  --st-url <url>
+//          --profile "<Connection Profile>"
 //
-// Three modes × 10 cases × 3 repetitions = 90 calls, plus 3–4 preflight calls and at most one repair call per invalid
-// answer. Output: p0_out/s0/summary.md (to send back), results.json, decision.json (read by S1 and S2).
+// Four modes (json_schema / JSON per instruction × reasoning as configured / off) × 10 cases × 3 repetitions = 120 calls,
+// plus 3–4 preflight calls and at most one repair call per invalid answer (the first run of 27.09. used three modes and
+// could not separate format from reasoning, docs/P0_BERICHT.md §2).
+// Output: p0_out/s0/summary.md (to send back), results.json, decision.json (read by S1 and S2).
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { openProvider } from './lib/provider.mjs';
@@ -31,9 +34,14 @@ const MODE_DEFS = {
     plain_off: { schema: false, off: true, label: 'JSON per Anweisung, Reasoning aus' },
 };
 
-/** Which modes run, given what the preflight found. */
+/**
+ * Which modes run, given what the preflight found. With json_schema and a lower reasoning value both available, all four
+ * combinations run (format × reasoning): the first P0 run left out plain_keep, so its format comparison was confounded
+ * with reasoning and the combination it chose (plain + reasoning as configured) was not measured at all
+ * (docs/P0_BERICHT.md §2).
+ */
 export function chooseModes({ schemaOk, offValue }) {
-    if (schemaOk && offValue) return ['schema_keep', 'schema_off', 'plain_off'];
+    if (schemaOk && offValue) return ['schema_keep', 'schema_off', 'plain_keep', 'plain_off'];
     if (schemaOk) return ['schema_keep', 'plain_keep'];
     if (offValue) return ['plain_keep', 'plain_off'];
     return ['plain_keep'];
@@ -85,19 +93,63 @@ export function modeStats(records) {
 }
 
 /**
- * The S0 decision (plan §4.3: json_schema only if S0 shows the provider keeps it).
- * Reasoning off wins when it answers as reliably and is clearly faster or thinks clearly less.
- * json_schema wins when it errs in ≤ 5 % of the calls, is valid on the first try in ≥ 95 %, and is not worse than
- * plain JSON (≤ 2 points less valid, ≤ 5 points less often right).
+ * The S0 decision (plan §4.3: json_schema only if S0 shows the provider keeps it), in two steps that each compare
+ * like with like:
+ *   1. format: json_schema against JSON per instruction at the SAME reasoning level (configured, else off). json_schema
+ *      wins when it errs in ≤ 5 % of the calls, is valid on the first try in ≥ 95 %, and is not worse than plain JSON
+ *      (≤ 2 points less valid, ≤ 5 points less often right).
+ *   2. reasoning: within the chosen format, off against configured. Off wins when it answers as reliably and is clearly
+ *      faster or thinks clearly less.
+ * A step without both of its modes is reported as not measured, never as a result: "not run in this run" is not
+ * "rejected by the provider" (the plain_keep run of 27.09. said so), and a combination that was not measured is named
+ * as such (the first run of 27.09. chose plain + configured reasoning and showed the numbers of plain_off).
+ * @returns {{structured_mode: 'json_schema'|'plain', reasoning: string|null, chosen_mode: string, chosen_measured: boolean, notes: string[]}}
  */
 export function decide(stats, { offValue, schemaOk }) {
     const notes = [];
+    const has = (m) => !!stats[m];
+
+    // 1) format, at one reasoning level on both sides
+    let structured = 'plain';
+    if (!schemaOk) {
+        notes.push('Strukturierter Modus: JSON per Anweisung (Modus C). json_schema wurde in der Vorabprüfung vom Provider abgelehnt.');
+    } else if (!has('schema_keep') && !has('schema_off')) {
+        notes.push('Strukturierter Modus: JSON per Anweisung (Modus C). json_schema wurde in diesem Lauf nicht gemessen (Vorabprüfung: angenommen); ein Vergleich braucht --modes schema_keep,plain_keep.');
+    } else {
+        const level = has('schema_keep') && has('plain_keep') ? 'keep' : has('schema_off') && has('plain_off') ? 'off' : null;
+        const schemaMode = level ? `schema_${level}` : has('schema_keep') ? 'schema_keep' : 'schema_off';
+        const plainMode = level ? `plain_${level}` : has('plain_keep') ? 'plain_keep' : has('plain_off') ? 'plain_off' : null;
+        const a = stats[schemaMode];
+        const b = plainMode ? stats[plainMode] : null;
+        const keeps = (a.error_pct ?? 100) <= 5 && (a.valid_first_pct ?? 0) >= 95;
+        const notWorse = !b || ((a.valid_first_pct ?? 0) >= (b.valid_first_pct ?? 0) - 2 && (a.semantic_pct ?? 0) >= (b.semantic_pct ?? 0) - 5);
+        const numbers = `${schemaMode}: Fehler ${a.error_pct} %, gültig im 1. Versuch ${a.valid_first_pct} %, inhaltlich richtig ${a.semantic_pct} %${b ? `; ${plainMode}: gültig ${b.valid_first_pct} %, richtig ${b.semantic_pct} %` : ''}`;
+        if (keeps && notWorse) {
+            structured = 'json_schema';
+            notes.push(`Strukturierter Modus: json_schema (${numbers}).`);
+        } else {
+            notes.push(`Strukturierter Modus: JSON per Anweisung (Modus C). ${numbers}.`);
+        }
+        if (!level && b) notes.push(`Hinweis: ${schemaMode} und ${plainMode} liefen mit unterschiedlichem Reasoning: Der Formatvergleich ist mit dem Reasoning vermischt (konfundiert) und nur ein Richtwert.`);
+        const loose = ['schema_keep', 'schema_off'].filter(has).find((m) => stats[m].raw_json_pct >= 95 && (stats[m].valid_first_pct ?? 100) < 95);
+        if (loose) notes.push(`Hinweis: json_schema wurde angenommen und lieferte reines JSON (${loose}: ${stats[loose].raw_json_pct} %), aber nur ${stats[loose].valid_first_pct} % passten beim ersten Versuch zum Schema: Der Provider nimmt den Parameter an, erzwingt das Schema aber nicht. Maßgeblich bleibt der lokale Validator.`);
+    }
+    for (const f of ['schema', 'plain']) {
+        const k = stats[`${f}_keep`];
+        const o = stats[`${f}_off`];
+        if (offValue && k && o && o.reasoning_chars > 2 * Math.max(k.reasoning_chars, 50)) {
+            notes.push(`Hinweis: reasoning_effort ${offValue} erzeugte mehr Reasoning-Text als die Einstellung (${f}_off ${o.reasoning_chars} statt ${k.reasoning_chars} Zeichen je Antwort${o.truncated ? `, ${o.truncated} abgeschnitten` : ''}): Der Wert wirkt bei diesem Provider nicht als „aus“.`);
+        }
+    }
+
+    // 2) reasoning, within the chosen format
+    const fmt = structured === 'json_schema' ? 'schema' : 'plain';
     let reasoning = null;
-    const keepMode = stats.schema_keep ? 'schema_keep' : 'plain_keep';
-    const offMode = stats.schema_off ? 'schema_off' : stats.plain_off ? 'plain_off' : null;
-    if (offValue && offMode && stats[keepMode]) {
-        const k = stats[keepMode];
-        const o = stats[offMode];
+    if (!offValue) {
+        notes.push('Reasoning bleibt wie konfiguriert: Der Provider nahm keinen niedrigeren reasoning_effort an (oder --reasoning-off skip).');
+    } else if (has(`${fmt}_keep`) && has(`${fmt}_off`)) {
+        const k = stats[`${fmt}_keep`];
+        const o = stats[`${fmt}_off`];
         const reliable = o.answered > 0 && (o.error_pct ?? 100) <= (k.error_pct ?? 0) + 5
             && (o.valid_first_pct ?? 0) >= (k.valid_first_pct ?? 0) - 5 && (o.semantic_pct ?? 0) >= (k.semantic_pct ?? 0) - 5;
         const faster = o.p50_s !== null && k.p50_s !== null && k.p50_s > 0 && o.p50_s <= 0.85 * k.p50_s;
@@ -107,36 +159,17 @@ export function decide(stats, { offValue, schemaOk }) {
             reasoning = offValue;
             notes.push(`Reasoning aus (reasoning_effort: ${offValue}): p50 ${o.p50_s} s statt ${k.p50_s} s, gültig ${o.valid_first_pct} % statt ${k.valid_first_pct} %, inhaltlich richtig ${o.semantic_pct} % statt ${k.semantic_pct} %.`);
         } else if (!reliable) {
-            notes.push(`Reasoning bleibt wie konfiguriert: Mit ${offValue} war die Antwort weniger zuverlässig (Fehler ${o.error_pct} %, gültig ${o.valid_first_pct} %, richtig ${o.semantic_pct} %).`);
+            notes.push(`Reasoning bleibt wie konfiguriert: Mit ${offValue} war die Antwort weniger zuverlässig (${fmt}_off: Fehler ${o.error_pct} %, gültig ${o.valid_first_pct} %, richtig ${o.semantic_pct} %; ${fmt}_keep: gültig ${k.valid_first_pct} %, richtig ${k.semantic_pct} %).`);
         } else {
             notes.push(`Reasoning bleibt wie konfiguriert: ${offValue} bringt keinen messbaren Vorteil (p50 ${o.p50_s} s statt ${k.p50_s} s).`);
         }
-    } else if (!offValue) {
-        notes.push('Reasoning bleibt wie konfiguriert: Der Provider nahm keinen niedrigeren reasoning_effort an (oder --reasoning-off skip).');
-    }
-
-    let structured = 'plain';
-    const schemaMode = reasoning && stats.schema_off ? 'schema_off' : stats.schema_keep ? 'schema_keep' : null;
-    const plainMode = reasoning && stats.plain_off ? 'plain_off' : stats.plain_keep ? 'plain_keep' : stats.plain_off ? 'plain_off' : null;
-    if (!schemaOk || !schemaMode) {
-        notes.push('Strukturierter Modus: JSON per Anweisung (Modus C). json_schema wurde vom Provider abgelehnt.');
     } else {
-        const a = stats[schemaMode];
-        const b = plainMode ? stats[plainMode] : null;
-        const keeps = (a.error_pct ?? 100) <= 5 && (a.valid_first_pct ?? 0) >= 95;
-        const notWorse = !b || ((a.valid_first_pct ?? 0) >= (b.valid_first_pct ?? 0) - 2 && (a.semantic_pct ?? 0) >= (b.semantic_pct ?? 0) - 5);
-        if (keeps && notWorse) {
-            structured = 'json_schema';
-            notes.push(`Strukturierter Modus: json_schema (${schemaMode}: Fehler ${a.error_pct} %, gültig im 1. Versuch ${a.valid_first_pct} %, inhaltlich richtig ${a.semantic_pct} %${b ? `; ${plainMode}: gültig ${b.valid_first_pct} %, richtig ${b.semantic_pct} %` : ''}).`);
-        } else {
-            notes.push(`Strukturierter Modus: JSON per Anweisung (Modus C). ${schemaMode}: Fehler ${a.error_pct} %, gültig im 1. Versuch ${a.valid_first_pct} %, richtig ${a.semantic_pct} %${b ? `; ${plainMode}: gültig ${b.valid_first_pct} %, richtig ${b.semantic_pct} %` : ''}.`);
-        }
-        if (reasoning && schemaMode === 'schema_off' && plainMode === 'plain_off') { /* same reasoning on both sides */ } else if (b) {
-            notes.push(`Hinweis: ${schemaMode} und ${plainMode} liefen mit unterschiedlichem Reasoning; der Vergleich ist nur ein Richtwert.`);
-        }
+        notes.push(`Reasoning bleibt wie konfiguriert, ohne Beleg: Für ${fmt === 'schema' ? 'json_schema' : 'JSON per Anweisung'} lief in diesem Lauf nicht beides (${fmt}_keep und ${fmt}_off).`);
     }
-    const chosen = structured === 'json_schema' ? (reasoning && stats.schema_off ? 'schema_off' : 'schema_keep') : (reasoning && stats.plain_off ? 'plain_off' : stats.plain_keep ? 'plain_keep' : 'plain_off');
-    return { structured_mode: structured, reasoning, chosen_mode: chosen, notes };
+    const chosen = `${fmt}_${reasoning ? 'off' : 'keep'}`;
+    const measured = has(chosen);
+    if (!measured) notes.push(`Die gewählte Kombination ${chosen} wurde in diesem Lauf NICHT gemessen. Vor S1/S2 nachmessen: node tools/p0/s0_structured.mjs --modes ${chosen}`);
+    return { structured_mode: structured, reasoning, chosen_mode: chosen, chosen_measured: measured, notes };
 }
 
 function casesFrom(arg) {
@@ -186,8 +219,11 @@ function summaryMarkdown(run) {
     L.push(`- **Reasoning für Interpreter, Recovery und Generator: ${decision.reasoning ? `aus (reasoning_effort: ${decision.reasoning})` : 'wie konfiguriert'}**`);
     const cm = stats[decision.chosen_mode];
     if (cm) L.push(`- Gewählter Modus \`${decision.chosen_mode}\`: Interpreter-Fälle p50 ${cm.by_role.interpreter.p50_s ?? '–'} s (Gate „p50 ≤ 6 s“ prüft S1 mit dem echten Interpreter-Prompt), Tokens je Aufruf ≈ ${cm.prompt_tok ?? '?'} Prompt + ${cm.completion_tok ?? '?'} Output.`);
+    else L.push(`- Gewählter Modus \`${decision.chosen_mode}\`: **in diesem Lauf nicht gemessen** (keine Zahlen; siehe Hinweis unten).`);
     for (const n of decision.notes) L.push(`- ${n}`);
-    L.push('- S1 und S2 übernehmen diese Wahl aus `p0_out/s0/decision.json` (überschreibbar mit `--mode` und `--reasoning`).');
+    L.push(run.outIsDefault
+        ? '- S1 und S2 übernehmen diese Wahl aus `p0_out/s0/decision.json` (überschreibbar mit `--mode` und `--reasoning`).'
+        : `- Diese Entscheidung steht in \`${run.outName}/decision.json\`. S1 und S2 lesen \`p0_out/s0/decision.json\`, nicht diese Datei; für S1/S2 gilt \`--mode\` und \`--reasoning\` auf der Kommandozeile.`);
     const problems = records.filter((r) => !r.skipped && (!r.ok || !r.valid_first || !r.semantic_ok));
     if (problems.length) {
         L.push('', '## Auffälligkeiten (höchstens 25)', '');
@@ -322,10 +358,10 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
         calls_total: calls, calls_preflight, calls_repair: records.reduce((n, r) => n + (r.repaired ? 1 : 0), 0),
     };
     const run = { meta, preflight, modes, stats, decision, records };
-    const summary = summaryMarkdown(run);
+    const summary = summaryMarkdown({ ...run, outIsDefault: path.resolve(outDir) === path.resolve(OUT_ROOT, 's0'), outName: path.relative(path.dirname(OUT_ROOT), outDir) || outDir });
     const decisionFile = {
         tool: TOOL, version: TOOL_VERSION, created: meta.finished, backend: d.backend, model: d.model,
-        structured_mode: decision.structured_mode, reasoning: decision.reasoning, chosen_mode: decision.chosen_mode,
+        structured_mode: decision.structured_mode, reasoning: decision.reasoning, chosen_mode: decision.chosen_mode, chosen_measured: decision.chosen_measured,
         evidence: { schema_accepted: schemaOk, reasoning_off_value: offValue, stats: Object.fromEntries(modes.map((m) => [m, { ...stats[m], by_role: undefined }])) },
         notes: decision.notes,
     };

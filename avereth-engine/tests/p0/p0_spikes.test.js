@@ -9,7 +9,7 @@ import path from 'node:path';
 import { openProvider } from '../../tools/p0/lib/provider.mjs';
 import { readJsonl, readJson } from '../../tools/p0/lib/util.mjs';
 import { strictProblems } from '../../tools/p0/lib/schema.mjs';
-import { loadDeltaVocab, checkBlock, deltaSchema } from '../../tools/p0/lib/deltas.mjs';
+import { loadDeltaVocab, checkBlock, deltaSchema, scoreDeltas } from '../../tools/p0/lib/deltas.mjs';
 import { loadVocabulary, loadScenes, interpreterSchema, interpreterSystem, sceneIds } from '../../tools/p0/lib/interpreter.mjs';
 import { scoreCase, aggregate, matchCommand } from '../../tools/p0/lib/score.mjs';
 import { CASES, s0MockResponder } from '../../tools/p0/s0_cases.mjs';
@@ -36,12 +36,34 @@ test('S0: ten cases, strict schemas, gold answers valid and right; mode choice a
         assert.deepEqual(validateSchema(c.gold, c.schema), [], c.id);
         assert.equal(c.check(c.gold).ok, true, c.id);
     }
-    assert.deepEqual(chooseModes({ schemaOk: true, offValue: 'none' }), ['schema_keep', 'schema_off', 'plain_off']);
+    // format × reasoning, all four (the first run of 27.09. left out plain_keep: docs/P0_BERICHT.md §2)
+    assert.deepEqual(chooseModes({ schemaOk: true, offValue: 'none' }), ['schema_keep', 'schema_off', 'plain_keep', 'plain_off']);
     assert.deepEqual(chooseModes({ schemaOk: false, offValue: null }), ['plain_keep']);
-    const st = (x) => ({ answered: 30, error_pct: 0, valid_first_pct: 100, semantic_pct: 100, p50_s: 4, reasoning_tok: 0, reasoning_chars: 0, ...x });
-    assert.equal(s0decide({ schema_keep: st({ p50_s: 10 }), schema_off: st({ p50_s: 4 }), plain_off: st({}) }, { offValue: 'none', schemaOk: true }).structured_mode, 'json_schema');
-    assert.equal(s0decide({ schema_keep: st({ valid_first_pct: 80 }), schema_off: st({ valid_first_pct: 80 }), plain_off: st({}) }, { offValue: 'none', schemaOk: true }).structured_mode, 'plain');
-    assert.equal(s0decide({ schema_keep: st({ p50_s: 4 }), schema_off: st({ p50_s: 4 }), plain_off: st({}) }, { offValue: 'none', schemaOk: true }).reasoning, null, 'no gain → reasoning stays as configured');
+    const st = (x) => ({ answered: 30, error_pct: 0, valid_first_pct: 100, raw_json_pct: 100, semantic_pct: 100, p50_s: 4, reasoning_tok: 0, reasoning_chars: 0, truncated: 0, ...x });
+    const all = (x = {}) => ({ schema_keep: st(x.schema_keep), schema_off: st(x.schema_off), plain_keep: st(x.plain_keep), plain_off: st(x.plain_off) });
+    const opts = { offValue: 'none', schemaOk: true };
+    let d = s0decide(all({ schema_keep: { p50_s: 10 }, plain_keep: { p50_s: 10 }, schema_off: { p50_s: 4 } }), opts);
+    assert.deepEqual([d.structured_mode, d.reasoning, d.chosen_mode, d.chosen_measured], ['json_schema', 'none', 'schema_off', true]);
+    assert.equal(s0decide(all({ schema_keep: { valid_first_pct: 80 } }), opts).structured_mode, 'plain');
+    d = s0decide(all(), opts);
+    assert.equal(d.reasoning, null, 'no gain → reasoning stays as configured');
+    assert.ok(!d.notes.some((n) => /konfundiert|NICHT gemessen/.test(n)), 'a full run compares like with like');
+    // regression, the first S0 run of 27.09. (p0_out/s0): no plain_keep, the chosen combination was never measured
+    d = s0decide({
+        schema_keep: st({ valid_first_pct: 20, semantic_pct: 96.7, p50_s: 5.7, reasoning_chars: 75 }),
+        schema_off: st({ valid_first_pct: 20, raw_json_pct: 63.3, semantic_pct: 70, p50_s: 47.2, reasoning_chars: 3808, truncated: 10 }),
+        plain_off: st({ valid_first_pct: 76.7, raw_json_pct: 70, semantic_pct: 73.3, p50_s: 24.2, reasoning_chars: 3287, truncated: 9 }),
+    }, opts);
+    assert.deepEqual([d.structured_mode, d.reasoning, d.chosen_mode, d.chosen_measured], ['plain', null, 'plain_keep', false]);
+    assert.ok(d.notes.some((n) => n.includes('NICHT gemessen') && n.includes('--modes plain_keep')));
+    assert.ok(d.notes.some((n) => n.includes('erzwingt das Schema aber nicht')), 'accepted is not enforced');
+    assert.ok(d.notes.some((n) => n.includes('nicht als „aus“')), 'none produced more reasoning, not less');
+    // regression, the plain_keep run of 27.09. (p0_out/s0_plain_keep): json_schema not run is not json_schema rejected
+    d = s0decide({ plain_keep: st({ p50_s: 4.8 }) }, opts);
+    assert.ok(!d.notes.some((n) => /abgelehnt/.test(n)), d.notes.join(' | '));
+    assert.ok(d.notes.some((n) => n.includes('nicht gemessen (Vorabprüfung: angenommen)')));
+    assert.equal(d.chosen_measured, true);
+    assert.ok(s0decide({ plain_keep: st({}) }, { offValue: null, schemaOk: false }).notes.some((n) => n.includes('vom Provider abgelehnt')));
 });
 
 test('S0 run with the mock: a provider that rejects json_schema and reasoning overrides ends in plain, reasoning kept', async () => {
@@ -140,7 +162,10 @@ test('S2 data: 41 recorded turns, every request present and cleanly turned into 
         assert.deepEqual(notes, [], t.id);
         const all = messages.map((m) => m.content).join('\n');
         assert.ok(all.includes('WORLD DELTAS') && all.includes('PLAYER ACTIONS'), t.id);
-        assert.ok(!/fact report|FACT REPORT|taken_by/.test(all), `${t.id}: the 3.1 report is gone`);
+        // the old report key taken_by is gone; the enum value taken_by_other of listing.gone is not it (the typed field
+        // list of the hidden-schema fix prints enums)
+        assert.ok(!/fact report|FACT REPORT|\btaken_by\b/.test(all), `${t.id}: the 3.1 report is gone`);
+        assert.ok(all.includes('FORMAT RULES (schema-critical):') && all.includes('kind must be exactly one of: realm, region'), `${t.id}: the prompt states the schema's constraints`);
         assert.ok(!all.includes('RESOLVED THIS TURN'), t.id);
         const schema = deltaSchema(deltaVocab, t.catalog, t.expected_keys);
         assert.deepEqual(strictProblems(schema), [], t.id);
@@ -149,6 +174,42 @@ test('S2 data: 41 recorded turns, every request present and cleanly turned into 
         assert.equal(scoreTurn(t, chk.value).semantic, 1, `${t.id}: the gold answer scores 100 %`);
         assert.ok(t.reply.length > 200 && !t.reply.includes('<avereth>'), `${t.id}: recorded prose without the old report`);
     }
+});
+
+test('S2 harness fix of 27.09.: with --concurrency 1, B-gen and B-block run one after the other (no parallel calls, no 429)', async () => {
+    const out = tmp('s2serial');
+    try {
+        let inFlight = 0;
+        let peak = 0;
+        const inner = s2MockResponder(s2turns, deltaVocab);
+        const provider = await openProvider({
+            backend: 'mock',
+            mock: async (req) => {
+                inFlight += 1;
+                peak = Math.max(peak, inFlight);
+                await new Promise((r) => setTimeout(r, 1));
+                try { return await inner(req); } finally { inFlight -= 1; }
+            },
+        });
+        const turns = s2turns.slice(0, 4).map((t) => t.id).join(',');
+        assert.equal(await s2main(['--out', out, '--variant', 'b', '--concurrency', '1', '--turns', turns], { ...quiet, provider, decision: null }), 0);
+        assert.equal(peak, 1, 'never two provider calls at once');
+        const b = JSON.parse(fs.readFileSync(path.join(out, 'b.json'), 'utf8'));
+        assert.equal(b.gen.length + b.block.length, 8);
+    } finally {
+        fs.rmSync(out, { recursive: true, force: true });
+    }
+});
+
+test('S2 scoring correction: a turn without gold items no longer counts as 100 %; unscored extra deltas are counted', () => {
+    const v = { expected: {}, deltas: [{ seq: 1, type: 'time', minutes: 5 }, { seq: 2, type: 'object.new', name: 'x', kind: 'item', qty: 1, unit: null, holder: 'pc', for_quest: null }] };
+    const s = scoreDeltas({ expected: {}, critical: [], forbidden: [] }, v);
+    assert.equal(s.semantic, 1, 'P0 as measured: items=0 scores 1');
+    assert.equal(s.semantic_v2, null, 'corrected: nothing to score');
+    assert.deepEqual(s.extraneous, ['time', 'object.new']);
+    const f = scoreDeltas({ expected: {}, critical: [{ type: 'time' }], forbidden: [{ type: 'object.new' }] }, v);
+    assert.equal(f.semantic_v2, 0.5);
+    assert.deepEqual(f.extraneous, [], 'a forbidden hit is scored, not extraneous');
 });
 
 test('S2 run with the mock: B wins with good blocks; with too many missing blocks the rule picks A', async () => {

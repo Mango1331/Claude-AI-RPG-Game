@@ -244,6 +244,12 @@ export function goldMatch(gold, pred) {
 /**
  * S2 semantic score of one answer (block or recovery) against a turn's gold.
  * gold: {expected: {"2": {...}}, critical: [delta pattern], forbidden: [delta pattern]}
+ *
+ * semantic (P0 as measured): hits / (gold items + forbidden hits); a turn without gold items and without a forbidden
+ * hit scores 1, whatever else it reports. semantic_v2 (P0 correction, docs/P0_BERICHT.md §4): null for such a turn, so
+ * the per-turn mean no longer counts it as perfect; extraneous: the deltas no gold item used (neither right nor wrong
+ * by this gold: the gold lists what must and what must not be there, not every correct delta). The item-weighted micro
+ * average of s2_deltas.mjs never counted items=0 turns as perfect.
  */
 export function scoreDeltas(gold, value) {
     const deltas = Array.isArray(value?.deltas) ? value.deltas : [];
@@ -260,6 +266,8 @@ export function scoreDeltas(gold, value) {
     for (const f of gold.forbidden || []) for (const d of deltas) if (goldMatch(f, d)) forbiddenHits.push({ pattern: f, delta: d });
     const items = expKeys.length + critical.length;
     const hits = expectedOk.length + critical.filter((c) => c.found).length;
+    const forbiddenIdx = new Set(deltas.map((d, i) => ((gold.forbidden || []).some((f) => goldMatch(f, d)) ? i : -1)).filter((i) => i >= 0));
+    const extraneous = deltas.filter((d, i) => !used.has(i) && !forbiddenIdx.has(i)).map((d) => d?.type ?? '?');
     return {
         expected_total: expKeys.length,
         expected_ok: expectedOk.length,
@@ -269,6 +277,8 @@ export function scoreDeltas(gold, value) {
         critical_missing: critical.filter((c) => !c.found).map((c) => c.pattern),
         forbidden_hits: forbiddenHits,
         semantic: items + forbiddenHits.length ? hits / (items + forbiddenHits.length) : 1,
+        semantic_v2: items + forbiddenHits.length ? hits / (items + forbiddenHits.length) : null,
+        extraneous,
         deltas: deltas.length,
     };
 }

@@ -1,6 +1,17 @@
 # Runtime V4 · P0: Spikes S0–S3 (Werkzeuge, Anleitung, Stand)
 
-**Status:** Werkzeuge fertig, offline und gegen ein echtes SillyTavern 1.19 geprüft. Die Messung mit dem echten Provider steht aus; sie läuft lokal beim Spieler (§3). Kein P1-Produktcode: Nichts in `src/` wurde geändert; `tools/p0/` wird von keiner Engine-Datei importiert.
+**Status:** P0 ist gemessen (27.09.2026, `p0_out/`). **Ergebnis, gültige und ungültige Läufe, Werkzeugkorrekturen: [P0_BERICHT.md](P0_BERICHT.md).** Kurz:
+- S0: Plain JSON, Reasoning low;
+- S1: Präzision 93,1 %, nicht bestanden;
+- S2: D2 = A;
+- S3: 36/36.
+
+Die Anleitung unten gilt weiter, mit den Korrekturen aus P0_BERICHT §7:
+- S0 misst vier Modi;
+- S2 läuft seriell, mit den Schema-Regeln im Prompt;
+- `tools/p0/rescore.mjs` wertet gespeicherte Antworten neu aus, ohne Aufrufe.
+
+`tools/p0/` wird von keiner Engine-Datei importiert.
 
 Grundlage: [RUNTIME_V4_PLAN.md](RUNTIME_V4_PLAN.md) §16 (P0), §4 (Befehle), §5 (Deltas), §6 (Domänen), §11 (Tests).
 
@@ -24,7 +35,7 @@ Grundlage: [RUNTIME_V4_PLAN.md](RUNTIME_V4_PLAN.md) §16 (P0), §4 (Befehle), §
 | Spike | Werkzeug | Frage | Aufrufe | Dauer (geschätzt) | Key nötig | Ergebnis |
 |---|---|---|---|---|---|---|
 | Vorab | `tools/p0/check.mjs --ping` | Ist SillyTavern (oder der Provider) erreichbar, welche Einstellungen gelten? | 1 | Sekunden | über ST: nein | Konsole |
-| **S0** | `tools/p0/s0_structured.mjs` | Hält der Provider `json_schema` ein? Was kostet Reasoning an Zeit und Token? | 3–4 Vorab + 3 Modi × 10 Fälle × 3 Wiederholungen = **90**, + höchstens 1 Reparatur je ungültiger Antwort | 5–20 min | über ST: nein | `p0_out/s0/summary.md`, `decision.json` |
+| **S0** | `tools/p0/s0_structured.mjs` | Hält der Provider `json_schema` ein? Was kostet Reasoning an Zeit und Token? | 3–4 Vorab + 4 Modi × 10 Fälle × 3 Wiederholungen = **120**, + höchstens 1 Reparatur je ungültiger Antwort (bis P0_BERICHT §7: 3 Modi, 90) | 5–25 min | über ST: nein | `p0_out/s0/summary.md`, `decision.json` |
 | **S1** | `tools/p0/s1_interpreter.mjs` | Übersetzt der Interpreter Spielertexte richtig in Befehle, ohne falsche Agency? | **256** (ein Aufruf je Korpusfall), + Reparaturen; schnell: `--sample 80` | 8–30 min (Stichprobe 3–10 min) | über ST: nein | `p0_out/s1/summary.md` |
 | **S2** | `tools/p0/s2_deltas.mjs` | Variante A (Extraktion nach jeder Antwort) oder B (Block in der Antwort, Recovery nur bei Bedarf)? | A **41** + B **82** (41 Erzähler + 41 Block zur aufgezeichneten Prosa), + 1 Recovery je fehlerhaftem Block | 20–40 min | über ST: nein | `p0_out/s2/summary.md`, `decision.json` |
 | **S3** | `tools/p0/s3_prototype.mjs` | Tragen die Domänengrenzen den V12-Pfad? | **0** (offline) | unter 1 s | nein | `p0_out/s3/summary.md` |
@@ -203,9 +214,16 @@ Danach das PowerShell-Fenster schließen. Weg B braucht kein Aufräumen: Der Key
 |---|---|---|
 | `schema_keep` | `json_schema` (strict) | wie konfiguriert |
 | `schema_off` | `json_schema` | Override |
+| `plain_keep` | Schema als Text im Prompt | wie konfiguriert |
 | `plain_off` | Schema als Text im Prompt | Override |
 
-Lehnt der Provider etwas ab, wählt das Werkzeug die passenden Modi selbst (`plain_keep`/`plain_off`). Ein Modus, der dreimal nur Fehler liefert, wird abgebrochen.
+- Lehnt der Provider etwas ab, wählt das Werkzeug die passenden Modi selbst.
+- `--modes` legt sie fest (etwa `--modes plain_keep`).
+- Ein Modus, der dreimal nur Fehler liefert, wird abgebrochen.
+- **Korrektur nach P0 (P0_BERICHT §3, §7):** Die erste Fassung ließ `plain_keep` weg. Damit waren Format und Reasoning vermischt, und die gewählte Kombination blieb ungemessen. Jetzt laufen alle vier.
+  - `decide` vergleicht das Format bei gleichem Reasoning und das Reasoning im gewählten Format.
+  - Eine ungemessene Wahl meldet es ausdrücklich (`chosen_measured: false`).
+  - „Nicht gemessen“ heißt nie mehr „abgelehnt“.
 
 **Die 10 Fälle** (`tools/p0/s0_cases.mjs`) sind kleine Fassungen echter V4-Aufrufe aus dem Lauf 07:10:
 - Modus-Klassifikation;
@@ -311,6 +329,11 @@ Das Gate „p50 ≤ 6 s“ misst S1 mit dem echten Interpreter-Prompt.
 
 - Mit `--agreement` extrahiert S2 zusätzlich B-gens eigene Prosa. Das kostet einen Aufruf je Zug und ergibt einen Übereinstimmungswert.
 - **Semantische Genauigkeit** wird je Gold-Element gerechnet: Jedes Erwartungsfeld und jedes kritische Delta zählt einmal, ein verbotenes Delta als Fehler. Zum Vergleich steht das Mittel je Zug daneben.
+- **Korrektur nach P0 (P0_BERICHT §4):**
+  - Ein Zug ohne Gold-Element zählte im Mittel je Zug als 100 %. Jetzt steht daneben das korrigierte Mittel ohne solche Züge (`semantic_v2`).
+  - Deltas, die kein Gold-Element bewertet, werden gezählt (`extraneous`).
+  - `runB` ruft B-gen und B-block nacheinander auf, nicht mehr gleichzeitig.
+  - Der Extraktor-Prompt nennt die schema-relevanten Regeln (FORMAT RULES).
 - **Global verboten:** ein `quest.offer` mit Gilde, Brett, Schalter oder Clerk als Geber (D3).
 
 **Entscheidung** (`decision.json`, Regel §5.6):
@@ -373,10 +396,11 @@ Dazu der Aushang (5 Listings) und Varianten.
 | 10 | **Recovery-Grund:** Ein fehlendes Erwartungsfeld macht den Block *unvollständig*, nicht *ungültig* (§3.4); der Validator trennt das | `checkBlock` |
 | 11 | **Modus C:** kurze Formatzeile statt Schema-Text im Prompt. Das spart beim Interpreter ≈ 2k Token je Aufruf | S1-Prompt |
 
-**Offen bis zum Messlauf beim Spieler:**
-- S0: Modus und Reasoning;
-- S1: Gates;
-- S2: D2.
+**Gemessen am 27.09.2026** (Einzelheiten und Korrekturen: [P0_BERICHT.md](P0_BERICHT.md)):
+- S0: JSON per Anweisung, Reasoning wie konfiguriert (low). `json_schema` wird angenommen, aber nicht erzwungen.
+- S1: Negativ-Präzision 93,1 % (Gate ≥ 98 %: nicht bestanden), Recall 94,2 %, p50 3,7 s.
+- S2: D2 = A.
+- S3: 36/36.
 
 ---
 
@@ -390,6 +414,7 @@ Dazu der Aushang (5 Listings) und Varianten.
 | `tools/p0/s2_deltas.mjs` | S2 |
 | `tools/p0/s3_prototype.mjs` | S3 (Wegwerf-Prototyp) |
 | `tools/p0/report.mjs` | Ergebnisse bündeln |
+| `tools/p0/rescore.mjs` | gespeicherte Antworten offline neu auswerten (korrigiertes Scoring, später Guard und Firewall des Produkts), ohne Aufrufe; schreibt `p0_out/rescored/` |
 | `tools/p0/lib/provider.mjs` | Backends SillyTavern, direct, mock |
 | `tools/p0/lib/structured.mjs` | strukturierter Aufruf, Reparatur, Transport-Retry |
 | `tools/p0/lib/schema.mjs` | strikter Schema-Dialekt |

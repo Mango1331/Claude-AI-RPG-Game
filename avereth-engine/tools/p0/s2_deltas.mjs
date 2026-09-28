@@ -222,6 +222,8 @@ async function runA(provider, turns, vocab, o, note) {
             id: t.id, ok: r.ok, error: r.ok ? null : scrub(r.error, o.secrets), valid_first: r.valid_first, valid_final: r.valid_final,
             complete: value ? completeKeys(value, t.expected_keys) : false, score: value ? scoreTurn(t, value) : null, items: goldItems(t),
             ms: r.attempts[0]?.ms ?? null, tokens: callTokens(r), value, errors: r.errors_final,
+            // an invalid answer is kept (shortened) for diagnosis: the sample run of 27.09. kept only its error paths
+            answer: r.ok && !value ? scrub(String(r.content).slice(0, 2000), o.secrets) : undefined,
         };
         note(`[A ${++done}/${turns.length}] ${t.id}: ${!r.ok ? `Fehler (${rec.error})` : !value ? 'ungültig' : `Semantik ${round(rec.score.semantic * 100, 0)} %`} · ${round((rec.ms ?? 0) / 1000, 1)} s`);
         return rec;
@@ -286,6 +288,13 @@ function agreement(a, b) {
 
 // ------------------------------------------------------------------------------------------------ report
 const sec = (ms) => round((ms ?? 0) / 1000, 1);
+/** semantic_v2 of a stored score; scores of the runs of 27.09. predate it and are recomputed from their counts. */
+function rescoreTurnValue(x) {
+    if (x.semantic_v2 !== undefined) return x.semantic_v2;
+    const items = (x.expected_total ?? 0) + (x.critical_total ?? 0);
+    const denom = items + (x.forbidden_hits?.length ?? 0);
+    return denom ? ((x.expected_ok ?? 0) + (x.critical_found ?? 0)) / denom : null;
+}
 function semStats(recs) {
     const scored = recs.filter((r) => r.score);
     const s = scored.map((r) => r.score);
@@ -300,6 +309,14 @@ function semStats(recs) {
         forbidden_hits: sum((x) => x.forbidden_hits.length),
         // items-weighted: every expected field and critical delta counts once, a forbidden delta counts as a miss
         semantic_micro_pct: pct(sum((x) => x.expected_ok + x.critical_found), recs.reduce((n, r) => n + (r.items ?? 0), 0) + sum((x) => x.forbidden_hits.length)),
+        // P0 correction (docs/P0_BERICHT.md §4): the per-turn mean without the turns that have nothing to score
+        semantic_turns_v2_pct: (() => {
+            const v = s.map((x) => rescoreTurnValue(x)).filter((x) => x !== null);
+            return v.length ? round(100 * mean(v), 1) : null;
+        })(),
+        turns_without_items: s.filter((x) => rescoreTurnValue(x) === null).length,
+        deltas_total: sum((x) => x.deltas ?? 0),
+        extraneous_total: sum((x) => (x.extraneous ? x.extraneous.length : 0)),
     };
 }
 
@@ -356,9 +373,11 @@ function summaryMarkdown({ meta, a, b, turns, vocab }) {
         L.push(mdTable(['Kennzahl', 'Wert'], [
             ['Antwort gültig (Schema) / vollständig', `${s.valid_pct ?? '–'} % / ${pct(a.records.filter((r) => r.complete).length, a.records.length) ?? '–'} %`],
             ['**Semantische Genauigkeit** (je Gold-Element; Mittel je Zug)', `**${s.semantic_micro_pct ?? '–'} %** (${s.semantic_all_pct ?? '–'} %)`],
+            ['Mittel je Zug, korrigiert (ohne die Züge ohne Gold-Element)', `${s.semantic_turns_v2_pct ?? '–'} % (${s.turns_without_items} Züge ohne Gold-Element)`],
             ['Kritische Deltas gefunden', `${s.critical} (${s.critical_pct ?? '–'} %)`],
             ['expected-Felder richtig', `${s.expected} (${s.expected_pct ?? '–'} %)`],
             ['Verbotene Deltas (falsch gemeldet)', `${s.forbidden_hits}`],
+            ['Deltas gesamt / davon von keinem Gold-Element erfasst (weder richtig noch falsch bewertet)', `${s.deltas_total} / ${s.extraneous_total}`],
             ['Token je Aufruf (Prompt / Output)', `${round(mean(a.records.filter((r) => r.tokens.reported).map((r) => r.tokens.prompt)), 0) ?? '?'} / ${round(mean(a.records.filter((r) => r.tokens.reported).map((r) => r.tokens.completion)), 0) ?? '?'}`],
             ['Latenz p50 / p90', `${sec(percentile(a.records.map((r) => r.ms), 50))} / ${sec(percentile(a.records.map((r) => r.ms), 90))} s`],
         ]));
@@ -378,6 +397,7 @@ function summaryMarkdown({ meta, a, b, turns, vocab }) {
             ['Erzähler-Latenz p50 / p90', `${sec(percentile(okGen.map((r) => r.ms), 50))} / ${sec(percentile(okGen.map((r) => r.ms), 90))} s`],
             ['Block zur aufgezeichneten Prosa: gültig und vollständig', `${pct(b.block.filter((r) => r.valid && r.complete).length, b.block.length) ?? '–'} %`],
             ['**Semantische Genauigkeit B** (Block zur aufgezeichneten Prosa; je Gold-Element; Mittel je Zug)', `**${s.semantic_micro_pct ?? '–'} %** (${s.semantic_all_pct ?? '–'} %)`],
+            ['Mittel je Zug B, korrigiert (ohne die Züge ohne Gold-Element)', `${s.semantic_turns_v2_pct ?? '–'} %`],
             ['Kritische Deltas gefunden / expected richtig / verbotene Deltas', `${s.critical} / ${s.expected} / ${s.forbidden_hits}`],
             ...(gen.some((r) => r.agreement) ? [['Übereinstimmung Block ↔ Extraktion derselben Prosa (Delta-Typen, Jaccard)', `${round(mean(gen.filter((r) => r.agreement).map((r) => r.agreement.delta_types_jaccard)), 2)}`]] : []),
         ]));

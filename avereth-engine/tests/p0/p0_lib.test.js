@@ -132,3 +132,25 @@ test('report bundles the summaries and refuses anything that looks like a key', 
         fs.rmSync(dir, { recursive: true, force: true });
     }
 });
+
+test('rescore: the recorded P0 answers give the recorded decision numbers again; the corrections sit beside them', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const { ENGINE_ROOT, readJsonl } = await import('../../tools/p0/lib/util.mjs');
+    const { rescoreS2, rescoreS1 } = await import('../../tools/p0/rescore.mjs');
+    const { DATA_FILE } = await import('../../tools/p0/s2_deltas.mjs');
+    const { CORPUS_FILE } = await import('../../tools/p0/s1_interpreter.mjs');
+    const dir = path.join(ENGINE_ROOT, 'p0_out');
+    if (!fs.existsSync(path.join(dir, 's2', 'a.json'))) return; // the results of 27.09. are not in this checkout
+    const s2 = rescoreS2(path.join(dir, 's2'), readJsonl(DATA_FILE));
+    assert.equal(s2.a.semantic_micro_pct, 87.4, 'A as measured');
+    assert.equal(s2.a.semantic_turns_v1_pct, 85.2);
+    assert.equal(s2.b_block.semantic_micro_pct, 67.3, 'B as measured');
+    assert.equal(s2.a.semantic_turns_v2_pct, 81.6, 'A per turn, without the turns that have no gold item');
+    assert.equal(s2.a.forbidden_hits, 7);
+    assert.equal(s2.a.critical, '58/63');
+    assert.ok(s2.b_block_strict.semantic_micro_pct < s2.b_block.semantic_micro_pct, 'B counting only schema-valid blocks');
+    const s1 = rescoreS1(path.join(dir, 's1', 'results.json'), readJsonl(CORPUS_FILE));
+    assert.equal(s1.layers[0].negative_precision_pct, 93.1);
+    assert.equal(s1.layers[0].recall_pct, 94.2);
+});

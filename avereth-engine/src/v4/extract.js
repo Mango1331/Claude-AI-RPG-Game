@@ -9,7 +9,7 @@
 import { O, S, B, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 
-export const EXTRACTOR_VERSION = 'extract-4.4';
+export const EXTRACTOR_VERSION = 'extract-4.5';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -86,7 +86,7 @@ const fieldList = (d) => Object.entries(d.fields).map(([k, spec]) => `${k}:${fie
 // the schema's constraints in words (the validator checks exactly these); without them the P0 sample run of 27.09. was
 // 26 % valid, with them 100 %
 export const FORMAT_RULES = [
-    'Every field printed for a delta is required. A field that allows null must still be present; use null when it is unknown.',
+    'Fields shown with |null may be omitted when unknown; the engine fills them with null before validation. Other fields are required unless the delta description says otherwise.',
     'string[] is always a JSON array, even when it contains only one value.',
     `place-ref is an exact known place id from the CATALOG, or {"new":{"name":"...","kind":"...","parent":...}}. For a new place, kind must be exactly one of: ${PLACE_KINDS.join(', ')}. Use settlement for a city, town, village or hamlet; site for a building, inn or Guild hall; interior for a room; wilderness for natural outdoor terrain.`,
     'When the CATALOG already contains the place, quest or object, copy its id exactly. Never rewrite an id, invent another id for it, or substitute its title/name.',
@@ -159,13 +159,36 @@ export function extractorRequest(vocab, { catalog, actions, player = null, expec
  * Read an extractor answer: valid (JSON + schema) and complete (every expected key answered).
  * @returns {{value: object|null, valid: boolean, complete: boolean, errors: string[], missing: string[], raw: boolean}}
  */
+function normalizeSoftFields(value, vocab) {
+    if (!value || typeof value !== 'object') return value;
+    const specs = new Map((vocab.deltas || []).map((d) => [d.type, d]));
+    const deltas = Array.isArray(value.deltas) ? value.deltas.map((d) => {
+        if (!d || typeof d !== 'object') return d;
+        const spec = specs.get(d.type);
+        if (!spec) return d;
+        const x = { ...d };
+        for (const [k, f] of Object.entries(spec.fields || {})) if (x[k] === undefined && f.nullable) x[k] = null;
+        // Harmless persistence defaults: their omission should not trigger another LLM call.
+        if (d.type === 'person.new' && x.desc === undefined) x.desc = [];
+        if (d.type === 'creature.new') {
+            if (x.desc === undefined) x.desc = [];
+            if (x.count === undefined) x.count = 1;
+        }
+        if (d.type === 'memory' && x.who === undefined) x.who = [];
+        return x;
+    }) : value.deltas;
+    return { ...value, expected: value.expected && typeof value.expected === 'object' ? value.expected : {}, deltas };
+}
+
 export function parseExtraction(answer, vocab, ids, expectedKeys) {
-    const { value, error, raw } = extractJsonObject(answer);
+    const parsed = extractJsonObject(answer);
+    const { error, raw } = parsed;
+    const value = normalizeSoftFields(parsed.value, vocab);
     const want = Object.keys(expectedKeys || {});
     if (!value) return { value: null, valid: false, complete: false, errors: [error || 'no JSON object'], missing: want, raw: false };
     const exp = value && typeof value.expected === 'object' && value.expected ? value.expected : {};
     const missing = want.filter((k) => !exp[k] || typeof exp[k] !== 'object');
-    // a missing expected key makes the answer incomplete, not invalid (the repair asks for it)
+    // A missing expected answer may remain incomplete, but a schema-valid partial extraction is still useful state.
     const schema = deltaSchema(vocab, ids, Object.fromEntries(Object.entries(expectedKeys || {}).filter(([k]) => !missing.includes(k))));
     const clean = missing.length ? { ...value, expected: Object.fromEntries(Object.entries(exp).filter(([k]) => !missing.includes(k))) } : value;
     const errors = validate(clean, schema);

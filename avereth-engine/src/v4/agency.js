@@ -30,10 +30,11 @@
 import { normText } from '../util.js';
 
 /** Commands that commit Alaric to something (the dangerous kind of false agency; same list as the P0 scoring). */
-export const COMMITMENTS = new Set(['pay', 'buy', 'sell', 'give', 'drop', 'use', 'offer.accept', 'offer.decline', 'quest.accept', 'quest.turn_in', 'quest.abandon', 'guild.register', 'guild.promote']);
+export const COMMITMENTS = new Set(['pay', 'buy', 'sell', 'give', 'drop', 'use', 'offer.accept', 'offer.decline', 'quest.accept', 'quest.turn_in', 'quest.abandon', 'guild.register', 'guild.promote', 'journey.continue']);
 
 /** The verbs that express a command's own act (for the negation and plan checks, not for recognising commands). */
 export const LEMMAS = {
+    'journey.continue': ['ready', 'go', 'leave', 'depart', 'set off', 'continue'],
     go: ['go', 'goes', 'going', 'went', 'head', 'heading', 'walk', 'walking', 'travel', 'travelling', 'traveling', 'ride', 'riding', 'return', 'returning', 'be at', 'set off', 'leave', 'leaving'],
     activity: ['sleep', 'sleeping', 'rest', 'resting', 'wait', 'waiting', 'work', 'working', 'train', 'training', 'gather', 'gathering', 'search', 'searching', 'study', 'studying', 'craft', 'crafting'],
     take: ['take', 'taking', 'pick up', 'picking up', 'grab', 'grabbing', 'pocket', 'collect', 'collecting'],
@@ -57,6 +58,7 @@ export const LEMMAS = {
 
 /** The same acts in the past tense (the memory check: "I gave you the heads an hour ago", "I drank it yesterday"). */
 export const PAST = {
+    'journey.continue': ['left', 'departed', 'continued', 'set off'],
     go: ['went', 'walked', 'headed', 'travelled', 'traveled', 'rode', 'returned', 'came', 'left', 'gone'],
     activity: ['slept', 'rested', 'waited', 'worked', 'trained', 'gathered', 'searched', 'studied', 'crafted'],
     take: ['took', 'taken', 'picked up', 'grabbed', 'pocketed', 'collected'],

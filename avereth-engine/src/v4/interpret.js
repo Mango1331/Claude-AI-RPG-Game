@@ -8,7 +8,7 @@
 import { O, S, B, I, E, A, N, REF, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 
-export const INTERPRETER_VERSION = 'interp-4.1';
+export const INTERPRETER_VERSION = 'interp-4.2';
 
 // Contrastive examples from another town, so they never name a catalog id of the current scene. They follow the error
 // clusters of P0/S1 (docs/P0_BERICHT.md §5) without repeating any case of the evaluation corpora: a test checks that no
@@ -85,11 +85,12 @@ export function catalogText(catalog) {
     const L = ['CATALOG'];
     const here = catalog.here || {};
     L.push(`HERE: ${here.path || here.name} (${here.id})${catalog.time ? ` · ${catalog.time}` : ''}`);
-    L.push(`PRESENT: ${(catalog.present || []).map((p) => `${p.id} (${p.label})`).join(' · ') || 'nobody besides Alaric'}`);
+    L.push(`PRESENT: ${(catalog.present || []).map((p) => `${p.id}${p.handle ? ` [${p.handle}]` : ''} (${p.label})`).join(' · ') || 'nobody besides Alaric'}`);
     if (catalog.alaric) L.push(`ALARIC: ${catalog.alaric}`);
     const places = (catalog.places || []).filter((p) => p.id !== here.id);
     if (places.length) L.push(`PLACES: ${places.map((p) => `${p.id} (${p.name})`).join(' · ')}`);
     if ((catalog.quests || []).length) L.push(`QUESTS: ${catalog.quests.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
+    if (catalog.journey_ready) L.push(`JOURNEY READY: ${catalog.journey_ready}`);
     if ((catalog.completed || []).length) L.push(`COMPLETED TODAY: ${catalog.completed.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
     if ((catalog.board || []).length) L.push(`BOARD (${catalog.board_label || 'visible here'}): ${catalog.board.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
     if ((catalog.offers || []).length) L.push(`OFFERS: ${catalog.offers.map((o) => `${o.id} (${o.seller}: ${o.lines.map((l) => `${l.id} ${l.what} ${l.price_cp} cp`).join(', ')})`).join(' · ')}`);

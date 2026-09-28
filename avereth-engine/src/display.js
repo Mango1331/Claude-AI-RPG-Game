@@ -9,6 +9,7 @@ import { deriveCharacter } from './derived.js';
 import { formatCoin } from './economy.js';
 import { bandIndex, itemLabel } from './util.js';
 import { damagePreview, combatTargets, targetLabel } from './combat.js';
+import { sceneHandle } from './v4/scene_handles.js';
 
 const sys = (text) => `\`${text}\``;
 // a combatant by its target label (from the board of that step, which outlives the fight), anyone else as the player knows them
@@ -172,6 +173,22 @@ function commandLines(o) {
 export function worldPanel(state, content, reply = {}) {
     const o = state.last?.outcome;
     const lines = [];
+    // A creature becoming concretely visible is gameplay-relevant before Combat. Show its canonical handle, locked HP
+    // and Range immediately above the same narration that revealed it. This is NOT Initiative and does not start combat.
+    if (reply?.state && reply?.events) {
+        const before = new Set(state.scene?.present || []);
+        const revealed = (reply.state.scene?.present || []).filter((id) => {
+            const e = reply.state.entities?.[id];
+            if (!e || e.kind !== 'creature' || !e.profile) return false;
+            return !before.has(id) || !state.entities?.[id]?.profile;
+        });
+        for (const id of revealed) {
+            const e = reply.state.entities[id];
+            const pos = reply.state.scene.positions?.[id];
+            const hp = e.profile.hp ?? e.profile.max_hp;
+            lines.push(sys(`ACTIVE SCENE — ${sceneHandle(reply.state, content, id)} · HP ${hp}/${e.profile.max_hp} · ${pos?.band || 'Range unknown'}${pos?.cover && pos.cover !== 'none' ? ` · ${pos.cover} cover` : ''}`));
+        }
+    }
     if (o?.kind === 'v4') lines.push(...commandLines(o));
     else if (o?.kind === 'combat') lines.push(...combatLines(state, content, o));
     else if (o?.kind === 'check' && o.check) lines.push(checkLine(o.check));

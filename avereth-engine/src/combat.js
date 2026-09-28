@@ -7,6 +7,7 @@ import { deriveCharacter, rawPower, rawPowerText } from './derived.js';
 import { defeatXp, awardXp } from './progression.js';
 import { lookOf } from './knowledge.js';
 import { bandIndex, bandName, clone, num, roundHalfUp } from './util.js';
+import { sceneHandle } from './v4/scene_handles.js';
 
 const PROF = (content, level) => content.rules.proficiency.levels[String(level || 1)];
 const label = (e) => e.name || (e.descriptors && e.descriptors[0] ? `the ${e.descriptors[0]}` : e.id);
@@ -79,17 +80,20 @@ const titleCase = (s) => s.replace(/(^|[\s-])(\p{Ll})/gu, (_, a, b) => a + b.toU
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 /** [base, lettered]: the known name as it is, else the plain look ("cellar_rat_2" -> Cellar Rat), always lettered. */
-function targetBase(e) {
+function targetBase(e, state, content, id) {
     const name = e.known_name ?? e.name; // only as much of a name as the story has said
     if (name) return [titleCase(String(name).replace(/^the\s+/i, '').trim()), false];
+    // Runtime V4 already exposed a stable scene handle before the fight. Keep it verbatim so Footpad B never
+    // becomes Footpad A merely because A stayed out of this particular encounter.
+    if (state.meta?.runtime === 'v4') return [sceneHandle(state, content, id), false];
     const look = lookOf(e) || e.species || (e.kind === 'creature' ? 'creature' : 'stranger');
     return [titleCase(String(look).replace(/^(?:the|a|an)\s+/i, '')), true];
 }
 
-function assignLabels(enc, state, ids) {
+function assignLabels(enc, state, content, ids) {
     const groups = new Map();
     for (const id of ids) {
-        const [base, lettered] = targetBase(state.entities[id]);
+        const [base, lettered] = targetBase(state.entities[id], state, content, id);
         if (!groups.has(base)) groups.set(base, { lettered, ids: [] });
         const g = groups.get(base);
         g.lettered ||= lettered;
@@ -146,10 +150,13 @@ export function initEncounter(state, content, dice, trigger, participants, encId
         pc_rank: pcRank, pending_xp: 0, defeated: [], escaped: [], trigger: clone(trigger), log: [], opening: null,
         started: { turn: state.turn, minute: state.clock.minute }, intents: {},
     };
-    assignLabels(enc, state, Object.keys(combatants).filter((id) => id !== 'pc'));
+    assignLabels(enc, state, content, Object.keys(combatants).filter((id) => id !== 'pc'));
     // Ambush (Core #24): only a genuinely unaware target grants an Opening Action. Awareness is engine state (set by a
     // stealth check or an established narration report), never a posture the narrator invents at commitment time.
-    if (trigger.actor === 'pc') {
+    if (trigger.engage) {
+        enc.ambush = false;
+        enc.ambush_reason = 'Alaric openly commits to the confrontation; no attack has been made and no Ambush Opening Action is granted.';
+    } else if (trigger.actor === 'pc') {
         const awareness = state.scene.awareness[trigger.target] || 'aware';
         enc.ambush = !!combatants[trigger.target] && awareness === 'unaware';
         enc.ambush_reason = `target awareness: ${awareness}${enc.ambush ? ' -> true Ambush (Opening Action: guaranteed Critical Hit ×1.5)' : " -> no Ambush; the trigger action waits for Alaric's Turn"}`;
@@ -171,7 +178,7 @@ export function addCombatant(enc, state, content, id, side, intent = 'attack') {
     c.current.cover = pos.cover || 'none';
     if (side === 'hostile') c.fixed.defeat_xp = defeatXp(c.fixed.level, c.fixed.type, enc.pc_rank, content);
     enc.combatants[id] = c;
-    assignLabels(enc, state, [id]);
+    assignLabels(enc, state, content, [id]);
     // insert after all combatants with higher or equal Initiative (existing ties keep their locked order)
     let idx = enc.order.findIndex((x) => enc.combatants[x].fixed.init < c.fixed.init);
     if (idx < 0) idx = enc.order.length;

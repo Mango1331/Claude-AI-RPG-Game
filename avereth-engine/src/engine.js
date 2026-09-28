@@ -215,11 +215,12 @@ function engagementTurn(s, content, dice, emit, targets = []) {
 /** Give an NPC/creature its locked combat profile once (Content #7 anchors / proposed human templates). */
 const FAMILY_CLASS = { bow: 'ranger', focus: 'mage', precision: 'duelist', heavy_melee: 'guardian', melee: 'warrior' };
 
-function materialise(s, content, dice, emit, id) {
+export function materialise(s, content, dice, emit, id) {
     const e = s.entities[id];
     if (e.sheet || e.profile) return;
     if (e.kind === 'creature') {
         const anchor = content.anchors.get(e.anchor) || anchorFor(content, [e.species, ...(e.descriptors || [])].join(' '));
+        if (!anchor) throw new Error(`creature ${id} has no valid body-plan anchor`);
         const area = truth(s, s.scene.location, 'danger')[0]?.o || 'unknown';
         const level = e.level || chooseCreatureLevel(area, content, dice);
         emit({ t: 'entity.updated', d: { id, set: { profile: scaleCreature(anchor, level, e.type || 'normal', content) } } });

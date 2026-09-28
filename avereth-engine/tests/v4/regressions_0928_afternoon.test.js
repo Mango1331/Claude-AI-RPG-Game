@@ -125,29 +125,32 @@ test('same-reply arrival re-checks authority in the new location', async () => {
     assert.ok(!currentFacts(a.state, () => true).some((f) => /F-Rank/.test(String(f.o))), 'the post-arrival Guild fact never commits');
 });
 
-test('active Guild quest catalog carries exact objective and proof; V4 contract requires quest friction and concrete search resolution', async () => {
+test('active Guild quest catalog is continuity memory; V4 contract keeps quest friction without literal proof gates', async () => {
     const g = await created();
     const s = structuredClone(g.state());
     s.quests['quest.escort'] = {
         id: 'quest.escort', title: 'Escort a Fish Cart', kind: 'guild_contract', status: 'active', rank: 'Novice',
-        payout_cp: 50, client: 'Old Hew', giver: null, notes: [], history: [],
+        payout_cp: 50, client: 'Old Hew', giver: null, notes: ['Cart has reached the market road'], history: [],
+        desired_end_state: "Old Hew's fish cart safely reaches the market",
         objectives: [{ id: 'o1', verb: 'ESCORT', what: "Old Hew's fish cart", qty: null, unit: null, where: 'Market Gate', status: 'open' }],
         proof: [{ id: 'p1', kind: 'mark', what: 'delivery confirmed by Old Hew', on: 'Guild contract slip', consume: false }],
     };
     const c = buildCatalog(s, contentPack);
     const info = c.quests.find((x) => x.id === 'quest.escort')?.info || '';
-    assert.match(info, /objective: ESCORT Old Hew's fish cart at Market Gate/);
-    assert.match(info, /proof: "delivery confirmed by Old Hew" on the Guild contract slip/);
-    const ctx = buildContext(s, contentPack, { input: 'I wait.', outcome: { kind: 'v4', actions: ['NOTHING TO BOOK'], extra: [], check_die: 1 } }).text;
-    assert.match(ctx, /ACTIVE QUESTS \(canonical/);
-    assert.match(ctx, /proof required for Guild turn-in: "delivery confirmed by Old Hew"/);
+    assert.match(info, /desired outcome: Old Hew's fish cart safely reaches the market/);
+    assert.match(info, /job memory: ESCORT Old Hew's fish cart at Market Gate/);
+    assert.match(info, /verification example: "delivery confirmed by Old Hew" on the Guild contract slip/);
+    const ctx = buildContext(s, contentPack, { input: 'I wait.', outcome: { kind: 'v4', actions: ['NOTHING TO BOOK'], extra: [], search_checks: [] } }).text;
+    assert.match(ctx, /ACTIVE QUEST MEMORY/);
+    assert.match(ctx, /verification examples: "delivery confirmed by Old Hew"/);
+    assert.match(ctx, /not as a word-for-word checklist/);
     assert.match(ctx, /QUEST FRICTION:/);
-    assert.match(ctx, /paid only by the Guild at accepted turn-in/);
+    assert.match(ctx, /paid only by the Guild on explicit accepted turn-in/);
     const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
     assert.match(contract, /GAMEPLAY RESOLUTION — SEARCH & QUEST FRICTION/);
     assert.match(contract, /Repeated searches in the same situation must advance or close the situation/);
     assert.match(contract, /A nontrivial accepted adventure Quest must contain at least one meaningful complication/);
-    assert.match(contract, /playable development, not success, safety, reward or combat/);
+    assert.match(contract, /objectives\/proof.*memory.*not a permission system|Quest objectives\/proof.*memory/i);
 });
 
 test('interpreter contract explicitly treats walking toward a sound/track/direction as GO', () => {
@@ -185,7 +188,7 @@ test('extractor contract treats tracks as evidence and never re-reports engine s
     assert.match(rules, /Tracks, spoor, hair, a wallow, sounds, shadows.*not creature\.new/s);
 });
 
-test('Guild quest.detail cannot alter payout/proof/completion mechanics but may add an operational schedule', () => {
+test('Guild quest.detail protects payout/completion mechanics but allows operational verification fiction', () => {
     const q = { id: 'quest.watch', title: 'Night Watch', payout_cp: 90, status: 'active' };
     const ctx = {
         inGuildHall: true, contracts: [q],
@@ -195,8 +198,10 @@ test('Guild quest.detail cannot alter payout/proof/completion mechanics but may 
     const bad = firewall([{ seq: 1, type: 'quest.detail', quest: q.id, note: "The steward won't pay for early arrival.", schedule: 'after sundown' }], ctx);
     assert.equal(bad.accept.length, 0);
     assert.equal(bad.reject[0].rule, 'guild_quest_detail');
-    const good = firewall([{ seq: 1, type: 'quest.detail', quest: q.id, note: 'Meet steward Hobb Martt at the west door.', schedule: 'after sundown' }], ctx);
+    const good = firewall([{ seq: 1, type: 'quest.detail', quest: q.id, note: 'Meet steward Hobb Martt at the west door; his witness statement can verify the patrol.', schedule: 'after sundown' }], ctx);
     assert.equal(good.accept.length, 1);
+    const proofFiction = firewall([{ seq: 2, type: 'quest.detail', quest: q.id, note: 'The watch captain can sign the slip or confirm the result in person.', schedule: null }], ctx);
+    assert.equal(proofFiction.accept.length, 1);
 });
 
 test('Runtime V4 does not mutate narrator prose with style word replacements', async () => {

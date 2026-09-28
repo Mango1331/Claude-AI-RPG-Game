@@ -1,6 +1,6 @@
 {
- "version": "delta-0.9",
- "note": "Runtime V4 world-delta vocabulary (docs/RUNTIME_V4_PLAN.md §5). One source for the extractor prompt, its schema and the validator (src/v4/extract.js); the domain/authority firewall (src/v4/firewall.js) decides what of a schema-valid answer the engine commits. D2 = A (P0/S2): the narrator writes prose only, the extractor reads each reply afterwards. delta-0.2 against the P0 draft delta-0.1-draft: expected of a pending buy/pay also asks taken_anyway (P0/S2 v12_08: the reply had Alaric take the room unasked, the free overreach delta was missed, the expected fields were 25/25); position, aware, intent and thread as in 3.x; creature.new and person.new carry the distance band a fight needs; check without the numbers the prose does not show. delta-0.3 (product 4.0): expected of a sell asks sold and price_cp (the world applier books a sale by them; before, a sell fell back to {done} and could never be booked); no delta type changed. delta-0.4 (live run 28.09.2026): the extractor also reads the PLAYER MESSAGE; what it has Alaric say or do himself (\"*i sign the card*\") is never overreach, a payment, purchase, acceptance, registration or journey that PLAYER ACTIONS did not book still is; a name Alaric gives is learned by those who hear it; no delta type changed. delta-0.5 (live run 28.09.2026 afternoon): name learning requires diegetic transmission; deltas caused only by an overreaching Alaric action are omitted; no delta type changed. delta-0.6 (live run 28.09.2026 15:17): an engine-resolved SEARCH CHECK is never re-reported as a check; tracks/signs of an unseen unknown creature are evidence, not creature.new; Guild quest.detail may add operational fiction but never payout/proof/completion/rank mechanics; no delta type changed. delta-0.7: explicit null names stay anonymous; booked objects are not recreated; extractor gets Core Range Band semantics. delta-0.8: visible fantasy creatures carry a separate mechanical F1 body-plan anchor so creative species names never fail entity creation; a revealed creature is immediately profile-locked for target/HP display. Quest gather yields: concrete gathered amounts for an active Guild GATHER objective become canonical quest resource objects, so later proof checks use real inventory rather than a progress-only fact. delta-0.9 soft-world simplification: ordinary NPC/world causality is stored rather than pre-authorized; NPC->PC hand-overs are allowed; Guild proof is guidance, while quest.ready records that the desired story outcome has been achieved before deterministic turn-in/payout/XP.",
+ "version": "delta-0.10",
+ "note": "Runtime V4 world-delta vocabulary (docs/RUNTIME_V4_PLAN.md §5). One source for the extractor prompt, its schema and the validator (src/v4/extract.js); the domain/authority firewall (src/v4/firewall.js) decides what of a schema-valid answer the engine commits. D2 = A (P0/S2): the narrator writes prose only, the extractor reads each reply afterwards. delta-0.2 against the P0 draft delta-0.1-draft: expected of a pending buy/pay also asks taken_anyway (P0/S2 v12_08: the reply had Alaric take the room unasked, the free overreach delta was missed, the expected fields were 25/25); position, aware, intent and thread as in 3.x; creature.new and person.new carry the distance band a fight needs; check without the numbers the prose does not show. delta-0.3 (product 4.0): expected of a sell asks sold and price_cp (the world applier books a sale by them; before, a sell fell back to {done} and could never be booked); no delta type changed. delta-0.4 (live run 28.09.2026): the extractor also reads the PLAYER MESSAGE; what it has Alaric say or do himself (\"*i sign the card*\") is never overreach, a payment, purchase, acceptance, registration or journey that PLAYER ACTIONS did not book still is; a name Alaric gives is learned by those who hear it; no delta type changed. delta-0.5 (live run 28.09.2026 afternoon): name learning requires diegetic transmission; deltas caused only by an overreaching Alaric action are omitted; no delta type changed. delta-0.6 (live run 28.09.2026 15:17): an engine-resolved SEARCH CHECK is never re-reported as a check; tracks/signs of an unseen unknown creature are evidence, not creature.new; Guild quest.detail may add operational fiction but never payout/proof/completion/rank mechanics; no delta type changed. delta-0.7: explicit null names stay anonymous; booked objects are not recreated; extractor gets Core Range Band semantics. delta-0.8: visible fantasy creatures carry a separate mechanical F1 body-plan anchor so creative species names never fail entity creation; a revealed creature is immediately profile-locked for target/HP display. Quest gather yields: concrete gathered amounts for an active Guild GATHER objective become canonical quest resource objects, so later proof checks use real inventory rather than a progress-only fact. delta-0.9 soft-world simplification: ordinary NPC/world causality is stored rather than pre-authorized; NPC->PC hand-overs are allowed; Guild proof is guidance, while quest.ready records that the desired story outcome has been achieved before deterministic turn-in/payout/XP. delta-0.10 boundary cleanup: remove obsolete generic check deltas, allow explicit externally-forced relocation, keep soft persistence tolerant while Combat/progression remain strict.",
  "rules": [
   "Report only what THIS reply establishes, in the order it happens (seq 1, 2, 3 …). Invent nothing.",
   "Alaric's own decisions are in PLAYER ACTIONS and already booked by the engine; never report them as deltas (no payment, purchase, acceptance, turn-in, pick-up of his).",
@@ -11,7 +11,6 @@
   "Official Guild contracts come only from the engine's BOARD; never report a new one (if the reply shows one the BOARD lacks: overreach guild_listing).",
   "A price someone merely mentions is a fact; an offer is a price for something Alaric could buy now.",
   "A person learns Alaric's name only from diegetic evidence: Alaric explicitly says it where they hear him, or visibly writes/shows it where the reply establishes they read it. Third-person narration merely calling the protagonist \"Alaric\" or \"Alaric Red\" is never evidence that an NPC learned his name.",
-  "An engine-resolved SEARCH CHECK already shown in PLAYER ACTIONS is already booked by the engine. Never emit a check delta for that search. Emit check only when the reply actually used the separate generic CHECK DIE issued for the turn.",
   "Tracks, spoor, hair, a wallow, sounds, shadows or other evidence of an unseen/unknown creature are evidence, not creature.new. Report the evidence as a fact or thread. Use creature.new only when the reply establishes the creature itself as an actual individual/group with a species the engine can map.",
   "For a known Guild contract, quest.detail may freely store operational story information such as contacts, routes, witnesses, schedules, discovered requirements or plausible verification. It may never alter the engine-owned payout, Guild rank, Quest XP, completed status, or promotion mechanics.",
   "Range Bands use Core #12 only: ENGAGED = immediate contact/melee reach; SHORT = one normal combat movement from ENGAGED; MEDIUM = two; LONG = three. Convert an exact narrated distance once to the most reasonable band. A person about forty yards ahead is not ENGAGED. Preserve an established band unless the reply clearly changes distance; threat/intensity alone never changes a band.",
@@ -22,7 +21,9 @@
   "When PLAYER ACTIONS contains a GATHERS activity and the reply establishes a concrete amount actually gathered for an active Quest GATHER objective, emit object.new for the amount gained THIS reply: kind:\"resource\", holder:\"pc\", for_quest:<that quest id>, name matching the objective/proof resource, qty the amount gained, unit matching the objective/proof. A progress fact alone is not enough. Do not emit resources the reply did not say were gathered.",
   "Guild contract proof/verification is narrative guidance, not an exact inventory-string gate. Store the expected verification so the narrator remembers what the job is about, but alternative credible in-world evidence may satisfy the fiction.",
   "For an active Guild contract, emit quest.ready only when THIS reply clearly establishes that the contract's desired end state has been substantively achieved in the world. Partial progress, merely finding a clue, traveling to the site, or planning the next step is not enough. quest.ready does not complete or pay the quest; the player must still explicitly turn it in at a Guild hall.",
-  "A known object voluntarily handed to Alaric by an NPC is object.move to:\"pc\", even if Alaric only asked for it and did not issue a TAKE command. For a newly introduced gift, emit object.new with the giver/NPC as holder and then object.move to:\"pc\". These are NPC/world agency, not overreach. An unattended object lying in the world still requires Alaric's own TAKE if he picks it up."
+  "A known object voluntarily handed to Alaric by an NPC is object.move to:\"pc\", even if Alaric only asked for it and did not issue a TAKE command. For a newly introduced gift, emit object.new with the giver/NPC as holder and then object.move to:\"pc\". These are NPC/world agency, not overreach. An unattended object lying in the world still requires Alaric's own TAKE if he picks it up.",
+  "arrive.forced_by is only for an external event that actually relocates Alaric against or independently of his voluntary travel choice (for example arrest, being carried, a collapsing floor, abduction). Do not use it to invent ordinary voluntary travel.",
+  "Soft continuity deltas are memory, not mechanics. Prefer recording the durable fact once over splitting ordinary fiction into several redundant deltas."
  ],
  "expected": {
   "go": {
@@ -83,9 +84,13 @@
    "fields": {
     "at": {
      "ref": "place"
+    },
+    "forced_by": {
+     "type": "string",
+     "nullable": true
     }
    },
-   "summary": "Alaric arrives somewhere (only after a GOES action or when forced)"
+   "summary": "Alaric arrives somewhere after his own GO/roaming action, or because the reply explicitly establishes an external involuntary cause in forced_by"
   },
   {
    "type": "person.new",
@@ -582,22 +587,6 @@
     }
    },
    "summary": "a story thread that will matter again (a threat, a promise, a debt), or one that is resolved now"
-  },
-  {
-   "type": "check",
-   "fields": {
-    "what": {
-     "type": "string"
-    },
-    "stat": {
-     "type": "string",
-     "nullable": true
-    },
-    "success": {
-     "type": "boolean"
-    }
-   },
-   "summary": "only if the reply used the separate generic CHECK DIE of this turn; never re-report an engine-resolved SEARCH CHECK"
   },
   {
    "type": "recover",

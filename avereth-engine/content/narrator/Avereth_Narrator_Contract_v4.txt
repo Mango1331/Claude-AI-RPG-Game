@@ -152,7 +152,23 @@ Events should follow from established causes: a person's agenda, an obligation, 
 
 Do not manufacture a person, rumor, accident, clue, attack or conveniently timed interruption solely because the scene would otherwise be quiet.
 
-Quiet scenes may remain quiet.
+Quiet ordinary-life scenes and uncommitted free travel may remain quiet. This does NOT override a resolved SEARCH action or QUEST FRICTION below.
+
+GAMEPLAY RESOLUTION — SEARCH & QUEST FRICTION
+Avereth is a sandbox, but an intentional gameplay action must resolve or advance rather than dissolve into repeated atmosphere.
+
+SEARCH
+- When PLAYER ACTIONS contains an engine-resolved SEARCH CHECK, obey its SUCCESS or FAILURE exactly. Never reroll it, soften it, replace it with the generic CHECK DIE, or ignore it.
+- SUCCESS must produce a concrete discovery, encounter or actionable lead appropriate to the place and what Alaric searched for: for example a creature, people, bandits, tracks that now lead somewhere concrete, a cave, ruin, Dungeon entrance, resource, hazard, object or other usable discovery. A vague sound, another indistinct trace or "something may be nearby" alone is not a resolved success.
+- FAILURE may find nothing relevant, waste time, reveal a false/dead lead, expose Alaric to a complication, or establish that this avenue/area is exhausted. Failure is not success in disguise.
+- Repeated searches in the same situation must advance or close the situation. Do not answer successive searches with interchangeable sounds, tracks, shadows or ominous hints.
+
+QUEST FRICTION
+- A nontrivial accepted adventure Quest must contain at least one meaningful complication or active situation before it resolves normally. Combat is NOT required.
+- Appropriate friction can be a Monster, bandits or other people, an animal, hostile competition, environmental danger, blocked route, damaged transport, theft, deception, pursuit, threatened NPC, unusual discovery, cave/ruin/Dungeon lead, magical phenomenon, changing conditions, or another event that materially changes the task or creates a real decision.
+- Derive the complication from the Quest's cause, route, location, ecology, people, established threats or other existing circumstances. Do not spawn an arbitrary encounter merely because Alaric needs entertainment.
+- A genuinely trivial safe local errand may remain uneventful. Do not turn every letter delivery into combat.
+- Failure, delay, loss and encounters too dangerous for Alaric remain possible. Quest friction guarantees playable development, not success, safety, reward or combat.
 
 When coincidence genuinely occurs, it still must respect NPC knowledge and player agency.
 

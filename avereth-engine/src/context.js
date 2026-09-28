@@ -10,6 +10,7 @@ import {
 } from './knowledge.js';
 import { rank, pack, Bm25 } from './retrieval.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
+import { objectiveText, proofText as guildProofText } from './v4/guild.js';
 
 export const DEFAULT_BUDGET = 1400;
 export const DEFAULT_RULES_BUDGET = 800;
@@ -212,6 +213,7 @@ export const V4_OUTPUT_LINE = 'OUTPUT: write only the story. No <avereth> block,
 export function playerActionsBlock(outcome) {
     const lines = ['PLAYER ACTIONS (the engine resolved Alaric\'s message; narrate exactly these, in this order; he decides nothing else):', ...(outcome.actions || [])];
     for (const x of outcome.extra || []) lines.push(x);
+    if (outcome.search_checks?.length) lines.push('SEARCH RESOLUTION is already rolled and binding in PLAYER ACTIONS above. Do not reroll it, replace it with another check, or turn a concrete result into another vague teaser.');
     if (outcome.check_die) lines.push(`CHECK DIE for this reply: d100 = ${outcome.check_die}. Use it only if a Core #7 check is genuinely needed (uncertain AND consequential): Chance% = Actor ÷ (Actor + Opposition) × 100 (Actor = relevant stat + explicit bonuses; situational ±10/20/35 %); success if ${outcome.check_die} ≤ Chance%. Otherwise ignore the die.`);
     return lines.join('\n');
 }
@@ -402,6 +404,14 @@ export function buildContext(state, content, opts = {}) {
     const pinned = currentFacts(state, (f) => f.hard && f.visibility !== 'secret').filter((f) => f.s === state.scene.location
         || state.scene.present.includes(f.s) || mentioned(anyLabel(state, content, f.s), scan)).slice(-6);
     if (pinned.length) add('facts', `ESTABLISHED FACTS (binding; they change only with an in-world cause):\n${pinned.map((f) => `- ${propText(state, f, content)} (since ${day(f.since.minute)}${f.source?.because ? `; cause: ${f.source.because}` : ''})`).join('\n')}`, 0);
+
+    const activeQuests = Object.values(state.quests).filter((q) => q.status === 'active');
+    if (activeQuests.length) add('quests', `ACTIVE QUESTS (canonical; these requirements are binding and must be conveyed in-world before they are needed):\n${activeQuests.map((q) => {
+        const req = q.kind === 'guild_contract'
+            ? ` | objective: ${objectiveText(q)} | proof required for Guild turn-in: ${guildProofText(q) || 'none'} | payout: ${q.payout_cp ?? 0} cp`
+            : q.objectives?.length ? ` | objective: ${objectiveText(q)}` : '';
+        return `- ${q.title}${req}`;
+    }).join('\n')}\nQUEST FRICTION: if an active Quest is a nontrivial adventure task, it must develop at least one causal, meaningful complication or active situation before normal resolution. Combat is not required; trivial safe local errands are exempt. This guarantees playable development, not success.`, 0);
 
     // relevant memories / facts / quests / threads
     const relStrength = new Map();

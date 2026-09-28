@@ -43,6 +43,21 @@ export function firewallContext(s, content) {
         booked: o.booked || { registration: false, grants: [], turnIns: [], accepted: [] },
         auth: { go: !!(auth.gos || []).length || !!auth.go, roam: !!auth.roam, take: !!(auth.take || []).length, gather: !!auth.gather, forced: false },
         heldByPc: (ref) => s.objects?.[ref]?.holder?.entity === 'pc' || (typeof ref === 'string' && ref.startsWith('item.') && !!s.entities.pc.sheet.inventory[ref.slice(5)]),
+        isGuildContractRef: (ref) => {
+            if (typeof ref !== 'string') return false;
+            const q = s.quests?.[ref] || Object.values(s.quests || {}).find((x) => x.kind === 'guild_contract' && normText(x.title) === normText(ref));
+            return q?.kind === 'guild_contract';
+        },
+        guildContractForObject: (ref) => {
+            if (typeof ref !== 'string') return null;
+            let o = s.objects?.[ref] || Object.values(s.objects || {}).find((x) => normText(x.name) === normText(ref));
+            if (!o) {
+                const active = contracts(s).filter((q) => q.status === 'active');
+                if (active.length === 1 && /\b(?:guild\s+)?contract\s+slip\b/i.test(ref)) return active[0];
+                return null;
+            }
+            return (o.for_quests || []).map((id) => s.quests?.[id]).find((q) => q?.kind === 'guild_contract') || null;
+        },
         // the Guild's canon for the corrections of refused Guild facts (guild_canon)
         canon: { feeCp: content.rules.guild.registration_fee_cp, guildRanks: content.rules.guild.ranks, powerRanks: content.rules.ranks.order },
     };
@@ -176,6 +191,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     };
 
     for (const d of [...fw.accept].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0))) {
+        // Authority is checked again at the actual story step: earlier deltas may have changed its context.
+        const stepFw = firewall([d], firewallContext(s, content));
+        if (!stepFw.accept.length) {
+            for (const x of stepFw.reject) reject(x.delta, x.rule, x.why);
+            for (const x of stepFw.corrections) if (!corrections.includes(x)) corrections.push(x);
+            continue;
+        }
         switch (d.type) {
             case 'time': {
                 const room = Math.max(0, cap - timeUsed);
@@ -242,7 +264,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 v3({ facts: [{ s: mapRef(d.s), p: d.p, o: mapRef(d.o) }] }, d);
                 break;
             case 'learn':
-                v3({ learn: [{ who: mapRef(d.who), s: mapRef(d.s), p: d.p, o: mapRef(d.o), how: d.how }] }, d);
+                // who/s are references; o is the literal proposition value. Resolving "Alaric Red" as an entity
+                // turned the name into "pc" in the 28.09. live run.
+                v3({ learn: [{ who: mapRef(d.who), s: mapRef(d.s), p: d.p, o: typeof d.o === 'string' ? d.o : String(d.o), how: d.how }] }, d);
                 break;
             case 'attitude':
                 v3({ attitude: [{ who: mapRef(d.who), delta: d.delta, why: d.why }] }, d);

@@ -1,0 +1,144 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { loadContent, ROOT } from '../helpers.js';
+import { Chat4 } from './harness.js';
+import { firewall } from '../../src/v4/firewall.js';
+import { applyWorld } from '../../src/v4/world.js';
+import { buildCatalog } from '../../src/v4/catalog.js';
+import { knows, PC_NAME_FACT, currentFacts } from '../../src/knowledge.js';
+import { interpreterSystem } from '../../src/v4/interpret.js';
+
+const contentPack = await loadContent();
+
+async function created(seed = 7) {
+    const g = new Chat4(contentPack, { seed });
+    const w = contentPack.classes.get('warrior');
+    await g.player('Warrior');
+    await g.player(w.skill_pool.slice(0, 2).map((id) => contentPack.skills.get(id).name).join(' and '));
+    return g;
+}
+
+test('search is one engine-resolved PER check, not an unlimited narrator yield (live 28.09. afternoon)', async () => {
+    const g = await created();
+    const text = '*I search the woods for tracks of larger animals.*';
+    const r = await g.player(text, [{
+        seq: 1, type: 'activity', kind: 'search', what: 'tracks of larger animals',
+        minutes: null, until: null, quote: 'search the woods for tracks of larger animals',
+    }]);
+    assert.equal(r.action, 'context');
+    const o = g.state().last.outcome;
+    assert.equal(o.search_checks.length, 1);
+    assert.equal(o.search_checks[0].stat, 'PER');
+    assert.equal(typeof o.search_checks[0].roll, 'number');
+    assert.equal(typeof o.search_checks[0].success, 'boolean');
+    assert.equal(o.check_die, null, 'search owns the Core #7 roll; no second generic die');
+    assert.match(o.actions[0], /SEARCH CHECK/);
+    assert.match(o.actions[0], o.search_checks[0].success ? /concrete discovery, encounter or actionable lead/ : /no relevant find, a false lead, danger\/complication, or this avenue being exhausted/);
+    assert.match(r.context.text, /SEARCH RESOLUTION is already rolled and binding/);
+});
+
+test('learn keeps a told proper name as a literal; third-person Alaric is not name-learning evidence', async () => {
+    const g = await created();
+    await g.player('I look at the person nearby.', []);
+    await g.reply('A clerk waits nearby.', { expected: {}, deltas: [{
+        seq: 1, type: 'person.new', ref: 'clerk', name: null, role: 'clerk', desc: ['plain coat'], present: true, at: null, band: null,
+    }] });
+    const before = g.state();
+    const clerk = Object.values(before.entities).find((e) => e.kind === 'npc' && (e.descriptors || []).includes('clerk'))?.id;
+    assert.ok(clerk);
+    await g.player('My name is Alaric Red.', []);
+    await g.reply('Alaric said, "My name is Alaric Red."', { expected: {}, deltas: [{
+        seq: 1, type: 'learn', who: clerk, s: 'pc', p: 'name', o: 'Alaric Red', how: 'told',
+    }] });
+    const s = g.state();
+    assert.equal(knows(s, clerk, PC_NAME_FACT), true);
+    assert.ok(!Object.values(s.claims).some((x) => x.s === 'pc' && x.p === 'name' && x.o === 'pc'), 'no pc.name=pc claim');
+    assert.match(contentPack.deltaVocab.rules.join('\n'), /Third-person narration merely calling the protagonist "Alaric"/);
+});
+
+test('an anonymous Drowned Gull innkeeper is not named from the inn title', async () => {
+    const g = await created();
+    await g.player('I look at the innkeeper.', []);
+    await g.reply('The Drowned Gull smelled of salt and smoke. Its innkeeper wiped the counter.', { expected: {}, deltas: [{
+        seq: 1, type: 'person.new', ref: 'person.drowned_gull_innkeeper', name: null, role: 'innkeeper', desc: ['stout'], present: true, at: null, band: null,
+    }] });
+    const npc = Object.values(g.state().entities).find((e) => e.kind === 'npc' && (e.descriptors || []).includes('innkeeper'));
+    assert.ok(npc);
+    assert.ok(!/^(?:Drowned|Gull|Drowned Gull)$/i.test(npc.name || ''), `unexpected inferred name: ${npc.name}`);
+});
+
+test('Guild contract status/payout and Guild clearance marks cannot be smuggled through free world deltas', () => {
+    const q = { id: 'quest.escort', title: 'Escort a Fish Cart', payout_cp: 50, status: 'active' };
+    const ctx = {
+        inGuildHall: true,
+        contracts: [q],
+        booked: { registration: false, grants: [], turnIns: [], accepted: [] },
+        auth: { go: true, take: false, gather: false, roam: false },
+        isGuildPerson: (x) => x === 'npc.guild_clerk',
+        heldByPc: (x) => x === 'obj.escort_slip',
+        isGuildContractRef: (x) => x === q.id,
+        guildContractForObject: (x) => x === 'obj.escort_slip' ? q : null,
+    };
+    const bad = firewall([
+        { seq: 1, type: 'fact', s: q.id, p: 'payout', o: '5 copper' },
+        { seq: 2, type: 'fact', s: q.id, p: 'status', o: 'done on Guild rolls' },
+        { seq: 3, type: 'fact', s: 'obj.escort_slip', p: 'mark', o: 'CLEARED' },
+        { seq: 4, type: 'object.mark', object: 'obj.escort_slip', mark: 'CLEARED', by: 'npc.guild_clerk' },
+    ], ctx);
+    assert.deepEqual(bad.accept, []);
+    assert.deepEqual(bad.reject.map((x) => x.rule), ['engine_owned_fact', 'engine_owned_fact', 'engine_owned_fact', 'guild_completion']);
+    const proof = firewall([{ seq: 1, type: 'object.mark', object: 'obj.escort_slip', mark: 'delivery confirmed by Old Hew', by: 'npc.old_hew' }], ctx);
+    assert.equal(proof.accept.length, 1, 'field proof remains narrator/world-owned');
+});
+
+test('same-reply arrival re-checks authority in the new location', async () => {
+    const g = await created();
+    const s = structuredClone(g.state());
+    s.last.outcome = {
+        kind: 'v4',
+        actions: [],
+        expected_keys: {},
+        conditionals: [],
+        booked: { registration: false, grants: [], turnIns: [], accepted: [] },
+        auth: {
+            go: { seq: 1, to: 'loc.redmarch.guild_hall', name: 'Guild hall', hall: true, newName: null },
+            gos: [{ seq: 1, to: 'loc.redmarch.guild_hall', name: 'Guild hall', hall: true, newName: null }],
+            roam: false, take: [], gather: false, rest: false, timeCap: 120,
+        },
+    };
+    const a = applyWorld(s, contentPack, { expected: {}, deltas: [
+        { seq: 1, type: 'arrive', at: 'loc.redmarch.guild_hall' },
+        { seq: 2, type: 'fact', s: 'new members', p: 'start at', o: 'F-Rank' },
+    ] }, { msg: 99, prose: 'He reaches the Guild hall. The clerk says all new members start at F-Rank.' });
+    assert.equal(a.state.scene.at, 'loc.redmarch.guild_hall');
+    assert.ok(a.rejected.some((x) => x.seq === 2 && x.rule === 'guild_canon'));
+    assert.ok(!currentFacts(a.state, () => true).some((f) => /F-Rank/.test(String(f.o))), 'the post-arrival Guild fact never commits');
+});
+
+test('active Guild quest catalog carries exact objective and proof; V4 contract requires quest friction and concrete search resolution', async () => {
+    const g = await created();
+    const s = structuredClone(g.state());
+    s.quests['quest.escort'] = {
+        id: 'quest.escort', title: 'Escort a Fish Cart', kind: 'guild_contract', status: 'active', rank: 'Novice',
+        payout_cp: 50, client: 'Old Hew', giver: null, notes: [], history: [],
+        objectives: [{ id: 'o1', verb: 'ESCORT', what: "Old Hew's fish cart", qty: null, unit: null, where: 'Market Gate', status: 'open' }],
+        proof: [{ id: 'p1', kind: 'mark', what: 'delivery confirmed by Old Hew', on: 'Guild contract slip', consume: false }],
+    };
+    const c = buildCatalog(s, contentPack);
+    const info = c.quests.find((x) => x.id === 'quest.escort')?.info || '';
+    assert.match(info, /objective: ESCORT Old Hew's fish cart at Market Gate/);
+    assert.match(info, /proof: "delivery confirmed by Old Hew" on the Guild contract slip/);
+    const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
+    assert.match(contract, /GAMEPLAY RESOLUTION — SEARCH & QUEST FRICTION/);
+    assert.match(contract, /Repeated searches in the same situation must advance or close the situation/);
+    assert.match(contract, /A nontrivial accepted adventure Quest must contain at least one meaningful complication/);
+    assert.match(contract, /playable development, not success, safety, reward or combat/);
+});
+
+test('interpreter contract explicitly treats walking toward a sound/track/direction as GO', () => {
+    const go = contentPack.commandVocab.commands.find((x) => x.type === 'go');
+    assert.match(go.summary, /walks toward a sound\/tracks\/direction/);
+    assert.match(interpreterSystem(contentPack.commandVocab), /walk toward the sound/);
+});

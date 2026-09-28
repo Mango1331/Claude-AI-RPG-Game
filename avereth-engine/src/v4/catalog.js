@@ -60,8 +60,15 @@ function proofText(q) {
     return (q.proof || []).map((p) => (p.kind === 'object' ? `${p.qty ?? 1} ${p.unit ?? ''} of ${p.what}`.replace(/\s+/g, ' ') : p.kind === 'mark' ? `"${p.what}" on the ${p.on || 'slip'}` : String(p.what || p))).join(' and ');
 }
 
+function objectiveText(q) {
+    return (q.objectives || []).map((o) => {
+        const qty = o.qty !== null && o.qty !== undefined ? `${o.qty}${o.unit ? ` ${o.unit}` : ''} ` : '';
+        return `${String(o.verb || 'DO').toUpperCase()} ${qty}${o.what || 'the objective'}${o.where ? ` at ${o.where}` : ''}`.replace(/\s+/g, ' ').trim();
+    }).join('; ');
+}
+
 function questInfo(state, content, q) {
-    if (q.kind === 'guild_contract') return ['Guild contract', q.status, q.rank, q.payout_cp !== null && q.payout_cp !== undefined ? `${q.payout_cp} cp` : null, (q.proof || []).length ? `proof: ${proofText(q)}` : null].filter(Boolean).join(' · ');
+    if (q.kind === 'guild_contract') return ['Guild contract', q.status, q.rank, q.payout_cp !== null && q.payout_cp !== undefined ? `${q.payout_cp} cp` : null, (q.objectives || []).length ? `objective: ${objectiveText(q)}` : null, (q.proof || []).length ? `proof: ${proofText(q)}` : null].filter(Boolean).join(' · ');
     const giver = q.giver && state.entities[q.giver] ? personLabel(state, content, q.giver) : q.giver;
     return ['private', q.status, giver ? `from ${giver}` : null, q.payout_cp ? `reward ${q.payout_cp} cp` : null].filter(Boolean).join(' · ');
 }
@@ -113,7 +120,7 @@ export function buildCatalog(state, content, { extraPlaces = [] } = {}) {
     const hall = hallOf(state, at);
     const town = hall ? settlementOf(state, hall) : null;
     const rank = membership(state)?.rank || 'Novice';
-    const board = hall && town ? listingsOf(state, town, rank).map((q) => ({ id: q.id, title: q.title, info: `${q.rank} · ${q.payout_cp} cp` })) : [];
+    const board = hall && town ? listingsOf(state, town, rank).map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) })) : [];
     const offers = openOffers(state).filter((o) => o.canon ? (!o.at || hallOf(state, o.at) === hall) : state.scene.present.includes(o.seller))
         .map((o) => ({ id: o.id, seller: o.canon ? 'Guild' : personLabel(state, content, o.seller), lines: o.lines.map((l) => ({ id: l.id, what: l.what, price_cp: l.price_cp })) }));
     const objects = [

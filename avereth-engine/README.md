@@ -1,4 +1,4 @@
-# Avereth Engine (v4.0.0)
+# Avereth Engine (v4.0.1)
 
 Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extension**. Sie besitzt Regeln, Würfel, Kampagnenzustand und Figurenwissen. Das Sprachmodell erzählt.
 

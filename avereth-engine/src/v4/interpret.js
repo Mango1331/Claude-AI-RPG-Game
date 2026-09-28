@@ -8,7 +8,7 @@
 import { O, S, B, I, E, A, N, REF, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 
-export const INTERPRETER_VERSION = 'interp-4.0';
+export const INTERPRETER_VERSION = 'interp-4.1';
 
 // Contrastive examples from another town, so they never name a catalog id of the current scene. They follow the error
 // clusters of P0/S1 (docs/P0_BERICHT.md §5) without repeating any case of the evaluation corpora: a test checks that no
@@ -19,6 +19,8 @@ MESSAGE: *i paid the ferryman and crossed to the far bank* nice weather today
 → {"commands":[{"seq":1,"type":"offer.accept","offer":"offer.ferry","lines":null,"quote":"i paid the ferryman"},{"seq":2,"type":"go","to":{"new":"the far bank"},"quote":"crossed to the far bank"}]}
 MESSAGE: Would the smith buy my old boots? Maybe I'll ask him tomorrow.
 → {"commands":[]}
+MESSAGE: *I turn toward the cracking branches, ready my sword, and walk in the direction of the sound.*
+→ {"commands":[{"seq":1,"type":"go","to":{"new":"toward the sound"},"quote":"walk in the direction of the sound"}]}
 MESSAGE: I'll take a bed if it's no more than 6 copper, then sleep till morning.
 → {"commands":[{"seq":1,"type":"buy","what":"a bed for the night","from":null,"qty":null,"max_cp":6,"any_price":false,"quote":"I'll take a bed if it's no more than 6 copper"},{"seq":2,"type":"activity","kind":"sleep","what":null,"minutes":null,"until":"morning","quote":"then sleep till morning"}]}
 MESSAGE: *the guard waves me through and i nod to him*

@@ -152,7 +152,12 @@ function nameFromRef(n, prose) {
     const desc = new Set((Array.isArray(n.desc) ? n.desc : []).flatMap((d) => normText(d).split(' ')));
     const cap = (w) => w.charAt(0).toUpperCase() + w.slice(1);
     const named = String(n.ref).replace(/[_.]+/g, ' ').trim().split(/\s+/).map((w) => w.toLowerCase()).filter((w) => /^[a-z][a-z'-]+$/.test(w)
-        && !desc.has(w) && new RegExp(`\\b${escapeRe(cap(w))}\\b`).test(prose) && !new RegExp(`\\b${escapeRe(w)}\\b`).test(prose));
+        && !desc.has(w)
+        && new RegExp(`\\b${escapeRe(cap(w))}\\b`).test(prose)
+        && !new RegExp(`\\b${escapeRe(w)}\\b`).test(prose)
+        // A capitalised ref token inside "The X Y" is normally a place/business title, not this person's name
+        // (live 28.09.: person.drowned_gull_innkeeper beside "The Drowned Gull").
+        && !new RegExp(`\\bThe\\s+(?:${escapeRe(cap(w))}\\s+[A-Z][A-Za-z'-]+|[A-Z][A-Za-z'-]+\\s+${escapeRe(cap(w))})\\b`).test(prose));
     return named.length ? named.map(cap).join(' ') : null;
 }
 

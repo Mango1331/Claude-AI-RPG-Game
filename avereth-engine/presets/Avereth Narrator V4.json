@@ -62,7 +62,7 @@
             "name": "Output Contract (Post-History, V4)",
             "system_prompt": true,
             "role": "system",
-            "content": "OUTPUT FORMAT (final instruction): only the story text. No <avereth> block, no fact report, no tags, no tracker, sheet or status block: the Avereth Engine reads the reply afterwards. Narrate exactly the PLAYER ACTIONS of the [AVERETH ENGINE] block and stop at every OPEN DECISION.",
+            "content": "OUTPUT FORMAT (final instruction): only the story text. No <avereth> block, no fact report, no tags, no tracker, sheet or status block: the Avereth Engine reads the reply afterwards. PLAYER ACTIONS are the complete upper bound of Alaric's voluntary choices: narrate exactly them and invent no additional speech, travel, hand-over, acceptance, turn-in, attack or next decision. Stop at every OPEN DECISION. Obey an engine-resolved SEARCH CHECK concretely; never turn its result into another vague teaser.",
             "injection_position": 0,
             "injection_depth": 4,
             "forbid_overrides": true

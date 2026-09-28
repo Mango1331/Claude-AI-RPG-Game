@@ -127,6 +127,17 @@ export function proofText(q) {
     return q.proof.map((p) => (p.kind === 'object' ? `${p.qty ?? 1} ${p.unit ?? ''} of ${p.what}`.replace(/\s+/g, ' ') : `"${p.what}" on the ${p.on || 'contract slip'}`)).join(' and ');
 }
 
+/** Canonical objectives in compact narrator-facing prose (the Board generator owns their structure). */
+export function objectiveText(q) {
+    const objectives = q?.objectives || [];
+    if (!objectives.length) return 'the stated objective';
+    return objectives.map((o) => {
+        const qty = o.qty !== null && o.qty !== undefined ? `${o.qty}${o.unit ? ` ${o.unit}` : ''} ` : '';
+        const where = o.where ? ` at ${o.where}` : '';
+        return `${String(o.verb || 'DO').toUpperCase()} ${qty}${o.what || 'the objective'}${where}`.replace(/\s+/g, ' ').trim();
+    }).join('; ');
+}
+
 /** Turn a contract in at a Guild hall: proof, consumption, payout, Quest XP, completed; the desk witnesses it. */
 export function completeContract(s, content, q, emit, { step } = {}) {
     const pr = checkProof(s, q);

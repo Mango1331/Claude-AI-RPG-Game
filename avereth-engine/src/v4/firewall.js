@@ -34,6 +34,8 @@ const PAYOUT_WHY = /\b(?:reward|bounty|payout|pay(?:ment)?\s+for|contract|quest|
 const TURN_IN_OBJECTIVE = /\b(?:turn(?:ed|s|ing)?|hand(?:ed|s|ing)?)\s+(?:it\s+|them\s+|the\s+\w+\s+)?in\b|\b(?:deliver\w*|return\w*|report\w*|bring\w*|brought|tak(?:e|es|ing)|hand\w*)\b[^.;]*\b(?:guild|desk|hall|clerk)\b/i;
 const PC_REF = /^(?:pc|alaric(?: red)?)$/i;
 const ENGINE_FACT = /\b(?:regist\w*|guild rank|member\w*|novice|proven|veteran|power rank|coin|copper|silver|paid|reward|payout|xp|level)\b/i;
+const GUILD_QUEST_STATE = /\b(?:status|state|complete\w*|done|closed|cleared|turn(?:ed|ing)?\s+in|paid|payment|payout|reward|mark|stamp|proof)\b/i;
+const GUILD_COMPLETION_MARK = /\b(?:cleared|complete\w*|closed|paid|turned?\s+in|accepted|settled)\b/i;
 
 // The Guild's mechanics are the engine's (live run 28.09.2026: the clerk's "F-Rank to start, for everyone" became the fact
 // "new Guild members start at F-Rank" and came back in the next engine block): what registration costs or requires,
@@ -105,6 +107,8 @@ export const isPc = (ref) => PC_REF.test(words(ref));
  *           player's commands authorised: a go; a forced move; an activity that moves him (search, gather, errand); a
  *           take; an activity that yields things (gather, search, craft)
  * @property {(ref: string) => boolean} [heldByPc]  an object Alaric holds (known id)
+ * @property {(ref: string) => boolean} [isGuildContractRef]  a known Guild contract id
+ * @property {(ref: string) => object|null} [guildContractForObject]  the Guild contract a known object belongs to
  * @property {{feeCp?: number, guildRanks?: string[], powerRanks?: string[]}} [canon]  the Guild's canon for the
  *           corrections of refused Guild facts (guild_canon): the registration fee, the Guild ranks, the Power Ranks
  */
@@ -180,6 +184,15 @@ export function firewall(deltas, ctx = {}) {
                 }
                 break;
             }
+            case 'object.mark': {
+                const q = ctx.guildContractForObject?.(text(d.object));
+                if (q && (guildy(d.by) || GUILD_COMPLETION_MARK.test(text(d.mark)))) {
+                    no(d, 'guild_completion', 'a Guild contract slip may receive field proof from the world, but Guild completion/clearance is booked only by the engine at turn-in',
+                        q.status === 'active' ? `"${q.title}" is still active until the engine accepts its proof at a Guild turn-in.` : null);
+                    continue;
+                }
+                break;
+            }
             case 'object.move': {
                 if (isPc(d.to) && (ctx.heldByPc?.(text(d.object)) || granted(text(d.object)))) {
                     no(d, 'engine_booked', 'Alaric already holds it');
@@ -216,6 +229,11 @@ export function firewall(deltas, ctx = {}) {
             }
             case 'fact': {
                 const p = words(d.p).replace(/\s+/g, '_');
+                const guildQuestState = !!ctx.isGuildContractRef?.(text(d.s)) || !!ctx.guildContractForObject?.(text(d.s));
+                if (guildQuestState && GUILD_QUEST_STATE.test(`${words(d.p)} ${words(d.o)}`)) {
+                    no(d, 'engine_owned_fact', 'a known Guild contract and its proof document keep payout, status, proof/marks and completion in the engine domains; a free fact cannot override them');
+                    continue;
+                }
                 if (STATE_PREDICATES.has(p)) {
                     no(d, 'domain_fact', `"${d.p}" is state with its own delta (arrive/enter/leave, intent, the Guild's rank), not a fact`);
                     continue;

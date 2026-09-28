@@ -13,6 +13,7 @@
 // reply may change because of a command (auth), what the extractor must answer (expectedKeys) and what waits for the
 // reply (conditionals) go into the turn's outcome; the world applier (src/v4/world.js) reads them from there.
 import { formatCoin } from '../economy.js';
+import { resolveCheck } from '../checks.js';
 import { entityLabel, setFactEvents } from '../knowledge.js';
 import { normText, slug } from '../util.js';
 import {
@@ -20,7 +21,7 @@ import {
 } from './domain.js';
 import { sameWant } from './world.js';
 import {
-    REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, checkProof, proofText,
+    REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, checkProof, proofText, objectiveText,
     promotion, takenByOthers, bookBoard,
 } from './guild.js';
 
@@ -36,6 +37,7 @@ export function newTurnContext(content) {
         auth: { go: null, gos: [], roam: false, take: [], gather: false, rest: false, timeCap: content.rules.time.default_cap_min },
         conditionals: [], expectedKeys: {}, actions: [], extra: [], resolutions: [],
         booked: { registration: false, grants: [], turnIns: [], accepted: [] },
+        searchChecks: [],
         boardShown: null,
     };
 }
@@ -100,7 +102,7 @@ const HANDLERS = {
         ctx.expectedKeys[String(c.seq)] = 'go';
         return { status: 'authorized', line: `GOES — to ${name} (the story decides whether and where he arrives).` };
     },
-    activity(s, content, c, ctx) {
+    activity(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT — not while the fight runs.' };
         const t = content.rules.time;
         const cap = c.until ? untilMinutes(content, s, c.until) : c.minutes ? Math.ceil(c.minutes * t.minutes_factor) : t.default_cap_min;
@@ -110,6 +112,22 @@ const HANDLERS = {
         if (RESTING.has(c.kind)) ctx.auth.rest = true;
         ctx.expectedKeys[String(c.seq)] = 'activity';
         const span = c.until ? UNTIL[c.until] || `until ${c.until}` : c.minutes ? `for ${c.minutes} minutes` : 'for a while';
+        if (c.kind === 'search' && envx?.dice) {
+            const actor = s.entities.pc?.sheet?.stats?.PER ?? 5;
+            const opposition = content.rules.checks?.difficulty_scores?.moderate ?? 6;
+            const check = resolveCheck(envx.dice, { label: `Search: ${c.what || 'the area'}`, actor, opposition });
+            const record = {
+                what: String(c.what || 'search the area').slice(0, 80), stat: 'PER', actor: check.actor_score,
+                opposition: check.opposition, chance: check.chance, roll: check.roll, success: check.success,
+                claimed: check.success, by: 'engine', seq: c.seq,
+            };
+            emit({ t: 'check.recorded', d: record });
+            ctx.searchChecks.push(record);
+            const result = check.success
+                ? 'SUCCESS — reveal a concrete discovery, encounter or actionable lead; a teaser-only answer is not a resolved search'
+                : 'FAILURE — resolve it concretely as no relevant find, a false lead, danger/complication, or this avenue being exhausted; do not repeat an interchangeable hint';
+            return { status: 'authorized', cap, line: `SEARCHES ${c.what ? `${c.what} ` : ''}${span}. SEARCH CHECK (PER ${check.actor_score} vs ${check.opposition}): ${check.chance}% (d100 ${check.roll}) → ${result}.` };
+        }
         return { status: 'authorized', cap, line: `${VERBS[c.kind] || String(c.kind).toUpperCase()} ${c.what ? `${c.what} ` : ''}${span} (at most ${cap} minutes; the story decides how long it takes and what it yields).` };
     },
     take(s, content, c, ctx, emit) {
@@ -283,7 +301,7 @@ const HANDLERS = {
             acceptContract(s, content, q, emit, { step: c.seq });
             ctx.booked.accepted.push(q.id);
             ctx.booked.grants.push('contract slip');
-            return { status: 'resolved', line: `ACCEPTS — ${questLine(q)} at the Guild desk; the clerk logs it and hands him its contract slip (the Guild pays ${q.payout_cp} cp on completion).` };
+            return { status: 'resolved', line: `ACCEPTS — ${questLine(q)} at the Guild desk; the clerk logs it and hands him its contract slip. Canonical objective: ${objectiveText(q)}. Required proof for turn-in: ${proofText(q)}. The Guild pays ${q.payout_cp} cp on completion.` };
         }
         // private work: its giver must be here
         if (q.status !== 'offered') return { status: 'refused', reason: `the job is ${q.status}`, line: `NOTHING TO DO — ${questLine(q)} is ${q.status}.` };
@@ -362,7 +380,7 @@ const HANDLERS = {
         }
         emit({ t: 'board.shown', d: { branch, rank, listings: listed.map((q) => q.id) } });
         ctx.boardShown = { branch, rank, listings: listed.map((q) => q.id) };
-        return { status: 'resolved', line: `READS the ${rank} board — BOARD (canonical; show exactly these, invent no other official contract): ${listed.map((q) => `${q.title} · ${q.payout_cp} cp`).join(' | ')}.` };
+        return { status: 'resolved', line: `READS the ${rank} board — BOARD (canonical; show exactly these, invent no other official contract, objective or proof): ${listed.map((q) => `${q.title} · ${q.payout_cp} cp · objective: ${objectiveText(q)} · proof: ${proofText(q)}`).join(' | ')}.` };
     },
     equip(s, content, c, ctx, emit) {
         const o = objectOf(s, content, c.object);

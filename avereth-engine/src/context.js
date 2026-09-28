@@ -11,6 +11,7 @@ import {
 import { rank, pack, Bm25 } from './retrieval.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
 import { objectiveText, proofText as guildProofText } from './v4/guild.js';
+import { sceneHandle } from './v4/scene_handles.js';
 
 export const DEFAULT_BUDGET = 1400;
 export const DEFAULT_RULES_BUDGET = 800;
@@ -116,7 +117,8 @@ function npcCard(state, content, id, focusWords, { absent = false } = {}) {
     const hp = c ? `${conditionLabel(c.current.hp, c.fixed.max_hp)} (HP ${c.current.hp}/${c.fixed.max_hp})` : statusOf(state, id) === 'dead' ? 'dead' : '';
     const band = c ? c.current.band : pos?.band;
     const cover = c ? c.current.cover : pos?.cover;
-    lines.push(`• ${c ? fightName(state, id) : entityLabel(state, id)} — ${kind}${look ? `; ${look}` : ''}${cues?.voice ? `; voice: ${cues.voice}` : ''}${hp ? `; ${hp}` : ''}${band ? `; ${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : ''}${absent ? '; NOT PRESENT' : ''}`);
+    const display = c ? fightName(state, id) : `${sceneHandle(state, content, id)} [${id}]`;
+    lines.push(`• ${display} — ${kind}${look ? `; ${look}` : ''}${cues?.voice ? `; voice: ${cues.voice}` : ''}${hp ? `; ${hp}` : ''}${band ? `; ${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : ''}${absent ? '; NOT PRESENT' : ''}`);
     if (statusOf(state, id) === 'dead') return lines[0];
     const aware = absent ? null : state.scene.awareness[id];
     const unseen = !absent && state.scene.concealed.includes('pc');
@@ -395,8 +397,8 @@ export function buildContext(state, content, opts = {}) {
     const queryText = `${input} ${lastReply}`;
     const focusWords = new Set(tokenize(queryText));
     const others = state.scene.present.filter((id) => id !== 'pc' && state.entities[id]);
-    if (others.length) add('present', `PRESENT (each NPC knows ONLY what its card lists):\n${others.map((id) => npcCard(state, content, id, focusWords)).join('\n')}`, 1);
-    else if (state.mode !== 'creation') add('present', 'PRESENT: nobody besides Alaric.', 1);
+    if (others.length) add('present', `ACTIVE SCENE — canonical handles (use these exact handles to distinguish or target actors; each NPC knows ONLY what its card lists):\n${others.map((id) => npcCard(state, content, id, focusWords)).join('\n')}`, 1);
+    else if (state.mode !== 'creation') add('present', 'ACTIVE SCENE: nobody besides Alaric.', 1);
     const absent = state.mode === 'creation' ? [] : namedAbsent(state, normText(queryText));
     if (absent.length) add('named', `NAMED, NOT PRESENT (continuity only; they are elsewhere unless the story brings them in):\n${absent.map((id) => npcCard(state, content, id, focusWords, { absent: true })).join('\n')}`, 2);
     add('combat', combatBlock(state), 0);
@@ -408,7 +410,7 @@ export function buildContext(state, content, opts = {}) {
     if (pinned.length) add('facts', `ESTABLISHED FACTS (binding; they change only with an in-world cause):\n${pinned.map((f) => `- ${propText(state, f, content)} (since ${day(f.since.minute)}${f.source?.because ? `; cause: ${f.source.because}` : ''})`).join('\n')}`, 0);
 
     const activeQuests = Object.values(state.quests).filter((q) => q.status === 'active');
-    if (activeQuests.length) add('quests', `ACTIVE QUESTS (canonical; these requirements are binding and must be conveyed in-world before they are needed):\n${activeQuests.map((q) => {
+    if (activeQuests.length) add('quests', `ACTIVE QUESTS (canonical; these requirements are binding and must be conveyed in-world before they are needed; mechanical numbers are literal — repeat the exact copper amount, never convert or recalculate it):\n${activeQuests.map((q) => {
         const req = q.kind === 'guild_contract'
             ? ` | objective: ${objectiveText(q)} | proof required for Guild turn-in: ${guildProofText(q) || 'none'} | payout: ${q.payout_cp ?? 0} cp (paid only by the Guild at accepted turn-in; contacts/stewards may confirm proof but never alter or pay this payout)`
             : q.objectives?.length ? ` | objective: ${objectiveText(q)}` : '';

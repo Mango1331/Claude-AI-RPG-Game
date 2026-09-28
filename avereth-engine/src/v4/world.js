@@ -354,6 +354,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 emit({ t: 'quest.progressed', d: { id: q.id, objective: String(d.objective).slice(0, 160), status: d.status } });
                 break;
             }
+            case 'quest.ready': {
+                const q = questRef(d.quest);
+                if (!q) { reject(d, 'quest', 'unknown quest'); break; }
+                if (q.status !== 'active') { reject(d, 'quest', `the quest is ${q.status}`); break; }
+                emit({ t: 'quest.ready', d: { id: q.id, note: String(d.note || q.desired_end_state || 'desired outcome achieved').slice(0, 220) } });
+                break;
+            }
             case 'quest.close': {
                 const q = questRef(d.quest);
                 if (!q) { reject(d, 'quest', 'unknown quest'); break; }

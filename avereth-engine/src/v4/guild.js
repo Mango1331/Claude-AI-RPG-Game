@@ -13,7 +13,7 @@ import { hallOf, settlementOf, heldBy, membership, listingsOf, boardKey, today, 
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
-export const BOARD_VERSION = 'board-4.0';
+export const BOARD_VERSION = 'board-4.1';
 const QTYPES = ['minor', 'standard', 'dangerous', 'major'];
 const VERBS = ['GO', 'FIND', 'TALK', 'GET', 'GATHER', 'GIVE', 'DELIVER', 'USE', 'REPAIR', 'DEFEND', 'ESCORT', 'ATTACK', 'DEFEAT'];
 
@@ -196,7 +196,14 @@ export function boardRequest(s, content, need) {
         "You write the official contracts on an Adventurers' Guild board in a sandbox fantasy RPG. The engine books exactly what you return as canon; the narrator will only describe these listings. Write no story.",
         '',
         'Rules:',
-        `- Each listing is ordinary, local work a Guild of this rank would post: vermin, escorts, gathering, lost animals, repairs, deliveries, watches; nothing world-shaking.`,
+        '- A contract is a concrete request to change a current situation in the world. Build it from: cause (why now), stakeholder/client, current problem, desired end state, 1–4 concrete objectives, verifiable proof, and reward.',
+        '- Rank limits scope, risk and complexity — not whether the subject is mundane or fantastical. Low-rank work may involve a manageable Monster, minor magic or a minor ruin, one dangerous animal, or a small clearly defined weak group such as wolves, goblins or feral dogs.',
+        '- Do not preferentially default to rats, cellar vermin or indistinct swarms. Rats are allowed occasionally, not the standard low-rank combat answer.',
+        '- The listings generated together must differ materially in underlying problem, principal activity, location and likely play experience. Do not make a balanced checklist of predefined quest categories.',
+        '- Let contracts arise from this branch and its surroundings: local trades, roads, wilderness, factions, ruins, ecology, magic and already-established places. Nothing world-shaking at low rank.',
+        '- Structural example only: a livestock owner reports repeated pen break-ins; identify the threat and stop the losses, with proof appropriate to whether it is killed or driven away. This demonstrates cause, modest scope, alternate solutions and verifiable completion.',
+        '- Structural example only: a survey team failed to return from abandoned workings; locate them, rescue survivors if possible, and recover an official seal. What happened is not predetermined by the contract and emerges in play.',
+        '- These examples demonstrate structure only. Do not reuse their people, locations, creatures, objects, circumstances or exact objective sequence.',
         `- rank is "${need.rank}"; level is the quest level, an integer from ${lo} to ${hi}; qtype is minor, standard, dangerous or major.`,
         `- payout_cp is the Guild's one fixed payout in copper (1 silver = 10 copper)${guide ? `; for ${need.rank} work ${guide[0]}–${guide[1]} cp is usual (a guide, not a limit)` : ''}.`,
         '- 1 to 4 objectives: {verb, what, qty, unit, where}; verb is one of GO, FIND, TALK, GET, GATHER, GIVE, DELIVER, USE, REPAIR, DEFEND, ESCORT, ATTACK, DEFEAT.',

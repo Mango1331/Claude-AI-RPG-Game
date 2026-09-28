@@ -149,7 +149,8 @@ test('V12 golden path: the narrator gets PLAYER ACTIONS and is never asked for a
         assert.match(text, /PLAYER ACTIONS \(the engine resolved Alaric's message/);
         assert.ok(text.endsWith(V4_OUTPUT_LINE), `${t.id}: the prose-only line comes last`);
         assert.doesNotMatch(text, /FACT REPORT|End EVERY reply with <avereth>/);
-        assert.match(text, /CHECK DIE for this reply: d100 = \d+/);
+        assert.doesNotMatch(text, /CHECK DIE for this reply/);
+        assert.match(text, /ORDINARY WORLD FICTION|SEARCH RESOLUTION is already rolled and binding/);
     }
     // the interpreter and the extractor were called once per story turn (no repair was needed); the board once
     const purposes = main.calls.map((c) => c.purpose);

@@ -172,7 +172,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         for (let i = 1; i <= count; i++) {
             const ref = count > 1 ? `${d.ref} ${i}` : d.ref;
             entries.push(kind === 'npc'
-                ? { ref, kind: 'npc', name: d.name || undefined, desc: [...(d.role ? [d.role] : []), ...(d.desc || [])], traits: (d.desc || []).join(', '), band: d.band || undefined }
+                ? { ref, kind: 'npc', name: d.name === null ? null : d.name || undefined, desc: [...(d.role ? [d.role] : []), ...(d.desc || [])], traits: (d.desc || []).join(', '), band: d.band || undefined }
                 : { ref, kind: 'creature', name: undefined, species: d.species, desc: d.desc || [], band: d.band || undefined });
         }
         const joins = kind === 'creature' && s.encounter && hostileRefs.has(normText(d.ref));
@@ -189,6 +189,18 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (kind === 'npc' && d.role && created.length && !truth(s, created[0], 'occupation').length) occupation(created[0], d.role);
         return ids;
     };
+
+    const explicitArrival = fw.accept.some((d) => d.type === 'arrive');
+    if (!explicitArrival && !s.encounter) {
+        for (const [k, type] of Object.entries(outcome.expected_keys || {}).sort((a, b) => Number(a[0]) - Number(b[0]))) {
+            if (type !== 'go') continue;
+            const e = expected[k];
+            if (!e || e.arrived !== true) continue;
+            const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
+            const at = e.at ? resolvePlace(s, e.at, emit) : go?.to ? { id: go.to } : { error: 'no place' };
+            if (!at.error && at.id !== s.scene.at) { perceiveAll(s, emit); arrive(at.id); }
+        }
+    }
 
     for (const d of [...fw.accept].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0))) {
         // Authority is checked again at the actual story step: earlier deltas may have changed its context.

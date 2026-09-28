@@ -9,7 +9,7 @@
 import { O, S, B, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 
-export const EXTRACTOR_VERSION = 'extract-4.2';
+export const EXTRACTOR_VERSION = 'extract-4.3';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 

@@ -21,6 +21,9 @@ MESSAGE: Would the smith buy my old boots? Maybe I'll ask him tomorrow.
 → {"commands":[]}
 MESSAGE: *I turn toward the cracking branches, ready my sword, and walk in the direction of the sound.*
 → {"commands":[{"seq":1,"type":"go","to":{"new":"toward the sound"},"quote":"walk in the direction of the sound"}]}
+CATALOG: OBJECTS: item.starter_longsword (Starter Longsword, held by Alaric, equipped: weapon)
+MESSAGE: *I get my sword out and hold it ready.*
+→ {"commands":[]}
 MESSAGE: I'll take a bed if it's no more than 6 copper, then sleep till morning.
 → {"commands":[{"seq":1,"type":"buy","what":"a bed for the night","from":null,"qty":null,"max_cp":6,"any_price":false,"quote":"I'll take a bed if it's no more than 6 copper"},{"seq":2,"type":"activity","kind":"sleep","what":null,"minutes":null,"until":"morning","quote":"then sleep till morning"}]}
 MESSAGE: *the guard waves me through and i nod to him*

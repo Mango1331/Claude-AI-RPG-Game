@@ -16,7 +16,7 @@ import { applyWorld } from './world.js';
 import { INTERPRETER_VERSION } from './interpret.js';
 import { EXTRACTOR_VERSION } from './extract.js';
 
-const V3_KINDS = new Set(['command', 'creation.class', 'creation.skills', 'creation.invalid', 'attack', 'ambiguous_target', 'no_target', 'unknown_skill', 'stealth']);
+const V3_KINDS = new Set(['command', 'creation.class', 'creation.skills', 'creation.invalid', 'attack', 'engage', 'ambiguous_target', 'no_target', 'unknown_skill', 'stealth']);
 
 /**
  * Which engine resolves this message: 'v3' for commands, creation, combat and stealth (the V3 engine, unchanged in a V4

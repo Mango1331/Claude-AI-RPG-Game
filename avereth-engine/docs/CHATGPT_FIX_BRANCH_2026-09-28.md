@@ -121,3 +121,37 @@ The 4.0.3 run reached the intended Quest-friction Monster reveal but exposed a h
 - invented Guild plate replacement fees are rejected as Guild canon.
 
 Inventory containers/capacity and sack aliases are intentionally out of scope for this patch.
+
+
+## 4.0.5 — soft-world simplification after 22:21 live run
+
+The 4.0.4 run showed that the Runtime had become too strict outside protected mechanics. The extractor was being used as a permission system for ordinary NPC/world causality, generated proof strings had become exact bureaucratic gates, and final narration was hidden until a slow second LLM extraction finished.
+
+4.0.5 deliberately removes rules rather than adding another subsystem.
+
+Hard / deterministic remains:
+- Combat actor identity, target handles, HP, Range, Initiative, Skills, resources, damage, death and Combat XP.
+- Character progression and coin/equipment mechanics.
+- Guild listing identity/rank, fixed payout, Quest XP, completed-contract credit and Guild promotion.
+- Explicit Quest accept/abandon/turn-in.
+- Search and Stealth checks already owned by the engine.
+
+Soft / narrator-world state:
+- NPC help/refusal/departure/companionship and ordinary causal reactions.
+- NPC -> PC item hand-overs and ordinary gifts.
+- Quest contacts, witnesses, routes, discovered requirements and plausible verification.
+- How the desired Quest outcome is achieved.
+- Ordinary non-combat physical/social uncertainty.
+
+Quest design:
+- Objectives and generated proof remain continuity memory for the narrator, not exact-token gates.
+- New quest.ready is a semantic persistence flag: the extractor sets it only when the reply clearly establishes the desired Quest outcome as substantively achieved.
+- quest.ready does NOT complete/pay a Guild contract. The player still explicitly turns it in; only then does the engine award payout, Quest XP, completed-contract count and promotion credit.
+- Legacy exact proof can still substantiate older contracts, but story-ready contracts no longer require/consume an exact generated token or mark.
+
+Runtime/UI:
+- Narrator prose is visible immediately again. Extraction continues as persistence/bookkeeping; the next-turn barrier still waits for it.
+- There is no generic d100 roll on every ordinary V4 story turn. Search, Stealth and Combat keep their actual engine mechanics.
+- NPC cards surface established NPC-to-NPC ties from persistent facts, in addition to stance toward Alaric and knowledge.
+
+This patch intentionally does not add container/carry-capacity mechanics and does not loosen Combat.

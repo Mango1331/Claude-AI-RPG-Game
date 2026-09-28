@@ -14,7 +14,7 @@ import { clone, normText, slug } from '../util.js';
 import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver } from '../delta.js';
 import { truth, entityLabel, setFactEvents } from '../knowledge.js';
-import { perceiveAll, selfIntro, episode, openCommitted } from '../engine.js';
+import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
 import { firewall } from './firewall.js';
 import {
     PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, placeName, contracts, heldBy, openOffers, membership,
@@ -173,7 +173,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             const ref = count > 1 ? `${d.ref} ${i}` : d.ref;
             entries.push(kind === 'npc'
                 ? { ref, kind: 'npc', name: d.name === null ? null : d.name || undefined, desc: [...(d.role ? [d.role] : []), ...(d.desc || [])], traits: (d.desc || []).join(', '), band: d.band || undefined }
-                : { ref, kind: 'creature', name: undefined, species: d.species, desc: d.desc || [], band: d.band || undefined });
+                : { ref, kind: 'creature', name: undefined, species: d.species, anchor: d.anchor, desc: d.desc || [], band: d.band || undefined });
         }
         const joins = kind === 'creature' && s.encounter && hostileRefs.has(normText(d.ref));
         const r = v3({ new: entries, ...(joins ? { combat: entries.map((e) => ({ by: e.ref })) } : {}) }, d);
@@ -187,6 +187,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // who the person is shows on their card (occupation), as text: the V3 fact rule would read "Guild clerk" as a
         // reference to the clerk himself
         if (kind === 'npc' && d.role && created.length && !truth(s, created[0], 'occupation').length) occupation(created[0], d.role);
+        // Gameplay visibility: once an actual creature is visibly present, lock its deterministic profile immediately.
+        // This gives the player a canonical target handle + HP + Range before deciding whether to attack; Initiative still waits for Combat START.
+        if (kind === 'creature' && d.present !== false) for (const id of ids) materialise(s, content, dice, emit, id);
         return ids;
     };
 

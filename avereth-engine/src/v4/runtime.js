@@ -239,8 +239,9 @@ export function extractionRequest(chat, id, content) {
             : o.kind === 'check' ? `CHECK — the engine resolved: ${o.check?.label || 'a check'}, ${o.check?.success ? 'success' : 'failure'}.`
                 : 'NOTHING TO BOOK — Alaric decided nothing the engine resolves.';
     const expectedKeys = o.expected_keys || {};
-    const req = extractorRequest(content.deltaVocab, { catalog: cat.text, actions, expectedKeys, reply: msg.mes });
-    return { ...req, hash: r.text_hash, expectedKeys, ids: { places: cat.places, quests: cat.quests, objects: cat.objects }, catalog: cat.text, actions };
+    const player = state.last?.input || null;
+    const req = extractorRequest(content.deltaVocab, { catalog: cat.text, actions, player, expectedKeys, reply: msg.mes });
+    return { ...req, hash: r.text_hash, expectedKeys, ids: { places: cat.places, quests: cat.quests, objects: cat.objects }, catalog: cat.text, actions, player };
 }
 
 /**
@@ -262,7 +263,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed' } =
         if (!a.ok) { error = a.error; continue; }
         let p = parseExtraction(a.content, vocab, req.ids, req.expectedKeys);
         if (!(p.valid && p.complete)) {
-            const rep = extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, expectedKeys: req.expectedKeys, reply: chat[id].mes }, { previous: a.content, errors: p.errors });
+            const rep = extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player, expectedKeys: req.expectedKeys, reply: chat[id].mes }, { previous: a.content, errors: p.errors });
             const b = await ask(llm, rep.messages, 'extract_repair');
             ms += b.ms;
             repaired = true;

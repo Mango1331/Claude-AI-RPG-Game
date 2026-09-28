@@ -133,7 +133,7 @@ function extractionCall(provider, turn, vocab, reply, o, errors) {
         // the product's extractor: its system prompt, user message, schema and format line (src/v4/extract.js)
         return structuredCall(provider, {
             name: 'world_deltas', schema: v4x.deltaSchema(vocab, turn.catalog, turn.expected_keys), system: v4x.extractorSystem(vocab),
-            user: v4x.extractorUser({ catalog: turn.catalog.text, actions: turn.actions, expectedKeys: turn.expected_keys, vocab, reply }),
+            user: v4x.extractorUser({ catalog: turn.catalog.text, actions: turn.actions, player: turn.player, expectedKeys: turn.expected_keys, vocab, reply }),
             mode: o.mode, plainInstruction: v4x.EXTRACT_PLAIN_FORMAT, reasoning: o.reasoning, maxTokens: o.extractMaxTokens, temperature: 0.1, timeoutMs: o.timeoutMs, ...o.retry,
         });
     }

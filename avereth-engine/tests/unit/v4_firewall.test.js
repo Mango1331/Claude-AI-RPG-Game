@@ -113,7 +113,44 @@ test('facts: Alaric\'s possessions and standing are the engine\'s; a place that 
     assert.deepEqual(verdict([f('npc.tomas', 'located', 'the mill')], base()).rules, ['domain_fact']);
     assert.deepEqual(verdict([f('association granary', 'has', 'three cellars under the ground floor')], base()).accepted, ['fact']);
     assert.deepEqual(verdict([f('Guild registration', 'takes', 'about a quarter hour')], base()).accepted, ['fact']);
-    assert.deepEqual(verdict([f('Guild registration', 'costs', '2 silver')], base()).accepted, ['fact'], 'the story\'s words about the fee are a fact; the engine owns the price');
+});
+
+test('the Guild\'s mechanics are the engine\'s: a fact that defines fees, starting ranks, contract rights, promotion or payouts is refused (live run 28.09.)', () => {
+    const f = (s, p, o) => ({ seq: 1, type: 'fact', s, p, o });
+    // the live run: the clerk's "F-Rank to start, for everyone" became this fact and came back in the next engine block
+    const fRank = verdict([f('new Guild members', 'start at', 'F-Rank, which grants notice board access, contracts up to their Rank, and Guild rates at any Guild house in Ilyrion')], base());
+    assert.deepEqual(fRank.rules, ['guild_canon']);
+    assert.match(fRank.corrections[0], /Guild Rank Novice[\s\S]*Power Rank \(F to S\)[\s\S]*separate scale/);
+    // the fee, right or wrong, is the engine's (until 28.09. the story's words about it were kept as a fact: the fact
+    // then reached the narrator again, and a swipe of the same run had "a silver and a thumbprint")
+    assert.deepEqual(verdict([f('Guild registration', 'costs', '2 silver (20 cp), one-time, lifetime membership')], base()).rules, ['guild_canon']);
+    const wrong = verdict([f("Adventurers' Guild registration", 'costs', '1 silver plus a thumbprint')], base({ canon: { feeCp: 20 } }));
+    assert.deepEqual(wrong.rules, ['guild_canon']);
+    assert.match(wrong.corrections[0], /registration fee is 2 silver \(20 cp\)/);
+    assert.deepEqual(verdict([f('Guild registration', 'requires', 'payment before the membership card is cut, plus a name spelled out and a signature or mark')], base()).rules, ['guild_canon']);
+    assert.deepEqual(verdict([f('Redmarch Guild branch', 'rule', 'Novices may take only Novice contracts without a desk-clerk waiver')], base()).rules, ['guild_canon']);
+    assert.deepEqual(verdict([f('the Guild', 'promotes', 'members after a season of work')], base()).rules, ['guild_canon']);
+    // his own rank is the engine's too: the card of the live run read "F-Rank, Lumenford branch"
+    const card = verdict([f("Alaric's Guild card", 'reads', 'F-Rank, Lumenford branch')], base({ inGuildHall: true }));
+    assert.deepEqual(card.rules, ['guild_canon']);
+    assert.match(card.corrections[0], /starts at Guild Rank Novice/);
+    assert.deepEqual(verdict([f('Alaric', 'rank', 'F-Rank')], base()).rules, ['engine_owned_fact']);
+    // a claim that agrees with the canon is refused as a fact (the engine keeps its own) but needs no correction
+    const right = verdict([f('new Guild members', 'start at', 'Novice')], base());
+    assert.deepEqual([right.rules, right.corrections], [['guild_canon'], []]);
+    assert.deepEqual(verdict([f('Guild registration', 'costs', '2 silver (20 cp)')], base({ canon: { feeCp: 20 } })).corrections, []);
+    // the hall, its people and its customs stay the story's, so do tolls, prices of ordinary things and a client's bonus
+    for (const [s, p, o] of [
+        ['Guild hall', 'allows', 'carrying arms inside without surrendering them'],
+        ['Lumenford', 'charges strangers an entry toll', '2 copper at the gate'],
+        ["Adventurers' Guild hall, Redmarch", 'layout', 'long counter on the right, a wall of Quest slips marked in rank bands'],
+        ['Redmarch Guild branch', 'procedure', "a grey crystal reads a registrant's Rank and general condition"],
+        ['Redmarch Guild branch', 'rule', 'falsifying a completion means expulsion'],
+        ['Guild registration form', 'includes liability clause on back', 'Guild does not rescue members from Dungeons, pay funerals, or avenge them'],
+        ['quest.boar_eastfields', 'farmer_bonus', 'the farmer will add two silver from his own purse if the boar is brought down before the next full moon'],
+        ['Guild hall', 'serves', 'ale for 2 copper a mug'],
+        ['npc.dozing_bowman', 'is', 'a C-rank archer between contracts'],
+    ]) assert.deepEqual(verdict([f(s, p, o)], base({ inGuildHall: true })).accepted, ['fact'], `${s} ${p} ${o}`);
 });
 
 test('Alaric arrives only after his own go, a forced move or an activity that moves him', () => {
@@ -149,5 +186,10 @@ test('P0/S2 offline: the firewall refuses 6 of the 7 forbidden deltas of variant
     assert.deepEqual(s.remaining.map((x) => x.id), ['v11_05'], 'a plan read as private work: the extractor\'s error, no authority question');
     assert.equal(s.critical_after, s.critical_before);
     assert.equal(s.refused.filter((x) => x.gold === 'critical').length, 0);
-    assert.deepEqual(s.refused.filter((x) => x.gold === 'neither').map((x) => `${x.id}:${x.rule}`), ['v8_04:engine_booked', 'v10_03:engine_owned_fact', 'v10_03:engine_owned_fact']);
+    const neither = s.refused.filter((x) => x.gold === 'neither');
+    assert.deepEqual(neither.filter((x) => x.rule !== 'guild_canon').map((x) => `${x.id}:${x.rule}`), ['v8_04:engine_booked', 'v10_03:engine_owned_fact', 'v10_03:engine_owned_fact']);
+    // since the live run of 28.09.: the Guild's mechanics as facts (fees, starting rank, contract rights, payouts), among
+    // them wrong ones (v9_02 "one silver", v12_02 the "desk clerk waiver", v11_11 "nothing owed by the Guild")
+    assert.deepEqual(neither.filter((x) => x.rule === 'guild_canon').map((x) => x.id), ['v8_02', 'v9_02', 'v9_02', 'v9_03', 'v10_02', 'v10_03', 'v10_04', 'v10_04', 'v11_02', 'v11_03', 'v11_03', 'v11_11', 'v12_02', 'v12_02']);
+    assert.ok(neither.filter((x) => x.rule === 'guild_canon').every((x) => x.delta.type === 'fact'));
 });

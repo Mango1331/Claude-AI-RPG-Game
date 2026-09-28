@@ -281,6 +281,10 @@ const byTurn = (i) => narr.find((c) => c.lastUser.includes(TURNS[i].player));
 const idx = (c) => calls.indexOf(c);
 const presetFile = JSON.parse(fs.readFileSync(path.join(ENGINE, `presets/${PRESET}.json`), 'utf8'));
 const jailbreak = presetFile.prompts.find((p) => p.identifier === 'jailbreak')?.content;
+// the one refusal of the V12 gold (as tests/v4/golden_v12.test.js): the clerk's "Novices may take only Novice contracts
+// without a desk-clerk waiver" (gold t2, seq 1) invents a contract rule; the Guild's ranks and rules are the engine's
+// canon since the live run of 28.09.2026 (guild_canon)
+const EXPECTED_REJECTED = { 1: ['1:fact:guild_canon'], 2: [] };
 const checks = {
     campaignV4AtGreeting: greeting.events.some((e) => e.t === 'campaign.started' && e.runtime === 'v4'),
     creationBySystem: T('Warrior').system && /CLASS SELECTED: WARRIOR/.test(T('Warrior').panelText) && T(SKILLS).system && /CHARACTER CREATION COMPLETE/.test(T(SKILLS).panelText)
@@ -301,7 +305,8 @@ const checks = {
     barrier: end.t1?.status === 'applied' && end.t1?.board === 'booked' && idx(byTurn(1)) > idx(calls.find((c) => c.purpose === 'board')),
     world: end.state?.member === 'Novice' && end.state?.coin === 30 && end.state?.at === 'loc.redmarch.guild_hall' && end.state?.quests["Weasel Sign at Fenwick's Coop"] === 'taken_by_other'
         && Object.values(end.state?.quests || {}).filter((x) => x === 'listed').length === 4,
-    everyReplyApplied: [1, 2].every((i) => T(TURNS[i].player).extraction?.status === 'applied' && !T(TURNS[i].player).rejected.length),
+    everyReplyApplied: [1, 2].every((i) => T(TURNS[i].player).extraction?.status === 'applied'
+        && JSON.stringify(T(TURNS[i].player).rejected.map((x) => `${x.seq}:${x.type}:${x.rule}`)) === JSON.stringify(EXPECTED_REJECTED[i])),
     hudUnderReplies: [0, 1, 2].every((i) => T(TURNS[i].player).huds === 2) && /Guild hall/.test(T(TURNS[2].player).hudText),
     proseShown: [0, 1, 2].every((i) => !/<avereth|"deltas"|PLAYER ACTIONS/.test(T(TURNS[i].player).shown)),
     statusLine: /runtime v4 \(LLM: custom endpoint\)/.test(end.status) && /integrity: OK/.test(end.status),

@@ -98,6 +98,26 @@ test('plan and negation bind to the command\'s own verb: "Deal, I\'ll clear it t
     assert.deepEqual(kept("I don't care what it costs, I'll take the room.", [{ seq: 1, type: 'buy', what: 'a room', from: null, qty: null, max_cp: null, any_price: true, quote: "I don't care what it costs, I'll take the room." }], 'inn_no_offer'), ['buy']);
 });
 
+test('evidence is anchored, not matched letter for letter: an elided quote of a clear payment stands (live run 28.09.); invented or scattered words, and elisions over a question, a negation, a plan or someone else\'s words, do not', () => {
+    const live = 'My name is Alaric Red *i say and push 2 silver over the counter as i pay the fee*';
+    const pay = (quote) => [{ seq: 1, type: 'offer.accept', offer: 'offer.registration', lines: null, quote }];
+    assert.deepEqual(kept(live, pay('i push 2 silver over the counter as i pay the fee'), 'hall_fee'), ['offer.accept'], 'the live case: "i say and push" quoted as "i push"');
+    assert.deepEqual(why(live, pay('i hand her three gold crowns'), 'hall_fee'), ['no_evidence'], 'words the message does not have');
+    assert.deepEqual(why('I pay attention to the man by the door, then I look over the counter and the list of fees', pay('i pay the fee'), 'hall_fee'), ['no_evidence'], 'words scattered over the message');
+    assert.deepEqual(why('*i do not pay the fee yet*', pay('i pay the fee'), 'hall_fee'), ['negation']);
+    assert.deepEqual(why('Could I pay the fee later?', pay('I pay the fee'), 'hall_fee'), ['question']);
+    assert.deepEqual(why('Tomorrow I will probably pay the fee', pay('I will pay the fee'), 'hall_fee'), ['plan']);
+    assert.deepEqual(why('"You pay the fee now, boy," says the clerk.', pay('you pay the fee boy'), 'hall_fee'), ['npc_speech']);
+    assert.deepEqual(kept('Im here to Register', [{ seq: 1, type: 'guild.register', quote: "I'm here to register" }], 'hall_new'), ['guild.register'], '"Im" and "I\'m" are one word');
+});
+
+test('a member registers no second time: "*i sign the card*" read as guild.register after he paid is redundant (live run 28.09.); before he paid it goes to the engine', () => {
+    const sign = [{ seq: 1, type: 'guild.register', quote: 'i sign the card' }];
+    assert.deepEqual(why('*i sign the card*', sign, 'hall_plate'), ['redundant']);
+    assert.deepEqual(kept('*i sign the card*', sign, 'hall_fee'), ['guild.register'], 'the fee still open: the engine keeps the registration pending');
+    assert.deepEqual(kept('*i sign the card*', sign, 'hall_new'), ['guild.register']);
+});
+
 test('evidence: a commitment whose quote is not in the message is dropped; board.read is never dropped for reading', () => {
     assert.deepEqual(why('*i look around the hall*', [{ seq: 1, type: 'pay', to: 'npc.guild_clerk', amount_cp: 20, for: null, quote: 'i pay the fee' }], 'hall_fee'), ['no_evidence']);
     assert.deepEqual(kept('*i walk over to the Novice Rank Quest Board and look at the Quests there*', [{ seq: 1, type: 'board.read', rank: 'Novice', quote: 'i walk over to the Novice Rank Quest Board and look at the Quests there' }], 'hall_board'), ['board.read']);

@@ -14,11 +14,11 @@ Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extens
 1. **Vor der Erzählung** übersetzt ein kleiner LLM-Aufruf (Interpreter, reines JSON, Temperatur 0,1) deine Nachricht einmal in typisierte Befehle: `go`, `activity`, `take`, `give`, `pay`, `buy`, `guild.register`, `quest.accept`, `quest.turn_in`, `board.read` und weitere (`content/commands.json`). Fragen, Rückblicke, Pläne und Absichten („I'm here to register“) sind keine Befehle; ein deterministischer Agency-Guard entfernt, was die Nachricht nicht trägt.
 2. **Die Engine prüft und bucht** jeden Befehl: *resolved* (jetzt gebucht: Gebühr, Annahme, Abgabe am Schalter mit Beweisprüfung), *authorized* (Reise, Tätigkeit mit Zeitdeckel), *conditional* („wenn er die Halle erreicht“), *pending* (Preis unbekannt: der Erzähler nennt ihn und hält an), *refused*, *clarify*. Offizielle Gildenaushänge erzeugt ein Board-Generator, bevor sie gezeigt werden (*canonical first*); die Registrierung kostet die Canon-Gebühr 20 cp, nur die Gilde zahlt Verträge aus.
 3. **Der Erzähler** bekommt PLAYER ACTIONS und schreibt **nur Prosa**: keinen Block, keinen Report (Vertrag v4, Preset „Avereth Narrator V4“).
-4. **Nach der Antwort** liest ein Extraktor (LLM, JSON) sie im Hintergrund als geordnete Weltänderungen. Eine **Autoritäts-Firewall** verwirft, was nur die Engine buchen darf (Gildenzahlungen, Registrierung, Aushänge, Besitz Alarics ohne seinen Befehl, Reisen ohne sein `go`), und schreibt eine Korrektur für den nächsten Zug.
+4. **Nach der Antwort** liest ein Extraktor (LLM, JSON) sie im Hintergrund als geordnete Weltänderungen; er kennt dabei auch deine Nachricht. Eine **Autoritäts-Firewall** verwirft, was nur die Engine buchen darf (Gildenzahlungen, Registrierung, Aushänge, die Regeln und Ränge der Gilde, Besitz Alarics ohne seinen Befehl, Reisen ohne sein `go`), und schreibt eine Korrektur für den nächsten Zug.
 5. **Commit-Barriere:** Die nächste Nachricht wartet, bis die Welt der vorigen Antwort gebucht ist (höchstens 90 s; sonst eine sichtbare Lücke mit Korrektur).
 6. **Kampf, Charaktererstellung, `#`-Befehle und Schleichen** laufen unverändert über die V3-Engine.
 
-Einrichtung und Ablauf des ersten Live-Tests: [docs/LIVETEST_V4.md](docs/LIVETEST_V4.md). Architektur, Entscheidungen und Grenzen: [docs/RUNTIME_V4_PLAN.md](docs/RUNTIME_V4_PLAN.md), Rev. 3.
+Einrichtung und Ablauf des Live-Tests: [docs/LIVETEST_V4.md](docs/LIVETEST_V4.md), mit dem kurzen Retest nach dem ersten Lauf (§5). Architektur, Entscheidungen und Grenzen: [docs/RUNTIME_V4_PLAN.md](docs/RUNTIME_V4_PLAN.md), Rev. 3; Befunde des ersten Live-Tests vom 28.09.2026: R3.9.
 
 ## Was die Engine pro Zug tut (Runtime V3)
 
@@ -172,7 +172,7 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 ## Für Entwickler
 
 ```
-npm test                               # 383 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Runtime V3, Pre-Test-5, Regression der Testruns 1–4, beider Test-5-Läufe und der Live-Läufe 6–11, Narrator-Vergleich, P0-Werkzeuge, Runtime V4 (tests/v4: Golden V12, Cluster, Laufzeit, Abdeckung)
+npm test                               # 392 Tests: Unit, Szenarien, SillyTavern-Verhalten, Review-Fälle, Lorebook, Runtime V3, Pre-Test-5, Regression der Testruns 1–4, beider Test-5-Läufe und der Live-Läufe 6–11, Narrator-Vergleich, P0-Werkzeuge, Runtime V4 (tests/v4: Golden V12, Cluster, Laufzeit, Abdeckung, erster V4-Live-Lauf 28.09.)
 node tools/testrun_compare.js          # Token-Vergleich mit Testrun-v1
 node tools/browser_smoke.mjs           # optional: index.js in echtem Chromium mit gemocktem SillyTavern-Kontext, eine V3- und eine V4-Kampagne (braucht Playwright)
 AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st   # optional: Live-Smoke (V3) in echtem SillyTavern mit streamendem Mock-Erzähler (docs/RUNTIME_V3.md §8); mit AVERETH_ST_PRESET="Avereth Narrator" für das eigene Preset (docs/NARRATOR_AB.md §2.4)

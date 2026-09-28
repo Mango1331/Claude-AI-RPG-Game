@@ -137,5 +137,6 @@ export function guardContextFromScene(scene) {
         objects,
         registrationPending: !!reg,
         registrationOffer: reg ? reg.id : null,
+        member: /^Guild member\b/.test(scene.alaric || ''),
     };
 }

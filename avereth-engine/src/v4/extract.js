@@ -9,7 +9,7 @@
 import { O, S, B, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 
-export const EXTRACTOR_VERSION = 'extract-4.0';
+export const EXTRACTOR_VERSION = 'extract-4.1';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -130,10 +130,12 @@ export function extractorSystem(vocab) {
 
 export const EXTRACT_PLAIN_FORMAT = 'Return only one JSON object, no prose before or after it, no code fences: {"expected": {<every key asked>}, "deltas": [{"seq": 1, "type": "<delta>", <every field of that delta; null where allowed and unknown>}]}.';
 
-export function extractorUser({ catalog, actions, expectedKeys, vocab, reply }) {
+export function extractorUser({ catalog, actions, player = null, expectedKeys, vocab, reply }) {
     return [
         catalog || 'CATALOG: –',
         '',
+        // what the player wrote (live run 28.09.2026: "*i sign the card*" read as overreach without it)
+        ...(player ? [`PLAYER MESSAGE (what the player wrote Alaric saying and doing):\n${String(player).slice(0, 1500)}`, ''] : []),
         `PLAYER ACTIONS (already booked):\n${actions || 'none'}`,
         '',
         expectedText(vocab, expectedKeys),
@@ -143,9 +145,9 @@ export function extractorUser({ catalog, actions, expectedKeys, vocab, reply }) 
 }
 
 /** The messages of an extractor call, and of its one repair (the invalid answer and the errors appended). */
-export function extractorRequest(vocab, { catalog, actions, expectedKeys, reply }, { previous = null, errors = null } = {}) {
+export function extractorRequest(vocab, { catalog, actions, player = null, expectedKeys, reply }, { previous = null, errors = null } = {}) {
     const system = `${extractorSystem(vocab)}\n\n${EXTRACT_PLAIN_FORMAT}`;
-    const user = extractorUser({ catalog, actions, expectedKeys, vocab, reply });
+    const user = extractorUser({ catalog, actions, player, expectedKeys, vocab, reply });
     const messages = [{ role: 'system', content: system }, { role: 'user', content: user }];
     if (previous !== null && errors) {
         messages.push({ role: 'assistant', content: String(previous) }, { role: 'user', content: `Your answer was not valid: ${errors.slice(0, 8).join('; ')}. Answer again with only the corrected JSON object, nothing else.` });

@@ -162,5 +162,6 @@ export function guardContext(state, content, catalog = buildCatalog(state, conte
         objects,
         registrationPending: !!reg,
         registrationOffer: reg ? reg.id : null,
+        member: !!membership(state),
     };
 }

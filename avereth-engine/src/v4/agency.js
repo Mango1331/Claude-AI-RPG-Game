@@ -9,7 +9,10 @@
 // the rules against questions, memories, plans and other people's actions were already in its prompt. The guard is the
 // deterministic second line, kept deliberately small:
 //
-//   evidence      a commitment whose quote is not in the message                          no_evidence
+//   evidence      a commitment whose quote is not in the message: word for word, or all its   no_evidence
+//                 words in order within a few more of the message ("i say and push 2 silver"
+//                 quoted as "i push 2 silver", live run 28.09.); every check below reads the
+//                 message's own words
 //   question      every sentence the quote touches is a question ("Could I take …?")     question
 //   memory        a past-time anchor with a past verb ("I gave you the heads an hour ago") retrospective
 //   plan          a future anchor with a future modal before the command's own verb        plan
@@ -20,7 +23,8 @@
 //   other actor   the quote's subject is a person present, not Alaric ("the clerk takes …") npc_actor
 //   other speech  the quote sits in someone else's quoted words ('"…," says the furrier')   npc_speech
 //   state         drop/give/sell/use/equip of something he does not hold; a turn-in of a    not_held, same_message,
-//                 contract taken in the same message; a registration already under way      redundant
+//                 contract taken in the same message; a registration already under way, or   redundant
+//                 of a member ("*i sign the card*" after he paid)
 //
 // Only clear cases are removed. Everything else goes to the engine, whose guards refuse what cannot be done there.
 import { normText } from '../util.js';
@@ -123,16 +127,45 @@ function sentences(message) {
     return out;
 }
 
+/** Words for anchoring a quote: edge punctuation off, apostrophes dropped ("I'm" = "Im"). */
+const tokens = (t) => flat(t).split(' ').map((w) => w.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '').replace(/'/g, '')).filter(Boolean);
+
+/**
+ * Where a quote the message does not carry word for word stands in it: all of the quote's words, in their order, within
+ * a window at most a few words longer than the quote. The interpreter may leave words out ("My name is Alaric Red *i say
+ * and push 2 silver over the counter as i pay the fee*" quoted as "i push 2 silver over the counter as i pay the fee",
+ * live run 28.09.2026); a word the message does not have, or words scattered over it, anchor nothing. Returns the
+ * message's own words of that window (the evidence every check reads), or null.
+ */
+export function anchorQuote(message, quote) {
+    const q = tokens(quote);
+    if (!q.length) return null;
+    const m = tokens(message);
+    const slack = Math.max(2, Math.ceil(q.length / 4));
+    let best = null;
+    for (let start = 0; start < m.length; start++) {
+        if (m[start] !== q[0]) continue;
+        let end = start;
+        for (let k = 1; k < q.length && end >= 0; k++) end = m.indexOf(q[k], end + 1);
+        if (end < 0 || end - start + 1 > q.length + slack) continue;
+        if (!best || end - start < best.end - best.start) best = { start, end };
+    }
+    return best ? m.slice(best.start, best.end + 1).join(' ') : null;
+}
+
 /** The sentences a quote touches (by its words), or null when the quote is not in the message. */
 function touched(message, quote) {
-    const q = flat(quote).replace(/[.!?,;:"]+$/g, '').trim();
+    let q = flat(quote).replace(/[.!?,;:"]+$/g, '').trim();
     if (!q) return null;
     const m = flat(message);
-    if (!m.includes(q)) return null;
+    if (!m.includes(q)) {
+        q = anchorQuote(message, quote);
+        if (!q) return null;
+    }
     const parts = sentences(message);
     const words = q.split(' ').filter((w) => w.length > 2 || /^(?:i|go|do|ok)$/.test(w));
     const hit = parts.filter((p) => words.some((w) => p.text.includes(w)) && (q.includes(p.text.replace(/[.!?]+$/, '')) || p.text.includes(q) || overlap(p.text, q)));
-    return hit.length ? hit : parts.filter((p) => p.text.includes(q.split(' ')[0]));
+    return { parts: hit.length ? hit : parts.filter((p) => p.text.includes(q.split(' ')[0])), evidence: q };
 }
 
 function overlap(a, b) {
@@ -165,7 +198,7 @@ function otherActor(quote, context) {
 /** The quote is inside quoted words that the message gives to someone else ('"…," says the furrier'). */
 function otherSpeech(message, quote, context) {
     const src = normText(String(message ?? ''));
-    const q = flat(quote).replace(/[.!?,;:]+$/g, '').trim();
+    const q = tokens(quote).join(' ');
     const who = actorWords(context);
     const speaker = (clause) => {
         const w = flat(clause).replace(/[,.;:!?"]/g, ' ').split(' ').filter(Boolean);
@@ -175,7 +208,7 @@ function otherSpeech(message, quote, context) {
     const re = /"([^"]+)"/g;
     let m;
     while ((m = re.exec(src))) {
-        if (!flat(m[1]).includes(q)) continue;
+        if (!q || !tokens(m[1]).join(' ').includes(q)) continue;
         const after = src.slice(m.index + m[0].length, m.index + m[0].length + 60).split(/[.!?"]/)[0];
         const before = src.slice(Math.max(0, m.index - 40), m.index).split(/[.!?"]/).pop();
         if ((flat(after) && speaker(after)) || (flat(before) && speaker(before))) return true;
@@ -204,7 +237,8 @@ const idOf = (ref) => (typeof ref === 'string' ? ref : null);
  * @param {object} context what the engine knows now:
  *   inGuildHall: boolean · guildHalls: Set<placeId> (places that are or lie in a Guild hall) ·
  *   present: [{id, names: string[]}] · objects: Map<id, {held: boolean, name?: string}> ·
- *   registrationPending: boolean · registrationOffer: string|null (offer id of the open registration)
+ *   registrationPending: boolean · registrationOffer: string|null (offer id of the open registration) ·
+ *   member: boolean (Alaric is a Guild member already)
  * @returns {{kept: object[], dropped: {command: object, rule: string, why: string}[]}}
  */
 export function guardCommands(message, commands, context = {}, { language = true, state = true } = {}) {
@@ -217,12 +251,13 @@ export function guardCommands(message, commands, context = {}, { language = true
     for (const c of list) {
         const type = String(c.type || '');
         const commit = COMMITMENTS.has(type);
-        const parts = touched(message, c.quote);
-        if (!parts) {
+        const found = touched(message, c.quote);
+        if (!found) {
             if (commit) { drop(c, 'no_evidence', `the quote "${String(c.quote ?? '').slice(0, 60)}" is not in the message`); continue; }
             kept.push(c);
             continue;
         }
+        const { parts, evidence } = found;
         const text = parts.map((p) => p.text).join(' ');
         if (!language) { if (!stateCheck(c)) kept.push(c); continue; }
         // a request to buy may be phrased as a question ("Can I get a room?"); it books nothing without a price. A polite
@@ -234,8 +269,8 @@ export function guardCommands(message, commands, context = {}, { language = true
         if (RETRO_ANCHOR.test(text) && pastRe(type) && new RegExp(`\\b(?:${pastRe(type)})\\b`).test(text)) { drop(c, 'retrospective', 'the evidence recalls an earlier deed'); continue; }
         if (planned(text, type)) { drop(c, 'plan', 'the evidence plans it for later'); continue; }
         if (negated(text, type)) { drop(c, 'negation', 'the evidence negates it'); continue; }
-        if (otherSpeech(message, c.quote, context)) { drop(c, 'npc_speech', "the evidence is someone else's quoted words"); continue; }
-        if (otherActor(c.quote, context)) { drop(c, 'npc_actor', 'the evidence is what someone else does'); continue; }
+        if (otherSpeech(message, evidence, context)) { drop(c, 'npc_speech', "the evidence is someone else's quoted words"); continue; }
+        if (otherActor(evidence, context)) { drop(c, 'npc_actor', 'the evidence is what someone else does'); continue; }
         const goesToHall = kept.some((k) => k.type === 'go' && (halls.has(idOf(k.to)) || /guild/i.test(String(k.to?.new ?? ''))));
         if (GUILD_ACTS.has(type) && PURPOSE.test(text) && !context.inGuildHall && !goesToHall) { drop(c, 'purpose', 'the evidence names the purpose of a later visit to a Guild hall, not an act here'); continue; }
         if (stateCheck(c)) continue;
@@ -258,6 +293,8 @@ export function guardCommands(message, commands, context = {}, { language = true
             }
         }
         if (type === 'quest.turn_in' && idOf(c.quest) && kept.some((k) => k.type === 'quest.accept' && k.quest === c.quest)) { drop(c, 'same_message', 'the contract is taken in this very message; handing it in is part of taking it'); return true; }
+        // a member registers no second time: signing the card or the register after he paid is part of the story
+        if (type === 'guild.register' && context.member) { drop(c, 'redundant', 'Alaric is a Guild member already'); return true; }
         if (type === 'guild.register' && context.registrationPending) {
             const paysFee = list.some((k) => k !== c && ((k.type === 'offer.accept' && (!context.registrationOffer || k.offer === context.registrationOffer)) || k.type === 'pay'));
             if (paysFee) { drop(c, 'redundant', 'the registration is already under way; paying its fee completes it'); return true; }

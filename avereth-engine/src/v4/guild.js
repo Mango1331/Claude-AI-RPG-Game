@@ -5,7 +5,7 @@
 // the promotion. The narrator only tells what the engine booked; the extractor's deltas cannot change any of it.
 import { O, S, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
-import { setFactEvents, perceivers, knows } from '../knowledge.js';
+import { setFactEvents, perceivers, knows, truth, PC_NAME_FACT } from '../knowledge.js';
 import { awardXp, questXp } from '../progression.js';
 import { rankOf, rankIndex } from '../derived.js';
 import { slug } from '../util.js';
@@ -42,6 +42,16 @@ function recordFact(s, emit, { p, o, id }) {
 }
 
 // ------------------------------------------------------------------------------------------------ registration
+/**
+ * The Guild's two rank scales in one sentence, for the narrator whenever registration comes up (live run 28.09.2026:
+ * with only "Power Rank F" in view the clerk said "F-Rank to start, for everyone").
+ */
+export function rankCanon(content) {
+    const g = content.rules.guild.ranks;
+    const p = content.rules.ranks.order;
+    return `a new member starts at Guild Rank ${g[0]} (the Guild's ranks run ${g[0]} to ${g.at(-1)}); Power Rank (${p[0]} to ${p.at(-1)}) is a person's measured strength, a separate scale the Guild reads but never grants`;
+}
+
 /** The canon fee as an open offer and an open decision (plan §6.4: pending until Alaric agrees to pay). */
 export function openRegistration(s, content, emit) {
     const fee = feeOf(content);
@@ -61,7 +71,23 @@ export function registerEvents(s, content, emit) {
         emit({ t: 'object.created', d: { object: { id: PLATE_ID, name: 'Guild plate', kind: 'document', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [{ text: 'Novice stamp', by: 'guild', turn: s.turn }], for_quests: [], source: { turn: s.turn, how: 'guild' } } } });
     }
     recordFact(s, emit, { p: 'guild_rank', o: 'Novice' });
+    // the desk writes his name into the register: whoever registers him knows it (live run 28.09.2026: "My name is
+    // Alaric Red" at the counter, a dozing bowman made two listeners, and the clerk "did NOT know his name")
+    for (const who of deskStaff(s)) {
+        if (!knows(s, who, PC_NAME_FACT)) emit({ t: 'knowledge.gained', d: { who, about: PC_NAME_FACT, stance: 'knows', source: 'told:pc', turn: s.turn, minute: s.clock.minute } });
+    }
     return { power };
+}
+
+const DESK_ROLE = /\b(?:clerk|registrar|receptionist|desk)\b/i;
+
+/** The people at the Guild's desk: present, noticing him, a clerk, registrar or receptionist by occupation or label. */
+function deskStaff(s) {
+    return perceivers(s).filter((id) => {
+        const e = s.entities[id];
+        if (id === 'pc' || e?.kind !== 'npc' || s.scene.awareness[id] === 'unaware') return false;
+        return DESK_ROLE.test([truth(s, id, 'occupation')[0]?.o, e.traits, ...(e.descriptors || [])].filter(Boolean).join(' '));
+    });
 }
 
 // ------------------------------------------------------------------------------------------------ contracts

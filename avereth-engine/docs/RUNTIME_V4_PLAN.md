@@ -1,6 +1,6 @@
 # Runtime V4 / Engine 4.0: Plan zur gemeinsamen Review (Revision 3)
 
-**Status:** **Revision 3 (28.09.2026): umgesetzt als Engine 4.0.0**, Branch `claude/happy-wright-1a4y19`. Was P0 entschieden hat, was wie umgesetzt ist, wo die Umsetzung abweicht und welche Gates offen sind: Abschnitt [R3](#r3-revision-3-stand-nach-p0-und-umsetzung-40). Die Abschnitte 0–16 sind die Revisionen 2 und 2.1 (Plan, für P0 freigegeben am 27.09.2026) und bleiben als Historie stehen.
+**Status:** **Revision 3 (28.09.2026): umgesetzt als Engine 4.0.0**, Branch `claude/happy-wright-1a4y19`. Was P0 entschieden hat, was wie umgesetzt ist, wo die Umsetzung abweicht und welche Gates offen sind: Abschnitt [R3](#r3-revision-3-stand-nach-p0-und-umsetzung-40). Der erste Live-Test (28.09.2026, 04:27) und seine Korrekturen: [R3.9](#r39-erster-live-test-28092026-befunde-und-korrekturen). Die Abschnitte 0–16 sind die Revisionen 2 und 2.1 (Plan, für P0 freigegeben am 27.09.2026) und bleiben als Historie stehen.
 - **Revision 2** nach dem externen Review von ChatGPT auf Revision 1 (Commit `52ed696`). Review: [CHATGPT_REVIEW_RUNTIME_V4_PLAN.md](CHATGPT_REVIEW_RUNTIME_V4_PLAN.md). Was sich ändert: Abschnitt [R](#r-revision-2-was-sich-gegenüber-revision-1-ändert).
 - **Revision 2.1**, Bedingung der Freigabe: Offizielle Gildenaushänge sind *canonical first, prose second*. Scheitert der Board-Generator, gibt es keinen Erzähler-Rückfall mehr (D3, §3.4, §6.4).
 - **P0 (Spikes):** Werkzeuge und Anleitung in [P0_SPIKES.md](P0_SPIKES.md). Was P0 am Plan präzisiert hat (Befehle `drop`/`use`, Erwartungsfeld `priced`, Anwesenheit bei Ankunft), steht dort in §8 und ist hier in §4.1, §5.3 und §6.2 nachgetragen; die Messwerte mit dem echten Provider stehen aus.
@@ -89,8 +89,12 @@ flowchart TD
 
 - **Vokabular** `content/commands.json` (cmd-0.2): 19 Befehle wie §4.1; `attempt` bleibt 4.1.
 - **Agency-Guard** (`src/v4/agency.js`) nach jeder Interpretation:
-  - Evidenz: Das `quote` jedes Befehls muss eine Handlung oder Festlegung Alarics sein, keine Frage, kein Rückblick, kein Plan, kein Zweck („I'm here to register“), keine Verneinung, keine Handlung oder Rede Dritter.
-  - Zustand: Besitz beim Geben/Ablegen, Abgabe eines im selben Satz genommenen Vertrags, laufende Registrierung.
+  - Evidenz: Das `quote` jedes Befehls muss in der Nachricht stehen und eine Handlung oder Festlegung Alarics sein, keine Frage, kein Rückblick, kein Plan, kein Zweck („I'm here to register“), keine Verneinung, keine Handlung oder Rede Dritter.
+    - „In der Nachricht“ heißt wörtlich oder **verankert**: alle Wörter des Zitats in ihrer Reihenfolge in einem Fenster, das höchstens einige Wörter länger ist als das Zitat (höchstens 2 oder ein Viertel der Zitatlänge).
+    - Der Interpreter lässt Wörter aus: „i say and push 2 silver …“ zitiert als „i push 2 silver …“ (Live-Test 28.09., R3.9).
+    - Alle weiteren Prüfungen lesen die Wörter der Nachricht in diesem Fenster, nicht das Zitat.
+    - Fremde oder verstreute Wörter verankern nichts (`no_evidence`).
+  - Zustand: Besitz beim Geben/Ablegen, Abgabe eines im selben Satz genommenen Vertrags, laufende Registrierung, `guild.register` eines Mitglieds („*i sign the card*“ nach der Zahlung, R3.9).
   - Entfernte Befehle zeigt der System-Block als `NOT A DECISION`.
 - **Registrierung und Zahlung in einer Nachricht:** in beiden Reihenfolgen genau eine Zahlung der Canon-Gebühr und `resolved` (§4.1).
 
@@ -114,10 +118,17 @@ flowchart TD
 | `guild_listing` | offizielle Gildenverträge aus der Prosa statt vom Board-Generator |
 | `guild_completion` | den Abschluss eines Gildenvertrags ohne Abgabe am Schalter, auch als abgehaktes Ziel („deliver … to the Guild“) |
 | `domain_fact` | Fakten über Zustand, der eigene Deltas hat (Ort, Anwesenheit, Absicht, Gildenrang) |
-| `engine_owned_fact` | Fakten über Alarics Besitz, Stand, Coin und Fortschritt |
+| `engine_owned_fact` | Fakten über Alarics Besitz, Stand, Coin und Fortschritt, auch einen Rang („Alaric: F-Rank“) |
+| `guild_canon` | Fakten, die die Mechanik der Gilde festlegen (seit dem Live-Test 28.09., R3.9): Gebühren und was die Registrierung verlangt, Auszahlungen, Rang zu Beginn oder eines Mitglieds (auch auf Alarics Karte oder Plakette), welche Verträge ein Rang nehmen darf, Beförderung. Eine Korrektur gibt es nur bei Widerspruch zum Kanon: ein Power-Rang-Buchstabe als Gildenrang, ein anderer Startrang als Novice, eine andere Gebühr als 20 cp. Halle, Personen, Bräuche, Zölle, Preise gewöhnlicher Dinge, ein Bonus des Auftraggebers und der Rang anderer Leute bleiben Fakten der Geschichte |
 | `no_go` | eine Ankunft Alarics ohne sein `go` oder Zwang; Suchen, Sammeln und Botengänge erlauben Bewegung |
 
-Was die Firewall nicht prüft (Zeitdeckel, Ortsbaum, Anwesenheit, Gegenpartei eines Kaufs), prüft der World-Applier beim schrittweisen Anwenden; `expected.taken_anyway` und ein Verkauf ohne vereinbarten Preis werden dort zu Overreach. Vokabular `content/deltas.json` **delta-0.3**: 29 Delta-Typen wie delta-0.2; neu ist nur `expected.sell` {sold, price_cp}.
+Was die Firewall nicht prüft (Zeitdeckel, Ortsbaum, Anwesenheit, Gegenpartei eines Kaufs), prüft der World-Applier beim schrittweisen Anwenden; `expected.taken_anyway` und ein Verkauf ohne vereinbarten Preis werden dort zu Overreach. Vokabular `content/deltas.json` **delta-0.4**: 29 Delta-Typen wie delta-0.2.
+- delta-0.3 brachte `expected.sell` {sold, price_cp}.
+- delta-0.4 (Live-Test 28.09., R3.9) ändert nur Regeln:
+  - Der Extraktor (`extract-4.1`) liest auch die **Spielernachricht** (PLAYER MESSAGE, vor PLAYER ACTIONS).
+  - Was sie Alaric selbst sagen oder tun lässt (Worte, Geste, Unterschrift), ist nie Overreach.
+  - Eine Zahlung, ein Kauf, ein Aufheben, eine Annahme, eine Abgabe, eine Registrierung oder eine Reise, die die Antwort zeigt, die PLAYER ACTIONS nicht buchen und die der Katalog nicht schon als erledigt zeigt, bleibt Overreach, auch wenn der Spieler sie schrieb.
+  - Einen Namen, den Alaric nennt, lernen die, die ihn laut Antwort hören (`learn` pc name).
 
 ### R3.5 Barriere und Fehlerpolitik (ersetzt §3.4)
 
@@ -138,7 +149,7 @@ Was die Firewall nicht prüft (Zeitdeckel, Ortsbaum, Anwesenheit, Gegenpartei ei
 
 **Bewusst anders als geplant:**
 - **Keine Upcaster (§8):** Eine Kampagne behält ihre Runtime; V3-Chats laufen unverändert mit der V3-Engine weiter. Grund: Der V3-Pfad bleibt byte-gleich und live bewährt; ein Wechsel mitten in der Kampagne müsste Quest-, Orts- und Besitzstand aus Reports rekonstruieren, die das nie sauber trugen (P0/S2). Ein Wechsel ist ein neuer Chat.
-- **Kein Event-Schema v2 mit `v`:** Die Versionierung tragen `STATE_VERSION` 3, Record v3 und die Versionen von Interpreter (`interp-4.0`), Extraktor (`extract-4.0`) und Vokabularen in jedem Record.
+- **Kein Event-Schema v2 mit `v`:** Die Versionierung tragen `STATE_VERSION` 3, Record v3 und die Versionen von Interpreter (`interp-4.0`), Extraktor (`extract-4.1` seit dem Live-Test 28.09.; `extract-4.0` davor) und Vokabularen in jedem Record.
 - **Strukturierter Output:** kein `json_schema` (S0).
 
 **Grundlegend in 4.0, ausbaufähig:**
@@ -160,7 +171,7 @@ Was die Firewall nicht prüft (Zeitdeckel, Ortsbaum, Anwesenheit, Gegenpartei ei
 
 | Gate (§11.7, §16) | Stand |
 |---|---|
-| alle Tests grün | **383/383** (`npm test`) |
+| alle Tests grün | **392/392** (`npm test`; 383 vor den Korrekturen des Live-Tests, R3.9) |
 | Golden-V4-Test: alle 12 Erwartungen | **erfüllt** im Pfad A, am Produkt über den echten Host-Pfad (E1–E12, X1–X6, Endzustand) |
 | Cluster-Regressionen P0 | **erfüllt** (`tests/v4/clusters.test.js`) |
 | Barriere, Fehler, Swipe, Edit, Reload, Kampf in V4 | **erfüllt** (`tests/v4/runtime.test.js`) |
@@ -169,14 +180,42 @@ Was die Firewall nicht prüft (Zeitdeckel, Ortsbaum, Anwesenheit, Gegenpartei ei
 | Smokes | Browser (V3 + V4) **OK**; echtes SillyTavern 1.19 mit Mock-Provider: V4 **17/17**, V3 **21/21** |
 | Interpreter live: Negativ-Präzision ≥ 98 %, Recall ≥ 90 %, p50 ≤ 6 s | **offen**: P0 roh 93,1 % / 94,2 % / 3,7 s; mit Guard offline 100 % (optimistisch) und auf ungesehenen Fällen 89 % abgefangen. Nachmessung live: [LIVETEST_V4.md §3](LIVETEST_V4.md#3-nachmessung-s1s2-optional-vor-dem-spiel) |
 | Deltas live ≥ 95 % gültig und vollständig | P0: A 100 %; **Produktpfad (Extraktor + Firewall) live offen** |
-| Live-Spieltest mit dem echten Modell | **offen**: [LIVETEST_V4.md §4](LIVETEST_V4.md#4-der-spieltest) |
+| Live-Spieltest mit dem echten Modell | **erster Lauf 28.09.2026** (GLM-5.3-Flash, vier Story-Züge, absichtlich früh beendet): vier Fehler, behoben (R3.9). **Kurzer Retest offen**: [LIVETEST_V4.md §5](LIVETEST_V4.md#5-kurzer-retest-nach-dem-ersten-live-test-28092026) |
 | Tag `v3.1.7` vor dem Merge | Schritt des Eigentümers beim Merge nach `main` |
 
 ### R3.8 Dateien (ergänzt §12)
 
-- **Neu:** `src/v4/` (agency, catalog, commands, domain, extract, firewall, guild, interpret, json, runtime, schema, turn, world; ≈ 3.000 Zeilen), `content/commands.json`, `content/deltas.json`, `content/narrator/Avereth_Narrator_Contract_v4.txt`, `presets/Avereth Narrator V4.json`, `lorebook/Avereth_World_Lore_v0.13.json` (ersetzt v0.12), `tests/v4/`, `tests/testrun_v12/gold_v4.json`, `tests/eval/`, `tools/p0/`, `tools/st_live/run_v4.mjs`, `docs/P0_BERICHT.md`, `docs/LIVETEST_V4.md`.
+- **Neu:** `src/v4/` (agency, catalog, commands, domain, extract, firewall, guild, interpret, json, runtime, schema, turn, world; ≈ 3.000 Zeilen), `content/commands.json`, `content/deltas.json`, `content/narrator/Avereth_Narrator_Contract_v4.txt`, `presets/Avereth Narrator V4.json`, `lorebook/Avereth_World_Lore_v0.13.json` (ersetzt v0.12), `tests/v4/` (mit `live_0928.json` und `live_0928.test.js`, R3.9), `tests/testrun_v12/gold_v4.json`, `tests/eval/`, `tools/p0/`, `tools/st_live/run_v4.mjs`, `docs/P0_BERICHT.md`, `docs/LIVETEST_V4.md`.
 - **Geändert:** `src/state.js` (Zustand v3, V4-Domänen), `src/engine.js` (Kampagnenstart mit Runtime; Wahrnehmung, Episode und Kampfbeginn als gemeinsame Bausteine), `src/host.js`, `src/context.js` (PLAYER ACTIONS, Prosa-Zeile), `src/display.js` (WORLD-Zeilen), `src/validate.js` (V4-Invarianten), `src/delta.js` (ID-Tag je Delta), `index.js` (Runtime, LLM-Weg, Barriere), `content/rules.json` (`guild`, `time`), `content/manifest.json` 4.0.0.
 - **Unverändert:** Kampf (`combat.js`), Charaktererstellung, `#`-Befehle, Schleichen, V3-Report-Pfad.
+
+### R3.9 Erster Live-Test (28.09.2026): Befunde und Korrekturen
+
+**Lauf:** SillyTavern 1.19, GLM-5.3-Flash, Lumenford. Ablauf:
+- Begrüßung und Erstellung (Warrior, Heavy Slash + Charge);
+- vier Story-Züge: in die Stadt und zur Gilde (zwei Swipes), „Hello. I'm here to register“, „My name is Alaric Red *i say and push 2 silver over the counter as i pay the fee*“, „*i sign the card*“;
+- absichtlich früh beendet.
+
+Die Artefakte (Chat, Event-Log, Request-Log) wurden Zug für Zug verglichen. Der Lauf ist mit den aufgezeichneten Antworten des Modells als Regressionstest nachgespielt: `tests/v4/live_0928.json` enthält nur Chattexte und Modellantworten, keine Requests. Dazu `tests/v4/live_0928.test.js`.
+
+| # | Befund (externer Review) | Prüfung am Beleg | Schicht | Korrektur (klein) |
+|---|---|---|---|---|
+| 1 | Zahlung vom Guard als `no_evidence` verworfen | **bestätigt.** Der Interpreter erkannte `offer.accept offer.registration` richtig. Sein Zitat ließ „say and“ aus; der Guard verlangte das Zitat buchstabengenau. Folge: keine Buchung; die erzählte Zahlung wurde Overreach und nicht angewandt, Coin blieb 50 | Agency-Guard | Evidenz verankert statt buchstabengenau (R3.3). S1 unverändert: alle 236 aufgezeichneten Zitate standen wörtlich in der Nachricht, Negativ-Präzision 100 %, Recall 94,2 %, Prüfsätze gleich |
+| 2 | „F-Rank to start, for everyone“ wird Kanon | **bestätigt, drei Schichten.** (a) Die Zeile REGISTERS nannte dem Erzähler keinen Gildenrang; im Blick standen nur „Rank: F“ (Begrüßung) und „Power Rank F“ (Engine-Block). (b) Der Extraktor meldete die Worte der Schreiberin als Fakten (Regel 5 verlangt das für Gebühr und Lohn). (c) Die Firewall ließ Fakten über die Mechanik der Gilde durch. Der Fakt „new Guild members start at F-Rank“ stand in den Erzähler-Requests der beiden folgenden Züge unter RELEVANT | Erzählerkontext, Firewall | REGISTERS und PAYS nennen Gildenrang Novice und Power Rank als getrennte Skalen (`rankCanon`). Regel `guild_canon` (R3.4) mit Korrektur nur bei Widerspruch; `engine_owned_fact` auch für Alarics Rang |
+| 3 | „*i sign the card*“ als Overreach | **bestätigt, Ursache zweistufig.** Der Extraktor sah die Spielernachricht nicht. Weil die Zahlung (1) fehlte, stand in PLAYER ACTIONS noch „stop there: he has not agreed to pay“ | Extraktor, Folge von 1 | Der Extraktor liest die Spielernachricht; Regel: eigenes Tun ist nie Overreach, nicht gebuchte Festlegungen bleiben es (delta-0.4). `guild.register` eines Mitglieds entfernt der Guard (`redundant`); der Erzähler bekommt „NOTHING TO BOOK“ statt einer Ablehnung. Kein neuer Befehl für Gesten |
+| 4 | Schreiberin lernt den Namen nicht | **bestätigt, andere Ursache als vermutet.** `selfIntro` lässt nur Angesprochene oder den einzigen Zuhörer den Namen lernen. Der dösende Bogenschütze machte zwei Zuhörer; angesprochen war niemand mit Namen. Der Extraktor sah die Nachricht mit dem Namen nicht (3) | World/Knowledge-Apply, Extraktor | Die Registrierung schreibt den Namen ins Register: Anwesendes Gildenpersonal am Schalter (clerk, registrar, receptionist, desk) lernt ihn. Dazu die `learn`-Regel des Extraktors (delta-0.4) |
+| 5 | Swipe mit erfundenem Stadtzoll | **teilweise.** Die Autorität hielt: Coin blieb 50. Ein Delta senkt Coin nur als Zwang (`coerce`: Strafe oder Beschlagnahme durch eine anwesende Obrigkeit, Raub durch einen Feindseligen, immer mit Grund und sichtbarer Zeile); der Extraktor meldete keinen, gespeichert wurde nur der Zoll als Fakt der Stadt. Es fehlte ein Overreach-Hinweis für „The coins left the pouch“. Die erfundene Gebühr „a silver and a thumbprint“ desselben Swipes war ein Fakt | Firewall (Hinweis: Extraktor) | Keine neue Architektur. Die Gebühr verwirft jetzt `guild_canon` mit Korrektur. Die Overreach-Regel von delta-0.4 nennt Zahlungen ausdrücklich. Test: Swipe 0 lässt Coin bei 50 |
+
+**Nicht geändert:** Event-Sourcing, kanonischer Zustand, HUD, Erzähler (nur Prosa), Extraktor nach der Antwort, Commit-Barriere, Board canonical first, V3-Kampf, -Erstellung, `#` und Schleichen, Kampagnentrennung.
+
+**Firewall auf den P0-Antworten** (`tools/p0/rescore.mjs`), vorher → nachher:
+- verbotene Deltas 7 → 1 und kritische 58 → 58: unverändert;
+- zusätzlich verworfen: 3 → 17. Die 14 neuen sind `guild_canon`, alle Gold-Klasse „weder noch“: Gebühr, Startrang, Rechte, Auszahlungsort, Anmeldung;
+- der Golden-Pfad V12 verwirft eine Tatsache: die erfundene „desk-clerk waiver“ (t2).
+
+**Grenzen:**
+- Ob der Extraktor mit der Spielernachricht die Unterschrift nicht mehr als Overreach meldet und den Namen als `learn` meldet, entscheidet das Modell. Das zeigt erst der Retest; der Test prüft, was der Extraktor bekommt.
+- Deterministisch sind: die Verankerung, die Redundanz des Mitglieds, der Gildenkanon, das Namenswissen bei der Registrierung und der Schutz der Münzen.
 
 ---
 

@@ -43,6 +43,8 @@ export function firewallContext(s, content) {
         booked: o.booked || { registration: false, grants: [], turnIns: [], accepted: [] },
         auth: { go: !!(auth.gos || []).length || !!auth.go, roam: !!auth.roam, take: !!(auth.take || []).length, gather: !!auth.gather, forced: false },
         heldByPc: (ref) => s.objects?.[ref]?.holder?.entity === 'pc' || (typeof ref === 'string' && ref.startsWith('item.') && !!s.entities.pc.sheet.inventory[ref.slice(5)]),
+        // the Guild's canon for the corrections of refused Guild facts (guild_canon)
+        canon: { feeCp: content.rules.guild.registration_fee_cp, guildRanks: content.rules.guild.ranks, powerRanks: content.rules.ranks.order },
     };
 }
 

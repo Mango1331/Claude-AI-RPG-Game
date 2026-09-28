@@ -25,6 +25,7 @@
 10. [Nach P0: S1 mit Agency-Guard (offline gemessen)](#10-nach-p0-s1-mit-agency-guard-offline-gemessen)
 11. [Nach P0: S2 mit Autoritäts-Firewall (offline gemessen)](#11-nach-p0-s2-mit-autoritäts-firewall-offline-gemessen)
 12. [Nachtrag: vom Prototyp ins Produkt (4.0.0)](#12-nachtrag-vom-prototyp-ins-produkt-400)
+13. [Nachtrag: erster Live-Test (28.09.2026) und die Offline-Zahlen](#13-nachtrag-erster-live-test-28092026-und-die-offline-zahlen)
 
 ---
 
@@ -449,3 +450,40 @@ Die Abschnitte 1–11 bleiben, wie sie gemessen wurden. Dieser Nachtrag sagt, wa
 | S1 ungesehen, Prüfsatz 2 (58 Fälle) | `node tools/p0/s1_interpreter.mjs --corpus tests/eval/commands_holdout2.jsonl --out p0_out/s1_holdout2` | erster Lauf: 89 % der Fehlbefehle abgefangen, 97 % der richtigen erhalten |
 | S2 Produktpfad, 41 Züge | `node tools/p0/s2_deltas.mjs --variant a --vocab v4 --out p0_out/s2_v4` | Firewall auf den P0-Antworten: verbotene Deltas A 7 → 1, B 8 → 0; kritische unverändert |
 | Spieltest in SillyTavern | [LIVETEST_V4.md §4](LIVETEST_V4.md#4-der-spieltest) | echtes SillyTavern 1.19 mit Mock-Provider: V4 17/17 Prüfungen |
+
+---
+
+## 13. Nachtrag: erster Live-Test (28.09.2026) und die Offline-Zahlen
+
+Die Abschnitte 1–12 bleiben, wie sie gemessen wurden. Der erste Live-Lauf fand vier Fehler; ihre Korrekturen ändern Guard, Firewall und Extraktor ([RUNTIME_V4_PLAN.md R3.9](RUNTIME_V4_PLAN.md#r39-erster-live-test-28092026-befunde-und-korrekturen)). Hier steht, was das für die Offline-Zahlen aus §10 und §11 heißt. Nachgerechnet mit `node tools/p0/rescore.mjs` auf denselben aufgezeichneten Antworten, ohne neue Aufrufe.
+
+**S1 mit Agency-Guard (§10): unverändert.**
+- Der Guard verankert ein Zitat jetzt auch, wenn der Interpreter Wörter auslässt.
+- Alle 236 aufgezeichneten Zitate des Korpus standen wörtlich in ihrer Nachricht; die Verankerung greift dort nie.
+- Negativ-Präzision 100 % (87/87), Recall 94,2 %, 1 falscher Befehl / 0 falsche Festlegungen, 12 verworfen, kein Recall-Verlust.
+- Die Prüfsätze sind gleich: Satz 1 35/36 abgefangen, 40/41 erhalten; Satz 2 27/28 und 34/34.
+- Die neue Zustandsregel (`guild.register` eines Mitglieds) trifft keinen Fall des Korpus. Das Messwerkzeug kennt die Mitgliedschaft jetzt aus der Szene wie das Produkt aus dem Zustand.
+
+**S2 mit Firewall (§11): verbotene und kritische Deltas unverändert, mehr Verwerfungen.**
+
+| Antworten | verbotene Deltas vorher → nachher | kritische Deltas vorher → nachher | zusätzlich verworfen (weder verboten noch kritisch) |
+|---|---|---|---|
+| S2 A, 41 Züge (Produktpfad) | 7 → 1 (wie §11) | 58 → 58 (wie §11) | **3 → 17** |
+| S2 B, 27 schema-gültige Blöcke | 8 → 0 (wie §11) | 27 → 27 (wie §11) | 2 (wie §11) |
+
+- Die 14 neuen Verwerfungen sind alle die neue Regel `guild_canon`. Sie trifft Fakten, die die Mechanik der Gilde festlegen:
+  - Gebühr: v9_02, v12_02;
+  - was die Registrierung verlangt: v8_02, v11_02;
+  - Startrang und Rang eines Mitglieds: v9_02, v11_03;
+  - Rechte eines Rangs: v10_02, v11_03, v12_02 mit der erfundenen „desk clerk waiver“;
+  - Auszahlungsort und -bedingung: v9_03, v10_03, v11_11;
+  - Bedingungen zweier Aushänge mit Lohn: v10_04.
+- Alle 14 hat das Gold als „weder noch“ eingestuft. **Das ist eine Änderung der Politik, keine Korrektur der Daten.** Bis 28.09. galten die Worte der Geschichte über Gebühr und Lohn als Fakten, die Engine buchte sie nur nicht. Im Live-Lauf kam ein solcher Fakt („new Guild members start at F-Rank“) als RELEVANT zurück zum Erzähler. Seitdem gehören diese Regeln der Engine.
+- Was die Geschichte über die Gilde sonst erzählt, bleibt Fakt: Halle, Bräuche, Haftungsklausel, Ausschluss bei Betrug, Kristallprüfung, Bonus eines Auftraggebers, Rang anderer Leute.
+- Der Golden-Pfad V12 (§12) verwirft damit genau einen Fakt: t2, die erfundene „desk-clerk waiver“. `tests/v4/golden_v12.test.js` erwartet ihn.
+
+**Extraktor: delta-0.4, `extract-4.1`.**
+- Der Extraktor bekommt die Spielernachricht (PLAYER MESSAGE) vor PLAYER ACTIONS.
+- Die Overreach-Regel unterscheidet eigenes Tun von nicht gebuchten Festlegungen.
+- Eine Regel lässt die, die laut Antwort Alarics Namen hören, ihn lernen (`learn`).
+- Die S2-Zahlen aus §4 und §11 sind mit dem alten Prompt gemessen. `node tools/p0/s2_deltas.mjs --variant a --vocab v4` schickt jetzt den neuen Prompt, mit der Spielernachricht jedes Zuges aus dem Korpus. Eine Nachmessung zeigt, ob die Regeln die Semantik halten; sie ist nicht gelaufen.

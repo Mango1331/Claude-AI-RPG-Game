@@ -1,8 +1,10 @@
 # Live-Test Runtime V4 (Engine 4.0.0)
 
+**Stand 28.09.2026:** Der erste Live-Lauf (04:27, GLM-5.3-Flash, vier Story-Züge) fand vier Fehler; sie sind behoben ([RUNTIME_V4_PLAN.md R3.9](RUNTIME_V4_PLAN.md#r39-erster-live-test-28092026-befunde-und-korrekturen)). **Nächster Schritt: der kurze Retest in [§5](#5-kurzer-retest-nach-dem-ersten-live-test-28092026)**, danach der volle Spieltest (§4).
+
 **Worum es geht:** der erste Lauf von Runtime V4 mit dem echten Modell. Alles, was ohne Modell prüfbar ist, ist geprüft (§1). Offen sind nur Dinge, die das Modell entscheidet: Liest der Interpreter die Nachrichten richtig? Erzählt der Erzähler nur Prosa und hält er bei offenen Entscheidungen an? Liest der Extraktor die Antworten treu?
 
-**Der API-Schlüssel bleibt in SillyTavern.** Kein Schritt hier verlangt, ihn irgendwohin zu kopieren. Die Engine sieht ihn nie: Ihre drei Aufrufe gehen an SillyTavern (`/api/backends/chat-completions/generate`), und SillyTavern setzt den Schlüssel auf seinem Server ein. Der Live-Smoke gegen ein echtes SillyTavern 1.19 hat genau das geprüft (§1). Was du zurückschickst (§5), enthält keinen Schlüssel.
+**Der API-Schlüssel bleibt in SillyTavern.** Kein Schritt hier verlangt, ihn irgendwohin zu kopieren. Die Engine sieht ihn nie: Ihre drei Aufrufe gehen an SillyTavern (`/api/backends/chat-completions/generate`), und SillyTavern setzt den Schlüssel auf seinem Server ein. Der Live-Smoke gegen ein echtes SillyTavern 1.19 hat genau das geprüft (§1). Was du zurückschickst (§6), enthält keinen Schlüssel.
 
 ## Inhalt
 
@@ -10,8 +12,9 @@
 2. [Einrichtung in SillyTavern](#2-einrichtung-in-sillytavern)
 3. [Nachmessung S1/S2 (optional, vor dem Spiel)](#3-nachmessung-s1s2-optional-vor-dem-spiel)
 4. [Der Spieltest](#4-der-spieltest)
-5. [Zurückschicken](#5-zurückschicken)
-6. [Bekannte Grenzen dieses Stands](#6-bekannte-grenzen-dieses-stands)
+5. [Kurzer Retest nach dem ersten Live-Test (28.09.2026)](#5-kurzer-retest-nach-dem-ersten-live-test-28092026)
+6. [Zurückschicken](#6-zurückschicken)
+7. [Bekannte Grenzen dieses Stands](#7-bekannte-grenzen-dieses-stands)
 
 ---
 
@@ -19,7 +22,7 @@
 
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
-| Einheiten, Golden-V12, Cluster, Laufzeit, Abdeckung | `npm test` | 383/383 |
+| Einheiten, Golden-V12, Cluster, Laufzeit, Abdeckung, Nachspiel des ersten Live-Laufs (`tests/v4/live_0928.test.js`) | `npm test` | 392/392 |
 | `index.js` in Chromium, SillyTavern nachgebaut: eine V3- und eine V4-Kampagne | `node tools/browser_smoke.mjs` | OK |
 | **Echtes SillyTavern 1.19**, V4: Begrüßung → V4-Kampagne, Erschaffung, drei V12-Züge; Mock-Provider hinter der Quelle Custom | `AVERETH_ST_DIR=… node tools/st_live/run_v4.mjs` | 17/17 |
 | Echtes SillyTavern 1.19, V3-Kampagne (14 Züge, Kampf, Nachforderung, Reise) | `AVERETH_ST_DIR=… node tools/st_live/setup.mjs && … run.mjs` | 21/21 |
@@ -55,7 +58,7 @@
 
 ## 3. Nachmessung S1/S2 (optional, vor dem Spiel)
 
-Interpreter und Extraktor haben sich seit den P0-Messungen geändert (Agency-Guard, Firewall, Vokabular delta-0.3). Diese Läufe messen den Produktpfad mit dem echten Modell. Der Schlüssel bleibt in SillyTavern ([P0_SPIKES.md §3.2](P0_SPIKES.md#32-weg-b-empfohlen-über-sillytavern), Weg B: SillyTavern läuft, Quelle Custom gewählt).
+Interpreter und Extraktor haben sich seit den P0-Messungen geändert (Agency-Guard, Firewall, Vokabular delta-0.4 mit der Spielernachricht für den Extraktor). Diese Läufe messen den Produktpfad mit dem echten Modell. Der Schlüssel bleibt in SillyTavern ([P0_SPIKES.md §3.2](P0_SPIKES.md#32-weg-b-empfohlen-über-sillytavern), Weg B: SillyTavern läuft, Quelle Custom gewählt).
 
 ```powershell
 cd "<DEIN_REPO_PFAD>\avereth-engine"
@@ -112,7 +115,29 @@ node tools/p0/s2_deltas.mjs --variant a --vocab v4 --out p0_out/s2_v4
 
 ---
 
-## 5. Zurückschicken
+## 5. Kurzer Retest nach dem ersten Live-Test (28.09.2026)
+
+Derselbe Weg wie im ersten Lauf, jetzt mit den Korrekturen. Einrichtung wie §2 (Extension neu kopieren; die Statuszeile zeigt weiter `Avereth Engine 4.0.0`). Ein neuer Chat mit Begrüßung `outside Lumenford, Ilyrion` wie im ersten Lauf, Erschaffung wie gewohnt (z. B. `Warrior`, `Heavy Slash + Charge`). Dann genau diese Eingaben:
+
+| # | Eingabe (wörtlich) | Erwartet |
+|---|---|---|
+| 1 | `*i walk into the city ahead of me and make my way to the adventurer Guild*` | Ankunft in der Gildenhalle, Coin 50. **Einmal swipen:** Erfindet die neue Antwort eine Zahlung (Zoll, Gebühr), bleibt Coin 50; entweder `NOT APPLIED` oder gar keine Buchung, nie ein stilles Minus |
+| 2 | `*i walk up to the counter and say* Hello. I'm here to register with the Adventurers Guild.` | `UNDERSTOOD … guild.register (open: fee)`. Die Schreiberin nennt **2 Silber (20 cp)** und hält an. **Nichts bezahlt**, Coin 50. Gildenrang **Novice**; kein „F-Rank to start“ |
+| 3 | `My name is Alaric Red *i say and push 2 silver over the counter as i pay the fee*` | `UNDERSTOOD … offer.accept (booked)`, **kein** `NOT A DECISION … no_evidence`. Coin **30** (genau einmal −20), Gildenrang Novice, Power Rank F, Plakette. **Kein** `NOT APPLIED`. Die Schreiberin kennt seinen Namen (siehe unten) |
+| 4 | `*i sign the card*` | Die Unterschrift steht in der Antwort. Höchstens `NOT A DECISION — "i sign the card" (guild.register: redundant)`, **kein** `NOT APPLIED`. Coin 30, Mitgliedschaft unverändert |
+| 5 | `*i look at the Novice board*` | genau die kanonischen Aushänge des System-Blocks, keine erfundenen; Novice, nicht „F-Rank“ |
+
+**Worauf achten:**
+- **A–B:** die System-Zeilen `UNDERSTOOD` und `NOT A DECISION`, die Münzen im HUD.
+- **C:** Sagt die Schreiberin einen Gildenrang, ist es Novice. Nennt eine Antwort trotzdem „F-Rank“ als Startrang, verwirft die Engine das als Fakt. Die Korrektur steht dann im nächsten Erzähler-Request unter CORRECTIONS.
+- **E, Name:** Im nächsten Erzähler-Request (Chat Completion request log) steht bei der Schreiberin „knows him by name“ statt „has seen him, does NOT know his name“. Im Event-Log ist es ein `knowledge.gained` mit `about: f.pc.name`.
+- **F:** keine Münzänderung ohne `UNDERSTOOD … (booked)`, außer einer sichtbaren `FINE`/`CONFISCATION`/`ROBBERY`-Zeile (Zwang durch eine anwesende Obrigkeit oder einen Räuber).
+
+**Zurückschicken** wie beim ersten Lauf (§6): Chat-Export, Event-Log, Chat-Completion-Request-Log ohne Schlüssel.
+
+---
+
+## 6. Zurückschicken
 
 - **Chat-Export** des Test-Chats (SillyTavern: Chat-Menü → Export als `.jsonl`). Er enthält die Prosa und die Records der Engine (Befehle, Auflösungen, Extraktor-Antworten, Events), keine Schlüssel.
 - **Event-Log** (Engine-Panel → *Export event log*).
@@ -123,11 +148,17 @@ node tools/p0/s2_deltas.mjs --variant a --vocab v4 --out p0_out/s2_v4
 
 ---
 
-## 6. Bekannte Grenzen dieses Stands
+## 7. Bekannte Grenzen dieses Stands
 
 Die vollständige Liste steht in [RUNTIME_V4_PLAN.md, Rev. 3](RUNTIME_V4_PLAN.md#r3-revision-3-stand-nach-p0-und-umsetzung-40). Für den Test wichtig:
 
-- **Nur mit dem echten Modell prüfbar:** Lesefehler des Extraktors wie P0 v11_05 (er liest „er ging zur Mühle“ als Ankunft, obwohl die Antwort unterwegs endet); Überschreitungen, die die Firewall nicht kennt.
+- **Nur mit dem echten Modell prüfbar:**
+  - Lesefehler des Extraktors wie P0 v11_05 (er liest „er ging zur Mühle“ als Ankunft, obwohl die Antwort unterwegs endet);
+  - Überschreitungen, die die Firewall nicht kennt;
+  - seit 28.09.: ob der Extraktor mit der Spielernachricht eigenes Tun („*i sign the card*“) nicht mehr als Overreach meldet, eine nicht gebuchte Zahlung aber schon, und einen genannten Namen als `learn` meldet.
+- **Name:** deterministisch lernt ihn nur das Gildenpersonal am Schalter bei der Registrierung, sonst wer angesprochen wird oder der einzige Zuhörer ist; alles andere hängt am Extraktor.
+- **Erzählte Zahlungen an Obrigkeiten** (Zoll, Strafe) kann der Extraktor als Zwang (`coerce`) lesen: dann sinkt Coin mit einer sichtbaren Zeile, nicht still. Ein Zoll, den Alaric „zahlt“, ist nach delta-0.4 Overreach.
+- **Chatverlauf:** Was frühere Antworten falsch sagten („F-Rank to start“), bleibt im Verlauf, den der Erzähler sieht. Die Engine korrigiert es einmal (CORRECTIONS) und speichert es nicht als Fakt.
 - **Andere Quellen als Custom:** `generateRaw` mit der Temperatur des Presets; nicht gemessen.
 - **V3-Chats bleiben V3.** Es gibt keine Umstellung laufender Kampagnen (keine Upcaster).
 - **In 4.0 grundlegend:** Verkauf, Ausrüsten. **Private Aufträge bringen noch keine Quest-XP** (offene Entscheidung, Plan R3.6). Pending Check folgt in 4.1.

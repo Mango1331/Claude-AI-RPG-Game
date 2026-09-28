@@ -20,7 +20,7 @@ import {
 } from './domain.js';
 import { sameWant } from './world.js';
 import {
-    REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, acceptContract, completeContract, checkProof, proofText,
+    REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, checkProof, proofText,
     promotion, takenByOthers, bookBoard,
 } from './guild.js';
 
@@ -255,7 +255,7 @@ const HANDLERS = {
         for (const l of lines.filter((x) => x.kind === 'service' && x.service !== 'guild_registration')) emit({ t: 'service.granted', d: { service: l.service || 'other', what: l.what, by: o.seller, at: s.scene.at, turn: s.turn } });
         emit({ t: 'offer.closed', d: { id: o.id, status: 'accepted' } });
         for (const d of s.decisions.filter((x) => x.offer === o.id || (reg && x.kind === 'registration') || (x.kind === 'purchase' && x.seller === o.seller) || (x.kind === 'purchase' && !x.seller && x.at === s.scene.at))) emit({ t: 'decision.closed', d: { id: d.id, status: 'accepted' } });
-        if (reg) return { status: 'resolved', line: `PAYS — the Guild registration fee, ${price} cp: registered, Guild Rank Novice; the crystal reads his Power Rank: ${power}; he receives his Guild plate.` };
+        if (reg) return { status: 'resolved', line: `PAYS — the Guild registration fee, ${price} cp: registered at Guild Rank ${content.rules.guild.ranks[0]}; the crystal reads his Power Rank: ${power} (his measured strength, a separate scale from the Guild's ranks); he receives his Guild plate.` };
         return { status: 'resolved', line: `ACCEPTS the offer — ${lines.map((l) => l.what).join(', ')} for ${cpText(price, content)}; he pays ${who(s, o.seller)}.` };
     },
     'offer.decline'(s, content, c, ctx, emit) {
@@ -336,7 +336,7 @@ const HANDLERS = {
         if (membership(s) && ctx.booked.registration) return { status: 'resolved', line: 'REGISTERS — done: the fee he paid above registered him.' };
         if (membership(s)) return { status: 'refused', reason: 'already a member', line: 'NOTHING TO DO — he is already a member.' };
         const fee = openRegistration(s, content, emit);
-        return { status: 'pending', reason: 'fee', line: `REGISTERS — pending: the Guild's registration fee is ${fee % 10 === 0 ? `${fee / 10} silver (${fee} cp)` : `${fee} cp`}, one-time. Let the clerk name it and explain; stop there: he has not agreed to pay.` };
+        return { status: 'pending', reason: 'fee', line: `REGISTERS — pending: the Guild's registration fee is ${fee % 10 === 0 ? `${fee / 10} silver (${fee} cp)` : `${fee} cp`}, one-time; ${rankCanon(content)}. Let the clerk name the fee and explain; stop there: he has not agreed to pay.` };
     },
     'guild.promote'(s, content, c, ctx, emit) {
         if (!hallOf(s, s.scene.at)) return { status: 'refused', reason: 'not at a Guild hall', line: 'CANNOT ASK FOR PROMOTION — only at a Guild hall.' };

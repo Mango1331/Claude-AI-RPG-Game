@@ -112,7 +112,12 @@ const main = await newGame();
 const run = await play(main);
 const R = (id) => run.find((x) => x.id === id);
 
-test('V12 golden path: every turn resolves as gold, PLAYER ACTIONS as gold, state as gold, no refusal, invariants hold', () => {
+// the one refusal on the golden path: the 3.1.7 narrator's "Novices may take only Novice contracts without a desk-clerk
+// waiver" (gold t2, seq 1) invents a contract rule the engine does not have; since the live run of 28.09.2026 the
+// Guild's ranks and rules are the engine's canon and such a fact is refused (guild_canon)
+const EXPECTED_REFUSALS = { t2: [{ seq: 1, type: 'fact', rule: 'guild_canon' }] };
+
+test('V12 golden path: every turn resolves as gold, PLAYER ACTIONS as gold, state as gold, no refusal but the expected one, invariants hold', () => {
     const problems = [];
     for (const t of gold.turns) {
         const r = R(t.id);
@@ -128,7 +133,8 @@ test('V12 golden path: every turn resolves as gold, PLAYER ACTIONS as gold, stat
         const rec = r.rep.record;
         problems.push(...subsetDiff(t.after_reply || {}, { ...excerpt(r.afterReply), corrections: (rec.corrections || []).length }, main).map((x) => `${t.id} after reply: ${x}`));
         if (rec.extraction?.status !== 'applied') problems.push(`${t.id}: extraction ${rec.extraction?.status}`);
-        if ((rec.rejected || []).length) problems.push(`${t.id}: refused ${JSON.stringify(rec.rejected)}`);
+        const refused = (rec.rejected || []).map((x) => ({ seq: x.seq, type: x.type, rule: x.rule }));
+        if (JSON.stringify(refused) !== JSON.stringify(EXPECTED_REFUSALS[t.id] || [])) problems.push(`${t.id}: refused ${JSON.stringify(rec.rejected)}`);
         problems.push(...r.problems.map((x) => `${t.id} invariant: ${x}`));
     }
     assert.deepEqual(problems, []);

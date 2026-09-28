@@ -69,3 +69,21 @@ test('delta-0.2 keeps the P0 lessons: the payout and the fee are facts only, buy
     assert.match(vocab.deltas.find((d) => d.type === 'coin.gift').summary, /never the Guild's payout/);
     assert.match(vocab.deltas.find((d) => d.type === 'object.new').summary, /only after his TAKES or GATHERS/);
 });
+
+test('delta-0.4: the extractor reads the player\'s message; his own words and gestures are never overreach, a booking the engine did not make still is; a name he gives is learned (live run 28.09.)', () => {
+    const player = '*i sign the card*';
+    const { messages } = extractorRequest(vocab, { catalog: 'CATALOG', actions: 'NOTHING TO BOOK — Alaric decides nothing the engine resolves.', player, expectedKeys: {}, reply: 'He signs the card.' });
+    const user = messages[1].content;
+    assert.match(user, /PLAYER MESSAGE \(what the player wrote Alaric saying and doing\):\n\*i sign the card\*\n\nPLAYER ACTIONS \(already booked\):\nNOTHING TO BOOK/);
+    const sys = messages[0].content;
+    assert.match(sys, /neither PLAYER ACTIONS nor the PLAYER MESSAGE contain, report it only as overreach/);
+    assert.match(sys, /What the PLAYER MESSAGE has him say or do himself \(his words, a gesture, signing, sitting down\) is his own, never overreach/);
+    assert.match(sys, /a payment, purchase, pick-up, acceptance, turn-in, registration or journey that the reply shows, that PLAYER ACTIONS do not book and the CATALOG does not show as done already, is overreach, even when the PLAYER MESSAGE has him do it/);
+    assert.match(sys, /A name Alaric gives \(in the PLAYER MESSAGE or the reply\) is learned by those the reply shows hearing it: learn \{"who": <person>, "s": "pc", "p": "name"/);
+    // no message (a caller without one): no empty section
+    const none = extractorRequest(vocab, { catalog: 'CATALOG', actions: 'none', expectedKeys: {}, reply: 'x' }).messages[1].content;
+    assert.doesNotMatch(none, /PLAYER MESSAGE/);
+    // the repair keeps it
+    const rep = extractorRequest(vocab, { catalog: 'CATALOG', actions: 'none', player, expectedKeys: {}, reply: 'x' }, { previous: '{}', errors: ['$.deltas: missing'] });
+    assert.match(rep.messages[1].content, /PLAYER MESSAGE[^]*\*i sign the card\*/);
+});

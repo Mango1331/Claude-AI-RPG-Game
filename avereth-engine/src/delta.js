@@ -386,8 +386,8 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
         const part = name && kind === 'npc' && /\p{Lu}/u.test(name) ? namePart(name) : null;
         if (part !== null) entity.known_name = part;
         if (kind === 'creature') {
-            const anchor = content.anchors.get(n.species) || anchorFor(content, [n.species, ...desc, n.traits].filter(Boolean).join(' '));
-            if (!anchor) { reject(n, 'creature needs a species that maps to an F1 body-plan anchor (or kind "npc")'); continue; }
+            const anchor = content.anchors.get(n.anchor) || content.anchors.get(n.species) || anchorFor(content, [n.species, ...desc, n.traits].filter(Boolean).join(' '));
+            if (!anchor) { reject(n, 'creature needs a valid F1 body-plan anchor (explicit anchor preferred; species name may be free fantasy fauna)'); continue; }
             entity.species = n.species ? String(n.species).slice(0, 40) : desc[0];
             entity.anchor = anchor.id;
         } else {

@@ -79,6 +79,7 @@ function guildMechanic(d, ctx) {
     const po = words(`${text(d.p)} ${text(d.o)}`);
     const lower = `${text(d.s)} ${text(d.p)} ${text(d.o)}`.toLowerCase();
     if (GUILD_MONEY.test(po) && GUILD_MONEY_TOPIC.test(all) && !CLIENT_BONUS.test(all)) return 'money';
+    if (GUILD_CANON_ITEM.test(words(d.s)) && GUILD_MONEY.test(po) && !CLIENT_BONUS.test(all)) return 'money';
     const label = RANK_LABEL.test(`${rankText(d.p)} ${rankText(d.o)}`);
     const rank = label || /\brank\b/.test(po);
     // his own rank, on him or on his card or plate ("F-Rank, Lumenford branch" on the card, live run 28.09.2026)

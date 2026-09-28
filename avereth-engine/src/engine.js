@@ -143,6 +143,7 @@ function storyTurn(s, content, text, intent, dice, emit, situations) {
     if (pcAction?.kind === 'attack') {
         return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move }, pcAction: null }, situations);
     }
+    if (pcAction?.kind === 'engage') return engagementTurn(s, content, dice, emit, pcAction.targets);
     // 3) declared stealth: opposed check (or automatic with nobody around)
     if (intent.kind === 'stealth') {
         const r = stealthEvents(s, content, dice);
@@ -158,6 +159,7 @@ function storyTurn(s, content, text, intent, dice, emit, situations) {
 function pcActionOf(s, content, intent, text) {
     const name = (id) => entityLabel(s, id);
     switch (intent.kind) {
+        case 'engage': return { kind: 'engage', targets: intent.targets || [] };
         case 'attack':
             // a group the story holds as one creature ("cellar rats") is never fought as one: the story shows its animals
             // first, as it would for a group that attacks (live run 27.09. 01:19)
@@ -191,6 +193,23 @@ function pcActionOf(s, content, intent, text) {
  */
 function combatants(s, leadId, committed = []) {
     return uniq([leadId, ...committed]).filter((id) => s.entities[id] && s.entities[id].status !== 'dead');
+}
+
+/** Start a confrontation because Alaric explicitly committed to fight, but do not spend, move or attack for him. */
+function engagementTurn(s, content, dice, emit, targets = []) {
+    const ids = uniq(targets).filter((id) => id !== 'pc' && s.scene.present.includes(id) && s.entities[id]?.status !== 'dead');
+    if (!ids.length) return { kind: 'note', text: 'Alaric is ready to fight, but there is no concrete opposing actor the engine can put into an encounter yet.' };
+    for (const id of ids) materialise(s, content, dice, emit, id);
+    const enc = initEncounter(s, content, dice, { actor: 'pc', target: ids[0], engage: true }, ids.map((id) => ({ id, side: 'hostile' })), `enc.t${s.turn}`);
+    Object.assign(enc.intents, s.pending_intents || {});
+    emit({ t: 'encounter.started', d: { encounter: enc } });
+    for (const id of ids) if (s.scene.awareness[id] !== 'aware') emit({ t: 'scene.awareness', d: { id, level: 'aware' } });
+    const named = (id) => enc.combatants[id]?.label || entityLabel(s, id);
+    return {
+        kind: 'combat',
+        started: { reason: enc.ambush_reason, order: enc.order.map(named).join(' > '), ambush: false, engagement: true },
+        records: [], illegal: null, next: "Alaric's Turn (Round 1)", board: combatBoard(enc),
+    };
 }
 
 /** Give an NPC/creature its locked combat profile once (Content #7 anchors / proposed human templates). */

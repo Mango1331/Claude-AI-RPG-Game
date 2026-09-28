@@ -42,6 +42,7 @@ const EXPECTED_SHAPES = {
     take: () => O({ taken: B() }),
     buy: () => O({ priced: B(), taken_anyway: B() }),
     pay: () => O({ priced: B(), taken_anyway: B() }),
+    sell: () => O({ sold: B(), price_cp: N(I(0)) }),
 };
 
 /**

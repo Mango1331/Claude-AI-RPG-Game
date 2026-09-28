@@ -168,6 +168,29 @@ test('a purchase agreed in advance ("if it\'s no more than 6 copper") is booked 
     assert.deepEqual(s.decisions, []);
 });
 
+test('a sale with a lowest price is booked when the buyer pays at least that; a sale no price was agreed for is overreach', async () => {
+    const g = await atHall();
+    await g.player("I'll sell you my pouch, not under 3 copper.", [{ seq: 1, type: 'sell', object: 'item.small_pouch', qty: null, to: 'npc.guild_clerk', min_cp: 3, quote: "I'll sell you my pouch, not under 3 copper." }]);
+    assert.deepEqual(statuses(g), ['conditional']);
+    const coin = g.state().entities.pc.sheet.coin_cp;
+    const r = await g.reply('"Three copper, then," says the clerk, and counts it out.', fill({ expected: { 1: { sold: true, price_cp: 3 } }, deltas: [] }));
+    assert.equal(r.record.extraction.status, 'applied', 'the extractor can answer a sale (delta-0.3)');
+    let s = g.state();
+    assert.equal(s.entities.pc.sheet.coin_cp, coin + 3);
+    assert.ok(!s.entities.pc.sheet.inventory.small_pouch, 'the pouch is gone');
+    assert.deepEqual(s.decisions, []);
+    const h = await atHall();
+    await h.player('I want to sell my pouch.', [{ seq: 1, type: 'sell', object: 'item.small_pouch', qty: null, to: null, min_cp: null, quote: 'I want to sell my pouch.' }]);
+    assert.deepEqual(statuses(h), ['pending']);
+    const before = h.state().entities.pc.sheet.coin_cp;
+    const x = await h.reply('The clerk pays him two copper for it without a word.', fill({ expected: { 1: { sold: true, price_cp: 2 } }, deltas: [] }));
+    assert.ok(x.record.system.some((l) => l.startsWith('NOT APPLIED')), 'shown as not applied');
+    s = h.state();
+    assert.equal(s.entities.pc.sheet.coin_cp, before);
+    assert.equal(s.entities.pc.sheet.inventory.small_pouch, 1);
+    assert.deepEqual(validateState(s, content), []);
+});
+
 test('known refs are exact: an id the catalog does not have fails the schema and is repaired; the Guild hall named anew is the engine\'s node', async () => {
     const g = await created();
     await g.player('*i walk to the guild*', [{ seq: 1, type: 'go', to: 'loc.redmarch.guild_hall', quote: 'i walk to the guild' }]);

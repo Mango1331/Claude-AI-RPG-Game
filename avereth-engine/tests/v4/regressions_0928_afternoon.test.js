@@ -11,6 +11,9 @@ import { buildContext } from '../../src/context.js';
 import { processReplyAny } from '../../src/v4/runtime.js';
 import { knows, PC_NAME_FACT, currentFacts } from '../../src/knowledge.js';
 import { interpreterSystem } from '../../src/v4/interpret.js';
+import { sceneHandle } from '../../src/v4/scene_handles.js';
+import { parseIntent } from '../../src/intent.js';
+import { boardRequest } from '../../src/v4/guild.js';
 
 const contentPack = await loadContent();
 
@@ -202,4 +205,70 @@ test('Runtime V4 does not mutate narrator prose with style word replacements', a
     const p = processReplyAny(g.chat, id, contentPack, { swaps: [['ledger', 'register']] });
     assert.equal(p.extract, true);
     assert.equal(g.chat[id].mes, 'Deliver a Ledger to the Saltwharf Counting House.');
+});
+
+
+test('stable scene handles target anonymous actors before combat and do not renumber after A leaves', async () => {
+    const g = await created();
+    const st = structuredClone(g.state());
+    st.entities['npc.foot_a'] = { id: 'npc.foot_a', kind: 'npc', name: null, role: 'footpad', descriptors: ['footpad'], traits: '', status: 'alive', created: { turn: 3, minute: 10 }, template: 'commoner', card: {} };
+    st.entities['npc.foot_b'] = { id: 'npc.foot_b', kind: 'npc', name: null, role: 'footpad', descriptors: ['footpad'], traits: '', status: 'alive', created: { turn: 4, minute: 11 }, template: 'commoner', card: {} };
+    st.scene.present.push('npc.foot_a', 'npc.foot_b');
+    st.scene.positions['npc.foot_a'] = { band: 'SHORT', cover: 'none' };
+    st.scene.positions['npc.foot_b'] = { band: 'SHORT', cover: 'partial' };
+    assert.equal(sceneHandle(st, contentPack, 'npc.foot_a'), 'Footpad A');
+    assert.equal(sceneHandle(st, contentPack, 'npc.foot_b'), 'Footpad B');
+    const cat = buildCatalog(st, contentPack);
+    assert.equal(cat.present.find((x) => x.id === 'npc.foot_b').handle, 'Footpad B');
+    const intent = parseIntent('I attack Footpad B.', st, contentPack);
+    assert.equal(intent.kind, 'attack');
+    assert.equal(intent.target, 'npc.foot_b');
+    st.scene.present = st.scene.present.filter((id) => id !== 'npc.foot_a');
+    assert.equal(sceneHandle(st, contentPack, 'npc.foot_b'), 'Footpad B');
+});
+
+test('explicit combat readiness is a deterministic engage intent when concrete opponents have tactical intent', async () => {
+    const g = await created();
+    const st = structuredClone(g.state());
+    st.entities['npc.foot_a'] = { id: 'npc.foot_a', kind: 'npc', name: null, role: 'footpad', descriptors: ['footpad'], traits: '', status: 'alive', created: { turn: 3, minute: 10 }, template: 'commoner', card: {} };
+    st.entities['npc.foot_b'] = { id: 'npc.foot_b', kind: 'npc', name: null, role: 'footpad', descriptors: ['footpad'], traits: '', status: 'alive', created: { turn: 4, minute: 11 }, template: 'commoner', card: {} };
+    st.scene.present.push('npc.foot_a', 'npc.foot_b');
+    st.pending_intents['npc.foot_a'] = 'parley';
+    st.pending_intents['npc.foot_b'] = 'take_cover';
+    const intent = parseIntent('*I step forward and get ready for combat.*', st, contentPack);
+    assert.equal(intent.kind, 'engage');
+    assert.deepEqual(intent.targets, ['npc.foot_a', 'npc.foot_b']);
+    assert.equal(parseIntent('*I draw my sword.*', st, contentPack).kind, 'narrative');
+});
+
+test('V4 explicit name:null stays anonymous for an Ashbridge Guild clerk', async () => {
+    const g = await created();
+    await g.player('I look at the clerk.', []);
+    await g.reply('At the Ashbridge Guild hall, the clerk looks up.', { expected: {}, deltas: [{
+        seq: 1, type: 'person.new', ref: 'person.ashbridge_guild_clerk', name: null, role: 'Guild clerk', desc: ['ink-stained'], present: true, at: null, band: null,
+    }] });
+    const clerk = Object.values(g.state().entities).find((e) => e.kind === 'npc' && (e.descriptors || []).includes('guild clerk'));
+    assert.ok(clerk);
+    assert.equal(clerk.name, null);
+});
+
+test('extractor contract carries exact Core Range Band semantics and booked-object dedupe instruction', () => {
+    const rules = contentPack.deltaVocab.rules.join('\n');
+    assert.match(rules, /ENGAGED = immediate contact\/melee reach/);
+    assert.match(rules, /forty yards ahead is not ENGAGED/);
+    assert.match(rules, /already grant or create a Guild plate, contract slip or other object/);
+});
+
+test('Guild board prompt uses structural quest design instead of the old chore checklist', async () => {
+    const g = await created();
+    const st = g.state();
+    const branch = Object.values(st.places).find((p) => p.kind === 'settlement')?.id;
+    assert.ok(branch);
+    const req = boardRequest(st, contentPack, { branch, rank: 'Novice', missing: 5, day: 1, have: [] });
+    assert.doesNotMatch(req.system, /vermin, escorts, gathering, lost animals, repairs, deliveries, watches/);
+    assert.match(req.system, /cause \(why now\), stakeholder\/client, current problem, desired end state/);
+    assert.match(req.system, /Rank limits scope, risk and complexity/);
+    assert.match(req.system, /wolves, goblins or feral dogs/);
+    assert.match(req.system, /Do not preferentially default to rats/);
+    assert.match(req.system, /examples demonstrate structure only/i);
 });

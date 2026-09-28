@@ -1,10 +1,10 @@
 {
-    "display_name": "Avereth Engine",
-    "loading_order": 5,
-    "js": "index.js",
-    "css": "style.css",
-    "author": "Avereth RPG project",
-    "version": "4.0.2",
-    "auto_update": false,
-    "generate_interceptor": "averethInterceptor"
+  "display_name": "Avereth Engine",
+  "loading_order": 5,
+  "js": "index.js",
+  "css": "style.css",
+  "author": "Avereth RPG project",
+  "version": "4.0.3",
+  "auto_update": false,
+  "generate_interceptor": "averethInterceptor"
 }

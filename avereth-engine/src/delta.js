@@ -210,7 +210,7 @@ function oneCreature(content, text) {
  * @param {object} [opts] msg = chat index of the reply; prose = the reply's text (names written in it)
  * @returns {{events: object[], accepted: string[], rejected: {item: any, reason: string}[], corrections: string[]}}
  */
-export function reportToEvents(report, state, content, { msg = null, prose = '' } = {}) {
+export function reportToEvents(report, state, content, { msg = null, prose = '', idTag = '' } = {}) {
     const events = [];
     const accepted = [];
     const rejected = [];
@@ -232,7 +232,9 @@ export function reportToEvents(report, state, content, { msg = null, prose = '' 
     }
     const at = { turn: state.turn, minute: state.clock.minute };
     let idc = 0;
-    const mkId = (prefix) => `${prefix}.t${state.turn}${msg !== null && msg !== undefined ? `.m${msg}` : ''}.${++idc}`;
+    // idTag: Runtime V4 applies a reply's deltas one by one (src/v4/world.js); each call gets its own tag ("d3") so the
+    // ids of its facts, claims and memories never collide with those of the call before
+    const mkId = (prefix) => `${prefix}.t${state.turn}${msg !== null && msg !== undefined ? `.m${msg}` : ''}${idTag ? `.${idTag}` : ''}.${++idc}`;
     const newRefs = new Map();
     const taken = new Set();
     const created = new Map(); // entities introduced by this very report (usable by its other keys)

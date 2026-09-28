@@ -13,7 +13,7 @@ import { applyEvent } from '../state.js';
 import { clone, normText, slug } from '../util.js';
 import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver } from '../delta.js';
-import { truth, entityLabel } from '../knowledge.js';
+import { truth, entityLabel, setFactEvents } from '../knowledge.js';
 import { perceiveAll, selfIntro, episode, openCommitted } from '../engine.js';
 import { firewall } from './firewall.js';
 import {
@@ -140,8 +140,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         return local.length === 1 ? local[0].id : null;
     };
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
+    let calls = 0;
     const v3 = (report, d) => {
-        const r = reportToEvents(report, s, content, { msg, prose });
+        calls += 1;
+        const r = reportToEvents(report, s, content, { msg, prose, idTag: `d${d?.seq ?? 0}${calls > 1 ? `_${calls}` : ''}` });
         r.events.forEach(emit);
         for (const x of r.rejected) reject(d, 'world_rule', x.reason);
         return r;
@@ -165,8 +167,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (ids.length) refs.set(normText(d.ref), ids[0]);
         if (d.name && ids.length) refs.set(normText(d.name), ids[0]);
         if (count > 1) groups.set(normText(d.ref), ids);
-        // who the person is shows on their card (occupation); a person the reply only mentions is not here
-        if (kind === 'npc' && d.role && created.length && !truth(s, created[0], 'occupation').length) v3({ facts: [{ s: created[0], p: 'occupation', o: d.role }] }, d);
+        // who the person is shows on their card (occupation), as text: the V3 fact rule would read "Guild clerk" as a
+        // reference to the clerk himself
+        if (kind === 'npc' && d.role && created.length && !truth(s, created[0], 'occupation').length) occupation(created[0], d.role);
         return ids;
     };
 
@@ -202,7 +205,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     emit({ t: 'entity.created', d: { entity: { id, kind: 'npc', name: d.name ? String(d.name).slice(0, 60) : null, descriptors: [...new Set([...(d.role ? [d.role] : []), ...(d.desc || []), d.ref].map((x) => String(x).toLowerCase().slice(0, 40)))], traits: (d.desc || []).join(', ').slice(0, 240), status: 'alive', location: where ? locationOf(s, where) : s.scene.location, at: where, created: { turn: s.turn, minute: s.clock.minute }, source: { kind: 'narration', msg }, card: {}, template: 'commoner' } } });
                     refs.set(normText(d.ref), id);
                     if (d.name) refs.set(normText(d.name), id);
-                    if (d.role) v3({ facts: [{ s: id, p: 'occupation', o: d.role }] }, d);
+                    if (d.role) occupation(id, d.role);
                     break;
                 }
                 newEntity(d, 'npc');
@@ -367,6 +370,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     return { events, rejected, corrections, system, opened, state: s, arrivedHall };
 
     // ---------------------------------------------------------------------------------------------- step helpers
+    function occupation(id, role) {
+        setFactEvents(s, { s: id, p: 'occupation', o: String(role).slice(0, 80), source: { kind: 'narration', msg }, importance: 0.5 }).forEach(emit);
+    }
+
     function arrive(id) {
         const town = locationOf(s, id);
         emit({ t: 'scene.moved', d: { at: id, location: town, place: placeName(s, id), reset_present: true } });
@@ -436,9 +443,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
         emit({ t: 'offer.created', d: { offer: { id, seller, at: s.scene.at, status: 'open', canon: false, turn: s.turn, lines: d.lines.map((l, i) => ({ id: `l${i + 1}`, ...l })) } } });
         // a purchase Alaric agreed to in advance, within his limit (buy with max_cp or any_price)
-        const words = (t) => normText(t).split(/[^a-z0-9]+/).filter((w) => w.length > 3);
         for (const dec of s.decisions.filter((x) => x.kind === 'purchase' && (x.max_cp !== null || x.any_price) && x.at === s.scene.at && (!x.seller || x.seller === seller))) {
-            const lines = d.lines.map((l, i) => ({ id: `l${i + 1}`, ...l })).filter((l) => words(dec.what).some((w) => normText(l.what).includes(w)));
+            const lines = d.lines.map((l, i) => ({ id: `l${i + 1}`, ...l })).filter((l) => sameWant(dec.what, l.what));
             if (!lines.length) continue;
             const price = lines.reduce((n, l) => n + l.price_cp * (l.qty || 1), 0);
             const coin = s.entities.pc.sheet.coin_cp;
@@ -523,6 +529,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         emit({ t: 'cmd.completed', d: { seq: dec.seq, ok: true } });
     }
 }
+
+const FILLER = new Set(['the', 'and', 'for', 'with', 'some', 'any', 'one', 'his', 'her', 'its', 'our', 'your', 'this', 'that', 'what', 'from', 'into']);
+/** The words that name a want or an offer's line ("a bed for the night" ~ "bed in the Guild dormitory"). */
+export const keyWords = (t) => normText(t).split(/[^a-z0-9]+/).map((w) => w.replace(/s$/, '')).filter((w) => w.length >= 3 && !FILLER.has(w));
+export const sameWant = (want, what) => { const k = keyWords(what); return keyWords(want).some((w) => k.includes(w)); };
 
 function uniqueEntityId(s, base) {
     let id = `npc.${slug(base) || 'unnamed'}`;

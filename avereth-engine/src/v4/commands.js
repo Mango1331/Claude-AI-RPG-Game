@@ -18,6 +18,7 @@ import { normText, slug } from '../util.js';
 import {
     placeName, hallOf, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey,
 } from './domain.js';
+import { sameWant } from './world.js';
 import {
     REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, acceptContract, completeContract, checkProof, proofText,
     promotion, takenByOthers, bookBoard,
@@ -183,9 +184,8 @@ const HANDLERS = {
         return { status: 'resolved', line: `PAYS — ${cpText(c.amount_cp, content)} to ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}.` };
     },
     buy(s, content, c, ctx, emit) {
-        const words = normText(c.what).split(/[^a-z0-9]+/).filter((w) => w.length > 3);
         const offers = Object.values(s.offers).filter((o) => o.status === 'open' && !o.canon && present(s, o.seller) && (!c.from || o.seller === c.from));
-        const match = offers.map((o) => ({ o, lines: o.lines.filter((l) => words.some((w) => normText(l.what).includes(w))) })).find((x) => x.lines.length);
+        const match = offers.map((o) => ({ o, lines: o.lines.filter((l) => sameWant(c.what, l.what)) })).find((x) => x.lines.length);
         if (match) {
             const price = match.lines.reduce((n, l) => n + l.price_cp * (l.qty || 1), 0) * (c.qty && match.lines.length === 1 ? c.qty : 1);
             if (c.max_cp !== null && c.max_cp !== undefined && price > c.max_cp && !c.any_price) {

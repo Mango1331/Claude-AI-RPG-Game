@@ -85,3 +85,21 @@ It also exposed five follow-up issues now fixed in 4.0.2:
 The same run also exposed a V4 location-view issue: a wilderness leaf could display as `Caelreth, Caelreth — Unnamed Wood...` because context/HUD used the V3 compatibility `scene.location` instead of the V4 leaf `scene.at`. V4 context/HUD/lore keys now prefer `scene.at` while leaving compatibility state unchanged.
 
 Quest Friction itself remains untested by this run because Alaric accepted Night Watch and then left for unrelated free exploration before undertaking the quest.
+
+
+## 4.0.3 — 17:25 live-run follow-up
+
+The 4.0.2 run confirmed Quest Friction but exposed the handoff from narrative actors to deterministic gameplay.
+
+Implemented in 4.0.3:
+- stable pre-combat scene handles (Footpad A/B, Wolf A/B/C) shared by context, catalog, HUD, target parser and combat labels;
+- explicit player readiness for combat opens an encounter without attacking or spending resources;
+- Core #12 Range Band semantics in the extractor contract;
+- fallback GO arrival is applied before destination-scene deltas so reset_present cannot erase a same-reply NPC;
+- contextual journey.continue for clear consent to an already-established escort journey;
+- engine-booked Guild document dedupe regardless of echoed holder;
+- Runtime V4 name:null is authoritative; no ref/place-name inference such as Ashbridge or Drowned;
+- Power Rank protected as engine state;
+- Guild Board generator redesigned around cause -> stakeholder -> problem -> desired end state -> objectives -> proof -> reward, with rank controlling scope/risk rather than mundane-vs-fantasy and rats no longer the default low-rank combat example.
+
+Not changed: damage/Skill math, XP, initiative policy or class balance. The 17:25 live run never reached actual combat resolution, so those existing mechanics remain untouched pending the next live test.

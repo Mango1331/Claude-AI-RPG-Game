@@ -400,7 +400,7 @@ export function buildContext(state, content, opts = {}) {
     const queryText = `${input} ${lastReply}`;
     const focusWords = new Set(tokenize(queryText));
     const others = state.scene.present.filter((id) => id !== 'pc' && state.entities[id]);
-    if (others.length) add('present', `ACTIVE SCENE — canonical handles (use these exact handles to distinguish or target actors; each NPC knows ONLY what its card lists):\n${others.map((id) => npcCard(state, content, id, focusWords)).join('\n')}`, 1);
+    if (others.length) add('present', `ACTIVE SCENE — canonical handles (use these exact handles to distinguish or target actors; card knowledge is authoritative relevant recall, not an exhaustive mind dump):\n${others.map((id) => npcCard(state, content, id, focusWords)).join('\n')}`, 1);
     else if (state.mode !== 'creation') add('present', 'ACTIVE SCENE: nobody besides Alaric.', 1);
     const absent = state.mode === 'creation' ? [] : namedAbsent(state, normText(queryText));
     if (absent.length) add('named', `NAMED, NOT PRESENT (continuity only; they are elsewhere unless the story brings them in):\n${absent.map((id) => npcCard(state, content, id, focusWords, { absent: true })).join('\n')}`, 2);

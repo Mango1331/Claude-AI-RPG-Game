@@ -15,7 +15,7 @@ import { scoreCase, aggregate, matchCommand } from '../../tools/p0/lib/score.mjs
 import { CASES, s0MockResponder } from '../../tools/p0/s0_cases.mjs';
 import { main as s0main, chooseModes, decide as s0decide } from '../../tools/p0/s0_structured.mjs';
 import { main as s1main, CORPUS_FILE, s1MockResponder, goldAnswer as s1Gold, sampleCases } from '../../tools/p0/s1_interpreter.mjs';
-import { main as s2main, DATA_FILE, REQUESTS_FILE, v4Messages, goldAnswer as s2Gold, s2MockResponder, decide as s2decide, scoreTurn } from '../../tools/p0/s2_deltas.mjs';
+import { main as s2main, DATA_FILE, REQUESTS_FILE, PRODUCT_DELTA_FILE, v4Messages, goldAnswer as s2Gold, s2MockResponder, decide as s2decide, scoreTurn } from '../../tools/p0/s2_deltas.mjs';
 import { runChecks, CHECK_IDS, GOLD_FILE } from '../../tools/p0/s3_prototype.mjs';
 import { validateSchema } from '../../src/validate.js';
 
@@ -242,6 +242,38 @@ test('S2 run with the mock: B wins with good blocks; with too many missing block
         assert.equal(b.gen.filter((r) => r.recovery_reason === 'missing').length, 12);
         assert.equal(b.gen.filter((r) => r.recovery?.valid_final).length, 12, 'the recovery extractor steps in for every missing block');
         assert.equal(s2decide(null, b), null);
+    } finally {
+        fs.rmSync(out, { recursive: true, force: true });
+    }
+});
+
+test('S2 after P0, --vocab v4: the product extractor and its firewall; a forbidden delta in the answer is refused, not committed', async () => {
+    const out = tmp('s2v4');
+    try {
+        const product = loadDeltaVocab(PRODUCT_DELTA_FILE);
+        const inner = s2MockResponder(s2turns, product);
+        // the mock answers with the gold, plus the reeve paying the Guild reward in v11_11 (a P0 finding)
+        const provider = await openProvider({
+            backend: 'mock',
+            mock: async (req) => {
+                const r = await inner(req);
+                if (!req.messages.some((m) => m.content.includes('Reeve Aldous') && m.content.includes('TURNS IN'))) return r;
+                const v = JSON.parse(r.content);
+                v.deltas.push({ seq: v.deltas.length + 1, type: 'coin.gift', from: 'npc.reeve_aldous', cp: 80, why: 'payment for the Wolf Problem' });
+                return { content: JSON.stringify(v) };
+            },
+        });
+        assert.equal(await s2main(['--out', out, '--vocab', 'v4', '--concurrency', '8'], { ...quiet, provider, decision: null }), 0);
+        const a = JSON.parse(fs.readFileSync(path.join(out, 'a.json'), 'utf8'));
+        assert.equal(a.meta.vocab, product.version);
+        assert.equal(a.records.filter((r) => r.valid_final).length, 41, 'the gold answers are valid against the product schema');
+        const v11 = a.records.find((r) => r.id === 'v11_11');
+        assert.equal(v11.score_raw.forbidden_hits.length, 1);
+        assert.equal(v11.score.forbidden_hits.length, 0);
+        assert.deepEqual(v11.refused.map((x) => x.rule), ['guild_payout']);
+        assert.equal(a.records.reduce((n, r) => n + r.score.critical_found, 0), 63, 'the firewall keeps every critical gold delta');
+        assert.ok(!fs.existsSync(path.join(out, 'decision.json')), 'D2 is decided; the product run writes no decision');
+        await assert.rejects(() => s2main(['--out', out, '--vocab', 'v4', '--variant', 'b'], { ...quiet, provider, decision: null }), /nur für Variante A/);
     } finally {
         fs.rmSync(out, { recursive: true, force: true });
     }

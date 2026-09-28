@@ -12,6 +12,10 @@
 //   node tools/p0/s2_deltas.mjs                   A and B through SillyTavern (default; the key stays there)
 //   node tools/p0/s2_deltas.mjs --variant a       only A      (--variant b: only B; the decision needs both)
 //   node tools/p0/s2_deltas.mjs --dry-run         no calls: V4 prompts of three turns to p0_out/s2/requests_sample.json
+//   node tools/p0/s2_deltas.mjs --variant a --vocab v4 --out p0_out/s2_v4
+//                                                 after P0: A with the product's extractor (src/v4/extract.js,
+//                                                 content/deltas.json) and its domain/authority firewall
+//                                                 (src/v4/firewall.js); scored raw and as committed
 // Options: --turns id,id  --runs V11,V12  --limit N  --concurrency 2  --agreement (extra call per B-gen turn: the
 //          extractor on B's own prose, to compare)  --mode json_schema|plain  --reasoning <value>|keep  --timeout 300
 //          --backend direct|st  --st-url <url>  --profile "<name>"  --out <dir>
@@ -27,11 +31,15 @@ import {
     ENGINE_ROOT, OUT_ROOT, parseArgs, intArg, pool, percentile, mean, round, pct, readJson, readJsonl, readDecision,
     writeJson, writeText, nowIso, progress, mdTable, assertNoSecrets, scrub, estimateTokens,
 } from './lib/util.mjs';
+import { firewallContextFromTurn } from './lib/deltas.mjs';
+import * as v4x from '../../src/v4/extract.js';
+import { firewall } from '../../src/v4/firewall.js';
 
 export const TOOL = 's2_deltas';
 export const TOOL_VERSION = 1;
 export const DATA_FILE = path.join(ENGINE_ROOT, 'tests', 'eval', 'deltas.jsonl');
 export const REQUESTS_FILE = path.join(ENGINE_ROOT, 'tests', 'eval', 's2_requests.json');
+export const PRODUCT_DELTA_FILE = path.join(ENGINE_ROOT, 'content', 'deltas.json');
 export const RULE = { block_ok_pct: 80, semantic_margin_pp: 5 };
 /** Checked on every turn: an official contract never enters through quest.offer (plan §6.4, D3). */
 export const GLOBAL_FORBIDDEN = [{ type: 'quest.offer', giver: '/guild|board|desk|clerk/i' }];
@@ -121,6 +129,14 @@ export function scoreTurn(turn, value) {
 }
 
 function extractionCall(provider, turn, vocab, reply, o, errors) {
+    if (o.kit === 'v4') {
+        // the product's extractor: its system prompt, user message, schema and format line (src/v4/extract.js)
+        return structuredCall(provider, {
+            name: 'world_deltas', schema: v4x.deltaSchema(vocab, turn.catalog, turn.expected_keys), system: v4x.extractorSystem(vocab),
+            user: v4x.extractorUser({ catalog: turn.catalog.text, actions: turn.actions, expectedKeys: turn.expected_keys, vocab, reply }),
+            mode: o.mode, plainInstruction: v4x.EXTRACT_PLAIN_FORMAT, reasoning: o.reasoning, maxTokens: o.extractMaxTokens, temperature: 0.1, timeoutMs: o.timeoutMs, ...o.retry,
+        });
+    }
     return structuredCall(provider, {
         name: 'world_deltas', schema: deltaSchema(vocab, turn.catalog, turn.expected_keys), system: recoverySystem(vocab),
         user: recoveryUser({ catalog: turn.catalog.text, actions: turn.actions, expectedKeys: turn.expected_keys, vocab, reply, errors }),
@@ -188,7 +204,7 @@ export function goldAnswer(turn, vocab) {
         if (t === 'go') expected[k] = { arrived: g.arrived ?? true, at: g.at === undefined ? null : placeFor(g.at, turn.catalog) };
         else if (t === 'activity') expected[k] = { minutes: g.minutes ?? 60, done: g.done ?? false };
         else if (t === 'take') expected[k] = { taken: g.taken ?? true };
-        else expected[k] = { priced: g.priced ?? false };
+        else expected[k] = vocab.expected?.[t]?.shape?.taken_anyway !== undefined ? { priced: g.priced ?? false, taken_anyway: g.taken_anyway ?? false } : { priced: g.priced ?? false };
     }
     return { expected, deltas: (turn.gold.critical || []).map((p, i) => concreteDelta(p, i + 1, vocab, turn.catalog)) };
 }
@@ -217,11 +233,15 @@ async function runA(provider, turns, vocab, o, note) {
     let done = 0;
     return pool(turns.map((t) => async () => {
         const r = await extractionCall(provider, t, vocab, t.reply, o);
-        const value = r.valid_final ? r.value : null;
+        const raw = r.valid_final ? r.value : null;
+        // v4: what the engine commits is what its domain/authority firewall accepts; the raw answer is scored beside it
+        const fw = raw && o.kit === 'v4' ? firewall(raw.deltas, firewallContextFromTurn(t)) : null;
+        const value = raw && fw ? { ...raw, deltas: fw.accept } : raw;
         const rec = {
             id: t.id, ok: r.ok, error: r.ok ? null : scrub(r.error, o.secrets), valid_first: r.valid_first, valid_final: r.valid_final,
             complete: value ? completeKeys(value, t.expected_keys) : false, score: value ? scoreTurn(t, value) : null, items: goldItems(t),
             ms: r.attempts[0]?.ms ?? null, tokens: callTokens(r), value, errors: r.errors_final,
+            ...(fw ? { raw_value: raw, score_raw: scoreTurn(t, raw), refused: fw.reject.map((x) => ({ rule: x.rule, delta: x.delta })), corrections: fw.corrections } : {}),
             // an invalid answer is kept (shortened) for diagnosis: the sample run of 27.09. kept only its error paths
             answer: r.ok && !value ? scrub(String(r.content).slice(0, 2000), o.secrets) : undefined,
         };
@@ -364,7 +384,7 @@ function costs(a, b, vocab, turns) {
 
 function summaryMarkdown({ meta, a, b, turns, vocab }) {
     const L = ['# P0 / S2 World-Delta-Strategie: Ergebnis', ''];
-    L.push(`- Datum: ${meta.finished} · Werkzeug ${TOOL} v${TOOL_VERSION} · Delta-Vokabular ${vocab.version} · ${turns.length} Züge (${[...new Set(turns.map((t) => t.run))].join(', ')})`);
+    L.push(`- Datum: ${meta.finished} · Werkzeug ${TOOL} v${TOOL_VERSION} · Delta-Vokabular ${vocab.version}${meta.kit === 'v4' ? ' (Produkt-Extraktor + Firewall)' : ''} · ${turns.length} Züge (${[...new Set(turns.map((t) => t.run))].join(', ')})`);
     L.push(`- Backend: ${meta.provider.backend} · Modell: ${meta.provider.model} · Extraktor: ${meta.mode}, Reasoning ${meta.reasoning ?? 'wie konfiguriert'} (${meta.mode_source}) · Erzähler: Parameter der Läufe (temperature 0.9, top_p 0.95)`);
     L.push(`- Varianten in diesem Ergebnis: ${[a ? `A (${a.meta.finished})` : null, b ? `B (${b.meta.finished})` : null].filter(Boolean).join(' und ')}`);
     if (a) {
@@ -381,6 +401,24 @@ function summaryMarkdown({ meta, a, b, turns, vocab }) {
             ['Token je Aufruf (Prompt / Output)', `${round(mean(a.records.filter((r) => r.tokens.reported).map((r) => r.tokens.prompt)), 0) ?? '?'} / ${round(mean(a.records.filter((r) => r.tokens.reported).map((r) => r.tokens.completion)), 0) ?? '?'}`],
             ['Latenz p50 / p90', `${sec(percentile(a.records.map((r) => r.ms), 50))} / ${sec(percentile(a.records.map((r) => r.ms), 90))} s`],
         ]));
+    }
+    if (a && a.records.some((r) => r.score_raw)) {
+        const rawRecs = a.records.map((r) => ({ ...r, score: r.score_raw ?? null }));
+        const sr = semStats(rawRecs);
+        const sc = semStats(a.records);
+        const refused = a.records.flatMap((r) => (r.refused || []).map((x) => ({ id: r.id, ...x })));
+        const byRule = {};
+        for (const x of refused) byRule[x.rule] = (byRule[x.rule] || 0) + 1;
+        L.push('', '## Produktpfad: roh gegen committet (Domain-/Authority-Firewall, src/v4/firewall.js)', '');
+        L.push(mdTable(['Kennzahl', 'Extraktor roh', 'nach der Firewall (committet)'], [
+            ['Semantische Genauigkeit (je Gold-Element)', `${sr.semantic_micro_pct ?? '–'} %`, `**${sc.semantic_micro_pct ?? '–'} %**`],
+            ['Kritische Deltas gefunden', sr.critical, sc.critical],
+            ['expected-Felder richtig', sr.expected, sc.expected],
+            ['Verbotene Deltas', `${sr.forbidden_hits}`, `**${sc.forbidden_hits}**`],
+            ['Deltas gesamt', `${sr.deltas_total}`, `${sc.deltas_total}`],
+        ]));
+        L.push('', `Verworfen: ${refused.length}${refused.length ? ` (${Object.entries(byRule).map(([k, n]) => `${k} ${n}`).join(', ')})` : ''}.`);
+        for (const x of refused.slice(0, 60)) L.push(`- ${x.id} · ${x.rule} · ${JSON.stringify(Object.fromEntries(Object.entries(x.delta).filter(([k]) => k !== 'seq'))).slice(0, 160)}`);
     }
     if (b) {
         const gen = b.gen;
@@ -405,7 +443,8 @@ function summaryMarkdown({ meta, a, b, turns, vocab }) {
     const d = decide(a, b);
     const c = costs(a, b, vocab, turns);
     L.push('', '## Entscheidung D2 (Regel §5.6)', '');
-    if (!d) L.push('- Noch keine Entscheidung: Es fehlt eine Variante. Den fehlenden Teil mit `--variant a` bzw. `--variant b` nachholen; das Werkzeug führt beide Ergebnisse zusammen.');
+    if (meta.kit === 'v4') L.push('- D2 = A ist seit P0 entschieden (docs/P0_BERICHT.md §4); dieser Lauf misst den Produktpfad.');
+    else if (!d) L.push('- Noch keine Entscheidung: Es fehlt eine Variante. Den fehlenden Teil mit `--variant a` bzw. `--variant b` nachholen; das Werkzeug führt beide Ergebnisse zusammen.');
     else {
         L.push(`- **Empfehlung: Variante ${d.choice}** (${d.choice === 'B' ? 'Erzähler schreibt den Block, Extraktion nur als Recovery' : 'Extraktion nach jeder Antwort'})`);
         for (const r of d.reasons) L.push(`- ${r}`);
@@ -446,14 +485,18 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     const started = Date.now();
     const log = deps.log ?? ((t) => console.log(t));
     const note = deps.progress ?? progress;
-    const vocab = loadDeltaVocab();
+    const kit = a.vocab && a.vocab !== true ? String(a.vocab).toLowerCase() : 'p0';
+    if (!['p0', 'v4'].includes(kit)) throw new Error('--vocab ist p0 oder v4');
+    const vocab = kit === 'v4' ? loadDeltaVocab(PRODUCT_DELTA_FILE) : loadDeltaVocab();
     let turns = deps.turns ?? readJsonl(DATA_FILE);
     const requests = deps.requests ?? readJson(REQUESTS_FILE);
     if (a.turns && a.turns !== true) { const ids = String(a.turns).split(','); turns = turns.filter((t) => ids.includes(t.id)); }
     if (a.runs && a.runs !== true) { const runs = String(a.runs).toUpperCase().split(','); turns = turns.filter((t) => runs.includes(t.run)); }
     if (a.limit) turns = turns.slice(0, intArg(a.limit, turns.length));
-    const variant = a.variant && a.variant !== true ? String(a.variant).toLowerCase() : 'both';
+    const variant = a.variant && a.variant !== true ? String(a.variant).toLowerCase() : kit === 'v4' ? 'a' : 'both';
     if (!['a', 'b', 'both'].includes(variant)) throw new Error('--variant ist a, b oder both');
+    // D2 = A: the inline block (B) exists only in the P0 draft; the product has no <avereth> block
+    if (kit === 'v4' && variant !== 'a') throw new Error('--vocab v4 gibt es nur für Variante A (D2 = A: das Produkt hat keinen Block im Erzähltext)');
     const outDir = a.out ? path.resolve(String(a.out)) : path.join(OUT_ROOT, 's2');
     const decision = deps.decision !== undefined ? deps.decision : readDecision();
     const mode = a.mode && a.mode !== true ? String(a.mode) : decision?.structured_mode || 'plain';
@@ -461,7 +504,7 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     if (a.reasoning !== undefined && a.reasoning !== true) reasoning = String(a.reasoning) === 'keep' ? undefined : String(a.reasoning);
     else reasoning = decision?.reasoning ?? undefined;
     const modeSource = a.mode || a.reasoning !== undefined ? 'Kommandozeile' : decision ? 'aus S0' : 'Standard, S0 nicht gefunden';
-    const o = { mode, reasoning, concurrency: intArg(a.concurrency, 2), timeoutMs: intArg(a.timeout, 300) * 1000, extractMaxTokens: intArg(a['max-tokens'], 2500), agreement: !!a.agreement, retry: deps.retry, secrets: [] };
+    const o = { kit, mode, reasoning, concurrency: intArg(a.concurrency, 2), timeoutMs: intArg(a.timeout, 300) * 1000, extractMaxTokens: intArg(a['max-tokens'], 2500), agreement: !!a.agreement, retry: deps.retry, secrets: [] };
     const nA = variant !== 'b' ? turns.length : 0;
     const nB = variant !== 'a' ? turns.length * 2 : 0;
 
@@ -487,9 +530,9 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     }
     o.secrets = provider.secrets || [];
     const d = provider.describe();
-    log(`S2 World Deltas · Backend ${d.backend} · Modell ${d.model} · Variante ${variant} · Extraktor ${mode}, Reasoning ${reasoning ?? 'wie konfiguriert'} (${modeSource})`);
+    log(`S2 World Deltas · Backend ${d.backend} · Modell ${d.model} · Variante ${variant} · Vokabular ${vocab.version} (${kit === 'v4' ? 'Produkt-Extraktor + Firewall' : 'P0-Entwurf'}) · Extraktor ${mode}, Reasoning ${reasoning ?? 'wie konfiguriert'} (${modeSource})`);
     log(`Plan: ${turns.length} Züge → A ${nA} Aufrufe, B ${nB} Aufrufe (+ Recovery je fehlerhaftem Block${o.agreement ? ', + Vergleichs-Extraktion' : ''}), ${o.concurrency} gleichzeitig.`);
-    const meta = (extra) => ({ tool: TOOL, version: TOOL_VERSION, started: new Date(started).toISOString(), finished: nowIso(), node: process.version, provider: d, mode, reasoning: reasoning ?? null, mode_source: modeSource, turns: turns.map((t) => t.id), ...extra });
+    const meta = (extra) => ({ tool: TOOL, version: TOOL_VERSION, started: new Date(started).toISOString(), finished: nowIso(), node: process.version, provider: d, mode, reasoning: reasoning ?? null, mode_source: modeSource, vocab: vocab.version, kit, turns: turns.map((t) => t.id), ...extra });
     let A = null;
     let B = null;
     if (variant !== 'b') {
@@ -508,13 +551,13 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     if (!A) try { A = readJson(path.join(outDir, 'a.json')); } catch { /* not run yet */ }
     if (!B) try { B = readJson(path.join(outDir, 'b.json')); } catch { /* not run yet */ }
     const ids = turns.map((t) => t.id).join(',');
-    if (A && A.meta.turns.join(',') !== ids) A = null;
+    if (A && (A.meta.turns.join(',') !== ids || (A.meta.kit || 'p0') !== kit)) A = null;
     if (B && B.meta.turns.join(',') !== ids) B = null;
     const summary = summaryMarkdown({ meta: meta({}), a: A, b: B, turns, vocab });
     const dec = decide(A, B);
     assertNoSecrets(summary, o.secrets);
     writeText(path.join(outDir, 'summary.md'), summary);
-    if (dec) writeJson(path.join(outDir, 'decision.json'), { tool: TOOL, version: TOOL_VERSION, created: nowIso(), d2: dec.choice, ...dec, costs: costs(A, B, vocab, turns) });
+    if (dec && kit === 'p0') writeJson(path.join(outDir, 'decision.json'), { tool: TOOL, version: TOOL_VERSION, created: nowIso(), d2: dec.choice, ...dec, costs: costs(A, B, vocab, turns) });
     log('');
     log(summary.split('\n## Abweichungen')[0]);
     log(`Gespeichert: ${path.join(outDir, 'summary.md')} (zum Zurückschicken), a.json, b.json${dec ? ', decision.json' : ''}`);

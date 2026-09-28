@@ -282,3 +282,66 @@ export function scoreDeltas(gold, value) {
         deltas: deltas.length,
     };
 }
+
+// ------------------------------------------------------------------------------------------------ firewall view
+const CATALOG_ENTRY = /\b([a-z]+\.[\w.]+) \(((?:[^()]|\([^()]*\))*)\)/g;
+const GUILD_LABEL = /\b(?:guild|clerk|registrar|receptionist|desk)\b/i;
+
+/** The id (label) entries of one CATALOG line (labels may hold one level of parentheses: "Lost Dog (Pip) · 10 cp"). */
+export function catalogEntries(catalogText, key) {
+    const line = (String(catalogText || '').match(new RegExp(`^${key}: (.*)$`, 'm')) || [])[1] || '';
+    return [...line.matchAll(CATALOG_ENTRY)].map((m) => ({ id: m[1], label: m[2] }));
+}
+
+/**
+ * The domain/authority firewall's view of one S2 turn (src/v4/firewall.js), rebuilt from the text the engine wrote for
+ * it: PLAYER ACTIONS (what the engine booked or will book, what Alaric's commands authorised) and the CATALOG (the
+ * Guild's people, contracts with their payouts, what Alaric holds). In the product the engine reads the same from its
+ * state; this reconstruction exists only to measure the firewall on the recorded P0 answers.
+ */
+export function firewallContextFromTurn(turn) {
+    const actions = String(turn.actions || '');
+    const cat = String(turn.catalog?.text || '');
+    // by id, or by the name before the label's comma ("Marta, Guild receptionist"): the product resolves a person ref
+    // by id, name or role before its firewall sees it
+    const guildPeople = new Set(catalogEntries(cat, 'PRESENT').filter((p) => GUILD_LABEL.test(p.label))
+        .flatMap((p) => [p.id, ...(p.label.includes(',') ? [p.label.split(',')[0].trim().toLowerCase()] : [])]));
+    const held = new Set(catalogEntries(cat, 'OBJECTS').filter((o) => /held by Alaric/i.test(o.label)).map((o) => o.id));
+    const contracts = new Map();
+    const contract = (id, title, patch) => {
+        const key = id || `title:${title.toLowerCase()}`;
+        const found = [...contracts.values()].find((q) => (id && q.id === id) || q.title.toLowerCase() === title.toLowerCase());
+        const q = found || { id: id || key, title, payout_cp: null, client: null, status: 'listed' };
+        Object.assign(q, Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== null && v !== undefined)));
+        contracts.set(q.id, q);
+        return q;
+    };
+    for (const q of catalogEntries(cat, 'BOARD')) {
+        const [title, pay] = q.label.split(' · ');
+        contract(q.id, title, { payout_cp: Number((pay || '').match(/(\d+)\s*cp/)?.[1]) || null, status: 'listed' });
+    }
+    for (const q of catalogEntries(cat, 'QUESTS')) {
+        const parts = q.label.split(' · ');
+        if (!/Guild contract/i.test(q.label)) continue;
+        contract(q.id, parts[0], { status: parts[2] || 'active' });
+    }
+    const accepted = [];
+    for (const m of actions.matchAll(/^\d+\. ACCEPTS — "([^"]+)"[^\n]*?the Guild pays (\d+) cp/gm)) accepted.push(contract(null, m[1], { payout_cp: Number(m[2]), status: 'active' }).id);
+    const turnIns = [];
+    for (const m of actions.matchAll(/^\d+\. TURNS IN[^"\n]*"([^"]+)"[^\n]*?the Guild pays (\d+) cp/gm)) turnIns.push(contract(null, m[1], { payout_cp: Number(m[2]) }).id);
+    const paid = actions.match(/^\d+\. PAYS — the Guild registration fee[^\n]*?registered[^\n]*?receives his ([^.;\n]+)/m);
+    return {
+        isGuildPerson: (ref) => guildPeople.has(String(ref)) || guildPeople.has(String(ref).trim().toLowerCase()),
+        inGuildHall: /^HERE: [^\n]*Guild hall/m.test(cat),
+        contracts: [...contracts.values()],
+        // the product hands the contract slip over when a Guild contract is accepted (src/v4/guild.js)
+        booked: { registration: !!paid, grants: [...(paid ? [paid[1].trim()] : []), ...(accepted.length ? ['contract slip'] : [])], turnIns, accepted },
+        auth: {
+            go: /^\d+\. GOES —/m.test(actions),
+            roam: /^\d+\. (?:SEARCHES|GATHERS|RUNS ERRANDS)\b/m.test(actions),
+            take: /^\d+\. TAKES —/m.test(actions),
+            gather: /^\d+\. (?:GATHERS|SEARCHES|CRAFTS)\b/m.test(actions),
+        },
+        heldByPc: (ref) => held.has(String(ref)),
+    };
+}

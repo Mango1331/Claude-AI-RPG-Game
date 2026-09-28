@@ -16,13 +16,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { OUT_ROOT, parseArgs, readJson, readJsonl, writeJson, writeText, nowIso, mdTable, round, pct, mean } from './lib/util.mjs';
-import { scoreTurn, DATA_FILE } from './s2_deltas.mjs';
+import { scoreTurn, DATA_FILE, GLOBAL_FORBIDDEN } from './s2_deltas.mjs';
+import { firewallContextFromTurn, goldMatch } from './lib/deltas.mjs';
 import { CORPUS_FILE } from './s1_interpreter.mjs';
 import { scoreCase, aggregate, COMMITMENTS } from './lib/score.mjs';
 import { loadScenes } from './lib/interpreter.mjs';
 
 export const TOOL = 'p0_rescore';
-export const TOOL_VERSION = 1;
+export const TOOL_VERSION = 2;
 
 // ------------------------------------------------------------------------------------------------ S2
 /** Item-weighted and per-turn semantics of a list of {value, turn} pairs, scored with the current scoring. */
@@ -65,6 +66,64 @@ export function rescoreS2(dir, turns) {
         out.b_block_strict = { run: b.meta.finished, ...s2Stats(b.block.map((r) => ({ turn: byId.get(r.id), value: r.valid ? r.value : null }))) };
     }
     return out;
+}
+
+// ------------------------------------------------------------------------------------------------ S2 firewall
+/**
+ * The product's domain/authority firewall (src/v4/firewall.js) on recorded extractor answers: what it would have
+ * committed and refused. Each turn's firewall context is rebuilt from the text the engine wrote for it
+ * (firewallContextFromTurn). A refused delta is classified against the turn's gold: forbidden (the gold says it must
+ * not be committed: a correct refusal), critical (the gold needs it: a loss) or neither (read by hand in the report).
+ * @param {{id: string, value: object|null}[]} answers  schema-valid answers (value null = not scored)
+ */
+export async function firewallStats(answers, turns) {
+    const { firewall } = await import('../../src/v4/firewall.js');
+    const byId = new Map(turns.map((t) => [t.id, t]));
+    const out = { answers: 0, forbidden_before: 0, forbidden_after: 0, critical_before: 0, critical_after: 0, critical_total: 0, refused: [], remaining: [], by_rule: {} };
+    for (const r of answers) {
+        const turn = byId.get(r.id);
+        if (!turn || !r.value) continue;
+        out.answers += 1;
+        const res = firewall(r.value.deltas, firewallContextFromTurn(turn));
+        const before = scoreTurn(turn, r.value);
+        const after = scoreTurn(turn, { ...r.value, deltas: res.accept });
+        out.forbidden_before += before.forbidden_hits.length;
+        out.forbidden_after += after.forbidden_hits.length;
+        out.critical_before += before.critical_found;
+        out.critical_after += after.critical_found;
+        out.critical_total += before.critical_total;
+        for (const h of after.forbidden_hits) out.remaining.push({ id: r.id, type: h.delta.type, delta: h.delta });
+        for (const x of res.reject) {
+            const gold = [...(turn.gold.forbidden || []), ...GLOBAL_FORBIDDEN].some((f) => goldMatch(f, x.delta)) ? 'forbidden'
+                : (turn.gold.critical || []).some((c) => goldMatch(c, x.delta)) ? 'critical' : 'neither';
+            out.refused.push({ id: r.id, rule: x.rule, gold, type: x.delta.type, delta: x.delta });
+            out.by_rule[x.rule] = (out.by_rule[x.rule] || 0) + 1;
+        }
+    }
+    return out;
+}
+
+const shortDelta = (d) => JSON.stringify(Object.fromEntries(Object.entries(d).filter(([k]) => k !== 'seq'))).slice(0, 170);
+
+export function firewallMarkdown(sets) {
+    const L = [mdTable(['Antworten', 'verbotene Deltas vorher → nachher', 'kritische Deltas vorher → nachher', 'verworfen: verboten / kritisch / weder noch'],
+        sets.map(({ name, s }) => [`${name} (${s.answers})`, `${s.forbidden_before} → ${s.forbidden_after}`, `${s.critical_before} → ${s.critical_after} (von ${s.critical_total})`,
+            `${s.refused.filter((x) => x.gold === 'forbidden').length} / ${s.refused.filter((x) => x.gold === 'critical').length} / ${s.refused.filter((x) => x.gold === 'neither').length}`]))];
+    for (const { name, s } of sets) {
+        L.push('', `### ${name}: verworfen (${s.refused.length})`, '');
+        for (const x of s.refused) L.push(`- ${x.id} · ${x.rule} · Gold: ${x.gold} · ${shortDelta(x.delta)}`);
+        if (s.remaining.length) {
+            L.push('', `Verbleibende verbotene Deltas (nicht Sache der Firewall): ${s.remaining.map((x) => `${x.id} ${x.type} ${shortDelta(x.delta)}`).join('; ')}`);
+        }
+    }
+    return L.join('\n');
+}
+
+/** Default firewall step of main(): variant A (the product path) and, as a second sample, B's schema-valid blocks. */
+export async function firewallDefault(aRun, turns, bRun = null) {
+    const sets = [{ name: 'S2 A (Extraktor, Produktpfad)', s: await firewallStats(aRun.records.map((r) => ({ id: r.id, value: r.valid_final ? r.value : null })), turns) }];
+    if (bRun?.block) sets.push({ name: 'S2 B, schema-gültige Blöcke (zweite Stichprobe)', s: await firewallStats(bRun.block.map((r) => ({ id: r.id, value: r.valid ? r.value : null })), turns) });
+    return { sets: sets.map(({ name, s }) => ({ name, ...s })), markdown: firewallMarkdown(sets) };
 }
 
 // ------------------------------------------------------------------------------------------------ S1
@@ -175,7 +234,10 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
     const res = { tool: TOOL, version: TOOL_VERSION, created: nowIso() };
     const turns = readJsonl(DATA_FILE);
     if (fs.existsSync(path.join(root, 's2', 'a.json'))) res.s2 = rescoreS2(path.join(root, 's2'), turns);
-    if (deps.firewall && fs.existsSync(path.join(root, 's2', 'a.json'))) res.firewall = await deps.firewall(readJson(path.join(root, 's2', 'a.json')), turns);
+    if (fs.existsSync(path.join(root, 's2', 'a.json'))) {
+        const bFile = path.join(root, 's2', 'b.json');
+        res.firewall = await (deps.firewall ?? firewallDefault)(readJson(path.join(root, 's2', 'a.json')), turns, fs.existsSync(bFile) ? readJson(bFile) : null);
+    }
     const s1file = path.join(root, 's1', 'results.json');
     if (fs.existsSync(s1file)) res.s1 = rescoreS1(s1file, readJsonl(CORPUS_FILE), deps.s1Layers ?? await guardLayers());
     writeJson(path.join(outDir, 'results.json'), res);

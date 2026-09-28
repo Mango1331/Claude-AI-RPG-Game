@@ -411,10 +411,10 @@ Dazu der Aushang (5 Listings) und Varianten.
 | `tools/p0/check.mjs` | Verbindungsprüfung, zeigt nie den Key |
 | `tools/p0/s0_structured.mjs`, `s0_cases.mjs` | S0 |
 | `tools/p0/s1_interpreter.mjs` | S1 |
-| `tools/p0/s2_deltas.mjs` | S2 |
+| `tools/p0/s2_deltas.mjs` | S2; nach P0 mit `--variant a --vocab v4` der Produktpfad (Extraktor `src/v4/extract.js` + Firewall `src/v4/firewall.js`) |
 | `tools/p0/s3_prototype.mjs` | S3 (Wegwerf-Prototyp) |
 | `tools/p0/report.mjs` | Ergebnisse bündeln |
-| `tools/p0/rescore.mjs` | gespeicherte Antworten offline neu auswerten (korrigiertes Scoring, später Guard und Firewall des Produkts), ohne Aufrufe; schreibt `p0_out/rescored/` |
+| `tools/p0/rescore.mjs` | gespeicherte Antworten offline neu auswerten (korrigiertes Scoring, Agency-Guard und Firewall des Produkts), ohne Aufrufe; schreibt `p0_out/rescored/` |
 | `tools/p0/lib/provider.mjs` | Backends SillyTavern, direct, mock |
 | `tools/p0/lib/structured.mjs` | strukturierter Aufruf, Reparatur, Transport-Retry |
 | `tools/p0/lib/schema.mjs` | strikter Schema-Dialekt |

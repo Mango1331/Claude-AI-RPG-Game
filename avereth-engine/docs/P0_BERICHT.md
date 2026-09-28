@@ -23,6 +23,7 @@
 8. [Das externe Review: Zustimmung und Widerspruch](#8-das-externe-review-zustimmung-und-widerspruch)
 9. [Folgen für Runtime V4](#9-folgen-für-runtime-v4)
 10. [Nach P0: S1 mit Agency-Guard (offline gemessen)](#10-nach-p0-s1-mit-agency-guard-offline-gemessen)
+11. [Nach P0: S2 mit Autoritäts-Firewall (offline gemessen)](#11-nach-p0-s2-mit-autoritäts-firewall-offline-gemessen)
 
 ---
 
@@ -354,3 +355,73 @@ node tools/p0/s1_interpreter.mjs --corpus tests/eval/commands_holdout2.jsonl --o
 
 - Die Zusammenfassung zeigt beide Schichten nebeneinander: den Interpreter allein und den Interpreter mit Guard.
 - `--prompt p0 --guard off` wiederholt den P0-Lauf zum Vergleich.
+
+---
+
+## 11. Nach P0: S2 mit Autoritäts-Firewall (offline gemessen)
+
+**Was sie ist.** `src/v4/firewall.js` steht zwischen dem Extraktor und dem Commit.
+- Ein schema-gültiges Delta ist ein Vorschlag. Die Firewall entscheidet danach, **wem der Zustand gehört**, den es ändern würde, nicht danach, wie plausibel es klingt.
+- Autoritätsmatrix (Plan §5.7):
+
+| Quelle | darf ändern |
+|---|---|
+| `player_command` | Alarics Entscheidungen (gehen, nehmen, zahlen, annehmen, abgeben, registrieren …), von der Engine aufgelöst |
+| `engine_resolution` | Münzen einer Transaktion, Queststatus, Gildenmitgliedschaft und Rang, Auszahlung, XP, was die Engine Alaric aushändigt (Plakette, Auftragszettel), PC-Inventar |
+| `board_generator` | offizielle Gildenaufträge |
+| `narrator_delta` | die Welt: Personen, Orte, Kreaturen, Fakten, Wissen, Haltungen, Angebote gewöhnlicher Verkäufer, Geschenke, Übergaben an Alaric, Markierungen, private Aufträge, Feindseligkeit |
+
+- Regeln (je eine Zeile im Audit, nie ein Commit):
+  - `guild_canon_price`: ein Angebot eines Gildenbeamten über Gebühr/Dokumente;
+  - `guild_payout`: `coin.gift` von der Gilde oder vom Auftraggeber eines Gildenvertrags (gleiche Summe oder benannter Vertrag);
+  - `engine_booked`: was die Engine schon ausgehändigt hat (Plakette nach der Registrierung, Zettel nach der Annahme), noch einmal;
+  - `pc_inventory`: etwas Neues in Alarics Hand ohne sein Nehmen/Sammeln; etwas von Alaric weg ohne seinen Befehl;
+  - `guild_listing`: ein offizieller Auftrag aus der Prosa;
+  - `guild_completion`: ein Gildenvertrag als „completed“ oder als „an die Gilde geliefert“;
+  - `engine_owned_fact` / `domain_fact`: Alarics Besitz, Stand, Münzen als Fakt; Zustandsprädikate (`located`, `intent`, `guild_rank`);
+  - `no_go`: Ankunft ohne sein Gehen, ohne Zwang und ohne eine Tätigkeit, die ihn bewegt (Suchen, Sammeln, Botengang).
+- Bekannte Referenzen gelten exakt; ein `{new: "<Titel>"}`, das einen bekannten Vertrag benennt, *ist* dieser Vertrag; ein Beamter wird auch über seinen Namen erkannt.
+
+**Messung an den aufgezeichneten Antworten** (`node tools/p0/rescore.mjs`, Abschnitt „S2 A durch die Firewall“). Der Kontext je Zug (gebuchte Registrierung, Aushändigungen, Abgaben, Berechtigungen, Gildenverträge mit Lohn, Gildenpersonal) wird aus dem Text rekonstruiert, den die Engine für den Zug geschrieben hat (`firewallContextFromTurn`); im Produkt liest die Engine ihn aus dem Zustand.
+
+| Antworten | verbotene Deltas vorher → nachher | kritische Deltas vorher → nachher | zusätzlich verworfen (weder verboten noch kritisch) |
+|---|---|---|---|
+| S2 A, 41 Züge (Produktpfad) | **7 → 1** | **58 → 58** | 3, alle von Hand geprüft richtig |
+| S2 B, 27 schema-gültige Blöcke (zweite Stichprobe) | 8 → 0 | 27 → 27 | 2, beide richtig |
+
+- A, verbleibend: **v11_05** (`quest.offer` „Walk to the kill site“ von Tomas). Das ist ein Lesefehler des Extraktors, keine Autoritätsfrage: ein Führungsangebot als privater Auftrag. Die Firewall lässt private Aufträge aus der Geschichte zu; dieser Fehler bleibt ein Risiko des Extraktors für den Live-Lauf.
+- A, zusätzlich verworfen:
+  - v8_04: der „Quest slip“ nach der Annahme, Halter `pc`. Richtig **unter der Voraussetzung**, dass das Produkt den Auftragszettel bei der Annahme selbst aushändigt. Das tut `src/v4/guild.js`; der Beweis „Siegel auf dem Zettel“ (V11) braucht ein Objekt, das die Engine kennt.
+  - v10_03 (zweimal): „registered as Guild Novice“, „Power Rank recorded as F“ als Fakten über Alaric. Beides ist Zustand der Engine.
+
+**Ehrliche Einordnung der Entwicklung:**
+- **Erster Lauf auf A** (vor jeder Anpassung): verbotene Deltas 7 → 1, kritische 58 → 58, aber **11 zusätzliche Verwerfungen, davon 8 falsch**:
+  - sechs gewöhnliche Fakten mit „has“/„takes“ („the granary has three cellars“, „Guild registration takes about a quarter hour“), weil die Prädikatliste aus S3 pauschal sperrte;
+  - die Ankunft am Wolfsbau während „SEARCHES the wolves' trail“ (v11_07). Das Verwerfen hätte Alaric an der Fundstelle festgehalten, während die Geschichte ihn am Bau zeigt;
+  - „deliver two wolf heads verified by the reeve“ als Gildenabgabe, obwohl es ein Schritt beim Auftraggeber ist.
+- Korrigiert wurde **die Regel, nicht die Daten**:
+  - Besitzprädikate sperren nur Aussagen über Alaric;
+  - Such-, Sammel- und Botentätigkeiten berechtigen zur Bewegung;
+  - eine Abgabe verlangt „an die Gilde / den Schalter / den Clerk“ oder „hand/turn in“.
+- Die 3 verbleibenden Zusatzverwerfungen auf A sind deshalb optimistisch gemessen.
+- **B als zweite Stichprobe**, erst nach diesen Korrekturen gelesen, erster Lauf: 8 → 2 verbotene, 27 → 27 kritische, 2 Zusatzverwerfungen, beide richtig. Die zwei Lücken waren Referenzen, die nicht kanonisch waren:
+  - Verkäuferin „Marta“ statt `npc.marta`;
+  - Vertrag als `{new: "Herb Run — Marshmint"}`.
+  - Die Namens- und Titel-Kanonisierung schloss beide.
+- **Unabhängig belastbar** ist damit: Die Firewall kostete in beiden Stichproben **kein einziges kritisches Delta**. Die Trefferquote auf ungesehenen Antworten zeigt erst der Live-Lauf.
+
+**Live-Nachmessung (nötig, weil sich Extraktor und Vokabular geändert haben: delta-0.2):**
+
+```
+node tools/p0/s2_deltas.mjs --variant a --vocab v4 --out p0_out/s2_v4
+```
+
+- 41 Aufrufe (plus höchstens eine Reparatur je ungültiger Antwort), Schlüssel bleibt in SillyTavern.
+- Die Zusammenfassung zeigt den Extraktor roh und nach der Firewall (committet) nebeneinander, dazu jede verworfene Delta mit Regel.
+- Erwartung, nicht Messung: Gültigkeit wie P0 (100 %), verbotene Deltas committet ≤ 1 von 41 Zügen.
+
+**Was die Firewall nicht tut:**
+- Zeitgrenzen, Ortsbaum, Anwesenheit und Gegenpartei eines Kaufs prüft der Anwender der Deltas (`src/v4/world.js`) beim schrittweisen Anwenden.
+- `expected.taken_anyway` wird dort zum Overreach.
+- Lesefehler wie v11_05 erkennt sie nicht; dafür bleibt die Semantik des Extraktors maßgeblich.
+

@@ -1,0 +1,593 @@
+{
+ "version": "delta-0.2",
+ "note": "Runtime V4 world-delta vocabulary (docs/RUNTIME_V4_PLAN.md §5). One source for the extractor prompt, its schema and the validator (src/v4/extract.js); the domain/authority firewall (src/v4/firewall.js) decides what of a schema-valid answer the engine commits. D2 = A (P0/S2): the narrator writes prose only, the extractor reads each reply afterwards. delta-0.2 against the P0 draft delta-0.1-draft: expected of a pending buy/pay also asks taken_anyway (P0/S2 v12_08: the reply had Alaric take the room unasked, the free overreach delta was missed, the expected fields were 25/25); position, aware, intent and thread as in 3.x; creature.new and person.new carry the distance band a fight needs; check without the numbers the prose does not show.",
+ "rules": [
+  "Report only what THIS reply establishes, in the order it happens (seq 1, 2, 3 …). Invent nothing.",
+  "Alaric's own decisions are in PLAYER ACTIONS and already booked by the engine; never report them as deltas (no payment, purchase, acceptance, turn-in, pick-up of his).",
+  "If the reply has Alaric decide something PLAYER ACTIONS does not list, report it only as overreach.",
+  "Answer every key of expected; each key asks about the PLAYER ACTION with the same number.",
+  "Known places, people, quests and objects by their id from the CATALOG; a new place as {\"new\": {\"name\", \"kind\", \"parent\"}} (parent: a place id or one more {\"new\": …}).",
+  "Prices and coin are integers in copper (1 silver = 10 copper, 1 gold = 100 copper). The Guild's contract payout and its registration fee are the engine's; report the story's words about them only as facts.",
+  "Official Guild contracts come only from the engine's BOARD; never report a new one (if the reply shows one the BOARD lacks: overreach guild_listing).",
+  "A price someone merely mentions is a fact; an offer is a price for something Alaric could buy now."
+ ],
+ "expected": {
+  "go": {
+   "summary": "did he arrive, and where",
+   "shape": {
+    "arrived": "true|false",
+    "at": "place id, {\"new\": …} or null"
+   }
+  },
+  "activity": {
+   "summary": "how long it took, and whether he finished",
+   "shape": {
+    "minutes": "int",
+    "done": "true|false"
+   }
+  },
+  "take": {
+   "summary": "did he get it",
+   "shape": {
+    "taken": "true|false"
+   }
+  },
+  "buy": {
+   "summary": "did someone name a price; did the reply have Alaric take, use or pay for it although he had not agreed",
+   "shape": {
+    "priced": "true|false",
+    "taken_anyway": "true|false"
+   }
+  },
+  "pay": {
+   "summary": "did someone name the amount; did the reply have Alaric pay anyway",
+   "shape": {
+    "priced": "true|false",
+    "taken_anyway": "true|false"
+   }
+  }
+ },
+ "deltas": [
+  {
+   "type": "time",
+   "fields": {
+    "minutes": {
+     "type": "integer",
+     "min": 0
+    }
+   },
+   "summary": "story time that passed"
+  },
+  {
+   "type": "arrive",
+   "fields": {
+    "at": {
+     "ref": "place"
+    }
+   },
+   "summary": "Alaric arrives somewhere (only after a GOES action or when forced)"
+  },
+  {
+   "type": "person.new",
+   "fields": {
+    "ref": {
+     "type": "string"
+    },
+    "name": {
+     "type": "string",
+     "nullable": true
+    },
+    "role": {
+     "type": "string"
+    },
+    "desc": {
+     "array": "string"
+    },
+    "present": {
+     "type": "boolean"
+    },
+    "at": {
+     "ref": "place",
+     "nullable": true
+    },
+    "band": {
+     "enum": [
+      "ENGAGED",
+      "SHORT",
+      "MEDIUM",
+      "LONG"
+     ],
+     "nullable": true
+    }
+   },
+   "summary": "a person the reply introduces; name only a proper name, else null; present: here with Alaric now; at: where they are if not here"
+  },
+  {
+   "type": "creature.new",
+   "fields": {
+    "ref": {
+     "type": "string"
+    },
+    "species": {
+     "type": "string"
+    },
+    "desc": {
+     "array": "string"
+    },
+    "count": {
+     "type": "integer",
+     "min": 1
+    },
+    "present": {
+     "type": "boolean"
+    },
+    "band": {
+     "enum": [
+      "ENGAGED",
+      "SHORT",
+      "MEDIUM",
+      "LONG"
+     ],
+     "nullable": true
+    }
+   },
+   "summary": "creatures the reply introduces; count > 1 for several of one kind (the engine makes each its own creature); band: distance to Alaric when it matters for a fight"
+  },
+  {
+   "type": "enter",
+   "fields": {
+    "who": {
+     "ref": "person"
+    }
+   },
+   "summary": "a known person comes into the scene"
+  },
+  {
+   "type": "leave",
+   "fields": {
+    "who": {
+     "ref": "person"
+    }
+   },
+   "summary": "a person leaves or stays behind"
+  },
+  {
+   "type": "fact",
+   "fields": {
+    "s": {
+     "type": "string"
+    },
+    "p": {
+     "type": "string"
+    },
+    "o": {
+     "type": "string"
+    }
+   },
+   "summary": "a lasting world fact (not about what Alaric holds, pays or has decided)"
+  },
+  {
+   "type": "learn",
+   "fields": {
+    "who": {
+     "ref": "person"
+    },
+    "s": {
+     "type": "string"
+    },
+    "p": {
+     "type": "string"
+    },
+    "o": {
+     "type": "string"
+    },
+    "how": {
+     "enum": [
+      "witnessed",
+      "told",
+      "rumor",
+      "inferred"
+     ]
+    }
+   },
+   "summary": "what a person now knows"
+  },
+  {
+   "type": "attitude",
+   "fields": {
+    "who": {
+     "ref": "person"
+    },
+    "delta": {
+     "type": "integer",
+     "min": -50,
+     "max": 50
+    },
+    "why": {
+     "type": "string"
+    }
+   },
+   "summary": "a real change in how someone regards Alaric"
+  },
+  {
+   "type": "memory",
+   "fields": {
+    "text": {
+     "type": "string"
+    },
+    "who": {
+     "array": "string"
+    },
+    "imp": {
+     "type": "integer",
+     "min": 6,
+     "max": 10
+    }
+   },
+   "summary": "a moment people will remember"
+  },
+  {
+   "type": "object.new",
+   "fields": {
+    "name": {
+     "type": "string"
+    },
+    "kind": {
+     "enum": [
+      "resource",
+      "item",
+      "document",
+      "trophy"
+     ]
+    },
+    "qty": {
+     "type": "integer",
+     "min": 0
+    },
+    "unit": {
+     "type": "string",
+     "nullable": true
+    },
+    "holder": {
+     "type": "string"
+    },
+    "for_quest": {
+     "ref": "quest",
+     "nullable": true
+    }
+   },
+   "summary": "a physical thing that now exists (holder: a place id, \"here\" or a person); Alaric holds it only after his TAKES or GATHERS action"
+  },
+  {
+   "type": "object.move",
+   "fields": {
+    "object": {
+     "ref": "object"
+    },
+    "qty": {
+     "type": "integer",
+     "min": 1,
+     "nullable": true
+    },
+    "to": {
+     "type": "string"
+    }
+   },
+   "summary": "someone else hands or moves an object (to Alaric: \"pc\"); never away from Alaric"
+  },
+  {
+   "type": "object.mark",
+   "fields": {
+    "object": {
+     "ref": "object"
+    },
+    "mark": {
+     "type": "string"
+    },
+    "by": {
+     "type": "string"
+    }
+   },
+   "summary": "an object gets a mark (\"signed by the waystation master\")"
+  },
+  {
+   "type": "offer",
+   "fields": {
+    "seller": {
+     "type": "string"
+    },
+    "lines": {
+     "array": "offer_line"
+    }
+   },
+   "summary": "someone names prices; lines: what, kind (goods|service), service (lodging, bath, laundry, meal, healing, training, other or null), qty, price_cp"
+  },
+  {
+   "type": "coin.gift",
+   "fields": {
+    "from": {
+     "type": "string"
+    },
+    "cp": {
+     "type": "integer",
+     "min": 1
+    },
+    "why": {
+     "type": "string"
+    }
+   },
+   "summary": "someone gives Alaric coin of their own will (never the Guild's payout)"
+  },
+  {
+   "type": "coerce",
+   "fields": {
+    "kind": {
+     "enum": [
+      "theft",
+      "robbery",
+      "confiscation",
+      "fine"
+     ]
+    },
+    "by": {
+     "type": "string"
+    },
+    "coin_cp": {
+     "type": "integer",
+     "min": 0,
+     "nullable": true
+    },
+    "object": {
+     "type": "string",
+     "nullable": true
+    },
+    "because": {
+     "type": "string"
+    }
+   },
+   "summary": "something is taken from Alaric against his will (never by the other side of a sale)"
+  },
+  {
+   "type": "quest.offer",
+   "fields": {
+    "title": {
+     "type": "string"
+    },
+    "giver": {
+     "type": "string"
+    },
+    "reward_cp": {
+     "type": "integer",
+     "min": 0,
+     "nullable": true
+    },
+    "objectives": {
+     "array": "string"
+    },
+    "proof": {
+     "array": "string"
+    }
+   },
+   "summary": "private work someone offers (never a Guild contract)"
+  },
+  {
+   "type": "quest.detail",
+   "fields": {
+    "quest": {
+     "ref": "quest"
+    },
+    "note": {
+     "type": "string"
+    },
+    "schedule": {
+     "type": "string",
+     "nullable": true
+    }
+   },
+   "summary": "the giver or the Guild desk adds a detail (a start time, a meeting place)"
+  },
+  {
+   "type": "quest.progress",
+   "fields": {
+    "quest": {
+     "ref": "quest"
+    },
+    "objective": {
+     "type": "string"
+    },
+    "status": {
+     "enum": [
+      "done",
+      "failed",
+      "open"
+     ]
+    }
+   },
+   "summary": "an objective visibly advanced (information only)"
+  },
+  {
+   "type": "quest.close",
+   "fields": {
+    "quest": {
+     "ref": "quest"
+    },
+    "status": {
+     "enum": [
+      "completed",
+      "failed"
+     ]
+    },
+    "by": {
+     "type": "string"
+    }
+   },
+   "summary": "private work closed by its giver; a Guild contract only as failed (it became impossible): Guild contracts are completed only when Alaric turns them in at a Guild hall"
+  },
+  {
+   "type": "listing.gone",
+   "fields": {
+    "listing": {
+     "ref": "quest"
+    },
+    "why": {
+     "enum": [
+      "taken_by_other",
+      "withdrawn"
+     ]
+    }
+   },
+   "summary": "a board listing is taken by someone else or withdrawn"
+  },
+  {
+   "type": "hostile",
+   "fields": {
+    "by": {
+     "array": "string"
+    }
+   },
+   "summary": "who commits to attack Alaric right now"
+  },
+  {
+   "type": "position",
+   "fields": {
+    "who": {
+     "ref": "person"
+    },
+    "band": {
+     "enum": [
+      "ENGAGED",
+      "SHORT",
+      "MEDIUM",
+      "LONG"
+     ]
+    },
+    "cover": {
+     "enum": [
+      "none",
+      "partial",
+      "full"
+     ],
+     "nullable": true
+    }
+   },
+   "summary": "where someone present now stands relative to Alaric (outside a fight)"
+  },
+  {
+   "type": "aware",
+   "fields": {
+    "who": {
+     "ref": "person"
+    },
+    "level": {
+     "enum": [
+      "unaware",
+      "suspicious",
+      "aware"
+     ]
+    }
+   },
+   "summary": "whether someone present has noticed Alaric"
+  },
+  {
+   "type": "intent",
+   "fields": {
+    "who": {
+     "ref": "person"
+    },
+    "intent": {
+     "enum": [
+      "attack",
+      "flee",
+      "surrender",
+      "parley",
+      "hold",
+      "take_cover"
+     ]
+    }
+   },
+   "summary": "what someone hostile means to do on their next turn"
+  },
+  {
+   "type": "thread",
+   "fields": {
+    "text": {
+     "type": "string"
+    },
+    "kind": {
+     "enum": [
+      "mystery",
+      "threat",
+      "promise",
+      "debt",
+      "rumor",
+      "other"
+     ]
+    },
+    "status": {
+     "enum": [
+      "open",
+      "resolved"
+     ]
+    }
+   },
+   "summary": "a story thread that will matter again (a threat, a promise, a debt), or one that is resolved now"
+  },
+  {
+   "type": "check",
+   "fields": {
+    "what": {
+     "type": "string"
+    },
+    "stat": {
+     "type": "string",
+     "nullable": true
+    },
+    "success": {
+     "type": "boolean"
+    }
+   },
+   "summary": "only if the reply used the CHECK DIE of this turn: what was tried and whether it succeeded"
+  },
+  {
+   "type": "recover",
+   "fields": {
+    "who": {
+     "type": "string"
+    },
+    "hp": {
+     "type": "integer",
+     "min": 0,
+     "nullable": true
+    },
+    "sta": {
+     "type": "integer",
+     "min": 0,
+     "nullable": true
+    }
+   },
+   "summary": "rest or healing outside combat"
+  },
+  {
+   "type": "overreach",
+   "fields": {
+    "kind": {
+     "enum": [
+      "payment",
+      "purchase",
+      "travel",
+      "accept",
+      "take",
+      "turn_in",
+      "register",
+      "guild_listing",
+      "other"
+     ]
+    },
+    "what": {
+     "type": "string"
+    }
+   },
+   "summary": "the reply had Alaric decide something he had not decided (no state change)"
+  }
+ ]
+}

@@ -401,6 +401,17 @@ const HANDLERS = {
         return { status: 'resolved', line: `READS the ${rank} board — BOARD (canonical; show exactly these, invent no other official contract, objective or proof): ${listed.map((q) => `${q.title} · ${q.payout_cp} cp · objective: ${objectiveText(q)} · proof: ${proofText(q)}`).join(' | ')}.` };
     },
     equip(s, content, c, ctx, emit) {
+        const eq = s.entities.pc.sheet.equipment || {};
+        const asked = typeof c.object === 'object' && c.object?.new ? normText(c.object.new) : null;
+        const already = Object.entries(eq).find(([, ref]) => {
+            const it = typeof ref === 'string' ? content.items.get(ref) : ref;
+            const n = normText(it?.name || ref?.name || ref || '');
+            return asked && (n.includes(asked) || asked.includes(n));
+        });
+        if (already) {
+            const it = typeof already[1] === 'string' ? content.items.get(already[1]) : already[1];
+            return { status: 'resolved', reason: 'already equipped', line: `READIES — ${it?.name || c.object.new} is already equipped; drawing/readying it is not an equipment swap.` };
+        }
         const o = objectOf(s, content, c.object);
         const tpl = o?.template || [...content.items.entries()].find(([, i]) => o && normText(i.name) === normText(o.name))?.[0];
         if (!o || o.holder?.entity !== 'pc') return { status: 'refused', reason: 'he does not hold it', line: 'CANNOT EQUIP — he does not hold that.' };

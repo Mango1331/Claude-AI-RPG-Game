@@ -174,10 +174,6 @@ export function firewall(deltas, ctx = {}) {
                     continue;
                 }
                 if (isPc(d.holder)) {
-                    if (false) {
-                        no(d, 'engine_booked', 'the engine already handed Alaric this with its own resolution');
-                        continue;
-                    }
                     if (guildContract(d.for_quest) && CONTRACT_DOC.test(text(d.name))) {
                         no(d, 'engine_booked', 'a Guild contract\'s slip is the engine\'s: it hands it over when the contract is accepted');
                         continue;

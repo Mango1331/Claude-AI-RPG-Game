@@ -122,6 +122,37 @@ test('an interpreter that answers nothing valid books nothing, says so, and is a
     assert.deepEqual(g.state().last.outcome.resolutions.map((r) => r.status), ['authorized']);
 });
 
+test('a Board generation that failed is not cached: Regenerate asks for the board again, with the same interpretation and dice (plan §3.4, D3)', async () => {
+    const g = await created({ boardFails: true });
+    for (const id of ['t1', 't2']) {
+        const t = T(id);
+        await g.player(t.player, t.commands);
+        await g.reply('The story goes on.', fill(t.recovery));
+    }
+    const t3 = T('t3');
+    await g.player(t3.player, t3.commands);
+    const failed = g.state().last.outcome;
+    assert.ok(failed.actions.some((a) => a.includes('invent none')), 'no listing, the narrator invents none');
+    const die = failed.check_die;
+    const interprets = g.calls.filter((c) => c.purpose.startsWith('interpret')).length;
+    const boards = g.calls.filter((c) => c.purpose === 'board').length;
+    g.boardFails = false;
+    const again = await prepareGenerationAsync(g.chat, content, { type: 'regenerate', llm: g.llm });
+    assert.equal(again.action, 'context');
+    const o = g.state().last.outcome;
+    assert.ok(o.actions.some((a) => a.includes('READS the Novice board — BOARD (canonical')), 'the board is canonical now');
+    assert.ok(again.context.text.includes("Miller's Run Escort · 80 cp"));
+    assert.equal(g.calls.filter((c) => c.purpose.startsWith('interpret')).length, interprets, 'the interpretation is kept');
+    assert.ok(g.calls.filter((c) => c.purpose === 'board').length > boards, 'the board was asked for again');
+    assert.equal(o.check_die, die);
+    assert.equal(g.state().guild.membership?.rank, 'Novice', 'the fee is paid once');
+    // a board that was generated is kept: the next Regenerate asks nothing
+    const calls = g.calls.length;
+    await prepareGenerationAsync(g.chat, content, { type: 'regenerate', llm: g.llm });
+    assert.equal(g.calls.length, calls);
+    assert.deepEqual(validateState(g.state(), content), []);
+});
+
 test('a swipe is a new reply: its own extraction; the player\'s commands, their resolution and the dice stay as they were', async () => {
     const g = await created();
     const t = T('t1');

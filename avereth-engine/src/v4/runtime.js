@@ -152,8 +152,10 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
     let dirty = false;
     let r = rec(msg);
     const inputHash = hash32(msg.mes);
-    // an interpretation that failed is not cached: Regenerate asks again (plan §3.4)
-    if (type !== 'continue' && (!r || r.input_hash !== inputHash || r.interp?.failed)) {
+    // an interpretation that failed is not cached: Regenerate asks again (plan §3.4); neither is a Board generation that
+    // failed: a new generation of the same message asks for the board again, with the interpretation it came with
+    const retryBoard = !!r && r.route === 'v4' && r.input_hash === inputHash && !r.interp?.failed && !!r.board?.failed;
+    if (type !== 'continue' && (!r || r.input_hash !== inputHash || r.interp?.failed || retryBoard)) {
         if (closeLatePending(chat, u)) dirty = true;
         const before = foldChat(chat, u).state;
         if (routeTurn(before, content, msg.mes) === 'v3') {
@@ -162,7 +164,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         } else {
             if (typeof llm !== 'function') throw new Error('Runtime V4 needs an LLM call for the interpreter');
             const catalog = buildCatalog(before, content);
-            const ip = await interpretMessage(llm, content, catalog, msg.mes);
+            const ip = retryBoard ? { commands: r.interp.commands, ms: 0, repaired: !!r.interp.repaired, failed: false } : await interpretMessage(llm, content, catalog, msg.mes);
             const guarded = ip.commands ? guardCommands(msg.mes, ip.commands, guardContext(before, content, catalog)) : { kept: [], dropped: [] };
             const need = ip.failed ? null : boardFor(before, content, guarded.kept);
             const board = need ? await generateBoard(llm, before, content, need) : null;

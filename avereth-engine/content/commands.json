@@ -1,6 +1,6 @@
 {
- "version": "cmd-0.3",
- "note": "Runtime V4 command vocabulary (docs/RUNTIME_V4_PLAN.md §4.1, §4.2). One source for the interpreter prompt, its schema and the validator (src/v4/interpret.js). cmd-0.2 against the P0 draft cmd-0.1-draft (docs/P0_BERICHT.md §5): guild.register no longer teaches the phrase \"I'm here to register\"; quest.turn_in no longer teaches a purpose clause as a turn-in; reading the Guild board is board.read, not 'looking around'; \"register it\" after taking a slip is part of quest.accept. The positive/negative lists document intent for readers and are never put into a prompt: several of them are cases of the evaluation corpus (tests/eval/commands.jsonl). cmd-0.3: GO explicitly includes moving toward a perceived sound, trail or direction (live 28.09. afternoon).",
+ "version": "cmd-0.4",
+ "note": "Runtime V4 command vocabulary (docs/RUNTIME_V4_PLAN.md §4.1, §4.2). One source for the interpreter prompt, its schema and the validator (src/v4/interpret.js). cmd-0.2 against the P0 draft cmd-0.1-draft (docs/P0_BERICHT.md §5): guild.register no longer teaches the phrase \"I'm here to register\"; quest.turn_in no longer teaches a purpose clause as a turn-in; reading the Guild board is board.read, not 'looking around'; \"register it\" after taking a slip is part of quest.accept. The positive/negative lists document intent for readers and are never put into a prompt: several of them are cases of the evaluation corpus (tests/eval/commands.jsonl). cmd-0.3: GO explicitly includes moving toward a perceived sound, trail or direction (live 28.09. afternoon). cmd-0.4: add journey.continue for clear consent to an already-established escort journey; scene handles are targetable by the deterministic combat parser.",
  "rules": [
   "Only what Alaric himself does or commits to in this message. A deed he narrates in the past tense in this message counts.",
   "No command for a question, a thought or wish, a hypothetical (\"if I …, would …\"), a plan for later (\"tomorrow I'll …\"), a memory of an earlier turn, a negation (\"I don't pay\"), or what other people do or say, even when the player writes it.",
@@ -11,6 +11,7 @@
   "Refer to known things by their id from the CATALOG; for something the catalog does not have use {\"new\": \"<short name>\"}. If several catalog entries fit and the message does not say which, use null where the argument allows it.",
   "Coin in copper: 1 silver = 10 copper, 1 gold = 100 copper. When an OFFER in the catalog covers what he pays for or takes, use offer.accept.",
   "Talking, asking, looking around, walking up to someone in the same room, readying the weapon he already wields: no command. Reading or looking over the Guild's contract board (walking over to it to look at the contracts included) is board.read.",
+  "When the CATALOG shows JOURNEY READY, clear present-tense agreement to depart/continue now (for example \"I'm ready when you are\" or \"let's go\") is journey.continue. Without JOURNEY READY those words are only dialogue.",
   "Attacks, sneaking and # commands are handled elsewhere: no command.",
   "quote: the exact words of the message the command rests on."
  ],
@@ -389,6 +390,19 @@
    ],
    "negative": [
     "What's on the board today?"
+   ]
+  },
+  {
+   "type": "journey.continue",
+   "summary": "Alaric clearly agrees to depart or continue now with the already-established escort/journey named by JOURNEY READY in the CATALOG. Never use without JOURNEY READY.",
+   "args": {},
+   "positive": [
+    "I'm ready when you are.",
+    "Let's go."
+   ],
+   "negative": [
+    "I'm ready.",
+    "Maybe we can leave tomorrow."
    ]
   },
   {

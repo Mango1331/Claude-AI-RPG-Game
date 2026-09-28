@@ -86,9 +86,10 @@ test('Guild contract status/payout and Guild clearance marks cannot be smuggled 
         { seq: 2, type: 'fact', s: q.id, p: 'status', o: 'done on Guild rolls' },
         { seq: 3, type: 'fact', s: 'obj.escort_slip', p: 'mark', o: 'CLEARED' },
         { seq: 4, type: 'object.mark', object: 'obj.escort_slip', mark: 'CLEARED', by: 'npc.guild_clerk' },
+        { seq: 5, type: 'fact', s: 'the Guild', p: 'stamped the contract slip', o: 'CLEARED' },
     ], ctx);
     assert.deepEqual(bad.accept, []);
-    assert.deepEqual(bad.reject.map((x) => x.rule), ['engine_owned_fact', 'engine_owned_fact', 'engine_owned_fact', 'guild_completion']);
+    assert.deepEqual(bad.reject.map((x) => x.rule), ['engine_owned_fact', 'engine_owned_fact', 'engine_owned_fact', 'guild_completion', 'engine_owned_fact']);
     const proof = firewall([{ seq: 1, type: 'object.mark', object: 'obj.escort_slip', mark: 'delivery confirmed by Old Hew', by: 'npc.old_hew' }], ctx);
     assert.equal(proof.accept.length, 1, 'field proof remains narrator/world-owned');
 });

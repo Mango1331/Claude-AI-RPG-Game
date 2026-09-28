@@ -229,7 +229,11 @@ export function firewall(deltas, ctx = {}) {
             }
             case 'fact': {
                 const p = words(d.p).replace(/\s+/g, '_');
-                const guildQuestState = !!ctx.isGuildContractRef?.(text(d.s)) || !!ctx.guildContractForObject?.(text(d.s));
+                const factText = `${words(d.s)} ${words(d.p)} ${words(d.o)}`;
+                const guildQuestState = !!ctx.isGuildContractRef?.(text(d.s))
+                    || !!ctx.guildContractForObject?.(text(d.s))
+                    || namesContract(factText)
+                    || (!!ctx.inGuildHall && /\b(?:contract|quest|slip)\b/.test(factText) && GUILD_QUEST_STATE.test(factText));
                 if (guildQuestState && GUILD_QUEST_STATE.test(`${words(d.p)} ${words(d.o)}`)) {
                     no(d, 'engine_owned_fact', 'a known Guild contract and its proof document keep payout, status, proof/marks and completion in the engine domains; a free fact cannot override them');
                     continue;

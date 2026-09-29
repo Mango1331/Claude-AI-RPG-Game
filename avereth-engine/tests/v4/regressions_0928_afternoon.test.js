@@ -13,9 +13,10 @@ import { knows, PC_NAME_FACT, currentFacts } from '../../src/knowledge.js';
 import { interpreterSystem } from '../../src/v4/interpret.js';
 import { sceneHandle } from '../../src/v4/scene_handles.js';
 import { parseIntent } from '../../src/intent.js';
-import { boardRequest, checkProof, completeContract } from '../../src/v4/guild.js';
+import { boardRequest, checkProof, completeContract, parseBoard } from '../../src/v4/guild.js';
 import { worldPanel } from '../../src/display.js';
 import { playerTurn } from '../../src/engine.js';
+import { playerTurnV4 } from '../../src/v4/turn.js';
 
 const contentPack = await loadContent();
 
@@ -99,6 +100,8 @@ test('Guild contract status/payout and Guild clearance marks cannot be smuggled 
     assert.deepEqual(bad.reject.map((x) => x.rule), ['engine_owned_fact', 'engine_owned_fact', 'engine_owned_fact', 'guild_completion', 'engine_owned_fact']);
     const proof = firewall([{ seq: 1, type: 'object.mark', object: 'obj.escort_slip', mark: 'delivery confirmed by Old Hew', by: 'npc.old_hew' }], ctx);
     assert.equal(proof.accept.length, 1, 'field proof remains narrator/world-owned');
+    const guildNote = firewall([{ seq: 2, type: 'object.mark', object: 'obj.escort_slip', mark: 'Old Hew seen at the desk; statement received', by: 'npc.guild_clerk' }], ctx);
+    assert.equal(guildNote.accept.length, 1, 'Guild staff may add ordinary witness/verification notes; only completion/payment marks are protected');
 });
 
 test('same-reply arrival re-checks authority in the new location', async () => {

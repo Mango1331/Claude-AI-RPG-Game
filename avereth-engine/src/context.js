@@ -419,7 +419,7 @@ export function buildContext(state, content, opts = {}) {
             ? ` | desired outcome: ${q.desired_end_state || objectiveText(q)} | remembered work: ${objectiveText(q)}${progress ? ` | progress: ${progress}` : ''}${q.ready ? ` | READY FOR TURN-IN: ${q.ready_note || 'desired outcome achieved'}` : ''} | verification examples: ${guildProofText(q) || 'none listed'} | payout: ${q.payout_cp ?? 0} cp (paid only by the Guild on explicit accepted turn-in)`
             : q.objectives?.length ? ` | remembered work: ${objectiveText(q)}` : '';
         return `- ${q.title}${req}`;
-    }).join('\n')}\nQUEST FRICTION: a nontrivial active Quest should still develop at least one causal, meaningful complication or active situation before ordinary resolution. Combat is not required. Once the desired outcome is genuinely achieved, let the extractor store quest.ready; do not manufacture extra bureaucracy merely to satisfy a generated proof phrase.`, 0);
+    }).join('\n')}\nQUEST PLAY: only when the current scene/action is actually pursuing a nontrivial active Quest, let that Quest develop at least one causal, meaningful complication or active situation before ordinary resolution. Do not inject Quest complications into unrelated scenes merely because a Quest is active. Combat is not required. Once the desired outcome is genuinely achieved, let the extractor store quest.ready; do not manufacture extra bureaucracy merely to satisfy a generated proof phrase.`, 0);
 
     // relevant memories / facts / quests / threads
     const relStrength = new Map();

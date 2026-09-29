@@ -21,7 +21,7 @@ import {
 } from './domain.js';
 import { sameWant } from './world.js';
 import {
-    REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, checkProof, proofText, objectiveText,
+    REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, checkProof, objectiveText,
     promotion, takenByOthers, bookBoard,
 } from './guild.js';
 

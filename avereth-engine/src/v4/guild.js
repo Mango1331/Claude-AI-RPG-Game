@@ -256,21 +256,9 @@ export function parseBoard(answer, content, need) {
     const ok = [];
     const refused = [];
     for (const l of value.listings) {
-        const noviceFamily = need.rank !== 'Novice' || l.objectives.some((o) => ['ATTACK', 'DEFEAT', 'ESCORT', 'DELIVER'].includes(o.verb));
-        const why = l.rank !== need.rank ? `rank ${l.rank} is not ${need.rank}`
-            : l.level < lo || l.level > hi ? `level ${l.level} outside ${lo}–${hi}`
-                : l.objectives.length > 4 ? 'more than 4 objectives'
-                    : l.proof.length > 2 ? 'more than 2 verification examples'
-                        : !noviceFamily ? 'Novice test profile allows only culling/combat, escort or delivery jobs'
-                            : null;
+        const why = l.rank !== need.rank ? `rank ${l.rank} is not ${need.rank}` : l.level < lo || l.level > hi ? `level ${l.level} outside ${lo}–${hi}` : l.objectives.length > 4 ? 'more than 4 objectives' : l.proof.length > 2 ? 'more than 2 verification examples' : null;
         if (why) refused.push({ title: l.title, why });
         else ok.push(l);
-    }
-    if (need.rank === 'Novice' && need.missing >= 5) {
-        const has = (verbs) => ok.filter((l) => l.objectives.some((o) => verbs.includes(o.verb))).length;
-        if (has(['ATTACK', 'DEFEAT']) < 2 || has(['ESCORT']) < 1 || has(['DELIVER']) < 1) {
-            return { listings: null, refused, errors: ['fresh Novice board must contain at least 2 ATTACK/DEFEAT listings, 1 ESCORT listing and 1 DELIVER listing'] };
-        }
     }
     return { listings: ok.slice(0, need.missing), refused, errors: [] };
 }

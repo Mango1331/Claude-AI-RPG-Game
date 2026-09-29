@@ -133,7 +133,7 @@ export function checkProof(s, q) {
 }
 
 export function proofText(q) {
-    if (!(q.proof || []).length) return 'the contract (no proof listed)';
+    if (!(q.proof || []).length) return 'no fixed verification listed';
     return q.proof.map((p) => (p.kind === 'object' ? `${p.qty ?? 1} ${p.unit ?? ''} of ${p.what}`.replace(/\s+/g, ' ') : `"${p.what}" on the ${p.on || 'contract slip'}`)).join(' and ');
 }
 

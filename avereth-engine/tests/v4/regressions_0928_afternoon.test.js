@@ -469,3 +469,84 @@ test('active quest narrator context treats objectives/proof as memory and verifi
     assert.match(ctx.text,/not as a word-for-word checklist/);
     assert.doesNotMatch(ctx.text,/proof required for Guild turn-in/);
 });
+
+
+test('explicit external cause may relocate Alaric without a GO command', async () => {
+    const g = await created();
+    const st = structuredClone(g.state());
+    st.last.outcome = {
+        kind:'v4', actions:['NOTHING TO BOOK'], expected_keys:{}, conditionals:[],
+        booked:{registration:false,grants:[],turnIns:[],accepted:[]},
+        auth:{go:null,gos:[],roam:false,take:[],gather:false,rest:false,timeCap:120},
+        search_checks:[], check_die:null,
+    };
+    const before = st.scene.at;
+    const r = applyWorld(st, contentPack, {expected:{}, deltas:[
+        {seq:1,type:'arrive',at:'loc.redmarch.guild_hall',forced_by:'a watch patrol physically escorts him there under arrest'}
+    ]},{msg:99,prose:'The watch closes around Alaric and marches him to the Guild hall.'});
+    assert.deepEqual(r.rejected, []);
+    assert.notEqual(r.state.scene.at, before);
+    assert.equal(r.state.scene.at, 'loc.redmarch.guild_hall');
+});
+
+test('journey.continue can use stored non-ESCORT travel context with a present participant', async () => {
+    const g = await created();
+    const st = structuredClone(g.state());
+    st.entities['npc.noll'] = {
+        id:'npc.noll', kind:'npc', name:'Noll', descriptors:['ferryman'], traits:'ferryman',
+        status:'alive', created:{turn:st.turn,minute:st.clock.minute}, template:'commoner', card:{},
+    };
+    st.scene.present.push('npc.noll');
+    st.quests['quest.packet'] = {
+        id:'quest.packet', title:'Packet Across the River', kind:'guild_contract', status:'active', rank:'Novice',
+        client:'Noll', payout_cp:30, desired_end_state:'Noll ferries Alaric across and the packet reaches the far-bank waystation',
+        objectives:[{id:'o1',verb:'DELIVER',what:'sealed packet',qty:1,unit:null,where:'far-bank waystation',status:'open'}],
+        proof:[], details:['Noll says his ferry leaves when Alaric is ready'], notes:[], history:[],
+    };
+    const cat = buildCatalog(st, contentPack);
+    assert.match(cat.journey_ready || '', /quest\.packet.*Noll/i);
+    const turn = playerTurnV4(st, contentPack, "I'm ready when you are.", {
+        msg:99,
+        commands:[{seq:1,type:'journey.continue',quote:"I'm ready when you are."}],
+        interp:{version:'test',ms:0,source:'test',failed:false},
+    });
+    assert.equal(turn.outcome.resolutions[0].status, 'authorized');
+    assert.equal(turn.outcome.auth.roam, true);
+    assert.match(turn.outcome.actions.join('\n'), /DEPARTS\/CONTINUES/);
+});
+
+test('Board generator may return no verification token when the outcome can be established naturally', () => {
+    const raw = JSON.stringify({listings:[{
+        title:'Find the Missing Carter', client:'East Gate carters', rank:'Novice', level:1, qtype:'standard', payout_cp:40,
+        desired_end_state:'the missing carter is found and the carters learn what happened',
+        objectives:[{verb:'FIND',what:'the missing carter',qty:null,unit:null,where:'the east road'}],
+        proof:[]
+    }]});
+    const p = parseBoard(raw, contentPack, {rank:'Novice',missing:1});
+    assert.deepEqual(p.errors, []);
+    assert.equal(p.listings.length, 1);
+    assert.deepEqual(p.listings[0].proof, []);
+});
+
+test('an empty verification-hint list does not make an untouched Guild contract auto-complete', async () => {
+    const g = await created();
+    const st = structuredClone(g.state());
+    const q = {
+        id:'quest.no_proof', title:'Find the Carter', kind:'guild_contract', rank:'Novice', level:1, qtype:'standard', payout_cp:40,
+        desired_end_state:'the missing carter is found', objectives:[{id:'o1',verb:'FIND',what:'carter',status:'open'}],
+        proof:[], status:'active', history:[], notes:[], details:[],
+    };
+    st.quests[q.id]=q;
+    const events=[];
+    const done=completeContract(st,contentPack,q,(e)=>events.push(e),{step:1});
+    assert.equal(done.ok,false);
+    assert.ok(!events.some((e)=>e.t==='coin.changed'));
+});
+
+test('narrator contract treats NPC cards as relevant recall and allows harmless cosmetic/micro prose', () => {
+    const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
+    assert.match(contract, /authoritative relevant recall, not an exhaustive dump/);
+    assert.match(contract, /Incidental micro-gestures may be prose/);
+    assert.match(contract, /Harmless cosmetic\/sensory description/);
+    assert.doesNotMatch(contract, /what is not listed on its card is unknown to it/);
+});

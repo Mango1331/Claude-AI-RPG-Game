@@ -209,3 +209,18 @@ Principle: the engine does not create ordinary world content in advance. It mate
 - Interpreter failure aborts narration and books no story/world events. Regenerate retries interpretation.
 
 Still hard: Combat, Search/Stealth, coin/trade/equipment, Guild payout/XP/count/promotion, and creature mechanical profiles once a creature is actually revealed.
+
+
+## 4.0.8 — Novice test profile + readable selection lists
+
+For mechanics testing, Novice Board generation is intentionally less open-ended. This is a generator policy, not a hard quest-mechanics validator.
+
+- Fresh Novice boards are prompted to contain at least two explicit Monster culling/clearance jobs with a direct combat route, at least one escort whose route leaves the settlement, and at least one delivery/courier job whose destination leaves the settlement; the fifth listing also comes from those families.
+- Partial Novice refills are told to prefer the same three families and avoid administrative errands, pure paperwork, abstract mysteries and low-interaction local chores.
+- Escort/delivery travel may produce danger naturally but does not pre-script a mandatory ambush.
+- The policy stays soft-world: the engine validates schema/canon, not semantic quest categories.
+
+Presentation:
+- Guild Boards render canonical listings as separate title-first lines in the engine instruction.
+- The narrator contract now requires multi-option boards, shops/stores, merchant inventories, menus and service lists to use one option per line, title/item name first, followed by price/reward and a concise description.
+- Normal surrounding scene narration remains prose.

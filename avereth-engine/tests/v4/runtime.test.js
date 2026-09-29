@@ -112,20 +112,37 @@ test('an extractor that answers nothing valid gets one primary call plus one rep
     assert.ok(next.context.text.includes(FAILED_CORRECTION));
 });
 
-test('an interpreter that answers nothing valid books nothing, says so, and is asked again on Regenerate (no cache)', async () => {
+test('arriving at a Guild hall does not preload its board; the first explicit board.read generates it', async () => {
+    const g = await created();
+    const t1 = T('t1');
+    await g.player(t1.player, t1.commands);
+    await g.reply('He reaches the Guild hall.', fill(t1.recovery));
+    assert.equal(g.state().scene.at, 'loc.redmarch.guild_hall');
+    assert.equal(g.calls.filter((x) => x.purpose === 'board').length, 0, 'arrival alone does not spend an LLM call on unseen listings');
+    assert.equal(Object.values(g.state().quests).filter((q) => q.status === 'listed').length, 0, 'unseen listings do not exist yet');
+
+    const p = await g.player('I read the Novice board.', [{ seq: 1, type: 'board.read', rank: 'Novice', quote: 'read the Novice board' }]);
+    assert.equal(p.action, 'context');
+    assert.equal(g.calls.filter((x) => x.purpose === 'board').length, 1, 'board generation is on-demand');
+    assert.ok(Object.values(g.state().quests).some((q) => q.status === 'listed'));
+    assert.match(p.context.text, /these listings now become canonical because Alaric actually reads them/);
+});
+
+test('an interpreter transport/schema failure aborts narration and is asked again on Regenerate (no cache)', async () => {
     const g = await created();
     const base = g.llm;
     let fail = true;
     g.llm = async (req) => (req.purpose.startsWith('interpret') && fail ? 'I think he wants to go to the guild.' : base(req));
     const p = await g.player(T('t1').player, T('t1').commands);
-    const o = g.state().last.outcome;
-    assert.equal(o.interp_failed, true);
-    assert.match(o.actions[0], /^NOTHING TO BOOK — the engine could not read/);
-    assert.match(p.context.text, /NOTHING TO BOOK — the engine could not read/);
+    const r = rec(g.chat.at(-1));
+    assert.equal(p.action, 'abort');
+    assert.match(p.notice, /interpreter failed/i);
+    assert.equal(r.interp.failed, true);
+    assert.deepEqual(r.events, [], 'a failed interpreter does not create a story turn or world events');
     fail = false;
     const again = await prepareGenerationAsync(g.chat, content, { type: 'regenerate', llm: g.llm });
     assert.equal(again.action, 'context');
-    assert.deepEqual(g.state().last.outcome.resolutions.map((r) => r.status), ['authorized']);
+    assert.deepEqual(g.state().last.outcome.resolutions.map((x) => x.status), ['authorized']);
 });
 
 test('a Board generation that failed is not cached: Regenerate asks for the board again, with the same interpretation and dice (plan §3.4, D3)', async () => {
@@ -146,7 +163,7 @@ test('a Board generation that failed is not cached: Regenerate asks for the boar
     const again = await prepareGenerationAsync(g.chat, content, { type: 'regenerate', llm: g.llm });
     assert.equal(again.action, 'context');
     const o = g.state().last.outcome;
-    assert.ok(o.actions.some((a) => a.includes('READS the Novice board — BOARD (canonical')), 'the board is canonical now');
+    assert.ok(o.actions.some((a) => a.includes('READS the Novice board — BOARD')), 'the board is canonical now');
     assert.ok(again.context.text.includes("Miller's Run Escort · 80 cp"));
     assert.equal(g.calls.filter((c) => c.purpose.startsWith('interpret')).length, interprets, 'the interpretation is kept');
     assert.ok(g.calls.filter((c) => c.purpose === 'board').length > boards, 'the board was asked for again');

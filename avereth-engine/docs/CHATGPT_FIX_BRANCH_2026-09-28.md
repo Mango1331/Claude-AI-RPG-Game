@@ -155,3 +155,39 @@ Runtime/UI:
 - NPC cards surface established NPC-to-NPC ties from persistent facts, in addition to stance toward Alaric and knowledge.
 
 This patch intentionally does not add container/carry-capacity mechanics and does not loosen Combat.
+
+
+## 4.0.6 — boundary cleanup: hard mechanics, soft world
+
+A branch-wide review after 4.0.5 found several older safeguards that still treated continuity like Combat mechanics. 4.0.6 removes those without weakening Combat, progression, money or player agency.
+
+### Extractor/runtime
+- A reply now gets exactly one primary extractor call and at most one repair (previous worst case: four calls).
+- Missing nullable soft fields are filled locally with null; harmless persistence defaults such as person.new.desc=[], creature.new.desc=[]/count=1 and memory.who=[] no longer force an LLM repair.
+- The obsolete generic narrator check delta is removed; Search/Stealth/Combat keep their actual engine mechanics.
+- Narration remains visible immediately; the commit barrier still protects the next turn.
+
+### World/agency boundary
+- Explicit involuntary relocation is now a normal arrive delta with forced_by. Arrest, abduction, being carried or a collapsing floor may move Alaric without pretending he chose GO. Combat movement remains Combat-owned.
+- Coercion no longer validates fiction through NPC-role regexes ("must look like a guard/bandit"). A present external actor + an explicit causal reason is enough to persist the consequence; sale/offer safeguards remain.
+- journey.continue is no longer hardwired to an ESCORT objective. JOURNEY READY may derive from any persisted travel/departure context (active Quest or open thread) tied to a present NPC.
+
+### Guild / Quest
+- Board verification is optional: proof accepts 0–2 story-guidance examples; [] is valid.
+- Empty verification never auto-completes a Quest. New contracts still require quest.ready (desired story outcome achieved) before deterministic turn-in/payout/XP unless an older contract has real legacy proof.
+- Guild staff may add ordinary witness/field notes to contract documents. Only marks that themselves claim formal completion/payment/clearance are protected.
+- quest.detail may store completion-related story information; it still cannot alter payout, Guild rank or promotion.
+- Automatic 20%/day random removal of board listings is disabled (0%). World/board changes can still be established explicitly.
+
+### Narrator/context
+- NPC cards are authoritative relevant recall, not exhaustive mind dumps. Listed knowledge cannot be contradicted; missing special/private knowledge still cannot be invented, but ordinary established/public knowledge is not erased merely because retrieval did not print it.
+- Harmless micro-gestures are allowed when they change no mechanical/decision-relevant state.
+- Generic Gear may receive harmless cosmetic/sensory description, but no invented provenance, hidden property, value, faction/Guild mark or mechanical/social significance.
+- The free fantasy creature rule is internally consistent again: in-world species name is free; the separate anchor supplies mechanics.
+
+Deliberately NOT changed in 4.0.6:
+- Combat actor identity, HP, Range, Initiative, Skills/resources, damage, death and Combat XP.
+- Coin arithmetic, purchases/sales, equipment mechanics, Guild payout/XP/count/promotion.
+- Search and Stealth mechanics.
+- Numeric attitude/memory storage and time caps; those are candidates for later simplification only if live tests show they hurt play.
+- Container/carry-capacity mechanics.

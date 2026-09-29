@@ -91,9 +91,9 @@ const HANDLERS = {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
         const travelRe = /\b(?:escort|journey|travel|road|cart|wagon|caravan|ship|boat|ferry|ride|guide|lead|depart|leave|deliver|destination|route|waystation)\b/i;
         const sources = [
-            ...Object.values(s.quests).filter((q) => q.status === 'active').map((q) => ({
+            ...Object.values(s.quests).filter((q) => q.status === 'active' && [...(q.details || []), ...(q.notes || [])].length).map((q) => ({
                 label: q.title,
-                text: [q.title, q.client, q.desired_end_state, ...(q.details || []), ...(q.notes || []), ...(q.objectives || []).flatMap((o) => [o.verb, o.what, o.where])].filter(Boolean).join(' '),
+                text: [...(q.details || []), ...(q.notes || [])].filter(Boolean).join(' '),
             })),
             ...Object.values(s.threads || {}).filter((t) => t.status === 'open').map((t) => ({ label: t.text, text: t.text })),
         ];
@@ -331,7 +331,7 @@ const HANDLERS = {
             acceptContract(s, content, q, emit, { step: c.seq });
             ctx.booked.accepted.push(q.id);
             ctx.booked.grants.push('contract slip');
-            return { status: 'resolved', line: `ACCEPTS — ${questLine(q)} at the Guild desk; the clerk logs it and hands him its contract slip. Story goal: ${q.desired_end_state || objectiveText(q)}. Objectives to remember: ${objectiveText(q)}. Suggested verification: ${proofText(q)}. Verification is flexible in play; payout (${q.payout_cp} cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in.` };
+            return { status: 'resolved', line: `ACCEPTS — ${questLine(q)} at the Guild desk; the clerk logs it and hands him its contract slip. Contract memory: ${q.desired_end_state || objectiveText(q)}. The stored objectives and any verification examples are continuity guidance, not mandatory steps or wording. Payout (${q.payout_cp} cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in.` };
         }
         // private work: its giver must be here
         if (q.status !== 'offered') return { status: 'refused', reason: `the job is ${q.status}`, line: `NOTHING TO DO — ${questLine(q)} is ${q.status}.` };
@@ -410,7 +410,7 @@ const HANDLERS = {
         }
         emit({ t: 'board.shown', d: { branch, rank, listings: listed.map((q) => q.id) } });
         ctx.boardShown = { branch, rank, listings: listed.map((q) => q.id) };
-        return { status: 'resolved', line: `READS the ${rank} board — BOARD (canonical listings, payout and broad job content; verification examples are guidance, not exclusive tokens): ${listed.map((q) => `${q.title} · ${q.payout_cp} cp · goal: ${q.desired_end_state || objectiveText(q)} · objectives: ${objectiveText(q)} · verification example: ${proofText(q)}`).join(' | ')}.` };
+        return { status: 'resolved', line: `READS the ${rank} board — BOARD (these listings now become canonical because Alaric actually reads them; describe the notices naturally, not as a checklist): ${listed.map((q) => `${q.title} · client: ${q.client || 'unspecified'} · ${q.payout_cp} cp · request: ${q.desired_end_state || objectiveText(q)}`).join(' | ')}. Stored objectives and any verification examples are continuity memory only.` };
     },
     equip(s, content, c, ctx, emit) {
         const eq = s.entities.pc.sheet.equipment || {};

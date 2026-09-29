@@ -132,9 +132,10 @@ export function buildCatalog(state, content, { extraPlaces = [] } = {}) {
     const quests = activeRaw.map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) }));
     const travelRe = /\b(?:escort|journey|travel|road|cart|wagon|caravan|ship|boat|ferry|ride|guide|lead|depart|leave|deliver|destination|route|waystation)\b/i;
     const journeySources = [
-        ...activeRaw.filter((q) => q.status === 'active').map((q) => ({
+        ...activeRaw.filter((q) => q.status === 'active' && [...(q.details || []), ...(q.notes || [])].length).map((q) => ({
             id: q.id, label: q.title,
-            text: [q.title, q.client, q.desired_end_state, ...(q.details || []), ...(q.notes || []), ...(q.objectives || []).flatMap((o) => [o.verb, o.what, o.where])].filter(Boolean).join(' '),
+            // Journey readiness comes only from story-persisted detail/note memory, never from generated objective text.
+            text: [...(q.details || []), ...(q.notes || [])].filter(Boolean).join(' '),
         })),
         ...Object.values(state.threads || {}).filter((t) => t.status === 'open').map((t) => ({ id: t.id, label: t.text, text: t.text })),
     ];

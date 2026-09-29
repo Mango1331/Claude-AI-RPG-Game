@@ -208,6 +208,13 @@ export function boardRequest(s, content, need) {
     const guide = content.rules.guild.board?.payout_guide_cp?.[need.rank];
     const town = s.places[need.branch];
     const realm = town?.realm && s.places[town.realm] ? s.places[town.realm].name : null;
+    const noviceProfile = need.rank === 'Novice' ? [
+        'NOVICE TEST PROFILE:',
+        '- Keep Novice work practical and immediately playable. For a fresh five-listing board: at least 2 listings are explicit Monster culling/clearance jobs whose obvious intended route can lead directly to combat; at least 1 is an escort whose route leaves the settlement; at least 1 is a delivery/courier job whose destination leaves the settlement; the fifth is another culling, escort or delivery job.',
+        '- Monster culling/clearance names a concrete creature threat and a concrete place/problem to clear, kill, drive off or make safe. Do not disguise both combat slots as open-ended investigations into an unknown culprit.',
+        '- Escort and delivery jobs must involve real travel beyond the city/settlement rather than a safe errand between two buildings in town. Route trouble may emerge naturally from the world; do not pre-script a mandatory ambush.',
+        '- For partial Board refills, prefer these same three job families and avoid filling the Novice Board with administrative errands, pure paperwork, abstract mysteries or local chores that provide little opportunity to test travel/combat gameplay.',
+    ] : [];
     const system = [
         "You write the official contracts on an Adventurers' Guild board in a sandbox fantasy RPG. The engine books exactly what you return as canon; the narrator will only describe these listings. Write no story.",
         '',
@@ -215,11 +222,12 @@ export function boardRequest(s, content, need) {
         '- A contract is a concrete request to change a current situation in the world. Build it from: cause (why now), stakeholder/client, current problem, desired end state, 1–4 useful objective memories, and reward. Verification is optional story guidance, not a mandatory token.',
         '- Rank limits scope, risk and complexity — not whether the subject is mundane or fantastical. Low-rank work may involve a manageable Monster, minor magic or a minor ruin, one dangerous animal, or a small clearly defined weak group such as wolves, goblins or feral dogs.',
         '- Do not preferentially default to rats, cellar vermin or indistinct swarms. Rats are allowed occasionally, not the standard low-rank combat answer.',
-        '- The listings generated together must differ materially in underlying problem, principal activity, location and likely play experience. Do not make a balanced checklist of predefined quest categories.',
+        '- The listings generated together must differ materially in underlying problem, location and likely play experience. Outside an explicit rank profile, do not make a balanced checklist of predefined quest categories.',
         '- Let contracts arise from this branch and its surroundings: local trades, roads, wilderness, factions, ruins, ecology, magic and already-established places. Nothing world-shaking at low rank.',
         '- Structural example only: a livestock owner reports repeated pen break-ins; identify the threat and stop the losses, with proof appropriate to whether it is killed or driven away. This demonstrates cause, modest scope, alternate solutions and verifiable completion.',
         '- Structural example only: a survey team failed to return from abandoned workings; locate them, rescue survivors if possible, and recover an official seal. What happened is not predetermined by the contract and emerges in play.',
         '- These examples demonstrate structure only. Do not reuse their people, locations, creatures, objects, circumstances or exact objective sequence.',
+        ...noviceProfile,
         `- rank is "${need.rank}"; level is the quest level, an integer from ${lo} to ${hi}; qtype is minor, standard, dangerous or major.`,
         `- payout_cp is the Guild's one fixed payout in copper (1 silver = 10 copper)${guide ? `; for ${need.rank} work ${guide[0]}–${guide[1]} cp is usual (a guide, not a limit)` : ''}.`,
         '- 1 to 4 objectives: {verb, what, qty, unit, where}; verb is one of GO, FIND, TALK, GET, GATHER, GIVE, DELIVER, USE, REPAIR, DEFEND, ESCORT, ATTACK, DEFEAT. These are continuity memories for play, not a rigid checklist the narrator must force in order.',

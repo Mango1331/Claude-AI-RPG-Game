@@ -7,8 +7,8 @@
 //
 //   before the narrator   prepareGenerationAsync: interpreter -> agency guard -> (Board generator) -> command handlers
 //   after the reply       processReplyV4 (prose only, extraction pending) -> runExtraction (extractor, firewall, world)
-//   barrier               the next player message waits for the reply's extraction; whatever is not committed by
-//                         then is recorded as a gap (extract.failed "late") and the late answer is dropped
+//   barrier               the host waits for the current extraction/repair before starting the next normal turn.
+//                         closeLatePending remains a safety net for reloads/out-of-band calls that bypass that host job.
 //
 // A V3 campaign never reaches this module's V4 branches: prepareGenerationAsync and processReplyAny hand it to host.js.
 import {
@@ -192,6 +192,12 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         }
         setRec(msg, r);
         dirty = true;
+    }
+    if (r?.route === 'v4' && r.interp?.failed) {
+        return {
+            action: 'abort', dirty,
+            notice: `Avereth Engine: interpreter failed${r.interp.error ? ` (${r.interp.error})` : ''}. Regenerate or send the message again; no story turn was generated.`,
+        };
     }
     if (r?.command && !r.command.llm) {
         if (r.command.posted) return { action: 'abort', dirty };

@@ -1,6 +1,6 @@
 {
- "version": "cmd-0.4",
- "note": "Runtime V4 command vocabulary (docs/RUNTIME_V4_PLAN.md §4.1, §4.2). One source for the interpreter prompt, its schema and the validator (src/v4/interpret.js). cmd-0.2 against the P0 draft cmd-0.1-draft (docs/P0_BERICHT.md §5): guild.register no longer teaches the phrase \"I'm here to register\"; quest.turn_in no longer teaches a purpose clause as a turn-in; reading the Guild board is board.read, not 'looking around'; \"register it\" after taking a slip is part of quest.accept. The positive/negative lists document intent for readers and are never put into a prompt: several of them are cases of the evaluation corpus (tests/eval/commands.jsonl). cmd-0.3: GO explicitly includes moving toward a perceived sound, trail or direction (live 28.09. afternoon). cmd-0.4: add journey.continue for clear consent to an already-established escort journey; scene handles are targetable by the deterministic combat parser.",
+ "version": "cmd-0.5",
+ "note": "Runtime V4 command vocabulary (docs/RUNTIME_V4_PLAN.md §4.1, §4.2). One source for the interpreter prompt, its schema and the validator (src/v4/interpret.js). cmd-0.2 against the P0 draft cmd-0.1-draft (docs/P0_BERICHT.md §5): guild.register no longer teaches the phrase \"I'm here to register\"; quest.turn_in no longer teaches a purpose clause as a turn-in; reading the Guild board is board.read, not 'looking around'; \"register it\" after taking a slip is part of quest.accept. The positive/negative lists document intent for readers and are never put into a prompt: several of them are cases of the evaluation corpus (tests/eval/commands.jsonl). cmd-0.3: GO explicitly includes moving toward a perceived sound, trail or direction (live 28.09. afternoon). cmd-0.4: add journey.continue for clear consent to an already-established escort journey; scene handles are targetable by the deterministic combat parser. cmd-0.5: JOURNEY READY may come from any persisted travel/departure context with a present participant, not only an ESCORT objective.",
  "rules": [
   "Only what Alaric himself does or commits to in this message. A deed he narrates in the past tense in this message counts.",
   "No command for a question, a thought or wish, a hypothetical (\"if I …, would …\"), a plan for later (\"tomorrow I'll …\"), a memory of an earlier turn, a negation (\"I don't pay\"), or what other people do or say, even when the player writes it.",
@@ -394,7 +394,7 @@
   },
   {
    "type": "journey.continue",
-   "summary": "Alaric clearly agrees to depart or continue now with the already-established escort/journey named by JOURNEY READY in the CATALOG. Never use without JOURNEY READY.",
+   "summary": "Alaric clearly agrees to depart or continue now with the already-established journey/departure named by JOURNEY READY in the CATALOG. Never use without JOURNEY READY.",
    "args": {},
    "positive": [
     "I'm ready when you are.",

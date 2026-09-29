@@ -284,6 +284,10 @@ test('Guild board prompt uses structural quest design instead of the old chore c
     assert.match(req.system, /Prefer \[\] when return, witnesses or a credible report can establish the outcome naturally/);
     assert.match(req.system, /EVERY entry must be an object with all fields present/);
     assert.match(req.system, /continuity memories for play, not a rigid checklist/);
+    assert.match(req.system, /NOVICE TEST PROFILE/);
+    assert.match(req.system, /at least 2 listings are explicit Monster culling\/clearance jobs/);
+    assert.match(req.system, /at least 1 is an escort whose route leaves the settlement/);
+    assert.match(req.system, /at least 1 is a delivery\/courier job whose destination leaves the settlement/);
 });
 
 
@@ -577,5 +581,8 @@ test('narrator contract treats NPC cards as relevant recall and allows harmless 
     assert.match(contract, /authoritative relevant recall, not an exhaustive dump/);
     assert.match(contract, /Incidental micro-gestures may be prose/);
     assert.match(contract, /Harmless cosmetic\/sensory description/);
+    assert.match(contract, /SELECTION LISTS/);
+    assert.match(contract, /put each option on its own line with the title\/item name first/);
+    assert.match(contract, /For shops\/stores: item name first, then price/);
     assert.doesNotMatch(contract, /what is not listed on its card is unknown to it/);
 });

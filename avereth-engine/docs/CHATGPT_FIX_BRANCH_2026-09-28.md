@@ -191,3 +191,21 @@ Deliberately NOT changed in 4.0.6:
 - Search and Stealth mechanics.
 - Numeric attitude/memory storage and time caps; those are candidates for later simplification only if live tests show they hurt play.
 - Container/carry-capacity mechanics.
+
+
+## 4.0.7 — lazy world / on-demand Guild board
+
+The first 4.0.6 live run showed that arrival in a Guild hall still generated unseen Board listings in the background. A schema-invalid Board answer triggered a repair; while it was still running, the player's next single message started the interpreter and hit the provider concurrency limit. 4.0.7 removes that proactive world generation.
+
+Principle: the engine does not create ordinary world content in advance. It materialises it when the player actually perceives/requests it or narration establishes it. Protected mechanics become canonical at that boundary.
+
+- Guild-hall arrival no longer generates a Board. The first explicit board.read generates missing listings, canonical first, immediately before narration.
+- Unseen listings do not exist and consume no Board LLM call.
+- Board/acceptance instructions present contracts as natural requests; stored objectives and verification are continuity memory, not a mandatory checklist.
+- proof is optional. [] is preferred when return, witnesses or a credible report can verify the outcome naturally. When proof entries are used, the Board prompt now states the exact object schema required by validation.
+- journey.continue derives readiness only from persisted story details/notes or an open thread, not from generated Quest title/client/goal/objective text.
+- Quest friction is explicitly tied to actually pursuing that Quest, not merely having an active Quest during an unrelated scene.
+- The next normal turn no longer overtakes a still-running extractor/repair after an arbitrary 90-second race.
+- Interpreter failure aborts narration and books no story/world events. Regenerate retries interpretation.
+
+Still hard: Combat, Search/Stealth, coin/trade/equipment, Guild payout/XP/count/promotion, and creature mechanical profiles once a creature is actually revealed.

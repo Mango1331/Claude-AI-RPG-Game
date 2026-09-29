@@ -15,7 +15,7 @@
 //                              the narrator card's lorebook (lorebook/, docs/LOREBOOK.md) activates the right entries
 import { loadContentPack } from './src/content.js';
 import { onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory, reportRequest, applyReportAnswer } from './src/host.js';
-import { prepareGenerationAsync, processReplyAny, runExtraction, runBoardAfterArrival, pendingExtraction, campaignRuntime, onEditedV4 } from './src/v4/runtime.js';
+import { prepareGenerationAsync, processReplyAny, runExtraction, pendingExtraction, campaignRuntime, onEditedV4 } from './src/v4/runtime.js';
 import { validateState } from './src/validate.js';
 import { newSeed } from './src/rng.js';
 import { parseSwaps, ENGINE_VERSION } from './src/util.js';
@@ -25,7 +25,6 @@ const PROMPT_KEY = 'avereth_engine';
 const LORE_KEY = 'avereth_lore_keys';
 const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: '', hud: 'closed', historyTurns: 4, stripTrackers: true, recoverReports: true, runtime: 'v4' };
 const REPORT_WAIT_MS = 60000; // the next turn waits this long at most for a report still being asked for
-const EXTRACT_WAIT_MS = 90000; // Runtime V4 barrier: the next turn waits this long at most for the last reply's world
 const LLM_TIMEOUT_MS = 120000;
 
 let content = null;
@@ -33,7 +32,7 @@ let lastContext = null;
 let lastProjection = null;
 let legacyWarned = null;
 let pendingReport = null; // {chatId, id, hash, job}: the report request of the latest reply, while it runs
-let pendingWorld = null; // Runtime V4: {chatId, id, job}: the extraction (and board) of the latest reply, while it runs
+let pendingWorld = null; // Runtime V4: {chatId, id, job}: the extraction of the latest reply, while it runs
 let llmPath = null; // Runtime V4: which call the last LLM request used ('custom endpoint' | 'generateRaw')
 
 function ctx() {
@@ -138,7 +137,7 @@ async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500 }) {
     return c.generateRaw({ systemPrompt: system?.content || '', prompt, responseLength: maxTokens });
 }
 
-/** Runtime V4: read the latest reply's world in the background (extractor, firewall, world, then its board). */
+/** Runtime V4: read the latest reply's world in the background (extractor, firewall, world). World content such as a Guild board is generated only when the player actually asks to perceive it. */
 function startWorld(id) {
     const c = ctx();
     const chatId = c.getCurrentChatId();
@@ -146,14 +145,9 @@ function startWorld(id) {
     const hash = c.chat[id]?.extra?.avereth?.text_hash;
     const job = (async () => {
         const now = () => ctx();
-        let res = await runExtraction(now().chat, id, content, v4Llm, { hud: settings().hud });
+        const res = await runExtraction(now().chat, id, content, v4Llm, { hud: settings().hud });
         if (now().getCurrentChatId() !== chatId) return;
         if (res.changed) { rerender(now(), id); await now().saveChat(); renderDebug(); }
-        if (res.boardNeeded || now().chat[id]?.extra?.avereth?.extraction?.board === 'pending') {
-            res = await runBoardAfterArrival(now().chat, id, content, v4Llm, { hud: settings().hud });
-            if (now().getCurrentChatId() !== chatId) return;
-            if (res.changed) { rerender(now(), id); await now().saveChat(); renderDebug(); }
-        }
     })().catch((err) => console.error('[Avereth] world extraction failed', err));
     pendingWorld = { chatId, id, hash, job };
     job.finally(() => { if (pendingWorld?.job === job) pendingWorld = null; });
@@ -181,9 +175,10 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         if (pendingReport && pendingReport.chatId === c.getCurrentChatId() && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingReport.id) {
             await Promise.race([pendingReport.job, new Promise((done) => setTimeout(done, REPORT_WAIT_MS))]);
         }
-        // Runtime V4 barrier: the last reply's world is committed before the next player turn is resolved
+        // Runtime V4 barrier: never overlap a new normal turn with the previous reply's extractor/repair.
+        // The LLM call itself has a finite timeout; letting a second call overtake it can exceed provider concurrency.
         if (pendingWorld && pendingWorld.chatId === c.getCurrentChatId() && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingWorld.id) {
-            await Promise.race([pendingWorld.job, new Promise((done) => setTimeout(done, EXTRACT_WAIT_MS))]);
+            await pendingWorld.job;
         }
         const r = await prepareGenerationAsync(c.chat, content, { type, settings: engineSettings(), llm: v4Llm });
         setLoreKeys(r.loreKeys);
@@ -196,6 +191,8 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         if (r.action === 'abort') {
             abort(true);
             setPrompt('');
+            if (r.notice) toastr.error(r.notice);
+            if (r.dirty) await c.saveChat();
             return;
         }
         if (r.action === 'panels') {

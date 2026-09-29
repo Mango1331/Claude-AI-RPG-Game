@@ -212,99 +212,15 @@
   "guild": {
     "src": "Lorebook v0.12 GUILD — Contract lifecycle (live run 27.09.2026 04:11)",
     "contract": "A Guild contract (a quest with a Guild Quest Rank) is taken at the Guild and completed only when the player turns it in (his message says so: by name, or unnamed when it is the one active contract) in a city or capital with a Guild branch; the Guild accepts a turn-in once the story has credibly achieved the contract's desired outcome; posted proof is expected verification/world guidance, not an exclusive token checklist. The engine then pays the posted reward, one fixed payout, and Quest XP. Local clients inform, give access and confirm proof; they neither complete nor pay it. Work without a Quest Rank is private and settles directly (Quest XP, no Guild credit). The Guild registration is a procedure, not a contract.",
-    "branch_kinds": [
-      "city",
-      "capital"
-    ],
+    "branch_kinds": ["city", "capital"],
     "registration_fee_cp": 20,
     "registration_fee_src": "Canon decision 27.09.2026: 2 silver = 20 cp at every branch (docs/RUNTIME_V4_PLAN.md §6.4)",
-    "ranks": [
-      "Novice",
-      "Proven",
-      "Veteran",
-      "Elite",
-      "Master",
-      "Grandmaster",
-      "Legend"
-    ],
-    "rank_levels": {
-      "Novice": [
-        1,
-        14
-      ],
-      "Proven": [
-        15,
-        29
-      ],
-      "Veteran": [
-        30,
-        44
-      ],
-      "Elite": [
-        45,
-        59
-      ],
-      "Master": [
-        60,
-        74
-      ],
-      "Grandmaster": [
-        75,
-        89
-      ],
-      "Legend": [
-        90,
-        104
-      ]
-    },
-    "rank_power": {
-      "Novice": "F",
-      "Proven": "E",
-      "Veteran": "D",
-      "Elite": "C",
-      "Master": "B",
-      "Grandmaster": "A",
-      "Legend": "S"
-    },
+    "ranks": ["Novice", "Proven", "Veteran", "Elite", "Master", "Grandmaster", "Legend"],
+    "rank_levels": { "Novice": [1, 14], "Proven": [15, 29], "Veteran": [30, 44], "Elite": [45, 59], "Master": [60, 74], "Grandmaster": [75, 89], "Legend": [90, 104] },
+    "rank_power": { "Novice": "F", "Proven": "E", "Veteran": "D", "Elite": "C", "Master": "B", "Grandmaster": "A", "Legend": "S" },
     "promotion_contracts": 5,
-    "supported_ranks": {
-      "_status": "proposed (plan D10): runtime defaults for branches without their own list",
-      "city": [
-        "Novice",
-        "Proven",
-        "Veteran"
-      ],
-      "capital": [
-        "Novice",
-        "Proven",
-        "Veteran",
-        "Elite"
-      ]
-    },
-    "board": {
-      "_status": "proposed (plan §6.4, D9, D11)",
-      "size": 5,
-      "taken_by_others_pct_per_day": 0,
-      "payout_guide_cp": {
-        "Novice": [
-          10,
-          200
-        ],
-        "Proven": [
-          100,
-          600
-        ],
-        "Veteran": [
-          300,
-          1500
-        ],
-        "Elite": [
-          800,
-          4000
-        ]
-      },
-      "_note": "Soft-world v4.0.6: automatic random removal of listings is disabled. Board/world changes may still be established narratively or by explicit state changes."
-    }
+    "supported_ranks": { "_status": "proposed (plan D10): runtime defaults for branches without their own list", "city": ["Novice", "Proven", "Veteran"], "capital": ["Novice", "Proven", "Veteran", "Elite"] },
+    "board": { "_status": "proposed (plan §6.4, D9, D11)", "size": 5, "taken_by_others_pct_per_day": 0, "payout_guide_cp": { "Novice": [10, 200], "Proven": [100, 600], "Veteran": [300, 1500], "Elite": [800, 4000] } }
   },
   "time": {
     "src": "Runtime V4 time caps per reply (docs/RUNTIME_V4_PLAN.md §6.7); runtime defaults, no world law",
@@ -314,14 +230,7 @@
     "minutes_factor": 1.25,
     "done_min": 720,
     "combat_cap_min": 10,
-    "until": {
-      "noon": 720,
-      "evening": 1080,
-      "end_of_day": 1200,
-      "night": 1320,
-      "dawn": 360,
-      "morning": 480
-    }
+    "until": { "noon": 720, "evening": 1080, "end_of_day": 1200, "night": 1320, "dawn": 360, "morning": 480 }
   },
   "combat": {
     "src": "Core #23, #24, #26-#28",

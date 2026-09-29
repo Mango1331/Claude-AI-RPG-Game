@@ -361,7 +361,7 @@ const HANDLERS = {
         }
         const go = ctx.auth.gos.filter((g) => g.hall && g.seq < c.seq).at(-1);
         if (go) {
-            const ready = !!q.ready || checkProof(s, q).ok;
+            const ready = !!q.ready || ((q.proof || []).length > 0 && checkProof(s, q).ok);
             ctx.conditionals.push({ seq: c.seq, kind: 'turn_in', quest: q.id, condition: 'arrive_guild_hall', hall: go.to });
             ctx.booked.turnIns.push(q.id);
             return {

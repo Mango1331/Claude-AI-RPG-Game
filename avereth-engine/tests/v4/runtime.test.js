@@ -139,6 +139,8 @@ test('an interpreter transport/schema failure aborts narration and is asked agai
     assert.match(p.notice, /interpreter failed/i);
     assert.equal(r.interp.failed, true);
     assert.deepEqual(r.events, [], 'a failed interpreter does not create a story turn or world events');
+    const continued = await prepareGenerationAsync(g.chat, content, { type: 'continue', llm: g.llm });
+    assert.equal(continued.action, 'abort', 'Continue cannot bypass a failed interpretation');
     fail = false;
     const again = await prepareGenerationAsync(g.chat, content, { type: 'regenerate', llm: g.llm });
     assert.equal(again.action, 'context');

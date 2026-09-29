@@ -281,6 +281,9 @@ test('Guild board prompt uses structural quest design instead of the old chore c
     assert.match(req.system, /wolves, goblins or feral dogs/);
     assert.match(req.system, /Do not preferentially default to rats/);
     assert.match(req.system, /examples demonstrate structure only/i);
+    assert.match(req.system, /Prefer \[\] when return, witnesses or a credible report can establish the outcome naturally/);
+    assert.match(req.system, /EVERY entry must be an object with all fields present/);
+    assert.match(req.system, /continuity memories for play, not a rigid checklist/);
 });
 
 
@@ -467,6 +470,7 @@ test('active quest narrator context treats objectives/proof as memory and verifi
     assert.match(ctx.text,/ACTIVE QUEST MEMORY/);
     assert.match(ctx.text,/verification examples:/);
     assert.match(ctx.text,/not as a word-for-word checklist/);
+    assert.match(ctx.text,/Do not inject Quest complications into unrelated scenes/);
     assert.doesNotMatch(ctx.text,/proof required for Guild turn-in/);
 });
 
@@ -513,6 +517,31 @@ test('journey.continue can use stored non-ESCORT travel context with a present p
     assert.equal(turn.outcome.resolutions[0].status, 'authorized');
     assert.equal(turn.outcome.auth.roam, true);
     assert.match(turn.outcome.actions.join('\n'), /DEPARTS\/CONTINUES/);
+});
+
+test('journey.continue is not inferred from generated objectives alone', async () => {
+    const g = await created();
+    const st = structuredClone(g.state());
+    st.entities['npc.noll'] = {
+        id:'npc.noll', kind:'npc', name:'Noll', descriptors:['ferryman'], traits:'ferryman',
+        status:'alive', created:{turn:st.turn,minute:st.clock.minute}, template:'commoner', card:{},
+    };
+    st.scene.present.push('npc.noll');
+    st.quests['quest.packet'] = {
+        id:'quest.packet', title:'Packet Across the River', kind:'guild_contract', status:'active', rank:'Novice',
+        client:'Noll', payout_cp:30, desired_end_state:'Noll ferries Alaric across and the packet reaches the far-bank waystation',
+        objectives:[{id:'o1',verb:'DELIVER',what:'sealed packet',qty:1,unit:null,where:'far-bank waystation',status:'open'}],
+        proof:[], details:[], notes:[], history:[],
+    };
+    const cat = buildCatalog(st, contentPack);
+    assert.equal(cat.journey_ready, undefined, 'generated quest structure alone does not pre-authorize a departure');
+    const turn = playerTurnV4(st, contentPack, "I'm ready when you are.", {
+        msg:99,
+        commands:[{seq:1,type:'journey.continue',quote:"I'm ready when you are."}],
+        interp:{version:'test',ms:0,source:'test',failed:false},
+    });
+    assert.equal(turn.outcome.resolutions[0].status, 'refused');
+    assert.match(turn.outcome.actions.join('\n'), /no stored journey\/departure/);
 });
 
 test('Board generator may return no verification token when the outcome can be established naturally', () => {

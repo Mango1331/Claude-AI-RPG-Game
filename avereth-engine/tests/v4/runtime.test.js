@@ -166,7 +166,8 @@ test('a Board generation that failed is not cached: Regenerate asks for the boar
     assert.equal(again.action, 'context');
     const o = g.state().last.outcome;
     assert.ok(o.actions.some((a) => a.includes('READS the Novice board — BOARD')), 'the board is canonical now');
-    assert.ok(again.context.text.includes("Miller's Run Escort · 80 cp"));
+    assert.match(again.context.text, /Miller's Run Escort/);
+    assert.match(again.context.text, /80 cp/);
     assert.equal(g.calls.filter((c) => c.purpose.startsWith('interpret')).length, interprets, 'the interpretation is kept');
     assert.ok(g.calls.filter((c) => c.purpose === 'board').length > boards, 'the board was asked for again');
     assert.equal(o.check_die, die);

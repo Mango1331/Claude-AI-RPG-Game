@@ -267,7 +267,11 @@ export function guardCommands(message, commands, context = {}, { language = true
         // … and so is asking the listener to do it for him ("Can you register me?", "could you sign me up for the dog?")
         const request = (p) => new RegExp(`^(?:(?:can|could|would|will) you (?:please )?)?(?:${lemmaRe(type) || '$^'})\\b.*(?:\\bme\\b|\\bplease\\b)`).test(p.text);
         if (type !== 'buy' && parts.every((p) => isQuestion(p) && !request(p))) { drop(c, 'question', 'the evidence is a question'); continue; }
-        if (type === 'go' && CAME_FROM.test(text)) { drop(c, 'retrospective', 'the evidence says where he came from'); continue; }
+        // "I walk back the way I came from" is a current GO; only drop an actual
+        // retrospective travel claim, not a subordinate route description.
+        if (type === 'go' && CAME_FROM.test(evidence) && !/\b(?:walk|walking|head|heading|go|going|travel|travelling|traveling|return|returning|leave|leaving|ride|riding|set off)\b/.test(evidence.replace(/\bcame (?:here |over |in |down |up )?from\b/g, ''))) {
+            drop(c, 'retrospective', 'the evidence only says where he came from'); continue;
+        }
         if (RETRO_ANCHOR.test(text) && pastRe(type) && new RegExp(`\\b(?:${pastRe(type)})\\b`).test(text)) { drop(c, 'retrospective', 'the evidence recalls an earlier deed'); continue; }
         if (planned(text, type)) { drop(c, 'plan', 'the evidence plans it for later'); continue; }
         if (negated(text, type)) { drop(c, 'negation', 'the evidence negates it'); continue; }

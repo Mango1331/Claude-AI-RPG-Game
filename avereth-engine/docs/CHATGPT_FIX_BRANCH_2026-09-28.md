@@ -224,3 +224,43 @@ Presentation:
 - Guild Boards render canonical listings as separate title-first lines in the engine instruction.
 - The narrator contract now requires multi-option boards, shops/stores, merchant inventories, menus and service lists to use one option per line, title/item name first, followed by price/reward and a concise description.
 - Normal surrounding scene narration remains prose.
+
+## 4.0.9 — 30 Sep successful-branch live-test repairs and Claude handoff
+
+**Reference:** the successful SillyTavern chat JSONL from 30 September is canonical; the Engine export and Completion Logger may include discarded branches. The user confirmed the 4.0.8 Guild Board presentation is good; its title-first multi-line rendering was retained exactly. User's highest priority is an RPG that advances to actual combat and pays properly, not further cosmetic changes or bureaucratic checks. This branch is experimental: Claude should independently judge each delta against his prior stricter architecture, not wholesale merge it.
+
+### Verified 4.0.8 successes and precise failures
+
+- First explicit board.read produced 3 explicit monster jobs + 1 outbound escort + 1 outbound delivery. That Novice test profile worked.
+- **First-display listing loss:** on the very narrator reply displaying the Board, the narrator fabricated two just-published contracts being taken by other adventurers; the extractor emitted listing.gone, booking both as unavailable. The player could not take the first monster Quest.
+- The subsequent escort through the countryside reached actual deterministic Combat: 4 separate visible Wolves, A–D identity/HP/Range, initiative, correct spent stamina/damage, delayed 40 Combat XP; a later wolf appeared without forced combat. Leave combat mechanics alone.
+- **Lost travel:** the interpreter omitted present "we continue" after waiting, then classified "I walk back the way I came from" as retrospective; the narrator moved Alaric anyway and the Engine rejected arrivals.
+- **NPC continuity:** the shepherd cart driver/wool factor gained duplicated identities after scene.moved cleared presence; the escort's JOURNEY READY predicate previously guessed continuity from text and failed after a location transition.
+- **False quest readiness:** quest.ready for reaching the destination was accepted in the same reply in which that destination's arrive delta failed no_go.
+- **Sign vs turn-in:** a request to the local recipient for a witness signature was incorrectly interpreted as immediately submitting a contract to the Guild.
+- A farm's 12 non-threatening sheep became 12 distinct Combat entities even though they were just background; actual Monster targets must still materialize as individuals immediately on reveal.
+- **Money was NOT overpaid.** Starting 50 cp –20 cp registration +90 cp posted reward = 120 cp = 1 gold 2 silver. The defect was a phantom additional "copper" inventory object after the player tried to collect coin that the engine had already booked. Do not undo correct canonical payout arithmetic.
+- An unknown-price tavern order was narrated as already paid/served despite a pending engine decision; explicit priced offers can still transact immediately. User accepts the two-step flow where the price is unknown.
+
+### Implemented 4.0.9 experiment
+
+- `content/rules.json`: normal combat XP base 10→12, Quest XP base 10→15 (other level thresholds, rank multipliers, Combat formula and level-up carryover unchanged). Real formula evaluation: four L1 same-rank normal Wolves × 12 XP + a standard L2 Guild Quest 60 XP = **108 XP**, which grants L2 with **8 XP remaining** from zero. **Experimental balance:** compare to Core #25 canonical defaults, allow Claude to choose another justified reward solution.
+- `commands.js` + `world.js`: generic references to credited cash never create a second inventory object, including the fallback path. Actual item IDs and money arithmetic remain unchanged.
+- `commands.js`, `world.js`, `content/deltas.json`: official just-generated Board listings are protected for **the entire first board-reading reply**, with a narrator correction if it claims they disappeared. Real later world events can still affect them. The tested Board display format is unchanged.
+- `state.js`, `world.js`, `catalog.js`, `commands.js`: very small event-sourced `journey.party` bookmark for NPCs **already accompanying a real active escort**. Carry their existing IDs across actual shared route stops; restore them into scene after a scene.moved reset; keep JOURNEY READY based on persisted real participants, with older quest detail/thread fallback. `person.new` can resolve a unique existing named person or local/persisted-party role rather than duplicating. New companions are not spawned by a generated objective.
+- `world.js`: reject an escort/delivery `quest.ready` dependent on an arrival rejected as `no_go` in that same extraction; other story-earned completion remains soft. This is a causal consistency guard, not an objective checklist.
+- `agency.js` and interpreter command vocabulary/examples `cmd-0.6`/`interp-4.4`: distinguish active "I walk back the way I came from" from a historical travel assertion; prioritize explicit `we continue` after waiting if JOURNEY READY exists; asking a client to sign a verification slip is dialogue, not Guild turn-in.
+- `world.js` + `delta-0.11`: do not instantiate numerous individually profiled **ordinary background livestock/herds**. Five or more revealed actionable monsters still get separate combatants, locked mechanics on first reveal; passive large group remains recorded as simple scenery until one matters.
+- `context.js`: an engine-pending unpriced trade is a binding narrator stop: reveal the actual seller's price then stop before money/service/consumption. An explicit player acceptance of the now-known offer debits and grants atomically. Do not auto-consent.
+- `firewall.js`: operational Quest details may mention the correct posted price or unrelated normal travel tolls. A revision of Guild reward/rank/payment terms is still rejected, including one that mentions the original correct reward alongside a fake increased reward.
+- Engine version, package version and **content/manifest version** now 4.0.9. Board generator still board-4.4. No preset or character-desc modifications required for these engine instructions.
+
+### Validation and caveats
+
+- `tests/v4/livetest_0930_patch.test.js` contains explicit regressions for XP/level carryover, Board first display, accepted backtracking, party across two scene changes, named driver identity reuse, quest-ready arrival dependency, harmless 12-sheep case, actionable 5-wolf case, cash double-object, Quest detail canonical price and unpriced trade narration.
+- Static syntax validation ran on changed JavaScript. Isolated real-function checks confirmed the progression calculation (12+60→108 L2/8), the return-trip agency guard and Guild-detail firewall legitimate/tampered/toll cases. **The complete Node test suite and SillyTavern live runtime were NOT run on 4.0.9; Claude must run them and fix discrepancies.**
+- Review risks: heuristic existing-person role matching can misidentify two genuinely similar locals unless name/scene cues discriminate; escort party is not an autonomous follower/party simulation and should not accompany unrelated side detours; only protect Board listings during first display rather than freezing the world; never treat non-threatening herd compression as permission to hide actionable visible enemies.
+- The actual 4.0.8 successful-branch raw chat, event export and mixed-branch completion logger are bundled separately by the user; don't attribute discarded branch requests to that actual chat.
+- Earlier changes and test rationale remain above. **Do not alter `claude/happy-wright-1a4y19`** as part of reviewing this branch.
+
+Full fresh-start instructions: `docs/CLAUDE_HANDOFF_2026-09-30.md`.

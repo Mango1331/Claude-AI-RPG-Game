@@ -139,8 +139,16 @@ export function buildCatalog(state, content, { extraPlaces = [] } = {}) {
         })),
         ...Object.values(state.threads || {}).filter((t) => t.status === 'open').map((t) => ({ id: t.id, label: t.text, text: t.text })),
     ];
-    let journey_ready;
+    // A real, persisted escort party survives scene resets. This is stronger evidence than
+    // re-matching NPC roles in every subsequent scene, and still never follows a generated
+    // quest objective alone.
+    const partyQuest = state.journey?.quest && state.quests[state.journey.quest];
+    const partyContact = state.journey?.party?.find((id) => state.scene.present.includes(id) && state.entities[id]?.status !== 'dead');
+    let journey_ready = partyQuest?.status === 'active' && !partyQuest.ready && partyContact
+        ? `${partyQuest.id} with ${sceneHandle(state, content, partyContact)} — an established escort already underway; Alaric may continue when he agrees`
+        : undefined;
     for (const src of journeySources) {
+        if (journey_ready) break;
         if (!travelRe.test(src.text)) continue;
         const text = normText(src.text);
         const contact = state.scene.present.find((id) => {

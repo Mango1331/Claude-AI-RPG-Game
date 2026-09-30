@@ -161,6 +161,12 @@ const HANDLERS = {
         return { status: 'authorized', cap, line: `${VERBS[c.kind] || String(c.kind).toUpperCase()} ${c.what ? `${c.what} ` : ''}${span} (at most ${cap} minutes; the story decides how long it takes and what it yields).` };
     },
     take(s, content, c, ctx, emit) {
+        // Currency is already tracked in sheet.coin_cp, not as a second loot item. A physical named
+        // coin-containing object, if one actually exists, still uses the normal object-id path below.
+        const cashName = typeof c.object === 'object' ? normText(c.object?.new || '') : '';
+        if (/^(?:(?:the|my|some|a|our)\s+)?(?:(?:quest|guild)\s+)?(?:reward|payout|payment|coins?|coppers?|silvers?|golds?)(?:\s+coins?)?$/.test(cashName)) {
+            return { status: 'refused', reason: 'currency already booked', line: 'NOTHING TO TAKE — received coin is already in Alaric\'s purse and coin total; do not create a second currency item.' };
+        }
         if (c.object && typeof c.object === 'object') {
             ctx.auth.take.push(c.seq);
             ctx.auth.takeNames = { ...(ctx.auth.takeNames || {}), [String(c.seq)]: String(c.object.new).slice(0, 80) };

@@ -220,8 +220,13 @@ export function firewall(deltas, ctx = {}) {
                 // memory cannot make the entire story detail invalid.
                 const posted = Number(q?.payout_cp);
                 const exactPosted = Number.isInteger(posted) && new RegExp(`\\b${posted}\\s*(?:cp|copper)\\b`, 'i').test(detail);
-                const mechanicChange = /\\b(?:change|raise|lower|increase|decrease|override|replace|advance|prepay|already paid|new fee|promotion|guild\\s+rank|xp|experience points)\\b/i.test(detail)
-                    || (GUILD_DETAIL_MECHANIC.test(detail) && !exactPosted);
+                const changedReward = [...detail.matchAll(/\b(?:guild\s+)?(?:payout|reward)\s*(?:is|of|:)?\s*(\d+)\s*(?:cp|copper)\b/gi)]
+                    .some((match) => Number(match[1]) !== posted);
+                const institutionalRule = /\b(?:guild\s+rank|promotion|xp|experience\s+points|registration\s+fee)\b/i.test(detail);
+                const revisesCanon = /\b(?:change|raise|lower|increase|decrease|override|replace|advance|prepay|already\s+paid|new\s+(?:guild\s+)?fee)\b/i.test(detail)
+                    && /\b(?:payout|reward|guild|fee|rank|xp)\b/i.test(detail);
+                const mechanicChange = changedReward || institutionalRule || revisesCanon
+                    || (/\b(?:payout|reward)\b/i.test(detail) && !exactPosted);
                 if (q && mechanicChange) {
                     no(d, 'guild_quest_detail', 'a Guild contract detail may store story progress, contacts, routes, witnesses, verification or schedules, but may not invent or alter payout/payment, Guild rank or promotion mechanics');
                     continue;

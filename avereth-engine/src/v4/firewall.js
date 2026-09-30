@@ -220,7 +220,7 @@ export function firewall(deltas, ctx = {}) {
                 // memory cannot make the entire story detail invalid.
                 const posted = Number(q?.payout_cp);
                 const exactPosted = Number.isInteger(posted) && new RegExp(`\\b${posted}\\s*(?:cp|copper)\\b`, 'i').test(detail);
-                const changedReward = [...detail.matchAll(/\b(?:guild\s+)?(?:payout|reward)\s*(?:is|of|:)?\s*(\d+)\s*(?:cp|copper)\b/gi)]
+                const changedReward = [...detail.matchAll(/\b(?:guild\s+)?(?:payout|reward)\b[^.;]{0,60}?\b(\d+)\s*(?:cp|copper)\b/gi)]
                     .some((match) => Number(match[1]) !== posted);
                 const institutionalRule = /\b(?:guild\s+rank|promotion|xp|experience\s+points|registration\s+fee)\b/i.test(detail);
                 const revisesCanon = /\b(?:change|raise|lower|increase|decrease|override|replace|advance|prepay|already\s+paid|new\s+(?:guild\s+)?fee)\b/i.test(detail)

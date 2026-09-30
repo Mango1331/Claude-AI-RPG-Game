@@ -246,7 +246,7 @@ try {
     const turns = [];
     turns.push(await send('Warrior'));
     turns.push(await send(SKILLS));
-    // t1, then t2 at once: the barrier holds t2 until t1's world (and the hall's board) is committed
+    // t1, then t2 at once: the barrier holds t2 until t1's world is committed (the board waits for t3, when he reads it)
     turns.push(await send(TURNS[0].player, { world: false }));
     const t1Index = await page.evaluate(() => SillyTavern.getContext().chat.findLastIndex((m) => !m.is_user && !m.is_system));
     turns.push(await send(TURNS[1].player));
@@ -283,13 +283,15 @@ const presetFile = JSON.parse(fs.readFileSync(path.join(ENGINE, `presets/${PRESE
 const jailbreak = presetFile.prompts.find((p) => p.identifier === 'jailbreak')?.content;
 // the one refusal of the V12 gold (as tests/v4/golden_v12.test.js): the clerk's "Novices may take only Novice contracts
 // without a desk-clerk waiver" (gold t2, seq 1) invents a contract rule; the Guild's ranks and rules are the engine's
-// canon since the live run of 28.09.2026 (guild_canon)
-const EXPECTED_REJECTED = { 1: ['1:fact:guild_canon'], 2: [] };
+// canon since the live run of 28.09.2026 (guild_canon); the recorded t3 reply has the Weasel contract taken in the very
+// reply that shows the board, refused since 4.0.9 (board_first_display)
+const EXPECTED_REJECTED = { 1: ['1:fact:guild_canon'], 2: ['3:listing.gone:board_first_display'] };
 const checks = {
     campaignV4AtGreeting: greeting.events.some((e) => e.t === 'campaign.started' && e.runtime === 'v4'),
     creationBySystem: T('Warrior').system && /CLASS SELECTED: WARRIOR/.test(T('Warrior').panelText) && T(SKILLS).system && /CHARACTER CREATION COMPLETE/.test(T(SKILLS).panelText)
         && !calls.some((c) => c.lastUser === 'Warrior' || c.lastUser === SKILLS),
-    engineCalls: JSON.stringify(calls.filter((c) => c.purpose !== 'narrator').map((c) => c.purpose)) === JSON.stringify(['interpret', 'extract', 'board', 'interpret', 'extract', 'interpret', 'extract']),
+    // the Board generator runs when Alaric reads the board (t3, 4.0.7), not on the arrival at the hall
+    engineCalls: JSON.stringify(calls.filter((c) => c.purpose !== 'narrator').map((c) => c.purpose)) === JSON.stringify(['interpret', 'extract', 'interpret', 'extract', 'interpret', 'board', 'extract']),
     engineCallParams: calls.filter((c) => c.purpose !== 'narrator').every((c) => !c.stream && c.model === 'mock-narrator' && c.temperature === (c.purpose === 'board' ? 0.6 : 0.1)),
     keyAddedBySillyTavern: calls.length > 0 && calls.every((c) => c.auth === `Bearer ${DUMMY_KEY}`),
     keyNeverInBrowser: keyInBrowser.length === 0,
@@ -300,11 +302,11 @@ const checks = {
             && c.messages.at(-1).content === jailbreak && c.messages.some((m) => String(m.content).startsWith('AVERETH RPG — SANDBOX NARRATOR CONTRACT') && String(m.content).includes('Write only the story. No <avereth> block'));
     }),
     actionsPerTurn: engineOf(byTurn(0)).includes("GOES — to Adventurers' Guild hall") && engineOf(byTurn(1)).includes('REGISTERS — pending') && engineOf(byTurn(1)).includes('20 cp')
-        && engineOf(byTurn(2)).includes('PAYS — the Guild registration fee, 20 cp') && engineOf(byTurn(2)).includes("Miller's Run Escort · 80 cp"),
+        && engineOf(byTurn(2)).includes('PAYS — the Guild registration fee, 20 cp') && engineOf(byTurn(2)).includes("**Miller's Run Escort** — client: Harrow's mill · reward: 80 cp"),
     readInBackground: T(TURNS[0].player).pendingAfterReply === 'pending',
-    barrier: end.t1?.status === 'applied' && end.t1?.board === 'booked' && idx(byTurn(1)) > idx(calls.find((c) => c.purpose === 'board')),
-    world: end.state?.member === 'Novice' && end.state?.coin === 30 && end.state?.at === 'loc.redmarch.guild_hall' && end.state?.quests["Weasel Sign at Fenwick's Coop"] === 'taken_by_other'
-        && Object.values(end.state?.quests || {}).filter((x) => x === 'listed').length === 4,
+    barrier: end.t1?.status === 'applied' && idx(byTurn(1)) > idx(calls.find((c) => c.purpose === 'extract')) && idx(calls.find((c) => c.purpose === 'board')) > idx(byTurn(1)),
+    world: end.state?.member === 'Novice' && end.state?.coin === 30 && end.state?.at === 'loc.redmarch.guild_hall' && end.state?.quests["Weasel Sign at Fenwick's Coop"] === 'listed'
+        && Object.values(end.state?.quests || {}).filter((x) => x === 'listed').length === 5,
     everyReplyApplied: [1, 2].every((i) => T(TURNS[i].player).extraction?.status === 'applied'
         && JSON.stringify(T(TURNS[i].player).rejected.map((x) => `${x.seq}:${x.type}:${x.rule}`)) === JSON.stringify(EXPECTED_REJECTED[i])),
     hudUnderReplies: [0, 1, 2].every((i) => T(TURNS[i].player).huds === 2) && /Guild hall/.test(T(TURNS[2].player).hudText),

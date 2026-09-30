@@ -241,13 +241,15 @@ async function v4Page(DATA) {
     const p1 = window.__prompt || '';
     result.playerActions = !aborted && p1.includes("PLAYER ACTIONS (the engine resolved Alaric's message") && p1.includes("GOES — to Adventurers' Guild hall")
         && p1.endsWith(DATA.outputLine) && !p1.includes('FACT REPORT') && !p1.includes('End EVERY reply with <avereth>');
-    // the reply is shown at once and read in the background
+    // the reply is shown at once, as it came (4.0.5: no waiting line over the prose), and read in the background
     const r1 = await reply(DATA.turns[0].reply);
-    result.pendingShown = rec(chat[r1]).extraction?.status === 'pending' && (chat[r1].extra.display_text || '').includes('WORLD — the engine is reading the reply');
-    // the player answers at once: the barrier holds the next turn until the reply's world (and the hall's board) is in
+    result.pendingShown = rec(chat[r1]).extraction?.status === 'pending' && chat[r1].mes === DATA.turns[0].reply;
+    // the player answers at once: the barrier holds the next turn until the reply's world is in (the board is generated
+    // only when Alaric reads it, 4.0.7)
     const waited = await send(DATA.turns[1].player);
     const x1 = rec(chat[r1]).extraction || {};
-    result.barrier = waited >= DATA.extractDelay && x1.status === 'applied' && x1.board === 'booked' && state().scene.at === 'loc.redmarch.guild_hall';
+    result.barrier = waited >= DATA.extractDelay && x1.status === 'applied' && state().scene.at === 'loc.redmarch.guild_hall'
+        && !Object.keys(state().quests).length;
     const probe = document.createElement('div');
     probe.innerHTML = chat[r1].extra.display_text || '';
     result.worldShown = (window.__rerendered || []).includes(r1) && probe.querySelectorAll('details.avereth-hud').length === 2 && probe.textContent.includes('Guild hall');
@@ -255,20 +257,23 @@ async function v4Page(DATA) {
     result.registerPending = p2.includes('REGISTERS — pending') && p2.includes('20 cp') && p2.includes('stop there');
     const r2 = await reply(DATA.turns[1].reply);
     await until(() => rec(chat[r2]).extraction?.status !== 'pending');
-    // t3 with another API (no custom source): the same interpreter through generateRaw, one prompt
+    // t3 with another API (no custom source): the same interpreter, and the Board generator of the board he reads now,
+    // through generateRaw, one prompt each
     ctx.mainApi = 'textgenerationwebui';
     const coin = state().entities.pc.sheet.coin_cp;
     await send(DATA.turns[2].player);
     const p3 = window.__prompt || '';
-    result.generateRawPath = rawCalls === 1 && status().includes('LLM: generateRaw') && p3.includes('PAYS — the Guild registration fee, 20 cp')
-        && p3.includes("Miller's Run Escort · 80 cp");
+    result.generateRawPath = rawCalls === 2 && status().includes('LLM: generateRaw') && p3.includes('PAYS — the Guild registration fee, 20 cp')
+        && p3.includes("**Miller's Run Escort** — client: Harrow's mill · reward: 80 cp");
     ctx.mainApi = 'openai';
     const r3 = await reply(DATA.turns[2].reply);
     await until(() => rec(chat[r3]).extraction?.status !== 'pending');
     const s = state();
     const x3 = rec(chat[r3]);
-    result.world = rec(chat[r2]).extraction?.status === 'applied' && x3.extraction?.status === 'applied' && !(x3.rejected || []).length
-        && s.guild.membership?.rank === 'Novice' && s.entities.pc.sheet.coin_cp === coin - 20 && s.quests[DATA.weasel]?.status === 'taken_by_other';
+    // the recorded reply has the Weasel contract taken in the reply that shows the board: refused since 4.0.9, it stays listed
+    result.world = rec(chat[r2]).extraction?.status === 'applied' && x3.extraction?.status === 'applied'
+        && JSON.stringify((x3.rejected || []).map((x) => x.rule)) === '["board_first_display"]'
+        && s.guild.membership?.rank === 'Novice' && s.entities.pc.sheet.coin_cp === coin - 20 && s.quests[DATA.weasel]?.status === 'listed';
     result.statusLine = status().includes('runtime v4 (LLM: custom endpoint)') && status().includes('integrity: OK');
     result.settingsUi = document.getElementById('avereth_runtime')?.value === 'v4';
     result.log = window.__log;
@@ -352,7 +357,7 @@ server.close();
 
 // what the V4 page asked for, in order, and how: SillyTavern's endpoint with the custom source, the settings' URL and
 // model, the P0 temperatures, no streaming, the CSRF header SillyTavern's getRequestHeaders() gives, and no key
-const want = [['interpret', 'custom'], ['extract', 'custom'], ['board', 'custom'], ['interpret', 'custom'], ['extract', 'custom'], ['interpret', 'generateRaw'], ['extract', 'custom']];
+const want = [['interpret', 'custom'], ['extract', 'custom'], ['interpret', 'custom'], ['extract', 'custom'], ['interpret', 'generateRaw'], ['board', 'generateRaw'], ['extract', 'custom']];
 v4.llmCalls = llmCalls.map((c) => `${c.purpose}/${c.path}${c.path === 'custom' ? ` t=${c.temperature}` : ''}`);
 v4.requests = JSON.stringify(llmCalls.map((c) => [c.purpose, c.path])) === JSON.stringify(want)
     && llmCalls.filter((c) => c.path === 'custom').every((c) => c.source === 'custom' && c.url === V4.customUrl && c.model === V4.model && c.stream === false

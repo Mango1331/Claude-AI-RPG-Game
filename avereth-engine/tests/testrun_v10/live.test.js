@@ -111,10 +111,13 @@ test('"a Basic Attack at the creature": the fight with the Cellar Gnawer starts 
     const intent = run.at[17].rec.events.find((e) => e.t === 'outcome.recorded').d.outcome;
     assert.equal(intent.kind, 'combat');
     assert.equal(intent.started.order, 'Cellar Gnawer > Alaric');
-    // the same dice: the bite for 1, the Basic Attack for 18, the Gnawer dead, 10 XP
-    assert.equal(run.at[18].panel, fx.recorded.panel19);
+    // the same dice: the bite for 1, the Basic Attack for 18, the Gnawer dead; its DefeatXP is Level 1 × base_per_level
+    // (the run recorded 10 under the XP constants before the balance of 30.09.; the recorded panel stays as it was)
+    const xp = content.rules.xp.base_per_level;
+    assert.ok(fx.recorded.panel19.endsWith('`COMBAT END — Cellar Gnawer defeated · +10 XP → XP 10/100`'));
+    assert.equal(run.at[18].panel, fx.recorded.panel19.replace('+10 XP → XP 10/100', `+${xp} XP → XP ${xp}/100`));
     assert.equal(run.at[18].state.entities['mon.cellar_gnawer'].status, 'dead');
-    assert.equal(run.at[18].state.entities.pc.sheet.xp, 10);
+    assert.equal(run.at[18].state.entities.pc.sheet.xp, xp);
 });
 
 test('the pups the report could not create name nothing: the fact about them keeps its words, and no fact is about a creature that does not exist', () => {

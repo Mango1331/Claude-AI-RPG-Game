@@ -342,7 +342,7 @@ test('multi-hit stops once the target is dead; DefeatXP enters Pending XP exactl
     const r = attackAction(ctx, 'pc', 'mon.rat', 'ranger.twin_shot');
     assert.equal(r.strikes.length, 1);
     assert.equal(r.strikes[0].defeated, true);
-    assert.equal(ctx.enc.pending_xp, 10);
+    assert.equal(ctx.enc.pending_xp, content.rules.xp.base_per_level, 'the Level-1 rat\'s DefeatXP');
     assert.equal(r.ammo.used, 2, 'both arrows were committed with the Skill');
 });
 
@@ -377,13 +377,15 @@ test('NPC policy: skittish flees, aggressive closes in, non-hostile unharmed per
     assert.equal(npcDecide(ctx, 'npc.hunter').kind, 'close_and_attack', 'once hurt, its temperament decides');
 });
 
-test('DefeatXP: Level*10 × rank-gap × type, locked against the PC Rank at encounter start (Core #25)', () => {
-    assert.equal(defeatXp(1, 'normal', 'F', content), 10);
-    assert.equal(defeatXp(2, 'normal', 'F', content), 20);
-    assert.equal(defeatXp(15, 'normal', 'F', content), 300); // E vs F: x2
-    assert.equal(defeatXp(30, 'elite', 'F', content), 1800); // D vs F: x4, Elite x1.5
-    assert.equal(defeatXp(1, 'boss', 'E', content), 13); // F vs E: x0.5, Boss x2.5 -> 12.5 -> 13
-    assert.equal(defeatXp(10, 'normal', 'C', content), 25); // F vs C: gap -3 -> x0.25
+test('DefeatXP: Level*base_per_level × rank-gap × type, locked against the PC Rank at encounter start (Core #25)', () => {
+    // base_per_level was 10 until 4.0.9 and is 12 since the XP balance of the live test 30.09. (content test: Core text)
+    const B = content.rules.xp.base_per_level;
+    assert.equal(defeatXp(1, 'normal', 'F', content), B);
+    assert.equal(defeatXp(2, 'normal', 'F', content), 2 * B);
+    assert.equal(defeatXp(15, 'normal', 'F', content), 15 * B * 2); // E vs F: x2
+    assert.equal(defeatXp(30, 'elite', 'F', content), 30 * B * 4 * 1.5); // D vs F: x4, Elite x1.5
+    assert.equal(defeatXp(1, 'boss', 'E', content), Math.round(B * 0.5 * 2.5)); // F vs E: x0.5, Boss x2.5, rounded half up
+    assert.equal(defeatXp(10, 'normal', 'C', content), Math.round(10 * B * 0.25)); // F vs C: gap -3 -> x0.25
 });
 
 test('Level-up WHILE loop with carry-over, +5 free points and favored +1/+1 per Level, no refill (Core #3)', () => {

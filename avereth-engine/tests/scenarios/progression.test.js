@@ -34,7 +34,8 @@ test('35 hunts: XP, Levels, free points, favored growth and resources stay consi
     const s = g.state.entities.pc.sheet;
     const totalXp = g.log.filter((e) => e.t === 'xp.changed').reduce((a, e) => a + e.d.amount, 0);
     assert.equal(totalXp, defeatedXp, 'XP is awarded exactly once per fight');
-    assert.equal(totalXp, fights * 10, 'each Level-1 boar was locked at DefeatXP 10');
+    // Core #25: Level × base_per_level (10 until 4.0.9, 12 since the XP balance of the live test 30.09.)
+    assert.equal(totalXp, fights * content.rules.xp.base_per_level, 'each Level-1 boar was locked at DefeatXP 1 × base_per_level');
     let spent = 0;
     for (let l = 1; l < s.level; l++) spent += l * 100;
     assert.equal(spent + s.xp, totalXp, 'Level and XP account for every point earned');

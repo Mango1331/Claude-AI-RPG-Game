@@ -56,7 +56,7 @@ test('Combat V3 on the real fight: every attack lands — the Bite for 3 (6 vs D
     assert.ok(recs.every((r) => r.strikes.every((x) => x.hit === undefined && x.crit === undefined)), 'no Hit roll, no random Crit');
     assert.equal(recs[1].raw_text, '16 + AGI 6×1.875 + ATK 6 = 33.25', 'the Ranger\'s PER share moved onto AGI: the same Raw at Level 1');
     assert.deepEqual([recs[0].strikes[0].power, recs[0].strikes[0].defense, recs[0].strikes[0].final], [6, 3, 3]);
-    assert.equal(T(10).outcome.ended.xp_awarded, 10);
+    assert.equal(T(10).outcome.ended.xp_awarded, content.rules.xp.base_per_level, 'the Level-1 vermin\'s DefeatXP (10 in the run, Core #25 base_per_level)');
     assert.equal(T(10).state.encounter, null);
     // the dice that remain (damage variance, the CHECK DIE): uniform d100, a 63% chance succeeds 63% of the time
     const d = new Dice(fx.seed, 0);

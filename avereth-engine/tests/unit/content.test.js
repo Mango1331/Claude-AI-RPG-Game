@@ -82,6 +82,7 @@ test('every numeric rule constant is stated in the verbatim Core text it came fr
     assert.deepEqual(r.xp.rank_gap, { '-2': 0.25, '-1': 0.5, 0: 1, 1: 2, 2: 4, 3: 8 });
     has('core.25', 'Normal x1; Elite x1.5; Boss x2.5');
     has('core.25', 'Minor/routine x1.5; Standard x2; Dangerous x3; Major/Dungeon/major objective x5');
+    has('core.25', `Quest Base XP = Recommended Level*${r.xp.quest_base_per_level}`);
     for (const v of ['P2: Cost ×0.95', 'P3: Cost ×0.95; damaging Modified Power ×1.05', 'P4: Cost ×0.925; damaging Modified Power ×1.15', 'P5: Cost ×0.90; damaging Modified Power ×1.20']) has('core.5', v);
     assert.deepEqual(Object.values(r.proficiency.levels).map((l) => l.power), [1, 1, 1.05, 1.15, 1.2]);
     assert.ok(Object.values(r.proficiency.levels).every((l) => !('hit_pp' in l)));

@@ -2,7 +2,7 @@
 import { rankOf, rankIndex } from './derived.js';
 import { roundHalfUp } from './util.js';
 
-/** Final target XP = round(Level*10 * rank-gap * type) vs the player's Rank at encounter start (Core #25). */
+/** Final target XP = round(Level*base_per_level (12) * rank-gap * type) vs the player's Rank at encounter start (Core #25). */
 export function defeatXp(targetLevel, targetType, playerRank, content) {
     const x = content.rules.xp;
     const gap = rankIndex(rankOf(targetLevel, content), content) - rankIndex(playerRank, content);

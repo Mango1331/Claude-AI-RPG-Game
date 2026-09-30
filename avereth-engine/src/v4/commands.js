@@ -347,7 +347,7 @@ const HANDLERS = {
             ctx.booked.grants.push('contract slip');
             // a hunt is proven by trophies of the kills at a Guild hall (live 30.09.2026 14:56: the clerk made a local
             // steward's inspection and signature a condition of the payout)
-            const proof = isHunt(q) ? ` Proof: ${(q.proof || []).length ? proofText(q) : 'trophies of the kills'} brought to a Guild hall; no local inspection, witness or signature is required.` : '';
+            const proof = isHunt(q, content) ? ` Proof: ${(q.proof || []).length ? proofText(q) : 'trophies of the kills'} brought to a Guild hall; no local inspection, witness or signature is required.` : '';
             return { status: 'resolved', line: `ACCEPTS — ${questLine(q)} at the Guild desk; the clerk logs it and hands him its contract slip. Contract memory: ${q.desired_end_state || objectiveText(q)}.${proof} The stored objectives and any verification examples are continuity guidance, not mandatory steps or wording. Payout (${q.payout_cp} cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in.` };
         }
         // private work: its giver must be here

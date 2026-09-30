@@ -84,8 +84,8 @@ test('the generator\'s listing may carry task or leave it out; a task that is no
 
 // ------------------------------------------------------------------------------------------------ hunt proof
 test('a hunt\'s acceptance names its proof: trophies at a Guild hall, no local inspection or signature', () => {
-    assert.equal(isHunt(hunt(structuredClone(base)).quests['quest.wolves']), true);
-    assert.equal(isHunt({ objectives: [{ verb: 'ESCORT', what: 'a cart' }] }), false);
+    assert.equal(isHunt(hunt(structuredClone(base)).quests['quest.wolves'], content), true);
+    assert.equal(isHunt({ objectives: [{ verb: 'ESCORT', what: 'a cart' }] }, content), false);
     const s = at(structuredClone(base), 'loc.redmarch.guild_hall', 'loc.redmarch');
     s.guild.membership = { rank: 'Novice', since: { turn: 1, minute: 0 }, branch: 'loc.redmarch' };
     hunt(s).quests['quest.wolves'].status = 'listed';

@@ -9,11 +9,11 @@ import { setFactEvents, perceivers, knows, truth, PC_NAME_FACT } from '../knowle
 import { awardXp, questXp } from '../progression.js';
 import { rankOf, rankIndex } from '../derived.js';
 import { slug } from '../util.js';
-import { hallOf, settlementOf, heldBy, membership, listingsOf, boardKey, today, contracts, supportedRanks, placeName, namesKind } from './domain.js';
+import { hallOf, settlementOf, heldBy, membership, listingsOf, boardKey, today, contracts, supportedRanks, placeName, namesKind, namesPeople, peopleNamed } from './domain.js';
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
-export const BOARD_VERSION = 'board-4.5';
+export const BOARD_VERSION = 'board-4.6';
 const QTYPES = ['minor', 'standard', 'dangerous', 'major'];
 const VERBS = ['GO', 'FIND', 'TALK', 'GET', 'GATHER', 'GIVE', 'DELIVER', 'USE', 'REPAIR', 'DEFEND', 'ESCORT', 'ATTACK', 'DEFEAT'];
 
@@ -146,14 +146,19 @@ export function proofText(q) {
  */
 export function defeatTally(s, content, q) {
     const since = (q.history || []).find((h) => h.status === 'active')?.turn ?? 0;
-    const dead = Object.values(s.entities).filter((e) => e.kind === 'creature').filter((e) => {
+    const dead = Object.values(s.entities).filter((e) => e.kind === 'creature' || e.kind === 'npc').filter((e) => {
         const f = truth(s, e.id, 'status')[0];
         return f?.o === 'dead' && (f.since?.turn ?? 0) >= since;
     });
-    return (q.objectives || []).filter((o) => o.verb === 'DEFEAT' && Number.isInteger(o.qty) && o.qty > 0).map((o) => ({
-        what: o.what, qty: o.qty,
-        done: dead.filter((e) => namesKind(o.what, e.species || '', content.anchors.get(e.anchor || e.profile?.anchor))).length,
-    }));
+    return (q.objectives || []).filter((o) => o.verb === 'DEFEAT' && Number.isInteger(o.qty) && o.qty > 0).map((o) => {
+        // animals and monsters by their kind; people by their role ("raiders": a dead brigand counts, review of 4.1.3:
+        // 4.1.2 counted creatures only, so five dead bandits made 0 of 5)
+        const people = peopleNamed(o.what, content);
+        const counts = (e) => (people.size
+            ? e.kind === 'npc' && (e.descriptors || []).some((d) => [...peopleNamed(d, content)].some((t) => people.has(t)))
+            : e.kind === 'creature' && namesKind(o.what, e.species || '', content.anchors.get(e.anchor || e.profile?.anchor)));
+        return { what: o.what, qty: o.qty, done: dead.filter(counts).length };
+    });
 }
 
 /** "3 of 4 bog striders": the tally as the engine block and the catalog show it. */
@@ -162,27 +167,31 @@ export const tallyText = (tally) => tally.map((t) => `${t.done} of ${t.qty} ${t.
 /** The DEFEAT objectives whose number the engine's count has not reached yet. */
 export const countShort = (s, content, q) => defeatTally(s, content, q).filter((t) => t.done < t.qty);
 
-/**
- * What the catalog and the quest memory show as ready: the story's readiness that the desk accepts (contractReady). A
- * readiness booked with fewer kills than named and no alternative (a campaign of a build before 4.1.2) is not shown as
- * ready: the turn-in would be refused.
- */
-export const readyShown = (s, content, q) => !!q.ready && (!!q.ready_alternative || !countShort(s, content, q).length);
 const NOT_READY_COUNT = 'NOT READY FOR TURN-IN: fewer defeated than named and no other way the outcome was reached is established';
+/**
+ * The readiness the catalog and the quest memory show (src/v4/catalog.js, src/context.js): what the desk would do now
+ * (contractReady), so that shown and done agree (review of 4.1.3: the listed proof in hand with the full count is
+ * accepted at the desk before any quest.ready). A story readiness the count holds back (a campaign of a build before
+ * 4.1.2) shows as not ready.
+ */
+export function readyText(s, content, q) {
+    const r = contractReady(s, content, q);
+    if (r.ok) return `READY FOR TURN-IN: ${r.mode === 'story_outcome' ? q.ready_note || 'desired outcome achieved' : `the listed proof is in hand (${proofText(q)})`}`;
+    return q.ready ? NOT_READY_COUNT : null;
+}
 
-/** The readiness part of the catalog line and the quest memory (src/v4/catalog.js, src/context.js). */
-export const readyText = (s, content, q) => (readyShown(s, content, q) ? `READY FOR TURN-IN: ${q.ready_note || 'desired outcome achieved'}` : q.ready ? NOT_READY_COUNT : null);
-
-// A hunt or cull contract's work is the kills: ATTACK/DEFEAT, and besides them only finding and reaching the targets
-// (FIND, GO) or protecting what they threaten (DEFEND "the weir platforms and eel boats"). Other work beside the kills
-// (REPAIR the old watch post, DELIVER, ESCORT, GATHER, GET, GIVE, USE, TALK) makes it mixed work, whose other parts keep
-// their own proof (review of 4.1.2).
+// A hunt or cull contract's work is killing animals or monsters: ATTACK/DEFEAT, and besides them only finding and
+// reaching the targets (FIND, GO) or protecting what they threaten (DEFEND "the weir platforms and eel boats"). Other
+// work beside the kills (REPAIR the old watch post, DELIVER, ESCORT, GATHER, GET, GIVE, USE, TALK) makes it mixed work,
+// whose other parts keep their own proof (review of 4.1.2); a fight or search against people ("FIND bandits", "DEFEAT
+// bandits") is no hunt either: body parts are no proof for people (review of 4.1.3).
 const KILL_WORK = new Set(['ATTACK', 'DEFEAT']);
 const HUNT_SUPPORT = new Set(['FIND', 'GO', 'DEFEND']);
-/** A hunt or cull contract (proof: trophies of the kills, no local sign-off); mixed work is none. */
-export const isHunt = (q) => {
-    const verbs = (q.objectives || []).map((o) => o.verb);
-    return verbs.some((v) => KILL_WORK.has(v)) && verbs.every((v) => KILL_WORK.has(v) || HUNT_SUPPORT.has(v));
+/** A hunt or cull contract (proof: trophies of the kills, no local sign-off); mixed work and work against people are none. */
+export const isHunt = (q, content) => {
+    const objectives = q.objectives || [];
+    return objectives.some((o) => KILL_WORK.has(o.verb)) && objectives.every((o) => KILL_WORK.has(o.verb) || HUNT_SUPPORT.has(o.verb))
+        && !objectives.some((o) => (KILL_WORK.has(o.verb) || o.verb === 'FIND') && namesPeople(o.what, content));
 };
 
 /** Canonical objectives in compact narrator-facing prose (the Board generator owns their structure). */
@@ -289,7 +298,7 @@ export function boardRequest(s, content, need) {
         'Rules:',
         '- A contract is a concrete request to change a current situation in the world. Build it from: cause (why now), stakeholder/client, current problem, desired end state, 1–4 useful objective memories, and reward. Verification is optional story guidance, not a mandatory token.',
         '- task is what the notice asks the adventurer to do, one imperative sentence the board shows ("Hunt and cull the bog strider colony at the eel-weirs of the Reed Flats so the eel boats can launch safely again."). desired_end_state is the outcome the Guild recognizes when it is reached ("The bog strider colony is culled and the eel boats launch again."). Keep the two apart.',
-        '- A hunt or cull contract (its work is the kills: ATTACK/DEFEAT, with FIND/GO to reach the targets or DEFEND for what they threaten) is proven by a species-appropriate body part of each kill (ears, teeth, claws, leg joints …) as its one proof entry. Add no local inspection, witness, sign-off or signature for it. Mixed work (repair the old watch post and clear out what nests in it) keeps a fitting proof for each part: trophies for the kills, a receipt or sign-off only where its other work naturally needs one.',
+        '- A hunt or cull contract (its work is killing animals or monsters: ATTACK/DEFEAT, with FIND/GO to reach the targets or DEFEND for what they threaten) is proven by a species-appropriate body part of each kill (ears, teeth, claws, leg joints …) as its one proof entry. Add no local inspection, witness, sign-off or signature for it. Mixed work (repair the old watch post and clear out what nests in it) keeps a fitting proof for each part: trophies for the kills, a receipt or sign-off only where its other work naturally needs one. Work against people (bandits, raiders, deserters) is no hunt: its proof fits the job (a leader\'s token, recovered goods, the reeve\'s word), never body parts.',
         '- Rank limits scope, risk and complexity — not whether the subject is mundane or fantastical. Low-rank work may involve a manageable Monster, minor magic or a minor ruin, one dangerous animal, or a small clearly defined weak group such as wolves, goblins or feral dogs.',
         '- Do not preferentially default to rats, cellar vermin or indistinct swarms. Rats are allowed occasionally, not the standard low-rank combat answer.',
         '- The listings generated together must differ materially in underlying problem, location and likely play experience. Outside an explicit rank profile, do not make a balanced checklist of predefined quest categories.',

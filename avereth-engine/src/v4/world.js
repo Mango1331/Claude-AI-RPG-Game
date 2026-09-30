@@ -427,7 +427,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 // story makes a condition is no part of it (live 30.09.2026 14:56: "the steward must inspect and sign
                 // before payment"); the rest of the note (route, contacts, what was seen) stays
                 let note = String(d.note);
-                if (q.kind === 'guild_contract' && isHunt(q)) {
+                if (q.kind === 'guild_contract' && isHunt(q, content)) {
                     const clauses = note.split(/(?<=[.;])\s+/);
                     const kept = clauses.filter((x) => !(SIGN_OFF.test(x) && REQUIRE.test(x)));
                     if (kept.length < clauses.length) {

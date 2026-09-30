@@ -12,7 +12,7 @@ import { applyEvent } from '../../src/state.js';
 import { applyWorld } from '../../src/v4/world.js';
 import { resolveCommands } from '../../src/v4/commands.js';
 import { buildCatalog } from '../../src/v4/catalog.js';
-import { contractReady, isHunt, boardRequest } from '../../src/v4/guild.js';
+import { contractReady, isHunt as isHuntOf, boardRequest } from '../../src/v4/guild.js';
 import { setFactEvents } from '../../src/knowledge.js';
 import { deedsOf, parseIntent } from '../../src/intent.js';
 import { questXp } from '../../src/progression.js';
@@ -132,15 +132,16 @@ test('the full count completes a hunt by its proof as before; work without a num
 
 // ------------------------------------------------------------------------------------------------ 2. hunt or mixed
 test('a hunt is kill work: FIND/GO to reach the targets and DEFEND what they threaten go with it; other work makes it mixed', () => {
-    const verbs = (...v) => ({ objectives: v.map((verb) => ({ verb, what: 'x' })) });
-    assert.equal(isHunt(verbs('FIND', 'DEFEAT', 'DEFEND')), true, 'the bog striders of the live run');
-    assert.equal(isHunt(verbs('FIND', 'DEFEAT')), true);
-    assert.equal(isHunt(verbs('ATTACK')), true);
-    assert.equal(isHunt(verbs('REPAIR', 'DEFEAT')), false, 'the watch post and what nests in it');
-    assert.equal(isHunt(verbs('DEFEAT', 'DELIVER')), false);
-    assert.equal(isHunt(verbs('TALK', 'DEFEAT')), false);
-    assert.equal(isHunt(verbs('ESCORT', 'DEFEND')), false, 'no kill work');
-    assert.equal(isHunt(verbs()), false);
+    const verbs = (...v) => ({ objectives: v.map((verb) => ({ verb, what: 'wolves' })) });
+    const isHunt = (c, q) => isHuntOf(q, c);
+    assert.equal(isHunt(content, verbs('FIND', 'DEFEAT', 'DEFEND')), true, 'the bog striders of the live run');
+    assert.equal(isHunt(content, verbs('FIND', 'DEFEAT')), true);
+    assert.equal(isHunt(content, verbs('ATTACK')), true);
+    assert.equal(isHunt(content, verbs('REPAIR', 'DEFEAT')), false, 'the watch post and what nests in it');
+    assert.equal(isHunt(content, verbs('DEFEAT', 'DELIVER')), false);
+    assert.equal(isHunt(content, verbs('TALK', 'DEFEAT')), false);
+    assert.equal(isHunt(content, verbs('ESCORT', 'DEFEND')), false, 'no kill work');
+    assert.equal(isHunt(content, verbs()), false);
 });
 
 test('mixed work keeps the proof of its other parts: the watch captain\'s inspection stays, no "no signature" line; its kills are still counted', () => {
@@ -172,7 +173,7 @@ test('the Board generator is told the difference, and its version says the promp
     const text = JSON.stringify(req);
     assert.match(text, /Mixed work \(repair the old watch post and clear out what nests in it\) keeps a fitting proof for each part/);
     const { BOARD_VERSION } = await import('../../src/v4/guild.js');
-    assert.equal(BOARD_VERSION, 'board-4.5', '4.1.2 changed the prompt and schema (task, hunt proof) and kept board-4.4');
+    assert.notEqual(BOARD_VERSION, 'board-4.4', '4.1.2 changed the prompt and schema (task, hunt proof) and kept board-4.4');
     assert.match(fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8'), /Mixed work keeps the proof its other parts need/);
 });
 
@@ -183,9 +184,9 @@ test('"I attack the wolf. *I shout* Get back!": the declared attack counts; a re
     const wolf = Object.values(w.entities).find((e) => e.kind === 'creature').id;
     const intent = (m) => { const i = parseIntent(m, w, content); return [i.kind, i.target ?? null]; };
     assert.deepEqual(intent('I attack the wolf. *I shout* Get back!'), ['attack', wolf], '4.1.2: narrative');
-    assert.deepEqual(intent('Get back! *I shout* and I slash at the wolf'), ['attack', wolf]);
-    assert.deepEqual(intent('*i say* I strike the wolf.'), ['attack', wolf]);
-    // what stays speech
+    // what stays speech (review of 4.1.3: the words after a speech tag are said, 4.1.3 read these two as attacks)
+    assert.equal(intent('Get back! *I shout* and I slash at the wolf')[0], 'narrative');
+    assert.equal(intent('*i say* I strike the wolf.')[0], 'narrative');
     assert.equal(intent('found 3 killed 2 *i say calmly* is that enough for you to sign my proof? or do i have to hunt more?')[0], 'narrative');
     assert.equal(intent('I found three and killed two *i say calmly*')[0], 'narrative', 'a report in the past tense');
     assert.equal(intent('I killed two of them *i say*')[0], 'narrative');

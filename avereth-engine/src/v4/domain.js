@@ -289,6 +289,23 @@ export function namesKind(what, species, anchor) {
     return (!!g.head && t.phrase.has(g.head)) || (!!t.head && g.words.has(t.head)) || [...t.phrase].some((w) => kinds.has(w));
 }
 
+// the NPC templates' words for a person that name no role (content npc_templates.json: commoner): they sit in monster
+// names ("the wolf-man", "a man-eating tiger") and say nothing about whom a contract is against
+const GENERIC_PERSON = new Set(['man', 'woman', 'boy', 'girl']);
+const personRoles = new WeakMap();
+/**
+ * The kinds of people a text names: the NPC templates of the role words of its noun phrase (content npc_templates.json
+ * descriptors: "raiders" and "brigands" are both bandits; guard, soldier, mercenary, poacher …); an owner is no target
+ * ("the miner's cave troll", "Rook's wolves"). Review of 4.1.3: "FIND bandits" + "DEFEAT bandits" is no hunt.
+ */
+export function peopleNamed(text, content) {
+    if (!personRoles.has(content)) personRoles.set(content, new Map((content.templateDescriptors || []).map(([d, id]) => [stem(d.split(' ').at(-1)), id])));
+    const roles = personRoles.get(content);
+    const { phrase } = kindOf(normText(text).replace(/\b[a-z]+'s?(?=\s|$)/g, ' '));
+    return new Set([...phrase].filter((w) => !GENERIC_PERSON.has(w) && roles.has(w)).map((w) => roles.get(w)));
+}
+export const namesPeople = (text, content) => peopleNamed(text, content).size > 0;
+
 // ------------------------------------------------------------------------------------------------ queries: things
 export const heldBy = (state, who) => Object.values(state.objects || {}).filter((o) => o.holder?.entity === who);
 export const lyingAt = (state, at) => Object.values(state.objects || {}).filter((o) => o.holder?.loc === at);

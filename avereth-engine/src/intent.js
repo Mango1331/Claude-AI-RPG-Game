@@ -45,17 +45,29 @@ const ownDeed = (sentence) => {
 
 /**
  * Runtime V4: the deeds of a message that marks them with asterisks and says that the rest is speech ("found 3
- * killed 2 *i say calmly* is that enough?", live 30.09.2026 14:56): the starred parts, and of the rest only the
- * sentences that plainly declare his own deed now ("I attack the wolf. *I shout* Get back!", review of 4.1.2), in
- * their order; a message without that convention unchanged.
+ * killed 2 *i say calmly* is that enough?", live 30.09.2026 14:56): the starred parts, in their order; a message
+ * without that convention unchanged. Outside the stars, what a speech tag ("*I say*", "*I shout*") gives as said is
+ * speech and never a deed (review of 4.1.3: "*I say* I strike the wolf." is words): the words after it, and the words
+ * that run into it ("I found three and killed two *I say calmly*", "I strike you down *I shout*"). A sentence closed by
+ * a full stop before a tag that has words of its own after it is none of them ("I attack the wolf. *I shout* Get
+ * back!", review of 4.1.2): it and the other sentences outside the stars count when they plainly declare his own deed.
  */
 export function deedsOf(text) {
     const src = String(text);
     const parts = src.split(/(\*[^*]+\*)/).filter((x) => x.trim());
-    const starred = parts.filter((x) => /^\*[^*]+\*$/.test(x)).map((x) => x.slice(1, -1));
-    if (!starred.length || !starred.some((x) => SAY_RE.test(x))) return src;
-    return parts.flatMap((x) => (/^\*[^*]+\*$/.test(x) ? [x.slice(1, -1)] : x.split(/(?<=[.!?])\s+|\n+/).filter(ownDeed)))
-        .map((x) => x.trim().replace(/[.!]+$/, '')).filter(Boolean).join('. ');
+    const starred = (x) => /^\*[^*]+\*$/.test(x);
+    const tag = (x) => !!x && starred(x) && SAY_RE.test(x.slice(1, -1));
+    if (!parts.some(tag)) return src;
+    const deeds = [];
+    parts.forEach((x, i) => {
+        if (starred(x)) return deeds.push(x.slice(1, -1));
+        if (tag(parts[i - 1])) return; // the words a tag introduces
+        const sentences = x.split(/(?<=[.!?])\s+|\n+/).map((y) => y.trim()).filter(Boolean);
+        // the words a tag closes: the last sentence before it, unless it ends with a full stop and the tag has its own words
+        if (tag(parts[i + 1]) && sentences.length && !(/\.$/.test(sentences.at(-1)) && parts[i + 2] && !starred(parts[i + 2]))) sentences.pop();
+        deeds.push(...sentences.filter(ownDeed));
+    });
+    return deeds.map((x) => x.trim().replace(/[.!]+$/, '')).filter(Boolean).join('. ');
 }
 // a word for any creature: it names the creatures present, never the people standing by
 const CREATURE_RE = /\b(?:creature|creatures|beast|beasts|animal|animals|monster|monsters)\b/i;

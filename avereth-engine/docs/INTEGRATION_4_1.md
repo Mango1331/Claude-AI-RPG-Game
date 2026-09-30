@@ -1,13 +1,13 @@
 # Integration 4.1: das ChatGPT-Experiment 4.0.1–4.0.9 geprüft und eingebaut
 
-**Stand 30.09.2026, Build 4.1.3.** Dieses Dokument hält fest, was aus dem Experiment übernommen, überarbeitet, ersetzt oder verworfen wurde, und warum. Es beschreibt auch den nächsten Live-Test (§5). §8 enthält die Nachprüfung von 4.1.0 durch ein unabhängiges Review und die Korrekturen in 4.1.1. §9 enthält den Live-Lauf vom 30.09. 14:56 auf 4.1.1 und die Korrekturen und Designänderungen in 4.1.2. §10 enthält die Nachprüfung von 4.1.2, die Korrekturen in 4.1.3 und den nächsten Live-Test.
+**Stand 30.09.2026, Build 4.1.4.** Dieses Dokument hält fest, was aus dem Experiment übernommen, überarbeitet, ersetzt oder verworfen wurde, und warum. Es beschreibt auch den nächsten Live-Test (§5). §8 enthält die Nachprüfung von 4.1.0 durch ein unabhängiges Review und die Korrekturen in 4.1.1. §9 enthält den Live-Lauf vom 30.09. 14:56 auf 4.1.1 und die Korrekturen und Designänderungen in 4.1.2. §10 enthält die Nachprüfung von 4.1.2 und die Korrekturen in 4.1.3. §11 enthält die Nachprüfung von 4.1.3, den Patch 4.1.4 und den echten Live-Test, der jetzt ansteht.
 
 | | Branch | Commit |
 |---|---|---|
 | Basis (bisheriger Stand, unverändert) | `claude/happy-wright-1a4y19` | `1cbfdd4` |
 | Experiment (unverändert) | `chatgpt/v4-livetest-fixes-2026-09-28` | `a067bd0` (4.0.9); der Live-Lauf 30.09. lief auf 4.0.8 (`2f5eeb5`) |
 | Integration | `claude/v4-integration-2026-09-30` | von `1cbfdd4`; der Merge-Commit `f1b6bdd` holt `a067bd0` als Prüfgegenstand herein, die Folge-Commits überarbeiten ihn Teil für Teil; 4.1.0 = `d7ef49b` |
-| Korrekturen 4.1.1 (§8), 4.1.2 (§9) und 4.1.3 (§10) | `claude/v4-integration-fixes-2026-09-30` | von `d7ef49b`; 4.1.1 = `6acc7f9`, 4.1.2 = `0814ab5` |
+| Korrekturen 4.1.1 (§8), 4.1.2 (§9), 4.1.3 (§10) und 4.1.4 (§11) | `claude/v4-integration-fixes-2026-09-30` | von `d7ef49b`; 4.1.1 = `6acc7f9`, 4.1.2 = `0814ab5`, 4.1.3 = `5a8ccab` |
 
 Primärbelege: Chat-JSONL des Laufs (Branch #1), Event-Export, Chat-Completion-Log (mit verworfenem Seitenzweig; nur über exakten Text zugeordnet). Die Chronik des Experiments steht in [CHATGPT_FIX_BRANCH_2026-09-28.md](CHATGPT_FIX_BRANCH_2026-09-28.md).
 
@@ -437,3 +437,92 @@ Aus §9 weiter mitprüfen:
 - Registrierung ohne `overreach`;
 - „*i say*“-Berichte ohne Zielfrage;
 - „keep myself hidden“ als Heimlichkeitsprobe.
+
+---
+
+## 11. Nachprüfung von 4.1.3 und Korrekturen 4.1.4
+
+Eine unabhängige Prüfung von 4.1.3 (`5a8ccab`) hat drei Punkte gemeldet. Alle drei wurden auf 4.1.3 nachgewiesen, bevor etwas geändert wurde. Die Regressionstests stehen in `tests/v4/review_4_1_3.test.js`. Alle fünf Tests schlagen auf 4.1.3 fehl und laufen auf 4.1.4 durch. Der Patch ist klein und enthält keinen Umbau.
+
+| # | Befund | Urteil | Korrektur 4.1.4 |
+|---|---|---|---|
+| 1 | Gesprochenes löst Kampf aus: `*I say* I strike the wolf.` | **bestätigt**; mein eigener 4.1.3-Test erwartete sogar den Angriff. Dieselbe Lücke gab es auf der anderen Seite der Sprechmarke: „I strike you down *I shout*“, „I strike you down. *I shout*“ und „Get back! *I shout* and I slash at the wolf“ waren Angriffe | Was eine Sprechmarke als gesagt ausweist, ist nie eine Tat (siehe unten) |
+| 2 | Die Jagd-Erkennung sieht nur Verben: `FIND bandits` + `DEFEAT bandits` galt als Jagd | **bestätigt** | Kampf gegen Menschen ist keine Jagd. Erkannt wird das über die Rollenwörter der NPC-Vorlagen |
+| 2+ | selbst gefunden: Die Tötungszählung zählte nur Kreaturen | **bestätigt**: Bei „DEFEAT 2 bandits“ blieb es nach zwei toten Banditen bei „0 of 2“. Bereitschaft und Abgabe wären ohne `alternative` nie möglich gewesen | Menschen zählen nach ihrer Rolle |
+| 3 | Die Anzeige der Bereitschaft folgt nicht `contractReady`: Bei voller Zahl und Nachweis in der Hand nahm der Schalter an, der Katalog zeigte nichts | **bestätigt** | Katalog und Quest-Gedächtnis zeigen, was `contractReady` entscheidet |
+
+**Rede (1).** Mit einer Sprechmarke („*I say*“, „*I shout*“) gilt außerhalb der Sternchen:
+- **Die Worte danach** bis zum nächsten Sternchen-Teil sind gesagt: `*I say* I strike the wolf.`, `Get back! *I shout* and I slash at the wolf`.
+- **Die Worte direkt davor** sind ebenfalls gesagt: `I found three and killed two *I say calmly*`, `I strike you down *I shout*`. Das gilt auch mit Punkt, wenn nach der Marke nichts mehr kommt: `I strike you down. *I shout*`.
+- **Ausnahme:** Ein mit Punkt abgeschlossener Satz vor einer Marke, die danach eigene Worte hat, ist erzählt. Deshalb bleibt `I attack the wolf. *I shout* Get back!` ein Angriff.
+- **Was sonst zählt:** die übrigen Sätze außerhalb der Sternchen nur, wenn sie eine eigene Tat im Präsens erklären; die Sternchen-Teile immer (`*I shout* Get back! *I strike the wolf*` ist ein Angriff).
+
+Das gilt nur in V4. Wer nach einer Sprechmarke handeln will, schreibt die Tat in Sternchen.
+
+**Jagd gegen Menschen (2).**
+- Eine Jagd ist Tötungsarbeit gegen Tiere oder Monster.
+- Nennt ein Tötungs- oder Suchziel Menschen, ist der Auftrag keine Jagd: `FIND bandits`, `DEFEAT the raiders`, `Rook's brigands`, `FIND the missing trapper`.
+- Erkannt werden Menschen an den Rollenwörtern, die die Engine schon für NPCs kennt (`content/npc_templates.json`: bandit, brigand, raider, outlaw, guard, soldier, mercenary, poacher, hunter …). Es gibt keine neue Liste und keine Questtypen.
+- Die allgemeinen Wörter man/woman/boy/girl zählen nicht (`the wolf-man`, `a man-eating tiger` bleiben Monster). Ein Besitzer zählt ebenfalls nicht (`the miner's cave troll`).
+- Folge: Ein Banditenauftrag behält seinen Nachweis und die örtliche Bestätigung. Der Annahme-Satz sagt nicht „no local inspection“.
+- Board-Generator (`board-4.6`) und Erzählervertrag sagen jetzt: Arbeit gegen Menschen ist keine Jagd, ihr Nachweis passt zur Arbeit und besteht nie aus Körperteilen.
+
+**Zählung von Menschen (2+).**
+- Ein DEFEAT-Ziel, das Menschen nennt, zählt tote Personen gleicher Rolle seit der Annahme. „raiders“ und ein toter „brigand“ sind beide Banditen.
+- Ein Ziel mit Tieren oder Monstern zählt nur Kreaturen wie bisher, also nie einen toten „wolf hunter“.
+- Ergeben haben sich Menschen nicht als tot, sie zählen nicht. Das bleibt eine Sache für `alternative`.
+
+**Anzeige = Verhalten (3).** `readyText` fragt jetzt `contractReady`:
+- „READY FOR TURN-IN: …“ steht genau dann da, wenn der Schalter annehmen würde.
+- Mit dem gelisteten Nachweis in der Hand heißt es „the listed proof is in hand (…)“.
+- Eine von der Zählung gesperrte Bereitschaft der Geschichte erscheint als „NOT READY FOR TURN-IN“.
+- Der Test prüft sieben Fälle gegen Katalog, Quest-Gedächtnis und die tatsächliche Abgabe.
+
+**Beobachtet, nicht geändert:** V4 legt Personen mit `template: 'commoner'` an (`src/v4/world.js`). Der Kampf nimmt diese Vorlage vor den Rollenwörtern, also kämpft ein Bandit in V4 mit Werten eines Bürgers. Das ist eine Balancefrage außerhalb dieses Patches; sie wird im Live-Test sichtbar, wenn Menschen kämpfen.
+
+### Nachweise 4.1.4, nach Testart getrennt
+
+| Testart | Prüfung | Ergebnis |
+|---|---|---|
+| deterministisch | `npm test` | **501/501** (4.1.3: 496) |
+| deterministisch | neue Regressionstests `review_4_1_3.test.js` | 5/5; auf 4.1.3 (`5a8ccab`) 0/5 |
+| deterministisch | angepasste 4.1.3-Erwartungen (gewollte Regeländerung) | `*i say* I strike the wolf.` und `Get back! *I shout* and I slash at the wolf` jetzt Rede; `isHunt` bekommt `content`; die Board-Version wird nur noch als „nicht mehr 4.4“ geprüft |
+| deterministisch | Mutationsprobe: fünf Teilkorrekturen einzeln abgeschaltet | jede lässt 1–2 Tests fehlschlagen |
+| deterministisch | V3-Differenzlauf v8–v12 | identisch bis auf den Build-Stempel |
+| deterministisch | P0-Rescore der gespeicherten Antworten | identisch mit 4.1.3 |
+| Mock-Provider-Smokes | Browser-Smoke V3 + V4 | OK |
+| Mock-Provider-Smokes | echtes SillyTavern 1.19, V4 | erster Lauf 16/17: `noPageErrors` durch eine Fehlermeldung aus SillyTaverns eigener Verbindungsprüfung (`AbortReason @ openai.js:4565`, abgebrochene Statusabfrage; kein Engine-Code). Einmalige Wiederholung 17/17 |
+| Mock-Provider-Smokes | echtes SillyTavern 1.19, V3 | OK |
+| Mock-Provider-Smokes | `secrets.json` nach den Läufen | `{}` |
+| echter Modell-Live-Test | – | **steht aus**; nächster Schritt |
+
+### Restrisiken 4.1.4
+
+- **Rollenwörter:** Menschen werden nur an den Rollenwörtern der NPC-Vorlagen erkannt. „cultists“, „smugglers“ oder „pirates“ stehen dort nicht und gelten weiter als Monster. Der Board-Generator ist angewiesen, ihnen trotzdem keinen Körperteil-Nachweis zu geben.
+- **Sprechkonvention:**
+  - Die Regel hängt an Sprechverben in den Sternchen („say“, „shout“, „ask“ …). „*I yell*“ ist keine Marke; die Nachricht wird dann wie ohne Konvention gelesen.
+  - Eine Tat direkt vor einer Marke ohne Punkt wird als gesagt gelesen. Das ist die vorsichtige Seite: kein Kampf aus Worten.
+- **Menschen, die sich ergeben,** zählen nicht als besiegt; die Geschichte kann das über `alternative` feststellen.
+- Alle Restrisiken aus §10 und §9 gelten weiter.
+
+### Der echte Live-Test (Build 4.1.4)
+
+**Einrichtung** wie [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern):
+- Extension `avereth-engine/` aus `claude/v4-integration-fixes-2026-09-30`; die Statuszeile zeigt `Avereth Engine 4.1.4`.
+- Die Kartenbeschreibung **neu** aus `content/narrator/Avereth_Narrator_Contract_v4.txt` kopieren (geändert in 4.1.2, 4.1.3 und 4.1.4).
+- Neuer Chat, Erschaffung als Warrior.
+
+**Zu prüfen:**
+
+| # | Situation | Erwartet |
+|---|---|---|
+| 1 | Ein Monster entkommt und kommt später zurück | dieselbe ID im HUD (kein neues „D“), nach dem Tod tot |
+| 2 | Ausdrücklich zurück zu einer bekannten Gildenhalle | `GOES — to Adventurers' Guild hall, …`; Ankunft in der Halle, kein erfundenes Büro |
+| 3 | Jagdauftrag abschließen | Tötungen, Trophäen und Bereitschaft passen zusammen. Bei zu wenigen Tötungen: kein `QUEST READY`, und die Abgabe wird auch mit genug Trophäen abgelehnt („the engine counts N of M …“) |
+| 4 | Eine glaubwürdige andere Lösung (Anführer tot, der Rest flieht endgültig) | `QUEST READY` mit dem Grund; die Abgabe wird angenommen |
+| 5 | Abgabe | Lohn und Quest-XP genau einmal; eine zweite Abgabe: „already turned in“ |
+| 6 | Mit Sprechmarke reden, ohne zu kämpfen: „I could kill them all *I say*“, „*I say* I strike first next time.“ | kein Kampf, keine Zielfrage |
+| 7 | Mit Sprechmarke kämpfen: „I attack the wolf. *I shout* Get back!“ oder die Tat in Sternchen | ein Angriff |
+| 8 | Falls das Brett einen Auftrag gegen Menschen zeigt (Banditen, Räuber) | kein „no local inspection“ im Annahme-Satz. Tote Banditen zählen in „defeated (engine count)“ |
+
+**Zurückschicken:** wie [LIVETEST_V4.md §6](LIVETEST_V4.md#6-zurückschicken): Chat-Export, Event-Log, Request-Log. **Keine Schlüssel, keine Authorization-Header.**

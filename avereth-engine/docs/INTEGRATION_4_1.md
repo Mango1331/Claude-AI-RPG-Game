@@ -1,13 +1,13 @@
 # Integration 4.1: das ChatGPT-Experiment 4.0.1–4.0.9 geprüft und eingebaut
 
-**Stand 30.09.2026, Build 4.1.1.** Dieses Dokument hält fest, was aus dem Experiment übernommen, überarbeitet, ersetzt oder verworfen wurde, und warum. Es beschreibt auch den nächsten Live-Test (§5). §8 enthält die Nachprüfung von 4.1.0 durch ein unabhängiges Review und die Korrekturen in 4.1.1.
+**Stand 30.09.2026, Build 4.1.2.** Dieses Dokument hält fest, was aus dem Experiment übernommen, überarbeitet, ersetzt oder verworfen wurde, und warum. Es beschreibt auch den nächsten Live-Test (§5). §8 enthält die Nachprüfung von 4.1.0 durch ein unabhängiges Review und die Korrekturen in 4.1.1. §9 enthält den Live-Lauf vom 30.09. 14:56 auf 4.1.1, die Korrekturen und Designänderungen in 4.1.2 und die Ergänzungen zum nächsten Live-Test.
 
 | | Branch | Commit |
 |---|---|---|
 | Basis (bisheriger Stand, unverändert) | `claude/happy-wright-1a4y19` | `1cbfdd4` |
 | Experiment (unverändert) | `chatgpt/v4-livetest-fixes-2026-09-28` | `a067bd0` (4.0.9); der Live-Lauf 30.09. lief auf 4.0.8 (`2f5eeb5`) |
 | Integration | `claude/v4-integration-2026-09-30` | von `1cbfdd4`; der Merge-Commit `f1b6bdd` holt `a067bd0` als Prüfgegenstand herein, die Folge-Commits überarbeiten ihn Teil für Teil; 4.1.0 = `d7ef49b` |
-| Korrekturen 4.1.1 (§8) | `claude/v4-integration-fixes-2026-09-30` | von `d7ef49b` |
+| Korrekturen 4.1.1 (§8) und 4.1.2 (§9) | `claude/v4-integration-fixes-2026-09-30` | von `d7ef49b`; 4.1.1 = `6acc7f9` |
 
 Primärbelege: Chat-JSONL des Laufs (Branch #1), Event-Export, Chat-Completion-Log (mit verworfenem Seitenzweig; nur über exakten Text zugeordnet). Die Chronik des Experiments steht in [CHATGPT_FIX_BRANCH_2026-09-28.md](CHATGPT_FIX_BRANCH_2026-09-28.md).
 
@@ -229,3 +229,113 @@ Danach ist die Reise ohne anwesende Begleiter fortsetzbar. Die Regel „außerha
 | kontrolliertes Replay | Lauf 30.09. (`live_0930.test.js`): Nachricht 51 auf den neuen Katalog umgestellt, Ziele neu zugeordnet, zusätzliche Schläge bis Kampfende | alle Prüfungen grün; die Reise ist ab Nachricht 23 gespeichert begonnen |
 | Mock-Provider-Smokes | Browser-Smoke V3 + V4; echtes SillyTavern 1.19 mit Mock-Provider und Dummy-Schlüssel | OK; V4 17/17, V3 OK; `secrets.json` danach `{}` |
 | echter Modell-Live-Test | — | **keiner** für 4.1.1; §5 ist der nächste |
+
+---
+
+## 9. Live-Lauf 30.09.2026 14:56 (Build 4.1.1) und Korrekturen 4.1.2
+
+**Material:**
+- Chat-Export, Event-Export und CMD-Logger des Laufs;
+- die Auswertung von ChatGPT.
+
+Dem Logger fehlt der Anfang (Erschaffung und Registrierung). Chat und Events enthalten ihn vollständig.
+
+**Nachgespielt:** Der Lauf ist als `tests/v4/live_0930b.json` gespeichert: Seed, Begrüßung, Erschaffung, die fünf Aushänge und 38 Züge mit den aufgezeichneten Interpreter- und Extraktor-Antworten. Auf 4.1.1 nachgespielt, ergibt er denselben Endzustand wie live:
+- 36 Kampf-XP;
+- 30 cp;
+- zwei Paar Beingelenke mit je `qty` 2;
+- der Vertrag bereit;
+- der erste Strider lebend.
+
+Erst danach wurde geändert.
+
+### Befunde, Urteil, Ursache
+
+| # | Befund (ChatGPT) | Urteil | Ursache im Code | Korrektur 4.1.2 |
+|---|---|---|---|---|
+| 1 | „walk back to the city“ als `npc_actor` verworfen | **bestätigt** | Der Agency-Guard nahm jedes Wort aus den Labels der Anwesenden als Akteur-Wort, auch das „Walk“ aus „Oss, Steward of the Eelmongers' Walk“ | `actorWords` nimmt aus jedem Label-Teil nur Name und Rolle, bis zum ersten Beziehungswort (`of`, `at`, `with` …). „the steward takes …“ und „Oss walks …“ bleiben `npc_actor` |
+| 1 | „the guild building“ wurde ein neuer Ort, der Erzähler erfand ein Gildenbüro, später eine zweite Halle | **bestätigt** | (a) `go {new}` mit „guild“ blieb ein neuer Ort. (b) `resolvePlace` erkannte „guild building“ nicht als Halle. (c) Außerhalb einer Siedlung listete der Katalog nur die Städte des Reichs, **keine Hallen**. Die Wehre lagen richtig außerhalb von Glassmere; genau deshalb fehlte die Halle im Katalog | `go` auf „…guild…“ geht zur Halle der Siedlung, in der er ist. Draußen geht es zur Filiale des einen aktiven Vertrags, sonst zu der der Mitgliedschaft. Steht er schon in der Halle: „already here“. Draußen führt der Katalog die Hallen der Städte des Reichs und die vier neuesten im Spiel entstandenen Orte des Reichs. `resolvePlace` kennt „building“ |
+| 1 | Abgabe im erfundenen Büro | **richtig abgelehnt** (Schutz hat gehalten) | – | unverändert |
+| 2 | Der zurückkehrende Strider wurde „Bog Strider D“; der erste blieb lebend im Zustand | **bestätigt** | `creature.new` legte immer ein neues Tier an. Nichts verband die Rückkehr mit dem Tier, das die Szene verlassen hatte | Zeigt ein `creature.new` **ein** Tier einer Art, und gibt es am selben Ort genau ein lebendes, abwesendes Tier dieser Art und dieses Körperbaus, tritt dieses Tier wieder ein (`scene.entered`, dieselbe ID). Bei zwei oder mehr Kandidaten bleibt es ein neues Tier. Keine allgemeine Identitätsverwaltung |
+| 3 | Vertrag „bereit“ bei 3 von 4 Tötungen; vier Paar Gelenke | **bestätigt** | `quest.ready` prüfte keine Zahl. Die vier Paare kamen, weil der Extraktor dem letzten Tier zwei Paare zuschrieb | Für DEFEAT-Ziele mit Zahl zählt die Engine die toten Tiere der genannten Art seit Annahme (`defeatTally`). Bei weniger ist `quest.ready` nur mit `alternative` gültig: Die Geschichte sagt, wie das Ziel anders erreicht wurde (der Rest dauerhaft vertrieben, die Kolonie zerschlagen). Sonst wird es abgelehnt (`quest_count`), und die Korrektur nennt die Zahl. Trophäen sind keine Zählung. Die Zahl steht im Katalog und im Quest-Gedächtnis (`defeated (engine count): 3 of 4 bog striders`) |
+| 3 | Fakt „drei tot“ nach zwei Tötungen | **bestätigt** (weicher Fakt) | Fakten sind Gedächtnis. Die Engine prüft keine Zahlen darin | Die Engine-Zählung steht jetzt im Kontext. Der Erzählervertrag sagt „never state another“. Der Fakt selbst wird **nicht** abgefangen (Restrisiko) |
+| 4 | „found 3 killed 2 *i say calmly*“ fragte nach einem Angriffsziel | **bestätigt** | `parseIntent` las „killed“ im gesprochenen Teil als Angriff | V4: Markiert der Spieler Taten mit Sternchen und nennt darin sein Sprechen („i say“), zählen nur die Sternchen-Teile als Taten (`deedsOf`). „Die! *i say and Heavy Slash at it*“ bleibt ein Angriff |
+| 5 | „Heavy Slash at it“ bot Oss und die Köderfrau an | **bestätigt** | Das Pronomen fand keinen Namen, also galten alle gültigen Ziele | V4: „it“ meint die Kreaturen unter den Zielen. Bei zwei Kreaturen fragt die Engine weiter |
+| 6 | „keep myself hidden as i lay in wait“ ohne Mechanik | **bestätigt** | `STEALTH_RE` kannte „hidden“ und „lay in wait“ nicht | V4 erkennt auch „keep myself hidden / out of sight / low“, „lay/lie in wait“ und „hold myself hidden“ als Heimlichkeit. Der Versuch geht an die V3-Heimlichkeitsmechanik; Erfolg ist nicht garantiert |
+| 7 | `"type": "place"` im Extraktor | **bestätigt**, zweimal: Nachricht 50 (`place` neben dem `arrive`) und später (`place` in Fakt-Form, „Guild hall at Marlow's Staithe“) | Das Modell erfand einen Delta-Typ. Das Schema lehnte ihn ab, die vorhandene Reparatur lief. Der Event-Export zeigt die reparierte Fassung | Neue Vokabelregel: Nur die gelisteten Typen existieren; ein neuer Ort entsteht nur als Ortsreferenz eines `arrive` (oder `person.new at`). Regressionstest mit der aufgezeichneten Antwort. **Kein** neuer Fehlerbehandlungsmechanismus |
+| + | Ein Fakt über das Zollhaus „at the landward end of the Eelmongers' Walk“ wurde der Schreiberin zugeordnet | **zusätzlich gefunden** | Der Rückgriff von `idOf` aufs letzte Wort traf „Walk“ in ihrer Rolle „…at the Eelmongers' Walk tollhouse“ | Der Rückgriff gilt nur für kurze Bezüge (höchstens drei Wörter, kein Beziehungswort) und vergleicht mit dem Kopfwort der Rolle |
+
+### Gewünschte Designänderungen
+
+1. **Aufgabe statt Endzustand.** Das Brett zeigt `task`, einen Imperativsatz des Board-Generators („Hunt and cull … so the eel boats can launch safely again.“). `desired_end_state` bleibt getrennt und intern: im Katalog, im Quest-Gedächtnis und im Annahme-Satz. Aushänge ohne `task` zeigen wie bisher den Endzustand. `#quest <Name>` zeigt die Aufgabe. Die Abschlusslogik ist unverändert.
+2. **Jagdnachweis durch Körperteile.** Der Generator gibt Jagd- und Beseitigungsaufträgen einen artspezifischen Körperteil als Nachweis und keine örtliche Abnahme. Der Annahme-Satz nennt ihn: „Proof: … brought to a Guild hall; no local inspection, witness or signature is required.“ Ein `quest.detail` zu einem Jagdauftrag verliert Sätze, die eine Unterschrift, Prüfung oder Bestätigung zur **Bedingung** machen (ein Unterschriftswort zusammen mit must/before/until/only/once …). Der Rest der Notiz bleibt, und der Erzähler bekommt eine Korrektur. Liefer- und andere Aufträge behalten Quittungen.
+3. **Overreach gelockert.** Die natürlichen Schritte einer gebuchten Handlung gehören zu ihr, etwa bei der Registrierung Unterschreiben, Messstein und zurück zum Schalter. Das steht gleichlautend in der Overreach-Regel des Extraktors (delta-0.14) und im Erzählervertrag. Hart bleiben:
+   - Zahlen, Kaufen, Verkaufen;
+   - Annehmen, Aufgeben, Abgeben von Aufträgen;
+   - Angreifen;
+   - Aufbruch zu einem anderen Ziel;
+   - Inventar und alle Mechanik.
+
+Unverändert und im Replay bestätigt: Erschaffung, Registrierung und einmalige Gebühr, Brett und Annahme, Kampfrechnung, Kampf-XP (36), Beuteerfassung, der Schutz vor der Abgabe an einem nicht autorisierten Ort.
+
+Versionen:
+- Engine 4.1.2;
+- Vokabular `delta-0.14`;
+- Extraktor `extract-4.9`;
+- Board-Schema mit nullbarem `task`.
+
+### Nachweise 4.1.2, nach Testart getrennt
+
+| Testart | Prüfung | Ergebnis |
+|---|---|---|
+| deterministisch | `npm test` | **485/485** (4.1.1: 465) |
+| deterministisch | neue Einzeltests `tests/v4/fixes_4_1_2.test.js` (je Befund der Fall des Laufs und der Fall, der bleiben muss) | 13/13 |
+| deterministisch | Mutationsprobe: `agency.js`, `catalog.js`, `commands.js`, `intent.js`, `world.js` einzeln auf 4.1.1 zurückgesetzt | jede Datei lässt Tests fehlschlagen (2–7) |
+| deterministisch | V3-Differenzlauf v8–v12 | identisch bis auf den Build-Stempel (die Intent-Änderungen gelten nur in V4) |
+| deterministisch | P0-Rescore der gespeicherten Antworten | identisch mit 4.1.1; die Guard-Änderung verschiebt keine Messung |
+| kontrolliertes Replay | Lauf 14:56 (`tests/v4/live_0930b.test.js`, 7 Tests): Rückkehr des Striders, keine Bereitschaft bei 3 von 4, keine örtliche Unterschrift, beide Teile des Rückwegs, Fakt nicht an der Schreiberin, die drei Eingaben | grün. Wo 4.1.2 anders entscheidet, weicht das Replay ab: Der zweite Kampf läuft gegen den zurückgekehrten Strider (nicht „D“), mit einfachen Angriffen bis zum Ende |
+| Mock-Provider-Smokes | Browser-Smoke V3 + V4; echtes SillyTavern 1.19 mit Mock-Provider und Dummy-Schlüssel, V4 und V3 | OK; `secrets.json` danach `{}` |
+| echter Modell-Live-Test | – | **keiner** für 4.1.2 |
+
+**Lokal getestet, nicht live bestätigt:**
+- ob der Board-Generator `task` schreibt und Jagdaufträgen Körperteile statt Unterschriften gibt;
+- ob der Extraktor `alternative` nutzt, nur wenn die Geschichte es trägt;
+- ob er keinen `place`-Typ mehr sendet;
+- ob der Erzähler mit Halle im Katalog und `go` zur Halle keine Büros mehr erfindet;
+- ob die gelockerte Overreach-Regel nichts durchlässt, was hart bleiben soll.
+
+Die aufgezeichneten Antworten des Laufs sind die des Modells unter 4.1.1. Das Replay zeigt, was die Engine aus ihnen macht, nicht, was das Modell unter 4.1.2 antworten würde.
+
+### Restrisiken 4.1.2
+
+- **Heimlichkeit gegen Anwesende:** Die V3-Heimlichkeitsmechanik (`stealthEvents`) ist unverändert. Was sie gegen später eintreffende Tiere bewirkt, ist live nicht gesehen.
+- **Nachricht 39:** „*I nod and go back down but i keep myself hidden …*“ läuft ganz als Heimlichkeit über V3. Das „go back down“ geht dabei verloren (wie jede Bewegung in einer V3-Heimlichkeitsnachricht).
+- **Rückkehr eines Tieres:** Sie wird nur erkannt, wenn es genau ein passendes, abwesendes, lebendes Tier gibt. Bei zwei entkommenen Tieren derselben Art entsteht weiter ein neues. Ein wirklich neues Einzeltier derselben Art, während das entkommene noch lebt, wird als das alte gelesen (die seltenere Verwechslung).
+- **Tötungszahl:**
+  - Sie zählt nur Tiere, die die Engine als tot kennt (Kampf) und deren Art der Auftrag nennt. Tötet die Geschichte Tiere außerhalb eines Kampfes, fehlen sie in der Zählung; dann bleibt nur `alternative`.
+  - Ein Extraktor, der `alternative` zu großzügig füllt, macht den Vertrag trotzdem bereit. Die Schranke ist die Extraktor-Regel, nicht die Engine.
+- **Weiche Fakten** mit falschen Zahlen („three dead“) werden nicht abgefangen, nur durch die sichtbare Engine-Zählung überschrieben.
+- **Erfundene Hallen:** Der Erzähler kann weiter Hallen erfinden. Die Engine bucht dort nichts, und `go` „zur Gilde“ führt jetzt zur echten Halle. Ein `arrive` an einer erfundenen „Guild hall“ ohne `go` bleibt ein gewöhnlicher Ort.
+- **`go` mit „guild“:** Jeder `go {new}` mit dem Wort „guild“ geht zur Halle. Ein Ziel wie „the guild quarter“ würde ebenfalls dorthin führen.
+- **Unterschriftsfilter:** Er arbeitet mit Wörtern. Ein Satz, der eine Unterschrift und „only“/„before“ enthält, ohne sie zur Bedingung zu machen, geht der Notiz verloren (mit Korrektur). Ein geschickt umschriebener Bedingungssatz kommt durch; dagegen stehen der Annahme-Satz und der Erzählervertrag.
+- **`deedsOf`:** Es greift nur bei Sternchen mit einem Sprechverb darin. „I say I killed two“ ohne Sternchen läuft wie bisher.
+
+### Nächster Live-Test (Build 4.1.2)
+
+Einrichtung wie §5, Extension aus `claude/v4-integration-fixes-2026-09-30`; die Statuszeile zeigt `Avereth Engine 4.1.2`. Zusätzlich zu §5:
+
+| # | Eingabe (sinngemäß) | Erwartet |
+|---|---|---|
+| 1 | Novice-Brett lesen | Jede Zeile sagt, **was zu tun ist** (Imperativ). Jagdaufträge nennen einen Körperteil als Nachweis, keine Unterschrift |
+| 2 | Registrierung mit Messstein | Der Erzähler darf Unterschrift, Stein und Rückweg zum Schalter zeigen. Kein `overreach` dafür im Event-Log |
+| 3 | einen Jagdauftrag annehmen | Annahme-Satz mit „Proof: … no local inspection, witness or signature is required“. Kein Zwischenstopp zum Abzeichnen |
+| 4 | ein Tier entkommen lassen, später kommt es zurück | dieselbe ID im HUD (kein „D“). Nach dem Tod ist es tot |
+| 5 | weniger Tiere töten als verlangt, Trophäen mitnehmen | Der Vertrag wird **nicht** bereit (`quest_count` in `#audit`), außer die Geschichte sagt klar, wie der Rest erledigt ist |
+| 6 | „*i say calmly*“ mit einem Bericht über Getötetes | keine Zielfrage |
+| 7 | „keep myself hidden as i lay in wait“ | eine Heimlichkeitsprobe in den System-Zeilen |
+| 8 | draußen: „walk back to the city and to the guild building“ | zwei `GOES`, das zweite zur Halle der Stadt. Dort ist Abgabe möglich |
+
+**Worauf achten:**
+- `NOT APPLIED` / `ENGINE REFUSED` mit `quest_count`, `guild_quest_detail`;
+- Extraktor-Reparaturen im Request-Log (ein erneuter `place`-Typ);
+- ob Aushänge `task` haben.

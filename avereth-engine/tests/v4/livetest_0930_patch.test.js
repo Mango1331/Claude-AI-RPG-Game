@@ -183,7 +183,8 @@ test('C4: JOURNEY READY comes from the contract: an escort he has set off on can
 test('C3: an escort is not ready in a reply whose arrival the engine refused; other work of that reply may be', async () => {
     const g = await created();
     const s = escort(g.state());
-    s.quests['quest.wolves'] = { ...structuredClone(s.quests['quest.cart']), id: 'quest.wolves', title: 'Wolves on the River Road', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'the wolf pack', qty: 4, unit: null, where: 'river road', status: 'open' }] };
+    // no number on the wolves: the engine's kill count (4.1.2) is not what this case is about
+    s.quests['quest.wolves'] = { ...structuredClone(s.quests['quest.cart']), id: 'quest.wolves', title: 'Wolves on the River Road', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'the wolf pack', qty: null, unit: null, where: 'river road', status: 'open' }] };
     const r = applyWorld(after(s, { input: 'I wait here' }), content, { expected: {}, deltas: [
         { seq: 1, type: 'arrive', at: { new: { name: 'Millbrook', kind: 'settlement', parent: 'realm.veyrhold' } }, forced_by: null, with: null },
         { seq: 2, type: 'quest.ready', quest: 'quest.cart', note: 'the wool cart is safe' },

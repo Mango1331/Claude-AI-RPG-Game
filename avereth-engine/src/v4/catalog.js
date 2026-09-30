@@ -12,6 +12,7 @@ import {
     membership, listingsOf, today,
 } from './domain.js';
 import { catalogText } from './interpret.js';
+import { defeatTally, tallyText } from './guild.js';
 
 /** A person or creature as the catalog labels it: name, role, look ("Marta, Guild receptionist"). */
 export function personLabel(state, content, id) {
@@ -52,7 +53,14 @@ export function catalogPlaces(state, extra = []) {
     // the places play created in this settlement (the reedbeds, the inn), newest first, a few
     if (town) Object.values(state.places).filter((p) => p.by === 'reply' && settlementOf(state, p.id) === town).slice(-6).reverse().forEach((p) => add(p.id));
     const realm = realmOf(state, at);
-    if (realm) Object.values(state.places).filter((p) => p.kind === 'settlement' && p.parent === realm).slice(0, 4).forEach((p) => add(p.id));
+    const towns = realm ? Object.values(state.places).filter((p) => p.kind === 'settlement' && p.parent === realm).slice(0, 4) : [];
+    towns.forEach((p) => add(p.id));
+    // out in the wilds the way back matters: the Guild halls of those towns and the places play created in this realm,
+    // newest first (live 30.09.2026 14:56: at the weirs, "back to the city and to the guild building" found no hall)
+    if (!town) {
+        towns.forEach((p) => add(hallOfSettlement(state, p.id)));
+        Object.values(state.places).filter((p) => p.by === 'reply' && realmOf(state, p.id) === realm).slice(-4).reverse().forEach((p) => add(p.id));
+    }
     for (const id of extra) add(id);
     return ids.map((id) => placeEntry(state, id));
 }
@@ -75,6 +83,7 @@ function questInfo(state, content, q) {
             q.desired_end_state ? `desired outcome: ${q.desired_end_state}` : null,
             (q.objectives || []).length ? `job memory: ${objectiveText(q)}` : null,
             progress ? `progress: ${progress}` : null,
+            q.status === 'active' && defeatTally(state, content, q).length ? `defeated (engine count): ${tallyText(defeatTally(state, content, q))}` : null,
             q.ready ? `READY FOR TURN-IN: ${q.ready_note || 'desired outcome achieved'}` : null,
             (q.proof || []).length ? `verification example: ${proofText(q)}` : null].filter(Boolean).join(' · ');
     }

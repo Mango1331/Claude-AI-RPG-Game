@@ -9,7 +9,7 @@ export const GREETING = 'SYSTEM INITIALIZATION COMPLETE\n`Location: Public roads
 /** A fixture listing as the Board generator writes it: no ids, every field present (null where it does not apply). */
 export function generatorListing({ id, ...l }) {
     return {
-        title: l.title, client: l.client, rank: l.rank, level: l.level, qtype: l.qtype, payout_cp: l.payout_cp, desired_end_state: l.desired_end_state,
+        title: l.title, client: l.client, rank: l.rank, level: l.level, qtype: l.qtype, payout_cp: l.payout_cp, ...(l.task !== undefined ? { task: l.task } : {}), desired_end_state: l.desired_end_state,
         objectives: (l.objectives || []).map((o) => ({ verb: o.verb, what: o.what, qty: o.qty ?? null, unit: o.unit ?? null, where: o.where ?? null })),
         proof: (l.proof || []).map((p) => ({ kind: p.kind, what: p.what, qty: p.qty ?? null, unit: p.unit ?? null, on: p.on ?? null, consume: p.consume ?? null })),
     };

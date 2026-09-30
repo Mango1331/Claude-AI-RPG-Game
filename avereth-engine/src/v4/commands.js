@@ -17,14 +17,14 @@ import { resolveCheck } from '../checks.js';
 import { entityLabel, setFactEvents, truth } from '../knowledge.js';
 import { normText, slug } from '../util.js';
 import {
-    placeName, hallOf, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin,
+    placeName, hallOf, hallOfSettlement, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin,
 } from './domain.js';
 import { sameWant } from './world.js';
 import { journeyReady } from './catalog.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText } from './trade.js';
 import {
     REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, checkProof, objectiveText,
-    promotion, takenByOthers, bookBoard,
+    promotion, takenByOthers, bookBoard, isHunt, proofText,
 } from './guild.js';
 
 const VERBS = { rest: 'RESTS', sleep: 'SLEEPS', wait: 'WAITS', work: 'WORKS', train: 'TRAINS', study: 'STUDIES', craft: 'CRAFTS', search: 'SEARCHES', gather: 'GATHERS', errand: 'RUNS ERRANDS' };
@@ -74,6 +74,18 @@ function questLine(q) {
     return `"${q.title}"`;
 }
 
+/**
+ * The Guild hall a message means by "the guild" without naming a town: the hall of the settlement he is in; else the
+ * branch of his active Guild contracts (one); else the branch he registered at.
+ */
+function guildHallMeant(s) {
+    const here = settlementOf(s, s.scene.at);
+    if (here) return hallOfSettlement(s, here);
+    const branches = [...new Set(contracts(s).filter((q) => q.status === 'active').map((q) => q.source?.branch).filter(Boolean))];
+    const town = branches.length === 1 ? branches[0] : membership(s)?.branch || null;
+    return town ? hallOfSettlement(s, town) : null;
+}
+
 /** The one contract a turn-in or acceptance without a name can mean, or a question. */
 function pickQuest(s, ref, statuses, kind = null) {
     if (typeof ref === 'string') return { q: s.quests[ref] || null };
@@ -106,6 +118,12 @@ const HANDLERS = {
     },
     go(s, content, c, ctx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT GO — not while the fight runs.' };
+        // "the guild building", "back to the guild": the Guild hall is an engine node, never a new place to invent
+        // (live 30.09.2026 14:56: the narrator made a "Guild desk" of it where no payout is possible)
+        if (c.to && typeof c.to === 'object' && /\bguild\b/i.test(String(c.to.new || ''))) {
+            const hall = guildHallMeant(s);
+            if (hall) c = { ...c, to: hall };
+        }
         const known = typeof c.to === 'string';
         if (known && !s.places[c.to]) return { status: 'refused', reason: 'unknown place', line: 'CANNOT GO — no such place is known.' };
         if (known && c.to === s.scene.at) return { status: 'refused', reason: 'already here', line: `NOTHING TO DO — he is already at ${placeName(s, c.to)}.` };
@@ -327,7 +345,10 @@ const HANDLERS = {
             acceptContract(s, content, q, emit, { step: c.seq });
             ctx.booked.accepted.push(q.id);
             ctx.booked.grants.push('contract slip');
-            return { status: 'resolved', line: `ACCEPTS — ${questLine(q)} at the Guild desk; the clerk logs it and hands him its contract slip. Contract memory: ${q.desired_end_state || objectiveText(q)}. The stored objectives and any verification examples are continuity guidance, not mandatory steps or wording. Payout (${q.payout_cp} cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in.` };
+            // a hunt is proven by trophies of the kills at a Guild hall (live 30.09.2026 14:56: the clerk made a local
+            // steward's inspection and signature a condition of the payout)
+            const proof = isHunt(q) ? ` Proof: ${proofText(q) || 'trophies of the kills'} brought to a Guild hall; no local inspection, witness or signature is required.` : '';
+            return { status: 'resolved', line: `ACCEPTS — ${questLine(q)} at the Guild desk; the clerk logs it and hands him its contract slip. Contract memory: ${q.desired_end_state || objectiveText(q)}.${proof} The stored objectives and any verification examples are continuity guidance, not mandatory steps or wording. Payout (${q.payout_cp} cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in.` };
         }
         // private work: its giver must be here
         if (q.status !== 'offered') return { status: 'refused', reason: `the job is ${q.status}`, line: `NOTHING TO DO — ${questLine(q)} is ${q.status}.` };
@@ -407,7 +428,7 @@ const HANDLERS = {
         }
         emit({ t: 'board.shown', d: { branch, rank, listings: listed.map((q) => q.id) } });
         ctx.boardShown = { branch, rank, listings: listed.map((q) => q.id) };
-        const rows = listed.map((q) => `**${q.title}** — client: ${q.client || 'unspecified'} · reward: ${q.payout_cp} cp · ${q.desired_end_state || objectiveText(q)}`).join('\n');
+        const rows = listed.map((q) => `**${q.title}** — client: ${q.client || 'unspecified'} · reward: ${q.payout_cp} cp · ${q.task || q.desired_end_state || objectiveText(q)}`).join('\n');
         return { status: 'resolved', line: `READS the ${rank} board — BOARD (these listings now become canonical because Alaric actually reads them; show exactly these, invent no other official contract; present the notices in the existing title-first readable format; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\n${rows}\nStored objectives and any verification examples are continuity memory only.` };
     },
     equip(s, content, c, ctx, emit) {

@@ -211,7 +211,7 @@ function quests(state, content, arg) {
     if (arg) {
         const q = list.find((x) => normText(x.title).includes(normText(arg)));
         if (!q) return `[SYSTEM // QUEST]\nNo known Quest "${arg}".`;
-        return [`[SYSTEM // QUEST] ${q.title}`, `Status: ${q.status}${q.rank ? ` | Quest Rank: ${q.rank}` : ''}${q.giver ? ` | Issuer: ${playerLabel(state, q.giver)}` : ''}`, ...q.notes.map((n) => `- ${n}`),
+        return [`[SYSTEM // QUEST] ${q.title}`, `Status: ${q.status}${q.rank ? ` | Quest Rank: ${q.rank}` : ''}${q.giver ? ` | Issuer: ${playerLabel(state, q.giver)}` : ''}`, ...(q.task ? [`Task: ${q.task}`] : []), ...q.notes.map((n) => `- ${n}`),
             ...q.history.map((h) => `  ${formatClock(h.minute)}: ${h.status}`)].join('\n');
     }
     if (!list.length) return '[SYSTEM // QUESTS]\nNo Quests.';

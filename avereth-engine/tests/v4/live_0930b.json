@@ -1,0 +1,1326 @@
+{
+ "note": "Live run 30.09.2026 14:56 (SillyTavern, Runtime V4, build 4.1.1; docs/INTEGRATION_4_1.md §9): the chat JSONL as the chat stores it. Per player message the interpreter commands the record kept (none for V3-routed combat), per reply the narrator prose and the extractor answer the record kept; the Board generator listings from the quest.created events of message 11; the seed from campaign.started. No request data, no provider data.",
+ "seed": 3669395026,
+ "greeting": "*Cool wind moves through the rough grass around Alaric Red's boots.*\r\n\r\n*The last thing that belongs to Earth is still there in memory—an old life, a world without visible mana, Classes, or this impossible second beginning. The present is different: the smell of soil and distant woodsmoke, an unfamiliar sky, and stone walls beyond the public road.*\r\n\r\n*Alaric Red is already standing on an uncultivated roadside verge outside the nearby city. Cultivated fields and fenced holdings begin farther away. No one is close enough to have witnessed the instant of arrival.*\r\n\r\n*The body is Human, healthy, and eighteen years old. Simple traveler's clothes are already being worn; a small pouch holding five silver rests at the belt. The memories are still from Earth.*\r\n\r\n*A translucent interface opens across Alaric Red's vision.*\r\n\r\n`SYSTEM INITIALIZATION COMPLETE`\r\n`Origin: Earth`\r\n`World: Avereth`\r\n`Race: Human`\r\n`Age: 18`\r\n`Level: 1 | Rank: F`\r\n\r\n`BASE STATS`\r\n`STR 5 | VIT 5 | AGI 5 | INT 5 | PER 5 | WIL 5`\r\n\r\n`Location: Public roadside verge outside Glassmere, Caelreth`\r\n`Arrival Witnesses: NONE`\r\n`Starting Possessions: Simple Traveler's Clothes | Small Pouch | 5 Silver`\r\n`Local Common Language: Integrated`\r\n`Mandatory Quest: NONE`\r\n\r\n`CHARACTER CREATION — STEP 1/2`\r\n`Choose your Base Class:`\r\n\r\n`Warrior   — Favored Stats: STR / VIT`\r\n`Mage      — Favored Stats: INT / WIL`\r\n`Guardian  — Favored Stats: VIT / WIL`\r\n`Duelist   — Favored Stats: STR / AGI`\r\n`Ranger    — Favored Stats: AGI / PER`\r\n\r\n`Your chosen Class immediately applies +1 to both Favored Stats at Level 1.`\r\n`After choosing a Class, select exactly 2 Skills from that Class's Base Skill Pool.`\r\n\r\n`Reply with your Class choice.`\r\n\r\n*The System waits. Story time does not move during Character Creation.*\r\n",
+ "creation": [
+  "Warrior",
+  "Heavy Slash + Charge"
+ ],
+ "listings": [
+  {
+   "title": "Bog Striders in the Reed Flats",
+   "client": "Eelmongers' Walk Cooperative",
+   "rank": "Novice",
+   "level": 2,
+   "qtype": "standard",
+   "payout_cp": 90,
+   "desired_end_state": "The bog strider colony haunting the eel-weirs of the Reed Flats is culled and the eel boats can launch again without crews being dragged into the shallows.",
+   "objectives": [
+    {
+     "verb": "FIND",
+     "what": "bog strider nesting mounds among the eel-weirs",
+     "qty": null,
+     "unit": null,
+     "where": "Reed Flats, south of the Eelmongers' Walk"
+    },
+    {
+     "verb": "DEFEAT",
+     "what": "bog striders",
+     "qty": 4,
+     "unit": "adults",
+     "where": "Reed Flats eel-weirs"
+    },
+    {
+     "verb": "DEFEND",
+     "what": "the weir platforms and eel boats",
+     "qty": null,
+     "unit": null,
+     "where": "Reed Flats"
+    }
+   ],
+   "proof": [
+    {
+     "kind": "object",
+     "what": "bog strider leg joints",
+     "qty": 4,
+     "unit": "pairs",
+     "on": null,
+     "consume": false
+    }
+   ]
+  },
+  {
+   "title": "Feral Hounds at the Tannery Road",
+   "client": "Marla Ostrow, tanner",
+   "rank": "Novice",
+   "level": 1,
+   "qtype": "minor",
+   "payout_cp": 50,
+   "desired_end_state": "The feral dog pack scavenging hides and threatening apprentices along the Tannery Road is driven off or destroyed, and the drying yards are safe again.",
+   "objectives": [
+    {
+     "verb": "FIND",
+     "what": "the feral dog pack's den",
+     "qty": null,
+     "unit": null,
+     "where": "abandoned kilns off the Tannery Road"
+    },
+    {
+     "verb": "DEFEAT",
+     "what": "feral dogs",
+     "qty": 3,
+     "unit": "or drive the pack beyond the road",
+     "where": "Tannery Road and the old kilns"
+    }
+   ],
+   "proof": [
+    {
+     "kind": "object",
+     "what": "dog ears",
+     "qty": 3,
+     "unit": "pairs",
+     "on": null,
+     "consume": false
+    }
+   ]
+  },
+  {
+   "title": "Wagon Escort to Ferrybridge Landing",
+   "client": "Halden Vetch, dyer",
+   "rank": "Novice",
+   "level": 2,
+   "qtype": "standard",
+   "payout_cp": 120,
+   "desired_end_state": "Vetch's madder-dye wagon reaches Ferrybridge Landing intact and on schedule for the river barge, with driver and cargo unharmed.",
+   "objectives": [
+    {
+     "verb": "ESCORT",
+     "what": "dye wagon and driver to Ferrybridge Landing",
+     "qty": 1,
+     "unit": "wagon",
+     "where": "Ferrybridge Landing, two days down the towpath"
+    },
+    {
+     "verb": "DELIVER",
+     "what": "sealed dye casks to the barge master",
+     "qty": 6,
+     "unit": "casks",
+     "where": "Ferrybridge Landing"
+    }
+   ],
+   "proof": []
+  },
+  {
+   "title": "Medicine Run to Hollowmere Hamlet",
+   "client": "Physician's Hall of Glassmere",
+   "rank": "Novice",
+   "level": 2,
+   "qtype": "minor",
+   "payout_cp": 80,
+   "desired_end_state": "A case of febrifuge tincture and bandaging stock arrives at Hollowmere Hamlet's hedge-healer before the marsh fever spreads further.",
+   "objectives": [
+    {
+     "verb": "DELIVER",
+     "what": "febrifuge tincture and bandaging stock",
+     "qty": 1,
+     "unit": "sealed case",
+     "where": "Hollowmere Hamlet, half a day northeast"
+    },
+    {
+     "verb": "TALK",
+     "what": "the hedge-healer, to confirm the fever's spread and carry word back",
+     "qty": 1,
+     "unit": "report",
+     "where": "Hollowmere Hamlet"
+    }
+   ],
+   "proof": [
+    {
+     "kind": "object",
+     "what": "signed receipt from the hedge-healer",
+     "qty": 1,
+     "unit": null,
+     "on": null,
+     "consume": false
+    }
+   ]
+  },
+  {
+   "title": "Clear the Old Watchpost at Thorn Causeway",
+   "client": "Causeway Toll-Keeper Brant",
+   "rank": "Novice",
+   "level": 3,
+   "qtype": "dangerous",
+   "payout_cp": 160,
+   "desired_end_state": "The ruined toll watchpost on the Thorn Causeway is cleared of the giant marsh frog and its brood squatting in the cellar, so the toll-keeper can reoccupy it before the autumn traffic.",
+   "objectives": [
+    {
+     "verb": "GO",
+     "what": "the ruined watchpost on the Thorn Causeway",
+     "qty": 1,
+     "unit": "site",
+     "where": "Thorn Causeway, north toll stretch"
+    },
+    {
+     "verb": "DEFEAT",
+     "what": "giant marsh frog and its brood",
+     "qty": 1,
+     "unit": "adult plus young",
+     "where": "watchpost cellar and causeway culverts"
+    },
+    {
+     "verb": "REPAIR",
+     "what": "the watchpost door bar and shutter, enough to hold the night",
+     "qty": 1,
+     "unit": "post",
+     "where": "Thorn Causeway watchpost"
+    }
+   ],
+   "proof": [
+    {
+     "kind": "mark",
+     "what": "Guild chalk sigil on the cleared watchpost door",
+     "qty": 1,
+     "unit": null,
+     "on": "watchpost door",
+     "consume": null
+    }
+   ]
+  }
+ ],
+ "turns": [
+  {
+   "i": 5,
+   "player": "*i walk into the city ahead of me and make my way to the Adventurers Guild*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": "loc.glassmere",
+     "quote": "i walk into the city ahead of me"
+    },
+    {
+     "seq": 2,
+     "type": "go",
+     "to": "loc.glassmere.guild_hall",
+     "quote": "make my way to the Adventurers Guild"
+    }
+   ]
+  },
+  {
+   "i": 6,
+   "reply": "The road takes him down a gentle slope, past a drover walking three shaggy sheep and a boy hauling bundles of kindling with a rope over one shoulder. Nobody pays him more than a glance—another traveler, another sword, unremarkable here.\n\nGlassmere's gate stands open, two guards in dull mail leaning against the stonework, one chewing a stalk. The wall is old grey granite patched with newer masonry, moss furring the shaded side. Passing under the arch, the smell changes: wet stone, horse dung, frying onions from a cookshop just inside, and something faintly metallic from a smith's yard to the left.\n\nInside, morning trade is well underway. Cart wheels grind over cobbles; a woman argues with a fishmonger over the price of river pike; two students in mismatched college robes cross the square with their heads bent over a shared slate, one gesturing at a diagram chalked there. A crier posts a notice on a board outside a counting-house, tacking it up with three practiced hammer blows.\n\nThe Guild hall is not hard to find. A wooden sign hangs from an iron bracket over a wide doorway near the square's south side—a sword crossed with a bow, paint flaking but legible. Through the open door comes the murmur of conversation and the smell of tallow smoke.\n\nInside, a long room with worn plank floors. A notice board crowds one wall, papers layered thick. A few tables hold off-duty adventurers—a woman in patched mail eating porridge, two men dicing by the window. Behind a scarred oak counter sits a clerk, a thin man with ink-stained fingers and spectacles perched on his nose, copying entries into a ledger. He finishes his line before looking up.\n\n\"Morning,\" he says. \"Registration, posting, or business?\"",
+   "answer": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": "loc.glassmere",
+      "with": null
+     },
+     "2": {
+      "arrived": true,
+      "at": "loc.glassmere.guild_hall",
+      "with": null
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 30
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": "loc.glassmere",
+      "with": null,
+      "forced_by": null
+     },
+     {
+      "seq": 3,
+      "type": "time",
+      "minutes": 10
+     },
+     {
+      "seq": 4,
+      "type": "arrive",
+      "at": "loc.glassmere.guild_hall",
+      "with": null,
+      "forced_by": null
+     },
+     {
+      "seq": 5,
+      "type": "person.new",
+      "ref": "person.glassmere_clerk",
+      "name": null,
+      "role": "Guild hall clerk",
+      "desc": [
+       "thin man with ink-stained fingers",
+       "spectacles perched on his nose",
+       "copies entries into a ledger behind a scarred oak counter"
+      ],
+      "present": true,
+      "at": "loc.glassmere.guild_hall",
+      "band": "ENGAGED"
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "Glassmere's Guild hall notice board",
+      "p": "is",
+      "o": "crowded with layered papers"
+     },
+     {
+      "seq": 7,
+      "type": "fact",
+      "s": "Guild clerk",
+      "p": "asks Alaric whether he wants",
+      "o": "registration, posting, or business"
+     }
+    ]
+   }
+  },
+  {
+   "i": 7,
+   "player": "*i walk to the front desk and say* Hello my name is Alaric Red and im here to register*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "guild.register",
+     "quote": "im here to register"
+    }
+   ]
+  },
+  {
+   "i": 8,
+   "reply": "\"Red. Alaric Red.\" The clerk writes it in the ledger in a small, even hand, then sets the pen down. \"Registration's two silver. One-time fee. That buys you a Guild medallion and your name on the rolls—any branch in the kingdom honors it, not just this one.\"\n\nHe taps the ledger with one stained finger. \"You start at Novice. That's your standing with the Guild, nothing else—it's what contracts you're allowed to take, not how strong you are. New registrations get read on a measuring stone before I hand the medallion over, so we'll know your Power Rank too. Most come in F.\"\n\nFrom the counter's edge he slides a wooden tray of medallions across—flat discs of stamped tin, each on a worn cord.\n\n\"You'll be able to take contracts off that board there at Novice level and below. Payment's posted on each listing; the Guild pays it when you turn in your proof here or at any other branch. Lose the medallion, you pay for a replacement. Die with it, we collect it.\" He says the last without any particular weight, like a man reciting a rule he's said a thousand times.\n\n\"So. Two silver, and your hand on the ledger line. Anything unclear?\"",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "learn",
+      "who": "npc.personglassmere_clerk",
+      "s": "Alaric Red",
+      "p": "knows_name",
+      "o": "Alaric Red",
+      "how": "witnessed"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "Guild registration",
+      "p": "fee",
+      "o": "2 silver one-time, buys a Guild medallion honored at any branch"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "new Guild members",
+      "p": "are read on a measuring stone",
+      "o": "before receiving their medallion, to record their Power Rank"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Guild medallion",
+      "p": "replacement rule",
+      "o": "lost medallions must be paid for; the Guild collects a dead member's medallion"
+     }
+    ]
+   }
+  },
+  {
+   "i": 9,
+   "player": "*i nod and pay the 2 silver. i then put my hand on the ledger line*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "offer.accept",
+     "offer": "offer.registration",
+     "lines": [
+      "l1"
+     ],
+     "qty": null,
+     "quote": "i nod and pay the 2 silver"
+    },
+    {
+     "seq": 2,
+     "type": "guild.register",
+     "quote": "i then put my hand on the ledger line"
+    }
+   ]
+  },
+  {
+   "i": 10,
+   "reply": "The clerk counts the two silver into a lockbox beneath the counter, then turns the ledger toward Alaric and holds out the pen. The ink is thick and brownish; the line waits beneath the last entry, a farmhand named Dorrit Vane registered three days prior.\n\nAlaric signs. The clerk blots it with a square of sand, reads it back once, and nods.\n\n\"Measuring stone's through there.\" He lifts a hinged flap in the counter and jerks his chin toward a side room, its door standing open.\n\nThe room is small and cold, windowless, lit by an oil lamp. A slab of cloudy crystal the size of a grave marker stands upright in a wooden frame, its base worn smooth by years of palms. \"Flat hand on the stone, hold still. It reads your body's Rank, not your Guild standing—like I said, most come out F. Don't be disappointed if it's nothing dramatic.\"\n\nAlaric presses his palm to the crystal. It is colder than the room, and for a heartbeat the cloudiness inside it stirs, a pale glow gathering beneath the surface before settling into a steady, faint luminescence—dim and even, the color of moonlit frost.\n\nThe clerk glances at the slab, then at a small brass gauge set into the frame's base, and makes a note on a slip of paper.\n\n\"F,\" he says. \"Base stage, ordinary measure. Nothing wrong with that—every S-rank in the kingdom started somewhere on this stone.\"\n\nBack in the main hall, he takes one tin medallion from the tray, threads on its cord, and holds it out across the counter. The stamp is fresh: a sword crossed with a bow, and the letter N beneath.\n\n\"Alaric Red, Novice, Glassmere branch. Congratulations.\" He returns to his ledger, pen already moving. \"Notice board's behind you if you want work. Read the listing and the Quest Rank before you take anything—contract's active the moment I stamp it.\"",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 10
+     },
+     {
+      "seq": 2,
+      "type": "learn",
+      "who": "npc.personglassmere_clerk",
+      "s": "Alaric",
+      "p": "registered_name",
+      "o": "Alaric Red",
+      "how": "witnessed"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Alaric",
+      "p": "measured_power_rank",
+      "o": "F, base stage"
+     }
+    ]
+   }
+  },
+  {
+   "i": 11,
+   "player": "*I Nod again and then i walk over to the Novice Quest board and look at it*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "board.read",
+     "rank": "Novice",
+     "quote": "i walk over to the Novice Quest board and look at it"
+    }
+   ]
+  },
+  {
+   "i": 12,
+   "reply": "The Novice board is a door-sized expanse of cork and old nail holes, papers pinned two and three deep. Alaric brushes a hanging corner aside and reads what's currently posted.\n\n**Bog Striders in the Reed Flats**\n*Client: Eelmongers' Walk Cooperative · Reward: 90 cp*\nThe bog strider colony haunting the eel-weirs of the Reed Flats is culled and the eel boats can launch again without crews being dragged into the shallows.\n\n**Feral Hounds at the Tannery Road**\n*Client: Marla Ostrow, tanner · Reward: 50 cp*\nThe feral dog pack scavenging hides and threatening apprentices along the Tannery Road is driven off or destroyed, and the drying yards are safe again.\n\n**Wagon Escort to Ferrybridge Landing**\n*Client: Halden Vetch, dyer · Reward: 120 cp*\nVetch's madder-dye wagon reaches Ferrybridge Landing intact and on schedule for the river barge, with driver and cargo unharmed.\n\n**Medicine Run to Hollowmere Hamlet**\n*Client: Physician's Hall of Glassmere · Reward: 80 cp*\nA case of febrifuge tincture and bandaging stock arrives at Hollowmere Hamlet's hedge-healer before the marsh fever spreads further.\n\n**Clear the Old Watchpost at Thorn Causeway**\n*Client: Causeway Toll-Keeper Brant · Reward: 160 cp*\nThe ruined toll watchpost on the Thorn Causeway is cleared of the giant marsh frog and its brood squatting in the cellar, so the toll-keeper can reoccupy it before the autumn traffic.\n\nEach carries a small stamped mark at the bottom: Novice, all five. Behind Alaric, the dice players argue over a throw; the clerk's pen scratches on, unhurried.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 3
+     }
+    ]
+   }
+  },
+  {
+   "i": 13,
+   "player": "*I take Bog Striders in the Reed Flats and register it at the front desk*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "quest.accept",
+     "quest": "quest.bog_striders_in_the_reed_flats",
+     "quote": "I take Bog Striders in the Reed Flats and register it at the front desk"
+    }
+   ]
+  },
+  {
+   "i": 14,
+   "reply": "\"Reed Flats,\" the clerk says, taking the listing from Alaric's hand. He reads it over his spectacles, then pulls a fresh sheet from a drawer and copies out the contract in the same small, even hand: client, reward, the terms as posted. \"Eelmongers' Walk Cooperative. Ninety copper, paid here when you bring proof.\"\n\nThe pen moves down the page. He stamps it, blots it, and holds the slip out. \"Colony means more than one. Locals confirm the work's done before the Guild pays—coop steward at the Walk inspects the site and signs. Don't burn the weirs down to get at them; the client wants eel boats launching, not a rebuild.\"\n\nHe slides the ledger around and logs the entry while Alaric takes the slip. \"South road out of the city, then the causeway track past the saltmeadows. An hour and a half's walk, longer if the mud's wet. Ask for Steward Oss at the Eelmongers' Walk—he'll point you at the worst of the weirs.\"\n\nThe stamp is already back in its ink. \"Contract's active. Good hunting.\"",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "Eelmongers' Walk Cooperative",
+      "p": "is the client of",
+      "o": "quest.bog_striders_in_the_reed_flats"
+     },
+     {
+      "seq": 2,
+      "type": "quest.detail",
+      "quest": "quest.bog_striders_in_the_reed_flats",
+      "note": "Client is the Eelmongers' Walk Cooperative; 90 copper paid at the Guild hall on proof. Locals (coop steward Steward Oss at the Eelmongers' Walk) must confirm the work is done and inspect/sign the site before payment. Do not burn the weirs; the client wants eel boats launching, not a rebuild. Route: south road out of Glassmere, then the causeway track past the saltmeadows, about an hour and a half's walk (longer if the mud is wet). Ask for Steward Oss to find the worst of the weirs.",
+      "schedule": null
+     },
+     {
+      "seq": 3,
+      "type": "time",
+      "minutes": 5
+     }
+    ]
+   }
+  },
+  {
+   "i": 15,
+   "player": "*I nod and then make my way over to the Reed Flats location*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": {
+      "new": "the Reed Flats"
+     },
+     "quote": "make my way over to the Reed Flats location"
+    }
+   ]
+  },
+  {
+   "i": 16,
+   "reply": "The south road leaves Glassmere through a gate still busy with carts, then runs straight between fields of grazing geese and drystone walls. An hour in, the walls give up and the land begins to flatten and darken—saltmeadow grass, stiff and grey-green, shivering in a wind that carries brine and rot-smell from the flats beyond. The causeway track is raised stone, wide enough for a cart, with black ditches on either side where water sits motionless.\n\nThe Eelmongers' Walk announces itself by smell first: fish guts and tar. A row of low sheds on stilts lines the causeway's end, nets hung to dry like grey curtains, a dozen flat-bottomed eel boats pulled up on the mud below. Men and women work the nets in the morning light, and a few of them pause to look at the stranger with a sword coming down the track.\n\nA broad man in a leather apron, forearms scarred old from eel teeth, wipes his hands and comes to meet him partway along the boards.\n\n\"Guild?\" he says. Up close he smells of smoke and brine. \"Oss. Steward of the Walk.\" He looks Alaric over—the new medallion, the clean armor—and something in his face settles, not unkind. \"The striders took the east weirs two nights back. Dragged poor Tebb's skiff half into the water while he stood on the bank and hollered.\"\n\nHe points down the line of the flats, past the last shed, where wooden weir platforms stand in the shallows like scattered tables.\n\n\"Four big ones at least, maybe more. They nest in the mounds out among the reeds.\" He looks Alaric in the eye. \"You wanting to go out now, lad, or wait for the tide?\"",
+   "answer": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Eelmongers' Walk, Reed Flats",
+        "kind": "site",
+        "parent": "loc.glassmere"
+       }
+      },
+      "with": null
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 60
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Eelmongers' Walk, Reed Flats",
+        "kind": "site",
+        "parent": "loc.glassmere"
+       }
+      },
+      "forced_by": null,
+      "with": null
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "npc.oss",
+      "name": "Oss",
+      "role": "Steward of the Eelmongers' Walk",
+      "desc": [
+       "broad man in a leather apron",
+       "forearms scarred old from eel teeth",
+       "smells of smoke and brine"
+      ],
+      "present": true,
+      "at": {
+       "new": {
+        "name": "Eelmongers' Walk, Reed Flats",
+        "kind": "site",
+        "parent": "loc.glassmere"
+       }
+      },
+      "band": "ENGAGED"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Bog striders took the east weirs two nights back and dragged Tebb's skiff half into the water",
+      "p": "event",
+      "o": "Reed Flats eel-weirs"
+     },
+     {
+      "seq": 5,
+      "type": "quest.detail",
+      "quest": "quest.bog_striders_in_the_reed_flats",
+      "note": "Oss, steward of the Eelmongers' Walk, reports four big bog striders at least, maybe more, nesting in mounds out among the reeds; east weirs attacked two nights back; Tebb's skiff dragged half into the water",
+      "schedule": null
+     },
+     {
+      "seq": 6,
+      "type": "memory",
+      "text": "Oss the Walk steward met the new Guild swordsman on the boards and pointed him toward the strider-haunted east weirs",
+      "who": [
+       "npc.oss"
+      ],
+      "imp": 6
+     }
+    ]
+   }
+  },
+  {
+   "i": 17,
+   "player": "Ill go out now *i say and then go to the wodden platforms sword ready*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": {
+      "new": "the wooden platforms"
+     },
+     "quote": "i say and then go to the wodden platforms"
+    }
+   ]
+  },
+  {
+   "i": 18,
+   "reply": "\"Mind the mud between the platforms,\" Oss calls after him. \"It'll take a boot and keep it.\"\n\nThe first weir platform is a short hop down the boards, wet wood darkened with old fish slime. From there the others scatter out into the shallows—six, seven of them, connected in places by sunken plank paths that sit just under the water's skin. The reeds grow thick between them, taller than a man's head, hissing when the wind pushes through. Somewhere out in that grey-green sea of stalks, water drips and small things plop.\n\nThe second platform tells the story. The eel traps stacked at its edge are overturned, one split open, and long gouges score the wood—four parallel lines of them, deep as a knife-draw, spaced wide. A single wet footprint-print remains in a patch of soft algae: three long toes radiating forward, a spur of heel behind, big as a dinner plate. Whatever made it stood here recently enough that the algae hasn't dried at its edges.\n\nBeyond, out where the reeds thin around a dark hump of heaped vegetation—a nesting mound, mud and cut reed stacked waist-high—something tall and jointed stands half-visible in the motionless water. Legs like folded fishing poles, a flat body riding a man's height above the surface, utterly still. Watching the platform Alaric stands on, or waiting on it.\n\nThe wind shifts. The reeds between here and there shiver, and two more long-legged silhouettes slide sideways through them, low and deliberate, cutting off the plank path back toward the Walk.\n\nThe mud between platforms gleams, deep and soft. The plank path ahead is submerged to a hand's width under brown water.",
+   "answer": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Reed Flats eel-weir platforms",
+        "kind": "wilderness",
+        "parent": "loc.glassmere.eelmongers_walk_reed_flats"
+       }
+      },
+      "with": null
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "bog_strider_evidence",
+      "p": "found_on",
+      "o": "second weir platform: overturned split eel traps, four parallel gouges, and a fresh three-toed footprint with heel spur big as a dinner plate in wet algae"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "bog_strider_nesting_mound",
+      "p": "located",
+      "o": "a waist-high mound of mud and cut reed stands out in the shallows beyond the second platform"
+     },
+     {
+      "seq": 3,
+      "type": "creature.new",
+      "ref": "npc.bog_strider_mound",
+      "species": "bog strider",
+      "anchor": "arthropod",
+      "desc": [
+       "tall and jointed, legs like folded fishing poles, flat body riding a man's height above the water, standing half-visible by the nesting mound, utterly still and watching the platform"
+      ],
+      "count": 1,
+      "present": true,
+      "band": "LONG"
+     },
+     {
+      "seq": 4,
+      "type": "creature.new",
+      "ref": "npc.bog_strider_flankers",
+      "species": "bog strider",
+      "anchor": "arthropod",
+      "desc": [
+       "two long-legged silhouettes sliding low and deliberate through the reeds, cutting off the plank path back toward the Eelmongers' Walk"
+      ],
+      "count": 2,
+      "present": true,
+      "band": "MEDIUM"
+     },
+     {
+      "seq": 5,
+      "type": "intent",
+      "who": "npc.bog_strider_flankers",
+      "intent": "hold"
+     }
+    ]
+   }
+  },
+  {
+   "i": 21,
+   "player": "*i go a few steps deeper and stop at kneedeep waiting for them to come closer*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": {
+      "new": "a few steps deeper into the water"
+     },
+     "quote": "i go a few steps deeper"
+    },
+    {
+     "seq": 2,
+     "type": "activity",
+     "kind": "wait",
+     "what": "at kneedeep for the bog striders to come closer",
+     "minutes": null,
+     "until": null,
+     "quote": "stop at kneedeep waiting for them to come closer"
+    }
+   ]
+  },
+  {
+   "i": 22,
+   "reply": "The water closes around his boots, cold as a well, and the mud beneath grips each step before letting go. At kneedeep he stops, sword held low, and the flats go on being what they were—wind in the reeds, a gull somewhere over the sheds, water running off the weir boards in thin threads.\n\nThe two flankers come first. They move without hurry, feet lifting and setting down on the water's surface skin or on hidden hummocks, so soundlessly it is unsettling—two sets of stilt legs drifting through the reed gaps, closing on the plank path twenty paces off, then fifteen. Up close they are worse than silhouettes: flat grey bodies like overgrown water beetles, jaw-hinged faces all mouthparts, forelegs folded up against the chest in a way that makes clear the folded part is a choice.\n\nThe big one at the mound does not move. It just keeps standing, tall as a man and half again, head tilted down at him.\n\nThe wind drops. In the new stillness he can hear them—the dry tick of leg-joints, the faint lap of water against his own greaves.\n\nOne of the flankers leaves the path. It comes over the open water straight at him, quick now, forelegs unfolding, and the other breaks through the reeds behind it at a sprint across the shallows, both of them committed, the big one still at its mound and watching.",
+   "answer": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": "loc.reed_flats_eel_weir_platforms",
+      "with": null
+     },
+     "2": {
+      "minutes": 5,
+      "done": true
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "position",
+      "who": "mon.npcbog_strider_flankers_1",
+      "band": "SHORT",
+      "cover": "none"
+     },
+     {
+      "seq": 2,
+      "type": "position",
+      "who": "mon.npcbog_strider_flankers_2",
+      "band": "SHORT",
+      "cover": "none"
+     },
+     {
+      "seq": 3,
+      "type": "position",
+      "who": "mon.npcbog_strider_mound",
+      "band": "LONG",
+      "cover": "none"
+     },
+     {
+      "seq": 4,
+      "type": "hostile",
+      "by": [
+       "mon.npcbog_strider_flankers_1",
+       "mon.npcbog_strider_flankers_2"
+      ]
+     },
+     {
+      "seq": 5,
+      "type": "intent",
+      "who": "mon.npcbog_strider_flankers_1",
+      "intent": "attack"
+     },
+     {
+      "seq": 6,
+      "type": "intent",
+      "who": "mon.npcbog_strider_flankers_2",
+      "intent": "attack"
+     },
+     {
+      "seq": 7,
+      "type": "fact",
+      "s": "mon.npcbog_strider_mound",
+      "p": "behavior",
+      "o": "stays at its mound, tall as a man and a half, watching without moving"
+     }
+    ]
+   }
+  },
+  {
+   "i": 23,
+   "player": "*I Heavy Slash Bog Strider A*",
+   "route": "v3"
+  },
+  {
+   "i": 24,
+   "reply": "The first one reaches him before the water settles. It rises half out of the shallows, stilt legs braced wide, and its face splits—mouthparts hinging open around a pale sting that jabs at his thigh. The point skids off heavy armor plating and leaves a numb line of pressure above his knee. The second comes over the water a heartbeat later, quick and dry, and its sting scrapes the meat of his arm where the vambrace gaps, a hot pinprick through the sleeve.\n\nHe swings through it.\n\nThe longsword comes around from the low guard in a full-shouldered arc, weight dropping into the cut, and the edge takes the first strider across the flat of its body where the grey carapace narrows. It goes through. Chitin cracks like river ice and the blade buries itself deep, and the creature folds around the steel—legs spasming, a thin hiss of air through its mouthparts—then sags, dead weight dragging at his grip as he wrenches the sword free. It slides into the brown water and floats, legs up, carried a hand's width sideways by the current before the mud catches it.\n\nThe second one does not retreat. It strikes again at his sword arm, sting glancing off the armor's edge, a scratch of force more than a wound.\n\nOut among the reeds, the big one at the mound has finally moved. It has taken two long, silent steps out onto open water, head lowering, the folded forelegs beginning to unfold.\n\nThe water around his knees is still again. His blade drips.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "Bog Strider A",
+      "p": "status",
+      "o": "slain by Alaric's heavy slash, body floating dead among the eel-weir shallows"
+     },
+     {
+      "seq": 2,
+      "type": "quest.progress",
+      "quest": "quest.bog_striders_in_the_reed_flats",
+      "objective": "DEFEAT 4 adult bog striders at Reed Flats eel-weirs",
+      "status": "open"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Bog Strider C (mound strider)",
+      "p": "position",
+      "o": "has left the mound and taken two long steps out onto open water, forelegs beginning to unfold"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Bog Strider B",
+      "p": "behavior",
+      "o": "does not retreat, strikes again at Alaric's sword arm, sting glancing off armor"
+     },
+     {
+      "seq": 5,
+      "type": "time",
+      "minutes": 1
+     }
+    ]
+   }
+  },
+  {
+   "i": 27,
+   "player": "*I Heavy Slash Bog Strider B*",
+   "route": "v3"
+  },
+  {
+   "i": 28,
+   "reply": "The second one is still over the water when his blade comes around again, and it has no room left to run. The edge catches it mid-lunge, high on the flat of the body where the carapace narrows toward the head, and opens it—a long crack of split chitin, wet and grey inside, the sting-arm spasming wide. It reels sideways off the line of the swing, legs scrambling against the water's skin, and drags itself back toward the reeds trailing a thin thread of dark fluid, one hind leg already dragging crooked. Not dead. Ruined, and trying to leave.\n\nHe feels the cost of the swing settle into his arms, breath a little shorter than before.\n\nIt jabs at him anyway on the way past—a last spiteful thrust of the sting against his forearm, glancing off the armor's rim, a pinch of pressure and nothing more.\n\nOut on the open water, the big one has stopped its advance. It stands a dozen paces off, head low, forelegs half-unfolded, and for the first time it does something other than watch: a slow sideways shift, weight settling onto its hind stilts, like a man deciding whether a fight is worth the price.\n\nThe wounded one slips into the reeds. The stalks shiver twice where it goes, then still.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "Bog Strider B",
+      "p": "condition",
+      "o": "badly wounded, carapace split, one hind leg dragging, retreated into the reeds trailing dark fluid"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "Bog Strider B",
+      "p": "last attack",
+      "o": "jabbed its sting at Alaric's forearm on the way past, glancing off the armor's rim harmlessly"
+     },
+     {
+      "seq": 3,
+      "type": "position",
+      "who": "mon.npcbog_strider_mound",
+      "band": "MEDIUM",
+      "cover": "none"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Bog Strider C",
+      "p": "demeanor",
+      "o": "stopped its advance a dozen paces off, shifting weight sideways as if weighing whether the fight is worth continuing"
+     },
+     {
+      "seq": 5,
+      "type": "time",
+      "minutes": 1
+     }
+    ]
+   }
+  },
+  {
+   "i": 31,
+   "player": "*I basic attack the Bog Strider B*",
+   "route": "v3"
+  },
+  {
+   "i": 32,
+   "reply": "He goes after it before the reeds close. Two steps through the water, mud sucking at his boots, and the blade takes the wounded strider across the back where it drags itself through the stalks—a short, hard chop that finishes the split in its carapace. It shudders once, legs curling inward, and goes still among the reed stems, dark fluid threading away downstream.\n\nThen it is quiet.\n\nThe flats settle around him: water dripping off his blade, his own breathing, the gull again out over the sheds. Two grey bodies float among the weirs, legs up, drifting slowly against the weir boards.\n\nThe big one has not run. It stands on the open water a dozen paces off, tall as a man and a half, forelegs still half-unfolded—and as he straightens, it does the last thing he might have expected. It backs away. One slow deliberate step, then another, head never dropping, until the reeds take its outline and only the dry tick of its joints remains, going.\n\nThen even that is gone, and there is nothing left on the water but wind, dead striders, and the mound standing dark at the edge of the shallows.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "npc.bog_strider_mound",
+      "p": "status",
+      "o": "retreated into the reeds, backing away from Alaric without attacking"
+     },
+     {
+      "seq": 2,
+      "type": "leave",
+      "who": "npc.bog_strider_mound"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "bog strider B",
+      "p": "status",
+      "o": "killed by Alaric's chop, dead among the reed stems"
+     },
+     {
+      "seq": 4,
+      "type": "quest.progress",
+      "quest": "quest.bog_striders_in_the_reed_flats",
+      "objective": "DEFEAT 4 adult bog striders at Reed Flats eel-weirs",
+      "status": "open"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "reed flats eel-weirs",
+      "p": "scene",
+      "o": "three dead bog striders now float among the weirs; only the nesting mound remains at the edge of the shallows"
+     }
+    ]
+   }
+  },
+  {
+   "i": 33,
+   "player": "*i cut of small parts of the 2 corpses on my feet as proof and then walk back out to the man that pointed me here*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "take",
+     "object": {
+      "new": "bog strider leg joints (proof from 2 corpses)"
+     },
+     "qty": null,
+     "quote": "i cut of small parts of the 2 corpses on my feet as proof"
+    },
+    {
+     "seq": 2,
+     "type": "go",
+     "to": {
+      "new": "back to the man that pointed me here"
+     },
+     "quote": "then walk back out to the man that pointed me here"
+    }
+   ]
+  },
+  {
+   "i": 34,
+   "reply": "The joints come off ugly. He kneels on the weir platform with a dead strider half-beached beside him, saws the blade through the hinge of a hind leg where the chitin thins, and works until it cracks free—a grey-brown segment longer than his hand, still faintly warm inside. The second corpse gives up its joint easier. He wraps both in a strip torn from the hem of his sleeve-cloth and tucks them into the small pouch, wipes the sword once against his trousers, and starts back along the weir boards.\n\nThe walk out is longer than the walk in had felt. His boots squelch. A shallow cut on his forearm stings with every swing of his arm, and the numb patch above his knee has faded to an ache. Eelermen watch him from two platforms over—one pauses in hauling a dripping weir line to track him the whole way across, elbow crooked over the post.\n\nOss is where he left him, up on the main boards by the mooring posts, talking to a woman with a bait barrel. The steward is a wiry man gone grey at the temples, forearms like rope, a coiled measuring cord over one shoulder. He breaks off when he sees the sword still bare in the young Guildsman's hand and the state of the boots.\n\n\"Well now.\" He comes a few steps down the planking, eyes going past Alaric to the east weirs, then back to him. There is blood on the water back there; from here it reads as a dark smear among the stakes. \"You went out to the mounds, then. Alone.\" He says it flat, not quite a question, and rubs a thumb along the cord on his shoulder. \"How many did you find?\"",
+   "answer": {
+    "expected": {
+     "1": {
+      "taken": true
+     },
+     "2": {
+      "arrived": true,
+      "at": "loc.reed_flats_eel_weir_platforms",
+      "with": null
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "object.new",
+      "name": "bog strider leg joints",
+      "kind": "trophy",
+      "qty": 2,
+      "unit": "pairs of leg joints",
+      "holder": "pc",
+      "for_quest": "quest.bog_striders_in_the_reed_flats"
+     },
+     {
+      "seq": 2,
+      "type": "time",
+      "minutes": 20
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "person.oss",
+      "name": "Oss",
+      "role": "weir steward",
+      "desc": [
+       "wiry man gone grey at the temples",
+       "forearms like rope",
+       "coiled measuring cord over one shoulder"
+      ],
+      "present": true,
+      "at": "loc.reed_flats_eel_weir_platforms",
+      "band": "SHORT"
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "person.bait_woman",
+      "name": null,
+      "role": "woman with a bait barrel",
+      "desc": [
+       "talking with Oss by the mooring posts"
+      ],
+      "present": true,
+      "at": "loc.reed_flats_eel_weir_platforms",
+      "band": "SHORT"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "Oss",
+      "p": "notices",
+      "o": "Alaric returning from the east weirs with a bare sword and blood visible in the water behind him"
+     },
+     {
+      "seq": 6,
+      "type": "quest.detail",
+      "quest": "quest.bog_striders_in_the_reed_flats",
+      "note": "Oss the steward at the mooring posts asks how many bog striders Alaric found; blood in the water by the east weirs is visible from the main boards",
+      "schedule": null
+     }
+    ]
+   }
+  },
+  {
+   "i": 37,
+   "player": "I found 3 and eliminated 2 *i say calmly* is that enough for you to sign my proof? or do i need to hunt more?",
+   "commands": []
+  },
+  {
+   "i": 38,
+   "reply": "Oss scratches under the edge of his leather apron with a thumb, unhurried. \"Eliminated two.\" He looks back at the east weirs, at the dark smear on the water, and his mouth works around something—whistles once, low, through a gap in his teeth. The woman with the bait barrel has gone quiet, arms folded over the lid, listening.\n\n\"Three, though. You said three.\" He shifts the measuring cord higher on his shoulder. \"The big one went off into the reeds, did it? They do that. Sulk a while, then come back to the same mounds once the smell of blood fades.\" He steps closer and holds out a broad hand, palm up, scarred cross the knuckles from old eel teeth. \"Show me what you've brought, then.\"\n\nHe turns the wrapped joints over, thumbs one out of the cloth far enough to see the hinge, the wet grey of it, and grunts. \"Fresh. This morning's work, no mistake.\" He wraps them back up and hands them over, but doesn't let go of the cloth right away.\n\n\"Here's how it sits, Guildsman. The contract says four adults. Two joints is half your proof—won't get you the payout on its own, and I won't sign a job half done, Walk's word means something at that front desk.\" He does let go now, and wipes his hand down the apron. \"The third one's still out there with a mound to guard. Wait an hour, two, it'll show itself again. Or go in after it now, while it's rattled and alone.\" A nod toward the east, where the reeds stand still. \"Either way, you come back with a third pair of joints, I'll write what I saw and put my mark under it. And there's a boat here—\" a glance at the woman, who shrugs, \"—if you'd rather not stand in the water waiting on it.\"\n\nThe woman speaks up at last, dry as the bait barrels. \"He's right about them coming back. Took two fingers off Harl the cooper last spring, the same strider, twice.\"",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "quest.detail",
+      "quest": "quest.bog_striders_in_the_reed_flats",
+      "note": "Oss, the Walk's steward, inspected Alaric's 2 pairs of bog strider leg joints and confirmed they are fresh morning kills. He will write and sign the proof once Alaric brings a third pair; two pairs alone is only half the required proof and he will not sign a half-done job.",
+      "schedule": null
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "Oss",
+      "p": "promises to sign bog strider proof upon",
+      "o": "a third pair of leg joints"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "bait barrel woman",
+      "p": "recounts",
+      "o": "the same strider took two fingers off Harl the cooper last spring, twice"
+     },
+     {
+      "seq": 4,
+      "type": "thread",
+      "text": "The third bog strider fled into the reeds east of the weirs; it sulks but returns to the same mounds once the smell of blood fades, and a boat is available if Alaric would rather not wait in the water.",
+      "kind": "other",
+      "status": "open"
+     },
+     {
+      "seq": 5,
+      "type": "memory",
+      "text": "Oss examined Alaric's bog strider joints, judged them fresh, and promised to sign the proof if a third pair is brought back.",
+      "who": [
+       "npc.oss",
+       "npc.personbait_woman"
+      ],
+      "imp": 6
+     }
+    ]
+   }
+  },
+  {
+   "i": 39,
+   "player": "*I Nod and go back down but i keep myself hidden as i lay in wait for more to come*",
+   "commands": []
+  },
+  {
+   "i": 40,
+   "reply": "The waiting spot chooses itself. Back past the first weir line there is a tangle of stacked eel-traps against the platform posts—a hurdle of grey wicker taller than a crouched man, half rotten, with a gap in the middle where a coil of rope has slipped down. He folds himself into that gap with the sword flat across his knees, back against the posts, and the traps close over him like a lid. From inside, the water is a strip of grey light between the wicker and the mud.\n\nThe flats go on being the flats. An eelboat poles out from the main boards and works its lines two hundred paces west, too far to matter. Water ticks against the weir stakes. Somewhere under the platform, something small moves through the mud and stops, moves and stops. His forearm cut dries to a tight itch. The numb patch above his knee settles into a dull throb that keeps its own slow time.\n\nThe reeds out by the mound do not move for a long while.\n\nThen they do—wrong, all at once, a wide swath of them tilting upstream of the mound where no wind leans. The strip of water between the traps shows him legs, unfolded now and taking their time, each jointed step placed down quiet as a heron's. The big strider comes back the way Oss said it would, head low, moving along the weir line—not toward the mound, but toward the platforms. Toward the blood-smell on the boards where the first two died.\n\nIt stops twenty paces out, at the edge of the first weir. The head tilts, one huge eye angled down at the boards, at the dark smear, at the tangle of traps.\n\nIts forelegs come off the water and grip the platform edge, and the boards creak under the weight.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 20
+     },
+     {
+      "seq": 2,
+      "type": "creature.new",
+      "ref": "creature.big_bog_strider",
+      "species": "bog strider",
+      "anchor": "arthropod",
+      "desc": [
+       "The big adult bog strider, head low, jointed heron-quiet legs, drawn back along the weir line toward the platforms by the blood-smell where the first two died"
+      ],
+      "count": 1,
+      "present": true,
+      "band": "ENGAGED"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "creature.big_bog_strider",
+      "p": "position",
+      "o": "forelegs gripping the edge of the first weir platform, boards creaking, twenty paces from Alaric's hiding spot among the stacked eel-traps"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Alaric",
+      "p": "hides",
+      "o": "in the gap of the rotten stacked eel-traps behind the first weir line, sword across his knees"
+     }
+    ]
+   }
+  },
+  {
+   "i": 43,
+   "player": "*I Dash forward and Heavy Slash at Bog Strider D*",
+   "route": "v3"
+  },
+  {
+   "i": 44,
+   "reply": "The wicker hurdles burst apart as he drives through the gap, boots skidding on wet boards, and the strider is faster than something that size has any right to be. The head whips down and its mouthparts jab at his shoulder—a hard, needling pinch through the armor's edge, shallow, more insult than wound.\n\nThen the longsword comes around in a full-armed arc and catches the creature where neck meets body. The blade bites deep through chitin with a sound like a hatchet in green wood, and the whole strider lurches sideways, forelegs raking the platform, one joint buckling under it. Dark fluid wells along the cut. Its weight sags onto the boards, legs splayed, and the head still snakes at him—the mouthparts snap shut on his forearm, another pinprick stab, clinging for a heartbeat before it tears free.\n\nThe thing is trembling now. Still upright, barely, legs bowed under its bulk, the eye fixed on him and rolling. Blood and watery ichor run together between the boards toward the eel-trap wreckage.\n\nThe strider's legs scrape, shift, gather.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "creature.big_bog_strider",
+      "p": "condition",
+      "o": "gravely wounded by Alaric's heavy slash, dark fluid welling, one joint buckled, barely upright but still hostile and gathering its legs"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "creature.big_bog_strider",
+      "p": "bit Alaric",
+      "o": "twice with shallow mouthpart pinches, shoulder and forearm, minor wounds through armor's edge"
+     }
+    ]
+   }
+  },
+  {
+   "i": 45,
+   "player": "*I basic attack Bog Strider D*",
+   "route": "v3"
+  },
+  {
+   "i": 46,
+   "reply": "He meets its gather with a straight, economical cut—a short step in, the blade driven through the eye. The strider shudders once, all six legs straightening stiff, and comes down across the boards with a crash that sends the eel-trap wreckage sliding. A leg twitches, scrapes, and is still.\n\nThe flats take the sound back. The eelboat out west poles on, unaware. Water ticks against the stakes. His forearm bleeds where the mouthparts jabbed it, two small dark punctures above the earlier cut, and the pinch at his shoulder aches dully under the armor's edge.\n\nUp the boards, Oss and the bait woman stand at the mooring posts, the woman still gripping the barrel lid. Oss lets out a long breath through the gap in his teeth and starts forward, boots loud on the planks, stopping at a respectful distance from the sagging bulk and the dark fluid spreading under it.\n\n\"Well.\" He looks the strider over, then Alaric, then the trampled wreckage of the traps. \"That's the big of it, then. Four adults, all told.\" He wipes his palms on the apron. \"You'll want the joints off that one before the ants and the gulls get at them. I'll fetch the measuring cord and my slate—we'll do this properly, and you can be at the Guild desk before the noon bell if your legs still answer you.\"",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "bog strider D",
+      "p": "status",
+      "o": "killed on the weir boards, dark fluid spreading under its bulk"
+     },
+     {
+      "seq": 2,
+      "type": "quest.progress",
+      "quest": "quest.bog_striders_in_the_reed_flats",
+      "objective": "DEFEAT 4 adult bog striders at Reed Flats eel-weirs",
+      "status": "open"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Alaric",
+      "p": "wounds",
+      "o": "two fresh dark punctures on his forearm from the strider's mouthparts, shoulder pinch aching under the armor"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Oss",
+      "p": "advises",
+      "o": "harvest the leg joints from the dead strider before ants and gulls get at them; he will fetch measuring cord and slate to verify properly"
+     },
+     {
+      "seq": 5,
+      "type": "memory",
+      "text": "Oss watched Alaric cut down a big bog strider on the weir boards with one economical thrust through the eye.",
+      "who": [
+       "npc.oss",
+       "npc.personbait_woman"
+      ],
+      "imp": 7
+     }
+    ]
+   }
+  },
+  {
+   "i": 47,
+   "player": "*I cut off the joints again and then go back out*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "take",
+     "object": {
+      "new": "bog strider leg joints"
+     },
+     "qty": null,
+     "quote": "I cut off the joints again"
+    },
+    {
+     "seq": 2,
+     "type": "go",
+     "to": {
+      "new": "back out"
+     },
+     "quote": "then go back out"
+    }
+   ]
+  },
+  {
+   "i": 48,
+   "reply": "The big one's joints take more work than the others did. The chitin is thicker here, dark and ridged like old leather, and he has to saw at the first knee joint before the blade finds the softer seam and pops it free. He works down the legs methodically, boots dark with ichor, and stacks four heavy joints on the clean end of the boards while gulls begin to gather on the weir stakes, screaming, dropping closer each time he turns his back.\n\nHe wraps them with the others and shoulders the lot.\n\nOss watches from the mooring posts, measuring cord coiled in one hand. \"Four pairs,\" he says as Alaric comes up the boards. \"Didn't think you'd see the big one dead by noon, honest.\" He licks the tip of his slate pencil, scrawls a few marks on the slate, and holds it out along with a stub of chalk for the mark. \"There. My sign for the Walk, and Marda's beside it.\" The bait woman presses a thumbprint of dark tar next to the chalk. \"That'll speak for the cull. Guild desk at the Walk takes contract business till the evening bell.\"\n\nThe flats stretch back toward the Walk under a thinning haze, the tide pools steaming faintly where the sun has worked through, the path home a raised corduroy of boards and packed mud between the weirs. The gulls follow him for the first hundred paces, hoping, then give up.",
+   "answer": {
+    "expected": {
+     "1": {
+      "taken": true
+     },
+     "2": {
+      "arrived": false,
+      "at": null,
+      "with": null
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "object.new",
+      "name": "bog strider leg joints",
+      "kind": "resource",
+      "qty": 2,
+      "unit": "pairs of leg joints",
+      "holder": "pc",
+      "for_quest": "quest.bog_striders_in_the_reed_flats"
+     },
+     {
+      "seq": 2,
+      "type": "quest.progress",
+      "quest": "quest.bog_striders_in_the_reed_flats",
+      "objective": "DEFEAT 4 adult bog striders at Reed Flats eel-weirs",
+      "status": "done"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Oss",
+      "p": "marked slate with chalk sign and Marda's tar thumbprint",
+      "o": "verifying the bog strider cull at the Reed Flats eel-weirs"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Guild desk at the Eelmongers' Walk",
+      "p": "takes contract business until",
+      "o": "the evening bell"
+     },
+     {
+      "seq": 5,
+      "type": "quest.ready",
+      "quest": "quest.bog_striders_in_the_reed_flats",
+      "note": "Four pairs of bog strider leg joints harvested, including the big one; Oss and the bait woman marked a slate as witness verification of the cull. Ready to turn in at the Guild desk at the Walk."
+     },
+     {
+      "seq": 6,
+      "type": "time",
+      "minutes": 30
+     }
+    ]
+   }
+  },
+  {
+   "i": 49,
+   "player": "*I nod and then walk back to the city and to the guild building*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": {
+      "new": "back to the city"
+     },
+     "quote": "walk back to the city"
+    },
+    {
+     "seq": 2,
+     "type": "go",
+     "to": {
+      "new": "the guild building"
+     },
+     "quote": "and to the guild building"
+    }
+   ]
+  },
+  {
+   "i": 50,
+   "reply": "The walk back is slower than the walk out. His forearm stiffens, the punctures crusting dark, and the wrapped joints swing heavy against his hip. The flats steam under the mended sun, and the Eelmongers' Walk rises ahead on its pilings—a long crooked street of smokehouses, net racks, and bait stalls balanced over the mud, all of it smelling of tar, brine, and fish gone pleasantly wrong.\n\nThe Guild desk occupies a squat stone building at the landward end, a former tollhouse by the look of it, with a plank door propped open to the street. Inside: one room, one counter, a rack of contract slats behind it, and a woman with cropped grey hair and ink-stained fingers sorting slats into a ledger.\n\nShe looks up, takes in the blood on his forearm and the wrapped bundle swinging at his hip, and sets her pencil down.\n\n\"Joints?\" she says. \"Set them on the counter and let's see.\"",
+   "answer": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Guild desk tollhouse",
+        "kind": "interior",
+        "parent": {
+         "new": {
+          "name": "Eelmongers' Walk",
+          "kind": "district",
+          "parent": "loc.glassmere"
+         }
+        }
+       }
+      },
+      "with": null
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Guild desk tollhouse",
+        "kind": "interior",
+        "parent": {
+         "new": {
+          "name": "Eelmongers' Walk",
+          "kind": "district",
+          "parent": "loc.glassmere"
+         }
+        }
+       }
+      },
+      "forced_by": null,
+      "with": null
+     },
+     {
+      "seq": 2,
+      "type": "person.new",
+      "ref": "npc.guild_clerk",
+      "name": null,
+      "role": "Guild desk clerk at the Eelmongers' Walk tollhouse",
+      "desc": [
+       "woman with cropped grey hair",
+       "ink-stained fingers",
+       "sorting contract slats into a ledger"
+      ],
+      "present": true,
+      "at": null,
+      "band": "ENGAGED"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Guild desk",
+      "p": "housed in",
+      "o": "a squat former tollhouse at the landward end of the Eelmongers' Walk"
+     }
+    ]
+   }
+  },
+  {
+   "i": 51,
+   "player": "*i pull them out and turn the Quest in*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "quest.turn_in",
+     "quest": "quest.bog_striders_in_the_reed_flats",
+     "quote": "i pull them out and turn the Quest in"
+    }
+   ]
+  },
+  {
+   "i": 52,
+   "reply": "She unwraps the first bundle, counts the joints with a practiced finger, and prods the biggest pair with her pencil, turning one over to check the seam where it was cut.\n\n\"Fresh. Good size on this pair.\" She rewraps them and pushes the bundle back across the counter. \"Proof's sound. But this is a contract desk, not a hall—I take slats, log the day's business, settle the fish-tally disputes. Coin for a cull comes across a Guild hall counter, and there's no way around that.\" She taps the contract slip he lays down, reads the mark on it, and copies something into her ledger. \"I'll log the verification here under today, so there's no argument when you present. Oss's chalk and the tar print—that's the Walk's stamp, they'll know it.\"\n\nShe tears a strip from the ledger page, writes a line in a quick clerk's hand, and holds it out.\n\n\"Take the slip and the joints upriver to the Guild hall at Marlow's Staithe, half a day's walk, or wait for the eelboat that runs cargo up at the evening tide if you'd rather ride than walk. Desk at the hall pays out same day for Novice work.\" She's already reaching for the next slat. \"Get that forearm looked at before you go anywhere, though. Strider mouths go bad fast.\"",
+   "answer": null
+  }
+ ]
+}

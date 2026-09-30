@@ -179,10 +179,21 @@ function overlap(a, b) {
 const isQuestion = (s) => s.question || QUESTION_START.test(s.text);
 
 /** Heads of the labels and names of the people present ("Guild clerk" → clerk; "Reeve Aldous" → reeve, aldous). */
+// where a label's name part ends: "Steward of the Eelmongers' Walk", "woman with a bait barrel" (live 30.09.2026 14:56:
+// the "Walk" of Oss's label made "walk back to the city" the steward's deed)
+const RELATION = new Set(['of', 'at', 'in', 'on', 'with', 'by', 'from', 'near', 'behind', 'beside', 'to', 'for', 'who', 'that']);
 function actorWords(context) {
     const words = new Set();
     for (const p of context.present || []) {
-        for (const n of p.names || []) for (const w of flat(n).replace(/[,.;:()]/g, ' ').split(' ')) if (w.length > 1 && !STOP.has(w)) words.add(w);
+        for (const n of p.names || []) {
+            // each part of a label ("Oss, Steward of the Walk, broad man in an apron") names the person up to its first
+            // relation word; what follows describes where they belong or what they carry
+            for (const part of flat(n).replace(/[.;:()]/g, ' ').split(',')) {
+                const t = part.trim().split(' ').filter(Boolean);
+                const end = t.findIndex((w) => RELATION.has(w));
+                for (const w of end < 0 ? t : t.slice(0, end)) if (w.length > 1 && !STOP.has(w) && !w.endsWith('ing')) words.add(w);
+            }
+        }
     }
     return words;
 }

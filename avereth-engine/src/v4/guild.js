@@ -9,7 +9,7 @@ import { setFactEvents, perceivers, knows, truth, PC_NAME_FACT } from '../knowle
 import { awardXp, questXp } from '../progression.js';
 import { rankOf, rankIndex } from '../derived.js';
 import { slug } from '../util.js';
-import { hallOf, settlementOf, heldBy, membership, listingsOf, boardKey, today, contracts, supportedRanks, placeName } from './domain.js';
+import { hallOf, settlementOf, heldBy, membership, listingsOf, boardKey, today, contracts, supportedRanks, placeName, namesKind } from './domain.js';
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
@@ -137,6 +137,31 @@ export function proofText(q) {
     return q.proof.map((p) => (p.kind === 'object' ? `${p.qty ?? 1} ${p.unit ?? ''} of ${p.what}`.replace(/\s+/g, ' ') : `"${p.what}" on the ${p.on || 'contract slip'}`)).join(' and ');
 }
 
+/**
+ * The engine's count for a contract's DEFEAT objectives with a number (live 30.09.2026 14:56: three bog striders
+ * died, four pairs of leg joints lay in the pack, the story said "four adults, all told"): the creatures of the named
+ * kind that died since the contract was taken. Trophies are no count; the story may still reach the outcome otherwise
+ * (the rest fled for good), and quest.ready then says how (src/v4/world.js).
+ * @returns {{what: string, qty: number, done: number}[]}
+ */
+export function defeatTally(s, content, q) {
+    const since = (q.history || []).find((h) => h.status === 'active')?.turn ?? 0;
+    const dead = Object.values(s.entities).filter((e) => e.kind === 'creature').filter((e) => {
+        const f = truth(s, e.id, 'status')[0];
+        return f?.o === 'dead' && (f.since?.turn ?? 0) >= since;
+    });
+    return (q.objectives || []).filter((o) => o.verb === 'DEFEAT' && Number.isInteger(o.qty) && o.qty > 0).map((o) => ({
+        what: o.what, qty: o.qty,
+        done: dead.filter((e) => namesKind(o.what, e.species || '', content.anchors.get(e.anchor || e.profile?.anchor))).length,
+    }));
+}
+
+/** "3 of 4 bog striders": the tally as the engine block and the catalog show it. */
+export const tallyText = (tally) => tally.map((t) => `${t.done} of ${t.qty} ${t.what}`).join('; ');
+
+/** A hunt or cull contract: its work is to attack or defeat creatures (proof: trophies of the kills, no sign-off). */
+export const isHunt = (q) => (q.objectives || []).some((o) => o.verb === 'ATTACK' || o.verb === 'DEFEAT');
+
 /** Canonical objectives in compact narrator-facing prose (the Board generator owns their structure). */
 export function objectiveText(q) {
     const objectives = q?.objectives || [];
@@ -201,7 +226,7 @@ export function listingSchema(content) {
     return O({
         listings: A(O({
             title: S(), client: S(), rank: E(ranksOf(content)), level: I(1, 104), qtype: E(QTYPES), payout_cp: I(0),
-            desired_end_state: S(), objectives: A(OBJECTIVE, 1), proof: A(PROOF),
+            task: N(S()), desired_end_state: S(), objectives: A(OBJECTIVE, 1), proof: A(PROOF),
         })),
     });
 }
@@ -224,6 +249,8 @@ export function boardRequest(s, content, need) {
         '',
         'Rules:',
         '- A contract is a concrete request to change a current situation in the world. Build it from: cause (why now), stakeholder/client, current problem, desired end state, 1–4 useful objective memories, and reward. Verification is optional story guidance, not a mandatory token.',
+        '- task is what the notice asks the adventurer to do, one imperative sentence the board shows ("Hunt and cull the bog strider colony at the eel-weirs of the Reed Flats so the eel boats can launch safely again."). desired_end_state is the outcome the Guild recognizes when it is reached ("The bog strider colony is culled and the eel boats launch again."). Keep the two apart.',
+        '- A hunt or cull contract (ATTACK/DEFEAT) is proven by a species-appropriate body part of each kill (ears, teeth, claws, leg joints …) as its one proof entry. Add no local inspection, witness, sign-off or signature for it.',
         '- Rank limits scope, risk and complexity — not whether the subject is mundane or fantastical. Low-rank work may involve a manageable Monster, minor magic or a minor ruin, one dangerous animal, or a small clearly defined weak group such as wolves, goblins or feral dogs.',
         '- Do not preferentially default to rats, cellar vermin or indistinct swarms. Rats are allowed occasionally, not the standard low-rank combat answer.',
         '- The listings generated together must differ materially in underlying problem, location and likely play experience. Outside an explicit rank profile, do not make a balanced checklist of predefined quest categories.',
@@ -239,7 +266,7 @@ export function boardRequest(s, content, need) {
         '- Do not use GO merely as a travel checklist item. Objectives should describe meaningful work/outcomes (find, rescue, repair, defend, escort, investigate through FIND/TALK/GET, defeat, deliver, etc.); travel itself is normally just how play reaches them. Do not invent paperwork solely to make verification possible.',
         '- client is who posted the work (a person, a trade, a hamlet); titles differ from the listings already on the board.',
         '',
-        'Return only one JSON object, no prose before or after it, no code fences: {"listings": [{"title": "...", "client": "...", "rank": "...", "level": 1, "qtype": "...", "payout_cp": 0, "desired_end_state": "...", "objectives": [...], "proof": [...]}]}. Every field is required; null where a field allows it and does not apply.',
+        'Return only one JSON object, no prose before or after it, no code fences: {"listings": [{"title": "...", "client": "...", "rank": "...", "level": 1, "qtype": "...", "payout_cp": 0, "task": "...", "desired_end_state": "...", "objectives": [...], "proof": [...]}]}. Every field is required; null where a field allows it and does not apply.',
     ].join('\n');
     const user = [
         `BRANCH: ${town?.name || need.branch}${realm ? `, ${realm}` : ''} (${town?.sub || 'settlement'})`,
@@ -254,6 +281,8 @@ export function boardRequest(s, content, need) {
 export function parseBoard(answer, content, need) {
     const { value, error } = extractJsonObject(answer);
     if (!value) return { listings: null, errors: [error || 'no JSON object'] };
+    // a listing without its board text is still a listing: the board then shows the desired end state (as before 4.1.2)
+    for (const l of Array.isArray(value.listings) ? value.listings : []) if (l && typeof l === 'object' && l.task === undefined) l.task = null;
     const errors = validate(value, listingSchema(content));
     if (errors.length) return { listings: null, errors: errors.slice(0, 8) };
     const [lo, hi] = content.rules.guild.rank_levels[need.rank];
@@ -278,7 +307,7 @@ export function bookBoard(s, content, need, listings, emit) {
         const quest = {
             id, title: String(l.title).slice(0, 80), kind: 'guild_contract', client: String(l.client || '').slice(0, 80) || null, giver: null,
             rank: need.rank, level: l.level, qtype: l.qtype, payout_cp: l.payout_cp, reward: `${l.payout_cp} cp`,
-            desired_end_state: l.desired_end_state, objectives: l.objectives.map((o, i) => ({ id: `o${i + 1}`, ...o, status: 'open' })),
+            task: l.task ? String(l.task).slice(0, 240) : null, desired_end_state: l.desired_end_state, objectives: l.objectives.map((o, i) => ({ id: `o${i + 1}`, ...o, status: 'open' })),
             proof: l.proof.map((p, i) => ({ id: `p${i + 1}`, ...p, consume: p.kind === 'object' ? p.consume !== false : undefined })),
             source: { board: `${need.branch}.guild_hall`, branch: need.branch, listed: { turn: s.turn, minute: s.clock.minute, day: need.day } },
             schedule: { starts_at: null, deadline: null }, status: 'listed', taker: null, history: [{ turn: s.turn, minute: s.clock.minute, status: 'listed' }],

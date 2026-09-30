@@ -257,6 +257,36 @@ export function sameSettlement(state, a, b) {
     return !!sa && sa === settlementOf(state, b);
 }
 
+// ------------------------------------------------------------------------------------------------ queries: creature kinds
+/** A noun's stem, the same for its singular and plural ("wolves"/"wolf", "ponies"/"pony", "horses"/"horse"). */
+const stem = (w) => String(w).replace(/ves$/, 'f').replace(/ies$/, 'y').replace(/(?<!s)s$/, '').replace(/e$/, '');
+const PLACE_WORDS = new Set(['in', 'at', 'on', 'near', 'from', 'within', 'inside', 'around', 'along', 'by', 'under', 'beyond', 'across', 'behind', 'over', 'through', 'to', 'for', 'that', 'which', 'who', 'with']);
+const DETERMINERS = new Set(['the', 'a', 'an', 'some', 'those', 'these', 'its', 'their', 'his', 'her']);
+/**
+ * The creature a text names: the stems of all its words, of its noun phrase (up to a place, a clause or a participle:
+ * "the rats in the cellar", "the wolves harrying the sheep", not "the stirring dead") and of its last word.
+ */
+export function kindOf(text) {
+    const tokens = normText(text).replace(/[^a-z\s-]+/g, ' ').split(/\s+/).filter(Boolean);
+    const cut = tokens.findIndex((w, i) => PLACE_WORDS.has(w) || (i > 0 && w.length >= 6 && w.endsWith('ing') && !w.includes('-') && !DETERMINERS.has(tokens[i - 1])));
+    const words = (list) => list.flatMap((w) => w.split('-')).filter(Boolean).map(stem);
+    const phrase = words(cut < 0 ? tokens : tokens.slice(0, cut));
+    return { words: new Set(words(tokens)), phrase: new Set(phrase), head: phrase.at(-1) || null };
+}
+
+/**
+ * Does a hunting objective ("the vermin in the cellar", "wild goats") name this creature kind? By the kind the text
+ * names, never by the body plan alone (review of 4.1.0: the deer plan's alias "goat" made sheep wild-goat targets):
+ * the species names the objective's creature or the objective the species' ("giant rats" ~ "rats", "swarm of rats"
+ * ~ "rats"), or the objective names the body plan's whole kind (content monsters.json "kinds": vermin for rats).
+ */
+export function namesKind(what, species, anchor) {
+    const t = kindOf(what);
+    const g = kindOf(species || '');
+    const kinds = new Set((anchor?.kinds || []).map(stem));
+    return (!!g.head && t.phrase.has(g.head)) || (!!t.head && g.words.has(t.head)) || [...t.phrase].some((w) => kinds.has(w));
+}
+
 // ------------------------------------------------------------------------------------------------ queries: things
 export const heldBy = (state, who) => Object.values(state.objects || {}).filter((o) => o.holder?.entity === who);
 export const lyingAt = (state, at) => Object.values(state.objects || {}).filter((o) => o.holder?.loc === at);

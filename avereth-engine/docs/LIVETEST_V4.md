@@ -1,6 +1,8 @@
-# Live-Test Runtime V4 (Engine 4.1.1)
+# Live-Test Runtime V4 (Engine 4.1.2)
 
-**Stand 30.09.2026, Build 4.1.1:** Der nächste Live-Test ist die Warrior-Baseline in [INTEGRATION_4_1.md §5](INTEGRATION_4_1.md#5-nächster-live-test-warrior-baseline-build-411) (Brett, Eskorte, Kampf, Abgabe, Taverne, Mengenkauf, Beute). Die Einrichtung unten gilt weiter; Branch und Version siehe dort.
+**Stand 30.09.2026, Build 4.1.2:** Nach dem Lauf 14:56 (auf 4.1.1) kommen die Punkte aus [INTEGRATION_4_1.md §9](INTEGRATION_4_1.md#nächster-live-test-build-412) zur Baseline hinzu: Brettaufgaben, Jagdnachweis ohne Unterschrift, zurückkehrende Tiere, Tötungszahl, Rückweg zur Halle.
+
+**Build 4.1.1:** Der nächste Live-Test ist die Warrior-Baseline in [INTEGRATION_4_1.md §5](INTEGRATION_4_1.md#5-nächster-live-test-warrior-baseline-build-411) (Brett, Eskorte, Kampf, Abgabe, Taverne, Mengenkauf, Beute). Die Einrichtung unten gilt weiter; Branch und Version siehe dort.
 
 **Stand 28.09.2026:** Der erste Live-Lauf (04:27, GLM-5.3-Flash, vier Story-Züge) fand vier Fehler; sie sind behoben ([RUNTIME_V4_PLAN.md R3.9](RUNTIME_V4_PLAN.md#r39-erster-live-test-28092026-befunde-und-korrekturen)). **Nächster Schritt: der kurze Retest in [§5](#5-kurzer-retest-nach-dem-ersten-live-test-28092026)**, danach der volle Spieltest (§4).
 
@@ -24,7 +26,7 @@
 
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
-| Einheiten, Golden-V12, Cluster, Laufzeit, Abdeckung, Nachspiel der Live-Läufe 28.09. und 30.09. (`tests/v4/live_0928.test.js`, `live_0930.test.js`) | `npm test` | 465/465 (4.1.1) |
+| Einheiten, Golden-V12, Cluster, Laufzeit, Abdeckung, Nachspiel der Live-Läufe 28.09. und 30.09. (`tests/v4/live_0928.test.js`, `live_0930.test.js`, `live_0930b.test.js`) | `npm test` | 485/485 (4.1.2) |
 | `index.js` in Chromium, SillyTavern nachgebaut: eine V3- und eine V4-Kampagne | `node tools/browser_smoke.mjs` | OK |
 | **Echtes SillyTavern 1.19**, V4: Begrüßung → V4-Kampagne, Erschaffung, drei V12-Züge; Mock-Provider hinter der Quelle Custom | `AVERETH_ST_DIR=… node tools/st_live/run_v4.mjs` | 17/17 |
 | Echtes SillyTavern 1.19, V3-Kampagne (14 Züge, Kampf, Nachforderung, Reise) | `AVERETH_ST_DIR=… node tools/st_live/setup.mjs && … run.mjs` | 21/21 |
@@ -43,7 +45,7 @@
 
 ## 2. Einrichtung in SillyTavern
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/v4-integration-fixes-2026-09-30` (Build 4.1.1) nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; eine alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile im Engine-Panel zeigt `Avereth Engine 4.1.1`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/v4-integration-fixes-2026-09-30` (Build 4.1.2) nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; eine alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile im Engine-Panel zeigt `Avereth Engine 4.1.2`.
 2. **Verbindung (wichtig):** API Connections → Chat Completion → Quelle **Custom (OpenAI-compatible)**, Endpoint und Modell wie bisher, einmal Connect. Die Include-Body-Parameter (z. B. `reasoning_effort`, `clear_thinking`) gelten auch für die drei Engine-Aufrufe, wie in P0 gemessen.
    - **Warum Custom:** Nur bei dieser Quelle schickt die Engine ihre Aufrufe genau so wie die P0-Werkzeuge, mit eigener Temperatur 0,1. Bei jeder anderen Quelle nimmt sie `generateRaw`; dann gelten Temperatur und Einstellungen des Erzähler-Presets. Das ist nicht gemessen.
 3. **Eine eigene Karte für V4** (empfohlen), z. B. die bisherige Karte duplizieren und „Avereth V4“ nennen:

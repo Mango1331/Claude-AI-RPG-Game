@@ -17,11 +17,16 @@ import { truth, entityLabel, setFactEvents, statusOf } from '../knowledge.js';
 import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
 import { firewall } from './firewall.js';
 import {
-    PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today,
+    PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind,
 } from './domain.js';
-import { completeContract, REGISTRATION_OFFER } from './guild.js';
+import { completeContract, REGISTRATION_OFFER, defeatTally, tallyText, isHunt } from './guild.js';
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
 
+// the words that end a person's name or role in a description ("clerk at the Walk", "steward of the weirs")
+const RELATION_WORDS = new Set(['of', 'at', 'in', 'on', 'with', 'by', 'from', 'near', 'behind', 'beside', 'to', 'for', 'who', 'that']);
+// a local sign-off made a condition ("must inspect and sign before payment", "will sign once …")
+const SIGN_OFF = /\b(?:sign(?:s|ed|ing)?|signature|countersign\w*|inspect\w*|confirm\w*|vouch\w*|witness\w*|verif\w*)\b/i;
+const REQUIRE = /\b(?:must|required?|requires|need(?:s|ed)?|before|until|unless|only|once)\b/i;
 const AUTHORITY_ROLE = /\b(?:guard|watch(?:man)?|sergeant|captain|constable|reeve|bailiff|magistrate|official|officer|toll ?keeper|tax|customs|steward|marshal|warden)\b/i;
 const HOSTILE_ROLE = /\b(?:bandit|thief|robber|brigand|cutpurse|pickpocket|thug|highwayman)\b/i;
 
@@ -71,7 +76,7 @@ function resolvePlace(s, ref, emit, depth = 0) {
     const n = ref?.new;
     if (!n || typeof n !== 'object' || !n.name) return { error: 'a place needs an id or {new: {name, kind, parent}}' };
     if (depth > 1) return { error: 'at most one level of new parents' };
-    if (/\bguild\b/i.test(n.name) && /\b(?:hall|house|office|lodge)\b/i.test(n.name)) {
+    if (/\bguild\b/i.test(n.name) && /\b(?:hall|house|office|lodge|building)\b/i.test(n.name)) {
         // the Guild hall is the engine's node: a reply that names it again means that node
         const town = typeof n.parent === 'string' ? settlementOf(s, n.parent) : settlementOf(s, s.scene.at);
         const hall = town && `${town}.guild_hall`;
@@ -159,11 +164,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const bare = ref.replace(/^(?:person|npc|creature|mon)\./i, '');
         const named = bare !== ref ? makeResolver(s, new Map(), content)(bare) : null;
         if (named && named !== 'pc') return named;
-        // "the same clerk", "the clerk": the one person here (or met at this place) whose role ends in that word
-        const last = k.replace(/^(?:the |a |an )?(?:same |other |first |second )?/, '').split(' ').at(-1);
-        if (!last || last.length < 3) return null;
+        // "the same clerk", "the clerk": the one person here (or met at this place) whose role names that word. Only a
+        // short reference is a person; a description ("a squat former tollhouse at the landward end of the Walk") is
+        // text, never the clerk whose role ends "at the Walk" (live 30.09.2026 14:56)
+        const short = k.replace(/^(?:the |a |an )?(?:same |other |first |second )?/, '').split(' ').filter(Boolean);
+        if (!short.length || short.length > 3 || short.some((w) => RELATION_WORDS.has(w))) return null;
+        const last = short.at(-1);
+        if (last.length < 3) return null;
+        const head = (x) => { const w = normText(x).split(' '); const end = w.findIndex((y) => RELATION_WORDS.has(y)); return (end < 0 ? w : w.slice(0, end)).at(-1); };
         const local = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.status !== 'dead' && (s.scene.present.includes(e.id) || (e.location === s.scene.location && (!e.at || e.at === s.scene.at)))
-            && [...(e.descriptors || []), truth(s, e.id, 'occupation')[0]?.o].filter(Boolean).some((x) => normText(x).split(' ').at(-1) === last));
+            && [...(e.descriptors || []), truth(s, e.id, 'occupation')[0]?.o].filter(Boolean).some((x) => head(x) === last));
         return local.length === 1 ? local[0].id : null;
     };
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
@@ -179,14 +189,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     // plan alone (review of 4.1.0: the deer plan's alias "goat" made a flock of sheep the targets of a wild-goat job):
     // the group's species names the objective's creature or the objective names the group's ("giant rats" ~ "rats",
     // "swarm of rats" ~ "rats"), or the objective names the body plan's whole kind ("the vermin in the cellar": rats).
-    const hunted = (d, anchor) => {
-        const group = kindOf(d.species);
-        const kinds = new Set((anchor.kinds || []).map(stem));
-        return Object.values(s.quests).filter((q) => q.status === 'active')
-            .flatMap((q) => (q.objectives || []).filter((o) => o.verb === 'ATTACK' || o.verb === 'DEFEAT'))
-            .map((o) => kindOf(o.what))
-            .some((t) => (group.head && t.phrase.has(group.head)) || (t.head && group.words.has(t.head)) || [...t.phrase].some((w) => kinds.has(w)));
-    };
+    const hunted = (d, anchor) => Object.values(s.quests).filter((q) => q.status === 'active')
+        .flatMap((q) => (q.objectives || []).filter((o) => o.verb === 'ATTACK' || o.verb === 'DEFEAT'))
+        .some((o) => namesKind(o.what, d.species, anchor));
     const newEntity = (d, kind) => {
         // A large group of skittish animals (their body-plan's temperament: a flock, a herd, a flight of birds) that nobody
         // set on Alaric is the scene's background, one fact, not a dozen combat profiles (live 30.09.2026: twelve penned
@@ -197,6 +202,19 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (anchor?.temperament === 'skittish' && d.count > 4 && !hunted(d, anchor) && !s.encounter && !hostileRefs.has(normText(d.ref))) {
             setFactEvents(s, { s: s.scene.at, p: 'background_fauna', o: `${d.count} ${d.species}`, source: { kind: 'narration', msg }, importance: 0.3 }).forEach(emit);
             return [];
+        }
+        // One animal of a kind that left this area alive, and no other of its kind: the story shows it coming back, not
+        // a second one (live 30.09.2026 14:56: the big bog strider withdrew into the reeds and returned as "Bog
+        // Strider D" while the first stayed alive in the state). Two or more such animals stay a question for the story.
+        if (kind === 'creature' && (d.count || 1) === 1 && d.present !== false) {
+            const same = Object.values(s.entities).filter((e) => e.kind === 'creature' && statusOf(s, e.id) !== 'dead' && !s.scene.present.includes(e.id)
+                && normText(e.species || '') === normText(d.species || '') && (e.anchor || e.profile?.anchor) === d.anchor && e.location === s.scene.location);
+            if (same.length === 1) {
+                emit({ t: 'scene.entered', d: { id: same[0].id, band: d.band || 'MEDIUM' } });
+                refs.set(normText(d.ref), same[0].id);
+                if (!same[0].profile) materialise(s, content, dice, emit, same[0].id);
+                return [same[0].id];
+            }
         }
         const before = new Set(Object.keys(s.entities));
         const entries = [];
@@ -405,7 +423,21 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'quest.detail': {
                 const q = questRef(d.quest);
                 if (!q) { reject(d, 'quest', 'unknown quest'); break; }
-                emit({ t: 'quest.detailed', d: { id: q.id, note: String(d.note).slice(0, 200), schedule: d.schedule ? String(d.schedule).slice(0, 80) : null } });
+                // a hunt is proven by the trophies of its kills at a Guild hall: a local inspection or signature the
+                // story makes a condition is no part of it (live 30.09.2026 14:56: "the steward must inspect and sign
+                // before payment"); the rest of the note (route, contacts, what was seen) stays
+                let note = String(d.note);
+                if (q.kind === 'guild_contract' && isHunt(q)) {
+                    const clauses = note.split(/(?<=[.;])\s+/);
+                    const kept = clauses.filter((x) => !(SIGN_OFF.test(x) && REQUIRE.test(x)));
+                    if (kept.length < clauses.length) {
+                        const correction = `"${q.title}" is a hunt contract: the Guild pays it on the trophies of the kills brought to a Guild hall; no local inspection, witness or signature is required.`;
+                        if (!corrections.includes(correction)) corrections.push(correction);
+                        if (!kept.length) { reject(d, 'guild_quest_detail', 'a hunt contract needs no local sign-off'); break; }
+                        note = kept.join(' ');
+                    }
+                }
+                emit({ t: 'quest.detailed', d: { id: q.id, note: note.slice(0, 200), schedule: d.schedule ? String(d.schedule).slice(0, 80) : null } });
                 break;
             }
             case 'quest.progress': {
@@ -431,7 +463,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     if (!corrections.includes(correction)) corrections.push(correction);
                     break;
                 }
-                emit({ t: 'quest.ready', d: { id: q.id, note: claimed.slice(0, 220) } });
+                // a count the engine keeps is not the story's to settle: fewer defeated than the objective names is ready
+                // only when the story says how the outcome was reached otherwise (alternative); trophies are no count
+                const short = q.kind === 'guild_contract' ? defeatTally(s, content, q).filter((t) => t.done < t.qty) : [];
+                const alternative = String(d.alternative || '').trim();
+                if (short.length && !alternative) {
+                    reject(d, 'quest_count', `the engine counts ${tallyText(short)} defeated; trophies or a claimed number do not make the count`);
+                    const correction = `"${q.title}" is still IN PROGRESS: the engine counts ${tallyText(short)} defeated. It is ready only when the story establishes that the outcome was reached otherwise (the rest driven off for good, the colony broken).`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    break;
+                }
+                emit({ t: 'quest.ready', d: { id: q.id, note: `${claimed}${short.length ? ` — ${alternative}` : ''}`.slice(0, 220) } });
                 break;
             }
             case 'quest.close': {
@@ -748,22 +790,6 @@ const FILLER = new Set(['the', 'and', 'for', 'with', 'some', 'any', 'one', 'his'
 /** The words that name a want or an offer's line ("a bed for the night" ~ "bed in the Guild dormitory"). */
 export const keyWords = (t) => normText(t).split(/[^a-z0-9]+/).map((w) => w.replace(/s$/, '')).filter((w) => w.length >= 3 && !FILLER.has(w));
 export const sameWant = (want, what) => { const k = keyWords(what); return keyWords(want).some((w) => k.includes(w)); };
-
-/** A noun's stem, the same for its singular and plural ("wolves"/"wolf", "ponies"/"pony", "horses"/"horse"). */
-const stem = (w) => String(w).replace(/ves$/, 'f').replace(/ies$/, 'y').replace(/(?<!s)s$/, '').replace(/e$/, '');
-const PLACE_WORDS = new Set(['in', 'at', 'on', 'near', 'from', 'within', 'inside', 'around', 'along', 'by', 'under', 'beyond', 'across', 'behind', 'over', 'through', 'to', 'for', 'that', 'which', 'who', 'with']);
-const DETERMINERS = new Set(['the', 'a', 'an', 'some', 'those', 'these', 'its', 'their', 'his', 'her']);
-/**
- * The creature a text names: the stems of all its words, of its noun phrase (up to a place, a clause or a participle:
- * "the rats in the cellar", "the wolves harrying the sheep", not "the stirring dead") and of its last word.
- */
-function kindOf(text) {
-    const tokens = normText(text).replace(/[^a-z\s-]+/g, ' ').split(/\s+/).filter(Boolean);
-    const cut = tokens.findIndex((w, i) => PLACE_WORDS.has(w) || (i > 0 && w.length >= 6 && w.endsWith('ing') && !w.includes('-') && !DETERMINERS.has(tokens[i - 1])));
-    const words = (list) => list.flatMap((w) => w.split('-')).filter(Boolean).map(stem);
-    const phrase = words(cut < 0 ? tokens : tokens.slice(0, cut));
-    return { words: new Set(words(tokens)), phrase: new Set(phrase), head: phrase.at(-1) || null };
-}
 
 function uniqueEntityId(s, base) {
     let id = `npc.${slug(base) || 'unnamed'}`;

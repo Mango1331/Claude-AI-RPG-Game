@@ -28,6 +28,19 @@ const AWAY_RE = /\b(?:retreat|retreats|back\s+(?:away|off|up)|(?:step|steps|jump
 const FLEE_RE = /\b(?:flee|flees|run\s+away|escape|make\s+a\s+run\s+for\s+it|bolt\s+(?:away|off))\b/i;
 const STEALTH_RE = /\b(?:sneak|sneaks|sneaking|creep|creeps|creeping|hide|hides|hiding|stay\s+hidden|move\s+quietly|stalk|stalks|stalking|crouch\s+low)\b/i;
 const PRONOUN_RE = /\b(?:him|her|it|them|the\s+(?:man|woman|creature|beast|animal|thing))\b/i;
+// Runtime V4 (live 30.09.2026 14:56): waiting in hiding is declared stealth too ("keep myself hidden as i lay in wait")
+const STEALTH_V4_RE = /\b(?:keep(?:s|ing)?\s+(?:myself\s+|himself\s+)?(?:hidden|out\s+of\s+sight|low)|stay(?:s|ing)?\s+out\s+of\s+sight|(?:lay|lays|lie|lies|lying|laying)\s+(?:in\s+wait|low|hidden)|hold(?:s|ing)?\s+(?:myself\s+)?hidden)\b/i;
+// "*i say calmly*": the player marks his deeds with asterisks and names what is outside them as his words
+const SAY_RE = /\b(?:i|we)\s+(?:\w+\s+)?(?:say|says|said|ask|asks|asked|reply|replies|replied|tell|tells|told|shout|shouts|call|calls|whisper|whispers|answer|answers|add|adds|mutter|mutters)\b/i;
+
+/**
+ * Runtime V4: the deeds of a message that marks them with asterisks and says that the rest is speech ("found 3
+ * killed 2 *i say calmly* is that enough?", live 30.09.2026 14:56): only the starred parts; anything else unchanged.
+ */
+export function deedsOf(text) {
+    const starred = [...String(text).matchAll(/\*([^*]+)\*/g)].map((m) => m[1]);
+    return starred.length && starred.some((x) => SAY_RE.test(x)) ? starred.join('. ') : String(text);
+}
 // a word for any creature: it names the creatures present, never the people standing by
 const CREATURE_RE = /\b(?:creature|creatures|beast|beasts|animal|animals|monster|monsters)\b/i;
 const NEAREST_RE = /\b(?:nearest|closest)\b/i;
@@ -114,6 +127,9 @@ export function resolveTarget(text, state, content, { hostileOnly = false } = {}
     // "the creature", "the beast": the creatures among the targets (live run 27.09. 02:30: "a Basic Attack at the
     // creature" asked "Bren or Blue Ox barkeep or Cellar Gnawer", two people and the one creature in the cellar)
     if (!hits.length && CREATURE_RE.test(t)) hits = valid.filter((id) => state.entities[id].kind === 'creature');
+    // Runtime V4: "it" is a creature, never one of the people standing by (live 30.09.2026 14:56: "Heavy Slash at it"
+    // asked "Oss or the bait woman or Bog Strider D")
+    if (!hits.length && state.meta?.runtime === 'v4' && /\bit\b/.test(t)) hits = valid.filter((id) => state.entities[id].kind === 'creature');
     if (hits.length === 1) return { id: hits[0], how: 'named' };
     // "the nearest one": the player chooses by distance, so the closest Range Band decides among the targets he named
     // ("the nearest wolf") or, in a fight, among the hostiles; equally close targets remain his choice (Core #23).
@@ -159,7 +175,8 @@ export function parseIntent(text, state, content) {
 
     const sheet = state.entities.pc?.sheet;
     const known = sheet ? Object.keys(sheet.skills) : [];
-    const decl = declarative(raw);
+    const v4 = state.meta?.runtime === 'v4';
+    const decl = declarative(v4 ? deedsOf(raw) : raw);
     const d = normText(decl);
     if (!d) return { kind: 'narrative', flags: { info: /\?/.test(raw), speech: /["“]/.test(raw) } };
     // Skills: known ones by name; an unknown one only when unmistakable (multi-word name or "use/cast X"), so that
@@ -204,7 +221,7 @@ export function parseIntent(text, state, content) {
         const target = resolveTarget(raw, state, content, { hostileOnly: true });
         return { kind: 'move', dir: move, target: target.id || null };
     }
-    if (STEALTH_RE.test(d)) return { kind: 'stealth' };
+    if (STEALTH_RE.test(d) || (v4 && STEALTH_V4_RE.test(d))) return { kind: 'stealth' };
     return { kind: 'narrative', flags: { aim: AIM_RE.test(d) } };
 }
 

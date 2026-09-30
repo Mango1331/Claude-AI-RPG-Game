@@ -1,12 +1,13 @@
 # Integration 4.1: das ChatGPT-Experiment 4.0.1–4.0.9 geprüft und eingebaut
 
-**Stand 30.09.2026, Build 4.1.0.** Dieses Dokument hält fest, was aus dem Experiment übernommen, überarbeitet, ersetzt oder verworfen wurde, und warum. Es beschreibt auch den nächsten Live-Test (§5).
+**Stand 30.09.2026, Build 4.1.1.** Dieses Dokument hält fest, was aus dem Experiment übernommen, überarbeitet, ersetzt oder verworfen wurde, und warum. Es beschreibt auch den nächsten Live-Test (§5). §8 enthält die Nachprüfung von 4.1.0 durch ein unabhängiges Review und die Korrekturen in 4.1.1.
 
 | | Branch | Commit |
 |---|---|---|
 | Basis (bisheriger Stand, unverändert) | `claude/happy-wright-1a4y19` | `1cbfdd4` |
 | Experiment (unverändert) | `chatgpt/v4-livetest-fixes-2026-09-28` | `a067bd0` (4.0.9); der Live-Lauf 30.09. lief auf 4.0.8 (`2f5eeb5`) |
-| Integration | `claude/v4-integration-2026-09-30` | von `1cbfdd4`; der Merge-Commit `f1b6bdd` holt `a067bd0` als Prüfgegenstand herein, die Folge-Commits überarbeiten ihn Teil für Teil |
+| Integration | `claude/v4-integration-2026-09-30` | von `1cbfdd4`; der Merge-Commit `f1b6bdd` holt `a067bd0` als Prüfgegenstand herein, die Folge-Commits überarbeiten ihn Teil für Teil; 4.1.0 = `d7ef49b` |
+| Korrekturen 4.1.1 (§8) | `claude/v4-integration-fixes-2026-09-30` | von `d7ef49b` |
 
 Primärbelege: Chat-JSONL des Laufs (Branch #1), Event-Export, Chat-Completion-Log (mit verworfenem Seitenzweig; nur über exakten Text zugeordnet). Die Chronik des Experiments steht in [CHATGPT_FIX_BRANCH_2026-09-28.md](CHATGPT_FIX_BRANCH_2026-09-28.md).
 
@@ -104,10 +105,10 @@ Die 4.0.9-Heuristiken, die Wortlisten auf einen Einzelfall zuschnitten, sind dur
 
 ---
 
-## 5. Nächster Live-Test (Warrior-Baseline, Build 4.1.0)
+## 5. Nächster Live-Test (Warrior-Baseline, Build 4.1.1)
 
 **Einrichtung** wie [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern), mit folgenden Abweichungen:
-- Extension aus `claude/v4-integration-2026-09-30`; die Statuszeile zeigt `Avereth Engine 4.1.0`.
+- Extension aus `claude/v4-integration-fixes-2026-09-30`; die Statuszeile zeigt `Avereth Engine 4.1.1`.
 - Neuer Chat mit Begrüßung `outside Tidecross, Solmere`.
 - Erschaffung: `Warrior`, dann `Heavy Slash + Quick Slash`.
 
@@ -124,12 +125,16 @@ Die 4.0.9-Heuristiken, die Wortlisten auf einen Einzelfall zuschnitten, sind dur
 | 9 | zurück, am Schalter abgeben | ausgeschriebener Lohn **einmal**, Quest-XP; mit vier L1-Wölfen und einer L2-Standard-Eskorte **Level 2** |
 | 10 | „ich nehme die Münzen“ | kein Gegenstand „copper“, Kasse unverändert |
 | 11 | Taverne: etwas ohne Preis bestellen | Preis genannt, **Halt**; erst nach „ja“ bezahlt, einmal |
+| 12 | „drei davon, bitte“ bei einem genannten Stückpreis (4.1.1) | dreimal der Preis abgebucht, drei Stück im Inventar |
+| 13 | nach einem Kampf: „ich durchsuche ihn und nehme seine Münzen“ (4.1.1) | Beute einmal gutgeschrieben; ohne eigenes Nehmen bleibt die Kasse gleich |
 
 **Worauf achten:**
-- nach jeder Ankunft die Liste der Anwesenden;
-- doppelte Personen;
+- nach jeder Ankunft die Liste der Anwesenden (`arrive.with`);
+- doppelte Personen (`person.named`);
+- ob „wir gehen weiter“ nach dem Aufbruch als `DEPARTS/CONTINUES` erkannt wird, und vor dem Aufbruch nicht;
 - die System-Zeilen `NOT APPLIED` und `ENGINE REFUSED`;
-- Münzen im HUD.
+- Münzen im HUD: jede Änderung einmal, keine aus bloßer Erzählung;
+- unbekannte Preise: Halt, erst nach Zustimmung bezahlt; bei Mengen („drei davon“) der Gesamtpreis.
 
 **Zurückschicken:** wie [LIVETEST_V4.md §6](LIVETEST_V4.md#6-zurückschicken): Chat-Export, Event-Log, Request-Log, **keine Schlüssel**.
 
@@ -151,7 +156,7 @@ Die 4.0.9-Heuristiken, die Wortlisten auf einen Einzelfall zuschnitten, sind dur
 
 ---
 
-## 7. Nachweise
+## 7. Nachweise (Build 4.1.0)
 
 | Prüfung | Ergebnis |
 |---|---|
@@ -162,3 +167,65 @@ Die 4.0.9-Heuristiken, die Wortlisten auf einen Einzelfall zuschnitten, sind dur
 | P0-Rescore (Firewall, Agency-Guard) | verboten 7 → 1, kritisch 58 → 58 (4.0.9: 57); Guard 100 % Negativ-Präzision, Recall 94,2 % |
 | Browser-Smoke (V3 + V4) | OK |
 | echtes SillyTavern 1.19, Mock-Provider, Dummy-Schlüssel | V4 17/17, V3 OK; Schlüssel danach entfernt |
+
+---
+
+## 8. Nachprüfung von 4.1.0 und Korrekturen 4.1.1
+
+Ein unabhängiges Review (ChatGPT, 30.09.2026) hat Gegenbeispiele gegen 4.1.0 gemeldet. Jedes wurde isoliert am Code von `d7ef49b` reproduziert, bevor etwas geändert wurde. Die Regressionstests stehen in `tests/v4/review_4_1.test.js`. Alle 17 Tests schlagen auf 4.1.0 fehl und laufen auf 4.1.1 durch.
+
+| # | Befund | Urteil | Korrektur 4.1.1 |
+|---|---|---|---|
+| 1 | `coin.gift` erzeugt Geld: 90 cp „from the counter“ nach der Auszahlung, 14 cp aus der Börse eines toten Banditen ohne TAKE | **bestätigt**, dazu zwei weitere Wege: Verkaufserlös plus `coin.gift` vom Käufer (doppelt), „Wechselgeld“ nach einem Kauf zum genauen Preis | drei strukturelle Fragen im World-Applier, siehe unten |
+| 2 | Kauf von drei Stück bucht einen Preis und ein Stück | **bestätigt, breiter**: Das Limit rechnete mit der Menge, die Buchung nicht; Angebotszeilen mit eigener Menge wurden doppelt multipliziert; `offer.accept` kannte gar keine Menge; der bedingte Kauf verlor sie | ein Mengenmodell in `src/v4/trade.js` |
+| 3 | Verkauf von mehr als vorhanden; Teilverkauf überträgt den ganzen Stapel | **bestätigt**; „negativer Bestand“ **widerlegt** (der Eintrag wird bei ≤ 0 gelöscht). Das echte Problem: verkaufte und bezahlte Phantomeinheiten | dasselbe Modul: Bestandsprüfung, geteilter Stapel, Preis der verkauften Menge |
+| 4 | `journeyReady()`: ein angenommener Escort gilt allein in einer anderen Stadt als unterwegs | **bestätigt**; bei zwei Aufträgen gewann der erste | gespeicherter Beginn der Reise (`quest.journey`) |
+| 5 | `hunted()`: Schafe werden über den Alias „goat“ Ziele eines Ziegenauftrags | **bestätigt**; ebenso Mäuse/Ratten, Raben/Krähen, Rinder/Pferde | Zuordnung nach der genannten Art |
+| 6 | C3-Sperre: eine abgelehnte zweite Ortsänderung blockiert die legitime Bereitschaft | **bestätigt**; dazu ein eigener Fehler (ein unbekannter Begleiter in `arrive.with` zählte als abgelehnte Reise) und der häufigere Fall „schon am Ziel, ohne `go` in die Halle geführt“ | Sperre nach Erzählreihenfolge und Reiseziel |
+| 7 | v11_05: ein Hilfsangebot wird privater Auftrag | Zahlen **bestätigt** (7 → 1 verbotene, 58/58 der vorhandenen kritischen Deltas, 63 im Gold); strukturell nicht ohne Textheuristik trennbar | Klarstellung im Vokabular von `quest.offer`; messbar erst live |
+| 8 | Aussagekraft der Tests | **zutreffend**; das Repository hat keine CI | Nachweise unten nach Testart getrennt |
+
+**Geld (1).** Die Firewall bleibt unverändert, sie prüft weiter die Gilde. Neu entscheidet der World-Applier, bevor er ein `coin.gift` bucht, anhand von drei Fragen:
+- **Wer gibt es?** Eine lebende, anwesende Person darf Alaric Geld schenken. Die Gegenseite eines Handels, den die Engine in diesem Zug gebucht hat, kann das nicht: Der Käufer eines Verkaufs und der Verkäufer, dem Alaric den genauen Preis gezahlt hat, schenken nichts. Wechselgeld auf eine selbst gewählte Zahlung (`pay` mit Betrag) bleibt erlaubt.
+- **Hat Alaric es genommen?** Geld von allem anderen (Leiche, Börse, Theke, Truhe) nimmt Alaric. Es gehört ihm nur, wenn er in PLAYER ACTIONS etwas genommen hat oder sucht bzw. sammelt. Als Nehmen zählt ein TAKE mit `taken: true` oder ein sofort gebuchtes TAKE.
+- **Ist es schon gebucht?** Die Engine merkt sich ihre eigenen Gutschriften (`transaction.completed` an `pc`, Ort und Tag). Das betrifft die Gildenauszahlung und Verkaufserlöse. Genommenes Geld am selben Ort am selben Tag ist dieses Geld.
+
+Jede Ablehnung bringt eine Korrektur in den nächsten Engine-Block. `isLooseCoin` erkennt jetzt auch „the bandit's coins“ und „the silver on the counter“. Ein TAKE davon legt also kein Phantomobjekt neben die Gutschrift.
+
+**Handel (2, 3).** Eine Angebotszeile ist ein Posten aus `qty` Einheiten für `price_cp`, bei einem Stückpreis ist `qty` 1. Bei allen bisherigen Daten ist `qty` 1, dort ändert sich nichts.
+- Ein Teil eines Postens wird nur zu einem ganzzahligen Stückpreis verkauft, sonst wird mit Hinweis auf die Losgröße abgelehnt.
+- `buy`, `offer.accept` und der bedingte Kauf buchen über dieselbe Funktion.
+- `offer.accept` hat ein nullbares `qty` (Vokabular `cmd-0.7`, Interpreter `interp-4.6`). Fehlende nullbare Argumente ergänzt der Parser als `null`, wie beim Extraktor.
+- Verkäufe prüfen den Bestand beim Anbieten und beim Buchen. Ohne Mengenangabe geht ein Objekt ganz und ein Bogen-Gegenstand einzeln, wie bisher.
+
+**Reise (4).** `quest.journey` wird gesetzt, wenn Alaric
+- der Fortsetzung dieses Auftrags zustimmt (`journey.continue`), oder
+- bei angezeigter Reise dieses Auftrags (Beteiligte anwesend) aufbricht und dabei die Siedlung verlässt.
+
+Danach ist die Reise ohne anwesende Begleiter fortsetzbar. Die Regel „außerhalb der Stadt des Bretts“ entfällt. Kampagnen, die unter 4.1.0 mitten in einer Reise stehen, haben keinen Marker. Für sie gilt nur der Story-Pfad (Beteiligte anwesend) oder ein neues `go`.
+
+**Tiere (5).** Verglichen werden die Hauptwörter von Gruppenart und Auftragsziel in beide Richtungen, nicht mehr die Aliasse des Körperbaus. Die Nominalphrase endet an Ort, Nebensatz oder Partizip, sodass in „the wolves harrying the sheep“ nur die Wölfe Ziele sind. Oberbegriffe, die für den ganzen Körperbau gelten, stehen als Daten in `monsters.json` (`rat`: vermin, rodent; `raptor`: bird).
+
+**C3 (6).** Die Sperre greift nur bei einer abgelehnten Ankunft, die Alaric aus seiner Siedlung (außerhalb: von seinem Ort) wegführen würde. Sie muss in der Erzählung vor dem `quest.ready` liegen, und davor darf keine Ankunft angenommen worden sein. Abgelehnte Begleiter zählen nicht.
+
+**Unverändert (Vorgabe):** die Architektur aus harter Mechanik und freier Welt, das Brett beim ersten Lesen und seine Formatierung, die Novice-Mischung, die Kampfmechanik, der geschichtsbasierte Abschluss, `arrive.with` und `person.named`, XP 12/15.
+
+**Restrisiken 4.1.1:**
+- Ein TAKE von etwas anderem (etwa einem Schwert) erlaubt auch Beute-Geld, das der Erzähler dazuerfindet. Die erste Sperre dagegen ist die Overreach-Regel des Extraktors.
+- Genommenes Geld am selben Ort und Tag wie eine Engine-Gutschrift wird abgelehnt, auch wenn es wirklich neues Geld wäre (konservativ).
+- Ein Geschenk einer anwesenden Person bleibt frei. Überreicht jemand anderes als der Auftraggeber die schon gebuchte Auszahlung erneut, fängt das nur die Firewall-Regel zu Auftraggeber und Summe.
+- `pay` mit einem Betrag, der mehreren Stück eines Angebots entspricht, bleibt eine reine Zahlung. Der Interpreter soll dafür `offer.accept` mit `qty` nehmen.
+- Ein Auftrag, der nur einen Oberbegriff außerhalb der Datenliste nennt („pests“), macht eine scheue Gruppe zur Kulisse. Ein Angriff darauf findet dann kein Ziel, bis die Geschichte einzelne Tiere zeigt.
+- `offer.accept.qty`, die Losgrößen-Semantik, die Herkunft in `coin.gift` und die Abgrenzung in `quest.offer` sind Modellverhalten. Offline ist davon nichts gemessen.
+
+**Nachweise 4.1.1, nach Testart getrennt:**
+
+| Testart | Prüfung | Ergebnis |
+|---|---|---|
+| deterministisch | `npm test` | **465/465** (4.1.0: 448) |
+| deterministisch | neue Regressionstests `review_4_1.test.js` | 17/17; auf 4.1.0 (`d7ef49b`) 0/17 |
+| deterministisch | V3-Differenzlauf v8–v12 gegen die Basis `1cbfdd4` | identisch bis auf den Build-Stempel |
+| deterministisch | P0-Rescore der gespeicherten Antworten (nur Firewall und Guard) | unverändert zu 4.1.0: verboten 7 → 1, kritisch 58 → 58 von 63. Die neuen Geldregeln sitzen im World-Applier und werden davon nicht erfasst; im Gold gibt es kein kritisches `coin.gift` |
+| kontrolliertes Replay | Lauf 30.09. (`live_0930.test.js`): Nachricht 51 auf den neuen Katalog umgestellt, Ziele neu zugeordnet, zusätzliche Schläge bis Kampfende | alle Prüfungen grün; die Reise ist ab Nachricht 23 gespeichert begonnen |
+| Mock-Provider-Smokes | Browser-Smoke V3 + V4; echtes SillyTavern 1.19 mit Mock-Provider und Dummy-Schlüssel | OK; V4 17/17, V3 OK; `secrets.json` danach `{}` |
+| echter Modell-Live-Test | — | **keiner** für 4.1.1; §5 ist der nächste |

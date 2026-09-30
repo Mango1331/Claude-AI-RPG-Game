@@ -217,6 +217,10 @@ Die Artefakte (Chat, Event-Log, Request-Log) wurden Zug für Zug verglichen. Der
 - Ob der Extraktor mit der Spielernachricht die Unterschrift nicht mehr als Overreach meldet und den Namen als `learn` meldet, entscheidet das Modell. Das zeigt erst der Retest; der Test prüft, was der Extraktor bekommt.
 - Deterministisch sind: die Verankerung, die Redundanz des Mitglieds, der Gildenkanon, das Namenswissen bei der Registrierung und der Schutz der Münzen.
 
+### R3.10 Integration 4.1 (30.09.2026)
+
+Das ChatGPT-Experiment 4.0.1–4.0.9 und der Live-Lauf vom 30.09. (4.0.8) sind geprüft und eingebaut: Build 4.1.0 auf `claude/v4-integration-2026-09-30`. Was übernommen, überarbeitet, ersetzt oder verworfen wurde, die zusätzlichen Befunde, Restrisiken und der nächste Live-Test: [INTEGRATION_4_1.md](INTEGRATION_4_1.md). Grundsätzlich neu gegenüber Rev. 3: das Brett entsteht beim ersten Lesen; Verträge sind nach der Geschichte bereit (`quest.ready`), Auszahlung und XP bleiben bei der Engine; Begleiter kommen mit `arrive.with`, Namen mit `person.named`; XP-Konstanten 12/15.
+
 ---
 
 ## R. Revision 2: was sich gegenüber Revision 1 ändert

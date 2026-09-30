@@ -1,4 +1,6 @@
-# Live-Test Runtime V4 (Engine 4.0.0)
+# Live-Test Runtime V4 (Engine 4.1.0)
+
+**Stand 30.09.2026, Build 4.1.0:** Der nächste Live-Test ist die Warrior-Baseline in [INTEGRATION_4_1.md §5](INTEGRATION_4_1.md#5-nächster-live-test-warrior-baseline-build-410) (Brett, Eskorte, Kampf, Abgabe, Taverne). Die Einrichtung unten gilt weiter; Branch und Version siehe dort.
 
 **Stand 28.09.2026:** Der erste Live-Lauf (04:27, GLM-5.3-Flash, vier Story-Züge) fand vier Fehler; sie sind behoben ([RUNTIME_V4_PLAN.md R3.9](RUNTIME_V4_PLAN.md#r39-erster-live-test-28092026-befunde-und-korrekturen)). **Nächster Schritt: der kurze Retest in [§5](#5-kurzer-retest-nach-dem-ersten-live-test-28092026)**, danach der volle Spieltest (§4).
 
@@ -22,7 +24,7 @@
 
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
-| Einheiten, Golden-V12, Cluster, Laufzeit, Abdeckung, Nachspiel des ersten Live-Laufs (`tests/v4/live_0928.test.js`) | `npm test` | 392/392 |
+| Einheiten, Golden-V12, Cluster, Laufzeit, Abdeckung, Nachspiel der Live-Läufe 28.09. und 30.09. (`tests/v4/live_0928.test.js`, `live_0930.test.js`) | `npm test` | 448/448 (4.1.0) |
 | `index.js` in Chromium, SillyTavern nachgebaut: eine V3- und eine V4-Kampagne | `node tools/browser_smoke.mjs` | OK |
 | **Echtes SillyTavern 1.19**, V4: Begrüßung → V4-Kampagne, Erschaffung, drei V12-Züge; Mock-Provider hinter der Quelle Custom | `AVERETH_ST_DIR=… node tools/st_live/run_v4.mjs` | 17/17 |
 | Echtes SillyTavern 1.19, V3-Kampagne (14 Züge, Kampf, Nachforderung, Reise) | `AVERETH_ST_DIR=… node tools/st_live/setup.mjs && … run.mjs` | 21/21 |
@@ -32,8 +34,8 @@
 - Der Erzähler bekommt PLAYER ACTIONS und am Ende „write only the story“; kein Report wird verlangt.
 - Interpreter, Extraktor und Board-Generator laufen über SillyTavern mit Temperatur 0,1 / 0,1 / 0,6, ohne Streaming.
 - **Schlüssel:** Ein Dummy-Schlüssel in `secrets.json` kam beim Provider an, von SillyTavern gesetzt. In keiner Anfrage oder Antwort des Browsers und in keiner Chat-Datei tauchte er auf.
-- **Barriere:** Die nächste Nachricht wurde sofort gesendet. Sie wartete, bis Extraktion und Board der vorigen Antwort gebucht waren.
-- HUD, Statuszeile (`runtime v4 (LLM: custom endpoint)`, `integrity: OK`, `lore: World Info (Avereth World Lore v0.13)`) und Endzustand stimmen: Novice, 30 cp, fünf Aushänge, einer von anderen genommen.
+- **Barriere:** Die nächste Nachricht wurde sofort gesendet. Sie wartete, bis die Extraktion der vorigen Antwort gebucht war. Das Brett entsteht seit 4.0.7 erst, wenn Alaric es liest.
+- HUD, Statuszeile (`runtime v4 (LLM: custom endpoint)`, `integrity: OK`, `lore: World Info (Avereth World Lore v0.13)`) und Endzustand stimmen: Novice, 30 cp, fünf Aushänge (seit 4.0.9 verschwindet keiner in der Antwort, die das Brett zeigt).
 
 **`tools/st_live/*` nur gegen ein Wegwerf-SillyTavern laufen lassen, nie gegen deine Installation.** Die Werkzeuge ersetzen dort Extension, Karte, Einstellungen und kurz `secrets.json`.
 
@@ -41,7 +43,7 @@
 
 ## 2. Einrichtung in SillyTavern
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/happy-wright-1a4y19` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; eine alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile im Engine-Panel zeigt `Avereth Engine 4.0.0`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/v4-integration-2026-09-30` (Build 4.1.0) nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; eine alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile im Engine-Panel zeigt `Avereth Engine 4.1.0`.
 2. **Verbindung (wichtig):** API Connections → Chat Completion → Quelle **Custom (OpenAI-compatible)**, Endpoint und Modell wie bisher, einmal Connect. Die Include-Body-Parameter (z. B. `reasoning_effort`, `clear_thinking`) gelten auch für die drei Engine-Aufrufe, wie in P0 gemessen.
    - **Warum Custom:** Nur bei dieser Quelle schickt die Engine ihre Aufrufe genau so wie die P0-Werkzeuge, mit eigener Temperatur 0,1. Bei jeder anderen Quelle nimmt sie `generateRaw`; dann gelten Temperatur und Einstellungen des Erzähler-Presets. Das ist nicht gemessen.
 3. **Eine eigene Karte für V4** (empfohlen), z. B. die bisherige Karte duplizieren und „Avereth V4“ nennen:
@@ -79,13 +81,13 @@ node tools/p0/s2_deltas.mjs --variant a --vocab v4 --out p0_out/s2_v4
 
 ## 4. Der Spieltest
 
-**Wegwerf-Chat zuerst.** Nach jeder Antwort liest die Engine sie im Hintergrund. Über der Antwort steht dann `WORLD — the engine is reading the reply`, danach die Änderungen und das HUD. Sendest du vorher, wartet die nächste Nachricht darauf, höchstens 90 s.
+**Wegwerf-Chat zuerst.** Nach jeder Antwort liest die Engine sie im Hintergrund; die Antwort steht sofort da, die Änderungen und das HUD folgen. Sendest du vorher, wartet die nächste Nachricht, bis die Lesung gebucht ist (seit 4.0.7 ohne Zeitlimit).
 
 ### A. Der Weg des Laufs V12 (acht Nachrichten, eigene Worte erlaubt)
 
 | # | Nachricht (sinngemäß) | Erwartet |
 |---|---|---|
-| 1 | in die Stadt gehen, zur Gilde, eintreten | Ankunft in „Adventurers' Guild hall“, HUD-Ort; das Brett wird im Hintergrund erzeugt |
+| 1 | in die Stadt gehen, zur Gilde, eintreten | Ankunft in „Adventurers' Guild hall“, HUD-Ort; noch kein Brett (es entsteht beim ersten Lesen, Zug 3) |
 | 2 | „Im here to Register“ (höflich) | Der Schreiber nennt die Gebühr **2 Silber**, einmalig, und hält an. **Nichts bezahlt**, Coin unverändert |
 | 3 | nicken, die 2 Silber zahlen, Hand auf den Stein, dann das Novice-Brett ansehen | −20 cp, Novice, Power Rank F, Plakette. **Genau fünf Aushänge** mit Namen und Preis wie im System-Block; keine erfundenen |
 | 4 | nach einem Auftrag fragen („Could I take the escort?“) | eine Frage, **keine Annahme** |
@@ -108,7 +110,7 @@ node tools/p0/s2_deltas.mjs --variant a --vocab v4 --out p0_out/s2_v4
 
 - **Swipe** einer Antwort: dieselben Würfel, die neue Antwort wird neu gelesen.
 - **Regenerate** nach `INTERPRETER FAILED` oder „no new official contracts“: fragt neu.
-- **Seite neu laden,** während `WORLD — the engine is reading` dasteht: Die Lesung läuft danach weiter.
+- **Seite neu laden,** während die Engine eine Antwort noch liest: Die Lesung läuft danach weiter.
 - **Antwort bearbeiten** (Tippfehler): Die gebuchte Welt bleibt.
 
 **Bitte notieren, je Zug:** falsch Gebuchtes oder Fehlendes (System-Zeilen `UNDERSTOOD`, `WORLD`, `NOT APPLIED`, `ENGINE REFUSED`); ob der Erzähler bei offenen Entscheidungen anhielt; die Wartezeit bis zum ersten Wort und bis das HUD erschien.

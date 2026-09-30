@@ -97,8 +97,13 @@ const HANDLERS = {
             })),
             ...Object.values(s.threads || {}).filter((t) => t.status === 'open').map((t) => ({ label: t.text, text: t.text })),
         ];
-        let ready = null;
+        // An already-established escort retains its real party identities across scenes.
+        const pQuest = s.journey?.quest && s.quests[s.journey.quest];
+        const pContact = s.journey?.party?.find((id) => present(s, id));
+        let ready = pQuest?.status === 'active' && !pQuest.ready && pContact
+            ? { label: pQuest.title, contact: pContact } : null;
         for (const src of sources) {
+            if (ready) break;
             if (!travelRe.test(src.text)) continue;
             const text = normText(src.text);
             const contact = s.scene.present.find((id) => {

@@ -112,9 +112,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         events.push(e);
     };
     const rejected = [];
+    let rejectedTravel = false;
     const corrections = [];
     const system = [];
     const reject = (d, rule, why) => {
+        if (d?.type === 'arrive' && rule === 'no_go') rejectedTravel = true;
         rejected.push({ seq: d?.seq ?? 0, type: d?.type ?? 'expected', rule, why });
         emit({ t: 'delta.rejected', d: { item: d, rule, reason: why } });
     };
@@ -155,6 +157,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     };
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
     let calls = 0;
+    const isLooseCurrency = (name) => /^(?:(?:the|my|some|a|our)\s+)?(?:(?:quest|guild)\s+)?(?:reward|payout|payment|coins?|coppers?|silvers?|golds?)(?:\s+coins?)?$/.test(normText(name || ''));
     const v3 = (report, d) => {
         calls += 1;
         const r = reportToEvents(report, s, content, { msg, prose, idTag: `d${d?.seq ?? 0}${calls > 1 ? `_${calls}` : ''}` });
@@ -162,7 +165,50 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         for (const x of r.rejected) reject(d, 'world_rule', x.reason);
         return r;
     };
+    // Reintroducing a unique, already-established local person must not mint another NPC.
+    // Proper names are global identities; generic roles are usable only for one unique local
+    // or current escort-party match. Never merge explicitly "another" or enumerated people.
+    const existingPerson = (d) => {
+        if (d.name) {
+            const named = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.name && normText(e.name) === normText(d.name));
+            if (named.length === 1) return named[0].id;
+        }
+        if (/\b(?:another|other|different|second|new)\b/i.test([d.role, ...(d.desc || [])].join(' '))
+            || /(?:_[a-z]|_\d+)$/i.test(String(d.ref || ''))) return null;
+        const useful = (txt) => new Set(normText(txt || '').split(/[^a-z]+/).filter((w) =>
+            w.length >= 4 && !['person', 'woman', 'young', 'older', 'guild', 'other', 'another', 'some', 'local', 'male', 'female', 'with', 'from', 'that', 'same', 'there'].includes(w)));
+        const wanted = useful(d.role);
+        if (!wanted.size) return null;
+        const party = s.journey?.party || [];
+        const local = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.status !== 'dead'
+            && (s.scene.present.includes(e.id) || party.includes(e.id)
+                || (e.location === s.scene.location && (!e.at || e.at === s.scene.at))));
+        const candidates = local.filter((e) => !d.name || !e.name || normText(e.name) === normText(d.name))
+            .map((e) => {
+                const role = [truth(s, e.id, 'occupation')[0]?.o, ...(e.descriptors || [])].join(' ');
+                const have = useful(role);
+                const score = [...wanted].filter((t) => have.has(t)).length;
+                return { e, score };
+            }).filter((x) => x.score > 0).sort((a, b) => b.score - a.score);
+        return candidates.length && (candidates.length === 1 || candidates[0].score > candidates[1].score) ? candidates[0].e.id : null;
+    };
     const newEntity = (d, kind) => {
+        if (kind === 'npc') {
+            const knownId = existingPerson(d);
+            if (knownId) {
+                const e = s.entities[knownId];
+                if (d.name && !e.name) emit({ t: 'entity.updated', d: { id: knownId, set: { name: d.name, descriptors: [d.name, ...(d.desc || [])] } } });
+                if (d.present !== false && !s.scene.present.includes(knownId)) emit({ t: 'scene.entered', d: { id: knownId, band: d.band || 'SHORT' } });
+                refs.set(normText(d.ref), knownId);
+                if (d.name) refs.set(normText(d.name), knownId);
+                return [knownId];
+            }
+        }
+        if (kind === 'creature' && d.count > 4 && !hostileRefs.has(normText(d.ref))) {
+            // Ordinary herds are scenery until a particular member becomes actionable.
+            setFactEvents(s, { s: s.scene.at, p: 'background_fauna', o: `${d.count} ${d.species}`, source: { kind: 'narration', msg }, importance: 0.3 }).forEach(emit);
+            return [];
+        }
         const before = new Set(Object.keys(s.entities));
         const entries = [];
         const count = kind === 'creature' ? Math.max(1, Math.min(12, d.count || 1)) : 1;
@@ -253,10 +299,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'enter':
                 v3({ enter: [mapRef(d.who)] }, d);
                 break;
-            case 'leave':
+            case 'leave': {
+                const who = mapRef(d.who);
                 perceiveAll(s, emit);
-                v3({ leave: [mapRef(d.who)] }, d);
+                v3({ leave: [who] }, d);
+                if (s.journey?.party?.includes(who)) {
+                    emit({ t: 'journey.party', d: { quest: s.journey.quest, party: s.journey.party.filter((x) => x !== who) } });
+                }
                 break;
+            }
             case 'position':
                 v3({ position: [{ who: mapRef(d.who), band: d.band, cover: d.cover || undefined }] }, d);
                 break;
@@ -300,6 +351,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 break;
             }
             case 'object.new':
+                if (isLooseCurrency(d.name) && normText(d.holder) === 'pc') {
+                    reject(d, 'currency_wallet', 'ordinary coin is tracked in the character coin total, not recreated as a second inventory item');
+                    break;
+                }
                 objectNew(d);
                 break;
             case 'object.move':
@@ -343,7 +398,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 const q = questRef(d.quest);
                 if (!q) { reject(d, 'quest', 'unknown quest'); break; }
                 if (q.status !== 'active') { reject(d, 'quest', `the quest is ${q.status}`); break; }
-                emit({ t: 'quest.ready', d: { id: q.id, note: String(d.note || q.desired_end_state || 'desired outcome achieved').slice(0, 220) } });
+                const claimed = String(d.note || q.desired_end_state || '');
+                // Do not commit an escort/delivery completion whose only grounding this very
+                // reply was an arrival that the authorization firewall just refused.
+                if (rejectedTravel && !arrived && (q.objectives || []).some((o) => ['ESCORT', 'DELIVER'].includes(o.verb))
+                    && /\b(?:arriv|reach|deliver|escort|destination|made it|got there)/i.test(claimed)) {
+                    reject(d, 'quest_dependency', 'the escort/delivery destination was not canonically reached in this reply; readiness cannot depend on the refused arrival');
+                    break;
+                }
+                emit({ t: 'quest.ready', d: { id: q.id, note: claimed.slice(0, 220) } });
                 break;
             }
             case 'quest.close': {
@@ -392,7 +455,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         }
         if (type === 'take' && e.taken === true && !events.some((x) => x.t === 'object.created' && x.d.object.holder?.entity === 'pc') && !events.some((x) => x.t === 'object.moved' && x.d.to?.entity === 'pc')) {
             const name = (auth.takeNames || {})[k];
-            if (name) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
+            if (name && !isLooseCurrency(name)) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
         }
         if ((type === 'buy' || type === 'pay') && e.taken_anyway === true) overreach(type === 'buy' ? 'purchase' : 'payment', `the reply had Alaric ${type === 'buy' ? 'take or use what he had not bought' : 'pay'} although he had not agreed`);
         if ((type === 'buy' || type === 'pay') && e.priced === true) {
@@ -421,7 +484,29 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
 
     function arrive(id) {
         const town = locationOf(s, id);
+        const escort = Object.values(s.quests).find((q) => q.status === 'active' && !q.ready
+            && q.kind === 'guild_contract' && (q.objectives || []).some((o) => o.verb === 'ESCORT'));
+        const alone = /\b(?:alone|by myself|without (?:them|the party|the driver|my companions))\b/i.test(s.last?.input || '');
+        const travel = !!(auth.gos || []).length && !hallOf(s, s.scene.at) && !hallOf(s, id) && !alone;
+        let party = [];
+        if (travel && escort && s.journey?.quest === escort.id) {
+            party = (s.journey.party || []).filter((who) => s.entities[who]?.status !== 'dead');
+        } else if (travel && escort && !s.journey) {
+            // Record actual people already sharing the escort departure scene. A busy Guild
+            // clerk is never recruited; unrelated crowds are not made permanent followers.
+            party = s.scene.present.filter((who) => who !== 'pc' && s.entities[who]?.kind === 'npc'
+                && s.entities[who].status !== 'dead'
+                && /\b(?:driver|carter|cart|wool|flock|shepherd|escort|factor|guide|wagon)\b/i.test(
+                    [truth(s, who, 'occupation')[0]?.o, s.entities[who].traits, ...(s.entities[who].descriptors || [])].join(' ')));
+            if (party.length) emit({ t: 'journey.party', d: { quest: escort.id, party } });
+        }
+        if ((alone || hallOf(s, id) || !escort) && s.journey) emit({ t: 'journey.party', d: { quest: null, party: [] } });
         emit({ t: 'scene.moved', d: { at: id, location: town, place: placeName(s, id), reset_present: true } });
+        for (const who of party) {
+            if (!s.entities[who] || s.entities[who].status === 'dead') continue;
+            emit({ t: 'entity.updated', d: { id: who, set: { at: id } } });
+            emit({ t: 'scene.entered', d: { id: who, band: 'SHORT' } });
+        }
         arrived = id;
         // a decision belongs to the place it was opened at: leaving it closes it; one opened in this very turn goes
         // with him ("look for an inn to sleep": the room is bought where he arrives)

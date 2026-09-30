@@ -146,7 +146,7 @@
   },
   "xp": {
     "src": "Core #25",
-    "base_per_level": 10,
+    "base_per_level": 12,
     "rank_gap": {
       "0": 1,
       "1": 2,
@@ -160,7 +160,7 @@
       "elite": 1.5,
       "boss": 2.5
     },
-    "quest_base_per_level": 10,
+    "quest_base_per_level": 15,
     "quest_type": {
       "minor": 1.5,
       "standard": 2,

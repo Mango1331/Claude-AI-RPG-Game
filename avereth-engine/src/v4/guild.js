@@ -13,7 +13,7 @@ import { hallOf, settlementOf, heldBy, membership, listingsOf, boardKey, today, 
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
-export const BOARD_VERSION = 'board-4.4';
+export const BOARD_VERSION = 'board-4.5';
 const QTYPES = ['minor', 'standard', 'dangerous', 'major'];
 const VERBS = ['GO', 'FIND', 'TALK', 'GET', 'GATHER', 'GIVE', 'DELIVER', 'USE', 'REPAIR', 'DEFEND', 'ESCORT', 'ATTACK', 'DEFEAT'];
 
@@ -159,8 +159,31 @@ export function defeatTally(s, content, q) {
 /** "3 of 4 bog striders": the tally as the engine block and the catalog show it. */
 export const tallyText = (tally) => tally.map((t) => `${t.done} of ${t.qty} ${t.what}`).join('; ');
 
-/** A hunt or cull contract: its work is to attack or defeat creatures (proof: trophies of the kills, no sign-off). */
-export const isHunt = (q) => (q.objectives || []).some((o) => o.verb === 'ATTACK' || o.verb === 'DEFEAT');
+/** The DEFEAT objectives whose number the engine's count has not reached yet. */
+export const countShort = (s, content, q) => defeatTally(s, content, q).filter((t) => t.done < t.qty);
+
+/**
+ * What the catalog and the quest memory show as ready: the story's readiness that the desk accepts (contractReady). A
+ * readiness booked with fewer kills than named and no alternative (a campaign of a build before 4.1.2) is not shown as
+ * ready: the turn-in would be refused.
+ */
+export const readyShown = (s, content, q) => !!q.ready && (!!q.ready_alternative || !countShort(s, content, q).length);
+const NOT_READY_COUNT = 'NOT READY FOR TURN-IN: fewer defeated than named and no other way the outcome was reached is established';
+
+/** The readiness part of the catalog line and the quest memory (src/v4/catalog.js, src/context.js). */
+export const readyText = (s, content, q) => (readyShown(s, content, q) ? `READY FOR TURN-IN: ${q.ready_note || 'desired outcome achieved'}` : q.ready ? NOT_READY_COUNT : null);
+
+// A hunt or cull contract's work is the kills: ATTACK/DEFEAT, and besides them only finding and reaching the targets
+// (FIND, GO) or protecting what they threaten (DEFEND "the weir platforms and eel boats"). Other work beside the kills
+// (REPAIR the old watch post, DELIVER, ESCORT, GATHER, GET, GIVE, USE, TALK) makes it mixed work, whose other parts keep
+// their own proof (review of 4.1.2).
+const KILL_WORK = new Set(['ATTACK', 'DEFEAT']);
+const HUNT_SUPPORT = new Set(['FIND', 'GO', 'DEFEND']);
+/** A hunt or cull contract (proof: trophies of the kills, no local sign-off); mixed work is none. */
+export const isHunt = (q) => {
+    const verbs = (q.objectives || []).map((o) => o.verb);
+    return verbs.some((v) => KILL_WORK.has(v)) && verbs.every((v) => KILL_WORK.has(v) || HUNT_SUPPORT.has(v));
+};
 
 /** Canonical objectives in compact narrator-facing prose (the Board generator owns their structure). */
 export function objectiveText(q) {
@@ -173,18 +196,34 @@ export function objectiveText(q) {
     }).join('; ');
 }
 
-/** Turn a contract in at a Guild hall: story-readiness (or legacy exact proof), then deterministic payout/XP/count. */
+/**
+ * Whether the Guild accepts a contract now: the one check behind every way to complete it (the turn-in at the desk,
+ * the turn-in on arriving at a hall, the line that announces a turn-in on the way). The outcome is established (the
+ * story's quest.ready, or the listed proof in hand), and a DEFEAT objective with a number has its kills by the
+ * engine's count, unless the story established how the outcome was reached otherwise (quest.ready's alternative).
+ * Trophies in hand are no count (review of 4.1.2: four pairs of leg joints from three kills completed the contract by
+ * its proof, although the count refused its quest.ready).
+ * @returns {{ok: boolean, mode: 'story_outcome'|'legacy_verification'|'not_ready'|'count_short', reason: string|null, consume: object[]}}
+ */
+export function contractReady(s, content, q) {
+    const legacy = (q.proof || []).length > 0 ? checkProof(s, q) : { ok: false, consume: [] };
+    const mode = q.ready ? 'story_outcome' : legacy.ok ? 'legacy_verification' : 'not_ready';
+    if (mode === 'not_ready') return { ok: false, mode, reason: 'the contract outcome has not yet been established as achieved in the world', consume: [] };
+    const short = countShort(s, content, q);
+    if (short.length && !(q.ready && q.ready_alternative)) {
+        return { ok: false, mode: 'count_short', reason: `the engine counts ${tallyText(short)} defeated and the story has not established that the outcome was reached otherwise; trophies are no count`, consume: [] };
+    }
+    return { ok: true, mode, reason: null, consume: mode === 'legacy_verification' ? legacy.consume : [] };
+}
+
+/** Turn a contract in at a Guild hall: its readiness (contractReady), then deterministic payout/XP/count. */
 export function completeContract(s, content, q, emit, { step } = {}) {
-    const legacy = checkProof(s, q);
-    const hasLegacyProof = (q.proof || []).length > 0;
-    const legacyReady = hasLegacyProof && legacy.ok;
-    const ready = !!q.ready || legacyReady;
-    const reason = ready ? null : 'the contract outcome has not yet been established as achieved in the world';
-    emit({ t: 'proof.checked', d: { quest: q.id, ok: ready, reason, mode: q.ready ? 'story_outcome' : legacyReady ? 'legacy_verification' : 'not_ready' } });
-    if (!ready) return { ok: false, reason };
+    const check = contractReady(s, content, q);
+    emit({ t: 'proof.checked', d: { quest: q.id, ok: check.ok, reason: check.reason, mode: check.mode } });
+    if (!check.ok) return { ok: false, reason: check.reason };
     // Exact generated proof is only a backwards-compatible path. When story-readiness exists, items/marks are
     // continuity evidence, not mandatory tokens and are not auto-consumed by string matching.
-    if (!q.ready && legacyReady) for (const x of legacy.consume) emit({ t: 'object.consumed', d: { id: typeof x === 'string' ? x : x.id, by: 'guild', ...(typeof x === 'object' ? { qty: x.qty } : {}) } });
+    for (const x of check.consume) emit({ t: 'object.consumed', d: { id: typeof x === 'string' ? x : x.id, by: 'guild', ...(typeof x === 'object' ? { qty: x.qty } : {}) } });
     const sheet = s.entities.pc.sheet;
     const pay = q.payout_cp || 0;
     if (pay) {
@@ -250,7 +289,7 @@ export function boardRequest(s, content, need) {
         'Rules:',
         '- A contract is a concrete request to change a current situation in the world. Build it from: cause (why now), stakeholder/client, current problem, desired end state, 1–4 useful objective memories, and reward. Verification is optional story guidance, not a mandatory token.',
         '- task is what the notice asks the adventurer to do, one imperative sentence the board shows ("Hunt and cull the bog strider colony at the eel-weirs of the Reed Flats so the eel boats can launch safely again."). desired_end_state is the outcome the Guild recognizes when it is reached ("The bog strider colony is culled and the eel boats launch again."). Keep the two apart.',
-        '- A hunt or cull contract (ATTACK/DEFEAT) is proven by a species-appropriate body part of each kill (ears, teeth, claws, leg joints …) as its one proof entry. Add no local inspection, witness, sign-off or signature for it.',
+        '- A hunt or cull contract (its work is the kills: ATTACK/DEFEAT, with FIND/GO to reach the targets or DEFEND for what they threaten) is proven by a species-appropriate body part of each kill (ears, teeth, claws, leg joints …) as its one proof entry. Add no local inspection, witness, sign-off or signature for it. Mixed work (repair the old watch post and clear out what nests in it) keeps a fitting proof for each part: trophies for the kills, a receipt or sign-off only where its other work naturally needs one.',
         '- Rank limits scope, risk and complexity — not whether the subject is mundane or fantastical. Low-rank work may involve a manageable Monster, minor magic or a minor ruin, one dangerous animal, or a small clearly defined weak group such as wolves, goblins or feral dogs.',
         '- Do not preferentially default to rats, cellar vermin or indistinct swarms. Rats are allowed occasionally, not the standard low-rank combat answer.',
         '- The listings generated together must differ materially in underlying problem, location and likely play experience. Outside an explicit rank profile, do not make a balanced checklist of predefined quest categories.',

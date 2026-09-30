@@ -23,7 +23,7 @@ import { sameWant } from './world.js';
 import { journeyReady } from './catalog.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText } from './trade.js';
 import {
-    REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, checkProof, objectiveText,
+    REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, contractReady, objectiveText,
     promotion, takenByOthers, bookBoard, isHunt, proofText,
 } from './guild.js';
 
@@ -347,7 +347,7 @@ const HANDLERS = {
             ctx.booked.grants.push('contract slip');
             // a hunt is proven by trophies of the kills at a Guild hall (live 30.09.2026 14:56: the clerk made a local
             // steward's inspection and signature a condition of the payout)
-            const proof = isHunt(q) ? ` Proof: ${proofText(q) || 'trophies of the kills'} brought to a Guild hall; no local inspection, witness or signature is required.` : '';
+            const proof = isHunt(q) ? ` Proof: ${(q.proof || []).length ? proofText(q) : 'trophies of the kills'} brought to a Guild hall; no local inspection, witness or signature is required.` : '';
             return { status: 'resolved', line: `ACCEPTS — ${questLine(q)} at the Guild desk; the clerk logs it and hands him its contract slip. Contract memory: ${q.desired_end_state || objectiveText(q)}.${proof} The stored objectives and any verification examples are continuity guidance, not mandatory steps or wording. Payout (${q.payout_cp} cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in.` };
         }
         // private work: its giver must be here
@@ -378,12 +378,13 @@ const HANDLERS = {
         }
         const go = ctx.auth.gos.filter((g) => g.hall && g.seq < c.seq).at(-1);
         if (go) {
-            const ready = !!q.ready || ((q.proof || []).length > 0 && checkProof(s, q).ok);
+            // the same check the desk makes on arrival (guild.js contractReady)
+            const ready = contractReady(s, content, q);
             ctx.conditionals.push({ seq: c.seq, kind: 'turn_in', quest: q.id, condition: 'arrive_guild_hall', hall: go.to });
             ctx.booked.turnIns.push(q.id);
             return {
                 status: 'conditional', condition: 'arrive_guild_hall',
-                line: `TURNS IN, when he reaches the Guild hall — ${questLine(q)}: ${ready ? `the achieved outcome is ready for desk acceptance; the Guild pays ${q.payout_cp} cp` : 'the story has not yet established the contract outcome as achieved'}. If the reply does not reach the hall, nothing is turned in.`,
+                line: `TURNS IN, when he reaches the Guild hall — ${questLine(q)}: ${ready.ok ? `the achieved outcome is ready for desk acceptance; the Guild pays ${q.payout_cp} cp` : ready.mode === 'count_short' ? `the desk will refuse it: ${ready.reason}` : 'the story has not yet established the contract outcome as achieved'}. If the reply does not reach the hall, nothing is turned in.`,
             };
         }
         return { status: 'refused', reason: 'not at a Guild hall', line: `CANNOT TURN IN — ${questLine(q)}: contracts are turned in at a Guild hall.` };

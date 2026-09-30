@@ -23,6 +23,9 @@ import { parseIntent } from '../../src/intent.js';
 import { routeTurn } from '../../src/v4/turn.js';
 import { buildCatalog } from '../../src/v4/catalog.js';
 import { sceneHandle } from '../../src/v4/scene_handles.js';
+import { resolveCommands } from '../../src/v4/commands.js';
+import { checkProof } from '../../src/v4/guild.js';
+import { applyEvent } from '../../src/state.js';
 
 const content = await loadContent();
 const fx = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests/v4/live_0930b.json'), 'utf8'));
@@ -126,4 +129,28 @@ test('the messages that asked for a target or ignored the hiding: a report is no
     // a declared attack in the same convention is still an attack
     assert.equal(parseIntent('Die! *i say and Heavy Slash at it*', S(40), content).kind, 'attack');
     assert.notEqual(S(40).entities['mon.npcbog_strider_mound'].status, 'dead');
+});
+
+test('review of 4.1.2: at the real Guild hall, four pairs of joints for three kills are not paid either; a way the story gives is, once', () => {
+    // the run's end state, at the Glassmere hall, the joints in the unit the listed proof names (the run's extractor
+    // wrote "pairs of leg joints", which "pairs" did not match: 4.1.2 refused this turn-in only by that chance)
+    const s = structuredClone(g.state());
+    Object.assign(s.scene, { at: 'loc.glassmere.guild_hall', location: 'loc.glassmere', present: ['pc'] });
+    for (const o of Object.values(s.objects)) if (o.holder?.entity === 'pc' && /joints/.test(o.name)) o.unit = 'pairs';
+    assert.equal(checkProof(s, s.quests[QUEST]).ok, true, 'the listed proof is in hand');
+    const turnIn = (state) => {
+        const x = structuredClone(state);
+        const ctx = resolveCommands(x, content, [{ seq: 1, type: 'quest.turn_in', quest: QUEST, quote: 'i pull them out and turn the Quest in' }], (e) => applyEvent(x, e));
+        return { x, r: ctx.resolutions[0] };
+    };
+    const refused = turnIn(s);
+    assert.equal(refused.r.status, 'refused', '4.1.2 paid it by the proof');
+    assert.match(refused.r.reason, /engine counts 3 of 4 bog striders defeated/);
+    assert.deepEqual([refused.x.entities.pc.sheet.coin_cp, refused.x.quests[QUEST].status], [30, 'active']);
+    // the story establishes the rest otherwise
+    applyEvent(s, { t: 'quest.ready', d: { id: QUEST, note: 'the colony at the weirs is broken', alternative: 'the last adult fled downriver and the nests are empty' } });
+    const paid = turnIn(s);
+    assert.equal(paid.r.status, 'resolved');
+    assert.deepEqual([paid.x.entities.pc.sheet.coin_cp, paid.x.quests[QUEST].status], [30 + s.quests[QUEST].payout_cp, 'completed']);
+    assert.equal(turnIn(paid.x).r.reason, 'already_completed');
 });

@@ -19,7 +19,7 @@ import { firewall } from './firewall.js';
 import {
     PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind,
 } from './domain.js';
-import { completeContract, REGISTRATION_OFFER, defeatTally, tallyText, isHunt } from './guild.js';
+import { completeContract, REGISTRATION_OFFER, countShort, tallyText, isHunt } from './guild.js';
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
 
 // the words that end a person's name or role in a description ("clerk at the Walk", "steward of the weirs")
@@ -465,7 +465,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 }
                 // a count the engine keeps is not the story's to settle: fewer defeated than the objective names is ready
                 // only when the story says how the outcome was reached otherwise (alternative); trophies are no count
-                const short = q.kind === 'guild_contract' ? defeatTally(s, content, q).filter((t) => t.done < t.qty) : [];
+                const short = q.kind === 'guild_contract' ? countShort(s, content, q) : [];
                 const alternative = String(d.alternative || '').trim();
                 if (short.length && !alternative) {
                     reject(d, 'quest_count', `the engine counts ${tallyText(short)} defeated; trophies or a claimed number do not make the count`);
@@ -473,7 +473,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     if (!corrections.includes(correction)) corrections.push(correction);
                     break;
                 }
-                emit({ t: 'quest.ready', d: { id: q.id, note: `${claimed}${short.length ? ` — ${alternative}` : ''}`.slice(0, 220) } });
+                // the alternative is kept with the contract: the turn-in accepts the short count on it (guild.js contractReady)
+                emit({ t: 'quest.ready', d: { id: q.id, note: `${claimed}${short.length ? ` — ${alternative}` : ''}`.slice(0, 220), ...(short.length ? { alternative: alternative.slice(0, 200) } : {}) } });
                 break;
             }
             case 'quest.close': {

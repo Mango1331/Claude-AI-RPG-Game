@@ -145,6 +145,8 @@ export function applyDomainEvent(state, e) {
             if (!q) throw new Error(`unknown quest ${d.id}`);
             q.ready = true;
             q.ready_note = d.note || null;
+            // how the story reached the outcome with fewer kills than a DEFEAT objective names (src/v4/guild.js contractReady)
+            if (d.alternative) q.ready_alternative = String(d.alternative);
             q.notes = [...(q.notes || []), `Outcome achieved: ${d.note || q.desired_end_state || 'ready for turn-in'}`].slice(-6);
             break;
         }

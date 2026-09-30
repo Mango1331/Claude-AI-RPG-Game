@@ -12,7 +12,7 @@ import {
     membership, listingsOf, today,
 } from './domain.js';
 import { catalogText } from './interpret.js';
-import { defeatTally, tallyText } from './guild.js';
+import { defeatTally, tallyText, readyText } from './guild.js';
 
 /** A person or creature as the catalog labels it: name, role, look ("Marta, Guild receptionist"). */
 export function personLabel(state, content, id) {
@@ -84,7 +84,7 @@ function questInfo(state, content, q) {
             (q.objectives || []).length ? `job memory: ${objectiveText(q)}` : null,
             progress ? `progress: ${progress}` : null,
             q.status === 'active' && defeatTally(state, content, q).length ? `defeated (engine count): ${tallyText(defeatTally(state, content, q))}` : null,
-            q.ready ? `READY FOR TURN-IN: ${q.ready_note || 'desired outcome achieved'}` : null,
+            readyText(state, content, q),
             (q.proof || []).length ? `verification example: ${proofText(q)}` : null].filter(Boolean).join(' · ');
     }
     const giver = q.giver && state.entities[q.giver] ? personLabel(state, content, q.giver) : q.giver;

@@ -1,13 +1,13 @@
 # Integration 4.1: das ChatGPT-Experiment 4.0.1–4.0.9 geprüft und eingebaut
 
-**Stand 30.09.2026, Build 4.1.2.** Dieses Dokument hält fest, was aus dem Experiment übernommen, überarbeitet, ersetzt oder verworfen wurde, und warum. Es beschreibt auch den nächsten Live-Test (§5). §8 enthält die Nachprüfung von 4.1.0 durch ein unabhängiges Review und die Korrekturen in 4.1.1. §9 enthält den Live-Lauf vom 30.09. 14:56 auf 4.1.1, die Korrekturen und Designänderungen in 4.1.2 und die Ergänzungen zum nächsten Live-Test.
+**Stand 30.09.2026, Build 4.1.3.** Dieses Dokument hält fest, was aus dem Experiment übernommen, überarbeitet, ersetzt oder verworfen wurde, und warum. Es beschreibt auch den nächsten Live-Test (§5). §8 enthält die Nachprüfung von 4.1.0 durch ein unabhängiges Review und die Korrekturen in 4.1.1. §9 enthält den Live-Lauf vom 30.09. 14:56 auf 4.1.1 und die Korrekturen und Designänderungen in 4.1.2. §10 enthält die Nachprüfung von 4.1.2, die Korrekturen in 4.1.3 und den nächsten Live-Test.
 
 | | Branch | Commit |
 |---|---|---|
 | Basis (bisheriger Stand, unverändert) | `claude/happy-wright-1a4y19` | `1cbfdd4` |
 | Experiment (unverändert) | `chatgpt/v4-livetest-fixes-2026-09-28` | `a067bd0` (4.0.9); der Live-Lauf 30.09. lief auf 4.0.8 (`2f5eeb5`) |
 | Integration | `claude/v4-integration-2026-09-30` | von `1cbfdd4`; der Merge-Commit `f1b6bdd` holt `a067bd0` als Prüfgegenstand herein, die Folge-Commits überarbeiten ihn Teil für Teil; 4.1.0 = `d7ef49b` |
-| Korrekturen 4.1.1 (§8) und 4.1.2 (§9) | `claude/v4-integration-fixes-2026-09-30` | von `d7ef49b`; 4.1.1 = `6acc7f9` |
+| Korrekturen 4.1.1 (§8), 4.1.2 (§9) und 4.1.3 (§10) | `claude/v4-integration-fixes-2026-09-30` | von `d7ef49b`; 4.1.1 = `6acc7f9`, 4.1.2 = `0814ab5` |
 
 Primärbelege: Chat-JSONL des Laufs (Branch #1), Event-Export, Chat-Completion-Log (mit verworfenem Seitenzweig; nur über exakten Text zugeordnet). Die Chronik des Experiments steht in [CHATGPT_FIX_BRANCH_2026-09-28.md](CHATGPT_FIX_BRANCH_2026-09-28.md).
 
@@ -339,3 +339,101 @@ Einrichtung wie §5, Extension aus `claude/v4-integration-fixes-2026-09-30`; die
 - `NOT APPLIED` / `ENGINE REFUSED` mit `quest_count`, `guild_quest_detail`;
 - Extraktor-Reparaturen im Request-Log (ein erneuter `place`-Typ);
 - ob Aushänge `task` haben.
+
+---
+
+## 10. Nachprüfung von 4.1.2 und Korrekturen 4.1.3
+
+ChatGPT hat 4.1.2 (`0814ab5`) am Code geprüft und drei konkrete Lücken gemeldet. Jede wurde auf 4.1.2 reproduziert, bevor etwas geändert wurde. Die Regressionstests stehen in `tests/v4/review_4_1_2.test.js`, dazu ein Test am echten Endzustand des Laufs 14:56 in `live_0930b.test.js`.
+
+| # | Befund | Urteil | Korrektur 4.1.3 |
+|---|---|---|---|
+| 1 | Der zweite Abschlussweg umgeht die Tötungszählung: `completeContract` nimmt einen Auftrag auch an, wenn der gelistete Nachweis im Inventar liegt | **bestätigt**. Drei getötete Wölfe und vier Paar Ohren: Die Abgabe bezahlte 90 cp, obwohl die Zählung `quest.ready` abgelehnt hätte. Im Nachspiel des Laufs 14:56 griff der Fehler nur zufällig nicht, weil der Extraktor die Einheit „pairs of leg joints“ schrieb und der Nachweis „pairs“ verlangte. Mit passender Einheit zahlt 4.1.2 auch dort | Eine Prüfung für alle Wege: `contractReady` in `src/v4/guild.js` |
+| 2 | Die Jagd-Erkennung ist zu allgemein: Jedes ATTACK/DEFEAT-Ziel machte einen Auftrag zur Jagd | **bestätigt**. „Repariere den Wachposten“ mit einem Rattenkampf verlor die Prüfung des Wachhauptmanns vollständig (`guild_quest_detail`). Der Annahme-Satz widersprach sich selbst: „Proof: ‚signed by the watch captain‘ … no local inspection, witness or signature is required“ | Jagd = Tötungsarbeit; gemischte Aufträge behalten ihre Nachweise |
+| 3 | `deedsOf`: „I attack the wolf. *I shout* Get back!“ | **bestätigt**: Die Engine erkannte keinen Angriff | Sätze außerhalb der Sternchen, die eine eigene Tat im Präsens erklären, zählen wieder |
+| + | selbst gefunden: Ein Jagdauftrag ohne gelisteten Nachweis hieß im Annahme-Satz „Proof: no fixed verification listed brought to a Guild hall“ | Fehler aus 4.1.2 | Fällt zurück auf „trophies of the kills“ |
+| + | selbst gefunden: 4.1.2 änderte Prompt und Schema des Board-Generators (`task`, Jagdnachweis), die Version blieb `board-4.4` | Versäumnis in 4.1.2 | `board-4.5` |
+
+**Eine Prüfung für alle Wege (1).**
+
+Jeder Abschluss eines Gildenauftrags läuft über `completeContract`:
+- die Abgabe am Schalter;
+- die Abgabe bei Ankunft in der Halle.
+
+Die Firewall verbietet `quest.close` für Gildenaufträge. `completeContract` fragt jetzt `contractReady`, und dieselbe Funktion bestimmt auch die Ankündigung „TURNS IN, when he reaches the Guild hall“.
+
+Bedingungen der Prüfung:
+- Das Ergebnis muss belegt sein: durch die Bereitschaft der Geschichte (`quest.ready`) oder den gelisteten Nachweis in der Hand.
+- Ein DEFEAT-Ziel mit Zahl braucht zusätzlich die Tötungen nach der Engine-Zählung.
+- Ausnahme: Die Geschichte hat erzählt, wie das Ziel anders erreicht wurde. Dieses `alternative` aus `quest.ready` bleibt jetzt am Auftrag gespeichert (`ready_alternative`).
+- Trophäen zählen nicht als Tötungen.
+
+Folgen:
+- Eine glaubwürdige andere Lösung bleibt möglich und wird genau einmal bezahlt.
+- Ein Auftrag ohne Zahl (Kräuter, „the weasel“) ist unverändert.
+- Eine Bereitschaft, die ein älterer Build ohne Zählung gebucht hat (die Kampagne vom 14:56-Lauf), wird bei der Abgabe ebenfalls geprüft. Katalog und Quest-Gedächtnis zeigen sie dann als „NOT READY FOR TURN-IN“ statt „READY“.
+
+**Jagd oder gemischt (2).**
+
+Eine Jagd besteht aus ATTACK/DEFEAT. Daneben sind nur erlaubt:
+- FIND und GO, um die Ziele zu finden und zu erreichen;
+- DEFEND für das, was sie bedrohen. Die Bog Striders des Laufs (FIND, DEFEAT, DEFEND) bleiben damit eine Jagd.
+
+Jedes andere Ziel (REPAIR, DELIVER, ESCORT, GATHER, GET, GIVE, USE, TALK) macht den Auftrag gemischt:
+- keine Streichung von Unterschriftsbedingungen in `quest.detail`;
+- kein „no local inspection“ im Annahme-Satz.
+
+Die Tötungszählung gilt weiter für jedes DEFEAT-Ziel mit Zahl, auch in gemischten Aufträgen. Board-Generator und Erzählervertrag sagen jetzt: Gemischte Arbeit behält den Nachweis, den ihre anderen Teile brauchen.
+
+**Taten außerhalb der Sternchen (3).** Mit der Sprechkonvention („*I shout*“) zählen neben den Sternchen-Teilen auch Sätze außerhalb, die mit „I“ beginnen und im Präsens eine Tat erklären. Beispiele: „I attack the wolf.“ und „and I slash at the wolf“. Weiter als Rede gelten:
+- Berichte in der Vergangenheit („I found three and killed two“);
+- Drohungen und Pläne („I will kill you all“, Core #23);
+- Perfekt („I have killed two“);
+- alles ohne „I“ am Satzanfang.
+
+Das gilt nur in V4.
+
+**Beobachtung beim Nachspiel, nicht geändert.** In der aufgezeichneten Antwort des Laufs (Modell unter 4.1.1) kommt Alaric am erfundenen „Guild desk tollhouse“ an. Die Engine nimmt diese Ankunft als neuen Ort an, weil die Geschichte entscheidet, wo er ankommt. Die Abgabe dort lehnt sie ab. Seit 4.1.2 steht im PLAYER-ACTIONS-Satz „GOES — to Adventurers' Guild hall, Glassmere“. Ob der Erzähler trotzdem noch ein Büro erfindet, ist Punkt 2 des nächsten Live-Tests. Einer Empfehlung aus dem Review folgend kommt vorher kein weiterer Sonderfall dazu.
+
+### Nachweise 4.1.3, nach Testart getrennt
+
+| Testart | Prüfung | Ergebnis |
+|---|---|---|
+| deterministisch | `npm test` | **496/496** (4.1.2: 485) |
+| deterministisch | neue Regressionstests `review_4_1_2.test.js` (10) und am Endzustand des Laufs 14:56 (`live_0930b.test.js`, 1) | 11/11; die drei Befunde vorher auf 4.1.2 reproduziert (Abgabe bezahlt, Notiz verworfen, kein Angriff) |
+| deterministisch | Mutationsprobe: sechs Teilkorrekturen einzeln abgeschaltet (Zählung bei der Abgabe, Jagd-Erkennung, `deedsOf`, READY-Anzeige, Nachweis-Rückfall, gespeicherte Alternative) | jede lässt 1–4 Tests fehlschlagen |
+| deterministisch | V3-Differenzlauf v8–v12 | identisch bis auf den Build-Stempel |
+| deterministisch | P0-Rescore der gespeicherten Antworten | identisch mit 4.1.2 |
+| Mock-Provider-Smokes | Browser-Smoke V3 + V4; echtes SillyTavern 1.19 mit Mock-Provider und Dummy-Schlüssel, V4 und V3 | OK; `secrets.json` danach `{}` |
+| echter Modell-Live-Test | – | **keiner** für 4.1.2 oder 4.1.3 |
+
+### Restrisiken 4.1.3
+
+- **Alternative:** Nur der Extraktor schreibt `alternative`, und die Engine prüft nicht, ob die Geschichte sie trägt. Ein zu großzügiges `alternative` macht den Auftrag bezahlbar. Das ist der bewusste Preis dafür, dass andere Lösungen möglich bleiben.
+- **Tötungen außerhalb der Kampfmechanik** zählen nicht (wie 4.1.2); dann hilft nur `alternative`.
+- **Spielstände unter 4.1.2:** 4.1.2 schrieb eine angenommene Alternative nur in die Notiz. Ein dort so bereit gebuchter Auftrag gilt unter 4.1.3 bei der Abgabe als nicht bereit, bis die Geschichte die andere Lösung erneut feststellt (der Katalog zeigt „NOT READY FOR TURN-IN“). Ein unter 4.1.2 gespielter Spielstand ist nicht bekannt; der letzte Live-Lauf lief auf 4.1.1.
+- **Gemischte Jagden:** Eine Jagd mit einem TALK-Ziel („sprich mit dem Vogt“) gilt als gemischt. Eine örtliche Unterschrift darin wird nicht gestrichen; das ist der Stand vor 4.1.2 und die vorsichtige Seite.
+- **DEFEND mit DEFEAT gegen Menschen** (eine Wachschicht gegen Räuber) gilt als Jagd. Eine Bestätigungsbedingung darin wird gestrichen.
+- **`deedsOf`:**
+  - „I'm attacking …“ (Kurzform) und Taten ohne „I“ am Satzanfang zählen außerhalb der Sternchen weiter nicht.
+  - Ein Satz wie „I strike the wolf“ nach „*i say*“ gilt als Tat, auch wenn er gesprochen gemeint war.
+- **Karte:** Erzählervertrag und Board-Generator haben sich geändert. Für den Live-Test muss die Kartenbeschreibung neu aus `content/narrator/Avereth_Narrator_Contract_v4.txt` kopiert werden.
+
+### Nächster Live-Test (Build 4.1.3)
+
+Einrichtung wie §5, Extension aus `claude/v4-integration-fixes-2026-09-30`; die Statuszeile zeigt `Avereth Engine 4.1.3`. Die Kartenbeschreibung neu aus dem Erzählervertrag v4 kopieren. Die fünf entscheidenden Situationen (Review 4.1.2):
+
+| # | Situation | Erwartet |
+|---|---|---|
+| 1 | Ein Monster entkommt und kommt später zurück | dieselbe ID im HUD, kein „D“; nach dem Tod ist es tot |
+| 2 | Alaric kehrt ausdrücklich zu einer bekannten Gildenhalle zurück („back to the city and to the guild“) | `GOES — to Adventurers' Guild hall, …`, Ankunft in der Halle; kein neuer Ort, kein erfundenes Büro |
+| 3 | Ein Jagdauftrag wird abgeschlossen | Tötungen (HUD/Kampfzeilen), Trophäen (Inventar) und Bereitschaft passen zusammen. Bei weniger Tötungen als verlangt: kein `QUEST READY`, und die Abgabe wird mit „the engine counts N of M …“ abgelehnt, auch mit genug Trophäen |
+| 4 | Eine glaubwürdige andere Lösung ohne alle Tötungen (Anführer tot, der Rest flieht endgültig) | `QUEST READY` mit dem Grund; die Abgabe wird angenommen |
+| 5 | Die Abgabe | Lohn und Quest-XP genau einmal; eine zweite Abgabe: „already turned in“ |
+
+Aus §9 weiter mitprüfen:
+- Aushänge im Imperativ;
+- Jagdnachweis ohne Unterschrift, bei gemischten Aufträgen mit dem passenden Nachweis;
+- Registrierung ohne `overreach`;
+- „*i say*“-Berichte ohne Zielfrage;
+- „keep myself hidden“ als Heimlichkeitsprobe.

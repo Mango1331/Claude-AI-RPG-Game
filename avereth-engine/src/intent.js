@@ -33,13 +33,29 @@ const STEALTH_V4_RE = /\b(?:keep(?:s|ing)?\s+(?:myself\s+|himself\s+)?(?:hidden|
 // "*i say calmly*": the player marks his deeds with asterisks and names what is outside them as his words
 const SAY_RE = /\b(?:i|we)\s+(?:\w+\s+)?(?:say|says|said|ask|asks|asked|reply|replies|replied|tell|tells|told|shout|shouts|call|calls|whisper|whispers|answer|answers|add|adds|mutter|mutters)\b/i;
 
+// a sentence outside the stars that still declares his own deed now ("I attack the wolf."): "I", perhaps an adverb, then a
+// verb that is no modal or auxiliary ("I will kill you", "I have killed two") and not in the past tense (a report:
+// "I found three", "I killed two")
+const OWN_DEED_RE = /^(?:(?:and|then|so|now|but)\s+)?i\s+(?:\w+ly\s+)?(?!(?:will|would|could|should|might|must|can|cannot|shall|may|have|had|did|do|was|were|am)\b)([a-z]+)\b/i;
+const PAST_IRREGULAR = new Set(['found', 'got', 'took', 'saw', 'went', 'came', 'made', 'left', 'brought', 'caught', 'fought', 'slew', 'struck', 'swung', 'shot', 'threw', 'drew', 'ran', 'met', 'lost', 'won', 'said', 'told', 'heard', 'felt', 'knew', 'thought', 'kept', 'held', 'stood', 'sat', 'bit', 'tore', 'broke', 'began', 'gave', 'ate', 'fell', 'hid', 'led', 'slept']);
+const ownDeed = (sentence) => {
+    const m = OWN_DEED_RE.exec(sentence.trim());
+    return !!m && !/ed$/i.test(m[1]) && !PAST_IRREGULAR.has(m[1].toLowerCase());
+};
+
 /**
  * Runtime V4: the deeds of a message that marks them with asterisks and says that the rest is speech ("found 3
- * killed 2 *i say calmly* is that enough?", live 30.09.2026 14:56): only the starred parts; anything else unchanged.
+ * killed 2 *i say calmly* is that enough?", live 30.09.2026 14:56): the starred parts, and of the rest only the
+ * sentences that plainly declare his own deed now ("I attack the wolf. *I shout* Get back!", review of 4.1.2), in
+ * their order; a message without that convention unchanged.
  */
 export function deedsOf(text) {
-    const starred = [...String(text).matchAll(/\*([^*]+)\*/g)].map((m) => m[1]);
-    return starred.length && starred.some((x) => SAY_RE.test(x)) ? starred.join('. ') : String(text);
+    const src = String(text);
+    const parts = src.split(/(\*[^*]+\*)/).filter((x) => x.trim());
+    const starred = parts.filter((x) => /^\*[^*]+\*$/.test(x)).map((x) => x.slice(1, -1));
+    if (!starred.length || !starred.some((x) => SAY_RE.test(x))) return src;
+    return parts.flatMap((x) => (/^\*[^*]+\*$/.test(x) ? [x.slice(1, -1)] : x.split(/(?<=[.!?])\s+|\n+/).filter(ownDeed)))
+        .map((x) => x.trim().replace(/[.!]+$/, '')).filter(Boolean).join('. ');
 }
 // a word for any creature: it names the creatures present, never the people standing by
 const CREATURE_RE = /\b(?:creature|creatures|beast|beasts|animal|animals|monster|monsters)\b/i;

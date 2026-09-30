@@ -152,6 +152,20 @@ test('a dozen ordinary nonhostile sheep remain one compact scenery fact, not twe
     assert.ok(r.events.some((e) => e.t === 'fact.asserted' && e.d.fact.p === 'background_fauna'));
 });
 
+test('a larger, visible threatening wolf pack is NOT treated as background fauna', async () => {
+    const g = await created();
+    const s = escortScene(g.state());
+    s.last = { input: 'I see wolves coming down from the ridge', outcome: {
+        kind: 'v4', auth: { go: null, gos: [], roam: false, take: [], gather: false, rest: false, timeCap: 120 },
+        expected_keys: {}, conditionals: [], booked: { registration: false, grants: [], turnIns: [], accepted: [] },
+    } };
+    const r = applyWorld(s, content, { expected: {}, deltas: [{
+        seq: 1, type: 'creature.new', ref: 'wolfpack', species: 'wolf', anchor: 'wolf',
+        desc: ['five wolves charging down the ridge'], count: 5, present: true, band: 'SHORT',
+    }] }, { msg: 107 });
+    assert.equal(r.events.filter((e) => e.t === 'entity.created' && e.d.entity.kind === 'creature').length, 5);
+});
+
 test('already credited copper cannot be collected again as a phantom object', async () => {
     const g = await created();
     const s = g.state();

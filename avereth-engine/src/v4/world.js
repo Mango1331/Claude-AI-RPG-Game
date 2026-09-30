@@ -493,7 +493,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const escort = Object.values(s.quests).find((q) => q.status === 'active' && !q.ready
             && q.kind === 'guild_contract' && (q.objectives || []).some((o) => o.verb === 'ESCORT'));
         const alone = /\b(?:alone|by myself|without (?:them|the party|the driver|my companions))\b/i.test(s.last?.input || '');
-        const travel = !!(auth.gos || []).length && !hallOf(s, s.scene.at) && !hallOf(s, id) && !alone;
+        const sharesTrip = /\b(?:we|our|them|together|follow|escort|cart|wagon|caravan|journey|travel|continue|road|with)\b/i.test(s.last?.input || '');
+        const routeStop = ['wilderness', 'region', 'settlement'].includes(s.places[id]?.kind);
+        const travel = !!(auth.gos || []).length && !hallOf(s, s.scene.at) && !hallOf(s, id) && !alone
+            && (sharesTrip || auth.roam || routeStop);
         let party = [];
         if (travel && escort && s.journey?.quest === escort.id) {
             party = (s.journey.party || []).filter((who) => s.entities[who]?.status !== 'dead');
@@ -506,7 +509,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     [truth(s, who, 'occupation')[0]?.o, s.entities[who].traits, ...(s.entities[who].descriptors || [])].join(' ')));
             if (party.length) emit({ t: 'journey.party', d: { quest: escort.id, party } });
         }
-        if ((alone || hallOf(s, id) || !escort) && s.journey) emit({ t: 'journey.party', d: { quest: null, party: [] } });
+        if ((!travel || !escort) && s.journey) emit({ t: 'journey.party', d: { quest: null, party: [] } });
         emit({ t: 'scene.moved', d: { at: id, location: town, place: placeName(s, id), reset_present: true } });
         for (const who of party) {
             if (!s.entities[who] || s.entities[who].status === 'dead') continue;

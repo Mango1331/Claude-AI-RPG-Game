@@ -215,7 +215,14 @@ export function firewall(deltas, ctx = {}) {
             }
             case 'quest.detail': {
                 const q = questOf(d.quest);
-                if (q && GUILD_DETAIL_MECHANIC.test(`${text(d.note)} ${text(d.schedule)}`)) {
+                const detail = `${text(d.note)} ${text(d.schedule)}`;
+                // Merely restating the correct posted reward next to useful route/contact
+                // memory cannot make the entire story detail invalid.
+                const posted = Number(q?.payout_cp);
+                const exactPosted = Number.isInteger(posted) && new RegExp(`\\b${posted}\\s*(?:cp|copper)\\b`, 'i').test(detail);
+                const mechanicChange = /\\b(?:change|raise|lower|increase|decrease|override|replace|advance|prepay|already paid|new fee|promotion|guild\\s+rank|xp|experience points)\\b/i.test(detail)
+                    || (GUILD_DETAIL_MECHANIC.test(detail) && !exactPosted);
+                if (q && mechanicChange) {
                     no(d, 'guild_quest_detail', 'a Guild contract detail may store story progress, contacts, routes, witnesses, verification or schedules, but may not invent or alter payout/payment, Guild rank or promotion mechanics');
                     continue;
                 }

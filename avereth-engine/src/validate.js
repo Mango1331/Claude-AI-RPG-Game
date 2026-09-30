@@ -46,7 +46,8 @@ export function validateState(state, content) {
         if (e.status === 'dead' && s.hp !== 0) p.push(`${where}: dead with HP ${s.hp}`);
     }
     const sc = state.scene;
-    if (sc.location && !state.entities[sc.location] && !content.locations.has(sc.location)) p.push(`unknown scene location ${sc.location}`);
+    // Runtime V4 keeps its place nodes in state.places; wilderness outside a settlement lies in its realm (live 30.09.2026)
+    if (sc.location && !state.entities[sc.location] && !content.locations.has(sc.location) && !state.places?.[sc.location]) p.push(`unknown scene location ${sc.location}`);
     if (!sc.present.includes('pc')) p.push('PC not present in own scene');
     for (const id of sc.present) if (!state.entities[id]) p.push(`present entity ${id} does not exist`);
     for (const id of Object.keys(sc.positions)) if (!sc.present.includes(id)) p.push(`position for absent ${id}`);

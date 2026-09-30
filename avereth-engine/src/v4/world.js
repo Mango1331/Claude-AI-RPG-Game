@@ -171,15 +171,22 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         for (const x of r.rejected) reject(d, 'world_rule', x.reason);
         return r;
     };
+    // the creature a group is (its species, its body-plan's names) among the targets of an active ATTACK/DEFEAT objective
+    const singular = (text) => new Set(normText(text).split(/[^a-z]+/).filter(Boolean).map((w) => w.replace(/s$/, '')));
+    const hunted = (d, anchor) => {
+        const targets = Object.values(s.quests).filter((q) => q.status === 'active')
+            .flatMap((q) => (q.objectives || []).filter((o) => o.verb === 'ATTACK' || o.verb === 'DEFEAT')).map((o) => singular(o.what));
+        const names = [d.species, ...(anchor.aliases || [])].filter(Boolean).map((n) => [...singular(n)]).filter((w) => w.length);
+        return targets.some((t) => names.some((w) => w.every((x) => t.has(x))));
+    };
     const newEntity = (d, kind) => {
         // A large group of skittish animals (their body-plan's temperament: a flock, a herd, a flight of birds) that nobody
         // set on Alaric is the scene's background, one fact, not a dozen combat profiles (live 30.09.2026: twelve penned
-        // sheep). A pack of aggressive, defensive or cautious creatures stays individual, whatever its size, and so does
-        // every group while a contract to attack or defeat something is active (the vermin of a cellar job are its
-        // targets); one animal singled out later is a creature.new of its own.
+        // sheep). A pack of aggressive, defensive or cautious creatures stays individual, whatever its size, and so do
+        // the animals an active contract is to attack or defeat (the rats of a cellar job); one animal singled out later
+        // is a creature.new of its own.
         const anchor = kind === 'creature' ? content.anchors.get(d.anchor) : null;
-        const hunting = Object.values(s.quests).some((q) => q.status === 'active' && (q.objectives || []).some((o) => o.verb === 'ATTACK' || o.verb === 'DEFEAT'));
-        if (anchor?.temperament === 'skittish' && d.count > 4 && !hunting && !s.encounter && !hostileRefs.has(normText(d.ref))) {
+        if (anchor?.temperament === 'skittish' && d.count > 4 && !hunted(d, anchor) && !s.encounter && !hostileRefs.has(normText(d.ref))) {
             setFactEvents(s, { s: s.scene.at, p: 'background_fauna', o: `${d.count} ${d.species}`, source: { kind: 'narration', msg }, importance: 0.3 }).forEach(emit);
             return [];
         }
@@ -501,19 +508,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     function arrive(id, party = []) {
         const town = locationOf(s, id);
         const from = s.scene.at;
-        // whoever does not come along stays at the place he leaves, until the story moves them (live 30.09.2026: back
-        // at the ford from the scree slope, Aldsa, her driver and the cart were gone from the scene)
+        // whoever does not come along stays at the place he leaves (entity.at): "the driver" there is that driver again.
+        // They are not put back into the scene when he returns: only the story knows whether they are still there (the
+        // replay of 30.09.2026 would have had Aldsa waiting at the ford while she was in Millbrook); it brings them in.
         for (const who of s.scene.present) {
             const e = s.entities[who];
             if (who === 'pc' || party.includes(who) || e?.kind !== 'npc' || e.status === 'dead' || e.at === from) continue;
             emit({ t: 'entity.updated', d: { id: who, set: { at: from } } });
         }
         emit({ t: 'scene.moved', d: { at: id, location: town, place: placeName(s, id), reset_present: true } });
-        // who travelled with him arrives with him; who stayed at the place he comes to is still there
+        // who travelled with him arrives with him
         for (const who of party) emit({ t: 'scene.entered', d: { id: who, band: 'SHORT' } });
-        for (const e of Object.values(s.entities)) {
-            if (e.kind === 'npc' && e.status !== 'dead' && e.at === id && !s.scene.present.includes(e.id)) emit({ t: 'scene.entered', d: { id: e.id, band: 'SHORT' } });
-        }
         arrived = id;
         // a decision belongs to the place it was opened at: leaving it closes it; one opened in this very turn goes
         // with him ("look for an inn to sleep": the room is bought where he arrives)

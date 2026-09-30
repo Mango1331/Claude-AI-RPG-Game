@@ -1,0 +1,1925 @@
+{
+ "note": "Live run 30.09.2026 06:34 (SillyTavern, Runtime V4, build 4.0.8 of the ChatGPT experiment branch; docs/INTEGRATION_4_1.md): the chat JSONL as the chat stores it (Branch #1, the run the event export belongs to). Per player message the interpreter commands the record kept (none for V3-routed combat), per reply the narrator prose and the extractor answer the record kept; the Board generator listings from the quest.created events of message 13; the seed from campaign.started. No request data, no provider data.",
+ "seed": 980955136,
+ "greeting": "*Cool wind moves through the rough grass around Alaric Red's boots.*\r\n\r\n*The last thing that belongs to Earth is still there in memory—an old life, a world without visible mana, Classes, or this impossible second beginning. The present is different: the smell of soil and distant woodsmoke, an unfamiliar sky, and stone walls beyond the public road.*\r\n\r\n*Alaric Red is already standing on an uncultivated roadside verge outside the nearby city. Cultivated fields and fenced holdings begin farther away. No one is close enough to have witnessed the instant of arrival.*\r\n\r\n*The body is Human, healthy, and eighteen years old. Simple traveler's clothes are already being worn; a small pouch holding five silver rests at the belt. The memories are still from Earth.*\r\n\r\n*A translucent interface opens across Alaric Red's vision.*\r\n\r\n`SYSTEM INITIALIZATION COMPLETE`\r\n`Origin: Earth`\r\n`World: Avereth`\r\n`Race: Human`\r\n`Age: 18`\r\n`Level: 1 | Rank: F`\r\n\r\n`BASE STATS`\r\n`STR 5 | VIT 5 | AGI 5 | INT 5 | PER 5 | WIL 5`\r\n\r\n`Location: Public roadside verge outside Tidecross, Solmere`\r\n`Arrival Witnesses: NONE`\r\n`Starting Possessions: Simple Traveler's Clothes | Small Pouch | 5 Silver`\r\n`Local Common Language: Integrated`\r\n`Mandatory Quest: NONE`\r\n\r\n`CHARACTER CREATION — STEP 1/2`\r\n`Choose your Base Class:`\r\n\r\n`Warrior   — Favored Stats: STR / VIT`\r\n`Mage      — Favored Stats: INT / WIL`\r\n`Guardian  — Favored Stats: VIT / WIL`\r\n`Duelist   — Favored Stats: STR / AGI`\r\n`Ranger    — Favored Stats: AGI / PER`\r\n\r\n`Your chosen Class immediately applies +1 to both Favored Stats at Level 1.`\r\n`After choosing a Class, select exactly 2 Skills from that Class's Base Skill Pool.`\r\n\r\n`Reply with your Class choice.`\r\n\r\n*The System waits. Story time does not move during Character Creation.*\r\n",
+ "creation": [
+  "Warrior",
+  "Heavy Slash + Quick Slash"
+ ],
+ "listings": [
+  {
+   "title": "Bog Hounds at the Reed Docks",
+   "client": "Harbormaster Ondra Vell, Tidecross Reed Docks",
+   "rank": "Novice",
+   "level": 2,
+   "qtype": "standard",
+   "payout_cp": 80,
+   "desired_end_state": "The pack of bog hounds that has been dragging fish and mauling dockhands off the eastern reedwalks is killed or driven off, and the docks are safe to work at dawn.",
+   "objectives": [
+    {
+     "verb": "FIND",
+     "what": "the bog hounds' den among the reedwalks east of the docks",
+     "qty": 1,
+     "unit": "den",
+     "where": "Reed Docks, Tidecross"
+    },
+    {
+     "verb": "DEFEAT",
+     "what": "bog hounds",
+     "qty": 3,
+     "unit": "killed or driven off",
+     "where": "Reed Docks reedwalks"
+    }
+   ],
+   "proof": [
+    {
+     "kind": "object",
+     "what": "bog hound ears",
+     "qty": 3,
+     "unit": "pairs",
+     "on": "presented at the harbormaster's office",
+     "consume": true
+    }
+   ]
+  },
+  {
+   "title": "Clear the Gnawed Barrow",
+   "client": "Warden of Ways, Solmere Road Trust",
+   "rank": "Novice",
+   "level": 3,
+   "qtype": "standard",
+   "payout_cp": 120,
+   "desired_end_state": "The old barrow beside the Saltway is cleared of the skeletons stirring within it, so carters stop refusing to camp in its shadow.",
+   "objectives": [
+    {
+     "verb": "GO",
+     "what": "the Gnawed Barrow on the Saltway, half a day west of Tidecross",
+     "qty": 1,
+     "unit": "site",
+     "where": "Saltway roadside"
+    },
+    {
+     "verb": "DEFEAT",
+     "what": "restless dead within the barrow",
+     "qty": null,
+     "unit": null,
+     "where": "Gnawed Barrow"
+    },
+    {
+     "verb": "GET",
+     "what": "the old burial goods left scattered in the outer chamber",
+     "qty": 1,
+     "unit": "bundle",
+     "where": "Gnawed Barrow outer chamber"
+    }
+   ],
+   "proof": [
+    {
+     "kind": "object",
+     "what": "grave-goods bundle from the barrow",
+     "qty": 1,
+     "unit": "bundle",
+     "on": "surrendered to the Road Trust warden",
+     "consume": true
+    }
+   ]
+  },
+  {
+   "title": "Shepherd Cart to Millbrook",
+   "client": "Aldsa Corren, wool factor",
+   "rank": "Novice",
+   "level": 2,
+   "qtype": "standard",
+   "payout_cp": 90,
+   "desired_end_state": "Aldsa's wool cart reaches Millbrook hamlet with her driver and flock-hand unharmed; wolves have been sighted along the river road and she wants armed company for the trip.",
+   "objectives": [
+    {
+     "verb": "ESCORT",
+     "what": "Aldsa Corren's wool cart and driver to Millbrook",
+     "qty": 1,
+     "unit": "cart",
+     "where": "river road, Tidecross to Millbrook"
+    }
+   ],
+   "proof": []
+  },
+  {
+   "title": "Feverfew to the Lighthouse Keeper",
+   "client": "Mistress Ennet, herbalist of Brack Lane",
+   "rank": "Novice",
+   "level": 1,
+   "qtype": "minor",
+   "payout_cp": 40,
+   "desired_end_state": "A sealed satchel of feverfew tincture and clean bandages reaches the keeper of the Gullspit light before the week's storm, as his wife lies fevered and the keeper cannot leave the light.",
+   "objectives": [
+    {
+     "verb": "DELIVER",
+     "what": "sealed satchel of medicine",
+     "qty": 1,
+     "unit": "satchel",
+     "where": "Gullspit lighthouse, across the tidal flats"
+    },
+    {
+     "verb": "TALK",
+     "what": "the lighthouse keeper, to learn whether more medicine or help is needed",
+     "qty": 1,
+     "unit": "keeper",
+     "where": "Gullspit lighthouse"
+    }
+   ],
+   "proof": [
+    {
+     "kind": "mark",
+     "what": "keeper's chalk sigil on the satchel's return tag",
+     "qty": 1,
+     "unit": null,
+     "on": "returned tag",
+     "consume": null
+    }
+   ]
+  },
+  {
+   "title": "Drive the Marsh Cats from the Oyster Beds",
+   "client": "Oyster Bed Cooperative of Tidecross",
+   "rank": "Novice",
+   "level": 2,
+   "qtype": "standard",
+   "payout_cp": 70,
+   "desired_end_state": "The marsh cats preying on the cooperative's tending crews are driven off or culled, and the beds can be worked without posting a watch.",
+   "objectives": [
+    {
+     "verb": "FIND",
+     "what": "where the marsh cats are lairing along the oyster beds",
+     "qty": 1,
+     "unit": "lair",
+     "where": "southern oyster beds"
+    },
+    {
+     "verb": "DEFEAT",
+     "what": "marsh cats",
+     "qty": 2,
+     "unit": "killed or driven off",
+     "where": "southern oyster beds"
+    }
+   ],
+   "proof": [
+    {
+     "kind": "object",
+     "what": "marsh cat pelts",
+     "qty": 2,
+     "unit": "pelts",
+     "on": "shown to the cooperative foreman",
+     "consume": false
+    }
+   ]
+  }
+ ],
+ "turns": [
+  {
+   "i": 5,
+   "player": "*i walk into the city ahead of me and make my way to the Adventurers Guild*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": "loc.tidecross",
+     "quote": "i walk into the city ahead of me"
+    },
+    {
+     "seq": 2,
+     "type": "go",
+     "to": "loc.tidecross.guild_hall",
+     "quote": "make my way to the Adventurers Guild"
+    }
+   ]
+  },
+  {
+   "i": 6,
+   "reply": "The road to Tidecross carried cart ruts and morning traffic. A farmer with a wagon of cabbages nodded once as Alaric passed, already looking back to his mule. Farther on, two children chased a dog through the ditch grass, and the sound of their shouting carried long across the flat fields.\n\nThe walls resolved slowly out of the morning haze — grey stone, older than anything around them, patched in places with paler masonry. The gate stood open. A queue of carts and foot traffic shuffled through, and a bored gate guard waved Alaric along with the rest, his eyes flicking once to the sword at the newcomer's hip, then away. No toll for someone on foot.\n\nInside, the noise arrived first. Fish, tar, bread smoke, wet wool. A wide market street ran from the gate toward a harbor district, and the smell of the sea drifted in over the rooftops, salt and brine and pitch. Stallholders called prices. A porter cursed at a slipped crate. Somewhere a bell rang twice and stopped.\n\nAlaric asked directions twice. A baker's girl pointed with her chin without breaking stride; an old man mending a net gave longer directions, most of which were commentary about the Guild's lately inflated reward rates.\n\nThe Adventurers' Guild hall sat on a corner where the market street widened, a squat stone building with a heavy oak door and a painted shield above the lintel, the varnish gone dull with weather. Smoke and noise came from inside. Through the open door: long tables, a notice board crowded with parchment, a stone counter, and perhaps a dozen people — armed, tired, some drinking at this hour.\n\nA one-armed man leaned on a broom by the door, sweeping mud back out of the entrance. He glanced at Alaric, took in the starter armor and the unmarked sword.\n\n\"Counter's to the left,\" he said, and went back to sweeping.",
+   "answer": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": "loc.tidecross"
+     },
+     "2": {
+      "arrived": true,
+      "at": "loc.tidecross.guild_hall"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 30
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": "loc.tidecross",
+      "forced_by": null
+     },
+     {
+      "seq": 3,
+      "type": "arrive",
+      "at": "loc.tidecross.guild_hall",
+      "forced_by": null
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "person.sweeper",
+      "name": null,
+      "role": "one-armed sweeper at the Guild hall door",
+      "desc": [
+       "one-armed man leaning on a broom, sweeping mud back out of the entrance",
+       "glanced at Alaric's starter armor and unmarked sword"
+      ],
+      "present": true,
+      "at": "loc.tidecross.guild_hall",
+      "band": "SHORT"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "Tidecross gate",
+      "p": "charges no toll for",
+      "o": "foot traffic"
+     }
+    ]
+   }
+  },
+  {
+   "i": 7,
+   "player": "*i walk to the front desk and say* Hello my name is Alaric Red and im here to register*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "guild.register",
+     "quote": "im here to register"
+    }
+   ]
+  },
+  {
+   "i": 8,
+   "reply": "The hall smelled of lamp oil and wet leather. A woman behind the counter looked up from a ledger — mid-forties, grey streaking her braided hair, a quill tucked behind one ear. She set her stylus down in the book's gutter.\n\n\"Registration,\" she repeated. \"Right. This'll take a few minutes.\"\n\nShe pulled a fresh sheet toward her and dipped the quill.\n\n\"Name as you want it written. Alaric Red — spelling?\" She wrote it as he confirmed, narrating as she went in a bored, practised rhythm. \"Human, eighteen. Any prior Guild membership with another branch? No? Fine. First registration is one-time, two silver. That covers your tin tag, your entry in the branch rolls, and the shares of the rolls any Solmere branch keeps with us. You start at Novice. Quest Ranks you can take run Novice and below until you've built a record.\"\n\nShe tapped the ledger with the quill's feather end.\n\n\"Two things people get wrong, so hear me out. Your Guild Rank is paperwork. It's what we trust you with. Your Power Rank is what you actually are — there's a reading stone in the back room, we test every new member before the tag's cut. Don't confuse the two in front of veterans, they'll laugh at you.\"\n\nShe turned the ledger around and slid it across with a stub of charcoal pencil tied to a string.\n\n\"Sign there. And the two silver whenever you're ready — I can't cut the tag before it's paid.\"",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "person.new",
+      "ref": "npc.guildclerk",
+      "name": null,
+      "role": "Guild registration clerk at Tidecross",
+      "desc": [
+       "mid-forties woman with grey streaking her braided hair",
+       "quill tucked behind one ear",
+       "bored, practised manner behind the counter ledger"
+      ],
+      "present": true,
+      "at": "loc.tidecross.guild_hall",
+      "band": "ENGAGED"
+     },
+     {
+      "seq": 2,
+      "type": "learn",
+      "who": "npc.guildclerk",
+      "s": "Alaric",
+      "p": "knows_name_of",
+      "o": "Alaric Red",
+      "how": "witnessed"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Tidecross Guild registration",
+      "p": "fee",
+      "o": "one-time two silver (20 cp), covering tin tag, branch rolls entry, and roll shares with other Solmere branches"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Tidecross Guild",
+      "p": "tests new members",
+      "o": "every new member is measured on a reading stone in the back room before the tag is cut; Guild Rank is paperwork, Power Rank is measured strength"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "new Tidecross Guild members",
+      "p": "start_rank",
+      "o": "Novice; Quest Ranks Novice and below until a record is built"
+     }
+    ]
+   }
+  },
+  {
+   "i": 9,
+   "player": "*I sign and then i pay the 2 silver*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "guild.register",
+     "quote": "I sign"
+    },
+    {
+     "seq": 2,
+     "type": "offer.accept",
+     "offer": "offer.registration",
+     "lines": null,
+     "quote": "then i pay the 2 silver"
+    }
+   ]
+  },
+  {
+   "i": 10,
+   "reply": "She counted the two silver, bit one out of old habit, and dropped both into a lockbox under the counter.\n\n\"Alaric Red, Novice, paid in full.\" The quill scratched. Then she pushed back from the counter and lifted a hinged flap in its side. \"Back room. Reading stone. I'm not cutting the tag until you've been measured, so you might as well come now.\"\n\nThe back room was smaller, colder, lit by one high window. A floor-standing crystal the height of a man sat on a stone plinth, cloudy at the base and clear toward the top, its surface dusted except for a patch at chest height worn smooth by years of palms.\n\n\"Hand on the flat, hold still, count to five,\" she said, arms crossed. \"It reads what you are. Doesn't hurt, doesn't bite, and no, squeezing harder doesn't change the answer.\"\n\nAlaric pressed his palm to the smooth patch. The cloud at the crystal's base stirred, swirled, and climbed — then settled into a dull, even glow that stopped a hand's width above the plinth's lowest band.\n\n\"F,\" she said. \"Fresh-stone F, too, not a dim one. Common as bread at that stage, so don't let it go to your head.\" She pulled a small tin plate from a drawer and stamped it against a punch block — one hard strike of her heel of hand. \"Alaric Red, Novice. Branch of Tidecross. Keep it on you at any Guild counter; lose it and it's a silver to replace.\"\n\nShe held the plate out across her palm.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "learn",
+      "who": "npc.npcguildclerk",
+      "s": "Alaric",
+      "p": "name",
+      "o": "Alaric Red",
+      "how": "witnessed"
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Guild Hall Back Room",
+        "kind": "interior",
+        "parent": "loc.tidecross.guild_hall"
+       }
+      },
+      "forced_by": null
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Guild reading stone",
+      "p": "measured",
+      "o": "Alaric Red at Power Rank F, fresh-stone glow"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Guild plate replacement",
+      "p": "costs",
+      "o": "1 silver"
+     },
+     {
+      "seq": 5,
+      "type": "time",
+      "minutes": 10
+     }
+    ]
+   }
+  },
+  {
+   "i": 13,
+   "player": "*i take the plate and then i walk to the Novice Board looking at it*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "take",
+     "object": "obj.guild_plate",
+     "qty": 1,
+     "quote": "i take the plate"
+    },
+    {
+     "seq": 2,
+     "type": "board.read",
+     "rank": "Novice",
+     "quote": "i walk to the Novice Board looking at it"
+    }
+   ]
+  },
+  {
+   "i": 14,
+   "reply": "The Novice board hung on the wall beside the great notice board, smaller, its parchment fresher. A few names were chalked in a corner column beside two of the postings — taken, but not yet closed.\n\n**Bog Hounds at the Reed Docks** — client: Harbormaster Ondra Vell, Tidecross Reed Docks · reward: 80 cp\nThe pack of bog hounds that has been dragging fish and mauling dockhands off the eastern reedwalks is killed or driven off, and the docks are safe to work at dawn.\n\n**Clear the Gnawed Barrow** — client: Warden of Ways, Solmere Road Trust · reward: 120 cp\nThe old barrow beside the Saltway is cleared of the skeletons stirring within it, so carters stop refusing to camp in its shadow.\n\n**Shepherd Cart to Millbrook** — client: Aldsa Corren, wool factor · reward: 90 cp\nAldsa's wool cart reaches Millbrook hamlet with her driver and flock-hand unharmed; wolves have been sighted along the river road and she wants armed company for the trip.\n\n**Feverfew to the Lighthouse Keeper** — client: Mistress Ennet, herbalist of Brack Lane · reward: 40 cp\nA sealed satchel of feverfew tincture and clean bandages reaches the keeper of the Gullspit light before the week's storm, as his wife lies fevered and the keeper cannot leave the light.\n\n**Drive the Marsh Cats from the Oyster Beds** — client: Oyster Bed Cooperative of Tidecross · reward: 70 cp\nThe marsh cats preying on the cooperative's tending crews are driven off or culled, and the beds can be worked without posting a watch.\n\nThe chalked corner marked the barrow and the reed docks as spoken for. Behind the counter, the clerk's quill scratched on. At the nearest long table, two weathered men argued over dice, ignoring everything else.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "listing.gone",
+      "listing": "quest.clear_the_gnawed_barrow",
+      "why": "taken_by_other"
+     },
+     {
+      "seq": 2,
+      "type": "listing.gone",
+      "listing": "quest.bog_hounds_at_the_reed_docks",
+      "why": "taken_by_other"
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "npc.dice_men_a",
+      "name": null,
+      "role": "dice-playing adventurer at the Guild hall",
+      "desc": [
+       "weathered man arguing over dice at the nearest long table"
+      ],
+      "present": true,
+      "at": "loc.tidecross.guild_hall",
+      "band": "SHORT"
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "npc.dice_men_b",
+      "name": null,
+      "role": "dice-playing adventurer at the Guild hall",
+      "desc": [
+       "weathered man arguing over dice at the nearest long table"
+      ],
+      "present": true,
+      "at": "loc.tidecross.guild_hall",
+      "band": "SHORT"
+     }
+    ]
+   }
+  },
+  {
+   "i": 15,
+   "player": "*i take Bog Hounds at the Reed Docks Quest and register it at the front desk*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "quest.accept",
+     "quest": {
+      "new": "Bog Hounds at the Reed Docks"
+     },
+     "quote": "i take Bog Hounds at the Reed Docks Quest and register it at the front desk"
+    }
+   ]
+  },
+  {
+   "i": 16,
+   "reply": "He pulled the parchment from the board and carried it to the counter.\n\nThe clerk took it, glanced at the corner column, and turned it back toward him without reaching for the ledger.\n\n\"Chalked,\" she said, nodding at the board. \"Reed docks went out this morning. Two took it — a pair off a Solmere caravel, already on their way down.\" She hooked the parchment back onto its nail. \"It stays posted till they close it, in case they fail and it goes back up clean. But I can't book two parties on one contract; the harbormaster pays once.\"\n\nShe tapped the board with the quill.\n\n\"Plenty left. The feverfew run's easy coin if you want easy. The oyster beds or the shepherd cart if you want something with teeth in it.\" She slid the ledger aside and waited, arms folding.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "Reed Docks contract",
+      "p": "status",
+      "o": "chalked this morning; two adventurers off a Solmere caravel took it and are already on their way down; it stays posted until closed, but the harbormaster pays only once"
+     },
+     {
+      "seq": 2,
+      "type": "learn",
+      "who": "npc.npcguildclerk",
+      "s": "Alaric",
+      "p": "attempted_to_register",
+      "o": "the Reed Docks contract, which was already taken",
+      "how": "witnessed"
+     }
+    ]
+   }
+  },
+  {
+   "i": 17,
+   "player": "Oh then ill take the Shepherd Cart to Millbrook please *i say and register it*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "quest.accept",
+     "quest": "quest.shepherd_cart_to_millbrook",
+     "quote": "ill take the Shepherd Cart to Millbrook please *i say and register it*"
+    }
+   ]
+  },
+  {
+   "i": 18,
+   "reply": "\"The shepherd cart. Fine.\" She took the parchment, dipped the quill, and wrote his name into the ledger with the ease of someone who did forty of these a week. \"Alaric Red, Novice, active on it. Nobody else can chalk it now.\"\n\nShe stamped the bottom edge, tore off a slim contract slip, and held it out with the parchment.\n\n\"Client's Aldsa Corren, wool factor. Her yard's off Cordwainer Row — follow the smell of lanolin, you'll find it. Cart rolls when it's loaded, and she's usually loading by midmorning, so don't dawdle.\" The quill went back behind her ear. \"You'll be walking beside her driver and the flock-hand. They know the road; you're the sword, not the guide. And the ninety copper's the Guild's, not theirs — they don't pay you a thing, so don't stand in her yard with your hand out.\"\n\nShe was already reaching for the next paper in her stack.\n\n\"Proof's simple enough. Driver sees you safe to Millbrook, hamlet confirms you came in with the cart, you bring the slip back here. Any Guild counter closes it.\" A flick of her eyes toward the door. \"Wolves on the river road have been mostly a sighting so far, not a mauling. Keep it that way and it's the easiest ninety copper on that board.\"\n\nBehind him, the dice clattered again, and the one-armed sweeper worked his broom at a fresh drag of mud someone had tracked in.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "learn",
+      "who": "npc.npcguildclerk",
+      "s": "Alaric Red",
+      "p": "name",
+      "o": "Alaric Red",
+      "how": "witnessed"
+     },
+     {
+      "seq": 2,
+      "type": "quest.detail",
+      "quest": "quest.shepherd_cart_to_millbrook",
+      "note": "Client is Aldsa Corren, wool factor; her yard is off Cordwainer Row in Tidecross (follow the smell of lanolin). Cart rolls when loaded, usually loading by midmorning. Alaric walks beside her driver and flock-hand as the sword, not the guide. The 90 cp is the Guild's payout, not the client's. Proof: driver sees him safe to Millbrook, hamlet confirms he came in with the cart, return the slip to any Guild counter.",
+      "schedule": "cart usually loading by midmorning"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "wolves on the river road",
+      "p": "status",
+      "o": "mostly sightings so far, not a mauling"
+     },
+     {
+      "seq": 4,
+      "type": "time",
+      "minutes": 5
+     }
+    ]
+   }
+  },
+  {
+   "i": 19,
+   "player": "*I nod and make my way over to the Cordwainer Row*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": {
+      "new": "Cordwainer Row"
+     },
+     "quote": "make my way over to the Cordwainer Row"
+    }
+   ]
+  },
+  {
+   "i": 20,
+   "reply": "Cordwainer Row ran downhill from the Guild square, a crooked lane of awnings and hoof-muck where the smell changed block by block — tanned leather, then hot pitch from a candlemaker's, then, sure enough, the thick greasy sweetness of lanolin rolling off a walled yard near the bottom.\n\nThe gate stood open. Inside, a flat-bedded cart sat in the yard's center while two laborers wrestled wool bales up a ramp and a third cinched them down with rope that had gone stiff with grease. A dozen sheep pressed together in a penned corner, bleating whenever a bale thumped down. Beyond the cart, a heavyset woman with a wool-comb pin stuck through her sleeve moved along a tally board, checking lines off with a stub of charcoal.\n\nThe cart's bench seat sat empty. A lean, sun-darkened man perched on the yard's rail nearby, chewing a straw and working a pair of worn boots onto his feet, one heel thumping the rail post as he pulled each on.\n\nThe woman with the tally board glanced up as the shadow crossed her ledger, charcoal pausing mid-line. Her eyes went to the Guild plate on him, then to his face.\n\n\"You'll be the one from the board, then.\" It came out flat, more statement than question. She tapped the tally board with the charcoal stub. \"We've got eleven bales and twelve sheep, and the tide waits on no one. You riding the bench or walking flank?\"",
+   "answer": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Cordwainer Row",
+        "kind": "district",
+        "parent": "loc.tidecross"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Cordwainer Row",
+        "kind": "district",
+        "parent": "loc.tidecross"
+       }
+      },
+      "forced_by": null
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "Cordwainer Row",
+      "p": "contains",
+      "o": "a walled wool yard with an open gate near the bottom of the lane"
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "npc.wool_tally_woman",
+      "name": null,
+      "role": "wool merchant overseeing the yard",
+      "desc": [
+       "heavyset woman with a wool-comb pin stuck through her sleeve",
+       "checks lines off a tally board with a charcoal stub"
+      ],
+      "present": true,
+      "at": null,
+      "band": "ENGAGED"
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "npc.wool_cart_driver",
+      "name": null,
+      "role": "lean sun-darkened man by the cart",
+      "desc": [
+       "perched on the yard's rail chewing a straw",
+       "pulling on a pair of worn boots"
+      ],
+      "present": true,
+      "at": null,
+      "band": "SHORT"
+     },
+     {
+      "seq": 5,
+      "type": "creature.new",
+      "ref": "cre.sheep_flock",
+      "species": "sheep",
+      "anchor": "deer",
+      "desc": [
+       "a dozen sheep penned in a corner of the wool yard",
+       "bleating whenever a bale thumps down"
+      ],
+      "count": 12,
+      "present": true,
+      "band": "SHORT"
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "Aldsa's wool yard",
+      "p": "cargo",
+      "o": "eleven wool bales and twelve sheep ready at Cordwainer Row"
+     },
+     {
+      "seq": 7,
+      "type": "learn",
+      "who": "npc.wool_tally_woman",
+      "s": "Alaric",
+      "p": "is",
+      "o": "the Guild escort from the board",
+      "how": "witnessed"
+     },
+     {
+      "seq": 8,
+      "type": "quest.detail",
+      "quest": "quest.shepherd_cart_to_millbrook",
+      "note": "Cart is loaded at the walled wool yard on Cordwainer Row; eleven bales and twelve sheep; the driver is a lean sun-darkened man; the tally-keeping woman asks whether Alaric will ride the bench or walk flank; the tide sets the departure.",
+      "schedule": "departure bound to the tide"
+     }
+    ]
+   }
+  },
+  {
+   "i": 21,
+   "player": "Im walking flank *i say and then we start our travels as i walk besides them*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": {
+      "new": "Millbrook, with the wool cart"
+     },
+     "quote": "we start our travels as i walk besides them"
+    }
+   ]
+  },
+  {
+   "i": 22,
+   "reply": "\"Flank suits me.\" The charcoal went behind her ear and she jerked her chin at the driver. \"Dren, this is your sword. Keep him fed and don't lose him.\"\n\n\"Dren,\" the lean man said around the straw, and that was the whole introduction. He swung off the rail, whistled through his teeth, and the yard came apart into motion — sheep funneling through a side gate into a rope pen behind the cart, the last bale thumping into place, Aldsa pressing a folded paper into Dren's palm with a word too low to catch.\n\nThey rolled out through Tidecross's river gate a little past midmorning, Dren on the bench with the reins and a flock-hand named Piet walking the off side, crook in hand. Twelve sheep made a small woolly tide behind the cart, and the road ran level beside the river, brown water sliding fast with the spring melt. Dren talked the whole first hour — the price of wool in Goldharbor, a cousin who'd drowned at the harbor mouth, his opinion of every toll Alaric had never asked about — and Piet said nothing at all, watching the treeline on the far bank the way a man watches weather.\n\nThe treeline thickened past the second milestone. Willows came down close to the road on the river side, and the cart's wheels went quiet on soft ground where the dust gave out.\n\nDren stopped talking mid-sentence about his cousin. The straw tilted in his mouth.\n\n\"There,\" he said, and nodded at the verge ahead without pointing at it.\n\nPrints in the soft mud at the road's edge, big as a spread hand, clawed, half washed by seep water but fresh enough that the edges still held. Several sets. They came out of the willows, ran the verge for twenty paces parallel to the road, and went back in.\n\nPiet had gone still, crook planted. The sheep bunched tight against the cart's wheels.\n\n\"Seen these yesterday too,\" Dren said quietly, \"only they were a mile back toward town.\" He gathered the reins short. \"They're pacing us.\"",
+   "answer": {
+    "expected": {
+     "1": {
+      "arrived": false,
+      "at": null
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "person.new",
+      "ref": "npc.dren",
+      "name": "Dren",
+      "role": "wool cart driver",
+      "desc": [
+       "lean sun-darkened man",
+       "chews a straw",
+       "drives Aldsa's wool cart"
+      ],
+      "present": true,
+      "at": null,
+      "band": "SHORT"
+     },
+     {
+      "seq": 2,
+      "type": "person.new",
+      "ref": "npc.piet",
+      "name": "Piet",
+      "role": "flock-hand",
+      "desc": [
+       "quiet man with a crook",
+       "walks the off side of the cart",
+       "watches the treeline"
+      ],
+      "present": true,
+      "at": null,
+      "band": "SHORT"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Aldsa Corren",
+      "p": "gave",
+      "o": "a folded paper to Dren before departure"
+     },
+     {
+      "seq": 4,
+      "type": "time",
+      "minutes": 75
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "river road past the second milestone",
+      "p": "shows",
+      "o": "fresh large clawed prints, several sets, running from the willows along the verge and back in"
+     },
+     {
+      "seq": 6,
+      "type": "thread",
+      "text": "Wolf-like prints pacing the cart — seen a mile back toward town yesterday, now alongside the road",
+      "kind": "threat",
+      "status": "open"
+     },
+     {
+      "seq": 7,
+      "type": "quest.detail",
+      "quest": "quest.shepherd_cart_to_millbrook",
+      "note": "Fresh clawed prints along the river road past the second milestone; Dren says the same tracks were a mile back toward town yesterday — the beasts are pacing the cart.",
+      "schedule": null
+     }
+    ]
+   }
+  },
+  {
+   "i": 23,
+   "player": "*I nod as my hand stays ready around my sword handle and i continue to walk*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "journey.continue",
+     "quote": "i continue to walk"
+    }
+   ]
+  },
+  {
+   "i": 24,
+   "reply": "Dren clicked his tongue and the cart rolled on. Nobody spoke after that for a while. The only sounds were the creak of the axle, the squelch of hooves in the soft verge, and the river running fast on their left.\n\nAlaric walked the near flank with his hand loose on the sword grip, and the willows slid past, grey-barked and dense, their branches hanging low enough in places to drag the top of the wool bales. Twice he caught movement in there — a shadow shifting against shadow — and twice it stilled when he looked straight at it.\n\nPiet drifted back along the off side, crossed behind the cart, and came up level with him on the near side, crook in hand, eyes on the trees.\n\n\"They won't take a sheep off the road with four of us standing here,\" he said. His voice was low, pitched under the wheel noise. \"Not these. They're testing. Running the verge, seeing if we flinch, counting us.\" He turned a stalk of grass over in his fingers, chewed the end of it. \"Come dusk, or when the road narrows and we're strung out, that's when they decide.\"\n\nThe cart's wheels found harder ground again. Dust came back, and behind them the willows drew apart into meadow for a stretch, and the prints stopped.\n\nDren spat the straw over the side and put a fresh one in his mouth.\n\n\"There's a ford crossing two miles on,\" he said, not looking back. \"Road pinches between the water and a stony rise there, single cart wide. No way around it.\" He rolled the straw to the corner of his mouth. \"If it were me, I'd not stop for lunch before it.\"",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 30
+     },
+     {
+      "seq": 2,
+      "type": "thread",
+      "text": "Shadows shifting in the willows along the verge — something unseen is shadowing the cart, stilling when watched; Piet says the wolves are testing, counting the party, and will decide at dusk or when the road narrows.",
+      "kind": "threat",
+      "status": "open"
+     },
+     {
+      "seq": 3,
+      "type": "quest.detail",
+      "quest": "quest.shepherd_cart_to_millbrook",
+      "note": "A ford crossing lies two miles ahead where the road pinches between the water and a stony rise, single cart wide, no way around — the likely spot for a wolf attack; Dren advises not stopping for lunch before it.",
+      "schedule": null
+     }
+    ]
+   }
+  },
+  {
+   "i": 25,
+   "player": "*I nod and we continue its not my call when we take a break or not im just the sword*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "journey.continue",
+     "quote": "I nod and we continue"
+    }
+   ]
+  },
+  {
+   "i": 26,
+   "reply": "No break came. Dren shook the reins into a trot and the sheep strung out behind the cart, and they covered the two miles with the river growing wider and shallower on their left until the water went white over stones.\n\nThen the road pinched. A stony rise shouldered down from the right, gorse and broken rock, and the river shoved against the road's far edge, leaving barely room for the cart's wheels with a hand's width to spare on either side. The ford itself lay beyond, water braided around gravel bars, calm enough to cross.\n\nDren stood up on the bench to see over the rise.\n\n\"Easy,\" he breathed, and it wasn't clear whether he meant the horses or himself.\n\nPiet stopped walking. He said nothing, but his face said it, and Alaric followed his look up the rise — to the gorse at its crest, where a shape stood against the sky. Grey-brown, big through the chest, head lowered, watching them. Not one wolf. Three more broke from cover further along the ridge, trotting parallel to the cart, unhurried, as if the matter were already decided and they were merely taking their places.\n\nThe sheep broke. The flock surged as one animal against the cart's flank, bleating, wheeling, and the cart lurched as the near horse screamed and threw its head against the traces. One sheep bolted down the road's edge toward the water and a grey shape peeled off the ridge after it, closing in three bounds.\n\nDren hauled the reins back, hauling the cart to a stop in the narrows with the rise on one side and the river on the other.\n\n\"Sword!\" was all he got out.\n\nThe wolves on the ridge came down the rocks together.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 40
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Ford Narrows on the River Road",
+        "kind": "wilderness",
+        "parent": "loc.tidecross.verge"
+       }
+      },
+      "forced_by": null
+     },
+     {
+      "seq": 3,
+      "type": "creature.new",
+      "ref": "mon.roadwolves_1",
+      "species": "wolf",
+      "anchor": "wolf",
+      "desc": [
+       "grey-brown wolves, big through the chest, hunting the flock from the stony rise above the ford narrows"
+      ],
+      "count": 4,
+      "present": true,
+      "band": "SHORT"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "wolf pack",
+      "p": "threatens",
+      "o": "Aldsa's wool cart and flock at the ford narrows"
+     },
+     {
+      "seq": 5,
+      "type": "hostile",
+      "by": [
+       "mon.roadwolves_1"
+      ]
+     },
+     {
+      "seq": 6,
+      "type": "thread",
+      "text": "One sheep bolted toward the water with a wolf peeling off after it",
+      "kind": "threat",
+      "status": "open"
+     }
+    ]
+   }
+  },
+  {
+   "i": 27,
+   "player": "*i draw my sword and Basic Attack Wolf A*",
+   "route": "v3"
+  },
+  {
+   "i": 28,
+   "reply": "Steel came out singing. The first wolf hit him before the blade was fully up — a grey shoulder slamming his thigh, jaws closing on the meat of his calf through the armor's gap, a grinding pinch that flared hot. He staggered a half step and the second was on him from the rise side, teeth raking the back of his sword arm, and the third hit high, snapping at his forearm as he brought the guard around. The fourth came low, worrying at his knee, and the four of them were a circling, snapping storm of fur and stinking breath, quick as whips, never quite staying in one place.\n\nHe cut through the chaos on feel. The longsword swept down across the lead wolf's shoulder as it came in again — steel meeting meat with a heavy, wet jolt, the blade biting deep through hide and muscle. The wolf tore loose with a yelp that turned to a rasp, blood sheeting dark down its foreleg, and it broke off sideways, hindquarters dragging, hackles up, ribs heaving. It didn't run. It circled at the edge of his vision, snarling through a muzzle gone red, still in the fight.\n\nThe others barely paused. Jaws closed on his thigh again, on his forearm, on the meat above his knee — four sets of teeth worrying at him from every side while the river roared white beyond them and the sheep screamed behind the cart. His blood ran warm down inside his boot and sleeve. The sword arm burned with every bite that had found it.\n\nThe biggest one — the shape from the crest, grey-brown and thick through the chest — hung back a pace, teeth bared, ribs working, waiting on him.\n\nSteel in his hand, blood on the rocks, and all four wolves still coming.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "Wolf A",
+      "p": "condition",
+      "o": "deeply cut across the shoulder, bleeding heavily, hindquarters dragging but still circling and fighting"
+     }
+    ]
+   }
+  },
+  {
+   "i": 31,
+   "player": "*i Heavy Slash Wolf B*",
+   "route": "v3"
+  },
+  {
+   "i": 32,
+   "reply": "The blade came around in a full-shouldered arc, weight dropping through the hips, and caught the second wolf broadside as it lunged for his flank. Heavy Slash carved through its neck and shoulder in one deep stroke — the impact shuddered up his wrists — and the wolf went sideways off its feet, hit the rocks, rolled once, and lay still. Its legs kicked twice against the stone and then stopped.\n\nThe circle closed over the body without pause. Jaws found him from three sides at once — teeth punching into his thigh, his sword arm, the meat above his knee — each bite a sharp crushing pinch, each pulling away glistening. Blood sheeted down inside his boot and sleeve, warm, soaking the cloth at his side. His breath came ragged now, the sword heavier in a bitten arm.\n\nThe badly hurt one limped its circle wider, hind leg dragging, muzzle red, snapping air. The big one at the ridge's foot shifted its weight forward onto its toes.\n\nBehind the cart the sheep pressed screaming against the wheels, and the river ran white over its stones.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "Wolf B",
+      "p": "status",
+      "o": "slain by Alaric's Heavy Slash, lying still by the rocks"
+     }
+    ]
+   }
+  },
+  {
+   "i": 33,
+   "player": "*I Quick Slash Wolf C*",
+   "route": "v3"
+  },
+  {
+   "i": 34,
+   "reply": "The Quick Slash flicked out low, a short cutting stroke across the third wolf's flank as it snapped at his knee — steel opened hide and muscle in a red line, and the wolf jerked back with a shrieking yelp, ribs heaving, legs splayed wide and unsteady on the stones. It stayed up. Barely. Blood pooled dark under its belly and its snarl had gone thin.\n\nThen the teeth. The wounded one at his knee bit down through cloth and skin, a sharp crushing pinch; the limper lunged in and got his thigh; the big one finally committed, slamming in from the rise side to lock its jaws on his sword arm. Three bites, each one a flare of heat, each pulling away wet. His arm shook. Blood ran freely now, dripping off his fingers onto the rock, and the river roared on past them all like it hadn't noticed.\n\nThe sheep screamed behind the cart. The big wolf's red-muzzled grip tore loose and it backed a pace, low, ready.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "Wolf C",
+      "p": "condition",
+      "o": "badly wounded by Alaric's Quick Slash, bleeding heavily but still standing"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "wolves",
+      "p": "behavior",
+      "o": "all three bit Alaric this round; the big wolf's grip tore loose and it backed a pace, low and ready"
+     }
+    ]
+   }
+  },
+  {
+   "i": 35,
+   "player": "*I Heavy Slash Wolf D*",
+   "route": "v3"
+  },
+  {
+   "i": 36,
+   "reply": "The Heavy Slash dropped through the big one's spine as it came in low — a two-handed stroke that landed across its back and shoulders with a sound like an axe into wet oak. The stroke broke it mid-lunge. It folded onto the stones under him, skidded a hand-span through the blood and grit, and never got its legs under it again. Its breath came once, twice, and stopped.\n\nThen the last two were on him. The limper's teeth punched into his forearm and tore; the half-flanked one got his thigh again, a sharp crushing pinch that pulled away wet. His legs went briefly watery under him, boot slipping on bloodied stone, and he caught his balance on the sword tip against the rock. Two wolves left. One barely standing, one dragging a ruined hind leg, both muzzles red, both still circling.\n\nThe river ran white. Behind the cart the sheep had gone from screaming to a low panicked bleating, and somewhere above, on the rise, loose pebbles ticked down the slope — small, then still.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "mon.monroadwolves_1_2",
+      "p": "status",
+      "o": "dead — killed by Alaric's Heavy Slash, folded on the ford stones"
+     },
+     {
+      "seq": 2,
+      "type": "position",
+      "who": "mon.monroadwolves_1_1",
+      "band": "ENGAGED",
+      "cover": "none"
+     },
+     {
+      "seq": 3,
+      "type": "position",
+      "who": "mon.monroadwolves_1_3",
+      "band": "ENGAGED",
+      "cover": "none"
+     },
+     {
+      "seq": 4,
+      "type": "thread",
+      "text": "Loose pebbles ticked down the slope above the ford — small, then still — as if something moved on the rise",
+      "kind": "threat",
+      "status": "open"
+     }
+    ]
+   }
+  },
+  {
+   "i": 37,
+   "player": "*I basic attack Wolf A*",
+   "route": "v3"
+  },
+  {
+   "i": 38,
+   "reply": "The basic stroke cut straight down through the last biting wolf's skull as it snapped at his leg — a short, clean killing blow, no flourish, and the animal dropped where it stood, jaws still open, dead on the rock.\n\nThe last one got him anyway. The near-dead wolf lunged through the opening its death made and its teeth raked his leg one final time, a shallow tearing pinch, and then it backed off — swaying, forelegs braced, blood sheeting from its flank, breath rasping. It stood its ground on the stones three paces off, muzzle wrinkled, but its hindquarters trembled and its eyes had gone wrong, cornered-animal wide.\n\nFour bodies lay dark on the river rocks. Blood dripped off Alaric's fingers, off his elbow, ran warm inside his boot. His arm burned and his leg wanted to fold.\n\nOn the rise above the ford, the pebbles ticked again — closer, and heavier this time, a scatter of stones dislodged in a line, as if something were picking its way down the slope. The wolf's ears swivelled toward the sound, and it whined once, low, without taking its eyes off him.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "wolf",
+      "p": "status",
+      "o": "Wolf A killed by Alaric's downward stroke; four wolf bodies lie dead on the river rocks"
+     },
+     {
+      "seq": 2,
+      "type": "position",
+      "who": "mon.monroadwolves_1_3",
+      "band": "ENGAGED",
+      "cover": "none"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "wolf",
+      "p": "condition",
+      "o": "the last wolf is gravely wounded, bleeding heavily, standing its ground but trembling and cornered"
+     },
+     {
+      "seq": 4,
+      "type": "thread",
+      "text": "Something heavier is picking its way down the slope above the ford, dislodging pebbles in a line; the wounded wolf whines at the sound",
+      "kind": "threat",
+      "status": "open"
+     },
+     {
+      "seq": 5,
+      "type": "time",
+      "minutes": 1
+     }
+    ]
+   }
+  },
+  {
+   "i": 39,
+   "player": "*I basic attack Wolf C*",
+   "route": "v3"
+  },
+  {
+   "i": 40,
+   "reply": "The last stroke took the wounded wolf across the neck as it stood swaying — a short, tired blow, all it needed. The animal buckled, slid a body-length on the wet stones, and was still.\n\nThen quiet, except the river and the sheep. Four grey bodies darkened the ford, blood thinning in the shallows and running off downstream in slow ribbons. Alaric's breath came hard; the sword tip drooped until it rested on the rock. Bites throbbed along his arm, thigh, forearm — torn cloth stiff with red, skin underneath opened and bruised, nothing gushing but everything bleeding steadily.\n\nThe sheep huddled against the far wheel of the cart, pressed into a shivering knot. The overturned cart bed creaked once in the current.\n\nAbove the ford, the sound on the slope came again — and this time not pebbles. A slow, heavy tread on scree, unhurried, descending in a line straight toward the ford. Then stillness. Whatever it was had stopped partway down, out of sight past the lip of the rise, and it had not made the noise of anything wolf-sized.\n\nThe sheep had gone silent. All of them, ears pricked toward the rise, tails clamped.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "wolf C",
+      "p": "status",
+      "o": "dead at the ford, killed by Alaric's stroke"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "wolf pack",
+      "p": "status",
+      "o": "four grey bodies dead in the ford shallows"
+     },
+     {
+      "seq": 3,
+      "type": "thread",
+      "text": "A slow, heavy tread descended the scree slope above the ford — something not wolf-sized — then stopped out of sight past the lip of the rise; the sheep froze silent, ears pricked toward it.",
+      "kind": "threat",
+      "status": "open"
+     },
+     {
+      "seq": 4,
+      "type": "time",
+      "minutes": 1
+     }
+    ]
+   }
+  },
+  {
+   "i": 41,
+   "player": "*i clean my blade and then sheath it again saying* okay we can continue",
+   "commands": []
+  },
+  {
+   "i": 42,
+   "reply": "He knelt at the river's edge away from the wolf bodies, rinsed the blade in the current until the water ran pink off the steel, wiped it dry against his sleeve, and slid it home in the scabbard. \"Okay, we can continue.\"\n\nAldsa didn't answer right away. She was still behind the cart, one hand buried in the fleece of the nearest sheep, and when he looked up she was staring at the rise.\n\n\"Continue,\" she said, flat. \"Up there. You hear it?\"\n\nHe heard it. Or rather, he heard nothing where there had been something — the tread had stopped again, and the quiet above the ford sat wrong, the way a wood does when a bird won't sing. The sheep wouldn't move. Aldsa pulled at the halter twice and the lead ewe planted its feet and backed, eyes rolling white toward the slope.\n\n\"That's not done,\" Aldsa said quietly. \"Wolves die and the rest scatter. That's how it goes. That—\" she jerked her chin at the rise, \"—has been standing there listening for the last minute. Things that listen aren't done.\"\n\nThe driver, a broad grey-bearded man with a wooden crook, had worked his way around to the cart's far side and picked up a stone the size of a fist. He held it low, against his thigh, like a man who had done this before.\n\n\"Middle of the ford,\" he said to Aldsa, not to Alaric. \"Cart between us and the slope, water at our backs. If it comes down, it comes down loud, and we'll hear every step.\"\n\nAbove them, on the lip of the rise, a shadow crossed the gap between two gorse bushes. Large, low-slung, and slow. Then it settled, and did not move again.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 2
+     },
+     {
+      "seq": 2,
+      "type": "person.new",
+      "ref": "pc_aldsa",
+      "name": "Aldsa",
+      "role": "wool cart owner and escort employer",
+      "desc": [
+       "woman with a wool cart and flock",
+       "reads animal and wild signs shrewdly"
+      ],
+      "present": true,
+      "at": "loc.ford_narrows_on_the_river_road",
+      "band": "ENGAGED"
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "pc_driver",
+      "name": null,
+      "role": "cart driver",
+      "desc": [
+       "broad grey-bearded man with a wooden crook",
+       "veteran bearing, armed himself with a fist-sized stone"
+      ],
+      "present": true,
+      "at": "loc.ford_narrows_on_the_river_road",
+      "band": "ENGAGED"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "large low-slung creature",
+      "p": "observed as",
+      "o": "a slow shadow crossing the lip of the rise above the ford, then settling motionless among gorse"
+     },
+     {
+      "seq": 5,
+      "type": "thread",
+      "text": "Something large on the rise above the ford has been standing still and listening; the sheep refuse to move and Aldsa believes it is not done with them",
+      "kind": "threat",
+      "status": "open"
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "driver",
+      "p": "proposed tactic",
+      "o": "hold middle of the ford with the cart between them and the slope and water at their backs"
+     }
+    ]
+   }
+  },
+  {
+   "i": 43,
+   "player": "okay then wait here *i say and start walking up towards the shadow sword ready*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": {
+      "new": "toward the shadow"
+     },
+     "quote": "start walking up towards the shadow"
+    }
+   ]
+  },
+  {
+   "i": 44,
+   "reply": "\"Wait here,\" he said, and drew the sword again, and started up.\n\nAldsa said something behind him — his nameless escort, the tone of it sharp — but the driver cut her off with a low \"let him,\" and then the water-noise swallowed the rest.\n\nThe slope was loose scree under a skin of turf and gorse, and it took his weight grudgingly; every third step a stone slid and clattered down behind him, loud as a shout. He kept to the line where the shadow had crossed, boots finding the flatter rocks, blade held out from his leg. The river fell away at his back. Halfway up he could see over the lip of the rise, and the ground beyond opened into a stretch of bracken and gorse running back toward a stand of birch — and forty paces off, exactly where the pebbles had said it was, the thing stood in the open.\n\nIt was a wolf. That was the first word for it, and the last, because everything else about it was wrong for the word. It stood as high through the shoulder as the cart's wheel, grey-brown like its dead kin below but gaunt in a way that spoke of a hard season, ribs shadowing through the pelt, and a ridge of old scar tissue seamed across its muzzle where the fur had gone white. It had been listening. It was listening still, ears cupped at him, head low, forelegs planted.\n\nIt did not growl. That was the worst of it. It looked at him, then past him — down the slope, at the ford, the cart, the sheep — and back to him, weight shifting onto its haunches by a hand's width, the way a thing shifts when it is measuring ground.\n\nBehind him, far below, one of the sheep bleated once and was silenced.\n\nThe wolf's eyes came back to his and stayed there.",
+   "answer": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Scree slope above the Ford Narrows",
+        "kind": "wilderness",
+        "parent": "loc.ford_narrows_on_the_river_road"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 5
+     },
+     {
+      "seq": 2,
+      "type": "creature.new",
+      "ref": "npc.scarred_wolf",
+      "species": "scarred gaunt wolf",
+      "anchor": "wolf",
+      "desc": [
+       "wolf as tall through the shoulder as the cart's wheel",
+       "grey-brown, gaunt with ribs shadowing through the pelt",
+       "ridge of old scar tissue across its muzzle where fur went white",
+       "silent, head low, forelegs planted, measuring Alaric and glancing at the cart and sheep"
+      ],
+      "count": 1,
+      "present": true,
+      "band": "LONG"
+     },
+     {
+      "seq": 3,
+      "type": "position",
+      "who": "npc.scarred_wolf",
+      "band": "LONG",
+      "cover": "none"
+     },
+     {
+      "seq": 4,
+      "type": "aware",
+      "who": "npc.scarred_wolf",
+      "level": "aware"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "scarred gaunt wolf",
+      "p": "sighted at",
+      "o": "scree slope above the Ford Narrows, forty paces off among bracken and gorse"
+     }
+    ]
+   }
+  },
+  {
+   "i": 45,
+   "player": "*I look at it and start walking closer as i see if its here to fight or if it leaves*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": {
+      "new": "toward the scarred gaunt wolf"
+     },
+     "quote": "start walking closer as i see if its here to fight or if it leaves"
+    }
+   ]
+  },
+  {
+   "i": 46,
+   "reply": "Forty paces. Thirty. The scree gave under his boots and each slide of stone rang down the slope, and the wolf let him hear every step he took — it never once shifted its gaze off him, but it did not back up either, and did not put its ears flat.\n\nTwenty paces. Close enough now to see the scar plainly: not one old wound but a seam of them, layered, the newest still hairless and pink along the jaw. Close enough to see it was starving. The haunches stood out like knots in rope.\n\nAt fifteen paces it made its choice. No snarl, no charge — the head swung aside, slow, deliberate, toward the birch stand, and the great gaunt body turned with it. It took three steps away, unhurried, the way it had come down, then paused with one hind foot still planted and looked back at him once — at him, not the ford — as if fixing him in whatever ledger such a thing kept.\n\nThen it went. Bracken closed over the grey-brown rump, gorse shivered, and the slope was empty. The birches took the sound of it and gave back nothing.\n\nAlaric stood on the scree with his sword still out, heart going like a fist on a door. Below, the sheep had begun to shuffle and press against each other, and Aldsa's voice carried thin up the slope: \"Is it gone? Is it moving?\"\n\nFrom the ford, the driver called up something else — that a wolf's pack was never just the wolves you could see, and that if the big one had decided to walk, they'd best walk too, while the walking was good.",
+   "answer": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": "loc.ford_narrows_on_the_river_road.scree_slope_above_the_ford_narrows"
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "scarred gaunt wolf",
+      "p": "condition",
+      "o": "starving, with layered scars along the jaw, the newest still hairless and pink"
+     },
+     {
+      "seq": 2,
+      "type": "leave",
+      "who": "mon.npcscarred_wolf"
+     },
+     {
+      "seq": 3,
+      "type": "thread",
+      "text": "The scarred gaunt wolf looked back at Alaric once before leaving, as if fixing him in its ledger; the driver warns a wolf's pack is never just the wolves you can see.",
+      "kind": "threat",
+      "status": "open"
+     }
+    ]
+   }
+  },
+  {
+   "i": 47,
+   "player": "Its gone now hurry before more come *i yell down and wait for them to catch up and then we continue our travel*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "activity",
+     "kind": "wait",
+     "what": "wait for Aldsa and the flock-hand to catch up",
+     "minutes": null,
+     "until": null,
+     "quote": "i yell down and wait for them to catch up"
+    }
+   ]
+  },
+  {
+   "i": 48,
+   "reply": "\"It's gone! Hurry, before more come!\" — the words went down the slope and the ford came alive below him.\n\nHe waited at the top, sword still bare, watching the birches while the ford emptied itself of hesitation. The driver got the cart moving through the water first, wheels grinding over the stones, and Aldsa came behind with the flock, crook swinging, driving the sheep across in one pressed-together bunch that bleated and shoved and wanted nothing but the far bank. She crossed last herself, skirts hauled up, and only when the whole lot stood dripping on the north side did she look up the slope at him.\n\n\"Down,\" she called. \"Quick. Walk past us, don't loiter.\"\n\nHe came down the scree faster than he'd gone up, sheathed the blade at the bottom, and they went — cart first at a pace just short of a trot, the flock bunched tight between cart and river, Aldsa at the flank nearest the rise, the driver clicking his tongue and slapping the crook against a wheel rim to keep the animals moving. Nobody talked for the first half mile.\n\nThe road beyond the narrows was kinder: wider, hedged, running level through water-meadows with the river sliding along to the left. The sun stood high and the mist had burned off entirely. It was Aldsa, finally, who spoke, without turning her head.\n\n\"You walked at it.\" A pause. \"Fifteen paces, I'd guess, from what I could see. At a thing the size of a calf.\"\n\n\"Let her be,\" the driver said. \"It walked away. That's the whole of the story I want.\"\n\nBut Aldsa looked at Alaric a moment longer — a reassessing look, the kind given to a hired sword being upgraded in the mind to something else — before she faced the road again. \"Millbrook by mid-afternoon at this pace,\" she said. \"And I'll be buying the drinks, not you.\"\n\nThe sheep, recovering their nerve, had begun to graze as they walked. Somewhere behind, far off, a crow called over the ford they'd left.",
+   "answer": {
+    "expected": {
+     "1": {
+      "minutes": 30,
+      "done": true
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 30
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "Aldsa Corren's cart, flock and driver have crossed the Ford Narrows to the north bank and the party travels on toward Millbrook",
+      "p": "status",
+      "o": "crossed and moving"
+     },
+     {
+      "seq": 3,
+      "type": "quest.detail",
+      "quest": "quest.shepherd_cart_to_millbrook",
+      "note": "Aldsa expects to reach Millbrook by mid-afternoon at the current pace; she says she'll be buying the drinks.",
+      "schedule": "Millbrook by mid-afternoon"
+     },
+     {
+      "seq": 4,
+      "type": "attitude",
+      "who": "person.aldsa_corren",
+      "delta": 10,
+      "why": "She saw Alaric walk to within fifteen paces of the creature; she upgrades him from hired sword to something more"
+     },
+     {
+      "seq": 5,
+      "type": "memory",
+      "text": "Aldsa watched Alaric walk fifteen paces toward the calf-sized creature at the ford; the driver just wants the story to end with it walking away",
+      "who": [
+       "person.aldsa_corren"
+      ],
+      "imp": 7
+     }
+    ]
+   }
+  },
+  {
+   "i": 51,
+   "player": "*i nod and we continue*",
+   "commands": []
+  },
+  {
+   "i": 52,
+   "reply": "They went. The road unspooled through the water-meadows, and the afternoon did its quiet work: hedges gave way to willow pollards, the river bent away north, and the cart's left rear wheel developed a rhythm that meant it wanted greasing by evening. Alaric walked where Aldsa had placed him at the start — a pace off the flock's flank, sword side toward the open rise — and mostly that meant watching sheep and listening to the driver hum something tuneless through his nose.\n\nNo wolf came. Twice the sheep went rigid as one body, heads up, and twice it was nothing — a heron off the slough, a paper blown across the road. Aldsa drove them through both scares without a word, though the second time her knuckles were white on the crook.\n\nThe land told them Millbrook was near before Millbrook did. Fences appeared, mended. A dog ran out of a yard to bark at the cart and was called off by name. Then smoke over a low rise, and the hamlet itself: twenty-odd roofs of thatch and slate around a mill with its wheel turning brown water, a green where geese patrolled, a smithy ringing somewhere out of sight. It was barely a village. It was people, and it was walls of a kind.\n\nAldsa brought the cart up the lane to the mill yard and stopped it with a long breath out, like a woman setting down a weight. The driver climbed down and stood with a hand on the wheel, looking back the way they'd come, at the empty road, for longer than he needed to.\n\n\"Well,\" Aldsa said, unlatching the cart's tailboard. \"Wool's delivered, flock's whole, and so are we.\" She dug in the cart and came up with a strip of dried mutton, which she held out toward Alaric without ceremony. \"Millbrook has an alehouse with two tables and the same ale in both. You've earned a seat at either.\"\n\nThe miller had come out to meet the cart, wiping flour from his hands, and was already asking the driver what had held them up past noon.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 180
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Millbrook",
+        "kind": "settlement",
+        "parent": "loc.ford_narrows_on_the_river_road"
+       }
+      },
+      "forced_by": null
+     },
+     {
+      "seq": 3,
+      "type": "quest.ready",
+      "quest": "quest.shepherd_cart_to_millbrook",
+      "note": "Aldsa's wool cart delivered to the mill yard at Millbrook; flock and driver unharmed, no wolf attack on the road."
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "person.miller_millbrook",
+      "name": null,
+      "role": "millkeeper of Millbrook",
+      "desc": [
+       "Came out to meet the cart wiping flour from his hands",
+       "Asking the driver what held them up past noon"
+      ],
+      "present": true,
+      "at": null,
+      "band": "SHORT"
+     },
+     {
+      "seq": 5,
+      "type": "object.new",
+      "name": "strip of dried mutton",
+      "kind": "resource",
+      "qty": 1,
+      "unit": "strip",
+      "holder": "person.aldsa_corren",
+      "for_quest": null
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "Millbrook",
+      "p": "has",
+      "o": "an alehouse with two tables serving the same ale"
+     }
+    ]
+   }
+  },
+  {
+   "i": 55,
+   "player": "Thank you but i want to turn the quest in first. does Millbrook have a branch of the guild?",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "quest.turn_in",
+     "quest": "quest.shepherd_cart_to_millbrook",
+     "quote": "i want to turn the quest in first"
+    }
+   ]
+  },
+  {
+   "i": 56,
+   "reply": "\"No branch here,\" the driver said, before anyone else could answer. He'd turned from the cart at the word guild, and he shook his head with the certainty of a man who'd lived around Millbrook long enough to be tired of it. \"Nothing nearer than Tidecross. The hall on Cordwainer Row, by the market cross. That's where you'd have taken the contract, I'd guess.\"\n\nThe millkeeper had stopped mid-question and was looking between them with flour still on his knuckles. \"There's a posting board at the alehouse,\" he offered. \"Guild notices, wool prices, that sort of thing. But nobody here pays out on anything. We're not the Guild, we're a mill.\"\n\nAldsa was already through the mill door with her wool, her voice gone from inside, something about scales and damp mornings. The driver hitched himself up to sit on the cart's empty bed, taking his weight off his feet at last.\n\n\"Tidecross is back down the river road, mind,\" he said. \"Half a day, the way you walk. Road's been quiet enough this side of the narrows for years — it was the ford stretch that wanted a sword, and you're done with that.\" He rubbed the back of his neck. \"If it were me, I'd sit, eat, and start fresh in the morning. But it's not me walking it twice in one day.\"\n\nThe millkeeper wiped his hands on his apron, having apparently concluded that Alaric was not a wool buyer. \"Alehouse is the low slate roof past the green,\" he said. \"Two tables. Same ale in both.\" And he went back to his flour.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "Millbrook",
+      "p": "has no Guild branch; nearest hall is in",
+      "o": "Tidecross on Cordwainer Row by the market cross"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "Millbrook alehouse",
+      "p": "has",
+      "o": "a posting board with Guild notices and wool prices, but pays out nothing"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Millbrook alehouse",
+      "p": "is located",
+      "o": "low slate roof past the green, two tables"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Tidecross",
+      "p": "is",
+      "o": "half a day's walk back down the river road from Millbrook"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "river road this side of the narrows",
+      "p": "has been",
+      "o": "quiet for years; the ford stretch was the dangerous part"
+     }
+    ]
+   }
+  },
+  {
+   "i": 57,
+   "player": "*i nod and then say* then id rather return now. Maybe next time we can drink together. Also please Sign my contract slip *i wait for the Signature and then i walk back the same way i came from*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "quest.turn_in",
+     "quest": "quest.shepherd_cart_to_millbrook",
+     "quote": "Also please Sign my contract slip"
+    },
+    {
+     "seq": 2,
+     "type": "go",
+     "to": {
+      "new": "back the same way i came from"
+     },
+     "quote": "i walk back the same way i came from"
+    }
+   ]
+  },
+  {
+   "i": 58,
+   "reply": "\"Aye, that I can do.\" The driver took the contract slip Alaric held out, and for a moment had nowhere to put it — no table, no wall, just the cart bed — so he braced it on his knee and asked the millkeeper for a stub of charcoal pencil, which appeared from the mill office along with a hand that held it steady while he wrote.\n\nAldsa Corren, in a heavy, slanting hand, learned in wool ledgers rather than schools. Below it she added, unprompted, *delivered whole, flock and man both*, and dated it.\n\n\"There.\" She handed the slip back. \"They'll squint at the ink but it's honest. And aye — next time the ale's on me, if there's a next time.\" She looked him over once, the sword, the road-dust, the blood dried stiff on his armor where the wolves had reached him. \"Walk with that blade loose and your ears open past the narrows. It went away. It didn't go far.\"\n\nThe millkeeper held the gate for him and said nothing, being done with him.\n\nThe lane back down to the river road was short, and then Millbrook was behind him and the meadows were ahead. The afternoon had tipped past its best; the light came long and gold across the water, and his shadow walked beside him, stretched thin. His legs knew the way now — the hedges, the willow pollards, the bend where the river swung north — and the miles gave themselves up one after another with only the plover and the wind in the grass for company.\n\nAt the narrows the ford lay quiet. The water ran brown and ordinary over the stones, and the scree on the south side stood empty in the slanting light. He crossed it. On the far rise the birches held still. Whatever had watched from there earlier had better places to be, or the daylight made the difference.\n\nThe road south to Tidecross opened below, long and level and dimming toward evening.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "object.mark",
+      "object": "obj.slip.shepherd_cart_to_millbrook",
+      "mark": "signed by Aldsa Corren: 'delivered whole, flock and man both', dated",
+      "by": "npc.aldsa_corren"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "Aldsa Corren",
+      "p": "promised",
+      "o": "next round of ale is on her, if there is a next time"
+     },
+     {
+      "seq": 3,
+      "type": "thread",
+      "text": "Aldsa warns the wolf 'went away. It didn't go far' — stay alert past the narrows",
+      "kind": "threat",
+      "status": "open"
+     },
+     {
+      "seq": 4,
+      "type": "time",
+      "minutes": 60
+     },
+     {
+      "seq": 5,
+      "type": "arrive",
+      "at": "loc.ford_narrows_on_the_river_road",
+      "forced_by": null
+     }
+    ]
+   }
+  },
+  {
+   "i": 59,
+   "player": "*i continue walking until i reach the city and then i walk into the guild hall again*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": {
+      "new": "the city"
+     },
+     "quote": "i continue walking until i reach the city"
+    },
+    {
+     "seq": 2,
+     "type": "go",
+     "to": {
+      "new": "the guild hall"
+     },
+     "quote": "i walk into the guild hall again"
+    }
+   ]
+  },
+  {
+   "i": 60,
+   "reply": "The miles gave in gradually. Dusk came up out of the east while the west still held its light, and by the time the road joined the wider traffic of the river — carts, a drover's herd, two women with fishing poles — the sky had gone to iron and ember. Lamplighters were working the outer streets of Tidecross when he passed the gate, and the gatewarden glanced at his armor and dried blood, decided it was Guild business or none of his, and waved him through.\n\nThe city smelled of tar, woodsmoke and fried fish. Evening had the markets closing, shutters going up along Cordwainer Row, and the Guild hall's lamps were already lit — a long, low building of dark stone with the white-and-blue sign hanging over the door, doors still open at this hour.\n\nInside it was quieter than the street. Rushlights in iron brackets, a long counter of scarred oak, a big board of posted contracts on the far wall, and a handful of people: two weathered men deep in conversation over a map, a clerk carrying ledgers somewhere behind, and at the counter a woman of middle years with grey-streaked hair pulled back tight, a quill behind her ear, in the middle of writing something and finishing it before she looked up.\n\nShe looked up. Her eyes went to the Guild plate at his belt, then to the blood on his armor, then to his face.\n\n\"Evening,\" she said. \"Desk's open if you've business.\"",
+   "answer": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": "loc.tidecross"
+     },
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Tidecross Guild Hall",
+        "kind": "site",
+        "parent": "loc.tidecross"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 150
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": "loc.tidecross",
+      "forced_by": null
+     },
+     {
+      "seq": 3,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Tidecross Guild Hall",
+        "kind": "site",
+        "parent": "loc.tidecross"
+       }
+      },
+      "forced_by": null
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "npc.tidecross_guild_desk_clerk",
+      "name": null,
+      "role": "desk clerk at the Tidecross Guild hall",
+      "desc": [
+       "middle years",
+       "grey-streaked hair pulled back tight",
+       "quill behind her ear",
+       "at the counter"
+      ],
+      "present": true,
+      "at": {
+       "new": {
+        "name": "Tidecross Guild Hall",
+        "kind": "site",
+        "parent": "loc.tidecross"
+       }
+      },
+      "band": "ENGAGED"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "Tidecross Guild hall",
+      "p": "has",
+      "o": "a big board of posted contracts on the far wall and a long oak counter"
+     },
+     {
+      "seq": 6,
+      "type": "fact",
+      "s": "gatewarden at Tidecross gate",
+      "p": "waved Alaric through",
+      "o": "deciding his armor and dried blood were Guild business"
+     },
+     {
+      "seq": 7,
+      "type": "learn",
+      "who": "npc.tidecross_guild_desk_clerk",
+      "s": "visitor",
+      "p": "wears",
+      "o": "a Guild plate and blood-stained armor",
+      "how": "witnessed"
+     }
+    ]
+   }
+  },
+  {
+   "i": 61,
+   "player": "*i pull the signed slip out and say* Yes i have a finished contract ready for turn in",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "quest.turn_in",
+     "quest": "quest.shepherd_cart_to_millbrook",
+     "quote": "Yes i have a finished contract ready for turn in"
+    }
+   ]
+  },
+  {
+   "i": 62,
+   "reply": "\"Let's see it, then.\"\n\nShe took the slip across the scarred oak and read it properly — not a glance, but line by line, the way of someone who had caught plenty of creative honesty in her time. The Guild plate. The contract number. Aldsa Corren's heavy ledger hand and the note beneath it: *delivered whole, flock and man both.*\n\n\"Ford Narrows stretch,\" she said. It wasn't quite a question, and her eyes had already answered it by way of the dried blood on his armor. She turned to the ledger on the counter, ran a finger down a column, and set a mark against the contract with two strokes of the quill. \"Shepherd Cart to Millbrook, closed. Wolf activity on that road's been the topic of the board for a fortnight, so you've done somebody a service.\"\n\nShe counted the payout out of the drawer behind her — copper, stacked and pushed across the oak to him. Ninety copper, honest and plain.\n\n\"That's the Guild's portion, all of it. Anything beyond's between you and the client, and the client's a wool farmer, so I'd not hold my breath.\" She set the quill back behind her ear and looked at him properly for the first time, taking in the plate at his belt again. \"First contract closed, is it? The board's got standing work if you're staying in the city tonight — vermin, deliveries, the usual. Nothing worth bleeding over at your standing yet.\"\n\nShe glanced once more at the state of him. \"Though you look like you've been bleeding plenty already today. There's a physicker two doors down, if the wolves got deeper than the armor.\"",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "quest.shepherd_cart_to_millbrook",
+      "p": "status",
+      "o": "closed at the Tidecross Guild hall; clerk marked the ledger"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "quest.shepherd_cart_to_millbrook",
+      "p": "payout",
+      "o": "90 copper counted out and pushed across the counter as the Guild's portion"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Tidecross Guild desk clerk",
+      "p": "advice",
+      "o": "mentioned a physicker two doors down from the Guild hall for Alaric's wounds"
+     },
+     {
+      "seq": 4,
+      "type": "time",
+      "minutes": 5
+     }
+    ]
+   }
+  },
+  {
+   "i": 63,
+   "player": "*i nod and take the copper saying* thank you for the tip *i then go find a tavern and go inside and sit at a corner table*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "take",
+     "object": {
+      "new": "copper"
+     },
+     "qty": null,
+     "quote": "i nod and take the copper"
+    },
+    {
+     "seq": 2,
+     "type": "go",
+     "to": {
+      "new": "a tavern"
+     },
+     "quote": "i then go find a tavern and go inside"
+    }
+   ]
+  },
+  {
+   "i": 64,
+   "reply": "The copper went into the pouch with the rest, and the door of the Guild hall gave onto the evening street. Two doors down the physicker's lamp was burning, but the wounds could wait; hunger could not.\n\nThe first tavern he found was the Drowned Eel, a low timbered place near the fish market with a painted sign whose eel had drowned convincingly enough. Inside it was warm and thick with cooking smoke and ale breath. Perhaps a dozen people: two rivermen arguing over dice, a pair of porters with their boots off, an old man asleep sitting up in the corner by the fire. Nobody looked at him longer than a stranger warrants — a swordsman with bloody armor was the sort of thing Tidecross saw every week.\n\nHe took a corner table, back to the wall, and the bench creaked under the armor's weight as he sat. The wood was sticky under his forearm. Someone's names and a rude drawing were carved into it, old and softened by hands.\n\nA serving girl came by with a rag over her shoulder and a tankard in each hand, already promised elsewhere. \"What'll it be?\" she asked, looking down at him, her eyes flicking once over the blood. \"Stew's mutton, bread's today's, and the ale's drinkable if you're not particular.\"",
+   "answer": {
+    "expected": {
+     "1": {
+      "taken": true
+     },
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Drowned Eel",
+        "kind": "site",
+        "parent": "loc.tidecross"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 15
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Drowned Eel",
+        "kind": "site",
+        "parent": "loc.tidecross"
+       }
+      },
+      "forced_by": null
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "npc.drowned_eel_serving_girl",
+      "name": null,
+      "role": "serving girl at the Drowned Eel",
+      "desc": [
+       "rag over her shoulder, a tankard in each hand, already promised elsewhere",
+       "eyes flicked once over the blood on Alaric's armor"
+      ],
+      "present": true,
+      "at": null,
+      "band": "ENGAGED"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Drowned Eel",
+      "p": "description",
+      "o": "low timbered tavern near the fish market in Tidecross, warm, thick with cooking smoke, about a dozen patrons including two arguing rivermen, two porters, and an old man asleep by the fire"
+     }
+    ]
+   }
+  },
+  {
+   "i": 65,
+   "player": "Just a water please *i say and then pay for it and rest for the next hour as i sip my water*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "buy",
+     "what": "water",
+     "from": "npc.npcdrowned_eel_serving_girl",
+     "qty": null,
+     "max_cp": null,
+     "any_price": false,
+     "quote": "Just a water please"
+    },
+    {
+     "seq": 2,
+     "type": "activity",
+     "kind": "rest",
+     "what": "sipping water",
+     "minutes": 60,
+     "until": null,
+     "quote": "rest for the next hour as i sip my water"
+    }
+   ]
+  },
+  {
+   "i": 66,
+   "reply": "\"Water's a copper,\" she said, and at his nod added, \"Well water, not river, before you ask.\" She fetched it in a clay cup, took the copper, and was gone again into the smoke.\n\nThe water was cold and tasted of the well-iron. He drank slowly and let the tavern wash over him. The dice game turned ugly and then funny again; one of the porters sang three lines of something about a Merrow's daughter before his companion told him to spare the room. The old man by the fire slept on. Steam rose off the mutton stew going past on a tray, and his stomach took note of it whether he did or not.\n\nHe sat and let the hour run out of him. The bench, the sticky table, the fire's warmth on one side and the draft off the door on the other. Under the armor the scratches pulled with every shift of his shoulders, a dull stitched ache that would want cleaning before the day was done. The noise thinned as the rivermen gave up their dice and the porters went out into the dark; a boy came through sweeping, pushing grit along the boards.\n\nBy the time the serving girl came round again with her rag, the rushlights had been trimmed twice and the room was half what it was. She set the rag down and looked at him — still there, still on the same cup, armor bloodied and untouched stew nowhere in front of him.\n\n\"You'll want food at some point,\" she said. \"Or a room. We do both, and neither's dear.\"",
+   "answer": {
+    "expected": {
+     "1": {
+      "priced": true,
+      "taken_anyway": false
+     },
+     "2": {
+      "minutes": 60,
+      "done": true
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 60
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "water",
+      "p": "price",
+      "o": "1 copper at the Drowned Eel"
+     },
+     {
+      "seq": 3,
+      "type": "recover",
+      "who": "Alaric",
+      "hp": null,
+      "sta": null
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Drowned Eel",
+      "p": "offers",
+      "o": "food and rooms, both inexpensive"
+     }
+    ]
+   }
+  },
+  {
+   "i": 67,
+   "player": "*i pay the copper and then say* im fine thank you *i then leave and go find an inn*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "pay",
+     "to": "npc.npcdrowned_eel_serving_girl",
+     "amount_cp": 1,
+     "for": "water",
+     "quote": "i pay the copper"
+    },
+    {
+     "seq": 2,
+     "type": "go",
+     "to": {
+      "new": "an inn"
+     },
+     "quote": "i then leave and go find an inn"
+    }
+   ]
+  },
+  {
+   "i": 68,
+   "reply": "The copper clicked on the table and he rose; the bench scraped, and the serving girl took the cup with a shrug that had seen plenty of men drink one water for an evening and go.\n\nThe door let him back into the night. Tidecross after dark was lamplight and fish smell and the slap of water somewhere below the street. He walked a few streets inland, following the wider lamps toward the market square, and found the Salt and Ladder Inn on the corner — two storeys, honest stonework below and timber above, a ladder painted on the sign with a saltcellar balanced on the top rung. Light and the smell of bread came through the shutters.\n\nInside, the common room was quieter than the Eel: a merchant closing his ledger, a couple of carter families finishing a late meal, a broad woman behind the counter with keys on a ring at her belt. She looked up as he came in, taking in the armor and the blood the way innkeepers do — pricing him first, worrying second.\n\n\"Room's four copper, stable for the horse another two if you've one, supper's a copper if you want it hot.\" She set the key ring down. \"You'd be wanting the physicker before bed, I'd judge, by the state of that armor. Bandages are a copper extra if you'd rather not bleed on the mattress.\"",
+   "answer": {
+    "expected": {
+     "2": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Salt and Ladder Inn",
+        "kind": "site",
+        "parent": "loc.tidecross"
+       }
+      }
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 15
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Salt and Ladder Inn",
+        "kind": "site",
+        "parent": "loc.tidecross"
+       }
+      },
+      "forced_by": null
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "npc.salt_ladder_innkeeper",
+      "name": null,
+      "role": "innkeeper of the Salt and Ladder Inn",
+      "desc": [
+       "broad woman",
+       "keys on a ring at her belt",
+       "sizes up guests by their armor and wounds"
+      ],
+      "present": true,
+      "at": {
+       "new": {
+        "name": "Salt and Ladder Inn",
+        "kind": "site",
+        "parent": "loc.tidecross"
+       }
+      },
+      "band": "ENGAGED"
+     },
+     {
+      "seq": 4,
+      "type": "offer",
+      "seller": "npc.salt_ladder_innkeeper",
+      "lines": [
+       {
+        "what": "room for the night",
+        "kind": "service",
+        "service": "lodging",
+        "qty": 1,
+        "price_cp": 4
+       },
+       {
+        "what": "stable for a horse",
+        "kind": "service",
+        "service": "other",
+        "qty": 1,
+        "price_cp": 2
+       },
+       {
+        "what": "hot supper",
+        "kind": "service",
+        "service": "meal",
+        "qty": 1,
+        "price_cp": 1
+       },
+       {
+        "what": "bandages",
+        "kind": "service",
+        "service": "healing",
+        "qty": 1,
+        "price_cp": 1
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ]
+}

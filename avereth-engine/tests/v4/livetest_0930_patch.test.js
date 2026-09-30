@@ -95,7 +95,7 @@ test('C1: the listings a board has just shown cannot be taken away in the reply 
     assert.ok(r.record.corrections.some((c) => /remains AVAILABLE/.test(c)));
 });
 
-test('C2: the companions an arrival names arrive with Alaric; who is not named stays at the old place and is there again when he comes back', async () => {
+test('C2: the companions an arrival names arrive with Alaric; who is not named stays at the old place, where the story finds that same person again', async () => {
     const g = await created();
     let s = after(escort(g.state()), { auth: TRAVEL });
     const ford = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'arrive', at: FORD, forced_by: null, with: ['npc.wool_driver'] }] }, { msg: 100 });
@@ -103,10 +103,17 @@ test('C2: the companions an arrival names arrive with Alaric; who is not named s
     assert.deepEqual(ford.state.scene.present, ['pc', 'npc.wool_driver'], 'the driver came along, the factor stayed');
     assert.equal(ford.state.entities['npc.wool_factor'].at, 'loc.redmarch.verge');
     assert.ok(!ford.events.some((e) => e.t === 'journey.party'), 'no party bookmark');
-    // back at the verge: the factor is still where he stayed, the driver comes back with him
+    // back at the verge: the driver comes back with him; the factor is not put back into the scene by the engine (only the
+    // story knows whether he waited), and when the story has him there, "the wool factor" is that same factor
     s = after(ford.state, { auth: TRAVEL });
-    const back = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'arrive', at: 'loc.redmarch.verge', forced_by: null, with: ['npc.wool_driver'] }] }, { msg: 102 });
+    const back = applyWorld(s, content, { expected: {}, deltas: [
+        { seq: 1, type: 'arrive', at: 'loc.redmarch.verge', forced_by: null, with: ['npc.wool_driver'] },
+        { seq: 2, type: 'enter', who: 'the wool factor' },
+    ] }, { msg: 102 });
+    assert.deepEqual(back.rejected, []);
     assert.deepEqual([...back.state.scene.present].sort(), ['npc.wool_driver', 'npc.wool_factor', 'pc']);
+    const alone = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'arrive', at: 'loc.redmarch.verge', forced_by: null, with: null }] }, { msg: 102 });
+    assert.deepEqual(alone.state.scene.present, ['pc'], 'nobody reappears by himself');
     // someone who walked off is not waiting there
     s = after(back.state);
     const gone = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'leave', who: 'npc.wool_factor' }] }, { msg: 104 });
@@ -192,9 +199,13 @@ test('C5: a large passive flock is one background fact; a wolf pack, a hostile h
     const stampede = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'creature.new', ref: 'stags', species: 'stag', anchor: 'deer', desc: ['rutting'], count: 6, present: true, band: 'SHORT' }, { seq: 2, type: 'hostile', by: ['stags'] }] }, { msg: 108 });
     assert.equal(count(stampede, 'stag'), 6, 'a group that attacks is individual');
     const job = structuredClone(s);
-    job.quests['quest.cart'].objectives[0].verb = 'DEFEAT';
+    job.quests['quest.rats'] = { ...structuredClone(job.quests['quest.cart']), id: 'quest.rats', title: 'Rats in the Grain Cellars', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'the rats in the grain cellars', qty: null, unit: null, where: 'grain cellars', status: 'open' }] };
     const rats = applyWorld(job, content, { expected: {}, deltas: [{ seq: 1, type: 'creature.new', ref: 'rats', species: 'cellar rat', anchor: 'rat', desc: ['in the grain sacks'], count: 8, present: true, band: 'SHORT' }] }, { msg: 109 });
-    assert.equal(count(rats, 'cellar rat'), 8, 'while a contract to defeat something is active, the vermin may be its targets');
+    assert.equal(count(rats, 'cellar rat'), 8, 'the rats a contract is to defeat are its targets');
+    job.quests['quest.hounds'] = { ...structuredClone(job.quests['quest.cart']), id: 'quest.hounds', title: 'Bog Hounds at the Reed Docks', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'the bog hound pack', qty: null, unit: null, where: 'Reed Docks', status: 'open' }] };
+    delete job.quests['quest.rats'];
+    const flock = applyWorld(job, content, { expected: {}, deltas: [{ seq: 1, type: 'creature.new', ref: 'sheep', species: 'sheep', anchor: 'deer', desc: ['penned'], count: 12, present: true, band: 'MEDIUM' }] }, { msg: 110 });
+    assert.equal(count(flock, 'sheep'), 0, 'a hound job makes no flock of sheep its targets');
 });
 
 test('C6: loose coin is never an item: taking the paid-out copper books nothing more; loot coin is coin.gift; the Guild pays nobody twice', async () => {

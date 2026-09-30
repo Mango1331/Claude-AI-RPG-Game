@@ -204,8 +204,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 return [knownId];
             }
         }
-        if (kind === 'creature' && d.count > 4 && !hostileRefs.has(normText(d.ref))) {
-            // Ordinary herds are scenery until a particular member becomes actionable.
+        const herdSpecies = /\b(?:sheep|goats?|cows?|cattle|chickens?|hens?|geese|ducks?|pigs?|horses?|mules?|donkeys?|oxen|deer)\b/i.test(d.species || '');
+        const grazing = /\b(?:graz\w*|pastur\w*|tether\w*|peaceful\w*|feeding|farm\w*|herd|flock|pen\w*)\b/i.test((d.desc || []).join(' '));
+        if (kind === 'creature' && d.count > 4 && herdSpecies && grazing && !hostileRefs.has(normText(d.ref))) {
+            // Background livestock/herds are scenery, NOT a blanket exemption for visible
+            // five-wolf packs or other individually actionable combat creatures.
             setFactEvents(s, { s: s.scene.at, p: 'background_fauna', o: `${d.count} ${d.species}`, source: { kind: 'narration', msg }, importance: 0.3 }).forEach(emit);
             return [];
         }

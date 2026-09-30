@@ -75,7 +75,7 @@ const desk = replay({ 6: PLACE }, [TURN_IN, AGAIN]);
 const WOLF = 'quest.wolf_problem_millbrook_hamlet';
 const reasons = (r) => r.rejected.map((x) => x.reason);
 const completedContracts = (s) => Object.values(s.quests).filter((q) => q.rank && q.status === 'completed').length;
-// The XP constants changed after the run (Core #25: 10 per Level until 4.0.9, 12 for targets and 15 for quests since the
+// The XP constants changed after the run (Core #25: 10 per Level until 4.0.8, 12 for targets and 15 for quests since the
 // live test 30.09.). The recorded XP values scale with them; every other field of the run is compared as recorded.
 const B = content.rules.xp.base_per_level;
 const WOLVES_XP = 2 * B; // the two Level-1 wolves (20 in the run)

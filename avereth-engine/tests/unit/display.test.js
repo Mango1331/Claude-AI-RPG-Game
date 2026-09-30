@@ -108,7 +108,7 @@ test('coin, items, rest, quests and Quest XP a reply changed read like a game lo
     const b2 = g.state;
     const r2 = g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'completed' }], recover: [{ sta: 5, why: 'short rest' }] }, 'Mara pays.');
     const lines = turnPanel(b2, content, null, r2).split('\n');
-    // 10 × quest_base_per_level × 1.5 Quest XP (150 until 4.0.9, 225 since the live test 30.09.): Level 1 -> 2 with the rest carried over
+    // 10 × quest_base_per_level × 1.5 Quest XP (150 until 4.0.8, 225 since the live test 30.09.): Level 1 -> 2 with the rest carried over
     const xp = Math.round(10 * content.rules.xp.quest_base_per_level * 1.5);
     assert.ok(xp >= 100 && xp < 300, 'one Level threshold');
     assert.deepEqual(lines, ['`QUEST COMPLETED — Rats in the Cellar (Mara)`', `\`+${xp} XP → XP ${xp - 100}/200 · Quest XP: Rats in the Cellar (XP basis Level 10, minor)\``, '`LEVEL UP → Level 2 (+5 free Stat Points)`']);

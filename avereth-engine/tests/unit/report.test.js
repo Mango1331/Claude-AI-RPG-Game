@@ -149,7 +149,7 @@ test('Quest XP (Core #25): locked when offered, awarded once on completion throu
     // the posted reward stays as posted (live run 24.09. 23:23: 5 silver on the board, "four" at the hand-in)
     assert.equal(q.reward, '5 silver');
     assert.match(g.context().text, /Quest \(active\): Rats in the Cellar — from [^\n]* — reward: 5 silver/);
-    // Quest Base XP = Recommended Level × quest_base_per_level (10 until 4.0.9, 15 since the live test 30.09.)
+    // Quest Base XP = Recommended Level × quest_base_per_level (10 until 4.0.8, 15 since the live test 30.09.)
     const Q = content.rules.xp.quest_base_per_level;
     const rats = Math.round(3 * Q * 1.5); // minor x1.5: 45 then, 68 now
     g.reply({ quests: [{ title: 'Rats in the Cellar', status: 'completed' }] });
@@ -403,8 +403,8 @@ test('a creature the report could not create names nothing: a fact about it keep
 // signature still to come, and its "8 silver" were paid there as 800 Copper. A Guild contract (a quest with a Quest Rank)
 // is taken at the Guild and completed only at a Guild front desk, where the engine pays its posted reward.
 const WOLF_BOARD = { title: 'Wolf Problem — Millbrook Hamlet', status: 'offered', giver: 'Millbrook Hamlet', reward: '8 silver on proof of at least two wolves', level: 1, type: 'standard', rank: 'Novice' };
-const WOLF_XP = questXp(WOLF_BOARD.level, WOLF_BOARD.type, content); // Core #25: 20 until 4.0.9, 30 since the live test 30.09.
-const MINOR_XP = questXp(1, 'minor', content); // a Level-1 minor contract: 15 until 4.0.9, 23 since
+const WOLF_XP = questXp(WOLF_BOARD.level, WOLF_BOARD.type, content); // Core #25: 20 until 4.0.8, 30 since the live test 30.09.
+const MINOR_XP = questXp(1, 'minor', content); // a Level-1 minor contract: 15 until 4.0.8, 23 since
 
 test('a Guild contract is completed only at a Guild front desk, where the engine pays its posted reward and its Quest XP once; in the field it stays active and no coin is booked for it (live run 27.09. 04:11)', () => {
     const g = ready(); // outside Tidecross, a city with a Guild branch

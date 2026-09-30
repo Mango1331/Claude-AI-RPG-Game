@@ -255,7 +255,7 @@
         "quest_xp"
       ],
       "engine": true,
-      "source": "Core v1.21 #25; XP constants 12 (target) and 15 (quest) since engine 4.1, live test 30.09.2026"
+      "source": "Core v1.21 #25; XP constants 12 (target) and 15 (quest) since engine 4.0.9 (live test 30.09.2026), kept in 4.1"
     },
     {
       "id": "core.26",

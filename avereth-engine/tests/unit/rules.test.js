@@ -378,7 +378,7 @@ test('NPC policy: skittish flees, aggressive closes in, non-hostile unharmed per
 });
 
 test('DefeatXP: Level*base_per_level × rank-gap × type, locked against the PC Rank at encounter start (Core #25)', () => {
-    // base_per_level was 10 until 4.0.9 and is 12 since the XP balance of the live test 30.09. (content test: Core text)
+    // base_per_level was 10 until 4.0.8 and is 12 since the XP balance of the live test 30.09. (content test: Core text)
     const B = content.rules.xp.base_per_level;
     assert.equal(defeatXp(1, 'normal', 'F', content), B);
     assert.equal(defeatXp(2, 'normal', 'F', content), 2 * B);

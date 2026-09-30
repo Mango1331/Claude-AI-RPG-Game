@@ -8,7 +8,7 @@
 import { O, S, B, I, E, A, N, REF, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 
-export const INTERPRETER_VERSION = 'interp-4.4';
+export const INTERPRETER_VERSION = 'interp-4.5';
 
 // Contrastive examples from another town, so they never name a catalog id of the current scene. They follow the error
 // clusters of P0/S1 (docs/P0_BERICHT.md §5) without repeating any case of the evaluation corpora: a test checks that no
@@ -40,7 +40,7 @@ MESSAGE: *i stroll over to the notice wall and look over the contracts* could I 
 → {"commands":[{"seq":1,"type":"board.read","rank":null,"quote":"i stroll over to the notice wall and look over the contracts"}]}
 MESSAGE: *i pull the bridge slip and have the clerk write it into the ledger*
 → {"commands":[{"seq":1,"type":"quest.accept","quest":"quest.bridge","quote":"i pull the bridge slip and have the clerk write it into the ledger"}]}
-CATALOG: JOURNEY READY: quest.wagon with the cart driver — the established journey is ready
+CATALOG: JOURNEY READY: quest.wagon — "Wagon to Fenmoor": the contract's journey is underway; Alaric may continue it when he clearly agrees
 MESSAGE: We wait for the stragglers and then we continue.
 → {"commands":[{"seq":1,"type":"activity","kind":"wait","what":"for the stragglers","minutes":null,"until":null,"quote":"We wait for the stragglers"},{"seq":2,"type":"journey.continue","quote":"then we continue"}]}
 MESSAGE: Please sign my contract slip to show the Guild we arrived.

@@ -417,7 +417,7 @@ const HANDLERS = {
         emit({ t: 'board.shown', d: { branch, rank, listings: listed.map((q) => q.id) } });
         ctx.boardShown = { branch, rank, listings: listed.map((q) => q.id) };
         const rows = listed.map((q) => `**${q.title}** — client: ${q.client || 'unspecified'} · reward: ${q.payout_cp} cp · ${q.desired_end_state || objectiveText(q)}`).join('\n');
-        return { status: 'resolved', line: `READS the ${rank} board — BOARD (these listings now become canonical because Alaric actually reads them; present each notice on its own line with the title first, not as a prose paragraph or checklist):\n${rows}\nStored objectives and any verification examples are continuity memory only.` };
+        return { status: 'resolved', line: `READS the ${rank} board — BOARD (these listings now become canonical because Alaric actually reads them; present the notices in the existing title-first readable format; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\n${rows}\nStored objectives and any verification examples are continuity memory only.` };
     },
     equip(s, content, c, ctx, emit) {
         const eq = s.entities.pc.sheet.equipment || {};

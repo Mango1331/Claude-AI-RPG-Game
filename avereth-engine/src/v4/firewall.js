@@ -36,7 +36,6 @@ const PC_REF = /^(?:pc|alaric(?: red)?)$/i;
 const ENGINE_FACT = /\b(?:regist\w*|guild rank|member\w*|novice|proven|veteran|power rank|coin|copper|silver|paid|reward|payout|xp|level)\b/i;
 const GUILD_QUEST_STATE = /\b(?:status|state|complete\w*|done|closed|cleared|turn(?:ed|ing)?\s+in|paid|payment|payout|reward)\b/i;
 const GUILD_COMPLETION_MARK = /\b(?:cleared|completed?|contract\s+complete|quest\s+complete|closed|reward\s+paid|paid\s+out|turned?\s+in|settled)\b/i;
-const GUILD_DETAIL_MECHANIC = /\b(?:fees?|costs?|prices?|pay(?:s|ing|ment)?|paid|payouts?|rewards?|copper|silver|gold|guild\s+rank|promotion)\b/i;
 
 // The Guild's mechanics are the engine's (live run 28.09.2026: the clerk's "F-Rank to start, for everyone" became the fact
 // "new Guild members start at F-Rank" and came back in the next engine block): what registration costs or requires,
@@ -70,6 +69,31 @@ function amountsCp(t) {
         out.push(n * COIN_CP[m[2]]);
     }
     return out;
+}
+
+const REWARD_WORD = /\b(?:payouts?|rewards?|bount(?:y|ies)|pay(?:s|ing|ment)?|paid)\b/;
+const NEGATION = /\b(?:not|no|never|won't|wont|don't|doesn't|without|unpaid|forfeit\w*)\b/;
+const REWARD_REVISION = /\b(?:chang\w*|rais\w*|lower\w*|increas\w*|decreas\w*|overrid\w*|replac\w*|doubl\w*|halv\w*|waiv\w*|prepa\w*|advance[sd]?|already paid)\b/;
+const INSTITUTION_RULE = /\b(?:guild rank|promot\w*|xp|experience points|registration fee)\b/;
+
+/**
+ * Does a Guild contract's quest.detail change what the engine owns (live 30.09.2026)? A detail keeps story memory
+ * (contacts, routes, schedules, witnesses, a road toll). The payout is the Guild's, paid at turn-in: within a clause
+ * about payment, an amount other than the posted payout (in any coin and wording: "payout eight silver" is the posted
+ * 80 cp), a revision of it or a condition that withholds it is the engine's; so are Guild rank, promotion, XP and the
+ * registration fee.
+ */
+function detailRevisesMechanics(detail, q) {
+    const lower = String(detail).toLowerCase();
+    if (INSTITUTION_RULE.test(lower)) return true;
+    const posted = Number(q.payout_cp);
+    for (const clause of lower.split(/[.;]/)) {
+        if (!REWARD_WORD.test(clause) || CLIENT_BONUS.test(clause)) continue;
+        if (REWARD_REVISION.test(clause) || NEGATION.test(clause)) return true;
+        const amounts = amountsCp(clause);
+        if (amounts.length && !amounts.every((a) => a === posted) && amounts.reduce((sum, a) => sum + a, 0) !== posted) return true;
+    }
+    return false;
 }
 
 /** Is a fact the Guild's mechanics (engine-owned)? Returns the kind ('money', 'rank', 'rights', 'promotion') or null. */
@@ -215,19 +239,7 @@ export function firewall(deltas, ctx = {}) {
             }
             case 'quest.detail': {
                 const q = questOf(d.quest);
-                const detail = `${text(d.note)} ${text(d.schedule)}`;
-                // Merely restating the correct posted reward next to useful route/contact
-                // memory cannot make the entire story detail invalid.
-                const posted = Number(q?.payout_cp);
-                const exactPosted = Number.isInteger(posted) && new RegExp(`\\b${posted}\\s*(?:cp|copper)\\b`, 'i').test(detail);
-                const changedReward = [...detail.matchAll(/\b(?:guild\s+)?(?:payout|reward)\b[^.;]{0,60}?\b(\d+)\s*(?:cp|copper)\b/gi)]
-                    .some((match) => Number(match[1]) !== posted);
-                const institutionalRule = /\b(?:guild\s+rank|promotion|xp|experience\s+points|registration\s+fee)\b/i.test(detail);
-                const revisesCanon = /\b(?:change|raise|lower|increase|decrease|override|replace|advance|prepay|already\s+paid|new\s+(?:guild\s+)?fee)\b/i.test(detail)
-                    && /\b(?:payout|reward|guild|fee|rank|xp)\b/i.test(detail);
-                const mechanicChange = changedReward || institutionalRule || revisesCanon
-                    || (/\b(?:payout|reward)\b/i.test(detail) && !exactPosted);
-                if (q && mechanicChange) {
+                if (q && detailRevisesMechanics(`${text(d.note)} ${text(d.schedule)}`, q)) {
                     no(d, 'guild_quest_detail', 'a Guild contract detail may store story progress, contacts, routes, witnesses, verification or schedules, but may not invent or alter payout/payment, Guild rank or promotion mechanics');
                     continue;
                 }
@@ -240,7 +252,7 @@ export function firewall(deltas, ctx = {}) {
             case 'quest.close': {
                 const q = questOf(d.quest);
                 if (q && d.status === 'completed') {
-                    no(d, 'guild_completion', 'a Guild contract is completed only when Alaric explicitly turns it in at a Guild hall; payout, XP and contract credit are engine-owned', q.status === 'active' && !booked.turnIns.includes(q.id) ? `"${q.title}" is still active until Alaric turns it in.` : null);
+                    no(d, 'guild_completion', 'a Guild contract is completed only when Alaric explicitly turns it in at a Guild hall; payout, XP and contract credit are engine-owned', q.status === 'active' && !booked.turnIns.includes(q.id) ? `"${q.title}" is still active until Alaric turns it in at a Guild hall.` : null);
                     continue;
                 }
                 break;

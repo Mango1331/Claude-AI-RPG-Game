@@ -93,7 +93,7 @@ test('a Guild contract closes as completed only at the desk; failure and private
     const done = { seq: 1, type: 'quest.close', quest: 'quest.wolf_problem', status: 'completed', by: 'npc.reeve_aldous' };
     const r = verdict([done], base());
     assert.deepEqual(r.rules, ['guild_completion']);
-    assert.match(r.corrections[0], /still open/);
+    assert.match(r.corrections[0], /is still active until Alaric turns it in at a Guild hall/);
     assert.deepEqual(verdict([{ ...done, status: 'failed' }], base()).accepted, ['quest.close']);
     assert.deepEqual(verdict([{ ...done, quest: 'quest.mend_fence' }], base()).accepted, ['quest.close'], 'private work is closed by its giver');
     const byTitle = { ...done, quest: { new: 'Herb Run — Marshmint' } };
@@ -157,7 +157,7 @@ test('Alaric arrives only after his own go, a forced move or an activity that mo
     const arrive = { seq: 1, type: 'arrive', at: { new: { name: 'Blue Ox Tavern', kind: 'site', parent: 'loc.redmarch' } } };
     const r = verdict([arrive], base());
     assert.deepEqual(r.rules, ['no_go']);
-    assert.match(r.corrections[0], /did not travel/);
+    assert.match(r.corrections[0], /did not voluntarily travel/);
     assert.deepEqual(verdict([arrive], base({ auth: { go: true } })).accepted, ['arrive']);
     assert.deepEqual(verdict([arrive], base({ auth: { roam: true } })).accepted, ['arrive'], 'P0/S2 v11_07: tracking a trail leads him to the den');
     assert.deepEqual(verdict([{ ...arrive, forced_by: 'a watch patrol carries him to the station' }], base()).accepted, ['arrive']);
@@ -187,9 +187,12 @@ test('P0/S2 offline: the firewall refuses 6 of the 7 forbidden deltas of variant
     assert.equal(s.critical_after, s.critical_before);
     assert.equal(s.refused.filter((x) => x.gold === 'critical').length, 0);
     const neither = s.refused.filter((x) => x.gold === 'neither');
-    assert.deepEqual(neither.filter((x) => x.rule !== 'guild_canon').map((x) => `${x.id}:${x.rule}`), ['v8_04:engine_booked', 'v10_03:engine_owned_fact', 'v10_03:engine_owned_fact']);
+    // since 4.0.x (integration 30.09.): an object the engine books (the Guild's register entry, a contract half) is not
+    // created again by the story wherever it lies, and a fact that closes or settles a known Guild contract is engine-owned
+    assert.deepEqual(neither.filter((x) => x.rule !== 'guild_canon').map((x) => `${x.id}:${x.rule}`), ['v8_04:engine_booked', 'v10_03:engine_owned_fact', 'v10_03:engine_owned_fact', 'v10_05:engine_booked', 'v11_03:engine_booked', 'v11_11:engine_owned_fact']);
     // since the live run of 28.09.: the Guild's mechanics as facts (fees, starting rank, contract rights, payouts), among
     // them wrong ones (v9_02 "one silver", v12_02 the "desk clerk waiver", v11_11 "nothing owed by the Guild")
-    assert.deepEqual(neither.filter((x) => x.rule === 'guild_canon').map((x) => x.id), ['v8_02', 'v9_02', 'v9_02', 'v9_03', 'v10_02', 'v10_03', 'v10_04', 'v10_04', 'v11_02', 'v11_03', 'v11_03', 'v11_11', 'v12_02', 'v12_02']);
+    // since 4.0.4: the price of a Guild item (the plate's replacement cost, v8_03, v9_03) is Guild money too
+    assert.deepEqual(neither.filter((x) => x.rule === 'guild_canon').map((x) => x.id), ['v8_02', 'v8_03', 'v9_02', 'v9_02', 'v9_03', 'v9_03', 'v10_02', 'v10_03', 'v10_04', 'v10_04', 'v11_02', 'v11_03', 'v11_03', 'v12_02', 'v12_02']);
     assert.ok(neither.filter((x) => x.rule === 'guild_canon').every((x) => x.delta.type === 'fact'));
 });

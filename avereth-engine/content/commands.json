@@ -1,449 +1,450 @@
 {
- "version": "cmd-0.5",
- "note": "Runtime V4 command vocabulary (docs/RUNTIME_V4_PLAN.md §4.1, §4.2). One source for the interpreter prompt, its schema and the validator (src/v4/interpret.js). cmd-0.2 against the P0 draft cmd-0.1-draft (docs/P0_BERICHT.md §5): guild.register no longer teaches the phrase \"I'm here to register\"; quest.turn_in no longer teaches a purpose clause as a turn-in; reading the Guild board is board.read, not 'looking around'; \"register it\" after taking a slip is part of quest.accept. The positive/negative lists document intent for readers and are never put into a prompt: several of them are cases of the evaluation corpus (tests/eval/commands.jsonl). cmd-0.3: GO explicitly includes moving toward a perceived sound, trail or direction (live 28.09. afternoon). cmd-0.4: add journey.continue for clear consent to an already-established escort journey; scene handles are targetable by the deterministic combat parser. cmd-0.5: JOURNEY READY may come from any persisted travel/departure context with a present participant, not only an ESCORT objective.",
- "rules": [
-  "Only what Alaric himself does or commits to in this message. A deed he narrates in the past tense in this message counts.",
-  "No command for a question, a thought or wish, a hypothetical (\"if I …, would …\"), a plan for later (\"tomorrow I'll …\"), a memory of an earlier turn, a negation (\"I don't pay\"), or what other people do or say, even when the player writes it.",
-  "Commitments (accept, pay, buy, sell, give, register, turn in, abandon) only when Alaric does or clearly agrees to them now.",
-  "A purpose or a need is not an act: \"I'm here to sign on\" said at a harbour gate, \"I'll need a stamp so I can collect my pay at the office\" give a reason, not a command. Said where the act can happen (at the desk that does it), the same words ask for it now.",
-  "A condition becomes an argument: \"if it's under 5 copper\" → max_cp; \"whatever it costs\" → any_price.",
-  "Keep the order of the message: seq 1, 2, 3 … One command per action.",
-  "Refer to known things by their id from the CATALOG; for something the catalog does not have use {\"new\": \"<short name>\"}. If several catalog entries fit and the message does not say which, use null where the argument allows it.",
-  "Coin in copper: 1 silver = 10 copper, 1 gold = 100 copper. When an OFFER in the catalog covers what he pays for or takes, use offer.accept.",
-  "Talking, asking, looking around, walking up to someone in the same room, readying the weapon he already wields: no command. Reading or looking over the Guild's contract board (walking over to it to look at the contracts included) is board.read.",
-  "When the CATALOG shows JOURNEY READY, clear present-tense agreement to depart/continue now (for example \"I'm ready when you are\" or \"let's go\") is journey.continue. Without JOURNEY READY those words are only dialogue.",
-  "Attacks, sneaking and # commands are handled elsewhere: no command.",
-  "quote: the exact words of the message the command rests on."
- ],
- "arg_types": {
-  "place": "a place id from HERE or PLACES, or {\"new\": \"<name>\"}",
-  "person": "a person id from PRESENT, or {\"new\": \"<who>\"}",
-  "object": "an object id from OBJECTS, or {\"new\": \"<what>\"}",
-  "quest": "a quest or listing id from QUESTS or BOARD, or {\"new\": \"<title>\"}",
-  "offer": "an offer id from OFFERS, or {\"new\": \"<what>\"}"
- },
- "commands": [
-  {
-   "type": "go",
-   "summary": "Alaric sets off for another place or toward a perceptible lead: walks, travels, heads back, goes inside or down, walks toward a sound/tracks/direction, or looks for a kind of place (\"look for an inn\" → {new:\"an inn\"}; \"walk toward the sound\" → {new:\"toward the sound\"}).",
-   "args": {
-    "to": {
-     "ref": "place"
+  "version": "cmd-0.6",
+  "note": "Runtime V4 command vocabulary (docs/RUNTIME_V4_PLAN.md §4.1, §4.2). One source for the interpreter prompt, its schema and the validator (src/v4/interpret.js). cmd-0.2 against the P0 draft cmd-0.1-draft (docs/P0_BERICHT.md §5): guild.register no longer teaches the phrase \"I'm here to register\"; quest.turn_in no longer teaches a purpose clause as a turn-in; reading the Guild board is board.read, not 'looking around'; \"register it\" after taking a slip is part of quest.accept. The positive/negative lists document intent for readers and are never put into a prompt: several of them are cases of the evaluation corpus (tests/eval/commands.jsonl). cmd-0.3: GO explicitly includes moving toward a perceived sound, trail or direction (live 28.09. afternoon). cmd-0.4: add journey.continue for clear consent to an already-established escort journey; scene handles are targetable by the deterministic combat parser. cmd-0.5: JOURNEY READY may come from any persisted travel/departure context with a present participant, not only an ESCORT objective. cmd-0.6: explicit present-tense continuation after a persisted journey, current return travel despite 'came from'; witness-signature requests are never Guild turn-ins.",
+  "rules": [
+    "Only what Alaric himself does or commits to in this message. A deed he narrates in the past tense in this message counts.",
+    "No command for a question, a thought or wish, a hypothetical (\"if I …, would …\"), a plan for later (\"tomorrow I'll …\"), a memory of an earlier turn, a negation (\"I don't pay\"), or what other people do or say, even when the player writes it.",
+    "Commitments (accept, pay, buy, sell, give, register, turn in, abandon) only when Alaric does or clearly agrees to them now.",
+    "A purpose or a need is not an act: \"I'm here to sign on\" said at a harbour gate, \"I'll need a stamp so I can collect my pay at the office\" give a reason, not a command. Said where the act can happen (at the desk that does it), the same words ask for it now.",
+    "A condition becomes an argument: \"if it's under 5 copper\" → max_cp; \"whatever it costs\" → any_price.",
+    "Keep the order of the message: seq 1, 2, 3 … One command per action.",
+    "Refer to known things by their id from the CATALOG; for something the catalog does not have use {\"new\": \"<short name>\"}. If several catalog entries fit and the message does not say which, use null where the argument allows it.",
+    "Coin in copper: 1 silver = 10 copper, 1 gold = 100 copper. When an OFFER in the catalog covers what he pays for or takes, use offer.accept.",
+    "Talking, asking, looking around, walking up to someone in the same room, readying the weapon he already wields: no command. Reading or looking over the Guild's contract board (walking over to it to look at the contracts included) is board.read.",
+    "When the CATALOG shows JOURNEY READY, clear present-tense agreement to depart/continue NOW ('we continue', 'I nod and we continue', 'wait, then we continue', 'let's go') is journey.continue, even with a preceding WAIT. Without JOURNEY READY, those words are dialogue only. A current explicit 'I walk back the way I came from' is GO, not a recalled past journey.",
+    "Asking a local client or witness to SIGN/STAMP the existing contract slip as evidence is ordinary dialogue, not quest.turn_in. Only a present request to submit/report the completed contract to the Guild qualifies as quest.turn_in.",
+    "Attacks, sneaking and # commands are handled elsewhere: no command.",
+    "quote: the exact words of the message the command rests on."
+  ],
+  "arg_types": {
+    "place": "a place id from HERE or PLACES, or {\"new\": \"<name>\"}",
+    "person": "a person id from PRESENT, or {\"new\": \"<who>\"}",
+    "object": "an object id from OBJECTS, or {\"new\": \"<what>\"}",
+    "quest": "a quest or listing id from QUESTS or BOARD, or {\"new\": \"<title>\"}",
+    "offer": "an offer id from OFFERS, or {\"new\": \"<what>\"}"
+  },
+  "commands": [
+    {
+      "type": "go",
+      "summary": "Alaric sets off for another place or toward a perceptible lead: walks, travels, heads back, goes inside or down, walks toward a sound/tracks/direction, or looks for a kind of place (\"look for an inn\" → {new:\"an inn\"}; \"walk toward the sound\" → {new:\"toward the sound\"}).",
+      "args": {
+        "to": {
+          "ref": "place"
+        }
+      },
+      "positive": [
+        "*i head back to the guild*",
+        "I walked down into the cellar."
+      ],
+      "negative": [
+        "Where is the inn?",
+        "Tomorrow I'll ride to the capital."
+      ]
+    },
+    {
+      "type": "activity",
+      "summary": "Alaric spends time on something: rest, sleep, wait, work, train, study, craft, search, gather, errand. minutes when he names a duration; until when he names an end (noon, evening, end_of_day, night, dawn, morning; done = until the task is finished).",
+      "args": {
+        "kind": {
+          "enum": [
+            "rest",
+            "sleep",
+            "wait",
+            "work",
+            "train",
+            "study",
+            "craft",
+            "search",
+            "gather",
+            "errand"
+          ]
+        },
+        "what": {
+          "type": "string",
+          "nullable": true
+        },
+        "minutes": {
+          "type": "integer",
+          "min": 1,
+          "nullable": true
+        },
+        "until": {
+          "enum": [
+            "done",
+            "noon",
+            "evening",
+            "end_of_day",
+            "night",
+            "dawn",
+            "morning"
+          ],
+          "nullable": true
+        }
+      },
+      "positive": [
+        "*i gather herbs until the basket is full*",
+        "*i rest for an hour*"
+      ],
+      "negative": [
+        "I'd love to sleep for a week.",
+        "How long until dawn?"
+      ]
+    },
+    {
+      "type": "take",
+      "summary": "Alaric picks something up or takes it along: loot, a pile, his arrows, an item left out for him. Not something a person still holds: that person has to give it.",
+      "args": {
+        "object": {
+          "ref": "object"
+        },
+        "qty": {
+          "type": "integer",
+          "min": 1,
+          "nullable": true
+        }
+      },
+      "positive": [
+        "*i pocket the rat ears*",
+        "*i grab my arrows*"
+      ],
+      "negative": [
+        "Is that enough for a basket?"
+      ]
+    },
+    {
+      "type": "drop",
+      "summary": "Alaric puts down or leaves behind something he holds, at the place where he is.",
+      "args": {
+        "object": {
+          "ref": "object"
+        },
+        "qty": {
+          "type": "integer",
+          "min": 1,
+          "nullable": true
+        }
+      },
+      "positive": [
+        "*i leave the heads on the floor*"
+      ],
+      "negative": [
+        "*i keep the heads*"
+      ]
+    },
+    {
+      "type": "give",
+      "summary": "Alaric hands something he holds (not coin) to a present person.",
+      "args": {
+        "object": {
+          "ref": "object"
+        },
+        "qty": {
+          "type": "integer",
+          "min": 1,
+          "nullable": true
+        },
+        "to": {
+          "ref": "person"
+        }
+      },
+      "positive": [
+        "*i hand the slip to the reeve*"
+      ],
+      "negative": [
+        "Should I give you the heads now?"
+      ]
+    },
+    {
+      "type": "use",
+      "summary": "Alaric consumes something he holds: drinks a potion, eats a ration, burns oil.",
+      "args": {
+        "object": {
+          "ref": "object"
+        },
+        "qty": {
+          "type": "integer",
+          "min": 1,
+          "nullable": true
+        }
+      },
+      "positive": [
+        "*i drink the healing potion*"
+      ],
+      "negative": [
+        "I could drink the potion if it gets bad."
+      ]
+    },
+    {
+      "type": "pay",
+      "summary": "Alaric hands over coin to a present person. amount_cp when the message or an open offer names it, else null; for: what it pays for, or null. Use offer.accept when he accepts an open offer.",
+      "args": {
+        "to": {
+          "ref": "person"
+        },
+        "amount_cp": {
+          "type": "integer",
+          "min": 0,
+          "nullable": true
+        },
+        "for": {
+          "type": "string",
+          "nullable": true
+        }
+      },
+      "positive": [
+        "*i toss him a silver*"
+      ],
+      "negative": [
+        "I paid you yesterday.",
+        "I'm not paying that."
+      ]
+    },
+    {
+      "type": "buy",
+      "summary": "Alaric wants to buy goods or a service that no OFFER in the catalog lists. max_cp when he sets a limit, any_price true when he accepts any price.",
+      "args": {
+        "what": {
+          "type": "string"
+        },
+        "from": {
+          "ref": "person",
+          "nullable": true
+        },
+        "qty": {
+          "type": "integer",
+          "min": 1,
+          "nullable": true
+        },
+        "max_cp": {
+          "type": "integer",
+          "min": 0,
+          "nullable": true
+        },
+        "any_price": {
+          "type": "boolean"
+        }
+      },
+      "positive": [
+        "I'd like a room for the night.",
+        "A bath, if it's no more than 3 copper."
+      ],
+      "negative": [
+        "What would a sword cost here?"
+      ]
+    },
+    {
+      "type": "sell",
+      "summary": "Alaric offers something he holds for sale; min_cp when he names a lowest price.",
+      "args": {
+        "object": {
+          "ref": "object"
+        },
+        "qty": {
+          "type": "integer",
+          "min": 1,
+          "nullable": true
+        },
+        "to": {
+          "ref": "person",
+          "nullable": true
+        },
+        "min_cp": {
+          "type": "integer",
+          "min": 0,
+          "nullable": true
+        }
+      },
+      "positive": [
+        "I'll sell you the pelts, not under 30 copper."
+      ],
+      "negative": [
+        "How much would you give me for pelts?"
+      ]
+    },
+    {
+      "type": "offer.accept",
+      "summary": "Alaric accepts an open offer from the catalog (\"Deal.\", \"I'll take the room\", \"all three\"). lines: the line ids he takes; null when he takes the whole offer.",
+      "args": {
+        "offer": {
+          "ref": "offer"
+        },
+        "lines": {
+          "array": "string",
+          "nullable": true
+        }
+      },
+      "positive": [
+        "All three, please.",
+        "Fine, I'll pay the fee."
+      ],
+      "negative": [
+        "Would you do it for less?"
+      ]
+    },
+    {
+      "type": "offer.decline",
+      "summary": "Alaric turns down an open offer.",
+      "args": {
+        "offer": {
+          "ref": "offer"
+        }
+      },
+      "positive": [
+        "Too expensive, I'll pass."
+      ],
+      "negative": [
+        "Let me think about it."
+      ]
+    },
+    {
+      "type": "quest.accept",
+      "summary": "Alaric takes on a Guild listing or a job someone offers him (take the slip, sign up, \"I'll do it\", \"Deal\"; taking a slip and having it registered or logged at the desk is one quest.accept). quest: the listing or offered quest; null when several fit and the message does not say which.",
+      "args": {
+        "quest": {
+          "ref": "quest",
+          "nullable": true
+        }
+      },
+      "positive": [
+        "*i take the Herb Run slip*",
+        "Deal, I'll clear your well."
+      ],
+      "negative": [
+        "Could I take the escort job too?",
+        "Tomorrow I'll take the fence job."
+      ]
+    },
+    {
+      "type": "quest.turn_in",
+      "summary": "Alaric hands in a Guild contract (turn in, hand in, report back), at a Guild hall, or at the one he sets off for earlier in the same message. quest: the contract; null when several active contracts fit and the message does not say which. Taking a slip and having the clerk register or log it is quest.accept, not a turn-in.",
+      "args": {
+        "quest": {
+          "ref": "quest",
+          "nullable": true
+        }
+      },
+      "positive": [
+        "*i turn the quest in at the desk*"
+      ],
+      "negative": [
+        "Can I turn this in already?",
+        "Later I'll hand it in."
+      ]
+    },
+    {
+      "type": "quest.abandon",
+      "summary": "Alaric gives up a contract or job. quest: null when unclear which.",
+      "args": {
+        "quest": {
+          "ref": "quest",
+          "nullable": true
+        }
+      },
+      "positive": [
+        "I quit the escort contract."
+      ],
+      "negative": [
+        "Should I drop the escort job?"
+      ]
+    },
+    {
+      "type": "guild.register",
+      "summary": "Alaric asks the Guild to register him or agrees to register, while HERE is a Guild hall (\"Register me\", \"I'd like to join\"; at the desk also \"I'm here to register\"). Paying a registration fee that OFFERS already lists is offer.accept, not a second guild.register.",
+      "args": {},
+      "positive": [
+        "Register me, please."
+      ],
+      "negative": [
+        "What do I need to register?"
+      ]
+    },
+    {
+      "type": "guild.promote",
+      "summary": "Alaric asks for a promotion or the rank examination.",
+      "args": {},
+      "positive": [
+        "I'd like the promotion exam to Proven."
+      ],
+      "negative": [
+        "How many contracts do I need for Proven?"
+      ]
+    },
+    {
+      "type": "board.read",
+      "summary": "Alaric reads or looks over the Guild's board of contracts, also when he walks over to it to look at the contracts. rank when he names one.",
+      "args": {
+        "rank": {
+          "enum": [
+            "Novice",
+            "Proven",
+            "Veteran",
+            "Elite",
+            "Master",
+            "Grandmaster",
+            "Legend"
+          ],
+          "nullable": true
+        }
+      },
+      "positive": [
+        "*i walk over to the Novice board and read the slips*"
+      ],
+      "negative": [
+        "What's on the board today?"
+      ]
+    },
+    {
+      "type": "journey.continue",
+      "summary": "Alaric clearly agrees to depart or continue now with the already-established journey/departure named by JOURNEY READY in the CATALOG. Never use without JOURNEY READY.",
+      "args": {},
+      "positive": [
+        "I'm ready when you are.",
+        "Let's go."
+      ],
+      "negative": [
+        "I'm ready.",
+        "Maybe we can leave tomorrow."
+      ]
+    },
+    {
+      "type": "equip",
+      "summary": "Alaric puts on or switches to a different item as gear (armor on, switches weapons). Not drawing or readying the weapon he already wields.",
+      "args": {
+        "object": {
+          "ref": "object"
+        },
+        "slot": {
+          "enum": [
+            "weapon",
+            "offhand",
+            "armor",
+            "clothing",
+            "quiver"
+          ],
+          "nullable": true
+        }
+      },
+      "positive": [
+        "*i put my armor back on*"
+      ],
+      "negative": [
+        "*i draw my sword*"
+      ]
+    },
+    {
+      "type": "unequip",
+      "summary": "Alaric takes off gear (armor off, a weapon stowed in the pack). Not sheathing or slinging the weapon he keeps.",
+      "args": {
+        "object": {
+          "ref": "object"
+        }
+      },
+      "positive": [
+        "*i take off my armor*"
+      ],
+      "negative": [
+        "*i sling my bow over my shoulder*"
+      ]
     }
-   },
-   "positive": [
-    "*i head back to the guild*",
-    "I walked down into the cellar."
-   ],
-   "negative": [
-    "Where is the inn?",
-    "Tomorrow I'll ride to the capital."
-   ]
-  },
-  {
-   "type": "activity",
-   "summary": "Alaric spends time on something: rest, sleep, wait, work, train, study, craft, search, gather, errand. minutes when he names a duration; until when he names an end (noon, evening, end_of_day, night, dawn, morning; done = until the task is finished).",
-   "args": {
-    "kind": {
-     "enum": [
-      "rest",
-      "sleep",
-      "wait",
-      "work",
-      "train",
-      "study",
-      "craft",
-      "search",
-      "gather",
-      "errand"
-     ]
-    },
-    "what": {
-     "type": "string",
-     "nullable": true
-    },
-    "minutes": {
-     "type": "integer",
-     "min": 1,
-     "nullable": true
-    },
-    "until": {
-     "enum": [
-      "done",
-      "noon",
-      "evening",
-      "end_of_day",
-      "night",
-      "dawn",
-      "morning"
-     ],
-     "nullable": true
-    }
-   },
-   "positive": [
-    "*i gather herbs until the basket is full*",
-    "*i rest for an hour*"
-   ],
-   "negative": [
-    "I'd love to sleep for a week.",
-    "How long until dawn?"
-   ]
-  },
-  {
-   "type": "take",
-   "summary": "Alaric picks something up or takes it along: loot, a pile, his arrows, an item left out for him. Not something a person still holds: that person has to give it.",
-   "args": {
-    "object": {
-     "ref": "object"
-    },
-    "qty": {
-     "type": "integer",
-     "min": 1,
-     "nullable": true
-    }
-   },
-   "positive": [
-    "*i pocket the rat ears*",
-    "*i grab my arrows*"
-   ],
-   "negative": [
-    "Is that enough for a basket?"
-   ]
-  },
-  {
-   "type": "drop",
-   "summary": "Alaric puts down or leaves behind something he holds, at the place where he is.",
-   "args": {
-    "object": {
-     "ref": "object"
-    },
-    "qty": {
-     "type": "integer",
-     "min": 1,
-     "nullable": true
-    }
-   },
-   "positive": [
-    "*i leave the heads on the floor*"
-   ],
-   "negative": [
-    "*i keep the heads*"
-   ]
-  },
-  {
-   "type": "give",
-   "summary": "Alaric hands something he holds (not coin) to a present person.",
-   "args": {
-    "object": {
-     "ref": "object"
-    },
-    "qty": {
-     "type": "integer",
-     "min": 1,
-     "nullable": true
-    },
-    "to": {
-     "ref": "person"
-    }
-   },
-   "positive": [
-    "*i hand the slip to the reeve*"
-   ],
-   "negative": [
-    "Should I give you the heads now?"
-   ]
-  },
-  {
-   "type": "use",
-   "summary": "Alaric consumes something he holds: drinks a potion, eats a ration, burns oil.",
-   "args": {
-    "object": {
-     "ref": "object"
-    },
-    "qty": {
-     "type": "integer",
-     "min": 1,
-     "nullable": true
-    }
-   },
-   "positive": [
-    "*i drink the healing potion*"
-   ],
-   "negative": [
-    "I could drink the potion if it gets bad."
-   ]
-  },
-  {
-   "type": "pay",
-   "summary": "Alaric hands over coin to a present person. amount_cp when the message or an open offer names it, else null; for: what it pays for, or null. Use offer.accept when he accepts an open offer.",
-   "args": {
-    "to": {
-     "ref": "person"
-    },
-    "amount_cp": {
-     "type": "integer",
-     "min": 0,
-     "nullable": true
-    },
-    "for": {
-     "type": "string",
-     "nullable": true
-    }
-   },
-   "positive": [
-    "*i toss him a silver*"
-   ],
-   "negative": [
-    "I paid you yesterday.",
-    "I'm not paying that."
-   ]
-  },
-  {
-   "type": "buy",
-   "summary": "Alaric wants to buy goods or a service that no OFFER in the catalog lists. max_cp when he sets a limit, any_price true when he accepts any price.",
-   "args": {
-    "what": {
-     "type": "string"
-    },
-    "from": {
-     "ref": "person",
-     "nullable": true
-    },
-    "qty": {
-     "type": "integer",
-     "min": 1,
-     "nullable": true
-    },
-    "max_cp": {
-     "type": "integer",
-     "min": 0,
-     "nullable": true
-    },
-    "any_price": {
-     "type": "boolean"
-    }
-   },
-   "positive": [
-    "I'd like a room for the night.",
-    "A bath, if it's no more than 3 copper."
-   ],
-   "negative": [
-    "What would a sword cost here?"
-   ]
-  },
-  {
-   "type": "sell",
-   "summary": "Alaric offers something he holds for sale; min_cp when he names a lowest price.",
-   "args": {
-    "object": {
-     "ref": "object"
-    },
-    "qty": {
-     "type": "integer",
-     "min": 1,
-     "nullable": true
-    },
-    "to": {
-     "ref": "person",
-     "nullable": true
-    },
-    "min_cp": {
-     "type": "integer",
-     "min": 0,
-     "nullable": true
-    }
-   },
-   "positive": [
-    "I'll sell you the pelts, not under 30 copper."
-   ],
-   "negative": [
-    "How much would you give me for pelts?"
-   ]
-  },
-  {
-   "type": "offer.accept",
-   "summary": "Alaric accepts an open offer from the catalog (\"Deal.\", \"I'll take the room\", \"all three\"). lines: the line ids he takes; null when he takes the whole offer.",
-   "args": {
-    "offer": {
-     "ref": "offer"
-    },
-    "lines": {
-     "array": "string",
-     "nullable": true
-    }
-   },
-   "positive": [
-    "All three, please.",
-    "Fine, I'll pay the fee."
-   ],
-   "negative": [
-    "Would you do it for less?"
-   ]
-  },
-  {
-   "type": "offer.decline",
-   "summary": "Alaric turns down an open offer.",
-   "args": {
-    "offer": {
-     "ref": "offer"
-    }
-   },
-   "positive": [
-    "Too expensive, I'll pass."
-   ],
-   "negative": [
-    "Let me think about it."
-   ]
-  },
-  {
-   "type": "quest.accept",
-   "summary": "Alaric takes on a Guild listing or a job someone offers him (take the slip, sign up, \"I'll do it\", \"Deal\"; taking a slip and having it registered or logged at the desk is one quest.accept). quest: the listing or offered quest; null when several fit and the message does not say which.",
-   "args": {
-    "quest": {
-     "ref": "quest",
-     "nullable": true
-    }
-   },
-   "positive": [
-    "*i take the Herb Run slip*",
-    "Deal, I'll clear your well."
-   ],
-   "negative": [
-    "Could I take the escort job too?",
-    "Tomorrow I'll take the fence job."
-   ]
-  },
-  {
-   "type": "quest.turn_in",
-   "summary": "Alaric hands in a Guild contract (turn in, hand in, report back), at a Guild hall, or at the one he sets off for earlier in the same message. quest: the contract; null when several active contracts fit and the message does not say which. Taking a slip and having the clerk register or log it is quest.accept, not a turn-in.",
-   "args": {
-    "quest": {
-     "ref": "quest",
-     "nullable": true
-    }
-   },
-   "positive": [
-    "*i turn the quest in at the desk*"
-   ],
-   "negative": [
-    "Can I turn this in already?",
-    "Later I'll hand it in."
-   ]
-  },
-  {
-   "type": "quest.abandon",
-   "summary": "Alaric gives up a contract or job. quest: null when unclear which.",
-   "args": {
-    "quest": {
-     "ref": "quest",
-     "nullable": true
-    }
-   },
-   "positive": [
-    "I quit the escort contract."
-   ],
-   "negative": [
-    "Should I drop the escort job?"
-   ]
-  },
-  {
-   "type": "guild.register",
-   "summary": "Alaric asks the Guild to register him or agrees to register, while HERE is a Guild hall (\"Register me\", \"I'd like to join\"; at the desk also \"I'm here to register\"). Paying a registration fee that OFFERS already lists is offer.accept, not a second guild.register.",
-   "args": {},
-   "positive": [
-    "Register me, please."
-   ],
-   "negative": [
-    "What do I need to register?"
-   ]
-  },
-  {
-   "type": "guild.promote",
-   "summary": "Alaric asks for a promotion or the rank examination.",
-   "args": {},
-   "positive": [
-    "I'd like the promotion exam to Proven."
-   ],
-   "negative": [
-    "How many contracts do I need for Proven?"
-   ]
-  },
-  {
-   "type": "board.read",
-   "summary": "Alaric reads or looks over the Guild's board of contracts, also when he walks over to it to look at the contracts. rank when he names one.",
-   "args": {
-    "rank": {
-     "enum": [
-      "Novice",
-      "Proven",
-      "Veteran",
-      "Elite",
-      "Master",
-      "Grandmaster",
-      "Legend"
-     ],
-     "nullable": true
-    }
-   },
-   "positive": [
-    "*i walk over to the Novice board and read the slips*"
-   ],
-   "negative": [
-    "What's on the board today?"
-   ]
-  },
-  {
-   "type": "journey.continue",
-   "summary": "Alaric clearly agrees to depart or continue now with the already-established journey/departure named by JOURNEY READY in the CATALOG. Never use without JOURNEY READY.",
-   "args": {},
-   "positive": [
-    "I'm ready when you are.",
-    "Let's go."
-   ],
-   "negative": [
-    "I'm ready.",
-    "Maybe we can leave tomorrow."
-   ]
-  },
-  {
-   "type": "equip",
-   "summary": "Alaric puts on or switches to a different item as gear (armor on, switches weapons). Not drawing or readying the weapon he already wields.",
-   "args": {
-    "object": {
-     "ref": "object"
-    },
-    "slot": {
-     "enum": [
-      "weapon",
-      "offhand",
-      "armor",
-      "clothing",
-      "quiver"
-     ],
-     "nullable": true
-    }
-   },
-   "positive": [
-    "*i put my armor back on*"
-   ],
-   "negative": [
-    "*i draw my sword*"
-   ]
-  },
-  {
-   "type": "unequip",
-   "summary": "Alaric takes off gear (armor off, a weapon stowed in the pack). Not sheathing or slinging the weapon he keeps.",
-   "args": {
-    "object": {
-     "ref": "object"
-    }
-   },
-   "positive": [
-    "*i take off my armor*"
-   ],
-   "negative": [
-    "*i sling my bow over my shoulder*"
-   ]
-  }
- ]
+  ]
 }

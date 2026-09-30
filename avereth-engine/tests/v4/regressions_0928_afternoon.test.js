@@ -17,6 +17,7 @@ import { boardRequest, checkProof, completeContract, parseBoard } from '../../sr
 import { worldPanel } from '../../src/display.js';
 import { playerTurn } from '../../src/engine.js';
 import { playerTurnV4 } from '../../src/v4/turn.js';
+import { parseExtraction } from '../../src/v4/extract.js';
 
 const contentPack = await loadContent();
 
@@ -147,7 +148,7 @@ test('active Guild quest catalog is continuity memory; V4 contract keeps quest f
     assert.match(ctx, /ACTIVE QUEST MEMORY/);
     assert.match(ctx, /verification examples: "delivery confirmed by Old Hew"/);
     assert.match(ctx, /not as a word-for-word checklist/);
-    assert.match(ctx, /QUEST FRICTION:/);
+    assert.match(ctx, /QUEST PLAY:/); // the QUEST FRICTION line of 4.0.5 became QUEST PLAY in 4.0.6
     assert.match(ctx, /paid only by the Guild on explicit accepted turn-in/);
     const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
     assert.match(contract, /GAMEPLAY RESOLUTION — SEARCH & QUEST FRICTION/);
@@ -162,32 +163,17 @@ test('interpreter contract explicitly treats walking toward a sound/track/direct
     assert.match(interpreterSystem(contentPack.commandVocab), /walk toward the sound/);
 });
 
-test('search-check echoes are silent duplicates; opposite narration gets a correction, not ENGINE REFUSED', async () => {
-    const g = await created();
-    const s = structuredClone(g.state());
-    s.last.outcome = {
-        kind: 'v4', actions: [], expected_keys: {}, conditionals: [],
-        booked: { registration: false, grants: [], turnIns: [], accepted: [] },
-        auth: { go: null, gos: [], roam: true, take: [], gather: true, rest: false, timeCap: 120 },
-        search_checks: [{ what: 'large animal tracks', stat: 'PER', actor: 5, opposition: 6, chance: 45.45, roll: 11, success: true, by: 'engine', seq: 1 }],
-        check_die: null,
-    };
-    const ok = applyWorld(s, contentPack, { expected: {}, deltas: [
-        { seq: 1, type: 'check', what: 'large animal tracks', stat: 'PER', success: true },
-    ] }, { msg: 99, prose: 'He found fresh tracks.' });
-    assert.deepEqual(ok.rejected, []);
-    assert.equal(ok.events.filter((e) => e.t === 'check.recorded').length, 0, 'engine search check is not booked twice');
-
-    const bad = applyWorld(s, contentPack, { expected: {}, deltas: [
-        { seq: 1, type: 'check', what: 'large animal tracks', stat: 'PER', success: false },
-    ] }, { msg: 99, prose: 'He found nothing.' });
-    assert.deepEqual(bad.rejected, []);
-    assert.ok(bad.corrections.some((x) => /resolved it as SUCCESS/.test(x)));
+// 4.0.5 removed the generic CHECK DIE and 4.0.6 the check delta: an engine search check (PER vs moderate, Core #7) is
+// resolved by the SEARCH handler and told to the narrator as binding; the extractor has nothing to re-report
+test('an engine search check cannot be re-reported: the vocabulary has no check delta, and an answer with one is invalid', () => {
+    assert.ok(!contentPack.deltaVocab.deltas.some((x) => x.type === 'check'));
+    const p = parseExtraction(JSON.stringify({ expected: {}, deltas: [{ seq: 1, type: 'check', what: 'large animal tracks', stat: 'PER', success: true }] }), contentPack.deltaVocab, {}, {});
+    assert.equal(p.valid, false);
 });
 
 test('extractor contract treats tracks as evidence and never re-reports engine search checks', () => {
     const rules = contentPack.deltaVocab.rules.join('\n');
-    assert.match(rules, /engine-resolved SEARCH CHECK.*Never emit a check delta/s);
+    assert.ok(!contentPack.deltaVocab.deltas.some((x) => x.type === 'check'), 'no check delta to re-report a search with');
     assert.match(rules, /Tracks, spoor, hair, a wallow, sounds, shadows.*not creature\.new/s);
 });
 
@@ -317,10 +303,15 @@ test('free fantasy species uses an explicit F1 anchor, materialises at reveal, a
     assert.match(panel, /ACTIVE SCENE — Plated Wallow Beast A · HP 70\/70 · SHORT/);
     assert.doesNotMatch(panel, /Initiative|COMBAT START/);
 
-    const intent = parseIntent('*I Basic Attack the creature*', a.state, contentPack);
+    // at SHORT a Basic Attack (ENGAGED) needs the step that brings it into range (Core #12): without it the engine
+    // explains the range and starts nothing
+    const standing = playerTurn(a.state, contentPack, '*I Basic Attack the creature*', { msg: 100 });
+    assert.equal(standing.state.encounter, null);
+    assert.match(standing.outcome.notice || JSON.stringify(standing.outcome.illegal || ''), /SHORT; Basic Attack reaches ENGAGED/);
+    const intent = parseIntent('*I close in and Basic Attack the creature*', a.state, contentPack);
     assert.equal(intent.kind, 'attack');
     assert.equal(intent.target, beast.id);
-    const attack = playerTurn(a.state, contentPack, '*I Basic Attack the creature*', { msg: 100 });
+    const attack = playerTurn(a.state, contentPack, '*I close in and Basic Attack the creature*', { msg: 100 });
     assert.equal(attack.outcome.kind, 'combat');
     assert.ok(attack.state.encounter, 'first actual attack starts the encounter');
     assert.ok(attack.outcome.board.order.some((x) => x.id === beast.id), 'Initiative board now contains the revealed creature');

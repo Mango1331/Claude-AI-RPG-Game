@@ -119,6 +119,38 @@ export function openDecisionTexts(state) {
     });
 }
 
+const TRAVEL_WORDS = /\b(?:escort|journey|travel|road|cart|wagon|caravan|ship|boat|ferry|ride|guide|lead|depart|leave|deliver|destination|route|waystation)\b/i;
+
+/**
+ * The journey Alaric can continue without naming where to ("wait, then we continue", live run 30.09.2026): an active
+ * Guild escort or delivery contract that is underway (Alaric is outside the settlement whose board posted it and its
+ * outcome is not reached yet); else a journey the story stored in an active quest's notes or an open thread, with
+ * someone present whom it names. The interpreter sees it as JOURNEY READY; journey.continue is authorised by it.
+ * @returns {{id: string, label: string, contact: string|null, why: string}|null}
+ */
+export function journeyReady(state) {
+    const here = settlementOf(state, state.scene.at);
+    const underway = Object.values(state.quests).find((q) => q.status === 'active' && !q.ready && q.kind === 'guild_contract'
+        && (q.objectives || []).some((o) => o.verb === 'ESCORT' || o.verb === 'DELIVER') && q.source?.branch && here !== q.source.branch);
+    if (underway) return { id: underway.id, label: underway.title, contact: null, why: 'the contract\'s journey is underway' };
+    const sources = [
+        ...Object.values(state.quests).filter((q) => q.status === 'active')
+            .map((q) => ({ id: q.id, label: q.title, text: [...(q.details || []).map((x) => (typeof x === 'string' ? x : x?.note)), ...(q.notes || [])].filter(Boolean).join(' ') })),
+        ...Object.values(state.threads || {}).filter((t) => t.status === 'open').map((t) => ({ id: t.id, label: t.text, text: t.text })),
+    ];
+    for (const src of sources) {
+        if (!TRAVEL_WORDS.test(src.text)) continue;
+        const text = normText(src.text);
+        const contact = state.scene.present.find((id) => {
+            const e = state.entities[id];
+            if (id === 'pc' || e?.kind !== 'npc' || e.status === 'dead') return false;
+            return [e.name, truth(state, id, 'occupation')[0]?.o, ...(e.descriptors || [])].filter(Boolean).map(normText).some((x) => x.length >= 3 && text.includes(x));
+        });
+        if (contact) return { id: src.id, label: src.label, contact, why: 'an established journey' };
+    }
+    return null;
+}
+
 /**
  * The catalog of the current state (the scenes.json shape).
  * @param {{extraPlaces?: string[], rankLook?: string}} [opts] extraPlaces: place ids to list besides the default ones
@@ -130,38 +162,8 @@ export function buildCatalog(state, content, { extraPlaces = [] } = {}) {
         .map((id) => ({ id, handle: sceneHandle(state, content, id), label: personLabel(state, content, id) }));
     const activeRaw = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered');
     const quests = activeRaw.map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) }));
-    const travelRe = /\b(?:escort|journey|travel|road|cart|wagon|caravan|ship|boat|ferry|ride|guide|lead|depart|leave|deliver|destination|route|waystation)\b/i;
-    const journeySources = [
-        ...activeRaw.filter((q) => q.status === 'active' && [...(q.details || []), ...(q.notes || [])].length).map((q) => ({
-            id: q.id, label: q.title,
-            // Journey readiness comes only from story-persisted detail/note memory, never from generated objective text.
-            text: [...(q.details || []), ...(q.notes || [])].filter(Boolean).join(' '),
-        })),
-        ...Object.values(state.threads || {}).filter((t) => t.status === 'open').map((t) => ({ id: t.id, label: t.text, text: t.text })),
-    ];
-    // A real, persisted escort party survives scene resets. This is stronger evidence than
-    // re-matching NPC roles in every subsequent scene, and still never follows a generated
-    // quest objective alone.
-    const partyQuest = state.journey?.quest && state.quests[state.journey.quest];
-    const partyContact = state.journey?.party?.find((id) => state.scene.present.includes(id) && state.entities[id]?.status !== 'dead');
-    let journey_ready = partyQuest?.status === 'active' && !partyQuest.ready && partyContact
-        ? `${partyQuest.id} with ${sceneHandle(state, content, partyContact)} — an established escort already underway; Alaric may continue when he agrees`
-        : undefined;
-    for (const src of journeySources) {
-        if (journey_ready) break;
-        if (!travelRe.test(src.text)) continue;
-        const text = normText(src.text);
-        const contact = state.scene.present.find((id) => {
-            if (id === 'pc' || !state.entities[id] || state.entities[id].kind !== 'npc') return false;
-            const e = state.entities[id];
-            const labels = [e.name, truth(state, id, 'occupation')[0]?.o, ...(e.descriptors || [])].filter(Boolean).map(normText);
-            return labels.some((x) => x.length >= 3 && text.includes(x));
-        });
-        if (contact) {
-            journey_ready = `${src.id} with ${sceneHandle(state, content, contact)} — an established journey/departure is ready to continue if Alaric clearly agrees`;
-            break;
-        }
-    }
+    const journey = journeyReady(state);
+    const journey_ready = journey ? `${journey.id} — "${journey.label}"${journey.contact ? ` with ${sceneHandle(state, content, journey.contact)}` : ''}: ${journey.why}; Alaric may continue it when he clearly agrees` : undefined;
     const day = today(state);
     const completed = Object.values(state.quests).filter((q) => q.status === 'completed' && (q.history || []).some((h) => h.status === 'completed' && Math.floor((h.minute ?? 0) / 1440) + 1 === day))
         .map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) }));

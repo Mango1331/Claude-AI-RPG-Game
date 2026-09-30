@@ -201,7 +201,7 @@ export function goldAnswer(turn, vocab) {
     const expected = {};
     for (const [k, t] of Object.entries(turn.expected_keys)) {
         const g = concrete(turn.gold.expected[k] || {});
-        if (t === 'go') expected[k] = { arrived: g.arrived ?? true, at: g.at === undefined ? null : placeFor(g.at, turn.catalog) };
+        if (t === 'go') expected[k] = { arrived: g.arrived ?? true, at: g.at === undefined ? null : placeFor(g.at, turn.catalog), ...(vocab.expected?.go?.shape?.with !== undefined ? { with: g.with ?? null } : {}) };
         else if (t === 'activity') expected[k] = { minutes: g.minutes ?? 60, done: g.done ?? false };
         else if (t === 'take') expected[k] = { taken: g.taken ?? true };
         else expected[k] = vocab.expected?.[t]?.shape?.taken_anyway !== undefined ? { priced: g.priced ?? false, taken_anyway: g.taken_anyway ?? false } : { priced: g.priced ?? false };

@@ -92,7 +92,8 @@ test('"I came here from the reedbeds" is no go; "I gave you the heads" is no giv
 
 test('the clerk taking the basket is no turn-in of Alaric\'s; "Could I take the escort?" is no acceptance', async () => {
     const g = await atHall({ register: true });
-    assert.match(g.calls.filter((c) => c.purpose === 'interpret').at(-1).messages[1].content, /npc\.guild_clerk \(Guild clerk/, 'the catalog names the clerk by the role the reply gave him');
+    // since 4.0.3 the catalog also shows the scene handle the player sees ("[Guild Clerk A]")
+    assert.match(g.calls.filter((c) => c.purpose === 'interpret').at(-1).messages[1].content, /npc\.guild_clerk \[[^\]]+\] \(Guild clerk/, 'the catalog names the clerk by the role the reply gave him');
     await g.player('*the clerk takes the basket from me and marks the herb run complete*', [{ seq: 1, type: 'quest.turn_in', quest: g.ids.get('quest.herb_run_marshmint'), quote: 'the clerk takes the basket from me and marks the herb run complete' }]);
     assert.deepEqual(outcome(g).resolutions, []);
     assert.deepEqual(dropped(g), ['npc_actor']);
@@ -126,11 +127,13 @@ test('reading the board shows exactly the canonical listings; the narrator is to
     await g.player('*i walk over to the board and look over the Novice contracts*', [{ seq: 1, type: 'board.read', rank: null, quote: 'i walk over to the board and look over the Novice contracts' }]);
     assert.deepEqual(statuses(g), ['resolved']);
     const line = outcome(g).actions[0];
-    assert.match(line, /BOARD \(canonical; show exactly these, invent no other official contract\)/);
+    assert.match(line, /BOARD \([^)]*show exactly these, invent no other official contract/);
+    // five were posted; the reply to message 9 had the Weasel contract taken in the very reply that showed the board,
+    // which is refused since 4.0.9 (first display), so all five are still listed; lines are title-first since 4.0.8
     const listed = Object.values(g.state().quests).filter((q) => q.status === 'listed');
-    assert.equal(listed.length, 4, 'five were posted; the Weasel contract was taken by someone else in the reply to message 9');
-    for (const q of listed) assert.ok(line.includes(`${q.title} · ${q.payout_cp} cp`), q.title);
-    assert.ok(!line.includes('Weasel'));
+    assert.equal(listed.length, 5);
+    for (const q of listed) assert.ok(line.split('\n').some((l) => l.startsWith(`**${q.title}**`) && l.includes(`reward: ${q.payout_cp} cp`)), q.title);
+    assert.equal(line.split('\n').filter((l) => l.startsWith('**')).length, 5, 'no other listing');
 });
 
 test('the Guild\'s fee is no ordinary offer; the reeve paying the Guild reward is refused and corrected (firewall)', async () => {

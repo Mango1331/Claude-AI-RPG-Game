@@ -12,7 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadContent, ROOT } from '../helpers.js';
 import { Chat4 } from './harness.js';
-import { prepareGenerationAsync, processReplyAny, runExtraction, runBoardAfterArrival, extractionRequest } from '../../src/v4/runtime.js';
+import { prepareGenerationAsync, processReplyAny, runExtraction, extractionRequest } from '../../src/v4/runtime.js';
 import { knows, currentFacts, PC_NAME_FACT } from '../../src/knowledge.js';
 import { validateState } from '../../src/validate.js';
 
@@ -40,7 +40,8 @@ class Live extends Chat4 {
         return this.player(t.player);
     }
 
-    /** A reply with the extractor's answer (recorded or given) and, on arrival at a hall, the Board generator's. */
+    /** A reply with the extractor's answer (recorded or given). The run's Board generator answers (at the arrival at the
+     *  hall) are not asked for since 4.0.7: the board is generated when Alaric first reads it, which the run never did. */
     async replyWith(prose, extractor, board = null) {
         this.queue.extract.push(typeof extractor === 'string' ? extractor : JSON.stringify(extractor));
         if (board) this.queue.board.push(board);
@@ -54,9 +55,8 @@ class Live extends Chat4 {
         assert.equal(again.action, 'context');
         assert.equal(processReplyAny(this.chat, id, content, {}).extract, true);
         this.queue.extract.push(extractor);
-        this.queue.board.push(board);
-        const x = await runExtraction(this.chat, id, content, this.llm);
-        if (x.boardNeeded) await runBoardAfterArrival(this.chat, id, content, this.llm);
+        if (board) this.queue.board.push(board);
+        await runExtraction(this.chat, id, content, this.llm);
         return this.record(id);
     }
 }
@@ -98,7 +98,9 @@ test('t1: the entry toll the first swipe invented changes no coin; the fee it in
     assert.doesNotMatch(factText(s), /toll|thumbprint/, 'what a swiped-away reply established is gone');
     assert.ok(clerkOf(s) && s.scene.present.includes(clerkOf(s)));
     assert.ok(bowmanOf(s) && s.scene.present.includes(bowmanOf(s)));
-    assert.ok(Object.values(s.quests).some((q) => q.kind === 'guild_contract' && q.status === 'listed'), 'the board was generated');
+    // the run generated the board on the arrival; since 4.0.7 it is generated when Alaric first reads it
+    assert.ok(!Object.values(s.quests).some((q) => q.kind === 'guild_contract'), 'no board before he reads it');
+    assert.ok(!g.calls.some((c) => c.purpose === 'board'), 'the Board generator was not asked');
     assert.deepEqual(validateState(s, content), []);
 });
 
@@ -193,6 +195,7 @@ test('t4: "*i sign the card*" after he paid books nothing and refuses nothing; t
 
 test('counter-case: a reply that has him sign and register while the fee is still open is overreach: not applied, no member, coin unchanged', async () => {
     const { g } = await run({ upTo: 't2' });
+    g.queue.interpret.push(JSON.stringify({ commands: [] })); // since 4.0.7 a failed interpreter call aborts the turn
     await g.player('*i wait while she writes*', []);
     assert.match(outcome(g).actions[0], /^NOTHING TO BOOK/);
     g.chat.push({ mes: 'Alaric signs the register and pushes two silver across; she stamps his card. "Welcome to the Guild."', is_user: false, is_system: false, extra: {} });

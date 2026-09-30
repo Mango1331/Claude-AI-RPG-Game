@@ -119,14 +119,34 @@ const main = await newGame();
 const run = await play(main);
 const R = (id) => run.find((x) => x.id === id);
 
-// the one refusal on the golden path: the 3.1.7 narrator's "Novices may take only Novice contracts without a desk-clerk
+// the refusals on the golden path: the 3.1.7 narrator's "Novices may take only Novice contracts without a desk-clerk
 // waiver" (gold t2, seq 1) invents a contract rule the engine does not have; since the live run of 28.09.2026 the
-// Guild's ranks and rules are the engine's canon and such a fact is refused (guild_canon)
-const EXPECTED_REFUSALS = { t2: [{ seq: 1, type: 'fact', rule: 'guild_canon' }] };
+// Guild's ranks and rules are the engine's canon and such a fact is refused (guild_canon). Since 4.0.9 (live run
+// 30.09.2026) a listing the board has just shown cannot be taken away in the same reading reply: the recorded reply
+// of t3 has the Weasel Sign "already taken" (seq 3), which is refused (board_first_display)
+const EXPECTED_REFUSALS = { t2: [{ seq: 1, type: 'fact', rule: 'guild_canon' }], t3: [{ seq: 3, type: 'listing.gone', rule: 'board_first_display' }] };
+
+/**
+ * The gold of a turn under the rules the engine has now; the gold file itself stays as recorded. Intended changes since
+ * it was written: the Board generator runs when Alaric first reads the board (4.0.7), not when he enters the hall, so
+ * t1 has no listing yet; board lines are title-first ("**Miller's Run Escort** — client: … · reward: 80 cp · …", 4.0.8);
+ * the Weasel Sign shown at t3 stays listed (first display, see above).
+ */
+function current(t) {
+    const c = structuredClone(t);
+    if (c.id === 't1' && c.after_reply) delete c.after_reply.listings;
+    if (c.id === 't3' && c.after_reply?.listings) c.after_reply.listings['quest.weasel_fenwick'] = 'listed';
+    return c;
+}
+/** A board line of the gold ("Title · 80 cp") as the title-first line of the board now. */
+const boardLine = (text, want) => {
+    const m = /^(.+) · (\d+ cp)$/.exec(want);
+    return m ? text.split('\n').some((l) => l.includes(`**${m[1]}**`) && l.includes(`reward: ${m[2]}`)) : text.includes(want);
+};
 
 test('V12 golden path: every turn resolves as gold, PLAYER ACTIONS as gold, state as gold, no refusal but the expected one, invariants hold', () => {
     const problems = [];
-    for (const t of gold.turns) {
+    for (const t of gold.turns.map(current)) {
         const r = R(t.id);
         assert.equal(r.prep.action, 'context', `${t.id}: a story turn with a narrator reply`);
         const res = r.outcome.resolutions.map((x) => ({ seq: x.seq, status: x.status, ...(x.reason ? { reason: x.reason } : {}), ...(x.cap ? { cap: x.cap } : {}), ...(x.condition ? { condition: x.condition } : {}) }));
@@ -135,7 +155,7 @@ test('V12 golden path: every turn resolves as gold, PLAYER ACTIONS as gold, stat
             for (const [k, v] of Object.entries(w)) if (got?.[k] !== v) problems.push(`${t.id} resolution ${w.seq}.${k}: expected ${v}, got ${got?.[k]}`);
         }
         const text = [...r.outcome.actions, ...(r.outcome.extra || [])].join('\n');
-        for (const s of t.actions_contains || []) if (!text.includes(s)) problems.push(`${t.id}: PLAYER ACTIONS lack "${s}"`);
+        for (const s of t.actions_contains || []) if (!boardLine(text, s)) problems.push(`${t.id}: PLAYER ACTIONS lack "${s}"`);
         problems.push(...subsetDiff(t.after_player || {}, excerpt(r.afterPlayer), main).map((x) => `${t.id} after message: ${x}`));
         const rec = r.rep.record;
         problems.push(...subsetDiff(t.after_reply || {}, { ...excerpt(r.afterReply), corrections: (rec.corrections || []).length }, main).map((x) => `${t.id} after reply: ${x}`));
@@ -160,7 +180,7 @@ test('V12 golden path: the narrator gets PLAYER ACTIONS and is never asked for a
     const purposes = main.calls.map((c) => c.purpose);
     assert.equal(purposes.filter((p) => p === 'interpret').length, 8);
     assert.equal(purposes.filter((p) => p === 'extract').length, 8);
-    assert.equal(purposes.filter((p) => p === 'board').length, 1, 'the board is generated once, on the first arrival at the hall');
+    assert.equal(purposes.filter((p) => p === 'board').length, 1, 'the board is generated once, when Alaric first reads it');
 });
 
 test('E1–E3: the board is canonical before it is shown; Miller\'s Run is Novice work from the listing; Ossler exists, not met', () => {
@@ -168,7 +188,9 @@ test('E1–E3: the board is canonical before it is shown; Miller\'s Run is Novic
     const listed = Object.values(t3.afterPlayer.quests).filter((q) => q.status === 'listed');
     assert.equal(listed.length, 5);
     assert.deepEqual(gold.board_generator.listings.map((l) => t3.afterPlayer.quests[main.ids.get(l.id)]?.payout_cp), [80, 150, 40, 20, 50]);
-    assert.equal(t3.afterReply.quests[main.ids.get('quest.weasel_fenwick')].status, 'taken_by_other');
+    // the recorded reply had the Weasel Sign taken in the very reply that showed it: refused since 4.0.9 (first display)
+    assert.equal(t3.afterReply.quests[main.ids.get('quest.weasel_fenwick')].status, 'listed');
+    assert.ok(t3.rep.record.corrections.some((c) => /"Weasel Sign at Fenwick's Coop" remains AVAILABLE/.test(c)));
     const m = main.ids.get('quest.millers_run_escort');
     assert.equal(R('t4').afterPlayer.quests[m].status, 'active');
     assert.equal(R('t4').afterPlayer.quests[m].rank, 'Novice');

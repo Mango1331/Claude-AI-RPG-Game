@@ -17,9 +17,12 @@ import { truth, entityLabel, setFactEvents } from '../knowledge.js';
 import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
 import { firewall } from './firewall.js';
 import {
-    PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, placeName, contracts, heldBy, openOffers, membership,
+    PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, placeName, contracts, heldBy, openOffers, membership, isLooseCoin,
 } from './domain.js';
 import { completeContract, REGISTRATION_OFFER } from './guild.js';
+
+const AUTHORITY_ROLE = /\b(?:guard|watch(?:man)?|sergeant|captain|constable|reeve|bailiff|magistrate|official|officer|toll ?keeper|tax|customs|steward|marshal|warden)\b/i;
+const HOSTILE_ROLE = /\b(?:bandit|thief|robber|brigand|cutpurse|pickpocket|thug|highwayman)\b/i;
 
 /** The firewall's view of the state after the player's turn (src/v4/firewall.js FirewallContext). */
 export function firewallContext(s, content) {
@@ -116,7 +119,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const corrections = [];
     const system = [];
     const reject = (d, rule, why) => {
-        if (d?.type === 'arrive' && rule === 'no_go') rejectedTravel = true;
+        if (d?.type === 'arrive') rejectedTravel = true;
         rejected.push({ seq: d?.seq ?? 0, type: d?.type ?? 'expected', rule, why });
         emit({ t: 'delta.rejected', d: { item: d, rule, reason: why } });
     };
@@ -148,6 +151,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (s.entities[ref]) return ref;
         const hit = makeResolver(s, new Map(), content)(ref);
         if (hit) return hit;
+        // a ref in the vocabulary's own form for a known person ("person.aldsa_corren" for Aldsa, live 30.09.2026)
+        const bare = ref.replace(/^(?:person|npc|creature|mon)\./i, '');
+        const named = bare !== ref ? makeResolver(s, new Map(), content)(bare) : null;
+        if (named && named !== 'pc') return named;
         // "the same clerk", "the clerk": the one person here (or met at this place) whose role ends in that word
         const last = k.replace(/^(?:the |a |an )?(?:same |other |first |second )?/, '').split(' ').at(-1);
         if (!last || last.length < 3) return null;
@@ -157,7 +164,6 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     };
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
     let calls = 0;
-    const isLooseCurrency = (name) => /^(?:(?:the|my|some|a|our)\s+)?(?:(?:quest|guild)\s+)?(?:reward|payout|payment|coins?|coppers?|silvers?|golds?)(?:\s+coins?)?$/.test(normText(name || ''));
     const v3 = (report, d) => {
         calls += 1;
         const r = reportToEvents(report, s, content, { msg, prose, idTag: `d${d?.seq ?? 0}${calls > 1 ? `_${calls}` : ''}` });
@@ -165,50 +171,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         for (const x of r.rejected) reject(d, 'world_rule', x.reason);
         return r;
     };
-    // Reintroducing a unique, already-established local person must not mint another NPC.
-    // Proper names are global identities; generic roles are usable only for one unique local
-    // or current escort-party match. Never merge explicitly "another" or enumerated people.
-    const existingPerson = (d) => {
-        if (d.name) {
-            const named = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.name && normText(e.name) === normText(d.name));
-            if (named.length === 1) return named[0].id;
-        }
-        if (/\b(?:another|other|different|second|new)\b/i.test([d.role, ...(d.desc || [])].join(' '))
-            || /(?:_[a-z]|_\d+)$/i.test(String(d.ref || ''))) return null;
-        const useful = (txt) => new Set(normText(txt || '').split(/[^a-z]+/).filter((w) =>
-            w.length >= 4 && !['person', 'woman', 'young', 'older', 'guild', 'other', 'another', 'some', 'local', 'male', 'female', 'with', 'from', 'that', 'same', 'there'].includes(w)));
-        const wanted = useful(d.role);
-        if (!wanted.size) return null;
-        const party = s.journey?.party || [];
-        const local = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.status !== 'dead'
-            && (s.scene.present.includes(e.id) || party.includes(e.id)
-                || (e.location === s.scene.location && (!e.at || e.at === s.scene.at))));
-        const candidates = local.filter((e) => !d.name || !e.name || normText(e.name) === normText(d.name))
-            .map((e) => {
-                const role = [truth(s, e.id, 'occupation')[0]?.o, ...(e.descriptors || [])].join(' ');
-                const have = useful(role);
-                const score = [...wanted].filter((t) => have.has(t)).length;
-                return { e, score };
-            }).filter((x) => x.score > 0).sort((a, b) => b.score - a.score);
-        return candidates.length && (candidates.length === 1 || candidates[0].score > candidates[1].score) ? candidates[0].e.id : null;
-    };
     const newEntity = (d, kind) => {
-        if (kind === 'npc') {
-            const knownId = existingPerson(d);
-            if (knownId) {
-                const e = s.entities[knownId];
-                if (d.name && !e.name) emit({ t: 'entity.updated', d: { id: knownId, set: { name: d.name, descriptors: [d.name, ...(d.desc || [])] } } });
-                if (d.present !== false && !s.scene.present.includes(knownId)) emit({ t: 'scene.entered', d: { id: knownId, band: d.band || 'SHORT' } });
-                refs.set(normText(d.ref), knownId);
-                if (d.name) refs.set(normText(d.name), knownId);
-                return [knownId];
-            }
-        }
-        const herdSpecies = /\b(?:sheep|goats?|cows?|cattle|chickens?|hens?|geese|ducks?|pigs?|horses?|mules?|donkeys?|oxen|deer)\b/i.test(d.species || '');
-        const grazing = /\b(?:graz\w*|pastur\w*|tether\w*|peaceful\w*|feeding|farm\w*|herd|flock|pen\w*)\b/i.test((d.desc || []).join(' '));
-        if (kind === 'creature' && d.count > 4 && herdSpecies && grazing && !hostileRefs.has(normText(d.ref))) {
-            // Background livestock/herds are scenery, NOT a blanket exemption for visible
-            // five-wolf packs or other individually actionable combat creatures.
+        // A large group of skittish animals (their body-plan's temperament: a flock, a herd, a flight of birds) that nobody
+        // set on Alaric is the scene's background, one fact, not a dozen combat profiles (live 30.09.2026: twelve penned
+        // sheep). A pack of aggressive, defensive or cautious creatures stays individual, whatever its size, and so does
+        // every group while a contract to attack or defeat something is active (the vermin of a cellar job are its
+        // targets); one animal singled out later is a creature.new of its own.
+        const anchor = kind === 'creature' ? content.anchors.get(d.anchor) : null;
+        const hunting = Object.values(s.quests).some((q) => q.status === 'active' && (q.objectives || []).some((o) => o.verb === 'ATTACK' || o.verb === 'DEFEAT'));
+        if (anchor?.temperament === 'skittish' && d.count > 4 && !hunting && !s.encounter && !hostileRefs.has(normText(d.ref))) {
             setFactEvents(s, { s: s.scene.at, p: 'background_fauna', o: `${d.count} ${d.species}`, source: { kind: 'narration', msg }, importance: 0.3 }).forEach(emit);
             return [];
         }
@@ -247,7 +218,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             if (!e || e.arrived !== true) continue;
             const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
             const at = e.at ? resolvePlace(s, e.at, emit) : go?.to ? { id: go.to } : { error: 'no place' };
-            if (!at.error && at.id !== s.scene.at) { perceiveAll(s, emit); arrive(at.id); }
+            if (!at.error && at.id !== s.scene.at) {
+                const party = companions(e.with, { seq: Number(k), type: 'expected' });
+                perceiveAll(s, emit);
+                arrive(at.id, party);
+            }
         }
     }
 
@@ -272,8 +247,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 const at = resolvePlace(s, d.at, emit);
                 if (at.error) { reject(d, 'place', at.error); break; }
                 if (at.id === s.scene.at) break;
+                const party = companions(d.with, d);
                 perceiveAll(s, emit);
-                arrive(at.id);
+                arrive(at.id, party);
                 break;
             }
             case 'person.new': {
@@ -296,6 +272,21 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 newEntity(d, 'npc');
                 break;
             }
+            case 'person.named': {
+                // a person known without a name whom the story now names (live 30.09.2026: the anonymous wool cart
+                // driver became a second person "Dren"): the same entity, now with its name
+                const id = idOf(d.who);
+                const e = id && id !== 'pc' ? s.entities[id] : null;
+                const name = String(d.name || '').trim().slice(0, 60);
+                if (!e || e.kind !== 'npc' || !name) { reject(d, 'world_rule', 'person.named: no such known person'); break; }
+                if (e.name && normText(e.name) !== normText(name) && !normText(name).startsWith(`${normText(e.name)} `)) {
+                    reject(d, 'world_rule', `${id} is already named ${e.name}`);
+                    break;
+                }
+                if (normText(e.name || '') !== normText(name)) emit({ t: 'entity.updated', d: { id, set: { name, known_name: name, descriptors: [name.toLowerCase()] } } });
+                refs.set(normText(name), id);
+                break;
+            }
             case 'creature.new':
                 newEntity(d, 'creature');
                 break;
@@ -306,9 +297,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 const who = mapRef(d.who);
                 perceiveAll(s, emit);
                 v3({ leave: [who] }, d);
-                if (s.journey?.party?.includes(who)) {
-                    emit({ t: 'journey.party', d: { quest: s.journey.quest, party: s.journey.party.filter((x) => x !== who) } });
-                }
+                // who walks off is not waiting at this place when Alaric comes back
+                if (s.entities[who]?.at && !s.scene.present.includes(who)) emit({ t: 'entity.updated', d: { id: who, set: { at: null } } });
                 break;
             }
             case 'position':
@@ -354,8 +344,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 break;
             }
             case 'object.new':
-                if (isLooseCurrency(d.name) && normText(d.holder) === 'pc') {
-                    reject(d, 'currency_wallet', 'ordinary coin is tracked in the character coin total, not recreated as a second inventory item');
+                // coin is a number, never a thing: Alaric's in his purse, anyone else's in the story; coin he gains is
+                // coin.gift (a phantom "copper" after the Guild payout, live 30.09.2026)
+                if (isLooseCoin(d.name)) {
+                    reject(d, 'currency_wallet', 'loose coin is no object: Alaric\'s coin is his purse total, and coin he gains in the story is coin.gift');
                     break;
                 }
                 objectNew(d);
@@ -402,10 +394,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 if (!q) { reject(d, 'quest', 'unknown quest'); break; }
                 if (q.status !== 'active') { reject(d, 'quest', `the quest is ${q.status}`); break; }
                 const claimed = String(d.note || q.desired_end_state || '');
-                // Do not commit an escort/delivery completion whose only grounding this very
-                // reply was an arrival that the authorization firewall just refused.
-                if (rejectedTravel && !arrived && (q.objectives || []).some((o) => ['ESCORT', 'DELIVER'].includes(o.verb))
-                    && /\b(?:arriv|reach|deliver|escort|destination|made it|got there)/i.test(claimed)) {
+                // an escort or delivery is ready where it arrives: a reply whose arrival the engine refused has not
+                // taken it there (live 30.09.2026: Millbrook refused, the escort "ready" in the same reply)
+                if (rejectedTravel && (q.objectives || []).some((o) => ['ESCORT', 'DELIVER'].includes(o.verb))) {
                     reject(d, 'quest_dependency', 'the escort/delivery destination was not canonically reached in this reply; readiness cannot depend on the refused arrival');
                     const correction = `"${q.title}" is still IN PROGRESS: the destination arrival in the previous reply was not authorized or booked, so the Guild Quest is not ready to turn in yet.`;
                     if (!corrections.includes(correction)) corrections.push(correction);
@@ -455,7 +446,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             // the arrival the story showed without an arrive delta: where the answer says, else where he set off to
             const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
             const at = e.at ? resolvePlace(s, e.at, emit) : go?.to ? { id: go.to } : { error: 'no place' };
-            if (!at.error && at.id !== s.scene.at) { perceiveAll(s, emit); arrive(at.id); }
+            if (!at.error && at.id !== s.scene.at) {
+                const party = companions(e.with, { seq: Number(k), type: 'expected' });
+                perceiveAll(s, emit);
+                arrive(at.id, party);
+            }
         }
         if (type === 'activity' && !timeUsed && Number.isInteger(e.minutes) && e.minutes > 0) {
             const m = Math.min(e.minutes, Math.max(0, cap - timeUsed));
@@ -463,7 +458,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         }
         if (type === 'take' && e.taken === true && !events.some((x) => x.t === 'object.created' && x.d.object.holder?.entity === 'pc') && !events.some((x) => x.t === 'object.moved' && x.d.to?.entity === 'pc')) {
             const name = (auth.takeNames || {})[k];
-            if (name && !isLooseCurrency(name)) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
+            if (name && !isLooseCoin(name)) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
         }
         if ((type === 'buy' || type === 'pay') && e.taken_anyway === true) overreach(type === 'buy' ? 'purchase' : 'payment', `the reply had Alaric ${type === 'buy' ? 'take or use what he had not bought' : 'pay'} although he had not agreed`);
         if ((type === 'buy' || type === 'pay') && e.priced === true) {
@@ -490,33 +485,34 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         setFactEvents(s, { s: id, p: 'occupation', o: String(role).slice(0, 80), source: { kind: 'narration', msg }, importance: 0.5 }).forEach(emit);
     }
 
-    function arrive(id) {
-        const town = locationOf(s, id);
-        const escort = Object.values(s.quests).find((q) => q.status === 'active' && !q.ready
-            && q.kind === 'guild_contract' && (q.objectives || []).some((o) => o.verb === 'ESCORT'));
-        const alone = /\b(?:alone|by myself|without (?:them|the party|the driver|my companions))\b/i.test(s.last?.input || '');
-        const sharesTrip = /\b(?:we|our|them|together|follow|escort|cart|wagon|caravan|journey|travel|continue|road|with)\b/i.test(s.last?.input || '');
-        const routeStop = ['wilderness', 'region', 'settlement'].includes(s.places[id]?.kind);
-        const travel = !!(auth.gos || []).length && !hallOf(s, s.scene.at) && !hallOf(s, id) && !alone
-            && (sharesTrip || auth.roam || routeStop);
-        let party = [];
-        if (travel && escort && s.journey?.quest === escort.id) {
-            party = (s.journey.party || []).filter((who) => s.entities[who]?.status !== 'dead');
-        } else if (travel && escort && !s.journey) {
-            // Record actual people already sharing the escort departure scene. A busy Guild
-            // clerk is never recruited; unrelated crowds are not made permanent followers.
-            party = s.scene.present.filter((who) => who !== 'pc' && s.entities[who]?.kind === 'npc'
-                && s.entities[who].status !== 'dead'
-                && /\b(?:driver|carter|cart|wool|flock|shepherd|escort|factor|guide|wagon)\b/i.test(
-                    [truth(s, who, 'occupation')[0]?.o, s.entities[who].traits, ...(s.entities[who].descriptors || [])].join(' ')));
-            if (party.length) emit({ t: 'journey.party', d: { quest: escort.id, party } });
+    /** The people an arrival brings along (arrive.with, an expected go's with): known, alive, here before the move. */
+    function companions(list, d) {
+        const out = [];
+        for (const ref of Array.isArray(list) ? list : []) {
+            const id = idOf(ref);
+            const e = id && id !== 'pc' ? s.entities[id] : null;
+            if (!e || !['npc', 'creature'].includes(e.kind) || e.status === 'dead') { reject(d, 'world_rule', `arrive.with: unknown person ${String(ref).slice(0, 40)}`); continue; }
+            if (!s.scene.present.includes(id)) { reject(d, 'world_rule', `arrive.with: ${id} was not with Alaric`); continue; }
+            if (!out.includes(id)) out.push(id);
         }
-        if ((!travel || !escort) && s.journey) emit({ t: 'journey.party', d: { quest: null, party: [] } });
+        return out;
+    }
+
+    function arrive(id, party = []) {
+        const town = locationOf(s, id);
+        const from = s.scene.at;
+        // whoever does not come along stays at the place he leaves, until the story moves them (live 30.09.2026: back
+        // at the ford from the scree slope, Aldsa, her driver and the cart were gone from the scene)
+        for (const who of s.scene.present) {
+            const e = s.entities[who];
+            if (who === 'pc' || party.includes(who) || e?.kind !== 'npc' || e.status === 'dead' || e.at === from) continue;
+            emit({ t: 'entity.updated', d: { id: who, set: { at: from } } });
+        }
         emit({ t: 'scene.moved', d: { at: id, location: town, place: placeName(s, id), reset_present: true } });
-        for (const who of party) {
-            if (!s.entities[who] || s.entities[who].status === 'dead') continue;
-            emit({ t: 'entity.updated', d: { id: who, set: { at: id } } });
-            emit({ t: 'scene.entered', d: { id: who, band: 'SHORT' } });
+        // who travelled with him arrives with him; who stayed at the place he comes to is still there
+        for (const who of party) emit({ t: 'scene.entered', d: { id: who, band: 'SHORT' } });
+        for (const e of Object.values(s.entities)) {
+            if (e.kind === 'npc' && e.status !== 'dead' && e.at === id && !s.scene.present.includes(e.id)) emit({ t: 'scene.entered', d: { id: e.id, band: 'SHORT' } });
         }
         arrived = id;
         // a decision belongs to the place it was opened at: leaving it closes it; one opened in this very turn goes
@@ -607,8 +603,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const counterpart = openOffers(s).some((o) => o.seller === by) || events.some((e) => e.t === 'transaction.completed' && e.d.seller === by);
         if (counterpart) { reject(d, 'coerce', 'the other side of a sale or an open offer cannot coerce (a sale is never a confiscation)'); return; }
         if (!d.because) { reject(d, 'coerce', 'coercion needs a because'); return; }
-        // Whether this coercion is lawful, wise or socially justified is fiction, not a mechanical role-name check.
-        // The engine only requires a present external actor and an explicit causal reason, then stores the consequence.
+        // taking Alaric's coin or things is the engine's (money is hard state): a fine or confiscation needs an authority,
+        // a robbery a hostile robber (or a fight); who may take what is not left to the story
+        const e = s.entities[by];
+        const role = [truth(s, by, 'occupation')[0]?.o, ...(e?.descriptors || []), e?.traits, e?.template].filter(Boolean).join(' ');
+        if ((d.kind === 'confiscation' || d.kind === 'fine') && !AUTHORITY_ROLE.test(role)) { reject(d, 'coerce', `${d.kind} needs an authority (a guard, an official)`); return; }
+        if (d.kind === 'robbery' && !(HOSTILE_ROLE.test(role) || s.pending_combat?.some((p) => p.by === by) || s.encounter)) { reject(d, 'coerce', 'a robbery needs a hostile robber'); return; }
         const sheet = s.entities.pc.sheet;
         if (d.coin_cp) {
             const cp = Math.min(d.coin_cp, sheet.coin_cp);

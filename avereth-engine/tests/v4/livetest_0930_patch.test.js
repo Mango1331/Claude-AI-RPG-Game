@@ -1,5 +1,9 @@
-// Regression cases isolated from the successful 30 September 2026 SillyTavern 4.0.8 branch.
-// This suite is independent of the mixed-branch Completion Logger.
+// Regression cases of the SillyTavern live run of 30.09.2026 (build 4.0.8, the ChatGPT experiment branch): the Novice
+// board, the escort of Aldsa's wool cart with the four wolves at the Ford Narrows, the turn-in and the tavern. Written
+// for 4.0.9 by the experiment branch and revised in the integration (docs/INTEGRATION_4_1.md): companions arrive with
+// Alaric by arrive.with instead of a role-guessing party bookmark, a person known without a name is named by
+// person.named, people who stay behind stay at their place, JOURNEY READY comes from the contract's state, a large
+// passive group of skittish animals is background by its body plan, and loose coin is never an item.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -10,8 +14,9 @@ import { awardXp, defeatXp, questXp } from '../../src/progression.js';
 import { applyWorld } from '../../src/v4/world.js';
 import { resolveCommands } from '../../src/v4/commands.js';
 import { guardCommands } from '../../src/v4/agency.js';
-import { buildCatalog } from '../../src/v4/catalog.js';
+import { buildCatalog, journeyReady } from '../../src/v4/catalog.js';
 import { firewall } from '../../src/v4/firewall.js';
+import { parseExtraction } from '../../src/v4/extract.js';
 import { playerActionsBlock } from '../../src/context.js';
 
 const content = await loadContent();
@@ -25,172 +30,211 @@ async function created() {
     return g;
 }
 
-function escortScene(state) {
+const NOBODY = { registration: false, grants: [], turnIns: [], accepted: [] };
+/** The state after a player turn whose outcome authorised `auth` (the rest of state.last as the engine keeps it). */
+function after(state, { input = 'We go on.', auth = {}, expected_keys = {}, actions = [] } = {}) {
     const s = structuredClone(state);
-    s.scene.at = 'loc.redmarch.verge';
-    s.scene.location = 'loc.redmarch';
-    s.scene.present = ['pc', 'npc.wool_driver', 'npc.wool_factor'];
-    const base = { kind: 'npc', status: 'alive', location: 'loc.redmarch', at: 'loc.redmarch.verge', source: { kind: 'narration' }, card: {}, template: 'commoner' };
-    s.entities['npc.wool_driver'] = { ...base, id: 'npc.wool_driver', name: null, descriptors: ['wool cart driver'], traits: 'wool cart driver' };
-    s.entities['npc.wool_factor'] = { ...base, id: 'npc.wool_factor', name: null, descriptors: ['wool factor'], traits: 'wool factor' };
-    s.quests['quest.cart'] = {
-        id: 'quest.cart', title: 'Shepherd Cart to Millbrook', kind: 'guild_contract', status: 'active',
-        rank: 'Novice', payout_cp: 90, ready: false,
-        details: ['the wool factor and driver depart with Alaric on the river road'],
-        notes: [], objectives: [{ verb: 'ESCORT', what: 'wool cart to Millbrook' }],
-        proof: [], history: [], client: 'wool factor',
-    };
-    return s;
-}
-
-function travelTurn(s, input = 'We continue toward Millbrook') {
     s.last = {
-        input,
+        ...s.last, input,
         outcome: {
-            kind: 'v4', actions: ['1. CONTINUES — the established escort'], extra: [],
-            auth: { go: { seq: 1 }, gos: [{ seq: 1, to: null, name: 'the established journey' }], roam: true, take: [], gather: false, rest: false, timeCap: 720 },
-            expected_keys: {}, conditionals: [], booked: { registration: false, grants: [], turnIns: [], accepted: [] },
+            kind: 'v4', actions, extra: [], resolutions: [], expected_keys, conditionals: [], booked: NOBODY, search_checks: [], check_die: null,
+            auth: { go: null, gos: [], roam: false, take: [], gather: false, rest: false, timeCap: 120, ...auth },
         },
     };
     return s;
 }
+const TRAVEL = { go: { seq: 1 }, gos: [{ seq: 1, to: null, name: 'the established journey' }], roam: true, timeCap: 720 };
 
-test('4.0.9 XP: four same-rank L1 wolves plus a standard L2 escort exceed the first level threshold with carryover', () => {
+/** The escort as the run had it: Aldsa's contract from the Redmarch board, her driver and her at the verge with Alaric. */
+function escort(state, { objective = 'ESCORT' } = {}) {
+    const s = structuredClone(state);
+    const person = (id, role) => ({ id, kind: 'npc', name: null, descriptors: [role], traits: role, status: 'alive', location: 'loc.redmarch', created: { turn: s.turn, minute: s.clock.minute }, source: { kind: 'narration' }, card: {}, template: 'commoner' });
+    s.entities['npc.wool_driver'] = person('npc.wool_driver', 'wool cart driver');
+    s.entities['npc.wool_factor'] = person('npc.wool_factor', 'wool factor');
+    s.scene.present = ['pc', 'npc.wool_driver', 'npc.wool_factor'];
+    s.quests['quest.cart'] = {
+        id: 'quest.cart', title: 'Shepherd Cart to Millbrook', kind: 'guild_contract', status: 'active', rank: 'Novice', level: 2, qtype: 'standard',
+        payout_cp: 90, client: 'Aldsa Corren, wool factor', desired_end_state: 'the wool cart reaches Millbrook', details: [], notes: [], history: [], proof: [],
+        objectives: [{ id: 'o1', verb: objective, what: 'the wool cart to Millbrook', qty: 1, unit: 'cart', where: 'Millbrook', status: 'open' }],
+        source: { board: 'loc.redmarch.guild_hall', branch: 'loc.redmarch' },
+    };
+    return s;
+}
+const FORD = { new: { name: 'Ford Narrows', kind: 'wilderness', parent: 'realm.veyrhold' } };
+const rules = (r) => r.events.filter((e) => e.t === 'delta.rejected').map((e) => e.d.rule);
+
+test('XP: four same-rank Level-1 wolves and the Level-2 standard escort reach Level 2 with 8 XP carried over (Core #25)', () => {
     const wolf = defeatXp(1, 'normal', 'F', content);
     const quest = questXp(2, 'standard', content);
-    assert.equal(wolf, 12);
-    assert.equal(quest, 60);
-    const xp = 4 * wolf + quest;
-    assert.equal(xp, 108);
+    assert.deepEqual([wolf, quest, 4 * wolf + quest], [12, 60, 108], 'the run had 4 × 10 + 40 = 80: no Level-up');
     const events = awardXp({ level: 1, class: 'warrior', xp: 4 * wolf }, quest, content, 'Quest XP');
     assert.equal(events.find((e) => e.t === 'level.up')?.d.level, 2);
     assert.equal(events.find((e) => e.t === 'level.up')?.d.xp_after, 8);
 });
 
-test('current return journey containing "came from" is not dropped as a retrospective memory', () => {
+test('a present return journey with "came from" is not dropped as a remembered one', () => {
     const quote = 'I walk back along the road I came from';
     const guard = guardCommands(quote, [{ seq: 1, type: 'go', to: { new: 'back along the road' }, quote }], {});
     assert.equal(guard.kept.length, 1);
     assert.equal(guard.dropped.length, 0);
 });
 
-test('just-displayed Board listings cannot be removed retrospectively in the reading reply', async () => {
+test('C1: the listings a board has just shown cannot be taken away in the reply that shows them', async () => {
     const g = await created();
     await g.player('I go to the Guild hall.', [{ seq: 1, type: 'go', to: 'loc.redmarch.guild_hall', quote: 'I go to the Guild hall' }]);
-    await g.reply('Alaric reached the Guild hall.', { expected: { '1': { arrived: true, at: 'loc.redmarch.guild_hall' } },
-        deltas: [{ seq: 1, type: 'arrive', at: 'loc.redmarch.guild_hall', forced_by: null }] });
+    await g.reply('Alaric reached the Guild hall.', { expected: { 1: { arrived: true, at: 'loc.redmarch.guild_hall' } }, deltas: [{ seq: 1, type: 'arrive', at: 'loc.redmarch.guild_hall', forced_by: null }] });
+    assert.ok(!Object.values(g.state().quests).length, 'no board before he reads it');
     await g.player('I read the Novice Board.', [{ seq: 1, type: 'board.read', rank: 'Novice', quote: 'I read the Novice Board' }]);
     const visible = g.state().last.outcome.board.listings;
     assert.equal(visible.length, 5);
-    const id = visible[0];
-    const r = await g.reply('Five jobs are freshly displayed; the clerk claims somebody has taken the first.', {
-        expected: {}, deltas: [{ seq: 1, type: 'listing.gone', listing: id, why: 'taken_by_other' }],
+    const r = await g.reply('Five jobs are freshly chalked; the clerk says somebody took the first this morning.', {
+        expected: {}, deltas: [{ seq: 1, type: 'listing.gone', listing: visible[0], why: 'taken_by_other' }],
     });
-    assert.ok(r.record.events.some((e) => e.t === 'delta.rejected' && e.d.rule === 'board_first_display'));
-    assert.equal(g.state().quests[id].status, 'listed');
+    assert.deepEqual(rules(r.record), ['board_first_display']);
+    assert.equal(g.state().quests[visible[0]].status, 'listed');
+    assert.ok(r.record.corrections.some((c) => /remains AVAILABLE/.test(c)));
 });
 
-test('a real escort party survives two scene changes and exposes JOURNEY READY without rematching generic NPC labels', async () => {
+test('C2: the companions an arrival names arrive with Alaric; who is not named stays at the old place and is there again when he comes back', async () => {
     const g = await created();
-    let s = travelTurn(escortScene(g.state()));
-    const ford = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'arrive',
-        at: { new: { name: 'Ford Narrows', kind: 'wilderness', parent: 'realm.veyrhold' } }, forced_by: null }] }, { msg: 100 });
-    assert.ok(ford.state.journey, 'party is now an event-sourced continuity bookmark');
-    assert.deepEqual(new Set(ford.state.journey.party), new Set(['npc.wool_driver', 'npc.wool_factor']));
-    assert.ok(ford.state.scene.present.includes('npc.wool_driver'));
-    assert.ok(ford.state.scene.present.includes('npc.wool_factor'));
-    const cat = buildCatalog(ford.state, content);
-    assert.match(cat.journey_ready || '', /quest\.cart/);
-    s = travelTurn(ford.state);
-    const millbrook = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'arrive',
-        at: { new: { name: 'Millbrook', kind: 'settlement', parent: 'realm.veyrhold' } }, forced_by: null }] }, { msg: 102 });
-    assert.ok(millbrook.state.scene.present.includes('npc.wool_driver'));
-    assert.ok(millbrook.state.scene.present.includes('npc.wool_factor'));
-    assert.deepEqual(new Set(millbrook.state.journey.party), new Set(['npc.wool_driver', 'npc.wool_factor']));
+    let s = after(escort(g.state()), { auth: TRAVEL });
+    const ford = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'arrive', at: FORD, forced_by: null, with: ['npc.wool_driver'] }] }, { msg: 100 });
+    assert.deepEqual(ford.rejected, []);
+    assert.deepEqual(ford.state.scene.present, ['pc', 'npc.wool_driver'], 'the driver came along, the factor stayed');
+    assert.equal(ford.state.entities['npc.wool_factor'].at, 'loc.redmarch.verge');
+    assert.ok(!ford.events.some((e) => e.t === 'journey.party'), 'no party bookmark');
+    // back at the verge: the factor is still where he stayed, the driver comes back with him
+    s = after(ford.state, { auth: TRAVEL });
+    const back = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'arrive', at: 'loc.redmarch.verge', forced_by: null, with: ['npc.wool_driver'] }] }, { msg: 102 });
+    assert.deepEqual([...back.state.scene.present].sort(), ['npc.wool_driver', 'npc.wool_factor', 'pc']);
+    // someone who walked off is not waiting there
+    s = after(back.state);
+    const gone = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'leave', who: 'npc.wool_factor' }] }, { msg: 104 });
+    assert.equal(gone.state.entities['npc.wool_factor'].at, null);
 });
 
-test('a named driver reuses the existing anonymous companion instead of creating a second driver', async () => {
+test('C2: an arrival answered only as an expected go brings its "with" along too; a with of someone not here is refused', async () => {
     const g = await created();
-    const s = travelTurn(escortScene(g.state()));
-    const r = applyWorld(s, content, { expected: {}, deltas: [{
-        seq: 1, type: 'person.new', ref: 'person.dren', name: 'Dren', role: 'wool cart driver',
-        desc: ['the same wool cart driver'], present: true, at: null, band: 'SHORT',
-    }] }, { msg: 103 });
-    assert.equal(r.state.entities['npc.wool_driver'].name, 'Dren');
-    assert.equal(Object.values(r.state.entities).filter((e) => e.kind === 'npc' && e.name === 'Dren').length, 1);
+    const s = after(escort(g.state()), { auth: TRAVEL, expected_keys: { 1: 'go' } });
+    const r = applyWorld(s, content, { expected: { 1: { arrived: true, at: FORD, with: ['npc.wool_driver', 'npc.wool_factor', 'npc.nobody'] } }, deltas: [] }, { msg: 100 });
+    assert.deepEqual([...r.state.scene.present].sort(), ['npc.wool_driver', 'npc.wool_factor', 'pc']);
+    assert.deepEqual(rules(r), ['world_rule'], 'npc.nobody is no one');
+    // an answer that leaves with out is valid: with is optional there, like a |null delta field
+    const p = parseExtraction(JSON.stringify({ expected: { 1: { arrived: true, at: null } }, deltas: [] }), content.deltaVocab, {}, { 1: 'go' });
+    assert.equal(p.valid, true, p.errors.join('; '));
 });
 
-test('a rejected arrival cannot make an escort ready for turn-in in the very same reply', async () => {
+test('C2: the story naming the anonymous driver names that driver (person.new of the name later reuses him); "person.aldsa_corren" finds Aldsa', async () => {
     const g = await created();
-    const s = escortScene(g.state());
-    s.last = { input: 'I wait here', outcome: {
-        kind: 'v4', actions: ['1. WAITS'], auth: { go: null, gos: [], roam: false, take: [], gather: false, rest: false, timeCap: 120 },
-        expected_keys: {}, conditionals: [], booked: { registration: false, grants: [], turnIns: [], accepted: [] },
-    } };
-    const r = applyWorld(s, content, { expected: {}, deltas: [
-        { seq: 1, type: 'arrive', at: { new: { name: 'Millbrook', kind: 'settlement', parent: 'realm.veyrhold' } }, forced_by: null },
-        { seq: 2, type: 'quest.ready', quest: 'quest.cart', note: 'the wool cart reached Millbrook safely' },
+    const s = after(escort(g.state()));
+    const named = applyWorld(s, content, { expected: {}, deltas: [
+        { seq: 1, type: 'person.named', who: 'npc.wool_driver', name: 'Dren' },
+        { seq: 2, type: 'person.named', who: 'npc.wool_factor', name: 'Aldsa' },
+    ] }, { msg: 103 });
+    assert.deepEqual(named.rejected, []);
+    assert.equal(named.state.entities['npc.wool_driver'].name, 'Dren');
+    const again = applyWorld(after(named.state), content, { expected: {}, deltas: [
+        { seq: 1, type: 'person.new', ref: 'person.dren', name: 'Dren', role: 'wool cart driver', desc: [], present: true, at: null, band: 'SHORT' },
+        { seq: 2, type: 'attitude', who: 'person.aldsa_corren', delta: 10, why: 'he walked up to the wolf' },
     ] }, { msg: 105 });
-    assert.ok(r.events.some((e) => e.t === 'delta.rejected' && e.d.rule === 'no_go'));
-    assert.ok(r.events.some((e) => e.t === 'delta.rejected' && e.d.rule === 'quest_dependency'));
-    assert.notEqual(r.state.quests['quest.cart'].ready, true);
+    assert.deepEqual(again.rejected, []);
+    assert.equal(Object.values(again.state.entities).filter((e) => e.kind === 'npc' && e.name === 'Dren').length, 1, 'one Dren');
+    assert.ok(again.events.some((e) => e.t === 'relation.set' && e.d.rel.a === 'npc.wool_factor' && e.d.rel.type === 'attitude'), 'the attitude reaches Aldsa');
+    // a person already named otherwise is not renamed
+    const rename = applyWorld(after(named.state), content, { expected: {}, deltas: [{ seq: 1, type: 'person.named', who: 'npc.wool_driver', name: 'Piet' }] }, { msg: 107 });
+    assert.deepEqual(rules(rename), ['world_rule']);
+    assert.equal(rename.state.entities['npc.wool_driver'].name, 'Dren');
 });
 
-test('a dozen ordinary nonhostile sheep remain one compact scenery fact, not twelve HUD combatants', async () => {
+test('C4: JOURNEY READY comes from the contract: an escort underway outside its town can be continued without anyone of it being present', async () => {
     const g = await created();
-    const s = escortScene(g.state());
-    const n = Object.keys(s.entities).length;
-    s.last = { input: 'I look at the pasture', outcome: {
-        kind: 'v4', auth: { go: null, gos: [], roam: false, take: [], gather: false, rest: false, timeCap: 120 },
-        expected_keys: {}, conditionals: [], booked: { registration: false, grants: [], turnIns: [], accepted: [] },
-    } };
-    const r = applyWorld(s, content, { expected: {}, deltas: [{
-        seq: 1, type: 'creature.new', ref: 'sheep', species: 'sheep', anchor: 'deer', desc: ['grazing peacefully'],
-        count: 12, present: true, band: 'MEDIUM',
-    }] }, { msg: 106 });
-    assert.equal(Object.keys(r.state.entities).length, n);
-    assert.ok(r.events.some((e) => e.t === 'fact.asserted' && e.d.fact.p === 'background_fauna'));
+    const s = escort(g.state());
+    assert.equal(journeyReady(s), null, 'at the verge of Redmarch, the board\'s town, the journey has not begun');
+    const ford = applyWorld(after(s, { auth: TRAVEL }), content, { expected: {}, deltas: [{ seq: 1, type: 'arrive', at: FORD, forced_by: null, with: null }] }, { msg: 100 }).state;
+    assert.deepEqual(ford.scene.present, ['pc'], 'nobody came along in this answer');
+    assert.equal(journeyReady(ford)?.id, 'quest.cart');
+    assert.match(buildCatalog(ford, content).journey_ready, /^quest\.cart — "Shepherd Cart to Millbrook": the contract's journey is underway/);
+    const events = [];
+    const ctx = resolveCommands(ford, content, [{ seq: 1, type: 'journey.continue', quote: 'then we continue' }], (e) => events.push(e));
+    assert.equal(ctx.resolutions[0].status, 'authorized');
+    assert.equal(ctx.auth.roam, true);
+    // once the outcome is reached, there is no journey left to continue
+    const ready = structuredClone(ford);
+    ready.quests['quest.cart'].ready = true;
+    assert.equal(journeyReady(ready), null);
 });
 
-test('a larger, visible threatening wolf pack is NOT treated as background fauna', async () => {
+test('C3: an escort is not ready in a reply whose arrival the engine refused; other work of that reply may be', async () => {
     const g = await created();
-    const s = escortScene(g.state());
-    s.last = { input: 'I see wolves coming down from the ridge', outcome: {
-        kind: 'v4', auth: { go: null, gos: [], roam: false, take: [], gather: false, rest: false, timeCap: 120 },
-        expected_keys: {}, conditionals: [], booked: { registration: false, grants: [], turnIns: [], accepted: [] },
-    } };
-    const r = applyWorld(s, content, { expected: {}, deltas: [{
-        seq: 1, type: 'creature.new', ref: 'wolfpack', species: 'wolf', anchor: 'wolf',
-        desc: ['five wolves charging down the ridge'], count: 5, present: true, band: 'SHORT',
-    }] }, { msg: 107 });
-    assert.equal(r.events.filter((e) => e.t === 'entity.created' && e.d.entity.kind === 'creature').length, 5);
+    const s = escort(g.state());
+    s.quests['quest.wolves'] = { ...structuredClone(s.quests['quest.cart']), id: 'quest.wolves', title: 'Wolves on the River Road', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'the wolf pack', qty: 4, unit: null, where: 'river road', status: 'open' }] };
+    const r = applyWorld(after(s, { input: 'I wait here' }), content, { expected: {}, deltas: [
+        { seq: 1, type: 'arrive', at: { new: { name: 'Millbrook', kind: 'settlement', parent: 'realm.veyrhold' } }, forced_by: null, with: null },
+        { seq: 2, type: 'quest.ready', quest: 'quest.cart', note: 'the wool cart is safe' },
+        { seq: 3, type: 'quest.ready', quest: 'quest.wolves', note: 'the four wolves are dead' },
+    ] }, { msg: 105 });
+    assert.deepEqual(rules(r), ['no_go', 'quest_dependency']);
+    assert.notEqual(r.state.quests['quest.cart'].ready, true, 'however the note is worded');
+    assert.equal(r.state.quests['quest.wolves'].ready, true, 'the dead wolves do not depend on where he is');
+    assert.ok(r.corrections.some((c) => /"Shepherd Cart to Millbrook" is still IN PROGRESS/.test(c)));
 });
 
-test('already credited copper cannot be collected again as a phantom object', async () => {
+test('C5: a large passive flock is one background fact; a wolf pack, a hostile herd and the vermin of a hunting contract stay individual', async () => {
+    const g = await created();
+    const s = after(escort(g.state()));
+    const count = (r, species) => Object.values(r.state.entities).filter((e) => e.kind === 'creature' && e.species === species).length;
+    const sheep = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'creature.new', ref: 'sheep', species: 'sheep', anchor: 'deer', desc: ['penned in a corner of the yard'], count: 12, present: true, band: 'MEDIUM' }] }, { msg: 106 });
+    assert.equal(count(sheep, 'sheep'), 0);
+    assert.ok(sheep.events.some((e) => e.t === 'fact.asserted' && e.d.fact.p === 'background_fauna' && e.d.fact.o === '12 sheep'));
+    const wolves = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'creature.new', ref: 'wolves', species: 'wolf', anchor: 'wolf', desc: ['watching from the ridge'], count: 5, present: true, band: 'LONG' }] }, { msg: 107 });
+    assert.equal(count(wolves, 'wolf'), 5, 'aggressive: individual, profiles locked before any attack');
+    assert.ok(Object.values(wolves.state.entities).filter((e) => e.species === 'wolf').every((e) => e.profile));
+    const stampede = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'creature.new', ref: 'stags', species: 'stag', anchor: 'deer', desc: ['rutting'], count: 6, present: true, band: 'SHORT' }, { seq: 2, type: 'hostile', by: ['stags'] }] }, { msg: 108 });
+    assert.equal(count(stampede, 'stag'), 6, 'a group that attacks is individual');
+    const job = structuredClone(s);
+    job.quests['quest.cart'].objectives[0].verb = 'DEFEAT';
+    const rats = applyWorld(job, content, { expected: {}, deltas: [{ seq: 1, type: 'creature.new', ref: 'rats', species: 'cellar rat', anchor: 'rat', desc: ['in the grain sacks'], count: 8, present: true, band: 'SHORT' }] }, { msg: 109 });
+    assert.equal(count(rats, 'cellar rat'), 8, 'while a contract to defeat something is active, the vermin may be its targets');
+});
+
+test('C6: loose coin is never an item: taking the paid-out copper books nothing more; loot coin is coin.gift; the Guild pays nobody twice', async () => {
     const g = await created();
     const s = g.state();
     s.entities.pc.sheet.coin_cp = 120;
     const events = [];
-    const r = resolveCommands(s, content, [{ seq: 1, type: 'take', object: { new: 'the copper' }, qty: 1, quote: 'I take the copper' }], (e) => events.push(e));
-    assert.equal(r.resolutions[0].reason, 'currency already booked');
-    assert.ok(!events.some((e) => e.t === 'object.created' || e.t === 'coin.changed'));
-    assert.equal(s.entities.pc.sheet.coin_cp, 120);
+    const ctx = resolveCommands(s, content, [{ seq: 1, type: 'take', object: { new: 'the copper' }, qty: null, quote: 'I take the copper' }], (e) => events.push(e));
+    assert.equal(ctx.resolutions[0].status, 'authorized', 'not refused: coin can be his to take');
+    assert.match(ctx.actions[0], /coin counts in his purse \(coin the engine already paid him is not counted again\)/);
+    const t = after(s, { auth: { take: [1], takeNames: { 1: 'the copper' } }, expected_keys: { 1: 'take' } });
+    const took = applyWorld(t, content, { expected: { 1: { taken: true } }, deltas: [{ seq: 1, type: 'object.new', name: '90 copper', kind: 'item', qty: 1, unit: null, holder: 'pc', for_quest: null }] }, { msg: 64 });
+    assert.ok(!Object.values(took.state.objects).length, 'no phantom "copper"');
+    assert.deepEqual(rules(took), ['currency_wallet']);
+    assert.equal(took.state.entities.pc.sheet.coin_cp, 120);
+    // a pile of coin lying about is no object either; what he takes of it is coin
+    const loot = applyWorld(after(s), content, { expected: {}, deltas: [
+        { seq: 1, type: 'object.new', name: 'a pile of silver', kind: 'item', qty: 1, unit: null, holder: 'here', for_quest: null },
+        { seq: 2, type: 'coin.gift', from: 'the dead bandit\'s purse', cp: 14, why: 'coins found on the bandit' },
+        { seq: 3, type: 'object.new', name: 'a coin purse', kind: 'item', qty: 1, unit: null, holder: 'here', for_quest: null },
+    ] }, { msg: 70 });
+    assert.equal(loot.state.entities.pc.sheet.coin_cp, 134);
+    assert.deepEqual(Object.values(loot.state.objects).map((o) => o.name), ['a coin purse'], 'a purse is a thing');
+    // the payout of a contract that was just turned in, handed over in the story: refused
+    const fw = firewall([{ seq: 1, type: 'coin.gift', from: 'npc.tidecross_guild_desk_clerk', cp: 90, why: 'Guild payout for the shepherd cart' }],
+        { contracts: [{ id: 'quest.cart', title: 'Shepherd Cart to Millbrook', payout_cp: 90, status: 'completed' }], booked: { ...NOBODY, turnIns: ['quest.cart'] }, inGuildHall: true });
+    assert.deepEqual(fw.reject.map((x) => x.rule), ['guild_payout']);
 });
 
-test('operational quest detail can include the correct posted reward but cannot increase Guild payout', () => {
+test('quest.detail may restate the posted payout in any coin and keep route memory; a changed or withheld payout is refused', () => {
     const ctx = { contracts: [{ id: 'quest.cart', title: 'Shepherd Cart', payout_cp: 90, status: 'active' }] };
-    const okay = firewall([{ seq: 1, type: 'quest.detail', quest: 'quest.cart', note: 'Meet Aldsa by the wool shed; posted reward 90 cp; take the river road.', schedule: null }], ctx);
-    assert.equal(okay.accept.length, 1);
-    const abuse = firewall([{ seq: 1, type: 'quest.detail', quest: 'quest.cart', note: 'The Guild reward is now 150 cp; the previous posted reward was 90 cp.', schedule: null }], ctx);
-    assert.ok(abuse.reject.length >= 1);
-    const toll = firewall([{ seq: 1, type: 'quest.detail', quest: 'quest.cart', note: 'A 5 cp road toll is charged by the ferryman.', schedule: null }], ctx);
-    assert.equal(toll.accept.length, 1);
+    const note = (n) => firewall([{ seq: 1, type: 'quest.detail', quest: 'quest.cart', note: n, schedule: null }], ctx);
+    for (const ok of ['Meet Aldsa by the wool shed; posted reward 90 cp; take the river road.', 'payout nine silver on return to the Guild hall', 'A 5 cp road toll is charged by the ferryman.']) assert.equal(note(ok).accept.length, 1, ok);
+    for (const bad of ['The Guild reward is now 150 cp; the previous posted reward was 90 cp.', 'Aldsa will not pay if the flock loses a sheep.', 'the reward was doubled by the clerk']) assert.equal(note(bad).accept.length, 0, bad);
 });
 
-test('unpriced water stays a hard pending trade boundary in the engine narrator instructions', () => {
-    const text = playerActionsBlock({ actions: ['1. WANTS — water; no price is known.'],
-        extra: ['OPEN DECISION — seller names the price and stops.'],
-        resolutions: [{ type: 'buy', status: 'pending' }], search_checks: [] });
+test('C7: an unpriced purchase is a hard stop before payment, service or consumption; invented consent counts as taken_anyway', () => {
+    const text = playerActionsBlock({ actions: ['1. WANTS — water; no price is known.'], extra: [], resolutions: [{ type: 'buy', status: 'pending' }], search_checks: [] });
     assert.match(text, /PENDING TRADE IS A HARD STOP/);
     assert.match(text, /BEFORE any payment, delivery, drinking/);
+    assert.match(content.deltaVocab.expected.buy.summary, /a nod or consent the reply invents for him is no agreement/);
+    assert.match(content.deltaVocab.expected.pay.summary, /a nod or consent the reply invents for him is no agreement/);
 });

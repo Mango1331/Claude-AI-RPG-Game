@@ -16,7 +16,7 @@
 //   quests     the shared quest map; V4 quests carry kind guild_contract|private and the fields of plan §6.3
 //   guild      {membership: {rank, since, branch} | null, boards: {"<branch>|<rank>": {branch, rank, day, listings[]}}}
 //   decisions  [{id, kind: registration|purchase|payment|sale, what, offer, seller, at, turn, max_cp, any_price, priced}]
-import { clone } from '../util.js';
+import { clone, normText } from '../util.js';
 
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 /** Which parent a place may have (plan §6.1). */
@@ -222,6 +222,19 @@ export function placeName(state, id) {
         return town ? `${p.name}, ${state.places[town].name}` : p.name;
     }
     return p.name;
+}
+
+const COIN_WORDS = new Set(['coin', 'coins', 'copper', 'coppers', 'silver', 'silvers', 'gold', 'golds', 'cp', 'piece', 'pieces', 'money', 'reward', 'payout', 'payment', 'quest', 'guild']);
+const COIN_AMOUNT = /^(?:the|my|his|her|their|our|some|a|an|of|handful|few|several|pile|stack|\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)$/;
+
+/**
+ * Loose coin ("the copper", "90 copper", "a pile of coins", "the reward"), not a thing that holds coin ("a coin
+ * purse"): coin is his purse's number (sheet.coin_cp), never an inventory object (live 30.09.2026: "take the copper"
+ * after the Guild payout became a second, phantom "copper" in his inventory).
+ */
+export function isLooseCoin(name) {
+    const w = normText(name || '').split(/\s+/).filter((x) => x && !COIN_AMOUNT.test(x));
+    return w.length > 0 && w.every((x) => COIN_WORDS.has(x)) && w.some((x) => !['quest', 'guild'].includes(x));
 }
 
 /** Local = the same settlement (plan §6.1); else a journey. */

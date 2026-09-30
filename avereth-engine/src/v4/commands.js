@@ -17,9 +17,10 @@ import { resolveCheck } from '../checks.js';
 import { entityLabel, setFactEvents, truth } from '../knowledge.js';
 import { normText, slug } from '../util.js';
 import {
-    placeName, hallOf, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey,
+    placeName, hallOf, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin,
 } from './domain.js';
 import { sameWant } from './world.js';
+import { journeyReady } from './catalog.js';
 import {
     REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, checkProof, objectiveText,
     promotion, takenByOthers, bookBoard,
@@ -89,38 +90,14 @@ function pickQuest(s, ref, statuses, kind = null) {
 const HANDLERS = {
     'journey.continue'(s, content, c, ctx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
-        const travelRe = /\b(?:escort|journey|travel|road|cart|wagon|caravan|ship|boat|ferry|ride|guide|lead|depart|leave|deliver|destination|route|waystation)\b/i;
-        const sources = [
-            ...Object.values(s.quests).filter((q) => q.status === 'active' && [...(q.details || []), ...(q.notes || [])].length).map((q) => ({
-                label: q.title,
-                text: [...(q.details || []), ...(q.notes || [])].filter(Boolean).join(' '),
-            })),
-            ...Object.values(s.threads || {}).filter((t) => t.status === 'open').map((t) => ({ label: t.text, text: t.text })),
-        ];
-        // An already-established escort retains its real party identities across scenes.
-        const pQuest = s.journey?.quest && s.quests[s.journey.quest];
-        const pContact = s.journey?.party?.find((id) => present(s, id));
-        let ready = pQuest?.status === 'active' && !pQuest.ready && pContact
-            ? { label: pQuest.title, contact: pContact } : null;
-        for (const src of sources) {
-            if (ready) break;
-            if (!travelRe.test(src.text)) continue;
-            const text = normText(src.text);
-            const contact = s.scene.present.find((id) => {
-                if (id === 'pc' || s.entities[id]?.kind !== 'npc') return false;
-                const e = s.entities[id];
-                return [e.name, truth(s, id, 'occupation')[0]?.o, ...(e.descriptors || [])].filter(Boolean).map(normText)
-                    .some((x) => x.length >= 3 && text.includes(x));
-            });
-            if (contact) { ready = { ...src, contact }; break; }
-        }
-        if (!ready) return { status: 'refused', reason: 'no established journey', line: 'NOTHING TO DEPART ON — no stored journey/departure with someone here is ready to continue.' };
+        const ready = journeyReady(s);
+        if (!ready) return { status: 'refused', reason: 'no established journey', line: 'NOTHING TO DEPART ON — no stored journey/departure is ready to continue here.' };
         const go = { seq: c.seq, to: null, name: `the established journey for "${ready.label}"`, hall: false, newName: 'the established journey' };
         ctx.auth.go = go;
         ctx.auth.gos.push(go);
         ctx.auth.roam = true;
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, content.rules.time.travel_cap_min);
-        return { status: 'authorized', line: `DEPARTS/CONTINUES — the already-established journey with ${entityLabel(s, ready.contact)}; the story may advance it and establish where they reach.` };
+        return { status: 'authorized', line: `DEPARTS/CONTINUES — the already-established journey of "${ready.label}"${ready.contact ? ` with ${entityLabel(s, ready.contact)}` : ''}; the story may advance it and establish where they reach.` };
     },
     go(s, content, c, ctx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT GO — not while the fight runs.' };
@@ -166,16 +143,13 @@ const HANDLERS = {
         return { status: 'authorized', cap, line: `${VERBS[c.kind] || String(c.kind).toUpperCase()} ${c.what ? `${c.what} ` : ''}${span} (at most ${cap} minutes; the story decides how long it takes and what it yields).` };
     },
     take(s, content, c, ctx, emit) {
-        // Currency is already tracked in sheet.coin_cp, not as a second loot item. A physical named
-        // coin-containing object, if one actually exists, still uses the normal object-id path below.
-        const cashName = typeof c.object === 'object' ? normText(c.object?.new || '') : '';
-        if (/^(?:(?:the|my|some|a|our)\s+)?(?:(?:quest|guild)\s+)?(?:reward|payout|payment|coins?|coppers?|silvers?|golds?)(?:\s+coins?)?$/.test(cashName)) {
-            return { status: 'refused', reason: 'currency already booked', line: 'NOTHING TO TAKE — received coin is already in Alaric\'s purse and coin total; do not create a second currency item.' };
-        }
         if (c.object && typeof c.object === 'object') {
             ctx.auth.take.push(c.seq);
             ctx.auth.takeNames = { ...(ctx.auth.takeNames || {}), [String(c.seq)]: String(c.object.new).slice(0, 80) };
             ctx.expectedKeys[String(c.seq)] = 'take';
+            // loose coin is his purse's number, never an item: what the engine booked already (a Guild payout) is his,
+            // coin the story newly lets him take (loot, a found purse's contents) the extractor books as coin
+            if (isLooseCoin(c.object.new)) return { status: 'authorized', line: `TAKES — ${c.object.new}, if it is there; coin counts in his purse (coin the engine already paid him is not counted again).` };
             return { status: 'authorized', line: `TAKES — ${c.object.new}, if it is there (the story decides whether he gets it).` };
         }
         const o = objectOf(s, content, c.object);
@@ -414,6 +388,7 @@ const HANDLERS = {
         // the generator's listings for this board (host.js ran it before this turn, canonical first)
         const gen = envx.board && envx.board.branch === branch && envx.board.rank === rank ? envx.board : null;
         if (gen?.listings?.length) bookBoard(s, content, gen, gen.listings, emit);
+        else if (gen?.failed) emit({ t: 'board.failed', d: { branch, rank, error: gen.failed } }); // on record for #audit
         const listed = listingsOf(s, branch, rank);
         if (!listed.length) {
             ctx.boardShown = { branch, rank, failed: true };
@@ -422,7 +397,7 @@ const HANDLERS = {
         emit({ t: 'board.shown', d: { branch, rank, listings: listed.map((q) => q.id) } });
         ctx.boardShown = { branch, rank, listings: listed.map((q) => q.id) };
         const rows = listed.map((q) => `**${q.title}** — client: ${q.client || 'unspecified'} · reward: ${q.payout_cp} cp · ${q.desired_end_state || objectiveText(q)}`).join('\n');
-        return { status: 'resolved', line: `READS the ${rank} board — BOARD (these listings now become canonical because Alaric actually reads them; present the notices in the existing title-first readable format; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\n${rows}\nStored objectives and any verification examples are continuity memory only.` };
+        return { status: 'resolved', line: `READS the ${rank} board — BOARD (these listings now become canonical because Alaric actually reads them; show exactly these, invent no other official contract; present the notices in the existing title-first readable format; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\n${rows}\nStored objectives and any verification examples are continuity memory only.` };
     },
     equip(s, content, c, ctx, emit) {
         const eq = s.entities.pc.sheet.equipment || {};

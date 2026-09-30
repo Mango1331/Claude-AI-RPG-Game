@@ -22,7 +22,7 @@ test('the extractor prompt states every rule and every constraint the validator 
     assert.equal(messages.length, 2);
     assert.ok(messages[0].content.endsWith(EXTRACT_PLAIN_FORMAT));
     assert.match(messages[1].content, /PLAYER ACTIONS \(already booked\):\n1\. GOES/);
-    assert.match(messages[1].content, /"1" \(go: did he arrive, and where\)/);
+    assert.match(messages[1].content, /"1" \(go: did he arrive, where, and who came with him\)/);
 });
 
 test('the schema stays strict internally while the parser fills harmless soft omissions before validation', () => {

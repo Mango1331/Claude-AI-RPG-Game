@@ -9,7 +9,7 @@
 import { O, S, B, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 
-export const EXTRACTOR_VERSION = 'extract-4.6';
+export const EXTRACTOR_VERSION = 'extract-4.7';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -37,7 +37,7 @@ function fieldSchema(spec, refs) {
 }
 
 const EXPECTED_SHAPES = {
-    go: (refs) => O({ arrived: B(), at: N(refs.place) }),
+    go: (refs) => O({ arrived: B(), at: N(refs.place), with: N(A(S())) }),
     activity: () => O({ minutes: I(0), done: B() }),
     take: () => O({ taken: B() }),
     buy: () => O({ priced: B(), taken_anyway: B() }),
@@ -187,6 +187,8 @@ export function parseExtraction(answer, vocab, ids, expectedKeys) {
     const want = Object.keys(expectedKeys || {});
     if (!value) return { value: null, valid: false, complete: false, errors: [error || 'no JSON object'], missing: want, raw: false };
     const exp = value && typeof value.expected === 'object' && value.expected ? value.expected : {};
+    // who came along may be left out of an arrival answer, like a |null delta field
+    for (const [k, t] of Object.entries(expectedKeys || {})) if (t === 'go' && exp[k] && typeof exp[k] === 'object' && exp[k].with === undefined) exp[k].with = null;
     const missing = want.filter((k) => !exp[k] || typeof exp[k] !== 'object');
     // A missing expected answer may remain incomplete, but a schema-valid partial extraction is still useful state.
     const schema = deltaSchema(vocab, ids, Object.fromEntries(Object.entries(expectedKeys || {}).filter(([k]) => !missing.includes(k))));

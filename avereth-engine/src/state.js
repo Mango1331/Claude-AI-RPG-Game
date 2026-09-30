@@ -153,10 +153,9 @@ export function applyEvent(state, e) {
             delete state.scene.positions[d.id];
             delete state.scene.awareness[d.id];
             break;
-        // A small continuity bookmark, not a general NPC-following simulation. A party exists
-        // only when the story established a shared escort journey; its IDs survive scene resets.
+        // the escort party bookmark of the 4.0.9 experiment: read and ignored, so its chats still fold (companions now
+        // arrive with Alaric by arrive.with, src/v4/world.js)
         case 'journey.party':
-            state.journey = d.quest ? { quest: d.quest, party: (d.party || []).slice() } : null;
             break;
         case 'scene.position':
             state.scene.positions[d.id] = { band: d.band, cover: d.cover || 'none' };

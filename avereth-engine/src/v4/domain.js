@@ -16,6 +16,7 @@
 //   quests     the shared quest map; V4 quests carry kind guild_contract|private and the fields of plan §6.3
 //   guild      {membership: {rank, since, branch} | null, boards: {"<branch>|<rank>": {branch, rank, day, listings[]}}}
 //   decisions  [{id, kind: registration|purchase|payment|sale, what, offer, seller, at, turn, max_cp, any_price, priced}]
+//   credits    [{cp, at, day}] the engine's last credits to Alaric (Guild payouts, sales), set on first use
 import { clone, normText } from '../util.js';
 
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
@@ -35,7 +36,7 @@ export const V4_EVENTS = new Set([
     'place.created',
     'object.created', 'object.moved', 'object.marked', 'object.consumed',
     'offer.created', 'offer.closed', 'transaction.completed', 'service.granted',
-    'quest.created', 'quest.status', 'quest.detailed', 'quest.progressed', 'quest.ready', 'proof.checked',
+    'quest.created', 'quest.status', 'quest.detailed', 'quest.progressed', 'quest.ready', 'quest.journey', 'proof.checked',
     'board.refreshed', 'board.failed', 'board.shown',
     'guild.registered', 'guild.promoted',
     'decision.opened', 'decision.closed',
@@ -147,6 +148,13 @@ export function applyDomainEvent(state, e) {
             q.notes = [...(q.notes || []), `Outcome achieved: ${d.note || q.desired_end_state || 'ready for turn-in'}`].slice(-6);
             break;
         }
+        case 'quest.journey': {
+            // the quest's journey has actually begun: Alaric set off on it (src/v4/catalog.js journeyReady)
+            const q = state.quests[d.id];
+            if (!q) throw new Error(`unknown quest ${d.id}`);
+            q.journey = { since: state.turn, from: d.at ?? null };
+            break;
+        }
         case 'board.refreshed':
             state.guild.boards[d.key] = { branch: d.branch, rank: d.rank, day: d.day, listings: [...d.listings] };
             break;
@@ -162,8 +170,12 @@ export function applyDomainEvent(state, e) {
         case 'decision.closed':
             state.decisions = state.decisions.filter((x) => x.id !== d.id);
             break;
-        // audit only: the record of what was interpreted, resolved, applied or refused
         case 'transaction.completed':
+            // the engine's own credits to Alaric (a Guild payout, a sale), by place and day: coin the story then shows
+            // him pick up there that day is this coin, not new coin (src/v4/world.js coin.gift). His payments are audit.
+            if (d.to === 'pc') state.credits = [...(state.credits || []), { cp: d.cp, at: d.at ?? state.scene?.at ?? null, day: today(state) }].slice(-6);
+            break;
+        // audit only: the record of what was interpreted, resolved, applied or refused
         case 'proof.checked':
         case 'board.failed':
         case 'board.shown':
@@ -233,7 +245,9 @@ const COIN_AMOUNT = /^(?:the|my|his|her|their|our|some|a|an|of|handful|few|sever
  * after the Guild payout became a second, phantom "copper" in his inventory).
  */
 export function isLooseCoin(name) {
-    const w = normText(name || '').split(/\s+/).filter((x) => x && !COIN_AMOUNT.test(x));
+    // the coin itself, not whose it was or where it lies ("the bandit's coins", "the silver on the counter")
+    const phrase = normText(name || '').replace(/^.*\b[a-z]+'s?\s+/, '').split(/\s+(?:in|on|from|at|inside|under|behind|beneath|off)\s+/)[0];
+    const w = phrase.split(/\s+/).filter((x) => x && !COIN_AMOUNT.test(x));
     return w.length > 0 && w.every((x) => COIN_WORDS.has(x)) && w.some((x) => !['quest', 'guild'].includes(x));
 }
 

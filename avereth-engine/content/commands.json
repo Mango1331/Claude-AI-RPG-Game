@@ -1,6 +1,6 @@
 {
-  "version": "cmd-0.6",
-  "note": "Runtime V4 command vocabulary (docs/RUNTIME_V4_PLAN.md §4.1, §4.2). One source for the interpreter prompt, its schema and the validator (src/v4/interpret.js). cmd-0.2 against the P0 draft cmd-0.1-draft (docs/P0_BERICHT.md §5): guild.register no longer teaches the phrase \"I'm here to register\"; quest.turn_in no longer teaches a purpose clause as a turn-in; reading the Guild board is board.read, not 'looking around'; \"register it\" after taking a slip is part of quest.accept. The positive/negative lists document intent for readers and are never put into a prompt: several of them are cases of the evaluation corpus (tests/eval/commands.jsonl). cmd-0.3: GO explicitly includes moving toward a perceived sound, trail or direction (live 28.09. afternoon). cmd-0.4: add journey.continue for clear consent to an already-established escort journey; scene handles are targetable by the deterministic combat parser. cmd-0.5: JOURNEY READY may come from any persisted travel/departure context with a present participant, not only an ESCORT objective. cmd-0.6: explicit present-tense continuation after a persisted journey, current return travel despite 'came from'; witness-signature requests are never Guild turn-ins.",
+  "version": "cmd-0.7",
+  "note": "Runtime V4 command vocabulary (docs/RUNTIME_V4_PLAN.md §4.1, §4.2). One source for the interpreter prompt, its schema and the validator (src/v4/interpret.js). cmd-0.2 against the P0 draft cmd-0.1-draft (docs/P0_BERICHT.md §5): guild.register no longer teaches the phrase \"I'm here to register\"; quest.turn_in no longer teaches a purpose clause as a turn-in; reading the Guild board is board.read, not 'looking around'; \"register it\" after taking a slip is part of quest.accept. The positive/negative lists document intent for readers and are never put into a prompt: several of them are cases of the evaluation corpus (tests/eval/commands.jsonl). cmd-0.3: GO explicitly includes moving toward a perceived sound, trail or direction (live 28.09. afternoon). cmd-0.4: add journey.continue for clear consent to an already-established escort journey; scene handles are targetable by the deterministic combat parser. cmd-0.5: JOURNEY READY may come from any persisted travel/departure context with a present participant, not only an ESCORT objective. cmd-0.6: explicit present-tense continuation after a persisted journey, current return travel despite 'came from'; witness-signature requests are never Guild turn-ins. cmd-0.7 (review of 4.1.0): offer.accept carries qty, the number of units he takes of one line (\"three flasks\"); an OFFER line may be a lot (\"3 for 9 cp\"); buy and sell count units the same way.",
   "rules": [
     "Only what Alaric himself does or commits to in this message. A deed he narrates in the past tense in this message counts.",
     "No command for a question, a thought or wish, a hypothetical (\"if I …, would …\"), a plan for later (\"tomorrow I'll …\"), a memory of an earlier turn, a negation (\"I don't pay\"), or what other people do or say, even when the player writes it.",
@@ -201,7 +201,7 @@
     },
     {
       "type": "buy",
-      "summary": "Alaric wants to buy goods or a service that no OFFER in the catalog lists. max_cp when he sets a limit, any_price true when he accepts any price.",
+      "summary": "Alaric wants to buy goods or a service that no OFFER in the catalog lists. qty: how many units, when he names a number. max_cp when he sets a limit (for all of it), any_price true when he accepts any price.",
       "args": {
         "what": {
           "type": "string"
@@ -234,7 +234,7 @@
     },
     {
       "type": "sell",
-      "summary": "Alaric offers something he holds for sale; min_cp when he names a lowest price.",
+      "summary": "Alaric offers something he holds for sale; qty: how many units, when he names a number; min_cp when he names a lowest price (for all of it).",
       "args": {
         "object": {
           "ref": "object"
@@ -263,7 +263,7 @@
     },
     {
       "type": "offer.accept",
-      "summary": "Alaric accepts an open offer from the catalog (\"Deal.\", \"I'll take the room\", \"all three\"). lines: the line ids he takes; null when he takes the whole offer.",
+      "summary": "Alaric accepts an open offer from the catalog (\"Deal.\", \"I'll take the room\", \"all three\"). lines: the line ids he takes; null when he takes the whole offer. qty: how many units he takes when he names a number of one line (\"three of the flasks\"); null for the line as offered.",
       "args": {
         "offer": {
           "ref": "offer"
@@ -271,11 +271,17 @@
         "lines": {
           "array": "string",
           "nullable": true
+        },
+        "qty": {
+          "type": "integer",
+          "min": 1,
+          "nullable": true
         }
       },
       "positive": [
         "All three, please.",
-        "Fine, I'll pay the fee."
+        "Fine, I'll pay the fee.",
+        "Three of the water flasks, please."
       ],
       "negative": [
         "Would you do it for less?"

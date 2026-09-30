@@ -162,7 +162,11 @@ export function completeContract(s, content, q, emit, { step } = {}) {
     if (!q.ready && legacyReady) for (const x of legacy.consume) emit({ t: 'object.consumed', d: { id: typeof x === 'string' ? x : x.id, by: 'guild', ...(typeof x === 'object' ? { qty: x.qty } : {}) } });
     const sheet = s.entities.pc.sheet;
     const pay = q.payout_cp || 0;
-    if (pay) emit({ t: 'coin.changed', d: { id: 'pc', value: sheet.coin_cp + pay, delta: pay, why: `Guild payout: ${q.title}` } });
+    if (pay) {
+        emit({ t: 'coin.changed', d: { id: 'pc', value: sheet.coin_cp + pay, delta: pay, why: `Guild payout: ${q.title}` } });
+        // the engine's credit, by place: the payout the clerk counts out on the counter is this coin (src/v4/world.js)
+        emit({ t: 'transaction.completed', d: { to: 'pc', from: 'guild', cp: pay, for: q.title, at: s.scene.at } });
+    }
     const xp = q.level ? questXp(q.level, q.qtype || 'standard', content) : 0;
     if (xp) awardXp(s.entities.pc.sheet, xp, content, `Quest XP: ${q.title}`).forEach(emit);
     emit({ t: 'quest.status', d: { id: q.id, from: q.status, to: 'completed', at: s.scene.at, step } });

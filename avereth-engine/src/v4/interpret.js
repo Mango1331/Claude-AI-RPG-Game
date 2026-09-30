@@ -8,15 +8,17 @@
 import { O, S, B, I, E, A, N, REF, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 
-export const INTERPRETER_VERSION = 'interp-4.5';
+export const INTERPRETER_VERSION = 'interp-4.6';
 
 // Contrastive examples from another town, so they never name a catalog id of the current scene. They follow the error
 // clusters of P0/S1 (docs/P0_BERICHT.md §5) without repeating any case of the evaluation corpora: a test checks that no
 // example message equals a corpus message.
 const EXAMPLES = `Examples (another town, not the current scene):
-CATALOG: PRESENT: npc.ferryman (ferryman) · OFFERS: offer.ferry (ferryman: l1 crossing 2 cp)
+CATALOG: PRESENT: npc.ferryman (ferryman) · OFFERS: offer.ferry (ferryman: l1 crossing 2 cp, l2 smoked eel 3 for 2 cp)
 MESSAGE: *i paid the ferryman and crossed to the far bank* nice weather today
-→ {"commands":[{"seq":1,"type":"offer.accept","offer":"offer.ferry","lines":null,"quote":"i paid the ferryman"},{"seq":2,"type":"go","to":{"new":"the far bank"},"quote":"crossed to the far bank"}]}
+→ {"commands":[{"seq":1,"type":"offer.accept","offer":"offer.ferry","lines":["l1"],"qty":null,"quote":"i paid the ferryman"},{"seq":2,"type":"go","to":{"new":"the far bank"},"quote":"crossed to the far bank"}]}
+MESSAGE: Six of the eels, please.
+→ {"commands":[{"seq":1,"type":"offer.accept","offer":"offer.ferry","lines":["l2"],"qty":6,"quote":"Six of the eels, please."}]}
 MESSAGE: Would the smith buy my old boots? Maybe I'll ask him tomorrow.
 → {"commands":[]}
 MESSAGE: *I turn toward the cracking branches, ready my sword, and walk in the direction of the sound.*
@@ -103,7 +105,7 @@ export function catalogText(catalog) {
     if (catalog.journey_ready) L.push(`JOURNEY READY: ${catalog.journey_ready}`);
     if ((catalog.completed || []).length) L.push(`COMPLETED TODAY: ${catalog.completed.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
     if ((catalog.board || []).length) L.push(`BOARD (${catalog.board_label || 'visible here'}): ${catalog.board.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
-    if ((catalog.offers || []).length) L.push(`OFFERS: ${catalog.offers.map((o) => `${o.id} (${o.seller}: ${o.lines.map((l) => `${l.id} ${l.what} ${l.price_cp} cp`).join(', ')})`).join(' · ')}`);
+    if ((catalog.offers || []).length) L.push(`OFFERS: ${catalog.offers.map((o) => `${o.id} (${o.seller}: ${o.lines.map((l) => `${l.id} ${l.what} ${l.qty > 1 ? `${l.qty} for ${l.price_cp} cp` : `${l.price_cp} cp`}`).join(', ')})`).join(' · ')}`);
     if ((catalog.objects || []).length) L.push(`OBJECTS: ${catalog.objects.map((o) => `${o.id} (${o.name}${o.qty ? `, ${o.qty}${o.unit ? ` ${o.unit}` : ''}` : ''}, ${holderText(o)})`).join(' · ')}`);
     if ((catalog.open || []).length) L.push(`OPEN DECISIONS: ${catalog.open.join(' · ')}`);
     return L.join('\n');
@@ -155,6 +157,14 @@ export function interpreterSchema(vocab, catalog) {
 export function parseInterpretation(answer, vocab, catalog) {
     const { value, error, raw } = extractJsonObject(answer);
     if (!value) return { commands: null, errors: [error || 'no JSON object'], raw: false };
+    // an argument that may be null may also be left out (as the extractor's |null fields): no repair call for it
+    const specs = new Map((vocab.commands || []).map((c) => [c.type, c.args || {}]));
+    if (Array.isArray(value.commands)) {
+        for (const c of value.commands) {
+            if (!c || typeof c !== 'object') continue;
+            for (const [k, spec] of Object.entries(specs.get(c.type) || {})) if (spec.nullable && c[k] === undefined) c[k] = null;
+        }
+    }
     const errors = validate(value, interpreterSchema(vocab, catalog));
     if (errors.length) return { commands: null, errors: errors.slice(0, 8), raw };
     return { commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [], raw };

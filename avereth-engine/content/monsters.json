@@ -22,7 +22,11 @@
         "rodent"
       ],
       "temperament": "skittish",
-      "source_line": "16 / 6 / 0 / 0 / 10 | Bite | Physical | ENGAGED"
+      "source_line": "16 / 6 / 0 / 0 / 10 | Bite | Physical | ENGAGED",
+      "kinds": [
+        "vermin",
+        "rodent"
+      ]
     },
     {
       "id": "wolf",
@@ -213,7 +217,10 @@
         "raven"
       ],
       "temperament": "skittish",
-      "source_line": "18 / 7 / 0 / 0 / 15 | Talons/Beak | Physical | ENGAGED"
+      "source_line": "18 / 7 / 0 / 0 / 15 | Talons/Beak | Physical | ENGAGED",
+      "kinds": [
+        "bird"
+      ]
     },
     {
       "id": "arthropod",

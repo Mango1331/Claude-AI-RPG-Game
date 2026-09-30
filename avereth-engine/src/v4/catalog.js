@@ -112,8 +112,8 @@ function objectEntry(state, content, o) {
 export function openDecisionTexts(state) {
     return (state.decisions || []).filter((d) => !d.at || d.at === state.scene.at).map((d) => {
         if (d.kind === 'registration') return `registration: the Guild's fee ${d.price_cp} cp is due (${d.offer}); he has not paid yet`;
-        if (d.kind === 'purchase') return `purchase: ${d.what}${d.max_cp !== null && d.max_cp !== undefined ? ` (at most ${d.max_cp} cp)` : d.any_price ? ' (any price)' : ''}; ${d.priced ? 'priced, not agreed' : 'no price known yet'}`;
-        if (d.kind === 'sale') return `sale: ${d.what}${d.min_cp ? ` (at least ${d.min_cp} cp)` : ''}; no price agreed yet`;
+        if (d.kind === 'purchase') return `purchase: ${d.qty > 1 ? `${d.qty} × ` : ''}${d.what}${d.max_cp !== null && d.max_cp !== undefined ? ` (at most ${d.max_cp} cp)` : d.any_price ? ' (any price)' : ''}; ${d.priced ? 'priced, not agreed' : 'no price known yet'}`;
+        if (d.kind === 'sale') return `sale: ${d.qty > 1 ? `${d.qty} × ` : ''}${d.what}${d.min_cp ? ` (at least ${d.min_cp} cp)` : ''}; no price agreed yet`;
         if (d.kind === 'payment') return `payment: ${d.what}; the amount is not known yet`;
         return `${d.kind}: ${d.what}`;
     });
@@ -122,17 +122,15 @@ export function openDecisionTexts(state) {
 const TRAVEL_WORDS = /\b(?:escort|journey|travel|road|cart|wagon|caravan|ship|boat|ferry|ride|guide|lead|depart|leave|deliver|destination|route|waystation)\b/i;
 
 /**
- * The journey Alaric can continue without naming where to ("wait, then we continue", live run 30.09.2026): an active
- * Guild escort or delivery contract that is underway (Alaric is outside the settlement whose board posted it and its
- * outcome is not reached yet); else a journey the story stored in an active quest's notes or an open thread, with
- * someone present whom it names. The interpreter sees it as JOURNEY READY; journey.continue is authorised by it.
+ * The journey Alaric can continue without naming where to ("wait, then we continue", live run 30.09.2026): a journey
+ * the story stored in an active quest's notes or an open thread, with someone present whom it names; else the journey
+ * of an active quest he has actually set off on (quest.journey: he agreed to continue it, or set off on it with its
+ * people and left the settlement), whoever of its people the scene still shows, the one begun last first. A quest he
+ * only accepted is no journey (review of 4.1.0: an escort accepted in Redmarch, Alaric alone in another town). The
+ * interpreter sees it as JOURNEY READY; journey.continue is authorised by it.
  * @returns {{id: string, label: string, contact: string|null, why: string}|null}
  */
 export function journeyReady(state) {
-    const here = settlementOf(state, state.scene.at);
-    const underway = Object.values(state.quests).find((q) => q.status === 'active' && !q.ready && q.kind === 'guild_contract'
-        && (q.objectives || []).some((o) => o.verb === 'ESCORT' || o.verb === 'DELIVER') && q.source?.branch && here !== q.source.branch);
-    if (underway) return { id: underway.id, label: underway.title, contact: null, why: 'the contract\'s journey is underway' };
     const sources = [
         ...Object.values(state.quests).filter((q) => q.status === 'active')
             .map((q) => ({ id: q.id, label: q.title, text: [...(q.details || []).map((x) => (typeof x === 'string' ? x : x?.note)), ...(q.notes || [])].filter(Boolean).join(' ') })),
@@ -148,7 +146,9 @@ export function journeyReady(state) {
         });
         if (contact) return { id: src.id, label: src.label, contact, why: 'an established journey' };
     }
-    return null;
+    const underway = Object.values(state.quests).filter((q) => q.status === 'active' && !q.ready && q.journey)
+        .sort((a, b) => (b.journey.since ?? 0) - (a.journey.since ?? 0))[0];
+    return underway ? { id: underway.id, label: underway.title, contact: null, why: 'the contract\'s journey is underway' } : null;
 }
 
 /**
@@ -172,7 +172,7 @@ export function buildCatalog(state, content, { extraPlaces = [] } = {}) {
     const rank = membership(state)?.rank || 'Novice';
     const board = hall && town ? listingsOf(state, town, rank).map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) })) : [];
     const offers = openOffers(state).filter((o) => o.canon ? (!o.at || hallOf(state, o.at) === hall) : state.scene.present.includes(o.seller))
-        .map((o) => ({ id: o.id, seller: o.canon ? 'Guild' : personLabel(state, content, o.seller), lines: o.lines.map((l) => ({ id: l.id, what: l.what, price_cp: l.price_cp })) }));
+        .map((o) => ({ id: o.id, seller: o.canon ? 'Guild' : personLabel(state, content, o.seller), lines: o.lines.map((l) => ({ id: l.id, what: l.what, price_cp: l.price_cp, ...(l.qty > 1 ? { qty: l.qty } : {}) })) }));
     const objects = [
         ...heldBy(state, 'pc').map((o) => objectEntry(state, content, o)),
         ...sheetObjects(state, content),

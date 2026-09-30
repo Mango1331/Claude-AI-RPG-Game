@@ -32,7 +32,7 @@ export function routeTurn(state, content, text) {
 function serializableAuth(auth) {
     return {
         go: auth.go, gos: auth.gos, roam: auth.roam, take: auth.take, takeNames: auth.takeNames || {}, gather: auth.gather,
-        rest: auth.rest, timeCap: auth.timeCap,
+        rest: auth.rest, timeCap: auth.timeCap, ...(auth.journey ? { journey: auth.journey } : {}),
     };
 }
 

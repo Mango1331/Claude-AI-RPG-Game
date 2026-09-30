@@ -21,6 +21,7 @@ import {
 } from './domain.js';
 import { sameWant } from './world.js';
 import { journeyReady } from './catalog.js';
+import { pickLines, bookPurchase, picksText, saleUnits, unitsText } from './trade.js';
 import {
     REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, checkProof, objectiveText,
     promotion, takenByOthers, bookBoard,
@@ -35,9 +36,9 @@ const RESTING = new Set(['rest', 'sleep']);
 /** An empty resolution context for one player message. */
 export function newTurnContext(content) {
     return {
-        auth: { go: null, gos: [], roam: false, take: [], gather: false, rest: false, timeCap: content.rules.time.default_cap_min },
+        auth: { go: null, gos: [], roam: false, take: [], gather: false, rest: false, timeCap: content.rules.time.default_cap_min, journey: null },
         conditionals: [], expectedKeys: {}, actions: [], extra: [], resolutions: [],
-        booked: { registration: false, grants: [], turnIns: [], accepted: [] },
+        booked: { registration: false, grants: [], turnIns: [], accepted: [], sellers: [] },
         searchChecks: [],
         boardShown: null,
     };
@@ -88,10 +89,14 @@ function pickQuest(s, ref, statuses, kind = null) {
 // ------------------------------------------------------------------------------------------------ handlers
 // Each handler: (s, content, c, ctx, emit, env) -> {status, reason?, line?, extra?, cap?, condition?}
 const HANDLERS = {
-    'journey.continue'(s, content, c, ctx) {
+    'journey.continue'(s, content, c, ctx, emit) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
         const ready = journeyReady(s);
         if (!ready) return { status: 'refused', reason: 'no established journey', line: 'NOTHING TO DEPART ON — no stored journey/departure is ready to continue here.' };
+        // his agreement to go on with this quest's journey is its start: from now on it is his to continue, whoever of
+        // its people the scene still shows (review of 4.1.0: an accepted escort is no journey before he sets off)
+        const q = s.quests[ready.id];
+        if (q?.status === 'active' && !q.journey) emit({ t: 'quest.journey', d: { id: q.id, at: s.scene.at } });
         const go = { seq: c.seq, to: null, name: `the established journey for "${ready.label}"`, hall: false, newName: 'the established journey' };
         ctx.auth.go = go;
         ctx.auth.gos.push(go);
@@ -112,6 +117,9 @@ const HANDLERS = {
         ctx.auth.gos.push(go);
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, cap);
         ctx.expectedKeys[String(c.seq)] = 'go';
+        // he sets off while a quest's journey is ready with its people here: an arrival out of the settlement starts it
+        const ready = journeyReady(s);
+        if (ready?.contact && s.quests[ready.id]?.status === 'active' && !s.quests[ready.id].journey) ctx.auth.journey = ready.id;
         return { status: 'authorized', line: `GOES — to ${name} (the story decides whether and where he arrives).` };
     },
     activity(s, content, c, ctx, emit, envx) {
@@ -207,7 +215,7 @@ const HANDLERS = {
             return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: REGISTRATION_OFFER, lines: null }, ctx, emit);
         }
         // an open offer of the one he pays: paying it is accepting it
-        const offer = Object.values(s.offers).find((o) => o.status === 'open' && !o.canon && o.seller === c.to && (c.amount_cp === null || c.amount_cp === undefined || o.lines.reduce((n, l) => n + l.price_cp * (l.qty || 1), 0) === c.amount_cp));
+        const offer = Object.values(s.offers).find((o) => o.status === 'open' && !o.canon && o.seller === c.to && (c.amount_cp === null || c.amount_cp === undefined || pickLines(o).cp === c.amount_cp));
         if (offer) return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: offer.id, lines: null }, ctx, emit);
         if (!present(s, c.to)) return { status: 'refused', reason: 'nobody to pay', line: 'CANNOT PAY — the one he means to pay is not here.' };
         if (c.amount_cp === null || c.amount_cp === undefined) {
@@ -227,13 +235,8 @@ const HANDLERS = {
     buy(s, content, c, ctx, emit) {
         const offers = Object.values(s.offers).filter((o) => o.status === 'open' && !o.canon && present(s, o.seller) && (!c.from || o.seller === c.from));
         const match = offers.map((o) => ({ o, lines: o.lines.filter((l) => sameWant(c.what, l.what)) })).find((x) => x.lines.length);
-        if (match) {
-            const price = match.lines.reduce((n, l) => n + l.price_cp * (l.qty || 1), 0) * (c.qty && match.lines.length === 1 ? c.qty : 1);
-            if (c.max_cp !== null && c.max_cp !== undefined && price > c.max_cp && !c.any_price) {
-                return { status: 'refused', reason: 'above his limit', line: `DOES NOT BUY — ${match.lines.map((l) => l.what).join(', ')} costs ${cpText(price, content)}, more than the ${c.max_cp} cp he allows.` };
-            }
-            return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: match.o.id, lines: match.lines.map((l) => l.id) }, ctx, emit);
-        }
+        // an offer lists it: buying is accepting that line, in the number he names and within the limit he set
+        if (match) return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: match.o.id, lines: match.lines.map((l) => l.id), qty: c.qty ?? null }, ctx, emit);
         const limit = c.max_cp !== null && c.max_cp !== undefined;
         emit({ t: 'decision.opened', d: { decision: { id: `dec.t${s.turn}.${c.seq}`, kind: 'purchase', what: c.what, seller: c.from || null, at: s.scene.at, turn: s.turn, max_cp: limit ? c.max_cp : null, any_price: !!c.any_price, qty: c.qty || null, priced: false, seq: c.seq } } });
         ctx.expectedKeys[String(c.seq)] = 'buy';
@@ -252,44 +255,52 @@ const HANDLERS = {
         const o = objectOf(s, content, c.object);
         if (!o || o.holder?.entity !== 'pc') return { status: 'refused', reason: 'he does not hold it', line: `CANNOT SELL — he does not hold ${o ? o.name : 'that'}.` };
         if (c.to && !present(s, c.to)) return { status: 'refused', reason: 'nobody to sell to', line: `CANNOT SELL — ${who(s, c.to)} is not here.` };
-        emit({ t: 'decision.opened', d: { decision: { id: `dec.t${s.turn}.${c.seq}`, kind: 'sale', what: o.name, object: o.id, seller: c.to || null, at: s.scene.at, turn: s.turn, min_cp: c.min_cp ?? null, qty: c.qty || null, seq: c.seq } } });
+        // exactly the units he offers, never more than he holds (review of 4.1.0: ten herbs offered while he held one)
+        const n = saleUnits(s, o.id, c.qty ?? null);
+        if (n.error) return { status: 'refused', reason: 'he holds fewer', line: `CANNOT SELL — ${c.qty} ${o.name}: ${n.error}.` };
+        const what = (o.qty ?? 1) > 1 ? unitsText(o.name, n.units) : o.name;
+        emit({ t: 'decision.opened', d: { decision: { id: `dec.t${s.turn}.${c.seq}`, kind: 'sale', what: o.name, object: o.id, seller: c.to || null, at: s.scene.at, turn: s.turn, min_cp: c.min_cp ?? null, qty: n.units, seq: c.seq } } });
         ctx.expectedKeys[String(c.seq)] = 'sell';
         if (c.min_cp !== null && c.min_cp !== undefined) {
-            return { status: 'conditional', condition: 'buyer_agrees', line: `SELLS — ${o.name}${c.to ? ` to ${who(s, c.to)}` : ''} if the buyer pays at least ${c.min_cp} cp (the story decides whether the buyer agrees).` };
+            return { status: 'conditional', condition: 'buyer_agrees', line: `SELLS — ${what}${c.to ? ` to ${who(s, c.to)}` : ''} if the buyer pays at least ${c.min_cp} cp (the story decides whether the buyer agrees).` };
         }
         return {
-            status: 'pending', reason: 'no_price', line: `WANTS TO SELL — ${o.name}; no price is agreed.`,
-            extra: [`OPEN DECISION — Alaric offers ${o.name} for sale; no price is agreed. Let the buyer name a price, then stop: he has not agreed to sell.`],
+            status: 'pending', reason: 'no_price', line: `WANTS TO SELL — ${what}; no price is agreed.`,
+            extra: [`OPEN DECISION — Alaric offers ${what} for sale; no price is agreed. Let the buyer name a price, then stop: he has not agreed to sell.`],
         };
     },
     'offer.accept'(s, content, c, ctx, emit) {
         const o = s.offers[c.offer];
         if (!o || o.status !== 'open') return { status: 'refused', reason: 'no open offer', line: 'CANNOT ACCEPT — there is no such open offer.' };
-        const lines = Array.isArray(c.lines) && c.lines.length ? o.lines.filter((l) => c.lines.includes(l.id)) : o.lines;
-        if (!lines.length) return { status: 'refused', reason: 'no such line', line: 'CANNOT ACCEPT — the offer has no such item.' };
+        // the lines he takes, in the number he names (review of 4.1.0: "three flasks" became one flask for one price)
+        const pick = pickLines(o, c.lines, c.qty ?? null);
+        if (pick.clarify) return { status: 'clarify', reason: 'which line?', line: `CLARIFY — ${c.qty} of which: ${pick.clarify.join(' or ')}?` };
+        if (pick.error === 'the offer has no such item') return { status: 'refused', reason: 'no such line', line: 'CANNOT ACCEPT — the offer has no such item.' };
+        if (pick.error) return { status: 'refused', reason: 'not in that amount', line: `CANNOT BUY ${c.qty} — ${pick.error}.` };
         if (o.canon && !hallOf(s, s.scene.at)) return { status: 'refused', reason: 'not at a Guild hall', line: 'CANNOT PAY — the Guild registers members at a Guild hall.' };
         if (!o.canon && !present(s, o.seller)) return { status: 'refused', reason: 'the seller is not here', line: `CANNOT ACCEPT — ${who(s, o.seller)} is not here.` };
-        const price = lines.reduce((n, l) => n + l.price_cp * (l.qty || 1), 0);
+        const price = pick.cp;
+        // a limit he set ("if it's no more than 6 copper") holds for what he actually buys
+        if (c.max_cp !== null && c.max_cp !== undefined && !c.any_price && price > c.max_cp) {
+            return { status: 'refused', reason: 'above his limit', line: `DOES NOT BUY — ${picksText(pick.picks)} costs ${cpText(price, content)}, more than the ${c.max_cp} cp he allows.` };
+        }
         const coin = s.entities.pc.sheet.coin_cp;
         if (coin < price) return { status: 'refused', reason: 'not enough coin', line: `CANNOT PAY — ${cpText(price, content)} needed, he has ${coin} cp.` };
-        emit({ t: 'transaction.completed', d: { offer: o.id, lines: lines.map((l) => l.id), cp: price, seller: o.seller } });
-        emit({ t: 'coin.changed', d: { id: 'pc', value: coin - price, delta: -price, why: lines.map((l) => l.what).join(', ') } });
-        const reg = lines.some((l) => l.service === 'guild_registration');
+        bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (what) => `obj.t${env(ctx).msg}.${slug(what)}` });
+        const reg = pick.picks.some((p) => p.line.service === 'guild_registration');
         let power = null;
         if (reg) {
             power = registerEvents(s, content, emit).power;
             ctx.booked.registration = true;
             ctx.booked.grants.push('Guild plate');
         }
-        for (const l of lines.filter((x) => x.kind === 'goods')) {
-            emit({ t: 'object.created', d: { object: { id: `obj.t${env(ctx).msg}.${slug(l.what)}`, name: l.what, kind: 'item', stack: (l.qty || 1) > 1, qty: l.qty || 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'bought', from: o.seller } } } });
-            ctx.booked.grants.push(l.what);
-        }
-        for (const l of lines.filter((x) => x.kind === 'service' && x.service !== 'guild_registration')) emit({ t: 'service.granted', d: { service: l.service || 'other', what: l.what, by: o.seller, at: s.scene.at, turn: s.turn } });
+        for (const p of pick.picks.filter((x) => x.line.kind === 'goods')) ctx.booked.grants.push(p.line.what);
+        // the seller was paid exactly the price: coin from the seller in the reply (change) is not a gift
+        if (!o.canon) ctx.booked.sellers.push(o.seller);
         emit({ t: 'offer.closed', d: { id: o.id, status: 'accepted' } });
         for (const d of s.decisions.filter((x) => x.offer === o.id || (reg && x.kind === 'registration') || (x.kind === 'purchase' && x.seller === o.seller) || (x.kind === 'purchase' && !x.seller && x.at === s.scene.at))) emit({ t: 'decision.closed', d: { id: d.id, status: 'accepted' } });
         if (reg) return { status: 'resolved', line: `PAYS — the Guild registration fee, ${price} cp: registered at Guild Rank ${content.rules.guild.ranks[0]}; the crystal reads his Power Rank: ${power} (his measured strength, a separate scale from the Guild's ranks); he receives his Guild plate.` };
-        return { status: 'resolved', line: `ACCEPTS the offer — ${lines.map((l) => l.what).join(', ')} for ${cpText(price, content)}; he pays ${who(s, o.seller)}.` };
+        return { status: 'resolved', line: `ACCEPTS the offer — ${picksText(pick.picks)} for ${cpText(price, content)}; he pays ${who(s, o.seller)}.` };
     },
     'offer.decline'(s, content, c, ctx, emit) {
         const o = s.offers[c.offer];

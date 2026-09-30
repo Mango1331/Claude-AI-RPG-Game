@@ -2,7 +2,7 @@
 // board, the escort of Aldsa's wool cart with the four wolves at the Ford Narrows, the turn-in and the tavern. Written
 // for 4.0.9 by the experiment branch and revised in the integration (docs/INTEGRATION_4_1.md): companions arrive with
 // Alaric by arrive.with instead of a role-guessing party bookmark, a person known without a name is named by
-// person.named, people who stay behind stay at their place, JOURNEY READY comes from the contract's state, a large
+// person.named, people who stay behind stay at their place, JOURNEY READY comes from the journey he has begun, a large
 // passive group of skittish animals is background by its body plan, and loose coin is never an item.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -153,11 +153,20 @@ test('C2: the story naming the anonymous driver names that driver (person.new of
     assert.equal(rename.state.entities['npc.wool_driver'].name, 'Dren');
 });
 
-test('C4: JOURNEY READY comes from the contract: an escort underway outside its town can be continued without anyone of it being present', async () => {
+test('C4: JOURNEY READY comes from the contract: an escort he has set off on can be continued without anyone of it being present', async () => {
     const g = await created();
     const s = escort(g.state());
-    assert.equal(journeyReady(s), null, 'at the verge of Redmarch, the board\'s town, the journey has not begun');
-    const ford = applyWorld(after(s, { auth: TRAVEL }), content, { expected: {}, deltas: [{ seq: 1, type: 'arrive', at: FORD, forced_by: null, with: null }] }, { msg: 100 }).state;
+    assert.equal(journeyReady(s), null, 'accepted, not begun: no journey (review of 4.1.0)');
+    // the story stored the trip with the driver, who is here: he agrees to go on, and the journey has begun
+    s.quests['quest.cart'].notes = ['Alaric walks beside the wool cart driver on the river road'];
+    assert.equal(journeyReady(s)?.contact, 'npc.wool_driver');
+    const start = [];
+    const go = resolveCommands(s, content, [{ seq: 1, type: 'journey.continue', quote: 'we set off' }], (e) => start.push(e));
+    assert.equal(go.resolutions[0].status, 'authorized');
+    assert.deepEqual(start.filter((e) => e.t === 'quest.journey').map((e) => e.d.id), ['quest.cart']);
+    const begun = structuredClone(s);
+    begun.quests['quest.cart'].journey = { since: begun.turn, from: begun.scene.at };
+    const ford = applyWorld(after(begun, { auth: TRAVEL }), content, { expected: {}, deltas: [{ seq: 1, type: 'arrive', at: FORD, forced_by: null, with: null }] }, { msg: 100 }).state;
     assert.deepEqual(ford.scene.present, ['pc'], 'nobody came along in this answer');
     assert.equal(journeyReady(ford)?.id, 'quest.cart');
     assert.match(buildCatalog(ford, content).journey_ready, /^quest\.cart — "Shepherd Cart to Millbrook": the contract's journey is underway/);
@@ -221,14 +230,17 @@ test('C6: loose coin is never an item: taking the paid-out copper books nothing 
     assert.ok(!Object.values(took.state.objects).length, 'no phantom "copper"');
     assert.deepEqual(rules(took), ['currency_wallet']);
     assert.equal(took.state.entities.pc.sheet.coin_cp, 120);
-    // a pile of coin lying about is no object either; what he takes of it is coin
-    const loot = applyWorld(after(s), content, { expected: {}, deltas: [
+    // a pile of coin lying about is no object either; what he takes of it is coin, when he takes it (review of 4.1.0)
+    const deltas = [
         { seq: 1, type: 'object.new', name: 'a pile of silver', kind: 'item', qty: 1, unit: null, holder: 'here', for_quest: null },
         { seq: 2, type: 'coin.gift', from: 'the dead bandit\'s purse', cp: 14, why: 'coins found on the bandit' },
         { seq: 3, type: 'object.new', name: 'a coin purse', kind: 'item', qty: 1, unit: null, holder: 'here', for_quest: null },
-    ] }, { msg: 70 });
+    ];
+    const told = applyWorld(after(s), content, { expected: {}, deltas }, { msg: 70 });
+    assert.equal(told.state.entities.pc.sheet.coin_cp, 120, 'the story alone does not put coin in his purse');
+    const loot = applyWorld(after(s, { auth: { take: [1], takeNames: { 1: 'the bandit\'s coins' } }, expected_keys: { 1: 'take' } }), content, { expected: { 1: { taken: true } }, deltas }, { msg: 70 });
     assert.equal(loot.state.entities.pc.sheet.coin_cp, 134);
-    assert.deepEqual(Object.values(loot.state.objects).map((o) => o.name), ['a coin purse'], 'a purse is a thing');
+    assert.deepEqual(Object.values(loot.state.objects).map((o) => o.name), ['a coin purse'], 'a purse is a thing; the coins he took are no object');
     // the payout of a contract that was just turned in, handed over in the story: refused
     const fw = firewall([{ seq: 1, type: 'coin.gift', from: 'npc.tidecross_guild_desk_clerk', cp: 90, why: 'Guild payout for the shepherd cart' }],
         { contracts: [{ id: 'quest.cart', title: 'Shepherd Cart to Millbrook', payout_cp: 90, status: 'completed' }], booked: { ...NOBODY, turnIns: ['quest.cart'] }, inGuildHall: true });

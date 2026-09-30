@@ -92,8 +92,10 @@ test('C5: the twelve penned sheep are one background fact; the four wolves at th
     assert.ok(wolves.every((w) => w.profile && w.profile.max_hp > 0), 'locked before the first blow');
 });
 
-test('C4: both recorded continuations of the road are authorised journeys', () => {
+test('C4: both recorded continuations of the road are authorised journeys; the first one begins the escort\'s journey', () => {
     for (const i of [23, 25]) assert.deepEqual(S(i).last.outcome.resolutions.map((r) => [r.type, r.status]), [['journey.continue', 'authorized']], `message ${i}`);
+    assert.equal(S(21).quests[ESCORT].journey, undefined, 'accepted and about to leave: not begun yet');
+    assert.equal(S(23).quests[ESCORT].journey?.from, 'loc.tidecross.cordwainer_row');
 });
 
 test('the fight: all four wolves fall; their locked DefeatXP reaches Alaric once', () => {

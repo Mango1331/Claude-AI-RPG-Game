@@ -13,13 +13,14 @@ import { applyEvent } from '../state.js';
 import { clone, normText, slug } from '../util.js';
 import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver } from '../delta.js';
-import { truth, entityLabel, setFactEvents } from '../knowledge.js';
+import { truth, entityLabel, setFactEvents, statusOf } from '../knowledge.js';
 import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
 import { firewall } from './firewall.js';
 import {
-    PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, placeName, contracts, heldBy, openOffers, membership, isLooseCoin,
+    PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today,
 } from './domain.js';
 import { completeContract, REGISTRATION_OFFER } from './guild.js';
+import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
 
 const AUTHORITY_ROLE = /\b(?:guard|watch(?:man)?|sergeant|captain|constable|reeve|bailiff|magistrate|official|officer|toll ?keeper|tax|customs|steward|marshal|warden)\b/i;
 const HOSTILE_ROLE = /\b(?:bandit|thief|robber|brigand|cutpurse|pickpocket|thug|highwayman)\b/i;
@@ -115,14 +116,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         events.push(e);
     };
     const rejected = [];
-    let rejectedTravel = false;
     const corrections = [];
     const system = [];
     const reject = (d, rule, why) => {
-        if (d?.type === 'arrive') rejectedTravel = true;
         rejected.push({ seq: d?.seq ?? 0, type: d?.type ?? 'expected', rule, why });
         emit({ t: 'delta.rejected', d: { item: d, rule, reason: why } });
     };
+    // the arrivals of this reply in story order, applied or refused (an escort's readiness, quest.ready below)
+    const travel = [];
+    const refusedArrival = (d) => { if (d?.type === 'arrive') travel.push({ seq: d.seq ?? 0, ok: false, away: leavesHere(d.at) }); };
     const outcome = s.last?.outcome || {};
     const auth = outcome.auth || {};
     const expected = answer.expected || {};
@@ -130,8 +132,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
 
     // 1. authority first: what the story may not decide is never applied
     const fw = firewall(answer.deltas, firewallContext(s, content));
-    for (const x of fw.reject) reject(x.delta, x.rule, x.why);
+    for (const x of fw.reject) { reject(x.delta, x.rule, x.why); refusedArrival(x.delta); }
     corrections.push(...fw.corrections);
+    // the other side of a trade the engine books this turn: a sale's buyer, a seller he paid exactly (coin.gift below)
+    const counterparts = new Set([...(outcome.booked?.sellers || []), ...s.decisions.filter((x) => x.kind === 'sale' && x.turn === s.turn).map((x) => x.seller || '*')]);
 
     // 2. world deltas in story order, each against the state at its step
     const refs = new Map(); // a delta's ref -> the entity it names (person.new, creature.new of this answer)
@@ -171,13 +175,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         for (const x of r.rejected) reject(d, 'world_rule', x.reason);
         return r;
     };
-    // the creature a group is (its species, its body-plan's names) among the targets of an active ATTACK/DEFEAT objective
-    const singular = (text) => new Set(normText(text).split(/[^a-z]+/).filter(Boolean).map((w) => w.replace(/s$/, '')));
+    // Is a group the target of an active ATTACK/DEFEAT objective? By the kind the objective names, never by the body
+    // plan alone (review of 4.1.0: the deer plan's alias "goat" made a flock of sheep the targets of a wild-goat job):
+    // the group's species names the objective's creature or the objective names the group's ("giant rats" ~ "rats",
+    // "swarm of rats" ~ "rats"), or the objective names the body plan's whole kind ("the vermin in the cellar": rats).
     const hunted = (d, anchor) => {
-        const targets = Object.values(s.quests).filter((q) => q.status === 'active')
-            .flatMap((q) => (q.objectives || []).filter((o) => o.verb === 'ATTACK' || o.verb === 'DEFEAT')).map((o) => singular(o.what));
-        const names = [d.species, ...(anchor.aliases || [])].filter(Boolean).map((n) => [...singular(n)]).filter((w) => w.length);
-        return targets.some((t) => names.some((w) => w.every((x) => t.has(x))));
+        const group = kindOf(d.species);
+        const kinds = new Set((anchor.kinds || []).map(stem));
+        return Object.values(s.quests).filter((q) => q.status === 'active')
+            .flatMap((q) => (q.objectives || []).filter((o) => o.verb === 'ATTACK' || o.verb === 'DEFEAT'))
+            .map((o) => kindOf(o.what))
+            .some((t) => (group.head && t.phrase.has(group.head)) || (t.head && group.words.has(t.head)) || [...t.phrase].some((w) => kinds.has(w)));
     };
     const newEntity = (d, kind) => {
         // A large group of skittish animals (their body-plan's temperament: a flock, a herd, a flight of birds) that nobody
@@ -229,6 +237,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 const party = companions(e.with, { seq: Number(k), type: 'expected' });
                 perceiveAll(s, emit);
                 arrive(at.id, party);
+                travel.push({ seq: 0, ok: true });
             }
         }
     }
@@ -237,7 +246,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // Authority is checked again at the actual story step: earlier deltas may have changed its context.
         const stepFw = firewall([d], firewallContext(s, content));
         if (!stepFw.accept.length) {
-            for (const x of stepFw.reject) reject(x.delta, x.rule, x.why);
+            for (const x of stepFw.reject) { reject(x.delta, x.rule, x.why); refusedArrival(x.delta); }
             for (const x of stepFw.corrections) if (!corrections.includes(x)) corrections.push(x);
             continue;
         }
@@ -250,13 +259,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 break;
             }
             case 'arrive': {
-                if (s.encounter) { reject(d, 'combat', 'no travel while combat is ACTIVE'); break; }
+                if (s.encounter) { reject(d, 'combat', 'no travel while combat is ACTIVE'); refusedArrival(d); break; }
+                const away = leavesHere(d.at);
                 const at = resolvePlace(s, d.at, emit);
-                if (at.error) { reject(d, 'place', at.error); break; }
+                if (at.error) { reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 if (at.id === s.scene.at) break;
                 const party = companions(d.with, d);
                 perceiveAll(s, emit);
                 arrive(at.id, party);
+                travel.push({ seq: d.seq ?? 0, ok: true });
                 break;
             }
             case 'person.new': {
@@ -374,6 +385,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'coin.gift': {
                 const from = idOf(d.from);
                 if (from === 'pc') { reject(d, 'coin', 'Alaric does not gift himself coin'); break; }
+                const refusal = coinRefusal(d, from);
+                if (refusal) {
+                    reject(d, refusal.rule, refusal.why);
+                    const correction = `Alaric's purse did not change: the ${d.cp} cp from ${String(d.from).slice(0, 60)} in the last reply were not booked (${refusal.fix}).`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    break;
+                }
                 const coin = s.entities.pc.sheet.coin_cp;
                 emit({ t: 'coin.changed', d: { id: 'pc', value: coin + d.cp, delta: d.cp, why: `${from ? entityLabel(s, from) : d.from}: ${String(d.why || 'a gift').slice(0, 80)}` } });
                 break;
@@ -401,9 +419,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 if (!q) { reject(d, 'quest', 'unknown quest'); break; }
                 if (q.status !== 'active') { reject(d, 'quest', `the quest is ${q.status}`); break; }
                 const claimed = String(d.note || q.desired_end_state || '');
-                // an escort or delivery is ready where it arrives: a reply whose arrival the engine refused has not
-                // taken it there (live 30.09.2026: Millbrook refused, the escort "ready" in the same reply)
-                if (rejectedTravel && (q.objectives || []).some((o) => ['ESCORT', 'DELIVER'].includes(o.verb))) {
+                // an escort or delivery is ready where it arrives: a reply whose journey the engine refused has not
+                // taken it there (live 30.09.2026: Millbrook refused, the escort "ready" in the same reply). What
+                // counts is the story before this claim: a refused journey away with no arrival applied before it.
+                // A refused step inside the place he is in (the factor leads him into her wool hall) or a refused move
+                // after an applied arrival (review of 4.1.0) does not undo where the engine has him.
+                const before = travel.filter((t) => t.seq < (d.seq ?? 0));
+                if (before.some((t) => !t.ok && t.away) && !before.some((t) => t.ok) && (q.objectives || []).some((o) => ['ESCORT', 'DELIVER'].includes(o.verb))) {
                     reject(d, 'quest_dependency', 'the escort/delivery destination was not canonically reached in this reply; readiness cannot depend on the refused arrival');
                     const correction = `"${q.title}" is still IN PROGRESS: the destination arrival in the previous reply was not authorized or booked, so the Guild Quest is not ready to turn in yet.`;
                     if (!corrections.includes(correction)) corrections.push(correction);
@@ -505,6 +527,45 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         return out;
     }
 
+    /**
+     * Would an arrival take Alaric away from where he is: out of his settlement, or, outside one, away from his place?
+     * A new site or room with no parent, or with a parent here, is a step inside (the story's "she led him into the
+     * wool hall"); a new settlement, region or wilderness is always away.
+     */
+    function leavesHere(ref) {
+        const here = settlementOf(s, s.scene.at) || s.scene.at;
+        const inside = (id) => typeof id === 'string' && !!s.places[id] && (settlementOf(s, id) || id) === here;
+        if (typeof ref === 'string') return !inside(ref);
+        const n = ref?.new;
+        if (!n || typeof n !== 'object') return true;
+        if (!['district', 'site', 'interior'].includes(n.kind)) return true;
+        if (n.parent === null || n.parent === undefined) return false;
+        return typeof n.parent === 'string' ? !inside(n.parent) : leavesHere(n.parent);
+    }
+
+    /**
+     * Why coin the story gives Alaric is not his (review of 4.1.0), or null. Coin is hard state; three questions decide:
+     * who hands it over, whether he took it himself, whether the engine has booked it already.
+     *   - a living person here may give him coin of their own will; the other side of a trade the engine books this
+     *     turn does not (a sale's price and a purchase's change are the engine's numbers)
+     *   - coin from anywhere else (a dead man's purse, a chest, a counter) he takes: it is his only by his own TAKE the
+     *     reply carried out, or a search or gathering, in PLAYER ACTIONS
+     *   - and never when it is the coin the engine credited him at this place today (a Guild payout, a sale): the
+     *     story counting it out on the counter and him pocketing it is the same coin
+     */
+    function coinRefusal(d, from) {
+        const giver = from ? s.entities[from] : null;
+        if (giver?.kind === 'npc' && statusOf(s, from) !== 'dead' && s.scene.present.includes(from)) {
+            if (counterparts.has(from) || counterparts.has('*')) return { rule: 'engine_booked', why: 'the other side of a trade the engine booked this turn does not give him coin', fix: 'the engine booked that trade at its price' };
+            return null;
+        }
+        const took = Object.entries(outcome.expected_keys || {}).some(([k, t]) => t === 'take' && expected[k]?.taken === true)
+            || (outcome.resolutions || []).some((r) => r.type === 'take' && r.status === 'resolved') || !!auth.gather;
+        if (!took) return { rule: 'pc_inventory', why: 'coin nobody here hands him is his only by his own TAKE or search in PLAYER ACTIONS', fix: 'Alaric took no coin himself' };
+        if ((s.credits || []).some((c) => c.at === s.scene.at && c.day === today(s))) return { rule: 'engine_booked', why: 'the coin the engine paid him here today is already in his purse', fix: 'that coin is what the engine paid him here, already counted in his purse' };
+        return null;
+    }
+
     function arrive(id, party = []) {
         const town = locationOf(s, id);
         const from = s.scene.at;
@@ -520,6 +581,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // who travelled with him arrives with him
         for (const who of party) emit({ t: 'scene.entered', d: { id: who, band: 'SHORT' } });
         arrived = id;
+        // he set off on a quest's journey (a GO while its people were with him) and has left the settlement: it has begun
+        const trip = auth.journey && s.quests[auth.journey];
+        if (trip?.status === 'active' && !trip.journey && settlementOf(s, from) !== settlementOf(s, id)) emit({ t: 'quest.journey', d: { id: trip.id, at: from } });
         // a decision belongs to the place it was opened at: leaving it closes it; one opened in this very turn goes
         // with him ("look for an inn to sleep": the room is bought where he arrives)
         for (const dec of s.decisions.filter((x) => x.at && x.at !== id && x.kind !== 'registration')) {
@@ -584,18 +648,20 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (!seller || seller === 'pc' || !s.scene.present.includes(seller)) { reject(d, 'offer', `the seller ${String(d.seller).slice(0, 40)} is not present`); return; }
         const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
         emit({ t: 'offer.created', d: { offer: { id, seller, at: s.scene.at, status: 'open', canon: false, turn: s.turn, lines: d.lines.map((l, i) => ({ id: `l${i + 1}`, ...l })) } } });
-        // a purchase Alaric agreed to in advance, within his limit (buy with max_cp or any_price)
+        // a purchase Alaric agreed to in advance, within his limit (buy with max_cp or any_price), in the number he named
         for (const dec of s.decisions.filter((x) => x.kind === 'purchase' && (x.max_cp !== null || x.any_price) && x.at === s.scene.at && (!x.seller || x.seller === seller))) {
-            const lines = d.lines.map((l, i) => ({ id: `l${i + 1}`, ...l })).filter((l) => sameWant(dec.what, l.what));
+            const o = s.offers[id];
+            const lines = o.lines.filter((l) => sameWant(dec.what, l.what));
             if (!lines.length) continue;
-            const price = lines.reduce((n, l) => n + l.price_cp * (l.qty || 1), 0);
+            const pick = pickLines(o, lines.map((l) => l.id), dec.qty ?? null);
+            if (pick.clarify || pick.error) { system.push(`NOT BOUGHT — ${pick.error || `which of ${pick.clarify.join(' or ')} he wants ${dec.qty} of is open`}`); continue; }
+            const price = pick.cp;
+            const what = pick.picks.map((p) => unitsText(p.line.what, p.units)).join(', ');
             const coin = s.entities.pc.sheet.coin_cp;
-            if (!dec.any_price && price > dec.max_cp) { system.push(`NOT BOUGHT — ${lines.map((l) => l.what).join(', ')}: ${price} cp is above his limit of ${dec.max_cp} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'too_expensive' } }); continue; }
+            if (!dec.any_price && price > dec.max_cp) { system.push(`NOT BOUGHT — ${what}: ${price} cp is above his limit of ${dec.max_cp} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'too_expensive' } }); continue; }
             if (coin < price) { system.push(`NOT BOUGHT — ${price} cp needed, he has ${coin} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'no_coin' } }); continue; }
-            emit({ t: 'transaction.completed', d: { offer: id, lines: lines.map((l) => l.id), cp: price, seller } });
-            emit({ t: 'coin.changed', d: { id: 'pc', value: coin - price, delta: -price, why: lines.map((l) => l.what).join(', ') } });
-            for (const l of lines.filter((x) => x.kind === 'goods')) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, l.what), name: l.what, kind: 'item', stack: (l.qty || 1) > 1, qty: l.qty || 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'bought', from: seller } } } });
-            for (const l of lines.filter((x) => x.kind === 'service')) emit({ t: 'service.granted', d: { service: l.service || 'other', what: l.what, by: seller, at: s.scene.at, turn: s.turn } });
+            bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (name) => uniqueObjectId(s, tag, name) });
+            counterparts.add(seller);
             emit({ t: 'offer.closed', d: { id, status: 'accepted' } });
             emit({ t: 'decision.closed', d: { id: dec.id, status: 'accepted' } });
             emit({ t: 'cmd.completed', d: { seq: dec.seq, ok: true } });
@@ -665,10 +731,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             return;
         }
         const buyer = dec.seller || null;
-        const o = s.objects[dec.object];
-        if (o?.holder?.entity === 'pc') emit({ t: 'object.moved', d: { id: o.id, to: buyer ? { entity: buyer } : { loc: s.scene.at } } });
-        else if (dec.object?.startsWith('item.')) emit({ t: 'item.changed', d: { id: 'pc', item: dec.object.slice(5), qty: -(dec.qty || 1), why: 'sold' } });
-        emit({ t: 'coin.changed', d: { id: 'pc', value: s.entities.pc.sheet.coin_cp + price, delta: price, why: `sold ${dec.what}` } });
+        // exactly the units he offered, as far as they are still his at this step; the rest of a stack stays his
+        const n = saleUnits(s, dec.object, dec.qty ?? null);
+        if (n.error) {
+            system.push(`NOT SOLD — ${dec.what}: ${n.error}`);
+            emit({ t: 'decision.closed', d: { id: dec.id, status: 'not_held' } });
+            return;
+        }
+        bookSale(s, emit, { ref: dec.object, units: n.units, buyer, cp: price, what: unitsText(dec.what, n.units), splitId: `${dec.object}_${tag}` });
         emit({ t: 'decision.closed', d: { id: dec.id, status: 'sold' } });
         emit({ t: 'cmd.completed', d: { seq: dec.seq, ok: true } });
     }
@@ -678,6 +748,22 @@ const FILLER = new Set(['the', 'and', 'for', 'with', 'some', 'any', 'one', 'his'
 /** The words that name a want or an offer's line ("a bed for the night" ~ "bed in the Guild dormitory"). */
 export const keyWords = (t) => normText(t).split(/[^a-z0-9]+/).map((w) => w.replace(/s$/, '')).filter((w) => w.length >= 3 && !FILLER.has(w));
 export const sameWant = (want, what) => { const k = keyWords(what); return keyWords(want).some((w) => k.includes(w)); };
+
+/** A noun's stem, the same for its singular and plural ("wolves"/"wolf", "ponies"/"pony", "horses"/"horse"). */
+const stem = (w) => String(w).replace(/ves$/, 'f').replace(/ies$/, 'y').replace(/(?<!s)s$/, '').replace(/e$/, '');
+const PLACE_WORDS = new Set(['in', 'at', 'on', 'near', 'from', 'within', 'inside', 'around', 'along', 'by', 'under', 'beyond', 'across', 'behind', 'over', 'through', 'to', 'for', 'that', 'which', 'who', 'with']);
+const DETERMINERS = new Set(['the', 'a', 'an', 'some', 'those', 'these', 'its', 'their', 'his', 'her']);
+/**
+ * The creature a text names: the stems of all its words, of its noun phrase (up to a place, a clause or a participle:
+ * "the rats in the cellar", "the wolves harrying the sheep", not "the stirring dead") and of its last word.
+ */
+function kindOf(text) {
+    const tokens = normText(text).replace(/[^a-z\s-]+/g, ' ').split(/\s+/).filter(Boolean);
+    const cut = tokens.findIndex((w, i) => PLACE_WORDS.has(w) || (i > 0 && w.length >= 6 && w.endsWith('ing') && !w.includes('-') && !DETERMINERS.has(tokens[i - 1])));
+    const words = (list) => list.flatMap((w) => w.split('-')).filter(Boolean).map(stem);
+    const phrase = words(cut < 0 ? tokens : tokens.slice(0, cut));
+    return { words: new Set(words(tokens)), phrase: new Set(phrase), head: phrase.at(-1) || null };
+}
 
 function uniqueEntityId(s, base) {
     let id = `npc.${slug(base) || 'unnamed'}`;

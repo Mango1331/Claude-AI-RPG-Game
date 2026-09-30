@@ -13,14 +13,15 @@
 // reply may change because of a command (auth), what the extractor must answer (expectedKeys) and what waits for the
 // reply (conditionals) go into the turn's outcome; the world applier (src/v4/world.js) reads them from there.
 import { formatCoin } from '../economy.js';
-import { entityLabel, setFactEvents } from '../knowledge.js';
+import { resolveCheck } from '../checks.js';
+import { entityLabel, setFactEvents, truth } from '../knowledge.js';
 import { normText, slug } from '../util.js';
 import {
     placeName, hallOf, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey,
 } from './domain.js';
 import { sameWant } from './world.js';
 import {
-    REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, checkProof, proofText,
+    REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, checkProof, objectiveText,
     promotion, takenByOthers, bookBoard,
 } from './guild.js';
 
@@ -36,6 +37,7 @@ export function newTurnContext(content) {
         auth: { go: null, gos: [], roam: false, take: [], gather: false, rest: false, timeCap: content.rules.time.default_cap_min },
         conditionals: [], expectedKeys: {}, actions: [], extra: [], resolutions: [],
         booked: { registration: false, grants: [], turnIns: [], accepted: [] },
+        searchChecks: [],
         boardShown: null,
     };
 }
@@ -85,6 +87,41 @@ function pickQuest(s, ref, statuses, kind = null) {
 // ------------------------------------------------------------------------------------------------ handlers
 // Each handler: (s, content, c, ctx, emit, env) -> {status, reason?, line?, extra?, cap?, condition?}
 const HANDLERS = {
+    'journey.continue'(s, content, c, ctx) {
+        if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
+        const travelRe = /\b(?:escort|journey|travel|road|cart|wagon|caravan|ship|boat|ferry|ride|guide|lead|depart|leave|deliver|destination|route|waystation)\b/i;
+        const sources = [
+            ...Object.values(s.quests).filter((q) => q.status === 'active' && [...(q.details || []), ...(q.notes || [])].length).map((q) => ({
+                label: q.title,
+                text: [...(q.details || []), ...(q.notes || [])].filter(Boolean).join(' '),
+            })),
+            ...Object.values(s.threads || {}).filter((t) => t.status === 'open').map((t) => ({ label: t.text, text: t.text })),
+        ];
+        // An already-established escort retains its real party identities across scenes.
+        const pQuest = s.journey?.quest && s.quests[s.journey.quest];
+        const pContact = s.journey?.party?.find((id) => present(s, id));
+        let ready = pQuest?.status === 'active' && !pQuest.ready && pContact
+            ? { label: pQuest.title, contact: pContact } : null;
+        for (const src of sources) {
+            if (ready) break;
+            if (!travelRe.test(src.text)) continue;
+            const text = normText(src.text);
+            const contact = s.scene.present.find((id) => {
+                if (id === 'pc' || s.entities[id]?.kind !== 'npc') return false;
+                const e = s.entities[id];
+                return [e.name, truth(s, id, 'occupation')[0]?.o, ...(e.descriptors || [])].filter(Boolean).map(normText)
+                    .some((x) => x.length >= 3 && text.includes(x));
+            });
+            if (contact) { ready = { ...src, contact }; break; }
+        }
+        if (!ready) return { status: 'refused', reason: 'no established journey', line: 'NOTHING TO DEPART ON — no stored journey/departure with someone here is ready to continue.' };
+        const go = { seq: c.seq, to: null, name: `the established journey for "${ready.label}"`, hall: false, newName: 'the established journey' };
+        ctx.auth.go = go;
+        ctx.auth.gos.push(go);
+        ctx.auth.roam = true;
+        ctx.auth.timeCap = Math.max(ctx.auth.timeCap, content.rules.time.travel_cap_min);
+        return { status: 'authorized', line: `DEPARTS/CONTINUES — the already-established journey with ${entityLabel(s, ready.contact)}; the story may advance it and establish where they reach.` };
+    },
     go(s, content, c, ctx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT GO — not while the fight runs.' };
         const known = typeof c.to === 'string';
@@ -100,7 +137,7 @@ const HANDLERS = {
         ctx.expectedKeys[String(c.seq)] = 'go';
         return { status: 'authorized', line: `GOES — to ${name} (the story decides whether and where he arrives).` };
     },
-    activity(s, content, c, ctx) {
+    activity(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT — not while the fight runs.' };
         const t = content.rules.time;
         const cap = c.until ? untilMinutes(content, s, c.until) : c.minutes ? Math.ceil(c.minutes * t.minutes_factor) : t.default_cap_min;
@@ -110,9 +147,31 @@ const HANDLERS = {
         if (RESTING.has(c.kind)) ctx.auth.rest = true;
         ctx.expectedKeys[String(c.seq)] = 'activity';
         const span = c.until ? UNTIL[c.until] || `until ${c.until}` : c.minutes ? `for ${c.minutes} minutes` : 'for a while';
+        if (c.kind === 'search' && envx?.dice) {
+            const actor = s.entities.pc?.sheet?.stats?.PER ?? 5;
+            const opposition = content.rules.checks?.difficulty_scores?.moderate ?? 6;
+            const check = resolveCheck(envx.dice, { label: `Search: ${c.what || 'the area'}`, actor, opposition });
+            const record = {
+                what: String(c.what || 'search the area').slice(0, 80), stat: 'PER', actor: check.actor_score,
+                opposition: check.opposition, chance: check.chance, roll: check.roll, success: check.success,
+                claimed: check.success, by: 'engine', seq: c.seq,
+            };
+            emit({ t: 'check.recorded', d: record });
+            ctx.searchChecks.push(record);
+            const result = check.success
+                ? 'SUCCESS — reveal a concrete discovery, encounter or actionable lead; a teaser-only answer is not a resolved search'
+                : 'FAILURE — resolve it concretely as no relevant find, a false lead, danger/complication, or this avenue being exhausted; do not repeat an interchangeable hint';
+            return { status: 'authorized', cap, line: `SEARCHES ${c.what ? `${c.what} ` : ''}${span}. SEARCH CHECK (PER ${check.actor_score} vs ${check.opposition}): ${check.chance}% (d100 ${check.roll}) → ${result}.` };
+        }
         return { status: 'authorized', cap, line: `${VERBS[c.kind] || String(c.kind).toUpperCase()} ${c.what ? `${c.what} ` : ''}${span} (at most ${cap} minutes; the story decides how long it takes and what it yields).` };
     },
     take(s, content, c, ctx, emit) {
+        // Currency is already tracked in sheet.coin_cp, not as a second loot item. A physical named
+        // coin-containing object, if one actually exists, still uses the normal object-id path below.
+        const cashName = typeof c.object === 'object' ? normText(c.object?.new || '') : '';
+        if (/^(?:(?:the|my|some|a|our)\s+)?(?:(?:quest|guild)\s+)?(?:reward|payout|payment|coins?|coppers?|silvers?|golds?)(?:\s+coins?)?$/.test(cashName)) {
+            return { status: 'refused', reason: 'currency already booked', line: 'NOTHING TO TAKE — received coin is already in Alaric\'s purse and coin total; do not create a second currency item.' };
+        }
         if (c.object && typeof c.object === 'object') {
             ctx.auth.take.push(c.seq);
             ctx.auth.takeNames = { ...(ctx.auth.takeNames || {}), [String(c.seq)]: String(c.object.new).slice(0, 80) };
@@ -283,7 +342,7 @@ const HANDLERS = {
             acceptContract(s, content, q, emit, { step: c.seq });
             ctx.booked.accepted.push(q.id);
             ctx.booked.grants.push('contract slip');
-            return { status: 'resolved', line: `ACCEPTS — ${questLine(q)} at the Guild desk; the clerk logs it and hands him its contract slip (the Guild pays ${q.payout_cp} cp on completion).` };
+            return { status: 'resolved', line: `ACCEPTS — ${questLine(q)} at the Guild desk; the clerk logs it and hands him its contract slip. Contract memory: ${q.desired_end_state || objectiveText(q)}. The stored objectives and any verification examples are continuity guidance, not mandatory steps or wording. Payout (${q.payout_cp} cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in.` };
         }
         // private work: its giver must be here
         if (q.status !== 'offered') return { status: 'refused', reason: `the job is ${q.status}`, line: `NOTHING TO DO — ${questLine(q)} is ${q.status}.` };
@@ -309,16 +368,16 @@ const HANDLERS = {
             const r = completeContract(s, content, q, emit, { step: c.seq });
             if (!r.ok) return { status: 'refused', reason: r.reason, line: `TURNS IN — ${questLine(q)}: the desk refuses it, ${r.reason}.` };
             ctx.booked.turnIns.push(q.id);
-            return { status: 'resolved', line: `TURNS IN — ${questLine(q)}: the desk checks ${proofText(q)} → accepted; the Guild pays ${q.payout_cp} cp.` };
+            return { status: 'resolved', line: `TURNS IN — ${questLine(q)}: the world has established the contract outcome; the Guild accepts the turn-in and pays ${q.payout_cp} cp.` };
         }
         const go = ctx.auth.gos.filter((g) => g.hall && g.seq < c.seq).at(-1);
         if (go) {
-            const pre = checkProof(s, q);
+            const ready = !!q.ready || ((q.proof || []).length > 0 && checkProof(s, q).ok);
             ctx.conditionals.push({ seq: c.seq, kind: 'turn_in', quest: q.id, condition: 'arrive_guild_hall', hall: go.to });
             ctx.booked.turnIns.push(q.id);
             return {
                 status: 'conditional', condition: 'arrive_guild_hall',
-                line: `TURNS IN, when he reaches the Guild hall — ${questLine(q)}: the desk checks ${proofText(q)} → ${pre.ok ? `accepted; the Guild pays ${q.payout_cp} cp` : `refused: ${pre.reason}`}. If the reply does not reach the hall, nothing is turned in.`,
+                line: `TURNS IN, when he reaches the Guild hall — ${questLine(q)}: ${ready ? `the achieved outcome is ready for desk acceptance; the Guild pays ${q.payout_cp} cp` : 'the story has not yet established the contract outcome as achieved'}. If the reply does not reach the hall, nothing is turned in.`,
             };
         }
         return { status: 'refused', reason: 'not at a Guild hall', line: `CANNOT TURN IN — ${questLine(q)}: contracts are turned in at a Guild hall.` };
@@ -362,9 +421,21 @@ const HANDLERS = {
         }
         emit({ t: 'board.shown', d: { branch, rank, listings: listed.map((q) => q.id) } });
         ctx.boardShown = { branch, rank, listings: listed.map((q) => q.id) };
-        return { status: 'resolved', line: `READS the ${rank} board — BOARD (canonical; show exactly these, invent no other official contract): ${listed.map((q) => `${q.title} · ${q.payout_cp} cp`).join(' | ')}.` };
+        const rows = listed.map((q) => `**${q.title}** — client: ${q.client || 'unspecified'} · reward: ${q.payout_cp} cp · ${q.desired_end_state || objectiveText(q)}`).join('\n');
+        return { status: 'resolved', line: `READS the ${rank} board — BOARD (these listings now become canonical because Alaric actually reads them; present the notices in the existing title-first readable format; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\n${rows}\nStored objectives and any verification examples are continuity memory only.` };
     },
     equip(s, content, c, ctx, emit) {
+        const eq = s.entities.pc.sheet.equipment || {};
+        const asked = typeof c.object === 'object' && c.object?.new ? normText(c.object.new) : null;
+        const already = Object.entries(eq).find(([, ref]) => {
+            const it = typeof ref === 'string' ? content.items.get(ref) : ref;
+            const n = normText(it?.name || ref?.name || ref || '');
+            return asked && (n.includes(asked) || asked.includes(n));
+        });
+        if (already) {
+            const it = typeof already[1] === 'string' ? content.items.get(already[1]) : already[1];
+            return { status: 'resolved', reason: 'already equipped', line: `READIES — ${it?.name || c.object.new} is already equipped; drawing/readying it is not an equipment swap.` };
+        }
         const o = objectOf(s, content, c.object);
         const tpl = o?.template || [...content.items.entries()].find(([, i]) => o && normText(i.name) === normText(o.name))?.[0];
         if (!o || o.holder?.entity !== 'pc') return { status: 'refused', reason: 'he does not hold it', line: 'CANNOT EQUIP — he does not hold that.' };

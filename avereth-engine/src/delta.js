@@ -152,7 +152,12 @@ function nameFromRef(n, prose) {
     const desc = new Set((Array.isArray(n.desc) ? n.desc : []).flatMap((d) => normText(d).split(' ')));
     const cap = (w) => w.charAt(0).toUpperCase() + w.slice(1);
     const named = String(n.ref).replace(/[_.]+/g, ' ').trim().split(/\s+/).map((w) => w.toLowerCase()).filter((w) => /^[a-z][a-z'-]+$/.test(w)
-        && !desc.has(w) && new RegExp(`\\b${escapeRe(cap(w))}\\b`).test(prose) && !new RegExp(`\\b${escapeRe(w)}\\b`).test(prose));
+        && !desc.has(w)
+        && new RegExp(`\\b${escapeRe(cap(w))}\\b`).test(prose)
+        && !new RegExp(`\\b${escapeRe(w)}\\b`).test(prose)
+        // A capitalised ref token inside "The X Y" is normally a place/business title, not this person's name
+        // (live 28.09.: person.drowned_gull_innkeeper beside "The Drowned Gull").
+        && !new RegExp(`\\bThe\\s+(?:${escapeRe(cap(w))}\\s+[A-Z][A-Za-z'-]+|[A-Z][A-Za-z'-]+\\s+${escapeRe(cap(w))})\\b`).test(prose));
     return named.length ? named.map(cap).join(' ') : null;
 }
 
@@ -372,7 +377,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
         }
         const desc = uniq([...(Array.isArray(n.desc) ? n.desc : []), n.ref].map((x) => String(x).toLowerCase().slice(0, 40)));
         const id = uniqueId(state, kind === 'npc' ? 'npc' : 'mon', n.name || n.ref, taken);
-        const name = n.name ? String(n.name).slice(0, 60) : kind === 'npc' ? nameFromRef(n, prose) : null;
+        const name = n.name === null ? null : n.name ? String(n.name).slice(0, 60) : kind === 'npc' ? nameFromRef(n, prose) : null;
         const entity = { id, kind, name, descriptors: desc, traits: n.traits ? String(n.traits).slice(0, 240) : '', status: 'alive', location: state.scene.location, created: at, source: src, card: {} };
         // Test 5 run: "Sergeant Hobb" and "Wick" came in "new" a reply before the story said their names (Testrun 2:
         // "Bram" was said five turns before "Fenn"); the player's views (combat target labels, HUD) show only the
@@ -381,8 +386,8 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
         const part = name && kind === 'npc' && /\p{Lu}/u.test(name) ? namePart(name) : null;
         if (part !== null) entity.known_name = part;
         if (kind === 'creature') {
-            const anchor = content.anchors.get(n.species) || anchorFor(content, [n.species, ...desc, n.traits].filter(Boolean).join(' '));
-            if (!anchor) { reject(n, 'creature needs a species that maps to an F1 body-plan anchor (or kind "npc")'); continue; }
+            const anchor = content.anchors.get(n.anchor) || content.anchors.get(n.species) || anchorFor(content, [n.species, ...desc, n.traits].filter(Boolean).join(' '));
+            if (!anchor) { reject(n, 'creature needs a valid F1 body-plan anchor (explicit anchor preferred; species name may be free fantasy fauna)'); continue; }
             entity.species = n.species ? String(n.species).slice(0, 40) : desc[0];
             entity.anchor = anchor.id;
         } else {

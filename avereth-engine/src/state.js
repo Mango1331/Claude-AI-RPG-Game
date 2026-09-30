@@ -153,6 +153,11 @@ export function applyEvent(state, e) {
             delete state.scene.positions[d.id];
             delete state.scene.awareness[d.id];
             break;
+        // A small continuity bookmark, not a general NPC-following simulation. A party exists
+        // only when the story established a shared escort journey; its IDs survive scene resets.
+        case 'journey.party':
+            state.journey = d.quest ? { quest: d.quest, party: (d.party || []).slice() } : null;
+            break;
         case 'scene.position':
             state.scene.positions[d.id] = { band: d.band, cover: d.cover || 'none' };
             break;

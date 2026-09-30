@@ -6,6 +6,7 @@
 import { truth, entityLabel, statusOf } from '../knowledge.js';
 import { deriveCharacter } from '../derived.js';
 import { formatClock, normText } from '../util.js';
+import { sceneHandle } from './scene_handles.js';
 import {
     placePath, placeName, settlementOf, realmOf, hallOf, hallOfSettlement, childrenOf, heldBy, lyingAt, openOffers,
     membership, listingsOf, today,
@@ -60,8 +61,23 @@ function proofText(q) {
     return (q.proof || []).map((p) => (p.kind === 'object' ? `${p.qty ?? 1} ${p.unit ?? ''} of ${p.what}`.replace(/\s+/g, ' ') : p.kind === 'mark' ? `"${p.what}" on the ${p.on || 'slip'}` : String(p.what || p))).join(' and ');
 }
 
+function objectiveText(q) {
+    return (q.objectives || []).map((o) => {
+        const qty = o.qty !== null && o.qty !== undefined ? `${o.qty}${o.unit ? ` ${o.unit}` : ''} ` : '';
+        return `${String(o.verb || 'DO').toUpperCase()} ${qty}${o.what || 'the objective'}${o.where ? ` at ${o.where}` : ''}`.replace(/\s+/g, ' ').trim();
+    }).join('; ');
+}
+
 function questInfo(state, content, q) {
-    if (q.kind === 'guild_contract') return ['Guild contract', q.status, q.rank, q.payout_cp !== null && q.payout_cp !== undefined ? `${q.payout_cp} cp` : null, (q.proof || []).length ? `proof: ${proofText(q)}` : null].filter(Boolean).join(' · ');
+    if (q.kind === 'guild_contract') {
+        const progress = (q.progress || []).slice(-3).map((p) => `${p.objective}: ${p.status}`).join('; ');
+        return ['Guild contract', q.status, q.rank, q.payout_cp !== null && q.payout_cp !== undefined ? `${q.payout_cp} cp` : null,
+            q.desired_end_state ? `desired outcome: ${q.desired_end_state}` : null,
+            (q.objectives || []).length ? `job memory: ${objectiveText(q)}` : null,
+            progress ? `progress: ${progress}` : null,
+            q.ready ? `READY FOR TURN-IN: ${q.ready_note || 'desired outcome achieved'}` : null,
+            (q.proof || []).length ? `verification example: ${proofText(q)}` : null].filter(Boolean).join(' · ');
+    }
     const giver = q.giver && state.entities[q.giver] ? personLabel(state, content, q.giver) : q.giver;
     return ['private', q.status, giver ? `from ${giver}` : null, q.payout_cp ? `reward ${q.payout_cp} cp` : null].filter(Boolean).join(' · ');
 }
@@ -77,8 +93,14 @@ export function alaricLine(state, content) {
 
 /** What Alaric's own sheet carries (template items: pouch, arrows) as catalog objects "item.<template>". */
 function sheetObjects(state, content) {
-    const inv = state.entities.pc?.sheet?.inventory || {};
-    return Object.entries(inv).filter(([k]) => !k.startsWith('obj.')).map(([k, q]) => ({ id: `item.${k}`, name: content.items.get(k)?.name || state.item_names?.[k] || k, qty: q > 1 ? q : undefined }));
+    const sheet = state.entities.pc?.sheet || {};
+    const inv = sheet.inventory || {};
+    const carried = Object.entries(inv).filter(([k]) => !k.startsWith('obj.')).map(([k, q]) => ({ id: `item.${k}`, name: content.items.get(k)?.name || state.item_names?.[k] || k, qty: q > 1 ? q : undefined }));
+    const equipped = Object.entries(sheet.equipment || {}).map(([slot, ref]) => {
+        if (typeof ref !== 'string') return ref?.id ? { id: `item.${ref.id}`, name: ref.name || ref.id, state: `equipped: ${slot}` } : null;
+        return { id: `item.${ref}`, name: content.items.get(ref)?.name || ref, state: `equipped: ${slot}` };
+    }).filter(Boolean);
+    return [...equipped, ...carried.filter((o) => !equipped.some((e) => e.id === o.id))];
 }
 
 function objectEntry(state, content, o) {
@@ -105,15 +127,48 @@ export function openDecisionTexts(state) {
 export function buildCatalog(state, content, { extraPlaces = [] } = {}) {
     const at = state.scene.at;
     const present = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && statusOf(state, id) !== 'dead')
-        .map((id) => ({ id, label: personLabel(state, content, id) }));
-    const quests = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered').map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) }));
+        .map((id) => ({ id, handle: sceneHandle(state, content, id), label: personLabel(state, content, id) }));
+    const activeRaw = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered');
+    const quests = activeRaw.map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) }));
+    const travelRe = /\b(?:escort|journey|travel|road|cart|wagon|caravan|ship|boat|ferry|ride|guide|lead|depart|leave|deliver|destination|route|waystation)\b/i;
+    const journeySources = [
+        ...activeRaw.filter((q) => q.status === 'active' && [...(q.details || []), ...(q.notes || [])].length).map((q) => ({
+            id: q.id, label: q.title,
+            // Journey readiness comes only from story-persisted detail/note memory, never from generated objective text.
+            text: [...(q.details || []), ...(q.notes || [])].filter(Boolean).join(' '),
+        })),
+        ...Object.values(state.threads || {}).filter((t) => t.status === 'open').map((t) => ({ id: t.id, label: t.text, text: t.text })),
+    ];
+    // A real, persisted escort party survives scene resets. This is stronger evidence than
+    // re-matching NPC roles in every subsequent scene, and still never follows a generated
+    // quest objective alone.
+    const partyQuest = state.journey?.quest && state.quests[state.journey.quest];
+    const partyContact = state.journey?.party?.find((id) => state.scene.present.includes(id) && state.entities[id]?.status !== 'dead');
+    let journey_ready = partyQuest?.status === 'active' && !partyQuest.ready && partyContact
+        ? `${partyQuest.id} with ${sceneHandle(state, content, partyContact)} — an established escort already underway; Alaric may continue when he agrees`
+        : undefined;
+    for (const src of journeySources) {
+        if (journey_ready) break;
+        if (!travelRe.test(src.text)) continue;
+        const text = normText(src.text);
+        const contact = state.scene.present.find((id) => {
+            if (id === 'pc' || !state.entities[id] || state.entities[id].kind !== 'npc') return false;
+            const e = state.entities[id];
+            const labels = [e.name, truth(state, id, 'occupation')[0]?.o, ...(e.descriptors || [])].filter(Boolean).map(normText);
+            return labels.some((x) => x.length >= 3 && text.includes(x));
+        });
+        if (contact) {
+            journey_ready = `${src.id} with ${sceneHandle(state, content, contact)} — an established journey/departure is ready to continue if Alaric clearly agrees`;
+            break;
+        }
+    }
     const day = today(state);
     const completed = Object.values(state.quests).filter((q) => q.status === 'completed' && (q.history || []).some((h) => h.status === 'completed' && Math.floor((h.minute ?? 0) / 1440) + 1 === day))
         .map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) }));
     const hall = hallOf(state, at);
     const town = hall ? settlementOf(state, hall) : null;
     const rank = membership(state)?.rank || 'Novice';
-    const board = hall && town ? listingsOf(state, town, rank).map((q) => ({ id: q.id, title: q.title, info: `${q.rank} · ${q.payout_cp} cp` })) : [];
+    const board = hall && town ? listingsOf(state, town, rank).map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) })) : [];
     const offers = openOffers(state).filter((o) => o.canon ? (!o.at || hallOf(state, o.at) === hall) : state.scene.present.includes(o.seller))
         .map((o) => ({ id: o.id, seller: o.canon ? 'Guild' : personLabel(state, content, o.seller), lines: o.lines.map((l) => ({ id: l.id, what: l.what, price_cp: l.price_cp })) }));
     const objects = [
@@ -129,6 +184,7 @@ export function buildCatalog(state, content, { extraPlaces = [] } = {}) {
         present,
         places: catalogPlaces(state, extraPlaces),
         quests,
+        journey_ready,
         completed,
         board_label: hall ? `${rank} board of this hall` : undefined,
         board,
@@ -158,7 +214,7 @@ export function guardContext(state, content, catalog = buildCatalog(state, conte
     return {
         inGuildHall: !!hallOf(state, state.scene.at),
         guildHalls: new Set([catalog.here.id, ...catalog.places.map((p) => p.id)].filter((id) => hallOf(state, id) === id)),
-        present: catalog.present.map((p) => ({ id: p.id, names: [p.label, state.entities[p.id]?.name].filter(Boolean) })),
+        present: catalog.present.map((p) => ({ id: p.id, names: [p.handle, p.label, state.entities[p.id]?.name].filter(Boolean) })),
         objects,
         registrationPending: !!reg,
         registrationOffer: reg ? reg.id : null,

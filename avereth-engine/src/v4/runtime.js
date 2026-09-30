@@ -7,9 +7,8 @@
 //
 //   before the narrator   prepareGenerationAsync: interpreter -> agency guard -> (Board generator) -> command handlers
 //   after the reply       processReplyV4 (prose only, extraction pending) -> runExtraction (extractor, firewall, world)
-//                         -> runBoardAfterArrival (a Guild hall reached: its board, canonical first)
-//   barrier               the next player message waits for the reply's extraction; whatever is not committed by
-//                         then is recorded as a gap (extract.failed "late") and the late answer is dropped
+//   barrier               the host waits for the current extraction/repair before starting the next normal turn.
+//                         closeLatePending remains a safety net for reloads/out-of-band calls that bypass that host job.
 //
 // A V3 campaign never reaches this module's V4 branches: prepareGenerationAsync and processReplyAny hand it to host.js.
 import {
@@ -28,7 +27,7 @@ import { buildCatalog, extractorCatalog, guardContext } from './catalog.js';
 import { interpreterRequest, parseInterpretation, INTERPRETER_VERSION } from './interpret.js';
 import { guardCommands } from './agency.js';
 import { extractorRequest, parseExtraction, EXTRACTOR_VERSION } from './extract.js';
-import { boardNeed, boardRequest, parseBoard, bookBoard, BOARD_VERSION } from './guild.js';
+import { boardRequest, parseBoard, bookBoard, BOARD_VERSION } from './guild.js';
 import { extractionFailedEvents } from './world.js';
 import { hallOf, settlementOf, membership, boardKey, today, listingsOf, supportedRanks } from './domain.js';
 
@@ -165,22 +164,40 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
             if (typeof llm !== 'function') throw new Error('Runtime V4 needs an LLM call for the interpreter');
             const catalog = buildCatalog(before, content);
             const ip = retryBoard ? { commands: r.interp.commands, ms: 0, repaired: !!r.interp.repaired, failed: false } : await interpretMessage(llm, content, catalog, msg.mes);
-            const guarded = ip.commands ? guardCommands(msg.mes, ip.commands, guardContext(before, content, catalog)) : { kept: [], dropped: [] };
-            const need = ip.failed ? null : boardFor(before, content, guarded.kept);
+            if (ip.failed) {
+                r = {
+                    v: RECORD_V4, input_hash: inputHash, route: 'v4',
+                    interp: { version: INTERPRETER_VERSION, ms: ip.ms, failed: true, repaired: ip.repaired, commands: null, error: ip.error || undefined },
+                    events: [], command: null,
+                };
+                setRec(msg, r);
+                return {
+                    action: 'abort', dirty: true,
+                    notice: `Avereth Engine: interpreter failed${ip.error ? ` (${ip.error})` : ''}. Regenerate or send the message again; no story turn was generated.`,
+                };
+            }
+            const guarded = guardCommands(msg.mes, ip.commands, guardContext(before, content, catalog));
+            const need = boardFor(before, content, guarded.kept);
             const board = need ? await generateBoard(llm, before, content, need) : null;
             const t = playerTurnV4(before, content, msg.mes, {
                 msg: u, commands: guarded.kept, dropped: guarded.dropped, board,
-                interp: { version: INTERPRETER_VERSION, ms: ip.ms, source: ip.repaired ? 'json_repaired' : 'json', failed: ip.failed, error: ip.error },
+                interp: { version: INTERPRETER_VERSION, ms: ip.ms, source: ip.repaired ? 'json_repaired' : 'json', failed: false, error: null },
             });
             r = {
                 v: RECORD_V4, input_hash: inputHash, route: 'v4',
-                interp: { version: INTERPRETER_VERSION, ms: ip.ms, failed: ip.failed, repaired: ip.repaired, commands: ip.commands, error: ip.error || undefined },
+                interp: { version: INTERPRETER_VERSION, ms: ip.ms, failed: false, repaired: ip.repaired, commands: ip.commands },
                 board: board ? { branch: board.branch, rank: board.rank, ms: board.ms, failed: board.failed || undefined, listings: board.listings.length } : undefined,
                 events: t.events, command: t.command ? { panels: t.command.panels, llm: null } : null,
             };
         }
         setRec(msg, r);
         dirty = true;
+    }
+    if (r?.route === 'v4' && r.interp?.failed) {
+        return {
+            action: 'abort', dirty,
+            notice: `Avereth Engine: interpreter failed${r.interp.error ? ` (${r.interp.error})` : ''}. Regenerate or send the message again; no story turn was generated.`,
+        };
     }
     if (r?.command && !r.command.llm) {
         if (r.command.posted) return { action: 'abort', dirty };
@@ -214,13 +231,18 @@ export function processReplyAny(chat, id, content, opts = {}) {
     const u = lastUserIndex(chat, id);
     if (u < 0) return { changed: false };
     const clean = extractReport(msg.mes).clean;
-    msg.mes = swapWords(opts.stripTrackers === false ? clean : stripTrackerBlocks(clean), opts.swaps || []);
+    // V4 prose is also the extractor's evidence. Post-generation word swaps can corrupt canonical names/content
+    // (live 28.09.: "Deliver a Ledger" became "Deliver a Register"). Keep V4 text byte-faithful apart from retired blocks.
+    msg.mes = opts.stripTrackers === false ? clean : stripTrackerBlocks(clean);
     if (rec(chat[u])?.command?.llm) {
         setRec(msg, { v: RECORD_V4, events: [], system_answer: true, text_hash: hash32(msg.mes) });
         return { changed: true };
     }
     const { state } = foldChat(chat, id);
-    const view = display(msg, content, state, { pending: true }, opts.hud || 'closed');
+    // Soft-world V4: the player reads the narrator immediately. Extraction is persistence/bookkeeping and may take
+    // tens of seconds; it must not hide ordinary story prose. The next-turn barrier still waits for the commit.
+    // When extraction finishes, showPanel refreshes this same reply with newly recorded state (including creature HP).
+    const view = display(msg, content, state, { pending: true, state }, opts.hud || 'closed');
     setRec(msg, { v: RECORD_V4, events: [], text_hash: hash32(msg.mes), extraction: { status: 'pending', version: EXTRACTOR_VERSION }, corrections: [], ...view });
     return { changed: true, extract: true };
 }
@@ -245,9 +267,9 @@ export function extractionRequest(chat, id, content) {
 }
 
 /**
- * Read reply id with the extractor (one repair; one more call if still invalid) and commit its world: firewall, world
- * handlers, display. A reply that changed meanwhile, or a later turn already resolved, is left alone.
- * @returns {{changed: boolean, applied?: boolean, failed?: string, boardNeeded?: boolean, late?: boolean}}
+ * Read reply id with the extractor: exactly one primary call and at most one repair, then commit whatever valid
+ * persistence we have. A reply that changed meanwhile, or a later turn already resolved, is left alone.
+ * @returns {{changed: boolean, applied?: boolean, failed?: string, late?: boolean}}
  */
 export async function runExtraction(chat, id, content, llm, { hud = 'closed' } = {}) {
     const req = extractionRequest(chat, id, content);
@@ -257,24 +279,27 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed' } =
     let parsed = null;
     let repaired = false;
     let error = null;
-    for (let attempt = 0; attempt < 2 && !(parsed?.valid && parsed.complete); attempt++) {
-        const a = await ask(llm, req.messages, 'extract');
-        ms += a.ms;
-        if (!a.ok) { error = a.error; continue; }
-        let p = parseExtraction(a.content, vocab, req.ids, req.expectedKeys);
-        if (!(p.valid && p.complete)) {
-            const rep = extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player, expectedKeys: req.expectedKeys, reply: chat[id].mes }, { previous: a.content, errors: p.errors });
-            const b = await ask(llm, rep.messages, 'extract_repair');
-            ms += b.ms;
+
+    const first = await ask(llm, req.messages, 'extract');
+    ms += first.ms;
+    if (first.ok) {
+        const p1 = parseExtraction(first.content, vocab, req.ids, req.expectedKeys);
+        if (p1.valid) parsed = p1;
+        else error = p1.errors.join('; ').slice(0, 200);
+
+        if (!(p1.valid && p1.complete)) {
+            const rep = extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player, expectedKeys: req.expectedKeys, reply: chat[id].mes }, { previous: first.content, errors: p1.errors });
+            const second = await ask(llm, rep.messages, 'extract_repair');
+            ms += second.ms;
             repaired = true;
-            if (b.ok) {
-                const p2 = parseExtraction(b.content, vocab, req.ids, req.expectedKeys);
-                if (p2.valid && (p2.complete || !p.valid)) p = p2;
-            }
+            if (second.ok) {
+                const p2 = parseExtraction(second.content, vocab, req.ids, req.expectedKeys);
+                if (p2.valid && (!parsed || p2.complete || p2.missing.length < parsed.missing.length)) parsed = p2;
+                else if (!p2.valid && !parsed) error = p2.errors.join('; ').slice(0, 200);
+            } else if (!parsed) error = second.error;
         }
-        if (p.valid) parsed = p;
-        else error = p.errors.join('; ').slice(0, 200);
-    }
+    } else error = first.error;
+
     return applyExtraction(chat, id, content, parsed, { hash: req.hash, ms, repaired, error, hud });
 }
 
@@ -294,54 +319,20 @@ export function applyExtraction(chat, id, content, parsed, { hash, ms = null, re
     const res = replyTurnV4(state, content, parsed.value, { msg: id, prose: msg.mes, ms, repaired });
     const corrections = [...res.corrections];
     if (!parsed.complete) corrections.push(`Your last reply left open what happened to: ${parsed.missing.map((k) => `action ${k}`).join(', ')}; the engine treats it as not done.`);
-    const needBoard = !!res.arrivedHall && !!boardNeed(res.state, content);
     const view = display(msg, content, state, res, hud);
     setRec(msg, {
         v: RECORD_V4, events: res.events, text_hash: hash, corrections,
-        extraction: { status: 'applied', version: EXTRACTOR_VERSION, ms, repaired, deltas: (parsed.value.deltas || []).length, missing: parsed.missing.length ? parsed.missing : undefined, raw: parsed.value, board: needBoard ? 'pending' : undefined },
+        extraction: { status: 'applied', version: EXTRACTOR_VERSION, ms, repaired, deltas: (parsed.value.deltas || []).length, missing: parsed.missing.length ? parsed.missing : undefined, raw: parsed.value },
         rejected: res.rejected.length ? res.rejected : undefined, system: res.system.length ? res.system : undefined, ...view,
     });
-    return { changed: true, applied: true, boardNeeded: needBoard };
-}
-
-/**
- * Alaric reached a Guild hall in reply id: its board is generated now, in the background (plan §6.4), so a later look
- * does not wait. The listings are canon from here on; the events join the reply's record. A failure is only noted:
- * the next board.read tries again (blocking).
- */
-export async function runBoardAfterArrival(chat, id, content, llm, { hud = 'closed' } = {}) {
-    const msg = chat[id];
-    const r = rec(msg);
-    if (!r || r.extraction?.board !== 'pending' || laterTurns(chat, id)) return { changed: false };
-    const hash = r.text_hash;
-    const { state } = foldChat(chat, id + 1);
-    const need = boardNeed(state, content);
-    if (!need) {
-        setRec(msg, { ...r, extraction: { ...r.extraction, board: undefined } });
-        return { changed: true };
-    }
-    const board = await generateBoard(llm, state, content, need);
-    const now = rec(chat[id]);
-    if (!now || now.text_hash !== hash || hash32(chat[id].mes) !== hash || laterTurns(chat, id)) return { changed: false };
-    const s = clone(state);
-    const events = [];
-    if (board.listings.length) bookBoard(s, content, need, board.listings, (e) => { applyEvent(s, e); events.push(e); });
-    else {
-        const e = { t: 'board.failed', d: { branch: need.branch, rank: need.rank, error: board.failed } };
-        applyEvent(s, e);
-        events.push(e);
-    }
-    const before = foldChat(chat, id).state;
-    const view = display(chat[id], content, before, { events: [...now.events, ...events], state: s, system: now.system || [], rejected: now.rejected || [] }, hud);
-    setRec(chat[id], { ...now, events: [...now.events, ...events], extraction: { ...now.extraction, board: board.listings.length ? 'booked' : 'failed' }, ...view });
-    return { changed: true, booked: board.listings.length };
+    return { changed: true, applied: true };
 }
 
 /** The reply whose extraction a reload or a chat switch cut off (index.js resumes it), or -1. */
 export function pendingExtraction(chat) {
     const id = chat.findLastIndex((m) => !m.is_user && !m.is_system);
     const r = id >= 0 ? rec(chat[id]) : null;
-    if (r && (r.extraction?.status === 'pending' || r.extraction?.board === 'pending') && r.text_hash === hash32(chat[id].mes) && !laterTurns(chat, id)) return id;
+    if (r && r.extraction?.status === 'pending' && r.text_hash === hash32(chat[id].mes) && !laterTurns(chat, id)) return id;
     return -1;
 }
 

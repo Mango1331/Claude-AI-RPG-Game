@@ -9,6 +9,7 @@ import { deriveCharacter } from './derived.js';
 import { formatCoin } from './economy.js';
 import { bandIndex, itemLabel } from './util.js';
 import { damagePreview, combatTargets, targetLabel } from './combat.js';
+import { sceneHandle } from './v4/scene_handles.js';
 
 const sys = (text) => `\`${text}\``;
 // a combatant by its target label (from the board of that step, which outlives the fight), anyone else as the player knows them
@@ -67,9 +68,24 @@ export function turnPanel(state, content, narratorCheck = null, reply = null) {
  * place of a story turn. Nothing was spent or rolled; the fight waits for the player to name a target by its label.
  */
 export function targetQuestion(state, content, intent) {
-    const targets = combatTargets(state.encounter);
     const name = namer(state, null);
     const skill = content.skills.get(intent.skill)?.name || 'Attack';
+    if (!state.encounter) {
+        const scene = (state.scene?.present || []).filter((id) => id !== 'pc' && state.entities[id]?.status !== 'dead').map((id) => {
+            const e = state.entities[id];
+            const pos = state.scene.positions?.[id];
+            return { id, label: sceneHandle(state, content, id), band: pos?.band || null, hp: e.profile?.hp ?? e.sheet?.hp ?? null, max: e.profile?.max_hp ?? null };
+        });
+        const ask = intent.kind === 'ambiguous_target'
+            ? `which target — ${intent.candidates.map((id) => sceneHandle(state, content, id)).join(' or ')}?`
+            : intent.ref ? `"${intent.ref}" is not a valid target in the active scene.` : 'there is no valid target in the active scene.';
+        return [
+            '[SYSTEM // ATTACK — TARGET NEEDED]',
+            `${name('pc')}'s ${skill}: ${ask} Nothing was spent or rolled.`,
+            scene.length ? `ACTIVE SCENE — ${scene.map((x) => `${x.label}${x.hp !== null ? ` · HP ${x.hp}/${x.max ?? x.hp}` : ''}${x.band ? ` · ${x.band}` : ''}`).join(' | ')}` : 'ACTIVE SCENE — no targetable actor',
+        ].join('\n');
+    }
+    const targets = combatTargets(state.encounter);
     const ask = intent.kind === 'ambiguous_target' ? `which target — ${intent.candidates.map(name).join(' or ')}?`
         : intent.ref ? `"${intent.ref}" is not a target in this fight.` : 'no target in this fight.';
     return [
@@ -124,6 +140,9 @@ function changeLines(before, after, content, events) {
         } else if (e.t === 'level.up' && d.id === 'pc') {
             lvl = d.level;
             out.push(sys(`LEVEL UP → Level ${d.level} (+${d.free_points} free Stat Points)`));
+        } else if (e.t === 'quest.ready') {
+            const q = after.quests[d.id];
+            out.push(sys(`QUEST READY FOR TURN-IN — ${q?.title || d.id}${d.note ? ` · ${d.note}` : ''}`));
         } else if (e.t === 'quest.status' && QUEST[d.to] && d.to !== 'offered') {
             const q = after.quests[d.id];
             out.push(sys(`QUEST ${QUEST[d.to]} — ${q?.title || d.id}${q?.rank ? ` (${q.rank})` : ''}`));
@@ -172,12 +191,27 @@ function commandLines(o) {
 export function worldPanel(state, content, reply = {}) {
     const o = state.last?.outcome;
     const lines = [];
+    // A creature becoming concretely visible is gameplay-relevant before Combat. Show its canonical handle, locked HP
+    // and Range immediately above the same narration that revealed it. This is NOT Initiative and does not start combat.
+    if (reply?.state && reply?.events) {
+        const before = new Set(state.scene?.present || []);
+        const revealed = (reply.state.scene?.present || []).filter((id) => {
+            const e = reply.state.entities?.[id];
+            if (!e || e.kind !== 'creature' || !e.profile) return false;
+            return !before.has(id) || !state.entities?.[id]?.profile;
+        });
+        for (const id of revealed) {
+            const e = reply.state.entities[id];
+            const pos = reply.state.scene.positions?.[id];
+            const hp = e.profile.hp ?? e.profile.max_hp;
+            lines.push(sys(`ACTIVE SCENE — ${sceneHandle(reply.state, content, id)} · HP ${hp}/${e.profile.max_hp} · ${pos?.band || 'Range unknown'}${pos?.cover && pos.cover !== 'none' ? ` · ${pos.cover} cover` : ''}`));
+        }
+    }
     if (o?.kind === 'v4') lines.push(...commandLines(o));
     else if (o?.kind === 'combat') lines.push(...combatLines(state, content, o));
     else if (o?.kind === 'check' && o.check) lines.push(checkLine(o.check));
     else if (o?.kind === 'note' && o.notice) lines.push(sys(o.notice));
-    if (reply.pending) lines.push(sys('WORLD — the engine is reading the reply; the HUD follows in a moment.'));
-    else if (reply.failed) lines.push(sys(`WORLD NOT RECORDED — ${String(reply.failed).replace(/[<>`]/g, '')}. Nothing of this reply changed the game state; swipe to retry, or go on.`));
+    if (reply.failed) lines.push(sys(`WORLD NOT RECORDED — ${String(reply.failed).replace(/[<>`]/g, '')}. Nothing of this reply changed the game state; swipe to retry, or go on.`));
     if (reply.events && reply.state) {
         lines.push(...changeLines(state, reply.state, content, reply.opened ? reply.events.slice(0, reply.opened.from) : reply.events));
         const check = reply.events.find((e) => e.t === 'check.recorded' && e.d.by === 'narrator');

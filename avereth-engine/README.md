@@ -1,4 +1,4 @@
-# Avereth Engine (v4.0.0)
+# Avereth Engine (v4.0.6)
 
 Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extension**. Sie besitzt Regeln, Würfel, Kampagnenzustand und Figurenwissen. Das Sprachmodell erzählt.
 
@@ -12,10 +12,10 @@ Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extens
 *LLM interprets and narrates. Engine validates and commits.* Jede Kampagne behält die Runtime, mit der sie begann: Neue Chats laufen in V4 (Einstellung „Runtime for new campaigns“), laufende V3-Chats bleiben V3.
 
 1. **Vor der Erzählung** übersetzt ein kleiner LLM-Aufruf (Interpreter, reines JSON, Temperatur 0,1) deine Nachricht einmal in typisierte Befehle: `go`, `activity`, `take`, `give`, `pay`, `buy`, `guild.register`, `quest.accept`, `quest.turn_in`, `board.read` und weitere (`content/commands.json`). Fragen, Rückblicke, Pläne und Absichten („I'm here to register“) sind keine Befehle; ein deterministischer Agency-Guard entfernt, was die Nachricht nicht trägt.
-2. **Die Engine prüft und bucht** jeden Befehl: *resolved* (jetzt gebucht: Gebühr, Annahme, Abgabe am Schalter mit Beweisprüfung), *authorized* (Reise, Tätigkeit mit Zeitdeckel), *conditional* („wenn er die Halle erreicht“), *pending* (Preis unbekannt: der Erzähler nennt ihn und hält an), *refused*, *clarify*. Offizielle Gildenaushänge erzeugt ein Board-Generator, bevor sie gezeigt werden (*canonical first*); die Registrierung kostet die Canon-Gebühr 20 cp, nur die Gilde zahlt Verträge aus.
+2. **Die Engine prüft und bucht** jeden Befehl: *resolved* (harte Mechanik/Commitments wie Gebühr, Questannahme, Kauf/Verkauf), *authorized* (Reise, Tätigkeit), *conditional*, *pending*, *refused*, *clarify*. Offizielle Gildenaushänge erzeugt ein Board-Generator (*canonical first*); Registrierung, feste Quest-Auszahlung, Quest-XP, Completed-Count und Promotion bleiben Engine-owned. Questziele, Hinweise und Verification dienen dagegen als gespeichertes Story-Gedächtnis.
 3. **Der Erzähler** bekommt PLAYER ACTIONS und schreibt **nur Prosa**: keinen Block, keinen Report (Vertrag v4, Preset „Avereth Narrator V4“).
-4. **Nach der Antwort** liest ein Extraktor (LLM, JSON) sie im Hintergrund als geordnete Weltänderungen; er kennt dabei auch deine Nachricht. Eine **Autoritäts-Firewall** verwirft, was nur die Engine buchen darf (Gildenzahlungen, Registrierung, Aushänge, die Regeln und Ränge der Gilde, Besitz Alarics ohne seinen Befehl, Reisen ohne sein `go`), und schreibt eine Korrektur für den nächsten Zug.
-5. **Commit-Barriere:** Die nächste Nachricht wartet, bis die Welt der vorigen Antwort gebucht ist (höchstens 90 s; sonst eine sichtbare Lücke mit Korrektur).
+4. **Nach der Antwort** liest ein Extraktor (LLM, JSON) sie im Hintergrund als geordnete Weltänderungen; maximal ein Erstversuch plus ein Repair. Die **Autoritäts-Firewall** schützt harte Mechanik und Alarics eigene Commitments, nicht normale Weltkausalität: NPC-Hilfe, Beziehungen, Wissen, Witnesses, Questfortschritt und freiwillige NPC→PC-Übergaben werden primär gespeichert. Externe Ereignisse dürfen Alaric mit explizitem Grund auch unfreiwillig bewegen; Combat-/Coin-/Progressionsmechanik bleibt streng.
+5. **Commit-Barriere:** Die Narration selbst bleibt sofort sichtbar; die nächste Nachricht wartet, bis die Welt der vorigen Antwort gebucht ist (höchstens 90 s; sonst eine sichtbare Lücke mit Korrektur).
 6. **Kampf, Charaktererstellung, `#`-Befehle und Schleichen** laufen unverändert über die V3-Engine.
 
 Einrichtung und Ablauf des Live-Tests: [docs/LIVETEST_V4.md](docs/LIVETEST_V4.md), mit dem kurzen Retest nach dem ersten Lauf (§5). Architektur, Entscheidungen und Grenzen: [docs/RUNTIME_V4_PLAN.md](docs/RUNTIME_V4_PLAN.md), Rev. 3; Befunde des ersten Live-Tests vom 28.09.2026: R3.9.
@@ -69,7 +69,7 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
    - **Welcher Stand?** Neue Änderungen liegen zuerst auf dem Branch `claude/happy-wright-1a4y19` und kommen erst mit dem Merge nach `main`. Den Ordner aus dem Stand kopieren, den du testen willst.
    - **Nur eine Kopie:** Liegt zusätzlich ein gleichnamiger Ordner unter `public/scripts/extensions/third-party/`, liefert SillyTavern pro Datei die Kopie aus `data/<user>/extensions/`. Alte Kopien löschen.
 2. SillyTavern neu laden. Unter Extensions erscheint **Avereth Engine**.
-   - **Build prüfen:** „Manage extensions“ zeigt die Version aus `manifest.json` (jetzt **4.0.0**). Dieselbe Nummer steht in der Statuszeile des Engine-Panels, in der letzten Zeile von `#audit` und bei jeder Nachricht im Event-Export (`build`). Nachrichten ohne `build` stammen von einem Stand vor 3.1.0.
+   - **Build prüfen:** „Manage extensions“ zeigt die Version aus `manifest.json` (jetzt **4.0.6**). Dieselbe Nummer steht in der Statuszeile des Engine-Panels, in der letzten Zeile von `#audit` und bei jeder Nachricht im Event-Export (`build`). Nachrichten ohne `build` stammen von einem Stand vor 3.1.0.
 3. **Charakterkarte:**
    - **Runtime V4 (Standard):** Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v4.txt`; dazu das Preset `presets/Avereth Narrator V4.json` und die API-Quelle **Custom (OpenAI-compatible)**. Schritt für Schritt: [docs/LIVETEST_V4.md §2](docs/LIVETEST_V4.md#2-einrichtung-in-sillytavern). Am besten eine eigene Karte für V4, damit laufende V3-Chats ihre behalten.
    - **Runtime V3:** Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v3.txt` (Stand 3.3; nach jedem Update neu einfügen);
@@ -105,7 +105,7 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
 | HUD under replies | Folded | Charakter- und Welt-Panel unter jeder Antwort: eingeklappt mit Zusammenfassung, offen oder aus |
 | Injection depth | 0 | 0 = direkt vor der Generierung |
 | World lore | Auto | Auto: Lorebook der Karte, falls verknüpft, sonst die Lore der Engine. „Card lorebook“ oder „Engine“ erzwingen eine Quelle. Die Statuszeile zeigt die aktive. |
-| Word replacements | `ledger=register` | Wörter, die der Erzähler überstrapaziert, werden in seinen Antworten ersetzt: ganze Wörter, Plural und Großschreibung bleiben; Paare mit Komma trennen (`ledger=register, tapestry=weave`). Das Wort steht so auch nicht mehr im nächsten Prompt. Eine Bann-Liste im Preset nennt das Wort und macht es eher wahrscheinlicher. |
+| Word replacements | leer (V3 only) | Wörter, die der Erzähler überstrapaziert, werden in seinen Antworten ersetzt: ganze Wörter, Plural und Großschreibung bleiben; Paare mit Komma trennen (`ledger=register, tapestry=weave`). Das Wort steht so auch nicht mehr im nächsten Prompt. Eine Bann-Liste im Preset nennt das Wort und macht es eher wahrscheinlicher. |
 | Show last engine block | aus | zeigt den zuletzt injizierten Engine-Block (Debugging) |
 
 Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log als JSON herunterlädt.

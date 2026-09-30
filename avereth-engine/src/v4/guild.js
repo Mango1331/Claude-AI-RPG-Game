@@ -13,7 +13,7 @@ import { hallOf, settlementOf, heldBy, membership, listingsOf, boardKey, today, 
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
-export const BOARD_VERSION = 'board-4.0';
+export const BOARD_VERSION = 'board-4.4';
 const QTYPES = ['minor', 'standard', 'dangerous', 'major'];
 const VERBS = ['GO', 'FIND', 'TALK', 'GET', 'GATHER', 'GIVE', 'DELIVER', 'USE', 'REPAIR', 'DEFEND', 'ESCORT', 'ATTACK', 'DEFEAT'];
 
@@ -104,16 +104,26 @@ export function acceptContract(s, content, q, emit, { step } = {}) {
     recordFact(s, emit, { p: 'accepted_contract', o: q.title, id: `f.pc.accepted.${q.id}` });
 }
 
-/** The proof check at the desk (plan §6.3): objects in the quest's unit, marks on a document Alaric holds. */
+/** Legacy/advisory verification check: exact generated proof may still substantiate an older contract, but V4.0.5 no longer requires it when the story has already established the desired quest outcome. */
 export function checkProof(s, q) {
     const consume = [];
     const held = heldBy(s, 'pc');
     const words = (x) => String(x || '').toLowerCase();
     for (const p of q.proof || []) {
         if (p.kind === 'object') {
-            const o = held.find((x) => words(x.name).includes(words(p.what)) && (x.unit || null) === (p.unit || null) && (x.qty ?? 1) >= (p.qty ?? 1));
-            if (!o) return { ok: false, reason: `${p.qty ?? 1} ${p.unit ?? ''} of ${p.what} missing`.replace(/\s+/g, ' ') };
-            if (p.consume !== false) consume.push(o.id);
+            const need = p.qty ?? 1;
+            const matches = held.filter((x) => words(x.name).includes(words(p.what)) && (x.unit || null) === (p.unit || null));
+            const have = matches.reduce((n, x) => n + (x.qty ?? 1), 0);
+            if (have < need) return { ok: false, reason: `${need} ${p.unit ?? ''} of ${p.what} missing (has ${have})`.replace(/\s+/g, ' ') };
+            if (p.consume !== false) {
+                let left = need;
+                for (const o of matches) {
+                    if (left <= 0) break;
+                    const qty = Math.min(left, o.qty ?? 1);
+                    consume.push({ id: o.id, qty });
+                    left -= qty;
+                }
+            }
         } else if (p.kind === 'mark') {
             const doc = held.find((x) => (x.marks || []).some((m) => words(m.text).includes(words(p.what)) || words(p.what).includes(words(m.text))));
             if (!doc) return { ok: false, reason: `the mark "${p.what}" is missing` };
@@ -123,16 +133,33 @@ export function checkProof(s, q) {
 }
 
 export function proofText(q) {
-    if (!(q.proof || []).length) return 'the contract (no proof listed)';
+    if (!(q.proof || []).length) return 'no fixed verification listed';
     return q.proof.map((p) => (p.kind === 'object' ? `${p.qty ?? 1} ${p.unit ?? ''} of ${p.what}`.replace(/\s+/g, ' ') : `"${p.what}" on the ${p.on || 'contract slip'}`)).join(' and ');
 }
 
-/** Turn a contract in at a Guild hall: proof, consumption, payout, Quest XP, completed; the desk witnesses it. */
+/** Canonical objectives in compact narrator-facing prose (the Board generator owns their structure). */
+export function objectiveText(q) {
+    const objectives = q?.objectives || [];
+    if (!objectives.length) return 'the stated objective';
+    return objectives.map((o) => {
+        const qty = o.qty !== null && o.qty !== undefined ? `${o.qty}${o.unit ? ` ${o.unit}` : ''} ` : '';
+        const where = o.where ? ` at ${o.where}` : '';
+        return `${String(o.verb || 'DO').toUpperCase()} ${qty}${o.what || 'the objective'}${where}`.replace(/\s+/g, ' ').trim();
+    }).join('; ');
+}
+
+/** Turn a contract in at a Guild hall: story-readiness (or legacy exact proof), then deterministic payout/XP/count. */
 export function completeContract(s, content, q, emit, { step } = {}) {
-    const pr = checkProof(s, q);
-    emit({ t: 'proof.checked', d: { quest: q.id, ok: pr.ok, reason: pr.reason ?? null } });
-    if (!pr.ok) return pr;
-    for (const id of pr.consume) emit({ t: 'object.consumed', d: { id, by: 'guild' } });
+    const legacy = checkProof(s, q);
+    const hasLegacyProof = (q.proof || []).length > 0;
+    const legacyReady = hasLegacyProof && legacy.ok;
+    const ready = !!q.ready || legacyReady;
+    const reason = ready ? null : 'the contract outcome has not yet been established as achieved in the world';
+    emit({ t: 'proof.checked', d: { quest: q.id, ok: ready, reason, mode: q.ready ? 'story_outcome' : legacyReady ? 'legacy_verification' : 'not_ready' } });
+    if (!ready) return { ok: false, reason };
+    // Exact generated proof is only a backwards-compatible path. When story-readiness exists, items/marks are
+    // continuity evidence, not mandatory tokens and are not auto-consumed by string matching.
+    if (!q.ready && legacyReady) for (const x of legacy.consume) emit({ t: 'object.consumed', d: { id: typeof x === 'string' ? x : x.id, by: 'guild', ...(typeof x === 'object' ? { qty: x.qty } : {}) } });
     const sheet = s.entities.pc.sheet;
     const pay = q.payout_cp || 0;
     if (pay) emit({ t: 'coin.changed', d: { id: 'pc', value: sheet.coin_cp + pay, delta: pay, why: `Guild payout: ${q.title}` } });
@@ -140,7 +167,7 @@ export function completeContract(s, content, q, emit, { step } = {}) {
     if (xp) awardXp(s.entities.pc.sheet, xp, content, `Quest XP: ${q.title}`).forEach(emit);
     emit({ t: 'quest.status', d: { id: q.id, from: q.status, to: 'completed', at: s.scene.at, step } });
     recordFact(s, emit, { p: 'completed_contract', o: q.title, id: `f.pc.completed.${q.id}` });
-    return { ...pr, pay, xp };
+    return { ok: true, pay, xp, ready: !!q.ready, verification: q.ready_note || null };
 }
 
 // ------------------------------------------------------------------------------------------------ board
@@ -170,7 +197,7 @@ export function listingSchema(content) {
     return O({
         listings: A(O({
             title: S(), client: S(), rank: E(ranksOf(content)), level: I(1, 104), qtype: E(QTYPES), payout_cp: I(0),
-            desired_end_state: S(), objectives: A(OBJECTIVE, 1), proof: A(PROOF, 1),
+            desired_end_state: S(), objectives: A(OBJECTIVE, 1), proof: A(PROOF),
         })),
     });
 }
@@ -181,15 +208,31 @@ export function boardRequest(s, content, need) {
     const guide = content.rules.guild.board?.payout_guide_cp?.[need.rank];
     const town = s.places[need.branch];
     const realm = town?.realm && s.places[town.realm] ? s.places[town.realm].name : null;
+    const noviceProfile = need.rank === 'Novice' ? [
+        'NOVICE TEST PROFILE:',
+        '- Keep Novice work practical and immediately playable. For a fresh five-listing board: at least 2 listings are explicit Monster culling/clearance jobs whose obvious intended route can lead directly to combat; at least 1 is an escort whose route leaves the settlement; at least 1 is a delivery/courier job whose destination leaves the settlement; the fifth is another culling, escort or delivery job.',
+        '- Monster culling/clearance names a concrete creature threat and a concrete place/problem to clear, kill, drive off or make safe. Do not disguise both combat slots as open-ended investigations into an unknown culprit.',
+        '- Escort and delivery jobs must involve real travel beyond the city/settlement rather than a safe errand between two buildings in town. Route trouble may emerge naturally from the world; do not pre-script a mandatory ambush.',
+        '- For partial Board refills, prefer these same three job families and avoid filling the Novice Board with administrative errands, pure paperwork, abstract mysteries or local chores that provide little opportunity to test travel/combat gameplay.',
+    ] : [];
     const system = [
         "You write the official contracts on an Adventurers' Guild board in a sandbox fantasy RPG. The engine books exactly what you return as canon; the narrator will only describe these listings. Write no story.",
         '',
         'Rules:',
-        `- Each listing is ordinary, local work a Guild of this rank would post: vermin, escorts, gathering, lost animals, repairs, deliveries, watches; nothing world-shaking.`,
+        '- A contract is a concrete request to change a current situation in the world. Build it from: cause (why now), stakeholder/client, current problem, desired end state, 1–4 useful objective memories, and reward. Verification is optional story guidance, not a mandatory token.',
+        '- Rank limits scope, risk and complexity — not whether the subject is mundane or fantastical. Low-rank work may involve a manageable Monster, minor magic or a minor ruin, one dangerous animal, or a small clearly defined weak group such as wolves, goblins or feral dogs.',
+        '- Do not preferentially default to rats, cellar vermin or indistinct swarms. Rats are allowed occasionally, not the standard low-rank combat answer.',
+        '- The listings generated together must differ materially in underlying problem, location and likely play experience. Outside an explicit rank profile, do not make a balanced checklist of predefined quest categories.',
+        '- Let contracts arise from this branch and its surroundings: local trades, roads, wilderness, factions, ruins, ecology, magic and already-established places. Nothing world-shaking at low rank.',
+        '- Structural example only: a livestock owner reports repeated pen break-ins; identify the threat and stop the losses, with proof appropriate to whether it is killed or driven away. This demonstrates cause, modest scope, alternate solutions and verifiable completion.',
+        '- Structural example only: a survey team failed to return from abandoned workings; locate them, rescue survivors if possible, and recover an official seal. What happened is not predetermined by the contract and emerges in play.',
+        '- These examples demonstrate structure only. Do not reuse their people, locations, creatures, objects, circumstances or exact objective sequence.',
+        ...noviceProfile,
         `- rank is "${need.rank}"; level is the quest level, an integer from ${lo} to ${hi}; qtype is minor, standard, dangerous or major.`,
         `- payout_cp is the Guild's one fixed payout in copper (1 silver = 10 copper)${guide ? `; for ${need.rank} work ${guide[0]}–${guide[1]} cp is usual (a guide, not a limit)` : ''}.`,
-        '- 1 to 4 objectives: {verb, what, qty, unit, where}; verb is one of GO, FIND, TALK, GET, GATHER, GIVE, DELIVER, USE, REPAIR, DEFEND, ESCORT, ATTACK, DEFEAT.',
-        '- At least one proof the Guild desk can check when the contract is turned in: an object Alaric hands in ({"kind":"object","what":"marshmint","qty":1,"unit":"basket","on":null,"consume":true}) or a mark on a document he carries ({"kind":"mark","what":"signed by the waystation master","qty":null,"unit":null,"on":"Guild contract slip","consume":null}).',
+        '- 1 to 4 objectives: {verb, what, qty, unit, where}; verb is one of GO, FIND, TALK, GET, GATHER, GIVE, DELIVER, USE, REPAIR, DEFEND, ESCORT, ATTACK, DEFEAT. These are continuity memories for play, not a rigid checklist the narrator must force in order.',
+        '- proof contains 0–2 optional verification examples the Guild could recognize. Prefer [] when return, witnesses or a credible report can establish the outcome naturally. If used, EVERY entry must be an object with all fields present: {"kind":"object"|"mark","what":"...","qty":integer>=1|null,"unit":string|null,"on":string|null,"consume":true|false|null}. These are story guidance, NOT exclusive completion tokens.',
+        '- Do not use GO merely as a travel checklist item. Objectives should describe meaningful work/outcomes (find, rescue, repair, defend, escort, investigate through FIND/TALK/GET, defeat, deliver, etc.); travel itself is normally just how play reaches them. Do not invent paperwork solely to make verification possible.',
         '- client is who posted the work (a person, a trade, a hamlet); titles differ from the listings already on the board.',
         '',
         'Return only one JSON object, no prose before or after it, no code fences: {"listings": [{"title": "...", "client": "...", "rank": "...", "level": 1, "qtype": "...", "payout_cp": 0, "desired_end_state": "...", "objectives": [...], "proof": [...]}]}. Every field is required; null where a field allows it and does not apply.',
@@ -213,7 +256,7 @@ export function parseBoard(answer, content, need) {
     const ok = [];
     const refused = [];
     for (const l of value.listings) {
-        const why = l.rank !== need.rank ? `rank ${l.rank} is not ${need.rank}` : l.level < lo || l.level > hi ? `level ${l.level} outside ${lo}–${hi}` : l.objectives.length > 4 ? 'more than 4 objectives' : null;
+        const why = l.rank !== need.rank ? `rank ${l.rank} is not ${need.rank}` : l.level < lo || l.level > hi ? `level ${l.level} outside ${lo}–${hi}` : l.objectives.length > 4 ? 'more than 4 objectives' : l.proof.length > 2 ? 'more than 2 verification examples' : null;
         if (why) refused.push({ title: l.title, why });
         else ok.push(l);
     }

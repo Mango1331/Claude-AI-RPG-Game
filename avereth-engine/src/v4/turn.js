@@ -16,7 +16,7 @@ import { applyWorld } from './world.js';
 import { INTERPRETER_VERSION } from './interpret.js';
 import { EXTRACTOR_VERSION } from './extract.js';
 
-const V3_KINDS = new Set(['command', 'creation.class', 'creation.skills', 'creation.invalid', 'attack', 'ambiguous_target', 'no_target', 'unknown_skill', 'stealth']);
+const V3_KINDS = new Set(['command', 'creation.class', 'creation.skills', 'creation.invalid', 'attack', 'engage', 'ambiguous_target', 'no_target', 'unknown_skill', 'stealth']);
 
 /**
  * Which engine resolves this message: 'v3' for commands, creation, combat and stealth (the V3 engine, unchanged in a V4
@@ -72,7 +72,7 @@ export function playerTurnV4(state, content, text, { msg = null, commands = [], 
     const outcome = {
         kind: 'v4', actions, extra: ctx.extra, resolutions: ctx.resolutions, expected_keys: ctx.expectedKeys,
         auth: serializableAuth(ctx.auth), conditionals: ctx.conditionals, booked: ctx.booked, board: ctx.boardShown,
-        check_die: dice.d100('check die'), interp_failed: !!interp.failed,
+        search_checks: ctx.searchChecks, check_die: null, interp_failed: !!interp.failed,
         dropped: dropped.map((x) => ({ type: x.command?.type, rule: x.rule, quote: x.command?.quote ?? null })),
     };
     emit({ t: 'outcome.recorded', d: { outcome, situations: [] } });

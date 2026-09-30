@@ -22,7 +22,13 @@ const fill = (answer) => {
     const a = structuredClone(answer);
     for (const d of a.deltas || []) {
         const spec = content.deltaVocab.deltas.find((x) => x.type === d.type);
-        for (const [k, f] of Object.entries(spec?.fields || {})) if (d[k] === undefined) d[k] = f.nullable ? null : k === 'count' ? 1 : d[k];
+        for (const [k, f] of Object.entries(spec?.fields || {})) if (d[k] === undefined) {
+            if (f.nullable) d[k] = null;
+            else if (k === 'count') d[k] = 1;
+            else if (k === 'anchor' && d.type === 'creature.new') {
+                d[k] = [...content.anchors.values()].find((a) => a.aliases.some((x) => x.toLowerCase() === String(d.species || '').toLowerCase()))?.id || 'rat';
+            }
+        }
     }
     return a;
 };
@@ -92,34 +98,53 @@ test('barrier: a reply not read before the next message is a recorded gap; its l
     assert.deepEqual(validateState(g.state(), content), []);
 });
 
-test('an extractor that answers nothing valid (twice, with repairs): no world change, the failure is on record and corrected', async () => {
+test('an extractor that answers nothing valid gets one primary call plus one repair, then fails closed', async () => {
     const g = await created();
     const t = T('t1');
     await g.player(t.player, t.commands);
     const r = await g.reply('He walks up to the Guild hall.', 'Sure! He arrived at the hall and met a clerk.');
     assert.equal(r.record.extraction.status, 'failed');
     assert.deepEqual(r.record.events.map((e) => e.t), ['extract.failed']);
-    assert.equal(g.calls.filter((c) => c.purpose.startsWith('extract')).length, 4, 'two calls, each with its repair');
+    assert.equal(g.calls.filter((c) => c.purpose.startsWith('extract')).length, 2, 'one primary extraction plus one repair only');
     assert.equal(g.state().scene.at, 'loc.redmarch.verge', 'nothing moved');
     assert.match(g.chat[r.id].extra.display_text, /WORLD NOT RECORDED/);
     const next = await g.player(T('t2').player, []);
     assert.ok(next.context.text.includes(FAILED_CORRECTION));
 });
 
-test('an interpreter that answers nothing valid books nothing, says so, and is asked again on Regenerate (no cache)', async () => {
+test('arriving at a Guild hall does not preload its board; the first explicit board.read generates it', async () => {
+    const g = await created();
+    const t1 = T('t1');
+    await g.player(t1.player, t1.commands);
+    await g.reply('He reaches the Guild hall.', fill(t1.recovery));
+    assert.equal(g.state().scene.at, 'loc.redmarch.guild_hall');
+    assert.equal(g.calls.filter((x) => x.purpose === 'board').length, 0, 'arrival alone does not spend an LLM call on unseen listings');
+    assert.equal(Object.values(g.state().quests).filter((q) => q.status === 'listed').length, 0, 'unseen listings do not exist yet');
+
+    const p = await g.player('I read the Novice board.', [{ seq: 1, type: 'board.read', rank: 'Novice', quote: 'read the Novice board' }]);
+    assert.equal(p.action, 'context');
+    assert.equal(g.calls.filter((x) => x.purpose === 'board').length, 1, 'board generation is on-demand');
+    assert.ok(Object.values(g.state().quests).some((q) => q.status === 'listed'));
+    assert.match(p.context.text, /these listings now become canonical because Alaric actually reads them/);
+});
+
+test('an interpreter transport/schema failure aborts narration and is asked again on Regenerate (no cache)', async () => {
     const g = await created();
     const base = g.llm;
     let fail = true;
     g.llm = async (req) => (req.purpose.startsWith('interpret') && fail ? 'I think he wants to go to the guild.' : base(req));
     const p = await g.player(T('t1').player, T('t1').commands);
-    const o = g.state().last.outcome;
-    assert.equal(o.interp_failed, true);
-    assert.match(o.actions[0], /^NOTHING TO BOOK — the engine could not read/);
-    assert.match(p.context.text, /NOTHING TO BOOK — the engine could not read/);
+    const r = rec(g.chat.at(-1));
+    assert.equal(p.action, 'abort');
+    assert.match(p.notice, /interpreter failed/i);
+    assert.equal(r.interp.failed, true);
+    assert.deepEqual(r.events, [], 'a failed interpreter does not create a story turn or world events');
+    const continued = await prepareGenerationAsync(g.chat, content, { type: 'continue', llm: g.llm });
+    assert.equal(continued.action, 'abort', 'Continue cannot bypass a failed interpretation');
     fail = false;
     const again = await prepareGenerationAsync(g.chat, content, { type: 'regenerate', llm: g.llm });
     assert.equal(again.action, 'context');
-    assert.deepEqual(g.state().last.outcome.resolutions.map((r) => r.status), ['authorized']);
+    assert.deepEqual(g.state().last.outcome.resolutions.map((x) => x.status), ['authorized']);
 });
 
 test('a Board generation that failed is not cached: Regenerate asks for the board again, with the same interpretation and dice (plan §3.4, D3)', async () => {
@@ -140,8 +165,9 @@ test('a Board generation that failed is not cached: Regenerate asks for the boar
     const again = await prepareGenerationAsync(g.chat, content, { type: 'regenerate', llm: g.llm });
     assert.equal(again.action, 'context');
     const o = g.state().last.outcome;
-    assert.ok(o.actions.some((a) => a.includes('READS the Novice board — BOARD (canonical')), 'the board is canonical now');
-    assert.ok(again.context.text.includes("Miller's Run Escort · 80 cp"));
+    assert.ok(o.actions.some((a) => a.includes('READS the Novice board — BOARD')), 'the board is canonical now');
+    assert.match(again.context.text, /Miller's Run Escort/);
+    assert.match(again.context.text, /80 cp/);
     assert.equal(g.calls.filter((c) => c.purpose.startsWith('interpret')).length, interprets, 'the interpretation is kept');
     assert.ok(g.calls.filter((c) => c.purpose === 'board').length > boards, 'the board was asked for again');
     assert.equal(o.check_die, die);
@@ -195,7 +221,7 @@ test('a fight in a V4 campaign: an attack goes to the V3 combat engine; a commit
     await g.player('*i walk down into the cellar*', [{ seq: 1, type: 'go', to: { new: 'cellar' }, quote: 'i walk down into the cellar' }]);
     const r1 = await g.reply('Two rats rush at him from the dark.', fill({ expected: { 1: { arrived: true, at: { new: { name: 'cellar', kind: 'site', parent: 'loc.redmarch' } } } }, deltas: [
         { seq: 1, type: 'arrive', at: { new: { name: 'cellar', kind: 'site', parent: 'loc.redmarch' } } },
-        { seq: 2, type: 'creature.new', ref: 'cellar rat', species: 'rat', desc: ['grey'], count: 2, present: true, band: 'SHORT' },
+        { seq: 2, type: 'creature.new', ref: 'cellar rat', species: 'rat', anchor: 'rat', desc: ['grey'], count: 2, present: true, band: 'SHORT' },
         { seq: 3, type: 'hostile', by: ['cellar rat'] },
     ] }));
     assert.equal(r1.record.extraction.status, 'applied');

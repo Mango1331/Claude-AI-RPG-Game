@@ -146,7 +146,7 @@
   },
   "xp": {
     "src": "Core #25",
-    "base_per_level": 10,
+    "base_per_level": 12,
     "rank_gap": {
       "0": 1,
       "1": 2,
@@ -160,7 +160,7 @@
       "elite": 1.5,
       "boss": 2.5
     },
-    "quest_base_per_level": 10,
+    "quest_base_per_level": 15,
     "quest_type": {
       "minor": 1.5,
       "standard": 2,
@@ -211,7 +211,7 @@
   },
   "guild": {
     "src": "Lorebook v0.12 GUILD — Contract lifecycle (live run 27.09.2026 04:11)",
-    "contract": "A Guild contract (a quest with a Guild Quest Rank) is taken at the Guild and completed only when the player turns it in (his message says so: by name, or unnamed when it is the one active contract) in a city or capital with a Guild branch; the Guild checks the proof and pays the posted reward, one fixed payout (the engine books its first amount), then Quest XP. Local clients inform, give access and confirm proof; they neither complete nor pay it. Work without a Quest Rank is private and settles directly (Quest XP, no Guild credit). The Guild registration is a procedure, not a contract.",
+    "contract": "A Guild contract (a quest with a Guild Quest Rank) is taken at the Guild and completed only when the player turns it in (his message says so: by name, or unnamed when it is the one active contract) in a city or capital with a Guild branch; the Guild accepts a turn-in once the story has credibly achieved the contract's desired outcome; posted proof is expected verification/world guidance, not an exclusive token checklist. The engine then pays the posted reward, one fixed payout, and Quest XP. Local clients inform, give access and confirm proof; they neither complete nor pay it. Work without a Quest Rank is private and settles directly (Quest XP, no Guild credit). The Guild registration is a procedure, not a contract.",
     "branch_kinds": ["city", "capital"],
     "registration_fee_cp": 20,
     "registration_fee_src": "Canon decision 27.09.2026: 2 silver = 20 cp at every branch (docs/RUNTIME_V4_PLAN.md §6.4)",
@@ -220,7 +220,7 @@
     "rank_power": { "Novice": "F", "Proven": "E", "Veteran": "D", "Elite": "C", "Master": "B", "Grandmaster": "A", "Legend": "S" },
     "promotion_contracts": 5,
     "supported_ranks": { "_status": "proposed (plan D10): runtime defaults for branches without their own list", "city": ["Novice", "Proven", "Veteran"], "capital": ["Novice", "Proven", "Veteran", "Elite"] },
-    "board": { "_status": "proposed (plan §6.4, D9, D11)", "size": 5, "taken_by_others_pct_per_day": 20, "payout_guide_cp": { "Novice": [10, 200], "Proven": [100, 600], "Veteran": [300, 1500], "Elite": [800, 4000] } }
+    "board": { "_status": "proposed (plan §6.4, D9, D11)", "size": 5, "taken_by_others_pct_per_day": 0, "payout_guide_cp": { "Novice": [10, 200], "Proven": [100, 600], "Veteran": [300, 1500], "Elite": [800, 4000] } }
   },
   "time": {
     "src": "Runtime V4 time caps per reply (docs/RUNTIME_V4_PLAN.md §6.7); runtime defaults, no world law",

@@ -2,7 +2,7 @@
 // SillyTavern extension plays it (index.js), with the three LLM calls scripted: the interpreter answers the commands a
 // test gives it, the extractor the answer a test gives it, the Board generator the listings of a fixture.
 import { ensureCampaign, foldChat, rec } from '../../src/host.js';
-import { prepareGenerationAsync, processReplyAny, runExtraction, runBoardAfterArrival } from '../../src/v4/runtime.js';
+import { prepareGenerationAsync, processReplyAny, runExtraction } from '../../src/v4/runtime.js';
 
 export const GREETING = 'SYSTEM INITIALIZATION COMPLETE\n`Location: Public roadside verge outside Redmarch, Veyrhold`';
 
@@ -73,16 +73,15 @@ export class Chat4 {
         return r;
     }
 
-    /** The narrator's reply (prose); the extractor answers `answer`; a Guild hall reached gets its board. */
+    /** The narrator's reply (prose); the extractor answers `answer`. Guild boards are generated only by an explicit board.read player turn. */
     async reply(prose, answer = { expected: {}, deltas: [] }) {
         this.chat.push({ mes: prose, is_user: false, is_system: false, extra: {} });
         const id = this.chat.length - 1;
         const p = processReplyAny(this.chat, id, this.content, {});
         this.answer = answer;
         const x = p.extract ? await runExtraction(this.chat, id, this.content, this.llm) : { changed: false };
-        const b = x.boardNeeded ? await runBoardAfterArrival(this.chat, id, this.content, this.llm) : null;
         this.learnIds();
-        return { id, process: p, extract: x, board: b, record: rec(this.chat[id]) };
+        return { id, process: p, extract: x, board: null, record: rec(this.chat[id]) };
     }
 
     record(id) {

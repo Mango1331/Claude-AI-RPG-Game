@@ -10,6 +10,8 @@ import {
 } from './knowledge.js';
 import { rank, pack, Bm25 } from './retrieval.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
+import { objectiveText, proofText as guildProofText } from './v4/guild.js';
+import { sceneHandle } from './v4/scene_handles.js';
 
 export const DEFAULT_BUDGET = 1400;
 export const DEFAULT_RULES_BUDGET = 800;
@@ -115,7 +117,8 @@ function npcCard(state, content, id, focusWords, { absent = false } = {}) {
     const hp = c ? `${conditionLabel(c.current.hp, c.fixed.max_hp)} (HP ${c.current.hp}/${c.fixed.max_hp})` : statusOf(state, id) === 'dead' ? 'dead' : '';
     const band = c ? c.current.band : pos?.band;
     const cover = c ? c.current.cover : pos?.cover;
-    lines.push(`• ${c ? fightName(state, id) : entityLabel(state, id)} — ${kind}${look ? `; ${look}` : ''}${cues?.voice ? `; voice: ${cues.voice}` : ''}${hp ? `; ${hp}` : ''}${band ? `; ${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : ''}${absent ? '; NOT PRESENT' : ''}`);
+    const display = c ? fightName(state, id) : `${sceneHandle(state, content, id)} [${id}]`;
+    lines.push(`• ${display} — ${kind}${look ? `; ${look}` : ''}${cues?.voice ? `; voice: ${cues.voice}` : ''}${hp ? `; ${hp}` : ''}${band ? `; ${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : ''}${absent ? '; NOT PRESENT' : ''}`);
     if (statusOf(state, id) === 'dead') return lines[0];
     const aware = absent ? null : state.scene.awareness[id];
     const unseen = !absent && state.scene.concealed.includes('pc');
@@ -124,9 +127,12 @@ function npcCard(state, content, id, focusWords, { absent = false } = {}) {
     } else {
         const rel = state.relations[`rel.${id}.attitude.pc`];
         const last = rel?.history?.at(-1);
+        const ties = currentFacts(state, (f) => f.s === id && f.visibility !== 'secret'
+            && /\b(?:relationship|related|family|kin|parent|child|daughter|son|sibling|spouse|partner|friend|ally|serves|works_for|employer|member_of|affiliation)\b/i.test(String(f.p || '').replace(/_/g, ' '))).slice(-3);
         const ident = pcIdentityFor(state, id);
         const idText = ident.level === 'name' ? 'knows him by name' : ident.level === 'seen' ? 'has seen him, does NOT know his name' : 'has never seen him';
         lines.push(`  toward Alaric: ${attitudeLabel(rel?.value)}${last?.why ? ` (last change: ${last.why})` : ''}; ${idText}${aware ? `; awareness: ${aware}` : ''}${unseen ? '; Alaric is currently UNSEEN by others' : ''}`);
+        if (ties.length) lines.push(`  established ties: ${ties.map((f) => propText(state, f, content)).join('; ')}`);
         const moments = sharedMoments(state, id);
         const lastMoment = moments.at(-1);
         if (lastMoment) lines.push(`  last meaningful: [${day(lastMoment.minute)}] ${memoryText(state, lastMoment, id)}`);
@@ -208,11 +214,15 @@ export function recordLine(state, r, name = (id) => fightLabel(state, id)) {
 /** Runtime V4: the narrator writes only prose; the engine reads the reply afterwards (src/v4/extract.js). */
 export const V4_OUTPUT_LINE = 'OUTPUT: write only the story. No <avereth> block, no fact report, no tags, no tracker, sheet or status block: the engine reads the reply afterwards.';
 
-/** The engine's instructions to the narrator for a V4 story turn: PLAYER ACTIONS, open decisions, the CHECK DIE. */
+/** The engine's instructions to the narrator for a V4 story turn. Search/combat checks are engine-owned; ordinary fiction is narrated plausibly and then stored. */
 export function playerActionsBlock(outcome) {
     const lines = ['PLAYER ACTIONS (the engine resolved Alaric\'s message; narrate exactly these, in this order; he decides nothing else):', ...(outcome.actions || [])];
     for (const x of outcome.extra || []) lines.push(x);
-    if (outcome.check_die) lines.push(`CHECK DIE for this reply: d100 = ${outcome.check_die}. Use it only if a Core #7 check is genuinely needed (uncertain AND consequential): Chance% = Actor ÷ (Actor + Opposition) × 100 (Actor = relevant stat + explicit bonuses; situational ±10/20/35 %); success if ${outcome.check_die} ≤ Chance%. Otherwise ignore the die.`);
+    if ((outcome.resolutions || []).some((r) => (r.type === 'buy' || r.type === 'pay') && r.status === 'pending')) {
+        lines.push('PENDING TRADE IS A HARD STOP: state the seller\'s actual price and stop BEFORE any payment, delivery, drinking, eating or other action that depends on the unaccepted purchase. A later player turn can explicitly accept the offer, at which point the engine debits coin and grants the goods/service. An unrelated independent action is unaffected.');
+    }
+    if (outcome.search_checks?.length) lines.push('SEARCH RESOLUTION is already rolled and binding in PLAYER ACTIONS above. Do not reroll it, replace it with another check, or turn a concrete result into another vague teaser.');
+    if (!outcome.search_checks?.length) lines.push('ORDINARY WORLD FICTION: resolve non-combat physical/social uncertainty plausibly from established fiction; do not invent rolls. Combat, Stealth and explicit SEARCH are the engine-owned mechanical exceptions.');
     return lines.join('\n');
 }
 
@@ -368,14 +378,16 @@ export function buildContext(state, content, opts = {}) {
     const budget = opts.budget ?? DEFAULT_BUDGET;
     const input = opts.input || '';
     const lastReply = proseOnly(opts.lastReply).slice(-1500);
-    const loc = state.entities[state.scene.location] || content.locations.get(state.scene.location) || state.places?.[state.scene.location];
+    const sceneNode = state.meta?.runtime === 'v4' && state.scene.at ? state.scene.at : state.scene.location;
+    const loc = state.entities[sceneNode] || content.locations.get(sceneNode) || state.places?.[sceneNode];
     const realmId = loc?.realm || null;
     const realm = realmId ? content.factions.get(realmId)?.name || realmId : null;
     const locStatus = statusOf(state, state.scene.location);
+    const placeSuffix = state.scene.place && normText(state.scene.place) !== normText(loc?.name || '') ? ` — ${state.scene.place}` : '';
     const sections = [];
     const add = (name, text, priority, own = false) => text && sections.push({ name, text, priority, own, tokens: estimateTokens(text) });
 
-    add('header', `[AVERETH ENGINE — authoritative game state, turn ${state.turn}. Numbers, rolls, positions and knowledge below are binding; narrate, never recalculate.]\n${formatClock(state.clock.minute)} | ${loc ? `${loc.name}${realm ? `, ${realm}` : ''}` : 'unknown location'}${state.scene.place ? ` — ${state.scene.place}` : ''} | mode: ${state.mode}${locStatus !== 'exists' && locStatus !== 'alive' ? ` | LOCATION STATUS: ${String(locStatus).toUpperCase()}` : ''}\nSetting: Western-fantasy medieval material culture with mana/high magic; letters and messengers for distance; no modern technology.`, 0);
+    add('header', `[AVERETH ENGINE — authoritative game state, turn ${state.turn}. Numbers, rolls, positions and knowledge below are binding; narrate, never recalculate.]\n${formatClock(state.clock.minute)} | ${loc ? `${loc.name}${realm && normText(realm) !== normText(loc.name) ? `, ${realm}` : ''}` : 'unknown location'}${placeSuffix} | mode: ${state.mode}${locStatus !== 'exists' && locStatus !== 'alive' ? ` | LOCATION STATUS: ${String(locStatus).toUpperCase()}` : ''}\nSetting: Western-fantasy medieval material culture with mana/high magic; letters and messengers for distance; no modern technology.`, 0);
     // what Alaric's line carries depends on the turn: items and coin only when trade, loot or items are in play
     const itemScan = `${input} ${lastReply}`;
     const skillNamed = Object.keys(state.entities.pc.sheet?.skills || {}).some((id) => mentioned(content.skills.get(id)?.name || id, normText(input)));
@@ -391,23 +403,32 @@ export function buildContext(state, content, opts = {}) {
     const queryText = `${input} ${lastReply}`;
     const focusWords = new Set(tokenize(queryText));
     const others = state.scene.present.filter((id) => id !== 'pc' && state.entities[id]);
-    if (others.length) add('present', `PRESENT (each NPC knows ONLY what its card lists):\n${others.map((id) => npcCard(state, content, id, focusWords)).join('\n')}`, 1);
-    else if (state.mode !== 'creation') add('present', 'PRESENT: nobody besides Alaric.', 1);
+    if (others.length) add('present', `ACTIVE SCENE — canonical handles (use these exact handles to distinguish or target actors; card knowledge is authoritative relevant recall, not an exhaustive mind dump):\n${others.map((id) => npcCard(state, content, id, focusWords)).join('\n')}`, 1);
+    else if (state.mode !== 'creation') add('present', 'ACTIVE SCENE: nobody besides Alaric.', 1);
     const absent = state.mode === 'creation' ? [] : namedAbsent(state, normText(queryText));
     if (absent.length) add('named', `NAMED, NOT PRESENT (continuity only; they are elsewhere unless the story brings them in):\n${absent.map((id) => npcCard(state, content, id, focusWords, { absent: true })).join('\n')}`, 2);
     add('combat', combatBlock(state), 0);
 
     // hard facts about the current place, present people and anything named this turn are always shown (binding)
     const scan = normText(queryText);
-    const pinned = currentFacts(state, (f) => f.hard && f.visibility !== 'secret').filter((f) => f.s === state.scene.location
+    const pinned = currentFacts(state, (f) => f.hard && f.visibility !== 'secret').filter((f) => f.s === sceneNode || f.s === state.scene.location
         || state.scene.present.includes(f.s) || mentioned(anyLabel(state, content, f.s), scan)).slice(-6);
     if (pinned.length) add('facts', `ESTABLISHED FACTS (binding; they change only with an in-world cause):\n${pinned.map((f) => `- ${propText(state, f, content)} (since ${day(f.since.minute)}${f.source?.because ? `; cause: ${f.source.because}` : ''})`).join('\n')}`, 0);
+
+    const activeQuests = Object.values(state.quests).filter((q) => q.status === 'active');
+    if (activeQuests.length) add('quests', `ACTIVE QUEST MEMORY — use this to preserve continuity, not as a word-for-word checklist. For Guild contracts only payout, active/completed status, Quest XP/credit and Guild rank mechanics are hard engine state; objectives, witnesses and verification are story guidance and may be satisfied by credible alternatives:\n${activeQuests.map((q) => {
+        const progress = (q.progress || []).slice(-4).map((p) => `${p.objective}: ${p.status}`).join('; ');
+        const req = q.kind === 'guild_contract'
+            ? ` | desired outcome: ${q.desired_end_state || objectiveText(q)} | remembered work: ${objectiveText(q)}${progress ? ` | progress: ${progress}` : ''}${q.ready ? ` | READY FOR TURN-IN: ${q.ready_note || 'desired outcome achieved'}` : ''} | verification examples: ${guildProofText(q) || 'none listed'} | payout: ${q.payout_cp ?? 0} cp (paid only by the Guild on explicit accepted turn-in)`
+            : q.objectives?.length ? ` | remembered work: ${objectiveText(q)}` : '';
+        return `- ${q.title}${req}`;
+    }).join('\n')}\nQUEST PLAY: only when the current scene/action is actually pursuing a nontrivial active Quest, let that Quest develop at least one causal, meaningful complication or active situation before ordinary resolution. Do not inject Quest complications into unrelated scenes merely because a Quest is active. Combat is not required. Once the desired outcome is genuinely achieved, let the extractor store quest.ready; do not manufacture extra bureaucracy merely to satisfy a generated proof phrase.`, 0);
 
     // relevant memories / facts / quests / threads
     const relStrength = new Map();
     for (const r of Object.values(state.relations)) if (r.b === 'pc' || r.a === 'pc') relStrength.set(r.a === 'pc' ? r.b : r.a, Math.min(1, Math.abs(r.value) / 100));
     const focus = {
-        entities: [...others, 'pc'], location: state.scene.location, realm: realmId,
+        entities: [...others, 'pc'], location: sceneNode, realm: realmId,
         quests: Object.values(state.quests).filter((q) => q.status === 'active').map((q) => q.id), turn: state.turn,
         query: `${queryText} ${others.map((id) => entityLabel(state, id)).join(' ')}`, relationStrength: relStrength,
     };
@@ -459,7 +480,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'present', 'named', 'combat', 'facts', 'relevant', 'lore', 'rules', 'corrections', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'present', 'named', 'combat', 'facts', 'quests', 'relevant', 'lore', 'rules', 'corrections', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };
@@ -470,9 +491,10 @@ export function buildContext(state, content, opts = {}) {
  * their World Info entries activate even when no recent message names them. Keys only, never engine state.
  */
 export function loreKeys(state, content) {
-    const loc = state.entities[state.scene.location] || content.locations.get(state.scene.location) || state.places?.[state.scene.location];
+    const sceneNode = state.meta?.runtime === 'v4' && state.scene.at ? state.scene.at : state.scene.location;
+    const loc = state.entities[sceneNode] || content.locations.get(sceneNode) || state.places?.[sceneNode];
     const realmId = loc?.realm || null;
-    const keys = [content.factions.get(realmId)?.name, content.locations.has(state.scene.location) ? loc.name : null];
+    const keys = [content.factions.get(realmId)?.name, loc?.name || null];
     return keys.filter(Boolean);
 }
 

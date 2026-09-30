@@ -8,7 +8,7 @@
 import { O, S, B, I, E, A, N, REF, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 
-export const INTERPRETER_VERSION = 'interp-4.0';
+export const INTERPRETER_VERSION = 'interp-4.4';
 
 // Contrastive examples from another town, so they never name a catalog id of the current scene. They follow the error
 // clusters of P0/S1 (docs/P0_BERICHT.md §5) without repeating any case of the evaluation corpora: a test checks that no
@@ -18,6 +18,11 @@ CATALOG: PRESENT: npc.ferryman (ferryman) · OFFERS: offer.ferry (ferryman: l1 c
 MESSAGE: *i paid the ferryman and crossed to the far bank* nice weather today
 → {"commands":[{"seq":1,"type":"offer.accept","offer":"offer.ferry","lines":null,"quote":"i paid the ferryman"},{"seq":2,"type":"go","to":{"new":"the far bank"},"quote":"crossed to the far bank"}]}
 MESSAGE: Would the smith buy my old boots? Maybe I'll ask him tomorrow.
+→ {"commands":[]}
+MESSAGE: *I turn toward the cracking branches, ready my sword, and walk in the direction of the sound.*
+→ {"commands":[{"seq":1,"type":"go","to":{"new":"toward the sound"},"quote":"walk in the direction of the sound"}]}
+CATALOG: OBJECTS: item.starter_longsword (Starter Longsword, held by Alaric, equipped: weapon)
+MESSAGE: *I get my sword out and hold it ready.*
 → {"commands":[]}
 MESSAGE: I'll take a bed if it's no more than 6 copper, then sleep till morning.
 → {"commands":[{"seq":1,"type":"buy","what":"a bed for the night","from":null,"qty":null,"max_cp":6,"any_price":false,"quote":"I'll take a bed if it's no more than 6 copper"},{"seq":2,"type":"activity","kind":"sleep","what":null,"minutes":null,"until":"morning","quote":"then sleep till morning"}]}
@@ -34,7 +39,14 @@ MESSAGE: Hello there. I'd like to join, if you're taking new members.
 MESSAGE: *i stroll over to the notice wall and look over the contracts* could I sign up for the bridge one?
 → {"commands":[{"seq":1,"type":"board.read","rank":null,"quote":"i stroll over to the notice wall and look over the contracts"}]}
 MESSAGE: *i pull the bridge slip and have the clerk write it into the ledger*
-→ {"commands":[{"seq":1,"type":"quest.accept","quest":"quest.bridge","quote":"i pull the bridge slip and have the clerk write it into the ledger"}]}`;
+→ {"commands":[{"seq":1,"type":"quest.accept","quest":"quest.bridge","quote":"i pull the bridge slip and have the clerk write it into the ledger"}]}
+CATALOG: JOURNEY READY: quest.wagon with the cart driver — the established journey is ready
+MESSAGE: We wait for the stragglers and then we continue.
+→ {"commands":[{"seq":1,"type":"activity","kind":"wait","what":"for the stragglers","minutes":null,"until":null,"quote":"We wait for the stragglers"},{"seq":2,"type":"journey.continue","quote":"then we continue"}]}
+MESSAGE: Please sign my contract slip to show the Guild we arrived.
+→ {"commands":[]}
+MESSAGE: *I walk back along the road I came from.*
+→ {"commands":[{"seq":1,"type":"go","to":{"new":"back along the road"},"quote":"I walk back along the road I came from"}]}`;
 
 export const EXAMPLE_MESSAGES = [...EXAMPLES.matchAll(/^MESSAGE: (.*)$/gm)].map((m) => m[1]);
 
@@ -83,11 +95,12 @@ export function catalogText(catalog) {
     const L = ['CATALOG'];
     const here = catalog.here || {};
     L.push(`HERE: ${here.path || here.name} (${here.id})${catalog.time ? ` · ${catalog.time}` : ''}`);
-    L.push(`PRESENT: ${(catalog.present || []).map((p) => `${p.id} (${p.label})`).join(' · ') || 'nobody besides Alaric'}`);
+    L.push(`PRESENT: ${(catalog.present || []).map((p) => `${p.id}${p.handle ? ` [${p.handle}]` : ''} (${p.label})`).join(' · ') || 'nobody besides Alaric'}`);
     if (catalog.alaric) L.push(`ALARIC: ${catalog.alaric}`);
     const places = (catalog.places || []).filter((p) => p.id !== here.id);
     if (places.length) L.push(`PLACES: ${places.map((p) => `${p.id} (${p.name})`).join(' · ')}`);
     if ((catalog.quests || []).length) L.push(`QUESTS: ${catalog.quests.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
+    if (catalog.journey_ready) L.push(`JOURNEY READY: ${catalog.journey_ready}`);
     if ((catalog.completed || []).length) L.push(`COMPLETED TODAY: ${catalog.completed.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
     if ((catalog.board || []).length) L.push(`BOARD (${catalog.board_label || 'visible here'}): ${catalog.board.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
     if ((catalog.offers || []).length) L.push(`OFFERS: ${catalog.offers.map((o) => `${o.id} (${o.seller}: ${o.lines.map((l) => `${l.id} ${l.what} ${l.price_cp} cp`).join(', ')})`).join(' · ')}`);

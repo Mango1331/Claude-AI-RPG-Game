@@ -160,7 +160,7 @@ test('Alaric arrives only after his own go, a forced move or an activity that mo
     assert.match(r.corrections[0], /did not travel/);
     assert.deepEqual(verdict([arrive], base({ auth: { go: true } })).accepted, ['arrive']);
     assert.deepEqual(verdict([arrive], base({ auth: { roam: true } })).accepted, ['arrive'], 'P0/S2 v11_07: tracking a trail leads him to the den');
-    assert.deepEqual(verdict([arrive], base({ auth: { forced: true } })).accepted, ['arrive']);
+    assert.deepEqual(verdict([{ ...arrive, forced_by: 'a watch patrol carries him to the station' }], base()).accepted, ['arrive']);
 });
 
 test('world deltas outside the engine\'s domains pass untouched', () => {

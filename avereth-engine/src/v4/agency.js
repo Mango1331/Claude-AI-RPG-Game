@@ -30,10 +30,11 @@
 import { normText } from '../util.js';
 
 /** Commands that commit Alaric to something (the dangerous kind of false agency; same list as the P0 scoring). */
-export const COMMITMENTS = new Set(['pay', 'buy', 'sell', 'give', 'drop', 'use', 'offer.accept', 'offer.decline', 'quest.accept', 'quest.turn_in', 'quest.abandon', 'guild.register', 'guild.promote']);
+export const COMMITMENTS = new Set(['pay', 'buy', 'sell', 'give', 'drop', 'use', 'offer.accept', 'offer.decline', 'quest.accept', 'quest.turn_in', 'quest.abandon', 'guild.register', 'guild.promote', 'journey.continue']);
 
 /** The verbs that express a command's own act (for the negation and plan checks, not for recognising commands). */
 export const LEMMAS = {
+    'journey.continue': ['ready', 'go', 'leave', 'depart', 'set off', 'continue'],
     go: ['go', 'goes', 'going', 'went', 'head', 'heading', 'walk', 'walking', 'travel', 'travelling', 'traveling', 'ride', 'riding', 'return', 'returning', 'be at', 'set off', 'leave', 'leaving'],
     activity: ['sleep', 'sleeping', 'rest', 'resting', 'wait', 'waiting', 'work', 'working', 'train', 'training', 'gather', 'gathering', 'search', 'searching', 'study', 'studying', 'craft', 'crafting'],
     take: ['take', 'taking', 'pick up', 'picking up', 'grab', 'grabbing', 'pocket', 'collect', 'collecting'],
@@ -57,6 +58,7 @@ export const LEMMAS = {
 
 /** The same acts in the past tense (the memory check: "I gave you the heads an hour ago", "I drank it yesterday"). */
 export const PAST = {
+    'journey.continue': ['left', 'departed', 'continued', 'set off'],
     go: ['went', 'walked', 'headed', 'travelled', 'traveled', 'rode', 'returned', 'came', 'left', 'gone'],
     activity: ['slept', 'rested', 'waited', 'worked', 'trained', 'gathered', 'searched', 'studied', 'crafted'],
     take: ['took', 'taken', 'picked up', 'grabbed', 'pocketed', 'collected'],
@@ -265,7 +267,11 @@ export function guardCommands(message, commands, context = {}, { language = true
         // … and so is asking the listener to do it for him ("Can you register me?", "could you sign me up for the dog?")
         const request = (p) => new RegExp(`^(?:(?:can|could|would|will) you (?:please )?)?(?:${lemmaRe(type) || '$^'})\\b.*(?:\\bme\\b|\\bplease\\b)`).test(p.text);
         if (type !== 'buy' && parts.every((p) => isQuestion(p) && !request(p))) { drop(c, 'question', 'the evidence is a question'); continue; }
-        if (type === 'go' && CAME_FROM.test(text)) { drop(c, 'retrospective', 'the evidence says where he came from'); continue; }
+        // "I walk back the way I came from" is a current GO; only drop an actual
+        // retrospective travel claim, not a subordinate route description.
+        if (type === 'go' && CAME_FROM.test(evidence) && !/\b(?:walk|walking|head|heading|go|going|travel|travelling|traveling|return|returning|leave|leaving|ride|riding|set off)\b/.test(evidence.replace(/\bcame (?:here |over |in |down |up )?from\b/g, ''))) {
+            drop(c, 'retrospective', 'the evidence only says where he came from'); continue;
+        }
         if (RETRO_ANCHOR.test(text) && pastRe(type) && new RegExp(`\\b(?:${pastRe(type)})\\b`).test(text)) { drop(c, 'retrospective', 'the evidence recalls an earlier deed'); continue; }
         if (planned(text, type)) { drop(c, 'plan', 'the evidence plans it for later'); continue; }
         if (negated(text, type)) { drop(c, 'negation', 'the evidence negates it'); continue; }

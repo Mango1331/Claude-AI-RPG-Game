@@ -14,15 +14,12 @@ import { clone, normText, slug } from '../util.js';
 import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver } from '../delta.js';
 import { truth, entityLabel, setFactEvents } from '../knowledge.js';
-import { perceiveAll, selfIntro, episode, openCommitted } from '../engine.js';
+import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
 import { firewall } from './firewall.js';
 import {
     PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, placeName, contracts, heldBy, openOffers, membership,
 } from './domain.js';
 import { completeContract, REGISTRATION_OFFER } from './guild.js';
-
-const AUTHORITY_ROLE = /\b(?:guard|watch(?:man)?|sergeant|captain|constable|reeve|bailiff|magistrate|official|officer|toll ?keeper|tax|customs|steward|marshal|warden)\b/i;
-const HOSTILE_ROLE = /\b(?:bandit|thief|robber|brigand|cutpurse|pickpocket|thug|highwayman)\b/i;
 
 /** The firewall's view of the state after the player's turn (src/v4/firewall.js FirewallContext). */
 export function firewallContext(s, content) {
@@ -43,6 +40,21 @@ export function firewallContext(s, content) {
         booked: o.booked || { registration: false, grants: [], turnIns: [], accepted: [] },
         auth: { go: !!(auth.gos || []).length || !!auth.go, roam: !!auth.roam, take: !!(auth.take || []).length, gather: !!auth.gather, forced: false },
         heldByPc: (ref) => s.objects?.[ref]?.holder?.entity === 'pc' || (typeof ref === 'string' && ref.startsWith('item.') && !!s.entities.pc.sheet.inventory[ref.slice(5)]),
+        isGuildContractRef: (ref) => {
+            if (typeof ref !== 'string') return false;
+            const q = s.quests?.[ref] || Object.values(s.quests || {}).find((x) => x.kind === 'guild_contract' && normText(x.title) === normText(ref));
+            return q?.kind === 'guild_contract';
+        },
+        guildContractForObject: (ref) => {
+            if (typeof ref !== 'string') return null;
+            let o = s.objects?.[ref] || Object.values(s.objects || {}).find((x) => normText(x.name) === normText(ref));
+            if (!o) {
+                const active = contracts(s).filter((q) => q.status === 'active');
+                if (active.length === 1 && /\b(?:guild\s+)?contract\s+slip\b/i.test(ref)) return active[0];
+                return null;
+            }
+            return (o.for_quests || []).map((id) => s.quests?.[id]).find((q) => q?.kind === 'guild_contract') || null;
+        },
         // the Guild's canon for the corrections of refused Guild facts (guild_canon)
         canon: { feeCp: content.rules.guild.registration_fee_cp, guildRanks: content.rules.guild.ranks, powerRanks: content.rules.ranks.order },
     };
@@ -100,9 +112,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         events.push(e);
     };
     const rejected = [];
+    let rejectedTravel = false;
     const corrections = [];
     const system = [];
     const reject = (d, rule, why) => {
+        if (d?.type === 'arrive' && rule === 'no_go') rejectedTravel = true;
         rejected.push({ seq: d?.seq ?? 0, type: d?.type ?? 'expected', rule, why });
         emit({ t: 'delta.rejected', d: { item: d, rule, reason: why } });
     };
@@ -143,6 +157,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     };
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
     let calls = 0;
+    const isLooseCurrency = (name) => /^(?:(?:the|my|some|a|our)\s+)?(?:(?:quest|guild)\s+)?(?:reward|payout|payment|coins?|coppers?|silvers?|golds?)(?:\s+coins?)?$/.test(normText(name || ''));
     const v3 = (report, d) => {
         calls += 1;
         const r = reportToEvents(report, s, content, { msg, prose, idTag: `d${d?.seq ?? 0}${calls > 1 ? `_${calls}` : ''}` });
@@ -150,15 +165,61 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         for (const x of r.rejected) reject(d, 'world_rule', x.reason);
         return r;
     };
+    // Reintroducing a unique, already-established local person must not mint another NPC.
+    // Proper names are global identities; generic roles are usable only for one unique local
+    // or current escort-party match. Never merge explicitly "another" or enumerated people.
+    const existingPerson = (d) => {
+        if (d.name) {
+            const named = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.name && normText(e.name) === normText(d.name));
+            if (named.length === 1) return named[0].id;
+        }
+        if (/\b(?:another|other|different|second|new)\b/i.test([d.role, ...(d.desc || [])].join(' '))
+            || /(?:_[a-z]|_\d+)$/i.test(String(d.ref || ''))) return null;
+        const useful = (txt) => new Set(normText(txt || '').split(/[^a-z]+/).filter((w) =>
+            w.length >= 4 && !['person', 'woman', 'young', 'older', 'guild', 'other', 'another', 'some', 'local', 'male', 'female', 'with', 'from', 'that', 'same', 'there'].includes(w)));
+        const wanted = useful(d.role);
+        if (!wanted.size) return null;
+        const party = s.journey?.party || [];
+        const local = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.status !== 'dead'
+            && (s.scene.present.includes(e.id) || party.includes(e.id)
+                || (e.location === s.scene.location && (!e.at || e.at === s.scene.at))));
+        const candidates = local.filter((e) => !d.name || !e.name || normText(e.name) === normText(d.name))
+            .map((e) => {
+                const role = [truth(s, e.id, 'occupation')[0]?.o, ...(e.descriptors || [])].join(' ');
+                const have = useful(role);
+                const score = [...wanted].filter((t) => have.has(t)).length;
+                return { e, score };
+            }).filter((x) => x.score > 0).sort((a, b) => b.score - a.score);
+        return candidates.length && (candidates.length === 1 || candidates[0].score > candidates[1].score) ? candidates[0].e.id : null;
+    };
     const newEntity = (d, kind) => {
+        if (kind === 'npc') {
+            const knownId = existingPerson(d);
+            if (knownId) {
+                const e = s.entities[knownId];
+                if (d.name && !e.name) emit({ t: 'entity.updated', d: { id: knownId, set: { name: d.name, descriptors: [d.name, ...(d.desc || [])] } } });
+                if (d.present !== false && !s.scene.present.includes(knownId)) emit({ t: 'scene.entered', d: { id: knownId, band: d.band || 'SHORT' } });
+                refs.set(normText(d.ref), knownId);
+                if (d.name) refs.set(normText(d.name), knownId);
+                return [knownId];
+            }
+        }
+        const herdSpecies = /\b(?:sheep|goats?|cows?|cattle|chickens?|hens?|geese|ducks?|pigs?|horses?|mules?|donkeys?|oxen|deer)\b/i.test(d.species || '');
+        const grazing = /\b(?:graz\w*|pastur\w*|tether\w*|peaceful\w*|feeding|farm\w*|herd|flock|pen\w*)\b/i.test((d.desc || []).join(' '));
+        if (kind === 'creature' && d.count > 4 && herdSpecies && grazing && !hostileRefs.has(normText(d.ref))) {
+            // Background livestock/herds are scenery, NOT a blanket exemption for visible
+            // five-wolf packs or other individually actionable combat creatures.
+            setFactEvents(s, { s: s.scene.at, p: 'background_fauna', o: `${d.count} ${d.species}`, source: { kind: 'narration', msg }, importance: 0.3 }).forEach(emit);
+            return [];
+        }
         const before = new Set(Object.keys(s.entities));
         const entries = [];
         const count = kind === 'creature' ? Math.max(1, Math.min(12, d.count || 1)) : 1;
         for (let i = 1; i <= count; i++) {
             const ref = count > 1 ? `${d.ref} ${i}` : d.ref;
             entries.push(kind === 'npc'
-                ? { ref, kind: 'npc', name: d.name || undefined, desc: [...(d.role ? [d.role] : []), ...(d.desc || [])], traits: (d.desc || []).join(', '), band: d.band || undefined }
-                : { ref, kind: 'creature', name: undefined, species: d.species, desc: d.desc || [], band: d.band || undefined });
+                ? { ref, kind: 'npc', name: d.name === null ? null : d.name || undefined, desc: [...(d.role ? [d.role] : []), ...(d.desc || [])], traits: (d.desc || []).join(', '), band: d.band || undefined }
+                : { ref, kind: 'creature', name: undefined, species: d.species, anchor: d.anchor, desc: d.desc || [], band: d.band || undefined });
         }
         const joins = kind === 'creature' && s.encounter && hostileRefs.has(normText(d.ref));
         const r = v3({ new: entries, ...(joins ? { combat: entries.map((e) => ({ by: e.ref })) } : {}) }, d);
@@ -172,10 +233,32 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // who the person is shows on their card (occupation), as text: the V3 fact rule would read "Guild clerk" as a
         // reference to the clerk himself
         if (kind === 'npc' && d.role && created.length && !truth(s, created[0], 'occupation').length) occupation(created[0], d.role);
+        // Gameplay visibility: once an actual creature is visibly present, lock its deterministic profile immediately.
+        // This gives the player a canonical target handle + HP + Range before deciding whether to attack; Initiative still waits for Combat START.
+        if (kind === 'creature' && d.present !== false) for (const id of ids) materialise(s, content, dice, emit, id);
         return ids;
     };
 
+    const explicitArrival = fw.accept.some((d) => d.type === 'arrive');
+    if (!explicitArrival && !s.encounter) {
+        for (const [k, type] of Object.entries(outcome.expected_keys || {}).sort((a, b) => Number(a[0]) - Number(b[0]))) {
+            if (type !== 'go') continue;
+            const e = expected[k];
+            if (!e || e.arrived !== true) continue;
+            const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
+            const at = e.at ? resolvePlace(s, e.at, emit) : go?.to ? { id: go.to } : { error: 'no place' };
+            if (!at.error && at.id !== s.scene.at) { perceiveAll(s, emit); arrive(at.id); }
+        }
+    }
+
     for (const d of [...fw.accept].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0))) {
+        // Authority is checked again at the actual story step: earlier deltas may have changed its context.
+        const stepFw = firewall([d], firewallContext(s, content));
+        if (!stepFw.accept.length) {
+            for (const x of stepFw.reject) reject(x.delta, x.rule, x.why);
+            for (const x of stepFw.corrections) if (!corrections.includes(x)) corrections.push(x);
+            continue;
+        }
         switch (d.type) {
             case 'time': {
                 const room = Math.max(0, cap - timeUsed);
@@ -219,10 +302,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'enter':
                 v3({ enter: [mapRef(d.who)] }, d);
                 break;
-            case 'leave':
+            case 'leave': {
+                const who = mapRef(d.who);
                 perceiveAll(s, emit);
-                v3({ leave: [mapRef(d.who)] }, d);
+                v3({ leave: [who] }, d);
+                if (s.journey?.party?.includes(who)) {
+                    emit({ t: 'journey.party', d: { quest: s.journey.quest, party: s.journey.party.filter((x) => x !== who) } });
+                }
                 break;
+            }
             case 'position':
                 v3({ position: [{ who: mapRef(d.who), band: d.band, cover: d.cover || undefined }] }, d);
                 break;
@@ -242,7 +330,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 v3({ facts: [{ s: mapRef(d.s), p: d.p, o: mapRef(d.o) }] }, d);
                 break;
             case 'learn':
-                v3({ learn: [{ who: mapRef(d.who), s: mapRef(d.s), p: d.p, o: mapRef(d.o), how: d.how }] }, d);
+                // who/s are references; o is the literal proposition value. Resolving "Alaric Red" as an entity
+                // turned the name into "pc" in the 28.09. live run.
+                v3({ learn: [{ who: mapRef(d.who), s: mapRef(d.s), p: d.p, o: typeof d.o === 'string' ? d.o : String(d.o), how: d.how }] }, d);
                 break;
             case 'attitude':
                 v3({ attitude: [{ who: mapRef(d.who), delta: d.delta, why: d.why }] }, d);
@@ -253,12 +343,6 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'thread':
                 v3({ threads: [{ text: d.text, kind: d.kind, status: d.status }] }, d);
                 break;
-            case 'check': {
-                const die = outcome.check_die;
-                if (!die) { reject(d, 'check', 'no CHECK DIE was issued this turn'); break; }
-                emit({ t: 'check.recorded', d: { what: String(d.what || 'check').slice(0, 80), stat: d.stat ? String(d.stat).toUpperCase() : null, roll: die, success: !!d.success, claimed: !!d.success, by: 'narrator' } });
-                break;
-            }
             case 'recover': {
                 const who = idOf(d.who) || 'pc';
                 const serviced = (s.services || []).some((x) => x.turn === s.turn && ['lodging', 'healing', 'meal'].includes(x.service));
@@ -270,6 +354,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 break;
             }
             case 'object.new':
+                if (isLooseCurrency(d.name) && normText(d.holder) === 'pc') {
+                    reject(d, 'currency_wallet', 'ordinary coin is tracked in the character coin total, not recreated as a second inventory item');
+                    break;
+                }
                 objectNew(d);
                 break;
             case 'object.move':
@@ -309,6 +397,23 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 emit({ t: 'quest.progressed', d: { id: q.id, objective: String(d.objective).slice(0, 160), status: d.status } });
                 break;
             }
+            case 'quest.ready': {
+                const q = questRef(d.quest);
+                if (!q) { reject(d, 'quest', 'unknown quest'); break; }
+                if (q.status !== 'active') { reject(d, 'quest', `the quest is ${q.status}`); break; }
+                const claimed = String(d.note || q.desired_end_state || '');
+                // Do not commit an escort/delivery completion whose only grounding this very
+                // reply was an arrival that the authorization firewall just refused.
+                if (rejectedTravel && !arrived && (q.objectives || []).some((o) => ['ESCORT', 'DELIVER'].includes(o.verb))
+                    && /\b(?:arriv|reach|deliver|escort|destination|made it|got there)/i.test(claimed)) {
+                    reject(d, 'quest_dependency', 'the escort/delivery destination was not canonically reached in this reply; readiness cannot depend on the refused arrival');
+                    const correction = `"${q.title}" is still IN PROGRESS: the destination arrival in the previous reply was not authorized or booked, so the Guild Quest is not ready to turn in yet.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    break;
+                }
+                emit({ t: 'quest.ready', d: { id: q.id, note: claimed.slice(0, 220) } });
+                break;
+            }
             case 'quest.close': {
                 const q = questRef(d.quest);
                 if (!q) { reject(d, 'quest', 'unknown quest'); break; }
@@ -318,6 +423,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 break;
             }
             case 'listing.gone': {
+                // The same reply in which the player reads an official board is not allowed to
+                // retroactively take away its just-published choices. Later world actions may.
+                if ((outcome.board?.listings || []).some((id) => id === (typeof d.listing === 'string' ? d.listing : questRef(d.listing)?.id))) {
+                    reject(d, 'board_first_display', 'a listing just presented as available cannot vanish retroactively during the same board-reading reply');
+                    const title = questRef(d.listing)?.title || String(d.listing?.new || d.listing);
+                    const correction = `The newly displayed Guild listing "${title}" remains AVAILABLE. The previous reply's claim that it had just been taken was not booked; only a later established event may remove it.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    break;
+                }
                 const q = questRef(d.listing);
                 if (!q || q.status !== 'listed') { reject(d, 'quest', 'no such listing on the board'); break; }
                 emit({ t: 'quest.status', d: { id: q.id, from: 'listed', to: d.why, by: 'world' } });
@@ -349,7 +463,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         }
         if (type === 'take' && e.taken === true && !events.some((x) => x.t === 'object.created' && x.d.object.holder?.entity === 'pc') && !events.some((x) => x.t === 'object.moved' && x.d.to?.entity === 'pc')) {
             const name = (auth.takeNames || {})[k];
-            if (name) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
+            if (name && !isLooseCurrency(name)) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
         }
         if ((type === 'buy' || type === 'pay') && e.taken_anyway === true) overreach(type === 'buy' ? 'purchase' : 'payment', `the reply had Alaric ${type === 'buy' ? 'take or use what he had not bought' : 'pay'} although he had not agreed`);
         if ((type === 'buy' || type === 'pay') && e.priced === true) {
@@ -378,7 +492,32 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
 
     function arrive(id) {
         const town = locationOf(s, id);
+        const escort = Object.values(s.quests).find((q) => q.status === 'active' && !q.ready
+            && q.kind === 'guild_contract' && (q.objectives || []).some((o) => o.verb === 'ESCORT'));
+        const alone = /\b(?:alone|by myself|without (?:them|the party|the driver|my companions))\b/i.test(s.last?.input || '');
+        const sharesTrip = /\b(?:we|our|them|together|follow|escort|cart|wagon|caravan|journey|travel|continue|road|with)\b/i.test(s.last?.input || '');
+        const routeStop = ['wilderness', 'region', 'settlement'].includes(s.places[id]?.kind);
+        const travel = !!(auth.gos || []).length && !hallOf(s, s.scene.at) && !hallOf(s, id) && !alone
+            && (sharesTrip || auth.roam || routeStop);
+        let party = [];
+        if (travel && escort && s.journey?.quest === escort.id) {
+            party = (s.journey.party || []).filter((who) => s.entities[who]?.status !== 'dead');
+        } else if (travel && escort && !s.journey) {
+            // Record actual people already sharing the escort departure scene. A busy Guild
+            // clerk is never recruited; unrelated crowds are not made permanent followers.
+            party = s.scene.present.filter((who) => who !== 'pc' && s.entities[who]?.kind === 'npc'
+                && s.entities[who].status !== 'dead'
+                && /\b(?:driver|carter|cart|wool|flock|shepherd|escort|factor|guide|wagon)\b/i.test(
+                    [truth(s, who, 'occupation')[0]?.o, s.entities[who].traits, ...(s.entities[who].descriptors || [])].join(' ')));
+            if (party.length) emit({ t: 'journey.party', d: { quest: escort.id, party } });
+        }
+        if ((!travel || !escort) && s.journey) emit({ t: 'journey.party', d: { quest: null, party: [] } });
         emit({ t: 'scene.moved', d: { at: id, location: town, place: placeName(s, id), reset_present: true } });
+        for (const who of party) {
+            if (!s.entities[who] || s.entities[who].status === 'dead') continue;
+            emit({ t: 'entity.updated', d: { id: who, set: { at: id } } });
+            emit({ t: 'scene.entered', d: { id: who, band: 'SHORT' } });
+        }
         arrived = id;
         // a decision belongs to the place it was opened at: leaving it closes it; one opened in this very turn goes
         // with him ("look for an inn to sleep": the room is bought where he arrives)
@@ -425,7 +564,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (!holder) { reject(d, 'object', `unknown holder ${String(d.holder).slice(0, 40)}`); return; }
         const q = d.for_quest ? questRef(d.for_quest) : null;
         const id = uniqueObjectId(s, tag, d.name);
-        emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, holder, marks: [], for_quests: q ? [q.id] : [], source: { turn: s.turn, how: holder.entity === 'pc' ? 'taken' : 'story' } } } });
+        emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, holder, marks: [], for_quests: q ? [q.id] : [], source: { turn: s.turn, how: holder.entity === 'pc' ? (((auth.take || []).length || auth.gather) ? 'taken' : 'world_gift') : 'story' } } } });
         objectsNew.set(normText(d.name), id);
     }
 
@@ -468,10 +607,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const counterpart = openOffers(s).some((o) => o.seller === by) || events.some((e) => e.t === 'transaction.completed' && e.d.seller === by);
         if (counterpart) { reject(d, 'coerce', 'the other side of a sale or an open offer cannot coerce (a sale is never a confiscation)'); return; }
         if (!d.because) { reject(d, 'coerce', 'coercion needs a because'); return; }
-        const e = s.entities[by];
-        const role = [truth(s, by, 'occupation')[0]?.o, ...(e?.descriptors || []), e?.traits, e?.template].filter(Boolean).join(' ');
-        if ((d.kind === 'confiscation' || d.kind === 'fine') && !AUTHORITY_ROLE.test(role)) { reject(d, 'coerce', `${d.kind} needs an authority (a guard, an official)`); return; }
-        if (d.kind === 'robbery' && !(HOSTILE_ROLE.test(role) || s.pending_combat?.some((p) => p.by === by) || s.encounter)) { reject(d, 'coerce', 'a robbery needs a hostile robber'); return; }
+        // Whether this coercion is lawful, wise or socially justified is fiction, not a mechanical role-name check.
+        // The engine only requires a present external actor and an explicit causal reason, then stores the consequence.
         const sheet = s.entities.pc.sheet;
         if (d.coin_cp) {
             const cp = Math.min(d.coin_cp, sheet.coin_cp);

@@ -20,7 +20,7 @@
 import { normText } from '../util.js';
 
 /** Fact predicates that are state with their own delta or domain (plan §5.1): never a free fact. */
-export const STATE_PREDICATES = new Set(['located', 'intent', 'guild_rank']);
+export const STATE_PREDICATES = new Set(['located', 'intent', 'guild_rank', 'power_rank']);
 /** Possession predicates: about Alaric they are the engine's inventory, never a fact. */
 export const POSSESSION_PREDICATES = new Set(['takes', 'took', 'carries', 'has', 'holds', 'lacks', 'owns', 'receives', 'received', 'pays', 'paid']);
 
@@ -34,6 +34,9 @@ const PAYOUT_WHY = /\b(?:reward|bounty|payout|pay(?:ment)?\s+for|contract|quest|
 const TURN_IN_OBJECTIVE = /\b(?:turn(?:ed|s|ing)?|hand(?:ed|s|ing)?)\s+(?:it\s+|them\s+|the\s+\w+\s+)?in\b|\b(?:deliver\w*|return\w*|report\w*|bring\w*|brought|tak(?:e|es|ing)|hand\w*)\b[^.;]*\b(?:guild|desk|hall|clerk)\b/i;
 const PC_REF = /^(?:pc|alaric(?: red)?)$/i;
 const ENGINE_FACT = /\b(?:regist\w*|guild rank|member\w*|novice|proven|veteran|power rank|coin|copper|silver|paid|reward|payout|xp|level)\b/i;
+const GUILD_QUEST_STATE = /\b(?:status|state|complete\w*|done|closed|cleared|turn(?:ed|ing)?\s+in|paid|payment|payout|reward)\b/i;
+const GUILD_COMPLETION_MARK = /\b(?:cleared|completed?|contract\s+complete|quest\s+complete|closed|reward\s+paid|paid\s+out|turned?\s+in|settled)\b/i;
+const GUILD_DETAIL_MECHANIC = /\b(?:fees?|costs?|prices?|pay(?:s|ing|ment)?|paid|payouts?|rewards?|copper|silver|gold|guild\s+rank|promotion)\b/i;
 
 // The Guild's mechanics are the engine's (live run 28.09.2026: the clerk's "F-Rank to start, for everyone" became the fact
 // "new Guild members start at F-Rank" and came back in the next engine block): what registration costs or requires,
@@ -76,6 +79,7 @@ function guildMechanic(d, ctx) {
     const po = words(`${text(d.p)} ${text(d.o)}`);
     const lower = `${text(d.s)} ${text(d.p)} ${text(d.o)}`.toLowerCase();
     if (GUILD_MONEY.test(po) && GUILD_MONEY_TOPIC.test(all) && !CLIENT_BONUS.test(all)) return 'money';
+    if (GUILD_CANON_ITEM.test(words(d.s)) && GUILD_MONEY.test(po) && !CLIENT_BONUS.test(all)) return 'money';
     const label = RANK_LABEL.test(`${rankText(d.p)} ${rankText(d.o)}`);
     const rank = label || /\brank\b/.test(po);
     // his own rank, on him or on his card or plate ("F-Rank, Lumenford branch" on the card, live run 28.09.2026)
@@ -105,6 +109,8 @@ export const isPc = (ref) => PC_REF.test(words(ref));
  *           player's commands authorised: a go; a forced move; an activity that moves him (search, gather, errand); a
  *           take; an activity that yields things (gather, search, craft)
  * @property {(ref: string) => boolean} [heldByPc]  an object Alaric holds (known id)
+ * @property {(ref: string) => boolean} [isGuildContractRef]  a known Guild contract id
+ * @property {(ref: string) => object|null} [guildContractForObject]  the Guild contract a known object belongs to
  * @property {{feeCp?: number, guildRanks?: string[], powerRanks?: string[]}} [canon]  the Guild's canon for the
  *           corrections of refused Guild facts (guild_canon): the registration fee, the Guild ranks, the Power Ranks
  */
@@ -164,19 +170,28 @@ export function firewall(deltas, ctx = {}) {
                 break;
             }
             case 'object.new': {
+                if (granted(d.name) || (booked.registration && GUILD_CANON_ITEM.test(text(d.name)))) {
+                    no(d, 'engine_booked', 'the engine already created/handed over this object with its own resolution');
+                    continue;
+                }
                 if (isPc(d.holder)) {
-                    if (granted(d.name) || (booked.registration && GUILD_CANON_ITEM.test(text(d.name)))) {
-                        no(d, 'engine_booked', 'the engine already handed Alaric this with its own resolution');
-                        continue;
-                    }
                     if (guildContract(d.for_quest) && CONTRACT_DOC.test(text(d.name))) {
                         no(d, 'engine_booked', 'a Guild contract\'s slip is the engine\'s: it hands it over when the contract is accepted');
                         continue;
                     }
                     if (!auth.take && !auth.gather) {
-                        no(d, 'pc_inventory', 'Alaric holds a new thing only after his own take or gather; a hand-over is object.new with the giver as holder, then object.move to him');
+                        no(d, 'pc_inventory', 'a newly introduced object enters Alaric\'s inventory only from his TAKE/GATHER; an NPC gift is created on the NPC and then object.move to pc');
                         continue;
                     }
+                }
+                break;
+            }
+            case 'object.mark': {
+                const q = ctx.guildContractForObject?.(text(d.object));
+                if (q && GUILD_COMPLETION_MARK.test(text(d.mark))) {
+                    no(d, 'guild_completion', 'a Guild contract document may carry ordinary notes, witness marks and verification; only a mark that itself claims completion/payment/clearance is engine-owned',
+                        q.status === 'active' ? `"${q.title}" remains active until Alaric explicitly turns it in.` : null);
+                    continue;
                 }
                 break;
             }
@@ -198,10 +213,34 @@ export function firewall(deltas, ctx = {}) {
                 }
                 break;
             }
+            case 'quest.detail': {
+                const q = questOf(d.quest);
+                const detail = `${text(d.note)} ${text(d.schedule)}`;
+                // Merely restating the correct posted reward next to useful route/contact
+                // memory cannot make the entire story detail invalid.
+                const posted = Number(q?.payout_cp);
+                const exactPosted = Number.isInteger(posted) && new RegExp(`\\b${posted}\\s*(?:cp|copper)\\b`, 'i').test(detail);
+                const changedReward = [...detail.matchAll(/\b(?:guild\s+)?(?:payout|reward)\b[^.;]{0,60}?\b(\d+)\s*(?:cp|copper)\b/gi)]
+                    .some((match) => Number(match[1]) !== posted);
+                const institutionalRule = /\b(?:guild\s+rank|promotion|xp|experience\s+points|registration\s+fee)\b/i.test(detail);
+                const revisesCanon = /\b(?:change|raise|lower|increase|decrease|override|replace|advance|prepay|already\s+paid|new\s+(?:guild\s+)?fee)\b/i.test(detail)
+                    && /\b(?:payout|reward|guild|fee|rank|xp)\b/i.test(detail);
+                const mechanicChange = changedReward || institutionalRule || revisesCanon
+                    || (/\b(?:payout|reward)\b/i.test(detail) && !exactPosted);
+                if (q && mechanicChange) {
+                    no(d, 'guild_quest_detail', 'a Guild contract detail may store story progress, contacts, routes, witnesses, verification or schedules, but may not invent or alter payout/payment, Guild rank or promotion mechanics');
+                    continue;
+                }
+                break;
+            }
+            case 'quest.ready':
+                // Story-owned readiness: the world may establish that the desired outcome has been achieved.
+                // Completion/payout/XP still belong to the explicit Guild turn-in.
+                break;
             case 'quest.close': {
                 const q = questOf(d.quest);
                 if (q && d.status === 'completed') {
-                    no(d, 'guild_completion', 'a Guild contract is completed only when Alaric turns it in at a Guild hall (the engine checks the proof and pays)', q.status === 'active' && !booked.turnIns.includes(q.id) ? `"${q.title}" is completed only when Alaric turns it in at a Guild hall; it is still open.` : null);
+                    no(d, 'guild_completion', 'a Guild contract is completed only when Alaric explicitly turns it in at a Guild hall; payout, XP and contract credit are engine-owned', q.status === 'active' && !booked.turnIns.includes(q.id) ? `"${q.title}" is still active until Alaric turns it in.` : null);
                     continue;
                 }
                 break;
@@ -216,6 +255,15 @@ export function firewall(deltas, ctx = {}) {
             }
             case 'fact': {
                 const p = words(d.p).replace(/\s+/g, '_');
+                const factText = `${words(d.s)} ${words(d.p)} ${words(d.o)}`;
+                const guildQuestState = !!ctx.isGuildContractRef?.(text(d.s))
+                    || !!ctx.guildContractForObject?.(text(d.s))
+                    || namesContract(factText)
+                    || (!!ctx.inGuildHall && /\b(?:contract|quest|slip)\b/.test(factText) && GUILD_QUEST_STATE.test(factText));
+                if (guildQuestState && GUILD_QUEST_STATE.test(`${words(d.p)} ${words(d.o)}`)) {
+                    no(d, 'engine_owned_fact', 'a known Guild contract keeps payout and formal status/completion in the engine domain; use quest.detail/quest.progress/quest.ready for story progress instead of overriding that state with a free fact');
+                    continue;
+                }
                 if (STATE_PREDICATES.has(p)) {
                     no(d, 'domain_fact', `"${d.p}" is state with its own delta (arrive/enter/leave, intent, the Guild's rank), not a fact`);
                     continue;
@@ -242,8 +290,8 @@ export function firewall(deltas, ctx = {}) {
                 break;
             }
             case 'arrive': {
-                if (!auth.go && !auth.forced && !auth.roam) {
-                    no(d, 'no_go', 'Alaric arrives somewhere only after his own go (or when forced)', 'Alaric did not travel in the last reply: he had not decided to go anywhere; he is still where he was.');
+                if (!auth.go && !auth.roam && !text(d.forced_by).trim()) {
+                    no(d, 'no_go', 'Alaric arrives somewhere only after his own travel/roaming action or an explicit external involuntary cause', 'Alaric did not voluntarily travel in the last reply, and no external event moved him; he remains where he was.');
                     continue;
                 }
                 break;

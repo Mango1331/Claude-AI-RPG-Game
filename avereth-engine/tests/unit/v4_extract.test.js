@@ -25,7 +25,7 @@ test('the extractor prompt states every rule and every constraint the validator 
     assert.match(messages[1].content, /"1" \(go: did he arrive, and where\)/);
 });
 
-test('the schema is strict (every property required, no extra keys) and knows the catalog ids', () => {
+test('the schema stays strict internally while the parser fills harmless soft omissions before validation', () => {
     const schema = deltaSchema(vocab, ids, { 1: 'go', 2: 'buy' });
     assert.deepEqual(strictProblems(schema), []);
     const ok = parseExtraction(JSON.stringify({
@@ -38,6 +38,13 @@ test('the schema is strict (every property required, no extra keys) and knows th
     }), vocab, ids, { 1: 'go', 2: 'buy' });
     assert.equal(ok.valid, true, ok.errors.join('; '));
     assert.equal(ok.complete, true);
+    assert.equal(ok.value.deltas[1].forced_by, null, 'nullable forced_by is filled locally instead of causing a repair');
+    const soft = parseExtraction(JSON.stringify({expected:{},deltas:[{seq:1,type:'person.new',ref:'woman',role:'washerwoman',present:true}]}), vocab, ids, {});
+    assert.equal(soft.valid, true, soft.errors.join('; '));
+    assert.deepEqual(soft.value.deltas[0].desc, []);
+    assert.equal(soft.value.deltas[0].name, null);
+    assert.equal(soft.value.deltas[0].at, null);
+    assert.equal(soft.value.deltas[0].band, null);
 });
 
 test('a missing expected key makes an answer incomplete, not invalid; a wrong id makes it invalid, naming the field', () => {
@@ -62,28 +69,32 @@ test('the one repair carries the invalid answer and the errors', () => {
     assert.match(messages[3].content, /not valid: \$\.deltas: not an array/);
 });
 
-test('delta-0.2 keeps the P0 lessons: the payout and the fee are facts only, buy/pay ask for taken_anyway', () => {
+test('delta-0.10 keeps hard money/agency domains but treats ordinary world causality as persistence', () => {
     assert.ok(vocab.rules.some((r) => /registration fee are the engine's; report the story's words about them only as facts/.test(r)));
     assert.ok(vocab.rules.some((r) => /A price someone merely mentions is a fact/.test(r)));
     assert.deepEqual(Object.keys(vocab.expected.buy.shape), ['priced', 'taken_anyway']);
     assert.match(vocab.deltas.find((d) => d.type === 'coin.gift').summary, /never the Guild's payout/);
-    assert.match(vocab.deltas.find((d) => d.type === 'object.new').summary, /only after his TAKES or GATHERS/);
+    assert.match(vocab.deltas.find((d) => d.type === 'object.new').summary, /TAKE\/GATHER/);
+    assert.ok(!vocab.deltas.some((d) => d.type === 'check'), 'generic narrator check delta is gone');
+    assert.ok(vocab.rules.some((r) => /Ordinary world causality is not overreach/));
 });
 
-test('delta-0.4: the extractor reads the player\'s message; his own words and gestures are never overreach, a booking the engine did not make still is; a name he gives is learned (live run 28.09.)', () => {
+test('soft-world extractor protects PC commitments while recording NPC/world agency and diegetic knowledge', () => {
     const player = '*i sign the card*';
     const { messages } = extractorRequest(vocab, { catalog: 'CATALOG', actions: 'NOTHING TO BOOK — Alaric decides nothing the engine resolves.', player, expectedKeys: {}, reply: 'He signs the card.' });
     const user = messages[1].content;
     assert.match(user, /PLAYER MESSAGE \(what the player wrote Alaric saying and doing\):\n\*i sign the card\*\n\nPLAYER ACTIONS \(already booked\):\nNOTHING TO BOOK/);
     const sys = messages[0].content;
-    assert.match(sys, /neither PLAYER ACTIONS nor the PLAYER MESSAGE contain, report it only as overreach/);
-    assert.match(sys, /What the PLAYER MESSAGE has him say or do himself \(his words, a gesture, signing, sitting down\) is his own, never overreach/);
-    assert.match(sys, /a payment, purchase, pick-up, acceptance, turn-in, registration or journey that the reply shows, that PLAYER ACTIONS do not book and the CATALOG does not show as done already, is overreach, even when the PLAYER MESSAGE has him do it/);
-    assert.match(sys, /A name Alaric gives \(in the PLAYER MESSAGE or the reply\) is learned by those the reply shows hearing it: learn \{"who": <person>, "s": "pc", "p": "name"/);
+    assert.match(sys, /Overreach is only for meaningful voluntary PC commitments/);
+    assert.match(sys, /Ordinary world causality is not overreach/);
+    assert.match(sys, /known object voluntarily handed to Alaric by an NPC/i);
+    assert.match(sys, /A person learns Alaric's name only from diegetic evidence/);
+    assert.match(sys, /Third-person narration merely calling the protagonist "Alaric"/);
+    assert.match(sys, /Soft continuity deltas are memory, not mechanics/);
     // no message (a caller without one): no empty section
     const none = extractorRequest(vocab, { catalog: 'CATALOG', actions: 'none', expectedKeys: {}, reply: 'x' }).messages[1].content;
     assert.doesNotMatch(none, /PLAYER MESSAGE/);
-    // the repair keeps it
+    // the one repair keeps the player message
     const rep = extractorRequest(vocab, { catalog: 'CATALOG', actions: 'none', player, expectedKeys: {}, reply: 'x' }, { previous: '{}', errors: ['$.deltas: missing'] });
     assert.match(rep.messages[1].content, /PLAYER MESSAGE[^]*\*i sign the card\*/);
 });

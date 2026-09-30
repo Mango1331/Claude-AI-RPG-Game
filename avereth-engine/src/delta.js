@@ -377,7 +377,8 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
         }
         const desc = uniq([...(Array.isArray(n.desc) ? n.desc : []), n.ref].map((x) => String(x).toLowerCase().slice(0, 40)));
         const id = uniqueId(state, kind === 'npc' ? 'npc' : 'mon', n.name || n.ref, taken);
-        const name = n.name === null ? null : n.name ? String(n.name).slice(0, 60) : kind === 'npc' ? nameFromRef(n, prose) : null;
+        // Runtime V4 says explicitly when the story gave no name (person.new name:null): no name is read from the ref
+        const name = n.anonymous ? null : n.name ? String(n.name).slice(0, 60) : kind === 'npc' ? nameFromRef(n, prose) : null;
         const entity = { id, kind, name, descriptors: desc, traits: n.traits ? String(n.traits).slice(0, 240) : '', status: 'alive', location: state.scene.location, created: at, source: src, card: {} };
         // Test 5 run: "Sergeant Hobb" and "Wick" came in "new" a reply before the story said their names (Testrun 2:
         // "Bram" was said five turns before "Fenn"); the player's views (combat target labels, HUD) show only the
@@ -387,7 +388,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
         if (part !== null) entity.known_name = part;
         if (kind === 'creature') {
             const anchor = content.anchors.get(n.anchor) || content.anchors.get(n.species) || anchorFor(content, [n.species, ...desc, n.traits].filter(Boolean).join(' '));
-            if (!anchor) { reject(n, 'creature needs a valid F1 body-plan anchor (explicit anchor preferred; species name may be free fantasy fauna)'); continue; }
+            if (!anchor) { reject(n, 'creature needs a species that maps to an F1 body-plan anchor (or kind "npc")'); continue; }
             entity.species = n.species ? String(n.species).slice(0, 40) : desc[0];
             entity.anchor = anchor.id;
         } else {

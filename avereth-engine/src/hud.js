@@ -70,7 +70,8 @@ export function worldRows(state, content) {
     if (weather) rows.push(['Weather', weather.o]);
     const enc = state.encounter;
     // in a fight everyone by the target label the combat panel shows (Cellar Rat A), else as the player knows them
-    const label = (id) => enc ? targetLabel(state, id, (x) => playerLabel(state, x)) : sceneHandle(state, content, id);
+    // Runtime V4 shows the stable scene handle before a fight (Wolf A); V3 as the player knows them
+    const label = (id) => enc || state.meta?.runtime !== 'v4' ? targetLabel(state, id, (x) => playerLabel(state, x)) : sceneHandle(state, content, id);
     const present = state.scene.present.filter((id) => id !== 'pc' && state.entities[id]).map((id) => {
         const e = state.entities[id];
         const c = enc?.combatants?.[id];

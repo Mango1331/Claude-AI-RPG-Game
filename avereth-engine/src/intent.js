@@ -88,7 +88,7 @@ export function resolveTarget(text, state, content, { hostileOnly = false } = {}
     }
     const present = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && state.entities[id].status !== 'dead');
     const valid = enc ? present.filter((id) => enc.combatants[id]?.side === 'hostile' && !enc.combatants[id].current.defeated && !enc.combatants[id].current.escaped && !enc.combatants[id].current.surrendered) : present;
-    if (!enc) {
+    if (!enc && state.meta?.runtime === 'v4') {
         const byHandle = valid.filter((id) => wordRe(normText(sceneHandle(state, content, id))).test(t));
         if (byHandle.length === 1) return { id: byHandle[0], how: 'scene handle' };
         if (byHandle.length > 1) return { ambiguous: byHandle };
@@ -191,7 +191,7 @@ export function parseIntent(text, state, content) {
         if (target.none) return { kind: 'no_target', skill: skill.id, ...(target.ref ? { ref: target.ref } : {}) };
         return { kind: 'attack', skill: skill.id, target: target.id, target_how: target.how, move };
     }
-    if (!state.encounter && ENGAGE_RE.test(d) && !attackWords && !offensive) {
+    if (!state.encounter && state.meta?.runtime === 'v4' && ENGAGE_RE.test(d) && !attackWords && !offensive) {
         const targets = state.scene.present.filter((id) => id !== 'pc' && state.entities[id]?.status !== 'dead'
             && ['attack', 'flee', 'surrender', 'parley', 'hold', 'take_cover'].includes(state.pending_intents?.[id]));
         if (targets.length) return { kind: 'engage', targets };

@@ -117,7 +117,8 @@ function npcCard(state, content, id, focusWords, { absent = false } = {}) {
     const hp = c ? `${conditionLabel(c.current.hp, c.fixed.max_hp)} (HP ${c.current.hp}/${c.fixed.max_hp})` : statusOf(state, id) === 'dead' ? 'dead' : '';
     const band = c ? c.current.band : pos?.band;
     const cover = c ? c.current.cover : pos?.cover;
-    const display = c ? fightName(state, id) : `${sceneHandle(state, content, id)} [${id}]`;
+    const v4 = state.meta?.runtime === 'v4';
+    const display = c ? fightName(state, id) : v4 ? `${sceneHandle(state, content, id)} [${id}]` : entityLabel(state, id);
     lines.push(`• ${display} — ${kind}${look ? `; ${look}` : ''}${cues?.voice ? `; voice: ${cues.voice}` : ''}${hp ? `; ${hp}` : ''}${band ? `; ${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : ''}${absent ? '; NOT PRESENT' : ''}`);
     if (statusOf(state, id) === 'dead') return lines[0];
     const aware = absent ? null : state.scene.awareness[id];
@@ -127,7 +128,7 @@ function npcCard(state, content, id, focusWords, { absent = false } = {}) {
     } else {
         const rel = state.relations[`rel.${id}.attitude.pc`];
         const last = rel?.history?.at(-1);
-        const ties = currentFacts(state, (f) => f.s === id && f.visibility !== 'secret'
+        const ties = !v4 ? [] : currentFacts(state, (f) => f.s === id && f.visibility !== 'secret'
             && /\b(?:relationship|related|family|kin|parent|child|daughter|son|sibling|spouse|partner|friend|ally|serves|works_for|employer|member_of|affiliation)\b/i.test(String(f.p || '').replace(/_/g, ' '))).slice(-3);
         const ident = pcIdentityFor(state, id);
         const idText = ident.level === 'name' ? 'knows him by name' : ident.level === 'seen' ? 'has seen him, does NOT know his name' : 'has never seen him';
@@ -383,11 +384,12 @@ export function buildContext(state, content, opts = {}) {
     const realmId = loc?.realm || null;
     const realm = realmId ? content.factions.get(realmId)?.name || realmId : null;
     const locStatus = statusOf(state, state.scene.location);
-    const placeSuffix = state.scene.place && normText(state.scene.place) !== normText(loc?.name || '') ? ` — ${state.scene.place}` : '';
+    const v4 = state.meta?.runtime === 'v4';
+    const placeSuffix = !v4 ? (state.scene.place ? ` — ${state.scene.place}` : '') : state.scene.place && normText(state.scene.place) !== normText(loc?.name || '') ? ` — ${state.scene.place}` : '';
     const sections = [];
     const add = (name, text, priority, own = false) => text && sections.push({ name, text, priority, own, tokens: estimateTokens(text) });
 
-    add('header', `[AVERETH ENGINE — authoritative game state, turn ${state.turn}. Numbers, rolls, positions and knowledge below are binding; narrate, never recalculate.]\n${formatClock(state.clock.minute)} | ${loc ? `${loc.name}${realm && normText(realm) !== normText(loc.name) ? `, ${realm}` : ''}` : 'unknown location'}${placeSuffix} | mode: ${state.mode}${locStatus !== 'exists' && locStatus !== 'alive' ? ` | LOCATION STATUS: ${String(locStatus).toUpperCase()}` : ''}\nSetting: Western-fantasy medieval material culture with mana/high magic; letters and messengers for distance; no modern technology.`, 0);
+    add('header', `[AVERETH ENGINE — authoritative game state, turn ${state.turn}. Numbers, rolls, positions and knowledge below are binding; narrate, never recalculate.]\n${formatClock(state.clock.minute)} | ${loc ? `${loc.name}${realm && (!v4 || normText(realm) !== normText(loc.name)) ? `, ${realm}` : ''}` : 'unknown location'}${placeSuffix} | mode: ${state.mode}${locStatus !== 'exists' && locStatus !== 'alive' ? ` | LOCATION STATUS: ${String(locStatus).toUpperCase()}` : ''}\nSetting: Western-fantasy medieval material culture with mana/high magic; letters and messengers for distance; no modern technology.`, 0);
     // what Alaric's line carries depends on the turn: items and coin only when trade, loot or items are in play
     const itemScan = `${input} ${lastReply}`;
     const skillNamed = Object.keys(state.entities.pc.sheet?.skills || {}).some((id) => mentioned(content.skills.get(id)?.name || id, normText(input)));
@@ -403,8 +405,9 @@ export function buildContext(state, content, opts = {}) {
     const queryText = `${input} ${lastReply}`;
     const focusWords = new Set(tokenize(queryText));
     const others = state.scene.present.filter((id) => id !== 'pc' && state.entities[id]);
-    if (others.length) add('present', `ACTIVE SCENE — canonical handles (use these exact handles to distinguish or target actors; card knowledge is authoritative relevant recall, not an exhaustive mind dump):\n${others.map((id) => npcCard(state, content, id, focusWords)).join('\n')}`, 1);
-    else if (state.mode !== 'creation') add('present', 'ACTIVE SCENE: nobody besides Alaric.', 1);
+    const presentHead = v4 ? 'ACTIVE SCENE — canonical handles (use these exact handles to distinguish or target actors; card knowledge is authoritative relevant recall, not an exhaustive mind dump):' : 'PRESENT (each NPC knows ONLY what its card lists):';
+    if (others.length) add('present', `${presentHead}\n${others.map((id) => npcCard(state, content, id, focusWords)).join('\n')}`, 1);
+    else if (state.mode !== 'creation') add('present', v4 ? 'ACTIVE SCENE: nobody besides Alaric.' : 'PRESENT: nobody besides Alaric.', 1);
     const absent = state.mode === 'creation' ? [] : namedAbsent(state, normText(queryText));
     if (absent.length) add('named', `NAMED, NOT PRESENT (continuity only; they are elsewhere unless the story brings them in):\n${absent.map((id) => npcCard(state, content, id, focusWords, { absent: true })).join('\n')}`, 2);
     add('combat', combatBlock(state), 0);
@@ -415,7 +418,7 @@ export function buildContext(state, content, opts = {}) {
         || state.scene.present.includes(f.s) || mentioned(anyLabel(state, content, f.s), scan)).slice(-6);
     if (pinned.length) add('facts', `ESTABLISHED FACTS (binding; they change only with an in-world cause):\n${pinned.map((f) => `- ${propText(state, f, content)} (since ${day(f.since.minute)}${f.source?.because ? `; cause: ${f.source.because}` : ''})`).join('\n')}`, 0);
 
-    const activeQuests = Object.values(state.quests).filter((q) => q.status === 'active');
+    const activeQuests = v4 ? Object.values(state.quests).filter((q) => q.status === 'active') : [];
     if (activeQuests.length) add('quests', `ACTIVE QUEST MEMORY — use this to preserve continuity, not as a word-for-word checklist. For Guild contracts only payout, active/completed status, Quest XP/credit and Guild rank mechanics are hard engine state; objectives, witnesses and verification are story guidance and may be satisfied by credible alternatives:\n${activeQuests.map((q) => {
         const progress = (q.progress || []).slice(-4).map((p) => `${p.objective}: ${p.status}`).join('; ');
         const req = q.kind === 'guild_contract'
@@ -494,7 +497,7 @@ export function loreKeys(state, content) {
     const sceneNode = state.meta?.runtime === 'v4' && state.scene.at ? state.scene.at : state.scene.location;
     const loc = state.entities[sceneNode] || content.locations.get(sceneNode) || state.places?.[sceneNode];
     const realmId = loc?.realm || null;
-    const keys = [content.factions.get(realmId)?.name, loc?.name || null];
+    const keys = [content.factions.get(realmId)?.name, state.meta?.runtime === 'v4' ? loc?.name || null : content.locations.has(state.scene.location) ? loc.name : null];
     return keys.filter(Boolean);
 }
 

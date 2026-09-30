@@ -91,7 +91,8 @@ export function playerTurn(state, content, input, { msg = null } = {}) {
     // in a fight, an attack whose target is unclear is the engine's question, not a story turn: nothing resolves, is
     // rolled or spent, and the narrator is not called (live run 25.09. 01:31: "which target? Brede or Osney" went to
     // the narrator as a story turn). The System panel lists the targets by label; the fight waits for the choice.
-    if (s.entities.pc.status !== 'dead' && (intent.kind === 'ambiguous_target' || intent.kind === 'no_target')) {
+    // Runtime V4 asks the same before a fight: the scene handles (Wolf A) are what the player targets (V3 unchanged)
+    if ((s.encounter || s.meta?.runtime === 'v4') && s.entities.pc.status !== 'dead' && (intent.kind === 'ambiguous_target' || intent.kind === 'no_target')) {
         return { events, outcome: null, command: { panels: [targetQuestion(s, content, intent)], llm: null }, intent, situations: [], state: s };
     }
     emit({ t: 'turn.begun', d: { turn: s.turn + 1, input_hash: hash32(text), input: text.slice(0, 240) } });

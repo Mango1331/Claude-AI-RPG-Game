@@ -218,7 +218,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         for (let i = 1; i <= count; i++) {
             const ref = count > 1 ? `${d.ref} ${i}` : d.ref;
             entries.push(kind === 'npc'
-                ? { ref, kind: 'npc', name: d.name === null ? null : d.name || undefined, desc: [...(d.role ? [d.role] : []), ...(d.desc || [])], traits: (d.desc || []).join(', '), band: d.band || undefined }
+                ? { ref, kind: 'npc', name: d.name || undefined, anonymous: !d.name, desc: [...(d.role ? [d.role] : []), ...(d.desc || [])], traits: (d.desc || []).join(', '), band: d.band || undefined }
                 : { ref, kind: 'creature', name: undefined, species: d.species, anchor: d.anchor, desc: d.desc || [], band: d.band || undefined });
         }
         const joins = kind === 'creature' && s.encounter && hostileRefs.has(normText(d.ref));

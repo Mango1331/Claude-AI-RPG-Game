@@ -23,7 +23,7 @@ import { parseSwaps, ENGINE_VERSION } from './src/util.js';
 const MODULE = 'avereth';
 const PROMPT_KEY = 'avereth_engine';
 const LORE_KEY = 'avereth_lore_keys';
-const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: '', hud: 'closed', historyTurns: 4, stripTrackers: true, recoverReports: true, runtime: 'v4' };
+const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: 'ledger=register', hud: 'closed', historyTurns: 4, stripTrackers: true, recoverReports: true, runtime: 'v4' };
 const REPORT_WAIT_MS = 60000; // the next turn waits this long at most for a report still being asked for
 const LLM_TIMEOUT_MS = 120000;
 

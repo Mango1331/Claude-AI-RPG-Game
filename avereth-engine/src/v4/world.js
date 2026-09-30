@@ -425,6 +425,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 // retroactively take away its just-published choices. Later world actions may.
                 if ((outcome.board?.listings || []).some((id) => id === (typeof d.listing === 'string' ? d.listing : questRef(d.listing)?.id))) {
                     reject(d, 'board_first_display', 'a listing just presented as available cannot vanish retroactively during the same board-reading reply');
+                    const title = questRef(d.listing)?.title || String(d.listing?.new || d.listing);
+                    const correction = `The newly displayed Guild listing "${title}" remains AVAILABLE. The previous reply's claim that it had just been taken was not booked; only a later established event may remove it.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
                     break;
                 }
                 const q = questRef(d.listing);

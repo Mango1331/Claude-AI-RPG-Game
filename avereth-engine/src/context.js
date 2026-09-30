@@ -218,6 +218,9 @@ export const V4_OUTPUT_LINE = 'OUTPUT: write only the story. No <avereth> block,
 export function playerActionsBlock(outcome) {
     const lines = ['PLAYER ACTIONS (the engine resolved Alaric\'s message; narrate exactly these, in this order; he decides nothing else):', ...(outcome.actions || [])];
     for (const x of outcome.extra || []) lines.push(x);
+    if ((outcome.resolutions || []).some((r) => (r.type === 'buy' || r.type === 'pay') && r.status === 'pending')) {
+        lines.push('PENDING TRADE IS A HARD STOP: state the seller\'s actual price and stop BEFORE any payment, delivery, drinking, eating or other action that depends on the unaccepted purchase. A later player turn can explicitly accept the offer, at which point the engine debits coin and grants the goods/service. An unrelated independent action is unaffected.');
+    }
     if (outcome.search_checks?.length) lines.push('SEARCH RESOLUTION is already rolled and binding in PLAYER ACTIONS above. Do not reroll it, replace it with another check, or turn a concrete result into another vague teaser.');
     if (!outcome.search_checks?.length) lines.push('ORDINARY WORLD FICTION: resolve non-combat physical/social uncertainty plausibly from established fiction; do not invent rolls. Combat, Stealth and explicit SEARCH are the engine-owned mechanical exceptions.');
     return lines.join('\n');

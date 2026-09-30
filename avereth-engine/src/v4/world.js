@@ -355,6 +355,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 break;
             }
             case 'listing.gone': {
+                // The same reply in which the player reads an official board is not allowed to
+                // retroactively take away its just-published choices. Later world actions may.
+                if ((outcome.board?.listings || []).some((id) => id === (typeof d.listing === 'string' ? d.listing : questRef(d.listing)?.id))) {
+                    reject(d, 'board_first_display', 'a listing just presented as available cannot vanish retroactively during the same board-reading reply');
+                    break;
+                }
                 const q = questRef(d.listing);
                 if (!q || q.status !== 'listed') { reject(d, 'quest', 'no such listing on the board'); break; }
                 emit({ t: 'quest.status', d: { id: q.id, from: 'listed', to: d.why, by: 'world' } });

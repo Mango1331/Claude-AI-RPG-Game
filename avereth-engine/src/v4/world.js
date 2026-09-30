@@ -407,6 +407,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 if (rejectedTravel && !arrived && (q.objectives || []).some((o) => ['ESCORT', 'DELIVER'].includes(o.verb))
                     && /\b(?:arriv|reach|deliver|escort|destination|made it|got there)/i.test(claimed)) {
                     reject(d, 'quest_dependency', 'the escort/delivery destination was not canonically reached in this reply; readiness cannot depend on the refused arrival');
+                    const correction = `"${q.title}" is still IN PROGRESS: the destination arrival in the previous reply was not authorized or booked, so the Guild Quest is not ready to turn in yet.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
                     break;
                 }
                 emit({ t: 'quest.ready', d: { id: q.id, note: claimed.slice(0, 220) } });

@@ -255,10 +255,10 @@ Jeder Schritt hielt alle bestehenden Tests unverändert grün, brachte eigene Te
 | V3-Differenzlauf (Testruns v8–v12, `xp10`) | identisch bis auf die Versionsanzeige im `#audit`-Panel (4.2.0 und 4.2.1) |
 | V4-Differenzlauf (`tools/v4_diff.mjs`, drei Live-Läufe, 122 Schritte) | 4.2.1: 56 Schritte identisch; jeder Unterschied in einer erwarteten Kategorie (IR-Feld 62, Envelope-Abschnitt 33, Kampf-Scope 6, Retrieval nach abgelaufenen Kampf-Fakten 5); keiner „other“; Endzustände gleich bis auf Scopes und Versionsstempel; keine Envelope-Ablehnung, kein Ownership-Abbruch |
 | P0-Rescore (S1-Guard, S2-Firewall) | identisch mit der Basis (4.2.0 und 4.2.1) |
-| Mutationsprobe (36 Mutanten über Ownership, Envelope, Policy, IR und Scope) | jeder Mutant lässt mindestens einen Test scheitern (Lauf auf dem Endstand) |
+| Mutationsprobe | 4.2.0: 36/36 erkannt. 4.2.1: 44/44 über Ownership (mit Regionen und Capabilities), Envelope, Policy, IR, Scope und die 4.2.1-Fixes; der erste Lauf fand dabei toten Code (entfernt) und eine Testlücke (geschlossen) |
 | Browser-Smoke | V3- und V4-Seite OK (4.2.0 und 4.2.1) |
-| SillyTavern-Smoke V4 (echtes ST, Mock-Provider) | OK; Status „Avereth Engine 4.2.0 … narrator contract: current“; `WORLD ENVELOPE` steht im Prompt an den Erzähler; kein Schlüssel im Browser, `secrets.json` leer |
-| SillyTavern-Smoke V3 | OK, alle 21 Prüfpunkte |
+| SillyTavern-Smoke V4 (echtes ST, Mock-Provider) | 18/18 (4.2.0 und 4.2.1); Status „Avereth Engine 4.2.1 … narrator contract: current“; `WORLD ENVELOPE` steht im Prompt an den Erzähler; kein Schlüssel im Browser, `secrets.json` leer |
+| SillyTavern-Smoke V3 | 21/21 (4.2.0 und 4.2.1) |
 
 ### 6.2 Befunde der Prüfung (und was daraus wurde)
 

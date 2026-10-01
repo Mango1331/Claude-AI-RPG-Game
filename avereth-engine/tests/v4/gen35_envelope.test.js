@@ -68,6 +68,24 @@ test('one violence policy: npcDecide in a fight and the envelope before the stor
             }
         }
     }
+    // the animals: npcDecide's own temperament branches decide in a fight; the policy says the same of every band (a
+    // strike that landed on it is what "harmed" means to a skittish one)
+    const beast = (temperament, band, hit) => {
+        const me = { id: 'mon.x', model: 'creature', side: 'hostile', fixed: { max_hp: 20, temperament, sapient: false, attack: { range: 'ENGAGED' } }, current: { hp: 20, band, cover: 'none', effects: [] } };
+        const pc = { id: 'pc', model: 'character', side: 'pc', fixed: { max_hp: 30, sapient: true, actions: {} }, current: { hp: 30, band: null, cover: 'none', effects: [] } };
+        const log = hit ? [{ actor: 'pc', kind: 'attack', target: 'mon.x', strikes: [{ target: 'mon.x' }] }] : [];
+        return npcDecide({ enc: { combatants: { pc, 'mon.x': me }, intents: {}, log }, content, state: { relations: {} } }, 'mon.x').kind;
+    };
+    for (const temperament of ['skittish', 'defensive', 'aggressive', 'cautious']) {
+        for (const band of ['ENGAGED', 'SHORT', 'MEDIUM', 'LONG']) {
+            for (const hit of [false, true]) {
+                // a cautious animal shot from range takes cover first: a tactic inside the fight, not a refusal to fight
+                if (temperament === 'cautious' && hit) continue;
+                const violent = ['attack', 'close_and_attack'].includes(beast(temperament, band, hit));
+                assert.equal(opensViolence({ sapient: false, temperament, band, harmed: hit }).ok, violent, `${temperament} at ${band}${hit ? ', hit' : ''}`);
+            }
+        }
+    }
     assert.equal(opensViolence({ sapient: true, temperament: 'cautious', attitude: 0 }).rule, 'provoked_only');
     assert.equal(opensViolence({ sapient: true, temperament: 'cautious', attitude: -20 }).ok, true, 'hostile at -20, as npcDecide');
     assert.equal(opensViolence({ sapient: false, temperament: 'skittish', band: 'MEDIUM' }).rule, 'cornered_only');

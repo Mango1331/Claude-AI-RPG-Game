@@ -12,6 +12,7 @@ import { envelopeLines, envelopeBlock, reactionEnvelope, mayOpenFight } from '..
 import { opensViolence } from '../../src/policy.js';
 import { npcDecide } from '../../src/combat.js';
 import { buildContext } from '../../src/context.js';
+import { turnBlock } from '../../src/host.js';
 import { replayRun } from './replay_lib.js';
 
 const content = await loadContent();
@@ -60,11 +61,12 @@ test('one violence policy: npcDecide in a fight and the envelope before the stor
         return npcDecide({ enc, content, state }, 'npc.x').kind;
     };
     for (const temperament of ['cautious', 'skittish', 'aggressive', 'defensive']) {
-        for (const attitude of [null, 0, -19, -20, -60]) {
+        for (const attitude of [null, 0, -19, -20, -25, -60]) {
             for (const hp of [20, 12]) {
                 const policy = opensViolence({ sapient: true, temperament, attitude: attitude ?? 0, harmed: hp < 20 });
-                const violent = !['hold', 'cover', 'flee'].includes(decide(temperament, attitude, hp)) || (temperament === 'defensive' && policy.ok);
-                if (!policy.ok) assert.equal(violent, false, `${temperament} attitude ${attitude} hp ${hp}: the policy says no violence, npcDecide must agree`);
+                // both ways: at arm's length and fit to fight, npcDecide strikes exactly when the policy allows it
+                const kind = decide(temperament, attitude, hp);
+                assert.equal(['attack', 'close_and_attack'].includes(kind), policy.ok, `${temperament} attitude ${attitude} hp ${hp}: npcDecide ${kind}, the policy ${policy.why}`);
             }
         }
     }
@@ -130,6 +132,28 @@ test('the engine block carries the WORLD ENVELOPE before the corrections and PLA
     assert.match(ctx.text, /WORLD ENVELOPE \(causal limits for this reply; inside them the story is free\):\n- Violent only once the story gives them cause first/);
     const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
     assert.match(contract, /WORLD ENVELOPE in the engine block \(when present\) names the few causal limits of this reply/);
+});
+
+test('the envelope has its own allowance: in no story turn of the recorded runs does it displace a retrieved section', async () => {
+    let turns = 0;
+    let shown = 0;
+    for (const f of ['live_0930.json', 'live_0930b.json', 'live_0930c.json']) {
+        const fx = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests/v4', f), 'utf8'));
+        await replayRun(content, fx, {
+            onPlayer: (st, g) => {
+                if (st.action !== 'context') return;
+                const withIt = turnBlock(g.chat, st.u, content, {}).context;
+                const without = turnBlock(g.chat, st.u, content, { engineEnvelope: false }).context;
+                turns += 1;
+                if (withIt.sections.some((x) => x.name === 'envelope')) shown += 1;
+                // the same memories, lore and corrections, the same dropped sections: the block plus the envelope
+                assert.deepEqual(withIt.sections.filter((x) => x.name !== 'envelope'), without.sections, `${f} #${st.i}`);
+                assert.deepEqual(withIt.dropped, without.dropped, `${f} #${st.i}`);
+                assert.equal(withIt.text.replace(/\n\nWORLD ENVELOPE \([^\n]*(?:\n- [^\n]*)*/, ''), without.text, `${f} #${st.i}`);
+            },
+        });
+    }
+    assert.ok(turns >= 50 && shown >= 20, `${shown} of ${turns} story turns with an envelope`);
 });
 
 // ------------------------------------------------------------------------------------------------ after the story

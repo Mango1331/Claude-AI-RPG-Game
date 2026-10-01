@@ -101,6 +101,7 @@ export function ensureCampaign(chat, content, { seed, force = false, runtime = '
  * regenerations reuse the same dice) and returns what the host must do.
  * settings.engineLore = false leaves the descriptive world lore to the host's lorebook (the engine block keeps
  * mechanics and state only); loreKeys names the current realm and location for that lorebook's retrieval.
+ * settings.engineEnvelope = false leaves the World Envelope out of the block (Gen 3.5; for a comparison only).
  * @returns {{action: 'none'|'clear'|'abort'|'panels'|'context', dirty: boolean, panels?: string[], context?: object, loreKeys?: string[], index?: number, errors?: string[]}}
  */
 export function prepareGeneration(chat, content, { type = 'normal', settings = {} } = {}) {
@@ -143,6 +144,7 @@ export function turnBlock(chat, u, content, settings = {}) {
         recentTurns: settings.recentTurns,
         systemQuery: r?.command?.llm ? r.command.llm.question || 'help' : null,
         lore: settings.engineLore !== false,
+        envelope: settings.engineEnvelope !== false,
     });
     return { state, errors, context };
 }

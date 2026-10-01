@@ -374,7 +374,7 @@ const SITUATIONS = ['stealth', 'loot', 'trade'];
 
 /**
  * Build the per-turn engine block.
- * opts: {input, outcome, corrections: string[], budget, rulesBudget, recentTurns, situations: string[], weights, lastReply, systemQuery}
+ * opts: {input, outcome, corrections: string[], budget, rulesBudget, recentTurns, situations: string[], weights, lastReply, systemQuery, lore, envelope}
  */
 export function buildContext(state, content, opts = {}) {
     const budget = opts.budget ?? DEFAULT_BUDGET;
@@ -465,8 +465,9 @@ export function buildContext(state, content, opts = {}) {
         rulesUsed += estimateTokens(t);
     }
     if (rulesTexts.length) add('rules', `RULES (situational):\n${rulesTexts.join('\n---\n')}`, 0, true);
-    // Gen 3.5: the World Envelope (src/v4/envelope.js): the causal limits of this reply, nothing for a scene without them
-    if (v4 && !opts.systemQuery) add('envelope', envelopeBlock(state, content), 0);
+    // Gen 3.5: the World Envelope (src/v4/envelope.js): the causal limits of this reply, nothing for a scene without them.
+    // Its own allowance, like the rules and the output line: it displaces no retrieved section (memories, lore)
+    if (v4 && !opts.systemQuery && opts.envelope !== false) add('envelope', envelopeBlock(state, content), 0, true);
     if (opts.corrections && opts.corrections.length) add('corrections', `CORRECTIONS (the previous reply conflicted with the engine; keep the engine's version):\n${opts.corrections.map((c) => `- ${c}`).join('\n')}`, 1);
     if (opts.systemQuery) {
         add('resolved', `SYSTEM QUERY (#system): ${opts.systemQuery}\nAnswer ONLY as the System (neutral, private, computer-like): no narration, no NPC reactions, story time and combat stay frozen. Use the state above, Core rules and player-known content; show formulas and arithmetic when useful; say INSUFFICIENT INFORMATION when data is missing. Never reveal hidden NPC data.`, 0);

@@ -1,8 +1,16 @@
-# Live-Test Runtime V4 (Engine 4.1.5)
+# Live-Test Runtime V4 (Engine 4.2.0, Gen 3.5)
 
-**Stand 01.10.2026, Build 4.1.5:** Jetzt steht der echte Live-Test an: [INTEGRATION_4_1.md §12](INTEGRATION_4_1.md#der-echte-live-test-build-415).
+**Stand 01.10.2026, Build 4.2.0 (Gen 3.5):** Branch `claude/gen35-world-envelope-2026-10-01`, Architektur und Messung in [ARCHITECTURE_GEN35.md](ARCHITECTURE_GEN35.md). Der Branch `claude/v4-integration-fixes-2026-09-30` (Build 4.1.5) bleibt als Vergleich unverändert.
 
-> **Die Kartenbeschreibung vollständig ersetzen:** die ganze Beschreibung löschen und den Inhalt von `content/narrator/Avereth_Narrator_Contract_v4.txt` einfügen. Danach einen **neuen Chat** beginnen. Die Statuszeile muss `narrator contract: current` zeigen. Der Lauf vom 30.09. 22:41 lief mit einem Vertrag von vor 4.1.2 ([§12](INTEGRATION_4_1.md#12-live-lauf-30092026-2241-build-414-und-korrekturen-415)).
+> **Die Kartenbeschreibung vollständig ersetzen:** die ganze Beschreibung löschen und den Inhalt von `content/narrator/Avereth_Narrator_Contract_v4.txt` einfügen (Revision 4.2.0: neue Zeile zum WORLD ENVELOPE). Danach einen **neuen Chat** beginnen. Die Statuszeile muss `narrator contract: current` zeigen.
+
+Was Gen 3.5 im Live-Test zusätzlich zeigen soll (der Testablauf der Liste unten gilt unverändert):
+- **WORLD ENVELOPE:** Der Engine-Block nennt friedliche Leute, scheue und defensive Tiere und wer Alaric etwas nehmen darf. Greift ein friedlicher NPC ohne Anlass an, lehnt die Engine das ab, und der nächste Block trägt eine Korrektur „… did not turn on Alaric …“. Bitte notieren, wie oft das passiert und ob die Prosa davor schon so erzählt war. Ein Hinterhalt durch Neue bleibt frei, ein Kampf nach einer Beleidigung oder Drohung auch.
+- **Erinnerungen:** In den Zeilen „last meaningful“ und „also remembers“ stehen keine Auszahlungen, Vertragsstatus, XP oder Ränge mehr.
+- **Nach einem Kampf:** Was die Geschichte während des Kampfes über Wunden und Bewegungen der Gegner sagte, steht danach nicht mehr unter ESTABLISHED FACTS oder RELEVANT.
+- **IR:** Im exportierten Chat trägt jede Spielernachricht `extra.avereth.ir` (Route, erkannte Namen, Akte). Damit lässt sich jede Fehldeutung einer Nachricht einer Stelle zuordnen.
+
+**Build 4.1.5:** Der echte Live-Test nach [INTEGRATION_4_1.md §12](INTEGRATION_4_1.md#der-echte-live-test-build-415). Der Lauf vom 30.09. 22:41 lief mit einem Vertrag von vor 4.1.2 ([§12](INTEGRATION_4_1.md#12-live-lauf-30092026-2241-build-414-und-korrekturen-415)).
 
 Der Test prüft:
 - einen Auftrag mit einem Tatwort im Titel annehmen (kein Schleichen);
@@ -42,7 +50,8 @@ Der Test prüft:
 
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
-| Einheiten, Golden-V12, Cluster, Laufzeit, Abdeckung, Nachspiel der Live-Läufe 28.09. und 30.09. (`tests/v4/live_0928.test.js`, `live_0930.test.js`, `live_0930b.test.js`, `live_0930c.test.js`) | `npm test` | 515/515 (4.1.5) |
+| Einheiten, Golden-V12, Cluster, Laufzeit, Abdeckung, Nachspiel der Live-Läufe 28.09. und 30.09. (`tests/v4/live_0928.test.js`, `live_0930.test.js`, `live_0930b.test.js`, `live_0930c.test.js`), Gen 3.5 (`tests/v4/gen35_*.test.js`) | `npm test` | 542/542 (4.2.0) |
+| Gen 3.5 gegen 4.1.5: die drei Live-Läufe durch beide Stände, jeder Unterschied einer erwarteten Kategorie zugeordnet | `node tools/v4_diff.mjs <Basis> .` | 122 Schritte, kein unerklärter Unterschied |
 | `index.js` in Chromium, SillyTavern nachgebaut: eine V3- und eine V4-Kampagne | `node tools/browser_smoke.mjs` | OK |
 | **Echtes SillyTavern 1.19**, V4: Begrüßung → V4-Kampagne, Erschaffung, drei V12-Züge; Mock-Provider hinter der Quelle Custom; die Statuszeile zeigt `narrator contract: current` | `AVERETH_ST_DIR=… node tools/st_live/run_v4.mjs` | 18/18 |
 | Echtes SillyTavern 1.19, V3-Kampagne (14 Züge, Kampf, Nachforderung, Reise) | `AVERETH_ST_DIR=… node tools/st_live/setup.mjs && … run.mjs` | 21/21 |
@@ -61,11 +70,11 @@ Der Test prüft:
 
 ## 2. Einrichtung in SillyTavern
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/v4-integration-fixes-2026-09-30` (Build 4.1.5) nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; eine alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile im Engine-Panel zeigt `Avereth Engine 4.1.5`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/gen35-world-envelope-2026-10-01` (Build 4.2.0) nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; eine alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile im Engine-Panel zeigt `Avereth Engine 4.2.0`.
 2. **Verbindung (wichtig):** API Connections → Chat Completion → Quelle **Custom (OpenAI-compatible)**, Endpoint und Modell wie bisher, einmal Connect. Die Include-Body-Parameter (z. B. `reasoning_effort`, `clear_thinking`) gelten auch für die drei Engine-Aufrufe, wie in P0 gemessen.
    - **Warum Custom:** Nur bei dieser Quelle schickt die Engine ihre Aufrufe genau so wie die P0-Werkzeuge, mit eigener Temperatur 0,1. Bei jeder anderen Quelle nimmt sie `generateRaw`; dann gelten Temperatur und Einstellungen des Erzähler-Presets. Das ist nicht gemessen.
 3. **Eine eigene Karte für V4** (empfohlen), z. B. die bisherige Karte duplizieren und „Avereth V4“ nennen:
-   - Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v4.txt`. Die ganze Beschreibung ersetzen, nicht zusammenführen; nach jedem neuen Build wieder. Zeile 2 nennt die Revision (`Contract revision: 4.1.5`);
+   - Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v4.txt`. Die ganze Beschreibung ersetzen, nicht zusammenführen; nach jedem neuen Build wieder. Zeile 2 nennt die Revision (`Contract revision: 4.2.0`);
    - Begrüßung = First Message v0.4 wie bisher (die Zeile `Location: … outside <City>, <Realm>` legt den Startort fest; für den Vergleich mit Lauf V12: `outside Redmarch, Veyrhold`).
    - Laufende V3-Chats behalten ihre Karte mit Vertrag v3.
 4. **Preset:** `presets/Avereth Narrator V4.json` importieren (Chat Completion Presets → Import) und wählen. Es ist das Avereth-Narrator-Preset mit neuem Schluss: „only the story text. No <avereth> block …“.

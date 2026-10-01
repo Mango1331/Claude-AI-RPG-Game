@@ -60,6 +60,7 @@ test('asking the witnesses where the beasts den is work, not a confirmation erra
     assert.equal(isHunt(withTalk('to witnesses about where the beasts den'), content), false, '4.2.0: "witness" made it a confirmation');
     assert.equal(isHunt(withTalk('the witnesses at the mill'), content), false, 'the witnesses are people to ask');
     assert.equal(isHunt(withTalk('the farmer about the sightings'), content), false);
+    assert.equal(isHunt(withTalk('Old Mara to verify the sightings and learn where they den'), content), false, 'a confirmation word beside an inquiry: still work');
     assert.equal(isHunt(withTalk('Harl Cotter to confirm the losses have stopped'), content), true, 'as 4.1.5');
     assert.equal(isHunt(withTalk('the reeve to witness the kill'), content), true);
     assert.equal(isHunt(withTalk('the steward to sign the proof'), content), true);

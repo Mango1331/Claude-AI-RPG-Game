@@ -264,7 +264,7 @@ export function ownedClause(clause, { store = 'note' } = {}) {
     if (ENGINE_STATUS.test(x)) return /\b(?:registered)\b/i.test(x) && !/\b(?:contract|quest|job|slip)\b/i.test(x) ? 'guild.standing' : 'quest.status';
     if (CLIENT_OWN.test(x)) return null;
     if (ENGINE_MONEY.test(x)) return /\b(?:xp|experience\s+points)\b/i.test(x) ? 'pc.progress' : /\b(?:guild\s+rank|promot\w*)\b/i.test(x) ? 'guild.standing' : 'pc.coin';
-    if (MONEY_AMOUNT.test(x) && (store === 'memory' ? GUILD_MONEY_TOPIC : MONEY_TOPIC).test(x)) return 'pc.coin';
+    if (MONEY_AMOUNT.test(x) && MONEY_TOPIC.test(x)) return 'pc.coin';
     return null;
 }
 

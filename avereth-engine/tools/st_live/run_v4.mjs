@@ -312,6 +312,8 @@ const checks = {
     hudUnderReplies: [0, 1, 2].every((i) => T(TURNS[i].player).huds === 2) && /Guild hall/.test(T(TURNS[2].player).hudText),
     proseShown: [0, 1, 2].every((i) => !/<avereth|"deltas"|PLAYER ACTIONS/.test(T(TURNS[i].player).shown)),
     statusLine: /runtime v4 \(LLM: custom endpoint\)/.test(end.status) && /integrity: OK/.test(end.status),
+    // the card holds this build's narrator contract, and the status line says so (4.1.5)
+    narratorContract: /narrator contract: current/.test(end.status),
     noPageErrors: pageErrors.length === 0,
 };
 fs.writeFileSync(path.join(HERE, 'result.json'), JSON.stringify({ checks, greeting, end, turns: turns.map((t) => ({ ...t, display: t.display.slice(0, 400) })), calls: calls.map((c) => ({ purpose: c.purpose, stream: c.stream, temperature: c.temperature, auth: c.auth ? 'Bearer <dummy>' : null, n: c.messages.length, lastUser: c.lastUser.slice(0, 80) })), keyInBrowser, pageErrors }, null, 1));

@@ -8,7 +8,7 @@ import { rankOf, deriveCharacter } from './derived.js';
 import { weaponFamily } from './content.js';
 import { roundHalfUp } from './util.js';
 
-export function scaleCreature(anchor, level, type, content) {
+export function scaleCreature(anchor, level, type, content, variation = null) {
     const g = level - 1;
     const sc = content.monsters.scaling;
     const p = {
@@ -18,6 +18,17 @@ export function scaleCreature(anchor, level, type, content) {
         mdef: Math.max(0, roundHalfUp((anchor.mdef + 1) * (1 + sc.mdef.coef * g) - 1)),
         init: roundHalfUp(anchor.init * (1 + sc.init.coef * g)),
     };
+    // individual variation (Content #7): an individual the story establishes as bigger or stronger than ordinary ones of
+    // its kind, after Level scaling and before Elite/Boss, fixed once (live run 30.09.2026 22:41: the "big boar" had the
+    // numbers of a common one)
+    if (variation === 'strong') {
+        const v = content.monsters.variation;
+        p.hp = roundHalfUp(p.hp * (1 + v.hp_atk_pct / 100));
+        p.atk = roundHalfUp(p.atk * (1 + v.hp_atk_pct / 100));
+        p.def += v.def_mdef;
+        p.mdef += v.def_mdef;
+        p.init += v.init;
+    }
     if (type === 'elite' || type === 'boss') {
         const m = content.monsters[type];
         p.hp = roundHalfUp(p.hp * m.hp);
@@ -27,7 +38,7 @@ export function scaleCreature(anchor, level, type, content) {
         p.init = p.init + m.init;
     }
     return {
-        model: 'creature', anchor: anchor.id, body_plan: anchor.name, level, rank: rankOf(level, content), type: type || 'normal',
+        model: 'creature', anchor: anchor.id, body_plan: anchor.name, level, rank: rankOf(level, content), type: type || 'normal', ...(variation === 'strong' ? { variation } : {}),
         max_hp: p.hp, atk: p.atk, def: p.def, mdef: p.mdef, init: p.init,
         attack: { name: anchor.attack, damage_type: anchor.damage_type, range: anchor.range },
         temperament: anchor.temperament,

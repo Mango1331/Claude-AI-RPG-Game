@@ -105,6 +105,12 @@ export function acceptContract(s, content, q, emit, { step } = {}) {
 }
 
 /** Legacy/advisory verification check: exact generated proof may still substantiate an older contract, but V4.0.5 no longer requires it when the story has already established the desired quest outcome. */
+// what a proof names, without the explanation the generator adds ("boar tusks, one pair per kill" → "boar tusks"), and a
+// unit by its first word ("pairs of leg joints" is "pairs"; live runs 30.09.2026 14:56 and 22:41: the trophies in hand
+// never matched their proof). How many were killed is the count's matter (contractReady), not the trophies'.
+const proofCore = (t) => String(t || '').toLowerCase().split(/[,;:(]|\s[-–—]\s/)[0].trim();
+const unitStem = (u) => String(u || '').toLowerCase().trim().split(/\s+/)[0].replace(/(?<!s)s$/, '') || null;
+
 export function checkProof(s, q) {
     const consume = [];
     const held = heldBy(s, 'pc');
@@ -112,7 +118,7 @@ export function checkProof(s, q) {
     for (const p of q.proof || []) {
         if (p.kind === 'object') {
             const need = p.qty ?? 1;
-            const matches = held.filter((x) => words(x.name).includes(words(p.what)) && (x.unit || null) === (p.unit || null));
+            const matches = held.filter((x) => words(x.name).includes(proofCore(p.what)) && unitStem(x.unit) === unitStem(p.unit));
             const have = matches.reduce((n, x) => n + (x.qty ?? 1), 0);
             if (have < need) return { ok: false, reason: `${need} ${p.unit ?? ''} of ${p.what} missing (has ${have})`.replace(/\s+/g, ' ') };
             if (p.consume !== false) {
@@ -164,6 +170,35 @@ export function defeatTally(s, content, q) {
 /** "3 of 4 bog striders": the tally as the engine block and the catalog show it. */
 export const tallyText = (tally) => tally.map((t) => `${t.done} of ${t.qty} ${t.what}`).join('; ');
 
+// What a quest note may not keep as memory: the engine's own state of a contract (live run 30.09.2026 22:41:
+// "Contract registered and active; payout 60 cp from the Alderwatch drawer" was stored while it was still on the
+// board): its formal status (registered, logged, accepted, active, completed, turned in, failed), its payout, Quest XP,
+// Guild rank and promotion. Routes, contacts, observations, local hints, times and plausible verification stay; so does
+// a client's own bonus.
+const ENGINE_STATUS = /\b(?:registered|logged|turned\s+in|handed\s+in|(?:contract|quest|job|slip)\b[^.;]{0,40}\b(?:active|accepted|listed|complete|completed|closed|failed|finished))\b|^\W*(?:active|accepted|completed|closed|failed)\b/i;
+const ENGINE_MONEY = /\b(?:payouts?|rewards?|pays?\s+out|paid\s+out|xp|experience\s+points|guild\s+rank|promot\w*)\b/i;
+const MONEY_AMOUNT = /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|a\s+hundred)\s*(?:cp|coppers?|silvers?|golds?)\b/i;
+const MONEY_TOPIC = /\b(?:pay\w*|reward\w*|fees?|contract|bount(?:y|ies)|drawer|posted)\b/i;
+const CLIENT_OWN = /\b(?:bonus|own\s+purse|from\s+(?:his|her|their)\s+own)\b/i;
+/** A clause of a quest note that states the engine's state of the contract (its status, payout, XP, rank). */
+export const engineClause = (x) => ENGINE_STATUS.test(x) || (!CLIENT_OWN.test(x) && (ENGINE_MONEY.test(x) || (MONEY_AMOUNT.test(x) && MONEY_TOPIC.test(x))));
+/** The contract state a text claims ("registered and active", "turned in", "failed"), or null. */
+export function claimedStatus(x) {
+    if (/\b(?:complete|completed|turned\s+in|handed\s+in|closed|finished|paid\s+out)\b/i.test(x)) return 'completed';
+    if (/\bfailed\b/i.test(x)) return 'failed';
+    if (/\b(?:registered|logged|accepted|active|stamped)\b/i.test(x)) return 'active';
+    return null;
+}
+/** The correction when the story claimed a state the contract is not in (it keeps the engine's). */
+export function statusCorrection(q) {
+    const state = {
+        listed: 'still LISTED on the Guild board: Alaric has not accepted it and nothing is logged for him',
+        offered: 'only OFFERED: he has not accepted it', active: 'ACTIVE: accepted, not yet turned in, nothing paid',
+        completed: 'COMPLETED: turned in and paid once', failed: 'FAILED', abandoned: 'given up',
+    }[q.status] || q.status;
+    return `"${q.title}" is ${state} (the engine's state; the story does not change it).`;
+}
+
 /** The DEFEAT objectives whose number the engine's count has not reached yet. */
 export const countShort = (s, content, q) => defeatTally(s, content, q).filter((t) => t.done < t.qty);
 
@@ -187,11 +222,23 @@ export function readyText(s, content, q) {
 // bandits") is no hunt either: body parts are no proof for people (review of 4.1.3).
 const KILL_WORK = new Set(['ATTACK', 'DEFEAT']);
 const HUNT_SUPPORT = new Set(['FIND', 'GO', 'DEFEND']);
+// An objective whose only work is having the result confirmed, signed, witnessed or inspected ("TALK Harl Cotter to
+// confirm the losses have stopped", live 30.09.2026 22:41) is no work of its own beside the kills: a hunt is proven by
+// the trophies at a Guild hall. A talk that is work (asking where the pack dens) keeps its place and makes it mixed.
+const CONFIRMS = /\b(?:confirm\w*|sign(?:s|ed|ing|ature|atures|-?off)?|countersign\w*|verif\w*|vouch\w*|witness\w*|inspect\w*|attest\w*|receipt)\b/i;
+const confirmsOnly = (o) => ['TALK', 'GET', 'GIVE'].includes(o.verb) && CONFIRMS.test(o.what || '');
 /** A hunt or cull contract (proof: trophies of the kills, no local sign-off); mixed work and work against people are none. */
 export const isHunt = (q, content) => {
-    const objectives = q.objectives || [];
+    const objectives = (q.objectives || []).filter((o) => !confirmsOnly(o));
     return objectives.some((o) => KILL_WORK.has(o.verb)) && objectives.every((o) => KILL_WORK.has(o.verb) || HUNT_SUPPORT.has(o.verb))
         && !objectives.some((o) => (KILL_WORK.has(o.verb) || o.verb === 'FIND') && namesPeople(o.what, content));
+};
+/** A generated listing as the Guild books it: a hunt without the confirmation errands the generator added anyway. */
+export const huntObjectives = (l, content) => (isHunt(l, content) ? l.objectives.filter((o) => !confirmsOnly(o)) : l.objectives);
+/** The trophies a hunt is proven by (its object proofs), else the kills' own. */
+export const trophyText = (q) => {
+    const objects = (q.proof || []).filter((p) => p.kind === 'object');
+    return objects.length ? proofText({ proof: objects }) : 'trophies of the kills';
 };
 
 /** Canonical objectives in compact narrator-facing prose (the Board generator owns their structure). */
@@ -355,7 +402,7 @@ export function bookBoard(s, content, need, listings, emit) {
         const quest = {
             id, title: String(l.title).slice(0, 80), kind: 'guild_contract', client: String(l.client || '').slice(0, 80) || null, giver: null,
             rank: need.rank, level: l.level, qtype: l.qtype, payout_cp: l.payout_cp, reward: `${l.payout_cp} cp`,
-            task: l.task ? String(l.task).slice(0, 240) : null, desired_end_state: l.desired_end_state, objectives: l.objectives.map((o, i) => ({ id: `o${i + 1}`, ...o, status: 'open' })),
+            task: l.task ? String(l.task).slice(0, 240) : null, desired_end_state: l.desired_end_state, objectives: huntObjectives(l, content).map((o, i) => ({ id: `o${i + 1}`, ...o, status: 'open' })),
             proof: l.proof.map((p, i) => ({ id: `p${i + 1}`, ...p, consume: p.kind === 'object' ? p.consume !== false : undefined })),
             source: { board: `${need.branch}.guild_hall`, branch: need.branch, listed: { turn: s.turn, minute: s.clock.minute, day: need.day } },
             schedule: { starts_at: null, deadline: null }, status: 'listed', taker: null, history: [{ turn: s.turn, minute: s.clock.minute, status: 'listed' }],

@@ -1,0 +1,941 @@
+{
+ "note": "Live run 30.09.2026 22:41 (SillyTavern, Runtime V4, build 4.1.4; docs/INTEGRATION_4_1.md §12): the chat JSONL as the chat stores it. Per player message the interpreter commands the record kept (none for V3-routed messages: the quest acceptance of message 15 was misread as stealth, the combat), per reply the narrator prose and the extractor answer the record kept; the Board generator listings from the quest.created events of message 13; the seed from campaign.started. No request data, no provider data.",
+ "seed": 973382073,
+ "greeting": "*Cool wind moves through the rough grass around Alaric Red's boots.*\r\n\r\n*The last thing that belongs to Earth is still there in memory—an old life, a world without visible mana, Classes, or this impossible second beginning. The present is different: the smell of soil and distant woodsmoke, an unfamiliar sky, and stone walls beyond the public road.*\r\n\r\n*Alaric Red is already standing on an uncultivated roadside verge outside the nearby city. Cultivated fields and fenced holdings begin farther away. No one is close enough to have witnessed the instant of arrival.*\r\n\r\n*The body is Human, healthy, and eighteen years old. Simple traveler's clothes are already being worn; a small pouch holding five silver rests at the belt. The memories are still from Earth.*\r\n\r\n*A translucent interface opens across Alaric Red's vision.*\r\n\r\n`SYSTEM INITIALIZATION COMPLETE`\r\n`Origin: Earth`\r\n`World: Avereth`\r\n`Race: Human`\r\n`Age: 18`\r\n`Level: 1 | Rank: F`\r\n\r\n`BASE STATS`\r\n`STR 5 | VIT 5 | AGI 5 | INT 5 | PER 5 | WIL 5`\r\n\r\n`Location: Public roadside verge outside Alderwatch, Valedorn Crown`\r\n`Arrival Witnesses: NONE`\r\n`Starting Possessions: Simple Traveler's Clothes | Small Pouch | 5 Silver`\r\n`Local Common Language: Integrated`\r\n`Mandatory Quest: NONE`\r\n\r\n`CHARACTER CREATION — STEP 1/2`\r\n`Choose your Base Class:`\r\n\r\n`Warrior   — Favored Stats: STR / VIT`\r\n`Mage      — Favored Stats: INT / WIL`\r\n`Guardian  — Favored Stats: VIT / WIL`\r\n`Duelist   — Favored Stats: STR / AGI`\r\n`Ranger    — Favored Stats: AGI / PER`\r\n\r\n`Your chosen Class immediately applies +1 to both Favored Stats at Level 1.`\r\n`After choosing a Class, select exactly 2 Skills from that Class's Base Skill Pool.`\r\n\r\n`Reply with your Class choice.`\r\n\r\n*The System waits. Story time does not move during Character Creation.*\r\n",
+ "creation": [
+  "Mage",
+  "Arcane Bolt + Flame Lance"
+ ],
+ "board_msg": 13,
+ "listings": [
+  {
+   "title": "Cull the Gnaw-Hide Boars at the Mill Road Turnips",
+   "client": "Harl Cotter, turnip farmer of the Mill Road fields",
+   "rank": "Novice",
+   "level": 1,
+   "qtype": "minor",
+   "payout_cp": 60,
+   "task": "Hunt down the three tusked boars that have been breaking into the turnip pens off the Mill Road and put them down before the whole autumn crop is rooted up.",
+   "desired_end_state": "The pen-breaking boars are dead and Cotter's turnip fields are safe through harvest.",
+   "objectives": [
+    {
+     "verb": "FIND",
+     "what": "the boars' wallow and trail near the turnip pens",
+     "qty": null,
+     "unit": null,
+     "where": "Mill Road fields outside Alderwatch"
+    },
+    {
+     "verb": "DEFEAT",
+     "what": "tusked pen-breaking boars",
+     "qty": 3,
+     "unit": "boars",
+     "where": "Mill Road fields and the wood edge beyond"
+    },
+    {
+     "verb": "TALK",
+     "what": "Harl Cotter to confirm the losses have stopped",
+     "qty": 1,
+     "unit": null,
+     "where": "Cotter farmstead, Mill Road"
+    }
+   ],
+   "proof": [
+    {
+     "kind": "object",
+     "what": "boar tusks, one pair per kill",
+     "qty": 3,
+     "unit": "pairs",
+     "on": null,
+     "consume": false
+    }
+   ]
+  },
+  {
+   "title": "Clear the Mire Frogs from the Eel-Weir Sheds",
+   "client": "The Reed Flats Eel-Wrights' Guild",
+   "rank": "Novice",
+   "level": 2,
+   "qtype": "standard",
+   "payout_cp": 110,
+   "task": "Drive off or kill the swollen mire frogs nesting in the eel-weir sheds on the Reed Flats so the wrights can smoke this season's catch without their stores being fouled.",
+   "desired_end_state": "The weir sheds are cleared of mire frogs and the eel-wrights resume smoking their catch.",
+   "objectives": [
+    {
+     "verb": "GO",
+     "what": "the eel-weir sheds",
+     "qty": null,
+     "unit": null,
+     "where": "Reed Flats, south of Alderwatch"
+    },
+    {
+     "verb": "DEFEAT",
+     "what": "mire frogs nesting in the sheds",
+     "qty": 6,
+     "unit": "frogs",
+     "where": "eel-weir sheds, Reed Flats"
+    },
+    {
+     "verb": "DEFEND",
+     "what": "the smoked-eel stores while the sheds are cleared",
+     "qty": null,
+     "unit": null,
+     "where": "eel-weir sheds, Reed Flats"
+    }
+   ],
+   "proof": [
+    {
+     "kind": "object",
+     "what": "mire frog leg joints",
+     "qty": 6,
+     "unit": "joints",
+     "on": null,
+     "consume": false
+    }
+   ]
+  },
+  {
+   "title": "Escort the Dyer's Wagon to Fenwick Landing",
+   "client": "Mistress Sela Varn, dyer of the Clothmarket",
+   "rank": "Novice",
+   "level": 2,
+   "qtype": "standard",
+   "payout_cp": 140,
+   "task": "Escort Sela Varn's mule wagon of dyed cloth along the river road to Fenwick Landing and see her factor takes delivery untroubled.",
+   "desired_end_state": "The wagon and its cloth arrive at Fenwick Landing and the factor accepts delivery.",
+   "objectives": [
+    {
+     "verb": "ESCORT",
+     "what": "the dyer's mule wagon",
+     "qty": 1,
+     "unit": "wagon",
+     "where": "river road from Alderwatch to Fenwick Landing"
+    },
+    {
+     "verb": "GIVE",
+     "what": "the bolt manifest to Varn's factor",
+     "qty": 1,
+     "unit": "manifest",
+     "where": "Fenwick Landing docks"
+    }
+   ],
+   "proof": []
+  },
+  {
+   "title": "Carry the Chirurgeon's Satchel to the Quarry Camp",
+   "client": "Chirurgeon Odd Martel, Alderwatch lowtown surgery",
+   "rank": "Novice",
+   "level": 1,
+   "qtype": "minor",
+   "payout_cp": 90,
+   "task": "Deliver Martel's sealed satchel of splints and fever draughts to the overseer at the Greyfell quarry camp before the injured there worsen.",
+   "desired_end_state": "The satchel reaches the quarry overseer intact and in time to treat the injured.",
+   "objectives": [
+    {
+     "verb": "DELIVER",
+     "what": "sealed chirurgeon's satchel",
+     "qty": 1,
+     "unit": "satchel",
+     "where": "Greyfell quarry camp, half a day north"
+    },
+    {
+     "verb": "TALK",
+     "what": "the quarry overseer to confirm receipt",
+     "qty": 1,
+     "unit": null,
+     "where": "Greyfell quarry camp"
+    }
+   ],
+   "proof": []
+  },
+  {
+   "title": "Thin the Feral Dog Pack at the Tannery Rows",
+   "client": "Bram Odo, tannery foreman of the Rows",
+   "rank": "Novice",
+   "level": 1,
+   "qtype": "minor",
+   "payout_cp": 70,
+   "task": "Hunt down the feral dog pack that has been denning behind the tannery curing sheds and cull it before it takes another hide or bites a worker.",
+   "desired_end_state": "The feral pack is culled and the tannery yard is safe for the workers again.",
+   "objectives": [
+    {
+     "verb": "FIND",
+     "what": "the pack's den behind the curing sheds",
+     "qty": null,
+     "unit": null,
+     "where": "Tannery Rows, Alderwatch outskirts"
+    },
+    {
+     "verb": "DEFEAT",
+     "what": "feral dogs of the tannery pack",
+     "qty": 4,
+     "unit": "dogs",
+     "where": "Tannery Rows and the ditch-line dens"
+    }
+   ],
+   "proof": [
+    {
+     "kind": "object",
+     "what": "dog ears",
+     "qty": 4,
+     "unit": "pairs",
+     "on": null,
+     "consume": false
+    }
+   ]
+  }
+ ],
+ "turns": [
+  {
+   "i": 5,
+   "player": "*i walk into the city ahead of me and make my way to the Adventurers Guild*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": "loc.alderwatch",
+     "quote": "i walk into the city ahead of me"
+    },
+    {
+     "seq": 2,
+     "type": "go",
+     "to": "loc.alderwatch.guild_hall",
+     "quote": "make my way to the Adventurers Guild"
+    }
+   ]
+  },
+  {
+   "i": 6,
+   "reply": "The road took him down a shallow rise, and Alderwatch grew as he walked — first the wall, grey stone patched in places with darker, newer masonry, then the roofs behind it, then the sound: cart wheels on packed dirt, a dog barking somewhere, the cry of a woman selling early apples.\n\nThe gate stood open. Two guards in the city's colors leaned against the stone, watching traffic with the boredom of men halfway through a shift. One glanced at Alaric's staff and robes, weighed them against the absence of any visible blade, and looked away again. Nobody asked him anything. A carter ahead of him paid a copper for his load of turnips; Alaric passed through for nothing at all, into a street that smelled of horses, bread and river water.\n\nInside, the city opened out. Wide cobbled ways branched off the gate square, signs hanging over shopfronts: a smith, a chandler, a moneychanger with a bright brass scale painted above the door. People moved with the purpose of those who had somewhere to be. Nobody gave him a second look beyond the ordinary one.\n\nHe asked the way once, of a woman scrubbing a doorstep, who jerked her chin down a side lane and went back to her work without a word.\n\nThe Guild hall sat where she'd pointed — a broad stone building with a tall door and a wooden board beside it, nailed over with notices: lost livestock, a reward for wolf scalps, a notice about road tolls past someplace called Hemsford. Through the open door came warm air and noise: voices, the clink of mugs this early, boots on floorboards.\n\nThe interior was long and smoke-darkened, lit by windows high on one wall. A long counter ran along the right, behind it shelves of ledgers and two clerks. On the left wall hung a great board thick with pinned contracts. A dozen or so people were scattered through the room — a table of armed men dicing, a hooded figure drinking alone, a pair of travelers arguing over a map near the hearth.\n\nA clerk behind the counter, a thin man with ink-stained fingers, looked up from his ledger as Alaric approached it.\n\n\"Morning. Registering, or taking work?\"",
+   "answer": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": "loc.alderwatch",
+      "with": null
+     },
+     "2": {
+      "arrived": true,
+      "at": "loc.alderwatch.guild_hall",
+      "with": null
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 30
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": "loc.alderwatch",
+      "forced_by": null,
+      "with": null
+     },
+     {
+      "seq": 3,
+      "type": "arrive",
+      "at": "loc.alderwatch.guild_hall",
+      "forced_by": null,
+      "with": null
+     },
+     {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "clerk_guild_alderwatch",
+      "name": null,
+      "role": "Guild clerk",
+      "desc": [
+       "thin man with ink-stained fingers",
+       "asks whether Alaric is registering or taking work"
+      ],
+      "present": true,
+      "at": "loc.alderwatch.guild_hall",
+      "band": "ENGAGED"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "A notice board beside the Guild hall door lists lost livestock, a wolf-scalp reward and road tolls past Hemsford",
+      "p": "notices",
+      "o": "posted"
+     }
+    ]
+   }
+  },
+  {
+   "i": 7,
+   "player": "Hello my name is Alaric Red and im here to register",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "guild.register",
+     "quote": "im here to register"
+    }
+   ]
+  },
+  {
+   "i": 8,
+   "reply": "\"Alaric Red.\" The clerk said it back flatly, already pulling a ledger toward himself and wetting his pen. \"One moment.\"\n\nHe flipped to a fresh page and began writing — name, date, a column of small ticks. \"Registration's a one-time fee. Two silver. That puts you on the rolls as Novice, gives you access to the contract board, branch access across the kingdoms — any city with a Guild hall honors the registration.\" He glanced up. \"What you're capable of is a separate matter. Power Rank's measured, not granted. Some of it shows on the contracts you're allowed to take, eventually. You start small either way.\"\n\nThe pen scratched on. \"You'll want to state your Class for the record — whatever it is you do. Helps the desk match you to work. And understand the contract terms before you take one: posted reward's fixed, client bonuses are separate, and proof gets checked at turn-in, not before.\"\n\nHe finished writing, blotted it, and looked at Alaric properly for the first time. Behind him, one of the dice players swore over a bad throw; nobody else was paying attention.\n\n\"Two silver and a mark or a thumbprint at the bottom, and you're a member. Paying?\"",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "learn",
+      "who": "npc.clerk_guild_alderwatch",
+      "s": "Alaric Red",
+      "p": "name",
+      "o": "Alaric Red",
+      "how": "witnessed"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "Guild registration",
+      "p": "terms",
+      "o": "one-time fee of two silver; grants Novice rank, contract board access, and branch access across the kingdoms; Power Rank is measured separately, not granted"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "Guild contracts",
+      "p": "terms",
+      "o": "posted reward is fixed, client bonuses are separate, and proof is checked at turn-in, not before"
+     }
+    ]
+   }
+  },
+  {
+   "i": 11,
+   "player": "*i pay the 2 Silver and then put my thumppront at the bottom* Im a Mage",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "offer.accept",
+     "offer": "offer.registration",
+     "lines": [
+      "l1"
+     ],
+     "qty": null,
+     "quote": "i pay the 2 Silver and then put my thumppront at the bottom"
+    }
+   ]
+  },
+  {
+   "i": 12,
+   "reply": "The two silver crossed the counter, and the clerk counted them without hurry, swept them into a drawer, and turned the ledger around so Alaric could reach the ink pad — a small black cushion, worn shiny in the middle.\n\n\"Mage,\" he repeated, writing it in. \"Fine. Press it here, hard, and roll it a little. Smudges cost everyone time.\"\n\nThe thumbprint went down dark and complete. The clerk blotted it, closed the ledger, and reached beneath the counter for a small wooden case. Inside, on a bed of felt, lay a thin bronze plate the size of a coin, stamped with the Guild's sigil and a fresh-punched mark.\n\n\"Your plate. Don't lose it — replacement's another fee. That goes with you to any branch.\" He set it on the counter between them, then took from his elbow a squat crystal on a brass stand and slid it to Alaric's side. \"Hand on this. Standard part of registration — it reads your Power Rank, that's all, so the desk knows what you actually are rather than what you say you are. Nothing it keeps. Everybody does it.\"\n\nThe crystal was cool and slightly oily to the touch. It lit from within with a dull amber glow, held it for a breath, and faded.\n\n\"F,\" the clerk said, glancing at the reading, and noted it in the ledger with a small tick. \"Novice rank. That's everyone's start — means you can take Quest Rank F contracts off the board.\" He nodded toward the far wall, where the pinned notices hung in ragged rows. \"Board's over there. Anything at your rank, you bring the slip to me and I'll log it active. Proof checked at turn-in, as I said.\"\n\nHe went back to his ledger. Behind Alaric, the dice players were racking up a new game; the hooded figure by the wall had ordered something warmer.\n\nThe clerk paused, pen still moving. \"Anything else, or are you browsing?\"",
+   "answer": {
+    "expected": {},
+    "deltas": []
+   }
+  },
+  {
+   "i": 13,
+   "player": "*i shake my head and then walk to the Novice Quest board looking at it*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "board.read",
+     "rank": "Novice",
+     "quote": "walk to the Novice Quest board looking at it"
+    }
+   ]
+  },
+  {
+   "i": 14,
+   "reply": "The Novice section took up the lower half of the board, pinned close together on ragged paper. Alaric read down the column.\n\n**Cull the Gnaw-Hide Boars at the Mill Road Turnips** — client: Harl Cotter, turnip farmer of the Mill Road fields · reward: 60 cp · Hunt down the three tusked boars that have been breaking into the turnip pens off the Mill Road and put them down before the whole autumn crop is rooted up.\n\n**Clear the Mire Frogs from the Eel-Weir Sheds** — client: The Reed Flats Eel-Wrights' Guild · reward: 110 cp · Drive off or kill the swollen mire frogs nesting in the eel-weir sheds on the Reed Flats so the wrights can smoke this season's catch without their stores being fouled.\n\n**Escort the Dyer's Wagon to Fenwick Landing** — client: Mistress Sela Varn, dyer of the Clothmarket · reward: 140 cp · Escort Sela Varn's mule wagon of dyed cloth along the river road to Fenwick Landing and see her factor takes delivery untroubled.\n\n**Carry the Chirurgeon's Satchel to the Quarry Camp** — client: Chirurgeon Odd Martel, Alderwatch lowtown surgery · reward: 90 cp · Deliver Martel's sealed satchel of splints and fever draughts to the overseer at the Greyfell quarry camp before the injured there worsen.\n\n**Thin the Feral Dog Pack at the Tannery Rows** — client: Bram Odo, tannery foreman of the Rows · reward: 70 cp · Hunt down the feral dog pack that has been denning behind the tannery curing sheds and cull it before it takes another hide or bites a worker.\n\nSome of the pins had been pulled and replaced so often the paper around the holes was soft and grey. The boar notice was the oldest; the escort contract looked freshest, its ink barely a day dark.\n\nThe clerk's pen kept scratching behind him. Near the hearth, one of the map-arguing travelers said something sharp about river fords and the other snapped back.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "boar notice",
+      "p": "age",
+      "o": "oldest notice on the Novice board, pins pulled and replaced often"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "escort contract notice",
+      "p": "age",
+      "o": "freshest notice on the Novice board, its ink barely a day dark"
+     }
+    ]
+   }
+  },
+  {
+   "i": 15,
+   "player": "*i take the Cull the Gnaw Hide Boars at the Mill Road Turnips Quest and register it at the front dest*",
+   "route": "v3"
+  },
+  {
+   "i": 16,
+   "reply": "The notice came off its pin with a dry tug, and Alaric had it in hand and was back across the floor before anyone by the hearth looked up. The clerk, absorbed in his ledger, started slightly when the slip appeared on the counter in front of him.\n\n\"Hm.\" He took it, held it at arm's length, and squinted at the old paper. \"The boars. Harl Cotter's turnip fields, off the Mill Road.\" He opened the ledger to a fresh line and began copying out the details in a small, cramped hand. \"Sixty copper, posted and fixed. Cotter's been through three of you already this season, mind — the boars come back after dark, and he's lost patience with the lot of you. Don't take it as a slight. He's a turnip farmer with rooted-up fields.\"\n\nHe finished the entry, initialed it, and slid the slip back across with the Guild's stamp pressed into its corner.\n\n\"Contract's active as of now. Proof at turn-in — tusks will do, or Cotter's own mark if he'd rather sign for them alive or dead, his words. You close it at a front desk, this one or any other branch, and the payout comes from the drawer here.\" He dipped his pen again. \"Mill Road's the south road out of the walled gate; fields start past the second mile marker, turnip pens on the east side. You'll smell them before you see them.\"\n\nHe looked up once more. \"That's you logged. Good hunting.\"",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "quest.detail",
+      "quest": "quest.cull_the_gnaw_hide_boars_at_the_mill_road_turnips",
+      "note": "Contract registered and active; payout 60 cp from the Alderwatch drawer. Proof at turn-in: boar tusks, or Harl Cotter's own mark signing for them alive or dead. Cotter has already gone through three adventurers this season; the boars return after dark and he has lost patience.",
+      "schedule": null
+     },
+     {
+      "seq": 2,
+      "type": "quest.detail",
+      "quest": "quest.cull_the_gnaw_hide_boars_at_the_mill_road_turnips",
+      "note": "Route: Mill Road is the south road out of Alderwatch's walled gate; turnip fields start past the second mile marker, pens on the east side; the boars can be smelled before seen.",
+      "schedule": null
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "quest.cull_the_gnaw_hide_boars_at_the_mill_road_turnips",
+      "p": "status",
+      "o": "active with Guild stamp on the slip, logged by the Alderwatch clerk"
+     }
+    ]
+   }
+  },
+  {
+   "i": 19,
+   "player": "*I nod and travel to the Mill Road Turnips*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": {
+      "new": "Mill Road Turnips"
+     },
+     "quote": "I nod and travel to the Mill Road Turnips"
+    }
+   ]
+  },
+  {
+   "i": 20,
+   "reply": "The south gate let him out onto a hard-packed road rutted by cartwheels, hedgerows thick with late blackberries on either side. Traffic was thin: a drover with two cows, a boy leading a donkey loaded with firewood, both of them giving the robed young man with the staff a look and nothing more.\n\nThe second mile marker leaned in the grass, its carved numeral weathered to a shallow groove. Past it the hedge broke open into fields, and the smell arrived as promised — turned earth, dung, and under it something sour and old.\n\nThe turnip pens sat on the east side of the road: post-and-rail enclosures around long mounds of harvested roots, and beyond them the wide field where the ground had been torn. It looked like a plow had run mad through it — soil heaved up in great ragged slabs, rows churned together, fence rails snapped flat in two places where something heavy and determined had come through. The mud held tracks the size of a man's spread hand, cloven and deep, pressed in by weight rather than number. Three sets at least, of slightly different sizes, though how old the freshest was Alaric couldn't say by eye.\n\nA figure was working the far edge of the wreckage with a mattock, straightening what rails could be straightened. Broad, grey-bearded, moving with the slow fury of a man redoing a month's labor. He hadn't noticed anyone on the road yet, or had stopped caring about visitors some weeks ago.\n\nBeyond the ruined field, tree line and hedgerow ran down toward a shallow wooded valley — the likeliest place for boars to den within rooting distance of a turnip crop.",
+   "answer": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Mill Road Turnips",
+        "kind": "wilderness",
+        "parent": "loc.alderwatch"
+       }
+      },
+      "with": null
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 60
+     },
+     {
+      "seq": 2,
+      "type": "arrive",
+      "at": {
+       "new": {
+        "name": "Mill Road Turnips",
+        "kind": "wilderness",
+        "parent": "loc.alderwatch"
+       }
+      },
+      "forced_by": null,
+      "with": null
+     },
+     {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "npc.cotter_farmer",
+      "name": null,
+      "role": "broad grey-bearded farmer repairing broken fence rails with a mattock",
+      "desc": [
+       "broad, grey-bearded, working the far edge of the ruined field with slow fury"
+      ],
+      "present": true,
+      "at": {
+       "new": {
+        "name": "Mill Road Turnips",
+        "kind": "wilderness",
+        "parent": "loc.alderwatch"
+       }
+      },
+      "band": "LONG"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Mill Road Turnips field",
+      "p": "shows",
+      "o": "heaved and churned soil, snapped fence rails, and at least three sets of large cloven boar tracks of different sizes"
+     },
+     {
+      "seq": 5,
+      "type": "fact",
+      "s": "wooded valley beyond the ruined field",
+      "p": "is likeliest den ground for",
+      "o": "the pen-breaking boars"
+     },
+     {
+      "seq": 6,
+      "type": "quest.detail",
+      "quest": "quest.cull_the_gnaw_hide_boars_at_the_mill_road_turnips",
+      "note": "Turnip pens east of the road are wrecked: churned soil, snapped rails, at least three sets of large cloven boar tracks of differing sizes; a wooded valley beyond the field is the likeliest den site; a grey-bearded farmer works the wreckage.",
+      "schedule": null
+     }
+    ]
+   }
+  },
+  {
+   "i": 21,
+   "player": "*I follow down the tree line to look for the boars*",
+   "commands": [
+    {
+     "seq": 1,
+     "type": "go",
+     "to": {
+      "new": "down the tree line to look for the boars"
+     },
+     "quote": "I follow down the tree line to look for the boars"
+    }
+   ]
+  },
+  {
+   "i": 22,
+   "reply": "The ground under the trees was cooler, leaf-rot soft underfoot, the canopy thin enough that midmorning light came down in slanted bars. Alaric kept to the edge where field met wood, staff in hand, and the going was quiet enough to hear the farmer's mattock fade behind him into dull rhythm and then nothing.\n\nThe signs came quickly once he was among the trees. A sapling stripped of bark at hip height, the marks broad and low. Mud churned along a hollow where a stream trickled down from the valley — a wallow, wide as a cart track, the water in it fouled brown and still stirring faintly at one edge. The sour smell from the field was stronger here, concentrated, layered with musk and something ranker.\n\nDownslope, the valley thickened. Oaks and hazel crowded a fold of ground between two low ridges, and in the shadow of the fold something pale showed through the undergrowth — snapped branches, pushed flat, a bedding patch of matted grass and mud broad enough for more than one animal.\n\nThen a sound carried up through the trees: a low, guttural huffing, and the knock of something hard against wood. Below and to the left, maybe forty paces off, a hazel bush shivered with no wind to move it. Through the leaves a grey-bristled flank shifted, and the curved back of a second animal rooted at the ground beneath it, grunting steadily to itself. The biggest of the three — if these were two of the three — was not in view, or was the dark mass half-hidden in the deeper shadow of the fold.\n\nThe breeze sat still. The boars had not lifted their heads.",
+   "answer": {
+    "expected": {
+     "1": {
+      "arrived": true,
+      "at": {
+       "new": {
+        "name": "Woodland Edge below the Turnip Fields",
+        "kind": "wilderness",
+        "parent": "loc.mill_road_turnips"
+       }
+      },
+      "with": null
+     }
+    },
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "time",
+      "minutes": 15
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "boar_sign",
+      "p": "found_at",
+      "o": "stripped sapling, churned wallow by a stream, and a large bedding patch in the wooded fold below the turnip fields"
+     },
+     {
+      "seq": 3,
+      "type": "creature.new",
+      "ref": "cre.boar_pair",
+      "species": "wild boar",
+      "anchor": "boar",
+      "desc": [
+       "grey-bristled boars rooting beneath a hazel bush in the wooded fold, heads down, unaware of Alaric"
+      ],
+      "count": 2,
+      "present": true,
+      "band": "LONG"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "third_boar",
+      "p": "possibly_hidden_as",
+      "o": "a dark mass half-hidden in the deeper shadow of the fold, likely the biggest of the three boars"
+     },
+     {
+      "seq": 5,
+      "type": "aware",
+      "who": "cre.boar_pair",
+      "level": "unaware"
+     }
+    ]
+   }
+  },
+  {
+   "i": 23,
+   "player": "*i Arcane Bolt Wild Boar A from the distance*",
+   "route": "v3"
+  },
+  {
+   "i": 24,
+   "reply": "The bolt guttered out of the staff's tip and died halfway down the slope, its light thinning to a spark and then nothing a dozen paces short of the hazel bush. Forty paces was past the reach of the spell; the air simply refused to carry it further.\n\nThe boars kept rooting. Neither head came up. The sound of their feeding went on — the grunt, the knock of tusks against root, the tear of earth — unhurried and oblivious.\n\nThe one in the deeper shadow of the fold had not moved either, or at least showed no more than it had before.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "Arcane Bolt",
+      "p": "range",
+      "o": "died a dozen paces short of the hazel bush; forty paces is past the spell's reach"
+     },
+     {
+      "seq": 2,
+      "type": "position",
+      "who": "mon.creboar_pair_1",
+      "band": "LONG",
+      "cover": "none"
+     },
+     {
+      "seq": 3,
+      "type": "aware",
+      "who": "mon.creboar_pair_1",
+      "level": "unaware"
+     },
+     {
+      "seq": 4,
+      "type": "aware",
+      "who": "mon.creboar_pair_2",
+      "level": "unaware"
+     }
+    ]
+   }
+  },
+  {
+   "i": 25,
+   "player": "*i crouch down and sneak closer into medium range*",
+   "route": "v3"
+  },
+  {
+   "i": 26,
+   "reply": "The leaf-rot gave under his boots without complaint. Alaric went down the slope slow and low, weight on the outside of each foot, staff held flat against his forearm to keep it from catching the brush. The rooting grunts below covered the small sounds he made — a twig pressed rather than snapped, a boot settling into soft ground.\n\nTwenty paces closed to fifteen, and the hazel bush's shadow swallowed him. The boars never stopped. The grey-bristled one — nearer now, plain to see — was a big sow or a young boar, ribs showing under the coarse hair, tusks yellowed and chipping at the bark of a root it worried back and forth. The second rooted with its whole body, hindquarters swaying, ears flicking at flies.\n\nAt this range he could smell them properly: wet hide, musk, the sour ferment of their dung. The dark mass in the fold of the valley still hadn't shifted. Whatever it was, it slept or it waited.\n\nThe two below him were an easy walk's distance apart and both with their heads down. A clean shot at either one was there for the taking.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "position",
+      "who": "mon.creboar_pair_1",
+      "band": "MEDIUM",
+      "cover": "partial"
+     },
+     {
+      "seq": 2,
+      "type": "position",
+      "who": "mon.creboar_pair_2",
+      "band": "MEDIUM",
+      "cover": "partial"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "dark mass",
+      "p": "located in",
+      "o": "fold of the valley below the turnip fields, unmoving"
+     }
+    ]
+   }
+  },
+  {
+   "i": 27,
+   "player": "*I arcane Bolt Wild Boar A*",
+   "route": "v3"
+  },
+  {
+   "i": 28,
+   "reply": "The bolt leapt the fifteen paces in a blink and took the grey-bristled boar high in the shoulder, behind the ear, where the ambush caught it broadside. It went down as if the legs had been cut from under it — a shriek torn out of it, high and pig-bitter, unlike anything its rooting had hinted at — then it was up again almost at once, forelegs scrabbling, blood sheeting dark down the bristled neck.\n\nThe shriek did what the spell hadn't. The second boar's head snapped up out of the earth, mud dripping from its tusks, small eyes fixed on nothing yet. The wounded one wheeled toward the hazel bush where the light had flashed, snout swinging, blood flicking from its jaw with each jerk of its head — and it came. Not fleeing. Charging, short and fast through the brush, brushwood cracking under it, closing the gap to a handful of paces before it pulled up hard, hooves plowing leaf-rot, its breath coming in ragged bellows. Blood ran from the shoulder wound in a steady trickle. It stood its ground at ten feet, tusks wide, sides heaving.\n\nThe wounded boar had found him. Its small eyes were fixed on the hazel shadow where Alaric crouched, and behind it the second boar had begun to move — not toward him, but circling, wide, its own grunt rising to a coughing bark.\n\nIn the fold below, the dark mass shifted for the first time.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "mon.creboar_pair_1",
+      "p": "wounded",
+      "o": "hit by arcane bolt high in the shoulder, blood running steadily, still standing"
+     },
+     {
+      "seq": 2,
+      "type": "position",
+      "who": "mon.creboar_pair_1",
+      "band": "ENGAGED",
+      "cover": "none"
+     },
+     {
+      "seq": 3,
+      "type": "hostile",
+      "by": [
+       "mon.creboar_pair_1",
+       "mon.creboar_pair_2"
+      ]
+     },
+     {
+      "seq": 4,
+      "type": "intent",
+      "who": "mon.creboar_pair_1",
+      "intent": "attack"
+     },
+     {
+      "seq": 5,
+      "type": "position",
+      "who": "mon.creboar_pair_2",
+      "band": "SHORT",
+      "cover": "partial"
+     },
+     {
+      "seq": 6,
+      "type": "intent",
+      "who": "mon.creboar_pair_2",
+      "intent": "attack"
+     },
+     {
+      "seq": 7,
+      "type": "thread",
+      "text": "A dark mass in the fold below shifted for the first time — more boars may be nearby.",
+      "kind": "threat",
+      "status": "open"
+     }
+    ]
+   }
+  },
+  {
+   "i": 29,
+   "player": "*I basic attack Wild Boar A*",
+   "route": "v3"
+  },
+  {
+   "i": 30,
+   "reply": "He came up out of the crouch with the staff already swinging, both hands on it, and brought the butt down on the wounded boar's skull as it stood its ground. The crack of wood on bone carried through the brush. The boar's forelegs buckled sideways; it dropped into the leaf-rot with a strangled grunt, kicked twice, and went still. Blood pooled black under its shoulder and spread into the earth.\n\nThe second boar came out of its wide circle all at once. It had seen the flash and the fall both, and it didn't hesitate — a coughing bark, then a headlong rush through the hazel brush that snapped branches thick as wrists. Alaric got the staff half across in front of him and the boar's skull hit it, and him, like a thrown sack of grain. The tusk tore a hot line along his forearm before the impact threw him back into the bush — a sear of pain, then the cold shock of mud and leaves down the back of his clothes.\n\nThe boar wheeled a few paces off, hooves churning, blood-flecked foam at its mouth. It turned its head, found him again in the wrecked brush, and lowered it. Tusks wide. Breath sawing.\n\nBelow, in the fold, the dark mass was moving — a second shadow rising out of the first, big through the shoulder, coming up out of its bedding with the slow deliberation of something that had been woken twice.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "Wild Boar A",
+      "p": "status",
+      "o": "dead, killed by Alaric's staff blow"
+     },
+     {
+      "seq": 2,
+      "type": "hostile",
+      "by": [
+       "mon.creboar_pair_2"
+      ]
+     },
+     {
+      "seq": 3,
+      "type": "intent",
+      "who": "mon.creboar_pair_2",
+      "intent": "attack"
+     },
+     {
+      "seq": 4,
+      "type": "creature.new",
+      "ref": "cre.boar_sow_large",
+      "species": "large boar",
+      "anchor": "boar",
+      "desc": [
+       "a big boar through the shoulder, rising from its bedding in the fold below, woken twice, moving with slow deliberation"
+      ],
+      "count": 1,
+      "present": true,
+      "band": "MEDIUM"
+     },
+     {
+      "seq": 5,
+      "type": "thread",
+      "text": "A second, larger boar has risen from its bedding in the fold below and is coming up toward Alaric",
+      "kind": "threat",
+      "status": "open"
+     }
+    ]
+   }
+  },
+  {
+   "i": 31,
+   "player": "*I Arcane Bolt Wild Boar B*",
+   "route": "v3"
+  },
+  {
+   "i": 32,
+   "reply": "The bolt struck the charging boar in the flank as it lowered its head — a wet, heavy impact that punched through hide and muscle. The boar stumbled mid-rush, legs tangling, and went down onto its knees in the churned earth. A raw squeal ripped out of it. It heaved itself back up, slower now, the wound along its side pouring blood, but it came on again — swerving, dragging, closing the last few paces.\n\nThen its tusks hit. The strike glanced along Alaric's staff arm rather than finding his middle, and the force of it still knocked him sideways through the wrecked brush. Pain flared white along the forearm where the tusk had already torn him once. He caught himself on one knee in the mud, staff still in hand, breath coming hard.\n\nThe boar wheeled around ten feet away, bleeding freely, foam and blood at its mouth. It was slowing — its hindquarters sagged with each step — but its small eyes stayed fixed on him and its head stayed low.\n\nBehind it, down in the fold, the big shadow came up out of the hollow at a heavy, deliberate trot. Ground-eating strides, ears forward, a low continuous grunt rolling out of it like a cart on a bad road. It would reach the top of the fold in a handful of heartbeats.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "creature.new",
+      "ref": "mon.creboar_big",
+      "species": "big boar",
+      "anchor": "boar",
+      "desc": [
+       "a large boar emerging from the hollow at a heavy deliberate trot, ears forward, low continuous grunt"
+      ],
+      "count": 1,
+      "present": true,
+      "band": "SHORT"
+     },
+     {
+      "seq": 2,
+      "type": "position",
+      "who": "mon.creboar_pair_2",
+      "band": "SHORT",
+      "cover": null
+     },
+     {
+      "seq": 3,
+      "type": "position",
+      "who": "mon.creboar_big",
+      "band": "SHORT",
+      "cover": null
+     },
+     {
+      "seq": 4,
+      "type": "hostile",
+      "by": [
+       "mon.creboar_pair_2",
+       "mon.creboar_big"
+      ]
+     },
+     {
+      "seq": 5,
+      "type": "intent",
+      "who": "mon.creboar_pair_2",
+      "intent": "attack"
+     },
+     {
+      "seq": 6,
+      "type": "intent",
+      "who": "mon.creboar_big",
+      "intent": "attack"
+     }
+    ]
+   }
+  },
+  {
+   "i": 35,
+   "player": "*I Basic Attack Wild Boar B*",
+   "route": "v3"
+  },
+  {
+   "i": 36,
+   "reply": "He got up out of the mud and met it. The boar came dragging its wounded side through the brush, and Alaric swung the staff in both hands, putting his weight behind it. The butt caught the boar across the skull with a blow that jarred his arms to the elbows. The animal dropped where it stood, legs folding under it, and slid a foot through the leaf-rot with a last wet grunt. It did not get up. Blood steamed in the cold morning air around its opened flank.\n\nHe had one breath of stillness — two boars down in the churned brush, his own blood running warm down the forearm.\n\nThen the big one was there.\n\nIt came up over the lip of the fold at a heavy trot and never slowed. Alaric got the staff around, but the creature was half again the size of the others, and the blow threw him sideways off his feet. A tusk hooked his side as the skull slammed into him — a deep, tearing ache below the ribs — and he went down into the brush again, rolled twice through mud and broken hazel, and fetched up against a sapling. The staff stayed in his hands. His breath came ragged, every pull tugging at the wound.\n\nThe big boar turned in a wide arc, hooves tearing the earth, and lowered its head again. Foam flew from its jaws with each barking grunt. It found him against the sapling and charged.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "wild boar B",
+      "p": "status",
+      "o": "killed by Alaric's staff blow to the skull"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "Alaric",
+      "p": "wounded",
+      "o": "deep tusk gash below the ribs from the big boar's charge"
+     },
+     {
+      "seq": 3,
+      "type": "hostile",
+      "by": [
+       "mon.moncreboar_big"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "i": 37,
+   "player": "*I Flame Lance Big Boar A*",
+   "route": "v3"
+  },
+  {
+   "i": 38,
+   "reply": "The lance of fire leapt off the staff in a whipcrack of heat and took the charging boar high in the shoulder. Burning bristle and fat spat outward; the creature's barking grunt turned into a scream. It ploughed past him instead of through him, half its momentum gone, hide charred along a long furrow — but its skull still clipped his hip as it blundered by, and a tusk raked across him, tearing at the wound below his ribs. Fresh pain bloomed hot and wet. Alaric went down onto one knee against the sapling, staff clutched across his body, blood soaking through his shirt front.\n\nThe big boar staggered a few paces beyond him, burned and bleeding, its breath coming in shuddering heaves. Steam rose off its seared shoulder into the cold air. Its hind legs shook. It turned, slow now, one hoof dragging, and faced him across the churned mud — still upright, still meaning to kill him, with foam and blood dripping from its jaws and its small eyes burning under the ruined bristle.\n\nTen feet of torn ground lay between them. It gathered itself.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "mon.moncreboar_big",
+      "p": "condition",
+      "o": "badly burned and bleeding from the Flame Lance, one hoof dragging, but still upright and fighting"
+     },
+     {
+      "seq": 2,
+      "type": "position",
+      "who": "mon.moncreboar_big",
+      "band": "ENGAGED",
+      "cover": "none"
+     },
+     {
+      "seq": 3,
+      "type": "intent",
+      "who": "mon.moncreboar_big",
+      "intent": "attack"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Alaric",
+      "p": "condition",
+      "o": "knocked to one knee, tusk raked across the wound below his ribs, blood soaking through his shirt"
+     }
+    ]
+   }
+  },
+  {
+   "i": 41,
+   "player": "*I Basic Attack Big Boar A*",
+   "route": "v3"
+  },
+  {
+   "i": 42,
+   "reply": "The big boar came at him one last time, dragging its burned shoulder through the mud, and Alaric rose off his knee to meet it. He swung the staff down with everything left in his arms. The blow cracked across its skull just as its forelegs buckled, and the creature's own momentum carried it past him into the brush. It crashed through the hazel, ploughed a furrow in the leaf-rot, and lay still. One hind leg kicked twice, slowed, and stopped. Blood and foam pooled dark beneath its jaw, steaming in the cold.\n\nThen the woodland was quiet again — nothing but his own ragged breathing, the drip of water somewhere down in the fold, and the slow settling of the saplings he had broken.\n\nAlaric stayed on his feet a moment longer, staff planted, making sure. Nothing else moved beneath the trees. Three boars lay dead in the churned ground: the two grey-bristled ones where they had fallen, and the big one half-buried in broken brush, its seared shoulder still faintly warm when the wind shifted.\n\nHe lowered himself onto the fallen sapling at last, and the pain arrived properly once he let it. The gash below his ribs wept blood through his torn shirt with every breath; the forearm tusk-wound had stiffened, crusted with mud and drying red. Cold had crept into his hands. Somewhere above the tree line, the ruined turnip field waited under a grey morning sky, and the little town and its Guild sat a long way past it.\n\nThe boars' tusks and hides were worth something if he wanted to harvest them. That could wait a few breaths. Everything, for a few breaths, could wait.",
+   "answer": {
+    "expected": {},
+    "deltas": [
+     {
+      "seq": 1,
+      "type": "fact",
+      "s": "big boar",
+      "p": "status",
+      "o": "dead — skull crushed by Alaric's staff blow, crashed into the brush and lay still"
+     },
+     {
+      "seq": 2,
+      "type": "fact",
+      "s": "woodland edge below the turnip fields",
+      "p": "contains",
+      "o": "three dead boars: two grey-bristled boars and the big boar, lying in the churned ground"
+     },
+     {
+      "seq": 3,
+      "type": "fact",
+      "s": "boars",
+      "p": "harvestable",
+      "o": "tusks and hides are worth something if harvested"
+     },
+     {
+      "seq": 4,
+      "type": "fact",
+      "s": "Alaric",
+      "p": "wounded",
+      "o": "bleeding gash below the ribs and a stiffened tusk-wound on the forearm, cold and exhausted after the fight"
+     }
+    ]
+   }
+  }
+ ]
+}

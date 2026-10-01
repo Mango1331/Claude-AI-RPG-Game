@@ -15,11 +15,11 @@ import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver } from '../delta.js';
 import { truth, entityLabel, setFactEvents, statusOf } from '../knowledge.js';
 import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
-import { firewall } from './firewall.js';
+import { firewall, detailRevisesMechanics } from './firewall.js';
 import {
     PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind,
 } from './domain.js';
-import { completeContract, REGISTRATION_OFFER, countShort, tallyText, isHunt } from './guild.js';
+import { completeContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, engineClause, claimedStatus, statusCorrection } from './guild.js';
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
 
 // the words that end a person's name or role in a description ("clerk at the Walk", "steward of the weirs")
@@ -237,6 +237,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // who the person is shows on their card (occupation), as text: the V3 fact rule would read "Guild clerk" as a
         // reference to the clerk himself
         if (kind === 'npc' && d.role && created.length && !truth(s, created[0], 'occupation').length) occupation(created[0], d.role);
+        // an individual the story establishes as bigger or stronger than ordinary ones of its kind (creature.new stronger):
+        // the individual variation of Content #7, fixed with its profile (live run 30.09.2026 22:41: the big boar had the
+        // numbers of a common one); the name it goes by decides nothing
+        if (kind === 'creature' && d.stronger === true) for (const id of created) emit({ t: 'entity.updated', d: { id, set: { variation: 'strong' } } });
         // Gameplay visibility: once an actual creature is visibly present, lock its deterministic profile immediately.
         // This gives the player a canonical target handle + HP + Range before deciding whether to attack; Initiative still waits for Combat START.
         if (kind === 'creature' && d.present !== false) for (const id of ids) materialise(s, content, dice, emit, id);
@@ -423,19 +427,30 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'quest.detail': {
                 const q = questRef(d.quest);
                 if (!q) { reject(d, 'quest', 'unknown quest'); break; }
-                // a hunt is proven by the trophies of its kills at a Guild hall: a local inspection or signature the
-                // story makes a condition is no part of it (live 30.09.2026 14:56: "the steward must inspect and sign
-                // before payment"); the rest of the note (route, contacts, what was seen) stays
+                // A Guild contract's note keeps the story, not the engine's state: a clause that states its status,
+                // payout, XP or rank is dropped (live run 30.09.2026 22:41: "Contract registered and active; payout
+                // 60 cp" while it was still on the board), and a status the contract is not in is corrected. So is a
+                // clause that changes the mechanics (another payout, a payment withheld, the fee); the firewall refuses
+                // such a note when it keeps no story. A hunt is proven by the trophies of its kills at a Guild hall: a
+                // local inspection or signature the story makes a condition is no part of it (live 30.09.2026 14:56:
+                // "the steward must inspect and sign before payment"). The rest of the note (route, contacts, what was
+                // seen) stays.
                 let note = String(d.note);
-                if (q.kind === 'guild_contract' && isHunt(q, content)) {
+                if (q.kind === 'guild_contract') {
                     const clauses = note.split(/(?<=[.;])\s+/);
-                    const kept = clauses.filter((x) => !(SIGN_OFF.test(x) && REQUIRE.test(x)));
-                    if (kept.length < clauses.length) {
+                    const owned = clauses.filter(engineClause);
+                    const altered = clauses.filter((x) => detailRevisesMechanics(x, q));
+                    const signOff = isHunt(q, content) ? clauses.filter((x) => !owned.includes(x) && !altered.includes(x) && SIGN_OFF.test(x) && REQUIRE.test(x)) : [];
+                    const kept = clauses.filter((x) => !owned.includes(x) && !altered.includes(x) && !signOff.includes(x));
+                    const claims = owned.map(claimedStatus).filter(Boolean);
+                    const stated = (x) => (x === 'active' ? ['active', 'completed'] : [x]);
+                    if (claims.some((c) => !stated(c).includes(q.status)) && !corrections.includes(statusCorrection(q))) corrections.push(statusCorrection(q));
+                    if (signOff.length) {
                         const correction = `"${q.title}" is a hunt contract: the Guild pays it on the trophies of the kills brought to a Guild hall; no local inspection, witness or signature is required.`;
                         if (!corrections.includes(correction)) corrections.push(correction);
-                        if (!kept.length) { reject(d, 'guild_quest_detail', 'a hunt contract needs no local sign-off'); break; }
-                        note = kept.join(' ');
                     }
+                    if (!kept.length) { reject(d, signOff.length || altered.length ? 'guild_quest_detail' : 'engine_owned_detail', 'a Guild contract note keeps the story; its status, payout, XP, rank and (for a hunt) the proof are the engine\'s'); break; }
+                    note = kept.join(' ');
                 }
                 emit({ t: 'quest.detailed', d: { id: q.id, note: note.slice(0, 200), schedule: d.schedule ? String(d.schedule).slice(0, 80) : null } });
                 break;

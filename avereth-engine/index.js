@@ -18,7 +18,7 @@ import { onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory, 
 import { prepareGenerationAsync, processReplyAny, runExtraction, pendingExtraction, campaignRuntime, onEditedV4 } from './src/v4/runtime.js';
 import { validateState } from './src/validate.js';
 import { newSeed } from './src/rng.js';
-import { parseSwaps, ENGINE_VERSION } from './src/util.js';
+import { parseSwaps, ENGINE_VERSION, NARRATOR_CONTRACT_REVISION } from './src/util.js';
 
 const MODULE = 'avereth';
 const PROMPT_KEY = 'avereth_engine';
@@ -317,14 +317,31 @@ async function onMessageEdited(messageId) {
 }
 
 // ------------------------------------------------------------------------------------------ settings UI
+/**
+ * Runtime V4: does the character card hold the current narrator contract (its revision line)? A card with an older
+ * contract plays with rules the engine no longer expects (live run 30.09.2026 22:41: a card from before 4.1.2).
+ */
+function contractState() {
+    const card = ctx().characters?.[ctx().characterId];
+    const text = String(card?.description || card?.data?.description || '');
+    if (!text.includes('SANDBOX NARRATOR CONTRACT')) return 'not on the card';
+    return text.includes(NARRATOR_CONTRACT_REVISION) ? 'current' : 'OUTDATED';
+}
+
+let contractWarned = null;
 function renderDebug() {
     const el = document.getElementById('avereth_status');
     if (!el || !content) return;
     const c = ctx();
     const { state, errors } = foldChat(c.chat);
+    const contract = state.meta.started && state.meta.runtime === 'v4' ? contractState() : null;
+    if (contract && contract !== 'current' && contractWarned !== c.getCurrentChatId()) {
+        contractWarned = c.getCurrentChatId();
+        toastr.warning(`Avereth Engine: the narrator contract on this character card is ${contract === 'OUTDATED' ? 'outdated' : 'missing'}. Replace the card description with content/narrator/Avereth_Narrator_Contract_v4.txt of this build (${NARRATOR_CONTRACT_REVISION}).`);
+    }
     const problems = state.meta.started ? validateState(state, content) : [];
     el.textContent = `Avereth Engine ${ENGINE_VERSION} | ` + (state.meta.started
-        ? `runtime ${state.meta.runtime || 'v3'}${state.meta.runtime === 'v4' && llmPath ? ` (LLM: ${llmPath})` : ''} | turn ${state.turn} | mode ${state.mode} | events ${c.chat.reduce((a, m) => a + (m.extra?.avereth?.events?.length || 0), 0)} | integrity: ${problems.length || errors.length ? `${problems.length + errors.length} problem(s)` : 'OK'}${lastContext ? ` | last block ~${lastContext.tokens} tokens` : ''}${lastProjection ? ` | history: ${lastProjection.removed} older message(s) left out, ${lastProjection.stripped} tracker block(s) removed` : ''} | lore: ${loreFromWorldInfo() ? `World Info${cardLorebook() ? ` (${cardLorebook()})` : ''}` : 'engine'}`
+        ? `runtime ${state.meta.runtime || 'v3'}${state.meta.runtime === 'v4' && llmPath ? ` (LLM: ${llmPath})` : ''} | turn ${state.turn} | mode ${state.mode} | events ${c.chat.reduce((a, m) => a + (m.extra?.avereth?.events?.length || 0), 0)} | integrity: ${problems.length || errors.length ? `${problems.length + errors.length} problem(s)` : 'OK'}${lastContext ? ` | last block ~${lastContext.tokens} tokens` : ''}${lastProjection ? ` | history: ${lastProjection.removed} older message(s) left out, ${lastProjection.stripped} tracker block(s) removed` : ''} | lore: ${loreFromWorldInfo() ? `World Info${cardLorebook() ? ` (${cardLorebook()})` : ''}` : 'engine'}${contract ? ` | narrator contract: ${contract}` : ''}`
         : 'no campaign in this chat');
     const dbg = document.getElementById('avereth_debug');
     if (dbg) dbg.value = settings().showDebug ? [lastContext?.text || '', ...problems, ...errors].join('\n') : '';

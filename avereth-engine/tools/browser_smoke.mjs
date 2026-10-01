@@ -176,6 +176,8 @@ const V4 = {
 
 /** The V4 page's script: runs in the browser (stringified into the page), never in Node. */
 async function v4Page(DATA) {
+    // the card holds this build's V4 narrator contract, as in SillyTavern (the status line checks its revision)
+    const contract = await (await fetch('/content/narrator/Avereth_Narrator_Contract_v4.txt')).text();
     const chat = [{ is_user: false, is_system: false, mes: DATA.first, swipe_id: 0, swipes: [DATA.first], swipe_info: [{ extra: {} }], extra: {} }];
     const handlers = {};
     window.__log = [];
@@ -186,7 +188,7 @@ async function v4Page(DATA) {
         saveSettingsDebounced() {}, saveChat: async () => { window.__saved = (window.__saved || 0) + 1; },
         updateMessageBlock(id) { window.__rerendered = (window.__rerendered || []).concat(id); },
         setExtensionPrompt(key, value) { if (key === 'avereth_engine') window.__prompt = value; },
-        characters: [{ name: 'Avereth', data: { extensions: { world: '' } } }], characterId: 0,
+        characters: [{ name: 'Avereth', description: contract, data: { description: contract, extensions: { world: '' } } }], characterId: 0,
         addOneMessage(m) { window.__panels = (window.__panels || []).concat(m.mes); },
         async generateRaw({ systemPrompt, prompt, responseLength }) {
             rawCalls += 1;
@@ -274,9 +276,18 @@ async function v4Page(DATA) {
     result.world = rec(chat[r2]).extraction?.status === 'applied' && x3.extraction?.status === 'applied'
         && JSON.stringify((x3.rejected || []).map((x) => x.rule)) === '["board_first_display"]'
         && s.guild.membership?.rank === 'Novice' && s.entities.pc.sheet.coin_cp === coin - 20 && s.quests[DATA.weasel]?.status === 'listed';
-    result.statusLine = status().includes('runtime v4 (LLM: custom endpoint)') && status().includes('integrity: OK');
+    result.statusLine = status().includes('runtime v4 (LLM: custom endpoint)') && status().includes('integrity: OK') && status().includes('narrator contract: current');
     result.settingsUi = document.getElementById('avereth_runtime')?.value === 'v4';
-    result.log = window.__log;
+    result.log = window.__log.slice();
+    // a card with the contract of an older build (no revision line): the status line says so, the warning comes once
+    // per chat (4.1.5; the live run of 30.09. 22:41 played with a card from before 4.1.2)
+    const older = contract.replace(/^Contract revision: .*\n/m, '');
+    ctx.characters[0].description = older;
+    ctx.characters[0].data.description = older;
+    handlers.ms();
+    handlers.ms();
+    const warned = window.__log.filter((m) => m.startsWith('warn ') && m.includes('narrator contract on this character card is outdated'));
+    result.contractOutdated = older !== contract && status().includes('narrator contract: OUTDATED') && warned.length === 1;
     window.__result = result;
 }
 
@@ -368,7 +379,7 @@ if (!v4.requests) console.log('V4 requests:', JSON.stringify(llmCalls, null, 1))
 const okV3 = v3.campaign && v3.step2 && v3.creation && v3.firstStory && v3.stripped && v3.retcon && v3.combatShown && v3.command && v3.commitShown && v3.loreBridge && v3.wordSwap && v3.settingsUi
     && v3.hud && v3.trackersRemoved && v3.hudNotInPrompt && v3.historyWindow && v3.reportRequest && !v3.errors.length && !v3.log.length;
 const okV4 = v4.v4Campaign && v4.creation && v4.playerActions && v4.pendingShown && v4.barrier && v4.worldShown && v4.registerPending && v4.generateRawPath
-    && v4.world && v4.statusLine && v4.settingsUi && v4.requests && !v4.errors.length && !v4.log.length;
+    && v4.world && v4.statusLine && v4.contractOutdated && v4.settingsUi && v4.requests && !v4.errors.length && !v4.log.length;
 console.log(`V3 page: ${okV3 ? 'OK' : 'FAILED'} | V4 page: ${okV4 ? 'OK' : 'FAILED'}`);
 console.log(okV3 && okV4 ? 'BROWSER SMOKE: OK' : 'BROWSER SMOKE: FAILED');
 process.exit(okV3 && okV4 ? 0 : 1);

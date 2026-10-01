@@ -29,7 +29,35 @@ const FLEE_RE = /\b(?:flee|flees|run\s+away|escape|make\s+a\s+run\s+for\s+it|bol
 const STEALTH_RE = /\b(?:sneak|sneaks|sneaking|creep|creeps|creeping|hide|hides|hiding|stay\s+hidden|move\s+quietly|stalk|stalks|stalking|crouch\s+low)\b/i;
 const PRONOUN_RE = /\b(?:him|her|it|them|the\s+(?:man|woman|creature|beast|animal|thing))\b/i;
 // Runtime V4 (live 30.09.2026 14:56): waiting in hiding is declared stealth too ("keep myself hidden as i lay in wait")
-const STEALTH_V4_RE = /\b(?:keep(?:s|ing)?\s+(?:myself\s+|himself\s+)?(?:hidden|out\s+of\s+sight|low)|stay(?:s|ing)?\s+out\s+of\s+sight|(?:lay|lays|lie|lies|lying|laying)\s+(?:in\s+wait|low|hidden)|hold(?:s|ing)?\s+(?:myself\s+)?hidden)\b/i;
+const STEALTH_V4 = String.raw`keep(?:s|ing)?\s+(?:myself\s+|himself\s+)?(?:hidden|out\s+of\s+sight|low)|stay(?:s|ing)?\s+out\s+of\s+sight|(?:lay|lays|lie|lies|lying|laying)\s+(?:in\s+wait|low|hidden)|hold(?:s|ing)?\s+(?:myself\s+)?hidden`;
+// Runtime V4: stealth is a deed Alaric declares, so its word stands as his verb: after "I" (an adverb between: "I
+// carefully creep"), at the start of the message, a sentence or a starred part ("*crouch down and sneak closer*"), or
+// after and/then/but/so/or/to ("and sneak", "try to hide"). The word of a name or a noun is none ("the Cull the Gnaw
+// Hide Boars contract", "its hide"; live 30.09.2026 22:41: taking that contract was read as hiding from the clerk).
+const DEED_LEAD = String.raw`(?:^|[.!?;:,*(]\s*|\b(?:i|we|and|then|but|so|or|to)\s+)(?:\w+ly\s+)?`;
+const STEALTH_ACT_RE = new RegExp(String.raw`${DEED_LEAD}(?:sneak|sneaks|sneaking|creep|creeps|creeping|hide|hides|hiding|stay\s+hidden|move\s+quietly|stalk|stalks|stalking|crouch\s+low|${STEALTH_V4})\b`, 'i');
+const AT_DEED = new RegExp(`${DEED_LEAD}$`, 'i');
+
+/**
+ * Runtime V4: the message with the multi-word names the engine knows masked (Guild contract titles, places, named
+ * people and things): a word of a name is no deed of Alaric's ("I take the Cull the Gnaw-Hide Boars contract"; the
+ * "Walk" of a label was the same kind of error). A name where his own verb would stand stays: there it is his deed
+ * ("I kill the rats" while a contract is called "Kill the Rats"). Only the intent patterns read the masked text; the
+ * interpreter, the target resolution and the record keep the message as he wrote it.
+ */
+export function maskNames(text, state) {
+    const names = [
+        ...Object.values(state.quests || {}).map((q) => q.title),
+        ...Object.values(state.places || {}).map((p) => p.name),
+        ...Object.values(state.entities || {}).map((e) => e.name),
+        ...Object.values(state.objects || {}).map((o) => o.name),
+    ].map((n) => String(n || '').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean)).filter((w) => w.length >= 2);
+    let out = String(text);
+    for (const words of names.sort((a, b) => b.join(' ').length - a.join(' ').length)) {
+        out = out.replace(new RegExp(String.raw`\b${words.join(String.raw`[^a-z0-9*]+`)}\b`, 'gi'), (name, at, all) => (AT_DEED.test(all.slice(0, at)) ? name : ' '));
+    }
+    return out;
+}
 // "*i say calmly*": the player marks his deeds with asterisks and names what is outside them as his words
 const SAY_RE = /\b(?:i|we)\s+(?:\w+\s+)?(?:say|says|said|ask|asks|asked|reply|replies|replied|tell|tells|told|shout|shouts|call|calls|whisper|whispers|answer|answers|add|adds|mutter|mutters)\b/i;
 
@@ -204,7 +232,7 @@ export function parseIntent(text, state, content) {
     const sheet = state.entities.pc?.sheet;
     const known = sheet ? Object.keys(sheet.skills) : [];
     const v4 = state.meta?.runtime === 'v4';
-    const decl = declarative(v4 ? deedsOf(raw) : raw);
+    const decl = declarative(v4 ? deedsOf(maskNames(raw, state)) : raw);
     const d = normText(decl);
     if (!d) return { kind: 'narrative', flags: { info: /\?/.test(raw), speech: /["“]/.test(raw) } };
     // Skills: known ones by name; an unknown one only when unmistakable (multi-word name or "use/cast X"), so that
@@ -249,7 +277,7 @@ export function parseIntent(text, state, content) {
         const target = resolveTarget(raw, state, content, { hostileOnly: true });
         return { kind: 'move', dir: move, target: target.id || null };
     }
-    if (STEALTH_RE.test(d) || (v4 && STEALTH_V4_RE.test(d))) return { kind: 'stealth' };
+    if (v4 ? STEALTH_ACT_RE.test(d) : STEALTH_RE.test(d)) return { kind: 'stealth' };
     return { kind: 'narrative', flags: { aim: AIM_RE.test(d) } };
 }
 

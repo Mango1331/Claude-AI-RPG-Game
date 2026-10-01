@@ -18,6 +18,7 @@
 // correction. What the world handlers check while applying (time caps, place tree, presence, offers of a sale) stays
 // in src/v4/world.js; this module only knows authority.
 import { normText } from '../util.js';
+import { claimedStatus, statusCorrection, engineClause } from './guild.js';
 
 /** Fact predicates that are state with their own delta or domain (plan §5.1): never a free fact. */
 export const STATE_PREDICATES = new Set(['located', 'intent', 'guild_rank', 'power_rank']);
@@ -83,7 +84,7 @@ const INSTITUTION_RULE = /\b(?:guild rank|promot\w*|xp|experience points|registr
  * 80 cp), a revision of it or a condition that withholds it is the engine's; so are Guild rank, promotion, XP and the
  * registration fee.
  */
-function detailRevisesMechanics(detail, q) {
+export function detailRevisesMechanics(detail, q) {
     const lower = String(detail).toLowerCase();
     if (INSTITUTION_RULE.test(lower)) return true;
     const posted = Number(q.payout_cp);
@@ -239,7 +240,11 @@ export function firewall(deltas, ctx = {}) {
             }
             case 'quest.detail': {
                 const q = questOf(d.quest);
-                if (q && detailRevisesMechanics(`${text(d.note)} ${text(d.schedule)}`, q)) {
+                // a note that changes the Guild's mechanics and keeps no story beside it is refused; from a note that
+                // also keeps story the world applier drops those clauses and keeps the rest (4.1.5)
+                const clauses = text(d.note).split(/(?<=[.;])\s+/).filter((c) => c.trim());
+                const alters = (c) => detailRevisesMechanics(c, q);
+                if (q && ((clauses.some(alters) && clauses.every((c) => alters(c) || engineClause(c))) || alters(text(d.schedule)))) {
                     no(d, 'guild_quest_detail', 'a Guild contract detail may store story progress, contacts, routes, witnesses, verification or schedules, but may not invent or alter payout/payment, Guild rank or promotion mechanics');
                     continue;
                 }
@@ -273,7 +278,11 @@ export function firewall(deltas, ctx = {}) {
                     || namesContract(factText)
                     || (!!ctx.inGuildHall && /\b(?:contract|quest|slip)\b/.test(factText) && GUILD_QUEST_STATE.test(factText));
                 if (guildQuestState && GUILD_QUEST_STATE.test(`${words(d.p)} ${words(d.o)}`)) {
-                    no(d, 'engine_owned_fact', 'a known Guild contract keeps payout and formal status/completion in the engine domain; use quest.detail/quest.progress/quest.ready for story progress instead of overriding that state with a free fact');
+                    // a claimed state the contract is not in is corrected (live run 30.09.2026 22:41: "active" while listed)
+                    const q = questOf(text(d.s)) || ctx.guildContractForObject?.(text(d.s)) || null;
+                    const claim = claimedStatus(`${words(d.p)} ${words(d.o)}`);
+                    no(d, 'engine_owned_fact', 'a known Guild contract keeps payout and formal status/completion in the engine domain; use quest.detail/quest.progress/quest.ready for story progress instead of overriding that state with a free fact',
+                        q && claim && !(claim === 'active' ? ['active', 'completed'] : [claim]).includes(q.status) ? statusCorrection(q) : null);
                     continue;
                 }
                 if (STATE_PREDICATES.has(p)) {

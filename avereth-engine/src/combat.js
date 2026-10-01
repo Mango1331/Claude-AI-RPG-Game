@@ -4,7 +4,8 @@
 // The only roll left in an attack is the damage variance. Every step is written into the encounter snapshot (the
 // FIXED+CURRENT snapshot that Testrun-v1 lost), so the next turn copies it instead of re-guessing.
 import { deriveCharacter, rawPower, rawPowerText } from './derived.js';
-import { defeatXp, awardXp } from './progression.js';
+import { defeatXp, awardXp, strengthOf } from './progression.js';
+import { scaleCreature } from './npcgen.js';
 import { lookOf } from './knowledge.js';
 import { bandIndex, bandName, clone, num, roundHalfUp } from './util.js';
 import { sceneHandle } from './v4/scene_handles.js';
@@ -39,6 +40,17 @@ function ammoOf(sheet, content) {
     return out;
 }
 
+/**
+ * A hostile's locked Defeat XP (Core #25): its Level, type and the rank gap, and for a creature how much stronger its
+ * own numbers are than the standard of its Level and type (src/progression.js strengthOf; a standard creature: its
+ * Level's XP exactly).
+ */
+function hostileXp(c, state, content, pcRank) {
+    const anchor = c.model === 'creature' ? content.anchors.get(state.entities[c.id]?.profile?.anchor) : null;
+    const strength = anchor ? strengthOf(c.fixed, scaleCreature(anchor, c.fixed.level, c.fixed.type, content), content) : 1;
+    return defeatXp(c.fixed.level, c.fixed.type, pcRank, content, strength);
+}
+
 /** Opponents are on different sides of the hostile line (future allies/summons stay on Alaric's side). */
 export function isOpponent(a, b) {
     return a.id !== b.id && (a.side === 'hostile') !== (b.side === 'hostile');
@@ -52,7 +64,7 @@ export function creatureCombatant(state, id) {
         fixed: {
             level: p.level, rank: p.rank, type: p.type, body_plan: p.body_plan, max_hp: p.max_hp, atk: p.atk, def: p.def,
             mdef: p.mdef, init: p.init, attack: p.attack, temperament: p.temperament,
-            sapient: false,
+            sapient: false, ...(p.variation ? { variation: p.variation } : {}),
         },
         current: { hp: p.hp ?? p.max_hp, band: null, cover: 'none', effects: [], defeated: false, escaped: false, surrendered: false },
     };
@@ -143,7 +155,7 @@ export function initEncounter(state, content, dice, trigger, participants, encId
     }
     const pcRank = combatants.pc.fixed.rank;
     for (const c of Object.values(combatants)) {
-        if (c.side === 'hostile') c.fixed.defeat_xp = defeatXp(c.fixed.level, c.fixed.type, pcRank, content);
+        if (c.side === 'hostile') c.fixed.defeat_xp = hostileXp(c, state, content, pcRank);
     }
     const enc = {
         id: encId, phase: 'ACTIVE', round: 0, order: [], turn_index: -1, current: null, combatants,
@@ -176,7 +188,7 @@ export function addCombatant(enc, state, content, id, side, intent = 'attack') {
     const pos = state.scene.positions[id] || { band: 'MEDIUM', cover: 'none' };
     c.current.band = pos.band;
     c.current.cover = pos.cover || 'none';
-    if (side === 'hostile') c.fixed.defeat_xp = defeatXp(c.fixed.level, c.fixed.type, enc.pc_rank, content);
+    if (side === 'hostile') c.fixed.defeat_xp = hostileXp(c, state, content, enc.pc_rank);
     enc.combatants[id] = c;
     assignLabels(enc, state, content, [id]);
     // insert after all combatants with higher or equal Initiative (existing ties keep their locked order)

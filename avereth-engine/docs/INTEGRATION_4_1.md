@@ -1,13 +1,15 @@
 # Integration 4.1: das ChatGPT-Experiment 4.0.1–4.0.9 geprüft und eingebaut
 
-**Stand 30.09.2026, Build 4.1.4.** Dieses Dokument hält fest, was aus dem Experiment übernommen, überarbeitet, ersetzt oder verworfen wurde, und warum. Es beschreibt auch den nächsten Live-Test (§5). §8 enthält die Nachprüfung von 4.1.0 durch ein unabhängiges Review und die Korrekturen in 4.1.1. §9 enthält den Live-Lauf vom 30.09. 14:56 auf 4.1.1 und die Korrekturen und Designänderungen in 4.1.2. §10 enthält die Nachprüfung von 4.1.2 und die Korrekturen in 4.1.3. §11 enthält die Nachprüfung von 4.1.3, den Patch 4.1.4 und den echten Live-Test, der jetzt ansteht.
+**Stand 01.10.2026, Build 4.1.5.** Dieses Dokument hält fest, was aus dem Experiment übernommen, überarbeitet, ersetzt oder verworfen wurde, und warum. Es beschreibt auch den nächsten Live-Test (§5). §8 enthält die Nachprüfung von 4.1.0 durch ein unabhängiges Review und die Korrekturen in 4.1.1. §9 enthält den Live-Lauf vom 30.09. 14:56 auf 4.1.1 und die Korrekturen und Designänderungen in 4.1.2. §10 enthält die Nachprüfung von 4.1.2 und die Korrekturen in 4.1.3. §11 enthält die Nachprüfung von 4.1.3 und den Patch 4.1.4. §12 enthält den Live-Lauf vom 30.09. 22:41 auf 4.1.4, den Patch 4.1.5 und den echten Live-Test, der jetzt ansteht.
+
+> **Vor dem nächsten Test:** die Kartenbeschreibung vollständig durch `content/narrator/Avereth_Narrator_Contract_v4.txt` ersetzen und einen neuen Chat beginnen. Die Statuszeile muss `narrator contract: current` zeigen ([§12](#12-live-lauf-30092026-2241-build-414-und-korrekturen-415)).
 
 | | Branch | Commit |
 |---|---|---|
 | Basis (bisheriger Stand, unverändert) | `claude/happy-wright-1a4y19` | `1cbfdd4` |
 | Experiment (unverändert) | `chatgpt/v4-livetest-fixes-2026-09-28` | `a067bd0` (4.0.9); der Live-Lauf 30.09. lief auf 4.0.8 (`2f5eeb5`) |
 | Integration | `claude/v4-integration-2026-09-30` | von `1cbfdd4`; der Merge-Commit `f1b6bdd` holt `a067bd0` als Prüfgegenstand herein, die Folge-Commits überarbeiten ihn Teil für Teil; 4.1.0 = `d7ef49b` |
-| Korrekturen 4.1.1 (§8), 4.1.2 (§9), 4.1.3 (§10) und 4.1.4 (§11) | `claude/v4-integration-fixes-2026-09-30` | von `d7ef49b`; 4.1.1 = `6acc7f9`, 4.1.2 = `0814ab5`, 4.1.3 = `5a8ccab` |
+| Korrekturen 4.1.1 (§8), 4.1.2 (§9), 4.1.3 (§10), 4.1.4 (§11) und 4.1.5 (§12) | `claude/v4-integration-fixes-2026-09-30` | von `d7ef49b`; 4.1.1 = `6acc7f9`, 4.1.2 = `0814ab5`, 4.1.3 = `5a8ccab`, 4.1.4 = `f600166` |
 
 Primärbelege: Chat-JSONL des Laufs (Branch #1), Event-Export, Chat-Completion-Log (mit verworfenem Seitenzweig; nur über exakten Text zugeordnet). Die Chronik des Experiments steht in [CHATGPT_FIX_BRANCH_2026-09-28.md](CHATGPT_FIX_BRANCH_2026-09-28.md).
 
@@ -507,6 +509,8 @@ Das gilt nur in V4. Wer nach einer Sprechmarke handeln will, schreibt die Tat in
 
 ### Der echte Live-Test (Build 4.1.4)
 
+_Gelaufen am 30.09. 22:41; Befunde und der Test für 4.1.5 in [§12](#12-live-lauf-30092026-2241-build-414-und-korrekturen-415)._
+
 **Einrichtung** wie [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern):
 - Extension `avereth-engine/` aus `claude/v4-integration-fixes-2026-09-30`; die Statuszeile zeigt `Avereth Engine 4.1.4`.
 - Die Kartenbeschreibung **neu** aus `content/narrator/Avereth_Narrator_Contract_v4.txt` kopieren (geändert in 4.1.2, 4.1.3 und 4.1.4).
@@ -524,5 +528,207 @@ Das gilt nur in V4. Wer nach einer Sprechmarke handeln will, schreibt die Tat in
 | 6 | Mit Sprechmarke reden, ohne zu kämpfen: „I could kill them all *I say*“, „*I say* I strike first next time.“ | kein Kampf, keine Zielfrage |
 | 7 | Mit Sprechmarke kämpfen: „I attack the wolf. *I shout* Get back!“ oder die Tat in Sternchen | ein Angriff |
 | 8 | Falls das Brett einen Auftrag gegen Menschen zeigt (Banditen, Räuber) | kein „no local inspection“ im Annahme-Satz. Tote Banditen zählen in „defeated (engine count)“ |
+
+**Zurückschicken:** wie [LIVETEST_V4.md §6](LIVETEST_V4.md#6-zurückschicken): Chat-Export, Event-Log, Request-Log. **Keine Schlüssel, keine Authorization-Header.**
+
+---
+
+## 12. Live-Lauf 30.09.2026 22:41 (Build 4.1.4) und Korrekturen 4.1.5
+
+> **Vor dem nächsten Test die Kartenbeschreibung vollständig ersetzen.** Der Lauf 22:41 lief mit einem Erzählervertrag von vor 4.1.2. Keine der 22 Erzähler-Anfragen im Request-Log enthält die Regeln, die 4.1.2, 4.1.3 und 4.1.4 in den Vertrag geschrieben haben. Die beiden Board-Generator-Anfragen waren aktuell, denn diesen Prompt baut die Engine selbst.
+>
+> - **Ab 4.1.5:** Zeile 2 des Vertrags lautet `Contract revision: 4.1.5`. Die Statuszeile im Engine-Panel zeigt `narrator contract: current`.
+> - **Falsche Karte:** Steht dort `OUTDATED` oder `not on the card`, ist die Karte falsch, und einmal pro Chat erscheint eine Warnung.
+> - **So geht es:** Die ganze Beschreibung löschen und den Inhalt von `content/narrator/Avereth_Narrator_Contract_v4.txt` einfügen. Nicht zusammenführen. Danach einen neuen Chat beginnen.
+
+**Material.** Chat-Export (JSONL), Event-Export, Request-Log und die Auswertung durch ChatGPT mit fünf Punkten.
+
+**Vorgehen.**
+1. Alle Punkte zuerst auf dem unveränderten Stand 4.1.4 (`f600166`) nachgewiesen. Werkzeug ist ein Nachspiel des Laufs durch den Produktpfad mit den aufgezeichneten Antworten:
+   - Test: `tests/v4/live_0930c.test.js`.
+   - Fixture: `tests/v4/live_0930c.json`, gebaut aus dem Chat-Export. Es enthält keine Schlüssel, keine Header und keine Provider-Konfiguration.
+2. Danach der Patch 4.1.5. Er ist klein, ohne Umbau und ohne Questtyp-System.
+
+**Was 4.1.4 im Lauf tat** (Nachspiel auf `f600166`):
+
+| Nachricht | auf 4.1.4 |
+|---|---|
+| 15: `*i take the Cull the Gnaw Hide Boars at the Mill Road Turnips Quest and register it at the front dest*` | Absicht `stealth`, Weg V3: `scene.concealed` und ein Schleichwurf gegen die Angestellte. Kein Interpreter, kein `quest.accept`; der Vertrag bleibt `listed` |
+| 16 (Antwort) | Die Notiz „Contract registered and active; payout 60 cp from the Alderwatch drawer …“ wird gespeichert. Der freie Fakt „status: active …“ wird abgewiesen (`engine_owned_fact`), der Erzähler erfährt aber nicht, dass der Vertrag noch am Brett hängt |
+| 30, 32 (Kampf) | „large boar“ abgewiesen (`world_rule`: ein Kampfbeitritt braucht `new` und `combat`), „big boar“ mit den Werten eines gewöhnlichen Keilers angelegt. Alle drei Keiler: 41 HP, ATK 11, Typ normal |
+| Ende | Vertrag `listed`, 30 cp, ein XP-Ereignis über 36 (12 + 12 + 12) |
+
+Auf 4.1.4 schlagen 5 von 6 Tests des Nachspiels fehl; nur der Invarianten-Test läuft auf beiden Ständen.
+
+### Befunde, Urteil, Ursache
+
+| # | Befund | Urteil | Ursache | Korrektur 4.1.5 |
+|---|---|---|---|---|
+| 1 | Der Questtitel „Gnaw-Hide“ löst Schleichen aus (P1) | **bestätigter Fehler** | `STEALTH_RE` findet „hide“ irgendwo in der Nachricht, hier im Titel. Eine V3-Absicht geht am Interpreter vorbei (`routeTurn`), also gab es nie ein `quest.accept` | V4: Bekannte Namen sind keine Taten; ein Schleichwort zählt nur als Alarics Verb |
+| 2 | Der Board-Generator gibt einer Jagd „TALK Harl Cotter to confirm the losses have stopped“ | **bestätigter Fehler** | Der Generator-Prompt enthielt die Regel („Add no local inspection, witness, sign-off or signature“), das Modell hielt sich nicht daran. `isHunt` las das TALK-Ziel als eigene Arbeit: gemischte Arbeit, also kein Jagdschutz | Die Engine normalisiert: Ein reiner Bestätigungsauftrag zählt bei einer Jagd nicht als Arbeit und wird nicht gebucht |
+| 3 | `quest.detail` speichert Engine-Zustand als Erinnerung | **bestätigter Fehler** | Die Firewall prüfte nur geänderte Beträge, XP, Rang, Beförderung und Gebühr. Status und der ausgeschriebene Lohn gingen durch, also blieb die Notiz | Die Notiz wird klauselweise bereinigt; ein falscher Status wird korrigiert |
+| 3+ | selbst gefunden: Der Statusfakt wurde wortlos abgewiesen | **bestätigt** | `engine_owned_fact` ohne Korrektur, also erzählte der Erzähler weiter einen aktiven Vertrag | Die Abweisung sagt dem Erzähler den Stand der Engine |
+| 3++ | selbst gefunden: Eine gemischte Notiz mit XP, Rang, Beförderung, Gebühr oder geändertem Lohn ging ganz verloren, samt Route und Kontakt | **bestätigt** (Verhalten seit 4.1.0) | Die Firewall prüfte die ganze Notiz auf einmal | Die Firewall weist nur noch ab, wenn die Notiz Mechanik ändert und daneben keine Geschichte hat; sonst streicht der World-Applier die Klauseln |
+| 4 | Veralteter Erzählervertrag auf der Karte | **bestätigter Setup-Fehler**, kein Engine-Fehler | Kartenbeschreibung von vor 4.1.2 (Request-Log). Erklärt einen Teil des Erzählverhaltens (die erfundene Cotter-Bestätigung), aber nicht 1, 2 und das fehlende `quest.accept` | Revisionszeile im Vertrag, Anzeige in der Statuszeile, Warnung; diese Doku |
+| 5 | Der große Keiler gibt dieselben XP wie die gewöhnlichen | **bestätigt**, mit zwei Ursachen | (a) Mechanisch war er ein gewöhnlicher Keiler: `creature.new` hatte kein Feld für ein stärkeres Individuum, und die Engine fixierte Werte nur aus Anker, Level und Typ. Die individuelle Variation aus Content #7 war nie umgesetzt. (b) Defeat XP hing nur an Level, Rangabstand und Typ | Extraktor-Feld `stronger`, Variante `strong` nach Content #7, Defeat XP nach den Werten |
+| 6 | selbst gefunden: Der Nachweis in der Hand passte nicht zu seinem Eintrag | **bestätigt** | `checkProof` verglich den ganzen Nachweistext „boar tusks, one pair per kill“ mit dem Gegenstandsnamen und die Einheit wörtlich. Mit den Hauern in der Hand wäre die Abgabe abgelehnt worden | Verglichen wird der Kern des Nachweises und das erste Wort der Einheit; die Zahl entscheidet weiter |
+
+**Schleichen (1).** Das gilt nur in V4; V3 liest wie bisher.
+- **Namen sind keine Taten.** Vor der Absichtserkennung blendet die Engine bekannte Namen aus mindestens zwei Wörtern aus: Questtitel, Ortsnamen, Namen von Personen und Kreaturen, Gegenstände. Bindestriche und Satzzeichen zwischen den Wörtern zählen nicht, „Gnaw-Hide“ ist „Gnaw Hide“. Das betrifft die ganze Fehlerklasse, nicht nur „hide“: „*I take the Kill the Rat King of the Tannery Drains contract*“ war ohne Ausblendung sogar ein Angriff ohne Ziel.
+- **An der Verbstelle bleibt ein Name stehen.** Steht ein Name dort, wo Alarics eigenes Verb stünde, ist er seine Tat: „I kill the rats“ und „*kill the rats*“ bleiben Angriffe, auch wenn ein Auftrag „Kill the Rats“ heißt. Ohne diese Ausnahme hätte das Ausblenden den Angriff verschluckt; in V4 beginnt ein Kampf nur über die Absichtserkennung, der Interpreter kennt keine Angriffe. Gefunden in der eigenen Prüfung des Entwurfs, vor dem Commit.
+- **Ein Schleichwort zählt nur als Alarics Verb.** Gemeint sind sneak, creep, hide, stalk, „crouch low“, „move quietly“ und neu „keep myself hidden“, „lay in wait“, „stay out of sight“. Das Verb muss am Satz- oder Sternchenanfang stehen oder nach I, we, and, then, but, so, or, to. Ein Adverb auf -ly darf dazwischen stehen.
+- **Beide Regeln greifen auch einzeln:**
+  - Der Satz des Laufs ist auch ohne bekannten Titel kein Schleichen.
+  - „*I take the Sneak and Hide contract*“ ist Schleichen, wenn die Engine den Titel nicht kennt, und kein Schleichen, wenn sie ihn kennt.
+- **Bleibt Schleichen:**
+  - „*i crouch down and sneak closer into medium range*“ (der Lauf, Nachricht 25)
+  - „I hide behind the crates“
+  - „I try to hide“
+  - „*I keep myself hidden as i lay in wait*“
+  - „I carefully creep forward“
+  - „*sneak up on them*“
+- **Ist kein Schleichen:** „I skin the boar and take its hide“.
+
+**Jagd ohne Bestätigungsauftrag (2).**
+- **Was übergangen wird:** Ein TALK-, GET- oder GIVE-Ziel, dessen Text nur Bestätigen, Unterschreiben, Gegenzeichnen, Prüfen, Bezeugen, Verbürgen, Beglaubigen oder Quittieren nennt, ist bei der Jagd-Erkennung keine eigene Arbeit.
+- **Was gebucht wird:**
+  - Der Vertrag einer Jagd wird ohne diese Ziele gebucht (`huntObjectives`).
+  - Der Annahme-Satz nennt den Trophäen-Nachweis: „Proof: 3 pairs of boar tusks, one pair per kill brought to a Guild hall; no local inspection, witness or signature is required.“
+  - Nennt der Aushang nur eine Unterschrift als Nachweis, heißt es „trophies of the kills“.
+- **Was bleibt:**
+  - Ein Gespräch, das Arbeit ist, etwa „TALK the old shepherd about where the pack dens“, macht den Auftrag weiter zu gemischter Arbeit.
+  - Die Lieferung der Tasche im selben Lauf behält „TALK the quarry overseer to confirm receipt“.
+- **Was nicht geändert wurde:** Es gibt kein Questtyp-System. Der Generator-Prompt bleibt `board-4.6`; er enthielt die Regel schon.
+
+**Notizen (3).** Eine Notiz zu einem Gildenvertrag wird an `.` und `;` in Teilsätze zerlegt.
+- **Gestrichen** werden Teilsätze über:
+  - den Status: registered, logged, accepted, active, listed, completed, turned in, failed;
+  - den Lohn: payout, reward, ein Betrag mit einem Lohnwort;
+  - Quest-XP, Gildenrang und Beförderung;
+  - eine Änderung der Mechanik: ein anderer Lohn, eine zurückgehaltene Zahlung, die Gebühr.
+- **Bleibt:** Route, Kontakt, Beobachtung, Hinweise, Zeitfenster, erzählte Anforderungen, plausible Prüfung, der eigene Bonus eines Auftraggebers („from his own purse“) und ein Preis unterwegs („the ferry costs 2 cp“).
+- **Ganz abgewiesen** wird eine Notiz nur in zwei Fällen:
+  - Es bleibt nichts übrig (`engine_owned_detail`).
+  - Die Notiz ändert die Mechanik und hat daneben keine Geschichte (`guild_quest_detail`, Firewall wie bisher).
+- **Korrektur bei falschem Status.** Behauptet ein gestrichener Teil einen Status, den der Vertrag nicht hat, bekommt der Erzähler eine Korrektur, im Lauf: „"Cull the Gnaw-Hide Boars at the Mill Road Turnips" is still LISTED on the Guild board: Alaric has not accepted it and nothing is logged for him (the engine's state; the story does not change it).“ Dasselbe gilt für den abgewiesenen freien Statusfakt.
+- **Wie bisher:** Eine Notiz wird auf 200 Zeichen gekürzt.
+
+**Vertrag auf der Karte (4).**
+- Der Vertrag trägt in Zeile 2 seine Revision: `Contract revision: 4.1.5`.
+- Bei einer V4-Kampagne zeigt die Statuszeile `narrator contract: current`, `OUTDATED` oder `not on the card`. Ist er nicht aktuell, erscheint einmal pro Chat eine Warnung mit dem Dateinamen.
+- Geprüft wird nur die Revisionszeile, nicht der ganze Text.
+
+**Stärkere Kreaturen und XP (5).**
+- **Extraktor** (delta-0.15, extract-5.0): `creature.new` hat das Feld `stronger`.
+  - `true` steht dort nur, wenn die Antwort das Individuum klar als größer oder stärker als gewöhnliche seiner Art etabliert („half again the size of the others“).
+  - Nie aus einem Namen („big boar“ im Vorbeigehen), nie aus Wut, Wunden oder Drama.
+  - Elite und Boss werden nie abgeleitet (Designation Lock).
+- **Engine:** `stronger` macht das Individuum zur Variante `strong`. Es bekommt die individuelle Variation aus Content #7 (`monsters.json` → `variation`): HP und ATK +20 %, DEF und MDEF +1, Init +2.
+  - Die Variation wird nach der Level-Skalierung und vor Elite/Boss angewandt und einmal fixiert.
+  - Keiler Level 1: HP/ATK/DEF/MDEF/Init 41/11/2/0/7 werden zu 49/13/3/1/9.
+- **Defeat XP** = bisherige Formel × Stärke.
+  - Bei Standardwerten ist die Stärke 1.
+  - Darüber gilt Stärke = 1 + (P − 1) × (1,5 − 1) / (1,75 × 1,15 − 1). P = (HP / HP_Standard) × (ATK / ATK_Standard), gemessen an den Standardwerten desselben Ankers, Levels und Typs.
+  - Die Mehrstärke wird also zu dem Satz bewertet, zu dem der Content den Elite-Typ bewertet: HP ×1,75 und ATK ×1,15 bringen dort XP ×1,5.
+- **Keiler Level 1:**
+
+  | Gegner | Defeat XP |
+  |---|---|
+  | Standard | 12 |
+  | stark | 14 |
+  | Elite | 18 |
+  | Level 2 | 24 |
+
+  Gegen die Kurve von 100 XP pro Level (`xp_to_next_per_level`) sind das 8,3 Standard- oder 7,1 starke Keiler pro Level. Der Bonus ist also moderat und liegt unter Elite und unter dem nächsten Level.
+- **Der Name entscheidet nichts:** Ein „Big Boar“ mit Standardwerten gibt 12.
+- **Unverändert:**
+  - Kampf-XP kommen weiter genau einmal, am Ende jedes Kampfes.
+  - Gewöhnliche Tiere bleiben deterministisch: keine Zufallsvariation, nur die ausdrücklich gemeldete Variante.
+
+**Nachweisvergleich (6).**
+- **Kern statt ganzem Text:** Verglichen wird der Kern des Nachweises, also der Teil vor Komma, Semikolon, Doppelpunkt, Klammer oder Gedankenstrich: „boar tusks, one pair per kill“ wird zu „boar tusks“.
+- **Einheit nach ihrem ersten Wort**, im Singular: „pairs of leg joints“ zählt als „pairs“, wie im Lauf 14:56.
+- **Unverändert:** Eine andere Einheit oder ein anderer Gegenstand passt nicht. Die Menge entscheidet weiter.
+
+**Was im Lauf funktioniert hat** und weiter geschützt ist:
+- „*i crouch down and sneak closer*“ war Schleichen und führte zum Hinterhalt mit Hinterhalt-Krit.
+- Drei Keiler waren drei Engine-Entitäten, mit stimmigen HP und MP.
+- Kampf-XP kamen einmal, drei Engine-Tode.
+- `task` und `desired_end_state` waren getrennt, die Brett-Texte echte Aufgaben.
+- Die Trophäenmenge stimmte mit den Tötungen überein.
+- Das Nachspiel prüft Nachricht 25 (Weg V3, Schleichen), die drei Tode, das eine XP-Ereignis und die Zählung „3 of 3“. Hinterhalt, Krit sowie `task` und `desired_end_state` decken die bestehenden Tests ab.
+
+### Nachweise 4.1.5, nach Testart getrennt
+
+| Testart | Prüfung | Ergebnis |
+|---|---|---|
+| deterministisch | `npm test` | **515/515** (4.1.4: 501) |
+| deterministisch | Nachspiel des Laufs, `live_0930c.test.js` | 6/6; auf 4.1.4 (`f600166`) 1/6 |
+| deterministisch | neue Einzeltests, `fixes_4_1_5.test.js` | 8/8. Jede Teilkorrektur hat ihren Fehlfall aus dem Lauf und den Fall, der bleiben muss |
+| deterministisch | Mutationsprobe: 16 Teilkorrekturen einzeln abgeschaltet | Jede lässt 1–3 Tests fehlschlagen. Die Teile: Namen ausblenden, Namen an der Verbstelle stehen lassen, Verbstellung beim Schleichen, Bestätigungsziel bei `isHunt`, beim Buchen und im Annahme-Satz, Statusklauseln, die beiden Korrekturen, gemischte Notiz in Firewall und World-Applier, reine Mechanik-Notiz, Variation, XP, Weitergabe von `stronger`, Nachweisvergleich |
+| deterministisch | bestehende Testerwartungen | keine geändert |
+| deterministisch | V3-Differenzlauf v8–v12 | identisch mit 4.1.4 bis auf den Build-Stempel |
+| deterministisch | P0-Rescore der gespeicherten Antworten | identisch mit 4.1.4 |
+| Mock-Provider-Smokes | Browser-Smoke V3 + V4 | OK. Neu geprüft werden die Anzeige `narrator contract: current`, die Anzeige `OUTDATED` bei einer Karte ohne Revisionszeile und die eine Warnung. Ignoriert die Engine die Revision, schlägt die Seite fehl |
+| Mock-Provider-Smokes | echtes SillyTavern 1.19, V4 | Neue Prüfung `narratorContract`. Der erste Lauf auf 4.1.5 scheiterte nur an `noPageErrors`: SillyTavern hatte seine eigene Statusabfrage abgebrochen (`AbortError @ openai.js:4565`), wie im ersten Lauf auf 4.1.4. Alle weiteren Läufe bestanden 18/18, auch der auf dem End-Stand (Statuszeile `… narrator contract: current`) |
+| Mock-Provider-Smokes | echtes SillyTavern 1.19, V3 | 21/21 auf dem End-Stand (wie vorgeschrieben direkt nach `setup.mjs`) |
+| Mock-Provider-Smokes | `secrets.json` nach den Läufen | `{}` |
+| echter Modell-Live-Test | – | **steht aus**; nächster Schritt |
+
+Im Nachspiel bekommt Nachricht 15 eine vorgegebene Interpreter-Antwort (`quest.accept` des Aushangs), weil der Lauf den Interpreter für sie nie gefragt hat. Ob das echte Modell sie so gibt, zeigt erst der Live-Test. Der Schleichwurf des Laufs fehlt im Nachspiel, deshalb verschieben sich die Würfel des Kampfes um einen Wurf. Das Nachspiel kämpft den Kampf mit den Befehlen des Laufs gegen die Keiler, die noch stehen, bis zum Ende.
+
+### Bewusste Designentscheidungen 4.1.5
+
+- **Nur V4.** V3 bleibt byte-gleich (Differenzlauf). In V3 bleibt „Gnaw Hide“ deshalb Schleichen.
+- **Ausgeblendet werden nur bekannte Namen aus mindestens zwei Wörtern, und nur außerhalb der Verbstelle.** Ein einzelnes Wort ist zu oft ein echtes Verb, und gegen die Fehlerklasse wirkt schon die Verbstellung. An der Verbstelle ist ein Titel Alarics Tat.
+- **Das Bestätigungsziel wird nicht gebucht, nicht nur übersehen.** Sonst stünde im Quest-Gedächtnis weiter eine örtliche Abnahme, die die Gilde nicht verlangt. Brett, Katalog und Quest-Gedächtnis zeigen den gebuchten Vertrag, also ohne dieses Ziel. Die Rohantwort des Generators bleibt im Protokoll.
+- **Die Wortliste für Bestätigungen** gilt nur für TALK, GET und GIVE. Ein Gespräch, das Arbeit ist, bleibt Arbeit.
+- **Der XP-Satz für mehr Stärke** kommt aus dem Content selbst (Elite: Werte gegen XP) und ist nicht frei gewählt. Er misst nur HP und ATK; das sind die Werte, an denen Content #7 und Elite die Stärke vor allem festmachen.
+- **Stärke nur über das ausdrückliche Feld** `stronger`, nie aus dem Namen. Es gibt keine schwächere Variante, und XP fallen nie unter den Wert des Levels.
+- **Revisionszeile statt Textvergleich.** Die Engine prüft nur, ob die Karte den Vertrag dieses Builds trägt. Eine Karte mit richtiger Zeile und von Hand geändertem Text zeigt `current`.
+
+### Restrisiken 4.1.5
+
+- **Schleichen:**
+  - Die Verbstellung ist eine Heuristik. Ein ungewöhnlich gebauter Satz kann als Schleichen ausfallen.
+  - Ein einzelnes Namenswort nach „to“ oder „and“ zählt („I talk to Hide“).
+  - Ein frei umschriebener Titel wird nicht ausgeblendet („the hide job“). Wegen der Verbstellung ist er trotzdem kein Schleichen.
+  - Ein Titel am Satzanfang gilt als Tat: „Kill the Rats sounds good“ bleibt ein Angriff, und die Engine fragt nach dem Ziel.
+- **Bestätigungsziele:** Ein anders formulierter Bestätigungsauftrag („TALK Cotter to see that the boars are gone“) bleibt gemischte Arbeit.
+- **Notizen:**
+  - Ein Erzählsatz mit Statuswörtern wird mitgestrichen, etwa „Cotter registered a complaint with the reeve“ oder „a reward of a ham“.
+  - Ein bedingter Satz („once the job is completed“) kann eine überflüssige, aber wahre Statuskorrektur auslösen.
+- **`stronger` hängt am Extraktor.** Der Lauf kannte das Feld noch nicht. Ob das Modell es richtig setzt, zeigt erst der Live-Test.
+- **Der Nachweisvergleich ist lockerer:** Kern und erstes Einheitswort. Die Menge entscheidet weiter.
+- **Smoke:** Die abgebrochene Statusabfrage SillyTaverns kann einen ersten Smoke-Lauf rot färben. Das betrifft keinen Engine-Code.
+- **Aus §11:** Personen kämpfen in V4 mit der Vorlage `commoner`.
+- Alle Restrisiken aus §11, §10 und §9 gelten weiter.
+
+### Der echte Live-Test (Build 4.1.5)
+
+**Einrichtung** wie [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern):
+1. Extension `avereth-engine/` aus `claude/v4-integration-fixes-2026-09-30` kopieren, eine alte Kopie vorher löschen. Die Statuszeile zeigt `Avereth Engine 4.1.5`.
+2. **Kartenbeschreibung vollständig ersetzen:** die ganze Beschreibung löschen, dann den Inhalt von `content/narrator/Avereth_Narrator_Contract_v4.txt` einfügen. Zeile 2 lautet `Contract revision: 4.1.5`.
+3. **Neuer Chat**, nicht der Spielstand vom 22:41. Erschaffung frei; der Lauf 22:41 war ein Mage.
+4. Nach der Begrüßung zeigt die Statuszeile `narrator contract: current`. Zeigt sie `OUTDATED` oder `not on the card`: anhalten und die Karte richten.
+
+**Zu prüfen:**
+
+| # | Situation | Erwartet |
+|---|---|---|
+| 1 | Einen Auftrag mit einem Tatwort im Titel annehmen, beim Namen genannt (wie „Cull the Gnaw-Hide Boars …“) | `quest.accept` und Vertragszettel; kein Schleichwurf |
+| 2 | Echtes Schleichen: „*I crouch down and sneak closer*“ | Schleichwurf, danach Hinterhalt wie im Lauf |
+| 3 | Einen Jagdauftrag annehmen | kein „TALK … to confirm/sign/inspect“ unter den Zielen; Annahme-Satz „Proof: … brought to a Guild hall; no local inspection, witness or signature is required.“ |
+| 4 | Der Erzähler nennt Status oder Lohn in einer Notiz | Das Quest-Gedächtnis zeigt die Notiz ohne diese Teile; ein falscher Status wird korrigiert |
+| 5 | Eine Kreatur, die die Geschichte deutlich größer oder stärker macht als die anderen | höhere Werte im HUD und mehr Defeat XP (Keiler Level 1: 14 statt 12). Ein bloßes „big …“ ohne solche Beschreibung bleibt Standard |
+| 6 | Tötungen gegen einen aktiven Auftrag | `defeated (engine count): N of M` |
+| 7 | Zu wenige Tötungen, aber genug Trophäen | kein `QUEST READY`, die Abgabe wird abgelehnt („the engine counts N of M …“) |
+| 8 | Eine glaubwürdige andere Lösung mit weniger Tötungen | `QUEST READY` mit dem Grund; die Abgabe wird angenommen |
+| 9 | Zurück zu einer bekannten Gildenhalle | Ankunft in der Halle, kein erfundenes Büro |
+| 10 | Ein erfüllter aktiver Auftrag | `QUEST READY`; die Trophäen in der Hand passen zum Nachweis |
+| 11 | Abgabe | Lohn und Quest-XP genau einmal |
+| 12 | Eine zweite Abgabe | „already turned in“ |
+| 13 | Ein Monster entkommt und kommt zurück | dieselbe ID im HUD, nach dem Tod tot |
+| 14 | Mit Sprechmarke reden, ohne zu kämpfen; mit Sprechmarke kämpfen | wie §11, Zeilen 6 und 7 |
 
 **Zurückschicken:** wie [LIVETEST_V4.md §6](LIVETEST_V4.md#6-zurückschicken): Chat-Export, Event-Log, Request-Log. **Keine Schlüssel, keine Authorization-Header.**

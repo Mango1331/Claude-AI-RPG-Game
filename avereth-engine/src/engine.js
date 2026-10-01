@@ -224,7 +224,7 @@ export function materialise(s, content, dice, emit, id) {
         if (!anchor) throw new Error(`creature ${id} has no valid body-plan anchor`);
         const area = truth(s, s.scene.location, 'danger')[0]?.o || 'unknown';
         const level = e.level || chooseCreatureLevel(area, content, dice);
-        emit({ t: 'entity.updated', d: { id, set: { profile: scaleCreature(anchor, level, e.type || 'normal', content) } } });
+        emit({ t: 'entity.updated', d: { id, set: { profile: scaleCreature(anchor, level, e.type || 'normal', content, e.variation || null) } } });
         return;
     }
     const words = [...(e.descriptors || []), e.traits || ''].join(' ');

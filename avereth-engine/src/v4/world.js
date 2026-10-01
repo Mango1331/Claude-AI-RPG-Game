@@ -17,6 +17,7 @@ import { truth, entityLabel, setFactEvents, statusOf } from '../knowledge.js';
 import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
 import { firewall } from './firewall.js';
 import { stripOwned, wrongClaim, ownershipViolation } from './ownership.js';
+import { mayOpenFight, mayTake } from './envelope.js';
 import {
     PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind,
 } from './domain.js';
@@ -33,8 +34,6 @@ const RELATION_WORDS = new Set(['of', 'at', 'in', 'on', 'with', 'by', 'from', 'n
 // a local sign-off made a condition ("must inspect and sign before payment", "will sign once …")
 const SIGN_OFF = /\b(?:sign(?:s|ed|ing)?|signature|countersign\w*|inspect\w*|confirm\w*|vouch\w*|witness\w*|verif\w*)\b/i;
 const REQUIRE = /\b(?:must|required?|requires|need(?:s|ed)?|before|until|unless|only|once)\b/i;
-const AUTHORITY_ROLE = /\b(?:guard|watch(?:man)?|sergeant|captain|constable|reeve|bailiff|magistrate|official|officer|toll ?keeper|tax|customs|steward|marshal|warden)\b/i;
-const HOSTILE_ROLE = /\b(?:bandit|thief|robber|brigand|cutpurse|pickpocket|thug|highwayman)\b/i;
 
 /** The firewall's view of the state after the player's turn (src/v4/firewall.js FirewallContext). */
 export function firewallContext(s, content) {
@@ -160,6 +159,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const objectsNew = new Map(); // name -> object id, for object.move {new: name} of this answer
     const hostileRefs = new Set(fw.accept.filter((d) => d.type === 'hostile').flatMap((d) => d.by || []).map((x) => normText(x)));
     const joinedByNew = new Set();
+    const bornHere = new Set(); // the people and creatures this answer introduces (an ambush is the world's move)
     const cap = s.encounter ? content.rules.time.combat_cap_min : auth.timeCap ?? content.rules.time.default_cap_min;
     let timeUsed = 0;
     let arrived = null;
@@ -189,6 +189,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         return local.length === 1 ? local[0].id : null;
     };
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
+    // the World Envelope at this step (docs/ARCHITECTURE_GEN35.md §2.3): may this actor turn on Alaric of its own accord?
+    const envelopeAllows = (id, d) => {
+        if (typeof id !== 'string' || !s.entities[id] || !['npc', 'creature'].includes(s.entities[id].kind)) return true; // the V3 rules refuse unknown attackers
+        const v = mayOpenFight(s, content, id, { newInAnswer: bornHere.has(id) });
+        if (v.ok) return true;
+        const label = entityLabel(s, id);
+        reject(d, 'envelope', `${id} does not turn on Alaric: ${v.why}`);
+        const correction = `${label} did not turn on Alaric in the last reply (${v.why}); no fight started. ${v.rule === 'provoked_only' ? 'Only a cause the story establishes first (an insult, a threat, harm) turns them against him.' : 'An animal like this one attacks only when cornered or within reach.'}`;
+        if (!corrections.includes(correction)) corrections.push(correction);
+        return false;
+    };
     let calls = 0;
     const v3 = (report, d) => {
         calls += 1;
@@ -241,6 +252,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const r = v3({ new: entries, ...(joins ? { combat: entries.map((e) => ({ by: e.ref })) } : {}) }, d);
         if (joins) joinedByNew.add(normText(d.ref));
         const created = r.events.filter((e) => e.t === 'entity.created').map((e) => e.d.entity.id).filter((id) => !before.has(id));
+        for (const id of created) bornHere.add(id);
         const known = r.accepted.map((a) => /^known (\S+) \(not duplicated\)$/.exec(a)?.[1]).filter(Boolean);
         const ids = [...created, ...known];
         if (ids.length) refs.set(normText(d.ref), ids[0]);
@@ -316,6 +328,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                         if (!p.error) where = p.id;
                     }
                     const id = uniqueEntityId(s, d.name || d.role || d.ref);
+                    bornHere.add(id);
                     emit({ t: 'entity.created', d: { entity: { id, kind: 'npc', name: d.name ? String(d.name).slice(0, 60) : null, descriptors: [...new Set([...(d.role ? [d.role] : []), ...(d.desc || []), d.ref].map((x) => String(x).toLowerCase().slice(0, 40)))], traits: (d.desc || []).join(', ').slice(0, 240), status: 'alive', location: where ? locationOf(s, where) : s.scene.location, at: where, created: { turn: s.turn, minute: s.clock.minute }, source: { kind: 'narration', msg }, card: {}, template: 'commoner' } } });
                     refs.set(normText(d.ref), id);
                     if (d.name) refs.set(normText(d.name), id);
@@ -360,12 +373,18 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'aware':
                 v3({ aware: [{ who: mapRef(d.who), level: d.level }] }, d);
                 break;
-            case 'intent':
-                v3({ intent: [{ who: mapRef(d.who), intent: d.intent }] }, d);
+            case 'intent': {
+                // an intent to attack him is the same decision as turning on him: the World Envelope's (outside a fight)
+                const who = mapRef(d.who);
+                if (d.intent === 'attack' && !s.encounter && !envelopeAllows(who, d)) break;
+                v3({ intent: [{ who, intent: d.intent }] }, d);
                 break;
+            }
             case 'hostile': {
                 const by = (d.by || []).flatMap((x) => (groups.get(normText(x)) || [mapRef(x)])).filter((x) => !joinedByNew.has(normText(x)));
-                const left = by.filter((x) => !(typeof x === 'string' && s.encounter?.combatants?.[x]));
+                // who turns on Alaric: inside the World Envelope at this step (an attitude the reply lowered before is
+                // a cause); outside it nobody attacks, the next engine block says why
+                const left = by.filter((x) => !(typeof x === 'string' && s.encounter?.combatants?.[x])).filter((x) => envelopeAllows(x, d));
                 if (left.length) v3({ combat: left.map((x) => ({ by: x })) }, d);
                 break;
             }
@@ -750,12 +769,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const counterpart = openOffers(s).some((o) => o.seller === by) || events.some((e) => e.t === 'transaction.completed' && e.d.seller === by);
         if (counterpart) { reject(d, 'coerce', 'the other side of a sale or an open offer cannot coerce (a sale is never a confiscation)'); return; }
         if (!d.because) { reject(d, 'coerce', 'coercion needs a because'); return; }
-        // taking Alaric's coin or things is the engine's (money is hard state): a fine or confiscation needs an authority,
-        // a robbery a hostile robber (or a fight); who may take what is not left to the story
-        const e = s.entities[by];
-        const role = [truth(s, by, 'occupation')[0]?.o, ...(e?.descriptors || []), e?.traits, e?.template].filter(Boolean).join(' ');
-        if ((d.kind === 'confiscation' || d.kind === 'fine') && !AUTHORITY_ROLE.test(role)) { reject(d, 'coerce', `${d.kind} needs an authority (a guard, an official)`); return; }
-        if (d.kind === 'robbery' && !(HOSTILE_ROLE.test(role) || s.pending_combat?.some((p) => p.by === by) || s.encounter)) { reject(d, 'coerce', 'a robbery needs a hostile robber'); return; }
+        // taking Alaric's coin or things is the engine's (money is hard state): who may take what is the World Envelope's
+        // (src/v4/envelope.js): a fine or confiscation needs an authority, a robbery a hostile robber (or a fight)
+        const may = mayTake(s, by, d.kind);
+        if (!may.ok) { reject(d, 'coerce', may.why); return; }
         const sheet = s.entities.pc.sheet;
         if (d.coin_cp) {
             const cp = Math.min(d.coin_cp, sheet.coin_cp);

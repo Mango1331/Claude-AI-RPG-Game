@@ -3,6 +3,7 @@
 // Crit, no PER in combat math; only a true Ambush Opening Action crits (×1.5, every strike, PC and creatures alike).
 // The only roll left in an attack is the damage variance. Every step is written into the encounter snapshot (the
 // FIXED+CURRENT snapshot that Testrun-v1 lost), so the next turn copies it instead of re-guessing.
+import { opensViolence } from './policy.js';
 import { deriveCharacter, rawPower, rawPowerText } from './derived.js';
 import { defeatXp, awardXp, strengthOf } from './progression.js';
 import { scaleCreature } from './npcgen.js';
@@ -648,7 +649,7 @@ export function npcDecide(ctx, npcId) {
     // not open with violence unless it is aggressive by temperament (it seeks cover or stays put instead).
     const attitude = ctx.state?.relations?.[`rel.${npcId}.attitude.pc`]?.value ?? 0;
     const harmed = me.current.hp < me.fixed.max_hp || wasHit || enc.log.some(attackOn);
-    if (!intent && me.fixed.sapient && attitude > -20 && !harmed && temper !== 'aggressive') {
+    if (!intent && me.fixed.sapient && !opensViolence({ sapient: true, temperament: temper, attitude, harmed }).ok) {
         if (temper === 'skittish') return { kind: 'flee', why: 'not hostile, frightened' };
         return me.current.cover === 'none' && band !== 'ENGAGED' ? { kind: 'cover', why: 'not hostile, not yet harmed: seeks cover' } : { kind: 'hold', why: 'not hostile, not yet harmed' };
     }

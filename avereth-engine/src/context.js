@@ -11,6 +11,7 @@ import {
 import { rank, pack, Bm25 } from './retrieval.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
 import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText } from './v4/guild.js';
+import { envelopeBlock } from './v4/envelope.js';
 import { sceneHandle } from './v4/scene_handles.js';
 
 export const DEFAULT_BUDGET = 1400;
@@ -464,6 +465,8 @@ export function buildContext(state, content, opts = {}) {
         rulesUsed += estimateTokens(t);
     }
     if (rulesTexts.length) add('rules', `RULES (situational):\n${rulesTexts.join('\n---\n')}`, 0, true);
+    // Gen 3.5: the World Envelope (src/v4/envelope.js): the causal limits of this reply, nothing for a scene without them
+    if (v4 && !opts.systemQuery) add('envelope', envelopeBlock(state, content), 0);
     if (opts.corrections && opts.corrections.length) add('corrections', `CORRECTIONS (the previous reply conflicted with the engine; keep the engine's version):\n${opts.corrections.map((c) => `- ${c}`).join('\n')}`, 1);
     if (opts.systemQuery) {
         add('resolved', `SYSTEM QUERY (#system): ${opts.systemQuery}\nAnswer ONLY as the System (neutral, private, computer-like): no narration, no NPC reactions, story time and combat stay frozen. Use the state above, Core rules and player-known content; show formulas and arithmetic when useful; say INSUFFICIENT INFORMATION when data is missing. Never reveal hidden NPC data.`, 0);
@@ -483,7 +486,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'present', 'named', 'combat', 'facts', 'quests', 'relevant', 'lore', 'rules', 'corrections', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'present', 'named', 'combat', 'facts', 'quests', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };

@@ -1,6 +1,6 @@
 # Avereth Gen 3.5: Architektur und Migration
 
-Stand: 01.10.2026. Build 4.2.0, Branch `claude/gen35-world-envelope-2026-10-01`.
+Stand: 01.10.2026. Build 4.2.1 (Gen 3.5 mit der Härtung nach dem Review, §8), Branch `claude/gen35-world-envelope-2026-10-01`.
 
 | | |
 |---|---|
@@ -115,6 +115,7 @@ Die Nachricht wird einmal gelesen (`readTurn`), und beide Pfade schreiben diesel
 - **`acts`**, Story-Pfad: die Interpreter-Befehle nach dem Agency Guard, `source: 'interpreter'`. Was der Guard entfernt hat, bleibt mit `dropped: <Regel>` sichtbar.
 - **`route` und `reason`:** erzwungen (`campaign`, `creation`, `dead`, `fight`, `committed`) oder aus dem Akt. Ein mechanischer Akt geht in die V3-Engine, sonst läuft der Story-Pfad, genau wie der Router von 4.1.5.
 - **Wiederverwendung:** Swipe und Regenerate nutzen den Record, wie bisher. Der Decision Trace zeigt für beide Pfade dieselbe Form.
+- **Was es nicht ist:** kein einheitlicher semantischer Compiler. Der Pfad wird gewählt, bevor der Interpreter liest; die gemeinsame Form entsteht danach. Treffender ist „ein einheitlicher Turn-Record“. Der Name `ir-1` bleibt, weil er in gespeicherten Chats steht.
 
 ### 2.2 Decision Ownership (`src/v4/ownership.js`)
 
@@ -149,7 +150,9 @@ Jede kanonische Zustandsart hat **genau eine** Owner-Domain. Die Tabelle ist Dat
 | `listing.gone` | `guild.board`, `quest.status` → `world.taken` |
 | `arrive` | Status, Coin, XP, Inventar, Rang → `conditional` (die Abgabe, die sein eigener Befehl an die Ankunft gebunden hat) |
 
-`eventKind` ordnet jedes Event einer Art zu, auch datenabhängig (`coin.changed` von Alaric ist `pc.coin`, von anderen `entities`). Der World-Applier fragt bei eingeschaltetem Assert (`assertOwnership`, in der ganzen Testsuite an) bei **jedem** Event eines Deltas `ownershipViolation` und bricht mit „Decision Ownership: …“ ab.
+`eventKind` ordnet jedes Event seiner primären Art zu, auch datenabhängig (`coin.changed` von Alaric ist `pc.coin`, von anderen `entities`). Bei eingeschaltetem Assert (`assertOwnership`, in der ganzen Testsuite an, im Spiel aus) prüft der World-Applier bei **jedem** Event eines Deltas zweierlei und bricht sonst mit „Decision Ownership: …“ ab:
+- **Alle tatsächlichen Wirkungen** (seit 4.2.1): `stateRegions` nimmt vor und nach dem Reducer einen Fingerabdruck jeder Zustandsregion; jede geänderte Region muss das Delta schreiben dürfen. Ein Event ändert oft mehrere Regionen (`scene.moved` verschiebt Alaric, die Szene und die Datensätze der Anwesenden). Die Regionen sind gemessen, nicht nachgepflegt: Eine zweite Liste „welches Event schreibt was“ würde den Reducer kopieren und mit ihm auseinanderlaufen.
+- **Tore als Capabilities** (seit 4.2.1): Ein Tor öffnet nur, wenn der World-Applier es in **diesem** Schritt gewährt hat, und das tut er genau dort, wo die Prüfung bestanden ist (`mayTake`, Envelope, Geschenk- und Nehmen-Regeln, der vom Spieler vorab vereinbarte Kauf, Rast, ein gescheiterter Vertrag, ein vergebener Aushang, die bedingte Abgabe). Die Deklaration allein genügt nicht mehr.
 
 **Regel für Freitext.** Freitextspeicher dürfen Engine-Zustand nicht als zweite Wahrheit enthalten: Status, Auszahlung, XP, Rang oder Mitgliedschaft eines Gildenvertrags. Eine einzige Klauselregel (`ownedClause`, `stripOwned`) gilt für alle Speicher:
 - **Quest-Notiz** (`quest.detail`): wie 4.1.5, Klausel für Klausel gleich (Test über alle Notizen und Erinnerungen der Aufzeichnungen).
@@ -171,19 +174,21 @@ Der Envelope wird vor der Narration deterministisch aus dem Zustand berechnet: f
     - Scheue Tiere: nur in die Enge getrieben, also auf ENGAGED und unverletzt (`cornered_only`).
     - Defensive Tiere: nur, was in Reichweite kommt (ENGAGED, `reach_only`).
     - Alle anderen Tiere: frei.
-- **Nehmen** (`mayTake`): Strafe und Beschlagnahme nur durch eine Obrigkeit (Rolle); Raub nur durch einen feindseligen Räuber oder in einem festgelegten oder laufenden Kampf. Die Gegenseite eines Handels nimmt nie (vorher geprüft, unverändert).
+- **Nehmen** (`mayTake`): Strafe und Beschlagnahme nur durch eine Obrigkeit (Rolle); Raub nur durch einen feindseligen Räuber, einen, der sich auf einen Kampf mit Alaric festgelegt hat, oder einen feindlichen Kämpfer des laufenden Kampfes (seit 4.2.1; vorher genügte irgendein laufender Kampf). Die Gegenseite eines Handels nimmt nie (vorher geprüft, unverändert).
 
 Derselbe Envelope wird zweimal verwendet:
 1. **Vor der Prosa.** Der Engine-Block zeigt nur die Grenzen (Abschnitt `WORLD ENVELOPE`, gruppiert, nichts in einem Kampf, bei der Erschaffung oder in V3). Innerhalb der Grenzen entscheidet der Erzähler frei, wer hilft, ablehnt, geht, blufft oder zögert. Die Vertragszeile (Revision 4.2.0) sagt das. Der Abschnitt hat ein **eigenes Kontingent** wie die Situationsregeln und die Ausgabezeile: Er verdrängt keine abgerufene Erinnerung und keine Lore (§6.2).
 2. **Nach der Prosa.** Der World-Applier prüft `hostile`, `intent: attack` (außerhalb eines Kampfes) und `coerce` mit denselben Funktionen gegen den Zustand **dieses Schritts**. Eine Haltung, die die Antwort vorher senkt, ist ein Anlass. Eine Ablehnung (`envelope`) bringt eine Korrektur in den nächsten Engine-Block.
+
+**Entscheidung: eine Reaktionsgrenze, kein Kausalbeweis.** Senkt dieselbe Antwort erst Brens Haltung und lässt ihn dann zuschlagen, ist der Angriff erlaubt; eine Haltung, die erst *nach* dem Angriff sinkt, legitimiert nichts (Test). Die Alternative, nur den Zustand vor der Antwort gelten zu lassen, bräche den Hauptfall: Alaric beleidigt Bren in seiner Nachricht, die Antwort erzählt Wut und Schlag. Ob ein Anlass „gut genug“ ist, kann deterministischer Code nicht beurteilen; eine Haltungsänderung trägt immer ein `why`. Die Vertragszeile sagt dem Erzähler genau das: Gewalt erst, wenn die Geschichte einen Anlass gibt.
 
 Kampf, Erzähler-Vorgabe und Prüfung können damit nicht auseinanderlaufen. Der Paritätstest prüft beide Richtungen: für Menschen über Temperament × Haltung × Verletzung, für Tiere über Temperament × Abstand × Treffer gegen die Verzweigungen von `npcDecide`.
 
 ### 2.4 Selective Persistence: der Kampf-Scope
 
 Was die Geschichte **während eines Kampfes** über die Kämpfenden sagt (Wunden, wie einer sich bewegt, was er tut), beschreibt Zustand, der dem Kampf gehört. Ein solcher Fakt bekommt `scope: {fight: <Encounter-ID>}` und ist nur aktuell, solange dieser Kampf läuft:
-- Gescoped wird ein nicht-funktionaler Fakt über einen Kampfteilnehmer und ein Fakt über die Art der noch stehenden Gegner („the wolves“, „the last wolf“), der keine Entität nennt.
-- Nicht gescoped werden funktionale Eigenschaften eines Kampfteilnehmers (Aussehen, Name, Status) und alles, was außerhalb eines Kampfes gesagt wird.
+- Gescoped wird ein Fakt über einen Kampfteilnehmer oder über die Art der noch stehenden Gegner („the wolves“, „the last wolf“), dessen Prädikat zum Moment des Kampfes gehört: Verhalten, Haltung, Position, Bewegung, letzter Angriff, Taktik, `wounded`, Blutung, Erschöpfung.
+- Nicht gescoped (seit 4.2.1 konservativ): jedes andere Prädikat, und auch ein Moment-Prädikat nicht, wenn es eine dauerhafte Folge nennt („lost its left eye“, Narbe, abgetrennt, Tätowierung, Brandmal). Ebenso alles, was außerhalb eines Kampfes gesagt wird. Im Zweifel bleibt ein Fakt dauerhaft, wie vor 4.2.0.
 - Die Gültigkeit wird beim Lesen ausgewertet (`factLive` in src/knowledge.js), es gibt kein Lösch-Event. Das Log behält jeden Fakt; wer einen solchen Fakt kannte, kennt nach dem Kampf etwas Veraltetes (`outdated`).
 - Den Zustand eines Kampfteilnehmers selbst (`condition`) lehnt schon die V3-Regel ab, wie bisher.
 
@@ -191,7 +196,7 @@ Was die Geschichte **während eines Kampfes** über die Kämpfenden sagt (Wunden
 1. **Daten:** In den drei aufgezeichneten Live-Läufen waren die Ortsfakten außerhalb von Kämpfen überwiegend dauerhaft („Millbrook has an alehouse“). Die flüchtigen Fakten häuften sich in Kämpfen, und dort folgt die Lebensdauer ohne Modellurteil aus der Ownership-Tabelle (`combat` ist engine-eigen).
 2. **Messbarkeit:** Ein neues Feld ändert Prompt und Schema des Extraktors (extract-5.0, durch Tests und P0 festgehalten). Ob das Modell `scene` und `local` verlässlich setzt, lässt sich nur mit dem echten Modell messen. Ein nicht messbarer Baustein wird nicht erzwungen (§5).
 
-Ergebnis in den Replays: 8 von 94 Fakten gescoped, alle während eines Kampfes, keiner außerhalb.
+Ergebnis in den Replays: 6 von 94 Fakten gescoped, alle während eines Kampfes, keiner außerhalb (4.2.0: 8; die zwei Status-Fakten über „wolf“ bleiben jetzt dauerhaft).
 
 ### 2.5 Was unverändert bleibt
 
@@ -232,7 +237,7 @@ Jeder Schritt hielt alle bestehenden Tests unverändert grün, brachte eigene Te
 - **Due-Queue und Lazy Simulation:** Die Ownership-Tabelle und der Envelope schaffen die Grundlage. Die Queue folgt erst, wenn ein Live-Lauf einen Bedarf zeigt.
 - **NPC-Tiefe T2/T3 (Inner World):** gibt es nicht. Auch LWE nutzt sie im untersuchten Projekt null Mal.
 - **Extraktor-Scope `scene`/`local`/`lasting`:** siehe §2.4.
-- **Die zwei offenen 4.1.6-Befunde** aus der ChatGPT-Prüfung gehören nicht in diesen Architekturbranch.
+- **Die zwei offenen 4.1.6-Befunde** aus der ChatGPT-Prüfung sind seit 4.2.1 eingebaut (§8).
 
 ## 5. Messung und Abbruch
 
@@ -246,12 +251,12 @@ Jeder Schritt hielt alle bestehenden Tests unverändert grün, brachte eigene Te
 
 | Prüfung | Ergebnis |
 |---|---|
-| Testsuite (`npm test`) | 542/542 (515 bestehende + 27 neue in `tests/v4/gen35_*.test.js`); keine bestehende Testdatei geändert, `tests/helpers.js` schaltet nur den Ownership-Assert für alle ein |
-| V3-Differenzlauf (Testruns v8–v12, `xp10`) | identisch bis auf die Versionsanzeige im `#audit`-Panel |
-| V4-Differenzlauf (`tools/v4_diff.mjs`, drei Live-Läufe, 122 Schritte) | 55 Schritte identisch; jeder Unterschied in einer erwarteten Kategorie (IR-Feld 62, Envelope-Abschnitt 33, Kampf-Scope 8, Retrieval nach abgelaufenen Kampf-Fakten 5); keiner „other“; Endzustände gleich bis auf Scopes und Versionsstempel; keine Envelope-Ablehnung |
-| P0-Rescore (S1-Guard, S2-Firewall) | identisch mit der Basis |
+| Testsuite (`npm test`) | 4.2.1: 550/550 (515 bestehende + 29 in `tests/v4/gen35_*.test.js` + 6 in `fixes_4_2_1.test.js`); keine bestehende Testdatei geändert, `tests/helpers.js` schaltet nur den Ownership-Assert für alle ein |
+| V3-Differenzlauf (Testruns v8–v12, `xp10`) | identisch bis auf die Versionsanzeige im `#audit`-Panel (4.2.0 und 4.2.1) |
+| V4-Differenzlauf (`tools/v4_diff.mjs`, drei Live-Läufe, 122 Schritte) | 4.2.1: 56 Schritte identisch; jeder Unterschied in einer erwarteten Kategorie (IR-Feld 62, Envelope-Abschnitt 33, Kampf-Scope 6, Retrieval nach abgelaufenen Kampf-Fakten 5); keiner „other“; Endzustände gleich bis auf Scopes und Versionsstempel; keine Envelope-Ablehnung, kein Ownership-Abbruch |
+| P0-Rescore (S1-Guard, S2-Firewall) | identisch mit der Basis (4.2.0 und 4.2.1) |
 | Mutationsprobe (36 Mutanten über Ownership, Envelope, Policy, IR und Scope) | jeder Mutant lässt mindestens einen Test scheitern (Lauf auf dem Endstand) |
-| Browser-Smoke | V3- und V4-Seite OK |
+| Browser-Smoke | V3- und V4-Seite OK (4.2.0 und 4.2.1) |
 | SillyTavern-Smoke V4 (echtes ST, Mock-Provider) | OK; Status „Avereth Engine 4.2.0 … narrator contract: current“; `WORLD ENVELOPE` steht im Prompt an den Erzähler; kein Schlüssel im Browser, `secrets.json` leer |
 | SillyTavern-Smoke V3 | OK, alle 21 Prüfpunkte |
 
@@ -279,3 +284,20 @@ Gen 3.5 ist **keine neue Architekturgeneration**, sondern eine wesentlich sauber
 - Echte neue Fähigkeiten sind wenige und klein: Der Erzähler sieht die kausalen Grenzen vor dem Schreiben; Erinnerungen tragen keinen Engine-Zustand mehr; Kampfnarration veraltet mit dem Kampf; jede Spielernachricht hat einen lesbaren IR-Eintrag.
 - Komplexität: Der Quelltext ist gewachsen (etwa +500 Zeilen, davon gut die Hälfte die Ownership-Tabelle als Daten). Sie ist aber an einer Stelle gebündelt (eine Klauselregel statt drei, eine Gewaltpolicy statt zwei, ein Parse statt zwei), und der Ownership-Assert prüft sie in jedem Test.
 - Ob der Envelope die Prosa im echten Spiel verbessert, also weniger Korrekturen bei gleicher Freiheit, zeigt erst ein Live-Lauf. Die Replays belegen nur, dass er nichts verschlechtert, was sie messen können.
+
+## 8. 4.2.1: Review des Branches und Härtung
+
+ChatGPT hat den Branch auf `6d85b8f` gelesen (nicht ausgeführt). Jeder Befund wurde am Code nachgeprüft; die Entscheidung je Punkt:
+
+| Befund des Reviews | Nachprüfung | Entscheidung in 4.2.1 |
+|---|---|---|
+| Der Assert prüft nur die primäre Art eines Events; Tore sind nur Deklaration | bestätigt: `scene.moved` ändert auch Szene und Datensätze; `coerce` erreichte `pc.coin` allein durch das deklarierte Tor | umgesetzt, stärker als vorgeschlagen: statt einer handgepflegten `affectedKinds()`-Liste gemessene Zustandsregionen vor/nach jedem Event; Tore als in diesem Schritt gewährte Capabilities. Fand zwei bisher unsichtbare Schreibzugriffe (§2.2) |
+| Die zwei 4.1.6-Fehler stecken noch im Code | bestätigt | eingebaut: ein stärkeres Tier, wo ein gewöhnliches mit festen Werten ging, ist ein anderes Individuum (eines ohne feste Werte bekommt die Variation vorher); „witnesses“ als Personen und Erkundigungen („about where the beasts den“) sind Arbeit, kein Bestätigungsauftrag |
+| Die Memory-Klauselregel streicht normale Wörter („registered“, „reward“) | bestätigt, und breiter: auch „promoted to head cook“, „logged every boat“, „the dice paid out“ | umgesetzt: in Erinnerungen zählen Status- und weiche Geldwörter nur mit Gildenkontext; XP und Auszahlung immer; Quest-Notizen unverändert |
+| Der Kampf-Scope kann Dauerhaftes veralten lassen | bestätigt (z. B. „wound: lost two fingers“) | umgesetzt: nur bekannte Moment-Prädikate, nie eine dauerhafte Folge; im Zweifel dauerhaft |
+| Der Envelope kann sich in derselben Antwort selbst legitimieren | bestätigt | bewusst beibehalten und festgelegt (§2.3): ein erzählter Anlass vor dem Angriff zählt, einer danach nicht (Test) |
+| `mayTake`: irgendein laufender Kampf genügt für Raub | bestätigt | umgesetzt: nur ein feindlicher Kämpfer dieses Kampfes |
+| „Unified Intent IR“ ist kein semantischer Compiler | zutreffend | Doku präzisiert (§2.1); kein Umbenennen im Code |
+| README-Version veraltet | bestätigt (v4.0.6) | korrigiert |
+
+Nicht übernommen wurde nur die Form, nicht der Inhalt: Eine eigene `affectedKinds()`-Tabelle hätte den Reducer ein zweites Mal beschrieben. Die gemessene Prüfung ist dafür auf den Testmodus beschränkt (im Spiel aus) und so grob wie ihre Regionen; Felder des Spielerdatensatzes außerhalb von Bogen, Status und Ort zählen zu `entities`.

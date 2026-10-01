@@ -27,12 +27,12 @@ Einrichtung und Ablauf des Live-Tests: [docs/LIVETEST_V4.md](docs/LIVETEST_V4.md
 
 Dazu der echte Live-Test: [docs/INTEGRATION_4_1.md](docs/INTEGRATION_4_1.md) §12. **Vor dem Test die Kartenbeschreibung vollständig durch den Erzählervertrag v4 ersetzen.**
 
-**Build 4.2.0 (Gen 3.5)**, Branch `claude/gen35-world-envelope-2026-10-01`, schärft die Grenzen von Gen 3, ohne den Ablauf zu ändern ([docs/ARCHITECTURE_GEN35.md](docs/ARCHITECTURE_GEN35.md)):
+**Build 4.2.x (Gen 3.5)**, Branch `claude/gen35-world-envelope-2026-10-01`, schärft die Grenzen von Gen 3, ohne den Ablauf zu ändern ([docs/ARCHITECTURE_GEN35.md](docs/ARCHITECTURE_GEN35.md); 4.2.1 härtet sie nach dem Review, §8):
 - **Decision Ownership** als Daten (`src/v4/ownership.js`): Jede Zustandsart gehört einer Domain, jedes Extraktor-Delta deklariert, was es schreiben darf, und ein Assert prüft das in der ganzen Testsuite. Freitext (Notizen, Erinnerungen, Bereitschaftsnotizen) speichert keinen Engine-Zustand.
 - **World/Reaction Envelope** (`src/v4/envelope.js`): Vor der Prosa nennt der Engine-Block die kausalen Grenzen (wer nur mit Anlass gewalttätig wird, welche Tiere nur in die Enge getrieben kämpfen, wer Alaric etwas nehmen darf); nach der Prosa prüft der World-Applier dieselben Grenzen. Die Gewaltpolicy teilt er mit dem Kampf (`src/policy.js`).
 - **Unified Intent IR** (`src/ir.js`): ein Parse je Nachricht, erkannte Namen als Links, eine Form für beide Zugpfade im Record.
 - **Kampf-Scope für Fakten:** Was die Geschichte während eines Kampfes über die Kämpfenden sagt, gilt nur, solange er läuft.
-- Der Erzählervertrag hat Revision 4.2.0: die Kartenbeschreibung ersetzen.
+- Der Erzählervertrag hat Revision 4.2.0: die Kartenbeschreibung ersetzen (4.2.1 ändert ihn nicht).
 
 ## Was die Engine pro Zug tut (Runtime V3)
 
@@ -80,7 +80,7 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
 ## Installation
 
 1. Den Ordner `avereth-engine/` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren. „Install extension“ mit der Repository-Adresse geht nicht: SillyTavern erwartet `manifest.json` im Wurzelverzeichnis des Repositorys, hier liegt sie im Unterordner.
-   - **Welcher Stand?** Neue Änderungen liegen zuerst auf dem Branch `claude/happy-wright-1a4y19` und kommen erst mit dem Merge nach `main`; Build 4.1.0 (Integration des ChatGPT-Experiments) liegt auf `claude/v4-integration-2026-09-30`, Build 4.1.5 (Korrekturen nach den Nachprüfungen und nach den Live-Läufen 30.09. 14:56 und 22:41) auf `claude/v4-integration-fixes-2026-09-30`, Build 4.2.0 (Gen 3.5) auf `claude/gen35-world-envelope-2026-10-01`. Den Ordner aus dem Stand kopieren, den du testen willst.
+   - **Welcher Stand?** Neue Änderungen liegen zuerst auf dem Branch `claude/happy-wright-1a4y19` und kommen erst mit dem Merge nach `main`; Build 4.1.0 (Integration des ChatGPT-Experiments) liegt auf `claude/v4-integration-2026-09-30`, Build 4.1.5 (Korrekturen nach den Nachprüfungen und nach den Live-Läufen 30.09. 14:56 und 22:41) auf `claude/v4-integration-fixes-2026-09-30`, Build 4.2.1 (Gen 3.5) auf `claude/gen35-world-envelope-2026-10-01`. Den Ordner aus dem Stand kopieren, den du testen willst.
    - **Nur eine Kopie:** Liegt zusätzlich ein gleichnamiger Ordner unter `public/scripts/extensions/third-party/`, liefert SillyTavern pro Datei die Kopie aus `data/<user>/extensions/`. Alte Kopien löschen.
 2. SillyTavern neu laden. Unter Extensions erscheint **Avereth Engine**.
    - **Build prüfen:** „Manage extensions“ zeigt die Version aus `manifest.json` (jetzt **4.2.1**). Dieselbe Nummer steht in der Statuszeile des Engine-Panels, in der letzten Zeile von `#audit` und bei jeder Nachricht im Event-Export (`build`). Nachrichten ohne `build` stammen von einem Stand vor 3.1.0.

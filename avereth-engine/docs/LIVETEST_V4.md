@@ -1,8 +1,8 @@
-# Live-Test Runtime V4 (Engine 4.2.0, Gen 3.5)
+# Live-Test Runtime V4 (Engine 4.2.1, Gen 3.5)
 
-**Stand 01.10.2026, Build 4.2.0 (Gen 3.5):** Branch `claude/gen35-world-envelope-2026-10-01`, Architektur und Messung in [ARCHITECTURE_GEN35.md](ARCHITECTURE_GEN35.md). Der Branch `claude/v4-integration-fixes-2026-09-30` (Build 4.1.5) bleibt als Vergleich unverändert.
+**Stand 01.10.2026, Build 4.2.1 (Gen 3.5 mit der Härtung nach dem Review):** Branch `claude/gen35-world-envelope-2026-10-01`, Architektur, Messung und Review in [ARCHITECTURE_GEN35.md](ARCHITECTURE_GEN35.md) (§8: was 4.2.1 geändert hat, darunter die zwei offenen 4.1.6-Befunde). Der Branch `claude/v4-integration-fixes-2026-09-30` (Build 4.1.5) bleibt als Vergleich unverändert.
 
-> **Die Kartenbeschreibung vollständig ersetzen:** die ganze Beschreibung löschen und den Inhalt von `content/narrator/Avereth_Narrator_Contract_v4.txt` einfügen (Revision 4.2.0: neue Zeile zum WORLD ENVELOPE). Danach einen **neuen Chat** beginnen. Die Statuszeile muss `narrator contract: current` zeigen.
+> **Die Kartenbeschreibung vollständig ersetzen:** die ganze Beschreibung löschen und den Inhalt von `content/narrator/Avereth_Narrator_Contract_v4.txt` einfügen (Revision 4.2.0: neue Zeile zum WORLD ENVELOPE; 4.2.1 ändert den Vertrag nicht). Danach einen **neuen Chat** beginnen. Die Statuszeile muss `narrator contract: current` zeigen.
 
 Was Gen 3.5 im Live-Test zusätzlich zeigen soll (der Testablauf der Liste unten gilt unverändert):
 - **WORLD ENVELOPE:** Der Engine-Block nennt friedliche Leute, scheue und defensive Tiere und wer Alaric etwas nehmen darf. Greift ein friedlicher NPC ohne Anlass an, lehnt die Engine das ab, und der nächste Block trägt eine Korrektur „… did not turn on Alaric …“. Bitte notieren, wie oft das passiert und ob die Prosa davor schon so erzählt war. Ein Hinterhalt durch Neue bleibt frei, ein Kampf nach einer Beleidigung oder Drohung auch.
@@ -50,7 +50,7 @@ Der Test prüft:
 
 | Prüfung | Befehl | Ergebnis |
 |---|---|---|
-| Einheiten, Golden-V12, Cluster, Laufzeit, Abdeckung, Nachspiel der Live-Läufe 28.09. und 30.09. (`tests/v4/live_0928.test.js`, `live_0930.test.js`, `live_0930b.test.js`, `live_0930c.test.js`), Gen 3.5 (`tests/v4/gen35_*.test.js`) | `npm test` | 542/542 (4.2.0) |
+| Einheiten, Golden-V12, Cluster, Laufzeit, Abdeckung, Nachspiel der Live-Läufe 28.09. und 30.09. (`tests/v4/live_0928.test.js`, `live_0930.test.js`, `live_0930b.test.js`, `live_0930c.test.js`), Gen 3.5 (`tests/v4/gen35_*.test.js`) | `npm test` | 550/550 (4.2.1) |
 | Gen 3.5 gegen 4.1.5: die drei Live-Läufe durch beide Stände, jeder Unterschied einer erwarteten Kategorie zugeordnet | `node tools/v4_diff.mjs <Basis> .` | 122 Schritte, kein unerklärter Unterschied |
 | `index.js` in Chromium, SillyTavern nachgebaut: eine V3- und eine V4-Kampagne | `node tools/browser_smoke.mjs` | OK |
 | **Echtes SillyTavern 1.19**, V4: Begrüßung → V4-Kampagne, Erschaffung, drei V12-Züge; Mock-Provider hinter der Quelle Custom; die Statuszeile zeigt `narrator contract: current` | `AVERETH_ST_DIR=… node tools/st_live/run_v4.mjs` | 18/18 |
@@ -70,7 +70,7 @@ Der Test prüft:
 
 ## 2. Einrichtung in SillyTavern
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/gen35-world-envelope-2026-10-01` (Build 4.2.0) nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; eine alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile im Engine-Panel zeigt `Avereth Engine 4.2.0`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/gen35-world-envelope-2026-10-01` (Build 4.2.1) nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; eine alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile im Engine-Panel zeigt `Avereth Engine 4.2.1`.
 2. **Verbindung (wichtig):** API Connections → Chat Completion → Quelle **Custom (OpenAI-compatible)**, Endpoint und Modell wie bisher, einmal Connect. Die Include-Body-Parameter (z. B. `reasoning_effort`, `clear_thinking`) gelten auch für die drei Engine-Aufrufe, wie in P0 gemessen.
    - **Warum Custom:** Nur bei dieser Quelle schickt die Engine ihre Aufrufe genau so wie die P0-Werkzeuge, mit eigener Temperatur 0,1. Bei jeder anderen Quelle nimmt sie `generateRaw`; dann gelten Temperatur und Einstellungen des Erzähler-Presets. Das ist nicht gemessen.
 3. **Eine eigene Karte für V4** (empfohlen), z. B. die bisherige Karte duplizieren und „Avereth V4“ nennen:

@@ -43,8 +43,19 @@ export function isTerminalStatus(p, o) {
     return p === 'status' && TERMINAL_STATUS.test(normText(o));
 }
 
+/**
+ * Is a fact live in this state (Gen 3.5 selective persistence, docs/ARCHITECTURE_GEN35.md §2.4)? A fact with a scope
+ * lives only as long as what it describes: the story's words about a combatant during a fight (its wounds, how it
+ * moves) describe state the fight owns, and end with that fight. Read-time, no event: the log keeps every fact.
+ */
+export function factLive(state, f) {
+    if (f.until) return false;
+    if (f.scope?.fight) return state.encounter?.id === f.scope.fight;
+    return true;
+}
+
 export function currentFacts(state, filter = () => true) {
-    return Object.values(state.facts).filter((f) => !f.until && filter(f));
+    return Object.values(state.facts).filter((f) => factLive(state, f) && filter(f));
 }
 
 /** Current value(s) of a predicate for a subject (world truth). */
@@ -63,7 +74,7 @@ export function statusOf(state, id) {
  * Events that record a fact. Functional predicates end the old current value (kept as history) before the new one
  * is asserted; non-functional predicates simply add a value. Re-asserting an existing value is a no-op.
  */
-export function setFactEvents(state, { s, p, o, visibility = 'public', importance = 0.5, hard = false, source, id }) {
+export function setFactEvents(state, { s, p, o, visibility = 'public', importance = 0.5, hard = false, source, id, scope = null }) {
     const events = [];
     const at = { turn: state.turn, minute: state.clock.minute };
     const current = truth(state, s, p);
@@ -73,7 +84,7 @@ export function setFactEvents(state, { s, p, o, visibility = 'public', importanc
     }
     const fact = {
         id: id || `f.${slugPart(s)}.${slugPart(p)}.t${state.turn}`, s, p, o, since: at, until: null, visibility,
-        importance, hard: !!hard || isTerminalStatus(p, o), source,
+        importance, hard: !!hard || isTerminalStatus(p, o), source, ...(scope ? { scope } : {}),
     };
     events.push({ t: 'fact.asserted', d: { fact } });
     return events;
@@ -94,7 +105,7 @@ export function knowledgeOf(state, who, subjects = null) {
         if (subjects && !subjects.includes(prop.s) && !subjects.includes(prop.o)) continue;
         rows.push({
             about, s: prop.s, p: prop.p, o: prop.o, stance: k.stance, source: k.source, turn: k.turn,
-            minute: k.minute, is_fact: !!f, true: f ? true : c.truth === 'true' ? true : c.truth === 'false' ? false : null /* null = unknown */, outdated: !!(f && f.until),
+            minute: k.minute, is_fact: !!f, true: f ? true : c.truth === 'true' ? true : c.truth === 'false' ? false : null /* null = unknown */, outdated: !!(f && !factLive(state, f)),
             visibility: prop.visibility || 'public',
         });
     }

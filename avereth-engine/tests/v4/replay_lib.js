@@ -22,10 +22,20 @@ export async function replayRun(content, fx, { onPlayer = null, onReply = null, 
         if (n++ >= maxTurns) break;
         if (t.player !== undefined) {
             const before = g.state();
-            const prep = await g.player(t.player, t.commands || []);
+            // the fight, as the run's own replays play it: the dice may have felled another opponent than in the run;
+            // a command against one that is down goes to one still standing (the run's tests do the same per run)
+            let text = t.player;
+            if (before.encounter) {
+                const hostiles = Object.values(before.encounter.combatants).filter((c) => c.side === 'hostile');
+                const standing = hostiles.filter((c) => !c.current.defeated && !c.current.escaped && !c.current.surrendered);
+                const word = (label) => new RegExp(`\\b${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+                const named = hostiles.filter((c) => c.label && word(c.label).test(text)).sort((a, b) => b.label.length - a.label.length)[0];
+                if (named && !standing.includes(named) && standing.length) text = text.replace(word(named.label), standing[0].label);
+            }
+            const prep = await g.player(text, t.commands || []);
             const u = g.chat.length - 1 - (prep.action === 'panels' ? 1 : 0);
             const ctx = prep.action === 'context' ? turnBlock(g.chat, u, content, {}).context : null;
-            const step = { i: t.i, kind: 'player', text: t.player, action: prep.action, before, block: ctx?.text ?? null, sections: ctx?.sections ?? null, tokens: ctx?.tokens ?? null, record: g.record(u), state: g.state() };
+            const step = { i: t.i, kind: 'player', text, action: prep.action, before, block: ctx?.text ?? null, sections: ctx?.sections ?? null, tokens: ctx?.tokens ?? null, record: g.record(u), state: g.state() };
             steps.push(step);
             story = prep.action === 'context';
             onPlayer?.(step);

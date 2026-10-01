@@ -13,7 +13,7 @@ import { applyEvent } from '../state.js';
 import { clone, normText, slug } from '../util.js';
 import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver } from '../delta.js';
-import { truth, entityLabel, setFactEvents, statusOf } from '../knowledge.js';
+import { truth, entityLabel, setFactEvents, statusOf, FUNCTIONAL, normPredicate } from '../knowledge.js';
 import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
 import { firewall } from './firewall.js';
 import { stripOwned, wrongClaim, ownershipViolation } from './ownership.js';
@@ -388,9 +388,20 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 if (left.length) v3({ combat: left.map((x) => ({ by: x })) }, d);
                 break;
             }
-            case 'fact':
-                v3({ facts: [{ s: mapRef(d.s), p: d.p, o: mapRef(d.o) }] }, d);
+            case 'fact': {
+                // selective persistence (Gen 3.5): what the story says about the fighters while the fight runs (their wounds,
+                // how they move, what they do) describes state the fight owns; it lives as long as that fight. A known
+                // combatant's own lasting attributes (its look, its name) stay; so does anything said outside a fight
+                const subject = mapRef(d.s);
+                const enc = s.encounter;
+                const combatant = !!enc && typeof subject === 'string' && subject !== 'pc' && !!enc.combatants?.[subject];
+                // "the wolves", "the last wolf", "wolf pack": no one entity, but the kind of the opponents still fighting
+                const fighters = !!enc && typeof subject === 'string' && !s.entities[subject] && Object.values(enc.combatants).some((c) => c.id !== 'pc' && c.side === 'hostile'
+                    && !c.current.defeated && namesKind(String(d.s), s.entities[c.id]?.species, content.anchors.get(s.entities[c.id]?.anchor || s.entities[c.id]?.profile?.anchor)));
+                const scoped = (combatant && !FUNCTIONAL.has(normPredicate(d.p))) || fighters;
+                v3({ facts: [{ s: subject, p: d.p, o: mapRef(d.o), ...(scoped ? { scope: { fight: enc.id } } : {}) }] }, d);
                 break;
+            }
             case 'learn':
                 // who/s are references; o is the literal proposition value. Resolving "Alaric Red" as an entity
                 // turned the name into "pc" in the 28.09. live run.

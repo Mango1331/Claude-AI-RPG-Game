@@ -526,7 +526,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
             if (power && QUEST_RANKS.indexOf(gr) > QUEST_RANKS.indexOf(power)) { reject(f, `Guild Rank ${gr} needs Power Rank ${content.rules.ranks.order[QUEST_RANKS.indexOf(gr)]} (a promotion minimum)`); continue; }
             value = gr;
         }
-        const evs = setFactEvents(state, { id: mkId('f'), s, p, o: value, visibility: f.vis === 'secret' ? 'secret' : 'public', importance: clamp(Number(f.imp || 5), 1, 10) / 10, hard: !!f.hard, source: { ...src, because: f.because ? String(f.because).slice(0, 160) : null } });
+        const evs = setFactEvents(state, { id: mkId('f'), s, p, o: value, visibility: f.vis === 'secret' ? 'secret' : 'public', importance: clamp(Number(f.imp || 5), 1, 10) / 10, hard: !!f.hard, source: { ...src, because: f.because ? String(f.because).slice(0, 160) : null }, ...(f.scope ? { scope: f.scope } : {}) });
         events.push(...evs);
         const fact = evs.find((e) => e.t === 'fact.asserted')?.d.fact;
         // a person's or creature's entity status is physical (alive/dead); any other "status" stays an ordinary fact

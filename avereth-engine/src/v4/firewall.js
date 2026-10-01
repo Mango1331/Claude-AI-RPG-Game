@@ -18,7 +18,10 @@
 // correction. What the world handlers check while applying (time caps, place tree, presence, offers of a sale) stays
 // in src/v4/world.js; this module only knows authority.
 import { normText } from '../util.js';
-import { claimedStatus, statusCorrection, engineClause } from './guild.js';
+import { statusCorrection } from './guild.js';
+import { claimedStatus, engineClause, amountsCp, detailRevisesMechanics, wrongClaim } from './ownership.js';
+
+export { detailRevisesMechanics };
 
 /** Fact predicates that are state with their own delta or domain (plan §5.1): never a free fact. */
 export const STATE_PREDICATES = new Set(['located', 'intent', 'guild_rank', 'power_rank']);
@@ -59,44 +62,6 @@ const PROMOTION = /\bpromot\w*/;
 // what contradicts the canon (only then a correction): a Power Rank letter as a Guild rank, or another start than Novice
 const POWER_LABEL = /\b(?:(?:[a-f]|s)-rank(?:ed)?|(?:[b-f]|s) rank|rank (?:[a-f]|s))\b/;
 const RANK_START = /\b(?:start(?:s|ed|ing)?|begin(?:s|ning)?|began)\b/;
-const NUMBER_WORDS = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, twenty: 20 };
-const COIN_CP = { copper: 1, coppers: 1, cp: 1, silver: 10, silvers: 10, gold: 100, golds: 100 };
-
-/** Amounts in copper a text names ("2 silver (20 cp)" → [20, 20]; "a silver" → [10]). */
-function amountsCp(t) {
-    const out = [];
-    for (const m of String(t).toLowerCase().matchAll(/\b(\d+|an?|one|two|three|four|five|six|seven|eight|nine|ten|twenty)\s*(coppers?|cp|silvers?|golds?)\b/g)) {
-        const n = /^\d+$/.test(m[1]) ? Number(m[1]) : NUMBER_WORDS[m[1]];
-        out.push(n * COIN_CP[m[2]]);
-    }
-    return out;
-}
-
-const REWARD_WORD = /\b(?:payouts?|rewards?|bount(?:y|ies)|pay(?:s|ing|ment)?|paid)\b/;
-const NEGATION = /\b(?:not|no|never|won't|wont|don't|doesn't|without|unpaid|forfeit\w*)\b/;
-const REWARD_REVISION = /\b(?:chang\w*|rais\w*|lower\w*|increas\w*|decreas\w*|overrid\w*|replac\w*|doubl\w*|halv\w*|waiv\w*|prepa\w*|advance[sd]?|already paid)\b/;
-const INSTITUTION_RULE = /\b(?:guild rank|promot\w*|xp|experience points|registration fee)\b/;
-
-/**
- * Does a Guild contract's quest.detail change what the engine owns (live 30.09.2026)? A detail keeps story memory
- * (contacts, routes, schedules, witnesses, a road toll). The payout is the Guild's, paid at turn-in: within a clause
- * about payment, an amount other than the posted payout (in any coin and wording: "payout eight silver" is the posted
- * 80 cp), a revision of it or a condition that withholds it is the engine's; so are Guild rank, promotion, XP and the
- * registration fee.
- */
-export function detailRevisesMechanics(detail, q) {
-    const lower = String(detail).toLowerCase();
-    if (INSTITUTION_RULE.test(lower)) return true;
-    const posted = Number(q.payout_cp);
-    for (const clause of lower.split(/[.;]/)) {
-        if (!REWARD_WORD.test(clause) || CLIENT_BONUS.test(clause)) continue;
-        if (REWARD_REVISION.test(clause) || NEGATION.test(clause)) return true;
-        const amounts = amountsCp(clause);
-        if (amounts.length && !amounts.every((a) => a === posted) && amounts.reduce((sum, a) => sum + a, 0) !== posted) return true;
-    }
-    return false;
-}
-
 /** Is a fact the Guild's mechanics (engine-owned)? Returns the kind ('money', 'rank', 'rights', 'promotion') or null. */
 function guildMechanic(d, ctx) {
     const all = words(`${text(d.s)} ${text(d.p)} ${text(d.o)}`);
@@ -282,7 +247,7 @@ export function firewall(deltas, ctx = {}) {
                     const q = questOf(text(d.s)) || ctx.guildContractForObject?.(text(d.s)) || null;
                     const claim = claimedStatus(`${words(d.p)} ${words(d.o)}`);
                     no(d, 'engine_owned_fact', 'a known Guild contract keeps payout and formal status/completion in the engine domain; use quest.detail/quest.progress/quest.ready for story progress instead of overriding that state with a free fact',
-                        q && claim && !(claim === 'active' ? ['active', 'completed'] : [claim]).includes(q.status) ? statusCorrection(q) : null);
+                        wrongClaim(claim, q) ? statusCorrection(q) : null);
                     continue;
                 }
                 if (STATE_PREDICATES.has(p)) {

@@ -7,6 +7,11 @@ import { loadContentPack } from '../src/content.js';
 import { startCampaign, playerTurn, narratorReply, turnContext } from '../src/engine.js';
 import { fold } from '../src/state.js';
 import { validateState } from '../src/validate.js';
+import { assertOwnership } from '../src/v4/world.js';
+
+// Gen 3.5 Decision Ownership (docs/ARCHITECTURE_GEN35.md §2.2): in every test, each event an extractor delta writes must
+// be a kind its type may write (src/v4/ownership.js DELTA_WRITES); a violation fails the test that caused it
+assertOwnership(true);
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT = path.dirname(HERE);

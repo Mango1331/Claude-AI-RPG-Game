@@ -15,12 +15,18 @@ import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver } from '../delta.js';
 import { truth, entityLabel, setFactEvents, statusOf } from '../knowledge.js';
 import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
-import { firewall, detailRevisesMechanics } from './firewall.js';
+import { firewall } from './firewall.js';
+import { stripOwned, wrongClaim, ownershipViolation } from './ownership.js';
 import {
     PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind,
 } from './domain.js';
-import { completeContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, engineClause, claimedStatus, statusCorrection } from './guild.js';
+import { completeContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection } from './guild.js';
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
+
+// Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
+// delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
+let OWNERSHIP_ASSERT = false;
+export function assertOwnership(on = true) { OWNERSHIP_ASSERT = !!on; }
 
 // the words that end a person's name or role in a description ("clerk at the Walk", "steward of the weirs")
 const RELATION_WORDS = new Set(['of', 'at', 'in', 'on', 'with', 'by', 'from', 'near', 'behind', 'beside', 'to', 'for', 'who', 'that']);
@@ -115,8 +121,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const s = clone(state);
     const dice = Dice.from(s);
     const events = [];
+    // the step whose events these are (Decision Ownership: an extractor delta writes only what its type may write)
+    let step = { kind: 'engine' };
     const emit = (e) => {
         if (dice.n !== s.rng.n) e.rng_to = dice.n;
+        if (OWNERSHIP_ASSERT) {
+            const why = ownershipViolation(step, e, s);
+            if (why) throw new Error(`Decision Ownership: ${why}`);
+        }
         applyEvent(s, e);
         events.push(e);
     };
@@ -265,6 +277,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     }
 
     for (const d of [...fw.accept].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0))) {
+        step = { kind: 'delta', type: d.type, seq: d.seq ?? 0 };
         // Authority is checked again at the actual story step: earlier deltas may have changed its context.
         const stepFw = firewall([d], firewallContext(s, content));
         if (!stepFw.accept.length) {
@@ -367,9 +380,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'attitude':
                 v3({ attitude: [{ who: mapRef(d.who), delta: d.delta, why: d.why }] }, d);
                 break;
-            case 'memory':
-                v3({ memory: [{ text: d.text, who: (d.who || []).map(mapRef), imp: d.imp }] }, d);
+            case 'memory': {
+                // a memory keeps the moment, never the engine's state as a second truth (Decision Ownership): a clause
+                // that states a contract's status, a payout, Quest XP, Guild rank or membership goes; the rest stays
+                const cut = stripOwned(d.text, { store: 'memory' });
+                if (!cut.kept.length) { reject(d, 'engine_owned_memory', `a memory keeps the moment; ${cut.kinds.join(', ')} is the engine's state, recorded by the engine`); break; }
+                v3({ memory: [{ text: cut.owned.length ? cut.kept.join(' ') : d.text, who: (d.who || []).map(mapRef), imp: d.imp }] }, d);
                 break;
+            }
             case 'thread':
                 v3({ threads: [{ text: d.text, kind: d.kind, status: d.status }] }, d);
                 break;
@@ -437,20 +455,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 // seen) stays.
                 let note = String(d.note);
                 if (q.kind === 'guild_contract') {
-                    const clauses = note.split(/(?<=[.;])\s+/);
-                    const owned = clauses.filter(engineClause);
-                    const altered = clauses.filter((x) => detailRevisesMechanics(x, q));
-                    const signOff = isHunt(q, content) ? clauses.filter((x) => !owned.includes(x) && !altered.includes(x) && SIGN_OFF.test(x) && REQUIRE.test(x)) : [];
-                    const kept = clauses.filter((x) => !owned.includes(x) && !altered.includes(x) && !signOff.includes(x));
-                    const claims = owned.map(claimedStatus).filter(Boolean);
-                    const stated = (x) => (x === 'active' ? ['active', 'completed'] : [x]);
-                    if (claims.some((c) => !stated(c).includes(q.status)) && !corrections.includes(statusCorrection(q))) corrections.push(statusCorrection(q));
-                    if (signOff.length) {
+                    // the one free-text rule of the Decision Ownership (src/v4/ownership.js), with the hunt's sign-off
+                    const cut = stripOwned(note, { store: 'note', quest: q, extra: isHunt(q, content) ? (x) => SIGN_OFF.test(x) && REQUIRE.test(x) : null });
+                    if (cut.claims.some((c) => wrongClaim(c, q)) && !corrections.includes(statusCorrection(q))) corrections.push(statusCorrection(q));
+                    if (cut.other.length) {
                         const correction = `"${q.title}" is a hunt contract: the Guild pays it on the trophies of the kills brought to a Guild hall; no local inspection, witness or signature is required.`;
                         if (!corrections.includes(correction)) corrections.push(correction);
                     }
-                    if (!kept.length) { reject(d, signOff.length || altered.length ? 'guild_quest_detail' : 'engine_owned_detail', 'a Guild contract note keeps the story; its status, payout, XP, rank and (for a hunt) the proof are the engine\'s'); break; }
-                    note = kept.join(' ');
+                    if (!cut.kept.length) { reject(d, cut.other.length || cut.altered.length ? 'guild_quest_detail' : 'engine_owned_detail', 'a Guild contract note keeps the story; its status, payout, XP, rank and (for a hunt) the proof are the engine\'s'); break; }
+                    note = cut.kept.join(' ');
                 }
                 emit({ t: 'quest.detailed', d: { id: q.id, note: note.slice(0, 200), schedule: d.schedule ? String(d.schedule).slice(0, 80) : null } });
                 break;
@@ -465,7 +478,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 const q = questRef(d.quest);
                 if (!q) { reject(d, 'quest', 'unknown quest'); break; }
                 if (q.status !== 'active') { reject(d, 'quest', `the quest is ${q.status}`); break; }
-                const claimed = String(d.note || q.desired_end_state || '');
+                // the readiness note is story memory too: the contract's status, payout, XP or rank stay the engine's
+                const ownNote = q.kind === 'guild_contract' && d.note ? stripOwned(d.note, { store: 'note', quest: q }).kept.join(' ') : d.note;
+                const claimed = String(ownNote || q.desired_end_state || '');
                 // an escort or delivery is ready where it arrives: a reply whose journey the engine refused has not
                 // taken it there (live 30.09.2026: Millbrook refused, the escort "ready" in the same reply). What
                 // counts is the story before this claim: a refused journey away with no arrival applied before it.
@@ -526,6 +541,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     }
 
     // 3. what the extractor answered about the player's commands
+    step = { kind: 'expected' };
     for (const [k, type] of Object.entries(outcome.expected_keys || {})) {
         const e = expected[k];
         if (!e) continue;
@@ -555,9 +571,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     }
 
     // 4. what waited for the reply and did not happen
+    step = { kind: 'conditional' };
     for (const c of conditionals.filter((x) => !x.done)) emit({ t: 'cmd.expired', d: { seq: c.seq, reason: 'the condition did not happen in this reply' } });
 
     // 5. who noticed him, his introduction, his own record of the turn, a fight the reply committed to
+    step = { kind: 'engine' };
     perceiveAll(s, emit);
     selfIntro(s, emit);
     const ep = episode(s, msg);

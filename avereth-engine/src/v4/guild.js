@@ -170,25 +170,9 @@ export function defeatTally(s, content, q) {
 /** "3 of 4 bog striders": the tally as the engine block and the catalog show it. */
 export const tallyText = (tally) => tally.map((t) => `${t.done} of ${t.qty} ${t.what}`).join('; ');
 
-// What a quest note may not keep as memory: the engine's own state of a contract (live run 30.09.2026 22:41:
-// "Contract registered and active; payout 60 cp from the Alderwatch drawer" was stored while it was still on the
-// board): its formal status (registered, logged, accepted, active, completed, turned in, failed), its payout, Quest XP,
-// Guild rank and promotion. Routes, contacts, observations, local hints, times and plausible verification stay; so does
-// a client's own bonus.
-const ENGINE_STATUS = /\b(?:registered|logged|turned\s+in|handed\s+in|(?:contract|quest|job|slip)\b[^.;]{0,40}\b(?:active|accepted|listed|complete|completed|closed|failed|finished))\b|^\W*(?:active|accepted|completed|closed|failed)\b/i;
-const ENGINE_MONEY = /\b(?:payouts?|rewards?|pays?\s+out|paid\s+out|xp|experience\s+points|guild\s+rank|promot\w*)\b/i;
-const MONEY_AMOUNT = /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|a\s+hundred)\s*(?:cp|coppers?|silvers?|golds?)\b/i;
-const MONEY_TOPIC = /\b(?:pay\w*|reward\w*|fees?|contract|bount(?:y|ies)|drawer|posted)\b/i;
-const CLIENT_OWN = /\b(?:bonus|own\s+purse|from\s+(?:his|her|their)\s+own)\b/i;
-/** A clause of a quest note that states the engine's state of the contract (its status, payout, XP, rank). */
-export const engineClause = (x) => ENGINE_STATUS.test(x) || (!CLIENT_OWN.test(x) && (ENGINE_MONEY.test(x) || (MONEY_AMOUNT.test(x) && MONEY_TOPIC.test(x))));
-/** The contract state a text claims ("registered and active", "turned in", "failed"), or null. */
-export function claimedStatus(x) {
-    if (/\b(?:complete|completed|turned\s+in|handed\s+in|closed|finished|paid\s+out)\b/i.test(x)) return 'completed';
-    if (/\bfailed\b/i.test(x)) return 'failed';
-    if (/\b(?:registered|logged|accepted|active|stamped)\b/i.test(x)) return 'active';
-    return null;
-}
+// What a quest note may not keep as memory (the engine's status, payout, XP and rank of a contract): one clause rule
+// for every free-text store, in src/v4/ownership.js (Gen 3.5 Decision Ownership)
+export { engineClause, claimedStatus } from './ownership.js';
 /** The correction when the story claimed a state the contract is not in (it keeps the engine's). */
 export function statusCorrection(q) {
     const state = {

@@ -22,7 +22,8 @@ import { renderHud } from '../hud.js';
 import { worldPanel } from '../display.js';
 import { applyEvent } from '../state.js';
 import { hash32, clone, swapWords, stripTrackerBlocks } from '../util.js';
-import { routeTurn, playerTurnV4, replyTurnV4 } from './turn.js';
+import { playerTurnV4, replyTurnV4 } from './turn.js';
+import { readTurn, irRecord, interpretedActs } from '../ir.js';
 import { buildCatalog, extractorCatalog, guardContext } from './catalog.js';
 import { interpreterRequest, parseInterpretation, INTERPRETER_VERSION } from './interpret.js';
 import { guardCommands } from './agency.js';
@@ -157,16 +158,18 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
     if (type !== 'continue' && (!r || r.input_hash !== inputHash || r.interp?.failed || retryBoard)) {
         if (closeLatePending(chat, u)) dirty = true;
         const before = foldChat(chat, u).state;
-        if (routeTurn(before, content, msg.mes) === 'v3') {
-            const t = playerTurn(before, content, msg.mes, { msg: u });
-            r = { v: RECORD_V4, input_hash: inputHash, route: 'v3', events: t.events, command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
+        // the message read once (Gen 3.5 Intent IR): its route, its links, the parsed act the V3 engine resolves
+        const ir = readTurn(msg.mes, before, content);
+        if (ir.route === 'v3') {
+            const t = playerTurn(before, content, msg.mes, { msg: u, intent: ir.intent });
+            r = { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRecord(ir), events: t.events, command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
         } else {
             if (typeof llm !== 'function') throw new Error('Runtime V4 needs an LLM call for the interpreter');
             const catalog = buildCatalog(before, content);
             const ip = retryBoard ? { commands: r.interp.commands, ms: 0, repaired: !!r.interp.repaired, failed: false } : await interpretMessage(llm, content, catalog, msg.mes);
             if (ip.failed) {
                 r = {
-                    v: RECORD_V4, input_hash: inputHash, route: 'v4',
+                    v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: irRecord(ir, []),
                     interp: { version: INTERPRETER_VERSION, ms: ip.ms, failed: true, repaired: ip.repaired, commands: null, error: ip.error || undefined },
                     events: [], command: null,
                 };
@@ -184,7 +187,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
                 interp: { version: INTERPRETER_VERSION, ms: ip.ms, source: ip.repaired ? 'json_repaired' : 'json', failed: false, error: null },
             });
             r = {
-                v: RECORD_V4, input_hash: inputHash, route: 'v4',
+                v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: irRecord(ir, interpretedActs(guarded.kept, guarded.dropped)),
                 interp: { version: INTERPRETER_VERSION, ms: ip.ms, failed: false, repaired: ip.repaired, commands: ip.commands },
                 board: board ? { branch: board.branch, rank: board.rank, ms: board.ms, failed: board.failed || undefined, listings: board.listings.length } : undefined,
                 events: t.events, command: t.command ? { panels: t.command.panels, llm: null } : null,

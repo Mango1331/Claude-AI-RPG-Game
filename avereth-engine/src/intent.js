@@ -39,25 +39,36 @@ const STEALTH_ACT_RE = new RegExp(String.raw`${DEED_LEAD}(?:sneak|sneaks|sneakin
 const AT_DEED = new RegExp(`${DEED_LEAD}$`, 'i');
 
 /**
- * Runtime V4: the message with the multi-word names the engine knows masked (Guild contract titles, places, named
- * people and things): a word of a name is no deed of Alaric's ("I take the Cull the Gnaw-Hide Boars contract"; the
- * "Walk" of a label was the same kind of error). A name where his own verb would stand stays: there it is his deed
- * ("I kill the rats" while a contract is called "Kill the Rats"). Only the intent patterns read the masked text; the
- * interpreter, the target resolution and the record keep the message as he wrote it.
+ * Runtime V4 / Gen 3.5 Intent IR: the names the engine knows in a message, linked to what they name (Guild contract
+ * titles, places, people and creatures, things; multi-word names, longest first). A word of a name is no deed of
+ * Alaric's ("I take the Cull the Gnaw-Hide Boars contract": the "Hide" is part of a contract's title; the "Walk" of a
+ * label was the same kind of error). A name where his own verb would stand stays his deed ("I kill the rats" while a
+ * contract is called "Kill the Rats"). The intent patterns read the masked text; the interpreter, the target
+ * resolution and the record keep the message as he wrote it; the IR keeps the links (src/ir.js).
+ * @returns {{masked: string, links: {kind: string, id: string, text: string, deed: boolean}[]}}
  */
-export function maskNames(text, state) {
-    const names = [
-        ...Object.values(state.quests || {}).map((q) => q.title),
-        ...Object.values(state.places || {}).map((p) => p.name),
-        ...Object.values(state.entities || {}).map((e) => e.name),
-        ...Object.values(state.objects || {}).map((o) => o.name),
-    ].map((n) => String(n || '').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean)).filter((w) => w.length >= 2);
+export function linkEntities(text, state) {
+    const named = [
+        ...Object.values(state.quests || {}).map((q) => ({ kind: 'quest', id: q.id, name: q.title })),
+        ...Object.values(state.places || {}).map((p) => ({ kind: 'place', id: p.id, name: p.name })),
+        ...Object.values(state.entities || {}).map((e) => ({ kind: e.kind === 'creature' ? 'creature' : e.id === 'pc' ? 'pc' : 'person', id: e.id, name: e.name })),
+        ...Object.values(state.objects || {}).map((o) => ({ kind: 'object', id: o.id, name: o.name })),
+    ].map((x) => ({ ...x, words: String(x.name || '').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean) })).filter((x) => x.words.length >= 2);
     let out = String(text);
-    for (const words of names.sort((a, b) => b.join(' ').length - a.join(' ').length)) {
-        out = out.replace(new RegExp(String.raw`\b${words.join(String.raw`[^a-z0-9*]+`)}\b`, 'gi'), (name, at, all) => (AT_DEED.test(all.slice(0, at)) ? name : ' '));
+    const links = [];
+    for (const x of named.sort((a, b) => b.words.join(' ').length - a.words.join(' ').length)) {
+        out = out.replace(new RegExp(String.raw`\b${x.words.join(String.raw`[^a-z0-9*]+`)}\b`, 'gi'), (name, at, all) => {
+            const deed = AT_DEED.test(all.slice(0, at));
+            links.push({ kind: x.kind, id: x.id, text: name, deed });
+            return deed ? name : ' ';
+        });
     }
-    return out;
+    return { masked: out, links };
 }
+
+/** The message with the names the engine knows masked where they are no deed of Alaric's (linkEntities). */
+export const maskNames = (text, state) => linkEntities(text, state).masked;
+
 // "*i say calmly*": the player marks his deeds with asterisks and names what is outside them as his words
 const SAY_RE = /\b(?:i|we)\s+(?:\w+\s+)?(?:say|says|said|ask|asks|asked|reply|replies|replied|tell|tells|told|shout|shouts|call|calls|whisper|whispers|answer|answers|add|adds|mutter|mutters)\b/i;
 
@@ -210,7 +221,7 @@ export function resolveTarget(text, state, content, { hostileOnly = false } = {}
  * @returns {object} intent: {kind: 'command'|'creation.class'|'creation.skills'|'creation.invalid'|'attack'|'skill'
  *   |'move'|'flee'|'stealth'|'narrative'|'ambiguous_target'|'unknown_skill'|'no_target', ...}
  */
-export function parseIntent(text, state, content) {
+export function parseIntent(text, state, content, { masked = null } = {}) {
     const raw = String(text || '');
     const t = normText(raw);
     const cmd = raw.match(/^\s*#\s*([a-z]+)\s*([\s\S]*)$/i);
@@ -232,7 +243,7 @@ export function parseIntent(text, state, content) {
     const sheet = state.entities.pc?.sheet;
     const known = sheet ? Object.keys(sheet.skills) : [];
     const v4 = state.meta?.runtime === 'v4';
-    const decl = declarative(v4 ? deedsOf(maskNames(raw, state)) : raw);
+    const decl = declarative(v4 ? deedsOf(masked ?? maskNames(raw, state)) : raw);
     const d = normText(decl);
     if (!d) return { kind: 'narrative', flags: { info: /\?/.test(raw), speech: /["“]/.test(raw) } };
     // Skills: known ones by name; an unknown one only when unmistakable (multi-word name or "use/cast X"), so that

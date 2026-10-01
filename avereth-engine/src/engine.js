@@ -71,7 +71,7 @@ export function startCampaign(content, { seed = newSeed(), firstMessage = '', ru
  * Resolve the player's message. Deterministic for a given (state, input).
  * @returns {{events, outcome, command: null|{panels, llm}, intent, situations, state}}
  */
-export function playerTurn(state, content, input, { msg = null } = {}) {
+export function playerTurn(state, content, input, { msg = null, intent: parsed = null } = {}) {
     if (!state.meta.started) throw new Error('campaign not started');
     const s = clone(state);
     const dice = Dice.from(s);
@@ -82,7 +82,8 @@ export function playerTurn(state, content, input, { msg = null } = {}) {
         events.push(e);
     };
     const text = String(input ?? '');
-    const intent = parseIntent(text, s, content);
+    // the act the message's Intent IR read (src/ir.js), else read here: the same parse of the same state
+    const intent = parsed || parseIntent(text, s, content);
     if (intent.kind === 'command') {
         const r = runCommands(s, content, text);
         for (const e of r.events) emit(e);

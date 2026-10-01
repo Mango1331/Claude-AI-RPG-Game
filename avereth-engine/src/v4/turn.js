@@ -10,23 +10,18 @@
 import { Dice } from '../rng.js';
 import { applyEvent } from '../state.js';
 import { clone, hash32 } from '../util.js';
-import { parseIntent } from '../intent.js';
+import { readTurn } from '../ir.js';
 import { resolveCommands } from './commands.js';
 import { applyWorld } from './world.js';
 import { INTERPRETER_VERSION } from './interpret.js';
 import { EXTRACTOR_VERSION } from './extract.js';
 
-const V3_KINDS = new Set(['command', 'creation.class', 'creation.skills', 'creation.invalid', 'attack', 'engage', 'ambiguous_target', 'no_target', 'unknown_skill', 'stealth']);
-
 /**
  * Which engine resolves this message: 'v3' for commands, creation, combat and stealth (the V3 engine, unchanged in a V4
- * campaign), 'v4' for a story turn (interpreter and extractor).
+ * campaign), 'v4' for a story turn (interpreter and extractor). The route of the message's Intent IR (src/ir.js).
  */
 export function routeTurn(state, content, text) {
-    if (state.meta?.runtime !== 'v4') return 'v3';
-    if (state.mode === 'creation' || state.entities.pc?.status === 'dead' || state.encounter || (state.pending_combat || []).length) return 'v3';
-    const intent = parseIntent(String(text ?? ''), state, content);
-    return V3_KINDS.has(intent.kind) ? 'v3' : 'v4';
+    return readTurn(String(text ?? ''), state, content).route;
 }
 
 function serializableAuth(auth) {

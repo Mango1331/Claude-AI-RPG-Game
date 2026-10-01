@@ -93,6 +93,18 @@ test('the assertion: a delta that writes what it does not own is named; the decl
     assert.match(ownershipViolation({ kind: 'delta', type: 'time' }, { t: 'no.such.event', d: {} }, base), /no declared kind/);
 });
 
+test('the world applier asks the assertion at every event of a delta: a write the table does not declare stops the suite', () => {
+    const memory = { seq: 1, type: 'memory', text: 'The barkeep laughed at his joke.', who: [], imp: 6 };
+    assert.ok(world(base, [memory]).events.some((e) => e.t === 'memory.recorded'), 'declared: the memory is kept');
+    const declared = DELTA_WRITES.memory;
+    DELTA_WRITES.memory = { writes: [] };
+    try {
+        assert.throws(() => world(base, [memory]), /Decision Ownership: memory wrote memory \(memory\.recorded\)/);
+    } finally {
+        DELTA_WRITES.memory = declared;
+    }
+});
+
 // ------------------------------------------------------------------------------------------------ free text
 test('one clause rule for every store: a quest note keeps the old verdicts exactly (the rule moved, it did not change)', () => {
     const OLD_STATUS = /\b(?:registered|logged|turned\s+in|handed\s+in|(?:contract|quest|job|slip)\b[^.;]{0,40}\b(?:active|accepted|listed|complete|completed|closed|failed|finished))\b|^\W*(?:active|accepted|completed|closed|failed)\b/i;

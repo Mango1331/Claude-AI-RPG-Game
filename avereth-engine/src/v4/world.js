@@ -13,10 +13,10 @@ import { applyEvent } from '../state.js';
 import { clone, normText, slug } from '../util.js';
 import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver } from '../delta.js';
-import { truth, entityLabel, setFactEvents, statusOf, FUNCTIONAL, normPredicate } from '../knowledge.js';
+import { truth, entityLabel, setFactEvents, statusOf, normPredicate } from '../knowledge.js';
 import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
 import { firewall } from './firewall.js';
-import { stripOwned, wrongClaim, ownershipViolation } from './ownership.js';
+import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolation } from './ownership.js';
 import { mayOpenFight, mayTake } from './envelope.js';
 import {
     PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind,
@@ -26,6 +26,10 @@ import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
+// the predicates of a fight's moment (selective persistence: they end with the fight) and the words of a lasting mark
+const FIGHT_MOMENT = /^(?:behaviou?r|demeanou?r|position|posture|stance|gait|movement|motion|action|activity|last_attack|attack(?:ing)?|tactics?|mood|focus|wounded|bleeding|breathing|stamina|fatigue)$/;
+const LASTING_MARK = /\b(?:lost|loses|missing|severed|scar\w*|maimed|crippled|blinded|permanent\w*|tattoo\w*|brand\w*)\b/i;
+
 let OWNERSHIP_ASSERT = false;
 export function assertOwnership(on = true) { OWNERSHIP_ASSERT = !!on; }
 
@@ -122,13 +126,21 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const events = [];
     // the step whose events these are (Decision Ownership: an extractor delta writes only what its type may write)
     let step = { kind: 'engine' };
+    // a gate the current delta passed (src/v4/ownership.js): only then may it reach the engine-owned kind behind it
+    const grant = (gate) => step.granted?.add(gate);
     const emit = (e) => {
         if (dice.n !== s.rng.n) e.rng_to = dice.n;
+        const checked = OWNERSHIP_ASSERT && step.kind === 'delta';
+        const before = checked ? stateRegions(s) : null;
         if (OWNERSHIP_ASSERT) {
             const why = ownershipViolation(step, e, s);
             if (why) throw new Error(`Decision Ownership: ${why}`);
         }
         applyEvent(s, e);
+        if (checked) {
+            const why = effectViolation(step, e, before, stateRegions(s));
+            if (why) throw new Error(`Decision Ownership: ${why}`);
+        }
         events.push(e);
     };
     const rejected = [];
@@ -191,9 +203,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
     // the World Envelope at this step (docs/ARCHITECTURE_GEN35.md §2.3): may this actor turn on Alaric of its own accord?
     const envelopeAllows = (id, d) => {
-        if (typeof id !== 'string' || !s.entities[id] || !['npc', 'creature'].includes(s.entities[id].kind)) return true; // the V3 rules refuse unknown attackers
+        if (typeof id !== 'string' || !s.entities[id] || !['npc', 'creature'].includes(s.entities[id].kind)) { grant('envelope.fight'); return true; } // the V3 rules refuse unknown attackers
         const v = mayOpenFight(s, content, id, { newInAnswer: bornHere.has(id) });
-        if (v.ok) return true;
+        if (v.ok) { grant('envelope.fight'); return true; }
         const label = entityLabel(s, id);
         reject(d, 'envelope', `${id} does not turn on Alaric: ${v.why}`);
         const correction = `${label} did not turn on Alaric in the last reply (${v.why}); no fight started. ${v.rule === 'provoked_only' ? 'Only a cause the story establishes first (an insult, a threat, harm) turns them against him.' : 'An animal like this one attacks only when cornered or within reach.'}`;
@@ -232,9 +244,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (kind === 'creature' && (d.count || 1) === 1 && d.present !== false) {
             const same = Object.values(s.entities).filter((e) => e.kind === 'creature' && statusOf(s, e.id) !== 'dead' && !s.scene.present.includes(e.id)
                 && normText(e.species || '') === normText(d.species || '') && (e.anchor || e.profile?.anchor) === d.anchor && e.location === s.scene.location);
-            if (same.length === 1) {
+            // a stronger one than the ordinary one that left, whose numbers are fixed, is another individual (review of
+            // 4.1.5: the returning path skipped the variation); one not yet fixed is this one, shown stronger now
+            const other = same.length === 1 && d.stronger === true && same[0].variation !== 'strong' && !!same[0].profile;
+            if (same.length === 1 && !other) {
                 emit({ t: 'scene.entered', d: { id: same[0].id, band: d.band || 'MEDIUM' } });
                 refs.set(normText(d.ref), same[0].id);
+                if (d.stronger === true && same[0].variation !== 'strong') emit({ t: 'entity.updated', d: { id: same[0].id, set: { variation: 'strong' } } });
                 if (!same[0].profile) materialise(s, content, dice, emit, same[0].id);
                 return [same[0].id];
             }
@@ -249,6 +265,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 : { ref, kind: 'creature', name: undefined, species: d.species, anchor: d.anchor, desc: d.desc || [], band: d.band || undefined });
         }
         const joins = kind === 'creature' && s.encounter && hostileRefs.has(normText(d.ref));
+        if (joins) grant('envelope.fight'); // introduced by this reply: an ambush or a reinforcement is the world's move
         const r = v3({ new: entries, ...(joins ? { combat: entries.map((e) => ({ by: e.ref })) } : {}) }, d);
         if (joins) joinedByNew.add(normText(d.ref));
         const created = r.events.filter((e) => e.t === 'entity.created').map((e) => e.d.entity.id).filter((id) => !before.has(id));
@@ -289,7 +306,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     }
 
     for (const d of [...fw.accept].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0))) {
-        step = { kind: 'delta', type: d.type, seq: d.seq ?? 0 };
+        step = { kind: 'delta', type: d.type, seq: d.seq ?? 0, granted: new Set() };
         // Authority is checked again at the actual story step: earlier deltas may have changed its context.
         const stepFw = firewall([d], firewallContext(s, content));
         if (!stepFw.accept.length) {
@@ -377,6 +394,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 // an intent to attack him is the same decision as turning on him: the World Envelope's (outside a fight)
                 const who = mapRef(d.who);
                 if (d.intent === 'attack' && !s.encounter && !envelopeAllows(who, d)) break;
+                grant('narrated_intent');
                 v3({ intent: [{ who, intent: d.intent }] }, d);
                 break;
             }
@@ -389,16 +407,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 break;
             }
             case 'fact': {
-                // selective persistence (Gen 3.5): what the story says about the fighters while the fight runs (their wounds,
-                // how they move, what they do) describes state the fight owns; it lives as long as that fight. A known
-                // combatant's own lasting attributes (its look, its name) stay; so does anything said outside a fight
+                // selective persistence (Gen 3.5): what the story says about the fighters while the fight runs (how they
+                // move, what they do, a fresh wound) describes state the fight owns; it lives as long as that fight. Only
+                // such known moment-to-moment predicates, and never a lasting mark ("lost two fingers", a scar): anything
+                // else said during a fight keeps its lifetime, as everything said outside one (review of 4.2.0)
                 const subject = mapRef(d.s);
                 const enc = s.encounter;
                 const combatant = !!enc && typeof subject === 'string' && subject !== 'pc' && !!enc.combatants?.[subject];
                 // "the wolves", "the last wolf", "wolf pack": no one entity, but the kind of the opponents still fighting
                 const fighters = !!enc && typeof subject === 'string' && !s.entities[subject] && Object.values(enc.combatants).some((c) => c.id !== 'pc' && c.side === 'hostile'
                     && !c.current.defeated && namesKind(String(d.s), s.entities[c.id]?.species, content.anchors.get(s.entities[c.id]?.anchor || s.entities[c.id]?.profile?.anchor)));
-                const scoped = (combatant && !FUNCTIONAL.has(normPredicate(d.p))) || fighters;
+                const scoped = (combatant || fighters) && FIGHT_MOMENT.test(normPredicate(d.p)) && !LASTING_MARK.test(String(d.o ?? ''));
                 v3({ facts: [{ s: subject, p: d.p, o: mapRef(d.o), ...(scoped ? { scope: { fight: enc.id } } : {}) }] }, d);
                 break;
             }
@@ -428,6 +447,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 const amounts = {};
                 if (d.hp) amounts.hp = d.hp;
                 if (d.sta) amounts.sta = d.sta;
+                if (who === 'pc') grant('player.rest');
                 if (Object.keys(amounts).length) v3({ recover: [{ who, ...amounts, why: who === 'pc' ? (serviced ? 'lodging or healing' : 'rest') : 'rest' }] }, d);
                 break;
             }
@@ -463,6 +483,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     break;
                 }
                 const coin = s.entities.pc.sheet.coin_cp;
+                grant('envelope.give');
                 emit({ t: 'coin.changed', d: { id: 'pc', value: coin + d.cp, delta: d.cp, why: `${from ? entityLabel(s, from) : d.from}: ${String(d.why || 'a gift').slice(0, 80)}` } });
                 break;
             }
@@ -542,6 +563,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 if (!q) { reject(d, 'quest', 'unknown quest'); break; }
                 if (q.status !== 'active' && q.status !== 'offered') { reject(d, 'quest', `the quest is ${q.status}`); break; }
                 if (q.kind === 'private' && d.status === 'completed' && q.giver && idOf(d.by) !== q.giver) { reject(d, 'quest', 'private work is closed by its giver'); break; }
+                if (d.status === 'failed') grant('world.failed');
                 emit({ t: 'quest.status', d: { id: q.id, from: q.status, to: d.status, by: idOf(d.by) || null } });
                 break;
             }
@@ -557,6 +579,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 }
                 const q = questRef(d.listing);
                 if (!q || q.status !== 'listed') { reject(d, 'quest', 'no such listing on the board'); break; }
+                grant('world.taken');
                 emit({ t: 'quest.status', d: { id: q.id, from: 'listed', to: d.why, by: 'world' } });
                 const key = Object.keys(s.guild.boards).find((k) => s.guild.boards[k].listings.includes(q.id));
                 if (key) emit({ t: 'board.refreshed', d: { key, ...s.guild.boards[key], listings: s.guild.boards[key].listings.filter((x) => x !== q.id) } });
@@ -701,6 +724,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             arrivedHall = hall;
             for (const k of conditionals.filter((x) => !x.done && x.condition === 'arrive_guild_hall')) {
                 k.done = true;
+                grant('conditional');
                 const q = s.quests[k.quest];
                 const r = q && q.status === 'active' ? completeContract(s, content, q, emit, { step: k.seq }) : { ok: false, reason: 'the contract is no longer active' };
                 emit({ t: 'cmd.completed', d: { seq: k.seq, ok: r.ok, reason: r.reason ?? null } });
@@ -735,6 +759,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (!holder) { reject(d, 'object', `unknown holder ${String(d.holder).slice(0, 40)}`); return; }
         const q = d.for_quest ? questRef(d.for_quest) : null;
         const id = uniqueObjectId(s, tag, d.name);
+        if (holder.entity === 'pc' && ((auth.take || []).length || auth.gather)) grant('player.take');
         emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, holder, marks: [], for_quests: q ? [q.id] : [], source: { turn: s.turn, how: holder.entity === 'pc' ? (((auth.take || []).length || auth.gather) ? 'taken' : 'world_gift') : 'story' } } } });
         objectsNew.set(normText(d.name), id);
     }
@@ -746,6 +771,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (!to) { reject(d, 'object', `unknown receiver ${String(d.to).slice(0, 40)}`); return; }
         if (to.entity === 'pc' && o.holder?.loc && !(auth.take || []).length) { reject(d, 'pc_inventory', 'what lies here becomes his only by his own take'); return; }
         const part = d.qty && d.qty < (o.qty ?? 1) ? d.qty : null;
+        // to him: from where it lies, by his own take; from someone's hands, their gift (the firewall's rules)
+        if (to.entity === 'pc') grant(o.holder?.loc ? 'player.take' : 'envelope.give');
         emit({ t: 'object.moved', d: { id: o.id, to, ...(part ? { qty: part, split: `${o.id}_${tag}` } : {}) } });
     }
 
@@ -766,6 +793,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             const coin = s.entities.pc.sheet.coin_cp;
             if (!dec.any_price && price > dec.max_cp) { system.push(`NOT BOUGHT — ${what}: ${price} cp is above his limit of ${dec.max_cp} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'too_expensive' } }); continue; }
             if (coin < price) { system.push(`NOT BOUGHT — ${price} cp needed, he has ${coin} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'no_coin' } }); continue; }
+            grant('player.buy');
             bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (name) => uniqueObjectId(s, tag, name) });
             counterparts.add(seller);
             emit({ t: 'offer.closed', d: { id, status: 'accepted' } });
@@ -784,6 +812,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // (src/v4/envelope.js): a fine or confiscation needs an authority, a robbery a hostile robber (or a fight)
         const may = mayTake(s, by, d.kind);
         if (!may.ok) { reject(d, 'coerce', may.why); return; }
+        grant('envelope.take');
         const sheet = s.entities.pc.sheet;
         if (d.coin_cp) {
             const cp = Math.min(d.coin_cp, sheet.coin_cp);

@@ -10,8 +10,9 @@ import { loadContent, ROOT } from '../helpers.js';
 import { Chat4 } from './harness.js';
 import { applyWorld } from '../../src/v4/world.js';
 import {
-    STATE_KINDS, DELTA_WRITES, AUDIT_EVENTS, eventKind, ownershipViolation, ownedClause, stripOwned, engineOwned,
+    STATE_KINDS, DELTA_WRITES, AUDIT_EVENTS, eventKind, ownershipViolation, ownedClause, stripOwned, engineOwned, stateRegions, effectViolation,
 } from '../../src/v4/ownership.js';
+import { applyEvent } from '../../src/state.js';
 import { engineClause } from '../../src/v4/guild.js';
 import { V4_EVENTS } from '../../src/v4/domain.js';
 
@@ -87,10 +88,50 @@ test('the assertion: a delta that writes what it does not own is named; the decl
     const coin = { t: 'coin.changed', d: { id: 'pc', value: 50, delta: 10 } };
     assert.match(ownershipViolation({ kind: 'delta', type: 'memory' }, coin, base), /memory wrote pc\.coin \(coin\.changed\)/);
     assert.match(ownershipViolation({ kind: 'delta', type: 'fact' }, { t: 'quest.status', d: { id: 'quest.g' } }, { quests: { 'quest.g': { kind: 'guild_contract' } } }), /fact wrote quest\.status/);
-    assert.equal(ownershipViolation({ kind: 'delta', type: 'coin.gift' }, coin, base), null, 'a gift to him is the gift gate');
-    assert.equal(ownershipViolation({ kind: 'delta', type: 'coerce' }, coin, base), null, 'a robbery or a fine is the take gate');
+    // a gate is a capability: declared is not enough, the check behind it must have passed in this step (4.2.1)
+    assert.match(ownershipViolation({ kind: 'delta', type: 'coin.gift' }, coin, base), /coin\.gift wrote pc\.coin \(coin\.changed\) without passing its gate envelope\.give/);
+    assert.match(ownershipViolation({ kind: 'delta', type: 'coerce', granted: new Set(['envelope.give']) }, coin, base), /without passing its gate envelope\.take/, 'another gate opens nothing');
+    assert.equal(ownershipViolation({ kind: 'delta', type: 'coin.gift', granted: new Set(['envelope.give']) }, coin, base), null, 'a gift to him, once the gift rules passed');
+    assert.equal(ownershipViolation({ kind: 'delta', type: 'coerce', granted: new Set(['envelope.take']) }, coin, base), null, 'a robbery or a fine, once mayTake passed');
     assert.equal(ownershipViolation({ kind: 'expected' }, coin, base), null, 'the engine answering its own questions writes by the player\'s commands');
     assert.match(ownershipViolation({ kind: 'delta', type: 'time' }, { t: 'no.such.event', d: {} }, base), /no declared kind/);
+});
+
+test('every region an event changes is checked, not only its primary kind: an arrival moves the scene, the people with him and Alaric', () => {
+    const s = structuredClone(base);
+    const before = stateRegions(s);
+    applyEvent(s, { t: 'scene.moved', d: { at: 'loc.redmarch.guild_hall', location: 'loc.redmarch', place: 'hall', reset_present: true } });
+    const after = stateRegions(s);
+    const changed = Object.keys(after).filter((k) => before[k] !== after[k]);
+    assert.ok(changed.includes('pc.location'), changed.join(','));
+    assert.equal(eventKind({ t: 'scene.moved', d: {} }), 'pc.location', 'its primary kind alone');
+    // declared for an arrival; any other delta that moved him would be named, whichever region it is
+    const ev = { t: 'scene.moved', d: {} };
+    assert.equal(effectViolation({ kind: 'delta', type: 'arrive', granted: new Set() }, ev, before, after), null);
+    assert.match(effectViolation({ kind: 'delta', type: 'person.named', granted: new Set() }, ev, before, after), /person\.named changed pc\.location \(scene\.moved\)/);
+    // a thing he holds: what and how many is his inventory; a mark on it is the world's note
+    const held = structuredClone(base);
+    held.objects['obj.slip'] = { id: 'obj.slip', name: 'contract slip', kind: 'item', qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [] };
+    const b2 = stateRegions(held);
+    applyEvent(held, { t: 'object.marked', d: { id: 'obj.slip', mark: 'signed by the steward', by: 'npc.x', turn: held.turn } });
+    const a2 = stateRegions(held);
+    assert.deepEqual(Object.keys(a2).filter((k) => b2[k] !== a2[k]), ['objects']);
+});
+
+test('the world applier checks every region an event changed: someone entering moves their record too, and that must be declared', () => {
+    const s = structuredClone(base);
+    s.entities['npc.far'] = { id: 'npc.far', kind: 'npc', name: 'Odo', descriptors: ['carter'], traits: '', status: 'alive', location: 'loc.elsewhere', at: null, card: {}, created: { turn: 1, minute: 0 } };
+    const enter = { seq: 1, type: 'enter', who: 'npc.far' };
+    const ok = world(s, [enter]);
+    assert.ok(ok.events.some((e) => e.t === 'scene.entered'));
+    assert.equal(ok.state.entities['npc.far'].location, s.scene.location, 'scene.entered moved his record (a second region)');
+    const declared = DELTA_WRITES.enter;
+    DELTA_WRITES.enter = { writes: ['scene'] };
+    try {
+        assert.throws(() => world(s, [enter]), /Decision Ownership: enter changed entities \(scene\.entered\)/, 'the primary kind (scene) alone would pass');
+    } finally {
+        DELTA_WRITES.enter = declared;
+    }
 });
 
 test('the world applier asks the assertion at every event of a delta: a write the table does not declare stops the suite', () => {

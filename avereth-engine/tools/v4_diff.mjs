@@ -7,8 +7,8 @@
 //   node tools/v4_diff.mjs /tmp/base/avereth-engine . [out.json]
 //
 // Also measured: the engine block's tokens (estimate, src/context.js) and the engine's own time per message (median
-// of five replays per tree; the interpreter and the extractor are the runs' recorded answers, so this is the
-// deterministic part of a turn only).
+// of five replays per tree, the ownership assertion off as in the game; the interpreter and the extractor are the
+// runs' recorded answers, so this is the deterministic part of a turn only).
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -28,7 +28,9 @@ async function tree(root) {
     const { turnBlock } = await imp('src/host.js');
     let envelopeBlock = null;
     try { ({ envelopeBlock } = await imp('src/v4/envelope.js')); } catch { /* a tree before the envelope */ }
-    return { root, content: await loadContent(), Chat4, turnBlock, envelopeBlock };
+    // the test helpers switch the ownership assertion on (it checks the replays here); the game runs without it
+    const { assertOwnership = null } = await imp('src/v4/world.js');
+    return { root, content: await loadContent(), Chat4, turnBlock, envelopeBlock, assertOwnership };
 }
 // the replay driver of the newer tree, with each tree's own harness and host
 const { replayRun } = await import(pathToFileURL(path.resolve(rootB, 'tests/v4/replay_lib.js')).href);
@@ -141,7 +143,13 @@ for (const f of RUNS) {
     const stateKeys = [...new Set([...Object.keys(fa || {}), ...Object.keys(fb || {})])].filter((k) => key(fa?.[k]) !== key(fb?.[k]));
     run.state = stateKeys;
     // the engine's time per message: median of REPEAT replays per tree
-    const time = async (T) => { const xs = []; for (let r = 0; r < REPEAT; r++) { const st = await play(T, fx); xs.push(st.reduce((s, z) => s + (z.ms || 0), 0)); } return median(xs); };
+    const time = async (T) => {
+        T.assertOwnership?.(false);
+        const xs = [];
+        for (let r = 0; r < REPEAT; r++) { const st = await play(T, fx); xs.push(st.reduce((s, z) => s + (z.ms || 0), 0)); }
+        T.assertOwnership?.(true);
+        return median(xs);
+    };
     run.ms = { a: await time(A), b: await time(B), messages: sa.length };
     report.runs[f] = run;
 }

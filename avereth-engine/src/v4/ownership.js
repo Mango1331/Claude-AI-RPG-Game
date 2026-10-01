@@ -7,7 +7,7 @@
 // The same table serves three purposes: the authority comment that used to live in firewall.js is data here; a test
 // replays every recorded live run and checks each delta's events against what its type may write; and free text (a
 // quest note, a memory) never keeps the engine's state as a second truth: one clause rule for every such store.
-export const OWNERSHIP_VERSION = 'ownership-1';
+export const OWNERSHIP_VERSION = 'ownership-2';
 
 /** Kinds of canonical state and their one owner domain; engine: decided only by the engine (or through a gate). */
 export const STATE_KINDS = {
@@ -100,11 +100,77 @@ export const AUDIT_EVENTS = new Set([
 export function ownershipViolation(step, e, s) {
     const kind = eventKind(e, s);
     if (kind === null) return `${e.t}: an event of no declared kind`;
+    return kindViolation(step, kind, e, 'wrote');
+}
+
+/**
+ * May this step change this kind? Its own writes, the audit, or a gate whose check this very step passed: a gate is a
+ * capability the world applier grants where the check succeeds (`step.granted`, e.g. 'envelope.take' once mayTake
+ * said yes), not a declaration that suffices by itself.
+ */
+function kindViolation(step, kind, e, verb) {
     if (!step || step.kind !== 'delta') return null;
     const w = DELTA_WRITES[step.type];
     if (!w) return `${step.type}: a delta type without declared writes`;
-    if (ALWAYS.has(kind) || (w.writes || []).includes(kind) || (w.gates && kind in w.gates)) return null;
-    return `${step.type} wrote ${kind} (${e.t}), which it does not own and has no gate for`;
+    if (ALWAYS.has(kind) || (w.writes || []).includes(kind)) return null;
+    const gate = w.gates?.[kind];
+    if (!gate) return `${step.type} ${verb} ${kind} (${e.t}), which it does not own and has no gate for`;
+    const needs = [].concat(gate);
+    if (needs.some((g) => step.granted?.has(g))) return null;
+    return `${step.type} ${verb} ${kind} (${e.t}) without passing its gate ${needs.join(' or ')}`;
+}
+
+/**
+ * Every region of the state an event actually changed, by kind: a fingerprint of each region before and after the
+ * reducer (assertion mode only). One event often changes several regions (an arrival moves Alaric, the people with
+ * him and the scene); the check covers all of them, not only the event's primary kind.
+ */
+export function stateRegions(s) {
+    const j = (x) => JSON.stringify(x ?? null);
+    const pc = s.entities?.pc || {};
+    const sh = pc.sheet || {};
+    const { sheet, status, location, at, ...pcRest } = pc;
+    const objects = Object.values(s.objects || {});
+    const pcHeld = (o) => pcHolder(o.holder);
+    // what he holds is the inventory (which thing, how many); marks and quest ties on it are the world's notes
+    const held = objects.filter(pcHeld).map((o) => [o.id, o.name, o.kind, o.qty, o.unit, o.holder]);
+    const worldObjects = objects.filter((o) => !pcHeld(o) || o.marks?.length || o.for_quests?.length)
+        .map((o) => (pcHeld(o) ? [o.id, o.marks, o.for_quests] : o));
+    const quests = Object.values(s.quests || {});
+    const contracts = quests.filter((q) => q.kind === 'guild_contract');
+    return {
+        'pc.coin': j(sh.coin_cp),
+        'pc.inventory': j([sh.inventory, sh.equipment, held]),
+        'pc.vitals': j([sh.hp, sh.mp, sh.sta, status]),
+        'pc.progress': j([sh.level, sh.class, sh.stats, sh.skills, sh.xp, sh.free_points, s.creation]),
+        'pc.location': j([s.scene?.location, s.scene?.place, s.scene?.at, location, at]),
+        entities: j([Object.entries(s.entities || {}).filter(([id]) => id !== 'pc'), pcRest]),
+        scene: j([s.scene?.present, s.scene?.positions, s.scene?.awareness, s.scene?.concealed]),
+        combat: j([s.encounter, s.pending_combat, s.pending_intents, s.mode]),
+        'quest.status': j(contracts.map((q) => [q.id, q.status, q.history])),
+        'guild.board': j([s.guild?.boards, contracts.map((q) => q.id)]),
+        'guild.standing': j(s.guild?.membership),
+        quests: j(quests.map((q) => (q.kind === 'guild_contract' ? (({ status: st, history, ...rest }) => rest)(q) : q))),
+        trade: j([s.offers, s.decisions, s.services]),
+        facts: j(s.facts),
+        knowledge: j([s.knowledge, s.claims]),
+        relations: j(s.relations),
+        memory: j(s.memories),
+        threads: j(s.threads),
+        time: j(s.clock),
+        places: j(s.places),
+        objects: j(worldObjects),
+    };
+}
+
+/** Why the regions an event of this step changed break the Decision Ownership, or null. */
+export function effectViolation(step, e, before, after) {
+    for (const kind of Object.keys(after)) {
+        if (before[kind] === after[kind]) continue;
+        const why = kindViolation(step, kind, e, 'changed');
+        if (why) return why;
+    }
+    return null;
 }
 
 /**
@@ -115,8 +181,9 @@ export const DELTA_WRITES = {
     time: { writes: ['time'] },
     // an arrival moves him and the people with him, may create the place, starts a journey, carries or closes open
     // decisions, and fires the turn-in his own command made conditional on arriving at a Guild hall (with the engine's
-    // own record of it: the fact "completed_contract" and what its witnesses remember)
-    arrive: { writes: ['pc.location', 'scene', 'entities', 'places', 'quests', 'trade', 'knowledge', 'facts', 'memory'], gates: { 'quest.status': 'conditional', 'pc.coin': 'conditional', 'pc.progress': 'conditional', 'pc.inventory': 'conditional', 'guild.standing': 'conditional' } },
+    // own record of it: the fact "completed_contract" and what its witnesses remember; the trophies it consumes take
+    // their quest ties with them)
+    arrive: { writes: ['pc.location', 'scene', 'entities', 'places', 'quests', 'trade', 'knowledge', 'facts', 'memory', 'objects'], gates: { 'quest.status': 'conditional', 'pc.coin': 'conditional', 'pc.progress': 'conditional', 'pc.inventory': 'conditional', 'guild.standing': 'conditional' } },
     'person.new': { writes: ['entities', 'scene', 'facts', 'places', 'knowledge'] },
     'person.named': { writes: ['entities'] },
     'creature.new': { writes: ['entities', 'scene', 'facts'], gates: { combat: 'envelope.fight' } },
@@ -134,7 +201,8 @@ export const DELTA_WRITES = {
     thread: { writes: ['threads'] },
     recover: { writes: ['entities'], gates: { 'pc.vitals': 'player.rest' } },
     'object.new': { writes: ['objects'], gates: { 'pc.inventory': 'player.take' } },
-    'object.move': { writes: ['objects'], gates: { 'pc.inventory': 'envelope.give' } },
+    // a thing handed to him (a gift), or taken from where it lies by his own take
+    'object.move': { writes: ['objects'], gates: { 'pc.inventory': ['envelope.give', 'player.take'] } },
     'object.mark': { writes: ['objects'] },
     // an offer may meet a purchase he agreed to in advance within his limit: the engine books it (trade.js)
     offer: { writes: ['trade'], gates: { 'pc.coin': 'player.buy', 'pc.inventory': 'player.buy' } },
@@ -176,8 +244,23 @@ const CLIENT_OWN = /\b(?:bonus|own\s+purse|from\s+(?:his|her|their)\s+own)\b/i;
  * @param {{store?: 'note'|'memory'}} [opts] note: a quest note (any money with a payment word is the contract's);
  *   memory: a moment (a payment for goods stays)
  */
+// A memory is everyday prose: "registered surprise", "the only reward was a smile", "promoted to head cook", "logged
+// every boat", "the dice paid out" are moments (review of 4.2.0). There a status word or a soft money word is the
+// engine's only beside the Guild's own words; Quest XP and a payout always are.
+const GUILD_CONTEXT = /\b(?:guild|contracts?|quests?|jobs?|slips?|members?(?:hip)?|clerks?|desk|registry|bount(?:y|ies)|drawer|listings?|board)\b/i;
+const HARD_MONEY = /\b(?:payouts?|xp|experience\s+points)\b/i;
+const moneyKind = (x) => (/\b(?:xp|experience\s+points)\b/i.test(x) ? 'pc.progress' : /\b(?:guild\s+rank|promot\w*)\b/i.test(x) ? 'guild.standing' : 'pc.coin');
+function ownedInMemory(x) {
+    if (ENGINE_STATUS.test(x) && GUILD_CONTEXT.test(x)) return /\b(?:registered)\b/i.test(x) && !/\b(?:contract|quest|job|slip)\b/i.test(x) ? 'guild.standing' : 'quest.status';
+    if (CLIENT_OWN.test(x)) return null;
+    if (HARD_MONEY.test(x) || (ENGINE_MONEY.test(x) && GUILD_CONTEXT.test(x))) return moneyKind(x);
+    if (MONEY_AMOUNT.test(x) && GUILD_MONEY_TOPIC.test(x)) return 'pc.coin';
+    return null;
+}
+
 export function ownedClause(clause, { store = 'note' } = {}) {
     const x = String(clause || '');
+    if (store === 'memory') return ownedInMemory(x);
     if (ENGINE_STATUS.test(x)) return /\b(?:registered)\b/i.test(x) && !/\b(?:contract|quest|job|slip)\b/i.test(x) ? 'guild.standing' : 'quest.status';
     if (CLIENT_OWN.test(x)) return null;
     if (ENGINE_MONEY.test(x)) return /\b(?:xp|experience\s+points)\b/i.test(x) ? 'pc.progress' : /\b(?:guild\s+rank|promot\w*)\b/i.test(x) ? 'guild.standing' : 'pc.coin';

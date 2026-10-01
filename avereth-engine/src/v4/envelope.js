@@ -67,13 +67,16 @@ function roleText(state, id) {
 
 /**
  * May this actor take Alaric's coin or things? A fine or a confiscation needs an authority, a robbery a hostile robber
- * (or a fight that is committed or running). The other side of a sale is decided before (the world applier).
+ * (or one committed to a fight with him, or fighting him now). The other side of a sale is decided before (the world
+ * applier).
  * @returns {{ok: boolean, why?: string}}
  */
 export function mayTake(state, by, kind) {
     const role = roleText(state, by);
     if ((kind === 'confiscation' || kind === 'fine') && !AUTHORITY_ROLE.test(role)) return { ok: false, why: `${kind} needs an authority (a guard, an official)` };
-    if (kind === 'robbery' && !(HOSTILE_ROLE.test(role) || state.pending_combat?.some((p) => p.by === by) || state.encounter)) return { ok: false, why: 'a robbery needs a hostile robber' };
+    // in a fight: only one who fights against him there (review of 4.2.0: any running fight let the merchant rob him)
+    const fighting = state.encounter?.combatants?.[by]?.side === 'hostile';
+    if (kind === 'robbery' && !(HOSTILE_ROLE.test(role) || state.pending_combat?.some((p) => p.by === by) || fighting)) return { ok: false, why: 'a robbery needs a hostile robber' };
     return { ok: true };
 }
 

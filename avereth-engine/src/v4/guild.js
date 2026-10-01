@@ -209,8 +209,11 @@ const HUNT_SUPPORT = new Set(['FIND', 'GO', 'DEFEND']);
 // An objective whose only work is having the result confirmed, signed, witnessed or inspected ("TALK Harl Cotter to
 // confirm the losses have stopped", live 30.09.2026 22:41) is no work of its own beside the kills: a hunt is proven by
 // the trophies at a Guild hall. A talk that is work (asking where the pack dens) keeps its place and makes it mixed.
-const CONFIRMS = /\b(?:confirm\w*|sign(?:s|ed|ing|ature|atures|-?off)?|countersign\w*|verif\w*|vouch\w*|witness\w*|inspect\w*|attest\w*|receipt)\b/i;
-const confirmsOnly = (o) => ['TALK', 'GET', 'GIVE'].includes(o.verb) && CONFIRMS.test(o.what || '');
+// "Witness" counts as the act (have it witnessed, witness the kill), not as the people to ask; an objective that asks
+// something (where the beasts den, about the sightings) is inquiry, real work (review of 4.1.5)
+const CONFIRMS = /\b(?:confirm\w*|sign(?:s|ed|ing|ature|atures|-?off)?|countersign\w*|verif\w*|vouch\w*|witness(?:ed|ing)?\b(?!es)(?=\s+(?:the|it|his|that|their|its)\b|\s*$|[.,;])|witnessed|inspect\w*|attest\w*|receipt)\b/i;
+const INQUIRY = /\b(?:about|where|which|whether|who|how|when|ask\w*|learn\w*|find\s+out|rumou?rs?|sightings?|tracks?|trail|lairs?|dens?|nests?)\b/i;
+const confirmsOnly = (o) => ['TALK', 'GET', 'GIVE'].includes(o.verb) && CONFIRMS.test(o.what || '') && !INQUIRY.test(o.what || '');
 /** A hunt or cull contract (proof: trophies of the kills, no local sign-off); mixed work and work against people are none. */
 export const isHunt = (q, content) => {
     const objectives = (q.objectives || []).filter((o) => !confirmsOnly(o));

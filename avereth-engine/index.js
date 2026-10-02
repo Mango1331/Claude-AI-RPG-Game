@@ -228,15 +228,27 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         let r;
         const wantsGm = !!s.gmTools && campaignRuntime(c.chat) === 'v4';
         if (wantsGm && gmToolCapable(c)) {
-            const g = prepareGmGeneration(c.chat, content, { type, settings: engineSettings() });
+            const existingGm = activeGmSession();
+            const g = prepareGmGeneration(c.chat, content, { type, settings: engineSettings(), session: existingGm });
             if (!g.fallback) {
                 r = g;
-                gmSession = g.gm ? createGmSession({
-                    chatId: c.getCurrentChatId(),
-                    userIndex: g.gm.userIndex,
-                    input: g.gm.input,
-                    beforeState: g.gm.beforeState,
-                }) : null;
+                if (g.gm) {
+                    const same = existingGm && existingGm.userIndex === g.gm.userIndex && existingGm.inputHash === g.gm.inputHash;
+                    if (same) gmSession = existingGm;
+                    else {
+                        const staleToolCallIds = c.chat.slice(g.gm.userIndex + 1)
+                            .flatMap((m) => m.extra?.tool_invocations || []).map((x) => x.id).filter(Boolean);
+                        gmSession = {
+                            ...createGmSession({
+                                chatId: c.getCurrentChatId(),
+                                userIndex: g.gm.userIndex,
+                                input: g.gm.input,
+                                beforeState: g.gm.beforeState,
+                            }),
+                            staleToolCallIds,
+                        };
+                    }
+                } else gmSession = null;
             } else {
                 gmSession = null;
                 r = await prepareGenerationAsync(c.chat, content, { type, settings: engineSettings(), llm: v4Llm });
@@ -277,6 +289,15 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         setPrompt(r.context.text);
         // prompt-only: retired tracker blocks out of the history, and only the last exchanges (the saved chat is untouched)
         lastProjection = projectPromptHistory(chat, { keepTurns: Number(s.historyTurns) || 0 });
+        // SillyTavern stores successful tool invocations as system messages. On Regenerate/Swipe, old invocations from
+        // the previous branch must not teach the model to reuse stale results. Current-chain invocations have new ids.
+        const stale = new Set(activeGmSession()?.staleToolCallIds || []);
+        if (stale.size) {
+            for (let i = chat.length - 1; i >= 0; i--) {
+                const inv = chat[i]?.extra?.tool_invocations;
+                if (Array.isArray(inv) && inv.some((x) => stale.has(x.id))) chat.splice(i, 1);
+            }
+        }
         if (r.errors?.length) console.warn('[Avereth] fold errors', r.errors);
         if (r.dirty) await c.saveChat();
         renderDebug();

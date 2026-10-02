@@ -9,7 +9,7 @@ Stand 02.10.2026.
 | Korpus (91 Fälle) | `tests/eval/s4b_cases.jsonl` |
 | Szenen (7) | `tests/eval/s4b_scenes.json` |
 | Tests | `tests/p0/p0_s4b.test.js` |
-| Ergebnis und Auswertung | §13 (nachgetragen; §0–§12 unverändert) |
+| Ergebnis und Auswertung | §13 (nachgetragen; §0–§12 unverändert; Präzisierungen in §13.10) |
 | Entwurf, der daraus folgt | `docs/ARCHITECTURE_C.md` |
 
 Ersetzt die Skizze in `docs/RESEARCH_NL_TO_ENGINE.md` §7 und `docs/ARCHITECTURE_REVIEW_GM_TOOLS.md` §11.2.
@@ -496,7 +496,7 @@ FCs einziger Wechsel ist k1_07 in Wiederholung 2: `skill` statt `attack` für Ar
 | Fall | Text (Szene) | wer | was | Ursache |
 |---|---|---|---|---|
 | k4_05 | „I Arcane Burst the scorpions next to me, then climb the rope ladder out“ (Kampf) | P1, P1-ohne, FC | 2. Absicht `go` statt flee/move | **a) Planer verletzt Regel 7.** Deterministisch erkennbar: `go` gibt es im Kampf nicht. FC_GM: flee (richtig). |
-| k3_11 | „I cast Flame Lance at the ceiling to bring it down over the hole“ (kein Kampf) | P1, FC, FC_GM | Ziel `feat.hole` statt `{new: ceiling}`; Skill, Art und Ziel-Text richtig | **a) Ziel-Zuordnung.** Geringe Schwere: gleiche Kosten, keine HP-Wirkung, die Decke steht im `goal`. P1 ohne RECENT: richtig (RECENT nennt das Loch). |
+| k3_11 | „I cast Flame Lance at the ceiling to bring it down over the hole“ (kein Kampf) | P1, FC, FC_GM | Ziel `feat.hole` statt `{new: ceiling}`; Skill, Art und Ziel-Text richtig | **a) Ziel-Zuordnung.** Voller Zielfehler (präzisiert, §13.10): Das Weltobjekt ist Teil der Absicht, und in C hängen Schwierigkeit und Persistenz-Freigabe am Ziel. P1 ohne RECENT: richtig (RECENT nennt das Loch, `feat.hole` steht im Katalog). |
 | k1_07, k1_08 | „I unleash an arcane blast all around me“, „I cast Arcane Bust“ | FC | `skill` statt `attack`, Skill richtig | **b) Schema-Artefakt:** Das Schema unterscheidet `attack` und `skill` redundant, obwohl der Skill die Art festlegt. Die Absicht (Arcane Burst) ist richtig verstanden. |
 | k6_08 | „I blast Barkscorpion B“ | **alle 4 LLM-Arme** | Basic Attack → B | **c) Produktregel offen und Prompt widersprüchlich:** Regel 3 („Angriff ohne Skill-Hinweis = Basic Attack“) gegen Regel 6 (fragen). Gold: nur fragen. Alle Arme folgten Regel 3. |
 | k5_10 | „I scan the treeline for more wolves“ (Kampf) | **alle 4 LLM-Arme** | `search` | **c) Produktregel offen und Spezifikationslücke:** Was Wahrnehmung im Kampf ist, steht weder im Prompt noch im Gold-Schema. Deterministisch erkennbar: `search` gibt es im Kampf nicht. |
@@ -518,11 +518,11 @@ FCs einziger Wechsel ist k1_07 in Wiederholung 2: `skill` statt `attack` für Ar
 - d) Korpus strittig (k6_07, k1_04);
 - e) Bewertung (k2_13).
 
-Bei P1 stammen von den 4 falschen Festlegungen 2 aus c), 2 aus a). Von den beiden a)-Fehlern ist k4_05 deterministisch abfangbar, k3_11 hat geringe Schwere.
+Bei P1 stammen von den 4 falschen Festlegungen 2 aus c), 2 aus a). Von den beiden a)-Fehlern ist k4_05 deterministisch abfangbar. k3_11 ist ein voller Zielfehler; eine deterministische Regel dafür steht in `docs/ARCHITECTURE_C.md` §9 (präzisiert, §13.10).
 
 ### 13.4 Verlauf (RECENT), GM-Kontext, Kaskade
 
-**Verlauf.** D3 ist vorab festgelegt (§8) und **erfüllt**. Der Planer braucht RECENT.
+**Verlauf.** D3 ist vorab festgelegt (§8) und **erfüllt**. D3 misst Flüssigkeit, nicht Sicherheit: RECENT verbessert die Referenzauflösung; ohne RECENT wurde gefragt, nicht falsch festgelegt (präzisiert, §13.10).
 
 | | aufgelöst | gefragt | falsch |
 |---|---|---|---|
@@ -532,7 +532,7 @@ Bei P1 stammen von den 4 falschen Festlegungen 2 aus c), 2 aus a). Von den beide
 Die höhere Gesamtzahl von P1 ohne RECENT (87 gegen 85) ist **kein** Vorteil:
 - 3 Fälle zählen nur durch die L9-Lockerung als richtig.
 - Der echte Unterschied ist k3_11. Dort hat RECENT das Loch hervorgehoben.
-- Lehre: RECENT ist nötig, kann aber eine Zielwahl verzerren. Engine-Fakten (wer wen zuletzt angegriffen hat) sind die sicherere Form; Prosa nur als Ergänzung (Architektur C §5).
+- Lehre: RECENT hilft der Flüssigkeit, ist keine Sicherheitsvoraussetzung und kann eine Zielwahl verzerren. Strukturierte Engine-Fakten (wer wen zuletzt angegriffen hat) sind die sicherere Form; Prosa nur klein und nur, wenn eine Messung sie trägt (Architektur C §6; präzisiert, §13.10).
 
 **GM-Kontext.** FC_GM gegen FC: 5/4 Fälle, p = 1. Gegen P1: 2/5, p = 0,45.
 - Der Erzählerkontext bringt keinen messbaren Gewinn.
@@ -599,7 +599,7 @@ Grundlage ist der exakte zweiseitige Vorzeichentest auf gepaarten Fällen. Bei 1
 | P1 genauer als FC | 4/0, p = 0,125; V2 2/0, p = 0,5 | Richtung, nicht belegt |
 | P1 sicherer als FC | 3/0 auf falschen Festlegungen, p = 0,25. Nach der vorab festgelegten Regel P1 in V1; in V2 gleichwertig | Regel erfüllt, Ursache großteils Schema |
 | P1 stabiler als FC | 30/30 gegen 29/30. Der eine Wechsel ist das Schema-Artefakt | nicht belegt |
-| RECENT nötig | D3 erfüllt (5/5 gegen 2/5) | Entscheidungsregel erfüllt, 5 Fälle, Einzellauf |
+| RECENT verbessert die Referenzauflösung | D3 erfüllt (5/5 gegen 2/5 aufgelöst; ohne RECENT 3 Rückfragen, 0 falsch) | Entscheidungsregel erfüllt, 5 Fälle, Einzellauf; Sicherheit hing nicht daran (präzisiert, §13.10) |
 | Erzählerkontext hilft nicht | 5/2 und 4/5, p ≥ 0,45 | Einzellauf, kein Unterschied messbar |
 | Gate sicher | 0 unsicher durchgelassen bei 91 und 30 × 3 Fällen | gilt für den Korpus des Autors; live unbelegt |
 
@@ -641,7 +641,7 @@ Der letzte Punkt ist für die Latenz relevant (Architektur C §6).
 2. Sie ersetzt einen **genannten** Skill nicht still. In 544 LLM-Entscheidungen (4 × 91 + 2 × 90) gab es 0 Ersetzungen und 0 falsche Agency. Unbekannte Skills kamen als `{new}` zurück und wurden verweigert.
 3. Sie fragt bei echter Mehrdeutigkeit (Recall 90 %) und kaum unnötig (0 % auf Handlungsfällen).
 4. Sie ist über drei Läufe stabil (P1 30/30).
-5. Der Erzählerkontext ist für die Semantik nicht nötig. RECENT ist nötig.
+5. Der Erzählerkontext ist für die Semantik nicht nötig. RECENT verbessert die Referenzauflösung (weniger Rückfragen); für die Sicherheit war es nicht nötig (präzisiert, §13.10).
 6. Ein konservatives Gate kann ohne Fehler vorgeschaltet werden (Korpus). Es bringt aber keinen Qualitätsgewinn.
 
 **Nicht bewiesen:**
@@ -659,4 +659,26 @@ Der letzte Punkt ist für die Latenz relevant (Architektur C §6).
   - Aktionsökonomie bei mehreren Handlungen im Kampf;
 - welche FEATURES es im Produkt gibt. In S4b waren sie handgeschrieben. Im Produkt hat A heute keine Szenen-Merkmale, nur Objekte und Orte (`src/v4/catalog.js`).
 
-**Weiter:** Der Entwurf, der daraus folgt, steht in `docs/ARCHITECTURE_C.md`. Noch kein Code dafür.
+**Weiter:** Der Entwurf, der daraus folgt, steht in `docs/ARCHITECTURE_C.md` (Revision 2). Noch kein Code dafür.
+
+### 13.10 Präzisierungen nach der Rückmeldung zur Auswertung (02.10.2026, Architektur-Pass)
+
+Die Messwerte in §13.1–§13.9 sind unverändert. Geändert sind nur Deutungen. Jede geänderte Stelle trägt „präzisiert, §13.10“; die Erstfassung steht im Git-Verlauf (Commit b3d95d5).
+
+| Stelle | vorher | jetzt | Grund |
+|---|---|---|---|
+| RECENT (§13.4, §13.7, §13.9) | „Der Planer braucht RECENT“ | RECENT verbessert die Referenzauflösung und die Flüssigkeit; es ist keine Sicherheitsvoraussetzung | Ohne RECENT: 2 aufgelöst, 3 gefragt, 0 falsch. D3 misst Flüssigkeit. |
+| k3_11 (§13.3) | „geringe Schwere“ | voller Zielfehler | Das Weltobjekt ist Teil der Absicht. In C hängen Schwierigkeit (E6) und Persistenz-Freigabe am Ziel; „gering“ widersprach dem eigenen Entwurf. |
+| k4_05, k5_10 (§13.3) | Planerfehler bzw. offene Produktregel | gegen die Prompt-Regel 7 von S4b v1 weiterhin Planerfehler. Unter Schema v2.1 (`docs/ARCHITECTURE_C.md` §4) liegt die Modus-Abbildung in der Engine; dann sind beide Lesarten semantisch richtig, und die Engine entscheidet. | Dasselbe Prinzip wie `attack`/`skill` → `use_skill`: Der Planer wiederholt keine mechanische Klassifikation. Das ist eine Nachdeutung derselben Daten, kein Beleg. |
+| P1 gegen FC (Schluss) | „P1 vor FC“ nach der vorab festgelegten Regel, in V2 gleichwertig | **S4b zeigt nicht, dass JSON-P1 semantisch grundsätzlich besser ist als Function Calling.** Belegt ist: Eine spezialisierte LLM-Semantikstufe ist A0 deutlich überlegen. Die konkret getestete FC-Variante hatte keinen nachgewiesenen Qualitäts- oder Sicherheitsvorteil gegenüber P1, brauchte aber mehr Reparaturen. | engere Formulierung, deckungsgleich mit §13.7 |
+
+**Nachträgliche Machbarkeitsprüfungen** (Wegwerf-Skripte, nicht im Repository, an denselben Daten; kein Beleg):
+- **Weltziel-Regel V5:**
+  - k3_11 wird in allen drei betroffenen Armen zur Rückfrage.
+  - 0 Fehlalarme auf 15 Gold-Plänen und 61 weiteren richtigen Weltnutzungen.
+- **Skill-Hinweis-Detektor für `skill: null`:**
+  - 52/52 Sätze mit Skill-Bezug werden markiert.
+  - 0/6 reine Basic-Attack-Sätze werden markiert.
+  - Die Listen wurden dabei mit Blick auf diesen Korpus eingestellt.
+
+Beides steht mit Vorbehalt in `docs/ARCHITECTURE_C.md` §7 und §9. Entscheiden müssen Korpus v2 und der Holdout.

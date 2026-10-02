@@ -325,6 +325,8 @@ Genau das soll S4b messen.
 
 ## 7. Vorschlag: S4b, die Problemklasse selbst
 
+> Nachtrag 02.10.2026: Nach der Prüfung des ChatGPT-Feedbacks ausgearbeitet und gebaut, siehe `docs/P0_S4B.md` (Arme, Gold, Labelregeln, Gate, Kriterien, Befehle). Dieser Abschnitt bleibt als Stand des Vorschlags stehen; wo er abweicht, gilt `docs/P0_S4B.md`.
+
 ### 7.1 Frage
 
 Versteht eine LLM-Semantikstufe die eigentlichen Problemfälle so, dass:

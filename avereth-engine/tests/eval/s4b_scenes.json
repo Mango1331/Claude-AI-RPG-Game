@@ -1,0 +1,391 @@
+{
+  "_about": "P0 / S4b scenes (docs/P0_S4B.md). Each scene is built as a real engine state (class, skills, arrival, the narrator's report of who is there) by tools/p0/lib/s4b.mjs; bands and HP are then set as written here. A0 reads that state; the LLM arms see the catalog rendered from it plus features, places and RECENT, which only this file knows. Opponent refs become ids mon.<ref> (creatures) or npc.<ref> (people).",
+  "burrow_fight": {
+    "class": "Mage",
+    "skills": "Flame Lance + Arcane Burst",
+    "arrive": "I climb down into the old barkscorpion burrow below the dry riverbed.",
+    "prose": "Three barkscorpions burst out of the sand around the burrow floor.",
+    "where": "the old barkscorpion burrow below the dry riverbed",
+    "fight": true,
+    "opponents": [
+      {
+        "ref": "s1",
+        "kind": "creature",
+        "species": "scorpion",
+        "desc": [
+          "barkscorpion"
+        ],
+        "band": "ENGAGED",
+        "hp": "unhurt"
+      },
+      {
+        "ref": "s2",
+        "kind": "creature",
+        "species": "scorpion",
+        "desc": [
+          "barkscorpion"
+        ],
+        "band": "SHORT",
+        "hp": "badly wounded"
+      },
+      {
+        "ref": "s3",
+        "kind": "creature",
+        "species": "scorpion",
+        "desc": [
+          "barkscorpion"
+        ],
+        "band": "MEDIUM",
+        "hp": "unhurt"
+      }
+    ],
+    "others": [],
+    "features": [
+      {
+        "id": "feat.cracked_floor",
+        "text": "a cracked stone floor over a hollow"
+      },
+      {
+        "id": "feat.hole",
+        "text": "a narrow hole in the burrow wall, leading deeper"
+      },
+      {
+        "id": "feat.rope_ladder",
+        "text": "a frayed rope ladder hanging down the entrance shaft"
+      },
+      {
+        "id": "feat.rubble",
+        "text": "a heap of loose rubble by the tunnel mouth"
+      }
+    ],
+    "places": [
+      {
+        "id": "loc.burrow_entrance",
+        "name": "the burrow entrance"
+      },
+      {
+        "id": "loc.dry_riverbed",
+        "name": "the dry riverbed"
+      },
+      {
+        "id": "loc.redmarch",
+        "name": "Redmarch"
+      }
+    ],
+    "recent": "Barkscorpion C skitters along the wall; its stinger grazes Alaric's shoulder before it pulls back into the dark. Barkscorpion B drags itself toward the hole in the wall, one leg crushed. Barkscorpion A clacks its pincers right in front of him."
+  },
+  "burrow_dry": {
+    "class": "Mage",
+    "skills": "Flame Lance + Arcane Burst",
+    "arrive": "I climb down into the old barkscorpion burrow below the dry riverbed.",
+    "prose": "Two dry-brown barkscorpions block the tunnel.",
+    "where": "the old barkscorpion burrow below the dry riverbed",
+    "fight": true,
+    "opponents": [
+      {
+        "ref": "d1",
+        "kind": "creature",
+        "species": "scorpion",
+        "desc": [
+          "dry-brown barkscorpion"
+        ],
+        "band": "ENGAGED",
+        "hp": "unhurt"
+      },
+      {
+        "ref": "d2",
+        "kind": "creature",
+        "species": "scorpion",
+        "desc": [
+          "dry-brown barkscorpion"
+        ],
+        "band": "SHORT",
+        "hp": "unhurt"
+      }
+    ],
+    "others": [],
+    "features": [
+      {
+        "id": "feat.rope_ladder",
+        "text": "a frayed rope ladder hanging down the entrance shaft"
+      },
+      {
+        "id": "feat.rubble",
+        "text": "a heap of loose rubble by the tunnel mouth"
+      }
+    ],
+    "places": [
+      {
+        "id": "loc.burrow_entrance",
+        "name": "the burrow entrance"
+      },
+      {
+        "id": "loc.redmarch",
+        "name": "Redmarch"
+      }
+    ],
+    "recent": "Two dry-brown barkscorpions block the tunnel. The nearer one snaps at Alaric; the other waits by the rubble."
+  },
+  "burrow_single": {
+    "class": "Mage",
+    "skills": "Flame Lance + Arcane Burst",
+    "arrive": "I climb down into the old barkscorpion burrow below the dry riverbed.",
+    "prose": "A lone barkscorpion rears up in front of Alaric.",
+    "where": "the old barkscorpion burrow below the dry riverbed",
+    "fight": true,
+    "opponents": [
+      {
+        "ref": "s1",
+        "kind": "creature",
+        "species": "scorpion",
+        "desc": [
+          "barkscorpion"
+        ],
+        "band": "ENGAGED",
+        "hp": "unhurt"
+      }
+    ],
+    "others": [],
+    "features": [
+      {
+        "id": "feat.cracked_floor",
+        "text": "a cracked stone floor over a hollow"
+      },
+      {
+        "id": "feat.hole",
+        "text": "a narrow hole in the burrow wall, leading deeper"
+      },
+      {
+        "id": "feat.rope_ladder",
+        "text": "a frayed rope ladder hanging down the entrance shaft"
+      },
+      {
+        "id": "feat.rubble",
+        "text": "a heap of loose rubble by the tunnel mouth"
+      }
+    ],
+    "places": [
+      {
+        "id": "loc.burrow_entrance",
+        "name": "the burrow entrance"
+      },
+      {
+        "id": "loc.redmarch",
+        "name": "Redmarch"
+      }
+    ],
+    "recent": "A lone barkscorpion rears up in front of Alaric, its tail curled over the cracked floor."
+  },
+  "wolf_fight": {
+    "class": "Ranger",
+    "skills": "Aimed Shot + Twin Shot",
+    "arrive": "I climb the pine trail toward the ridge.",
+    "prose": "Wolves come out of the trees.",
+    "where": "the pine trail below the ridge",
+    "fight": true,
+    "opponents": [
+      {
+        "ref": "w1",
+        "kind": "creature",
+        "species": "wolf",
+        "desc": [
+          "grey wolf"
+        ],
+        "band": "SHORT",
+        "hp": "unhurt"
+      },
+      {
+        "ref": "w2",
+        "kind": "creature",
+        "species": "wolf",
+        "desc": [
+          "grey wolf"
+        ],
+        "band": "MEDIUM",
+        "hp": "wounded"
+      },
+      {
+        "ref": "w3",
+        "kind": "creature",
+        "species": "wolf",
+        "desc": [
+          "dire wolf",
+          "huge grey-black wolf"
+        ],
+        "band": "LONG",
+        "hp": "unhurt"
+      }
+    ],
+    "others": [],
+    "features": [
+      {
+        "id": "feat.dead_pine",
+        "text": "a dead pine leaning over the trail"
+      },
+      {
+        "id": "feat.brush",
+        "text": "dry brush along the slope"
+      }
+    ],
+    "places": [
+      {
+        "id": "loc.millbrook",
+        "name": "Millbrook, the village down the trail"
+      },
+      {
+        "id": "loc.ridge",
+        "name": "the ridge"
+      }
+    ],
+    "recent": "The dire wolf circles at the treeline while Grey Wolf A snaps at Alaric's boots. Grey Wolf B limps behind with an arrow in its flank."
+  },
+  "bandit_fight": {
+    "class": "Warrior",
+    "skills": "Heavy Slash + Guard",
+    "arrive": "I walk to the crossroads south of Redmarch.",
+    "prose": "Two bandits jump out at the crossroads; Brede the salt merchant stumbles back from his cart.",
+    "where": "the crossroads south of Redmarch",
+    "fight": true,
+    "opponents": [
+      {
+        "ref": "b1",
+        "kind": "npc",
+        "species": "human",
+        "desc": [
+          "bandit"
+        ],
+        "band": "ENGAGED",
+        "hp": "unhurt"
+      },
+      {
+        "ref": "b2",
+        "kind": "npc",
+        "species": "human",
+        "desc": [
+          "bandit"
+        ],
+        "band": "ENGAGED",
+        "hp": "wounded"
+      }
+    ],
+    "others": [
+      {
+        "ref": "Brede",
+        "name": "Brede",
+        "kind": "npc",
+        "desc": [
+          "salt merchant"
+        ],
+        "band": "MEDIUM"
+      }
+    ],
+    "features": [
+      {
+        "id": "feat.cart",
+        "text": "Brede's overturned salt cart"
+      },
+      {
+        "id": "feat.lantern",
+        "text": "a lantern hanging on a rope from a post"
+      }
+    ],
+    "places": [
+      {
+        "id": "loc.redmarch",
+        "name": "Redmarch"
+      }
+    ],
+    "recent": "Bandit B, blood on his sleeve, has just cut Brede's purse strings and backs off grinning. Bandit A raises his club at Alaric."
+  },
+  "burrow_after": {
+    "class": "Mage",
+    "skills": "Flame Lance + Arcane Burst",
+    "arrive": "I climb down into the old barkscorpion burrow below the dry riverbed.",
+    "prose": "The burrow is quiet now.",
+    "where": "the old barkscorpion burrow below the dry riverbed",
+    "fight": false,
+    "opponents": [],
+    "others": [
+      {
+        "ref": "s1",
+        "kind": "creature",
+        "species": "scorpion",
+        "desc": [
+          "barkscorpion"
+        ],
+        "dead": true,
+        "label": "Barkscorpion A (dead)"
+      }
+    ],
+    "features": [
+      {
+        "id": "feat.cracked_floor",
+        "text": "a cracked stone floor over a hollow"
+      },
+      {
+        "id": "feat.hole",
+        "text": "a narrow hole in the burrow wall, leading deeper"
+      },
+      {
+        "id": "feat.rubble",
+        "text": "a heap of loose rubble by the tunnel mouth"
+      }
+    ],
+    "places": [
+      {
+        "id": "loc.burrow_entrance",
+        "name": "the burrow entrance"
+      },
+      {
+        "id": "loc.dry_riverbed",
+        "name": "the dry riverbed"
+      },
+      {
+        "id": "loc.redmarch",
+        "name": "Redmarch"
+      }
+    ],
+    "recent": "Barkscorpion A lies still at Alaric's feet. The other two scuttled through the hole in the wall, leaving drag marks in the dust."
+  },
+  "town": {
+    "class": "Mage",
+    "skills": "Flame Lance + Arcane Burst",
+    "arrive": "I walk into the Redmarch market.",
+    "prose": "Hesta the spice merchant nods at Alaric from her stall.",
+    "where": "the Redmarch market",
+    "fight": false,
+    "opponents": [],
+    "others": [
+      {
+        "ref": "Hesta",
+        "name": "Hesta",
+        "kind": "npc",
+        "desc": [
+          "spice merchant"
+        ],
+        "band": "SHORT"
+      }
+    ],
+    "features": [
+      {
+        "id": "feat.brazier",
+        "text": "a cold iron brazier by the stall"
+      },
+      {
+        "id": "feat.door",
+        "text": "a stuck oak door to a storeroom"
+      }
+    ],
+    "places": [
+      {
+        "id": "loc.guild_hall",
+        "name": "the Adventurers' Guild hall"
+      },
+      {
+        "id": "loc.burrow_entrance",
+        "name": "the burrow entrance"
+      }
+    ],
+    "recent": "Hesta sorts saffron into little paper cones and nods at Alaric. Earlier a scar-faced thug shoved past him and disappeared into the crowd."
+  }
+}

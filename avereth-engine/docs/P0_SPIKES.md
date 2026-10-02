@@ -413,9 +413,10 @@ Dazu der Aushang (5 Listings) und Varianten.
 | `tools/p0/s1_interpreter.mjs` | S1 |
 | `tools/p0/s2_deltas.mjs` | S2; nach P0 mit `--variant a --vocab v4` der Produktpfad (Extraktor `src/v4/extract.js` + Firewall `src/v4/firewall.js`) |
 | `tools/p0/s3_prototype.mjs` | S3 (Wegwerf-Prototyp) |
+| `tools/p0/s4_gm_tools.mjs` | S4 (02.10.2026, nur auf dem GM-Tools-Branch): der Erzähler mit den GM-Tools (Prototyp B) auf dem S1-Korpus, mit `--compare p0_out/s1/results.json` neben dem Interpreter; Anleitung `docs/ARCHITECTURE_REVIEW_GM_TOOLS.md` §11.1 |
 | `tools/p0/report.mjs` | Ergebnisse bündeln |
 | `tools/p0/rescore.mjs` | gespeicherte Antworten offline neu auswerten (korrigiertes Scoring, Agency-Guard und Firewall des Produkts), ohne Aufrufe; schreibt `p0_out/rescored/` |
-| `tools/p0/lib/provider.mjs` | Backends SillyTavern, direct, mock |
+| `tools/p0/lib/provider.mjs` | Backends SillyTavern, direct, mock (seit S4 auch `tools`/`tool_choice` hin und die Tool-Aufrufe der Antwort zurück) |
 | `tools/p0/lib/structured.mjs` | strukturierter Aufruf, Reparatur, Transport-Retry |
 | `tools/p0/lib/schema.mjs` | strikter Schema-Dialekt |
 | `tools/p0/lib/interpreter.mjs`, `score.mjs` | Interpreter-Prompt, -Schema, Bewertung |

@@ -93,7 +93,9 @@ function parseChoice(json) {
         total_tokens: u.total_tokens ?? null,
         reasoning_tokens: u.completion_tokens_details?.reasoning_tokens ?? u.reasoning_tokens ?? null,
     } : null;
-    return { content, reasoning, usage, finish: json?.choices?.[0]?.finish_reason ?? null };
+    // function calls of the answer (S4: the Narrator with GM tools); arguments stay the provider's JSON text
+    const toolCalls = Array.isArray(msg.tool_calls) ? msg.tool_calls.map((t) => ({ id: t?.id ?? null, name: t?.function?.name ?? null, arguments: t?.function?.arguments ?? null })) : [];
+    return { content, reasoning, usage, finish: json?.choices?.[0]?.finish_reason ?? null, tool_calls: toolCalls };
 }
 
 async function timedFetch(url, init, timeoutMs) {
@@ -185,6 +187,8 @@ async function stProvider({ stUrl, profile, timeoutMs = 180000 } = {}) {
                 custom_prompt_post_processing: oai.custom_prompt_post_processing || '',
                 ...(secretId ? { secret_id: secretId } : {}),
                 ...(req.jsonSchema ? { json_schema: { name: req.jsonSchema.name, value: req.jsonSchema.schema, strict: true } } : {}),
+                // SillyTavern forwards tools/tool_choice to an OpenAI-compatible source as they are
+                ...(Array.isArray(req.tools) && req.tools.length ? { tools: req.tools, tool_choice: req.toolChoice ?? 'auto' } : {}),
             };
             const r = await timedFetch(`${base}/api/backends/chat-completions/generate`, { method: 'POST', headers, body: JSON.stringify(body) }, req.timeoutMs ?? timeoutMs);
             if (r.error) return { ok: false, status: r.status, error: r.error, ms: r.ms, override };
@@ -228,6 +232,7 @@ function directProvider({ timeoutMs = 180000 } = {}) {
                 override = { reasoning_effort: req.reasoning };
             }
             if (req.jsonSchema) body.response_format = { type: 'json_schema', json_schema: { name: req.jsonSchema.name, strict: true, schema: flattenRefs(req.jsonSchema.schema) } };
+            if (Array.isArray(req.tools) && req.tools.length) Object.assign(body, { tools: req.tools, tool_choice: req.toolChoice ?? 'auto' });
             const r = await timedFetch(url, { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` }, body: JSON.stringify(body) }, req.timeoutMs ?? timeoutMs);
             if (r.error) return { ok: false, status: r.status, error: scrub(r.error, [key]), ms: r.ms, override };
             let json = null;
@@ -252,8 +257,9 @@ function mockProvider(respond) {
             if (out && out.error) return { ok: false, status: out.status || 'http_error', error: out.error, ms: out.ms ?? 0 };
             const content = String(out?.content ?? '');
             const prompt = req.messages.map((m) => m.content).join('\n');
+            const toolCalls = Array.isArray(out?.tool_calls) ? out.tool_calls : [];
             return {
-                ok: true, status: 'ok', content, reasoning: '', finish: 'stop', ms: out?.ms ?? 0, error: null,
+                ok: true, status: 'ok', content, reasoning: '', finish: toolCalls.length ? 'tool_calls' : 'stop', ms: out?.ms ?? 0, error: null, tool_calls: toolCalls,
                 usage: { prompt_tokens: estimateTokens(prompt), completion_tokens: estimateTokens(content), total_tokens: estimateTokens(prompt) + estimateTokens(content), reasoning_tokens: null },
             };
         },

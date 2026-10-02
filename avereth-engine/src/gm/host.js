@@ -25,6 +25,7 @@ export const GM_MODE_NOTE =
  */
 export function prepareGmGeneration(chat, content, { type = 'normal', settings = {} } = {}) {
     if (type === 'quiet' || type === 'impersonate') return { action: 'clear', dirty: false };
+    if (type === 'continue') return { fallback: true, reason: 'continue_uses_legacy_v4' };
     if (!hasCampaign(chat)) return { action: 'none', dirty: false };
     const u = lastPlayerIndex(chat);
     if (u < 0) return { action: 'none', dirty: false };

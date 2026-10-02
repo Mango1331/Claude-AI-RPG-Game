@@ -537,6 +537,39 @@ export function skillAction(ctx, actorId, skillId, extra = {}) {
     return record;
 }
 
+/**
+ * Prototype C (src/v4/planner.js): a known skill used on a thing during a fight. It is Alaric's action for the Turn:
+ * the skill's cost (and arrows) are booked and a CHECK DIE is drawn for the narrator's Core #7 judgement of the attempt;
+ * the engine resolves no damage and no effect on any combatant from it.
+ */
+export function worldAction(ctx, actorId, act) {
+    const { enc, content } = ctx;
+    const actor = enc.combatants[actorId];
+    const skill = skillOf(content, act.skill);
+    if (!skill || actor.model !== 'character' || !actor.fixed.actions[skill.id]) return { illegal: `${actor.name} does not know ${skill?.name || act.skill}` };
+    const prof = PROF(content, actor.fixed.actions[skill.id].prof);
+    const cost = skill.cost ? roundHalfUp(skill.cost.amount * prof.cost) : 0;
+    if (skill.cost && actor.current[skill.cost.resource] < cost) return { illegal: `${actor.name} lacks ${skill.cost.resource.toUpperCase()} for ${skill.name} (${actor.current[skill.cost.resource]} < ${cost})` };
+    let ammoUsed = 0;
+    if (skill.ammo && actor.fixed.weapon_family === 'bow') {
+        const have = actor.current.ammo?.[skill.ammo.item] || 0;
+        if (have < skill.ammo.qty) return { illegal: `${actor.name} has ${have} arrow(s); ${skill.name} needs ${skill.ammo.qty}` };
+        ammoUsed = skill.ammo.qty;
+    }
+    const record = { round: enc.round, actor: actorId, kind: 'ability_world', skill: skill.id, skill_name: skill.name, target_text: act.target_text || 'something', goal: act.goal || null };
+    if (cost) {
+        record.cost = { resource: skill.cost.resource, amount: cost, before: actor.current[skill.cost.resource] };
+        actor.current[skill.cost.resource] -= cost;
+        record.cost.after = actor.current[skill.cost.resource];
+    }
+    if (ammoUsed) {
+        record.ammo = { item: skill.ammo.item, used: ammoUsed };
+        actor.current.ammo[skill.ammo.item] -= ammoUsed;
+    }
+    record.check_die = ctx.dice.d100('check die');
+    return record;
+}
+
 function repositionPc(enc, actorId, dir, focusId) {
     // PC reposition shifts every hostile's band relative to the PC one step (away = +1, closer = -1)
     if (actorId !== 'pc') {
@@ -839,6 +872,7 @@ export function runCombat(ctx, pcAction) {
             if (act.kind === 'attack') r = attackAction(ctx, 'pc', act.target, act.skill, { move: act.move });
             else if (act.kind === 'skill') r = skillAction(ctx, 'pc', act.skill, { dir: act.dir, target: act.target });
             else if (act.kind === 'move') r = moveAction(ctx, 'pc', act.dir, act.target);
+            else if (act.kind === 'ability_world') r = worldAction(ctx, 'pc', act);
             else if (act.kind === 'flee') {
                 const far = Object.values(enc.combatants).filter((c) => c.side === 'hostile' && alive(c)).every((c) => c.current.band === 'LONG');
                 if (far) { enc.combatants.pc.current.escaped = true; r = { round: enc.round, actor: 'pc', kind: 'flee', escaped: true }; }

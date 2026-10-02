@@ -22,7 +22,7 @@ import { truth, knows, perceivers, entityLabel, playerLabel, setFactEvents, PC_N
 import { buildContext } from './context.js';
 import { targetQuestion } from './display.js';
 import { parseCoin } from './economy.js';
-import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, ENGINE_VERSION } from './util.js';
+import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, roundHalfUp, ENGINE_VERSION } from './util.js';
 import { seedPlaces } from './v4/domain.js';
 
 const GROUP_RE = /\b(?:everyone|everybody|all of you|you all|the (?:group|room|crowd|table|company)|(?:to|at|toward|towards) them)\b/i;
@@ -107,6 +107,8 @@ export function playerTurn(state, content, input, { msg = null, intent: parsed =
     } else {
         outcome = storyTurn(s, content, text, intent, dice, emit, situations);
     }
+    // prototype C (src/v4/planner.js): the parts of the player's message the engine did not take this turn stay visible
+    if (intent.plan_notes?.length && outcome) outcome = { ...outcome, plan_notes: intent.plan_notes };
     if (TRADE_RE.test(text) && s.mode !== 'creation') situations.push('trade');
     emit({ t: 'outcome.recorded', d: { outcome, situations } });
     // character creation is a menu: the engine answers it with a System panel, the narrator is not called
@@ -147,6 +149,8 @@ function storyTurn(s, content, text, intent, dice, emit, situations) {
     }
     if (pcAction?.kind === 'engage') return engagementTurn(s, content, dice, emit, pcAction.targets);
     // 3) declared stealth: opposed check (or automatic with nobody around)
+    // prototype C: a known skill used on a thing, outside a fight (in a fight runCombat resolves it as Alaric's action)
+    if (pcAction?.kind === 'ability_world') return worldUse(s, content, pcAction, dice, emit);
     if (intent.kind === 'stealth') {
         const r = stealthEvents(s, content, dice);
         r.events.forEach(emit);
@@ -155,6 +159,33 @@ function storyTurn(s, content, text, intent, dice, emit, situations) {
     }
     // 4) ordinary story turn: one pre-committed CHECK DIE the narrator may use for a Core #7 check
     return { kind: 'narrative', check_die: dice.d100('check die'), flags: intent.flags || {} };
+}
+
+/**
+ * Prototype C (src/v4/planner.js): a known skill used on a thing outside a fight. The engine books the skill's cost (and
+ * arrows) and draws the pre-committed CHECK DIE of an ordinary story turn; it resolves no effect on any creature and no
+ * lasting change by itself (the narrator tells the attempt, the extractor reads the world as after any story turn).
+ */
+function worldUse(s, content, act, dice, emit) {
+    const sheet = s.entities.pc.sheet;
+    const skill = content.skills.get(act.skill);
+    if (!skill || !sheet.skills?.[skill.id]) return { kind: 'note', text: `Alaric does not know ${skill?.name || act.skill}. Nothing was spent or rolled.`, notice: `Alaric does not know ${skill?.name || act.skill} (nothing spent, nothing rolled)` };
+    const prof = content.rules.proficiency.levels[String(sheet.skills[skill.id].prof || 1)] || { cost: 1 };
+    const amount = skill.cost ? roundHalfUp(skill.cost.amount * (prof.cost ?? 1)) : 0;
+    const res = skill.cost?.resource;
+    if (amount && Number(sheet[res] || 0) < amount) return { kind: 'note', text: `Alaric lacks ${res.toUpperCase()} for ${skill.name} (${sheet[res] || 0} < ${amount}). Nothing was spent or rolled.`, notice: `${skill.name}: not enough ${res.toUpperCase()} (${sheet[res] || 0} < ${amount}; nothing spent, nothing rolled)` };
+    // arrows as in a fight (src/combat.js): only a bow shoots them, only what he carries
+    const weapon = Object.values(sheet.equipment || {}).map((r) => (typeof r === 'string' ? content.items.get(r) : r)).find((it) => it && it.slot === 'weapon');
+    const shoots = !!skill.ammo && weapon?.family === 'bow';
+    const arrows = shoots ? Number(sheet.inventory?.[skill.ammo.item] || 0) : 0;
+    if (shoots && arrows < skill.ammo.qty) return { kind: 'note', text: `Alaric has ${arrows} arrow(s); ${skill.name} needs ${skill.ammo.qty}. Nothing was spent or rolled.`, notice: `${skill.name}: not enough arrows (nothing spent, nothing rolled)` };
+    const cost = amount ? { resource: res, amount, before: sheet[res], after: sheet[res] - amount } : null;
+    if (cost) emit({ t: 'resource.changed', d: { id: 'pc', resource: res, value: cost.after, why: `${skill.name} on ${act.target_text}` } });
+    if (shoots) emit({ t: 'item.changed', d: { id: 'pc', item: skill.ammo.item, qty: -skill.ammo.qty, why: skill.name } });
+    return {
+        kind: 'ability_world', skill: skill.id, skill_name: skill.name, target_text: act.target_text, target_id: act.target_id || null, goal: act.goal || null,
+        cost, ammo: shoots ? { item: skill.ammo.item, used: skill.ammo.qty } : null, check_die: dice.d100('check die'),
+    };
 }
 
 /** Map the parsed intent to a combat action, or a note when the declared action cannot be resolved. */
@@ -173,6 +204,10 @@ function pcActionOf(s, content, intent, text) {
         case 'skill': return { kind: 'skill', skill: intent.skill, dir: intent.dir, target: intent.target };
         case 'move': return { kind: 'move', dir: intent.dir, target: intent.target };
         case 'flee': return { kind: 'flee' };
+        // prototype C (src/v4/planner.js): a declared wait in a fight (the same hold as A's HOLD_RE below), a known skill
+        // used on a thing
+        case 'hold': return s.encounter ? { kind: 'hold' } : null;
+        case 'ability_world': return { kind: 'ability_world', skill: intent.skill, target_text: intent.target_text, target_id: intent.target_id || null, goal: intent.goal || null };
         case 'ambiguous_target': return {
             note: `Alaric's attack needs a target: ${intent.candidates.map(name).join(' or ')}. Nothing was spent or rolled for it; stop at his decision and let the player name one (Core #23: never choose among several targets for him).`,
             notice: `Alaric: which target? ${intent.candidates.map((id) => playerLabel(s, id)).join(' or ')} (nothing spent, nothing rolled)`,

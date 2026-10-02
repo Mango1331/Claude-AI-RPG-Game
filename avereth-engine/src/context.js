@@ -210,6 +210,7 @@ export function recordLine(state, r, name = (id) => fightLabel(state, id)) {
     if (r.kind === 'cover') return `${who}: takes cover (${r.change})${r.why ? ` — ${r.why}` : ''}`;
     if (r.kind === 'surrender') return `${who}: SURRENDERS${r.pending_xp_added ? ` (Pending XP +${r.pending_xp_added})` : ''}`;
     if (r.kind === 'hold') return `${who}: holds (${r.why || 'no action'})`;
+    if (r.kind === 'ability_world') return `${who}: ${r.skill_name} on ${r.target_text}${r.goal ? ` (his aim: ${r.goal})` : ''} [${r.cost ? `${r.cost.resource.toUpperCase()} ${r.cost.before}->${r.cost.after}` : 'no cost'}${r.ammo ? `; ${r.ammo.used} arrow${r.ammo.used > 1 ? 's' : ''}` : ''}]: an attempt on a thing, his action this Turn. CHECK DIE d100 = ${r.check_die}: use it for a Core #7 check only if the result is uncertain AND consequential. The engine resolves NO damage and no effect on any combatant from it: narrate none`;
     return `${who}: ${r.kind}`;
 }
 
@@ -228,7 +229,14 @@ export function playerActionsBlock(outcome) {
     return lines.join('\n');
 }
 
-function outcomeBlock(state, content, outcome, { v4 = false } = {}) {
+function outcomeBlock(state, content, outcome, opts = {}) {
+    const block = outcomeLines(state, content, outcome, opts);
+    // prototype C (src/v4/planner.js): what of the player's message the engine did not take this turn
+    const notes = (outcome?.plan_notes || []).map((n) => `- NOT TAKEN THIS TURN (it does not happen; do not narrate it as done): ${n}`);
+    return [block, ...notes].filter(Boolean).join('\n');
+}
+
+function outcomeLines(state, content, outcome, { v4 = false } = {}) {
     if (!outcome) return '';
     if (outcome.kind === 'v4') return playerActionsBlock(outcome);
     const lines = [];
@@ -272,6 +280,10 @@ function outcomeBlock(state, content, outcome, { v4 = false } = {}) {
         lines.push(`No mechanic was triggered by the player's message${report(' (the fact report is still due)')}. CHECK DIE for this reply: d100 = ${outcome.check_die}. Use it only if a Core #7 check is genuinely needed (uncertain AND consequential): Chance% = Actor ÷ (Actor + Opposition) × 100 (Actor = relevant stat + explicit bonuses; situational ±10/20/35 %); success if ${outcome.check_die} ≤ Chance%.${report(' Then add "check" to the fact report.')} Otherwise ignore the die.`);
     } else if (outcome.kind === 'note') {
         lines.push(outcome.text);
+    } else if (outcome.kind === 'ability_world') {
+        // prototype C (src/v4/planner.js): a known skill used on a thing outside a fight
+        const c = outcome.cost ? `${outcome.cost.resource.toUpperCase()} ${outcome.cost.before}->${outcome.cost.after}` : 'no cost';
+        lines.push(`Alaric uses ${outcome.skill_name} on ${outcome.target_text}${outcome.goal ? ` (his aim: ${outcome.goal})` : ''} [${c}${outcome.ammo ? `; ${outcome.ammo.used} arrow${outcome.ammo.used > 1 ? 's' : ''}` : ''}]. The engine booked the cost; it resolves no effect on any creature or person and no lasting change by itself. CHECK DIE for this attempt: d100 = ${outcome.check_die}. Use it only if the result is genuinely uncertain AND consequential: Chance% = Actor ÷ (Actor + Opposition) × 100; success if ${outcome.check_die} ≤ Chance%. Otherwise narrate the plausible result from established fiction.`);
     }
     return lines.join('\n');
 }

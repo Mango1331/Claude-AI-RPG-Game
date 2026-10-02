@@ -23,7 +23,7 @@ import { worldPanel } from '../display.js';
 import { applyEvent } from '../state.js';
 import { hash32, clone, swapWords, stripTrackerBlocks } from '../util.js';
 import { playerTurnV4, replyTurnV4 } from './turn.js';
-import { readTurn, irRecord, interpretedActs } from '../ir.js';
+import { readTurn, irRecord, interpretedActs, IR_VERSION } from '../ir.js';
 import { buildCatalog, extractorCatalog, guardContext } from './catalog.js';
 import { interpreterRequest, parseInterpretation, INTERPRETER_VERSION } from './interpret.js';
 import { guardCommands } from './agency.js';
@@ -31,12 +31,14 @@ import { extractorRequest, parseExtraction, EXTRACTOR_VERSION } from './extract.
 import { boardRequest, parseBoard, bookBoard, BOARD_VERSION } from './guild.js';
 import { extractionFailedEvents } from './world.js';
 import { hallOf, settlementOf, membership, boardKey, today, listingsOf, supportedRanks } from './domain.js';
+import { PLANNER_VERSION, MECH_TYPES, planContext, withContentSkills, plannerRequest, parsePlan, mapPlan, recentText } from './planner.js';
 
 export const RECORD_V4 = 3;
 export const LLM = {
     interpret: { temperature: 0.1, maxTokens: 2500 },
     extract: { temperature: 0.1, maxTokens: 2500 },
     board: { temperature: 0.6, maxTokens: 3000 },
+    plan: { temperature: 0.1, maxTokens: 900 },
 };
 export const LATE_CORRECTION = 'The engine could not record what your last reply established (it was not read in time): nothing of it changed the game state. The state above is authoritative.';
 export const FAILED_CORRECTION = 'The engine could not read what your last reply established: nothing of it changed the game state. The state above is authoritative.';
@@ -79,6 +81,80 @@ export async function interpretMessage(llm, content, catalog, text) {
         if (second.ok) p = parseInterpretation(second.content, vocab, catalog);
     }
     return p.commands ? { commands: p.commands, failed: false, error: null, ms, repaired, raw: p.raw } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired };
+}
+
+// ------------------------------------------------------------------------------------------------ planner (prototype C)
+/** Prototype C (src/v4/planner.js): the planner call with its one repair, as the interpreter's. */
+export async function planMessage(llm, content, ctx, text, { recent = '' } = {}) {
+    const vocab = content.commandVocab;
+    const req = plannerRequest(vocab, ctx, text, { recent });
+    const first = await ask(llm, req.messages, 'plan');
+    let ms = first.ms;
+    if (!first.ok) return { commands: null, failed: true, error: first.error, ms, repaired: false, raw: [] };
+    const raw = [String(first.content).slice(0, 2000)];
+    let p = parsePlan(first.content, vocab, ctx, text);
+    let repaired = false;
+    if (!p.commands) {
+        const rep = plannerRequest(vocab, ctx, text, { recent, previous: first.content, errors: p.errors });
+        const second = await ask(llm, rep.messages, 'plan_repair');
+        ms += second.ms;
+        repaired = true;
+        if (second.ok) {
+            raw.push(String(second.content).slice(0, 2000));
+            p = parsePlan(second.content, vocab, ctx, text);
+        }
+    }
+    return p.commands ? { commands: p.commands, failed: false, error: null, ms, repaired, raw } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired, raw };
+}
+
+/**
+ * Prototype C: one free-text message read by the planner (settings.planner on). The result goes to the engine's
+ * existing inputs (src/v4/planner.js mapPlan); the record has the same shape as A's, plus `plan`, so swipes and
+ * regenerations reuse it exactly as they reuse the interpreter's (nothing is planned again for the same message).
+ */
+async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previous = null }) {
+    const msg = chat[u];
+    const p = lastReplyIndex(chat, u);
+    const recent = p >= 0 ? recentText(chat[p].mes) : '';
+    const catalog = buildCatalog(before, content);
+    const ctx = withContentSkills(planContext(before, content, catalog), content);
+    const reuse = previous?.plan && previous.interp?.commands ? { commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [] } : null;
+    const pl = reuse || await planMessage(llm, content, ctx, msg.mes, { recent });
+    const plan = {
+        version: PLANNER_VERSION, mode: ctx.fight ? 'fight' : 'story', ms: pl.ms, repaired: pl.repaired, failed: pl.failed,
+        ...(pl.error ? { error: pl.error } : {}), raw: pl.raw,
+        a0: { route: ir.route, kind: ir.intent?.kind ?? null, skill: ir.intent?.skill ?? null, target: ir.intent?.target ?? null },
+    };
+    const interp = { version: PLANNER_VERSION, ms: pl.ms, failed: !!pl.failed, repaired: !!pl.repaired, commands: pl.commands, ...(pl.error ? { error: pl.error } : {}) };
+    if (pl.failed) return { v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: { v: IR_VERSION, route: 'v4', reason: 'planner', links: ir.links, acts: [] }, plan, interp, events: [], command: null };
+    const guarded = guardCommands(msg.mes, pl.commands, guardContext(before, content, catalog));
+    const m = mapPlan(guarded.kept, ctx, content, msg.mes, before);
+    plan.dropped = guarded.dropped.map((x) => ({ type: x.command?.type ?? null, rule: x.rule, quote: x.command?.quote ?? null }));
+    plan.notes = m.notes;
+    if (m.free?.length) plan.free = m.free;
+    if (m.hint) plan.hint = m.hint;
+    plan.mapped = m.route === 'v3' ? m.intent : m.route;
+    const acts = [
+        ...guarded.kept.map((c) => ({ ...c, act: c.type, source: 'planner' })),
+        ...guarded.dropped.map((x) => ({ act: x.command?.type ?? null, seq: x.command?.seq ?? null, quote: x.command?.quote ?? null, source: 'planner', dropped: x.rule })),
+    ].map(({ type, ...a }) => a);
+    const irRec = { v: IR_VERSION, route: m.route === 'v4' ? 'v4' : 'v3', reason: 'planner', links: ir.links, acts };
+    if (m.route === 'panel') return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, events: [], command: { panels: [m.panel], llm: null } };
+    if (m.route === 'v3') {
+        const t = playerTurn(before, content, msg.mes, { msg: u, intent: m.intent });
+        return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, events: t.events, command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
+    }
+    const need = boardFor(before, content, m.commands);
+    const board = need ? await generateBoard(llm, before, content, need) : null;
+    const t = playerTurnV4(before, content, msg.mes, {
+        msg: u, commands: m.commands, dropped: guarded.dropped.filter((x) => !MECH_TYPES.includes(x.command?.type)), board,
+        interp: { version: PLANNER_VERSION, ms: pl.ms, source: pl.repaired ? 'json_repaired' : 'json', failed: false, error: null },
+    });
+    return {
+        v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: irRec, plan, interp,
+        board: board ? { branch: board.branch, rank: board.rank, ms: board.ms, failed: board.failed || undefined, listings: board.listings.length } : undefined,
+        events: t.events, command: t.command ? { panels: t.command.panels, llm: null } : null,
+    };
 }
 
 // ------------------------------------------------------------------------------------------------ board
@@ -160,7 +236,21 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         const before = foldChat(chat, u).state;
         // the message read once (Gen 3.5 Intent IR): its route, its links, the parsed act the V3 engine resolves
         const ir = readTurn(msg.mes, before, content);
-        if (ir.route === 'v3') {
+        // prototype C: the planner reads every free-text message; '#' commands, character creation and a dead PC stay
+        // the deterministic control channels they are in A
+        const control = ir.reason === 'creation' || ir.reason === 'dead' || ir.intent?.kind === 'command';
+        if (settings.planner && !control) {
+            if (typeof llm !== 'function') throw new Error('Runtime V4 needs an LLM call for the planner');
+            r = await plannedTurn(chat, content, { u, before, ir, inputHash, llm, previous: retryBoard ? r : null });
+            setRec(msg, r);
+            if (r.interp?.failed) {
+                return {
+                    action: 'abort', dirty: true,
+                    notice: `Avereth Engine: planner failed${r.interp.error ? ` (${r.interp.error})` : ''}. Regenerate or send the message again; no story turn was generated.`,
+                };
+            }
+            dirty = true;
+        } else if (ir.route === 'v3') {
             const t = playerTurn(before, content, msg.mes, { msg: u, intent: ir.intent });
             r = { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRecord(ir), events: t.events, command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
         } else {
@@ -199,7 +289,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
     if (r?.route === 'v4' && r.interp?.failed) {
         return {
             action: 'abort', dirty,
-            notice: `Avereth Engine: interpreter failed${r.interp.error ? ` (${r.interp.error})` : ''}. Regenerate or send the message again; no story turn was generated.`,
+            notice: `Avereth Engine: ${r.plan ? 'planner' : 'interpreter'} failed${r.interp.error ? ` (${r.interp.error})` : ''}. Regenerate or send the message again; no story turn was generated.`,
         };
     }
     if (r?.command && !r.command.llm) {

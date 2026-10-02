@@ -34,6 +34,8 @@ Dazu der echte Live-Test: [docs/INTEGRATION_4_1.md](docs/INTEGRATION_4_1.md) §1
 - **Kampf-Scope für Fakten:** Was die Geschichte während eines Kampfes über die Kämpfenden sagt, gilt nur, solange er läuft.
 - Der Erzählervertrag hat Revision 4.2.0: die Kartenbeschreibung ersetzen (4.2.1 ändert ihn nicht).
 
+**Prototyp C (Build 4.3.0-c.1)**, Branch `claude/c-planner-prototype-2026-10-02` (von `90bd450`): ein semantischer Planner hinter dem Schalter „Prototype C: semantic planner“ im Engine-Panel (Standard aus; aus läuft A byte-gleich). Ein LLM-Aufruf liest jede freie Nachricht, ein kleiner Validator prüft Struktur und Zustand und ersetzt nie einen Wert, die Engine löst wie bisher. Umfang, Abweichungen von der Arbeitshypothese (Architektur C Rev. 3) und die echte Testsession: [docs/PROTOTYPE_C.md](docs/PROTOTYPE_C.md).
+
 ## Was die Engine pro Zug tut (Runtime V3)
 
 1. **Vor der Generierung** (Prompt-Interceptor) liest sie deine Nachricht:
@@ -191,6 +193,8 @@ node tools/testrun_compare.js          # Token-Vergleich mit Testrun-v1
 node tools/browser_smoke.mjs           # optional: index.js in echtem Chromium mit gemocktem SillyTavern-Kontext, eine V3- und eine V4-Kampagne (braucht Playwright)
 AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st   # optional: Live-Smoke (V3) in echtem SillyTavern mit streamendem Mock-Erzähler (docs/RUNTIME_V3.md §8); mit AVERETH_ST_PRESET="Avereth Narrator" für das eigene Preset (docs/NARRATOR_AB.md §2.4)
 AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st:v4   # optional: Live-Smoke Runtime V4 in echtem SillyTavern, Mock-Provider hinter der Quelle Custom (docs/LIVETEST_V4.md §1); nur gegen ein Wegwerf-SillyTavern
+AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st:c    # optional: Live-Smoke Prototyp C (Planner an, gescriptete Pläne; docs/PROTOTYPE_C.md §8); nur gegen ein Wegwerf-SillyTavern
+node tools/c_flag_off_diff.mjs <Basis-Engine> .   # Prototyp C, Schalter aus: Live-Läufe und Kampf-Eingaben durch zwei Stände, byte-gleich? (docs/PROTOTYPE_C.md §8)
 node tools/run_report.mjs <Server-Log> [<Chat.jsonl>]   # Messung eines Laufs: Prompt je Kategorie, Output-Aufteilung, Dauer (docs/TEST5_PLAN.md §4)
 node tools/narrator_ab.mjs --log <Server-Log> --chat <Chat.jsonl> [--log … --chat …] --dry-run   # Narrator-Vergleich A/B/C; ohne --dry-run mit AVERETH_AB_API_BASE/_KEY (docs/NARRATOR_AB.md §3)
 node tools/lorebook_audit.mjs          # welche Lorebook-Einträge in den Testruns 2–4 feuern (World-Info-Nachbau, gegen Testrun 4 bestätigt)

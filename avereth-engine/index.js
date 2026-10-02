@@ -23,7 +23,7 @@ import { parseSwaps, ENGINE_VERSION, NARRATOR_CONTRACT_REVISION } from './src/ut
 const MODULE = 'avereth';
 const PROMPT_KEY = 'avereth_engine';
 const LORE_KEY = 'avereth_lore_keys';
-const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: 'ledger=register', hud: 'closed', historyTurns: 4, stripTrackers: true, recoverReports: true, runtime: 'v4' };
+const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: 'ledger=register', hud: 'closed', historyTurns: 4, stripTrackers: true, recoverReports: true, runtime: 'v4', planner: false };
 const REPORT_WAIT_MS = 60000; // the next turn waits this long at most for a report still being asked for
 const LLM_TIMEOUT_MS = 120000;
 
@@ -370,6 +370,7 @@ function mountSettings() {
         <option value="v4">V4 (interpreter + extractor, prose only)</option>
         <option value="v3">V3 (fact report in the reply)</option>
       </select></label>
+      <label class="avereth-row" title="Prototype C (V4 campaigns): one planner call reads every free-text message, in fights too (skill aliases, free target references, skills on things, several actions); a small validator checks it and the engine resolves it as before. Off: Runtime V4 as before (regex in fights, interpreter in the story).">Prototype C: semantic planner <input type="checkbox" id="avereth_planner"></label>
       <label class="avereth-row">Context budget (tokens) <input type="number" id="avereth_budget" min="400" max="6000" step="100"></label>
       <label class="avereth-row">Rules allowance (tokens) <input type="number" id="avereth_rules" min="0" max="3000" step="100"></label>
       <label class="avereth-row">Recent turns not re-retrieved <input type="number" id="avereth_recent" min="0" max="50" step="1"></label>
@@ -409,6 +410,7 @@ function mountSettings() {
     };
     bind('avereth_enabled', 'enabled');
     bind('avereth_runtime', 'runtime', String);
+    bind('avereth_planner', 'planner');
     bind('avereth_budget', 'budget', Number);
     bind('avereth_rules', 'rulesBudget', Number);
     bind('avereth_recent', 'recentTurns', Number);

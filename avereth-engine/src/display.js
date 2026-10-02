@@ -31,6 +31,7 @@ export function turnPanel(state, content, narratorCheck = null, reply = null) {
     if (o?.kind === 'combat' && !(idle && reply?.opened)) lines.push(...combatLines(state, content, o));
     if (o?.kind === 'check' && o.check) lines.push(checkLine(o.check));
     if (o?.kind === 'note' && o.notice) lines.push(sys(o.notice));
+    lines.push(...planLines(o));
     if (narratorCheck) lines.push(sys(`CHECK — ${narratorCheck.what}: ${narratorCheck.chance}% · d100 ${narratorCheck.roll} → ${narratorCheck.success ? 'SUCCESS' : 'FAILURE'}`));
     // what the report changed; the fight it opened shows its own steps and HP below
     if (reply?.events && reply.state) lines.push(...changeLines(state, reply.state, content, reply.opened ? reply.events.slice(0, reply.opened.from) : reply.events));
@@ -211,6 +212,7 @@ export function worldPanel(state, content, reply = {}) {
     else if (o?.kind === 'combat') lines.push(...combatLines(state, content, o));
     else if (o?.kind === 'check' && o.check) lines.push(checkLine(o.check));
     else if (o?.kind === 'note' && o.notice) lines.push(sys(o.notice));
+    lines.push(...planLines(o));
     if (reply.failed) lines.push(sys(`WORLD NOT RECORDED — ${String(reply.failed).replace(/[<>`]/g, '')}. Nothing of this reply changed the game state; swipe to retry, or go on.`));
     if (reply.events && reply.state) {
         lines.push(...changeLines(state, reply.state, content, reply.opened ? reply.events.slice(0, reply.opened.from) : reply.events));
@@ -287,6 +289,17 @@ function boardLines(state, b) {
     // arrows only for someone who carries a quiver or arrows (the Pre-Test-5 Warrior's fight showed "Arrows 0")
     const arrows = state.entities.pc?.sheet?.equipment?.quiver || b.pc.arrows > 0 ? ` · Arrows ${b.pc.arrows}` : '';
     out.push(sys(`${name('pc')}: MP ${b.pc.mp}/${b.pc.max_mp} · STA ${b.pc.sta}/${b.pc.max_sta}${arrows}`));
+    return out;
+}
+
+/** Prototype C (src/v4/planner.js): a world use outside a fight, and the parts of the message not taken this turn. */
+function planLines(o) {
+    const out = [];
+    if (o?.kind === 'ability_world') {
+        const cost = o.cost ? ` · ${o.cost.resource.toUpperCase()} ${o.cost.before} - ${o.cost.amount} = ${o.cost.after}` : '';
+        out.push(sys(`Alaric: ${o.skill_name} on ${String(o.target_text).replace(/[<>`]/g, '')}${cost}${o.ammo ? ` · ${o.ammo.used} arrow${o.ammo.used > 1 ? 's' : ''}` : ''} — check die d100 ${o.check_die}`));
+    }
+    for (const n of o?.plan_notes || []) out.push(sys(`NOT TAKEN — ${String(n).replace(/[<>`]/g, '')}`));
     return out;
 }
 
@@ -375,5 +388,6 @@ function recordLines(name, r) {
     if (r.kind === 'cover') return [sys(`${who}: takes cover (${change})`)];
     if (r.kind === 'surrender') return [sys(`${who}: SURRENDERS`)];
     if (r.kind === 'hold') return [sys(`${who}: holds${r.why ? ` — ${r.why}` : ''}`)];
+    if (r.kind === 'ability_world') return [sys(`${who}: ${r.skill_name} on ${String(r.target_text).replace(/[<>`]/g, '')}${cost}${ammo} — check die d100 ${r.check_die}`)];
     return [sys(`${who}: ${r.kind}`)];
 }

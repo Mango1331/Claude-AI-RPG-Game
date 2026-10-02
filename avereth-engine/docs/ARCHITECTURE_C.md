@@ -1,623 +1,506 @@
 # Architektur C: Planer → Validator → Engine → Erzähler → Persistenz
 
-Stand 02.10.2026, **Revision 2** (Architektur-Pass nach der Rückmeldung zu Revision 1).
+Stand 02.10.2026, **Revision 3: entscheidungsreif.**
 
-**Status:** Entwurf zur Gegenprüfung. Es gibt **keinen Code** für C. A und B bleiben unverändert.
+**Status:** Letzter Review vor C0/C1. Es gibt **keinen Produktionscode** für C. A und B bleiben unverändert.
 
 **Grundlage:**
-- `docs/P0_S4B.md` §13: S4b-Ergebnis, Auswertung, Präzisierungen in §13.10;
-- `docs/ARCHITECTURE_REVIEW_GM_TOOLS.md` §2 (A aus dem Code) und §7 (erste C-Skizze);
+- `docs/P0_S4B.md` §13, mit den Präzisierungen in §13.10;
+- `docs/ARCHITECTURE_REVIEW_GM_TOOLS.md` §2 und §7;
 - `docs/RESEARCH_NL_TO_ENGINE.md`.
 
-**Code-Bezug:** A ist Gen 3.5 / 4.2.1 (`claude/gen35-world-envelope-2026-10-01` @ 90bd450). Alle Datei- und Funktionsangaben beziehen sich auf diesen Stand. Sie wurden für diese Revision erneut am Code geprüft.
+**Code-Bezug:** A ist Gen 3.5 / 4.2.1 (`claude/gen35-world-envelope-2026-10-01` @ 90bd450). Alle Datei- und Funktionsangaben beziehen sich auf diesen Stand.
+
+**Versionen:**
+- Revision 1 (Commit b3d95d5): erster Entwurf.
+- Revision 2 (0fab23f): restriktiver Validator, `use_skill`, Weltziel-Treue.
+- Revision 3: Review-Ergebnis (siehe Tabelle unten).
 
 ---
 
-## Änderungen gegenüber Revision 1
+## Änderungen gegenüber Revision 2
 
-| Thema | Revision 1 | Revision 2 | Anlass |
+Jeder Punkt wurde vor der Übernahme gegen Code und Architektur geprüft. Keiner wurde abgelehnt.
+
+| Punkt | Revision 2 | Revision 3 | Prüfung |
 |---|---|---|---|
-| RECENT | „Der Planer braucht RECENT“ | RECENT verbessert Referenzauflösung und Flüssigkeit. Es ist **keine Sicherheitsvoraussetzung**. Zuerst kommen strukturierte Engine-Fakten, Prosa nur klein und nur, wenn eine Messung sie trägt (§6). | Rückmeldung 1; Rohdaten: ohne RECENT 0 falsche Festlegungen auf den Verlaufsfällen |
-| Weltziel (k3_11) | „geringe Schwere“ | voller Zielfehler; neue Validator-Regel **V5 Weltziel-Treue** (§9) | Rückmeldung 2. „Gering“ widersprach auch meinem eigenen Entwurf: Schwierigkeit (E6) und Persistenz-Freigabe hängen am Ziel. |
-| Arten | `attack`/`skill` getrennt; Kampf- und Story-Vokabular getrennt | **`use_skill`**. Alle Arten sind **modusunabhängig**; die Engine bildet je Modus auf die Mechanik ab (§4.2). | Rückmeldung 3; Code: Die Kategorie folgt aus der Skill-Definition (§4.1) |
-| `skill: null` | Grundsatz | exakte Regeln N1–N6 mit Hinweis-Detektor, Geltungsbereich, Garantie und Restrisiko (§7) | Rückmeldung 4 |
-| Validator | entfernen, abstufen, Reparatur. Dazu V2 (Modus), V6b (füllt das einzige Ziel), V7 (Ökonomie), V9 (kürzt) | **nur annehmen, Rückfrage oder ablehnen**. Modus, Ökonomie und Zielvorgabe sind Engine-Regeln. Kürzen entfällt. Die Reparatur gilt nur für Schema und Verankerung und nennt nie einen Ersatzwert. Invarianten M1–M6 (§8). | Rückmeldung 5 |
-| Gate | Schatten; nach der Messphase entfernen | Schatten. Aktivierung nur nach vorab festgelegten Live-Kennzahlen G1–G6. Über die Entfernung entscheidet der Nutzer anhand echter Protokolle (§17). | Rückmeldung 6 |
-| Mehrfachhandlungen | Der Validator verweigert überzählige Handlungen | Der Planer behält alle. Die Engine entscheidet die Ausführbarkeit (Kategorien N, L, W). Nichts verschwindet still (§10). | Rückmeldung 7 |
-| Swipe | Bindung an `input_hash` | dazu Prüfprotokoll `state_before_hash`, Fehlschlag, Rückfrage, Verzweigung; alle Fälle am Code (§14) | Rückmeldung 8 |
-| Produktregeln | Kurztabelle E1–E8 | vollständig mit Alternativen, Technik, Spielgefühl und Empfehlung; neu E9–E12 (§20) | Rückmeldung 9 |
-| Holdout | „von jemand anderem“ | Spezifikation für ChatGPT als Autor (§21) | Rückmeldung 10 |
+| Hinweis-Detektor | Komponenten h1–h6 | ausdrücklich ein **kleiner Safety Catch** mit festen Grenzen (§6.4). Er wählt nie etwas und wächst nicht zu einem zweiten Parser. | konsistent: Der Detektor kann ohnehin nur abstufen |
+| E2 | Bestätigung bei neutralem oder freundlichem Ziel | **ausführen**, wenn Ziel und Handlung eindeutig sind. Rückfrage nur bei semantischer Zielunsicherheit. `confirm` entfällt (V4d gestrichen). | A führt einen benannten Angriff heute schon aus |
+| E3 / E11 | D5: „closer“ vor, „away“ **nach** dem Angriff (As Umordnung) | **strikt Spielerreihenfolge.** D5 gestrichen; neue Engine-Invariante X1 (keine Umordnung). Dass `attackAction` die Reihenfolge noch nicht einhält, ist Engine-Migrationsbedarf. | Core #12/#24, im Code zitiert: „one move + one Main Action, **either order**“. Die Engine darf die Reihenfolge des Spielers einhalten; A legt nur eine fest. |
+| E4 | keine Engine-Handlung, der Kampf wartet | `search` bleibt `search`. Entweder eine kostenpflichtige Wahrnehmungshandlung oder sichtbar nicht ausführbar; nie kostenlos, nie „keine Handlung“. Empfehlung: kostenpflichtig (§20). | A hat für den SC keinen Zustand für verborgene Gegner (nur `scene.awareness` der NPCs). Die Suche findet in v1 mechanisch nichts. |
+| E7 | „second one“ = B nach Label-Reihenfolge | nur aus einer **für den Spieler etablierten** Reihenfolge, nie aus Katalog- oder ID-Reihenfolge | Die Labels A/B/C zeigt A dem Spieler im System-Panel |
+| E8 | Weltnutzung an der Laterne | ausdrücklich: Ziel **und** vollständiger Zweck („auf Bandit B fallen lassen“) bleiben gespeichert; die Engine meldet, dass v1 keinen Kreaturenschaden berechnet | – |
+| E9 / E10 | sichtbare v1-Grenze | dazu als **offene Open-World-Lücke** markiert (§20, §26) | – |
+| E12 | Fast-Treffer | eng definierte Ähnlichkeit, genau ein Kandidat, nur als Frage | – |
+| Modus-Abbildung | D4: im Kampf `go` → Flucht | **gestrichen.** `go` bleibt Reise und ist im Kampf nicht ausführbar (gemeldet). Wegkommen ist die semantische Absicht `flee`. Bewegung in der Szene ist `move`. | Bedeutung und Mechanik getrennt; k4_05 und k5_10 neu geprüft (§19) |
+| D2 | einziges legales Ziel → dieses | nur, wenn der Spieler **keinerlei** Zielbezug formuliert hat; neue Catch-Regel V4e | As eigener Vorrang: `EXPLICIT_REF_RE` in `resolveTarget` |
+| Restklasse `skill: null` | Restrisiko genannt | ausdrücklich: Der Safety Catch kann kreative Umschreibungen nicht abdecken. Eigene Holdout-Teilmenge (§21). | – |
+| Holdout | ChatGPT als Autor | ChatGPT kennt S4b und ist als blinder Autor ungeeignet. Stattdessen eine **frische isolierte Instanz** als Autor plus eine zweite für die blinde Gegenkennzeichnung. ChatGPT prüft Unterlagen, Hashes und Auswertung (§21). | – |
+| Schwellen | „≤ 2 je 100“ | absolute Ganzzahlen bei N = 120; Statistik mit Methode und Fehlerklasse (§21.5) | exakt nachgerechnet |
+| Evidenz | Machbarkeitsprüfungen | Regel: S4b-Korpora sind nur Entwicklungs- und Regressionsdaten, nie Beleg (§2) | – |
 
 ---
 
-## 0. In Kürze
+## 0. Entscheidungen in Kürze
 
-1. **C ist ein Umbau von As Eingangsseite.** Hinter der Deutung hat A die richtige Form:
-   - Unified Intent IR (`src/ir.js`);
-   - Deutung einmal je Spielernachricht, gespeichert mit `input_hash` (`src/v4/runtime.js` `prepareGenerationAsync`);
-   - Agency-Guard;
-   - deterministische Engine mit zählerbasiertem RNG;
-   - Ereignisse auf der Nachricht;
-   - Erzähler nur Prosa;
-   - Extraktor, Firewall, Ownership, Envelope.
+1. **C ist ein Umbau von As Eingangsseite.** Hinter der Deutung bleibt A: IR, Record je `input_hash`, Agency-Guard, deterministische Engine mit RNG, Ereignisse auf Nachrichten, Erzähler nur Prosa, Extraktor mit Firewall.
+2. **Pipeline:**
 
-   Die gemessenen Fehler sitzen **vor** der Engine: Der Regex-Pfad hat im Kampf Deutungsautorität und stille Standardwerte.
-2. **Die Pipeline** (Prüfung in §2):
-   - Steuerkanäle;
-   - spezialisierter semantischer Planer;
-   - deterministischer, restriktiver Validator;
-   - deterministische Engine;
-   - kanonische Ereignisse;
-   - Erzähler;
-   - validierte Welt-Persistenz.
+   ```text
+   Steuerkanäle → Planer → restriktiver Validator → Engine → Ereignisse → Erzähler → validierte Persistenz
+   ```
 
-   Das A0-Gate misst nur im Schatten.
-3. **Der Planer deutet nur Bedeutung.** Seine Arten sind modusunabhängig. Ob „Arcane Burst“ ein Flächenangriff ist oder „climb out“ im Kampf eine Flucht, entscheidet die Engine aus Skill-Definition und Modus.
-4. **Der Validator ist monoton restriktiv.** Er darf annehmen, eine Rückfrage auslösen oder ablehnen. Skill, Ziel, Art und Reihenfolge ersetzt er nie, und er ergänzt keine Handlung.
-5. **`skill: null` wird von der Engine zum Basisangriff.** Der Validator lässt `null` nicht durch, sobald der Satz auf einen Skill hindeutet. Einen unbekannten oder unsicheren Skill ersetzt nie jemand still.
-6. **Weltziele sind so verbindlich wie Kreaturziele.** Ein genanntes Weltobjekt wird nie durch ein anderes ersetzt; bei Konflikt gibt es eine Rückfrage (V5).
-7. **Mehrfachhandlungen:**
-   - Der Planer schreibt alle beabsichtigten Teilhandlungen.
-   - Die Engine entscheidet, was in diesem Zug ausführbar ist.
-   - Jeder nicht ausgeführte Rest wird gemeldet. Er wird nie gespeichert und verschwindet nie still.
-8. **Swipe:** Die Mechanik hängt an der Spielernachricht (`input_hash`). Swipe und Regenerate erzeugen nur neue Prosa.
-9. **RECENT** dient Komfort und Referenzauflösung, nicht der Sicherheit. Engine-Fakten haben Vorrang.
-10. **Branch:** neu von A (§24).
+   Das A0-Gate misst nur im Schatten (§1, §17).
+3. **Der Planer deutet nur Bedeutung.** Schema v2.1 hat semantische, modusunabhängige Arten (§4). Mechanik leitet die Engine aus Skill-Definition, Modus und Regeln ab (§5).
+4. **Validator, harte Invariante:** `accept | clarify | reject`. Nie Ersatz von Skill, Ziel, Art oder Reihenfolge, nie eine zusätzliche Handlung (§6). Das ist im Code als Eigenschaftstest umzusetzen, nicht als Prompt-Regel.
+5. **Engine, harte Invariante:** Spielerreihenfolge bleibt erhalten. Sie füllt nur über drei geschlossene Vorgaben D1–D3. Jede Nicht-Ausführung wird gemeldet (§5.4).
+6. **`skill: null`** wird zum Basisangriff, nur ohne Skill-Hinweis. Der Safety Catch blockiert offensichtliche Hinweise. Kreative Umschreibungen ohne Wortüberlappung bleiben ein Wahrscheinlichkeitsproblem für den Holdout (§7).
+7. **Ziel-Treue:** Ein genanntes Wesen oder Weltobjekt wird nie durch ein anderes ersetzt (V4b, V5). Ein eigener Zielbezug hat Vorrang vor D2 (V4e).
+8. **Mehrfachhandlungen:** Der Planer behält alle Teile in Spielerreihenfolge. Die Engine arbeitet sie bis zur Ökonomiegrenze ab. Der Rest wird gemeldet, nie vorgemerkt, nie still verworfen (§9).
+9. **Swipe** erzeugt nur neue Prosa. Die Mechanik hängt an der Spielernachricht (§14).
+10. **RECENT** dient Flüssigkeit und Referenzauflösung, nicht der Sicherheit (§11).
+11. **Holdout:** frischer isolierter Autor, blinde Gegenkennzeichnung, Versiegelung vor dem Lauf, absolute Schwellen (§21).
+12. **Branch:** neu von A (§24).
 
 ---
 
-## 1. Was die Messungen für C festlegen
-
-| Befund (Quelle) | Folge für C |
-|---|---|
-| LLM-Semantik ≫ A0: 93 % gegen 40 % richtig, 4 gegen 17 falsche Festlegungen (S4b, p < 0,001) | Planer statt Regex-Autorität, auch im Kampf |
-| 0 Ersetzungen genannter Skills, 0 falsche Agency in 544 LLM-Entscheidungen | Der Planer darf den Skill wählen. Validator und Engine sichern trotzdem ab (§7, §12). |
-| K-S verfehlt durch: <br>• Ziel-Zuordnung (k3_11) <br>• Modus-Abbildung (k4_05, k5_10) <br>• offene Produktregeln (k6_08, k5_10) | • Weltziel-Treue V5 <br>• Modus-Abbildung in die Engine <br>• Produktregeln als Daten |
-| Redundante Art `attack`/`skill` erzeugte die einzigen Schnittstellenfehler und den einzigen Stabilitätswechsel (FC) | `use_skill`; die Engine leitet die Mechanik ab |
-| Eine inhaltlich richtige Bestätigung wurde als falsch gewertet (k2_13) | `confirm`, erzeugt vom Validator aus dem Zustand |
-| Mit RECENT 5/5 aufgelöst. Ohne RECENT 2/5 aufgelöst, 3 gefragt, **0 falsch** | RECENT bringt Flüssigkeit, keine Sicherheit (§6) |
-| Erzählerkontext ohne messbaren Nutzen, 4,3-fache Token (FC_GM) | eigener kleiner Planer-Prompt |
-| Gate: 0 unsicher, 12 % gespart, Kaskade = Arm | kein Gate im Produktionspfad; Schatten (§17) |
-| JSON-Text 98,9 % gültig im 1. Versuch; Tool (`auto`) 85,7 %, aber je Aufruf schneller | Das Schema ist der Vertrag; der Transport wird gemessen (§18) |
-| S4b: FC hatte keinen nachgewiesenen Qualitäts- oder Sicherheitsvorteil gegenüber P1, brauchte aber mehr Reparaturen. JSON-P1 ist **nicht** grundsätzlich semantisch besser. | keine Festlegung gegen Function Calling, nur gegen die getestete Form |
-
----
-
-## 2. Pipeline (Prüfung von Punkt 11)
+## 1. Pipeline
 
 ```text
 Player message
      ↓
 control channels only            #-Befehl · Erschaffungsmenü · toter SC · Antwort = genau eine angebotene Option
      ↓
-specialized semantic planner     1 LLM-Aufruf, nur Bedeutung (§4, §5)          ┐  parallel, ohne Autorität:
-     ↓                                                                            ├─ A0-Gate im Schatten (§17)
-deterministic restrictive        annehmen · Rückfrage · ablehnen (§8)            ┘  (schreibt nur ins Prüfprotokoll)
+specialized semantic planner     1 LLM-Aufruf; nur Bedeutung (§4, §12)        ┐  parallel, ohne Autorität:
+     ↓                                                                          ├─ A0-Gate im Schatten (§17),
+deterministic restrictive        accept · clarify · reject (§6)                ┘  schreibt nur ins Prüfprotokoll
 validator
      ↓
-deterministic engine             Ausführbarkeit · kanonische Vorgaben D1–D5 · Mechanik · RNG (§10)
+deterministic engine             Ausführbarkeit N/L/W · Vorgaben D1–D3 · Mechanik · RNG (§5)
      ↓
-canonical events/state           Ereignisse auf der Spielernachricht, Faltung (§15)
+canonical events/state           Ereignisse auf der Spielernachricht; Faltung (§15)
      ↓
 narrator                         Prosa zum Ergebnis; bei Rückfrage nicht aufgerufen
      ↓
 validated world persistence      Extraktor → Firewall / Ownership / Envelope; nur freigegebene Fakten
 ```
 
-**Ergebnis der Prüfung:** Die Pipeline gilt nach allen Änderungen dieser Revision unverändert. Drei Präzisierungen:
-1. **Rückfragen** entstehen an drei Stellen (§11):
-   - beim Planer bei semantischer Mehrdeutigkeit;
-   - beim Validator bei einem Treuekonflikt;
-   - in der Engine bei mechanischer Unterbestimmung, etwa D2 mit zwei oder mehr legalen Zielen.
-
-   Jede hält **vor** jeder Zustandsänderung an. Der Erzähler wird dann nicht aufgerufen.
-2. **Ausführbarkeit** ist eine Stufe der Engine vor der Mechanik. Sie deutet nichts, sie wendet Regeln auf eine schon validierte Absicht an.
-3. **Das Gate** liest dieselbe Nachricht und denselben Zustand. Es schreibt nur ins Prüfprotokoll und hat keinen Weg zur Engine.
-
-| Stufe | Ort (A, sonst neu) | LLM | entscheidet |
-|---|---|---|---|
-| Host | `src/v4/runtime.js` `prepareGenerationAsync` | – | ob neu geplant wird (§14) |
-| Steuerkanäle | `src/intent.js` (`#`), Erschaffung, `src/engine.js` (toter SC); neu: Antwort auf Rückfrage | – | nur geschlossene Eingaben |
-| Planer | neu (`src/plan/planner.js`), ersetzt `interpretMessage` und die Kampfroute | ja | Bedeutung |
-| Validator | neu (`src/plan/validate.js`); nutzt `guardCommands` (`src/v4/agency.js`), `mentionedSkills` (`src/intent.js`) | – | Zulässigkeit der Deutung |
-| Engine | `src/engine.js`, `src/combat.js`, `src/v4/commands.js`; neu: Adapter `use_skill`, Handler `ability_world` | – | Mechanik |
-| Ereignisse | `src/state.js`, `src/host.js` `foldChat` | – | Zustand |
-| Erzähler | Engine-Block `src/context.js` | ja | Prosa |
-| Persistenz | `src/v4/extract.js`, `firewall.js`, `ownership.js`, `envelope.js`, `world.js` | ja (Extraktor) | Weltfakten im Rahmen der Freigaben |
+**Prüfung:** Die Pipeline gilt nach allen Änderungen unverändert. Präzisierungen:
+- Rückfragen entstehen an drei Stellen: Planer (semantisch), Validator (Treue) und Engine (mechanische Unterbestimmung, z. B. D2 ohne eindeutiges Ziel). Alle halten **vor** jeder Zustandsänderung an.
+- Die Engine hat eine Stufe „Ausführbarkeit“ vor der Mechanik. Sie deutet nichts.
+- Das Gate hat keinen Weg zur Engine.
 
 ---
 
-## 3. Komponenten von A: bleibt, eingeschränkt, entfällt
+## 2. Was als Beleg gilt
 
-| Komponente (A) | in C | Begründung |
+| Datenquelle | Rolle | darf belegen |
 |---|---|---|
-| `src/engine.js`, `src/combat.js`: Kampf, NPC-Züge, Würfel | **bleibt.** Neu ist nur ein Adapter am Eingang. | Ein validierter Intent ersetzt `parseIntent` |
-| `src/rng.js`, `rng_to` in Ereignissen | **bleibt** | Reproduzierbarkeit, kein Neuwürfeln |
-| `src/state.js`, `src/host.js` (`rec`, `setRec`, `foldChat`, `messageEvents`) | **bleibt** | Event-Sourcing auf Nachrichten |
-| `prepareGenerationAsync`: Deutung je `input_hash`, Fehlschlag nicht zwischengespeichert | **bleibt als Rahmen.** Der Planer ersetzt `interpretMessage` und den Zweig `route 'v3'` für freie Sprache. | Swipe-Stabilität ist gelöst (§14) |
-| `src/ir.js` Unified Intent IR | **bleibt, als `ir-2`.** `readTurn` erzwingt `fight` nicht mehr. Neue Quelle `planner`. | eine Form für alle Pfade |
-| `src/v4/agency.js` `guardCommands` | **bleibt** als Validator-Regel V2 | Frage, Plan, Verneinung, fremde Tat |
-| `src/v4/commands.js`: 20 Story-Befehle | **bleibt** | Der Planer schreibt dieselben Befehle |
-| `src/v4/catalog.js` `buildCatalog` | **bleibt.** Erweitert um Kampfbrett, Skillprofil und Engine-Fakten. | Planer-Eingabe |
-| `src/context.js` Engine-Block | **bleibt.** Neue Zeilen für Weltnutzung, Nicht-Ausgeführtes und Rückfragen. | nur Prosa |
-| Extraktor, Firewall, Ownership, Envelope, Welt | **bleibt.** Die Firewall wird um die Freigabe aus `ability_world` erweitert. | Persistenz nur mit Freigabe |
-| `src/v4/interpret.js` | **geht im Planer auf.** `parseInterpretation` wird Teil von V1. | eine Deutungsautorität |
-| `src/intent.js` `parseIntent` | **verliert die Autorität.** Bleibt im Schatten und als Lieferant für Validator-Hilfen (§3.1). | Hier sitzt der gemessene Fehler |
+| S4b-Korpus v1 (91 Fälle, gemessen) | Ergebnis von S4b; danach **nur** Entwicklungs- und Regressionsdaten | die S4b-Aussagen in `docs/P0_S4B.md` §13. **Nicht**, dass nachträglich entworfene Validator-Regeln funktionieren. |
+| nachträgliche Prüfungen auf v1 (V5: k3_11 gefangen, 0 Fehlalarme; Hinweis-Detektor: 52/52 und 0/6) | Machbarkeit und Regression | nur „umsetzbar“, nicht „wirksam“ |
+| Korpus v2 (Claude, C1) | Entwicklungssatz | nichts als Beleg; er dient zum Bauen und als Regressionstest |
+| **Holdout** (frischer Autor, §21) | unabhängige Prüfung | Qualität und Sicherheit von Planer und Validator auf seiner Verteilung |
+| **Live-Paarlauf**, echte Protokolle | Prüfung im Spiel | Verhalten im echten Spiel; Gate-Kennzahlen G1–G6 |
 
-### 3.1 Regex- und Intent-Weichen im Einzelnen
-
-| Weiche (A) | Ort | in C |
-|---|---|---|
-| Kampf erzwingt den Regex-Pfad (`state.encounter ? 'fight'`) | `src/ir.js` `readTurn` | **entfernt.** Kampf ist ein Modus, keine Route am Planer vorbei. |
-| Angriffswörter ohne erkannten Skill → Basisangriff | `src/intent.js` `parseIntent` | **entfernt.** Das war die gemessene stille Ersetzung. Ersetzt durch `skill: null` + V3b (§7). |
-| Erkennung unbekannter Skills: nur **im Content vorhandene** Skillnamen, und nur mehrteilig oder nach „use/cast“ | `src/intent.js` (`mentionedSkills`, `USE_RE`) | **bleibt als Teil des Hinweis-Detektors** (h1). Am Code bestätigt: Erfundene Namen („Fire Lance“) erkennt A nicht. Darum kommt h2–h6 dazu (§7). |
-| `resolveTarget` (Label, Name, Beschreibung, Pronomen, einziges Ziel) | `src/intent.js` | **entfernt als Autorität.** Der Planer liefert IDs. Exakte Label- und Namensabgleiche bleiben für V4b; „einziges legales Ziel“ wird Engine-Vorgabe D2. |
-| `ambiguous_target` / `no_target` → Engine-Frage | `src/engine.js` `playerTurn` → `targetQuestion` | **bleibt als Engine-Verhalten** (Auslöser D2 bzw. V4c) |
-| `MECHANICAL`: Angriff und Stealth außerhalb des Kampfes zur V3-Route | `src/ir.js` | **entfernt.** Die Route folgt aus den Arten des Plans. |
-| `HOLD_RE` | `src/engine.js` `pcActionOf` | **entfällt.** `activity {kind: wait}` wird im Kampf zu hold (E5). |
-| `#`-Befehle, Erschaffung, toter SC, `pending_combat` | `src/ir.js`, `src/engine.js` | **bleiben deterministisch.** Steuerkanäle, keine Sprachdeutung. |
-| A0-Gate (`gate()`) | `tools/p0/lib/s4b.mjs` | **nur Schatten** (§17). `parseIntent` bleibt dafür im Code, bis der Nutzer über das Gate entschieden hat. |
+Regel: Ein Test auf S4b v1 oder v2 heißt „Regressionstest“ oder „Machbarkeitsprüfung“, nie „Nachweis“.
 
 ---
 
-## 4. Unified Intent IR v2 und Planer-Schema v2.1
+## 3. Komponenten von A
 
-### 4.1 Befund am Code: `attack` und `skill` sind keine semantischen Arten
+| Komponente (A) | in C |
+|---|---|
+| `src/engine.js`, `src/combat.js` (Kampf, NPC-Züge, Würfel) | bleibt. Neu ist ein Adapter am Eingang. **Migrationsbedarf:** `attackAction` muss die Reihenfolge Bewegung/Angriff aus dem Plan übernehmen (E11). |
+| `src/rng.js`, `src/state.js`, `src/host.js` (`rec`, `foldChat`) | bleibt |
+| `src/v4/runtime.js` `prepareGenerationAsync` | bleibt als Rahmen. Der Planer ersetzt `interpretMessage` und den Zweig `route 'v3'` für freie Sprache. |
+| `src/ir.js` | wird `ir-2`; `readTurn` erzwingt `fight` nicht mehr |
+| `src/v4/agency.js` `guardCommands` | bleibt (V2) |
+| `src/v4/commands.js` (20 Story-Befehle) | bleibt |
+| `src/v4/catalog.js` | bleibt, erweitert um Kampfbrett, Skillprofil und Engine-Fakten |
+| `src/context.js` (Engine-Block) | bleibt, neue Zeilen für Nicht-Ausgeführtes und Weltnutzung |
+| Extraktor, Firewall, Ownership, Envelope, Welt | bleiben; dazu die Freigabe aus `ability_world` |
+| `src/v4/interpret.js` | geht im Planer auf |
+| `src/intent.js` `parseIntent` | **keine Autorität mehr.** Bleibt für das Schatten-Gate und als Quelle kleiner Catch-Hilfen (`mentionedSkills`, Label-Abgleich, `EXPLICIT_REF_RE`). |
 
-- `parseIntent` schreibt `attack` oder `skill` danach, ob der genannte Skill ein `attack`-Feld hat (`offensive` gegen `nonOffensive`).
-- `pcActionOf` reicht das an `src/combat.js` weiter.
-  - `attackAction` lehnt einen Skill ohne `attack` ab („is not an attack“).
-  - `skillAction` wendet die Effekte des Skills an (Verteidigung, Barriere, Reposition).
-- **Die Kategorie ist also vollständig eine Funktion der Skill-Definition.** Der Planer muss sie nicht wiederholen.
-  - S4b: Die einzigen Schnittstellenfehler dieser Art (FC k1_07, k1_08) und der einzige Stabilitätswechsel kamen aus dieser Doppelung.
-- **Entscheidung:** eine semantische Art `use_skill`. Der Engine-Adapter wählt `skill.attack ? attackAction : skillAction`; `skill: null` wird zu D1.
-- **Dasselbe Prinzip gilt für den Modus.** In A gibt es im Kampf keine Reise, keine Rast und kein Durchsuchen als Handlung. Bisher stand die Abbildung („im Kampf ist Weggehen Flucht“, S4b-Regel L7) im Planer-Prompt. Drei von vier Armen haben sie in k4_05 verletzt. Sie gehört wie die Skill-Kategorie in die Engine (§4.2, D4).
+| Weiche in A | in C |
+|---|---|
+| Kampf erzwingt den Regex-Pfad (`readTurn`) | entfernt |
+| Angriffswörter ohne Skill → Basisangriff (`parseIntent`) | entfernt; ersetzt durch `skill: null` + V3b |
+| `resolveTarget` als Autorität | entfernt; der Planer liefert IDs. D2 nur ohne jeden Zielbezug. |
+| `ambiguous_target` / `no_target` → Engine-Frage | bleibt als Engine-Verhalten |
+| `MECHANICAL`-Route, `HOLD_RE` | entfernt; die Route folgt aus dem Plan, `wait` → hold |
+| Umordnung „away nach dem Angriff“ (`attackAction`) | **entfernt** (E11) |
+| `#`-Befehle, Erschaffung, toter SC, `pending_combat` | bleiben deterministisch (Steuerkanäle) |
 
-**Warum `ability_world` eine eigene Art bleibt**, statt in `use_skill` mit einem Ding als Ziel aufzugehen:
-1. Es ist eine andere Handlung: auf ein Ding wirken, um ein Ziel zu erreichen, statt gegen einen Gegner.
-2. Sie hat ein eigenes Feld `goal`.
-3. Ein `{new}`-Ziel wäre sonst mehrdeutig. Bei `use_skill` ist `{new}` ein abwesendes Wesen und wird verweigert; bei `ability_world` ist es ein nicht gelistetes Ding.
+---
 
-Eine Verwechslung der beiden ist in Wahrheit ein **Zielfehler**: Gegner statt Boden. V4 und V5 prüfen sie.
+## 4. Schema v2.1 (final) und IR v2
 
-### 4.2 Semantische Arten (modusunabhängig) und Abbildung durch die Engine
+### 4.1 Grundsatz
 
-| Art (Planer) | Bedeutung | im Kampf (Engine) | außerhalb (Engine) |
-|---|---|---|---|
-| `use_skill` | einen Skill gegen ein Wesen oder auf sich; ohne Skill: angreifen | `attackAction` oder `skillAction` nach Skill-Definition; `skill: null` → D1 | Angriff auf ein Wesen oder eine Person beginnt den Kampf (A). Nicht angreifender Skill: wie A, ohne Buchung (offen, §25). |
-| `ability_world` | bekannter Skill auf ein Ding, mit Ziel | Haupthandlung, Probe (E6) | Probe (E6) |
-| `move` | sich relativ zu Gegnern bewegen | `moveAction` oder an die Kampfaktion gehängt (D5) | keine Engine-Handlung (Erzählung) |
-| `flee` | sich der Gefahr entziehen | Flucht (A: entkommt, wenn alle Gegner LONG, sonst weg) | bei gebundenem Kampf (`pending_combat`) wie A, sonst keine Engine-Handlung |
-| `go` (V4) | an einen Ort gehen oder reisen | **D4:** Fluchtversuch | Reise (V4-Handler) |
-| `activity` (V4) | Zeit verbringen: rest, wait, search … | `wait` → hold (E5); `search` → E4; sonst nicht ausführbar (N) | V4-Handler |
-| übrige V4-Befehle | take, pay, quest.accept … | nicht ausführbar (N), gemeldet (E9) | V4-Handler |
-| `stealth` | sich verbergen, anschleichen | nicht ausführbar (N). In A gibt es kein Stealth im Kampf: `storyTurn` geht vorher in den Kampf, `pcActionOf` kennt kein `stealth`. Mechanisch verpufft die Nachricht dort heute still. | A `stealthEvents` |
-| `other` | beabsichtigte Handlung ohne passende Art | nicht ausführbar (E10), gemeldet; der Kampf wartet | wie A eine Erzählrunde mit vorab gezogenem Prüfwürfel |
-| `clarify` | Rückfrage des Planers | – | – |
+Der Planer schreibt **was gemeint ist**. Er schreibt keine mechanische Kategorie:
+- ob ein Skill ein Angriff, ein Effekt oder ein Flächenzauber ist, weiß die Engine aus `content` (`attackAction` lehnt Nicht-Angriffe ab, `skillAction` wendet Effekte an);
+- was eine Absicht im Kampf kostet oder ob sie geht, entscheidet die Engine aus dem Modus.
 
-**Neu ist `other`.** Es ist die Auffangart, damit der Planer keine beabsichtigte Handlung weglassen oder in eine falsche Art pressen muss. Mechanisch entspricht es As heutigem Verhalten bei nicht erkannten Handlungen: Im Kampf wartet der Kampf, außerhalb gibt es eine Erzählrunde. Neu ist nur, dass es **sichtbar** wird.
+Umgekehrt **ändert die Engine nie den Bedeutungsgehalt.** Sie bildet eine Absicht auf eine Mechanik ab oder meldet sie als nicht ausführbar.
 
-### 4.3 Schema v2.1
+### 4.2 Semantische Arten
 
 ```text
-Gemeinsam: {"intents": [ … ]} · jede Handlung mit "quote" (wörtlich aus der Nachricht) · keine Zusatzfelder
-           · KEIN Feld für Ergebnis, Erfolg, Schaden, Kosten, Schwierigkeit oder Priorität
+Gemeinsam: {"intents": [ … ]} in Spielerreihenfolge · jede Handlung mit "quote" (wörtlich) · keine Zusatzfelder
+           · KEIN Feld für Ergebnis, Erfolg, Schaden, Kosten, Schwierigkeit, Priorität oder mechanische Kategorie
 
 use_skill      {"kind","skill": <id | {"new":"<seine Worte>"} | null>, "target": <id | {"new":"<Beschreibung>"} | null>, "quote"}
-ability_world  {"kind","skill": <id | {"new":…} | null>, "target": <object id | {"new":"<das Ding>"}>,
-                "target_words": "<wörtlich aus quote>", "goal": "<≤ 12 Wörter>", "quote"}
-move           {"kind","dir": "closer"|"away", "target": <id | null>, "quote"}
-flee           {"kind","quote"}
-stealth        {"kind","quote"}
-other          {"kind","what": "<kurz, in seinen Worten>", "quote"}
+               einen Skill gegen ein Wesen, eine Person oder sich selbst; ohne Skill: angreifen
+ability_world  {"kind","skill": <id | {"new"} | null>, "target": <object id | {"new":"<das Ding>"}>,
+                "target_words": "<wörtlich aus quote>", "goal": "<sein Zweck, ≤ 12 Wörter>", "quote"}
+               einen Skill auf ein Ding, mit Zweck
+move           {"kind","dir": "closer"|"away"|null, "target": <id | null>, "to": {"new":"<Stelle>"} | null, "quote"}
+               sich innerhalb der Szene bewegen (zu oder weg von jemandem, an eine Stelle)
+flee           {"kind","to": <place id | {"new"} | null>, "quote"}
+               sich der Gefahr entziehen, den Ort verlassen, um wegzukommen
+stealth        {"kind","quote"}                           sich verbergen, anschleichen
+other          {"kind","what": "<kurz, seine Worte>", "quote"}   beabsichtigte Handlung ohne passende Art
 clarify        {"kind","about": "target"|"skill"|"action", "question", "options": [<ids oder kurze Texte>]}
-V4-Befehle     wie content/commands.json (go, activity, take, pay, …), je mit "quote"
+V4-Befehle     wie content/commands.json, je mit "quote":
+               go (Reise), activity (rest, wait, search, …), take, give, pay, buy, sell, use,
+               offer.*, quest.*, guild.*, board.read, journey.continue, equip, unequip
 ```
 
-- **`target_words` ist neu.** Es verankert das Weltziel im Wortlaut (V5).
-- **`hold` entfällt als Art.** Warten ist `activity {kind: "wait"}`; die Engine macht daraus im Kampf hold.
-- **`confirm`** steht nicht im Planer-Schema. Der Validator erzeugt es (V4d).
-- **Prompt je Modus:**
-  - Das Schema ist dasselbe; der Prompt zeigt je Modus nur die Arten, die dort eine Abbildung haben, plus `other` und `clarify`.
-  - Kampf: `use_skill`, `ability_world`, `move`, `flee`, `go`, `activity`, `stealth`, `other`, `clarify`.
-  - Story: alle 20 V4-Befehle plus `use_skill`, `ability_world`, `flee`, `stealth`, `other`, `clarify`.
-  - Durch `other` geht nichts verloren, wenn eine Art im Modus-Prompt fehlt. Ob der volle Prompt in beiden Modi messbar besser ist, misst C4.
+**Abgrenzungen** (Planer-Regeln, semantisch):
+- Wegkommen von einer Gefahr, auch mit Ziel („climb the ladder out“, „run back to the village“), ist `flee`.
+- Reisen ohne Gefahr ist `go`.
+- Sich in der Szene zu bewegen („behind the pillar“, „step back“) ist `move`.
+- Suchen bleibt `activity {kind: search}`, Warten `activity {kind: wait}`, auch im Kampf.
+- **Gestrichen:**
+  - `attack` und `skill` (jetzt `use_skill`);
+  - `hold` (jetzt `wait`);
+  - `confirm` (E2);
+  - die Modus-Abbildung „im Kampf ist Weggehen Flucht“ als Mechanikregel. Sie bleibt nur als Bedeutungsregel: Weggehen *von einer Gefahr* ist `flee`.
 
-### 4.4 IR v2
+**Prompt je Modus:** Das Schema bleibt dasselbe. Der Kampf-Prompt zeigt `use_skill`, `ability_world`, `move`, `flee`, `activity`, `go`, `stealth`, `other` und `clarify`, der Story-Prompt alle Arten. Was im Prompt fehlt, landet in `other`; nichts geht verloren.
+
+### 4.3 IR v2
 
 - `IR_VERSION = 'ir-2'`.
-- `acts` tragen die semantischen Arten, Quelle `planner` oder `control`.
-- `check` hält die Urteile des Validators je Handlung, mit Regel.
-- Die mechanische Kategorie (Angriff, Skill, Flucht …) steht nur in den Engine-Ereignissen.
-- Ein Record liest sich also: was der Spieler meinte (IR), was zulässig war (check), was geschah (events).
+- `acts` tragen die semantischen Arten mit `source: 'planner' | 'control'`.
+- `check` trägt die Validator-Urteile mit Regel.
+- Mechanik steht nur in den Engine-Ereignissen.
+- Ein Record liest sich: Absicht (IR) → Zulässigkeit (check) → Geschehen (events).
 
 ---
 
-## 5. Der Planer
+## 5. Engine: Abbildung, Vorgaben, Ausführbarkeit (getrennt von den Absichten)
 
-### 5.1 Ort und Aufruf
+### 5.1 Abbildung semantischer Absicht → Mechanik
 
-- **Ort:** in `prepareGenerationAsync`, an der Stelle von `interpretMessage`. Er läuft einmal je neuer oder bearbeiteter Spielernachricht (§14).
-- **Aufruf:**
-  - JSON, Temperatur 0,1, `maxTokens` ≈ 400 (gemessen: im Mittel 51 Output-Token).
-  - Höchstens **eine Reparatur**, nur bei V1-Fehlern (Schema, IDs, Verankerung).
-  - Die Reparaturnachricht nennt die verletzte Regel und das Feld, **nie einen Ersatzwert**. Der Validator schiebt dem Planer also keine Deutung unter.
-- **Fehlschlag:**
-  - Abbruch mit Hinweis, kein Erzähleraufruf (wie A);
-  - nicht zwischengespeichert;
-  - kein Rückfall auf Regex.
-- **Record:** `PLANNER_VERSION`, Hash des statischen Prompts, Rohantwort(en).
+| Absicht | im Kampf | außerhalb |
+|---|---|---|
+| `use_skill` | `attackAction` oder `skillAction` nach Skill-Definition; `skill: null` → D1; `target: null` → D2/D3 | Angriff auf ein Wesen oder eine Person beginnt den Kampf (A). Nicht angreifender Skill: wie A (Erzählrunde, ohne Buchung; offen, §25). |
+| `ability_world` | Haupthandlung, Probe (E6) | Probe (E6) |
+| `move` mit `dir`/`target` | `moveAction` (Bänder relativ zu Gegnern), in Planreihenfolge zur Haupthandlung | keine Mechanik (Erzählung) |
+| `move` mit `to` (eine Stelle, z. B. Deckung) | **N**: A hat für den SC keine Deckungs- oder Positionsaktion (Deckung nur für NPCs bzw. Szene); gemeldet | keine Mechanik |
+| `flee` | Flucht (A: entkommt, wenn alle Gegner LONG, sonst weg) | bei `pending_combat` wie A, sonst Erzählrunde (A) |
+| `go` | **N**: „Reisen ist im Kampf nicht möglich“, gemeldet. **Keine** Umdeutung zu Flucht. | Reise (V4) |
+| `activity: wait` | hold (E5): Der Zug ist vorbei, die NPCs handeln | V4 `activity` |
+| `activity: search` | E4 | V4 `activity` |
+| andere `activity`, andere V4-Befehle | **N** (E9), gemeldet | V4-Handler |
+| `stealth` | **N**: A hat kein Stealth im Kampf; heute verpufft es still. Jetzt wird es gemeldet. | A `stealthEvents` |
+| `other` | **N** (E10), gemeldet; der Kampf wartet | wie A eine Erzählrunde mit vorab gezogenem Prüfwürfel |
+| `clarify` | System-Panel, nichts gebucht | dito |
 
-### 5.2 Eingabe je Zug
+### 5.2 Kanonische Vorgaben (geschlossen, D1–D3)
 
-| Block | Quelle (A) | Inhalt | Größe (geschätzt) |
-|---|---|---|---|
-| Rolle, Regeln, Arten, Beispiele, Format | statisch, je Modus | wie S4b P1, angepasst an Schema v2.1 | Kampf ≈ 1,0–1,3k; Story ≈ 2,5–3k |
-| MODE | `state.encounter`, `state.scene.at` | `fight (round n)` oder `story at <Ort>` | < 20 |
-| KNOWN SKILLS | Bogen + `content` | ID, Name, Profil (Angriff/kein Angriff, Einzel/Fläche, Reichweite, Schadensart, Munition) | ≈ 15 je Skill |
-| OPPONENTS (Kampf) | `state.encounter`, Labels | ID, Label, HP-Band, Abstand, Haltung | ≈ 15 je Gegner |
-| PRESENT | `buildCatalog().present` | ID, Name oder Handle, Haltung | ≈ 10 je Person |
-| OBJECTS / PLACES | `buildCatalog()` | wie heute im Interpreter | wie heute |
-| ENGINE FACTS | Ereignisse der letzten Runde | strukturiert, deterministisch (§6) | ≈ 30–60 |
-| RECENT (Prosa) | letzte Erzählerantwort | optional, ≤ 600 Zeichen (§6) | ≤ 150 |
-| PENDING QUESTION | Record der vorigen Spielernachricht | Frage, Optionen, zurückgehaltener Plan (§11) | ≈ 40 |
-| PLAYER MESSAGE | | | |
+| | Vorgabe | Bedingung |
+|---|---|---|
+| **D1** | `skill: null` → Basisangriff der Klasse | nur nach V3b (kein Skill-Hinweis) |
+| **D2** | `target: null` bei einem Einzelziel-Skill → das einzige aktive feindliche Ziel. Bei 0 Zielen: L. Bei ≥ 2: Engine-Rückfrage. | nur, wenn der Satz **keinerlei Zielbezug** enthält (V4e). Ein eigener, auch unvollkommener Bezug („the second one“, „that one“, „him“) hat immer Vorrang. As Präzedenz: `EXPLICIT_REF_RE` („never silently the only combatant“). |
+| **D3** | Flächen-Skill → Ziele nach Flächenregel | A `attackAction`: alle ENGAGED-Gegner |
 
-**FEATURES:** A führt keine Szenen-Merkmale (Decke, Strickleiter, Laterne), nur Objekte und Orte. In C v1 sind Weltziele Objekt-IDs oder `{"new": "<das Ding>"}`. In S4b standen handgeschriebene FEATURES im Katalog; k3_11 zeigt deren Sog (§9).
+D4 (Modus-Abbildung als Vorgabe) und D5 (Umordnung) sind gestrichen.
 
-### 5.3 Prompt-Größe
+### 5.3 Ausführbarkeit
 
-- **Gemessen (P1):** ≈ 1,87k Prompt-Token je Fall, davon ≈ 1,33k statisch.
-- **Kampf mit Modus-Prompt:** statisch ≈ 1,0–1,3k, gesamt ≈ 1,5–1,9k.
-- **Story:** ≈ 3,5k. Der Planer ersetzt den Interpreter (≈ 3,1k); es gibt also keinen zusätzlichen Aufruf.
-- **Für Prompt-Caching:** zuerst der statische Teil (byte-gleich je Modus), dann der Zustand, zuletzt die Nachricht.
-- **Nicht kürzen:** die Regeln zu Skill-Treue, `skill: null`, Rückfrage und „jede beabsichtigte Handlung aufschreiben“ sowie die Beispiele mit `{new}`, Rückfrage und Mehrfachhandlung. Sie tragen die Sicherheitskennzahlen.
+| Kategorie | Bedeutung | Folge |
+|---|---|---|
+| **N** | im Modus nie möglich (Abbildung N in §5.1) | übersprungen, gemeldet; verbraucht keine Ökonomie |
+| **L** | situativ unzulässig: Reichweite, Ressourcen, volle Deckung, Ziel weg, unbekannter Skill | **Der Zug wird nicht aufgelöst** (A: `illegal`, `runCombat` hält an). Der Grund wird gemeldet; der Spieler entscheidet neu. |
+| **W** | Aktionsökonomie erschöpft (Core #12/#24: eine Bewegung + eine Haupthandlung je Zug) | nicht in diesem Zug; gemeldet; **nie vorgemerkt** |
 
-### 5.4 Was der Planer entscheiden darf, und was nicht
+### 5.4 Engine-Invarianten
 
-| darf | darf nicht |
+Sie sind hart, im Code umgesetzt und als Test geprüft.
+
+| | Invariante |
 |---|---|
-| welche Handlungen die Nachricht ausdrückt, in Spielerreihenfolge, **alle**, auch wenn sie jetzt unmöglich scheinen | Handlungen weglassen, weil er sie für nicht ausführbar hält |
-| welcher **bekannte** Skill gemeint ist (Alias, Tippfehler, Umschreibung), wenn genau einer passt | einen anderen Skill an die Stelle eines genannten setzen; Basic Attack ohne die Worte „basic attack“ wählen |
-| welches Ziel gemeint ist (Label, Teil-Label, Beschreibung, Pronomen, Engine-Fakt), wenn genau eines passt | unter mehreren passenden Zielen wählen; ein genanntes Ziel durch ein anderes ersetzen |
-| ein unbekanntes Ding oder einen unbekannten Skill als `{new}` benennen | `{new}` in eine bekannte ID umdeuten |
-| `goal` in den Worten des Spielers | Erfolg, Schwierigkeit, Folgen |
-| eine Rückfrage, wenn zwei Lesarten mechanisch verschieden wären | fragen, wenn genau eine passt |
-| leer antworten (Frage, Plan, Rede, fremde Tat) | mechanische Kategorien festlegen (Angriff oder Skill, Flucht oder Reise); das macht die Engine |
+| **X1 Reihenfolge** | ausgeführte Handlungen in Planreihenfolge; keine Umordnung, auch nicht „zugunsten des Spielers“ |
+| **X2 Nur Validiertes** | ausgeführt wird nur, was der Validator angenommen hat. Gefüllt wird nur über D1–D3, jede Füllung steht im Ereignis. |
+| **X3 Nichts verschwindet** | jede Handlung des Plans ist ausgeführt oder als N, L, W oder Rückfrage gemeldet: System-Zeile, Engine-Block, Record |
+| **X4 Determinismus** | gleicher Zustand + Plan + Seed → byte-gleiche Ereignisse |
 
 ---
 
-## 6. RECENT: Sicherheit gegen Komfort und Referenzauflösung
+## 6. Der Validator
 
-**Die Daten (S4b, 5 Verlaufsfälle):**
+### 6.1 Harte Invarianten
 
-| | aufgelöst | gefragt | falsch festgelegt |
-|---|---|---|---|
-| mit RECENT | 5 | 0 | 0 |
-| ohne RECENT | 2 | 3 | **0** |
+Sie werden im Code umgesetzt und mit Eigenschaftstest und Mutationsprobe geprüft, nicht als Prompt-Regel.
 
-Dazu zwei Einzelbeobachtungen, beide ohne Wiederholung:
-- **k3_11:** Mit RECENT wählte P1 das Loch. RECENT nennt „the hole in the wall“, und `feat.hole` steht im Katalog. Ohne RECENT kam `{new: "the burrow ceiling"}`. RECENT kann also auch Präzision kosten.
-- **k6_07:** Der Korpus-Text für RECENT widersprach dem Kampfbrett.
+| | Invariante |
+|---|---|
+| **M1 Nur drei Urteile** | je Handlung `accept`, `clarify` oder `reject` |
+| **M2 Kein Ersatz** | Art, Skill, Ziel, `target_words`, `goal` und Argumente einer angenommenen Handlung sind byte-gleich zum Plan |
+| **M3 Keine Ergänzung** | angenommene Handlungen ⊆ Plan; Rückfragen sind keine Handlungen |
+| **M4 Keine Umordnung** | angenommene Handlungen behalten die Planreihenfolge |
+| **M5 Sichtbarkeit** | jede nicht angenommene Handlung mit Regel im Record und in der System-Zeile, auch Entfernungen durch den Agency-Guard |
+| **M6 Rückfragen wählen nicht** | Optionen stammen aus dem Plan, aus wörtlichen Spannen der Nachricht oder aus dem Katalog; die Wahl trifft der Spieler |
 
-**Einordnung:**
-- **Sicherheit hing in S4b nicht an RECENT.** Ohne Verlauf hat der Planer gefragt, nicht geraten.
-- **Flüssigkeit hing daran.** Mit RECENT gab es keine Rückfrage.
-- Das Kriterium D3 („Planer braucht den Verlauf“) hat Flüssigkeit gemessen, nicht Sicherheit. Die Formulierung in Revision 1 war zu stark.
+**Weitere Grenzen:**
+- Der Validator liest **kein** RECENT.
+- Eine Reparatur (nur V1) nennt die verletzte Regel und das Feld, **nie einen Ersatzwert**.
 
-**Regeln für C:**
-1. **Sicherheit muss ohne RECENT gelten.**
-   - Prompt-Regel: Lässt sich ein Bezug aus Nachricht, Zustand und Engine-Fakten nicht eindeutig auflösen, wird gefragt.
-   - Der Validator benutzt RECENT **nie**. Er prüft nur gegen Nachricht, Zustand und Content.
-2. **Strukturierte Engine-Fakten zuerst.** Sie kommen aus den Ereignissen der letzten Runde, ohne LLM, ≈ 30–60 Token, und widersprechen dem Brett nie. Beispiele:
-   - „Barkscorpion B stung Alaric (last round)“;
-   - „Alaric hit Grey Wolf B“;
-   - „Bandit B moved to SHORT“.
-3. **Prosa nur klein und nur, wenn die Messung sie trägt.**
-   - Die letzten ≤ 600 Zeichen der Erzählerantwort, ohne Tracker-Blöcke.
-   - Nur für Bezüge, die keine Engine-Tatsache sind („the one by the lantern“).
-   - Bei Widerspruch gilt das Brett (Prompt-Regel).
-4. **Messung in C4,** drei Varianten auf Verlaufs- und k3_11-artigen Fällen:
-   - nur Engine-Fakten;
-   - Fakten und Prosa;
-   - nichts.
+### 6.2 Regeln
 
-   Prosa bleibt nur, wenn sie Bezüge besser auflöst, **ohne** eine falsche Festlegung hinzuzufügen.
+| Regel | Prüfung | Urteil |
+|---|---|---|
+| **V1** Schema und Verankerung | Arten, Pflichtfelder, IDs aus dem Katalog, keine Zusatzfelder, Grenzen; `quote` und `target_words` wörtlich in der Nachricht | eine Reparatur, sonst Abbruch (wie As Interpreter-Fehlschlag) |
+| **V2** Beleg | As `guardCommands`: keine Frage, kein Plan, keine Verneinung, keine fremde Tat | `reject`, sichtbar |
+| **V3a** genannter Skill | Der Satz nennt einen bekannten Skill exakt oder fast, der Plan nimmt einen anderen | `clarify(skill)` mit beiden |
+| **V3b** `null` mit Hinweis | Safety Catch (§7) | `clarify(skill)` |
+| **V3c** Basic Attack ohne Worte | Basic-Attack-ID ohne „basic attack“ im Satz | wie `null` → V3b |
+| **V3d** `{new}`-Skill | enger Fast-Treffer (E12) zu genau einem bekannten Skill | `clarify(skill)` „Meinst du …?“, sonst `reject(unknown_skill)` |
+| **V4a** Zieltyp | ID passt zur Art | V1 |
+| **V4b** genanntes Wesen | Der Satz (ohne Zweckteil) nennt exakt das Label oder den Namen von X, der Plan zielt auf Y ≠ X | `clarify(target)` mit X und Y |
+| **V4c** abwesendes Wesen | `{new}` als Ziel von `use_skill` | `reject(no_target)` mit der Liste der Anwesenden (wie As `no_target`) |
+| **V4e** Zielbezug vor D2 | `target: null`, aber der Satz enthält einen Zielbezug (Ordinal, „the other/left/right one“, Pronomen, „the <Wort>“ nach Angriffsverb oder Richtungswort) | `clarify(target)`; D2 wird nicht angewandt |
+| **V5** Weltziel-Treue | §8.2 | `accept`, `clarify(target)` oder V1 |
+| **V6** Rückfrage allein | eine Rückfrage im Plan | der ganze Plan wird zurückgehalten; nichts gebucht |
 
-**Kurzform:** Relevante strukturierte RECENT-Daten sind ein wertvoller Bestandteil des Planers für Flüssigkeit und Referenzauflösung. Sie sind keine Sicherheitsvoraussetzung und bleiben selektiv und klein.
+V4d (Bestätigung bei Nicht-Feind) ist gestrichen (E2).
+
+### 6.3 Was nicht im Validator steht
+
+- Modus, Ökonomie, Reihenfolge der Ausführung und Zielvorgabe: Engine (§5).
+- Kürzen oder Korrigieren: nie (V1 lehnt ab).
+
+### 6.4 Grenzen der Safety Catches (V3b, V4e, V5)
+
+Die Detektoren hinter V3b (Skill-Hinweis), V4e (Zielbezug) und V5 (Zielteil gegen Zweckteil) sind **Sicherungen, keine Deuter**. Feste Grenzen:
+1. **Ausgabe:** nur „Hinweis vorhanden: ja/nein“ und die gefundene Wortspanne (für den Fragetext). Nie ein Skill, Ziel oder eine Art.
+2. **Wirkung:** nur abstufen (`clarify`). Nie annehmen, was sonst abgelehnt würde, nie wählen.
+3. **Geschlossene Komponenten:**
+   - V3b: h1–h6 (§7.2);
+   - V4e: As `EXPLICIT_REF_RE`-Familie, Pronomen, „the <Wort>“ nach Angriffsverb oder Richtungswort;
+   - V5: Verankerung und eine kurze Zweckwortliste.
+
+   Eine neue Komponente ist eine Architekturentscheidung, kein Code-Feinschliff.
+4. **Kleine Daten:** Listen liegen im Content, je Klasse, versioniert. Richtgröße: ≤ 10 Hinweisverben je Klasse, ≤ 15 allgemeine Magie- und Skillwörter, ≤ 8 Zweckwörter.
+5. **Keine Grammatik:** keine Wortarten-Erkennung, keine Satzanalyse, keine Synonymlisten. Braucht ein Fall so etwas, gehört er zum Planer und in den Holdout, nicht in den Catch.
+6. **Bewertet nur als Sicherung:**
+   - verpasste Blockaden: Fälle, in denen der Planer `null` schrieb, obwohl ein Skill gemeint war, und der Catch nichts fand;
+   - unnötige Blockaden: Rückfragen, wo Handeln richtig war.
+
+   **Nie** als Deutungsgenauigkeit.
 
 ---
 
 ## 7. `skill: null`, exakt
 
+### 7.1 Regeln
+
 | | Regel |
 |---|---|
-| **N1 (Planer)** | `skill: null` nur in `use_skill` oder `ability_world`, und nur, wenn der Satz der Handlung **keinen Skill nennt und keinen andeutet** („I hit it“, „I shoot the wolf“). Die Basic-Attack-ID nur, wenn der Spieler „basic attack“ sagt. Ein unbekannter Skill wird `{"new": "<seine Worte>"}`. |
-| **N2 (Engine, Vorgabe D1)** | `null` → Basisangriff der Klasse (`content.classes[...].basic_attack`), als Angriff bzw. bei Weltnutzung als Mittel (mit Munition). Nur nach V3b-Freigabe. |
-| **N3 (Validator V3b)** | Der Hinweis-Detektor (unten) läuft auf dem Geltungsbereich der Handlung. **Ein Hinweis → `clarify(skill)`.** Mit `null` und einem Hinweis wird nie etwas ausgeführt. |
-| **N4 (Validator V3c)** | Basic-Attack-ID ohne die Worte „basic attack“ im Geltungsbereich → wie `null` (dann N3) |
-| **N5 (Validator V3d)** | `{"new": X}` wird nie ersetzt. Passt X fast genau zu **einem** bekannten Skill → `clarify(skill)` „Meinst du Flame Lance?“. Sonst → `reject(unknown_skill)`: Die Engine meldet „Alaric kennt X nicht“, nichts wird gebucht. |
-| **N6 (Planer + V3a)** | Keine stille Ersetzung eines unsicheren Skills. Der Planer wählt einen bekannten Skill nur, wenn genau einer passt; sonst fragt er. V3a: Nennt der Satz einen bekannten Skill exakt oder fast, und der Plan nimmt einen anderen → `clarify(skill)` mit beiden. |
+| **N1 Planer** | `null` nur in `use_skill` oder `ability_world` und nur, wenn der Satz keinen Skill nennt und keinen andeutet. Die Basic-Attack-ID nur, wenn der Spieler „basic attack“ sagt. Ein unbekannter Skill wird `{"new": "<seine Worte>"}`. |
+| **N2 Engine (D1)** | `null` → Basisangriff der Klasse, nur nach V3b-Freigabe |
+| **N3 Validator (V3b)** | Ein Skill-Hinweis im Geltungsbereich → `clarify(skill)`. Mit `null` und Hinweis wird nie etwas ausgeführt. |
+| **N4 (V3c)** | Basic-Attack-ID ohne die Worte → wie `null` |
+| **N5 (V3d)** | `{new}` wird nie ersetzt: enger Fast-Treffer (E12) → Frage; sonst Ablehnung („Alaric kennt X nicht“, nichts gebucht) |
+| **N6 (Planer + V3a)** | kein unsicherer Skill still: Der Planer wählt nur, wenn genau einer passt; sonst fragt er. V3a fängt den Konflikt mit einem genannten Skill. |
 
-**Hinweis-Detektor.** Er ist deterministisch, alle Listen sind Daten im Content.
+### 7.2 Safety Catch für Skill-Hinweise (Komponenten, geschlossen)
 
-| | erkennt | Quelle |
-|---|---|---|
-| h1 | exakte Namen jedes Skills im Content (auch nicht gelernter), längste zuerst | As `mentionedSkills` |
-| h2 | Fast-Treffer auf **unterscheidende** Wörter von Skillnamen: Editierabstand ≤ 1 (4–5 Buchstaben) bzw. ≤ 2 (ab 6), Vertauschung zählt 1; zusammengeschrieben („flamelance“). Allgemeine Kampfwörter (attack, shot, strike, slash, hit, shoot) sind ausgenommen. | neu |
-| h3 | allgemeine Skill- und Magiewörter: spell, magic, ability, skill, technique, cast, conjure, summon, invoke, channel | neu, Liste = Daten |
-| h4 | **Hinweisverben je Klasse** (Produktregel E1), z. B. Magier: blast, zap | neu, Daten |
-| h5 | Muster „use/activate/perform (my\|a\|the) X on/at/against“, wenn X kein gehaltener Gegenstand ist | neu (As `USE_RE` erweitert) |
-| h6 | großgeschriebene Mehrwortfolge mitten im Satz, die kein bekannter Name, kein Label, kein Ort und keine Art ist | neu |
-
-**Vorher wird maskiert:** Labels, Namen, Orte, Arten und Questtitel (As `linkEntities` plus Kampflabels). So zählt „Grey Wolf A“ nicht als Skill-Hinweis.
-
-**Geltungsbereich:**
-- der Satz, der das `quote` der Handlung enthält;
-- ohne wörtliche Rede und ohne Fragesätze (wie As `declarative`);
-- ohne Wortspannen, die das `quote` einer **anderen** Handlung abdeckt.
-
-Beispiele:
-- „I step back and hit A“: „step“ gehört zu `move` und zählt für „hit A“ nicht.
-- „I Fire Lance Barkscorpion B“ mit einem zu knappen `quote` („Barkscorpion B“): Der Hinweis „lance“ bleibt unabgedeckt → Rückfrage.
-
-**Machbarkeit (nachträglich, an den 91 S4b-v1-Texten, Wegwerf-Prototyp):**
-- 52 von 52 Sätzen, deren Gold einen Skill nennt, andeutet oder nach ihm fragt, werden markiert.
-- 0 von 6 reinen Basic-Attack-Sätzen werden markiert. „basic attack“ wird als ausdrücklich erkannt.
-- **Kein Beleg:** Die Listen wurden mit Blick auf denselben Korpus eingestellt. Die allgemeinen Magiewörter kamen erst nach k7_06 dazu. Über Fehlalarme entscheiden Korpus v2 und Holdout.
-
-**Garantie und Restrisiko:**
-- **Strukturell verhindert:**
-  - Der Planer kann einen erkannten Skill nicht durch Basic Attack ersetzen, ohne dass V3a, V3b oder V3c es abfängt.
-  - Jeder exakt genannte oder fast genannte Skillname und jedes Hinweiswort aus den Listen führt bei `null` zur Rückfrage. Der ursprüngliche Fall „Fire Lance“ (h2: „lance“) ist damit strukturell gesperrt.
-- **Nur mehrschichtig abgesichert, nicht garantiert:** Umschreibungen ohne jede Wortüberlappung, etwa „my fiery javelin“. Dafür müssten zwei Stufen zugleich versagen: Der Planer schreibt `null` (in S4b 0 von 544), und der Detektor findet nichts.
-
----
-
-## 8. Der Validator: monoton restriktiv
-
-**Signatur:**
-
-```text
-validatePlan(plan, state, content, message) → { verdicts[], turn }
-```
-
-- reine Funktion, kein LLM, keine Zufallszahl, **kein RECENT**;
-- `verdicts[i]` ∈ {`accept`, `clarify(about, options, rule)`, `reject(reason, rule)`};
-- `turn` ∈ {`commit(accepted, in Planreihenfolge)`, `ask(clarify|confirm, zurückgehaltener Plan)`, `abort(V1)`}.
-
-### 8.1 Invarianten
-
-Sie werden als Eigenschaftstest geprüft: zufällige Pläne und Zustände; jede Verletzung schlägt fehl.
-
-| | Invariante |
+| | erkennt |
 |---|---|
-| **M1 Keine neuen Inhalte** | Jede Handlung, die an die Engine geht, ist Feld für Feld gleich einer Handlung des Plans. |
-| **M2 Keine Ersetzung** | Art, Skill, Ziel, `target_words`, `goal` und Argumente einer angenommenen Handlung sind unverändert. |
-| **M3 Keine Ergänzung** | Angenommene Handlungen ⊆ Plan. Der Validator erzeugt keine Handlung; Rückfrage und Bestätigung sind keine Handlungen. |
-| **M4 Keine Umordnung** | Die angenommenen Handlungen behalten die Reihenfolge des Plans. |
-| **M5 Sichtbarkeit** | Jede nicht angenommene Handlung steht mit Regel im Record. Der Spieler sieht sie in der System-Zeile. Das gilt auch für Entfernungen durch den Agency-Guard. |
-| **M6 Rückfragen wählen nicht** | Optionen stammen aus dem Plan, aus wörtlichen Spannen der Nachricht oder aus dem Katalog. Eine Rückfrage legt nichts fest; die Wahl trifft der Spieler. |
+| h1 | exakte Namen jedes Content-Skills (As `mentionedSkills`) |
+| h2 | Fast-Treffer auf unterscheidende Wörter von Skillnamen: Abstand ≤ 1 bei 4–5 Buchstaben, ≤ 2 ab 6, Vertauschung = 1; zusammengeschrieben. Allgemeine Kampfwörter (attack, shot, strike, slash, hit, shoot) sind ausgenommen. |
+| h3 | allgemeine Skill- und Magiewörter (spell, magic, ability, skill, cast, conjure, summon, invoke, channel) |
+| h4 | Hinweisverben je Klasse (E1) |
+| h5 | „use/activate/perform (my\|a\|the) X on/at/against“, wenn X kein gehaltener Gegenstand ist |
+| h6 | großgeschriebene Mehrwortfolge mitten im Satz, die kein bekannter Name, kein Label, kein Ort und keine Art ist |
 
-### 8.2 Regeln
+**Vorher maskiert:** Labels, Namen, Orte, Arten, Questtitel.
 
-| Regel | Prüfung | mögliche Urteile | warum monoton |
-|---|---|---|---|
-| **V1** Schema und Verankerung | Art bekannt, Pflichtfelder, IDs aus dem Katalog, keine Zusatzfelder, Grenzen (`goal` ≤ 12 Wörter …), `quote` und `target_words` wörtlich in der Nachricht | Reparatur (einmal, ohne Ersatzwert), sonst `abort` | Der Validator ändert nichts. Er lehnt ab oder lässt den Planer neu antworten. Der neue Plan durchläuft alle Regeln. |
-| **V2** Beleg (As Agency-Guard) | keine Frage, kein Plan, keine Verneinung, keine fremde Tat | `reject(not_a_deed)`, sichtbar | nur entfernen |
-| **V3a** genannter Skill | Geltungsbereich nennt einen bekannten Skill exakt oder fast, der Plan nimmt einen anderen | `clarify(skill)` mit beiden | fragt, wählt nicht |
-| **V3b** `null` mit Hinweis | §7 N3 | `clarify(skill)` | dito |
-| **V3c** Basic Attack ohne Worte | §7 N4 | wie `null` | strenger, nicht anders |
-| **V3d** `{new}` | §7 N5 | `clarify(skill)` oder `reject(unknown_skill)` | ersetzt nie |
-| **V4a** Zieltyp | ID passt zur Art: Wesen oder Person für `use_skill`, Objekt für `ability_world` | V1 | – |
-| **V4b** genanntes Ziel | Geltungsbereich (ohne den Zielteil, §9) nennt exakt das Label oder den Namen eines Wesens X, der Plan zielt auf Y ≠ X | `clarify(target)` mit X und Y | fragt, tauscht nie |
-| **V4c** abwesendes Wesen | `{new}` als Ziel von `use_skill` | `reject(no_target)` mit der Liste der Anwesenden (wie As `no_target`) | nur ablehnen |
-| **V4d** Nicht-Feind | Angriff auf eine anwesende Person mit Haltung neutral oder freundlich | `confirm` mit zurückgehaltenem Plan (E2) | hält an, ändert nichts |
-| **V5** Weltziel-Treue | §9 | `accept`, `clarify(target)` oder V1 | fragt, tauscht nie |
-| **V6** Rückfrage allein | eine Rückfrage oder Bestätigung im Plan, egal von wem | `ask`: **nichts** wird gebucht, der ganze Plan wird zurückgehalten | nur anhalten |
+**Geltungsbereich:** der Satz mit dem `quote` der Handlung, ohne wörtliche Rede und Fragesätze, ohne Spannen, die das `quote` einer anderen Handlung abdeckt.
 
-### 8.3 Was nicht mehr im Validator steht
+### 7.3 Was der Catch nicht leistet
 
-| Revision 1 | Revision 2 | Grund |
-|---|---|---|
-| V2 Art im Modus (mit Reparaturhinweis „leaving is flee“) | Engine D4 und Kategorie N (§10) | Modus ist Mechanik. Der Reparaturhinweis hätte dem Planer eine Art vorgeschlagen. |
-| V6b „1 Gegner → dieser“ | Engine D2 | Der Validator setzt kein Ziel ein |
-| V7 Aktionsökonomie | Engine, Kategorie W | Was in einer Runde geht, ist Mechanik |
-| V9 kürzen | V1 (ablehnen bzw. Reparatur) | Kürzen ändert den Inhalt |
+**Er kann kreative Umschreibungen ohne Wortüberlappung nicht abdecken** („my fiery javelin“ für Flame Lance).
+- Gegen diese Klasse steht nur der Planer (S4b: 0 Ersetzungen genannter Skills in 544 Entscheidungen; das ist keine Garantie).
+- Sie ist ein Wahrscheinlichkeitsproblem und wird im Holdout eigens geprüft: H2b, mindestens 6 Umschreibungen ohne Wortüberlappung, mit eigener Kennzahl (§21).
+- **„Fire Lance → Basic Attack strukturell unmöglich“** gilt nur für Fälle, die Planer oder Catch als Skill-Hinweis erkennen. „Fire Lance“ selbst gehört dazu (h2: „lance“).
 
 ---
 
-## 9. Ziel-Treue: Weltziele (V5) und Wesen (V4b)
+## 8. Ziel-Treue
 
-**Schwere:** Ein falsches Weltziel ist ein **voller Zielfehler**, so schwer wie ein falsches Kreaturziel:
-- Das Ziel bestimmt die Schwierigkeit der Probe (E6).
-- Die Persistenz-Freigabe ist an das Ziel gebunden (§13).
-- Spätere Bezüge („the collapsed ceiling“) lösen sich nur auf, wenn das richtige Ding verändert wurde.
+### 8.1 Wesen (V4b, V4e, D2)
 
-In Revision 1 stand „geringe Schwere“. Das war falsch und widersprach dem eigenen Entwurf.
+- Ein genanntes Wesen wird nie durch ein anderes ersetzt (V4b).
+- Ein eigener Zielbezug, auch ein unvollkommener, hat Vorrang vor D2 (V4e). D2 gilt nur, wenn **gar kein** Bezug formuliert ist („I attack“ bei genau einem Gegner).
+- Beschreibungen und Pronomen löst der Planer auf. V4b prüft nur exakte Labels und Namen.
 
-**V5 (für `ability_world`), deterministisch:**
+### 8.2 Weltziele (V5)
+
+**Invariante:** Ein explizit genanntes Weltziel wird nie durch ein anderes kanonisches Ziel ersetzt.
+
+**Schwere:** Ein falsches Weltziel ist ein voller Zielfehler. Schwierigkeit (E6), Persistenz-Freigabe und spätere Bezüge hängen am Ziel.
+
+Prüfung (Safety Catch, Grenzen §6.4):
 
 | Schritt | Prüfung | Folge |
 |---|---|---|
 | 5a Verankerung | `target_words` steht wörtlich im `quote` | sonst V1 |
-| 5b Identität | `{new: T}`: T entspricht `target_words` ohne Artikel und Possessiv (keine Umschreibung). Objekt-ID: `target_words` enthält das Kopfwort des Objektnamens oder einen Alias. | sonst V1 (Reparatur), danach `clarify(target)` |
-| 5c Rolle | Die Nachricht wird am ersten **Zweckwort** in Zielteil und Zweckteil getrennt. Zweckwörter: „so“, „so that“, „in order to“ und „to“ vor einem Verb, also nicht vor Artikel oder Pronomen; Liste = Daten. Steht `target_words` **nur im Zweckteil**, und nennt der Zielteil ein anderes Ding (Objekt nach at/on/into/against/through/over … oder direktes Objekt nach dem Skill) | `clarify(target)` mit beiden Wortlauten als Optionen |
-| 5d kein Gegenkandidat | Der Zielteil nennt kein Ding („I cast Flame Lance to bring the ceiling down“) | `accept`; die Wahl des Planers steht im Record (Restrisiko) |
-| 5e Wesen als Weltziel | `target_words` ist das Label oder der Name eines Wesens | V1 (Art und Ziel passen nicht zusammen) |
+| 5b Identität | `{new}`-Text entspricht `target_words` (ohne Artikel und Possessiv). Bei einer Objekt-ID enthält `target_words` deren Kopfwort oder einen Alias. | sonst V1, danach `clarify(target)` |
+| 5c Rolle | Die Nachricht wird am ersten Zweckwort geteilt („so“, „so that“, „in order to“, „to“ vor einem Verb). Steht `target_words` nur im Zweckteil, und nennt der Zielteil ein anderes Ding, folgt eine Rückfrage. | `clarify(target)` mit beiden Wortlauten |
+| 5d kein Gegenkandidat | Der Zielteil nennt kein Ding | `accept`; die Wahl steht im Record (Restrisiko) |
+| 5e Wesen als Weltziel | `target_words` ist Label oder Name eines Wesens | V1 |
 
-**Der Validator setzt nie selbst das Ding aus dem Zielteil ein.** Er fragt. Damit wird ein genanntes Weltobjekt nie durch ein anderes ersetzt.
-
-**Beispiele:**
-
-| Satz | Plan | V5 |
-|---|---|---|
-| „I cast Flame Lance at the ceiling to bring it down over the hole“ (k3_11) | Ziel: das Loch | 5c: „hole“ nur im Zweckteil, der Zielteil nennt „the ceiling“ → **Rückfrage**: „the ceiling“ oder „the hole“ |
-| „I cast Arcane Burst into the hole to blow it open“ | Loch | im Zielteil → annehmen |
-| „I use Flame Lance to burn through the rope ladder“ | Strickleiter | Zielteil ohne Ding → annehmen (5d) |
-| „I Heavy Slash the lantern's rope so the lantern drops on Bandit B“ | Laterne | „lantern“ im Zielteil → annehmen |
-
-**Machbarkeit (nachträglich, alle 16 S4b-Fälle mit Weltnutzung, Wegwerf-Prototyp; Kopfwort aus Ziel-ID bzw. `{new}`-Text, da S4b-v1-Pläne kein `target_words` haben):**
-- k3_11 wird in allen drei betroffenen Armen (P1, FC, FC_GM) zur Rückfrage.
-- **0 Fehlalarme** auf den 15 Gold-Plänen und auf 61 weiteren Planer-Weltnutzungen, die richtig waren.
-- Das ist auf denselben Daten entworfen und nur ein Machbarkeitsnachweis.
-
-**V4b für Wesen:**
-- Gleiches Prinzip mit exakten Labels und Namen: der längste Treffer, wie bei As `resolveTarget`, Kampflabels zuerst.
-- Namen im Zweckteil zählen nicht: „I attack Bandit A to protect Brede“.
-- Beschreibungen und Pronomen prüft V4b nicht. Ihre Auflösung ist Semantik und bleibt beim Planer.
+**Wirksam ist die Invariante, nicht der Detektor.** Der Planer hat die Regel „target = the thing the skill acts on; goal = what should happen“. V5 fängt offensichtliche Verstöße. Ob das reicht, zeigt der Holdout (H4).
 
 ---
 
-## 10. Engine: Ausführbarkeit, kanonische Vorgaben, Mehrfachhandlungen
+## 9. Mehrfachhandlungen (E3, E11)
 
-### 10.1 Kanonische Vorgaben (geschlossene Liste)
+1. **Planer:** jede beabsichtigte Teilhandlung, in Spielerreihenfolge, auch wenn sie jetzt unmöglich scheint. Prompt-Regel: „Write down every action he intends, in his order; the engine decides what is possible.“ Auffangart `other`.
+2. **Validator:** nimmt an, fragt oder lehnt je Handlung ab, ohne Umordnung (M4).
+3. **Engine,** strikt in Planreihenfolge:
+   - N-Handlungen werden gemeldet und übersprungen.
+   - Die übrigen werden der Reihe nach verarbeitet, bis die Ökonomie (eine Bewegung + eine Haupthandlung) erschöpft ist.
+   - Was danach kommt, ist W und wird gemeldet.
+   - Vor dem Auflösen läuft ein Probelauf in derselben Reihenfolge (A-Muster). Ist eine Handlung im Budget L, wird nichts aufgelöst und der Grund gemeldet.
+   - „Step back → attack“ bleibt in dieser Reihenfolge. Ist der Nahkampf-Skill nach dem Zurücktreten außer Reichweite, ist das L: Der Spieler erfährt es und entscheidet neu.
+4. **Nie vorgemerkt.** Ein gespeicherter Befehl wäre im nächsten Zustand veraltet.
+5. **Grenze:** Dass der Planer eine Teilhandlung **weglässt**, erkennt kein deterministischer Prüfer verlässlich; eine Wortabdeckung würde bei Ausschmückungen falsch fragen. Weggelassene Teilhandlungen werden gemessen (§21) und stehen als Prüfprotokoll (nicht abgedeckte Handlungsverben) im Record.
 
-Jede Vorgabe ist sichtbar im Ereignis oder Record. Sie greift nur, wo **keine Wahl** besteht oder eine feste Spielregel gilt. Der Validator wendet keine davon an.
-
-| | Vorgabe | Herkunft |
-|---|---|---|
-| **D1** | `skill: null` → Basisangriff der Klasse | §7; nur nach V3b |
-| **D2** | `target: null` bei Einzelziel-Skill: genau **ein** legales Ziel → dieses; ≥ 2 → Engine-Rückfrage; 0 → nicht ausführbar (L) | A: Core #23 „sole-hostile default“ (`resolveTarget`, „sole target“) |
-| **D3** | Flächen-Skill → Ziele nach Flächenregel | A `attackAction`: alle ENGAGED-Gegner |
-| **D4** | Modus-Abbildung nach §4.2: im Kampf `go` → Flucht, `activity: wait` → hold, `activity: search` → E4, andere Story-Befehle → nicht ausführbar | S4b-Regel L7, A-Mechanik |
-| **D5** | Bewegung und Angriff: „closer“ vor, „away“ **nach** dem Angriff, unabhängig von der geschriebenen Reihenfolge | A `attackAction` (Kommentar: „taken after the attack, so the attack keeps its range“). Produktfrage E11. |
-
-D1 und D2 sind die einzigen Vorgaben, die ein Argument füllen. Beide greifen nur ohne Wahlmöglichkeit, und beide sind As bestehende Regeln. Ist das zu weit, gibt es eine strengere Variante für D2: Der Planer muss das Ziel immer nennen, und `null` führt auch bei einem einzigen Gegner zur Rückfrage. Das kostet Rückfragen auf „I attack“ (S4b-Gold L1: handeln).
-
-### 10.2 Ausführbarkeit: drei Kategorien
-
-| Kategorie | Beispiel | Folge |
-|---|---|---|
-| **N** nie in diesem Modus | Trank im Kampf (E9), Rast im Kampf, Stealth im Kampf, `other` | übersprungen; gemeldet „im Kampf nicht möglich“ |
-| **L** situativ unzulässig | Ziel außer Reichweite, zu wenig Mana, volle Deckung, Ziel nicht mehr da, unbekannter Skill | **Der Zug wird nicht aufgelöst** (A: `stopped: 'illegal'`), Grund gemeldet, der Spieler entscheidet neu |
-| **W** Aktionsökonomie | eine zweite Haupthandlung in derselben Kampfrunde | nicht in dieser Runde, gemeldet, **nicht gespeichert** (der Zustand ändert sich, ein gespeicherter Befehl wäre veraltet) |
-
-**Ablauf einer Kampfrunde aus einem validierten Plan:**
-1. Handlungen in Planreihenfolge; N-Handlungen werden gemeldet und übersprungen.
-2. Die erste Haupthandlung (`use_skill`, `ability_world`, `flee`, Flucht aus D4, hold) mit höchstens einer Bewegung wird nach D5 zusammengesetzt.
-3. Legalität wie in A: `attackAction`, `skillAction` oder `moveAction` melden `illegal`, `runCombat` hält an; beim Kampfbeginn prüft der Probelauf in `combatTurn`. Bei L: nichts wird aufgelöst, der Grund wird gemeldet, der Kampf wartet.
-4. Weitere Haupthandlungen und weitere Bewegungen: W, gemeldet.
-5. Auflösen; NPC-Züge wie in A.
-
-**Story-Modus:** As Befehlsfolge mit `seq`. As Handler entscheiden je Befehl und melden Verweigerungen schon heute.
-
-### 10.3 Nichts verschwindet still
-
-| Wo | was |
-|---|---|
-| Planer | Prompt-Regel: „Write down every action he intends, in his order, even if it may be impossible now; the engine decides.“ Auffangart `other`. |
-| Validator | nimmt nur weg mit Regel und Anzeige (M5) |
-| Engine | N, L und W werden gemeldet: System-Zeile, Engine-Block für den Erzähler („Alaric's second action, burning the rope ladder, was not taken this round“) und Record |
-| Erzähler | Der Engine-Block verbietet, nicht Ausgeführtes als geschehen zu erzählen. Die Firewall prüft Engine-Felder wie heute. |
-
-**Grenze:** Dass der Planer eine beabsichtigte Teilhandlung **weglässt**, kann der Validator nicht deterministisch erkennen. Eine Wortabdeckungsprüfung würde bei Ausschmückungen („I grit my teeth and …“) ständig falsch fragen. Darum:
-- Die Abdeckung steht nur als **Prüfprotokoll** im Record (nicht abgedeckte Handlungsverben).
-- Weggelassene Teilhandlungen sind eine Kennzahl in S4b v2 und im Holdout (§21). In S4b v1: „verpasst“ 2,9 % (P1).
+**Engine-Migrationsbedarf (C5):**
+- `attackAction` bekommt die Reihenfolge der Bewegung aus dem Plan.
+- Die heutige feste Regel „away nach dem Angriff“ entfällt.
+- As Verhalten ändert sich damit an genau dieser Stelle. Ein eigener Regressionstest belegt das alte gegen das neue Verhalten.
 
 ---
 
-## 11. Rückfragen
-
-**Drei Quellen, eine Behandlung:**
+## 10. Rückfragen
 
 | Quelle | Beispiel | Optionen aus |
 |---|---|---|
-| Planer | „I attack“ bei drei Skorpionen; „I blast B“ bei zwei Zaubern (E1) | Plan (Katalog-IDs) |
-| Validator | V3a, V3b, V3d, V4b, V5, Bestätigung V4d | Plan, wörtliche Spannen, Katalog |
+| Planer | „I attack“ bei drei Skorpionen; „I blast B“ bei zwei Zaubern (E1) | Plan, Katalog |
+| Validator | V3a, V3b, V3d, V4b, V4e, V5 | Plan, wörtliche Spannen, Katalog |
 | Engine | D2 mit ≥ 2 legalen Zielen | Zustand |
 
-**Ablauf** (wie As Zielfrage heute, `playerTurn` → `targetQuestion`):
-- Ein System-Panel zeigt Frage und Optionen.
-- **Nichts** wird gebucht oder gewürfelt. Kein NPC-Zug, kein Erzähleraufruf.
-- Der Record hält fest: `pending: {about, options, held_plan}`. Der **ganze** Plan wird zurückgehalten, damit keine Teilhandlung verloren geht.
+**Ablauf** (wie As `targetQuestion`):
+- System-Panel; nichts gebucht, nichts gewürfelt; kein NPC-Zug, kein Erzähler.
+- Der Record hält `pending: {about, options, held_plan}` mit dem **ganzen** Plan.
 - **Antwort:**
-  - **Genau eine angebotene Option** (Label, Name, Skillname, „yes“ bei einer Bestätigung; normalisiert): Der Steuerkanal setzt sie in den zurückgehaltenen Plan, ohne LLM. Das ist eine Auswahl aus einer geschlossenen Menge. Der Plan durchläuft danach Validator und Engine wie jeder andere.
-  - **Sonst:** Der Planer deutet die Antwort frei, mit `PENDING QUESTION` als Kontext („the wounded one“, „never mind, I run“).
+  - genau eine angebotene Option → Steuerkanal ohne LLM; danach laufen Validator und Engine wie immer.
+  - sonst → Planer mit `PENDING QUESTION`.
 - Eine Rückfrage ist kein Zug.
 
 ---
 
-## 12. Wie „Fire Lance → Basic Attack“ verhindert wird
+## 11. RECENT: Sicherheit gegen Flüssigkeit
 
-1. **Schema:** Der Planer kann Basic Attack nicht als Ersatz wählen. Ohne Skill schreibt er `null`, Unbekanntes als `{new}`. S4b: 0 Ersetzungen in 544 Entscheidungen.
-2. **Validator:** „Fire Lance“ erkennt h2 („lance“ ~ „Flame Lance“).
-   - `null` oder Basic Attack → V3b/V3c → Rückfrage;
-   - `{new: "Fire Lance"}` → V3d → „Meinst du Flame Lance?“;
-   - Flame Lance → passt.
-3. **Engine:** Ein unbekannter Skill wird verweigert, nie ersetzt. Das gilt für jeden Pfad.
-4. **Aufzeichnung:** Jede Abstufung steht mit ihrer Regel im Record, und die Mutationsprobe deckt jede Regel ab.
+**Daten (S4b, 5 Verlaufsfälle):**
+- mit RECENT: 5 aufgelöst;
+- ohne RECENT: 2 aufgelöst, 3 gefragt, **0 falsch**.
 
-Garantie und Restrisiko: §7.
+Einzelbeobachtungen:
+- k3_11: RECENT nannte das Loch. Mit RECENT war das Ziel falsch, ohne richtig.
+- k6_07: Der Korpus-Text für RECENT widersprach dem Brett.
+
+**Regeln:**
+1. Sicherheit gilt ohne RECENT: Ist ein Bezug nicht eindeutig, wird gefragt. Der Validator liest RECENT nie.
+2. Zuerst kommen **strukturierte Engine-Fakten** aus den Ereignissen der letzten Runde (≈ 30–60 Token, deterministisch).
+3. Prosa ist optional und klein (≤ 600 Zeichen). Sie dient nur Bezügen, die keine Engine-Tatsache sind. Bei Widerspruch gilt das Brett.
+4. C4 vergleicht drei Varianten: nur Fakten, Fakten + Prosa, nichts. Prosa bleibt nur, wenn sie besser auflöst, ohne eine falsche Festlegung hinzuzufügen.
+
+**Kurz:** Relevante strukturierte RECENT-Daten sind wertvoll für Flüssigkeit und Referenzauflösung. Sie sind keine Sicherheitsvoraussetzung und bleiben selektiv und klein.
+
+---
+
+## 12. Der Planer
+
+- **Ort:** `prepareGenerationAsync`, an der Stelle von `interpretMessage`; einmal je neuer oder bearbeiteter Spielernachricht.
+- **Aufruf:**
+  - JSON, Temperatur 0,1, `maxTokens` ≈ 400;
+  - höchstens eine Reparatur, nur bei V1-Fehlern;
+  - bei Fehlschlag Abbruch mit Hinweis; nicht zwischengespeichert; kein Regex-Rückfall.
+- **Eingabe:**
+  - Modus;
+  - bekannte Skills mit Profil;
+  - Gegner mit Label, HP-Band, Abstand und Haltung;
+  - Anwesende mit Haltung;
+  - Objekte und Orte (`buildCatalog`);
+  - Engine-Fakten;
+  - optional RECENT-Prosa;
+  - offene Rückfrage;
+  - die Nachricht.
+- **Größe:**
+  - gemessen ≈ 1,87k Prompt-Token je Fall, davon ≈ 1,33k statisch;
+  - geschätzt: Kampf ≈ 1,5–1,9k, Story ≈ 3,5k (ersetzt den Interpreter mit ≈ 3,1k);
+  - statischer Teil vorn, für Prompt-Caching.
+
+| darf | darf nicht |
+|---|---|
+| alle beabsichtigten Handlungen in Spielerreihenfolge | Handlungen weglassen, weil sie unmöglich scheinen |
+| genau einen passenden bekannten Skill wählen (Alias, Tippfehler, Umschreibung) | einen genannten Skill ersetzen; Basic Attack ohne die Worte wählen |
+| genau ein passendes Ziel wählen | unter mehreren wählen; ein genanntes Ziel ersetzen |
+| `{new}` für Unbekanntes | `{new}` in eine bekannte ID umdeuten |
+| `goal` in seinen Worten | Erfolg, Schwierigkeit, Folgen |
+| fragen bei mechanisch verschiedenen Lesarten | fragen, wenn genau eine passt |
+| leer antworten (Frage, Plan, Rede, fremde Tat) | mechanische Kategorien festlegen |
 
 ---
 
 ## 13. `ability_world` durch die Engine
 
-**Handler:** `abilityWorld(state, content, intent, dice)`, neu in der Engine. Kosten- und Kraftlogik aus Bs `useAbilityOnWorld` (`src/gm/runtime.js`) dienen als Vorlage; der Handler wird neu geschrieben.
-
-**Ablauf:**
-1. **Ziel:** nur nach V5. Das validierte Ziel (ID oder `target_words`) ist Teil des Ereignisses.
+1. **Ziel:** nur nach V5. Das Ereignis enthält Ziel (ID oder `target_words`) **und** den vollständigen Zweck (`goal`).
 2. **Skill und Kosten:**
-   - Der Skill muss bekannt sein; `null` wird zu D1, z. B. „shoot down the dead pine“ mit Pfeil.
-   - Kosten nach Beherrschungsstufe, Munition wie beim Angriff. B hat Munitions-Skills hier verweigert; C schließt diese Lücke.
-3. **Im Kampf:** Haupthandlung (§10); die NPC-Züge folgen. B hatte die Weltnutzung im Kampf ganz verweigert (`active_combat_not_migrated`).
-4. **Gelingen:** Core-#7-Probe, **von der Engine gerechnet**: Chance % = Actor ÷ (Actor + Opposition) × 100, W100 aus `Dice`.
-   - Actor, Schwierigkeit je Zielklasse und Standardwert (`moderate` 6, in `rules.checks.difficulty_scores` als „proposed“ markiert) entscheidet E6.
-   - Planer und Erzähler setzen keine Schwierigkeit.
-5. **Wirkung in v1:** keine HP- und keine Statuswirkung auf Wesen (E6, E8). Der Engine-Block sagt das ausdrücklich.
-6. **Ereignis:**
-
-   ```text
-   ability.world_used {skill, target (id | target_words), goal, cost, roll, chance, success, rng_to}
-   ```
-
-7. **Persistenz:**
+   - Der Skill muss bekannt sein; `null` → D1.
+   - Kosten nach Beherrschungsstufe, Munition wie beim Angriff.
+   - Vorlage: Bs `useAbilityOnWorld`, als Engine-Funktion neu geschrieben.
+3. **Im Kampf** eine Haupthandlung; die NPC-Züge folgen.
+4. **Gelingen:** Core-#7-Probe, **von der Engine gewürfelt und entschieden** (W100 aus `Dice`). Actor-Wert und Schwierigkeitstabelle sind E6-Parameter, nötig vor C5. Planer und Erzähler setzen nichts davon.
+5. **v1-Grenze:** keine HP- und keine Statuswirkung auf Wesen. Ein Zweck, der ein Wesen betrifft („so it drops on Bandit B“), bleibt gespeichert. Die Engine meldet: „v1 berechnet daraus keinen Kreaturenschaden“. Der Erzähler darf keinen Schadenstreffer erzählen.
+6. **Persistenz:**
    - Bei Erfolg darf der Extraktor eine dauerhafte Änderung **am validierten Ziel** vorschlagen.
-   - Die Firewall verwirft Weltänderungen an anderen Dingen, die sich auf diese Handlung berufen.
-   - Bei Misserfolg gibt es keine dauerhafte Änderung durch diese Handlung.
-
-**Der Planer erfindet keinen Erfolg.** Das Schema hat dafür kein Feld; V1 verwirft Zusatzfelder.
+   - Die Firewall verwirft Änderungen an anderen Dingen, die sich auf diese Handlung berufen.
+   - Wo diese Änderung in As Weltmodell liegt, ist offen und betrifft erst C7 (§25).
 
 ---
 
-## 14. Swipe, Regenerate, Bearbeiten (Prüfung von Punkt 8)
+## 14. Swipe, Regenerate, Bearbeiten
 
-**Bindung:**
-- Die mechanische Deutung (Plan, Urteile, Engine-Ereignisse) liegt im Record der **Spielernachricht**.
-- Der Schlüssel ist `input_hash = hash32(msg.mes)` (`prepareGenerationAsync`).
-- SillyTavern führt bei Spielernachrichten keine Swipes. Swipes der Antwort berühren diesen Record nicht.
+Die Mechanik (Plan, Urteile, Ereignisse) liegt im Record der **Spielernachricht**, Schlüssel `input_hash` (`prepareGenerationAsync`).
 
-| Ereignis | Planer | Validator, Engine, Würfel | Erzähler | Extraktor/Welt | am Code (A) |
+| Ereignis | Planer | Engine/Würfel | Erzähler | Extraktor | am Code (A) |
 |---|---|---|---|---|---|
-| neue Spielernachricht | 1× | 1× | 1× | 1× | `prepareGenerationAsync` |
-| **Swipe / Regenerate** | **nein** | **nein**: Ereignisse auf der Spielernachricht | neu | neu je Swipe (`text_hash`), nur im Rahmen der Freigaben des Records | Wiederverwendung bei gleichem `input_hash` |
+| neue Spielernachricht | 1× | 1× | 1× | 1× | |
+| **Swipe / Regenerate** | **nein** | **nein** | neu | neu je Swipe, nur im Rahmen der Freigaben | gleicher `input_hash` → Wiederverwendung |
 | Continue | nein | nein | setzt fort | – | `type !== 'continue'` |
-| Planer war fehlgeschlagen | ja: Es gab noch keine Deutung | dann 1× | dann 1× | | `r.interp?.failed` wird nicht zwischengespeichert |
-| Board-Generierung fehlgeschlagen | nein, Plan wird wiederverwendet | nur Board neu | | | `retryBoard` |
-| Rückfrage offen, Regenerate | nein | nichts | nicht aufgerufen (Panel schon gezeigt) | – | `command.posted` |
+| Planer war fehlgeschlagen | ja (es gab keine Deutung) | dann 1× | dann 1× | | `interp.failed` nicht zwischengespeichert |
+| Board fehlgeschlagen | nein | nur Board | | | `retryBoard` |
+| Rückfrage offen, Regenerate | nein | nichts | nicht aufgerufen | – | `command.posted` |
 | Spielernachricht bearbeitet | ja, gegen den Zustand vor der Nachricht | neu | neu | neu | neuer `input_hash` |
-| frühere Nachricht bearbeitet oder gelöscht | nein | nein: spätere Züge werden nicht neu aufgelöst | – | – | `onEdited`: Retcon nur auf der letzten Antwort |
-| Verzweigung (Branch) | nein | nein | | | Der Record reist in `extra` mit |
-| quiet / impersonate | nein | nein | – | – | `action: 'clear'` |
+| frühere Nachricht geändert oder gelöscht | nein | nein | – | – | `onEdited`: Retcon nur auf der letzten Antwort |
+| Verzweigung | nein | nein | | | Record reist in `extra` |
 
-**Ergebnis:**
-- Ein Swipe erzeugt nur neue Prosa und eine neue Lesung dieser Prosa durch den Extraktor.
-- Gelingen, Kosten und Würfel der Mechanik sind fest.
-- Den Planer ruft er nie auf.
-- Neu geplant wird nur, wenn es noch keine gültige Deutung gibt oder der Spieler den Text seiner Nachricht ändert. Beides ist keine Neudeutung eines bestehenden mechanischen Ergebnisses.
+**Neu:** `state_before_hash` im Record, nur zur Sichtbarkeit. Weicht er ab, kommt ein Hinweis, aber kein stilles Neuplanen oder Neuwürfeln.
 
-**Neu in C: `state_before_hash`.** Der Record hält einen Hash des Zustands, gegen den geplant wurde. Stimmt er bei der Wiederverwendung nicht mehr, wurde eine frühere Nachricht geändert oder gelöscht. Dann gilt:
-- Wie in A wird **nicht** still neu geplant oder neu gewürfelt.
-- Die Engine zeigt einen Hinweis: „Diese Nachricht wurde gegen einen früheren Stand aufgelöst; zum Neuauflösen die Nachricht bearbeiten oder neu senden.“
-
-Das ist reine Sichtbarkeit; As Semantik bleibt.
+**Ergebnis:** Ein Swipe lässt den Planer nie neu deuten.
 
 ---
 
-## 15. Event-Sourcing, RNG, Erzähler, Welt-Persistenz
-
-**Record der Spielernachricht** (Erweiterung von `RECORD_V4`):
+## 15. Record und Event-Sourcing
 
 ```text
 { input_hash, state_before_hash, route,
@@ -625,14 +508,12 @@ Das ist reine Sichtbarkeit; As Semantik bleibt.
   plan:   { version, prompt_hash, mode, ms, tokens, repaired, raw[] },
   check:  { verdicts[] (je mit Regel), turn: commit | ask | abort, pending? },
   gate_shadow: { cls, a0_plan, agrees },
-  events: [turn.begun, …, ability.world_used, not_executed, outcome.recorded] (mit rng_to) }
+  events: [turn.begun, …, ability.world_used, not_executed{N|L|W}, outcome.recorded] (mit rng_to) }
 ```
 
-- **Event-Sourcing:** Der Zustand ist die Faltung der Ereignisse (`foldChat`). `plan`, `check` und `gate_shadow` sind Prüfprotokoll, keine Ereignisquelle. Beim Neuaufbau wird nie neu geplant.
-- **Deterministische Wiederholung:** `engine(Zustand vorher, check.commit, seed)` ergibt byte-gleich `events`. Das ist ein Test, kein Laufzeitpfad.
-- **RNG:** `Dice.from(state)` je Zug; jede gezogene Zahl steht im Ereignis. Swipes ziehen nicht neu.
-- **Erzähler:** bekommt Ergebnisse, Nicht-Ausgeführtes und Hinweise. Er erzählt nur.
-- **Welt:** Extraktor → Firewall → Ownership → Envelope → Welt, wie in A. Neu ist nur die Freigabe aus `ability_world`. Der Planer hat keinen Schreibweg in die Welt.
+- Der Zustand ist die Faltung der Ereignisse.
+- `plan`, `check` und `gate_shadow` sind Prüfprotokoll; beim Neuaufbau wird nie neu geplant.
+- Wiederholungstest: `engine(Zustand vorher, check.commit, seed)` ergibt byte-gleich `events`.
 
 ---
 
@@ -640,411 +521,359 @@ Das ist reine Sichtbarkeit; As Semantik bleibt.
 
 | | entscheidet | entscheidet nie |
 |---|---|---|
-| **Planer** | Bedeutung: Art, bekannter Skill oder `null` oder `{new}`, Ziel-ID oder `{new}`, `target_words`, `goal`, Reihenfolge; ob gefragt werden muss | Mechanik (Angriff oder Skill, Flucht oder Reise), Ergebnis, Zahlen, Kosten, Schwierigkeit; Ersetzung; Wahl unter mehreren Zielen; Weglassen beabsichtigter Handlungen; Weltzustand |
-| **Validator** | ob die Deutung zulässig und treu ist: annehmen, Rückfrage, ablehnen | Skill, Ziel, Art, Reihenfolge ersetzen; Handlungen ergänzen; freie Sprache deuten; RECENT lesen |
-| **Engine** | Ausführbarkeit (N, L, W), kanonische Vorgaben D1–D5, Kosten, Würfel, Treffer, Schaden, Gelingen der Weltnutzung, NPC-Züge, Optionen der Engine-Rückfragen, Ereignisse | freie Sprache deuten; Prosa |
-| **Erzähler** | Worte und Beschreibung im Rahmen des Engine-Blocks | Zahlen, HP, Geld, Rang, Gelingen, Nicht-Ausgeführtes als geschehen erzählen |
-| **Extraktor + Firewall / Ownership / Envelope** | welche Prosa-Fakten Zustand werden, im Rahmen der Freigaben | Mechanik; Engine-Felder; Weltänderungen ohne Freigabe |
-| **Host** | Zeitpunkt, Wiederverwendung je `input_hash`, Barriere | Inhalt |
+| **Planer** | Bedeutung: Art, Skill/`null`/`{new}`, Ziel/`{new}`, `target_words`, `goal`, Reihenfolge, Rückfrage | Mechanik, Ergebnis, Zahlen; Ersetzung; Wahl unter mehreren; Weglassen |
+| **Validator** | `accept`, `clarify`, `reject` | Ersatz, Ergänzung, Umordnung, Deutung, RECENT |
+| **Engine** | Abbildung, D1–D3, Ausführbarkeit N/L/W, Kosten, Würfel, Treffer, Gelingen, NPC-Züge, Ereignisse | Deutung, Umordnung, Bedeutungsänderung, Prosa |
+| **Erzähler** | Prosa im Rahmen des Engine-Blocks | Zahlen, Gelingen, Nicht-Ausgeführtes als geschehen |
+| **Extraktor + Firewall** | welche Prosa-Fakten Zustand werden, im Rahmen der Freigaben | Mechanik, Engine-Felder, Änderungen ohne Freigabe |
 | **A0-Gate (Schatten)** | nichts; misst | jeden Weg zur Engine |
 
 ---
 
-## 17. Das A0-Gate: nur im Schatten (Prüfung von Punkt 6)
+## 17. A0-Gate: nur im Schatten
 
-**In C nicht im Produktionspfad.**
+Das Gate ist **nicht** im Produktionspfad. Es klassifiziert jeden Zug, schreibt sein Ergebnis und seine Übereinstimmung mit dem **validierten** Planer-Commit in den Record und misst die Planer-Latenz. `parseIntent` und `gate()` bleiben dafür im Code, bis der Nutzer entschieden hat.
 
-Im Schatten:
-- klassifiziert es jeden Zug: `FAST_COMMIT`, `FAST_CLARIFY`, `FAST_REJECT` oder `ESCALATE`;
-- schreibt in den Record seinen Plan, ob er mit dem **validierten** Planer-Commit übereinstimmt (Art, Skill-ID, Ziel-ID, Anzahl der Handlungen) und die Planer-Latenz dieses Zuges;
-- kostet keinen LLM-Aufruf und Millisekunden Rechenzeit.
+**Vor jeder Aktivierung müssen alle sechs Kennzahlen live erfüllt sein** (jetzt festgelegt):
 
-Dafür bleiben `parseIntent` und `gate()` im Code, bis der Nutzer entschieden hat.
+| | Kennzahl | Schwelle |
+|---|---|---|
+| G1 | `FAST_COMMIT`-Züge aus echtem Spiel | ≥ 300, aus ≥ 2 Kampagnen und ≥ 2 Klassen |
+| G2 | Abweichungen `FAST_COMMIT` ↔ validierter Planer-Commit (Art, Skill-ID, Ziel-ID, Anzahl) | **0**, jede von Hand geprüft. Bei 0/300 liegt die einseitige obere 95-%-Grenze der Abweichungsrate je Zug bei 0,99 % (exakt nach Clopper-Pearson; Dreierregel 1,0 %). |
+| G3 | Anteil `FAST_COMMIT` an allen Kampfzügen | ≥ 30 % |
+| G4 | erwartete Ersparnis je Kampfzug (Anteil × Median der Planer-Latenz auf diesen Zügen), gemessen nach Caching und Transportwahl | ≥ 1,0 s |
+| G5 | Gate-Code und Wortlisten während der Messung eingefroren | jede Änderung setzt G1/G2 zurück |
+| G6 | Form bei Aktivierung: ersetzt nur den Planer-Aufruf; Validator und Engine unverändert; der Planer läuft im Hintergrund weiter und protokolliert Abweichungen | Pflicht |
 
-**Kennzahlen, die vor einer Aktivierung live erfüllt sein müssen** (jetzt festgelegt, alle zugleich):
-
-| | Kennzahl | Schwelle | Begründung |
-|---|---|---|---|
-| **G1** Stichprobe | `FAST_COMMIT`-Züge aus echtem Spiel, nicht aus Testkorpora | ≥ 300, aus ≥ 2 Kampagnen und ≥ 2 Klassen | Bei 0 Abweichungen in 300 Zügen liegt die obere 95-%-Grenze der Abweichungsrate bei ≈ 1 % (Dreierregel) |
-| **G2** Abweichungen | `FAST_COMMIT`-Plan ≠ validierter Planer-Commit | **0**, jede von Hand geprüft | Das Gate darf nie anders handeln als der geprüfte Hauptpfad |
-| **G3** Anteil | `FAST_COMMIT` an allen Kampfzügen | ≥ 30 % | Darunter lohnt ein zweiter Pfad nicht |
-| **G4** Nutzen | erwartete Ersparnis je Kampfzug = Anteil × Median der Planer-Latenz auf diesen Zügen | ≥ 1,0 s, **nachdem** Caching und Transportwahl (§18) umgesetzt sind | Latenz ist der einzige Nutzen |
-| **G5** Einfrieren | Gate-Code und Wortlisten während der Messung unverändert | jede Änderung setzt G1/G2 zurück | Die Messung gilt nur für den gemessenen Code |
-| **G6** Form bei Aktivierung | Der schnelle Pfad ersetzt **nur** den Planer-Aufruf. Validator und Engine laufen unverändert; Quelle `fast` im Record. Der Planer läuft im Hintergrund weiter und schreibt Abweichungen ins Protokoll. | Pflicht | kein zweiter Weg an den Prüfungen vorbei |
-
-**Entfernung:** Über die Entfernung entscheidet der Nutzer nach echten Protokollen. Sind nach mindestens 300 Kampfzügen G3 oder G4 verfehlt, ist das die Empfehlung.
+Über eine dauerhafte Entfernung entscheidet der Nutzer nach echten Protokollen.
 
 ---
 
-## 18. Transport: JSON-Text oder Tool-Aufruf
+## 18. Transport
 
-**Gemessen:**
-- JSON-Text: 98,9 % gültig im 1. Versuch.
-- Tool mit `tool_choice auto`: 85,7 %. 7 der 10 Rückfragefälle hatten ein ungültiges `kind`; 6 Negativfälle kamen ohne Aufruf.
-- Der Tool-Pfad war je Aufruf deutlich schneller (p50 1,6 s gegen 3,4 s). Die Ursache ist unbekannt; die Läufe waren nicht verschränkt.
+Der **Vertrag** ist Schema v2.1. Der **Transport** wird in C4 verschränkt gemessen:
+- JSON-Text;
+- erzwungener Tool-Aufruf;
+- falls verfügbar, `response_format` mit Schema.
 
-**Entscheidung:**
-- Der **Vertrag** ist Schema v2.1.
-- Der **Transport** wird in C4 verschränkt gemessen:
-  1. JSON-Text;
-  2. erzwungener Tool-Aufruf (`tool_choice required`) mit demselben Schema;
-  3. falls verfügbar: `response_format` mit JSON-Schema.
-- Es gewinnt die schnellste Variante mit nicht schlechterer Gültigkeit und Sicherheit.
+Es gewinnt die schnellste Variante mit nicht schlechterer Gültigkeit und Sicherheit.
 
-Die enge Lesart des FC-Befunds: Verworfen sind
-- die redundante Art,
-- `tool_choice auto` und
-- die Rückfrage ohne eigenes Beispiel.
-
-Function Calling als Transport ist nicht verworfen.
+Die enge Lesart des S4b-Befunds: Die getestete FC-Variante (`auto`, redundante Art, Rückfrage ohne eigenes Beispiel) hatte keinen nachgewiesenen Qualitäts- oder Sicherheitsvorteil und brauchte mehr Reparaturen. Function Calling als Transport ist nicht verworfen.
 
 ---
 
-## 19. Die S4b-Fehlerklassen in C
+## 19. Die S4b-Fehler in Revision 3 (neu geprüft)
 
-| Klasse | Fälle | Behandlung in C | Restrisiko |
+| Fall | v2.1-Absicht (Gold v2) | was P1 in v1 schrieb, in v2.1-Begriffen | Ergebnis in C (nachträglich, kein Beleg) |
 |---|---|---|---|
-| Weltziel aus dem Zweckteil, Katalog-Sog | k3_11 | V5 (Rückfrage); Prompt-Regel „target = what the skill acts on; goal = what should happen“; Engine-Fakten vor Prosa | Zielteil ohne Gegenkandidat (5d); messen |
-| Modus-Abbildung im Planer | k4_05 (`go` im Kampf), k5_10 (`search` im Kampf) | Die Abbildung liegt in der Engine (D4, E4). Der Planer schreibt nur die Bedeutung. | keines, sobald E4 entschieden ist |
-| Hinweisverb gegen Basisangriff | k6_08 | E1 als Daten; V3b | keines, sobald E1 entschieden ist |
-| redundante Art | k1_07, k1_08 (FC) | `use_skill` | entfällt |
-| Bestätigung | k2_13 | V4d `confirm` | entfällt |
-| Rückfrage oder kein Aufruf im Tool-Pfad | k6_05, k0_07, 13 Erstversuche (FC) | Transportmessung (§18) | wird gemessen |
-| Szenen- und Goldfehler | k6_07, k1_04 | Korpus v2; k1_04 über V3d („Meinst du …?“) | – |
+| **k4_05** „I Arcane Burst the scorpions next to me, then climb the rope ladder out“ | `use_skill` Arcane Burst, dann `flee {to: loc.burrow_entrance}` | `use_skill` AB, dann `go` | AB wird ausgeführt. `go` ist im Kampf **N** und wird gemeldet („Reisen im Kampf nicht möglich; um wegzukommen: fliehen“). **Keine stille Festlegung, aber weiterhin ein Planerfehler** (go statt flee). Korrektur zu Revision 2: Dort hätte die Engine `go` zu Flucht gemacht. Mit richtiger Absicht wäre `flee` als zweite Haupthandlung W, gemeldet. |
+| **k5_10** „I scan the treeline for more wolves“ | `activity {kind: search, what: "more wolves"}` | `search` | semantisch richtig. Die Engine verfährt nach E4. |
+| **k6_08** „I blast Barkscorpion B“ | `clarify(skill)` (E1) | Basic-Attack-ID | V3c → wie `null` → V3b mit h4 („blast“) → Rückfrage |
+| **k3_11** „I cast Flame Lance at the ceiling to bring it down over the hole“ | `ability_world {target: {new: the ceiling}, target_words: "the ceiling", goal …}` | Ziel `feat.hole` | V5 (5c) → Rückfrage „the ceiling“ oder „the hole“ |
+| **k2_13** „I attack the salt merchant“ | `use_skill` → `npc.brede` (E2) | Bestätigungsfrage | nach E2 eine unnötige Rückfrage; Gold v2 = ausführen |
 
-**Nachrechnung unter Schema v2.1** (nachträglich, gleiche Daten, kein Beleg). Von P1s vier falschen Festlegungen in S4b v1 bliebe keine still:
-- k3_11 → Rückfrage durch V5;
-- k4_05 → `go` würde Flucht. Das Gold akzeptierte flee; der Fluchtteil wäre als zweite Haupthandlung nach W gemeldet worden;
-- k5_10 → `search` nach E4;
-- k6_08 → V3c/V3b mit E1 → Rückfrage.
-
-Ob das hält, zeigen Korpus v2 und Holdout. Gegen die damalige Prompt-Regel 7 waren k4_05 und k5_10 Planerfehler. Unter v2.1 sind sie Fragen der Spezifikation. Beide Lesarten stehen in `docs/P0_S4B.md` §13.10.
+Von P1s vier stillen Fehlfestlegungen in v1 bliebe also keine still; k4_05 bliebe ein sichtbarer Planerfehler. Das ist eine Nachrechnung an Entwicklungsdaten (§2), kein Beleg.
 
 ---
 
 ## 20. Produktentscheidungen E1–E12
 
-**Das sind Produktentscheidungen, keine technischen Wahrheiten.** Jede wird nach der Entscheidung zu Daten: Content oder Regeldatei. Prompt und Gold entstehen aus derselben Quelle. E1–E8 stammen aus Revision 1; E9–E12 kamen in diesem Pass dazu.
+Das sind **Produktentscheidungen, keine technischen Wahrheiten.** Nach der Entscheidung werden sie Daten in einer Regeldatei. Aus dieser einen Quelle entstehen Prompt, Hinweislisten und Gold.
 
-### E1 Hinweisverben (k6_08: „I blast Barkscorpion B“, Magier mit Flame Lance und Arcane Burst)
+**Status:**
+- **entschieden** heißt: durch die Rückmeldung festgelegt;
+- **offen** heißt: Entscheidung des Nutzers nötig.
 
-| Feld | Inhalt |
-|---|---|
-| Vorschlag | Hinweisverben je Klasse als Content-Daten; Magier: blast, zap. Allgemein: cast, conjure, summon, channel, spell, magic. Ein Hinweis und mehr als ein passender Skill → Rückfrage. Genau ein passender Zauber → dieser (L1). |
-| Alternativen | (a) „blast“ ist ein allgemeines Verb → Basic Attack (Prompt-Regel 3; so taten es alle 4 Arme). (b) Rückfrage immer, auch bei genau einem Zauber. (c) „GM-Raten“, etwa der stärkste oder zuletzt benutzte Zauber (verworfen: Raten). |
-| Technik | Vorschlag: Liste in `content/classes.json`, V3b. (a): keine Liste. Gold k6_08 = Rückfrage (Vorschlag) bzw. Basic Attack (a). |
-| Spielgefühl | Vorschlag: eine Rückfrage, wo der Spieler Magie meint, aber keinen Zauber nennt; Spieler lernen schnell, Zauber zu nennen. (a): flüssiger, aber „blast“ wird ein Stabhieb, was sich falsch anfühlt. |
-| Empfehlung | Vorschlag. Nur Verben, die klar Magie bedeuten. Allgemeine Kampfverben (hit, strike, attack, beim Waldläufer auch shoot) bleiben Basic Attack. |
+| | Regel | Status |
+|---|---|---|
+| E1 | Magisch konnotiertes Verb wird nie Basic Attack. ≥ 2 plausible Skills → Rückfrage; genau einer → dieser. Kleine Klassenliste, nur als Safety Catch. | **entschieden** |
+| E2 | Ausdrücklicher Angriff auf einen neutralen oder freundlichen NPC wird ausgeführt, wenn Ziel und Handlung eindeutig sind. Rückfrage nur bei semantischer Zielunsicherheit. | **entschieden** |
+| E3 | Strikt Spielerreihenfolge, Verarbeitung bis zur Ökonomiegrenze; der Rest wird gemeldet, nie vorgemerkt | **entschieden.** Zur Bestätigung: bei L wird nichts aufgelöst (A-Verhalten). |
+| E4 | `search` im Kampf: kostenpflichtige Wahrnehmungshandlung oder sichtbar nicht ausführbar | **offen** (Empfehlung: kostenpflichtig) |
+| E5 | `wait` → hold | **entschieden** |
+| E6 | Engine würfelt und entscheidet; kein indirekter Kreaturenschaden in v1 | **entschieden.** Parameter (Actor, Schwierigkeit) vor C5. |
+| E7 | Ordinalzahl nur aus einer für den Spieler etablierten Reihenfolge | **entschieden** |
+| E8 | Weltnutzung an Laterne/Seil; Zweck vollständig gespeichert; kein Kreaturenschaden in v1, gemeldet | **entschieden** |
+| E9 | Story-Handlungen im Kampf in v1 nicht ausführbar, gemeldet | **entschieden** (v1-Grenze; Open-World-Lücke) |
+| E10 | Kreative Handlung ohne Skill: `other`, gemeldet | **entschieden** (v1-Grenze; Open-World-Lücke) |
+| E11 | Spielerreihenfolge von Bewegung und Angriff bleibt erhalten; Engine-Migration | **entschieden** |
+| E12 | Fast-Treffer nur eng, genau ein Kandidat, nur als Frage | **entschieden** |
 
-### E2 Angriff auf einen anwesenden Nicht-Feind (k2_13: „I attack the salt merchant“)
-
-| Feld | Inhalt |
-|---|---|
-| Vorschlag | Bestätigung (`confirm`), bei Haltung neutral oder freundlich; ein „yes“ genügt (Steuerkanal) |
-| Alternativen | (a) sofort ausführen; der Spieler hat das Ziel ausdrücklich genannt (A heute). (b) nur bei freundlich oder quest-wichtig bestätigen. (c) immer bestätigen, auch bei Wesen. |
-| Technik | `pending` und Steuerkanal-Antwort (wie Rückfrage); Haltung aus dem Zustand. Gold: `confirm`. |
-| Spielgefühl | schützt vor Versprechern („salt merchant“ statt „bandit“), kostet bei Absicht einen Schritt, kann bevormundend wirken |
-| Empfehlung | Vorschlag; neutral formuliert („Brede is not hostile. Attack him?“) |
-
-### E3 Mehrere Haupthandlungen in einer Kampfrunde (k4_01, k4_05)
-
-| Feld | Inhalt |
-|---|---|
-| Vorschlag | Die erste ausführbare Haupthandlung (mit einer Bewegung) wird ausgeführt, der Rest gemeldet und nicht gespeichert. Kategorien N, L, W (§10.2): Bei L wird nichts aufgelöst. |
-| Alternativen | (a) vorher fragen: „Eine Handlung pro Runde, welche?“ (b) Rest für die nächste Runde vormerken (verworfen: veraltet). (c) zwei Handlungen erlauben (Regeländerung, nicht im Core). |
-| Technik | rein Engine; der Planer bleibt unverändert. Engine-Block-Zeilen für Nicht-Ausgeführtes. |
-| Spielgefühl | Vorschlag: flüssig, sofort sichtbar, was geschah. Risiko: Der zweite Teil war dem Spieler wichtiger (er hat aber die Reihenfolge geschrieben). (a): sicherer, aber langsamer. |
-| Empfehlung | Vorschlag |
-
-### E4 Wahrnehmung im Kampf (k5_10: „I scan the treeline for more wolves“)
+### E1 Magisch konnotierte Verben (k6_08) — entschieden
 
 | Feld | Inhalt |
 |---|---|
-| Vorschlag | keine Engine-Handlung: freier Blick, der Kampf wartet (A heute bei einer Nachricht ohne Kampfaktion). Der Erzähler beschreibt, was sichtbar ist; neue Wesen nur nach As Regeln. |
-| Alternativen | (a) Wahrnehmungsprobe (Core #8), verbraucht die Haupthandlung. (b) Blick, der den Zug verbraucht (wie hold). |
-| Technik | Vorschlag: keine. (a) braucht verborgene Gegner als Engine-Zustand; den gibt es dafür heute nicht. |
-| Spielgefühl | Vorschlag: natürlich für einen kurzen Blick, aber beliebig wiederholbar. (a): taktisch, mehr Regeln. (b): bestraft Umsicht. |
-| Empfehlung | Vorschlag für v1; (a), wenn verborgene Gegner Engine-Zustand werden |
+| Regel | Ein klar magisch konnotiertes Verb (Magier: blast, zap; allgemein: cast, conjure, summon, channel) wird nie Basic Attack. Bei ≥ 2 plausiblen bekannten Skills → Rückfrage. Bei genau einem plausiblen bekannten Skill → dieser (der Planer ordnet zu). |
+| Alternativen (verworfen) | „blast“ = Basic Attack; immer fragen; raten |
+| Technik | kleine Klassenliste im Content (h4), Grenzen §6.4; V3b |
+| Spielgefühl | eine Rückfrage, wo Magie gemeint, aber kein Zauber genannt ist; kein „Stabhieb“ auf „blast“ |
 
-### E5 „Bogen anlegen und warten“ (k8_09)
-
-| Feld | Inhalt |
-|---|---|
-| Vorschlag | `activity {kind: wait}` → hold: Der Zug ist vorbei, die NPCs handeln |
-| Alternativen | (a) keine Engine-Handlung, der Kampf wartet. (b) vorbereitete Handlung: Schuss, sobald der Wolf sich bewegt (neue Mechanik). (c) Rückfrage. |
-| Technik | hold gibt es in A. (b) braucht eine neue Mechanik. |
-| Spielgefühl | hold: „warten“ lässt Zeit vergehen. (b) würde „trained on“ am besten treffen. (a): verwirrend, weil nichts passiert. |
-| Empfehlung | Vorschlag für v1; (b) als spätere Regel |
-
-### E6 Auflösung von `ability_world`
+### E2 Ausdrücklicher Angriff auf einen Nicht-Feind (k2_13) — entschieden (geändert)
 
 | Feld | Inhalt |
 |---|---|
-| Vorschlag | Core-#7-Probe, von der Engine gerechnet: Actor = Leitwert des Skills (genau festzulegen), Schwierigkeit je Zielklasse (Standard `moderate` 6). Bei Erfolg dauerhafte Änderung nur am Ziel. **Keine HP- oder Statuswirkung auf Wesen in v1.** Im Kampf eine Haupthandlung, Kosten wie der Skill. |
-| Alternativen | (a) gelingt immer, wenn der Skill passt; der Erzähler gestaltet. (b) Der Erzähler entscheidet mit dem vorab gezogenen Würfel (As Praxis bei Story-Proben). (c) Wirkungstabellen je Skill-Merkmal × Material (Feuer brennt Seil und Holz). Zusatz: (i) nie Wesen-Schaden in v1; (ii) Umweltschaden nach fester Regel. |
-| Technik | Vorschlag: Actor-Definition, Schwierigkeitstabelle, Ereignis, Firewall-Freigabe. (a) minimal. (c) viel Content. (ii) neue Schadensregel. |
-| Spielgefühl | Vorschlag: Unsicherheit, fair. Mit (i) wirken kreative Angriffe im Kampf zahm. (a) großzügig, entwertet Hindernisse. (ii) belohnt Taktik. |
-| Empfehlung | Vorschlag mit (i) für v1, klar angesagt; (c) und (ii) nach Live-Daten |
+| Regel | „I attack Brede / the salt merchant“ wird ausgeführt, wenn das Ziel eindeutig aufgelöst ist. Keine Rückfrage wegen der Haltung. Rückfrage nur bei semantischer Zielunsicherheit (zwei Händler, „him“ zwischen Bandit und Brede). |
+| Alternativen (verworfen) | Bestätigung bei neutral oder freundlich (Revision 2); Bestätigung nur bei Verbündeten |
+| Technik | V4d und `confirm` gestrichen. Gold k2_13 = Angriff auf `npc.brede`. A führt das heute schon so aus. |
+| Spielgefühl | Der Spieler trägt die Folgen seiner bewussten Entscheidung; keine Bevormundung |
 
-### E7 „the second one“ (k2_15, Labels A/B)
-
-| Feld | Inhalt |
-|---|---|
-| Vorschlag | B: Ordnungszahl = Label-Reihenfolge, keine Rückfrage, wenn die Labels Buchstaben sind und die Zahl genau passt |
-| Alternativen | (a) bei Ordnungszahlen immer fragen. (b) nach Position oder Abstand (A kennt keine Positionen; Abstandsbänder sind mehrdeutig). |
-| Technik | Planer-Regel und Gold; deterministisch prüfbar |
-| Spielgefühl | natürlich in den meisten Fällen. Risiko: „the second one from the left“ meint eine Position, die A nicht kennt. |
-| Empfehlung | Vorschlag; Rückfrage bei Namen-Labels oder unpassender Zahl |
-
-### E8 Heavy Slash auf das Laternenseil, damit die Laterne auf Bandit B fällt (k3_12)
+### E3 Mehrere Handlungen in einem Zug — entschieden
 
 | Feld | Inhalt |
 |---|---|
-| Vorschlag | `ability_world` auf die Laterne (`target_words` „the lantern's rope“). Bandit B nimmt in v1 keinen Engine-Schaden; der Erzähler darf keinen Treffer mit Schaden erzählen. |
-| Alternativen | (a) Rückfrage: „Bandit B angreifen oder das Seil kappen?“ (b) Weltnutzung plus Umweltschaden (E6 ii). (c) als indirekter Angriff auf Bandit B mit dem Schaden von Heavy Slash. |
-| Technik | Vorschlag: nichts Neues. (b) braucht E6 (ii). (c) ist mechanisch fragwürdig. |
-| Spielgefühl | Vorschlag kann enttäuschen, weil die Laterne fällt, aber nichts bewirkt. (b) belohnt. (a) bremst. |
-| Empfehlung | Vorschlag, abhängig von E6; mit klarer Erzählervorgabe („der Bandit weicht aus oder ist abgelenkt, nicht verletzt“) |
+| Regel | Strikt in Spielerreihenfolge. Die Engine verarbeitet nacheinander, bis die Ökonomie (eine Bewegung + eine Haupthandlung) erschöpft ist. Der Rest ist W, gemeldet, nie vorgemerkt. N wird gemeldet und übersprungen. |
+| Zur Bestätigung | Ist eine Handlung im Budget L (z. B. außer Reichweite), wird **nichts** aufgelöst, und der Grund wird gemeldet (wie A). Alternative: alles vor der L-Handlung ausführen. |
+| Technik | rein Engine (§5.3, §9), Invariante X1 |
+| Spielgefühl | vorhersehbar; der Spieler sieht sofort, was nicht geschah |
 
-### E9 Story-Handlungen im Kampf (neu): Trank trinken, Gegenstand geben, rasten
-
-| Feld | Inhalt |
-|---|---|
-| Vorschlag | v1: nicht ausführbar (N), gemeldet „im Kampf nicht möglich“. Das ist As Mechanik: Dort wird im Kampf kein Story-Befehl gedeutet, die Nachricht verpufft heute still. |
-| Alternativen | (a) Trank als Haupthandlung (neue Engine-Regel). (b) freie Handlung ohne Zugverbrauch. |
-| Technik | Vorschlag: keine. (a) braucht einen Kampf-Handler für `use`. |
-| Spielgefühl | Ein Trank, der im Kampf nicht geht, überrascht. Spieler werden ihn versuchen. |
-| Empfehlung | Vorschlag für v1, (a) als erste Engine-Erweiterung nach C |
-
-### E10 Kreative Handlung ohne Skill im Kampf (neu): „I kick sand into his eyes“
+### E4 Suchen und Wahrnehmen im Kampf (k5_10) — offen
 
 | Feld | Inhalt |
 |---|---|
-| Vorschlag | `other`: nicht ausgeführt, gemeldet, der Kampf wartet (entspricht A, nur sichtbar) |
-| Alternativen | (a) improvisierte Handlung: Core-#7-Probe ohne HP-Wirkung, verbraucht die Haupthandlung (wie E6 ohne Skill). (b) als Basic Attack (L4). |
-| Technik | Vorschlag: keine. (a): Handler wie E6. (b): falsche Mechanik für Nicht-Angriffe. |
-| Spielgefühl | Vorschlag: ehrlich, aber trocken. (a) belohnt Kreativität. |
-| Empfehlung | Vorschlag für v1, (a) prüfen, wenn E6 lebt |
+| Fest | `search` bleibt `activity {kind: search}`. Der Planer deutet es nie zu „keine Handlung“ um. Es liefert nie kostenlos beliebig oft Information. |
+| Option A (Empfehlung): kostenpflichtig | verbraucht die Haupthandlung; die NPCs handeln. Engine-Ergebnis in v1: `search.resolved {found: []}`, denn A führt für den SC keine verborgenen Gegner (nur `scene.awareness` der NPCs). Der Erzähler beschreibt nur Etabliertes und führt **wegen der Suche** keine neuen Wesen oder Fakten ein. Sobald es verborgene Gegner als Engine-Zustand gibt, wird daraus eine echte Probe (Core #8, PER). |
+| Option B: sichtbar nicht ausführbar | N: „Suchen ist im Kampf in v1 nicht möglich“, kein Zug verbraucht, der Erzähler beschreibt nichts Neues |
+| Technik | A: Handler, der den Zug wie hold beendet, plus eine Zeile im Engine-Block. B: nur die Meldung. |
+| Spielgefühl | A: realistisch, denn Umsehen kostet Zeit, während die Wölfe handeln; in v1 aber ohne mechanischen Fund. B: ehrlich, wirkt aber merkwürdig, weil Umsehen offensichtlich möglich ist. |
+| Empfehlung | A. Kostenlose Abfragen sind ausgeschlossen, und die Mechanik ist schon die spätere. |
 
-### E11 Reihenfolge von Bewegung und Angriff (neu, aus dem Code)
+### E5 Warten — entschieden
 
-| Feld | Inhalt |
-|---|---|
-| Vorschlag | As Regel D5 beibehalten: „closer“ vor, „away“ nach dem Angriff, unabhängig von der geschriebenen Reihenfolge |
-| Alternativen | (a) Spielerreihenfolge wörtlich: Zurücktreten zuerst kann einen Nahkampf-Skill unzulässig machen (L, nichts passiert). |
-| Technik | Vorschlag: keine. (a): Reihenfolge-Feld im Adapter und `attackAction` ändern. |
-| Spielgefühl | Vorschlag: spielerfreundlich („either order“ im Core). (a): wörtlich, kann frustrieren. |
-| Empfehlung | Vorschlag, mit Anzeige der tatsächlichen Reihenfolge in der System-Zeile |
+`activity {kind: wait}` ist die semantische Absicht. Die Engine bildet sie im Kampf auf das vorhandene hold ab: Zeit vergeht, die NPCs handeln. Vorbereitete Handlungen („shoot when it moves“) sind eine spätere Mechanik.
 
-### E12 Unbekannter Skillname mit Fast-Treffer (neu)
+### E6 Weltnutzung — entschieden (v1-Grenze)
 
 | Feld | Inhalt |
 |---|---|
-| Vorschlag | Hat der Planer `{new: X}` geschrieben und passt X fast genau zu einem bekannten Skill → „Meinst du Flame Lance?“; sonst verweigern mit der Liste der bekannten Skills |
-| Alternativen | (a) immer verweigern. (b) Tippfehler mit Abstand 1 still annehmen (verworfen: stille Ersetzung durch die Engine). |
-| Technik | V3d. Gold: L1 (der Planer löst Aliase selbst auf) bleibt. Die Rückfrage greift nur, wenn der Planer nicht aufgelöst hat. |
-| Spielgefühl | hilfreich statt nur „kennst du nicht“ |
-| Empfehlung | Vorschlag |
+| Regel | Core-#7-Probe, von der Engine gewürfelt und entschieden; Schwierigkeit nach Zielklasse; Erfolg erlaubt eine dauerhafte Änderung nur am Ziel; im Kampf eine Haupthandlung |
+| v1-Grenze | **kein indirekter Kreaturenschaden**, klar dokumentiert und gemeldet. Der vollständige Zweck bleibt gespeichert. |
+| offen vor C5 | Actor-Wert, Schwierigkeitstabelle (`difficulty_scores` ist in den Regeln als „proposed“ markiert) |
+
+### E7 Ordinale Zielbezüge (k2_15) — entschieden (präzisiert)
+
+| Feld | Inhalt |
+|---|---|
+| Regel | „the second one“ → B nur, wenn dem Spieler eine stabile Reihenfolge **gezeigt** wurde: Kampflabels A/B/C im System-Panel, eine ausdrücklich nummerierte Liste. **Nie** aus interner Katalog- oder ID-Reihenfolge, nie aus der Erwähnungsreihenfolge in Prosa. Ungeordnete Namen oder Positionsbezüge („the left one“; A kennt keine Positionen) → Rückfrage. |
+| Technik | Planer-Regel und Gold. Der Katalog kennzeichnet, ob eine Reihenfolge für den Spieler etabliert ist (`ordered: true` nur bei Labels). |
+
+### E8 Laterne auf Bandit B (k3_12) — entschieden
+
+`ability_world` mit Ziel Laterne bzw. Seil (`target_words` „the lantern's rope“) und Zweck „drops on Bandit B“. Beides bleibt vollständig gespeichert. Die Engine meldet, dass v1 daraus keinen Kreaturenschaden berechnet. Der Erzähler darf keinen Schadenstreffer erzählen.
+
+### E9 Story-Handlungen im Kampf — entschieden (v1-Grenze)
+
+Trank, Gegenstand geben, rasten: im Kampf in v1 N, gemeldet, nie still. **Spätere Pflicht:** Trank als Haupthandlung ist die erste Engine-Erweiterung nach C.
+
+### E10 Kreative Handlung ohne Skill — entschieden (v1-Grenze)
+
+„I kick sand into his eyes“: `other`, gemeldet, der Kampf wartet; außerhalb eine Erzählrunde wie A.
+
+**Ausdrücklich offen für das Produktziel:** Ohne echte Auflösung kreativer Nicht-Skill-Handlungen löst C die Sprachdeutung, aber noch **nicht vollständig das Open-World-Spielproblem**. Vorgesehene Richtung: eine improvisierte Handlung mit Engine-Probe nach dem Muster von E6.
+
+### E11 Reihenfolge von Bewegung und Angriff — entschieden (geändert)
+
+| Feld | Inhalt |
+|---|---|
+| Regel | „step back → attack“ bleibt „step back → attack“. Kein stilles Umordnen. |
+| Code | Core #12/#24 erlaubt „either order“. A ordnet heute fest um (`attackAction`: „taken after the attack, so the attack keeps its range“). Das wird zum Engine-Migrationsbedarf (C5) mit eigenem Regressionstest. |
+| Folge | Zurücktreten zuerst kann einen Nahkampf-Skill unzulässig machen. Das ist L: Der Zug wird nicht aufgelöst, der Grund gemeldet. |
+
+### E12 Enger Fast-Treffer für unbekannte Skillnamen — entschieden
+
+| Feld | Inhalt |
+|---|---|
+| Regel | Nur wenn der Planer `{new: X}` schrieb. Enger Treffer heißt: Normalisierter Gesamtname mit Damerau-Abstand ≤ 1 (bis 7 Buchstaben) bzw. ≤ 2 (ab 8), **oder** gleiche Wortzahl, alle Wörter bis auf eines exakt, und das exakte Wort ist unterscheidend für genau einen bekannten Skill („Fire Lance“ → Flame Lance). Genau ein Kandidat → „Meinst du Flame Lance?“. |
+| sonst | unbekannter Versuch: Ablehnung mit Liste der bekannten Skills, oder offene Rückfrage. **Nie Ersetzung.** |
 
 ---
 
-## 21. Holdout-Spezifikation (Autor: ChatGPT)
+## 21. Holdout: Prozess, Umfang, Schwellen
 
-**Zweck:** eine unabhängige Prüfung von Planer + Validator (+ Engine-Sicht) auf der Produktfrage. Geschrieben wird sie von einem Autor, der S4b und C **nicht** entworfen hat. Sie dient nie zum Einstellen.
+### 21.1 Rollen
 
-### 21.1 Umfang und Kategorien
+| Rolle | wer | darf | darf nicht |
+|---|---|---|---|
+| **Autor** | eine **frische, isolierte Modellinstanz**, möglichst ein drittes Modell: weder Claude (Entwurf) noch ChatGPT (kennt S4b) noch das Planer-Modell | nur das Briefing-Paket lesen | Webzugang, Gedächtnis oder Verlauf, eigene Anweisungen, Projektdateien, das Repository |
+| **Gegenkennzeichner** | eine zweite frische, isolierte Instanz (gleiche Regeln) | Texte, Szenen und Regeln lesen und eigene Gold-Labels vergeben, **ohne** das Gold des Autors | das Gold des Autors sehen |
+| **Nutzer** | Betreiber | Sitzungen öffnen, Abweichungen anhand des Regeltexts entscheiden, versiegeln, lokal laufen lassen | Fälle umschreiben, um Ergebnisse zu ändern |
+| **Claude** | Entwurf von C | das Briefing-Paket schreiben (nur erlaubte Inhalte); nach dem Lauf auswerten | die Fälle vor dem ersten Lauf sehen |
+| **ChatGPT** | methodische Prüfung | das Briefing-Paket vorab auf Lecks prüfen; Manifest, Hashes und Auswertung nachrechnen | Fälle schreiben, ändern oder ergänzen |
 
-**≈ 120 Fälle** (100–140), davon 30 als Stabilitätsfälle (3 Wiederholungen).
+### 21.2 Briefing-Paket (erlaubt / nicht erlaubt)
 
-Begründung:
-- Bei 0 falschen Festlegungen in 120 Fällen liegt die obere 95-%-Grenze bei ≈ 2,5 % (Dreierregel).
-- Je Kategorie sind es 6–15 Fälle; dort gibt es nur Richtungen, keine Signifikanz.
+**Erlaubt:**
+- die Produktfrage und die Grundsätze;
+- Schema v2.1 (§4);
+- die Labelregeln L1–L9 in der überarbeiteten Fassung;
+- die **entschiedenen** E-Regeln als Text;
+- Szenenformat;
+- Content-Katalog (Klassen, Skills, Monster, Orte);
+- Kategorien und **feste** Mengen (§21.3);
+- das Ausgabeformat.
+
+**Nicht erlaubt:**
+- S4b-Korpus v1 und Korpus v2, auch keine Beispielsätze daraus;
+- S4b-Ergebnisse und Fehlerlisten;
+- der Planer-Prompt;
+- die Listen und Schwellen der Safety Catches;
+- dieses Dokument;
+- Planerausgaben.
+
+### 21.3 Umfang (fest: genau 120 Fälle)
 
 | | Kategorie | Fälle |
 |---|---|---|
-| H1 | exakte Befehle (Skill + Label) als Kontrolle | 6 |
-| H2 | Aliase, Tippfehler, Umschreibungen bekannter Skills, auch ohne Wortüberlappung | 12 |
-| H3 | Zielbezüge: Teil-Labels, Beschreibungen, Pronomen, Engine-Fakten („the one that hit me“), Prosa-Bezüge | 14 |
-| H4 | Weltnutzung: Objekte und Kulisse, Zweckteil, Ziel im Zweckteil gegen Ziel im Zielteil (beide Richtungen) | 14 |
-| H5 | Mehrfachhandlungen: Bewegung + Skill in beiden Reihenfolgen, zwei Haupthandlungen, Kampf + Welt, Angriff + Flucht, Story-Handlung + Kampfhandlung | 12 |
-| H6 | Gehen, Suchen, Warten in und außerhalb von Kämpfen (Modus-Abbildung) | 10 |
-| H7 | echte Mehrdeutigkeit: Ziel, Skill, Art | 10 |
-| H8 | Unbekanntes und Unmögliches: nicht gelernte Content-Skills, erfundene Namen, Fast-Treffer, abwesende Ziele | 10 |
-| H9 | Negativfälle: Fragen, Pläne und Bedingungen, Rede und Drohung, Erinnerung, Taten anderer, OOC | 12 |
-| H10 | je entschiedene Produktregel E1–E12 mindestens 1–2 Fälle (getrennt ausgewiesen) | ≈ 14 |
-| H11 | Antworten auf eine offene Rückfrage: exakte Option, freie Antwort, Meinungswechsel | 6 |
-| H12 | Story-Befehle (Handel, Gilde, Quest, Reise) mit Kampf- oder Skill-Anteil | 6 |
+| H1 | exakte Befehle (Kontrolle) | 6 |
+| H2a | Aliase, Tippfehler, Umschreibungen mit Wortüberlappung | 6 |
+| **H2b** | **Umschreibungen ohne jede Wortüberlappung** (Restklasse `skill: null`, §7.3) | 6 |
+| H3 | Zielbezüge (Teil-Labels, Beschreibungen, Pronomen, Engine-Fakten, Prosa-Bezüge, Ordinalzahlen) | 14 |
+| H4 | Weltnutzung, auch Ziel im Zweckteil gegen Ziel im Zielteil | 14 |
+| H5 | Mehrfachhandlungen (Reihenfolge, Ökonomie, N/L/W) | 12 |
+| H6 | flee / go / move / search / wait in und außerhalb von Kämpfen | 10 |
+| H7 | echte Mehrdeutigkeit | 10 |
+| H8 | Unbekanntes, Unmögliches, enge und weite Fast-Treffer | 10 |
+| H9 | Negativfälle | 12 |
+| H10 | je eine Fall-Vorlage pro E-Regel E1–E12 | 12 |
+| H11 | Antworten auf Rückfragen | 4 |
+| H12 | Story-Befehle mit Kampf- oder Skill-Anteil | 4 |
+| | **Summe** | **120** |
 
 **Szenen:**
-- mindestens 6, im S4b-Szenenformat;
-- nur Klassen, Skills, Monster und Orte aus `content/`;
-- mindestens 2 Szenen, die den S4b-Szenen nicht ähneln: andere Klassen-Kombination, andere Monster, benannter Unbeteiligter, ein Nicht-Feind, Objekte am Ort.
+- mindestens 6, nur aus `content/`;
+- mindestens 2 ohne Ähnlichkeit zu S4b-Szenen.
 
-### 21.2 Was der Autor kennen darf, und was nicht
+**Stabilität:** 30 vom Autor markierte Fälle, je 3 Läufe.
 
-| darf kennen | darf nicht sehen |
-|---|---|
-| die Produktfrage und die Grundsätze (keine stille Ersetzung, fragen statt raten, Engine-Autorität) | den S4b-v1-Korpus und den Korpus v2 (Entwicklungssatz), damit nichts umformuliert übernommen wird |
-| Schema v2.1, Ausgangsklassen und Schwere | den Planer-Prompt (Regeltext, Beispiele) |
-| die Labelregeln L1–L9 in der überarbeiteten Fassung und die **entschiedenen** E-Regeln als Text | die Validator-Heuristiken: Hinweislisten, Zweckwörter, Schwellen, Abstände |
-| Szenenformat, Content-Katalog (Klassen, Skills, Monster, Orte), Kategorien und Mengen | Ausgaben eines Planers auf Holdout-Texten vor der Versiegelung |
+### 21.4 Ablauf
 
-**Hinweise:**
-- ChatGPT kennt die S4b-Zusammenfassungen und die Fehlerliste (k3_11 usw.). Das lässt sich nicht rückgängig machen. Die Vorgabe lautet: keine Sätze aus diesen Berichten übernehmen, keine Fälle als bloße Varianten davon bauen.
-- **Claude sieht den Holdout vor dem ersten Lauf nicht.** Der Nutzer führt den Lauf lokal aus. Erst die Ergebnisse kommen zur Auswertung zurück.
+1. **C1:** Claude schreibt das Briefing-Paket; ChatGPT prüft es auf Lecks; Korrekturen werden protokolliert.
+2. Der Nutzer öffnet die Autoren-Instanz und gibt **nur** das Paket hinein. Ausgabe:
+   - `holdout_cases.jsonl` mit genau 120 Fällen in den Mengen aus §21.3;
+   - `holdout_scenes.json`;
+   - Begründungen zu strittigen Labels.
+3. Formatprüfung durch das S4b-v2-Werkzeug (`--validate-only`: zählt und prüft das Format, ruft keinen Planer).
+4. Die Gegenkennzeichner-Instanz bekommt Texte, Szenen und Regeln **ohne Gold** und vergibt eigene Labels. Das Werkzeug listet die Abweichungen. Der Nutzer entscheidet jede Abweichung allein anhand des Regeltexts und protokolliert sie in `holdout_adjudication.md`.
+5. **Versiegeln.** Der Nutzer committet nur `tests/eval/holdout_manifest.json` mit:
+   - SHA-256 von Fällen, Szenen, Entscheidungsprotokoll und Briefing-Paket;
+   - Mengen je Kategorie und je Gold-Klasse;
+   - den **ganzzahligen Schwellen** (§21.5);
+   - dem Commit des geprüften Planer- und Validator-Stands.
 
-### 21.3 Versiegelung
+   Die Dateien bleiben außerhalb des Repositories.
+6. Zwischen Versiegelung und Lauf keine Änderung an Planer, Validator oder Regeldatei.
+7. **Lauf:** der Nutzer lokal; das Werkzeug prüft die Hashes und bricht bei Abweichung ab.
+8. **Auswertung:** Ergebnisse an Claude und ChatGPT. ChatGPT rechnet die Kennzahlen aus `results.json` unabhängig nach (der Scorer ist deterministisch) und prüft die Hashes. Danach dürfen die Dateien committet werden.
+9. **Errata** nur begründet. Die Originalwertung wird immer zuerst berichtet.
+10. **Einmalig.** Jede weitere Iteration braucht einen neuen Holdout nach demselben Ablauf.
 
-1. ChatGPT schreibt `holdout_cases.jsonl`, `holdout_scenes.json` und eine kurze Begründung je strittigem Gold-Label.
-2. Der Nutzer berechnet die SHA-256-Werte (PowerShell: `Get-FileHash -Algorithm SHA256 <Datei>`). Er committet **nur** ein Manifest (`tests/eval/holdout_manifest.json`) mit:
-   - Hashes;
-   - Fallzahl je Kategorie;
-   - Datum;
-   - Commit des zu prüfenden Planer- und Validator-Stands.
-3. Die Dateien bleiben bis nach dem ersten Lauf außerhalb des Repositories.
-4. Das S4b-v2-Werkzeug liest einen externen Pfad. Es prüft den Hash gegen das Manifest und bricht bei Abweichung ab.
-5. Nach dem Lauf dürfen die Dateien committet werden. Die Hashes belegen, dass sie unverändert sind.
-6. **Errata:** Gold-Korrekturen nach dem Lauf nur als begründete Liste. Die Originalwertung wird **immer zuerst** berichtet (wie §13.6 in S4b).
-7. **Einmal:** Der Holdout dient nie zum Einstellen. Die nächste Iteration braucht einen neuen Holdout.
-
-### 21.4 Vorab festgelegte Kennzahlen
-
-Sie werden im Manifest festgeschrieben; die Schwellen entsprechen §23 Block B.
+### 21.5 Schwellen (absolut, bei N = 120)
 
 | Kennzahl | Schwelle |
 |---|---|
-| stille falsche Festlegungen (alle Fälle, nach Unterart) | ≤ 2 je 100 Fälle |
-| Ersetzung eines **genannten** Bezugs (Skill, Wesen, Weltziel) | 0 |
-| falsche Agency (Negativfälle) | 0 |
-| stilles Verschwinden: beabsichtigte Handlung weder ausgeführt noch gefragt noch gemeldet (Ende zu Ende, mit Validator- und Engine-Sicht) | 0 |
-| weggelassene Teilhandlungen in Mehrfachfällen (Planer) | ≤ 1 |
-| Absicht richtig | ≥ 85 % gesamt; je Kategorie berichtet |
-| Rückfrage-Recall / unnötige Rückfragen | ≥ 85 % / ≤ 5 % der reinen Handlungsfälle |
-| gültig nach Reparatur | ≥ 99 % (Transportfehler getrennt) |
-| Stabilität (30 × 3) | safe^3 = 100 %, pass^3 ≥ 90 % |
-| Latenz p50 / p90, Token | berichtet; Schwellen §23 |
-| Validator | Abstufungen je Regel, von Hand als richtig oder unnötig bewertet |
-| Gate-Schatten | Anteil `FAST_COMMIT`, Abweichungen |
+| Fälle mit mindestens einer stillen Fehlfestlegung | **≤ 2 von 120** (aus „2 je 100“ abgerundet, also die strengere Lesart) |
+| Ersetzung eines genannten Bezugs (Skill, Wesen, Weltziel) | **0 von 120** |
+| falsche Agency | **0 von 12** (H9) |
+| stilles Verschwinden einer beabsichtigten Handlung (Ende zu Ende) | **0 von 120** |
+| weggelassene Teilhandlung durch den Planer | **≤ 1** über alle Fälle mit mehreren Handlungen |
+| Absicht richtig | **≥ 102 von 120** (85 %) |
+| H2b (Umschreibungen ohne Überlappung): stille Fehlfestlegungen | **0 von 6** (berichtet getrennt; Restklasse) |
+| Rückfrage-Recall | ≥ ⌈0,85 · n_ask⌉, beim Versiegeln als Ganzzahl ins Manifest |
+| unnötige Rückfragen | ≤ ⌊0,05 · n_act⌋, beim Versiegeln als Ganzzahl ins Manifest |
+| gültig nach Reparatur | **≥ 119 von 120** |
+| Stabilität (30 × 3) | safe^3 **30 von 30**; pass^3 **≥ 27 von 30** |
+| Planer-Latenz im Kampf | p50 ≤ 3,5 s, p90 ≤ 7,0 s (Bestätigung durch den Nutzer offen, §25) |
 
-**Statistik:** Wilson-Intervalle (95 %). Keine Signifikanzaussagen über Kategorien. Produktregel-Fälle (H10) werden zusätzlich getrennt ausgewiesen.
+**Statistik:**
+- **„≈ 2,5 %“** ist die **einseitige** obere 95-%-Grenze der Rate des binären Ereignisses „ein Fall enthält mindestens eine stille Fehlfestlegung“, wenn **0 von 120** beobachtet werden:
+  - exakt nach Clopper-Pearson 2,47 %;
+  - Dreierregel (3/n) 2,50 %;
+  - zweiseitig (obere Grenze des 95-%-Intervalls) 3,03 %.
+- **Annahme:** Die Fälle sind unabhängige Ziehungen aus einer festen Verteilung. Der Holdout ist aber konstruiert und geschichtet, keine Zufallsstichprobe echten Spiels. Die Grenze gilt also für die Holdout-Verteilung, nicht für Live-Spiel.
+- **An der Schwelle** (2 von 120 beobachtet) liegt die einseitige obere 95-%-Grenze bei **5,15 %**. Bestehen heißt also nicht „Rate ≤ 2 %“.
+- **0 von 12** falscher Agency ergibt eine obere Grenze von ≈ 22 %. Das ist schwache Evidenz. Negativfälle stützen sich zusätzlich auf S1 und Live.
+- Kategorien werden mit Wilson-Intervallen berichtet, ohne Signifikanzaussagen.
 
 ---
 
-## 22. Minimaler Umsetzungsplan
-
-Jeder Schritt ist ein eigener Commit mit grüner Suite. Bis C6 ist nichts davon im Spiel aktiv.
+## 22. Umsetzungsplan
 
 | Schritt | Inhalt | Prüfung |
 |---|---|---|
-| **C0** | neuer Branch von A (90bd450); nur P0-Werkzeuge und Dokumente per Datei-Checkout; keine B-Commits | `npm test` grün; A byte-gleich (V3/V4-Diff, Golden) |
-| **C1** | • E1–E12 entschieden (Nutzer mit ChatGPT) <br>• **eine Regeldatei** als Quelle für Prompt, Hinweislisten und Gold <br>• Schema v2.1 eingefroren <br>• Korpus v2 (Entwicklungssatz, Claude): k6_07 konsistent, `use_skill`, `confirm`, `target_words`, Modus-Abbildung, `other`, Mehrfachfälle mit N/L/W <br>• **Holdout (ChatGPT), versiegelt** (§21). Korpus v1 und seine Ergebnisse bleiben unverändert. | Korpus-Integrität; Gold ↔ Regeldatei |
-| **C2** | `validatePlan` als reines Modul mit V1–V6; Eigenschaftstest M1–M6; Mutationsprobe je Regel. Offline: die gespeicherten S4b-v1-Rohpläne durch V3 und V5 (mit abgeleiteten `target_words`) | alle Abstufungen von Hand geprüft; keine neue stille Festlegung |
-| **C3** | `plannerRequest`: Modus-Prompt aus der Regeldatei, Katalog, Engine-Fakten, RECENT-Varianten | gleicher Zustand → gleiche Prompt-Bytes; Token je Modus |
-| **C4** | S4b v2: Planer + Validator auf Korpus v2, danach **einmal** Holdout. Verschränkt: Transport (3 Varianten), RECENT (3 Varianten), Modus-Prompt gegen vollen Prompt. Stabilität 30 × 3. | §23 Block B |
-| **C5** | Engine: <br>• `use_skill`-Adapter <br>• Handler `ability_world` <br>• Ausführbarkeit N/L/W <br>• D1–D5 <br>• Panels für Rückfrage und Bestätigung <br>• Steuerkanal-Antworten | As Kampftests mit gleichwertigen Plänen → identische Ereignisse; Wiederholungstest |
-| **C6** | Laufzeit hinter `planner: off \| shadow \| on`: <br>• `shadow`: A entscheidet, C wird nur protokolliert <br>• `on`: C entscheidet, das Gate läuft im Schatten | Node-Tests: Swipe, Regenerate, Bearbeiten, Continue, Reload, Rückfrage; Barriere |
-| **C7** | Engine-Block-Zeilen; Firewall-Freigabe aus `ability_world`; Persistenzmodell für `{new}`-Weltziele (§25); Erzählervertrag | Firewall-Tests; Mutationsprobe |
-| **C8** | echte SillyTavern-Smokes mit Mock-Anbieter | wie bisher |
-| **C9** | Live-Paarlauf A gegen C, erst `shadow`, dann `on` | §23 Block D; Gate-Kennzahlen G1–G6 beginnen |
-
-**Bewusst nicht in v1:**
-- Szenen-Merkmale aus der Welt;
-- HP-Wirkungen der Weltnutzung;
-- vorbereitete Handlungen;
-- Tränke im Kampf;
-- Planen und Erzählen in einem Aufruf;
-- andere Sprachen.
+| **C0** | neuer Branch von A (90bd450); P0-Werkzeuge und Dokumente per Datei-Checkout; keine B-Commits | `npm test`; A byte-gleich |
+| **C1** | • E4 entschieden; Regeldatei als einzige Quelle für Prompt, Catch-Listen und Gold <br>• Schema v2.1 eingefroren <br>• Korpus v2 (Entwicklungssatz) <br>• Briefing-Paket mit Leckprüfung <br>• Holdout nach §21.4 bis zur Versiegelung | Korpus-Integrität; Gold ↔ Regeldatei |
+| **C2** | `validatePlan` (V1–V6); Eigenschaftstest M1–M6; Mutationsprobe; Regression auf S4b v1/v2 (kein Beleg, §2) | alle Abstufungen von Hand geprüft |
+| **C3** | `plannerRequest` (Modus-Prompt, Katalog, Engine-Fakten, RECENT-Varianten) | gleiche Prompt-Bytes bei gleichem Zustand; Token |
+| **C4** | S4b v2 auf Korpus v2 (Entwicklung), dann **einmal** Holdout. Verschränkt: Transport, RECENT, Prompt-Variante. | §21.5, §23 |
+| **C5** | Engine-Adapter, `ability_world` (E6-Parameter), N/L/W, D1–D3, Invarianten X1–X4; **E11-Migration** von `attackAction` | As Kampftests; E11-Regressionstest; Wiederholungstest |
+| **C6** | Laufzeit hinter `planner: off \| shadow \| on`; Gate im Schatten | Swipe, Regenerate, Bearbeiten, Continue, Reload, Rückfrage |
+| **C7** | Engine-Block, Firewall-Freigabe, Persistenzmodell für `{new}`-Weltziele | Firewall-Tests, Mutationsprobe |
+| **C8** | SillyTavern-Smokes (Mock-Anbieter) | wie bisher |
+| **C9** | Live-Paarlauf A gegen C (erst `shadow`, dann `on`); Beginn G1–G6 | §23 E |
 
 ---
 
 ## 23. Tests vor einer Migration (`on` als Standard)
 
-**A. Unverändertes:**
-- volle Suite grün;
-- V3/V4-Diff und Golden-Tests von A byte-gleich mit `off`;
-- As Kampftests mit gleichwertigen Plänen: identische Ereignisse;
-- S1-Story-Korpus: Der Planer im Storymodus ist im Vorzeichentest nicht schlechter als der Interpreter; 0 falsche Agency nach dem Guard.
-
-**B. Semantik (Korpus v2 und Holdout, Schwellen vorab):**
-- Korpus v2: ≤ 2 stille falsche Festlegungen, 0 Ersetzungen genannter Bezüge, 0 falsche Agency, Rückfrage-Recall ≥ 85 %, unnötige Rückfragen ≤ 5 %.
-- Holdout: die Kennzahlen aus §21.4.
-- Stabilität: safe^3 = 100 %, pass^3 ≥ 90 %.
-- Planer-Latenz im Kampf: p50 ≤ 3,5 s, p90 ≤ 7 s (A-Interpreter live: 2,3–6,2 s). **Diese Schwelle bestätigt der Nutzer** (§25).
-
-**C. Validator:**
-- Eigenschaftstest M1–M6 (Zufallspläne, Zufallszustände);
-- für jede Regel V1–V6 ein Test, der beim Entfernen der Regel fehlschlägt.
-
-**D. Determinismus und Host:**
-- gleicher Record + Zustand → byte-gleiche Ereignisse;
-- Swipe ×3: identische Ereignisse und Würfel, nur die Prosa unterscheidet sich;
-- Regenerate nach Planerausfall: neu geplant;
-- Bearbeiten: neu geplant ab dem Zustand vor der Nachricht;
-- Reload: identische Faltung;
-- `state_before_hash` weicht ab: Hinweis, kein stilles Neuplanen;
-- offene Rückfrage: nichts gebucht, kein NPC-Zug, kein Erzähler;
-- Antwort mit genau einer Option: kein LLM-Aufruf.
-
-**E. Live:**
-- 0 stille Ersetzungen und 0 stilles Verschwinden in den Protokollen;
-- jede Abstufung und jede Nicht-Ausführung mit Regel sichtbar;
-- Gesamtlatenz je Zug gegen A.
+- **A. Unverändertes:**
+  - Suite grün;
+  - A byte-gleich mit `off`;
+  - As Kampftests mit gleichwertigen Plänen identisch, **außer** der dokumentierten E11-Änderung (eigener Test);
+  - S1-Story-Korpus nicht schlechter, 0 falsche Agency.
+- **B. Semantik:** die Holdout-Schwellen §21.5. Korpus v2 nur als Regression.
+- **C. Invarianten:** M1–M6 und X1–X4 als Eigenschaftstests; je Validator-Regel ein Test, der beim Entfernen der Regel fehlschlägt.
+- **D. Host:**
+  - Swipe ×3 identisch;
+  - Regenerate nach Fehlschlag plant neu;
+  - Bearbeiten plant neu;
+  - Reload ergibt dieselbe Faltung;
+  - `state_before_hash`-Hinweis;
+  - offene Rückfrage bucht nichts;
+  - eine Antwort mit genau einer Option kommt ohne LLM aus.
+- **E. Live:**
+  - 0 stille Ersetzungen und 0 stilles Verschwinden;
+  - jede Abstufung und Nicht-Ausführung mit Regel sichtbar;
+  - Gesamtlatenz je Zug gegen A.
 
 ---
 
 ## 24. Branch
 
-**Neuer Branch von A** (`claude/gen35-world-envelope-2026-10-01` @ 90bd450).
+**Neu von A** (`claude/gen35-world-envelope-2026-10-01` @ 90bd450).
 
-- A ist der gemessene stabile Stand.
-- C ist ein Umbau von As Eingangsseite.
-- Der Versuchsbranch (`chatgpt/narrator-gm-tools-2026-10-02`) trägt B: `src/gm/*`, die Host-Verdrahtung in `index.js` (≈ 130 Zeilen), `4.3.0-alpha.2` und `case 'hold'` in `pcActionOf`. C darauf zu bauen würde zwei Prototypen vermischen.
-- Übernommen werden nur Dateien:
-  - P0-Werkzeuge, Korpora und Tests;
-  - die Dokumente;
-  - Bs `useAbilityOnWorld` als **Vorlage** für den Engine-Handler.
-- Der Versuchsbranch bleibt als Prototyp B unverändert.
-- `main` liegt 221 Commits hinter A und ist keine Basis.
+- Der Versuchsbranch trägt B (`src/gm/*`, `index.js`-Verdrahtung, `4.3.0-alpha.2`) und bleibt als Prototyp B unverändert.
+- Übernommen werden nur Dateien: P0-Werkzeuge, Korpora, Tests, Dokumente.
+- Bs `useAbilityOnWorld` dient nur als Vorlage.
 
 ---
 
-## 25. Offene Punkte, und was vor C0/C1 geklärt sein muss
+## 25. Offene Fragen
 
-**Vor C0:** nichts Architektonisches. C0 ist mechanisch (Branch, Dateien). Wann er beginnt, entscheidet der Nutzer.
+**Architekturfragen, die vor C0/C1 geklärt sein müssten: keine.**
 
-**Vor C1** (Gold-Labels), alles Produkt- und Prozessfragen:
-1. E1–E12 entschieden, inklusive der Hinweislisten aus E1 als Daten.
-2. Schema v2.1 und Labelregeln bestätigt (dieses Dokument). Neu gegenüber S4b:
-   - `use_skill` statt `attack`/`skill`;
-   - modusunabhängige Arten statt L7 im Planer;
-   - `other`;
-   - `target_words`;
-   - `activity: wait` statt `hold`.
-3. Holdout-Ablauf (§21) vereinbart und ChatGPT gebrieft.
+Die einzige noch offene Architekturfrage betrifft C7, nicht Deutung oder Gold: Wo liegt in As Weltmodell die Folge einer Weltnutzung an einem nicht gelisteten Ding („Decke eingestürzt“), und wie bindet die Firewall die Freigabe daran?
+
+**Produkt- und Prozessfragen vor C1:**
+1. **E4** entscheiden (kostenpflichtig oder sichtbar nicht ausführbar).
+2. **E3-Detail** bestätigen: bei L wird nichts aufgelöst (A-Verhalten), statt den Teil vor der L-Handlung auszuführen.
+3. **Holdout-Rollen** besetzen: welches dritte Modell als Autor und als Gegenkennzeichner; Bestätigung des Ablaufs §21.4.
 
 **Vor C4:**
-- Latenzbudget im Kampf bestätigt (Vorschlag p50 ≤ 3,5 s);
-- welche Transportvarianten SillyTavern mit dem Spielmodell anbietet (`tool_choice required`, `response_format`).
+- Latenzbudget im Kampf (Vorschlag: p50 ≤ 3,5 s, p90 ≤ 7,0 s);
+- welche Transportvarianten SillyTavern mit dem Spielmodell anbietet.
 
-**Vor C5/C7, technisch offen, aber nicht blockierend für C0/C1:**
-- E6-Zahlen (Actor-Wert, Schwierigkeitstabelle).
-- **Persistenzmodell für `{new}`-Weltziele:** Wo in As Weltmodell „die Decke über dem Loch ist eingestürzt“ liegt (Ortsfakt mit Geltungsbereich?) und wie die Firewall die Freigabe daran bindet. Das ist die einzige echte Architekturfrage, die noch offen ist. Sie betrifft C7, nicht die Deutung.
-- Nicht angreifende Skills außerhalb des Kampfes: wie A ohne Buchung, oder als `ability_world`?
-
-**Messfragen** (keine Architekturfragen, Antwort in C4):
-- gemeinsamer Planer auf Story-Befehlen;
-- Prosa-RECENT ja oder nein;
-- Fehlalarme von Hinweis-Detektor und Zielteil-Trennung;
-- weggelassene Teilhandlungen;
-- Transport.
+**Vor C5/C7:**
+- E6-Parameter;
+- nicht angreifende Skills außerhalb des Kampfes (wie A ohne Buchung oder als `ability_world`);
+- das Persistenzmodell oben.
 
 ---
 
-## 26. Risiken
+## 26. Risiken und Grenzen
 
-- **Autorenbias:** Korpus, Gold, Prompt, Gate, Heuristiken und dieser Entwurf stammen vom selben Autor. Die Machbarkeitsprüfungen in §7 und §9 sind nachträglich. Holdout (§21) und Live-Paarlauf sind die eigentlichen Prüfungen.
-- **Englische Heuristiken:** Hinweis-Detektor und Zielteil-Trennung (Zweckwörter) sind sprachabhängig. Ihre Fehlalarme kosten Rückfragen, nie stille Festlegungen.
-- **Kampflatenz:** C fügt im Kampf einen Aufruf vor dem Erzähler hinzu (gemessen p50 3,4 s). Ob Caching, Transportwahl und Modus-Prompt das genug senken, ist offen. Das Gate ist dafür nur im Schatten vorgesehen.
-- **Restrisiko `skill: null`:** Umschreibungen ohne Wortüberlappung (§7). Zwei Stufen müssten zugleich versagen.
-- **E6/E8/E10:** Ohne Wirkungen auf Wesen kann sich Kreativität im Kampf zahm anfühlen. Das ist eine Spielentscheidung.
+- **Autorenbias:** Korpus v1/v2, Prompt, Catches und Entwurf stammen von Claude. Darum zählen nur Holdout und Live als Beleg (§2).
+- **Restklasse `skill: null`:** Kreative Umschreibungen ohne Wortüberlappung schützt nur der Planer (H2b).
+- **Safety Catches** sind englisch und heuristisch. Fehlalarme kosten Rückfragen, nie stille Festlegungen. Die Grenzen in §6.4 verhindern, dass sie zum Parser werden.
+- **Kampflatenz:** Im Kampf kommt ein Planer-Aufruf vor dem Erzähler dazu (gemessen p50 3,4 s). Das Gate ist dafür nur im Schatten vorgesehen.
+- **Open-World-Lücke:** E9 und E10 sind sichtbare v1-Grenzen. Ohne echte Auflösung kreativer Nicht-Skill-Handlungen ist das Open-World-Ziel nicht vollständig erreicht.
+- **E11 ändert As Kampfverhalten** an einer Stelle. Das ist gewollt, dokumentiert und eigens getestet.
 - **Ein Modell, Englisch.**

@@ -10,6 +10,7 @@ Die Anleitung unten gilt weiter, mit den Korrekturen aus P0_BERICHT §7:
 - S0 misst vier Modi;
 - S2 läuft seriell, mit den Schema-Regeln im Prompt;
 - `tools/p0/rescore.mjs` wertet gespeicherte Antworten neu aus, ohne Aufrufe.
+- Seit 02.10.2026 (`docs/ARCHITECTURE_REVIEW_GM_TOOLS.md` §16) berichten S1, S4 und S4a neben den Kennzahlen „nur gültige Antworten“ (bedingt; so gerechnet wie bisher) auch **Ende-zu-Ende**-Kennzahlen: ein Fall ohne gültige Antwort zählt als leerer Plan. Gemessene Läufe bleiben unverändert; `tools/p0/compare.mjs` rechnet beide Lesarten aus vorhandenen `results.json` nach.
 
 `tools/p0/` wird von keiner Engine-Datei importiert.
 
@@ -415,6 +416,7 @@ Dazu der Aushang (5 Listings) und Varianten.
 | `tools/p0/s3_prototype.mjs` | S3 (Wegwerf-Prototyp) |
 | `tools/p0/s4_gm_tools.mjs` | S4 (02.10.2026, nur auf dem GM-Tools-Branch): der Erzähler mit den GM-Tools (Prototyp B) auf dem S1-Korpus, mit `--compare p0_out/s1/results.json` neben dem Interpreter; Anleitung `docs/ARCHITECTURE_REVIEW_GM_TOOLS.md` §11.1 |
 | `tools/p0/s4a_gm_semantics.mjs` | S4a (02.10.2026, GM-Tools-Branch): dieselbe Ausgabeschnittstelle, User-Nachricht und Bewertung wie S1, nur mit Erzählerkontext statt Interpreter-Rolle; ohne Tools. Arme `gm` und `gm_rules`; Anleitung `docs/ARCHITECTURE_REVIEW_GM_TOOLS.md` §15.6 |
+| `tools/p0/compare.mjs` | gespeicherte S1-/S4-/S4a-Läufe offline auf ihren gemeinsamen Fällen vergleichen: Kennzahlen „nur gültige Antworten“ neben Ende-zu-Ende, ungültige Antworten mit dem Produkt-Validator eingeordnet (nur `quote` fehlt / Format), paarweise exakter Vorzeichentest; ohne Aufrufe (`docs/ARCHITECTURE_REVIEW_GM_TOOLS.md` §16) |
 | `tools/p0/report.mjs` | Ergebnisse bündeln |
 | `tools/p0/rescore.mjs` | gespeicherte Antworten offline neu auswerten (korrigiertes Scoring, Agency-Guard und Firewall des Produkts), ohne Aufrufe; schreibt `p0_out/rescored/` |
 | `tools/p0/lib/provider.mjs` | Backends SillyTavern, direct, mock (seit S4 auch `tools`/`tool_choice` hin und die Tool-Aufrufe der Antwort zurück) |

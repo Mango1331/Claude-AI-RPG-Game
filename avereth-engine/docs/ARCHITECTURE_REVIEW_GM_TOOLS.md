@@ -433,6 +433,8 @@ node tools/p0/s4_gm_tools.mjs --sample 80 --compare p0_out/s1_now/results.json
 
 ### 11.2 S4b: Kampf- und Kreativ-Korpus (als Nächstes zu bauen)
 
+> Nachtrag 02.10.2026: ausgearbeitet in `docs/RESEARCH_NL_TO_ENGINE.md` §7 (Arme, Gold, Kennzahlen, Auswertungsregeln). Diese Skizze bleibt als Stand des Reviews stehen.
+
 Die §11-Sätze und Varianten aus den Läufen, je etwa 10 Fälle für Alias, Ziel-Referenz, kreativen Skill, Suche, Reise und Mehrdeutig, in zwei bis drei Kampf- und Ruhe-Szenen. Gold ist die Tool-Entscheidung, in drei Formen:
 - Kampf {skill, target} oder Nachfrage;
 - Welt-Skill {skill};
@@ -668,3 +670,211 @@ node tools/p0/s4a_gm_semantics.mjs --arm gm_rules --sample 80 --concurrency 1 --
 
 - `p0_out/s1_now/results.json` ist der S1-Lauf, den du schon hast. Liegt er unter einem anderen Pfad, gib diesen an.
 - Zurückschicken: `p0_out\s4a_gm\summary.md` und `p0_out\s4a_gm_rules\summary.md`, bei Bedarf auch die `results.json`.
+
+---
+
+## 16. Nachtrag 02.10.2026 (2): Auswertung S4a, Ende-zu-Ende, Rolle der Regeln
+
+Läufe des Spielers über SillyTavern:
+- Modell: GLM-5.3-Flash.
+- Stichprobe: dieselben 80 Fälle wie S1 (33 negativ, 61 Gold-Befehle).
+- Einstellungen: seriell (`--concurrency 1`), t 0,1, S4a v1.
+- Arme: `gm` (Erzählervertrag + Planungsschritt + Befehlsliste) und `gm_rules` (zusätzlich Regeln und Beispiele des Interpreters).
+
+Ausgewertet gegen die Rohdaten. Dazu dient jetzt `tools/p0/compare.mjs`; es rechnet alle Zahlen dieses Abschnitts aus den `results.json` nach.
+
+### 16.1 Die Nennerfrage
+
+**ChatGPTs Lesart stimmt.** `aggregate()` (`tools/p0/lib/score.mjs`) zählte Recall, Typ-Recall, „Fälle exakt“ und Negativ-Präzision nur über Fälle mit gültiger Antwort (`answered = scored.filter((s) => s.score)`). Ein endgültig ungültiger Fall fiel samt seinen Gold-Befehlen aus dem Nenner:
+- gm: 54 statt 61 Gold-Befehle;
+- gm_rules: 60 statt 61.
+
+**Einordnung:**
+- **Kein Rechenfehler**, aber ein **Auswertungsfehler**. Als Diagnose „bedingt auf gültige Ausgabe“ ist die Kennzahl legitim. Sie war aber nirgends so benannt, und für die Frage „taugt das als Pipeline-Stufe?“ ist sie die falsche Hauptzahl.
+- Die Vergleichstabelle in der S4a-Summary verglich dadurch Ungleiches:
+  - S1 hatte 0 ungültige Antworten; dort sind bedingt und Ende-zu-Ende gleich.
+  - S4a gm hatte 6 ungültige Antworten. Das schönte gm um 10 Prozentpunkte Recall.
+  - S4 (B) zählt abgewiesene Tool-Aufrufe ohnehin als verpasst, ist also schon Ende-zu-Ende.
+
+**Korrektur (additiv, gemessene Läufe unverändert):**
+- `aggregate()` liefert zusätzlich `end_to_end`. Ein Fall ohne gültige Antwort ist dort ein leerer Plan: seine Gold-Befehle sind verpasst, er ist nie exakt, und ein Negativfall ohne Antwort legt nichts fest.
+- S1 (v2), S4 (v3) und S4a (v2) zeigen beide Lesarten nebeneinander und benennen die bedingte ausdrücklich („nur gültige Antworten“).
+- Im Vergleich mit S1 steht der exakte Vorzeichentest auf den abweichenden Fällen.
+- Die Messung selbst ist unverändert.
+
+### 16.2 Ende-zu-Ende über alle 80 Fälle und alle 61 Gold-Befehle
+
+| | S1 Interpreter | S4a gm | S4a gm_rules | S4 B (Tools) |
+|---|---|---|---|---|
+| **Recall Ende-zu-Ende** | **93,4 % (57/61)** | **78,7 % (48/61)** | **88,5 % (54/61)** | 29,5 % (18/61) |
+| Wilson-95 %-Intervall | 84,3–97,4 | 66,9–87,1 | 78,2–94,3 | 19,6–41,9 |
+| Recall, nur gültige Antworten (alte Zahl) | 93,4 % von 61 | 88,9 % von 54 | 90,0 % von 60 | 29,5 % von 61 |
+| Recall, fehlendes `quote` nachgetragen¹ | 93,4 % | 85,2 % (52/61) | 90,2 % (55/61) | 29,5 % |
+| **Fälle exakt Ende-zu-Ende** | **95,0 % (76/80)** | **83,8 % (67/80)** | **91,3 % (73/80)** | 53,8 % (43/80) |
+| Fälle exakt, nur gültige Antworten (alte Zahl) | 95,0 % | 90,5 % von 74 | 92,4 % von 79 | 53,8 % |
+| Fälle exakt, `quote` nachgetragen¹ | 95,0 % | 88,8 % (71/80) | 92,5 % (74/80) | 53,8 % |
+| Negativfälle ohne falschen Befehl, nach Guard (roh) | 33/33 (31/33) | 32/33 (29/33) | 33/33 (30/33) | 30/33 |
+| falsche Festlegungen nach Guard | 0 | 1 (neg_turnin_05) | 0 | 1 |
+| gültig im 1. Versuch | 100 % | 75 % | 98,8 % | – |
+| Reparaturaufrufe / endgültig ungültig | 0 / 0 | 20 / 6 (7 Gold) | 1 / 1 (1 Gold) | – |
+
+¹ Ist ein fehlendes `quote` der einzige Fehler einer Antwort (Produkt-Validator `src/v4/interpret.js`), wird sie mit der Spielernachricht als Zitat neu gewertet, Guard eingeschlossen. Diese Spalte trennt Format von Lesart, sie misst aber kein Pipeline-Verhalten.
+
+### 16.3 Die ungültigen Antworten: nicht verstanden oder Format?
+
+Der Harness prüft mit dem generischen Validator (`$.commands[0]: matches none of anyOf`). Der Produkt-Validator benennt den Fehler typisiert:
+
+| Fall | Arm | Antwort (gekürzt) | Fehler laut Produkt-Validator | Absicht verstanden? |
+|---|---|---|---|---|
+| real_v2_05 „track game trails“ | gm | `activity kind=search` | fehlendes `quote` | ja; mit Zitat exakt |
+| syn_offer_01 „All three, please“ | gm | `offer.accept lines=[l1,l2,l3]` | fehlendes `quote` | ja; mit Zitat exakt |
+| syn_offer_02 „Deal.“ | gm | `offer.accept lines=[l1…l4]` | fehlendes `quote` | ja; mit Zitat exakt |
+| syn_sell_02 „sell … not under 30 copper“ | gm | `sell obj.wolf_pelts qty 3 min_cp 30` | fehlendes `quote` | ja; mit Zitat exakt |
+| syn_use_01 „drink the healing potion“ | gm | `use object="healing_potion"` | `quote` fehlt **und** `object` ist ein loser Name statt ID oder `{new}` | ja (Handlung richtig), Referenzformat falsch |
+| real_v12_19 „turn the Quest in … look for an Inn“ | gm | `quest.turn_in` falsche Quest + `go to="an inn"` | `go.to` ist ein loser String statt `{new}` | teilweise: `go` richtig gemeint, aber falsch geformt. Die falsche Quest wählt **auch S1** (geteilte Mehrdeutigkeit der Szene) |
+| syn_sell_01 „offer the wolf pelts to the furrier“ | gm_rules | `sell …` | fehlendes `quote` | ja; mit Zitat exakt |
+
+**Ergebnis:**
+- Alle 7 endgültig ungültigen Antworten scheitern an Format- oder Referenz-Compliance.
+- Keine scheitert daran, dass die Absicht nicht verstanden wurde. Die einzige Fehllesung (die Quest in v12_19) teilt S1.
+- ChatGPTs Fallbeispiele stimmen.
+
+**Die gültigen, aber abweichenden Fälle** sind dagegen überwiegend echte Lesefehler:
+- **gm:**
+  - real_v3_13: Ohren vergessen;
+  - real_v6_08: `wait` fehlt;
+  - real_v11_14: `go` zur Gilde fehlt;
+  - syn_unequip_01: `rest` statt `sleep`;
+  - syn_decline_02;
+  - neg_turnin_05: `quest.turn_in` aus einer NPC-Handlung, also eine falsche Festlegung. Der Guard ließ sie durch, weil das Zitat nur „marks the herb run complete“ umfasste.
+  - real_v2_07 (Zitat mit „…“ gekürzt → Guard `no_evidence`) ist wieder ein Format-/Evidenzfehler.
+- **gm_rules:**
+  - real_v3_04: ID in `{new}` gepackt, ein Formatfehler;
+  - real_v6_08;
+  - real_v11_14: `go {new:"Reeve Aldous"}` + `go {new:"the Guild"}`;
+  - syn_decline_02;
+  - syn_give_02: `give` fehlt;
+  - syn_equip_02.
+- **S1:** real_v3_04, real_v12_19, syn_decline_02, syn_equip_02.
+
+### 16.4 Statistik: was unterscheidbar ist
+
+Exakter Vorzeichentest (zweiseitig) auf den Fällen, die nur einer der beiden exakt traf:
+
+| Paar | Ende-zu-Ende: nur links / nur rechts | p | `quote` nachgetragen | p |
+|---|---|---|---|---|
+| S1 ↔ gm | 11 / 2 | **0,022** | 7 / 2 | 0,18 |
+| S1 ↔ gm_rules | 4 / 1 | 0,375 | 3 / 1 | 0,625 |
+| gm ↔ gm_rules | 4 / 10 | 0,18 | 3 / 6 | 0,508 |
+| S1 ↔ S4 (B) | 35 / 2 | < 0,001 | 35 / 2 | < 0,001 |
+
+Liest man syn_use_01 von Hand als „verstanden“, wird S1 ↔ gm semantisch 6 / 2 (p = 0,29).
+
+**Lesart:**
+- **S1 schlägt gm Ende-zu-Ende signifikant.** Fast der ganze Abstand ist Format.
+- **S1 und gm_rules sind mit 80 Fällen nicht unterscheidbar.** Gleichwertigkeit ist damit aber nicht bewiesen; die Intervalle überlappen breit.
+- **Die semantische Lücke gm → gm_rules** (3 / 6, p = 0,51) ist nicht belegt.
+
+### 16.5 Die vorab festgelegten Kriterien (§15.6)
+
+| Kriterium | gm | gm_rules |
+|---|---|---|
+| Recall ≥ S1 − 3 pp | Ende-zu-Ende −14,7 pp (bedingt −4,5 pp): **verfehlt** | Ende-zu-Ende −4,9 pp = 3 Befehle (bedingt −3,4 pp, `quote` nachgetragen −3,3 pp): **knapp verfehlt** |
+| Negativ-Präzision nach Guard ≥ S1 − 2 pp | −3,0 pp (1 falsche Festlegung): **verfehlt** | ±0: **erfüllt** |
+| Rauschregel „unter etwa 3 Befehlen“ | 9 Befehle Abstand: klar | 3 Befehle: an der Grenze |
+
+**Ergebnis:** Am besten passt Fall 2: gm liegt deutlich darunter, gm_rules etwa auf S1-Niveau. Die Spezialisierung trägt die Zuverlässigkeit, nicht der Kontext.
+
+**Ehrliche Einschränkung:** Die beiden vorab notierten Schwellen widersprechen sich bei 61 Gold-Befehlen. 3 pp sind 1,8 Befehle, die Rauschgrenze liegt bei etwa 3 Befehlen. gm_rules liegt genau dazwischen. Belegt ist darum nur: Der Erzählerkontext bringt keinen messbaren Vorteil. Dass er schadet, ist nicht belegt.
+
+### 16.6 Die Rolle der Regeln und Beispiele
+
+| | gm | gm_rules |
+|---|---|---|
+| gültig im 1. Versuch | 75 % | 98,8 % |
+| Reparaturen / endgültig ungültig | 20 / 6 | 1 / 1 |
+| Recall Ende-zu-Ende | 78,7 % | 88,5 % |
+| Recall, `quote` nachgetragen | 85,2 % | 90,2 % |
+| Negativfälle roh (vor Guard) | 29/33 | 30/33 |
+
+- **Den großen Teil des Sprungs von gm zu gm_rules tragen Format und Schnittstelle**, nicht das Verständnis. Die Beispiele des Interpreters zeigen vollständige Befehle: mit `quote`, mit `{new: …}` für Unbekanntes, mit IDs aus dem Katalog. Genau diese drei Dinge fehlen in den ungültigen gm-Antworten.
+- **Der semantische Anteil** ist klein und nicht signifikant: 3 / 6 Fälle; in Befehlen gezählt 52 gegen 55 von 61. Er ist aber nicht null: `give` und `wait` werden mit Regeln eher gebucht.
+- **Die Agency-Regeln wirken vor allem über den Guard.** Roh liegen alle drei Prompts nahe beieinander (31, 29 und 30 von 33). Nach dem Guard sind es 33, 32 und 33. Die Regeln bringen das Modell aber dazu, das ganze Beweisstück zu zitieren. Davon lebt der Guard (neg_turnin_05).
+- **Die Messung benachteiligt Arme mit Formatproblemen zusätzlich.** Die Reparaturnachricht des Harness nennt nur „matches none of anyOf“; der Produkt-Validator nennt Befehl und Feld. Außerdem füllt der Harness, anders als das Produkt (`parseInterpretation`), weggelassene nullbare Argumente nicht auf.
+  - Für die 7 endgültig ungültigen Antworten ändert das nichts; alle scheitern auch im Produkt.
+  - Die Validität im 1. Versuch des Harness ist aber eine untere Schranke.
+  - Für S4b: typisierte Reparatur wie im Produkt.
+
+### 16.7 Kosten (Architekturkosten, kein Ersatz für Qualität)
+
+| | S1 | S4a gm | S4a gm_rules | S4 (B) |
+|---|---|---|---|---|
+| Latenz p50 / p90 bis zur Entscheidung | 3,0 / 8,2 s (Lauf mit 3 gleichzeitig) | 4,2 / 11,2 s | 3,2 / 6,6 s | 11,9 s (erste Runde 10,4 s) |
+| Prompt-Token je Fall | 2.802 | 8.091 (inkl. Reparaturen) | 8.026 | 10.975 (erste Anfrage 6.690) |
+| Output-Token je Fall | – | 99 | 52 | – |
+
+- **Der Erzählerkontext kostet als Planer etwa das 2,9-Fache an Prompt-Token**, ohne messbaren Gewinn bei Story-Befehlen.
+- **Die Latenz eines separaten Planer-Aufrufs** liegt bei etwa 3 s p50 und kommt vor jeder Prosa hinzu, egal mit welchem Kontext. Wie viel Prompt-Caching davon abfängt, ist ungemessen.
+- **Ungemessen ist auch „planen und erzählen in einem Aufruf“.** S4a ist ein eigener Aufruf ohne Prosa.
+
+### 16.8 Was S4a bewiesen hat, was nicht
+
+**Belegt** (dieses Modell, diese 80 Story-Fälle):
+1. Ohne Regeln und Beispiele ist der GM-Kontext als Planer Ende-zu-Ende signifikant schlechter als der Interpreter (p = 0,022). Ursache ist fast ganz Schnittstellen-Compliance.
+2. Mit Regeln und Beispielen ist kein Unterschied zum Interpreter messbar (p = 0,375).
+3. Der Erzählerkontext bringt keinen messbaren semantischen Vorteil und kostet etwa das Dreifache an Prompt.
+4. Bs Rückstand in S4 (29,5 %) war überwiegend Schnittstelle und Zuständigkeit:
+   - Derselbe Kontext erreicht mit expliziter Schnittstelle 78,7–88,5 % Ende-zu-Ende.
+   - Mit nachgetragenem Zitat sind es 85–90 %.
+
+**Nicht belegt:**
+- **Kampf, Zielreferenzen, Skill-Aliase, kreative Fähigkeiten, Suche gegen Reise:** Keiner der 80 Fälle ist ein Kampf- oder Fähigkeitsfall. Das ist die eigentliche Produktlücke (§16.10).
+- **Klärungsfragen:** Das Vokabular hat keine Klärungsform, also misst S4a auch kein „nachfragen statt raten“.
+- **Generalisierung:** Der Hauptkorpus ist Entwicklungskorpus, Interpreter-Beispiele und Guard wurden an ihm gebaut. Das begünstigt S1 und gm_rules.
+- **Stabilität:** eine Wiederholung bei t 0,1; die Konsistenz über k Läufe (τ-bench pass^k) ist ungemessen.
+- **Andere Modelle;** Planen und Erzählen in einem Aufruf; Prompt-Caching.
+
+### 16.9 Noch ein 256er-Lauf über dieselben Story-Befehle?
+
+**Für die Architekturentscheidung: redundant.**
+- **Das Ergebnis kann die Entscheidung nicht ändern:**
+  - Ist gm_rules auf 256 Fällen gleich gut wie S1, bleibt der Erzählerkontext ein Dreifach-Prompt ohne Gewinn.
+  - Ist gm_rules schlechter, spricht das erst recht für den schlanken Planer.
+  - Beide Ausgänge führen zur selben Folgerung für die Semantikstufe.
+- **Teststärke:** Für einen Abstand der beobachteten Größe (Diskordanz 4 : 1 bei etwa 6 % der Fälle) hat ein gepaarter Lauf über 256 Fälle nur etwa 2/3 Teststärke (Simulation); bei 3 : 1 etwa 40 %. 80 Fälle hatten etwa 16 %.
+- **Optimistischer Korpus:** Der volle Korpus ist zudem Entwicklungskorpus.
+
+**Sinnvoll wird ein großer Story-Lauf erst später, als Regressionsschranke für den dann gewählten Planer-Prompt.** Das heißt: nicht schlechter als S1 auf 256 Fällen plus `commands_holdout2.jsonl`.
+
+Als Generalisierungsprobe jetzt höchstens: S1 gegen gm_rules auf `commands_holdout2.jsonl` (58 Fälle), niedrige Priorität.
+
+### 16.10 A heute auf der eigentlichen Problemklasse (am Code geprüft, 02.10.)
+
+`parseIntent` mit einer Mage-Szene: Flame Lance + Arcane Burst gelernt, drei Barkscorpions im Kampf. In V4 laufen alle Kampfnachrichten über diesen Pfad (`readTurn`: `route 'fight'`), kein Interpreter.
+
+| Eingabe | A heute | richtig wäre |
+|---|---|---|
+| I Flame Lance Barkscorpion B | Flame Lance → B (Label) | ✓ |
+| **I Fire Lance Barkscorpion B** | **Basic Attack → B, still** | Flame Lance → B (Alias) |
+| I use my fire spear on Barkscorpion B | Basic Attack → B, still | Flame Lance → B, oder Nachfrage |
+| I blast Barkscorpion B | narrative (keine Mechanik) | Angriff mit Skill, oder Nachfrage welcher |
+| I Flame Lance Barkscorpion B, wenn das Label „Dry-Brown Barkscorpion B“ heißt | fragt unter allen 3 | Flame Lance → B (eindeutige Teilbezeichnung) |
+| I Flame Lance the wounded one | fragt unter allen 3 | das verwundete Ziel, oder Nachfrage, falls mehrere |
+| I blast the left one | narrative | Nachfrage (Positionen kennt die Engine nicht) |
+| **I Flame Lance the cracked floor** | **fragt, welcher Skorpion** | Fähigkeit auf die Welt |
+| I cast Arcane Burst into the hole / to scatter the rubble | fragt, welcher Skorpion | Fähigkeit auf die Welt |
+| I use Flame Lance to burn through the rope | fragt, welcher Skorpion | Fähigkeit auf die Welt |
+| I look for the other two / I follow the trail / I go back to the burrow | narrative | Suche / Spur / Reise |
+
+Das bestätigt die Produktbeschreibung („unsichtbare Textknöpfe“) am Code:
+- Was A erkennt, löst es deterministisch und richtig.
+- Alles andere wird still zum Basisangriff, zur falschen Zielfrage oder zu bloßer Erzählung.
+
+### 16.11 Folgerungen und nächster Schritt
+
+- **Die Semantikfrage für Story-Befehle ist im Rahmen des Rauschens beantwortet:**
+  - Ein spezialisierter Planer mit expliziter Schnittstelle und Beispielen versteht so gut wie der Interpreter.
+  - Der Erzählerkontext hilft nicht messbar.
+  - Bs Tool-Schnittstelle ohne Typliste ist das schwächste Glied.
+- **Keine Architekturentscheidung aus S4a allein.** Offen sind genau die Fälle aus §16.10. Die breite Recherche und der Vorschlag für S4b stehen in `docs/RESEARCH_NL_TO_ENGINE.md`; er ersetzt die Skizze in §11.2.
+- **Weiter kein Prototyp C** und kein Umbau eines Branches.

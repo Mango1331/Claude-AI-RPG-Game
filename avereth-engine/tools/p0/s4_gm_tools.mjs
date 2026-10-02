@@ -26,7 +26,7 @@ import * as v4 from '../../src/v4/interpret.js';
 import { guardCommands } from '../../src/v4/agency.js';
 import { gmToolRegistrations } from '../../src/gm/tools.js';
 import { GM_MODE_NOTE } from '../../src/gm/host.js';
-import { scoreCase, aggregate, COMMITMENTS } from './lib/score.mjs';
+import { scoreCase, aggregate, signTestP, fmtP, COMMITMENTS } from './lib/score.mjs';
 import { sampleCases, goldAnswer, CORPUS_FILE, PRODUCT_VOCAB_FILE } from './s1_interpreter.mjs';
 import {
     ENGINE_ROOT, OUT_ROOT, parseArgs, intArg, pool, percentile, mean, round, pct, readJsonl, readJson, writeJson, writeText,
@@ -34,7 +34,8 @@ import {
 } from './lib/util.mjs';
 
 export const TOOL = 's4_gm_tools';
-export const TOOL_VERSION = 2;
+// v3 (02.10.): end-to-end figures and the sign test in the summary (docs/ARCHITECTURE_REVIEW_GM_TOOLS.md §16); the measurement is unchanged
+export const TOOL_VERSION = 3;
 const CONTRACT_FILE = path.join(ENGINE_ROOT, 'content', 'narrator', 'Avereth_Narrator_Contract_v4.txt');
 const NEG_CATEGORIES = ['question', 'thought', 'hypothetical', 'plan', 'memory', 'negation', 'npc_action', 'quoted_speech', 'speech', 'neutral'];
 
@@ -181,6 +182,8 @@ const fmtGold = (g) => (g.anyOf ? g.anyOf.map(fmtGold).join(' | ') : fmtCmd(g));
 function aggRow(a) {
     return [`${a.negative_precision_pct ?? '–'} % (${a.negative_ok}/${a.negative_cases})`, `${a.recall_pct ?? '–'} %`, `${a.false_commands} / ${a.false_commitments}`, `${a.exact_cases_pct ?? '–'} %`];
 }
+// end to end: a case without a valid answer is an empty plan (score.mjs endToEnd); B's refused calls are misses either way
+const e2eRow = (a) => (a.end_to_end ? [`${a.end_to_end.recall_pct ?? '–'} % (${a.end_to_end.full_commands}/${a.end_to_end.gold_commands})`, `${a.end_to_end.exact_cases_pct ?? '–'} % (${a.end_to_end.exact_cases}/${a.end_to_end.cases})`] : ['–', '–']);
 
 function summaryMarkdown(run) {
     const { meta, agg, aggRaw, lat, tok, records, rounds, compare } = run;
@@ -193,21 +196,25 @@ function summaryMarkdown(run) {
     L.push('', '## Kennzahlen (wie S1; nach dem Agency-Guard, den B jetzt anwendet)', '');
     L.push(mdTable(['Kennzahl', 'B: Erzähler + Tools', 'B ohne Guard'], [
         ['Negativ-Präzision (keine falsche Agency)', aggRow(agg)[0], aggRow(aggRaw)[0]],
-        ['Recall (Typ und Argumente)', aggRow(agg)[1], aggRow(aggRaw)[1]],
+        ['Recall (Typ und Argumente), Fälle mit Antwort', aggRow(agg)[1], aggRow(aggRaw)[1]],
+        ['Recall Ende-zu-Ende (keine Antwort = verpasst)', e2eRow(agg)[0], e2eRow(aggRaw)[0]],
         ['falsche Befehle / Festlegungen', aggRow(agg)[2], aggRow(aggRaw)[2]],
-        ['Fälle exakt', aggRow(agg)[3], aggRow(aggRaw)[3]],
+        ['Fälle exakt, Fälle mit Antwort', aggRow(agg)[3], aggRow(aggRaw)[3]],
+        ['Fälle exakt Ende-zu-Ende', e2eRow(agg)[1], e2eRow(aggRaw)[1]],
     ]));
     if (compare) {
         L.push('', `## Gegen S1 (dieselben ${compare.cases} Fälle; S1: ${compare.s1_meta})`, '');
         L.push(mdTable(['Kennzahl', 'A: Interpreter + Guard (S1)', 'B: Erzähler + Tools + Guard'], [
             ['Negativ-Präzision', aggRow(compare.a)[0], aggRow(compare.b)[0]],
-            ['Recall (Typ und Argumente)', aggRow(compare.a)[1], aggRow(compare.b)[1]],
+            ['Recall (Typ und Argumente), Fälle mit Antwort', aggRow(compare.a)[1], aggRow(compare.b)[1]],
+            ['Recall Ende-zu-Ende', e2eRow(compare.a)[0], e2eRow(compare.b)[0]],
             ['falsche Befehle / Festlegungen', aggRow(compare.a)[2], aggRow(compare.b)[2]],
-            ['Fälle exakt', aggRow(compare.a)[3], aggRow(compare.b)[3]],
+            ['Fälle exakt, Fälle mit Antwort', aggRow(compare.a)[3], aggRow(compare.b)[3]],
+            ['Fälle exakt Ende-zu-Ende', e2eRow(compare.a)[1], e2eRow(compare.b)[1]],
             ['Latenz p50 bis zur Entscheidung', `${compare.a_p50_s ?? '–'} s`, `${compare.b_p50_s ?? '–'} s (+ der Prosa-Aufruf)`],
             ['Prompt-Token je Fall (Mittel)', `${compare.a_prompt ?? '?'} (+ Erzähler-Aufruf)`, `${compare.b_prompt ?? '?'} (+ Prosa-Aufruf)`],
         ]));
-        L.push('', `Nur A richtig: ${compare.only_a.length} · nur B richtig: ${compare.only_b.length} · beide falsch: ${compare.both_wrong.length}`);
+        L.push('', `Nur A richtig: ${compare.only_a.length} · nur B richtig: ${compare.only_b.length} · beide falsch: ${compare.both_wrong.length} · Vorzeichentest auf den abweichenden Fällen (exakt, zweiseitig): p = ${fmtP(compare.sign_p)}`);
         for (const [title, list] of [['Nur A richtig', compare.only_a], ['Nur B richtig', compare.only_b]]) {
             if (!list.length) continue;
             L.push('', `### ${title} (höchstens 30)`);
@@ -259,8 +266,8 @@ export function compareWithS1(s1, records) {
     return {
         cases: rows.length,
         s1_meta: `${s1.meta?.provider?.model ?? '?'}, Prompt ${s1.meta?.prompt ?? '?'}, Guard ${s1.meta?.guard ? 'an' : 'aus'}`,
-        a: aggregate(rows.map((x) => ({ score: x.a.score, predicted_count: x.a.predicted_count }))),
-        b: aggregate(rows.map((x) => ({ score: x.b.score, predicted_count: x.b.predicted_count }))),
+        a: aggregate(rows.map((x) => ({ score: x.a.score, predicted_count: x.a.predicted_count, gold: x.a.expect.length }))),
+        b: aggregate(rows.map((x) => ({ score: x.b.score, predicted_count: x.b.predicted_count, gold: x.b.expect.length }))),
         a_p50_s: sec(percentile(lats, 50)),
         b_p50_s: sec(percentile(blats, 50)),
         a_prompt: prom(rows.map((x) => x.a.tokens)),
@@ -268,6 +275,8 @@ export function compareWithS1(s1, records) {
         only_a: rows.filter((x) => x.a.score?.exact && !x.b.score?.exact).map((x) => ({ id: x.id, text: x.text, a: verdict(x.a.score), b: verdict(x.b.score) })),
         only_b: rows.filter((x) => !x.a.score?.exact && x.b.score?.exact).map((x) => ({ id: x.id, text: x.text, a: verdict(x.a.score), b: verdict(x.b.score) })),
         both_wrong: rows.filter((x) => !x.a.score?.exact && !x.b.score?.exact).map((x) => x.id),
+        // exact end to end (a case without a valid answer is never exact): the paired test on the discordant cases
+        sign_p: signTestP(rows.filter((x) => x.a.score?.exact && !x.b.score?.exact).length, rows.filter((x) => !x.a.score?.exact && x.b.score?.exact).length),
     };
 }
 
@@ -363,8 +372,8 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
         }
     }
     const records = await pool(tasks, concurrency);
-    const agg = aggregate(records.map((r) => ({ score: r.score, predicted_count: r.predicted_count })));
-    const aggRaw = aggregate(records.map((r) => ({ score: r.score_raw, predicted_count: r.raw_count })));
+    const agg = aggregate(records.map((r) => ({ score: r.score, predicted_count: r.predicted_count, gold: r.expect.length })));
+    const aggRaw = aggregate(records.map((r) => ({ score: r.score_raw, predicted_count: r.raw_count, gold: r.expect.length })));
     const answered = records.filter((r) => r.ok);
     const lats = answered.map((r) => r.ms).filter(Number.isFinite);
     const lat = { p50_s: sec(percentile(lats, 50)), p90_s: sec(percentile(lats, 90)), mean_s: sec(mean(lats)) };

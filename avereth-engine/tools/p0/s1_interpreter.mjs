@@ -29,7 +29,8 @@ import {
 } from './lib/util.mjs';
 
 export const TOOL = 's1_interpreter';
-export const TOOL_VERSION = 1;
+// v2 (02.10.): the summary also shows the end-to-end figures (docs/ARCHITECTURE_REVIEW_GM_TOOLS.md §16); the measurement is unchanged
+export const TOOL_VERSION = 2;
 export const CORPUS_FILE = path.join(ENGINE_ROOT, 'tests', 'eval', 'commands.jsonl');
 export const PRODUCT_VOCAB_FILE = path.join(ENGINE_ROOT, 'content', 'commands.json');
 
@@ -131,6 +132,9 @@ const fmtCmd = (c) => {
     return `${c.type}${args.length ? ` {${args.join(', ')}}` : ''}`;
 };
 const fmtGold = (g) => (g.anyOf ? g.anyOf.map(fmtGold).join(' | ') : fmtCmd(g));
+// the figures above are conditional on a valid answer; end to end a case without one is an empty plan (score.mjs endToEnd)
+const e2eRecall = (a) => (a.end_to_end ? `${a.end_to_end.recall_pct ?? '–'} % (${a.end_to_end.full_commands}/${a.end_to_end.gold_commands})` : '–');
+const e2eExact = (a) => (a.end_to_end ? `${a.end_to_end.exact_cases_pct ?? '–'} % (${a.end_to_end.exact_cases}/${a.end_to_end.cases})` : '–');
 
 function summaryMarkdown(run) {
     const { meta, agg, lat, tok, records, gates } = run;
@@ -144,7 +148,7 @@ function summaryMarkdown(run) {
     L.push('', '## Schwellen (Go/No-Go P0, Plan §16)', '');
     L.push(mdTable(['Kennzahl', 'Wert', 'Schwelle', 'erfüllt'], [
         ['Präzision auf Negativfällen (keine falsche Agency)', `${agg.negative_precision_pct ?? '–'} % (${agg.negative_ok}/${agg.negative_cases})`, `≥ ${GATES.negative_precision_pct} %`, gates.negative ? 'ja' : 'NEIN'],
-        ['Recall (Typ und Argumente)', `${agg.recall_pct ?? '–'} % von ${agg.gold_commands} Befehlen`, `≥ ${GATES.recall_pct} %`, gates.recall ? 'ja' : 'NEIN'],
+        ['Recall (Typ und Argumente, nur gültige Antworten)', `${agg.recall_pct ?? '–'} % von ${agg.gold_commands} Befehlen`, `≥ ${GATES.recall_pct} %`, gates.recall ? 'ja' : 'NEIN'],
         ['p50 Latenz', `${lat.p50_s ?? '–'} s`, `≤ ${GATES.p50_s} s`, gates.p50 ? 'ja' : 'NEIN'],
     ]));
     if (run.agg_raw) {
@@ -168,11 +172,13 @@ function summaryMarkdown(run) {
         ['Recall nur Befehlstyp', `${agg.type_recall_pct ?? '–'} %`],
         ['Präzision aller Befehle', `${agg.command_precision_pct ?? '–'} %`],
         ['falsche Befehle gesamt / davon Festlegungen (pay, buy, accept …)', `${agg.false_commands} / ${agg.false_commitments}`],
-        ['Fälle exakt richtig', `${agg.exact_cases_pct ?? '–'} %`],
+        ['Fälle exakt richtig (nur gültige Antworten)', `${agg.exact_cases_pct ?? '–'} %`],
         ['Reihenfolge bei Mehrfachhandlungen', `${agg.order_ok_pct ?? '–'} % von ${agg.order_cases}`],
         ['Referenzen richtig aufgelöst', `${agg.reference_ok_pct ?? '–'} % von ${agg.reference_args}`],
         ['gültig im 1. Versuch / nach Reparatur', `${run.valid.first_pct ?? '–'} % / ${run.valid.final_pct ?? '–'} %`],
         ['Fehler (keine Antwort)', `${agg.failed}`],
+        ['Recall Ende-zu-Ende (Fall ohne gültige Antwort: alle Befehle verpasst)', e2eRecall(agg)],
+        ['Fälle exakt Ende-zu-Ende', e2eExact(agg)],
         ['Latenz p50 / p90 / Mittel', `${lat.p50_s ?? '–'} / ${lat.p90_s ?? '–'} / ${lat.mean_s ?? '–'} s`],
         ['Token je Aufruf (Prompt / Output / Reasoning)', `${tok.prompt ?? '?'} / ${tok.completion ?? '?'} / ${tok.reasoning ?? '–'}`],
     ]));
@@ -304,8 +310,8 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
         }
     }
     const records = await pool(tasks, concurrency);
-    const agg = aggregate(records.map((r) => ({ score: r.score, predicted_count: r.predicted_count })));
-    const aggRaw = guardOn ? aggregate(records.map((r) => ({ score: r.score_raw ?? r.score, predicted_count: r.raw_count ?? r.predicted_count }))) : null;
+    const agg = aggregate(records.map((r) => ({ score: r.score, predicted_count: r.predicted_count, gold: r.expect.length })));
+    const aggRaw = guardOn ? aggregate(records.map((r) => ({ score: r.score_raw ?? r.score, predicted_count: r.raw_count ?? r.predicted_count, gold: r.expect.length }))) : null;
     const answered = records.filter((r) => r.ok);
     const lats = answered.map((r) => r.ms).filter(Number.isFinite);
     const lat = { p50_s: s(percentile(lats, 50)), p90_s: s(percentile(lats, 90)), mean_s: s(mean(lats)) };

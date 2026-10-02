@@ -87,7 +87,60 @@ export function scoreCase(kase, predicted) {
 
 const pctOf = (a, b) => (b ? Math.round((1000 * a) / b) / 10 : null);
 
-/** Aggregate over case scores: the S1 metrics (plan §11.2, §11.7). */
+/**
+ * End to end (docs/ARCHITECTURE_REVIEW_GM_TOOLS.md §16): what the pipeline would have done with every case. A case
+ * without a valid answer is an empty plan: its gold commands count as missed, it is never exact, and on a negative case
+ * it commits nothing. The other figures of aggregate() leave such cases out of their denominators: they are
+ * conditional on a valid answer (a diagnostic of the answers that came back). Each entry needs `gold` (the number of
+ * gold commands of its case) when it has no score; without it the end-to-end figures are null.
+ */
+export function endToEnd(scored) {
+    if (scored.some((s) => !s.score && !Number.isInteger(s.gold))) return null;
+    const goldOf = (s) => (s.score ? s.score.gold : s.gold);
+    const failed = scored.filter((s) => !s.score);
+    const pos = scored.filter((s) => goldOf(s) > 0);
+    const neg = scored.filter((s) => goldOf(s) === 0);
+    const gold = pos.reduce((n, s) => n + goldOf(s), 0);
+    const full = pos.reduce((n, s) => n + (s.score ? s.score.full : 0), 0);
+    const typeHits = pos.reduce((n, s) => n + (s.score ? s.score.full + s.score.type_only : 0), 0);
+    const exact = scored.filter((s) => s.score?.exact).length;
+    const negOk = neg.filter((s) => !s.score || s.score.negative_ok).length;
+    return {
+        cases: scored.length,
+        failed: failed.length,
+        failed_gold: failed.reduce((n, s) => n + s.gold, 0),
+        gold_commands: gold,
+        full_commands: full,
+        recall_pct: pctOf(full, gold),
+        type_recall_pct: pctOf(typeHits, gold),
+        exact_cases: exact,
+        exact_cases_pct: pctOf(exact, scored.length),
+        negative_cases: neg.length,
+        negative_ok: negOk,
+        negative_precision_pct: pctOf(negOk, neg.length),
+    };
+}
+
+/**
+ * Two-sided exact sign test (binomial, p = ½) on the discordant cases of a paired comparison on the same cases:
+ * b = cases only the first run got right, c = cases only the second got right. Concordant cases carry no information.
+ */
+export function signTestP(b, c) {
+    const n = b + c;
+    if (!n) return 1;
+    let p = 0.5 ** n;
+    let tail = 0;
+    for (let i = 0; i <= Math.min(b, c); i += 1) {
+        tail += p;
+        p = (p * (n - i)) / (i + 1);
+    }
+    return Math.min(1, 2 * tail);
+}
+
+/** A p value for a report: three decimals, or "< 0.001". */
+export const fmtP = (p) => (p < 0.001 ? '< 0.001' : String(Math.round(p * 1000) / 1000));
+
+/** Aggregate over case scores: the S1 metrics (plan §11.2, §11.7), conditional on a valid answer, and end_to_end. */
 export function aggregate(scored) {
     const answered = scored.filter((s) => s.score);
     const neg = answered.filter((s) => s.score.negative);
@@ -146,5 +199,6 @@ export function aggregate(scored) {
         reference_args: refArgs.total,
         reference_ok_pct: pctOf(refArgs.ok, refArgs.total),
         per_type: perType,
+        end_to_end: endToEnd(scored),
     };
 }

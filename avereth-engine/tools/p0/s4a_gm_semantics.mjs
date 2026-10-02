@@ -25,7 +25,7 @@ import { structuredCall, callTokens } from './lib/structured.mjs';
 import { loadVocabulary, loadScenes, guardContextFromScene } from './lib/interpreter.mjs';
 import * as v4 from '../../src/v4/interpret.js';
 import { guardCommands } from '../../src/v4/agency.js';
-import { scoreCase, aggregate, COMMITMENTS } from './lib/score.mjs';
+import { scoreCase, aggregate, fmtP, COMMITMENTS } from './lib/score.mjs';
 import { sampleCases, s1MockResponder, CORPUS_FILE, PRODUCT_VOCAB_FILE } from './s1_interpreter.mjs';
 import { compareWithS1 } from './s4_gm_tools.mjs';
 import {
@@ -34,7 +34,8 @@ import {
 } from './lib/util.mjs';
 
 export const TOOL = 's4a_gm_semantics';
-export const TOOL_VERSION = 1;
+// v2 (02.10.): end-to-end figures and the sign test in the summary (docs/ARCHITECTURE_REVIEW_GM_TOOLS.md §16); the measurement is unchanged
+export const TOOL_VERSION = 2;
 export const ARMS = ['gm', 'gm_rules'];
 const CONTRACT_FILE = path.join(ENGINE_ROOT, 'content', 'narrator', 'Avereth_Narrator_Contract_v4.txt');
 
@@ -77,6 +78,8 @@ const fmtCmd = (c) => {
 };
 const fmtGold = (g) => (g.anyOf ? g.anyOf.map(fmtGold).join(' | ') : fmtCmd(g));
 const aggRow = (a) => [`${a.negative_precision_pct ?? '–'} % (${a.negative_ok}/${a.negative_cases})`, `${a.recall_pct ?? '–'} %`, `${a.type_recall_pct ?? '–'} %`, `${a.false_commands} / ${a.false_commitments}`, `${a.exact_cases_pct ?? '–'} %`];
+// end to end: a case without a valid answer is an empty plan (score.mjs endToEnd); the rows above are conditional on one
+const e2eRow = (a) => (a.end_to_end ? [`${a.end_to_end.recall_pct ?? '–'} % (${a.end_to_end.full_commands}/${a.end_to_end.gold_commands})`, `${a.end_to_end.exact_cases_pct ?? '–'} % (${a.end_to_end.exact_cases}/${a.end_to_end.cases})`, `${a.end_to_end.failed} / ${a.end_to_end.failed_gold}`] : ['–', '–', '–']);
 
 function summaryMarkdown(run) {
     const { meta, agg, aggRaw, lat, tok, valid, records, compare } = run;
@@ -89,10 +92,13 @@ function summaryMarkdown(run) {
     L.push('', '## Kennzahlen (Scoring wie S1)', '');
     L.push(mdTable(['Kennzahl', 'nach Agency-Guard', 'ohne Guard'], [
         ['Negativ-Präzision', aggRow(agg)[0], aggRow(aggRaw)[0]],
-        ['Recall (Typ und Argumente)', aggRow(agg)[1], aggRow(aggRaw)[1]],
-        ['Recall nur Befehlstyp', aggRow(agg)[2], aggRow(aggRaw)[2]],
+        ['Recall (Typ und Argumente), nur gültige Antworten', aggRow(agg)[1], aggRow(aggRaw)[1]],
+        ['Recall Ende-zu-Ende (ungültig = verpasst)', e2eRow(agg)[0], e2eRow(aggRaw)[0]],
+        ['Recall nur Befehlstyp, nur gültige Antworten', aggRow(agg)[2], aggRow(aggRaw)[2]],
         ['falsche Befehle / Festlegungen', aggRow(agg)[3], aggRow(aggRaw)[3]],
-        ['Fälle exakt', aggRow(agg)[4], aggRow(aggRaw)[4]],
+        ['Fälle exakt, nur gültige Antworten', aggRow(agg)[4], aggRow(aggRaw)[4]],
+        ['Fälle exakt Ende-zu-Ende', e2eRow(agg)[1], e2eRow(aggRaw)[1]],
+        ['ohne gültige Antwort: Fälle / Gold-Befehle darin', e2eRow(agg)[2], ''],
         ['gültig im 1. Versuch / nach Reparatur', `${valid.first_pct ?? '–'} % / ${valid.final_pct ?? '–'} %`, ''],
         ['Latenz p50 / p90', `${lat.p50_s ?? '–'} / ${lat.p90_s ?? '–'} s`, ''],
         ['Token je Fall (Prompt / Output)', `${tok.prompt ?? '?'} / ${tok.completion ?? '?'}`, ''],
@@ -101,14 +107,16 @@ function summaryMarkdown(run) {
         L.push('', `## Gegen S1 (dieselben ${compare.cases} Fälle; S1: ${compare.s1_meta})`, '');
         L.push(mdTable(['Kennzahl', 'A: Interpreter + Guard (S1)', `S4a ${meta.arm} + Guard`], [
             ['Negativ-Präzision', aggRow(compare.a)[0], aggRow(compare.b)[0]],
-            ['Recall (Typ und Argumente)', aggRow(compare.a)[1], aggRow(compare.b)[1]],
-            ['Recall nur Befehlstyp', aggRow(compare.a)[2], aggRow(compare.b)[2]],
+            ['Recall (Typ und Argumente), nur gültige Antworten', aggRow(compare.a)[1], aggRow(compare.b)[1]],
+            ['Recall Ende-zu-Ende (ungültig = verpasst)', e2eRow(compare.a)[0], e2eRow(compare.b)[0]],
+            ['Recall nur Befehlstyp, nur gültige Antworten', aggRow(compare.a)[2], aggRow(compare.b)[2]],
             ['falsche Befehle / Festlegungen', aggRow(compare.a)[3], aggRow(compare.b)[3]],
-            ['Fälle exakt', aggRow(compare.a)[4], aggRow(compare.b)[4]],
+            ['Fälle exakt, nur gültige Antworten', aggRow(compare.a)[4], aggRow(compare.b)[4]],
+            ['Fälle exakt Ende-zu-Ende', e2eRow(compare.a)[1], e2eRow(compare.b)[1]],
             ['Latenz p50', `${compare.a_p50_s ?? '–'} s`, `${compare.b_p50_s ?? '–'} s`],
             ['Prompt-Token je Fall', `${compare.a_prompt ?? '?'}`, `${compare.b_prompt ?? '?'}`],
         ]));
-        L.push('', `Nur A richtig: ${compare.only_a.length} · nur S4a richtig: ${compare.only_b.length} · beide falsch: ${compare.both_wrong.length}`);
+        L.push('', `Nur A richtig: ${compare.only_a.length} · nur S4a richtig: ${compare.only_b.length} · beide falsch: ${compare.both_wrong.length} · Vorzeichentest auf den abweichenden Fällen (exakt, zweiseitig): p = ${fmtP(compare.sign_p)}`);
         for (const [title, list] of [['Nur A richtig', compare.only_a], ['Nur S4a richtig', compare.only_b]]) {
             if (!list.length) continue;
             L.push('', `### ${title}`);
@@ -210,8 +218,8 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
         return rec;
     });
     const records = await pool(tasks, concurrency);
-    const agg = aggregate(records.map((r) => ({ score: r.score, predicted_count: r.predicted_count })));
-    const aggRaw = aggregate(records.map((r) => ({ score: r.score_raw, predicted_count: r.raw_count })));
+    const agg = aggregate(records.map((r) => ({ score: r.score, predicted_count: r.predicted_count, gold: r.expect.length })));
+    const aggRaw = aggregate(records.map((r) => ({ score: r.score_raw, predicted_count: r.raw_count, gold: r.expect.length })));
     const answered = records.filter((r) => r.ok);
     const lats = answered.map((r) => r.ms).filter(Number.isFinite);
     const lat = { p50_s: sec(percentile(lats, 50)), p90_s: sec(percentile(lats, 90)), mean_s: sec(mean(lats)) };

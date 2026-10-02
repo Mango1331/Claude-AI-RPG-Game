@@ -16,6 +16,9 @@
 import { loadContentPack } from './src/content.js';
 import { onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory, reportRequest, applyReportAnswer } from './src/host.js';
 import { prepareGenerationAsync, processReplyAny, runExtraction, pendingExtraction, campaignRuntime, onEditedV4 } from './src/v4/runtime.js';
+import { prepareGmGeneration, processGmReply } from './src/gm/host.js';
+import { createGmSession, resolveCombat as resolveGmCombat, resolveStory as resolveGmStory, useAbilityOnWorld as useGmAbilityOnWorld, commitWorld as commitGmWorld, lookup as lookupGmState } from './src/gm/runtime.js';
+import { gmToolRegistrations } from './src/gm/tools.js';
 import { validateState } from './src/validate.js';
 import { newSeed } from './src/rng.js';
 import { parseSwaps, ENGINE_VERSION, NARRATOR_CONTRACT_REVISION } from './src/util.js';
@@ -23,7 +26,7 @@ import { parseSwaps, ENGINE_VERSION, NARRATOR_CONTRACT_REVISION } from './src/ut
 const MODULE = 'avereth';
 const PROMPT_KEY = 'avereth_engine';
 const LORE_KEY = 'avereth_lore_keys';
-const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: 'ledger=register', hud: 'closed', historyTurns: 4, stripTrackers: true, recoverReports: true, runtime: 'v4' };
+const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: 'ledger=register', hud: 'closed', historyTurns: 4, stripTrackers: true, recoverReports: true, runtime: 'v4', gmTools: false };
 const REPORT_WAIT_MS = 60000; // the next turn waits this long at most for a report still being asked for
 const LLM_TIMEOUT_MS = 120000;
 
@@ -33,6 +36,8 @@ let lastProjection = null;
 let legacyWarned = null;
 let pendingReport = null; // {chatId, id, hash, job}: the report request of the latest reply, while it runs
 let pendingWorld = null; // Runtime V4: {chatId, id, job}: the extraction of the latest reply, while it runs
+let gmSession = null; // experimental Narrator-as-GM transaction; committed only when the final assistant swipe arrives
+let gmToolsWarned = null;
 let llmPath = null; // Runtime V4: which call the last LLM request used ('custom endpoint' | 'generateRaw')
 
 function ctx() {
@@ -43,6 +48,46 @@ function settings() {
     const { extensionSettings } = ctx();
     extensionSettings[MODULE] = { ...DEFAULTS, ...(extensionSettings[MODULE] || {}) };
     return extensionSettings[MODULE];
+}
+
+function gmToolCapable(c = ctx()) {
+    if (typeof c.registerFunctionTool !== 'function') return false;
+    try {
+        return typeof c.isToolCallingSupported !== 'function' || !!c.isToolCallingSupported();
+    } catch {
+        return false;
+    }
+}
+
+function activeGmSession() {
+    if (!gmSession) return null;
+    return gmSession.chatId === ctx().getCurrentChatId() ? gmSession : null;
+}
+
+/** Register once; shouldRegister keeps the tools out of every non-GM generation. */
+function registerGmTools() {
+    const c = ctx();
+    if (typeof c.registerFunctionTool !== 'function') return;
+    const run = (fn) => (args) => {
+        const current = activeGmSession();
+        if (!current || !content) return { ok: false, code: 'no_active_gm_turn', message: 'There is no active Avereth GM-tool turn.' };
+        const out = fn(current, content, args || {});
+        if (out?.session) gmSession = out.session;
+        return out?.result || { ok: false, code: 'tool_failed', message: 'The Avereth tool returned no result.' };
+    };
+    const actions = {
+        lookup: (args) => {
+            const current = activeGmSession();
+            if (!current || !content) return { ok: false, code: 'no_active_gm_turn', message: 'There is no active Avereth GM-tool turn.' };
+            return lookupGmState(current, content, args || {});
+        },
+        resolveCombat: run(resolveGmCombat),
+        resolveStory: run(resolveGmStory),
+        useAbilityOnWorld: run(useGmAbilityOnWorld),
+        commitWorld: run(commitGmWorld),
+    };
+    const shouldRegister = () => !!activeGmSession() && !!settings().gmTools && campaignRuntime(ctx().chat) === 'v4';
+    for (const def of gmToolRegistrations(actions, shouldRegister)) c.registerFunctionTool(def);
 }
 
 async function loadContent() {
@@ -180,7 +225,30 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         if (pendingWorld && pendingWorld.chatId === c.getCurrentChatId() && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingWorld.id) {
             await pendingWorld.job;
         }
-        const r = await prepareGenerationAsync(c.chat, content, { type, settings: engineSettings(), llm: v4Llm });
+        let r;
+        const wantsGm = !!s.gmTools && campaignRuntime(c.chat) === 'v4';
+        if (wantsGm && gmToolCapable(c)) {
+            const g = prepareGmGeneration(c.chat, content, { type, settings: engineSettings() });
+            if (!g.fallback) {
+                r = g;
+                gmSession = g.gm ? createGmSession({
+                    chatId: c.getCurrentChatId(),
+                    userIndex: g.gm.userIndex,
+                    input: g.gm.input,
+                    beforeState: g.gm.beforeState,
+                }) : null;
+            } else {
+                gmSession = null;
+                r = await prepareGenerationAsync(c.chat, content, { type, settings: engineSettings(), llm: v4Llm });
+            }
+        } else {
+            gmSession = null;
+            if (wantsGm && !gmToolCapable(c) && gmToolsWarned !== c.getCurrentChatId()) {
+                gmToolsWarned = c.getCurrentChatId();
+                toastr.warning('Avereth Engine: Narrator GM tools are enabled, but the current SillyTavern/API configuration does not expose function calling. Falling back to Runtime V4.');
+            }
+            r = await prepareGenerationAsync(c.chat, content, { type, settings: engineSettings(), llm: v4Llm });
+        }
         setLoreKeys(r.loreKeys);
         if (r.action === 'clear' || r.action === 'none') {
             // 'clear': quiet/impersonate generations get no engine block; 'none': no campaign or no player message yet
@@ -238,6 +306,16 @@ async function onMessageReceived(messageId) {
     if (!settings().enabled || !content) return;
     const c = ctx();
     try {
+        const gs = activeGmSession();
+        if (gs && settings().gmTools && campaignRuntime(c.chat) === 'v4') {
+            const r = processGmReply(c.chat, Number(messageId), content, gs, { hud: settings().hud, stripTrackers: settings().stripTrackers });
+            gmSession = null;
+            if (!r.changed) return;
+            rerender(c, Number(messageId));
+            await c.saveChat();
+            renderDebug();
+            return;
+        }
         const recover = settings().recoverReports && typeof c.generateRaw === 'function';
         // the greeting of a new chat arrives here too (SillyTavern: MESSAGE_RECEIVED 'first_message') and starts the campaign
         const r = processReplyAny(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover, runtime: newRuntime() });
@@ -341,7 +419,7 @@ function renderDebug() {
     }
     const problems = state.meta.started ? validateState(state, content) : [];
     el.textContent = `Avereth Engine ${ENGINE_VERSION} | ` + (state.meta.started
-        ? `runtime ${state.meta.runtime || 'v3'}${state.meta.runtime === 'v4' && llmPath ? ` (LLM: ${llmPath})` : ''} | turn ${state.turn} | mode ${state.mode} | events ${c.chat.reduce((a, m) => a + (m.extra?.avereth?.events?.length || 0), 0)} | integrity: ${problems.length || errors.length ? `${problems.length + errors.length} problem(s)` : 'OK'}${lastContext ? ` | last block ~${lastContext.tokens} tokens` : ''}${lastProjection ? ` | history: ${lastProjection.removed} older message(s) left out, ${lastProjection.stripped} tracker block(s) removed` : ''} | lore: ${loreFromWorldInfo() ? `World Info${cardLorebook() ? ` (${cardLorebook()})` : ''}` : 'engine'}${contract ? ` | narrator contract: ${contract}` : ''}`
+        ? `runtime ${state.meta.runtime || 'v3'}${state.meta.runtime === 'v4' && llmPath ? ` (LLM: ${llmPath})` : ''} | turn ${state.turn} | mode ${state.mode} | events ${c.chat.reduce((a, m) => a + (m.extra?.avereth?.events?.length || 0), 0)} | integrity: ${problems.length || errors.length ? `${problems.length + errors.length} problem(s)` : 'OK'}${lastContext ? ` | last block ~${lastContext.tokens} tokens` : ''}${lastProjection ? ` | history: ${lastProjection.removed} older message(s) left out, ${lastProjection.stripped} tracker block(s) removed` : ''}${state.meta.runtime === 'v4' ? ` | GM tools: ${settings().gmTools ? (gmToolCapable(c) ? 'enabled' : 'unsupported') : 'off'}` : ''} | lore: ${loreFromWorldInfo() ? `World Info${cardLorebook() ? ` (${cardLorebook()})` : ''}` : 'engine'}${contract ? ` | narrator contract: ${contract}` : ''}`
         : 'no campaign in this chat');
     const dbg = document.getElementById('avereth_debug');
     if (dbg) dbg.value = settings().showDebug ? [lastContext?.text || '', ...problems, ...errors].join('\n') : '';
@@ -370,6 +448,7 @@ function mountSettings() {
         <option value="v4">V4 (interpreter + extractor, prose only)</option>
         <option value="v3">V3 (fact report in the reply)</option>
       </select></label>
+      <label class="avereth-row" title="Experimental V4 path: the Narrator interprets player intent itself and calls deterministic Avereth function tools for hard mechanics/state. Events are committed to the final assistant swipe. Falls back to normal V4 when tool calling is unavailable."><input type="checkbox" id="avereth_gm_tools"> Experimental Narrator GM tools</label>
       <label class="avereth-row">Context budget (tokens) <input type="number" id="avereth_budget" min="400" max="6000" step="100"></label>
       <label class="avereth-row">Rules allowance (tokens) <input type="number" id="avereth_rules" min="0" max="3000" step="100"></label>
       <label class="avereth-row">Recent turns not re-retrieved <input type="number" id="avereth_recent" min="0" max="50" step="1"></label>
@@ -409,6 +488,7 @@ function mountSettings() {
     };
     bind('avereth_enabled', 'enabled');
     bind('avereth_runtime', 'runtime', String);
+    bind('avereth_gm_tools', 'gmTools');
     bind('avereth_budget', 'budget', Number);
     bind('avereth_rules', 'rulesBudget', Number);
     bind('avereth_recent', 'recentTurns', Number);
@@ -433,13 +513,15 @@ function mountSettings() {
         return;
     }
     const c = ctx();
+    registerGmTools();
     const ev = c.eventTypes || c.event_types;
     c.eventSource.on(ev.MESSAGE_RECEIVED, onMessageReceived);
     c.eventSource.on(ev.MESSAGE_EDITED, onMessageEdited);
     // state is always re-folded from the chat, so these events only refresh the status line; the interceptor sets
     // the engine block before every generation (normal, swipe, regenerate, continue)
-    c.eventSource.on(ev.CHAT_CHANGED, () => { lastContext = null; lastProjection = null; setPrompt(''); setLoreKeys([]); renderDebug(); resumeReport(); });
-    for (const t of [ev.MESSAGE_DELETED, ev.MESSAGE_SWIPED]) c.eventSource.on(t, () => renderDebug());
+    c.eventSource.on(ev.CHAT_CHANGED, () => { gmSession = null; lastContext = null; lastProjection = null; setPrompt(''); setLoreKeys([]); renderDebug(); resumeReport(); });
+    c.eventSource.on(ev.MESSAGE_DELETED, () => { gmSession = null; renderDebug(); });
+    c.eventSource.on(ev.MESSAGE_SWIPED, () => renderDebug());
     mountSettings();
     renderDebug();
 })();

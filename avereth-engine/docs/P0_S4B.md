@@ -9,6 +9,8 @@ Stand 02.10.2026.
 | Korpus (91 Fälle) | `tests/eval/s4b_cases.jsonl` |
 | Szenen (7) | `tests/eval/s4b_scenes.json` |
 | Tests | `tests/p0/p0_s4b.test.js` |
+| Ergebnis und Auswertung | §13 (nachgetragen; §0–§12 unverändert) |
+| Entwurf, der daraus folgt | `docs/ARCHITECTURE_C.md` |
 
 Ersetzt die Skizze in `docs/RESEARCH_NL_TO_ENGINE.md` §7 und `docs/ARCHITECTURE_REVIEW_GM_TOOLS.md` §11.2.
 
@@ -436,3 +438,225 @@ node tools/p0/s4b_intent.mjs --report p0_out/s4b_a0/results.json p0_out/s4b_p1/r
 - **A0 läuft auf einem V3-gebauten Zustand mit V4-Kennzeichen.** Kämpfe gehen in V4 denselben Regex-Pfad (`route 'fight'`); die Ausgaben für die Beispielsätze waren identisch (Review §16.10).
 - **Ein Modell, Englisch, eine Wiederholung** (außer den Stabilitätsläufen), t 0,1.
 - **Statistik:** Zwischen nahen Armen erkennt S4b nur große Unterschiede. Für feinere braucht es einen größeren Lauf oder echte Protokolle.
+
+---
+
+## 13. Ergebnis und Abschlussauswertung (02.10.2026, nachgetragen)
+
+Die Abschnitte §0–§12 sind das Design vor dem Lauf. Sie bleiben unverändert. Gemessen ist auf Korpus v1 mit Werkzeug v1. Nichts davon wurde nachträglich umgewertet. Die Sensitivitätsrechnungen in §13.6 sind zusätzliche Lesarten derselben Rohdaten, keine Korrektur.
+
+### 13.1 Datengrundlage
+
+| Datei | Inhalt |
+|---|---|
+| `s4b_a0_summary.md` | A0 offline (deterministisch) |
+| `s4b_p1_summary.md`, `s4b_p1_results.json` | P1: JSON-Text, Planer-Rolle, RECENT |
+| `s4b_fc_summary.md`, `s4b_fc_results.json` | FC: Tool `plan_turn`, `tool_choice auto`, gleiche Information |
+| `s4b_fc_gm_summary.md`, `s4b_fc_gm_results.json` | FC mit dem vollen Erzählerkontext (≈ 8k Token) |
+| `s4b_p1_nohist_summary.md`, `s4b_p1_nohist_results.json` | P1 ohne RECENT |
+| `s4b_p1_stab_summary.md` | P1, 30 Fälle × 3 (ohne results.json) |
+| `s4b_fc_stab_summary.md`, `s4b_fc_stab_results.json` | FC, 30 Fälle × 3 |
+| `s4b_report_summary.md` | Vergleich aller Läufe |
+
+Die Rohpläne wurden für jeden nicht richtigen Fall von Hand gelesen. Bei P1-stab fehlen die Rohdaten. Dort stützt sich die Aussage nur auf die Zusammenfassung (30/30 identisch).
+
+### 13.2 Gemessen (Hauptläufe, je 1 Wiederholung, 91 Fälle)
+
+| Kennzahl | A0 | P1 | FC | FC_GM | P1 ohne RECENT |
+|---|---|---|---|---|---|
+| Absicht richtig | 36 (39,6 %) | **85 (93,4 %)** | 81 (89,0 %) | 82 (90,1 %) | 87 (95,6 %)¹ |
+| stille falsche Festlegungen | 17 | **4** | 7 | 4 | 3 |
+| davon auf den 17 A0-Fallen | – | 0 | 0 | 0 | 0 |
+| falsche Agency (Negativfälle) | 1 | 0 | 0 | 0 | 0 |
+| Ersetzung eines **genannten** Skills | (A0: ja) | 0 | 0 | 0 | 0 |
+| unnötige Rückfrage | 33,3 % | 0 % | 0 % | 0 %² | 0 % |
+| Rückfrage-Recall / -Präzision | 70 / 31 % | 90 / 90 % | 70 / 87,5 % | 80 / 75 % | 90 / 100 % |
+| gültig im 1. Versuch / nach Reparatur | – | 98,9 / 100 % | 85,7 / 96,7 % | 91,2 / 98,9 % | 100 / 100 % |
+| Latenz bis gültigem Plan p50 / p90 | 0 | 3,4 / 6,6 s | 1,6 / 4,8 s | 2,0 / 12,3 s | 4,0 / 9,1 s |
+| Prompt- / Output-Token je Fall | 0 | 1874 / 51 | 2731 / 63 | 8081 / 65 | 1801 / 53 |
+| Kaskade: ohne LLM entschieden | – | 11 (12,1 %) | 11 | 11 | 11 |
+| Kaskade: unsicher durchgelassen | – | 0 | 0 | 0 | 0 |
+| Kaskade = Arm (richtig, falsch) | – | ja | ja | ja | ja |
+| Guard hat entfernt | – | 0 | 0 | 0 | 0 |
+
+¹ Nicht direkt vergleichbar. Ohne RECENT akzeptiert L9 auch eine Rückfrage. Drei der fünf Verlaufsfälle hat P1 ohne RECENT so „richtig“ (§13.4).
+² Die Kennzahl zählt nur Handlungsfälle. FC_GM fragte zusätzlich in drei **Negativfällen** (k8_01, k8_02, k8_05). Dort war nichts zu tun.
+
+**Stabilität** (30 Fälle × 3):
+
+| | pass^3 | safe^3 | gleicher Plan | Latenz p50 |
+|---|---|---|---|---|
+| P1 | 30/30 | 30/30 | 30/30 | 3,6 s |
+| FC | 29/30 | 29/30 | 28/30 | 1,4 s |
+
+FCs einziger Wechsel ist k1_07 in Wiederholung 2: `skill` statt `attack` für Arcane Burst. Das ist dasselbe Schema-Artefakt wie in §13.3 (Klasse b). Er zählt in K-R mit, ist aber keine semantische Unsicherheit.
+
+### 13.3 Fall für Fall: woher die falschen Festlegungen kommen
+
+| Fall | Text (Szene) | wer | was | Ursache |
+|---|---|---|---|---|
+| k4_05 | „I Arcane Burst the scorpions next to me, then climb the rope ladder out“ (Kampf) | P1, P1-ohne, FC | 2. Absicht `go` statt flee/move | **a) Planer verletzt Regel 7.** Deterministisch erkennbar: `go` gibt es im Kampf nicht. FC_GM: flee (richtig). |
+| k3_11 | „I cast Flame Lance at the ceiling to bring it down over the hole“ (kein Kampf) | P1, FC, FC_GM | Ziel `feat.hole` statt `{new: ceiling}`; Skill, Art und Ziel-Text richtig | **a) Ziel-Zuordnung.** Geringe Schwere: gleiche Kosten, keine HP-Wirkung, die Decke steht im `goal`. P1 ohne RECENT: richtig (RECENT nennt das Loch). |
+| k1_07, k1_08 | „I unleash an arcane blast all around me“, „I cast Arcane Bust“ | FC | `skill` statt `attack`, Skill richtig | **b) Schema-Artefakt:** Das Schema unterscheidet `attack` und `skill` redundant, obwohl der Skill die Art festlegt. Die Absicht (Arcane Burst) ist richtig verstanden. |
+| k6_08 | „I blast Barkscorpion B“ | **alle 4 LLM-Arme** | Basic Attack → B | **c) Produktregel offen und Prompt widersprüchlich:** Regel 3 („Angriff ohne Skill-Hinweis = Basic Attack“) gegen Regel 6 (fragen). Gold: nur fragen. Alle Arme folgten Regel 3. |
+| k5_10 | „I scan the treeline for more wolves“ (Kampf) | **alle 4 LLM-Arme** | `search` | **c) Produktregel offen und Spezifikationslücke:** Was Wahrnehmung im Kampf ist, steht weder im Prompt noch im Gold-Schema. Deterministisch erkennbar: `search` gibt es im Kampf nicht. |
+| k6_07 | „I slash him“ (zwei Banditen ENGAGED) | FC, FC_GM | Basic Attack → Bandit A | **d) strittig:** RECENT nennt zuletzt „Bandit A raises his club“. Zugleich widerspricht RECENT dem Brett („Bandit B backs off“, aber B ist ENGAGED). Szenenfehler im Korpus. |
+
+**Nicht falsch festgelegt, aber nicht richtig gewertet:**
+
+| Fall | Text | wer | was | Einordnung |
+|---|---|---|---|---|
+| k2_13 | „I attack the salt merchant“ | P1, FC | „Do you really mean to attack Brede …?“ (`about: target`) | **e) Bewertungsartefakt:** Akzeptiert war eine Bestätigung nur mit `about: action`. Inhaltlich ist es die gewünschte Bestätigung. |
+| k1_04 | „I use my fire spear on Barkscorpion C“ | alle | `{new: "fire spear"}` → Engine verweigert | **d) Gold strittig:** könnte ein Gegenstand sein. Sicher: verweigert, nicht ersetzt. |
+| k6_05 | „I use my spell on it“ | FC | ungültig (Rückfrage ohne gültiges `kind`) | **b) Schnittstelle** |
+| k0_07 | „I cast Arcane Burst“ | FC_GM | kein Tool-Aufruf | **b) Schnittstelle** |
+
+**Klassen:**
+- a) echter Planerfehler (k4_05, k3_11);
+- b) Schema/Schnittstelle (k1_07, k1_08, k6_05, k0_07);
+- c) offene Produktregel (k6_08, k5_10);
+- d) Korpus strittig (k6_07, k1_04);
+- e) Bewertung (k2_13).
+
+Bei P1 stammen von den 4 falschen Festlegungen 2 aus c), 2 aus a). Von den beiden a)-Fehlern ist k4_05 deterministisch abfangbar, k3_11 hat geringe Schwere.
+
+### 13.4 Verlauf (RECENT), GM-Kontext, Kaskade
+
+**Verlauf.** D3 ist vorab festgelegt (§8) und **erfüllt**. Der Planer braucht RECENT.
+
+| | aufgelöst | gefragt | falsch |
+|---|---|---|---|
+| P1 | 5/5 | 0 | 0 |
+| P1 ohne RECENT | 2/5 | 3 | 0 |
+
+Die höhere Gesamtzahl von P1 ohne RECENT (87 gegen 85) ist **kein** Vorteil:
+- 3 Fälle zählen nur durch die L9-Lockerung als richtig.
+- Der echte Unterschied ist k3_11. Dort hat RECENT das Loch hervorgehoben.
+- Lehre: RECENT ist nötig, kann aber eine Zielwahl verzerren. Engine-Fakten (wer wen zuletzt angegriffen hat) sind die sicherere Form; Prosa nur als Ergänzung (Architektur C §5).
+
+**GM-Kontext.** FC_GM gegen FC: 5/4 Fälle, p = 1. Gegen P1: 2/5, p = 0,45.
+- Der Erzählerkontext bringt keinen messbaren Gewinn.
+- Er kostet das 3- bis 4-Fache an Prompt-Token, und p90 liegt bei 12,3 s.
+- Er hat drei Rückfragen auf Negativfällen erzeugt. Dafür hat er k4_05 richtig gelöst. Das ist ein einzelner Fall.
+
+**Kaskade.** In allen vier LLM-Armen gleich dem Arm, Fall für Fall:
+- 0 unsicher durchgelassen;
+- 11/91 Aufrufe gespart.
+
+Das Gate kostet also keine Qualität und bringt keine. Es spart nur Aufrufe auf exakten Befehlen. Wie groß dieser Anteil im echten Spiel ist, misst der Korpus nicht: Er ist absichtlich mit schweren Fällen angereichert.
+
+### 13.5 Die vorab festgelegten Kriterien
+
+| | P1 | FC | FC_GM | P1 ohne RECENT |
+|---|---|---|---|---|
+| K-S (≤ 3 falsch, ≤ 1 auf A0-Fallen) | **nein** (4; 0) | nein (7; 0) | nein (4; 0) | ja (3; 0) |
+| K-V (Problemklasse ≥ 80 % und ≥ A0 + 30 pp) | ja (91,8 %, A0 19,7 %) | ja (88,5 %) | ja | ja |
+| K-F (Recall ≥ 70 %, unnötig ≤ 15 %) | ja | ja (70 %, knapp) | ja | ja |
+| K-N (≤ 1 falsche Agency) | ja (0) | ja (0) | ja (0) | ja (0) |
+| K-R (Stabilität) | ja (30/30) | ja (29/30) | – | – |
+
+**K-S ist für P1 verfehlt. Das bleibt so stehen.**
+- Der vorab festgelegte Vergleich P1 gegen FC (§8: „liegt eine Seite um ≥ 2 falsche Festlegungen vorn, entscheidet das“) fällt für P1 aus: 4 gegen 7.
+- §13.6 zeigt, wovon dieses Urteil abhängt.
+
+### 13.6 Verzerren Bewertung oder Produktfälle die Architekturentscheidung?
+
+Die Rohdaten wurden in drei Lesarten neu bewertet. Die Lesarten sind Nachrechnungen und keine Umwertung des Gemessenen:
+- **V1:** wie gemessen.
+- **V2:** Die Art wird aus dem Skill abgeleitet: `skill` mit einem Angriffs-Skill zählt als `attack`. So arbeitet die Engine ohnehin.
+- **V3:** V2, und jede Rückfrage ist akzeptiert, wo eine Rückfrage akzeptiert ist, gleich zu welchem `about`.
+
+| Arm | V1 richtig / falsch | V2 | V3 | V2 ohne die 6 Produktfälle: falsch | V2 ohne Produkt- und strittige Fälle (k1_04, k6_07): falsch |
+|---|---|---|---|---|---|
+| P1 | 85 / 4 | 85 / 4 | 86 / 4 | 2 (k3_11, k4_05) | 2 |
+| FC | 81 / 7 | 83 / 5 | 84 / 5 | 3 (+ k6_07) | 2 |
+| FC_GM | 82 / 4 | 82 / 4 | 82 / 4 | 2 (k3_11, k6_07) | 1 |
+| P1 ohne RECENT | 87 / 3 | 87 / 3 | 87 / 3 | 1 (k4_05) | 1 |
+
+Antworten auf die Frage, ob ein guter semantischer Planer für eine offene Produktregel bestraft wurde:
+1. **Ja, in zwei Fällen, aber alle Arme gleich.** Bei k6_08 und k5_10 haben alle vier LLM-Arme identisch geantwortet. k6_08 folgte sogar wörtlich Prompt-Regel 3. Diese Fälle unterscheiden die Arme nicht. Sie entscheiden nur, ob P1 K-S absolut besteht: Ohne sie hat P1 2 falsche Festlegungen, also ≤ 3. **Die Architekturfrage hängt nicht daran.** Aus beiden folgt dieselbe Konsequenz:
+   - Produktregeln vor dem nächsten Lauf entscheiden;
+   - sie als Daten festhalten, nicht nur im Prompt;
+   - Prompt und Gold aus **demselben** Regeltext erzeugen.
+2. **Das Bewertungsartefakt k2_13** traf P1 und FC gleich. In V3 ist es weg.
+3. **Das Schema-Artefakt attack/skill traf nur FC** (k1_07, k1_08, der K-R-Wechsel). Daran hängt das vorab festgelegte Urteil „P1 vor FC“:
+   - V1: 4 gegen 7, also Abstand ≥ 2; P1 entscheidet.
+   - V2: 4 gegen 5, also Abstand 1. Der Vorzeichentest ergibt 2/0, p = 0,5. Damit sind beide gleichwertig innerhalb der Messgenauigkeit.
+4. **Die L9-Lockerung bevorzugt P1 ohne RECENT** (§13.4). Dass dieser Arm als einziger K-S besteht, ist kein Argument gegen RECENT.
+
+**Folgerung.** Bewertung und Produktfälle verzerren den **Vergleich der Schnittstellen**. Gegen FC fällt er in V1 schärfer aus, als die Semantik hergibt. Die **Architekturentscheidung** verzerren sie nicht: LLM-Semantik plus deterministische Prüfung danach. Diese Entscheidung ist in jeder Lesart dieselbe.
+
+### 13.7 Statistik: belegt, Richtung, Einzellauf
+
+Grundlage ist der exakte zweiseitige Vorzeichentest auf gepaarten Fällen. Bei 10 Paaren liegt die Bonferroni-Schwelle bei 0,005.
+
+| Aussage | Zahlen | Status |
+|---|---|---|
+| Jede LLM-Stufe versteht besser als A0 | „richtig“: 51/2, 48/3, 51/5, 52/1; p < 0,001 | **belegt** (vorab geplanter Test) |
+| FC (diese Form) braucht öfter eine Reparatur als P1 | ungültig im 1. Versuch 13 gegen 1, p = 0,0018 | **belegt**, aber nachträglich gewählter Test; betrifft die Schnittstelle |
+| FC ist je Aufruf schneller | FC in 71 von 91 Fällen schneller, p < 10⁻⁷. In 3 FC- gegen 3 P1-Läufe gleichgerichtet, auch FC_GM mit 4-fachem Prompt (p50 2,0 s) | **messbar**, aber nicht verschränkt gelaufen (Tageszeit), Ursache unbekannt; Output-Token ähnlich (51 gegen 63) |
+| LLM-Stufen legen seltener falsch fest als A0 | 17 gegen 4 (P1), p = 0,007; gegen FC p = 0,064 | Richtung, nachträglich |
+| P1 genauer als FC | 4/0, p = 0,125; V2 2/0, p = 0,5 | Richtung, nicht belegt |
+| P1 sicherer als FC | 3/0 auf falschen Festlegungen, p = 0,25. Nach der vorab festgelegten Regel P1 in V1; in V2 gleichwertig | Regel erfüllt, Ursache großteils Schema |
+| P1 stabiler als FC | 30/30 gegen 29/30. Der eine Wechsel ist das Schema-Artefakt | nicht belegt |
+| RECENT nötig | D3 erfüllt (5/5 gegen 2/5) | Entscheidungsregel erfüllt, 5 Fälle, Einzellauf |
+| Erzählerkontext hilft nicht | 5/2 und 4/5, p ≥ 0,45 | Einzellauf, kein Unterschied messbar |
+| Gate sicher | 0 unsicher durchgelassen bei 91 und 30 × 3 Fällen | gilt für den Korpus des Autors; live unbelegt |
+
+**Wichtig:** FC wird hier **nicht** pauschal verworfen. Die genaue Aussage lautet:
+
+> Unter diesen Bedingungen hatte die faire FC-Variante keinen Vorteil bei Verständnis oder Sicherheit. Die Bedingungen:
+> - ein Tool mit `kind`-Enum, die Rückfrage als `kind` im selben Tool;
+> - redundante `attack`/`skill`-Unterscheidung;
+> - `tool_choice auto`;
+> - dieses Modell, Englisch, eine Wiederholung.
+>
+> Dafür hatte sie systematische Erstversuchsfehler:
+> - 7 der 10 Rückfragefälle in K6 mit ungültigem `kind` im ersten Versuch;
+> - 6 Negativfälle ohne Tool-Aufruf.
+>
+> Sie war je Aufruf deutlich schneller.
+
+Nicht getestet:
+- `tool_choice required`;
+- ein eigenes Rückfrage-Tool;
+- Strict-Modus oder Constrained Decoding;
+- dasselbe Schema v2 über den Tool-Transport.
+
+Der letzte Punkt ist für die Latenz relevant (Architektur C §6).
+
+### 13.8 Zweitmeinung (ChatGPT) gegen die Rohdaten
+
+| Behauptung | Befund |
+|---|---|
+| P1 ist besser und stabiler als FC | **Teilweise.** Besser nach der vorab festgelegten Regel in V1, aber nicht statistisch belegt. 2 der 3 zusätzlichen FC-Fehler und der einzige Stabilitätswechsel sind ein Schema-Artefakt, der dritte ist strittig (k6_07). Belegt ist nur: FC braucht öfter eine Reparatur und ist schneller. |
+| K-S mit 4 falschen Festlegungen verfehlt | **Richtig gemessen.** Fehlt: 0 davon auf den A0-Fallen, 2 sind offene Produktregeln mit identischem Verhalten aller Arme, 1 ist deterministisch abfangbar. |
+| „blast → Basic Attack“ u. a. begründen eine deterministische semantische Validierungsschicht | **Die Schicht ja, die Begründung nur halb.** k6_08 ist kein Planerfehler im gemessenen Sinn: Das Modell folgte Regel 3. Er braucht eine **Produktregel als Daten** (Hinweisverben je Klasse), die der Validator durchsetzt. Die Schicht begründen k4_05 und k5_10 (Art im Modus nicht erlaubt), die Ersetzungssicherung und die Rückfrage-Regeln. Die Prüfung muss deterministisch sein, kein zweites LLM. |
+| Kette Gate → Planer → Validierung/Ambiguity Guard → Engine → Events → Erzähler → Persistenz | **Ab dem Planer: ja.** Das Gate vorne trägt in v1 nichts: kein Qualitätsgewinn, eine zweite Deutungsautorität, 12 % gesparte Aufrufe auf einem angereicherten Korpus. Empfehlung: Gate nur im Schattenmodus zum Messen (Architektur C §7). |
+
+### 13.9 Was S4b bewiesen hat, und was nicht
+
+**Bewiesen** (auf diesem Korpus, mit diesem Modell):
+1. Eine LLM-Semantikstufe löst Aliase, Tippfehler, Beschreibungen, Verlaufsbezüge, kreative Weltnutzung, Kampf + Welt und Suche/Reise **weit** besser als A heute: 93 % gegen 40 %, p < 0,001.
+2. Sie ersetzt einen **genannten** Skill nicht still. In 544 LLM-Entscheidungen (4 × 91 + 2 × 90) gab es 0 Ersetzungen und 0 falsche Agency. Unbekannte Skills kamen als `{new}` zurück und wurden verweigert.
+3. Sie fragt bei echter Mehrdeutigkeit (Recall 90 %) und kaum unnötig (0 % auf Handlungsfällen).
+4. Sie ist über drei Läufe stabil (P1 30/30).
+5. Der Erzählerkontext ist für die Semantik nicht nötig. RECENT ist nötig.
+6. Ein konservatives Gate kann ohne Fehler vorgeschaltet werden (Korpus). Es bringt aber keinen Qualitätsgewinn.
+
+**Nicht bewiesen:**
+- dass K-S ohne deterministische Nachprüfung erreicht wird (gemessen: nein);
+- ob P1 oder FC grundsätzlich besser ist (nur Schnittstellenform und Betrieb unterscheiden sich messbar);
+- Planer **mit** den 20 Story-Befehlen von V4 im selben Prompt. S4b hatte 8 Arten, S1/S4a die Story-Befehle getrennt;
+- echte Spielprotokolle statt eines Korpus vom selben Autor wie Gold, Gate und Prompt;
+- andere Modelle, andere Sprachen;
+- alles hinter dem Plan:
+  - ob eine Handlung wirkt;
+  - Weltfolgen und ihre Persistenz;
+  - Erzählertreue;
+  - Swipe/Regenerate mit dem Planer in SillyTavern;
+  - Gesamtlatenz eines Zuges;
+  - Aktionsökonomie bei mehreren Handlungen im Kampf;
+- welche FEATURES es im Produkt gibt. In S4b waren sie handgeschrieben. Im Produkt hat A heute keine Szenen-Merkmale, nur Objekte und Orte (`src/v4/catalog.js`).
+
+**Weiter:** Der Entwurf, der daraus folgt, steht in `docs/ARCHITECTURE_C.md`. Noch kein Code dafür.

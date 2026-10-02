@@ -879,4 +879,6 @@ Das bestätigt die Produktbeschreibung („unsichtbare Textknöpfe“) am Code:
 - **Keine Architekturentscheidung aus S4a allein.** Offen sind genau die Fälle aus §16.10. Die breite Recherche und der Vorschlag für S4b stehen in `docs/RESEARCH_NL_TO_ENGINE.md`; er ersetzt die Skizze in §11.2.
 - **Weiter kein Prototyp C** und kein Umbau eines Branches.
 
+> Nachtrag 02.10.2026 (2): S4b ist gelaufen. Auswertung in `docs/P0_S4B.md` §13, Entwurf C mit Migrationsplan in `docs/ARCHITECTURE_C.md` (ersetzt die Skizze in §7.2; Swipe: Plan auf der Spielernachricht, nicht auf dem Swipe).
+
 > Nachtrag 02.10.2026: S4b ist gebaut, siehe `docs/P0_S4B.md`. A0 offline: 39,6 % richtig, 17 stille falsche Festlegungen auf 91 Fällen; das Gate der Kaskade lässt keine davon durch.

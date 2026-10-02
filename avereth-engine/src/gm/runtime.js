@@ -26,7 +26,7 @@ export const GM_TOOLS_VERSION = 'gm-tools-0.1';
 const STORY_COMMANDS = new Set([
     'go', 'activity', 'take', 'drop', 'give', 'use', 'pay', 'buy', 'sell',
     'offer.accept', 'offer.decline', 'quest.accept', 'quest.turn_in', 'quest.abandon',
-    'guild.register', 'guild.promote', 'journey.continue', 'equip', 'unequip',
+    'guild.register', 'guild.promote', 'board.read', 'journey.continue', 'equip', 'unequip',
 ]);
 
 const WORLD_TYPES = new Set([
@@ -141,7 +141,7 @@ export function resolveCombat(session, content, args = {}) {
         const target = targetOf(session.beforeState, content, args.target);
         if (!target) return { session, result: error('unknown_target', 'Engage needs one unique living actor in the current scene.') };
         intent = { kind: 'engage', targets: [target] };
-    } else if (action === 'hold') intent = { kind: 'narrative', flags: { gm_tool_hold: true } };
+    } else if (action === 'hold') intent = { kind: 'hold' };
     else return { session, result: error('unsupported_action', 'Supported actions: attack, skill, stealth, flee, engage, hold.') };
 
     const r = playerTurn(session.beforeState, content, session.input, { msg: session.userIndex, intent });

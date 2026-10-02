@@ -133,35 +133,6 @@ Do not produce an overall verdict from intuition alone. State what is known, wha
 
 ## 3. Constraints that are probably worth preserving — but may still be challenged with evidence
 
-Do not revert the branch to "make the parser smarter".
-
-The intended boundary is:
-
-```text
-Narrator / AI GM
-    owns meaning, references, ordinary world causality and creative adjudication
-        |
-        v
-Avereth function tools
-    expose hard capabilities and canonical lookups
-        |
-        v
-existing deterministic domains
-    own resources, combat math, economy, progression, Guild/Quest hard state
-        |
-        v
-Event Store / fold(events) / HUD
-```
-
-A semantic failure should normally be fixed by:
-
-- better tool description/context;
-- better canonical lookup;
-- a clearer capability boundary;
-- asking for clarification when genuinely ambiguous;
-
-not by adding another regex for one English phrase.
-
 The prototype was built around the following working constraints:
 
 - hard numeric state should not become free-form prose;
@@ -191,6 +162,20 @@ Event Store / fold(events) / HUD
 ```
 
 A semantic failure in the prototype should not automatically be answered by another regex. But equally, do not assume function tools are automatically superior. Diagnose the failure at the architectural level first.
+
+### Preserve experiments as comparable artifacts
+
+Treat this branch as **Prototype B**, not as the branch that must eventually win.
+
+If your review identifies a materially different Architecture C worth implementing, prefer to preserve this branch as-is for comparison and create a sibling experimental branch from the same 4.2.1 / Gen 3.5 base commit. That lets us compare:
+
+- A: the original Gen 3.5 implementation;
+- B: this Narrator-GM/tool prototype;
+- C: your alternative/hybrid prototype;
+
+against the same live scenarios and measurements.
+
+Do not erase B merely to turn it into C. If only small fixes are needed to make B executable for fair testing, make those fixes here and document them.
 
 ## 4. Files introduced by this experiment
 
@@ -724,6 +709,11 @@ After research and tests, choose one of:
 - build a hybrid;
 - prototype a different C architecture;
 - run additional discriminating experiments before choosing.
+
+Preserve this branch as Prototype B for comparison.
+If C is materially different, create a sibling experimental branch from the same 4.2.1 base commit
+90bd4501be4c007fd3b80e8ee1c42257a4853df2 rather than rewriting B into C.
+Small fixes needed to make B testable may be committed here.
 
 If you continue with GM tools, treat src/gm/* as disposable prototype code.
 You may redesign its APIs completely if evidence supports that.

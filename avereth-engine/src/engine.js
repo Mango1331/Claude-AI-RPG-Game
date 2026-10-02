@@ -173,6 +173,7 @@ function pcActionOf(s, content, intent, text) {
         case 'skill': return { kind: 'skill', skill: intent.skill, dir: intent.dir, target: intent.target };
         case 'move': return { kind: 'move', dir: intent.dir, target: intent.target };
         case 'flee': return { kind: 'flee' };
+        case 'hold': return { kind: 'hold' };
         case 'ambiguous_target': return {
             note: `Alaric's attack needs a target: ${intent.candidates.map(name).join(' or ')}. Nothing was spent or rolled for it; stop at his decision and let the player name one (Core #23: never choose among several targets for him).`,
             notice: `Alaric: which target? ${intent.candidates.map((id) => playerLabel(s, id)).join(' or ')} (nothing spent, nothing rolled)`,

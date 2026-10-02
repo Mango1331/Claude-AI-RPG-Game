@@ -6,6 +6,7 @@ import { startCampaign, playerTurn } from '../../src/engine.js';
 import { fold, applyEvent } from '../../src/state.js';
 import { createGmSession, resolveCombat, resolveStory, useAbilityOnWorld, commitWorld, finalizeGmSession } from '../../src/gm/runtime.js';
 import { truth } from '../../src/knowledge.js';
+import { gmToolRegistrations } from '../../src/gm/tools.js';
 
 const content = await loadContent();
 
@@ -113,4 +114,62 @@ test('a conversational turn with no tool call still advances once when the assis
     assert.equal(final.events.filter((e) => e.t === 'turn.begun').length, 1);
     assert.equal(final.events.filter((e) => e.t === 'outcome.recorded').length, 1);
     assert.equal(final.actionResolved, false);
+});
+
+// ------------------------------------------------------------------------------------------------ review fixes
+test('a malformed story command is refused with its schema errors, not resolved silently wrong', () => {
+    const state = mageState();
+    const session = createGmSession({ chatId: 'test', userIndex: 3, input: '*I look for the other 2*', beforeState: state });
+    // before: ok=true with "UNDEFINED for a while" and "GOES — to somewhere"
+    const search = resolveStory(session, content, { commands: [{ type: 'activity', activity: 'search' }] });
+    assert.equal(search.result.ok, false);
+    assert.equal(search.result.code, 'invalid_commands');
+    assert.match(search.result.message, /missing required "kind"/);
+    assert.ok(search.result.expected_args.activity.kind, 'the expected arguments come back for the repair');
+    assert.equal(search.session, session, 'nothing is staged');
+    const go = resolveStory(session, content, { commands: [{ type: 'go', destination: 'the guild' }] });
+    assert.equal(go.result.code, 'invalid_commands');
+    assert.match(go.result.message, /missing required "to"/);
+});
+
+test('a journey the engine authorized can end: commit_world arrive moves the scene; without the go it is refused', () => {
+    const state = mageState();
+    const to = 'loc.redmarch.guild_hall';
+    let session = createGmSession({ chatId: 'test', userIndex: 3, input: '*I walk to the Adventurers Guild*', beforeState: state });
+    const went = resolveStory(session, content, { commands: [{ type: 'go', to, quote: 'walk to the Adventurers Guild' }] });
+    assert.equal(went.result.ok, true);
+    assert.notEqual(went.session.state.scene.at, to, 'go only authorizes the journey');
+    const arrived = commitWorld(went.session, content, { changes: [{ type: 'arrive', at: to }] });
+    assert.equal(arrived.result.ok, true);
+    assert.deepEqual(arrived.result.rejected, []);
+    assert.equal(arrived.session.state.scene.at, to);
+    // no go this turn: the applier refuses the arrival
+    session = createGmSession({ chatId: 'test', userIndex: 3, input: '*I look around*', beforeState: state });
+    const stray = commitWorld(session, content, { changes: [{ type: 'arrive', at: to }] });
+    assert.notEqual(stray.session.state.scene.at, to);
+});
+
+test('the story bridge keeps the agency guard: a question or a plan is not a commitment the Narrator may resolve', () => {
+    const state = mageState();
+    const ask = createGmSession({ chatId: 'test', userIndex: 3, input: '"What does it cost to register with the Guild?"', beforeState: state });
+    const asked = resolveStory(ask, content, { commands: [{ type: 'guild.register', quote: 'What does it cost to register with the Guild?' }] });
+    assert.equal(asked.result.ok, false);
+    assert.equal(asked.result.code, 'not_player_commitment');
+    assert.equal(asked.result.dropped[0].rule, 'question');
+    assert.equal(asked.session, ask);
+    const later = createGmSession({ chatId: 'test', userIndex: 3, input: '*Tomorrow I will pay the clerk the fee.*', beforeState: state });
+    const planned = resolveStory(later, content, { commands: [{ type: 'pay', amount_cp: 10, to: { new: 'the clerk' }, for: 'the fee', quote: 'Tomorrow I will pay the clerk the fee' }] });
+    assert.equal(planned.result.code, 'not_player_commitment');
+    assert.equal(planned.result.dropped[0].rule, 'plan');
+    // the quote is required: without it nothing is committed
+    const bare = resolveStory(later, content, { commands: [{ type: 'activity', kind: 'search', what: 'the hall', minutes: null, until: null }] });
+    assert.equal(bare.result.code, 'invalid_commands');
+    assert.match(bare.result.message, /quote/);
+});
+
+test('the tool definitions load and name what the runtime accepts', () => {
+    const defs = gmToolRegistrations({}, () => true);
+    assert.deepEqual(defs.map((d) => d.name), ['avereth_lookup', 'avereth_resolve_combat', 'avereth_resolve_story', 'avereth_use_ability_on_world', 'avereth_commit_world']);
+    assert.match(defs.find((d) => d.name === 'avereth_commit_world').description, /\barrive\b/);
+    assert.match(defs.find((d) => d.name === 'avereth_resolve_story').description, /quote/);
 });

@@ -3,7 +3,7 @@
 Stand: 02.10.2026  
 Branch: `chatgpt/narrator-gm-tools-2026-10-02`  
 Base: `claude/gen35-world-envelope-2026-10-01` @ `90bd4501be4c007fd3b80e8ee1c42257a4853df2`  
-Build on this branch: `4.3.0-alpha.1`
+Build on this branch: `4.3.0-alpha.2` (alpha.1 plus the fixes of `docs/ARCHITECTURE_REVIEW_GM_TOOLS.md` §13)
 
 > **Status:** experimental scaffold. The existing 4.2.1 / Gen 3.5 path is preserved and remains the fallback.  
 > Enable the new path explicitly with **Experimental Narrator GM tools** in the extension settings.
@@ -188,7 +188,7 @@ No new mechanical events are written to the player message before the Narrator h
 
 Tool calls mutate the staged state only.
 
-When the final assistant prose arrives, `src/gm/host.js` commits the full staged event list to **that assistant swipe** and renders the HUD from the resulting state.
+When the whole generation has ended (SillyTavern `GENERATION_ENDED`, after every tool recursion), `src/gm/host.js` commits the full staged event list to **the final assistant reply** and renders the HUD from the resulting state. (alpha.1 committed on `MESSAGE_RECEIVED`; SillyTavern emits that for the intermediate tool-call reply too, so the transaction closed before the first tool ran. Fixed in the review of 02.10.2026, `docs/ARCHITECTURE_REVIEW_GM_TOOLS.md` §5.)
 
 Why assistant-owned events?
 
@@ -206,7 +206,8 @@ Therefore the branch:
 - preserves the same `gmSession` through recursive tool generations;
 - builds subsequent Engine context from the already-staged state;
 - does not resolve the primary player action twice;
-- remembers pre-existing tool-call IDs when a fresh Regenerate/Swipe starts and removes those **only from the prompt copy**, so stale previous-branch tool results do not decide the new branch.
+- remembers the pre-existing tool-invocation lists (the `extra.tool_invocations` arrays themselves, not their ids: a provider may reuse an id) when a fresh Regenerate/Swipe starts and removes those **only from the prompt copy**, so stale previous-branch tool results do not decide the new branch;
+- keeps the transaction when SillyTavern deletes the empty intermediate reply before it runs the tools (`MESSAGE_DELETED`); it ends only when its player message is gone.
 
 This code is intentionally explicit because tool-call/regeneration behavior is one of the main areas Claude should harden further.
 
@@ -510,7 +511,7 @@ Avoid:
 
 The Engine should be easy for the GM to *ask*, not impossible for it to ignore.
 
-## 13. Known limitations of 4.3.0-alpha.1
+## 13. Known limitations of 4.3.0-alpha (alpha.1; items 11–13 found in the review)
 
 These are intentional handoff items, not hidden claims of completeness.
 
@@ -524,7 +525,10 @@ These are intentional handoff items, not hidden claims of completeness.
 8. **Tool transaction is memory-resident until final prose.** A browser reload/crash in the middle of a tool recursion loses the staged transaction; no half-state is persisted, but the generation must be retried.
 9. **Continue uses legacy V4.**
 10. **The old Narrator Contract is still revision 4.2.0.** GM-mode instructions are injected in the Engine block. Before production, decide whether tool behavior belongs in a new contract revision or remains runtime-specific.
-11. **No automatic alias database is added.** This is deliberate. The Narrator may map `Fire Lance` to the only established `Flame Lance`; if genuinely uncertain it should use lookup/ask, not manufacture a parser heuristic.
+11. **A swipe whose reply calls tools does not stay one swipe.** SillyTavern 1.19 does not delete the swiped reply when it carries tool calls (`type !== 'swipe'` in `public/script.js`): the swiped message keeps an empty new swipe, the tool messages and the final reply are appended after it. The state stays right (the empty swipe's inherited record no longer matches its text and is skipped), but the old swipe of that message can only be selected again after deleting what follows. Verified with `tools/st_live/run_gm.mjs`.
+12. **`avereth_commit_world` covers 18 of the 30 world-delta types.** Not reachable in GM mode: `learn`, `object.new`, `object.move`, `object.mark`, `offer`, `coin.gift`, `coerce`, `quest.offer`, `quest.close`, `listing.gone`, `recover`, `overreach` (an NPC's price offer, a gift, a robbery, knowledge). `arrive` was added in the review (without it no journey ended).
+13. **A pending NPC commitment (`pending_combat`) is not opened by `resolve_story` or `use_ability_on_world`.** Rare in V4 (a hostile commitment opens the fight in the reply that reports it), but a bypass.
+14. **No automatic alias database is added.** This is deliberate. The Narrator may map `Fire Lance` to the only established `Flame Lance`; if genuinely uncertain it should use lookup/ask, not manufacture a parser heuristic.
 
 ## 14. Tests added
 
@@ -534,7 +538,10 @@ These are intentional handoff items, not hidden claims of completeness.
 - creative Flame Lance use on scenery spending 16 MP without an `ATTACK_TERRAIN` command;
 - persistence of the resulting cave opening through the existing world/firewall path;
 - `look for the other two` being supplied as SEARCH and receiving the engine-owned search roll instead of GO;
-- a no-tool conversational turn still advancing exactly once at finalization.
+- a no-tool conversational turn still advancing exactly once at finalization;
+- (review 02.10.2026) a malformed story command refused with its schema errors; the agency guard on `resolve_story`; `arrive` ending a journey the engine authorized; the tool definitions loading.
+
+`tools/st_live/run_gm.mjs` checks the host side in a real SillyTavern (tool recursion, final commit, Swipe, tool-calling swipe, Regenerate, delete + retry, reload; with and without streaming, with reused tool-call ids). `tools/p0/s4_gm_tools.mjs` measures the semantic decision of the Narrator with these tools against the S1 corpus and the interpreter (the experiment of the review, `docs/ARCHITECTURE_REVIEW_GM_TOOLS.md` §11.1).
 
 The entire existing test suite must stay green before this experiment can replace any old path.
 

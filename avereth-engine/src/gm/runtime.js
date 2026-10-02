@@ -17,7 +17,9 @@ import { deriveCharacter, rawPower } from '../derived.js';
 import { playerTurn } from '../engine.js';
 import { playerTurnV4 } from '../v4/turn.js';
 import { applyWorld } from '../v4/world.js';
-import { buildCatalog } from '../v4/catalog.js';
+import { buildCatalog, guardContext } from '../v4/catalog.js';
+import { parseInterpretation } from '../v4/interpret.js';
+import { guardCommands } from '../v4/agency.js';
 import { sceneHandle } from '../v4/scene_handles.js';
 import { entityLabel, statusOf } from '../knowledge.js';
 
@@ -32,7 +34,7 @@ const STORY_COMMANDS = new Set([
 const WORLD_TYPES = new Set([
     'fact', 'thread', 'attitude', 'memory', 'person_new', 'person_named', 'creature_new',
     'enter', 'leave', 'position', 'aware', 'hostile', 'intent',
-    'quest_detail', 'quest_progress', 'quest_ready', 'time',
+    'quest_detail', 'quest_progress', 'quest_ready', 'time', 'arrive',
 ]);
 
 function error(code, message, extra = {}) {
@@ -177,9 +179,25 @@ export function resolveStory(session, content, args = {}) {
         if (!STORY_COMMANDS.has(c.type)) return { session, result: error('unsupported_command', `${c.type} is not exposed by the GM-tool bridge.`) };
         if (c.type === 'board.read') return { session, result: error('board_not_migrated', 'Board generation still uses the legacy path in this scaffold. Claude should give it a dedicated GM tool rather than hiding an LLM generator behind this bridge.') };
     }
+    // the same strict schema the interpreter answers against (argument names, enums, catalog ids, the quote): a
+    // malformed command is refused with its errors instead of resolving silently wrong ("GOES — to somewhere")
+    const vocab = content.commandVocab;
+    const catalog = buildCatalog(session.beforeState, content);
+    const parsed = parseInterpretation(JSON.stringify({ commands }), vocab, catalog);
+    if (parsed.errors.length) {
+        const expected = Object.fromEntries([...new Set(commands.map((c) => c.type))].map((t) => [t, { ...(vocab.commands.find((x) => x.type === t)?.args || {}), quote: 'the player\'s exact words' }]));
+        return { session, result: error('invalid_commands', `Fix the commands and call again: ${parsed.errors.join('; ')}`, { expected_args: expected }) };
+    }
+    // and the same agency guard: a question, a plan, a negation, another actor's deed is not his commitment
+    const guarded = guardCommands(session.input, parsed.commands, guardContext(session.beforeState, content, catalog));
+    if (guarded.dropped.length) {
+        return { session, result: error('not_player_commitment', 'The player message does not commit Alaric to these commands; narrate without resolving them, or resolve only what he does commit to.', {
+            dropped: guarded.dropped.map((d) => ({ type: d.command.type, quote: d.command.quote ?? null, rule: d.rule, why: d.why })),
+        }) };
+    }
     const r = playerTurnV4(session.beforeState, content, session.input, {
         msg: session.userIndex,
-        commands,
+        commands: parsed.commands,
         dropped: [],
         board: null,
         interp: { version: GM_TOOLS_VERSION, source: 'narrator_tool', ms: 0, failed: false },
@@ -304,6 +322,8 @@ function deltaOf(change, seq, state) {
             if (!q) throw new Error(`unknown quest ${change.quest}`);
             return { seq, type: 'quest.ready', quest: change.quest, note: change.note, alternative: change.alternative ?? null };
         case 'time': return { seq, type: 'time', minutes: Math.max(0, Math.round(Number(change.minutes || 0))) };
+        // the end of a journey the engine authorized (resolve_story go): the applier checks it against that go
+        case 'arrive': return { seq, type: 'arrive', at: change.at, with: Array.isArray(change.with) ? change.with : [] };
         default: throw new Error('unreachable');
     }
 }

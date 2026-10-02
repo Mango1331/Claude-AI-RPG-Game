@@ -1,4 +1,4 @@
-# Avereth Engine (v4.3.0-alpha.1 — Narrator GM tools experiment)
+# Avereth Engine (v4.3.0-alpha.2 — Narrator GM tools experiment)
 
 Deterministische Spiel-Engine für die Avereth-Kampagne als **SillyTavern-Extension**. Sie besitzt Regeln, Würfel, Kampagnenzustand und Figurenwissen. Das Sprachmodell erzählt.
 
@@ -37,6 +37,8 @@ Dazu der echte Live-Test: [docs/INTEGRATION_4_1.md](docs/INTEGRATION_4_1.md) §1
 - Der Erzählervertrag hat Revision 4.2.0: die Kartenbeschreibung ersetzen (4.2.1 ändert ihn nicht).
 
 **Build 4.3.0-alpha.1 (experimentell)** ändert nicht die Regeln, sondern den Turn-Flow: Der Narrator soll natürliche Spielerabsichten selbst semantisch verstehen und bei harten Grenzen Engine-Tools aufrufen. Event Sourcing, Combat-Math, Ressourcen, Progression, Guild/Quest-Hard-State und HUD bleiben Engine-owned. Der Modus ist standardmäßig aus und fällt bei fehlendem Function Calling auf V4/Gen 3.5 zurück. Details und bekannte Grenzen: [docs/ARCHITECTURE_GM_TOOLS.md](docs/ARCHITECTURE_GM_TOOLS.md).
+
+**Build 4.3.0-alpha.2** ist alpha.1 mit den Korrekturen des Architektur-Reviews, damit der Prototyp in echtem SillyTavern fair testbar ist: Commit erst nach der ganzen Tool-Rekursion, Reise endet über `arrive`, Story-Befehle gegen Schema und Agency-Guard. Das Review selbst (A/B/C-Vergleich, Recherche, Testplan, Empfehlung): [docs/ARCHITECTURE_REVIEW_GM_TOOLS.md](docs/ARCHITECTURE_REVIEW_GM_TOOLS.md).
 
 ## Was die Engine pro Zug tut (Runtime V3)
 
@@ -84,10 +86,10 @@ Der Zustand wird **pro Nachricht** gespeichert (`message.extra.avereth`):
 ## Installation
 
 1. Den Ordner `avereth-engine/` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren. „Install extension“ mit der Repository-Adresse geht nicht: SillyTavern erwartet `manifest.json` im Wurzelverzeichnis des Repositorys, hier liegt sie im Unterordner.
-   - **Welcher Stand?** Neue Änderungen liegen zuerst auf dem Branch `claude/happy-wright-1a4y19` und kommen erst mit dem Merge nach `main`; Build 4.1.0 (Integration des ChatGPT-Experiments) liegt auf `claude/v4-integration-2026-09-30`, Build 4.1.5 (Korrekturen nach den Nachprüfungen und nach den Live-Läufen 30.09. 14:56 und 22:41) auf `claude/v4-integration-fixes-2026-09-30`, Build 4.2.1 (Gen 3.5) auf `claude/gen35-world-envelope-2026-10-01`, das opt-in Narrator-GM-Experiment 4.3.0-alpha.1 auf `chatgpt/narrator-gm-tools-2026-10-02`. Den Ordner aus dem Stand kopieren, den du testen willst.
+   - **Welcher Stand?** Neue Änderungen liegen zuerst auf dem Branch `claude/happy-wright-1a4y19` und kommen erst mit dem Merge nach `main`; Build 4.1.0 (Integration des ChatGPT-Experiments) liegt auf `claude/v4-integration-2026-09-30`, Build 4.1.5 (Korrekturen nach den Nachprüfungen und nach den Live-Läufen 30.09. 14:56 und 22:41) auf `claude/v4-integration-fixes-2026-09-30`, Build 4.2.1 (Gen 3.5) auf `claude/gen35-world-envelope-2026-10-01`, das opt-in Narrator-GM-Experiment 4.3.0-alpha.2 auf `chatgpt/narrator-gm-tools-2026-10-02`. Den Ordner aus dem Stand kopieren, den du testen willst.
    - **Nur eine Kopie:** Liegt zusätzlich ein gleichnamiger Ordner unter `public/scripts/extensions/third-party/`, liefert SillyTavern pro Datei die Kopie aus `data/<user>/extensions/`. Alte Kopien löschen.
 2. SillyTavern neu laden. Unter Extensions erscheint **Avereth Engine**.
-   - **Build prüfen:** „Manage extensions“ zeigt die Version aus `manifest.json` (auf diesem Branch **4.3.0-alpha.1**). Dieselbe Nummer steht in der Statuszeile des Engine-Panels, in der letzten Zeile von `#audit` und bei jeder Nachricht im Event-Export (`build`). Nachrichten ohne `build` stammen von einem Stand vor 3.1.0.
+   - **Build prüfen:** „Manage extensions“ zeigt die Version aus `manifest.json` (auf diesem Branch **4.3.0-alpha.2**). Dieselbe Nummer steht in der Statuszeile des Engine-Panels, in der letzten Zeile von `#audit` und bei jeder Nachricht im Event-Export (`build`). Nachrichten ohne `build` stammen von einem Stand vor 3.1.0.
 3. **Charakterkarte:**
    - **Runtime V4 (Standard):** Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v4.txt`; dazu das Preset `presets/Avereth Narrator V4.json` und die API-Quelle **Custom (OpenAI-compatible)**. Schritt für Schritt: [docs/LIVETEST_V4.md §2](docs/LIVETEST_V4.md#2-einrichtung-in-sillytavern). Am besten eine eigene Karte für V4, damit laufende V3-Chats ihre behalten.
    - **Runtime V3:** Beschreibung = Inhalt von `content/narrator/Avereth_Narrator_Contract_v3.txt` (Stand 3.3; nach jedem Update neu einfügen);

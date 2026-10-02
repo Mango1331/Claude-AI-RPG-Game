@@ -236,8 +236,10 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
                     const same = existingGm && existingGm.userIndex === g.gm.userIndex && existingGm.inputHash === g.gm.inputHash;
                     if (same) gmSession = existingGm;
                     else {
-                        const staleToolCallIds = c.chat.slice(g.gm.userIndex + 1)
-                            .flatMap((m) => m.extra?.tool_invocations || []).map((x) => x.id).filter(Boolean);
+                        // the invocation lists themselves, not their ids: a provider may reuse a call id across swipes
+                        // (SillyTavern's prompt copy keeps the same extra.tool_invocations arrays)
+                        const staleToolInvocations = new Set(c.chat.slice(g.gm.userIndex + 1)
+                            .map((m) => m.extra?.tool_invocations).filter(Array.isArray));
                         gmSession = {
                             ...createGmSession({
                                 chatId: c.getCurrentChatId(),
@@ -245,7 +247,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
                                 input: g.gm.input,
                                 beforeState: g.gm.beforeState,
                             }),
-                            staleToolCallIds,
+                            staleToolInvocations,
                         };
                     }
                 } else gmSession = null;
@@ -290,12 +292,12 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         // prompt-only: retired tracker blocks out of the history, and only the last exchanges (the saved chat is untouched)
         lastProjection = projectPromptHistory(chat, { keepTurns: Number(s.historyTurns) || 0 });
         // SillyTavern stores successful tool invocations as system messages. On Regenerate/Swipe, old invocations from
-        // the previous branch must not teach the model to reuse stale results. Current-chain invocations have new ids.
-        const stale = new Set(activeGmSession()?.staleToolCallIds || []);
-        if (stale.size) {
+        // the previous branch must not teach the model to reuse stale results. Current-chain invocations are new lists.
+        const stale = activeGmSession()?.staleToolInvocations;
+        if (stale?.size) {
             for (let i = chat.length - 1; i >= 0; i--) {
                 const inv = chat[i]?.extra?.tool_invocations;
-                if (Array.isArray(inv) && inv.some((x) => stale.has(x.id))) chat.splice(i, 1);
+                if (Array.isArray(inv) && stale.has(inv)) chat.splice(i, 1);
             }
         }
         if (r.errors?.length) console.warn('[Avereth] fold errors', r.errors);
@@ -323,20 +325,34 @@ function rerender(c, id) {
     }
 }
 
+/** GM tools: the generation (with every tool recursion) has ended: commit the staged turn to the final reply, once. */
+async function onGenerationEnded() {
+    const gs = activeGmSession();
+    if (!gs || !content) return;
+    const c = ctx();
+    gmSession = null;
+    if (!settings().gmTools || campaignRuntime(c.chat) !== 'v4') return;
+    const id = c.chat.findLastIndex((m, i) => i > gs.userIndex && !m.is_user && !m.is_system);
+    if (id < 0) return; // stopped or failed before any reply: nothing staged is kept
+    try {
+        const r = processGmReply(c.chat, id, content, gs, { hud: settings().hud, stripTrackers: settings().stripTrackers });
+        if (!r.changed) return;
+        rerender(c, id);
+        await c.saveChat();
+        renderDebug();
+    } catch (err) {
+        console.error('[Avereth] GM commit failed', err);
+    }
+}
+
 async function onMessageReceived(messageId) {
     if (!settings().enabled || !content) return;
     const c = ctx();
     try {
-        const gs = activeGmSession();
-        if (gs && settings().gmTools && campaignRuntime(c.chat) === 'v4') {
-            const r = processGmReply(c.chat, Number(messageId), content, gs, { hud: settings().hud, stripTrackers: settings().stripTrackers });
-            gmSession = null;
-            if (!r.changed) return;
-            rerender(c, Number(messageId));
-            await c.saveChat();
-            renderDebug();
-            return;
-        }
+        // GM tools: SillyTavern emits MESSAGE_RECEIVED for intermediate replies too (saveReply before the tool calls run,
+        // finalizeIntermediaryMessage while streaming). Committing here closed the transaction before the first tool ran;
+        // the commit happens once, when the whole tool recursion has ended (onGenerationEnded).
+        if (activeGmSession() && settings().gmTools && campaignRuntime(c.chat) === 'v4') return;
         const recover = settings().recoverReports && typeof c.generateRaw === 'function';
         // the greeting of a new chat arrives here too (SillyTavern: MESSAGE_RECEIVED 'first_message') and starts the campaign
         const r = processReplyAny(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover, runtime: newRuntime() });
@@ -537,11 +553,14 @@ function mountSettings() {
     registerGmTools();
     const ev = c.eventTypes || c.event_types;
     c.eventSource.on(ev.MESSAGE_RECEIVED, onMessageReceived);
+    c.eventSource.on(ev.GENERATION_ENDED, onGenerationEnded);
     c.eventSource.on(ev.MESSAGE_EDITED, onMessageEdited);
     // state is always re-folded from the chat, so these events only refresh the status line; the interceptor sets
     // the engine block before every generation (normal, swipe, regenerate, continue)
     c.eventSource.on(ev.CHAT_CHANGED, () => { gmSession = null; lastContext = null; lastProjection = null; setPrompt(''); setLoreKeys([]); renderDebug(); resumeReport(); });
-    c.eventSource.on(ev.MESSAGE_DELETED, () => { gmSession = null; renderDebug(); });
+    // SillyTavern deletes an empty intermediate reply right before it runs the tool calls: the GM turn survives that; it
+    // ends only when its player message itself is gone
+    c.eventSource.on(ev.MESSAGE_DELETED, () => { const g = activeGmSession(); if (g && ctx().chat.length <= g.userIndex) gmSession = null; renderDebug(); });
     c.eventSource.on(ev.MESSAGE_SWIPED, () => renderDebug());
     mountSettings();
     renderDebug();

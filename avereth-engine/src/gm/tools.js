@@ -45,11 +45,11 @@ export function gmToolRegistrations(actions, shouldRegister) {
         {
             name: 'avereth_resolve_story',
             displayName: 'Avereth: resolve hard story action',
-            description: 'Transitional bridge for HARD deterministic non-combat commitments in the PLAYER MESSAGE: travel, timed activity/search, taking/dropping/giving/using inventory, trade/payment, offers, Guild registration/promotion, quest accept/turn-in/abandon, journey continue, equip/unequip. Supply existing V4 command objects directly; there is no semantic interpreter before you. Do NOT use this for ordinary dialogue, looking at scenery, NPC reactions or creative environmental consequences. board.read is intentionally not migrated yet.',
+            description: 'Transitional bridge for HARD deterministic non-combat commitments in the PLAYER MESSAGE: travel, timed activity/search, taking/dropping/giving/using inventory, trade/payment, offers, Guild registration/promotion, quest accept/turn-in/abandon, journey continue, equip/unequip. Supply existing V4 command objects directly; there is no semantic interpreter before you. Every command needs quote: the exact words of the player message that commit Alaric to it. They are checked against the V4 command schema (argument names, enums, catalog ids; a malformed command returns invalid_commands with the expected arguments) and against the agency guard (a question, a plan, a negation or a deed of someone else returns not_player_commitment). Do NOT use this for ordinary dialogue, looking at scenery, NPC reactions or creative environmental consequences. board.read is intentionally not migrated yet.',
             parameters: {
                 type: 'object',
                 properties: {
-                    commands: { ...objectArray, description: 'Existing V4 command objects, in player-action order. Include type and its normal arguments; seq is optional.' },
+                    commands: { ...objectArray, description: 'Existing V4 command objects, in player-action order. Include type, its normal arguments and quote (the player\'s exact words); seq is optional.' },
                 },
                 required: ['commands'],
                 additionalProperties: false,
@@ -78,7 +78,7 @@ export function gmToolRegistrations(actions, shouldRegister) {
         {
             name: 'avereth_commit_world',
             displayName: 'Avereth: commit world consequence',
-            description: 'Persist durable WORLD consequences you established while narrating. This still passes through Avereth firewall/ownership rules. It cannot directly award Alaric coin, XP, Guild payout/rank, or arbitrarily mutate protected inventory/HP. Supported change types: fact, thread, attitude, memory, person_new, person_named, creature_new, enter, leave, position, aware, hostile, intent, quest_detail, quest_progress, quest_ready, time. Examples: {type:"fact",s:"<place id>",p:"stone_floor",o:"blasted open into a person-sized shaft"}; {type:"leave",who:"npc.id"}; {type:"quest_progress",quest:"quest.id",objective:"find the den",status:"done"}.',
+            description: 'Persist durable WORLD consequences you established while narrating. This still passes through Avereth firewall/ownership rules. It cannot directly award Alaric coin, XP, Guild payout/rank, or arbitrarily mutate protected inventory/HP. Supported change types: fact, thread, attitude, memory, person_new, person_named, creature_new, enter, leave, position, aware, hostile, intent, quest_detail, quest_progress, quest_ready, time, arrive (only where an engine-authorized go took him). Examples: {type:"fact",s:"<place id>",p:"stone_floor",o:"blasted open into a person-sized shaft"}; {type:"leave",who:"npc.id"}; {type:"arrive",at:"<place id>"}; {type:"quest_progress",quest:"quest.id",objective:"find the den",status:"done"}.',
             parameters: {
                 type: 'object',
                 properties: {

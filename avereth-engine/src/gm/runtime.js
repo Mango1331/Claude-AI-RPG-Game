@@ -13,7 +13,7 @@
 // - world changes still pass through applyWorld(), the firewall, ownership rules and event sourcing.
 import { applyEvent } from '../state.js';
 import { clone, hash32, normText, num, roundHalfUp } from '../util.js';
-import { deriveCharacter } from '../derived.js';
+import { deriveCharacter, rawPower } from '../derived.js';
 import { playerTurn } from '../engine.js';
 import { playerTurnV4 } from '../v4/turn.js';
 import { applyWorld } from '../v4/world.js';
@@ -201,9 +201,7 @@ function abilityPower(state, content, skill) {
     if (!skill.attack) return null;
     const sheet = state.entities.pc.sheet;
     const derived = deriveCharacter(sheet, content);
-    const scaled = (skill.attack.scaling || []).reduce((sum, t) => sum + (sheet.stats[t.stat] || 0) * Number(t.coef || 0), 0);
-    const derivedPart = Number(skill.attack.share ?? 1) * Number(derived[String(skill.attack.uses || '').toLowerCase()] ?? 0);
-    return num(Number(skill.attack.base || 0) + scaled + derivedPart);
+    return rawPower(skill, sheet.stats, { atk: derived.atk, matk: derived.matk });
 }
 
 /**

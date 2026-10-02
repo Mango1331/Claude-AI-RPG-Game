@@ -23,7 +23,7 @@ export const GM_MODE_NOTE =
  * Build the narrator context without resolving the player's semantics first. A temporary turn/outcome exists only to
  * make the existing context renderer show the current message and the GM-mode rule; it is never persisted.
  */
-export function prepareGmGeneration(chat, content, { type = 'normal', settings = {} } = {}) {
+export function prepareGmGeneration(chat, content, { type = 'normal', settings = {}, session = null } = {}) {
     if (type === 'quiet' || type === 'impersonate') return { action: 'clear', dirty: false };
     if (type === 'continue') return { fallback: true, reason: 'continue_uses_legacy_v4' };
     if (!hasCampaign(chat)) return { action: 'none', dirty: false };
@@ -40,9 +40,15 @@ export function prepareGmGeneration(chat, content, { type = 'normal', settings =
     // If this user message already owns legacy events (e.g. an old save/regenerate edge), do not double-resolve it.
     if (Array.isArray(rec(msg)?.events) && rec(msg).events.length) return { fallback: true, reason: 'already_resolved' };
 
-    const temp = clone(s);
-    applyEvent(temp, { t: 'turn.begun', d: { turn: temp.turn + 1, input_hash: hash32(msg.mes), input: String(msg.mes || '').slice(0, 240) } });
-    applyEvent(temp, { t: 'outcome.recorded', d: { outcome: { kind: 'note', text: GM_MODE_NOTE }, situations: [] } });
+    // Function calling performs follow-up generations inside the same player turn. Keep the staged transaction and
+    // render the next prompt from its current state instead of rebuilding from the pre-turn state.
+    const resumed = !!session && session.userIndex === u && session.inputHash === hash32(msg.mes);
+    const staged = resumed && session.state;
+    const temp = staged ? clone(session.state) : clone(s);
+    if (!staged) {
+        applyEvent(temp, { t: 'turn.begun', d: { turn: temp.turn + 1, input_hash: hash32(msg.mes), input: String(msg.mes || '').slice(0, 240) } });
+        applyEvent(temp, { t: 'outcome.recorded', d: { outcome: { kind: 'note', text: GM_MODE_NOTE }, situations: [] } });
+    }
 
     const p = lastReplyIndex(chat, u);
     const prev = p >= 0 ? rec(chat[p]) : null;
@@ -57,13 +63,14 @@ export function prepareGmGeneration(chat, content, { type = 'normal', settings =
         lore: settings.engineLore !== false,
         envelope: settings.engineEnvelope !== false,
     });
+    if (staged) context.text = `${context.text}\n\n${GM_MODE_NOTE}`;
     return {
         action: 'context',
         context,
         loreKeys: loreKeys(temp, content),
         dirty: false,
         errors: before.errors,
-        gm: { userIndex: u, input: msg.mes, inputHash: hash32(msg.mes), beforeState: s },
+        gm: { userIndex: u, input: msg.mes, inputHash: hash32(msg.mes), beforeState: resumed ? session.beforeState : s },
     };
 }
 

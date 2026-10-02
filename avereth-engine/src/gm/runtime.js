@@ -12,7 +12,7 @@
 //   remains GM adjudication and is persisted separately with commitWorld();
 // - world changes still pass through applyWorld(), the firewall, ownership rules and event sourcing.
 import { applyEvent } from '../state.js';
-import { clone, hash32, normText, num } from '../util.js';
+import { clone, hash32, normText, num, roundHalfUp } from '../util.js';
 import { deriveCharacter } from '../derived.js';
 import { playerTurn } from '../engine.js';
 import { playerTurnV4 } from '../v4/turn.js';
@@ -222,9 +222,16 @@ export function useAbilityOnWorld(session, content, args = {}) {
     const events = [];
     const emit = (e) => { applyEvent(s, e); events.push(e); };
     const sheet = s.entities.pc.sheet;
-    const cost = skill.cost ? { resource: skill.cost.resource, amount: Number(skill.cost.amount || 0) } : null;
+    const profLevel = sheet.skills?.[skill.id]?.prof || 1;
+    const prof = content.rules.proficiency.levels[String(profLevel)] || { cost: 1, power: 1 };
+    const cost = skill.cost ? {
+        resource: skill.cost.resource,
+        amount: roundHalfUp(Number(skill.cost.amount || 0) * Number(prof.cost ?? 1)),
+        base_amount: Number(skill.cost.amount || 0),
+        proficiency: profLevel,
+    } : null;
     if (cost && Number(sheet[cost.resource] || 0) < cost.amount) {
-        return { session, result: error('insufficient_resource', `${skill.name} costs ${cost.amount} ${cost.resource.toUpperCase()}, but Alaric has only ${sheet[cost.resource] || 0}.`) };
+        return { session, result: error('insufficient_resource', `${skill.name} costs ${cost.amount} ${cost.resource.toUpperCase()} at proficiency P${profLevel}, but Alaric has only ${sheet[cost.resource] || 0}.`) };
     }
 
     emit({ t: 'turn.begun', d: { turn: s.turn + 1, input_hash: hash32(session.input), input: session.input.slice(0, 240) } });
@@ -238,6 +245,8 @@ export function useAbilityOnWorld(session, content, args = {}) {
             cost,
             range: skill.range || null,
             raw_power: abilityPower(session.beforeState, content, skill),
+            proficiency_power: Number(prof.power ?? 1),
+            modified_power: skill.attack ? num(abilityPower(session.beforeState, content, skill) * Number(prof.power ?? 1)) : null,
             damage_type: skill.attack?.damage_type || null,
             effects: skill.effects || [],
         },

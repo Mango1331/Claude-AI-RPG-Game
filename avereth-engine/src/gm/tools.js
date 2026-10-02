@@ -16,7 +16,7 @@ export function gmToolRegistrations(actions, shouldRegister) {
                 type: 'object',
                 properties: {
                     kind: { type: 'string', enum: ['scene', 'skills', 'entity', 'quest', 'object', 'place', 'catalog'] },
-                    ref: { type: ['string', 'null'], description: 'Canonical id or exact visible/name reference; unnecessary for scene/skills/catalog.' },
+                    ref: { type: 'string', description: 'Canonical id or exact visible/name reference; omit for scene/skills/catalog.' },
                 },
                 required: ['kind'],
                 additionalProperties: false,
@@ -32,9 +32,9 @@ export function gmToolRegistrations(actions, shouldRegister) {
                 type: 'object',
                 properties: {
                     action: { type: 'string', enum: ['attack', 'skill', 'stealth', 'flee', 'engage', 'hold'] },
-                    skill: { type: ['string', 'null'], description: 'Canonical known skill id or exact skill name for attack/skill.' },
-                    target: { type: ['string', 'null'], description: 'Canonical current actor id or exact current scene handle/name when required.' },
-                    move: { type: ['string', 'null'], enum: ['closer', 'away', null] },
+                    skill: { type: 'string', description: 'Canonical known skill id or exact skill name for attack/skill; omit when the action needs no skill.' },
+                    target: { type: 'string', description: 'Canonical current actor id or exact current scene handle/name; omit when no target is required.' },
+                    move: { type: 'string', enum: ['closer', 'away'], description: 'Optional declared combat movement coupled to the action.' },
                 },
                 required: ['action'],
                 additionalProperties: false,
@@ -66,7 +66,7 @@ export function gmToolRegistrations(actions, shouldRegister) {
                 properties: {
                     skill: { type: 'string', description: 'Canonical known skill id or exact skill name.' },
                     target_description: { type: 'string', description: 'Concrete fictional target as established in the scene.' },
-                    target_ref: { type: ['string', 'null'], description: 'Canonical object/place/entity id when one exists; otherwise null.' },
+                    target_ref: { type: 'string', description: 'Canonical object/place/entity id when one exists; omit when the target has no canonical id.' },
                     goal: { type: 'string', description: 'What Alaric is trying to achieve with the ability.' },
                 },
                 required: ['skill', 'target_description', 'goal'],
@@ -83,7 +83,7 @@ export function gmToolRegistrations(actions, shouldRegister) {
                 type: 'object',
                 properties: {
                     changes: { ...objectArray, description: 'Durable typed world changes in story order.' },
-                    evidence: { type: ['string', 'null'], description: 'Optional concise statement of what the final narration establishes; used only as validation context.' },
+                    evidence: { type: 'string', description: 'Optional concise statement of what the final narration establishes; used only as validation context.' },
                 },
                 required: ['changes'],
                 additionalProperties: false,

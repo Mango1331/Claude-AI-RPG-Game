@@ -34,7 +34,7 @@ import {
 } from './lib/util.mjs';
 
 export const TOOL = 's4_gm_tools';
-export const TOOL_VERSION = 1;
+export const TOOL_VERSION = 2;
 const CONTRACT_FILE = path.join(ENGINE_ROOT, 'content', 'narrator', 'Avereth_Narrator_Contract_v4.txt');
 const NEG_CATEGORIES = ['question', 'thought', 'hypothetical', 'plan', 'memory', 'negation', 'npc_action', 'quoted_speech', 'speech', 'neutral'];
 
@@ -85,6 +85,11 @@ export function readAnswer(answer) {
         commits: calls.filter((c) => c.name === 'avereth_commit_world').length,
         prose: String(answer.content || '').trim().length > 0,
     };
+}
+
+/** expected_args of B's invalid_commands answer (src/gm/runtime.js resolveStory): the arguments of each named type. */
+function expectedArgs(vocab, story) {
+    return Object.fromEntries([...new Set(story.map((c) => c.type))].map((t) => [t, { ...(vocab.commands.find((x) => x.type === t)?.args || {}), quote: 'the player\'s exact words' }]));
 }
 
 /** The tool result B's runtime would give a lookup here: the scene as the engine knows it. */
@@ -154,7 +159,8 @@ async function runCase(provider, c, scene, { system, tools, vocab, reasoning, ma
         messages.push({ role: 'assistant', content: r.content || '', tool_calls: a.calls.map((x) => ({ id: x.id, type: 'function', function: { name: x.name, arguments: JSON.stringify(x.args) } })) });
         for (const x of a.calls) {
             const result = x.name === 'avereth_lookup' ? lookupResult(scene, x.args)
-                : x.name === 'avereth_resolve_story' ? { ok: false, code: 'invalid_commands', message: `Fix the commands and call again: ${storyErrors.join('; ')}` }
+                // the same answer as resolveStory in src/gm/runtime.js (until v1 of this tool sent no expected_args)
+                : x.name === 'avereth_resolve_story' ? { ok: false, code: 'invalid_commands', message: `Fix the commands and call again: ${storyErrors.join('; ')}`, expected_args: expectedArgs(vocab, a.story) }
                     : { ok: false, code: 'not_simulated' };
             messages.push({ role: 'tool', tool_call_id: x.id, content: JSON.stringify(result) });
         }
@@ -240,7 +246,7 @@ function summaryMarkdown(run) {
     return L.join('\n');
 }
 
-function compareWithS1(s1, records) {
+export function compareWithS1(s1, records) {
     if (!s1?.records) return null;
     const a = new Map(s1.records.filter((r) => (r.rep ?? 1) === 1).map((r) => [r.id, r]));
     const both = records.filter((r) => r.rep === 1 && a.has(r.id));

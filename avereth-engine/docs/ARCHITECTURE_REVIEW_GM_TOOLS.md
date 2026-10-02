@@ -541,3 +541,130 @@ Erlaubt nach Handoff §3: kleine Korrekturen, damit B fair testbar ist. Keine Um
 - **Die Zahlen zu Token und Latenz von B und C in §8 sind Schätzungen** aus dem 4.2.1-Log. Prompt-Caching beim Provider kann Bs Folgerunden deutlich verbilligen; das ist unbekannt.
 - **Der Agency-Guard ist am S1-Korpus entworfen** (P0 §10). Seine Wirkung in S4 ist so optimistisch wie dort.
 - **D7 (Swipe-Struktur) kann sich mit einer neuen SillyTavern-Version ändern.** Der Smoke prüft das bei jedem Lauf.
+
+---
+
+## 15. Nachtrag 02.10.2026: Auswertung S1 / S4 mit dem echten Modell
+
+Läufe des Spielers über SillyTavern:
+- Modell: GLM-5.3-Flash.
+- Stichprobe: dieselbe geschichtete mit 80 Fällen (33 negativ, 61 Gold-Befehle).
+- S1: Interpreter, t 0,1.
+- S4 v1: Erzähler mit GM-Tools, t 0,9, bis 3 Runden.
+
+Die Zahlen in §11.1 sind damit gemessen. Die Entscheidungsregel von §11.1 wird hier **nicht** mechanisch angewandt. Grund: Die fallweise Prüfung zeigt, dass S4 die Kernfrage nicht sauber misst.
+
+### 15.1 Gemessen
+
+| | A: S1 | B: S4 |
+|---|---|---|
+| Negativ-Präzision nach Guard (roh) | 100 % (93,9 %) | 90,9 % (84,8 %) |
+| Recall Typ + Argumente | 93,4 % | 29,5 % |
+| Fälle exakt | 95 % | 53,8 % |
+| abgewiesene `resolve_story`-Aufrufe | – | 61 in 30 Fällen; in 13 Fällen alle drei Runden |
+| Latenz p50 bis zur Entscheidung (nur erste Runde) | 3,0 s | 11,9 s (10,4 s) |
+| Prompt-Token je Fall (erste Anfrage) | 2.802 | 10.975 (6.690) |
+
+### 15.2 Was S1 misst, was S4 misst
+
+**S1** misst den dedizierten Interpreter: Rolle, 13 Agency-Regeln, 9 Kontrastbeispiele, Befehlsliste mit Typnamen und Argumentnamen, Format, eine Reparatur, Guard. Nicht gemessen ist As Regex-Frontend (Kampf, Schleichen; §4.2) und die Prosa.
+
+**S4 v1** misst vier Dinge zugleich:
+1. das Verständnis der Spielerabsicht;
+2. ob der Erzähler sich für ein Tool entscheidet oder selbst erzählt;
+3. ob er die internen Befehls- und Feldnamen errät;
+4. die Wirkung der Unterschiede im Prompt: t 0,9 gegen 0,1, keine Regeln, keine Beispiele.
+
+Die Ursache für (3) steht im Code:
+- `src/gm/tools.js` beschreibt `commands` als Array beliebiger Objekte (`additionalProperties: true`). Die Domänen nennt die Beschreibung nur als Prosa („Guild registration/promotion, quest accept/turn-in/abandon …“), **keinen einzigen Typnamen und kein Argument**.
+- `resolveStory` (`src/gm/runtime.js`) antwortet bei einem unbekannten Typ mit `expected_args: {<falscher Typ>: {}}`. Die Liste der gültigen Typen erfährt das Modell nie.
+- **Werkzeugfehler (von mir):** S4 v1 schickte bei einer Abweisung nicht einmal `expected_args` mit, anders als die Laufzeit. Behoben in S4 v2. Die vorliegenden Zahlen stammen aus v1.
+
+### 15.3 Die 61 Abweisungen
+
+| Fehlerart (Fehlerzeilen) | Anzahl | Beispiele |
+|---|---|---|
+| unbekannter Befehlsname | 46 | `guild_register`, `register`, `guild_registration`; `quest_accept`, `accept_quest`, `quest.take`; `quest_turn_in`, `turn_in`; `accept_offer`, `accept`; `guild_promotion`, `guild_rank_up`; `quest_abandon`; `search`, `journey.search`; `rest`, `sleep`, `wait`, `camp`; `consume`; `travel`; `trade` |
+| falscher Feldname | 53 | `where` / `destination` / `at` statt `to`; `target` / `what` / `item` statt `object`; `who` / `npc` statt `to`; `amount` statt `amount_cp`; `offer` an `pay` |
+| Typfeld fehlt | 5 | `{"action":"take",…}`, `{"command":"quest_abandon",…}` |
+
+In **jedem** abgewiesenen Fall ist die gemeinte Handlung aus dem geratenen Namen eindeutig: `guild_register` heißt `guild.register`, `quest_turnin` heißt `quest.turn_in`. Das sind Schnittstellenfehler, keine Fehldeutungen.
+
+Ein weiterer Schnittstellenfehler (real_v2_07): Das Modell hat im `quote` den Tippfehler „coint“ zu „coin“ korrigiert. Der Guard fand die Worte darum nicht in der Nachricht und verwarf das richtige `give` (`no_evidence`).
+
+### 15.4 Fallweise Einordnung der 37 Fälle, die B nicht exakt traf
+
+| Klasse | Fälle | Gold-Befehle | Fälle |
+|---|---|---|---|
+| **Schnittstelle**: Absicht richtig, Name, Feld oder Zitat falsch | 17 | 25 | real_v2_07, v3_03, v3_13, v4_13, v5_05, v6_03, v7_04, v11_08, syn_offer_01/02, syn_buy_02, syn_use_02, syn_promote_01/02, syn_unequip_01, syn_abandon_01/02 |
+| **Nicht verfügbar**: `board.read` ist in B absichtlich gesperrt, und die Tool-Beschreibung sagt das | 3 + 1 teilweise | 4 | real_v4_06, v6_05, v7_07, v10_05 |
+| **Zuständigkeit**: Absicht laut Prosa richtig verstanden, aber selbst erzählt statt Engine | 9 | 9 | real_v2_05 (Spuren, nur Fakt), v4_04 (Registrierung), v6_08 (warten), syn_decline_01, syn_buy_01 (Preis selbst genannt), syn_sell_01/02, syn_drop_01, syn_unequip_02 |
+| **Semantik**: falsch verstanden | 2 | 2 | real_v11_13 („put them on the floor“ wurde `give` an den Reeve: falsche Festlegung); real_v11_14 (Abgabe bei der Gilde ausgelassen) |
+| **Tool-Wahl**: Kampf-Tool außerhalb eines Kampfs, auf Negativfällen | 3 | – | real_v2_04 („continue hunting“ → stealth, falsch); real_v10_12 („get ready for combat“ → hold, falsch); real_v2_06 („sneaking … walk silently“ → stealth: vertretbar, nur außerhalb des S1-Golds) |
+| beide falsch (auch A) | 2 | 3 | real_v12_19, syn_decline_02 |
+
+Dazu zwei Gegenbefunde:
+- Die zwei Agency-Fehler, die der Guard abfängt (neg_accept_01 Frage, neg_turnin_05 NPC-Handlung), machen **A und B roh gleich**.
+- B war in zwei Fällen besser als A:
+  - real_v3_04: kanonische Orts-ID statt `{new}`;
+  - syn_equip_02: A hat die Rüstung übersehen.
+
+### 15.5 Was daraus folgt
+
+- **„B fällt klar hinter A zurück“ stimmt für den Prototyp, aber nicht in der Höhe von 29,5 % gegen 93,4 %.**
+  - Werden die 25 Schnittstellen-Befehle als verstanden gezählt, kommt B auf ≈ 70 % Recall.
+  - Ohne die 4 gesperrten `board.read` sind es ≈ 75 % (43 von 57); A liegt dort bei 93 % (53 von 57).
+  - Die verbleibende Lücke von rund 18 Prozentpunkten bilden fast ganz die **9 Zuständigkeitsfehler**, dazu zwei semantische Fehler und drei falsche Kampf-Tools.
+- **Die Zuständigkeitsfehler sind ein echter Architekturbefund für B.** Das Modell versteht die Fiktion, bucht sie aber nicht.
+  - Bs eigene Anweisungen verstärken das. Der GM-Hinweis sagt: „For ordinary dialogue and soft fiction no player-action tool is required“. Die Tool-Beschreibung sagt: „Do NOT use this for ordinary dialogue … NPC reactions“. „Too expensive, I'll pass“ oder „I'd like a room“ sehen nach Dialog aus.
+  - Folge im Spiel: Ein Verkauf wird erzählt, aber kein Coin gebucht. Das ist stiller Zustandsverlust.
+- **Die Kernhypothese ist damit nicht widerlegt.** S4 kann nicht trennen, ob die Fehler aus dem Verständnis, der Schnittstelle oder der Zuständigkeitsentscheidung kommen. Die Prosa der Zuständigkeitsfälle und die geratenen Namen sprechen eher für gutes Verständnis.
+- **ChatGPTs Hypothese** (S4 vermischt Semantik mit Schema) trägt. Sie ist am Code und an allen 37 Fällen bestätigt, mit drei Ergänzungen:
+  1. `board.read` war gesperrt;
+  2. das Werkzeug schickte keine `expected_args` mit;
+  3. die Temperatur unterschied sich.
+
+  Und mit einer Einschränkung: Selbst bei perfekter Schnittstelle bliebe B nach diesen Daten etwa 18 Prozentpunkte zurück, wegen der Zuständigkeitsentscheidung. Diese Entscheidung ist der Kern von B, nicht ein Prompt-Detail.
+
+### 15.6 S4a: die Semantikfrage ohne Tool-Schnittstelle (gebaut)
+
+`tools/p0/s4a_gm_semantics.mjs`, Tests `tests/p0/p0_s4a.test.js`.
+
+**Frage:** Erfasst ein allgemeiner GM-/Erzähler-Kontext die Spielerhandlung so zuverlässig wie der spezialisierte Interpreter, wenn beide dieselbe explizite Ausgabeschnittstelle haben?
+
+**Gleich wie S1:**
+- Stichprobe (`sampleCases`) und Gold;
+- User-Nachricht (Katalog + Spielernachricht, `interpreterUser`);
+- die Ausgabeschnittstelle, wortgleich aus dem Interpreter-Prompt geschnitten: Befehlsliste mit Typ- und Argumentnamen, Antwortzeile, `PLAIN_FORMAT`;
+- lokale Schemaprüfung mit einer Reparatur;
+- Agency-Guard und S1-Scorer;
+- t 0,1, max 2.500 Token, Reasoning wie konfiguriert.
+
+**Anders als S1:** nur der Systemkontext. Er besteht aus dem Erzählervertrag v4 und einem neutralen GM-Planungsschritt: „decide which actions Alaric himself takes … that the engine must resolve … an empty plan is a valid answer“.
+
+**Nicht enthalten:** Function Calling, Prosa, `commit_world`, Engine.
+
+**Zwei Arme:**
+- `gm` (Hauptfrage): ohne die Agency-Regeln und Beispiele des Interpreters.
+- `gm_rules` (Kontrollarm): mit ihnen. Er zeigt, ob schon der Erzählerkontext Genauigkeit kostet, wenn die Spezialisierung dabei ist.
+
+**Kein Duplikat:** S1 kennt keinen Erzählerkontext, S4 hat keine explizite Schnittstelle.
+
+**Auswertung vorab festgelegt:**
+- **S4a gm etwa auf S1-Niveau** (Recall ≥ A − 3 pp, Negativ-Präzision nach Guard ≥ A − 2 pp, auf derselben Stichprobe): Bs Rückstand kommt aus Schnittstelle und Zuständigkeit, nicht aus dem Verständnis. Ein Planer mit Erzählerkontext (C) wäre semantisch tragfähig.
+- **S4a gm deutlich darunter, gm_rules auf S1-Niveau:** Die Spezialisierung (Regeln, Beispiele) trägt die Genauigkeit, nicht der Kontext.
+- **Beide deutlich darunter:** Der Erzählerkontext selbst schadet. Ein schlanker, spezialisierter Planer vor der Engine bleibt nötig.
+- **Bei 80 Fällen und 61 Gold-Befehlen** ist ein Prozentpunkt weniger als ein Befehl. Unterschiede unter etwa 3 Befehlen sind Rauschen; fallweise vergleichen (`--compare`).
+
+**Befehle (seriell):**
+
+```powershell
+cd "<DEIN_REPO_PFAD>\avereth-engine"
+git pull
+node tools/p0/s4a_gm_semantics.mjs --dry-run
+node tools/p0/s4a_gm_semantics.mjs --arm gm --sample 80 --concurrency 1 --compare p0_out/s1_now/results.json
+node tools/p0/s4a_gm_semantics.mjs --arm gm_rules --sample 80 --concurrency 1 --compare p0_out/s1_now/results.json
+```
+
+- `p0_out/s1_now/results.json` ist der S1-Lauf, den du schon hast. Liegt er unter einem anderen Pfad, gib diesen an.
+- Zurückschicken: `p0_out\s4a_gm\summary.md` und `p0_out\s4a_gm_rules\summary.md`, bei Bedarf auch die `results.json`.

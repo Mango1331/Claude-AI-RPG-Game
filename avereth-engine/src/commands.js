@@ -323,15 +323,23 @@ export function runCommands(state, content, text) {
             case 'help': panels.push(['[SYSTEM // HELP]', ...HELP.map(([c, d]) => `${c.padEnd(20)} — ${d}`)].join('\n')); break;
             case 'system': llm = { kind: 'system', question: arg }; break;
             case 'assign': {
-                const pairs = [...arg.matchAll(/\b(STR|VIT|AGI|INT|PER|WIL)\b\s*\+?\s*(\d+)/gi)];
-                if (!pairs.length) { panels.push('[SYSTEM // ASSIGN]\nUsage: #assign <STAT> <n> (e.g. #assign PER 3 AGI 2)'); break; }
+                // "#assign INT 3" or "#assign INT 3 WIL 1 AGI 1": the whole command is checked first and applied whole
+                // or not at all (no partial assignment); a stat named twice is refused, not added up
+                const parsed = parseAssign(arg, content);
+                const free = pcSheet(s).free_points;
+                const total = parsed.pairs.reduce((a, p) => a + p.amount, 0);
+                const error = parsed.error || (total > free ? `${total} points asked, only ${free} free Stat Point${free === 1 ? '' : 's'} available` : null);
+                if (error) {
+                    panels.push(`[SYSTEM // ASSIGN]\nNOT APPLIED — ${error}. Nothing was assigned.\nUsage: #assign <STAT> <n> [<STAT> <n> …] (e.g. #assign INT 3 WIL 1 AGI 1); stats: ${content.rules.stats.join(', ')}\nFree Stat Points: ${free}`);
+                    break;
+                }
                 const lines = ['[SYSTEM // ASSIGN]'];
                 if (s === state) s = clone(state);
-                for (const [, stat, n] of pairs) {
-                    const r = assignStat(pcSheet(s), stat.toUpperCase(), parseInt(n, 10), content);
-                    if (r.errors) { lines.push(`${stat.toUpperCase()} +${n}: REJECTED — ${r.errors.join(' ')}`); continue; }
+                for (const { stat, amount } of parsed.pairs) {
+                    const r = assignStat(pcSheet(s), stat, amount, content);
+                    if (r.errors) throw new Error(`#assign: ${r.errors.join(' ')}`); // checked above
                     for (const e of r.events) { applyEvent(s, e); events.push(e); }
-                    lines.push(`${stat.toUpperCase()} +${n} -> ${pcSheet(s).stats[stat.toUpperCase()]}`);
+                    lines.push(`${stat} +${amount} -> ${pcSheet(s).stats[stat]}`);
                 }
                 lines.push(`Free Stat Points left: ${pcSheet(s).free_points} (current HP/MP/STA are not refilled)`);
                 panels.push(lines.join('\n'));
@@ -341,4 +349,25 @@ export function runCommands(state, content, text) {
         }
     }
     return { panels, events, llm };
+}
+
+/**
+ * The STAT/number pairs of #assign, in their order: "INT 3 WIL 1", "INT +3", "INT 3, WIL 1". Any token that is not part
+ * of a valid pair makes the whole command invalid.
+ * @returns {{pairs: {stat: string, amount: number}[], error: string|null}}
+ */
+export function parseAssign(arg, content) {
+    const tokens = String(arg ?? '').replace(/,/g, ' ').replace(/\+/g, ' ').trim().split(/\s+/).filter(Boolean);
+    const pairs = [];
+    if (!tokens.length) return { pairs, error: 'no stat given' };
+    if (tokens.length % 2) return { pairs, error: `"${tokens.join(' ')}" is not a list of <STAT> <n> pairs` };
+    for (let i = 0; i < tokens.length; i += 2) {
+        const stat = tokens[i].toUpperCase();
+        const n = tokens[i + 1];
+        if (!content.rules.stats.includes(stat)) return { pairs, error: `unknown stat "${tokens[i]}"` };
+        if (!/^\d+$/.test(n) || Number(n) <= 0) return { pairs, error: `${stat}: "${n}" is not a positive whole number` };
+        if (pairs.some((p) => p.stat === stat)) return { pairs, error: `${stat} is named twice (name each stat once)` };
+        pairs.push({ stat, amount: Number(n) });
+    }
+    return { pairs, error: null };
 }

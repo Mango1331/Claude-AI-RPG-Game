@@ -1,4 +1,4 @@
-# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.1)
+# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.2)
 
 Stand: 02.10.2026.
 
@@ -40,6 +40,7 @@ Stand: 02.10.2026.
 8. [Nachweise ohne echtes Modell](#8-nachweise-ohne-echtes-modell)
 9. [Die echte Testsession](#9-die-echte-testsession)
 10. [Bekannte Grenzen](#10-bekannte-grenzen)
+11. [4.3.0-c.2: Korrekturen nach dem Live-Test vom 03.10.2026](#11-430-c2-korrekturen-nach-dem-live-test-vom-03102026)
 
 ---
 
@@ -247,7 +248,7 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.1`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.2`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
    - Vertrag v4 (Revision 4.2.0, unverändert), Preset „Avereth Narrator V4“, Lorebook v0.13.
@@ -315,3 +316,78 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 - **Andere Quellen als Custom:** `generateRaw` mit der Temperatur des Presets; nicht gemessen.
 - **Außerhalb eines Kampfes** löst der Prototyp eine Art Handlung pro Nachricht (§5). Eine freie Tat neben Story-Befehlen erzählt der Erzähler wie in A oder lässt sie aus; `plan.free` zeigt solche Stellen.
 - **Reihenfolge:** Schritt und Angriff nimmt A's Engine in ihrer Reihenfolge (E11 offen).
+
+---
+
+## 11. 4.3.0-c.2: Korrekturen nach dem Live-Test vom 03.10.2026
+
+Grundlage ist der Live-Lauf vom 03.10.2026 auf 4.3.0-c.1 (Planner an, GLM-5.3-Flash). Spielersätze und rohe Planner-Antworten stehen wörtlich in `tests/v4/live_1003.json`, die Tests in `tests/v4/planner_c2.test.js`.
+
+**Grundsatz:** Alle Engine-Regeln dieses Abschnitts gelten nur auf dem Planner-Pfad. `plannedTurn` übergibt `c: true` an `playerTurnV4`; das Outcome trägt `auth.c`. Mit Schalter aus bleibt A byte-gleich (`tools/c_flag_off_diff.mjs`: 122/122 Schritte, 18/18 Eingaben, gegen `90bd450` und gegen `8c01212`). Einzige Ausnahme ist `#assign` (D), ein deterministischer `#`-Befehl außerhalb des Planners.
+
+### A. Vertragsabbruch und Contract Slip
+
+Befund im Log:
+- **#22** „ill decline the quest myself …“ (Eastgate Yard): Die Rohantwort war `quest.abandon`, Begründung des Modells „Decline quest. quest.abandon.“. Die Quest war sofort `abandoned`. Die Interpreter-Regel „Commitments … only … now“ griff nicht. A's Agency-Guard erkennt einen Plan nur mit Zeitanker („tomorrow“, „later“).
+- **#24** „turn the slip back in“: Die Rohantwort war `quest.turn_in` mit `quest: "obj.slip.wolves_on_the_salt_road"`. Die Reparatur machte daraus `{"id": …}`, beides schemawidrig, der Zug scheiterte.
+
+Korrekturen:
+- **Planner-Prompt** (`CONTRACT_RULES`, nur der Planner, nicht A's Interpreter):
+  - Quest und Slip sind verschiedene Dinge.
+  - `quest.turn_in` gilt nur für einen erledigten Vertrag.
+  - Den Slip eines nicht erledigten Vertrags zurückgeben ist `quest.abandon` mit der Quest-ID.
+  - Angekündigter Abbruch ist kein Befehl.
+  - Der Slip eines nicht mehr aktiven Vertrags geht per `give`.
+  - Dazu drei Beispiele aus einer anderen Stadt.
+- **Deterministische zweite Linie** (`announcedAbandon`): Ein `quest.abandon`, dessen Wortlaut ihn nur ankündigt („I'll / ill / I will / going to … decline, cancel, give up, hand back, return“), wird verworfen. Es steht als `NOT A DECISION (quest.abandon: plan)` sichtbar im Record. „I abandon the quest / I give up this contract / I cancel this job“ bleiben.
+- **Validator:** Steht in einem Quest-Argument eine Slip-ID, bekommt die eine Reparatur die Zeile „obj.slip.X is the contract slip (an object), not the contract; the contract is quest.X“. Es wird nichts ersetzt; fail-closed bleibt.
+- **Engine** (`abandonGuild`, `abandonContract`):
+  - Abbruch eines Gildenvertrags an der Gildenhalle: Der Slip geht an die Gilde (`object.consumed by guild`).
+  - Mit einem `go` zur Halle davor wird der Abbruch bedingt und erst bei Ankunft gebucht (wie `quest.turn_in`).
+  - Sonst sofort; der Slip bleibt dann bei ihm.
+  - Nie Auszahlung, Quest-XP oder `completed`. Ein Turn-in eines aufgegebenen Vertrags lehnt die Engine weiter ab.
+
+### B. Zeit
+
+Befund: Zeit entstand nur aus der Erzählung (Extraktor, gedeckelt). **#16/#17**, der Fußweg zum Eastgate Yard: Ortswechsel gebucht, 0 Minuten.
+
+| Fall | Regel (Planner-Pfad) |
+|---|---|
+| genannte Dauer („wait two hours“, „rest 30 minutes“, „sleep 8 hours“, jede Aktivität mit Minuten außer Suchen, dessen Prüfung unverändert bleibt) | genau diese Minuten, von der Engine mit dem Zug gebucht |
+| genanntes Ende („until morning“, „until night“) | bis zur nächsten dokumentierten Tageszeit, über Mitternacht (`rules.time.until`, morning = 08:00, die bestehende Regel) |
+| bloßes `sleep` | feste Schlafdauer 480 min |
+| bloßes `rest` | feste kurze Rast 60 min |
+| Warten, Suchen u. a. ohne Dauer | wie A: die Erzählung entscheidet, gedeckelt |
+| erfolgreicher `go` an einen anderen Ort | die Minuten der Erzählung; reichen sie nicht, eine Untergrenze: 15 min in derselben Siedlung, 60 min anderswo |
+| Doppelbuchung | Die Zeitangaben des Extraktors decken zuerst die schon gebuchten Minuten. Nur was darüber hinausgeht, zählt (z. B. Rast 30 + Weg 15) |
+| Swipe / Regenerate | Gebuchte Zeit steht im Record der Spielernachricht und wird wiederverwendet |
+
+Werte stehen zentral in `rules.time.engine_clock`. Sie sind vorläufig, noch kein Balancing.
+
+### C. Natürliche Regeneration
+
+- REST und SLEEP: Die Engine bucht mit dem Zug `resource.changed` für HP, MP und STA, nach einer Formel für beide: je Stunde ein Anteil des Maximums (`rules.recovery.per_hour_pct`: HP 10 %, MP 15 %, STA 25 %, vorläufig).
+- Abgerundet, nie über das Maximum. 0 Minuten bedeuten 0 Erholung, volle Werte bleiben unverändert.
+- WAIT und Reisen erholen nicht.
+- Ein `recover`-Delta des Extraktors für Alaric wird danach abgelehnt (`engine_recovery`); MP kam dort nie hinzu.
+- Erzähler und Spieler sehen die Werte: PLAYER ACTIONS, System-Zeilen `TIME —` und `RECOVERY —`.
+- Ein Swipe wendet nichts erneut an.
+
+### D. `#assign` mit mehreren Stats
+
+- `#assign INT 3` wie bisher; `#assign INT 3 WIL 1 AGI 1` vergibt genau 5 Punkte, in dieser Reihenfolge, als einzelne `stat.assigned`-Events. Auch `INT +3` und Kommas gehen.
+- Erst wird der ganze Befehl geprüft: gültige Stats, positive ganze Zahlen, vollständige Paare, Summe ≤ freie Punkte.
+- **Ein Stat zweimal wird abgelehnt** (nicht zusammengerechnet).
+- Ist irgendein Teil falsch, wird nichts angewendet: `NOT APPLIED — <Grund>. Nothing was assigned.`
+- Das gilt bei beiden Schalterstellungen. Bisher wurden gültige Paare einzeln angewendet und ungültige übersprungen; der Test in `tests/unit/context.test.js`, der genau das festhielt, ist auf die neue Regel umgestellt.
+
+### E. Wortwahl des Erzählers
+
+Im Stil-Prompt des Presets „Avereth Narrator V4“ (Abschnitt Prose) steht eine Zeile mehr: vertraute, moderne englische Wörter für gewöhnliche mittelalterliche Dinge; kein seltenes Fachvokabular nur für Atmosphäre; ein nützlicher Zeitbegriff wird beim ersten Mal aus dem Kontext verständlich; moderne Wortwahl ja, moderne Technik nein. Der Erzählervertrag ist unverändert (Revision 4.2.0). **Das Preset muss neu importiert werden.**
+
+### Grenzen von c.2
+
+- Ob GLM die neuen Prompt-Regeln befolgt, zeigt erst der Live-Retest. Für den angekündigten Abbruch gibt es die deterministische zweite Linie; die Unterscheidung „Slip zurück“ = `quest.abandon` liegt beim Planner.
+- Eine Rast wird mit dem Zug vollständig gebucht. Eine Unterbrechung durch die Geschichte verkürzt sie nicht (die Engine hat sie aufgelöst).
+- Ohne Schalter gelten Zeit- und Erholungsregeln nicht (A unverändert).
+

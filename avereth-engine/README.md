@@ -34,7 +34,7 @@ Dazu der echte Live-Test: [docs/INTEGRATION_4_1.md](docs/INTEGRATION_4_1.md) §1
 - **Kampf-Scope für Fakten:** Was die Geschichte während eines Kampfes über die Kämpfenden sagt, gilt nur, solange er läuft.
 - Der Erzählervertrag hat Revision 4.2.0: die Kartenbeschreibung ersetzen (4.2.1 ändert ihn nicht).
 
-**Prototyp C (Build 4.3.0-c.1)**, Branch `claude/c-planner-prototype-2026-10-02` (von `90bd450`): ein semantischer Planner hinter dem Schalter „Prototype C: semantic planner“ im Engine-Panel (Standard aus; aus läuft A byte-gleich). Ein LLM-Aufruf liest jede freie Nachricht, ein kleiner Validator prüft Struktur und Zustand und ersetzt nie einen Wert, die Engine löst wie bisher. Umfang, Abweichungen von der Arbeitshypothese (Architektur C Rev. 3) und die echte Testsession: [docs/PROTOTYPE_C.md](docs/PROTOTYPE_C.md).
+**Prototyp C (Build 4.3.0-c.2)**, Branch `claude/c-planner-prototype-2026-10-02` (von `90bd450`): ein semantischer Planner hinter dem Schalter „Prototype C: semantic planner“ im Engine-Panel (Standard aus; aus läuft A byte-gleich). Ein LLM-Aufruf liest jede freie Nachricht, ein kleiner Validator prüft Struktur und Zustand und ersetzt nie einen Wert, die Engine löst wie bisher. Umfang, Abweichungen von der Arbeitshypothese (Architektur C Rev. 3) und die echte Testsession: [docs/PROTOTYPE_C.md](docs/PROTOTYPE_C.md). c.2 (nach dem Live-Test vom 03.10.2026): Vertragsabbruch und Slip, Engine-Zeit, Erholung bei Rast und Schlaf, `#assign` mit mehreren Stats, eine Stilregel im Preset (§11).
 
 ## Was die Engine pro Zug tut (Runtime V3)
 

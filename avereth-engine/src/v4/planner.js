@@ -71,6 +71,37 @@ export const MECH_EXAMPLES = [
     '- (no fight) "I walk back to the old mill" → {"commands":[{"seq":1,"type":"go","to":"loc.mill","quote":"I walk back to the old mill"}]}',
 ].join('\n');
 
+// Guild contracts and their slips (live run 03.10.2026: "ill decline the quest myself" was booked as quest.abandon at the
+// wagon yard; "turn the slip back in" became quest.turn_in with the slip's object id, invalid twice, the turn failed)
+export const CONTRACT_RULES = [
+    'Guild contracts (these come before the rules above):',
+    '- A contract (quest.<id> under QUESTS) and its contract slip (obj.slip.<id> under OBJECTS) are different things. A quest argument is always the quest id, never the slip\'s object id.',
+    '- quest.turn_in is handing in a contract he has DONE at a Guild hall, for its payout. Handing back the slip of a contract he has not done, because he gives the job up or turned it down, is quest.abandon with the contract\'s quest id, never quest.turn_in.',
+    '- quest.abandon only when he gives the contract up in this message: "I abandon the quest", "I give up this contract", "I cancel this job", handing its slip back at the desk. Saying he will do it later is no command: "I\'ll decline the quest myself", "I\'ll go cancel it at the Guild", "I\'ll hand the contract back", "I\'ll return the slip" are words, not the act.',
+    '- The slip of a contract that is no longer active (given up or done), handed to someone: give {object: the slip, to: who takes it}; never a quest command.',
+    'Examples (another town): CATALOG: PLACES: loc.kf.guild_hall (Guild office, Kestrel Ford) · QUESTS: quest.ferry_job (Ferry Job · Guild contract · active) · OBJECTS: obj.slip.ferry_job (Guild contract slip: Ferry Job, held by Alaric)',
+    '- "*i shrug* I\'ll cancel that job at the Guild myself." → {"commands":[]}',
+    '- "*i walk back to the guild office and hand the slip back*" → {"commands":[{"seq":1,"type":"go","to":"loc.kf.guild_hall","quote":"i walk back to the guild office"},{"seq":2,"type":"quest.abandon","quest":"quest.ferry_job","quote":"hand the slip back"}]}',
+    '- "I give up the ferry job." → {"commands":[{"seq":1,"type":"quest.abandon","quest":"quest.ferry_job","quote":"I give up the ferry job."}]}',
+].join('\n');
+
+// A contract given up only in words for later: "ill decline the quest myself", "I'll go cancel it at the Guild", "I'm
+// going to hand the contract back". The deterministic second line behind CONTRACT_RULES (A's agency guard needs a time
+// anchor such as "tomorrow" for a plan); it only removes the command, the removal is in the record (plan.dropped).
+const ANNOUNCED_ABANDON = /(?:^|[^a-z'])(?:i'll|ill|i will|i shall|i'm going to|im going to|i am going to|gonna)\s+(?:(?:go|just|then|simply|also|probably|rather|myself|have to|need to)\s+){0,2}(?:decline|cancel|abandon|give (?:it |this |that |the \w+ )?up|quit|drop|hand|return|turn|bring)\b/;
+
+/** quest.abandon commands whose quote announces the act instead of doing it: {kept, dropped} as the agency guard's. */
+export function announcedAbandon(message, commands) {
+    const kept = [];
+    const dropped = [];
+    for (const c of commands || []) {
+        const words = flat(c.quote ?? '');
+        if (c.type === 'quest.abandon' && ANNOUNCED_ABANDON.test(words) && inMessage(message, c.quote ?? '')) dropped.push({ command: c, rule: 'plan' });
+        else kept.push(c);
+    }
+    return { kept, dropped };
+}
+
 /** The fight prompt shows only the story commands a fight can mean (go, activity); the story prompt all of them. */
 const FIGHT_STORY_TYPES = new Set(['go', 'activity']);
 
@@ -84,7 +115,7 @@ export function plannerSystem(vocab, { fight = false } = {}) {
         const story = vocabularyText({ commands: vocab.commands.filter((c) => FIGHT_STORY_TYPES.has(c.type)) });
         return [PLANNER_ROLE, '', mech, '', 'Story commands (the same list):', story, '', 'Answer with {"commands": [...]}; an empty list when the message contains no action of his.', '', PLAIN_FORMAT].join('\n');
     }
-    return [interpreterSystem(vocab), '', mech, '', PLAIN_FORMAT].join('\n');
+    return [interpreterSystem(vocab), '', CONTRACT_RULES, '', mech, '', PLAIN_FORMAT].join('\n');
 }
 
 function skillText(skill) {
@@ -221,7 +252,14 @@ export function parsePlan(answer, vocab, ctx, message) {
             // a story command: the interpreter's own schema, missing nullable arguments as null (as parseInterpretation)
             for (const [k, spec] of Object.entries(story.get(type).args || {})) if (spec.nullable && c[k] === undefined) c[k] = null;
             if (c.seq === undefined) c.seq = i + 1;
-            for (const e of validate({ commands: [c] }, schema)) errors.push(e.replace('$.commands[0]', `$.commands[${i}]`));
+            const bad = validate({ commands: [c] }, schema);
+            for (const e of bad) errors.push(e.replace('$.commands[0]', `$.commands[${i}]`));
+            // a contract slip named as the contract: say which id the contract has (the repair writes it, nothing is replaced here)
+            const slip = typeof c.quest === 'string' ? c.quest : typeof c.quest?.id === 'string' ? c.quest.id : null;
+            if (bad.length && slip?.startsWith('obj.slip.')) {
+                const qid = `quest.${slip.slice('obj.slip.'.length)}`;
+                errors.push(`${at}: ${slip} is the contract slip (an object), not the contract${(ctx.catalog.quests || []).some((q) => q.id === qid) ? `; the contract is ${qid}` : ''}`);
+            }
             if (typeof c.quote === 'string' && !inMessage(message, c.quote)) errors.push(`${at}: quote "${c.quote.slice(0, 60)}" is not in the message (copy his exact words)`);
             continue;
         }

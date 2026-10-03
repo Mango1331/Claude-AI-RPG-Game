@@ -62,9 +62,12 @@ test('command panels are computed from state (no LLM) and #assign is the only st
     assert.match(r.panels[3], /INACTIVE/);
     assert.equal(r.events.length, 0);
     for (const e of awardXp(g.state.entities.pc.sheet, 100, content, 'test')) applyEvent(g.state, e);
+    // all or nothing (4.3.0-c.2): one pair over the free points and nothing is assigned (it used to assign PER and AGI)
     r = runCommands(g.state, content, '#assign PER 3 AGI 2 VIT 9 #status');
+    assert.equal(r.events.length, 0);
+    assert.match(r.panels[0], /NOT APPLIED — 14 points asked, only \d+ free Stat Points available\. Nothing was assigned/);
+    r = runCommands(g.state, content, '#assign PER 3 AGI 2 #status');
     assert.equal(r.events.length, 2);
-    assert.match(r.panels[0], /VIT \+9: REJECTED/);
     assert.match(r.panels[1], /PER 10/); // 6 + 1 (Level 2 favored) + 3
     assert.equal(g.state.entities.pc.sheet.stats.PER, 7, 'runCommands does not mutate the input state');
     assert.match(runCommands(g.state, content, '#frobnicate').panels[0], /Unknown command/);

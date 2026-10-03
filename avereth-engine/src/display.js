@@ -181,6 +181,8 @@ function commandLines(o) {
         out.push(sys(`UNDERSTOOD — ${quote}${r.type} (${STATUS_WORD[r.status] || r.status}${r.reason ? `: ${r.reason}` : ''})`));
     }
     for (const x of o.dropped || []) out.push(sys(`NOT A DECISION — ${x.quote ? `"${String(x.quote).replace(/[<>`]/g, '').slice(0, 70)}" ` : ''}(${x.type}: ${x.rule})`));
+    // prototype C: the time and recovery the engine booked for this turn
+    for (const x of o.engine_lines || []) out.push(sys(String(x).replace(/[<>`]/g, '')));
     return out;
 }
 

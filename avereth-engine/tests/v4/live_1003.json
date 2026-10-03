@@ -1,0 +1,283 @@
+{
+ "source": "live run 03.10.2026 20:23, build 4.3.0-c.1, planner on (chat export + event export); player messages and raw planner answers verbatim, listings from the quest.created events",
+ "greeting": "`Location: Public roadside verge outside Tidecross, Solmere`\r",
+ "listings": [
+  {
+   "id": "quest.striders_at_the_eel_weirs",
+   "title": "Striders at the Eel-Weirs",
+   "client": "Reed Flats Eel-Fishers' Cooperative",
+   "rank": "Novice",
+   "level": 1,
+   "qtype": "standard",
+   "payout_cp": 120,
+   "task": "Hunt and cull the bog strider colony nesting at the eel-weirs of the Reed Flats so the eel boats can launch safely again.",
+   "desired_end_state": "The bog strider colony is culled and the eel boats launch from the weirs again.",
+   "objectives": [
+    {
+     "verb": "GO",
+     "what": "eel-weirs on the Reed Flats",
+     "qty": null,
+     "unit": null,
+     "where": "Reed Flats, south of Tidecross"
+    },
+    {
+     "verb": "ATTACK",
+     "what": "bog striders",
+     "qty": null,
+     "unit": null,
+     "where": "eel-weirs, Reed Flats"
+    },
+    {
+     "verb": "DEFEAT",
+     "what": "bog strider broodmother",
+     "qty": 1,
+     "unit": null,
+     "where": "weir nest mounds, Reed Flats"
+    }
+   ],
+   "proof": [
+    {
+     "kind": "object",
+     "what": "bog strider leg joints",
+     "qty": 6,
+     "unit": "pairs",
+     "on": null,
+     "consume": false
+    },
+    {
+     "kind": "object",
+     "what": "broodmother's head crest",
+     "qty": 1,
+     "unit": null,
+     "on": null,
+     "consume": false
+    }
+   ]
+  },
+  {
+   "id": "quest.wolves_on_the_salt_road",
+   "title": "Wolves on the Salt Road",
+   "client": "Wagonmaster Hessa Vole, Salt Road Freight",
+   "rank": "Novice",
+   "level": 2,
+   "qtype": "standard",
+   "payout_cp": 150,
+   "task": "Escort the salt wagon caravan along the Salt Road to the mill at Brackenford and see it through any trouble on the way.",
+   "desired_end_state": "The salt wagons arrive intact at Brackenford mill with cargo and drivers unharmed.",
+   "objectives": [
+    {
+     "verb": "ESCORT",
+     "what": "salt wagon caravan",
+     "qty": 3,
+     "unit": "wagons",
+     "where": "Salt Road, Tidecross to Brackenford"
+    },
+    {
+     "verb": "DEFEND",
+     "what": "caravan and drivers",
+     "qty": null,
+     "unit": null,
+     "where": "along the Salt Road"
+    },
+    {
+     "verb": "GO",
+     "what": "Brackenford mill",
+     "qty": null,
+     "unit": null,
+     "where": "Brackenford"
+    }
+   ],
+   "proof": []
+  },
+  {
+   "id": "quest.medicine_for_thornwick",
+   "title": "Medicine for Thornwick",
+   "client": "Apothecary Miren Doss, Doss's Physic",
+   "rank": "Novice",
+   "level": 1,
+   "qtype": "minor",
+   "payout_cp": 60,
+   "task": "Deliver this sealed case of fever tonics to the hedge-healer Old Wenna in Thornwick hamlet before week's end.",
+   "desired_end_state": "The sealed tonic case is delivered unopened to Old Wenna in Thornwick.",
+   "objectives": [
+    {
+     "verb": "DELIVER",
+     "what": "sealed case of fever tonics",
+     "qty": 1,
+     "unit": "case",
+     "where": "Old Wenna's cottage, Thornwick hamlet"
+    },
+    {
+     "verb": "TALK",
+     "what": "Old Wenna",
+     "qty": 1,
+     "unit": null,
+     "where": "Thornwick hamlet"
+    }
+   ],
+   "proof": [
+    {
+     "kind": "mark",
+     "what": "Wenna's receipt chalked on the case lid",
+     "qty": 1,
+     "unit": null,
+     "on": "tonic case"
+    }
+   ]
+  },
+  {
+   "id": "quest.clear_the_feral_dogs_of_tannery_row",
+   "title": "Clear the Feral Dogs of Tannery Row",
+   "client": "Tanner's Guild warden Odo Brask",
+   "rank": "Novice",
+   "level": 1,
+   "qtype": "standard",
+   "payout_cp": 100,
+   "task": "Hunt down and cull the feral dog pack denning under the abandoned tanning sheds on Tannery Row before they take another child.",
+   "desired_end_state": "The feral dog pack is destroyed and the tanning sheds are safe to work around again.",
+   "objectives": [
+    {
+     "verb": "FIND",
+     "what": "feral dog den",
+     "qty": 1,
+     "unit": null,
+     "where": "abandoned tanning sheds, Tannery Row"
+    },
+    {
+     "verb": "ATTACK",
+     "what": "feral dogs",
+     "qty": null,
+     "unit": null,
+     "where": "Tannery Row sheds and yard"
+    }
+   ],
+   "proof": [
+    {
+     "kind": "object",
+     "what": "dog ears",
+     "qty": 8,
+     "unit": "pairs",
+     "on": null,
+     "consume": false
+    }
+   ]
+  },
+  {
+   "id": "quest.something_in_the_oyster_culls",
+   "title": "Something in the Oyster Culls",
+   "client": "Oyster-lease holder Bram Tull",
+   "rank": "Novice",
+   "level": 2,
+   "qtype": "standard",
+   "payout_cp": 140,
+   "task": "Clear whatever monster is stripping the oyster culls at Tull's lease in the shallows of Merrow Point and make the beds safe to work.",
+   "desired_end_state": "The creature preying on the oyster beds is killed or driven off and the lease crews work the culls again.",
+   "objectives": [
+    {
+     "verb": "FIND",
+     "what": "the creature raiding the oyster culls",
+     "qty": null,
+     "unit": null,
+     "where": "Tull's oyster lease, Merrow Point shallows"
+    },
+    {
+     "verb": "ATTACK",
+     "what": "the oyster-bed predator",
+     "qty": 1,
+     "unit": null,
+     "where": "Merrow Point shallows"
+    },
+    {
+     "verb": "DEFEND",
+     "what": "the oyster beds",
+     "qty": null,
+     "unit": null,
+     "where": "Tull's lease, Merrow Point"
+    }
+   ],
+   "proof": [
+    {
+     "kind": "object",
+     "what": "species-appropriate trophy of the slain creature",
+     "qty": 1,
+     "unit": null,
+     "on": null,
+     "consume": false
+    }
+   ]
+  }
+ ],
+ "turns": [
+  {
+   "i": 6,
+   "player": "*i walk into the city ahead of me and make my way to the Adventurers Guild*",
+   "raw": [
+    "{\"commands\":[{\"seq\":1,\"type\":\"go\",\"to\":\"loc.tidecross\",\"quote\":\"i walk into the city ahead of me\"},{\"seq\":2,\"type\":\"go\",\"to\":\"loc.tidecross.guild_hall\",\"quote\":\"make my way to the Adventurers Guild\"}]}"
+   ]
+  },
+  {
+   "i": 8,
+   "player": "*i walk to the front desk and say* Hello my name is Alaric Red and im here to register*",
+   "raw": [
+    "{\"commands\":[{\"seq\":1,\"type\":\"guild.register\",\"quote\":\"im here to register\"}]}"
+   ]
+  },
+  {
+   "i": 10,
+   "player": "Allright *i say and pay*",
+   "raw": [
+    "{\"commands\":[{\"seq\":1,\"type\":\"offer.accept\",\"offer\":\"offer.registration\",\"lines\":[\"l1\"],\"qty\":null,\"quote\":\"Allright *i say and pay*\"}]}"
+   ]
+  },
+  {
+   "i": 12,
+   "player": "*i walk over and look at the Novice Rank Board*",
+   "raw": [
+    "{\"commands\":[{\"seq\":1,\"type\":\"board.read\",\"rank\":\"Novice\",\"quote\":\"i walk over and look at the Novice Rank Board\"}]}"
+   ]
+  },
+  {
+   "i": 14,
+   "player": "*i take the Wolves on Salt Road Quest and register it at the front desk*",
+   "raw": [
+    "{\"commands\":[{\"seq\":1,\"type\":\"quest.accept\",\"quest\":\"quest.wolves_on_the_salt_road\",\"quote\":\"i take the Wolves on Salt Road Quest and register it at the front desk\"}]}"
+   ]
+  },
+  {
+   "i": 16,
+   "player": "*I make my way over to the Eastgate Yard*",
+   "raw": [
+    "{\"commands\":[{\"seq\":1,\"type\":\"go\",\"to\":{\"new\":\"Eastgate Yard\"},\"quote\":\"*I make my way over to the Eastgate Yard*\"}]}"
+   ]
+  },
+  {
+   "i": 18,
+   "player": "Hello *i say* im from the Guild to escort you",
+   "raw": [
+    "{\"commands\": []}"
+   ]
+  },
+  {
+   "i": 20,
+   "player": "no need to worry im not a boy with a stick im a Mage so yes i can escort you",
+   "raw": [
+    "{\"commands\": []}"
+   ]
+  },
+  {
+   "i": 22,
+   "player": "*i sigh and turn around saying* ill decline the quest myself. no need to travel with someone like you. have a good day",
+   "raw": [
+    "{\"commands\":[{\"seq\":1,\"type\":\"quest.abandon\",\"quest\":\"quest.wolves_on_the_salt_road\",\"quote\":\"ill decline the quest myself. no need to travel with someone like you\"}]}"
+   ]
+  },
+  {
+   "i": 24,
+   "player": "*i go back to the guild hall and turn the slip back in*",
+   "raw": [
+    "{\"commands\":[{\"seq\":1,\"type\":\"go\",\"to\":\"loc.tidecross.guild_hall\",\"quote\":\"i go back to the guild hall\"},{\"seq\":2,\"type\":\"quest.turn_in\",\"quest\":\"obj.slip.wolves_on_the_salt_road\",\"quote\":\"turn the slip back in\"}]}",
+    "{\"commands\":[{\"seq\":1,\"type\":\"go\",\"to\":\"loc.tidecross.guild_hall\",\"quote\":\"i go back to the guild hall\"},{\"seq\":2,\"type\":\"quest.turn_in\",\"quest\":{\"id\":\"obj.slip.wolves_on_the_salt_road\"},\"quote\":\"turn the slip back in\"}]}"
+   ]
+  }
+ ]
+}

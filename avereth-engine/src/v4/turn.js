@@ -28,6 +28,8 @@ function serializableAuth(auth) {
     return {
         go: auth.go, gos: auth.gos, roam: auth.roam, take: auth.take, takeNames: auth.takeNames || {}, gather: auth.gather,
         rest: auth.rest, timeCap: auth.timeCap, ...(auth.journey ? { journey: auth.journey } : {}),
+        // Prototype C (src/v4/planner.js): the engine's own time and recovery this turn
+        ...(auth.c ? { c: true, booked_min: auth.booked_min || 0, recovered: !!auth.recovered } : {}),
     };
 }
 
@@ -37,7 +39,7 @@ function serializableAuth(auth) {
  *   interp: {version, ms, source, failed?, error?}; board: the Board generator's validated listings for this turn
  * @returns {{events, outcome, state, command: null|{panels: string[], llm: null}}}
  */
-export function playerTurnV4(state, content, text, { msg = null, commands = [], dropped = [], interp = {}, board = null } = {}) {
+export function playerTurnV4(state, content, text, { msg = null, commands = [], dropped = [], interp = {}, board = null, c = false } = {}) {
     if (!state.meta.started) throw new Error('campaign not started');
     const s = clone(state);
     const dice = Dice.from(s);
@@ -54,7 +56,7 @@ export function playerTurnV4(state, content, text, { msg = null, commands = [], 
         ...(interp.error ? { error: String(interp.error).slice(0, 200) } : {}),
         commands: commands.map((c) => ({ ...c })), dropped: dropped.map((x) => ({ type: x.command?.type, rule: x.rule, quote: x.command?.quote ?? null })),
     } });
-    const ctx = resolveCommands(s, content, commands, emit, { msg, dice, board });
+    const ctx = resolveCommands(s, content, commands, emit, { msg, dice, board, c });
     const clarify = ctx.resolutions.find((r) => r.status === 'clarify');
     if (clarify) {
         // an ambiguous reference: the System asks, nothing is booked, no story turn (plan §4.4)
@@ -69,6 +71,7 @@ export function playerTurnV4(state, content, text, { msg = null, commands = [], 
         auth: serializableAuth(ctx.auth), conditionals: ctx.conditionals, booked: ctx.booked, board: ctx.boardShown,
         search_checks: ctx.searchChecks, check_die: null, interp_failed: !!interp.failed,
         dropped: dropped.map((x) => ({ type: x.command?.type, rule: x.rule, quote: x.command?.quote ?? null })),
+        ...(ctx.engineLines.length ? { engine_lines: ctx.engineLines } : {}),
     };
     emit({ t: 'outcome.recorded', d: { outcome, situations: [] } });
     return { events, outcome, state: s, command: null };

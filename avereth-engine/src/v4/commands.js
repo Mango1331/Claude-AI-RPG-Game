@@ -15,7 +15,8 @@
 import { formatCoin } from '../economy.js';
 import { resolveCheck } from '../checks.js';
 import { entityLabel, setFactEvents, truth } from '../knowledge.js';
-import { normText, slug } from '../util.js';
+import { normText, slug, formatClock } from '../util.js';
+import { deriveCharacter } from '../derived.js';
 import {
     placeName, hallOf, hallOfSettlement, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin,
 } from './domain.js';
@@ -23,7 +24,7 @@ import { sameWant } from './world.js';
 import { journeyReady } from './catalog.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText } from './trade.js';
 import {
-    REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, contractReady, objectiveText,
+    REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, abandonContract, contractReady, objectiveText,
     promotion, takenByOthers, bookBoard, isHunt, trophyText,
 } from './guild.js';
 
@@ -70,6 +71,42 @@ export function untilMinutes(content, s, until) {
     return target > now ? target - now : target + 1440 - now;
 }
 
+/**
+ * Prototype C (setting 'planner', src/v4/planner.js): the minutes the engine books for an activity, or null when the
+ * story keeps deciding its length as in A. A duration he names is the duration; an end he names runs to it (over
+ * midnight); sleep without either is a night's sleep, rest without either a fixed short rest. Values: rules.time.engine_clock.
+ */
+export function engineMinutes(content, s, c) {
+    const t = content.rules.time;
+    if (Number.isInteger(c.minutes) && c.minutes > 0) return c.minutes;
+    if (c.until && c.until !== 'done' && t.until[c.until] !== undefined) return untilMinutes(content, s, c.until);
+    if (c.kind === 'sleep') return t.engine_clock.sleep_min;
+    if (c.kind === 'rest') return t.engine_clock.rest_default_min;
+    return null;
+}
+
+/**
+ * Prototype C: natural recovery for booked rest or sleep. Per hour, a share of each maximum (rules.recovery), rounded
+ * down, never above the maximum; no minutes, no recovery. Returns the resource.changed events and their lines.
+ */
+export function recoveryEvents(s, content, minutes, why) {
+    const sheet = s.entities.pc.sheet;
+    const dv = deriveCharacter(sheet, content);
+    const max = { hp: dv.maxHp, mp: dv.maxMp, sta: dv.maxSta };
+    const pct = content.rules.recovery.per_hour_pct;
+    const events = [];
+    const parts = [];
+    for (const r of ['hp', 'mp', 'sta']) {
+        const now = Number(sheet[r] ?? 0);
+        const gain = Math.min(Math.floor((max[r] * pct[r] * minutes) / 6000), Math.max(0, max[r] - now));
+        if (gain > 0) {
+            events.push({ t: 'resource.changed', d: { id: 'pc', resource: r, value: now + gain, why } });
+            parts.push(`${r.toUpperCase()} ${now}→${now + gain}/${max[r]}`);
+        }
+    }
+    return { events, text: parts.length ? parts.join(', ') : 'nothing to recover (HP, MP and STA are full)' };
+}
+
 function questLine(q) {
     return `"${q.title}"`;
 }
@@ -96,6 +133,25 @@ function pickQuest(s, ref, statuses, kind = null) {
     }
     if (pool.length === 1) return { q: pool[0] };
     return { q: null, clarify: pool.map((q) => q.title) };
+}
+
+/** Prototype C: giving up a Guild contract (quest.abandon on the planner path). No payout, Quest XP or completion. */
+function abandonGuild(s, content, q, c, ctx, emit) {
+    const slip = Object.values(s.objects).find((o) => (o.for_quests || []).includes(q.id) && o.holder?.entity === 'pc' && o.kind === 'document');
+    const desk = !!hallOf(s, s.scene.at);
+    // the slip of a contract no longer active goes back with give (src/v4/planner.js CONTRACT_RULES), never a quest command
+    if (q.status !== 'active') return { status: 'refused', reason: `the contract is ${q.status}`, line: `NOTHING TO DO — ${questLine(q)} is ${q.status}.` };
+    if (desk) {
+        abandonContract(s, q, emit, { step: c.seq, desk: true });
+        return { status: 'resolved', line: `GIVES UP — ${questLine(q)} at the Guild desk: the clerk strikes it from the ledger${slip ? ' and takes back its contract slip' : ''}. No payout, no Quest XP, not completed.` };
+    }
+    const go = ctx.auth.gos.filter((g) => g.hall && g.seq < c.seq).at(-1);
+    if (go) {
+        ctx.conditionals.push({ seq: c.seq, kind: 'abandon', quest: q.id, condition: 'arrive_guild_hall', hall: go.to });
+        return { status: 'conditional', condition: 'arrive_guild_hall', line: `GIVES UP, when he reaches the Guild hall — ${questLine(q)}: the clerk strikes it from the ledger${slip ? ' and takes back its contract slip' : ''}. No payout, no Quest XP, not completed. If the reply does not reach the hall, nothing is given up.` };
+    }
+    abandonContract(s, q, emit, { step: c.seq, desk: false });
+    return { status: 'resolved', line: `GIVES UP — ${questLine(q)}. No payout, no Quest XP.${slip ? ' Its contract slip stays with him until he hands it back at a Guild hall.' : ''}` };
 }
 
 // ------------------------------------------------------------------------------------------------ handlers
@@ -149,7 +205,25 @@ const HANDLERS = {
         if (ROAMING.has(c.kind)) ctx.auth.roam = true;
         if (RESTING.has(c.kind)) ctx.auth.rest = true;
         ctx.expectedKeys[String(c.seq)] = 'activity';
-        const span = c.until ? UNTIL[c.until] || `until ${c.until}` : c.minutes ? `for ${c.minutes} minutes` : 'for a while';
+        const span = c.until ? UNTIL[c.until] || `until ${c.until}` : c.minutes ? `for ${c.minutes} minutes` : c.kind === 'sleep' ? 'for a night\'s sleep' : 'for a while';
+        // Prototype C: the engine books a duration it can name, and the recovery of rest and sleep, in this turn's
+        // record (a swipe or a regeneration reuses it); the extractor's time for the same span is not counted again
+        const booked = envx?.c && c.kind !== 'search' ? engineMinutes(content, s, c) : null;
+        if (booked) {
+            emit({ t: 'time.advanced', d: { minutes: booked, why: c.kind } });
+            ctx.auth.booked_min = (ctx.auth.booked_min || 0) + booked;
+            ctx.auth.timeCap = Math.max(ctx.auth.timeCap, ctx.auth.booked_min);
+            ctx.engineLines.push(`TIME — ${c.kind} ${span}: ${booked} min (now ${formatClock(s.clock.minute)})`);
+            let rec = '';
+            if (RESTING.has(c.kind)) {
+                const r = recoveryEvents(s, content, booked, c.kind);
+                r.events.forEach(emit);
+                ctx.auth.recovered = true;
+                ctx.engineLines.push(`RECOVERY — ${r.text}`);
+                rec = ` Recovery booked: ${r.text}.`;
+            }
+            return { status: 'resolved', cap, line: `${VERBS[c.kind] || String(c.kind).toUpperCase()} ${c.what ? `${c.what} ` : ''}${span} — resolved by the engine: ${booked} minutes pass; it is now ${formatClock(s.clock.minute)}.${rec} Narrate it as done, at that length; do not cut it short or add time.` };
+        }
         if (c.kind === 'search' && envx?.dice) {
             const actor = s.entities.pc?.sheet?.stats?.PER ?? 5;
             const opposition = content.rules.checks?.difficulty_scores?.moderate ?? 6;
@@ -389,10 +463,13 @@ const HANDLERS = {
         }
         return { status: 'refused', reason: 'not at a Guild hall', line: `CANNOT TURN IN — ${questLine(q)}: contracts are turned in at a Guild hall.` };
     },
-    'quest.abandon'(s, content, c, ctx, emit) {
+    'quest.abandon'(s, content, c, ctx, emit, envx) {
         const pick = pickQuest(s, c.quest, ['active']);
         if (pick.clarify) return pick.clarify.length ? { status: 'clarify', reason: 'which one?', line: `CLARIFY — which does he give up: ${pick.clarify.join(' or ')}?` } : { status: 'refused', reason: 'nothing active', line: 'NOTHING TO DO — he has nothing to give up.' };
         const q = pick.q;
+        // Prototype C: a Guild contract is given up at the desk (its slip goes back to the Guild), or on arrival at the
+        // hall he sets off for earlier in the message; never a payout, Quest XP or completion
+        if (envx?.c && q?.kind === 'guild_contract') return abandonGuild(s, content, q, c, ctx, emit);
         if (!q || q.status !== 'active') return { status: 'refused', reason: 'not active', line: 'NOTHING TO DO — that is not his to give up.' };
         emit({ t: 'quest.status', d: { id: q.id, from: 'active', to: 'abandoned', at: s.scene.at, step: c.seq } });
         return { status: 'resolved', line: `GIVES UP — ${questLine(q)}.` };
@@ -486,6 +563,9 @@ export const COMMAND_TYPES = Object.keys(HANDLERS);
  */
 export function resolveCommands(s, content, commands, emit, envx = {}) {
     const ctx = newTurnContext(content);
+    // Prototype C (the planner path): engine-owned time, recovery and contract abandonment
+    if (envx.c) ctx.auth.c = true;
+    ctx.engineLines = [];
     const ordered = [...commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0));
     ctx.env = { msg: envx.msg ?? s.turn, commands: ordered };
     const lines = new Map();

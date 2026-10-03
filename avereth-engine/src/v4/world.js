@@ -19,9 +19,9 @@ import { firewall } from './firewall.js';
 import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolation } from './ownership.js';
 import { mayOpenFight, mayTake } from './envelope.js';
 import {
-    PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind,
+    PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind,
 } from './domain.js';
-import { completeContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection } from './guild.js';
+import { completeContract, abandonContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection } from './guild.js';
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
@@ -173,7 +173,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const joinedByNew = new Set();
     const bornHere = new Set(); // the people and creatures this answer introduces (an ambush is the world's move)
     const cap = s.encounter ? content.rules.time.combat_cap_min : auth.timeCap ?? content.rules.time.default_cap_min;
-    let timeUsed = 0;
+    // Prototype C (auth.c): the minutes the engine already booked for this turn's activities count as used; the
+    // extractor's time for the same span is not booked again (its minutes cover the booked ones first)
+    const booked = auth.c ? auth.booked_min || 0 : 0;
+    let bookedLeft = booked;
+    let timeUsed = booked;
+    const startAt = s.scene.at;
     let arrived = null;
     let arrivedHall = null;
     const conditionals = (outcome.conditionals || []).map((c) => ({ ...c, done: false }));
@@ -316,9 +321,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         }
         switch (d.type) {
             case 'time': {
+                const covered = Math.min(bookedLeft, d.minutes);
+                bookedLeft -= covered;
+                const want = d.minutes - covered;
                 const room = Math.max(0, cap - timeUsed);
-                const m = Math.min(d.minutes, room);
-                if (m < d.minutes) reject(d, 'time_cap', `${d.minutes} min exceed what this turn allows (${cap} min${auth.go ? '' : ' without travel or an activity'}); ${m} applied`);
+                const m = Math.min(want, room);
+                if (m < want) reject(d, 'time_cap', `${d.minutes} min exceed what this turn allows (${cap} min${auth.go ? '' : ' without travel or an activity'}); ${m} applied`);
                 if (m > 0) { emit({ t: 'time.advanced', d: { minutes: m, why: 'narration' } }); timeUsed += m; }
                 break;
             }
@@ -444,6 +452,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 const who = idOf(d.who) || 'pc';
                 const serviced = (s.services || []).some((x) => x.turn === s.turn && ['lodging', 'healing', 'meal'].includes(x.service));
                 if (who === 'pc' && !auth.rest && !serviced) { reject(d, 'recover', 'Alaric recovers only while resting or sleeping, or with lodging or healing he paid for'); break; }
+                // Prototype C: his natural recovery for the rest or sleep is the engine's, booked with the turn
+                if (who === 'pc' && auth.c && auth.recovered) { reject(d, 'engine_recovery', 'the engine already booked his recovery for the rest or sleep'); break; }
                 const amounts = {};
                 if (d.hp) amounts.hp = d.hp;
                 if (d.sta) amounts.sta = d.sta;
@@ -623,6 +633,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (type === 'sell') sale(k, e);
     }
 
+    // Prototype C: a real journey to another place takes time; without the story's own minutes a small fixed one
+    // (rules.time.engine_clock), never 0. Only the minutes beyond the booked activities count as travel
+    if (auth.c && arrived && arrived !== startAt) {
+        const t = content.rules.time.engine_clock;
+        const floor = sameSettlement(s, startAt, arrived) ? t.go_min_same_settlement : t.go_min_elsewhere;
+        const travelled = timeUsed - booked;
+        if (travelled < floor) { emit({ t: 'time.advanced', d: { minutes: floor - travelled, why: 'travel' } }); timeUsed += floor - travelled; }
+    }
+
     // 4. what waited for the reply and did not happen
     step = { kind: 'conditional' };
     for (const c of conditionals.filter((x) => !x.done)) emit({ t: 'cmd.expired', d: { seq: c.seq, reason: 'the condition did not happen in this reply' } });
@@ -726,6 +745,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 k.done = true;
                 grant('conditional');
                 const q = s.quests[k.quest];
+                if (k.kind === 'abandon') {
+                    // Prototype C: the contract he gives up at the desk; its slip goes back, nothing is paid
+                    const ok = q?.status === 'active';
+                    if (ok) abandonContract(s, q, emit, { step: k.seq, desk: true });
+                    emit({ t: 'cmd.completed', d: { seq: k.seq, ok, reason: ok ? null : 'the contract is no longer active' } });
+                    continue;
+                }
                 const r = q && q.status === 'active' ? completeContract(s, content, q, emit, { step: k.seq }) : { ok: false, reason: 'the contract is no longer active' };
                 emit({ t: 'cmd.completed', d: { seq: k.seq, ok: r.ok, reason: r.reason ?? null } });
                 if (!r.ok) system.push(`TURN-IN REFUSED — ${q?.title || k.quest}: ${r.reason}`);

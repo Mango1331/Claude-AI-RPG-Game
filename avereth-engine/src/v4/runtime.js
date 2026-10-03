@@ -31,7 +31,7 @@ import { extractorRequest, parseExtraction, EXTRACTOR_VERSION } from './extract.
 import { boardRequest, parseBoard, bookBoard, BOARD_VERSION } from './guild.js';
 import { extractionFailedEvents } from './world.js';
 import { hallOf, settlementOf, membership, boardKey, today, listingsOf, supportedRanks } from './domain.js';
-import { PLANNER_VERSION, MECH_TYPES, planContext, withContentSkills, plannerRequest, parsePlan, mapPlan, recentText } from './planner.js';
+import { PLANNER_VERSION, MECH_TYPES, planContext, withContentSkills, plannerRequest, parsePlan, mapPlan, recentText, announcedAbandon } from './planner.js';
 
 export const RECORD_V4 = 3;
 export const LLM = {
@@ -128,6 +128,10 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const interp = { version: PLANNER_VERSION, ms: pl.ms, failed: !!pl.failed, repaired: !!pl.repaired, commands: pl.commands, ...(pl.error ? { error: pl.error } : {}) };
     if (pl.failed) return { v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: { v: IR_VERSION, route: 'v4', reason: 'planner', links: ir.links, acts: [] }, plan, interp, events: [], command: null };
     const guarded = guardCommands(msg.mes, pl.commands, guardContext(before, content, catalog));
+    // a contract given up only in words for later is no act now (live run 03.10.2026)
+    const announced = announcedAbandon(msg.mes, guarded.kept);
+    guarded.kept = announced.kept;
+    guarded.dropped = [...guarded.dropped, ...announced.dropped];
     const m = mapPlan(guarded.kept, ctx, content, msg.mes, before);
     plan.dropped = guarded.dropped.map((x) => ({ type: x.command?.type ?? null, rule: x.rule, quote: x.command?.quote ?? null }));
     plan.notes = m.notes;
@@ -147,7 +151,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const need = boardFor(before, content, m.commands);
     const board = need ? await generateBoard(llm, before, content, need) : null;
     const t = playerTurnV4(before, content, msg.mes, {
-        msg: u, commands: m.commands, dropped: guarded.dropped.filter((x) => !MECH_TYPES.includes(x.command?.type)), board,
+        msg: u, commands: m.commands, dropped: guarded.dropped.filter((x) => !MECH_TYPES.includes(x.command?.type)), board, c: true,
         interp: { version: PLANNER_VERSION, ms: pl.ms, source: pl.repaired ? 'json_repaired' : 'json', failed: false, error: null },
     });
     return {

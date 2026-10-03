@@ -15,6 +15,7 @@ import zlib from 'node:zlib';
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { V4_OUTPUT_LINE } from '../../src/context.js';
+import { ENGINE_VERSION } from '../../src/util.js';
 
 const require = createRequire(import.meta.url);
 let chromium;
@@ -310,7 +311,7 @@ const checks = {
         && /- NOT TAKEN THIS TURN \(it does not happen; do not narrate it as done\): searching is not possible during a fight/.test(engineOf(narratorFor('search')[0]))
         && /NOT TAKEN — searching is not possible during a fight/.test(`${S('search').look.next?.display}\n${S('search').look.next?.shown}`),
     proseOnlyRequests: narr.every((c) => engineOf(c).trimEnd().endsWith(V4_OUTPUT_LINE)),
-    statusLine: /Avereth Engine 4\.3\.0-c\.1/.test(status) && /runtime v4 \(LLM: custom endpoint\)/.test(status) && /integrity: OK/.test(status),
+    statusLine: status.includes(`Avereth Engine ${ENGINE_VERSION}`) && /runtime v4 \(LLM: custom endpoint\)/.test(status) && /integrity: OK/.test(status),
     noPageErrors: pageErrors.length === 0,
 };
 fs.writeFileSync(path.join(HERE, 'result.json'), JSON.stringify({ checks, toggle, steps, status, calls: calls.map((c) => ({ purpose: c.purpose, stream: c.stream, temperature: c.temperature, max_tokens: c.maxTokens, auth: c.auth ? 'Bearer <dummy>' : null, n: c.messages.length, lastUser: c.lastUser.slice(-80) })), keyInBrowser, pageErrors }, null, 1));

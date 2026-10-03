@@ -230,7 +230,18 @@
     "minutes_factor": 1.25,
     "done_min": 720,
     "combat_cap_min": 10,
-    "until": { "noon": 720, "evening": 1080, "end_of_day": 1200, "night": 1320, "dawn": 360, "morning": 480 }
+    "until": { "noon": 720, "evening": 1080, "end_of_day": 1200, "night": 1320, "dawn": 360, "morning": 480 },
+    "engine_clock": {
+      "src": "Prototype C only (setting 'planner'; docs/PROTOTYPE_C.md §11): engine-owned time. Provisional values, no balance",
+      "go_min_same_settlement": 15,
+      "go_min_elsewhere": 60,
+      "rest_default_min": 60,
+      "sleep_min": 480
+    }
+  },
+  "recovery": {
+    "src": "Prototype C only (docs/PROTOTYPE_C.md §11): natural recovery while resting or sleeping, the same basis for both: per hour of booked rest or sleep, in % of the maximum, rounded down, never above the maximum. Provisional values, no balance",
+    "per_hour_pct": { "hp": 10, "mp": 15, "sta": 25 }
   },
   "combat": {
     "src": "Core #23, #24, #26-#28",

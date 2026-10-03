@@ -104,6 +104,16 @@ export function acceptContract(s, content, q, emit, { step } = {}) {
     recordFact(s, emit, { p: 'accepted_contract', o: q.title, id: `f.pc.accepted.${q.id}` });
 }
 
+/**
+ * Prototype C (setting 'planner'): give up a Guild contract. At the desk its slip goes back to the Guild; elsewhere he
+ * keeps it. Never a payout, Quest XP, completion or contract credit.
+ */
+export function abandonContract(s, q, emit, { step, desk = false } = {}) {
+    if (q.status === 'active') emit({ t: 'quest.status', d: { id: q.id, from: 'active', to: 'abandoned', at: s.scene.at, step } });
+    const slip = s.objects[slipId(q)];
+    if (desk && slip?.holder?.entity === 'pc') emit({ t: 'object.consumed', d: { id: slip.id, by: 'guild' } });
+}
+
 /** Legacy/advisory verification check: exact generated proof may still substantiate an older contract, but V4.0.5 no longer requires it when the story has already established the desired quest outcome. */
 // what a proof names, without the explanation the generator adds ("boar tusks, one pair per kill" → "boar tusks"), and a
 // unit by its first word ("pairs of leg joints" is "pairs"; live runs 30.09.2026 14:56 and 22:41: the trophies in hand

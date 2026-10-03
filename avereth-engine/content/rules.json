@@ -234,9 +234,7 @@
     "engine_clock": {
       "src": "Prototype C only (setting 'planner'; docs/PROTOTYPE_C.md §11): engine-owned time. Provisional values, no balance",
       "go_min_same_settlement": 15,
-      "go_min_elsewhere": 60,
-      "rest_default_min": 60,
-      "sleep_min": 480
+      "go_min_elsewhere": 60
     }
   },
   "recovery": {

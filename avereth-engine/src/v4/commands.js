@@ -72,16 +72,14 @@ export function untilMinutes(content, s, until) {
 }
 
 /**
- * Prototype C (setting 'planner', src/v4/planner.js): the minutes the engine books for an activity, or null when the
- * story keeps deciding its length as in A. A duration he names is the duration; an end he names runs to it (over
- * midnight); sleep without either is a night's sleep, rest without either a fixed short rest. Values: rules.time.engine_clock.
+ * Prototype C (setting 'planner', src/v4/planner.js): the minutes the engine books for an activity, or null when he
+ * names neither a duration nor an end. A duration he names is the duration; an end he names runs to it (over
+ * midnight). Without either, rest and sleep are a question (the activity handler), anything else is the story's as in A.
  */
 export function engineMinutes(content, s, c) {
     const t = content.rules.time;
     if (Number.isInteger(c.minutes) && c.minutes > 0) return c.minutes;
     if (c.until && c.until !== 'done' && t.until[c.until] !== undefined) return untilMinutes(content, s, c.until);
-    if (c.kind === 'sleep') return t.engine_clock.sleep_min;
-    if (c.kind === 'rest') return t.engine_clock.rest_default_min;
     return null;
 }
 
@@ -198,6 +196,10 @@ const HANDLERS = {
     },
     activity(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT — not while the fight runs.' };
+        // Prototype C: rest or sleep without a duration or an end is a question; nothing passes, nothing is recovered
+        if (envx?.c && RESTING.has(c.kind) && !engineMinutes(content, s, c)) {
+            return { status: 'clarify', reason: 'how long?', line: `CLARIFY — How long does he want to ${c.kind}? Name a duration ("for 2 hours") or an end ("until ${c.kind === 'sleep' ? 'morning' : 'evening'}").` };
+        }
         const t = content.rules.time;
         const cap = c.until ? untilMinutes(content, s, c.until) : c.minutes ? Math.ceil(c.minutes * t.minutes_factor) : t.default_cap_min;
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, cap);
@@ -205,7 +207,7 @@ const HANDLERS = {
         if (ROAMING.has(c.kind)) ctx.auth.roam = true;
         if (RESTING.has(c.kind)) ctx.auth.rest = true;
         ctx.expectedKeys[String(c.seq)] = 'activity';
-        const span = c.until ? UNTIL[c.until] || `until ${c.until}` : c.minutes ? `for ${c.minutes} minutes` : c.kind === 'sleep' ? 'for a night\'s sleep' : 'for a while';
+        const span = c.until ? UNTIL[c.until] || `until ${c.until}` : c.minutes ? `for ${c.minutes} minutes` : 'for a while';
         // Prototype C: the engine books a duration it can name, and the recovery of rest and sleep, in this turn's
         // record (a swipe or a regeneration reuses it); the extractor's time for the same span is not counted again
         const booked = envx?.c && c.kind !== 'search' ? engineMinutes(content, s, c) : null;

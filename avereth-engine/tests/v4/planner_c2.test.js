@@ -212,7 +212,7 @@ test('explicit WAIT and REST: the named duration is booked by the engine with th
     assert.equal(clock(g) - before, 45, 'only what the story adds beyond the booked 30');
 });
 
-test('sleep until morning runs over midnight to the fixed morning time; bare sleep is a night\'s sleep, not a 120-minute activity', async () => {
+test('sleep until morning runs over midnight to the fixed morning time', async () => {
     const g = await liveStart();
     await g.say('I wait until night', cmds({ type: 'activity', kind: 'wait', what: null, minutes: null, until: 'night', quote: 'I wait until night' }));
     await g.reply('Night fell.');
@@ -223,11 +223,57 @@ test('sleep until morning runs over midnight to the fixed morning time; bare sle
     assert.equal(clock(g) % 1440, content.rules.time.until.morning, '08:00, the documented morning');
     await g.reply('He slept through the night.', { expected: {}, deltas: [{ seq: 1, type: 'time', minutes: 600 }] });
     assert.equal(clock(g) % 1440, content.rules.time.until.morning, 'the narrated night is not booked again');
-    const h = await liveStart();
-    const before = clock(h);
-    await h.say('I go to sleep', cmds({ type: 'activity', kind: 'sleep', what: null, minutes: null, until: null, quote: 'I go to sleep' }));
-    assert.equal(clock(h) - before, content.rules.time.engine_clock.sleep_min);
-    assert.equal(engineMinutes(content, h.state(), { kind: 'sleep', minutes: 480 }), 480, 'a named duration wins');
+    assert.equal(engineMinutes(content, g.state(), { kind: 'sleep', minutes: 480 }), 480, 'a named duration wins');
+});
+
+test('bare REST and SLEEP ask how long (4.3.0-c.3): a CLARIFY panel, no time, no recovery, no story turn; a swipe or regeneration of it books nothing', async () => {
+    const g = await liveStart();
+    await g.say('I cast Arcane Bolt at the old fence post to test it', cmds({ type: 'ability_world', skill: 'mage.arcane_bolt', target: { new: 'the old fence post' }, target_words: 'the old fence post', goal: 'to test it', quote: 'I cast Arcane Bolt at the old fence post to test it' }));
+    await g.reply('The post cracked.');
+    const sheet = () => g.state().entities.pc.sheet;
+    const spent = { mp: sheet().mp, hp: sheet().hp, sta: sheet().sta };
+    assert.ok(spent.mp < 72, 'something to recover');
+    const start = clock(g);
+    for (const [text, kind] of [['I rest', 'rest'], ['I take a rest', 'rest'], ['I go to sleep', 'sleep'], ['I sleep', 'sleep']]) {
+        const r = await g.say(text, cmds({ type: 'activity', kind, what: null, minutes: null, until: null, quote: text }));
+        assert.equal(r.action, 'panels', `${text}: the System asks, no story turn`);
+        assert.match(r.panels[0], new RegExp(`^\\[SYSTEM // CLARIFY\\]\\nHow long does he want to ${kind}\\? Name a duration \\("for 2 hours"\\) or an end \\("until (?:morning|evening)"\\)\\.\\nNothing was booked`), text);
+        assert.deepEqual(g.last().events, [], `${text}: nothing booked`);
+        assert.equal(clock(g), start, `${text}: no time passes`);
+        assert.deepEqual({ mp: sheet().mp, hp: sheet().hp, sta: sheet().sta }, spent, `${text}: no recovery`);
+        // a swipe or a regeneration of the question books nothing and plans nothing again
+        const calls = g.planCalls();
+        for (const type of ['swipe', 'regenerate']) {
+            g.plans = [cmds({ type: 'activity', kind, what: null, minutes: 600, until: null, quote: text })];
+            const again = await prepareGenerationAsync(g.chat, content, { type, settings: { planner: true }, llm: g.llm });
+            assert.notEqual(again.action, 'context', `${text} ${type}: no story turn`);
+            assert.equal(g.planCalls(), calls, `${text} ${type}`);
+            assert.deepEqual(g.last().events, [], `${text} ${type}`);
+            assert.equal(clock(g), start, `${text} ${type}`);
+            assert.deepEqual({ mp: sheet().mp, hp: sheet().hp, sta: sheet().sta }, spent, `${text} ${type}`);
+        }
+    }
+    // with a duration it is booked as before, exactly
+    let before = clock(g);
+    await g.say('I rest for 30 minutes', cmds({ type: 'activity', kind: 'rest', what: null, minutes: 30, until: null, quote: 'I rest for 30 minutes' }));
+    assert.equal(clock(g) - before, 30);
+    assert.ok(sheet().mp > spent.mp, 'and recovers');
+    await g.reply('He rested.');
+    before = clock(g);
+    await g.say('I rest for 2 hours', cmds({ type: 'activity', kind: 'rest', what: null, minutes: 120, until: null, quote: 'I rest for 2 hours' }));
+    assert.equal(clock(g) - before, 120);
+    await g.reply('He rested.');
+    before = clock(g);
+    await g.say('I sleep for 8 hours', cmds({ type: 'activity', kind: 'sleep', what: null, minutes: 480, until: null, quote: 'I sleep for 8 hours' }));
+    assert.equal(clock(g) - before, 480);
+    await g.reply('He slept.');
+    // WAIT without a duration is unchanged: no question, the story decides its length
+    before = clock(g);
+    const w = await g.say('I wait', cmds({ type: 'activity', kind: 'wait', what: null, minutes: null, until: null, quote: 'I wait' }));
+    assert.equal(w.action, 'context');
+    assert.equal(clock(g), before);
+    assert.equal(engineMinutes(content, g.state(), { kind: 'rest' }), null);
+    assert.equal(engineMinutes(content, g.state(), { kind: 'sleep' }), null);
 });
 
 test('swipe and regenerate reuse the booked time and recovery: no second advance, no second recovery', async () => {
@@ -310,6 +356,13 @@ test('planner off: A is unchanged (no engine time for a walk or a rest, no slip 
     await g.player('I give up this contract.', [{ seq: 1, type: 'quest.abandon', quest: QUEST, quote: 'I give up this contract.' }]);
     assert.equal(g.state().quests[QUEST].status, 'abandoned');
     assert.equal(g.state().objects[SLIP].holder.entity, 'pc');
+    await g.reply('Hessa shrugged.');
+    // a bare sleep is A's: no question, A's line, no engine time
+    const t0 = clock(g);
+    const r = await g.player('I sleep', [{ seq: 1, type: 'activity', kind: 'sleep', what: null, minutes: null, until: null, quote: 'I sleep' }]);
+    assert.equal(r.action, 'context');
+    assert.match(g.narratorBlock(), /1\. SLEEPS for a while \(at most 120 minutes; the story decides how long it takes and what it yields\)/);
+    assert.equal(clock(g), t0);
 });
 
 // ------------------------------------------------------------------------------------------------ D. #assign

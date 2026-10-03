@@ -1,4 +1,4 @@
-# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.2)
+# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.3)
 
 Stand: 02.10.2026.
 
@@ -248,7 +248,7 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.2`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.3`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
    - Vertrag v4 (Revision 4.2.0, unverändert), Preset „Avereth Narrator V4“, Lorebook v0.13.
@@ -355,8 +355,7 @@ Befund: Zeit entstand nur aus der Erzählung (Extraktor, gedeckelt). **#16/#17**
 |---|---|
 | genannte Dauer („wait two hours“, „rest 30 minutes“, „sleep 8 hours“, jede Aktivität mit Minuten außer Suchen, dessen Prüfung unverändert bleibt) | genau diese Minuten, von der Engine mit dem Zug gebucht |
 | genanntes Ende („until morning“, „until night“) | bis zur nächsten dokumentierten Tageszeit, über Mitternacht (`rules.time.until`, morning = 08:00, die bestehende Regel) |
-| bloßes `sleep` | feste Schlafdauer 480 min |
-| bloßes `rest` | feste kurze Rast 60 min |
+| bloßes `rest` / `sleep` (weder Dauer noch Ende; seit 4.3.0-c.3) | eine Rückfrage (CLARIFY: „How long does he want to rest/sleep?“): keine Zeit, keine Erholung, kein Erzählerzug; ein Swipe oder Regenerate der Rückfrage bucht nichts. Bis c.2 galten feste 60 / 480 min |
 | Warten, Suchen u. a. ohne Dauer | wie A: die Erzählung entscheidet, gedeckelt |
 | erfolgreicher `go` an einen anderen Ort | die Minuten der Erzählung; reichen sie nicht, eine Untergrenze: 15 min in derselben Siedlung, 60 min anderswo |
 | Doppelbuchung | Die Zeitangaben des Extraktors decken zuerst die schon gebuchten Minuten. Nur was darüber hinausgeht, zählt (z. B. Rast 30 + Weg 15) |

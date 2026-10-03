@@ -155,6 +155,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const refusedArrival = (d) => { if (d?.type === 'arrive') travel.push({ seq: d.seq ?? 0, ok: false, away: leavesHere(d.at) }); };
     const outcome = s.last?.outcome || {};
     const auth = outcome.auth || {};
+    // Prototype C: the turn the planner read (a story turn: auth.c; a V3-routed one: the outcome's c)
+    const cPath = !!(auth.c || outcome.c);
     const expected = answer.expected || {};
     const tag = msg !== null && msg !== undefined ? msg : s.turn;
 
@@ -209,7 +211,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     // the World Envelope at this step (docs/ARCHITECTURE_GEN35.md §2.3): may this actor turn on Alaric of its own accord?
     const envelopeAllows = (id, d) => {
         if (typeof id !== 'string' || !s.entities[id] || !['npc', 'creature'].includes(s.entities[id].kind)) { grant('envelope.fight'); return true; } // the V3 rules refuse unknown attackers
-        const v = mayOpenFight(s, content, id, { newInAnswer: bornHere.has(id) });
+        const v = mayOpenFight(s, content, id, { newInAnswer: bornHere.has(id), c: cPath });
         if (v.ok) { grant('envelope.fight'); return true; }
         const label = entityLabel(s, id);
         reject(d, 'envelope', `${id} does not turn on Alaric: ${v.why}`);
@@ -653,7 +655,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const ep = episode(s, msg);
     if (ep) emit({ t: 'memory.recorded', d: { memory: ep } });
     const fightFrom = events.length;
-    const opened = openCommitted(s, content, dice, emit, { hold: false });
+    const opened = openCommitted(s, content, dice, emit, { hold: false, c: cPath });
     if (opened) opened.from = fightFrom;
     return { events, rejected, corrections, system, opened, state: s, arrivedHall };
 

@@ -1,4 +1,4 @@
-# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.3)
+# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.4)
 
 Stand: 02.10.2026.
 
@@ -41,6 +41,7 @@ Stand: 02.10.2026.
 9. [Die echte Testsession](#9-die-echte-testsession)
 10. [Bekannte Grenzen](#10-bekannte-grenzen)
 11. [4.3.0-c.2: Korrekturen nach dem Live-Test vom 03.10.2026](#11-430-c2-korrekturen-nach-dem-live-test-vom-03102026)
+12. [4.3.0-c.4: Temperament als Tendenz, nicht als Gesetz](#12-430-c4-temperament-als-tendenz-nicht-als-gesetz)
 
 ---
 
@@ -248,7 +249,7 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.3`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.4`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
    - Vertrag v4 (Revision 4.2.0, unverändert), Preset „Avereth Narrator V4“, Lorebook v0.13.
@@ -390,3 +391,53 @@ Im Stil-Prompt des Presets „Avereth Narrator V4“ (Abschnitt Prose) steht ein
 - Eine Rast wird mit dem Zug vollständig gebucht. Eine Unterbrechung durch die Geschichte verkürzt sie nicht (die Engine hat sie aufgelöst).
 - Ohne Schalter gelten Zeit- und Erholungsregeln nicht (A unverändert).
 
+
+---
+
+## 12. 4.3.0-c.4: Temperament als Tendenz, nicht als Gesetz
+
+Grundlage ist der Live-Lauf vom 03.10.2026, 23:43, auf 4.3.0-c.3 (Planner an). Die Fixture `tests/v4/live_1003b.json` enthält:
+- die Nachrichten 0–42 als aufgezeichnete Events;
+- Spielernachricht 43 mit ihrer rohen Planner-Antwort;
+- Antwort 44 mit ihrer rohen Extraktor-Antwort.
+
+Die Tests stehen in `tests/v4/planner_c4.test.js`.
+
+**Befund:** Der Erzähler etablierte den Quarry Strider Mate als in die Enge getrieben und angreifend („Cornered now…“, „claws first, straight across the open floor at him“). Der Extraktor meldete `hostile` und `intent: attack`. Der World Applier lehnte beides ab: „skittish: it flees from threats and fights only when cornered“. Die nächste Antwort musste den Angriff zurücknehmen.
+
+**Ursache im Code:**
+- `opensViolence` (`src/policy.js`) behandelt das Temperament eines Tiers als Gesetz. skittish darf nur auf ENGAGED und unverletzt kämpfen (`cornered_only`), defensive nur auf ENGAGED (`reach_only`).
+- `mayOpenFight` (`src/v4/envelope.js`) fragt diese Funktion, und der World Applier (`envelopeAllows` in `src/v4/world.js`) lehnt danach `hostile` und `intent: attack` ab. Der Mate stand auf MEDIUM.
+- `npcDecide` (`src/combat.js`) lässt ein skittish Tier ohne Intent immer fliehen, außer auf ENGAGED und unverletzt. Einmal getroffen, flieht es den Rest des Kampfes, auch auf Armlänge.
+- Rückt Alaric nur nach, entsteht eine Schleife: Das Tier flieht von MEDIUM auf LONG, er rückt auf MEDIUM nach, und so weiter, ohne Ende.
+
+**Lösung, nur auf dem Planner-Pfad:**
+
+| Stelle | Änderung |
+|---|---|
+| `mayOpenFight` | Ein Tier, das nur sein Temperament abhält, darf sich gegen Alaric wenden, wenn die Geschichte es so etabliert (`tendency: true`). Menschen behalten `provoked_only`. Einen toten oder abwesenden Angreifer lehnt weiter die Weltregel ab (`combat.by`). Schaden kommt weiter nur aus der Engine. |
+| WORLD ENVELOPE | Für dieselben Tiere steht eine Tendenz statt einer Grenze: „Skittish by nature, a tendency and not a law: they flee from threats and fight when cornered or given cause“. defensive entsprechend. Die Zeile für Menschen bleibt unverändert. |
+| `openCommitted` | Jeder Angreifer, den eine Antwort festlegt, greift in seinem Zug an, denn seine Feindseligkeit ist der etablierte Intent. A gibt nur dem ersten `attack`. Ein anderer gemeldeter Intent geht vor. |
+| `npcDecide`, skittish ohne Intent | Auf ENGAGED wehrt es sich, verletzt oder nicht. Bedroht sucht es Abstand und entkommt von LONG aus. Bedroht heißt: seit seinem letzten Zug angegriffen, oder Alaric hat den Kampf eröffnet, bevor es handelte. Sonst hält es, wachsam. Ein Verfolger, der nur nachrückt, steht so am Ende auf Armlänge. Ein etablierter Intent geht wie bisher vor. defensive, cautious und aggressive bleiben unverändert. |
+| Durchleitung | `plannedTurn` übergibt `c: true` auch an Züge über V3 (`playerTurn`), deren Outcome dann `c` trägt. Der World Applier liest `auth.c` oder `outcome.c`. Kämpfe erhalten `ctx.c`. |
+
+**Der Live-Fall nach dem Patch:**
+1. Antwort 44: `hostile` und `intent: attack` werden angenommen.
+2. Der Kampf öffnet mit der Antwort.
+3. Initiative: Mate 15, Alaric 7.
+4. Der Zug des Mate: SHORT → ENGAGED, Talons/Beak, 4 Schaden durch die Engine. Die Prosa allein kostet keinen HP-Punkt.
+5. Tritt Alaric im nächsten Zug zurück, hält der Mate wachsam. In A würde er fliehen.
+
+**Kein neuer LLM-Aufruf.** Planner, Erzähler und Extraktor sind unverändert, ebenso Vertrag und Preset. Ein Neuimport ist nicht nötig.
+
+**A unverändert:** Mit Schalter aus gilt alles wie vorher.
+- `tools/c_flag_off_diff.mjs`: 122/122 Schritte und 18/18 Eingaben, gegen `90bd450` und gegen `999167b`.
+- `tests/v4/gen35_envelope.test.js` ist unverändert grün.
+
+### Grenzen von c.4
+
+- Ob eine Ursache plausibel ist, prüft die Engine nicht. Das bleibt beim Erzähler, der die Tendenz sieht. Eine Regel-Engine oder einen Kausalgraphen gibt es bewusst nicht.
+- Ein `intent: attack` ohne `hostile` wird für ein Tier gespeichert, wie in A für aggressive Tiere. Einen Kampf eröffnet er nicht.
+- Ein Patt ist möglich: Hält Alaric, hält auch ein unbedrohtes skittish Tier, wie ein defensives in Deckung.
+- Der Vertrag (Revision 4.2.0) spricht von Tieren, die „nur in die Enge getrieben“ kämpfen. Auf dem Planner-Pfad sagt die Zeile im Engine-Block selbst, dass es eine Tendenz ist.
+- Menschen sind unverändert.

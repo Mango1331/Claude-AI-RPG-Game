@@ -50,13 +50,18 @@ export function actorTraits(state, content, id) {
  * free (an ambush is the world's move); someone already fighting or committed is the engine's.
  * @returns {{ok: boolean, rule?: string, why: string}}
  */
-export function mayOpenFight(state, content, id, { newInAnswer = false } = {}) {
+export function mayOpenFight(state, content, id, { newInAnswer = false, c = false } = {}) {
     const e = state.entities[id];
     if (!e || e.kind === 'location') return { ok: true, why: 'not an actor the envelope knows (the world rules decide)' };
     if (newInAnswer) return { ok: true, why: 'introduced by this reply' };
     if (state.encounter?.combatants?.[id]) return { ok: true, why: 'already fighting' };
     if ((state.pending_combat || []).some((p) => p.by === id)) return { ok: true, why: 'already committed' };
-    return opensViolence(actorTraits(state, content, id));
+    const traits = actorTraits(state, content, id);
+    const v = opensViolence(traits);
+    // Prototype C (4.3.0-c.4): an animal's temperament is a strong tendency, not a law. The story may give it a cause
+    // (cornered, its mate killed); the engine still resolves the attack on the animal's own turn, damage included.
+    // People keep their rule (provoked_only)
+    return c && !v.ok && !traits.sapient ? { ...v, ok: true, tendency: true } : v;
 }
 
 /** The words of an actor's role (occupation, descriptors, look, template). */
@@ -85,13 +90,13 @@ export function mayTake(state, by, kind) {
  * Alaric and about taking his coin or things.
  * @returns {{v: string, fight: null|'running', actors: {id: string, label: string, fight: object, fine: boolean, rob: boolean}[]}}
  */
-export function reactionEnvelope(state, content) {
+export function reactionEnvelope(state, content, { c = false } = {}) {
     if (state.encounter) return { v: ENVELOPE_VERSION, fight: 'running', actors: [] };
     const here = (state.scene?.present || []).filter((id) => id !== 'pc' && state.entities[id] && ['npc', 'creature'].includes(state.entities[id].kind) && statusOf(state, id) !== 'dead');
     return {
         v: ENVELOPE_VERSION, fight: null,
         actors: here.map((id) => ({
-            id, label: sceneHandle(state, content, id), fight: mayOpenFight(state, content, id),
+            id, label: sceneHandle(state, content, id), fight: mayOpenFight(state, content, id, { c }),
             fine: mayTake(state, id, 'fine').ok, rob: state.entities[id].kind === 'npc' && mayTake(state, id, 'robbery').ok,
         })),
     };
@@ -102,20 +107,26 @@ const RULE_LINES = {
     cornered_only: (names) => `Flee from threats; fight only when cornered (ENGAGED): ${names}.`,
     reach_only: (names) => `Fight only what comes within reach (ENGAGED): ${names}.`,
 };
+// Prototype C (4.3.0-c.4): the same animals, their temperament a tendency the story may overrule with a cause
+const TENDENCY_LINES = {
+    cornered_only: (names) => `Skittish by nature, a tendency and not a law: they flee from threats and fight when cornered or given cause: ${names}.`,
+    reach_only: (names) => `Defensive by nature, a tendency and not a law: they fight what comes within reach, or when given cause: ${names}.`,
+};
 
 /**
  * The narrator's part of the envelope (the engine block's WORLD ENVELOPE): only the limits, grouped, nothing for a
- * scene without them. A V4 story outside a fight; the fight's own block rules it otherwise.
+ * scene without them. A V4 story outside a fight; the fight's own block rules it otherwise. On the planner path (c)
+ * an animal's temperament is named as the tendency it is there.
  * @returns {string[]}
  */
-export function envelopeLines(state, content) {
+export function envelopeLines(state, content, { c = false } = {}) {
     if (state.meta?.runtime !== 'v4' || state.mode === 'creation') return [];
-    const env = reactionEnvelope(state, content);
+    const env = reactionEnvelope(state, content, { c });
     if (env.fight) return [];
     const lines = [];
     for (const [rule, line] of Object.entries(RULE_LINES)) {
-        const names = env.actors.filter((a) => !a.fight.ok && a.fight.rule === rule).map((a) => a.label);
-        if (names.length) lines.push(line(names.join(', ')));
+        const names = env.actors.filter((a) => (!a.fight.ok || a.fight.tendency) && a.fight.rule === rule).map((a) => a.label);
+        if (names.length) lines.push(((c && TENDENCY_LINES[rule]) || line)(names.join(', ')));
     }
     const fine = env.actors.filter((a) => a.fine).map((a) => a.label);
     const rob = env.actors.filter((a) => a.rob).map((a) => a.label);
@@ -126,7 +137,7 @@ export function envelopeLines(state, content) {
 }
 
 /** The engine block's section, or ''. */
-export function envelopeBlock(state, content) {
-    const lines = envelopeLines(state, content);
+export function envelopeBlock(state, content, { c = false } = {}) {
+    const lines = envelopeLines(state, content, { c });
     return lines.length ? `WORLD ENVELOPE (causal limits for this reply; inside them the story is free):\n${lines.map((l) => `- ${l}`).join('\n')}` : '';
 }

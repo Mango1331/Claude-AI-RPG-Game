@@ -695,6 +695,15 @@ export function npcDecide(ctx, npcId) {
         if (intent === 'attack') return inRange ? { kind: 'attack' } : { kind: 'close_and_attack' };
     }
     if (temper === 'skittish') {
+        // Prototype C (4.3.0-c.4): a tendency, not a law. At arm's length it fights back, hurt or not (cornered);
+        // threatened (attacked since its own last turn, or a fight Alaric opened before it acted) it seeks distance,
+        // from LONG it gets away; otherwise it holds, wary: a pursuit that only closes in ends at arm's length, not in a
+        // flee-and-chase loop. Any other attack is an intent the story established (above)
+        if (ctx.c) {
+            if (band === 'ENGAGED') return { kind: 'attack', why: 'cornered' };
+            const threatened = enc.log.slice(ownLast + 1).some(attackOn) || (ownLast < 0 && enc.trigger?.actor === 'pc');
+            return threatened ? { kind: 'flee', why: 'skittish, threatened' } : { kind: 'hold', why: 'skittish, wary' };
+        }
         if (wasHit || band === 'ENGAGED') return band === 'ENGAGED' && !wasHit ? { kind: 'attack', why: 'cornered' } : { kind: 'flee', why: 'skittish, threatened' };
         return { kind: 'flee', why: 'skittish' };
     }

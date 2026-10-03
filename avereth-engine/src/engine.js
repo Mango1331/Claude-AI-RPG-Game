@@ -71,7 +71,7 @@ export function startCampaign(content, { seed = newSeed(), firstMessage = '', ru
  * Resolve the player's message. Deterministic for a given (state, input).
  * @returns {{events, outcome, command: null|{panels, llm}, intent, situations, state}}
  */
-export function playerTurn(state, content, input, { msg = null, intent: parsed = null } = {}) {
+export function playerTurn(state, content, input, { msg = null, intent: parsed = null, c = false } = {}) {
     if (!state.meta.started) throw new Error('campaign not started');
     const s = clone(state);
     const dice = Dice.from(s);
@@ -105,10 +105,12 @@ export function playerTurn(state, content, input, { msg = null, intent: parsed =
     } else if (creation) {
         outcome = creationTurn(s, content, intent, emit);
     } else {
-        outcome = storyTurn(s, content, text, intent, dice, emit, situations);
+        outcome = storyTurn(s, content, text, intent, dice, emit, situations, c);
     }
     // prototype C (src/v4/planner.js): the parts of the player's message the engine did not take this turn stay visible
     if (intent.plan_notes?.length && outcome) outcome = { ...outcome, plan_notes: intent.plan_notes };
+    // prototype C: a V3-routed turn the planner read; its fights and its reply's world applier know it (4.3.0-c.4)
+    if (c && outcome) outcome = { ...outcome, c: true };
     if (TRADE_RE.test(text) && s.mode !== 'creation') situations.push('trade');
     emit({ t: 'outcome.recorded', d: { outcome, situations } });
     // character creation is a menu: the engine answers it with a System panel, the narrator is not called
@@ -132,20 +134,20 @@ function creationTurn(s, content, intent, emit) {
     return { kind: 'creation.invalid', reason: intent.reason || 'not a creation choice' };
 }
 
-function storyTurn(s, content, text, intent, dice, emit, situations) {
+function storyTurn(s, content, text, intent, dice, emit, situations, c = false) {
     const pcAction = pcActionOf(s, content, intent, text);
     // 1) an NPC commitment reported last turn resolves first; player input cannot erase it (Core #23 PENDING)
     const committed = (s.pending_combat || []).map((p) => p.by).filter((by) => s.entities[by] && s.entities[by].status !== 'dead' && s.scene.present.includes(by));
     if ((s.pending_combat || []).length) emit({ t: 'combat.pending_cleared', d: {} });
     if (committed.length) {
-        return combatTurn(s, content, dice, emit, { trigger: { actor: committed[0], target: 'pc' }, committed, pcAction }, situations);
+        return combatTurn(s, content, dice, emit, { trigger: { actor: committed[0], target: 'pc' }, committed, pcAction, c }, situations);
     }
     // 2) combat: an ACTIVE encounter continues (Turns before Alaric's resolve even when his own declaration needs a
     // target first: Testrun 3 dropped "the nearest one" silently); a declared attack starts one
-    if (s.encounter) return combatTurn(s, content, dice, emit, { pcAction }, situations);
+    if (s.encounter) return combatTurn(s, content, dice, emit, { pcAction, c }, situations);
     if (pcAction?.note) return { kind: 'note', text: pcAction.note, notice: pcAction.notice };
     if (pcAction?.kind === 'attack') {
-        return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move }, pcAction: null }, situations);
+        return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move }, pcAction: null, c }, situations);
     }
     if (pcAction?.kind === 'engage') return engagementTurn(s, content, dice, emit, pcAction.targets);
     // 3) declared stealth: opposed check (or automatic with nobody around)
@@ -290,7 +292,7 @@ export function materialise(s, content, dice, emit, id) {
  * One combat step for this player message: start (PC attack or pending NPC commitment), let a new attacker join,
  * run NPC Turns until Alaric's Turn / terminal state, and emit every resulting state change as events.
  */
-function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared = null, committed = [] }, situations) {
+function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared = null, committed = [], c = false }, situations) {
     const pcAction = declared?.kind ? declared : null;
     let started = null;
     let enc;
@@ -305,7 +307,7 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
             const tdice = new Dice(dice.seed, dice.n);
             for (const id of ids) materialise(trial, content, tdice, (e) => applyEvent(trial, e), id);
             const tenc = initEncounter(trial, content, tdice, trigger, ids.map((id) => ({ id, side: 'hostile' })), 'trial');
-            const tr = runCombat({ enc: tenc, content, dice: tdice, state: trial }, null);
+            const tr = runCombat({ enc: tenc, content, dice: tdice, state: trial, c }, null);
             if (tr.stopped === 'illegal' && !tr.records.length) return { kind: 'combat', records: [], illegal: tr.illegal, not_started: true };
         }
         for (const id of ids) materialise(s, content, dice, emit, id);
@@ -329,7 +331,7 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
             addCombatant(enc, s, content, pcAction.target, 'hostile', null);
         }
     }
-    const res = runCombat({ enc, content, dice, state: s }, pcAction);
+    const res = runCombat({ enc, content, dice, state: s, c }, pcAction);
     if (enc.log.length > 20) enc.log = enc.log.slice(-20);
     // the Turns resolved when the reply opened the fight come first for the narrator; the panel showed them already
     const preface = enc.preface || [];
@@ -532,7 +534,7 @@ function combatSpeech(state, clean) {
  * message. A commitment during an ACTIVE encounter joins the fixed Turn order.
  * @returns {null|{kind: 'started'|'joined', ids: string[], board: object, records?: object[], ended?: object, levelups?: string[]}}
  */
-export function openCommitted(s, content, dice, emit, { hold = false } = {}) {
+export function openCommitted(s, content, dice, emit, { hold = false, c = false } = {}) {
     if (s.mode === 'creation' || s.entities.pc?.status === 'dead' || !(s.pending_combat || []).length) return null;
     const committed = s.pending_combat.map((p) => p.by).filter((by) => s.entities[by] && s.entities[by].status !== 'dead' && s.scene.present.includes(by));
     if (!committed.length) return null;
@@ -543,6 +545,9 @@ export function openCommitted(s, content, dice, emit, { hold = false } = {}) {
         ids = combatants(s, committed[0], committed);
         for (const id of ids) materialise(s, content, dice, emit, id);
         enc = initEncounter(s, content, dice, { actor: committed[0], target: 'pc' }, ids.map((id) => ({ id, side: 'hostile' })), `enc.t${s.turn}r`);
+        // Prototype C (4.3.0-c.4): every attacker the reply committed attacks on its own turn, its hostility the intent
+        // the story established (A arms only the first); an intent the reply gave it instead still decides
+        if (c) for (const id of ids) enc.intents[id] = enc.intents[id] || 'attack';
         Object.assign(enc.intents, s.pending_intents || {});
         if (!hold) {
             const res = runCombat({ enc, content, dice, state: s }, null);

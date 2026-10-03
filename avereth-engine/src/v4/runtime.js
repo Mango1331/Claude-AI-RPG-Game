@@ -145,7 +145,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const irRec = { v: IR_VERSION, route: m.route === 'v4' ? 'v4' : 'v3', reason: 'planner', links: ir.links, acts };
     if (m.route === 'panel') return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, events: [], command: { panels: [m.panel], llm: null } };
     if (m.route === 'v3') {
-        const t = playerTurn(before, content, msg.mes, { msg: u, intent: m.intent });
+        const t = playerTurn(before, content, msg.mes, { msg: u, intent: m.intent, c: true });
         return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, events: t.events, command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
     }
     const need = boardFor(before, content, m.commands);

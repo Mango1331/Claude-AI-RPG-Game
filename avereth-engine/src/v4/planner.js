@@ -113,18 +113,32 @@ export function announcedAbandon(message, commands) {
     return { kept, dropped };
 }
 
-/** The fight prompt shows only the story commands a fight can mean (go, activity); the story prompt all of them. */
-const FIGHT_STORY_TYPES = new Set(['go', 'activity']);
+/**
+ * The fight prompt shows only the story commands a fight can mean (activity: wait, search); the story prompt all of
+ * them. Prototype C (4.3.0-c.6.2): no go in a fight, where it is never taken (mapPlan) — live: "i walk towards the next
+ * beasts as i try to gather them all around me for one big action" became go + other, neither taken, the turn lost
+ */
+const FIGHT_STORY_TYPES = new Set(['activity']);
+
+// Prototype C (4.3.0-c.6.2): a step within the fight is move by the Range Bands, leaving the fight is flee; the purpose
+// of a step or an action is part of it, no other
+export const FIGHT_RULES = [
+    'In a fight (these come before the rules above):',
+    '- Every step within the fight is move, by the Range Bands: toward opponents is "closer", back from them is "away". target: the one opponent he heads for, or null when he names none or several ("the next ones", "the others"). There is no go in a fight; getting away from the fight, out of it, is flee.',
+    '- What he wants a step or an action to achieve ("to draw them around me", "so I can hit them all at once") belongs to that command and is no command of its own: no other for it.',
+    '- (fight, the example catalog above) "I walk over to the rats so they crowd around me for one big blast" → {"commands":[{"seq":1,"type":"move","dir":"closer","target":null,"quote":"I walk over to the rats"}]}',
+].join('\n');
 
 /**
  * The system prompt. Story mode: the interpreter's prompt as P0/S1 measured it, followed by the planner's types.
- * Fight mode (a running fight or one committed to): the planner role, rules, types and examples, with go and activity.
+ * Fight mode (a running fight or one committed to): the planner role, rules, types and examples, the fight's rules,
+ * with activity.
  */
 export function plannerSystem(vocab, { fight = false } = {}) {
     const mech = [MECH_RULES, '', 'Commands for that:', MECH_COMMANDS, '', MECH_EXAMPLES].join('\n');
     if (fight) {
         const story = vocabularyText({ commands: vocab.commands.filter((c) => FIGHT_STORY_TYPES.has(c.type)) });
-        return [PLANNER_ROLE, '', mech, '', 'Story commands (the same list):', story, '', 'Answer with {"commands": [...]}; an empty list when the message contains no action of his.', '', PLAIN_FORMAT].join('\n');
+        return [PLANNER_ROLE, '', mech, '', FIGHT_RULES, '', 'Story commands (the same list):', story, '', 'Answer with {"commands": [...]}; an empty list when the message contains no action of his.', '', PLAIN_FORMAT].join('\n');
     }
     return [interpreterSystem(vocab), '', CONTRACT_RULES, '', ORDER_RULES, '', mech, '', PLAIN_FORMAT].join('\n');
 }

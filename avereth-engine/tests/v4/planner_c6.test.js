@@ -15,6 +15,7 @@ import { resolveCommands } from '../../src/v4/commands.js';
 import { applyWorld } from '../../src/v4/world.js';
 import { applyEvent } from '../../src/state.js';
 import { SLIP_READY, SLIP_DONE, contractReady, boardRequest } from '../../src/v4/guild.js';
+import { NARRATOR_CONTRACT_REVISION } from '../../src/util.js';
 
 const content = await loadContent();
 const fx = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests/v4/live_1004b.json'), 'utf8'));
@@ -456,4 +457,36 @@ test('R3. the C Board generator asks no trophies of a hunt (proof [], the slip s
     assert.equal(boardCalls(x), 1);
     assert.equal(listedOn(x.state()).length, 3);
     assert.match(x.calls.find((q) => q.purpose === 'board').messages[0].content, /is proven by a species-appropriate body part of each kill/);
+});
+
+// ------------------------------------------------------------------------------------------------ c.6.2
+test('c.6.2: the second reading of the day shows the same notices, not as new; the first posts them as new (A unchanged)', async () => {
+    const g = await member();
+    await read(g);
+    assert.match(outcomeOf(g).actions[0], /these official listings have JUST become available/);
+    await read(g);
+    const again = outcomeOf(g).actions[0];
+    assert.match(again, /^1\. READS the Novice board — BOARD \(show exactly these, invent no other official contract; .*these are the notices posted earlier today, the same as before, nothing new: do not call them new, fresh or just posted/);
+    assert.ok(!/JUST become available|first display|now become canonical/.test(again));
+    for (const l of DAY1) assert.ok(again.includes(`**${l.title}**`), l.title);
+    // A, planner off: every reading as before
+    const a = planner(new Chat4(content, { listings: DAY1 }));
+    await a.player('Warrior');
+    await a.player(content.classes.get('warrior').skill_pool.slice(0, 2).map((id) => content.skills.get(id).name).join(' and '));
+    await say(a, '*i walk to the guild*', [], { planner: false, commands: [{ seq: 1, type: 'go', to: HALL, quote: 'i walk to the guild' }] });
+    await a.reply('He reached the hall.', arrives([1, HALL]));
+    for (let i = 0; i < 2; i++) {
+        await say(a, '*i read the board*', [], { planner: false, commands: [{ seq: 1, type: 'board.read', rank: null, quote: 'i read the board' }] });
+        assert.match(outcomeOf(a).actions[0], /these listings now become canonical because Alaric actually reads them; .*these official listings have JUST become available/);
+        await a.reply('He read the board.');
+    }
+});
+
+test('c.6.2: the narrator contract asks no trophies of a hunt; the Guild\'s contract slips only reflect the status the Guild and the engine have established', () => {
+    const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
+    assert.ok(!/proven by trophies|trophies of the kills/.test(contract), 'no hunt-trophy rule');
+    assert.match(contract, /What proves a contract is what the engine block says for it; ask for nothing it does not name \(no trophies or body parts, no local inspection, witness or signature\)\./);
+    assert.match(contract, /The Adventurers' Guild issues standardized, lightly enchanted contract slips at its recognized branches\. A slip only reflects the contract status the Guild and the engine have established \(e\.g\. ACTIVE, READY, COMPLETED\); it does not watch the world on its own and pays nothing out\./);
+    assert.match(contract, /Body parts of kills stay ordinary loot, or real quest items when getting a body part is itself an objective\./);
+    assert.equal(contract.split('\n')[1], NARRATOR_CONTRACT_REVISION, 'a card with the old contract shows as outdated');
 });

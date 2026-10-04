@@ -10,7 +10,7 @@ import { prepareGenerationAsync } from '../../src/v4/runtime.js';
 import { rec, turnBlock } from '../../src/host.js';
 import { worldPanel } from '../../src/display.js';
 import { buildCatalog } from '../../src/v4/catalog.js';
-import { planContext, withContentSkills, plannerRequest, parsePlan, mapPlan } from '../../src/v4/planner.js';
+import { planContext, withContentSkills, plannerRequest, parsePlan, mapPlan, plannerSystem } from '../../src/v4/planner.js';
 
 const content = await loadContent();
 const A = 'mon.barkscorpion_1';
@@ -62,14 +62,14 @@ const outcomeOf = (r) => r?.events?.findLast((e) => e.t === 'outcome.recorded')?
 const pcSteps = (r) => (outcomeOf(r)?.records || []).filter((x) => x.actor === 'pc');
 
 /** A Mage (Flame Lance, Arcane Burst) in a fight with Barkscorpion A, B and C; set up with the planner off. */
-async function fight() {
+async function fight(band = 'SHORT') {
     const g = new ChatC(content);
     g.planner = false;
     await g.player('Mage');
     await g.player('Flame Lance and Arcane Burst');
     await g.player('I climb down into the old burrow.', [{ seq: 1, type: 'go', to: { new: 'the old burrow' }, quote: 'I climb down into the old burrow' }]);
     await g.reply('Three barkscorpions skitter out of the dark and rush at Alaric.', { expected: {}, deltas: [
-        { seq: 1, type: 'creature.new', ref: 'barkscorpion', species: 'barkscorpion', anchor: 'arthropod', desc: ['bark-plated'], count: 3, present: true, band: 'SHORT', stronger: null },
+        { seq: 1, type: 'creature.new', ref: 'barkscorpion', species: 'barkscorpion', anchor: 'arthropod', desc: ['bark-plated'], count: 3, present: true, band, stronger: null },
         { seq: 2, type: 'hostile', by: ['barkscorpion'] },
     ] });
     assert.ok(g.state().encounter, 'the fight is on');
@@ -420,7 +420,8 @@ test('the planner sees the scene: skills, opponents with their labels, engine fa
     assert.match(req.user, /- mon\.barkscorpion_2: Barkscorpion B — unhurt · ENGAGED/);
     assert.match(req.user, /ENGINE FACTS/);
     assert.match(req.user, /RECENT .*\nBarkscorpion B stung Alaric/);
-    assert.match(req.system, /- go \{to\}/);
+    assert.doesNotMatch(req.system, /- go \{/, 'no go in a fight (4.3.0-c.6.2): a step within it is move, getting away is flee');
+    assert.match(req.system, /- activity \{/);
     assert.doesNotMatch(req.system, /- pay \{/);
     assert.equal(plannerRequest(content.commandVocab, ctx, 'x').system, req.system, 'the same state gives the same prompt');
     const t = await story();
@@ -433,4 +434,35 @@ test('the planner sees the scene: skills, opponents with their labels, engine fa
     const p = parsePlan(JSON.stringify(cmds({ type: 'use_skill', skill: 'mage.flame_lance', target: B, damage: 20, quote: 'I Flame Lance B' })), content.commandVocab, ctx, 'I Flame Lance B');
     assert.equal(p.commands, null);
     assert.match(p.errors[0], /unknown field damage/);
+});
+
+// ------------------------------------------------------------------------------------------------ c.6.2 a step in a fight
+test('c.6.2: in a fight, walking toward the beasts is move closer by the Range Bands, its purpose no other; move + area attack, flee and go outside a fight unchanged', async () => {
+    const fightPrompt = plannerSystem(content.commandVocab, { fight: true });
+    assert.ok(!/\n- go \{/.test(fightPrompt), 'the fight prompt offers no go');
+    assert.match(fightPrompt, /Every step within the fight is move, by the Range Bands: toward opponents is "closer", back from them is "away"\. target: the one opponent he heads for, or null when he names none or several/);
+    assert.match(fightPrompt, /There is no go in a fight; getting away from the fight, out of it, is flee\./);
+    assert.match(fightPrompt, /belongs to that command and is no command of its own: no other for it/);
+    assert.match(fightPrompt, /"I walk over to the rats so they crowd around me for one big blast" → \{"commands":\[\{"seq":1,"type":"move","dir":"closer","target":null,"quote":"I walk over to the rats"\}\]\}/);
+    const storyPrompt = plannerSystem(content.commandVocab);
+    assert.match(storyPrompt, /\n- go \{/, 'outside a fight go stays');
+    assert.ok(!storyPrompt.includes('In a fight (these come before'));
+    // the live message (04.10.2026) as the fight prompt asks for it: every foe one band closer, nothing left untaken
+    const g = await fight('LONG');
+    await g.say('i walk towards the next beasts as i try to gather them all around me for one big action', cmds({ type: 'move', dir: 'closer', target: null, quote: 'i walk towards the next beasts' }));
+    assert.match(g.calls.at(-1).messages[0].content, /There is no go in a fight/);
+    assert.deepEqual(pcSteps(g.last()).map((r) => [r.kind, r.dir, r.change]), [['move', 'closer', 'Barkscorpion A MEDIUM -> SHORT; Barkscorpion B MEDIUM -> SHORT; Barkscorpion C MEDIUM -> SHORT']]);
+    assert.equal(outcomeOf(g.last()).plan_notes, undefined, 'nothing not taken');
+    // a step in and an area attack: Arcane Burst on every engaged foe (unchanged)
+    const h = await fight();
+    await h.say('I step in close and unleash Arcane Burst', cmds({ type: 'move', dir: 'closer', target: null, quote: 'I step in close' }, { type: 'use_skill', skill: 'mage.arcane_burst', target: null, quote: 'unleash Arcane Burst' }));
+    const burst = pcSteps(h.last())[0];
+    assert.deepEqual([burst.kind, burst.skill, burst.strikes.map((x) => x.target)], ['attack', 'mage.arcane_burst', [A, B, C]]);
+    // getting away is flee; outside a fight go is the V4 go (unchanged)
+    const k = await fight();
+    await k.say('I run for the exit', cmds({ type: 'flee', quote: 'I run for the exit' }));
+    assert.equal(pcSteps(k.last())[0].kind, 'flee');
+    const t = await story();
+    await t.say('I walk back to Redmarch', cmds({ type: 'go', to: 'loc.redmarch', quote: 'I walk back to Redmarch' }));
+    assert.equal(outcomeOf(t.last()).resolutions[0].type, 'go');
 });

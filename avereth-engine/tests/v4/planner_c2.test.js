@@ -402,5 +402,6 @@ test('the narrator preset asks for familiar modern words for ordinary medieval t
     const style = preset.prompts.find((p) => p.identifier === 'main').content;
     assert.match(style, /Prefer familiar, modern English words for ordinary medieval things\. Avoid rare or archaic historical terms used only for atmosphere; when a period term is genuinely useful, make its meaning clear from context the first time it appears\. Modern wording is fine; modern technology is not\./);
     const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
-    assert.match(contract, /^AVERETH RPG — SANDBOX NARRATOR CONTRACT\nContract revision: 4\.2\.0\n/);
+    // 4.3.0-c.6.2 changed the contract (the Guild's contract slips instead of the hunt trophies), not c.2
+    assert.match(contract, /^AVERETH RPG — SANDBOX NARRATOR CONTRACT\nContract revision: 4\.3\.0-c\.6\.2\n/);
 });

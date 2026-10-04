@@ -542,7 +542,10 @@ const HANDLERS = {
         else ctx.conditionals.push({ seq: c.seq, kind: 'board', condition: 'arrive_guild_hall', hall, branch, rank, listings: listed.map((q) => q.id) });
         ctx.boardShown = { branch, rank, listings: listed.map((q) => q.id) };
         const rows = listed.map((q) => `**${q.title}** — client: ${q.client || 'unspecified'} · reward: ${q.payout_cp} cp · ${q.task || q.desired_end_state || objectiveText(q)}`).join('\n');
-        const line = `READS the ${rank} board${when} — BOARD (these listings now become canonical because Alaric actually reads them; show exactly these, invent no other official contract; present the notices in the existing title-first readable format; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\n${rows}\nStored objectives and any verification examples are continuity memory only.`;
+        // Prototype C (4.3.0-c.6.2): only the reading that posts the day's board shows new notices; a later reading that
+        // day shows the same ones again, not as new
+        const fresh = !envx.c || !!gen?.listings?.length;
+        const line = `READS the ${rank} board${when} — BOARD (${fresh ? 'these listings now become canonical because Alaric actually reads them; ' : ''}show exactly these, invent no other official contract; present the notices in the existing title-first readable format; ${fresh ? 'these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display' : 'these are the notices posted earlier today, the same as before, nothing new: do not call them new, fresh or just posted, and do not claim, withdraw or remove any of them during this display'}):\n${rows}\nStored objectives and any verification examples are continuity memory only.`;
         if (ahead) return { status: 'conditional', condition: 'arrive_guild_hall', line: `${line}\nIf the reply does not reach the hall, he sees none of it.` };
         return { status: 'resolved', line };
     },

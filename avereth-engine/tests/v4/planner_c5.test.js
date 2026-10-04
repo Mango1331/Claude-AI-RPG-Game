@@ -70,7 +70,8 @@ test('1. live #39 "go back to the guild and look at the quest board again": the 
     assert.deepEqual(outcomeOf(g).resolutions.map((r) => [r.seq, r.type, r.status]), [[1, 'go', 'authorized'], [2, 'board.read', 'conditional']]);
     const [go, read] = outcomeOf(g).actions;
     assert.match(go, /^1\. GOES — to Adventurers' Guild hall, Alderwatch/);
-    assert.match(read, /^2\. READS the Novice board, when he reaches the Guild hall — BOARD \(these listings now become canonical/);
+    // his second look at the board that day: the same notices, not presented as new (4.3.0-c.6.2)
+    assert.match(read, /^2\. READS the Novice board, when he reaches the Guild hall — BOARD \(show exactly these, .*these are the notices posted earlier today, the same as before, nothing new/);
     // the real canonical board of that hall: the four listings still on it (the hounds are his, not on the board)
     const listed = Object.values(g.state().quests).filter((q) => q.status === 'listed');
     assert.equal(listed.length, 4);

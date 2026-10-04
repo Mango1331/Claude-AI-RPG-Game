@@ -1,4 +1,4 @@
-# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.6.1)
+# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.6.2)
 
 Stand: 02.10.2026.
 
@@ -251,7 +251,7 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.1`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.2`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
    - Vertrag v4 (Revision 4.2.0, unverändert), Preset „Avereth Narrator V4“, Lorebook v0.13.
@@ -577,3 +577,12 @@ Es gibt keinen neuen LLM-Aufruf (der Repair ist der bestehende zweite Versuch), 
 - Der Prompt steuert, die Engine erzwingt `proof: []` nicht. Schreibt das Modell trotzdem einen Trophäen-Beweis an eine Jagd, verlangt und nimmt die Engine ihn auf C nicht (c.6).
 - Schon gebuchte Listings behalten ihre Beweise.
 - Scheitert auch der Repair, zeigt der Tag keine Aushänge. Die gestrigen bleiben gelistet, sind aber nicht annehmbar. So verhält sich c.6 schon bei einem Generatorfehler.
+
+### Nachtrag 4.3.0-c.6.2
+
+- **Kampf:** Ein Schritt innerhalb des Kampfes ist `move` (closer/away, nach Range Bands), das Verlassen bleibt `flee`. Der Kampf-Prompt des Planners bietet kein `go` mehr an. Der Zweck einer Handlung („to draw them around me“) ist kein eigenes `other`. Live war „i walk towards the next beasts as i try to gather them all around me …“ zu `go` + `other` geworden, beides wurde nicht ausgeführt.
+- **Erzählervertrag (Revision 4.3.0-c.6.2, Kartenbeschreibung ersetzen):** Die Regel „hunt/cull is proven by trophies“ ist entfernt. Neu:
+  - Nachweis ist, was der Engine-Block nennt.
+  - Die anerkannten Niederlassungen der Gilde geben standardisierte, schwach verzauberte Contract Slips aus. Ein Slip zeigt nur den festgestellten Status (ACTIVE, READY, COMPLETED), überwacht nichts und zahlt nichts aus.
+  - Körperteile sind Beute oder echte Questgegenstände, wenn ihr Beschaffen selbst ein Objective ist.
+- **Board:** Nur das Lesen, das das Board des Tages aushängt, zeigt die Aushänge als neu. Ein weiteres Lesen am selben Tag zeigt dieselben, ausdrücklich nicht als neu.

@@ -1,4 +1,4 @@
-# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.5)
+# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.6)
 
 Stand: 02.10.2026.
 
@@ -43,6 +43,7 @@ Stand: 02.10.2026.
 11. [4.3.0-c.2: Korrekturen nach dem Live-Test vom 03.10.2026](#11-430-c2-korrekturen-nach-dem-live-test-vom-03102026)
 12. [4.3.0-c.4: Temperament als Tendenz, nicht als Gesetz](#12-430-c4-temperament-als-tendenz-nicht-als-gesetz)
 13. [4.3.0-c.5: Handlungen, die aufeinander aufbauen](#13-430-c5-handlungen-die-aufeinander-aufbauen)
+14. [4.3.0-c.6: Folgen statt Lästigkeit](#14-430-c6-folgen-statt-lästigkeit)
 
 ---
 
@@ -250,7 +251,7 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.5`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
    - Vertrag v4 (Revision 4.2.0, unverändert), Preset „Avereth Narrator V4“, Lorebook v0.13.
@@ -508,3 +509,45 @@ Die Tests stehen in `tests/v4/planner_c5.test.js`.
   - Ein nicht-gildisches „quest board“ würde auf C abgelehnt; der Inhalt kennt keins.
   - Anders formulierte Aushänge kommen durch.
   - Das ist ein Rückfallnetz. Der eigentliche Schutz ist der BOARD-Block der Engine.
+
+---
+
+## 14. 4.3.0-c.6: Folgen statt Lästigkeit
+
+Grundlage ist der Live-Lauf vom 04.10.2026, 16:35, auf 4.3.0-c.5 (Planner an), dazu die Designpunkte des Nutzers. Die Fixture `tests/v4/live_1004b.json` enthält:
+- die Nachrichten 0–30 mit Text und Events;
+- die rohen Planner- und Extraktor-Antworten der Züge 5/6, 13, 17, 23/24, 28 und 29/30.
+
+Die Tests stehen in `tests/v4/planner_c6.test.js`. Alles gilt nur auf dem Planner-Pfad; mit Schalter aus ist A unverändert.
+
+| # | Befund im Lauf / Wunsch | Ursache im Code | Änderung (nur C) |
+|---|---|---|---|
+| 1 | Das Board soll Alarics Ausschnitt des Tages sein: fünf Angebote, am selben Tag dieselben, am nächsten neue. | Plan §6.4: An einem neuen Tag bleiben alte Listings stehen, nur Lücken werden gefüllt (`boardNeed`, `boardFor`). `takenByOthers` würfelt sie weg (Inhalt: 0 %). | `boardFor` verlangt an einem neuen Tag fünf neue. `board.read` lässt beim ersten Lesen des Tages die nicht genommenen Aushänge ablaufen (`quest.status` → `expired`) und bucht die fünf neuen. Scheitert der Generator, bleibt nichts als „heute" stehen. `takenByOthers` läuft auf C nicht. `quest.accept` lehnt einen Aushang eines früheren Tages ab („no longer on the board: the Guild renews its board every day"). Der Katalog zeigt im BOARD nur den Tag; KNOWN CONTRACTS nennt gestrige Aushänge als „no longer on the board". |
+| 2 | Der Trophäen-Beweis widersprach dem Inventar: Die Erzählung gab beide Hauer ab, die Firewall hielt sie bei Alaric (#30). | Der Beweis kam aus Engine-Texten: die ACCEPTS-Zeile („Proof: 2 tusks … brought to a Guild hall"), „verification examples" in Questgedächtnis und Katalog. Die Erzählung machte daraus eine Notiz „Proof is two boar tusks". `contractReady` brauchte die Hauer gar nicht (`story_outcome`). Güter-Aufträge dagegen kamen mit `quest.ready` ganz ohne die Güter durch. | Jagd: Beweis ist der Vertragszettel. Die Engine markiert ihn **READY**, sobald der Vertrag angenommen würde, und **COMPLETED** nach der Auszahlung (`slipMarks`, Engine-Schritt). Trophäen werden weder verlangt noch abgegeben, auch nicht im alten Pfad. Güter (GATHER; GET, wenn der Vertrag das Ding als Objekt-Beweis führt): Sie müssen in seinen Händen sein und gehen an die Gilde. Lieferung (DELIVER): Solange er die Ware trägt, ist sie nicht geliefert. |
+| 3 | „use some cloth to stop my bleeding" (#23) und „go to the stone" (#11) gingen verloren. | `mapPlan` legte `other` außerhalb von Kämpfen nur in `plan.free` (Record) ab. | `other` wird ein Schritt in seiner Reihenfolge: `DOES — "…": his own action; tell it as it happens. It books nothing …`. HP, Gegenstände und Münzen bleiben Engine-Sache. Ein `recover` der Erzählung wird weiter abgelehnt. |
+| 4 | „follow the directions" wurde `journey.continue` „with Odo Fell" (#17). | `journeyReady` wertete Reisewörter in Questnotizen und offenen Threads aus, wenn jemand Genanntes anwesend war. Die Wegbeschreibung enthielt „road", „ride" … | Auf C zählen nur Verträge, deren Arbeit eine Reise ist (ESCORT, DELIVER; private Arbeit: escort/deliver/guide/accompany), oder eine begonnene Reise (`q.journey`). Threads zählen nicht. |
+| 5 | Bei der Abgabe (#30) wurde eine dritte „Guild desk clerk" angelegt. Die zwei Schreiber, die ihn registriert hatten, waren mit `at` = Gildenhalle vermerkt. | Bekannte Personen eines Ortes erreichten weder Erzähler noch Extraktor, wenn er dorthin zurückging („only the story knows …"). | Ein GO zu einem bekannten Ort hängt **KNOWN AT …** mit Personen und ids an die PLAYER ACTIONS; Erzähler und Extraktor sehen sie. Rückfall im World Applier: Eine unbenannte Service-Person (Schreiber, Wirt, Händler …) am Ort wird zur bekannten Person dieser Rolle. Das gilt, wenn es genau eine gibt oder ihre Beschreibung eindeutig passt (live: „spectacles"). Sonst entsteht eine neue. |
+| 6 | Kulissen-Personen (Torwache, gepanzerter Mann am Board) wurden Entitäten mit Fakten und Erinnerungen. | Jedes `person.new` wird gespeichert. | Eine unbenannte Person ohne Service-Rolle, auf die sich kein anderes Delta der Antwort bezieht, wird nicht gespeichert (`ambient`, im Audit). Name, ein Bezug oder eine Service-Rolle machen sie dauerhaft. |
+| 7 | „Boar den chamber" (interior) wurde in der Root-Hollow abgelehnt (#24). | `PLACE_PARENTS.interior` erlaubt keine `wilderness`. | Auf C darf ein Inneres (Höhle, Bau, Kammer) in der Wildnis liegen. |
+
+**Prompts und Texte:**
+- **Neue Engine-Zeilen:** DOES, KNOWN AT, die Ablauf-Ablehnung, die Beweis- und Übergabesätze.
+- **Questgedächtnis (Erzähler):** „proof: the contract slip …" bzw. „goods to hand over …" statt „verification examples".
+- **Katalog (Planner/Extraktor):** dieselben Proof-Texte; KNOWN CONTRACTS mit abgelaufenen Aushängen; JOURNEY READY nur noch bei strukturierter Reise.
+- **Board-Generator:** An einem neuen Tag ist „ON THE BOARD ALREADY: nothing", „WRITE: 5".
+- **Unverändert:** Vertrag, Preset und Planner-Systemprompt.
+
+**Kein neuer LLM-Aufruf. Kein neues State-Feld, keine Migration.** Neu sind nur Werte in bestehenden Strukturen: der Quest-Status `expired`, Engine-Marken auf Vertragszetteln und die Ablehnungsregel `ambient`. Alte Chats laufen weiter: gestrige Aushänge laufen beim nächsten Lesen ab.
+
+**A unverändert:** `tools/c_flag_off_diff.mjs`: 122/122 Schritte und 18/18 Eingaben, gegen `90bd450` und gegen `227d90d`.
+
+### Grenzen von c.6
+
+- **Deadlines:** `schedule.deadline` wird weiter nicht durchgesetzt. Aktive Verträge bleiben aktiv, ob mit oder ohne Deadline.
+- **Slip-Marken sind Anhängsel:** Wird ein Güter-Vertrag wieder unfertig (Ware weg), bleibt die READY-Marke stehen. Entscheidend ist die Prüfung am Schalter.
+- **Güter-Abgleich:** Er läuft über das Kopfwort des Ziels („venom sacs" → sac). Der Vertragszettel selbst zählt nie mit. Schwache Ein-Wort-Köpfe können fremde Gegenstände treffen.
+- **Hydration:**
+  - Die Hydration nennt die bekannten Personen, setzt sie aber nicht in die Szene. Das tut die Geschichte. Der Rückfall greift nur bei eindeutigem Treffer.
+  - Ein wirklich neuer Schreiber ohne Namen kann bei genau einem bekannten Schreiber derselben Rolle mit ihm verschmelzen. Ein Name verhindert das.
+- **Kulissen-Regel:** Sie hängt am Bezug innerhalb derselben Antwort. Spricht Alaric die Wache erst im nächsten Zug an, entsteht sie dann neu.
+- **Leichen- und Identitäts-Dubletten** anderer Art sind nicht Teil von c.6.

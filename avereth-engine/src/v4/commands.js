@@ -18,14 +18,14 @@ import { entityLabel, setFactEvents, truth } from '../knowledge.js';
 import { normText, slug, formatClock } from '../util.js';
 import { deriveCharacter } from '../derived.js';
 import {
-    placeName, hallOf, hallOfSettlement, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin,
+    placeName, hallOf, hallOfSettlement, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin, listedToday,
 } from './domain.js';
 import { sameWant } from './world.js';
-import { journeyReady } from './catalog.js';
+import { journeyReady, knownAt } from './catalog.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText } from './trade.js';
 import {
     REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, abandonContract, contractReady, objectiveText,
-    promotion, takenByOthers, bookBoard, isHunt, trophyText,
+    promotion, takenByOthers, bookBoard, isHunt, trophyText, proofTerms, handoverTerms,
 } from './guild.js';
 
 const VERBS = { rest: 'RESTS', sleep: 'SLEEPS', wait: 'WAITS', work: 'WORKS', train: 'TRAINS', study: 'STUDIES', craft: 'CRAFTS', search: 'SEARCHES', gather: 'GATHERS', errand: 'RUNS ERRANDS' };
@@ -161,9 +161,9 @@ function abandonGuild(s, content, q, c, ctx, emit) {
 // ------------------------------------------------------------------------------------------------ handlers
 // Each handler: (s, content, c, ctx, emit, env) -> {status, reason?, line?, extra?, cap?, condition?}
 const HANDLERS = {
-    'journey.continue'(s, content, c, ctx, emit) {
+    'journey.continue'(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
-        const ready = journeyReady(s);
+        const ready = journeyReady(s, { c: !!envx?.c });
         if (!ready) return { status: 'refused', reason: 'no established journey', line: 'NOTHING TO DEPART ON — no stored journey/departure is ready to continue here.' };
         // his agreement to go on with this quest's journey is its start: from now on it is his to continue, whoever of
         // its people the scene still shows (review of 4.1.0: an accepted escort is no journey before he sets off)
@@ -176,7 +176,7 @@ const HANDLERS = {
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, content.rules.time.travel_cap_min);
         return { status: 'authorized', line: `DEPARTS/CONTINUES — the already-established journey of "${ready.label}"${ready.contact ? ` with ${entityLabel(s, ready.contact)}` : ''}; the story may advance it and establish where they reach.` };
     },
-    go(s, content, c, ctx) {
+    go(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT GO — not while the fight runs.' };
         // "the guild building", "back to the guild": the Guild hall is an engine node, never a new place to invent
         // (live 30.09.2026 14:56: the narrator made a "Guild desk" of it where no payout is possible)
@@ -196,8 +196,11 @@ const HANDLERS = {
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, cap);
         ctx.expectedKeys[String(c.seq)] = 'go';
         // he sets off while a quest's journey is ready with its people here: an arrival out of the settlement starts it
-        const ready = journeyReady(s);
+        const ready = journeyReady(s, { c: !!envx?.c });
         if (ready?.contact && s.quests[ready.id]?.status === 'active' && !s.quests[ready.id].journey) ctx.auth.journey = ready.id;
+        // Prototype C (4.3.0-c.6): the people he met there before are that place's people, not new ones
+        const there = envx?.c && known && !ctx.extra.some((x) => x.startsWith(`KNOWN AT ${name} (`)) ? knownAt(s, content, c.to) : [];
+        if (there.length) ctx.extra.push(`KNOWN AT ${name} (met there before; when the story shows the people of that place, they are these, not new ones; whoever works there is at work unless the story establishes otherwise): ${there.map((p) => `${p.label} (${p.id})`).join(' · ')}`);
         return { status: 'authorized', line: `GOES — to ${name} (the story decides whether and where he arrives).` };
     },
     activity(s, content, c, ctx, emit, envx) {
@@ -412,14 +415,13 @@ const HANDLERS = {
     'quest.accept'(s, content, c, ctx, emit, envx) {
         const pick = pickQuest(s, c.quest, ['listed', 'offered']);
         if (pick.clarify) return pick.clarify.length ? { status: 'clarify', reason: 'which contract?', line: `CLARIFY — which one does he take: ${pick.clarify.join(' or ')}?` } : { status: 'refused', reason: 'nothing to accept', line: 'CANNOT ACCEPT — nothing is on offer.' };
-        // Prototype C (4.3.0-c.5): a listing he saw on an earlier day may have been taken since, as a new reading of
-        // its board would find (src/v4/guild.js takenByOthers); then it is no longer listed
-        if (envx?.c && envx.dice && pick.q?.kind === 'guild_contract' && pick.q.status === 'listed') takenByOthers(s, content, pick.q.source?.branch, pick.q.rank, envx.dice, emit);
-        const q = pick.q && s.quests[pick.q.id];
+        const q = pick.q;
         if (!q) return { status: 'refused', reason: 'no such contract', line: `CANNOT ACCEPT — no such contract${pick.unknown ? ` ("${pick.unknown}")` : ''} is on offer.` };
         if (q.kind === 'guild_contract') {
             if (q.status === 'active' || q.status === 'completed') return { status: 'refused', reason: `already ${q.status}`, done: q.status === 'active', line: `NOTHING TO DO — ${questLine(q)} is already ${q.status === 'active' ? 'his' : 'turned in'}.` };
             if (q.status !== 'listed') return { status: 'refused', reason: `the listing is ${q.status}`, line: `CANNOT ACCEPT — ${questLine(q)} is no longer on the board.` };
+            // Prototype C (4.3.0-c.6): the board is the day's; a notice of an earlier day came down with its day
+            if (envx?.c && !listedToday(s, q)) return { status: 'refused', reason: 'the listing expired', line: `CANNOT ACCEPT — ${questLine(q)} is no longer on the board: the Guild renews its board every day, and that notice came down with its day.` };
             if (!membership(s)) return { status: 'refused', reason: 'not a Guild member', line: `CANNOT ACCEPT — ${questLine(q)}: he is not a Guild member.` };
             const ranks = content.rules.guild.ranks;
             if (ranks.indexOf(q.rank) > ranks.indexOf(membership(s).rank)) return { status: 'refused', reason: 'rank too high', line: `CANNOT ACCEPT — ${questLine(q)} is ${q.rank} work; he is ${membership(s).rank}.` };
@@ -436,7 +438,8 @@ const HANDLERS = {
             ctx.booked.grants.push('contract slip');
             // a hunt is proven by trophies of the kills at a Guild hall (live 30.09.2026 14:56: the clerk made a local
             // steward's inspection and signature a condition of the payout)
-            const proof = isHunt(q, content) ? ` Proof: ${trophyText(q)} brought to a Guild hall; no local inspection, witness or signature is required.` : '';
+            // Prototype C (4.3.0-c.6): a hunt by its slip, goods by the goods (src/v4/guild.js proofTerms)
+            const proof = envx?.c ? proofTerms(q, content) : isHunt(q, content) ? ` Proof: ${trophyText(q)} brought to a Guild hall; no local inspection, witness or signature is required.` : '';
             const terms = `Contract memory: ${q.desired_end_state || objectiveText(q)}.${proof} The stored objectives and any verification examples are continuity guidance, not mandatory steps or wording. Payout (${q.payout_cp} cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in.`;
             if (there) return { status: 'conditional', condition: 'arrive_guild_hall', line: `ACCEPTS, when he reaches the Guild hall — ${questLine(q)}: the clerk logs it and hands him its contract slip. ${terms} If the reply does not reach the hall, nothing is accepted.` };
             return { status: 'resolved', line: `ACCEPTS — ${questLine(q)} at the Guild desk; the clerk logs it and hands him its contract slip. ${terms}` };
@@ -448,7 +451,7 @@ const HANDLERS = {
         ctx.booked.accepted.push(q.id);
         return { status: 'resolved', line: `ACCEPTS — ${questLine(q)}${q.giver ? ` from ${who(s, q.giver)}` : ''}.` };
     },
-    'quest.turn_in'(s, content, c, ctx, emit) {
+    'quest.turn_in'(s, content, c, ctx, emit, envx) {
         const pick = pickQuest(s, c.quest, ['active'], 'guild_contract');
         if (pick.clarify) {
             // the one that was just turned in, named again ("I turn the quest in"): nothing to do, not a question
@@ -461,21 +464,23 @@ const HANDLERS = {
         if (q.status === 'completed') return { status: 'refused', reason: 'already_completed', done: true, line: `NOTHING TO DO — ${questLine(q)} is already turned in.` };
         if (q.kind !== 'guild_contract') return { status: 'refused', reason: 'private work', line: `NOTHING TO TURN IN — ${questLine(q)} is private work; its giver settles it.` };
         if (q.status !== 'active') return { status: 'refused', reason: `the contract is ${q.status}`, line: `CANNOT TURN IN — ${questLine(q)} is ${q.status}.` };
+        const cc = !!envx?.c;
+        const hands = cc ? handoverTerms(q, content) : '';
         if (hallOf(s, s.scene.at)) {
-            const r = completeContract(s, content, q, emit, { step: c.seq });
+            const r = completeContract(s, content, q, emit, { step: c.seq, c: cc });
             if (!r.ok) return { status: 'refused', reason: r.reason, line: `TURNS IN — ${questLine(q)}: the desk refuses it, ${r.reason}.` };
             ctx.booked.turnIns.push(q.id);
-            return { status: 'resolved', line: `TURNS IN — ${questLine(q)}: the world has established the contract outcome; the Guild accepts the turn-in and pays ${q.payout_cp} cp.` };
+            return { status: 'resolved', line: `TURNS IN — ${questLine(q)}: the world has established the contract outcome; the Guild accepts the turn-in and pays ${q.payout_cp} cp.${hands}` };
         }
         const go = hallAhead(ctx, c);
         if (go) {
             // the same check the desk makes on arrival (guild.js contractReady)
-            const ready = contractReady(s, content, q);
+            const ready = contractReady(s, content, q, { c: cc });
             ctx.conditionals.push({ seq: c.seq, kind: 'turn_in', quest: q.id, condition: 'arrive_guild_hall', hall: go.to });
             ctx.booked.turnIns.push(q.id);
             return {
                 status: 'conditional', condition: 'arrive_guild_hall',
-                line: `TURNS IN, when he reaches the Guild hall — ${questLine(q)}: ${ready.ok ? `the achieved outcome is ready for desk acceptance; the Guild pays ${q.payout_cp} cp` : ready.mode === 'count_short' ? `the desk will refuse it: ${ready.reason}` : 'the story has not yet established the contract outcome as achieved'}. If the reply does not reach the hall, nothing is turned in.`,
+                line: `TURNS IN, when he reaches the Guild hall — ${questLine(q)}: ${ready.ok ? `the achieved outcome is ready for desk acceptance; the Guild pays ${q.payout_cp} cp` : ready.mode === 'count_short' || (cc && ready.mode !== 'not_ready') ? `the desk will refuse it: ${ready.reason}` : 'the story has not yet established the contract outcome as achieved'}.${ready.ok ? hands : ''} If the reply does not reach the hall, nothing is turned in.`,
             };
         }
         return { status: 'refused', reason: 'not at a Guild hall', line: `CANNOT TURN IN — ${questLine(q)}: contracts are turned in at a Guild hall.` };
@@ -516,12 +521,18 @@ const HANDLERS = {
         if (!hall) return { status: 'refused', reason: 'no Guild board here', line: envx.c ? 'NO BOARD HERE — the Guild\'s contract board hangs inside a Guild hall and he is not in one; he sees no listing this turn.' : 'CANNOT READ — the Guild board is in the Guild hall.' };
         const branch = settlementOf(s, hall);
         const rank = c.rank || membership(s)?.rank || 'Novice';
-        if (envx.dice) takenByOthers(s, content, branch, rank, envx.dice, emit);
+        // Prototype C (4.3.0-c.6): Alaric's five offers are his slice of the Guild's work: other adventurers have their
+        // own and take none of his; the board turns over with the day instead (below)
+        if (envx.dice && !envx.c) takenByOthers(s, content, branch, rank, envx.dice, emit);
         // the generator's listings for this board (host.js ran it before this turn, canonical first)
         const gen = envx.board && envx.board.branch === branch && envx.board.rank === rank ? envx.board : null;
-        if (gen?.listings?.length) bookBoard(s, content, gen, gen.listings, emit);
-        else if (gen?.failed) emit({ t: 'board.failed', d: { branch, rank, error: gen.failed } }); // on record for #audit
-        const listed = listingsOf(s, branch, rank);
+        if (gen?.listings?.length) {
+            // Prototype C (4.3.0-c.6): the first reading of a new day finds a new board; the notices nobody took came
+            // down (expired: remembered, no longer to be taken). A board that could not be renewed is not taken down
+            if (envx.c) for (const q of listingsOf(s, branch, rank).filter((x) => !listedToday(s, x))) emit({ t: 'quest.status', d: { id: q.id, from: 'listed', to: 'expired', by: 'board' } });
+            bookBoard(s, content, gen, gen.listings, emit);
+        } else if (gen?.failed) emit({ t: 'board.failed', d: { branch, rank, error: gen.failed } }); // on record for #audit
+        const listed = listingsOf(s, branch, rank).filter((q) => !envx.c || listedToday(s, q));
         const when = ahead ? ', when he reaches the Guild hall' : '';
         if (!listed.length) {
             ctx.boardShown = { branch, rank, failed: true };
@@ -582,6 +593,16 @@ const env = (ctx) => ctx.env || {};
 export const COMMAND_TYPES = Object.keys(HANDLERS);
 
 /**
+ * Prototype C (4.3.0-c.6): the planner's "other", his own deed that no command fits ("use some cloth to stop my
+ * bleeding"): a step of the message in its place (live 04.10.2026 16:35: it was lost between "cut the tusk" and "walk
+ * into the den"). It books nothing: HP, MP, STA, coin and possessions change only by the engine's own commands.
+ */
+function otherStep(s, content, c) {
+    const what = c.quote ? `"${String(c.quote).replace(/[<>`]/g, '').slice(0, 100)}"` : String(c.what || 'something').replace(/[<>`]/g, '').slice(0, 100);
+    return { status: 'resolved', line: `DOES — ${what}: his own action; tell it as it happens. It books nothing: no HP, MP, STA, coin or possessions change by it.` };
+}
+
+/**
  * Resolve the commands of one message in order. emit applies each event to s at once, so every command is checked
  * against the state after the ones before it ("pay the fee, then read the board").
  * @param {{msg?: number, dice?: object, board?: object, c?: boolean, dropped?: object[]}} envx msg: the player message's
@@ -598,7 +619,7 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
     const lines = new Map();
     const happened = new Set();
     for (const c of ordered) {
-        const h = HANDLERS[c.type];
+        const h = HANDLERS[c.type] || (envx.c && c.type === 'other' ? otherStep : null);
         // Prototype C (4.3.0-c.5): a step the planner marked as building on an earlier one of the message (needs) is not
         // taken when that one did not happen (refused, an open decision, a question, dropped by the agency guard); one
         // that found its goal true already (done: "already his", "already here") did, and so did a registration that

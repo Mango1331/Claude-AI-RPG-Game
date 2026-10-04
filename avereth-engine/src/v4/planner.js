@@ -428,11 +428,16 @@ export function mapPlan(commands, ctx, content, message, state) {
     // outside a fight a flight or a deed no command fits is story fiction: the narrator tells it as A's V4 turn does
     // (PLAYER ACTIONS / NOTHING TO BOOK); the record keeps it, so a session shows where it happened
     const mechMain = mains.filter((c) => fight || c.type !== 'flee');
-    if (!fight) for (const c of mech.filter((x) => x.type === 'other' || x.type === 'flee')) free.push(`${c.type}: ${said(c)}`);
+    if (!fight) for (const c of mech.filter((x) => x.type === 'flee')) free.push(`${c.type}: ${said(c)}`);
     if (!fight && !mechMain.length) {
         for (const c of moves) free.push(`move: ${said(c)}`);
-        return { route: 'v4', commands: story, notes, free };
+        // Prototype C (4.3.0-c.6): his own deed no command fits is a step of the message, in its place among the others
+        // (src/v4/commands.js other); live 04.10.2026 16:35: "cut the tusk ... use some cloth to stop my bleeding ... walk
+        // into the den" lost the middle step, the narrator told it anyway and the extractor made it canon
+        const others = mech.filter((x) => x.type === 'other');
+        return { route: 'v4', commands: [...story, ...others].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), notes, free };
     }
+    if (!fight) for (const c of mech.filter((x) => x.type === 'other')) free.push(`${c.type}: ${said(c)}`);
 
     const notTaken = (c, why) => notes.push(`${why}: ${said(c)}`);
     let wait = null;

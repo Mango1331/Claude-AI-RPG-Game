@@ -1,0 +1,364 @@
+// Prototype C, build 4.3.0-c.6 (docs/PROTOTYPE_C.md §14): consequences, not inconvenience. The live run of 04.10.2026
+// 16:35 (tests/v4/live_1004b.json: messages 0-30 with their texts and events, the raw planner and extractor answers of
+// the turns replayed here) and a fresh Redmarch member for the Guild board of the day.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { loadContent, ROOT } from '../helpers.js';
+import { Chat4 } from './harness.js';
+import { prepareGenerationAsync } from '../../src/v4/runtime.js';
+import { rec, turnBlock } from '../../src/host.js';
+import { buildCatalog, journeyReady } from '../../src/v4/catalog.js';
+import { catalogText } from '../../src/v4/interpret.js';
+import { resolveCommands } from '../../src/v4/commands.js';
+import { applyWorld } from '../../src/v4/world.js';
+import { applyEvent } from '../../src/state.js';
+import { SLIP_READY, SLIP_DONE, contractReady } from '../../src/v4/guild.js';
+
+const content = await loadContent();
+const fx = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests/v4/live_1004b.json'), 'utf8'));
+const BOARS = 'quest.clear_the_root_hollow_of_thorn_backed_boars';
+const SLIP = 'obj.slip.clear_the_root_hollow_of_thorn_backed_boars';
+const AW_HALL = 'loc.alderwatch.guild_hall';
+const HALL = 'loc.redmarch.guild_hall';
+
+function planner(g) {
+    const ask = g.llm;
+    g.llm = async (req) => {
+        if (!req.purpose.startsWith('plan')) return ask(req);
+        g.planRequest = req;
+        const a = g.plans.shift();
+        return a === undefined ? null : typeof a === 'string' ? a : JSON.stringify(a);
+    };
+    return g;
+}
+/** The live chat up to message `upto`, the planner on. */
+function live(upto) {
+    const g = new Chat4(content);
+    g.chat = fx.messages.slice(0, upto + 1).map((m) => ({ mes: m.mes, is_user: m.user, is_system: !!m.system, extra: m.events ? { avereth: { v: 3, events: structuredClone(m.events) } } : {} }));
+    return planner(g);
+}
+/** A player message with the planner's answer(s); `planner: false` plays it on A with the interpreter's commands. */
+async function say(g, text, plans, { planner: on = true, commands = [] } = {}) {
+    g.chat.push({ mes: text, is_user: true, is_system: false, extra: {} });
+    g.plans = [...plans];
+    g.commands = commands;
+    const r = await prepareGenerationAsync(g.chat, content, { type: 'normal', settings: { planner: on }, llm: g.llm });
+    if (r.action === 'panels') g.chat.push({ mes: r.panels.join('\n\n'), is_user: false, is_system: true, extra: { avereth_panel: true } });
+    g.learnIds();
+    return r;
+}
+const last = (g) => rec(g.chat.findLast((m) => m.is_user));
+const outcomeOf = (g) => last(g).events.findLast((e) => e.t === 'outcome.recorded').d.outcome;
+const block = (g) => turnBlock(g.chat, g.chat.findLastIndex((m) => m.is_user), content).context.text;
+const plan = (...commands) => ({ commands: commands.map((c, i) => ({ seq: i + 1, ...c })) });
+const arrives = (...places) => ({ expected: Object.fromEntries(places.map(([k, at]) => [k, { arrived: true, at, with: null }])), deltas: [] });
+const nextDay = (g) => rec(g.chat.at(-1)).events.push({ t: 'time.advanced', d: { minutes: 1440, why: 'test' } });
+const boardCalls = (g) => g.calls.filter((c) => c.purpose === 'board').length;
+const listedOn = (s) => (s.guild.boards[`loc.redmarch|Novice`]?.listings || []).filter((id) => s.quests[id]?.status === 'listed');
+
+const listing = (title, objectives, proof = []) => ({
+    id: `quest.${title.toLowerCase().replace(/[^a-z]+/g, '_')}`, title, client: 'a Redmarch client', rank: 'Novice', level: 2, qtype: 'standard', payout_cp: 60,
+    task: `${title}.`, desired_end_state: `${title}: done.`, objectives, proof,
+});
+const DAY1 = [
+    listing('Cull the Mill Rats', [{ verb: 'DEFEAT', what: 'giant rats', qty: 3, unit: 'rats' }], [{ kind: 'object', what: 'rat tail', qty: 3, unit: 'tails', consume: false }]),
+    listing('Harvest Marsh Adder Venom', [{ verb: 'GATHER', what: 'venom sacs', qty: 2, unit: 'sacs' }], [{ kind: 'object', what: 'venom sac', qty: 2, unit: 'sacs' }]),
+    listing('Deliver the Toll Ledger', [{ verb: 'DELIVER', what: 'sealed toll ledger', qty: 1, where: 'the Millbrook toll house' }]),
+    listing('Escort the Wool Cart', [{ verb: 'ESCORT', what: 'wool cart', qty: 1, where: 'Millbrook' }]),
+    listing('Drive Off the Carrion Crows', [{ verb: 'ATTACK', what: 'carrion crows', qty: 2 }]),
+];
+const DAY2 = [
+    listing('Clear the Wasp Nest', [{ verb: 'DEFEAT', what: 'giant wasps', qty: 4, unit: 'wasps' }]),
+    listing('Cull the Ditch Toads', [{ verb: 'DEFEAT', what: 'ditch toads', qty: 3, unit: 'toads' }]),
+    listing('Fetch the Lamp Oil', [{ verb: 'GET', what: 'barrel of lamp oil', qty: 1 }]),
+    listing('Escort the Salt Wagon', [{ verb: 'ESCORT', what: 'salt wagon', qty: 1, where: 'Ford Narrows' }]),
+    listing('Drive the Foxes from the Henyard', [{ verb: 'ATTACK', what: 'foxes', qty: 2 }]),
+];
+
+/** A fresh Warrior, registered at the Redmarch Guild hall, the planner on. */
+async function member(listings = DAY1) {
+    const g = planner(new Chat4(content, { listings }));
+    await g.player('Warrior');
+    await g.player(content.classes.get('warrior').skill_pool.slice(0, 2).map((id) => content.skills.get(id).name).join(' and '));
+    await say(g, '*i walk to the guild*', [plan({ type: 'go', to: HALL, quote: 'i walk to the guild' })]);
+    await g.reply('He reached the Guild hall.', arrives([1, HALL]));
+    await say(g, '*i register*', [plan({ type: 'guild.register', quote: 'i register' })]);
+    await g.reply('The clerk named the fee.');
+    await say(g, '*i pay the fee*', [plan({ type: 'offer.accept', offer: 'offer.registration', lines: ['l1'], qty: null, quote: 'i pay the fee' })]);
+    await g.reply('He paid and was registered.');
+    return g;
+}
+const read = async (g) => { await say(g, '*i read the novice board*', [plan({ type: 'board.read', rank: null, quote: 'i read the novice board' })]); await g.reply('He read the board.'); };
+const take = async (g, id) => { await say(g, '*i take that one*', [plan({ type: 'quest.accept', quest: g.ids.get(id) || id, quote: 'i take that one' })]); await g.reply('The clerk logged it.'); };
+
+// ------------------------------------------------------------------------------------------------ 1-6. the day's board
+test('1-3. the first reading of a day books five listings; reading again that day shows the same, no refill; one taken is his and four stay', async () => {
+    const g = await member();
+    await read(g);
+    const day1 = listedOn(g.state());
+    assert.equal(day1.length, 5);
+    assert.equal(boardCalls(g), 1);
+    await read(g);
+    assert.deepEqual(listedOn(g.state()), day1, 'the same listings');
+    assert.equal(boardCalls(g), 1, 'no second generator call the same day');
+    await take(g, DAY1[0].id);
+    const s = g.state();
+    assert.equal(s.quests[g.ids.get(DAY1[0].id)].status, 'active');
+    assert.deepEqual(listedOn(s), day1.slice(1));
+    await read(g);
+    assert.deepEqual(listedOn(g.state()), day1.slice(1), 'no refill after taking one');
+    assert.equal(boardCalls(g), 1);
+});
+
+test('4-5. the next day\'s first reading retires what nobody took and books five new; a taken contract stays his through many days', async () => {
+    const g = await member();
+    await read(g);
+    await take(g, DAY1[0].id);
+    const rats = g.ids.get(DAY1[0].id);
+    const old = listedOn(g.state());
+    nextDay(g);
+    // before the reading, yesterday's notices are known, not to be taken
+    const cat = catalogText(buildCatalog(g.state(), content, { known: true, c: true }));
+    assert.match(cat, new RegExp(`${old[0]} \\(Harvest Marsh Adder Venom · Guild contract · Novice · no longer on the board \\(posted on day 1`));
+    assert.ok(!cat.split('\n').some((l) => l.startsWith('BOARD') && old.some((id) => l.includes(id))), 'yesterday\'s notices are not on the board he stands at');
+    await say(g, '*i take the venom job*', [plan({ type: 'quest.accept', quest: old[0], quote: 'i take the venom job' })]);
+    assert.match(outcomeOf(g).actions[0], /^1\. CANNOT ACCEPT — "Harvest Marsh Adder Venom" is no longer on the board: the Guild renews its board every day/);
+    await g.reply('The clerk shook her head.');
+    g.listings = DAY2;
+    await read(g);
+    const s = g.state();
+    for (const id of old) assert.equal(s.quests[id].status, 'expired', id);
+    const day2 = listedOn(s);
+    assert.equal(day2.length, 5);
+    assert.deepEqual(day2.map((id) => s.quests[id].title), DAY2.map((l) => l.title));
+    assert.equal(boardCalls(g), 2);
+    assert.match(outcomeOf(g).actions[0], /READS the Novice board — BOARD/);
+    for (const l of DAY1) assert.ok(!outcomeOf(g).actions[0].includes(`**${l.title}**`), `${l.title} is not on the new board`);
+    // the rats contract is still his, two board days later (no deadline)
+    nextDay(g);
+    await read(g);
+    assert.equal(g.state().quests[rats].status, 'active');
+    assert.equal(boardCalls(g), 3);
+    // a day whose board cannot be written: yesterday's notices are not shown as today's, nor retired before a new board
+    nextDay(g);
+    g.boardFails = true;
+    await say(g, '*i read the novice board*', [plan({ type: 'board.read', rank: null, quote: 'i read the novice board' })]);
+    assert.match(outcomeOf(g).actions[0], /^1\. READS the board — BOARD: no new official contracts can be shown right now; invent none\.$/);
+    assert.equal(listedOn(g.state()).length, 5, 'still listed (not retired), but not on the day\'s board');
+});
+
+test('6. other adventurers do not take Alaric\'s offers, whatever the taken-by-others rate; on A the rate still applies', async () => {
+    const board = content.rules.guild.board;
+    const pct = board.taken_by_others_pct_per_day;
+    try {
+        board.taken_by_others_pct_per_day = 100;
+        const g = await member();
+        await read(g);
+        nextDay(g);
+        g.listings = DAY2;
+        await read(g);
+        const events = g.chat.flatMap((m) => rec(m)?.events || []);
+        assert.equal(events.filter((e) => e.t === 'quest.status' && e.d.to === 'taken_by_other').length, 0);
+        assert.equal(events.filter((e) => e.t === 'quest.status' && e.d.to === 'expired').length, 5);
+        // A, the same board on the next day: the rate takes them (unchanged)
+        const a = planner(new Chat4(content, { listings: DAY1 }));
+        await a.player('Warrior');
+        await a.player(content.classes.get('warrior').skill_pool.slice(0, 2).map((id) => content.skills.get(id).name).join(' and '));
+        await say(a, '*i walk to the guild*', [], { planner: false, commands: [{ seq: 1, type: 'go', to: HALL, quote: 'i walk to the guild' }] });
+        await a.reply('He reached the hall.', arrives([1, HALL]));
+        await say(a, '*i read the board*', [], { planner: false, commands: [{ seq: 1, type: 'board.read', rank: null, quote: 'i read the board' }] });
+        await a.reply('He read the board.');
+        nextDay(a);
+        await say(a, '*i read the board*', [], { planner: false, commands: [{ seq: 1, type: 'board.read', rank: null, quote: 'i read the board' }] });
+        assert.ok(rec(a.chat.findLast((m) => m.is_user)).events.some((e) => e.t === 'quest.status' && e.d.to === 'taken_by_other'));
+    } finally {
+        board.taken_by_others_pct_per_day = pct;
+    }
+});
+
+// ------------------------------------------------------------------------------------------------ 7-8. slip and goods
+test('7. the boar cull: its slip is the proof and shows READY from the world\'s outcome; no trophy is asked for or taken', async () => {
+    // the contract taken (live #13): the desk names no tusks
+    const t = live(12);
+    await say(t, fx.accept.player, fx.accept.plan);
+    const accepts = outcomeOf(t).actions[0];
+    assert.match(accepts, /^1\. ACCEPTS — "Clear the Root-Hollow of Thorn-Backed Boars" at the Guild desk; .* Proof: the contract slip itself; its Guild seal shows READY once the world has established the outcome/);
+    assert.ok(!/tusk/i.test(accepts), 'no trophy in the terms');
+    // the den cleared (live #28): quest.ready, and the engine marks the slip
+    const g = live(27);
+    const x = await g.reply(fx.ready.reply, fx.ready.extract);
+    assert.ok(x.record.events.some((e) => e.t === 'quest.ready' && e.d.id === BOARS));
+    assert.deepEqual(g.state().objects[SLIP].marks.map((m) => [m.text, m.by]), [[SLIP_READY, 'guild']]);
+    // what the narrator and the planner now read of it
+    await say(g, fx.turnin.player, fx.turnin.plan);
+    assert.match(block(g), /proof: the contract slip, its Guild seal showing READY now; no trophies are required/);
+    assert.ok(!/verification examples?: 2 tusks/.test(block(g)));
+    assert.match(g.planRequest.messages.at(-1).content, /proof: the contract slip, its Guild seal showing READY now/);
+    assert.match(outcomeOf(g).actions[2], /^3\. TURNS IN, when he reaches the Guild hall — .*the Guild pays 120 cp\. The slip's READY seal is the proof: nothing else is handed over/);
+    // turned in on arrival with the live reply: paid, the tusk he carries stays his, the slip shows COMPLETED
+    const y = await g.reply(fx.turnin.reply, fx.turnin.extract);
+    const s = g.state();
+    assert.equal(s.quests[BOARS].status, 'completed');
+    assert.ok(Object.values(s.objects).some((o) => o.holder?.entity === 'pc' && /tusk/.test(o.name)), 'his tusks are his');
+    assert.ok(!y.record.events.some((e) => e.t === 'object.consumed'));
+    assert.ok(s.objects[SLIP].marks.some((m) => m.text === SLIP_DONE && m.by === 'guild'));
+    // and without any trophy at all the desk pays the same
+    const bare = live(28).state();
+    for (const o of Object.values(bare.objects)) if (/tusk/.test(o.name)) delete bare.objects[o.id];
+    const ev = [];
+    const ctx = resolveCommands(at(bare, AW_HALL), content, [{ seq: 1, type: 'quest.turn_in', quest: BOARS, quote: 'i turn it in' }], (e) => { applyEvent(bare, e); ev.push(e); }, { c: true });
+    assert.equal(ctx.resolutions[0].status, 'resolved');
+    assert.deepEqual(ev.find((e) => e.t === 'proof.checked').d, { quest: BOARS, ok: true, reason: null, mode: 'story_outcome' });
+    // trophies that prove a hunt the old way (no quest.ready, the listed proof in hand) stay his on C; A takes them
+    const crows = { id: 'quest.crows', title: 'Drive Off the Crows', kind: 'guild_contract', status: 'active', rank: 'Novice', objectives: [{ id: 'o1', verb: 'ATTACK', what: 'carrion crows', qty: 2, unit: null, where: null, status: 'open' }],
+        proof: [{ id: 'p1', kind: 'object', what: 'crow feather', qty: 2, unit: 'feathers', on: null, consume: true }], history: [{ turn: 0, minute: 0, status: 'active' }] };
+    const feathers = structuredClone(bare);
+    feathers.quests['quest.crows'] = crows;
+    applyEvent(feathers, { t: 'object.created', d: { object: { id: 'obj.feathers', name: 'crow feather', kind: 'trophy', stack: true, qty: 2, unit: 'feathers', holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: 1, how: 'taken' } } } });
+    assert.deepEqual(contractReady(feathers, content, crows, { c: true }), { ok: true, mode: 'legacy_verification', reason: null, consume: [] });
+    assert.deepEqual(contractReady(feathers, content, crows).consume, [{ id: 'obj.feathers', qty: 2 }]);
+});
+function at(s, place) { s.scene.at = place; s.scene.location = 'loc.alderwatch'; s.scene.present = ['pc']; return s; }
+
+test('8. goods are the work: venom sacs must be in his hands and are handed over; a delivery is not done while he carries it', async () => {
+    const g = await member();
+    await read(g);
+    await take(g, DAY1[1].id);
+    await take(g, DAY1[2].id);
+    const venom = g.ids.get(DAY1[1].id);
+    const ledger = g.ids.get(DAY1[2].id);
+    const s = g.state();
+    // the story says both are done
+    applyEvent(s, { t: 'quest.ready', d: { id: venom, note: 'two sacs cut from the adders' } });
+    applyEvent(s, { t: 'quest.ready', d: { id: ledger, note: 'the ledger reached the toll house' } });
+    const turnIn = (st, id) => { const e = []; const ctx = resolveCommands(st, content, [{ seq: 1, type: 'quest.turn_in', quest: id, quote: 'i turn it in' }], (x) => { applyEvent(st, x); e.push(x); }, { c: true }); return { r: ctx.resolutions[0], line: ctx.actions[0], e }; };
+    // no sacs in his hands: the desk refuses, whatever the story said
+    const none = turnIn(structuredClone(s), venom);
+    assert.equal(none.r.status, 'refused');
+    assert.match(none.line, /the desk refuses it, the goods are the work: 2 sacs venom sacs \(he has 0\) must be in his hands/);
+    // with them: paid, and the Guild takes them
+    const held = structuredClone(s);
+    applyEvent(held, { t: 'object.created', d: { object: { id: 'obj.venom', name: 'marsh adder venom sac', kind: 'resource', stack: true, qty: 2, unit: 'sacs', holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: held.turn, how: 'taken' } } } });
+    const paid = turnIn(held, venom);
+    assert.equal(paid.r.status, 'resolved');
+    assert.match(paid.line, /He hands over 2 sacs venom sacs; the Guild keeps them\./);
+    assert.deepEqual(paid.e.filter((x) => x.t === 'object.consumed').map((x) => [x.d.id, x.d.qty]), [['obj.venom', 2]]);
+    assert.equal(held.quests[venom].status, 'completed');
+    // the ledger still in his pack: not delivered
+    const carrying = structuredClone(s);
+    applyEvent(carrying, { t: 'object.created', d: { object: { id: 'obj.ledger', name: 'sealed toll ledger', kind: 'document', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [ledger], source: { turn: carrying.turn, how: 'world_gift' } } } });
+    const owed = turnIn(carrying, ledger);
+    assert.equal(owed.r.status, 'refused');
+    assert.match(owed.line, /he still carries sealed toll ledger: a delivery is done where the goods are handed over/);
+    // a turn-in on arriving at the hall makes the same check (src/v4/world.js arrive)
+    const away = structuredClone(s);
+    away.scene.at = 'loc.redmarch';
+    away.last = { input: 'x', outcome: { kind: 'v4', actions: [], extra: [], resolutions: [], expected_keys: { 1: 'go' }, booked: { registration: false, grants: [], turnIns: [venom], accepted: [], sellers: [] },
+        conditionals: [{ seq: 2, kind: 'turn_in', quest: venom, condition: 'arrive_guild_hall', hall: HALL }],
+        auth: { go: { seq: 1, to: HALL }, gos: [{ seq: 1, to: HALL, name: 'hall', hall: true }], roam: false, take: [], gather: false, rest: false, timeCap: 120, c: true } } };
+    const arrival = applyWorld(away, content, { expected: { 1: { arrived: true, at: HALL, with: null } }, deltas: [] }, { msg: 99 });
+    assert.match(arrival.system.join(' '), /TURN-IN REFUSED — Harvest Marsh Adder Venom: the goods are the work/);
+    assert.equal(arrival.state.quests[venom].status, 'active');
+    // a GET is goods only when the contract asks to see that thing: "get word from the reeve" is no thing in his hands
+    const word = structuredClone(s.quests[venom]);
+    word.objectives = [{ id: 'o1', verb: 'GET', what: 'word from the reeve', qty: 1, unit: null, where: null, status: 'open' }];
+    word.proof = [];
+    assert.equal(contractReady(s, content, word, { c: true }).mode, 'story_outcome');
+    word.objectives[0].what = 'the stolen toll seal';
+    word.proof = [{ id: 'p1', kind: 'object', what: 'toll seal', qty: 1, unit: null, on: null, consume: true }];
+    assert.equal(contractReady(s, content, word, { c: true }).mode, 'goods_missing');
+    // handed over at the toll house: done
+    applyEvent(carrying, { t: 'object.moved', d: { id: 'obj.ledger', to: { loc: 'loc.redmarch' } } });
+    const done = turnIn(carrying, ledger); assert.equal(done.r.status, "resolved", done.line);
+});
+
+// ------------------------------------------------------------------------------------------------ 9, 12. the den
+test('9. "use some cloth to stop my bleeding" keeps its place between the tusk and the den, and heals nothing', async () => {
+    const g = live(22);
+    const hp = g.state().entities.pc.sheet.hp;
+    await say(g, fx.bandage.player, fx.bandage.plan);
+    assert.deepEqual(outcomeOf(g).resolutions.map((r) => [r.seq, r.type, r.status]), [[1, 'take', 'authorized'], [2, 'other', 'resolved'], [3, 'go', 'authorized']]);
+    const a = outcomeOf(g).actions;
+    assert.match(a[0], /^1\. TAKES — a thorn-backed boar tusk/);
+    assert.equal(a[1], '2. DOES — "use some cloth to stop my bleeding": his own action; tell it as it happens. It books nothing: no HP, MP, STA, coin or possessions change by it.');
+    assert.match(a[2], /^3\. GOES — to into the boar den/);
+    assert.ok(block(g).indexOf('2. DOES') > block(g).indexOf('1. TAKES') && block(g).indexOf('2. DOES') < block(g).indexOf('3. GOES'), 'in order, in the narrator\'s block');
+    assert.ok(!last(g).plan.free?.some((x) => /bleeding/.test(x)), 'not left in the record only');
+    // the reply binds the wound; a recovery the story claims is not booked
+    const x = await g.reply(fx.bandage.reply, { ...fx.bandage.extract, deltas: [...fx.bandage.extract.deltas, { seq: 20, type: 'recover', who: 'pc', hp: 12, sta: null }] });
+    assert.ok(x.record.rejected.some((r) => r.seq === 20));
+    assert.equal(g.state().entities.pc.sheet.hp, hp);
+    // one of two boars dead: the slip shows nothing yet
+    assert.deepEqual(g.state().objects[SLIP].marks, []);
+});
+
+test('12. a wild place may hold an interior: the boar den chamber lies in the Root-Hollow (A unchanged)', async () => {
+    const g = live(22);
+    await say(g, fx.bandage.player, fx.bandage.plan);
+    const x = await g.reply(fx.bandage.reply, fx.bandage.extract);
+    assert.ok(!(x.record.rejected || []).some((r) => r.rule === 'place'), JSON.stringify(x.record.rejected));
+    const s = g.state();
+    const den = s.places[s.scene.at];
+    assert.deepEqual([den.name, den.kind, den.parent], ['Boar den chamber', 'interior', 'loc.alderwatch_common_coppice.root_hollow']);
+    // the planner off: the same reply on A keeps A's rule
+    const a = live(22);
+    await say(a, fx.bandage.player, [], { planner: false, commands: [{ seq: 1, type: 'go', to: { new: 'into the boar den' }, quote: 'I then walk towards and into the den' }] });
+    const y = await a.reply(fx.bandage.reply, { expected: { 1: fx.bandage.extract.expected['3'] }, deltas: fx.bandage.extract.deltas.filter((d) => d.type === 'arrive').map((d) => ({ ...d, seq: 1 })) });
+    assert.deepEqual((y.record.rejected || []).map((r) => r.rule), ['place']);
+});
+
+// ------------------------------------------------------------------------------------------------ 10. directions
+test('10. directions to the den are no journey: "follow the directions" is a walk, not journey.continue (an escort still is one)', async () => {
+    const g = live(16);
+    const s = g.state();
+    assert.equal(journeyReady(s)?.contact, 'npc.odo_fell', 'A (unchanged): road words in the notes and the warden here');
+    assert.equal(journeyReady(s, { c: true }), null);
+    await say(g, fx.journey.player, fx.journey.plan);
+    assert.ok(!g.planRequest.messages.at(-1).content.includes('JOURNEY READY'));
+    assert.deepEqual(outcomeOf(g).resolutions.map((r) => [r.type, r.status, r.reason]), [['journey.continue', 'refused', 'no established journey']]);
+    assert.ok(!last(g).events.some((e) => e.t === 'quest.journey'));
+    // an escort he set off on is a journey on C too
+    const e = structuredClone(s);
+    e.quests[BOARS].objectives = [{ id: 'o1', verb: 'ESCORT', what: 'the coppice crew', qty: 1, unit: null, where: 'the far ride', status: 'open' }];
+    assert.equal(journeyReady(e, { c: true })?.contact, 'npc.odo_fell');
+});
+
+// ------------------------------------------------------------------------------------------------ 11, 13. people
+test('11. back at the Guild desk: the clerks he met there are named to narrator and extractor, and the desk clerk stays the same person', async () => {
+    const g = live(28);
+    await say(g, fx.turnin.player, fx.turnin.plan);
+    const known = outcomeOf(g).extra.find((x) => x.startsWith('KNOWN AT'));
+    assert.match(known, /^KNOWN AT Adventurers' Guild hall, Alderwatch \(met there before; .*\): .*older Guild clerk.*\(npc\.personguildclerk_old\) · .*Guild clerk.*\(npc\.personguildclerk_grey\)/);
+    assert.ok(block(g).includes(known), 'the narrator reads it');
+    // the live answer introduced a "Guild desk clerk" with spectacles: the older clerk with spectacles, not a third clerk
+    const x = await g.reply(fx.turnin.reply, fx.turnin.extract);
+    assert.ok(g.calls.findLast((c) => c.purpose.startsWith('extract')).messages.at(-1).content.includes(known), 'the extractor reads it');
+    assert.ok(!x.record.events.some((e) => e.t === 'entity.created' && /clerk/.test(e.d.entity.id)), 'no new clerk');
+    assert.ok(g.state().scene.present.includes('npc.personguildclerk_old'));
+    const clerks = Object.values(g.state().entities).filter((e) => e.kind === 'npc' && /clerk/.test(e.descriptors.join(' ')));
+    assert.equal(clerks.length, 2);
+    // the one clerk at a desk: a later "the clerk" is that clerk
+    const one = live(28).state();
+    one.entities['npc.personguildclerk_grey'].at = null;
+    one.last = { input: 'x', outcome: { kind: 'v4', actions: [], extra: [], resolutions: [], expected_keys: { 1: 'go' }, conditionals: [], booked: { registration: false, grants: [], turnIns: [], accepted: [], sellers: [] }, auth: { go: { seq: 1, to: AW_HALL }, gos: [{ seq: 1, to: AW_HALL, name: 'hall', hall: true }], roam: false, take: [], gather: false, rest: false, timeCap: 120, c: true } } };
+    const w = applyWorld(one, content, { expected: { 1: { arrived: true, at: AW_HALL, with: null } }, deltas: [{ seq: 1, type: 'person.new', ref: 'person.desk', name: null, role: 'Guild clerk', desc: ['a young clerk with ink-stained cuffs'], present: true, at: AW_HALL, band: 'ENGAGED' }] }, { msg: 99 });
+    assert.ok(!w.events.some((e) => e.t === 'entity.created'));
+    assert.ok(w.state.scene.present.includes('npc.personguildclerk_old'));
+});
+
+test('13. scene colour is not stored: the gate guard nobody spoke to is no entity, the Guild clerks are', async () => {
+    const g = live(4);
+    await say(g, fx.arrival.player, fx.arrival.plan);
+    const x = await g.reply(fx.arrival.reply, fx.arrival.extract);
+    const s = g.state();
+    assert.ok(!Object.keys(s.entities).some((id) => /gate_guard/.test(id)), 'no gate guard entity');
+    assert.ok(x.record.rejected.some((r) => r.rule === 'ambient'));
+    assert.ok(s.entities['npc.personguildclerk_old'] && s.entities['npc.personguildclerk_grey'], 'the clerks are the Guild\'s service people');
+    // whom the reply deals with is kept: the same guard, spoken to
+    const h = live(4);
+    await say(h, fx.arrival.player, fx.arrival.plan);
+    await h.reply(fx.arrival.reply, { ...fx.arrival.extract, deltas: [...fx.arrival.extract.deltas, { seq: 30, type: 'fact', s: 'person.alderwatch.gate_guard', p: 'asked', o: 'Alaric his business in town' }] });
+    assert.ok(Object.keys(h.state().entities).some((id) => /gate_guard/.test(id)));
+});

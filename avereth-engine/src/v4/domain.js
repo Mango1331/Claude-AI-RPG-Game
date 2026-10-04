@@ -321,6 +321,17 @@ export function listingsOf(state, branch, rank) {
     return (b?.listings || []).map((id) => state.quests[id]).filter((q) => q && q.status === 'listed');
 }
 
+/**
+ * Prototype C (4.3.0-c.6): Alaric's board is the day's: a notice posted on an earlier day came down when the day
+ * changed, whether or not a reading of the board has retired it yet (src/v4/commands.js board.read)
+ */
+export const listedToday = (state, q) => q.status === 'listed' && (q.source?.listed?.day ?? today(state)) === today(state);
+
+// Prototype C (4.3.0-c.6): the people a place keeps for a service (the Guild desk, a shop, an inn, a smithy): the same
+// person there when Alaric comes back (src/v4/world.js person.new); anyone else a reply only mentions is scene colour
+// until it matters
+export const SERVICE_ROLE = /\b(?:clerks?|registrars?|receptionists?|desk|innkeepers?|inn ?keepers?|barkeep(?:er)?s?|bartenders?|publicans?|tavern ?keepers?|shop ?keepers?|proprietors?|proprietress|quartermasters?|(?:black)?smiths?|armou?rers?|apothecar(?:y|ies)|herbalists?|healers?|ferry ?(?:man|men|woman)|stable ?masters?|stewards?|landlords?|landlad(?:y|ies)|chandlers?|merchants?|traders?)\b/i;
+
 /** The branch's supported ranks (content may name them per place; else the proposed runtime defaults). */
 export function supportedRanks(state, content, settlement) {
     const p = state.places?.[settlement];

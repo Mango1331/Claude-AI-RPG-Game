@@ -19,9 +19,9 @@ import { firewall } from './firewall.js';
 import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolation } from './ownership.js';
 import { mayOpenFight, mayTake } from './envelope.js';
 import {
-    PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind,
+    PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE,
 } from './domain.js';
-import { completeContract, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection } from './guild.js';
+import { completeContract, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
@@ -81,7 +81,7 @@ export function firewallContext(s, content) {
 
 // ------------------------------------------------------------------------------------------------ places
 /** Resolve a place ref; {new: {name, kind, parent}} creates it (the same name under the same parent is the same place). */
-function resolvePlace(s, ref, emit, depth = 0) {
+function resolvePlace(s, ref, emit, depth = 0, { c = false } = {}) {
     if (typeof ref === 'string') return s.places[ref] ? { id: ref } : { error: `unknown place ${ref}` };
     const n = ref?.new;
     if (!n || typeof n !== 'object' || !n.name) return { error: 'a place needs an id or {new: {name, kind, parent}}' };
@@ -92,12 +92,14 @@ function resolvePlace(s, ref, emit, depth = 0) {
         const hall = town && `${town}.guild_hall`;
         return hall && s.places[hall] ? { id: hall } : { error: 'Guild halls are engine nodes; there is no branch in this settlement' };
     }
-    const parent = n.parent === null || n.parent === undefined ? { id: s.scene.at } : resolvePlace(s, n.parent, emit, depth + 1);
+    const parent = n.parent === null || n.parent === undefined ? { id: s.scene.at } : resolvePlace(s, n.parent, emit, depth + 1, { c });
     if (parent.error) return parent;
     let pid = parent.id;
     // a kind that cannot lie in its parent climbs to the first ancestor where it can (a hamlet named inside a site of
-    // the town lies in the realm or region, not in the site)
-    for (let i = 0; i < 6 && pid && !(PLACE_PARENTS[n.kind] || []).includes(s.places[pid]?.kind); i++) pid = s.places[pid]?.parent;
+    // the town lies in the realm or region, not in the site). Prototype C (4.3.0-c.6): the wild has insides too, a den,
+    // a cave, a chamber (live 04.10.2026 16:35: "Boar den chamber" refused in the Root-Hollow)
+    const parents = [...(PLACE_PARENTS[n.kind] || []), ...(c && n.kind === 'interior' ? ['wilderness'] : [])];
+    for (let i = 0; i < 6 && pid && !parents.includes(s.places[pid]?.kind); i++) pid = s.places[pid]?.parent;
     if (!pid) return { error: `a ${n.kind} cannot lie in ${placeName(s, parent.id)}` };
     const same = Object.values(s.places).find((p) => p.parent === pid && normText(p.name) === normText(n.name));
     if (same) return { id: same.id };
@@ -158,6 +160,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const auth = outcome.auth || {};
     // Prototype C: the turn the planner read (a story turn: auth.c; a V3-routed one: the outcome's c)
     const cPath = !!(auth.c || outcome.c);
+    const place = (ref) => resolvePlace(s, ref, emit, 0, { c: cPath });
     const expected = answer.expected || {};
     const tag = msg !== null && msg !== undefined ? msg : s.turn;
 
@@ -303,7 +306,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             const e = expected[k];
             if (!e || e.arrived !== true) continue;
             const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
-            const at = e.at ? resolvePlace(s, e.at, emit) : go?.to ? { id: go.to } : { error: 'no place' };
+            const at = e.at ? place(e.at) : go?.to ? { id: go.to } : { error: 'no place' };
             if (!at.error && at.id !== s.scene.at) {
                 const party = companions(e.with, { seq: Number(k), type: 'expected' });
                 perceiveAll(s, emit);
@@ -336,7 +339,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'arrive': {
                 if (s.encounter) { reject(d, 'combat', 'no travel while combat is ACTIVE'); refusedArrival(d); break; }
                 const away = leavesHere(d.at);
-                const at = resolvePlace(s, d.at, emit);
+                const at = place(d.at);
                 if (at.error) { reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 if (at.id === s.scene.at) break;
                 const party = companions(d.with, d);
@@ -346,13 +349,30 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 break;
             }
             case 'person.new': {
+                // Prototype C (4.3.0-c.6): a place's service people stay who they are (live 04.10.2026 16:35: back at
+                // the Guild desk, a third "Guild desk clerk" was stored): an unnamed newcomer in the role of the one
+                // person Alaric left at this place in it is that person. Anyone else unnamed whom nothing else of this
+                // answer deals with is scene colour (a gate guard, a mailed man at the board), kept until it matters
+                if (cPath && !d.name) {
+                    if (SERVICE_ROLE.test(String(d.role || ''))) {
+                        const same = d.present !== false ? keptHere(d) : null;
+                        if (same) {
+                            emit({ t: 'scene.entered', d: { id: same, band: d.band || 'SHORT' } });
+                            refs.set(normText(d.ref), same);
+                            break;
+                        }
+                    } else if (!(answer.deltas || []).some((x) => x && x.seq !== d.seq && JSON.stringify(x).includes(String(d.ref)))) {
+                        reject(d, 'ambient', 'scene colour: an unnamed person nothing else of the reply deals with is not kept; the story brings them back when they matter');
+                        break;
+                    }
+                }
                 if (d.present === false) {
                     // someone the reply mentions who is elsewhere: exists, not here, not met (P0/S3 E3, Ossler)
                     const known = idOf(d.name || d.ref);
                     if (known && s.entities[known]) { refs.set(normText(d.ref), known); break; }
                     let where = null;
                     if (d.at) {
-                        const p = resolvePlace(s, d.at, emit);
+                        const p = place(d.at);
                         if (!p.error) where = p.id;
                     }
                     const id = uniqueEntityId(s, d.name || d.role || d.ref);
@@ -523,7 +543,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     const cut = stripOwned(note, { store: 'note', quest: q, extra: isHunt(q, content) ? (x) => SIGN_OFF.test(x) && REQUIRE.test(x) : null });
                     if (cut.claims.some((c) => wrongClaim(c, q)) && !corrections.includes(statusCorrection(q))) corrections.push(statusCorrection(q));
                     if (cut.other.length) {
-                        const correction = `"${q.title}" is a hunt contract: the Guild pays it on the trophies of the kills brought to a Guild hall; no local inspection, witness or signature is required.`;
+                        // Prototype C (4.3.0-c.6): its contract slip shows the outcome; trophies are loot
+                        const correction = cPath ? `"${q.title}" is a hunt contract: the Guild pays it at a Guild hall once its contract slip shows the outcome READY; no local inspection, witness, signature or trophy is required.`
+                            : `"${q.title}" is a hunt contract: the Guild pays it on the trophies of the kills brought to a Guild hall; no local inspection, witness or signature is required.`;
                         if (!corrections.includes(correction)) corrections.push(correction);
                     }
                     if (!cut.kept.length) { reject(d, cut.other.length || cut.altered.length ? 'guild_quest_detail' : 'engine_owned_detail', 'a Guild contract note keeps the story; its status, payout, XP, rank and (for a hunt) the proof are the engine\'s'); break; }
@@ -621,7 +643,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (type === 'go' && e.arrived === true && !arrived && !s.encounter) {
             // the arrival the story showed without an arrive delta: where the answer says, else where he set off to
             const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
-            const at = e.at ? resolvePlace(s, e.at, emit) : go?.to ? { id: go.to } : { error: 'no place' };
+            const at = e.at ? place(e.at) : go?.to ? { id: go.to } : { error: 'no place' };
             if (!at.error && at.id !== s.scene.at) {
                 const party = companions(e.with, { seq: Number(k), type: 'expected' });
                 perceiveAll(s, emit);
@@ -658,6 +680,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
 
     // 5. who noticed him, his introduction, his own record of the turn, a fight the reply committed to
     step = { kind: 'engine' };
+    // Prototype C (4.3.0-c.6): his contract slips show what the engine holds of their contracts (READY, COMPLETED)
+    if (cPath) slipMarks(s, content, emit);
     perceiveAll(s, emit);
     selfIntro(s, emit);
     const ep = episode(s, msg);
@@ -668,6 +692,25 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     return { events, rejected, corrections, system, opened, state: s, arrivedHall };
 
     // ---------------------------------------------------------------------------------------------- step helpers
+    /**
+     * Prototype C (4.3.0-c.6): the person in this role Alaric met at this place and left there (entity.at): the only one,
+     * or of several the one the newcomer's description alone matches (the clerk "with spectacles"); else nobody
+     */
+    function keptHere(d) {
+        const headOf = (x) => { const w = normText(x).split(' '); const end = w.findIndex((y) => RELATION_WORDS.has(y)); return (end < 0 ? w : w.slice(0, end)).at(-1); };
+        const want = headOf(d.role);
+        if (!want) return null;
+        const kept = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.at === s.scene.at && !s.scene.present.includes(e.id) && statusOf(s, e.id) !== 'dead'
+            && [truth(s, e.id, 'occupation')[0]?.o, ...(e.descriptors || [])].filter(Boolean).some((x) => headOf(x) === want));
+        if (kept.length < 2) return kept[0]?.id || null;
+        const roleWords = new Set(normText(d.role).split(' '));
+        const words = (x) => new Set(normText(x).split(/[^a-z]+/).filter((w) => w.length > 3 && !roleWords.has(w)));
+        const told = words((d.desc || []).join(' '));
+        const score = kept.map((e) => [...words([e.traits, ...(e.descriptors || [])].join(' '))].filter((w) => told.has(w)).length);
+        const best = Math.max(...score);
+        return best > 0 && score.filter((x) => x === best).length === 1 ? kept[score.indexOf(best)].id : null;
+    }
+
     function occupation(id, role) {
         setFactEvents(s, { s: id, p: 'occupation', o: String(role).slice(0, 80), source: { kind: 'narration', msg }, importance: 0.5 }).forEach(emit);
     }
@@ -779,7 +822,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     emit({ t: 'cmd.completed', d: { seq: k.seq, ok, reason: ok ? null : 'the contract is no longer active' } });
                     continue;
                 }
-                const r = q && q.status === 'active' ? completeContract(s, content, q, emit, { step: k.seq }) : { ok: false, reason: 'the contract is no longer active' };
+                const r = q && q.status === 'active' ? completeContract(s, content, q, emit, { step: k.seq, c: cPath }) : { ok: false, reason: 'the contract is no longer active' };
                 emit({ t: 'cmd.completed', d: { seq: k.seq, ok: r.ok, reason: r.reason ?? null } });
                 if (!r.ok) system.push(`TURN-IN REFUSED — ${q?.title || k.quest}: ${r.reason}`);
             }

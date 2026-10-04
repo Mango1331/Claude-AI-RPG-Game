@@ -8,7 +8,7 @@ import { extractJsonObject } from './json.js';
 import { setFactEvents, perceivers, knows, truth, PC_NAME_FACT } from '../knowledge.js';
 import { awardXp, questXp } from '../progression.js';
 import { rankOf, rankIndex } from '../derived.js';
-import { slug } from '../util.js';
+import { slug, normText } from '../util.js';
 import { hallOf, settlementOf, heldBy, membership, listingsOf, boardKey, today, contracts, supportedRanks, placeName, namesKind, namesPeople, peopleNamed } from './domain.js';
 
 export const REGISTRATION_OFFER = 'offer.registration';
@@ -203,9 +203,11 @@ const NOT_READY_COUNT = 'NOT READY FOR TURN-IN: fewer defeated than named and no
  * accepted at the desk before any quest.ready). A story readiness the count holds back (a campaign of a build before
  * 4.1.2) shows as not ready.
  */
-export function readyText(s, content, q) {
-    const r = contractReady(s, content, q);
-    if (r.ok) return `READY FOR TURN-IN: ${r.mode === 'story_outcome' ? q.ready_note || 'desired outcome achieved' : `the listed proof is in hand (${proofText(q)})`}`;
+export function readyText(s, content, q, { c = false } = {}) {
+    const r = contractReady(s, content, q, { c });
+    if (r.ok) return `READY FOR TURN-IN: ${r.mode === 'story_outcome' ? q.ready_note || 'desired outcome achieved' : r.mode === 'goods' ? `the goods are in his hands (${goodsText(q)})` : `the listed proof is in hand (${proofText(q)})`}`;
+    // Prototype C (4.3.0-c.6): the story's readiness that the goods do not bear out (not in his hands, not handed over)
+    if (c && q.ready && (r.mode === 'goods_missing' || r.mode === 'not_delivered')) return `NOT READY FOR TURN-IN: ${r.reason}`;
     return q.ready ? NOT_READY_COUNT : null;
 }
 
@@ -249,6 +251,65 @@ export function objectiveText(q) {
     }).join('; ');
 }
 
+// ------------------------------------------------------------------------------------------------ Prototype C: goods
+// Prototype C (4.3.0-c.6): what a contract's work is. A hunt or cull is done when the world has reached its outcome
+// (quest.ready, the engine's count): its contract slip shows it (slipMarks), and trophies are loot, never proof. Goods
+// are the work itself: what he is to gather (GATHER), or to get (GET) when the contract names that thing as an object
+// to show ("get word from the reeve" is no thing in his hands); a delivery (DELIVER) is done where the goods change hands.
+const RELATION = new Set(['of', 'for', 'from', 'to', 'with', 'at', 'in', 'on', 'by']);
+const stemOf = (w) => w.replace(/ies$/, 'y').replace(/(?<!s)s$/, '');
+/** The word a thing is called by ("sealed satchel of fever tinctures" → satchel, "venom sacs" → sac). */
+function headOf(what) {
+    const words = normText(what).replace(/'s\b/g, '').split(' ').filter(Boolean);
+    const end = words.findIndex((w) => RELATION.has(w));
+    return stemOf((end > 0 ? words.slice(0, end) : words).at(-1) || '');
+}
+/** The objects in his hands called what a contract names (its contract slips, which name their contracts, are none). */
+const carried = (s, what) => {
+    const h = headOf(what);
+    return h.length < 3 ? [] : heldBy(s, 'pc').filter((o) => !o.id.startsWith('obj.slip.') && normText(o.name).split(' ').map(stemOf).includes(h));
+};
+export const goodsOf = (q) => (q.objectives || []).filter((o) => o.what && !confirmsOnly(o)
+    && (o.verb === 'GATHER' || (o.verb === 'GET' && (q.proof || []).some((p) => p.kind === 'object' && headOf(p.what) === headOf(o.what)))));
+export const deliveriesOf = (q) => (q.objectives || []).filter((o) => o.verb === 'DELIVER' && o.what);
+const goodsText = (q) => goodsOf(q).map((o) => `${o.qty ?? 1}${o.unit ? ` ${o.unit}` : ''} ${o.what}`).join(', ');
+/** The ACCEPTS line's word on proof (Prototype C). */
+export function proofTerms(q, content) {
+    if (goodsOf(q).length) return ` The goods are the work: ${goodsText(q)} in his hands at a Guild hall; the Guild takes them at the turn-in.`;
+    if (deliveriesOf(q).length) return ' A delivery is done where the goods are handed over, not while he still carries them.';
+    if (isHunt(q, content)) return ' Proof: the contract slip itself; its Guild seal shows READY once the world has established the outcome (the engine marks it). No trophies or body parts are required or handed over; what he takes from his kills is his own loot.';
+    return '';
+}
+/** The TURNS IN line's word on what changes hands (Prototype C). */
+export function handoverTerms(q, content) {
+    if (goodsOf(q).length) return ` He hands over ${goodsText(q)}; the Guild keeps them.`;
+    if (isHunt(q, content)) return ' The slip\'s READY seal is the proof: nothing else is handed over, and what he carries stays his unless he gives it away himself.';
+    return '';
+}
+/** What the quest memory and the catalog say about proof (Prototype C), instead of the verification examples. */
+export function proofMemory(s, content, q) {
+    if (goodsOf(q).length) return `goods to hand over at the turn-in: ${goodsText(q)}`;
+    if (isHunt(q, content)) {
+        const ready = (s.objects[slipId(q)]?.marks || []).some((m) => m.by === 'guild' && m.text === SLIP_READY);
+        return `proof: the contract slip, its Guild seal showing READY ${ready ? 'now' : 'once the outcome is established'}; no trophies are required`;
+    }
+    return (q.proof || []).length ? `verification examples: ${proofText(q)}` : 'verification examples: none listed';
+}
+export const SLIP_READY = 'READY — the Guild seal shows the contract fulfilled';
+export const SLIP_DONE = 'COMPLETED — paid out by the Guild';
+/**
+ * Prototype C (4.3.0-c.6): a Guild contract slip shows its contract's state, as the engine has it: READY when the Guild
+ * would accept it now (contractReady), COMPLETED once it is paid. The slip decides nothing; it is read from the state.
+ */
+export function slipMarks(s, content, emit) {
+    for (const q of contracts(s)) {
+        const slip = s.objects[slipId(q)];
+        if (!slip) continue;
+        const want = q.status === 'completed' ? SLIP_DONE : q.status === 'active' && contractReady(s, content, q, { c: true }).ok ? SLIP_READY : null;
+        if (want && !(slip.marks || []).some((m) => m.by === 'guild' && m.text === want)) emit({ t: 'object.marked', d: { id: slip.id, mark: want, by: 'guild', turn: s.turn } });
+    }
+}
+
 /**
  * Whether the Guild accepts a contract now: the one check behind every way to complete it (the turn-in at the desk,
  * the turn-in on arriving at a hall, the line that announces a turn-in on the way). The outcome is established (the
@@ -258,7 +319,31 @@ export function objectiveText(q) {
  * its proof, although the count refused its quest.ready).
  * @returns {{ok: boolean, mode: 'story_outcome'|'legacy_verification'|'not_ready'|'count_short', reason: string|null, consume: object[]}}
  */
-export function contractReady(s, content, q) {
+export function contractReady(s, content, q, { c = false } = {}) {
+    if (c) {
+        // Prototype C (4.3.0-c.6): goods he is to gather or get are the work itself: in his hands at the hall, whatever
+        // the story says, and the Guild takes them; a delivery is not done while he still carries what it delivers
+        const goods = goodsOf(q);
+        if (goods.length) {
+            const short = goods.map((o) => ({ o, need: o.qty ?? 1, have: carried(s, o.what).reduce((n, x) => n + (x.qty ?? 1), 0) })).filter((x) => x.have < x.need);
+            if (short.length) return { ok: false, mode: 'goods_missing', reason: `the goods are the work: ${short.map((x) => `${x.need}${x.o.unit ? ` ${x.o.unit}` : ''} ${x.o.what} (he has ${x.have})`).join(', ')} must be in his hands`, consume: [] };
+            const count = countShort(s, content, q);
+            if (count.length && !(q.ready && q.ready_alternative)) return { ok: false, mode: 'count_short', reason: `the engine counts ${tallyText(count)} defeated and the story has not established that the outcome was reached otherwise; trophies are no count`, consume: [] };
+            const consume = [];
+            for (const o of goods) {
+                let left = o.qty ?? 1;
+                for (const x of carried(s, o.what)) {
+                    if (left <= 0) break;
+                    const qty = Math.min(left, x.qty ?? 1);
+                    consume.push({ id: x.id, qty });
+                    left -= qty;
+                }
+            }
+            return { ok: true, mode: 'goods', reason: null, consume };
+        }
+        const owed = deliveriesOf(q).filter((o) => carried(s, o.what).length);
+        if (owed.length) return { ok: false, mode: 'not_delivered', reason: `he still carries ${owed.map((o) => o.what).join(', ')}: a delivery is done where the goods are handed over`, consume: [] };
+    }
     const legacy = (q.proof || []).length > 0 ? checkProof(s, q) : { ok: false, consume: [] };
     const mode = q.ready ? 'story_outcome' : legacy.ok ? 'legacy_verification' : 'not_ready';
     if (mode === 'not_ready') return { ok: false, mode, reason: 'the contract outcome has not yet been established as achieved in the world', consume: [] };
@@ -266,12 +351,13 @@ export function contractReady(s, content, q) {
     if (short.length && !(q.ready && q.ready_alternative)) {
         return { ok: false, mode: 'count_short', reason: `the engine counts ${tallyText(short)} defeated and the story has not established that the outcome was reached otherwise; trophies are no count`, consume: [] };
     }
-    return { ok: true, mode, reason: null, consume: mode === 'legacy_verification' ? legacy.consume : [] };
+    // Prototype C (4.3.0-c.6): what a hunter takes from his kills is his loot, never taken as proof
+    return { ok: true, mode, reason: null, consume: mode === 'legacy_verification' && !(c && isHunt(q, content)) ? legacy.consume : [] };
 }
 
 /** Turn a contract in at a Guild hall: its readiness (contractReady), then deterministic payout/XP/count. */
-export function completeContract(s, content, q, emit, { step } = {}) {
-    const check = contractReady(s, content, q);
+export function completeContract(s, content, q, emit, { step, c = false } = {}) {
+    const check = contractReady(s, content, q, { c });
     emit({ t: 'proof.checked', d: { quest: q.id, ok: check.ok, reason: check.reason, mode: check.mode } });
     if (!check.ok) return { ok: false, reason: check.reason };
     // Exact generated proof is only a backwards-compatible path. When story-readiness exists, items/marks are

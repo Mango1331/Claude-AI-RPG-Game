@@ -116,7 +116,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const msg = chat[u];
     const p = lastReplyIndex(chat, u);
     const recent = p >= 0 ? recentText(chat[p].mes) : '';
-    const catalog = buildCatalog(before, content, { known: true });
+    const catalog = buildCatalog(before, content, { known: true, c: true });
     const ctx = withContentSkills(planContext(before, content, catalog), content);
     const reuse = previous?.plan && previous.interp?.commands ? { commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [] } : null;
     const pl = reuse || await planMessage(llm, content, ctx, msg.mes, { recent });
@@ -148,7 +148,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
         const t = playerTurn(before, content, msg.mes, { msg: u, intent: m.intent, c: true });
         return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, events: t.events, command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
     }
-    const need = boardFor(before, content, m.commands);
+    const need = boardFor(before, content, m.commands, { c: true });
     const board = need ? await generateBoard(llm, before, content, need) : null;
     const t = playerTurnV4(before, content, msg.mes, {
         msg: u, commands: m.commands, dropped: guarded.dropped.filter((x) => !MECH_TYPES.includes(x.command?.type)), board, c: true,
@@ -166,7 +166,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
  * The board a message reads (board.read), before the narrator describes it: in the Guild hall he is in, or in the one
  * an earlier go of the same message leads to; rank as named, else his rank after an earlier registration in the message.
  */
-export function boardFor(state, content, commands) {
+export function boardFor(state, content, commands, { c = false } = {}) {
     const read = commands.find((c) => c.type === 'board.read');
     if (!read) return null;
     let hall = hallOf(state, state.scene.at);
@@ -182,6 +182,9 @@ export function boardFor(state, content, commands) {
     const board = state.guild.boards[boardKey(branch, rank)];
     if (board && board.day >= today(state)) return null;
     const size = content.rules.guild.board?.size ?? 5;
+    // Prototype C (4.3.0-c.6): a new day's board is a new board: five notices, none of yesterday's (src/v4/commands.js
+    // board.read retires those)
+    if (c) return { branch, rank, missing: size, day: today(state), have: [] };
     const have = listingsOf(state, branch, rank);
     const missing = size - have.length;
     return missing > 0 ? { branch, rank, missing, day: today(state), have: have.map((q) => q.title) } : null;
@@ -353,7 +356,7 @@ export function extractionRequest(chat, id, content) {
     const o = state.last?.outcome || {};
     const gos = (o.auth?.gos || []).map((g) => g.to).filter(Boolean);
     // Prototype C (4.3.0-c.5): the contracts he read on a board, by id, also for a contract or board taken on arrival
-    const cat = extractorCatalog(state, content, { extraPlaces: gos, known: !!(o.auth?.c || o.c) });
+    const cat = extractorCatalog(state, content, { extraPlaces: gos, known: !!(o.auth?.c || o.c), c: !!(o.auth?.c || o.c) });
     const actions = o.kind === 'v4' ? [...o.actions, ...(o.extra || [])].join('\n')
         : o.kind === 'combat' ? 'COMBAT — the engine resolved this round (attacks, damage, movement); report only what else the reply established.'
             : o.kind === 'check' ? `CHECK — the engine resolved: ${o.check?.label || 'a check'}, ${o.check?.success ? 'success' : 'failure'}.`

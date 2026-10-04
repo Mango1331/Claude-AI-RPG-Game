@@ -214,21 +214,14 @@ test('4. the contract is gone: no acceptance, no claim that it is his, and the s
     assert.ok(late.corrections.includes('"Cull the Bog Striders at the Reed Flats Eel-Weirs" was not taken: it is no longer on the board; he holds no slip for it.'));
     assert.equal(late.state.quests[BOG].status, 'taken_by_other');
     assert.equal(late.state.objects[SLIP], undefined);
-    // a listing seen on an earlier day, with the board's taken-by-others rate on: the accept looks again, as a new
-    // reading of the board would; it is not frozen as available
-    const board = content.rules.guild.board;
-    const pct = board.taken_by_others_pct_per_day;
-    try {
-        board.taken_by_others_pct_per_day = 100;
-        const h = live();
-        before(h, { t: 'time.advanced', d: { minutes: 1440, why: 'test' } }); // the next day
-        await say(h, TAKE, [takePlan()]);
-        assert.equal(h.state().quests[BOG].status, 'taken_by_other');
-        assert.match(outcomeOf(h).actions[1], /^2\. CANNOT ACCEPT — "Cull the Bog Striders at the Reed Flats Eel-Weirs" is no longer on the board\.$/);
-        assert.match(outcomeOf(h).actions[2], /^3\. NOT DONE/);
-    } finally {
-        board.taken_by_others_pct_per_day = pct;
-    }
+    // a listing seen on an earlier day is not frozen as available: since 4.3.0-c.6 the board is the day's (it was a
+    // re-roll of other adventurers' takes in c.5), so the next day it came down with its day; known, not to be taken
+    const h = live();
+    before(h, { t: 'time.advanced', d: { minutes: 1440, why: 'test' } }); // the next day
+    await say(h, TAKE, [takePlan()]);
+    assert.match(outcomeOf(h).actions[1], /^2\. CANNOT ACCEPT — "Cull the Bog Striders at the Reed Flats Eel-Weirs" is no longer on the board: the Guild renews its board every day/);
+    assert.match(outcomeOf(h).actions[2], /^3\. NOT DONE/);
+    assert.equal(h.state().objects[SLIP], undefined);
 });
 
 // ------------------------------------------------------------------------------------------------ 5. independent steps

@@ -10,7 +10,7 @@ import {
 } from './knowledge.js';
 import { rank, pack, Bm25 } from './retrieval.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
-import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText } from './v4/guild.js';
+import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText, proofMemory } from './v4/guild.js';
 import { envelopeBlock } from './v4/envelope.js';
 import { sceneHandle } from './v4/scene_handles.js';
 
@@ -432,10 +432,12 @@ export function buildContext(state, content, opts = {}) {
     if (pinned.length) add('facts', `ESTABLISHED FACTS (binding; they change only with an in-world cause):\n${pinned.map((f) => `- ${propText(state, f, content)} (since ${day(f.since.minute)}${f.source?.because ? `; cause: ${f.source.because}` : ''})`).join('\n')}`, 0);
 
     const activeQuests = v4 ? Object.values(state.quests).filter((q) => q.status === 'active') : [];
+    // Prototype C (4.3.0-c.6): a hunt is proven by its contract slip, goods by the goods (src/v4/guild.js proofMemory)
+    const cTurn = !!(opts.outcome?.auth?.c || opts.outcome?.c);
     if (activeQuests.length) add('quests', `ACTIVE QUEST MEMORY — use this to preserve continuity, not as a word-for-word checklist. For Guild contracts only payout, active/completed status, Quest XP/credit and Guild rank mechanics are hard engine state; objectives, witnesses and verification are story guidance and may be satisfied by credible alternatives:\n${activeQuests.map((q) => {
         const progress = (q.progress || []).slice(-4).map((p) => `${p.objective}: ${p.status}`).join('; ');
         const req = q.kind === 'guild_contract'
-            ? ` | desired outcome: ${q.desired_end_state || objectiveText(q)} | remembered work: ${objectiveText(q)}${progress ? ` | progress: ${progress}` : ''}${q.status === 'active' && defeatTally(state, content, q).length ? ` | defeated (engine count): ${tallyText(defeatTally(state, content, q))}` : ''}${readyText(state, content, q) ? ` | ${readyText(state, content, q)}` : ''} | verification examples: ${guildProofText(q) || 'none listed'} | payout: ${q.payout_cp ?? 0} cp (paid only by the Guild on explicit accepted turn-in)`
+            ? ` | desired outcome: ${q.desired_end_state || objectiveText(q)} | remembered work: ${objectiveText(q)}${progress ? ` | progress: ${progress}` : ''}${q.status === 'active' && defeatTally(state, content, q).length ? ` | defeated (engine count): ${tallyText(defeatTally(state, content, q))}` : ''}${readyText(state, content, q, { c: cTurn }) ? ` | ${readyText(state, content, q, { c: cTurn })}` : ''} | ${cTurn ? proofMemory(state, content, q) : `verification examples: ${guildProofText(q) || 'none listed'}`} | payout: ${q.payout_cp ?? 0} cp (paid only by the Guild on explicit accepted turn-in)`
             : q.objectives?.length ? ` | remembered work: ${objectiveText(q)}` : '';
         return `- ${q.title}${req}`;
     }).join('\n')}\nQUEST PLAY: only when the current scene/action is actually pursuing a nontrivial active Quest, let that Quest develop at least one causal, meaningful complication or active situation before ordinary resolution. Do not inject Quest complications into unrelated scenes merely because a Quest is active. Combat is not required. Once the desired outcome is genuinely achieved, let the extractor store quest.ready; do not manufacture extra bureaucracy merely to satisfy a generated proof phrase.`, 0);

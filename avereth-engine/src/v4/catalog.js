@@ -9,10 +9,10 @@ import { formatClock, normText } from '../util.js';
 import { sceneHandle } from './scene_handles.js';
 import {
     placePath, placeName, settlementOf, realmOf, hallOf, hallOfSettlement, childrenOf, heldBy, lyingAt, openOffers,
-    membership, listingsOf, today, contracts,
+    membership, listingsOf, today, contracts, listedToday,
 } from './domain.js';
 import { catalogText } from './interpret.js';
-import { defeatTally, tallyText, readyText } from './guild.js';
+import { defeatTally, tallyText, readyText, proofMemory } from './guild.js';
 
 /** A person or creature as the catalog labels it: name, role, look ("Marta, Guild receptionist"). */
 export function personLabel(state, content, id) {
@@ -22,6 +22,16 @@ export function personLabel(state, content, id) {
     const role = truth(state, id, 'occupation')[0]?.o || (e.template && e.template !== 'commoner' ? content.templates.get(e.template)?.label?.toLowerCase() : null) || e.role || null;
     const look = e.traits ? String(e.traits).split(/[;,.]/)[0].trim() : (e.descriptors || []).find((d) => normText(d) !== normText(role || ''));
     return [e.name, role, look].filter(Boolean).filter((x, i, a) => a.findIndex((y) => normText(y) === normText(x)) === i).join(', ') || entityLabel(state, id);
+}
+
+/**
+ * Prototype C (4.3.0-c.6): the people Alaric met at a place and left there (entity.at, src/v4/world.js arrive), for a
+ * GO back to it: when the story shows that place's people, they are these, not new ones (live 04.10.2026 16:35: back
+ * at the Guild desk, a new "Guild desk clerk" was invented and stored beside the two clerks he had met there)
+ */
+export function knownAt(state, content, place) {
+    return Object.values(state.entities).filter((e) => e.kind === 'npc' && e.at === place && !state.scene.present.includes(e.id) && statusOf(state, e.id) !== 'dead')
+        .slice(-4).map((e) => ({ id: e.id, label: personLabel(state, content, e.id) }));
 }
 
 function settlementName(state, id) {
@@ -76,7 +86,7 @@ function objectiveText(q) {
     }).join('; ');
 }
 
-function questInfo(state, content, q) {
+function questInfo(state, content, q, { c = false } = {}) {
     if (q.kind === 'guild_contract') {
         const progress = (q.progress || []).slice(-3).map((p) => `${p.objective}: ${p.status}`).join('; ');
         return ['Guild contract', q.status, q.rank, q.payout_cp !== null && q.payout_cp !== undefined ? `${q.payout_cp} cp` : null,
@@ -84,8 +94,9 @@ function questInfo(state, content, q) {
             (q.objectives || []).length ? `job memory: ${objectiveText(q)}` : null,
             progress ? `progress: ${progress}` : null,
             q.status === 'active' && defeatTally(state, content, q).length ? `defeated (engine count): ${tallyText(defeatTally(state, content, q))}` : null,
-            readyText(state, content, q),
-            (q.proof || []).length ? `verification example: ${proofText(q)}` : null].filter(Boolean).join(' · ');
+            readyText(state, content, q, { c }),
+            // Prototype C (4.3.0-c.6): a hunt is proven by its slip, goods by the goods themselves
+            c ? proofMemory(state, content, q) : (q.proof || []).length ? `verification example: ${proofText(q)}` : null].filter(Boolean).join(' · ');
     }
     const giver = q.giver && state.entities[q.giver] ? personLabel(state, content, q.giver) : q.giver;
     return ['private', q.status, giver ? `from ${giver}` : null, q.payout_cp ? `reward ${q.payout_cp} cp` : null].filter(Boolean).join(' · ');
@@ -129,6 +140,10 @@ export function openDecisionTexts(state) {
 }
 
 const TRAVEL_WORDS = /\b(?:escort|journey|travel|road|cart|wagon|caravan|ship|boat|ferry|ride|guide|lead|depart|leave|deliver|destination|route|waystation)\b/i;
+// Prototype C (4.3.0-c.6): a journey comes from the work itself, an escort or a delivery (a private job: escort, deliver,
+// guide or accompany), never from road words in its notes (live 04.10.2026 16:35: the warden's directions to the boar
+// den made "follow the directions" an established journey with him)
+const journeyWork = (q) => (q.objectives || []).some((o) => (o.verb ? ['ESCORT', 'DELIVER'].includes(o.verb) : /^\s*(?:escort|deliver|guide|accompany)\b/i.test(o.what || '')));
 
 /**
  * The journey Alaric can continue without naming where to ("wait, then we continue", live run 30.09.2026): a journey
@@ -139,11 +154,11 @@ const TRAVEL_WORDS = /\b(?:escort|journey|travel|road|cart|wagon|caravan|ship|bo
  * interpreter sees it as JOURNEY READY; journey.continue is authorised by it.
  * @returns {{id: string, label: string, contact: string|null, why: string}|null}
  */
-export function journeyReady(state) {
+export function journeyReady(state, { c = false } = {}) {
     const sources = [
-        ...Object.values(state.quests).filter((q) => q.status === 'active')
+        ...Object.values(state.quests).filter((q) => q.status === 'active' && (!c || journeyWork(q)))
             .map((q) => ({ id: q.id, label: q.title, text: [...(q.details || []).map((x) => (typeof x === 'string' ? x : x?.note)), ...(q.notes || [])].filter(Boolean).join(' ') })),
-        ...Object.values(state.threads || {}).filter((t) => t.status === 'open').map((t) => ({ id: t.id, label: t.text, text: t.text })),
+        ...(c ? [] : Object.values(state.threads || {}).filter((t) => t.status === 'open').map((t) => ({ id: t.id, label: t.text, text: t.text }))),
     ];
     for (const src of sources) {
         if (!TRAVEL_WORDS.test(src.text)) continue;
@@ -165,25 +180,33 @@ export function journeyReady(state) {
  * @param {{extraPlaces?: string[], known?: boolean}} [opts] extraPlaces: place ids to list besides the default ones
  *   (a go target of this turn, for the extractor); known: the contracts listed on a Guild board elsewhere (Prototype C)
  */
-export function buildCatalog(state, content, { extraPlaces = [], known = false } = {}) {
+export function buildCatalog(state, content, { extraPlaces = [], known = false, c = false } = {}) {
     const at = state.scene.at;
     const present = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && statusOf(state, id) !== 'dead')
         .map((id) => ({ id, handle: sceneHandle(state, content, id), label: personLabel(state, content, id) }));
     const activeRaw = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered');
-    const quests = activeRaw.map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) }));
-    const journey = journeyReady(state);
+    const quests = activeRaw.map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q, { c }) }));
+    const journey = journeyReady(state, { c });
     const journey_ready = journey ? `${journey.id} — "${journey.label}"${journey.contact ? ` with ${sceneHandle(state, content, journey.contact)}` : ''}: ${journey.why}; Alaric may continue it when he clearly agrees` : undefined;
     const day = today(state);
     const completed = Object.values(state.quests).filter((q) => q.status === 'completed' && (q.history || []).some((h) => h.status === 'completed' && Math.floor((h.minute ?? 0) / 1440) + 1 === day))
-        .map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) }));
+        .map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q, { c }) }));
     const hall = hallOf(state, at);
     const town = hall ? settlementOf(state, hall) : null;
     const rank = membership(state)?.rank || 'Novice';
-    const board = hall && town ? listingsOf(state, town, rank).map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) })) : [];
+    // Prototype C (4.3.0-c.6): the board of the day; a notice of an earlier day has come down
+    const board = hall && town ? listingsOf(state, town, rank).filter((q) => !c || listedToday(state, q)).map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q, { c }) })) : [];
     // Prototype C (4.3.0-c.5): the contracts still listed on a Guild board he is not at (he read them there), by id
     // for a message that names one; whether he can take one, and where, the engine decides
-    const seen = known ? contracts(state).filter((q) => q.status === 'listed' && !board.some((b) => b.id === q.id))
+    // (4.3.0-c.6) and yesterday's notices that came down with their day, by id for a message that names one: known, not
+    // to be taken
+    const seen = known ? contracts(state).filter((q) => (c ? listedToday(state, q) : q.status === 'listed') && !board.some((b) => b.id === q.id))
         .map((q) => ({ id: q.id, title: q.title, info: `Guild contract · ${q.rank} · ${q.payout_cp} cp · on the board of ${placeName(state, q.source?.board)}` })) : [];
+    if (known && c) {
+        for (const q of contracts(state).filter((x) => (x.status === 'expired' || (x.status === 'listed' && !listedToday(state, x))) && (x.source?.listed?.day ?? 0) >= today(state) - 1)) {
+            seen.push({ id: q.id, title: q.title, info: `Guild contract · ${q.rank} · no longer on the board (posted on day ${q.source?.listed?.day}; the Guild renews its board every day)` });
+        }
+    }
     const offers = openOffers(state).filter((o) => o.canon ? (!o.at || hallOf(state, o.at) === hall) : state.scene.present.includes(o.seller))
         .map((o) => ({ id: o.id, seller: o.canon ? 'Guild' : personLabel(state, content, o.seller), lines: o.lines.map((l) => ({ id: l.id, what: l.what, price_cp: l.price_cp, ...(l.qty > 1 ? { qty: l.qty } : {}) })) }));
     const objects = [

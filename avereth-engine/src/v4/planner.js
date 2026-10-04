@@ -85,6 +85,17 @@ export const CONTRACT_RULES = [
     '- "I give up the ferry job." → {"commands":[{"seq":1,"type":"quest.abandon","quest":"quest.ferry_job","quote":"I give up the ferry job."}]}',
 ].join('\n');
 
+// Steps that build on each other (live run 04.10.2026: "go back to the guild and take the Cull the Bog Striders quest
+// and register it ad make my way over to the eel weirs": the contract could not be taken and he set off for its site
+// anyway). The engine does not take a step whose "needs" did not happen (src/v4/commands.js resolveCommands)
+export const ORDER_RULES = [
+    'Steps that build on each other (story commands):',
+    '- A step that only makes sense once an earlier step of the same message has happened carries "needs": <that step\'s seq>. He takes a contract and then sets off to do it: the go needs the quest.accept. He pays the ferryman and then crosses: the go needs the pay. If that step does not happen, the engine does not take this one either.',
+    '- A step that stands on its own carries no "needs": "I drop the broken cup and walk home" — the walk happens whether or not the drop does.',
+    'Example (another town): CATALOG: PLACES: loc.kf.guild_hall (Guild office, Kestrel Ford) · KNOWN CONTRACTS: quest.ferry_job (Ferry Job · Guild contract · Novice · 40 cp · on the board of Guild office, Kestrel Ford)',
+    '- "*i head to the guild office, take the ferry job and go down to the ferry*" → {"commands":[{"seq":1,"type":"go","to":"loc.kf.guild_hall","quote":"i head to the guild office"},{"seq":2,"type":"quest.accept","quest":"quest.ferry_job","quote":"take the ferry job"},{"seq":3,"type":"go","to":{"new":"the ferry"},"needs":2,"quote":"go down to the ferry"}]}',
+].join('\n');
+
 // A contract given up only in words for later: "ill decline the quest myself", "I'll go cancel it at the Guild", "I'm
 // going to hand the contract back". The deterministic second line behind CONTRACT_RULES (A's agency guard needs a time
 // anchor such as "tomorrow" for a plan); it only removes the command, the removal is in the record (plan.dropped).
@@ -115,7 +126,7 @@ export function plannerSystem(vocab, { fight = false } = {}) {
         const story = vocabularyText({ commands: vocab.commands.filter((c) => FIGHT_STORY_TYPES.has(c.type)) });
         return [PLANNER_ROLE, '', mech, '', 'Story commands (the same list):', story, '', 'Answer with {"commands": [...]}; an empty list when the message contains no action of his.', '', PLAIN_FORMAT].join('\n');
     }
-    return [interpreterSystem(vocab), '', CONTRACT_RULES, '', mech, '', PLAIN_FORMAT].join('\n');
+    return [interpreterSystem(vocab), '', CONTRACT_RULES, '', ORDER_RULES, '', mech, '', PLAIN_FORMAT].join('\n');
 }
 
 function skillText(skill) {
@@ -252,7 +263,14 @@ export function parsePlan(answer, vocab, ctx, message) {
             // a story command: the interpreter's own schema, missing nullable arguments as null (as parseInterpretation)
             for (const [k, spec] of Object.entries(story.get(type).args || {})) if (spec.nullable && c[k] === undefined) c[k] = null;
             if (c.seq === undefined) c.seq = i + 1;
+            // "needs" (ORDER_RULES) is the planner's own field, checked here: an earlier step of this answer, or nothing
+            const needs = c.needs ?? null;
+            delete c.needs;
             const bad = validate({ commands: [c] }, schema);
+            if (needs !== null) {
+                if (Number.isInteger(needs) && needs < c.seq && value.commands.some((o) => o && o !== c && o.seq === needs)) c.needs = needs;
+                else errors.push(`${at}: "needs" must be the seq of an earlier command of this answer, or left out`);
+            }
             for (const e of bad) errors.push(e.replace('$.commands[0]', `$.commands[${i}]`));
             // a contract slip named as the contract: say which id the contract has (the repair writes it, nothing is replaced here)
             const slip = typeof c.quest === 'string' ? c.quest : typeof c.quest?.id === 'string' ? c.quest.id : null;

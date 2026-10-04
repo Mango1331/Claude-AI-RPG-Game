@@ -116,7 +116,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const msg = chat[u];
     const p = lastReplyIndex(chat, u);
     const recent = p >= 0 ? recentText(chat[p].mes) : '';
-    const catalog = buildCatalog(before, content);
+    const catalog = buildCatalog(before, content, { known: true });
     const ctx = withContentSkills(planContext(before, content, catalog), content);
     const reuse = previous?.plan && previous.interp?.commands ? { commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [] } : null;
     const pl = reuse || await planMessage(llm, content, ctx, msg.mes, { recent });
@@ -352,7 +352,8 @@ export function extractionRequest(chat, id, content) {
     const { state } = foldChat(chat, id);
     const o = state.last?.outcome || {};
     const gos = (o.auth?.gos || []).map((g) => g.to).filter(Boolean);
-    const cat = extractorCatalog(state, content, { extraPlaces: gos });
+    // Prototype C (4.3.0-c.5): the contracts he read on a board, by id, also for a contract or board taken on arrival
+    const cat = extractorCatalog(state, content, { extraPlaces: gos, known: !!(o.auth?.c || o.c) });
     const actions = o.kind === 'v4' ? [...o.actions, ...(o.extra || [])].join('\n')
         : o.kind === 'combat' ? 'COMBAT — the engine resolved this round (attacks, damage, movement); report only what else the reply established.'
             : o.kind === 'check' ? `CHECK — the engine resolved: ${o.check?.label || 'a check'}, ${o.check?.success ? 'success' : 'failure'}.`

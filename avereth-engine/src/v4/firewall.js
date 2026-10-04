@@ -84,6 +84,10 @@ function guildMechanic(d, ctx) {
 const text = (v) => (v === null || v === undefined ? '' : typeof v === 'string' ? v : JSON.stringify(v));
 // ids are snake_case ("npc.guild_clerk"): \b does not fall between "guild" and "_"
 const words = (v) => normText(text(v)).replace(/[_.\-/]+/g, ' ').replace(/\s+/g, ' ').trim();
+// Prototype C (4.3.0-c.5): a Guild board ("the Novice board", "the Guild's contract board") and what a board listing
+// is said with: its official listings are the engine's, never a fact or an offer of the story
+const guildBoard = (t) => /\bboard\b/.test(t) && /\b(?:guild|quests?|contracts?|novice|proven|veteran|elite)\b/.test(t);
+const LISTS = /^(?:lists?|listed|listing|posts?|posted|offers?|offered|advertises|advertised)(?:_|$)/;
 export const isPc = (ref) => PC_REF.test(words(ref));
 
 /**
@@ -197,7 +201,7 @@ export function firewall(deltas, ctx = {}) {
                 break;
             }
             case 'quest.offer': {
-                if (guildy(d.giver)) {
+                if (guildy(d.giver) || (ctx.c && guildBoard(words(d.giver)))) {
                     no(d, 'guild_listing', 'official Guild contracts come only from the Board generator (canonical first)', 'Official Guild contracts come only from the board the engine shows; the contract the last reply mentioned does not exist.');
                     continue;
                 }
@@ -248,6 +252,12 @@ export function firewall(deltas, ctx = {}) {
                     const claim = claimedStatus(`${words(d.p)} ${words(d.o)}`);
                     no(d, 'engine_owned_fact', 'a known Guild contract keeps payout and formal status/completion in the engine domain; use quest.detail/quest.progress/quest.ready for story progress instead of overriding that state with a free fact',
                         wrongClaim(claim, q) ? statusCorrection(q) : null);
+                    continue;
+                }
+                // Prototype C (4.3.0-c.5): "the Novice board lists Rat Cull, Harrow Lane Graincellars — 40 cp" (live
+                // 04.10.2026: invented while the reply had no BOARD); a listing the board has is no new information
+                if (ctx.c && guildBoard(words(d.s)) && LISTS.test(p) && !namesContract(words(d.o))) {
+                    no(d, 'guild_listing', 'official Guild contracts come only from the board the engine shows', 'Official Guild contracts come only from the board the engine shows; the contract the last reply showed does not exist.');
                     continue;
                 }
                 if (STATE_PREDICATES.has(p)) {

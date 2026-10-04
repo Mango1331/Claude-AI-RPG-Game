@@ -21,7 +21,7 @@ import { mayOpenFight, mayTake } from './envelope.js';
 import {
     PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind,
 } from './domain.js';
-import { completeContract, abandonContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection } from './guild.js';
+import { completeContract, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection } from './guild.js';
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
@@ -52,6 +52,7 @@ export function firewallContext(s, content) {
     for (const e of Object.values(s.entities)) if (e.name) names.set(normText(e.name), e.id);
     const auth = o.auth || {};
     return {
+        c: !!(auth.c || o.c), // Prototype C: the turn the planner read
         isGuildPerson: (ref) => guildish(ref) || guildish(names.get(normText(ref))),
         inGuildHall: !!hallOf(s, s.scene.at),
         contracts: contracts(s).map((q) => ({ id: q.id, title: q.title, payout_cp: q.payout_cp ?? null, client: q.client || null, status: q.status })),
@@ -590,6 +591,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     break;
                 }
                 const q = questRef(d.listing);
+                // Prototype C (4.3.0-c.5): nor the contract the engine takes for him at the hall this reply brings him to
+                if (q && (outcome.conditionals || []).some((k) => k.kind === 'accept' && k.quest === q.id)) {
+                    reject(d, 'engine_booked', 'the contract he takes on his arrival in this reply is the engine\'s to book');
+                    const correction = `Nobody else took the Guild contract "${q.title}" in the last reply: the engine books it for Alaric when he reaches its Guild hall, else it stays on the board.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    break;
+                }
                 if (!q || q.status !== 'listed') { reject(d, 'quest', 'no such listing on the board'); break; }
                 grant('world.taken');
                 emit({ t: 'quest.status', d: { id: q.id, from: 'listed', to: d.why, by: 'world' } });
@@ -744,9 +752,26 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (hall) {
             arrivedHall = hall;
             for (const k of conditionals.filter((x) => !x.done && x.condition === 'arrive_guild_hall')) {
+                // Prototype C (4.3.0-c.5): a contract taken or a board read at its own hall waits for that hall
+                if ((k.kind === 'accept' || k.kind === 'board') && k.hall !== hall) continue;
                 k.done = true;
                 grant('conditional');
                 const q = s.quests[k.quest];
+                if (k.kind === 'accept') {
+                    const ok = q?.status === 'listed';
+                    if (ok) acceptContract(s, content, q, emit, { step: k.seq });
+                    emit({ t: 'cmd.completed', d: { seq: k.seq, ok, reason: ok ? null : 'the contract is no longer on the board' } });
+                    if (!ok) {
+                        system.push(`NOT ACCEPTED — ${q?.title || k.quest}: it is no longer on the board`);
+                        corrections.push(`"${q?.title || k.quest}" was not taken: it is no longer on the board; he holds no slip for it.`);
+                    }
+                    continue;
+                }
+                if (k.kind === 'board') {
+                    emit({ t: 'board.shown', d: { branch: k.branch, rank: k.rank, listings: k.listings } });
+                    emit({ t: 'cmd.completed', d: { seq: k.seq, ok: true, reason: null } });
+                    continue;
+                }
                 if (k.kind === 'abandon') {
                     // Prototype C: the contract he gives up at the desk; its slip goes back, nothing is paid
                     const ok = q?.status === 'active';

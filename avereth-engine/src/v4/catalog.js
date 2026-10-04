@@ -9,7 +9,7 @@ import { formatClock, normText } from '../util.js';
 import { sceneHandle } from './scene_handles.js';
 import {
     placePath, placeName, settlementOf, realmOf, hallOf, hallOfSettlement, childrenOf, heldBy, lyingAt, openOffers,
-    membership, listingsOf, today,
+    membership, listingsOf, today, contracts,
 } from './domain.js';
 import { catalogText } from './interpret.js';
 import { defeatTally, tallyText, readyText } from './guild.js';
@@ -162,10 +162,10 @@ export function journeyReady(state) {
 
 /**
  * The catalog of the current state (the scenes.json shape).
- * @param {{extraPlaces?: string[], rankLook?: string}} [opts] extraPlaces: place ids to list besides the default ones
- *   (a go target of this turn, for the extractor)
+ * @param {{extraPlaces?: string[], known?: boolean}} [opts] extraPlaces: place ids to list besides the default ones
+ *   (a go target of this turn, for the extractor); known: the contracts listed on a Guild board elsewhere (Prototype C)
  */
-export function buildCatalog(state, content, { extraPlaces = [] } = {}) {
+export function buildCatalog(state, content, { extraPlaces = [], known = false } = {}) {
     const at = state.scene.at;
     const present = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && statusOf(state, id) !== 'dead')
         .map((id) => ({ id, handle: sceneHandle(state, content, id), label: personLabel(state, content, id) }));
@@ -180,6 +180,10 @@ export function buildCatalog(state, content, { extraPlaces = [] } = {}) {
     const town = hall ? settlementOf(state, hall) : null;
     const rank = membership(state)?.rank || 'Novice';
     const board = hall && town ? listingsOf(state, town, rank).map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q) })) : [];
+    // Prototype C (4.3.0-c.5): the contracts still listed on a Guild board he is not at (he read them there), by id
+    // for a message that names one; whether he can take one, and where, the engine decides
+    const seen = known ? contracts(state).filter((q) => q.status === 'listed' && !board.some((b) => b.id === q.id))
+        .map((q) => ({ id: q.id, title: q.title, info: `Guild contract · ${q.rank} · ${q.payout_cp} cp · on the board of ${placeName(state, q.source?.board)}` })) : [];
     const offers = openOffers(state).filter((o) => o.canon ? (!o.at || hallOf(state, o.at) === hall) : state.scene.present.includes(o.seller))
         .map((o) => ({ id: o.id, seller: o.canon ? 'Guild' : personLabel(state, content, o.seller), lines: o.lines.map((l) => ({ id: l.id, what: l.what, price_cp: l.price_cp, ...(l.qty > 1 ? { qty: l.qty } : {}) })) }));
     const objects = [
@@ -199,6 +203,7 @@ export function buildCatalog(state, content, { extraPlaces = [] } = {}) {
         completed,
         board_label: hall ? `${rank} board of this hall` : undefined,
         board,
+        ...(known ? { known: seen } : {}),
         offers,
         objects,
         open: openDecisionTexts(state),
@@ -211,7 +216,7 @@ export function extractorCatalog(state, content, opts = {}) {
     return {
         text: catalogText(c),
         places: [...new Set([c.here.id, ...c.places.map((p) => p.id)].filter(Boolean))],
-        quests: [...new Set([...c.quests, ...c.board, ...c.completed].map((q) => q.id))],
+        quests: [...new Set([...c.quests, ...c.board, ...c.completed, ...(c.known || [])].map((q) => q.id))],
         objects: c.objects.map((o) => o.id),
         catalog: c,
     };

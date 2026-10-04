@@ -1,4 +1,4 @@
-# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.4)
+# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.5)
 
 Stand: 02.10.2026.
 
@@ -42,6 +42,7 @@ Stand: 02.10.2026.
 10. [Bekannte Grenzen](#10-bekannte-grenzen)
 11. [4.3.0-c.2: Korrekturen nach dem Live-Test vom 03.10.2026](#11-430-c2-korrekturen-nach-dem-live-test-vom-03102026)
 12. [4.3.0-c.4: Temperament als Tendenz, nicht als Gesetz](#12-430-c4-temperament-als-tendenz-nicht-als-gesetz)
+13. [4.3.0-c.5: Handlungen, die aufeinander aufbauen](#13-430-c5-handlungen-die-aufeinander-aufbauen)
 
 ---
 
@@ -249,7 +250,7 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.4`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.5`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
    - Vertrag v4 (Revision 4.2.0, unverändert), Preset „Avereth Narrator V4“, Lorebook v0.13.
@@ -441,3 +442,69 @@ Die Tests stehen in `tests/v4/planner_c4.test.js`.
 - Ein Patt ist möglich: Hält Alaric, hält auch ein unbedrohtes skittish Tier, wie ein defensives in Deckung.
 - Der Vertrag (Revision 4.2.0) spricht von Tieren, die „nur in die Enge getrieben“ kämpfen. Auf dem Planner-Pfad sagt die Zeile im Engine-Block selbst, dass es eine Tendenz ist.
 - Menschen sind unverändert.
+
+---
+
+## 13. 4.3.0-c.5: Handlungen, die aufeinander aufbauen
+
+Grundlage ist der Live-Lauf vom 04.10.2026, 01:48, auf 4.3.0-c.4 (Planner an). Die Fixture `tests/v4/live_1004.json` enthält:
+- die Nachrichten 0–38 als aufgezeichnete Events (Alaric rastet am Wegrand vor Alderwatch, Tag 1, 14:59);
+- Spielernachricht 39 in ihren zwei Fassungen aus dem API-Dump, je mit roher Planner-, Erzähler- und Extraktor-Antwort.
+
+Die Tests stehen in `tests/v4/planner_c5.test.js`.
+
+**Befund:**
+- „*i next go back to the guild and look at the quest board again*“: Der Planner plante richtig `go` (Gildenhalle), dann `board.read`. Die Engine lehnte das Lesen ab: „CANNOT READ — the Guild board is in the Guild hall.“ Der Erzähler machte daraus, dass Alaric nicht lesen kann; „unreadable to Alaric“ wurde gespeichert.
+- „*i next go back to the guild and take the Cull the Bog Striders quest and register it ad make my way over to the eel weirs*“: Der Planner schrieb `quest.accept {"new": "Cull the Bog Striders"}`. Die Engine fand dazu keinen Vertrag („no such contract“). Der Gang zu den Eel Weirs lief trotzdem.
+- In derselben Antwort sagte die Schreiberin, einen solchen Vertrag gebe es nicht. Der Erzähler zeigte zwei neue offizielle Listings ohne BOARD-Block der Engine (Rat Cull, Meadowfever Herb). Der Extraktor meldete sie als Fakten („Novice board lists …“), und sie wurden gespeichert.
+
+**Ursache im Code:**
+1. **Identität fehlt außerhalb der Halle.** `buildCatalog` zeigt Board-Listings nur in der Halle (`BOARD`). Den Vertrag, den Alaric am Morgen gelesen hatte (`listed`), konnte der Planner am Wegrand nur als `{new}` mit den Worten des Spielers nennen. `pickQuest` löst `{new}` bewusst nur über den exakten Titel auf, und der lautet „Cull the Bog Striders at the Reed Flats Eel-Weirs“.
+2. **Ort gegen den Startzustand geprüft.** `board.read`, `quest.accept` und `guild.register` prüften die Halle am Ort zu Beginn der Nachricht. Ein früherer GO derselben Nachricht zählte nicht. Den Mechanismus dafür gibt es seit c.2 für `quest.turn_in` und `quest.abandon`: ein Conditional `arrive_guild_hall`, das der World Applier bei der Ankunft bucht. `boardFor` erzeugte das Board für die Halle des GO sogar schon. Die drei Handler nutzten beides nicht.
+3. **Keine Abhängigkeit im IR.** Ein Plan konnte nicht sagen, dass Schritt 3 auf Schritt 2 aufbaut. `resolveCommands` führte jeden Schritt für sich aus.
+4. **Wortlaut.** „CANNOT READ“ klingt nach Analphabetismus statt nach „hier hängt kein Board“.
+5. **Board-Autorität ohne Rückfallnetz.** Die Extraktor-Regel `overreach guild_listing` gab es. Gemeldet wurden die Listings aber als Fakten, und die Firewall hatte für einen Board-Aushang als Fakt keinen Guard. `quest.offer` mit einem Board als Geber lehnte sie nur in der Halle ab.
+
+**Lösung, nur auf dem Planner-Pfad:**
+
+| Stelle | Änderung |
+|---|---|
+| Katalog (`buildCatalog`, `catalogText`, `catalogIds`) | Neue Zeile **KNOWN CONTRACTS**: Gildenverträge, die auf dem Board einer anderen Halle noch aushängen, mit id und dem Ort, an dem sie angenommen werden. Planner und Extraktor sehen sie auf C. Wissen ist nicht Verfügbarkeit: ob und wo er einen annehmen kann, entscheidet die Engine. Auf A bleibt der Katalog unverändert. |
+| `board.read`, `quest.accept`, `guild.register` | Führt ein früherer GO der Nachricht zu einer Gildenhalle (`hallAhead`, dieselbe Regel wie bei Abgabe und Aufgabe), wartet der Schritt auf die Ankunft. **board.read:** das Board dieser Halle, im Engine-Block mit „when he reaches the Guild hall“; `board.shown` erst bei der Ankunft. **quest.accept:** nur in der Halle des Boards, zu dem der Vertrag gehört. Bei der Ankunft prüft der Schalter erneut, ob er noch aushängt: dann aktiv mit Slip, sonst NOT ACCEPTED mit Korrektur. **guild.register:** das Gebührenangebot gilt in dieser Halle. Ohne GO zu einer Halle bleibt die Ablehnung. Die Zeile von `board.read` lautet auf C: „NO BOARD HERE — … he sees no listing this turn.“ |
+| `quest.accept` | Ein an einem früheren Tag gesehenes Listing wird wie bei einem neuen Lesen des Boards erneut ausgewürfelt (`takenByOthers`). Mit dem ausgelieferten Inhalt (0 % pro Tag) ändert sich nichts. |
+| Planner (`ORDER_RULES`, `parsePlan`) | Optional `"needs": <seq>` für einen Schritt, der erst nach einem früheren Schritt derselben Nachricht Sinn ergibt. Beispiele: erst den Vertrag nehmen, dann zum Einsatzort; erst zahlen, dann übersetzen. Ein Schritt, der für sich steht, bekommt kein `needs`: „I drop the broken cup and walk home“. Der Validator nimmt nur die seq eines früheren Schritts derselben Antwort an. |
+| `resolveCommands` | Ist der Schritt hinter `needs` nicht geschehen (refused, pending, clarify, vom Guard verworfen), wird der abhängige Schritt nicht ausgeführt: „NOT DONE — …: it was to follow step N, which did not happen.“ Als geschehen gilt auch ein Schritt, dessen Ziel schon erreicht war (`done`): schon hier, schon seiner, schon abgegeben, schon Mitglied, hält es schon. „Schon abgegeben“ zählt bei der Annahme nicht. Ebenso eine Registrierung, die eine Zahlung dazwischen abgeschlossen hat. Schritte ohne `needs` bleiben wie bisher unabhängig. |
+| World Applier | Ein Conditional `accept` oder `board` bucht nur die eigene Halle. `listing.gone` für einen Vertrag, den die Engine in dieser Antwort bei der Ankunft annimmt, wird abgelehnt (`engine_booked`), unabhängig von der Reihenfolge der Deltas. Decision Ownership: `arrive` darf `guild.board` über das Gate `conditional` schreiben. |
+| Firewall | Ein `fact` „<Gildenboard> lists/posts/offers …“, der keinen bekannten Vertrag nennt, wird als `guild_listing` abgelehnt, mit Korrektur. Ein `quest.offer`, dessen Geber ein Gildenboard ist („the Novice board“), wird auch außerhalb der Halle abgelehnt. |
+
+**Der Live-Fall nach dem Patch:**
+1. Board lesen: GO (authorized), dann „READS the Novice board, when he reaches the Guild hall — BOARD“ mit den vier echten Listings. Erreicht die Antwort die Halle, folgt `board.shown`, und die Listings sind in dieser Antwort geschützt (`board_first_display`). Erreicht sie sie nicht, hat er nichts gesehen (`cmd.expired`).
+2. Vertrag nehmen: Der Planner findet `quest.cull_the_bog_striders_at_the_reed_flats_eel_weirs` unter KNOWN CONTRACTS. Der Plan lautet: GO, `quest.accept` (id), GO zu den Eel Weirs mit `needs: 2`. Die Antwort bringt ihn in die Halle, dann wird der Vertrag aktiv, dann folgt der Slip, dann die Eel Weirs, in dieser Reihenfolge.
+3. Ist der Vertrag inzwischen weg, wird die Annahme abgelehnt, Schritt 3 ist NOT DONE, und eine Behauptung, er gehöre ihm, wird abgelehnt.
+4. Die zwei erfundenen Listings der Live-Antwort werden abgelehnt (`guild_listing`) und nicht gespeichert.
+
+**Was sich an Prompts ändert:**
+- Das Planner-System bekommt `ORDER_RULES`.
+- Planner- und Extraktor-Katalog bekommen auf C die Zeile KNOWN CONTRACTS.
+- Die Engine-Zeilen auf C sind neu: gestaffelte Zeilen, NO BOARD HERE, NOT DONE.
+- Erzählervertrag und Preset bleiben unverändert. Ein Neuimport ist nicht nötig.
+
+**Kein neuer LLM-Aufruf, kein neues State-Feld.** Neu sind die Conditional-Arten `accept` und `board` in `outcome.conditionals` und `needs` an den aufgezeichneten Befehlen.
+
+**A unverändert:** `tools/c_flag_off_diff.mjs`: 122/122 Schritte und 18/18 Eingaben, gegen `90bd450` und gegen `49dab09`.
+
+### Grenzen von c.5
+
+- **`needs` kommt vom Planner.**
+  - Lässt er es weg, läuft ein abhängiger Schritt wie in c.4.
+  - Setzt er es an einen unabhängigen Schritt, unterbleibt dieser, wenn der frühere scheitert (fail-closed).
+  - Wie zuverlässig das echte Modell es setzt, zeigt erst der Live-Retest.
+- **Annahme bei Ankunft und Weitergehen:** Der abhängige GO wird freigegeben, sobald die Annahme gestaffelt ist. Erreicht die Antwort die Halle nie, verfällt die Annahme. Eine erzählte Weiterreise nimmt die Engine aber nicht zurück. Im Engine-Block steht: „If the reply does not reach the hall, nothing is accepted.“
+- **Dieselbe Ursache, nicht gestaffelt:** `guild.promote` und das Zahlen der Registrierungsgebühr verlangen weiter, dass er in der Halle steht (fail-closed wie bisher).
+- **Abgabe, Nachricht 35/36 desselben Laufs:** Das ist eine andere Ursache. Die Staffelung griff. Das Conditional wurde aber beim Ankunftsschritt geprüft, vor dem `quest.ready` derselben Antwort, und scheiterte deshalb. Das ist nicht Teil von c.5. Vorschlag: Abgabe-Conditionals nach den Deltas der Antwort prüfen.
+- **KNOWN CONTRACTS** führt alle noch aushängenden Listings anderer Boards. Pro Listing gibt es keinen „gesehen“-Eintrag (`board.shown` ist reines Audit). Ein gestaffeltes Lesen, dessen Antwort die Halle nie erreicht, bucht die Listings trotzdem, denn das Board hängt dort ohnehin. Deshalb heißt die Zeile „listed on a Guild board elsewhere“, nicht „read“.
+- **Listings bleiben ausgehängt,** bis andere sie nehmen (Inhalt: 0 % pro Tag) oder `listing.gone` sie entfernt. Das Weltmodell ist unverändert. Die Annahme prüft wie ein erneutes Lesen.
+- **Der Firewall-Guard ist lexikalisch:** Board plus ein Gilden-, Rang-, Quest- oder Contract-Wort plus ein Aushang-Verb.
+  - Ein nicht-gildisches „quest board“ würde auf C abgelehnt; der Inhalt kennt keins.
+  - Anders formulierte Aushänge kommen durch.
+  - Das ist ein Rückfallnetz. Der eigentliche Schutz ist der BOARD-Block der Engine.

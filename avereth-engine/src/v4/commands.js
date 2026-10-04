@@ -133,6 +133,12 @@ function pickQuest(s, ref, statuses, kind = null) {
     return { q: null, clarify: pool.map((q) => q.title) };
 }
 
+/**
+ * The Guild hall an earlier GO of this message leads to. He is not there yet (the reply decides whether he arrives), so
+ * what is done at its desk waits for the arrival: a conditional the world applier books there (src/v4/world.js).
+ */
+const hallAhead = (ctx, c) => ctx.auth.gos.filter((g) => g.hall && g.seq < c.seq).at(-1) || null;
+
 /** Prototype C: giving up a Guild contract (quest.abandon on the planner path). No payout, Quest XP or completion. */
 function abandonGuild(s, content, q, c, ctx, emit) {
     const slip = Object.values(s.objects).find((o) => (o.for_quests || []).includes(q.id) && o.holder?.entity === 'pc' && o.kind === 'document');
@@ -143,7 +149,7 @@ function abandonGuild(s, content, q, c, ctx, emit) {
         abandonContract(s, q, emit, { step: c.seq, desk: true });
         return { status: 'resolved', line: `GIVES UP — ${questLine(q)} at the Guild desk: the clerk strikes it from the ledger${slip ? ' and takes back its contract slip' : ''}. No payout, no Quest XP, not completed.` };
     }
-    const go = ctx.auth.gos.filter((g) => g.hall && g.seq < c.seq).at(-1);
+    const go = hallAhead(ctx, c);
     if (go) {
         ctx.conditionals.push({ seq: c.seq, kind: 'abandon', quest: q.id, condition: 'arrive_guild_hall', hall: go.to });
         return { status: 'conditional', condition: 'arrive_guild_hall', line: `GIVES UP, when he reaches the Guild hall — ${questLine(q)}: the clerk strikes it from the ledger${slip ? ' and takes back its contract slip' : ''}. No payout, no Quest XP, not completed. If the reply does not reach the hall, nothing is given up.` };
@@ -180,7 +186,7 @@ const HANDLERS = {
         }
         const known = typeof c.to === 'string';
         if (known && !s.places[c.to]) return { status: 'refused', reason: 'unknown place', line: 'CANNOT GO — no such place is known.' };
-        if (known && c.to === s.scene.at) return { status: 'refused', reason: 'already here', line: `NOTHING TO DO — he is already at ${placeName(s, c.to)}.` };
+        if (known && c.to === s.scene.at) return { status: 'refused', reason: 'already here', done: true, line: `NOTHING TO DO — he is already at ${placeName(s, c.to)}.` };
         const name = known ? placeName(s, c.to) : String(c.to?.new || 'somewhere');
         const t = content.rules.time;
         const cap = !known ? t.unknown_place_cap_min : sameSettlement(s, c.to, s.scene.at) ? t.default_cap_min : t.travel_cap_min;
@@ -256,7 +262,7 @@ const HANDLERS = {
         }
         const o = objectOf(s, content, c.object);
         if (!o) return { status: 'refused', reason: 'unknown object', line: 'CANNOT TAKE — there is no such thing here.' };
-        if (o.holder?.entity === 'pc') return { status: 'refused', reason: 'he holds it already', line: `NOTHING TO DO — he holds ${o.name} already.` };
+        if (o.holder?.entity === 'pc') return { status: 'refused', reason: 'he holds it already', done: true, line: `NOTHING TO DO — he holds ${o.name} already.` };
         if (o.holder?.entity) return { status: 'refused', reason: 'someone holds it', line: `CANNOT TAKE — ${who(s, o.holder.entity)} holds ${o.name}; ${who(s, o.holder.entity)} would have to give it.` };
         if (o.holder?.loc !== s.scene.at) return { status: 'refused', reason: 'it is not here', line: `CANNOT TAKE — ${o.name} is not here.` };
         const part = c.qty && c.qty < (o.qty ?? 1) ? c.qty : null;
@@ -403,28 +409,37 @@ const HANDLERS = {
         for (const d of s.decisions.filter((x) => x.offer === o.id)) emit({ t: 'decision.closed', d: { id: d.id, status: 'declined' } });
         return { status: 'resolved', line: `DECLINES — ${o.canon ? 'the Guild registration' : `${who(s, o.seller)}'s offer`}.` };
     },
-    'quest.accept'(s, content, c, ctx, emit) {
+    'quest.accept'(s, content, c, ctx, emit, envx) {
         const pick = pickQuest(s, c.quest, ['listed', 'offered']);
         if (pick.clarify) return pick.clarify.length ? { status: 'clarify', reason: 'which contract?', line: `CLARIFY — which one does he take: ${pick.clarify.join(' or ')}?` } : { status: 'refused', reason: 'nothing to accept', line: 'CANNOT ACCEPT — nothing is on offer.' };
-        const q = pick.q;
+        // Prototype C (4.3.0-c.5): a listing he saw on an earlier day may have been taken since, as a new reading of
+        // its board would find (src/v4/guild.js takenByOthers); then it is no longer listed
+        if (envx?.c && envx.dice && pick.q?.kind === 'guild_contract' && pick.q.status === 'listed') takenByOthers(s, content, pick.q.source?.branch, pick.q.rank, envx.dice, emit);
+        const q = pick.q && s.quests[pick.q.id];
         if (!q) return { status: 'refused', reason: 'no such contract', line: `CANNOT ACCEPT — no such contract${pick.unknown ? ` ("${pick.unknown}")` : ''} is on offer.` };
         if (q.kind === 'guild_contract') {
-            if (q.status === 'active' || q.status === 'completed') return { status: 'refused', reason: `already ${q.status}`, line: `NOTHING TO DO — ${questLine(q)} is already ${q.status === 'active' ? 'his' : 'turned in'}.` };
+            if (q.status === 'active' || q.status === 'completed') return { status: 'refused', reason: `already ${q.status}`, done: q.status === 'active', line: `NOTHING TO DO — ${questLine(q)} is already ${q.status === 'active' ? 'his' : 'turned in'}.` };
             if (q.status !== 'listed') return { status: 'refused', reason: `the listing is ${q.status}`, line: `CANNOT ACCEPT — ${questLine(q)} is no longer on the board.` };
             if (!membership(s)) return { status: 'refused', reason: 'not a Guild member', line: `CANNOT ACCEPT — ${questLine(q)}: he is not a Guild member.` };
             const ranks = content.rules.guild.ranks;
             if (ranks.indexOf(q.rank) > ranks.indexOf(membership(s).rank)) return { status: 'refused', reason: 'rank too high', line: `CANNOT ACCEPT — ${questLine(q)} is ${q.rank} work; he is ${membership(s).rank}.` };
             const hall = hallOf(s, s.scene.at);
-            if (!hall || settlementOf(s, hall) !== q.source?.branch) {
+            // Prototype C (4.3.0-c.5): at the Guild hall of that board an earlier GO of this message leads to
+            const ahead = envx?.c && (!hall || settlementOf(s, hall) !== q.source?.branch) ? hallAhead(ctx, c) : null;
+            const there = ahead && settlementOf(s, ahead.to) === q.source?.branch ? hallOf(s, ahead.to) : null;
+            if (!there && (!hall || settlementOf(s, hall) !== q.source?.branch)) {
                 return { status: 'refused', reason: 'not at the Guild hall of that board', line: `CANNOT ACCEPT — ${questLine(q)} is taken at the Guild hall of ${s.places[q.source?.branch]?.name || 'its branch'}.` };
             }
-            acceptContract(s, content, q, emit, { step: c.seq });
+            if (!there) acceptContract(s, content, q, emit, { step: c.seq });
+            else ctx.conditionals.push({ seq: c.seq, kind: 'accept', quest: q.id, condition: 'arrive_guild_hall', hall: there });
             ctx.booked.accepted.push(q.id);
             ctx.booked.grants.push('contract slip');
             // a hunt is proven by trophies of the kills at a Guild hall (live 30.09.2026 14:56: the clerk made a local
             // steward's inspection and signature a condition of the payout)
             const proof = isHunt(q, content) ? ` Proof: ${trophyText(q)} brought to a Guild hall; no local inspection, witness or signature is required.` : '';
-            return { status: 'resolved', line: `ACCEPTS — ${questLine(q)} at the Guild desk; the clerk logs it and hands him its contract slip. Contract memory: ${q.desired_end_state || objectiveText(q)}.${proof} The stored objectives and any verification examples are continuity guidance, not mandatory steps or wording. Payout (${q.payout_cp} cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in.` };
+            const terms = `Contract memory: ${q.desired_end_state || objectiveText(q)}.${proof} The stored objectives and any verification examples are continuity guidance, not mandatory steps or wording. Payout (${q.payout_cp} cp), XP, completed-contract credit and promotion remain engine-owned at explicit turn-in.`;
+            if (there) return { status: 'conditional', condition: 'arrive_guild_hall', line: `ACCEPTS, when he reaches the Guild hall — ${questLine(q)}: the clerk logs it and hands him its contract slip. ${terms} If the reply does not reach the hall, nothing is accepted.` };
+            return { status: 'resolved', line: `ACCEPTS — ${questLine(q)} at the Guild desk; the clerk logs it and hands him its contract slip. ${terms}` };
         }
         // private work: its giver must be here
         if (q.status !== 'offered') return { status: 'refused', reason: `the job is ${q.status}`, line: `NOTHING TO DO — ${questLine(q)} is ${q.status}.` };
@@ -438,12 +453,12 @@ const HANDLERS = {
         if (pick.clarify) {
             // the one that was just turned in, named again ("I turn the quest in"): nothing to do, not a question
             const done = Object.values(s.quests).filter((q) => q.kind === 'guild_contract' && q.status === 'completed' && (q.history || []).some((h) => h.status === 'completed' && Math.floor((h.minute ?? 0) / 1440) + 1 === today(s)));
-            if (!pick.clarify.length && done.length) return { status: 'refused', reason: 'already_completed', line: `NOTHING TO DO — ${questLine(done.at(-1))} is already turned in.` };
+            if (!pick.clarify.length && done.length) return { status: 'refused', reason: 'already_completed', done: true, line: `NOTHING TO DO — ${questLine(done.at(-1))} is already turned in.` };
             return pick.clarify.length ? { status: 'clarify', reason: 'which contract?', line: `CLARIFY — which contract does he turn in: ${pick.clarify.join(' or ')}?` } : { status: 'refused', reason: 'no active contract', line: 'CANNOT TURN IN — he has no active Guild contract.' };
         }
         const q = pick.q;
         if (!q) return { status: 'refused', reason: 'unknown contract', line: `CANNOT TURN IN — no such contract${pick.unknown ? ` ("${pick.unknown}")` : ''}.` };
-        if (q.status === 'completed') return { status: 'refused', reason: 'already_completed', line: `NOTHING TO DO — ${questLine(q)} is already turned in.` };
+        if (q.status === 'completed') return { status: 'refused', reason: 'already_completed', done: true, line: `NOTHING TO DO — ${questLine(q)} is already turned in.` };
         if (q.kind !== 'guild_contract') return { status: 'refused', reason: 'private work', line: `NOTHING TO TURN IN — ${questLine(q)} is private work; its giver settles it.` };
         if (q.status !== 'active') return { status: 'refused', reason: `the contract is ${q.status}`, line: `CANNOT TURN IN — ${questLine(q)} is ${q.status}.` };
         if (hallOf(s, s.scene.at)) {
@@ -452,7 +467,7 @@ const HANDLERS = {
             ctx.booked.turnIns.push(q.id);
             return { status: 'resolved', line: `TURNS IN — ${questLine(q)}: the world has established the contract outcome; the Guild accepts the turn-in and pays ${q.payout_cp} cp.` };
         }
-        const go = ctx.auth.gos.filter((g) => g.hall && g.seq < c.seq).at(-1);
+        const go = hallAhead(ctx, c);
         if (go) {
             // the same check the desk makes on arrival (guild.js contractReady)
             const ready = contractReady(s, content, q);
@@ -476,12 +491,14 @@ const HANDLERS = {
         emit({ t: 'quest.status', d: { id: q.id, from: 'active', to: 'abandoned', at: s.scene.at, step: c.seq } });
         return { status: 'resolved', line: `GIVES UP — ${questLine(q)}.` };
     },
-    'guild.register'(s, content, c, ctx, emit) {
-        if (!hallOf(s, s.scene.at)) return { status: 'refused', reason: 'not at a Guild hall', line: 'CANNOT REGISTER — only at a Guild hall.' };
+    'guild.register'(s, content, c, ctx, emit, envx) {
+        // Prototype C (4.3.0-c.5): at the Guild hall an earlier GO of this message leads to; the clerk names the fee there
+        const ahead = envx?.c && !hallOf(s, s.scene.at) ? hallAhead(ctx, c) : null;
+        if (!hallOf(s, s.scene.at) && !ahead) return { status: 'refused', reason: 'not at a Guild hall', line: 'CANNOT REGISTER — only at a Guild hall.' };
         if (membership(s) && ctx.booked.registration) return { status: 'resolved', line: 'REGISTERS — done: the fee he paid above registered him.' };
-        if (membership(s)) return { status: 'refused', reason: 'already a member', line: 'NOTHING TO DO — he is already a member.' };
-        const fee = openRegistration(s, content, emit);
-        return { status: 'pending', reason: 'fee', line: `REGISTERS — pending: the Guild's registration fee is ${fee % 10 === 0 ? `${fee / 10} silver (${fee} cp)` : `${fee} cp`}, one-time; ${rankCanon(content)}. Let the clerk name the fee and explain; stop there: he has not agreed to pay.` };
+        if (membership(s)) return { status: 'refused', reason: 'already a member', done: true, line: 'NOTHING TO DO — he is already a member.' };
+        const fee = openRegistration(s, content, emit, ahead ? hallOf(s, ahead.to) : s.scene.at);
+        return { status: 'pending', reason: 'fee', line: `REGISTERS${ahead ? ', when he reaches the Guild hall' : ''} — pending: the Guild's registration fee is ${fee % 10 === 0 ? `${fee / 10} silver (${fee} cp)` : `${fee} cp`}, one-time; ${rankCanon(content)}. Let the clerk name the fee and explain; stop there: he has not agreed to pay.` };
     },
     'guild.promote'(s, content, c, ctx, emit) {
         if (!hallOf(s, s.scene.at)) return { status: 'refused', reason: 'not at a Guild hall', line: 'CANNOT ASK FOR PROMOTION — only at a Guild hall.' };
@@ -492,8 +509,11 @@ const HANDLERS = {
         return { status: 'resolved', line: `PROMOTION — the desk confirms: ${p.text}; he is examined and rises to ${p.next}.` };
     },
     'board.read'(s, content, c, ctx, emit, envx) {
-        const hall = hallOf(s, s.scene.at);
-        if (!hall) return { status: 'refused', reason: 'no Guild board here', line: 'CANNOT READ — the Guild board is in the Guild hall.' };
+        // Prototype C (4.3.0-c.5): the board of the Guild hall an earlier GO of this message leads to (host.js generated
+        // it for that hall already); he sees it when he gets there, booked on his arrival (src/v4/world.js)
+        const ahead = envx.c && !hallOf(s, s.scene.at) ? hallAhead(ctx, c) : null;
+        const hall = hallOf(s, s.scene.at) || (ahead && hallOf(s, ahead.to));
+        if (!hall) return { status: 'refused', reason: 'no Guild board here', line: envx.c ? 'NO BOARD HERE — the Guild\'s contract board hangs inside a Guild hall and he is not in one; he sees no listing this turn.' : 'CANNOT READ — the Guild board is in the Guild hall.' };
         const branch = settlementOf(s, hall);
         const rank = c.rank || membership(s)?.rank || 'Novice';
         if (envx.dice) takenByOthers(s, content, branch, rank, envx.dice, emit);
@@ -502,14 +522,18 @@ const HANDLERS = {
         if (gen?.listings?.length) bookBoard(s, content, gen, gen.listings, emit);
         else if (gen?.failed) emit({ t: 'board.failed', d: { branch, rank, error: gen.failed } }); // on record for #audit
         const listed = listingsOf(s, branch, rank);
+        const when = ahead ? ', when he reaches the Guild hall' : '';
         if (!listed.length) {
             ctx.boardShown = { branch, rank, failed: true };
-            return { status: 'resolved', reason: 'generator_failed', line: 'READS the board — BOARD: no new official contracts can be shown right now; invent none.' };
+            return { status: 'resolved', reason: 'generator_failed', line: `READS the board${when} — BOARD: no new official contracts can be shown right now; invent none.` };
         }
-        emit({ t: 'board.shown', d: { branch, rank, listings: listed.map((q) => q.id) } });
+        if (!ahead) emit({ t: 'board.shown', d: { branch, rank, listings: listed.map((q) => q.id) } });
+        else ctx.conditionals.push({ seq: c.seq, kind: 'board', condition: 'arrive_guild_hall', hall, branch, rank, listings: listed.map((q) => q.id) });
         ctx.boardShown = { branch, rank, listings: listed.map((q) => q.id) };
         const rows = listed.map((q) => `**${q.title}** — client: ${q.client || 'unspecified'} · reward: ${q.payout_cp} cp · ${q.task || q.desired_end_state || objectiveText(q)}`).join('\n');
-        return { status: 'resolved', line: `READS the ${rank} board — BOARD (these listings now become canonical because Alaric actually reads them; show exactly these, invent no other official contract; present the notices in the existing title-first readable format; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\n${rows}\nStored objectives and any verification examples are continuity memory only.` };
+        const line = `READS the ${rank} board${when} — BOARD (these listings now become canonical because Alaric actually reads them; show exactly these, invent no other official contract; present the notices in the existing title-first readable format; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\n${rows}\nStored objectives and any verification examples are continuity memory only.`;
+        if (ahead) return { status: 'conditional', condition: 'arrive_guild_hall', line: `${line}\nIf the reply does not reach the hall, he sees none of it.` };
+        return { status: 'resolved', line };
     },
     equip(s, content, c, ctx, emit) {
         const eq = s.entities.pc.sheet.equipment || {};
@@ -560,8 +584,9 @@ export const COMMAND_TYPES = Object.keys(HANDLERS);
 /**
  * Resolve the commands of one message in order. emit applies each event to s at once, so every command is checked
  * against the state after the ones before it ("pay the fee, then read the board").
- * @param {{msg?: number, dice?: object, board?: object}} envx msg: the player message's index; dice: the engine's
- *   dice (the board's taken-by-others draw); board: the Board generator's validated listings for this turn
+ * @param {{msg?: number, dice?: object, board?: object, c?: boolean, dropped?: object[]}} envx msg: the player message's
+ *   index; dice: the engine's dice (the board's taken-by-others draw); board: the Board generator's validated listings
+ *   for this turn; c: the planner path (Prototype C); dropped: the commands its agency guard dropped
  */
 export function resolveCommands(s, content, commands, emit, envx = {}) {
     const ctx = newTurnContext(content);
@@ -571,9 +596,19 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
     const ordered = [...commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0));
     ctx.env = { msg: envx.msg ?? s.turn, commands: ordered };
     const lines = new Map();
+    const happened = new Set();
     for (const c of ordered) {
         const h = HANDLERS[c.type];
-        const r = h ? h(s, content, c, ctx, emit, envx) : { status: 'refused', reason: `unknown command ${c.type}`, line: null };
+        // Prototype C (4.3.0-c.5): a step the planner marked as building on an earlier one of the message (needs) is not
+        // taken when that one did not happen (refused, an open decision, a question, dropped by the agency guard); one
+        // that found its goal true already (done: "already his", "already here") did, and so did a registration that
+        // made him a member (the fee paid in a step between; the guard drops such a registration as redundant)
+        const need = envx.c && Number.isInteger(c.needs) && !happened.has(c.needs) ? c.needs : null;
+        const unmet = need !== null && !(membership(s) && [...ctx.resolutions, ...(envx.dropped || []).map((x) => x.command || {})]
+            .some((x) => x.seq === need && x.type === 'guild.register'));
+        const r = unmet ? { status: 'refused', reason: `needs step ${c.needs}`, line: `NOT DONE — ${c.quote ? `"${String(c.quote).slice(0, 80)}"` : c.type}: it was to follow step ${c.needs}, which did not happen.` }
+            : h ? h(s, content, c, ctx, emit, envx) : { status: 'refused', reason: `unknown command ${c.type}`, line: null };
+        if (r.done || !['refused', 'pending', 'clarify'].includes(r.status)) happened.add(c.seq);
         ctx.resolutions.push({ seq: c.seq, type: c.type, status: r.status, ...(r.reason ? { reason: r.reason } : {}), ...(r.cap ? { cap: r.cap } : {}), ...(r.condition ? { condition: r.condition } : {}), quote: c.quote ?? null });
         if (r.line) lines.set(c.seq, r.line);
         if (r.extra) ctx.extra.push(...r.extra);

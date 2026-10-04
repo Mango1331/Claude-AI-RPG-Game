@@ -56,7 +56,7 @@ export function playerTurnV4(state, content, text, { msg = null, commands = [], 
         ...(interp.error ? { error: String(interp.error).slice(0, 200) } : {}),
         commands: commands.map((c) => ({ ...c })), dropped: dropped.map((x) => ({ type: x.command?.type, rule: x.rule, quote: x.command?.quote ?? null })),
     } });
-    const ctx = resolveCommands(s, content, commands, emit, { msg, dice, board, c });
+    const ctx = resolveCommands(s, content, commands, emit, { msg, dice, board, c, dropped });
     const clarify = ctx.resolutions.find((r) => r.status === 'clarify');
     if (clarify) {
         // an ambiguous reference: the System asks, nothing is booked, no story turn (plan §4.4)

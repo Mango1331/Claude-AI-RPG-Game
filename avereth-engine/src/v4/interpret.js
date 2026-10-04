@@ -105,6 +105,7 @@ export function catalogText(catalog) {
     if (catalog.journey_ready) L.push(`JOURNEY READY: ${catalog.journey_ready}`);
     if ((catalog.completed || []).length) L.push(`COMPLETED TODAY: ${catalog.completed.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
     if ((catalog.board || []).length) L.push(`BOARD (${catalog.board_label || 'visible here'}): ${catalog.board.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
+    if ((catalog.known || []).length) L.push(`KNOWN CONTRACTS (listed on a Guild board elsewhere; taken only at that board's Guild hall, if still listed): ${catalog.known.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
     if ((catalog.offers || []).length) L.push(`OFFERS: ${catalog.offers.map((o) => `${o.id} (${o.seller}: ${o.lines.map((l) => `${l.id} ${l.what} ${l.qty > 1 ? `${l.qty} for ${l.price_cp} cp` : `${l.price_cp} cp`}`).join(', ')})`).join(' · ')}`);
     if ((catalog.objects || []).length) L.push(`OBJECTS: ${catalog.objects.map((o) => `${o.id} (${o.name}${o.qty ? `, ${o.qty}${o.unit ? ` ${o.unit}` : ''}` : ''}, ${holderText(o)})`).join(' · ')}`);
     if ((catalog.open || []).length) L.push(`OPEN DECISIONS: ${catalog.open.join(' · ')}`);
@@ -122,7 +123,7 @@ export function catalogIds(catalog) {
         place: [...new Set([catalog.here?.id, ...ids(catalog.places)].filter(Boolean))],
         person: ids(catalog.present),
         object: ids(catalog.objects),
-        quest: [...new Set([...ids(catalog.quests), ...ids(catalog.board), ...ids(catalog.completed)])],
+        quest: [...new Set([...ids(catalog.quests), ...ids(catalog.board), ...ids(catalog.completed), ...ids(catalog.known)])],
         offer: ids(catalog.offers),
     };
 }

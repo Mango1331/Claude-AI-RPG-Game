@@ -182,8 +182,9 @@ export const DELTA_WRITES = {
     // an arrival moves him and the people with him, may create the place, starts a journey, carries or closes open
     // decisions, and fires the turn-in his own command made conditional on arriving at a Guild hall (with the engine's
     // own record of it: the fact "completed_contract" and what its witnesses remember; the trophies it consumes take
-    // their quest ties with them)
-    arrive: { writes: ['pc.location', 'scene', 'entities', 'places', 'quests', 'trade', 'knowledge', 'facts', 'memory', 'objects'], gates: { 'quest.status': 'conditional', 'pc.coin': 'conditional', 'pc.progress': 'conditional', 'pc.inventory': 'conditional', 'guild.standing': 'conditional' } },
+    // their quest ties with them); Prototype C (4.3.0-c.5): also the contract he takes and the board he reads at that
+    // hall, which take a listing off its board and show the board
+    arrive: { writes: ['pc.location', 'scene', 'entities', 'places', 'quests', 'trade', 'knowledge', 'facts', 'memory', 'objects'], gates: { 'quest.status': 'conditional', 'pc.coin': 'conditional', 'pc.progress': 'conditional', 'pc.inventory': 'conditional', 'guild.standing': 'conditional', 'guild.board': 'conditional' } },
     'person.new': { writes: ['entities', 'scene', 'facts', 'places', 'knowledge'] },
     'person.named': { writes: ['entities'] },
     'creature.new': { writes: ['entities', 'scene', 'facts'], gates: { combat: 'envelope.fight' } },

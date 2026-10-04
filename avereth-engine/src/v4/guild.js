@@ -53,12 +53,12 @@ export function rankCanon(content) {
 }
 
 /** The canon fee as an open offer and an open decision (plan §6.4: pending until Alaric agrees to pay). */
-export function openRegistration(s, content, emit) {
+export function openRegistration(s, content, emit, at = s.scene.at) {
     const fee = feeOf(content);
     if (s.offers[REGISTRATION_OFFER]?.status !== 'open') {
-        emit({ t: 'offer.created', d: { offer: { id: REGISTRATION_OFFER, seller: 'guild', at: s.scene.at, status: 'open', canon: true, turn: s.turn, lines: [{ id: 'l1', what: 'Guild registration fee', kind: 'service', service: 'guild_registration', qty: 1, price_cp: fee }] } } });
+        emit({ t: 'offer.created', d: { offer: { id: REGISTRATION_OFFER, seller: 'guild', at, status: 'open', canon: true, turn: s.turn, lines: [{ id: 'l1', what: 'Guild registration fee', kind: 'service', service: 'guild_registration', qty: 1, price_cp: fee }] } } });
     }
-    if (!s.decisions.some((d) => d.id === 'dec.registration')) emit({ t: 'decision.opened', d: { decision: { id: 'dec.registration', kind: 'registration', what: 'Guild registration', offer: REGISTRATION_OFFER, at: s.scene.at, turn: s.turn, price_cp: fee } } });
+    if (!s.decisions.some((d) => d.id === 'dec.registration')) emit({ t: 'decision.opened', d: { decision: { id: 'dec.registration', kind: 'registration', what: 'Guild registration', offer: REGISTRATION_OFFER, at, turn: s.turn, price_cp: fee } } });
     return fee;
 }
 

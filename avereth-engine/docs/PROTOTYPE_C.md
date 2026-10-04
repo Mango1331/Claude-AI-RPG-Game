@@ -1,4 +1,4 @@
-# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.6)
+# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.6.1)
 
 Stand: 02.10.2026.
 
@@ -251,7 +251,7 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.1`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
    - Vertrag v4 (Revision 4.2.0, unverändert), Preset „Avereth Narrator V4“, Lorebook v0.13.
@@ -551,3 +551,29 @@ Die Tests stehen in `tests/v4/planner_c6.test.js`. Alles gilt nur auf dem Planne
   - Ein wirklich neuer Schreiber ohne Namen kann bei genau einem bekannten Schreiber derselben Rolle mit ihm verschmelzen. Ein Name verhindert das.
 - **Kulissen-Regel:** Sie hängt am Bezug innerhalb derselben Antwort. Spricht Alaric die Wache erst im nächsten Zug an, entsteht sie dann neu.
 - **Leichen- und Identitäts-Dubletten** anderer Art sind nicht Teil von c.6.
+
+### Nachtrag 4.3.0-c.6.1: zwei Reviewpunkte
+
+Beide Punkte sind am Code bestätigt. Geändert ist nur C; A ist unverändert. Die Tests stehen in `tests/v4/planner_c6.test.js` (R1–R3).
+
+1. **Ein Board-Tag wird nur vollständig gebucht.**
+   - *Befund:* `generateBoard` nahm jede positive Zahl gültiger Listings an; `parseBoard` schneidet nur nach oben ab. `board.read` rotierte damit. Beispiel: 5 verlangt, 2 hart abgelehnt. Die 5 alten Aushänge liefen ab, 3 neue wurden gebucht, ohne Repair.
+   - *Jetzt:* Auf C gilt eine Antwort nur mit genau `need.missing` gültigen Listings. Sonst folgt der bestehende zweite Versuch mit Begründung: „3 valid listings of the 5 asked for; refused: "…" (…); write all 5“.
+   - Scheitert auch der, ist die Generierung gescheitert (`board.failed`): nichts gebucht, nichts abgelaufen. Das Board bleibt beim alten Tag, und das nächste Lesen versucht es neu. Das gilt auch für das allererste Board.
+   - A bucht weiter, was gültig ist.
+2. **Der Generator verlangt bei Jagden keine Körperteile mehr.**
+   - *Befund:* `boardRequest` verlangte noch „a species-appropriate body part of each kill … as its one proof entry“. Das widerspricht c.6: Der Vertragszettel zeigt READY, Trophäen sind Beute.
+   - *Jetzt:* Auf C ersetzt eine eigene Regel diese Zeile:
+     - Eine reine Jagd, Keulung oder Räumung ist durch ihr Ergebnis in der Welt erfüllt. Der magische Vertragszettel zeigt sie READY, `proof` ist `[]`.
+     - Körperteile sind Beute.
+     - Gemischte Arbeit behält einen Beweis nur für ihre anderen Teile.
+     - Ernte-, Bergungs- und Lieferarbeit behält ihre Dinge als Objectives (GATHER, GET, DELIVER).
+   - Im Strukturbeispiel mit dem Viehhalter entfällt auf C „with proof appropriate to“.
+   - Sonst ist der Prompt gleich; ein Test prüft, dass sich genau diese zwei Zeilen unterscheiden. Der A-Prompt ist byte-gleich.
+
+Es gibt keinen neuen LLM-Aufruf (der Repair ist der bestehende zweite Versuch), kein neues State-Feld und keine Migration.
+
+**Grenzen:**
+- Der Prompt steuert, die Engine erzwingt `proof: []` nicht. Schreibt das Modell trotzdem einen Trophäen-Beweis an eine Jagd, verlangt und nimmt die Engine ihn auf C nicht (c.6).
+- Schon gebuchte Listings behalten ihre Beweise.
+- Scheitert auch der Repair, zeigt der Tag keine Aushänge. Die gestrigen bleiben gelistet, sind aber nicht annehmbar. So verhält sich c.6 schon bei einem Generatorfehler.

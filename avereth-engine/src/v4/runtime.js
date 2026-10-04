@@ -183,8 +183,8 @@ export function boardFor(state, content, commands, { c = false } = {}) {
     if (board && board.day >= today(state)) return null;
     const size = content.rules.guild.board?.size ?? 5;
     // Prototype C (4.3.0-c.6): a new day's board is a new board: five notices, none of yesterday's (src/v4/commands.js
-    // board.read retires those)
-    if (c) return { branch, rank, missing: size, day: today(state), have: [] };
+    // board.read retires those), booked whole or not at all (generateBoard)
+    if (c) return { branch, rank, missing: size, day: today(state), have: [], c: true };
     const have = listingsOf(state, branch, rank);
     const missing = size - have.length;
     return missing > 0 ? { branch, rank, missing, day: today(state), have: have.map((q) => q.title) } : null;
@@ -200,8 +200,12 @@ export async function generateBoard(llm, state, content, need) {
         ms += a.ms;
         if (!a.ok) { last = { errors: [a.error] }; continue; }
         const p = parseBoard(a.content, content, need);
-        if (p.listings && p.listings.length) return { ...need, listings: p.listings, refused: p.refused, ms, version: BOARD_VERSION };
-        last = { answer: a.content, errors: p.errors.length ? p.errors : ['no valid listing'] };
+        // Prototype C (4.3.0-c.6.1): fewer valid listings than the day's board asks for are no board (repaired once, else
+        // failed: yesterday's stays up), never a smaller day
+        const n = p.listings?.length;
+        const short = need.c && p.listings && n < need.missing ? [`${n} valid listing${n === 1 ? '' : 's'} of the ${need.missing} asked for${p.refused.length ? `; refused: ${p.refused.map((r) => `"${r.title}" (${r.why})`).join(', ')}` : ''}; write all ${need.missing}`] : null;
+        if (p.listings && p.listings.length && !short) return { ...need, listings: p.listings, refused: p.refused, ms, version: BOARD_VERSION };
+        last = { answer: a.content, errors: short || (p.errors.length ? p.errors : ['no valid listing']) };
     }
     return { ...need, listings: [], failed: (last?.errors || ['failed']).join('; ').slice(0, 200), ms, version: BOARD_VERSION };
 }

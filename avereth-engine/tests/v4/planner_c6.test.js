@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadContent, ROOT } from '../helpers.js';
-import { Chat4 } from './harness.js';
+import { Chat4, generatorListing } from './harness.js';
 import { prepareGenerationAsync } from '../../src/v4/runtime.js';
 import { rec, turnBlock } from '../../src/host.js';
 import { buildCatalog, journeyReady } from '../../src/v4/catalog.js';
@@ -14,7 +14,7 @@ import { catalogText } from '../../src/v4/interpret.js';
 import { resolveCommands } from '../../src/v4/commands.js';
 import { applyWorld } from '../../src/v4/world.js';
 import { applyEvent } from '../../src/state.js';
-import { SLIP_READY, SLIP_DONE, contractReady } from '../../src/v4/guild.js';
+import { SLIP_READY, SLIP_DONE, contractReady, boardRequest } from '../../src/v4/guild.js';
 
 const content = await loadContent();
 const fx = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests/v4/live_1004b.json'), 'utf8'));
@@ -361,4 +361,99 @@ test('13. scene colour is not stored: the gate guard nobody spoke to is no entit
     await say(h, fx.arrival.player, fx.arrival.plan);
     await h.reply(fx.arrival.reply, { ...fx.arrival.extract, deltas: [...fx.arrival.extract.deltas, { seq: 30, type: 'fact', s: 'person.alderwatch.gate_guard', p: 'asked', o: 'Alaric his business in town' }] });
     assert.ok(Object.keys(h.state().entities).some((id) => /gate_guard/.test(id)));
+});
+
+// ------------------------------------------------------------------------------------------------ review of c.6
+/** The Board generator's next answers, one set of listings each; after them the fixture's again. */
+function boardAnswers(g, ...answers) {
+    const ask = g.llm;
+    g.llm = async (req) => {
+        if (req.purpose !== 'board' || !answers.length) return ask(req);
+        g.calls.push({ purpose: req.purpose, messages: req.messages });
+        return JSON.stringify({ listings: answers.shift().map(generatorListing) });
+    };
+}
+const readOnly = (g) => say(g, '*i read the novice board*', [plan({ type: 'board.read', rank: null, quote: 'i read the novice board' })]);
+// the next day's five, two of them refused by the generator's hard checks: three valid of the five asked for
+const SHORT = [...DAY2.slice(0, 3), { ...DAY2[3], rank: 'Proven' }, { ...DAY2[4], level: 40 }];
+
+test('R1. a new day is booked whole: three valid of the five asked for, after the repair too, is no day of three; yesterday\'s board stays up', async () => {
+    const g = await member();
+    await read(g);
+    const old = listedOn(g.state());
+    nextDay(g);
+    boardAnswers(g, SHORT, SHORT);
+    await readOnly(g);
+    const calls = g.calls.filter((c) => c.purpose === 'board');
+    assert.equal(calls.length, 3, 'day 1, then the answer and its one repair');
+    assert.equal(calls[2].messages.at(-1).content, 'That answer was not valid: 3 valid listings of the 5 asked for; refused: "Escort the Salt Wagon" (rank Proven is not Novice), "Drive the Foxes from the Henyard" (level 40 outside 1–14); write all 5. Answer again with only the corrected JSON object.');
+    const r = last(g);
+    assert.ok(!r.events.some((e) => e.t === 'quest.created' || e.t === 'board.refreshed'), 'nothing booked');
+    assert.ok(!r.events.some((e) => e.t === 'quest.status' && e.d.to === 'expired'), 'yesterday\'s board not retired');
+    assert.match(r.events.find((e) => e.t === 'board.failed').d.error, /^3 valid listings of the 5 asked for; refused: "Escort the Salt Wagon"/);
+    assert.match(outcomeOf(g).actions[0], /^1\. READS the board — BOARD: no new official contracts can be shown right now; invent none\.$/);
+    let s = g.state();
+    assert.deepEqual(listedOn(s), old, 'yesterday\'s five still listed');
+    assert.equal(s.guild.boards['loc.redmarch|Novice'].day, 1, 'the board is still day 1\'s');
+    await g.reply('The clerk was still pinning up the day\'s notices.');
+    // the next reading that day tries again: a whole board, and only now yesterday's comes down
+    g.listings = DAY2;
+    await read(g);
+    s = g.state();
+    assert.equal(boardCalls(g), 4);
+    for (const id of old) assert.equal(s.quests[id].status, 'expired', id);
+    assert.deepEqual(listedOn(s).map((id) => s.quests[id].title), DAY2.map((l) => l.title));
+});
+
+test('R2. the repair that brings all five books the new day; the first board of all is booked whole too', async () => {
+    const g = await member();
+    await read(g);
+    const old = listedOn(g.state());
+    nextDay(g);
+    boardAnswers(g, SHORT, DAY2);
+    await read(g);
+    const s = g.state();
+    assert.equal(boardCalls(g), 3);
+    for (const id of old) assert.equal(s.quests[id].status, 'expired', id);
+    assert.deepEqual(listedOn(s).map((id) => s.quests[id].title), DAY2.map((l) => l.title));
+    // the first reading of all: three valid of five, twice, books nothing
+    const f = await member();
+    boardAnswers(f, SHORT, SHORT);
+    await readOnly(f);
+    assert.equal(boardCalls(f), 2);
+    assert.ok(!Object.values(f.state().quests).some((q) => q.kind === 'guild_contract'));
+    assert.match(outcomeOf(f).actions[0], /^1\. READS the board — BOARD: no new official contracts can be shown right now; invent none\.$/);
+});
+
+test('R3. the C Board generator asks no trophies of a hunt (proof [], the slip shows the outcome); A keeps its prompt and its partial board', async () => {
+    const g = await member();
+    await read(g);
+    const sys = g.calls.find((c) => c.purpose === 'board').messages[0].content;
+    assert.ok(!/body part of each kill|trophies for the kills|with proof appropriate to/.test(sys), 'no trophy rule');
+    assert.match(sys, /Its proof is \[\]: no body parts or trophies, and no local inspection, witness, sign-off or signature\./);
+    assert.match(sys, /the Guild's magical contract slip shows it READY/);
+    assert.match(sys, /Harvest, retrieval and delivery work keeps the physical things it is about as its objectives \(GATHER/);
+    // C's request differs from A's in these two rules only
+    const need = { branch: 'loc.redmarch', rank: 'Novice', missing: 5, day: 1, have: [] };
+    const a = boardRequest(g.state(), content, need);
+    const c = boardRequest(g.state(), content, { ...need, c: true });
+    assert.equal(c.user, a.user);
+    const [la, lc] = [a.system.split('\n'), c.system.split('\n')];
+    assert.equal(lc.length, la.length);
+    const changed = la.filter((l, i) => l !== lc[i]);
+    assert.equal(changed.length, 2);
+    assert.match(changed[0], /^- A hunt or cull contract \(.*\) is proven by a species-appropriate body part of each kill \(ears, teeth, claws, leg joints …\) as its one proof entry\./);
+    assert.match(changed[1], /^- Structural example only: a livestock owner .* stop the losses, with proof appropriate to whether it is killed or driven away\./);
+    assert.equal(c.system.split('\n').filter((l, i) => l !== la[i]).length, 2);
+    // A, planner off: five asked for and three valid books the three, without a repair (unchanged)
+    const x = planner(new Chat4(content, { listings: DAY1 }));
+    boardAnswers(x, SHORT);
+    await x.player('Warrior');
+    await x.player(content.classes.get('warrior').skill_pool.slice(0, 2).map((id) => content.skills.get(id).name).join(' and '));
+    await say(x, '*i walk to the guild*', [], { planner: false, commands: [{ seq: 1, type: 'go', to: HALL, quote: 'i walk to the guild' }] });
+    await x.reply('He reached the hall.', arrives([1, HALL]));
+    await say(x, '*i read the board*', [], { planner: false, commands: [{ seq: 1, type: 'board.read', rank: null, quote: 'i read the board' }] });
+    assert.equal(boardCalls(x), 1);
+    assert.equal(listedOn(x.state()).length, 3);
+    assert.match(x.calls.find((q) => q.purpose === 'board').messages[0].content, /is proven by a species-appropriate body part of each kill/);
 });

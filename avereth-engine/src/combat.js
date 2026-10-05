@@ -373,32 +373,52 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
     const target = enc.combatants[targetId];
     const record = { round: enc.round, actor: actorId, kind: 'attack', target: targetId, opening: !!extra.opening };
     if (!target || !alive(target)) return { illegal: `target ${targetId} is not an active combatant` };
-    if (target.current.cover === 'full') return { illegal: `${target.name} is behind full cover (no line of sight)` };
+    // For an area attack targetId is only the routing/nominal target. Its personal full cover must not veto an AoE
+    // that may actually strike different ENGAGED foes.
+    const charSkill = actor.model === 'character' ? skillOf(content, skillId) : null;
+    const charArea = !!charSkill?.effects?.some((e) => e.kind === 'area');
+    if (target.current.cover === 'full' && !charArea) return { illegal: `${target.name} is behind full cover (no line of sight)` };
     // ---- character attack (Skill)
     if (actor.model === 'character') {
-        const skill = skillOf(content, skillId);
+        const skill = charSkill;
         if (!actor.fixed.actions[skill.id]) return { illegal: `${actor.name} does not know ${skill.name}` };
         if (!skill.attack) return { illegal: `${skill.name} is not an attack` };
         const prof = PROF(content, actor.fixed.actions[skill.id].prof);
         // range + movement (only the declared/written movement; Core #12, #24 PC ACTION SCOPE)
+        const isArea = charArea;
         const bandBefore = distance(enc, actorId, targetId);
         let band = bandBefore;
         let moved = 0;
+        // A movement command has its own focus. Old/V3 callers did not carry it, so they keep the attack target as
+        // their focus; Prototype C explicitly carries null for "move closer to the group / into the middle".
+        const moveTarget = extra.moveTarget === undefined ? targetId : extra.moveTarget;
+        const groupMove = actorId === 'pc' && isArea && extra.move === 'closer' && moveTarget === null;
         // declared "close in" = the normal one-band move; EXTRA-BAND skills (Charge/Lunge/Shield Charge) add their
         // written extra band and may combine with the normal move (Content: "may combine with the normal one-band
         // Turn movement"), so declaring the skill authorises both.
         const allowed = (extra.move === 'closer' || skill.range.extra_band || extra.autoNormalMove ? 1 : 0) + (skill.range.extra_band ? 1 : 0);
-        while (!rangeReaches(skill.range.band, band) && moved < allowed && bandIndex(band) > 0) {
-            band = bandName(bandIndex(band) - 1);
-            moved += 1;
+        if (!groupMove) {
+            while (!rangeReaches(skill.range.band, band) && moved < allowed && bandIndex(band) > 0) {
+                band = bandName(bandIndex(band) - 1);
+                moved += 1;
+            }
+            if (skill.range.extra_band && band !== 'ENGAGED') return { illegal: `${skill.name} must end ENGAGED; ${target.name} is too far (${bandBefore})` };
+            if (!rangeReaches(skill.range.band, band)) {
+                return { illegal: `${target.name} is at ${bandBefore}; ${skill.name} reaches ${skill.range.band} at most and no declared movement brings it into range` };
+            }
         }
-        if (skill.range.extra_band && band !== 'ENGAGED') return { illegal: `${skill.name} must end ENGAGED; ${target.name} is too far (${bandBefore})` };
-        if (!rangeReaches(skill.range.band, band)) {
-            return { illegal: `${target.name} is at ${bandBefore}; ${skill.name} reaches ${skill.range.band} at most and no declared movement brings it into range` };
-        }
-        const isArea = skill.effects.some((e) => e.kind === 'area');
-        const areaTargets = isArea ? Object.values(enc.combatants).filter((c) => isOpponent(actor, c) && alive(c) && !c.current.surrendered && distance(enc, actorId, c.id) === 'ENGAGED').map((c) => c.id) : [];
-        if (isArea && !areaTargets.length) return { illegal: `${skill.name} needs a valid target ENGAGED with ${actor.name}` };
+        // Area legality is evaluated at the position the declared one-band move would actually create. This is only a
+        // preview here: movement is committed below together with the otherwise legal action.
+        const plannedBand = (c) => {
+            const before = distance(enc, actorId, c.id);
+            if (actorId !== 'pc' || extra.move !== 'closer') return before;
+            if (moveTarget !== null && c.id !== moveTarget) return before;
+            return bandName(bandIndex(before) - 1);
+        };
+        const plannedAreaTargets = isArea ? Object.values(enc.combatants)
+            .filter((c) => isOpponent(actor, c) && alive(c) && !c.current.surrendered && plannedBand(c) === 'ENGAGED')
+            .map((c) => c.id) : [];
+        if (isArea && !plannedAreaTargets.length) return { illegal: `${skill.name} needs a valid target ENGAGED with ${actor.name} after the declared movement` };
         // resources (after legality of target/range, before RNG): Cost + Ammo committed together (Core #21)
         const costMult = prof.cost;
         const cost = skill.cost ? roundHalfUp(skill.cost.amount * costMult) : 0;
@@ -412,7 +432,13 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
             ammoUsed = skill.ammo.qty;
         }
         // commit movement + costs
-        if (moved) {
+        if (groupMove) {
+            const change = repositionPc(enc, 'pc', -1, null);
+            record.move = { bands: 1, dir: 'closer', change };
+        } else if (isArea && actorId === 'pc' && extra.move === 'closer' && moveTarget && enc.combatants[moveTarget] && plannedBand(enc.combatants[moveTarget]) !== distance(enc, actorId, moveTarget)) {
+            const change = repositionPc(enc, 'pc', -1, moveTarget);
+            record.move = { bands: 1, dir: 'closer', change };
+        } else if (moved) {
             record.move = { bands: moved, from: bandBefore, to: band };
             setDistance(enc, actorId, targetId, band);
             if (actorId !== 'pc') actor.current.cover = 'none'; // leaving a position leaves its cover
@@ -443,7 +469,10 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         const opts = { raw, profPower: prof.power, buffPowerPct, ambush: !!extra.opening };
         record.strikes = [];
         if (isArea) {
-            // area: every target in the area is hit, each with its own pipeline (DEF, variance, cover, Barrier, HP)
+            // area: every target actually ENGAGED after the declared movement is hit, each with its own pipeline.
+            const areaTargets = Object.values(enc.combatants)
+                .filter((c) => isOpponent(actor, c) && alive(c) && !c.current.surrendered && distance(enc, actorId, c.id) === 'ENGAGED')
+                .map((c) => c.id);
             for (const tid of areaTargets) record.strikes.push(resolveStrike(ctx, actor, enc.combatants[tid], skill.attack, opts));
         } else {
             for (let i = 0; i < (skill.strikes || 1); i++) {
@@ -851,7 +880,7 @@ export function runCombat(ctx, pcAction) {
         const t = enc.trigger;
         let r;
         if (t.actor === 'pc') {
-            r = attackAction(ctx, 'pc', t.target, t.skill, { opening: true, move: t.move });
+            r = attackAction(ctx, 'pc', t.target, t.skill, { opening: true, move: t.move, moveTarget: t.move_target });
             if (r.illegal) return { enc, records, stopped: 'illegal', illegal: r.illegal };
             pcActed = true;
         } else {
@@ -874,11 +903,11 @@ export function runCombat(ctx, pcAction) {
         startTurn(enc, actorId);
         if (actorId === 'pc') {
             if (pcActed) return { enc, records, stopped: 'pc_turn' };
-            const act = pcAction || (enc.trigger && enc.trigger.actor === 'pc' && !enc.trigger_done ? { kind: 'attack', skill: enc.trigger.skill, target: enc.trigger.target, move: enc.trigger.move } : null);
+            const act = pcAction || (enc.trigger && enc.trigger.actor === 'pc' && !enc.trigger_done ? { kind: 'attack', skill: enc.trigger.skill, target: enc.trigger.target, move: enc.trigger.move, move_target: enc.trigger.move_target } : null);
             if (enc.trigger && enc.trigger.actor === 'pc') enc.trigger_done = true;
             if (!act) return { enc, records, stopped: 'pc_turn' };
             let r;
-            if (act.kind === 'attack') r = attackAction(ctx, 'pc', act.target, act.skill, { move: act.move });
+            if (act.kind === 'attack') r = attackAction(ctx, 'pc', act.target, act.skill, { move: act.move, moveTarget: act.move_target });
             else if (act.kind === 'skill') r = skillAction(ctx, 'pc', act.skill, { dir: act.dir, target: act.target });
             else if (act.kind === 'move') r = moveAction(ctx, 'pc', act.dir, act.target);
             else if (act.kind === 'ability_world') r = worldAction(ctx, 'pc', act);

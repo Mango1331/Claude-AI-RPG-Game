@@ -4,7 +4,7 @@
   "js": "index.js",
   "css": "style.css",
   "author": "Avereth RPG project",
-  "version": "4.3.0-c.6.3-gpt",
+  "version": "4.3.0-c.6.4-gpt",
   "auto_update": false,
   "generate_interceptor": "averethInterceptor"
 }

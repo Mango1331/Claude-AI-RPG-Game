@@ -142,7 +142,9 @@ test('turn 10: the rat pack is never one combatant: the engine asks for its rats
         '`Alaric\'s attacks vs Fat Cellar Rat A: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`',
         '`ATTACKERS IDENTIFIED: a separate request named them (9.0 s).`',
     ]);
-    assert.ok(chat[20].extra.display_text.startsWith(T(10).panel), 'shown above the reply that reported the attack');
+    assert.equal(chat[20].extra.avereth.panel, T(10).panel, 'the stored engine panel is unchanged');
+    assert.match(chat[20].extra.display_text, /^<div class="avereth-system-panel avereth-system-combat">/, 'the panel is rendered as the Engine card above narration');
+    assert.match(chat[20].extra.display_text, /ATTACKERS IDENTIFIED: a separate request named them \(9\.0 s\)\./);
 });
 
 test('turn 11: "the nearest one" among the ENGAGED rats is still Alaric\'s choice: the engine asks, nothing resolves, no narration', () => {

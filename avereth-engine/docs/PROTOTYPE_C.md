@@ -1,4 +1,4 @@
-# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.6.3-gpt)
+# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.6.4-gpt)
 
 Stand: 02.10.2026.
 
@@ -251,10 +251,10 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.3-gpt`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.4-gpt`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
-   - Vertrag v4 (Revision 4.3.0-c.6.3-gpt), Preset „Avereth Narrator V4“, Lorebook v0.13.
+   - Vertrag v4 (Revision 4.3.0-c.6.4-gpt), Preset „Avereth Narrator V4“, Lorebook v0.13.
 3. **Schalter:** Engine-Panel → **„Prototype C: semantic planner“** anhaken.
    - Er gilt für jede V4-Kampagne, auch eine laufende, ab der nächsten Nachricht.
    - Ausschalten bringt A zurück.
@@ -596,3 +596,17 @@ Der Live-Lauf vom 05.10.2026 zeigte vier kleine, voneinander getrennte Restfehle
 - **NOT DONE bleibt nicht getan:** Der Erzähler darf eine von der Engine als NOT DONE/CANNOT/REFUSED/NOT TAKEN markierte Handlung und deren Ausführungsschritte nicht nachträglich erzählen.
 - **PC-Sprache und Ortsidentität:** Der Erzähler schreibt Alaric keine nicht vom Spieler gegebenen gesprochenen Sätze und benennt bereits etablierte Orte nicht für Atmosphäre um. Ein bekannter Ort behält seinen kanonischen Namen.
 \n
+
+### Nachtrag 4.3.0-c.6.4-gpt
+
+Der Live-Lauf vom 05.10.2026 trennt Planner-Verständnis und Engine-Auflösung weiter:
+
+- **Targetloses Combat-Move + AoE:** „dash forward in the middle of all of them and then Arcane Burst“ wurde korrekt als `move closer target:null` + Arcane Burst geplant. Das Movement behält nun seine eigene Zielbindung: `target:null` verschiebt die vorhandenen Hostiles relativ zu Alaric um genau ein Range Band, danach trifft die AoE nur Gegner, die tatsächlich ENGAGED sind. Ist nach diesem einen Schritt niemand ENGAGED, bleibt die kombinierte Aktion atomar illegal: keine Bewegung, keine Kosten.
+- **Taktische Sichtbarkeit:** Der Extraktor kann eine sichtbare Person mit `person.new relevant:true` als unmittelbar entscheidungsrelevant markieren (z. B. beobachteter Bandit, Gefangener, Gesprächspartner). Solche Personen werden nicht als Ambient-Kulisse verworfen und können vor Combat mit ihrem Range Band im Systemblock erscheinen. Hintergrund-Passanten bleiben filterbar.
+- **Target-Handles:** Eine einzelne anonyme NPC-Rolle heißt z. B. `Bandit Leader`, nicht `Bandit Leader A`. Erst echte Dubletten derselben Rolle bekommen `A/B/…`. Die bestehende Creature-Konvention (`Wolf A`, `Rat A/B`) bleibt unverändert.
+- **Tagesboard:** Auf C kann `listing.gone: taken_by_other` kein verbliebenes Angebot von Alarics aktuellem Tagesboard mehr verbrauchen. Rücknahme/Ablauf oder Alarics eigene Annahme bleiben getrennte Zustandsänderungen.
+- **Narrator-Grenzen:** Ein illegaler Combat-Zug darf auch seine mitgebuchte Bewegung nicht teilweise in der Prosa ausspielen. Erfundenes PC-Sprechen umfasst nun auch indirekte Scheinantworten wie „whatever he answered“.
+- **Combat UI:** Die gespeicherten Engine-Panels bleiben dieselbe Wahrheit, werden in SillyTavern aber als ein eigener, standardmäßig offener und bei Bedarf einklappbarer „AVERETH ENGINE · COMBAT LOG“-Block dargestellt. Während ACTIVE Combat ersetzt ein offenes taktisches HUD die redundanten Character-/World-Klappzeilen und zeigt aktive Gegner zeilenweise mit HP, Range und Cover, dazu Turn Order und Alarics Attack-Reichweiten. Bereits sichtbare Personen, die noch nicht im Encounter/der Initiative sind, bleiben in einem getrennten „Visible · not in the fight yet“-Abschnitt mit Range/Cover sichtbar; das ist reine Anzeige und macht sie nicht automatisch zu Gegnern.
+
+Bekannte Grenze bleibt **GO → STEALTH in derselben Nachricht**, wenn erst die GO-Narration die späteren Beobachter konkret etabliert. Der Live-Workaround mit zwei Nachrichten bewies, dass der Stealth-Check am erreichten Ort korrekt gegen den dortigen Beobachter läuft; eine echte Ein-Zug-Lösung würde einen zusätzlichen Narration→Mechanik-Zwischenschritt erfordern und ist nicht Teil dieses kleinen Patches.
+

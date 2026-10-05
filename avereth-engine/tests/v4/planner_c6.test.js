@@ -16,6 +16,9 @@ import { applyWorld } from '../../src/v4/world.js';
 import { applyEvent } from '../../src/state.js';
 import { SLIP_READY, SLIP_DONE, contractReady, boardRequest } from '../../src/v4/guild.js';
 import { NARRATOR_CONTRACT_REVISION } from '../../src/util.js';
+import { mapPlan } from '../../src/v4/planner.js';
+import { sceneHandle } from '../../src/v4/scene_handles.js';
+import { worldPanel } from '../../src/display.js';
 import { guardCommands } from '../../src/v4/agency.js';
 import { extractorUser } from '../../src/v4/extract.js';
 
@@ -540,4 +543,96 @@ test('c.6.3-gpt: narrator contract treats refused actions as absent, never suppl
     assert.match(contract, /Never write spoken words for Alaric that the current PLAYER MESSAGE did not actually give him as speech/);
     assert.match(contract, /Established place names are identities, not atmosphere\. Keep the canonical name shown by the engine or already established in play/);
     assert.match(contract, /never rename a known city, settlement, road, building or other place for flavor/);
+});
+
+
+test('c.6.4-gpt: targetless close-in stays targetless when it is paired with Arcane Burst', () => {
+    const ctx = {
+        fight: true,
+        known: ['mage.basic_attack', 'mage.flame_lance', 'mage.arcane_burst'],
+        basic: 'mage.basic_attack',
+        skills: [
+            { id: 'mage.basic_attack', name: 'Basic Attack' },
+            { id: 'mage.flame_lance', name: 'Flame Lance' },
+            { id: 'mage.arcane_burst', name: 'Arcane Burst' },
+        ],
+        opponents: [
+            { id: 'npc.crossbow', label: 'Crossbow Bandit', band: 'MEDIUM', engaged: false },
+            { id: 'npc.leader', label: 'Bandit Leader', band: 'SHORT', engaged: false },
+        ],
+        facts: [],
+        catalog: { present: [], objects: [] },
+        cls: 'mage',
+    };
+    const commands = [
+        { seq: 1, type: 'move', dir: 'closer', target: null, quote: 'i dash forward in the middle of all of them' },
+        { seq: 2, type: 'use_skill', skill: 'mage.arcane_burst', target: null, quote: 'then Arcane Burst' },
+    ];
+    const mapped = mapPlan(commands, ctx, content, '*i dash forward in the middle of all of them and then Arcane Burst*', {});
+    assert.equal(mapped.route, 'v3');
+    assert.equal(mapped.intent.kind, 'attack');
+    assert.equal(mapped.intent.skill, 'mage.arcane_burst');
+    assert.equal(mapped.intent.move, 'closer');
+    assert.equal(mapped.intent.move_target, null);
+    assert.equal(mapped.intent.target, 'npc.crossbow', 'a nominal attack target may route the AoE, but it does not become the movement focus');
+});
+
+test('c.6.4-gpt: another adventurer cannot consume a current-day C board listing after the first display', async () => {
+    const g = await member();
+    await read(g);
+    const s = structuredClone(g.state());
+    const id = s.guild.boards['loc.redmarch|Novice'].listings[1];
+    s.last.outcome = {
+        kind: 'v4', actions: [], extra: [], resolutions: [], expected_keys: {}, conditionals: [],
+        booked: { registration: false, grants: [], turnIns: [], accepted: [], sellers: [] },
+        auth: { go: null, gos: [], roam: false, take: [], gather: false, rest: false, c: true },
+        board: null,
+    };
+    const before = [...s.guild.boards['loc.redmarch|Novice'].listings];
+    const w = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'listing.gone', listing: id, why: 'taken_by_other' }] }, { msg: 999 });
+    assert.equal(w.state.quests[id].status, 'listed');
+    assert.deepEqual(w.state.guild.boards['loc.redmarch|Novice'].listings, before);
+    assert.equal(w.rejected[0]?.rule, 'board_stable_player');
+});
+
+test('c.6.4-gpt: a visible tactical person survives the ambient filter, gets a pre-combat Range line, and unique roles need no A suffix', () => {
+    const s = structuredClone(live(4).state());
+    s.last.outcome = {
+        kind: 'v4', actions: [], extra: [], resolutions: [], expected_keys: {}, conditionals: [],
+        booked: { registration: false, grants: [], turnIns: [], accepted: [], sellers: [] },
+        auth: { go: null, gos: [], roam: false, take: [], gather: false, rest: false, c: true },
+        board: null,
+    };
+    const tactical = applyWorld(s, content, {
+        expected: {},
+        deltas: [
+            { seq: 1, type: 'person.new', ref: 'npc.leader', name: null, role: 'bandit leader', desc: ['big bearded bandit'], present: true, relevant: true, at: null, band: 'SHORT' },
+            { seq: 2, type: 'person.new', ref: 'npc.young1', name: null, role: 'young bandit', desc: ['young bandit'], present: true, relevant: true, at: null, band: 'MEDIUM' },
+            { seq: 3, type: 'person.new', ref: 'npc.young2', name: null, role: 'young bandit', desc: ['young bandit'], present: true, relevant: true, at: null, band: 'MEDIUM' },
+        ],
+    }, { msg: 999 });
+    assert.equal(tactical.rejected.length, 0);
+    const ids = tactical.state.scene.present.filter((id) => id !== 'pc').filter((id) => tactical.state.entities[id]?.kind === 'npc');
+    const leader = ids.find((id) => sceneHandle(tactical.state, content, id) === 'Bandit Leader');
+    const young = ids.filter((id) => /^Young Bandit [AB]$/.test(sceneHandle(tactical.state, content, id)));
+    assert.ok(leader, 'one unique anonymous role is simply Bandit Leader');
+    assert.equal(young.length, 2, 'duplicates keep A/B handles');
+    const panel = worldPanel(s, content, tactical);
+    assert.match(panel, /ACTIVE SCENE — Bandit Leader · SHORT/);
+    assert.match(panel, /ACTIVE SCENE — Young Bandit A · MEDIUM/);
+    assert.match(panel, /ACTIVE SCENE — Young Bandit B · MEDIUM/);
+
+    const ambient = applyWorld(s, content, {
+        expected: {},
+        deltas: [{ seq: 1, type: 'person.new', ref: 'npc.passer', name: null, role: 'passer-by', desc: ['walking past'], present: true, relevant: false, at: null, band: 'MEDIUM' }],
+    }, { msg: 1000 });
+    assert.equal(ambient.rejected[0]?.rule, 'ambient');
+});
+
+test('c.6.4-gpt: narrator contract also forbids implied PC answers and partial narration of an illegal combat action', () => {
+    const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
+    assert.match(contract, /Do not evade this by implying an invented reply \("whatever he answered", "after he replied", "his answer satisfied them"\)/);
+    assert.match(contract, /combat resolution says Alaric's declared action is NOT possible, illegal, or that nothing was spent\/rolled/);
+    assert.match(contract, /none of that declared action happened, including any movement bundled into it/);
+    assert.match(contract, /stable set of player-facing choices for that branch, rank and Guild day/);
 });

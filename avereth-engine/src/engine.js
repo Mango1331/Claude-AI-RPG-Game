@@ -147,7 +147,7 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
     if (s.encounter) return combatTurn(s, content, dice, emit, { pcAction, c }, situations);
     if (pcAction?.note) return { kind: 'note', text: pcAction.note, notice: pcAction.notice };
     if (pcAction?.kind === 'attack') {
-        return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move }, pcAction: null, c }, situations);
+        return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move, move_target: pcAction.move_target }, pcAction: null, c }, situations);
     }
     if (pcAction?.kind === 'engage') return engagementTurn(s, content, dice, emit, pcAction.targets);
     // 3) declared stealth: opposed check (or automatic with nobody around)
@@ -202,7 +202,7 @@ function pcActionOf(s, content, intent, text) {
                 note: `Alaric attacks ${name(intent.target)}, a group the game holds as one creature: nothing was spent or rolled. Show its animals: each one that fights as its own "new" entry, their refs in "combat". Alaric acts on his next Turn.`,
                 notice: `Alaric's attack: ${playerLabel(s, intent.target)} is a group; the story shows its animals first (nothing spent, nothing rolled)`,
             };
-            return { kind: 'attack', skill: intent.skill, target: intent.target, move: intent.move };
+            return { kind: 'attack', skill: intent.skill, target: intent.target, move: intent.move, move_target: intent.move_target };
         case 'skill': return { kind: 'skill', skill: intent.skill, dir: intent.dir, target: intent.target };
         case 'move': return { kind: 'move', dir: intent.dir, target: intent.target };
         case 'flee': return { kind: 'flee' };

@@ -403,5 +403,5 @@ test('the narrator preset asks for familiar modern words for ordinary medieval t
     assert.match(style, /Prefer familiar, modern English words for ordinary medieval things\. Avoid rare or archaic historical terms used only for atmosphere; when a period term is genuinely useful, make its meaning clear from context the first time it appears\. Modern wording is fine; modern technology is not\./);
     const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
     // later Prototype C builds changed the contract; c.2 still owns only the style assertion above
-    assert.match(contract, /^AVERETH RPG — SANDBOX NARRATOR CONTRACT\nContract revision: 4\.3\.0-c\.6\.2\n/);
+    assert.match(contract, /^AVERETH RPG — SANDBOX NARRATOR CONTRACT\nContract revision: 4\.3\.0-c\.6\.4-gpt\n/);
 });

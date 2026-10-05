@@ -511,7 +511,7 @@ export function mapPlan(commands, ctx, content, message, state) {
     const dir = move ? move.dir : null;
     if (move && !def.attack && !(def.effects || []).some((e) => e.kind === 'reposition')) leaveMove(`not taken this turn (${def.name} moves no one; the engine resolves no step with it)`);
     const asAction = (target, how) => (def.attack
-        ? { kind: 'attack', skill, target, target_how: how, move: dir }
+        ? { kind: 'attack', skill, target, target_how: how, move: dir, move_target: move?.target || null }
         : { kind: 'skill', skill, dir: dir || 'away', target });
     if (isNew(main.target)) return base({ kind: 'no_target', skill, ref: String(main.target.new).slice(0, 60) });
     if (typeof main.target === 'string') return base(asAction(main.target, 'planner'));

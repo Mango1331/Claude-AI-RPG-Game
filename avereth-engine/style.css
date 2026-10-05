@@ -7,3 +7,117 @@
 .mes_text details.avereth-hud, .mes_text details.custom-avereth-hud { margin: 0.35em 0 0; border: 1px solid var(--SmartThemeBorderColor, #555); border-radius: 6px; padding: 0.2em 0.6em; font-size: 0.85em; opacity: 0.9; }
 .mes_text details.avereth-hud summary, .mes_text details.custom-avereth-hud summary { cursor: pointer; font-family: monospace; }
 .mes_text .avereth-hud-body, .mes_text .custom-avereth-hud-body { font-family: monospace; line-height: 1.45; padding: 0.3em 0 0.2em; }
+
+
+/* Engine-owned System output above narration. Keep it visually separate from prose without the old row of
+   individual inline-code boxes. SillyTavern may prefix message classes with "custom-"; substring selectors cover both. */
+.mes_text [class*="avereth-system-panel"] {
+  margin: 0 0 0.7em;
+  border: 1px solid var(--SmartThemeBorderColor, #555);
+  border-left-width: 3px;
+  border-radius: 7px;
+  padding: 0.45em 0.6em;
+  background: var(--SmartThemeBlurTintColor, rgba(0,0,0,0.28));
+  font-family: monospace;
+  font-size: 0.88em;
+  line-height: 1.35;
+}
+.mes_text [class*="avereth-system-line"] {
+  display: block;
+  padding: 0.12em 0;
+  overflow-wrap: anywhere;
+}
+.mes_text details[class*="avereth-system-combat"] > summary {
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+  margin: -0.05em 0 0.3em;
+  user-select: none;
+}
+.mes_text [class*="avereth-system-lines"] {
+  min-width: 0;
+}
+.mes_text [class*="avereth-system-heading"] { font-weight: 700; padding-top: 0.28em; }
+.mes_text [class*="avereth-system-warning"] {
+  font-weight: 700;
+  border-left: 2px solid var(--SmartThemeQuoteColor, currentColor);
+  padding-left: 0.5em;
+  margin: 0.18em 0;
+}
+.mes_text [class*="avereth-system-state"] { font-weight: 600; }
+.mes_text [class*="avereth-system-info"] { opacity: 0.92; }
+
+/* Active combat replaces the two generic folded HUDs with one always-open tactical view. */
+.mes_text details[class*="avereth-combat-hud"] {
+  margin-top: 0.55em;
+  opacity: 1;
+}
+.mes_text details[class*="avereth-combat-hud"] > summary {
+  font-weight: 700;
+  padding: 0.15em 0;
+}
+.mes_text [class*="avereth-combat-body"] {
+  font-family: monospace;
+  padding: 0.45em 0 0.2em;
+}
+.mes_text [class*="avereth-combat-resources"],
+.mes_text [class*="avereth-combat-meta"] {
+  padding: 0.28em 0;
+  overflow-wrap: anywhere;
+}
+.mes_text [class*="avereth-combat-table"] {
+  margin: 0.35em 0;
+  border-top: 1px solid var(--SmartThemeBorderColor, #555);
+  border-bottom: 1px solid var(--SmartThemeBorderColor, #555);
+}
+.mes_text [class*="avereth-combat-row"] {
+  display: grid;
+  grid-template-columns: minmax(10em, 2fr) minmax(4.8em, 0.65fr) minmax(6em, 0.75fr) minmax(4.8em, 0.65fr);
+  gap: 0.6em;
+  align-items: center;
+  padding: 0.28em 0.15em;
+  border-top: 1px solid color-mix(in srgb, var(--SmartThemeBorderColor, #555) 45%, transparent);
+}
+.mes_text [class*="avereth-combat-row"]:first-child { border-top: 0; }
+.mes_text [class*="avereth-combat-head"] {
+  font-weight: 700;
+  opacity: 0.78;
+}
+.mes_text [class*="avereth-combat-name"] { font-weight: 700; }
+.mes_text [class*="avereth-combat-subhead"] {
+  padding: 0.35em 0.15em 0.2em;
+  border-top: 1px solid var(--SmartThemeBorderColor, #555);
+  font-weight: 700;
+  opacity: 0.72;
+  font-size: 0.92em;
+}
+.mes_text [class*="avereth-combat-visible-row"] {
+  opacity: 0.86;
+}
+.mes_text [class*="avereth-range"] {
+  display: inline-block;
+  min-width: 5.2em;
+  text-align: center;
+  border: 1px solid var(--SmartThemeBorderColor, #666);
+  border-radius: 999px;
+  padding: 0.02em 0.42em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.mes_text [class*="avereth-range-engaged"] {
+  border-width: 2px;
+  text-decoration: underline;
+  text-underline-offset: 0.14em;
+}
+.mes_text [class*="avereth-skill-range"] { white-space: nowrap; }
+.mes_text [class*="avereth-turn-arrow"] { opacity: 0.65; padding: 0 0.12em; }
+.mes_text [class*="avereth-combat-empty"] { padding: 0.45em 0.15em; opacity: 0.75; }
+
+@media (max-width: 700px) {
+  .mes_text [class*="avereth-combat-row"] {
+    grid-template-columns: minmax(0, 1.65fr) 4.4em 5.6em 4.4em;
+    gap: 0.35em;
+    font-size: 0.94em;
+  }
+  .mes_text [class*="avereth-range"] { min-width: 0; width: 100%; box-sizing: border-box; }
+}

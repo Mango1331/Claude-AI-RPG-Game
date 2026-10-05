@@ -169,3 +169,58 @@ test('drift: a narrator that writes wrong coin, HP, STA, quest status or positio
     assert.doesNotMatch(chat.at(-1).mes, /World_State|Character_Sheet/);
     assert.ok(r.result.corrections.some((c) => /tracker blocks .* are retired and were removed/.test(c)));
 });
+
+
+test('active combat uses one open tactical HUD with fixed Target/HP/Range/Cover columns and attack reach', () => {
+    const g = new Game(content).ranger();
+    g.reply({
+        new: [
+            { ref: 'rat_a', kind: 'creature', species: 'rat', desc: ['cellar rat'], band: 'SHORT' },
+            { ref: 'rat_b', kind: 'creature', species: 'rat', desc: ['cellar rat'], band: 'MEDIUM' },
+        ],
+    }, 'Two cellar rats show themselves.');
+    g.input('I wait.');
+    g.reply({ combat: [{ by: 'rat_a' }, { by: 'rat_b' }] }, 'The rats rush him.');
+    assert.ok(g.state.encounter, 'fight stays active for the HUD test');
+
+    const html = renderHud(g.state, content, 'closed');
+    assert.match(html, /avereth-combat-hud/);
+    assert.match(html, /<summary>⚔ COMBAT · Round \d+ · /);
+    assert.match(html, /<span>Target<\/span><span>HP<\/span><span>Range<\/span><span>Cover<\/span>/);
+    assert.match(html, /Cellar Rat A/);
+    assert.match(html, /Cellar Rat B/);
+    assert.match(html, /avereth-range-(?:engaged|short|medium|long)/);
+    assert.match(html, /<strong>Turn order<\/strong>/);
+    assert.match(html, /<strong>Attack reach<\/strong>/);
+    assert.match(html, /Basic Attack/);
+    assert.match(html, /Power Shot/);
+    assert.doesNotMatch(html, /<summary>World —|<summary>Alaric —/, 'generic Character/World HUDs are replaced during active combat');
+    assert.equal((html.match(/<details /g) || []).length, 1, 'one combat HUD, not two redundant panels');
+});
+
+test('combat HUD keeps visible actors and their ranges when they have not joined Initiative yet', () => {
+    const g = new Game(content).ranger();
+    g.state.meta.runtime = 'v4';
+    g.reply({
+        new: [
+            { ref: 'crossbow', kind: 'npc', desc: ['crossbow bandit'], band: 'MEDIUM' },
+            { ref: 'leader', kind: 'npc', desc: ['bandit leader'], band: 'SHORT' },
+            { ref: 'young_a', kind: 'npc', desc: ['young bandit'], band: 'MEDIUM' },
+            { ref: 'young_b', kind: 'npc', desc: ['young bandit'], band: 'MEDIUM' },
+        ],
+    }, 'Four bandits are visible around the camp.');
+    g.input('I wait.');
+    g.reply({ combat: { by: 'crossbow' } }, 'The crossbowman turns on Alaric.');
+    assert.ok(g.state.encounter);
+    assert.equal(Object.values(g.state.encounter.combatants).filter((c) => c.side === 'hostile').length, 1, 'only the committed attacker is in Initiative');
+
+    const html = renderHud(g.state, content, 'closed');
+    assert.match(html, /Crossbow Bandit/);
+    assert.match(html, /Visible · not in the fight yet/);
+    assert.match(html, /Bandit Leader/);
+    assert.match(html, /Young Bandit A/);
+    assert.match(html, /Young Bandit B/);
+    assert.match(html, /Bandit Leader<\/span><span class="avereth-combat-hp">—<\/span><span class="avereth-combat-range"><span class="avereth-range avereth-range-short">SHORT<\/span>/);
+    assert.ok((html.match(/avereth-range-medium/g) || []).length >= 3, 'crossbow/young bandit ranges remain visible at MEDIUM');
+});
+

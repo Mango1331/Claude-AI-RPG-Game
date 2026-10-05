@@ -361,7 +361,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                             refs.set(normText(d.ref), same);
                             break;
                         }
-                    } else if (!(answer.deltas || []).some((x) => x && x.seq !== d.seq && JSON.stringify(x).includes(String(d.ref)))) {
+                    } else if (!d.relevant && !(answer.deltas || []).some((x) => x && x.seq !== d.seq && JSON.stringify(x).includes(String(d.ref)))) {
                         reject(d, 'ambient', 'scene colour: an unnamed person nothing else of the reply deals with is not kept; the story brings them back when they matter');
                         break;
                     }
@@ -603,12 +603,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 break;
             }
             case 'listing.gone': {
-                // The same reply in which the player reads an official board is not allowed to
-                // retroactively take away its just-published choices. Later world actions may.
+                // The same reply in which the player reads an official board is not allowed to retroactively take
+                // away its just-published choices. On Prototype C the current-day board stays Alaric's stable choice set;
+                // background adventurers do not get a second chance to consume one on a later reply either.
                 if ((outcome.board?.listings || []).some((id) => id === (typeof d.listing === 'string' ? d.listing : questRef(d.listing)?.id))) {
                     reject(d, 'board_first_display', 'a listing just presented as available cannot vanish retroactively during the same board-reading reply');
                     const title = questRef(d.listing)?.title || String(d.listing?.new || d.listing);
-                    const correction = `The newly displayed Guild listing "${title}" remains AVAILABLE. The previous reply's claim that it had just been taken was not booked; only a later established event may remove it.`;
+                    const correction = cPath
+                        ? `The newly displayed Guild listing "${title}" remains AVAILABLE to Alaric for this Guild day; background adventurers do not consume one of his five daily choices.`
+                        : `The newly displayed Guild listing "${title}" remains AVAILABLE. The previous reply's claim that it had just been taken was not booked; only a later established event may remove it.`;
                     if (!corrections.includes(correction)) corrections.push(correction);
                     break;
                 }
@@ -621,9 +624,18 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     break;
                 }
                 if (!q || q.status !== 'listed') { reject(d, 'quest', 'no such listing on the board'); break; }
+                const key = Object.keys(s.guild.boards).find((k) => s.guild.boards[k].listings.includes(q.id));
+                // Prototype C daily board is the player's stable set of choices. Ambient adventurers may exist in the
+                // fiction, but they do not consume one of Alaric's remaining same-day listings. Explicit withdrawal or
+                // expiry is a different world event and remains possible.
+                if (cPath && d.why === 'taken_by_other' && key && s.guild.boards[key].day === today(s)) {
+                    reject(d, 'board_stable_player', 'another adventurer does not consume Alaric\'s stable same-day Guild listing');
+                    const correction = `The Guild listing "${q.title}" remains AVAILABLE to Alaric for this Guild day; another adventurer taking work in the background does not remove one of his five daily choices.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    break;
+                }
                 grant('world.taken');
                 emit({ t: 'quest.status', d: { id: q.id, from: 'listed', to: d.why, by: 'world' } });
-                const key = Object.keys(s.guild.boards).find((k) => s.guild.boards[k].listings.includes(q.id));
                 if (key) emit({ t: 'board.refreshed', d: { key, ...s.guild.boards[key], listings: s.guild.boards[key].listings.filter((x) => x !== q.id) } });
                 break;
             }

@@ -160,7 +160,10 @@ test('combat is shown in the reply as System lines (display only): swipes, edits
     const shot = outcome.records.find((r) => r.actor === 'pc');
     const panel = reply.extra.avereth.panel;
     const hud = () => reply.extra.avereth.hud;
-    assert.equal(reply.extra.display_text, `${panel}\n\nThe arrow flies.\n\n${hud()}`, 'SillyTavern shows the block above the narration and the HUD below it');
+    assert.match(reply.extra.display_text, /^<div class="avereth-system-panel avereth-system-combat">/, 'SillyTavern shows the Engine card above the narration');
+    assert.match(reply.extra.display_text, /COMBAT START/);
+    assert.match(reply.extra.display_text, /The arrow flies\./);
+    assert.match(reply.extra.display_text, /avereth-combat-hud/, 'ACTIVE combat uses the tactical HUD below the narration');
     assert.equal(reply.mes, 'The arrow flies.', 'the prompt text stays plain');
     assert.match(panel, /^`COMBAT START`\n`Initiative: /);
     const s = shot.strikes[0];
@@ -172,13 +175,13 @@ test('combat is shown in the reply as System lines (display only): swipes, edits
     newSwipe(reply, 'The string snaps forward.\n<avereth>{}</avereth>');
     delete reply.extra.display_text;
     processReply(chat, chat.length - 1, content);
-    assert.equal(reply.extra.display_text, `${panel}\n\nThe string snaps forward.\n\n${hud()}`);
+    assert.match(reply.extra.display_text, /The string snaps forward\.[\s\S]*avereth-combat-hud/);
     selectSwipe(reply, 0);
-    assert.equal(reply.extra.display_text, `${panel}\n\nThe arrow flies.\n\n${hud()}`, 'each swipe keeps its own display');
+    assert.match(reply.extra.display_text, /COMBAT START[\s\S]*The arrow flies\.[\s\S]*avereth-combat-hud/, 'each swipe keeps its own display');
     // a typo edit keeps the block above the edited narration
     reply.mes = 'The arrow flies true.';
     assert.deepEqual(onEdited(chat, chat.length - 1, content), { changed: true, text: true });
-    assert.equal(reply.extra.display_text, `${panel}\n\nThe arrow flies true.\n\n${hud()}`);
+    assert.match(reply.extra.display_text, /COMBAT START[\s\S]*The arrow flies true\.[\s\S]*avereth-combat-hud/);
     // the next prompt quotes the reply without the block and without the HUD
     chat.push(userMsg('I shoot again.'));
     const next = prepareGeneration(chat, content, { type: 'normal' });

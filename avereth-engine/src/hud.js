@@ -9,7 +9,7 @@ import { deriveCharacter } from './derived.js';
 import { formatCoin } from './economy.js';
 import { playerLabel, statusOf, truth, currentFacts, propText } from './knowledge.js';
 import { targetLabel } from './combat.js';
-import { formatClock, itemLabel, normText } from './util.js';
+import { bandIndex, formatClock, itemLabel, normText } from './util.js';
 import { sceneHandle } from './v4/scene_handles.js';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -106,12 +106,45 @@ function panel(title, summary, rows, open) {
     return `<details class="avereth-hud"${open ? ' open' : ''}><summary>${esc(title)} — ${esc(summary)}</summary><div class="avereth-hud-body">${body}</div></details>`;
 }
 
+function combatHud(state, content) {
+    const enc = state.encounter;
+    if (!enc) return '';
+    const pc = enc.combatants.pc;
+    const name = (id) => targetLabel(state, id, (x) => playerLabel(state, x));
+    const foes = Object.values(enc.combatants)
+        .filter((x) => x.side === 'hostile' && !x.current.defeated && !x.current.escaped && !x.current.surrendered)
+        .sort((a, b) => bandIndex(a.current.band) - bandIndex(b.current.band) || name(a.id).localeCompare(name(b.id)));
+    const range = (b) => `<span class="avereth-range avereth-range-${String(b || 'unknown').toLowerCase()}">${esc(b || '—')}</span>`;
+    const rows = foes.map((x) => `<div class="avereth-combat-row"><span class="avereth-combat-name">${esc(name(x.id))}</span><span class="avereth-combat-hp">${x.current.hp}/${x.fixed.max_hp}</span><span class="avereth-combat-range">${range(x.current.band)}</span><span class="avereth-combat-cover">${esc(x.current.cover && x.current.cover !== 'none' ? x.current.cover : '—')}</span></div>`).join('');
+    // Keep tactical context the player can already see even when those actors have not formally joined the encounter yet.
+    // This is display-only: it never makes a bystander hostile or inserts them into Initiative.
+    const visible = (state.scene?.present || []).filter((id) => id !== 'pc' && state.entities?.[id] && !enc.combatants[id] && statusOf(state, id) !== 'dead')
+        .map((id) => ({ id, band: state.scene.positions?.[id]?.band || null, cover: state.scene.positions?.[id]?.cover || 'none' }))
+        .filter((x) => x.band)
+        .sort((a, b) => bandIndex(a.band) - bandIndex(b.band) || sceneHandle(state, content, a.id).localeCompare(sceneHandle(state, content, b.id)));
+    const visibleRows = visible.map((x) => `<div class="avereth-combat-row avereth-combat-visible-row"><span class="avereth-combat-name">${esc(sceneHandle(state, content, x.id))}</span><span class="avereth-combat-hp">—</span><span class="avereth-combat-range">${range(x.band)}</span><span class="avereth-combat-cover">${esc(x.cover && x.cover !== 'none' ? x.cover : '—')}</span></div>`).join('');
+    const order = enc.order.filter((id) => enc.combatants[id] && !enc.combatants[id].current.defeated && !enc.combatants[id].current.escaped && !enc.combatants[id].current.surrendered)
+        .map((id) => id === enc.current ? `<strong>${esc(name(id))}</strong>` : esc(name(id))).join(' <span class="avereth-turn-arrow">›</span> ');
+    const attacks = Object.keys(pc.fixed.actions || {}).map((sid) => content.skills.get(sid)).filter((s) => s?.attack)
+        .map((s) => `${esc(s.name)} <span class="avereth-skill-range">${range(s.range?.band)}${(s.effects || []).some((e) => e.kind === 'area') ? ' AoE' : ''}</span>`).join(' · ');
+    const current = enc.current === 'pc' ? "Alaric's turn" : `${name(enc.current)} to act`;
+    const arrows = Object.values(pc.current.ammo || {}).reduce((a, n) => a + n, 0);
+    const arrowText = arrows || state.entities.pc?.sheet?.equipment?.quiver ? ` · Arrows ${arrows}` : '';
+    return `<details class="avereth-hud avereth-combat-hud" open><summary>⚔ COMBAT · Round ${enc.round} · ${esc(current)}</summary><div class="avereth-combat-body">
+<div class="avereth-combat-resources"><strong>Alaric</strong> · HP ${pc.current.hp}/${pc.fixed.max_hp} · MP ${pc.current.mp}/${pc.fixed.max_mp} · STA ${pc.current.sta}/${pc.fixed.max_sta}${arrowText}</div>
+<div class="avereth-combat-table"><div class="avereth-combat-row avereth-combat-head"><span>Target</span><span>HP</span><span>Range</span><span>Cover</span></div>${rows || '<div class="avereth-combat-empty">No active enemies</div>'}${visibleRows ? `<div class="avereth-combat-subhead">Visible · not in the fight yet</div>${visibleRows}` : ''}</div>
+<div class="avereth-combat-meta"><strong>Turn order</strong> · ${order}</div>
+<div class="avereth-combat-meta"><strong>Attack reach</strong> · ${attacks || '—'}</div>
+</div></details>`;
+}
+
 /**
  * The HUD shown under a reply: the Character panel and the World panel. mode: 'closed' (folded, the summary line
  * shows the essentials), 'open', or 'off' (''). Empty before the campaign has a character.
  */
 export function renderHud(state, content, mode = 'closed') {
     if (mode === 'off' || !state.meta?.started || !state.entities.pc?.sheet) return '';
+    if (state.encounter) return combatHud(state, content);
     const s = state.entities.pc.sheet;
     const dv = deriveCharacter(s, content);
     const open = mode === 'open';

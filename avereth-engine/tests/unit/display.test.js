@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { loadContent, Game } from '../helpers.js';
 import { applyEvent } from '../../src/state.js';
 import { turnPanel } from '../../src/display.js';
+import { showPanel } from '../../src/host.js';
 
 const content = await loadContent();
 
@@ -138,4 +139,36 @@ test('an attack the reply reported is fixed and shown with it: Initiative, Turn 
         '`Alaric\'s attacks vs Wolf A: Basic Attack 16–19 · Aimed Shot 24–29 · Power Shot 30–37 damage`',
     ]);
     assert.deepEqual([r.state.encounter.round, r.state.encounter.current], [1, 'pc']);
+});
+
+
+test('Avereth System display uses one distinct HTML card while the saved panel and narration remain separate', () => {
+    const msg = { mes: 'The narration remains ordinary prose.', extra: { avereth: { v: 3 } } };
+    const raw = [
+        '`COMBAT START`',
+        '`HP: Bandit 90/90 · Alaric 80/80`',
+        '`Alaric: not possible — Arcane Burst is out of range (nothing spent, nothing rolled)`',
+    ].join('\n');
+    showPanel(msg, raw, '<details class="avereth-hud">HUD</details>');
+    assert.match(msg.extra.display_text, /^<details class="avereth-system-panel avereth-system-combat" open><summary>⚙ AVERETH ENGINE · COMBAT LOG<\/summary><div class="avereth-system-lines">/);
+    assert.match(msg.extra.display_text, /avereth-system-heading[^>]*>COMBAT START</);
+    assert.match(msg.extra.display_text, /avereth-system-state[^>]*>HP: Bandit 90\/90/);
+    assert.match(msg.extra.display_text, /avereth-system-warning[^>]*>Alaric: not possible/);
+    assert.match(msg.extra.display_text, /<\/div><\/details>\n\nThe narration remains ordinary prose\.\n\n<details class="avereth-hud">HUD<\/details>$/);
+    assert.doesNotMatch(msg.extra.display_text, /`COMBAT START`/);
+
+    const tactical = { mes: 'Narration.', extra: { avereth: { v: 3 } } };
+    showPanel(tactical, [
+        '`COMBAT START`',
+        '`COMBAT TARGETS — Bandit Leader [SHORT]`',
+        '`HP: Bandit Leader 90/90 · Alaric 80/80`',
+        '`Range: Bandit Leader SHORT`',
+        '`Alaric: MP 56/72 · STA 100/100`',
+        '`Next: Alaric\'s Turn (Round 2)`',
+        '`Alaric\'s attacks vs Bandit Leader: Flame Lance 30–37 damage`',
+    ].join('\n'), '<details class="avereth-hud avereth-combat-hud" open>TACTICAL</details>');
+    assert.doesNotMatch(tactical.extra.display_text, /COMBAT TARGETS|HP: Bandit Leader|Range: Bandit Leader|Alaric: MP|Next: Alaric/);
+    assert.match(tactical.extra.display_text, /COMBAT START/);
+    assert.match(tactical.extra.display_text, /Flame Lance 30–37 damage/);
+    assert.match(tactical.extra.display_text, /TACTICAL/);
 });

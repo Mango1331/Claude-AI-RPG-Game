@@ -45,6 +45,7 @@ test('the schema stays strict internally while the parser fills harmless soft om
     assert.equal(soft.value.deltas[0].name, null);
     assert.equal(soft.value.deltas[0].at, null);
     assert.equal(soft.value.deltas[0].band, null);
+    assert.equal(soft.value.deltas[0].relevant, null, 'new nullable tactical relevance stays backward-compatible with older extractor answers');
 });
 
 test('a missing expected key makes an answer incomplete, not invalid; a wrong id makes it invalid, naming the field', () => {

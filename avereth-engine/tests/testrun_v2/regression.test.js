@@ -115,9 +115,10 @@ test('the player sees the combat in the reply: Initiative, Turn order, rolls and
     // Initiative = floor(1.5 × AGI): Bram Fenn (AGI 6) ties Alaric at 9; the tie was resolved once without bias. The
     // story had said "Bram" since turn 5 but "Fenn" only in the narrator's retired tracker blocks: the player targets
     // "Bram", and no System line tells him the family name before the story does (turn 10)
-    assert.match(turn9, /^`COMBAT START`\n`Initiative: Alaric 9 · Bram 9 → Turn order: Alaric › Bram`/);
-    assert.match(turn9, /`COMBAT TARGETS — Bram \[ENGAGED\]`/);
-    assert.ok(turn9.split('\n').filter((l) => l.startsWith('`')).every((l) => !l.includes('Fenn')), 'no System line names "Fenn"');
+    assert.match(turn9, /^<div class="avereth-system-panel avereth-system-combat">/);
+    assert.match(turn9, /Initiative: Alaric 9 · Bram 9 → Turn order: Alaric › Bram/);
+    assert.match(turn9, /avereth-combat-hud[\s\S]*Bram[\s\S]*ENGAGED/, 'the tactical HUD carries the current target and range');
+    assert.doesNotMatch(turn9, /Fenn/, 'neither the System card nor the tactical HUD names "Fenn" before the story does');
     for (const [i, t] of turns.entries()) {
         const panel = chat[2 * i + 2].extra.avereth.panel || ''; // the reply to turn i: greeting, then user/reply pairs
         for (const r of t.outcome.records || []) for (const s of r.strikes || []) {

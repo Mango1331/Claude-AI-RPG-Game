@@ -194,20 +194,23 @@ function commandLines(o) {
 export function worldPanel(state, content, reply = {}) {
     const o = state.last?.outcome;
     const lines = [];
-    // A creature becoming concretely visible is gameplay-relevant before Combat. Show its canonical handle, locked HP
-    // and Range immediately above the same narration that revealed it. This is NOT Initiative and does not start combat.
+    // A concretely visible actor becoming relevant before Combat gets a player-facing handle + Range immediately
+    // above the same narration that revealed them. Creatures also have their already locked HP; NPC HP stays hidden
+    // until the combat profile is materialised. This is scene information, not Initiative, and starts no fight.
     if (reply?.state && reply?.events) {
         const before = new Set(state.scene?.present || []);
         const revealed = (reply.state.scene?.present || []).filter((id) => {
             const e = reply.state.entities?.[id];
-            if (!e || e.kind !== 'creature' || !e.profile) return false;
-            return !before.has(id) || !state.entities?.[id]?.profile;
+            const pos = reply.state.scene.positions?.[id];
+            if (!e || !['npc', 'creature'].includes(e.kind) || !pos?.band) return false;
+            return !before.has(id) || (e.kind === 'creature' && !state.entities?.[id]?.profile);
         });
         for (const id of revealed) {
             const e = reply.state.entities[id];
             const pos = reply.state.scene.positions?.[id];
-            const hp = e.profile.hp ?? e.profile.max_hp;
-            lines.push(sys(`ACTIVE SCENE — ${sceneHandle(reply.state, content, id)} · HP ${hp}/${e.profile.max_hp} · ${pos?.band || 'Range unknown'}${pos?.cover && pos.cover !== 'none' ? ` · ${pos.cover} cover` : ''}`));
+            const p = e.profile;
+            const hp = p ? ` · HP ${p.hp ?? p.max_hp}/${p.max_hp}` : '';
+            lines.push(sys(`ACTIVE SCENE — ${sceneHandle(reply.state, content, id)}${hp} · ${pos.band}${pos.cover && pos.cover !== 'none' ? ` · ${pos.cover} cover` : ''}`));
         }
     }
     if (o?.kind === 'v4') lines.push(...commandLines(o));
@@ -366,7 +369,9 @@ function recordLines(name, r) {
     const cost = r.actor === 'pc' && r.cost ? ` · ${r.cost.resource.toUpperCase()} ${r.cost.before} - ${r.cost.amount} = ${r.cost.after}` : '';
     const ammo = r.ammo ? ` · ${r.ammo.used} arrow${r.ammo.used > 1 ? 's' : ''}` : '';
     if (r.kind === 'attack') {
-        const move = r.move ? ` (moves ${r.move.from} → ${r.move.to})` : '';
+        const move = r.move ? (r.move.change
+            ? ` (moves closer: ${String(r.move.change).replace(/ -> /g, ' → ')})`
+            : ` (moves ${r.move.from} → ${r.move.to})`) : '';
         const back = r.after_move ? ` · then steps back (${String(r.after_move.change).replace(/ -> /g, ' → ')})` : '';
         const lines = [sys(`${who}${move}: ${r.skill_name}${r.opening ? ' (AMBUSH opening)' : ''} → ${name(r.strikes?.[0]?.target || r.target)}${cost}${ammo}${back}`)];
         const many = (r.strikes || []).length > 1;

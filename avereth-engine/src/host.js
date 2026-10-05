@@ -341,6 +341,30 @@ export function processReply(chat, id, content, { seed, swaps = [], hud = 'close
     return { changed: true, result, recover: pending };
 }
 
+const displayEsc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/** Render engine-owned display lines as a visually distinct System card without changing the stored panel text. */
+function displaySystemPanel(panel, { tactical = false } = {}) {
+    let raw = String(panel || '').split('\n').filter((x) => x.length);
+    if (!raw.length) return '';
+    const clean = (line) => line.startsWith('`') && line.endsWith('`') ? line.slice(1, -1) : line;
+    // During ACTIVE combat the tactical HUD below the narration owns the current snapshot. Keep the System card as the
+    // action/log/refusal record instead of repeating the target table, HP, Range, resources and "Next" a second time.
+    if (tactical) raw = raw.filter((line) => !/^(?:COMBAT TARGETS|HP:|Range:|Alaric: MP |Next:)/.test(clean(line)));
+    const klass = (line) => {
+        if (/not possible|NOT TAKEN|REFUSED|FAILED|NOT RECORDED|NOT APPLIED/i.test(line)) return 'avereth-system-line avereth-system-warning';
+        if (/^(?:COMBAT(?: START| END| —)|— (?:Round|Opening)|Next:)/.test(line)) return 'avereth-system-line avereth-system-heading';
+        if (/^(?:COMBAT TARGETS|HP:|Range:|Alaric: MP|ACTIVE SCENE)/.test(line)) return 'avereth-system-line avereth-system-state';
+        if (/^(?:Initiative:|Alaric's attacks vs )/.test(line)) return 'avereth-system-line avereth-system-info';
+        return 'avereth-system-line';
+    };
+    const combat = raw.some((line) => /COMBAT|Round|Range:|COMBAT TARGETS/.test(clean(line)));
+    return `<div class="avereth-system-panel${combat ? ' avereth-system-combat' : ''}">${raw.map((line) => {
+        const text = clean(line);
+        return `<div class="${klass(text)}">${displayEsc(text)}</div>`;
+    }).join('')}</div>`;
+}
+
 /**
  * Show the engine's System block (combat log, checks) above the reply and the player HUD below it: SillyTavern
  * renders extra.display_text instead of mes, while prompts keep using mes. Only what the engine wrote is replaced or
@@ -349,7 +373,10 @@ export function processReply(chat, id, content, { seed, swaps = [], hud = 'close
 export function showPanel(msg, panel, hud = '') {
     if (!msg.extra || typeof msg.extra !== 'object') msg.extra = {};
     const r = rec(msg);
-    if (panel || hud) msg.extra.display_text = [panel, msg.mes, hud].filter(Boolean).join('\n\n');
+    if (panel || hud) {
+        const tactical = String(hud || '').includes('avereth-combat-hud');
+        msg.extra.display_text = [panel ? displaySystemPanel(panel, { tactical }) : '', msg.mes, hud].filter(Boolean).join('\n\n');
+    }
     else if ((r?.panel || r?.hud) && typeof msg.extra.display_text === 'string') delete msg.extra.display_text;
 }
 

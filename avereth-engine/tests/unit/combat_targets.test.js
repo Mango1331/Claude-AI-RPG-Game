@@ -9,6 +9,10 @@ import { worldRows, renderHud } from '../../src/hud.js';
 import { prepareGeneration, processReply, foldChat, reportRequest, applyReportAnswer } from '../../src/host.js';
 import { propText } from '../../src/knowledge.js';
 import { hash32 } from '../../src/util.js';
+import { applyEvent } from '../../src/state.js';
+import { Dice } from '../../src/rng.js';
+import { materialise } from '../../src/engine.js';
+import { initEncounter, attackAction } from '../../src/combat.js';
 
 const content = await loadContent();
 
@@ -303,4 +307,56 @@ test('the host: an unclear target in a fight posts the System panel, hides the l
     chat[1].is_system = true; // index.js
     assert.equal(prepareGeneration(chat, content, { type: 'regenerate' }).action, 'abort');
     assert.deepEqual(foldChat(chat).state.encounter, g.state.encounter);
+});
+
+
+test('Prototype C targetless close-in + Arcane Burst moves the whole hostile field one band, then hits only foes actually ENGAGED', () => {
+    const g = new Game(content);
+    g.turn('Mage');
+    g.turn('Flame Lance + Arcane Burst');
+    g.reply({
+        new: [
+            { ref: 'leader', kind: 'npc', desc: ['bandit leader'], band: 'SHORT' },
+            { ref: 'crossbow', kind: 'npc', desc: ['crossbow bandit'], band: 'MEDIUM' },
+            { ref: 'young1', kind: 'npc', desc: ['young bandit'], band: 'MEDIUM' },
+            { ref: 'young2', kind: 'npc', desc: ['young bandit'], band: 'MEDIUM' },
+        ],
+    }, 'Four bandits are visible around the camp.');
+
+    const s = structuredClone(g.state);
+    const ids = s.scene.present.filter((id) => id !== 'pc');
+    const byWords = (words) => ids.find((id) => (s.entities[id].descriptors || []).join(' ').includes(words));
+    const leader = byWords('bandit leader');
+    const crossbow = byWords('crossbow bandit');
+    assert.ok(leader && crossbow && ids.length === 4);
+
+    s.meta.runtime = 'v4';
+    const dice = Dice.from(s);
+    for (const id of ids) materialise(s, content, dice, (e) => applyEvent(s, e), id);
+    const enc = initEncounter(s, content, dice,
+        { actor: 'pc', target: crossbow, skill: 'mage.arcane_burst', move: 'closer', move_target: null },
+        ids.map((id) => ({ id, side: 'hostile' })), 'enc.aoe.test');
+    assert.equal(enc.combatants[leader].label, 'Bandit Leader');
+    assert.equal(enc.combatants[crossbow].label, 'Crossbow Bandit');
+    assert.deepEqual(ids.filter((id) => id !== leader && id !== crossbow).map((id) => enc.combatants[id].label).sort(), ['Young Bandit A', 'Young Bandit B']);
+    enc.combatants[crossbow].current.cover = 'full'; // nominal AoE routing target: it is not the foe the burst will hit
+    const mpBefore = enc.combatants.pc.current.mp;
+    const r = attackAction({ enc, content, dice, state: s, c: true }, 'pc', crossbow, 'mage.arcane_burst', { move: 'closer', moveTarget: null });
+
+    assert.equal(r.illegal, undefined);
+    assert.match(r.move?.change || '', /SHORT -> ENGAGED/);
+    assert.equal(enc.combatants[leader].current.band, 'ENGAGED');
+    for (const id of ids.filter((id) => id !== leader)) assert.equal(enc.combatants[id].current.band, 'SHORT');
+    assert.deepEqual(r.strikes.map((x) => x.target), [leader], 'AoE hits the foe that is actually ENGAGED after the dash, not the nominal MEDIUM target');
+    assert.equal(enc.combatants.pc.current.mp, mpBefore - 14);
+
+    const enc2 = initEncounter(s, content, Dice.from(s),
+        { actor: 'pc', target: crossbow, skill: 'mage.arcane_burst', move: 'closer', move_target: null },
+        ids.map((id) => ({ id, side: 'hostile' })), 'enc.aoe.too_far');
+    for (const id of ids) enc2.combatants[id].current.band = 'MEDIUM';
+    const mp2 = enc2.combatants.pc.current.mp;
+    const no = attackAction({ enc: enc2, content, dice: Dice.from(s), state: s, c: true }, 'pc', crossbow, 'mage.arcane_burst', { move: 'closer', moveTarget: null });
+    assert.match(no.illegal, /needs a valid target ENGAGED/);
+    assert.equal(enc2.combatants.pc.current.mp, mp2, 'illegal combined action spends nothing');
+    assert.ok(ids.every((id) => enc2.combatants[id].current.band === 'MEDIUM'), 'illegal combined action commits no partial movement');
 });

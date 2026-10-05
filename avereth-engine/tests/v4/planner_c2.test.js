@@ -397,11 +397,11 @@ test('#assign: one pair as before, several pairs whole, nothing at all when any 
 });
 
 // ------------------------------------------------------------------------------------------------ E. vocabulary
-test('the narrator preset asks for familiar modern words for ordinary medieval things; the contract is unchanged', () => {
+test('the narrator preset asks for familiar modern words for ordinary medieval things; the contract carries the current revision', () => {
     const preset = JSON.parse(fs.readFileSync(path.join(ROOT, 'presets/Avereth Narrator V4.json'), 'utf8'));
     const style = preset.prompts.find((p) => p.identifier === 'main').content;
     assert.match(style, /Prefer familiar, modern English words for ordinary medieval things\. Avoid rare or archaic historical terms used only for atmosphere; when a period term is genuinely useful, make its meaning clear from context the first time it appears\. Modern wording is fine; modern technology is not\./);
     const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
-    // 4.3.0-c.6.2 changed the contract (the Guild's contract slips instead of the hunt trophies), not c.2
+    // later Prototype C builds changed the contract; c.2 still owns only the style assertion above
     assert.match(contract, /^AVERETH RPG — SANDBOX NARRATOR CONTRACT\nContract revision: 4\.3\.0-c\.6\.2\n/);
 });

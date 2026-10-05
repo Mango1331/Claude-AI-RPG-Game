@@ -1,10 +1,10 @@
-# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.6.2)
+# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.6.3-gpt)
 
 Stand: 02.10.2026.
 
 | | |
 |---|---|
-| Branch | `claude/c-planner-prototype-2026-10-02` |
+| Branch | `claude/c-planner-prototype-2026-10-02-gpt` |
 | Ausgangscommit | `90bd450` (Build 4.2.1, „Stand A“). Ohne Flag läuft A unverändert (§8) |
 | Arbeitshypothese (eingefroren) | `docs/ARCHITECTURE_C.md` Rev. 3 auf `chatgpt/narrator-gm-tools-2026-10-02` @ `717e2f7`. Sie wird hier nicht weiterentwickelt; dieses Dokument nennt nur, wo der Prototyp bewusst von ihr abweicht (§7) |
 | Schalter | Engine-Einstellung **„Prototype C: semantic planner“** (`planner`), Standard **aus** |
@@ -251,10 +251,10 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.2`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.3-gpt`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
-   - Vertrag v4 (Revision 4.2.0, unverändert), Preset „Avereth Narrator V4“, Lorebook v0.13.
+   - Vertrag v4 (Revision 4.3.0-c.6.3-gpt), Preset „Avereth Narrator V4“, Lorebook v0.13.
 3. **Schalter:** Engine-Panel → **„Prototype C: semantic planner“** anhaken.
    - Er gilt für jede V4-Kampagne, auch eine laufende, ab der nächsten Nachricht.
    - Ausschalten bringt A zurück.
@@ -586,3 +586,13 @@ Es gibt keinen neuen LLM-Aufruf (der Repair ist der bestehende zweite Versuch), 
   - Die anerkannten Niederlassungen der Gilde geben standardisierte, schwach verzauberte Contract Slips aus. Ein Slip zeigt nur den festgestellten Status (ACTIVE, READY, COMPLETED), überwacht nichts und zahlt nichts aus.
   - Körperteile sind Beute oder echte Questgegenstände, wenn ihr Beschaffen selbst ein Objective ist.
 - **Board:** Nur das Lesen, das das Board des Tages aushängt, zeigt die Aushänge als neu. Ein weiteres Lesen am selben Tag zeigt dieselben, ausdrücklich nicht als neu.
+
+### Nachtrag 4.3.0-c.6.3-gpt
+
+Der Live-Lauf vom 05.10.2026 zeigte vier kleine, voneinander getrennte Restfehler. Dieser GPT-Branch behebt sie ohne neuen LLM-Aufruf und ohne Änderung der Kampfmechanik:
+
+- **Agency-Guard / „next time“:** Ein langes Planner-Zitat enthielt erst „let's get together next time“ und danach die ausdrücklich jetzige Handlung „travel back …“. Die alte Planprüfung verband den Future-Marker mit einem früheren `return` und ließ dadurch die wirkliche Reise samt `needs`-Kette ausfallen. Für die Planprüfung muss der Future-Modal nun das letzte Handlungsverb des betreffenden Commands regieren. Echte Pläne wie „Tomorrow I'll walk …“ und „I'll walk … tomorrow“ bleiben Pläne.
+- **`quest.ready`:** Der Escort erreichte seinen ausdrücklich genannten Endzustand („We're delivered“; Wagen/Fahrer am Ziel), der Extraktor speicherte aber nur Fakten/Memory. Die semantische Zuständigkeit bleibt beim Extraktor; er bekommt deshalb direkt nach der REPLY einen abschließenden Pflichtcheck gegen jeden aktiven Guild-`desired_end_state`. Ein klar erreichtes Ergebnis muss zusätzlich `quest.ready` ergeben. Kein Regex-Questresolver und kein automatisches READY nur aufgrund eines Ortsnamens wurden eingeführt.
+- **NOT DONE bleibt nicht getan:** Der Erzähler darf eine von der Engine als NOT DONE/CANNOT/REFUSED/NOT TAKEN markierte Handlung und deren Ausführungsschritte nicht nachträglich erzählen.
+- **PC-Sprache und Ortsidentität:** Der Erzähler schreibt Alaric keine nicht vom Spieler gegebenen gesprochenen Sätze und benennt bereits etablierte Orte nicht für Atmosphäre um. Ein bekannter Ort behält seinen kanonischen Namen.
+\n

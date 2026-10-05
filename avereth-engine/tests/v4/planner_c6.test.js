@@ -16,6 +16,8 @@ import { applyWorld } from '../../src/v4/world.js';
 import { applyEvent } from '../../src/state.js';
 import { SLIP_READY, SLIP_DONE, contractReady, boardRequest } from '../../src/v4/guild.js';
 import { NARRATOR_CONTRACT_REVISION } from '../../src/util.js';
+import { guardCommands } from '../../src/v4/agency.js';
+import { extractorUser } from '../../src/v4/extract.js';
 
 const content = await loadContent();
 const fx = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests/v4/live_1004b.json'), 'utf8'));
@@ -489,4 +491,53 @@ test('c.6.2: the narrator contract asks no trophies of a hunt; the Guild\'s cont
     assert.match(contract, /The Adventurers' Guild issues standardized, lightly enchanted contract slips at its recognized branches\. A slip only reflects the contract status the Guild and the engine have established \(e\.g\. ACTIVE, READY, COMPLETED\); it does not watch the world on its own and pays nothing out\./);
     assert.match(contract, /Body parts of kills stay ordinary loot, or real quest items when getting a body part is itself an objective\./);
     assert.equal(contract.split('\n')[1], NARRATOR_CONTRACT_REVISION, 'a card with the old contract shows as outdated');
+});
+
+
+// ------------------------------------------------------------------------------------------------ c.6.3-gpt live follow-up
+test('c.6.3-gpt: an unrelated "next time" does not turn a later explicit current journey into a plan; real future travel still drops', () => {
+    const message = 'thank you im sure we will get to a drink back at Ashwater but ill have to return today so lets get together next time *i say politely and then travel back to Ashwater and into the guild there. In the guild hall i turn the quest in with the quest slip*';
+    const commands = [
+        { seq: 1, type: 'go', to: 'loc.ashbridge', quote: 'ill have to return today so lets get together next time *i say politely and then travel back to Ashwater' },
+        { seq: 2, type: 'go', to: { new: 'the guild hall in Ashwater' }, needs: 1, quote: 'and into the guild there' },
+        { seq: 3, type: 'quest.turn_in', quest: 'quest.wagon_escort_to_reedford_ferry', needs: 2, quote: 'In the guild hall i turn the quest in with the quest slip' },
+    ];
+    const live = guardCommands(message, commands, { guildHalls: new Set(), inGuildHall: false, present: [], objects: new Map(), member: true });
+    assert.deepEqual(live.dropped, []);
+    assert.deepEqual(live.kept.map((x) => x.seq), [1, 2, 3]);
+
+    for (const [text, quote] of [
+        ["Tomorrow I'll walk to Ashbridge.", "I'll walk to Ashbridge"],
+        ["I'll walk to Ashbridge tomorrow.", "I'll walk to Ashbridge"],
+    ]) {
+        const future = guardCommands(text, [{ seq: 1, type: 'go', to: 'loc.ashbridge', quote }], {});
+        assert.deepEqual(future.kept, []);
+        assert.equal(future.dropped[0]?.rule, 'plan');
+    }
+});
+
+test('c.6.3-gpt: the extractor is explicitly required to turn a clearly achieved active Guild outcome into quest.ready, not only fact/memory', () => {
+    const rules = content.deltaVocab.rules.join('\n');
+    assert.match(rules, /For every active Guild contract in the CATALOG, compare THIS reply with its desired end state before answering\./);
+    assert.match(rules, /you MUST emit quest\.ready even if you also emit arrive, fact, quest\.progress or memory; do not leave a clearly achieved contract outcome only as a fact or memory/);
+
+    const user = extractorUser({
+        catalog: 'CATALOG\nQUESTS: quest.wagon (Wagon Escort · Guild contract · active · desired outcome: The wool wagon and its driver arrive intact at Reedford Ferry.)',
+        actions: '1. DEPARTS/CONTINUES — the established escort journey.',
+        player: '*we continue the escort*',
+        expectedKeys: {},
+        vocab: content.deltaVocab,
+        reply: 'The wagon rolled into Reedford Ferry intact. "Made it," Odo said. "We\'re delivered."',
+    });
+    assert.match(user, /QUEST OUTCOME CHECK: Before answering, compare this reply with every active Guild contract's desired end state in the CATALOG\./);
+    assert.match(user, /quest\.ready is required even when arrival\/facts\/memory are also reported; fact or memory alone is not enough\./);
+});
+
+test('c.6.3-gpt: narrator contract treats refused actions as absent, never supplies Alaric dialogue, and preserves canonical place names', () => {
+    const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
+    assert.match(contract, /A PLAYER ACTION marked NOT DONE, CANNOT, REFUSED, NOT TAKEN or otherwise explicitly saying it did not happen is a prohibition/);
+    assert.match(contract, /Do not narrate that action or its ordinary execution steps: no travel\/arrival, payment, hand-over, turn-in, attack or other consequence from it/);
+    assert.match(contract, /Never write spoken words for Alaric that the current PLAYER MESSAGE did not actually give him as speech/);
+    assert.match(contract, /Established place names are identities, not atmosphere\. Keep the canonical name shown by the engine or already established in play/);
+    assert.match(contract, /never rename a known city, settlement, road, building or other place for flavor/);
 });

@@ -238,7 +238,24 @@ function negated(text, type) {
 function planned(text, type) {
     const lemmas = lemmaRe(type);
     if (!lemmas || !FUTURE_ANCHOR.test(text)) return false;
-    return new RegExp(`\\b${FUTURE_MODAL}\\s+(?:[a-z']+\\s+){0,2}?(?:${lemmas})\\b`).test(text);
+    // c.6.3-gpt live regression: a long exact quote contained "let's get together next time" and then
+    // "travel back to Ashwater". The old check paired that unrelated future anchor with an earlier "I'll ... return"
+    // and dropped the later, present travel. A command quote may contain several verbs; the future modal must govern
+    // the LAST verb of this command in the evidence, which is the act the planner is actually anchoring.
+    const actions = new RegExp(`\\b(?:${lemmas})\\b`, 'g');
+    let last = null;
+    let m;
+    while ((m = actions.exec(text))) {
+        last = { start: m.index, end: actions.lastIndex };
+        if (!m[0].length) actions.lastIndex += 1;
+    }
+    if (!last) return false;
+    const future = new RegExp(`\\b${FUTURE_MODAL}\\s+(?:[a-z']+\\s+){0,2}?(?:${lemmas})\\b`, 'g');
+    while ((m = future.exec(text))) {
+        if (m.index <= last.start && future.lastIndex >= last.end) return true;
+        if (!m[0].length) future.lastIndex += 1;
+    }
+    return false;
 }
 
 const idOf = (ref) => (typeof ref === 'string' ? ref : null);

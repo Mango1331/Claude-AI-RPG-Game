@@ -141,6 +141,8 @@ export function extractorUser({ catalog, actions, player = null, expectedKeys, v
         expectedText(vocab, expectedKeys),
         '',
         `REPLY:\n${reply}`,
+        '',
+        'QUEST OUTCOME CHECK: Before answering, compare this reply with every active Guild contract\'s desired end state in the CATALOG. If one is clearly achieved in this reply, quest.ready is required even when arrival/facts/memory are also reported; fact or memory alone is not enough.',
     ].join('\n');
 }
 

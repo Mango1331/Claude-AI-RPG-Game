@@ -362,19 +362,21 @@ test('defensive Skill effect lasts until the start of the user\'s next Turn (Cor
     assert.equal(res.stopped, 'pc_turn');
 });
 
-test('NPC policy: skittish flees, aggressive closes in, non-hostile unharmed person seeks cover', () => {
+test('NPC policy without personality tags: creatures use tactical state; peaceful people seek safety until hostility/harm or explicit intent', () => {
     const g = newRanger();
     spawn(g, 'mon.deer', { anchor: 'deer', band: 'SHORT' });
     spawn(g, 'mon.wolf', { anchor: 'wolf', band: 'MEDIUM' });
     applyEvent(g.state, { t: 'entity.created', d: { entity: { id: 'npc.hunter', kind: 'npc', name: 'Hunter', descriptors: ['hunter'], status: 'alive', location: g.state.scene.location } } });
-    applyEvent(g.state, { t: 'entity.sheet_set', d: { id: 'npc.hunter', sheet: { ...humanSheet(content.templates.get('hunter'), {}, content), generated: { temperament: 'cautious' } } } });
+    applyEvent(g.state, { t: 'entity.sheet_set', d: { id: 'npc.hunter', sheet: humanSheet(content.templates.get('hunter'), {}, content) } });
     applyEvent(g.state, { t: 'scene.entered', d: { id: 'npc.hunter', band: 'MEDIUM' } });
     const ctx = encounter(g, scriptedDice(), { actor: 'pc', target: 'mon.wolf', skill: 'ranger.aimed_shot' }, ['mon.deer', 'mon.wolf', 'npc.hunter']);
-    assert.equal(npcDecide(ctx, 'mon.deer').kind, 'flee');
+    assert.equal(npcDecide(ctx, 'mon.deer').kind, 'close_and_attack');
     assert.equal(npcDecide(ctx, 'mon.wolf').kind, 'close_and_attack');
     assert.equal(npcDecide(ctx, 'npc.hunter').kind, 'cover');
     ctx.enc.combatants['npc.hunter'].current.hp -= 10;
-    assert.equal(npcDecide(ctx, 'npc.hunter').kind, 'close_and_attack', 'once hurt, its temperament decides');
+    assert.equal(npcDecide(ctx, 'npc.hunter').kind, 'close_and_attack', 'once hurt, concrete combat state permits retaliation');
+    ctx.enc.intents['npc.hunter'] = 'flee';
+    assert.deepEqual(npcDecide(ctx, 'npc.hunter'), { kind: 'flee', why: 'narrated intent' });
 });
 
 test('DefeatXP: Level*base_per_level × rank-gap × type, locked against the PC Rank at encounter start (Core #25)', () => {

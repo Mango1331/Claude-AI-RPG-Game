@@ -357,7 +357,7 @@ test('fauna: a hunting contract makes the kind it names its targets, not other k
     assert.equal(individual(job('the wolves harrying the sheep'), 'sheep', 'deer'), 0, 'the victims an objective names are not its targets');
     assert.equal(individual(job('the rats gnawing the grain sacks'), 'rats', 'rat', 8), 8);
     assert.equal(individual(after(structuredClone(base)), 'sheep', 'deer'), 0, 'no contract: background');
-    assert.equal(individual(job('wild goats'), 'wolves', 'wolf', 5), 5, 'aggressive packs stay individual regardless');
+    assert.equal(individual(job('wild goats'), 'wolves', 'wolf', 5), 0, 'an unrelated uncommitted large pack may remain background without a species behaviour tag');
 });
 
 // ------------------------------------------------------------------------------------------------ 6. C3

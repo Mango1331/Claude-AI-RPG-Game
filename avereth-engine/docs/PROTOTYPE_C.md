@@ -1,10 +1,10 @@
-# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.6.5-gpt)
+# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.6.5-gpt-notemp)
 
 Stand: 02.10.2026.
 
 | | |
 |---|---|
-| Branch | `claude/c-planner-prototype-2026-10-02-gpt` |
+| Branch | `claude/c-planner-prototype-2026-10-02-gpt-no-temperament` |
 | Ausgangscommit | `90bd450` (Build 4.2.1, „Stand A“). Ohne Flag läuft A unverändert (§8) |
 | Arbeitshypothese (eingefroren) | `docs/ARCHITECTURE_C.md` Rev. 3 auf `chatgpt/narrator-gm-tools-2026-10-02` @ `717e2f7`. Sie wird hier nicht weiterentwickelt; dieses Dokument nennt nur, wo der Prototyp bewusst von ihr abweicht (§7) |
 | Schalter | Engine-Einstellung **„Prototype C: semantic planner“** (`planner`), Standard **aus** |
@@ -251,7 +251,7 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.5-gpt`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.5-gpt-notemp`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
    - Vertrag v4 (Revision 4.3.0-c.6.5-gpt), Preset „Avereth Narrator V4“, Lorebook v0.13.
@@ -619,4 +619,16 @@ Der Live-Lauf vom 06.10.2026 schärft vier Grenzen, ohne den Planner wieder durc
 - **Reise/Return-Memory:** `scene.history` wird deterministisch aus den Bewegungsereignissen gefaltet und dem semantischen Planner als RECENT ROUTE gegeben. Begriffe wie „back“, „return“ und „the city“ sollen damit auf bekannte Ziele auflösen statt einen neuen generischen Ort zu erzeugen. Eine begonnene Journey läuft durch gewöhnliche Wegstrecken und Gespräche bis Ziel oder echter Entscheidung/Komplikation.
 - **Quest-Endzustand:** Der Board-Generator muss im `desired_end_state` sämtliche substantiell erforderlichen Ergebnisse enthalten. Objectives dürfen keine zusätzliche Pflicht verstecken, die der Endzustand nicht nennt.
 - **Combat-Handles:** Der aktive C-Pfad wird bis in Encounter/Joiner-Labeling getragen; eine eindeutige anonyme Rolle bleibt z. B. `Bandit Leader`, während echte Dubletten `Young Bandit A/B` bleiben.
+
+### Experiment 4.3.0-c.6.5-gpt-notemp
+
+Diese Branch-Variante startet exakt vom normalen c.6.5-gpt-Stand und entfernt die vorab zugewiesene Verhaltenskategorie vollständig aus Engine und Content:
+
+- Monster-Anker und NPC-Templates tragen kein solches Feld.
+- Generierte Creature-/NPC-Profile und Combat-Snapshots tragen es nicht.
+- `opensViolence`, World Envelope und `npcDecide` erhalten/lesen keine solche Kategorie.
+- Nicht-sapiente Reaktionen werden nicht vorab als Flucht/Angriff/Defensive klassifiziert. Expliziter Story-Intent gewinnt; ohne Intent entscheidet nur der konkrete Combat-Zustand.
+- Sapiente Figuren bleiben durch konkrete Zustände begrenzt: etablierte Feindseligkeit, erlittenen Angriff/Schaden, Range, Cover und expliziten Intent.
+- Der Narrator Contract ist identisch mit c.6.5-gpt; deshalb bleibt seine Contract Revision `4.3.0-c.6.5-gpt`. Nur die Engine-Version trägt `-notemp`.
+- Diese Variante ist bewusst kein Flag-off/A-Kompatibilitätstest: die Content-/Combat-Grundlage unterscheidet sich absichtlich und soll live gegen den normalen c.6.5-gpt-Branch verglichen werden.
 

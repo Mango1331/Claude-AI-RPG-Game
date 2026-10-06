@@ -21,7 +21,6 @@
         "mice",
         "rodent"
       ],
-      "temperament": "skittish",
       "source_line": "16 / 6 / 0 / 0 / 10 | Bite | Physical | ENGAGED",
       "kinds": [
         "vermin",
@@ -52,7 +51,6 @@
         "coyote",
         "fox"
       ],
-      "temperament": "aggressive",
       "source_line": "23 / 9 / 0 / 0 / 12 | Bite | Physical | ENGAGED"
     },
     {
@@ -75,7 +73,6 @@
         "hog",
         "swine"
       ],
-      "temperament": "aggressive",
       "source_line": "41 / 11 / 2 / 0 / 7 | Gore | Physical | ENGAGED"
     },
     {
@@ -99,7 +96,6 @@
         "antelope",
         "goat"
       ],
-      "temperament": "skittish",
       "source_line": "27 / 7 / 0 / 0 / 14 | Kick/Antler | Physical | ENGAGED"
     },
     {
@@ -125,7 +121,6 @@
         "cattle",
         "bull"
       ],
-      "temperament": "skittish",
       "source_line": "38 / 8 / 1 / 0 / 12 | Kick | Physical | ENGAGED"
     },
     {
@@ -144,7 +139,6 @@
         "bear",
         "bears"
       ],
-      "temperament": "aggressive",
       "source_line": "63 / 14 / 2 / 1 / 5 | Claw/Bite | Physical | ENGAGED"
     },
     {
@@ -169,7 +163,6 @@
         "tiger",
         "feline"
       ],
-      "temperament": "aggressive",
       "source_line": "30 / 10 / 0 / 0 / 13 | Claw/Bite | Physical | ENGAGED"
     },
     {
@@ -190,7 +183,6 @@
         "viper",
         "adder"
       ],
-      "temperament": "defensive",
       "source_line": "20 / 8 / 0 / 1 / 11 | Bite | Physical | ENGAGED"
     },
     {
@@ -216,7 +208,6 @@
         "crow",
         "raven"
       ],
-      "temperament": "skittish",
       "source_line": "18 / 7 / 0 / 0 / 15 | Talons/Beak | Physical | ENGAGED",
       "kinds": [
         "bird"
@@ -243,7 +234,6 @@
         "ant",
         "wasp"
       ],
-      "temperament": "aggressive",
       "source_line": "24 / 8 / 2 / 0 / 8 | Bite/Sting | Physical | ENGAGED"
     },
     {
@@ -267,7 +257,6 @@
         "crocodile",
         "alligator"
       ],
-      "temperament": "aggressive",
       "source_line": "36 / 11 / 1 / 0 / 10 | Bite | Physical | ENGAGED"
     },
     {
@@ -289,7 +278,6 @@
         "goblins",
         "kobold"
       ],
-      "temperament": "cautious",
       "source_line": "45 / 11 / 1 / 1 / 8 | Natural/unarmed strike | Physical | ENGAGED"
     },
     {
@@ -309,7 +297,6 @@
         "ogres",
         "troll"
       ],
-      "temperament": "aggressive",
       "source_line": "90 / 18 / 2 / 0 / 3 | Slam | Physical | ENGAGED"
     },
     {
@@ -330,7 +317,6 @@
         "tortoise",
         "turtle"
       ],
-      "temperament": "defensive",
       "source_line": "70 / 12 / 5 / 1 / 5 | Body strike/Bite | Physical | ENGAGED"
     },
     {
@@ -350,7 +336,6 @@
         "wisp",
         "ghost"
       ],
-      "temperament": "aggressive",
       "source_line": "40 / 14 / 0 / 5 / 10 | Magical discharge | Magical | MEDIUM"
     }
   ],

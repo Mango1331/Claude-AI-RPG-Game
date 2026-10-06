@@ -6,7 +6,6 @@
 // state of each step: one constraint, two uses. Nothing here is a new rule: the violence policy is the fight's own
 // (src/policy.js, shared with npcDecide), who may take Alaric's coin or things is the world applier's coercion rule.
 import { opensViolence } from '../policy.js';
-import { templateFor } from '../content.js';
 import { deriveCharacter } from '../derived.js';
 import { truth, statusOf } from '../knowledge.js';
 import { sceneHandle } from './scene_handles.js';
@@ -16,12 +15,6 @@ export const ENVELOPE_VERSION = 'envelope-1';
 // who may fine or confiscate (an authority) and who may rob (a hostile robber), by role
 const AUTHORITY_ROLE = /\b(?:guard|watch(?:man)?|sergeant|captain|constable|reeve|bailiff|magistrate|official|officer|toll ?keeper|tax|customs|steward|marshal|warden)\b/i;
 const HOSTILE_ROLE = /\b(?:bandit|thief|robber|brigand|cutpurse|pickpocket|thug|highwayman)\b/i;
-
-/** An NPC's template as the fight would build it (engine.js materialise): its own, by its words, else a commoner. */
-function templateOf(content, e) {
-    const words = [...(e.descriptors || []), e.traits || ''].join(' ');
-    return content.templates.get(e.template) || templateFor(content, words) || content.templates.get('commoner') || null;
-}
 
 /** Is the actor hurt (its HP below its maximum)? */
 function hurt(content, e) {
@@ -33,12 +26,8 @@ function hurt(content, e) {
 /** What the violence policy reads about an actor, from the state as it is now. */
 export function actorTraits(state, content, id) {
     const e = state.entities[id];
-    const sapient = e.kind !== 'creature';
-    const temperament = sapient
-        ? e.card?.temperament || e.sheet?.generated?.temperament || templateOf(content, e)?.temperament || null
-        : e.profile?.temperament || content.anchors.get(e.anchor || e.profile?.anchor)?.temperament || null;
     return {
-        sapient, temperament,
+        sapient: e.kind !== 'creature',
         attitude: state.relations?.[`rel.${id}.attitude.pc`]?.value ?? 0,
         harmed: hurt(content, e),
         band: state.scene?.positions?.[id]?.band || null,
@@ -56,12 +45,7 @@ export function mayOpenFight(state, content, id, { newInAnswer = false, c = fals
     if (newInAnswer) return { ok: true, why: 'introduced by this reply' };
     if (state.encounter?.combatants?.[id]) return { ok: true, why: 'already fighting' };
     if ((state.pending_combat || []).some((p) => p.by === id)) return { ok: true, why: 'already committed' };
-    const traits = actorTraits(state, content, id);
-    const v = opensViolence(traits);
-    // Prototype C (4.3.0-c.4): an animal's temperament is a strong tendency, not a law. The story may give it a cause
-    // (cornered, its mate killed); the engine still resolves the attack on the animal's own turn, damage included.
-    // People keep their rule (provoked_only)
-    return c && !v.ok && !traits.sapient ? { ...v, ok: true, tendency: true } : v;
+    return opensViolence(actorTraits(state, content, id));
 }
 
 /** The words of an actor's role (occupation, descriptors, look, template). */
@@ -104,19 +88,12 @@ export function reactionEnvelope(state, content, { c = false } = {}) {
 
 const RULE_LINES = {
     provoked_only: (names) => `Violent only once the story gives them cause first (an insult, a threat, harm): ${names}.`,
-    cornered_only: (names) => `Flee from threats; fight only when cornered (ENGAGED): ${names}.`,
-    reach_only: (names) => `Fight only what comes within reach (ENGAGED): ${names}.`,
-};
-// Prototype C (4.3.0-c.4): the same animals, their temperament a tendency the story may overrule with a cause
-const TENDENCY_LINES = {
-    cornered_only: (names) => `Skittish by nature, a tendency and not a law: they flee from threats and fight when cornered or given cause: ${names}.`,
-    reach_only: (names) => `Defensive by nature, a tendency and not a law: they fight what comes within reach, or when given cause: ${names}.`,
 };
 
 /**
  * The narrator's part of the envelope (the engine block's WORLD ENVELOPE): only the limits, grouped, nothing for a
- * scene without them. A V4 story outside a fight; the fight's own block rules it otherwise. On the planner path (c)
- * an animal's temperament is named as the tendency it is there.
+ * scene without them. A V4 story outside a fight; the fight's own block rules it otherwise. This experimental branch
+ * carries no personality category in the envelope.
  * @returns {string[]}
  */
 export function envelopeLines(state, content, { c = false } = {}) {
@@ -126,7 +103,7 @@ export function envelopeLines(state, content, { c = false } = {}) {
     const lines = [];
     for (const [rule, line] of Object.entries(RULE_LINES)) {
         const names = env.actors.filter((a) => (!a.fight.ok || a.fight.tendency) && a.fight.rule === rule).map((a) => a.label);
-        if (names.length) lines.push(((c && TENDENCY_LINES[rule]) || line)(names.join(', ')));
+        if (names.length) lines.push(line(names.join(', ')));
     }
     const fine = env.actors.filter((a) => a.fine).map((a) => a.label);
     const rob = env.actors.filter((a) => a.rob).map((a) => a.label);

@@ -282,7 +282,6 @@ export function materialise(s, content, dice, emit, id) {
         tpl = { ...tpl, skills: cls.skill_pool.slice(0, 2) };
     }
     const sheet = humanSheet(tpl, overrides, content);
-    sheet.generated.temperament = tpl.temperament;
     // kit containers (quiver) fill the inventory: an NPC archer carries real, finite arrows like Alaric
     if (tpl.gear_from_starter_kit) for (const i of content.kits[overrides.class].map((x) => content.items.get(x))) for (const [item, qty] of Object.entries(i?.contains || {})) sheet.inventory[item] = (sheet.inventory[item] || 0) + qty;
     emit({ t: 'entity.sheet_set', d: { id, sheet } });

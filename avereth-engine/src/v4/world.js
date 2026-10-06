@@ -239,13 +239,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         .flatMap((q) => (q.objectives || []).filter((o) => o.verb === 'ATTACK' || o.verb === 'DEFEAT'))
         .some((o) => namesKind(o.what, d.species, anchor));
     const newEntity = (d, kind) => {
-        // A large group of skittish animals (their body-plan's temperament: a flock, a herd, a flight of birds) that nobody
-        // set on Alaric is the scene's background, one fact, not a dozen combat profiles (live 30.09.2026: twelve penned
-        // sheep). A pack of aggressive, defensive or cautious creatures stays individual, whatever its size, and so do
-        // the animals an active contract is to attack or defeat (the rats of a cellar job); one animal singled out later
-        // is a creature.new of its own.
+        // A large creature group that is only background fauna is one scene fact, not a dozen combat profiles
+        // (live 30.09.2026: twelve penned sheep). The distinction is contextual: a hunted/hostile/active-combat group
+        // stays concrete; an unthreatening background group may stay aggregate.
         const anchor = kind === 'creature' ? content.anchors.get(d.anchor) : null;
-        if (anchor?.temperament === 'skittish' && d.count > 4 && !hunted(d, anchor) && !s.encounter && !hostileRefs.has(normText(d.ref))) {
+        if (kind === 'creature' && d.count > 4 && !hunted(d, anchor) && !s.encounter && !hostileRefs.has(normText(d.ref))) {
             setFactEvents(s, { s: s.scene.at, p: 'background_fauna', o: `${d.count} ${d.species}`, source: { kind: 'narration', msg }, importance: 0.3 }).forEach(emit);
             return [];
         }

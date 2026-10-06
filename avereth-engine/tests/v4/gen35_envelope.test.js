@@ -51,70 +51,49 @@ const WOLF = creature('mon.wolf', 'grey wolf', 'wolf');
 const ADDER = creature('mon.adder', 'marsh adder', 'serpent');
 
 // ------------------------------------------------------------------------------------------------ the policy
-test('one violence policy: npcDecide in a fight and the envelope before the story ask the same function', () => {
-    // npcDecide: a sapient combatant that is not hostile, not hurt, not attacked and not aggressive does not open with violence
-    const decide = (temperament, attitude, hp = 20) => {
-        const me = { id: 'npc.x', model: 'character', side: 'hostile', fixed: { max_hp: 20, temperament, sapient: true, actions: {} }, current: { hp, band: 'ENGAGED', cover: 'none', effects: [] } };
+test('one violence policy: concrete hostility/harm agrees with npcDecide; creatures have no pre-assigned reaction class', () => {
+    const decidePerson = (attitude, hp = 20) => {
+        const me = { id: 'npc.x', model: 'character', side: 'hostile', fixed: { max_hp: 20, sapient: true, actions: {} }, current: { hp, band: 'ENGAGED', cover: 'none', effects: [] } };
         const pc = { id: 'pc', model: 'character', side: 'pc', fixed: { max_hp: 30, sapient: true, actions: {} }, current: { hp: 30, band: null, cover: 'none', effects: [] } };
         const enc = { combatants: { pc, 'npc.x': me }, intents: {}, log: [] };
         const state = { relations: attitude === null ? {} : { 'rel.npc.x.attitude.pc': { value: attitude } } };
         return npcDecide({ enc, content, state }, 'npc.x').kind;
     };
-    for (const temperament of ['cautious', 'skittish', 'aggressive', 'defensive']) {
-        for (const attitude of [null, 0, -19, -20, -25, -60]) {
-            for (const hp of [20, 12]) {
-                const policy = opensViolence({ sapient: true, temperament, attitude: attitude ?? 0, harmed: hp < 20 });
-                // both ways: at arm's length and fit to fight, npcDecide strikes exactly when the policy allows it
-                const kind = decide(temperament, attitude, hp);
-                assert.equal(['attack', 'close_and_attack'].includes(kind), policy.ok, `${temperament} attitude ${attitude} hp ${hp}: npcDecide ${kind}, the policy ${policy.why}`);
-            }
+    for (const attitude of [null, 0, -19, -20, -25, -60]) {
+        for (const hp of [20, 12]) {
+            const policy = opensViolence({ sapient: true, attitude: attitude ?? 0, harmed: hp < 20 });
+            const kind = decidePerson(attitude, hp);
+            assert.equal(['attack', 'close_and_attack'].includes(kind), policy.ok, `attitude ${attitude} hp ${hp}: ${kind} / ${policy.why}`);
         }
     }
-    // the animals: npcDecide's own temperament branches decide in a fight; the policy says the same of every band (a
-    // strike that landed on it is what "harmed" means to a skittish one)
-    const beast = (temperament, band, hit) => {
-        const me = { id: 'mon.x', model: 'creature', side: 'hostile', fixed: { max_hp: 20, temperament, sapient: false, attack: { range: 'ENGAGED' } }, current: { hp: 20, band, cover: 'none', effects: [] } };
+    assert.equal(opensViolence({ sapient: true, attitude: 0, harmed: false }).rule, 'provoked_only');
+    assert.equal(opensViolence({ sapient: true, attitude: -20, harmed: false }).ok, true);
+    assert.equal(opensViolence({ sapient: false, band: 'MEDIUM', harmed: false }).ok, true);
+
+    const beast = (band, intent = null) => {
+        const me = { id: 'mon.x', model: 'creature', side: 'hostile', fixed: { max_hp: 20, sapient: false, attack: { range: 'ENGAGED' } }, current: { hp: 20, band, cover: 'none', effects: [] } };
         const pc = { id: 'pc', model: 'character', side: 'pc', fixed: { max_hp: 30, sapient: true, actions: {} }, current: { hp: 30, band: null, cover: 'none', effects: [] } };
-        const log = hit ? [{ actor: 'pc', kind: 'attack', target: 'mon.x', strikes: [{ target: 'mon.x' }] }] : [];
-        return npcDecide({ enc: { combatants: { pc, 'mon.x': me }, intents: {}, log }, content, state: { relations: {} } }, 'mon.x').kind;
+        return npcDecide({ enc: { combatants: { pc, 'mon.x': me }, intents: intent ? { 'mon.x': intent } : {}, log: [] }, content, state: { relations: {} } }, 'mon.x');
     };
-    for (const temperament of ['skittish', 'defensive', 'aggressive', 'cautious']) {
-        for (const band of ['ENGAGED', 'SHORT', 'MEDIUM', 'LONG']) {
-            for (const hit of [false, true]) {
-                // a cautious animal shot from range takes cover first: a tactic inside the fight, not a refusal to fight
-                if (temperament === 'cautious' && hit) continue;
-                const violent = ['attack', 'close_and_attack'].includes(beast(temperament, band, hit));
-                assert.equal(opensViolence({ sapient: false, temperament, band, harmed: hit }).ok, violent, `${temperament} at ${band}${hit ? ', hit' : ''}`);
-            }
-        }
-    }
-    assert.equal(opensViolence({ sapient: true, temperament: 'cautious', attitude: 0 }).rule, 'provoked_only');
-    assert.equal(opensViolence({ sapient: true, temperament: 'cautious', attitude: -20 }).ok, true, 'hostile at -20, as npcDecide');
-    assert.equal(opensViolence({ sapient: false, temperament: 'skittish', band: 'MEDIUM' }).rule, 'cornered_only');
-    assert.equal(opensViolence({ sapient: false, temperament: 'skittish', band: 'ENGAGED' }).ok, true);
-    assert.equal(opensViolence({ sapient: false, temperament: 'skittish', band: 'ENGAGED', harmed: true }).ok, false, 'hurt, it flees (npcDecide)');
-    assert.equal(opensViolence({ sapient: false, temperament: 'defensive', band: 'SHORT' }).rule, 'reach_only');
+    assert.equal(beast('MEDIUM').kind, 'close_and_attack');
+    assert.deepEqual(beast('MEDIUM', 'flee'), { kind: 'flee', why: 'narrated intent' });
 });
 
 // ------------------------------------------------------------------------------------------------ before the story
-test('the narrator sees only the limits: peaceful people, skittish and defensive animals, who may take his things', () => {
+test('the narrator sees only concrete causal limits: peaceful people and who may take his things', () => {
     const s = scene([BREN, HOBB, RASK, DEER, WOLF, ADDER]);
     const lines = envelopeLines(s, content);
-    assert.equal(lines.length, 4, lines.join('\n'));
-    assert.match(lines[0], /^Violent only once the story gives them cause first .*: Bren\.$/);
-    assert.match(lines[1], /^Flee from threats; fight only when cornered \(ENGAGED\): Red Deer A\.$/);
-    assert.match(lines[2], /^Fight only what comes within reach \(ENGAGED\): Marsh Adder A\.$/);
-    assert.match(lines[3], /^Only Hobb \(a fine or confiscation\) and Rask \(a robbery\) may take Alaric's coin or things\.$/);
-    assert.ok(!lines.join(' ').includes('Grey Wolf'), 'an aggressive animal has no limit');
-    // nothing to say: no section
+    assert.equal(lines.length, 2, lines.join('\n'));
+    assert.match(lines[0], /^Violent only once the story gives them cause first .*: Bren, Hobb, Rask\.$/);
+    assert.match(lines.at(-1), /^Only Hobb \(a fine or confiscation\) and Rask \(a robbery\) may take Alaric's coin or things\.$/);
+    assert.doesNotMatch(lines.join(' '), /Red Deer|Grey Wolf|Marsh Adder/, 'no hidden creature behaviour class is exposed');
+
     assert.deepEqual(envelopeLines(scene([WOLF]), content), []);
     assert.equal(envelopeBlock(scene([WOLF]), content), '');
-    // in a fight the fight's block rules
     const fight = scene([BREN]);
     fight.encounter = { id: 'enc.x', combatants: { pc: {}, 'npc.bren': {} } };
     assert.deepEqual(envelopeLines(fight, content), []);
     assert.equal(reactionEnvelope(fight, content).fight, 'running');
-    // V3 campaigns have no envelope
     const v3 = scene([BREN]);
     v3.meta = { ...v3.meta, runtime: 'v3' };
     assert.deepEqual(envelopeLines(v3, content), []);
@@ -167,7 +146,7 @@ test('the same envelope checks the reply: the barkeep does not turn on him unpro
     const provoked = world(s, [{ seq: 1, type: 'attitude', who: 'npc.bren', delta: -40, why: 'Alaric spat in his ale' }, { seq: 2, type: 'hostile', by: ['npc.bren'] }]);
     assert.deepEqual(rules(provoked), []);
     assert.equal(committed(provoked), true);
-    // an aggressive animal needs no cause
+    // a non-sapient creature needs no hidden personality tag to react
     assert.equal(committed(world(s, [{ seq: 1, type: 'hostile', by: ['mon.wolf'] }])), true);
     // whom the same reply introduces as an attacker (an ambush) is the world's move
     const ambush = world(s, [{ seq: 1, type: 'person.new', ref: 'a scarred footpad', name: null, role: 'footpad', desc: ['knife drawn'], present: true, at: null, band: 'SHORT' }, { seq: 2, type: 'hostile', by: ['a scarred footpad'] }]);
@@ -175,14 +154,10 @@ test('the same envelope checks the reply: the barkeep does not turn on him unpro
     assert.equal(committed(ambush), true);
 });
 
-test('a skittish animal fights only when cornered; a defensive one only within reach; an attack intent is the same decision', () => {
-    assert.deepEqual(rules(world(scene([DEER]), [{ seq: 1, type: 'hostile', by: ['mon.deer'] }])), ['envelope']);
-    assert.equal(committed(world(scene([DEER], { 'mon.deer': 'ENGAGED' }), [{ seq: 1, type: 'hostile', by: ['mon.deer'] }])), true, 'cornered');
-    assert.deepEqual(rules(world(scene([ADDER]), [{ seq: 1, type: 'hostile', by: ['mon.adder'] }])), ['envelope']);
-    // the reply brings it within reach first: the step's state decides
-    const reach = world(scene([ADDER]), [{ seq: 1, type: 'position', who: 'mon.adder', band: 'ENGAGED', cover: null }, { seq: 2, type: 'hostile', by: ['mon.adder'] }]);
-    assert.equal(committed(reach), true);
-    // intents: attack is turning on him; flee or hold are free
+test('creatures are not pre-restricted by a hidden behaviour class; explicit intents still bind', () => {
+    assert.equal(committed(world(scene([DEER]), [{ seq: 1, type: 'hostile', by: ['mon.deer'] }])), true);
+    assert.equal(committed(world(scene([ADDER]), [{ seq: 1, type: 'hostile', by: ['mon.adder'] }])), true);
+
     assert.deepEqual(rules(world(scene([BREN]), [{ seq: 1, type: 'intent', who: 'npc.bren', intent: 'attack' }])), ['envelope']);
     const flee = world(scene([BREN]), [{ seq: 1, type: 'intent', who: 'npc.bren', intent: 'flee' }]);
     assert.deepEqual(rules(flee), []);

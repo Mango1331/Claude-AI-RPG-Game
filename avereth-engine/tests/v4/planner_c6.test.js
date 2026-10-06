@@ -647,7 +647,7 @@ test('c.6.5-gpt: co-presence alone is not first sight; explicit awareness is, an
     s.entities[id] = {
         id, kind: 'npc', name: null, descriptors: ['bandit leader'], traits: 'bandit leader', status: 'alive',
         location: s.scene.location, template: 'commoner', card: {},
-        sheet: { ...structuredClone(s.entities.pc.sheet), generated: { temperament: 'skittish' } },
+        sheet: structuredClone(s.entities.pc.sheet),
     };
     s.scene.present.push(id);
     s.scene.positions[id] = { band: 'SHORT', cover: 'none' };
@@ -674,34 +674,26 @@ test('c.6.5-gpt: co-presence alone is not first sight; explicit awareness is, an
     assert.match(encUnaware.ambush_reason, /true Ambush/);
 });
 
-test('c.6.5-gpt: skittish is a C bias: retreat gains distance, while leaving the encounter needs more than temperament', () => {
+test('c.6.5-gpt-notemp: concrete state and explicit intent drive NPC behaviour without a pre-assigned category', () => {
     const s = structuredClone(live(4).state());
-    const id = 'npc.skittish_test';
+    const id = 'npc.state_driven_test';
     s.entities[id] = {
         id, kind: 'npc', name: null, descriptors: ['nervous smuggler'], traits: 'nervous smuggler', status: 'alive',
         location: s.scene.location, template: 'commoner', card: {},
-        sheet: { ...structuredClone(s.entities.pc.sheet), generated: { temperament: 'skittish' } },
+        sheet: structuredClone(s.entities.pc.sheet),
     };
     s.scene.present.push(id);
     s.scene.positions[id] = { band: 'SHORT', cover: 'none' };
-    const enc = initEncounter(s, content, scriptedDice(), { actor: 'pc', target: id, skill: 'mage.basic_attack' }, [{ id, side: 'hostile' }], 'enc.skittish', { c: true });
-    const me = enc.combatants[id];
+    const enc = initEncounter(s, content, scriptedDice(), { actor: 'pc', target: id, skill: 'mage.basic_attack' }, [{ id, side: 'hostile' }], 'enc.state-driven', { c: true });
 
-    let d = npcDecide({ enc, content, state: s, c: true }, id);
-    assert.notEqual(d.kind, 'flee', 'temperament alone does not make an unharmed sapient NPC flee');
+    assert.equal(Object.hasOwn(enc.combatants[id].fixed, 'temperament'), false);
+    assert.notEqual(npcDecide({ enc, content, state: s, c: true }, id).kind, 'flee', 'no hidden category makes the NPC run');
 
-    enc.log.push({ round: 1, actor: 'pc', kind: 'attack', target: id, strikes: [{ target: id, final: 1 }] });
-    d = npcDecide({ enc, content, state: s, c: true }, id);
-    assert.equal(d.kind, 'retreat', 'a threatened skittish actor at SHORT/MEDIUM may gain distance without leaving');
+    enc.intents[id] = 'flee';
+    assert.deepEqual(npcDecide({ enc, content, state: s, c: true }, id), { kind: 'flee', why: 'narrated intent' });
 
-    me.current.band = 'LONG';
-    me.current.hp = Math.ceil(me.fixed.max_hp * 0.6);
-    d = npcDecide({ enc, content, state: s, c: true }, id);
-    assert.notEqual(d.kind, 'flee', 'at LONG, temperament alone is still not escape');
-
-    me.current.hp = Math.floor(me.fixed.max_hp * 0.2);
-    d = npcDecide({ enc, content, state: s, c: true }, id);
-    assert.equal(d.kind, 'flee', 'a genuinely badly wounded skittish actor may try to leave');
+    enc.intents[id] = 'attack';
+    assert.equal(npcDecide({ enc, content, state: s, c: true }, id).kind, 'close_and_attack', 'explicit attack intent still maps to tactical movement/attack');
 });
 
 test('c.6.5-gpt: planner gets recent route memory for semantic return references', () => {

@@ -27,7 +27,6 @@ export function characterCombatant(state, id, content, side) {
             actions: Object.fromEntries(Object.entries(s.skills).filter(([sid]) => content.skills.has(sid))),
             weapon_family: (Object.values(s.equipment || {}).map((r) => (typeof r === 'string' ? content.items.get(r) : r))
                 .find((it) => it && it.slot === 'weapon') || {}).family || null,
-            temperament: e.card?.temperament || s.generated?.temperament || null,
             sapient: true,
         },
         current: { hp: s.hp, mp: s.mp, sta: s.sta, ammo: ammoOf(s, content), band: null, cover: 'none', effects: [], defeated: false, escaped: false, surrendered: false },
@@ -64,7 +63,7 @@ export function creatureCombatant(state, id) {
         id, name: label(e), side: 'hostile', model: 'creature',
         fixed: {
             level: p.level, rank: p.rank, type: p.type, body_plan: p.body_plan, max_hp: p.max_hp, atk: p.atk, def: p.def,
-            mdef: p.mdef, init: p.init, attack: p.attack, temperament: p.temperament,
+            mdef: p.mdef, init: p.init, attack: p.attack,
             sapient: false, ...(p.variation ? { variation: p.variation } : {}),
         },
         current: { hp: p.hp ?? p.max_hp, band: null, cover: 'none', effects: [], defeated: false, escaped: false, surrendered: false },
@@ -684,36 +683,37 @@ export function damagePreview(enc, content, targetId) {
 // ------------------------------------------------------------------------------------------ NPC policy
 const PASSIVE_INTENTS = new Set(['hold', 'parley', 'take_cover']);
 
-/** Deterministic NPC decision (Core #27 NPC DECISION LOCK: decided from the NPC's own state/temperament first). */
+/**
+ * Deterministic NPC decision without a personality category. Explicit story intent wins; otherwise the engine uses
+ * only concrete combat state: established hostility/harm, range, cover, available attacks and what happened since
+ * this actor's last Turn. Flight/surrender therefore requires an explicit intent instead of a hidden archetype label.
+ */
 export function npcDecide(ctx, npcId) {
     const { enc } = ctx;
     const me = enc.combatants[npcId];
     const pc = enc.combatants.pc;
-    const hpPct = me.current.hp / me.fixed.max_hp;
     const band = me.current.band;
-    const temper = me.fixed.temperament || (me.fixed.sapient ? 'cautious' : 'aggressive');
     let intent = enc.intents[npcId];
     const reach = me.model === 'creature' ? me.fixed.attack.range : npcReach(ctx, me);
     const inRange = bandIndex(band) <= bandIndex(reach);
-    // a strike on it (every legal V3 strike lands; records from before Combat V3 carry a Hit roll)
     const wasHit = enc.log.some((r) => r.actor !== npcId && (r.strikes || []).some((s) => s.target === npcId && (!s.hit || s.hit.success)));
     const attackOn = (r) => r.actor !== npcId && r.kind === 'attack' && (r.target === npcId || (r.strikes || []).some((s) => s.target === npcId));
     if (!alive(pc) || pc.current.hp <= 0) return { kind: 'hold', why: 'no living opponent' };
-    // Core #27: the NPC decides from its own state. Being attacked since its last Turn outweighs a narrated passive
-    // intent (hold / parley / take cover): Testrun 2 froze a trapper for three rounds under fire because the narrator
-    // kept echoing the engine's "holds" as his next intent.
+
     const ownLast = enc.log.map((r) => r.actor).lastIndexOf(npcId);
     if (PASSIVE_INTENTS.has(intent) && enc.log.slice(ownLast + 1).some(attackOn)) {
         delete enc.intents[npcId];
         intent = undefined;
     }
-    // Temperament is a bias, not a command. A sapient NPC that is not hostile toward Alaric and has not been
-    // harmed does not open with violence merely because of a label such as "skittish". It may seek cover or hold.
+
     const attitude = ctx.state?.relations?.[`rel.${npcId}.attitude.pc`]?.value ?? 0;
     const harmed = me.current.hp < me.fixed.max_hp || wasHit || enc.log.some(attackOn);
-    if (!intent && me.fixed.sapient && !opensViolence({ sapient: true, temperament: temper, attitude, harmed }).ok) {
-        return me.current.cover === 'none' && band !== 'ENGAGED' ? { kind: 'cover', why: 'not hostile, not yet harmed: seeks cover' } : { kind: 'hold', why: 'not hostile, not yet harmed' };
+    if (!intent && me.fixed.sapient && !opensViolence({ sapient: true, attitude, harmed, band }).ok) {
+        return me.current.cover === 'none' && band !== 'ENGAGED'
+            ? { kind: 'cover', why: 'not hostile, not yet harmed: seeks cover' }
+            : { kind: 'hold', why: 'not hostile, not yet harmed' };
     }
+
     if (intent) {
         delete enc.intents[npcId];
         if (intent === 'surrender') return { kind: 'surrender', why: 'narrated intent' };
@@ -722,35 +722,12 @@ export function npcDecide(ctx, npcId) {
         if (intent === 'hold' || intent === 'parley') return { kind: 'hold', why: `narrated intent (${intent})` };
         if (intent === 'attack') return inRange ? { kind: 'attack' } : { kind: 'close_and_attack' };
     }
-    if (temper === 'skittish') {
-        // Prototype C: skittish biases positioning; it does not itself mean "leave the encounter". An explicit narrated
-        // flee intent still does that above. Otherwise a threatened skittish actor may RETREAT one band, while escape
-        // from LONG needs a stronger independent reason such as being badly wounded.
-        if (ctx.c) {
-            if (band === 'ENGAGED') return { kind: 'attack', why: 'cornered' };
-            const threatened = enc.log.slice(ownLast + 1).some(attackOn) || (ownLast < 0 && enc.trigger?.actor === 'pc');
-            if (!threatened) return me.current.cover === 'none' ? { kind: 'cover', why: 'skittish, wary: seeks cover' } : { kind: 'hold', why: 'skittish, wary' };
-            if (band === 'SHORT' || band === 'MEDIUM') return { kind: 'retreat', why: 'skittish, threatened: gains distance' };
-            if (band === 'LONG' && hpPct <= 0.20) return { kind: 'flee', why: 'badly wounded and skittish (<=20% HP)' };
-            return me.current.cover === 'none' ? { kind: 'cover', why: 'skittish at LONG: holds distance in cover' } : { kind: 'hold', why: 'skittish at LONG: holds distance' };
-        }
-        if (wasHit || band === 'ENGAGED') return band === 'ENGAGED' && !wasHit ? { kind: 'attack', why: 'cornered' } : { kind: 'flee', why: 'skittish, threatened' };
-        return { kind: 'flee', why: 'skittish' };
-    }
-    if (temper === 'aggressive') {
-        if (me.fixed.sapient && hpPct <= 0.15) return { kind: 'flee', why: 'badly wounded (<=15% HP)' };
-        return inRange ? { kind: 'attack' } : { kind: 'close_and_attack' };
-    }
-    if (temper === 'defensive') {
-        if (band === 'ENGAGED') return { kind: 'attack' };
-        return me.current.cover === 'none' ? { kind: 'cover', why: 'defensive' } : { kind: 'hold', why: 'defensive, in cover' };
-    }
-    // cautious
-    if (hpPct <= 0.35) return { kind: 'flee', why: 'wounded (<=35% HP)' };
+
+    // With no personality tag, the default combat choice is tactical rather than psychological.
     if (inRange) return { kind: 'attack' };
     const lastPc = [...enc.log].reverse().find((r) => r.actor === 'pc' && r.kind === 'attack');
     const shotFromRange = lastPc && (lastPc.strikes || []).some((s) => s.target === npcId) && band !== 'ENGAGED';
-    if (shotFromRange && me.current.cover === 'none') return { kind: 'cover', why: 'melee-only, shot from range' };
+    if (me.fixed.sapient && shotFromRange && me.current.cover === 'none') return { kind: 'cover', why: 'melee-only, shot from range' };
     return { kind: 'close_and_attack' };
 }
 

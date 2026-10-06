@@ -43,14 +43,14 @@ const sys = (panel) => panel.split('\n').filter((l) => l.startsWith('`'));
 test('several opponents of one kind: Cellar Rat A, B, C in the order they came, in the target list, HP, Range and the HUD', () => {
     const { g, panel } = ratFight();
     assert.deepEqual(labels(g), { 'mon.rat1': 'Cellar Rat A', 'mon.rat2': 'Cellar Rat B', 'mon.rat3': 'Cellar Rat C' });
-    // the rats are faster: their first Turns resolved with the reply (B and C, skittish, backed off from SHORT)
-    assert.ok(panel.includes('`COMBAT TARGETS — Cellar Rat A [ENGAGED] · Cellar Rat B [MEDIUM] · Cellar Rat C [MEDIUM]`'), panel);
+    // the rats are faster: all three were explicitly reported as attackers, so the SHORT rats close one band and attack.
+    assert.ok(panel.includes('`COMBAT TARGETS — Cellar Rat A [ENGAGED] · Cellar Rat B [ENGAGED] · Cellar Rat C [ENGAGED]`'), panel);
     // HP and Range in Turn order, by the same labels
     const hp = sys(panel).find((l) => l.startsWith('`HP: '));
     const range = sys(panel).find((l) => l.startsWith('`Range: '));
     for (const x of ['A', 'B', 'C']) assert.match(hp, new RegExp(`Cellar Rat ${x} \\d+/\\d+`));
     assert.match(range, /Cellar Rat A ENGAGED/);
-    assert.match(range, /Cellar Rat B MEDIUM/);
+    assert.match(range, /Cellar Rat B ENGAGED/);
     assert.doesNotMatch(panel.split('`COMBAT TARGETS')[1].split('\n')[0], /Brede/, 'the merchant is no target');
     const w = Object.fromEntries(worldRows(g.state, content));
     assert.match(w.Present, /Cellar Rat A \(HP \d+\/\d+, ENGAGED\)/);
@@ -72,7 +72,7 @@ test('the label decides: "Quick Slash on Cellar Rat B", "basic attack cellar rat
         assert.equal(i.kind, 'ambiguous_target', t);
         assert.deepEqual(i.candidates.sort(), ['mon.rat1', 'mon.rat2', 'mon.rat3'], t);
     }
-    assert.equal(target('*I attack the nearest one*').target, 'mon.rat1', 'the only ENGAGED one');
+    assert.deepEqual(target('*I attack the nearest one*').candidates.sort(), ['mon.rat1', 'mon.rat2', 'mon.rat3'], 'all three are now equally ENGAGED, so the engine asks instead of guessing');
     // named on purpose, a bystander is still Alaric's to attack (and would join the fight)
     assert.equal(target('*I attack Brede*').target, 'npc.brede');
     assert.deepEqual([target('*i dash at Cellar Rat B and basic attack it*').target, target('*i dash at Cellar Rat B and basic attack it*').move], ['mon.rat2', 'closer'], '"dash at" closes in');
@@ -86,7 +86,7 @@ test('in a fight an unclear target is the engine\'s question: a System panel, no
     assert.equal(t.command.panels[0], [
         '[SYSTEM // COMBAT — TARGET NEEDED]',
         'Alaric\'s Basic Attack: which target — Cellar Rat A or Cellar Rat B or Cellar Rat C? Nothing was spent or rolled.',
-        'COMBAT TARGETS — Cellar Rat A [ENGAGED] · Cellar Rat B [MEDIUM] · Cellar Rat C [MEDIUM]',
+        'COMBAT TARGETS — Cellar Rat A [ENGAGED] · Cellar Rat B [ENGAGED] · Cellar Rat C [ENGAGED]',
         'Name one, for example: *Basic Attack on Cellar Rat A*',
     ].join('\n'));
     assert.deepEqual(g.state, before);
@@ -156,7 +156,7 @@ test('a name the story has not said is not in the target list, the panels or the
 
 test('labels are combat state only: the fight ends and they are gone; no fact, claim or memory carries them', () => {
     const { g } = ratFight();
-    // strike whatever comes close; the skittish rest keep their distance, and Alaric leaves them
+    // strike active opponents until the fight ends; labels must remain fight-only state
     for (let n = 0; n < 40 && g.state.encounter; n++) {
         const near = Object.values(g.state.encounter.combatants).find((c) => c.side === 'hostile' && !c.current.defeated && !c.current.escaped && ['ENGAGED', 'SHORT'].includes(c.current.band));
         g.input(near ? `*I dash at ${near.label} and basic attack it*` : '*I flee*');

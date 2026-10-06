@@ -41,7 +41,6 @@ export function scaleCreature(anchor, level, type, content, variation = null) {
         model: 'creature', anchor: anchor.id, body_plan: anchor.name, level, rank: rankOf(level, content), type: type || 'normal', ...(variation === 'strong' ? { variation } : {}),
         max_hp: p.hp, atk: p.atk, def: p.def, mdef: p.mdef, init: p.init,
         attack: { name: anchor.attack, damage_type: anchor.damage_type, range: anchor.range },
-        temperament: anchor.temperament,
     };
 }
 

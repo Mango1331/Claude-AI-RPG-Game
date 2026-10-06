@@ -32,7 +32,7 @@
       "class": "warrior", "level": {"default": 1, "min": 1, "max": 3},
       "priority": ["VIT", "STR", "AGI"],
       "weapon": {"name": "Improvised tool", "family": "unarmed", "atk": 0},
-      "armor": null, "skills": [], "temperament": "skittish"
+      "armor": null, "skills": []
     },
     {
       "id": "laborer", "label": "Laborer / woodsman",
@@ -40,7 +40,7 @@
       "class": "warrior", "level": {"default": 2, "min": 1, "max": 4},
       "priority": ["STR", "VIT", "AGI"],
       "weapon": {"name": "Hand-axe", "family": "melee", "atk": 5},
-      "armor": null, "skills": [], "temperament": "cautious"
+      "armor": null, "skills": []
     },
     {
       "id": "hunter", "label": "Hunter / trapper",
@@ -48,7 +48,7 @@
       "class": "ranger", "level": {"default": 2, "min": 1, "max": 5},
       "priority": ["AGI", "PER", "VIT"],
       "weapon": {"name": "Hand-axe", "family": "melee", "atk": 5},
-      "armor": null, "skills": [], "temperament": "cautious"
+      "armor": null, "skills": []
     },
     {
       "id": "guard", "label": "Guard / watchman / soldier",
@@ -57,7 +57,7 @@
       "priority": ["STR", "VIT", "AGI"],
       "weapon": {"name": "Guard's sword", "family": "melee", "atk": 6},
       "armor": {"name": "Guard's light armor", "def": 3, "mdef": 2},
-      "skills": ["warrior.heavy_slash", "warrior.guard"], "temperament": "aggressive"
+      "skills": ["warrior.heavy_slash", "warrior.guard"]
     },
     {
       "id": "bandit", "label": "Bandit / brigand",
@@ -66,7 +66,7 @@
       "priority": ["STR", "AGI", "VIT"],
       "weapon": {"name": "Short blade", "family": "precision", "atk": 5},
       "armor": {"name": "Worn light armor", "def": 2, "mdef": 2},
-      "skills": ["duelist.precision_thrust"], "temperament": "aggressive"
+      "skills": ["duelist.precision_thrust"]
     },
     {
       "id": "hedge_mage", "label": "Hedge mage / apprentice / scholar",
@@ -75,7 +75,7 @@
       "priority": ["INT", "WIL", "PER"],
       "weapon": {"name": "Wooden staff", "family": "focus", "matk": 5},
       "armor": {"name": "Robes", "def": 2, "mdef": 3},
-      "skills": ["mage.arcane_bolt"], "temperament": "cautious"
+      "skills": ["mage.arcane_bolt"]
     },
     {
       "id": "adventurer", "label": "Adventurer (by Base Class)",
@@ -83,14 +83,7 @@
       "class": null, "level": {"default": 3, "min": 1, "max": 14},
       "priority_by_class": {"warrior": ["STR", "VIT", "AGI"], "mage": ["INT", "WIL", "PER"], "guardian": ["VIT", "WIL", "STR"], "duelist": ["STR", "AGI", "PER"], "ranger": ["AGI", "PER", "VIT"]},
       "gear_from_starter_kit": true,
-      "skills_rule": "first two Offensive/Defensive entries of the class skill pool",
-      "temperament": "cautious"
+      "skills_rule": "first two Offensive/Defensive entries of the class skill pool"
     }
-  ],
-  "temperaments": {
-    "aggressive": "closes in and attacks; retreats only at <=15% HP if sapient; beasts fight on",
-    "cautious": "attacks when it can reach; a melee-only NPC shot from range takes cover or closes in; retreats at <=35% HP",
-    "skittish": "flees once threatened or hurt; attacks only when cornered (ENGAGED with no retreat)",
-    "defensive": "holds position, attacks only targets that are ENGAGED, otherwise keeps cover"
-  }
+  ]
 }

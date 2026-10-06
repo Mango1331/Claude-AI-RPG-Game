@@ -3,7 +3,7 @@
 // for 4.0.9 by the experiment branch and revised in the integration (docs/INTEGRATION_4_1.md): companions arrive with
 // Alaric by arrive.with instead of a role-guessing party bookmark, a person known without a name is named by
 // person.named, people who stay behind stay at their place, JOURNEY READY comes from the journey he has begun, a large
-// passive group of skittish animals is background by its body plan, and loose coin is never an item.
+// passive large fauna may be background from scene context, and loose coin is never an item.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -196,7 +196,7 @@ test('C3: an escort is not ready in a reply whose arrival the engine refused; ot
     assert.ok(r.corrections.some((c) => /"Shepherd Cart to Millbrook" is still IN PROGRESS/.test(c)));
 });
 
-test('C5: a large passive flock is one background fact; a wolf pack, a hostile herd and the vermin of a hunting contract stay individual', async () => {
+test('C5 notemp: large uncommitted fauna may stay background; hostile groups and hunting targets stay individual', async () => {
     const g = await created();
     const s = after(escort(g.state()));
     const count = (r, species) => Object.values(r.state.entities).filter((e) => e.kind === 'creature' && e.species === species).length;
@@ -204,8 +204,8 @@ test('C5: a large passive flock is one background fact; a wolf pack, a hostile h
     assert.equal(count(sheep, 'sheep'), 0);
     assert.ok(sheep.events.some((e) => e.t === 'fact.asserted' && e.d.fact.p === 'background_fauna' && e.d.fact.o === '12 sheep'));
     const wolves = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'creature.new', ref: 'wolves', species: 'wolf', anchor: 'wolf', desc: ['watching from the ridge'], count: 5, present: true, band: 'LONG' }] }, { msg: 107 });
-    assert.equal(count(wolves, 'wolf'), 5, 'aggressive: individual, profiles locked before any attack');
-    assert.ok(Object.values(wolves.state.entities).filter((e) => e.species === 'wolf').every((e) => e.profile));
+    assert.equal(count(wolves, 'wolf'), 0, 'without a hidden species-behaviour tag, an uncommitted large pack may remain background');
+    assert.ok(wolves.events.some((e) => e.t === 'fact.asserted' && e.d.fact.p === 'background_fauna' && e.d.fact.o === '5 wolf'));
     const stampede = applyWorld(s, content, { expected: {}, deltas: [{ seq: 1, type: 'creature.new', ref: 'stags', species: 'stag', anchor: 'deer', desc: ['rutting'], count: 6, present: true, band: 'SHORT' }, { seq: 2, type: 'hostile', by: ['stags'] }] }, { msg: 108 });
     assert.equal(count(stampede, 'stag'), 6, 'a group that attacks is individual');
     const job = structuredClone(s);

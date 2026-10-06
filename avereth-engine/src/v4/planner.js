@@ -16,6 +16,7 @@ import { normText } from '../util.js';
 import { mentionedSkills } from '../intent.js';
 import { activeHostiles } from '../combat.js';
 import { sceneHandle } from './scene_handles.js';
+import { settlementOf } from './domain.js';
 import { extractJsonObject } from './json.js';
 import { validate } from './schema.js';
 import { interpreterSystem, vocabularyText, catalogText, interpreterSchema, PLAIN_FORMAT, repairMessage } from './interpret.js';
@@ -40,6 +41,7 @@ export const MECH_RULES = [
     '5. A known skill used on a thing instead of a creature or person is ability_world: target = an OBJECTS id or {"new": "<the thing>"}; target_words = his exact words for the thing the skill acts on (not the thing he wants to affect in the end); goal = what he wants to happen, in a few of his words. Do not judge whether it can work.',
     '6. Ask instead of guessing: if, after the catalog, ENGINE FACTS and RECENT, two or more readings remain that would play out differently (another target, another skill, another kind of action), answer with one clarify about that point and nothing else. If exactly one reading fits, act and do not ask.',
     '7. Write what he means: getting away from danger is flee; stepping back or closing in during a fight is move; looking for someone or something is activity with kind "search"; going somewhere is go; waiting is activity with kind "wait". Write every action he intends, even if it may be impossible now: the engine decides what is possible.',
+    '7a. Return words such as "back", "return", "the city", "where I came from" are semantic references, not names for new places. Use RECENT ROUTE and known PLACES to resolve them to an existing destination when one clearly fits; if more than one route destination genuinely fits, clarify instead of inventing a generic new place.',
     '8. Several actions in one message: one command each, in his order. Something he does that no command fits: other.',
     '9. quote: the exact words of the message the command rests on, copied as they are (do not correct the spelling).',
 ].join('\n');
@@ -195,7 +197,14 @@ export function planContext(state, content, catalog) {
         }
     }
     const basic = content.classes.get(sheet.class)?.basic_attack || null;
-    return { fight, skills, known, basic, opponents, facts, catalog, cls: sheet.class || null };
+    const route = [];
+    for (const id of (state.scene?.history || []).slice(-12)) {
+        const resolved = settlementOf(state, id) || id;
+        const p = state.places?.[resolved];
+        if (!p || route.at(-1)?.id === resolved) continue;
+        route.push({ id: resolved, name: p.name, kind: p.kind });
+    }
+    return { fight, skills, known, basic, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null };
 }
 
 /** The user message: the interpreter's CATALOG, then skills, opponents, engine facts, RECENT and the message. */
@@ -209,7 +218,8 @@ export function plannerUser(ctx, text, { recent = '' } = {}) {
         for (const o of ctx.opponents) L.push(`- ${o.id}: ${o.label} — ${o.hp} · ${o.band}`);
     }
     if (ctx.facts.length) L.push('ENGINE FACTS (the last rounds):', ...ctx.facts.map((f) => `- ${f}`));
-    if (recent) L.push('RECENT (the end of the last narration; the catalog and ENGINE FACTS win where they differ):', recent);
+    if (ctx.route?.length) L.push('RECENT ROUTE (older → newer; use these ids/names for "back", "return", "the city" and similar references):', ...ctx.route.map((p) => `- ${p.id}: ${p.name} (${p.kind})`));
+    if (recent) L.push('RECENT (the end of the last narration; the catalog, RECENT ROUTE and ENGINE FACTS win where they differ):', recent);
     L.push('', 'PLAYER MESSAGE:', String(text ?? ''));
     return L.join('\n');
 }

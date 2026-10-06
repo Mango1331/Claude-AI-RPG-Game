@@ -28,7 +28,7 @@ const orderKey = (e) => [
 ];
 
 /** Stable canonical handle for an entity in ordinary V4 scene play ("Footpad A", "Wolf B", "Tam Otley"). */
-export function sceneHandle(state, content, id) {
+export function sceneHandle(state, content, id, { c = null } = {}) {
     if (id === 'pc') return state.entities.pc?.name || 'Alaric';
     const info = baseOf(state, content, id);
     if (info.named) return info.base;
@@ -43,7 +43,7 @@ export function sceneHandle(state, content, id) {
     // Prototype C: anonymous NPC roles only need a suffix when two people actually share the same player-facing role.
     // "Bandit Leader A · Crossbow Bandit A · Young Bandit A" conveyed three false groups in the 05.10 live run.
     // Planner-off A keeps its old always-lettered anonymous handles byte-for-byte; creatures keep A/B in both paths.
-    const cPath = state.last?.outcome?.c === true || state.last?.outcome?.auth?.c === true;
+    const cPath = c === null ? (state.last?.outcome?.c === true || state.last?.outcome?.auth?.c === true) : !!c;
     if (cPath && info.kind === 'npc' && peers.length === 1) return info.base;
     const idx = Math.max(0, peers.findIndex((e) => e.id === id));
     return `${info.base} ${LETTERS[idx] || idx + 1}`;

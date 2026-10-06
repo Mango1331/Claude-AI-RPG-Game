@@ -174,7 +174,7 @@ const HANDLERS = {
         ctx.auth.gos.push(go);
         ctx.auth.roam = true;
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, content.rules.time.travel_cap_min);
-        return { status: 'authorized', line: `DEPARTS/CONTINUES — the already-established journey of "${ready.label}"${ready.contact ? ` with ${entityLabel(s, ready.contact)}` : ''}; the story may advance it and establish where they reach.` };
+        return { status: 'authorized', line: `DEPARTS/CONTINUES — the already-established journey of "${ready.label}"${ready.contact ? ` with ${entityLabel(s, ready.contact)}` : ''}; carry routine travel forward in THIS reply until they reach the destination or a concrete event creates a real decision/stop. Scenery, harmless conversation and uneventful road are not reasons to stop and ask the player to say "continue" again.` };
     },
     go(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT GO — not while the fight runs.' };
@@ -197,7 +197,10 @@ const HANDLERS = {
         ctx.expectedKeys[String(c.seq)] = 'go';
         // he sets off while a quest's journey is ready with its people here: an arrival out of the settlement starts it
         const ready = journeyReady(s, { c: !!envx?.c });
-        if (ready?.contact && s.quests[ready.id]?.status === 'active' && !s.quests[ready.id].journey) ctx.auth.journey = ready.id;
+        if (ready?.contact && s.quests[ready.id]?.status === 'active' && !s.quests[ready.id].journey) {
+            ctx.auth.journey = ready.id;
+            ctx.extra.push(`JOURNEY PACING — this GO starts the established journey of "${ready.label}". Carry routine travel forward in this same reply until destination or a concrete complication/open decision actually interrupts it; do not stop merely for scenery, harmless conversation or to make Alaric say "continue" again.`);
+        }
         // Prototype C (4.3.0-c.6): the people he met there before are that place's people, not new ones
         const there = envx?.c && known && !ctx.extra.some((x) => x.startsWith(`KNOWN AT ${name} (`)) ? knownAt(s, content, c.to) : [];
         if (there.length) ctx.extra.push(`KNOWN AT ${name} (met there before; when the story shows the people of that place, they are these, not new ones; whoever works there is at work unless the story establishes otherwise): ${there.map((p) => `${p.label} (${p.id})`).join(' · ')}`);

@@ -149,7 +149,7 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
     if (pcAction?.kind === 'attack') {
         return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move, move_target: pcAction.move_target }, pcAction: null, c }, situations);
     }
-    if (pcAction?.kind === 'engage') return engagementTurn(s, content, dice, emit, pcAction.targets);
+    if (pcAction?.kind === 'engage') return engagementTurn(s, content, dice, emit, pcAction.targets, { c });
     // 3) declared stealth: opposed check (or automatic with nobody around)
     // prototype C: a known skill used on a thing, outside a fight (in a fight runCombat resolves it as Alaric's action)
     if (pcAction?.kind === 'ability_world') return worldUse(s, content, pcAction, dice, emit);
@@ -235,11 +235,11 @@ function combatants(s, leadId, committed = []) {
 }
 
 /** Start a confrontation because Alaric explicitly committed to fight, but do not spend, move or attack for him. */
-function engagementTurn(s, content, dice, emit, targets = []) {
+function engagementTurn(s, content, dice, emit, targets = [], { c = false } = {}) {
     const ids = uniq(targets).filter((id) => id !== 'pc' && s.scene.present.includes(id) && s.entities[id]?.status !== 'dead');
     if (!ids.length) return { kind: 'note', text: 'Alaric is ready to fight, but there is no concrete opposing actor the engine can put into an encounter yet.' };
     for (const id of ids) materialise(s, content, dice, emit, id);
-    const enc = initEncounter(s, content, dice, { actor: 'pc', target: ids[0], engage: true }, ids.map((id) => ({ id, side: 'hostile' })), `enc.t${s.turn}`);
+    const enc = initEncounter(s, content, dice, { actor: 'pc', target: ids[0], engage: true }, ids.map((id) => ({ id, side: 'hostile' })), `enc.t${s.turn}`, { c });
     Object.assign(enc.intents, s.pending_intents || {});
     emit({ t: 'encounter.started', d: { encounter: enc } });
     for (const id of ids) if (s.scene.awareness[id] !== 'aware') emit({ t: 'scene.awareness', d: { id, level: 'aware' } });
@@ -306,12 +306,12 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
             const trial = clone(s);
             const tdice = new Dice(dice.seed, dice.n);
             for (const id of ids) materialise(trial, content, tdice, (e) => applyEvent(trial, e), id);
-            const tenc = initEncounter(trial, content, tdice, trigger, ids.map((id) => ({ id, side: 'hostile' })), 'trial');
+            const tenc = initEncounter(trial, content, tdice, trigger, ids.map((id) => ({ id, side: 'hostile' })), 'trial', { c });
             const tr = runCombat({ enc: tenc, content, dice: tdice, state: trial, c }, null);
             if (tr.stopped === 'illegal' && !tr.records.length) return { kind: 'combat', records: [], illegal: tr.illegal, not_started: true };
         }
         for (const id of ids) materialise(s, content, dice, emit, id);
-        enc = initEncounter(s, content, dice, trigger, ids.map((id) => ({ id, side: 'hostile' })), `enc.t${s.turn}`);
+        enc = initEncounter(s, content, dice, trigger, ids.map((id) => ({ id, side: 'hostile' })), `enc.t${s.turn}`, { c });
         Object.assign(enc.intents, s.pending_intents || {});
         started = { reason: enc.ambush_reason, order: enc.order.map(named).join(' > '), ambush: enc.ambush };
     } else {
@@ -323,12 +323,12 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
         const joiners = committed.filter((id) => !enc.combatants[id]);
         for (const id of joiners) {
             materialise(s, content, dice, emit, id);
-            addCombatant(enc, s, content, id, 'hostile', 'attack');
+            addCombatant(enc, s, content, id, 'hostile', 'attack', { c });
         }
         if (joiners.length) started = { reason: `${joiners.map(named).join(', ')} ${joiners.length > 1 ? 'join' : 'joins'} the fight`, order: enc.order.map(named).join(' > '), joined: joiners };
         if (pcAction?.kind === 'attack' && pcAction.target && !enc.combatants[pcAction.target]) {
             materialise(s, content, dice, emit, pcAction.target);
-            addCombatant(enc, s, content, pcAction.target, 'hostile', null);
+            addCombatant(enc, s, content, pcAction.target, 'hostile', null, { c });
         }
     }
     const res = runCombat({ enc, content, dice, state: s, c }, pcAction);
@@ -482,7 +482,10 @@ export function narratorReply(state, content, replyText, { msg = null, stripTrac
 export function perceiveAll(s, emit) {
     for (const id of perceivers(s)) {
         if (id === 'pc' || s.entities[id].kind !== 'npc' || s.scene.concealed.includes('pc') || knows(s, id, PC_LOOK_FACT)) continue;
-        if (s.scene.awareness[id] === 'unaware') continue; // present but has not noticed him
+        // Co-presence is not perception. The 06.10 live run put Alaric behind a fallen trunk while two smugglers kept
+        // talking, yet undefined awareness was treated as "they saw him" and later denied Ambush. First sight is stored
+        // only once the story/check explicitly establishes that the NPC actually noticed Alaric.
+        if (s.scene.awareness[id] !== 'aware') continue;
         emit({ t: 'knowledge.gained', d: { who: id, about: PC_LOOK_FACT, stance: 'knows', source: 'witnessed', turn: s.turn, minute: s.clock.minute } });
         emit({ t: 'memory.recorded', d: { memory: {
             id: `m.t${s.turn}.seen.${id}`, turn: s.turn, minute: s.clock.minute, text: `first saw {pc} at ${s.scene.place || entityLabel(s, s.scene.location)}`,
@@ -544,7 +547,7 @@ export function openCommitted(s, content, dice, emit, { hold = false, c = false 
     if (!s.encounter) {
         ids = combatants(s, committed[0], committed);
         for (const id of ids) materialise(s, content, dice, emit, id);
-        enc = initEncounter(s, content, dice, { actor: committed[0], target: 'pc' }, ids.map((id) => ({ id, side: 'hostile' })), `enc.t${s.turn}r`);
+        enc = initEncounter(s, content, dice, { actor: committed[0], target: 'pc' }, ids.map((id) => ({ id, side: 'hostile' })), `enc.t${s.turn}r`, { c });
         // Prototype C (4.3.0-c.4): every attacker the reply committed attacks on its own turn, its hostility the intent
         // the story established (A arms only the first); an intent the reply gave it instead still decides
         if (c) for (const id of ids) enc.intents[id] = enc.intents[id] || 'attack';
@@ -562,7 +565,7 @@ export function openCommitted(s, content, dice, emit, { hold = false, c = false 
         if (!ids.length) return null;
         for (const id of ids) {
             materialise(s, content, dice, emit, id);
-            addCombatant(enc, s, content, id, 'hostile', 'attack');
+            addCombatant(enc, s, content, id, 'hostile', 'attack', { c });
         }
         emit({ t: 'encounter.updated', d: { encounter: enc } });
     }

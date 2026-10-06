@@ -790,7 +790,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             if (who === 'pc' || party.includes(who) || e?.kind !== 'npc' || e.status === 'dead' || e.at === from) continue;
             emit({ t: 'entity.updated', d: { id: who, set: { at: from } } });
         }
-        emit({ t: 'scene.moved', d: { at: id, location: town, place: placeName(s, id), reset_present: true } });
+        emit({ t: 'scene.moved', d: { at: id, location: town, place: placeName(s, id), reset_present: true, ...(cPath ? { track_history: true } : {}) } });
         // who travelled with him arrives with him
         for (const who of party) emit({ t: 'scene.entered', d: { id: who, band: 'SHORT' } });
         arrived = id;

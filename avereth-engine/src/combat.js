@@ -93,20 +93,20 @@ const titleCase = (s) => s.replace(/(^|[\s-])(\p{Ll})/gu, (_, a, b) => a + b.toU
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 /** [base, lettered]: the known name as it is, else the plain look ("cellar_rat_2" -> Cellar Rat), always lettered. */
-function targetBase(e, state, content, id) {
+function targetBase(e, state, content, id, cPath = false) {
     const name = e.known_name ?? e.name; // only as much of a name as the story has said
     if (name) return [titleCase(String(name).replace(/^the\s+/i, '').trim()), false];
     // Runtime V4 already exposed a stable scene handle before the fight. Keep it verbatim so Footpad B never
     // becomes Footpad A merely because A stayed out of this particular encounter.
-    if (state.meta?.runtime === 'v4') return [sceneHandle(state, content, id), false];
+    if (state.meta?.runtime === 'v4') return [sceneHandle(state, content, id, { c: cPath }), false];
     const look = lookOf(e) || e.species || (e.kind === 'creature' ? 'creature' : 'stranger');
     return [titleCase(String(look).replace(/^(?:the|a|an)\s+/i, '')), true];
 }
 
-function assignLabels(enc, state, content, ids) {
+function assignLabels(enc, state, content, ids, { c = false } = {}) {
     const groups = new Map();
     for (const id of ids) {
-        const [base, lettered] = targetBase(state.entities[id], state, content, id);
+        const [base, lettered] = targetBase(state.entities[id], state, content, id, c);
         if (!groups.has(base)) groups.set(base, { lettered, ids: [] });
         const g = groups.get(base);
         g.lettered ||= lettered;
@@ -145,7 +145,7 @@ export function alive(c) {
  * Start an encounter (Core #26). trigger = {actor, action, target}.
  * participants: [{id, side}] (the PC is added automatically).
  */
-export function initEncounter(state, content, dice, trigger, participants, encId) {
+export function initEncounter(state, content, dice, trigger, participants, encId, { c = false } = {}) {
     const combatants = { pc: combatantOf(state, 'pc', content, 'pc') };
     for (const p of participants) {
         if (p.id === 'pc') continue;
@@ -163,14 +163,14 @@ export function initEncounter(state, content, dice, trigger, participants, encId
         pc_rank: pcRank, pending_xp: 0, defeated: [], escaped: [], trigger: clone(trigger), log: [], opening: null,
         started: { turn: state.turn, minute: state.clock.minute }, intents: {},
     };
-    assignLabels(enc, state, content, Object.keys(combatants).filter((id) => id !== 'pc'));
+    assignLabels(enc, state, content, Object.keys(combatants).filter((id) => id !== 'pc'), { c });
     // Ambush (Core #24): only a genuinely unaware target grants an Opening Action. Awareness is engine state (set by a
     // stealth check or an established narration report), never a posture the narrator invents at commitment time.
     if (trigger.engage) {
         enc.ambush = false;
         enc.ambush_reason = 'Alaric openly commits to the confrontation; no attack has been made and no Ambush Opening Action is granted.';
     } else if (trigger.actor === 'pc') {
-        const awareness = state.scene.awareness[trigger.target] || 'aware';
+        const awareness = state.scene.awareness[trigger.target] || 'unknown';
         enc.ambush = !!combatants[trigger.target] && awareness === 'unaware';
         enc.ambush_reason = `target awareness: ${awareness}${enc.ambush ? ' -> true Ambush (Opening Action: guaranteed Critical Hit ×1.5)' : " -> no Ambush; the trigger action waits for Alaric's Turn"}`;
     } else {
@@ -184,14 +184,14 @@ export function initEncounter(state, content, dice, trigger, participants, encId
 }
 
 /** A new combatant joins an ACTIVE encounter (e.g. a narrated attacker). Inserted into the fixed order by Initiative. */
-export function addCombatant(enc, state, content, id, side, intent = 'attack') {
+export function addCombatant(enc, state, content, id, side, intent = 'attack', { c: cPath = false } = {}) {
     const c = combatantOf(state, id, content, side);
     const pos = state.scene.positions[id] || { band: 'MEDIUM', cover: 'none' };
     c.current.band = pos.band;
     c.current.cover = pos.cover || 'none';
     if (side === 'hostile') c.fixed.defeat_xp = hostileXp(c, state, content, enc.pc_rank);
     enc.combatants[id] = c;
-    assignLabels(enc, state, content, [id]);
+    assignLabels(enc, state, content, [id], { c: cPath });
     // insert after all combatants with higher or equal Initiative (existing ties keep their locked order)
     let idx = enc.order.findIndex((x) => enc.combatants[x].fixed.init < c.fixed.init);
     if (idx < 0) idx = enc.order.length;
@@ -707,12 +707,11 @@ export function npcDecide(ctx, npcId) {
         delete enc.intents[npcId];
         intent = undefined;
     }
-    // PROPOSED NPC policy: a sapient NPC that is not hostile toward Alaric and has been neither hurt nor attacked does
-    // not open with violence unless it is aggressive by temperament (it seeks cover or stays put instead).
+    // Temperament is a bias, not a command. A sapient NPC that is not hostile toward Alaric and has not been
+    // harmed does not open with violence merely because of a label such as "skittish". It may seek cover or hold.
     const attitude = ctx.state?.relations?.[`rel.${npcId}.attitude.pc`]?.value ?? 0;
     const harmed = me.current.hp < me.fixed.max_hp || wasHit || enc.log.some(attackOn);
     if (!intent && me.fixed.sapient && !opensViolence({ sapient: true, temperament: temper, attitude, harmed }).ok) {
-        if (temper === 'skittish') return { kind: 'flee', why: 'not hostile, frightened' };
         return me.current.cover === 'none' && band !== 'ENGAGED' ? { kind: 'cover', why: 'not hostile, not yet harmed: seeks cover' } : { kind: 'hold', why: 'not hostile, not yet harmed' };
     }
     if (intent) {
@@ -724,14 +723,16 @@ export function npcDecide(ctx, npcId) {
         if (intent === 'attack') return inRange ? { kind: 'attack' } : { kind: 'close_and_attack' };
     }
     if (temper === 'skittish') {
-        // Prototype C (4.3.0-c.4): a tendency, not a law. At arm's length it fights back, hurt or not (cornered);
-        // threatened (attacked since its own last turn, or a fight Alaric opened before it acted) it seeks distance,
-        // from LONG it gets away; otherwise it holds, wary: a pursuit that only closes in ends at arm's length, not in a
-        // flee-and-chase loop. Any other attack is an intent the story established (above)
+        // Prototype C: skittish biases positioning; it does not itself mean "leave the encounter". An explicit narrated
+        // flee intent still does that above. Otherwise a threatened skittish actor may RETREAT one band, while escape
+        // from LONG needs a stronger independent reason such as being badly wounded.
         if (ctx.c) {
             if (band === 'ENGAGED') return { kind: 'attack', why: 'cornered' };
             const threatened = enc.log.slice(ownLast + 1).some(attackOn) || (ownLast < 0 && enc.trigger?.actor === 'pc');
-            return threatened ? { kind: 'flee', why: 'skittish, threatened' } : { kind: 'hold', why: 'skittish, wary' };
+            if (!threatened) return me.current.cover === 'none' ? { kind: 'cover', why: 'skittish, wary: seeks cover' } : { kind: 'hold', why: 'skittish, wary' };
+            if (band === 'SHORT' || band === 'MEDIUM') return { kind: 'retreat', why: 'skittish, threatened: gains distance' };
+            if (band === 'LONG' && hpPct <= 0.20) return { kind: 'flee', why: 'badly wounded and skittish (<=20% HP)' };
+            return me.current.cover === 'none' ? { kind: 'cover', why: 'skittish at LONG: holds distance in cover' } : { kind: 'hold', why: 'skittish at LONG: holds distance' };
         }
         if (wasHit || band === 'ENGAGED') return band === 'ENGAGED' && !wasHit ? { kind: 'attack', why: 'cornered' } : { kind: 'flee', why: 'skittish, threatened' };
         return { kind: 'flee', why: 'skittish' };
@@ -799,6 +800,7 @@ function npcTurn(ctx, npcId) {
         return { round: enc.round, actor: npcId, kind: 'surrender', why: decision.why, pending_xp_added: me.fixed.defeat_xp };
     }
     if (decision.kind === 'flee') return { ...moveAction(ctx, npcId, 'away'), why: decision.why };
+    if (decision.kind === 'retreat') return { ...moveAction(ctx, npcId, 'away'), kind: 'move', dir: 'away', why: decision.why };
     if (decision.kind === 'cover') {
         const before = me.current.cover;
         let change = '';

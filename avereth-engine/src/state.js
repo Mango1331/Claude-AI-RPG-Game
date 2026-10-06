@@ -131,7 +131,9 @@ export function applyEvent(state, e) {
         case 'entity.sheet_set': // full combat-profile materialisation for an NPC (npcgen)
             state.entities[d.id].sheet = clone(d.sheet);
             break;
-        case 'scene.moved':
+        case 'scene.moved': {
+            const from = state.scene.at;
+            if (d.track_history && d.at !== undefined && d.at !== from && from) state.scene.history = [...(state.scene.history || []), from].slice(-16);
             state.scene.location = d.location ?? state.scene.location;
             state.scene.place = d.place ?? state.scene.place;
             if (d.at !== undefined) state.scene.at = d.at; // V4: the place node
@@ -143,6 +145,7 @@ export function applyEvent(state, e) {
             }
             for (const id of state.scene.present) if (state.entities[id]) state.entities[id].location = state.scene.location;
             break;
+        }
         case 'scene.entered':
             if (!state.scene.present.includes(d.id)) state.scene.present.push(d.id);
             if (d.band) state.scene.positions[d.id] = { band: d.band, cover: d.cover || 'none' };

@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { loadContent, ROOT } from '../helpers.js';
+import { loadContent, ROOT, scriptedDice } from '../helpers.js';
 import { Chat4, generatorListing } from './harness.js';
 import { prepareGenerationAsync } from '../../src/v4/runtime.js';
 import { rec, turnBlock } from '../../src/host.js';
@@ -16,11 +16,13 @@ import { applyWorld } from '../../src/v4/world.js';
 import { applyEvent } from '../../src/state.js';
 import { SLIP_READY, SLIP_DONE, contractReady, boardRequest } from '../../src/v4/guild.js';
 import { NARRATOR_CONTRACT_REVISION } from '../../src/util.js';
-import { mapPlan } from '../../src/v4/planner.js';
+import { mapPlan, planContext, plannerUser } from '../../src/v4/planner.js';
 import { sceneHandle } from '../../src/v4/scene_handles.js';
 import { worldPanel } from '../../src/display.js';
 import { guardCommands } from '../../src/v4/agency.js';
 import { extractorUser } from '../../src/v4/extract.js';
+import { perceiveAll } from '../../src/engine.js';
+import { initEncounter, npcDecide } from '../../src/combat.js';
 
 const content = await loadContent();
 const fx = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests/v4/live_1004b.json'), 'utf8'));
@@ -635,4 +637,96 @@ test('c.6.4-gpt: narrator contract also forbids implied PC answers and partial n
     assert.match(contract, /combat resolution says Alaric's declared action is NOT possible, illegal, or that nothing was spent\/rolled/);
     assert.match(contract, /none of that declared action happened, including any movement bundled into it/);
     assert.match(contract, /stable set of player-facing choices for that branch, rank and Guild day/);
+});
+
+
+// ------------------------------------------------------------------------------------------------ c.6.5-gpt live follow-up
+test('c.6.5-gpt: co-presence alone is not first sight; explicit awareness is, and missing awareness is not silently "aware" for Ambush', () => {
+    const s = structuredClone(live(4).state());
+    const id = 'npc.test_watcher';
+    s.entities[id] = {
+        id, kind: 'npc', name: null, descriptors: ['bandit leader'], traits: 'bandit leader', status: 'alive',
+        location: s.scene.location, template: 'commoner', card: {},
+        sheet: { ...structuredClone(s.entities.pc.sheet), generated: { temperament: 'skittish' } },
+    };
+    s.scene.present.push(id);
+    s.scene.positions[id] = { band: 'SHORT', cover: 'none' };
+
+    const unseen = [];
+    perceiveAll(s, (e) => unseen.push(e));
+    assert.equal(unseen.some((e) => e.t === 'knowledge.gained' || e.t === 'memory.recorded'), false, 'being in the same scene does not mean the NPC saw Alaric');
+
+    s.scene.awareness[id] = 'aware';
+    const noticed = [];
+    perceiveAll(s, (e) => { noticed.push(e); applyEvent(s, e); });
+    assert.ok(noticed.some((e) => e.t === 'knowledge.gained' && e.d.who === id));
+    assert.ok(noticed.some((e) => e.t === 'memory.recorded' && e.d.memory?.id === `m.t${s.turn}.seen.${id}`));
+
+    delete s.scene.awareness[id];
+    const encUnknown = initEncounter(s, content, scriptedDice(), { actor: 'pc', target: id, skill: 'mage.basic_attack' }, [{ id, side: 'hostile' }], 'enc.test', { c: true });
+    assert.equal(encUnknown.ambush, false);
+    assert.match(encUnknown.ambush_reason, /target awareness: unknown -> no Ambush/);
+    assert.equal(encUnknown.combatants[id].label, 'Bandit Leader', 'the unique C role keeps the pre-combat label without a spurious A');
+
+    s.scene.awareness[id] = 'unaware';
+    const encUnaware = initEncounter(s, content, scriptedDice(), { actor: 'pc', target: id, skill: 'mage.basic_attack' }, [{ id, side: 'hostile' }], 'enc.test2', { c: true });
+    assert.equal(encUnaware.ambush, true);
+    assert.match(encUnaware.ambush_reason, /true Ambush/);
+});
+
+test('c.6.5-gpt: skittish is a C bias: retreat gains distance, while leaving the encounter needs more than temperament', () => {
+    const s = structuredClone(live(4).state());
+    const id = 'npc.skittish_test';
+    s.entities[id] = {
+        id, kind: 'npc', name: null, descriptors: ['nervous smuggler'], traits: 'nervous smuggler', status: 'alive',
+        location: s.scene.location, template: 'commoner', card: {},
+        sheet: { ...structuredClone(s.entities.pc.sheet), generated: { temperament: 'skittish' } },
+    };
+    s.scene.present.push(id);
+    s.scene.positions[id] = { band: 'SHORT', cover: 'none' };
+    const enc = initEncounter(s, content, scriptedDice(), { actor: 'pc', target: id, skill: 'mage.basic_attack' }, [{ id, side: 'hostile' }], 'enc.skittish', { c: true });
+    const me = enc.combatants[id];
+
+    let d = npcDecide({ enc, content, state: s, c: true }, id);
+    assert.notEqual(d.kind, 'flee', 'temperament alone does not make an unharmed sapient NPC flee');
+
+    enc.log.push({ round: 1, actor: 'pc', kind: 'attack', target: id, strikes: [{ target: id, final: 1 }] });
+    d = npcDecide({ enc, content, state: s, c: true }, id);
+    assert.equal(d.kind, 'retreat', 'a threatened skittish actor at SHORT/MEDIUM may gain distance without leaving');
+
+    me.current.band = 'LONG';
+    me.current.hp = Math.ceil(me.fixed.max_hp * 0.6);
+    d = npcDecide({ enc, content, state: s, c: true }, id);
+    assert.notEqual(d.kind, 'flee', 'at LONG, temperament alone is still not escape');
+
+    me.current.hp = Math.floor(me.fixed.max_hp * 0.2);
+    d = npcDecide({ enc, content, state: s, c: true }, id);
+    assert.equal(d.kind, 'flee', 'a genuinely badly wounded skittish actor may try to leave');
+});
+
+test('c.6.5-gpt: planner gets recent route memory for semantic return references', () => {
+    const s = structuredClone(live(4).state());
+    s.scene.history = ['loc.alderwatch', 'loc.alderwatch.guild_hall', 'loc.alderwatch', 'loc.alderwatch.wester_gate'];
+    const catalog = buildCatalog(s, content, { known: true, c: true });
+    const ctx = planContext(s, content, catalog);
+    const user = plannerUser(ctx, '*i walk back to the city*');
+    assert.match(user, /RECENT ROUTE \(older → newer; use these ids\/names for "back", "return", "the city"/);
+    assert.match(user, /loc\.alderwatch: Alderwatch \(settlement\)/);
+});
+
+test('c.6.5-gpt: journey pacing, complete desired outcomes, awareness and retreat boundaries are explicit at their LLM interfaces', () => {
+    const rules = content.deltaVocab.rules.join('\n');
+    assert.match(rules, /Co-presence is not awareness/);
+    assert.match(rules, /do not turn the engine's ordinary move away\/retreat into intent:flee/);
+
+    const need = { branch: 'loc.redmarch', rank: 'Novice', missing: 5, day: 1, have: [], c: true };
+    const board = boardRequest(live(4).state(), content, need).system;
+    assert.match(board, /desired_end_state is the single semantic completion gate and MUST cover every substantive result/);
+    assert.match(board, /ESCORTS a cart\/driver to a ford AND DELIVERS six casks to a trading yard/);
+
+    const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
+    assert.match(contract, /Do not make Alaric crouch, creep, sneak, hide behind cover, take a concealed firing position/);
+    assert.match(contract, /Carry ordinary road, scenery, harmless conversation and uneventful time forward in that same reply until the destination or a concrete event creates a real new decision\/stop/);
+    assert.match(contract, /Range movement is not escape/);
+    assert.match(contract, /SHORT→MEDIUM or MEDIUM→LONG/);
 });

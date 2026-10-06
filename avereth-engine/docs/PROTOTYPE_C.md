@@ -1,4 +1,4 @@
-# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.6.4-gpt)
+# Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.6.5-gpt)
 
 Stand: 02.10.2026.
 
@@ -251,10 +251,10 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.4-gpt`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.5-gpt`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
-   - Vertrag v4 (Revision 4.3.0-c.6.4-gpt), Preset „Avereth Narrator V4“, Lorebook v0.13.
+   - Vertrag v4 (Revision 4.3.0-c.6.5-gpt), Preset „Avereth Narrator V4“, Lorebook v0.13.
 3. **Schalter:** Engine-Panel → **„Prototype C: semantic planner“** anhaken.
    - Er gilt für jede V4-Kampagne, auch eine laufende, ab der nächsten Nachricht.
    - Ausschalten bringt A zurück.
@@ -609,4 +609,14 @@ Der Live-Lauf vom 05.10.2026 trennt Planner-Verständnis und Engine-Auflösung w
 - **Combat UI:** Die gespeicherten Engine-Panels bleiben dieselbe Wahrheit, werden in SillyTavern aber als ein eigener, standardmäßig offener und bei Bedarf einklappbarer „AVERETH ENGINE · COMBAT LOG“-Block dargestellt. Während ACTIVE Combat ersetzt ein offenes taktisches HUD die redundanten Character-/World-Klappzeilen und zeigt aktive Gegner zeilenweise mit HP, Range und Cover, dazu Turn Order und Alarics Attack-Reichweiten. Bereits sichtbare Personen, die noch nicht im Encounter/der Initiative sind, bleiben in einem getrennten „Visible · not in the fight yet“-Abschnitt mit Range/Cover sichtbar; das ist reine Anzeige und macht sie nicht automatisch zu Gegnern.
 
 Bekannte Grenze bleibt **GO → STEALTH in derselben Nachricht**, wenn erst die GO-Narration die späteren Beobachter konkret etabliert. Der Live-Workaround mit zwei Nachrichten bewies, dass der Stealth-Check am erreichten Ort korrekt gegen den dortigen Beobachter läuft; eine echte Ein-Zug-Lösung würde einen zusätzlichen Narration→Mechanik-Zwischenschritt erfordern und ist nicht Teil dieses kleinen Patches.
+
+### Nachtrag 4.3.0-c.6.5-gpt
+
+Der Live-Lauf vom 06.10.2026 schärft vier Grenzen, ohne den Planner wieder durch Keyword-Semantik zu ersetzen:
+
+- **Wahrnehmung/Ambush:** bloße Co-Präsenz bedeutet nicht mehr automatisch, dass ein NPC Alaric gesehen hat. `perceiveAll` speichert ersten Sichtkontakt nur bei explizitem `aware`; fehlende Awareness heißt beim Kampfbeginn `unknown`, nicht heimlich `aware`. Der Narrator darf ein gewöhnliches GO nicht als Crouch/Sneak/Hide inszenieren.
+- **Temperament/Flucht:** Auf C ist `skittish` ein Bias. Ein bedrohtes Wesen kann taktisch genau ein Band zurückweichen (`retreat`) und bleibt im Encounter; bloßes Temperament lässt es auf LONG nicht verschwinden. Ein echtes `flee` braucht expliziten Fluchtwillen oder einen stärkeren Grund.
+- **Reise/Return-Memory:** `scene.history` wird deterministisch aus den Bewegungsereignissen gefaltet und dem semantischen Planner als RECENT ROUTE gegeben. Begriffe wie „back“, „return“ und „the city“ sollen damit auf bekannte Ziele auflösen statt einen neuen generischen Ort zu erzeugen. Eine begonnene Journey läuft durch gewöhnliche Wegstrecken und Gespräche bis Ziel oder echter Entscheidung/Komplikation.
+- **Quest-Endzustand:** Der Board-Generator muss im `desired_end_state` sämtliche substantiell erforderlichen Ergebnisse enthalten. Objectives dürfen keine zusätzliche Pflicht verstecken, die der Endzustand nicht nennt.
+- **Combat-Handles:** Der aktive C-Pfad wird bis in Encounter/Joiner-Labeling getragen; eine eindeutige anonyme Rolle bleibt z. B. `Bandit Leader`, während echte Dubletten `Young Bandit A/B` bleiben.
 

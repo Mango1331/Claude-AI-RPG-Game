@@ -1,11 +1,11 @@
 # Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.6.5-gpt-notemp)
 
-Stand: 02.10.2026.
+Stand: 06.10.2026.
 
 | | |
 |---|---|
 | Branch | `claude/c-planner-prototype-2026-10-02-gpt-no-temperament` |
-| Ausgangscommit | `90bd450` (Build 4.2.1, „Stand A“). Ohne Flag läuft A unverändert (§8) |
+| Ausgangsstand dieses Experiments | `e7606624` (Build `4.3.0-c.6.5-gpt`). Historischer Prototyp-C-Ursprung: `90bd450` (Build 4.2.1, „Stand A“). Die A-byte-identischen Messungen in §8 dokumentieren den Elternbranch und gelten nicht für `-notemp`. |
 | Arbeitshypothese (eingefroren) | `docs/ARCHITECTURE_C.md` Rev. 3 auf `chatgpt/narrator-gm-tools-2026-10-02` @ `717e2f7`. Sie wird hier nicht weiterentwickelt; dieses Dokument nennt nur, wo der Prototyp bewusst von ihr abweicht (§7) |
 | Schalter | Engine-Einstellung **„Prototype C: semantic planner“** (`planner`), Standard **aus** |
 | Nicht vermischt | Experiment B (GM-Tools, S4b-Werkzeuge) bleibt auf seinem Branch; hier ist nichts davon übernommen |
@@ -251,7 +251,7 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.5-gpt-notemp`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt-no-temperament` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.5-gpt-notemp`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
    - Vertrag v4 (Revision 4.3.0-c.6.5-gpt), Preset „Avereth Narrator V4“, Lorebook v0.13.

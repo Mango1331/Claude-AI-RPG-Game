@@ -257,7 +257,7 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
    - Vertrag v4 (Revision 4.3.0-c.6.5-gpt), Preset „Avereth Narrator V4“, Lorebook v0.13.
 3. **Schalter:** Engine-Panel → **„Prototype C: semantic planner“** anhaken.
    - Er gilt für jede V4-Kampagne, auch eine laufende, ab der nächsten Nachricht.
-   - Ausschalten bringt A zurück.
+   - Auf diesem `-notemp`-Experiment schaltet der Haken nur den semantischen Planner aus; die No-Temperament-Content/Combat-Basis bleibt aktiv. Für den Vergleich mit dem normalen c.6.5-gpt-Stand muss dessen Branch separat installiert werden.
 4. **Neuer Chat** (empfohlen), Erschaffung wie gewohnt.
    - Die bekannten Fälle sind Mage-Fälle: `Mage`, dann `Flame Lance + Arcane Burst`.
    - Jede andere Klasse geht auch; dann die Skill-Namen unten durch deine ersetzen.

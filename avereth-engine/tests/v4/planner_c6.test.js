@@ -641,7 +641,7 @@ test('c.6.4-gpt: narrator contract also forbids implied PC answers and partial n
 
 
 // ------------------------------------------------------------------------------------------------ c.6.5-gpt live follow-up
-test('c.6.5-gpt: co-presence alone is not first sight; explicit awareness is, and missing awareness is not silently "aware" for Ambush', () => {
+test('c.6.6: seeing Alaric (knowledge) and Ambush awareness are separate: co-present people see him unless established unaware, in any order of the reply; Ambush still needs "unaware"', () => {
     const s = structuredClone(live(4).state());
     const id = 'npc.test_watcher';
     s.entities[id] = {
@@ -652,26 +652,36 @@ test('c.6.5-gpt: co-presence alone is not first sight; explicit awareness is, an
     s.scene.present.push(id);
     s.scene.positions[id] = { band: 'SHORT', cover: 'none' };
 
-    const unseen = [];
-    perceiveAll(s, (e) => unseen.push(e));
-    assert.equal(unseen.some((e) => e.t === 'knowledge.gained' || e.t === 'memory.recorded'), false, 'being in the same scene does not mean the NPC saw Alaric');
+    // with him, nothing says he went unnoticed: he is seen (c.6.2), as every recurring person's record needs
+    const seen = [];
+    perceiveAll(structuredClone(s), (e) => seen.push(e));
+    assert.ok(seen.some((e) => e.t === 'knowledge.gained' && e.d.who === id));
+    // established unaware (the state, or the same reply): not seen
+    const hidden = [];
+    perceiveAll(s, (e) => hidden.push(e), { unaware: new Set([id]) });
+    assert.equal(hidden.length, 0);
 
-    s.scene.awareness[id] = 'aware';
-    const noticed = [];
-    perceiveAll(s, (e) => { noticed.push(e); applyEvent(s, e); });
-    assert.ok(noticed.some((e) => e.t === 'knowledge.gained' && e.d.who === id));
-    assert.ok(noticed.some((e) => e.t === 'memory.recorded' && e.d.memory?.id === `m.t${s.turn}.seen.${id}`));
-
-    delete s.scene.awareness[id];
+    // Ambush reads the fight's awareness only: unknown is no Ambush, unaware is
     const encUnknown = initEncounter(s, content, scriptedDice(), { actor: 'pc', target: id, skill: 'mage.basic_attack' }, [{ id, side: 'hostile' }], 'enc.test', { c: true });
     assert.equal(encUnknown.ambush, false);
     assert.match(encUnknown.ambush_reason, /target awareness: unknown -> no Ambush/);
     assert.equal(encUnknown.combatants[id].label, 'Bandit Leader', 'the unique C role keeps the pre-combat label without a spurious A');
-
     s.scene.awareness[id] = 'unaware';
     const encUnaware = initEncounter(s, content, scriptedDice(), { actor: 'pc', target: id, skill: 'mage.basic_attack' }, [{ id, side: 'hostile' }], 'enc.test2', { c: true });
     assert.equal(encUnaware.ambush, true);
     assert.match(encUnaware.ambush_reason, /true Ambush/);
+
+    // the reply introduces two smugglers and only afterwards says they have not noticed him (live 06.10): no first sight
+    const base = structuredClone(live(4).state());
+    base.last = { input: 'x', rejected: [], outcome: { kind: 'v4', actions: [], extra: [], resolutions: [], expected_keys: {}, conditionals: [], booked: { registration: false, grants: [], turnIns: [], accepted: [], sellers: [] }, auth: { gos: [], roam: false, take: [], gather: false, rest: false, timeCap: 60, c: true } } };
+    const smugglers = (aware) => applyWorld(structuredClone(base), content, { expected: {}, deltas: [
+        { seq: 1, type: 'person.new', ref: 'person.smuggler', name: null, role: 'smuggler', desc: ['a smuggler hauling a crate'], present: true, relevant: true, at: null, band: 'MEDIUM' },
+        ...(aware ? [{ seq: 2, type: 'aware', who: 'person.smuggler', level: aware }] : []),
+    ] }, { msg: 9 });
+    const sawHim = (w) => w.events.some((e) => e.t === 'knowledge.gained' && e.d.about === 'f.pc.appearance' && /smuggler/.test(e.d.who));
+    assert.equal(sawHim(smugglers('unaware')), false, 'unaware later in the same reply: not seen');
+    assert.equal(sawHim(smugglers(null)), true, 'nothing said: co-present, seen');
+    assert.equal(sawHim(smugglers('aware')), true);
 });
 
 test('c.6.5-gpt: skittish is a C bias: retreat gains distance, while leaving the encounter needs more than temperament', () => {

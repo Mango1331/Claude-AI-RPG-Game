@@ -479,13 +479,14 @@ export function narratorReply(state, content, replyText, { msg = null, stripTrac
  * Perception: an NPC that can see Alaric now knows his appearance and remembers the first sight of him. Runtime V4
  * calls it at every step that changes who is with him (src/v4/world.js), V3 at the end of the reply.
  */
-export function perceiveAll(s, emit) {
+export function perceiveAll(s, emit, { unaware = null } = {}) {
     for (const id of perceivers(s)) {
         if (id === 'pc' || s.entities[id].kind !== 'npc' || s.scene.concealed.includes('pc') || knows(s, id, PC_LOOK_FACT)) continue;
-        // Co-presence is not perception. The 06.10 live run put Alaric behind a fallen trunk while two smugglers kept
-        // talking, yet undefined awareness was treated as "they saw him" and later denied Ambush. First sight is stored
-        // only once the story/check explicitly establishes that the NPC actually noticed Alaric.
-        if (s.scene.awareness[id] !== 'aware') continue;
+        // 4.3.0-c.6.6: seeing him (this knowledge, his look) and the fight's awareness (scene.awareness, Ambush) are two
+        // things. Someone with him who has not been established as unaware has seen him (c.6.2); an Ambush still needs
+        // an established "unaware" (src/combat.js initEncounter). unaware: whom the same reply establishes as unaware in
+        // a later step (src/v4/world.js), so the order of its deltas does not decide it
+        if (s.scene.awareness[id] === 'unaware' || unaware?.has(id)) continue;
         emit({ t: 'knowledge.gained', d: { who: id, about: PC_LOOK_FACT, stance: 'knows', source: 'witnessed', turn: s.turn, minute: s.clock.minute } });
         emit({ t: 'memory.recorded', d: { memory: {
             id: `m.t${s.turn}.seen.${id}`, turn: s.turn, minute: s.clock.minute, text: `first saw {pc} at ${s.scene.place || entityLabel(s, s.scene.location)}`,

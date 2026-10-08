@@ -235,27 +235,46 @@ function negated(text, type) {
     return new RegExp(`\\b${NEGATOR}\\s+(?:(?:going|about) to\\s+|gonna\\s+|be\\s+|really\\s+|even\\s+)?(?:${lemmas})\\b`).test(text);
 }
 
-function planned(text, type) {
+// a clause ends at punctuation inside a sentence or at a conjunction; a clause whose first words carry a subject starts
+// a new action, one without continues the action before it ("I'll walk to Ashbridge and then go to the market")
+const CLAUSE_BREAK = /\s*(?:[,;:]|\b(?:and then|and|then|but|so|while|before|after|because)\b)\s*/;
+const SUBJECTS = new Set([...FIRST_PERSON, 'he', 'she', 'they', 'you', 'it', 'lets', "let's"]);
+
+/**
+ * The actions of the evidence: per sentence, its clauses grouped by subject. Subjectless clauses before the first
+ * subject ("Tomorrow, I'll …", "next time I …") belong to the action they open; later ones to the action before them.
+ */
+function actionSpans(parts) {
+    const spans = [];
+    for (const p of parts) {
+        let lead = '';
+        let cur = null;
+        for (const clause of p.text.split(CLAUSE_BREAK).filter(Boolean)) {
+            const subject = clause.split(' ').slice(0, 3).some((w) => SUBJECTS.has(w));
+            if (subject) { cur = { text: lead ? `${lead} ${clause}` : clause }; lead = ''; spans.push(cur); }
+            else if (cur) cur.text += ` ${clause}`;
+            else lead = lead ? `${lead} ${clause}` : clause;
+        }
+        if (lead) spans.push({ text: lead });
+    }
+    return spans;
+}
+
+/**
+ * The command is planned for later only when EVERY action of the evidence that names it is: its own clause span has
+ * a future anchor and a future modal governing the verb.
+ * 4.3.0-c.6.6: c.6.3 bound the modal to the LAST verb of the whole evidence. That kept "Tomorrow I'll walk to
+ * Ashbridge and then go to the market" (the last verb has no modal of its own) and dropped "I travel back to Ashwater
+ * now, and next time I will return with friends" (the last verb is the later one). The decision belongs to the clause
+ * span of each act, not to a verb's position in the quote.
+ */
+function planned(parts, type) {
     const lemmas = lemmaRe(type);
-    if (!lemmas || !FUTURE_ANCHOR.test(text)) return false;
-    // c.6.3-gpt live regression: a long exact quote contained "let's get together next time" and then
-    // "travel back to Ashwater". The old check paired that unrelated future anchor with an earlier "I'll ... return"
-    // and dropped the later, present travel. A command quote may contain several verbs; the future modal must govern
-    // the LAST verb of this command in the evidence, which is the act the planner is actually anchoring.
-    const actions = new RegExp(`\\b(?:${lemmas})\\b`, 'g');
-    let last = null;
-    let m;
-    while ((m = actions.exec(text))) {
-        last = { start: m.index, end: actions.lastIndex };
-        if (!m[0].length) actions.lastIndex += 1;
-    }
-    if (!last) return false;
-    const future = new RegExp(`\\b${FUTURE_MODAL}\\s+(?:[a-z']+\\s+){0,2}?(?:${lemmas})\\b`, 'g');
-    while ((m = future.exec(text))) {
-        if (m.index <= last.start && future.lastIndex >= last.end) return true;
-        if (!m[0].length) future.lastIndex += 1;
-    }
-    return false;
+    if (!lemmas) return false;
+    const act = new RegExp(`\\b(?:${lemmas})\\b`);
+    const future = new RegExp(`\\b${FUTURE_MODAL}\\s+(?:[a-z']+\\s+){0,2}?(?:${lemmas})\\b`);
+    const acts = actionSpans(parts).filter((s) => act.test(s.text));
+    return acts.length > 0 && acts.every((s) => FUTURE_ANCHOR.test(s.text) && future.test(s.text));
 }
 
 const idOf = (ref) => (typeof ref === 'string' ? ref : null);
@@ -301,7 +320,7 @@ export function guardCommands(message, commands, context = {}, { language = true
             drop(c, 'retrospective', 'the evidence only says where he came from'); continue;
         }
         if (RETRO_ANCHOR.test(text) && pastRe(type) && new RegExp(`\\b(?:${pastRe(type)})\\b`).test(text)) { drop(c, 'retrospective', 'the evidence recalls an earlier deed'); continue; }
-        if (planned(text, type)) { drop(c, 'plan', 'the evidence plans it for later'); continue; }
+        if (planned(parts, type)) { drop(c, 'plan', 'the evidence plans it for later'); continue; }
         if (negated(text, type)) { drop(c, 'negation', 'the evidence negates it'); continue; }
         if (otherSpeech(message, evidence, context)) { drop(c, 'npc_speech', "the evidence is someone else's quoted words"); continue; }
         if (otherActor(evidence, context)) { drop(c, 'npc_actor', 'the evidence is what someone else does'); continue; }

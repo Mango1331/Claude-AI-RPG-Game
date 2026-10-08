@@ -335,7 +335,7 @@ test('Prototype C targetless close-in + Arcane Burst moves the whole hostile fie
     for (const id of ids) materialise(s, content, dice, (e) => applyEvent(s, e), id);
     const enc = initEncounter(s, content, dice,
         { actor: 'pc', target: crossbow, skill: 'mage.arcane_burst', move: 'closer', move_target: null },
-        ids.map((id) => ({ id, side: 'hostile' })), 'enc.aoe.test');
+        ids.map((id) => ({ id, side: 'hostile' })), 'enc.aoe.test', { c: true }); // the C path labels as src/engine.js does
     assert.equal(enc.combatants[leader].label, 'Bandit Leader');
     assert.equal(enc.combatants[crossbow].label, 'Crossbow Bandit');
     assert.deepEqual(ids.filter((id) => id !== leader && id !== crossbow).map((id) => enc.combatants[id].label).sort(), ['Young Bandit A', 'Young Bandit B']);
@@ -352,7 +352,7 @@ test('Prototype C targetless close-in + Arcane Burst moves the whole hostile fie
 
     const enc2 = initEncounter(s, content, Dice.from(s),
         { actor: 'pc', target: crossbow, skill: 'mage.arcane_burst', move: 'closer', move_target: null },
-        ids.map((id) => ({ id, side: 'hostile' })), 'enc.aoe.too_far');
+        ids.map((id) => ({ id, side: 'hostile' })), 'enc.aoe.too_far', { c: true });
     for (const id of ids) enc2.combatants[id].current.band = 'MEDIUM';
     const mp2 = enc2.combatants.pc.current.mp;
     const no = attackAction({ enc: enc2, content, dice: Dice.from(s), state: s, c: true }, 'pc', crossbow, 'mage.arcane_burst', { move: 'closer', moveTarget: null });

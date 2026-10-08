@@ -92,12 +92,32 @@ test('plan and negation bind to the command\'s own verb: "Deal, I\'ll clear it t
     assert.deepEqual(kept("Deal. I'll clear your well tomorrow morning.", [{ seq: 1, type: 'quest.accept', quest: 'quest.old_well', quote: "Deal. I'll clear your well tomorrow morning." }], 'village_reeve'), ['quest.accept']);
     assert.deepEqual(why("Tomorrow I'll take the Fence Repair job.", [{ seq: 1, type: 'quest.accept', quest: 'quest.fence_repair', quote: "Tomorrow I'll take the Fence Repair job." }], 'hall_board'), ['plan']);
     const live = "thank you im sure we will get to a drink back at Ashwater but ill have to return today so lets get together next time *i say politely and then travel back to Ashwater*";
-    assert.deepEqual(kept(live, [{ seq: 1, type: 'go', to: 'loc.ashbridge', quote: "ill have to return today so lets get together next time *i say politely and then travel back to Ashwater" }]), ['go'], 'an unrelated next-time phrase does not turn the later explicit current travel into a plan');
+    assert.deepEqual(kept(live, [{ seq: 1, type: 'go', to: 'loc.ashbridge', quote: "ill have to return today so lets get together next time *i say politely and then travel back to Ashwater" }], 'street'), ['go'], 'an unrelated next-time phrase does not turn the later explicit current travel into a plan');
     assert.deepEqual(why("I'm not paying four copper for that.", [{ seq: 1, type: 'pay', to: 'npc.innkeeper', amount_cp: 4, for: null, quote: "I'm not paying four copper for that." }], 'inn_offer'), ['negation']);
     // the typo "i not and pay" (for "nod") is no negation of the payment
     const t = '*i not and pay the 2 Silver. I then put my hand on the Stone*';
     assert.deepEqual(kept(t, [{ seq: 1, type: 'offer.accept', offer: 'offer.registration', lines: null, quote: 'i not and pay the 2 Silver' }], 'hall_fee'), ['offer.accept']);
     assert.deepEqual(kept("I don't care what it costs, I'll take the room.", [{ seq: 1, type: 'buy', what: 'a room', from: null, qty: null, max_cp: null, any_price: true, quote: "I don't care what it costs, I'll take the room." }], 'inn_no_offer'), ['buy']);
+});
+
+test('c.6.6: a plan binds to the clause span of each act, not to the first or last verb of the quote', () => {
+    const go = (quote, to = { new: 'Ashbridge' }) => [{ seq: 1, type: 'go', to, quote }];
+    const one = "I'll walk to Ashbridge tomorrow.";
+    assert.deepEqual(why(one, go(one), 'street'), ['plan'], 'one verb, future');
+    const both = 'Tomorrow I\'ll walk to Ashbridge and then go to the market.';
+    assert.deepEqual(why(both, go(both), 'street'), ['plan'], 'several verbs, all of them in the planned span');
+    const nowThenLater = 'I travel back to Ashwater now, and next time I will return with friends.';
+    assert.deepEqual(kept(nowThenLater, go(nowThenLater, { new: 'Ashwater' }), 'street'), ['go'], 'a current act and a later one: the current one stands');
+    const laterThenNow = 'Next time we can share a drink, I will return someday. *I walk back to Ashwater*';
+    assert.deepEqual(kept(laterThenNow, go(laterThenNow, { new: 'Ashwater' }), 'street'), ['go'], 'an earlier future phrase does not reach the current act');
+    const live = "thank you im sure we will get to a drink back at Ashwater but ill have to return today so lets get together next time *i say politely and then travel back to Ashwater*";
+    assert.deepEqual(kept(live, go(live, { new: 'Ashwater' }), 'street'), ['go'], 'the live message of 07.10., quoted in full');
+    const lead = 'Next time, I will walk to Ashbridge.';
+    assert.deepEqual(why(lead, go(lead), 'street'), ['plan'], 'a leading time phrase belongs to the act it opens');
+    const neg = "I won't walk to Ashbridge tomorrow.";
+    assert.deepEqual(why(neg, go(neg), 'street'), ['negation'], 'negation still binds');
+    const negNow = "I don't wait for tomorrow, I walk to Ashbridge.";
+    assert.deepEqual(kept(negNow, go(negNow), 'street'), ['go'], 'a negated wait is no negated walk, and tomorrow there names no act');
 });
 
 test('evidence is anchored, not matched letter for letter: an elided quote of a clear payment stands (live run 28.09.); invented or scattered words, and elisions over a question, a negation, a plan or someone else\'s words, do not', () => {

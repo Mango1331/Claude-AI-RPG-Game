@@ -212,6 +212,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         return local.length === 1 ? local[0].id : null;
     };
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
+    // whom this reply establishes as not having noticed Alaric (aware: unaware), whatever step of it reports that: they do
+    // not see him at an earlier step either (perceiveAll)
+    const seeing = () => ({ unaware: new Set((fw.accept || []).filter((d) => d?.type === 'aware' && d.level === 'unaware').map((d) => mapRef(d.who)).filter((x) => typeof x === 'string')) });
     // the World Envelope at this step (docs/ARCHITECTURE_GEN35.md §2.3): may this actor turn on Alaric of its own accord?
     const envelopeAllows = (id, d) => {
         if (typeof id !== 'string' || !s.entities[id] || !['npc', 'creature'].includes(s.entities[id].kind)) { grant('envelope.fight'); return true; } // the V3 rules refuse unknown attackers
@@ -309,7 +312,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             const at = e.at ? place(e.at) : go?.to ? { id: go.to } : { error: 'no place' };
             if (!at.error && at.id !== s.scene.at) {
                 const party = companions(e.with, { seq: Number(k), type: 'expected' });
-                perceiveAll(s, emit);
+                perceiveAll(s, emit, seeing());
                 arrive(at.id, party);
                 travel.push({ seq: 0, ok: true });
             }
@@ -343,7 +346,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 if (at.error) { reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 if (at.id === s.scene.at) break;
                 const party = companions(d.with, d);
-                perceiveAll(s, emit);
+                perceiveAll(s, emit, seeing());
                 arrive(at.id, party);
                 travel.push({ seq: d.seq ?? 0, ok: true });
                 break;
@@ -409,7 +412,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 break;
             case 'leave': {
                 const who = mapRef(d.who);
-                perceiveAll(s, emit);
+                perceiveAll(s, emit, seeing());
                 v3({ leave: [who] }, d);
                 // who walks off is not waiting at this place when Alaric comes back
                 if (s.entities[who]?.at && !s.scene.present.includes(who)) emit({ t: 'entity.updated', d: { id: who, set: { at: null } } });
@@ -658,7 +661,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             const at = e.at ? place(e.at) : go?.to ? { id: go.to } : { error: 'no place' };
             if (!at.error && at.id !== s.scene.at) {
                 const party = companions(e.with, { seq: Number(k), type: 'expected' });
-                perceiveAll(s, emit);
+                perceiveAll(s, emit, seeing());
                 arrive(at.id, party);
             }
         }
@@ -694,7 +697,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     step = { kind: 'engine' };
     // Prototype C (4.3.0-c.6): his contract slips show what the engine holds of their contracts (READY, COMPLETED)
     if (cPath) slipMarks(s, content, emit);
-    perceiveAll(s, emit);
+    perceiveAll(s, emit, seeing());
     selfIntro(s, emit);
     const ep = episode(s, msg);
     if (ep) emit({ t: 'memory.recorded', d: { memory: ep } });

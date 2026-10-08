@@ -205,7 +205,8 @@ test('the narrator contract carries its revision; the extractor is told about st
     const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
     assert.equal(contract.split('\n')[1], NARRATOR_CONTRACT_REVISION, 'the line the engine looks for on the card');
     assert.equal(EXTRACTOR_VERSION, 'extract-5.0');
-    assert.equal(content.deltaVocab.version, 'delta-0.15');
+    // 4.1.5 introduced delta-0.15; later rounds raise it (c.6.3+). The pin is "this vocabulary or a later one", not the old number
+    assert.ok(Number(content.deltaVocab.version.replace('delta-', '')) >= 0.15, content.deltaVocab.version);
     assert.deepEqual(content.deltaVocab.deltas.find((d) => d.type === 'creature.new').fields.stronger, { type: 'boolean', nullable: true });
     assert.ok(content.deltaVocab.rules.some((r) => /stronger: true only when the reply clearly establishes/.test(r) && /Never from a name or label alone/.test(r)));
 });

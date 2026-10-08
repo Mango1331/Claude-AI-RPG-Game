@@ -3,7 +3,7 @@
 // The build: manifest.json "version" matches (SillyTavern shows it under Manage extensions). Shown in the extension's
 // settings, in #audit and on every message record it writes, so a chat export says which build handled each turn
 // (live run 26.09. 23:09 ran 8132a25, the state of main, while the fixes were on the branch). Raise it with every change.
-export const ENGINE_VERSION = '4.3.0-c.6.5-gpt';
+export const ENGINE_VERSION = '4.3.0-c.6.6';
 // The revision line the V4 narrator contract carries (content/narrator/Avereth_Narrator_Contract_v4.txt): the engine
 // shows whether the character card holds the current contract (live run 30.09.2026 22:41 ran on a card from before 4.1.2).
 export const NARRATOR_CONTRACT_REVISION = 'Contract revision: 4.3.0-c.6.5-gpt';

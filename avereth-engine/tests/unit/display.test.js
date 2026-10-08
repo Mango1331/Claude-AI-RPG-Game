@@ -150,11 +150,13 @@ test('Avereth System display uses one distinct HTML card while the saved panel a
         '`Alaric: not possible — Arcane Burst is out of range (nothing spent, nothing rolled)`',
     ].join('\n');
     showPanel(msg, raw, '<details class="avereth-hud">HUD</details>');
-    assert.match(msg.extra.display_text, /^<details class="avereth-system-panel avereth-system-combat" open><summary>⚙ AVERETH ENGINE · COMBAT LOG<\/summary><div class="avereth-system-lines">/);
+    // the card the live build of 07.10.2026 showed (c.6.4 code): one open block of lines above the narration; the
+    // collapsible "COMBAT LOG" this test once expected never shipped (c.6.6: test and CSS follow the build)
+    assert.match(msg.extra.display_text, /^<div class="avereth-system-panel avereth-system-combat"><div class="avereth-system-line avereth-system-heading">COMBAT START<\/div>/);
     assert.match(msg.extra.display_text, /avereth-system-heading[^>]*>COMBAT START</);
     assert.match(msg.extra.display_text, /avereth-system-state[^>]*>HP: Bandit 90\/90/);
     assert.match(msg.extra.display_text, /avereth-system-warning[^>]*>Alaric: not possible/);
-    assert.match(msg.extra.display_text, /<\/div><\/details>\n\nThe narration remains ordinary prose\.\n\n<details class="avereth-hud">HUD<\/details>$/);
+    assert.match(msg.extra.display_text, /<\/div><\/div>\n\nThe narration remains ordinary prose\.\n\n<details class="avereth-hud">HUD<\/details>$/);
     assert.doesNotMatch(msg.extra.display_text, /`COMBAT START`/);
 
     const tactical = { mes: 'Narration.', extra: { avereth: { v: 3 } } };

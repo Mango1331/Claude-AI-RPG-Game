@@ -42,7 +42,7 @@ function replay(answer) {
     chat.push(user(fx.dash));
     const dash = prepareGeneration(chat, content, { type: 'normal' });
     if (dash.action === 'panels') chat.at(-1).is_system = true; // index.js hides a line the System answered
-    return { chat, before, recover: got.recover, first, request, rat: chat[ratId].extra.avereth, ratText: chat[ratId].extra.display_text, dash };
+    return { chat, before, recover: got.recover, first, request, rat: chat[ratId].extra.avereth, ratText: chat[ratId].extra.avereth.panel, shown: chat[ratId].extra.display_text, dash };
 }
 
 const run = replay(ANSWER);
@@ -88,6 +88,8 @@ test('with the answer: Rat A, Rat B, Rat C as three combatants, the fight fixed 
     assert.ok(!enc.combatants['npc.brede'] && !enc.combatants['npc.osney'], 'Brede and Osney stand by');
     assert.match(run.ratText, /^`COMBAT START — Rat A, Rat B, Rat C attack Alaric`\n`Initiative: [^\n]*`\n`— Round 1 —`\n[\s\S]*`COMBAT TARGETS — Rat A \[ENGAGED\] · Rat B \[MEDIUM\] · Rat C \[MEDIUM\]`\n`HP: /);
     assert.match(run.ratText, /`ATTACKERS IDENTIFIED: a separate request named them \(12\.0 s\)\.`/);
+    // c.6.4 renders the stored panel as one System card above the narration (the format this run predates)
+    assert.match(run.shown, /^<div class="avereth-system-panel avereth-system-combat"><div class="avereth-system-line avereth-system-heading">COMBAT START — Rat A, Rat B, Rat C attack Alaric<\/div>/);
 });
 
 test('"*i dash at the first one and basic attack it*": the engine asks among the three rats, Brede and Osney are no candidates, no narrator call', () => {

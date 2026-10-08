@@ -114,7 +114,8 @@ test('the fight the reply opens: the three rats, faster than Alaric, bite at onc
         '`Next: Alaric\'s Turn (Round 1)`',
         '`Alaric\'s attacks vs Big Cellar Rat: Basic Attack 16–19 · Heavy Slash 23–28 · Charge 21–26 damage`',
     ]);
-    assert.match(at[14].rec.hud, /Combat<\/b>: Round 1, Alaric to act/);
+    // c.6.4: during a fight the tactical combat HUD replaces the World HUD's "Combat: Round 1, Alaric to act" line
+    assert.match(at[14].rec.hud, /<summary>⚔ COMBAT · Round 1 · Alaric's turn<\/summary>/);
 });
 
 test('the Heavy Slash goes on from Alaric\'s Turn: no Turn twice, the same dice as the run, the narrator hears the whole Round', () => {
@@ -171,8 +172,11 @@ test('"Basic Attack Cellar Rat A" hits exactly A; the System panel, the HUD and 
     assert.equal(mine.target, 'mon.cellar_rat');
     assert.match(gen.context.text, /- Alaric: Basic Attack -> Cellar Rat A \[/);
     assert.match(turnPanel(s, content), /`Alaric: Basic Attack → Cellar Rat A/);
-    assert.match(renderHud(s, content, 'open'), /Cellar Rat A \((?:HP \d+\/16|dead)/);
-    assert.match(renderHud(s, content, 'open'), /Cellar Rat B \(HP \d+\/16/);
+    // c.6.4 combat HUD: one row per foe still in the fight, by the same label (a defeated one leaves the table)
+    const row = (label) => new RegExp(`<span class="avereth-combat-name">${label}</span><span class="avereth-combat-hp">\\d+/16</span>`);
+    if (s.encounter?.combatants['mon.cellar_rat']?.current.defeated) assert.doesNotMatch(renderHud(s, content, 'open'), /avereth-combat-name">Cellar Rat A</);
+    else assert.match(renderHud(s, content, 'open'), row('Cellar Rat A'));
+    assert.match(renderHud(s, content, 'open'), row('Cellar Rat B'));
 });
 
 test('a real newcomer still joins: introduced in "new" and its ref named in "combat", it is Cellar Rat C, also by the same name', () => {

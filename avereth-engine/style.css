@@ -27,16 +27,6 @@
   padding: 0.12em 0;
   overflow-wrap: anywhere;
 }
-.mes_text details[class*="avereth-system-combat"] > summary {
-  cursor: pointer;
-  font-weight: 700;
-  letter-spacing: 0.015em;
-  margin: -0.05em 0 0.3em;
-  user-select: none;
-}
-.mes_text [class*="avereth-system-lines"] {
-  min-width: 0;
-}
 .mes_text [class*="avereth-system-heading"] { font-weight: 700; padding-top: 0.28em; }
 .mes_text [class*="avereth-system-warning"] {
   font-weight: 700;

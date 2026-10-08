@@ -164,7 +164,15 @@ const HANDLERS = {
     'journey.continue'(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
         const ready = journeyReady(s, { c: !!envx?.c });
-        if (!ready) return { status: 'refused', reason: 'no established journey', line: 'NOTHING TO DEPART ON — no stored journey/departure is ready to continue here.' };
+        if (!ready) {
+            // 4.3.0-c.6.6: "I start to make my way back to Ashbridge" after the delivery: the planner read a journey that
+            // had ended, beside the go that is the actual travel (live 07.10.2026). The go stands, also where it was
+            // marked as building on this step; nothing is told about a journey
+            if (envx?.c && (ctx.env?.commands || []).some((x) => x.type === 'go' && (x.seq ?? 0) > (c.seq ?? 0))) {
+                return { status: 'refused', reason: 'no established journey; the go of this message is the travel', done: true, line: null };
+            }
+            return { status: 'refused', reason: 'no established journey', line: 'NOTHING TO DEPART ON — no stored journey/departure is ready to continue here.' };
+        }
         // his agreement to go on with this quest's journey is its start: from now on it is his to continue, whoever of
         // its people the scene still shows (review of 4.1.0: an accepted escort is no journey before he sets off)
         const q = s.quests[ready.id];
@@ -174,7 +182,7 @@ const HANDLERS = {
         ctx.auth.gos.push(go);
         ctx.auth.roam = true;
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, content.rules.time.travel_cap_min);
-        return { status: 'authorized', line: `DEPARTS/CONTINUES — the already-established journey of "${ready.label}"${ready.contact ? ` with ${entityLabel(s, ready.contact)}` : ''}; carry routine travel forward in THIS reply until they reach the destination or a concrete event creates a real decision/stop. Scenery, harmless conversation and uneventful road are not reasons to stop and ask the player to say "continue" again.` };
+        return { status: 'authorized', line: `DEPARTS/CONTINUES — the already-established journey of "${ready.label}"${ready.companion ? ` with ${entityLabel(s, ready.companion)}` : ''}; carry routine travel forward in THIS reply until they reach the destination or a concrete event creates a real decision/stop. Scenery, harmless conversation and uneventful road are not reasons to stop and ask the player to say "continue" again.` };
     },
     go(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT GO — not while the fight runs.' };

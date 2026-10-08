@@ -98,7 +98,8 @@ function resolvePlace(s, ref, emit, depth = 0, { c = false } = {}) {
     // a kind that cannot lie in its parent climbs to the first ancestor where it can (a hamlet named inside a site of
     // the town lies in the realm or region, not in the site). Prototype C (4.3.0-c.6): the wild has insides too, a den,
     // a cave, a chamber (live 04.10.2026 16:35: "Boar den chamber" refused in the Root-Hollow)
-    const parents = [...(PLACE_PARENTS[n.kind] || []), ...(c && n.kind === 'interior' ? ['wilderness'] : [])];
+    // (4.3.0-c.6.6) and a site out in the open (a waystation on the road, a ford) lies in the realm itself
+    const parents = [...(PLACE_PARENTS[n.kind] || []), ...(c && n.kind === 'interior' ? ['wilderness'] : []), ...(c && n.kind === 'site' ? ['realm'] : [])];
     for (let i = 0; i < 6 && pid && !parents.includes(s.places[pid]?.kind); i++) pid = s.places[pid]?.parent;
     if (!pid) return { error: `a ${n.kind} cannot lie in ${placeName(s, parent.id)}` };
     const same = Object.values(s.places).find((p) => p.parent === pid && normText(p.name) === normText(n.name));
@@ -341,8 +342,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             }
             case 'arrive': {
                 if (s.encounter) { reject(d, 'combat', 'no travel while combat is ACTIVE'); refusedArrival(d); break; }
-                const away = leavesHere(d.at);
-                const at = place(d.at);
+                const ref = onward(d.at);
+                const away = leavesHere(ref);
+                const at = place(ref);
                 if (at.error) { reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 if (at.id === s.scene.at) break;
                 const party = companions(d.with, d);
@@ -741,6 +743,25 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             if (!out.includes(id)) out.push(id);
         }
         return out;
+    }
+
+    /**
+     * 4.3.0-c.6.6: a new place he reaches after this reply has taken him out of the settlement it began in does not lie
+     * in that settlement (live 07.10.2026: "arrive Thornwick", then "arrive Thornwick chapel infirmary" in a chapel the
+     * extractor parented to Ashbridge, the town he had left). Its stated parent there becomes where he is now. Prototype C.
+     */
+    function onward(ref) {
+        const from = settlementOf(s, startAt);
+        const now = settlementOf(s, s.scene.at);
+        if (!cPath || !from || now === from || !ref || typeof ref !== 'object') return ref;
+        const fix = (r) => {
+            const n = r?.new;
+            if (!n || typeof n !== 'object' || ['realm', 'region', 'wilderness', 'settlement'].includes(n.kind)) return r;
+            if (n.parent && typeof n.parent === 'object') return { new: { ...n, parent: fix(n.parent) } };
+            if (typeof n.parent === 'string' && s.places[n.parent] && settlementOf(s, n.parent) === from) return { new: { ...n, parent: now || s.scene.at } };
+            return r;
+        };
+        return fix(ref);
     }
 
     /**

@@ -144,6 +144,10 @@ const TRAVEL_WORDS = /\b(?:escort|journey|travel|road|cart|wagon|caravan|ship|bo
 // guide or accompany), never from road words in its notes (live 04.10.2026 16:35: the warden's directions to the boar
 // den made "follow the directions" an established journey with him)
 const journeyWork = (q) => (q.objectives || []).some((o) => (o.verb ? ['ESCORT', 'DELIVER'].includes(o.verb) : /^\s*(?:escort|deliver|guide|accompany)\b/i.test(o.what || '')));
+// 4.3.0-c.6.6: who goes along is the escort's charge, not whoever handed over the parcel (live 07.10.2026: Brother
+// Aldric gave the medicine bundle and stayed; the engine's own "journey … with Aldric" made the story and the extractor
+// take him along to Thornwick and back)
+const escortWork = (q) => (q.objectives || []).some((o) => (o.verb ? o.verb === 'ESCORT' : /^\s*(?:escort|guide|accompany)\b/i.test(o.what || '')));
 
 /**
  * The journey Alaric can continue without naming where to ("wait, then we continue", live run 30.09.2026): a journey
@@ -156,7 +160,9 @@ const journeyWork = (q) => (q.objectives || []).some((o) => (o.verb ? ['ESCORT',
  */
 export function journeyReady(state, { c = false } = {}) {
     const sources = [
-        ...Object.values(state.quests).filter((q) => q.status === 'active' && (!c || journeyWork(q)))
+        // 4.3.0-c.6.6: a contract whose outcome is READY has reached its destination; its journey is over (live 07.10.2026:
+        // the way back from Thornwick "continued" the delivery journey that had ended at the chapel)
+        ...Object.values(state.quests).filter((q) => q.status === 'active' && (!c || (journeyWork(q) && !q.ready)))
             .map((q) => ({ id: q.id, label: q.title, text: [...(q.details || []).map((x) => (typeof x === 'string' ? x : x?.note)), ...(q.notes || [])].filter(Boolean).join(' ') })),
         ...(c ? [] : Object.values(state.threads || {}).filter((t) => t.status === 'open').map((t) => ({ id: t.id, label: t.text, text: t.text }))),
     ];
@@ -168,11 +174,11 @@ export function journeyReady(state, { c = false } = {}) {
             if (id === 'pc' || e?.kind !== 'npc' || e.status === 'dead') return false;
             return [e.name, truth(state, id, 'occupation')[0]?.o, ...(e.descriptors || [])].filter(Boolean).map(normText).some((x) => x.length >= 3 && text.includes(x));
         });
-        if (contact) return { id: src.id, label: src.label, contact, why: 'an established journey' };
+        if (contact) return { id: src.id, label: src.label, contact, companion: !c || escortWork(state.quests[src.id] || {}) ? contact : null, why: 'an established journey' };
     }
     const underway = Object.values(state.quests).filter((q) => q.status === 'active' && !q.ready && q.journey)
         .sort((a, b) => (b.journey.since ?? 0) - (a.journey.since ?? 0))[0];
-    return underway ? { id: underway.id, label: underway.title, contact: null, why: 'the contract\'s journey is underway' } : null;
+    return underway ? { id: underway.id, label: underway.title, contact: null, companion: null, why: 'the contract\'s journey is underway' } : null;
 }
 
 /**
@@ -187,7 +193,7 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
     const activeRaw = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered');
     const quests = activeRaw.map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q, { c }) }));
     const journey = journeyReady(state, { c });
-    const journey_ready = journey ? `${journey.id} — "${journey.label}"${journey.contact ? ` with ${sceneHandle(state, content, journey.contact)}` : ''}: ${journey.why}; Alaric may continue it when he clearly agrees` : undefined;
+    const journey_ready = journey ? `${journey.id} — "${journey.label}"${journey.companion ? ` with ${sceneHandle(state, content, journey.companion)}` : ''}: ${journey.why}; Alaric may continue it when he clearly agrees` : undefined;
     const day = today(state);
     const completed = Object.values(state.quests).filter((q) => q.status === 'completed' && (q.history || []).some((h) => h.status === 'completed' && Math.floor((h.minute ?? 0) / 1440) + 1 === day))
         .map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q, { c }) }));
@@ -236,6 +242,13 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
 /** The catalog as text, and the ids the extractor's schema may use. */
 export function extractorCatalog(state, content, opts = {}) {
     const c = buildCatalog(state, content, opts);
+    // 4.3.0-c.6.6: the land outside the settlements needs an id of its own. Without it the nearest town was the only
+    // parent on offer (live 07.10.2026: the half-way waystation on the river road and Thornwick's chapel were stored
+    // inside Ashbridge, and the 6-hour walk back was capped as a stroll inside one town)
+    const realm = opts.c ? realmOf(state, state.scene.at) : null;
+    if (realm && state.places[realm] && !c.places.some((p) => p.id === realm)) {
+        c.places = [...c.places, { id: realm, name: `${state.places[realm].name} (the realm itself: the roads, wilds and land between and beyond its settlements)` }];
+    }
     return {
         text: catalogText(c),
         places: [...new Set([c.here.id, ...c.places.map((p) => p.id)].filter(Boolean))],

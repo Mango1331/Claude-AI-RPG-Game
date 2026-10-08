@@ -100,21 +100,27 @@ ctx.characters[0].data.extensions.world = 'Avereth World Lore v0.13'; // linked 
 await turn('I Power Shot the boar', 'The arrow flies.\\n<avereth>{}</avereth>');
 result.loreBridge = result.loreBridge && !/\\nLORE:\\n/.test(window.__prompt) && window.__ext.avereth_lore_keys.value === 'Solmere\\nTidecross';
 const last = chat.at(-1);
-result.combatShown = /^\`COMBAT START\`\\n\`Initiative: /.test(last.extra.display_text || '') && last.mes === 'The arrow flies.' && /\`HP: /.test(last.extra.display_text);
+// 4.3.0-c.6.4+: the stored panel (record) keeps its lines; the message shows them as one System card above the prose
+const card = (m) => /^<div class="avereth-system-panel avereth-system-combat">/.test(m.extra.display_text || '');
+const panelOf = (m) => m.extra.avereth?.panel || '';
+result.combatShown = card(last) && /COMBAT START/.test(last.extra.display_text) && /^\`COMBAT START\`\\n\`Initiative: /.test(panelOf(last)) && last.mes === 'The arrow flies.' && /\`HP: /.test(panelOf(last));
 chat.push({ is_user: true, is_system: false, mes: '#status', extra: {} });
 await globalThis.averethInterceptor(chat, 8000, () => { aborted = true; }, 'normal');
 result.command = aborted && /SYSTEM \\/\\/ STATUS/.test((window.__panels || []).join('')) && chat.at(-1).is_system === true;
 // an NPC's attack reported by the reply: the fight is fixed at once and shown above that reply (Testrun 3)
 await turn('I look around again.', 'A wolf lunges out of the brush.\\n<avereth>{"new":[{"ref":"wolf","kind":"creature","species":"wolf","band":"SHORT"}],"combat":{"by":"wolf"}}</avereth>');
 // the wolf by its target label for the fight (live run 25.09.: "Wolf A"), listed among the targets
-result.commitShown = /\`COMBAT( START)? — Wolf A (attacks|joins)/.test(chat.at(-1).extra.display_text || '') && /\`COMBAT TARGETS — [^\`]*Wolf A \\[/.test(chat.at(-1).extra.display_text || '') && /\`Next: /.test(chat.at(-1).extra.display_text || '');
+result.commitShown = card(chat.at(-1)) && /COMBAT( START)? — Wolf A (attacks|joins)/.test(chat.at(-1).extra.display_text) && /\`COMBAT TARGETS — [^\`]*Wolf A \\[/.test(panelOf(chat.at(-1))) && /\`Next: /.test(panelOf(chat.at(-1)));
 // Runtime V3: a reply that still writes Megumin tracker blocks — removed from the text, the engine HUD below it
 const BLOCKS = '\\n<Blocks>\\n<World_State>**Loc:** nowhere</World_State>\\n<Character_Sheet>HP: 1/80 | Coin: 99 Gold</Character_Sheet>\\n<New_NPC name="Brom">**Background:** invented</New_NPC>\\n</Blocks>';
 await turn('I wait.', 'The wind turns.\\n<avereth>{}</avereth>' + BLOCKS);
 const v3 = chat.at(-1);
 const probe = document.createElement('div');
 probe.innerHTML = v3.extra.display_text || '';
-result.hud = probe.querySelectorAll('details.avereth-hud').length === 2 && /Alaric/.test(probe.querySelector('details.avereth-hud summary').textContent)
+// outside a fight the Character and World HUDs; in a fight (the wolf's, still running) one tactical combat HUD replaces them
+const huds = probe.querySelectorAll('details.avereth-hud');
+result.hud = ((huds.length === 2 && /Alaric/.test(huds[0].querySelector('summary').textContent))
+    || (huds.length === 1 && /avereth-combat-hud/.test(huds[0].className) && /⚔ COMBAT/.test(huds[0].querySelector('summary').textContent)))
   && /HP \\d+\\/80/.test(probe.textContent) && !/99 Gold|1\\/80|nowhere/.test(probe.textContent);
 result.trackersRemoved = v3.mes === 'The wind turns.' && !chat.some((m) => /<World_State>|<Character_Sheet>|<New_NPC>/.test(m.mes));
 // the prompt never carries the HUD; the next interceptor call trims its coreChat copy to the history window

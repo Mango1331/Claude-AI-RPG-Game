@@ -233,7 +233,8 @@ st.kill();
 mock.close();
 const checks = {
     noLeakWhileStreaming: turns.every((t) => !t.leakedWhileStreaming),
-    hudUnderEveryReply: turns.filter((t) => !t.system).every((t) => t.huds === 2 && t.hudStyled === 'solid'),
+    // outside a fight the Character and World HUDs; during one (4.3.0-c.6.4+) the single tactical combat HUD replaces them
+    hudUnderEveryReply: turns.filter((t) => !t.system).every((t) => (t.huds === 2 || (t.huds === 1 && /⚔ COMBAT · Round \d+/.test(t.hudText))) && t.hudStyled === 'solid'),
     noTrackerTextStored: turns.every((t) => !/<World_State>|<Character_Sheet>|<New_NPC>|<NPC_Update>/.test(t.mes)),
     engineBlockEveryRequest: out.requests.every((q) => q.engine),
     noTrackersOrHudInPrompts: out.requests.every((q) => !q.trackers && !q.hud),
@@ -271,7 +272,8 @@ checks.reportRecovered = reportReqs.length === 2 && /REPORT RECOVERED: the reply
 // start and that Turn with his first one; the next panel does not show it again (live run 26.09. 23:09)
 const wolfShown = T('river bank').shown || '';
 const slashShown = T('Heavy Slash Wolf A').shown || '';
-checks.npcTurnsBeforeAlaric = /COMBAT START — Wolf A attacks Alaric\n[^\n]*\n— Round 1 —\nWolf A[^\n]*→ Alaric/.test(wolfShown) && /Next: Alaric's Turn \(Round 1\)/.test(wolfShown)
+// the System card above the reply keeps the log; whose Turn it is now stands in the combat HUD below it (c.6.4+)
+checks.npcTurnsBeforeAlaric = /COMBAT START — Wolf A attacks Alaric\n[^\n]*\n— Round 1 —\nWolf A[^\n]*→ Alaric/.test(wolfShown) && /⚔ COMBAT · Round 1 · Alaric's turn/.test(wolfShown)
     && /Combat starts \([^\n]*\n- Wolf A[^\n]*\n- Alaric: Heavy Slash -> Wolf A/.test(engineOf(reqFor('Heavy Slash Wolf A')))
     && /^— Round 1 —\nAlaric: Heavy Slash → Wolf A/.test(slashShown);
 // the city reached from the verge without a spot (live run 27.09. 02:30): the place request names it, the HUD follows

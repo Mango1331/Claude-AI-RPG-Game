@@ -9,7 +9,7 @@ import { deriveCharacter } from './derived.js';
 import { formatCoin } from './economy.js';
 import { bandIndex, itemLabel } from './util.js';
 import { damagePreview, combatTargets, targetLabel } from './combat.js';
-import { sceneHandle } from './v4/scene_handles.js';
+import { sceneHandle, tacticalHere } from './v4/scene_handles.js';
 
 const sys = (text) => `\`${text}\``;
 // a combatant by its target label (from the board of that step, which outlives the fight), anyone else as the player knows them
@@ -197,12 +197,14 @@ export function worldPanel(state, content, reply = {}) {
     // A concretely visible actor becoming relevant before Combat gets a player-facing handle + Range immediately
     // above the same narration that revealed them. Creatures also have their already locked HP; NPC HP stays hidden
     // until the combat profile is materialised. This is scene information, not Initiative, and starts no fight.
+    // 4.3.0-c.6.6: only the actors that matter now (tacticalHere: creatures, people the story marked relevant on the
+    // planner path, attackers), not every clerk and keeper with a range (c.6.4 listed them all; A shows creatures, as before)
     if (reply?.state && reply?.events) {
         const before = new Set(state.scene?.present || []);
+        const tactical = new Set(tacticalHere(reply.state));
         const revealed = (reply.state.scene?.present || []).filter((id) => {
             const e = reply.state.entities?.[id];
-            const pos = reply.state.scene.positions?.[id];
-            if (!e || !['npc', 'creature'].includes(e.kind) || !pos?.band) return false;
+            if (!e || !tactical.has(id)) return false;
             return !before.has(id) || (e.kind === 'creature' && !state.entities?.[id]?.profile);
         });
         for (const id of revealed) {

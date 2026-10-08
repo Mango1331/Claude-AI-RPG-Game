@@ -15,7 +15,7 @@
 import { normText } from '../util.js';
 import { mentionedSkills } from '../intent.js';
 import { activeHostiles } from '../combat.js';
-import { sceneHandle } from './scene_handles.js';
+import { sceneHandle, tacticalHere } from './scene_handles.js';
 import { settlementOf } from './domain.js';
 import { extractJsonObject } from './json.js';
 import { validate } from './schema.js';
@@ -531,12 +531,23 @@ export function mapPlan(commands, ctx, content, message, state) {
     if (area(def)) {
         const nominal = ctx.opponents.find((o) => o.engaged) || ctx.opponents[0];
         if (nominal) return base(asAction(nominal.id, 'area'));
+        // 4.3.0-c.6.6: before a fight the area is the visible field (live 07.10.2026: "I dash in and use Arcane Burst"
+        // among visible bandits asked for a target): they enter the fight, the engine moves him and hits whoever is
+        // ENGAGED then, or refuses the whole action at no cost
+        if (!fight && state) {
+            const field = tacticalHere(state, { friendly: false });
+            const band = (id) => ['ENGAGED', 'SHORT', 'MEDIUM', 'LONG'].indexOf(state.scene.positions[id].band);
+            const near = [...field].sort((a, b) => band(a) - band(b))[0];
+            if (near) return base({ ...asAction(near, 'area'), field });
+        }
     }
     const words = flat(main.quote);
     const ref = EXPLICIT_REF.exec(words);
     if (ref) return base({ kind: 'no_target', skill, ref: ref[0] });
     if (hostiles.length === 1) return base(asAction(hostiles[0], PRONOUN.test(words) ? 'pronoun' : 'sole target'));
-    const candidates = hostiles.length ? hostiles : (state?.scene?.present || []).filter((id) => id !== 'pc' && state.entities[id] && state.entities[id].status !== 'dead');
+    // before a fight the choice is among the actors that matter, not the clerk behind the desk (4.3.0-c.6.6)
+    const tactical = !fight && state ? tacticalHere(state) : [];
+    const candidates = hostiles.length ? hostiles : tactical.length ? tactical : (state?.scene?.present || []).filter((id) => id !== 'pc' && state.entities[id] && state.entities[id].status !== 'dead');
     if (candidates.length >= 2) return base({ kind: 'ambiguous_target', skill, candidates });
     if (candidates.length === 1 && !fight) return base({ kind: 'ambiguous_target', skill, candidates });
     return base({ kind: 'no_target', skill });

@@ -133,3 +133,84 @@ test('c.6.6 route and sight: the planner keeps the destination and leaves the ro
     const go = content.deltaVocab.expected.go.summary;
     assert.match(go, /arrived is true only when the reply ends with him at the place \(seeing it ahead or passing it is false\)/);
 });
+
+// ------------------------------------------------------------------------------------------------ 11-14. before a fight
+const plan = (...commands) => JSON.stringify({ commands: commands.map((c, i) => ({ seq: i + 1, ...c })) });
+const bandit = (seq, ref, role, band, relevant = true) => ({ seq, type: 'person.new', ref, name: null, role, desc: [role], present: true, relevant, at: null, band });
+/** Alaric in Ashbridge (#46 of the live run), and a reply that shows four bandits, a passer-by and only tracks of a dog. */
+async function bandits(bands = ['SHORT', 'MEDIUM', 'MEDIUM', 'MEDIUM']) {
+    const g = live(46);
+    await say(g, '*i look at the men by the cart*', [plan()]);
+    const x = await g.reply('Four bandits loiter by the cart; a woman hurries past; paw prints of a big dog cross the mud.', {
+        expected: {},
+        deltas: [
+            bandit(1, 'leader', 'bandit leader', bands[0]), bandit(2, 'crossbow', 'crossbow bandit', bands[1]),
+            bandit(3, 'young1', 'young bandit', bands[2]), bandit(4, 'young2', 'young bandit', bands[3]),
+            { seq: 5, type: 'person.new', ref: 'woman', name: 'Hesk', role: 'passer-by', desc: ['a woman with a basket'], present: true, relevant: false, at: null, band: 'MEDIUM' },
+            { seq: 6, type: 'fact', s: 'the cart', p: 'tracks', o: 'paw prints of a big dog cross the mud' },
+            ...['leader', 'crossbow', 'young1', 'young2'].map((who, i) => ({ seq: 7 + i, type: 'aware', who, level: 'unaware' })),
+        ],
+    });
+    return { g, x };
+}
+const byRole = (s, role) => s.scene.present.filter((id) => (s.entities[id]?.descriptors || []).includes(role));
+
+test('c.6.6 before a fight: a targetless step in and Arcane Burst among visible bandits opens the fight with the field, moves him once and hits only who is ENGAGED then; impossible, it costs nothing', async () => {
+    const { g, x } = await bandits();
+    let s = g.state();
+    const [leader] = byRole(s, 'bandit leader');
+    const field = [...byRole(s, 'bandit leader'), ...byRole(s, 'crossbow bandit'), ...byRole(s, 'young bandit')];
+    assert.equal(field.length, 4);
+    assert.ok(field.every((id) => s.entities[id].relevant === true), 'the story marked them relevant; the engine keeps it');
+    // the ACTIVE SCENE names the four, not the passer-by, and nothing for the paw prints
+    const scene = x.record.panel.split('\n').filter((l) => l.includes('ACTIVE SCENE'));
+    assert.equal(scene.length, 4, x.record.panel);
+    assert.ok(!scene.some((l) => /Hesk|dog/i.test(l)));
+    assert.ok(!Object.values(s.entities).some((e) => /dog/.test(JSON.stringify(e.descriptors || []))), 'tracks are no creature');
+
+    await say(g, '*i dash forward and unleash arcane burst*', [plan(
+        { type: 'move', dir: 'closer', target: null, quote: 'i dash forward' },
+        { type: 'use_skill', skill: 'mage.arcane_burst', target: null, quote: 'unleash arcane burst' },
+    )]);
+    const panels = last(g).command?.panels || [];
+    assert.ok(!panels.some((p) => /TARGET NEEDED/.test(p)), panels.join('\n'));
+    const opened = last(g).events.find((e) => e.t === 'encounter.started')?.d.encounter;
+    assert.ok(opened, 'the burst opened the fight');
+    assert.deepEqual(Object.keys(opened.combatants).filter((id) => id !== 'pc').sort(), [...field].sort(), 'the visible field, not the passer-by');
+    assert.equal(opened.ambush, true, 'they had not noticed him: his burst is the opening action');
+    const burst = outcomeOf(g).records.find((r) => r.actor === 'pc' && r.kind === 'attack');
+    assert.match(burst.move.change, /Bandit Leader SHORT -> ENGAGED/);
+    assert.deepEqual(burst.strikes.map((k) => k.target), [leader], 'only the leader was ENGAGED after the one-band step');
+    assert.equal(burst.cost.amount, 14);
+
+    // all at MEDIUM: the step leaves everyone at SHORT, the burst has no one ENGAGED; nothing starts, nothing is spent
+    const { g: h } = await bandits(['MEDIUM', 'MEDIUM', 'MEDIUM', 'LONG']);
+    const before = structuredClone(h.state());
+    await say(h, '*i dash forward and unleash arcane burst*', [plan(
+        { type: 'move', dir: 'closer', target: null, quote: 'i dash forward' },
+        { type: 'use_skill', skill: 'mage.arcane_burst', target: null, quote: 'unleash arcane burst' },
+    )]);
+    const after = h.state();
+    assert.ok(!after.encounter);
+    assert.deepEqual(after.entities.pc.sheet, before.entities.pc.sheet, 'no MP spent');
+    assert.deepEqual(after.scene.positions, before.scene.positions, 'no partial movement');
+    assert.match(JSON.stringify(outcomeOf(h)), /needs a valid target ENGAGED/);
+});
+
+test('c.6.6 group awareness: "unaware" on a group ref reaches each of its creatures (live #18: three kobolds, only two got it); seeing stays its own thing', async () => {
+    const g = live(16);
+    await say(g, '*i crouch down and sneak closer my staff ready*', [plan({ type: 'stealth', quote: 'i crouch down and sneak closer' })]);
+    await g.reply('Two small kobolds root in a torn sack; a bigger one scrapes at the kiln dome. None of them looks up.', {
+        expected: {},
+        deltas: [
+            { seq: 1, type: 'creature.new', ref: 'kobold_small_a', species: 'gnaw-tooth kobold', anchor: 'goblin', desc: ['waist-high, hunched'], count: 2, present: true, band: 'MEDIUM', stronger: null },
+            { seq: 2, type: 'creature.new', ref: 'kobold_big', species: 'gnaw-tooth kobold', anchor: 'goblin', desc: ['half again the size of the small ones'], count: 1, present: true, band: 'MEDIUM', stronger: true },
+            { seq: 3, type: 'aware', who: 'kobold_small_a', level: 'unaware' },
+            { seq: 4, type: 'aware', who: 'kobold_big', level: 'unaware' },
+        ],
+    });
+    const s = g.state();
+    const kobolds = s.scene.present.filter((id) => s.entities[id]?.kind === 'creature');
+    assert.equal(kobolds.length, 3);
+    assert.deepEqual(kobolds.map((id) => s.scene.awareness[id]), ['unaware', 'unaware', 'unaware']);
+});

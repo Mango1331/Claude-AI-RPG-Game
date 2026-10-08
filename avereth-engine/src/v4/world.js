@@ -215,7 +215,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
     // whom this reply establishes as not having noticed Alaric (aware: unaware), whatever step of it reports that: they do
     // not see him at an earlier step either (perceiveAll)
-    const seeing = () => ({ unaware: new Set((fw.accept || []).filter((d) => d?.type === 'aware' && d.level === 'unaware').map((d) => mapRef(d.who)).filter((x) => typeof x === 'string')) });
+    const seeing = () => ({ unaware: new Set((fw.accept || []).filter((d) => d?.type === 'aware' && d.level === 'unaware').flatMap((d) => groups.get(normText(d.who)) || [mapRef(d.who)]).filter((x) => typeof x === 'string')) });
     // the World Envelope at this step (docs/ARCHITECTURE_GEN35.md §2.3): may this actor turn on Alaric of its own accord?
     const envelopeAllows = (id, d) => {
         if (typeof id !== 'string' || !s.entities[id] || !['npc', 'creature'].includes(s.entities[id].kind)) { grant('envelope.fight'); return true; } // the V3 rules refuse unknown attackers
@@ -288,6 +288,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const known = r.accepted.map((a) => /^known (\S+) \(not duplicated\)$/.exec(a)?.[1]).filter(Boolean);
         const ids = [...created, ...known];
         if (ids.length) refs.set(normText(d.ref), ids[0]);
+        // 4.3.0-c.6.6: whom the story made matter to his decision now stays marked as such (the ACTIVE SCENE, the field
+        // of an area attack: src/v4/scene_handles.js tacticalHere); a person once relevant stays it
+        if (cPath && kind === 'npc' && d.relevant === true) for (const id of ids) if (!s.entities[id]?.relevant) emit({ t: 'entity.updated', d: { id, set: { relevant: true } } });
         if (d.name && ids.length) refs.set(normText(d.name), ids[0]);
         if (count > 1) groups.set(normText(d.ref), ids);
         // who the person is shows on their card (occupation), as text: the V3 fact rule would read "Guild clerk" as a
@@ -424,7 +427,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 v3({ position: [{ who: mapRef(d.who), band: d.band, cover: d.cover || undefined }] }, d);
                 break;
             case 'aware':
-                v3({ aware: [{ who: mapRef(d.who), level: d.level }] }, d);
+                // 4.3.0-c.6.6: a group's ref (creature.new count > 1) means each of them (live 07.10.2026: "kobold_small_a"
+                // unaware reached only the first of the two small kobolds); its own Ambush awareness, not perception's
+                v3({ aware: (groups.get(normText(d.who)) || [mapRef(d.who)]).map((who) => ({ who, level: d.level })) }, d);
                 break;
             case 'intent': {
                 // an intent to attack him is the same decision as turning on him: the World Envelope's (outside a fight)

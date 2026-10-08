@@ -4,7 +4,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { loadContent, ROOT } from '../helpers.js';
+import { loadContent, ROOT, Game } from '../helpers.js';
+import { applyEvent } from '../../src/state.js';
+import { scaleCreature } from '../../src/npcgen.js';
+import { initEncounter, runCombat, npcDecide } from '../../src/combat.js';
+import { Dice } from '../../src/rng.js';
 import { Chat4 } from './harness.js';
 import { prepareGenerationAsync } from '../../src/v4/runtime.js';
 import { rec, turnBlock } from '../../src/host.js';
@@ -213,4 +217,72 @@ test('c.6.6 group awareness: "unaware" on a group ref reaches each of its creatu
     const kobolds = s.scene.present.filter((id) => s.entities[id]?.kind === 'creature');
     assert.equal(kobolds.length, 3);
     assert.deepEqual(kobolds.map((id) => s.scene.awareness[id]), ['unaware', 'unaware', 'unaware']);
+});
+
+// ------------------------------------------------------------------------------------------------ 16. flee and chase
+/** Alaric, a ranger, against one goblin (cautious) at a band; the fight his (V3 engine), the planner path or not. */
+function duel({ c = true, band = 'MEDIUM', seed = 11, hpPct = 1 } = {}) {
+    const g = new Game(content).ranger();
+    const p = scaleCreature(content.anchors.get('goblin'), 1, 'normal', content);
+    applyEvent(g.state, { t: 'entity.created', d: { entity: { id: 'mon.g', kind: 'creature', name: null, descriptors: ['goblin'], anchor: 'goblin', species: 'goblin', status: 'alive', location: g.state.scene.location, profile: p } } });
+    applyEvent(g.state, { t: 'scene.entered', d: { id: 'mon.g', band, cover: 'none' } });
+    applyEvent(g.state, { t: 'scene.awareness', d: { id: 'mon.g', level: 'aware' } });
+    const dice = new Dice(seed, 0);
+    const enc = initEncounter(g.state, content, dice, { actor: 'pc', target: 'mon.g', engage: true }, [{ id: 'mon.g', side: 'hostile' }], 'enc.c66', { c });
+    enc.combatants['mon.g'].current.hp = Math.max(1, Math.floor(enc.combatants['mon.g'].fixed.max_hp * hpPct));
+    return { enc, content, dice, state: g.state, c };
+}
+const mine = (ctx, who) => ctx.enc.log.filter((r) => r.actor === who);
+
+test('c.6.6 flee: nobody ENGAGED with him, one flee gets Alaric away; held in melee, one escape roll decides; A keeps its band-by-band flee', () => {
+    const free = duel({ band: 'MEDIUM' });
+    runCombat(free, { kind: 'flee' });
+    assert.deepEqual(mine(free, 'pc').map((r) => [r.kind, r.escaped]), [['flee', true]]);
+    assert.equal(free.enc.combatants.pc.current.escaped, true);
+    const a = duel({ c: false, band: 'MEDIUM' });
+    runCombat(a, { kind: 'flee' });
+    assert.equal(a.enc.combatants.pc.current.escaped, false, 'A: one band away, the fight goes on');
+
+    // ENGAGED: one roll (Initiative 9 against the goblin's 8: 55 %), never a flee-and-chase loop; seeds for both outcomes
+    const seen = new Map();
+    for (let seed = 1; seed < 40 && seen.size < 2; seed++) {
+        const ctx = duel({ band: 'ENGAGED', seed });
+        runCombat(ctx, { kind: 'flee' });
+        const r = mine(ctx, 'pc')[0];
+        assert.equal(r.escape.chance, 55);
+        if (!seen.has(r.escaped)) seen.set(r.escaped, ctx);
+    }
+    assert.equal(seen.get(true).enc.combatants.pc.current.escaped, true);
+    const held = seen.get(false);
+    assert.equal(held.enc.combatants.pc.current.escaped, false);
+    assert.equal(held.enc.combatants['mon.g'].current.band, 'ENGAGED', 'a failed break-away leaves him where he was');
+    assert.match(mine(held, 'pc')[0].why, /held in melee: he does not get away \(escape d100 \d+ > 55\)/);
+});
+
+test('c.6.6 chase: "I chase him" after a fleeing goblin is one roll, caught (ENGAGED, it fights) or gone; no flee-and-chase loop', () => {
+    const seen = new Map();
+    for (let seed = 1; seed < 60 && seen.size < 2; seed++) {
+        const ctx = duel({ band: 'SHORT', hpPct: 0.2, seed });
+        runCombat(ctx, { kind: 'hold' });
+        const ran = mine(ctx, 'mon.g').at(-1);
+        assert.equal(ran.fleeing, true, 'wounded and cautious, it runs');
+        runCombat(ctx, { kind: 'move', dir: 'closer', target: 'mon.g' });
+        const chase = mine(ctx, 'pc').at(-1);
+        assert.equal(chase.chase, true);
+        if (!seen.has(chase.caught)) seen.set(chase.caught, ctx);
+    }
+    const gone = seen.get(false);
+    assert.equal(gone.enc.combatants['mon.g'].current.escaped, true, 'gone: the fight is over');
+    const caught = seen.get(true);
+    assert.equal(caught.enc.combatants['mon.g'].current.band, 'ENGAGED');
+    assert.equal(caught.enc.combatants['mon.g'].current.caught, true);
+    assert.deepEqual(npcDecide({ ...caught }, 'mon.g').kind, 'flee', 'its own wish is still to run …');
+    const next = mine(caught, 'mon.g').at(-1);
+    assert.equal(next.kind, 'attack', '… but caught, it fights back instead');
+    // a foe that only gave ground (retreat) is closed in on as before, no roll
+    const step = duel({ band: 'SHORT' });
+    step.enc.log.push({ round: 1, actor: 'mon.g', kind: 'move', dir: 'away', change: 'SHORT -> MEDIUM', why: 'gains distance' });
+    step.enc.combatants['mon.g'].current.band = 'MEDIUM';
+    runCombat(step, { kind: 'move', dir: 'closer', target: 'mon.g' });
+    assert.equal(mine(step, 'pc').at(-1).chase, undefined);
 });

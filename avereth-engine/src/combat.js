@@ -790,7 +790,9 @@ function npcAttackSkill(ctx, me) {
 function npcTurn(ctx, npcId) {
     const { enc } = ctx;
     const me = enc.combatants[npcId];
-    const decision = npcDecide(ctx, npcId);
+    let decision = npcDecide(ctx, npcId);
+    // Prototype C (4.3.0-c.6.6): caught after a chase, it does not run again in this fight; it fights back
+    if (ctx.c && me.current.caught && (decision.kind === 'flee' || decision.kind === 'retreat')) decision = { kind: 'attack', why: 'caught: cornered' };
     if (decision.kind === 'surrender') {
         me.current.surrendered = true;
         if (!enc.defeated.includes(npcId)) {
@@ -799,7 +801,7 @@ function npcTurn(ctx, npcId) {
         }
         return { round: enc.round, actor: npcId, kind: 'surrender', why: decision.why, pending_xp_added: me.fixed.defeat_xp };
     }
-    if (decision.kind === 'flee') return { ...moveAction(ctx, npcId, 'away'), why: decision.why };
+    if (decision.kind === 'flee') return { ...moveAction(ctx, npcId, 'away'), why: decision.why, ...(ctx.c ? { fleeing: true } : {}) };
     if (decision.kind === 'retreat') return { ...moveAction(ctx, npcId, 'away'), kind: 'move', dir: 'away', why: decision.why };
     if (decision.kind === 'cover') {
         const before = me.current.cover;
@@ -870,6 +872,62 @@ function advance(enc) {
  *           | {kind:'flee'} | {kind:'hold'} | null (no mechanical action declared)
  * Returns {enc, records, stopped: 'pc_turn'|'terminal'|'illegal', illegal?}
  */
+/**
+ * Prototype C (4.3.0-c.6.6): one roll decides a break-away, never a band-by-band flee-and-chase loop. The runner's
+ * Initiative against the fastest of those it runs from; each further one holding it costs 10. Bounded to 15-85.
+ */
+function escapeRoll(ctx, runner, from) {
+    const best = Math.max(...from.map((c) => c.fixed.init ?? 0));
+    const chance = Math.max(15, Math.min(85, 50 + 5 * ((runner.fixed.init ?? 0) - best) - 10 * (from.length - 1)));
+    const roll = ctx.dice.d100('escape');
+    return { chance, roll, ok: roll <= chance };
+}
+
+/** Alaric flees (Prototype C): nobody ENGAGED with him, he is gone; held in melee, one escape roll; failed, he stays. */
+function pcFlee(ctx) {
+    const { enc } = ctx;
+    const pc = enc.combatants.pc;
+    const held = activeHostiles(enc).filter((c) => c.current.band === 'ENGAGED');
+    const record = { round: enc.round, actor: 'pc', kind: 'flee' };
+    if (!held.length) {
+        pc.current.escaped = true;
+        return { ...record, escaped: true, why: 'nobody ENGAGED with him: he gets away' };
+    }
+    const r = escapeRoll(ctx, pc, held);
+    record.escape = r;
+    if (r.ok) {
+        pc.current.escaped = true;
+        return { ...record, escaped: true, why: `breaks away from melee (escape d100 ${r.roll} <= ${r.chance})` };
+    }
+    return { ...record, escaped: false, why: `held in melee: he does not get away (escape d100 ${r.roll} > ${r.chance})` };
+}
+
+/** Who fled on its own last Turn (Prototype C), not one that only gave ground (retreat). */
+function fleeing(enc, id) {
+    const c = enc.combatants[id];
+    if (!c || !alive(c) || c.current.band === 'ENGAGED') return false;
+    const own = enc.log.filter((r) => r.actor === id).at(-1);
+    return !!own?.fleeing;
+}
+
+/** "I chase him" after a fleeing foe (Prototype C): one roll, caught (ENGAGED, cornered) or gone. */
+function chase(ctx, id) {
+    const { enc } = ctx;
+    const t = enc.combatants[id];
+    const before = t.current.band;
+    const r = escapeRoll(ctx, t, [enc.combatants.pc]);
+    const record = { round: enc.round, actor: 'pc', kind: 'move', dir: 'closer', target: id, chase: true, escape: r };
+    if (r.ok) {
+        t.current.escaped = true;
+        enc.escaped.push(id);
+        return { ...record, caught: false, change: `${t.name} ${before} -> out of range (escaped)`, why: `the chase fails: it gets away (escape d100 ${r.roll} <= ${r.chance})` };
+    }
+    t.current.band = 'ENGAGED';
+    t.current.cover = 'none';
+    t.current.caught = true;
+    return { ...record, caught: true, change: `${t.name} ${before} -> ENGAGED`, why: `caught: it cannot run again (escape d100 ${r.roll} > ${r.chance})` };
+}
+
 export function runCombat(ctx, pcAction) {
     const { enc } = ctx;
     const records = [];
@@ -911,8 +969,9 @@ export function runCombat(ctx, pcAction) {
             let r;
             if (act.kind === 'attack') r = attackAction(ctx, 'pc', act.target, act.skill, { move: act.move, moveTarget: act.move_target });
             else if (act.kind === 'skill') r = skillAction(ctx, 'pc', act.skill, { dir: act.dir, target: act.target });
-            else if (act.kind === 'move') r = moveAction(ctx, 'pc', act.dir, act.target);
+            else if (act.kind === 'move') r = ctx.c && act.dir === 'closer' && fleeing(enc, act.target) ? chase(ctx, act.target) : moveAction(ctx, 'pc', act.dir, act.target);
             else if (act.kind === 'ability_world') r = worldAction(ctx, 'pc', act);
+            else if (act.kind === 'flee' && ctx.c) r = pcFlee(ctx);
             else if (act.kind === 'flee') {
                 const far = Object.values(enc.combatants).filter((c) => c.side === 'hostile' && alive(c)).every((c) => c.current.band === 'LONG');
                 if (far) { enc.combatants.pc.current.escaped = true; r = { round: enc.round, actor: 'pc', kind: 'flee', escaped: true }; }

@@ -340,7 +340,7 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
     delete enc.preface;
     const outcome = { kind: 'combat', started, records: [...preface, ...res.records], ...(preface.length ? { shown: preface.length } : {}), illegal: res.illegal || null, next: null };
     if (declared?.note) Object.assign(outcome, { note: declared.note, notice: declared.notice });
-    const done = persistCombat(s, content, emit, enc, res.records, !!started && !s.encounter);
+    const done = persistCombat(s, content, emit, enc, res.records, !!started && !s.encounter, { c });
     outcome.board = done.board;
     if (done.ended) {
         outcome.ended = done.ended;
@@ -358,7 +358,7 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
  * its end (XP, the survivors' condition, the fight's memory).
  * @returns {{board: object, ended: object|null, levelups: string[], next: string|null}}
  */
-function persistCombat(s, content, emit, enc, records, isNew) {
+function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false } = {}) {
     emit({ t: isNew ? 'encounter.started' : 'encounter.updated', d: { encounter: enc } });
     for (const id of Object.keys(enc.combatants)) if (id !== 'pc' && s.scene.awareness[id] !== 'aware') emit({ t: 'scene.awareness', d: { id, level: 'aware' } });
     // mirror the PC's resources and every sheet-bearer's ammunition into the sheet (the snapshot stays authoritative for NPCs)
@@ -385,7 +385,8 @@ function persistCombat(s, content, emit, enc, records, isNew) {
             const e = s.entities[c.id];
             if (e.sheet) for (const r of ['hp', 'mp', 'sta']) { if (c.current[r] !== undefined && c.current[r] !== e.sheet[r]) emit({ t: 'resource.changed', d: { id: c.id, resource: r, value: c.current[r] } }); }
             else if (e.profile && c.current.hp !== e.profile.hp) emit({ t: 'entity.updated', d: { id: c.id, set: { profile: { ...e.profile, hp: c.current.hp } } } });
-            if (c.current.escaped) emit({ t: 'scene.left', d: { id: c.id } });
+            // Prototype C (4.3.0-c.6.6): when Alaric got away, the foes he left behind are out of his scene too
+            if (c.current.escaped || (cPath && enc.combatants.pc.current.escaped && c.side === 'hostile' && s.scene.present.includes(c.id))) emit({ t: 'scene.left', d: { id: c.id } });
             else if (s.scene.present.includes(c.id)) emit({ t: 'scene.position', d: { id: c.id, band: c.current.band, cover: c.current.cover } });
             if (c.current.surrendered) emit({ t: 'entity.updated', d: { id: c.id, set: { surrendered_to: 'pc' } } });
         }
@@ -556,9 +557,10 @@ export function openCommitted(s, content, dice, emit, { hold = false, c = false 
         if (c) for (const id of ids) enc.intents[id] = enc.intents[id] || 'attack';
         Object.assign(enc.intents, s.pending_intents || {});
         if (!hold) {
-            const res = runCombat({ enc, content, dice, state: s }, null);
+            // 4.3.0-c.6.6: the planner path's NPC rules hold in a fight the reply opened too (c was not passed here)
+            const res = runCombat({ enc, content, dice, state: s, c }, null);
             enc.preface = res.records;
-            const done = persistCombat(s, content, emit, enc, res.records, true);
+            const done = persistCombat(s, content, emit, enc, res.records, true, { c });
             return { kind: 'started', ids, board: done.board, records: res.records, ...(done.ended ? { ended: done.ended, levelups: done.levelups } : {}) };
         }
         emit({ t: 'encounter.started', d: { encounter: enc } });

@@ -100,10 +100,13 @@ test('1. a skittish creature without an intent: a deterministic fallback; a purs
     // the fallback on the planner path, by situation: startled by the fight Alaric opened, it seeks distance; left alone
     // it holds, wary; attacked since its own last turn, it seeks distance again; at arm's length it fights back, hurt or not
     const kind = (o) => `${o.kind}${o.why ? ` (${o.why})` : ''}`;
+    // c.6.5-gpt (kept in c.6.6): skittish is a bias on the planner path; threatened it RETREATS one band (at LONG it
+    // holds its distance in cover), left alone it seeks cover; leaving the fight needs more than the temperament
     for (const band of ['SHORT', 'MEDIUM', 'LONG']) {
-        assert.equal(kind(decide({ band })), 'flee (skittish, threatened)', `${band}, its first turn in Alaric's fight`);
-        assert.equal(kind(decide({ band, log: [OWN_MOVE] })), 'hold (skittish, wary)', `${band}, nobody pressed it since its last turn`);
-        assert.equal(kind(decide({ band, log: [OWN_MOVE, PC_HIT] })), 'flee (skittish, threatened)', `${band}, attacked since its last turn`);
+        const threatened = band === 'LONG' ? 'cover (skittish at LONG: holds distance in cover)' : 'retreat (skittish, threatened: gains distance)';
+        assert.equal(kind(decide({ band })), threatened, `${band}, its first turn in Alaric's fight`);
+        assert.equal(kind(decide({ band, log: [OWN_MOVE] })), 'cover (skittish, wary: seeks cover)', `${band}, nobody pressed it since its last turn`);
+        assert.equal(kind(decide({ band, log: [OWN_MOVE, PC_HIT] })), threatened, `${band}, attacked since its last turn`);
         assert.deepEqual(decide({ band, log: [OWN_MOVE] }), decide({ band, log: [OWN_MOVE] }), 'deterministic');
     }
     for (const log of [[], [OWN_MOVE], [OWN_MOVE, PC_HIT], [PC_HIT, OWN_MOVE, PC_HIT]]) assert.equal(kind(decide({ band: 'ENGAGED', log })), 'attack (cornered)');
@@ -273,7 +276,8 @@ test('5b. live, one turn on: Alaric steps back from the mate; on the planner pat
         return enc.log.filter((r) => r.actor === 'mon.strider_mate').at(-1);
     };
     const c = await next(true);
-    assert.equal(`${c.kind} (${c.why})`, 'hold (skittish, wary)');
+    // c.6.5-gpt: wary and in the open, it seeks cover (keeping its distance), it does not flee
+    assert.equal(`${c.kind} (${c.why})`, 'cover (skittish, wary: seeks cover)');
     const a = await next(false);
     assert.equal(`${a.kind} ${a.dir} (${a.why})`, 'move away (skittish)');
 });

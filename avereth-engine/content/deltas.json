@@ -18,7 +18,7 @@
     "During ACTIVE combat, do not turn the engine's ordinary move away/retreat into intent:flee. A combatant moving SHORT→MEDIUM or MEDIUM→LONG is still in the encounter. Emit intent:flee only when the reply independently establishes that the NPC actually chooses/tries to leave the fight or scene; words that merely describe gaining distance, backing off, retreating one band or keeping away are not enough.",
     "When PLAYER ACTIONS already grant or create a Guild plate, contract slip or other object, do not emit object.new for the narrated hand-over or description of that same booked object.",
     "For person.new, name:null means the reply did not establish a proper name. Never infer a proper name from the ref token, a nearby place/business title, or capitalization; keep the person anonymous until the story actually names them. When the story later names such a known person, report person.named {who: their id, name}, never a second person.new for them.",
-    "For person.new, set relevant:true when the reply makes this visible individual immediately important to what Alaric can decide now: a distinct threat he is observing or facing, a captive/hostage or person in danger, the person he is speaking to or directly dealing with, or another concrete participant in the current action. Incidental passers-by, spectators and background workers are relevant:false or omitted. A visible tactical person with relevant:true must carry the best established Range Band so the engine can show that range before combat.",
+    "For person.new, relevant:true means important to Alaric's decision IN THIS SCENE (including captives, clients, bystanders in immediate danger, conversation partners or adversaries). This is not the same as being hostile. Set threat:true ONLY for a visible person already clearly established as an adversary, attacker or immediate armed threat in the fiction; captives, hostages, helpers and neutral conversation partners are threat:false, regardless of relevance. Threat marks tactical opposition for a possible fight, not a decision by that person to attack. Incidental passers-by remain relevant:false. Supply a Range Band for visible relevant people.",
     "Co-presence is not awareness. Use aware only when THIS reply actually establishes whether a present person noticed Alaric: aware when they visibly notice/react to or directly interact with him; unaware when the reply explicitly establishes that they have not noticed him; suspicious when they notice signs but not Alaric himself. If the reply does not establish this, omit aware. Never mark someone aware merely because person.new/position made them present in the same scene.",
     "For creature.new, species is the creature's actual in-world name/type from the reply and may be newly invented fantasy fauna. Separately choose anchor as the nearest ecological/mechanical F1 body-plan from the allowed anchor enum. Do not force the creative species name to equal an anchor. Example: a low plated badger-lizard-like wallow beast may be species:\"plated wallow beast\", anchor:\"armored_beast\".",
     "creature.new stronger: true only when the reply clearly establishes this individual (or each of the group) as bigger or stronger than ordinary ones of its kind (half again the size of the others, the heaviest bull of the herd); the engine then fixes its stronger numbers once. Never from a name or label alone (\"big boar\" said in passing), never for anger, wounds or drama; otherwise null. Elite and Boss are never inferred.",
@@ -128,6 +128,10 @@
           "type": "boolean",
           "nullable": true
         },
+        "threat": {
+          "type": "boolean",
+          "nullable": true
+        },
         "at": {
           "ref": "place",
           "nullable": true
@@ -142,7 +146,7 @@
           "nullable": true
         }
       },
-      "summary": "a person the reply introduces; name only a proper name, else null; present: here with Alaric now; relevant:true for a distinct person immediately important to the current decision/action (including visible threats or captives), false/null for background scene colour; at: where they are if not here"
+      "summary": "a person the reply introduces; name only a proper name, else null; present: here with Alaric now; relevant:true for a person important to the current scene (hostage, client, opponent); threat:true ONLY for an actually established opponent or imminent threat, NEVER for a captive or neutral NPC; at: where they are if not here"
     },
     {
       "type": "person.named",

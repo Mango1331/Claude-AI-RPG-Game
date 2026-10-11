@@ -53,19 +53,17 @@ export function sceneHandles(state, content, ids = state.scene?.present || []) {
     return Object.fromEntries(ids.filter((id) => id !== 'pc' && state.entities?.[id]).map((id) => [id, sceneHandle(state, content, id)]));
 }
 
-/**
- * 4.3.0-c.6.6: the actors of the scene a decision turns on now: present, alive, placed at a range, and a creature, a
- * person the story marked relevant (person.new relevant, Prototype C), someone committed to attack, or a combatant.
- * Not the clerk at the desk, the passer-by or the waystation keeper; never a sound, a track or a shadow (those are no
- * entities). friendly: false leaves out those who like Alaric (an area attack is no attack on them).
- */
+/** Current-scene tactical actors. Relevance does not confer hostile allegiance or AoE eligibility. */
 export function tacticalHere(state, { friendly = true } = {}) {
     const pending = new Set((state.pending_combat || []).map((p) => p.by));
+    const relevant = new Set(state.scene?.relevant || []);
+    const threats = new Set(state.scene?.threats || []);
     return (state.scene?.present || []).filter((id) => {
         const e = state.entities?.[id];
         if (id === 'pc' || !e || e.status === 'dead' || !['npc', 'creature'].includes(e.kind)) return false;
         if (!state.scene.positions?.[id]?.band) return false;
-        if (!friendly && (state.relations?.[`rel.${id}.attitude.pc`]?.value ?? 0) > 0) return false;
-        return e.kind === 'creature' || e.relevant === true || pending.has(id) || !!state.encounter?.combatants?.[id];
+        const committed = pending.has(id) || !!state.encounter?.combatants?.[id];
+        if (!friendly) return e.kind === 'creature' || threats.has(id) || committed;
+        return e.kind === 'creature' || relevant.has(id) || threats.has(id) || committed;
     });
 }

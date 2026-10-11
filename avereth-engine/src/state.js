@@ -141,6 +141,8 @@ export function applyEvent(state, e) {
                 state.scene.present = ['pc'];
                 state.scene.positions = {};
                 state.scene.awareness = {};
+                state.scene.relevant = [];
+                state.scene.threats = [];
                 state.scene.concealed = [];
             }
             for (const id of state.scene.present) if (state.entities[id]) state.entities[id].location = state.scene.location;
@@ -153,9 +155,22 @@ export function applyEvent(state, e) {
             break;
         case 'scene.left':
             state.scene.present = state.scene.present.filter((x) => x !== d.id);
+            state.scene.relevant = (state.scene.relevant || []).filter((x) => x !== d.id);
+            state.scene.threats = (state.scene.threats || []).filter((x) => x !== d.id);
             delete state.scene.positions[d.id];
             delete state.scene.awareness[d.id];
             break;
+        // Prototype C: relevance and explicit threat are current-scene properties, not permanent
+        // NPC identities/attitudes. A hostage may be relevant without being a hostile combatant.
+        case 'scene.tactical': {
+            for (const [key, enabled] of [['relevant', d.relevant], ['threats', d.threat]]) {
+                const ids = new Set(state.scene[key] || []);
+                if (enabled) ids.add(d.id);
+                else ids.delete(d.id);
+                state.scene[key] = [...ids];
+            }
+            break;
+        }
         // the escort party bookmark of the 4.0.9 experiment: read and ignored, so its chats still fold (companions now
         // arrive with Alaric by arrive.with, src/v4/world.js)
         case 'journey.party':

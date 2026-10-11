@@ -17,6 +17,11 @@ jobs:
       - name: Unit and regression suite
         working-directory: avereth-engine
         run: npm test
+      - name: Install optional browser test dependency
+        working-directory: avereth-engine
+        run: |
+          npm install --no-save playwright
+          npx playwright install chromium
       - name: Browser smoke
         working-directory: avereth-engine
         run: npm run smoke:browser

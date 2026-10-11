@@ -141,8 +141,9 @@ export function applyEvent(state, e) {
                 state.scene.present = ['pc'];
                 state.scene.positions = {};
                 state.scene.awareness = {};
-                state.scene.relevant = [];
-                state.scene.threats = [];
+                // A/V3 has no tactical-scene flags; do not add keys on the planner-off path.
+                if (state.scene.relevant) state.scene.relevant = [];
+                if (state.scene.threats) state.scene.threats = [];
                 state.scene.concealed = [];
             }
             for (const id of state.scene.present) if (state.entities[id]) state.entities[id].location = state.scene.location;
@@ -155,8 +156,8 @@ export function applyEvent(state, e) {
             break;
         case 'scene.left':
             state.scene.present = state.scene.present.filter((x) => x !== d.id);
-            state.scene.relevant = (state.scene.relevant || []).filter((x) => x !== d.id);
-            state.scene.threats = (state.scene.threats || []).filter((x) => x !== d.id);
+            if (state.scene.relevant) state.scene.relevant = state.scene.relevant.filter((x) => x !== d.id);
+            if (state.scene.threats) state.scene.threats = state.scene.threats.filter((x) => x !== d.id);
             delete state.scene.positions[d.id];
             delete state.scene.awareness[d.id];
             break;

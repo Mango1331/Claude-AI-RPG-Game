@@ -321,3 +321,19 @@ test('c.6.6.1: scene tactical relevance expires on movement, NPC identity remain
     assert.ok(!copy.scene.threats.includes(leader));
     assert.ok(copy.entities[leader], 'remember the person, not their temporary tactical relevance');
 });
+
+test('c.6.6.1: the escort objective determines the traveller even when the job giver is mentioned first', () => {
+    const s = structuredClone(live(32).state());
+    s.entities['npc.giver_test'] = {
+        id: 'npc.giver_test', kind: 'npc', name: 'Quest Giver', descriptors: ['quest giver'],
+        status: 'alive', location: s.scene.location,
+    };
+    s.scene.present.splice(1, 0, 'npc.giver_test');
+    s.quests[MED].objectives = [{
+        id: 'o1', verb: 'ESCORT', what: 'Brother Aldric', qty: 1, status: 'open',
+    }];
+    s.quests[MED].details = [{ note: 'Quest Giver explains the escort route for Brother Aldric.' }];
+    const result = journeyReady(s, { c: true });
+    assert.equal(result.contact, 'npc.giver_test', 'job giver may still supply the route information');
+    assert.equal(result.companion, 'npc.aldric', 'only the person named by ESCORT travels');
+});

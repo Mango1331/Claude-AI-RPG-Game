@@ -141,7 +141,7 @@ export function firewall(deltas, ctx = {}) {
         const n = words(name).trim();
         const grantName = words(g).trim();
         if (n === grantName) return true;
-        if (grantName === 'contract slip') return /^guild contract slip(?::|$)/.test(n);
+        if (grantName === 'contract slip') return /\bcontract (?:slip|half|copy|counterfoil|tag|chit|docket|ticket)\b/.test(n);
         return false;
     });
     // known refs are exact; a {new: "<title>"} that names a known Guild contract is that contract (the engine

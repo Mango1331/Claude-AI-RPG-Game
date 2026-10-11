@@ -140,7 +140,7 @@ test('c.6.6 route and sight: the planner keeps the destination and leaves the ro
 
 // ------------------------------------------------------------------------------------------------ 11-14. before a fight
 const plan = (...commands) => JSON.stringify({ commands: commands.map((c, i) => ({ seq: i + 1, ...c })) });
-const bandit = (seq, ref, role, band, relevant = true) => ({ seq, type: 'person.new', ref, name: null, role, desc: [role], present: true, relevant, at: null, band });
+const bandit = (seq, ref, role, band, relevant = true) => ({ seq, type: 'person.new', ref, name: null, role, desc: [role], present: true, relevant, threat: true, at: null, band });
 /** Alaric in Ashbridge (#46 of the live run), and a reply that shows four bandits, a passer-by and only tracks of a dog. */
 async function bandits(bands = ['SHORT', 'MEDIUM', 'MEDIUM', 'MEDIUM']) {
     const g = live(46);
@@ -165,7 +165,7 @@ test('c.6.6 before a fight: a targetless step in and Arcane Burst among visible 
     const [leader] = byRole(s, 'bandit leader');
     const field = [...byRole(s, 'bandit leader'), ...byRole(s, 'crossbow bandit'), ...byRole(s, 'young bandit')];
     assert.equal(field.length, 4);
-    assert.ok(field.every((id) => s.entities[id].relevant === true), 'the story marked them relevant; the engine keeps it');
+    assert.ok(field.every((id) => s.scene.relevant.includes(id) && s.scene.threats.includes(id)), 'bandits are relevant threats in this scene');
     // the ACTIVE SCENE names the four, not the passer-by, and nothing for the paw prints
     const scene = x.record.panel.split('\n').filter((l) => l.includes('ACTIVE SCENE'));
     assert.equal(scene.length, 4, x.record.panel);
@@ -285,4 +285,39 @@ test('c.6.6 chase: "I chase him" after a fleeing goblin is one roll, caught (ENG
     step.enc.combatants['mon.g'].current.band = 'MEDIUM';
     runCombat(step, { kind: 'move', dir: 'closer', target: 'mon.g' });
     assert.equal(mine(step, 'pc').at(-1).chase, undefined);
+});
+
+test('c.6.6.1: an important neutral captive remains visible but cannot be promoted to a hostile AoE combatant', async () => {
+    const { g } = await bandits();
+    await say(g, '*I notice a captive near the wagon*', [plan()]);
+    await g.reply('A prisoner is tied to the wagon near the bandits, unable to fight.', {
+        expected: {},
+        deltas: [
+            { seq: 1, type: 'person.new', ref: 'captive', name: null, role: 'captive', desc: ['bound and unarmed'], present: true, relevant: true, threat: false, at: null, band: 'SHORT' },
+        ],
+    });
+    let s = g.state();
+    const captive = s.scene.present.find((id) => s.entities[id]?.descriptors?.includes('captive'));
+    assert.ok(captive);
+    assert.ok(s.scene.relevant.includes(captive));
+    assert.ok(!s.scene.threats.includes(captive));
+    await say(g, '*I dash forward and unleash Arcane Burst*', [plan(
+        { type: 'move', dir: 'closer', target: null, quote: 'I dash forward' },
+        { type: 'use_skill', skill: 'mage.arcane_burst', target: null, quote: 'unleash Arcane Burst' },
+    )]);
+    s = g.state();
+    assert.ok(s.encounter, 'the known threats still open an encounter');
+    assert.ok(!s.encounter.combatants[captive], 'the captive never becomes a hostile combatant');
+});
+
+test('c.6.6.1: scene tactical relevance expires on movement, NPC identity remains', async () => {
+    const { g } = await bandits();
+    const s = g.state();
+    const leader = byRole(s, 'bandit leader')[0];
+    assert.ok(s.scene.relevant.includes(leader));
+    const copy = structuredClone(s);
+    applyEvent(copy, { t: 'scene.moved', d: { at: 'loc.ashbridge', location: 'loc.ashbridge', place: 'Ashbridge', reset_present: true, track_history: true } });
+    assert.ok(!copy.scene.relevant.includes(leader));
+    assert.ok(!copy.scene.threats.includes(leader));
+    assert.ok(copy.entities[leader], 'remember the person, not their temporary tactical relevance');
 });

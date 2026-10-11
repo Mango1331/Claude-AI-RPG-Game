@@ -174,7 +174,22 @@ export function journeyReady(state, { c = false } = {}) {
             if (id === 'pc' || e?.kind !== 'npc' || e.status === 'dead') return false;
             return [e.name, truth(state, id, 'occupation')[0]?.o, ...(e.descriptors || [])].filter(Boolean).map(normText).some((x) => x.length >= 3 && text.includes(x));
         });
-        if (contact) return { id: src.id, label: src.label, contact, companion: !c || escortWork(state.quests[src.id] || {}) ? contact : null, why: 'an established journey' };
+        if (c && escortWork(state.quests[src.id] || {})) {
+            const quest = state.quests[src.id];
+            const descriptions = (quest.objectives || []).filter((o) => o.verb === 'ESCORT').map((o) => normText(o.what || ''));
+            const matches = state.scene.present.filter((id) => {
+                const e = state.entities[id];
+                if (id === 'pc' || e?.kind !== 'npc' || e.status === 'dead') return false;
+                const roles = [e.name, truth(state, id, 'occupation')[0]?.o, ...(e.descriptors || [])]
+                    .filter(Boolean).map(normText).filter((x) => x.length >= 5);
+                return descriptions.some((what) => roles.some((role) => what.includes(role)));
+            });
+            // The objective, not the first name in the Quest's free-form route notes, names the escort.
+            // If there is no unambiguous charge present, never make a client or route informant accompany him.
+            if (matches.length !== 1) continue;
+            return { id: src.id, label: src.label, contact: contact || matches[0], companion: matches[0], why: 'an established escort journey' };
+        }
+        if (contact) return { id: src.id, label: src.label, contact, companion: !c ? contact : null, why: 'an established journey' };
     }
     const underway = Object.values(state.quests).filter((q) => q.status === 'active' && !q.ready && q.journey)
         .sort((a, b) => (b.journey.since ?? 0) - (a.journey.since ?? 0))[0];

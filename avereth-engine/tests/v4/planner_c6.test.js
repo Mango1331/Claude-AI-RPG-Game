@@ -330,7 +330,7 @@ test('10. directions to the den are no journey: "follow the directions" is a wal
     // an escort he set off on is a journey on C too
     const e = structuredClone(s);
     e.quests[BOARS].objectives = [{ id: 'o1', verb: 'ESCORT', what: 'the coppice crew', qty: 1, unit: null, where: 'the far ride', status: 'open' }];
-    assert.equal(journeyReady(e, { c: true })?.contact, 'npc.odo_fell');
+    assert.equal(journeyReady(e, { c: true }), null, 'C: a warden who knows the road is not the absent coppice crew he must escort');
 });
 
 // ------------------------------------------------------------------------------------------------ 11, 13. people

@@ -711,6 +711,24 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (travelled < floor) { emit({ t: 'time.advanced', d: { minutes: floor - travelled, why: 'travel' } }); timeUsed += floor - travelled; }
     }
 
+    // Prototype C: an unfinished long-distance GO can progress for hours without reaching a named
+    // destination. The extractor correctly emits no 'arrive' for a distant lighthouse seen on the road;
+    // nevertheless Alaric is no longer physically inside his starting Guild hall (live 10.10.2026).
+    // Use the existing realm as a coarse travel location, not a fictional named waypoint. Short/local
+    // movements and trips with an explicit arrival keep their normal scene semantics.
+    if (cPath && !arrived && !s.encounter && auth.timeCap > content.rules.time.default_cap_min
+        && timeUsed - booked >= content.rules.time.engine_clock.go_min_elsewhere
+        && (auth.gos || []).length > 0 && s.scene.at === startAt) {
+        const destination = (auth.gos || []).at(-1);
+        const realm = s.places[startAt]?.realm;
+        if (realm && s.places[realm]?.kind === 'realm' && realm !== startAt
+            && (!destination.to || !sameSettlement(s, startAt, destination.to))) {
+            perceiveAll(s, emit, seeing());
+            arrive(realm, []);
+            emit({ t: 'scene.moved', d: { place: `On the way to ${destination.name || destination.newName || 'the destination'}` } });
+        }
+    }
+
     // 4. what waited for the reply and did not happen
     step = { kind: 'conditional' };
     for (const c of conditionals.filter((x) => !x.done)) emit({ t: 'cmd.expired', d: { seq: c.seq, reason: 'the condition did not happen in this reply' } });

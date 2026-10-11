@@ -21,7 +21,7 @@ import { mayOpenFight, mayTake } from './envelope.js';
 import {
     PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE,
 } from './domain.js';
-import { completeContract, contractReady, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
+import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
@@ -59,6 +59,8 @@ export function firewallContext(s, content) {
         booked: o.booked || { registration: false, grants: [], turnIns: [], accepted: [] },
         auth: { go: !!(auth.gos || []).length || !!auth.go, roam: !!auth.roam, take: !!(auth.take || []).length, gather: !!auth.gather, forced: false },
         heldByPc: (ref) => s.objects?.[ref]?.holder?.entity === 'pc' || (typeof ref === 'string' && ref.startsWith('item.') && !!s.entities.pc.sheet.inventory[ref.slice(5)]),
+        // Prototype C (4.3.0-c.6.6.3): what he set out to hand over where he went in this turn (commands.js give)
+        handingOver: (ref) => (o.conditionals || []).some((k) => k.kind === 'give' && (k.object === ref || normText(s.objects?.[k.object]?.name || '') === normText(ref))),
         isGuildContractRef: (ref) => {
             if (typeof ref !== 'string') return false;
             const q = s.quests?.[ref] || Object.values(s.quests || {}).find((x) => x.kind === 'guild_contract' && normText(x.title) === normText(ref));
@@ -168,6 +170,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     // 1. authority first: what the story may not decide is never applied
     const fw = firewall(answer.deltas, firewallContext(s, content));
     for (const x of fw.reject) { reject(x.delta, x.rule, x.why); refusedArrival(x.delta); }
+    // Prototype C (4.3.0-c.6.6.3): what of Alaric's the story moved to someone else without his hand-over (quest.ready below)
+    const refusedMoves = new Set(fw.reject.filter((x) => x.rule === 'pc_inventory' && x.delta?.type === 'object.move').map((x) => objectRef(x.delta.object)?.id).filter(Boolean));
+    const readied = []; // the contracts this reply made READY (their open deliveries are told after the deltas)
     corrections.push(...fw.corrections);
     // the other side of a trade the engine books this turn: a sale's buyer, a seller he paid exactly (coin.gift below)
     const counterparts = new Set([...(outcome.booked?.sellers || []), ...s.decisions.filter((x) => x.kind === 'sale' && x.turn === s.turn).map((x) => x.seller || '*')]);
@@ -325,6 +330,38 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 arrive(at.id, party);
                 travel.push({ seq: 0, ok: true });
             }
+        }
+    }
+
+    // Prototype C: an unfinished GO can take hours without reaching where it was going: the extractor rightly reports no
+    // arrival at a lighthouse only seen from the road, yet Alaric is no longer in the Guild hall he set off from (live
+    // 10.10.2026). 4.3.0-c.6.6.2: where he is instead is the smallest existing place that holds the way: the realm's
+    // road when he set off for a known place outside his settlement, on an established journey or for hours toward
+    // somewhere new; his settlement, out of the building, when he spent the time looking for something in it ("look for
+    // an inn"). Whoever travels with him (the story's answer, the journey's companion) comes along; no waypoint is made.
+    // 4.3.0-c.6.6.3: decided from the answer before its deltas, so whom he meets on the road is met on the road, not
+    // remembered at the shop he left (live 11.10.2026: the Reed Flats boy "first saw him at Chandler's Row")
+    const narrated = fw.accept.filter((d) => d.type === 'time').reduce((n, d) => n + (Number(d.minutes) || 0), 0);
+    const roadMinutes = Math.min(Math.max(0, narrated - booked), Math.max(0, cap - booked));
+    const arrivesAnyway = explicitArrival || Object.entries(outcome.expected_keys || {}).some(([k, type]) => type === 'go' && expected[k]?.arrived === true);
+    let transit = null;
+    if (cPath && !arrivesAnyway && !s.encounter && auth.timeCap > content.rules.time.default_cap_min
+        && roadMinutes >= content.rules.time.engine_clock.go_min_elsewhere
+        && (auth.gos || []).length > 0 && s.scene.at === startAt) {
+        const destination = (auth.gos || []).at(-1);
+        const home = settlementOf(s, startAt);
+        const realm = s.places[startAt]?.realm || s.places[s.scene.location]?.realm;
+        const far = destination.to ? !sameSettlement(s, startAt, destination.to)
+            : !!destination.journey || !home || roadMinutes > content.rules.time.default_cap_min;
+        const via = far ? (s.places[realm]?.kind === 'realm' ? realm : null) : destination.to ? null : home;
+        if (via && via !== startAt) {
+            const said = expected[String(destination.seq)]?.with;
+            const party = [...new Set([...(destination.with || []), ...(Array.isArray(said) ? said.map(idOf) : [])])]
+                .filter((id) => id && id !== 'pc' && s.scene.present.includes(id) && s.entities[id]?.status !== 'dead');
+            perceiveAll(s, emit, seeing());
+            arrive(via, party);
+            transit = via;
+            if (far) emit({ t: 'scene.moved', d: { place: `On the way to ${destination.journey || destination.name || destination.newName || 'the destination'}` } });
         }
     }
 
@@ -604,16 +641,21 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     if (!corrections.includes(correction)) corrections.push(correction);
                     break;
                 }
+                // Prototype C (4.3.0-c.6.6.3): an outcome that rests on a hand-over this very reply could not book (Alaric
+                // still holds the basket the story put into Sister Maren's hands, live 11.10.2026) is no outcome: no READY
+                // beside the thing in his hands. The real hand-over later is the delivery, and its reply the outcome
+                if (cPath && q.kind === 'guild_contract') {
+                    const refused = owedObjects(s, q).filter((o) => refusedMoves.has(o.id));
+                    if (refused.length) {
+                        reject(d, 'quest_delivery', `the hand-over of ${refused.map((o) => o.name).join(', ')} in this reply was not booked; Alaric still holds it`);
+                        const correction = `"${q.title}" is still IN PROGRESS: the hand-over of ${refused.map((o) => o.name).join(' and ')} in the last reply did not happen in the engine's state; Alaric still holds it. The contract, its goal and its recipient stay exactly as they were: do not invent a new recipient, address or condition to explain it. It is delivered when Alaric hands it over.`;
+                        if (!corrections.includes(correction)) corrections.push(correction);
+                        break;
+                    }
+                    readied.push(q.id);
+                }
                 // the alternative is kept with the contract: the turn-in accepts the short count on it (guild.js contractReady)
                 emit({ t: 'quest.ready', d: { id: q.id, note: `${claimed}${short.length ? ` — ${alternative}` : ''}`.slice(0, 220), ...(short.length ? { alternative: alternative.slice(0, 200) } : {}) } });
-                // Prototype C (4.3.0-c.6.6.2): the story's outcome stands; what he still carries of a delivery keeps the
-                // contract from the turn-in until it leaves his hands (guild.js contractReady, read anew every time), so
-                // a hand-over the engine books later makes it ready without another claim
-                if (cPath && q.kind === 'guild_contract') {
-                    const r = contractReady(s, content, s.quests[q.id], { c: true });
-                    const correction = `"${q.title}" is NOT READY for turn-in yet: ${r.reason}.`;
-                    if (r.mode === 'not_delivered' && !corrections.includes(correction)) corrections.push(correction);
-                }
                 break;
             }
             case 'quest.close': {
@@ -670,6 +712,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         }
     }
 
+    // Prototype C (4.3.0-c.6.6.2/3): the story's outcome stands; what he still carries of a delivery keeps the contract from
+    // the turn-in until it leaves his hands (guild.js contractReady, read anew every time), so a hand-over the engine books
+    // later makes it ready without another claim. Told after all of this reply's hand-overs, and without moving the goal
+    for (const id of readied) {
+        const r = contractReady(s, content, s.quests[id], { c: true });
+        const correction = `"${s.quests[id].title}" is NOT READY for turn-in yet: ${r.reason}. Its goal and recipient stay as they are: it is done when he hands it over there (no new recipient, address or condition).`;
+        if (r.mode === 'not_delivered' && !corrections.includes(correction)) corrections.push(correction);
+    }
+
     // 3. what the extractor answered about the player's commands
     step = { kind: 'expected' };
     for (const [k, type] of Object.entries(outcome.expected_keys || {})) {
@@ -704,36 +755,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     // (rules.time.engine_clock), never 0. Only the minutes beyond the booked activities count as travel.
     // 4.3.0-c.6.6.2: the long one only where the way crosses a settlement's bounds (into or out of a town, from one to
     // another); a short move within the wilds (the next bend of a wolf trail) is local like one within a town
-    if (auth.c && arrived && arrived !== startAt) {
+    if (auth.c && arrived && arrived !== startAt && arrived !== transit) {
         const t = content.rules.time.engine_clock;
         const floor = settlementOf(s, startAt) === settlementOf(s, arrived) ? t.go_min_same_settlement : t.go_min_elsewhere;
         const travelled = timeUsed - booked;
         if (travelled < floor) { emit({ t: 'time.advanced', d: { minutes: floor - travelled, why: 'travel' } }); timeUsed += floor - travelled; }
-    }
-
-    // Prototype C: an unfinished GO can take hours without reaching where it was going: the extractor rightly reports no
-    // arrival at a lighthouse only seen from the road, yet Alaric is no longer in the Guild hall he set off from (live
-    // 10.10.2026). 4.3.0-c.6.6.2: where he is instead is the smallest existing place that holds the way: the realm's
-    // road when he set off for a known place outside his settlement, on an established journey or for hours toward
-    // somewhere new; his settlement, out of the building, when he spent the time looking for something in it ("look for
-    // an inn"). Whoever travels with him (the story's answer, the journey's companion) comes along; no waypoint is made.
-    if (cPath && !arrived && !s.encounter && auth.timeCap > content.rules.time.default_cap_min
-        && timeUsed - booked >= content.rules.time.engine_clock.go_min_elsewhere
-        && (auth.gos || []).length > 0 && s.scene.at === startAt) {
-        const destination = (auth.gos || []).at(-1);
-        const home = settlementOf(s, startAt);
-        const realm = s.places[startAt]?.realm || s.places[s.scene.location]?.realm;
-        const far = destination.to ? !sameSettlement(s, startAt, destination.to)
-            : !!destination.journey || !home || timeUsed - booked > content.rules.time.default_cap_min;
-        const via = far ? (s.places[realm]?.kind === 'realm' ? realm : null) : destination.to ? null : home;
-        if (via && via !== startAt) {
-            const said = expected[String(destination.seq)]?.with;
-            const party = [...new Set([...(destination.with || []), ...(Array.isArray(said) ? said.map(idOf) : [])])]
-                .filter((id) => id && id !== 'pc' && s.scene.present.includes(id) && s.entities[id]?.status !== 'dead');
-            perceiveAll(s, emit, seeing());
-            arrive(via, party);
-            if (far) emit({ t: 'scene.moved', d: { place: `On the way to ${destination.journey || destination.name || destination.newName || 'the destination'}` } });
-        }
     }
 
     // 4. what waited for the reply and did not happen
@@ -946,6 +972,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (!o) { reject(d, 'object', 'unknown object'); return; }
         const to = holderOf(d.to);
         if (!to) { reject(d, 'object', `unknown receiver ${String(d.to).slice(0, 40)}`); return; }
+        // Prototype C (4.3.0-c.6.6.3): the hand-over he set out to make where he went (commands.js give): booked as the story
+        // has it change hands, into someone's hands there
+        const handOver = o.holder?.entity === 'pc' && conditionals.find((k) => !k.done && k.kind === 'give' && k.object === o.id);
+        if (handOver) {
+            if (!to.entity || to.entity === 'pc' || !s.scene.present.includes(to.entity) || (handOver.to && handOver.to !== to.entity)) { reject(d, 'pc_inventory', 'he hands it over only to the one he went to, there'); return; }
+            handOver.done = true;
+            grant('player.give');
+            emit({ t: 'object.moved', d: { id: o.id, to } });
+            emit({ t: 'cmd.completed', d: { seq: handOver.seq, ok: true, reason: null } });
+            return;
+        }
         if (to.entity === 'pc' && o.holder?.loc && !(auth.take || []).length) { reject(d, 'pc_inventory', 'what lies here becomes his only by his own take'); return; }
         const part = d.qty && d.qty < (o.qty ?? 1) ? d.qty : null;
         // to him: from where it lies, by his own take; from someone's hands, their gift (the firewall's rules)

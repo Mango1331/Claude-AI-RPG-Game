@@ -79,6 +79,7 @@ export const MECH_EXAMPLES = [
 export const CONTRACT_RULES = [
     'Guild contracts (these come before the rules above):',
     '- A contract (quest.<id> under QUESTS) and its contract slip (obj.slip.<id> under OBJECTS) are different things. A quest argument is always the quest id, never the slip\'s object id.',
+    '- quest.turn_in is handing in a contract at a Guild hall (his words to the Guild or the desk), for its payout. Taking leave of the contract\'s client or recipient ("that\'s my part done then", "glad it arrived") is no turn_in: it is words. A turn_in he names on the way back ("I head back to the Guild to turn it in") is go plus quest.turn_in.',
     '- quest.turn_in is handing in a contract he has DONE at a Guild hall, for its payout. Handing back the slip of a contract he has not done, because he gives the job up or turned it down, is quest.abandon with the contract\'s quest id, never quest.turn_in.',
     '- quest.abandon only when he gives the contract up in this message: "I abandon the quest", "I give up this contract", "I cancel this job", handing its slip back at the desk. Saying he will do it later is no command: "I\'ll decline the quest myself", "I\'ll go cancel it at the Guild", "I\'ll hand the contract back", "I\'ll return the slip" are words, not the act.',
     '- The slip of a contract that is no longer active (given up or done), handed to someone: give {object: the slip, to: who takes it}; never a quest command.',
@@ -95,10 +96,13 @@ export const HANDOVER_RULES = [
     'Handing over (story commands):',
     '- When RECENT shows someone asking Alaric for a particular thing and he now holds out, offers or produces exactly that thing for them, that is give {object, to}, even without the word "give": the hand-over is what he does. The object is the one he names, by its OBJECTS id; never another object in its place.',
     '- No give when he only shows, looks at or examines it, keeps it ("but I don\'t hand it over"), only asks whether they need it, or produces a different thing than the one asked for (then the story lets them answer).',
+    '- He goes to someone in order to hand them a thing himself, now ("I go to Sister Maren and hand her the basket", "I\'ll follow you up to hand it over myself"): go, then give {object, to} with "needs" the go; to is their id, or {"new": "<who>"} when they are not in the catalog. Going somewhere only to ask whether they want it, carrying it along, or handing it over another day is no give.',
     'Examples (another town): RECENT: …"I need the ferry permit before I can let you aboard," the ferryman says, holding out his hand. · OBJECTS: obj.t3.ferry_permit (ferry permit, held by Alaric), obj.slip.ferry_job (Guild contract slip: Ferry Job, held by Alaric) · PRESENT: npc.ferryman',
     '- "you mean this? *i hold out the ferry permit*" → {"commands":[{"seq":1,"type":"give","object":"obj.t3.ferry_permit","to":"npc.ferryman","quote":"i hold out the ferry permit"}]}',
     '- "*i show him the permit but keep hold of it*" → {"commands":[]}',
     '- "*i pull out the contract slip* this one?" → {"commands":[]}',
+    '- (RECENT: the ferryman offers to carry the permit up to the harbourmaster) "I\'ll walk up with you and give it to her myself" → {"commands":[{"seq":1,"type":"go","to":{"new":"the harbourmaster"},"quote":"I\'ll walk up with you"},{"seq":2,"type":"give","object":"obj.t3.ferry_permit","to":{"new":"the harbourmaster"},"needs":1,"quote":"give it to her myself"}]}',
+    '- "Tomorrow I\'ll take the permit to the harbourmaster." → {"commands":[]}',
 ].join('\n');
 
 // Steps that build on each other (live run 04.10.2026: "go back to the guild and take the Cull the Bog Striders quest

@@ -290,6 +290,8 @@ function stillCarried(s, q, o) {
     const own = Object.values(s.objects || {}).filter((x) => (x.for_quests || []).includes(q.id) && !x.id.startsWith('obj.slip.') && x.source?.how !== 'guild' && called(x));
     return own.length ? own.filter((x) => x.holder?.entity === 'pc') : carried(s, o.what);
 }
+/** 4.3.0-c.6.6.3: the things of a contract's deliveries he still holds (world.js: a READY resting on a refused hand-over). */
+export const owedObjects = (s, q) => [...new Map(deliveriesOf(q).flatMap((o) => stillCarried(s, q, o)).map((x) => [x.id, x])).values()];
 const goodsText = (q) => goodsOf(q).map((o) => `${o.qty ?? 1}${o.unit ? ` ${o.unit}` : ''} ${o.what}`).join(', ');
 /** The ACCEPTS line's word on proof (Prototype C). */
 export function proofTerms(q, content) {
@@ -438,6 +440,7 @@ export function boardRequest(s, content, need) {
         'NOVICE TEST PROFILE:',
         '- Keep Novice work practical and immediately playable. For a fresh five-listing board: at least 2 listings are explicit Monster culling/clearance jobs whose obvious intended route can lead directly to combat; at least 1 is an escort whose route leaves the settlement; at least 1 is a delivery/courier job whose destination leaves the settlement; the fifth is another culling, escort or delivery job.',
         '- Monster culling/clearance names a concrete creature threat and a concrete place/problem to clear, kill, drive off or make safe. Do not disguise both combat slots as open-ended investigations into an unknown culprit.',
+        '- Escort and delivery work that needs a Guild hand says why in its task where there is a reason: a stretch with reported waylayers or beasts, valuable or tempting cargo, a rival who wants it, a client with enemies. Weather and high water are one possible reason among many, not the default; a safe local errand needs none.',
         '- Escort and delivery jobs must involve real travel beyond the city/settlement rather than a safe errand between two buildings in town. Route trouble may emerge naturally from the world; do not pre-script a mandatory ambush.',
         '- For partial Board refills, prefer these same three job families and avoid filling the Novice Board with administrative errands, pure paperwork, abstract mysteries or local chores that provide little opportunity to test travel/combat gameplay.',
     ] : [];

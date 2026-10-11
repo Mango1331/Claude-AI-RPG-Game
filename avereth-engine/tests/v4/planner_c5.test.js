@@ -195,7 +195,7 @@ test('4. the contract is gone: no acceptance, no claim that it is his, and the s
     assert.ok(!g.planRequest.messages.at(-1).content.includes(`${BOG} (`), 'not offered as known');
     const a = outcomeOf(g).actions;
     assert.match(a[1], /^2\. CANNOT ACCEPT — no such contract \("Cull the Bog Striders"\) is on offer\.$/);
-    assert.equal(a[2], '3. NOT DONE — "make my way over to the eel weirs": it was to follow step 2, which did not happen.');
+    assert.equal(a[2], '3. NOT DONE — "make my way over to the eel weirs": it was to follow step 2, which did not happen; it does not happen in this reply (someone else\'s help does not do it for him).');
     assert.deepEqual(outcomeOf(g).resolutions.map((r) => r.status), ['authorized', 'refused', 'refused']);
     const x = await g.reply('The clerk shook her head: the job had gone to another company that morning.', { ...arrives([1, HALL]), deltas: [
         { seq: 1, type: 'fact', s: BOG, p: 'status', o: 'active, taken by Alaric' },

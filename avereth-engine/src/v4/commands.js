@@ -115,7 +115,8 @@ function questLine(q) {
  */
 function guildHallMeant(s) {
     const here = settlementOf(s, s.scene.at);
-    if (here) return hallOfSettlement(s, here);
+    // 4.3.0-c.6.6.3: a village without a branch (Hollow Ford) means the hall of his contracts, not none
+    if (here && hallOfSettlement(s, here)) return hallOfSettlement(s, here);
     const branches = [...new Set(contracts(s).filter((q) => q.status === 'active').map((q) => q.source?.branch).filter(Boolean))];
     const town = branches.length === 1 ? branches[0] : membership(s)?.branch || null;
     return town ? hallOfSettlement(s, town) : null;
@@ -266,7 +267,7 @@ const HANDLERS = {
         }
         return { status: 'authorized', cap, line: `${VERBS[c.kind] || String(c.kind).toUpperCase()} ${c.what ? `${c.what} ` : ''}${span} (at most ${cap} minutes; the story decides how long it takes and what it yields).` };
     },
-    take(s, content, c, ctx, emit) {
+    take(s, content, c, ctx, emit, envx) {
         if (c.object && typeof c.object === 'object') {
             ctx.auth.take.push(c.seq);
             ctx.auth.takeNames = { ...(ctx.auth.takeNames || {}), [String(c.seq)]: String(c.object.new).slice(0, 80) };
@@ -279,7 +280,14 @@ const HANDLERS = {
         const o = objectOf(s, content, c.object);
         if (!o) return { status: 'refused', reason: 'unknown object', line: 'CANNOT TAKE — there is no such thing here.' };
         if (o.holder?.entity === 'pc') return { status: 'refused', reason: 'he holds it already', done: true, line: `NOTHING TO DO — he holds ${o.name} already.` };
-        if (o.holder?.entity) return { status: 'refused', reason: 'someone holds it', line: `CANNOT TAKE — ${who(s, o.holder.entity)} holds ${o.name}; ${who(s, o.holder.entity)} would have to give it.` };
+        // Prototype C (4.3.0-c.6.6.3): the thing someone here keeps ready for his contract (the crate the chirurgeon set out,
+        // the basket on the chandler's counter) is his to take, unless they hold it back for a reason of their own: the
+        // story decides, and their hand-over books it. Anything else of theirs stays theirs (live 11.10.2026)
+        const keeper = o.holder?.entity;
+        if (keeper && envx?.c && present(s, keeper) && (o.for_quests || []).some((id) => s.quests[id]?.status === 'active' && s.quests[id]?.taker === 'pc')) {
+            return { status: 'authorized', uncertain: true, line: `TAKES — ${o.name} from ${who(s, keeper)}, who keeps it for his contract: he takes it along unless ${who(s, keeper)} holds it back for a reason of their own (the story decides; if it stays with them, nothing that was to follow it happens).` };
+        }
+        if (keeper) return { status: 'refused', reason: 'someone holds it', line: `CANNOT TAKE — ${who(s, keeper)} holds ${o.name}; ${who(s, keeper)} would have to give it.` };
         if (o.holder?.loc !== s.scene.at) return { status: 'refused', reason: 'it is not here', line: `CANNOT TAKE — ${o.name} is not here.` };
         const part = c.qty && c.qty < (o.qty ?? 1) ? c.qty : null;
         emit({ t: 'object.moved', d: { id: o.id, to: { entity: 'pc' }, ...(part ? { qty: part, split: `${o.id}_${s.turn}` } : {}) } });
@@ -296,9 +304,17 @@ const HANDLERS = {
         } else emit({ t: 'object.moved', d: { id: o.id, to: { loc: s.scene.at }, ...(qty ? { qty, split: `${o.id}_${s.turn}` } : {}) } });
         return { status: 'resolved', line: `DROPS — ${o.name}${qty ? ` (${qty})` : ''}; it stays here.` };
     },
-    give(s, content, c, ctx, emit) {
+    give(s, content, c, ctx, emit, envx) {
         const o = objectOf(s, content, c.object);
         if (!o || o.holder?.entity !== 'pc') return { status: 'refused', reason: 'he does not hold it', line: `CANNOT GIVE — he does not hold ${o ? o.name : 'that'}.` };
+        // Prototype C (4.3.0-c.6.6.3): "I'll follow you up to hand it over myself": he goes to the one he hands it to, in this
+        // message. The hand-over waits for them: booked when the story has it change hands there (src/v4/world.js); if the
+        // reply does not bring him to them, or they will not take it, he keeps it (live 11.10.2026, Sister Maren)
+        if (envx?.c && c.to !== 'pc' && !present(s, c.to) && !o.template && ctx.auth.gos.some((g) => (g.seq ?? 0) < (c.seq ?? 0))) {
+            const toName = typeof c.to === 'string' && s.entities[c.to] ? who(s, c.to) : String(c.to?.new || c.to || 'the one he goes to').slice(0, 60);
+            ctx.conditionals.push({ seq: c.seq, kind: 'give', object: o.id, to: typeof c.to === 'string' && s.entities[c.to] ? c.to : null, condition: 'hand_over' });
+            return { status: 'conditional', condition: 'hand_over', line: `GIVES, when he reaches ${toName} — ${o.name}, into their own hands. If the reply does not bring him to them, or they will not take it, he keeps it.` };
+        }
         if (!present(s, c.to) || c.to === 'pc') return { status: 'refused', reason: 'nobody to give it to', line: `CANNOT GIVE — ${typeof c.to === 'string' && s.entities[c.to] ? `${who(s, c.to)} is not here` : 'there is no such person here'}.` };
         const qty = c.qty && c.qty < (o.qty ?? 1) ? c.qty : null;
         if (o.template) {
@@ -634,6 +650,7 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
     ctx.env = { msg: envx.msg ?? s.turn, commands: ordered };
     const lines = new Map();
     const happened = new Set();
+    const uncertain = new Set();
     for (const c of ordered) {
         const h = HANDLERS[c.type] || (envx.c && c.type === 'other' ? otherStep : null);
         // Prototype C (4.3.0-c.5): a step the planner marked as building on an earlier one of the message (needs) is not
@@ -643,8 +660,11 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
         const need = envx.c && Number.isInteger(c.needs) && !happened.has(c.needs) ? c.needs : null;
         const unmet = need !== null && !(membership(s) && [...ctx.resolutions, ...(envx.dropped || []).map((x) => x.command || {})]
             .some((x) => x.seq === need && x.type === 'guild.register'));
-        const r = unmet ? { status: 'refused', reason: `needs step ${c.needs}`, line: `NOT DONE — ${c.quote ? `"${String(c.quote).slice(0, 80)}"` : c.type}: it was to follow step ${c.needs}, which did not happen.` }
+        const r = unmet ? { status: 'refused', reason: `needs step ${c.needs}`, line: `NOT DONE — ${c.quote ? `"${String(c.quote).slice(0, 80)}"` : c.type}: it was to follow step ${c.needs}, which did not happen; it does not happen in this reply (someone else's help does not do it for him).` }
             : h ? h(s, content, c, ctx, emit, envx) : { status: 'refused', reason: `unknown command ${c.type}`, line: null };
+        // 4.3.0-c.6.6.3: a step that builds on one the story still decides (a take from someone's keeping) follows it there
+        if (!unmet && Number.isInteger(c.needs) && uncertain.has(c.needs) && r.line) r.line = `${r.line} Only once step ${c.needs} has happened in the story; if it does not, this does not happen either.`;
+        if (r.uncertain) uncertain.add(c.seq);
         if (r.done || !['refused', 'pending', 'clarify'].includes(r.status)) happened.add(c.seq);
         ctx.resolutions.push({ seq: c.seq, type: c.type, status: r.status, ...(r.reason ? { reason: r.reason } : {}), ...(r.cap ? { cap: r.cap } : {}), ...(r.condition ? { condition: r.condition } : {}), quote: c.quote ?? null });
         if (r.line) lines.set(c.seq, r.line);

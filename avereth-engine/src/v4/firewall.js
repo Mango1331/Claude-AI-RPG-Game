@@ -214,7 +214,7 @@ export function firewall(deltas, ctx = {}) {
                     no(d, 'engine_booked', 'Alaric already holds it');
                     continue;
                 }
-                if (!isPc(d.to) && ctx.heldByPc?.(text(d.object))) {
+                if (!isPc(d.to) && ctx.heldByPc?.(text(d.object)) && !ctx.handingOver?.(text(d.object))) {
                     no(d, 'pc_inventory', 'what Alaric holds leaves him only through his own command (give, drop, sell, use) or a coercion', 'What Alaric holds stays his unless he gives, drops, sells or uses it himself; nothing of his changed hands in the last reply.');
                     continue;
                 }

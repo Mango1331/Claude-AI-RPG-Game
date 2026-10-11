@@ -203,7 +203,7 @@ export const DELTA_WRITES = {
     recover: { writes: ['entities'], gates: { 'pc.vitals': 'player.rest' } },
     'object.new': { writes: ['objects'], gates: { 'pc.inventory': 'player.take' } },
     // a thing handed to him (a gift), or taken from where it lies by his own take
-    'object.move': { writes: ['objects'], gates: { 'pc.inventory': ['envelope.give', 'player.take'] } },
+    'object.move': { writes: ['objects'], gates: { 'pc.inventory': ['envelope.give', 'player.take', 'player.give'] } },
     'object.mark': { writes: ['objects'] },
     // an offer may meet a purchase he agreed to in advance within his limit: the engine books it (trade.js)
     offer: { writes: ['trade'], gates: { 'pc.coin': 'player.buy', 'pc.inventory': 'player.buy' } },

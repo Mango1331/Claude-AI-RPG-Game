@@ -722,7 +722,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         && timeUsed - booked >= content.rules.time.engine_clock.go_min_elsewhere
         && (auth.gos || []).length > 0 && s.scene.at === startAt) {
         const destination = (auth.gos || []).at(-1);
-        const realm = s.places[startAt]?.realm;
+        const realm = s.places[startAt]?.realm || s.places[s.scene.location]?.realm;
         if (realm && s.places[realm]?.kind === 'realm' && realm !== startAt
             && (!destination.to || !sameSettlement(s, startAt, destination.to))) {
             perceiveAll(s, emit, seeing());

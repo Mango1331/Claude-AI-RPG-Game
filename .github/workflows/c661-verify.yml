@@ -1,0 +1,22 @@
+name: c.6.6.1 patch verification
+
+on:
+  push:
+    branches:
+      - claude/c-planner-prototype-2026-10-02-gpt-c661
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Unit and regression suite
+        working-directory: avereth-engine
+        run: npm test
+      - name: Browser smoke
+        working-directory: avereth-engine
+        run: npm run smoke:browser

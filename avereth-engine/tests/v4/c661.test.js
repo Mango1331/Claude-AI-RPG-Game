@@ -71,7 +71,7 @@ test('c.6.6.1: observing a distant destination does not leave Alaric at the orig
         expected: { '1': { arrived: false } },
         deltas: [{ seq: 1, type: 'time', minutes: 210 }],
     }, { msg: 102, prose: 'After three and a half hours on the coast path the lighthouse comes into view beyond a blocked crossing.' });
-    assert.equal(x.state.scene.at, 'realm.solmere', JSON.stringify({auth:s.last.outcome.auth, startAt:s.scene.at, timeUsed:x.state.clock.minute-s.clock.minute, events:x.events.filter((e)=>/time.advanced|scene.moved|delta.rejected/.test(e.t)), realm:s.places['loc.tidecross.guild_hall']?.realm}));
+    assert.equal(x.state.scene.at, 'realm.solmere', JSON.stringify({auth:s.last.outcome.auth, startAt:s.scene.at, timeUsed:x.state.clock.minute-s.clock.minute, events:x.events.filter((e)=>/time.advanced|scene.moved|delta.rejected/.test(e.t)), realm:s.places['loc.tidecross.guild_hall']?.realm, city:s.places['loc.tidecross'], realmPlace:s.places['realm.solmere'], scene:s.scene.location, cityKeys:Object.keys(s.places).slice(0,12)}));
     assert.match(x.state.scene.place, /On the way to Gullspire Point lighthouse/);
     assert.ok(!x.state.scene.present.some((id) => id !== 'pc'));
     assert.ok(!x.events.some((e) => e.t === 'scene.moved' && e.d.at === 'loc.gullspire_point_lighthouse'));

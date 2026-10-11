@@ -269,9 +269,27 @@ const carried = (s, what) => {
     const h = headOf(what);
     return h.length < 3 ? [] : heldBy(s, 'pc').filter((o) => !o.id.startsWith('obj.slip.') && normText(o.name).split(' ').map(stemOf).includes(h));
 };
-export const goodsOf = (q) => (q.objectives || []).filter((o) => o.what && !confirmsOnly(o)
-    && (o.verb === 'GATHER' || (o.verb === 'GET' && (q.proof || []).some((p) => p.kind === 'object' && headOf(p.what) === headOf(o.what)))));
-export const deliveriesOf = (q) => (q.objectives || []).filter((o) => o.verb === 'DELIVER' && o.what);
+// 4.3.0-c.6.6.2: a GIVE of a thing is a delivery too (the oil requisition slip to the keeper); a GIVE of word, a
+// warning or a confirmation leaves nothing in his hands. A thing he gathers to hand over elsewhere (GATHER the herbs,
+// DELIVER them to the apothecary) is that delivery's, not goods for the Guild.
+export const deliveriesOf = (q) => (q.objectives || []).filter((o) => ['DELIVER', 'GIVE'].includes(o.verb) && o.what && !confirmsOnly(o));
+export const goodsOf = (q) => {
+    const delivered = new Set(deliveriesOf(q).map((o) => headOf(o.what)));
+    return (q.objectives || []).filter((o) => o.what && !confirmsOnly(o) && !delivered.has(headOf(o.what))
+        && (o.verb === 'GATHER' || (o.verb === 'GET' && (q.proof || []).some((p) => p.kind === 'object' && headOf(p.what) === headOf(o.what)))));
+};
+/**
+ * 4.3.0-c.6.6.2: what of a delivery he still holds. The contract's own things (for_quests, the story's link) called by
+ * it decide: once they have left his hands his own satchel is no undelivered one. Without such a link, what his hands
+ * hold called so. His Guild contract slip is never a delivery. Read anew from the objects every time, never a receipt.
+ */
+function stillCarried(s, q, o) {
+    const h = headOf(o.what);
+    const words = normText(o.what).split(' ').map(stemOf);
+    const called = (x) => (h.length >= 3 && normText(x.name).split(' ').map(stemOf).includes(h)) || (headOf(x.name).length >= 3 && words.includes(headOf(x.name)));
+    const own = Object.values(s.objects || {}).filter((x) => (x.for_quests || []).includes(q.id) && !x.id.startsWith('obj.slip.') && x.source?.how !== 'guild' && called(x));
+    return own.length ? own.filter((x) => x.holder?.entity === 'pc') : carried(s, o.what);
+}
 const goodsText = (q) => goodsOf(q).map((o) => `${o.qty ?? 1}${o.unit ? ` ${o.unit}` : ''} ${o.what}`).join(', ');
 /** The ACCEPTS line's word on proof (Prototype C). */
 export function proofTerms(q, content) {
@@ -323,6 +341,9 @@ export function contractReady(s, content, q, { c = false } = {}) {
     if (c) {
         // Prototype C (4.3.0-c.6): goods he is to gather or get are the work itself: in his hands at the hall, whatever
         // the story says, and the Guild takes them; a delivery is not done while he still carries what it delivers
+        // (4.3.0-c.6.6.2: before the goods, so mixed work checks both)
+        const owed = deliveriesOf(q).filter((o) => stillCarried(s, q, o).length);
+        if (owed.length) return { ok: false, mode: 'not_delivered', reason: `he still carries ${owed.map((o) => o.what).join(', ')}: a delivery is done where the goods are handed over`, consume: [] };
         const goods = goodsOf(q);
         if (goods.length) {
             const short = goods.map((o) => ({ o, need: o.qty ?? 1, have: carried(s, o.what).reduce((n, x) => n + (x.qty ?? 1), 0) })).filter((x) => x.have < x.need);
@@ -341,8 +362,6 @@ export function contractReady(s, content, q, { c = false } = {}) {
             }
             return { ok: true, mode: 'goods', reason: null, consume };
         }
-        const owed = deliveriesOf(q).filter((o) => carried(s, o.what).length);
-        if (owed.length) return { ok: false, mode: 'not_delivered', reason: `he still carries ${owed.map((o) => o.what).join(', ')}: a delivery is done where the goods are handed over`, consume: [] };
     }
     const legacy = (q.proof || []).length > 0 ? checkProof(s, q) : { ok: false, consume: [] };
     const mode = q.ready ? 'story_outcome' : legacy.ok ? 'legacy_verification' : 'not_ready';

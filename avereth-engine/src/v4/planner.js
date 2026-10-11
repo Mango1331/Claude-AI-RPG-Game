@@ -88,6 +88,19 @@ export const CONTRACT_RULES = [
     '- "I give up the ferry job." → {"commands":[{"seq":1,"type":"quest.abandon","quest":"quest.ferry_job","quote":"I give up the ferry job."}]}',
 ].join('\n');
 
+// 4.3.0-c.6.6.2: a hand-over in gesture (live 10.10.2026: the keeper asked for the requisition, he drew a slip out with
+// "you mean this?", no give was booked and the story had her take it). Only the thing she asked for, never a
+// substitute: what he names is what changes hands; the agency guard still drops "but I keep it" and her snatching it
+export const HANDOVER_RULES = [
+    'Handing over (story commands):',
+    '- When RECENT shows someone asking Alaric for a particular thing and he now holds out, offers or produces exactly that thing for them, that is give {object, to}, even without the word "give": the hand-over is what he does. The object is the one he names, by its OBJECTS id; never another object in its place.',
+    '- No give when he only shows, looks at or examines it, keeps it ("but I don\'t hand it over"), only asks whether they need it, or produces a different thing than the one asked for (then the story lets them answer).',
+    'Examples (another town): RECENT: …"I need the ferry permit before I can let you aboard," the ferryman says, holding out his hand. · OBJECTS: obj.t3.ferry_permit (ferry permit, held by Alaric), obj.slip.ferry_job (Guild contract slip: Ferry Job, held by Alaric) · PRESENT: npc.ferryman',
+    '- "you mean this? *i hold out the ferry permit*" → {"commands":[{"seq":1,"type":"give","object":"obj.t3.ferry_permit","to":"npc.ferryman","quote":"i hold out the ferry permit"}]}',
+    '- "*i show him the permit but keep hold of it*" → {"commands":[]}',
+    '- "*i pull out the contract slip* this one?" → {"commands":[]}',
+].join('\n');
+
 // Steps that build on each other (live run 04.10.2026: "go back to the guild and take the Cull the Bog Striders quest
 // and register it ad make my way over to the eel weirs": the contract could not be taken and he set off for its site
 // anyway). The engine does not take a step whose "needs" did not happen (src/v4/commands.js resolveCommands)
@@ -143,7 +156,7 @@ export function plannerSystem(vocab, { fight = false } = {}) {
         const story = vocabularyText({ commands: vocab.commands.filter((c) => FIGHT_STORY_TYPES.has(c.type)) });
         return [PLANNER_ROLE, '', mech, '', FIGHT_RULES, '', 'Story commands (the same list):', story, '', 'Answer with {"commands": [...]}; an empty list when the message contains no action of his.', '', PLAIN_FORMAT].join('\n');
     }
-    return [interpreterSystem(vocab), '', CONTRACT_RULES, '', ORDER_RULES, '', mech, '', PLAIN_FORMAT].join('\n');
+    return [interpreterSystem(vocab), '', CONTRACT_RULES, '', HANDOVER_RULES, '', ORDER_RULES, '', mech, '', PLAIN_FORMAT].join('\n');
 }
 
 function skillText(skill) {

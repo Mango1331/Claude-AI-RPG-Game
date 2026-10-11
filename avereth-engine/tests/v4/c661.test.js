@@ -43,26 +43,13 @@ function ready(s) {
     }] }, { msg: 101, prose: 'The keeper thanks Alaric for the delivery.' });
 }
 test('firewall: a Guild contract slip is not the distinct oil requisition slip', () => {
-    const ctx = { booked: { grants: ['contract slip'] }, contracts: [quest()] };
+    const ctx = { c: true, booked: { grants: ['contract slip'] }, contracts: [quest()] };
     const oil = { seq: 1, type: 'object.new', name: 'oil requisition slip', kind: 'document', qty: 1, unit: null, holder: 'npc.clerk', for_quest: QID };
     const duplicate = { ...oil, name: 'Guild contract slip: Letters to the Lighthouse Keeper' };
     assert.deepEqual(firewall([oil], ctx).reject, []);
     assert.equal(firewall([duplicate], ctx).reject[0].rule, 'engine_booked');
 });
-test('c.6.6.1: each physical delivery requires its own engine-booked transfer', () => {
-    const s = setup();
-    applyEvent(s, { t: 'object.moved', d: { id: 'obj.satchel', to: { entity: 'npc.keeper' } } });
-    assert.equal(s.quests[QID].delivery_receipts.o1.object, 'obj.satchel');
-    assert.equal(s.quests[QID].delivery_receipts.o2, undefined);
-    const blocked = ready(s);
-    assert.equal(blocked.state.quests[QID].ready, undefined);
-    assert.ok(blocked.rejected.some((x) => x.rule === 'quest_delivery'));
-
-    applyEvent(s, { t: 'object.moved', d: { id: 'obj.oil', to: { entity: 'npc.keeper' } } });
-    const accepted = ready(s);
-    assert.equal(accepted.state.quests[QID].ready, true);
-    assert.ok(!accepted.rejected.some((x) => x.rule === 'quest_delivery'));
-});
+// c.6.6.2: the receipt gate of c.6.6.1 is gone; one delivery check (guild.js contractReady) is tested in c662.test.js
 test('c.6.6.1: observing a distant destination does not leave Alaric at the origin after hours of travel', () => {
     const s = setup();
     // Game's lightweight unit harness has no V4 place tree; a real V4 campaign always seeds it.

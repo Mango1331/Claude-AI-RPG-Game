@@ -63,7 +63,8 @@ export function tacticalHere(state, { friendly = true } = {}) {
         if (id === 'pc' || !e || e.status === 'dead' || !['npc', 'creature'].includes(e.kind)) return false;
         if (!state.scene.positions?.[id]?.band) return false;
         const committed = pending.has(id) || !!state.encounter?.combatants?.[id];
-        if (!friendly) return e.kind === 'creature' || threats.has(id) || committed;
+        // 4.3.0-c.6.6.2: a creature the story marked as no foe (threat: false, the packhorse) is no part of a hostile field
+        if (!friendly) return (e.kind === 'creature' && e.threat !== false) || threats.has(id) || committed;
         return e.kind === 'creature' || relevant.has(id) || threats.has(id) || committed;
     });
 }

@@ -177,7 +177,8 @@ const HANDLERS = {
         // its people the scene still shows (review of 4.1.0: an accepted escort is no journey before he sets off)
         const q = s.quests[ready.id];
         if (q?.status === 'active' && !q.journey) emit({ t: 'quest.journey', d: { id: q.id, at: s.scene.at } });
-        const go = { seq: c.seq, to: null, name: `the established journey for "${ready.label}"`, hall: false, newName: 'the established journey' };
+        // 4.3.0-c.6.6.2: its companion travels with him, also where the road has not reached its end yet (world.js)
+        const go = { seq: c.seq, to: null, name: `the established journey for "${ready.label}"`, hall: false, newName: 'the established journey', journey: ready.label, with: ready.companion ? [ready.companion] : [] };
         ctx.auth.go = go;
         ctx.auth.gos.push(go);
         ctx.auth.roam = true;
@@ -207,6 +208,7 @@ const HANDLERS = {
         const ready = journeyReady(s, { c: !!envx?.c });
         if (ready?.contact && s.quests[ready.id]?.status === 'active' && !s.quests[ready.id].journey) {
             ctx.auth.journey = ready.id;
+            if (ready.companion) go.with = [ready.companion];
             ctx.extra.push(`JOURNEY PACING — this GO starts the established journey of "${ready.label}". Carry routine travel forward in this same reply until destination or a concrete complication/open decision actually interrupts it; do not stop merely for scenery, harmless conversation or to make Alaric say "continue" again.`);
         }
         // Prototype C (4.3.0-c.6): the people he met there before are that place's people, not new ones

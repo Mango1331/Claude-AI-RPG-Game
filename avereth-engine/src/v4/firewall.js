@@ -84,6 +84,9 @@ function guildMechanic(d, ctx) {
 const text = (v) => (v === null || v === undefined ? '' : typeof v === 'string' ? v : JSON.stringify(v));
 // ids are snake_case ("npc.guild_clerk"): \b does not fall between "guild" and "_"
 const words = (v) => normText(text(v)).replace(/[_.\-/]+/g, ' ').replace(/\s+/g, ' ').trim();
+// the words a bought thing is called by, in any order and number ("two skewers of grilled eel" → eel, grilled, skewer)
+const NAME_FILLER = new Set(['the', 'and', 'with', 'for', 'from', 'some', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'pair', 'fresh', 'his', 'her', 'their', 'new']);
+const essentialWords = (t) => new Set(words(t).split(' ').map((w) => w.replace(/(?<![su])s$/, '')).filter((w) => w.length > 2 && !NAME_FILLER.has(w)));
 // Prototype C (4.3.0-c.5): a Guild board ("the Novice board", "the Guild's contract board") and what a board listing
 // is said with: its official listings are the engine's, never a fact or an offer of the story
 const guildBoard = (t) => /\bboard\b/.test(t) && /\b(?:guild|quests?|contracts?|novice|proven|veteran|elite)\b/.test(t);
@@ -134,15 +137,23 @@ export function firewall(deltas, ctx = {}) {
     const live = (q) => q.status === 'active' || booked.turnIns.includes(q.id) || booked.accepted.includes(q.id);
     const titleWords = (t) => words(t).split(/[^a-z0-9]+/).filter((w) => w.length > 3);
     const namesContract = (s) => contracts.some((q) => { const w = titleWords(q.title); return w.length && w.filter((x) => words(s).includes(x)).length >= Math.min(2, w.length); });
-    // Canonical Guild grants are identities, not bags of shared words. "contract slip" and "oil requisition slip"
-    // are separate physical documents even though both contain "slip" (live 10.10.2026).
-    // The contract's title is a permitted qualifier of the engine-issued Guild contract slip.
+    // What the engine booked this turn is created by the engine, never again by the story (4.3.0-c.6.6.2):
+    // - its Guild documents are identities, not bags of shared words: "contract slip" and "oil requisition slip" are
+    //   separate documents although both are slips (live 10.10.2026); the contract's title qualifies its slip;
+    // - goods he bought are the same thing under another word order ("skewer of grilled eel" = "grilled eel skewer"),
+    //   but not something else that shares a word ("oil lamp" is no "oil flask"): one name's essential words hold
+    //   all of the other's.
+    // (Prototype C only; with the planner off A keeps the shared-word check of 4.2.1)
     const granted = (name) => booked.grants.some((g) => {
-        const n = words(name).trim();
-        const grantName = words(g).trim();
-        if (n === grantName) return true;
-        if (grantName === 'contract slip') return /\bcontract (?:slip|half|copy|counterfoil|tag|chit|docket|ticket)\b/.test(n);
-        return false;
+        if (!ctx.c) return words(name).includes(words(g)) || words(g).split(' ').some((w) => w.length > 3 && !/^(?:guild|novice|copper|brass|iron|pewter|silver)$/.test(w) && words(name).includes(w));
+        const n = words(name);
+        const grant = words(g);
+        if (n === grant) return true;
+        if (grant === 'contract slip') return /\bcontract (?:slip|half|copy|counterfoil|tag|chit|docket|ticket)\b/.test(n);
+        if (grant === 'guild plate') return /\bplate\b/.test(n);
+        const a = essentialWords(n);
+        const b = essentialWords(grant);
+        return a.size > 0 && b.size > 0 && ([...a].every((w) => b.has(w)) || [...b].every((w) => a.has(w)));
     });
     // known refs are exact; a {new: "<title>"} that names a known Guild contract is that contract (the engine
     // canonicalises it the same way when it applies the delta)

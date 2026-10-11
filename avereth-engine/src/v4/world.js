@@ -21,7 +21,7 @@ import { mayOpenFight, mayTake } from './envelope.js';
 import {
     PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE,
 } from './domain.js';
-import { completeContract, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
+import { completeContract, contractReady, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
@@ -302,6 +302,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // the individual variation of Content #7, fixed with its profile (live run 30.09.2026 22:41: the big boar had the
         // numbers of a common one); the name it goes by decides nothing
         if (kind === 'creature' && d.stronger === true) for (const id of created) emit({ t: 'entity.updated', d: { id, set: { variation: 'strong' } } });
+        // Prototype C (4.3.0-c.6.6.2): a creature the story shows as no foe (the packhorse, a goat, a pet) is no part of the
+        // field an area attack is thrown into; a deliberate attack on it still makes it the target (scene_handles.js)
+        if (cPath && kind === 'creature' && d.threat === false) for (const id of created) emit({ t: 'entity.updated', d: { id, set: { threat: false } } });
         // Gameplay visibility: once an actual creature is visibly present, lock its deterministic profile immediately.
         // This gives the player a canonical target handle + HP + Range before deciding whether to attack; Initiative still waits for Combat START.
         if (kind === 'creature' && d.present !== false) for (const id of ids) materialise(s, content, dice, emit, id);
@@ -591,21 +594,6 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     if (!corrections.includes(correction)) corrections.push(correction);
                     break;
                 }
-                // Prototype C: a story may say "delivered" only after each physical DELIVER/GIVE
-                // objective has a real engine-booked object transfer from Alaric to a recipient.
-                // A rejected transfer, a merely displayed Guild contract slip or an inventory
-                // name collision cannot satisfy a second delivery item (Lighthouse live 10.10.2026).
-                if (cPath && q.kind === 'guild_contract') {
-                    const physical = (q.objectives || []).filter((o) => ['DELIVER', 'GIVE'].includes(o.verb));
-                    const missing = physical.filter((o) => !q.delivery_receipts?.[o.id] ||
-                        (o.qty && q.delivery_receipts[o.id].qty < o.qty));
-                    if (missing.length) {
-                        reject(d, 'quest_delivery', `delivery not booked for ${missing.map((o) => o.what).join(', ')}`);
-                        const correction = `"${q.title}" is still IN PROGRESS: ${missing.map((o) => o.what).join(' and ')} have not been handed over in the engine's object state. A Guild contract slip is not a delivery item.`;
-                        if (!corrections.includes(correction)) corrections.push(correction);
-                        break;
-                    }
-                }
                 // a count the engine keeps is not the story's to settle: fewer defeated than the objective names is ready
                 // only when the story says how the outcome was reached otherwise (alternative); trophies are no count
                 const short = q.kind === 'guild_contract' ? countShort(s, content, q) : [];
@@ -618,6 +606,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 }
                 // the alternative is kept with the contract: the turn-in accepts the short count on it (guild.js contractReady)
                 emit({ t: 'quest.ready', d: { id: q.id, note: `${claimed}${short.length ? ` — ${alternative}` : ''}`.slice(0, 220), ...(short.length ? { alternative: alternative.slice(0, 200) } : {}) } });
+                // Prototype C (4.3.0-c.6.6.2): the story's outcome stands; what he still carries of a delivery keeps the
+                // contract from the turn-in until it leaves his hands (guild.js contractReady, read anew every time), so
+                // a hand-over the engine books later makes it ready without another claim
+                if (cPath && q.kind === 'guild_contract') {
+                    const r = contractReady(s, content, s.quests[q.id], { c: true });
+                    const correction = `"${q.title}" is NOT READY for turn-in yet: ${r.reason}.`;
+                    if (r.mode === 'not_delivered' && !corrections.includes(correction)) corrections.push(correction);
+                }
                 break;
             }
             case 'quest.close': {
@@ -705,29 +701,38 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     }
 
     // Prototype C: a real journey to another place takes time; without the story's own minutes a small fixed one
-    // (rules.time.engine_clock), never 0. Only the minutes beyond the booked activities count as travel
+    // (rules.time.engine_clock), never 0. Only the minutes beyond the booked activities count as travel.
+    // 4.3.0-c.6.6.2: the long one only where the way crosses a settlement's bounds (into or out of a town, from one to
+    // another); a short move within the wilds (the next bend of a wolf trail) is local like one within a town
     if (auth.c && arrived && arrived !== startAt) {
         const t = content.rules.time.engine_clock;
-        const floor = sameSettlement(s, startAt, arrived) ? t.go_min_same_settlement : t.go_min_elsewhere;
+        const floor = settlementOf(s, startAt) === settlementOf(s, arrived) ? t.go_min_same_settlement : t.go_min_elsewhere;
         const travelled = timeUsed - booked;
         if (travelled < floor) { emit({ t: 'time.advanced', d: { minutes: floor - travelled, why: 'travel' } }); timeUsed += floor - travelled; }
     }
 
-    // Prototype C: an unfinished long-distance GO can progress for hours without reaching a named
-    // destination. The extractor correctly emits no 'arrive' for a distant lighthouse seen on the road;
-    // nevertheless Alaric is no longer physically inside his starting Guild hall (live 10.10.2026).
-    // Use the existing realm as a coarse travel location, not a fictional named waypoint. Short/local
-    // movements and trips with an explicit arrival keep their normal scene semantics.
+    // Prototype C: an unfinished GO can take hours without reaching where it was going: the extractor rightly reports no
+    // arrival at a lighthouse only seen from the road, yet Alaric is no longer in the Guild hall he set off from (live
+    // 10.10.2026). 4.3.0-c.6.6.2: where he is instead is the smallest existing place that holds the way: the realm's
+    // road when he set off for a known place outside his settlement, on an established journey or for hours toward
+    // somewhere new; his settlement, out of the building, when he spent the time looking for something in it ("look for
+    // an inn"). Whoever travels with him (the story's answer, the journey's companion) comes along; no waypoint is made.
     if (cPath && !arrived && !s.encounter && auth.timeCap > content.rules.time.default_cap_min
         && timeUsed - booked >= content.rules.time.engine_clock.go_min_elsewhere
         && (auth.gos || []).length > 0 && s.scene.at === startAt) {
         const destination = (auth.gos || []).at(-1);
+        const home = settlementOf(s, startAt);
         const realm = s.places[startAt]?.realm || s.places[s.scene.location]?.realm;
-        if (realm && s.places[realm]?.kind === 'realm' && realm !== startAt
-            && (!destination.to || !sameSettlement(s, startAt, destination.to))) {
+        const far = destination.to ? !sameSettlement(s, startAt, destination.to)
+            : !!destination.journey || !home || timeUsed - booked > content.rules.time.default_cap_min;
+        const via = far ? (s.places[realm]?.kind === 'realm' ? realm : null) : destination.to ? null : home;
+        if (via && via !== startAt) {
+            const said = expected[String(destination.seq)]?.with;
+            const party = [...new Set([...(destination.with || []), ...(Array.isArray(said) ? said.map(idOf) : [])])]
+                .filter((id) => id && id !== 'pc' && s.scene.present.includes(id) && s.entities[id]?.status !== 'dead');
             perceiveAll(s, emit, seeing());
-            arrive(realm, []);
-            emit({ t: 'scene.moved', d: { place: `On the way to ${destination.name || destination.newName || 'the destination'}` } });
+            arrive(via, party);
+            if (far) emit({ t: 'scene.moved', d: { place: `On the way to ${destination.journey || destination.name || destination.newName || 'the destination'}` } });
         }
     }
 

@@ -82,36 +82,6 @@ export function applyDomainEvent(state, e) {
         case 'object.moved': {
             const o = state.objects[d.id];
             if (!o) throw new Error(`unknown object ${d.id}`);
-            const fromPc = o.holder?.entity === 'pc';
-            const toPc = d.to?.entity === 'pc';
-            // A physical delivery is recorded only after an actual, engine-booked handover by Alaric.
-            // Prose and a rejected object.move never produce this receipt. A Guild contract slip cannot
-            // satisfy a different delivery objective just because both objects are called "slip".
-            if (fromPc && d.to?.entity && !toPc) {
-                const normalizeItem = (x) => normText(x).replace(/^(?:the|a|an) /, '').trim();
-                const item = normalizeItem(o.name);
-                for (const qid of o.for_quests || []) {
-                    const q = state.quests[qid];
-                    if (!q || q.status !== 'active') continue;
-                    for (const objective of q.objectives || []) {
-                        if (!['DELIVER', 'GIVE'].includes(objective.verb)) continue;
-                        const need = normalizeItem(objective.what);
-                        if (!need || !(item === need || (need.length > 8 && item.includes(need)) || (item.length > 8 && need.includes(item)))) continue;
-                        q.delivery_receipts = q.delivery_receipts || {};
-                        q.delivery_receipts[objective.id] = {
-                            object: d.split || o.id, to: d.to.entity, at: state.scene.at, turn: state.turn,
-                            qty: d.qty || o.qty || 1,
-                        };
-                    }
-                }
-            }
-            if (toPc) {
-                for (const q of Object.values(state.quests)) {
-                    for (const [oid, receipt] of Object.entries(q.delivery_receipts || {})) {
-                        if (receipt.object === d.id) delete q.delivery_receipts[oid];
-                    }
-                }
-            }
             if (d.split && d.qty && d.qty < (o.qty ?? 1)) {
                 // part of a stack changes hands: the part becomes its own object
                 state.objects[d.split] = { ...clone(o), id: d.split, qty: d.qty, holder: clone(d.to) };

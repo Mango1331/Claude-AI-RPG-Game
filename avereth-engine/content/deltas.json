@@ -21,6 +21,7 @@
     "For person.new, relevant:true means important to Alaric's decision IN THIS SCENE (including captives, clients, bystanders in immediate danger, conversation partners or adversaries). This is not the same as being hostile. Set threat:true ONLY for a visible person already clearly established as an adversary, attacker or immediate armed threat in the fiction; captives, hostages, helpers and neutral conversation partners are threat:false, regardless of relevance. Threat marks tactical opposition for a possible fight, not a decision by that person to attack. Incidental passers-by remain relevant:false. Supply a Range Band for visible relevant people.",
     "Co-presence is not awareness. Use aware only when THIS reply actually establishes whether a present person noticed Alaric: aware when they visibly notice/react to or directly interact with him; unaware when the reply explicitly establishes that they have not noticed him; suspicious when they notice signs but not Alaric himself. If the reply does not establish this, omit aware. Never mark someone aware merely because person.new/position made them present in the same scene.",
     "For creature.new, species is the creature's actual in-world name/type from the reply and may be newly invented fantasy fauna. Separately choose anchor as the nearest ecological/mechanical F1 body-plan from the allowed anchor enum. Do not force the creative species name to equal an anchor. Example: a low plated badger-lizard-like wallow beast may be species:\"plated wallow beast\", anchor:\"armored_beast\".",
+    "creature.new threat: false marks a creature the reply shows as no foe of Alaric: a pack or riding animal, a draught animal, livestock, a pet, harmless game grazing or fleeing. Leave it null for wild beasts and monsters that are or may be hostile (wolves, rats, boars, spiders, goblins), however timid or wary their kind. A creature marked threat: false is not swept into a fight by an area attack; a deliberate attack on it still makes it a target.",
     "creature.new stronger: true only when the reply clearly establishes this individual (or each of the group) as bigger or stronger than ordinary ones of its kind (half again the size of the others, the heaviest bull of the herd); the engine then fixes its stronger numbers once. Never from a name or label alone (\"big boar\" said in passing), never for anger, wounds or drama; otherwise null. Elite and Boss are never inferred.",
     "When creatures become visible in the scene, report creature.new immediately (one entry per kind of creature, count for a group), so their canonical target handles, HP and Range are locked before the player chooses to attack. The engine keeps a large passive flock or herd as one background fact; an animal the story later singles out, threatens or attacks is a creature.new of its own.",
     "When PLAYER ACTIONS contains a GATHERS activity and the reply establishes a concrete amount actually gathered for an active Quest GATHER objective, emit object.new for the amount gained THIS reply: kind:\"resource\", holder:\"pc\", for_quest:<that quest id>, name matching the objective/proof resource, qty the amount gained, unit matching the objective/proof. A progress fact alone is not enough. Do not emit resources the reply did not say were gathered.",
@@ -210,9 +211,13 @@
         "stronger": {
           "type": "boolean",
           "nullable": true
+        },
+        "threat": {
+          "type": "boolean",
+          "nullable": true
         }
       },
-      "summary": "creatures the reply itself establishes as actual creatures; species is the in-world/display species name, anchor is the nearest F1 mechanical body-plan; never tracks/spoor/hair/sounds alone; count > 1 makes separate creatures; band is current distance; stronger: true only when the reply clearly establishes this individual as bigger or stronger than ordinary ones of its kind (never a name alone), else null"
+      "summary": "creatures the reply itself establishes as actual creatures; species is the in-world/display species name, anchor is the nearest F1 mechanical body-plan; never tracks/spoor/hair/sounds alone; count > 1 makes separate creatures; band is current distance; stronger: true only when the reply clearly establishes this individual as bigger or stronger than ordinary ones of its kind (never a name alone), else null; threat: false only for a creature the reply shows as no foe (a pack or riding animal, livestock, a pet, harmless grazing game), else null"
     },
     {
       "type": "enter",

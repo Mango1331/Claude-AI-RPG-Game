@@ -306,7 +306,7 @@ test('c.6.6.1: an important neutral captive remains visible but cannot be promot
         { type: 'use_skill', skill: 'mage.arcane_burst', target: null, quote: 'unleash Arcane Burst' },
     )]);
     s = g.state();
-    assert.ok(s.encounter, 'the known threats still open an encounter');
+    assert.ok(s.encounter, `known threats should open an encounter: ${JSON.stringify({threats:s.scene.threats, relevant:s.scene.relevant, present:s.scene.present, outcome:outcomeOf(g), events:last(g).events.filter((e)=>/encounter|cmd.resolved/.test(e.t))}).slice(0,2500)}`);
     assert.ok(!s.encounter.combatants[captive], 'the captive never becomes a hostile combatant');
 });
 

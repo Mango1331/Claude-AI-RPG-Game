@@ -5,6 +5,7 @@ import { loadContent, Game } from '../helpers.js';
 import { applyEvent } from '../../src/state.js';
 import { applyWorld } from '../../src/v4/world.js';
 import { firewall } from '../../src/v4/firewall.js';
+import { seedPlaces } from '../../src/v4/domain.js';
 
 const content = await loadContent();
 const QID = 'quest.lighthouse_test';
@@ -64,6 +65,11 @@ test('c.6.6.1: each physical delivery requires its own engine-booked transfer', 
 });
 test('c.6.6.1: observing a distant destination does not leave Alaric at the origin after hours of travel', () => {
     const s = setup();
+    // Game's lightweight unit harness has no V4 place tree; a real V4 campaign always seeds it.
+    const location = content.locations.get('loc.tidecross');
+    for (const place of seedPlaces(content, location, 'public roadside verge outside Tidecross').places) {
+        applyEvent(s, { t: 'place.created', d: { place } });
+    }
     applyEvent(s, { t: 'scene.moved', d: { at: 'loc.tidecross.guild_hall', location: 'loc.tidecross', place: "Adventurers' Guild hall, Tidecross", reset_present: true } });
     s.last.input = '*I set off for Gullspire Point lighthouse*';
     s.last.outcome.auth.gos = [{ seq: 1, to: null, name: 'Gullspire Point lighthouse', newName: 'Gullspire Point lighthouse' }];

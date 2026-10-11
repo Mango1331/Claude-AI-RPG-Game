@@ -134,7 +134,16 @@ export function firewall(deltas, ctx = {}) {
     const live = (q) => q.status === 'active' || booked.turnIns.includes(q.id) || booked.accepted.includes(q.id);
     const titleWords = (t) => words(t).split(/[^a-z0-9]+/).filter((w) => w.length > 3);
     const namesContract = (s) => contracts.some((q) => { const w = titleWords(q.title); return w.length && w.filter((x) => words(s).includes(x)).length >= Math.min(2, w.length); });
-    const granted = (name) => booked.grants.some((g) => words(name).includes(words(g)) || words(g).split(' ').some((w) => w.length > 3 && !/^(?:guild|novice|copper|brass|iron|pewter|silver)$/.test(w) && words(name).includes(w)));
+    // Canonical Guild grants are identities, not bags of shared words. "contract slip" and "oil requisition slip"
+    // are separate physical documents even though both contain "slip" (live 10.10.2026).
+    // The contract's title is a permitted qualifier of the engine-issued Guild contract slip.
+    const granted = (name) => booked.grants.some((g) => {
+        const n = words(name).trim();
+        const grantName = words(g).trim();
+        if (n === grantName) return true;
+        if (grantName === 'contract slip') return /^guild contract slip(?::|$)/.test(n);
+        return false;
+    });
     // known refs are exact; a {new: "<title>"} that names a known Guild contract is that contract (the engine
     // canonicalises it the same way when it applies the delta)
     const questOf = (ref) => (typeof ref === 'string' ? contracts.find((q) => q.id === ref)

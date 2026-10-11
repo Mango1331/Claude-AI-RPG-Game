@@ -589,6 +589,21 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     if (!corrections.includes(correction)) corrections.push(correction);
                     break;
                 }
+                // Prototype C: a story may say "delivered" only after each physical DELIVER/GIVE
+                // objective has a real engine-booked object transfer from Alaric to a recipient.
+                // A rejected transfer, a merely displayed Guild contract slip or an inventory
+                // name collision cannot satisfy a second delivery item (Lighthouse live 10.10.2026).
+                if (cPath && q.kind === 'guild_contract') {
+                    const physical = (q.objectives || []).filter((o) => ['DELIVER', 'GIVE'].includes(o.verb));
+                    const missing = physical.filter((o) => !q.delivery_receipts?.[o.id] ||
+                        (o.qty && q.delivery_receipts[o.id].qty < o.qty));
+                    if (missing.length) {
+                        reject(d, 'quest_delivery', `delivery not booked for ${missing.map((o) => o.what).join(', ')}`);
+                        const correction = `"${q.title}" is still IN PROGRESS: ${missing.map((o) => o.what).join(' and ')} have not been handed over in the engine's object state. A Guild contract slip is not a delivery item.`;
+                        if (!corrections.includes(correction)) corrections.push(correction);
+                        break;
+                    }
+                }
                 // a count the engine keeps is not the story's to settle: fewer defeated than the objective names is ready
                 // only when the story says how the outcome was reached otherwise (alternative); trophies are no count
                 const short = q.kind === 'guild_contract' ? countShort(s, content, q) : [];

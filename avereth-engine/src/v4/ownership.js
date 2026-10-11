@@ -145,7 +145,7 @@ export function stateRegions(s) {
         'pc.progress': j([sh.level, sh.class, sh.stats, sh.skills, sh.xp, sh.free_points, s.creation]),
         'pc.location': j([s.scene?.location, s.scene?.place, s.scene?.at, location, at]),
         entities: j([Object.entries(s.entities || {}).filter(([id]) => id !== 'pc'), pcRest]),
-        scene: j([s.scene?.present, s.scene?.positions, s.scene?.awareness, s.scene?.concealed]),
+        scene: j([s.scene?.present, s.scene?.positions, s.scene?.awareness, s.scene?.concealed, s.scene?.relevant, s.scene?.threats]),
         combat: j([s.encounter, s.pending_combat, s.pending_intents, s.mode]),
         'quest.status': j(contracts.map((q) => [q.id, q.status, q.history])),
         'guild.board': j([s.guild?.boards, contracts.map((q) => q.id)]),
@@ -203,7 +203,7 @@ export const DELTA_WRITES = {
     recover: { writes: ['entities'], gates: { 'pc.vitals': 'player.rest' } },
     'object.new': { writes: ['objects'], gates: { 'pc.inventory': 'player.take' } },
     // a thing handed to him (a gift), or taken from where it lies by his own take
-    'object.move': { writes: ['objects'], gates: { 'pc.inventory': ['envelope.give', 'player.take'] } },
+    'object.move': { writes: ['objects', 'quests'], gates: { 'pc.inventory': ['envelope.give', 'player.take'] } },
     'object.mark': { writes: ['objects'] },
     // an offer may meet a purchase he agreed to in advance within his limit: the engine books it (trade.js)
     offer: { writes: ['trade'], gates: { 'pc.coin': 'player.buy', 'pc.inventory': 'player.buy' } },

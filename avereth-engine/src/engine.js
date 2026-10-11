@@ -24,6 +24,7 @@ import { targetQuestion } from './display.js';
 import { parseCoin } from './economy.js';
 import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, roundHalfUp, ENGINE_VERSION } from './util.js';
 import { seedPlaces } from './v4/domain.js';
+import { tacticalHere } from './v4/scene_handles.js';
 
 const GROUP_RE = /\b(?:everyone|everybody|all of you|you all|the (?:group|room|crowd|table|company)|(?:to|at|toward|towards) them)\b/i;
 const SELF_INTRO_RE = /\b(?:(?:my )?name(?:'s| is)|i am|i'?m|call me|they call me)\s+alaric\b/i; // "Name is Alaric" (Test 5 run 2)
@@ -148,7 +149,8 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
     if (pcAction?.note) return { kind: 'note', text: pcAction.note, notice: pcAction.notice };
     if (pcAction?.kind === 'attack') {
         // Prototype C (4.3.0-c.6.6): an area attack before a fight opens it with the visible field it is thrown into
-        const field = c && Array.isArray(pcAction.field) ? pcAction.field.filter((id) => s.scene.present.includes(id)) : [];
+        const eligible = c ? new Set(tacticalHere(s, { friendly: false })) : new Set();
+        const field = c && Array.isArray(pcAction.field) ? pcAction.field.filter((id) => eligible.has(id)) : [];
         return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move, move_target: pcAction.move_target }, committed: field, pcAction: null, c }, situations);
     }
     if (pcAction?.kind === 'engage') return engagementTurn(s, content, dice, emit, pcAction.targets, { c });

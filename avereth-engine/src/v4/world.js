@@ -288,9 +288,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const known = r.accepted.map((a) => /^known (\S+) \(not duplicated\)$/.exec(a)?.[1]).filter(Boolean);
         const ids = [...created, ...known];
         if (ids.length) refs.set(normText(d.ref), ids[0]);
-        // 4.3.0-c.6.6: whom the story made matter to his decision now stays marked as such (the ACTIVE SCENE, the field
-        // of an area attack: src/v4/scene_handles.js tacticalHere); a person once relevant stays it
-        if (cPath && kind === 'npc' && d.relevant === true) for (const id of ids) if (!s.entities[id]?.relevant) emit({ t: 'entity.updated', d: { id, set: { relevant: true } } });
+        // Scene relevance is ephemeral; an important person is not automatically an enemy.
+        // The NPC identity persists, but relevance and explicit threat expire when the scene ends.
+        if (cPath && kind === 'npc' && d.present !== false && d.relevant === true) {
+            for (const id of ids) emit({ t: 'scene.tactical', d: { id, relevant: true, threat: d.threat === true } });
+        }
         if (d.name && ids.length) refs.set(normText(d.name), ids[0]);
         if (count > 1) groups.set(normText(d.ref), ids);
         // who the person is shows on their card (occupation), as text: the V3 fact rule would read "Guild clerk" as a

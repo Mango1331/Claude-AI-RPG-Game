@@ -59,6 +59,13 @@ export function firewallContext(s, content) {
         booked: o.booked || { registration: false, grants: [], turnIns: [], accepted: [] },
         auth: { go: !!(auth.gos || []).length || !!auth.go, roam: !!auth.roam, take: !!(auth.take || []).length, gather: !!auth.gather, forced: false },
         heldByPc: (ref) => s.objects?.[ref]?.holder?.entity === 'pc' || (typeof ref === 'string' && ref.startsWith('item.') && !!s.entities.pc.sheet.inventory[ref.slice(5)]),
+        // Prototype C (4.3.0-c.6.6.4): lodging he paid for at this very place in the last day, and a room inside it
+        lodgedHere: (s.services || []).some((x) => x.service === 'lodging' && x.at === s.scene.at && s.clock.minute - (x.minute ?? 0) <= 24 * 60),
+        roomOfHere: (ref) => {
+            const n = ref && typeof ref === 'object' ? ref.new : null;
+            if (n && typeof n === 'object') return n.parent === s.scene.at && (!n.kind || ['interior', 'room', 'site'].includes(n.kind));
+            return typeof ref === 'string' && s.places[ref]?.parent === s.scene.at;
+        },
         // Prototype C (4.3.0-c.6.6.3): what he set out to hand over where he went in this turn (commands.js give)
         handingOver: (ref) => (o.conditionals || []).some((k) => k.kind === 'give' && (k.object === ref || normText(s.objects?.[k.object]?.name || '') === normText(ref))),
         isGuildContractRef: (ref) => {
@@ -641,6 +648,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     if (!corrections.includes(correction)) corrections.push(correction);
                     break;
                 }
+                // Prototype C (4.3.0-c.6.6.4): an escort is done by travelling with the charge, not by waiting where it
+                // arrives (live 15.10.2026: Alaric walked to the quarry gate alone, the pay wagon came in, READY and paid).
+                // Its journey (quest.journey: he set off or arrived with them) shows it; another arrangement the client
+                // agreed to is the claim's alternative. Any number of fights, or none
+                if (cPath && q.kind === 'guild_contract' && !q.journey && !String(d.alternative || '').trim() && (q.objectives || []).some((o) => o.verb === 'ESCORT')) {
+                    reject(d, 'quest_escort', 'an escort is done by travelling with the charge; the engine has no journey with them');
+                    const correction = `"${q.title}" is still IN PROGRESS: an escort is done by travelling with the escorted party along the way, and Alaric has not travelled with them. Their safe arrival without him is not his escort. The contract and its goal stay as they are.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    break;
+                }
                 // Prototype C (4.3.0-c.6.6.3): an outcome that rests on a hand-over this very reply could not book (Alaric
                 // still holds the basket the story put into Sister Maren's hands, live 11.10.2026) is no outcome: no READY
                 // beside the thing in his hands. The real hand-over later is the delivery, and its reply the outcome
@@ -892,6 +909,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // he set off on a quest's journey (a GO while its people were with him) and has left the settlement: it has begun
         const trip = auth.journey && s.quests[auth.journey];
         if (trip?.status === 'active' && !trip.journey && settlementOf(s, from) !== settlementOf(s, id)) emit({ t: 'quest.journey', d: { id: trip.id, at: from } });
+        // Prototype C (4.3.0-c.6.6.4): he arrives somewhere with the charge of an escort he took: he is escorting them
+        if (cPath && party.length) {
+            for (const q of Object.values(s.quests).filter((x) => x.status === 'active' && x.taker === 'pc' && !x.journey && (x.objectives || []).some((o) => o.verb === 'ESCORT'))) {
+                const what = (q.objectives || []).filter((o) => o.verb === 'ESCORT').map((o) => normText(o.what || '')).join(' ');
+                const charge = party.some((id) => [s.entities[id]?.name, truth(s, id, 'occupation')[0]?.o, ...(s.entities[id]?.descriptors || [])].filter(Boolean).map(normText).some((x) => x.length >= 4 && (what.includes(x) || x.split(' ').some((w) => w.length >= 5 && what.includes(w)))));
+                if (charge) emit({ t: 'quest.journey', d: { id: q.id, at: from } });
+            }
+        }
         // a decision belongs to the place it was opened at: leaving it closes it; one opened in this very turn goes
         // with him ("look for an inn to sleep": the room is bought where he arrives)
         for (const dec of s.decisions.filter((x) => x.at && x.at !== id && x.kind !== 'registration')) {

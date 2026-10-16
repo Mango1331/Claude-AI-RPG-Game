@@ -158,6 +158,8 @@ function changeLines(before, after, content, events) {
         } else if (e.t === 'object.moved' && (d.to?.entity === 'pc' || before.objects?.[d.id]?.holder?.entity === 'pc')) {
             const o = after.objects[d.split || d.id] || before.objects?.[d.id];
             out.push(sys(d.to?.entity === 'pc' ? `ITEM + ${o?.name || d.id}` : `ITEM - ${o?.name || d.id} → ${d.to?.entity ? label(d.to.entity) : 'left here'}`));
+        } else if (e.t === 'object.added' && after.objects?.[d.id]?.holder?.entity === 'pc') {
+            out.push(sys(`ITEM + ${after.objects[d.id].name} ×${d.qty} (now ×${after.objects[d.id].qty})`));
         } else if (e.t === 'object.consumed' && before.objects?.[d.id]?.holder?.entity === 'pc') {
             out.push(sys(`ITEM - ${before.objects[d.id].name}${d.by === 'guild' ? ' → handed in at the desk' : ' (used)'}`));
         } else if (e.t === 'service.granted') {

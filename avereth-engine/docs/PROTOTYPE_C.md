@@ -251,10 +251,10 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt-c66` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.6`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt-c664` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.6.4`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
-   - Vertrag v4 (Revision 4.3.0-c.6.6.3: die Kartenbeschreibung vollständig durch `content/narrator/Avereth_Narrator_Contract_v4.txt` ersetzen und einen neuen Chat beginnen), Preset „Avereth Narrator V4“, Lorebook v0.13.
+   - Vertrag v4 (Revision 4.3.0-c.6.6.4: die Kartenbeschreibung vollständig durch `content/narrator/Avereth_Narrator_Contract_v4.txt` ersetzen; SillyTavern liest die Beschreibung bei jeder Antwort neu, ein laufender Chat spielt also ab der nächsten Antwort mit ihr, die Statuszeile zeigt `narrator contract: current`), Preset „Avereth Narrator V4“, Lorebook v0.13.
 3. **Schalter:** Engine-Panel → **„Prototype C: semantic planner“** anhaken.
    - Er gilt für jede V4-Kampagne, auch eine laufende, ab der nächsten Nachricht.
    - Ausschalten bringt A zurück.
@@ -666,3 +666,36 @@ Tests: `tests/v4/c662.test.js` (inkl. Live-Ausschnitt `tests/v4/live_1010.json`,
 - **Klein:** Ein Abschied vom Empfänger („that's my part done“) ist kein `quest.turn_in`; „zurück zur Gilde“ aus einem Dorf ohne Gildenhalle meint die Halle des Vertrags. Die Durchreise wird vor den Deltas der Antwort entschieden: wen er unterwegs trifft, trifft er unterwegs (Erinnerung und Ort), nicht im Laden, den er verlassen hat.
 
 Tests: `tests/v4/c663.test.js`. Planner aus: unverändert gegenüber c.6.6.2. Build: `4.3.0-c.6.6.3`. **Narrator Contract Revision `4.3.0-c.6.6.3`: Kartenbeschreibung neu einsetzen.** Preset und Lorebook unverändert.
+
+### Nachtrag 4.3.0-c.6.6.4 (Livetest 15.10.2026: automatische Beute und Korrekturen)
+
+- **Automatische Beute (nur Planner-Pfad C):** Endet ein Kampf, schreibt die Engine im selben Zug gut, was die getöteten Gegner hinterlassen (`src/v4/loot.js`, aufgerufen in `persistCombat`). Es gibt keinen SEARCH-Check, keinen Zeitverbrauch und keinen Spielerbefehl. Erreichbarkeitsregel: Alaric lebt und ist nicht geflohen. Es zählt nur ein Gegner, der in diesem Kampf tot ist, also nicht geflohen, nicht ergeben und nicht überlebend. Jeder Gegner wird höchstens einmal geplündert (`entity.looted` = Encounter-ID).
+- **Determinismus:** Mengen und Zufallsfunde hängen nur vom Hash aus Encounter, Gegner und Material ab. Die Events liegen in der Spielernachricht, auf der der Kampf aufgelöst wird. Reload, Erzähler-Swipe und Regenerate ziehen daher nichts neu.
+- **Tiere und Monster:** Materialien nach Anchor bzw. Körperbau (`content/monsters.json` → `loot.anchors`: Fell, Haut, Zähne, Klauen, Hörner, Schuppen, Federn, Chitin, Gift …), benannt nach der eigenen Art des Geschöpfs („F-Rank Grey Wolf Pelt“). Sie geben kein Geld.
+  - Rang = Power Rank des Geschöpfs (`profile.rank`) als Feld `rank`, dazu `level`, `material`, `species`, `anchor`.
+  - Richtwert `value_cp` = Basiswert × 3^Rangstufe: F ×1, E ×3, D ×9 …
+- **Humanoide:**
+  - Goblin und Oger (Anchor mit `humanoid`): ein paar Kupfer und grobe Ausrüstung mit fester Wahrscheinlichkeit.
+  - Menschen: Waffe und Rüstung von ihrem Blatt (nicht improvisiert oder unbewaffnet), Content-Gegenstände aus ihrem Gepäck und ein Geldbeutel nach Blatt bzw. Vorlage (`purse_cp_by_template`).
+  - Ausrüstung kommt ins Gepäck und wird nie angelegt.
+- **Stapel:** Gleiches Material derselben Art und desselben Rangs bildet einen Stapel (`obj.loot.<art>.<material>.<rang>`; neues Event `object.added` erhöht ihn). Ein anderer Rang ist ein eigener Stapel. Es gibt weder Gewicht noch Slots.
+- **Erzähler und Extraktor:**
+  - Der Engine-Block nennt die Beute als LOOT: schon im Gepäck, keine Entscheidung Alarics, kein Häuten oder Durchsuchen zeigen, keine weiteren Funde. Die Zeile „nothing is taken automatically“ und die Situationsregel LOOT entfallen dann.
+  - Vertrag: Absatz AUTOMATIC LOOT. Extraktor-Regel: für diese Beute kein `object.new`, `object.move` oder `coin.gift`.
+  - Sagt der Spieler danach „ich plündere/häute den Wolf“, antwortet die Engine LOOTED ALREADY bzw. NOTHING MORE, ohne Check.
+- **Eskorte:** READY gibt es nur, wenn Alaric mit der eskortierten Partei gereist ist oder der Auftraggeber eine Alternative vereinbart hat (`alternative`).
+  - Nachweis der Reise: `quest.journey`, gesetzt bei einer Ankunft mit einem Party-Mitglied, das zum ESCORT-Ziel passt.
+  - Sonst wird `quest_escort` abgelehnt, mit der Korrektur „IN PROGRESS“.
+  - Ein Kampf ist nicht nötig. Abgeschlossene Aufträge bleiben unberührt.
+- **Zweck statt Übergabe:** „I'm here to deliver this crate“ ist eine Absicht, kein `give`. Der Agency-Guard verwirft ein `give`, dessen Zitat nur den Zweck nennt, wenn die Nachricht sonst kein Übergabeverb enthält. „Here is the crate, I hand it to you“ bleibt ein `give`. Die bedingte GO+GIVE-Übergabe aus c.6.6.3 ist unverändert.
+- **Gebuchtes Zimmer:** Hat Alaric hier in den letzten 24 Stunden eine Unterkunft gekauft, ist der Weg in einen Raum dieses Hauses kein `no_go` (Raum = Ort mit diesem Haus als Elternort). Jeder andere Ort ohne `go` bleibt `no_go`.
+- **Ortskontinuität (Vertrag):** Absatz LOCAL WAYS: Wege innerhalb der Stadt, in der er schon ist, sind keine Rückreise dorthin.
+- **Bestehende Kampagnen:** c.6.6.3-Chats laden unverändert. Geprüft am Live-Chat vom 15.10.2026 (`tests/v4/live_1015.json`): gleicher Zustand wie unter c.6.6.3, 0 Fehler, 217 cp, 47 XP, beide Aufträge abgeschlossen. Der alte Kampf gegen das armored_beast wird nicht nachträglich geplündert, denn Beute entsteht nur am Kampfende eines neuen Zugs.
+
+Tests: `tests/v4/c664.test.js` (Fälle 1–17 der Anforderung in 10 Tests). Planner aus: identisch zu c.6.6.3 (122/122 Live-Schritte, 18/18 Kampfeingaben). Build: `4.3.0-c.6.6.4`. **Narrator Contract Revision `4.3.0-c.6.6.4`: Kartenbeschreibung neu einsetzen.** Ein neuer Chat ist dafür nicht nötig. Preset und Lorebook sind unverändert.
+
+**Grenzen von c.6.6.4:**
+- Erbeutete Ausrüstung lässt sich noch nicht anlegen: `equip` kennt Werte nur für Content-Vorlagen, die Beute-Ausrüstung trägt ihre Werte in `gear`.
+- `value_cp` ist nur ein Richtwert. Händler kaufen danach noch nicht zu festen Preisen.
+- Die Erreichbarkeitsregel ist bewusst einfach: Ein Gegner, der in einen Abgrund oder einen Fluss stürzt, wird trotzdem geplündert, wenn er im Kampf tot ist.
+

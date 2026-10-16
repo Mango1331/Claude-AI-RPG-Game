@@ -21,6 +21,7 @@ import {
     placeName, hallOf, hallOfSettlement, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin, listedToday,
 } from './domain.js';
 import { sameWant } from './world.js';
+import { LOOT_WORDS, lootedHere } from './loot.js';
 import { journeyReady, knownAt } from './catalog.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText } from './trade.js';
 import {
@@ -219,6 +220,10 @@ const HANDLERS = {
     },
     activity(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT — not while the fight runs.' };
+        // Prototype C (4.3.0-c.6.6.4): looting the foes of a fight he won is no search: the engine credited their loot at
+        // the fight's end (src/v4/loot.js); no check, no time, nothing more on them (live 15.10.2026: a failed SEARCH)
+        const looted = envx?.c && c.kind === 'search' && LOOT_WORDS.test(`${c.what || ''} ${c.quote || ''}`) ? lootedHere(s) : [];
+        if (looted.length) return { status: 'resolved', reason: 'looted already', done: true, line: `LOOTED ALREADY — what ${looted.map((id) => who(s, id)).join(', ')} left was credited at the fight's end (the engine's automatic loot, in his pack); there is nothing more on the remains. No check, no time.` };
         // Prototype C: rest or sleep without a duration or an end is a question; nothing passes, nothing is recovered
         if (envx?.c && RESTING.has(c.kind) && !engineMinutes(content, s, c)) {
             return { status: 'clarify', reason: 'how long?', line: `CLARIFY — How long does he want to ${c.kind}? Name a duration ("for 2 hours") or an end ("until ${c.kind === 'sleep' ? 'morning' : 'evening'}").` };
@@ -268,6 +273,9 @@ const HANDLERS = {
         return { status: 'authorized', cap, line: `${VERBS[c.kind] || String(c.kind).toUpperCase()} ${c.what ? `${c.what} ` : ''}${span} (at most ${cap} minutes; the story decides how long it takes and what it yields).` };
     },
     take(s, content, c, ctx, emit, envx) {
+        // Prototype C (4.3.0-c.6.6.4): the pelts and fangs of foes looted at the fight's end are in his pack already
+        const looted = envx?.c && c.object && typeof c.object === 'object' && LOOT_WORDS.test(String(c.object.new || '')) ? lootedHere(s) : [];
+        if (looted.length) return { status: 'resolved', reason: 'looted already', done: true, line: `NOTHING MORE — what ${looted.map((id) => who(s, id)).join(', ')} left was credited at the fight's end (the engine's automatic loot, in his pack).` };
         if (c.object && typeof c.object === 'object') {
             ctx.auth.take.push(c.seq);
             ctx.auth.takeNames = { ...(ctx.auth.takeNames || {}), [String(c.seq)]: String(c.object.new).slice(0, 80) };

@@ -96,6 +96,7 @@ export const HANDOVER_RULES = [
     'Handing over (story commands):',
     '- When RECENT shows someone asking Alaric for a particular thing and he now holds out, offers or produces exactly that thing for them, that is give {object, to}, even without the word "give": the hand-over is what he does. The object is the one he names, by its OBJECTS id; never another object in its place.',
     '- No give when he only shows, looks at or examines it, keeps it ("but I don\'t hand it over"), only asks whether they need it, or produces a different thing than the one asked for (then the story lets them answer).',
+    '- Saying why he came ("I\'m here to deliver this crate", "I have your delivery") is words, no give: the thing changes hands when he hands it over, holds it out or sets it down for them, or when they reach for it and he lets them.',
     '- He goes to someone in order to hand them a thing himself, now ("I go to Sister Maren and hand her the basket", "I\'ll follow you up to hand it over myself"): go, then give {object, to} with "needs" the go; to is their id, or {"new": "<who>"} when they are not in the catalog. Going somewhere only to ask whether they want it, carrying it along, or handing it over another day is no give.',
     'Examples (another town): RECENT: …"I need the ferry permit before I can let you aboard," the ferryman says, holding out his hand. · OBJECTS: obj.t3.ferry_permit (ferry permit, held by Alaric), obj.slip.ferry_job (Guild contract slip: Ferry Job, held by Alaric) · PRESENT: npc.ferryman',
     '- "you mean this? *i hold out the ferry permit*" → {"commands":[{"seq":1,"type":"give","object":"obj.t3.ferry_permit","to":"npc.ferryman","quote":"i hold out the ferry permit"}]}',
@@ -121,13 +122,23 @@ export const ORDER_RULES = [
 // anchor such as "tomorrow" for a plan); it only removes the command, the removal is in the record (plan.dropped).
 const ANNOUNCED_ABANDON = /(?:^|[^a-z'])(?:i'll|ill|i will|i shall|i'm going to|im going to|i am going to|gonna)\s+(?:(?:go|just|then|simply|also|probably|rather|myself|have to|need to)\s+){0,2}(?:decline|cancel|abandon|give (?:it |this |that |the \w+ )?up|quit|drop|hand|return|turn|bring)\b/;
 
-/** quest.abandon commands whose quote announces the act instead of doing it: {kept, dropped} as the agency guard's. */
+// 4.3.0-c.6.6.4: "im with the guild and here to deliver this crate" says why he came; the crate changes hands when he
+// hands it over (live 15.10.2026: give booked while the warden still read the slip). A message that hands anything over
+// in words or gesture keeps its give
+const PURPOSE_ONLY = /\b(?:here|came|come|coming)\s+(?:\w+\s+){0,2}to\s+(?:deliver|bring|drop off|hand (?:over|in|off)|give)\b/;
+const HANDING = /\b(?:hand(?:s|ed|ing)?|giv(?:e|es|ing)|pass(?:es|ing)?|offer(?:s|ing)?|hold(?:s|ing)? out|holds? it out|set(?:s|ting)? (?:it|the \w+) (?:down|on)|put(?:s|ting)? (?:it|the \w+) (?:down|on|in)|here(?:'s| is| you go)|take it|this is for you)\b(?!\s+(?:to deliver|deliver))/;
+/**
+ * The commands whose quote announces the act instead of doing it: quest.abandon for later, a give that only says why
+ * he came. {kept, dropped} as the agency guard's.
+ */
 export function announcedAbandon(message, commands) {
     const kept = [];
     const dropped = [];
+    const all = flat(message ?? '');
     for (const c of commands || []) {
         const words = flat(c.quote ?? '');
         if (c.type === 'quest.abandon' && ANNOUNCED_ABANDON.test(words) && inMessage(message, c.quote ?? '')) dropped.push({ command: c, rule: 'plan' });
+        else if (c.type === 'give' && PURPOSE_ONLY.test(words) && !HANDING.test(all.replace(PURPOSE_ONLY, ' '))) dropped.push({ command: c, rule: 'plan' });
         else kept.push(c);
     }
     return { kept, dropped };

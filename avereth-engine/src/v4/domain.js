@@ -34,7 +34,7 @@ export const HALL_NAME = "Adventurers' Guild hall";
 
 export const V4_EVENTS = new Set([
     'place.created',
-    'object.created', 'object.moved', 'object.marked', 'object.consumed',
+    'object.created', 'object.moved', 'object.marked', 'object.consumed', 'object.added',
     'offer.created', 'offer.closed', 'transaction.completed', 'service.granted',
     'quest.created', 'quest.status', 'quest.detailed', 'quest.progressed', 'quest.ready', 'quest.journey', 'proof.checked',
     'board.refreshed', 'board.failed', 'board.shown',
@@ -95,6 +95,14 @@ export function applyDomainEvent(state, e) {
             const o = state.objects[d.id];
             if (!o) throw new Error(`unknown object ${d.id}`);
             o.marks = [...(o.marks || []), { text: d.mark, by: d.by ?? null, turn: d.turn ?? state.turn }];
+            break;
+        }
+        // Prototype C (4.3.0-c.6.6.4): more of the same stack (loot of the same material and Rank)
+        case 'object.added': {
+            const o = state.objects[d.id];
+            if (!o) throw new Error(`unknown object ${d.id}`);
+            o.qty = (o.qty ?? 1) + (d.qty ?? 1);
+            mirror(state, d.id);
             break;
         }
         case 'object.consumed': {

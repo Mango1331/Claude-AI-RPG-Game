@@ -25,6 +25,7 @@ import { parseCoin } from './economy.js';
 import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, roundHalfUp, ENGINE_VERSION } from './util.js';
 import { seedPlaces } from './v4/domain.js';
 import { tacticalHere } from './v4/scene_handles.js';
+import { lootEvents } from './v4/loot.js';
 
 const GROUP_RE = /\b(?:everyone|everybody|all of you|you all|the (?:group|room|crowd|table|company)|(?:to|at|toward|towards) them)\b/i;
 const SELF_INTRO_RE = /\b(?:(?:my )?name(?:'s| is)|i am|i'?m|call me|they call me)\s+alaric\b/i; // "Name is Alaric" (Test 5 run 2)
@@ -347,7 +348,10 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
     if (done.ended) {
         outcome.ended = done.ended;
         outcome.levelups = done.levelups;
-        situations.push('loot');
+        // Prototype C (4.3.0-c.6.6.4): with the engine's loot credited, the hand-collect rule of Core #20 does not apply
+        if (!done.loot) situations.push('loot');
+        // what the engine credited is booked: the story's object.new for the same pelt is no second one (firewall granted)
+        if (done.loot) Object.assign(outcome, { loot: done.loot, booked: { registration: false, grants: done.loot.map((l) => l.replace(/ ×\d+$/, '')), turnIns: [], accepted: [] } });
     } else {
         outcome.next = done.next;
     }
@@ -376,7 +380,7 @@ function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false
             for (const w of perceivers(s)) if (w !== c.id && deathFact && s.scene.awareness[w] !== 'unaware') emit({ t: 'knowledge.gained', d: { who: w, about: deathFact.id, stance: 'knows', source: 'witnessed', turn: s.turn, minute: s.clock.minute } });
         }
     }
-    const out = { board: combatBoard(enc), ended: null, levelups: [], next: null };
+    const out = { board: combatBoard(enc), ended: null, levelups: [], next: null, loot: null };
     if (terminal(enc)) {
         const end = endEncounterEvents(s, content, enc);
         out.levelups = end.events.filter((e) => e.t === 'level.up').map((e) => `Level ${e.d.level}`);
@@ -393,6 +397,12 @@ function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false
             if (c.current.surrendered) emit({ t: 'entity.updated', d: { id: c.id, set: { surrendered_to: 'pc' } } });
         }
         emit({ t: 'memory.recorded', d: { memory: fightMemory(s, content, enc, end.summary) } });
+        // Prototype C (4.3.0-c.6.6.4): what the foes killed in a fight he won leave is his at once (src/v4/loot.js)
+        if (cPath) {
+            const loot = lootEvents(s, content, enc);
+            loot.events.forEach(emit);
+            if (loot.lines.length) out.loot = loot.lines;
+        }
         out.ended = end.summary;
     } else {
         out.next = `Alaric's Turn (Round ${enc.round})`;
@@ -563,7 +573,7 @@ export function openCommitted(s, content, dice, emit, { hold = false, c = false 
             const res = runCombat({ enc, content, dice, state: s, c }, null);
             enc.preface = res.records;
             const done = persistCombat(s, content, emit, enc, res.records, true, { c });
-            return { kind: 'started', ids, board: done.board, records: res.records, ...(done.ended ? { ended: done.ended, levelups: done.levelups } : {}) };
+            return { kind: 'started', ids, board: done.board, records: res.records, ...(done.ended ? { ended: done.ended, levelups: done.levelups, ...(done.loot ? { loot: done.loot } : {}) } : {}) };
         }
         emit({ t: 'encounter.started', d: { encounter: enc } });
     } else {

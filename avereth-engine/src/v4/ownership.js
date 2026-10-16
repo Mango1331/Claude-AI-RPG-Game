@@ -70,7 +70,7 @@ export function eventKind(e, s = null) {
         case 'place.created': return 'places';
         case 'object.created': return pcHolder(d.object?.holder) ? 'pc.inventory' : 'objects';
         case 'object.moved': return pcHolder(d.to) || heldByPc(d.id) ? 'pc.inventory' : 'objects';
-        case 'object.consumed': return heldByPc(d.id) || !s ? 'pc.inventory' : 'objects';
+        case 'object.consumed': case 'object.added': return heldByPc(d.id) || !s ? 'pc.inventory' : 'objects';
         case 'object.marked': return 'objects';
         case 'offer.created': case 'offer.closed': case 'transaction.completed': case 'service.granted':
         case 'decision.opened': case 'decision.closed':

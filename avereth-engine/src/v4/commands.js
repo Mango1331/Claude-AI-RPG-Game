@@ -20,10 +20,11 @@ import { deriveCharacter } from '../derived.js';
 import {
     placeName, hallOf, hallOfSettlement, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin, listedToday,
 } from './domain.js';
-import { sameWant } from './world.js';
+import { sameWant, keyWords } from './world.js';
 import { LOOT_WORDS, lootedHere } from './loot.js';
+import { shopSearch, findTrades } from './settlement.js';
 import { journeyReady, knownAt } from './catalog.js';
-import { pickLines, bookPurchase, picksText, saleUnits, unitsText } from './trade.js';
+import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
 import {
     REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, abandonContract, contractReady, objectiveText,
     promotion, takenByOthers, bookBoard, isHunt, trophyText, proofTerms, handoverTerms,
@@ -162,6 +163,56 @@ function abandonGuild(s, content, q, c, ctx, emit) {
 
 // ------------------------------------------------------------------------------------------------ handlers
 // Each handler: (s, content, c, ctx, emit, env) -> {status, reason?, line?, extra?, cap?, condition?}
+const SELLING = /\b(?:sell\w*|sold)\b/i;
+const PART_ONLY = /\b(?:only|just|except|but not|apart from|keep(?:ing)? (?:the|my|back))\b/i;
+const BUYING = /\b(?:buy\w*|bought|purchas\w*|pay(?:s|ing)?|paid)\b/i;
+
+/**
+ * Prototype C (4.3.0-c.6.6.5): the bid an offer stored the wrong way round makes, when its lines name things Alaric
+ * holds by every word of their names (species and material, "venom sacs" for "F-Rank Mudwyrm Venom Sac"), with the
+ * number written before them or else all he holds of each; null when they name none of his things.
+ */
+function bidOfOffer(s, o) {
+    const text = o.lines.map((l) => l.what).join(' ; ');
+    const said = new Set(keyWords(text));
+    const lines = [];
+    for (const x of heldBy(s, 'pc').filter((h) => !h.id.startsWith('obj.slip.') && h.id !== 'obj.guild_plate' && !(h.for_quests || []).length)) {
+        const words = keyWords(x.name);
+        if (!words.length || !words.every((w) => said.has(w))) continue;
+        const last = words.at(-1);
+        const n = normText(text).match(new RegExp(`\\b(\\d+)\\s+(?:[a-z-]+\\s+){0,3}?${last}`));
+        const qty = Math.min(n ? Number(n[1]) : (x.qty ?? 1), x.qty ?? 1);
+        lines.push({ id: `l${lines.length + 1}`, what: x.name, kind: 'goods', service: null, object: x.id, qty, price_cp: null });
+    }
+    return lines.length ? { lines, price_cp: pickLines(o).cp ?? 0 } : null;
+}
+
+/**
+ * Prototype C (4.3.0-c.6.6.5): Alaric accepts a buyer's bid for things he holds: one sale of exactly the things and
+ * units of the bid (or the lines he names, when each has its own price), for exactly its price (src/v4/trade.js). A bid
+ * whose things he no longer holds is void (nothing changes hands, never a negative stock); a part of a lot priced only
+ * whole is a question for the buyer, not a sale.
+ */
+function acceptBid(s, content, c, ctx, emit, o) {
+    if (!present(s, o.seller)) return { status: 'refused', reason: 'the buyer is not here', line: `CANNOT SELL — ${who(s, o.seller)} is not here.` };
+    // a bid priced only for the whole lot is accepted whole unless he holds part of it back in words ("only the
+    // fangs", "but I keep the sacs"): the line ids a planner copies along are no choice of his (live: lines ["l1"])
+    const priced = (o.lines || []).every((l) => Number.isInteger(l.price_cp));
+    const sale = bidSale(s, o, priced || PART_ONLY.test(c.quote || '') ? c.lines : null);
+    if (sale.error) {
+        if (sale.stale) emit({ t: 'offer.closed', d: { id: o.id, status: 'expired' } });
+        return { status: 'refused', reason: sale.stale ? 'no longer held' : 'part of a lot', line: `NOT SOLD — ${sale.error}. Nothing changes hands; the buyer may name a new price.` };
+    }
+    const what = bidText(sale.lines);
+    bookSale(s, emit, { items: sale.lines.map((l) => ({ ref: l.object, units: l.qty, splitId: `${l.object}_t${s.turn}` })), buyer: o.seller, cp: sale.cp, what });
+    ctx.soldInBid = new Set([...(ctx.soldInBid || []), ...sale.lines.map((l) => l.object)]);
+    // the buyer paid him exactly the price: coin from her in the reply is this coin, never a gift (world.js coin.gift)
+    ctx.booked.sellers.push(o.seller);
+    emit({ t: 'offer.closed', d: { id: o.id, status: 'accepted' } });
+    for (const d of s.decisions.filter((x) => x.kind === 'sale' && sale.lines.some((l) => l.object === x.object))) emit({ t: 'decision.closed', d: { id: d.id, status: 'sold' } });
+    return { status: 'resolved', line: `SELLS — ${what} to ${who(s, o.seller)} for ${cpText(sale.cp, content)}: the coin is his now, the things are ${who(s, o.seller)}'s (the engine booked both).` };
+}
+
 const HANDLERS = {
     'journey.continue'(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
@@ -224,6 +275,19 @@ const HANDLERS = {
         // the fight's end (src/v4/loot.js); no check, no time, nothing more on them (live 15.10.2026: a failed SEARCH)
         const looted = envx?.c && c.kind === 'search' && LOOT_WORDS.test(`${c.what || ''} ${c.quote || ''}`) ? lootedHere(s) : [];
         if (looted.length) return { status: 'resolved', reason: 'looted already', done: true, line: `LOOTED ALREADY — what ${looted.map((id) => who(s, id)).join(', ')} left was credited at the fight's end (the engine's automatic loot, in his pack); there is nothing more on the remains. No check, no time.` };
+        // Prototype C (4.3.0-c.6.6.5): an ordinary shop or service of the settlement he is in is found, not searched for
+        // (live 15.10.2026: "look for a store to sell the monster parts to" in Ashbridge by day was a failed PER check
+        // and an hour): which trades the place has, the shops the story established first, no check; he chooses where
+        // to go. A secret, a hidden way or an illegal dealer stays a SEARCH
+        const wants = `${c.what || ''} ${c.quote || ''}`;
+        const found = envx?.c && c.kind === 'search' && shopSearch(content, wants) ? findTrades(s, content, wants) : null;
+        if (found) {
+            emit({ t: 'time.advanced', d: { minutes: found.minutes, why: 'asking around' } });
+            ctx.auth.booked_min = (ctx.auth.booked_min || 0) + found.minutes;
+            ctx.auth.timeCap = Math.max(ctx.auth.timeCap, ctx.auth.booked_min);
+            ctx.engineLines.push(`FOUND — the trades here, no check: ${found.minutes} min (now ${formatClock(s.clock.minute)})`);
+            return { status: 'resolved', reason: 'ordinary trade', done: true, line: `FINDS — ${found.line} Show the trades he can see or is pointed to as places he may go; he decides where to go, nothing is entered, bought or sold yet.` };
+        }
         // Prototype C: rest or sleep without a duration or an end is a question; nothing passes, nothing is recovered
         if (envx?.c && RESTING.has(c.kind) && !engineMinutes(content, s, c)) {
             return { status: 'clarify', reason: 'how long?', line: `CLARIFY — How long does he want to ${c.kind}? Name a duration ("for 2 hours") or an end ("until ${c.kind === 'sleep' ? 'morning' : 'evening'}").` };
@@ -355,7 +419,7 @@ const HANDLERS = {
             return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: REGISTRATION_OFFER, lines: null }, ctx, emit);
         }
         // an open offer of the one he pays: paying it is accepting it
-        const offer = Object.values(s.offers).find((o) => o.status === 'open' && !o.canon && o.seller === c.to && (c.amount_cp === null || c.amount_cp === undefined || pickLines(o).cp === c.amount_cp));
+        const offer = Object.values(s.offers).find((o) => o.status === 'open' && !o.canon && !o.bid && o.seller === c.to && (c.amount_cp === null || c.amount_cp === undefined || pickLines(o).cp === c.amount_cp));
         if (offer) return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: offer.id, lines: null }, ctx, emit);
         if (!present(s, c.to)) return { status: 'refused', reason: 'nobody to pay', line: 'CANNOT PAY — the one he means to pay is not here.' };
         if (c.amount_cp === null || c.amount_cp === undefined) {
@@ -373,7 +437,7 @@ const HANDLERS = {
         return { status: 'resolved', line: `PAYS — ${cpText(c.amount_cp, content)} to ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}.` };
     },
     buy(s, content, c, ctx, emit) {
-        const offers = Object.values(s.offers).filter((o) => o.status === 'open' && !o.canon && present(s, o.seller) && (!c.from || o.seller === c.from));
+        const offers = Object.values(s.offers).filter((o) => o.status === 'open' && !o.canon && !o.bid && present(s, o.seller) && (!c.from || o.seller === c.from));
         const match = offers.map((o) => ({ o, lines: o.lines.filter((l) => sameWant(c.what, l.what)) })).find((x) => x.lines.length);
         // an offer lists it: buying is accepting that line, in the number he names and within the limit he set
         if (match) return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: match.o.id, lines: match.lines.map((l) => l.id), qty: c.qty ?? null }, ctx, emit);
@@ -395,6 +459,17 @@ const HANDLERS = {
         const o = objectOf(s, content, c.object);
         if (!o || o.holder?.entity !== 'pc') return { status: 'refused', reason: 'he does not hold it', line: `CANNOT SELL — he does not hold ${o ? o.name : 'that'}.` };
         if (c.to && !present(s, c.to)) return { status: 'refused', reason: 'nobody to sell to', line: `CANNOT SELL — ${who(s, c.to)} is not here.` };
+        // Prototype C (4.3.0-c.6.6.5): what a buyer here has bid for is sold by accepting that bid ("i accept and sell all
+        // parts to her"): the sell commands of the message cover the lot, or he sells exactly a line she priced
+        const bid = Object.values(s.offers).find((x) => x.status === 'open' && x.bid && present(s, x.seller) && (!c.to || x.seller === c.to) && x.lines.some((l) => l.object === o.id));
+        if (bid) {
+            const sells = (env(ctx).commands || []).filter((x) => x.type === 'sell');
+            const line = bid.lines.find((l) => l.object === o.id);
+            const whole = bid.lines.every((l) => sells.some((x) => x.object === l.object && (!x.qty || x.qty === l.qty))) || /\b(?:all|every\w*|the lot|the whole|them)\b/i.test(c.quote || '');
+            if (whole) return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: bid.id, lines: null, qty: null }, ctx, emit);
+            if (Number.isInteger(line.price_cp) && (!c.qty || c.qty === line.qty)) return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: bid.id, lines: [line.id], qty: null }, ctx, emit);
+        }
+        if (ctx.soldInBid?.has(o.id)) return { status: 'resolved', done: true, line: `SOLD — ${o.name} went with the lot above.` };
         // exactly the units he offers, never more than he holds (review of 4.1.0: ten herbs offered while he held one)
         const n = saleUnits(s, o.id, c.qty ?? null);
         if (n.error) return { status: 'refused', reason: 'he holds fewer', line: `CANNOT SELL — ${c.qty} ${o.name}: ${n.error}.` };
@@ -411,7 +486,20 @@ const HANDLERS = {
     },
     'offer.accept'(s, content, c, ctx, emit) {
         const o = s.offers[c.offer];
-        if (!o || o.status !== 'open') return { status: 'refused', reason: 'no open offer', line: 'CANNOT ACCEPT — there is no such open offer.' };
+        if (!o || o.status !== 'open') {
+            if (o?.bid && o.status === 'accepted' && ctx.soldInBid?.size) return { status: 'resolved', done: true, line: 'SOLD — with the lot above.' };
+            return { status: 'refused', reason: 'no open offer', line: 'CANNOT ACCEPT — there is no such open offer.' };
+        }
+        if (o.bid) return acceptBid(s, content, c, ctx, emit, o);
+        // Prototype C (4.3.0-c.6.6.5): an offer is the other side SELLING to Alaric; agreeing to sell his own things is
+        // never paying for them (live 15.10.2026: "i accept and sell all parts to her" paid 80 cp for his own parts)
+        if (!o.canon && SELLING.test(c.quote || '') && !BUYING.test(c.quote || '')) {
+            // an offer stored the wrong way round whose lines name exactly his own things ("mudwyrm parts: 2 skins, 2
+            // fangs … the lot") is the buyer's price for them; anything else is a question, never a purchase
+            const lot = bidOfOffer(s, o);
+            if (lot) return acceptBid(s, content, { ...c, lines: null }, ctx, emit, { ...o, bid: true, lines: lot.lines, price_cp: lot.price_cp });
+            return { status: 'clarify', reason: 'buy or sell?', line: `CLARIFY — ${who(s, o.seller)}'s open offer sells ${picksText(pickLines(o).picks || [])} to Alaric; he speaks of selling. Does he buy that, or sell his own things (which, and for what price)?` };
+        }
         // the lines he takes, in the number he names (review of 4.1.0: "three flasks" became one flask for one price)
         const pick = pickLines(o, c.lines, c.qty ?? null);
         if (pick.clarify) return { status: 'clarify', reason: 'which line?', line: `CLARIFY — ${c.qty} of which: ${pick.clarify.join(' or ')}?` };
@@ -656,6 +744,14 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
     ctx.engineLines = [];
     const ordered = [...commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0));
     ctx.env = { msg: envx.msg ?? s.turn, commands: ordered };
+    // 4.3.0-c.6.6.5: what he only laid out or showed (the planner guard took it for no give) stays his; the story may let
+    // the other look, weigh and name a price (a bid), nothing more
+    const shown = (envx.dropped || []).filter((x) => x.rule === 'shows').map((x) => x.command || {});
+    if (shown.length) {
+        const things = [...new Set(shown.map((c) => objectOf(s, content, c.object)?.name).filter(Boolean))];
+        const to = typeof shown[0].to === 'string' && present(s, shown[0].to) ? who(s, shown[0].to) : null;
+        ctx.extra.push(`SHOWS — he lays out${things.length ? ` ${things.join(', ')}` : ' his things'} for ${to || 'them'} to look at: they stay his. ${to ? `${to[0].toUpperCase()}${to.slice(1)}` : 'They'} may handle, weigh and price them; nothing changes hands until he himself sells or gives them in a later message.`);
+    }
     const lines = new Map();
     const happened = new Set();
     const uncertain = new Set();

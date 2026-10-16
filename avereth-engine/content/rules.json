@@ -166,7 +166,39 @@
       "standard": 2,
       "dangerous": 3,
       "major": 5
+    },
+    "strength": {
+      "_rule": "4.3.0-c.6.6.5 (live 15.10.2026): a creature's Defeat XP also weighs how much stronger its own numbers are than an ordinary creature of the same Level and type (this reference, scaled like any creature): durability (HP raised by its average DEF/MDEF at defense_weight per point) times ATK, over the reference's, square-rooted and capped at max. Ordinary fauna (rat, wolf, boar, deer, horse, serpent ...) stay at their Level's XP; heavy body plans and strong individuals give more; never less than before.",
+      "reference": { "hp": 40, "atk": 11, "def": 1, "mdef": 0, "init": 8 },
+      "defense_weight": 0.1,
+      "max": 2.5
     }
+  },
+  "settlements": {
+    "_rule": "4.3.0-c.6.6.5 (live 15.10.2026: the Ashbridge Market District at midday felt like an empty stage, and finding a buyer for monster parts took a failed SEARCH and an hour). A settlement's size (its content sub: capital, seat, city; a settlement the story created is a village until the content says otherwise) decides how busy its streets are by time of day and which everyday trades it has. The crowd is ambient: scene colour, never stored as people; someone becomes a person when they matter (spoken to, acting, trading, in danger, attacked). The trades are functions, not a fixed list of named shops: an ordinary trade of the settlement is found without a check by day (signs, open fronts, asking around); the story names and places the shop when Alaric goes there, and a shop already established stays the one he knows.",
+    "size_of": { "capital": "city", "seat": "city", "city": "city", "town": "town", "village": "village", "hamlet": "village" },
+    "default_size": "village",
+    "sizes": ["village", "town", "city"],
+    "outdoor_kinds": ["settlement", "district"],
+    "crowd": {
+      "city": { "day": "crowded: residents and stallholders, customers haggling, carts and porters, a draught animal or a herd driven through, craftsmen at open fronts, now and then folk of other peoples", "evening": "thinning: the last customers and stallholders packing up, lamplighters, people heading home or to the taverns", "night": "near empty: a watch patrol, a late drinker, shuttered fronts" },
+      "town": { "day": "busy: townsfolk at their errands, a few stalls and carts, craftsmen at work", "evening": "quiet: people heading home, a tavern's noise", "night": "empty but for a watchman" },
+      "village": { "day": "a few villagers at their work, children and animals", "evening": "quiet doorsteps and a lit window or two", "night": "dark and still" }
+    },
+    "bystanders": { "city": { "day": 3, "evening": 1, "night": 0 }, "town": { "day": 2, "evening": 1, "night": 0 }, "village": { "day": 1, "evening": 0, "night": 0 } },
+    "trades": [
+      { "key": "monster_parts", "name": "hunter's exchange / monster-parts buyer (buys hides, pelts, fangs, claws, scales, venom, chitin)", "min": "town", "words": "monster|parts?|hides?|pelts?|skins?|fangs?|claws?|tusks?|horns?|antlers?|scales?|venom|chitin|feathers?|talons?|trophy|trophies|furrier|tanner|hunter'?s exchange|carcass" },
+      { "key": "smith", "name": "blacksmith / armorer", "min": "village", "words": "smith|smithy|blacksmith|armou?rer|weapons?|armou?r|blades?|swords?|forge|repairs?" },
+      { "key": "general", "name": "general store (rope, lamps, rations, travel gear)", "min": "village", "words": "general|supplies|provisions|rations?|rope|lamps?|torch(?:es)?|travel gear|goods" },
+      { "key": "apothecary", "name": "apothecary / alchemist (remedies, potions, herbs; buys venom and herbs)", "min": "town", "words": "apothecar\\w*|alchemist|potions?|remed(?:y|ies)|herbs?|herbalist|medicine|salves?|tonics?" },
+      { "key": "arcane", "name": "arcane supplies (reagents, focus items)", "min": "city", "words": "arcane|magic(?:al)? (?:shop|supplies|goods|wares)|mage'?s|reagents?|wands?|scrolls?|enchant\\w*" },
+      { "key": "leather", "name": "leatherworker / tailor (clothes, packs, leather gear)", "min": "town", "words": "leather\\w*|tailor|clothes|clothing|cloth|packs?|boots?|cloaks?" },
+      { "key": "inn", "name": "inns and taverns (meals, rooms)", "min": "village", "words": "inn|tavern|taproom|room|bed|meal|food|drink|ale|lodging" },
+      { "key": "stables", "name": "stables (horses, mules, carts)", "min": "town", "words": "stables?|horses?|mules?|ponies|pony|carts?|wagons?" },
+      { "key": "market", "name": "food and market stalls", "min": "village", "words": "market|stalls?|bread|baker|butcher|fish\\w*|fruit|vegetables?|cheese|meat" }
+    ],
+    "shop_words": "shops?|stores?|merchants?|traders?|dealers?|buyers?|vendors?|stalls?|someone (?:who|to) (?:buys?|sells?)|(?:a )?place to (?:sell|buy|eat|sleep|stay)|where (?:to|i can|he can) (?:sell|buy)",
+    "hidden_words": "secret|hidden|black market|fence|smuggl\\w*|illegal|stolen|contraband|underground|thieves|forbidden|outlaw"
   },
   "range": {
     "src": "Core #12",

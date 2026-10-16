@@ -147,6 +147,9 @@ function changeLines(before, after, content, events) {
         } else if (e.t === 'quest.status' && QUEST[d.to] && d.to !== 'offered') {
             const q = after.quests[d.id];
             out.push(sys(`QUEST ${QUEST[d.to]} — ${q?.title || d.id}${q?.rank ? ` (${q.rank})` : ''}`));
+            // 4.3.0-c.6.6.5: the slip of a contract turned in stays with the Guild (src/v4/domain.js)
+            const slip = before.objects?.[`obj.slip.${String(d.id).replace(/^quest\./, '')}`];
+            if (d.to === 'completed' && slip?.holder?.entity === 'pc' && after.objects?.[slip.id]?.holder?.entity !== 'pc') out.push(sys(`ITEM - ${slip.name} → filed at the Guild desk`));
         } else if (e.t === 'quest.created' && d.quest.status === 'offered') {
             out.push(sys(`QUEST OFFERED — ${d.quest.title}${d.quest.giver ? ` (${label(d.quest.giver)})` : ''}`));
         } else if (e.t === 'guild.registered') {
@@ -182,6 +185,8 @@ function commandLines(o) {
         const quote = r.quote ? `"${String(r.quote).replace(/[<>`]/g, '').slice(0, 70)}" → ` : '';
         out.push(sys(`UNDERSTOOD — ${quote}${r.type} (${STATUS_WORD[r.status] || r.status}${r.reason ? `: ${r.reason}` : ''})`));
     }
+    // 4.3.0-c.6.6.5: a SEARCH the engine rolled, with its result (live 15.10.2026: the failed hour in the market showed none)
+    for (const k of o.search_checks || []) out.push(sys(`SEARCH — ${String(k.what).replace(/[<>`]/g, '')} (${k.stat} ${k.actor} vs ${k.opposition}): ${k.chance}% · d100 ${k.roll} → ${k.success ? 'SUCCESS' : 'FAILURE'}`));
     for (const x of o.dropped || []) out.push(sys(`NOT A DECISION — ${x.quote ? `"${String(x.quote).replace(/[<>`]/g, '').slice(0, 70)}" ` : ''}(${x.type}: ${x.rule})`));
     // prototype C: the time and recovery the engine booked for this turn
     for (const x of o.engine_lines || []) out.push(sys(String(x).replace(/[<>`]/g, '')));
@@ -336,7 +341,7 @@ function combatLines(state, content, o) {
     const changed = (o.started && !o.started.previewed) || o.started?.joined || records.some((r) => r.escaped || r.kind === 'surrender' || (r.strikes || []).some((x) => x.defeated));
     if (b && !o.ended && changed) out.push(...targetsLine(b));
     if (b) out.push(...boardLines(state, b));
-    if (o.ended) out.push(...endLines(state, content, name, o.ended, o.levelups));
+    if (o.ended) out.push(...endLines(state, content, name, o.ended, o.levelups, o.loot));
     else if (o.next) {
         out.push(sys(`Next: ${o.next}`));
         if (state.encounter?.current === 'pc') out.push(...optionsLine(state, content));
@@ -358,13 +363,15 @@ function roundLines(name, records) {
     return out;
 }
 
-function endLines(state, content, name, e, levelups = []) {
+function endLines(state, content, name, e, levelups = [], loot = null) {
     const fates = [...e.defeated.map((id) => `${name(id)} defeated`), ...e.escaped.filter((id) => id !== 'pc').map((id) => `${name(id)} escaped`)];
     if (e.pc_dead) fates.push(`${name('pc')} is dead`);
     if (e.pc_escaped) fates.push(`${name('pc')} escaped`);
     const sheet = state.entities.pc.sheet;
     const xp = e.xp_awarded ? ` · +${e.xp_awarded} XP → XP ${sheet.xp}/${sheet.level * content.rules.progression.xp_to_next_per_level}` : '';
-    return [sys(`COMBAT END${fates.length ? ` — ${fates.join(', ')}` : ''}${xp}`), ...levelups.map((lv) => sys(`LEVEL UP → ${lv} (+5 free Stat Points)`))];
+    // Prototype C (4.3.0-c.6.6.5): the automatic loot the fight's end booked (src/v4/loot.js), what came in by this fight
+    const got = (loot || []).length ? [sys('LOOT ACQUIRED:'), ...loot.map((l) => sys(`  ${l}`))] : [];
+    return [sys(`COMBAT END${fates.length ? ` — ${fates.join(', ')}` : ''}${xp}`), ...got, ...levelups.map((lv) => sys(`LEVEL UP → ${lv} (+5 free Stat Points)`))];
 }
 
 function recordLines(name, r) {

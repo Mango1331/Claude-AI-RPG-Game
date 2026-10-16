@@ -207,6 +207,8 @@ export const DELTA_WRITES = {
     'object.mark': { writes: ['objects'] },
     // an offer may meet a purchase he agreed to in advance within his limit: the engine books it (trade.js)
     offer: { writes: ['trade'], gates: { 'pc.coin': 'player.buy', 'pc.inventory': 'player.buy' } },
+    // 4.3.0-c.6.6.5: a buyer's price for his things; nothing changes hands until his own acceptance
+    bid: { writes: ['trade'] },
     'coin.gift': { writes: [], gates: { 'pc.coin': 'envelope.give' } },
     coerce: { writes: [], gates: { 'pc.coin': 'envelope.take', 'pc.inventory': 'envelope.take' } },
     'quest.offer': { writes: ['quests'] },

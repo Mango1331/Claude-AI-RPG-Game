@@ -175,7 +175,9 @@ test('two common boars and a stronger one: the stronger gives more XP; the name 
     const plain = await boarFight(null);
     assert.deepEqual(plain.defeat, { 'Wild Boar A': 12, 'Wild Boar B': 12, 'Big Boar A': 12 }, 'a name alone');
     const strong = await boarFight(true);
-    assert.deepEqual(strong.defeat, { 'Wild Boar A': 12, 'Wild Boar B': 12, 'Big Boar A': 14 });
+    // 4.3.0-c.6.6.5: the strong boar's own numbers (49 HP, ATK 13, DEF 3) also count against an ordinary creature of
+    // its Level (content rules.xp.strength): 15, was 14; the common ones stay at their Level's 12
+    assert.deepEqual(strong.defeat, { 'Wild Boar A': 12, 'Wild Boar B': 12, 'Big Boar A': 15 });
     const big = Object.values(strong.g.state().entities).find((e) => e.species === 'big boar');
     assert.deepEqual([big.profile.max_hp, big.profile.atk, big.profile.variation], [49, 13, 'strong']);
     for (const f of [plain, strong]) {
@@ -183,7 +185,7 @@ test('two common boars and a stronger one: the stronger gives more XP; the name 
         assert.equal(f.xp.length, 3, 'Combat XP once per fight, at its end');
         assert.deepEqual(f.xp.map((e) => e.d.amount), f.ended.map((e) => e.d.summary.xp_awarded));
     }
-    assert.deepEqual(strong.xp.map((e) => e.d.amount), [12, 12, 14]);
+    assert.deepEqual(strong.xp.map((e) => e.d.amount), [12, 12, 15]);
     assert.equal(Object.values(strong.g.state().entities).filter((e) => e.kind === 'creature' && e.status === 'dead').length, 3);
 });
 

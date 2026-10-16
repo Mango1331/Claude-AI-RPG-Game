@@ -564,6 +564,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'offer':
                 offer(d);
                 break;
+            case 'bid':
+                bid(d);
+                break;
             case 'coin.gift': {
                 const from = idOf(d.from);
                 if (from === 'pc') { reject(d, 'coin', 'Alaric does not gift himself coin'); break; }
@@ -1041,9 +1044,43 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         }
     }
 
+    /**
+     * Prototype C (4.3.0-c.6.6.5): someone names what they would pay Alaric for things he holds (live 15.10.2026: "eight
+     * silver for the lot" became an offer to SELL him his own parts). The bid names his things by id and the units of
+     * each, and one price for all of them; nothing changes hands until his own acceptance (commands.js offer.accept).
+     * The buyer's latest bid stands: an earlier open one of theirs closes.
+     */
+    function bid(d) {
+        const buyer = idOf(d.buyer);
+        if (!buyer || buyer === 'pc' || !s.scene.present.includes(buyer)) { reject(d, 'offer', `the buyer ${String(d.buyer).slice(0, 40)} is not present`); return; }
+        const lines = [];
+        for (const l of d.lines || []) {
+            const o = objectRef(l.object);
+            if (!o || o.holder?.entity !== 'pc') { reject(d, 'offer', `a bid is for things Alaric holds (${JSON.stringify(l.object).slice(0, 60)} is not his)`); return; }
+            const have = lines.find((x) => x.object === o.id);
+            const qty = Math.min((have?.qty || 0) + (Number.isInteger(l.qty) && l.qty > 0 ? l.qty : (o.qty ?? 1)), o.qty ?? 1);
+            if (have) have.qty = qty;
+            else lines.push({ id: `l${lines.length + 1}`, what: o.name, kind: 'goods', service: null, object: o.id, qty, price_cp: null });
+        }
+        if (!lines.length || !Number.isInteger(d.price_cp)) { reject(d, 'offer', 'a bid names his things and one price'); return; }
+        for (const old of openOffers(s).filter((x) => x.bid && x.seller === buyer)) emit({ t: 'offer.closed', d: { id: old.id, status: 'expired' } });
+        const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
+        emit({ t: 'offer.created', d: { offer: { id, seller: buyer, bid: true, at: s.scene.at, status: 'open', canon: false, turn: s.turn, price_cp: d.price_cp, lines } } });
+        counterparts.add(buyer);
+    }
+
     function coerce(d) {
         const by = idOf(d.by);
-        if (!by || by === 'pc' || !s.scene.present.includes(by)) { reject(d, 'coerce', 'the one who takes it is not here'); return; }
+        if (!by || by === 'pc' || !s.scene.present.includes(by)) {
+            reject(d, 'coerce', 'the one who takes it is not here');
+            // 4.3.0-c.6.6.5 (live 15.10.2026: "the south gate took its usual toll of one copper", booked by nobody): the
+            // story must not go on as if it was paid
+            if (d.coin_cp) {
+                const correction = `Alaric's purse did not change: the ${d.coin_cp} cp ${d.kind} of ${String(d.by).slice(0, 60)} in the last reply was not paid (nobody who could take it was there). Do not refer to it as paid; a toll or fee is paid only when the engine books it.`;
+                if (!corrections.includes(correction)) corrections.push(correction);
+            }
+            return;
+        }
         const counterpart = openOffers(s).some((o) => o.seller === by) || events.some((e) => e.t === 'transaction.completed' && e.d.seller === by);
         if (counterpart) { reject(d, 'coerce', 'the other side of a sale or an open offer cannot coerce (a sale is never a confiscation)'); return; }
         if (!d.because) { reject(d, 'coerce', 'coercion needs a because'); return; }

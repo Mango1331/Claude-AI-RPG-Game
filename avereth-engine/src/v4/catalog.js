@@ -229,7 +229,10 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         }
     }
     const offers = openOffers(state).filter((o) => o.canon ? (!o.at || hallOf(state, o.at) === hall) : state.scene.present.includes(o.seller))
-        .map((o) => ({ id: o.id, seller: o.canon ? 'Guild' : personLabel(state, content, o.seller), lines: o.lines.map((l) => ({ id: l.id, what: l.what, price_cp: l.price_cp, ...(l.qty > 1 ? { qty: l.qty } : {}) })) }));
+        .map((o) => (o.bid
+            // 4.3.0-c.6.6.5: a buyer's bid for his things (he would be paid), by the ids of his things
+            ? { id: o.id, seller: personLabel(state, content, o.seller), bid: true, price_cp: o.price_cp, lines: o.lines.map((l) => ({ id: l.id, what: l.what, object: l.object, qty: l.qty, ...(Number.isInteger(l.price_cp) ? { price_cp: l.price_cp } : {}) })) }
+            : { id: o.id, seller: o.canon ? 'Guild' : personLabel(state, content, o.seller), lines: o.lines.map((l) => ({ id: l.id, what: l.what, price_cp: l.price_cp, ...(l.qty > 1 ? { qty: l.qty } : {}) })) }));
     const objects = [
         ...heldBy(state, 'pc').map((o) => objectEntry(state, content, o)),
         ...sheetObjects(state, content),

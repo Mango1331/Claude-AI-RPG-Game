@@ -9,7 +9,7 @@
 //   carries, what their pack holds, and a purse that fits their station (template)
 // - stacks: the same material of the same Rank is one stack (object.added); another Rank is another stack
 // - never: a foe that fled, surrendered or survived, a fight Alaric fled or died in, a foe already looted, equipping
-import { hash32, slug } from '../util.js';
+import { hash32, slug, normText } from '../util.js';
 import { rankOf } from '../derived.js';
 
 const ORDER = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
@@ -66,7 +66,10 @@ export function lootEvents(s, content, enc) {
             const spec = table.anchors?.[anchorId];
             const species = speciesName(e, anchor);
             const materials = Array.isArray(spec) ? spec : spec?.materials || [];
+            // 4.3.0-c.6.6.5: a special organ only from a creature whose own kind, description or attack shows it
+            const traits = normText([e.species, e.name, ...(e.descriptors || []), e.traits, prof.attack?.name].filter(Boolean).join(' '));
             for (const m of materials) {
+                if (m.only_if && !new RegExp(`\\b(?:${m.only_if})\\b`, 'i').test(traits)) continue;
                 const name = `${rank}-Rank ${m.name.replace('{species}', species)}`;
                 add(`${slug(species)}.${slug(m.key)}`, { name, rank, level, material: m.key, species, anchor: anchorId, value_cp: valueOf(m.value_cp, rank, factor) }, draw(`${seed}|${m.key}`, m.qty));
             }

@@ -131,6 +131,16 @@ export function applyDomainEvent(state, e) {
             q.status = d.to;
             if (d.taker !== undefined) q.taker = d.taker;
             q.history = [...(q.history || []), { turn: state.turn, minute: state.clock.minute, status: d.to, ...(d.at ? { at: d.at } : {}), ...(d.step ? { step: d.step } : {}), ...(d.by ? { by: d.by } : {}) }];
+            // 4.3.0-c.6.6.5: a Guild contract turned in is filed at the desk with its slip; the slip leaves his pack (also
+            // for contracts completed before this build: their stored completion files them on replay, nothing else
+            // changes). Accepted, READY or refused contracts keep theirs; so does the Guild plate
+            if (d.to === 'completed' && q.kind === 'guild_contract') {
+                const slip = state.objects[`obj.slip.${q.id.replace(/^quest\./, '')}`];
+                if (slip?.holder?.entity === 'pc') {
+                    slip.holder = { consumed: 'guild' };
+                    mirror(state, slip.id);
+                }
+            }
             break;
         }
         case 'quest.detailed': {

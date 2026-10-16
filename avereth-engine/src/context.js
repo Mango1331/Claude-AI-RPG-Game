@@ -13,6 +13,7 @@ import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } 
 import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText, proofMemory } from './v4/guild.js';
 import { envelopeBlock } from './v4/envelope.js';
 import { sceneHandle } from './v4/scene_handles.js';
+import { settlementLife } from './v4/settlement.js';
 
 export const DEFAULT_BUDGET = 1400;
 export const DEFAULT_RULES_BUDGET = 800;
@@ -187,11 +188,16 @@ export function combatBlock(state) {
 }
 
 /** One line per resolved step, with rolls, so the narration can follow exactly (and the player can audit). */
-export function recordLine(state, r, name = (id) => fightLabel(state, id)) {
+export function recordLine(state, r, name = (id) => fightLabel(state, id), content = null) {
     const who = name(r.actor);
     if (r.kind === 'attack') {
         const parts = [];
         if (r.move) parts.push(`moves ${r.move.from} -> ${r.move.to}`);
+        // 4.3.0-c.6.6.5 (live 15.10.2026: the Mage's Basic Attack, a magical bolt at MEDIUM, was told as a staff blow after
+        // walking around the roots): what kind of attack it is and that a ranged one leaves him where he stands
+        const sk = r.actor === 'pc' && content ? content.skills.get(r.skill) : null;
+        const ranged = sk && (sk.range?.band !== 'ENGAGED' || sk.attack?.damage_type === 'magical');
+        if (sk?.type_text && ranged && !r.move) parts.push(`${sk.type_text}: from where he stands, no step and no melee blow`);
         const head = `${who}: ${r.skill_name}${r.opening ? ' (AMBUSH Opening Action)' : ''} -> ${name(r.strikes?.[0]?.target || r.target)}`;
         if (r.cost) parts.push(`${r.cost.resource.toUpperCase()} ${r.cost.before}->${r.cost.after}`);
         if (r.ammo) parts.push(`${r.ammo.used} arrow${r.ammo.used > 1 ? 's' : ''} fired`);
@@ -247,14 +253,14 @@ function outcomeLines(state, content, outcome, { v4 = false } = {}) {
             return lines.join('\n');
         }
         if (outcome.started) lines.push(`${outcome.started.joined ? outcome.started.reason : `Combat starts (${outcome.started.reason})`}. Turn order: ${outcome.started.order}.`);
-        for (const r of outcome.records) lines.push(`- ${recordLine(state, r, (id) => fightLabel(state, id, outcome.board?.labels))}`);
+        for (const r of outcome.records) lines.push(`- ${recordLine(state, r, (id) => fightLabel(state, id, outcome.board?.labels), outcome.c ? content : null)}`);
         if (outcome.note) lines.push(`- ${outcome.note}`);
         if (outcome.illegal) lines.push(`- Alaric's declared action is NOT possible now: ${outcome.illegal}. Nothing was spent or rolled for it; it is still Alaric's decision.`);
         if (outcome.ended) {
             const s = outcome.ended;
             lines.push(`- Combat is over.${s.pc_dead ? ' Alaric is dead.' : ''}${s.xp_awarded ? ` Alaric gains ${s.xp_awarded} XP.` : ''}${outcome.levelups?.length ? ` LEVEL UP -> ${outcome.levelups.join(', ')} (+5 free Stat Points each; resources are not refilled).` : ''}${outcome.loot ? '' : ' Loot is only what the defeated actually carried or what can be harvested; nothing is taken automatically.'}`);
             // Prototype C (4.3.0-c.6.6.4): the engine's automatic loot, already in his pack (src/v4/loot.js)
-            if (outcome.loot) lines.push(`- LOOT (the engine's automatic loot at the fight's end, already in Alaric's pack): ${outcome.loot.join(', ')}. It is no decision of his and took no time: mention it in a few words or leave it to the HUD; do not show him skinning, carving or searching bodies, and add no other drop, coin or item.`);
+            if (outcome.loot) lines.push(`- LOOT (the engine's automatic loot at the fight's end, already in Alaric's pack): ${outcome.loot.join(', ')}. It is no decision of his and took no time: mention it in a few words or leave it to the HUD; do not show him skinning, carving or searching bodies, and add no other drop, coin or item. It sits in his magic pouch: no weight, bulk, packing, straps or carrying effort, now or later.`);
         } else if (outcome.next) lines.push(`- Next: ${outcome.next}. Stop the narration at Alaric's decision.`);
         if (outcome.records.length) lines.push(`Narrate exactly these resolved steps in order: the same number of attacks/projectiles, every one landing with the damage given (no misses, grazes or dodges), no extra movement, attacks or combatants${outcome.ended ? '' : ', and no dialogue (combat silence; it overrides any habit of opening with speech)'}.${report(' Then write the fact report.')}`);
     } else if (outcome.kind === 'creation.step2') {
@@ -426,6 +432,8 @@ export function buildContext(state, content, opts = {}) {
     const absent = state.mode === 'creation' ? [] : namedAbsent(state, normText(queryText));
     if (absent.length) add('named', `NAMED, NOT PRESENT (continuity only; they are elsewhere unless the story brings them in):\n${absent.map((id) => npcCard(state, content, id, focusWords, { absent: true })).join('\n')}`, 2);
     add('combat', combatBlock(state), 0);
+    // Prototype C (4.3.0-c.6.6.5): the settlement around Alaric lives (crowd by time of day, everyday trades by size)
+    if (v4 && !state.encounter && (opts.outcome?.auth?.c || opts.outcome?.c)) add('settlement', settlementLife(state, content), 1);
 
     // hard facts about the current place, present people and anything named this turn are always shown (binding)
     const scan = normText(queryText);
@@ -503,7 +511,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'present', 'named', 'combat', 'facts', 'quests', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'named', 'combat', 'facts', 'quests', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };

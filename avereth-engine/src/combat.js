@@ -48,7 +48,9 @@ function ammoOf(sheet, content) {
  */
 function hostileXp(c, state, content, pcRank) {
     const anchor = c.model === 'creature' ? content.anchors.get(state.entities[c.id]?.profile?.anchor) : null;
-    const strength = anchor ? strengthOf(c.fixed, scaleCreature(anchor, c.fixed.level, c.fixed.type, content), content) : 1;
+    const ref = content.rules.xp.strength?.reference;
+    const reference = anchor && ref ? scaleCreature({ id: 'xp_reference', name: 'reference', ...ref }, c.fixed.level, c.fixed.type, content) : null;
+    const strength = anchor ? strengthOf(c.fixed, scaleCreature(anchor, c.fixed.level, c.fixed.type, content), content, reference) : 1;
     return defeatXp(c.fixed.level, c.fixed.type, pcRank, content, strength);
 }
 
@@ -743,6 +745,12 @@ export function npcDecide(ctx, npcId) {
     }
     if (temper === 'defensive') {
         if (band === 'ENGAGED') return { kind: 'attack' };
+        // Prototype C (4.3.0-c.6.6.5, live 15.10.2026: the strong mudwyrm held in its cover three Turns while a Flame
+        // Lance struck it each Turn, 84 -> 0 HP, and never answered): cover that did not keep the strikes off is no
+        // defence; struck again in it, a defensive creature closes to defend itself, or flees when badly hurt
+        if (ctx.c && me.current.cover !== 'none' && ownLast >= 0 && enc.log.slice(ownLast + 1).some(attackOn)) {
+            return hpPct <= 0.25 ? { kind: 'flee', why: 'defensive, badly hurt in useless cover (<=25% HP)' } : { kind: 'close_and_attack', why: 'defensive, struck in its cover: closes to defend itself' };
+        }
         return me.current.cover === 'none' ? { kind: 'cover', why: 'defensive' } : { kind: 'hold', why: 'defensive, in cover' };
     }
     // cautious

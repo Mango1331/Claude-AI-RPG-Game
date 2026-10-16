@@ -106,7 +106,11 @@ export function catalogText(catalog) {
     if ((catalog.completed || []).length) L.push(`COMPLETED TODAY: ${catalog.completed.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
     if ((catalog.board || []).length) L.push(`BOARD (${catalog.board_label || 'visible here'}): ${catalog.board.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
     if ((catalog.known || []).length) L.push(`KNOWN CONTRACTS (listed on a Guild board elsewhere; taken only at that board's Guild hall, if still listed): ${catalog.known.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
-    if ((catalog.offers || []).length) L.push(`OFFERS: ${catalog.offers.map((o) => `${o.id} (${o.seller}: ${o.lines.map((l) => `${l.id} ${l.what} ${l.qty > 1 ? `${l.qty} for ${l.price_cp} cp` : `${l.price_cp} cp`}`).join(', ')})`).join(' · ')}`);
+    const sells = (catalog.offers || []).filter((o) => !o.bid);
+    const bids = (catalog.offers || []).filter((o) => o.bid);
+    if (sells.length) L.push(`OFFERS: ${sells.map((o) => `${o.id} (${o.seller}: ${o.lines.map((l) => `${l.id} ${l.what} ${l.qty > 1 ? `${l.qty} for ${l.price_cp} cp` : `${l.price_cp} cp`}`).join(', ')})`).join(' · ')}`);
+    // 4.3.0-c.6.6.5: what a buyer would pay Alaric for his things (accepting it sells them)
+    if (bids.length) L.push(`BIDS (someone would BUY these things of Alaric's; accepting sells them): ${bids.map((o) => `${o.id} (${o.seller} pays ${o.price_cp} cp for: ${o.lines.map((l) => `${l.id} ${l.object} ×${l.qty}${Number.isInteger(l.price_cp) ? ` ${l.price_cp} cp` : ''}`).join(', ')})`).join(' · ')}`);
     if ((catalog.objects || []).length) L.push(`OBJECTS: ${catalog.objects.map((o) => `${o.id} (${o.name}${o.qty ? `, ${o.qty}${o.unit ? ` ${o.unit}` : ''}` : ''}, ${holderText(o)})`).join(' · ')}`);
     if ((catalog.open || []).length) L.push(`OPEN DECISIONS: ${catalog.open.join(' · ')}`);
     return L.join('\n');

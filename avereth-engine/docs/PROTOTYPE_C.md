@@ -251,10 +251,10 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt-c664` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.6.4`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt-c665` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.6.5`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
-   - Vertrag v4 (Revision 4.3.0-c.6.6.4: die Kartenbeschreibung vollständig durch `content/narrator/Avereth_Narrator_Contract_v4.txt` ersetzen; SillyTavern liest die Beschreibung bei jeder Antwort neu, ein laufender Chat spielt also ab der nächsten Antwort mit ihr, die Statuszeile zeigt `narrator contract: current`), Preset „Avereth Narrator V4“, Lorebook v0.13.
+   - Vertrag v4 (Revision 4.3.0-c.6.6.5: die Kartenbeschreibung vollständig durch `content/narrator/Avereth_Narrator_Contract_v4.txt` ersetzen; SillyTavern liest die Beschreibung bei jeder Antwort neu, ein laufender Chat spielt also ab der nächsten Antwort mit ihr, die Statuszeile zeigt `narrator contract: current`), Preset „Avereth Narrator V4“, Lorebook v0.13.
 3. **Schalter:** Engine-Panel → **„Prototype C: semantic planner“** anhaken.
    - Er gilt für jede V4-Kampagne, auch eine laufende, ab der nächsten Nachricht.
    - Ausschalten bringt A zurück.
@@ -698,4 +698,71 @@ Tests: `tests/v4/c664.test.js` (Fälle 1–17 der Anforderung in 10 Tests). Plan
 - Erbeutete Ausrüstung lässt sich noch nicht anlegen: `equip` kennt Werte nur für Content-Vorlagen, die Beute-Ausrüstung trägt ihre Werte in `gear`.
 - `value_cp` ist nur ein Richtwert. Händler kaufen danach noch nicht zu festen Preisen.
 - Die Erreichbarkeitsregel ist bewusst einfach: Ein Gegner, der in einen Abgrund oder einen Fluss stürzt, wird trotzdem geplündert, wenn er im Kampf tot ist.
+
+### Nachtrag 4.3.0-c.6.6.5 (fortgesetzter Livetest 15./16.10.2026: Handel, Städte, Komfort)
+
+Die Spezifikation zählt Spielerzüge ohne den ersten „Mage“-Zug: Spec-Zug 41 = Nachricht #87/#88 (Alaric betritt den Laden mit Messer und Schere), Spec-Zug 42/43 = #89–#92 (der kaputte Verkauf).
+
+**P0 – Handel:**
+- **Vorzeigen ist keine Übergabe.** „*i take out every monster part i carry with me*“ war im Live-Planner vier `give` (die c.6.6.2-Regel „er holt hervor, worum gebeten wurde“ griff, weil die Händlerin sagte „put it on the counter“).
+  - Neue Planner-Regel mit Beispielen.
+  - Deterministischer Guard in `announcedAbandon`: Ein `give`, das nur zeigt (show, appraisal, „so she can look“), wird verworfen (`plan.dropped`, Regel `shows`). Ebenso eines, das bei einem Händler nur auslegt (take out, lay out, auf den Tresen), außer die Nachricht gibt, verkauft oder tauscht ausdrücklich oder der Gegenstand ist für einen aktiven Auftrag bestimmt.
+  - Der Erzähler erhält die Zeile SHOWS: „sie bleiben seine“.
+- **Ankaufsgebot (`bid`).** Neues Extractor-Delta `bid {buyer, lines:[{object, qty}], price_cp}` mit Alarics Objekt-IDs und einem Gesamtpreis. Gespeichert wird es als Offer mit `bid: true`. Der Planner-Katalog zeigt es unter BIDS; der World-Applier nimmt nur Dinge an, die Alaric hält.
+- **Verkauf.** `offer.accept` auf ein Gebot ist ein Verkauf über den vorhandenen `bookSale`-Pfad (`src/v4/trade.js`, jetzt mit mehreren Stapeln und einem Gesamtpreis). Es gibt keine zweite Buchungslogik.
+  - Gebucht werden genau die Objekte und Mengen. Ein Teilstapel wird abgespalten und behält Rang, Art, Herkunft und Wert.
+  - Danach wird das Gebot geschlossen.
+  - Ein Gebot für nicht mehr gehaltene Ware verfällt ohne Buchung.
+  - Ein reines Pauschalgebot wird ganz angenommen, außer der Spieler schränkt ein („only the fangs“).
+  - `sell` auf ein bebotenes Objekt nimmt das Gebot an.
+- **Nie stillschweigend kaufen.** Ein gewöhnliches Offer, das der Spieler mit „sell“ annimmt, wird nicht bezahlt.
+  - Benennen seine Zeilen genau Alarics eigene Dinge, also der Altfall des c.6.6.4-Extractors („mudwyrm parts: 2 skins … the lot“), wird es als Verkauf dieser Dinge gebucht.
+  - Sonst fragt das System nach (CLARIFY), ohne etwas zu buchen.
+- **Münzen.** Die Münzen, die die Händlerin danach in der Erzählung hinzählt, sind die Verkaufsgutschrift, kein Geschenk (`engine_booked`). Reload, Swipe und Regenerate buchen nichts doppelt.
+
+**P1:**
+- **Gildenzettel.** Ein abgeschlossener Gildenauftrag (`quest.status → completed`) legt seinen Zettel bei der Gilde ab (Reducer: `holder {consumed: 'guild'}`, wie beim Abbruch).
+  - Annahme, READY, unterwegs oder abgelehnte Abgabe ändern nichts; die Gildenplakette bleibt.
+  - Weil der Zustand aus den gespeicherten Events gefaltet wird, verschwinden auch die drei Zettel der vor diesem Build abgeschlossenen Aufträge aus dem effektiven Inventar. Das geschieht idempotent, ohne neues Event und ohne Änderung an Quest, Auszahlung oder XP.
+  - Das Systempanel zeigt „ITEM - … → filed at the Guild desk“.
+- **Städte** (`src/v4/settlement.js`, Content `rules.settlements`).
+  - **Größe:** Die Größe einer Siedlung folgt ihrem Content-`sub` (capital/seat/city → city; vom Erzähler erzeugte Siedlungen gelten als village).
+  - **Erzähler:** Im Planner-Pfad bekommt der Erzähler SETTLEMENT LIFE: wie belebt die Straße gerade ist (Tageszeit) und welche Alltagsgewerbe es gibt. Die Menge ist ausdrücklich Kulisse; der Extractor speichert unbenannte Passanten weiterhin nicht.
+  - **Kampf in der Menge:** Ein Angriff auf einen Passanten („the fishmonger“) macht diesen zur Person (Vorlage commoner) und zum Ziel. Ein Flächenangriff im Gedränge trifft die nächststehenden Menschen (Stadt am Tag 3, Kleinstadt 2, Dorf 1, nachts 0). In Gebäuden wird niemand erfunden.
+- **Geschäftsarten.** Monsterteile-Ankäufer (ab Kleinstadt), Schmied, Kramladen, Apotheke/Alchemist, Arkanbedarf (Stadt), Leder/Schneider, Gasthäuser, Ställe und Marktstände sind Funktionen, keine feste Ladenliste.
+  - Ein schon etablierter Laden wird über Ortsname oder Beruf der Person dort zuerst genannt, Martas Laden also als Monsterteile-Ankäufer.
+  - Ein Dorf sagt ehrlich, was es nicht hat, und nennt größere Orte.
+- **Läden ohne SEARCH.** Eine Suche nach einem gewöhnlichen Laden oder Dienst in einer Siedlung ist kein Wurf mehr: Das Ergebnis heißt FINDS, nennt die Gewerbe und kostet 10 Minuten. Der Spieler wählt selbst, wohin er geht. Geheimes, Verborgenes oder Illegales (Hehler, Schwarzmarkt) bleibt SEARCH.
+- **Kampf-XP.** `strengthOf` vergleicht die festen Werte einer Kreatur zusätzlich mit einer Referenzkreatur gleichen Levels und Typs (`rules.xp.strength`).
+  - **Formel:** Haltbarkeit (HP, durch DEF/MDEF erhöht) mal ATK, Quadratwurzel, gedeckelt bei 2,5×. Der Wert ist nie kleiner als bisher und wird beim Kampfbeginn festgeschrieben.
+  - **Wirkung:** Gewöhnliche Tiere bleiben bei den XP ihres Levels; der starke Panzer-Mudwyrm (84/14/6) gäbe 23 statt 14 XP.
+  - **Alte Kämpfe:** Gespeicherte XP (12/12/14) bleiben unverändert.
+
+**P2:**
+- **Loot im Kampfende-Block:** Unter COMBAT END steht „LOOT ACQUIRED:“ mit den Mengen dieses Kampfes. Es gibt keine doppelte ITEM-Zeile; ohne Loot erscheint kein Block.
+- **Magischer Beutel (Vertrag und LOOT-Zeile):** kein Gewicht, kein Packen, keine Riemen.
+- **Angriffsform:** Ein magischer oder Fernkampfangriff Alarics trägt im Engine-Block den Hinweis „Magical / Ranged / Projectile: from where he stands, no step and no melee blow“ (nur Planner-Pfad).
+- **SEARCH-Ergebnis im Systempanel:** Probe, Chance, Wurf und Ergebnis werden angezeigt.
+- **Erfundener Zoll:** Ein abgelehntes `coerce` mit Münzen erzeugt die Korrektur „was not paid“; der Vertrag erlaubt vollzogene Zahlungen nur, wenn die Engine sie gebucht hat.
+
+**Beobachtungen:**
+- **B1, Defekt belegt:** Ein defensives Nahkampf-Tier hielt unter Fernbeschuss endlos in Deckung (84 → 0 HP ohne Reaktion). Jetzt rückt es im Planner-Pfad vor, wenn es in der Deckung erneut getroffen wird, und flieht bei ≤ 25 % HP. Ohne erneuten Treffer bleibt es in Deckung.
+- **B2:** Giftorgane (Schlangen-Giftbeutel, Gliederfüßer-Giftdrüse) gibt es nur noch von Kreaturen, deren Art, Beschreibung oder Angriff Gift zeigt (`only_if`).
+- **B3:** unverändert, die großzügige Regel ist gewollt.
+- **B4:** Grenzen wie bisher.
+
+**Wiederaufnahme des Livetest-Chats:** Der gespeicherte Verlauf #89–#92 enthält den falschen Verkauf und wird beim Laden unverändert repliziert (257 cp, künstliches Paket). Diesen Teil nicht weiterspielen:
+1. Chat sichern.
+2. In SillyTavern an Nachricht #88 (Erzählerantwort „The door stuck, then gave …“) „Branch“ wählen. Der Branch enthält #0–#88 samt Engine-Records.
+3. Im Branch weiterspielen.
+
+Alternativ #89–#92 löschen.
+
+Tests: `tests/v4/c665.test.js` (17 Tests, Fixture `tests/v4/live_1016.json`). Die Mutationsproben sind dokumentiert, alle 16 Fixes sind einzeln geprüft. Planner aus: identisch zu c.6.6.4 (122/122 Live-Schritte, 18/18 Kampfeingaben); geteilte Fixes (Zettel ablegen, XP-Stärke, SEARCH-Anzeige, `bid`) gelten auch dort, berühren den Vergleichskorpus aber nicht. Build: `4.3.0-c.6.6.5`. **Narrator Contract Revision `4.3.0-c.6.6.5`: Kartenbeschreibung neu einsetzen.** Preset und Lorebook sind unverändert.
+
+**Grenzen von c.6.6.5:**
+- Erbeutete Ausrüstung lässt sich weiter nicht anlegen. Preise bleiben verhandelt, `value_cp` ist nur ein Richtwert.
+- Ob ein Händlerpreis ein `bid` wird, entscheidet der Extractor. Fällt er auf ein falsch gerichtetes `offer` zurück, greift die Zweitsicherung (Verkauf, wenn die Zeilen Alarics Dinge benennen, sonst CLARIFY).
+- Die Siedlungsgröße für vom Erzähler erzeugte Orte ist pauschal „village“. Die Belebung ist Erzähler-Kontext, kein simuliertes Bevölkerungsmodell.
+- Der Show-Guard erkennt englische Formulierungen.
 

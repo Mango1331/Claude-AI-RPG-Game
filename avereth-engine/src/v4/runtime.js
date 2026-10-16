@@ -32,6 +32,7 @@ import { boardRequest, parseBoard, bookBoard, BOARD_VERSION } from './guild.js';
 import { extractionFailedEvents } from './world.js';
 import { hallOf, settlementOf, membership, boardKey, today, listingsOf, supportedRanks } from './domain.js';
 import { PLANNER_VERSION, MECH_TYPES, planContext, withContentSkills, plannerRequest, parsePlan, mapPlan, recentText, announcedAbandon } from './planner.js';
+import { crowdCount, personWords, bystanderEvents } from './settlement.js';
 
 export const RECORD_V4 = 3;
 export const LLM = {
@@ -129,7 +130,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     if (pl.failed) return { v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: { v: IR_VERSION, route: 'v4', reason: 'planner', links: ir.links, acts: [] }, plan, interp, events: [], command: null };
     const guarded = guardCommands(msg.mes, pl.commands, guardContext(before, content, catalog));
     // a contract given up only in words for later is no act now (live run 03.10.2026)
-    const announced = announcedAbandon(msg.mes, guarded.kept);
+    const announced = announcedAbandon(msg.mes, guarded.kept, before);
     guarded.kept = announced.kept;
     guarded.dropped = [...guarded.dropped, ...announced.dropped];
     const m = mapPlan(guarded.kept, ctx, content, msg.mes, before);
@@ -145,8 +146,13 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const irRec = { v: IR_VERSION, route: m.route === 'v4' ? 'v4' : 'v3', reason: 'planner', links: ir.links, acts };
     if (m.route === 'panel') return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, events: [], command: { panels: [m.panel], llm: null } };
     if (m.route === 'v3') {
-        const t = playerTurn(before, content, msg.mes, { msg: u, intent: m.intent, c: true });
-        return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, events: t.events, command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
+        // 4.3.0-c.6.6.5: a fight among the crowd of a settlement's street makes people of it first (the passer-by he
+        // names, the people closest to an area attack), in this turn's record; nobody in a crowd is out of reach
+        const crowd = crowdIntent(before, content, m.intent);
+        const at = crowd ? clone(before) : before;
+        if (crowd) for (const e of crowd.events) applyEvent(at, e);
+        const t = playerTurn(at, content, msg.mes, { msg: u, intent: crowd ? crowd.intent : m.intent, c: true });
+        return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, events: [...(crowd && t.events.length ? crowd.events : []), ...t.events], command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
     }
     const need = boardFor(before, content, m.commands, { c: true });
     const board = need ? await generateBoard(llm, before, content, need) : null;
@@ -159,6 +165,25 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
         board: board ? { branch: board.branch, rank: board.rank, ms: board.ms, failed: board.failed || undefined, listings: board.listings.length } : undefined,
         events: t.events, command: t.command ? { panels: t.command.panels, llm: null } : null,
     };
+}
+
+/**
+ * Prototype C (4.3.0-c.6.6.5): an attack that found no one in the street of a busy settlement (live 15.10.2026 review:
+ * "the fishmonger" was no valid target in a crowded market): the one he names, if a person, or for an area attack the
+ * people standing closest, become people of the scene, and the attack goes to them. null when there is no crowd here,
+ * the attack named no person, or a fight is running.
+ */
+export function crowdIntent(state, content, intent) {
+    if (!intent || intent.kind !== 'no_target' || state.encounter) return null;
+    const people = crowdCount(state, content);
+    const def = content.skills.get(intent.skill);
+    if (!people || !def?.attack) return null;
+    const area = (def.effects || []).some((e) => e.kind === 'area');
+    if (intent.ref && !personWords(intent.ref)) return null;
+    if (!intent.ref && !area) return null;
+    const made = intent.ref ? bystanderEvents(state, content, { ref: intent.ref }) : bystanderEvents(state, content, { count: people });
+    const { ref, ...rest } = intent;
+    return { events: made.events, intent: { ...rest, kind: 'attack', target: made.ids[0], target_how: area ? 'area' : 'planner', move: null, move_target: null, ...(area ? { field: made.ids, crowd: true } : {}) } };
 }
 
 // ------------------------------------------------------------------------------------------------ board

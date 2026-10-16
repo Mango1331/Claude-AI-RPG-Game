@@ -3,6 +3,8 @@
 //   offer line   a lot: `qty` units (1 when the price is per piece) for `price_cp` ("three flasks for nine copper")
 //   purchase     how many units Alaric takes of one line (null: the line as offered); he pays exactly their price
 //   sale         how many units of what he holds leave him; he gets exactly the price the buyer agreed to
+//   bid          (4.3.0-c.6.6.5) a buyer's price for things he holds: lines name his objects and units, one price for
+//                the lot; accepting it is one sale of exactly those (bookSale with several items)
 //
 // Every purchase and sale books exactly those units against exactly that coin, and never more units than there are
 // (review of 4.1.0: three flasks bought for the price of one, ten herbs sold while he held one, a partial sale that
@@ -81,16 +83,43 @@ export function saleUnits(s, ref, qty = null) {
 }
 
 /**
- * Book a sale: exactly `units` leave Alaric (the rest of a stack stays his), exactly `cp` come in. The coin is the
- * engine's credit to him (transaction.completed to "pc"): coin the story shows him pick up there afterwards is this
- * coin, not new coin (src/v4/world.js coin.gift).
+ * Book a sale: exactly `units` of each thing leave Alaric (the rest of a stack stays his, with its Rank and origin),
+ * exactly `cp` come in, once for the whole sale: a buyer's price for a lot of several things is one price (4.3.0-c.6.6.5,
+ * live 15.10.2026: "eight silver for the lot" of four stacks). items: [{ref, units, splitId}], or ref/units/splitId for
+ * one thing. The coin is the engine's credit to him (transaction.completed to "pc"): coin the story shows him pick up
+ * there afterwards is this coin, not new coin (src/v4/world.js coin.gift).
  */
-export function bookSale(s, emit, { ref, units, buyer, cp, what, splitId }) {
-    const o = s.objects[ref];
-    if (o?.holder?.entity === 'pc') {
-        const part = units < (o.qty ?? 1) ? units : null;
-        emit({ t: 'object.moved', d: { id: o.id, to: buyer ? { entity: buyer } : { loc: s.scene.at }, ...(part ? { qty: part, split: splitId } : {}) } });
-    } else if (String(ref).startsWith('item.')) emit({ t: 'item.changed', d: { id: 'pc', item: ref.slice(5), qty: -units, why: 'sold' } });
+export function bookSale(s, emit, { items = null, ref, units, buyer, cp, what, splitId }) {
+    for (const it of items || [{ ref, units, splitId }]) {
+        const o = s.objects[it.ref];
+        if (o?.holder?.entity === 'pc') {
+            const part = it.units < (o.qty ?? 1) ? it.units : null;
+            emit({ t: 'object.moved', d: { id: o.id, to: buyer ? { entity: buyer } : { loc: s.scene.at }, ...(part ? { qty: part, split: it.splitId } : {}) } });
+        } else if (String(it.ref).startsWith('item.')) emit({ t: 'item.changed', d: { id: 'pc', item: String(it.ref).slice(5), qty: -it.units, why: 'sold' } });
+    }
     emit({ t: 'coin.changed', d: { id: 'pc', value: s.entities.pc.sheet.coin_cp + cp, delta: cp, why: `sold ${what}` } });
     emit({ t: 'transaction.completed', d: { to: 'pc', from: buyer, cp, for: what, at: s.scene.at } });
 }
+
+/**
+ * Prototype C (4.3.0-c.6.6.5): a buyer's bid for things Alaric holds, as it stands now: the lines he sells (all of them,
+ * or the ones he names when each has its own price), the price, and why it cannot be sold now (he no longer holds
+ * that many, or he names part of a lot the buyer priced only whole).
+ * @returns {{lines: object[], cp: number} | {error: string, stale?: boolean}}
+ */
+export function bidSale(s, offer, lineIds = null) {
+    const all = offer.lines || [];
+    const lines = Array.isArray(lineIds) && lineIds.length ? all.filter((l) => lineIds.includes(l.id)) : all;
+    if (!lines.length) return { error: 'the bid has no such thing' };
+    const priced = lines.every((l) => Number.isInteger(l.price_cp));
+    if (lines.length < all.length && !priced) return { error: `the ${offer.price_cp} cp are for the whole lot (${all.map((l) => unitsText(l.what, l.qty)).join(', ')}); for part of it the buyer has named no price` };
+    for (const l of lines) {
+        const held = heldUnits(s, l.object);
+        if (held < l.qty) return { error: `he ${held ? `holds only ${held}` : 'no longer holds any'} of ${l.what} (the bid was for ${l.qty})`, stale: true };
+    }
+    const cp = lines.length === all.length && Number.isInteger(offer.price_cp) ? offer.price_cp : lines.reduce((n, l) => n + (l.price_cp || 0), 0);
+    return { lines, cp };
+}
+
+/** "F-Rank Mudwyrm Skin ×2, F-Rank Mudwyrm Fang ×2": the things of a bid. */
+export const bidText = (lines) => lines.map((l) => `${l.what} ×${l.qty}`).join(', ');

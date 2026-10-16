@@ -22,6 +22,8 @@ export function placeRef(placeIds) {
 }
 
 const OFFER_LINE = O({ what: S(), kind: E(['goods', 'service']), service: N(E(SERVICES)), qty: I(1), price_cp: I(0) });
+// 4.3.0-c.6.6.5: a bid's line is one of Alaric's things and how many of it the buyer would take
+const bidLine = (refs) => A(O({ object: refs.object, qty: I(1) }), 1);
 
 function fieldSchema(spec, refs) {
     let s;
@@ -29,6 +31,7 @@ function fieldSchema(spec, refs) {
     else if (spec.ref) s = refs[spec.ref] ?? S();
     else if (spec.enum) s = E(spec.enum);
     else if (spec.array === 'offer_line') s = A(OFFER_LINE, 1);
+    else if (spec.array === 'bid_line') s = bidLine(refs);
     else if (spec.array) s = A(S());
     else if (spec.type === 'integer') s = I(spec.min, spec.max);
     else if (spec.type === 'boolean') s = B();
@@ -72,6 +75,7 @@ function fieldType(spec) {
     if (spec.ref) return `${spec.ref}-ref`;
     if (spec.enum) return spec.enum.map((v) => JSON.stringify(v)).join('|');
     if (spec.array === 'offer_line') return 'offer_line[]';
+    if (spec.array === 'bid_line') return 'bid_line[]';
     if (spec.array) return 'string[]';
     if (spec.type === 'integer') {
         const limits = [spec.min !== undefined ? `>=${spec.min}` : null, spec.max !== undefined ? `<=${spec.max}` : null].filter(Boolean);
@@ -93,6 +97,7 @@ export const FORMAT_RULES = [
     'quest-ref and object-ref mean the exact matching CATALOG id; use {"new":"..."} only when the thing is genuinely new and that reference type permits it.',
     'person-ref is a person id from PRESENT or the CATALOG, or the ref of a person.new/creature.new earlier in the same answer.',
     'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0}.',
+    'bid_line is {"object":object-ref (an exact OBJECTS id of a thing held by Alaric),"qty":integer>=1}.',
     'expected must contain exactly the keys requested below, no other keys.',
 ];
 

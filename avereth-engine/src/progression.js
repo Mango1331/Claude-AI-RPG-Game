@@ -16,11 +16,18 @@ export function defeatXp(targetLevel, targetType, playerRank, content, strength 
  * valued at the rate the content prices the Elite type (Elite: HP ×1.75 and ATK ×1.15 for XP ×1.5). A creature with the
  * standard numbers is worth its Level's XP exactly, whatever it is called; a weaker one no less.
  */
-export function strengthOf(fixed, standard, content) {
+export function strengthOf(fixed, standard, content, reference = null) {
     const power = (fixed.max_hp / standard.max_hp) * (fixed.atk / standard.atk);
-    if (!(power > 1)) return 1;
     const elite = content.monsters.elite;
-    return 1 + ((power - 1) * (content.rules.xp.target_type.elite - 1)) / (elite.hp * elite.atk - 1);
+    const own = power > 1 ? 1 + ((power - 1) * (content.rules.xp.target_type.elite - 1)) / (elite.hp * elite.atk - 1) : 1;
+    // 4.3.0-c.6.6.5 (live 15.10.2026: the strong mudwyrm of the Armored Beast plan, 84 HP, ATK 14, DEF 6, gave 14 XP beside
+    // 12 for the 20-HP serpent mudwyrms): its numbers against an ordinary creature of the same Level and type (content
+    // rules.xp.strength), durability (HP and defenses) times attack, square-rooted and capped; never less than before
+    const x = content.rules.xp.strength;
+    if (!reference || !x) return own;
+    const tough = (p) => p.max_hp * (1 + (((p.def || 0) + (p.mdef || 0)) / 2) * x.defense_weight);
+    const body = Math.min(x.max, Math.sqrt((tough(fixed) * fixed.atk) / (tough(reference) * reference.atk)));
+    return Math.max(1, own, body);
 }
 
 /** Events for an XP award including the WHILE level-up loop with carryover. No resource refill. */

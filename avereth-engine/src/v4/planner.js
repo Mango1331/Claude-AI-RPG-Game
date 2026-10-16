@@ -104,6 +104,14 @@ export const HANDOVER_RULES = [
     '- "*i pull out the contract slip* this one?" → {"commands":[]}',
     '- (RECENT: the ferryman offers to carry the permit up to the harbourmaster) "I\'ll walk up with you and give it to her myself" → {"commands":[{"seq":1,"type":"go","to":{"new":"the harbourmaster"},"quote":"I\'ll walk up with you"},{"seq":2,"type":"give","object":"obj.t3.ferry_permit","to":{"new":"the harbourmaster"},"needs":1,"quote":"give it to her myself"}]}',
     '- "Tomorrow I\'ll take the permit to the harbourmaster." → {"commands":[]}',
+    // 4.3.0-c.6.6.5 (live 15.10.2026): "*i take out every monster part i carry with me*" for the furrier who said "put it
+    // on the counter" became four gives; the parts were hers before any price was named
+    '- Taking things out, laying them out, putting them on a counter or table, or showing them for someone to look at, weigh, appraise or price is no give, even when that person asked to see them or to have them on the counter: they stay his until he sells, trades or gives them.',
+    '- Selling (story commands): when a BID in the catalog covers what he agrees to sell ("deal", "I accept and sell them to her"), that is offer.accept with the bid\'s id. Something no bid covers is sell {object, to, qty, min_cp}. Selling his own things is never buy, and never offer.accept of an OFFER.',
+    'Examples (another town): RECENT: …"Put it on the counter, let\'s see what you have," the furrier says. · OBJECTS: obj.loot.wolf.pelt.f (F-Rank Grey Wolf Pelt, 3, held by Alaric), obj.loot.wolf.fang.f (F-Rank Grey Wolf Fang, 2, held by Alaric) · PRESENT: npc.furrier',
+    '- "*i take out my pelts and fangs and lay them on the counter*" → {"commands":[]}',
+    '- "*i give her one fang as a gift*" → {"commands":[{"seq":1,"type":"give","object":"obj.loot.wolf.fang.f","qty":1,"to":"npc.furrier","quote":"i give her one fang as a gift"}]}',
+    '- (CATALOG: BIDS: offer.t9.2 (furrier pays 40 cp for: l1 obj.loot.wolf.pelt.f ×3, l2 obj.loot.wolf.fang.f ×2)) "*i nod* deal, they\'re yours" → {"commands":[{"seq":1,"type":"offer.accept","offer":"offer.t9.2","lines":null,"qty":null,"quote":"deal, they\'re yours"}]}',
 ].join('\n');
 
 // Steps that build on each other (live run 04.10.2026: "go back to the guild and take the Cull the Bog Striders quest
@@ -127,11 +135,34 @@ const ANNOUNCED_ABANDON = /(?:^|[^a-z'])(?:i'll|ill|i will|i shall|i'm going to|
 // in words or gesture keeps its give
 const PURPOSE_ONLY = /\b(?:here|came|come|coming)\s+(?:\w+\s+){0,2}to\s+(?:deliver|bring|drop off|hand (?:over|in|off)|give)\b/;
 const HANDING = /\b(?:hand(?:s|ed|ing)?|giv(?:e|es|ing)|pass(?:es|ing)?|offer(?:s|ing)?|hold(?:s|ing)? out|holds? it out|set(?:s|ting)? (?:it|the \w+) (?:down|on)|put(?:s|ting)? (?:it|the \w+) (?:down|on|in)|here(?:'s| is| you go)|take it|this is for you)\b(?!\s+(?:to deliver|deliver))/;
+// 4.3.0-c.6.6.5: showing, taking out and laying out (for a look, an appraisal, a price) is no hand-over (live 15.10.2026:
+// "*i take out every monster part i carry with me*" in a monster-parts shop booked four gives). Showing is never a give;
+// laying things out is none for a trader, whose counter is not her hands. A message that gives, sells or trades in words
+// keeps its give
+const SHOWING = /\b(?:show(?:s|ed|ing)?|display\w*|let (?:her|him|them) (?:see|look|inspect|examine|have a look)|(?:for|to) (?:her |his |their |an? )?(?:appraisal|inspection|look|valuation)|apprais\w*|(?:for (?:her|him|them) |so (?:she|he|they) can )?(?:to )?(?:look (?:at|over)|inspect|examine|value|price|check) (?:it|them|the \w+|my \w+|what i)\b)/;
+const LAYING_OUT = /\b(?:(?:take|takes|took|taking|pull|pulls|pulled|pulling|get|gets|got|getting|bring|brings|brought|lay|lays|laid|laying|spread|spreads|spreading|empty|empties|emptied|tip|tips|tipped)\s+(?:\w+\s+){0,5}?(?:out|forth)|unpack\w*|(?:lay|lays|laid|laying|put|puts|putting|set|sets|setting|place|places|placed|placing|spread|spreads)\s+(?:\w+\s+){0,6}?(?:on|onto|across|over)\s+(?:the|her|his|their|a)\s+(?:counter|table|bench|planks|board|cloth|stall))\b/;
+const PARTING = /\b(?:giv(?:e|es|ing)|gave|given|gift\w*|sell\w*|sold|trade\w*|swap\w*|(?:let|lets) (?:her|him|them) (?:have|keep)|keep (?:it|them|the)|(?:it'?s|they'?re|that'?s|this is|these are) (?:yours|for (?:you|her|him|them))|deal\b)/;
+const HANDS = /\b(?:hand(?:s|ed|ing)?|pass(?:es|ed|ing)?|hold(?:s|ing)? (?:\w+ )?out|held (?:\w+ )?out)\b/;
+const TRADER = /\b(?:shop\w*|store\w*|merchant|trader|dealer|buyer|vendor|monger|broker|chandler|furrier|tanner|smith|apothecar\w*|alchemist|herbalist|pawn\w*|fence|outfitter|stall\w*|exchange|peddler|pedlar|haberdasher|leatherworker|clothier|jeweller|jeweler|innkeeper|keeper)\b/;
+
+/** Is this person someone who trades (their role or occupation), or is the place a shop? */
+function traderHere(state, id) {
+    if (!state) return false;
+    const e = state.entities?.[id];
+    const role = [e?.role, e?.occupation, e?.name, ...(e?.descriptors || []), ...Object.values(state.facts || {}).filter((f) => f.s === id && f.p === 'occupation').map((f) => f.o)].filter(Boolean).join(' ');
+    const place = state.places?.[state.scene?.at]?.name || '';
+    return TRADER.test(normText(role)) || TRADER.test(normText(place)) || Object.values(state.offers || {}).some((o) => o.status === 'open' && o.seller === id);
+}
+
+/** A thing he carries for an active contract (a delivery set down on the recipient's counter is handed over). */
+const owed = (state, id) => typeof id === 'string' && (state?.objects?.[id]?.for_quests || []).some((q) => state.quests?.[q]?.status === 'active');
+
 /**
  * The commands whose quote announces the act instead of doing it: quest.abandon for later, a give that only says why
- * he came. {kept, dropped} as the agency guard's.
+ * he came, a give that only shows or lays out his things (4.3.0-c.6.6.5). {kept, dropped} as the agency guard's.
+ * @param {object} [state] the state before the message (who the recipient is: a trader's counter is not a hand-over)
  */
-export function announcedAbandon(message, commands) {
+export function announcedAbandon(message, commands, state = null) {
     const kept = [];
     const dropped = [];
     const all = flat(message ?? '');
@@ -139,6 +170,7 @@ export function announcedAbandon(message, commands) {
         const words = flat(c.quote ?? '');
         if (c.type === 'quest.abandon' && ANNOUNCED_ABANDON.test(words) && inMessage(message, c.quote ?? '')) dropped.push({ command: c, rule: 'plan' });
         else if (c.type === 'give' && PURPOSE_ONLY.test(words) && !HANDING.test(all.replace(PURPOSE_ONLY, ' '))) dropped.push({ command: c, rule: 'plan' });
+        else if (c.type === 'give' && !PARTING.test(all) && (SHOWING.test(words) || (LAYING_OUT.test(words) && !HANDS.test(all) && !owed(state, c.object) && traderHere(state, c.to)))) dropped.push({ command: c, rule: 'shows' });
         else kept.push(c);
     }
     return { kept, dropped };

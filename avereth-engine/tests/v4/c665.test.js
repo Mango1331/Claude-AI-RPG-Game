@@ -351,7 +351,7 @@ test('c.6.6.5 narrator 23-24: the Mage\'s Basic Attack is a bolt from where he s
         block = turnBlock(g.chat, g.chat.length - 1, content).context.text;
         await g.reply('The fight goes on.', { expected: {}, deltas: [] });
     }
-    assert.match(block, /Basic Attack -> .*Magical \/ Ranged \/ Projectile: from where he stands, no step and no melee blow/);
+    assert.match(block, /Basic Attack(?: \(FIRST STRIKE[^)]*\))? -> .*Magical \/ Ranged \/ Projectile: from where he stands, no step and no melee blow/);
     if (/LOOT \(/.test(block)) assert.match(block, /magic pouch: no weight, bulk, packing, straps or carrying effort/);
     const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
     assert.match(contract, /Automatic loot sits in his magic pouch/);

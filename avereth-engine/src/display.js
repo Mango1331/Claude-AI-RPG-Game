@@ -363,7 +363,7 @@ function roundLines(name, records) {
     for (const r of records) {
         if (r.round !== round) {
             round = r.round;
-            out.push(sys(round === 0 ? '— Opening Action (Ambush) —' : `— Round ${round} —`));
+            out.push(sys(round === 0 ? (r.first_strike ? '— First Strike (no Ambush) —' : '— Opening Action (Ambush) —') : `— Round ${round} —`));
         }
         out.push(...recordLines(name, r));
     }
@@ -391,7 +391,7 @@ function recordLines(name, r) {
             ? ` (moves closer: ${String(r.move.change).replace(/ -> /g, ' → ')})`
             : ` (moves ${r.move.from} → ${r.move.to})`) : '';
         const back = r.after_move ? ` · then steps back (${String(r.after_move.change).replace(/ -> /g, ' → ')})` : '';
-        const lines = [sys(`${who}${move}: ${r.skill_name}${r.opening ? ' (AMBUSH opening)' : ''} → ${name(r.strikes?.[0]?.target || r.target)}${cost}${ammo}${back}`)];
+        const lines = [sys(`${who}${move}: ${r.skill_name}${r.opening ? ' (AMBUSH opening)' : ''}${r.first_strike ? ' (FIRST STRIKE)' : ''} → ${name(r.strikes?.[0]?.target || r.target)}${cost}${ammo}${back}`)];
         const many = (r.strikes || []).length > 1;
         for (const [i, s] of (r.strikes || []).entries()) {
             const pre = many ? `${name(s.target)}${r.strikes.every((x) => x.target === s.target) ? ` #${i + 1}` : ''}: ` : '';

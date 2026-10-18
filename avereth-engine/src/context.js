@@ -195,13 +195,16 @@ export function recordLine(state, r, name = (id) => fightLabel(state, id), conte
     const who = `${name(r.actor)}${r.turned ? ` (turns on Alaric, ${r.turned})` : ''}`;
     if (r.kind === 'attack') {
         const parts = [];
-        if (r.move) parts.push(`moves ${r.move.from} -> ${r.move.to}`);
+        // Prototype C (4.3.0-c.6.6.7, live: Hounds C and D closed SHORT -> ENGAGED before biting and were still told in
+        // the den): a step before the attack is told first, in its order, with where it ends
+        const before = content && r.move?.from && r.move?.to ? ` first moves ${r.move.from} -> ${r.move.to} (now ${r.move.to}), then` : '';
+        if (r.move && !before) parts.push(`moves ${r.move.from} -> ${r.move.to}`);
         // 4.3.0-c.6.6.5 (live 15.10.2026: the Mage's Basic Attack, a magical bolt at MEDIUM, was told as a staff blow after
         // walking around the roots): what kind of attack it is and that a ranged one leaves him where he stands
         const sk = r.actor === 'pc' && content ? content.skills.get(r.skill) : null;
         const ranged = sk && (sk.range?.band !== 'ENGAGED' || sk.attack?.damage_type === 'magical');
         if (sk?.type_text && ranged && !r.move) parts.push(`${sk.type_text}: from where he stands, no step and no melee blow`);
-        const head = `${who}: ${r.skill_name}${r.opening ? ' (AMBUSH Opening Action)' : ''} -> ${name(r.strikes?.[0]?.target || r.target)}`;
+        const head = `${who}:${before} ${r.skill_name}${r.opening ? ' (AMBUSH Opening Action)' : ''}${r.first_strike ? ' (FIRST STRIKE: opens the fight before the Turn order; no Ambush bonus)' : ''} -> ${name(r.strikes?.[0]?.target || r.target)}`;
         if (r.cost) parts.push(`${r.cost.resource.toUpperCase()} ${r.cost.before}->${r.cost.after}`);
         if (r.ammo) parts.push(`${r.ammo.used} arrow${r.ammo.used > 1 ? 's' : ''} fired`);
         if (r.after_move) parts.push(`then steps back: ${r.after_move.change}`);
@@ -257,6 +260,9 @@ function outcomeLines(state, content, outcome, { v4 = false } = {}) {
         }
         if (outcome.started) lines.push(`${outcome.started.joined ? outcome.started.reason : `Combat starts (${outcome.started.reason})`}. Turn order: ${outcome.started.order}.`);
         for (const r of outcome.records) lines.push(`- ${recordLine(state, r, (id) => fightLabel(state, id, outcome.board?.labels), outcome.c ? content : null)}`);
+        // Prototype C (4.3.0-c.6.6.7): where everyone stands once these steps are done; a place they left is behind them
+        const stand = outcome.c && outcome.records.length && outcome.board ? outcome.board.hp.filter((h) => h.id !== 'pc' && h.band && !h.state) : [];
+        if (stand.length) lines.push(`- Where everyone stands after these steps (end the narration with them there; a place they left, a den or cover, is behind them): ${stand.map((h) => `${fightLabel(state, h.id, outcome.board.labels)} ${h.band}${h.cover && h.cover !== 'none' ? ` (${h.cover} cover)` : ''}`).join(', ')}.`);
         if (outcome.note) lines.push(`- ${outcome.note}`);
         if (outcome.illegal) lines.push(`- Alaric's declared action is NOT possible now: ${outcome.illegal}. Nothing was spent or rolled for it; it is still Alaric's decision.`);
         if (outcome.ended) {

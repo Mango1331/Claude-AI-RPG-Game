@@ -251,10 +251,10 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt-c666` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.6.6`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt-c666` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.6.7`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
-   - Vertrag v4 (Revision 4.3.0-c.6.6.6: die Kartenbeschreibung vollständig durch `content/narrator/Avereth_Narrator_Contract_v4.txt` ersetzen; SillyTavern liest die Beschreibung bei jeder Antwort neu, ein laufender Chat spielt also ab der nächsten Antwort mit ihr, die Statuszeile zeigt `narrator contract: current`), Preset „Avereth Narrator V4“, Lorebook v0.13.
+   - Vertrag v4 (Revision 4.3.0-c.6.6.6, unter Build c.6.6.7 unverändert: die Kartenbeschreibung vollständig durch `content/narrator/Avereth_Narrator_Contract_v4.txt` ersetzen; SillyTavern liest die Beschreibung bei jeder Antwort neu, ein laufender Chat spielt also ab der nächsten Antwort mit ihr, die Statuszeile zeigt `narrator contract: current`), Preset „Avereth Narrator V4“, Lorebook v0.13.
 3. **Schalter:** Engine-Panel → **„Prototype C: semantic planner“** anhaken.
    - Er gilt für jede V4-Kampagne, auch eine laufende, ab der nächsten Nachricht.
    - Ausschalten bringt A zurück.
@@ -837,3 +837,71 @@ Tests: `tests/v4/c666.test.js` (13 Tests zu den erwarteten Regressionstests 1–
 - Verbündete und Neutrale im Kampf greifen keine Monster an: Das Kampfsystem kennt keine Angriffe zwischen NPCs. Sie halten sich heraus oder weichen zurück, bis sie selbst zu Alarics Gegnern werden.
 - Für Nicht-Feinde, die er tötet, gibt es keine Kampf-XP (Beute ja). Wer sich gegen ihn wendet, bekommt ab dann gewöhnliche Defeat-XP.
 - Ob jemand Verbündeter ist, liest die Engine nur aus der Haltung (≥ 20). Einen eigenen Gruppen- oder Gefährtenstatus gibt es nicht.
+
+### Nachtrag 4.3.0-c.6.6.7 (Kampfbeginn und Reaktionen; Livetest „Branch #3“, 18.10.2026)
+
+Nur Pfad C (`ctx.c`). Pfad A ist unverändert. Balancing, Handel, Auftritte, Preset, Lorebook und Vertrag sind ebenfalls unverändert (Vertragsrevision bleibt `4.3.0-c.6.6.6`).
+
+**Befund 1: Der eigene erste Angriff wartete auf seinen Initiativplatz.**
+- Live (`*i arcane burst*` unter vier aufmerksamen Hunden): A und B standen ENGAGED, C und D auf SHORT. C und D rückten in ihren Zügen vor Alaric heran, danach traf der Burst alle vier.
+- Ursache: Ein vom Spieler ausgelöster Kampf ohne Ambush legte nur `enc.trigger` an und führte ihn erst an Alarics Platz in der Zugfolge aus. Einen vorgezogenen Angriff gab es nur für den Hinterhalt (Opening Action).
+
+**Neu: First Strike** (`src/combat.js` `initEncounter`, `runCombat`):
+- Ein offener Angriff, der einen Kampf eröffnet, wird zuerst aufgelöst, vor jedem anderen Zug, mit den Distanzen dieses Moments. Ein im selben Satz erklärter Schritt gehört dazu.
+- Es gibt keinen Ambush-Bonus.
+- Der Angriff ist die Aktion seines Urhebers in Runde 1. Sein Platz in der Zugfolge wird einmal übersprungen (`enc.spent`). Es entsteht keine zweite Aktion, keine zweite Kostenbuchung und kein zusätzlicher Zug.
+- Wer dabei fällt, handelt nicht mehr. Danach läuft die Initiative regulär.
+- Der Hinterhalt (Ziel nicht aufmerksam) bleibt wie bisher: Opening Action mit kritischem Treffer, und Alarics Runde-1-Zug bleibt ihm.
+- Ein unmöglicher Angriff (zu wenig MP, außer Reichweite) bucht nichts: kein MP-Abzug, kein Schritt, kein Kampf.
+
+**Symmetrie für NPCs:**
+- Die Regel gilt auch, wenn ein NPC den Kampf eröffnet: ein feindliches Delta in der Antwort oder ein offenes `pending_combat`. Sein Angriff kommt zuerst, auch wenn Alaric im nächsten Zug angreift; Alaric überholt ihn nicht.
+- Die gespeicherte Absicht des NPCs wird danach gelöscht, damit er nicht doppelt angreift.
+- Bedrohliche Haltung, Aufmerksamkeit oder ein bloßes `pending_intents: attack` gelten nicht als Bindung. Erst `pending_combat` oder ein laufender Kampf binden.
+
+**Befund 2: Ein getroffener Nicht-Feind antwortete nicht, wenn der Kampf damit endete.**
+- Nachgestellt an #111 mit einem Packpferd neben dem letzten Hund: Der Burst tötete den Hund. `terminal()` beendete den Kampf sofort, und das mitgetroffene Pferd reagierte nie.
+- Zusätzlich reagierte `asideTurn` auf jeden früheren Treffer, auch auf einen längst beantworteten.
+
+**Neu: offene Reaktionen** (`reactionsDue`, `asideTurn`):
+- Bevor der Kampf endet, antwortet jeder lebende, nicht kapitulierte Nicht-Feind, den Alaric seit dessen eigenem letzten Zug getroffen hat, genau einmal.
+- Die Antwort zählt als Aktion dieser Runde. Der Platz in der Zugfolge wird übersprungen, solange er noch aussteht.
+- Verbündete bleiben Verbündete und weichen zurück. Neutrale folgen ihrem Temperament (`opensViolence` + `npcDecide`): Ein scheues Tier weicht aus, ein aggressiver Wächter greift an.
+- Erst ein tatsächlicher Angriff macht einen Neutralen zu Alarics Feind, mit gewöhnlichen Defeat-XP ab dann; der Kampf geht weiter.
+- Bereits beantwortete Treffer lösen nichts mehr aus. Wer nichts mehr zu beantworten hat, bleibt einfach stehen.
+- Rückwirkende XP gibt es nicht, und es entstehen keine Endlosschleifen: Eine Antwort ohne Seitenwechsel beendet den Kampf.
+
+**Befund 3 (P2): Räumliche Kontinuität der Erzählung.**
+- Kleine Korrektur im Kontext des Erzählers (`src/context.js`):
+  - Ein Schritt vor einem Angriff steht als `X: first moves SHORT -> ENGAGED (now ENGAGED), then Bite -> Alaric`.
+  - Am Ende steht eine Zeile „Where everyone stands after these steps …“ mit den Bändern aller Lebenden.
+- Das Panel kennzeichnet den Kampfbeginn als „— First Strike (no Ambush) —“, den Angriff mit „(FIRST STRIKE)“.
+
+**Tests:** `tests/v4/c667.test.js` mit 11 Tests: A–I, Pfad A unverändert, P2.
+
+| Test | Prüft |
+|---|---|
+| A | Hundeszene: Burst trifft genau A und B, 14 MP einmal, kein Crit; C und D rücken danach heran; nächster Zug „Alaric's Turn (Round 2)“ |
+| B | Einzelziel |
+| C | Hinterhalt unverändert |
+| D | NPC hat sich bereits gebunden (Antwort-Delta oder `pending_combat`) |
+| E | Schritt + Burst im selben Satz, Distanzen beim Wirken; ein Schritt in einer früheren Nachricht eröffnet keinen Kampf |
+| F | Unmöglicher Angriff bucht nichts |
+| G | Nur ein Neutraler wird getroffen: Pferd weicht aus, Kampf endet, keine XP; aggressiver Wächter greift an, höchstens eine Aktion je Runde |
+| H | Letzter Hund tot, Pferd antwortet noch; XP nur für den Hund |
+| I | Keine leeren Züge; ein Gefährte beantwortet einen Treffer genau einmal |
+
+- Mutationsproben: 8 Fixes einzeln zurückgedreht, jeder fällt durch.
+- Gesamt: 716/716.
+- Planner aus: identisch zu c.6.6.6 (122/122 Live-Schritte, 18/18 Kampfeingaben).
+- Smokes: Browser, SillyTavern V3, V4 und C OK.
+- Build: `4.3.0-c.6.6.7`.
+
+**SillyTavern:** Nur den Extension-Ordner ersetzen. Karte, Preset und Lorebook bleiben, weil die Vertragsrevision unverändert ist.
+
+**Grenzen von c.6.6.7:**
+- Der First Strike verbraucht Alarics Runde 1. NPCs, die in der Zugfolge vor ihm stehen, handeln deshalb in Runde 1 und in Runde 2 vor seiner zweiten Aktion. Das ist regelkonform, wirkt aber wie zwei Züge des Gegners am Stück.
+- Eine Reaktion vor Runde 1 wird mit der Rundenzahl 1 protokolliert.
+- `pending_intents: attack` allein bindet nicht. Ein NPC, der nur „gleich angreifen will“, wird vom First Strike überholt.
+- Es gibt weiterhin keine Angriffe zwischen NPCs. Verbündete und Neutrale greifen keine Monster an.
+- Die Raumkontinuität der Erzählung wird nur über den Kontext geführt. Die Engine prüft die Prosa nicht auf Positionsfehler.

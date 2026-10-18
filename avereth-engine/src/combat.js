@@ -189,6 +189,16 @@ export function initEncounter(state, content, dice, trigger, participants, encId
         enc.ambush_reason = enc.ambush ? `${combatants[trigger.actor].name} attacked from concealment -> true Ambush (Opening Action: guaranteed Critical Hit ×1.5)` : `${combatants[trigger.actor].name} attacks openly; its trigger action waits for its Turn`;
         if (!enc.ambush) enc.intents[trigger.actor] = 'attack';
     }
+    // Prototype C (4.3.0-c.6.6.7, live 18.10.2026: "*i arcane burst*" among four aware hounds waited for Alaric's place in
+    // the Turn order; C and D closed from SHORT first and the burst struck four instead of the two in reach): an open
+    // attack that starts the fight, his or an attacker's, is resolved first, without any Ambush bonus, as its maker's
+    // action of Round 1 (runCombat). An Ambush keeps its Opening Action; an open commitment to fight (engage) is no attack
+    if (c && !trigger.engage && !enc.ambush && (trigger.actor === 'pc' ? !!combatants[trigger.target] : !!combatants[trigger.actor])) {
+        enc.first_strike = true;
+        enc.ambush_reason = trigger.actor === 'pc'
+            ? `target awareness: ${state.scene.awareness[trigger.target] || 'unknown'} -> no Ambush; his declared attack opens the fight first (First Strike: no Ambush bonus; it is his action of Round 1)`
+            : `${combatants[trigger.actor].name} attacks openly; its attack opens the fight first (First Strike: no Ambush bonus; its action of Round 1)`;
+    }
     enc.order = initiativeOrder(enc, dice);
     return enc;
 }
@@ -818,7 +828,9 @@ function npcAttackSkill(ctx, me) {
 function asideTurn(ctx, npcId) {
     const { enc } = ctx;
     const me = enc.combatants[npcId];
-    const struck = [...enc.log].reverse().find((r) => r.actor === 'pc' && (r.strikes || []).some((k) => k.target === npcId));
+    // 4.3.0-c.6.6.7: a strike since its own last Turn; an old one was answered then
+    const ownLast = enc.log.findLastIndex((r) => r.actor === npcId);
+    const struck = enc.log.slice(ownLast + 1).findLast((r) => r.actor === 'pc' && (r.strikes || []).some((k) => k.target === npcId));
     const turnOn = (why, decision) => {
         me.side = 'hostile';
         me.fixed.defeat_xp = hostileXp(me, ctx.state, ctx.content, enc.pc_rank);
@@ -831,8 +843,12 @@ function asideTurn(ctx, npcId) {
         me.side = 'hostile';
         const decision = npcDecide(ctx, npcId);
         me.side = side;
-        if (decision.kind === 'attack' || decision.kind === 'close_and_attack') return turnOn(`struck by his ${struck.skill_name || 'attack'}`, decision);
-        if (decision.kind !== 'surrender' && decision.kind !== 'hold') return { ...npcAct(ctx, npcId, decision), why: `${who}, struck by his ${struck.skill_name || 'attack'}: ${decision.why || decision.kind}` };
+        // 4.3.0-c.6.6.7: only one its nature lets open violence (src/policy.js: a skittish animal flees what hurt it)
+        const attitude = ctx.state?.relations?.[`rel.${npcId}.attitude.pc`]?.value ?? 0;
+        const temperament = me.fixed.temperament || (me.fixed.sapient ? 'cautious' : 'aggressive');
+        const may = opensViolence({ sapient: me.fixed.sapient, temperament, attitude, harmed: true, band: me.current.band }).ok;
+        if (may && (decision.kind === 'attack' || decision.kind === 'close_and_attack')) return turnOn(`struck by his ${struck.skill_name || 'attack'}`, decision);
+        if (!['surrender', 'hold', 'attack', 'close_and_attack'].includes(decision.kind)) return { ...npcAct(ctx, npcId, decision), why: `${who}, struck by his ${struck.skill_name || 'attack'}: ${decision.why || decision.kind}` };
     }
     if (struck && me.current.band !== 'LONG') return { ...moveAction(ctx, npcId, 'away'), kind: 'move', dir: 'away', why: `${who}, struck by his ${struck.skill_name || 'attack'}: steps back out of reach` };
     return { round: enc.round, actor: npcId, kind: 'hold', why: `${who}: keeps out of the fight` };
@@ -904,6 +920,21 @@ function endTurn(enc, actorId) {
     for (const c of Object.values(enc.combatants)) {
         c.current.effects = c.current.effects.filter((e) => !(e.source === actorId && e.expires === 'end_of_source_next_turn' && e.round < enc.round_marker - 0.5));
     }
+}
+
+/**
+ * Prototype C (4.3.0-c.6.6.7): who in the fight is no foe of his, alive, and struck by him since their own last Turn: their
+ * answer to the strike is still due when the fight would end (runCombat). One answer per strike; an old one is answered.
+ */
+function reactionsDue(enc) {
+    const pc = enc.combatants.pc;
+    if (pc.current.defeated || pc.current.escaped) return [];
+    return enc.order.filter((id) => {
+        const c = enc.combatants[id];
+        if (id === 'pc' || c.side === 'hostile' || !alive(c) || c.current.surrendered) return false;
+        const hit = enc.log.findLastIndex((r) => r.actor === 'pc' && (r.strikes || []).some((k) => k.target === id));
+        return hit >= 0 && enc.log.findLastIndex((r) => r.actor === id) < hit;
+    });
 }
 
 function terminal(enc) {
@@ -1020,10 +1051,56 @@ export function runCombat(ctx, pcAction) {
         enc.trigger_done = true;
         push(r);
     }
+    // Prototype C (4.3.0-c.6.6.7): First Strike, an open attack that starts the fight (initEncounter), before Round 1.
+    // It is its maker's action of Round 1: that place in the Turn order is passed over once (enc.spent)
+    if (ctx.c && enc.round === 0 && enc.first_strike && !enc.opening && !enc.trigger_done) {
+        const t = enc.trigger;
+        let r;
+        if (t.actor === 'pc') {
+            r = attackAction(ctx, 'pc', t.target, t.skill, { move: t.move, moveTarget: t.move_target });
+            if (r.illegal) return { enc, records, stopped: 'illegal', illegal: r.illegal };
+            pcActed = true;
+        } else {
+            const me = enc.combatants[t.actor];
+            const sid = me.model === 'creature' ? null : npcAttackSkill(ctx, me);
+            r = me.model !== 'creature' && !sid ? { illegal: 'no attack reaches' } : attackAction(ctx, t.actor, 'pc', sid, { move: 'closer', autoNormalMove: true });
+            // out of reach even after its step: no First Strike, it attacks on its own Turn as before; made, the attack
+            // is the one its intent announced (npcDecide uses an intent once)
+            if (r.illegal) r = null;
+            else delete enc.intents[t.actor];
+        }
+        enc.opening = true;
+        enc.trigger_done = true;
+        if (r) {
+            r.first_strike = true;
+            r.note = 'First Strike (an open attack that opens the fight: no Ambush bonus; its maker\'s action of Round 1)';
+            enc.spent = { ...(enc.spent || {}), [t.actor]: 1 };
+            push(r);
+        }
+    }
     if (enc.round === 0) { enc.round = 1; enc.turn_index = -1; advance(enc); if (enc.round > 1) enc.round = 1; }
     let guard = 0;
-    while (!terminal(enc) && guard++ < 200) {
+    while (guard++ < 200) {
+        if (terminal(enc)) {
+            // Prototype C (4.3.0-c.6.6.7): someone who is no foe of his, struck since their last Turn, answers the strike
+            // before the fight ends (asideTurn); that answer is their action of this Round. A turn on him goes on fighting
+            const due = ctx.c ? reactionsDue(enc) : [];
+            if (!due.length) break;
+            for (const id of due) {
+                startTurn(enc, id);
+                push({ ...npcTurn(ctx, id), reaction: true });
+                endTurn(enc, id);
+                if (enc.order.indexOf(id) >= enc.turn_index) enc.spent = { ...(enc.spent || {}), [id]: enc.round };
+            }
+            continue;
+        }
         const actorId = enc.current;
+        // a place in the Turn order already used this Round (a First Strike, an answer to a strike) is passed over once
+        if (enc.spent?.[actorId] !== undefined) {
+            const round = enc.spent[actorId];
+            delete enc.spent[actorId];
+            if (round === enc.round) { advance(enc); continue; }
+        }
         startTurn(enc, actorId);
         if (actorId === 'pc') {
             if (pcActed) return { enc, records, stopped: 'pc_turn' };

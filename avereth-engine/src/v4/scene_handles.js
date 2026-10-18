@@ -68,3 +68,41 @@ export function tacticalHere(state, { friendly = true } = {}) {
         return e.kind === 'creature' || relevant.has(id) || threats.has(id) || committed;
     });
 }
+
+const BANDS = ['ENGAGED', 'SHORT', 'MEDIUM', 'LONG'];
+/**
+ * Prototype C (4.3.0-c.6.6.6): who Alaric's one-band step brings him nearer to (or farther from) outside the fight's
+ * combatants (their bands are the fight's, src/combat.js repositionPc): the one he names, else those he moves among —
+ * the visible foes, and only when there are none the others here (live 18.10.2026: "I walk in front of them" in the
+ * pups' den). A bystander beside the foes he steps toward stays as near as the story put them.
+ * @returns {{id: string, from: string, to: string}[]} only those whose band changes
+ */
+export function approachedBy(state, { move = null, moveTarget = null } = {}) {
+    if (move !== 'closer' && move !== 'away') return [];
+    const foes = tacticalHere(state, { friendly: false });
+    const among = moveTarget ? [moveTarget] : foes.length ? foes : tacticalHere(state);
+    return among.filter((id) => id !== 'pc' && (state.scene?.present || []).includes(id) && !state.encounter?.combatants?.[id]
+        && state.entities?.[id] && state.entities[id].status !== 'dead' && BANDS.includes(state.scene.positions?.[id]?.band))
+        .map((id) => {
+            const from = state.scene.positions[id].band;
+            const to = BANDS[Math.max(0, Math.min(BANDS.length - 1, BANDS.indexOf(from) + (move === 'closer' ? -1 : 1)))];
+            return { id, from, to };
+        }).filter((x) => x.from !== x.to);
+}
+
+/**
+ * Prototype C (4.3.0-c.6.6.6, live 18.10.2026: Feral Hounds B, C and D stood ENGAGED with Alaric, the fight held only
+ * Hound A, and his Arcane Burst struck A alone): ENGAGED is how near someone is to him, not whether they fight. An area
+ * attack centred on him catches everyone present ENGAGED with him after the one-band step he declares with it (see
+ * approachedBy): foe, bystander or friend. These are the ones outside the fight; they enter it when the attack happens
+ * (src/engine.js). Who stands farther off is not caught.
+ * @returns {string[]}
+ */
+export function areaCaught(state, { move = null, moveTarget = null } = {}) {
+    const stepped = new Map(approachedBy(state, { move: move === 'closer' ? 'closer' : null, moveTarget }).map((x) => [x.id, x.to]));
+    return (state.scene?.present || []).filter((id) => {
+        const e = state.entities?.[id];
+        if (id === 'pc' || !e || e.status === 'dead' || !['npc', 'creature'].includes(e.kind) || state.encounter?.combatants?.[id]) return false;
+        return (stepped.get(id) || state.scene.positions?.[id]?.band) === 'ENGAGED';
+    });
+}

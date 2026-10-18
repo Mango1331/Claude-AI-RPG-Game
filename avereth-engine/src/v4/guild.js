@@ -9,7 +9,7 @@ import { setFactEvents, perceivers, knows, truth, PC_NAME_FACT } from '../knowle
 import { awardXp, questXp } from '../progression.js';
 import { rankOf, rankIndex } from '../derived.js';
 import { slug, normText } from '../util.js';
-import { hallOf, settlementOf, heldBy, membership, listingsOf, boardKey, today, contracts, supportedRanks, placeName, namesKind, namesPeople, peopleNamed } from './domain.js';
+import { hallOf, settlementOf, heldBy, membership, listingsOf, boardKey, today, contracts, supportedRanks, placeName, namesKind, namesPeople, peopleNamed, sameKinds, namesYoung } from './domain.js';
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
@@ -158,27 +158,49 @@ export function proofText(q) {
  * died, four pairs of leg joints lay in the pack, the story said "four adults, all told"): the creatures of the named
  * kind that died since the contract was taken. Trophies are no count; the story may still reach the outcome otherwise
  * (the rest fled for good), and quest.ready then says how (src/v4/world.js).
- * @returns {{what: string, qty: number, done: number}[]}
+ * Prototype C (4.3.0-c.6.6.6, live 18.10.2026: two feral hounds killed, the count said 0 of 4): the kind is the
+ * objective's words or its unit ("feral dogs of the pack", unit "hounds"), with the words content holds as one kind
+ * (dog = hound); the young of the kind (the pack's pups) count only when the objective names them; and where the
+ * contract allows driving them off, each one the engine saw flee a fight (fled) counts as driven off. One the story
+ * only lets walk out of the scene is not counted: quest.ready's alternative says how the outcome was reached then.
+ * @returns {{what: string, qty: number, done: number, killed: number, driven: number}[]}
  */
 export function defeatTally(s, content, q) {
     const since = (q.history || []).find((h) => h.status === 'active')?.turn ?? 0;
-    const dead = Object.values(s.entities).filter((e) => e.kind === 'creature' || e.kind === 'npc').filter((e) => {
-        const f = truth(s, e.id, 'status')[0];
-        return f?.o === 'dead' && (f.since?.turn ?? 0) >= since;
-    });
+    const status = (e) => truth(s, e.id, 'status')[0];
+    const beings = Object.values(s.entities).filter((e) => e.kind === 'creature' || e.kind === 'npc');
+    const dead = beings.filter((e) => status(e)?.o === 'dead' && (status(e).since?.turn ?? 0) >= since);
+    const fled = drivesOff(content, q) ? beings.filter((e) => status(e)?.o !== 'dead' && e.fled && (e.fled.turn ?? 0) >= since) : [];
+    const same = sameKinds(content);
     return (q.objectives || []).filter((o) => o.verb === 'DEFEAT' && Number.isInteger(o.qty) && o.qty > 0).map((o) => {
         // animals and monsters by their kind; people by their role ("raiders": a dead brigand counts, review of 4.1.3:
         // 4.1.2 counted creatures only, so five dead bandits made 0 of 5)
         const people = peopleNamed(o.what, content);
+        const young = namesYoung(content, `${o.what} ${o.unit || ''}`);
+        const kind = (e) => {
+            const anchor = content.anchors.get(e.anchor || e.profile?.anchor);
+            return [o.what, o.unit].filter(Boolean).some((w) => namesKind(w, e.species || '', anchor, same))
+                && (young || !namesYoung(content, `${e.species || ''} ${e.name || ''}`));
+        };
         const counts = (e) => (people.size
             ? e.kind === 'npc' && (e.descriptors || []).some((d) => [...peopleNamed(d, content)].some((t) => people.has(t)))
-            : e.kind === 'creature' && namesKind(o.what, e.species || '', content.anchors.get(e.anchor || e.profile?.anchor)));
-        return { what: o.what, qty: o.qty, done: dead.filter(counts).length };
+            : e.kind === 'creature' && kind(e));
+        const killed = dead.filter(counts).length;
+        const driven = fled.filter(counts).length;
+        return { what: o.what, qty: o.qty, done: killed + driven, killed, driven };
     });
 }
 
+/** Does the contract allow its targets to be driven off ("driven off or destroyed", "Clear the hounds from …")? */
+export function drivesOff(content, q) {
+    const w = content.rules.guild?.drive_off;
+    if (!w) return false;
+    const re = new RegExp(`\\b(?:${w.verbs})\\b(?:\\s+[a-z'-]+){0,3}?\\s+(?:${w.after})\\b|\\b(?:${w.alone})\\b`, 'i');
+    return re.test([q.title, q.desired_end_state, q.description].filter(Boolean).join(' '));
+}
+
 /** "3 of 4 bog striders": the tally as the engine block and the catalog show it. */
-export const tallyText = (tally) => tally.map((t) => `${t.done} of ${t.qty} ${t.what}`).join('; ');
+export const tallyText = (tally) => tally.map((t) => `${t.done} of ${t.qty} ${t.what}${t.driven ? ` (${t.killed} killed, ${t.driven} driven off)` : ''}`).join('; ');
 
 // What a quest note may not keep as memory (the engine's status, payout, XP and rank of a contract): one clause rule
 // for every free-text store, in src/v4/ownership.js (Gen 3.5 Decision Ownership)

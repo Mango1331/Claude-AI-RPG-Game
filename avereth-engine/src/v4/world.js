@@ -20,6 +20,7 @@ import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolati
 import { mayOpenFight, mayTake } from './envelope.js';
 import {
     PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE,
+    progressKey, sameKinds, kindOf,
 } from './domain.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
@@ -253,7 +254,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     // "swarm of rats" ~ "rats"), or the objective names the body plan's whole kind ("the vermin in the cellar": rats).
     const hunted = (d, anchor) => Object.values(s.quests).filter((q) => q.status === 'active')
         .flatMap((q) => (q.objectives || []).filter((o) => o.verb === 'ATTACK' || o.verb === 'DEFEAT'))
-        .some((o) => namesKind(o.what, d.species, anchor));
+        .some((o) => namesKind(o.what, d.species, anchor, cPath ? sameKinds(content) : null));
     const newEntity = (d, kind) => {
         // A large group of skittish animals (their body-plan's temperament: a flock, a herd, a flight of birds) that nobody
         // set on Alaric is the scene's background, one fact, not a dozen combat profiles (live 30.09.2026: twelve penned
@@ -619,7 +620,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'quest.progress': {
                 const q = questRef(d.quest);
                 if (!q) { reject(d, 'quest', 'unknown quest'); break; }
-                emit({ t: 'quest.progressed', d: { id: q.id, objective: String(d.objective).slice(0, 160), status: d.status } });
+                // Prototype C (4.3.0-c.6.6.6): the same word on the same objective again is no news (one entry each)
+                const said = String(d.objective).slice(0, 160);
+                if (cPath && (q.progress || []).some((p) => progressKey(q, p.objective) === progressKey(q, said) && p.status === d.status)) break;
+                emit({ t: 'quest.progressed', d: { id: q.id, objective: said, status: d.status } });
                 break;
             }
             case 'quest.ready': {
@@ -894,6 +898,25 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         return null;
     }
 
+    /**
+     * Prototype C (4.3.0-c.6.6.6, live 18.10.2026: "I walk into the dark looking for the pups" made the den a room of
+     * the alleys, and the four pups the scene held were gone from it: "PRESENT: nobody besides Alaric", his Arcane
+     * Burst had no one to hit). A step into a part of the place he is in, back out of it or into the next part of the
+     * same place, toward creatures of the scene: those his GO names (their kind or name) are there with him. The story's
+     * arrive.with brings anyone else; nobody else is moved into another room.
+     */
+    function soughtHere(id, party) {
+        const from = s.scene.at;
+        const local = !!from && !!s.places[id] && (s.places[id].parent === from || s.places[from]?.parent === id
+            || (!!s.places[id].parent && s.places[id].parent === s.places[from]?.parent));
+        if (!local) return [];
+        const said = [...(auth.gos || []).map((g) => g.newName || g.name || ''), ...(outcome.resolutions || []).filter((r) => r.type === 'go').map((r) => r.quote || '')].join(' ');
+        const words = kindOf(said).words;
+        const named = (e) => [e.species, e.name, e.known_name].filter(Boolean).some((t) => { const h = kindOf(t).head; return !!h && h.length >= 3 && words.has(h); });
+        return s.scene.present.filter((who) => who !== 'pc' && !party.includes(who) && s.entities[who]?.kind === 'creature' && statusOf(s, who) !== 'dead' && named(s.entities[who]))
+            .map((who) => ({ id: who, awareness: s.scene.awareness?.[who] || null, relevant: (s.scene.relevant || []).includes(who), threat: (s.scene.threats || []).includes(who) }));
+    }
+
     function arrive(id, party = []) {
         const town = locationOf(s, id);
         const from = s.scene.at;
@@ -905,9 +928,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             if (who === 'pc' || party.includes(who) || e?.kind !== 'npc' || e.status === 'dead' || e.at === from) continue;
             emit({ t: 'entity.updated', d: { id: who, set: { at: from } } });
         }
+        const near = cPath ? soughtHere(id, party) : [];
         emit({ t: 'scene.moved', d: { at: id, location: town, place: placeName(s, id), reset_present: true, ...(cPath ? { track_history: true } : {}) } });
         // who travelled with him arrives with him
         for (const who of party) emit({ t: 'scene.entered', d: { id: who, band: 'SHORT' } });
+        // and the creatures he went to in a part of the place he was in are there with him, as he knew them
+        for (const n of near) {
+            emit({ t: 'scene.entered', d: { id: n.id, band: 'SHORT' } });
+            if (n.awareness) emit({ t: 'scene.awareness', d: { id: n.id, level: n.awareness } });
+            if (n.relevant || n.threat) emit({ t: 'scene.tactical', d: { id: n.id, relevant: n.relevant, threat: n.threat } });
+        }
         arrived = id;
         // he set off on a quest's journey (a GO while its people were with him) and has left the settlement: it has begun
         const trip = auth.journey && s.quests[auth.journey];

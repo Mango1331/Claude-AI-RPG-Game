@@ -34,6 +34,23 @@ function serializableAuth(auth) {
 }
 
 /**
+ * Prototype C (4.3.0-c.6.6.6): the coin the engine booked for Alaric in this turn, each change as its events have it (a
+ * sale, a purchase, a payment, a Guild payout), for the System block (src/display.js). An offer or a bid alone books
+ * none. kind: sale | payout (a transaction to him from a buyer or the Guild), purchase (one he made from an offer),
+ * paid, received.
+ */
+function coinBooked(events) {
+    return events.flatMap((e, i) => {
+        if (e.t !== 'coin.changed' || e.d.id !== 'pc' || !e.d.delta) return [];
+        const txn = [events[i + 1], events[i - 1]].find((x) => x?.t === 'transaction.completed');
+        const kind = e.d.delta > 0
+            ? (txn?.d.to === 'pc' ? (txn.d.from === 'guild' ? 'payout' : 'sale') : 'received')
+            : (txn?.d.offer ? 'purchase' : 'paid');
+        return [{ kind, delta: e.d.delta, before: e.d.value - e.d.delta, after: e.d.value, why: e.d.why || null }];
+    });
+}
+
+/**
  * Resolve a V4 story turn: the interpreted commands (after the agency guard) against the state, with the engine's dice.
  * @param {{msg?: number, commands: object[], dropped?: object[], interp?: object, board?: object}} input
  *   interp: {version, ms, source, failed?, error?}; board: the Board generator's validated listings for this turn
@@ -72,6 +89,7 @@ export function playerTurnV4(state, content, text, { msg = null, commands = [], 
         search_checks: ctx.searchChecks, check_die: null, interp_failed: !!interp.failed,
         dropped: dropped.map((x) => ({ type: x.command?.type, rule: x.rule, quote: x.command?.quote ?? null })),
         ...(ctx.engineLines.length ? { engine_lines: ctx.engineLines } : {}),
+        ...(c && coinBooked(events).length ? { coin: coinBooked(events) } : {}),
     };
     emit({ t: 'outcome.recorded', d: { outcome, situations: [] } });
     return { events, outcome, state: s, command: null };

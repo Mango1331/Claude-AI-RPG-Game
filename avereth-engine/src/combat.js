@@ -363,7 +363,8 @@ function onDefeat(ctx, target, record) {
         enc.defeated.push(target.id);
         if (target.side === 'hostile' && typeof target.fixed.defeat_xp === 'number') {
             enc.pending_xp += target.fixed.defeat_xp;
-            record.pending_xp_added = target.fixed.defeat_xp;
+            // Prototype C (4.3.0-c.6.6.6): an area attack may defeat several at once; the record shows all they add
+            record.pending_xp_added = (ctx.c ? record.pending_xp_added || 0 : 0) + target.fixed.defeat_xp;
         }
     }
 }

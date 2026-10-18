@@ -251,6 +251,7 @@
     "rank_levels": { "Novice": [1, 14], "Proven": [15, 29], "Veteran": [30, 44], "Elite": [45, 59], "Master": [60, 74], "Grandmaster": [75, 89], "Legend": [90, 104] },
     "rank_power": { "Novice": "F", "Proven": "E", "Veteran": "D", "Elite": "C", "Master": "B", "Grandmaster": "A", "Legend": "S" },
     "promotion_contracts": 5,
+    "drive_off": { "_doc": "Prototype C (4.3.0-c.6.6.6): a contract whose desired outcome or title allows the targets to be driven off (one of the verbs with off/away/out after it, or one of the words alone) counts each one the engine saw flee a fight with Alaric (escaped) as driven off; one the story only lets walk out of the scene is not (src/v4/guild.js defeatTally).", "verbs": "drive|driven|drove|driving|chase|chased|chasing|scare|scared|frighten|frightened|run|ran|send|sent", "after": "off|away|out", "alone": "clear|cleared|clearing|rout|routed|disperse|dispersed|banish|banished" },
     "supported_ranks": { "_status": "proposed (plan D10): runtime defaults for branches without their own list", "city": ["Novice", "Proven", "Veteran"], "capital": ["Novice", "Proven", "Veteran", "Elite"] },
     "board": { "_status": "proposed (plan §6.4, D9, D11)", "size": 5, "taken_by_others_pct_per_day": 0, "payout_guide_cp": { "Novice": [10, 200], "Proven": [100, 600], "Veteran": [300, 1500], "Elite": [800, 4000] } }
   },

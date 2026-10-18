@@ -154,8 +154,20 @@ export function applyDomainEvent(state, e) {
         case 'quest.progressed': {
             const q = state.quests[d.id];
             if (!q) throw new Error(`unknown quest ${d.id}`);
-            q.progress = [...(q.progress || []), { objective: d.objective, status: d.status, turn: state.turn }];
-            q.notes = [...(q.notes || []), `${d.objective}: ${d.status}`].slice(-6);
+            // Prototype C (4.3.0-c.6.6.6, live 18.10.2026: "DEFEAT 4 hounds …: open" stored twice): one entry per
+            // objective, the latest word on it; the same news again changes nothing. A keeps its list as it was
+            const cTurn = state.last?.outcome?.c === true || state.last?.outcome?.auth?.c === true;
+            if (!cTurn) {
+                q.progress = [...(q.progress || []), { objective: d.objective, status: d.status, turn: state.turn }];
+                q.notes = [...(q.notes || []), `${d.objective}: ${d.status}`].slice(-6);
+                break;
+            }
+            const key = progressKey(q, d.objective);
+            const at = (q.progress || []).findIndex((p) => progressKey(q, p.objective) === key);
+            if (at >= 0 && q.progress[at].status === d.status) break;
+            const entry = { objective: d.objective, status: d.status, turn: state.turn };
+            q.progress = at >= 0 ? [...q.progress.slice(0, at), ...q.progress.slice(at + 1), entry] : [...(q.progress || []), entry];
+            q.notes = [...(q.notes || []).filter((n) => !(at >= 0 && progressKey(q, String(n).replace(/: [^:]*$/, '')) === key)), `${d.objective}: ${d.status}`].slice(-6);
             break;
         }
         case 'quest.ready': {
@@ -300,12 +312,42 @@ export function kindOf(text) {
  * the species names the objective's creature or the objective the species' ("giant rats" ~ "rats", "swarm of rats"
  * ~ "rats"), or the objective names the body plan's whole kind (content monsters.json "kinds": vermin for rats).
  */
-export function namesKind(what, species, anchor) {
+export function namesKind(what, species, anchor, same = null) {
+    const one = (w) => (w && same?.get(w)) || w;
+    const all = (set) => (same ? new Set([...set].map(one)) : set);
     const t = kindOf(what);
     const g = kindOf(species || '');
     const kinds = new Set((anchor?.kinds || []).map(stem));
-    return (!!g.head && t.phrase.has(g.head)) || (!!t.head && g.words.has(t.head)) || [...t.phrase].some((w) => kinds.has(w));
+    return (!!g.head && all(t.phrase).has(one(g.head))) || (!!t.head && all(g.words).has(one(t.head))) || [...t.phrase].some((w) => kinds.has(w));
 }
+
+/**
+ * Which of a quest's objectives a progress note is about (4.3.0-c.6.6.6): the objective whose verb and object it
+ * names ("DEFEAT 4 hounds feral dogs of the pack at …" is o2), else the note's own words. Progress is kept per key.
+ */
+export function progressKey(q, text) {
+    const t = normText(text);
+    const hit = (q.objectives || []).filter((o) => o.what && t.startsWith(normText(o.verb || '')) && t.includes(normText(o.what)));
+    return hit.length === 1 ? `objective:${hit[0].id ?? hit[0].what}` : t;
+}
+
+// Prototype C (4.3.0-c.6.6.6): the words content monsters.json kind_words holds as one kind ("dog" and "hound"), each
+// stem to the first of its set, and the words for the young of a kind (pups, cubs, a brood)
+const kindWords = new WeakMap();
+function kindWordsOf(content) {
+    if (!kindWords.has(content)) {
+        const k = content?.monsters?.kind_words || {};
+        kindWords.set(content, {
+            same: new Map((k.same || []).flatMap((set) => set.map((w) => [stem(w), stem(set[0])]))),
+            young: new Set((k.young || []).map(stem)),
+        });
+    }
+    return kindWords.get(content);
+}
+/** The content's map of kind words to one kind, for namesKind (null without content kind_words). */
+export const sameKinds = (content) => (kindWordsOf(content).same.size ? kindWordsOf(content).same : null);
+/** Does a text name the young of a kind ("feral hound pups", "the mudwyrm brood")? */
+export const namesYoung = (content, text) => [...kindOf(text || '').words].some((w) => kindWordsOf(content).young.has(w));
 
 // the NPC templates' words for a person that name no role (content npc_templates.json: commoner): they sit in monster
 // names ("the wolf-man", "a man-eating tiger") and say nothing about whom a contract is against

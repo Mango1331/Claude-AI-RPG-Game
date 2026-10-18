@@ -15,7 +15,7 @@
 import { normText } from '../util.js';
 import { mentionedSkills } from '../intent.js';
 import { activeHostiles } from '../combat.js';
-import { sceneHandle, tacticalHere } from './scene_handles.js';
+import { sceneHandle, tacticalHere, areaCaught, approachedBy } from './scene_handles.js';
 import { settlementOf } from './domain.js';
 import { extractJsonObject } from './json.js';
 import { validate } from './schema.js';
@@ -59,7 +59,7 @@ export const MECH_COMMANDS = [
 
 // written for the rules with a catalog of their own; no example is a message of the S4b corpus or the test corpora
 export const MECH_EXAMPLES = [
-    'Examples (another place, not the current scene). Example catalog: KNOWN SKILLS mage.frost_dart (Frost Dart: attack · single target), mage.basic_attack (Basic Attack: attack · single target), mage.ember_ring (Ember Ring: attack · area: every foe ENGAGED with Alaric) · OPPONENTS mon.x1 Cave Rat A (unhurt · ENGAGED), mon.x2 Cave Rat B (wounded · SHORT) · PLACES loc.mill (the old mill) · ENGINE FACTS: Cave Rat B bit Alaric (last round)',
+    'Examples (another place, not the current scene). Example catalog: KNOWN SKILLS mage.frost_dart (Frost Dart: attack · single target), mage.basic_attack (Basic Attack: attack · single target), mage.ember_ring (Ember Ring: attack · area: everyone ENGAGED with Alaric, friend or foe) · OPPONENTS mon.x1 Cave Rat A (unhurt · ENGAGED), mon.x2 Cave Rat B (wounded · SHORT) · PLACES loc.mill (the old mill) · ENGINE FACTS: Cave Rat B bit Alaric (last round)',
     '- "Frostdart rat B!" → {"commands":[{"seq":1,"type":"use_skill","skill":"mage.frost_dart","target":"mon.x2","quote":"Frostdart rat B!"}]}',
     '- "I shatter the icicles with a Frost Dart so they bury the tunnel" → {"commands":[{"seq":1,"type":"ability_world","skill":"mage.frost_dart","target":{"new":"the icicles over the tunnel"},"target_words":"the icicles","goal":"bury the tunnel","quote":"I shatter the icicles with a Frost Dart so they bury the tunnel"}]}',
     '- "I call down Lightning on Rat A" → {"commands":[{"seq":1,"type":"use_skill","skill":{"new":"Lightning"},"target":"mon.x1","quote":"I call down Lightning on Rat A"}]}',
@@ -67,6 +67,7 @@ export const MECH_EXAMPLES = [
     '- "Frost Dart the biter" → {"commands":[{"seq":1,"type":"use_skill","skill":"mage.frost_dart","target":"mon.x2","quote":"Frost Dart the biter"}]}',
     '- "I kick the one in front of me" → {"commands":[{"seq":1,"type":"use_skill","skill":null,"target":"mon.x1","quote":"I kick the one in front of me"}]}',
     '- "I back off a step and Frost Dart Rat A" → {"commands":[{"seq":1,"type":"move","dir":"away","target":null,"quote":"I back off a step"},{"seq":2,"type":"use_skill","skill":"mage.frost_dart","target":"mon.x1","quote":"Frost Dart Rat A"}]}',
+    '- "I step right in among them and then Ember Ring" → {"commands":[{"seq":1,"type":"move","dir":"closer","target":null,"quote":"I step right in among them"},{"seq":2,"type":"use_skill","skill":"mage.ember_ring","target":null,"quote":"Ember Ring"}]}',
     '- "I bolt for the exit" → {"commands":[{"seq":1,"type":"flee","quote":"I bolt for the exit"}]}',
     '- "Would Frost Dart even hurt them?" → {"commands":[]}',
     '- "\\"Back off or I\'ll freeze you,\\" I snarl." → {"commands":[]}',
@@ -209,7 +210,7 @@ export function plannerSystem(vocab, { fight = false } = {}) {
 function skillText(skill) {
     const area = (skill.effects || []).some((e) => e.kind === 'area');
     const bits = [skill.attack ? 'attack' : 'not an attack'];
-    if (skill.attack) bits.push(area ? 'area: every foe ENGAGED with Alaric' : 'single target');
+    if (skill.attack) bits.push(area ? 'area: everyone ENGAGED with Alaric, friend or foe' : 'single target');
     if (skill.range?.band && skill.attack) bits.push(`reaches ${skill.range.band}`);
     if (!skill.attack) bits.push(...(skill.effects || []).map((e) => e.kind.replace(/_/g, ' ')));
     if (skill.cost?.amount) bits.push(`${skill.cost.amount} ${skill.cost.resource.toUpperCase()}`);
@@ -515,7 +516,14 @@ export function mapPlan(commands, ctx, content, message, state) {
     const mechMain = mains.filter((c) => fight || c.type !== 'flee');
     if (!fight) for (const c of mech.filter((x) => x.type === 'flee')) free.push(`${c.type}: ${said(c)}`);
     if (!fight && !mechMain.length) {
-        for (const c of moves) free.push(`move: ${said(c)}`);
+        // 4.3.0-c.6.6.6: a step toward (or back from) the creatures or people of the scene is the engine's to set, one per
+        // message; one that brings him nearer to no one, or toward something that is no one here ({new: "the well"}),
+        // stays story fiction
+        const stepped = (c) => !!state && (c.target === null || typeof c.target === 'string') && approachedBy(state, { move: c.dir, moveTarget: c.target }).length > 0;
+        const steps = moves.filter(stepped);
+        for (const c of moves.filter((x) => !stepped(x))) free.push(`move: ${said(c)}`);
+        for (const c of steps.slice(1)) notes.push(`not taken this turn (one move per turn): ${said(c)}`);
+        story.push(...steps.slice(0, 1));
         // Prototype C (4.3.0-c.6): his own deed no command fits is a step of the message, in its place among the others
         // (src/v4/commands.js other); live 04.10.2026 16:35: "cut the tusk ... use some cloth to stop my bleeding ... walk
         // into the den" lost the middle step, the narrator told it anyway and the extractor made it canon
@@ -594,10 +602,14 @@ export function mapPlan(commands, ctx, content, message, state) {
         // 4.3.0-c.6.6: before a fight the area is the visible field (live 07.10.2026: "I dash in and use Arcane Burst"
         // among visible bandits asked for a target): they enter the fight, the engine moves him and hits whoever is
         // ENGAGED then, or refuses the whole action at no cost
+        // 4.3.0-c.6.6.6: and it catches everyone ENGAGED with him after his step, foe or not (live 18.10.2026: the den's
+        // pups were no foes, "I walk in front of them and then I arcane burst" asked for a target); with nobody in
+        // reach, the engine refuses it at no cost
         if (!fight && state) {
-            const field = tacticalHere(state, { friendly: false });
-            const band = (id) => ['ENGAGED', 'SHORT', 'MEDIUM', 'LONG'].indexOf(state.scene.positions[id].band);
-            const near = [...field].sort((a, b) => band(a) - band(b))[0];
+            const caught = areaCaught(state, { move: dir, moveTarget: move?.target ?? null });
+            const field = [...new Set([...tacticalHere(state, { friendly: false }), ...caught])];
+            const band = (id) => (caught.includes(id) ? -1 : ['ENGAGED', 'SHORT', 'MEDIUM', 'LONG'].indexOf(state.scene.positions[id].band));
+            const near = [...(field.length ? field : tacticalHere(state))].sort((a, b) => band(a) - band(b))[0];
             if (near) return base({ ...asAction(near, 'area'), field });
         }
     }

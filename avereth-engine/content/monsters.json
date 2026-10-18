@@ -354,6 +354,17 @@
       "source_line": "40 / 14 / 0 / 5 / 10 | Magical discharge | Magical | MEDIUM"
     }
   ],
+  "kind_words": {
+    "_doc": "Prototype C (4.3.0-c.6.6.6): how a contract's DEFEAT objective names the creatures it counts (src/v4/domain.js namesKind, src/v4/guild.js defeatTally). same: words that name one kind of creature (live 18.10.2026: 'feral dogs of the pack' and the species 'feral hound' are the same animals; the body plan alone never decides, see namesKind). young: the young of a kind; they count toward an objective only when it names them itself ('cull the brood', 'the wolf cubs'), never as extra grown ones.",
+    "same": [
+      ["dog", "hound", "cur", "mutt", "mongrel"],
+      ["boar", "hog", "swine", "pig"],
+      ["snake", "serpent", "viper", "adder"],
+      ["crow", "raven"],
+      ["goblin", "gob"]
+    ],
+    "young": ["pup", "puppy", "puppies", "cub", "whelp", "kit", "kitten", "foal", "calf", "calves", "fawn", "chick", "hatchling", "fledgling", "nestling", "larva", "larvae", "grub", "piglet", "lamb", "eaglet", "owlet", "spiderling", "brood", "litter", "spawn", "egg", "baby", "babies", "infant", "juvenile"]
+  },
   "scaling": {
     "hp": {
       "coef": 0.2

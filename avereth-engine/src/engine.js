@@ -24,7 +24,7 @@ import { targetQuestion } from './display.js';
 import { parseCoin } from './economy.js';
 import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, roundHalfUp, ENGINE_VERSION } from './util.js';
 import { seedPlaces } from './v4/domain.js';
-import { tacticalHere } from './v4/scene_handles.js';
+import { tacticalHere, areaCaught, approachedBy } from './v4/scene_handles.js';
 import { lootEvents } from './v4/loot.js';
 
 const GROUP_RE = /\b(?:everyone|everybody|all of you|you all|the (?:group|room|crowd|table|company)|(?:to|at|toward|towards) them)\b/i;
@@ -153,7 +153,9 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
         const eligible = c ? new Set(tacticalHere(s, { friendly: false })) : new Set();
         // 4.3.0-c.6.6.5: the people of a crowd it is thrown into (src/v4/runtime.js crowdIntent) are in it too
         const field = c && Array.isArray(pcAction.field) ? pcAction.field.filter((id) => eligible.has(id) || (pcAction.crowd && s.scene.present.includes(id))) : [];
-        return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move, move_target: pcAction.move_target }, committed: field, pcAction: null, c }, situations);
+        // 4.3.0-c.6.6.6: and everyone it catches, ENGAGED with him after his step, whether foe, bystander or friend
+        const caught = c ? caughtBy(s, content, pcAction) : [];
+        return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move, move_target: pcAction.move_target }, committed: uniq([...field, ...caught]), pcAction: null, c }, situations);
     }
     if (pcAction?.kind === 'engage') return engagementTurn(s, content, dice, emit, pcAction.targets, { c });
     // 3) declared stealth: opposed check (or automatic with nobody around)
@@ -336,8 +338,31 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
             materialise(s, content, dice, emit, pcAction.target);
             addCombatant(enc, s, content, pcAction.target, 'hostile', null, { c });
         }
+        // Prototype C (4.3.0-c.6.6.6, live 18.10.2026: Arcane Burst struck Hound A, the one combatant, and not Hounds B, C
+        // and D ENGAGED beside it): an area attack catches everyone ENGAGED with him, in the fight or not. Those outside
+        // it enter it when the attack is legal (a refused one, no MP or no one in reach, drags no one in); each then
+        // acts for itself on its Turns (src/combat.js npcDecide: fights back, flees or holds)
+        const caught = c && pcAction?.kind === 'attack' ? caughtBy(s, content, pcAction) : [];
+        if (caught.length && areaLegal(s, content, dice, enc, caught, pcAction, c)) {
+            for (const id of caught) {
+                materialise(s, content, dice, emit, id);
+                addCombatant(enc, s, content, id, 'hostile', null, { c });
+            }
+            const skill = content.skills.get(pcAction.skill)?.name || 'the attack';
+            started = { ...(started || {}), reason: `${caught.map(named).join(', ')} ${caught.length > 1 ? 'are' : 'is'} caught in ${skill} and ${caught.length > 1 ? 'join' : 'joins'} the fight`, order: enc.order.map(named).join(' > '), joined: [...(started?.joined || []), ...caught] };
+        }
     }
     const res = runCombat({ enc, content, dice, state: s, c }, pcAction);
+    // Prototype C (4.3.0-c.6.6.6, live 18.10.2026: "I walk in range of Feral Hound B and C and D" moved him nearer to no
+    // one: B, C and D were not in the fight): his step brings him nearer to those outside the fight he moves among too
+    // (src/v4/scene_handles.js approachedBy); their distances are the engine's then, not the story's
+    if (c && !res.illegal) {
+        const act = pcAction || (trigger?.actor === 'pc' ? trigger : null);
+        const mine = res.records.find((r) => r.actor === 'pc' && (r.kind === 'move' || r.move || r.after_move));
+        const step = !mine || !act ? null : mine.kind === 'move' ? { move: mine.dir, moveTarget: act.target ?? null }
+            : mine.move ? { move: 'closer', moveTarget: act.move_target ?? null } : { move: 'away', moveTarget: null };
+        for (const x of step ? approachedBy(s, step).filter((x) => !enc.combatants[x.id]) : []) emit({ t: 'scene.position', d: { id: x.id, band: x.to, cover: s.scene.positions[x.id]?.cover || 'none' } });
+    }
     if (enc.log.length > 20) enc.log = enc.log.slice(-20);
     // the Turns resolved when the reply opened the fight come first for the narrator; the panel showed them already
     const preface = enc.preface || [];
@@ -357,6 +382,33 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
         outcome.next = done.next;
     }
     return outcome;
+}
+
+/** An area attack's skill (Arcane Burst: effects kind "area"). */
+const areaSkill = (content, id) => !!content.skills.get(id)?.effects?.some((e) => e.kind === 'area');
+
+/**
+ * Prototype C (4.3.0-c.6.6.6): who Alaric's area attack catches outside the fight (src/v4/scene_handles.js areaCaught),
+ * those the engine can give a combat profile: everyone ENGAGED with him after his declared step.
+ */
+function caughtBy(s, content, act) {
+    if (!areaSkill(content, act.skill)) return [];
+    return areaCaught(s, { move: act.move, moveTarget: act.move_target ?? null }).filter((id) => {
+        const e = s.entities[id];
+        return !!(e.sheet || e.profile || e.kind === 'npc' || content.anchors.get(e.anchor) || anchorFor(content, [e.species, ...(e.descriptors || [])].join(' ')));
+    });
+}
+
+/** Would the area attack be legal with those it catches in the fight (a trial on copies; nothing is emitted)? */
+function areaLegal(s, content, dice, enc, caught, act, c) {
+    const trial = clone(s);
+    const tdice = new Dice(dice.seed, dice.n);
+    const tenc = clone(enc);
+    for (const id of caught) {
+        materialise(trial, content, tdice, (e) => applyEvent(trial, e), id);
+        addCombatant(tenc, trial, content, id, 'hostile', null, { c });
+    }
+    return runCombat({ enc: tenc, content, dice: tdice, state: trial, c }, act).stopped !== 'illegal';
 }
 
 /**
@@ -393,8 +445,11 @@ function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false
             if (e.sheet) for (const r of ['hp', 'mp', 'sta']) { if (c.current[r] !== undefined && c.current[r] !== e.sheet[r]) emit({ t: 'resource.changed', d: { id: c.id, resource: r, value: c.current[r] } }); }
             else if (e.profile && c.current.hp !== e.profile.hp) emit({ t: 'entity.updated', d: { id: c.id, set: { profile: { ...e.profile, hp: c.current.hp } } } });
             // Prototype C (4.3.0-c.6.6): when Alaric got away, the foes he left behind are out of his scene too
-            if (c.current.escaped || (cPath && enc.combatants.pc.current.escaped && c.side === 'hostile' && s.scene.present.includes(c.id))) emit({ t: 'scene.left', d: { id: c.id } });
-            else if (s.scene.present.includes(c.id)) emit({ t: 'scene.position', d: { id: c.id, band: c.current.band, cover: c.current.cover } });
+            if (c.current.escaped || (cPath && enc.combatants.pc.current.escaped && c.side === 'hostile' && s.scene.present.includes(c.id))) {
+                emit({ t: 'scene.left', d: { id: c.id } });
+                // 4.3.0-c.6.6.6: one that fled the fight itself is driven off, as the engine saw it (src/v4/guild.js defeatTally)
+                if (cPath && c.current.escaped) emit({ t: 'entity.updated', d: { id: c.id, set: { fled: { turn: s.turn, encounter: enc.id } } } });
+            } else if (s.scene.present.includes(c.id)) emit({ t: 'scene.position', d: { id: c.id, band: c.current.band, cover: c.current.cover } });
             if (c.current.surrendered) emit({ t: 'entity.updated', d: { id: c.id, set: { surrendered_to: 'pc' } } });
         }
         emit({ t: 'memory.recorded', d: { memory: fightMemory(s, content, enc, end.summary) } });

@@ -136,6 +136,11 @@
         "rank_levels": { "type": "object", "additionalProperties": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 } },
         "rank_power": { "type": "object", "additionalProperties": { "type": "string" } },
         "promotion_contracts": { "type": "integer", "minimum": 1 },
+        "drive_off": {
+          "type": "object",
+          "required": ["verbs", "after", "alone"],
+          "properties": { "_doc": { "type": "string" }, "verbs": { "type": "string" }, "after": { "type": "string" }, "alone": { "type": "string" } }
+        },
         "supported_ranks": { "type": "object" },
         "board": {
           "type": "object",

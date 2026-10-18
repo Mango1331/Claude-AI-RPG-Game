@@ -251,10 +251,10 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt-c665` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.6.5`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt-c666` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.6.6`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
-   - Vertrag v4 (Revision 4.3.0-c.6.6.5: die Kartenbeschreibung vollständig durch `content/narrator/Avereth_Narrator_Contract_v4.txt` ersetzen; SillyTavern liest die Beschreibung bei jeder Antwort neu, ein laufender Chat spielt also ab der nächsten Antwort mit ihr, die Statuszeile zeigt `narrator contract: current`), Preset „Avereth Narrator V4“, Lorebook v0.13.
+   - Vertrag v4 (Revision 4.3.0-c.6.6.6: die Kartenbeschreibung vollständig durch `content/narrator/Avereth_Narrator_Contract_v4.txt` ersetzen; SillyTavern liest die Beschreibung bei jeder Antwort neu, ein laufender Chat spielt also ab der nächsten Antwort mit ihr, die Statuszeile zeigt `narrator contract: current`), Preset „Avereth Narrator V4“, Lorebook v0.13.
 3. **Schalter:** Engine-Panel → **„Prototype C: semantic planner“** anhaken.
    - Er gilt für jede V4-Kampagne, auch eine laufende, ab der nächsten Nachricht.
    - Ausschalten bringt A zurück.
@@ -766,3 +766,64 @@ Tests: `tests/v4/c665.test.js` (17 Tests, Fixture `tests/v4/live_1016.json`). Di
 - Die Siedlungsgröße für vom Erzähler erzeugte Orte ist pauschal „village“. Die Belebung ist Erzähler-Kontext, kein simuliertes Bevölkerungsmodell.
 - Der Show-Guard erkennt englische Formulierungen.
 
+### Nachtrag 4.3.0-c.6.6.6 (Livetest „Branch #3“, 18.10.2026: Präsenz, Flächenzauber, Questzählung, Münzanzeige)
+
+Grundlage: Chat und Events von Branch #3 (Abzweig von #88, gespielt unter c.6.6.5) und der konsolidierte CMD-Logger (Planner- und Extractor-Antworten #89–#119). Fixture: `tests/v4/live_1018.json`.
+
+**Belegte Ursachen:**
+- **Welpen verschwunden (#117/#118).** Der Planner las „walk into the dark looking for the pups“ als `go {new: …}`. Der Extractor legte die Höhle als Unterort der Gasse an, meldete die Ankunft aber mit `with: null`. `arrive()` setzt die Szene immer zurück (`reset_present`), und Kreaturen werden dabei nicht übernommen. Danach zeigte der Planner „PRESENT: nobody besides Alaric“, und #119 endete mit ATTACK — TARGET NEEDED.
+- **Arcane Burst traf nur Hund A (#111).** Der Kampf enthielt nur A (Kampfbeginn #106: nur A hatte angegriffen). B, C und D standen laut Szene (`scene.position`, Extractor #110) auf ENGAGED, waren aber keine Combatants. Die Flächenauflösung in `combat.js` kennt nur Combatants.
+- **0 von 4 trotz zwei Kills.** Ziel „feral dogs of the pack“ (Einheit „hounds“), Art „feral hound“. `namesKind` vergleicht nur Wortköpfe („pack“ bzw. „hound“), die Einheit wurde nicht gelesen, und „dog“ und „hound“ galten nicht als dieselbe Art.
+- **Doppelte Fortschrittseinträge.** Der Reducer `quest.progressed` hängt immer an; der World-Applier prüft nicht auf Wiederholung.
+- **Keine Münzanzeige beim Verkauf.** Die Buchung (+280, 337 → 617) passiert im Spielerzug. Das Systempanel zeigte bisher nur Münzänderungen aus der Antwort des Erzählers.
+- **Gruppenbewegung.** Vor einem Kampf landete `move` nur in der Erzählung (#105, #113). Im Kampf bewegte `move closer` nur Combatants (#109); B, C und D blieben unverändert, und der Extractor setzte ihre Distanz danach selbst.
+
+**Änderungen (alle nur im Planner-Pfad, außer wo vermerkt):**
+- **Präsenz bei Unterorten** (`src/v4/world.js` `soughtHere`, `arrive`).
+  - Bei einem Schritt in einen Teil des aktuellen Ortes, aus ihm heraus oder in einen Nachbarteil desselben Ortes kommen die anwesenden Kreaturen mit, die sein GO benennt (Art oder Name: „toward the pups“). Sie stehen auf SHORT; Wahrnehmung und Relevanz bleiben erhalten.
+  - Alle anderen bleiben, wo sie waren; niemand wird pauschal in einen anderen Raum versetzt.
+  - Neue Extractor-Regel (`content/deltas.json`, delta-0.21): Wer nach einem solchen Schritt mit ihm dort ist, gehört in `arrive.with`. Das gilt für Kreaturen und Personen.
+- **ENGAGED ist Distanz, nicht Kampfteilnahme** (`src/v4/scene_handles.js` `approachedBy`, `areaCaught`; `src/engine.js` `caughtBy`, `areaLegal`).
+  - Ein Flächenangriff trifft jeden Anwesenden, der nach dem erklärten Ein-Band-Schritt ENGAGED steht: Feind, Unbeteiligter oder Verbündeter (Friendly Fire).
+  - Wer außerhalb des Kampfes getroffen wird, tritt vorher in den Kampf ein, aber nur wenn der Angriff legal ist (Probelauf auf Kopien). Ein abgelehnter Burst (kein MP, niemand in Reichweite) zieht niemanden hinein.
+  - Getroffene handeln danach selbst (`npcDecide`: wehren, fliehen, abwarten).
+  - Pro Wirkung wird einmal MP abgezogen; Schaden, Tod, XP und Loot laufen über die bestehenden Kampfregeln.
+  - Selbsttreffer gibt es nicht: Die Skilldefinition („ENGAGED AREA centered on caster“) trifft nur, wer mit dem Zauberer ENGAGED ist.
+  - Der Mechanismus fragt nur `effects.kind = area` ab und gilt damit für jeden künftigen Flächenzauber.
+  - Der Planner beschreibt Flächenskills jetzt als „everyone ENGAGED with Alaric, friend or foe“ und hat ein Beispiel „step in among them and then Ember Ring“ (move + use_skill).
+- **Bewegung** (`src/v4/commands.js` `moveStep`, `src/v4/planner.js`, `src/engine.js`).
+  - Ein Schritt vor dem Kampf („I walk into the middle of them“) wird zu einem Engine-Befehl. Er verschiebt die Distanz des genannten Ziels um ein Band, sonst die der sichtbaren Feinde; nur wenn es keine gibt, die der übrigen Szene.
+  - Der Erzähler bekommt MOVES mit den neuen Distanzen, das Systempanel zeigt MOVED.
+  - Ein Schritt im Kampf bringt ihn auch den Feinden außerhalb des Kampfes ein Band näher.
+  - Kombinierte Eingaben („walk in front of them and then Arcane Burst“): erst der Schritt, dann der Angriff, wie bisher mit genau einem Schritt pro Zug.
+- **Questzählung** (`src/v4/guild.js` `defeatTally`, `drivesOff`; `src/v4/domain.js` `namesKind`, `sameKinds`, `namesYoung`; Content `monsters.json kind_words`, `rules.json guild.drive_off`).
+  - Ein Ziel zählt über seinen Text **oder** seine Einheit. Wörter, die der Content als dieselbe Art führt (dog = hound …), gelten gleich.
+  - Junge einer Art (pups, cubs, brood …) zählen nur, wenn das Ziel sie selbst nennt.
+  - Erlaubt der Vertrag ausdrücklich das Vertreiben („driven off or destroyed“, „Clear … from …“), zählt jede Kreatur, die die Engine aus einem Kampf fliehen sah (`fled`, gesetzt in `persistCombat`), als vertrieben.
+  - Ein bloßes `scene.left` der Erzählung zählt nicht. READY braucht dann weiter die `alternative` der Geschichte.
+  - Zählung und Anzeige (der Zählstand als „2 of 4 … (2 killed, 2 driven off)“) gelten in beiden Pfaden; `fled` entsteht nur im Planner-Pfad.
+  - Auszahlung und Quest-XP bleiben beim Turn-in an der Gilde.
+- **Keine Duplikate** (`src/v4/domain.js` `progressKey`, Reducer `quest.progressed`; `src/v4/world.js`).
+  - Ein Fortschritt wird über das Ziel identifiziert, dessen Verb und Gegenstand er nennt (o2), und ersetzt dessen Eintrag. Dieselbe Meldung noch einmal ändert nichts und erzeugt kein Event.
+  - Der Reducer wirkt beim Falten: Der gespeicherte Livetest-Chat hat damit sofort zwei statt drei Einträge.
+- **Münzanzeige** (`src/v4/turn.js` `coinBooked`, `src/display.js`).
+  - Gebuchte Münzänderungen eines Spielerzugs erscheinen als eigene Systemzeilen, z. B. `SALE COMPLETE · +280 copper · sold …` und `COIN: 337 → 617 copper`.
+  - Ebenso PURCHASE COMPLETE, PAID, GUILD PAYOUT und COIN RECEIVED.
+  - Die Werte stammen ausschließlich aus den `coin.changed`-/`transaction.completed`-Events. Angebote und Gebote erzeugen keine Zeile.
+- **Kleinigkeit:** Der Kampfbericht eines Flächenangriffs zeigt die Summe der XP aller durch ihn Besiegten (vorher nur die des letzten).
+
+**Kompatibilität:** Keine Savegame-Migration nötig.
+- Alle Änderungen wirken beim Laden: Questzählung und Duplikatbereinigung über Reducer und Zählung, die Branch-#3-Kampagne zeigt danach 2 von 4 und zwei Fortschrittseinträge.
+- Historische Events bleiben unverändert.
+- Was die Engine damals nicht entschieden hat (die Welpen in #118, der Burst in #111), wird nicht rückwirkend neu berechnet.
+
+**Vertrag** (Revision `4.3.0-c.6.6.6`): neue Absätze DISTANCE AND AREA (Distanzen nach MOVES, Flächentreffer für Freund und Feind, sonst niemand) und SCENE CONTINUITY. **Kartenbeschreibung neu einsetzen.** Preset und Lorebook sind unverändert.
+
+Tests: `tests/v4/c666.test.js` (10 Tests zu den erwarteten Regressionstests 1–8). Mutationsproben: jeder der 12 Fixes einzeln zurückgedreht, jeder fällt durch. Gesamt 702/702. Planner aus: identisch zu c.6.6.5 (122/122 Live-Schritte, 18/18 Kampfeingaben). Smokes: Browser, SillyTavern V3, V4 und C OK. Build: `4.3.0-c.6.6.6`.
+
+**Grenzen von c.6.6.6:**
+- Die Präsenzübernahme erkennt das Ziel des GO über Art- und Namenswörter (englisch). Personen übernimmt nur die Geschichte über `arrive.with` (Extractor-Regel), nicht die Engine. Das ist so gewollt, damit NPCs nicht ungefragt versetzt werden.
+- Die Distanzen bleiben ein Bandmodell relativ zu Alaric. Ein Gruppenschritt nähert ihn allen Feinden um ein Band. „Mitten hinein“ von MEDIUM aus braucht zwei Züge; eine echte Formation (wer steht neben wem) gibt es nicht.
+- Für Nicht-Combatants setzt die Engine die Distanz nur bei Alarics eigenem Schritt. Danach meldet der Extractor sie weiter (Kreaturen und NPCs dürfen sich selbst bewegen). Eine Erzählung, die Alaric selbst näher rückt als gebucht, wird nur über den Vertrag begrenzt.
+- „Vertrieben“ zählt automatisch nur bei einer Flucht aus einem Kampf. Eine Vertreibung ohne Kampf (Drohen, Feuer, Lärm) bleibt Sache der Geschichte: `quest.ready` mit `alternative`, geprüft wie bisher.
+- Friendly Fire macht Getroffene im Kampf zu Gegnern Alarics (die Kampfseite „hostile“ ist die einzige Gegenseite). Ob sie sich wehren, entscheidet ihr Temperament; Begleiter können also zurückschlagen.

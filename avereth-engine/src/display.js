@@ -172,6 +172,7 @@ function changeLines(before, after, content, events) {
     return out;
 }
 
+const COIN_KIND = { sale: 'SALE COMPLETE', purchase: 'PURCHASE COMPLETE', payout: 'GUILD PAYOUT', paid: 'PAID', received: 'COIN RECEIVED' };
 const STATUS_WORD = { resolved: 'booked', authorized: 'allowed', conditional: 'if', pending: 'open', refused: 'refused', clarify: 'unclear' };
 
 /**
@@ -187,6 +188,12 @@ function commandLines(o) {
     }
     // 4.3.0-c.6.6.5: a SEARCH the engine rolled, with its result (live 15.10.2026: the failed hour in the market showed none)
     for (const k of o.search_checks || []) out.push(sys(`SEARCH — ${String(k.what).replace(/[<>`]/g, '')} (${k.stat} ${k.actor} vs ${k.opposition}): ${k.chance}% · d100 ${k.roll} → ${k.success ? 'SUCCESS' : 'FAILURE'}`));
+    // 4.3.0-c.6.6.6: coin the engine booked this turn, as the loot and the XP are shown (live 18.10.2026: a sale of 280 cp
+    // left no trace in the System block); from its coin events only, never from an offer
+    for (const k of o.coin || []) {
+        out.push(sys(`${COIN_KIND[k.kind] || 'COIN'} · ${k.delta < 0 ? '-' : '+'}${Math.abs(k.delta)} copper${k.why ? ` · ${String(k.why).replace(/[<>`]/g, '').slice(0, 160)}` : ''}`));
+        out.push(sys(`COIN: ${k.before} → ${k.after} copper`));
+    }
     for (const x of o.dropped || []) out.push(sys(`NOT A DECISION — ${x.quote ? `"${String(x.quote).replace(/[<>`]/g, '').slice(0, 70)}" ` : ''}(${x.type}: ${x.rule})`));
     // prototype C: the time and recovery the engine booked for this turn
     for (const x of o.engine_lines || []) out.push(sys(String(x).replace(/[<>`]/g, '')));

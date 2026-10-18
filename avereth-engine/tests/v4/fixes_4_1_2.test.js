@@ -146,7 +146,7 @@ test('the engine counts the kills since the contract was taken; trophies are no 
     killed(s, 'mon.wolf_b', 'grey wolf', 'wolf');
     killed(s, 'mon.rat', 'giant rat', 'rat');
     const q = s.quests['quest.wolves'];
-    assert.deepEqual(defeatTally(s, content, q), [{ what: 'wolves', qty: 4, done: 2 }]);
+    assert.deepEqual(defeatTally(s, content, q), [{ what: 'wolves', qty: 4, done: 2, killed: 2, driven: 0 }]);
     assert.equal(tallyText(defeatTally(s, content, q)), '2 of 4 wolves');
     // a wolf dead before the contract was taken is not its kill
     const earlier = structuredClone(s);

@@ -25,6 +25,7 @@ import { LOOT_WORDS, lootedHere } from './loot.js';
 import { shopSearch, findTrades } from './settlement.js';
 import { journeyReady, knownAt } from './catalog.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
+import { approachedBy, sceneHandle } from './scene_handles.js';
 import {
     REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, abandonContract, contractReady, objectiveText,
     promotion, takenByOthers, bookBoard, isHunt, trophyText, proofTerms, handoverTerms,
@@ -725,6 +726,21 @@ export const COMMAND_TYPES = Object.keys(HANDLERS);
  * bleeding"): a step of the message in its place (live 04.10.2026 16:35: it was lost between "cut the tusk" and "walk
  * into the den"). It books nothing: HP, MP, STA, coin and possessions change only by the engine's own commands.
  */
+/**
+ * Prototype C (4.3.0-c.6.6.6, live 18.10.2026: "I walk into the middle of them" before a fight was only told; the hounds'
+ * distances were whatever the story said next): his step outside a fight, one band nearer to (or farther from) the one
+ * he names or those he moves among (src/v4/scene_handles.js approachedBy). The engine sets the new distances; the story
+ * tells the step and how they answer it.
+ */
+function moveStep(s, content, c, ctx, emit) {
+    const moved = c.target === null || typeof c.target === 'string' ? approachedBy(s, { move: c.dir, moveTarget: c.target }) : [];
+    if (!moved.length) return { status: 'resolved', line: `MOVES — ${c.dir === 'away' ? 'back' : 'closer'}: nobody here is nearer or farther for it; tell the step as it happens.` };
+    for (const x of moved) emit({ t: 'scene.position', d: { id: x.id, band: x.to, cover: s.scene.positions[x.id]?.cover || 'none' } });
+    const label = (id) => sceneHandle(s, content, id);
+    ctx.engineLines?.push(`MOVED — ${moved.map((x) => `${label(x.id)} ${x.from} → ${x.to}`).join(' · ')}`);
+    return { status: 'resolved', line: `MOVES — one step ${c.dir === 'away' ? 'back from' : 'closer to'} ${moved.map((x) => `${label(x.id)} (${x.from} → ${x.to})`).join(', ')}: the engine's distances now; tell the step and how they answer it, and put no one nearer or farther than this.` };
+}
+
 function otherStep(s, content, c) {
     const what = c.quote ? `"${String(c.quote).replace(/[<>`]/g, '').slice(0, 100)}"` : String(c.what || 'something').replace(/[<>`]/g, '').slice(0, 100);
     return { status: 'resolved', line: `DOES — ${what}: his own action; tell it as it happens. It books nothing: no HP, MP, STA, coin or possessions change by it.` };
@@ -756,7 +772,7 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
     const happened = new Set();
     const uncertain = new Set();
     for (const c of ordered) {
-        const h = HANDLERS[c.type] || (envx.c && c.type === 'other' ? otherStep : null);
+        const h = HANDLERS[c.type] || (envx.c && c.type === 'other' ? otherStep : null) || (envx.c && c.type === 'move' ? moveStep : null);
         // Prototype C (4.3.0-c.5): a step the planner marked as building on an earlier one of the message (needs) is not
         // taken when that one did not happen (refused, an open decision, a question, dropped by the agency guard); one
         // that found its goal true already (done: "already his", "already here") did, and so did a registration that

@@ -102,11 +102,11 @@ test('a bandit contract keeps its proof and its local confirmation; its kills ar
     dead(s, 'npc.b1', { descriptors: ['bandit', 'scarred man with a crossbow'] });
     dead(s, 'mon.w1', { species: 'grey wolf', anchor: 'wolf' });
     dead(s, 'npc.shepherd', { descriptors: ['shepherd'] });
-    assert.deepEqual(defeatTally(s, content, s.quests['quest.x']), [{ what: 'bandits', qty: 2, done: 1 }]);
+    assert.deepEqual(defeatTally(s, content, s.quests['quest.x']), [{ what: 'bandits', qty: 2, done: 1, killed: 1, driven: 0 }]);
     const ready = (st) => applyWorld(after(st), content, { expected: {}, deltas: [{ seq: 1, type: 'quest.ready', quest: 'quest.x', note: 'the camp is broken', alternative: null }] }, { msg: 9 });
     assert.deepEqual(rules(ready(s)), ['quest_count']);
     dead(s, 'npc.b2', { descriptors: ['raider', 'the raider'] });
-    assert.deepEqual(defeatTally(s, content, s.quests['quest.x']), [{ what: 'bandits', qty: 2, done: 2 }]);
+    assert.deepEqual(defeatTally(s, content, s.quests['quest.x']), [{ what: 'bandits', qty: 2, done: 2, killed: 2, driven: 0 }]);
     assert.deepEqual(rules(ready(s)), [], 'two dead bandits are the count');
 });
 

@@ -13,6 +13,10 @@ import { defeatTally, tallyText, countShort, drivesOff } from '../../src/v4/guil
 import { namesKind, sameKinds, namesYoung, progressKey } from '../../src/v4/domain.js';
 import { areaCaught, approachedBy } from '../../src/v4/scene_handles.js';
 import { bystanderEvents } from '../../src/v4/settlement.js';
+import { applyEvent } from '../../src/state.js';
+import { scaleCreature } from '../../src/npcgen.js';
+import { addCombatant, attackAction } from '../../src/combat.js';
+import { Dice } from '../../src/rng.js';
 import { Chat4 } from './harness.js';
 
 const content = await loadContent();
@@ -91,7 +95,7 @@ test('c.6.6.6 presence + AoE (tests 1, 3, 4): in the den, "I walk in front of th
     assert.ok(!(r0.panels || []).some((p) => /TARGET NEEDED/.test(p)), 'no "ATTACK — TARGET NEEDED"');
     assert.ok(!g.state().encounter, 'nobody ENGAGED: no fight');
     assert.equal(g.state().entities.pc.sheet.mp, mp, 'nothing spent');
-    assert.match(outcomeOf(g).illegal, /at SHORT; Arcane Burst reaches ENGAGED at most/);
+    assert.match(outcomeOf(g).illegal, /Arcane Burst needs a valid target ENGAGED with Alaric after the declared movement/);
     // with the step he said he takes
     const h = live(117);
     await say(h, fx.messages[117].mes, { type: 'go', to: { new: 'into the dark toward the pups' }, quote: 'i walk into the dark looking for the pups' });
@@ -103,6 +107,17 @@ test('c.6.6.6 presence + AoE (tests 1, 3, 4): in the den, "I walk in front of th
     assert.deepEqual(burst.cost, { resource: 'mp', amount: 14, before: mp, after: mp - 14 }, 'one cost for the cast');
     assert.equal(h.state().entities.pc.sheet.mp, mp - 14);
     assert.ok(!burst.strikes.some((k) => k.target === 'pc'), 'no self-hit: the area is centred on the caster');
+    // review: the pups are no foes of his (threat: false); they enter as neutral and the burst is still resolved when
+    // they are awake (no Ambush opening) in a fight that has no foe yet; nobody is a foe for being caught
+    const w = live(117);
+    await say(w, fx.messages[117].mes, { type: 'go', to: { new: 'into the dark toward the pups' }, quote: 'i walk into the dark looking for the pups' });
+    await w.reply(fx.messages[118].mes, LIVE_DEN);
+    inject(w, PUPS.map((id) => ({ t: 'scene.awareness', d: { id, level: 'aware' } })));
+    await say(w, fx.messages[119].mes, { type: 'move', dir: 'closer', target: null, quote: 'i walk in front of them' }, BURST);
+    const open = lastUser(w).events.find((e) => e.t === 'encounter.started')?.d.encounter;
+    assert.equal(open.ambush, false);
+    assert.deepEqual(PUPS.map((id) => open.combatants[id].side), PUPS.map(() => 'neutral'));
+    assert.deepEqual(burstOf(w).strikes.map((k) => k.target).sort(), [...PUPS].sort(), 'resolved, not ended before his attack');
 });
 
 // ------------------------------------------------------------------------------------------------ P0 AoE
@@ -147,6 +162,102 @@ test('c.6.6.6 AoE friendly fire (test 2): a neutral townsperson ENGAGED beside t
     assert.ok(struck.includes(near.ids[0]), 'friendly fire: the boy at arm\'s length is struck');
     assert.ok(!struck.includes(far.ids[0]), 'the carter at SHORT is not');
     assert.ok(outcomeOf(g).started.joined.includes(near.ids[0]), 'struck, he is in the fight: he acts for himself on his Turns');
+});
+
+// ------------------------------------------------------------------------------------------------ review: every side
+const DOG = 'mon.brindle';
+/** Alaric's war dog, already fighting at his side (side ally), ENGAGED beside Hound A; the other hounds where given. */
+function withAlly(g, { bands = null } = {}) {
+    const s0 = g.state();
+    const made = [
+        { t: 'entity.created', d: { entity: { id: DOG, kind: 'creature', name: 'Brindle', species: 'war dog', anchor: 'wolf', descriptors: ['Alaric\'s war dog'], status: 'alive', location: s0.scene.location, at: s0.scene.at, created: { turn: s0.turn, minute: s0.clock.minute }, source: { kind: 'engine', why: 'test' }, card: {}, profile: scaleCreature(content.anchors.get('wolf'), 1, 'normal', content) } } },
+        { t: 'scene.entered', d: { id: DOG, band: 'ENGAGED' } },
+        ...Object.entries(bands || {}).map(([id, band]) => ({ t: 'scene.position', d: { id, band, cover: 'none' } })),
+    ];
+    const s1 = structuredClone(s0);
+    for (const e of made) applyEvent(s1, e);
+    const enc = structuredClone(s1.encounter);
+    addCombatant(enc, s1, content, DOG, 'ally', null, { c: true });
+    for (const [id, band] of Object.entries(bands || {})) if (enc.combatants[id]) enc.combatants[id].current.band = band;
+    inject(g, [...made, { t: 'encounter.updated', d: { encounter: enc } }]);
+    return g.state();
+}
+
+test('c.6.6.6 review: Arcane Burst strikes a companion already fighting at Alaric\'s side, ENGAGED beside a foe; it stays on his side, locks no XP and answers by stepping back; the caster is never struck', async () => {
+    const g = live(111);
+    const s1 = withAlly(g);
+    assert.equal(s1.encounter.combatants[DOG].side, 'ally');
+    assert.equal(s1.encounter.combatants[DOG].current.band, 'ENGAGED');
+    const mp = s1.entities.pc.sheet.mp;
+    await say(g, fx.messages[111].mes, BURST);
+    const burst = burstOf(g);
+    const struck = burst.strikes.map((k) => k.target);
+    assert.ok(struck.includes(DOG), 'the companion beside the hound is struck (c.6.6.6: filtered out as no opponent)');
+    assert.ok(struck.includes(A), 'and the hound in the fight');
+    assert.ok(!struck.includes('pc'), 'not the caster');
+    assert.equal(burst.cost.amount, 14);
+    assert.equal(g.state().entities.pc.sheet.mp, mp - 14, 'one cost for every one struck');
+    const dog = burst.strikes.find((k) => k.target === DOG);
+    assert.ok(dog.final > 0 && dog.hp_after === Math.max(0, dog.hp_before - dog.final), 'damage as for anyone');
+    const s = g.state();
+    const c = s.encounter?.combatants?.[DOG];
+    if (c) {
+        assert.equal(c.side, 'ally', 'struck is not switched to the monsters\' side');
+        assert.equal(c.fixed.defeat_xp, undefined, 'no Defeat XP for a companion');
+        const own = outcomeOf(g).records.filter((r) => r.actor === DOG);
+        assert.ok(own.every((r) => !r.turned && r.kind !== 'attack'), JSON.stringify(own));
+        if (own.length) assert.match(own[0].why, /on Alaric's side, struck by his Arcane Burst/);
+    }
+    // what the narrator reads: on his side, no foe
+    if (s.encounter) {
+        const { combatBlock } = await import('../../src/context.js');
+        assert.match(combatBlock(s), /Brindle: .*ON ALARIC'S SIDE \(no foe\)/);
+    }
+});
+
+test('c.6.6.6 review (validation): with only the companion in reach and the hounds at SHORT, the burst is legal and strikes the companion alone; on path A the same burst finds no target', async () => {
+    const g = live(111);
+    const far = { [A]: 'SHORT', [B]: 'SHORT', [C]: 'SHORT', [D]: 'SHORT' };
+    const s1 = withAlly(g, { bands: far });
+    assert.deepEqual(areaCaught(s1), [], 'no one outside the fight in reach');
+    await say(g, fx.messages[111].mes, BURST);
+    const burst = burstOf(g);
+    assert.ok(burst, outcomeOf(g).illegal);
+    assert.deepEqual(burst.strikes.map((k) => k.target), [DOG]);
+    // the area check itself, before any strike: C (planner) counts everyone in reach; A only opponents
+    const enc = structuredClone(s1.encounter);
+    const ctx = (c) => ({ enc: structuredClone(enc), content, dice: new Dice(1, 0), state: s1, c });
+    assert.ok(!attackAction(ctx(true), 'pc', A, 'mage.arcane_burst').illegal);
+    assert.match(attackAction(ctx(false), 'pc', A, 'mage.arcane_burst').illegal, /at SHORT; Arcane Burst reaches ENGAGED at most/, 'A as before: its nominal target out of reach');
+});
+
+test('c.6.6.6 review: a townsperson caught in the burst enters the fight as no foe; only a Turn in which they fight him makes them his foe; the story may turn a companion', async () => {
+    const g = live(111);
+    const near = bystanderEvents(g.state(), content, { ref: 'tanner\'s boy' });
+    near.events.find((e) => e.t === 'scene.entered').d.band = 'ENGAGED';
+    inject(g, near.events);
+    await say(g, fx.messages[111].mes, BURST);
+    const boy = near.ids[0];
+    const out = outcomeOf(g);
+    assert.ok(out.started.joined.includes(boy));
+    const opened = lastUser(g).events.find((e) => e.t === 'encounter.updated')?.d.encounter;
+    const own = out.records.filter((r) => r.actor === boy);
+    const turned = own.some((r) => r.turned);
+    assert.equal(opened.combatants[boy].side, turned ? 'hostile' : 'neutral', JSON.stringify(own));
+    assert.equal(typeof opened.combatants[boy].fixed.defeat_xp === 'number', turned, 'Defeat XP only once he is a foe');
+    for (const r of own.filter((x) => x.turned)) assert.equal(r.turned, 'struck by his Arcane Burst');
+    // the story turns a companion on him: from its next Turn it fights him
+    const h = live(111);
+    withAlly(h);
+    await say(h, '*i hold my ground*', { type: 'activity', kind: 'wait', what: null, minutes: null, until: null, quote: 'i hold my ground' });
+    assert.equal(h.state().encounter.combatants[DOG].side, 'ally');
+    assert.ok(outcomeOf(h).records.filter((r) => r.actor === DOG).every((r) => r.kind === 'hold'), 'unstruck, it keeps out of it');
+    const x = await h.reply('Brindle snarls and rounds on Alaric.', { expected: {}, deltas: [{ seq: 1, type: 'hostile', by: [DOG] }] });
+    assert.ok(x.record.events.some((e) => e.t === 'combat.intent' && e.d.who === DOG && e.d.intent === 'attack'));
+    await say(h, '*i hold my ground*', { type: 'activity', kind: 'wait', what: null, minutes: null, until: null, quote: 'i hold my ground' });
+    const turn = outcomeOf(h).records.find((r) => r.actor === DOG);
+    assert.equal(turn.turned, 'as the story has it');
+    assert.equal(h.state().encounter.combatants[DOG].side, 'hostile');
 });
 
 // ------------------------------------------------------------------------------------------------ P1 group movement

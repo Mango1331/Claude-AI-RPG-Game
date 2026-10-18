@@ -106,3 +106,16 @@ export function areaCaught(state, { move = null, moveTarget = null } = {}) {
         return (stepped.get(id) || state.scene.positions?.[id]?.band) === 'ENGAGED';
     });
 }
+
+/**
+ * Prototype C (4.3.0-c.6.6.6, review): the side someone his area attack catches stands on in the fight it opens or
+ * joins: a foe of the scene stays one (tacticalHere without the friendly), someone friendly toward Alaric (attitude
+ * 20 and more) is on his side, anyone else is no party to it. Being caught changes none of it; what they do about the
+ * strike is their own answer on their Turns (src/combat.js asideTurn).
+ * @returns {'hostile'|'ally'|'neutral'}
+ */
+export function sideOf(state, id) {
+    if (state.encounter?.combatants?.[id]) return state.encounter.combatants[id].side;
+    if (tacticalHere(state, { friendly: false }).includes(id)) return 'hostile';
+    return (state.relations?.[`rel.${id}.attitude.pc`]?.value ?? 0) >= 20 ? 'ally' : 'neutral';
+}

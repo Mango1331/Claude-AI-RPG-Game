@@ -174,7 +174,9 @@ export function combatBlock(state) {
         if (c.id === 'pc') continue;
         const st = c.current.defeated ? 'DEFEATED' : c.current.escaped ? 'ESCAPED' : c.current.surrendered ? 'SURRENDERED' : `HP ${c.current.hp}/${c.fixed.max_hp}, ${c.current.band}${c.current.cover !== 'none' ? `, ${c.current.cover} cover` : ''}`;
         const fx = c.current.effects.length ? `; effects: ${c.current.effects.map((x) => x.name).join(', ')}` : '';
-        lines.push(`  ${fightName(state, c.id)}: L${c.fixed.level} ${c.fixed.rank} ${c.model === 'creature' ? c.fixed.body_plan : 'core-stat'}; ${st}; locked DefeatXP ${c.fixed.defeat_xp ?? '-'}${fx}`);
+        // Prototype C (4.3.0-c.6.6.6, review): who in the fight is no foe of his (caught in it, or at his side)
+        const side = c.side === 'ally' ? '; ON ALARIC\'S SIDE (no foe)' : c.side === 'neutral' ? '; NEUTRAL (no foe, caught in the fight)' : '';
+        lines.push(`  ${fightName(state, c.id)}: L${c.fixed.level} ${c.fixed.rank} ${c.model === 'creature' ? c.fixed.body_plan : 'core-stat'}; ${st}${side}; locked DefeatXP ${c.fixed.defeat_xp ?? '-'}${fx}`);
     }
     const pcfx = enc.combatants.pc.current.effects;
     if (pcfx.length) lines.push(`  Alaric effects: ${pcfx.map((x) => x.name).join(', ')}`);
@@ -189,7 +191,8 @@ export function combatBlock(state) {
 
 /** One line per resolved step, with rolls, so the narration can follow exactly (and the player can audit). */
 export function recordLine(state, r, name = (id) => fightLabel(state, id), content = null) {
-    const who = name(r.actor);
+    // Prototype C (4.3.0-c.6.6.6, review): someone who was no foe of his and now fights him, and why
+    const who = `${name(r.actor)}${r.turned ? ` (turns on Alaric, ${r.turned})` : ''}`;
     if (r.kind === 'attack') {
         const parts = [];
         if (r.move) parts.push(`moves ${r.move.from} -> ${r.move.to}`);

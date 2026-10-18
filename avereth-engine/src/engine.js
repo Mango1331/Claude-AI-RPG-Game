@@ -24,7 +24,7 @@ import { targetQuestion } from './display.js';
 import { parseCoin } from './economy.js';
 import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, roundHalfUp, ENGINE_VERSION } from './util.js';
 import { seedPlaces } from './v4/domain.js';
-import { tacticalHere, areaCaught, approachedBy } from './v4/scene_handles.js';
+import { tacticalHere, areaCaught, approachedBy, sideOf } from './v4/scene_handles.js';
 import { lootEvents } from './v4/loot.js';
 
 const GROUP_RE = /\b(?:everyone|everybody|all of you|you all|the (?:group|room|crowd|table|company)|(?:to|at|toward|towards) them)\b/i;
@@ -153,9 +153,12 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
         const eligible = c ? new Set(tacticalHere(s, { friendly: false })) : new Set();
         // 4.3.0-c.6.6.5: the people of a crowd it is thrown into (src/v4/runtime.js crowdIntent) are in it too
         const field = c && Array.isArray(pcAction.field) ? pcAction.field.filter((id) => eligible.has(id) || (pcAction.crowd && s.scene.present.includes(id))) : [];
-        // 4.3.0-c.6.6.6: and everyone it catches, ENGAGED with him after his step, whether foe, bystander or friend
+        // 4.3.0-c.6.6.6: and everyone it catches, ENGAGED with him after his step, whether foe, bystander or friend; each
+        // enters on the side they stand on (review: a bystander or a friend is no foe because he caught them)
         const caught = c ? caughtBy(s, content, pcAction) : [];
-        return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move, move_target: pcAction.move_target }, committed: uniq([...field, ...caught]), pcAction: null, c }, situations);
+        const committed = uniq([...field, ...caught]);
+        const sides = c && areaSkill(content, pcAction.skill) ? Object.fromEntries([pcAction.target, ...committed].filter(Boolean).map((id) => [id, sideOf(s, id)])) : null;
+        return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move, move_target: pcAction.move_target }, committed, sides, pcAction: null, c }, situations);
     }
     if (pcAction?.kind === 'engage') return engagementTurn(s, content, dice, emit, pcAction.targets, { c });
     // 3) declared stealth: opposed check (or automatic with nobody around)
@@ -300,7 +303,7 @@ export function materialise(s, content, dice, emit, id) {
  * One combat step for this player message: start (PC attack or pending NPC commitment), let a new attacker join,
  * run NPC Turns until Alaric's Turn / terminal state, and emit every resulting state change as events.
  */
-function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared = null, committed = [], c = false }, situations) {
+function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared = null, committed = [], sides = null, c = false }, situations) {
     const pcAction = declared?.kind ? declared : null;
     let started = null;
     let enc;
@@ -314,12 +317,12 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
             const trial = clone(s);
             const tdice = new Dice(dice.seed, dice.n);
             for (const id of ids) materialise(trial, content, tdice, (e) => applyEvent(trial, e), id);
-            const tenc = initEncounter(trial, content, tdice, trigger, ids.map((id) => ({ id, side: 'hostile' })), 'trial', { c });
+            const tenc = initEncounter(trial, content, tdice, trigger, ids.map((id) => ({ id, side: sides?.[id] || 'hostile' })), 'trial', { c });
             const tr = runCombat({ enc: tenc, content, dice: tdice, state: trial, c }, null);
             if (tr.stopped === 'illegal' && !tr.records.length) return { kind: 'combat', records: [], illegal: tr.illegal, not_started: true };
         }
         for (const id of ids) materialise(s, content, dice, emit, id);
-        enc = initEncounter(s, content, dice, trigger, ids.map((id) => ({ id, side: 'hostile' })), `enc.t${s.turn}`, { c });
+        enc = initEncounter(s, content, dice, trigger, ids.map((id) => ({ id, side: sides?.[id] || 'hostile' })), `enc.t${s.turn}`, { c });
         Object.assign(enc.intents, s.pending_intents || {});
         started = { reason: enc.ambush_reason, order: enc.order.map(named).join(' > '), ambush: enc.ambush };
     } else {
@@ -346,7 +349,7 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
         if (caught.length && areaLegal(s, content, dice, enc, caught, pcAction, c)) {
             for (const id of caught) {
                 materialise(s, content, dice, emit, id);
-                addCombatant(enc, s, content, id, 'hostile', null, { c });
+                addCombatant(enc, s, content, id, sideOf(s, id), null, { c });
             }
             const skill = content.skills.get(pcAction.skill)?.name || 'the attack';
             started = { ...(started || {}), reason: `${caught.map(named).join(', ')} ${caught.length > 1 ? 'are' : 'is'} caught in ${skill} and ${caught.length > 1 ? 'join' : 'joins'} the fight`, order: enc.order.map(named).join(' > '), joined: [...(started?.joined || []), ...caught] };
@@ -406,7 +409,7 @@ function areaLegal(s, content, dice, enc, caught, act, c) {
     const tenc = clone(enc);
     for (const id of caught) {
         materialise(trial, content, tdice, (e) => applyEvent(trial, e), id);
-        addCombatant(tenc, trial, content, id, 'hostile', null, { c });
+        addCombatant(tenc, trial, content, id, sideOf(trial, id), null, { c });
     }
     return runCombat({ enc: tenc, content, dice: tdice, state: trial, c }, act).stopped !== 'illegal';
 }

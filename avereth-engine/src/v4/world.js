@@ -495,6 +495,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 // a cause); outside it nobody attacks, the next engine block says why
                 const left = by.filter((x) => !(typeof x === 'string' && s.encounter?.combatants?.[x])).filter((x) => envelopeAllows(x, d));
                 if (left.length) v3({ combat: left.map((x) => ({ by: x })) }, d);
+                // Prototype C (4.3.0-c.6.6.6, review): one already in the fight but no foe of his (caught in his area
+                // attack, at his side) whom the story turns on him fights him from its next Turn (src/combat.js asideTurn)
+                const turning = cPath ? by.filter((x) => typeof x === 'string' && x !== 'pc' && s.encounter?.combatants?.[x] && s.encounter.combatants[x].side !== 'hostile').filter((x) => envelopeAllows(x, d)) : [];
+                if (turning.length) v3({ intent: turning.map((who) => ({ who, intent: 'attack' })) }, d);
                 break;
             }
             case 'fact': {

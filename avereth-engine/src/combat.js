@@ -76,9 +76,17 @@ export function creatureCombatant(state, id) {
 export function combatantOf(state, id, content, side) {
     const e = state.entities[id];
     if (e.sheet) return characterCombatant(state, id, content, side);
-    if (e.profile) return creatureCombatant(state, id);
+    // a creature keeps the side it enters with (a bystander caught in an area attack, Prototype C), hostile by default
+    if (e.profile) return { ...creatureCombatant(state, id), ...(side && side !== 'hostile' ? { side } : {}) };
     throw new Error(`no combat profile for ${id}`);
 }
+
+/**
+ * Who an area attack strikes. Prototype C (4.3.0-c.6.6.6, review): everyone alive in its reach, whatever their side in
+ * the fight (a companion at Alaric's side, a bystander caught in it, a foe that surrendered), never the caster; A keeps
+ * its opponents-only area.
+ */
+const areaVictim = (ctx, actor, c) => (ctx.c ? c.id !== actor.id && alive(c) : isOpponent(actor, c) && alive(c) && !c.current.surrendered);
 
 export function activeHostiles(enc) {
     return Object.values(enc.combatants).filter((c) => c.side === 'hostile' && !c.current.defeated && !c.current.escaped && !c.current.surrendered);
@@ -400,7 +408,9 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         // written extra band and may combine with the normal move (Content: "may combine with the normal one-band
         // Turn movement"), so declaring the skill authorises both.
         const allowed = (extra.move === 'closer' || skill.range.extra_band || extra.autoNormalMove ? 1 : 0) + (skill.range.extra_band ? 1 : 0);
-        if (!groupMove) {
+        // Prototype C (4.3.0-c.6.6.6, review): an area attack's reach is who stands ENGAGED with him (below), not where its
+        // nominal target stands: a hound at SHORT does not veto a burst that reaches the companion at his side
+        if (!groupMove && !(ctx.c && isArea)) {
             while (!rangeReaches(skill.range.band, band) && moved < allowed && bandIndex(band) > 0) {
                 band = bandName(bandIndex(band) - 1);
                 moved += 1;
@@ -419,7 +429,7 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
             return bandName(bandIndex(before) - 1);
         };
         const plannedAreaTargets = isArea ? Object.values(enc.combatants)
-            .filter((c) => isOpponent(actor, c) && alive(c) && !c.current.surrendered && plannedBand(c) === 'ENGAGED')
+            .filter((c) => areaVictim(ctx, actor, c) && plannedBand(c) === 'ENGAGED')
             .map((c) => c.id) : [];
         if (isArea && !plannedAreaTargets.length) return { illegal: `${skill.name} needs a valid target ENGAGED with ${actor.name} after the declared movement` };
         // resources (after legality of target/range, before RNG): Cost + Ammo committed together (Core #21)
@@ -474,7 +484,7 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         if (isArea) {
             // area: every target actually ENGAGED after the declared movement is hit, each with its own pipeline.
             const areaTargets = Object.values(enc.combatants)
-                .filter((c) => isOpponent(actor, c) && alive(c) && !c.current.surrendered && distance(enc, actorId, c.id) === 'ENGAGED')
+                .filter((c) => areaVictim(ctx, actor, c) && distance(enc, actorId, c.id) === 'ENGAGED')
                 .map((c) => c.id);
             for (const tid of areaTargets) record.strikes.push(resolveStrike(ctx, actor, enc.combatants[tid], skill.attack, opts));
         } else {
@@ -796,10 +806,52 @@ function npcAttackSkill(ctx, me) {
     return best ? best.id : null;
 }
 
-function npcTurn(ctx, npcId) {
+/**
+ * Prototype C (4.3.0-c.6.6.6, review): the Turn of someone in the fight who is not Alaric's foe (a bystander his area
+ * attack caught, a companion at his side). Where they stood makes no one his enemy: unstruck, they keep out of it. A
+ * companion he struck stays on his side and steps back out of reach. Anyone else he struck answers by their own nature,
+ * as any combatant decides (npcDecide: temperament, wounds, reach): one that would fight him turns on him and is his
+ * foe from then on; one that would flee, back off or take cover does that and stays no party to the fight. A turn
+ * the story narrates (intent attack, src/v4/world.js hostile) turns them too.
+ * @returns {{turned: string, decision?: object} | object} {turned} when they now fight him, else the record of the Turn
+ */
+function asideTurn(ctx, npcId) {
     const { enc } = ctx;
     const me = enc.combatants[npcId];
-    let decision = npcDecide(ctx, npcId);
+    const struck = [...enc.log].reverse().find((r) => r.actor === 'pc' && (r.strikes || []).some((k) => k.target === npcId));
+    const turnOn = (why, decision) => {
+        me.side = 'hostile';
+        me.fixed.defeat_xp = hostileXp(me, ctx.state, ctx.content, enc.pc_rank);
+        return { turned: why, ...(decision ? { decision } : {}) };
+    };
+    if (enc.intents[npcId] === 'attack') return turnOn('as the story has it');
+    const who = me.side === 'ally' ? 'on Alaric\'s side' : 'no foe of his';
+    if (struck && me.side !== 'ally') {
+        const side = me.side;
+        me.side = 'hostile';
+        const decision = npcDecide(ctx, npcId);
+        me.side = side;
+        if (decision.kind === 'attack' || decision.kind === 'close_and_attack') return turnOn(`struck by his ${struck.skill_name || 'attack'}`, decision);
+        if (decision.kind !== 'surrender' && decision.kind !== 'hold') return { ...npcAct(ctx, npcId, decision), why: `${who}, struck by his ${struck.skill_name || 'attack'}: ${decision.why || decision.kind}` };
+    }
+    if (struck && me.current.band !== 'LONG') return { ...moveAction(ctx, npcId, 'away'), kind: 'move', dir: 'away', why: `${who}, struck by his ${struck.skill_name || 'attack'}: steps back out of reach` };
+    return { round: enc.round, actor: npcId, kind: 'hold', why: `${who}: keeps out of the fight` };
+}
+
+function npcTurn(ctx, npcId) {
+    const me = ctx.enc.combatants[npcId];
+    if (ctx.c && me.side !== 'hostile') {
+        const aside = asideTurn(ctx, npcId);
+        if (!aside.turned) return aside;
+        return { ...npcAct(ctx, npcId, aside.decision), turned: aside.turned };
+    }
+    return npcAct(ctx, npcId);
+}
+
+function npcAct(ctx, npcId, decided = null) {
+    const { enc } = ctx;
+    const me = enc.combatants[npcId];
+    let decision = decided || npcDecide(ctx, npcId);
     // Prototype C (4.3.0-c.6.6): caught after a chase, it does not run again in this fight; it fights back
     if (ctx.c && me.current.caught && (decision.kind === 'flee' || decision.kind === 'retreat')) decision = { kind: 'attack', why: 'caught: cornered' };
     if (decision.kind === 'surrender') {
@@ -856,7 +908,10 @@ function endTurn(enc, actorId) {
 
 function terminal(enc) {
     const pc = enc.combatants.pc;
-    return activeHostiles(enc).length === 0 || pc.current.defeated || pc.current.escaped;
+    // Prototype C (4.3.0-c.6.6.6, review): an attack of his that opens a fight among no foes (an area attack among
+    // bystanders) is resolved before the fight can be over
+    const opening = enc.trigger?.actor === 'pc' && !enc.trigger.engage && !enc.trigger_done;
+    return (activeHostiles(enc).length === 0 && !opening) || pc.current.defeated || pc.current.escaped;
 }
 
 function advance(enc) {

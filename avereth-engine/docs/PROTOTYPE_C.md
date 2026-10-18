@@ -787,6 +787,14 @@ Grundlage: Chat und Events von Branch #3 (Abzweig von #88, gespielt unter c.6.6.
   - Ein Flächenangriff trifft jeden Anwesenden, der nach dem erklärten Ein-Band-Schritt ENGAGED steht: Feind, Unbeteiligter oder Verbündeter (Friendly Fire).
   - Wer außerhalb des Kampfes getroffen wird, tritt vorher in den Kampf ein, aber nur wenn der Angriff legal ist (Probelauf auf Kopien). Ein abgelehnter Burst (kein MP, niemand in Reichweite) zieht niemanden hinein.
   - Getroffene handeln danach selbst (`npcDecide`: wehren, fliehen, abwarten).
+  - **Review-Korrektur:** Treffererfassung und Seite sind getrennt.
+    - Die Flächenziele sind in Vorprüfung und Auflösung (`src/combat.js` `areaVictim`) alle lebenden Kampfteilnehmer in Reichweite außer dem Zaubernden, unabhängig von ihrer Seite. Das schließt bereits kämpfende Verbündete (`side: 'ally'`) und ergebene Gegner ein. Pfad A behält „nur Gegner“.
+    - Die Reichweite seines nominellen Ziels kann einen Flächenangriff nicht mehr verhindern (ein Hund auf SHORT blockierte den Burst, der den Gefährten auf ENGAGED erreicht).
+    - Wer von außen erfasst wird, tritt mit seiner eigenen Seite ein (`src/v4/scene_handles.js` `sideOf`): Feinde der Szene als `hostile`, wer Alaric freundlich gesinnt ist (Haltung ≥ 20) als `ally`, alle anderen als `neutral`. Nur `hostile` sperrt Defeat-XP.
+    - Die Reaktion entscheidet der Zug des Getroffenen (`asideTurn`). Ein Verbündeter bleibt auf Alarics Seite und tritt aus der Reichweite. Ein Neutraler handelt nach seinem Temperament (`npcDecide`): Greift er an, wird er ab diesem Zug Alarics Gegner (Anzeige „turns on Alaric, struck by his Arcane Burst“). Flieht er, weicht er zurück oder sucht er Deckung, bleibt er neutral. Ungetroffene halten sich heraus.
+    - Die Geschichte kann einen Nicht-Feind im Kampf umdrehen (`hostile`-Delta → `combat.intent attack`).
+    - Ein Kampf, den Alarics Angriff unter lauter Nicht-Feinden eröffnet, endet nicht vor diesem Angriff (`terminal`).
+    - Der Kampfblock des Erzählers markiert NEUTRAL bzw. ON ALARIC'S SIDE.
   - Pro Wirkung wird einmal MP abgezogen; Schaden, Tod, XP und Loot laufen über die bestehenden Kampfregeln.
   - Selbsttreffer gibt es nicht: Die Skilldefinition („ENGAGED AREA centered on caster“) trifft nur, wer mit dem Zauberer ENGAGED ist.
   - Der Mechanismus fragt nur `effects.kind = area` ab und gilt damit für jeden künftigen Flächenzauber.
@@ -819,11 +827,13 @@ Grundlage: Chat und Events von Branch #3 (Abzweig von #88, gespielt unter c.6.6.
 
 **Vertrag** (Revision `4.3.0-c.6.6.6`): neue Absätze DISTANCE AND AREA (Distanzen nach MOVES, Flächentreffer für Freund und Feind, sonst niemand) und SCENE CONTINUITY. **Kartenbeschreibung neu einsetzen.** Preset und Lorebook sind unverändert.
 
-Tests: `tests/v4/c666.test.js` (10 Tests zu den erwarteten Regressionstests 1–8). Mutationsproben: jeder der 12 Fixes einzeln zurückgedreht, jeder fällt durch. Gesamt 702/702. Planner aus: identisch zu c.6.6.5 (122/122 Live-Schritte, 18/18 Kampfeingaben). Smokes: Browser, SillyTavern V3, V4 und C OK. Build: `4.3.0-c.6.6.6`.
+Tests: `tests/v4/c666.test.js` (13 Tests zu den erwarteten Regressionstests 1–8 und zur Review-Korrektur). Mutationsproben: jeder der 19 Fixes einzeln zurückgedreht, jeder fällt durch. Gesamt 705/705. Planner aus: identisch zu c.6.6.5 (122/122 Live-Schritte, 18/18 Kampfeingaben). Smokes: Browser, SillyTavern V3, V4 und C OK. Build: `4.3.0-c.6.6.6`.
 
 **Grenzen von c.6.6.6:**
 - Die Präsenzübernahme erkennt das Ziel des GO über Art- und Namenswörter (englisch). Personen übernimmt nur die Geschichte über `arrive.with` (Extractor-Regel), nicht die Engine. Das ist so gewollt, damit NPCs nicht ungefragt versetzt werden.
 - Die Distanzen bleiben ein Bandmodell relativ zu Alaric. Ein Gruppenschritt nähert ihn allen Feinden um ein Band. „Mitten hinein“ von MEDIUM aus braucht zwei Züge; eine echte Formation (wer steht neben wem) gibt es nicht.
 - Für Nicht-Combatants setzt die Engine die Distanz nur bei Alarics eigenem Schritt. Danach meldet der Extractor sie weiter (Kreaturen und NPCs dürfen sich selbst bewegen). Eine Erzählung, die Alaric selbst näher rückt als gebucht, wird nur über den Vertrag begrenzt.
 - „Vertrieben“ zählt automatisch nur bei einer Flucht aus einem Kampf. Eine Vertreibung ohne Kampf (Drohen, Feuer, Lärm) bleibt Sache der Geschichte: `quest.ready` mit `alternative`, geprüft wie bisher.
-- Friendly Fire macht Getroffene im Kampf zu Gegnern Alarics (die Kampfseite „hostile“ ist die einzige Gegenseite). Ob sie sich wehren, entscheidet ihr Temperament; Begleiter können also zurückschlagen.
+- Verbündete und Neutrale im Kampf greifen keine Monster an: Das Kampfsystem kennt keine Angriffe zwischen NPCs. Sie halten sich heraus oder weichen zurück, bis sie selbst zu Alarics Gegnern werden.
+- Für Nicht-Feinde, die er tötet, gibt es keine Kampf-XP (Beute ja). Wer sich gegen ihn wendet, bekommt ab dann gewöhnliche Defeat-XP.
+- Ob jemand Verbündeter ist, liest die Engine nur aus der Haltung (≥ 20). Einen eigenen Gruppen- oder Gefährtenstatus gibt es nicht.

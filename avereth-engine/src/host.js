@@ -343,9 +343,37 @@ export function processReply(chat, id, content, { seed, swaps = [], hud = 'close
 
 const displayEsc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+/**
+ * Patch 10A: the full panel stays in the message record; the player sees useful mechanics
+ * and actionable failures, not ordinary internal bookkeeping rejections.
+ */
+export function playerFacingLines(panel) {
+    const clean = (line) => line.startsWith('\x60') && line.endsWith('\x60') ? line.slice(1, -1) : line;
+    const out = [];
+    for (const raw of String(panel || '').split('\n').filter(Boolean)) {
+        const line = clean(raw);
+        // A rejected non-canonical fact does not change the state and needs no player action.
+        if (/^(?:ENGINE REFUSED\b|ENGINE BLOCKED\b|NOT A DECISION\b|NOT APPLIED\b|NON[- ]CANON(?:ICAL)? FACT\b)/i.test(line)) continue;
+        if (/^UNDERSTOOD — /i.test(line)) {
+            // A refused/ambiguous PLAYER action is important, ordinary command parsing is not.
+            const match = /^UNDERSTOOD — (.+) \((refused|unclear|open)(?:: (.+))?\)$/i.exec(line);
+            if (!match) continue;
+            const [, action, status, why] = match;
+            if (status.toLowerCase() === 'open') continue; // pending world/player response
+            const label = status.toLowerCase() === 'refused' ? 'ACTION NOT POSSIBLE' : 'ACTION NEEDS CLARIFICATION';
+            out.push('\x60' + label + ' — ' + action + (why ? ': ' + why : '') + '\x60');
+            continue;
+        }
+        // Time is visible in the world HUD; search checks, rewards and combat remain visible.
+        if (/^TIME — /i.test(line)) continue;
+        out.push(raw);
+    }
+    return out;
+}
+
 /** Render engine-owned display lines as a visually distinct System card without changing the stored panel text. */
-function displaySystemPanel(panel, { tactical = false } = {}) {
-    let raw = String(panel || '').split('\n').filter((x) => x.length);
+function displaySystemPanel(panel, { tactical = false, playerFacing = false } = {}) {
+    let raw = playerFacing ? playerFacingLines(panel) : String(panel || '').split('\n').filter((x) => x.length);
     if (!raw.length) return '';
     const clean = (line) => line.startsWith('`') && line.endsWith('`') ? line.slice(1, -1) : line;
     // During ACTIVE combat the tactical HUD below the narration owns the current snapshot. Keep the System card as the
@@ -358,6 +386,7 @@ function displaySystemPanel(panel, { tactical = false } = {}) {
         if (/^(?:Initiative:|Alaric's attacks vs )/.test(line)) return 'avereth-system-line avereth-system-info';
         return 'avereth-system-line';
     };
+    if (!raw.length) return '';
     const combat = raw.some((line) => /COMBAT|Round|Range:|COMBAT TARGETS/.test(clean(line)));
     return `<div class="avereth-system-panel${combat ? ' avereth-system-combat' : ''}">${raw.map((line) => {
         const text = clean(line);
@@ -370,12 +399,12 @@ function displaySystemPanel(panel, { tactical = false } = {}) {
  * renders extra.display_text instead of mes, while prompts keep using mes. Only what the engine wrote is replaced or
  * removed.
  */
-export function showPanel(msg, panel, hud = '') {
+export function showPanel(msg, panel, hud = '', { playerFacing = false } = {}) {
     if (!msg.extra || typeof msg.extra !== 'object') msg.extra = {};
     const r = rec(msg);
     if (panel || hud) {
         const tactical = String(hud || '').includes('avereth-combat-hud');
-        msg.extra.display_text = [panel ? displaySystemPanel(panel, { tactical }) : '', msg.mes, hud].filter(Boolean).join('\n\n');
+        msg.extra.display_text = [panel ? displaySystemPanel(panel, { tactical, playerFacing }) : '', msg.mes, hud].filter(Boolean).join('\n\n');
     }
     else if ((r?.panel || r?.hud) && typeof msg.extra.display_text === 'string') delete msg.extra.display_text;
 }

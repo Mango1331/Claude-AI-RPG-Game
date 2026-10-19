@@ -351,3 +351,70 @@ test('review 3: a group shown as no foe can still turn on him as a group once th
     assert.deepEqual(Object.keys(s.encounter?.combatants || {}).filter((id) => id !== 'pc').sort(), dogs.slice().sort());
     assert.ok(W.every((id) => !s.encounter.combatants[id]), 'the wolves are no part of it');
 });
+
+// ------------------------------------------------------------------------------------------------ last review: more
+/** The quarry pack (four, group cre.quarry_pack) and the eastern pair (two, group east pair), side by side. */
+async function twoPacks() {
+    const g = await pack();
+    await say(g, '*i wait and watch*');
+    await g.reply('Two more wolves, a pair from the eastern ridge, come down apart from the quarry pack.', { expected: {}, deltas: [wolfNew('east pair', 2, true, 'MEDIUM')] });
+    const s = g.state();
+    const pair = wolves(s).filter((e) => e.group === 'east pair').map((e) => e.id);
+    return { g, pair };
+}
+const groupsOf = (s) => Object.fromEntries(wolves(s).map((e) => [e.id, e.group ?? null]));
+
+test('last review 1: "more:false" with the eastern pair\'s own ref means the pair, never two of the quarry pack; a hostile in the same reply strikes the pair; without a ref that names one group, more:false over two groups picks no one', async () => {
+    const { g, pair } = await twoPacks();
+    const before = groupsOf(g.state());
+    await say(g, '*i wait and watch*');
+    const r = await g.reply('The eastern pair circles closer and rushes him.', { expected: {}, deltas: [
+        { ...wolfNew('east pair', 2, false, 'SHORT'), seq: 1 }, { seq: 2, type: 'position', who: 'east pair', band: 'SHORT', cover: 'none' }, { seq: 3, type: 'hostile', by: ['east pair'] }] });
+    let s = g.state();
+    // the pair's ref in the same reply is the pair: the quarry wolves stay where they were and out of the fight
+    assert.deepEqual(W.map((id) => s.scene.positions[id]?.band), ['LONG', 'LONG', 'LONG', 'LONG'], 'no quarry wolf was moved as one of the pair');
+    assert.deepEqual(groupsOf(s), before, 'the same six ids in the same groups');
+    assert.deepEqual(Object.keys(s.encounter?.combatants || {}).filter((id) => id !== 'pc').sort(), pair.slice().sort(), 'the hostile strikes the pair');
+    assert.ok(!r.record.events.some((e) => e.t === 'delta.rejected' && e.d.rule === 'group_unclear'));
+    // the same words without the pair's ref: two groups of wolves here, "the same ones" is no one in particular
+    const h = await twoPacks();
+    const b2 = groupsOf(h.g.state());
+    await say(h.g, '*i wait and watch*');
+    const r2 = await h.g.reply('Two wolves pace the rim.', { expected: {}, deltas: [wolfNew('wolves', 2, false, 'MEDIUM')] });
+    s = h.g.state();
+    assert.deepEqual(groupsOf(s), b2, 'nothing chosen, nothing made');
+    assert.ok(r2.record.events.some((e) => e.t === 'delta.rejected' && e.d.rule === 'group_unclear'));
+    assert.match(r2.record.corrections.join('\n'), /could not tell which of the groups here they are/);
+});
+
+test('last review 2: one wolf that joins the quarry pack (its ref, more:true) is a new individual of the pack; the pack\'s ref then means all five; a lone newcomer joins no pack', async () => {
+    let g = await pack();
+    await say(g, '*i wait and watch*');
+    await g.reply('A fifth wolf appears and joins the existing quarry pack.', { expected: {}, deltas: [wolfNew('cre.quarry_pack', 1, true)] });
+    let s = g.state();
+    const fifth = wolves(s).map((e) => e.id).filter((id) => !W.includes(id));
+    assert.deepEqual(fifth, ['mon.crequarry_pack_5'], 'one new individual, numbered after the pack');
+    assert.deepEqual(groupsOf(s), Object.fromEntries([...W, ...fifth].map((id) => [id, 'cre.quarry_pack'])), 'of the quarry pack');
+    await say(g, '*i wait and watch*');
+    const rr = await g.reply('The whole pack rushes him.', { expected: {}, deltas: [{ seq: 1, type: 'hostile', by: ['cre.quarry_pack'] }] });
+    assert.ok(!rr.record.events.some((e) => e.t === 'delta.rejected'), 'nobody refused as "a group held as one creature"');
+    assert.deepEqual(Object.keys(g.state().encounter.combatants).filter((id) => id !== 'pc').sort(), [...W, ...fifth].sort());
+    // the joiner and the pack's attack in one reply: the pack's ref is the whole pack, the newcomer included
+    g = await pack();
+    await say(g, '*i wait and watch*');
+    await g.reply('A fifth wolf bursts from the brush to join the pack, and all five rush him.', { expected: {}, deltas: [
+        { ...wolfNew('cre.quarry_pack', 1, true, 'SHORT'), seq: 1 }, { seq: 2, type: 'hostile', by: ['cre.quarry_pack'] }] });
+    s = g.state();
+    assert.equal(Object.keys(s.encounter.combatants).filter((id) => id !== 'pc').length, 5);
+    // a newcomer under a ref of its own joins no pack: the pack's ref still means the four
+    g = await pack();
+    await say(g, '*i wait and watch*');
+    await g.reply('A lone grey wolf watches from the far rocks, no part of the pack.', { expected: {}, deltas: [wolfNew('lone wolf', 1, true)] });
+    s = g.state();
+    const lone = wolves(s).map((e) => e.id).filter((id) => !W.includes(id));
+    assert.equal(lone.length, 1);
+    assert.notEqual(s.entities[lone[0]].group, 'cre.quarry_pack');
+    await say(g, '*i wait and watch*');
+    await g.reply('The pack rushes him.', { expected: {}, deltas: [{ seq: 1, type: 'hostile', by: ['cre.quarry_pack'] }] });
+    assert.deepEqual(Object.keys(g.state().encounter.combatants).filter((id) => id !== 'pc').sort(), W);
+});

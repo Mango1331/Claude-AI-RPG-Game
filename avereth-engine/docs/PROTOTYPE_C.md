@@ -1172,3 +1172,22 @@ Leitsatz: Jeder tatsächliche Teilnehmer eines Kampfes ist eine eigene persisten
 Tests: `tests/v4/patch4.test.js` +3 (review 1–3; jeder Fix einzeln abgeschaltet → rot), Test (1, 4) auf die explizite Semantik angepasst. Gesamt 765/765. Kosten: Extraktor-Systemprompt +50 Token (5.565 → 5.615), Katalog etwa 3 Token je gruppierter Kreatur. Keine neuen LLM-Aufrufe.
 
 Verbleibende Grenzen: Ohne `more` werden Neuankömmlinge derselben Art nicht angelegt, bis eine spätere Antwort sie klar meldet (bewusst: lieber sichtbar fehlend als still falsch zugeordnet). Ob der Extraktor `more` zuverlässig setzt, zeigt erst ein Live-Lauf.
+
+**Letzte Prüfung der `more`-Semantik (gleicher Build, Commit nach `aaf4e06`):**
+
+| Fall | Befund (reproduziert) | Behebung |
+|---|---|---|
+| `more:false` mit zwei Rudeln | `creature.new {ref:"east pair", count:2, more:false}` nahm zwei Wölfe der Quarry-Gruppe (Auswahl nach Art); eine `position` derselben Antwort traf einen Quarry-Wolf | Die Gruppen-Ref bestimmt die Individuen; ohne sie wählt `more:false` nur, wenn die Tiere dieser Art hier eine einzige Gruppe sind, sonst `group_unclear` (keine Auswahl) |
+| Einzelner Neuzugang zum Rudel | `{ref:"cre.quarry_pack", count:1, more:true}`: neuer Wolf ohne Gruppe; die Rudel-Ref meinte weiter vier; als Einzeltier unter der Rudel-Ref galt er zudem als „Gruppe als ein Wesen“ (`delta.js`) | Neuzugänge unter der Ref einer anwesenden Gruppe treten ihr bei, mit fortlaufender Einzel-Ref („cre.quarry_pack 5“ → `mon.crequarry_pack_5`); die Gruppen-Ref in derselben Antwort meint die ganze Gruppe samt Neuzugang |
+
+Eindeutige Semantik (keine Zuordnung nach bloßer Artgleichheit, kein neues Feld; die Gruppe steht im Katalog als „group …“):
+
+| Meldung | Bedeutung |
+|---|---|
+| `ref` = Gruppe hier, `more:false` oder `null` | diese Gruppe erneut erwähnt (Überzählige treten ihr bei) |
+| `ref` = Gruppe hier, `more:true` | Neuzugänge, die dieser Gruppe beitreten |
+| andere `ref`, `more:true` | eigenständige neue Gruppe bzw. einzelner Neuankömmling ohne Rudel |
+| andere `ref`, `more:false` | die Tiere dieser Art hier, nur wenn sie eine einzige Gruppe sind; sonst `group_unclear` |
+| andere `ref`, `null`, Art hier vorhanden | `group_unclear` (nichts verschmolzen, nichts verdoppelt, Korrektur an den Erzähler) |
+
+Tests: `tests/v4/patch4.test.js` +2 („last review“ 1–2: Entity-IDs, gespeicherte Gruppen, `position`/`hostile` derselben und einer späteren Antwort); jede Teiländerung einzeln abgeschaltet → rot. Vokabular `delta-0.91` (nur die Beschreibung von `creature.new`).

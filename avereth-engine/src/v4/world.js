@@ -359,20 +359,27 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 // the same kind by the same name: "a big boar" among wild boars is another animal (4.1.5)
                 return e?.kind === 'creature' && !namedHere.has(id) && statusOf(s, id) !== 'dead' && anchorOf(e) === d.anchor && normText(e.species || '') === normText(d.species || '');
             }) : [];
-        // review of c.6.6.12: which of them the reply means is the extractor's to say (more), never the engine's guess. false:
-        // those here again (only the ones beyond them are new); true: others, a group of their own; null with this kind
-        // here: the group's own ref is them, anything else is unclear: nothing is merged or doubled, the story is told
+        // review of c.6.6.12: which of them the reply means is the extractor's to say, never the engine's guess by kind. A
+        // group here is named by its ref (the catalog's "group ..."): with more false or null those are that group named
+        // again (only the ones beyond them are new), with more true they are newcomers who join it. Under any other ref:
+        // more true is a group of their own; more false is those here only when they are one group (two packs of wolves:
+        // which?); null is unclear. Unclear: nothing is merged, picked or doubled, the story is told
         const own = here.filter((id) => s.entities[id].group === normText(d.ref));
-        if (d.more !== true && d.more !== false && !own.length && here.length) {
-            reject(d, 'group_unclear', `${count} ${d.species}: the reply does not say whether they are those already here or others (more)`);
-            const correction = `The engine holds ${here.map((id) => sceneHandle(s, content, id)).join(', ')} here; the ${count > 1 ? `${count} ` : ''}${d.species} of the last reply ${count > 1 ? 'were' : 'was'} not added: it could not tell whether they are those already here or others. If others came, the story shows them arriving; if not, it names those here.`;
+        const sets = new Set(here.map((id) => s.entities[id].group || id));
+        const unclear = here.length && !own.length && (d.more === false ? sets.size > 1 : d.more !== true);
+        if (unclear) {
+            const which = d.more === false ? 'which of the groups here they are' : 'whether they are those already here or others';
+            reject(d, 'group_unclear', `${count} ${d.species}: the reply does not say ${which} (a group's ref, or more)`);
+            const correction = `The engine holds ${here.map((id) => sceneHandle(s, content, id)).join(', ')} here; the ${count > 1 ? `${count} ` : ''}${d.species} of the last reply ${count > 1 ? 'were' : 'was'} not added: it could not tell ${which}. If others came, the story shows them arriving; if not, it names those here.`;
             if (!corrections.includes(correction)) corrections.push(correction);
             return [];
         }
-        const pool = d.more === true ? [] : d.more === false ? here : own;
+        const pool = own.length ? (d.more === true ? [] : own) : d.more === false ? here : [];
         const again = d.stronger === true && !pool.some((id) => s.entities[id].variation === 'strong') ? [] : pool.slice(0, count);
         for (let i = again.length + 1; i <= count; i++) {
-            const ref = count > 1 ? `${d.ref} ${i}` : d.ref;
+            // a newcomer to a group here is one animal of it, numbered after its members ("cre.quarry_pack 5"), never the
+            // group's own ref (that would be the whole pack held as one creature, src/delta.js isGroupCreature)
+            const ref = own.length ? `${d.ref} ${own.length + i - again.length}` : count > 1 ? `${d.ref} ${i}` : d.ref;
             entries.push(kind === 'npc'
                 ? { ref, kind: 'npc', name: d.name || undefined, anonymous: !d.name, desc: [...(d.role ? [d.role] : []), ...(d.desc || [])], traits: (d.desc || []).join(', '), band: d.band || undefined }
                 : { ref, kind: 'creature', name: undefined, species: d.species, anchor: d.anchor, desc: d.desc || [], band: d.band || undefined });
@@ -388,12 +395,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // the members of a group keep its name (the ref the story gave them), so a later "the quarry pack" means them; one
         // that joins those already here joins their group (review of c.6.6.12: the fifth wolf under the ref "wolves" is
         // of the quarry pack); a group of others never takes the name of a group already here
-        const joined = [...new Set(again.map((id) => s.entities[id].group).filter(Boolean))];
+        // a newcomer named under a group's ref joins that group (the fifth wolf of "cre.quarry_pack", count 1, more true)
+        const joined = own.length ? [normText(d.ref)] : [...new Set(again.map((id) => s.entities[id].group).filter(Boolean))];
         const taken = new Set(Object.values(s.entities).map((e) => e.group).filter(Boolean));
         let name = normText(d.ref);
         if (d.more === true) for (let n = 2; taken.has(name); n++) name = `${normText(d.ref)} ${n}`;
         const group = joined.length === 1 ? joined[0] : name;
         if (count > 1 || joined.length === 1) for (const id of [...again.filter((x) => !s.entities[x].group), ...created]) emit({ t: 'entity.updated', d: { id, set: { group } } });
+        // the group's ref in this reply (a hostile after it) is the whole group here, its newcomers with it
+        if (own.length) groups.set(normText(d.ref), s.scene.present.filter((id) => s.entities[id]?.group === group && statusOf(s, id) !== 'dead'));
         if (ids.length) refs.set(normText(d.ref), ids[0]);
         // Scene relevance is ephemeral; an important person is not automatically an enemy.
         // The NPC identity persists, but relevance and explicit threat expire when the scene ends.
@@ -401,7 +411,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             for (const id of ids) emit({ t: 'scene.tactical', d: { id, relevant: true, threat: d.threat === true } });
         }
         if (d.name && ids.length) refs.set(normText(d.name), ids[0]);
-        if (count > 1) groups.set(normText(d.ref), ids);
+        if (count > 1 && !own.length) groups.set(normText(d.ref), ids);
         // who the person is shows on their card (occupation), as text: the V3 fact rule would read "Guild clerk" as a
         // reference to the clerk himself
         if (kind === 'npc' && d.role && created.length && !truth(s, created[0], 'occupation').length) occupation(created[0], d.role);

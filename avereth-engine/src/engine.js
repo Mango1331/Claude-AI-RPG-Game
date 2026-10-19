@@ -459,7 +459,9 @@ function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false
         // (rules.combat.wary_min): a story that soon after has them lose track of him sets up no Ambush (src/v4/world.js aware)
         if (cPath) {
             const wary = { turn: s.turn, minute: s.clock.minute, encounter: enc.id };
-            const watched = s.scene.present.filter((id) => id !== 'pc' && !enc.combatants[id] && s.entities[id] && ['npc', 'creature'].includes(s.entities[id].kind) && s.scene.awareness[id] && s.scene.awareness[id] !== 'unaware');
+            // Patch 5: one the story never marked is no less a witness than one marked aware (the two wolves that hung back
+            // on the road); only one the story keeps unaware of him missed it
+            const watched = s.scene.present.filter((id) => id !== 'pc' && !enc.combatants[id] && s.entities[id] && ['npc', 'creature'].includes(s.entities[id].kind) && s.scene.awareness[id] !== 'unaware');
             for (const id of [...Object.keys(enc.combatants).filter((id) => id !== 'pc'), ...watched]) if (s.entities[id]?.status !== 'dead') emit({ t: 'entity.updated', d: { id, set: { wary: wary } } });
         }
         emit({ t: 'memory.recorded', d: { memory: fightMemory(s, content, enc, end.summary) } });

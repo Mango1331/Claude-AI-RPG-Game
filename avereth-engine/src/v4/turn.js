@@ -27,7 +27,7 @@ export function routeTurn(state, content, text) {
 function serializableAuth(auth) {
     return {
         go: auth.go, gos: auth.gos, roam: auth.roam, take: auth.take, takeNames: auth.takeNames || {}, gather: auth.gather,
-        rest: auth.rest, timeCap: auth.timeCap, ...(auth.journey ? { journey: auth.journey } : {}),
+        rest: auth.rest, timeCap: auth.timeCap, ...(auth.journey ? { journey: auth.journey } : {}), ...(auth.road ? { road: auth.road } : {}),
         // Prototype C (src/v4/planner.js): the engine's own time and recovery this turn
         ...(auth.c ? { c: true, booked_min: auth.booked_min || 0, recovered: !!auth.recovered } : {}),
     };

@@ -234,6 +234,13 @@ Seit 4.3.0-c.6.6.12 (Patch 4) hält der V4-Weltpfad Gruppen und Kampfkontinuitä
 - **Flucht:** Wer in seinem letzten Zug geflohen ist, flieht weiter, bis er den Kampf verlassen hat. Wird er eingeholt, kämpft er.
 - **Erzählerblock:** Kreaturen, die anwesend, aber nicht im Kampf sind, stehen als „Here but NOT in the fight“ im Kampfblock.
 
+Seit 4.3.0-c.6.6.13 (Patch 5) ist eine Reise eine zusammenhängende Unternehmung auf denselben Bausteinen (`src/v4/commands.js`, `src/v4/world.js`, `src/v4/intents.js`):
+- **Ziel und Fortsetzung:** Das Ziel bleibt in `s.intents`, bis er ankommt, es aufgibt oder ersetzt. Ein offenes „bis ich ein Dorf finde“ wird ein Ziel ohne Ort (`seek`), sobald er dafür auf der Straße ist; „I continue“ setzt es mit seinen ursprünglichen Worten zum Weg fort. Ein Ort, den die Erzählung nur nennt oder zeigt, ist keine Ankunft.
+- **Etappen:** Jede Etappe ohne Ankunft auf der Reichsstraße bewegt die Szene weiter; Mitreisende (der Schützling einer laufenden Questreise, `go.along`) kommen mit und kommen auch an, alle anderen bleiben, wo sie waren (`entity.left`).
+- **Die Straße:** Für Etappen jenseits der Siedlung entscheidet die Engine nur, ob diese Etappe eine konkrete Unterbrechung bringen darf (`rules.travel.leg_event_pct`, deterministisch aus Seed und Zug), und sagt es dem Erzähler in einer ROAD-Zeile. Auf einer ruhigen Etappe greift niemand an, den die Antwort neu bringt. Wer von einer Unterbrechung noch da ist, ist noch da; nichts Neues kommt hinzu.
+- **Dieselben Individuen:** Dieselbe Art am selben Ort kurz danach (fester Ort: `wary_min`; Straße: nur in derselben Antwort) sind die Zurückgelassenen mit ihren HP; sonst andere. Neue Tiere erhalten nie die Ref oder den Gruppennamen früherer.
+- **Gruppenposition:** `position` mit einer Gruppen-Ref bewegt jedes Mitglied; mehrdeutige Referenzen bewegen niemanden.
+
 **Aufbau des Engine-Blocks** (Sektionen mit Priorität, gepackt unter Budget, Standard 1.400 Token):
 
 | Priorität | Sektionen |

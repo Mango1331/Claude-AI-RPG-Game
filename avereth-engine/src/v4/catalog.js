@@ -223,7 +223,7 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
     // Patch 2: his own goals with a place, and a quest journey; more than one: the engine asks which "I continue" means
     const options = continueOptions(state, { c });
     const optionText = (o) => (o.kind === 'intent'
-        ? `${o.id} — his goal "${o.label}" (to ${o.place})`
+        ? `${o.id} — his goal "${o.label}" (${o.place ? `to ${o.place}` : `to find ${o.seek}, no place yet`})`
         : `${o.id} — "${o.label}"${o.companion ? ` with ${sceneHandle(state, content, o.companion)}` : ''}: ${o.why}`);
     const journey_ready = options.length === 1 ? `${optionText(options[0])}; Alaric may continue it when he clearly agrees`
         : options.length > 1 ? `${options.map(optionText).join(' · ')}; "I continue" without naming one asks which` : undefined;

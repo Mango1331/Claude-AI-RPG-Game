@@ -15,7 +15,7 @@
 import { formatCoin } from '../economy.js';
 import { resolveCheck } from '../checks.js';
 import { entityLabel, setFactEvents, truth } from '../knowledge.js';
-import { normText, slug, formatClock } from '../util.js';
+import { normText, slug, formatClock, hash32 } from '../util.js';
 import { deriveCharacter } from '../derived.js';
 import {
     placeName, hallOf, hallOfSettlement, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin, listedToday,
@@ -167,6 +167,39 @@ function abandonGuild(s, content, q, c, ctx, emit) {
     return { status: 'resolved', line: `GIVES UP — ${questLine(q)}. No payout, no Quest XP.${slip ? ' Its contract slip stays with him until he hands it back at a Guild hall.' : ''}` };
 }
 
+// ------------------------------------------------------------------------------------------------ the road (Patch 5)
+/**
+ * Patch 5: whom a quest journey under way takes along on a GO or a "continue": its charge, while he or she is with him
+ * (an escort is not left at the roadside because the extractor did not list the charge again). Nobody else.
+ */
+function companionOf(s, envx) {
+    if (!envx?.c) return {};
+    const ready = journeyReady(s, { c: !!envx?.c });
+    return ready?.companion && s.quests[ready.id]?.journey && present(s, ready.companion) ? { with: [ready.companion], along: true } : {};
+}
+
+/**
+ * Patch 5: one leg of a journey beyond his settlement (a known place elsewhere, a goal, a quest's journey). The road is
+ * no spawn table: the engine decides only whether this leg may bring one concrete interruption (rules.travel
+ * leg_event_pct, drawn from the campaign seed and the turn, so a swipe or a replay draws the same, and no die of the
+ * fight is used up), never what it is; the story makes it fit the land, its creatures and people as the world has them.
+ * Those of an interruption still here are still here: nothing new meets him while they are (no interruption made again
+ * with each message). auth.road: 'open' | 'quiet'; on a quiet leg nobody the reply introduces turns on him (world.js).
+ */
+function roadLine(s, content, c, ctx, go) {
+    if (!ctx.auth.c) return;
+    const goWith = new Set(go.with || []);
+    const held = s.scene.present.filter((id) => id !== 'pc' && !goWith.has(id) && s.entities[id] && s.entities[id].status !== 'dead'
+        && (s.entities[id].kind === 'creature' ? s.entities[id].threat !== false : (s.scene.threats || []).includes(id)));
+    const pct = content.rules.travel?.leg_event_pct ?? 0;
+    const roll = parseInt(hash32(`${s.meta?.seed ?? ''}|${s.turn}|${s.clock.minute}|${c.seq}|road`), 16) % 100;
+    ctx.auth.road = !held.length && roll < pct ? 'open' : 'quiet';
+    const toward = go.to ? placeName(s, go.to) : go.journey || go.name;
+    if (held.length) ctx.extra.push(`THE ROAD — ${held.map((id) => sceneHandle(s, content, id)).join(', ')} ${held.length > 1 ? 'are' : 'is'} still here as he goes on toward ${toward}: the story shows how they take it; nothing new meets him on this leg.`);
+    else if (ctx.auth.road === 'open') ctx.extra.push(`THE ROAD — this leg toward ${toward} may (not must) bring ONE concrete interruption that fits the land he crosses and the hour: people or creatures of this land, an obstacle on the way, a meeting. It stops the travel where it happens, short of where he is going; what he does about it (fight, pay, talk, flee, another way) is his decision, not the story's. Scenery, weather and far-off signs are atmosphere, not interruptions.`);
+    else ctx.extra.push(`THE ROAD — this leg toward ${toward} is uneventful: no ambush, attack or obstacle meets him on it. Scenery, weather, far-off animals and harmless travellers are atmosphere; carry the travel forward until he arrives or the day's travel ends, and leave every choice about it to him.`);
+}
+
 // ------------------------------------------------------------------------------------------------ handlers
 // Each handler: (s, content, c, ctx, emit, env) -> {status, reason?, line?, extra?, cap?, condition?}
 const SELLING = /\b(?:sell\w*|sold)\b/i;
@@ -224,18 +257,23 @@ const HANDLERS = {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
         // Patch 2: his own goals and the quest journey; with more than one, "I continue" is a question, never a pick
         const options = continueOptions(s, { c: !!envx?.c });
-        if (options.length > 1) return { status: 'clarify', reason: 'which journey?', line: `CLARIFY — continue which: ${options.map((o) => (o.kind === 'intent' ? `${o.label} (${placeName(s, o.place)})` : o.label)).join(' or ')}?` };
+        if (options.length > 1) return { status: 'clarify', reason: 'which journey?', line: `CLARIFY — continue which: ${options.map((o) => (o.kind === 'intent' ? `${o.label} (${o.place ? placeName(s, o.place) : `somewhere: ${o.seek}`})` : o.label)).join(' or ')}?` };
         const goal = options[0]?.kind === 'intent' ? options[0] : null;
         if (goal) {
-            const name = placeName(s, goal.place);
-            const go = { seq: c.seq, to: goal.place, name, hall: !!hallOf(s, goal.place), newName: null, intent: goal.id };
+            // Patch 5: a goal with no place yet (seek) goes on toward what he set off to find; his first words keep the
+            // way he chose (a route is how he travels, never a destination)
+            const name = goal.place ? placeName(s, goal.place) : goal.seek;
+            const go = { seq: c.seq, to: goal.place || null, name, hall: !!goal.place && !!hallOf(s, goal.place), newName: goal.place ? null : name, intent: goal.id, ...companionOf(s, envx) };
             ctx.auth.go = go;
             ctx.auth.gos.push(go);
             ctx.auth.roam = true;
-            ctx.auth.timeCap = Math.max(ctx.auth.timeCap, content.rules.time.travel_cap_min);
+            ctx.auth.timeCap = Math.max(ctx.auth.timeCap, goal.place ? content.rules.time.travel_cap_min : content.rules.time.unknown_place_cap_min);
             ctx.expectedKeys[String(c.seq)] = 'go';
-            setIntentEvents(s, { goal: goal.label, place: goal.place, quote: c.quote }).events.forEach(emit);
-            return { status: 'authorized', line: `CONTINUES — toward ${name}, his own goal "${goal.label}" (the story decides how far he gets and whether he arrives; it does not move him further than this message does).` };
+            setIntentEvents(s, { goal: goal.label, place: goal.place }).events.forEach(emit);
+            const first = s.intents[goal.id]?.quote;
+            const way = first && first !== c.quote ? ` He set off saying "${String(first).slice(0, 120)}": that is still his way.` : '';
+            roadLine(s, content, c, ctx, go);
+            return { status: 'authorized', line: `CONTINUES — ${goal.place ? `toward ${name}` : `on his way to find ${name}`}, his own goal "${goal.label}" (the story decides how far he gets and whether he arrives; it does not move him further than this message does).${way}` };
         }
         const ready = journeyReady(s, { c: !!envx?.c });
         if (!ready) {
@@ -252,11 +290,12 @@ const HANDLERS = {
         const q = s.quests[ready.id];
         if (q?.status === 'active' && !q.journey) emit({ t: 'quest.journey', d: { id: q.id, at: s.scene.at } });
         // 4.3.0-c.6.6.2: its companion travels with him, also where the road has not reached its end yet (world.js)
-        const go = { seq: c.seq, to: null, name: `the established journey for "${ready.label}"`, hall: false, newName: 'the established journey', journey: ready.label, with: ready.companion ? [ready.companion] : [] };
+        const go = { seq: c.seq, to: null, name: `the established journey for "${ready.label}"`, hall: false, newName: 'the established journey', journey: ready.label, with: ready.companion ? [ready.companion] : [], ...(envx?.c ? { along: true } : {}) };
         ctx.auth.go = go;
         ctx.auth.gos.push(go);
         ctx.auth.roam = true;
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, content.rules.time.travel_cap_min);
+        roadLine(s, content, c, ctx, go);
         return { status: 'authorized', line: `DEPARTS/CONTINUES — the already-established journey of "${ready.label}"${ready.companion ? ` with ${entityLabel(s, ready.companion)}` : ''}; carry routine travel forward in THIS reply until they reach the destination or a concrete event creates a real decision/stop. Scenery, harmless conversation and uneventful road are not reasons to stop and ask the player to say "continue" again.` };
     },
     go(s, content, c, ctx, emit, envx) {
@@ -284,6 +323,12 @@ const HANDLERS = {
             ctx.auth.journey = ready.id;
             if (ready.companion) go.with = [ready.companion];
             ctx.extra.push(`JOURNEY PACING — this GO starts the established journey of "${ready.label}". Carry routine travel forward in this same reply until destination or a concrete complication/open decision actually interrupts it; do not stop merely for scenery, harmless conversation or to make Alaric say "continue" again.`);
+        }
+        // Patch 5: a leg beyond his settlement (a known place elsewhere, a place known by report, a quest's journey): the
+        // charge of a journey under way goes with him; a step to a place nearby (up the scree above the ford) is his alone
+        if (ctx.auth.journey || (known && (goSetsGoal(s, c.to) || (!sameSettlement(s, c.to, s.scene.at) && s.places[c.to]?.kind !== 'realm' && !!settlementOf(s, c.to))))) {
+            if (!ctx.auth.journey) Object.assign(go, companionOf(s, envx));
+            roadLine(s, content, c, ctx, go);
         }
         // Patch 2: a destination beyond his settlement, or a place he knows by report, is his goal until he reaches it
         // (src/v4/intents.js); a quest's journey is that quest's own

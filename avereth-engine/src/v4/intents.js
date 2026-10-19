@@ -5,6 +5,8 @@
 // no delta for it. A goal is remembered through fights, rests, detours and changes of place; it is done when he arrives
 // where it leads, given up when he says so, and paused when he sets off for another destination instead. It never moves
 // him: "I continue" goes on with it only when exactly one goal or journey can be meant, and only because he said so.
+// Patch 5: a GO toward somewhere new and unnamed that took him out on the road without getting there ("until I find a
+// village") is a goal too, with no place (seek): it is done where the story has him arrive at what he went to find.
 import { normText } from '../util.js';
 import { placeName, settlementOf } from './domain.js';
 import { journeyReady } from './catalog.js';
@@ -31,7 +33,7 @@ function existing(s, { place = null, goal = '' }) {
  * The events for a goal he sets: a new one, or the same one again (active once more). A new destination pauses the
  * other active destination: he chose this one instead; nothing is given up unless he says so.
  */
-export function setIntentEvents(s, { goal, place = null, quote = null, why = 'his decision' }) {
+export function setIntentEvents(s, { goal, place = null, quote = null, why = 'his decision', seek = null }) {
     const events = [];
     const cur = existing(s, { place, goal });
     if (place) {
@@ -41,7 +43,10 @@ export function setIntentEvents(s, { goal, place = null, quote = null, why = 'hi
     }
     if (cur?.status === 'active') return { id: cur.id, events, fresh: false };
     const id = cur?.id || `intent.${list(s).length + 1}`;
-    const intent = { id, goal: String(goal || (place ? `reach ${placeName(s, place)}` : 'his goal')).slice(0, 120), place, status: 'active', since: cur?.since || at(s), updated: at(s), quote: quote ? String(quote).slice(0, 160) : cur?.quote || null, why };
+    const intent = { id, goal: String(goal || (place ? `reach ${placeName(s, place)}` : 'his goal')).slice(0, 120), place, status: 'active', since: cur?.since || at(s), updated: at(s), quote: quote ? String(quote).slice(0, 160) : cur?.quote || null, why,
+        // Patch 5: what he set off to find without a known place for it ("follow the northern road until I find a
+        // village"): a journey he can go on with, done only where the story has him find it
+        ...(seek || cur?.seek ? { seek: String(seek || cur.seek).slice(0, 80) } : {}) };
     events.push({ t: 'intent.set', d: { intent } });
     return { id, events, fresh: !cur };
 }
@@ -77,8 +82,8 @@ export function goSetsGoal(s, to) {
  * @returns {{kind: 'intent'|'quest', id, label, place?, companion?, contact?, why}[]}
  */
 export function continueOptions(s, { c = false } = {}) {
-    const goals = activeIntents(s).filter((i) => i.place && s.places[i.place] && s.places[i.place].known !== KNOWN.false && !within(s, s.scene.at, i.place))
-        .map((i) => ({ kind: 'intent', id: i.id, label: i.goal, place: i.place, why: 'his own goal' }));
+    const goals = activeIntents(s).filter((i) => (i.place && s.places[i.place] && s.places[i.place].known !== KNOWN.false && !within(s, s.scene.at, i.place)) || (!i.place && i.seek))
+        .map((i) => ({ kind: 'intent', id: i.id, label: i.goal, place: i.place, ...(i.seek ? { seek: i.seek } : {}), why: 'his own goal' }));
     const quest = journeyReady(s, { c });
     const explicit = quest && (quest.why !== 'an established journey' || !!quest.companion);
     // a goal that is the quest journey's own destination (he set off for the escort's town) is that journey, no second
@@ -86,6 +91,7 @@ export function continueOptions(s, { c = false } = {}) {
     const trip = quest && explicit ? s.quests?.[quest.id] : null;
     const words = trip ? normText([trip.title, trip.desired_end_state, ...(trip.objectives || []).flatMap((o) => [o.what, o.where])].filter(Boolean).join(' ')) : '';
     const same = (g) => {
+        if (!g.place) return false;
         const n = normText(placeName(s, g.place)).replace(/^the /, '');
         return n.length >= 3 && words.includes(n);
     };

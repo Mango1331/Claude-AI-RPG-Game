@@ -274,6 +274,11 @@
     "src": "Prototype C only (docs/PROTOTYPE_C.md §11): natural recovery while resting or sleeping, the same basis for both: per hour of booked rest or sleep, in % of the maximum, rounded down, never above the maximum. Provisional values, no balance",
     "per_hour_pct": { "hp": 10, "mp": 15, "sta": 25 }
   },
+  "travel": {
+    "src": "Patch 5 (docs/PROTOTYPE_C.md): travel legs on the planner path. Provisional values, no world law",
+    "leg_event_pct": 35,
+    "leg_event_note": "the share of travel legs beyond a settlement that may bring one concrete interruption (an encounter, an obstacle, a meeting) the story makes fit the land; the others are uneventful. Never a guaranteed fight, never what it is"
+  },
   "combat": {
     "src": "Core #23, #24, #26-#28",
     "phases": [

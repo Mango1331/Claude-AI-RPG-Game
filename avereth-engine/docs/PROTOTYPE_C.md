@@ -1191,3 +1191,42 @@ Eindeutige Semantik (keine Zuordnung nach bloßer Artgleichheit, kein neues Feld
 | andere `ref`, `null`, Art hier vorhanden | `group_unclear` (nichts verschmolzen, nichts verdoppelt, Korrektur an den Erzähler) |
 
 Tests: `tests/v4/patch4.test.js` +2 („last review“ 1–2: Entity-IDs, gespeicherte Gruppen, `position`/`hostile` derselben und einer späteren Antwort); jede Teiländerung einzeln abgeschaltet → rot. Vokabular `delta-0.91` (nur die Beschreibung von `creature.new`).
+
+### Nachtrag 4.3.0-c.6.6.13 (Patch 5: Reisen, Reisekontinuität und Begegnungen)
+
+Leitsatz: Reisen sind zusammenhängende Unternehmungen durch eine persistente Welt. Gewöhnliche Wegstrecken darf die Erzählung zusammenfassen; tatsächliche Begegnungen und Entscheidungen bleiben mechanisch nachvollziehbar. Der Erzähler gestaltet die Reise, verbindliche Zustände und Folgen bestimmt nur die Engine. Es gibt kein zweites Reisesystem: Ziele bleiben `s.intents` (Patch 2), Etappen bleiben `go`/`journey.continue` mit dem Transit von c.6.6.2, Begegnungen bleiben `creature.new`/`person.new` mit der World Envelope und dem Kampfkern.
+
+**Bereits vorhanden (gesichert durch Tests):** Zielorte als feste IDs („back to the city“ ist Ashbridge, kein neuer Ort); Berichtsorte sind Ziele, kein Besuch; eine Etappe ohne Ankunft stellt Alaric auf die Straße des Reichs („On the way to …“); Zeit wird einmal gebucht, Caps (`travel_cap_min` 10080 usw.) gelten und müssen nicht ausgeschöpft werden; Reisezeit heilt nicht (`recover` nur bei Rast/Schlaf auf seinen Befehl); kein `go`/`journey.continue` während eines Kampfes; Ziel bleibt durch Kampf und Rast aktiv, pausiert bei neuem Ziel, endet durch Ankunft oder `intent.drop`; Lieferungen hängen an `owedObjects`/`contractReady`; die Patch-3-Firewall gilt auf jeder Etappe.
+
+| Bestätigter Fehler | Ursache | Behebung |
+|---|---|---|
+| Gruppenposition (Patch-4-Lücke): `position {who:"east pair"}` bewegte ein Tier | `case 'position'` nutzte `mapRef` | `members()` wie bei `aware`/`intent`/`hostile`; eine eigene ID bewegt nur dieses Tier; „the wolves“ über zwei Gruppen bewegt niemanden (`group_unclear`) |
+| Weitere Etappe auf der Straße: tote und lebende Wölfe der letzten Begegnung blieben Stunden später „PRESENT“ | Transit zog nur um, wenn der Ort wechselte (`via !== startAt`) | Auch eine weitere Etappe auf der Reichsstraße (≥ `go_min_elsewhere` erzählte Wegminuten, keine Ankunft) bewegt die Szene weiter; Mitreisende kommen mit, der Rest bleibt zurück |
+| Neues Rudel unter der Ref eines früheren („wolves“) ging verloren | Die V3-Regeln hielten `wolves 1` für den toten `mon.wolves_1` („known, not duplicated“) | Neuankömmlinge erhalten eine eigene Ref (fortlaufend), ihre Gruppe einen eigenen Namen, wenn der alte schon vergeben ist |
+| „Follow the northern road until I find a village“ war nach der ersten Unterbrechung vergessen | Ein `go {new}` setzte kein Ziel; `continueOptions` kannte nur Ziele mit Ort | Führt der Transit ihn ohne Ankunft auf die Straße, wird das Gesuchte sein Ziel ohne Ort (`intent.seek`); „I continue“ setzt es fort (Cap `unknown_place_cap_min`); erledigt erst, wenn der Extraktor die Ankunft dieses GO meldet (dann mit `place`) |
+| Eskorte: der Schützling blieb am Straßenrand, wenn der Extraktor ihn bei der Ankunft nicht nannte | `arrive.with` war die einzige Quelle | Ein GO/„continue“ einer laufenden Questreise trägt den Schützling (`go.with`, `along`); er kommt an, solange die Geschichte ihn nicht trennt. Ein GO, das die Reise erst beginnen könnte (noch in der Stadt), nimmt niemanden mit |
+| Eskorte READY auf offener Straße („as good as there“) | Die READY-Prüfung kannte nur die fehlende Reise | Auf der Reichsstraße ist eine Eskorte nicht fertig (`quest_escort`); die Ankunft muss stattfinden |
+| Zuschauer ohne Awareness-Eintrag wurden nicht wachsam | `persistCombat` verlangte eine gesetzte Awareness | Nur wer ausdrücklich `unaware` ist, hat den Kampf verpasst |
+| Nichts bemaß die Straße: jede Etappe ein Hinterhalt oder keiner, nach Laune des Erzählers | Die Envelope erlaubt jedem Neuankömmling der Antwort den Angriff | Kleiner Mechanismus (unten) |
+
+**Die Straße (`roadLine`, `src/v4/commands.js`):** Nur für Etappen jenseits der Siedlung (bekannter Ort anderswo, Berichtsort, Ziel, Questreise). Die Engine entscheidet allein, ob diese Etappe *eine* konkrete Unterbrechung bringen darf (`rules.travel.leg_event_pct`, 35 %), nie welche. Der Wurf kommt aus `hash32(seed|turn|minute|seq)`: derselbe bei Swipe und Replay, kein Würfel des Kampfes wird verbraucht. Der Erzähler erhält eine Zeile:
+- `open`: „may (not must) bring ONE concrete interruption that fits the land he crosses and the hour … what he does about it is his decision“
+- `quiet`: „uneventful: no ambush, attack or obstacle … Scenery, weather, far-off animals and harmless travellers are atmosphere“
+- noch Anwesende einer Unterbrechung: „X, Y are still here … nothing new meets him on this leg“ (`quiet`). So wird eine Unterbrechung nicht mit jeder Nachricht neu erzeugt.
+
+Durchgesetzt wird nur `quiet`: Wen die Antwort auf die Straße bringt, greift nicht an (`road`, Korrektur); er ist da, mehr nicht. Was erscheint, wählt der Erzähler aus Lore, Ankern und Ort; es gibt keine Spawnliste, keinen Generator und keinen LLM-Aufruf dafür.
+
+**Dieselben Individuen (`entity.left`):** Lebende Kreaturen, die er zurücklässt, behalten `left: {at, minute, turn, leg}`. Nennt die Geschichte an *diesem* Ort dieselbe Art wieder (ohne Anwesende dieser Art, nicht `more:true`), sind es diese, mit ihren HP, Gruppe und Wachsamkeit: an einem festen Ort innerhalb `wary_min`, auf der offenen Straße nur in der Antwort, in der er weiterging (kein Verfolgen über beliebige Strecken; das gilt jetzt auch für das einzelne Rückkehrtier). Weniger als dort sind oder zwei Gruppen: `group_unclear`, nichts gewählt, nichts erzeugt. Tote bleiben tot und liegen, wo sie fielen.
+
+**Zustand:** keine neue Reise-Struktur. Neu sind nur `intent.seek` (Ziel ohne Ort), `entity.left` (wo eine Kreatur zurückblieb), `go.along` (Begleiter einer laufenden Reise) und `outcome.auth.road`.
+
+**Tests:** `tests/v4/patch5.test.js` (27 Tests zu den Anforderungen 1–35; Doppelungen mit Patch 2/3/4 und c.6.6.2/c.6.6.4 sind dort belassen). Gegenproben: 15 Teiländerungen einzeln abgeschaltet → jeweils mindestens ein Test rot. Gesamt 794/794; Smokes Browser, ST Default, ST V4, ST C grün.
+
+**Kosten:** Extraktor-Systemprompt unverändert (5.638 Token, `deltas.json` unverändert). Erzähler: eine ROAD-Zeile je Reiseetappe (35–100 Token), die CONTINUES-Zeile +25 Token mit seinen ersten Worten zum Weg. Planner unverändert. Keine neuen LLM-Aufrufe. Laufzeit der Engine messbar unverändert.
+
+**Grenzen:**
+- Wie dicht Begegnungen sind, ist ein Anteil ohne Land- oder Tageszeitbezug; das „Was“ bleibt beim Erzähler (kein Biom-Ökosystem).
+- `open` ist eine Erlaubnis, keine Pflicht; ob der Erzähler die `quiet`-Zeile befolgt, wird nur für Angriffe durchgesetzt (eine erfundene Brücke oder ein Sturm bleibt Erzählung).
+- Personengruppen haben weiterhin kein `count`; zurückgelassene Personen erkennt die Engine über `entity.at` und Namen wie bisher.
+- Die erste Etappe eines offenen Suchziels („bis ich ein Dorf finde“) bekommt keine ROAD-Zeile, weil erst die Antwort zeigt, ob er die Stadt verlässt.
+- Ob ein Schützling am Ziel ankommt, folgt aus der laufenden Reise; trennt die Geschichte die beiden ohne `leave`, merkt die Engine das nicht.

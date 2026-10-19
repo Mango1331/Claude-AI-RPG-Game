@@ -27,7 +27,7 @@ import {
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
-import { reachedEvents } from './intents.js';
+import { reachedEvents, setIntentEvents } from './intents.js';
 import { itemTraits, useOf } from './items.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
@@ -286,12 +286,27 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (!ids.length || (said.length && !said.includes(ids.length))) return null;
         return ids;
     };
+    // a plural kind or a collective that names no one group here ("the wolves" over two packs): never one of them by a
+    // guess of the name resolver (Patch 5, position)
+    const groupWords = (ref) => {
+        if (typeof ref !== 'string' || refs.has(normText(ref)) || s.entities[ref]) return false;
+        const bare = normText(ref).replace(/[_.]+/g, ' ').split(' ').filter((w) => w && !QUANT.has(w) && !numbersIn(w).size).join(' ');
+        return !!bare && isGroup(content, bare);
+    };
     // whom this reply establishes as not having noticed Alaric (aware: unaware), whatever step of it reports that: they do
     // not see him at an earlier step either (perceiveAll)
     const seeing = () => ({ unaware: new Set((fw.accept || []).filter((d) => d?.type === 'aware' && d.level === 'unaware').flatMap((d) => members(d.who) || [mapRef(d.who)]).filter((x) => typeof x === 'string')) });
     // the World Envelope at this step (docs/ARCHITECTURE_GEN35.md §2.3): may this actor turn on Alaric of its own accord?
     const envelopeAllows = (id, d) => {
         if (typeof id !== 'string' || !s.entities[id] || !['npc', 'creature'].includes(s.entities[id].kind)) { grant('envelope.fight'); return true; } // the V3 rules refuse unknown attackers
+        // Patch 5: on a leg the engine gave as uneventful (commands.js roadLine), nobody the reply brings onto the road
+        // ambushes him; whoever was there before follows the envelope as ever
+        if (auth.road === 'quiet' && bornHere.has(id) && !s.encounter) {
+            reject(d, 'road', `${id} does not turn on Alaric: this leg of the road was uneventful`);
+            const correction = `${entityLabel(s, id)} did not attack Alaric in the last reply: that leg of his journey was uneventful (no ambush or attack on it); no fight started. Whoever the story brought onto the road is there, nothing more.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+            return false;
+        }
         const v = mayOpenFight(s, content, id, { newInAnswer: bornHere.has(id), c: cPath });
         if (v.ok) { grant('envelope.fight'); return true; }
         const label = entityLabel(s, id);
@@ -315,6 +330,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const hunted = (d, anchor) => Object.values(s.quests).filter((q) => q.status === 'active')
         .flatMap((q) => (q.objectives || []).filter((o) => o.verb === 'ATTACK' || o.verb === 'DEFEAT'))
         .some((o) => namesKind(o.what, d.species, anchor, cPath ? sameKinds(content) : null));
+    // Patch 5: a living creature he left at this very place a short while ago (entity.left; the wary span of Patch 4), or,
+    // on the open road, in this very reply (the stretch he just walked on from); anywhere else it is gone from his way
+    const nearby = (e) => e.kind === 'creature' && statusOf(s, e.id) !== 'dead' && !s.scene.present.includes(e.id) && !!e.left && e.left.at === s.scene.at
+        && (e.left.leg ? e.left.turn === s.turn : s.clock.minute - (e.left.minute ?? 0) <= (content.rules.combat?.wary_min ?? 360));
+    // a ref the V3 rules resolve to a creature that is not here (dead, or left elsewhere)
+    const absentRef = (ref) => { const id = makeResolver(s, new Map(), content)(ref); return !!id && s.entities[id]?.kind === 'creature' && !s.scene.present.includes(id); };
     const newEntity = (d, kind) => {
         // A large group of skittish animals (their body-plan's temperament: a flock, a herd, a flight of birds) that nobody
         // set on Alaric is the scene's background, one fact, not a dozen combat profiles (live 30.09.2026: twelve penned
@@ -329,9 +350,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // One animal of a kind that left this area alive, and no other of its kind: the story shows it coming back, not
         // a second one (live 30.09.2026 14:56: the big bog strider withdrew into the reeds and returned as "Bog
         // Strider D" while the first stayed alive in the state). Two or more such animals stay a question for the story.
+        // Patch 5: on the open road that area is the stretch it was left on (nearby), not the whole realm: no animal follows
+        // him from one end of Duskreach to the other
+        const road = s.places[s.scene.at]?.kind === 'realm';
         if (kind === 'creature' && (d.count || 1) === 1 && d.present !== false) {
             const same = Object.values(s.entities).filter((e) => e.kind === 'creature' && statusOf(s, e.id) !== 'dead' && !s.scene.present.includes(e.id)
-                && normText(e.species || '') === normText(d.species || '') && (e.anchor || e.profile?.anchor) === d.anchor && e.location === s.scene.location);
+                && normText(e.species || '') === normText(d.species || '') && (e.anchor || e.profile?.anchor) === d.anchor && e.location === s.scene.location && (!road || nearby(e)));
             // a stronger one than the ordinary one that left, whose numbers are fixed, is another individual (review of
             // 4.1.5: the returning path skipped the variation); one not yet fixed is this one, shown stronger now
             const other = same.length === 1 && d.stronger === true && same[0].variation !== 'strong' && !!same[0].profile;
@@ -374,12 +398,27 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             if (!corrections.includes(correction)) corrections.push(correction);
             return [];
         }
-        const pool = own.length ? (d.more === true ? [] : own) : d.more === false ? here : [];
+        // Patch 5: none of this kind here, but a group of it he left at this very place a short while ago (nearby): the
+        // story showing that kind here again means them, hurt as they were, never unhurt copies; only those beyond them
+        // are new. Fewer than they are, or two groups of them: which is the story's to say, nothing is picked
+        const back = kind === 'creature' && !here.length && d.present !== false && d.more !== true && !(s.encounter && hostileRefs.has(normText(d.ref)))
+            ? Object.values(s.entities).filter((e) => nearby(e) && anchorOf(e) === d.anchor && normText(e.species || '') === normText(d.species || '')).map((e) => e.id) : [];
+        if (back.length && (count < back.length || new Set(back.map((id) => s.entities[id].group || id)).size > 1)) {
+            reject(d, 'group_unclear', `${count} ${d.species}: ${back.length} of this kind were left here a short while ago; the reply does not say which`);
+            const correction = `${back.map((id) => sceneHandle(s, content, id)).join(', ')} ${back.length > 1 ? 'were' : 'was'} left here a short while ago; the ${count > 1 ? `${count} ` : ''}${d.species} of the last reply ${count > 1 ? 'were' : 'was'} not added: the engine could not tell which of them ${count > 1 ? 'they are' : 'it is'}. If the story shows them again, it shows all of them; if others came, they are others.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+            return [];
+        }
+        const pool = own.length ? (d.more === true ? [] : own) : here.length ? (d.more === false ? here : []) : back;
         const again = d.stronger === true && !pool.some((id) => s.entities[id].variation === 'strong') ? [] : pool.slice(0, count);
+        for (const id of again.filter((x) => !s.scene.present.includes(x))) emit({ t: 'scene.entered', d: { id, band: d.band || 'MEDIUM' } });
         for (let i = again.length + 1; i <= count; i++) {
             // a newcomer to a group here is one animal of it, numbered after its members ("cre.quarry_pack 5"), never the
             // group's own ref (that would be the whole pack held as one creature, src/delta.js isGroupCreature)
-            const ref = own.length ? `${d.ref} ${own.length + i - again.length}` : count > 1 ? `${d.ref} ${i}` : d.ref;
+            let ref = own.length ? `${d.ref} ${own.length + i - again.length}` : count > 1 ? `${d.ref} ${i}` : d.ref;
+            // Patch 5: a newcomer's ref is its own, never one an earlier creature of that name had (a dead wolf of the
+            // last pack, one left far behind): the V3 rules would take it for that one, and the newcomer would be lost
+            for (let n = count + 1; kind === 'creature' && n < count + 64 && (entries.some((x) => normText(x.ref) === normText(ref)) || absentRef(ref)); n++) ref = `${d.ref} ${n}`;
             entries.push(kind === 'npc'
                 ? { ref, kind: 'npc', name: d.name || undefined, anonymous: !d.name, desc: [...(d.role ? [d.role] : []), ...(d.desc || [])], traits: (d.desc || []).join(', '), band: d.band || undefined }
                 : { ref, kind: 'creature', name: undefined, species: d.species, anchor: d.anchor, desc: d.desc || [], band: d.band || undefined });
@@ -399,7 +438,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const joined = own.length ? [normText(d.ref)] : [...new Set(again.map((id) => s.entities[id].group).filter(Boolean))];
         const taken = new Set(Object.values(s.entities).map((e) => e.group).filter(Boolean));
         let name = normText(d.ref);
-        if (d.more === true) for (let n = 2; taken.has(name); n++) name = `${normText(d.ref)} ${n}`;
+        // Patch 5: nor the name of a group met before elsewhere (the dead pack of the last stretch of road)
+        if (d.more === true || !joined.length) for (let n = 2; taken.has(name); n++) name = `${normText(d.ref)} ${n}`;
         const group = joined.length === 1 ? joined[0] : name;
         if (count > 1 || joined.length === 1) for (const id of [...again.filter((x) => !s.entities[x].group), ...created]) emit({ t: 'entity.updated', d: { id, set: { group } } });
         // the group's ref in this reply (a hostile after it) is the whole group here, its newcomers with it
@@ -467,7 +507,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const far = destination.to ? !sameSettlement(s, startAt, destination.to)
             : !!destination.journey || !home || roadMinutes > content.rules.time.default_cap_min;
         const via = far ? (s.places[realm]?.kind === 'realm' ? realm : null) : destination.to ? null : home;
-        if (via && via !== startAt) {
+        // Patch 5: a further leg on the road he is already on moves on as well (diagnosis of Patch 5: the two wolves he
+        // left standing, and the two he killed, were still around him four hours of walking later); whoever travels with
+        // him comes along, the rest stays where it was
+        const further = far && via === startAt && s.places[startAt]?.kind === 'realm';
+        if (via && (via !== startAt || further)) {
             const said = expected[String(destination.seq)]?.with;
             const party = [...new Set([...(destination.with || []), ...(Array.isArray(said) ? said.map(idOf) : [])])]
                 .filter((id) => id && id !== 'pc' && s.scene.present.includes(id) && s.entities[id]?.status !== 'dead');
@@ -475,6 +519,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             arrive(via, party);
             transit = via;
             if (far) emit({ t: 'scene.moved', d: { place: `On the way to ${destination.journey || destination.name || destination.newName || 'the destination'}` } });
+            // Patch 5: he set off for somewhere new and unnamed and is out on the road without having found it: what he
+            // went to find is his goal now, a journey he can go on with (src/v4/intents.js seek), never a place yet
+            if (far && destination.newName && !destination.to && !destination.journey && !destination.intent) {
+                const quote = (outcome.resolutions || []).find((r) => r.seq === destination.seq)?.quote || null;
+                setIntentEvents(s, { goal: `find ${destination.newName}`, seek: destination.newName, quote, why: 'he set off to find it' }).events.forEach(emit);
+            }
         }
     }
 
@@ -576,11 +626,18 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 v3({ leave: [who] }, d);
                 // who walks off is not waiting at this place when Alaric comes back
                 if (s.entities[who]?.at && !s.scene.present.includes(who)) emit({ t: 'entity.updated', d: { id: who, set: { at: null } } });
+                // Patch 5: a creature that goes off stays in the area it left for a while (newEntity: the same one again)
+                if (s.entities[who]?.kind === 'creature' && !s.scene.present.includes(who)) emit({ t: 'entity.updated', d: { id: who, set: { left: { at: s.scene.at, minute: s.clock.minute, turn: s.turn, leg: false } } } });
                 break;
             }
-            case 'position':
-                v3({ position: [{ who: mapRef(d.who), band: d.band, cover: d.cover || undefined }] }, d);
+            case 'position': {
+                // Patch 5 (the Patch 4 gap): a group's ref moves each living member of it here, as aware, intent and
+                // hostile do ("the east pair closes in"), never only the first; one creature's own ref moves that one
+                const whos = members(d.who);
+                if (!whos && groupWords(d.who)) { reject(d, 'group_unclear', `"${String(d.who).slice(0, 60)}" names no one group here`); break; }
+                v3({ position: (whos || [mapRef(d.who)]).map((who) => ({ who, band: d.band, cover: d.cover || undefined })) }, d);
                 break;
+            }
             case 'aware':
                 // 4.3.0-c.6.6: a group's ref (creature.new count > 1) means each of them (live 07.10.2026: "kobold_small_a"
                 // unaware reached only the first of the two small kobolds); its own Ambush awareness, not perception's
@@ -824,6 +881,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     if (!corrections.includes(correction)) corrections.push(correction);
                     break;
                 }
+                // Patch 5: nor is it done on the open road between (a washed-out bridge "as good as there"): the charge
+                // arrives where the journey leads, and the arrival must happen
+                if (cPath && q.kind === 'guild_contract' && s.places[s.scene.at]?.kind === 'realm' && !String(d.alternative || '').trim() && (q.objectives || []).some((o) => o.verb === 'ESCORT')) {
+                    reject(d, 'quest_escort', 'the escort is still on the road; it is done where the charge arrives');
+                    const correction = `"${q.title}" is still IN PROGRESS: Alaric and his charge are still on the road, not where the escort leads. It is done when the story has them arrive there together.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    break;
+                }
                 // Prototype C (4.3.0-c.6.6.3): an outcome that rests on a hand-over this very reply could not book (Alaric
                 // still holds the basket the story put into Sister Maren's hands, live 11.10.2026) is no outcome: no READY
                 // beside the thing in his hands. The real hand-over later is the delivery, and its reply the outcome
@@ -934,6 +999,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (type === 'sell') sale(k, e);
     }
 
+    // Patch 5: a goal with no place (seek) is done where the extractor reports the GO for it arrived: the place the story
+    // had him find. A place only named or seen on the way is no arrival
+    if (arrived && arrived !== transit) {
+        for (const g of auth.gos || []) {
+            if (expected[String(g.seq)]?.arrived !== true) continue;
+            const i = Object.values(s.intents || {}).find((x) => x.status === 'active' && x.seek && !x.place && (x.id === g.intent || (!g.to && normText(x.seek) === normText(g.newName || ''))));
+            if (i) emit({ t: 'intent.set', d: { intent: { ...i, place: arrived, status: 'done', updated: { turn: s.turn, minute: s.clock.minute }, why: `he found it: ${placeName(s, arrived)}` } } });
+        }
+    }
+
     // Prototype C: a real journey to another place takes time; without the story's own minutes a small fixed one
     // (rules.time.engine_clock), never 0. Only the minutes beyond the booked activities count as travel.
     // 4.3.0-c.6.6.2: the long one only where the way crosses a settlement's bounds (into or out of a town, from one to
@@ -1003,7 +1078,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
 
     /** The people an arrival brings along (arrive.with, an expected go's with): known, alive, here before the move. */
     function companions(list, d) {
-        const out = [];
+        // Patch 5: the charge of a quest journey he travels on (the GO's with, along: the journey is under way) arrives
+        // with him unless the story parted them; a GO that only might start it (still in town) takes no one along
+        const out = (auth.gos || []).filter((g) => g.along).flatMap((g) => g.with || []).filter((id) => s.scene.present.includes(id) && statusOf(s, id) !== 'dead');
         for (const ref of Array.isArray(list) ? list : []) {
             const id = idOf(ref);
             const e = id && id !== 'pc' ? s.entities[id] : null;
@@ -1011,7 +1088,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             if (!s.scene.present.includes(id)) { reject(d, 'world_rule', `arrive.with: ${id} was not with Alaric`); continue; }
             if (!out.includes(id)) out.push(id);
         }
-        return out;
+        return [...new Set(out)];
     }
 
     /**
@@ -1099,8 +1176,18 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // replay of 30.09.2026 would have had Aldsa waiting at the ford while she was in Millbrook); it brings them in.
         for (const who of s.scene.present) {
             const e = s.entities[who];
-            if (who === 'pc' || party.includes(who) || e?.kind !== 'npc' || e.status === 'dead' || e.at === from) continue;
+            if (who === 'pc' || party.includes(who) || e?.status === 'dead') continue;
+            // Patch 5: a living creature he leaves behind stays where it was (entity.left): the story may show the same
+            // ones again there, never unhurt copies of them (newEntity)
+            if (e?.kind === 'creature') emit({ t: 'entity.updated', d: { id: who, set: { left: { at: from, minute: s.clock.minute, turn: s.turn, leg: id === from } } } });
+            if (e?.kind !== 'npc' || e.at === from) continue;
             emit({ t: 'entity.updated', d: { id: who, set: { at: from } } });
+        }
+        // one that went off on this stretch of road before (leave) stays behind on it as well
+        if (id === from) {
+            for (const e of Object.values(s.entities).filter((x) => x.kind === 'creature' && x.left?.at === from && !x.left.leg && !s.scene.present.includes(x.id))) {
+                emit({ t: 'entity.updated', d: { id: e.id, set: { left: { ...e.left, turn: s.turn, leg: true } } } });
+            }
         }
         const near = cPath ? soughtHere(id, party) : [];
         emit({ t: 'scene.moved', d: { at: id, location: town, place: placeName(s, id), reset_present: true, ...(cPath ? { track_history: true } : {}) } });

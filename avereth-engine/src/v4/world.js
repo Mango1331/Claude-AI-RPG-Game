@@ -14,6 +14,7 @@ import { clone, normText, slug } from '../util.js';
 import { coinFromWords, coinMentions, numbersIn } from '../economy.js';
 import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver, isGroup, GROUP_WORDS } from '../delta.js';
+import { sceneHandle } from './scene_handles.js';
 import { truth, entityLabel, setFactEvents, statusOf, normPredicate } from '../knowledge.js';
 import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
 import { firewall, pcWound, pcActIn } from './firewall.js';
@@ -269,12 +270,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (refs.has(k) || s.entities[ref]) return null;
         const words = k.replace(/[_.]+/g, ' ').split(' ').filter((w) => w && !QUANT.has(w) && !numbersIn(w).size);
         const bare = words.join(' ');
-        const here = s.scene.present.filter((id) => s.entities[id]?.kind === 'creature' && statusOf(s, id) !== 'dead' && s.entities[id].threat !== false);
+        // review of c.6.6.12: a group the story showed as no foe (threat false) is still that group; whether it may turn
+        // on him is the World Envelope's to decide for each (hostile), never the reference's
+        const here = s.scene.present.filter((id) => s.entities[id]?.kind === 'creature' && statusOf(s, id) !== 'dead');
         let ids = here.filter((id) => [k, bare].includes(s.entities[id].group));
         if (!ids.length && bare && isGroup(content, bare)) {
             const kind = words.filter((w) => !GROUP_WORDS.has(w)).join(' ');
             ids = kind ? here.filter((id) => namesKind(kind, s.entities[id].species || '', content.anchors.get(s.entities[id].anchor || s.entities[id].profile?.anchor)))
-                : [...new Set(here.map((id) => s.entities[id].group).filter(Boolean))].length === 1 ? here.filter((id) => s.entities[id].group) : [];
+                : here.filter((id) => s.entities[id].group);
+            // a kind or a collective over two groups ("the wolves" with the quarry pack and the eastern pair here) is no
+            // one in particular: as an unknown name (the hostile case tells the narrator)
+            if (new Set(ids.map((id) => s.entities[id].group || id)).size > 1) ids = [];
         }
         const said = [...numbersIn(k)];
         if (!ids.length || (said.length && !said.includes(ids.length))) return null;
@@ -353,7 +359,18 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 // the same kind by the same name: "a big boar" among wild boars is another animal (4.1.5)
                 return e?.kind === 'creature' && !namedHere.has(id) && statusOf(s, id) !== 'dead' && anchorOf(e) === d.anchor && normText(e.species || '') === normText(d.species || '');
             }) : [];
-        const again = d.stronger === true && !here.some((id) => s.entities[id].variation === 'strong') ? [] : here.slice(0, count);
+        // review of c.6.6.12: which of them the reply means is the extractor's to say (more), never the engine's guess. false:
+        // those here again (only the ones beyond them are new); true: others, a group of their own; null with this kind
+        // here: the group's own ref is them, anything else is unclear: nothing is merged or doubled, the story is told
+        const own = here.filter((id) => s.entities[id].group === normText(d.ref));
+        if (d.more !== true && d.more !== false && !own.length && here.length) {
+            reject(d, 'group_unclear', `${count} ${d.species}: the reply does not say whether they are those already here or others (more)`);
+            const correction = `The engine holds ${here.map((id) => sceneHandle(s, content, id)).join(', ')} here; the ${count > 1 ? `${count} ` : ''}${d.species} of the last reply ${count > 1 ? 'were' : 'was'} not added: it could not tell whether they are those already here or others. If others came, the story shows them arriving; if not, it names those here.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+            return [];
+        }
+        const pool = d.more === true ? [] : d.more === false ? here : own;
+        const again = d.stronger === true && !pool.some((id) => s.entities[id].variation === 'strong') ? [] : pool.slice(0, count);
         for (let i = again.length + 1; i <= count; i++) {
             const ref = count > 1 ? `${d.ref} ${i}` : d.ref;
             entries.push(kind === 'npc'
@@ -368,8 +385,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         for (const id of created) bornHere.add(id);
         const known = r.accepted.map((a) => /^known (\S+) \(not duplicated\)$/.exec(a)?.[1]).filter(Boolean);
         const ids = [...again, ...created, ...known];
-        // the members of a group keep its name (the ref the story gave them), so a later "the quarry pack" means them
-        if (count > 1) for (const id of created) emit({ t: 'entity.updated', d: { id, set: { group: normText(d.ref) } } });
+        // the members of a group keep its name (the ref the story gave them), so a later "the quarry pack" means them; one
+        // that joins those already here joins their group (review of c.6.6.12: the fifth wolf under the ref "wolves" is
+        // of the quarry pack); a group of others never takes the name of a group already here
+        const joined = [...new Set(again.map((id) => s.entities[id].group).filter(Boolean))];
+        const taken = new Set(Object.values(s.entities).map((e) => e.group).filter(Boolean));
+        let name = normText(d.ref);
+        if (d.more === true) for (let n = 2; taken.has(name); n++) name = `${normText(d.ref)} ${n}`;
+        const group = joined.length === 1 ? joined[0] : name;
+        if (count > 1 || joined.length === 1) for (const id of [...again.filter((x) => !s.entities[x].group), ...created]) emit({ t: 'entity.updated', d: { id, set: { group } } });
         if (ids.length) refs.set(normText(d.ref), ids[0]);
         // Scene relevance is ephemeral; an important person is not automatically an enemy.
         // The NPC identity persists, but relevance and explicit threat expire when the scene ends.

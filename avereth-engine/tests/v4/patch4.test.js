@@ -55,13 +55,15 @@ test('patch 4 (1, 4): four visible wolves are four individuals with their letter
     assert.deepEqual(wolves(s).map((e) => e.id), W);
     assert.deepEqual(W.map((id) => sceneHandle(s, content, id)), ['Wolf A', 'Wolf B', 'Wolf C', 'Wolf D']);
     assert.ok(W.every((id) => s.entities[id].profile && s.entities[id].group === 'cre.quarry_pack'), 'each with its own profile and its group');
-    // live #42 shape: the same pack named again
+    // live #42 shape: the same pack named again (more: false, or its own ref; without either the engine does not guess)
+    for (const [ref, more] of [['wolves', false], ['cre.quarry_pack', null], ['wolves', null]]) {
+        await say(g, '*i wait and watch*');
+        await g.reply('The four wolves pace along the quarry rim.', { expected: {}, deltas: [{ seq: 1, type: 'creature.new', ref, species: 'wolf', anchor: 'wolf', desc: ['the quarry wolves'], count: 4, present: true, band: 'LONG', stronger: null, threat: null, more }] });
+        s = g.state();
+        assert.deepEqual(wolves(s).map((e) => e.id), W, `no four more wolves (${ref}, ${more})`);
+    }
     await say(g, '*i wait and watch*');
-    await g.reply('The four wolves pace along the quarry rim.', { expected: {}, deltas: [{ seq: 1, type: 'creature.new', ref: 'wolves', species: 'wolf', anchor: 'wolf', desc: ['the quarry wolves'], count: 4, present: true, band: 'LONG', stronger: null, threat: null }] });
-    s = g.state();
-    assert.deepEqual(wolves(s).map((e) => e.id), W, 'no four more wolves');
-    await say(g, '*i wait and watch*');
-    await g.reply('Five wolves now: another lopes out of the trees to join them.', { expected: {}, deltas: [{ seq: 1, type: 'creature.new', ref: 'wolves', species: 'wolf', anchor: 'wolf', desc: ['the quarry wolves'], count: 5, present: true, band: 'LONG', stronger: null, threat: null }] });
+    await g.reply('Five wolves now: another lopes out of the trees to join them.', { expected: {}, deltas: [{ seq: 1, type: 'creature.new', ref: 'wolves', species: 'wolf', anchor: 'wolf', desc: ['the quarry wolves'], count: 5, present: true, band: 'LONG', stronger: null, threat: null, more: false }] });
     s = g.state();
     assert.equal(wolves(s).length, 5, 'only the one beyond the four is new');
     assert.equal(sceneHandle(s, content, wolves(s)[4].id), 'Wolf E');
@@ -274,4 +276,78 @@ test('patch 4 (24): the narrator\'s combat block and the HUD carry every fighter
     const hud = renderHud(s, content, 'open');
     for (const w of ['Wolf A', 'Wolf B', 'Wolf C', 'Wolf D']) assert.match(hud, new RegExp(w));
     assert.match(hud, /Visible · not in the fight yet/);
+});
+
+// ------------------------------------------------------------------------------------------------ review of c.6.6.12
+const wolfNew = (ref, count, more, band = 'LONG') => ({ seq: 1, type: 'creature.new', ref, species: 'wolf', anchor: 'wolf', desc: ['lean grey wolves'], count, present: true, band, stronger: null, threat: null, more });
+
+test('review 1: a fifth wolf that joins the quarry pack under another ref is one of the pack; the pack\'s ref later means all five', async () => {
+    const g = await pack();
+    await say(g, '*i wait and watch*');
+    await g.reply('A fifth wolf lopes out of the trees and joins the four.', { expected: {}, deltas: [wolfNew('wolves', 5, false)] });
+    let s = g.state();
+    assert.equal(wolves(s).length, 5);
+    assert.deepEqual(wolves(s).map((e) => e.group), Array(5).fill('cre.quarry_pack'), 'the newcomer joins the pack it came to');
+    for (const by of [['cre.quarry_pack'], ['the pack']]) {
+        const h = await pack();
+        await say(h, '*i wait and watch*');
+        await h.reply('A fifth wolf lopes out of the trees and joins the four.', { expected: {}, deltas: [wolfNew('wolves', 5, false)] });
+        await say(h, '*i wait and watch*');
+        await h.reply('The whole pack rushes him.', { expected: {}, deltas: [{ seq: 1, type: 'hostile', by }] });
+        s = h.state();
+        assert.equal(Object.keys(s.encounter?.combatants || {}).filter((id) => id !== 'pc').length, 5, JSON.stringify(by));
+    }
+});
+
+test('review 2: a second, separate pair of wolves beside the four stays two more; they are told apart; with nothing to tell them apart the engine asks the story instead of guessing', async () => {
+    const g = await pack();
+    await say(g, '*i wait and watch*');
+    await g.reply('Two more wolves, a pair from the eastern ridge, come down apart from the quarry pack.', { expected: {}, deltas: [wolfNew('east pair', 2, true, 'MEDIUM')] });
+    let s = g.state();
+    assert.equal(wolves(s).length, 6, 'four and two, none merged');
+    const pair = wolves(s).filter((e) => e.group === 'east pair').map((e) => e.id);
+    assert.equal(pair.length, 2);
+    assert.ok(pair.every((id) => !W.includes(id)));
+    assert.deepEqual(wolves(s).map((e) => sceneHandle(s, content, e.id)), ['Wolf A', 'Wolf B', 'Wolf C', 'Wolf D', 'Wolf E', 'Wolf F']);
+    assert.ok(buildContext(s, content, { input: 'x', lastReply: '' }).text.length, 'the context builds');
+    // the pair by its ref: only the pair; "the wolves" over two packs: no one in particular, the narrator is told
+    await say(g, '*i wait and watch*');
+    await g.reply('The eastern pair rushes him.', { expected: {}, deltas: [{ seq: 1, type: 'hostile', by: ['east pair'] }] });
+    s = g.state();
+    assert.deepEqual(Object.keys(s.encounter.combatants).filter((id) => id !== 'pc').sort(), pair.slice().sort());
+    const h = await pack();
+    await say(h, '*i wait and watch*');
+    await h.reply('Two more wolves come down from the eastern ridge.', { expected: {}, deltas: [wolfNew('east pair', 2, true, 'MEDIUM')] });
+    await say(h, '*i wait and watch*');
+    let r = await h.reply('The wolves rush him.', { expected: {}, deltas: [{ seq: 1, type: 'hostile', by: ['the wolves'] }] });
+    assert.equal(h.state().encounter, null);
+    assert.match(r.record.corrections.join('\n'), /The attack of "the wolves" in the last reply was not booked/);
+    // the extractor says neither "others" nor "the same": nothing is merged and nothing doubled; the narrator is told
+    const k = await pack();
+    await say(k, '*i wait and watch*');
+    r = await k.reply('Two wolves come down from the ridge.', { expected: {}, deltas: [wolfNew('wolves', 2, null, 'MEDIUM')] });
+    s = k.state();
+    assert.equal(wolves(s).length, 4);
+    assert.ok(r.record.events.some((e) => e.t === 'delta.rejected' && e.d.rule === 'group_unclear'));
+    assert.match(r.record.corrections.join('\n'), /could not tell whether they are those already here or others/);
+});
+
+test('review 3: a group shown as no foe can still turn on him as a group once the story gives it cause; the envelope decides each, and presence alone starts nothing', async () => {
+    const g = await pack();
+    await say(g, '*i wait and watch*');
+    await g.reply('Three farm dogs nose around the quarry track, wagging.', { expected: {}, deltas: [{ seq: 1, type: 'creature.new', ref: 'farm dogs', species: 'farm dog', anchor: 'wolf', desc: ['shaggy farm dogs'], count: 3, present: true, band: 'SHORT', stronger: null, threat: false, more: true }] });
+    let s = g.state();
+    const dogs = Object.values(s.entities).filter((e) => e.species === 'farm dog').map((e) => e.id);
+    assert.equal(dogs.length, 3);
+    assert.ok(dogs.every((id) => s.entities[id].threat === false));
+    // presence: nothing
+    await say(g, '*i wait and watch*');
+    await g.reply('The dogs sniff at his boots.', { expected: {}, deltas: [] });
+    assert.equal(g.state().encounter, null);
+    // he gives them cause; the story has the group turn on him
+    await say(g, '*i throw a stone at the dogs*');
+    await g.reply('The stone cracks off a flank; all three farm dogs turn on him, snarling.', { expected: {}, deltas: [{ seq: 1, type: 'hostile', by: ['farm dogs'] }] });
+    s = g.state();
+    assert.deepEqual(Object.keys(s.encounter?.combatants || {}).filter((id) => id !== 'pc').sort(), dogs.slice().sort());
+    assert.ok(W.every((id) => !s.encounter.combatants[id]), 'the wolves are no part of it');
 });

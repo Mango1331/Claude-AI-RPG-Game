@@ -1157,6 +1157,18 @@ Leitsatz: Jeder tatsächliche Teilnehmer eines Kampfes ist eine eigene persisten
 
 **Grenzen:**
 - Personengruppen („the bandits“) werden nicht als Gruppe aufgelöst; Personen kommen einzeln (`person.new` hat kein `count`).
-- Eine teilweise erneute Nennung mit kleinerer Zahl außerhalb eines Kampfes („two wolves“ bei vier anwesenden) gilt als Teil der Anwesenden. Echte Verstärkung außerhalb eines Kampfes muss die Gesamtzahl nennen.
+- (Überholt durch die Review-Nachbesserung unten: ob eine erneute Nennung die Anwesenden meint, sagt jetzt `creature.new.more`.)
 - Ein im laufenden Kampf geflohener Gegner, der im selben Kampf zurückkehrt, ist ein neuer Teilnehmer (die Verfolgung `chase` behält dagegen denselben).
 - Zuschauer werden nur dann wachsam, wenn sie Alaric bemerkt hatten (Awareness nicht `unaware`).
+
+**Review-Nachbesserung (gleicher Build, Commit nach `d27aea0`):**
+
+| Fall | Befund (reproduziert) | Behebung |
+|---|---|---|
+| 1 Rudelverstärkung mit neuer Ref | `creature.new {ref:"wolves", count:5}` zum Rudel `cre.quarry_pack`: A–D behielten ihre Gruppe, E bekam „wolves“; „cre.quarry_pack“ meinte danach vier | Neuzugänge zu einer anwesenden Gruppe erben deren Namen; wiederverwendete Tiere ohne Gruppe erhalten ihn ebenfalls |
+| 2 Zwei Rudel derselben Art | Ein eigenständiges Paar neben den vier wurde mit zwei der vier verschmolzen (Art + Anker gleich) | Neues nullable Feld `creature.new.more` (`delta-0.9`): `true` = andere (eigene Gruppe, nie der Name einer vorhandenen), `false` = die Anwesenden erneut, `null` ohne eigene Gruppen-Ref = unklar: nichts verschmolzen, nichts verdoppelt, Ablehnung `group_unclear` und Korrektur an den Erzähler („If others came, the story shows them arriving“). „the wolves“ über zwei Gruppen bindet niemanden. Der Katalog zeigt die Gruppe jeder Kreatur |
+| 3 Friedliche Gruppe wird feindlich | `members()` filterte `threat: false`: „farm dogs“ griffen nach der Provokation nicht an | Gruppenreferenzen lösen die Identitäten unabhängig von `threat` auf; ob ein Angriff zulässig ist, entscheidet die bestehende World Envelope pro Tier. Anwesenheit allein startet weiterhin nichts |
+
+Tests: `tests/v4/patch4.test.js` +3 (review 1–3; jeder Fix einzeln abgeschaltet → rot), Test (1, 4) auf die explizite Semantik angepasst. Gesamt 765/765. Kosten: Extraktor-Systemprompt +50 Token (5.565 → 5.615), Katalog etwa 3 Token je gruppierter Kreatur. Keine neuen LLM-Aufrufe.
+
+Verbleibende Grenzen: Ohne `more` werden Neuankömmlinge derselben Art nicht angelegt, bis eine spätere Antwort sie klar meldet (bewusst: lieber sichtbar fehlend als still falsch zugeordnet). Ob der Extraktor `more` zuverlässig setzt, zeigt erst ein Live-Lauf.

@@ -17,6 +17,18 @@ import { sceneHandle } from './v4/scene_handles.js';
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const list = (xs, none = '—') => (xs.length ? xs.join(' · ') : none);
 
+// Patch 10A: consistent, non-repeating location names in expanded and collapsed HUD.
+function locationLabels(state, content) {
+    const loc = state.entities[state.scene.location] || content.locations.get(state.scene.location) || state.places?.[state.scene.location];
+    const name = loc?.name || 'unknown';
+    const realm = loc?.realm ? content.factions.get(loc.realm)?.name || null : null;
+    const parts = [name];
+    if (realm && normText(realm) !== normText(name)) parts.push(realm);
+    const spot = String(state.scene.place || '').trim();
+    const detail = spot && !parts.some((part) => normText(part) === normText(spot)) ? ` — ${spot}` : '';
+    return { full: `${parts.join(', ')}${detail}`, brief: `${name}${detail}` };
+}
+
 function condition(hp, max) {
     const r = hp / max;
     if (hp <= 0) return 'dead';
@@ -61,12 +73,11 @@ export function characterRows(state, content) {
 
 /** Where and when, who is here, the fight, the open threads: as rows [label, value]. Only player-knowable things. */
 export function worldRows(state, content) {
-    const loc = state.entities[state.scene.location] || content.locations.get(state.scene.location) || state.places?.[state.scene.location];
-    const realm = loc?.realm ? content.factions.get(loc.realm)?.name || null : null;
+    const location = locationLabels(state, content);
     const status = statusOf(state, state.scene.location);
     const rows = [
         ['Time', formatClock(state.clock.minute)],
-        ['Location', `${loc ? loc.name : 'unknown'}${realm ? `, ${realm}` : ''}${state.scene.place ? ` — ${state.scene.place}` : ''}${status !== 'exists' && status !== 'alive' ? ` (${String(status).toUpperCase()})` : ''}`],
+        ['Location', `${location.full}${status !== 'exists' && status !== 'alive' ? ` (${String(status).toUpperCase()})` : ''}`],
     ];
     const weather = truth(state, state.scene.location, 'weather')[0];
     if (weather) rows.push(['Weather', weather.o]);
@@ -91,10 +102,13 @@ export function worldRows(state, content) {
         rows.push(['Combat', `${state.pending_combat.map((p) => label(p.by)).join(', ')} committed to attack`]);
     }
     const quests = Object.values(state.quests).filter((q) => q.status === 'active').map((q) => q.title);
-    if (quests.length) rows.push(['Active quests', list(quests)]);
+    if (quests.length) rows.push(['Active quests', `${list(quests.slice(0, 3))}${quests.length > 3 ? ` · +${quests.length - 3} more (#quests)` : ''}`]);
     // Patch 2: his goals; the hints of this place; a few lasting leads. Everything else is in #journal
     const goals = goalLines(state, { max: 3, ids: false }).map((g) => `${g.status === 'paused' ? '(paused) ' : ''}${g.text}`);
-    if (goals.length) rows.push(['Goals', list(goals)]);
+    if (goals.length) {
+        const total = Object.values(state.intents || {}).filter((i) => i.status === 'active' || i.status === 'paused').length;
+        rows.push(['Goals', `${list(goals)}${total > goals.length ? ` · +${total - goals.length} more (#journal)` : ''}`]);
+    }
     const current = currentThreads(state);
     const deadlines = current.filter((t) => t.kind === 'deadline').map((t) => t.text);
     if (deadlines.length) rows.push(['Deadlines', list(deadlines)]);
@@ -105,7 +119,7 @@ export function worldRows(state, content) {
     const more = Object.values(state.threads).length - here.length - leads.length - deadlines.length;
     if (more > 0) rows.push(['Journal', `${more} more (older or settled): #journal`]);
     // world events Alaric can know where he stands: the hard facts about this place (a burned bridge, a sealed gate)
-    const known = currentFacts(state, (f) => f.hard && f.visibility !== 'secret' && f.s === state.scene.location).slice(-3).map((f) => propText(state, f, content));
+    const known = currentFacts(state, (f) => f.hard && f.visibility !== 'secret' && (f.s === state.scene.at || f.s === state.scene.location)).slice(-3).map((f) => propText(state, f, content));
     if (known.length) rows.push(['Known here', list(known)]);
     return rows;
 }
@@ -125,6 +139,12 @@ function combatHud(state, content) {
         .sort((a, b) => bandIndex(a.current.band) - bandIndex(b.current.band) || name(a.id).localeCompare(name(b.id)));
     const range = (b) => `<span class="avereth-range avereth-range-${String(b || 'unknown').toLowerCase()}">${esc(b || '—')}</span>`;
     const rows = foes.map((x) => `<div class="avereth-combat-row"><span class="avereth-combat-name">${esc(name(x.id))}</span><span class="avereth-combat-hp">${x.current.hp}/${x.fixed.max_hp}</span><span class="avereth-combat-range">${range(x.current.band)}</span><span class="avereth-combat-cover">${esc(x.current.cover && x.current.cover !== 'none' ? x.current.cover : '—')}</span></div>`).join('');
+    // Patch 10A: non-hostile combatants already in Initiative also deserve a row.
+    // This is presentation-only: it never creates an ally or changes the encounter.
+    const othersInFight = Object.values(enc.combatants)
+        .filter((x) => x.id !== 'pc' && x.side !== 'hostile' && !x.current.defeated && !x.current.escaped && !x.current.surrendered)
+        .sort((a, b) => bandIndex(a.current.band) - bandIndex(b.current.band) || name(a.id).localeCompare(name(b.id)));
+    const otherRows = othersInFight.map((x) => `<div class="avereth-combat-row avereth-combat-other-row"><span class="avereth-combat-name">${esc(name(x.id))}</span><span class="avereth-combat-hp">${x.current.hp}/${x.fixed.max_hp}</span><span class="avereth-combat-range">${range(x.current.band)}</span><span class="avereth-combat-cover">${esc(x.current.cover && x.current.cover !== 'none' ? x.current.cover : '—')}</span></div>`).join('');
     // Keep tactical context the player can already see even when those actors have not formally joined the encounter yet.
     // This is display-only: it never makes a bystander hostile or inserts them into Initiative.
     const visible = (state.scene?.present || []).filter((id) => id !== 'pc' && state.entities?.[id] && !enc.combatants[id] && statusOf(state, id) !== 'dead')
@@ -141,7 +161,7 @@ function combatHud(state, content) {
     const arrowText = arrows || state.entities.pc?.sheet?.equipment?.quiver ? ` · Arrows ${arrows}` : '';
     return `<details class="avereth-hud avereth-combat-hud" open><summary>⚔ COMBAT · Round ${enc.round} · ${esc(current)}</summary><div class="avereth-combat-body">
 <div class="avereth-combat-resources"><strong>Alaric</strong> · HP ${pc.current.hp}/${pc.fixed.max_hp} · MP ${pc.current.mp}/${pc.fixed.max_mp} · STA ${pc.current.sta}/${pc.fixed.max_sta}${arrowText}</div>
-<div class="avereth-combat-table"><div class="avereth-combat-row avereth-combat-head"><span>Target</span><span>HP</span><span>Range</span><span>Cover</span></div>${rows || '<div class="avereth-combat-empty">No active enemies</div>'}${visibleRows ? `<div class="avereth-combat-subhead">Visible · not in the fight yet</div>${visibleRows}` : ''}</div>
+<div class="avereth-combat-table"><div class="avereth-combat-row avereth-combat-head"><span>Target</span><span>HP</span><span>Range</span><span>Cover</span></div>${rows || '<div class="avereth-combat-empty">No active enemies</div>'}${otherRows ? `<div class="avereth-combat-subhead">Other combatants · not hostile</div>${otherRows}` : ''}${visibleRows ? `<div class="avereth-combat-subhead">Visible · not in the fight yet</div>${visibleRows}` : ''}</div>
 <div class="avereth-combat-meta"><strong>Turn order</strong> · ${order}</div>
 <div class="avereth-combat-meta"><strong>Attack reach</strong> · ${attacks || '—'}</div>
 </div></details>`;
@@ -158,10 +178,10 @@ export function renderHud(state, content, mode = 'closed') {
     const dv = deriveCharacter(s, content);
     const open = mode === 'open';
     const cls = s.class ? content.classes.get(s.class)?.name || s.class : 'no Class';
-    const loc = state.entities[state.scene.location] || content.locations.get(state.scene.location) || state.places?.[state.scene.location];
+    const location = locationLabels(state, content);
     const others = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && statusOf(state, id) !== 'dead').length;
     const charSummary = `L${s.level} ${cls} · HP ${s.hp}/${dv.maxHp} · MP ${s.mp}/${dv.maxMp} · STA ${s.sta}/${dv.maxSta} · ${formatCoin(s.coin_cp, content)}`;
-    const worldSummary = `${formatClock(state.clock.minute).split(' (')[0]} · ${loc?.name || 'unknown'}${state.scene.place ? ` — ${state.scene.place}` : ''}${state.encounter ? ' · COMBAT' : ''}${others ? ` · ${others} present` : ''}`;
+    const worldSummary = `${formatClock(state.clock.minute).split(' (')[0]} · ${location.brief}${others ? ` · ${others} present` : ''}`;
     return [
         panel(state.entities.pc.name || 'Alaric', charSummary, characterRows(state, content), open),
         panel('World', worldSummary, worldRows(state, content), open),

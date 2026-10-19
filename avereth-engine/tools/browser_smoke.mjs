@@ -153,8 +153,10 @@ window.__result = result;
 
 // ------------------------------------------------------------------------------------------------ Runtime V4 page
 const content = await loadContent();
-const gold = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests/testrun_v12/gold_v4.json'), 'utf8'));
-const v12 = fs.readFileSync(path.join(ROOT, 'tests/eval/deltas.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l)).filter((t) => t.run === 'V12');
+// run V12 was played in Redmarch, Veyrhold, which Lorebook v0.14 removed: the smoke plays it in Alderwatch, Valedorn Crown
+const toAlderwatch = (text) => text.replace(/loc\.redmarch/g, 'loc.alderwatch').replace(/realm\.veyrhold/g, 'realm.valedorn_crown').replace(/Redmarch/g, 'Alderwatch').replace(/Veyrhold/g, 'Valedorn Crown');
+const gold = JSON.parse(toAlderwatch(fs.readFileSync(path.join(ROOT, 'tests/testrun_v12/gold_v4.json'), 'utf8')));
+const v12 = toAlderwatch(fs.readFileSync(path.join(ROOT, 'tests/eval/deltas.jsonl'), 'utf8')).trim().split('\n').map((l) => JSON.parse(l)).filter((t) => t.run === 'V12');
 // the Board generator writes no ids: a listing is booked as quest.<title> (src/v4/guild.js bookBoard)
 const booked = new Map(gold.board_generator.listings.map((l) => [l.id, `quest.${slug(l.title)}`]));
 const asBooked = (text) => [...booked].reduce((t, [a, b]) => t.split(a).join(b), text);
@@ -171,7 +173,7 @@ const TURNS = gold.turns.slice(0, 3).map((t, i) => ({ player: t.player, commands
 const warrior = content.classes.get('warrior');
 const EXTRACT_DELAY_MS = 1200;
 const V4 = {
-    first: 'SYSTEM INITIALIZATION COMPLETE\n`Location: Public roadside verge outside Redmarch, Veyrhold`',
+    first: 'SYSTEM INITIALIZATION COMPLETE\n`Location: Public roadside verge outside Alderwatch, Valedorn Crown`',
     skills: warrior.skill_pool.slice(0, 2).map((id) => content.skills.get(id).name).join(' and '),
     turns: TURNS.map(({ player, reply }) => ({ player, reply })),
     outputLine: V4_OUTPUT_LINE,
@@ -256,7 +258,7 @@ async function v4Page(DATA) {
     // only when Alaric reads it, 4.0.7)
     const waited = await send(DATA.turns[1].player);
     const x1 = rec(chat[r1]).extraction || {};
-    result.barrier = waited >= DATA.extractDelay && x1.status === 'applied' && state().scene.at === 'loc.redmarch.guild_hall'
+    result.barrier = waited >= DATA.extractDelay && x1.status === 'applied' && state().scene.at === 'loc.alderwatch.guild_hall'
         && !Object.keys(state().quests).length;
     const probe = document.createElement('div');
     probe.innerHTML = chat[r1].extra.display_text || '';

@@ -17,11 +17,27 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT = path.dirname(HERE);
 
 let cached = null;
+let product = null;
+const contentFile = async (name) => JSON.parse(await readFile(path.join(ROOT, 'content', name), 'utf8'));
+/**
+ * The content the tests play with: the product content plus the realms and cities of the world before Lorebook v0.14
+ * (tests/legacy_world.json), where the recorded runs these tests replay were played. Test data only.
+ */
 export async function loadContent() {
     if (!cached) {
-        cached = await loadContentPack(async (name) => JSON.parse(await readFile(path.join(ROOT, 'content', name), 'utf8')));
+        const legacy = await readJson('tests/legacy_world.json');
+        cached = await loadContentPack(async (name) => {
+            const json = await contentFile(name);
+            return name === 'lore.json' ? { ...json, locations: [...json.locations, ...legacy.locations], factions: [...json.factions, ...legacy.factions] } : json;
+        });
     }
     return cached;
+}
+
+/** The content exactly as the extension loads it. */
+export async function loadProductContent() {
+    if (!product) product = await loadContentPack(contentFile);
+    return product;
 }
 
 export async function readJson(rel) {

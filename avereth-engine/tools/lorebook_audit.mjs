@@ -6,7 +6,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadContentPack } from '../src/content.js';
+import { loadContent } from '../tests/helpers.js';
 import { prepareGeneration, processReply } from '../src/host.js';
 import { loadLorebook, activate } from './wi_sim.mjs';
 
@@ -34,7 +34,8 @@ export async function scanWindows(content, fixture) {
 
 async function main() {
     const [budget = 1800, depth = 2, book = LOREBOOK] = process.argv.slice(2);
-    const content = await loadContentPack((name) => json(`content/${name}`));
+    // the content the fixtures were played with: the product plus the world before Lorebook v0.14 (tests/legacy_world.json)
+    const content = await loadContent();
     const entries = loadLorebook(path.join(ROOT, book));
     const all = [];
     for (const fixture of ['tests/testrun_v2/fixture.json', 'tests/testrun_v3/fixture.json', 'tests/testrun_v4/fixture.json']) {

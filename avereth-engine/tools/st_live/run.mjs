@@ -40,7 +40,7 @@ const SCRIPT = [
     ['Warrior', 'BASE CLASS: WARRIOR — CONFIRMED. Choose 2: Cleave, Iron Guard, War Step, Shield Bash, Battle Cry.'],
     // from the verge the campaign begins at, the report names the city and no spot (live run 27.09. 02:30): the engine
     // asks where the reply ends (PLACES)
-    ['city gate', 'The south gate of Tidecross stands open to the morning carts. A gate guard with a bored face and a boar-spear waves the traffic through, then looks you over once.\n\n"Pass\'s free on foot," he says, already watching the next cart.\n<avereth>{"time":20,"location":"Tidecross","new":[{"ref":"gate guard","kind":"npc","desc":["gate guard","bored"],"band":"SHORT"}],"aware":[{"who":"gate guard","level":"aware"}]}</avereth>' + MEGUMIN_BLOCKS],
+    ['city gate', 'The south gate of Glassmere stands open to the morning carts. A gate guard with a bored face and a boar-spear waves the traffic through, then looks you over once.\n\n"Pass\'s free on foot," he says, already watching the next cart.\n<avereth>{"time":20,"location":"Glassmere","new":[{"ref":"gate guard","kind":"npc","desc":["gate guard","bored"],"band":"SHORT"}],"aware":[{"who":"gate guard","level":"aware"}]}</avereth>' + MEGUMIN_BLOCKS],
     ['rats are done', '"Heard." Kest glances at the ear pail, then back at you. "Start there. Keep starting there."\n<avereth>{"time":2,"attitude":[{"who":"Kest","delta":10,"why":"the Novice took the rat job first, as told"}]}</avereth>'],
     ['long road east', 'Three days of road dust later, a walled city of black stone rises over the river crossing. The guards at the east gate wave carts through without a glance.\n<avereth>{"time":4320,"location":"Ashbridge","place":"east gate"}</avereth>'],
     // no fact report (Test 5 runs 1 and 2: 5 of 15 replies had one): the engine asks for it separately (REPORTS)
@@ -66,7 +66,7 @@ const REPORTS = [
 ];
 const isReportRequest = (msgs) => String(msgs[0]?.content || '').startsWith('[AVERETH ENGINE — FACT REPORT REQUEST]');
 // answers to the engine's place requests: where the reply ends, and who of the people it introduced is there
-const PLACES = [['city gate', '<avereth>{"place":"Tidecross south gate","present":["gate guard"]}</avereth>']];
+const PLACES = [['city gate', '<avereth>{"place":"Glassmere south gate","present":["gate guard"]}</avereth>']];
 const isPlaceRequest = (msgs) => String(msgs[0]?.content || '').startsWith('[AVERETH ENGINE — PLACE REQUEST]');
 
 const mock = http.createServer(async (req, res) => {
@@ -278,10 +278,10 @@ checks.npcTurnsBeforeAlaric = /COMBAT START — Wolf A attacks Alaric\n[^\n]*\n�
     && /^— Round 1 —\nAlaric: Heavy Slash → Wolf A/.test(slashShown);
 // the city reached from the verge without a spot (live run 27.09. 02:30): the place request names it, the HUD follows
 const placeReqs = requests.filter((r) => isPlaceRequest(r.messages));
-checks.placeRequested = placeReqs.length === 1 && /NARRATOR'S REPLY:\nThe south gate of Tidecross/.test(String(placeReqs[0].lastUser))
-    && /Its report named the city reached \("Tidecross"\) but no spot in it\. The people its report introduced: "gate guard" \(gate guard, bored\)/.test(String(placeReqs[0].lastUser))
-    && /PLACE REPORTED: Tidecross south gate, named by a separate request \(\d+\.\d s\)\./.test(T('city gate').shown || '')
-    && /Location: Tidecross, \w+ — Tidecross south gate/.test(T('city gate').hudText || '') && /Present: [^\n]*gate guard/.test(T('city gate').hudText || '');
+checks.placeRequested = placeReqs.length === 1 && /NARRATOR'S REPLY:\nThe south gate of Glassmere/.test(String(placeReqs[0].lastUser))
+    && /Its report named the city reached \("Glassmere"\) but no spot in it\. The people its report introduced: "gate guard" \(gate guard, bored\)/.test(String(placeReqs[0].lastUser))
+    && /PLACE REPORTED: Glassmere south gate, named by a separate request \(\d+\.\d s\)\./.test(T('city gate').shown || '')
+    && /Location: Glassmere, \w+ — Glassmere south gate/.test(T('city gate').hudText || '') && /Present: [^\n]*gate guard/.test(T('city gate').hudText || '');
 // a Guild contract (live run 27.09. 04:11): reported completed in the cellar it stays active; turned in by the player at
 // the Guild, the engine pays its posted reward, and the coin the report books for it is refused
 const turnIn = T('back to the Guild');

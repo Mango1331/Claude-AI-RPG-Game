@@ -1,5 +1,5 @@
 {
-  "_source": "Lore v0.8, revised with Lorebook v0.14 (five great powers, overland play, Dungeons with optional structured progression) + First Message start locations. Locations and realms marked \"retired\" belong to the world before v0.14: they are no start locations and get no lore, but campaigns begun there keep resolving their ids and names (src/v4/domain.js seedPlaces; docs/LOREBOOK.md).",
+  "_source": "Lore v0.8, revised with Lorebook v0.14 (five great powers, overland play, Dungeons with optional structured progression) + First Message start locations.",
   "entries": [
     {
       "id": "lore.world_foundations",
@@ -331,39 +331,6 @@
       ]
     },
     {
-      "id": "loc.redmarch",
-      "name": "Redmarch",
-      "kind": "city",
-      "realm": "realm.veyrhold",
-      "source": "First Message v0.4 (start location pick list)",
-      "facts": [
-        "Redmarch is a walled city in Veyrhold; the campaign may start on the public roadside verge outside it."
-      ],
-      "retired": "v0.14"
-    },
-    {
-      "id": "loc.tidecross",
-      "name": "Tidecross",
-      "kind": "city",
-      "realm": "realm.solmere",
-      "source": "First Message v0.4 (start location pick list)",
-      "facts": [
-        "Tidecross is a walled city in Solmere; the campaign may start on the public roadside verge outside it."
-      ],
-      "retired": "v0.14"
-    },
-    {
-      "id": "loc.lumenford",
-      "name": "Lumenford",
-      "kind": "city",
-      "realm": "realm.ilyrion",
-      "source": "First Message v0.4 (start location pick list)",
-      "facts": [
-        "Lumenford is a walled city in Ilyrion; the campaign may start on the public roadside verge outside it."
-      ],
-      "retired": "v0.14"
-    },
-    {
       "id": "loc.ashbridge",
       "name": "Ashbridge",
       "kind": "city",
@@ -386,30 +353,6 @@
       "kind": "capital",
       "realm": "realm.caelreth",
       "source": "Lore v0.8 realm entry"
-    },
-    {
-      "id": "loc.ironward",
-      "name": "Ironward",
-      "kind": "capital",
-      "realm": "realm.veyrhold",
-      "source": "Lore v0.8 realm entry",
-      "retired": "v0.14"
-    },
-    {
-      "id": "loc.goldharbor",
-      "name": "Goldharbor",
-      "kind": "capital",
-      "realm": "realm.solmere",
-      "source": "Lore v0.8 realm entry",
-      "retired": "v0.14"
-    },
-    {
-      "id": "loc.sanctum_vale",
-      "name": "Sanctum Vale",
-      "kind": "capital",
-      "realm": "realm.ilyrion",
-      "source": "Lore v0.8 realm entry",
-      "retired": "v0.14"
     },
     {
       "id": "loc.blackgate",
@@ -449,24 +392,6 @@
       "id": "realm.caelreth",
       "name": "Caelreth",
       "kind": "realm"
-    },
-    {
-      "id": "realm.veyrhold",
-      "name": "Veyrhold",
-      "kind": "realm",
-      "retired": "v0.14"
-    },
-    {
-      "id": "realm.solmere",
-      "name": "Solmere",
-      "kind": "realm",
-      "retired": "v0.14"
-    },
-    {
-      "id": "realm.ilyrion",
-      "name": "Ilyrion",
-      "kind": "realm",
-      "retired": "v0.14"
     },
     {
       "id": "realm.duskreach",

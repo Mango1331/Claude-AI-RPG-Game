@@ -40,7 +40,7 @@ const plan = (...commands) => ({ commands: commands.map((c, i) => ({ seq: i + 1,
 const TURNS = [
     { key: 'burrow', player: 'I climb down into the old burrow.', plan: plan({ type: 'go', to: { new: 'the old burrow' }, quote: 'I climb down into the old burrow' }),
         reply: 'Alaric lowers himself into the burrow. The air is dry and smells of resin. Three barkscorpions skitter out of the dark and rush at him, pincers raised.',
-        answer: { expected: { 1: { arrived: true, at: { new: { name: 'the old burrow', kind: 'wilderness', parent: 'loc.redmarch' } }, with: null } }, deltas: [
+        answer: { expected: { 1: { arrived: true, at: { new: { name: 'the old burrow', kind: 'wilderness', parent: 'loc.alderwatch' } }, with: null } }, deltas: [
             { seq: 1, type: 'creature.new', ref: 'barkscorpion', species: 'barkscorpion', anchor: 'arthropod', desc: ['bark-plated'], count: 3, present: true, band: 'SHORT', stronger: null },
             { seq: 2, type: 'hostile', by: ['barkscorpion'] },
         ] } },
@@ -56,7 +56,7 @@ const turnOf = (text) => TURNS.find((t) => text.includes(`PLAYER MESSAGE:\n${t.p
 
 // ------------------------------------------------------------------------------------------------ setup (as run_v4.mjs)
 const contract = fs.readFileSync(path.join(ENGINE, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
-const first = 'SYSTEM INITIALIZATION COMPLETE\n\n`Location: Public roadside verge outside Redmarch, Veyrhold`\n\nCHARACTER CREATION — STEP 1/2: choose a Base Class (Warrior, Mage, Guardian, Duelist, Ranger).';
+const first = 'SYSTEM INITIALIZATION COMPLETE\n\n`Location: Public roadside verge outside Alderwatch, Valedorn Crown`\n\nCHARACTER CREATION — STEP 1/2: choose a Base Class (Warrior, Mage, Guardian, Duelist, Ranger).';
 const card = {
     spec: 'chara_card_v2', spec_version: '2.0',
     name: CARD, description: contract, personality: '', scenario: '', first_mes: first, mes_example: '',

@@ -40,8 +40,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ------------------------------------------------------------------------------------------------ the V12 turns
 const content = await loadContent();
-const gold = JSON.parse(fs.readFileSync(path.join(ENGINE, 'tests/testrun_v12/gold_v4.json'), 'utf8'));
-const v12 = fs.readFileSync(path.join(ENGINE, 'tests/eval/deltas.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l)).filter((t) => t.run === 'V12');
+// run V12 was played in Redmarch, Veyrhold, which Lorebook v0.14 removed: the smoke plays it in Alderwatch, Valedorn Crown
+const toAlderwatch = (text) => text.replace(/loc\.redmarch/g, 'loc.alderwatch').replace(/realm\.veyrhold/g, 'realm.valedorn_crown').replace(/Redmarch/g, 'Alderwatch').replace(/Veyrhold/g, 'Valedorn Crown');
+const gold = JSON.parse(toAlderwatch(fs.readFileSync(path.join(ENGINE, 'tests/testrun_v12/gold_v4.json'), 'utf8')));
+const v12 = toAlderwatch(fs.readFileSync(path.join(ENGINE, 'tests/eval/deltas.jsonl'), 'utf8')).trim().split('\n').map((l) => JSON.parse(l)).filter((t) => t.run === 'V12');
 const booked = new Map(gold.board_generator.listings.map((l) => [l.id, `quest.${slug(l.title)}`]));
 const asBooked = (text) => [...booked].reduce((t, [a, b]) => t.split(a).join(b), text);
 function toProduct(answer) {
@@ -58,7 +60,7 @@ const SKILLS = warrior.skill_pool.slice(0, 2).map((id) => content.skills.get(id)
 
 // ------------------------------------------------------------------------------------------------ setup
 const contract = fs.readFileSync(path.join(ENGINE, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
-const first = 'SYSTEM INITIALIZATION COMPLETE\n\n`Location: Public roadside verge outside Redmarch, Veyrhold`\n\nCHARACTER CREATION — STEP 1/2: choose a Base Class (Warrior, Mage, Guardian, Duelist, Ranger).';
+const first = 'SYSTEM INITIALIZATION COMPLETE\n\n`Location: Public roadside verge outside Alderwatch, Valedorn Crown`\n\nCHARACTER CREATION — STEP 1/2: choose a Base Class (Warrior, Mage, Guardian, Duelist, Ranger).';
 const card = {
     spec: 'chara_card_v2', spec_version: '2.0',
     name: CARD, description: contract, personality: '', scenario: '', first_mes: first, mes_example: '',
@@ -305,7 +307,7 @@ const checks = {
         && engineOf(byTurn(2)).includes('PAYS — the Guild registration fee, 20 cp') && engineOf(byTurn(2)).includes("**Miller's Run Escort** — client: Harrow's mill · reward: 80 cp"),
     readInBackground: T(TURNS[0].player).pendingAfterReply === 'pending',
     barrier: end.t1?.status === 'applied' && idx(byTurn(1)) > idx(calls.find((c) => c.purpose === 'extract')) && idx(calls.find((c) => c.purpose === 'board')) > idx(byTurn(1)),
-    world: end.state?.member === 'Novice' && end.state?.coin === 30 && end.state?.at === 'loc.redmarch.guild_hall' && end.state?.quests["Weasel Sign at Fenwick's Coop"] === 'listed'
+    world: end.state?.member === 'Novice' && end.state?.coin === 30 && end.state?.at === 'loc.alderwatch.guild_hall' && end.state?.quests["Weasel Sign at Fenwick's Coop"] === 'listed'
         && Object.values(end.state?.quests || {}).filter((x) => x === 'listed').length === 5,
     everyReplyApplied: [1, 2].every((i) => T(TURNS[i].player).extraction?.status === 'applied'
         && JSON.stringify(T(TURNS[i].player).rejected.map((x) => `${x.seq}:${x.type}:${x.rule}`)) === JSON.stringify(EXPECTED_REJECTED[i])),

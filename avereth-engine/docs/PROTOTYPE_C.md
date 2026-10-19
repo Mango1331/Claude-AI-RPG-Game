@@ -919,16 +919,17 @@ Nur Welt-Lore und Content. Keine Mechanik ändert sich, Pfad A und C sind unver�
 **Lorebook:** 67 → 50 Einträge, 51.747 → 45.056 Zeichen. Im Schnitt 882 → 839 aktivierte Token je Generierung, Budget-Schnitte 29 → 16.
 
 **Content:**
-- `lore.json`: Die entfernten Reiche und Städte tragen `"retired": "v0.14"`. Ihre IDs und Namen lösen weiter auf, ihre Rückfall-Lore ist entfernt.
+- `lore.json`: Die entfernten Reiche und Städte sind ganz gestrichen, samt ihrer Rückfall-Lore.
 - `campaign_start.json`: drei Startorte.
-- `src/v4/domain.js` `seedPlaces`: Stillgelegte Orte kommen nur in den Ortsbaum einer Kampagne, die in einer stillgelegten Stadt beginnt (alte Begrüßung). Laufende Kampagnen behalten ihren Ortsbaum aus dem Event-Log.
+- Kein Code für alte Kampagnen: Nach jedem Patch beginnt ein neuer Lauf. `src/` ist unverändert bis auf die Versionsnummer.
 
 **Tests:**
 - `tests/unit/lorebook.test.js` mit 5 Tests, darunter neu die Welt von v0.14.
 - `context.test.js` startet den Lore-Test in Ashbridge, weil Solmere keine Lore mehr hat.
+- Die aufgezeichneten Läufe der Regressionstests spielen in Tidecross, Redmarch und Lumenford. Diese Städte liegen nur als Testdaten in `tests/legacy_world.json`; `tests/helpers.js` lädt sie dazu, die Extension nicht.
 - Gesamt: 717/717.
-- Planner aus, gegen c.6.6.7 (122 Live-Schritte): Zustand und Records identisch bis auf die stillgelegten Orte. Engine-Blöcke unterscheiden sich nur in Zeilen der Rückfall-Lore.
-- Smokes: Browser (V3-Seite startet jetzt in Ashbridge), SillyTavern V3, V4 und C OK.
+- Planner aus, gegen c.6.6.7 (122 Live-Schritte): Zustand und Records sind identisch, wenn man die Orte der alten Welt beiseitelässt (sie stehen in den Tests jetzt am Ende der Ortsliste). Engine-Blöcke unterscheiden sich nur in Zeilen der Rückfall-Lore.
+- Smokes: Browser, SillyTavern V3, V4 und C OK. Sie starten jetzt in Ashbridge, Glassmere und Alderwatch.
 - Build: `4.3.0-c.6.6.8`.
 
 **SillyTavern:**
@@ -938,6 +939,5 @@ Nur Welt-Lore und Content. Keine Mechanik ändert sich, Pfad A und C sind unver�
 - Die Karte (Vertrag) und das Preset bleiben.
 
 **Grenzen von c.6.6.8:**
-- Eine Kampagne, die in Redmarch, Tidecross oder Lumenford beginnt, spielt in der alten Welt ohne Realm- und Stadt-Lore.
-- Eine laufende Kampagne kennt Veyrhold & Co. weiter als Orte, ohne Lore.
+- Eine Begrüßung, die noch Redmarch, Tidecross oder Lumenford nennt, startet in einer der drei Startstädte (nach Seed), während der Text von der alten Stadt spricht. Die Ortszeile ersetzen.
 - Die World-Info-Einträge stehen weiter vor dem Vertrag (Position 0). Das Prompt-Caching bricht dort ab; ein Umbau ist nicht Teil dieses Patches.

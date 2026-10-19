@@ -404,17 +404,14 @@ export function supportedRanks(state, content, settlement) {
  * The place tree a V4 campaign starts with (plan §6.1): every realm, every settlement of the content (lore.json) under
  * its realm, the engine's fixed Guild hall node in each settlement with a branch (rules.guild.branch_kinds), and the
  * spot the campaign begins at, outside its city. Deterministic: the same content gives the same tree.
- * Lorebook v0.14: realms and cities "retired" in lore.json belong to the world before v0.14; only a campaign that begins
- * in one of them (an older First Message) gets that world, every other campaign the five great powers alone.
  */
 export function seedPlaces(content, loc, startName) {
     const places = [];
     const branch = content.rules.guild?.branch_kinds || [];
-    const world = (x) => !x.retired || !!loc.retired;
     for (const f of content.factions.values()) {
-        if (f.kind === 'realm' && world(f)) places.push({ id: f.id, name: f.name, kind: 'realm', parent: null, realm: f.id, tags: [], by: 'content' });
+        if (f.kind === 'realm') places.push({ id: f.id, name: f.name, kind: 'realm', parent: null, realm: f.id, tags: [], by: 'content' });
     }
-    for (const l of [...content.locations.values()].filter(world)) {
+    for (const l of content.locations.values()) {
         places.push({ id: l.id, name: l.name, kind: 'settlement', sub: l.kind, parent: l.realm || null, realm: l.realm || null, tags: [], by: 'content' });
         if (branch.includes(l.kind)) places.push({ id: `${l.id}.guild_hall`, name: HALL_NAME, kind: 'site', parent: l.id, realm: l.realm || null, tags: ['guild_hall'], by: 'engine' });
     }

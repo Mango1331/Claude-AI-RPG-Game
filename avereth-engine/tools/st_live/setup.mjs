@@ -13,7 +13,7 @@ const ENGINE = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..
 const USER = path.join(ST, 'data/default-user');
 const narrator = JSON.parse(fs.readFileSync(path.join(ENGINE, 'content/narrator.json'), 'utf8'));
 const WORLD = 'Avereth World Lore v0.14';
-const first = 'SYSTEM INITIALIZATION COMPLETE\n\n`Location: Public roadside verge outside Tidecross, Solmere`\n\nCHARACTER CREATION — STEP 1/2: choose a Base Class (Warrior, Mage, Guardian, Duelist, Ranger).';
+const first = 'SYSTEM INITIALIZATION COMPLETE\n\n`Location: Public roadside verge outside Glassmere, Caelreth`\n\nCHARACTER CREATION — STEP 1/2: choose a Base Class (Warrior, Mage, Guardian, Duelist, Ranger).';
 const card = {
     spec: 'chara_card_v2', spec_version: '2.0',
     name: 'Avereth', description: narrator.contract_text, personality: '', scenario: '', first_mes: first, mes_example: '',

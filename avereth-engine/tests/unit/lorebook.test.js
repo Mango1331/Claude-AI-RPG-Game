@@ -3,13 +3,14 @@
 // World Info load per generation, replayed with SillyTavern's activation rules (tools/wi_sim.mjs; docs/LOREBOOK.md).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loadContent, readJson, Game } from '../helpers.js';
+import { loadContent, loadProductContent, readJson, Game } from '../helpers.js';
 import { lorebookEntries, activate, matchKey } from '../../tools/wi_sim.mjs';
 import { scanWindows, LOREBOOK } from '../../tools/lorebook_audit.mjs';
 import { loreKeys } from '../../src/context.js';
 import { seedPlaces } from '../../src/v4/domain.js';
 
-const content = await loadContent();
+const content = await loadContent(); // with the world of the recorded runs (tests/legacy_world.json)
+const product = await loadProductContent(); // the world the extension plays
 const book = await readJson(LOREBOOK);
 const entries = lorebookEntries(book);
 const SETTINGS = { depth: 2, budget: 1800 }; // the recommended SillyTavern settings (docs/LOREBOOK.md)
@@ -26,26 +27,21 @@ test('every entry is a complete World Info entry; nothing recurses (realm and ci
 
 test('the Lore Bridge names match the lorebook: every realm and city of the engine has an entry keyed on its name', () => {
     const keyed = (name) => entries.some((e) => e.key.some((k) => k.toLowerCase() === name.toLowerCase()));
-    for (const f of content.factions.values()) if (f.kind === 'realm' && !f.retired) assert.ok(keyed(f.name), f.name);
-    for (const l of content.locations.values()) if (!l.retired) assert.ok(keyed(l.name), l.name);
-    const g = new Game(content, { firstMessage: 'Arrival.\n`Location: Public roadside verge outside Ashbridge, Duskreach`' }).ranger();
-    assert.deepEqual(loreKeys(g.state, content), ['Duskreach', 'Ashbridge']);
+    for (const f of product.factions.values()) if (f.kind === 'realm') assert.ok(keyed(f.name), f.name);
+    for (const l of product.locations.values()) assert.ok(keyed(l.name), l.name);
+    const g = new Game(product, { firstMessage: 'Arrival.\n`Location: Public roadside verge outside Ashbridge, Duskreach`' }).ranger();
+    assert.deepEqual(loreKeys(g.state, product), ['Duskreach', 'Ashbridge']);
     // descriptive lore comes from the lorebook: the engine block keeps mechanics and state only
     assert.match(g.context().text, /\nLORE:\n/);
     assert.doesNotMatch(g.context({ lore: false }).text, /\nLORE:\n/);
 });
 
-test('v0.14: five great powers and three start cities; the realms and cities before v0.14 stay resolvable but have no lore', () => {
-    const realms = [...content.factions.values()].filter((f) => f.kind === 'realm');
-    assert.deepEqual(realms.filter((f) => !f.retired).map((f) => f.name), ['Valedorn Crown', 'Caelreth', 'Duskreach', 'Ashen Scale Dominion', 'Verdant Fang Court']);
-    assert.deepEqual(content.start.start_locations.map((id) => content.locations.get(id).name), ['Alderwatch', 'Glassmere', 'Ashbridge']);
-    const keyed = (name) => entries.some((e) => e.key.some((k) => k.toLowerCase() === name.toLowerCase()));
-    for (const x of [...realms, ...content.locations.values()].filter((x) => x.retired)) assert.ok(!keyed(x.name), `${x.name} is retired`);
-    for (const l of content.locations.values()) assert.ok(!l.realm || !content.factions.get(l.realm).retired || l.retired, `${l.name} lies in a retired realm`);
-    // a new campaign starts in the world of five powers; one whose First Message names a retired city keeps the older world
-    const names = (loc) => seedPlaces(content, loc, 'start').places.filter((p) => p.kind === 'realm').map((p) => p.name);
-    assert.deepEqual(names(content.locations.get('loc.ashbridge')), realms.filter((f) => !f.retired).map((f) => f.name));
-    assert.equal(names(content.locations.get('loc.tidecross')).length, realms.length);
+test('v0.14: five great powers and three start cities; a new campaign knows no other realm', () => {
+    const realms = [...product.factions.values()].filter((f) => f.kind === 'realm').map((f) => f.name);
+    assert.deepEqual(realms, ['Valedorn Crown', 'Caelreth', 'Duskreach', 'Ashen Scale Dominion', 'Verdant Fang Court']);
+    assert.deepEqual(product.start.start_locations.map((id) => product.locations.get(id).name), ['Alderwatch', 'Glassmere', 'Ashbridge']);
+    for (const l of product.locations.values()) assert.ok(!l.realm || product.factions.has(l.realm), `${l.name}: realm ${l.realm}`);
+    assert.deepEqual(seedPlaces(product, product.locations.get('loc.glassmere'), 'start').places.filter((p) => p.kind === 'realm').map((p) => p.name), realms);
     // the dungeon canon: persistent shared places; only real Dungeons have levels, an ordinary cave stays a cave
     const dungeons = entries.find((e) => e.comment === 'WORLD — Dungeons').content;
     for (const phrase of ['physical, persistent places', 'never private instances', 'without levels, bosses or regeneration', 'rare return stones']) assert.ok(dungeons.includes(phrase), phrase);
@@ -61,7 +57,7 @@ test('no key is an everyday word that fired on ordinary narration or tracker tex
 });
 
 test('Testrun 2, 3 and 4 replayed: realm and city present in Ashbridge, no Guild rules in the forest, quest scaffolds at the quest board', async () => {
-    // Testrun 2 (Solmere, Tidecross) and 4 (Ilyrion, Lumenford) were played in realms retired in v0.14: no entry for them
+    // Testrun 2 (Solmere, Tidecross) and 4 (Ilyrion, Lumenford) were played in realms Lorebook v0.14 no longer has
     const load = [];
     const has = (r, comment) => r.kept.some((x) => x.e.comment === comment);
     for (const fixture of ['tests/testrun_v2/fixture.json', 'tests/testrun_v3/fixture.json', 'tests/testrun_v4/fixture.json']) {

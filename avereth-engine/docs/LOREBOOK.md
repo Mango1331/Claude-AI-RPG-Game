@@ -267,24 +267,22 @@ Nach Szene:
 Die Grundlast ist +7 Token: Der Kern ist kleiner, Duskreach etwas länger. In den Fixtures von Testrun 2 und 4 sinkt die Last nur, weil Solmere/Tidecross und Ilyrion/Lumenford keine Einträge mehr haben. Für Spiel in Ashbridge ist das keine Ersparnis.
 
 **Replay-Vergleich** gegen c.6.6.7, mit `tools/c_flag_off_diff.mjs` und einer Nachprüfung je Schritt. In allen 122 Schritten der Live-Replays (`tests/v4/live_0930*.json`):
-- Zustand und Record sind identisch, außer den stillgelegten Orten im Ortsbaum neuer Kampagnen.
+- Zustand und Record sind identisch, wenn man die Orte der alten Welt beiseitelässt (in den Tests stehen sie jetzt am Ende der Ortsliste).
 - Die Engine-Blöcke unterscheiden sich nur in Zeilen der Rückfall-Lore.
 - Kampf, Würfe, XP, Quests und Gilde sind unverändert.
 
-### Kompatibilität
+### Keine Altwelt-Sonderfälle
 
-- **`lore.json`:** Die entfernten Reiche und Städte bleiben mit ihrer ID im Index, markiert mit `"retired": "v0.14"`. Ihre Namen lösen weiter auf: Kampagnenstart, Namensauflösung in `src/delta.js`, HUD, Validierung. Ihre Rückfall-Lore ist entfernt.
-- **First Message der Karte:** Die Begrüßung v0.4 würfelt den Startort mit `{{pick::…}}` aus sechs Städten, drei davon stillgelegt. Ohne Änderung begänne etwa die Hälfte neuer Chats in der alten Welt. Die Zeile ersetzen (Einrichtung, Schritt 5); sonst bleibt die Begrüßung gleich.
-- **Neue Kampagnen:**
-  - Ohne Ortsangabe in der First Message wählt der Seed Alderwatch, Glassmere oder Ashbridge.
-  - Nennt die First Message eine stillgelegte Stadt („outside Redmarch, Veyrhold“), beginnt die Kampagne dort in der Welt vor v0.14: Der V4-Ortsbaum hat dann alle 8 Reiche und 12 Gildenhallen (`seedPlaces`, `src/v4/domain.js`). Jede andere Kampagne bekommt nur die fünf Großmächte (20 Orte mit 6 Hallen).
-  - Für die alte Welt hat das Lorebook keine Realm- und Stadteinträge mehr. Die Bridge sendet die alten Namen, sie treffen aber nichts; der Erzähler erfindet im Rahmen des Kerns. Die Testsuite und die ST-Smokes spielen weiter in Tidecross und Redmarch und prüfen damit genau diesen Pfad.
-- **Laufende V4-Kampagnen**, etwa Alaric in Ashbridge:
-  - Der Ortsbaum steht in ihrem `campaign.started`-Event und bleibt, wie er ist; Veyrhold & Co. sind dort weiter Orte ohne Lore.
-  - Ashbridge und Duskreach behalten Schlüssel und Seed. Der Duskreach-Text ist überarbeitet, ohne Widerspruch zum bisherigen Spiel.
-- **V3-Kanon:** Nennt der Erzähler eine stillgelegte Stadt als Reiseziel, löst `delta.js` sie weiter auf. Das Lorebook nennt diese Städte nicht mehr, der Fall ist also unwahrscheinlich.
-- **Alte Chats** können entfernte Reiche in ihrer Prosa enthalten. Es feuert dazu nichts: kein Widerspruch, aber auch keine Stütze.
-- **Keine Migration:** Bestehende Kampagnen werden nicht umgeschrieben.
+Nach jedem Patch beginnt ein neuer Lauf. Deshalb gibt es keine Kompatibilität für Kampagnen aus der Welt vor v0.14:
+- **`lore.json`:** Veyrhold, Solmere, Ilyrion und ihre sechs Städte sind ganz entfernt, ebenso ihre Rückfall-Lore.
+- **Ortsbaum:** Eine neue V4-Kampagne bekommt die fünf Großmächte: 20 Orte, darunter 6 Gildenhallen (`seedPlaces` unverändert).
+- **First Message der Karte:** Die Begrüßung v0.4 würfelt den Startort mit `{{pick::…}}` aus sechs Städten. Drei davon gibt es nicht mehr.
+  - Nennt die Begrüßung eine entfernte Stadt, kennt die Engine sie nicht und startet in Alderwatch, Glassmere oder Ashbridge (nach Seed). Die Begrüßung spräche dann von einer anderen Stadt als der Spielstand.
+  - Deshalb die Ortszeile ersetzen (Einrichtung, Schritt 5).
+- **Tests:** Die Regressionstests spielen aufgezeichnete Läufe ab, die in Tidecross, Redmarch und Lumenford stattfanden. Diese Städte liegen deshalb als reine Testdaten in `tests/legacy_world.json`:
+  - `tests/helpers.js` (`loadContent`) und `tools/lorebook_audit.mjs` laden sie zusätzlich;
+  - die Extension kennt sie nicht;
+  - `loadProductContent` liefert die Inhalte genau wie die Extension; der Lorebook-Test prüft damit die Welt von v0.14.
 
 ### Bekannt, nicht geändert: Prompt-Cache
 
@@ -314,16 +312,16 @@ Die Einträge stehen auf Position „Before Char Defs“ (0), also vor der Karte
    `Location: Public roadside verge outside {{pick::Alderwatch, Valedorn Crown::Glassmere, Caelreth::Ashbridge, Duskreach}}`
    ```
 
-   Laufende Chats behalten ihren Startort; die Änderung gilt für neue Chats.
+   Die Änderung gilt für neue Chats.
 
 ## Nach Änderungen am Lorebook
 
 `node tools/lorebook_audit.mjs [budget] [depth]` zeigt je Zug, welche Einträge feuern (mit auslösendem Schlüssel) und was das Budget abschneidet. `tests/unit/lorebook.test.js` prüft fünf Dinge:
 - keine Rekursion;
 - Namen passend zur Bridge;
-- die Welt von v0.14: fünf Großmächte, drei Startstädte, stillgelegte Namen ohne Eintrag, Ortsbaum nach Startort, Dungeon-Kanon, höchstens 55 Einträge;
+- die Welt von v0.14 (Produktinhalte): fünf Großmächte, drei Startstädte, Ortsbaum einer neuen Kampagne, Dungeon-Kanon, höchstens 55 Einträge;
 - keine Allerweltsschlüssel;
-- Realm und Stadt in jedem echten Zug in Ashbridge, keine Gildenregeln im Wald, Quest-Gerüste am Aushang.
+- Realm und Stadt in jedem echten Zug in Ashbridge, keine Gildenregeln im Wald, Quest-Gerüste am Aushang (Testruns 2–4, mit `tests/legacy_world.json`).
 
 ## Bewusst offen
 

@@ -1,0 +1,73 @@
+{
+  "_source": "Test data only, not product content. The realms and cities of Avereth before Lorebook v0.14 (Veyrhold, Solmere, Ilyrion), where the recorded testruns and live runs the regression tests replay were played. tests/helpers.js adds them to the content the tests load; the extension never sees them.",
+  "locations": [
+    {
+      "id": "loc.redmarch",
+      "name": "Redmarch",
+      "kind": "city",
+      "realm": "realm.veyrhold",
+      "source": "First Message v0.4 (start location pick list)",
+      "facts": [
+        "Redmarch is a walled city in Veyrhold; the campaign may start on the public roadside verge outside it."
+      ]
+    },
+    {
+      "id": "loc.tidecross",
+      "name": "Tidecross",
+      "kind": "city",
+      "realm": "realm.solmere",
+      "source": "First Message v0.4 (start location pick list)",
+      "facts": [
+        "Tidecross is a walled city in Solmere; the campaign may start on the public roadside verge outside it."
+      ]
+    },
+    {
+      "id": "loc.lumenford",
+      "name": "Lumenford",
+      "kind": "city",
+      "realm": "realm.ilyrion",
+      "source": "First Message v0.4 (start location pick list)",
+      "facts": [
+        "Lumenford is a walled city in Ilyrion; the campaign may start on the public roadside verge outside it."
+      ]
+    },
+    {
+      "id": "loc.ironward",
+      "name": "Ironward",
+      "kind": "capital",
+      "realm": "realm.veyrhold",
+      "source": "Lore v0.8 realm entry"
+    },
+    {
+      "id": "loc.goldharbor",
+      "name": "Goldharbor",
+      "kind": "capital",
+      "realm": "realm.solmere",
+      "source": "Lore v0.8 realm entry"
+    },
+    {
+      "id": "loc.sanctum_vale",
+      "name": "Sanctum Vale",
+      "kind": "capital",
+      "realm": "realm.ilyrion",
+      "source": "Lore v0.8 realm entry"
+    }
+  ],
+  "factions": [
+    {
+      "id": "realm.veyrhold",
+      "name": "Veyrhold",
+      "kind": "realm"
+    },
+    {
+      "id": "realm.solmere",
+      "name": "Solmere",
+      "kind": "realm"
+    },
+    {
+      "id": "realm.ilyrion",
+      "name": "Ilyrion",
+      "kind": "realm"
+    }
+  ]
+}

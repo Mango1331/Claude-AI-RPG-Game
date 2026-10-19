@@ -1,11 +1,11 @@
 {
-  "_source": "Lore v0.8 (world text byte-identical) + First Message v0.4 start locations",
+  "_source": "Lore v0.8, revised with Lorebook v0.14 (five great powers, overland play, Dungeons with optional structured progression) + First Message start locations. Locations and realms marked \"retired\" belong to the world before v0.14: they are no start locations and get no lore, but campaigns begun there keep resolving their ids and names (src/v4/domain.js seedPlaces; docs/LOREBOOK.md).",
   "entries": [
     {
       "id": "lore.world_foundations",
       "title": "[LORE] Avereth World Foundations",
       "kind": "topic",
-      "text": "AVERETH\nThe known world is dominated by one immense continent, Avereth, surrounded by ocean. Civilizations, species, religions and dynasties have risen and vanished over immense history; some ancient beings remember eras ordinary people know only as myth.\n\nTone is high fantasy with contrast: safe cities, trade, families and festivals coexist with dangerous wilderness, Dungeons, political violence and old powers. The setting is not uniformly grim.\n\nCurrent campaign scope defines six human kingdoms, two monster realms, the neutral Adventurers' Guild and independent high-rank actors. More great powers may exist but remain undefined until play needs them.\nHuman and monster states are not unified blocs and may trade, ally, feud or fight across species lines.\n\nMaterial baseline: Western-fantasy medieval society alongside mana and high magic; modern/industrial technology is not assumed.",
+      "text": "AVERETH\nAvereth is the continent this campaign is played on: a settled heartland of roads, rivers, forests, hills and wild country, with coasts only at its far edges; play is overland. Civilizations, species, religions and dynasties have risen and vanished over a long history; some ancient beings remember eras ordinary people know only as myth.\n\nTone is high fantasy with contrast: safe cities, trade, families and festivals coexist with dangerous wilderness, Dungeons, political violence and old powers. The setting is not uniformly grim.\n\nCurrent campaign scope defines three human kingdoms, two monster realms, the neutral Adventurers' Guild and independent high-rank actors. Minor lordships, free towns and further powers may exist but remain undefined until play needs them.\nHuman and monster states are not unified blocs and may trade, ally, feud or fight across species lines.\n\nMaterial baseline: Western-fantasy medieval society alongside mana and high magic; modern/industrial technology is not assumed.",
       "keys": [
         "Avereth",
         "Avereth continent",
@@ -133,7 +133,7 @@
       "id": "lore.geopolitics",
       "title": "[LORE] Continental Geopolitics and High-Rank Deterrence",
       "kind": "topic",
-      "text": "CURRENT GREAT-POWER MAP\nHuman kingdoms: Valedorn Crown, Caelreth, Veyrhold, Solmere, Ilyrion, Duskreach.\nMonster realms: Ashen Scale Dominion, Verdant Fang Court.\nAdditional states may exist; borders, minor states, cities, noble holdings and most history stay open until needed.\n\nThere is no permanent human-vs-monster bloc. Trade, rivalry, border conflict, non-aggression and temporary alliances all occur.\n\nHIGH-RANK DETERRENCE\nS-ranks are strategic actors, not routine battlefield units. Direct clashes risk catastrophic collateral damage and escalation, so they usually act through deterrence, diplomacy, representatives or only truly strategic intervention.\nB/A-ranks handle much of the practical high-level conflict. A powerful ruler does not intervene merely because an unrelated lower-rank member of the same species/faction was killed.\n",
+      "text": "CURRENT GREAT-POWER MAP\nHuman kingdoms: Valedorn Crown, Caelreth, Duskreach.\nMonster realms: Ashen Scale Dominion, Verdant Fang Court.\nAdditional states may exist; borders, minor lordships, free towns, noble holdings and most history stay open until needed.\n\nThere is no permanent human-vs-monster bloc. Trade, rivalry, border conflict, non-aggression and temporary alliances all occur.\n\nHIGH-RANK DETERRENCE\nS-ranks are strategic actors, not routine battlefield units. Direct clashes risk catastrophic collateral damage and escalation, so they usually act through deterrence, diplomacy, representatives or only truly strategic intervention.\nB/A-ranks handle much of the practical high-level conflict. A powerful ruler does not intervene merely because an unrelated lower-rank member of the same species/faction was killed.",
       "keys": [
         "geopolitics",
         "high-rank deterrence",
@@ -149,7 +149,7 @@
       "id": "realm.valedorn_crown",
       "title": "[REALM] Human Kingdom — Valedorn Crown",
       "kind": "realm",
-      "text": "VALEDORN CROWN\n\nPosition: central Avereth.\nCapital: Crownheart.\nStatus: strongest human kingdom.\nPublic S-ranks: 3.\n\nIdentity:\nValedorn is the political center of human diplomacy and hosts the most influential royal court on the continent.\nIt possesses deep noble lineages, wealthy academies, old military institutions, and one of the largest Adventurers' Guild headquarters.\n\nIts strength comes less from a single specialty than from having almost everything at a high level: wealth, population, military organization, magic, diplomacy, and several Full-Divine protectors.\n\nValedorn is powerful but not automatically dominant over every neighbor; coalitions of other kingdoms can still constrain it.\n",
+      "text": "VALEDORN CROWN\n\nPosition: central Avereth.\nCapital: Crownheart.\nStatus: strongest human kingdom.\nPublic S-ranks: 3.\n\nIdentity:\nValedorn is the political and commercial heart of the human kingdoms and hosts the most influential royal court on the continent.\nIt possesses deep noble lineages, a broad administration, old military institutions, busy roads and river trade, merchant houses and one of the largest Adventurers' Guild headquarters.\nIts great temples and healer orders are the most renowned in Avereth; most known soul-return specialists train or serve there. Temples hold real influence, but the kingdom is not a theocracy.\n\nIts strength comes less from a single specialty than from having almost everything at a high level: wealth, population, administration, military organization, magic, faith, diplomacy, and several Full-Divine protectors whose deterrence its allies rely on.\n\nValedorn is powerful but not automatically dominant; coalitions and internal rivalries can still constrain it.",
       "keys": [
         "Valedorn",
         "Crownheart"
@@ -165,7 +165,7 @@
       "id": "realm.caelreth",
       "title": "[REALM] Human Kingdom — Caelreth",
       "kind": "realm",
-      "text": "CAELRETH\n\nPosition: western Avereth.\nCapital: Asterhall.\nStatus: top-tier human kingdom.\nPublic S-ranks: 2.\n\nIdentity:\nCaelreth is the continent's most academically arcane human kingdom.\nIt is known for magical colleges, Skill-Stone study, enchantment research, ritual theory, and old mage families.\n\nCaelreth's nobles heavily protect rare Evolution knowledge.\nIts cities contain unusually dense populations of professional mages and high-rank researchers.\n\nRelations with the Verdant Fang Court are cautious but often scholarly and commercial rather than purely hostile.\n",
+      "text": "CAELRETH\n\nPosition: western Avereth.\nCapital: Asterhall.\nStatus: top-tier human kingdom.\nPublic S-ranks: 2.\n\nIdentity:\nCaelreth is the magical research and training center of the human kingdoms.\nIt is known for magical colleges and academies, Skill-Stone study and trade, enchantment research, ritual theory, archives and old mage families.\n\nCaelreth's nobles heavily protect rare Evolution knowledge.\nIts cities contain unusually dense populations of professional mages and high-rank researchers.\n\nIts western reaches border the Verdant Fang Court; relations are cautious but often scholarly and commercial rather than purely hostile.",
       "keys": [
         "Caelreth",
         "Asterhall"
@@ -178,58 +178,10 @@
       "source": "Lore v0.8 #8"
     },
     {
-      "id": "realm.veyrhold",
-      "title": "[REALM] Human Kingdom — Veyrhold",
-      "kind": "realm",
-      "text": "VEYRHOLD\n\nPosition: eastern Avereth.\nCapital: Ironward.\nStatus: top-tier martial kingdom.\nPublic S-ranks: 2.\n\nIdentity:\nVeyrhold is a heavily militarized frontier kingdom shaped by centuries of dangerous borders.\nMartial training, disciplined officer corps, fortified cities, and monster-hunting traditions are central to its culture.\n\nIt has the most openly tense relationship with the Ashen Scale Dominion.\nBorder clashes occur, but both sides avoid escalation that could draw their S-ranks into direct war.\n",
-      "keys": [
-        "Veyrhold",
-        "Ironward"
-      ],
-      "entities": [
-        "realm.veyrhold"
-      ],
-      "importance": 0.5,
-      "baseline": false,
-      "source": "Lore v0.8 #9"
-    },
-    {
-      "id": "realm.solmere",
-      "title": "[REALM] Human Kingdom — Solmere",
-      "kind": "realm",
-      "text": "SOLMERE\n\nPosition: southern coast.\nCapital: Goldharbor.\nStatus: major kingdom.\nPublic S-ranks: 1.\n\nIdentity:\nSolmere is Avereth's largest maritime trade power.\nPorts, shipyards, merchant houses, mercenary contracts, Dungeon imports, and inter-kingdom commerce dominate its politics.\n\nIt is less militarily imposing than Valedorn or Veyrhold but can buy expertise, logistics, and high-rank service at enormous scale.\n\nSolmere maintains pragmatic trade across both human and monster polities and is one of the human states most comfortable dealing openly with intelligent monster populations.\n",
-      "keys": [
-        "Solmere",
-        "Goldharbor"
-      ],
-      "entities": [
-        "realm.solmere"
-      ],
-      "importance": 0.5,
-      "baseline": false,
-      "source": "Lore v0.8 #10"
-    },
-    {
-      "id": "realm.ilyrion",
-      "title": "[REALM] Human Kingdom — Ilyrion",
-      "kind": "realm",
-      "text": "ILYRION\n\nPosition: south-central riverlands.\nCapital: Sanctum Vale.\nStatus: major kingdom.\nPublic S-ranks: 1.\n\nIdentity:\nIlyrion is famous for temples, healers, soul rites, pilgrimage routes, and religious scholarship.\nMany of Avereth's best-known resurrection specialists train or serve here.\n\nThe kingdom is not a theocracy, but temples possess major political and economic influence.\n\nSeveral ancient faiths associated with historically famous S-rank figures or traditions maintain important sanctuaries in Ilyrion.\n",
-      "keys": [
-        "Ilyrion",
-        "Sanctum Vale"
-      ],
-      "entities": [
-        "realm.ilyrion"
-      ],
-      "importance": 0.5,
-      "baseline": false,
-      "source": "Lore v0.8 #11"
-    },
-    {
       "id": "realm.duskreach",
       "title": "[REALM] Human Kingdom — Duskreach",
       "kind": "realm",
-      "text": "DUSKREACH\n\nPosition: southeastern marches.\nCapital: Blackgate.\nStatus: regional human kingdom.\nPublic S-ranks: none.\n\nIdentity:\nDuskreach is a hard frontier realm with strong B- and A-rank military figures but no known Full-Divine protector.\n\nIt survives through fortifications, alliances, Guild contracts, mercenary service, and careful diplomacy with stronger neighbors.\n\nIts rulers are acutely aware that wealth and armies cannot fully substitute for an S-rank at the kingdom level.\n",
+      "text": "DUSKREACH\n\nPosition: southeastern marches.\nCapital: Blackgate.\nStatus: regional human kingdom.\nPublic S-ranks: none.\n\nIdentity:\nDuskreach is the hard frontier of the human kingdoms, where Monsters in forest, moor and hill are a daily fact. Monster hunting, mercenary companies, garrisons, Guild contracts and the trade in Monster materials sustain it.\nIt has strong B- and A-rank military figures but no known Full-Divine protector.\n\nIt survives through fortifications, alliances with stronger neighbors (Valedorn above all), Guild support and careful diplomacy. Its eastern marches face the Ashen Scale Dominion; border incidents happen, but both sides avoid a war that could draw S-ranks in.\n\nIts rulers are acutely aware that wealth and armies cannot fully substitute for an S-rank at the kingdom level.",
       "keys": [
         "Duskreach",
         "Blackgate"
@@ -245,7 +197,7 @@
       "id": "realm.ashen_scale_dominion",
       "title": "[REALM] Monster Realm — Ashen Scale Dominion",
       "kind": "realm",
-      "text": "ASHEN SCALE DOMINION\n\nPosition: volcanic eastern highlands.\nSeat of power: the Cinder Throne.\nStatus: strongest recognized monster realm.\nPublic S-ranks: 3.\n\nIdentity:\nThe Dominion is ruled by ancient draconic and scaled bloodlines alongside other fire- and mountain-adapted monster species.\n\nIts oldest rulers think in centuries rather than years.\nStrength, bloodline, territory, oath, and personal authority matter more than human-style bureaucracy.\n\nThe Dominion is Veyrhold's most dangerous neighbor.\nNeither side seeks a war large enough to force direct S-rank confrontation.\n",
+      "text": "ASHEN SCALE DOMINION\n\nPosition: volcanic eastern highlands.\nSeat of power: the Cinder Throne.\nStatus: strongest recognized monster realm.\nPublic S-ranks: 3.\n\nIdentity:\nThe Dominion is ruled by ancient draconic and scaled bloodlines alongside other fire- and mountain-adapted monster species.\n\nIts oldest rulers think in centuries rather than years.\nStrength, bloodline, territory, oath, and personal authority matter more than human-style bureaucracy.\n\nThe Dominion is Duskreach's most dangerous neighbor.\nNeither side seeks a war large enough to force direct S-rank confrontation.\n",
       "keys": [
         "Ashen Scale Dominion",
         "Cinder Throne"
@@ -299,7 +251,7 @@
       "id": "lore.dungeons",
       "title": "[LORE] Natural Dungeons",
       "kind": "topic",
-      "text": "NATURAL DUNGEONS\nNatural Dungeons are persistent supernatural ecosystems/resource zones shaped by concentrated mana and other established local conditions.\nThey can contain unusual environments, rare materials, Skill Stones and exceptional Monsters.\nThey are physical/world locations, not temporary game instances that appear only for Alaric.\nExact Dungeon rules, layouts, ownership and local history remain open until established.\n",
+      "text": "DUNGEONS\nDungeons are physical, persistent places in Avereth, arising from concentrated mana, natural phenomena, ancient civilizations or other traceable causes. They can contain unusual environments, rare materials, Skill Stones and exceptional Monsters.\nSome have a recognizable, magically structured progression: successive levels with their own Monster populations, level guardians and bosses, danger rising with depth, valuable materials and special loot; their Monsters and resources can return over time, access can be restricted or limited, other adventurers enter on their own, and rare return stones can carry a bearer back out.\nThey are shared world locations, not temporary game instances that appear only for Alaric. Ordinary caves, catacombs, ruins and tunnels are not Dungeons unless play establishes one.\nExact Dungeon rules, layouts, timings, capacities, ownership and local history remain open until established.",
       "keys": [
         "Dungeon",
         "Dungeons",
@@ -334,7 +286,7 @@
       "id": "lore.material_culture",
       "title": "[LORE] Medieval Material Culture, Communication, and Travel",
       "kind": "topic",
-      "text": "MATERIAL CULTURE\nAvereth uses a Western-fantasy medieval material baseline alongside mana and high magic.\nOrdinary life relies on handcraft, smithing, mills, farms, carts, horses, sailing ships, fortified settlements, markets, written records and similar pre-industrial institutions.\nMana and high magic can accomplish things mundane medieval technology cannot, but this has NOT created a modern or industrial technological society.\n\nDo not assume modern/industrial infrastructure or devices such as electrical grids, telephones, computers, engines, railways, mass industrial manufacturing or firearms unless later canon explicitly establishes an exception.\n\nCOMMUNICATION\nOrdinary people communicate at distance through letters, messengers, couriers and travelers.\nMagical long-distance communication is possible through sufficiently powerful magic, institutions or artifacts, but it is uncommon and not universal everyday infrastructure available to ordinary people on demand.\n\nTRAVEL\nOrdinary travel is by foot, mount, wagon/carriage and ship as geography permits.\nLong-distance travel takes meaningful in-world time; do not compress cities or kingdoms together merely for narrative convenience.\nTeleportation or comparable magical transport may exist when explicitly established, but is never assumed to be ordinary public transportation.\n",
+      "text": "MATERIAL CULTURE\nAvereth uses a Western-fantasy medieval material baseline alongside mana and high magic.\nOrdinary life relies on handcraft, smithing, mills, farms, carts, horses, river boats, fortified settlements, markets, written records and similar pre-industrial institutions.\nMana and high magic can accomplish things mundane medieval technology cannot, but this has NOT created a modern or industrial technological society.\n\nDo not assume modern/industrial infrastructure or devices such as electrical grids, telephones, computers, engines, railways, mass industrial manufacturing or firearms unless later canon explicitly establishes an exception.\n\nCOMMUNICATION\nOrdinary people communicate at distance through letters, messengers, couriers and travelers.\nMagical long-distance communication is possible through sufficiently powerful magic, institutions or artifacts, but it is uncommon and not universal everyday infrastructure available to ordinary people on demand.\n\nTRAVEL\nOrdinary travel is overland by foot, mount and wagon/carriage, and by river boat or ferry where rivers allow; sea voyages exist only where a coast is established.\nLong-distance travel takes meaningful in-world time; do not compress cities or kingdoms together merely for narrative convenience.\nTeleportation or comparable magical transport may exist when explicitly established, but is never assumed to be ordinary public transportation.\n",
       "keys": [
         "technology",
         "medieval",
@@ -386,7 +338,8 @@
       "source": "First Message v0.4 (start location pick list)",
       "facts": [
         "Redmarch is a walled city in Veyrhold; the campaign may start on the public roadside verge outside it."
-      ]
+      ],
+      "retired": "v0.14"
     },
     {
       "id": "loc.tidecross",
@@ -396,7 +349,8 @@
       "source": "First Message v0.4 (start location pick list)",
       "facts": [
         "Tidecross is a walled city in Solmere; the campaign may start on the public roadside verge outside it."
-      ]
+      ],
+      "retired": "v0.14"
     },
     {
       "id": "loc.lumenford",
@@ -406,7 +360,8 @@
       "source": "First Message v0.4 (start location pick list)",
       "facts": [
         "Lumenford is a walled city in Ilyrion; the campaign may start on the public roadside verge outside it."
-      ]
+      ],
+      "retired": "v0.14"
     },
     {
       "id": "loc.ashbridge",
@@ -437,21 +392,24 @@
       "name": "Ironward",
       "kind": "capital",
       "realm": "realm.veyrhold",
-      "source": "Lore v0.8 realm entry"
+      "source": "Lore v0.8 realm entry",
+      "retired": "v0.14"
     },
     {
       "id": "loc.goldharbor",
       "name": "Goldharbor",
       "kind": "capital",
       "realm": "realm.solmere",
-      "source": "Lore v0.8 realm entry"
+      "source": "Lore v0.8 realm entry",
+      "retired": "v0.14"
     },
     {
       "id": "loc.sanctum_vale",
       "name": "Sanctum Vale",
       "kind": "capital",
       "realm": "realm.ilyrion",
-      "source": "Lore v0.8 realm entry"
+      "source": "Lore v0.8 realm entry",
+      "retired": "v0.14"
     },
     {
       "id": "loc.blackgate",
@@ -495,17 +453,20 @@
     {
       "id": "realm.veyrhold",
       "name": "Veyrhold",
-      "kind": "realm"
+      "kind": "realm",
+      "retired": "v0.14"
     },
     {
       "id": "realm.solmere",
       "name": "Solmere",
-      "kind": "realm"
+      "kind": "realm",
+      "retired": "v0.14"
     },
     {
       "id": "realm.ilyrion",
       "name": "Ilyrion",
-      "kind": "realm"
+      "kind": "realm",
+      "retired": "v0.14"
     },
     {
       "id": "realm.duskreach",

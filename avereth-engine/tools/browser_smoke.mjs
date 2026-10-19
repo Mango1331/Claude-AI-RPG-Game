@@ -31,7 +31,7 @@ try {
 }
 
 const PAGE = `<!doctype html><html><body><div id="extensions_settings2"></div><div id="chat"></div><script type="module">
-const FIRST = 'Arrival.\\n\\\`Location: Public roadside verge outside Tidecross, Solmere\\\`';
+const FIRST = 'Arrival.\\n\\\`Location: Public roadside verge outside Ashbridge, Duskreach\\\`';
 const chat = [{ is_user: false, is_system: false, mes: FIRST, swipe_id: 0, swipes: [FIRST], swipe_info: [{ extra: {} }], extra: {} }];
 const handlers = {};
 window.__log = [];
@@ -95,10 +95,10 @@ await turn('I look around.', 'A boar. A hunter writes in his ledger.\\n<avereth>
 result.wordSwap = chat.at(-1).mes === 'A boar. A hunter writes in his register.';
 // Lore Bridge: realm and city as World Info scan text, never inserted (position NONE); engine lore until a lorebook is linked
 const bridge = window.__ext.avereth_lore_keys;
-result.loreBridge = bridge && bridge.value === 'Solmere\\nTidecross' && bridge.position === -1 && bridge.scan === true && /\\nLORE:\\n/.test(window.__prompt);
-ctx.characters[0].data.extensions.world = 'Avereth World Lore v0.13'; // linked as Character Lore: descriptive lore comes from it
+result.loreBridge = bridge && bridge.value === 'Duskreach\\nAshbridge' && bridge.position === -1 && bridge.scan === true && /\\nLORE:\\n/.test(window.__prompt);
+ctx.characters[0].data.extensions.world = 'Avereth World Lore v0.14'; // linked as Character Lore: descriptive lore comes from it
 await turn('I Power Shot the boar', 'The arrow flies.\\n<avereth>{}</avereth>');
-result.loreBridge = result.loreBridge && !/\\nLORE:\\n/.test(window.__prompt) && window.__ext.avereth_lore_keys.value === 'Solmere\\nTidecross';
+result.loreBridge = result.loreBridge && !/\\nLORE:\\n/.test(window.__prompt) && window.__ext.avereth_lore_keys.value === 'Duskreach\\nAshbridge';
 const last = chat.at(-1);
 // 4.3.0-c.6.4+: the stored panel (record) keeps its lines; the message shows them as one System card above the prose
 const card = (m) => /^<div class="avereth-system-panel avereth-system-combat">/.test(m.extra.display_text || '');

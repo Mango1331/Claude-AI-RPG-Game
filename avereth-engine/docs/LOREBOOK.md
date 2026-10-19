@@ -1,4 +1,4 @@
-# Welt-Lore als SillyTavern-Lorebook (v0.13)
+# Welt-Lore als SillyTavern-Lorebook (v0.14)
 
 **Ausgangspunkt:** ChatGPTs Architekturvorschlag v0.10b (66 World-Info-Einträge und ein Handoff mit 7 Architekturfragen). Er wurde als externe Review behandelt und gegen drei Quellen geprüft:
 - den Engine-Code;
@@ -19,7 +19,7 @@ Der Erzählervertrag und der Engine-Block gehen dem Lorebook vor. Eintrag „COR
 
 ## Was die Engine dafür tut
 
-**Keine doppelte Lore.** Ist an der Erzähler-Karte ein Lorebook verknüpft (SillyTavern speichert es in `data.extensions.world`), lässt die Engine ihre eigene LORE-Sektion weg. Einstellung „World lore“: `Auto` (Standard), `Card lorebook` oder `Engine`. Die Statuszeile zeigt die aktive Quelle. Die 19 Engine-Texte (Lore v0.8) bleiben als Rückfall für Setups ohne Lorebook erhalten.
+**Keine doppelte Lore.** Ist an der Erzähler-Karte ein Lorebook verknüpft (SillyTavern speichert es in `data.extensions.world`), lässt die Engine ihre eigene LORE-Sektion weg. Einstellung „World lore“: `Auto` (Standard), `Card lorebook` oder `Engine`. Die Statuszeile zeigt die aktive Quelle. Die 17 Engine-Texte (Lore v0.8, in v0.14 an die kleinere Welt angepasst) bleiben als Rückfall für Setups ohne Lorebook erhalten.
 
 **Lore-Bridge (0 Token).** Vor jeder Generierung setzt die Extension einen zweiten Extension-Prompt:
 - Inhalt: nur der Name des aktuellen Realms und der aktuellen Stadt, etwa `Duskreach` und `Ashbridge`;
@@ -116,9 +116,183 @@ Fünf Einträge bekommen je einen Satz; Schlüssel, Einstellungen und alles ande
 4. **„Causal generation rule“ (uid 25):** dasselbe am Absatz über die Mindestzahl je Rang, damit sie nicht als Auftrag zum Auffüllen gelesen wird.
 5. **„Promotion and placement“ (uid 65):** Nennt der Engine-Block Eignung oder Beförderung, gilt das; die Geschichte befördert nie von sich aus.
 
+## Änderungen v0.13 → v0.14 (kleinere Welt, Build 4.3.0-c.6.6.8)
+
+**Ziel:**
+- eine kompaktere Welt mit fünf Großmächten;
+- Spiel über Land statt Seefahrt;
+- Dungeons als persistente Orte der Welt;
+- weniger Lore-Overhead.
+
+Lorebook, `content/lore.json` und `content/campaign_start.json` ändern sich, keine Mechanik. Belegt durch den Replay-Vergleich unten.
+
+### Welt
+
+| | v0.13 | v0.14 |
+|---|---|---|
+| Großmächte | 6 menschliche Königreiche, 2 Monsterreiche | menschlich: **Valedorn Crown**, **Caelreth**, **Duskreach**; Monsterreiche: **Ashen Scale Dominion**, **Verdant Fang Court** |
+| Startstädte (`start_locations`) | Alderwatch, Glassmere, Redmarch, Tidecross, Lumenford, Ashbridge | **Alderwatch** (Valedorn), **Glassmere** (Caelreth), **Ashbridge** (Duskreach) |
+| Hauptstädte und Sitze | 6 Hauptstädte, 2 Sitze | Crownheart, Asterhall, Blackgate; Cinder Throne, Thornheart |
+| Meer | Solmere als Seehandelsmacht, Häfen in Generatoren | keine Seemacht; Küsten nur am fernen Rand, Seereisen nur wo eine Küste etabliert ist |
+
+**Entfernt:**
+- Veyrhold mit Redmarch und Ironward;
+- Solmere mit Tidecross und Goldharbor;
+- Ilyrion mit Lumenford und Sanctum Vale.
+
+Ihre Aufgaben sind verteilt:
+- **Veyrhold** (Militärmacht, Festungen):
+  - an Duskreach: Grenzland mit Garnisonen, Söldnerkompanien, Monsterjagd, Befestigungen und Gildenverträgen;
+  - an Valedorn: „old military institutions“.
+- **Solmere** (Handelshäuser, Söldnerverträge):
+  - an Valedorn: Handel, Handelshäuser, Karawanen und Flusshandel;
+  - an Duskreach: die Söldner;
+  - der Seehandel entfällt.
+- **Ilyrion** (Tempel, Heiler, Seelenrückkehr):
+  - an Valedorn: Avereths bekannteste Tempel und Heilerorden, ohne Theokratie;
+  - „Religion“ und „Death and resurrection“ verweisen jetzt auf Valedorns Tempel.
+
+Weitere Festlegungen:
+- **S-Ränge:** Die öffentlichen S-Ränge der entfernten Reiche gehen an keinen anderen Staat über (Valedorn 3, Caelreth 2, Duskreach keiner, Ashen Scale 3, Verdant Fang 2, wie bisher).
+- **Kleinere Mächte:** Der konstante Kern sagt jetzt: *Minor lordships, free towns and independent high-rank actors exist between them.*
+- **Nachbarschaft:**
+  - Duskreach grenzt im Osten an die Ashen Scale Dominion; Zwischenfälle bleiben unterhalb eines Krieges.
+  - Caelreth grenzt im Westen an den Verdant Fang Court.
+  - Valedorn liegt zentral und ist Duskreachs wichtigster Verbündeter.
+- **Entfernungen:** Nachbarorte liegen einen bis wenige Tage auseinander, ein Königreich zu durchqueren dauert Wochen, ein anderes Reich zu erreichen ist eine echte Reise.
+
+Weniger See an fünf Stellen:
+- „Geography and distance“: *a coast only where established*; Meere, Inseln und Länder jenseits von Avereth erst, wenn Alaric sie sucht.
+- „Material culture“: Reisen über Land, mit Flussboot oder Fähre.
+- „Settlement body“: Flussübergang statt Hafen.
+- „Travel and route body“: *overland by default*, Furten und Fähren.
+- Konstanter Kern: *coasts only at its far edges; play is overland*.
+
+### Dungeons
+
+„WORLD — Dungeons“ (bisher „Natural Dungeons“) ist neuer Kanon; `lore.dungeons` in `lore.json` sagt dasselbe:
+
+> Dungeons are physical, persistent places in Avereth, arising from concentrated mana, natural phenomena, ancient civilizations or other traceable causes. They can hold unusual environments, rare materials, Skill Stones and exceptional Monsters, and can be known, owned, disputed, exploited, sealed or partly mapped.
+>
+> Some have a recognizable, magically structured progression: successive levels with their own Monster populations, level guardians and bosses, danger rising with depth, valuable materials and special loot. There, Monsters and resources can return over time, access can be restricted or limited in numbers, other adventurers enter on their own, and rare return stones can carry a bearer back out. Such Dungeons are shared world places, never private instances for Alaric.
+>
+> Ordinary caves, catacombs, ruins and tunnels stay explorable places without levels, bosses or regeneration unless play establishes a real Dungeon there. Exact rules, timings, capacities and rewards stay open; the Engine owns them once it tracks a Dungeon, so invent no fixed timers, capacities or System notices.
+
+**„GENERATOR — Dungeon body“** hat diese Schichten:
+- ORIGIN;
+- ECOLOGY;
+- STRUCTURE: Ein strukturierter Dungeon hat aufeinanderfolgende Level; den Weg nach unten (Treppe, Schacht, Tor) findet man, indem man ihn erreicht, nicht durch ein Labyrinth.
+- VALUE;
+- CLAIMS: wer kartiert, erntet, bewacht, besitzt, lizenziert, begrenzt oder bestreitet, und wer sonst drin ist;
+- CHANGE: geräumte Level füllen sich wieder, Spuren einer anderen Gruppe, verschobene Population, geschlossener oder überfüllter Eingang.
+
+Die Schwierigkeit hängt an der Tiefe, nicht an Alarics Level. Eine gewöhnliche Höhle bleibt eine Höhle. Es gibt keine Engine-Mechanik dafür; Timer, Kapazitäten und Systemmeldungen erfindet der Erzähler nicht.
+
+### Konsolidierung: 67 → 50 Einträge
+
+| v0.14 | aus v0.13 (uid) |
+|---|---|
+| CORE — Avereth world identity (konstant) | 0 + 50 Great-power map (die Karte steht jetzt in drei Sätzen im Kern; ihre Schlüssel entfallen) |
+| WORLD — Geography and distance | 2 Geography generation scaffold + 3 Beyond the known continent |
+| POWER — Lifespan, social weight, high-rank deterrence | 13 + 24 |
+| POWER — Skills, learning, access | 21 + 22 |
+| QUEST — Generation: cause, body, friction | 25 Causal generation rule + 29 Complete quest body |
+| QUEST — Motive, strategy, steps | 26 Motivation + 27 Strategy + 28 Action grammar |
+| QUEST — Complications, branches, consequences | 32 + 33 |
+| QUEST — Private work and rewards | 35 Non-Guild work + 31 Rewards |
+| GUILD — Contract boards and Quest Ranks | 66 Contract boards + 30 Guild Quest Rank calibration |
+| GENERATOR — Rumors, knowledge, provenance | 45 + 49 |
+| entfernt | 53–55 (Realms Veyrhold, Solmere, Ilyrion), 61–63 (Seeds Redmarch, Tidecross, Lumenford) |
+
+Gekürzt:
+- „Adventurers' Guild and rank systems“ von 2.687 auf 2.178 Zeichen; alle Regeln (Verträge, Abgabe, Auszahlung, Gebühr, Ränge) bleiben.
+- Die zusammengelegten Quest-Einträge verlieren Doppelungen, nicht Regeln: Mindestzahl je Rang, versteckte Level, *canonical first*, QUEST FRICTION, Gilden-Auszahlung.
+
+Neu geschrieben:
+- Valedorn, Caelreth, Duskreach;
+- Ashen Scale (Nachbarschaft);
+- Religion, Death, Material culture, Settlement, Travel;
+- beide Dungeon-Einträge.
+
+Im Ranger-Eintrag stand „Alaric's future Ranger Evolutions“. Jetzt heißt es allgemein „A Ranger's Evolutions derive from that character's real Skills …“.
+
+Unverändert:
+- Klassenrahmen und Evolution sowie die fünf Klassen-Körper;
+- NPC, Monster-Ökologie, Arten, Monster-Gesellschaften, Organisation, Loot, Ereignisse, Konflikt;
+- Rang, Domänen, Geschichte, Kultur, Recht, Währung, Mana;
+- Beförderung, Verdant Fang Court und die drei Seeds.
+
+**Order:**
+- „Contract boards and Quest Ranks“ hat 286 und liegt damit vor „Generation“ (284). Bei vollem Budget am Brett bleiben Gilde und Brett-Regeln, und das Quest-Gerüst fällt (v0.13 schnitt umgekehrt das Brett).
+- Die Gilde hat unverändert 290.
+
+**Schlüssel:** 299 → 285.
+- Neu sind zwei spezifische: `Dungeon level`, `return stone`.
+- Entfernt:
+  - die Namen der entfernten Reiche und Städte;
+  - die Kartenschlüssel (`geopolitics`, `great powers`, `human kingdoms`, `monster realms`, `continental politics`, `full-divine politics`), da die Karte im konstanten Kern steht;
+  - `high-rank deterrence`, weil `high-rank` es abdeckt.
+- Schlüssel in mehreren Einträgen: 10 → 5. Gewollt sind die Stadtnamen in Realm und Seed sowie `quest board` und `job board` in Brett und Quest-Gerüst.
+
+### Größe und Last
+
+| | v0.13 | v0.14 |
+|---|---|---|
+| Einträge | 67 | 50 |
+| Text | 51.747 Zeichen (≈ 12.000 Token) | 45.056 Zeichen (≈ 10.500 Token), −13 % |
+| Datei | 135,8 kB | 109,5 kB |
+| konstant, jeder Zug | 1.625 Zeichen (≈ 378 Token) | 1.554 Zeichen (≈ 361 Token) |
+| `lore.json`-Rückfalltexte | 20 Texte, 13.742 Zeichen | 17 Texte, 13.485 Zeichen |
+
+Aktivierte World-Info-Token je Generierung, nachgerechnet mit `tools/wi_sim.mjs` (Tiefe 2, Budget 1.800, Bridge an) über die echten Chats:
+
+| Quelle | Züge | v0.13 | v0.14 | Budget-Schnitte |
+|---|---|---|---|---|
+| Live 18.10. Branch #3 (Ashbridge, Gilde, Kampf) | 54 | 536–1.689, Ø 946 | 543–1.709, Ø 915 | 15 → 9 |
+| Live 16.10. (Ashbridge, Handel) | 41 | 536–1.689, Ø 1.000 | 543–1.709, Ø 967 | 12 → 7 |
+| Lauf 18.10. 23:37 (Ashbridge → Wildnis → Dungeon) | 34 | 536–944, Ø 675 | 543–1.082, Ø 717 | 0 → 0 |
+| Testruns 2–4 (V3-Fixtures) | 34 | 604–1.794, Ø 846 | 363–1.712, Ø 686 | 2 → 0 |
+| **alle** | 163 | 536–1.794, Ø 882 | 363–1.712, Ø 839 | 29 → 16 |
+
+Nach Szene:
+
+| Szene | v0.13 | v0.14 | Einordnung |
+|---|---|---|---|
+| Gilde und Brett | Ø 1.282 | Ø 1.216 | leichter; Schnitte 27 → 16 |
+| Kampf | Ø 648 | Ø 655 | etwa gleich |
+| Stadt | Ø 602 | Ø 609 | etwa gleich |
+| Wildnis | Ø 708 | Ø 718 | etwa gleich |
+| Dungeon | Ø 675 | Ø 747 | schwerer: der neue Kanon (≈ +140 Token, wenn er feuert); Höchstwert 1.082, kein Schnitt |
+
+Die Grundlast ist +7 Token: Der Kern ist kleiner, Duskreach etwas länger. In den Fixtures von Testrun 2 und 4 sinkt die Last nur, weil Solmere/Tidecross und Ilyrion/Lumenford keine Einträge mehr haben. Für Spiel in Ashbridge ist das keine Ersparnis.
+
+**Replay-Vergleich** gegen c.6.6.7, mit `tools/c_flag_off_diff.mjs` und einer Nachprüfung je Schritt. In allen 122 Schritten der Live-Replays (`tests/v4/live_0930*.json`):
+- Zustand und Record sind identisch, außer den stillgelegten Orten im Ortsbaum neuer Kampagnen.
+- Die Engine-Blöcke unterscheiden sich nur in Zeilen der Rückfall-Lore.
+- Kampf, Würfe, XP, Quests und Gilde sind unverändert.
+
+### Kompatibilität
+
+- **`lore.json`:** Die entfernten Reiche und Städte bleiben mit ihrer ID im Index, markiert mit `"retired": "v0.14"`. Ihre Namen lösen weiter auf: Kampagnenstart, Namensauflösung in `src/delta.js`, HUD, Validierung. Ihre Rückfall-Lore ist entfernt.
+- **First Message der Karte:** Die Begrüßung v0.4 würfelt den Startort mit `{{pick::…}}` aus sechs Städten, drei davon stillgelegt. Ohne Änderung begänne etwa die Hälfte neuer Chats in der alten Welt. Die Zeile ersetzen (Einrichtung, Schritt 5); sonst bleibt die Begrüßung gleich.
+- **Neue Kampagnen:**
+  - Ohne Ortsangabe in der First Message wählt der Seed Alderwatch, Glassmere oder Ashbridge.
+  - Nennt die First Message eine stillgelegte Stadt („outside Redmarch, Veyrhold“), beginnt die Kampagne dort in der Welt vor v0.14: Der V4-Ortsbaum hat dann alle 8 Reiche und 12 Gildenhallen (`seedPlaces`, `src/v4/domain.js`). Jede andere Kampagne bekommt nur die fünf Großmächte (20 Orte mit 6 Hallen).
+  - Für die alte Welt hat das Lorebook keine Realm- und Stadteinträge mehr. Die Bridge sendet die alten Namen, sie treffen aber nichts; der Erzähler erfindet im Rahmen des Kerns. Die Testsuite und die ST-Smokes spielen weiter in Tidecross und Redmarch und prüfen damit genau diesen Pfad.
+- **Laufende V4-Kampagnen**, etwa Alaric in Ashbridge:
+  - Der Ortsbaum steht in ihrem `campaign.started`-Event und bleibt, wie er ist; Veyrhold & Co. sind dort weiter Orte ohne Lore.
+  - Ashbridge und Duskreach behalten Schlüssel und Seed. Der Duskreach-Text ist überarbeitet, ohne Widerspruch zum bisherigen Spiel.
+- **V3-Kanon:** Nennt der Erzähler eine stillgelegte Stadt als Reiseziel, löst `delta.js` sie weiter auf. Das Lorebook nennt diese Städte nicht mehr, der Fall ist also unwahrscheinlich.
+- **Alte Chats** können entfernte Reiche in ihrer Prosa enthalten. Es feuert dazu nichts: kein Widerspruch, aber auch keine Stütze.
+- **Keine Migration:** Bestehende Kampagnen werden nicht umgeschrieben.
+
+### Bekannt, nicht geändert: Prompt-Cache
+
+Die Einträge stehen auf Position „Before Char Defs“ (0), also vor der Kartenbeschreibung mit dem Erzählervertrag, und wechseln von Zug zu Zug. Der Prompt-Cache eines Anbieters bricht deshalb schon an dieser Stelle ab. v0.14 senkt nur die Last. Die Einträge hinter den Vertrag zu legen, wäre ein eigener Umbau mit Messung.
+
 ## Einrichtung in SillyTavern
 
-1. World Info → Import → `lorebook/Avereth_World_Lore_v0.13.json` (eine ältere Version vorher löschen).
+1. World Info → Import → `lorebook/Avereth_World_Lore_v0.14.json` (eine ältere Version vorher löschen).
 2. Charakterkarte → Globus-Symbol → das Lorebook als **Character Lore** verknüpfen, also nicht global aktivieren.
 3. World-Info-Einstellungen:
 
@@ -133,15 +307,23 @@ Fünf Einträge bekommen je einen Satz; Schlüssel, Einstellungen und alles ande
    | Alert on overflow | im Test an |
    | Vektor-Suche | aus |
 
-4. Avereth-Einstellung „World lore“ auf `Auto` lassen. Die Statuszeile zeigt dann `lore: World Info (Avereth World Lore v0.13)`.
+4. Avereth-Einstellung „World lore“ auf `Auto` lassen. Die Statuszeile zeigt dann `lore: World Info (Avereth World Lore v0.14)`.
+5. Ab v0.14 in der Begrüßung (First Message v0.4) die Ortszeile auf die drei Startstädte kürzen:
+
+   ```
+   `Location: Public roadside verge outside {{pick::Alderwatch, Valedorn Crown::Glassmere, Caelreth::Ashbridge, Duskreach}}`
+   ```
+
+   Laufende Chats behalten ihren Startort; die Änderung gilt für neue Chats.
 
 ## Nach Änderungen am Lorebook
 
-`node tools/lorebook_audit.mjs [budget] [depth]` zeigt je Zug, welche Einträge feuern (mit auslösendem Schlüssel) und was das Budget abschneidet. `tests/unit/lorebook.test.js` prüft vier Dinge:
+`node tools/lorebook_audit.mjs [budget] [depth]` zeigt je Zug, welche Einträge feuern (mit auslösendem Schlüssel) und was das Budget abschneidet. `tests/unit/lorebook.test.js` prüft fünf Dinge:
 - keine Rekursion;
 - Namen passend zur Bridge;
+- die Welt von v0.14: fünf Großmächte, drei Startstädte, stillgelegte Namen ohne Eintrag, Ortsbaum nach Startort, Dungeon-Kanon, höchstens 55 Einträge;
 - keine Allerweltsschlüssel;
-- Realm und Stadt in jedem echten Zug, keine Gildenregeln im Wald, Quest-Gerüste am Aushang.
+- Realm und Stadt in jedem echten Zug in Ashbridge, keine Gildenregeln im Wald, Quest-Gerüste am Aushang.
 
 ## Bewusst offen
 

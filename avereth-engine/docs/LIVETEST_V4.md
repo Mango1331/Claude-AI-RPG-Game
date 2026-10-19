@@ -79,7 +79,7 @@ Der Test prüft:
    - Laufende V3-Chats behalten ihre Karte mit Vertrag v3.
 4. **Preset:** `presets/Avereth Narrator V4.json` importieren (Chat Completion Presets → Import) und wählen. Es ist das Avereth-Narrator-Preset mit neuem Schluss: „only the story text. No <avereth> block …“.
    - Streaming ist im Preset aus. Einschalten ist erlaubt; V4 braucht keine Regex, weil die Antwort keinen Block enthält.
-5. **Lorebook:** `lorebook/Avereth_World_Lore_v0.13.json` importieren, v0.12 löschen und v0.13 an der Karte als Character Lore verknüpfen. Einstellungen wie bisher ([LOREBOOK.md](LOREBOOK.md)). v0.13 sagt dem Erzähler nicht mehr, einen Report zu schreiben.
+5. **Lorebook:** `lorebook/Avereth_World_Lore_v0.14.json` importieren, die ältere Version löschen und v0.14 an der Karte als Character Lore verknüpfen. Einstellungen wie bisher ([LOREBOOK.md](LOREBOOK.md)). Seit v0.14 (Build c.6.6.8) ist die Welt kleiner: in der Begrüßung die `{{pick::…}}`-Ortszeile auf Alderwatch, Glassmere und Ashbridge kürzen ([LOREBOOK.md, Einrichtung Schritt 5](LOREBOOK.md#einrichtung-in-sillytavern)). Redmarch, Tidecross und Lumenford starten weiterhin, aber in der Welt vor v0.14 ohne eigene Lore.
 6. **Engine-Einstellung** „Runtime for new campaigns“ = **V4** (Standard). Sie gilt für neue Chats; ein laufender Chat behält seine Runtime.
 7. **Neuen Chat** mit der V4-Karte starten. Die Statuszeile zeigt `runtime v4` und `narrator contract: current`, nach dem ersten Story-Zug `runtime v4 (LLM: custom endpoint)`.
    - Zeigt sie `narrator contract: OUTDATED` oder `not on the card`, trägt die Karte nicht den Vertrag dieses Builds. Dann erscheint auch einmal pro Chat eine Warnung. Anhalten, die Beschreibung ersetzen (Schritt 3) und einen neuen Chat beginnen.

@@ -1,6 +1,6 @@
 // Live SillyTavern smoke for prototype C (docs/PROTOTYPE_C.md): the planner path in a real SillyTavern (tested with
 // 1.19.0), set up as tools/st_live/run_v4.mjs sets up Runtime V4 (card with the V4 contract, preset "Avereth Narrator V4",
-// Lorebook v0.13, Chat Completion source "Custom" in front of a mock provider on port 5001, a dummy key in SillyTavern's
+// Lorebook v0.14, Chat Completion source "Custom" in front of a mock provider on port 5001, a dummy key in SillyTavern's
 // secrets file). The run switches the planner on in the extension's settings panel, as a player does, and plays a Mage
 // into a fight with three barkscorpions through the known failure classes: "I Fire Lance Barkscorpion B" (an alias A
 // books as a silent Basic Attack), a misspelled skill the planner left without a skill (the safety catch asks), a skill
@@ -28,7 +28,7 @@ const USER = path.join(ST, 'data/default-user');
 const HERE = process.env.AVERETH_ST_OUT || path.join(ST, 'avereth_live_smoke_c');
 fs.mkdirSync(HERE, { recursive: true });
 const CARD = 'Avereth V4';
-const WORLD = 'Avereth World Lore v0.13';
+const WORLD = 'Avereth World Lore v0.14';
 const PRESET = 'Avereth Narrator V4';
 const DUMMY_KEY = 'smoke-not-a-real-key';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -72,7 +72,7 @@ fs.writeFileSync(path.join(USER, `characters/${CARD}.png`), Buffer.concat([
     chunk('IDAT', zlib.deflateSync(Buffer.from([0, 60, 60, 90, 255]))), chunk('IEND', Buffer.alloc(0)),
 ]));
 fs.rmSync(path.join(USER, 'chats', CARD), { recursive: true, force: true }); // a fresh campaign chat
-fs.copyFileSync(path.join(ENGINE, 'lorebook/Avereth_World_Lore_v0.13.json'), path.join(USER, 'worlds', `${WORLD}.json`));
+fs.copyFileSync(path.join(ENGINE, 'lorebook/Avereth_World_Lore_v0.14.json'), path.join(USER, 'worlds', `${WORLD}.json`));
 fs.copyFileSync(path.join(ENGINE, `presets/${PRESET}.json`), path.join(USER, `OpenAI Settings/${PRESET}.json`));
 const ext = path.join(USER, 'extensions/avereth-engine');
 fs.rmSync(ext, { recursive: true, force: true });

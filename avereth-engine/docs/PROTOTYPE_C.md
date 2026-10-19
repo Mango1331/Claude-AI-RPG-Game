@@ -251,10 +251,10 @@ Rev. 3 bleibt die Arbeitshypothese. Der Prototyp weicht bewusst ab, wo die volle
 
 ### 9.1 Einrichtung
 
-1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt-c666` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.6.7`.
+1. **Extension:** den Ordner `avereth-engine/` aus dem Branch `claude/c-planner-prototype-2026-10-02-gpt-c666` nach `SillyTavern/data/<user>/extensions/avereth-engine/` kopieren; die alte Kopie vorher löschen. SillyTavern neu laden. Die Statuszeile zeigt `Avereth Engine 4.3.0-c.6.6.8`.
 2. **Verbindung, Karte, Preset, Lorebook:** wie in [LIVETEST_V4.md §2](LIVETEST_V4.md#2-einrichtung-in-sillytavern).
    - Quelle **Custom (OpenAI-compatible)**: nur dort läuft der Planner mit Temperatur 0,1 wie gemessen.
-   - Vertrag v4 (Revision 4.3.0-c.6.6.6, unter Build c.6.6.7 unverändert: die Kartenbeschreibung vollständig durch `content/narrator/Avereth_Narrator_Contract_v4.txt` ersetzen; SillyTavern liest die Beschreibung bei jeder Antwort neu, ein laufender Chat spielt also ab der nächsten Antwort mit ihr, die Statuszeile zeigt `narrator contract: current`), Preset „Avereth Narrator V4“, Lorebook v0.13.
+   - Vertrag v4 (Revision 4.3.0-c.6.6.6, unter Build c.6.6.8 unverändert: die Kartenbeschreibung vollständig durch `content/narrator/Avereth_Narrator_Contract_v4.txt` ersetzen; SillyTavern liest die Beschreibung bei jeder Antwort neu, ein laufender Chat spielt also ab der nächsten Antwort mit ihr, die Statuszeile zeigt `narrator contract: current`), Preset „Avereth Narrator V4“, Lorebook v0.14 (seit c.6.6.8; die Ortszeile der Begrüßung auf Alderwatch, Glassmere und Ashbridge kürzen, [LOREBOOK.md](LOREBOOK.md#einrichtung-in-sillytavern)).
 3. **Schalter:** Engine-Panel → **„Prototype C: semantic planner“** anhaken.
    - Er gilt für jede V4-Kampagne, auch eine laufende, ab der nächsten Nachricht.
    - Ausschalten bringt A zurück.
@@ -905,3 +905,39 @@ Nur Pfad C (`ctx.c`). Pfad A ist unverändert. Balancing, Handel, Auftritte, Pre
 - `pending_intents: attack` allein bindet nicht. Ein NPC, der nur „gleich angreifen will“, wird vom First Strike überholt.
 - Es gibt weiterhin keine Angriffe zwischen NPCs. Verbündete und Neutrale greifen keine Monster an.
 - Die Raumkontinuität der Erzählung wird nur über den Kontext geführt. Die Engine prüft die Prosa nicht auf Positionsfehler.
+
+### Nachtrag 4.3.0-c.6.6.8 (Lorebook v0.14: kleinere Welt, Dungeon-Kanon)
+
+Nur Welt-Lore und Content. Keine Mechanik ändert sich, Pfad A und C sind unverändert, und die Vertragsrevision bleibt `4.3.0-c.6.6.6`. Einzelheiten stehen in [LOREBOOK.md, „Änderungen v0.13 → v0.14“](LOREBOOK.md#änderungen-v013--v014-kleinere-welt-build-430-c668).
+
+**Welt:**
+- Fünf Großmächte: Valedorn Crown, Caelreth, Duskreach, Ashen Scale Dominion, Verdant Fang Court.
+- Startstädte: Alderwatch, Glassmere, Ashbridge. Veyrhold, Solmere und Ilyrion entfallen samt ihren Städten.
+- Spiel über Land.
+- Dungeons sind persistente, geteilte Orte der Welt. Gewöhnliche Höhlen bleiben Höhlen.
+
+**Lorebook:** 67 → 50 Einträge, 51.747 → 45.056 Zeichen. Im Schnitt 882 → 839 aktivierte Token je Generierung, Budget-Schnitte 29 → 16.
+
+**Content:**
+- `lore.json`: Die entfernten Reiche und Städte tragen `"retired": "v0.14"`. Ihre IDs und Namen lösen weiter auf, ihre Rückfall-Lore ist entfernt.
+- `campaign_start.json`: drei Startorte.
+- `src/v4/domain.js` `seedPlaces`: Stillgelegte Orte kommen nur in den Ortsbaum einer Kampagne, die in einer stillgelegten Stadt beginnt (alte Begrüßung). Laufende Kampagnen behalten ihren Ortsbaum aus dem Event-Log.
+
+**Tests:**
+- `tests/unit/lorebook.test.js` mit 5 Tests, darunter neu die Welt von v0.14.
+- `context.test.js` startet den Lore-Test in Ashbridge, weil Solmere keine Lore mehr hat.
+- Gesamt: 717/717.
+- Planner aus, gegen c.6.6.7 (122 Live-Schritte): Zustand und Records identisch bis auf die stillgelegten Orte. Engine-Blöcke unterscheiden sich nur in Zeilen der Rückfall-Lore.
+- Smokes: Browser (V3-Seite startet jetzt in Ashbridge), SillyTavern V3, V4 und C OK.
+- Build: `4.3.0-c.6.6.8`.
+
+**SillyTavern:**
+- Den Extension-Ordner ersetzen.
+- `lorebook/Avereth_World_Lore_v0.14.json` importieren, v0.13 löschen und v0.14 als Character Lore verknüpfen.
+- In der Begrüßung die `{{pick::…}}`-Ortszeile auf die drei Startstädte kürzen ([LOREBOOK.md, Einrichtung Schritt 5](LOREBOOK.md#einrichtung-in-sillytavern)).
+- Die Karte (Vertrag) und das Preset bleiben.
+
+**Grenzen von c.6.6.8:**
+- Eine Kampagne, die in Redmarch, Tidecross oder Lumenford beginnt, spielt in der alten Welt ohne Realm- und Stadt-Lore.
+- Eine laufende Kampagne kennt Veyrhold & Co. weiter als Orte, ohne Lore.
+- Die World-Info-Einträge stehen weiter vor dem Vertrag (Position 0). Das Prompt-Caching bricht dort ab; ein Umbau ist nicht Teil dieses Patches.

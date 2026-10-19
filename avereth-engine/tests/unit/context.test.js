@@ -21,10 +21,11 @@ test('section order puts the binding RESOLVED block and the report format last; 
 });
 
 test('lore is selected by key phrases and the current realm, not by generic words', () => {
-    const g = new Game(content).ranger();
+    // Lorebook v0.14: Solmere (the default start of these tests) is retired and has no lore; Duskreach is a current realm
+    const g = new Game(content, { firstMessage: 'Arrival.\n`Location: Public roadside verge outside Ashbridge, Duskreach`' }).ranger();
     g.input('*I get my bow ready and walk into the forest; my Power Shot feels strong*');
     const c1 = g.context();
-    assert.match(c1.text, /SOLMERE/, 'current realm');
+    assert.match(c1.text, /DUSKREACH/, 'current realm');
     assert.doesNotMatch(c1.text, /VERDANT FANG COURT/, '"forest" alone must not pull a distant forest realm');
     assert.doesNotMatch(c1.text, /EVOLUTION \/ LIFESPAN/, '"power" alone must not pull lifespan lore');
     g.reply({}, 'A notice from the Adventurers\' Guild hangs on the gate.');

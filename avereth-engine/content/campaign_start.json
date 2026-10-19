@@ -1,5 +1,5 @@
 {
-  "_source": "First Message v0.4 + Content #0/#11 + System #12 (New Campaign and Character Creation). The engine creates the initial state from this file; the start city is read from the First Message line 'Location: Public roadside verge outside <City>, <Realm>' (it is chosen by the {{pick}} macro).",
+  "_source": "First Message v0.4 + Content #0/#11 + System #12 (New Campaign and Character Creation). The engine creates the initial state from this file; the start city is read from the First Message line 'Location: Public roadside verge outside <City>, <Realm>' (it is chosen by the {{pick}} macro). Lorebook v0.14: the standard start cities are Alderwatch, Glassmere and Ashbridge; a First Message naming a city retired in v0.14 (content/lore.json \"retired\") still starts there, in the world before v0.14.",
   "pc": {
     "id": "pc",
     "name": "Alaric",
@@ -19,7 +19,7 @@
     "descriptors": ["Alaric", "stranger", "traveler"],
     "public_facts": ["Human, about eighteen", "wears simple traveler's clothes"]
   },
-  "start_locations": ["loc.alderwatch", "loc.glassmere", "loc.redmarch", "loc.tidecross", "loc.lumenford", "loc.ashbridge"],
+  "start_locations": ["loc.alderwatch", "loc.glassmere", "loc.ashbridge"],
   "start_scene": {
     "place": "public roadside verge outside the city",
     "clock_minutes": 540,

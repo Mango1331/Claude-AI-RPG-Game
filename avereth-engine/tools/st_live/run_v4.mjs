@@ -1,5 +1,5 @@
 // Live SillyTavern smoke for Runtime V4 (optional, docs/LIVETEST_V4.md): a real SillyTavern (tested with 1.19.0) with this
-// extension, a narrator card whose description is the V4 contract, the preset "Avereth Narrator V4", Lorebook v0.13 as
+// extension, a narrator card whose description is the V4 contract, the preset "Avereth Narrator V4", Lorebook v0.14 as
 // Character Lore, and a mock provider (OpenAI-compatible, port 5001) behind the Chat Completion source "Custom". The mock
 // answers the narrator with the recorded prose of the V12 run and the engine's three structured calls (interpreter,
 // extractor, Board generator) with the gold of P0/S3. The run plays the greeting (the campaign must start in V4), the
@@ -33,7 +33,7 @@ const USER = path.join(ST, 'data/default-user');
 const HERE = process.env.AVERETH_ST_OUT || path.join(ST, 'avereth_live_smoke_v4');
 fs.mkdirSync(HERE, { recursive: true });
 const CARD = 'Avereth V4';
-const WORLD = 'Avereth World Lore v0.13';
+const WORLD = 'Avereth World Lore v0.14';
 const PRESET = 'Avereth Narrator V4';
 const DUMMY_KEY = 'smoke-not-a-real-key';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -74,7 +74,7 @@ fs.writeFileSync(path.join(USER, `characters/${CARD}.png`), Buffer.concat([
     chunk('IDAT', zlib.deflateSync(Buffer.from([0, 60, 60, 90, 255]))), chunk('IEND', Buffer.alloc(0)),
 ]));
 fs.rmSync(path.join(USER, 'chats', CARD), { recursive: true, force: true }); // a fresh campaign chat
-fs.copyFileSync(path.join(ENGINE, 'lorebook/Avereth_World_Lore_v0.13.json'), path.join(USER, 'worlds', `${WORLD}.json`));
+fs.copyFileSync(path.join(ENGINE, 'lorebook/Avereth_World_Lore_v0.14.json'), path.join(USER, 'worlds', `${WORLD}.json`));
 fs.copyFileSync(path.join(ENGINE, `presets/${PRESET}.json`), path.join(USER, `OpenAI Settings/${PRESET}.json`));
 const ext = path.join(USER, 'extensions/avereth-engine');
 fs.rmSync(ext, { recursive: true, force: true });

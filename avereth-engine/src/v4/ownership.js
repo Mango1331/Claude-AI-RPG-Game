@@ -31,6 +31,7 @@ export const STATE_KINDS = {
     relations: { owner: 'relations', engine: false, about: 'how someone regards Alaric' },
     memory: { owner: 'memory', engine: false, about: 'moments people remember' },
     threads: { owner: 'threads', engine: false, about: 'story threads' },
+    intents: { owner: 'player', engine: true, about: "Alaric's goals: only his own commands set them, an arrival reaches them" },
     time: { owner: 'clock', engine: false, about: 'story time' },
     audit: { owner: 'audit', engine: false, about: 'records of the turn (no game state)' },
 };
@@ -67,7 +68,8 @@ export function eventKind(e, s = null) {
         case 'memory.recorded': return 'memory';
         case 'thread.set': return 'threads';
         case 'time.advanced': return 'time';
-        case 'place.created': return 'places';
+        case 'place.created': case 'place.updated': return 'places';
+        case 'intent.set': return 'intents';
         case 'object.created': return pcHolder(d.object?.holder) ? 'pc.inventory' : 'objects';
         case 'object.moved': return pcHolder(d.to) || heldByPc(d.id) ? 'pc.inventory' : 'objects';
         case 'object.consumed': case 'object.added': return heldByPc(d.id) || !s ? 'pc.inventory' : 'objects';
@@ -159,6 +161,7 @@ export function stateRegions(s) {
         threads: j(s.threads),
         time: j(s.clock),
         places: j(s.places),
+        intents: j(s.intents),
         objects: j(worldObjects),
     };
 }
@@ -184,7 +187,8 @@ export const DELTA_WRITES = {
     // own record of it: the fact "completed_contract" and what its witnesses remember; the trophies it consumes take
     // their quest ties with them); Prototype C (4.3.0-c.5): also the contract he takes and the board he reads at that
     // hall, which take a listing off its board and show the board
-    arrive: { writes: ['pc.location', 'scene', 'entities', 'places', 'quests', 'trade', 'knowledge', 'facts', 'memory', 'objects'], gates: { 'quest.status': 'conditional', 'pc.coin': 'conditional', 'pc.progress': 'conditional', 'pc.inventory': 'conditional', 'guild.standing': 'conditional', 'guild.board': 'conditional' } },
+    // Patch 2: and reaches a goal of his there (player.goal: the place his own goal leads to)
+    arrive: { writes: ['pc.location', 'scene', 'entities', 'places', 'quests', 'trade', 'knowledge', 'facts', 'memory', 'objects'], gates: { intents: 'player.goal', 'quest.status': 'conditional', 'pc.coin': 'conditional', 'pc.progress': 'conditional', 'pc.inventory': 'conditional', 'guild.standing': 'conditional', 'guild.board': 'conditional' } },
     'person.new': { writes: ['entities', 'scene', 'facts', 'places', 'knowledge'] },
     'person.named': { writes: ['entities'] },
     'creature.new': { writes: ['entities', 'scene', 'facts'], gates: { combat: 'envelope.fight' } },
@@ -200,6 +204,8 @@ export const DELTA_WRITES = {
     attitude: { writes: ['relations'] },
     memory: { writes: ['memory'] },
     thread: { writes: ['threads'] },
+    // Patch 2: a place known by report (src/v4/known.js): the place tree only, never a fact
+    'place.reported': { writes: ['places'] },
     recover: { writes: ['entities'], gates: { 'pc.vitals': 'player.rest' } },
     'object.new': { writes: ['objects'], gates: { 'pc.inventory': 'player.take' } },
     // a thing handed to him (a gift), or taken from where it lies by his own take

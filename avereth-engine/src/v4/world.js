@@ -24,6 +24,8 @@ import {
 } from './domain.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
+import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
+import { reachedEvents } from './intents.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
@@ -91,7 +93,7 @@ export function firewallContext(s, content) {
 
 // ------------------------------------------------------------------------------------------------ places
 /** Resolve a place ref; {new: {name, kind, parent}} creates it (the same name under the same parent is the same place). */
-function resolvePlace(s, ref, emit, depth = 0, { c = false } = {}) {
+function resolvePlace(s, ref, emit, depth = 0, { c = false, reported = false } = {}) {
     if (typeof ref === 'string') return s.places[ref] ? { id: ref } : { error: `unknown place ${ref}` };
     const n = ref?.new;
     if (!n || typeof n !== 'object' || !n.name) return { error: 'a place needs an id or {new: {name, kind, parent}}' };
@@ -102,7 +104,7 @@ function resolvePlace(s, ref, emit, depth = 0, { c = false } = {}) {
         const hall = town && `${town}.guild_hall`;
         return hall && s.places[hall] ? { id: hall } : { error: 'Guild halls are engine nodes; there is no branch in this settlement' };
     }
-    const parent = n.parent === null || n.parent === undefined ? { id: s.scene.at } : resolvePlace(s, n.parent, emit, depth + 1, { c });
+    const parent = n.parent === null || n.parent === undefined ? { id: s.scene.at } : resolvePlace(s, n.parent, emit, depth + 1, { c, reported });
     if (parent.error) return parent;
     let pid = parent.id;
     // a kind that cannot lie in its parent climbs to the first ancestor where it can (a hamlet named inside a site of
@@ -112,14 +114,18 @@ function resolvePlace(s, ref, emit, depth = 0, { c = false } = {}) {
     const parents = [...(PLACE_PARENTS[n.kind] || []), ...(c && n.kind === 'interior' ? ['wilderness'] : []), ...(c && n.kind === 'site' ? ['realm'] : [])];
     for (let i = 0; i < 6 && pid && !parents.includes(s.places[pid]?.kind); i++) pid = s.places[pid]?.parent;
     if (!pid) return { error: `a ${n.kind} cannot lie in ${placeName(s, parent.id)}` };
-    const same = Object.values(s.places).find((p) => p.parent === pid && normText(p.name) === normText(n.name));
+    const same = Object.values(s.places).find((p) => p.parent === pid && normText(p.name) === normText(n.name))
+        // Patch 2: a place known by report is that place wherever the new mention puts it in this realm
+        || knownByName(s, n.name, p0(s, pid), { reportedOnly: !reported });
     if (same) return { id: same.id };
     let id = `${pid.startsWith('loc.') ? pid : 'loc'}.${slug(n.name) || 'place'}`;
     for (let k = 2; s.places[id]; k++) id = `${pid.startsWith('loc.') ? pid : 'loc'}.${slug(n.name)}_${k}`;
     const p = s.places[pid];
-    emit({ t: 'place.created', d: { place: { id, name: String(n.name).slice(0, 80), kind: n.kind, parent: pid, realm: p?.realm ?? null, tags: [], by: 'reply', created: { turn: s.turn, minute: s.clock.minute } } } });
+    emit({ t: 'place.created', d: { place: { id, name: String(n.name).slice(0, 80), kind: n.kind, parent: pid, realm: p?.realm ?? null, tags: [], by: 'reply', created: { turn: s.turn, minute: s.clock.minute }, ...(reported ? { known: 'reported', reports: [] } : {}) } } });
     return { id };
 }
+
+const p0 = (s, pid) => s.places[pid]?.realm ?? null;
 
 /** The content or V4 settlement a node belongs to: the scene's "location" for the V3 views (HUD, lore, facts). */
 function locationOf(s, id) {
@@ -331,7 +337,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             const e = expected[k];
             if (!e || e.arrived !== true) continue;
             const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
-            const at = e.at ? place(e.at) : go?.to ? { id: go.to } : { error: 'no place' };
+            const at = place(reportedTarget(s, auth, expected, e.at, k) || e.at || go?.to || null);
             if (!at.error && at.id !== s.scene.at) {
                 const party = companions(e.with, { seq: Number(k), type: 'expected' });
                 perceiveAll(s, emit, seeing());
@@ -395,7 +401,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             }
             case 'arrive': {
                 if (s.encounter) { reject(d, 'combat', 'no travel while combat is ACTIVE'); refusedArrival(d); break; }
-                const ref = onward(d.at);
+                const ref = reportedTarget(s, auth, expected, d.at) || onward(d.at);
                 const away = leavesHere(ref);
                 const at = place(ref);
                 if (at.error) { reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
@@ -533,8 +539,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 break;
             }
             case 'thread':
-                v3({ threads: [{ text: d.text, kind: d.kind, status: d.status }] }, d);
+                // Patch 2: an id from the catalog's THREADS updates or resolves that thread (src/threads.js)
+                v3({ threads: [{ id: d.id || null, text: d.text, kind: d.kind, status: d.status, resolution: d.resolution || null }] }, d);
                 break;
+            case 'place.reported': {
+                // Patch 2: a place someone tells of, a map shows or a rumour names: a known place by report, not a
+                // place in the world as the story has shown it (src/v4/known.js)
+                const r = reportPlace(s, d, emit, { by: d.by ? idOf(d.by) || null : null, place: (ref) => resolvePlace(s, ref, emit, 0, { c: cPath, reported: true }) });
+                if (r.error) reject(d, 'place', r.error);
+                break;
+            }
             case 'recover': {
                 const who = idOf(d.who) || 'pc';
                 const serviced = (s.services || []).some((x) => x.turn === s.turn && ['lodging', 'healing', 'meal'].includes(x.service));
@@ -757,7 +771,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (type === 'go' && e.arrived === true && !arrived && !s.encounter) {
             // the arrival the story showed without an arrive delta: where the answer says, else where he set off to
             const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
-            const at = e.at ? place(e.at) : go?.to ? { id: go.to } : { error: 'no place' };
+            const at = place(reportedTarget(s, auth, expected, e.at, k) || e.at || go?.to || null);
             if (!at.error && at.id !== s.scene.at) {
                 const party = companions(e.with, { seq: Number(k), type: 'expected' });
                 perceiveAll(s, emit, seeing());
@@ -943,6 +957,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             if (n.relevant || n.threat) emit({ t: 'scene.tactical', d: { id: n.id, relevant: n.relevant, threat: n.threat } });
         }
         arrived = id;
+        // Patch 2: a place known only by report is seen now (it, and a reported place it lies in); a goal of his that
+        // this place reaches is done (src/v4/intents.js). Nothing else of the report becomes true by it
+        for (const e of visitEvents(s, id)) emit(e);
+        const reached = reachedEvents(s, id);
+        if (reached.length) grant('player.goal');
+        for (const e of reached) emit(e);
         // he set off on a quest's journey (a GO while its people were with him) and has left the settlement: it has begun
         const trip = auth.journey && s.quests[auth.journey];
         if (trip?.status === 'active' && !trip.journey && settlementOf(s, from) !== settlementOf(s, id)) emit({ t: 'quest.journey', d: { id: trip.id, at: from } });

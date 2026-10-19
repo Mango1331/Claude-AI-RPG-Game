@@ -989,3 +989,88 @@ Nur die Auswahl für den Abschnitt RELEVANT (`src/retrieval.js`, `src/context.js
 - Offene Threads bleiben offen, bis sie gelöst werden. Überholte Hinweise konkurrieren weiter mit; ihre Lebensdauer regelt erst ein Thread-Lifecycle.
 - Fast gleiche Zeilen (zwei Fakten zur selben Sache mit anderem Wortlaut) werden nicht zusammengefasst.
 - Lexikalisch heißt wörtlich: „cave“ findet „Dungeon“ nicht. Es gibt keine Embeddings; `rank()` hat dafür einen `semantic`-Haken.
+
+### Nachtrag 4.3.0-c.6.6.10 (Patch 2: Ziele, Berichtsorte, Thread-Lebenszyklus, Live-Lauf 18.10.2026)
+
+Leitsatz: Die Engine merkt sich Alarics Absichten und relevante Weltinformationen zuverlässig. Sie leitet daraus keine Entscheidungen für ihn ab und bewegt ihn nicht automatisch zu seinem Ziel. Kampf, XP, Dungeon-Mechanik, Item-Typen und Reise bleiben unverändert. Es gibt keinen neuen LLM-Aufruf: Planner, Interpreter und Extraktor sind dieselben.
+
+**Befund:**
+- Alaric brach am ersten Tag zum Dungeon von der Karte des Kartenhändlers auf. Nach Jagd, Lager, zwei Kämpfen und einem Steinbruch-Tunnel fand „I continue my journey towards the Dungeon location from the map“ nichts, was sich an das Ziel erinnerte.
+- Der Dungeon war Fakt, Erinnerung und Thread, aber kein Ort. Das Tal, das er fand, wurde ein neuer Ort neben ihm.
+- Zehn Threads waren offen, keiner wurde je geschlossen. Das HUD zeigte die letzten fünf.
+
+**Ziele** (`src/v4/intents.js`, Zustand `intents`, Event `intent.set`):
+- **Herkunft:** Nur Spielerbefehle schreiben Ziele. Der Extraktor hat kein Delta dafür, der Erzähler kann also kein Ziel setzen.
+  - `go` zu einem Berichtsort oder in eine andere Siedlung macht das Ziel „reach <Ort>“.
+  - `intent.set` gilt nur für eine feste Entscheidung („I decide to make for the old Dungeon tomorrow“). Neugier, Frage, Vielleicht oder Wunsch sind kein Ziel. Ein unbekannter Name bleibt Wortlaut: Ein Ziel erzeugt keinen Ort.
+  - `intent.drop` gibt ein Ziel auf oder erklärt es für erreicht.
+  - `journey.continue` frischt das Ziel auf.
+- **Status:** `active`, `paused`, `done`, `dropped`. Stabile IDs `intent.<n>`, dazu `since`, `updated`, `quote`, `why`.
+  - Kampf, Rast, Schlaf, Umwege und Ortswechsel ändern nichts.
+  - Ein neues Ziel mit Ort pausiert das bisherige; aufgegeben ist es erst auf seine Aussage hin.
+  - Bei Ankunft am Zielort oder darin wird das Ziel `done`, gesetzt durch das Gate `player.goal` im Ankunftsfall.
+- **„I continue“** (`continueOptions`): Optionen sind aktive Ziele mit Ort, an dem er noch nicht ist, und die `journeyReady()`-Reise eines Auftrags.
+  - Eine nur aus Notizen gelesene Reise weicht einem eigenen Ziel.
+  - Eine Eskorte, eine Lieferung unterwegs oder eine Reise mit Begleiter bleibt eine eigene Option.
+  - Ist das Ziel der Zielort dieser Reise (er brach zur Stadt der Lieferung auf), ist es dieselbe Reise. Der Auftrag behält Begleiter und Handhabung.
+  - Bei genau einer Option geht es weiter; bei mehreren fragt die Engine (`CLARIFY — continue which: …`) und bucht nichts.
+  - „Weiter zum Ziel“ ist ein GO mit Reise-Zeitdeckel. Die Erzählung entscheidet, wie weit er kommt; die Engine bewegt ihn nicht.
+- **Planner und Erzähler:**
+  - Der Katalog hat die Zeile `GOALS (Alaric's own; never a reason to act for him)`.
+  - `JOURNEY READY` nennt das Ziel bzw. bei mehreren Optionen alle, mit dem Hinweis, dass ein „I continue“ ohne Namen nachfragt.
+  - Der Engine-Block hat den Abschnitt `ALARIC'S GOALS (his own decisions: remember them; never act, decide or move him toward them for him)` mit höchstens 3 Zeilen.
+
+**Berichtsorte** (`src/v4/known.js`, `places[id].known`/`reports`, Event `place.updated`, Delta `place.reported`):
+- **Anlegen:** Was jemand erzählt, eine Karte zeigt oder ein Gerücht nennt, bekommt eine Orts-ID mit `known: reported` und einem Bericht `{by, how: told|map|rumor|written, where, turn, minute}`.
+  - Die Angaben des Berichts bleiben Angaben des Berichts, sie werden keine Weltfakten.
+  - Ein zweiter Bericht unter gleichem Namen im selben Reich ist derselbe Ort und ergänzt seine Berichte.
+- **Im Katalog:** „<Name> — known only by report (on a map, <Quelle>: <Lage>); not seen yet“. Höchstens 4 Berichtsorte stehen zusätzlich in PLACES.
+- **Ankunft:** Führte das GO dieses Zuges zum Berichtsort und meldet der Extraktor die Ankunft unter neuen Worten (`{new: "Dungeon valley with the dark cleft"}`) oder ohne Ort, ist es dieselbe ID (`reportedTarget`). Der Ort und ein Berichtsort, in dem er liegt, werden `visited`.
+- **Widerlegt:** `place.reported` mit `false: true` setzt `known: false`, aber nur für einen Ort, den er nicht gesehen hat. Fakten bleiben unberührt, und „I continue“ führt nicht mehr dorthin.
+- **Unverändert:** Orte aus Lore oder Erzählung (ohne `known`). Spieler und Erzähler legen weiter neue Orte an.
+
+**Threads** (`src/threads.js`, V3 `src/delta.js` und V4 `world.js` gemeinsam):
+- **IDs:** Die Engine vergibt `thread.t<Zug>.<n>`, der Wortlaut ist nie die Identität. Jeder Thread kennt seinen Ort (`at`).
+- **Aktualisieren:** Der Extraktor sieht `THREADS (open; update or resolve by id)` mit höchstens 6 aktuellen Threads, Text auf 80 Zeichen gekürzt.
+  - Er aktualisiert oder schließt per ID. Eine unbekannte ID wird abgelehnt.
+  - Ohne ID trifft gleicher Wortlaut oder eine Umformulierung (≥ 60 % Wortüberschneidung, genau ein Kandidat) denselben Thread.
+  - Abschließen geht nur für einen bekannten Thread, mit Beleg in der Antwort. Der Abschluss behält den Wortlaut und ergänzt `resolution`.
+- **Kurzlebige Hinweise:** `sign` (neu) und `threat` sind nicht mehr aktuell, wenn er anderswo ist und 6 h vergangen sind, oder nach 3 Tagen.
+  - Das ist eine Sicht, kein Event: Nichts wird geschlossen, und am Ort sind sie wieder aktuell.
+  - Rätsel, Versprechen, Schulden, Gerüchte und Fristen bleiben, bis die Geschichte sie auflöst.
+  - Ein Ortswechsel allein beendet nichts.
+- **Retrieval:** Aktuelle Threads haben Wichtigkeit 0,7 und ihren Ort. Erledigte und verblasste Threads haben 0,2 und den Vermerk „Resolved thread … — <resolution>“ bzw. „Earlier sign … no longer current“. Keine globale Thread-Liste pro Prompt.
+- **Vertrag:** `deltas.json` `delta-0.6` (`thread` mit `id`, `resolution`, `kind: sign`; neues Delta `place.reported`), `commands.json` `cmd-0.9` (`intent.set`, `intent.drop`).
+
+**HUD und Journal:**
+- **HUD:** zeigt Goals (ohne IDs), Fristen, „Here“ (bis 3 Threads dieses Ortes), „Leads“ (bis 3 dauerhafte von anderswo) und „Journal: N more“. Die letzten 5 globalen Threads entfallen; Kampf- und Questanzeige bleiben.
+- **`#journal`:** Ziele nach Status, Orte nur aus Berichten, offene Threads ([here]), nicht mehr aktuelle und erledigte Threads.
+- **Kein NPC-Wissen:** Was ein NPC weiß oder glaubt, erscheint weder im HUD noch im Journal.
+
+**Tests:** `tests/v4/patch2.test.js`, 11 Tests auf Produktinhalt (Ashbridge, Planner an):
+- 1–2 Karte und Berichtsort;
+- 3–5 Ziel durch Schlaf, Höhle, Kampf und Ortswechsel, „I continue my journey“;
+- 6 Zielwechsel, Aufgeben, Wortziel und zwei Ziele mit Rückfrage;
+- 7 Ankunft unter anderem Namen;
+- 8 Thread-Lebenszyklus;
+- 9 widerlegter Bericht und Gerücht;
+- 10 Lieferung plus Ziel;
+- 11 HUD und Journal;
+- 12 Kosten;
+- V3-Pfad.
+
+**Ergebnisse:**
+- Gesamt: 737/737.
+- Kosten im Szenario: Ziel-Abschnitt 59 Token, THREADS-Zeile 84, GOALS plus JOURNEY READY 82. Live-Lauf 18.10. (#63, alte Slug-IDs): THREADS-Zeile 217 Token.
+- Planner aus, gegen c.6.6.9 (122 Live-Schritte, 18 Kampfeingaben): Nach Ausblenden der neuen Felder (`intents`, Thread-`id`/`at`, `known`) sind die Zustände identisch.
+  - Unterschiede gibt es nur in der RELEVANT-Reihenfolge (aktuelle Threads mit Ort), bei den Schemafeldern `id`/`resolution: null` in Extraktor-Deltas und in den HUD-Zeilen.
+- Smokes: Browser, ST Default, ST V4 und ST C sind grün.
+- Build: `4.3.0-c.6.6.10`.
+
+**SillyTavern:** Nur den Extension-Ordner ersetzen und einen neuen Lauf beginnen.
+
+**Grenzen von c.6.6.10:**
+- **Keine Reisemechanik (Patch 5):** Etappen, Entfernung, Reisezeit und Zufallsbegegnungen fehlen. „Weiter zum Ziel“ bleibt ein GO mit Zeitdeckel.
+- **Keine Dungeon-Struktur (Patch 7):** Ebenen und Bewohner fehlen. Ein Ort im Dungeon ist ein Unterort.
+- **Namensabgleich:** Berichtsorte werden nur über gleichen Namen im selben Reich zusammengeführt („the old Dungeon“ = „The Old Dungeon“). Ein ganz anderer Name aus einer anderen Quelle wird ein zweiter Berichtsort, bis er dort ankommt.
+- **Nur V4:** Ziele gibt es nur im V4-Pfad. Der V3-Pfad hat Thread-IDs und Zusammenführung, aber keine Ziele.

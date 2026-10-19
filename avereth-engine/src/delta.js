@@ -10,6 +10,7 @@ import { deriveCharacter } from './derived.js';
 import { checkChance } from './checks.js';
 import { authorization, takesQuest, turnsInQuest, namesQuest, titleWords } from './intent.js';
 import { clamp, normText, slug, uniq } from './util.js';
+import { threadEvents } from './threads.js';
 
 const TAG_RE = /<avereth>\s*([\s\S]*?)\s*<\/avereth>/gi;
 const ENGINE_OWNED = new Set(['hp', 'mp', 'sta', 'xp', 'level', 'stats', 'skills', 'damage', 'roll', 'rolls', 'init', 'initiative', 'atk', 'def', 'mdef', 'rank', 'defeat_xp']);
@@ -822,14 +823,14 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
             } else corrections.push(`Quest "${quest.title}" was completed without a recommended Level and type, so it grants no Quest XP (report level and type when a quest is offered).`);
         }
     }
+    // Patch 2: an engine id per matter (src/threads.js); a report updates or resolves it by that id or its words
     for (const th of arr(report.threads)) {
-        if (!th || !th.text) { reject(th, 'thread needs text'); continue; }
-        const id = `thread.${slug(th.text).slice(0, 48)}`;
-        const cur = state.threads[id];
-        const status = th.status === 'resolved' ? 'resolved' : 'open';
-        if (!cur && status === 'resolved') { reject(th, 'cannot resolve an unknown thread'); continue; }
-        events.push({ t: 'thread.set', d: { thread: { id, text: String(th.text).slice(0, 200), kind: th.kind || 'mystery', status, since: cur?.since || at, updated: at, source: src } } });
-        accepted.push(`thread ${status}: ${th.text}`);
+        const view = { ...state, threads: { ...state.threads } };
+        for (const e of events.filter((x) => x.t === 'thread.set')) view.threads[e.d.thread.id] = e.d.thread;
+        const r = threadEvents(view, th, { at, src, place: state.meta?.runtime === 'v4' && state.scene.at ? state.scene.at : state.scene.location });
+        if (r.reject) { reject(th, r.reject); continue; }
+        events.push(...r.events);
+        if (r.accepted) accepted.push(r.accepted);
     }
     // combat commitment by an NPC (PENDING: the engine fixes the encounter after this reply and resolves the Turns
     // with the next player message) and NPC intents. Only an actual commitment makes a combatant: attitude or kinship

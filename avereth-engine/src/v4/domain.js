@@ -33,7 +33,7 @@ export const PLACE_PARENTS = {
 export const HALL_NAME = "Adventurers' Guild hall";
 
 export const V4_EVENTS = new Set([
-    'place.created',
+    'place.created', 'place.updated', 'intent.set',
     'object.created', 'object.moved', 'object.marked', 'object.consumed', 'object.added',
     'offer.created', 'offer.closed', 'transaction.completed', 'service.granted',
     'quest.created', 'quest.status', 'quest.detailed', 'quest.progressed', 'quest.ready', 'quest.journey', 'proof.checked',
@@ -46,7 +46,7 @@ export const V4_EVENTS = new Set([
 
 /** The V4 part of an empty state (state.js emptyState). */
 export function emptyDomains() {
-    return { places: {}, objects: {}, offers: {}, guild: { membership: null, boards: {} }, decisions: [], services: [] };
+    return { places: {}, objects: {}, offers: {}, guild: { membership: null, boards: {} }, decisions: [], services: [], intents: {} };
 }
 
 function ensure(state) {
@@ -73,6 +73,18 @@ export function applyDomainEvent(state, e) {
         case 'place.created':
             if (state.places[d.place.id]) throw new Error(`place exists: ${d.place.id}`);
             state.places[d.place.id] = clone(d.place);
+            break;
+        // Patch 2: what Alaric knows of a place (src/v4/known.js): a report added, seen, or proved false
+        case 'place.updated': {
+            const p = state.places[d.id];
+            if (!p) throw new Error(`unknown place ${d.id}`);
+            Object.assign(p, clone(d.set || {}));
+            if (d.report) p.reports = [...(p.reports || []), clone(d.report)];
+            break;
+        }
+        // Patch 2: one of Alaric's goals (src/v4/intents.js), whole
+        case 'intent.set':
+            state.intents[d.intent.id] = clone(d.intent);
             break;
         case 'object.created':
             if (state.objects[d.object.id]) throw new Error(`object exists: ${d.object.id}`);

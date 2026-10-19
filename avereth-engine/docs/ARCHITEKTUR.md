@@ -215,6 +215,11 @@ Seit 4.3.0-c.6.6.9 (Patch 1, Live-Lauf 18.10.2026) gilt für die Signale:
 - **Entität:** Alaric (`pc`) ist kein Fokus mehr, weil er in fast jeder Erinnerung vorkommt. Fokus sind die Anwesenden und die NPCs, die die Spielernachricht oder die letzte Antwort namentlich nennt.
 - **Gleiche Zeilen:** Wortgleiche Zeilen gleicher Art (gleiche Zeit, gleicher Text) erscheinen einmal mit `(×n)`. Das Event-Log bleibt unverändert.
 
+Seit 4.3.0-c.6.6.10 (Patch 2) gilt für Threads, Ziele und Berichtsorte:
+- **Threads** tragen eine Engine-ID (`thread.t<Zug>.<n>`) und den Ort, an dem sie entstanden (`src/threads.js`, gemeinsam für V3 und V4). Ein Bericht ohne ID trifft denselben offenen Thread bei gleichem Wortlaut oder bei einer Umformulierung mit ≥ 60 % Wortüberschneidung, wenn genau ein Kandidat passt. Abschließen geht nur für einen bekannten Thread, mit Beleg in der Antwort. Zeichen und lokale Gefahren (`sign`, `threat`) sind nach 6 h an einem anderen Ort oder nach 3 Tagen „nicht mehr aktuell“. Das ist eine Sicht, kein Event: Nichts wird geschlossen, und am Ort sind sie wieder aktuell. Im Retrieval stehen aktuelle Threads mit Wichtigkeit 0,7, die übrigen mit 0,2 und dem Vermerk „Resolved thread“ bzw. „Earlier sign … no longer current“.
+- **Ziele** (`intents`, nur V4) stehen als eigener Abschnitt `goals` (Priorität 1, höchstens 3 Zeilen) im Engine-Block, mit dem Hinweis, dass sie nie Grund sind, für Alaric zu handeln.
+- **Berichtsorte** (`places[id].known = reported`) stehen im Katalog mit ihrem Bericht („known only by report … not seen yet“). Ihre Angaben werden keine Fakten.
+
 **Aufbau des Engine-Blocks** (Sektionen mit Priorität, gepackt unter Budget, Standard 1.400 Token):
 
 | Priorität | Sektionen |

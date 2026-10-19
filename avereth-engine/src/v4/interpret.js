@@ -102,6 +102,7 @@ export function catalogText(catalog) {
     const places = (catalog.places || []).filter((p) => p.id !== here.id);
     if (places.length) L.push(`PLACES: ${places.map((p) => `${p.id} (${p.name})`).join(' · ')}`);
     if ((catalog.quests || []).length) L.push(`QUESTS: ${catalog.quests.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
+    if ((catalog.goals || []).length) L.push(`GOALS (Alaric's own; never a reason to act for him): ${catalog.goals.map((g) => `${g.id} (${g.text})`).join(' · ')}`);
     if (catalog.journey_ready) L.push(`JOURNEY READY: ${catalog.journey_ready}`);
     if ((catalog.completed || []).length) L.push(`COMPLETED TODAY: ${catalog.completed.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
     if ((catalog.board || []).length) L.push(`BOARD (${catalog.board_label || 'visible here'}): ${catalog.board.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
@@ -129,6 +130,7 @@ export function catalogIds(catalog) {
         object: ids(catalog.objects),
         quest: [...new Set([...ids(catalog.quests), ...ids(catalog.board), ...ids(catalog.completed), ...ids(catalog.known)])],
         offer: ids(catalog.offers),
+        intent: ids(catalog.goals),
     };
 }
 

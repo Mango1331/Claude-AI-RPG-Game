@@ -13,6 +13,9 @@ import {
 } from './domain.js';
 import { catalogText } from './interpret.js';
 import { defeatTally, tallyText, readyText, proofMemory } from './guild.js';
+import { knownNote, reportedPlaces } from './known.js';
+import { continueOptions, goalLines } from './intents.js';
+import { currentThreads } from '../threads.js';
 
 /** A person or creature as the catalog labels it: name, role, look ("Marta, Guild receptionist"). */
 export function personLabel(state, content, id) {
@@ -42,6 +45,9 @@ function settlementName(state, id) {
 
 function placeEntry(state, id) {
     const p = state.places[id];
+    // Patch 2: a place he knows only by report says so (a destination, not a place he has seen)
+    const note = knownNote(state, p);
+    if (note) return { id, name: `${p.name} — ${note}` };
     if (p.kind === 'settlement') return { id, name: settlementName(state, id) };
     if ((p.tags || []).includes('guild_hall')) return { id, name: placeName(state, id) };
     const parent = p.parent && state.places[p.parent];
@@ -71,6 +77,8 @@ export function catalogPlaces(state, extra = []) {
         towns.forEach((p) => add(hallOfSettlement(state, p.id)));
         Object.values(state.places).filter((p) => p.by === 'reply' && realmOf(state, p.id) === realm).slice(-4).reverse().forEach((p) => add(p.id));
     }
+    // Patch 2: the places he knows by report, a few, newest report first (wherever he is: he may set off for them)
+    reportedPlaces(state).slice(0, 4).forEach((p) => add(p.id));
     for (const id of extra) add(id);
     return ids.map((id) => placeEntry(state, id));
 }
@@ -207,8 +215,14 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         .map((id) => ({ id, handle: sceneHandle(state, content, id), label: personLabel(state, content, id) }));
     const activeRaw = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered');
     const quests = activeRaw.map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q, { c }) }));
-    const journey = journeyReady(state, { c });
-    const journey_ready = journey ? `${journey.id} — "${journey.label}"${journey.companion ? ` with ${sceneHandle(state, content, journey.companion)}` : ''}: ${journey.why}; Alaric may continue it when he clearly agrees` : undefined;
+    // Patch 2: his own goals with a place, and a quest journey; more than one: the engine asks which "I continue" means
+    const options = continueOptions(state, { c });
+    const optionText = (o) => (o.kind === 'intent'
+        ? `${o.id} — his goal "${o.label}" (to ${o.place})`
+        : `${o.id} — "${o.label}"${o.companion ? ` with ${sceneHandle(state, content, o.companion)}` : ''}: ${o.why}`);
+    const journey_ready = options.length === 1 ? `${optionText(options[0])}; Alaric may continue it when he clearly agrees`
+        : options.length > 1 ? `${options.map(optionText).join(' · ')}; "I continue" without naming one asks which` : undefined;
+    const goals = goalLines(state).map((g) => ({ id: g.id, text: `${g.status}: ${g.text}` }));
     const day = today(state);
     const completed = Object.values(state.quests).filter((q) => q.status === 'completed' && (q.history || []).some((h) => h.status === 'completed' && Math.floor((h.minute ?? 0) / 1440) + 1 === day))
         .map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q, { c }) }));
@@ -246,6 +260,7 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         present,
         places: catalogPlaces(state, extraPlaces),
         quests,
+        goals,
         journey_ready,
         completed,
         board_label: hall ? `${rank} board of this hall` : undefined,
@@ -267,8 +282,13 @@ export function extractorCatalog(state, content, opts = {}) {
     if (realm && state.places[realm] && !c.places.some((p) => p.id === realm)) {
         c.places = [...c.places, { id: realm, name: `${state.places[realm].name} (the realm itself: the roads, wilds and land between and beyond its settlements)` }];
     }
+    // Patch 2: the open threads that matter now, by id, for the extractor alone: it updates or resolves them by id (a
+    // few, their words cut short: enough to tell them apart)
+    const short = (t) => (t.length > 80 ? `${t.slice(0, 79)}…` : t);
+    const threads = currentThreads(state).slice(0, 6);
+    const threadText = threads.length ? `\nTHREADS (open; update or resolve by id): ${threads.map((t) => `${t.id} (${t.kind}: ${short(t.text)})`).join(' · ')}` : '';
     return {
-        text: catalogText(c),
+        text: catalogText(c) + threadText,
         places: [...new Set([c.here.id, ...c.places.map((p) => p.id)].filter(Boolean))],
         quests: [...new Set([...c.quests, ...c.board, ...c.completed, ...(c.known || [])].map((q) => q.id))],
         objects: c.objects.map((o) => o.id),

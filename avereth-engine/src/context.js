@@ -9,6 +9,8 @@ import {
     isMeaningful, PC_NAME_FACT, PC_LOOK_FACT,
 } from './knowledge.js';
 import { rank, pack, Bm25 } from './retrieval.js';
+import { threadCurrent } from './threads.js';
+import { goalLines } from './v4/intents.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
 import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText, proofMemory } from './v4/guild.js';
 import { envelopeBlock } from './v4/envelope.js';
@@ -347,7 +349,13 @@ function retrievalItems(state, content, pinnedIds, recentTurns) {
         // a Guild contract says where it ends: its reward is the Guild's to pay at a front desk (delta.js)
         items.push({ kind: 'quest', text: `${q.title} ${q.notes.join(' ')}`, entities: [q.giver].filter(Boolean), quests: [q.id], turn: q.history.at(-1)?.turn ?? 0, importance: 0.8, label: `Quest (${q.status}${q.rank ? `, ${q.rank} Guild contract` : ''}): ${q.title}${q.giver ? ` — from ${anyLabel(state, content, q.giver)}` : ''}${q.reward ? ` — reward: ${q.reward}` : ''}${q.rank && q.status === 'active' ? ' (paid by the Guild when turned in at a front desk; locals confirm, never pay)' : ''}${q.notes.length ? ` — ${q.notes.at(-1)}` : ''}` });
     }
-    for (const t of Object.values(state.threads)) if (t.status === 'open') items.push({ kind: 'thread', text: t.text, entities: [], turn: t.updated?.turn ?? 0, importance: 0.7, label: `Open thread (${t.kind}): ${t.text}` });
+    // Patch 2 (src/threads.js): the open threads that matter now; a faded or resolved one is history, found only when this
+    // turn's words are about it (low importance: the lexical match has to carry it)
+    for (const t of Object.values(state.threads)) {
+        const place = t.at && (isLocationId(state, content, t.at) || state.places?.[t.at]) ? t.at : null;
+        if (threadCurrent(state, t)) items.push({ kind: 'thread', text: t.text, entities: [], location: place, turn: t.updated?.turn ?? 0, importance: 0.7, label: `Open thread (${t.kind}): ${t.text}` });
+        else items.push({ kind: 'thread', text: `${t.text} ${t.resolution || ''}`, entities: [], location: null, turn: t.updated?.turn ?? 0, importance: 0.2, label: t.status === 'resolved' ? `Resolved thread (${t.kind}): ${t.text} — ${t.resolution || 'settled'}` : `Earlier sign (${t.kind}, no longer current): ${t.text}` });
+    }
     return mergeIdentical(items);
 }
 
@@ -528,6 +536,9 @@ export function buildContext(state, content, opts = {}) {
         return `- ${q.title}${req}`;
     }).join('\n')}\nQUEST PLAY: only when the current scene/action is actually pursuing a nontrivial active Quest, let that Quest develop at least one causal, meaningful complication or active situation before ordinary resolution. Do not inject Quest complications into unrelated scenes merely because a Quest is active. Combat is not required. Once the desired outcome is genuinely achieved, let the extractor store quest.ready; do not manufacture extra bureaucracy merely to satisfy a generated proof phrase.`, 0);
 
+    // Patch 2: Alaric's own goals (src/v4/intents.js): a few short lines, so the story knows where he is headed
+    const goals = v4 ? goalLines(state) : [];
+    if (goals.length) add('goals', `ALARIC'S GOALS (his own decisions: remember them; never act, decide or move him toward them for him):\n${goals.map((g) => `- ${g.status === 'paused' ? '(paused) ' : ''}${g.text}`).join('\n')}`, 1);
     // relevant memories / facts / quests / threads
     const rel = retrieveRelevant(state, content, { input, lastReply, budget, pinnedIds: new Set(pinned.map((f) => f.id)), recentTurns: opts.recentTurns ?? DEFAULT_RECENT_TURNS, weights: opts.weights });
     if (rel.items.length) add('relevant', `RELEVANT (retrieved from the campaign record):\n${rel.items.map((s) => `- ${s.item.label}`).join('\n')}`, 2);
@@ -577,7 +588,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'named', 'combat', 'facts', 'quests', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'named', 'combat', 'facts', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };

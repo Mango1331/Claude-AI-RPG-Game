@@ -9,6 +9,8 @@ import { knowledgeOf, memoriesOf, memoryText, propText, playerLabel, statusOf } 
 import { applyEvent } from './state.js';
 import { skillSummary } from './context.js';
 import { clone, itemLabel, joinList, normText, formatClock, roundHalfUp, ENGINE_VERSION } from './util.js';
+import { currentThreads, threadHere } from './threads.js';
+import { knownNote } from './v4/known.js';
 
 const HELP = [
     ['#status', 'full current status (alias #stats)'], ['#skills', 'all known Skills'], ['#skill <name>', 'full Skill definition with current values'],
@@ -17,7 +19,7 @@ const HELP = [
     ['#quest <name>', 'Quest details'], ['#effects', 'active effects'], ['#effect <name>', 'effect details'],
     ['#combat', 'encounter audit (read-only)'], ['#system <question>', 'mechanics question answered by the System'],
     ['#assign <STAT> <n>', 'spend free Stat Points (state-changing)'], ['#npc <name>', 'what Alaric knows about someone'],
-    ['#log [n]', "Alaric's recent memories"], ['#audit', 'rolls, rejected reports and corrections of the last turn'], ['#help', 'this list'],
+    ['#log [n]', "Alaric's recent memories"], ['#journal', 'goals, places known by report, open and settled threads'], ['#audit', 'rolls, rejected reports and corrections of the last turn'], ['#help', 'this list'],
 ];
 
 /** Split "#status #skill Power Shot" into commands (left to right, System #1). */
@@ -295,6 +297,42 @@ function audit(state, content) {
 }
 
 /**
+ * Patch 2: the journal. Alaric's goals, the places he knows only by report, the threads that matter now, and the older
+ * or settled ones: everything he can know, nothing an NPC keeps to themselves. Read-only.
+ */
+function journal(state, content) {
+    const L = ['[SYSTEM // JOURNAL]'];
+    const day = (m) => formatClock(m ?? 0).split(' (')[0];
+    const goals = Object.values(state.intents || {});
+    L.push('GOALS:');
+    if (!goals.length) L.push('  none');
+    for (const st of ['active', 'paused', 'done', 'dropped']) {
+        for (const i of goals.filter((x) => x.status === st)) L.push(`  [${st}] ${i.goal}${i.place && state.places?.[i.place] ? ` → ${state.places[i.place].name}` : ''} (since ${day(i.since?.minute)})`);
+    }
+    const known = Object.values(state.places || {}).filter((p) => p.known === 'reported' || p.known === 'false');
+    if (known.length) {
+        L.push('PLACES KNOWN BY REPORT:');
+        for (const p of known) L.push(`  ${p.name} — ${knownNote(state, p, (id) => playerLabel(state, id))}`);
+    }
+    const all = Object.values(state.threads || {});
+    const current = currentThreads(state);
+    L.push('OPEN THREADS:');
+    if (!current.length) L.push('  none');
+    for (const t of current) L.push(`  (${t.kind}) ${t.text}${threadHere(state, t) ? ' [here]' : ''}`);
+    const faded = all.filter((t) => t.status === 'open' && !current.includes(t));
+    if (faded.length) {
+        L.push('NO LONGER CURRENT (signs and dangers of places he has left):');
+        for (const t of faded.slice(-10)) L.push(`  (${t.kind}) ${t.text} — ${day(t.updated?.minute)}`);
+    }
+    const settled = all.filter((t) => t.status === 'resolved');
+    if (settled.length) {
+        L.push('SETTLED:');
+        for (const t of settled.slice(-10)) L.push(`  (${t.kind}) ${t.text} — ${t.resolution || 'resolved'}`);
+    }
+    return L.join('\n');
+}
+
+/**
  * Run a '#' command line.
  * @returns {{panels: string[], events: object[], llm: null | {kind: 'system', question: string}}}
  */
@@ -319,6 +357,7 @@ export function runCommands(state, content, text) {
             case 'combat': panels.push(combat(s)); break;
             case 'npc': panels.push(arg ? npc(s, content, arg) : '[SYSTEM // NPC]\nUsage: #npc <name>'); break;
             case 'log': panels.push(log(s, content, arg)); break;
+            case 'journal': panels.push(journal(s, content)); break;
             case 'audit': panels.push(audit(s, content)); break;
             case 'help': panels.push(['[SYSTEM // HELP]', ...HELP.map(([c, d]) => `${c.padEnd(20)} — ${d}`)].join('\n')); break;
             case 'system': llm = { kind: 'system', question: arg }; break;

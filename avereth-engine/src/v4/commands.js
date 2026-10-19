@@ -24,6 +24,8 @@ import { sameWant, keyWords } from './world.js';
 import { LOOT_WORDS, lootedHere } from './loot.js';
 import { shopSearch, findTrades } from './settlement.js';
 import { journeyReady, knownAt } from './catalog.js';
+import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSetsGoal } from './intents.js';
+import { knownByName } from './known.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import {
@@ -217,6 +219,21 @@ function acceptBid(s, content, c, ctx, emit, o) {
 const HANDLERS = {
     'journey.continue'(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
+        // Patch 2: his own goals and the quest journey; with more than one, "I continue" is a question, never a pick
+        const options = continueOptions(s, { c: !!envx?.c });
+        if (options.length > 1) return { status: 'clarify', reason: 'which journey?', line: `CLARIFY — continue which: ${options.map((o) => (o.kind === 'intent' ? `${o.label} (${placeName(s, o.place)})` : o.label)).join(' or ')}?` };
+        const goal = options[0]?.kind === 'intent' ? options[0] : null;
+        if (goal) {
+            const name = placeName(s, goal.place);
+            const go = { seq: c.seq, to: goal.place, name, hall: !!hallOf(s, goal.place), newName: null, intent: goal.id };
+            ctx.auth.go = go;
+            ctx.auth.gos.push(go);
+            ctx.auth.roam = true;
+            ctx.auth.timeCap = Math.max(ctx.auth.timeCap, content.rules.time.travel_cap_min);
+            ctx.expectedKeys[String(c.seq)] = 'go';
+            setIntentEvents(s, { goal: goal.label, place: goal.place, quote: c.quote }).events.forEach(emit);
+            return { status: 'authorized', line: `CONTINUES — toward ${name}, his own goal "${goal.label}" (the story decides how far he gets and whether he arrives; it does not move him further than this message does).` };
+        }
         const ready = journeyReady(s, { c: !!envx?.c });
         if (!ready) {
             // 4.3.0-c.6.6: "I start to make my way back to Ashbridge" after the delivery: the planner read a journey that
@@ -265,10 +282,34 @@ const HANDLERS = {
             if (ready.companion) go.with = [ready.companion];
             ctx.extra.push(`JOURNEY PACING — this GO starts the established journey of "${ready.label}". Carry routine travel forward in this same reply until destination or a concrete complication/open decision actually interrupts it; do not stop merely for scenery, harmless conversation or to make Alaric say "continue" again.`);
         }
+        // Patch 2: a destination beyond his settlement, or a place he knows by report, is his goal until he reaches it
+        // (src/v4/intents.js); a quest's journey is that quest's own
+        if (known && !ctx.auth.journey && goSetsGoal(s, c.to)) setIntentEvents(s, { goal: `reach ${name}`, place: c.to, quote: c.quote, why: 'he set off for it' }).events.forEach(emit);
         // Prototype C (4.3.0-c.6): the people he met there before are that place's people, not new ones
         const there = envx?.c && known && !ctx.extra.some((x) => x.startsWith(`KNOWN AT ${name} (`)) ? knownAt(s, content, c.to) : [];
         if (there.length) ctx.extra.push(`KNOWN AT ${name} (met there before; when the story shows the people of that place, they are these, not new ones; whoever works there is at work unless the story establishes otherwise): ${there.map((p) => `${p.label} (${p.id})`).join(' · ')}`);
         return { status: 'authorized', line: `GOES — to ${name} (the story decides whether and where he arrives).` };
+    },
+    // Patch 2: his goals are his own decisions (src/v4/intents.js); setting one changes nothing in the world
+    'intent.set'(s, content, c, ctx, emit) {
+        // a destination the record knows (by id, or by its name in this realm); a name the record does not know stays
+        // the goal's words: his goal makes no place
+        const named = c.to && typeof c.to === 'object' ? knownByName(s, c.to.new, s.places[s.scene.at]?.realm ?? null) : null;
+        const place = typeof c.to === 'string' && s.places[c.to] ? c.to : named?.id || null;
+        const goal = String(c.goal || (place ? `reach ${placeName(s, place)}` : '')).trim();
+        if (!goal) return { status: 'refused', reason: 'no goal', line: 'NOTHING TO NOTE — no goal named.' };
+        const r = setIntentEvents(s, { goal, place, quote: c.quote, why: 'his decision' });
+        r.events.forEach(emit);
+        return { status: 'resolved', done: true, line: `GOAL NOTED — "${goal}"${place ? ` (${placeName(s, place)})` : ''}: his own decision, remembered; nothing happens until he acts on it.` };
+    },
+    'intent.drop'(s, content, c, ctx, emit) {
+        const pool = activeIntents(s).concat(Object.values(s.intents || {}).filter((i) => i.status === 'paused'));
+        const named = typeof c.intent === 'string' && s.intents?.[c.intent] ? s.intents[c.intent] : null;
+        const target = named || (pool.length === 1 ? pool[0] : null);
+        if (!target) return pool.length ? { status: 'clarify', reason: 'which goal?', line: `CLARIFY — which goal does he give up: ${pool.map((i) => i.goal).join(' or ')}?` } : { status: 'refused', reason: 'no goal', done: true, line: 'NOTHING TO DO — he has no goal to give up.' };
+        const status = c.achieved ? 'done' : 'dropped';
+        endIntentEvents(s, target.id, status, c.achieved ? 'he says it is done' : 'he gave it up').forEach(emit);
+        return { status: 'resolved', done: true, line: `GOAL ${status === 'done' ? 'DONE' : 'DROPPED'} — "${target.goal}".` };
     },
     activity(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT — not while the fight runs.' };

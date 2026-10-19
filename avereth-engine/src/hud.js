@@ -6,6 +6,8 @@
 // extra.display_text (like the System block above the reply) and never enters a prompt, which quotes the plain
 // message text. It shows only what the player may know: no NPC attitudes, agendas, secrets or hidden numbers.
 import { deriveCharacter } from './derived.js';
+import { currentThreads, threadHere, LOCAL_KINDS } from './threads.js';
+import { goalLines } from './v4/intents.js';
 import { formatCoin } from './economy.js';
 import { playerLabel, statusOf, truth, currentFacts, propText } from './knowledge.js';
 import { targetLabel } from './combat.js';
@@ -90,11 +92,18 @@ export function worldRows(state, content) {
     }
     const quests = Object.values(state.quests).filter((q) => q.status === 'active').map((q) => q.title);
     if (quests.length) rows.push(['Active quests', list(quests)]);
-    const threads = Object.values(state.threads).filter((t) => t.status === 'open');
-    const deadlines = threads.filter((t) => t.kind === 'deadline').map((t) => t.text);
+    // Patch 2: his goals; the hints of this place; a few lasting leads. Everything else is in #journal
+    const goals = goalLines(state, { max: 3, ids: false }).map((g) => `${g.status === 'paused' ? '(paused) ' : ''}${g.text}`);
+    if (goals.length) rows.push(['Goals', list(goals)]);
+    const current = currentThreads(state);
+    const deadlines = current.filter((t) => t.kind === 'deadline').map((t) => t.text);
     if (deadlines.length) rows.push(['Deadlines', list(deadlines)]);
-    const open = threads.filter((t) => t.kind !== 'deadline').slice(-5).map((t) => `${t.text} (${t.kind})`);
-    if (open.length) rows.push(['Open threads', list(open)]);
+    const here = current.filter((t) => t.kind !== 'deadline' && threadHere(state, t)).slice(0, 3);
+    if (here.length) rows.push(['Here', list(here.map((t) => `${t.text} (${t.kind})`))]);
+    const leads = current.filter((t) => t.kind !== 'deadline' && !here.includes(t) && !LOCAL_KINDS.has(t.kind)).slice(0, 3);
+    if (leads.length) rows.push(['Leads', list(leads.map((t) => `${t.text} (${t.kind})`))]);
+    const more = Object.values(state.threads).length - here.length - leads.length - deadlines.length;
+    if (more > 0) rows.push(['Journal', `${more} more (older or settled): #journal`]);
     // world events Alaric can know where he stands: the hard facts about this place (a burned bridge, a sealed gate)
     const known = currentFacts(state, (f) => f.hard && f.visibility !== 'secret' && f.s === state.scene.location).slice(-3).map((f) => propText(state, f, content));
     if (known.length) rows.push(['Known here', list(known)]);

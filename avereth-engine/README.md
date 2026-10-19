@@ -180,6 +180,7 @@ Außerdem gibt es einen Button **Export event log**, der das komplette Event-Log
 | `#combat` | kompletter Kampf-Snapshot (Audit) |
 | `#npc <Name>` | was **Alaric** über jemanden weiß |
 | `#log [n]` | Alarics Erinnerungen |
+| `#journal` | Alarics Ziele (aktiv, pausiert, erreicht, aufgegeben), Orte, die er nur aus Berichten kennt, offene, nicht mehr aktuelle und erledigte Threads (V4) |
 | `#audit` | Würfe, Rechenwege, abgelehnte Report-Teile des letzten Zuges |
 | `#assign <STAT> <n>` | freie Stat-Punkte vergeben (einziger zustandsändernder Befehl) |
 | `#system <Frage>` | geht ans LLM im System-Modus, mit den passenden Regelabsätzen |

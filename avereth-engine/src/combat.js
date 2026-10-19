@@ -737,6 +737,10 @@ export function npcDecide(ctx, npcId) {
     if (!intent && me.fixed.sapient && !opensViolence({ sapient: true, temperament: temper, attitude, harmed }).ok) {
         return me.current.cover === 'none' && band !== 'ENGAGED' ? { kind: 'cover', why: 'not hostile, not yet harmed: seeks cover' } : { kind: 'hold', why: 'not hostile, not yet harmed' };
     }
+    // Patch 4 (Prototype C): one that fled on its own last Turn goes on fleeing until it is out of the fight (live:
+    // a wolf that broke for the trees turned at LONG and came back, its flight one step long); held in melee or
+    // caught, it fights (npcAct), and a new intent of the story's still counts
+    if (ctx.c && !intent && fleeing(enc, npcId)) return { kind: 'flee', why: 'keeps fleeing' };
     if (intent) {
         delete enc.intents[npcId];
         if (intent === 'surrender') return { kind: 'surrender', why: 'narrated intent' };

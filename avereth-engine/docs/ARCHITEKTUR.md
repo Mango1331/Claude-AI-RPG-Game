@@ -227,6 +227,13 @@ Seit 4.3.0-c.6.6.11 (Patch 3) schützt die Firewall zusätzlich den mechanischen
 - **Beträge** liest die Engine aus dem Wortlaut (`said`, sonst Einheitenfehler gegenüber im Text genannten Beträgen); ein übermittelter Betrag weicht nicht unbemerkt vom Text ab.
 - In Fakten gezeigte Kreaturen gleichen Aussehens tragen beim Lesen ihren Szenen-Handle („Wolf B“).
 
+Seit 4.3.0-c.6.6.12 (Patch 4) hält der V4-Weltpfad Gruppen und Kampfkontinuität zusammen (`src/v4/world.js`, `src/engine.js`, `src/combat.js`):
+- **Gruppen** sind ihre Einzeltiere: Eine `creature.new`-Gruppe bekommt einzelne Entities mit Gruppenname (`entity.group`). Nennt eine spätere Antwort dieselbe Art erneut, sind das die anwesenden Tiere; neu sind nur die überzähligen. Ein Neuzugang, der in einen laufenden Kampf eingreift, bleibt neu.
+- **Gruppenreferenzen** in `hostile`, `intent` und `aware` („the wolves“, „the pack“, die Ref der Gruppe) meinen jedes lebende Mitglied hier. Ausgenommen sind Mitglieder, denen dieselbe Antwort etwas anderes zuschreibt (Flucht, Zurückhalten). Eine Zahl, die nicht zur Gruppe passt („two wolves“ von vier), bindet niemanden; der Erzähler erhält eine Korrektur.
+- **Wachsamkeit:** Wer gegen Alaric gekämpft oder seinen Kampf beobachtet hat, ist eine Weile wachsam (`entity.wary`, `rules.combat.wary_min`). Ein erzähltes „unaware“ gibt dann keinen Hinterhalt; nur seine eigene Schleichprobe oder ausreichend Zeit tun das.
+- **Flucht:** Wer in seinem letzten Zug geflohen ist, flieht weiter, bis er den Kampf verlassen hat. Wird er eingeholt, kämpft er.
+- **Erzählerblock:** Kreaturen, die anwesend, aber nicht im Kampf sind, stehen als „Here but NOT in the fight“ im Kampfblock.
+
 **Aufbau des Engine-Blocks** (Sektionen mit Priorität, gepackt unter Budget, Standard 1.400 Token):
 
 | Priorität | Sektionen |

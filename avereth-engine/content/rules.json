@@ -283,6 +283,8 @@
       "TERMINAL"
     ],
     "no_in_combat_regeneration": true,
+    "wary_min": 360,
+    "wary_note": "Patch 4: a creature or person that fought Alaric, or watched his fight from the scene, stays aware of him this long; a story that says it lost track of him sooner sets no Ambush (only his own stealth check does)",
     "death_at_zero_hp": true
   },
   "cover": {

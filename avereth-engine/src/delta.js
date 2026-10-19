@@ -177,7 +177,7 @@ function escapeRe(s) {
 // Attackers the engine can take as individual combatants (live run 25.09. 01:31, docs/TESTRUN_V7.md). A word that is
 // the plural of a creature kind ("rats", "wolves") or a collective ("pack", "swarm") makes a group; counts are never
 // read from the text.
-const GROUP_WORDS = new Set(['pack', 'swarm', 'horde', 'flock', 'herd', 'colony', 'brood', 'troop', 'mob', 'group', 'gang']);
+export const GROUP_WORDS = new Set(['pack', 'swarm', 'horde', 'flock', 'herd', 'colony', 'brood', 'troop', 'mob', 'group', 'gang']);
 const wordsOf = (text) => normText(text).replace(/[_.]+/g, ' ').split(' ').filter(Boolean);
 const pluralKind = (content, w) => [...content.anchors.values()].some((a) => a.aliases.map(normText)
     .some((x) => x !== w && (w === `${x}s` || w === `${x}es` || (x.endsWith('f') && w === `${x.slice(0, -1)}ves`))));
@@ -187,7 +187,7 @@ const pluralKind = (content, w) => [...content.anchors.values()].some((a) => a.a
  * "cellar rats", "wolves"); a qualifier in parentheses is no part of it ("cellar rats (dark)"). "pack leader", "Big rat"
  * and an indexed ref ("pack_rat_1", "rat_b") name one.
  */
-function isGroup(content, text) {
+export function isGroup(content, text) {
     const last = wordsOf(String(text ?? '').replace(/\([^)]*\)/g, ' ')).at(-1);
     return !!last && (GROUP_WORDS.has(last) || pluralKind(content, last));
 }

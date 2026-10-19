@@ -1123,3 +1123,40 @@ Leitsatz: Die Engine führt tatsächliche Spielerhandlungen zuverlässig und nac
 Tests: `tests/v4/patch3.test.js` +4 (review 1–4; die Fixes 1, 2 und 4 per Gegenprobe ohne Fix rot), der `coin.gift`-Test verschärft, `gen35_ownership` mit tatsächlichem `pay`. Gesamt 753/753, Smokes Browser, ST Default, ST V4 und ST C grün. Keine Prompt-Änderung, kein LLM-Aufruf mehr.
 
 Weitere Grenzen: `actedOn` ordnet „hunted/cooked …“ jeder Aktivität zu (wie bei den Fakten), eine Schlafaktivität deckt also eine erzählte Jagd. Ein „He …“ zählt nur, wenn die Erinnerung mit „Alaric“ beginnt. Ein Geschenk ohne Wortlaut in einer Antwort, die andere Summen nennt, wird abgelehnt, auch wenn es plausibel wäre.
+
+### Nachtrag 4.3.0-c.6.6.12 (Patch 4: Gruppenkampf und Encounter-Kontinuität, Live-Lauf 18.10.2026)
+
+Leitsatz: Jeder tatsächliche Teilnehmer eines Kampfes ist eine eigene persistente mechanische Einheit. Die Engine entscheidet Kampfhandlungen, der Erzähler erzählt sie, und der Extraktor erschafft keine zweite Kampfrealität. Der Kampfkern (V3, `src/combat.js`) bleibt die Grundlage; es gibt keine zweite Gruppen-Datenbank, kein neues Rudel-KI-System und kein Rebalancing.
+
+**Diagnose (Wolfsszene #40–#44 aus `live_1018_weald.json`, Hundeszene aus `live_1018.json`, Szenarien auf dem Produkt-Content):**
+
+| Bereits korrekt | Beleg |
+|---|---|
+| Gruppe mit `count` → Einzel-Entities, Handles A–D, eigene Profile und HP | #40: `mon.crequarry_pack_1..4`, Wolf A–D |
+| Initiative: Nachzügler mit eigenem Platz, `turn_index` verschoben, keine Doppelzüge | Wolf C tritt in Runde 2 bei und handelt ab Runde 3 |
+| First Strike = Aktion von Runde 1 (`enc.spent`), Ambush nur bei `unaware` | c.6.6.7-Tests A–F |
+| Fluchtprobe des Spielers gegen alle Nahkampfgegner (−10 je weiterem); Überlebende bleiben mit ihren HP erhalten | `pcFlee`, `escapeRoll`, `persistCombat` |
+| XP je Gegner einmal (`enc.defeated`), Loot je Leiche einmal, Gegnerflucht = `escaped`/`fled`, kein Kill | Diagnose: 4 Wölfe → 48 XP, 4 Felle, 8 Zähne |
+| AoE nach Bändern zum Zeitpunkt des Wirkens; Neutrale bleiben neutral | c.6.6.6/c.6.6.7-Tests |
+
+| Bestätigter Fehler | Ursache | Behebung |
+|---|---|---|
+| D1: dieselbe Gruppe erneut genannt („the four wolves pace the rim“) → vier weitere Wölfe | `creature.new` legte bei `count > 1` immer neu an; nur einzelne, abwesende Rückkehrer wurden erkannt | Anwesende Tiere derselben Art (Anker und Artname gleich) sind die erneut genannten; neu sind nur die überzähligen. Ausnahmen: ein Neuzugang in einen laufenden Kampf, ein stärkeres Individuum, ein anderer Eintrag derselben Antwort |
+| D2: `hostile` mit „the wolves“, „the pack“ oder der Gruppen-Ref einer früheren Antwort → kein Wolf greift an, Ablehnung | Die Gruppen-Zuordnung (`groups`) galt nur innerhalb einer Antwort | `members()`: Gruppen-Ref (`entity.group`), Pluralart oder Kollektiv meint jedes lebende Mitglied hier, für `hostile`, `intent` und `aware`. Mitglieder mit einer anderen Absicht in derselben Antwort zählen nicht. Eine unpassende Zahl bindet niemanden und erzeugt eine Korrektur |
+| E1: Wolf kämpft → Alaric flieht → Wolf kehrt zurück, Erzählung „unaware“ → Ambush mit garantiertem Crit | `scene.left` löscht die Awareness; nichts merkt sich den Kampf | `entity.wary` beim Kampfende für Kämpfer und Zuschauer; ein erzähltes `unaware` innerhalb von `rules.combat.wary_min` (360 min) wird abgewiesen (Korrektur). Seine Schleichprobe oder ausreichend Zeit bleiben ein echter Überraschungsmoment; der normale First Strike einer neuen Begegnung bleibt |
+| F2: fliehender Wolf (Intent `flee`) kehrt auf LONG um und greift wieder an | `npcDecide` verbraucht das Intent nach einem Zug; das Temperament entschied danach „close and attack“ | Wer im letzten Zug geflohen ist, flieht weiter, bis er draußen ist; eingeholt (ENGAGED) kämpft er |
+| N1: Erzähler beschreibt Bisse von Wölfen außerhalb des Kampfes | Der Kampfblock nannte nur Personen als „not fighting“ | Zeile „Here but NOT in the fight: Wolf C (LONG), …: no attack and no damage from them this turn“ |
+
+**Live-Muster #41/#43 (jeder Wolf ein eigener Kampf mit First Strike):** Das ist kein Engine-Fehler. Die anderen Wölfe hatten sich in der Erzählung nicht zum Angriff verpflichtet (Heulen, Halten, Abziehen). Greifen sie laut Erzählung an, kommen sie jetzt auch als Gruppe in den Kampf (D2), und ihr erster Angriff ist ein NPC-First-Strike.
+
+**Extraktor:** `hostile`-Beschreibung präzisiert (alle Angreifer, IDs oder Gruppen-Ref; bloßes Beobachten oder Umkreisen ist kein Angriff), `delta-0.8`.
+
+**Tests:** `tests/v4/patch4.test.js` (9 Tests, Anforderungen 1–9, 12, 16–19, 21–24); 9–11, 13–15 und 20 bleiben durch c.6.6.6/c.6.6.7 abgedeckt, 25 und 26 durch die Patch-1-, -2- und -3-Tests der Suite. Gegenproben: Jeder der fünf Fixes einzeln abgeschaltet → der zugehörige Test wird rot. Gesamt 762/762; Smokes Browser, ST Default, ST V4 und ST C grün.
+
+**Kosten:** Extraktor-Systemprompt +34 Token (5.531 → 5.565). Kampfblock +40 Token nur in Kämpfen mit Kreaturen außerhalb des Encounters. Planner unverändert, keine neuen LLM-Aufrufe.
+
+**Grenzen:**
+- Personengruppen („the bandits“) werden nicht als Gruppe aufgelöst; Personen kommen einzeln (`person.new` hat kein `count`).
+- Eine teilweise erneute Nennung mit kleinerer Zahl außerhalb eines Kampfes („two wolves“ bei vier anwesenden) gilt als Teil der Anwesenden. Echte Verstärkung außerhalb eines Kampfes muss die Gesamtzahl nennen.
+- Ein im laufenden Kampf geflohener Gegner, der im selben Kampf zurückkehrt, ist ein neuer Teilnehmer (die Verfolgung `chase` behält dagegen denselben).
+- Zuschauer werden nur dann wachsam, wenn sie Alaric bemerkt hatten (Awareness nicht `unaware`).

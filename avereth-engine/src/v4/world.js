@@ -13,7 +13,7 @@ import { applyEvent } from '../state.js';
 import { clone, normText, slug } from '../util.js';
 import { coinFromWords, coinMentions, numbersIn } from '../economy.js';
 import { deriveCharacter } from '../derived.js';
-import { reportToEvents, makeResolver } from '../delta.js';
+import { reportToEvents, makeResolver, isGroup, GROUP_WORDS } from '../delta.js';
 import { truth, entityLabel, setFactEvents, statusOf, normPredicate } from '../knowledge.js';
 import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
 import { firewall, pcWound, pcActIn } from './firewall.js';
@@ -221,6 +221,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const hostileRefs = new Set(fw.accept.filter((d) => d.type === 'hostile').flatMap((d) => d.by || []).map((x) => normText(x)));
     const joinedByNew = new Set();
     const bornHere = new Set(); // the people and creatures this answer introduces (an ambush is the world's move)
+    const namedHere = new Set(); // Patch 4: the creatures an entry of this answer named (new, returning or named again)
     const cap = s.encounter ? content.rules.time.combat_cap_min : auth.timeCap ?? content.rules.time.default_cap_min;
     // Prototype C (auth.c): the minutes the engine already booked for this turn's activities count as used; the
     // extractor's time for the same span is not booked again (its minutes cover the booked ones first)
@@ -255,9 +256,33 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         return local.length === 1 ? local[0].id : null;
     };
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
+    // Patch 4 (live 18.10.2026: "the two survivors ... calling the rest of the pack in"; a hostile by "the wolves" or by
+    // the pack's own ref committed no wolf at all, and the request for them asked for new ones): a group the story names
+    // as a whole is each living member of it here: the group by its ref (creature.new count > 1, this reply or an
+    // earlier one), or a plural kind or collective ("the wolves", "the pack") by the creatures here it names. A number
+    // the story gives must be theirs ("two wolves" of four is no one in particular: null, as an unknown name)
+    const QUANT = new Set(['the', 'all', 'both', 'those', 'these', 'of', 'whole', 'entire', 'rest', 'remaining', 'other', 'others']);
+    const members = (ref) => {
+        if (typeof ref !== 'string') return null;
+        const k = normText(ref);
+        if (groups.has(k)) return groups.get(k);
+        if (refs.has(k) || s.entities[ref]) return null;
+        const words = k.replace(/[_.]+/g, ' ').split(' ').filter((w) => w && !QUANT.has(w) && !numbersIn(w).size);
+        const bare = words.join(' ');
+        const here = s.scene.present.filter((id) => s.entities[id]?.kind === 'creature' && statusOf(s, id) !== 'dead' && s.entities[id].threat !== false);
+        let ids = here.filter((id) => [k, bare].includes(s.entities[id].group));
+        if (!ids.length && bare && isGroup(content, bare)) {
+            const kind = words.filter((w) => !GROUP_WORDS.has(w)).join(' ');
+            ids = kind ? here.filter((id) => namesKind(kind, s.entities[id].species || '', content.anchors.get(s.entities[id].anchor || s.entities[id].profile?.anchor)))
+                : [...new Set(here.map((id) => s.entities[id].group).filter(Boolean))].length === 1 ? here.filter((id) => s.entities[id].group) : [];
+        }
+        const said = [...numbersIn(k)];
+        if (!ids.length || (said.length && !said.includes(ids.length))) return null;
+        return ids;
+    };
     // whom this reply establishes as not having noticed Alaric (aware: unaware), whatever step of it reports that: they do
     // not see him at an earlier step either (perceiveAll)
-    const seeing = () => ({ unaware: new Set((fw.accept || []).filter((d) => d?.type === 'aware' && d.level === 'unaware').flatMap((d) => groups.get(normText(d.who)) || [mapRef(d.who)]).filter((x) => typeof x === 'string')) });
+    const seeing = () => ({ unaware: new Set((fw.accept || []).filter((d) => d?.type === 'aware' && d.level === 'unaware').flatMap((d) => members(d.who) || [mapRef(d.who)]).filter((x) => typeof x === 'string')) });
     // the World Envelope at this step (docs/ARCHITECTURE_GEN35.md §2.3): may this actor turn on Alaric of its own accord?
     const envelopeAllows = (id, d) => {
         if (typeof id !== 'string' || !s.entities[id] || !['npc', 'creature'].includes(s.entities[id].kind)) { grant('envelope.fight'); return true; } // the V3 rules refuse unknown attackers
@@ -309,13 +334,27 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 refs.set(normText(d.ref), same[0].id);
                 if (d.stronger === true && same[0].variation !== 'strong') emit({ t: 'entity.updated', d: { id: same[0].id, set: { variation: 'strong' } } });
                 if (!same[0].profile) materialise(s, content, dice, emit, same[0].id);
+                namedHere.add(same[0].id);
                 return [same[0].id];
             }
         }
         const before = new Set(Object.keys(s.entities));
         const entries = [];
         const count = kind === 'creature' ? Math.max(1, Math.min(12, d.count || 1)) : 1;
-        for (let i = 1; i <= count; i++) {
+        // Patch 4 (live 18.10.2026: the quarry wolves, named again as a group of four, would have been four more): the
+        // creatures of this kind already here are the ones the reply names again, the same individuals with their HP,
+        // places and letters; only those beyond them are new. One that joins a running fight (hostile in this reply)
+        // is a new one, and so is a stronger individual among ordinary ones, and so are those another entry of this same
+        // reply introduced (the strider by the mound and the two flankers of one reply are three, live 30.09.2026)
+        const anchorOf = (e) => e.anchor || e.profile?.anchor;
+        const here = kind === 'creature' && d.present !== false && !(s.encounter && hostileRefs.has(normText(d.ref)))
+            ? s.scene.present.filter((id) => {
+                const e = s.entities[id];
+                // the same kind by the same name: "a big boar" among wild boars is another animal (4.1.5)
+                return e?.kind === 'creature' && !namedHere.has(id) && statusOf(s, id) !== 'dead' && anchorOf(e) === d.anchor && normText(e.species || '') === normText(d.species || '');
+            }) : [];
+        const again = d.stronger === true && !here.some((id) => s.entities[id].variation === 'strong') ? [] : here.slice(0, count);
+        for (let i = again.length + 1; i <= count; i++) {
             const ref = count > 1 ? `${d.ref} ${i}` : d.ref;
             entries.push(kind === 'npc'
                 ? { ref, kind: 'npc', name: d.name || undefined, anonymous: !d.name, desc: [...(d.role ? [d.role] : []), ...(d.desc || [])], traits: (d.desc || []).join(', '), band: d.band || undefined }
@@ -323,12 +362,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         }
         const joins = kind === 'creature' && s.encounter && hostileRefs.has(normText(d.ref));
         if (joins) grant('envelope.fight'); // introduced by this reply: an ambush or a reinforcement is the world's move
-        const r = v3({ new: entries, ...(joins ? { combat: entries.map((e) => ({ by: e.ref })) } : {}) }, d);
+        const r = entries.length ? v3({ new: entries, ...(joins ? { combat: entries.map((e) => ({ by: e.ref })) } : {}) }, d) : { events: [], accepted: [] };
         if (joins) joinedByNew.add(normText(d.ref));
         const created = r.events.filter((e) => e.t === 'entity.created').map((e) => e.d.entity.id).filter((id) => !before.has(id));
         for (const id of created) bornHere.add(id);
         const known = r.accepted.map((a) => /^known (\S+) \(not duplicated\)$/.exec(a)?.[1]).filter(Boolean);
-        const ids = [...created, ...known];
+        const ids = [...again, ...created, ...known];
+        // the members of a group keep its name (the ref the story gave them), so a later "the quarry pack" means them
+        if (count > 1) for (const id of created) emit({ t: 'entity.updated', d: { id, set: { group: normText(d.ref) } } });
         if (ids.length) refs.set(normText(d.ref), ids[0]);
         // Scene relevance is ephemeral; an important person is not automatically an enemy.
         // The NPC identity persists, but relevance and explicit threat expire when the scene ends.
@@ -350,6 +391,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // Gameplay visibility: once an actual creature is visibly present, lock its deterministic profile immediately.
         // This gives the player a canonical target handle + HP + Range before deciding whether to attack; Initiative still waits for Combat START.
         if (kind === 'creature' && d.present !== false) for (const id of ids) materialise(s, content, dice, emit, id);
+        for (const id of ids) namedHere.add(id);
         return ids;
     };
 
@@ -508,22 +550,44 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'aware':
                 // 4.3.0-c.6.6: a group's ref (creature.new count > 1) means each of them (live 07.10.2026: "kobold_small_a"
                 // unaware reached only the first of the two small kobolds); its own Ambush awareness, not perception's
-                v3({ aware: (groups.get(normText(d.who)) || [mapRef(d.who)]).map((who) => ({ who, level: d.level })) }, d);
+                // Patch 4: one that fought him (or watched his fight) a short while ago has not lost track of him because the
+                // story says so: no Ambush from it (rules.combat.wary_min); his own stealth check is the engine's way
+                const whos = members(d.who) || [mapRef(d.who)];
+                const wary = d.level === 'unaware' ? whos.filter((who) => { const w = s.entities[who]?.wary; return !!w && s.clock.minute - (w.minute ?? 0) < (content.rules.combat?.wary_min ?? 360); }) : [];
+                if (wary.length) {
+                    reject({ ...d, who: wary.length === whos.length ? d.who : wary }, 'engine_owned', `${wary.map((x) => entityLabel(s, x)).join(', ')} fought Alaric or watched his fight a short while ago and is still aware of him`);
+                    const correction = `${wary.map((x) => entityLabel(s, x)).join(', ')} did not lose track of Alaric: ${wary.length > 1 ? 'they' : 'it'} fought him or watched his fight a short while ago and ${wary.length > 1 ? 'are' : 'is'} still aware of him. Only his own stealth catches ${wary.length > 1 ? 'them' : 'it'} unaware.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                }
+                const left = whos.filter((who) => !wary.includes(who));
+                if (left.length) v3({ aware: left.map((who) => ({ who, level: d.level })) }, d);
                 break;
             case 'intent': {
-                // an intent to attack him is the same decision as turning on him: the World Envelope's (outside a fight)
-                const who = mapRef(d.who);
-                if (d.intent === 'attack' && !s.encounter && !envelopeAllows(who, d)) break;
+                // an intent to attack him is the same decision as turning on him: the World Envelope's (outside a fight);
+                // Patch 4: a group's intent is each member's ("the wolves break and run")
+                const whos = (members(d.who) || [mapRef(d.who)]).filter((who) => !(d.intent === 'attack' && !s.encounter && !envelopeAllows(who, d)));
+                if (!whos.length) break;
                 grant('narrated_intent');
-                v3({ intent: [{ who, intent: d.intent }] }, d);
+                v3({ intent: whos.map((who) => ({ who, intent: d.intent })) }, d);
                 break;
             }
             case 'hostile': {
-                const by = (d.by || []).flatMap((x) => (groups.get(normText(x)) || [mapRef(x)])).filter((x) => !joinedByNew.has(normText(x)));
+                // Patch 4: a group named as a whole is each member here, except one this reply shows doing something else
+                // (fleeing, holding back, giving up: its own intent); presence or kinship alone commits no one
+                const other = new Set(fw.accept.filter((x) => x.type === 'intent' && x.intent !== 'attack').flatMap((x) => members(x.who) || [mapRef(x.who)]));
+                const by = (d.by || []).flatMap((x) => { const m = members(x); return m ? m.filter((id) => !other.has(id)) : [mapRef(x)]; }).filter((x) => !joinedByNew.has(normText(x)));
                 // who turns on Alaric: inside the World Envelope at this step (an attitude the reply lowered before is
                 // a cause); outside it nobody attacks, the next engine block says why
                 const left = by.filter((x) => !(typeof x === 'string' && s.encounter?.combatants?.[x])).filter((x) => envelopeAllows(x, d));
-                if (left.length) v3({ combat: left.map((x) => ({ by: x })) }, d);
+                if (left.length) {
+                    const r = v3({ combat: left.map((x) => ({ by: x })) }, d);
+                    // Patch 4: an attack the engine could not give to anyone ("two wolves" of four): the story must not go on
+                    // as if they fight; only the combatants of the engine block do
+                    for (const x of left.filter((y) => typeof y === 'string' && !s.entities[y] && r.rejected.length)) {
+                        const correction = `The attack of "${String(x).slice(0, 60)}" in the last reply was not booked: the engine cannot tell which of those here attack. Only those the engine has fighting attack and deal damage; name each attacker by its handle when the story has them attack.`;
+                        if (!corrections.includes(correction)) corrections.push(correction);
+                    }
+                }
                 // Prototype C (4.3.0-c.6.6.6, review): one already in the fight but no foe of his (caught in his area
                 // attack, at his side) whom the story turns on him fights him from its next Turn (src/combat.js asideTurn)
                 const turning = cPath ? by.filter((x) => typeof x === 'string' && x !== 'pc' && s.encounter?.combatants?.[x] && s.encounter.combatants[x].side !== 'hostile').filter((x) => envelopeAllows(x, d)) : [];

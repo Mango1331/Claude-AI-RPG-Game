@@ -455,6 +455,13 @@ function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false
             } else if (s.scene.present.includes(c.id)) emit({ t: 'scene.position', d: { id: c.id, band: c.current.band, cover: c.current.cover } });
             if (c.current.surrendered) emit({ t: 'entity.updated', d: { id: c.id, set: { surrendered_to: 'pc' } } });
         }
+        // Patch 4 (Prototype C): who fought him, and who watched the fight from the scene, stays aware of him for a while
+        // (rules.combat.wary_min): a story that soon after has them lose track of him sets up no Ambush (src/v4/world.js aware)
+        if (cPath) {
+            const wary = { turn: s.turn, minute: s.clock.minute, encounter: enc.id };
+            const watched = s.scene.present.filter((id) => id !== 'pc' && !enc.combatants[id] && s.entities[id] && ['npc', 'creature'].includes(s.entities[id].kind) && s.scene.awareness[id] && s.scene.awareness[id] !== 'unaware');
+            for (const id of [...Object.keys(enc.combatants).filter((id) => id !== 'pc'), ...watched]) if (s.entities[id]?.status !== 'dead') emit({ t: 'entity.updated', d: { id, set: { wary: wary } } });
+        }
         emit({ t: 'memory.recorded', d: { memory: fightMemory(s, content, enc, end.summary) } });
         // Prototype C (4.3.0-c.6.6.4): what the foes killed in a fight he won leave is his at once (src/v4/loot.js)
         if (cPath) {

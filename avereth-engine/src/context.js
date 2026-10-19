@@ -167,7 +167,7 @@ function namedAbsent(state, scan) {
         .slice(0, 3).map((e) => e.id);
 }
 
-export function combatBlock(state) {
+export function combatBlock(state, content = null) {
     const enc = state.encounter;
     if (!enc) return '';
     const order = enc.order.map((id) => fightLabel(state, id)).join(' > ');
@@ -180,6 +180,10 @@ export function combatBlock(state) {
         const side = c.side === 'ally' ? '; ON ALARIC\'S SIDE (no foe)' : c.side === 'neutral' ? '; NEUTRAL (no foe, caught in the fight)' : '';
         lines.push(`  ${fightName(state, c.id)}: L${c.fixed.level} ${c.fixed.rank} ${c.model === 'creature' ? c.fixed.body_plan : 'core-stat'}; ${st}${side}; locked DefeatXP ${c.fixed.defeat_xp ?? '-'}${fx}`);
     }
+    // Patch 4 (live 18.10.2026: the pack mates of the one wolf in the fight stood, paced and growled around it): who is
+    // here but not in the fight makes no attack and deals no damage; a story that has them attack brings them in
+    const outside = content && state.meta?.runtime === 'v4' ? state.scene.present.filter((id) => id !== 'pc' && !enc.combatants[id] && state.entities[id]?.kind === 'creature' && state.entities[id].status !== 'dead') : [];
+    if (outside.length) lines.push(`  Here but NOT in the fight: ${outside.map((id) => `${sceneHandle(state, content, id)}${state.scene.positions[id]?.band ? ` (${state.scene.positions[id].band})` : ''}`).join(', ')}: no attack and no damage from them this turn; they join only on their own Turns after the story has them attack.`);
     const pcfx = enc.combatants.pc.current.effects;
     if (pcfx.length) lines.push(`  Alaric effects: ${pcfx.map((x) => x.name).join(', ')}`);
     lines.push(`  Pending Combat XP: ${enc.pending_xp} (awarded only when the fight ends)`);
@@ -519,7 +523,7 @@ export function buildContext(state, content, opts = {}) {
     else if (state.mode !== 'creation') add('present', v4 ? 'ACTIVE SCENE: nobody besides Alaric.' : 'PRESENT: nobody besides Alaric.', 1);
     const absent = state.mode === 'creation' ? [] : namedAbsent(state, normText(queryText));
     if (absent.length) add('named', `NAMED, NOT PRESENT (continuity only; they are elsewhere unless the story brings them in):\n${absent.map((id) => npcCard(state, content, id, focusWords, { absent: true })).join('\n')}`, 2);
-    add('combat', combatBlock(state), 0);
+    add('combat', combatBlock(state, content), 0);
     // Prototype C (4.3.0-c.6.6.5): the settlement around Alaric lives (crowd by time of day, everyday trades by size)
     if (v4 && !state.encounter && (opts.outcome?.auth?.c || opts.outcome?.c)) add('settlement', settlementLife(state, content), 1);
 

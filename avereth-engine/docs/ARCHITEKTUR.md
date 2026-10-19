@@ -209,6 +209,12 @@ Alle 42 Event-Typen sind in `schemas/event.schema.json` und [DATENMODELL.md](DAT
 ```
 (+ optional semantisch)
 
+Seit 4.3.0-c.6.6.9 (Patch 1, Live-Lauf 18.10.2026) gilt für die Signale:
+- **Anfrage:** BM25 bewertet die Spielernachricht voll. Aus der letzten Antwort zählen nur die bekannten Namen, die sie erwähnt (Personen, Orte, Quests), plus die Namen der Anwesenden, jeweils mit halbem Gewicht. Vorher ging die ganze Antwort (1.500 Zeichen) in die Anfrage ein.
+- **BM25-Kurve:** `1 − e^(−BM25/6)` statt `min(1, BM25/6)`. Starke Treffer bleiben unterscheidbar, statt bei 1 gleichzuziehen.
+- **Entität:** Alaric (`pc`) ist kein Fokus mehr, weil er in fast jeder Erinnerung vorkommt. Fokus sind die Anwesenden und die NPCs, die die Spielernachricht oder die letzte Antwort namentlich nennt.
+- **Gleiche Zeilen:** Wortgleiche Zeilen gleicher Art (gleiche Zeit, gleicher Text) erscheinen einmal mit `(×n)`. Das Event-Log bleibt unverändert.
+
 **Aufbau des Engine-Blocks** (Sektionen mit Priorität, gepackt unter Budget, Standard 1.400 Token):
 
 | Priorität | Sektionen |

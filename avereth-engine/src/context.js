@@ -348,7 +348,74 @@ function retrievalItems(state, content, pinnedIds, recentTurns) {
         items.push({ kind: 'quest', text: `${q.title} ${q.notes.join(' ')}`, entities: [q.giver].filter(Boolean), quests: [q.id], turn: q.history.at(-1)?.turn ?? 0, importance: 0.8, label: `Quest (${q.status}${q.rank ? `, ${q.rank} Guild contract` : ''}): ${q.title}${q.giver ? ` — from ${anyLabel(state, content, q.giver)}` : ''}${q.reward ? ` — reward: ${q.reward}` : ''}${q.rank && q.status === 'active' ? ' (paid by the Guild when turned in at a front desk; locals confirm, never pay)' : ''}${q.notes.length ? ` — ${q.notes.at(-1)}` : ''}` });
     }
     for (const t of Object.values(state.threads)) if (t.status === 'open') items.push({ kind: 'thread', text: t.text, entities: [], turn: t.updated?.turn ?? 0, importance: 0.7, label: `Open thread (${t.kind}): ${t.text}` });
-    return items;
+    return mergeIdentical(items);
+}
+
+/**
+ * Lines the narrator would read word for word twice (two wolves with the same label killed in the same minute, the same
+ * status fact about each) take one line with a count: the record keeps every event, the context does not spend its
+ * allowance twice on one sentence. Only identical lines merge: a different time, place, name or wording stays its own.
+ */
+function mergeIdentical(items) {
+    const byLabel = new Map();
+    for (const it of items) {
+        const key = `${it.kind}|${normText(it.label)}`;
+        const prev = byLabel.get(key);
+        if (!prev) byLabel.set(key, { ...it, count: 1 });
+        else byLabel.set(key, { ...prev, count: prev.count + 1, turn: Math.max(prev.turn, it.turn), importance: Math.max(prev.importance, it.importance), entities: [...new Set([...prev.entities, ...it.entities])] });
+    }
+    return [...byLabel.values()].map((it) => (it.count > 1 ? { ...it, label: `${it.label} (×${it.count})` } : it));
+}
+
+/**
+ * The retrieval query (Patch 1, live run 18.10.2026): the player's message says what this turn is about. The last reply
+ * adds only the known names it mentions (people, places, Quests), not its prose: 1,500 characters of narration matched
+ * almost every record ("wolf", "cold", "dark" ...), so an older record the player named outright ("the Dungeon location
+ * from the map") fell to places 18, 19 and 41 behind the latest fights.
+ */
+const nameOf = (state, id) => state.entities[id]?.name || (state.entities[id]?.kind === 'npc' ? entityLabel(state, id) : null);
+
+function retrievalQuery(state, content, input, lastReply) {
+    const reply = normText(lastReply);
+    const names = new Set();
+    const named = [];
+    const consider = (label, id = null) => {
+        if (!label || names.has(normText(label)) || !mentioned(label, reply)) return;
+        names.add(normText(label));
+        if (id) named.push(id);
+    };
+    for (const e of Object.values(state.entities)) if (e.id !== 'pc' && (e.kind === 'npc' || e.kind === 'location')) consider(nameOf(state, e.id), e.kind === 'npc' ? e.id : null);
+    for (const p of Object.values(state.places || {})) consider(p.name);
+    for (const l of content.locations.values()) consider(l.name);
+    for (const q of Object.values(state.quests)) if (q.status === 'active' || q.status === 'offered') consider(q.title);
+    return { query: input, context: [...names].join(' '), named };
+}
+
+/**
+ * The RELEVANT section: memories, facts, Quests and open threads ranked for this turn (src/retrieval.js) and packed
+ * into its share of the budget. Exported so tests can read the ranking as well as the packed lines.
+ */
+export function retrieveRelevant(state, content, { input = '', lastReply = '', budget = DEFAULT_BUDGET, pinnedIds = new Set(), recentTurns = DEFAULT_RECENT_TURNS, weights } = {}) {
+    const sceneNode = state.meta?.runtime === 'v4' && state.scene.at ? state.scene.at : state.scene.location;
+    const loc = state.entities[sceneNode] || content.locations.get(sceneNode) || state.places?.[sceneNode];
+    const others = state.scene.present.filter((id) => id !== 'pc' && state.entities[id]);
+    const relStrength = new Map();
+    for (const r of Object.values(state.relations)) if (r.b === 'pc' || r.a === 'pc') relStrength.set(r.a === 'pc' ? r.b : r.a, Math.min(1, Math.abs(r.value) / 100));
+    const q = retrievalQuery(state, content, input, lastReply);
+    // the people in the scene and the people named this turn: their shared history is what the scene can draw on
+    const inputScan = normText(input);
+    const namedInInput = Object.values(state.entities).filter((e) => e.kind === 'npc' && mentioned(nameOf(state, e.id), inputScan)).map((e) => e.id);
+    const focus = {
+        entities: [...new Set([...others, ...namedInInput, ...q.named])], location: sceneNode, realm: loc?.realm || null,
+        quests: Object.values(state.quests).filter((x) => x.status === 'active').map((x) => x.id), turn: state.turn,
+        // present people by name (or an NPC's trade, "the chartmaker"); a nameless creature's look ("low, heavy bulk") is
+        // adjectives that would match every other beast: the entity signal already covers it by id
+        query: q.query, context: `${q.context} ${others.map((id) => nameOf(state, id)).filter(Boolean).join(' ')}`.trim(), relationStrength: relStrength,
+    };
+    let episodes = 0;
+    const ranked = rank(retrievalItems(state, content, pinnedIds, recentTurns), focus, { weights })
+        .filter((x) => x.item.kind !== 'episode' || (episodes += 1) <= MAX_EPISODES);
+    return { ranked, ...pack(ranked.filter((x) => x.score > 1.2), Math.max(120, Math.floor(budget * 0.25)), (t) => estimateTokens(t) + 4) };
 }
 
 /**
@@ -462,17 +529,7 @@ export function buildContext(state, content, opts = {}) {
     }).join('\n')}\nQUEST PLAY: only when the current scene/action is actually pursuing a nontrivial active Quest, let that Quest develop at least one causal, meaningful complication or active situation before ordinary resolution. Do not inject Quest complications into unrelated scenes merely because a Quest is active. Combat is not required. Once the desired outcome is genuinely achieved, let the extractor store quest.ready; do not manufacture extra bureaucracy merely to satisfy a generated proof phrase.`, 0);
 
     // relevant memories / facts / quests / threads
-    const relStrength = new Map();
-    for (const r of Object.values(state.relations)) if (r.b === 'pc' || r.a === 'pc') relStrength.set(r.a === 'pc' ? r.b : r.a, Math.min(1, Math.abs(r.value) / 100));
-    const focus = {
-        entities: [...others, 'pc'], location: sceneNode, realm: realmId,
-        quests: Object.values(state.quests).filter((q) => q.status === 'active').map((q) => q.id), turn: state.turn,
-        query: `${queryText} ${others.map((id) => entityLabel(state, id)).join(' ')}`, relationStrength: relStrength,
-    };
-    let episodes = 0;
-    const ranked = rank(retrievalItems(state, content, new Set(pinned.map((f) => f.id)), opts.recentTurns ?? DEFAULT_RECENT_TURNS), focus, { weights: opts.weights })
-        .filter((x) => x.item.kind !== 'episode' || (episodes += 1) <= MAX_EPISODES);
-    const rel = pack(ranked.filter((s) => s.score > 1.2), Math.max(120, Math.floor(budget * 0.25)), (t) => estimateTokens(t) + 4);
+    const rel = retrieveRelevant(state, content, { input, lastReply, budget, pinnedIds: new Set(pinned.map((f) => f.id)), recentTurns: opts.recentTurns ?? DEFAULT_RECENT_TURNS, weights: opts.weights });
     if (rel.items.length) add('relevant', `RELEVANT (retrieved from the campaign record):\n${rel.items.map((s) => `- ${s.item.label}`).join('\n')}`, 2);
     // lore: the current realm entry + entries whose key phrases occur in this turn's text. Off when the descriptive
     // world lore comes from the narrator card's SillyTavern lorebook (docs/LOREBOOK.md): one copy, not two

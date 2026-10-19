@@ -941,3 +941,51 @@ Nur Welt-Lore und Content. Keine Mechanik ändert sich, Pfad A und C sind unver�
 **Grenzen von c.6.6.8:**
 - Eine Begrüßung, die noch Redmarch, Tidecross oder Lumenford nennt, startet in einer der drei Startstädte (nach Seed), während der Text von der alten Stadt spricht. Die Ortszeile ersetzen.
 - Die World-Info-Einträge stehen weiter vor dem Vertrag (Position 0). Das Prompt-Caching bricht dort ab; ein Umbau ist nicht Teil dieses Patches.
+
+### Nachtrag 4.3.0-c.6.6.9 (Patch 1: Memory-Retrieval, Live-Lauf 18.10.2026 23:37)
+
+Nur die Auswahl für den Abschnitt RELEVANT (`src/retrieval.js`, `src/context.js`). Folgendes bleibt unverändert:
+- Budget, Kontextsektionen, Vertrag und Preset;
+- Event-Log, Kampf, XP und Threads;
+- alle LLM-Aufrufe.
+
+**Befund:** Bei #63 („continue my journey towards the Dungeon location from the map i saw“) fehlte im Engine-Block alles zum Dungeon aus der Karte. Kartenhändler-Erinnerung, Dungeon-Thread und Dungeon-Lage standen auf den Plätzen 18, 19 und 41. Den Platz in RELEVANT belegten neuere Kämpfe, die Wunde und doppelte Wolfszeilen. Es gab drei Ursachen:
+1. **Anfrage:** Die Anfrage war Spielernachricht plus 1.500 Zeichen der letzten Antwort. Damit trafen fast alle Einträge: 51 von 95 erreichten den Höchstwert des lexikalischen Scores, mit der Spielernachricht allein waren es 4.
+2. **Alaric als Fokus:** Alaric zählte als Fokus-Entität. Jede Erinnerung mit ihm bekam +3, ein Fakt ohne ihn (der Kartenhändler über den Dungeon) nicht.
+3. **Wortgleiche Zeilen:** Sie kosteten das Budget doppelt, im Lauf 15-mal.
+
+**Neu:**
+- **Anfrage:** Die Spielernachricht zählt voll. Aus der letzten Antwort zählen nur die bekannten Namen, die sie nennt (NPCs, Orte, Quests), dazu die Namen der Anwesenden, mit halbem Gewicht. Eine namenlose Kreatur geht nicht als Beschreibung ein („low, heavy bulk“ traf sonst jedes andere Tier); ihr Signal läuft über die ID.
+- **Entität:** `pc` zählt nicht mehr. Fokus sind die Anwesenden und die NPCs, die Spielernachricht oder letzte Antwort beim Namen nennen; das ist neu für Abwesende.
+- **BM25:** `1 − e^(−x/6)` statt `min(1, x/6)`. Keine Kappung, starke Treffer bleiben unterscheidbar.
+- **Gleiche Zeilen:** Wortgleiche Zeilen gleicher Art werden zu einer Zeile mit `(×n)` zusammengefasst. Verschiedene Zeit, verschiedener Name oder anderer Wortlaut bleiben getrennt. Das Event-Log bleibt, wie es ist.
+- **Export:** `retrieveRelevant()` (aus `buildContext` herausgezogen) liefert Rangfolge und gepackte Zeilen für Tests.
+
+**Ergebnis im Lauf** (34 Spielerzüge, Standardbudget 1.400):
+
+| | vorher | nachher |
+|---|---|---|
+| Dungeon-/Kartenzeilen im Engine-Block bei #45 / #63 / #67 | 1 / 0 / 0 | 6 / 5 / 5 |
+| doppelte Zeilen in RELEVANT, gesamt | 15 | 0 |
+| Kampfzeilen je Zug | 1,3 | 0,5 |
+| RELEVANT-Token je Zug | 303 | 299 |
+| Engine-Block je Zug | 558 Token | 554 Token |
+| Rechenzeit Context Builder je Zug | 8,1 ms | 3,5 ms |
+
+**Tests:**
+- `tests/v4/retrieval_p1.test.js` mit 9 Tests:
+  - A (#45) und B (#63, zweimal), auf `tests/v4/live_1018_weald.json` (#0–#63 des Laufs);
+  - C (vier Tests): NPC nach 20 Kämpfen, Anwesende und Kampf, Quest und Ortsfakt, mehrdeutiges Wort;
+  - D (zwei Tests): Duplikate, und 5.000 Einträge unter 2 s.
+- Mutationsproben: 6 Teiländerungen einzeln zurückgedreht, jede fällt durch.
+- Gesamt: 726/726.
+- Planner aus, gegen c.6.6.8 (122 Live-Schritte): Zustand und Records identisch. 47 Engine-Blöcke unterscheiden sich, ausschließlich im Abschnitt RELEVANT; die 18 Kampfeingaben sind identisch.
+- Build: `4.3.0-c.6.6.9`.
+
+**SillyTavern:** Nur den Extension-Ordner ersetzen. Karte, Preset und Lorebook bleiben.
+
+**Grenzen von c.6.6.9:**
+- Nennt der Spieler das Ziel nicht („I keep walking“), hat die Anfrage kein Thema. Dann entscheiden Ort, Wichtigkeit und Aktualität. Ein dauerhaftes Vorhaben (Active Intent) fehlt noch.
+- Offene Threads bleiben offen, bis sie gelöst werden. Überholte Hinweise konkurrieren weiter mit; ihre Lebensdauer regelt erst ein Thread-Lifecycle.
+- Fast gleiche Zeilen (zwei Fakten zur selben Sache mit anderem Wortlaut) werden nicht zusammengefasst.
+- Lexikalisch heißt wörtlich: „cave“ findet „Dungeon“ nicht. Es gibt keine Embeddings; `rank()` hat dafür einen `semantic`-Haken.

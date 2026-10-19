@@ -35,20 +35,25 @@ export class Bm25 {
     }
 }
 
+const CONTEXT_WEIGHT = 0.5;
 export const DEFAULT_WEIGHTS = { entity: 3, location: 1.5, quest: 1.5, recency: 0.5, importance: 2, lexical: 2, relation: 1 };
 
 /**
  * Score items. item: {text, entities:[], location, quests:[], turn, importance (0..1)}
- * focus: {entities:[], location, realm, quests:[], turn, query, relationStrength: Map(entityId -> 0..1)}
+ * focus: {entities:[], location, realm, quests:[], turn, query, context, relationStrength: Map(entityId -> 0..1)}
+ * query is what this turn is about (the player's message); context adds names the scene supplies (the last reply, the
+ * people present) at half weight, so a long narration cannot outvote the player's words.
  */
 export function rank(items, focus, opts = {}) {
     const w = { ...DEFAULT_WEIGHTS, ...(opts.weights || {}) };
     const bm = new Bm25(items.map((it) => it.text));
-    const lex = items.map((_, i) => (focus.query ? bm.score(focus.query, i) : 0));
-    // absolute scale (not max-normalised): one rare shared term ~ 1, common words ~ 0.1, so the best of many weak
-    // matches is not inflated into a "perfect" match
+    const lex = items.map((_, i) => (focus.query ? bm.score(focus.query, i) : 0) + (focus.context ? CONTEXT_WEIGHT * bm.score(focus.context, i) : 0));
+    // absolute scale (not max-normalised): one rare shared term ~ 0.5, two ~ 0.75, common words ~ 0.05, so the best of
+    // many weak matches is not inflated into a "perfect" match. The curve flattens but never caps: two items that both
+    // match strongly keep their order (a hard cap at 1 tied 51 of 95 items in the live run of 18.10.2026)
     const lexScale = opts.lexicalScale || 6;
-    const fe = new Set(focus.entities || []);
+    // Alaric is in nearly every memory: being about him says nothing about THIS scene, so he is no focus entity
+    const fe = new Set((focus.entities || []).filter((e) => e !== 'pc'));
     const fq = new Set(focus.quests || []);
     const scored = items.map((it, i) => {
         const ents = it.entities || [];
@@ -59,7 +64,7 @@ export function rank(items, focus, opts = {}) {
         const age = Math.max(0, (focus.turn ?? 0) - (it.turn ?? 0));
         const recency = Math.pow(0.99, age);
         const importance = Math.max(0, Math.min(1, it.importance ?? 0.3));
-        const lexical = Math.min(1, lex[i] / lexScale);
+        const lexical = 1 - Math.exp(-lex[i] / lexScale);
         let relation = 0;
         if (focus.relationStrength) for (const e of ents) relation = Math.max(relation, focus.relationStrength.get(e) || 0);
         const semantic = opts.semantic ? opts.semantic(it) : 0;

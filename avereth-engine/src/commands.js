@@ -290,8 +290,9 @@ function audit(state, content) {
     if (o?.records) for (const r of o.records) for (const s of r.strikes || []) lines.push(`${name(r.actor)} ${r.skill_name || ''} -> ${name(s.target)}: ${s.hit ? `hit ${s.hit.chance}% d100 ${s.hit.roll} | ` : ''}${s.crit?.ambush ? 'AMBUSH CRIT | ' : ''}${s.steps ? s.steps.join(' → ') : `${s.final} damage`}`);
     if (o?.check) lines.push(`${o.check.label}: ${o.check.chance ?? '-'}% d100 ${o.check.roll ?? '-'} ${o.check.success ? 'SUCCESS' : 'FAILURE'}`);
     if (o?.check_die) lines.push(`Check die issued: d100 ${o.check_die}${state.last.check ? ` (used for "${state.last.check.what}": ${state.last.check.chance}% -> ${state.last.check.success ? 'SUCCESS' : 'FAILURE'})` : ' (unused)'}`);
-    for (const r of state.last.rejected) lines.push(`Rejected report item: ${r.reason}`);
-    if (lines.length === 1) lines.push('No rolls or rejections recorded for the last turn.');
+    // V4's rejected deltas are saved after the reply: show rule and reason only on explicit audit.
+    for (const r of state.last.rejected) lines.push(`Rejected world report [${r.rule || 'rule'}]: ${r.reason || 'not accepted'}`);
+    if (lines.length === 1) lines.push('No rolls or world-report rejections for the last turn. This is normal.');
     lines.push(`RNG: seed ${state.rng.seed} | draws ${state.rng.n} | Engine ${ENGINE_VERSION}`);
     return lines.join('\n');
 }

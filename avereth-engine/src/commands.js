@@ -292,7 +292,9 @@ function audit(state, content) {
     if (o?.check_die) lines.push(`Check die issued: d100 ${o.check_die}${state.last.check ? ` (used for "${state.last.check.what}": ${state.last.check.chance}% -> ${state.last.check.success ? 'SUCCESS' : 'FAILURE'})` : ' (unused)'}`);
     // V4's rejected deltas are saved after the reply: show rule and reason only on explicit audit.
     for (const r of state.last.rejected) lines.push(`Rejected world report [${r.rule || 'rule'}]: ${r.reason || 'not accepted'}`);
-    if (lines.length === 1) lines.push('No rolls or world-report rejections for the last turn. This is normal.');
+    if (state.last.extract_error) lines.push(`World report FAILED: ${state.last.extract_error} (world state not updated from the reply)`);
+    for (const r of state.last.overreach || []) lines.push(`Narrator overreach [${r.kind}]: ${r.what} (not applied)`);
+    if (lines.length === 1) lines.push('No rolls or recorded world-report problems in the last turn. This is normal.');
     lines.push(`RNG: seed ${state.rng.seed} | draws ${state.rng.n} | Engine ${ENGINE_VERSION}`);
     return lines.join('\n');
 }

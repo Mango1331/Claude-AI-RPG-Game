@@ -179,10 +179,13 @@ test('a memory keeps the moment, not the engine\'s state: a payout, a contract\'
     const only = world(s, [mem('Alaric turned in the boar contract; payout 60 cp; 15 Quest XP.')]);
     assert.deepEqual(rules(only), ['engine_owned_memory']);
     assert.deepEqual(stored(only), []);
-    // ordinary moments with money stay whole: a payment for goods or a service is no payout
+    // ordinary moments with money stay whole: a payment for goods or a service is no payout (Patch 3 review: his
+    // payment is his act, kept where he paid in this turn; one the story made for him is not kept)
+    const paid = (deltas) => { const t = after(s); t.last.outcome.resolutions = [{ seq: 1, type: 'pay', status: 'resolved' }]; return applyWorld(t, content, { expected: {}, deltas }, { msg: 9 }); };
     for (const keep of ['Alaric paid Wenna 2 silver for a bed in the dormitory and thanked her.', 'Wenna laughed when Alaric dropped his copper on the floor.']) {
-        assert.deepEqual(stored(world(s, [mem(keep)])), [keep.replace('Alaric', '{pc}')], keep);
+        assert.deepEqual(stored(paid([mem(keep)])), [keep.replace('Alaric', '{pc}')], keep);
     }
+    assert.deepEqual(rules(world(s, [mem('Alaric paid Wenna 2 silver for a bed in the dormitory and thanked her.')])), ['pc_decision']);
     assert.equal(ownedClause('Alaric made his payment of 2 copper for the crossing.', { store: 'memory' }), null);
     assert.equal(ownedClause('Alaric made his payment of 2 copper for the crossing.', { store: 'note' }), 'pc.coin', 'in a contract note every sum with a payment word is the contract\'s (unchanged)');
     assert.equal(ownedClause('The bounty was 20 cp.', { store: 'memory' }), 'pc.coin', 'the Guild\'s money stays the engine\'s in a memory too');

@@ -16,7 +16,7 @@ import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver } from '../delta.js';
 import { truth, entityLabel, setFactEvents, statusOf, normPredicate } from '../knowledge.js';
 import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
-import { firewall, pcWound } from './firewall.js';
+import { firewall, pcWound, pcActIn } from './firewall.js';
 import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolation } from './ownership.js';
 import { mayOpenFight, mayTake } from './envelope.js';
 import {
@@ -558,9 +558,20 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'memory': {
                 // a memory keeps the moment, never the engine's state as a second truth (Decision Ownership): a clause
                 // that states a contract's status, a payout, Quest XP, Guild rank or membership goes; the rest stays
-                const cut = stripOwned(d.text, { store: 'memory' });
-                if (!cut.kept.length) { reject(d, 'engine_owned_memory', `a memory keeps the moment; ${cut.kinds.join(', ')} is the engine's state, recorded by the engine`); break; }
-                v3({ memory: [{ text: cut.owned.length ? cut.kept.join(' ') : d.text, who: (d.who || []).map(mapRef), imp: d.imp }] }, d);
+                // Patch 3 (review): nor an act of his he did not choose (the fact firewall's pc_decision, in a memory's words:
+                // "Alaric hunted and roasted wood pigeons" on a road he only travelled); what he did stays
+                const fw = firewallContext(s, content);
+                // "He" opening a later clause of a memory about Alaric is Alaric
+                const actOf = (c) => pcActIn(/^\s*alaric\b/i.test(d.text) ? c.replace(/^\s*he\b/i, 'Alaric') : c);
+                const invented = (c) => { const act = actOf(c); return !!act && !fw.actedOn(act); };
+                const cut = stripOwned(d.text, { store: 'memory', extra: invented });
+                const acts = cut.other.map(actOf);
+                if (acts.length) {
+                    const correction = `Alaric did not ${[...new Set(acts)].join(' or ')} anything in the last reply: hunting, eating, buying, using up or leaving behind his things is his decision, and he did not make it. His food, coin and things are as the engine has them.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                }
+                if (!cut.kept.length) { reject(d, acts.length ? 'pc_decision' : 'engine_owned_memory', acts.length ? `a memory of his own act he did not choose (${acts.join(', ')})` : `a memory keeps the moment; ${cut.kinds.join(', ')} is the engine's state, recorded by the engine`); break; }
+                v3({ memory: [{ text: cut.owned.length || cut.other.length ? cut.kept.join(' ') : d.text, who: (d.who || []).map(mapRef), imp: d.imp }] }, d);
                 break;
             }
             case 'thread':
@@ -623,6 +634,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 }
                 const coin = s.entities.pc.sheet.coin_cp;
                 const cp = evidenced(d.cp, d.said, d);
+                if (cp === null) {
+                    reject(d, 'coin', `${d.cp} cp is no sum the reply names`);
+                    const correction = `Alaric's purse did not change: the ${d.cp} cp from ${String(d.from).slice(0, 60)} in the last reply were not booked (the reply names no such sum).`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    break;
+                }
                 grant('envelope.give');
                 emit({ t: 'coin.changed', d: { id: 'pc', value: coin + cp, delta: cp, why: `${from ? entityLabel(s, from) : d.from}: ${String(d.why || 'a gift').slice(0, 80)}` } });
                 break;
@@ -1114,33 +1131,34 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     }
 
     /**
-     * Patch 3: the amount the story says in words is the amount (live 18.10.2026: "two silver" reported as 200 cp). The
-     * engine reads the words the extractor copied from the reply (said) itself; where they name another sum than the
-     * number, the words win and the audit keeps both. Words that are not in the reply are no evidence.
+     * Patch 3: the amount the story says is the amount (live 18.10.2026: "two silver" reported as 200 cp). The engine
+     * reads the words the extractor copied from the reply (said) itself; where they name another sum than the number,
+     * the words win and the audit keeps both. Words that are not in the reply are no evidence: then, as without words,
+     * the reply's own sums decide (review of c.6.6.11: "nine gold" that the reply never said legitimised 7 cp):
+     * - the number is one the reply says (as coin or as a bare number: "two for the bath") -> it stands;
+     * - it is exactly one coin unit off the only such sum (200 for "two silver") -> that sum;
+     * - the reply names sums, none of them this one -> no evidence: null, nothing is booked or offered at it;
+     * - the reply names no sum at all ("presses a few coins into his hand") -> the extractor's number stands: the story
+     *   left the amount to the engine's reading, and the booking event keeps it.
      */
     function evidenced(cp, said, d) {
-        if (typeof said !== 'string' || !said.trim()) return unitSlip(cp, d);
-        const flatSaid = normText(said).replace(/[^a-z0-9]+/g, ' ').trim();
-        if (prose && !normText(prose).replace(/[^a-z0-9]+/g, ' ').includes(flatSaid)) return cp;
-        const v = coinFromWords(said, content);
-        if (v === null || v === cp) return cp;
-        emit({ t: 'note', d: { kind: 'amount.corrected', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: String(said).slice(0, 60), cp: v } });
-        return v;
-    }
-
-    /**
-     * Without the words: a number the reply does not say, that is exactly one coin unit off an amount it does say (200
-     * for "two silver"), is that amount misread in the wrong unit. Any other number stays as reported.
-     */
-    function unitSlip(cp, d) {
+        if (typeof said === 'string' && said.trim()) {
+            const flatSaid = normText(said).replace(/[^a-z0-9]+/g, ' ').trim();
+            const inReply = !prose || normText(prose).replace(/[^a-z0-9]+/g, ' ').includes(flatSaid);
+            const v = inReply ? coinFromWords(said, content) : null;
+            if (v !== null) {
+                if (v !== cp) emit({ t: 'note', d: { kind: 'amount.corrected', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: String(said).slice(0, 60), cp: v } });
+                return v;
+            }
+            if (!inReply) emit({ t: 'note', d: { kind: 'amount.unproven', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: String(said).slice(0, 60), why: 'the words are not in the reply' } });
+        }
         if (!prose || !Number.isInteger(cp)) return cp;
         const stated = coinMentions(prose, content);
-        // a number the reply says anywhere ("two for the bath") is no slip
-        if (!stated.length || stated.includes(cp) || numbersIn(prose).has(cp)) return cp;
+        if (stated.includes(cp) || numbersIn(prose).has(cp) || !stated.length) return cp;
         const u = content.rules.currency;
         const factors = [u.copper_per_silver, u.copper_per_silver * u.silver_per_gold];
         const near = [...new Set(stated.filter((v) => factors.some((f) => v * f === cp || cp * f === v)))];
-        if (near.length !== 1) return cp;
+        if (near.length !== 1) return null;
         emit({ t: 'note', d: { kind: 'amount.corrected', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: null, cp: near[0], why: 'one coin unit off the amount the reply states' } });
         return near[0];
     }
@@ -1148,7 +1166,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     function offer(d) {
         const seller = idOf(d.seller);
         if (!seller || seller === 'pc' || !s.scene.present.includes(seller)) { reject(d, 'offer', `the seller ${String(d.seller).slice(0, 40)} is not present`); return; }
-        const lines = d.lines.map((l, i) => ({ id: `l${i + 1}`, ...l, price_cp: evidenced(l.price_cp, l.said, d) }));
+        const priced = d.lines.map((l) => ({ ...l, price_cp: evidenced(l.price_cp, l.said, d) }));
+        // a price the reply does not say is not offered (review of c.6.6.11); the seller's other lines stand
+        const unproven = priced.filter((l, i) => l.price_cp === null && Number.isInteger(d.lines[i].price_cp));
+        if (unproven.length) {
+            reject({ ...d, lines: d.lines.filter((l, i) => unproven.includes(priced[i])) }, 'offer', 'a price the reply does not name');
+            const correction = `No price was recorded for ${unproven.map((l) => String(l.what).slice(0, 40)).join(', ')}: the last reply names no such sum. A price stands only as the story names it.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+        }
+        const lines = priced.filter((l) => !unproven.includes(l)).map((l, i) => ({ id: `l${i + 1}`, ...l }));
+        if (!lines.length) return;
         // the seller's latest price for the same thing stands: an open offer of theirs for it closes (one price at a
         // time, as for a buyer's bid); an unchanged one stays and is not offered twice
         const same = openOffers(s).filter((o) => !o.bid && !o.canon && o.seller === seller && o.lines.some((x) => lines.some((l) => sameWant(l.what, x.what) && sameWant(x.what, l.what))));
@@ -1197,6 +1224,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         }
         if (!lines.length || !Number.isInteger(d.price_cp)) { reject(d, 'offer', 'a bid names his things and one price'); return; }
         const price = evidenced(d.price_cp, d.said, d);
+        if (price === null) { reject(d, 'offer', `${d.price_cp} cp is no sum the reply names`); return; }
         for (const old of openOffers(s).filter((x) => x.bid && x.seller === buyer)) emit({ t: 'offer.closed', d: { id: old.id, status: 'expired' } });
         const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
         emit({ t: 'offer.created', d: { offer: { id, seller: buyer, bid: true, at: s.scene.at, status: 'open', canon: false, turn: s.turn, price_cp: price, lines } } });

@@ -207,6 +207,13 @@ export function applyEvent(state, e) {
         case 'resource.changed': {
             const s = sheetOf(state, d.id);
             s[d.resource] = d.value;
+            // Patch 3 (review): a wound of Alaric's (fact scope.hurt, src/v4/world.js) is healed for good the moment his
+            // HP reach the maximum it was told under; a later, unrelated hurt does not bring it back
+            if (d.id === 'pc' && d.resource === 'hp') {
+                for (const f of Object.values(state.facts)) {
+                    if (f.scope?.hurt && !f.until && d.value >= f.scope.hurt) f.until = { turn: state.turn, minute: state.clock.minute };
+                }
+            }
             break;
         }
         case 'item.changed': {

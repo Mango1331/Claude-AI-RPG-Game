@@ -93,6 +93,14 @@ const guildBoard = (t) => /\bboard\b/.test(t) && /\b(?:guild|quests?|contracts?|
 const LISTS = /^(?:lists?|listed|listing|posts?|posted|offers?|offered|advertises|advertised)(?:_|$)/;
 export const isPc = (ref) => PC_REF.test(words(ref));
 
+// Patch 3 (review): the same acts in a memory's words ("Alaric hunted a pair of wood pigeons and roasted them"): only
+// verbs that name a resource of his changing, never the ones that also say something else ("caught his breath",
+// "spent the night", "picked his way", "used the moment"); and only with Alaric as the one who did it
+const PC_ACT_WORDS = 'ate|eaten|eats|drank|drunk|consumed|devoured|hunted|cooked|roasted|bought|purchased|sold|traded|bartered|butchered|skinned|foraged|looted|discarded|abandoned|paid(?!\\s+(?:attention|heed|no|little|close|his|her|their|respects))';
+const PC_ACT_CLAUSE = new RegExp(`\\balaric(?:\\s+red)?\\b(?!['’]s)(?:\\s+(?:and\\s+(?:his|the)?\\s*\\w+|then|quickly|first|finally|also|had|has|soon|hungrily|gratefully|eventually|later|together|himself))*\\s+(${PC_ACT_WORDS})\\b`, 'i');
+/** The act of his own a memory's clause tells (as a predicate word, "hunted"), or null. */
+export const pcActIn = (clause) => PC_ACT_CLAUSE.exec(String(clause || ''))?.[1].toLowerCase() || null;
+
 // Patch 3 (live 18.10.2026): the engine's mechanical state is no free fact. A wolf the engine held alive was stored
 // "dead" (the extractor gave the dead Wolf A's death to Wolf B), "pc wounded: claw raked deep across his ribs" outlived
 // his full healing, and "pc hunted_and_ate a pair of wood pigeons" made the narrator's meal his decision.

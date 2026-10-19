@@ -479,9 +479,10 @@ const EXPLICIT_REF = /\b(?:the\s+(?:first|second|third|fourth|fifth|other|left|r
 const PRONOUN = /\b(?:him|her|it|them)\b/;
 const area = (skill) => (skill?.effects || []).some((e) => e.kind === 'area');
 
-function clarifyPanel(question, options) {
+function clarifyPanel(question, options, waiting = []) {
     const opts = options.filter(Boolean);
-    return ['[SYSTEM // CLARIFY]', String(question).replace(/[<>`]/g, '').slice(0, 240), opts.length ? `Options: ${opts.join(' · ')}` : '', 'Nothing was spent or rolled; answer and send your message again.'].filter(Boolean).join('\n');
+    return ['[SYSTEM // CLARIFY]', String(question).replace(/[<>`]/g, '').slice(0, 240), opts.length ? `Options: ${opts.join(' · ')}` : '',
+        waiting.length ? `Also waiting with it: ${waiting.join(', ')}.` : '', 'Nothing was spent or rolled; answer and send your message again.'].filter(Boolean).join('\n');
 }
 
 /**
@@ -501,12 +502,16 @@ export function mapPlan(commands, ctx, content, message, state) {
     const quotes = (commands || []).map((c) => c.quote).filter(Boolean);
 
     // a question back to the player stands alone: nothing else of the message is booked (the whole plan waits). It is
-    // his question with his options by name; never A's attack question, which would name a skill or an attack for him
+    // his question with his options by name; never A's attack question, which would name a skill or an attack for him.
+    // Patch 3 (review): the whole message waits, not only the step in question, because the answer is the message sent
+    // again: a step booked now would happen twice. The clarify names no step of its own (no quote, no "needs"), so which
+    // steps rest on it is not known; in a fight the rest is the one main action anyway. The panel names what waits.
     const ask = mech.find((c) => c.type === 'clarify');
     if (ask) {
         const known = (o) => ctx.opponents.some((x) => x.id === o) || (ctx.catalog.present || []).some((p) => p.id === o);
         const opts = ask.options.map((o) => (content.skills.has(o) ? skillName(o) : known(o) ? label(o) : String(o).replace(/[<>`]/g, '').slice(0, 60)));
-        return { route: 'panel', panel: clarifyPanel(ask.question, opts), notes: [] };
+        const waiting = commands.filter((c) => c !== ask && c.quote).map((c) => `"${String(c.quote).replace(/[<>`]/g, '').slice(0, 60)}"`);
+        return { route: 'panel', panel: clarifyPanel(ask.question, opts, waiting), notes: [] };
     }
 
     const notes = [];

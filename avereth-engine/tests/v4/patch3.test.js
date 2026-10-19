@@ -13,7 +13,7 @@ import { rec, foldChat } from '../../src/host.js';
 import { buildContext, playerActionsBlock } from '../../src/context.js';
 import { characterRows } from '../../src/hud.js';
 import { buildCatalog } from '../../src/v4/catalog.js';
-import { parsePlan, planContext, withContentSkills } from '../../src/v4/planner.js';
+import { parsePlan, planContext, withContentSkills, mapPlan } from '../../src/v4/planner.js';
 import { deriveCharacter } from '../../src/derived.js';
 import { currentFacts } from '../../src/knowledge.js';
 import { coinFromWords } from '../../src/economy.js';
@@ -286,7 +286,12 @@ test('a gift of coin in words is the words\' amount; words not in the reply prov
         { seq: 2, type: 'coin.gift', from: 'carter', cp: 200, why: 'thanks', said: 'two silver' },
         { seq: 3, type: 'coin.gift', from: 'carter', cp: 7, why: 'thanks', said: 'nine gold' },
     ] });
-    assert.equal(g.state().entities.pc.sheet.coin_cp, 50 + 20 + 7);
+    // review of c.6.6.11: "nine gold" is not in the reply, and 7 cp is no sum it names: nothing booked, the story is told
+    assert.equal(g.state().entities.pc.sheet.coin_cp, 50 + 20);
+    const u = g.chat.findLastIndex((m) => !m.is_user);
+    const ev = rec(g.chat[u]).events;
+    assert.ok(ev.some((e) => e.t === 'note' && e.d.kind === 'amount.unproven' && e.d.reported_cp === 7));
+    assert.ok(ev.some((e) => e.t === 'delta.rejected' && e.d.item.cp === 7 && e.d.rule === 'coin'));
 });
 
 test('cost: no new LLM call; the engine block grows by one short line only where time passes', async () => {
@@ -298,4 +303,134 @@ test('cost: no new LLM call; the engine block grows by one short line only where
     const u = g.chat.findLastIndex((m) => m.is_user);
     const block = rec(g.chat[u]).events.findLast((e) => e.t === 'outcome.recorded').d.outcome;
     assert.ok(block.auth.gos.length);
+});
+
+// ------------------------------------------------------------------------------------------------ review of c.6.6.11
+
+test('review 1: a wound healed once stays healed; a new, unrelated hurt does not bring the old wound back', async () => {
+    const g = await campaign();
+    await say(g, '*i walk into the city*', { type: 'go', to: 'loc.ashbridge', quote: 'i walk into the city' });
+    await g.reply('He walks in.', { expected: { 1: { arrived: true, at: 'loc.ashbridge', with: null } }, deltas: [] });
+    const hurt = (hp) => g.chat.findLast((m) => m.extra?.avereth?.events).extra.avereth.events.push({ t: 'resource.changed', d: { id: 'pc', resource: 'hp', value: hp } });
+    hurt(50);
+    await say(g, '*i look around*');
+    await g.reply('His side burns where the claws raked him.', { expected: {}, deltas: [{ seq: 1, type: 'fact', s: 'pc', p: 'wounded', o: 'claw raked deep across his left ribs' }] });
+    assert.equal(currentFacts(g.state(), (f) => f.s === 'pc' && f.p === 'wounded').length, 1);
+    await say(g, '*i rest for 8 hours*', { type: 'activity', kind: 'rest', what: null, minutes: 480, until: null, quote: 'i rest for 8 hours' });
+    await g.reply('He rests.', { expected: { 1: { minutes: 480, done: true } }, deltas: [] });
+    let s = g.state();
+    const old = Object.values(s.facts).find((f) => f.s === 'pc' && f.p === 'wounded');
+    assert.ok(old.until, 'healed: the wound is closed in the log, not only hidden while his HP is full');
+    // a new hurt, nothing said about the ribs: the old wound stays closed
+    hurt(60);
+    await say(g, '*i look around*');
+    await g.reply('He looks around.', { expected: {}, deltas: [] });
+    s = g.state();
+    assert.ok(s.entities.pc.sheet.hp < deriveCharacter(s.entities.pc.sheet, content).maxHp);
+    assert.equal(currentFacts(s, (f) => f.s === 'pc' && f.p === 'wounded').length, 0, 'the old wound does not come back');
+    // a new wound of the new hurt is a new fact
+    await g.reply('A fresh cut stings on his forearm.', { expected: {}, deltas: [{ seq: 1, type: 'fact', s: 'pc', p: 'wounded', o: 'a fresh cut on his forearm' }] });
+    assert.deepEqual(currentFacts(g.state(), (f) => f.s === 'pc' && f.p === 'wounded').map((f) => f.o), ['a fresh cut on his forearm']);
+});
+
+test('review 2: a price the reply does not say is no offer and no bid; a gift without words is booked only where the reply names no other sum', async () => {
+    const g = await campaign();
+    await say(g, '*i walk into the city*', { type: 'go', to: 'loc.ashbridge', quote: 'i walk into the city' });
+    let r = await g.reply('Ashbridge. A chandler sells oil flasks and a coil of rope: "A flask is three copper, the rope two silver."', {
+        expected: { 1: { arrived: true, at: 'loc.ashbridge', with: null } },
+        deltas: [
+            { seq: 1, type: 'person.new', ref: 'chandler', name: null, role: 'chandler', desc: [], present: true, relevant: true },
+            { seq: 2, type: 'person.new', ref: 'carter', name: null, role: 'carter', desc: [], present: true, relevant: true },
+            // the flask's price as the reply says it; the rope's "five gold" is nowhere in the reply, and 9 cp is no sum of it
+            { seq: 3, type: 'offer', seller: 'chandler', lines: [{ what: 'oil flask', kind: 'goods', service: null, qty: 1, price_cp: 3, said: 'three copper' }, { what: 'coil of rope', kind: 'goods', service: null, qty: 1, price_cp: 9, said: 'five gold' }] },
+            // without words, in a reply that names its sums (three copper, two silver): 4 cp is none of them, no gift
+            { seq: 4, type: 'coin.gift', from: 'carter', cp: 4, why: 'road news', said: null },
+        ],
+    });
+    let s = g.state();
+    const offer = Object.values(s.offers).find((x) => x.status === 'open' && !x.canon && !x.bid);
+    assert.deepEqual(offer.lines.map((l) => [l.what, l.price_cp]), [['oil flask', 3]], 'the rope at a price the reply never said is not offered');
+    assert.equal(s.entities.pc.sheet.coin_cp, 50);
+    assert.match(r.record.corrections.join('\n'), /No price was recorded for coil of rope/);
+    assert.match(r.record.corrections.join('\n'), /the 4 cp from carter in the last reply were not booked/);
+    // "a few coins": the reply names no sum at all; the extractor's number is the reading of it, and the booking keeps it
+    await say(g, '*i tell the carter about the road*');
+    await g.reply('The carter, grateful for the news, presses a few coins into his hand.', { expected: {}, deltas: [{ seq: 1, type: 'coin.gift', from: 'carter', cp: 4, why: 'road news', said: null }] });
+    s = g.state();
+    assert.equal(s.entities.pc.sheet.coin_cp, 54);
+    // a sum the reply names, and the extractor's other number: no gift; a bid at a price the reply never said: no bid
+    await say(g, '*i show the carter my staff*');
+    await g.reply('"I\'d give you eight silver for that staff," the carter says, and hands him two copper for the trouble.', { expected: {}, deltas: [
+        { seq: 1, type: 'coin.gift', from: 'carter', cp: 5, why: 'trouble', said: null },
+        { seq: 2, type: 'coin.gift', from: 'carter', cp: 2, why: 'trouble', said: 'two copper' },
+    ] });
+    s = g.state();
+    assert.equal(s.entities.pc.sheet.coin_cp, 56, 'the 5 cp the reply never names are not booked; the two copper are');
+    // a bid at a price the reply never said is no bid
+    await say(g, '*i buy a flask*', { type: 'offer.accept', offer: offer.id, lines: ['l1'], qty: null, quote: 'i buy a flask' });
+    await g.reply('He pays three copper.', { expected: {}, deltas: [] });
+    const flask = Object.values(g.state().objects).find((o) => o.holder?.entity === 'pc' && /flask/.test(o.name));
+    {
+        await say(g, '*i show the carter my flask*');
+        r = await g.reply('"Eight silver for it," the carter says.', { expected: {}, deltas: [{ seq: 1, type: 'bid', buyer: 'carter', lines: [{ object: flask.id, qty: 1 }], price_cp: 500, said: 'five gold' }] });
+        assert.ok(!Object.values(g.state().offers).some((o) => o.bid && o.status === 'open' && o.price_cp === 500));
+        assert.ok(r.record.events.some((e) => e.t === 'delta.rejected' && e.d.item.type === 'bid'));
+    }
+});
+
+test('review 4: a memory of a meal or hunt he did not choose is not kept; the memory of what he did is', async () => {
+    const g = live(19);
+    const raw = structuredClone(recorded(20).extraction.raw);
+    raw.deltas = raw.deltas.filter((d) => d.type !== 'fact' || d.s !== 'Alaric');
+    raw.deltas.push(
+        { seq: 8, type: 'memory', text: 'Alaric hunted a pair of wood pigeons and roasted them over a midday fire.', who: [], imp: 6 },
+        { seq: 9, type: 'memory', text: 'Alaric reached the stream crossing at dusk. He ate a pair of roasted wood pigeons there.', who: [], imp: 6 },
+        { seq: 10, type: 'memory', text: 'Alaric followed the Weald track south to the stream crossing.', who: [], imp: 6 },
+    );
+    const r = await g.reply(fx.messages[20].mes, raw);
+    const s = g.state();
+    const texts = s.memories.map((m) => m.text.replace(/\{pc\}/g, 'Alaric'));
+    assert.ok(!texts.some((t) => /pigeon/.test(t)), texts.join(' | '));
+    assert.ok(texts.includes('Alaric followed the Weald track south to the stream crossing.'));
+    assert.ok(texts.includes('Alaric reached the stream crossing at dusk.'), 'the rest of a memory stays');
+    assert.ok(r.record.events.some((e) => e.t === 'delta.rejected' && e.d.rule === 'pc_decision' && e.d.item.seq === 8));
+    assert.match(r.record.corrections.join('\n'), /Alaric did not (?:hunt|eat)/);
+    // what he did: bought the rope and ate his own bread: kept
+    const h = await campaign();
+    await say(h, '*i walk into the city*', { type: 'go', to: 'loc.ashbridge', quote: 'i walk into the city' });
+    await h.reply('Ashbridge. A chandler sells a coil of rope: "Two silver."', { expected: { 1: { arrived: true, at: 'loc.ashbridge', with: null } }, deltas: [
+        { seq: 1, type: 'person.new', ref: 'chandler', name: null, role: 'chandler', desc: [], present: true, relevant: true },
+        { seq: 2, type: 'offer', seller: 'chandler', lines: [{ what: 'coil of rope', kind: 'goods', service: null, qty: 1, price_cp: 20, said: 'two silver' }] },
+    ] });
+    const offer = Object.values(h.state().offers).find((x) => x.status === 'open' && !x.canon);
+    await say(h, '*i buy the rope*', { type: 'offer.accept', offer: offer.id, lines: ['l1'], qty: null, quote: 'i buy the rope' });
+    await h.reply('He pays and coils the rope over his shoulder.', { expected: {}, deltas: [{ seq: 1, type: 'memory', text: 'Alaric bought a coil of rope from the chandler for two silver.', who: ['chandler'], imp: 6 }] });
+    assert.ok(h.state().memories.some((m) => m.text.replace(/\{pc\}/g, 'Alaric') === 'Alaric bought a coil of rope from the chandler for two silver.'));
+    // words that only look like it ("caught his breath", "spent the night") are no act
+    await say(h, '*i look around*');
+    await h.reply('He catches his breath.', { expected: {}, deltas: [{ seq: 1, type: 'memory', text: 'Alaric caught his breath and spent the night thinking about the road.', who: [], imp: 6 }] });
+    assert.ok(h.state().memories.some((m) => m.text.replace(/\{pc\}/g, 'Alaric') === 'Alaric caught his breath and spent the night thinking about the road.'));
+});
+
+test('review 3: a planner question stops the whole message, in and out of a fight, and says which steps wait with it; nothing is booked twice', async () => {
+    // outside a fight: "which guard?" with a walk to the gate in the same message; the panel names the walk as waiting
+    const g = await campaign();
+    const r = await say(g, '*i ask the guard about the road and walk to the gate*',
+        { type: 'clarify', about: 'target', question: 'Which guard do you ask?', options: ['a guard', 'another guard'] },
+        { type: 'go', to: { new: 'the gate' }, quote: 'walk to the gate' });
+    assert.equal(r.action, 'panels');
+    assert.match(r.panels.join('\n'), /Which guard do you ask\?[\s\S]*Also waiting with it: "walk to the gate"\.[\s\S]*send your message again/);
+    const rec0 = rec(g.chat.findLast((m) => m.is_user));
+    assert.ok(!rec0.events.length, 'nothing booked: the walk happens when the message is sent again, once');
+    // in a fight the question holds the one main action, and no step joins it
+    const ctx = {
+        fight: true, known: ['mage.flame_lance'], basic: 'mage.basic_attack', cls: 'mage', skills: [{ id: 'mage.flame_lance', name: 'Flame Lance' }],
+        opponents: [{ id: 'mon.a', label: 'Wolf A' }, { id: 'mon.b', label: 'Wolf B' }], catalog: { present: [], objects: [] },
+    };
+    const m = mapPlan([
+        { seq: 1, type: 'move', dir: 'toward', target: null, quote: 'i step forward' },
+        { seq: 2, type: 'clarify', about: 'target', question: 'Which wolf?', options: ['mon.a', 'mon.b'] },
+    ], ctx, content, 'i step forward and burn the wolf', { scene: { present: [] }, entities: {} });
+    assert.equal(m.route, 'panel');
+    assert.match(m.panel, /Which wolf\?\nOptions: Wolf A · Wolf B\nAlso waiting with it: "i step forward"\./);
 });

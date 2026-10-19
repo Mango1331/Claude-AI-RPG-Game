@@ -52,7 +52,8 @@ export function isTerminalStatus(p, o) {
 export function factLive(state, f) {
     if (f.until) return false;
     if (f.scope?.fight) return state.encounter?.id === f.scope.fight;
-    // Patch 3: a wound of Alaric's (src/v4/world.js) lives while he is below the maximum HP he had then
+    // Patch 3: a wound of Alaric's (src/v4/world.js) lives while he is below the maximum HP he had then; healing to
+    // that maximum ends it for good (src/state.js resource.changed): it never comes back with a later hurt
     if (f.scope?.hurt) return (state.entities?.pc?.sheet?.hp ?? 0) < f.scope.hurt;
     return true;
 }

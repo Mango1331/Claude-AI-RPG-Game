@@ -111,3 +111,19 @@
   }
   .mes_text [class*="avereth-range"] { min-width: 0; width: 100%; box-sizing: border-box; }
 }
+
+
+/* Patch 10A: readable combat cards on narrow chat panes. The System-message CSS is unchanged. */
+.mes_text [class*="avereth-combat-other-row"] { opacity: 0.9; }
+@media (max-width: 480px) {
+  .mes_text [class*="avereth-combat-row"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.24em 0.45em;
+    padding: 0.4em 0.15em;
+  }
+  .mes_text [class*="avereth-combat-head"] { display: none; }
+  .mes_text [class*="avereth-combat-name"] { grid-column: 1 / -1; overflow-wrap: anywhere; }
+  .mes_text [class*="avereth-combat-hp"]::before { content: "HP "; font-size: 0.86em; opacity: 0.8; }
+  .mes_text [class*="avereth-combat-range"]::before { content: "Range "; display: block; font-size: 0.86em; opacity: 0.8; }
+  .mes_text [class*="avereth-combat-cover"]::before { content: "Cover "; display: block; font-size: 0.86em; opacity: 0.8; }
+}

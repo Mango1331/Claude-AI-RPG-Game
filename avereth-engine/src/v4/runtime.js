@@ -342,7 +342,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
 function display(msg, content, before, reply, hud) {
     const panel = worldPanel(before, content, reply);
     const view = renderHud(reply.state || before, content, hud);
-    showPanel(msg, panel, view);
+    showPanel(msg, panel, view, { playerFacing: true });
     return { panel: panel || undefined, hud: view || undefined };
 }
 
@@ -472,6 +472,6 @@ export function onEditedV4(chat, id) {
     const r = rec(msg);
     if (!msg || msg.is_user || !r) return { changed: false };
     setRec(msg, { ...r, text_hash: hash32(msg.mes) });
-    if (r.panel || r.hud) showPanel(msg, r.panel, r.hud);
+    if (r.panel || r.hud) showPanel(msg, r.panel, r.hud, { playerFacing: true });
     return r.panel || r.hud ? { changed: true, text: true } : { changed: true };
 }

@@ -20,7 +20,7 @@ test('10A.3: long inventory and contract lists do not overwhelm the character HU
         g.state.quests['quest.10a3_' + i] = { id: 'quest.10a3_' + i, title: 'Notice ' + i, status: 'offered' };
     }
     const c = chars(g.state);
-    assert.match(c.Carried, new RegExp('\\\\+' + (items.length - 8) + ' more \\(#bag\\)'));
+    assert.ok(c.Carried.includes(`+${items.length - 8} more (#bag)`), c.Carried);
     assert.match(c.Quests, /Notice 1|Notice 2|Notice 3/);
     assert.match(c.Quests, /\+3 more \(#quests\)/);
     assert.doesNotMatch(c.Quests, /Notice 6/);

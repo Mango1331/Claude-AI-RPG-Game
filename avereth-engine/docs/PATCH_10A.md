@@ -1,6 +1,6 @@
 # Patch 10A – HUD/QoL (vorgezogen, display-only)
 
-**Stand:** 20.10.2026 · **Build:** `4.3.0-c.6.6.13-10a.1` · Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`
+**Stand:** 20.10.2026 · **Build:** `4.3.0-c.6.6.13-10a.2` · Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`
 
 ## Warum jetzt?
 
@@ -23,3 +23,20 @@ Die zusätzlichen Regressionstests liegen unter `tests/unit/hud_10a.test.js` (Or
 **Testhinweis:** Diese Änderung wurde über die GitHub-Verbindung direkt im Repository erstellt; ein vollständiger lokaler Node-Testlauf beziehungsweise ein echter SillyTavern-Browser-Smoke konnte in dieser Umgebung nicht durchgeführt werden. Diesen Nachweis vor dem nächsten Live-Test bzw. bei Patch 6 nachholen.
 
 **Weiterarbeit:** Patch 6 soll auf dem dann aktuellen Branch-HEAD aufbauen, die Anzeigeänderungen erhalten und sich auf Exploration/Hazards beschränken. Patch 10A ersetzt nicht den späteren vollständigen Patch 10.
+
+
+## Patch 10A.2 – Spielerfreundliche Engine-Nachrichten
+
+**Warum:** Der V4-Systemblock war bislang zugleich Spielanzeige und Debugprotokoll. Bei gewöhnlichen Extraktor-Korrekturen stand über jeder Erzählung beispielsweise „ENGINE REFUSED … see #audit“, obwohl die Engine den überflüssigen/nichtkanonischen Fakt bereits korrekt abgelehnt hatte. Ein solches Ereignis verlangt keine neue Handlung vom Spieler.
+
+**Umsetzung:**
+- Der **Standard-V4-Systemblock** zeigt nur die wichtigen Gameplay-Ergebnisse und echte Handlungsprobleme: Kampf, Checks, Belohnungen, tatsächlich verweigerte oder unklare Spieleraktionen und schwerwiegende Speicher-/Extractor-Ausfälle („WORLD NOT RECORDED“, ggf. Swipe/Regenerate).
+- Routinezeilen wie \`UNDERSTOOD\` für normale Kommandos, \`NOT A DECISION\`, \`NOT APPLIED\`, \`ENGINE REFUSED\`, \`NON-CANON FACT\` sowie redundante \`TIME\`-Buchungen werden **nur aus der sichtbaren Systemkarte** entfernt.
+- Target-CLARIFY/Target-needed-Systemfragen bleiben **unverändert sichtbar**. Gleiches gilt für nicht ausführbare eigene Aktionen.
+- Der **ungefilterte Paneltext** bleibt im Nachrichtenrecord (\`extra.avereth.panel\`), die eigentlichen \`delta.rejected\`-Events bleiben erhalten. Der Filter wird nur auf der V4-Darstellung angewandt. V3 und \`#\`-Systemkommandos bleiben unverändert.
+- \`#audit\` benennt explizit aufgezeichnete Ablehnungsregeln samt Begründung. Die zuvor irreführende pauschale \`see #audit\`-Aufforderung entfällt aus der normalen Spielanzeige.
+- Beim erneuten Rendern nach einem Swipe/Edit wird dieselbe ruhige V4-Anzeige verwendet.
+
+**Regressionen:** \`tests/unit/display_10a.test.js\` prüft das Herausfiltern interner Meldungen, das Sichtbarbleiben echter Fehler, separate Zielklärungsfragen, die V3-Anzeige und die Ausgabe von \`#audit\`.
+
+Die Mechanik, die Regeln, der Narrator-/Extractor-Prompt und die LLM-Aufrufzahl bleiben unverändert. Neue Tests und vollständige Smokes konnten über die GitHub-Dateischnittstelle nicht lokal ausgeführt werden; vor Patch 6 bzw. beim nächsten Live-Test nachholen.

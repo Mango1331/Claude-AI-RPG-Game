@@ -350,12 +350,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // One animal of a kind that left this area alive, and no other of its kind: the story shows it coming back, not
         // a second one (live 30.09.2026 14:56: the big bog strider withdrew into the reeds and returned as "Bog
         // Strider D" while the first stayed alive in the state). Two or more such animals stay a question for the story.
-        // Patch 5: on the open road that area is the stretch it was left on (nearby), not the whole realm: no animal follows
-        // him from one end of Duskreach to the other
-        const road = s.places[s.scene.at]?.kind === 'realm';
+        // Patch 5 (review of c.6.6.13): "this area" is the very place it was left at (entity.left), never the settlement or
+        // realm it shares with another place (the wolf of one cave is not the wolf of the next cave in Duskreach); at a
+        // place of its own it is still there later (Patch 4: the quarry wolf after hours), on the open road only nearby
+        const leftHere = (e) => e.kind === 'creature' && statusOf(s, e.id) !== 'dead' && !s.scene.present.includes(e.id) && e.left?.at === s.scene.at
+            && (s.places[s.scene.at]?.kind === 'realm' ? nearby(e) : true);
         if (kind === 'creature' && (d.count || 1) === 1 && d.present !== false) {
-            const same = Object.values(s.entities).filter((e) => e.kind === 'creature' && statusOf(s, e.id) !== 'dead' && !s.scene.present.includes(e.id)
-                && normText(e.species || '') === normText(d.species || '') && (e.anchor || e.profile?.anchor) === d.anchor && e.location === s.scene.location && (!road || nearby(e)));
+            const same = Object.values(s.entities).filter((e) => leftHere(e)
+                && normText(e.species || '') === normText(d.species || '') && (e.anchor || e.profile?.anchor) === d.anchor);
             // a stronger one than the ordinary one that left, whose numbers are fixed, is another individual (review of
             // 4.1.5: the returning path skipped the variation); one not yet fixed is this one, shown stronger now
             const other = same.length === 1 && d.stronger === true && same[0].variation !== 'strong' && !!same[0].profile;

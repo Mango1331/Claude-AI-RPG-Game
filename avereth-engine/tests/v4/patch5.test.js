@@ -691,3 +691,40 @@ test('patch 5 (35): the road is the record\'s: the chat folds to the same state,
         assert.ok(ctx.text.length > 0);
     });
 });
+
+// ------------------------------------------------------------------------------------------------ review
+/** He climbs into a cave of the realm and meets one wolf there; it stays, alive, when he goes. */
+async function cave(g, name, ref) {
+    await say(g, `*I climb into ${name}*`, { type: 'go', to: { new: name }, quote: `I climb into ${name}` });
+    await g.reply(`A single grey wolf growls in ${name}.`, { expected: { 1: { arrived: true, at: { new: { name, kind: 'site', parent: 'realm.duskreach' } }, with: null } }, deltas: [wolvesNew(ref, 1, 'MEDIUM', null, 1)] });
+    return g.state().scene.at;
+}
+async function toRoad(g) {
+    await say(g, '*I go back out to the road*', { type: 'go', to: 'realm.duskreach', quote: 'I go back out to the road' });
+    await g.reply('He is back on the road.', { expected: { 1: { arrived: true, at: 'realm.duskreach', with: null } }, deltas: [{ seq: 1, type: 'time', minutes: 60 }] });
+}
+
+test('patch 5 review: one wolf left alive in cave A is not the wolf of cave B elsewhere in the realm; back in cave A a short while later it is the same wolf, hurt as it was', async () => {
+    const g = await campaign();
+    const a = await cave(g, 'the cave of the falls', 'falls wolf');
+    let s = g.state();
+    const first = creatures(s)[0].id;
+    inject(g, [{ t: 'entity.updated', d: { id: first, set: { profile: { ...s.entities[first].profile, hp: 4 } } } }]);
+    await toRoad(g);
+    const b = await cave(g, 'the cave under the old oak', 'oak wolf');
+    s = g.state();
+    assert.notEqual(a, b);
+    const here = s.scene.present.filter((id) => s.entities[id]?.kind === 'creature');
+    assert.equal(here.length, 1);
+    assert.notEqual(here[0], first, 'the wolf of cave B is its own');
+    assert.equal(hpOf(s, first), 4, 'the wolf of cave A is untouched');
+    assert.equal(s.entities[first].left.at, a, 'and still where it was left');
+    // back to cave A within hours: the same wolf, with its 4 HP
+    await toRoad(g);
+    await say(g, '*I go back into the cave of the falls*', { type: 'go', to: a, quote: 'I go back into the cave of the falls' });
+    await g.reply('The wolf is still there, limping.', { expected: { 1: { arrived: true, at: a, with: null } }, deltas: [wolvesNew('wolf', 1, 'MEDIUM', null, 1)] });
+    s = g.state();
+    assert.deepEqual(s.scene.present.filter((id) => s.entities[id]?.kind === 'creature'), [first]);
+    assert.equal(hpOf(s, first), 4);
+    assert.equal(creatures(s).length, 2, 'no third wolf');
+});

@@ -37,6 +37,7 @@ test('a stronger one coming where an ordinary one left, its numbers fixed, is an
     assert.ok(first.profile && first.variation !== 'strong');
     const gone = structuredClone(seen);
     gone.scene.present = gone.scene.present.filter((x) => x !== first.id);
+    gone.entities[first.id].left = { at: gone.scene.at, minute: gone.clock.minute, turn: gone.turn, leg: false }; // Patch 5: left here, as the engine records it
     // the same kind comes back, ordinary: the one that left (as 4.1.2)
     const back = world(gone, [boar()]).state;
     assert.deepEqual(Object.values(back.entities).filter((e) => e.kind === 'creature').map((e) => e.id), [first.id]);

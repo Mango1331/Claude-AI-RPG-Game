@@ -452,6 +452,9 @@ function persistCombat(s, content, emit, enc, records, isNew, { c: cPath = false
                 emit({ t: 'scene.left', d: { id: c.id } });
                 // 4.3.0-c.6.6.6: one that fled the fight itself is driven off, as the engine saw it (src/v4/guild.js defeatTally)
                 if (cPath && c.current.escaped) emit({ t: 'entity.updated', d: { id: c.id, set: { fled: { turn: s.turn, encounter: enc.id } } } });
+                // Patch 5 (review): where it got away, or where he got away from it, is where it may be met again
+                // (src/v4/world.js nearby)
+                if (s.entities[c.id]?.kind === 'creature') emit({ t: 'entity.updated', d: { id: c.id, set: { left: { at: s.scene.at, minute: s.clock.minute, turn: s.turn, leg: false } } } });
             } else if (s.scene.present.includes(c.id)) emit({ t: 'scene.position', d: { id: c.id, band: c.current.band, cover: c.current.cover } });
             if (c.current.surrendered) emit({ t: 'entity.updated', d: { id: c.id, set: { surrendered_to: 'pc' } } });
         }

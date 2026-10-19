@@ -19,7 +19,7 @@ import { sceneHandle, tacticalHere, areaCaught, approachedBy } from './scene_han
 import { settlementOf } from './domain.js';
 import { extractJsonObject } from './json.js';
 import { validate } from './schema.js';
-import { interpreterSystem, vocabularyText, catalogText, interpreterSchema, PLAIN_FORMAT, repairMessage } from './interpret.js';
+import { interpreterSystem, vocabularyText, catalogText, interpreterSchema, PLAIN_FORMAT, repairMessage, amountErrors } from './interpret.js';
 import { anchorQuote } from './agency.js';
 
 export const PLANNER_VERSION = 'plan-c0.1';
@@ -35,7 +35,7 @@ export const PLANNER_ROLE = 'You are the intent planner of the Avereth engine. Y
 export const MECH_RULES = [
     'Actions with skills, in fights and on things (commands of the same list; the engine decides what is possible now and every outcome):',
     '1. Only Alaric\'s own deeds in this message. Not an action: a question ("Can I …?"), a wish, a thought, a plan or a condition for later ("if it moves, I\'ll …", "next time …"), a memory, words he speaks (threats too), anything another character does. Such a message gets an empty list.',
-    '2. Skills: use only the ids under KNOWN SKILLS. Players misspell and paraphrase skills: if exactly one known skill fits what he names or describes, use that skill. If he names a skill Alaric does not know, write {"new": "<the name he used>"}; never put a different skill in its place.',
+    '2. A thing he holds (OBJECTS held by Alaric: a tool, food, a potion) that he uses is the story command use with its id, never a skill: "I use the flint and steel to make a light" → use. Skills: use only the ids under KNOWN SKILLS. Players misspell and paraphrase skills: if exactly one known skill fits what he names or describes, use that skill. If he names a skill Alaric does not know, write {"new": "<the name he used>"}; never put a different skill in its place.',
     '3. An attack that names no skill and hints at none ("I strike the rat", "I hit it", "I shoot at it"): "skill": null; the engine uses his Basic Attack. Use the Basic Attack id only when he says "basic attack".',
     '4. Targets: opponents and people by their id. Resolve labels and parts of labels ("B" for "Cave Rat B"), descriptions against the catalog (wounded, ENGAGED = right in front of him, the farthest, a size or kind), pronouns, ENGINE FACTS and RECENT. A target who is not here: {"new": "<description>"}. An area skill needs no target (null). When he names no target at all, null.',
     '5. A known skill used on a thing instead of a creature or person is ability_world: target = an OBJECTS id or {"new": "<the thing>"}; target_words = his exact words for the thing the skill acts on (not the thing he wants to affect in the end); goal = what he wants to happen, in a few of his words. Do not judge whether it can work.',
@@ -400,6 +400,7 @@ export function parsePlan(answer, vocab, ctx, message) {
             if (!Array.isArray(c.options) || c.options.some((o) => typeof o !== 'string')) errors.push(`${at}: options must be a list of ids or short texts`);
         }
     }
+    errors.push(...amountErrors(value.commands, ctx.currency));
     if (errors.length) return { commands: null, errors: errors.slice(0, 8) };
     return { commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [] };
 }
@@ -489,6 +490,10 @@ function clarifyPanel(question, options) {
  * @returns {{route: 'v3', intent: object} | {route: 'v4', commands: object[]} | {route: 'panel', panel: string}} plus notes
  */
 export function mapPlan(commands, ctx, content, message, state) {
+    // Patch 3 (live 18.10.2026: "I use the flint and steel to make a small light" became the unknown skill "flint and
+    // steel" and the "continue" after it was dropped): a thing he holds, named where a skill would stand, is that thing
+    // used, a story command among the others, never a skill
+    commands = (commands || []).map((c) => heldUse(c, ctx) || c);
     const story = (commands || []).filter((c) => !MECH_TYPES.includes(c.type));
     const mech = (commands || []).filter((c) => MECH_TYPES.includes(c.type));
     const label = (id) => ctx.opponents.find((o) => o.id === id)?.label || (ctx.catalog.present || []).find((p) => p.id === id)?.handle || id;
@@ -625,7 +630,25 @@ export function mapPlan(commands, ctx, content, message, state) {
     return base({ kind: 'no_target', skill });
 }
 
+const THING_FILLER = new Set(['the', 'and', 'with', 'his', 'my', 'some', 'a', 'an', 'of', 'in', 'to', 'on']);
+const thingWords = (t) => flat(t).split(/[^a-z0-9]+/).map((w) => w.replace(/(?<![su])s$/, '')).filter((w) => w.length > 2 && !THING_FILLER.has(w));
+/** Does a name he uses name this thing: every word of it is a word of the thing's name ("flint and steel")? */
+const namesThing = (said, name) => { const a = thingWords(said); const b = new Set(thingWords(name)); return a.length > 0 && a.every((w) => b.has(w)); };
+
+/**
+ * A skill command whose "skill" is a thing Alaric holds (OBJECTS held by him): the story command use of that thing,
+ * in its place in the message. Null when no held thing (exactly one) is meant.
+ */
+function heldUse(c, ctx) {
+    if (!['use_skill', 'ability_world'].includes(c?.type) || !isNew(c.skill)) return null;
+    const held = (ctx.catalog?.objects || []).filter((o) => !o.holder);
+    const byId = typeof c.target === 'string' ? held.find((o) => o.id === c.target) : null;
+    const named = byId && namesThing(c.skill.new, byId.name) ? [byId] : held.filter((o) => namesThing(c.skill.new, o.name));
+    if (named.length !== 1) return null;
+    return { seq: c.seq, type: 'use', object: named[0].id, qty: null, quote: c.quote, ...(Number.isInteger(c.needs) ? { needs: c.needs } : {}) };
+}
+
 /** The planner's view of the content: every skill id (for the validator's "is this a skill at all"). */
 export function withContentSkills(ctx, content) {
-    return { ...ctx, contentSkills: new Set(content.skills.keys()) };
+    return { ...ctx, contentSkills: new Set(content.skills.keys()), currency: content.rules.currency };
 }

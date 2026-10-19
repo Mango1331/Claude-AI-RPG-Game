@@ -14,6 +14,7 @@ import {
 import { catalogText } from './interpret.js';
 import { defeatTally, tallyText, readyText, proofMemory } from './guild.js';
 import { knownNote, reportedPlaces } from './known.js';
+import { spoiled } from './items.js';
 import { continueOptions, goalLines } from './intents.js';
 import { currentThreads } from '../threads.js';
 
@@ -133,7 +134,10 @@ function sheetObjects(state, content) {
 
 function objectEntry(state, content, o) {
     const holder = o.holder?.entity === 'pc' ? undefined : o.holder?.loc ? 'here' : o.holder?.entity ? personLabel(state, content, o.holder.entity) : undefined;
-    return { id: o.id, name: o.name, qty: o.stack || (o.qty ?? 1) > 1 ? o.qty : undefined, unit: o.unit || undefined, holder, state: (o.marks || []).length ? `marked: ${o.marks.map((m) => m.text).join('; ')}` : undefined };
+    // Patch 3: food counts in portions and can spoil (src/v4/items.js)
+    const food = o.use === 'food' ? (spoiled(state, o) ? 'food, spoiled' : 'food') : null;
+    const notes = [(o.marks || []).length ? `marked: ${o.marks.map((m) => m.text).join('; ')}` : null, food].filter(Boolean).join('; ') || undefined;
+    return { id: o.id, name: o.name, qty: o.stack || (o.qty ?? 1) > 1 || o.use === 'food' ? o.qty : undefined, unit: o.unit || undefined, holder, state: notes };
 }
 
 /** The open decisions at this place, as the catalog and the engine block name them. */

@@ -1074,3 +1074,39 @@ Leitsatz: Die Engine merkt sich Alarics Absichten und relevante Weltinformatione
 - **Keine Dungeon-Struktur (Patch 7):** Ebenen und Bewohner fehlen. Ein Ort im Dungeon ist ein Unterort.
 - **Namensabgleich:** Berichtsorte werden nur über gleichen Namen im selben Reich zusammengeführt („the old Dungeon“ = „The Old Dungeon“). Ein ganz anderer Name aus einer anderen Quelle wird ein zweiter Berichtsort, bis er dort ankommt.
 - **Nur V4:** Ziele gibt es nur im V4-Pfad. Der V3-Pfad hat Thread-IDs und Zusammenführung, aber keine Ziele.
+
+### Nachtrag 4.3.0-c.6.6.11 (Patch 3: Mechanische Konsistenz und Spielerautonomie, Live-Lauf 18.10.2026)
+
+Leitsatz: Die Engine führt tatsächliche Spielerhandlungen zuverlässig und nachvollziehbar aus. Der Erzähler gestaltet ihre Erlebnisse, darf aber nicht eigenmächtig mechanische Tatsachen oder Spielerentscheidungen verändern. Kein neuer LLM-Aufruf; Kampf, XP, Dungeon-Mechanik und Reise unverändert.
+
+**Bestätigte Ursachen (Lauf 18.10.2026) und Behebung:**
+
+| # | Befund | Ursache | Behebung |
+|---|---|---|---|
+| #51 | „I use the flint and steel to make a small light and continue“ → „Alaric does not know flint and steel“, „continue“ fallen gelassen | Planner schrieb `ability_world` mit Skill `{new: "flint and steel"}`; `use` hätte das Ding verbraucht; Story- und Mechanik-Befehle nie gemischt | Ein gehaltenes Ding an Stelle eines Skills wird `use` dieses Dings (`mapPlan`, `heldUse`); Planner-Regel 2; `use` nach Verhalten (Werkzeug bleibt) |
+| #31/#37 | Wildschweinfleisch gegessen und erneut gegessen, als ein Stück | Fleisch war ein Ding ohne Portionen; „kochen und essen“ als `craft`, später `use` verbrauchte alles | Essen in Portionen (`food`, `unit: portion`), eine Mahlzeit = 1 Portion, Rest bleibt; `use` eines im selben Zug genommenen Dings als Bedingung (gebucht erst, wenn die Geschichte es ihm gibt) |
+| #8/#10 | „two silver“ → 200 cp → „zwei Gold“, Erzähler schrieb den Preis um | Extraktor rechnete falsch; Engine rechnet nur Zahlen | Beträge mit Wortlaut (`said`) liest die Engine selbst (`coinFromWords`); ohne Wortlaut: ein Betrag, der genau eine Münzeinheit neben einem im Text genannten liegt und selbst nirgends steht, ist dieser (`amount.corrected` im Audit); Ablehnungszeile „der Preis bleibt“ |
+| #21 | „Lager am Steinkreis … und auf die Jagd“ → CLARIFY, die Jagd ging verloren | Eine Rückfrage hielt die ganze Nachricht an | Eine Rückfrage hält nur ihren Schritt und die darauf aufbauenden (`needs`); die übrigen werden gebucht, die Frage steht als OPEN QUESTION und im System-Block |
+| #73 | Kleider aus, Stab „bei den Kleidern“ – Robe und Stab blieben angelegt | `unequip` nur für ein Teil; `drop` ging nicht für Angelegtes | `unequip` ohne Objekt = alles Getragene (nicht Waffe/Schild in der Hand); `drop` von Angelegtem nimmt es erst ab; HUD zeigt den echten Zustand; Wiederaufnehmen + `equip` stellt es her |
+| #42 | Wolf B als tot gespeichert, Engine hielt ihn lebendig | Freier Status-Fakt; der Tote (Wolf A) war nicht mehr im Katalog | Leben/Tod von Kämpfern (mit Kampfwerten) ist Engine-Zustand: widersprechende Fakten abgewiesen, wiederholende nicht erneut gespeichert; gleich aussehende Kreaturen in Fakten mit Handle |
+| #56 | „claw raked deep across his ribs“ blieb nach voller Heilung | Wundfakt ohne Lebensdauer | Wunde Alarics nur bei HP < Max (`scope.hurt`, Lesezeit); bei voller HP abgewiesen; Narbe bleibt |
+| #20 | „pc hunted_and_ate a pair of wood pigeons“ | Extraktor machte die erfundene Mahlzeit zu Alarics Fakt | Alarics Taten mit seinen Dingen sind keine Fakten (`pc_decision`), Korrektur; Engine-Block-Zeile „HIS THINGS“ bei Reise/Aktivität; Extraktor-Regel: Overreach auch für Essen, Verbrauch, Jagd |
+
+**Allgemeines Modell** (`src/v4/items.js`, `content/rules.json` `items`):
+- `tool` (Standard): benutzt, nicht verbraucht. `consumable`: Trank, Fackel, Öl, Verband, Pfeil … pro Nutzung 1 (oder die genannte Menge). `food`: Portionen, frisch 2 Tage, haltbar (getrocknet, gesalzen, Ration …) 14 Tage, danach „spoiled“ (Essen bleibt seine Wahl, die Zeile sagt es). `equipment`: Gear mit Slot.
+- Bestimmt einmal beim Erzeugen aus dem Namen (Kauf, `object.new`, Nehmen); gespeichert als `use`/`fresh_until` am Objekt. Keine zweite Inventarstruktur.
+- Katalog: Essen mit Portionen und „food“ bzw. „food, spoiled“.
+
+**Beträge:** Neues optionales Feld `said` an Angebotszeilen, `bid` und `coin.gift` (`delta-0.7`). Spielerseitig (`pay`, `buy`, `sell`): ein Betrag, der seinen eigenen Worten widerspricht („two silver“ ≠ 200), geht in den bestehenden einen Reparaturaufruf (kein neuer Pflichtaufruf). Ein Verkäufer hat für dieselbe Sache einen Preis: ein neues Angebot schließt das alte (`repriced`), ein unverändertes wird nicht doppelt angelegt.
+
+**Befehle:** `cmd-1.0`: `use` (Werkzeug/Essen/Verbrauch, `{new}` nach `take`), `unequip` (Objekt nullable = alles Getragene), `drop` (auch Angelegtes).
+
+**Tests:** `tests/v4/patch3.test.js` (12): Live-Replays #51, #8/#9, #42, #20 mit den aufgezeichneten Planner-/Extraktor-Antworten; Portionen/Verderb, Werkzeug vs. Verbrauchsgut, Rückfrage + unabhängige Schritte, Ausziehen/Ablegen/Wiederanlegen, mechanische Fakten (HP, Ausrüstung, Wunde, Narbe), Spielerbeträge, Geldgeschenk mit Wortlaut, Kosten. Angepasst: `p0_spikes` (Gold-Antworten mit `said`), `gen35_scope` (Wundfakten haben `scope.hurt`). Gesamt 749/749; Smokes Browser, ST Default, ST V4, ST C grün.
+
+**Kosten:** Planner-Systemprompt +140 Token (5.842 → 5.982), Extraktor +130 (5.401 → 5.531), Engine-Block +32 Token nur in Zügen mit Reise oder Aktivität. LLM-Aufrufe unverändert (Planner + Extraktor).
+
+**Grenzen:**
+- Item-Verhalten nach Namenswörtern: ein Ding mit ungewöhnlichem Namen kann falsch eingeordnet sein (Standard: Werkzeug, nie verbraucht).
+- Essen „aus dem Rucksack“ im Kampf ist weiter nicht möglich (Story-Befehle im Kampf außer Warten).
+- Mischung Skill-auf-Ding (`ability_world`) mit Story-Schritten bleibt eine Art Aktion pro Nachricht (V3-Pfad); nur gehaltene Dinge an Skill-Stelle werden umgedeutet.
+- Die Einheitenprüfung ohne `said` greift nur, wenn der falsche Betrag selbst nirgends im Text steht und genau ein Kandidat passt.

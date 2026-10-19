@@ -7,6 +7,7 @@
 // (P0/S0: json_schema is accepted but not enforced by the provider; plain JSON was 30/30 valid).
 import { O, S, B, I, E, A, N, REF, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
+import { coinFromWords } from '../economy.js';
 
 export const INTERPRETER_VERSION = 'interp-4.6';
 
@@ -161,7 +162,21 @@ export function interpreterSchema(vocab, catalog) {
  * Read an interpreter answer: the commands if the JSON is valid against the schema, else the errors for a repair.
  * @returns {{commands: object[]|null, errors: string[], raw: boolean}}
  */
-export function parseInterpretation(answer, vocab, catalog) {
+// Patch 3: a sum the player names is the sum he names (the engine reads "two silver" itself): a command whose amount
+// differs from his own words goes back to the one repair call with both numbers, never replaced here
+const AMOUNT_FIELDS = { pay: 'amount_cp', buy: 'max_cp', sell: 'min_cp' };
+export function amountErrors(commands, currency) {
+    const errors = [];
+    for (const c of commands || []) {
+        const f = AMOUNT_FIELDS[c?.type];
+        if (!f || !Number.isInteger(c[f]) || typeof c.quote !== 'string' || !currency) continue;
+        const v = coinFromWords(c.quote, { rules: { currency } });
+        if (v !== null && v !== c[f]) errors.push(`${c.type} seq ${c.seq}: ${f} ${c[f]} is not what his words "${c.quote.slice(0, 60)}" say: ${v} cp (1 silver = ${currency.copper_per_silver} copper, 1 gold = ${currency.copper_per_silver * currency.silver_per_gold} copper)`);
+    }
+    return errors;
+}
+
+export function parseInterpretation(answer, vocab, catalog, { currency = null } = {}) {
     const { value, error, raw } = extractJsonObject(answer);
     if (!value) return { commands: null, errors: [error || 'no JSON object'], raw: false };
     // an argument that may be null may also be left out (as the extractor's |null fields): no repair call for it
@@ -174,6 +189,8 @@ export function parseInterpretation(answer, vocab, catalog) {
     }
     const errors = validate(value, interpreterSchema(vocab, catalog));
     if (errors.length) return { commands: null, errors: errors.slice(0, 8), raw };
+    const sums = amountErrors(value.commands, currency);
+    if (sums.length) return { commands: null, errors: sums.slice(0, 8), raw };
     return { commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [], raw };
 }
 

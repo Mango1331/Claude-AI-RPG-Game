@@ -72,14 +72,14 @@ export async function interpretMessage(llm, content, catalog, text) {
     const first = await ask(llm, req.messages, 'interpret');
     let ms = first.ms;
     if (!first.ok) return { commands: null, failed: true, error: first.error, ms, repaired: false };
-    let p = parseInterpretation(first.content, vocab, catalog);
+    let p = parseInterpretation(first.content, vocab, catalog, { currency: content.rules.currency });
     let repaired = false;
     if (!p.commands) {
         const rep = interpreterRequest(vocab, catalog, text, { previous: first.content, errors: p.errors });
         const second = await ask(llm, rep.messages, 'interpret_repair');
         ms += second.ms;
         repaired = true;
-        if (second.ok) p = parseInterpretation(second.content, vocab, catalog);
+        if (second.ok) p = parseInterpretation(second.content, vocab, catalog, { currency: content.rules.currency });
     }
     return p.commands ? { commands: p.commands, failed: false, error: null, ms, repaired, raw: p.raw } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired };
 }

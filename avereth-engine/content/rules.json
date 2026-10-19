@@ -289,5 +289,13 @@
     "src": "Core #12 (V3)",
     "full": "illegal",
     "partial_damage_reduction_pct": 25
+  },
+  "items": {
+    "src": "Patch 3 (4.3.0-c.6.6.11): how a thing behaves when Alaric uses it (src/v4/items.js); runtime defaults, no world law",
+    "note": "A thing is a tool (used, not used up) unless its name says it is food or used up when used. Food counts in portions (one portion is one meal) and keeps for a while, preserved food longer. Gear with a slot is equipment. Whole words of the thing's name decide.",
+    "food": "meat|steak|haunch|joint|rabbit|hare|venison|fish|trout|eel|eggs?|bread|loaf|loaves|cheese|apples?|berries|fruit|nuts|stew|soup|porridge|pie|sausages?|bacon|ham|jerky|rations?|hardtack|biscuits?|meal|food|provisions|honey|mushrooms?|vegetables?|onions?|turnips?|carrots?|potatoes?",
+    "preserved": "jerky|dried|salted|smoked|hardtack|biscuits?|rations?|cheese|honey|nuts|pickled|cured",
+    "consumable": "potions?|tonics?|elixirs?|draughts?|salves?|ointments?|poultices?|bandages?|antidotes?|tinctures?|oil|torch|torches|candles?|arrows?|bolts?|herbs?|powder|scrolls?|vials?|bombs?|kindling|tinder|firewood",
+    "keeps_min": { "fresh": 2880, "preserved": 20160 }
   }
 }

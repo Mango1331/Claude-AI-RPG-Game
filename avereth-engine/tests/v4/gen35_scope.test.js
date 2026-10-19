@@ -98,6 +98,8 @@ test('the recorded live runs: only the fights\' narration is scoped, nothing sai
                 for (const e of (st.record?.events || []).filter((x) => x.t === 'fact.asserted')) {
                     all += 1;
                     if (!e.d.fact.scope) continue;
+                    // Patch 3: a wound of Alaric's lives while he is hurt (scope.hurt), in a fight or out of one
+                    if (e.d.fact.scope.hurt) { assert.equal(e.d.fact.s, 'pc'); continue; }
                     scoped += 1;
                     assert.ok(before?.encounter, `${f}: a scoped fact outside a fight: ${e.d.fact.s} ${e.d.fact.p}`);
                     assert.equal(e.d.fact.scope.fight, before.encounter.id);

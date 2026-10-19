@@ -21,7 +21,8 @@ export function placeRef(placeIds) {
     return { anyOf: [...known, O({ new: O({ name: S(), kind: E(PLACE_KINDS), parent }) })] };
 }
 
-const OFFER_LINE = O({ what: S(), kind: E(['goods', 'service']), service: N(E(SERVICES)), qty: I(1), price_cp: I(0) });
+// Patch 3: said, the reply's words for the price (the parser fills it with null when left out: normalizeSoftFields)
+const OFFER_LINE = O({ what: S(), kind: E(['goods', 'service']), service: N(E(SERVICES)), qty: I(1), price_cp: I(0), said: N(S()) });
 // 4.3.0-c.6.6.5: a bid's line is one of Alaric's things and how many of it the buyer would take
 const bidLine = (refs) => A(O({ object: refs.object, qty: I(1) }), 1);
 
@@ -96,7 +97,7 @@ export const FORMAT_RULES = [
     'When the CATALOG already contains the place, quest or object, copy its id exactly. Never rewrite an id, invent another id for it, or substitute its title/name.',
     'quest-ref and object-ref mean the exact matching CATALOG id; use {"new":"..."} only when the thing is genuinely new and that reference type permits it.',
     'person-ref is a person id from PRESENT or the CATALOG, or the ref of a person.new/creature.new earlier in the same answer.',
-    'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0}.',
+    'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0,"said":string|null (the reply\'s words for the price)}.',
     'bid_line is {"object":object-ref (an exact OBJECTS id of a thing held by Alaric),"qty":integer>=1}.',
     'expected must contain exactly the keys requested below, no other keys.',
 ];
@@ -182,6 +183,8 @@ function normalizeSoftFields(value, vocab) {
             if (x.count === undefined) x.count = 1;
         }
         if (d.type === 'memory' && x.who === undefined) x.who = [];
+        // Patch 3: an offer line's words for its price may be left out like a |null field
+        if (d.type === 'offer' && Array.isArray(x.lines)) x.lines = x.lines.map((l) => (l && typeof l === 'object' && l.said === undefined ? { ...l, said: null } : l));
         return x;
     }) : value.deltas;
     return { ...value, expected: value.expected && typeof value.expected === 'object' ? value.expected : {}, deltas };

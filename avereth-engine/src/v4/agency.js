@@ -29,6 +29,10 @@
 // Only clear cases are removed. Everything else goes to the engine, whose guards refuse what cannot be done there.
 import { normText } from '../util.js';
 
+// the words that name a thing ("boar meat" ~ "the meat"), as the world applier matches a want (src/v4/world.js sameWant)
+const thingWords = (t) => normText(t).split(/[^a-z0-9]+/).map((w) => w.replace(/s$/, '')).filter((w) => w.length >= 3 && !['the', 'and', 'some', 'any', 'his', 'its', 'that', 'this'].includes(w));
+const sameWant = (a, b) => { const k = thingWords(b); return thingWords(a).some((w) => k.includes(w)); };
+
 /** Commands that commit Alaric to something (the dangerous kind of false agency; same list as the P0 scoring). */
 export const COMMITMENTS = new Set(['pay', 'buy', 'sell', 'give', 'drop', 'use', 'offer.accept', 'offer.decline', 'quest.accept', 'quest.turn_in', 'quest.abandon', 'guild.register', 'guild.promote', 'journey.continue']);
 
@@ -339,7 +343,9 @@ export function guardCommands(message, commands, context = {}, { language = true
             const id = idOf(c.object);
             const name = id ? objects.get(id)?.name : c.object?.new;
             // taken earlier in the same message ("i get the corpse … then leave it with him"): his by then
-            const takenNow = id && kept.some((k) => k.type === 'take' && idOf(k.object) === id);
+            const takenNow = (id && kept.some((k) => k.type === 'take' && idOf(k.object) === id))
+                // Patch 3: a thing he takes in this very message under new words ("cut some meat out ... and eat it")
+                || (!id && typeof c.object?.new === 'string' && kept.some((k) => k.type === 'take' && typeof k.object?.new === 'string' && sameWant(c.object.new, k.object.new)));
             if (!MONEY.test(String(name ?? '')) && !MONEY.test(String(c.quote ?? '')) && !takenNow) {
                 if (id && objects.has(id) && !objects.get(id).held) { drop(c, 'not_held', `Alaric does not hold ${objects.get(id).name || id}`); return true; }
                 if (!id && c.object && typeof c.object === 'object' && type !== 'equip') { drop(c, 'not_held', `Alaric holds nothing like "${String(c.object.new ?? '').slice(0, 40)}"`); return true; }

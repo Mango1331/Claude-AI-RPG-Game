@@ -238,6 +238,10 @@ export function playerActionsBlock(outcome) {
     if ((outcome.resolutions || []).some((r) => (r.type === 'buy' || r.type === 'pay') && r.status === 'pending')) {
         lines.push('PENDING TRADE IS A HARD STOP: state the seller\'s actual price and stop BEFORE any payment, delivery, drinking, eating or other action that depends on the unaccepted purchase. A later player turn can explicitly accept the offer, at which point the engine debits coin and grants the goods/service. An unrelated independent action is unaffected.');
     }
+    // Patch 3 (live 18.10.2026: on the road Alaric "hunted a pair of wood pigeons, roasted and ate them"): where time
+    // passes or he travels, the story fills the road, never his choices about his own things
+    const passing = (outcome.auth?.gos || []).length || (outcome.resolutions || []).some((r) => r.type === 'activity' && r.status !== 'refused');
+    if (passing) lines.push('HIS THINGS change only by PLAYER ACTIONS: on the road or in camp he hunts, eats, buys, uses up or leaves nothing he did not choose here.');
     if (outcome.search_checks?.length) lines.push('SEARCH RESOLUTION is already rolled and binding in PLAYER ACTIONS above. Do not reroll it, replace it with another check, or turn a concrete result into another vague teaser.');
     if (!outcome.search_checks?.length) lines.push('ORDINARY WORLD FICTION: resolve non-combat physical/social uncertainty plausibly from established fiction; do not invent rolls. Combat, Stealth and explicit SEARCH are the engine-owned mechanical exceptions.');
     return lines.join('\n');

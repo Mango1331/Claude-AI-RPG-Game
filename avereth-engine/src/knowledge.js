@@ -8,6 +8,7 @@
 //               (Generative Agents: per-agent memory stream, perception-scoped).
 // NPCs never read world truth directly: the context builder only shows them their own knowledge rows.
 import { normText } from './util.js';
+import { sceneHandle } from './v4/scene_handles.js';
 
 // Predicates are normalised so that "state"/"condition" and "status" are the same slot. FUNCTIONAL predicates hold
 // one current value per subject (a new value ends the old one); all other predicates may hold several values.
@@ -51,6 +52,8 @@ export function isTerminalStatus(p, o) {
 export function factLive(state, f) {
     if (f.until) return false;
     if (f.scope?.fight) return state.encounter?.id === f.scope.fight;
+    // Patch 3: a wound of Alaric's (src/v4/world.js) lives while he is below the maximum HP he had then
+    if (f.scope?.hurt) return (state.entities?.pc?.sheet?.hp ?? 0) < f.scope.hurt;
     return true;
 }
 
@@ -186,7 +189,17 @@ export function playerLabel(state, id) {
 
 /** Label for an entity id OR a content location/faction id (used when rendering facts). */
 export function anyLabel(state, content, id) {
-    if (state.entities[id]) return entityLabel(state, id);
+    const e = state.entities[id];
+    // Patch 3 (live 18.10.2026: four wolves of one pack were each "the lean grey-brown wolves at the ivy-hung q" in the
+    // facts the narrator and the extractor read): an unnamed creature that shares its look with another one is shown
+    // with its scene handle ("Wolf B"). A view at read time; no record keeps it
+    if (e && !e.name && e.kind === 'creature' && e.descriptors?.[0]) {
+        const look = normText(e.descriptors[0]);
+        if (Object.values(state.entities).some((x) => x.id !== id && x.kind === 'creature' && !x.name && normText(x.descriptors?.[0] || '') === look)) {
+            return `${entityLabel(state, id)} (${sceneHandle(state, content, id)})`;
+        }
+    }
+    if (e) return entityLabel(state, id);
     if (content) {
         const l = content.locations.get(id) || content.factions.get(id);
         if (l) return l.name;

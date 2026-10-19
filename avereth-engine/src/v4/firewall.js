@@ -93,6 +93,22 @@ const guildBoard = (t) => /\bboard\b/.test(t) && /\b(?:guild|quests?|contracts?|
 const LISTS = /^(?:lists?|listed|listing|posts?|posted|offers?|offered|advertises|advertised)(?:_|$)/;
 export const isPc = (ref) => PC_REF.test(words(ref));
 
+// Patch 3 (live 18.10.2026): the engine's mechanical state is no free fact. A wolf the engine held alive was stored
+// "dead" (the extractor gave the dead Wolf A's death to Wolf B), "pc wounded: claw raked deep across his ribs" outlived
+// his full healing, and "pc hunted_and_ate a pair of wood pigeons" made the narrator's meal his decision.
+/** Words that claim life or death. */
+const LIFE_CLAIM = /\b(?:dead|died|dies|killed|slain|slaughtered|lifeless|corpse|carcass|alive|living|survived|unharmed)\b/;
+const LIFE_PRED = /^(?:status|alive|dead|is_dead|is_alive|died|killed|slain|health|life|fate)$/;
+/** Alaric's numbers and gear are the engine's (his hit points, mana, stamina, level, what he wears and wields). */
+const PC_MECHANICAL = /^(?:hp|mp|sta|health|hit_points|mana|stamina|level|xp|experience|power_rank|equipped|equips|wears|wearing|is_wearing|wields|wielding|armed_with|dressed_in|clothed_in|naked|unarmed)$/;
+/** A wound in words (a lasting mark, a scar, is no wound: it stays). */
+const WOUND = /\b(?:wound\w*|injur\w*|hurt|bleed\w*|gash\w*|cut|cuts|bitten|bite|claw(?:ed|s)?|raked|bruis\w*|broken|fractur\w*|burn(?:ed|t|s)?|sprain\w*|torn|lacerat\w*|limp\w*|gored|stabbed|slashed)\b/;
+const LASTING = /\b(?:scar\w*|lost|missing|severed|maimed|crippled|blinded|permanent\w*|tattoo\w*|brand\w*|old wound)\b/;
+/** Acts of Alaric's that spend, gain or give up his things: his decisions, booked from his own commands only. */
+const PC_ACT = /^(?:ate|eats|eaten|eating|drank|drinks|drunk|drinking|consumed|consumes|hunted|hunts|hunting|caught|catches|killed|kills|slew|cooked|cooks|roasted|roasts|bought|buys|purchased|sold|sells|spent|spends|used|uses|used_up|dropped|drops|discarded|left_behind|abandoned|gave|gives|traded|trades|crafted|crafts|gathered|gathers|foraged|forages|picked|looted|loots|butchered|skinned|stole|steals|paid)(?:_|$)/;
+/** Is this fact a wound of Alaric's (not a lasting mark)? */
+export const pcWound = (d) => isPc(d?.s) && WOUND.test(`${words(d.p)} ${words(d.o)}`) && !LASTING.test(`${words(d.p)} ${words(d.o)}`);
+
 /**
  * @typedef {object} FirewallContext
  * @property {(ref: string) => boolean} [isGuildPerson]  a known Guild official (clerk, registrar …) by id or name
@@ -278,6 +294,31 @@ export function firewall(deltas, ctx = {}) {
                 // 04.10.2026: invented while the reply had no BOARD); a listing the board has is no new information
                 if (ctx.c && guildBoard(words(d.s)) && LISTS.test(p) && !namesContract(words(d.o))) {
                     no(d, 'guild_listing', 'official Guild contracts come only from the board the engine shows', 'Official Guild contracts come only from the board the engine shows; the contract the last reply showed does not exist.');
+                    continue;
+                }
+                // Patch 3: life and death of whom the engine fights for or against (a creature or person it fixed numbers
+                // for) are the engine's; a claim that contradicts it is refused, one that repeats it is not stored again
+                const life = ctx.lifeOf?.(text(d.s));
+                if (life && (LIFE_PRED.test(p) || LIFE_PRED.test(p.split('_')[0])) && LIFE_CLAIM.test(`${words(d.p)} ${words(d.o)}`)) {
+                    const claim = /\b(?:alive|living|survived|unharmed)\b/.test(`${words(d.p)} ${words(d.o)}`) && !/\b(?:dead|died|killed|slain)\b/.test(words(d.o)) ? 'alive' : 'dead';
+                    no(d, 'engine_owned_fact', claim === life ? `${text(d.s)} is ${life} by the engine already; not stored again as a fact` : `${text(d.s)} is ${life} in the engine's state; life and death of a fighter are the engine's`,
+                        claim === life ? null : `${ctx.labelOf?.(text(d.s)) || text(d.s)} is ${life}, as the engine has it: the last reply's ${claim === 'dead' ? 'death' : 'survival'} of it did not happen.${life === 'alive' ? ' Only a fight the engine resolves (or a cause the story shows) kills it.' : ''}`);
+                    continue;
+                }
+                if (isPc(d.s) && PC_MECHANICAL.test(p)) {
+                    no(d, 'engine_owned_fact', 'Alaric\'s hit points, mana, stamina, level and gear are the engine\'s state');
+                    continue;
+                }
+                // a wound he no longer has is no fact: at full health the story's wound is healed (a scar may stay)
+                if (pcWound(d) && ctx.pcHurt === false) {
+                    no(d, 'engine_owned_fact', 'Alaric is at full health in the engine\'s state; a fresh wound contradicts it', 'Alaric is unhurt (full HP) in the engine\'s state; his earlier wounds are healed. A scar may remain, an open wound does not.');
+                    continue;
+                }
+                // what Alaric did with his own things or for them (hunted, ate, bought, used up, left behind) is his decision:
+                // the engine books it from his commands; the story's version of it is no fact
+                if (isPc(d.s) && PC_ACT.test(p)) {
+                    no(d, 'pc_decision', `"${d.p}" is Alaric's own act: his decisions and his things change only by his commands (PLAYER ACTIONS)`,
+                        ctx.actedOn?.(p) ? null : `Alaric did not ${words(d.p).replace(/ and /g, ' or ')} anything in the last reply: hunting, eating, buying, using up or leaving behind his things is his decision, and he did not make it. His food, coin and things are as the engine has them.`);
                     continue;
                 }
                 if (STATE_PREDICATES.has(p)) {

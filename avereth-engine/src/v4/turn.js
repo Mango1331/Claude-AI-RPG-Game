@@ -75,10 +75,20 @@ export function playerTurnV4(state, content, text, { msg = null, commands = [], 
     } });
     const ctx = resolveCommands(s, content, commands, emit, { msg, dice, board, c, dropped });
     const clarify = ctx.resolutions.find((r) => r.status === 'clarify');
-    if (clarify) {
+    // Patch 3 (live 18.10.2026: "I settle on the ring of stones for my camp this night and go looking for animals to
+    // hunt": the camp's length was a question, and the hunt was lost with it): a question about one step stops that
+    // step and the steps that rest on it (needs); the steps that stand on their own are his and are taken
+    const standing = ctx.resolutions.filter((r) => r.status !== 'clarify' && !(r.status === 'refused' && /^needs step/.test(r.reason || '')));
+    if (clarify && !standing.length) {
         // an ambiguous reference: the System asks, nothing is booked, no story turn (plan §4.4)
         const line = ctx.actions.find((a) => a.startsWith(`${clarify.seq}. CLARIFY`)) || 'CLARIFY — which one?';
         return { events: [], outcome: null, state, command: { panels: [`[SYSTEM // CLARIFY]\n${line.replace(/^\d+\. CLARIFY — /, '')}\nNothing was booked; name it and send the message again.`], llm: null } };
+    }
+    for (const q of ctx.resolutions.filter((r) => r.status === 'clarify')) {
+        const i = ctx.actions.findIndex((a) => a.startsWith(`${q.seq}. CLARIFY`));
+        const question = (i >= 0 ? ctx.actions[i] : '').replace(/^\d+\. CLARIFY — /, '') || 'which one?';
+        if (i >= 0) ctx.actions[i] = `${q.seq}. OPEN QUESTION — ${q.quote ? `"${String(q.quote).slice(0, 80)}": ` : ''}${question} He has not said it; nothing is booked for this step. Tell the other steps as they happen; leave this one for him to answer (the System asks him).`;
+        ctx.engineLines.push(`QUESTION — ${question} (only this step waits; the rest of the message was taken)`);
     }
     const actions = interp.failed
         ? ['NOTHING TO BOOK — the engine could not read what Alaric decided in this message; narrate only what changes nothing about him (no travel, no payment, no acceptance), and stop at his next decision.']

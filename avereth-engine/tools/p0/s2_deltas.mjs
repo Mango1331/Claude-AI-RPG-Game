@@ -176,12 +176,14 @@ export function concreteDelta(pattern, seq, vocab, catalog) {
     const spec = vocab.deltas.find((d) => d.type === pattern.type);
     const c = concrete(pattern);
     const d = { seq, type: pattern.type };
+    // the product vocabulary since Patch 3: an offer line carries the reply's words for its price (said, nullable)
+    const said = vocab.deltas.some((x) => x.fields?.said) ? { said: null } : {};
     for (const [k, f] of Object.entries(spec.fields)) {
         if (k in c && k !== '$any') d[k] = f.ref === 'place' ? placeFor(c[k], catalog) : c[k];
         else if (f.ref === 'person') d[k] = c.$any ? String(c.$any) : 'someone';
         else if (f.nullable) d[k] = null;
         else if (f.enum) d[k] = f.enum[0];
-        else if (f.array === 'offer_line') d[k] = [{ what: 'x', kind: 'goods', service: null, qty: 1, price_cp: 1 }];
+        else if (f.array === 'offer_line') d[k] = [{ what: 'x', kind: 'goods', service: null, qty: 1, price_cp: 1, ...said }];
         else if (f.array) d[k] = [];
         else if (f.type === 'integer') d[k] = f.min ?? 1;
         else if (f.type === 'boolean') d[k] = false;
@@ -193,7 +195,7 @@ export function concreteDelta(pattern, seq, vocab, catalog) {
         const k = TEXT_FIELDS.find((f) => spec.fields[f] && !spec.fields[f].ref);
         if (k) d[k] = String(c.$any);
     }
-    if (pattern.type === 'offer' && c.lines) d.lines = c.lines.map((l) => ({ what: 'item', kind: 'goods', service: null, qty: 1, price_cp: 1, ...l }));
+    if (pattern.type === 'offer' && c.lines) d.lines = c.lines.map((l) => ({ what: 'item', kind: 'goods', service: null, qty: 1, price_cp: 1, ...said, ...l }));
     return d;
 }
 

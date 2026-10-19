@@ -10,6 +10,7 @@
 // (review of 4.1.0: three flasks bought for the price of one, ten herbs sold while he held one, a partial sale that
 // handed over the whole stack). The command handlers (src/v4/commands.js) and the world applier (src/v4/world.js)
 // both book through here.
+import { itemTraits } from './items.js';
 
 /** The price of `units` of an offer line (null: the line as offered), or why it is not sold in that amount. */
 export function linePrice(line, units = null) {
@@ -46,16 +47,17 @@ export const picksText = (picks) => picks.map((p) => unitsText(p.line.what, p.un
 /**
  * Book a purchase: the coin leaves Alaric, the goods come to him in the units bought, a service is granted. The
  * caller closes the offer and the decisions it answers.
- * @param {{offer: object, picks: object[], cp: number, objectId: (name: string) => string}} p objectId: the id of a
- *   goods object Alaric receives
+ * @param {{offer: object, picks: object[], cp: number, objectId: (name: string) => string, content?: object}} p objectId:
+ *   the id of a goods object Alaric receives; content: the goods' behaviour (Patch 3, src/v4/items.js)
  */
-export function bookPurchase(s, emit, { offer, picks, cp, objectId }) {
+export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = null }) {
     const coin = s.entities.pc.sheet.coin_cp;
     const counted = picks.some((p) => p.units !== (Number(p.line.qty) || 1));
     emit({ t: 'transaction.completed', d: { offer: offer.id, lines: picks.map((p) => p.line.id), ...(counted ? { units: picks.map((p) => p.units) } : {}), cp, seller: offer.seller } });
     emit({ t: 'coin.changed', d: { id: 'pc', value: coin - cp, delta: -cp, why: picksText(picks) } });
     for (const p of picks.filter((x) => x.line.kind === 'goods')) {
-        emit({ t: 'object.created', d: { object: { id: objectId(p.line.what), name: p.line.what, kind: 'item', stack: p.units > 1, qty: p.units, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'bought', from: offer.seller } } } });
+        const traits = content ? itemTraits(content, { name: p.line.what, kind: 'item' }, s.clock.minute) : {};
+        emit({ t: 'object.created', d: { object: { id: objectId(p.line.what), name: p.line.what, kind: 'item', stack: p.units > 1, qty: p.units, unit: null, ...traits, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'bought', from: offer.seller } } } });
     }
     for (const p of picks.filter((x) => x.line.kind === 'service' && x.line.service !== 'guild_registration')) {
         emit({ t: 'service.granted', d: { service: p.line.service || 'other', what: p.line.what, by: offer.seller, at: s.scene.at, turn: s.turn } });

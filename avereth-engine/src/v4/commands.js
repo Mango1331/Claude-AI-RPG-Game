@@ -26,6 +26,7 @@ import { shopSearch, findTrades } from './settlement.js';
 import { journeyReady, knownAt } from './catalog.js';
 import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSetsGoal } from './intents.js';
 import { knownByName } from './known.js';
+import { useOf, spoiled, unitsOf } from './items.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import {
@@ -38,6 +39,8 @@ const UNTIL = { done: 'until it is done', noon: 'until noon', evening: 'until ev
 const YIELDING = new Set(['gather', 'search', 'craft']);
 const ROAMING = new Set(['gather', 'search', 'errand']);
 const RESTING = new Set(['rest', 'sleep']);
+// the slots of what he holds in his hands (wielded, not worn): "everything I wear" leaves them as they are
+const HELD_SLOTS = new Set(['weapon', 'offhand']);
 
 /** An empty resolution context for one player message. */
 export function newTurnContext(content) {
@@ -408,6 +411,10 @@ const HANDLERS = {
         return { status: 'resolved', line: `TAKES — ${o.name}${(part || o.qty) && (o.stack || (o.qty ?? 1) > 1 || o.unit) ? ` (${part || o.qty}${o.unit ? ` ${o.unit}` : ''})` : ''} along.` };
     },
     drop(s, content, c, ctx, emit) {
+        // Patch 3 (live 18.10.2026: "he leaves the staff with them" while the staff stayed equipped): gear he wears or
+        // wields comes off first, then it lies here; it gives him nothing while it lies here
+        const worn = typeof c.object === 'string' && c.object.startsWith('item.') && !objectOf(s, content, c.object) && Object.values(s.entities.pc.sheet.equipment || {}).includes(c.object.slice(5));
+        const off = worn ? HANDLERS.unequip(s, content, { ...c, object: c.object }, ctx, emit) : null;
         const o = objectOf(s, content, c.object);
         if (!o || o.holder?.entity !== 'pc') return { status: 'refused', reason: 'he does not hold it', line: `CANNOT DROP — he does not hold ${o ? o.name : 'that'}.` };
         const qty = c.qty && c.qty < (o.qty ?? 1) ? c.qty : null;
@@ -416,7 +423,7 @@ const HANDLERS = {
             emit({ t: 'item.changed', d: { id: 'pc', item: o.template, qty: -n, why: 'dropped' } });
             emit({ t: 'object.created', d: { object: { id: `obj.t${env(ctx).msg}.${slug(o.name)}`, name: o.name, kind: 'item', stack: n > 1, qty: n, unit: null, holder: { loc: s.scene.at }, marks: [], for_quests: [], source: { turn: s.turn, how: 'dropped' } } } });
         } else emit({ t: 'object.moved', d: { id: o.id, to: { loc: s.scene.at }, ...(qty ? { qty, split: `${o.id}_${s.turn}` } : {}) } });
-        return { status: 'resolved', line: `DROPS — ${o.name}${qty ? ` (${qty})` : ''}; it stays here.` };
+        return { status: 'resolved', line: `DROPS — ${o.name}${qty ? ` (${qty})` : ''}${off ? ' (taken off first: no longer equipped)' : ''}; it stays here, not his gear until he takes it again.` };
     },
     give(s, content, c, ctx, emit, envx) {
         const o = objectOf(s, content, c.object);
@@ -439,12 +446,33 @@ const HANDLERS = {
         return { status: 'resolved', line: `GIVES — ${o.name}${qty ? ` (${qty})` : ''} to ${who(s, c.to)}.` };
     },
     use(s, content, c, ctx, emit) {
+        // Patch 3: a thing he takes in this very message ("cut some meat out ... cook it and eat it") is used once the
+        // story has him take it (the world applier books it then); never before it is his
+        if (c.object && typeof c.object === 'object' && typeof c.object.new === 'string') {
+            const take = Object.entries(ctx.auth.takeNames || {}).find(([seq, name]) => Number(seq) < (c.seq ?? 0) && sameWant(c.object.new, name));
+            if (!take) return { status: 'refused', reason: 'he does not hold it', line: `CANNOT USE — he does not hold ${String(c.object.new).slice(0, 60)}.` };
+            ctx.conditionals.push({ seq: c.seq, kind: 'use', name: take[1], take: Number(take[0]), qty: c.qty ?? null, condition: 'taken' });
+            return { status: 'conditional', condition: 'taken', line: `USES, once he has it — ${take[1]}${c.qty ? ` (${c.qty})` : ''}: only what the story lets him take (step ${take[0]}); if he gets none, he uses none.` };
+        }
+        // gear he wears or wields is used, never used up (a staff, a cloak)
+        const tpl = typeof c.object === 'string' && c.object.startsWith('item.') ? c.object.slice(5) : null;
+        if (tpl && Object.values(s.entities.pc.sheet.equipment || {}).includes(tpl)) {
+            return { status: 'resolved', line: `USES — ${content.items.get(tpl)?.name || tpl} (his gear: it stays equipped and is not used up; the story tells what it does).` };
+        }
         const o = objectOf(s, content, c.object);
         if (!o || o.holder?.entity !== 'pc') return { status: 'refused', reason: 'he does not hold it', line: `CANNOT USE — he does not hold ${o ? o.name : 'that'}.` };
-        const qty = c.qty || 1;
-        if (o.template) emit({ t: 'item.changed', d: { id: 'pc', item: o.template, qty: -Math.min(qty, o.qty), why: 'used' } });
-        else emit({ t: 'object.consumed', d: { id: o.id, by: 'pc', ...(qty < (o.qty ?? 1) ? { qty } : {}) } });
-        return { status: 'resolved', line: `USES — ${o.name}${qty > 1 ? ` (${qty})` : ''}; it is used up.` };
+        const use = useOf(content, o);
+        // a tool, gear or a document is used, not used up (live 18.10.2026: the flint and steel)
+        if (use === 'tool' || use === 'equipment') return { status: 'resolved', line: `USES — ${o.name} (a tool: it stays with him, not used up; the story tells what it achieves).` };
+        const qty = Math.min(c.qty || 1, o.qty ?? 1);
+        const left = (o.qty ?? 1) - qty;
+        if (o.template) emit({ t: 'item.changed', d: { id: 'pc', item: o.template, qty: -qty, why: 'used' } });
+        else emit({ t: 'object.consumed', d: { id: o.id, by: 'pc', ...(left > 0 ? { qty } : {}) } });
+        if (use === 'food') {
+            const off = spoiled(s, o) ? ' It has spoiled (kept too long): he eats it anyway, as he chose; the story tells how it sits.' : '';
+            return { status: 'resolved', line: `EATS — ${unitsOf(qty, o.unit || 'portion')} of ${o.name}; ${left > 0 ? `${unitsOf(left, o.unit || 'portion')} left, still his` : 'none left'}.${off} No other meal is eaten or used up.` };
+        }
+        return { status: 'resolved', line: `USES — ${o.name}${qty > 1 ? ` (${qty})` : ''}; ${left > 0 ? `used up: ${qty}, ${left} left` : 'it is used up'}.` };
     },
     pay(s, content, c, ctx, emit) {
         const reg = s.offers[REGISTRATION_OFFER];
@@ -555,8 +583,10 @@ const HANDLERS = {
             return { status: 'refused', reason: 'above his limit', line: `DOES NOT BUY — ${picksText(pick.picks)} costs ${cpText(price, content)}, more than the ${c.max_cp} cp he allows.` };
         }
         const coin = s.entities.pc.sheet.coin_cp;
-        if (coin < price) return { status: 'refused', reason: 'not enough coin', line: `CANNOT PAY — ${cpText(price, content)} needed, he has ${coin} cp.` };
-        bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (what) => `obj.t${env(ctx).msg}.${slug(what)}` });
+        // Patch 3 (live 18.10.2026: refused at a misread price, the story raised the price to "two gold" to explain it):
+        // the price stays the one the seller named; the story does not change it to fit
+        if (coin < price) return { status: 'refused', reason: 'not enough coin', line: `CANNOT PAY — ${cpText(price, content)} needed, he has ${coin} cp. The price stays as ${who(s, o.seller)} named it; nothing is bought, and the story does not change the price to explain it.` };
+        bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (what) => `obj.t${env(ctx).msg}.${slug(what)}`, content });
         const reg = pick.picks.some((p) => p.line.service === 'guild_registration');
         let power = null;
         if (reg) {
@@ -746,6 +776,14 @@ const HANDLERS = {
     },
     unequip(s, content, c, ctx, emit) {
         const eq = s.entities.pc.sheet.equipment;
+        // Patch 3: "I take off everything I'm wearing" (object null): all he wears, not the weapon or shield in his hands
+        if (c.object === null || c.object === undefined) {
+            const worn = Object.keys(eq).filter((k) => eq[k] && !HELD_SLOTS.has(k));
+            if (!worn.length) return { status: 'refused', reason: 'not equipped', done: true, line: 'NOTHING TO DO — he wears nothing he could take off.' };
+            const names = worn.map((k) => HANDLERS.unequip(s, content, { ...c, object: typeof eq[k] === 'string' ? `item.${eq[k]}` : eq[k]?.id ? `item.${eq[k].id}` : eq[k] }, ctx, emit))
+                .filter((r) => r.status === 'resolved').map((r) => r.line.replace(/^UNEQUIPS — |\.$/g, ''));
+            return { status: 'resolved', line: `UNEQUIPS — ${names.join(', ')}: all he wore; in his pack now, no longer worn.` };
+        }
         const ref = typeof c.object === 'string' ? c.object.replace(/^item\./, '') : null;
         const slot = Object.keys(eq).find((k) => eq[k] === ref || (typeof eq[k] === 'object' && normText(eq[k]?.name) === normText(content.items.get(ref)?.name || ref)));
         if (!slot) return { status: 'refused', reason: 'not equipped', line: 'NOTHING TO DO — he has nothing like that equipped.' };

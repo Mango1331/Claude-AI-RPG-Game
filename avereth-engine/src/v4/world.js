@@ -11,11 +11,12 @@
 import { Dice } from '../rng.js';
 import { applyEvent } from '../state.js';
 import { clone, normText, slug } from '../util.js';
+import { coinFromWords, coinMentions, numbersIn } from '../economy.js';
 import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver } from '../delta.js';
 import { truth, entityLabel, setFactEvents, statusOf, normPredicate } from '../knowledge.js';
 import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
-import { firewall } from './firewall.js';
+import { firewall, pcWound } from './firewall.js';
 import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolation } from './ownership.js';
 import { mayOpenFight, mayTake } from './envelope.js';
 import {
@@ -26,11 +27,21 @@ import { completeContract, contractReady, owedObjects, abandonContract, acceptCo
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents } from './intents.js';
+import { itemTraits, useOf } from './items.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
 // the predicates of a fight's moment (selective persistence: they end with the fight) and the words of a lasting mark
 const FIGHT_MOMENT = /^(?:behaviou?r|demeanou?r|position|posture|stance|gait|movement|motion|action|activity|last_attack|attack(?:ing)?|tactics?|mood|focus|wounded|bleeding|breathing|stamina|fatigue)$/;
+// Patch 3: the commands that make one of Alaric's own acts (a fact "pc ate …" after his own use is no news, no overreach)
+const ACT_COMMANDS = {
+    '^(?:ate|eat|drank|drink|drunk|consum|used)': ['use'],
+    '^(?:bought|buy|purchas|spent|paid)': ['buy', 'offer.accept', 'pay'],
+    '^(?:sold|sell|traded|trade)': ['sell', 'offer.accept'],
+    '^(?:dropped|drop|discard|left|abandon)': ['drop'],
+    '^(?:gave|give)': ['give'],
+    '^(?:hunt|caught|catch|gather|forag|picked|loot|butcher|skinn|cook|roast|craft|kill|slew)': ['activity', 'take', 'use'],
+};
 const LASTING_MARK = /\b(?:lost|loses|missing|severed|scar\w*|maimed|crippled|blinded|permanent\w*|tattoo\w*|brand\w*)\b/i;
 
 let OWNERSHIP_ASSERT = false;
@@ -56,6 +67,18 @@ export function firewallContext(s, content) {
     const auth = o.auth || {};
     return {
         c: !!(auth.c || o.c), // Prototype C: the turn the planner read
+        // Patch 3: the engine's mechanical state the story may not overwrite (src/v4/firewall.js)
+        lifeOf: (ref) => {
+            const id = s.entities[ref] ? ref : names.get(normText(ref));
+            const e = id && id !== 'pc' ? s.entities[id] : null;
+            return e && (e.profile || s.encounter?.combatants?.[id]) ? (e.status === 'dead' ? 'dead' : 'alive') : null;
+        },
+        labelOf: (ref) => (s.entities[ref] ? entityLabel(s, ref) : null),
+        pcHurt: (s.entities.pc?.sheet?.hp ?? 0) < deriveCharacter(s.entities.pc.sheet, content).maxHp,
+        actedOn: (p) => {
+            const done = new Set((o.resolutions || []).filter((r) => !['refused', 'clarify'].includes(r.status)).map((r) => r.type));
+            return Object.entries(ACT_COMMANDS).some(([re, types]) => new RegExp(re).test(p) && types.some((t) => done.has(t)));
+        },
         isGuildPerson: (ref) => guildish(ref) || guildish(names.get(normText(ref))),
         inGuildHall: !!hallOf(s, s.scene.at),
         contracts: contracts(s).map((q) => ({ id: q.id, title: q.title, payout_cp: q.payout_cp ?? null, client: q.client || null, status: q.status })),
@@ -519,7 +542,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 const fighters = !!enc && typeof subject === 'string' && !s.entities[subject] && Object.values(enc.combatants).some((c) => c.id !== 'pc' && c.side === 'hostile'
                     && !c.current.defeated && namesKind(String(d.s), s.entities[c.id]?.species, content.anchors.get(s.entities[c.id]?.anchor || s.entities[c.id]?.profile?.anchor)));
                 const scoped = (combatant || fighters) && FIGHT_MOMENT.test(normPredicate(d.p)) && !LASTING_MARK.test(String(d.o ?? ''));
-                v3({ facts: [{ s: subject, p: d.p, o: mapRef(d.o), ...(scoped ? { scope: { fight: enc.id } } : {}) }] }, d);
+                // Patch 3: a wound of Alaric's lives while he is hurt; at full health it is healed (a scar is no wound)
+                const hurt = !scoped && pcWound(d) ? { hurt: deriveCharacter(s.entities.pc.sheet, content).maxHp } : null;
+                v3({ facts: [{ s: subject, p: d.p, o: mapRef(d.o), ...(scoped ? { scope: { fight: enc.id } } : hurt ? { scope: hurt } : {}) }] }, d);
                 break;
             }
             case 'learn':
@@ -597,8 +622,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     break;
                 }
                 const coin = s.entities.pc.sheet.coin_cp;
+                const cp = evidenced(d.cp, d.said, d);
                 grant('envelope.give');
-                emit({ t: 'coin.changed', d: { id: 'pc', value: coin + d.cp, delta: d.cp, why: `${from ? entityLabel(s, from) : d.from}: ${String(d.why || 'a gift').slice(0, 80)}` } });
+                emit({ t: 'coin.changed', d: { id: 'pc', value: coin + cp, delta: cp, why: `${from ? entityLabel(s, from) : d.from}: ${String(d.why || 'a gift').slice(0, 80)}` } });
                 break;
             }
             case 'coerce':
@@ -784,7 +810,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         }
         if (type === 'take' && e.taken === true && !events.some((x) => x.t === 'object.created' && x.d.object.holder?.entity === 'pc') && !events.some((x) => x.t === 'object.moved' && x.d.to?.entity === 'pc')) {
             const name = (auth.takeNames || {})[k];
-            if (name && !isLooseCoin(name)) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
+            if (name && !isLooseCoin(name)) emit({ t: 'object.created', d: { object: { id: uniqueObjectId(s, tag, name), name, kind: 'item', stack: false, qty: 1, unit: null, ...itemTraits(content, { name }, s.clock.minute), holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'taken' } } } });
         }
         if ((type === 'buy' || type === 'pay') && e.taken_anyway === true) overreach(type === 'buy' ? 'purchase' : 'payment', `the reply had Alaric ${type === 'buy' ? 'take or use what he had not bought' : 'pay'} although he had not agreed`);
         if ((type === 'buy' || type === 'pay') && e.priced === true) {
@@ -806,6 +832,21 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
 
     // 4. what waited for the reply and did not happen
     step = { kind: 'conditional' };
+    // Patch 3: what he uses of a thing he took in this very reply (commands.js use, condition 'taken'): the thing the
+    // story let him take, in the amount he uses; a tool stays his. Nothing taken, nothing used
+    for (const k of conditionals.filter((x) => !x.done && x.kind === 'use')) {
+        const got = events.filter((e) => (e.t === 'object.created' && e.d.object.holder?.entity === 'pc') || (e.t === 'object.moved' && e.d.to?.entity === 'pc'))
+            .map((e) => s.objects[e.t === 'object.created' ? e.d.object.id : e.d.split || e.d.id])
+            .filter((o) => o && o.holder?.entity === 'pc' && sameWant(k.name, o.name));
+        const o = got.at(-1);
+        if (!o) continue;
+        k.done = true;
+        if (['food', 'consumable'].includes(useOf(content, o))) {
+            const n = Math.min(k.qty || 1, o.qty ?? 1);
+            emit({ t: 'object.consumed', d: { id: o.id, by: 'pc', ...(n < (o.qty ?? 1) ? { qty: n } : {}) } });
+        }
+        emit({ t: 'cmd.completed', d: { seq: k.seq, ok: true, reason: null } });
+    }
     for (const c of conditionals.filter((x) => !x.done)) emit({ t: 'cmd.expired', d: { seq: c.seq, reason: 'the condition did not happen in this reply' } });
 
     // 5. who noticed him, his introduction, his own record of the turn, a fight the reply committed to
@@ -1045,7 +1086,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const q = d.for_quest ? questRef(d.for_quest) : null;
         const id = uniqueObjectId(s, tag, d.name);
         if (holder.entity === 'pc' && ((auth.take || []).length || auth.gather)) grant('player.take');
-        emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, holder, marks: [], for_quests: q ? [q.id] : [], source: { turn: s.turn, how: holder.entity === 'pc' ? (((auth.take || []).length || auth.gather) ? 'taken' : 'world_gift') : 'story' } } } });
+        emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, ...itemTraits(content, d, s.clock.minute), holder, marks: [], for_quests: q ? [q.id] : [], source: { turn: s.turn, how: holder.entity === 'pc' ? (((auth.take || []).length || auth.gather) ? 'taken' : 'world_gift') : 'story' } } } });
         objectsNew.set(normText(d.name), id);
     }
 
@@ -1072,11 +1113,49 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         emit({ t: 'object.moved', d: { id: o.id, to, ...(part ? { qty: part, split: `${o.id}_${tag}` } : {}) } });
     }
 
+    /**
+     * Patch 3: the amount the story says in words is the amount (live 18.10.2026: "two silver" reported as 200 cp). The
+     * engine reads the words the extractor copied from the reply (said) itself; where they name another sum than the
+     * number, the words win and the audit keeps both. Words that are not in the reply are no evidence.
+     */
+    function evidenced(cp, said, d) {
+        if (typeof said !== 'string' || !said.trim()) return unitSlip(cp, d);
+        const flatSaid = normText(said).replace(/[^a-z0-9]+/g, ' ').trim();
+        if (prose && !normText(prose).replace(/[^a-z0-9]+/g, ' ').includes(flatSaid)) return cp;
+        const v = coinFromWords(said, content);
+        if (v === null || v === cp) return cp;
+        emit({ t: 'note', d: { kind: 'amount.corrected', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: String(said).slice(0, 60), cp: v } });
+        return v;
+    }
+
+    /**
+     * Without the words: a number the reply does not say, that is exactly one coin unit off an amount it does say (200
+     * for "two silver"), is that amount misread in the wrong unit. Any other number stays as reported.
+     */
+    function unitSlip(cp, d) {
+        if (!prose || !Number.isInteger(cp)) return cp;
+        const stated = coinMentions(prose, content);
+        // a number the reply says anywhere ("two for the bath") is no slip
+        if (!stated.length || stated.includes(cp) || numbersIn(prose).has(cp)) return cp;
+        const u = content.rules.currency;
+        const factors = [u.copper_per_silver, u.copper_per_silver * u.silver_per_gold];
+        const near = [...new Set(stated.filter((v) => factors.some((f) => v * f === cp || cp * f === v)))];
+        if (near.length !== 1) return cp;
+        emit({ t: 'note', d: { kind: 'amount.corrected', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: null, cp: near[0], why: 'one coin unit off the amount the reply states' } });
+        return near[0];
+    }
+
     function offer(d) {
         const seller = idOf(d.seller);
         if (!seller || seller === 'pc' || !s.scene.present.includes(seller)) { reject(d, 'offer', `the seller ${String(d.seller).slice(0, 40)} is not present`); return; }
+        const lines = d.lines.map((l, i) => ({ id: `l${i + 1}`, ...l, price_cp: evidenced(l.price_cp, l.said, d) }));
+        // the seller's latest price for the same thing stands: an open offer of theirs for it closes (one price at a
+        // time, as for a buyer's bid); an unchanged one stays and is not offered twice
+        const same = openOffers(s).filter((o) => !o.bid && !o.canon && o.seller === seller && o.lines.some((x) => lines.some((l) => sameWant(l.what, x.what) && sameWant(x.what, l.what))));
+        if (same.length && same.every((o) => lines.every((l) => o.lines.some((x) => sameWant(l.what, x.what) && x.price_cp === l.price_cp && (x.qty ?? 1) === (l.qty ?? 1))))) return;
+        for (const o of same) emit({ t: 'offer.closed', d: { id: o.id, status: 'repriced' } });
         const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
-        emit({ t: 'offer.created', d: { offer: { id, seller, at: s.scene.at, status: 'open', canon: false, turn: s.turn, lines: d.lines.map((l, i) => ({ id: `l${i + 1}`, ...l })) } } });
+        emit({ t: 'offer.created', d: { offer: { id, seller, at: s.scene.at, status: 'open', canon: false, turn: s.turn, lines } } });
         // a purchase Alaric agreed to in advance, within his limit (buy with max_cp or any_price), in the number he named
         for (const dec of s.decisions.filter((x) => x.kind === 'purchase' && (x.max_cp !== null || x.any_price) && x.at === s.scene.at && (!x.seller || x.seller === seller))) {
             const o = s.offers[id];
@@ -1090,7 +1169,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             if (!dec.any_price && price > dec.max_cp) { system.push(`NOT BOUGHT — ${what}: ${price} cp is above his limit of ${dec.max_cp} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'too_expensive' } }); continue; }
             if (coin < price) { system.push(`NOT BOUGHT — ${price} cp needed, he has ${coin} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'no_coin' } }); continue; }
             grant('player.buy');
-            bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (name) => uniqueObjectId(s, tag, name) });
+            bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (name) => uniqueObjectId(s, tag, name), content });
             counterparts.add(seller);
             emit({ t: 'offer.closed', d: { id, status: 'accepted' } });
             emit({ t: 'decision.closed', d: { id: dec.id, status: 'accepted' } });
@@ -1117,9 +1196,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             else lines.push({ id: `l${lines.length + 1}`, what: o.name, kind: 'goods', service: null, object: o.id, qty, price_cp: null });
         }
         if (!lines.length || !Number.isInteger(d.price_cp)) { reject(d, 'offer', 'a bid names his things and one price'); return; }
+        const price = evidenced(d.price_cp, d.said, d);
         for (const old of openOffers(s).filter((x) => x.bid && x.seller === buyer)) emit({ t: 'offer.closed', d: { id: old.id, status: 'expired' } });
         const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
-        emit({ t: 'offer.created', d: { offer: { id, seller: buyer, bid: true, at: s.scene.at, status: 'open', canon: false, turn: s.turn, price_cp: d.price_cp, lines } } });
+        emit({ t: 'offer.created', d: { offer: { id, seller: buyer, bid: true, at: s.scene.at, status: 'open', canon: false, turn: s.turn, price_cp: price, lines } } });
         counterparts.add(buyer);
     }
 

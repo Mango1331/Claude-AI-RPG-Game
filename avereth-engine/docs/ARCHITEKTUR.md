@@ -220,6 +220,13 @@ Seit 4.3.0-c.6.6.10 (Patch 2) gilt für Threads, Ziele und Berichtsorte:
 - **Ziele** (`intents`, nur V4) stehen als eigener Abschnitt `goals` (Priorität 1, höchstens 3 Zeilen) im Engine-Block, mit dem Hinweis, dass sie nie Grund sind, für Alaric zu handeln.
 - **Berichtsorte** (`places[id].known = reported`) stehen im Katalog mit ihrem Bericht („known only by report … not seen yet“). Ihre Angaben werden keine Fakten.
 
+Seit 4.3.0-c.6.6.11 (Patch 3) schützt die Firewall zusätzlich den mechanischen Zustand (`src/v4/firewall.js`):
+- **Leben und Tod** einer Kreatur oder Person mit Kampfwerten gehören der Engine. Eine widersprechende Behauptung wird abgewiesen (mit Korrektur), eine wiederholende nicht erneut gespeichert.
+- **Alarics HP, MP, STA, Level und Ausrüstung** sind keine freien Fakten. Eine Wunde bei voller HP wird abgewiesen; eine Wunde bei verletztem Alaric lebt nur bis zur Heilung (`scope.hurt`).
+- **Alarics eigene Taten** (gegessen, gejagt, gekauft, verbraucht, zurückgelassen) sind keine Fakten; sie entstehen nur aus seinen Befehlen. Hat er sie nicht befohlen, sagt die nächste Korrektur, dass sie nicht geschehen sind.
+- **Beträge** liest die Engine aus dem Wortlaut (`said`, sonst Einheitenfehler gegenüber im Text genannten Beträgen); ein übermittelter Betrag weicht nicht unbemerkt vom Text ab.
+- In Fakten gezeigte Kreaturen gleichen Aussehens tragen beim Lesen ihren Szenen-Handle („Wolf B“).
+
 **Aufbau des Engine-Blocks** (Sektionen mit Priorität, gepackt unter Budget, Standard 1.400 Token):
 
 | Priorität | Sektionen |

@@ -228,8 +228,18 @@ export function applyDomainEvent(state, e) {
         case 'cmd.completed':
         case 'cmd.expired':
         case 'extract.applied':
+            break;
+        // Patch 10A.3: these were previously throwaway audit-only events, leaving #audit
+        // empty despite a failed world report or a narrator-invented player commitment.
+        // They do not change the canonical world, only the latest turn's diagnostic record.
         case 'extract.failed':
+            state.last.extract_error = String(d.error || 'unknown').slice(0, 200);
+            break;
         case 'overreach.noted':
+            state.last.overreach = [...(state.last.overreach || []), {
+                kind: String(d.kind || 'action').slice(0, 80),
+                what: String(d.what || '').slice(0, 160),
+            }].slice(-12);
             break;
         default:
             throw new Error(`unknown V4 event type: ${e.t}`);

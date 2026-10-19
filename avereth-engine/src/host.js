@@ -380,7 +380,7 @@ function displaySystemPanel(panel, { tactical = false, playerFacing = false } = 
     // action/log/refusal record instead of repeating the target table, HP, Range, resources and "Next" a second time.
     if (tactical) raw = raw.filter((line) => !/^(?:COMBAT TARGETS|HP:|Range:|Alaric: MP |Next:)/.test(clean(line)));
     const klass = (line) => {
-        if (/not possible|NOT TAKEN|REFUSED|FAILED|NOT RECORDED|NOT APPLIED/i.test(line)) return 'avereth-system-line avereth-system-warning';
+        if (/not possible|NEEDS CLARIFICATION|NOT TAKEN|REFUSED|FAILED|NOT RECORDED|NOT APPLIED/i.test(line)) return 'avereth-system-line avereth-system-warning';
         if (/^(?:COMBAT(?: START| END| —)|— (?:Round|Opening)|Next:)/.test(line)) return 'avereth-system-line avereth-system-heading';
         if (/^(?:COMBAT TARGETS|HP:|Range:|Alaric: MP|ACTIVE SCENE)/.test(line)) return 'avereth-system-line avereth-system-state';
         if (/^(?:Initiative:|Alaric's attacks vs )/.test(line)) return 'avereth-system-line avereth-system-info';

@@ -1,6 +1,6 @@
 # Patch 10A – HUD/QoL (vorgezogen, display-only)
 
-**Stand:** 20.10.2026 · **Build:** `4.3.0-c.6.6.13-10a.2` · Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`
+**Stand:** 20.10.2026 · **Build:** `4.3.0-c.6.6.13-10a.3` · Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`
 
 ## Warum jetzt?
 
@@ -40,3 +40,20 @@ Die zusätzlichen Regressionstests liegen unter `tests/unit/hud_10a.test.js` (Or
 **Regressionen:** \`tests/unit/display_10a.test.js\` prüft das Herausfiltern interner Meldungen, das Sichtbarbleiben echter Fehler, separate Zielklärungsfragen, die V3-Anzeige und die Ausgabe von \`#audit\`.
 
 Die Mechanik, die Regeln, der Narrator-/Extractor-Prompt und die LLM-Aufrufzahl bleiben unverändert. Neue Tests und vollständige Smokes konnten über die GitHub-Dateischnittstelle nicht lokal ausgeführt werden; vor Patch 6 bzw. beim nächsten Live-Test nachholen.
+
+
+## Patch 10A.3 – Kleine HUD-/Audit-Nacharbeiten vor Patch 6
+
+**Ausgangslage:** In der Rückschau auf die bisherigen Live-Test-Wünsche fiel auf: (1) Das Welt-HUD begrenzt lange Questlisten, aber der Charakter-HUD enthielt noch alle Quests und sämtliche getragenen Items. (2) Ein `#audit` konnte leer aussehen, obwohl ein Extraktor fehlgeschlagen war oder der Narrator eigenmächtig eine Spielerhandlung beschrieben hatte. (3) „ACTION NEEDS CLARIFICATION“ war nicht wie andere echte Handlungsprobleme hervorgehoben.
+
+**Änderungen:**
+- Charakter-HUD: maximal acht Inventareinträge (Rest `#bag`) und drei angebotene/aktive Quests (Rest `#quests`). Die vollständigen kanonischen Informationen bleiben unverändert; nur die UI-Vorschau wird begrenzt.
+- `extract.failed` und `overreach.noted` ergänzen jetzt ausschließlich `state.last` um **temporäre Audit-Diagnosen** (`extract_error` / `overreach`), die bei `turn.begun` wie alle anderen letzten-Turn-Meldungen zurückgesetzt werden. Keine Änderung an Spielerressourcen, Persistenzregeln, Ablehnungen oder Narrator-Verhalten.
+- `#audit` kann dadurch „World report FAILED“ sowie „Narrator overreach […]“ mit konkretem Grund anzeigen, statt diese technischen Probleme nur im Eventexport sichtbar zu machen.
+- Eine echte `ACTION NEEDS CLARIFICATION` wird als System-Warnung formatiert. Die normale ruhige V4-Standardanzeige aus 10A.2 bleibt erhalten.
+
+**Tests:** `tests/unit/qol_10a3.test.js`: kurze Listen, konkrete Audit-Einträge und Reset zum nächsten Turn, sichtbare/markierte Handlungsrückfrage.
+
+**Bewusst nicht vorgezogen:** die Balance der Novice-Aufträge (z. B. mehr Monster-Culling und Escort-Einsätze) sowie der `creature.new more:true`-Einzeltierfall. Letzterer ist bereits als Punkt 17 im Patch-6-Auftrag enthalten. Patch 6 soll hierauf und auf den neuesten Branch-HEAD aufbauen.
+
+**Teststatus:** GitHub-Dateien und Syntax geprüft; ein vollständiger Node-Testlauf und die SillyTavern-Smokes können aus dieser GitHub-Verbindung nicht direkt gestartet werden. Vor Patch 6 nachholen.

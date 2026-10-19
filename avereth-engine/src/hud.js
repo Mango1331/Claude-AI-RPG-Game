@@ -56,6 +56,8 @@ export function characterRows(state, content) {
     const inv = Object.entries(s.inventory || {}).map(([k, q]) => `${itemLabel(state, content, k)}${q > 1 ? ` ×${q}` : ''}`);
     const quests = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered')
         .map((q) => `${q.title} (${[q.status, q.rank, q.giver ? playerLabel(state, q.giver) : null, q.reward ? `reward ${q.reward}` : null].filter(Boolean).join(' · ')})`);
+    // Patch 10A.3: keep the expanded sheet scannable as a campaign accumulates gear and contracts.
+    const brief = (items, limit, command) => `${list(items.slice(0, limit))}${items.length > limit ? ` · +${items.length - limit} more (${command})` : ''}`;
     const fx = state.encounter?.combatants?.pc?.current?.effects || [];
     return [
         ['Level', `${s.level} ${cls} · Power Rank ${dv.rank} · Guild Rank ${guildRankOf(state) || '— (not registered)'}${e.status === 'dead' ? ' · DEAD' : ''}`],
@@ -64,9 +66,9 @@ export function characterRows(state, content) {
         ['Combat', `ATK ${dv.atk} · MATK ${dv.matk} · DEF ${dv.def} · MDEF ${dv.mdef} · Initiative ${dv.init}`],
         ['Skills', list(skills)],
         ['Equipped', list(equip)],
-        ['Carried', list(inv)],
+        ['Carried', brief(inv, 8, '#bag')],
         ['Coin', formatCoin(s.coin_cp, content)],
-        ['Quests', list(quests)],
+        ['Quests', brief(quests, 3, '#quests')],
         ['Effects', list(fx.map((x) => x.name))],
     ];
 }

@@ -505,9 +505,12 @@ export function boardRequest(s, content, need) {
     const near = nearDungeons(s, need.branch, town?.realm, { guild: true });
     const dungeons = near.map((id) => `${s.places[id].name} (${dungeonText(s, id, { guild: true }).replace(/^a Dungeon: /, '')}${s.places[id].where ? `; ${s.places[id].where}` : ''})`);
     const up = need.have.some((t) => dungeonNamed(s, near, t));
+    // a Dungeon of mixed Ranks: the work must name its fitting level by number (the check reads "level N")
+    const levelRule = near.map((id) => [id, fittingLevels(s, content, need.rank, id)]).filter(([, ns]) => ns?.length)
+        .map(([id, ns]) => ` In ${s.places[id].name} that part is ${levelWords(ns)}: write it with its number in the task or an objective's where ("upper galleries" alone names no level).`).join('');
     const user = [
         `BRANCH: ${town?.name || need.branch}${realm ? `, ${realm}` : ''} (${town?.sub || 'settlement'})`,
-        ...(dungeons.length ? [`KNOWN DUNGEONS NEAR THIS BRANCH (the Guild's records): ${dungeons.join(' · ')}. ${up ? 'A Dungeon job is on the board already: write no other work in them.' : `At most one listing may be clearance work in one of them, and only in a part whose danger Rank is ${fits.join(' or ')} (this board's work; ${order.filter((r) => !fits.includes(r)).length ? 'deeper or stronger parts are not this board\'s' : 'any part'}): name the Dungeon exactly as written, the part (a level, a gallery) and its concrete outcome; it counts as one of the culling jobs.`}`] : []),
+        ...(dungeons.length ? [`KNOWN DUNGEONS NEAR THIS BRANCH (the Guild's records): ${dungeons.join(' · ')}. ${up ? 'A Dungeon job is on the board already: write no other work in them.' : `At most one listing may be clearance work in one of them, and only in a part whose danger Rank is ${fits.join(' or ')} (this board's work; ${order.filter((r) => !fits.includes(r)).length ? 'deeper or stronger parts are not this board\'s' : 'any part'}): name the Dungeon exactly as written, the part (a level, a gallery) and its concrete outcome; it counts as one of the culling jobs.${levelRule}`}`] : []),
         `RANK: ${need.rank} · DAY ${need.day}`,
         `ON THE BOARD ALREADY: ${need.have.length ? need.have.join(' | ') : 'nothing'}`,
         `WRITE: ${need.missing} new listing${need.missing > 1 ? 's' : ''}.`,
@@ -530,6 +533,20 @@ function dungeonNamed(s, ids, text) {
 const ORDINAL = { first: 1, second: 2, third: 3, fourth: 4, fifth: 5, sixth: 6 };
 
 /**
+ * Livetest 21.10.2026: the levels of a Dungeon a board of this Rank may send work to, by the Guild's record, or null
+ * when its whole known range fits (no level needs naming). "the upper galleries" names no level the engine can check.
+ */
+function fittingLevels(s, content, rank, id) {
+    const d = s.places[id];
+    const c = d.dungeon;
+    const known = guildRecord(c, d.by);
+    const fits = rankFits(content, rank);
+    if (known.includes('rank') && c.rank && fits.includes(c.rank.min) && fits.includes(c.rank.max)) return null;
+    return Object.entries(c.levels || {}).filter(([n, r]) => known.includes(`level:${n}`) && fits.includes(r.min) && fits.includes(r.max)).map(([n]) => Number(n));
+}
+const levelWords = (ns) => ns.map((n) => `"level ${n}"`).join(' or ');
+
+/**
  * Final review of Patch 7: a listing's Dungeon work must stay in a part the board's Rank fits, by the Guild's own
  * records. A Dungeon whose whole known range fits needs no part named; otherwise each level the listing names must be
  * on record with a fitting Rank. Returns the refusal, or null.
@@ -541,7 +558,10 @@ function dungeonPartWhy(s, content, rank, id, text) {
     const fits = rankFits(content, rank);
     if (known.includes('rank') && c.rank && fits.includes(c.rank.min) && fits.includes(c.rank.max)) return null;
     const levels = [...new Set([...text.matchAll(/\blevel\s+(\d+)\b/g)].map((m) => Number(m[1])).concat([...text.matchAll(/\b(first|second|third|fourth|fifth|sixth)\s+(?:level|floor)\b/g)].map((m) => ORDINAL[m[1]])))];
-    if (!levels.length) return `names no part of ${d.name}: only a part whose Rank is ${fits.join(' or ')} is ${rank} work`;
+    if (!levels.length) {
+        const ok = fittingLevels(s, content, rank, id) || [];
+        return `names no part of ${d.name}: only a part whose Rank is ${fits.join(' or ')} is ${rank} work${ok.length ? `; write ${levelWords(ok)} in its task or an objective's where (a gallery or "upper" alone names no level)` : ''}`;
+    }
     for (const n of levels) {
         const r = known.includes(`level:${n}`) ? c.levels?.[n] : null;
         if (!r) return `level ${n} of ${d.name} has no Rank on the Guild's record: not ${rank} work`;

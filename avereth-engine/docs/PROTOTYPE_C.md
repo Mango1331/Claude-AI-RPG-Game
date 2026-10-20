@@ -1713,3 +1713,31 @@ Ohne den Fix scheitern 1, 4 und 5.
 - Das gilt nach dem `arrive`-Delta (`laterLegs`) und, schon vor 7.2 offen, ebenso ohne Delta (Schleife vor den Deltas).
 - Wird nur die Endetappe gemeldet, geht er wie bisher dorthin.
 - Tests 7 und 8 scheitern ohne die Korrektur.
+
+### 4.3.0-c.6.6.23: Dungeon-Auftrag am Board, Lore-Bridge in der Halle
+
+Livetest 21.10.2026 00:16 (`tests/v4/live_1021.json`).
+
+**1. Board scheitert am Dungeon-Auftrag.**
+- Ablauf im Livetest:
+  - Der Generator schrieb den Auftrag in den Old Crown Catacombs (Rank F–E; level 1: F, level 2: E) für „the upper galleries“.
+  - Die Prüfung (`dungeonPartWhy`) liest nur „level N“ und lehnte ab.
+  - Der Retry schrieb „upper galleries (Rank F)“ und wurde wieder abgelehnt. Damit scheiterte das ganze Board.
+- Ursache:
+  - Die Anfrage verlangte „the part (a level, a gallery)“.
+  - Die Ablehnung nannte nie die gültige Ebene.
+- Fix: Anfrage und Ablehnung nennen jetzt die erlaubte Ebene, hier „level 1“ (`fittingLevels`).
+- Die Prüfung bleibt unverändert:
+  - Eine Galerie, „upper“ oder ein Rank-Buchstabe allein ist weiterhin keine Ebene.
+  - Level 2 (Rank E) bleibt abgelehnt.
+
+**2. World Info.**
+- Die Meldung „World info budget reached after 5 entries“ am Board ist das dokumentierte Verhalten (siehe [LOREBOOK.md](LOREBOOK.md), Order).
+  - Gilde (290) und Brett (286) bleiben, das Quest-Gerüst (284, 547 Token) fällt.
+  - Die Board-Aufträge schreibt ohnehin der eigene Board-Generator ohne World Info.
+- Gefunden wurde dabei ein Fehler der Lore-Bridge in V4:
+  - Sie nannte in einem Unterort (der Gildenhalle) nur den Unterort, nie die Stadt. Der Stadt-Eintrag (Alderwatch-Seed) aktivierte dort nie.
+  - Jetzt nennt sie Reich, Stadt und Unterort.
+- Das Lorebook ist unverändert.
+
+**Tests:** `board_1021` (4).

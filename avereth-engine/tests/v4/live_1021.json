@@ -1,0 +1,1901 @@
+{
+ "source": "SillyTavern chat \"Avereth Engine Test v4 - 2026-10-21 00h16m24s274ms\" under 4.3.0-c.6.6.22: messages #0-#10 (the state before the first board read at the Alderwatch hall, avereth records only; swipes, reasoning and API fields left out) and the Board generator answers of that read from the request log: the first answer and its retry (both refused for the Old Crown Catacombs job: \"upper galleries\" names no level) and the answer of the swipe (accepted). No secrets; no request headers.",
+ "messages": [
+  {
+   "mes": "*Cool wind moves through the rough grass around Alaric Red's boots.*\r\n\r\n*The last thing that belongs to Earth is still there in memory\u2014an old life, a world without visible mana, Classes, or this impossible second beginning. The present is different: the smell of soil and distant woodsmoke, an unfamiliar sky, and stone walls beyond the public road.*\r\n\r\n*Alaric Red is already standing on an uncultivated roadside verge outside the nearby city. Cultivated fields and fenced holdings begin farther away. No one is close enough to have witnessed the instant of arrival.*\r\n\r\n*The body is Human, healthy, and eighteen years old. Simple traveler's clothes are already being worn; a small pouch holding five silver rests at the belt. The memories are still from Earth.*\r\n\r\n*A translucent interface opens across Alaric Red's vision.*\r\n\r\n`SYSTEM INITIALIZATION COMPLETE`\r\n`Origin: Earth`\r\n`World: Avereth`\r\n`Race: Human`\r\n`Age: 18`\r\n`Level: 1 | Rank: F`\r\n\r\n`BASE STATS`\r\n`STR 5 | VIT 5 | AGI 5 | INT 5 | PER 5 | WIL 5`\r\n\r\n`Location: Public roadside verge outside Alderwatch, Valedorn Crown`\r\n`Arrival Witnesses: NONE`\r\n`Starting Possessions: Simple Traveler's Clothes | Small Pouch | 5 Silver`\r\n`Local Common Language: Integrated`\r\n`Mandatory Quest: NONE`\r\n\r\n`CHARACTER CREATION \u2014 STEP 1/2`\r\n`Choose your Base Class:`\r\n\r\n`Warrior   \u2014 Favored Stats: STR / VIT`\r\n`Mage      \u2014 Favored Stats: INT / WIL`\r\n`Guardian  \u2014 Favored Stats: VIT / WIL`\r\n`Duelist   \u2014 Favored Stats: STR / AGI`\r\n`Ranger    \u2014 Favored Stats: AGI / PER`\r\n\r\n`Your chosen Class immediately applies +1 to both Favored Stats at Level 1.`\r\n`After choosing a Class, select exactly 2 Skills from that Class's Base Skill Pool.`\r\n\r\n`Reply with your Class choice.`\r\n\r\n*The System waits. Story time does not move during Character Creation.*\r\n",
+   "is_user": false,
+   "is_system": false,
+   "extra": {
+    "avereth": {
+     "v": 2,
+     "events": [
+      {
+       "t": "campaign.started",
+       "d": {
+        "seed": 2117365388,
+        "minute": 540,
+        "entities": [
+         {
+          "id": "pc",
+          "kind": "pc",
+          "name": "Alaric",
+          "race": "Human",
+          "age": 18,
+          "origin": "Earth",
+          "descriptors": [
+           "alaric",
+           "stranger",
+           "traveler"
+          ],
+          "status": "alive",
+          "location": "loc.alderwatch",
+          "sheet": {
+           "level": 1,
+           "class": null,
+           "stats": {
+            "STR": 5,
+            "VIT": 5,
+            "AGI": 5,
+            "INT": 5,
+            "PER": 5,
+            "WIL": 5
+           },
+           "skills": {},
+           "equipment": {
+            "clothing": "simple_travelers_clothes"
+           },
+           "inventory": {
+            "small_pouch": 1
+           },
+           "coin_cp": 50,
+           "xp": 0,
+           "free_points": 0,
+           "hp": 80,
+           "mp": 60,
+           "sta": 100
+          }
+         }
+        ],
+        "location": "loc.alderwatch",
+        "place": "public roadside verge outside Alderwatch",
+        "facts": [
+         {
+          "id": "f.pc.name",
+          "s": "pc",
+          "p": "name",
+          "o": "Alaric",
+          "visibility": "public",
+          "since": {
+           "turn": 0,
+           "minute": 540
+          },
+          "until": null,
+          "importance": 0.9,
+          "hard": false,
+          "source": {
+           "kind": "campaign_start"
+          }
+         },
+         {
+          "id": "f.pc.appearance",
+          "s": "pc",
+          "p": "appearance",
+          "o": "Human, about eighteen; wears simple traveler's clothes",
+          "visibility": "public",
+          "since": {
+           "turn": 0,
+           "minute": 540
+          },
+          "until": null,
+          "importance": 0.9,
+          "hard": false,
+          "source": {
+           "kind": "campaign_start"
+          }
+         },
+         {
+          "id": "f.pc.origin",
+          "s": "pc",
+          "p": "origin",
+          "o": "Earth (transmigrated; memories intact)",
+          "visibility": "secret",
+          "since": {
+           "turn": 0,
+           "minute": 540
+          },
+          "until": null,
+          "importance": 0.9,
+          "hard": false,
+          "source": {
+           "kind": "campaign_start"
+          }
+         },
+         {
+          "id": "f.pc.arrival_witnesses",
+          "s": "pc",
+          "p": "arrival_witnesses",
+          "o": "none",
+          "visibility": "secret",
+          "since": {
+           "turn": 0,
+           "minute": 540
+          },
+          "until": null,
+          "importance": 0.9,
+          "hard": false,
+          "source": {
+           "kind": "campaign_start"
+          }
+         }
+        ],
+        "knowledge": [
+         {
+          "who": "pc",
+          "about": "f.pc.name",
+          "stance": "knows",
+          "source": "self",
+          "turn": 0,
+          "minute": 540
+         },
+         {
+          "who": "pc",
+          "about": "f.pc.appearance",
+          "stance": "knows",
+          "source": "self",
+          "turn": 0,
+          "minute": 540
+         },
+         {
+          "who": "pc",
+          "about": "f.pc.origin",
+          "stance": "knows",
+          "source": "self",
+          "turn": 0,
+          "minute": 540
+         },
+         {
+          "who": "pc",
+          "about": "f.pc.arrival_witnesses",
+          "stance": "knows",
+          "source": "self",
+          "turn": 0,
+          "minute": 540
+         }
+        ],
+        "campaign": "avereth",
+        "content_version": "4.2.0",
+        "engine_version": "4.3.0-c.6.6.22",
+        "runtime": "v4",
+        "path": "c",
+        "places": [
+         {
+          "id": "realm.valedorn_crown",
+          "name": "Valedorn Crown",
+          "kind": "realm",
+          "parent": null,
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "content"
+         },
+         {
+          "id": "realm.caelreth",
+          "name": "Caelreth",
+          "kind": "realm",
+          "parent": null,
+          "realm": "realm.caelreth",
+          "tags": [],
+          "by": "content"
+         },
+         {
+          "id": "realm.duskreach",
+          "name": "Duskreach",
+          "kind": "realm",
+          "parent": null,
+          "realm": "realm.duskreach",
+          "tags": [],
+          "by": "content"
+         },
+         {
+          "id": "realm.ashen_scale_dominion",
+          "name": "Ashen Scale Dominion",
+          "kind": "realm",
+          "parent": null,
+          "realm": "realm.ashen_scale_dominion",
+          "tags": [],
+          "by": "content"
+         },
+         {
+          "id": "realm.verdant_fang_court",
+          "name": "Verdant Fang Court",
+          "kind": "realm",
+          "parent": null,
+          "realm": "realm.verdant_fang_court",
+          "tags": [],
+          "by": "content"
+         },
+         {
+          "id": "loc.alderwatch",
+          "name": "Alderwatch",
+          "kind": "settlement",
+          "sub": "city",
+          "parent": "realm.valedorn_crown",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "content"
+         },
+         {
+          "id": "loc.alderwatch.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.alderwatch",
+          "realm": "realm.valedorn_crown",
+          "tags": [
+           "guild_hall"
+          ],
+          "by": "engine"
+         },
+         {
+          "id": "loc.glassmere",
+          "name": "Glassmere",
+          "kind": "settlement",
+          "sub": "city",
+          "parent": "realm.caelreth",
+          "realm": "realm.caelreth",
+          "tags": [],
+          "by": "content"
+         },
+         {
+          "id": "loc.glassmere.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.glassmere",
+          "realm": "realm.caelreth",
+          "tags": [
+           "guild_hall"
+          ],
+          "by": "engine"
+         },
+         {
+          "id": "loc.ashbridge",
+          "name": "Ashbridge",
+          "kind": "settlement",
+          "sub": "city",
+          "parent": "realm.duskreach",
+          "realm": "realm.duskreach",
+          "tags": [],
+          "by": "content"
+         },
+         {
+          "id": "loc.ashbridge.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.ashbridge",
+          "realm": "realm.duskreach",
+          "tags": [
+           "guild_hall"
+          ],
+          "by": "engine"
+         },
+         {
+          "id": "loc.crownheart",
+          "name": "Crownheart",
+          "kind": "settlement",
+          "sub": "capital",
+          "parent": "realm.valedorn_crown",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "content"
+         },
+         {
+          "id": "loc.crownheart.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.crownheart",
+          "realm": "realm.valedorn_crown",
+          "tags": [
+           "guild_hall"
+          ],
+          "by": "engine"
+         },
+         {
+          "id": "loc.asterhall",
+          "name": "Asterhall",
+          "kind": "settlement",
+          "sub": "capital",
+          "parent": "realm.caelreth",
+          "realm": "realm.caelreth",
+          "tags": [],
+          "by": "content"
+         },
+         {
+          "id": "loc.asterhall.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.asterhall",
+          "realm": "realm.caelreth",
+          "tags": [
+           "guild_hall"
+          ],
+          "by": "engine"
+         },
+         {
+          "id": "loc.blackgate",
+          "name": "Blackgate",
+          "kind": "settlement",
+          "sub": "capital",
+          "parent": "realm.duskreach",
+          "realm": "realm.duskreach",
+          "tags": [],
+          "by": "content"
+         },
+         {
+          "id": "loc.blackgate.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.blackgate",
+          "realm": "realm.duskreach",
+          "tags": [
+           "guild_hall"
+          ],
+          "by": "engine"
+         },
+         {
+          "id": "loc.cinder_throne",
+          "name": "Cinder Throne",
+          "kind": "settlement",
+          "sub": "seat",
+          "parent": "realm.ashen_scale_dominion",
+          "realm": "realm.ashen_scale_dominion",
+          "tags": [],
+          "by": "content"
+         },
+         {
+          "id": "loc.thornheart",
+          "name": "Thornheart",
+          "kind": "settlement",
+          "sub": "seat",
+          "parent": "realm.verdant_fang_court",
+          "realm": "realm.verdant_fang_court",
+          "tags": [],
+          "by": "content"
+         },
+         {
+          "id": "loc.mossback_warrens",
+          "name": "Mossback Warrens",
+          "kind": "site",
+          "parent": "realm.duskreach",
+          "realm": "realm.duskreach",
+          "tags": [],
+          "by": "content",
+          "near": "loc.ashbridge",
+          "where": "a moss-grown hill half a day's walk east of Ashbridge, off the old quarry track",
+          "rooms": true,
+          "dungeon": {
+           "real": true,
+           "theme": "goblin warrens: tunnels dug into a mossy hill, crude palisades, goblin scouts and warriors, a shaman deeper down",
+           "rank": {
+            "min": "F",
+            "max": "E"
+           },
+           "levels": {
+            "1": {
+             "min": "F",
+             "max": "F"
+            },
+            "2": {
+             "min": "E",
+             "max": "E"
+            }
+           },
+           "control": "the Adventurers' Guild of Ashbridge keeps its entry ledger under a charter of the Duskreach crown",
+           "hidden": [],
+           "heard": [],
+           "guild": [
+            "theme",
+            "rank",
+            "level:1",
+            "level:2",
+            "control"
+           ]
+          }
+         },
+         {
+          "id": "loc.glimmerdeep_grotto",
+          "name": "Glimmerdeep Grotto",
+          "kind": "site",
+          "parent": "realm.caelreth",
+          "realm": "realm.caelreth",
+          "tags": [],
+          "by": "content",
+          "near": "loc.glassmere",
+          "where": "a cleft in the hills a morning's walk north of Glassmere, where the stream runs out of the rock",
+          "rooms": true,
+          "dungeon": {
+           "real": true,
+           "theme": "crystal caverns: glittering grottos of mana-fed crystal, crystal beetles and mineral slimes",
+           "rank": {
+            "min": "F",
+            "max": "F"
+           },
+           "levels": {
+            "1": {
+             "min": "F",
+             "max": "F"
+            }
+           },
+           "control": "a Glassmere academy of magic holds the cleft and lets registered adventurers cull its outer grottos",
+           "hidden": [],
+           "heard": [],
+           "guild": [
+            "theme",
+            "rank",
+            "level:1",
+            "control"
+           ]
+          }
+         },
+         {
+          "id": "loc.old_crown_catacombs",
+          "name": "Old Crown Catacombs",
+          "kind": "site",
+          "parent": "realm.valedorn_crown",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "content",
+          "near": "loc.alderwatch",
+          "where": "beneath a ruined chapel an hour's ride west of Alderwatch",
+          "rooms": true,
+          "dungeon": {
+           "real": true,
+           "theme": "undead catacombs: burial galleries, restless skeletons, ghouls deeper down",
+           "rank": {
+            "min": "F",
+            "max": "E"
+           },
+           "levels": {
+            "1": {
+             "min": "F",
+             "max": "F"
+            },
+            "2": {
+             "min": "E",
+             "max": "E"
+            }
+           },
+           "control": "the temple wardens of Alderwatch, who ask the Guild to keep the upper galleries culled",
+           "hidden": [],
+           "heard": [],
+           "guild": [
+            "theme",
+            "rank",
+            "level:1",
+            "level:2",
+            "control"
+           ]
+          }
+         },
+         {
+          "id": "loc.alderwatch.verge",
+          "name": "public roadside verge outside Alderwatch",
+          "kind": "site",
+          "parent": "loc.alderwatch",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "content"
+         }
+        ],
+        "at": "loc.alderwatch.verge"
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "mes": "Mage",
+   "is_user": true,
+   "is_system": true,
+   "extra": {
+    "avereth": {
+     "v": 3,
+     "events": [
+      {
+       "t": "turn.begun",
+       "d": {
+        "turn": 1,
+        "input_hash": "488a02e3",
+        "input": "Mage"
+       }
+      },
+      {
+       "t": "creation.class_selected",
+       "d": {
+        "class": "mage",
+        "favored": [
+         "INT",
+         "WIL"
+        ],
+        "basic_attack": "mage.basic_attack"
+       }
+      },
+      {
+       "t": "outcome.recorded",
+       "d": {
+        "outcome": {
+         "kind": "creation.step2",
+         "class": "mage"
+        },
+        "situations": []
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "mes": "```\n[SYSTEM // CHARACTER CREATION \u2014 STEP 2/2]\nCLASS SELECTED: MAGE \u2014 favored INT +1, WIL +1 \u00b7 Basic Attack granted (P1)\nSTR 5 | VIT 5 | AGI 5 | INT 6 | PER 5 | WIL 6 | Max HP 80 | Max MP 72 | Max STA 100 | Initiative 7\nChoose exactly 2 Skills from the Mage Base Pool (for example \"Arcane Bolt + Arcane Ward\"):\n- Arcane Bolt [Offensive] | Cost 10 MP | Range MEDIUM | Raw = 10 + INT \u00d7 1.875 + MATK\n- Arcane Ward [Defensive] | Cost 10 MP | Effect: create a Barrier with Barrier HP equal to: 6 + (WIL \u00d7 1.50). The Barrier absorbs physical or magical damage and lasts until destroyed or until the start of the Mage's next turn.\n- Flame Lance [Offensive] | Cost 16 MP | Range LONG | Raw = 16 + INT \u00d7 2.375 + MATK\n- Arcane Burst [Offensive] | Cost 14 MP | Range ENGAGED AREA around caster | Raw = 8 + INT \u00d7 1.25 + MATK | Effect: resolve damage separately against each valid target ENGAGED with the caster. No additional status effect.\n- Blink [Utility] | Cost 8 MP | Effect: instantly reposition by up to 1 Range Band to a plausible visible unoccupied position. No attack is included.\n- Focused Ward [Defensive] | Cost 14 MP | Effect: create a Barrier with Barrier HP equal to: 10 + (WIL \u00d7 2.00). The Barrier absorbs physical or magical damage and lasts until destroyed or until the start of the Mage's next turn.\nStarter Gear, equipped when Step 2 is complete: Starter Arcane Staff [F] (MATK 6), Starter Light Robes [F] (DEF 2, MDEF 3).\n```",
+   "is_user": false,
+   "is_system": true,
+   "extra": {
+    "avereth_panel": true
+   }
+  },
+  {
+   "mes": "Flame Lance + Arcane Burst",
+   "is_user": true,
+   "is_system": true,
+   "extra": {
+    "avereth": {
+     "v": 3,
+     "events": [
+      {
+       "t": "turn.begun",
+       "d": {
+        "turn": 2,
+        "input_hash": "dd58a366",
+        "input": "Flame Lance + Arcane Burst"
+       }
+      },
+      {
+       "t": "creation.completed",
+       "d": {
+        "skills": [
+         "mage.flame_lance",
+         "mage.arcane_burst"
+        ],
+        "equip": {
+         "weapon": "starter_arcane_staff",
+         "armor": "starter_light_robes"
+        },
+        "items": {},
+        "hp": 80,
+        "mp": 72,
+        "sta": 100
+       }
+      },
+      {
+       "t": "outcome.recorded",
+       "d": {
+        "outcome": {
+         "kind": "creation.complete",
+         "class": "mage",
+         "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+         ],
+         "kit": [
+          "starter_arcane_staff",
+          "starter_light_robes"
+         ]
+        },
+        "situations": []
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "mes": "```\n[SYSTEM // CHARACTER CREATION COMPLETE]\nSKILLS SELECTED: Flame Lance (P1), Arcane Burst (P1)\nSTARTER GEAR EQUIPPED: Starter Arcane Staff [F] (MATK 6), Starter Light Robes [F] (DEF 2, MDEF 3)\nAlaric | Human | Level 1 | XP 0/100 | Power Rank F | Class: Mage\nHP 80/80 | MP 72/72 | STA 100/100\nSTR 5 | VIT 5 | AGI 5 | INT 6 | PER 5 | WIL 6 | Free Stat Points 0\nATK 0 | MATK 6 | DEF 3 (base 1) | MDEF 4 (base 1) | Initiative 7 (floor(1.5 \u00d7 AGI))\nActive Effects: none | Domain: NOT YET UNLOCKED\nEquipment: Simple Traveler's Clothes, Starter Arcane Staff [F] (MATK 6), Starter Light Robes [F] (DEF 2, MDEF 3)\nCarried: Small Pouch | Coin 5 Silver\nThe story begins with your next message: write what Alaric does.\n```",
+   "is_user": false,
+   "is_system": true,
+   "extra": {
+    "avereth_panel": true
+   }
+  },
+  {
+   "mes": "*i walk into the city ahead and make my way over to the adventurers guild*",
+   "is_user": true,
+   "is_system": false,
+   "extra": {
+    "avereth": {
+     "v": 3,
+     "events": [
+      {
+       "t": "turn.begun",
+       "d": {
+        "turn": 3,
+        "input_hash": "b4d933a4",
+        "input": "*i walk into the city ahead and make my way over to the adventurers guild*"
+       }
+      },
+      {
+       "t": "cmd.interpreted",
+       "d": {
+        "version": "plan-c0.1",
+        "source": "json",
+        "ms": 2556,
+        "failed": false,
+        "commands": [
+         {
+          "seq": 1,
+          "type": "go",
+          "to": "loc.alderwatch",
+          "quote": "i walk into the city ahead"
+         },
+         {
+          "seq": 2,
+          "type": "go",
+          "to": "loc.alderwatch.guild_hall",
+          "quote": "make my way over to the adventurers guild"
+         }
+        ],
+        "dropped": []
+       }
+      },
+      {
+       "t": "cmd.resolved",
+       "d": {
+        "seq": 1,
+        "type": "go",
+        "status": "authorized",
+        "quote": "i walk into the city ahead"
+       }
+      },
+      {
+       "t": "cmd.resolved",
+       "d": {
+        "seq": 2,
+        "type": "go",
+        "status": "authorized",
+        "quote": "make my way over to the adventurers guild"
+       }
+      },
+      {
+       "t": "outcome.recorded",
+       "d": {
+        "outcome": {
+         "kind": "v4",
+         "actions": [
+          "1. GOES \u2014 to Alderwatch (the story decides whether and where he arrives).",
+          "2. GOES \u2014 to Adventurers' Guild hall, Alderwatch (the story decides whether and where he arrives)."
+         ],
+         "extra": [],
+         "resolutions": [
+          {
+           "seq": 1,
+           "type": "go",
+           "status": "authorized",
+           "quote": "i walk into the city ahead"
+          },
+          {
+           "seq": 2,
+           "type": "go",
+           "status": "authorized",
+           "quote": "make my way over to the adventurers guild"
+          }
+         ],
+         "expected_keys": {
+          "1": "go",
+          "2": "go"
+         },
+         "auth": {
+          "go": {
+           "seq": 2,
+           "to": "loc.alderwatch.guild_hall",
+           "name": "Adventurers' Guild hall, Alderwatch",
+           "hall": true,
+           "newName": null
+          },
+          "gos": [
+           {
+            "seq": 1,
+            "to": "loc.alderwatch",
+            "name": "Alderwatch",
+            "hall": false,
+            "newName": null
+           },
+           {
+            "seq": 2,
+            "to": "loc.alderwatch.guild_hall",
+            "name": "Adventurers' Guild hall, Alderwatch",
+            "hall": true,
+            "newName": null
+           }
+          ],
+          "roam": false,
+          "take": [],
+          "takeNames": {},
+          "gather": false,
+          "rest": false,
+          "timeCap": 120,
+          "c": true,
+          "booked_min": 0,
+          "recovered": false
+         },
+         "conditionals": [],
+         "booked": {
+          "registration": false,
+          "grants": [],
+          "turnIns": [],
+          "accepted": [],
+          "sellers": []
+         },
+         "board": null,
+         "search_checks": [],
+         "check_die": null,
+         "interp_failed": false,
+         "dropped": []
+        },
+        "situations": []
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "mes": "The road took him down from the verge between plowed fields, and Alderwatch grew as he walked: first the walls, grey stone patched with darker mortar, then the sound of the city itself, cart wheels and a hammer somewhere and a dog barking itself hoarse. The gate stood open. A guard in a quilted jerkin glanced at the staff slung across his back, saw nothing worth a question, and waved him through with the rest of the morning traffic.\n\nInside, the street smelled of bread and horse dung. A woman argued over the price of geese. Two boys chased a hoop past his knees. Alderwatch did not care that he had arrived from nowhere; the city had its own morning to get on with.\n\nHe asked once, of a carter unloading casks, and the man tipped his chin up the hill without stopping work. \"Guild? Left at the well, follow the blue shutters.\"\n\nThe Guild hall was easy to find after that: a broad stone building with those blue shutters folded back, a wooden sign carved with a crossed sword and arrow above the door, and a steady coming and going of armed people. A woman in mail ducked out through the door, adjusting a sword belt. Somewhere inside, a crowd of voices and the clink of coin.\n\nThe door was heavy oak, worn smooth at the handle. It opened at a pull onto a hall that smelled of tallow and old leather \u2014 long notice boards papered with contract slips, a line of tables before a counter, bench seating along the walls. A few adventurers looked up when the door moved, then went back to their cups and their arguments. Behind the counter, a clerk with ink-stained fingers was already watching him, waiting to see if he wanted anything.",
+   "is_user": false,
+   "is_system": false,
+   "extra": {
+    "avereth": {
+     "v": 3,
+     "events": [
+      {
+       "t": "scene.moved",
+       "d": {
+        "at": "loc.alderwatch",
+        "location": "loc.alderwatch",
+        "place": "Alderwatch",
+        "reset_present": true,
+        "track_history": true
+       }
+      },
+      {
+       "t": "scene.moved",
+       "d": {
+        "at": "loc.alderwatch.guild_hall",
+        "location": "loc.alderwatch",
+        "place": "Adventurers' Guild hall, Alderwatch",
+        "reset_present": true,
+        "track_history": true
+       }
+      },
+      {
+       "t": "entity.created",
+       "d": {
+        "entity": {
+         "id": "npc.npcguild_clerk_alderwatch",
+         "kind": "npc",
+         "name": null,
+         "descriptors": [
+          "guild hall clerk",
+          "ink-stained fingers",
+          "watching from behind the counter, waitin",
+          "npc.guild_clerk_alderwatch"
+         ],
+         "traits": "ink-stained fingers, watching from behind the counter, waiting to see if he wanted anything",
+         "status": "alive",
+         "location": "loc.alderwatch",
+         "created": {
+          "turn": 3,
+          "minute": 540
+         },
+         "source": {
+          "kind": "narration",
+          "msg": 6
+         },
+         "card": {},
+         "template": "commoner"
+        }
+       }
+      },
+      {
+       "t": "scene.entered",
+       "d": {
+        "id": "npc.npcguild_clerk_alderwatch",
+        "band": "SHORT"
+       }
+      },
+      {
+       "t": "scene.tactical",
+       "d": {
+        "id": "npc.npcguild_clerk_alderwatch",
+        "relevant": true,
+        "threat": false
+       }
+      },
+      {
+       "t": "fact.asserted",
+       "d": {
+        "fact": {
+         "id": "f.npc_npcguild_clerk_alder.occupation.t3",
+         "s": "npc.npcguild_clerk_alderwatch",
+         "p": "occupation",
+         "o": "Guild hall clerk",
+         "since": {
+          "turn": 3,
+          "minute": 540
+         },
+         "until": null,
+         "visibility": "public",
+         "importance": 0.5,
+         "hard": false,
+         "source": {
+          "kind": "narration",
+          "msg": 6
+         }
+        }
+       }
+      },
+      {
+       "t": "time.advanced",
+       "d": {
+        "minutes": 15,
+        "why": "travel"
+       }
+      },
+      {
+       "t": "knowledge.gained",
+       "d": {
+        "who": "npc.npcguild_clerk_alderwatch",
+        "about": "f.pc.appearance",
+        "stance": "knows",
+        "source": "witnessed",
+        "turn": 3,
+        "minute": 555
+       }
+      },
+      {
+       "t": "memory.recorded",
+       "d": {
+        "memory": {
+         "id": "m.t3.seen.npc.npcguild_clerk_alderwatch",
+         "turn": 3,
+         "minute": 555,
+         "text": "first saw {pc} at Adventurers' Guild hall, Alderwatch",
+         "who": [
+          "npc.npcguild_clerk_alderwatch",
+          "pc"
+         ],
+         "witnesses": [
+          "npc.npcguild_clerk_alderwatch"
+         ],
+         "seen": [
+          "npc.npcguild_clerk_alderwatch"
+         ],
+         "location": "loc.alderwatch",
+         "place": "Adventurers' Guild hall, Alderwatch",
+         "importance": 4,
+         "kind": "meeting"
+        }
+       }
+      },
+      {
+       "t": "memory.recorded",
+       "d": {
+        "memory": {
+         "id": "m.t3.m6.ep",
+         "turn": 3,
+         "minute": 555,
+         "text": "Adventurers' Guild hall, Alderwatch: {pc}: \"*i walk into the city ahead and make my way over to the adventurers guild*\"",
+         "who": [
+          "pc"
+         ],
+         "about": [
+          "npc.npcguild_clerk_alderwatch"
+         ],
+         "witnesses": [
+          "pc"
+         ],
+         "seen": [
+          "pc"
+         ],
+         "location": "loc.alderwatch",
+         "place": "Adventurers' Guild hall, Alderwatch",
+         "importance": 3,
+         "kind": "episode",
+         "msg": 6
+        }
+       }
+      },
+      {
+       "t": "extract.applied",
+       "d": {
+        "version": "extract-5.1",
+        "source": "extractor",
+        "ms": 3661,
+        "repaired": false,
+        "deltas": 3,
+        "rejected": 0
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "mes": "*i walk up to the counter and say* Hello my name is Alaric Red im here to register",
+   "is_user": true,
+   "is_system": false,
+   "extra": {
+    "avereth": {
+     "v": 3,
+     "events": [
+      {
+       "t": "turn.begun",
+       "d": {
+        "turn": 4,
+        "input_hash": "4c51a8d6",
+        "input": "*i walk up to the counter and say* Hello my name is Alaric Red im here to register"
+       }
+      },
+      {
+       "t": "cmd.interpreted",
+       "d": {
+        "version": "plan-c0.1",
+        "source": "json",
+        "ms": 1570,
+        "failed": false,
+        "commands": [
+         {
+          "seq": 1,
+          "type": "guild.register",
+          "quote": "im here to register"
+         }
+        ],
+        "dropped": []
+       }
+      },
+      {
+       "t": "offer.created",
+       "d": {
+        "offer": {
+         "id": "offer.registration",
+         "seller": "guild",
+         "at": "loc.alderwatch.guild_hall",
+         "status": "open",
+         "canon": true,
+         "turn": 4,
+         "lines": [
+          {
+           "id": "l1",
+           "what": "Guild registration fee",
+           "kind": "service",
+           "service": "guild_registration",
+           "qty": 1,
+           "price_cp": 20
+          }
+         ]
+        }
+       }
+      },
+      {
+       "t": "decision.opened",
+       "d": {
+        "decision": {
+         "id": "dec.registration",
+         "kind": "registration",
+         "what": "Guild registration",
+         "offer": "offer.registration",
+         "at": "loc.alderwatch.guild_hall",
+         "turn": 4,
+         "price_cp": 20
+        }
+       }
+      },
+      {
+       "t": "cmd.resolved",
+       "d": {
+        "seq": 1,
+        "type": "guild.register",
+        "status": "pending",
+        "reason": "fee",
+        "quote": "im here to register"
+       }
+      },
+      {
+       "t": "outcome.recorded",
+       "d": {
+        "outcome": {
+         "kind": "v4",
+         "actions": [
+          "1. REGISTERS \u2014 pending: the Guild's registration fee is 2 silver (20 cp), one-time; a new member starts at Guild Rank Novice (the Guild's ranks run Novice to Legend); Power Rank (F to S) is a person's measured strength, a separate scale the Guild reads but never grants. Let the clerk name the fee and explain; stop there: he has not agreed to pay."
+         ],
+         "extra": [],
+         "resolutions": [
+          {
+           "seq": 1,
+           "type": "guild.register",
+           "status": "pending",
+           "reason": "fee",
+           "quote": "im here to register"
+          }
+         ],
+         "expected_keys": {},
+         "auth": {
+          "go": null,
+          "gos": [],
+          "roam": false,
+          "take": [],
+          "takeNames": {},
+          "gather": false,
+          "rest": false,
+          "timeCap": 120,
+          "c": true,
+          "booked_min": 0,
+          "recovered": false
+         },
+         "conditionals": [],
+         "booked": {
+          "registration": false,
+          "grants": [],
+          "turnIns": [],
+          "accepted": [],
+          "sellers": []
+         },
+         "board": null,
+         "search_checks": [],
+         "check_die": null,
+         "interp_failed": false,
+         "dropped": []
+        },
+        "situations": []
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "mes": "\"Red,\" the clerk repeated, already pulling a ledger across the counter. \"Fresh face, so I'll say the whole thing once.\"\n\nShe flipped the ledger open and dipped a pen. \"Registration is two silver, one time, and it buys you a standing in the rolls and the right to take contracts off that board there.\" A nod toward the papered notice boards. \"You start at Novice. That's your Guild standing, not how strong you are \u2014 that's a separate thing, your Power Rank, and the measuring stone tells us that, not me. Novice work is what it sounds like. Escorts, deliveries, culling rats out of cellars. It gets better from there.\"\n\nThe pen hovered. \"Two silver, and I write your name in. Do you want it?\"",
+   "is_user": false,
+   "is_system": false,
+   "extra": {
+    "avereth": {
+     "v": 3,
+     "events": [
+      {
+       "t": "delta.rejected",
+       "d": {
+        "item": {
+         "seq": 2,
+         "type": "fact",
+         "s": "Guild registration at Alderwatch costs two silver, one time, and grants standing in the rolls and the right to take contracts from the board",
+         "p": "guild_registration",
+         "o": "two silver"
+        },
+        "rule": "guild_canon",
+        "reason": "the Guild's fees and payouts are the engine's canon, not a fact of the story"
+       }
+      },
+      {
+       "t": "delta.rejected",
+       "d": {
+        "item": {
+         "seq": 3,
+         "type": "fact",
+         "s": "New Guild members start at Novice rank; Power Rank is a separate measure read from the measuring stone",
+         "p": "guild_ranks",
+         "o": "Novice"
+        },
+        "rule": "guild_canon",
+        "reason": "the Guild's ranks are the engine's canon, not a fact of the story"
+       }
+      },
+      {
+       "t": "knowledge.gained",
+       "d": {
+        "who": "npc.npcguild_clerk_alderwatch",
+        "about": "f.pc.name",
+        "stance": "knows",
+        "source": "witnessed",
+        "turn": 4,
+        "minute": 555
+       }
+      },
+      {
+       "t": "memory.recorded",
+       "d": {
+        "memory": {
+         "id": "m.t4.m8.ep",
+         "turn": 4,
+         "minute": 555,
+         "text": "Adventurers' Guild hall, Alderwatch: {pc}: \"*i walk up to the counter and say* Hello my name is Alaric Red im here to register\"",
+         "who": [
+          "pc"
+         ],
+         "about": [
+          "npc.npcguild_clerk_alderwatch"
+         ],
+         "witnesses": [
+          "pc"
+         ],
+         "seen": [
+          "pc"
+         ],
+         "location": "loc.alderwatch",
+         "place": "Adventurers' Guild hall, Alderwatch",
+         "importance": 3,
+         "kind": "episode",
+         "msg": 8
+        }
+       }
+      },
+      {
+       "t": "extract.applied",
+       "d": {
+        "version": "extract-5.1",
+        "source": "extractor",
+        "ms": 4558,
+        "repaired": false,
+        "deltas": 3,
+        "rejected": 2
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "mes": "*I nod and pay the 2 silver before i finish the registration*",
+   "is_user": true,
+   "is_system": false,
+   "extra": {
+    "avereth": {
+     "v": 3,
+     "events": [
+      {
+       "t": "turn.begun",
+       "d": {
+        "turn": 5,
+        "input_hash": "f3b41429",
+        "input": "*I nod and pay the 2 silver before i finish the registration*"
+       }
+      },
+      {
+       "t": "cmd.interpreted",
+       "d": {
+        "version": "plan-c0.1",
+        "source": "json",
+        "ms": 4491,
+        "failed": false,
+        "commands": [
+         {
+          "seq": 1,
+          "type": "offer.accept",
+          "offer": "offer.registration",
+          "lines": [
+           "l1"
+          ],
+          "qty": null,
+          "quote": "I nod and pay the 2 silver before i finish the registration"
+         }
+        ],
+        "dropped": []
+       }
+      },
+      {
+       "t": "transaction.completed",
+       "d": {
+        "offer": "offer.registration",
+        "lines": [
+         "l1"
+        ],
+        "cp": 20,
+        "seller": "guild"
+       }
+      },
+      {
+       "t": "coin.changed",
+       "d": {
+        "id": "pc",
+        "value": 30,
+        "delta": -20,
+        "why": "Guild registration fee"
+       }
+      },
+      {
+       "t": "guild.registered",
+       "d": {
+        "rank": "Novice",
+        "branch": "loc.alderwatch",
+        "power_rank": "F"
+       }
+      },
+      {
+       "t": "object.created",
+       "d": {
+        "object": {
+         "id": "obj.guild_plate",
+         "name": "Guild plate",
+         "kind": "document",
+         "stack": false,
+         "qty": 1,
+         "unit": null,
+         "holder": {
+          "entity": "pc"
+         },
+         "marks": [
+          {
+           "text": "Novice stamp",
+           "by": "guild",
+           "turn": 5
+          }
+         ],
+         "for_quests": [],
+         "source": {
+          "turn": 5,
+          "how": "guild"
+         }
+        }
+       }
+      },
+      {
+       "t": "fact.asserted",
+       "d": {
+        "fact": {
+         "id": "f.pc.guild_rank.t5",
+         "s": "pc",
+         "p": "guild_rank",
+         "o": "Novice",
+         "since": {
+          "turn": 5,
+          "minute": 555
+         },
+         "until": null,
+         "visibility": "public",
+         "importance": 0.7,
+         "hard": false,
+         "source": {
+          "kind": "engine"
+         }
+        }
+       }
+      },
+      {
+       "t": "knowledge.gained",
+       "d": {
+        "who": "npc.npcguild_clerk_alderwatch",
+        "about": "f.pc.guild_rank.t5",
+        "stance": "knows",
+        "source": "witnessed",
+        "turn": 5,
+        "minute": 555
+       }
+      },
+      {
+       "t": "offer.closed",
+       "d": {
+        "id": "offer.registration",
+        "status": "accepted"
+       }
+      },
+      {
+       "t": "decision.closed",
+       "d": {
+        "id": "dec.registration",
+        "status": "accepted"
+       }
+      },
+      {
+       "t": "cmd.resolved",
+       "d": {
+        "seq": 1,
+        "type": "offer.accept",
+        "status": "resolved",
+        "quote": "I nod and pay the 2 silver before i finish the registration"
+       }
+      },
+      {
+       "t": "outcome.recorded",
+       "d": {
+        "outcome": {
+         "kind": "v4",
+         "actions": [
+          "1. PAYS \u2014 the Guild registration fee, 20 cp: registered at Guild Rank Novice; the crystal reads his Power Rank: F (his measured strength, a separate scale from the Guild's ranks); he receives his Guild plate."
+         ],
+         "extra": [],
+         "resolutions": [
+          {
+           "seq": 1,
+           "type": "offer.accept",
+           "status": "resolved",
+           "quote": "I nod and pay the 2 silver before i finish the registration"
+          }
+         ],
+         "expected_keys": {},
+         "auth": {
+          "go": null,
+          "gos": [],
+          "roam": false,
+          "take": [],
+          "takeNames": {},
+          "gather": false,
+          "rest": false,
+          "timeCap": 120,
+          "c": true,
+          "booked_min": 0,
+          "recovered": false
+         },
+         "conditionals": [],
+         "booked": {
+          "registration": true,
+          "grants": [
+           "Guild plate"
+          ],
+          "turnIns": [],
+          "accepted": [],
+          "sellers": []
+         },
+         "board": null,
+         "search_checks": [],
+         "check_die": null,
+         "interp_failed": false,
+         "dropped": [],
+         "coin": [
+          {
+           "kind": "purchase",
+           "delta": -20,
+           "before": 50,
+           "after": 30,
+           "why": "Guild registration fee"
+          }
+         ]
+        },
+        "situations": []
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "mes": "The coins crossed the counter, two silver into the clerk's hand, and she wrote the name in a careful hand: *Alaric Red*. The ledger line got a flourish of her pen and a dab of sand to dry the ink.\n\n\"Right. This way, and don't touch anything.\"\n\nShe reached beneath the counter and hauled up a faceted crystal the size of a fist, set in a tarnished brass stand, and put it in front of him. \"Hand on the stone. It reads what you are, not what you say you are.\"\n\nThe crystal was cool under his palm. A flicker of light turned inside it, pale and unhurried, and settled.\n\n\"F,\" she said, reading the facet. \"Lowest band, everyone starts somewhere. That's your Power Rank, nothing to be ashamed of \u2014 it moves when you do.\" She pulled a flat wooden case from under the counter, opened it, and slid a small iron plate across the counter to him. It was the size of a coin but thinner, stamped with the Guild's crossed sword and arrow, and it warmed faintly at his touch. \"Your plate. It knows who you are, so don't lose it \u2014 replacing one costs more than registering did. Show it at any branch and the rolls will vouch for you. Contracts, payouts, all of it goes through that.\"\n\nShe wiped her pen and slid the ledger away. \"You're in, Red. Novice rank, board's over there on the left wall. Anything the clerk's desk has to do \u2014 taking a contract, turning one in \u2014 comes back to me.\"",
+   "is_user": false,
+   "is_system": false,
+   "extra": {
+    "avereth": {
+     "v": 3,
+     "events": [
+      {
+       "t": "delta.rejected",
+       "d": {
+        "item": {
+         "seq": 2,
+         "type": "fact",
+         "s": "Alaric",
+         "p": "power_rank",
+         "o": "F"
+        },
+        "rule": "engine_owned_fact",
+        "reason": "Alaric's hit points, mana, stamina, level and gear are the engine's state"
+       }
+      },
+      {
+       "t": "knowledge.gained",
+       "d": {
+        "who": "npc.npcguild_clerk_alderwatch",
+        "about": "f.pc.name",
+        "stance": "knows",
+        "source": "witnessed",
+        "turn": 5,
+        "minute": 555
+       }
+      },
+      {
+       "t": "memory.recorded",
+       "d": {
+        "memory": {
+         "id": "m.t5.m10.d3_2.1",
+         "turn": 5,
+         "minute": 555,
+         "text": "The clerk wrote {pc} Red into the Guild ledger and called him 'Red' as she welcomed him to Novice rank.",
+         "who": [
+          "npc.npcguild_clerk_alderwatch"
+         ],
+         "witnesses": [
+          "pc",
+          "npc.npcguild_clerk_alderwatch"
+         ],
+         "seen": [
+          "pc",
+          "npc.npcguild_clerk_alderwatch"
+         ],
+         "location": "loc.alderwatch",
+         "place": "Adventurers' Guild hall, Alderwatch",
+         "importance": 6,
+         "kind": "narrated",
+         "msg": 10
+        }
+       }
+      },
+      {
+       "t": "memory.recorded",
+       "d": {
+        "memory": {
+         "id": "m.t5.m10.ep",
+         "turn": 5,
+         "minute": 555,
+         "text": "Adventurers' Guild hall, Alderwatch: {pc}: \"*I nod and pay the 2 silver before i finish the registration*\"",
+         "who": [
+          "pc"
+         ],
+         "about": [
+          "npc.npcguild_clerk_alderwatch"
+         ],
+         "witnesses": [
+          "pc"
+         ],
+         "seen": [
+          "pc"
+         ],
+         "location": "loc.alderwatch",
+         "place": "Adventurers' Guild hall, Alderwatch",
+         "importance": 3,
+         "kind": "episode",
+         "msg": 10
+        }
+       }
+      },
+      {
+       "t": "extract.applied",
+       "d": {
+        "version": "extract-5.1",
+        "source": "extractor",
+        "ms": 6495,
+        "repaired": true,
+        "deltas": 3,
+        "rejected": 1
+       }
+      }
+     ]
+    }
+   }
+  }
+ ],
+ "board": {
+  "first": {
+   "listings": [
+    {
+     "title": "Skeletons in the Upper Galleries",
+     "client": "Temple Wardens of Alderwatch",
+     "rank": "Novice",
+     "level": 1,
+     "qtype": "standard",
+     "payout_cp": 60,
+     "task": "Enter the Old Crown Catacombs and cull the restless skeletons haunting the upper burial galleries so the wardens can resume warden patrols.",
+     "desired_end_state": "The restless skeletons in the upper burial galleries of the Old Crown Catacombs are culled and the wardens resume their patrols.",
+     "objectives": [
+      {
+       "verb": "GO",
+       "what": "upper burial galleries of the Old Crown Catacombs",
+       "qty": null,
+       "unit": null,
+       "where": "beneath the ruined chapel, an hour's ride west of Alderwatch"
+      },
+      {
+       "verb": "ATTACK",
+       "what": "restless skeletons",
+       "qty": null,
+       "unit": null,
+       "where": "upper burial galleries"
+      },
+      {
+       "verb": "DEFEND",
+       "what": "temple warden patrols",
+       "qty": null,
+       "unit": null,
+       "where": "upper galleries entrance"
+      }
+     ],
+     "proof": []
+    },
+    {
+     "title": "Feral Dogs at the Tannery Rows",
+     "client": "Bess Ondrel, tanner of Alderwatch",
+     "rank": "Novice",
+     "level": 1,
+     "qtype": "minor",
+     "payout_cp": 40,
+     "task": "Hunt down the feral dog pack that has been dragging hides and offal from the tannery drying rows along the riverbank.",
+     "desired_end_state": "The feral dog pack is culled and the tannery drying rows along the riverbank are no longer raided.",
+     "objectives": [
+      {
+       "verb": "FIND",
+       "what": "feral dog pack den",
+       "qty": null,
+       "unit": null,
+       "where": "riverbank scrub below the tannery rows"
+      },
+      {
+       "verb": "ATTACK",
+       "what": "feral dogs",
+       "qty": null,
+       "unit": null,
+       "where": "riverbank scrub"
+      }
+     ],
+     "proof": []
+    },
+    {
+     "title": "Cart to the Ferry Ford",
+     "client": "Harl Vetch, grain merchant",
+     "rank": "Novice",
+     "level": 2,
+     "qtype": "standard",
+     "payout_cp": 80,
+     "task": "Escort Harl Vetch's grain cart and driver across the Reed Flats road to the Ferry Ford, where wolves have been shadowing wagons at dusk.",
+     "desired_end_state": "The grain cart and its driver reach the Ferry Ford safely with the load intact.",
+     "objectives": [
+      {
+       "verb": "ESCORT",
+       "what": "grain cart and driver",
+       "qty": 1,
+       "unit": "cart",
+       "where": "Reed Flats road to the Ferry Ford"
+      },
+      {
+       "verb": "DEFEND",
+       "what": "cart and driver",
+       "qty": null,
+       "unit": null,
+       "where": "Reed Flats road"
+      }
+     ],
+     "proof": []
+    },
+    {
+     "title": "Ledger Satchel to Millbrook",
+     "client": "Clerk Ansel of the Alderwatch Weighhouse",
+     "rank": "Novice",
+     "level": 1,
+     "qtype": "minor",
+     "payout_cp": 50,
+     "task": "Carry the Weighhouse's sealed tax ledger satchel to the toll clerk at Millbrook village before the quarter's tally is due.",
+     "desired_end_state": "The sealed tax ledger satchel is delivered to the Millbrook toll clerk intact and before the tally due date.",
+     "objectives": [
+      {
+       "verb": "GET",
+       "what": "sealed ledger satchel",
+       "qty": 1,
+       "unit": "satchel",
+       "where": "Alderwatch Weighhouse"
+      },
+      {
+       "verb": "DELIVER",
+       "what": "sealed ledger satchel",
+       "qty": 1,
+       "unit": "satchel",
+       "where": "Millbrook village toll house"
+      }
+     ],
+     "proof": []
+    },
+    {
+     "title": "Bog Striders at the Eel-Weirs",
+     "client": "Reed Flats Eel-Fishers' Cooperative",
+     "rank": "Novice",
+     "level": 1,
+     "qtype": "standard",
+     "payout_cp": 70,
+     "task": "Hunt and cull the bog strider colony at the eel-weirs of the Reed Flats so the eel boats can launch safely again.",
+     "desired_end_state": "The bog strider colony at the eel-weirs is culled and the eel boats launch again.",
+     "objectives": [
+      {
+       "verb": "GO",
+       "what": "eel-weirs",
+       "qty": null,
+       "unit": null,
+       "where": "Reed Flats"
+      },
+      {
+       "verb": "ATTACK",
+       "what": "bog striders",
+       "qty": null,
+       "unit": null,
+       "where": "eel-weirs and reed banks"
+      }
+     ],
+     "proof": []
+    }
+   ]
+  },
+  "retry": {
+   "listings": [
+    {
+     "title": "Skeletons in the Old Crown Catacombs",
+     "client": "Temple Wardens of Alderwatch",
+     "rank": "Novice",
+     "level": 1,
+     "qtype": "standard",
+     "payout_cp": 60,
+     "task": "Enter the Old Crown Catacombs and cull the restless skeletons haunting the upper galleries (Rank F) so the wardens can resume their patrols.",
+     "desired_end_state": "The restless skeletons in the upper galleries of the Old Crown Catacombs are culled and the wardens resume their patrols.",
+     "objectives": [
+      {
+       "verb": "GO",
+       "what": "upper galleries of the Old Crown Catacombs",
+       "qty": null,
+       "unit": null,
+       "where": "beneath the ruined chapel, an hour's ride west of Alderwatch"
+      },
+      {
+       "verb": "ATTACK",
+       "what": "restless skeletons",
+       "qty": null,
+       "unit": null,
+       "where": "upper galleries of the Old Crown Catacombs"
+      },
+      {
+       "verb": "DEFEND",
+       "what": "temple warden patrols",
+       "qty": null,
+       "unit": null,
+       "where": "catacombs entrance"
+      }
+     ],
+     "proof": []
+    },
+    {
+     "title": "Feral Dogs at the Tannery Rows",
+     "client": "Bess Ondrel, tanner of Alderwatch",
+     "rank": "Novice",
+     "level": 1,
+     "qtype": "minor",
+     "payout_cp": 40,
+     "task": "Hunt down the feral dog pack that has been dragging hides and offal from the tannery drying rows along the riverbank.",
+     "desired_end_state": "The feral dog pack is culled and the tannery drying rows along the riverbank are no longer raided.",
+     "objectives": [
+      {
+       "verb": "FIND",
+       "what": "feral dog pack den",
+       "qty": null,
+       "unit": null,
+       "where": "riverbank scrub below the tannery rows"
+      },
+      {
+       "verb": "ATTACK",
+       "what": "feral dogs",
+       "qty": null,
+       "unit": null,
+       "where": "riverbank scrub"
+      }
+     ],
+     "proof": []
+    },
+    {
+     "title": "Cart to the Ferry Ford",
+     "client": "Harl Vetch, grain merchant",
+     "rank": "Novice",
+     "level": 2,
+     "qtype": "standard",
+     "payout_cp": 80,
+     "task": "Escort Harl Vetch's grain cart and driver across the Reed Flats road to the Ferry Ford, where wolves have been shadowing wagons at dusk.",
+     "desired_end_state": "The grain cart and its driver reach the Ferry Ford safely with the load intact.",
+     "objectives": [
+      {
+       "verb": "ESCORT",
+       "what": "grain cart and driver",
+       "qty": 1,
+       "unit": "cart",
+       "where": "Reed Flats road to the Ferry Ford"
+      },
+      {
+       "verb": "DEFEND",
+       "what": "cart and driver",
+       "qty": null,
+       "unit": null,
+       "where": "Reed Flats road"
+      }
+     ],
+     "proof": []
+    },
+    {
+     "title": "Ledger Satchel to Millbrook",
+     "client": "Clerk Ansel of the Alderwatch Weighhouse",
+     "rank": "Novice",
+     "level": 1,
+     "qtype": "minor",
+     "payout_cp": 50,
+     "task": "Carry the Weighhouse's sealed tax ledger satchel to the toll clerk at Millbrook village before the quarter's tally is due.",
+     "desired_end_state": "The sealed tax ledger satchel is delivered to the Millbrook toll clerk intact and before the tally due date.",
+     "objectives": [
+      {
+       "verb": "GET",
+       "what": "sealed ledger satchel",
+       "qty": 1,
+       "unit": "satchel",
+       "where": "Alderwatch Weighhouse"
+      },
+      {
+       "verb": "DELIVER",
+       "what": "sealed ledger satchel",
+       "qty": 1,
+       "unit": "satchel",
+       "where": "Millbrook village toll house"
+      }
+     ],
+     "proof": []
+    },
+    {
+     "title": "Bog Striders at the Eel-Weirs",
+     "client": "Reed Flats Eel-Fishers' Cooperative",
+     "rank": "Novice",
+     "level": 1,
+     "qtype": "standard",
+     "payout_cp": 70,
+     "task": "Hunt and cull the bog strider colony at the eel-weirs of the Reed Flats so the eel boats can launch safely again.",
+     "desired_end_state": "The bog strider colony at the eel-weirs is culled and the eel boats launch again.",
+     "objectives": [
+      {
+       "verb": "GO",
+       "what": "eel-weirs",
+       "qty": null,
+       "unit": null,
+       "where": "Reed Flats"
+      },
+      {
+       "verb": "ATTACK",
+       "what": "bog striders",
+       "qty": null,
+       "unit": null,
+       "where": "eel-weirs and reed banks"
+      }
+     ],
+     "proof": []
+    }
+   ]
+  },
+  "swipe": {
+   "listings": [
+    {
+     "title": "Cull the Restless Dead in the Upper Galleries",
+     "client": "Temple Wardens of Alderwatch",
+     "rank": "Novice",
+     "level": 1,
+     "qtype": "standard",
+     "payout_cp": 120,
+     "task": "Enter the Old Crown Catacombs and cull the restless skeletons in the upper burial galleries so the wardens can resume interments.",
+     "desired_end_state": "The restless skeletons in the upper burial galleries of the Old Crown Catacombs are culled and the wardens resume interments.",
+     "objectives": [
+      {
+       "verb": "GO",
+       "what": "the ruined chapel above the Old Crown Catacombs",
+       "qty": null,
+       "unit": null,
+       "where": "an hour's ride west of Alderwatch"
+      },
+      {
+       "verb": "ATTACK",
+       "what": "restless skeletons in the upper burial galleries",
+       "qty": null,
+       "unit": null,
+       "where": "Old Crown Catacombs, level 1"
+      }
+     ],
+     "proof": []
+    },
+    {
+     "title": "Thin the Otterhound Pack at the Fish Weirs",
+     "client": "Alderwatch Fishmongers' Row",
+     "rank": "Novice",
+     "level": 1,
+     "qtype": "minor",
+     "payout_cp": 60,
+     "task": "Hunt down or drive off the feral otterhound pack that has been tearing nets and taking catch at the fish weirs upstream of Alderwatch.",
+     "desired_end_state": "The feral otterhound pack at the upstream fish weirs is killed or driven off and the weirs are worked without further losses.",
+     "objectives": [
+      {
+       "verb": "FIND",
+       "what": "the otterhound pack's den and runs along the weir banks",
+       "qty": null,
+       "unit": null,
+       "where": "river weirs upstream of Alderwatch"
+      },
+      {
+       "verb": "DEFEAT",
+       "what": "the feral otterhounds",
+       "qty": null,
+       "unit": null,
+       "where": "upstream fish weirs"
+      }
+     ],
+     "proof": []
+    },
+    {
+     "title": "Wagon Guard to the Millbrook Granary",
+     "client": "Harvestmaster Odren of Millbrook",
+     "rank": "Novice",
+     "level": 2,
+     "qtype": "standard",
+     "payout_cp": 90,
+     "task": "Escort the grain wagon from Alderwatch's south gate to the Millbrook granary, guarding driver and load against the wolves reported on the mill road.",
+     "desired_end_state": "The grain wagon and its driver reach the Millbrook granary safely with the load intact.",
+     "objectives": [
+      {
+       "verb": "ESCORT",
+       "what": "grain wagon and driver",
+       "qty": 1,
+       "unit": "wagon",
+       "where": "mill road from Alderwatch to Millbrook"
+      },
+      {
+       "verb": "DEFEND",
+       "what": "wagon and driver from wolves along the mill road",
+       "qty": null,
+       "unit": null,
+       "where": "mill road"
+      }
+     ],
+     "proof": []
+    },
+    {
+     "title": "Deliver Tonic Crates to the Waystone Shrine",
+     "client": "Apothecary Sela Vunt",
+     "rank": "Novice",
+     "level": 1,
+     "qtype": "minor",
+     "payout_cp": 50,
+     "task": "Carry three crates of fever tonic from Sela Vunt's shop in Alderwatch to the shrine keeper at the Waystone Shrine before the week's end.",
+     "desired_end_state": "The three crates of fever tonic are delivered intact to the shrine keeper at the Waystone Shrine.",
+     "objectives": [
+      {
+       "verb": "GET",
+       "what": "crates of fever tonic",
+       "qty": 3,
+       "unit": "crates",
+       "where": "Sela Vunt's shop, Alderwatch"
+      },
+      {
+       "verb": "DELIVER",
+       "what": "fever tonic crates",
+       "qty": 3,
+       "unit": "crates",
+       "where": "Waystone Shrine"
+      }
+     ],
+     "proof": []
+    },
+    {
+     "title": "Clear the Gnawers from the Tannery Cellars",
+     "client": "Tanner's Guild of Alderwatch",
+     "rank": "Novice",
+     "level": 1,
+     "qtype": "minor",
+     "payout_cp": 40,
+     "task": "Clear the giant rats out of the Tanner's Guild curing cellars and block the hole they are using to get in from the drainage ditch.",
+     "desired_end_state": "The giant rats are cleared from the curing cellars and the drainage hole is blocked against further entry.",
+     "objectives": [
+      {
+       "verb": "DEFEAT",
+       "what": "giant rats in the curing cellars",
+       "qty": null,
+       "unit": null,
+       "where": "Tanner's Guild cellars, Alderwatch"
+      },
+      {
+       "verb": "REPAIR",
+       "what": "the drainage-ditch hole into the cellars",
+       "qty": 1,
+       "unit": "hole",
+       "where": "behind the Tanner's Guild"
+      }
+     ],
+     "proof": []
+    }
+   ]
+  }
+ }
+}

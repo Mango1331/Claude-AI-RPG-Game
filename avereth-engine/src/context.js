@@ -655,7 +655,11 @@ export function loreKeys(state, content) {
     const loc = state.entities[sceneNode] || content.locations.get(sceneNode) || state.places?.[sceneNode];
     const realmId = loc?.realm || null;
     const keys = [content.factions.get(realmId)?.name, state.meta?.runtime === 'v4' ? loc?.name || null : content.locations.has(state.scene.location) ? loc.name : null];
-    return keys.filter(Boolean);
+    // livetest 21.10.2026: inside a site of a town (its Guild hall) the bridge named the site only, never the town, so
+    // the town's entries (its seed) never activated there; the town is named as well, the site stays (its entries)
+    const town = state.meta?.runtime === 'v4' && sceneNode !== state.scene.location ? state.places?.[state.scene.location]?.name : null;
+    if (town) keys.splice(1, 0, town);
+    return [...new Set(keys.filter(Boolean))];
 }
 
 // Situational fact-report schema (Runtime V3): the parser accepts every key on every turn, but the prompt lists only

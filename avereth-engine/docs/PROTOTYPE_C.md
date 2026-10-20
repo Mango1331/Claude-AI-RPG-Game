@@ -1663,3 +1663,47 @@ Patch 7 ist damit bereit für den Live-Test mit GLM-5.3-Flash.
   - `patch72_items` (4).
 - Angepasst wurden Tests, die Gruppen-Refs ohne `scope` nutzten, mit dem Zitat der jeweiligen Prosa: `patch4`, `patch5`, `patch7`, `planner_c`, `runtime`, `c66`, `patch71`, `hotfix_scroll`.
 - Gesamt 898/898. 20 Mutationsproben, 19 erkannt. Die überlebende ist gleichwertig zum Original: Ein Schritt vor einer abgelehnten Trank-Aktion würde ohnehin nie gespeichert.
+
+### Hotfix 7.2.1 (4.3.0-c.6.6.22): mehrere GO-Ankünfte, Registrierung als Behauptung
+
+Livetest 20.10.2026 13:37 (`tests/v4/live_1020b.json`, Build c.6.6.21).
+
+**1. Mehrere bestätigte GO-Ankünfte.**
+- Ablauf im Livetest:
+  - „*i walk into the city ahead and make my way over to the adventurers guild*“: Der Planner las zwei GOs (Alderwatch, dann Gildenhalle).
+  - Der Narrator brachte Alaric in die Halle.
+  - Der Extractor meldete beide als `arrived` und ein einzelnes `arrive`-Delta für Alderwatch.
+- Ursache (`src/v4/world.js`, schon vor 7.2 vorhanden):
+  - Das Delta setzte die Ankunft und `explicitArrival`. Damit fiel die Schleife vor den Deltas aus.
+  - Die Nachbuchung nach den Deltas lief nur bei `!arrived`. Die zweite Etappe wurde nie gegangen, Alaric blieb in der Straße.
+- Fix: Nach dem `arrive`-Delta geht Alaric gleich weiter.
+  - Bedingungen für die Weiterreise:
+    - Eine GO-Etappe des Zuges nennt diesen Ort.
+    - Jede spätere Etappe ist als `arrived` gemeldet.
+  - Das passiert vor den übrigen Deltas der Antwort. Wen die Antwort in der Halle trifft (die Angestellte), der ist in der Halle und nicht im Ort davor.
+  - Eine frühere Etappe führt nie zurück. Eine nicht gemeldete Etappe beendet den Weg, wo er ist (unterbrochene Reise). Ein Ort, den keine Etappe nennt, verhält sich wie bisher.
+
+**2. Registrierung als Fakt.**
+- In der Folge lehnte die Engine Registrierung und Board ab („not at a Guild hall“). Die Geschichte registrierte Alaric trotzdem, und der Fakt „clerk registered_alaric: registration completed“ wurde gespeichert.
+- Fix: Ein Fakt, der Alarics Registrierung oder Mitgliedschaft behauptet, wird abgelehnt, solange die Engine ihn nicht registriert hat (`guild.membership`). Das gilt auch, wenn der Fakt über eine andere Person formuliert ist.
+  - Dazu kommt eine kurze Korrektur an den Narrator.
+- Was erlaubt bleibt:
+  - Fakten darüber, was die Registrierung verlangt.
+  - Verneinte Fakten („not registered yet“).
+  - Dieselbe Aussage, nachdem die Engine registriert hat.
+- Der `purpose`-Guard des Planners bleibt unverändert. Seine Ablehnung war Folge des falschen Ortes.
+
+**3. „walk back to the clerk“** (Nebenprüfung, ohne Änderung):
+- Der Planner las ein GO zu `{new: "the clerk's counter"}`.
+- Der Extractor meldete die Ankunft in der Halle, in der Alaric schon war.
+- Es entstanden kein Ort, kein Szenenwechsel und kein anderer Zustandsfehler.
+
+**Tests:** `hotfix_721` (6, aus dem Livetest):
+- zwei Etappen, Ziel Halle, die Angestellte dort;
+- umgekehrte Antwort;
+- unterbrochene Reise;
+- Registrierung und Board nach der Ankunft;
+- abgelehnter Registrierungs-Fakt;
+- erlaubter Fakt nach der Registrierung.
+
+Ohne den Fix scheitern 1, 4 und 5.

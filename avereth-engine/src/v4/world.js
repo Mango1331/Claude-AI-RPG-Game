@@ -81,6 +81,8 @@ export function firewallContext(s, content) {
         labelOf: (ref) => (s.entities[ref] ? entityLabel(s, ref) : null),
         // Patch 7.2C: a death of a fight the engine has not booked (src/v4/combat_truth.js)
         combatClaim: combatTruth(s, content),
+        // Hotfix 7.2.1: his Guild standing (a fact claiming a registration the engine has not booked is refused)
+        pcRegistered: !!s.guild?.membership,
         pcHurt: (s.entities.pc?.sheet?.hp ?? 0) < deriveCharacter(s.entities.pc.sheet, content).maxHp,
         actedOn: (p) => {
             const done = new Set((o.resolutions || []).filter((r) => !['refused', 'clarify'].includes(r.status)).map((r) => r.type));
@@ -582,6 +584,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 const party = companions(d.with, d);
                 perceiveAll(s, emit, seeing());
                 arrive(at.id, party);
+                // Hotfix 7.2.1: the arrive delta answers one leg of his GOs; a later leg the answer reports arrived as well
+                // takes him on, before the rest of the answer is applied there (live 20.10.2026: road → Alderwatch →
+                // Guild hall, both arrived, one arrive delta for Alderwatch: he stayed in the street, and the clerk of
+                // the hall would have been met there). A leg not reported arrived ends his way where he is
+                for (const k of laterLegs(at.id)) {
+                    const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
+                    const next = viaStop(place(reportedTarget(s, auth, expected, expected[k].at, k) || expected[k].at || go?.to || null));
+                    if (next.error || next.id === s.scene.at || wayRefused(next.id, { seq: k, type: 'expected' })) break;
+                    perceiveAll(s, emit, seeing());
+                    arrive(next.id, party);
+                }
                 travel.push({ seq: d.seq ?? 0, ok: true });
                 break;
             }
@@ -1280,6 +1293,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
      * Review of a5035f0: a walk the GO stopped short (a hidden trap on the way back: commands.js dungeonGo) ends where
      * it stops, also when the story tells it on to the far end.
      */
+    /** Hotfix 7.2.1: the GO legs after the one that reached `id`, each reported arrived, in order; none when no leg names it. */
+    function laterLegs(id) {
+        const legs = Object.entries(outcome.expected_keys || {}).filter(([k, type]) => type === 'go' && expected[k]?.arrived === true).map(([k]) => Number(k)).sort((a, b) => a - b);
+        const to = (k) => [expected[k]?.at, (auth.gos || []).find((g) => String(g.seq) === String(k))?.to];
+        const reached = legs.filter((k) => to(k).includes(id));
+        return reached.length ? legs.filter((k) => k > Math.max(...reached)) : [];
+    }
+
     function viaStop(at) {
         const stop = (auth.gos || []).map((g) => g.stop).find(Boolean);
         if (at.error || !stop || at.id === stop || s.scene.at === stop) return at;

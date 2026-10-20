@@ -39,6 +39,10 @@ const TURN_IN_OBJECTIVE = /\b(?:turn(?:ed|s|ing)?|hand(?:ed|s|ing)?)\s+(?:it\s+|
 const PC_REF = /^(?:pc|alaric(?: red)?)$/i;
 const ENGINE_FACT = /\b(?:regist\w*|guild rank|member\w*|novice|proven|veteran|power rank|coin|copper|silver|paid|reward|payout|xp|level)\b/i;
 const GUILD_QUEST_STATE = /\b(?:status|state|complete\w*|done|closed|cleared|turn(?:ed|ing)?\s+in|paid|payment|payout|reward)\b/i;
+// Hotfix 7.2.1: that Alaric is registered (or a member) with the Guild, said of him by anyone ("the clerk registered_alaric:
+// registration completed"); never what registration requires or costs
+const PC_REGISTERED = /\b(?:registered|registration (?:is |was |now )?(?:complete[d]?|done|finished)|(?:joined|enrolled (?:in|with)) the guild|(?:is|became|becomes|now) a (?:guild )?member)\b/;
+const NOT_YET = /\b(?:not|unregistered|never|yet to|pending|before)\b/;
 const GUILD_COMPLETION_MARK = /\b(?:cleared|completed?|contract\s+complete|quest\s+complete|closed|reward\s+paid|paid\s+out|turned?\s+in|settled)\b/i;
 
 // The Guild's mechanics are the engine's (live run 28.09.2026: the clerk's "F-Rank to start, for everyone" became the fact
@@ -318,6 +322,14 @@ export function firewall(deltas, ctx = {}) {
                 const kill = ctx.combatClaim?.(`${text(d.s)} ${words(d.p)} ${words(d.o)}`);
                 if (kill) {
                     no(d, 'engine_owned_fact', `a fight's dead are the engine's: ${kill.why}`, kill.correction);
+                    continue;
+                }
+                // Hotfix 7.2.1: Alaric's Guild standing is the engine's: a fact that has him registered while the engine has
+                // not registered him is refused, whoever it is said of (live 20.10.2026: the clerk's "registered_alaric")
+                if (ctx.pcRegistered === false && PC_REGISTERED.test(words(`${text(d.p)} ${text(d.o)}`)) && !NOT_YET.test(words(`${text(d.p)} ${text(d.o)}`))
+                    && (isPc(d.s) || /\b(?:alaric|pc|him|his)\b/.test(words(`${text(d.s)} ${text(d.p)} ${text(d.o)}`)))) {
+                    no(d, 'engine_owned_fact', 'Alaric\'s Guild registration is the engine\'s state, and the engine has not registered him',
+                        'Alaric is NOT registered with the Guild: the engine has not booked a registration, so the registration the last reply told of did not happen. He registers only by his own command at a Guild hall.');
                     continue;
                 }
                 if (isPc(d.s) && PC_MECHANICAL.test(p)) {

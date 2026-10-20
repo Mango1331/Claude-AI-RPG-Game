@@ -251,14 +251,19 @@
       "id": "lore.dungeons",
       "title": "[LORE] Natural Dungeons",
       "kind": "topic",
-      "text": "DUNGEONS\nDungeons are physical, persistent places in Avereth, arising from concentrated mana, natural phenomena, ancient civilizations or other traceable causes. They can contain unusual environments, rare materials, Skill Stones and exceptional Monsters.\nSome have a recognizable, magically structured progression: successive levels with their own Monster populations, level guardians and bosses, danger rising with depth, valuable materials and special loot; their Monsters and resources can return over time, access can be restricted or limited, other adventurers enter on their own, and rare return stones can carry a bearer back out.\nThey are shared world locations, not temporary game instances that appear only for Alaric. Ordinary caves, catacombs, ruins and tunnels are not Dungeons unless play establishes one.\nExact Dungeon rules, layouts, timings, capacities, ownership and local history remain open until established.",
+      "text": "DUNGEONS\nDungeons are physical, persistent places in Avereth, arising from concentrated mana, natural phenomena, ancient civilizations or other traceable causes. They can contain unusual environments, rare materials, Skill Stones and exceptional Monsters.\nDungeons are fairly common and unevenly spread. Around larger towns and settled regions there are often known Dungeons that people work; how many differs from region to region. Low-Rank Dungeons are common, high-Rank ones much rarer; a mighty Dungeon is a political and military asset.\nKnown Dungeons may be held by noble houses, local or royal rulers, the Adventurers' Guild, academies of magic, temples, trading houses or other established bodies, for licences, material rights, training, entry fees or exclusive expeditions. The Guild brokers Dungeon work, keeps records of known Dungeons and may hold access rights of its own, but it does not own every Dungeon; its jurisdiction stays as established. A fee is paid only when Alaric agrees to pay it.\nEvery Dungeon has a danger Rank of its own, F to S on the Power Rank bands, or a range of Ranks across its levels (Goblin Warrens F–D: scouts on the first level, warriors and shamans on the second, a champion on the third). Danger often rises with depth, but not always. A Dungeon never adapts to Alaric's Level, Power Rank or Guild Rank: a weak adventurer can find a deadly Dungeon, a strong one a harmless one. An unknown Rank stays unknown until established.\nA true Dungeon has a recognizable theme and dominant ecology (goblin warrens, undead catacombs, a spider nest, crystal caverns, a construct vault, a dragon sanctum); not every creature in it is of one kind, and a species alone does not fix a Rank. A theme is a world identity, not a spawn table, and does not change without cause.\nSome have a magically structured progression: successive levels with their own Monster populations, guardians and bosses, valuable materials and special loot; their Monsters and resources can return over time, access can be restricted, other adventurers enter on their own, and rare return stones can carry a bearer back out. They are shared world locations, not temporary instances for Alaric.\nOrdinary caves, catacombs, ruins and tunnels are explorable places, not Dungeons, unless play establishes one. Exact rules, layouts, timings, capacities, ownership and local history remain open until established.",
       "keys": [
         "Dungeon",
-        "Dungeons",
-        "natural Dungeon",
+        "Dungeon Rank",
+        "Dungeon clearance",
         "Dungeon ecology",
         "Dungeon materials",
-        "Skill Stone"
+        "Dungeons",
+        "Glimmerdeep Grotto",
+        "Mossback Warrens",
+        "Old Crown Catacombs",
+        "Skill Stone",
+        "natural Dungeon"
       ],
       "entities": [],
       "importance": 0.5,
@@ -407,6 +412,73 @@
       "id": "realm.verdant_fang_court",
       "name": "Verdant Fang Court",
       "kind": "realm"
+    }
+  ],
+  "dungeons": [
+    {
+      "id": "loc.mossback_warrens",
+      "name": "Mossback Warrens",
+      "near": "loc.ashbridge",
+      "where": "a moss-grown hill half a day's walk east of Ashbridge, off the old quarry track",
+      "theme": "goblin warrens: tunnels dug into a mossy hill, crude palisades, goblin scouts and warriors, a shaman deeper down",
+      "rank": {
+        "min": "F",
+        "max": "E"
+      },
+      "levels": {
+        "1": {
+          "min": "F",
+          "max": "F"
+        },
+        "2": {
+          "min": "E",
+          "max": "E"
+        }
+      },
+      "control": "the Adventurers' Guild of Ashbridge keeps its entry ledger under a charter of the Duskreach crown",
+      "source": "Patch 7 review: the novice Dungeon near the start city Ashbridge"
+    },
+    {
+      "id": "loc.glimmerdeep_grotto",
+      "name": "Glimmerdeep Grotto",
+      "near": "loc.glassmere",
+      "where": "a cleft in the hills a morning's walk north of Glassmere, where the stream runs out of the rock",
+      "theme": "crystal caverns: glittering grottos of mana-fed crystal, crystal beetles and mineral slimes",
+      "rank": {
+        "min": "F",
+        "max": "F"
+      },
+      "levels": {
+        "1": {
+          "min": "F",
+          "max": "F"
+        }
+      },
+      "control": "a Glassmere academy of magic holds the cleft and lets registered adventurers cull its outer grottos",
+      "source": "Patch 7 review: the novice Dungeon near the start city Glassmere"
+    },
+    {
+      "id": "loc.old_crown_catacombs",
+      "name": "Old Crown Catacombs",
+      "near": "loc.alderwatch",
+      "where": "beneath a ruined chapel an hour's ride west of Alderwatch",
+      "theme": "undead catacombs: burial galleries, restless skeletons, ghouls deeper down",
+      "rank": {
+        "min": "F",
+        "max": "E"
+      },
+      "levels": {
+        "1": {
+          "min": "F",
+          "max": "F"
+        },
+        "2": {
+          "min": "E",
+          "max": "E"
+        }
+      },
+      "control": "the temple wardens of Alderwatch, who ask the Guild to keep the upper galleries culled",
+      "source": "Patch 7 review: the novice Dungeon near the start city Alderwatch"
     }
   ]
 }

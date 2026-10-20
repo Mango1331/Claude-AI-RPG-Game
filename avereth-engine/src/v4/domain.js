@@ -447,6 +447,14 @@ export function seedPlaces(content, loc, startName) {
         places.push({ id: l.id, name: l.name, kind: 'settlement', sub: l.kind, parent: l.realm || null, realm: l.realm || null, tags: [], by: 'content' });
         if (branch.includes(l.kind)) places.push({ id: `${l.id}.guild_hall`, name: HALL_NAME, kind: 'site', parent: l.id, realm: l.realm || null, tags: ['guild_hall'], by: 'engine' });
     }
+    // review of Patch 7: the content's known Dungeons, out in the land near their settlement: explored room by room, and
+    // classified by the world from the start (theme, Rank, levels, who holds access), the same place in every telling
+    for (const x of content.dungeons?.values() || []) {
+        const near = content.locations.get(x.near);
+        if (!near) continue;
+        places.push({ id: x.id, name: x.name, kind: 'site', parent: near.realm || null, realm: near.realm || null, tags: [], by: 'content', near: x.near, where: x.where || null,
+            rooms: true, dungeon: { real: true, theme: x.theme || null, rank: x.rank || null, levels: x.levels || {}, control: x.control || null, hidden: [], heard: [] } });
+    }
     const at = `${loc.id}.verge`;
     places.push({ id: at, name: startName, kind: 'site', parent: loc.id, realm: loc.realm || null, tags: [], by: 'content' });
     return { places, at };

@@ -14,8 +14,9 @@ export const KNOWN = { reported: 'reported', visited: 'visited', false: 'false' 
 export function knownByName(s, name, realm, { reportedOnly = false } = {}) {
     const n = normText(name || '');
     if (!n) return null;
+    // a true Dungeon is one place of its name in its realm, wherever a new mention puts it (review of Patch 7)
     return Object.values(s.places).find((p) => normText(p.name) === n && (p.realm ?? null) === (realm ?? null) && p.kind !== 'realm'
-        && (!reportedOnly || p.known === KNOWN.reported)) || null;
+        && (!reportedOnly || p.known === KNOWN.reported || !!p.dungeon?.real)) || null;
 }
 
 /**

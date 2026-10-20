@@ -18,7 +18,7 @@ import { renderHud, worldRows } from '../../src/hud.js';
 import { runCommands } from '../../src/commands.js';
 import { buildCatalog, extractorCatalog } from '../../src/v4/catalog.js';
 import { dungeonOf, roomsOf, linkBetween, linksAt, exitsFrom } from '../../src/v4/dungeon.js';
-import { contractReady } from '../../src/v4/guild.js';
+import { contractReady, boardRequest } from '../../src/v4/guild.js';
 import { Chat4 } from './harness.js';
 
 const content = await loadProductContent();
@@ -100,7 +100,8 @@ test('patch 7 (23): the abandoned watchtower: in, a locked armory, its blade tak
         let s = g.state();
         const tower = s.scene.at;
         const coin = s.entities.pc.sheet.coin_cp;
-        assert.equal(s.places[tower].dungeon, true, 'the watchtower is a dungeon');
+        assert.equal(s.places[tower].rooms, true, 'the watchtower is explored room by room');
+        assert.equal(s.places[tower].dungeon, undefined, 'and is no Dungeon for that (review 9)');
         const hall = idOf(s, 'Entrance hall');
         assert.equal(s.places[hall].parent, tower);
         assert.equal(s.places[hall].visited, undefined, 'seen through the doors, not entered');
@@ -386,7 +387,7 @@ test('patch 7 (21): in towns and on the road nothing changes: a room of an inn n
     await say(g, '*I go to the back room*', GO({ new: 'the back room' }, 'I go to the back room'));
     await g.reply('The back room.', { expected: { 1: { arrived: true, at: { new: { name: 'Back room', kind: 'interior', parent: inn } }, with: null } }, deltas: [] });
     let s = g.state();
-    assert.equal(s.places[inn].dungeon, undefined, 'an inn in a town is no dungeon');
+    assert.equal(s.places[inn].rooms, undefined, 'an inn in a town is no dungeon');
     assert.equal(Object.keys(s.links || {}).length, 0, 'and has no ways to keep');
     await say(g, '*I go back to the common room*', GO(idOf(s, 'Common room'), 'I go back to the common room'));
     await g.reply('The common room again.', { expected: { 1: { arrived: true, at: { new: { name: 'Common room', kind: 'interior', parent: inn } }, with: null } }, deltas: [] });
@@ -641,7 +642,8 @@ test('patch 7 (42): the HUD shows where he is and the ways he knows, never a hid
     assert.match(map, /Level 2:\n- Cellar \(seen, not entered\)/);
     assert.doesNotMatch(map, /Bolt-hole/);
     const ctx = buildContext(s, content, { input: 'I look around' }).text;
-    assert.match(ctx, /DUNGEON — he is in Old watchtower › Main corridor \(level 1\)/);
+    assert.match(ctx, /ROOMS — he is in Old watchtower › Main corridor \(level 1\)/);
+    assert.doesNotMatch(ctx, /DUNGEON —/, "a watchtower explored room by room is no Dungeon");
     assert.match(ctx, /HIDDEN WAYS \(he has not found them.*crack in the wall → Bolt-hole/);
     assert.equal(dungeonOf(s, corridor), tower);
 });
@@ -677,8 +679,12 @@ test('patch 7 (7, 10, 20): going on without getting anywhere leaves him in the r
     assert.equal(s.places[vault].visited, undefined, 'a map books no visit');
     assert.ok(buildCatalog(s, content, { c: true }).places.some((p) => p.id === vault), 'known by report');
     assert.ok(!linksAt(s, vault, { hidden: true }).length, 'and no way to it');
+    // going there is looking for a way there (review of a5035f0), never arriving straight
     await say(g, '*I go to the sealed vault*', GO(vault, 'I go to the sealed vault'));
-    assert.match(actions(g), /NO KNOWN WAY/);
+    assert.match(actions(g), /GOES — on to find a way to Sealed vault/);
+    const r = await g.reply('He wanders the corridor and finds himself in the vault.', { expected: { 1: { arrived: true, at: vault, with: null } }, deltas: [] });
+    assert.equal(g.state().scene.at, corridor, 'no way shown, no arrival');
+    assert.ok(rejectedRules(r).includes('passage'));
 });
 
 test('patch 7 (5, 8, 9): a room he walks into that no way was shown to is joined to where he came from, both ways; a guard room one floor down is another guard room than the one up here', async () => {
@@ -705,4 +711,224 @@ test('patch 7 (5, 8, 9): a room he walks into that no way was shown to is joined
     assert.equal(guards.length, 2, 'two guard rooms, one per floor');
     assert.deepEqual(guards.map((p) => p.level).sort(), [1, 2]);
     assert.ok(linkBetween(s, guard, guards.find((p) => p.id !== guard).id), 'joined by the stair');
+});
+
+// ------------------------------------------------------------------------------------------------ review of a5035f0
+test('patch 7 review A1: an iron door and a ventilation shaft between the same two rooms are two ways: the door stays barred, the shaft goes, a report of the door leaves the shaft alone', async () => {
+    const { g, corridor } = await inHall();
+    await walk(g, corridor, { text: '*I go on*', prose: 'A locked iron door to the armory.', deltas: [
+        feature('locked iron door', 'obstacle', { stat: 'STR', difficulty: 'hard' }, 1),
+        way(room('Armory'), { name: 'iron door', feature: 'locked iron door' }, 2),
+    ] });
+    let s = g.state();
+    const armory = idOf(s, 'Armory');
+    const door = featNamed(s, /iron door/);
+    await say(g, '*I look around*');
+    await g.reply('High in the wall, a ventilation shaft also leads into the armory; behind a loose panel, a crawlspace too, unseen.', { expected: {}, deltas: [
+        way(armory, { name: 'ventilation shaft' }, 1), way(armory, { name: 'loose panel', hidden: true }, 2),
+    ] });
+    s = g.state();
+    const ways = Object.values(s.links).filter((l) => [l.a, l.b].includes(corridor) && [l.a, l.b].includes(armory));
+    assert.equal(ways.length, 3, 'three ways between the two rooms');
+    const iron = ways.find((l) => l.name === 'iron door');
+    const shaft = ways.find((l) => l.name === 'ventilation shaft');
+    assert.equal(iron.feature, door.id);
+    assert.equal(shaft.feature, null);
+    assert.equal(ways.find((l) => l.name === 'loose panel').hidden, true);
+    // the iron door named again: that way, not the shaft; no copy
+    await say(g, '*I look at the door*');
+    await g.reply('The iron door is still locked.', { expected: {}, deltas: [way(armory, { name: 'iron door', feature: 'locked iron door' })] });
+    s = g.state();
+    assert.equal(Object.values(s.links).filter((l) => [l.a, l.b].includes(armory)).length, 3, 'no fourth way');
+    assert.equal(s.links[shaft.id].feature, null, 'the shaft is not barred by the door');
+    // through the door: barred; to the armory: by the shaft
+    let q = await say(g, '*I go through the iron door*', GO({ new: 'the iron door' }, 'I go through the iron door'));
+    assert.match(actions(g), /BLOCKED — the way to .* is barred by locked iron door/);
+    await g.reply('Locked.', { expected: {}, deltas: [] });
+    await walk(g, armory, { text: '*I climb through the shaft into the armory*', prose: 'He drops into the armory.' });
+    s = g.state();
+    assert.equal(s.scene.at, armory);
+    assert.equal(s.features[door.id].status, 'active', 'the door is still locked');
+    assert.equal(Object.values(s.links).filter((l) => [l.a, l.b].includes(armory)).length, 3, 'walking the shaft made no new way');
+    await walk(g, corridor, { text: '*I climb back*', prose: 'Back up the shaft.' });
+    assert.equal(g.state().scene.at, corridor, 'and back by it');
+});
+
+test('patch 7 review A2: a room known only by report, with no way to it, is not reached by an arrival the story claims; a way the same reply shows makes it reachable; a part nobody knew is still found by going on', async () => {
+    const { g, tower, corridor } = await inHall();
+    await walk(g, corridor, { text: '*I go on*', prose: 'The corridor.' });
+    await say(g, '*I read the old map*');
+    await g.reply('The map shows a crypt below the tower.', { expected: {}, deltas: [{ seq: 1, type: 'place.reported', place: { new: { name: 'Crypt', kind: 'interior', parent: tower } }, by: null, how: 'map', where: 'below the tower', false: null }] });
+    const crypt = idOf(g.state(), 'Crypt');
+    // he goes on; the story drops him straight into the crypt it never showed a way to
+    await say(g, '*I go deeper*', GO({ new: 'deeper' }, 'I go deeper'));
+    let r = await g.reply('He arrives in the crypt.', { expected: { 1: { arrived: false, at: null, with: null } }, deltas: [{ seq: 1, type: 'arrive', at: crypt, forced_by: null, with: null }] });
+    assert.equal(g.state().scene.at, corridor, 'a report is no way');
+    assert.ok(rejectedRules(r).includes('passage'));
+    // forced, but by nothing next to him: still no
+    await say(g, '*I wait*');
+    r = await g.reply('The floor gives way and he falls into the crypt.', { expected: {}, deltas: [{ seq: 1, type: 'arrive', at: crypt, forced_by: 'the floor gives way', with: null }] });
+    assert.equal(g.state().scene.at, corridor, 'no way from here, forced or not');
+    // going for the crypt he knows of: he looks for the way; the reply shows a stair down and takes him in
+    await say(g, '*I make for the crypt on the map*', GO(crypt, 'I make for the crypt on the map'));
+    assert.match(actions(g), /GOES — on to find a way to Crypt/);
+    await g.reply('Behind a pillar a stair goes down; at its foot, the crypt.', { expected: { 1: { arrived: true, at: crypt, with: null } }, deltas: [way(crypt, { name: 'stair down', dir: 'down' })] });
+    let s = g.state();
+    assert.equal(s.scene.at, crypt, 'by the way the reply showed');
+    assert.equal(s.places[crypt].level, 2);
+    // a part nobody knew: found by going on, the way kept
+    await say(g, '*I push on*', GO({ new: 'onward' }, 'I push on'));
+    await g.reply('A side vault opens off the crypt.', { expected: { 1: { arrived: true, at: room('Side vault'), with: null } }, deltas: [] });
+    s = g.state();
+    assert.equal(s.scene.at, idOf(s, 'Side vault'));
+    assert.ok(linkBetween(s, crypt, idOf(s, 'Side vault')));
+});
+
+test('patch 7 review A3: the way back through a corridor with a hidden plate stops at the plate: it springs once on his arrival there, he is in the corridor; a spent plate no longer stops the walk', async () => {
+    await scores({ moderate: NEVER }, async () => {
+        const { g, hall, corridor } = await inHall();
+        await walk(g, corridor, { text: '*I go on*', prose: 'The corridor; a crypt beyond.', deltas: [
+            feature('pressure plate under the dust', 'hazard', { hidden: true, trigger: 'enter', stat: 'AGI', harm: 'hp' }, 1),
+            way(room('Crypt'), { name: 'arch' }, 2),
+        ] });
+        let s = g.state();
+        const crypt = idOf(s, 'Crypt');
+        const plate = featNamed(s, /pressure plate/);
+        await walk(g, crypt, { text: '*I go into the crypt*', prose: 'The crypt.' });
+        const before = hp(g.state());
+        await say(g, '*I go back to the entrance hall*', GO(hall, 'I go back to the entrance hall'));
+        const extra = (outcome(g).extra || []).join('\n');
+        assert.match(extra, /HIDDEN DANGER, IF HE GETS IN — pressure plate under the dust/);
+        assert.match(extra, /the walk stops in Main corridor/);
+        await g.reply('He heads back; in the corridor a plate clicks under his boot.', { expected: { 1: { arrived: true, at: hall, with: null } }, deltas: [] });
+        s = g.state();
+        assert.equal(s.scene.at, corridor, 'he stops where it sprang');
+        assert.equal(hp(s), before - content.rules.exploration.harm.moderate, 'once');
+        assert.deepEqual([s.features[plate.id].hidden, s.features[plate.id].status], [false, 'disabled']);
+        // spent: the walk goes on through
+        await walk(g, crypt, { text: '*I go back into the crypt*', prose: 'The crypt.' });
+        await say(g, '*I go back to the entrance hall*', GO(hall, 'I go back to the entrance hall'));
+        assert.doesNotMatch((outcome(g).extra || []).join('\n'), /HIDDEN DANGER|walk stops/);
+        await g.reply('Back through the corridor to the hall.', { expected: { 1: { arrived: true, at: hall, with: null } }, deltas: [] });
+        assert.equal(g.state().scene.at, hall);
+        assert.equal(hp(g.state()), before - content.rules.exploration.harm.moderate);
+    });
+});
+
+// ------------------------------------------------------------------------------------------------ review: true Dungeons
+const classify = (more = {}, seq = 1) => ({ seq, type: 'dungeon', place: null, theme: null, rank_min: null, rank_max: null, level: null, control: null, how: 'seen', ...more });
+
+test('patch 7 review 9, 10, 12, 13: a watchtower is no Dungeon; a crypt the story makes a true A-Rank Dungeon stays A-Rank for an F-Rank Alaric, its theme stays, a later other Rank or theme is refused', async () => {
+    const { g, tower } = await inHall();
+    let s = g.state();
+    assert.equal(s.places[tower].dungeon, undefined);
+    assert.ok(!Object.fromEntries(worldRows(s, content)).Dungeon, 'no Dungeon row for a watchtower');
+    // out, to a sunken crypt the story establishes as a true Dungeon far above him
+    await say(g, '*I leave and follow the road to the sunken crypt*', GO(REALM, 'I leave and follow the road'));
+    await g.reply('Out on the road again.', { expected: { 1: { arrived: true, at: REALM, with: null } }, deltas: [] });
+    await say(g, '*I go to the sunken crypt*', GO({ new: 'the sunken crypt' }, 'I go to the sunken crypt'));
+    await g.reply('A sunken crypt: the air hums; the Guild marks such places A-Rank.', { expected: { 1: { arrived: true, at: { new: { name: 'Sunken crypt', kind: 'site', parent: REALM } }, with: null } }, deltas: [
+        classify({ theme: 'undead catacombs', rank_min: 'A', rank_max: 'A' }),
+    ] });
+    s = g.state();
+    const crypt = s.scene.at;
+    assert.equal(s.entities.pc.sheet.level, 1, 'Alaric is level 1, F-Rank');
+    assert.deepEqual(s.places[crypt].dungeon.rank, { min: 'A', max: 'A' }, 'the Dungeon keeps its own Rank');
+    assert.equal(s.places[crypt].rooms, true, 'a true Dungeon is explored room by room too');
+    assert.match(Object.fromEntries(worldRows(s, content)).Dungeon, /Sunken crypt — undead catacombs; Rank A/);
+    assert.match(buildContext(s, content, { input: 'I look around' }).text, /DUNGEON — Sunken crypt is a true Dungeon: undead catacombs; Rank A\. Its Rank and theme are the world's and fixed: never fit it or its creatures to Alaric's level/);
+    // a later reply that would make it F-Rank goblin warrens: refused, told
+    await say(g, '*I look around*');
+    const r = await g.reply('Just a small goblin den, really, F-Rank.', { expected: {}, deltas: [classify({ theme: 'goblin warrens', rank_min: 'F', rank_max: 'F' })] });
+    assert.ok(rejectedRules(r).includes('world_canon'));
+    assert.match(r.record.corrections.join('\n'), /Sunken crypt stays as established: theme "undead catacombs", Rank A/);
+    // away and back: the same
+    await say(g, '*I go back to the road*', GO(REALM, 'I go back to the road'));
+    await g.reply('The road.', { expected: { 1: { arrived: true, at: REALM, with: null } }, deltas: [] });
+    await say(g, '*I go back to the sunken crypt*', GO(crypt, 'I go back to the sunken crypt'));
+    await g.reply('The sunken crypt again.', { expected: { 1: { arrived: true, at: crypt, with: null } }, deltas: [] });
+    s = g.state();
+    assert.deepEqual([s.places[crypt].dungeon.theme, s.places[crypt].dungeon.rank], ['undead catacombs', { min: 'A', max: 'A' }]);
+    assert.equal(byName(s, 'Sunken crypt').length, 1);
+});
+
+test('patch 7 review 11, 14: a Dungeon F–D keeps each level\'s Rank; a Rank the world holds but he does not know stays off his HUD (the narrator has it) until the Guild tells him; a rumour is a rumour', async () => {
+    const { g, tower } = await inHall();
+    await say(g, '*I look around*');
+    await g.reply('Goblin sign everywhere: these are goblin warrens of three levels.', { expected: {}, deltas: [
+        classify({ theme: 'goblin warrens', rank_min: 'F', rank_max: 'D', how: 'hidden' }, 1),
+        classify({ level: 1, rank_min: 'F', how: 'seen' }, 2),
+        classify({ level: 2, rank_min: 'E', how: 'hidden' }, 3),
+        classify({ level: 3, rank_min: 'D', how: 'hidden' }, 4),
+        classify({ rank_min: 'F', rank_max: 'F', how: 'rumor' }, 5),
+    ] });
+    let s = g.state();
+    const c = s.places[tower].dungeon;
+    assert.deepEqual(c.levels, { 1: { min: 'F', max: 'F' }, 2: { min: 'E', max: 'E' }, 3: { min: 'D', max: 'D' } });
+    assert.deepEqual(c.rank, { min: 'F', max: 'D' }, 'the rumour of F-Rank is no canon');
+    const hud = Object.fromEntries(worldRows(s, content)).Dungeon;
+    assert.match(hud, /level 1: F/);
+    assert.doesNotMatch(hud, /F–D|level 2|level 3|goblin/, 'what he does not know is not on his HUD');
+    assert.match(hud, /rumoured: Rank F/);
+    assert.match(buildContext(s, content, { input: 'I look around' }).text, /goblin warrens; Rank F–D; level 1: F, level 2: E, level 3: D/);
+    // a level's Rank told otherwise: refused
+    await say(g, '*I look around*');
+    let r = await g.reply('The second level is C-Rank.', { expected: {}, deltas: [classify({ level: 2, rank_min: 'C' })] });
+    assert.ok(rejectedRules(r).includes('world_canon'));
+    assert.deepEqual(g.state().places[tower].dungeon.levels[2], { min: 'E', max: 'E' });
+    // the Guild tells him: now he knows
+    await say(g, '*I read the Guild notice nailed by the door*');
+    r = await g.reply('A Guild notice: goblin warrens, F–D.', { expected: {}, deltas: [classify({ theme: 'goblin warrens', rank_min: 'F', rank_max: 'D', how: 'guild' })] });
+    assert.match(Object.fromEntries(worldRows(g.state(), content)).Dungeon, /goblin warrens; Rank F–D/);
+    assert.ok(!rejectedRules(r).includes('world_canon'), 'the same, told: no conflict');
+});
+
+test('patch 7 review C3, 15, 16, 17: Ashbridge knows the Mossback Warrens (F–E); the Novice board may put clearance of its F-Rank level there, one listing at most, as an ordinary Guild contract; going there finds the one place, never a copy', async () => {
+    const listings = [
+        { id: 'L1', title: 'Clear the first level of the Mossback Warrens', client: 'the Ashbridge Guild', rank: 'Novice', level: 4, qtype: 'standard', payout_cp: 60,
+            task: 'Clear the goblin scouts from the first level of the Mossback Warrens.', desired_end_state: 'The goblin scouts of the Mossback Warrens\' first level are dealt with.',
+            objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'goblin scout', qty: 3, unit: null, where: 'Mossback Warrens, level 1' }], proof: [] },
+        { id: 'L2', title: 'Cull the quarry rats', client: 'the quarry foreman', rank: 'Novice', level: 2, qtype: 'standard', payout_cp: 40, task: 'Cull the giant rats in the old quarry.', desired_end_state: 'The quarry rats are culled.', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'giant rat', qty: 4, unit: null, where: 'the old quarry' }], proof: [] },
+        { id: 'L3', title: 'Wagon guard to Blackgate', client: 'a wool merchant', rank: 'Novice', level: 3, qtype: 'standard', payout_cp: 70, task: 'Guard a wool wagon on the road to Blackgate.', desired_end_state: 'The wagon reaches Blackgate.', objectives: [{ id: 'o1', verb: 'ESCORT', what: 'the wool wagon', qty: null, unit: null, where: 'Blackgate' }], proof: [] },
+        { id: 'L4', title: 'Letters to the ford', client: 'the Ashbridge post', rank: 'Novice', level: 1, qtype: 'standard', payout_cp: 30, task: 'Carry a satchel of letters to the ferry house at the ford.', desired_end_state: 'The letters are in the ferryman\'s hands.', objectives: [{ id: 'o1', verb: 'DELIVER', what: 'satchel of letters', qty: 1, unit: null, where: 'the ford' }], proof: [] },
+        { id: 'L5', title: 'Drive off the reed wolves', client: 'the reed cutters', rank: 'Novice', level: 5, qtype: 'standard', payout_cp: 60, task: 'Drive the wolves off the reed beds.', desired_end_state: 'The wolves no longer prowl the reed beds.', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'wolf', qty: 2, unit: null, where: 'the reed beds' }], proof: [] },
+    ];
+    const g = new Chat4(content, { greeting: GREETING, listings });
+    await g.player('Mage');
+    await g.player('Flame Lance + Arcane Burst');
+    const ask = g.llm;
+    g.llm = async (req) => (req.purpose.startsWith('plan') ? g.plans.shift() ?? null : ask(req));
+    let s = g.state();
+    const warrens = 'loc.mossback_warrens';
+    assert.deepEqual([s.places[warrens].name, s.places[warrens].dungeon.rank, s.places[warrens].rooms], ['Mossback Warrens', { min: 'F', max: 'E' }, true]);
+    assert.equal(s.places[warrens].parent, REALM, 'out in the land near Ashbridge');
+    // the board generator is told of it, with the Novice limit
+    const req = boardRequest(s, content, { branch: 'loc.ashbridge', rank: 'Novice', missing: 5, day: 1, have: [] }).user;
+    assert.match(req, /KNOWN DUNGEONS NEAR THIS BRANCH \(the Guild's records\): Mossback Warrens \(goblin warrens.*Rank F–E; level 1: F, level 2: E/);
+    assert.match(req, /At most one listing may be clearance work in one of them, and only in a part whose danger Rank is F/);
+    // the planner can name it from Ashbridge
+    await say(g, '*I walk into Ashbridge*', GO('loc.ashbridge', 'I walk into Ashbridge'));
+    await g.reply('Ashbridge.', { expected: { 1: { arrived: true, at: 'loc.ashbridge', with: null } }, deltas: [] });
+    s = g.state();
+    assert.ok(buildCatalog(s, content, { c: true }).places.some((p) => p.id === warrens && /Rank F–E/.test(p.name)));
+    // the board: an ordinary Guild contract
+    await say(g, '*I go to the Guild hall*', GO('loc.ashbridge.guild_hall', 'I go to the Guild hall'));
+    await g.reply('The Guild hall.', { expected: { 1: { arrived: true, at: 'loc.ashbridge.guild_hall', with: null } }, deltas: [] });
+    assert.match(buildContext(g.state(), content, { input: 'I look around' }).text, /KNOWN DUNGEONS NEAR ASHBRIDGE .*Mossback Warrens/);
+    await say(g, '*I read the board*', { type: 'board.read', rank: null, quote: 'I read the board' });
+    s = g.state();
+    const q = Object.values(s.quests).find((x) => /Mossback/.test(x.title));
+    assert.ok(q, 'listed');
+    assert.equal(Object.values(s.quests).filter((x) => /Mossback/.test(x.title)).length, 1, 'one Dungeon job among five');
+    assert.equal(q.kind, 'guild_contract');
+    assert.equal(q.status, 'listed');
+    assert.equal(contractReady(s, content, q, { c: true }).ok, false, 'not done by being posted');
+    await g.reply('The board.', { expected: {}, deltas: [] });
+    // going there: the one Mossback Warrens, however the story names its parent
+    await say(g, '*I set out for the Mossback Warrens*', GO(warrens, 'I set out for the Mossback Warrens'));
+    await g.reply('Half a day east, the moss-grown hill.', { expected: { 1: { arrived: true, at: { new: { name: 'Mossback Warrens', kind: 'site', parent: 'loc.ashbridge' } }, with: null } }, deltas: [{ seq: 1, type: 'time', minutes: 300 }] });
+    s = g.state();
+    assert.equal(s.scene.at, warrens, 'the same place');
+    assert.equal(byName(s, 'Mossback Warrens').length, 1, 'no copy');
+    assert.match(Object.fromEntries(worldRows(s, content)).Dungeon, /Mossback Warrens — goblin warrens.*Rank F–E/);
 });

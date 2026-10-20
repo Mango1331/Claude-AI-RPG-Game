@@ -30,7 +30,7 @@ import { useOf, spoiled, unitsOf } from './items.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
-import { dungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed, hiddenWayFinds, linkEvent, otherEnd } from './dungeon.js';
+import { dungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed, hiddenWayFinds, linkEvent, otherEnd, linksAt, blockerOf, goesFrom, firstStop } from './dungeon.js';
 import {
     REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, abandonContract, contractReady, objectiveText,
     promotion, takenByOthers, bookBoard, isHunt, trophyText, proofTerms, handoverTerms,
@@ -260,15 +260,19 @@ function barred(f, toward) {
 }
 
 /**
- * Patch 7: a GO in or into a dungeon (src/v4/dungeon.js). A known room, also named by its name or by the way to it,
- * is reached only by ways he knows and can take, through rooms he has stood in; a way barred by an obstacle stays
- * barred however he words it. A part he has not seen yet he reaches by going on from where he is (the story shows
- * it; the world applier keeps the way he took), unless what he names lies behind an obstacle here.
- * @returns {{refuse?: object, to?: string, route?: object}}
+ * Patch 7: a GO in or into a place explored room by room (src/v4/dungeon.js). A known room, also named by its name or
+ * by the way to it, is reached only by ways he knows and can take, through rooms he has stood in; a way barred by an
+ * obstacle stays barred however he words it (the iron door he names, even when a shaft leads to the same room). A
+ * part he has not seen yet he reaches by going on from where he is (the story shows it; the world applier keeps the
+ * way he took), unless what he names lies behind an obstacle here. Review of a5035f0: a room he knows of (a map) with
+ * no way to it known is something to look for a way to, not a place to arrive at; a walk through several rooms stops
+ * where a hidden trap waits (firstStop), so the trap is never stepped over.
+ * @returns {{refuse?: object, to?: string, route?: object, explore?: string, stop?: string}}
  */
 function dungeonGo(s, c) {
     const here = s.scene.at;
     let to = c.to;
+    let via = null;
     if (to && typeof to === 'object') {
         if (!dungeonOf(s, here)) return {};
         const name = String(to.new || '');
@@ -279,15 +283,23 @@ function dungeonGo(s, c) {
             const f = featuresAt(s, here).find((x) => x.kind === 'obstacle' && x.status === 'active' && keyOf(x.name).some((w) => want.includes(w)));
             return f ? { refuse: barred(f, name) } : {};
         }
-        to = meant;
+        to = meant.id;
+        via = meant.link || null;
     }
     if (typeof to !== 'string' || !s.places[to] || to === here || (!dungeonOf(s, here) && !dungeonOf(s, to))) return {};
     if (isRoom(s, to) && !roomKnown(s, to)) return { refuse: { status: 'refused', reason: 'no known way', line: 'NO KNOWN WAY — he knows of no such place here; he stays where he is.' } };
+    // the way he named: that way, barred or open
+    if (via) {
+        if (blockerOf(s, via)) return { refuse: barred(blockerOf(s, via), placeName(s, to)) };
+        if (goesFrom(via, here)) return { to, route: { path: [here, to], ways: [via] } };
+    }
     const w = wayBetween(s, here, to);
     if (w.blocked) return { refuse: barred(w.blocked.feature, placeName(s, to)) };
     if (w.danger) return { refuse: { status: 'clarify', reason: 'danger on the way', line: `CLARIFY — the way he knows to ${placeName(s, to)} leads back through ${placeName(s, w.danger.at)}, where he left ${w.danger.who.map((e) => who(s, e.id)).join(', ')}: does he go there?` } };
+    if (w.none && isRoom(s, to) && !linksAt(s, to).length) return { explore: to };
     if (w.none) return { refuse: { status: 'refused', reason: 'no known way', line: `NO KNOWN WAY — he knows no open way from ${placeName(s, here)} to ${placeName(s, to)}: he stays where he is; another way has to be found first.` } };
-    return { to, route: w };
+    const stop = firstStop(s, w.path, w.ways);
+    return { to, route: w, ...(stop ? { stop: stop.at } : {}) };
 }
 
 const HANDLERS = {
@@ -348,6 +360,9 @@ const HANDLERS = {
         const nav = envx?.c ? dungeonGo(s, c) : {};
         if (nav.refuse) return nav.refuse;
         if (nav.to) c = { ...c, to: nav.to };
+        // a room he knows of, no way to it: he goes on to find one (reached only by a way the story shows him)
+        const sought = nav.explore ? placeName(s, nav.explore) : null;
+        if (sought) c = { ...c, to: { new: sought } };
         const known = typeof c.to === 'string';
         if (known && !s.places[c.to]) return { status: 'refused', reason: 'unknown place', line: 'CANNOT GO — no such place is known.' };
         if (known && c.to === s.scene.at) return { status: 'refused', reason: 'already here', done: true, line: `NOTHING TO DO — he is already at ${placeName(s, c.to)}.` };
@@ -375,19 +390,26 @@ const HANDLERS = {
         }
         // Patch 6: a hidden hazard at the place he goes into springs as he enters it (src/v4/features.js), the engine's roll;
         // review of 32c7d2c: booked only where the reply's arrival there is confirmed (a conditional of the arrival)
-        // Patch 7: and one across the way he takes there (the tripwire on that doorway)
+        // Patch 7: and one across the way he takes there (the tripwire on that doorway); review of a5035f0: a walk
+        // through several rooms that stops at a hidden trap on the way: the trap is the one at the stop, and the walk
+        // ends there (world.js viaStop)
+        const stopAt = nav.stop || null;
+        const legWays = stopAt ? nav.route.ways.slice(0, nav.route.path.indexOf(stopAt)) : nav.route?.ways || [];
+        if (stopAt) go.stop = stopAt;
         if (envx?.c && known && envx.dice) {
-            const pending = pendingSpring(s, content, envx.dice, { place: c.to, seq: c.seq, ways: (nav.route?.ways || []).map((l) => l.feature).filter(Boolean) });
+            const pending = pendingSpring(s, content, envx.dice, { place: stopAt || c.to, seq: c.seq, ways: legWays.map((l) => l.feature).filter(Boolean) });
             if (pending) { ctx.conditionals.push(pending.conditional); ctx.extra.push(pending.line); }
         }
         // Patch 7: back through rooms he knows, every way open: told in passing, no new decision on the way
-        if (nav.route?.path?.length > 2) ctx.extra.push(`THE WAY — through ${nav.route.path.slice(1, -1).map((id) => placeName(s, id)).join(', ')}: rooms he knows, every way on it open; tell the walk briefly, nothing new on the way unless the story has its own reason.`);
+        if (stopAt) ctx.extra.push(`THE WAY — toward ${name}${nav.route.path.indexOf(stopAt) > 1 ? ` through ${nav.route.path.slice(1, nav.route.path.indexOf(stopAt)).map((id) => placeName(s, id)).join(', ')}` : ''}: the walk stops in ${placeName(s, stopAt)}, where what is said below happens; he is in ${placeName(s, stopAt)} after it, and goes on only by his next decision.`);
+        else if (nav.route?.path?.length > 2) ctx.extra.push(`THE WAY — through ${nav.route.path.slice(1, -1).map((id) => placeName(s, id)).join(', ')}: rooms he knows, every way on it open; tell the walk briefly, nothing new on the way unless the story has its own reason.`);
         // Patch 2: a destination beyond his settlement, or a place he knows by report, is his goal until he reaches it
         // (src/v4/intents.js); a quest's journey is that quest's own
         if (known && !ctx.auth.journey && goSetsGoal(s, c.to)) setIntentEvents(s, { goal: `reach ${name}`, place: c.to, quote: c.quote, why: 'he set off for it' }).events.forEach(emit);
         // Prototype C (4.3.0-c.6): the people he met there before are that place's people, not new ones
         const there = envx?.c && known && !ctx.extra.some((x) => x.startsWith(`KNOWN AT ${name} (`)) ? knownAt(s, content, c.to) : [];
         if (there.length) ctx.extra.push(`KNOWN AT ${name} (met there before; when the story shows the people of that place, they are these, not new ones; whoever works there is at work unless the story establishes otherwise): ${there.map((p) => `${p.label} (${p.id})`).join(' · ')}`);
+        if (sought) return { status: 'authorized', line: `GOES — on to find a way to ${sought}: he knows of it, not of a way there; he gets there only by a way the story shows him find (a stair, a door, a passage), never straight.` };
         return { status: 'authorized', line: `GOES — to ${name} (the story decides whether and where he arrives).` };
     },
     // Patch 2: his goals are his own decisions (src/v4/intents.js); setting one changes nothing in the world

@@ -1738,14 +1738,16 @@
       "uid": 35,
       "key": [
         "Dungeon",
-        "Dungeons",
-        "natural Dungeon",
+        "Dungeon Rank",
+        "Dungeon clearance",
         "Dungeon ecology",
-        "Dungeon materials"
+        "Dungeon materials",
+        "Dungeons",
+        "natural Dungeon"
       ],
       "keysecondary": [],
       "comment": "WORLD — Dungeons",
-      "content": "DUNGEONS [CANON]\nDungeons are physical, persistent places in Avereth, arising from concentrated mana, natural phenomena, ancient civilizations or other traceable causes. They can hold unusual environments, rare materials, Skill Stones and exceptional Monsters, and can be known, owned, disputed, exploited, sealed or partly mapped.\n\nSome have a recognizable, magically structured progression: successive levels with their own Monster populations, level guardians and bosses, danger rising with depth, valuable materials and special loot. There, Monsters and resources can return over time, access can be restricted or limited in numbers, other adventurers enter on their own, and rare return stones can carry a bearer back out. Such Dungeons are shared world places, never private instances for Alaric.\n\nOrdinary caves, catacombs, ruins and tunnels stay explorable places without levels, bosses or regeneration unless play establishes a real Dungeon there. Exact rules, timings, capacities and rewards stay open; the Engine owns them once it tracks a Dungeon, so invent no fixed timers, capacities or System notices.",
+      "content": "DUNGEONS [CANON]\nDungeons are physical, persistent places in Avereth, arising from concentrated mana, natural phenomena, ancient civilizations or other traceable causes. They are fairly common and unevenly spread: around larger towns there are often known Dungeons that people work, more in some regions than in others; low-Rank Dungeons are common, high-Rank ones rare, and a mighty Dungeon is a political and military asset.\n\nKnown Dungeons may be held by noble houses, rulers, the Adventurers' Guild, academies of magic, temples, trading houses or other bodies, for licences, material rights, training, fees or exclusive expeditions. The Guild brokers Dungeon work and keeps records of known Dungeons, may hold access rights, but does not own every Dungeon. A fee is paid only when Alaric agrees to pay it.\n\nEvery Dungeon has its own danger Rank (F–S) or a range across its levels (Goblin Warrens F–D: scouts on the first level, warriors and shamans on the second, a champion on the third); danger often but not always rises with depth. A Dungeon never adapts to Alaric's Level, Power Rank or Guild Rank, and an unknown Rank stays unknown until established. A true Dungeon has a recognizable theme and dominant ecology (goblin warrens, undead catacombs, a spider nest, crystal caverns, a construct vault, a dragon sanctum) that does not change without cause; a species alone does not fix a Rank.\n\nSome have a magically structured progression: levels with their own populations, guardians and bosses, valuable materials and loot; Monsters and resources can return over time, access can be restricted, other adventurers enter on their own, rare return stones carry a bearer back out. They are shared world places, never private instances for Alaric.\n\nOrdinary caves, catacombs, ruins and tunnels stay explorable places without levels, bosses or regeneration unless play establishes a real Dungeon there. Exact rules, timings, capacities and rewards stay open; the Engine owns them once it tracks a Dungeon, so invent no fixed timers, capacities or System notices.",
       "constant": false,
       "vectorized": false,
       "selective": false,

@@ -35,6 +35,8 @@ export function indexContent(pack) {
         lore: pack.lore.entries,
         locations: new Map(pack.lore.locations.map((l) => [l.id, l])),
         factions: new Map(pack.lore.factions.map((f) => [f.id, f])),
+        // review of Patch 7: the known Dungeons of the content, each near a settlement (lore.json dungeons)
+        dungeons: new Map((pack.lore.dungeons || []).map((x) => [x.id, x])),
         rulesText: new Map(pack.rules_text.entries.map((r) => [r.id, r])),
         narrator: pack.narrator,
         start: pack.campaign_start,

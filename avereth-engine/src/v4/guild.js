@@ -3,6 +3,7 @@
 // board and its listings (from the Board generator, validated and booked before the narrator describes them), the
 // acceptance with its contract slip, the turn-in with the proof check, the payout, Quest XP, the contract count and
 // the promotion. The narrator only tells what the engine booked; the extractor's deltas cannot change any of it.
+import { nearDungeons, dungeonText } from './dungeon.js';
 import { O, S, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 import { setFactEvents, perceivers, knows, truth, PC_NAME_FACT } from '../knowledge.js';
@@ -496,8 +497,14 @@ export function boardRequest(s, content, need) {
         '',
         'Return only one JSON object, no prose before or after it, no code fences: {"listings": [{"title": "...", "client": "...", "rank": "...", "level": 1, "qtype": "...", "payout_cp": 0, "task": "...", "desired_end_state": "...", "objectives": [...], "proof": [...]}]}. Every field is required; null where a field allows it and does not apply.',
     ].join('\n');
+    // review of Patch 7: the known Dungeons near this branch, by their names (the same places on every board); work
+    // there is clearance of a part whose Rank this board's work fits (a Novice board: the F-Rank part), one listing
+    const order = content.rules.ranks.order;
+    const fits = content.rules.ranks.bands.filter((b) => b.max >= lo && b.min <= hi).map((b) => b.rank);
+    const dungeons = nearDungeons(s, need.branch, town?.realm).map((id) => `${s.places[id].name} (${dungeonText(s, id, { all: true }).replace(/^a Dungeon: /, '')}${s.places[id].where ? `; ${s.places[id].where}` : ''})`);
     const user = [
         `BRANCH: ${town?.name || need.branch}${realm ? `, ${realm}` : ''} (${town?.sub || 'settlement'})`,
+        ...(dungeons.length ? [`KNOWN DUNGEONS NEAR THIS BRANCH (the Guild's records): ${dungeons.join(' · ')}. At most one listing may be clearance work in one of them, and only in a part whose danger Rank is ${fits.join(' or ')} (this board's work; ${order.filter((r) => !fits.includes(r)).length ? 'deeper or stronger parts are not this board\'s' : 'any part'}): name the Dungeon exactly as written, the part (a level, a gallery) and its concrete outcome; it counts as one of the culling jobs.`] : []),
         `RANK: ${need.rank} · DAY ${need.day}`,
         `ON THE BOARD ALREADY: ${need.have.length ? need.have.join(' | ') : 'nothing'}`,
         `WRITE: ${need.missing} new listing${need.missing > 1 ? 's' : ''}.`,

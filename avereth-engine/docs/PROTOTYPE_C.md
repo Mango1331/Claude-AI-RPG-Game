@@ -1337,7 +1337,61 @@ Leitsatz: Die Umgebung bietet Probleme und Entdeckungen. Der Spieler entscheidet
 - Ein Dungeon wird nur durch `passage` markiert oder durch den Gang zwischen zwei Räumen eines Gebäudes in der Wildnis. Meldet der Extractor keine Wege, verhält sich ein Gebäude wie bisher.
 - Ebenen nur relativ über Treppenrichtung (Eingangsebene 1). Ohne `dir` bleibt die Ebene unbekannt.
 - Ein Weg über mehrere Räume fasst nur besuchte Räume zusammen. Durch einen gesehenen, aber nie betretenen Raum geht er Raum für Raum.
-- Verborgene `enter`-Fallen in Zwischenräumen eines zusammengefassten Wegs springen nicht; nur Ziel und Weg-Hindernisse zählen.
+- ~~Verborgene `enter`-Fallen in Zwischenräumen eines zusammengefassten Wegs springen nicht.~~ Behoben in der Review-Nachbesserung: Der Weg hält an der Falle.
 - `passed` gilt für Alaric (und wer mit ihm geht); für andere entscheidet die Erzählung.
 - Kein Respawn, keine wandernden Gruppen, keine Fraktionen (Patch 8).
+
+#### Review-Nachbesserung und Dungeon-Worldbuilding (4.3.0-c.6.6.16, noch Patch 7)
+
+**Technische Fälle** (alle vorher reproduziert, Test rot):
+
+| Fall | Fix |
+|---|---|
+| A1: Ein zweiter Weg zwischen denselben Räumen (Lüftungsschacht neben der verschlossenen Eisentür) verschmolz mit dem ersten (`linkBetween` nahm den ersten Fund) | `sameWay`: ein Bericht meint den Weg seines Namens; ein unbenannter, gegangener Weg bekommt den Namen; sonst ein neuer Weg. Ein GO durch einen benannten Weg nimmt genau diesen (`knownRoomNamed` liefert den Weg mit): Die Tür bleibt BLOCKED, der Schacht führt hinein und zurück. Verborgene Wege bleiben getrennt verborgen |
+| A2: Ein bekannter, unbesuchter Raum ohne Weg (Krypta von einer Karte) galt dem World-Applier als „unseen“ und war per `arrive` erreichbar | „unseen“ heißt nur noch: in dieser Antwort neu, oder ein Ort, den Alaric nicht kennt, ohne Weg, gefunden von einem GO ins Unbekannte. Ein bekannter Raum braucht einen Weg; zeigt die Erzählung ihn in derselben Antwort (`passage`), gilt die Ankunft. Planner-GO dorthin = „GOES — on to find a way to …“. Erzwungen ohne angrenzenden Weg: abgelehnt |
+| A3: Eine verborgene Falle in einem Zwischenraum eines zusammengefassten Wegs wurde übersprungen | `firstStop`: Der Weg hält im ersten Raum mit verborgener aktiver Falle (Betreten, oder `cross` am Weg dorthin). Die Falle wird vorgewürfelt (Swipe-stabil) und mit der Ankunft dort gebucht. `viaStop` hält ihn dort fest, auch wenn die Erzählung weitererzählt. Entschärfte oder verbrauchte Fallen halten nichts an |
+| A4: Jeder begehbare Komplex hieß `dungeon: true` | Navigation heißt jetzt `rooms: true`. Ein echter Dungeon ist eine eigene, kleine Klassifikation am selben Ort (`places[id].dungeon`). Narrator-Abschnitt „ROOMS — …“, „DUNGEON — …“ nur für echte Dungeons |
+
+**Worldbuilding** (`lore.json` `lore.dungeons` und Lorebook-Eintrag 35):
+- Dungeons sind verbreitet und regional verschieden; hochrangige sind selten und politisch bedeutsam.
+- Mögliche Halter: Adel, Herrscher, Gilde, Akademien, Tempel, Handelshäuser. Die Gilde vermittelt und führt Akten, besitzt aber nicht alle Dungeons. Gebühren zahlt Alaric nur selbst.
+- Jeder Dungeon hat einen eigenen Rang oder Rang-Bereich über seine Ebenen, nie an Alaric angepasst. Ein unbekannter Rang bleibt unbekannt.
+- Ein Theme ist eine Weltidentität, keine Spawn-Tabelle.
+
+**Klassifikation** (Delta `dungeon`, `delta-0.95`):
+- `theme`, `rank_min`/`rank_max`, `level`, `control`, `how: seen|guild|hidden|rumor`.
+- `seen`/`guild` ist kanonisch und Alaric bekannt.
+- `hidden` ist kanonisch und ihm unbekannt: nicht im HUD, wohl beim Narrator. Erst `guild` oder `seen` macht es ihm bekannt.
+- `rumor` ist nur Gerücht und erscheint im HUD als „rumoured“.
+- Spätere andere Werte werden mit `world_canon` abgelehnt und als Korrektur erzählt.
+- Kreaturenprofile hängen weiter am Gefahrenkontext des Ortes (`chooseCreatureLevel`), nie an Alarics Level oder an diesen Metadaten.
+
+**Novice-Dungeons:** Je Startstadt einer, weil die Startstadt zufällig gewählt wird:
+
+| Dungeon | Nahe | Rang | Theme |
+|---|---|---|---|
+| Mossback Warrens | Ashbridge | F–E (Ebene 1 F, Ebene 2 E) | Goblin-Tunnel |
+| Glimmerdeep Grotto | Glassmere | F | Kristallhöhlen |
+| Old Crown Catacombs | Alderwatch | F–E | Untote Katakomben |
+
+- Sie werden beim Kampagnenstart in den Ortsbaum gesetzt (`seedPlaces`): im Reich, mit `near`/`where`, klassifiziert und in Räumen erkundbar.
+- Ein echter Dungeon ist im Reich über seinen Namen eindeutig (`knownByName`): eine neue Erwähnung mit anderem Elternort findet denselben Ort.
+- Planner-Katalog: die nahen Dungeons (höchstens zwei).
+- Narrator: „KNOWN DUNGEONS NEAR …“ nur in der Gildenhalle oder wenn ein Dungeon zur Sprache kommt.
+- Board-Generator: bekommt die nahen Dungeons mit der Vorgabe „höchstens ein Räumungsauftrag, nur in einem Abschnitt passenden Rangs (Novice: F), Name exakt, Abschnitt und konkretes Ergebnis; zählt als Culling-Job“. Das Novice-Profil (Culling, Eskorte, Lieferung) bleibt. Der Auftrag ist ein gewöhnlicher Gildenvertrag (Zählung, READY, Auszahlung nur an der Gilde).
+
+**Tests:** 6 neue Tests in `tests/v4/patch7.test.js` (A1, A2, A3, Worldbuilding 9/10/12/13, 11/14, C3/15/16/17). Zwei bestehende Patch-7-Tests habe ich an das bewusst geänderte Verhalten angepasst: GO zu einem Kartenraum sucht einen Weg; der Narrator-Abschnitt heißt „ROOMS“. Gesamt 849/849.
+
+**Mutationsproben:** 11 Proben; 10 werden erkannt (A1 zweimal, A2, A3 zweimal, Kanon überschrieben, verborgen gezeigt, Gerücht als Kanon, Dungeon-Kopie per Name, Board ohne Dungeon-Vorgabe). Die HUD-Variante von A4 ist äquivalent, weil ein unklassifizierter Komplex nichts anzeigt. A4 ist durch die Daten- und die Kontextprüfung abgedeckt.
+
+**Kosten:**
+- Extractor-Systemprompt +195 Token (6.220 → 6.415, Delta `dungeon`); Planner unverändert (6.300).
+- Narrator in einem echten Dungeon ~156 Token (DUNGEON + ROOMS); KNOWN DUNGEONS ~109 Token nur bei Bedarf.
+- Board-Generator: eine Zeile, wenn ein Dungeon nahe ist.
+- Keine neuen LLM-Aufrufe.
+
+**Grenzen:**
+- Kreaturenstärke in Dungeon-Ebenen folgt noch nicht dem Ebenen-Rang (Balancing, Patch 9/10B); der Narrator kennt den Rang.
+- Kontrolle und Zugang sind Information, keine Lizenz- oder Gebührenmechanik.
+- `rooms` ersetzt das `dungeon: true` aus c.6.6.15; ein so markierter Altstand gilt weiter als in Räumen erkundbar, nicht als echter Dungeon.
 

@@ -17,7 +17,7 @@ import { knownNote, reportedPlaces } from './known.js';
 import { spoiled } from './items.js';
 import { continueOptions, goalLines } from './intents.js';
 import { featuresAt, featureText } from './features.js';
-import { dungeonOf, roomKnown, exitsFrom, exitText } from './dungeon.js';
+import { dungeonOf, roomKnown, exitsFrom, exitText, dungeonText, nearDungeons } from './dungeon.js';
 import { currentThreads } from '../threads.js';
 
 /** A person or creature as the catalog labels it: name, role, look ("Marta, Guild receptionist"). */
@@ -55,6 +55,9 @@ function placeEntry(state, id) {
     if (p.kind === 'settlement') return { id, name: settlementName(state, id) };
     if ((p.tags || []).includes('guild_hall')) return { id, name: placeName(state, id) };
     const parent = p.parent && state.places[p.parent];
+    // review of Patch 7: a true Dungeon as he knows it (its Rank and theme, never what is hidden from him)
+    const known = dungeonText(state, id);
+    if (known) return { id, name: `${p.name} (${known}${p.where ? `; ${p.where}` : ''})` };
     // Patch 7: the land outside the dungeon he is in
     const d = dungeonOf(state, state.scene.at);
     if (d && state.places[d].parent === id) return { id, name: `${p.name} (outside ${state.places[d].name})` };
@@ -100,6 +103,8 @@ export function catalogPlaces(state, extra = [], { hidden = false } = {}) {
         towns.forEach((p) => add(hallOfSettlement(state, p.id)));
         Object.values(state.places).filter((p) => p.by === 'reply' && realmOf(state, p.id) === realm).slice(-4).reverse().forEach((p) => add(p.id));
     }
+    // review of Patch 7: the known Dungeons near the settlement he is in (or of this land, out in it), a few
+    nearDungeons(state, town, realm).slice(0, 2).forEach((id) => add(id));
     // Patch 2: the places he knows by report, a few, newest report first (wherever he is: he may set off for them)
     reportedPlaces(state).slice(0, 4).forEach((p) => add(p.id));
     for (const id of extra) add(id);

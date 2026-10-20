@@ -29,7 +29,7 @@ import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents, setIntentEvents } from './intents.js';
 import { featureNamed, featureEvent, applySpring } from './features.js';
-import { complexOf, dungeonOf, linkBetween, linksAt, wayBetween, roomByName, markEvents, newLink, linkEvent, levelVia, blockerOf, visited } from './dungeon.js';
+import { complexOf, dungeonOf, trueDungeonOf, classified, rankText, linkBetween, sameWay, linksAt, wayBetween, roomByName, roomKnown, markEvents, newLink, linkEvent, levelVia, blockerOf, visited } from './dungeon.js';
 import { itemTraits, useOf } from './items.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
@@ -495,7 +495,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             const e = expected[k];
             if (!e || e.arrived !== true) continue;
             const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
-            const at = place(reportedTarget(s, auth, expected, e.at, k) || e.at || go?.to || null);
+            const at = viaStop(place(reportedTarget(s, auth, expected, e.at, k) || e.at || go?.to || null));
             if (!at.error && at.id !== s.scene.at && !wayRefused(at.id, { seq: Number(k), type: 'expected' })) {
                 const party = companions(e.with, { seq: Number(k), type: 'expected' });
                 perceiveAll(s, emit, seeing());
@@ -572,7 +572,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 if (s.encounter) { reject(d, 'combat', 'no travel while combat is ACTIVE'); refusedArrival(d); break; }
                 const ref = reportedTarget(s, auth, expected, d.at) || onward(d.at);
                 const away = leavesHere(ref);
-                const at = place(ref);
+                const at = viaStop(place(ref));
                 if (at.error) { reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 if (at.id === s.scene.at) break;
                 if (wayRefused(at.id, d, { forced: !!String(d.forced_by || '').trim() })) { travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
@@ -793,6 +793,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             }
             case 'passage':
                 passage(d);
+                break;
+            case 'dungeon':
+                dungeonClass(d);
                 break;
             case 'recover': {
                 const who = idOf(d.who) || 'pc';
@@ -1043,7 +1046,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (type === 'go' && e.arrived === true && !arrived && !s.encounter) {
             // the arrival the story showed without an arrive delta: where the answer says, else where he set off to
             const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
-            const at = place(reportedTarget(s, auth, expected, e.at, k) || e.at || go?.to || null);
+            const at = viaStop(place(reportedTarget(s, auth, expected, e.at, k) || e.at || go?.to || null));
             if (!at.error && at.id !== s.scene.at && !wayRefused(at.id, { seq: Number(k), type: 'expected' })) {
                 const party = companions(e.with, { seq: Number(k), type: 'expected' });
                 perceiveAll(s, emit, seeing());
@@ -1241,11 +1244,26 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
      * any way) he reaches by going on from where he is; one carried or dropped through a way next to him (forced) is
      * there. Refused: the reason (rejected, told as a correction), and he stays where he was.
      */
+    /**
+     * Review of a5035f0: a walk the GO stopped short (a hidden trap on the way back: commands.js dungeonGo) ends where
+     * it stops, also when the story tells it on to the far end.
+     */
+    function viaStop(at) {
+        const stop = (auth.gos || []).map((g) => g.stop).find(Boolean);
+        if (at.error || !stop || at.id === stop || s.scene.at === stop) return at;
+        return wayBetween(s, s.scene.at, at.id).path?.includes(stop) ? { id: stop } : at;
+    }
+
     function wayRefused(to, d, { forced = false } = {}) {
         const from = s.scene.at;
         if (to === from || (!dungeonOf(s, from) && !dungeonOf(s, to))) return null;
         const direct = linkBetween(s, from, to);
-        const unseen = events.some((e) => e.t === 'place.created' && e.d.place.id === to) || (!linksAt(s, to, { hidden: true }).length && !visited(s, to));
+        // a part he has not seen: new in this reply, or a place nobody showed him (no way, not known, not stood in)
+        // that his GO into the unknown found; a room he knows of (by report too) is reached only by a way (review of
+        // a5035f0)
+        const exploring = (auth.gos || []).some((g) => !g.to);
+        const unseen = events.some((e) => e.t === 'place.created' && e.d.place.id === to)
+            || (exploring && !roomKnown(s, to) && !linksAt(s, to, { hidden: true }).length && !visited(s, to));
         // a room of another dungeon only where he set out for that dungeon (no jump from one ruin into another's room)
         const dTo = dungeonOf(s, to);
         const elsewhere = !!dTo && dTo !== to && dTo !== dungeonOf(s, from) && !forced && !(auth.gos || []).some((g) => g.to && dungeonOf(s, g.to) === dTo);
@@ -1290,7 +1308,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const b = dungeonOf(s, b0.id) === dun ? b0.id : dun;
         if (a === b) { reject(d, 'world_rule', 'a passage joins two different places'); return; }
         const feature = d.feature ? wayFeature(d.feature, [a, b]) : null;
-        const known = linkBetween(s, a, b);
+        // review of a5035f0: the way of that name between them, not any way (an iron door and a shaft are two)
+        const known = sameWay(s, a, b, d.name);
         if (known) {
             if (known.hidden && d.hidden === false) reject(d, 'engine_owned', `${known.id}: a hidden way is found by his search, not by the story`);
             // a new obstacle in a way that was open (rubble falls, a portcullis drops); the one that stands stays
@@ -1307,6 +1326,31 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             const level = levelVia(s, a, l);
             if (Number.isInteger(level)) emit({ t: 'place.updated', d: { id: b, set: { level } } });
         }
+    }
+
+    /**
+     * Review of a5035f0: a true Dungeon as the story establishes it or someone tells of it (src/v4/dungeon.js
+     * classified): theme, Rank range, a level's Rank, who controls access. Its building or cave (or the place itself out
+     * in the wilds); never a settlement or a land. What the world established stays: a later other value is refused and
+     * told; a rumour is kept as a rumour. It is also explored room by room (rooms).
+     */
+    function dungeonClass(d) {
+        const at = d.place === null || d.place === undefined ? { id: s.scene.at } : place(d.place);
+        if (at.error) { reject(d, 'place', at.error); return; }
+        const root = trueDungeonOf(s, at.id) || complexOf(s, at.id) || (['wilderness', 'site', 'interior'].includes(s.places[at.id]?.kind) ? at.id : null);
+        if (!root) { reject(d, 'world_rule', 'a Dungeon is a cave, ruin or site of its own, not a settlement or a land'); return; }
+        const order = content.rules.ranks.order;
+        const [lo, hi] = [d.rank_min || d.rank_max, d.rank_max || d.rank_min].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+        const r = classified(s.places[root].dungeon, { theme: d.theme, rank: lo ? { min: lo, max: hi } : null, level: d.level, control: d.control, how: d.how }, s.turn);
+        if (r.conflicts.length) {
+            const c = s.places[root].dungeon;
+            const was = r.conflicts.map((k) => (k === 'rank' ? `Rank ${rankText(c.rank)}` : k.startsWith('level:') ? `level ${k.slice(6)} Rank ${rankText(c.levels[k.slice(6)])}` : `${k} "${c[k]}"`)).join(', ');
+            reject(d, 'world_canon', `${s.places[root].name}: ${was} as established; a Dungeon does not change with the telling`);
+            const fix = `${s.places[root].name} stays as established: ${was}.`;
+            if (!corrections.includes(fix)) corrections.push(fix);
+        }
+        if (d.how !== 'rumor') markEvents(s, root).forEach(emit);
+        if (JSON.stringify(r.next) !== JSON.stringify(s.places[root].dungeon || null)) emit({ t: 'place.updated', d: { id: root, set: { dungeon: r.next } } });
     }
 
     function arrive(id, party = []) {
@@ -1343,7 +1387,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             const a = dungeonOf(s, from) === dun ? from : dun;
             let way = linkBetween(s, a, id);
             if (!knownWay && a !== id && !way) { way = newLink(s, { a, b: id, how: 'walked', by: 'walked' }); emit(linkEvent(way)); }
-            else if (way?.hidden) emit(linkEvent({ ...way, hidden: false, found: { turn: s.turn, minute: s.clock.minute, how: 'walked' } }));
+            else if (!knownWay && way?.hidden) emit(linkEvent({ ...way, hidden: false, found: { turn: s.turn, minute: s.clock.minute, how: 'walked' } }));
             const level = id !== dun && way && !Number.isInteger(s.places[id].level) ? levelVia(s, a, way) : null;
             if (!s.places[id].visited || Number.isInteger(level)) emit({ t: 'place.updated', d: { id, set: { ...(s.places[id].visited ? {} : { visited: { turn: s.turn, minute: s.clock.minute } }), ...(Number.isInteger(level) ? { level } : {}) } } });
         }

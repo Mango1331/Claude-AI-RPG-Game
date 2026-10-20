@@ -1,17 +1,24 @@
 // Patch 7 (dungeon foundations): a ruin, a cave, a crypt or a tower that Alaric explores room by room is one place of
-// the place tree (src/v4/domain.js), marked as a dungeon, and its rooms are the places below it. Belonging (the tree)
-// is not the way between rooms: which room leads to which is a short list of the ways the story established or he
-// walked (links), each with whether he knows it, which way it can be taken, and the obstacle that stands in it (a
-// Patch 6 feature: the way is open once he got past it, made it harmless or it was destroyed).
+// the place tree (src/v4/domain.js), marked as explored room by room (rooms), and its rooms are the places below it.
+// Belonging (the tree) is not the way between rooms: which room leads to which is a short list of the ways the story
+// established or he walked (links), each with whether he knows it, which way it can be taken, and the obstacle that
+// stands in it (a Patch 6 feature: the way is open once he got past it, made it harmless or it was destroyed).
 //
-//   places[id].dungeon  true on the dungeon itself (the outermost building or cave of the rooms)
+// Review of a5035f0: being explored room by room is navigation, not a Dungeon. Not every cave, crypt or ruin is one
+// (lore.dungeons); a true Dungeon (its own ecology, a danger Rank of its own) carries its classification besides:
+//
+//   places[id].rooms    true on the place explored room by room (the outermost building or cave of the rooms)
 //   places[id].level    a room's level, when known (1 the entry level, 2 one floor down, 0 one up)
-//   places[id].visited  {turn, minute} when he first stood in a room of a dungeon
-//   links      id -> {id, a, b, name, both, hidden, feature, dir: up|down|null (from a to b), since, found, by}
+//   places[id].visited  {turn, minute} when he first stood in a room of it
+//   places[id].dungeon  a true Dungeon: {theme, rank: {min, max}|null, levels: {n: {min, max}}, control, hidden: [the
+//                       established fields he does not know], heard: [what reports say, not canon]}
+//   links      id -> {id, a, b, name, both, hidden, feature, dir: up|down|null (from a to b), since, found, by}; two
+//              rooms can be joined by more than one way (an iron door and a ventilation shaft)
 //
 // The engine moves him between rooms only along ways he knows and can take (commands.js go, and every arrival the
 // world applier books: src/v4/world.js); a room he has never seen is reached the first time by going on from where he
-// is, and the way he took is kept. No map is generated: the dungeon is what the story established.
+// is, and the way he took is kept. No map is generated: the place is what the story established. A Dungeon's Rank is
+// the world's, never fitted to Alaric.
 import { normText } from '../util.js';
 import { lineage, placeName } from './domain.js';
 
@@ -29,9 +36,70 @@ export function complexOf(s, id) {
     return top;
 }
 
-/** The dungeon a place lies in (the dungeon itself, or one of its rooms), or null. */
+/** The place explored room by room that a place lies in (itself, or the one its room belongs to), or null. */
 export function dungeonOf(s, id) {
-    return lineage(s, id).find((x) => s.places[x].dungeon) || null;
+    // (c.6.6.15 marked it dungeon: true)
+    return lineage(s, id).find((x) => s.places[x].rooms || s.places[x].dungeon === true) || null;
+}
+
+/** The true Dungeon a place lies in (classified by the world: places[id].dungeon.real), or null. */
+export function trueDungeonOf(s, id) {
+    return lineage(s, id).find((x) => s.places[x].dungeon?.real) || null;
+}
+
+/** "F–D" for a Rank range, "E" for one Rank. */
+export const rankText = (r) => (!r ? null : r.min === r.max ? r.min : `${r.min}–${r.max}`);
+
+/**
+ * A Dungeon's classification as text (review of a5035f0). all: as the world has it, with what reports say besides
+ * (the narrator, the extractor); else only what Alaric knows (the HUD, the planner): the established fields not hidden
+ * from him, and rumours as rumours. Null when there is nothing to tell.
+ */
+export function dungeonText(s, id, { all = false } = {}) {
+    const p = s.places?.[id];
+    const c = p?.dungeon;
+    if (!c) return null;
+    const shown = (k) => all || !(c.hidden || []).includes(k);
+    const levels = Object.entries(c.levels || {}).filter(([n]) => shown(`level:${n}`)).map(([n, r]) => `level ${n}: ${rankText(r)}`);
+    const bits = c.real ? [shown('theme') ? c.theme : null, shown('rank') && c.rank ? `Rank ${rankText(c.rank)}` : null, levels.length ? levels.join(', ') : null, shown('control') ? c.control : null].filter(Boolean) : [];
+    const heard = (c.heard || []).map((h) => [h.theme, h.rank ? `Rank ${rankText(h.rank)}` : null, h.level ? `level ${h.level}` : null, h.control].filter(Boolean).join(', ')).filter(Boolean);
+    if (!bits.length && !heard.length) return null;
+    return [bits.length ? `a Dungeon: ${bits.join('; ')}` : null, heard.length ? `rumoured: ${heard.slice(-2).join(' / ')}` : null].filter(Boolean).join('; ');
+}
+
+/** The true Dungeons Alaric can know of near a settlement (or in its land, out in it): the content's and those play classified. */
+export function nearDungeons(s, town, realm) {
+    return Object.values(s.places || {}).filter((p) => p.dungeon?.real && dungeonText(s, p.id) && (town ? p.near === town || (!p.near && p.realm === realm) : p.realm === realm))
+        .map((p) => p.id);
+}
+
+/**
+ * The classification a dungeon delta makes (review of a5035f0): seen or told by the Guild, it is the world's and known
+ * to him; hidden, the world's and not his; a rumour is only what was said. What the world established stays: another
+ * theme, Rank, level Rank or holder later is refused (conflicts), never an overwrite, and nothing follows Alaric's level.
+ * @param {{theme?, rank?: {min, max}|null, level?: number|null, control?, how: 'seen'|'guild'|'hidden'|'rumor'}} d
+ * @returns {{next: object, conflicts: string[]}}
+ */
+export function classified(cur, d, turn) {
+    const c = { real: false, theme: null, rank: null, levels: {}, control: null, hidden: [], heard: [], ...(cur || {}) };
+    if (d.how === 'rumor') return { next: { ...c, heard: [...c.heard, { theme: d.theme || null, rank: d.rank || null, level: d.level ?? null, control: d.control || null, turn }].slice(-6) }, conflicts: [] };
+    const conflicts = [];
+    const next = { ...c, real: true, levels: { ...c.levels }, hidden: [...c.hidden] };
+    const set = (key, field, value, same) => {
+        if (value === null || value === undefined) return;
+        const had = key.startsWith('level:') ? next.levels[key.slice(6)] : next[field];
+        if (had && !same(had, value)) { conflicts.push(key); return; }
+        if (key.startsWith('level:')) next.levels[key.slice(6)] = value;
+        else next[field] = value;
+        // hidden: the world's, not his yet; seen or told: he knows it now (also what was hidden before)
+        next.hidden = d.how === 'hidden' && !(had && !next.hidden.includes(key)) ? [...new Set([...next.hidden, key])] : next.hidden.filter((k) => k !== key);
+    };
+    const sameRank = (a, b) => a.min === b.min && a.max === b.max;
+    set('theme', 'theme', d.theme ? String(d.theme).slice(0, 120) : null, (a, b) => normText(a) === normText(b));
+    if (Number.isInteger(d.level)) set(`level:${d.level}`, null, d.rank || null, sameRank);
+    else set('rank', 'rank', d.rank || null, sameRank);
+    set('control', 'control', d.control ? String(d.control).slice(0, 120) : null, (a, b) => normText(a) === normText(b));
+    return { next, conflicts };
 }
 
 /** A room of a dungeon (a place below it, not the dungeon itself). */
@@ -50,7 +118,22 @@ export function linksAt(s, id, { hidden = false } = {}) {
 export const otherEnd = (l, id) => (l.a === id ? l.b : l.a);
 /** Can this way be taken from this end (a one-way drop only from its top)? */
 export const goesFrom = (l, from) => l.a === from || (l.both && l.b === from);
-export const linkBetween = (s, a, b) => Object.values(s.links || {}).find((l) => (l.a === a && l.b === b) || (l.a === b && l.b === a)) || null;
+/** Every way between two places (an iron door and a shaft may join the same rooms). */
+export const linksBetween = (s, a, b) => Object.values(s.links || {}).filter((l) => (l.a === a && l.b === b) || (l.a === b && l.b === a));
+/** A way between two places, one he knows first. */
+export const linkBetween = (s, a, b) => { const all = linksBetween(s, a, b); return all.find((l) => !l.hidden) || all[0] || null; };
+/**
+ * The way between two places a report means (review of a5035f0): the one of that name; without a name, the only one;
+ * a way he walked without a name is the one a name is given to. Null: another way between the same two places.
+ */
+export function sameWay(s, a, b, name) {
+    const all = linksBetween(s, a, b);
+    if (!all.length) return null;
+    const want = words(name || '');
+    if (!want.length) return all.length === 1 ? all[0] : all.find((l) => !l.hidden) || all[0];
+    const named = all.find((l) => { const have = words(l.name || ''); return have.length && (want.every((w) => have.includes(w)) || have.every((w) => want.includes(w))); });
+    return named || all.find((l) => !l.name) || null;
+}
 /** The obstacle that stands in a way while it stands (a locked door not yet opened), else null. */
 export function blockerOf(s, l) {
     const f = l?.feature ? s.features?.[l.feature] : null;
@@ -162,19 +245,46 @@ export function roomLabel(s, id) {
     return `${d === id ? p.name : `${s.places[d].name} › ${p.name}`}${Number.isInteger(p.level) ? ` (level ${p.level})` : ''}`;
 }
 
-/** The known room of this dungeon a name means (its own words, or the name of a known way from here to it), or null. */
+/**
+ * The known room of this place a name means: the way he names from here (that way: "the iron door"), the room it leads
+ * to by its name, or a known room of it; two different rooms for one name are a question.
+ * @returns {{id: string, link?: object}|{ambiguous: string[]}|null}
+ */
 export function knownRoomNamed(s, from, name) {
     const d = dungeonOf(s, from);
     if (!d) return null;
     const want = words(name);
     if (!want.length) return null;
     const same = (t) => { const have = words(t); return have.length && want.every((w) => have.includes(w)); };
-    const exits = exitsFrom(s, from).filter((e) => (e.name && same(e.name)) || same(s.places[e.to]?.name || ''));
-    if (exits.length === 1) return exits[0].to;
-    if (exits.length > 1) return { ambiguous: exits.map((e) => e.to) };
+    const pick = (list, viaWay) => {
+        const tos = [...new Set(list.map((e) => e.to))];
+        if (tos.length > 1) return { ambiguous: tos };
+        return tos.length ? { id: tos[0], ...(viaWay && list.length === 1 ? { link: list[0].link } : {}) } : null;
+    };
+    const exits = exitsFrom(s, from);
+    const byWay = pick(exits.filter((e) => e.name && same(e.name)), true);
+    if (byWay) return byWay;
+    const byRoom = pick(exits.filter((e) => same(s.places[e.to]?.name || '')), false);
+    if (byRoom) return byRoom;
     const rooms = [s.places[d], ...roomsOf(s, d)].filter((p) => roomKnown(s, p.id) && same(p.name));
-    if (rooms.length === 1) return rooms[0].id;
+    if (rooms.length === 1) return { id: rooms[0].id };
     return rooms.length > 1 ? { ambiguous: rooms.map((p) => p.id) } : null;
+}
+
+/**
+ * Review of a5035f0: the first room on a way through several rooms where something he does not know of waits for him
+ * (a hidden trap that springs as he enters, or across the way into it): there the walk stops, so it is never stepped
+ * over. A trap made harmless or spent stops nothing.
+ * @returns {{at: string, index: number}|null}
+ */
+export function firstStop(s, path, ways) {
+    for (let i = 1; i < path.length - 1; i++) {
+        const into = ways[i - 1];
+        const trap = Object.values(s.features || {}).some((f) => f.hidden && f.kind === 'hazard' && f.status === 'active'
+            && ((f.trigger === 'enter' && f.at === path[i]) || (f.trigger === 'cross' && !!f.on && f.on === into?.feature)));
+        if (trap) return { at: path[i], index: i };
+    }
+    return null;
 }
 
 /**
@@ -187,7 +297,7 @@ export function roomByName(s, d, n, near) {
     const hits = [s.places[d], ...roomsOf(s, d)].filter((p) => normText(p.name) === name
         && !(Number.isInteger(n.level) && Number.isInteger(p.level) && n.level !== p.level));
     if (hits.length <= 1) return hits.length ? { id: hits[0].id } : null;
-    const close = hits.filter((p) => p.id === near || linkBetween(s, p.id, near));
+    const close = hits.filter((p) => p.id === near || linksBetween(s, p.id, near).length);
     return close.length === 1 ? { id: close[0].id } : { ambiguous: hits.map((p) => p.id) };
 }
 
@@ -223,8 +333,8 @@ export function levelVia(s, from, l) {
  */
 export function markEvents(s, id) {
     const root = complexOf(s, id);
-    if (!root || s.places[root].dungeon || dungeonOf(s, root)) return [];
-    const events = [{ t: 'place.updated', d: { id: root, set: { dungeon: true } } }];
+    if (!root || s.places[root].rooms || dungeonOf(s, root)) return [];
+    const events = [{ t: 'place.updated', d: { id: root, set: { rooms: true } } }];
     const inside = (x) => !!x && (x === root || lineage(s, x).includes(root));
     const steps = [...(s.scene.history || []), s.scene.at];
     const links = { ...(s.links || {}) };
@@ -249,7 +359,8 @@ export function mapText(s, d) {
         const k = Number.isInteger(p.level) ? `Level ${p.level}` : p.id === d ? 'Way in' : 'Level unknown';
         byLevel.set(k, [...(byLevel.get(k) || []), p]);
     }
-    const L = [`${s.places[d].name}${s.scene.at === d || dungeonOf(s, s.scene.at) === d ? ` — you are in ${placeName(s, s.scene.at)}` : ''}`];
+    const known = dungeonText(s, d);
+    const L = [`${s.places[d].name}${known ? ` (${known})` : ''}${s.scene.at === d || dungeonOf(s, s.scene.at) === d ? ` — you are in ${placeName(s, s.scene.at)}` : ''}`];
     for (const [k, ps] of byLevel) {
         L.push(`${k}:`);
         for (const p of ps) {

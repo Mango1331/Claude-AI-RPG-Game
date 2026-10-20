@@ -213,6 +213,8 @@ export const DELTA_WRITES = {
     feature: { writes: ['features'] },
     // Patch 7: a way between two rooms of a dungeon (src/v4/dungeon.js), and the room it leads to
     passage: { writes: ['places'] },
+    // review of Patch 7: a true Dungeon's classification (theme, Rank, levels, control), as the world establishes it
+    dungeon: { writes: ['places'] },
     recover: { writes: ['entities'], gates: { 'pc.vitals': 'player.rest' } },
     'object.new': { writes: ['objects'], gates: { 'pc.inventory': 'player.take' } },
     // a thing handed to him (a gift), or taken from where it lies by his own take

@@ -13,7 +13,7 @@ import { playerLabel, statusOf, truth, currentFacts, propText } from './knowledg
 import { targetLabel } from './combat.js';
 import { bandIndex, formatClock, itemLabel, normText } from './util.js';
 import { sceneHandle } from './v4/scene_handles.js';
-import { dungeonOf, exitsFrom, exitText } from './v4/dungeon.js';
+import { dungeonOf, trueDungeonOf, dungeonText, exitsFrom, exitText } from './v4/dungeon.js';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const list = (xs, none = '—') => (xs.length ? xs.join(' · ') : none);
@@ -85,6 +85,10 @@ export function worldRows(state, content) {
     const weather = truth(state, state.scene.location, 'weather')[0];
     if (weather) rows.push(['Weather', weather.o]);
     // Patch 7: in a dungeon, the ways from here he knows (never a hidden one); the whole of it is #map
+    // review of Patch 7: a true Dungeon as he knows it (Rank, theme; nothing hidden from him)
+    const real = trueDungeonOf(state, state.scene.at);
+    const classed = real ? dungeonText(state, real) : null;
+    if (classed) rows.push(['Dungeon', `${state.places[real].name} — ${classed.replace(/^a Dungeon: /, '')}`]);
     if (dungeonOf(state, state.scene.at)) rows.push(['Exits', list(exitsFrom(state, state.scene.at).map((e) => exitText(state, e, { ids: false })), 'none known yet (#map)')]);
     const enc = state.encounter;
     // in a fight everyone by the target label the combat panel shows (Cellar Rat A), else as the player knows them

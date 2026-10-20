@@ -12,7 +12,8 @@ import { rank, pack, Bm25 } from './retrieval.js';
 import { threadCurrent } from './threads.js';
 import { goalLines } from './v4/intents.js';
 import { featuresAt, featureText } from './v4/features.js';
-import { dungeonOf, exitsFrom, exitText, roomLabel, wayBetween } from './v4/dungeon.js';
+import { dungeonOf, trueDungeonOf, dungeonText, nearDungeons, exitsFrom, exitText, roomLabel, wayBetween } from './v4/dungeon.js';
+import { settlementOf, realmOf, hallOf } from './v4/domain.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
 import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText, proofMemory } from './v4/guild.js';
 import { envelopeBlock } from './v4/envelope.js';
@@ -570,11 +571,20 @@ export function buildContext(state, content, opts = {}) {
         const seen = ways.filter((e) => !e.hidden).map((e) => exitText(state, e, { ids: false }));
         const hid = ways.filter((e) => e.hidden).map((e) => exitText(state, e, { ids: false }));
         const out = state.scene.at !== dun ? wayBetween(state, state.scene.at, dun) : null;
+        const real = trueDungeonOf(state, state.scene.at);
         add('dungeon', [
-            `DUNGEON — he is in ${roomLabel(state, state.scene.at)}. WAYS FROM HERE (the engine's; he moves only by these, or on into a part nobody has shown yet; a blocked one stays blocked until the engine says he got past what blocks it): ${seen.join(' · ') || 'none known yet'}`,
+            real ? `DUNGEON — ${state.places[real].name} is a true Dungeon: ${dungeonText(state, real, { all: true }).replace(/^a Dungeon: /, '')}. Its Rank and theme are the world's and fixed: never fit it or its creatures to Alaric's level; what is hidden from him stays hidden until he learns it.` : '',
+            `ROOMS — he is in ${roomLabel(state, state.scene.at)}. WAYS FROM HERE (the engine's; he moves only by these, or on into a part nobody has shown yet; a blocked one stays blocked until the engine says he got past what blocks it): ${seen.join(' · ') || 'none known yet'}`,
             hid.length ? `HIDDEN WAYS (he has not found them; do not reveal them by yourself: only his search finds them): ${hid.join(' · ')}` : '',
             out?.path?.length > 2 ? `WAY OUT he knows: ${out.path.slice(1).map((id) => state.places[id]?.name || id).join(' › ')}` : '',
         ].filter(Boolean).join('\n'), 1);
+    }
+    // review of Patch 7: the known Dungeons near the town he is in, only when they matter (at the Guild hall, or when
+    // a Dungeon or one of them is spoken of): common knowledge here, as the world has them
+    const town = v4 && !dun ? settlementOf(state, state.scene.at) : null;
+    const near = town ? nearDungeons(state, town, realmOf(state, town)) : [];
+    if (near.length && (hallOf(state, state.scene.at) || /\bdungeons?\b/.test(scan) || near.some((id) => scan.includes(normText(state.places[id].name))))) {
+        add('dungeon', `KNOWN DUNGEONS NEAR ${state.places[town].name.toUpperCase()} (common knowledge here; the Guild keeps records of them; the same places in every telling): ${near.map((id) => `${state.places[id].name} — ${dungeonText(state, id, { all: true }).replace(/^a Dungeon: /, '')}${state.places[id].where ? `; ${state.places[id].where}` : ''}`).join(' · ')}`, 2);
     }
     // relevant memories / facts / quests / threads
     const rel = retrieveRelevant(state, content, { input, lastReply, budget, pinnedIds: new Set(pinned.map((f) => f.id)), recentTurns: opts.recentTurns ?? DEFAULT_RECENT_TURNS, weights: opts.weights });

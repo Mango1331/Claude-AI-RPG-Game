@@ -18,6 +18,7 @@
 //   decisions  [{id, kind: registration|purchase|payment|sale, what, offer, seller, at, turn, max_cp, any_price, priced}]
 //   credits    [{cp, at, day}] the engine's last credits to Alaric (Guild payouts, sales), set on first use
 //   features   id -> an obstacle or hazard of a place (Patch 6, src/v4/features.js)
+//   links      id -> a way between two rooms of a dungeon (Patch 7, src/v4/dungeon.js)
 import { clone, normText } from '../util.js';
 
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
@@ -34,7 +35,7 @@ export const PLACE_PARENTS = {
 export const HALL_NAME = "Adventurers' Guild hall";
 
 export const V4_EVENTS = new Set([
-    'place.created', 'place.updated', 'intent.set', 'feature.set',
+    'place.created', 'place.updated', 'intent.set', 'feature.set', 'link.set',
     'object.created', 'object.moved', 'object.marked', 'object.consumed', 'object.added',
     'offer.created', 'offer.closed', 'transaction.completed', 'service.granted',
     'quest.created', 'quest.status', 'quest.detailed', 'quest.progressed', 'quest.ready', 'quest.journey', 'proof.checked',
@@ -47,7 +48,7 @@ export const V4_EVENTS = new Set([
 
 /** The V4 part of an empty state (state.js emptyState). */
 export function emptyDomains() {
-    return { places: {}, objects: {}, offers: {}, guild: { membership: null, boards: {} }, decisions: [], services: [], intents: {}, features: {} };
+    return { places: {}, objects: {}, offers: {}, guild: { membership: null, boards: {} }, decisions: [], services: [], intents: {}, features: {}, links: {} };
 }
 
 function ensure(state) {
@@ -90,6 +91,10 @@ export function applyDomainEvent(state, e) {
         // Patch 6: an obstacle or hazard of a place (src/v4/features.js), whole
         case 'feature.set':
             state.features[d.feature.id] = clone(d.feature);
+            break;
+        // Patch 7: a way between two rooms of a dungeon (src/v4/dungeon.js), whole
+        case 'link.set':
+            state.links[d.link.id] = clone(d.link);
             break;
         case 'object.created':
             if (state.objects[d.object.id]) throw new Error(`object exists: ${d.object.id}`);

@@ -27,9 +27,13 @@ const STOP = new Set(['the', 'a', 'an', 'of', 'to', 'in', 'on', 'at', 'for', 'wi
 export const keyOf = (t) => [...new Set(normText(t).split(/[^a-z0-9]+/).filter((w) => w.length > 2 && !STOP.has(w)))];
 const at = (s) => ({ turn: s.turn, minute: s.clock.minute });
 
-/** The features of a place (hidden ones only when asked: the narrator's and the engine's, never the player's). */
+/**
+ * The features of a place (hidden ones only when asked: the narrator's and the engine's, never the player's). Patch 7:
+ * the obstacle that stands in a way from here (the locked door between two rooms) is one of both rooms it joins.
+ */
 export function featuresAt(s, place, { hidden = false } = {}) {
-    return Object.values(s.features || {}).filter((f) => f.at === place && (hidden || !f.hidden));
+    const ways = new Set(Object.values(s.links || {}).filter((l) => (l.a === place || l.b === place) && l.feature && (hidden || !l.hidden)).map((l) => l.feature));
+    return Object.values(s.features || {}).filter((f) => (f.at === place || ways.has(f.id)) && (hidden || !f.hidden));
 }
 
 /** The feature of this place a name means: the same words (all of the shorter name's) — "the bridge" is the rotten bridge. */
@@ -145,14 +149,16 @@ export function springHidden(s, content, dice, emit, { place, triggers, seq, on 
  * change, only where the reply's arrival there is confirmed (src/v4/world.js). The narrator is told both outcomes in
  * advance: if he gets in, exactly this happens; if not, nothing springs.
  */
-export function pendingSpring(s, content, dice, { place, seq }) {
-    const f = featuresAt(s, place, { hidden: true }).find((x) => x.hidden && x.kind === 'hazard' && x.status === 'active' && x.trigger === 'enter');
+export function pendingSpring(s, content, dice, { place, seq, ways = [] }) {
+    // Patch 7: and a hidden hazard across the way he takes there (the tripwire on that doorway: on, trigger cross)
+    const f = featuresAt(s, place, { hidden: true }).find((x) => x.hidden && x.kind === 'hazard' && x.status === 'active' && x.trigger === 'enter' && x.at === place)
+        || Object.values(s.features || {}).find((x) => x.hidden && x.kind === 'hazard' && x.status === 'active' && x.trigger === 'cross' && !!x.on && ways.includes(x.on));
     if (!f) return null;
     const r = roll(s, content, dice, { label: `Hidden ${f.name}`, stat: f.stat || 'AGI', difficulty: f.difficulty || 'moderate', feature: f.id, aim: 'react', seq });
     const amount = r.success ? 0 : harmOf(content, f);
     return {
         conditional: { seq, kind: 'spring', condition: 'arrive', at: place, feature: f.id, success: r.success, record: r.record || null, auto: r.auto || null },
-        line: `HIDDEN DANGER, IF HE GETS IN — ${f.name} (${f.id}), which he has not found, springs as he enters: his reaction ${r.text || r.auto}${r.success ? '; he avoids it, unharmed' : `; it catches him${amount ? ` (${f.harm === 'sta' ? 'STA' : 'HP'} -${amount})` : ''}`}. Only if the story has him get in; if he does not reach it in this reply, nothing springs. Tell exactly this; no other harm.`,
+        line: `HIDDEN DANGER, IF HE GETS IN — ${f.name} (${f.id}), which he has not found, springs as he ${f.trigger === 'cross' ? 'goes through' : 'enters'}: his reaction ${r.text || r.auto}${r.success ? '; he avoids it, unharmed' : `; it catches him${amount ? ` (${f.harm === 'sta' ? 'STA' : 'HP'} -${amount})` : ''}`}. Only if the story has him get in; if he does not reach it in this reply, nothing springs. Tell exactly this; no other harm.`,
     };
 }
 
@@ -176,7 +182,7 @@ export function attemptEvents(s, content, dice, emit, c) {
     const place = s.scene.at;
     const f = typeof c.feature === 'string' ? s.features?.[c.feature] : null;
     const words = String(c.approach || c.quote || '').replace(/[<>`]/g, '').slice(0, 100);
-    if (!f || f.hidden || f.at !== place) return { status: 'resolved', line: `DOES — "${words}": no obstacle or danger the engine holds here; his own action, told as it happens. It books nothing: no HP, MP, STA or possessions change by it.` };
+    if (!f || f.hidden || !featuresAt(s, place).some((x) => x.id === f.id)) return { status: 'resolved', line: `DOES — "${words}": no obstacle or danger the engine holds here; his own action, told as it happens. It books nothing: no HP, MP, STA or possessions change by it.` };
     const aim = AIMS.includes(c.aim) ? c.aim : 'pass';
     const hidden = aim === 'examine' ? null : springHidden(s, content, dice, emit, { place, triggers: aim === 'pass' ? ['touch', 'cross'] : ['touch'], seq: c.seq, on: f.id });
     if (aim === 'examine') {
@@ -223,7 +229,9 @@ export function searchedBefore(s, place, what, tool = null) {
 
 /** What is there to find at a place, as one comparable text: each feature's id, status and whether it is hidden. */
 export function placeState(s, place) {
-    return featuresAt(s, place, { hidden: true }).map((f) => `${f.id}:${f.status}:${f.hidden ? 'h' : 'v'}`).sort().join('|');
+    // Patch 7: and its ways (a hidden passage found is a change there)
+    const ways = Object.values(s.links || {}).filter((l) => l.a === place || l.b === place).map((l) => `${l.id}:${l.hidden ? 'h' : 'v'}`);
+    return [...featuresAt(s, place, { hidden: true }).map((f) => `${f.id}:${f.status}:${f.hidden ? 'h' : 'v'}`), ...ways].sort().join('|');
 }
 
 /** The hidden features of this place a successful search finds (the one the focus names first, else one). */

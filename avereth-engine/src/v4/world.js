@@ -29,6 +29,7 @@ import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents, setIntentEvents } from './intents.js';
 import { featureNamed, featureEvent, applySpring } from './features.js';
+import { complexOf, dungeonOf, linkBetween, linksAt, wayBetween, roomByName, markEvents, newLink, linkEvent, levelVia, blockerOf, visited } from './dungeon.js';
 import { itemTraits, useOf } from './items.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
@@ -139,14 +140,25 @@ function resolvePlace(s, ref, emit, depth = 0, { c = false, reported = false } =
     const parents = [...(PLACE_PARENTS[n.kind] || []), ...(c && n.kind === 'interior' ? ['wilderness'] : []), ...(c && n.kind === 'site' ? ['realm'] : [])];
     for (let i = 0; i < 6 && pid && !parents.includes(s.places[pid]?.kind); i++) pid = s.places[pid]?.parent;
     if (!pid) return { error: `a ${n.kind} cannot lie in ${placeName(s, parent.id)}` };
-    const same = Object.values(s.places).find((p) => p.parent === pid && normText(p.name) === normText(n.name))
+    // Patch 7: a room of a dungeon lies in the dungeon, not in the room he stood in when the story named it, and is
+    // known there by its name (and level): the same name in another dungeon is another room; two rooms of that name
+    // and nothing to tell them apart is a question, never a pick (src/v4/dungeon.js)
+    const dun = ['interior', 'site'].includes(n.kind) ? dungeonOf(s, pid) : null;
+    if (dun) {
+        if (n.parent === null || n.parent === undefined) pid = dun;
+        const room = roomByName(s, dun, n, s.scene.at);
+        if (room?.ambiguous) return { error: `more than one room "${String(n.name).slice(0, 60)}" in ${s.places[dun].name}: name it by its id` };
+        if (room) return { id: room.id };
+    }
+    // (in a dungeon its rooms by name and level above, not by the parent alone)
+    const same = dun ? null : Object.values(s.places).find((p) => p.parent === pid && normText(p.name) === normText(n.name))
         // Patch 2: a place known by report is that place wherever the new mention puts it in this realm
         || knownByName(s, n.name, p0(s, pid), { reportedOnly: !reported });
     if (same) return { id: same.id };
     let id = `${pid.startsWith('loc.') ? pid : 'loc'}.${slug(n.name) || 'place'}`;
     for (let k = 2; s.places[id]; k++) id = `${pid.startsWith('loc.') ? pid : 'loc'}.${slug(n.name)}_${k}`;
     const p = s.places[pid];
-    emit({ t: 'place.created', d: { place: { id, name: String(n.name).slice(0, 80), kind: n.kind, parent: pid, realm: p?.realm ?? null, tags: [], by: 'reply', created: { turn: s.turn, minute: s.clock.minute }, ...(reported ? { known: 'reported', reports: [] } : {}) } } });
+    emit({ t: 'place.created', d: { place: { id, name: String(n.name).slice(0, 80), kind: n.kind, parent: pid, realm: p?.realm ?? null, tags: [], by: 'reply', created: { turn: s.turn, minute: s.clock.minute }, ...(reported ? { known: 'reported', reports: [] } : {}), ...(dun && Number.isInteger(n.level) ? { level: n.level } : {}) } } });
     return { id };
 }
 
@@ -220,6 +232,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const refs = new Map(); // a delta's ref -> the entity it names (person.new, creature.new of this answer)
     const groups = new Map(); // a creature.new ref with count > 1 -> its individual ids
     const objectsNew = new Map(); // name -> object id, for object.move {new: name} of this answer
+    // Patch 7: a feature this answer names (a hazard's on, the obstacle in a way) before reporting it
+    const pendingRefs = [];
     const hostileRefs = new Set(fw.accept.filter((d) => d.type === 'hostile').flatMap((d) => d.by || []).map((x) => normText(x)));
     const joinedByNew = new Set();
     const bornHere = new Set(); // the people and creatures this answer introduces (an ambush is the world's move)
@@ -482,7 +496,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             if (!e || e.arrived !== true) continue;
             const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
             const at = place(reportedTarget(s, auth, expected, e.at, k) || e.at || go?.to || null);
-            if (!at.error && at.id !== s.scene.at) {
+            if (!at.error && at.id !== s.scene.at && !wayRefused(at.id, { seq: Number(k), type: 'expected' })) {
                 const party = companions(e.with, { seq: Number(k), type: 'expected' });
                 perceiveAll(s, emit, seeing());
                 arrive(at.id, party);
@@ -503,7 +517,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const roadMinutes = Math.min(Math.max(0, narrated - booked), Math.max(0, cap - booked));
     const arrivesAnyway = explicitArrival || Object.entries(outcome.expected_keys || {}).some(([k, type]) => type === 'go' && expected[k]?.arrived === true);
     let transit = null;
-    if (cPath && !arrivesAnyway && !s.encounter && auth.timeCap > content.rules.time.default_cap_min
+    // Patch 7: inside a dungeon he is where he was until the story has him arrive somewhere (no road to put him on)
+    if (cPath && !arrivesAnyway && !s.encounter && !dungeonOf(s, startAt) && auth.timeCap > content.rules.time.default_cap_min
         && roadMinutes >= content.rules.time.engine_clock.go_min_elsewhere
         && (auth.gos || []).length > 0 && s.scene.at === startAt) {
         const destination = (auth.gos || []).at(-1);
@@ -560,6 +575,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 const at = place(ref);
                 if (at.error) { reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 if (at.id === s.scene.at) break;
+                if (wayRefused(at.id, d, { forced: !!String(d.forced_by || '').trim() })) { travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 const party = companions(d.with, d);
                 perceiveAll(s, emit, seeing());
                 arrive(at.id, party);
@@ -764,6 +780,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 const harm = d.harm || (d.kind === 'hazard' ? 'hp' : null);
                 // review of 32c7d2c: a hidden hazard that is part of a feature here (the needle in that chest's lock)
                 const on = d.kind === 'hazard' && d.on ? ((typeof d.on === 'string' && s.features?.[d.on]?.at === here ? s.features[d.on] : null) || featureNamed(s, here, d.on))?.id || null : null;
+                // Patch 7 (open point of the Patch 6 review): the feature it is part of may come later in this report
+                if (d.kind === 'hazard' && d.on && !on) pendingRefs.push({ kind: 'on', id, at: here, name: String(d.on) });
                 emit(featureEvent({
                     id, at: here, name: String(d.name || d.feature).slice(0, 80), kind: d.kind, hidden: d.hidden === true,
                     status: d.status === 'destroyed' ? 'destroyed' : 'active', trigger: d.kind === 'hazard' ? d.trigger || 'touch' : d.trigger || null,
@@ -773,6 +791,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 }));
                 break;
             }
+            case 'passage':
+                passage(d);
+                break;
             case 'recover': {
                 const who = idOf(d.who) || 'pc';
                 const serviced = (s.services || []).some((x) => x.turn === s.turn && ['lodging', 'healing', 'meal'].includes(x.service));
@@ -993,6 +1014,18 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         }
     }
 
+    // Patch 7 (the open point of the Patch 6 review): a feature that a hazard is part of (on), that stands in a way or
+    // holds a thing, named before the same report established it: found now by its name where it was named, once,
+    // whatever the order of the report (no second chest, the trap stays hidden); a thing's container by its name
+    // when he reaches for it (in_name: commands.js take)
+    for (const r of pendingRefs) {
+        step = { kind: 'delta', type: r.kind === 'on' ? 'feature' : 'passage', seq: r.seq ?? 0, granted: new Set() };
+        const target = wayFeature(r.name, r.at);
+        if (!target) continue;
+        if (r.kind === 'on' && s.features[r.id] && !s.features[r.id].on && target !== r.id) emit(featureEvent({ ...s.features[r.id], on: target }));
+        if (r.kind === 'way' && s.links[r.id] && !s.links[r.id].feature) emit(linkEvent({ ...s.links[r.id], feature: target }));
+    }
+
     // Prototype C (4.3.0-c.6.6.2/3): the story's outcome stands; what he still carries of a delivery keeps the contract from
     // the turn-in until it leaves his hands (guild.js contractReady, read anew every time), so a hand-over the engine books
     // later makes it ready without another claim. Told after all of this reply's hand-overs, and without moving the goal
@@ -1011,7 +1044,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             // the arrival the story showed without an arrive delta: where the answer says, else where he set off to
             const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
             const at = place(reportedTarget(s, auth, expected, e.at, k) || e.at || go?.to || null);
-            if (!at.error && at.id !== s.scene.at) {
+            if (!at.error && at.id !== s.scene.at && !wayRefused(at.id, { seq: Number(k), type: 'expected' })) {
                 const party = companions(e.with, { seq: Number(k), type: 'expected' });
                 perceiveAll(s, emit, seeing());
                 arrive(at.id, party);
@@ -1202,9 +1235,89 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             .map((who) => ({ id: who, awareness: s.scene.awareness?.[who] || null, relevant: (s.scene.relevant || []).includes(who), threat: (s.scene.threats || []).includes(who) }));
     }
 
+    /**
+     * Patch 7: an arrival in or out of a dungeon goes by a way he knows and can take (src/v4/dungeon.js), whichever
+     * path books it (the arrive delta, an expected go). A part he has not seen (new in this reply, or never joined to
+     * any way) he reaches by going on from where he is; one carried or dropped through a way next to him (forced) is
+     * there. Refused: the reason (rejected, told as a correction), and he stays where he was.
+     */
+    function wayRefused(to, d, { forced = false } = {}) {
+        const from = s.scene.at;
+        if (to === from || (!dungeonOf(s, from) && !dungeonOf(s, to))) return null;
+        const direct = linkBetween(s, from, to);
+        const unseen = events.some((e) => e.t === 'place.created' && e.d.place.id === to) || (!linksAt(s, to, { hidden: true }).length && !visited(s, to));
+        // a room of another dungeon only where he set out for that dungeon (no jump from one ruin into another's room)
+        const dTo = dungeonOf(s, to);
+        const elsewhere = !!dTo && dTo !== to && dTo !== dungeonOf(s, from) && !forced && !(auth.gos || []).some((g) => g.to && dungeonOf(s, g.to) === dTo);
+        const w = elsewhere ? { none: true } : (unseen && !direct) || (forced && direct) ? { path: [] } : wayBetween(s, from, to);
+        if (w.path || w.danger) return null;
+        const why = w.blocked
+            ? `the way to ${placeName(s, to)} is barred by ${w.blocked.feature.name} (${w.blocked.feature.id}), which he has not got past`
+            : elsewhere ? `${placeName(s, to)} lies in ${s.places[dTo].name}, where he did not set out for`
+                : `he knows no open way from ${placeName(s, from)} to ${placeName(s, to)}`;
+        reject(d, 'passage', why);
+        const fix = `Alaric is still in ${placeName(s, from)}: ${why}; he did not get there.`;
+        if (!corrections.includes(fix)) corrections.push(fix);
+        return why;
+    }
+
+    /** Patch 7: the feature a way, a hazard or a thing names (its id or its name), at these places. */
+    function wayFeature(ref, at) {
+        const places = [].concat(at);
+        if (typeof ref === 'string' && s.features?.[ref] && places.some((p) => s.features[ref].at === p || linksAt(s, p, { hidden: true }).some((l) => l.feature === ref))) return ref;
+        for (const p of places) { const f = featureNamed(s, p, ref); if (f) return f.id; }
+        return null;
+    }
+
+    /**
+     * Patch 7: a way between two rooms of a dungeon as the story shows it (src/v4/dungeon.js). It makes the place a
+     * dungeon (its building or cave), the room it leads to a room of it, and keeps the way once: named again it is the
+     * same way. What the story may not do: find a hidden way (his search does) or open a barred one (his attempt does).
+     */
+    function passage(d) {
+        const a0 = d.from === null || d.from === undefined ? { id: s.scene.at } : place(d.from);
+        if (a0.error) { reject(d, 'place', a0.error); return; }
+        markEvents(s, a0.id).forEach(emit);
+        // a way up or down leads to a room of another level: a room of the same name there is another room
+        const lv = d.dir && d.to?.new && typeof d.to.new === 'object' && dungeonOf(s, a0.id) ? levelVia(s, a0.id, { a: a0.id, dir: d.dir }) : null;
+        const b0 = place(Number.isInteger(lv) ? { new: { ...d.to.new, level: lv } } : d.to);
+        if (b0.error) { reject(d, 'place', b0.error); return; }
+        markEvents(s, b0.id).forEach(emit);
+        const dun = dungeonOf(s, a0.id) || dungeonOf(s, b0.id);
+        if (!dun) { reject(d, 'world_rule', 'a passage joins the rooms of a building, cave or ruin'); return; }
+        // from outside, a way in starts at the dungeon itself
+        const a = dungeonOf(s, a0.id) === dun ? a0.id : dun;
+        const b = dungeonOf(s, b0.id) === dun ? b0.id : dun;
+        if (a === b) { reject(d, 'world_rule', 'a passage joins two different places'); return; }
+        const feature = d.feature ? wayFeature(d.feature, [a, b]) : null;
+        const known = linkBetween(s, a, b);
+        if (known) {
+            if (known.hidden && d.hidden === false) reject(d, 'engine_owned', `${known.id}: a hidden way is found by his search, not by the story`);
+            // a new obstacle in a way that was open (rubble falls, a portcullis drops); the one that stands stays
+            const set = { ...(feature && feature !== known.feature && !blockerOf(s, known) ? { feature } : {}), ...(!known.name && d.name ? { name: String(d.name).slice(0, 60) } : {}) };
+            if (Object.keys(set).length) emit(linkEvent({ ...known, ...set }));
+            if (d.feature && !feature && !known.feature) pendingRefs.push({ kind: 'way', id: known.id, at: [a, b], name: String(d.feature), seq: d.seq });
+            return;
+        }
+        const l = newLink(s, { a, b, name: d.name, both: d.one_way !== true, hidden: d.hidden === true, feature, dir: d.dir || null });
+        emit(linkEvent(l));
+        if (d.feature && !feature) pendingRefs.push({ kind: 'way', id: l.id, at: [a, b], name: String(d.feature), seq: d.seq });
+        // the room it leads to lies on the level the way leads to
+        if (b !== dun && !Number.isInteger(s.places[b].level)) {
+            const level = levelVia(s, a, l);
+            if (Number.isInteger(level)) emit({ t: 'place.updated', d: { id: b, set: { level } } });
+        }
+    }
+
     function arrive(id, party = []) {
         const town = locationOf(s, id);
         const from = s.scene.at;
+        // Patch 7: two rooms of a building or cave out in the wild that he walks between make it a dungeon (with the
+        // ways he walked in it); and whether he knew a way here before he took it (else the way he took is kept)
+        if (cPath && !dungeonOf(s, from) && !dungeonOf(s, id) && s.places[from]?.kind === 'interior' && s.places[id]?.kind === 'interior'
+            && complexOf(s, from) && complexOf(s, from) === complexOf(s, id) && !settlementOf(s, complexOf(s, from))) markEvents(s, from).forEach(emit);
+        const dun = dungeonOf(s, id);
+        const knownWay = dun || dungeonOf(s, from) ? !!wayBetween(s, from, id).path : true;
         // whoever does not come along stays at the place he leaves (entity.at): "the driver" there is that driver again.
         // They are not put back into the scene when he returns: only the story knows whether they are still there (the
         // replay of 30.09.2026 would have had Aldsa waiting at the ford while she was in Millbrook); it brings them in.
@@ -1224,7 +1337,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             }
         }
         const near = cPath ? soughtHere(id, party) : [];
-        emit({ t: 'scene.moved', d: { at: id, location: town, place: placeName(s, id), reset_present: true, ...(cPath ? { track_history: true } : {}) } });
+        emit({ t: 'scene.moved', d: { at: id, location: town, place: dun && dun !== id ? `${s.places[dun].name} › ${s.places[id].name}` : placeName(s, id), reset_present: true, ...(cPath ? { track_history: true } : {}) } });
+        // Patch 7: in a dungeon, the way he took (found by walking it), the room's level, and that he has stood there
+        if (dun) {
+            const a = dungeonOf(s, from) === dun ? from : dun;
+            let way = linkBetween(s, a, id);
+            if (!knownWay && a !== id && !way) { way = newLink(s, { a, b: id, how: 'walked', by: 'walked' }); emit(linkEvent(way)); }
+            else if (way?.hidden) emit(linkEvent({ ...way, hidden: false, found: { turn: s.turn, minute: s.clock.minute, how: 'walked' } }));
+            const level = id !== dun && way && !Number.isInteger(s.places[id].level) ? levelVia(s, a, way) : null;
+            if (!s.places[id].visited || Number.isInteger(level)) emit({ t: 'place.updated', d: { id, set: { ...(s.places[id].visited ? {} : { visited: { turn: s.turn, minute: s.clock.minute } }), ...(Number.isInteger(level) ? { level } : {}) } } });
+        }
         // who travelled with him arrives with him
         for (const who of party) emit({ t: 'scene.entered', d: { id: who, band: 'SHORT' } });
         // and the creatures he went to in a part of the place he was in are there with him, as he knew them
@@ -1325,9 +1447,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const holder = holderOf(d.holder);
         if (!holder) { reject(d, 'object', `unknown holder ${String(d.holder).slice(0, 40)}`); return; }
         const q = d.for_quest ? questRef(d.for_quest) : null;
+        // Patch 7: what lies in a container that is still shut (the locked chest) is not in his hands before it opens
+        const box = d.in ? wayFeature(d.in, s.scene.at) : null;
+        if (holder.entity === 'pc' && box && s.features[box].status === 'active' && s.features[box].kind === 'obstacle') { reject(d, 'shut_in', `it lies in ${s.features[box].name} (${box}), which is not open yet`); return; }
         const id = uniqueObjectId(s, tag, d.name);
         if (holder.entity === 'pc' && ((auth.take || []).length || auth.gather)) grant('player.take');
-        emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, ...itemTraits(content, d, s.clock.minute), holder, marks: [], for_quests: q ? [q.id] : [], source: { turn: s.turn, how: holder.entity === 'pc' ? (((auth.take || []).length || auth.gather) ? 'taken' : 'world_gift') : 'story' } } } });
+        emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, ...itemTraits(content, d, s.clock.minute), holder, marks: [], for_quests: q ? [q.id] : [], ...(box ? { in: box } : d.in && holder.loc ? { in_name: String(d.in).slice(0, 80) } : {}), source: { turn: s.turn, how: holder.entity === 'pc' ? (((auth.take || []).length || auth.gather) ? 'taken' : 'world_gift') : 'story' } } } });
         objectsNew.set(normText(d.name), id);
     }
 
@@ -1348,6 +1473,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             return;
         }
         if (to.entity === 'pc' && o.holder?.loc && !(auth.take || []).length) { reject(d, 'pc_inventory', 'what lies here becomes his only by his own take'); return; }
+        const box = o.in ? s.features?.[o.in] : o.in_name && o.holder?.loc ? featureNamed(s, o.holder.loc, o.in_name) : null;
+        if (to.entity === 'pc' && box?.status === 'active' && box.kind === 'obstacle') { reject(d, 'shut_in', `it lies in ${box.name} (${box.id}), which is not open yet`); return; }
         const part = d.qty && d.qty < (o.qty ?? 1) ? d.qty : null;
         // to him: from where it lies, by his own take; from someone's hands, their gift (the firewall's rules)
         if (to.entity === 'pc') grant(o.holder?.loc ? 'player.take' : 'envelope.give');

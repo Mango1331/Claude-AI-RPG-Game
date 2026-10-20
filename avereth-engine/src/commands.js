@@ -11,6 +11,7 @@ import { skillSummary } from './context.js';
 import { clone, itemLabel, joinList, normText, formatClock, roundHalfUp, ENGINE_VERSION } from './util.js';
 import { currentThreads, threadHere } from './threads.js';
 import { knownNote } from './v4/known.js';
+import { dungeonOf, mapText } from './v4/dungeon.js';
 
 const HELP = [
     ['#status', 'full current status (alias #stats)'], ['#skills', 'all known Skills'], ['#skill <name>', 'full Skill definition with current values'],
@@ -19,7 +20,7 @@ const HELP = [
     ['#quest <name>', 'Quest details'], ['#effects', 'active effects'], ['#effect <name>', 'effect details'],
     ['#combat', 'encounter audit (read-only)'], ['#system <question>', 'mechanics question answered by the System'],
     ['#assign <STAT> <n>', 'spend free Stat Points (state-changing)'], ['#npc <name>', 'what Alaric knows about someone'],
-    ['#log [n]', "Alaric's recent memories"], ['#journal', 'goals, places known by report, open and settled threads'], ['#audit', 'rolls, rejected reports and corrections of the last turn'], ['#help', 'this list'],
+    ['#log [n]', "Alaric's recent memories"], ['#journal', 'goals, places known by report, open and settled threads'], ['#map', 'the rooms and ways of the dungeon you are in, as far as you know them'], ['#audit', 'rolls, rejected reports and corrections of the last turn'], ['#help', 'this list'],
 ];
 
 /** Split "#status #skill Power Shot" into commands (left to right, System #1). */
@@ -299,6 +300,12 @@ function audit(state, content) {
     return lines.join('\n');
 }
 
+/** Patch 7: the dungeon he is in (or was in last), as far as he knows it (src/v4/dungeon.js). */
+function dungeonMap(state) {
+    const d = dungeonOf(state, state.scene.at) || [...(state.scene.history || [])].reverse().map((id) => dungeonOf(state, id)).find(Boolean);
+    return d ? `[SYSTEM // MAP]\n${mapText(state, d)}` : '[SYSTEM // MAP]\nNo dungeon explored yet: #map shows the rooms and ways of one he is in.';
+}
+
 /**
  * Patch 2: the journal. Alaric's goals, the places he knows only by report, the threads that matter now, and the older
  * or settled ones: everything he can know, nothing an NPC keeps to themselves. Read-only.
@@ -361,6 +368,7 @@ export function runCommands(state, content, text) {
             case 'npc': panels.push(arg ? npc(s, content, arg) : '[SYSTEM // NPC]\nUsage: #npc <name>'); break;
             case 'log': panels.push(log(s, content, arg)); break;
             case 'journal': panels.push(journal(s, content)); break;
+            case 'map': panels.push(dungeonMap(s)); break;
             case 'audit': panels.push(audit(s, content)); break;
             case 'help': panels.push(['[SYSTEM // HELP]', ...HELP.map(([c, d]) => `${c.padEnd(20)} — ${d}`)].join('\n')); break;
             case 'system': llm = { kind: 'system', question: arg }; break;

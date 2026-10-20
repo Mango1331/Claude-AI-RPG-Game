@@ -17,6 +17,7 @@ import { knownNote, reportedPlaces } from './known.js';
 import { spoiled } from './items.js';
 import { continueOptions, goalLines } from './intents.js';
 import { featuresAt, featureText } from './features.js';
+import { dungeonOf, roomKnown, exitsFrom, exitText } from './dungeon.js';
 import { currentThreads } from '../threads.js';
 
 /** A person or creature as the catalog labels it: name, role, look ("Marta, Guild receptionist"). */
@@ -54,14 +55,33 @@ function placeEntry(state, id) {
     if (p.kind === 'settlement') return { id, name: settlementName(state, id) };
     if ((p.tags || []).includes('guild_hall')) return { id, name: placeName(state, id) };
     const parent = p.parent && state.places[p.parent];
+    // Patch 7: the land outside the dungeon he is in
+    const d = dungeonOf(state, state.scene.at);
+    if (d && state.places[d].parent === id) return { id, name: `${p.name} (outside ${state.places[d].name})` };
     return { id, name: parent && parent.kind !== 'realm' ? `${p.name} (in ${parent.name})` : p.name };
 }
 
-/** The places worth naming from here: parent, children, siblings, the settlement and its Guild hall, the realm's other settlements. */
-export function catalogPlaces(state, extra = []) {
+/**
+ * The places worth naming from here: parent, children, siblings, the settlement and its Guild hall, the realm's other
+ * settlements. Patch 7: of a dungeon only the rooms he knows of the one he is in (where its ways lead, where he has
+ * been), never one he has not found because it lies in the same dungeon; another dungeon by itself, not its rooms.
+ * hidden (the extractor): the rooms at the end of the hidden ways from here as well.
+ */
+export function catalogPlaces(state, extra = [], { hidden = false } = {}) {
     const at = state.scene.at;
     const ids = [];
-    const add = (id) => { if (id && state.places[id] && id !== at && !ids.includes(id) && state.places[id].kind !== 'realm') ids.push(id); };
+    const mine = dungeonOf(state, at);
+    const secret = new Set(hidden ? exitsFrom(state, at, { hidden: true }).map((e) => e.to) : []);
+    const fits = (id) => {
+        const d = dungeonOf(state, id);
+        return !d || d === id || (d === mine && (roomKnown(state, id) || secret.has(id)));
+    };
+    const add = (id) => { if (id && state.places[id] && id !== at && !ids.includes(id) && state.places[id].kind !== 'realm' && fits(id)) ids.push(id); };
+    // Patch 7: the ways from here first, so a long list of the land does not hide them; and the land outside the
+    // dungeon (its realm too: the way out of a ruin in the wilds)
+    for (const e of exitsFrom(state, at, { hidden })) add(e.to);
+    const outside = mine && state.places[mine]?.parent;
+    if (outside && state.places[outside] && !ids.includes(outside)) ids.push(outside);
     const here = state.places[at];
     add(here?.parent);
     for (const c of childrenOf(state, at)) add(c);
@@ -264,7 +284,7 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         time: formatClock(state.clock.minute).split(' (')[0].replace(/^Day/, 'day'),
         alaric: alaricLine(state, content),
         present,
-        places: catalogPlaces(state, extraPlaces),
+        places: catalogPlaces(state, extraPlaces, { hidden: hiddenFeatures }),
         quests,
         goals,
         journey_ready,
@@ -276,6 +296,8 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         objects,
         // Patch 6: the obstacles and hazards of this place; hidden ones only for the extractor (it names them by id)
         features: featuresAt(state, at, { hidden: hiddenFeatures }).map((f) => ({ id: f.id, name: f.name, text: `${featureText(f)}${f.hidden ? ' — HIDDEN: Alaric has not found it' : ''}` })),
+        // Patch 7: the ways from here (src/v4/dungeon.js); hidden ones only for the extractor
+        exits: exitsFrom(state, at, { hidden: hiddenFeatures }).map((e) => ({ id: e.link.id, to: e.to, text: exitText(state, e) })),
         open: openDecisionTexts(state),
     };
 }

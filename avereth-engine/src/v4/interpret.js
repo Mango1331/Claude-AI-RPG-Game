@@ -116,6 +116,8 @@ export function catalogText(catalog) {
     if ((catalog.objects || []).length) L.push(`OBJECTS: ${catalog.objects.map((o) => `${o.id} (${o.name}${o.qty ? `, ${o.qty}${o.unit ? ` ${o.unit}` : ''}` : ''}, ${holderText(o)})`).join(' · ')}`);
     // Patch 6: the obstacles and hazards of this place (src/v4/features.js)
     if ((catalog.features || []).length) L.push(`FEATURES (obstacles and dangers here): ${catalog.features.map((f) => f.text).join(' · ')}`);
+    // Patch 7: the ways from this room of a dungeon (src/v4/dungeon.js)
+    if ((catalog.exits || []).length) L.push(`EXITS (the ways from here; a blocked one is passed only by dealing with what blocks it): ${catalog.exits.map((e) => e.text).join(' · ')}`);
     if ((catalog.open || []).length) L.push(`OPEN DECISIONS: ${catalog.open.join(' · ')}`);
     return L.join('\n');
 }

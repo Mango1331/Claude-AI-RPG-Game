@@ -1262,7 +1262,7 @@ Leitsatz: Die Umgebung bietet Probleme und Entdeckungen. Der Spieler entscheidet
 **Kosten:** Extractor-Systemprompt +293 Token (5.638 → 5.931, das neue Delta `feature`). Planner-Systemprompt +203 Token (5.982 → 6.185, Regel 10 und `attempt`). Katalog und Engine-Block nur, wenn an diesem Ort Merkmale existieren (eine Zeile). Keine neuen LLM-Aufrufe; Laufzeit unverändert.
 
 **Grenzen:**
-- Merkmale gehören zu dem Ort, an dem Alaric ist, als die Erzählung sie etabliert; keine Raumgraphen (Patch 7).
+- Merkmale gehören zu dem Ort, an dem Alaric ist, als die Erzählung sie etabliert. Wege zwischen Räumen kamen mit Patch 7: Das Hindernis eines Wegs gehört zu beiden Räumen.
 - Wiedererkennung per ID oder mit denselben Worten. Ganz andere Worte für dasselbe Ding erzeugen ein zweites Merkmal, wenn der Extractor die ID nicht nutzt.
 - ~~Eine verborgene `enter`-Falle löst beim GO in den bekannten Ort aus, bevor die Erzählung zeigt, ob er ankommt.~~ Behoben in der Review-Nachbesserung (unten).
 - Ortsgefahren töten nicht (HP mindestens 1); DEF und Resistenzen mindern ihren Schaden nicht.
@@ -1282,3 +1282,62 @@ Leitsatz: Die Umgebung bietet Probleme und Entdeckungen. Der Spieler entscheidet
 **Tests:** `patch 6 review 1–3` in `tests/v4/patch6.test.js`. Test 12/13/17 wurde auf die neue Semantik umgestellt: Wurf vor der Erzählung, Buchung erst mit der Ankunft, Swipe der Antwort mit denselben Würfeln und ohne zweiten Schaden, ausgelöste Falle springt nicht wieder. Gegenproben: Jeder der drei Fixes einzeln zurückgenommen → genau der zugehörige Review-Test rot. Gesamt 827/827. Browser-Smoke, ST-V3 (Checks identisch zu Patch 5), ST-V4 und ST-C grün.
 
 **Kosten:** Extractor-Systemprompt +42 Token (5.931 → 5.973, Feld `on`). Planner unverändert. Keine neuen LLM-Aufrufe.
+
+### Nachtrag 4.3.0-c.6.6.15 (Patch 7: Dungeon-Grundlagen, Raumverbindungen und persistente Erkundung)
+
+**Vorher schon vorhanden:**
+- der Ortsbaum (`site`, `interior` in `interior`) mit stabilen IDs für gleichnamige Orte unter demselben Elternteil;
+- Ankünfte nur nach GO oder erzwungener Ursache (Firewall `no_go`);
+- `scene.history` und RECENT ROUTE für „back“;
+- Berichtsorte (Patch 2);
+- zurückgelassene Kreaturen mit `left.at` und dieselben Individuen bei Rückkehr (Patch 4/5);
+- Objekte mit genau einem Halter, `take` nur durch den Spieler (Patch 3);
+- Merkmale, Fallen und Suche (Patch 6);
+- Gilden-Readiness nach Engine-Zählung.
+
+**Bestätigte Lücken** (vor dem Patch nachgestellt):
+
+| Lücke | Fix |
+|---|---|
+| Hinter einer verschlossenen Tür: GO `{new: "the armory"}` und die Ankunft führten hindurch | `dungeonGo` (Planner-GO) und `wayRefused` (jede Ankunft im World-Applier) prüfen bekannte, begehbare Wege; ein Hindernis bleibt, bis `attempt` es überwindet |
+| Jeder neue Raum lag im Raum, aus dem er genannt wurde (Halle › Korridor › Waffenkammer); Identität nur über den Elternteil | Räume liegen im Dungeon; Identität über Namen und Ebene im ganzen Dungeon, nicht über den Elternteil allein; keine Realm-weite Namenssuche in Dungeons |
+| Nie gefundene Räume einer Ruine standen als PLACES neben den bekannten; draußen auch die Räume anderer Ruinen | `catalogPlaces`: aus einem Dungeon nur bekannte Räume des eigenen, sonst nur der Dungeon selbst; verborgene nur für den Extractor |
+| Kein Begriff von Wegen, Richtung oder Ebene | `s.links` mit `link.set`; Delta `passage` (`delta-0.94`); Ebenen über `dir` |
+| Patch-6-Rest: ein `on`, das vor seinem Merkmal im selben Bericht stand, blieb leer | Nachauflösung nach der Delta-Schleife, nach Namen am selben Ort, unabhängig von der Reihenfolge |
+| Unterbrochene Erkundung ohne Ankunft im Dungeon: der Transit setzte ihn auf die Straße | kein Transit aus einem Dungeon |
+
+**Ablauf:**
+1. Die Erzählung zeigt Wege (`passage`: von, nach, Name, verborgen, Einbahn, auf/ab, Hindernis). Der Komplex wird Dungeon, der Zielraum ein Raum davon (Ebene über die Richtung), der Weg wird einmal gespeichert.
+2. GO zu einem bekannten Raum (per ID, Raumname oder Wegname): Er gelangt nur über bekannte offene Wege durch besuchte Räume dorthin. Mehrere Räume fasst die Engine zusammen. BLOCKED, NO KNOWN WAY oder eine Rückfrage (zwei gleichnamige Türen, zurückgelassene Kreaturen auf dem Weg) ändern nichts.
+3. GO weiter in Unbekanntes (`{new}`): erlaubt. Die Ankunft legt den Raum an, und der gegangene Weg wird gespeichert (`walked`). Ein Name, den ein aktives Hindernis hier trägt, ist blockiert.
+4. Jede Ankunft prüft der World-Applier erneut. Ohne Weg: abgelehnt (`passage`) mit Korrektur. Eine erzwungene Ankunft geht durch einen angrenzenden Weg. Ein Raum eines anderen Dungeons wird nur erreicht, wenn er dorthin aufbrach.
+5. Suche findet verborgene Wege (der von seiner Suche genannte zuerst). Der Erzähler kann sie nicht aufdecken.
+6. HUD: `Exits` (nur bekannte, mit Blockade). `#map`: bekannte Räume nach Ebene. Narrator: DUNGEON-Abschnitt (Raum, Wege, verborgene Wege, Weg hinaus), nur dieser Raum und seine Nachbarn.
+
+**Tests:** `tests/v4/patch7.test.js`, 16 Tests.
+- Zentraler Nachweis ist der Wachturm-Integrationstest (23). Ablauf:
+  - Eingang, Korridor, verschlossene Waffenkammer: untersucht; per GO, Name und Erzählung nicht betretbar; Versuch scheitert, dann gelingt er;
+  - Klinge genommen, Helm bleibt;
+  - zurück, bröckelnde Treppe (Gefahr im Weg, `attempt pass`), Ebene 2;
+  - Krypta: „cleared“ ist keine Zählung; drei Ratten, zwei tot, eine flieht; Vertrag READY nach Engine-Zählung, keine Auszahlung im Dungeon;
+  - Suche findet die verborgene Nebenkammer, Kriechgang zurück als alternative Route;
+  - hinaus über bekannte Wege, später zurück zur Krypta über mehrere Räume; die verborgene Druckplatte springt erst bei bestätigter Ankunft, einmal, danach nie wieder.
+- Zum Schluss geprüft: alle IDs, Wege, Tür- und Treppenzustände, Tote, Gegenstände, XP und der Fold.
+- Gezielte Tests decken 1–44 ab: Identität, zwei Ruinen, Städte unverändert, beide Richtungen und Schacht, verborgener Weg, später blockierter Weg, „back“, gleichnamige Türen, unbetretene Zwischenräume, Gefahr auf dem Rückweg, Stolperdraht am Türweg, Ratten bleiben im Raum, Truhe mit Ring, Begleiterin, Reihenfolge `on`, HUD/#map/Kontext, Swipe, Erkundung ohne Ankunft, Karte, gegangener Weg, Ebenen.
+- Gegenproben: 16 Teiländerungen einzeln zurückgenommen, jeweils mindestens ein Test rot. Eine davon zeigte eine echte Lücke: Ein gleichnamiger Raum am Fuß einer Treppe verschmolz mit dem oberen. Behoben durch die erwartete Ebene beim Auflösen.
+- Gesamt 843/843.
+
+**Kosten:**
+- Extractor-Systemprompt +247 Token (5.973 → 6.220: Delta `passage`, `object.new.in`);
+- Planner-Systemprompt +115 Token (6.185 → 6.300: Regel 7c);
+- Katalog und Narrator nur in Dungeons: EXITS-Zeile bzw. DUNGEON-Abschnitt, etwa 100 Token für einen Raum mit fünf Wegen;
+- keine neuen LLM-Aufrufe; Wegsuche per Breitensuche über die wenigen Wege eines Dungeons.
+
+**Grenzen:**
+- Ein Dungeon wird nur durch `passage` markiert oder durch den Gang zwischen zwei Räumen eines Gebäudes in der Wildnis. Meldet der Extractor keine Wege, verhält sich ein Gebäude wie bisher.
+- Ebenen nur relativ über Treppenrichtung (Eingangsebene 1). Ohne `dir` bleibt die Ebene unbekannt.
+- Ein Weg über mehrere Räume fasst nur besuchte Räume zusammen. Durch einen gesehenen, aber nie betretenen Raum geht er Raum für Raum.
+- Verborgene `enter`-Fallen in Zwischenräumen eines zusammengefassten Wegs springen nicht; nur Ziel und Weg-Hindernisse zählen.
+- `passed` gilt für Alaric (und wer mit ihm geht); für andere entscheidet die Erzählung.
+- Kein Respawn, keine wandernden Gruppen, keine Fraktionen (Patch 8).
+

@@ -12,6 +12,7 @@ import { rank, pack, Bm25 } from './retrieval.js';
 import { threadCurrent } from './threads.js';
 import { goalLines } from './v4/intents.js';
 import { featuresAt, featureText } from './v4/features.js';
+import { dungeonOf, exitsFrom, exitText, roomLabel, wayBetween } from './v4/dungeon.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
 import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText, proofMemory } from './v4/guild.js';
 import { envelopeBlock } from './v4/envelope.js';
@@ -561,6 +562,20 @@ export function buildContext(state, content, opts = {}) {
             hid.length ? `HIDDEN HERE (he has not found them; do not reveal or spring them in the story: only his search or the engine does): ${hid.join(' · ')}` : '',
         ].filter(Boolean).join('\n'), 1);
     }
+    // Patch 7: where he is in a dungeon and the ways from here (src/v4/dungeon.js): this room and its neighbours only,
+    // never the whole dungeon; hidden ways for the narrator alone (only his search or the engine finds them)
+    const dun = v4 ? dungeonOf(state, state.scene.at) : null;
+    if (dun) {
+        const ways = exitsFrom(state, state.scene.at, { hidden: true });
+        const seen = ways.filter((e) => !e.hidden).map((e) => exitText(state, e, { ids: false }));
+        const hid = ways.filter((e) => e.hidden).map((e) => exitText(state, e, { ids: false }));
+        const out = state.scene.at !== dun ? wayBetween(state, state.scene.at, dun) : null;
+        add('dungeon', [
+            `DUNGEON — he is in ${roomLabel(state, state.scene.at)}. WAYS FROM HERE (the engine's; he moves only by these, or on into a part nobody has shown yet; a blocked one stays blocked until the engine says he got past what blocks it): ${seen.join(' · ') || 'none known yet'}`,
+            hid.length ? `HIDDEN WAYS (he has not found them; do not reveal them by yourself: only his search finds them): ${hid.join(' · ')}` : '',
+            out?.path?.length > 2 ? `WAY OUT he knows: ${out.path.slice(1).map((id) => state.places[id]?.name || id).join(' › ')}` : '',
+        ].filter(Boolean).join('\n'), 1);
+    }
     // relevant memories / facts / quests / threads
     const rel = retrieveRelevant(state, content, { input, lastReply, budget, pinnedIds: new Set(pinned.map((f) => f.id)), recentTurns: opts.recentTurns ?? DEFAULT_RECENT_TURNS, weights: opts.weights });
     if (rel.items.length) add('relevant', `RELEVANT (retrieved from the campaign record):\n${rel.items.map((s) => `- ${s.item.label}`).join('\n')}`, 2);
@@ -610,7 +625,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'named', 'combat', 'facts', 'features', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'named', 'combat', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };

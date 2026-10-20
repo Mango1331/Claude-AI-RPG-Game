@@ -24,7 +24,7 @@ export const STATE_KINDS = {
     quests: { owner: 'quests', engine: false, about: 'private work, quest notes, progress, readiness, journeys' },
     scene: { owner: 'world', engine: false, about: 'who is here, where they stand, who noticed him' },
     entities: { owner: 'world', engine: false, about: 'people and creatures, their names and looks' },
-    places: { owner: 'world', engine: false, about: 'the place tree' },
+    places: { owner: 'world', engine: false, about: 'the place tree, and the ways between the rooms of a dungeon (Patch 7)' },
     // Patch 6: established by the story with how hard they are; got past, made harmless or sprung only by the engine
     features: { owner: 'world', engine: false, about: 'obstacles and hazards of a place (src/v4/features.js)' },
     objects: { owner: 'world', engine: false, about: 'things in the world (not in Alaric\'s hands)' },
@@ -70,7 +70,7 @@ export function eventKind(e, s = null) {
         case 'memory.recorded': return 'memory';
         case 'thread.set': return 'threads';
         case 'time.advanced': return 'time';
-        case 'place.created': case 'place.updated': return 'places';
+        case 'place.created': case 'place.updated': case 'link.set': return 'places';
         case 'intent.set': return 'intents';
         case 'feature.set': return 'features';
         case 'object.created': return pcHolder(d.object?.holder) ? 'pc.inventory' : 'objects';
@@ -163,7 +163,7 @@ export function stateRegions(s) {
         memory: j(s.memories),
         threads: j(s.threads),
         time: j(s.clock),
-        places: j(s.places),
+        places: j([s.places, s.links]),
         intents: j(s.intents),
         objects: j(worldObjects),
     };
@@ -211,6 +211,8 @@ export const DELTA_WRITES = {
     'place.reported': { writes: ['places'] },
     // Patch 6: an obstacle or hazard of the place (src/v4/features.js): established, named again, or destroyed by the world
     feature: { writes: ['features'] },
+    // Patch 7: a way between two rooms of a dungeon (src/v4/dungeon.js), and the room it leads to
+    passage: { writes: ['places'] },
     recover: { writes: ['entities'], gates: { 'pc.vitals': 'player.rest' } },
     'object.new': { writes: ['objects'], gates: { 'pc.inventory': 'player.take' } },
     // a thing handed to him (a gift), or taken from where it lies by his own take

@@ -29,7 +29,8 @@ import { knownByName } from './known.js';
 import { useOf, spoiled, unitsOf } from './items.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
-import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, keyOf, placeState } from './features.js';
+import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
+import { dungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed, hiddenWayFinds, linkEvent, otherEnd } from './dungeon.js';
 import {
     REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, abandonContract, contractReady, objectiveText,
     promotion, takenByOthers, bookBoard, isHunt, trophyText, proofTerms, handoverTerms,
@@ -253,6 +254,42 @@ function acceptBid(s, content, c, ctx, emit, o) {
     return { status: 'resolved', line: `SELLS — ${what} to ${who(s, o.seller)} for ${cpText(sale.cp, content)}: the coin is his now, the things are ${who(s, o.seller)}'s (the engine booked both).` };
 }
 
+/** Patch 7: the line of a way barred by an obstacle he has not got past (src/v4/dungeon.js). */
+function barred(f, toward) {
+    return { status: 'refused', reason: 'blocked', line: `BLOCKED — the way to ${toward} is barred by ${f.name} (${f.id}): going there does not get him past it. He stays where he is; dealing with it (an attempt), another way or turning back is his choice.` };
+}
+
+/**
+ * Patch 7: a GO in or into a dungeon (src/v4/dungeon.js). A known room, also named by its name or by the way to it,
+ * is reached only by ways he knows and can take, through rooms he has stood in; a way barred by an obstacle stays
+ * barred however he words it. A part he has not seen yet he reaches by going on from where he is (the story shows
+ * it; the world applier keeps the way he took), unless what he names lies behind an obstacle here.
+ * @returns {{refuse?: object, to?: string, route?: object}}
+ */
+function dungeonGo(s, c) {
+    const here = s.scene.at;
+    let to = c.to;
+    if (to && typeof to === 'object') {
+        if (!dungeonOf(s, here)) return {};
+        const name = String(to.new || '');
+        const meant = knownRoomNamed(s, here, name);
+        if (meant?.ambiguous) return { refuse: { status: 'clarify', reason: 'which way?', line: `CLARIFY — which way does he take: to ${meant.ambiguous.map((id) => placeName(s, id)).join(' or to ')}?` } };
+        if (!meant) {
+            const want = keyOf(name);
+            const f = featuresAt(s, here).find((x) => x.kind === 'obstacle' && x.status === 'active' && keyOf(x.name).some((w) => want.includes(w)));
+            return f ? { refuse: barred(f, name) } : {};
+        }
+        to = meant;
+    }
+    if (typeof to !== 'string' || !s.places[to] || to === here || (!dungeonOf(s, here) && !dungeonOf(s, to))) return {};
+    if (isRoom(s, to) && !roomKnown(s, to)) return { refuse: { status: 'refused', reason: 'no known way', line: 'NO KNOWN WAY — he knows of no such place here; he stays where he is.' } };
+    const w = wayBetween(s, here, to);
+    if (w.blocked) return { refuse: barred(w.blocked.feature, placeName(s, to)) };
+    if (w.danger) return { refuse: { status: 'clarify', reason: 'danger on the way', line: `CLARIFY — the way he knows to ${placeName(s, to)} leads back through ${placeName(s, w.danger.at)}, where he left ${w.danger.who.map((e) => who(s, e.id)).join(', ')}: does he go there?` } };
+    if (w.none) return { refuse: { status: 'refused', reason: 'no known way', line: `NO KNOWN WAY — he knows no open way from ${placeName(s, here)} to ${placeName(s, to)}: he stays where he is; another way has to be found first.` } };
+    return { to, route: w };
+}
+
 const HANDLERS = {
     'journey.continue'(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
@@ -307,12 +344,17 @@ const HANDLERS = {
             const hall = guildHallMeant(s);
             if (hall) c = { ...c, to: hall };
         }
+        // Patch 7: in a dungeon he goes by the ways he knows (src/v4/dungeon.js)
+        const nav = envx?.c ? dungeonGo(s, c) : {};
+        if (nav.refuse) return nav.refuse;
+        if (nav.to) c = { ...c, to: nav.to };
         const known = typeof c.to === 'string';
         if (known && !s.places[c.to]) return { status: 'refused', reason: 'unknown place', line: 'CANNOT GO — no such place is known.' };
         if (known && c.to === s.scene.at) return { status: 'refused', reason: 'already here', done: true, line: `NOTHING TO DO — he is already at ${placeName(s, c.to)}.` };
         const name = known ? placeName(s, c.to) : String(c.to?.new || 'somewhere');
         const t = content.rules.time;
-        const cap = !known ? t.unknown_place_cap_min : sameSettlement(s, c.to, s.scene.at) ? t.default_cap_min : t.travel_cap_min;
+        const inside = known && !!dungeonOf(s, s.scene.at) && dungeonOf(s, s.scene.at) === dungeonOf(s, c.to);
+        const cap = !known ? t.unknown_place_cap_min : inside || sameSettlement(s, c.to, s.scene.at) ? t.default_cap_min : t.travel_cap_min;
         const go = { seq: c.seq, to: known ? c.to : null, name, hall: known && !!hallOf(s, c.to), newName: known ? null : name };
         ctx.auth.go = go;
         ctx.auth.gos.push(go);
@@ -333,10 +375,13 @@ const HANDLERS = {
         }
         // Patch 6: a hidden hazard at the place he goes into springs as he enters it (src/v4/features.js), the engine's roll;
         // review of 32c7d2c: booked only where the reply's arrival there is confirmed (a conditional of the arrival)
+        // Patch 7: and one across the way he takes there (the tripwire on that doorway)
         if (envx?.c && known && envx.dice) {
-            const pending = pendingSpring(s, content, envx.dice, { place: c.to, seq: c.seq });
+            const pending = pendingSpring(s, content, envx.dice, { place: c.to, seq: c.seq, ways: (nav.route?.ways || []).map((l) => l.feature).filter(Boolean) });
             if (pending) { ctx.conditionals.push(pending.conditional); ctx.extra.push(pending.line); }
         }
+        // Patch 7: back through rooms he knows, every way open: told in passing, no new decision on the way
+        if (nav.route?.path?.length > 2) ctx.extra.push(`THE WAY — through ${nav.route.path.slice(1, -1).map((id) => placeName(s, id)).join(', ')}: rooms he knows, every way on it open; tell the walk briefly, nothing new on the way unless the story has its own reason.`);
         // Patch 2: a destination beyond his settlement, or a place he knows by report, is his goal until he reaches it
         // (src/v4/intents.js); a quest's journey is that quest's own
         if (known && !ctx.auth.journey && goSetsGoal(s, c.to)) setIntentEvents(s, { goal: `reach ${name}`, place: c.to, quote: c.quote, why: 'he set off for it' }).events.forEach(emit);
@@ -430,18 +475,26 @@ const HANDLERS = {
             const opposition = content.rules.checks?.difficulty_scores?.moderate ?? 6;
             const check = resolveCheck(envx.dice, { label: `Search: ${c.what || 'the area'}`, actor, opposition });
             // Patch 6: a hidden feature of this place the search finds is found, by the engine (what it is, not a hint)
-            const found = envx.c && check.success ? searchFinds(s, place, focus) : null;
+            const pick = envx.c && check.success ? searchFinds(s, place, focus) : null;
+            // Patch 7: or a hidden way from here (src/v4/dungeon.js): the one his search names first
+            const hiddenWay = envx.c && check.success ? hiddenWayFinds(s, place, keyOf(focus)) : null;
+            const wayFirst = !!hiddenWay && (!pick || (hiddenWay.named && !keyOf(`${pick.name} ${pick.kind}`).some((w) => keyOf(focus).includes(w))));
+            const found = wayFirst ? null : pick;
+            const way = wayFirst ? hiddenWay.link : null;
+            if (way) emit(linkEvent({ ...way, hidden: false, found: { turn: s.turn, minute: s.clock.minute, how: 'search' } }));
             // what it found is found before the search is remembered: the place as this search left it (placeState)
             if (found) emit(featureEvent({ ...found, hidden: false, found: { turn: s.turn, minute: s.clock.minute, how: 'search' }, history: [...(found.history || []), { turn: s.turn, minute: s.clock.minute, what: 'found by his search' }] }));
             const record = {
                 what: String(c.what || 'search the area').slice(0, 80), stat: 'PER', actor: check.actor_score,
                 opposition: check.opposition, chance: check.chance, roll: check.roll, success: check.success,
                 claimed: check.success, by: 'engine', seq: c.seq,
-                ...(envx.c ? { search: true, at: place, focus: keyOf(focus), found: found?.id || null, sig: placeState(s, place) } : {}),
+                ...(envx.c ? { search: true, at: place, focus: keyOf(focus), found: found?.id || way?.id || null, sig: placeState(s, place) } : {}),
             };
             emit({ t: 'check.recorded', d: record });
             ctx.searchChecks.push(record);
-            const result = found
+            const result = way
+                ? `SUCCESS — he finds ${way.name || 'a hidden way'} (${way.id}), leading to ${placeName(s, otherEnd(way, place))}: tell plainly where it is and where it leads as far as he can see; he knows it now (going through it is his own decision)`
+                : found
                 ? `SUCCESS — he finds ${found.name} (${found.id}, a ${found.kind}${found.trigger ? ` that springs on ${found.trigger}` : ''}): tell plainly what it is and where; he knows it now`
                 : check.success
                     ? 'SUCCESS — reveal a concrete discovery, encounter or actionable lead; a teaser-only answer is not a resolved search'
@@ -477,6 +530,9 @@ const HANDLERS = {
         }
         if (keeper) return { status: 'refused', reason: 'someone holds it', line: `CANNOT TAKE — ${who(s, keeper)} holds ${o.name}; ${who(s, keeper)} would have to give it.` };
         if (o.holder?.loc !== s.scene.at) return { status: 'refused', reason: 'it is not here', line: `CANNOT TAKE — ${o.name} is not here.` };
+        // Patch 7: a thing in a container that is still shut (the locked chest): opened first, by his attempt
+        const shut = o.in ? s.features?.[o.in] : o.in_name ? featureNamed(s, o.holder.loc, o.in_name) : null;
+        if (shut && shut.status === 'active' && shut.kind === 'obstacle') return { status: 'refused', reason: 'shut in', line: `CANNOT TAKE — ${o.name} is in ${shut.name} (${shut.id}), which is not open yet: he has to get it open first (an attempt).` };
         const part = c.qty && c.qty < (o.qty ?? 1) ? c.qty : null;
         emit({ t: 'object.moved', d: { id: o.id, to: { entity: 'pc' }, ...(part ? { qty: part, split: `${o.id}_${s.turn}` } : {}) } });
         return { status: 'resolved', line: `TAKES — ${o.name}${(part || o.qty) && (o.stack || (o.qty ?? 1) > 1 || o.unit) ? ` (${part || o.qty}${o.unit ? ` ${o.unit}` : ''})` : ''} along.` };

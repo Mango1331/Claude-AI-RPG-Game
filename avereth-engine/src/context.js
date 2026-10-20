@@ -11,6 +11,7 @@ import {
 import { rank, pack, Bm25 } from './retrieval.js';
 import { threadCurrent } from './threads.js';
 import { goalLines } from './v4/intents.js';
+import { featuresAt, featureText } from './v4/features.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
 import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText, proofMemory } from './v4/guild.js';
 import { envelopeBlock } from './v4/envelope.js';
@@ -310,7 +311,9 @@ function outcomeLines(state, content, outcome, { v4 = false } = {}) {
     } else if (outcome.kind === 'ability_world') {
         // prototype C (src/v4/planner.js): a known skill used on a thing outside a fight
         const c = outcome.cost ? `${outcome.cost.resource.toUpperCase()} ${outcome.cost.before}->${outcome.cost.after}` : 'no cost';
-        lines.push(`Alaric uses ${outcome.skill_name} on ${outcome.target_text}${outcome.goal ? ` (his aim: ${outcome.goal})` : ''} [${c}${outcome.ammo ? `; ${outcome.ammo.used} arrow${outcome.ammo.used > 1 ? 's' : ''}` : ''}]. The engine booked the cost; it resolves no effect on any creature or person and no lasting change by itself. CHECK DIE for this attempt: d100 = ${outcome.check_die}. Use it only if the result is genuinely uncertain AND consequential: Chance% = Actor ÷ (Actor + Opposition) × 100; success if ${outcome.check_die} ≤ Chance%. Otherwise narrate the plausible result from established fiction.`);
+        // Patch 6: on an obstacle or hazard of the place the engine rolled and the result binds
+        if (outcome.feature) lines.push(`Alaric uses ${outcome.skill_name} on ${outcome.feature.name} (${outcome.feature.id})${outcome.goal ? ` (his aim: ${outcome.goal})` : ''} [${c}]. The engine resolved it: ${outcome.feature.text}. ${outcome.feature.success ? 'It is made harmless, and stays so.' : 'It stays as it was; the cost is spent.'} Tell exactly this; no other effect on any creature or person.`);
+        else lines.push(`Alaric uses ${outcome.skill_name} on ${outcome.target_text}${outcome.goal ? ` (his aim: ${outcome.goal})` : ''} [${c}${outcome.ammo ? `; ${outcome.ammo.used} arrow${outcome.ammo.used > 1 ? 's' : ''}` : ''}]. The engine booked the cost; it resolves no effect on any creature or person and no lasting change by itself. CHECK DIE for this attempt: d100 = ${outcome.check_die}. Use it only if the result is genuinely uncertain AND consequential: Chance% = Actor ÷ (Actor + Opposition) × 100; success if ${outcome.check_die} ≤ Chance%. Otherwise narrate the plausible result from established fiction.`);
     }
     return lines.join('\n');
 }
@@ -547,6 +550,17 @@ export function buildContext(state, content, opts = {}) {
     // Patch 2: Alaric's own goals (src/v4/intents.js): a few short lines, so the story knows where he is headed
     const goals = v4 ? goalLines(state) : [];
     if (goals.length) add('goals', `ALARIC'S GOALS (his own decisions: remember them; never act, decide or move him toward them for him):\n${goals.map((g) => `- ${g.status === 'paused' ? '(paused) ' : ''}${g.text}`).join('\n')}`, 1);
+    // Patch 6: the obstacles and hazards of this place (src/v4/features.js), the engine's state of them; hidden ones only
+    // here, for the narrator (never to be revealed or sprung by the story: only the engine finds or springs them)
+    const feats = v4 ? featuresAt(state, state.scene.at, { hidden: true }) : [];
+    if (feats.length) {
+        const seen = feats.filter((f) => !f.hidden).map(featureText);
+        const hid = feats.filter((f) => f.hidden).map(featureText);
+        add('features', [
+            seen.length ? `FEATURES HERE (the engine's: their state binds; what he got past or made harmless stays so; only an engine check decides an attempt on them, and only the engine books harm): ${seen.join(' · ')}` : '',
+            hid.length ? `HIDDEN HERE (he has not found them; do not reveal or spring them in the story: only his search or the engine does): ${hid.join(' · ')}` : '',
+        ].filter(Boolean).join('\n'), 1);
+    }
     // relevant memories / facts / quests / threads
     const rel = retrieveRelevant(state, content, { input, lastReply, budget, pinnedIds: new Set(pinned.map((f) => f.id)), recentTurns: opts.recentTurns ?? DEFAULT_RECENT_TURNS, weights: opts.weights });
     if (rel.items.length) add('relevant', `RELEVANT (retrieved from the campaign record):\n${rel.items.map((s) => `- ${s.item.label}`).join('\n')}`, 2);
@@ -596,7 +610,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'named', 'combat', 'facts', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'named', 'combat', 'facts', 'features', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };

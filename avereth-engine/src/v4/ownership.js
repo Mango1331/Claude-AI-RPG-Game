@@ -25,6 +25,8 @@ export const STATE_KINDS = {
     scene: { owner: 'world', engine: false, about: 'who is here, where they stand, who noticed him' },
     entities: { owner: 'world', engine: false, about: 'people and creatures, their names and looks' },
     places: { owner: 'world', engine: false, about: 'the place tree' },
+    // Patch 6: established by the story with how hard they are; got past, made harmless or sprung only by the engine
+    features: { owner: 'world', engine: false, about: 'obstacles and hazards of a place (src/v4/features.js)' },
     objects: { owner: 'world', engine: false, about: 'things in the world (not in Alaric\'s hands)' },
     facts: { owner: 'facts', engine: false, about: 'world facts (scoped: docs/ARCHITECTURE_GEN35.md §2.4)' },
     knowledge: { owner: 'knowledge', engine: false, about: 'what someone knows or believes' },
@@ -70,6 +72,7 @@ export function eventKind(e, s = null) {
         case 'time.advanced': return 'time';
         case 'place.created': case 'place.updated': return 'places';
         case 'intent.set': return 'intents';
+        case 'feature.set': return 'features';
         case 'object.created': return pcHolder(d.object?.holder) ? 'pc.inventory' : 'objects';
         case 'object.moved': return pcHolder(d.to) || heldByPc(d.id) ? 'pc.inventory' : 'objects';
         case 'object.consumed': case 'object.added': return heldByPc(d.id) || !s ? 'pc.inventory' : 'objects';
@@ -206,6 +209,8 @@ export const DELTA_WRITES = {
     thread: { writes: ['threads'] },
     // Patch 2: a place known by report (src/v4/known.js): the place tree only, never a fact
     'place.reported': { writes: ['places'] },
+    // Patch 6: an obstacle or hazard of the place (src/v4/features.js): established, named again, or destroyed by the world
+    feature: { writes: ['features'] },
     recover: { writes: ['entities'], gates: { 'pc.vitals': 'player.rest' } },
     'object.new': { writes: ['objects'], gates: { 'pc.inventory': 'player.take' } },
     // a thing handed to him (a gift), or taken from where it lies by his own take

@@ -274,6 +274,13 @@
     "src": "Prototype C only (docs/PROTOTYPE_C.md §11): natural recovery while resting or sleeping, the same basis for both: per hour of booked rest or sleep, in % of the maximum, rounded down, never above the maximum. Provisional values, no balance",
     "per_hour_pct": { "hp": 10, "mp": 15, "sta": 25 }
   },
+  "exploration": {
+    "src": "Patch 6 (docs/PROTOTYPE_C.md): obstacles and hazards of a place (src/v4/features.js). Provisional values, no balance",
+    "harm": { "easy": 4, "moderate": 8, "hard": 14, "very_hard": 20 },
+    "harm_note": "what a hazard (or an obstacle that can hurt) costs Alaric when an engine check against it fails or a hidden one catches him, by the feature's difficulty; HP never below 1 by a hazard of a place, STA never below 0",
+    "tool_eases": 1,
+    "tool_note": "a tool he holds and uses for an attempt makes it this many difficulty steps easier"
+  },
   "travel": {
     "src": "Patch 5 (docs/PROTOTYPE_C.md): travel legs on the planner path. Provisional values, no world law",
     "leg_event_pct": 35,

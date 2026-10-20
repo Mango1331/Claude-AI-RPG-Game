@@ -29,6 +29,7 @@ import { knownByName } from './known.js';
 import { useOf, spoiled, unitsOf } from './items.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
+import { attemptEvents, springHidden, searchedBefore, searchFinds, featureEvent, keyOf } from './features.js';
 import {
     REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, abandonContract, contractReady, objectiveText,
     promotion, takenByOthers, bookBoard, isHunt, trophyText, proofTerms, handoverTerms,
@@ -330,6 +331,11 @@ const HANDLERS = {
             if (!ctx.auth.journey) Object.assign(go, companionOf(s, envx));
             roadLine(s, content, c, ctx, go);
         }
+        // Patch 6: a hidden hazard at the place he goes into springs as he enters it (src/v4/features.js), the engine's roll
+        if (envx?.c && known && envx.dice) {
+            const sprung = springHidden(s, content, envx.dice, emit, { place: c.to, triggers: ['enter'], seq: c.seq });
+            if (sprung) ctx.extra.push(sprung);
+        }
         // Patch 2: a destination beyond his settlement, or a place he knows by report, is his goal until he reaches it
         // (src/v4/intents.js); a quest's journey is that quest's own
         if (known && !ctx.auth.journey && goSetsGoal(s, c.to)) setIntentEvents(s, { goal: `reach ${name}`, place: c.to, quote: c.quote, why: 'he set off for it' }).events.forEach(emit);
@@ -382,6 +388,12 @@ const HANDLERS = {
         if (envx?.c && RESTING.has(c.kind) && !engineMinutes(content, s, c)) {
             return { status: 'clarify', reason: 'how long?', line: `CLARIFY — How long does he want to ${c.kind}? Name a duration ("for 2 hours") or an end ("until ${c.kind === 'sleep' ? 'morning' : 'evening'}").` };
         }
+        // Patch 6: the same search at the same place, nothing changed there and nothing new in his hands: no second roll
+        // and nothing more to find (src/v4/features.js); another focus or method is a new search
+        const before = envx?.c && envx.dice && c.kind === 'search' ? searchedBefore(s, s.scene.at, String(c.what || c.quote || 'the area')) : null;
+        if (before) {
+            return { status: 'resolved', reason: 'searched already', done: true, line: `SEARCHED ALREADY — he searched ${c.what || 'here'} here before (turn ${before.turn}: ${before.success ? 'found what there was to find' : 'found nothing'}), and nothing here has changed since: the same search yields nothing new, no roll, nothing more to take. Looking elsewhere, another way or with a tool is a new search; say plainly that this one is done.` };
+        }
         const t = content.rules.time;
         const cap = c.until ? untilMinutes(content, s, c.until) : c.minutes ? Math.ceil(c.minutes * t.minutes_factor) : t.default_cap_min;
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, cap);
@@ -409,19 +421,31 @@ const HANDLERS = {
             return { status: 'resolved', cap, line: `${VERBS[c.kind] || String(c.kind).toUpperCase()} ${c.what ? `${c.what} ` : ''}${span} — resolved by the engine: ${booked} minutes pass; it is now ${formatClock(s.clock.minute)}.${rec} Narrate it as done, at that length; do not cut it short or add time.` };
         }
         if (c.kind === 'search' && envx?.dice) {
+            // Patch 6: the same search at the same place, nothing changed there and nothing new in his hands: no second
+            // roll (src/v4/features.js); another focus or method is a new search
+            const place = s.scene.at;
+            const focus = String(c.what || c.quote || 'the area');
             const actor = s.entities.pc?.sheet?.stats?.PER ?? 5;
             const opposition = content.rules.checks?.difficulty_scores?.moderate ?? 6;
             const check = resolveCheck(envx.dice, { label: `Search: ${c.what || 'the area'}`, actor, opposition });
+            // Patch 6: a hidden feature of this place the search finds is found, by the engine (what it is, not a hint)
+            const found = envx.c && check.success ? searchFinds(s, place, focus) : null;
             const record = {
                 what: String(c.what || 'search the area').slice(0, 80), stat: 'PER', actor: check.actor_score,
                 opposition: check.opposition, chance: check.chance, roll: check.roll, success: check.success,
                 claimed: check.success, by: 'engine', seq: c.seq,
+                ...(envx.c ? { search: true, at: place, focus: keyOf(focus), found: found?.id || null } : {}),
             };
             emit({ t: 'check.recorded', d: record });
             ctx.searchChecks.push(record);
-            const result = check.success
-                ? 'SUCCESS — reveal a concrete discovery, encounter or actionable lead; a teaser-only answer is not a resolved search'
-                : 'FAILURE — resolve it concretely as no relevant find, a false lead, danger/complication, or this avenue being exhausted; do not repeat an interchangeable hint';
+            if (found) emit(featureEvent({ ...found, hidden: false, found: { turn: s.turn, minute: s.clock.minute, how: 'search' }, history: [...(found.history || []), { turn: s.turn, minute: s.clock.minute, what: 'found by his search' }] }));
+            const result = found
+                ? `SUCCESS — he finds ${found.name} (${found.id}, a ${found.kind}${found.trigger ? ` that springs on ${found.trigger}` : ''}): tell plainly what it is and where; he knows it now`
+                : check.success
+                    ? 'SUCCESS — reveal a concrete discovery, encounter or actionable lead; a teaser-only answer is not a resolved search'
+                    : envx.c
+                        ? 'FAILURE — he finds nothing new this way: say so plainly (no false lead, nothing he wrongly believes, no interchangeable hint); what is there stays as it is, and another place, method or tool may still find it'
+                        : 'FAILURE — resolve it concretely as no relevant find, a false lead, danger/complication, or this avenue being exhausted; do not repeat an interchangeable hint';
             return { status: 'authorized', cap, line: `SEARCHES ${c.what ? `${c.what} ` : ''}${span}. SEARCH CHECK (PER ${check.actor_score} vs ${check.opposition}): ${check.chance}% (d100 ${check.roll}) → ${result}.` };
         }
         return { status: 'authorized', cap, line: `${VERBS[c.kind] || String(c.kind).toUpperCase()} ${c.what ? `${c.what} ` : ''}${span} (at most ${cap} minutes; the story decides how long it takes and what it yields).` };
@@ -865,6 +889,15 @@ function moveStep(s, content, c, ctx, emit) {
     return { status: 'resolved', line: `MOVES — one step ${c.dir === 'away' ? 'back from' : 'closer to'} ${moved.map((x) => `${label(x.id)} (${x.from} → ${x.to})`).join(', ')}: the engine's distances now; tell the step and how they answer it, and put no one nearer or farther than this.` };
 }
 
+// Patch 6: his attempt on an obstacle or hazard of this place (src/v4/features.js): the engine's check, before the story
+function attemptStep(s, content, c, ctx, emit, envx) {
+    if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT — not while the fight runs.' };
+    const r = attemptEvents(s, content, envx?.dice, emit, c);
+    const rec = s.last?.check;
+    if (rec?.feature && rec.seq === c.seq) ctx.engineLines?.push(`CHECK — ${rec.what}: ${rec.chance}% · d100 ${rec.roll} → ${rec.success ? 'SUCCESS' : 'FAILURE'}`);
+    return r;
+}
+
 function otherStep(s, content, c) {
     const what = c.quote ? `"${String(c.quote).replace(/[<>`]/g, '').slice(0, 100)}"` : String(c.what || 'something').replace(/[<>`]/g, '').slice(0, 100);
     return { status: 'resolved', line: `DOES — ${what}: his own action; tell it as it happens. It books nothing: no HP, MP, STA, coin or possessions change by it.` };
@@ -896,7 +929,7 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
     const happened = new Set();
     const uncertain = new Set();
     for (const c of ordered) {
-        const h = HANDLERS[c.type] || (envx.c && c.type === 'other' ? otherStep : null) || (envx.c && c.type === 'move' ? moveStep : null);
+        const h = HANDLERS[c.type] || (envx.c && c.type === 'other' ? otherStep : null) || (envx.c && c.type === 'move' ? moveStep : null) || (envx.c && c.type === 'attempt' ? attemptStep : null);
         // Prototype C (4.3.0-c.5): a step the planner marked as building on an earlier one of the message (needs) is not
         // taken when that one did not happen (refused, an open decision, a question, dropped by the agency guard); one
         // that found its goal true already (done: "already his", "already here") did, and so did a registration that

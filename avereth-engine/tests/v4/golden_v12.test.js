@@ -241,7 +241,9 @@ test('E11: looking for an inn books no price: buy pending, the inn\'s offer 4/2/
     const rec = t8.rep.record;
     assert.ok(rec.system.some((x) => x.startsWith('NOT APPLIED')));
     assert.equal(rec.corrections.length, 1);
-    assert.match(main.chat[t8.rep.id].extra.display_text, /NOT APPLIED/);
+    // Patch 10A.2: the refusal is routine bookkeeping: kept in the raw panel record (#audit), not on the player's card
+    assert.match(main.chat[t8.rep.id].extra.avereth.panel, /NOT APPLIED/);
+    assert.doesNotMatch(main.chat[t8.rep.id].extra.display_text, /NOT APPLIED/);
 });
 
 test('E12: a coercion by the seller of an open offer is refused; an old report key fails the schema', async () => {

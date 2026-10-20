@@ -1232,3 +1232,39 @@ Durchgesetzt wird nur `quiet`: Wen die Antwort auf die Straße bringt, greift ni
 - Ob ein Schützling am Ziel ankommt, folgt aus der laufenden Reise; trennt die Geschichte die beiden ohne `leave`, merkt die Engine das nicht.
 
 **Review-Nachbesserung (gleicher Build):** Ein einzelner Wolf, lebend in Höhle A zurückgelassen, wurde zum Wolf einer anderen Höhle B im selben Reich (Ursache: der Einzeltier-Rückkehrpfad verglich nur `entity.location`, also das Reich, nicht den konkreten Ort). Jetzt gilt für Einzeltiere wie für Gruppen nur `entity.left.at === scene.at`: an einem festen Ort ohne Zeitgrenze (der Steinbruchwolf aus Patch 4 ist auch Stunden später derselbe), auf der Straße nur in der Nähe (`nearby`). Damit jeder Weg aus der Szene `left` setzt, schreibt `persistCombat` es auch für Gegner, die fliehen oder die Alaric durch seine Flucht zurücklässt. Test: `patch 5 review` (Höhle A, Höhle B, Rückkehr nach A mit gleicher ID und HP); Gegenprobe mit der alten Ortsregel → rot. Suite 795/795, alle vier Smokes grün.
+
+### Nachtrag 4.3.0-c.6.6.14 (Patch 6: Exploration, Entdeckungen und Umweltgefahren)
+
+Aufgebaut auf Patch 10A (`4.3.0-c.6.6.13-10a.3`, nur Darstellung; erhalten). Vor Beginn lief die Suite mit 806 Tests; ein Golden-Test erwartete noch „NOT APPLIED“ in der sichtbaren Anzeige, die 10A.2 bewusst ruhig hält. Er prüft jetzt den ungefilterten Panel-Record (`extra.avereth.panel`).
+
+Leitsatz: Die Umgebung bietet Probleme und Entdeckungen. Der Spieler entscheidet frei; die Engine verwaltet Risiken, Würfe und Folgen; der Erzähler beschreibt sie. Ein Ort bleibt derselbe Ort, eine überwundene Gefahr bleibt überwunden, und ein Erfolg entsteht nicht aus erzählerischer Behauptung.
+
+**Bereits vorhanden:** SEARCH als PER-Probe gegen Moderate 6 (C-Pfad), deterministisch im Turn-Record; Orte, Berichtsorte und Besuche (Patch 2); Fakten, Threads und Objekte mit stabilen IDs; die Item-Regeln aus Patch 3 (Werkzeug bleibt, Verbrauchsgut wird verbraucht); `ability_world` mit Kostenbuchung; HP/MP/STA sind Engine-Eigentum (kein Delta kann sie setzen); Spuren als Fakt oder Thread, Kreaturen nur durch `creature.new`.
+
+| Bestätigte Lücke | Behebung |
+|---|---|
+| Dieselbe Suche würfelte bei jeder Wiederholung neu, bis sie gelang | Suchgedächtnis (`s.searches` aus `check.recorded`): dieselbe Suche am selben Ort, nichts dort verändert, kein neues Werkzeug → „SEARCHED ALREADY“, kein Wurf, auch keine neue Fund-Berechtigung (sonst hätte die Erzählung denselben Fund ein zweites Mal ins Inventar geben können) |
+| Ein Misserfolg durfte als „false lead“ erzählt werden | C-Pfad: „nichts Neues gefunden, klar gesagt; nichts, was er falsch glaubt“ |
+| Hindernisse und Fallen hatten keinen Zustand (eine eingestürzte Brücke war ein freier Fakt) | `s.features` mit Event `feature.set` und Extractor-Delta `feature` (`delta-0.92`) |
+| `ability_world`: der Erzähler bekam einen Würfel und wählte die Schwierigkeit nach dem Wurf | Auf ein Merkmal: Engine-Probe (Hauptstat des Skills gegen die festgelegte Difficulty), Ergebnis bindend; einmal entschärft, kostet ein zweiter Einsatz nichts |
+| Patch-5-Randfall: `creature.new {count:1, more:true}` bei einem zurückgelassenen Tier lieferte dieses | Der Einzeltier-Rückkehrpfad gilt nicht für `more:true` |
+
+**Ablauf einer Gefahr:**
+1. Die Erzählung etabliert sie (`feature`): Art, Stat, Difficulty, Schaden ja/nein, Auslöser; sichtbar oder verborgen. Die Etablierung selbst richtet nie Schaden an.
+2. Sichtbar: Der Spieler entscheidet (`attempt` examine/pass/disable, ein Skill, ein Werkzeug, ein anderer Weg, gehen). Die Engine würfelt vor der Erzählung und bucht Status und Schaden.
+3. Verborgen: Eine erfolgreiche Suche am Ort findet sie. Sonst löst sie nur durch seine Handlung aus (enter/touch/cross). Die Engine würfelt seine Reaktion, bucht den Schaden einmal und markiert sie als ausgelöst und bekannt.
+4. Überwunden (`passed`), entschärft (`disabled`) oder zerstört (`destroyed`) bleibt so; kein zweiter Wurf, keine zweite Belohnung. Ein aktives Hindernis bleibt beim Wiederbesuch aktiv.
+
+**Konfiguration (`rules.exploration`):** Schaden nach Difficulty (easy 4, moderate 8, hard 14, very hard 20; HP nie unter 1 durch eine Ortsgefahr), Werkzeug erleichtert um eine Stufe. Difficulty Scores aus `rules.checks.difficulty_scores`.
+
+**Tests:** `tests/v4/patch6.test.js` (18 Tests zu den Anforderungen 1–37). 30 und 37 sichern die Patch-4-, Kampf-, Handels- und Fluchttests der Suite; 34 (Begleiter beim Szenenwechsel) die Patch-5-Tests. Gegenproben: 12 Teiländerungen einzeln abgeschaltet → jeweils mindestens ein Test rot. Gesamt 824/824.
+
+**Kosten:** Extractor-Systemprompt +293 Token (5.638 → 5.931, das neue Delta `feature`). Planner-Systemprompt +203 Token (5.982 → 6.185, Regel 10 und `attempt`). Katalog und Engine-Block nur, wenn an diesem Ort Merkmale existieren (eine Zeile). Keine neuen LLM-Aufrufe; Laufzeit unverändert.
+
+**Grenzen:**
+- Merkmale gehören zu dem Ort, an dem Alaric ist, als die Erzählung sie etabliert; keine Raumgraphen (Patch 7).
+- Wiedererkennung per ID oder mit denselben Worten. Ganz andere Worte für dasselbe Ding erzeugen ein zweites Merkmal, wenn der Extractor die ID nicht nutzt.
+- Eine verborgene `enter`-Falle löst beim GO in den bekannten Ort aus, bevor die Erzählung zeigt, ob er ankommt.
+- Ortsgefahren töten nicht (HP mindestens 1); DEF und Resistenzen mindern ihren Schaden nicht.
+- Ob ein Weg „plainly impossible“ ist, liest der Planner (`possible: false`); die Engine prüft das nicht inhaltlich.
+- Kein XP für Erkundung (bewusst: gehört ins Progression-Review).

@@ -17,6 +17,7 @@
 //   guild      {membership: {rank, since, branch} | null, boards: {"<branch>|<rank>": {branch, rank, day, listings[]}}}
 //   decisions  [{id, kind: registration|purchase|payment|sale, what, offer, seller, at, turn, max_cp, any_price, priced}]
 //   credits    [{cp, at, day}] the engine's last credits to Alaric (Guild payouts, sales), set on first use
+//   features   id -> an obstacle or hazard of a place (Patch 6, src/v4/features.js)
 import { clone, normText } from '../util.js';
 
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
@@ -33,7 +34,7 @@ export const PLACE_PARENTS = {
 export const HALL_NAME = "Adventurers' Guild hall";
 
 export const V4_EVENTS = new Set([
-    'place.created', 'place.updated', 'intent.set',
+    'place.created', 'place.updated', 'intent.set', 'feature.set',
     'object.created', 'object.moved', 'object.marked', 'object.consumed', 'object.added',
     'offer.created', 'offer.closed', 'transaction.completed', 'service.granted',
     'quest.created', 'quest.status', 'quest.detailed', 'quest.progressed', 'quest.ready', 'quest.journey', 'proof.checked',
@@ -46,7 +47,7 @@ export const V4_EVENTS = new Set([
 
 /** The V4 part of an empty state (state.js emptyState). */
 export function emptyDomains() {
-    return { places: {}, objects: {}, offers: {}, guild: { membership: null, boards: {} }, decisions: [], services: [], intents: {} };
+    return { places: {}, objects: {}, offers: {}, guild: { membership: null, boards: {} }, decisions: [], services: [], intents: {}, features: {} };
 }
 
 function ensure(state) {
@@ -85,6 +86,10 @@ export function applyDomainEvent(state, e) {
         // Patch 2: one of Alaric's goals (src/v4/intents.js), whole
         case 'intent.set':
             state.intents[d.intent.id] = clone(d.intent);
+            break;
+        // Patch 6: an obstacle or hazard of a place (src/v4/features.js), whole
+        case 'feature.set':
+            state.features[d.feature.id] = clone(d.feature);
             break;
         case 'object.created':
             if (state.objects[d.object.id]) throw new Error(`object exists: ${d.object.id}`);

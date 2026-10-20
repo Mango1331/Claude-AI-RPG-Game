@@ -16,6 +16,7 @@ import { defeatTally, tallyText, readyText, proofMemory } from './guild.js';
 import { knownNote, reportedPlaces } from './known.js';
 import { spoiled } from './items.js';
 import { continueOptions, goalLines } from './intents.js';
+import { featuresAt, featureText } from './features.js';
 import { currentThreads } from '../threads.js';
 
 /** A person or creature as the catalog labels it: name, role, look ("Marta, Guild receptionist"). */
@@ -214,7 +215,7 @@ export function journeyReady(state, { c = false } = {}) {
  * @param {{extraPlaces?: string[], known?: boolean}} [opts] extraPlaces: place ids to list besides the default ones
  *   (a go target of this turn, for the extractor); known: the contracts listed on a Guild board elsewhere (Prototype C)
  */
-export function buildCatalog(state, content, { extraPlaces = [], known = false, c = false } = {}) {
+export function buildCatalog(state, content, { extraPlaces = [], known = false, c = false, hiddenFeatures = false } = {}) {
     const at = state.scene.at;
     const present = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && statusOf(state, id) !== 'dead')
         .map((id) => ({ id, handle: sceneHandle(state, content, id), label: personLabel(state, content, id) }));
@@ -273,13 +274,15 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         ...(known ? { known: seen } : {}),
         offers,
         objects,
+        // Patch 6: the obstacles and hazards of this place; hidden ones only for the extractor (it names them by id)
+        features: featuresAt(state, at, { hidden: hiddenFeatures }).map((f) => ({ id: f.id, name: f.name, text: `${featureText(f)}${f.hidden ? ' — HIDDEN: Alaric has not found it' : ''}` })),
         open: openDecisionTexts(state),
     };
 }
 
 /** The catalog as text, and the ids the extractor's schema may use. */
 export function extractorCatalog(state, content, opts = {}) {
-    const c = buildCatalog(state, content, opts);
+    const c = buildCatalog(state, content, { ...opts, hiddenFeatures: true });
     // 4.3.0-c.6.6: the land outside the settlements needs an id of its own. Without it the nearest town was the only
     // parent on offer (live 07.10.2026: the half-way waystation on the river road and Thornwick's chapel were stored
     // inside Ashbridge, and the 6-hour walk back was capped as a stroll inside one town)

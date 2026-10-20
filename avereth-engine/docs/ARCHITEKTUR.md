@@ -241,6 +241,13 @@ Seit 4.3.0-c.6.6.13 (Patch 5) ist eine Reise eine zusammenhängende Unternehmung
 - **Dieselben Individuen:** Dieselbe Art am selben Ort kurz danach (fester Ort: `wary_min`; Straße: nur in derselben Antwort) sind die Zurückgelassenen mit ihren HP; sonst andere. Neue Tiere erhalten nie die Ref oder den Gruppennamen früherer.
 - **Gruppenposition:** `position` mit einer Gruppen-Ref bewegt jedes Mitglied; mehrdeutige Referenzen bewegen niemanden.
 
+Seit 4.3.0-c.6.6.14 (Patch 6) sind Hindernisse und Gefahren eines Ortes spielbar (`src/v4/features.js`, `src/v4/commands.js`, `src/engine.js`):
+- **Merkmale (`s.features`):** Die Erzählung etabliert ein Hindernis oder eine Gefahr (Extractor-Delta `feature`) mit Ort, Art, ob verborgen, was es verlangt (Stat), wie schwer (Difficulty) und ob es verletzen kann. Diese Werte stehen fest, bevor jemand es versucht. Erneut genannt (per ID oder mit seinen eigenen Worten) ist es dasselbe Merkmal. Nur die Engine setzt „überwunden“ (`passed`), „entschärft“ (`disabled`) oder „gefunden“; die Welt selbst darf es zerstören (`destroyed`).
+- **Versuche (`attempt`, Planner):** Untersuchen ohne Wurf; Überwinden oder Entschärfen mit einer Engine-Probe (`resolveCheck`, Stat gegen Difficulty Score), gewürfelt vor der Erzählung, im Turn-Record gespeichert (Swipe-stabil). Ein passendes Werkzeug, das er hält, macht es eine Stufe leichter (Werkzeug bleibt, Verbrauchsgut wird verbraucht). Unmögliche Wege: kein Wurf; triviale: Erfolg ohne Wurf. Misserfolg an einer Gefahr kostet den Schaden aus `rules.exploration.harm` (HP nie unter 1 durch Ortsgefahren).
+- **Verborgene Gefahren:** Nur Erzähler und Extractor sehen sie. Sie lösen nur durch seine Handlung aus (Betreten bei `enter`, Hantieren bei `touch`, Überqueren bei `cross`); die Engine würfelt seine Reaktion, bucht den Schaden einmal und markiert die Falle als ausgelöst und bekannt.
+- **Suche:** Eine erfolgreiche Suche findet ein verborgenes Merkmal des Ortes (die Engine nennt es). Ein Misserfolg ist „nichts gefunden“, keine falsche Spur. Dieselbe Suche am selben Ort ohne Veränderung dort und ohne neues Werkzeug ist kein neuer Wurf und kein neuer Fund (`s.searches`).
+- **Skills auf Merkmale:** `ability_world` auf ein Merkmal ist eine Engine-Probe mit dem Hauptstat des Skills; Erfolg entschärft es dauerhaft. Ein bereits entschärftes oder zerstörtes Merkmal kostet nichts und bringt nichts.
+
 **Aufbau des Engine-Blocks** (Sektionen mit Priorität, gepackt unter Budget, Standard 1.400 Token):
 
 | Priorität | Sektionen |

@@ -16,7 +16,7 @@ import { scaleCreature, chooseCreatureLevel, humanSheet } from './npcgen.js';
 import { initEncounter, addCombatant, runCombat, endEncounterEvents, terminal } from './combat.js';
 import { parseIntent } from './intent.js';
 import { runCommands, creationPanel } from './commands.js';
-import { stealthEvents } from './checks.js';
+import { stealthEvents, resolveCheck } from './checks.js';
 import { extractReport, reportToEvents, isGroupCreature } from './delta.js';
 import { truth, knows, perceivers, entityLabel, playerLabel, setFactEvents, PC_NAME_FACT, PC_LOOK_FACT } from './knowledge.js';
 import { buildContext } from './context.js';
@@ -26,6 +26,7 @@ import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, ro
 import { seedPlaces } from './v4/domain.js';
 import { tacticalHere, areaCaught, approachedBy, sideOf } from './v4/scene_handles.js';
 import { lootEvents } from './v4/loot.js';
+import { featureEvent } from './v4/features.js';
 
 const GROUP_RE = /\b(?:everyone|everybody|all of you|you all|the (?:group|room|crowd|table|company)|(?:to|at|toward|towards) them)\b/i;
 const SELF_INTRO_RE = /\b(?:(?:my )?name(?:'s| is)|i am|i'?m|call me|they call me)\s+alaric\b/i; // "Name is Alaric" (Test 5 run 2)
@@ -192,12 +193,37 @@ function worldUse(s, content, act, dice, emit) {
     const shoots = !!skill.ammo && weapon?.family === 'bow';
     const arrows = shoots ? Number(sheet.inventory?.[skill.ammo.item] || 0) : 0;
     if (shoots && arrows < skill.ammo.qty) return { kind: 'note', text: `Alaric has ${arrows} arrow(s); ${skill.name} needs ${skill.ammo.qty}. Nothing was spent or rolled.`, notice: `${skill.name}: not enough arrows (nothing spent, nothing rolled)` };
+    // Patch 6: a skill on an obstacle or hazard of this place (src/v4/features.js) is the engine's check, not the story's
+    // die: the skill's own stat against the feature's difficulty, fixed before; one already made harmless or destroyed
+    // is nothing to do again (nothing spent, nothing gained)
+    const f = act.target_id && s.features?.[act.target_id]?.at === s.scene.at && !s.features[act.target_id].hidden ? s.features[act.target_id] : null;
+    if (f && ['disabled', 'destroyed'].includes(f.status)) return { kind: 'note', text: `${f.name} is ${f.status === 'destroyed' ? 'destroyed' : 'harmless'} already: ${skill.name} has nothing left to do there. Nothing was spent or rolled.`, notice: `${f.name}: already ${f.status === 'destroyed' ? 'destroyed' : 'made harmless'} (nothing spent, nothing rolled)` };
     const cost = amount ? { resource: res, amount, before: sheet[res], after: sheet[res] - amount } : null;
     if (cost) emit({ t: 'resource.changed', d: { id: 'pc', resource: res, value: cost.after, why: `${skill.name} on ${act.target_text}` } });
     if (shoots) emit({ t: 'item.changed', d: { id: 'pc', item: skill.ammo.item, qty: -skill.ammo.qty, why: skill.name } });
+    let feature = null;
+    if (f) {
+        const scaling = [...(skill.attack?.scaling || [])].sort((a, b) => (b.coef ?? 0) - (a.coef ?? 0));
+        const stat = scaling[0]?.stat || (skill.attack?.damage_type === 'magical' ? 'INT' : 'STR');
+        const difficulty = f.difficulty || 'moderate';
+        const opp = content.rules.checks?.difficulty_scores?.[difficulty] ?? 6;
+        let success;
+        let text;
+        if (difficulty === 'trivial' || difficulty === 'impossible') {
+            success = difficulty === 'trivial';
+            text = `${difficulty}: no roll`;
+        } else {
+            const r = resolveCheck(dice, { label: `${skill.name} on ${f.name}`, actor: sheet.stats?.[stat] ?? 5, opposition: opp });
+            emit({ t: 'check.recorded', d: { what: `${skill.name} on ${f.name}`.slice(0, 80), stat, actor: r.actor_score, opposition: r.opposition, chance: r.chance, roll: r.roll, success: r.success, claimed: r.success, by: 'engine', feature: f.id, aim: 'skill', difficulty } });
+            success = r.success;
+            text = `${stat} ${r.actor_score} vs ${difficulty.replace('_', ' ')} ${r.opposition}: ${r.chance}% (d100 ${r.roll}) → ${r.success ? 'SUCCESS' : 'FAILURE'}`;
+        }
+        if (success) emit(featureEvent({ ...f, status: 'disabled', history: [...(f.history || []), { turn: s.turn, minute: s.clock.minute, what: `made harmless: ${skill.name}` }] }));
+        feature = { id: f.id, name: f.name, success, text };
+    }
     return {
         kind: 'ability_world', skill: skill.id, skill_name: skill.name, target_text: act.target_text, target_id: act.target_id || null, goal: act.goal || null,
-        cost, ammo: shoots ? { item: skill.ammo.item, used: skill.ammo.qty } : null, check_die: dice.d100('check die'),
+        cost, ammo: shoots ? { item: skill.ammo.item, used: skill.ammo.qty } : null, ...(feature ? { feature } : { check_die: dice.d100('check die') }),
     };
 }
 

@@ -28,6 +28,7 @@ import { completeContract, contractReady, owedObjects, abandonContract, acceptCo
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents, setIntentEvents } from './intents.js';
+import { featureNamed, featureEvent } from './features.js';
 import { itemTraits, useOf } from './items.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
@@ -334,6 +335,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     // on the open road, in this very reply (the stretch he just walked on from); anywhere else it is gone from his way
     const nearby = (e) => e.kind === 'creature' && statusOf(s, e.id) !== 'dead' && !s.scene.present.includes(e.id) && !!e.left && e.left.at === s.scene.at
         && (e.left.leg ? e.left.turn === s.turn : s.clock.minute - (e.left.minute ?? 0) <= (content.rules.combat?.wary_min ?? 360));
+    const kindOk = (d) => !!String(d.name || d.feature || '').trim() && ['obstacle', 'hazard'].includes(d.kind);
     // a ref the V3 rules resolve to a creature that is not here (dead, or left elsewhere)
     const absentRef = (ref) => { const id = makeResolver(s, new Map(), content)(ref); return !!id && s.entities[id]?.kind === 'creature' && !s.scene.present.includes(id); };
     const newEntity = (d, kind) => {
@@ -355,7 +357,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // place of its own it is still there later (Patch 4: the quarry wolf after hours), on the open road only nearby
         const leftHere = (e) => e.kind === 'creature' && statusOf(s, e.id) !== 'dead' && !s.scene.present.includes(e.id) && e.left?.at === s.scene.at
             && (s.places[s.scene.at]?.kind === 'realm' ? nearby(e) : true);
-        if (kind === 'creature' && (d.count || 1) === 1 && d.present !== false) {
+        // Patch 6 (the Patch 5 edge): "another one" (more true) is never the one he left here
+        if (kind === 'creature' && (d.count || 1) === 1 && d.present !== false && d.more !== true) {
             const same = Object.values(s.entities).filter((e) => leftHere(e)
                 && normText(e.species || '') === normText(d.species || '') && (e.anchor || e.profile?.anchor) === d.anchor);
             // a stronger one than the ordinary one that left, whose numbers are fixed, is another individual (review of
@@ -740,6 +743,32 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 // place in the world as the story has shown it (src/v4/known.js)
                 const r = reportPlace(s, d, emit, { by: d.by ? idOf(d.by) || null : null, place: (ref) => resolvePlace(s, ref, emit, 0, { c: cPath, reported: true }) });
                 if (r.error) reject(d, 'place', r.error);
+                break;
+            }
+            case 'feature': {
+                // Patch 6 (src/v4/features.js): an obstacle or danger of the place where he is; named again it is the same
+                // one (no copy). What it takes, how hard and whether it hurts is fixed when the story establishes it; what
+                // Alaric achieves on it (got past, made harmless, found) is the engine's; the world itself may destroy it
+                const here = s.scene.at;
+                const known = (typeof d.feature === 'string' && s.features?.[d.feature]?.at === here ? s.features[d.feature] : null)
+                    || featureNamed(s, here, d.feature) || featureNamed(s, here, d.name);
+                if (known) {
+                    if (d.status === 'destroyed' && known.status !== 'destroyed') { emit(featureEvent({ ...known, status: 'destroyed', history: [...(known.history || []), { turn: s.turn, minute: s.clock.minute, what: 'destroyed (the story)' }] })); break; }
+                    const fixed = ['kind', 'trigger', 'stat', 'difficulty', 'harm'].filter((k) => d[k] != null && d[k] !== known[k]);
+                    if (known.hidden && d.hidden === false) fixed.push('hidden');
+                    if (fixed.length) reject(d, 'engine_owned', `${known.id}: ${fixed.join(', ')} of a known feature stay as established (found, passed and made harmless only by the engine)`);
+                    break;
+                }
+                if (!kindOk(d)) { reject(d, 'world_rule', 'a feature needs a name and a kind'); break; }
+                const id = `feat.${Object.keys(s.features || {}).length + 1}`;
+                const harm = d.harm || (d.kind === 'hazard' ? 'hp' : null);
+                emit(featureEvent({
+                    id, at: here, name: String(d.name || d.feature).slice(0, 80), kind: d.kind, hidden: d.hidden === true,
+                    status: d.status === 'destroyed' ? 'destroyed' : 'active', trigger: d.kind === 'hazard' ? d.trigger || 'touch' : d.trigger || null,
+                    stat: d.stat || null, difficulty: d.difficulty || 'moderate', harm,
+                    since: { turn: s.turn, minute: s.clock.minute }, found: d.hidden === true ? null : { turn: s.turn, minute: s.clock.minute, how: 'seen' },
+                    history: [{ turn: s.turn, minute: s.clock.minute, what: 'established' }], by: 'reply',
+                }));
                 break;
             }
             case 'recover': {

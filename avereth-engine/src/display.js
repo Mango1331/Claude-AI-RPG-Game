@@ -318,7 +318,9 @@ function planLines(o) {
     const out = [];
     if (o?.kind === 'ability_world') {
         const cost = o.cost ? ` · ${o.cost.resource.toUpperCase()} ${o.cost.before} - ${o.cost.amount} = ${o.cost.after}` : '';
-        out.push(sys(`Alaric: ${o.skill_name} on ${String(o.target_text).replace(/[<>`]/g, '')}${cost}${o.ammo ? ` · ${o.ammo.used} arrow${o.ammo.used > 1 ? 's' : ''}` : ''} — check die d100 ${o.check_die}`));
+        // Patch 6: on an obstacle or hazard the engine's own check and its result
+        const roll = o.feature ? `CHECK ${o.feature.text}` : `check die d100 ${o.check_die}`;
+        out.push(sys(`Alaric: ${o.skill_name} on ${String(o.feature?.name || o.target_text).replace(/[<>`]/g, '')}${cost}${o.ammo ? ` · ${o.ammo.used} arrow${o.ammo.used > 1 ? 's' : ''}` : ''} — ${roll}`));
     }
     for (const n of o?.plan_notes || []) out.push(sys(`NOT TAKEN — ${String(n).replace(/[<>`]/g, '')}`));
     return out;

@@ -114,6 +114,8 @@ export function catalogText(catalog) {
     // 4.3.0-c.6.6.5: what a buyer would pay Alaric for his things (accepting it sells them)
     if (bids.length) L.push(`BIDS (someone would BUY these things of Alaric's; accepting sells them): ${bids.map((o) => `${o.id} (${o.seller} pays ${o.price_cp} cp for: ${o.lines.map((l) => `${l.id} ${l.object} ×${l.qty}${Number.isInteger(l.price_cp) ? ` ${l.price_cp} cp` : ''}`).join(', ')})`).join(' · ')}`);
     if ((catalog.objects || []).length) L.push(`OBJECTS: ${catalog.objects.map((o) => `${o.id} (${o.name}${o.qty ? `, ${o.qty}${o.unit ? ` ${o.unit}` : ''}` : ''}, ${holderText(o)})`).join(' · ')}`);
+    // Patch 6: the obstacles and hazards of this place (src/v4/features.js)
+    if ((catalog.features || []).length) L.push(`FEATURES (obstacles and dangers here): ${catalog.features.map((f) => f.text).join(' · ')}`);
     if ((catalog.open || []).length) L.push(`OPEN DECISIONS: ${catalog.open.join(' · ')}`);
     return L.join('\n');
 }

@@ -10,7 +10,7 @@
 //   a question back to the player         -> a System panel; nothing is spent or rolled
 //
 // The answer has the interpreter's format ({"commands": [...]}) so its vocabulary, rules, examples and schema are
-// reused unchanged; the planner adds seven types: use_skill, ability_world, move, flee, stealth, other, clarify.
+// reused unchanged; the planner adds eight types: use_skill, ability_world, move, flee, stealth, attempt, other, clarify.
 // Pure module: the host makes the call (src/v4/runtime.js), the same state and answer give the same result.
 import { normText } from '../util.js';
 import { mentionedSkills } from '../intent.js';
@@ -24,7 +24,7 @@ import { anchorQuote } from './agency.js';
 
 export const PLANNER_VERSION = 'plan-c0.1';
 
-export const MECH_TYPES = ['use_skill', 'ability_world', 'move', 'flee', 'stealth', 'other', 'clarify'];
+export const MECH_TYPES = ['use_skill', 'ability_world', 'move', 'flee', 'stealth', 'attempt', 'other', 'clarify'];
 
 // --------------------------------------------------------------------------------------------- prompt
 // Role, rules and examples are the ones P0/S4b measured (tools/p0/lib/s4b.mjs, arm p1), adapted to the frozen schema:
@@ -38,13 +38,14 @@ export const MECH_RULES = [
     '2. A thing he holds (OBJECTS held by Alaric: a tool, food, a potion) that he uses is the story command use with its id, never a skill: "I use the flint and steel to make a light" → use. Skills: use only the ids under KNOWN SKILLS. Players misspell and paraphrase skills: if exactly one known skill fits what he names or describes, use that skill. If he names a skill Alaric does not know, write {"new": "<the name he used>"}; never put a different skill in its place.',
     '3. An attack that names no skill and hints at none ("I strike the rat", "I hit it", "I shoot at it"): "skill": null; the engine uses his Basic Attack. Use the Basic Attack id only when he says "basic attack".',
     '4. Targets: opponents and people by their id. Resolve labels and parts of labels ("B" for "Cave Rat B"), descriptions against the catalog (wounded, ENGAGED = right in front of him, the farthest, a size or kind), pronouns, ENGINE FACTS and RECENT. A target who is not here: {"new": "<description>"}. An area skill needs no target (null). When he names no target at all, null.',
-    '5. A known skill used on a thing instead of a creature or person is ability_world: target = an OBJECTS id or {"new": "<the thing>"}; target_words = his exact words for the thing the skill acts on (not the thing he wants to affect in the end); goal = what he wants to happen, in a few of his words. Do not judge whether it can work.',
+    '5. A known skill used on a thing instead of a creature or person is ability_world: target = an OBJECTS or FEATURES id or {"new": "<the thing>"}; target_words = his exact words for the thing the skill acts on (not the thing he wants to affect in the end); goal = what he wants to happen, in a few of his words. Do not judge whether it can work.',
     '6. Ask instead of guessing: if, after the catalog, ENGINE FACTS and RECENT, two or more readings remain that would play out differently (another target, another skill, another kind of action), answer with one clarify about that point and nothing else. If exactly one reading fits, act and do not ask.',
     '7. Write what he means: getting away from danger is flee; stepping back or closing in during a fight is move (chasing one who runs: move "closer" with its target); looking for someone or something is activity with kind "search"; going somewhere is go; waiting is activity with kind "wait". Write every action he intends, even if it may be impossible now: the engine decides what is possible.',
     '7a. Return words such as "back", "return", "the city", "where I came from" are semantic references, not names for new places. Use RECENT ROUTE and known PLACES to resolve them to an existing destination when one clearly fits; if more than one route destination genuinely fits, clarify instead of inventing a generic new place.',
     '7b. go.to is the destination, never the way there. A route, path or way he names ("through the forests", "along the river", "not past the waystation", "by the coast road") is how he travels: to is the destination\'s known id (or {"new": "<the destination>"} when it is not known), and the route stays in his words for the story. A route is never a place of its own.',
     '8. Several actions in one message: one command each, in his order. Something he does that no command fits: other.',
     '9. quote: the exact words of the message the command rests on, copied as they are (do not correct the spelling).',
+    '10. An obstacle or danger listed in FEATURES that he deals with himself is attempt: feature = its id; aim "examine" (he looks it over, tests or studies it), "pass" (gets past, across, over, through or around it) or "disable" (disarms, opens, breaks, removes or makes it harmless); approach = his words for how; stat = what his way takes: AGI (balance, jump, dodge, slip past), STR (climb, lift, force, hold on), VIT (endure), PER (spot the safe way), INT (work out a mechanism), WIL (steel himself), or null; tool = the OBJECTS id of a thing he holds and uses for it, or null; possible = false only when his way plainly cannot work on it as the catalog describes it, else null. Looking for something hidden is activity search, never attempt.',
 ].join('\n');
 
 export const MECH_COMMANDS = [
@@ -53,6 +54,7 @@ export const MECH_COMMANDS = [
     '- move {dir, target}: dir "closer" | "away"; target: an id | null',
     '- flee {}: he tries to get away',
     '- stealth {}: he hides or sneaks',
+    '- attempt {feature, aim, approach, stat, tool, possible}: he deals with an obstacle or danger of FEATURES (rule 10)',
     '- other {what}: an action of his that no command fits; what: a few of his words',
     '- clarify {about, question, options}: instead of acting; about "target" | "skill" | "action"; question: one short question to the player; options: ids or short texts',
 ].join('\n');
@@ -322,10 +324,11 @@ const FIELDS = {
     move: ['dir', 'target', 'quote'],
     flee: ['quote'],
     stealth: ['quote'],
+    attempt: ['feature', 'aim', 'approach', 'stat', 'tool', 'possible', 'quote'],
     other: ['what', 'quote'],
     clarify: ['about', 'question', 'options'],
 };
-const NULLABLE = { use_skill: ['skill', 'target'], ability_world: ['skill', 'goal'], move: ['target'] };
+const NULLABLE = { use_skill: ['skill', 'target'], ability_world: ['skill', 'goal'], move: ['target'], attempt: ['approach', 'stat', 'tool', 'possible'] };
 
 /**
  * Read and check a planner answer.
@@ -340,6 +343,9 @@ export function parsePlan(answer, vocab, ctx, message) {
     const schema = interpreterSchema(vocab, ctx.catalog);
     const people = new Set([...ctx.opponents.map((o) => o.id), ...(ctx.catalog.present || []).map((p) => p.id)]);
     const objects = new Set((ctx.catalog.objects || []).map((o) => o.id));
+    // Patch 6: the obstacles and hazards here (src/v4/features.js): what attempt and ability_world may act on
+    const features = new Set((ctx.catalog.features || []).map((f) => f.id));
+    const held = new Set((ctx.catalog.objects || []).filter((o) => !o.holder).map((o) => o.id));
     const list = value.commands.map((c, i) => ({ c, i }));
     for (const { c, i } of list) {
         const at = `commands[${i}]${c && typeof c === 'object' && c.type ? ` (${c.type})` : ''}`;
@@ -385,13 +391,21 @@ export function parsePlan(answer, vocab, ctx, message) {
         if (type === 'ability_world') {
             const t = c.target;
             if (typeof t === 'string' && people.has(t)) errors.push(`${at}: target ${t} is a creature or person: use use_skill`);
-            else if (!(isNew(t) || (typeof t === 'string' && objects.has(t)))) errors.push(`${at}: target must be an id from OBJECTS or {"new": "<the thing>"}`);
+            else if (!(isNew(t) || (typeof t === 'string' && (objects.has(t) || features.has(t))))) errors.push(`${at}: target must be an id from OBJECTS or FEATURES or {"new": "<the thing>"}`);
             if (typeof c.target_words !== 'string' || !c.target_words.trim() || !flat(c.quote).includes(flat(c.target_words))) errors.push(`${at}: target_words must be his exact words for the thing, taken from the quote`);
             if (c.goal !== null && typeof c.goal !== 'string') errors.push(`${at}: goal must be a few of his words or null`);
         }
         if (type === 'move') {
             if (!['closer', 'away'].includes(c.dir)) errors.push(`${at}: dir must be "closer" or "away"`);
             if (!(c.target === null || (typeof c.target === 'string' && people.has(c.target)))) errors.push(`${at}: target must be an id from OPPONENTS or PRESENT, or null`);
+        }
+        if (type === 'attempt') {
+            if (!(isNew(c.feature) || (typeof c.feature === 'string' && features.has(c.feature)))) errors.push(`${at}: feature must be an id from FEATURES or {"new": "<the thing>"}`);
+            if (!['examine', 'pass', 'disable'].includes(c.aim)) errors.push(`${at}: aim must be "examine", "pass" or "disable"`);
+            if (!(c.stat === null || ['STR', 'VIT', 'AGI', 'INT', 'PER', 'WIL'].includes(c.stat))) errors.push(`${at}: stat must be STR, VIT, AGI, INT, PER, WIL or null`);
+            if (!(c.tool === null || (typeof c.tool === 'string' && held.has(c.tool)))) errors.push(`${at}: tool must be the id of a thing Alaric holds (OBJECTS) or null`);
+            if (!(c.possible === null || typeof c.possible === 'boolean')) errors.push(`${at}: possible must be false or null`);
+            if (!(c.approach === null || typeof c.approach === 'string')) errors.push(`${at}: approach must be a few of his words or null`);
         }
         if (type === 'other' && (typeof c.what !== 'string' || !c.what.trim())) errors.push(`${at}: what must be a few of his words`);
         if (type === 'clarify') {
@@ -537,10 +551,10 @@ export function mapPlan(commands, ctx, content, message, state) {
         // Prototype C (4.3.0-c.6): his own deed no command fits is a step of the message, in its place among the others
         // (src/v4/commands.js other); live 04.10.2026 16:35: "cut the tusk ... use some cloth to stop my bleeding ... walk
         // into the den" lost the middle step, the narrator told it anyway and the extractor made it canon
-        const others = mech.filter((x) => x.type === 'other');
+        const others = mech.filter((x) => x.type === 'other' || x.type === 'attempt');
         return { route: 'v4', commands: [...story, ...others].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), notes, free };
     }
-    if (!fight) for (const c of mech.filter((x) => x.type === 'other')) free.push(`${c.type}: ${said(c)}`);
+    if (!fight) for (const c of mech.filter((x) => x.type === 'other' || x.type === 'attempt')) free.push(`${c.type}: ${said(c)}`);
 
     const notTaken = (c, why) => notes.push(`${why}: ${said(c)}`);
     let wait = null;
@@ -552,6 +566,7 @@ export function mapPlan(commands, ctx, content, message, state) {
         notTaken(c, 'not possible during a fight');
     }
     if (fight) for (const c of mech.filter((x) => x.type === 'other')) notTaken(c, 'not resolved by the engine');
+    if (fight) for (const c of mech.filter((x) => x.type === 'attempt')) notTaken(c, 'not possible during a fight');
 
     // the first main action is taken; a second one waits for its own turn (one main action per turn, Core #12/#24)
     const main = mechMain[0] || null;
@@ -592,7 +607,7 @@ export function mapPlan(commands, ctx, content, message, state) {
 
     if (main.type === 'ability_world') {
         leaveMove('not taken this turn (a step with a skill on a thing is not resolved by the engine yet)');
-        const target_text = String(main.target_words || (isNew(main.target) ? main.target.new : (ctx.catalog.objects || []).find((o) => o.id === main.target)?.name) || 'something').slice(0, 80);
+        const target_text = String(main.target_words || (isNew(main.target) ? main.target.new : [...(ctx.catalog.objects || []), ...(ctx.catalog.features || [])].find((o) => o.id === main.target)?.name) || 'something').slice(0, 80);
         return base({ kind: 'ability_world', skill, target_id: typeof main.target === 'string' ? main.target : null, target_text, goal: main.goal ? String(main.goal).slice(0, 120) : null });
     }
 

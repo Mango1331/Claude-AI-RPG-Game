@@ -30,7 +30,7 @@ import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.j
 import { reachedEvents, setIntentEvents } from './intents.js';
 import { featureNamed, featureEvent, applySpring } from './features.js';
 import { complexOf, dungeonOf, trueDungeonOf, classified, rankText, linkBetween, sameWay, linksAt, wayBetween, roomByName, roomKnown, markEvents, newLink, linkEvent, levelVia, blockerOf, visited } from './dungeon.js';
-import { itemTraits, useOf } from './items.js';
+import { itemTraits, useOf, itemProfile, priceAudit } from './items.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
@@ -656,7 +656,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 // hostile do ("the east pair closes in"), never only the first; one creature's own ref moves that one
                 const whos = members(d.who);
                 if (!whos && groupWords(d.who)) { reject(d, 'group_unclear', `"${String(d.who).slice(0, 60)}" names no one group here`); break; }
-                v3({ position: (whos || [mapRef(d.who)]).map((who) => ({ who, band: d.band, cover: d.cover || undefined })) }, d);
+                v3({ position: (whos || [mapRef(d.who)]).map((who) => ({ who, band: d.band, cover: d.cover || undefined, ...(d.cluster ? { cluster: d.cluster } : {}) })) }, d);
                 break;
             }
             case 'aware':
@@ -1569,7 +1569,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             const correction = `No price was recorded for ${unproven.map((l) => String(l.what).slice(0, 40)).join(', ')}: the last reply names no such sum. A price stands only as the story names it.`;
             if (!corrections.includes(correction)) corrections.push(correction);
         }
-        const lines = priced.filter((l) => !unproven.includes(l)).map((l, i) => ({ id: `l${i + 1}`, ...l }));
+        // Patch 7.1: what the extractor reports of a line is its words, kind, amount and price; the goods' own values are
+        // the engine's, fixed now with the offer (the variant he would buy), and the price is checked against them (an
+        // audit, never a refusal: merchants differ)
+        const lines = priced.filter((l) => !unproven.includes(l)).map((l, i) => {
+            const line = { id: `l${i + 1}`, what: l.what, kind: l.kind, service: l.service ?? null, qty: l.qty ?? 1, price_cp: l.price_cp, ...(l.said !== undefined ? { said: l.said } : {}) };
+            const profile = line.kind === 'goods' ? itemProfile(content, { name: line.what }) : null;
+            if (!profile) return line;
+            const audit = priceAudit(content, profile, line.price_cp, line.qty);
+            return { ...line, profile, ...(audit ? { audit } : {}) };
+        });
         if (!lines.length) return;
         // the seller's latest price for the same thing stands: an open offer of theirs for it closes (one price at a
         // time, as for a buyer's bid); an unchanged one stays and is not offered twice

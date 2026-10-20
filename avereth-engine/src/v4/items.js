@@ -11,6 +11,8 @@
 // The words of a thing's name decide (content/rules.json items), once, when the thing comes into his hands: the object
 // keeps its `use` and, for food, `fresh_until`. A document or a trophy is kept, never used up.
 import { normText } from '../util.js';
+import { itemTemplateOf, weaponFamily } from '../content.js';
+import { rankOf, rankIndex } from '../derived.js';
 
 const cache = new WeakMap();
 function patterns(content) {
@@ -48,12 +50,139 @@ export function useOf(content, o) {
     return o?.kind === 'resource' ? 'consumable' : 'tool';
 }
 
+// ------------------------------------------------------------------------------------------------ Patch 7.1
+// A concrete item's own values (docs/PROTOTYPE_C.md, Patch 7.1): fixed once when the item is established (an offer
+// line, then the purchase that carries the line's profile over; loot; the story) and kept on the object as `profile`,
+// never rolled again and never changed by the story. A Rank is a band, not a strength: the quality its name gives it
+// places it in the reference range of its kind (content gear instances), higher Ranks scale it (gear references_text:
+// HIGHER-RANK GENERATION). Ordinary things (food, tools, documents) have none and stay as they were.
+
+const RANK_RE = /\b(?:\[([fedcbas])\]|([fedcbas])\s*-?\s*rank|rank\s*-?\s*([fedcbas]))\b/;
+
+/** The Rank a name states ("E-Rank longsword", "[D] wand"), or null. */
+export function rankInName(name) {
+    const m = RANK_RE.exec(normText(name || ''));
+    return m ? (m[1] || m[2] || m[3]).toUpperCase() : null;
+}
+
+/** The quality tier the words of a name give a thing (content gear instances.quality); common when none says. */
+export function qualityOf(content, name) {
+    const q = content.gear?.instances?.quality || [];
+    const w = words(name);
+    const said = q.filter((x) => x.words.some((p) => w.includes(` ${normText(p).replace(/[^a-z0-9]+/g, ' ').trim()} `)));
+    // the strongest word wins ("a fine but battered blade" is no better than fine): the last tier named
+    return said.length ? said[said.length - 1] : q.find((x) => x.tier === 'common') || { tier: 'common', at: 0.35, power: 1 };
+}
+
+const rankFactor = (content, rank) => 1 + (content.gear?.rank_scaling?.per_rank_index ?? 0.75) * Math.max(0, rankIndex(rank || 'F', content));
+
+/** The gear kind a name is (a wand, a shield, a mail shirt, a sword), or null. */
+function gearKindOf(content, name) {
+    const w = words(name);
+    const kinds = content.gear?.instances?.gear_kinds || [];
+    for (const k of kinds) if (k.words.some((p) => w.includes(` ${normText(p).replace(/[^a-z0-9]+/g, ' ').trim()} `))) return k;
+    return null;
+}
+
+/**
+ * The profile a thing gets when it is established, or null for an ordinary thing:
+ *   attack  an offensive item of a kind the content knows (item_effects): its own power (standard × quality × Rank),
+ *           reach, area and uses, and the Rank it needs
+ *   gear    a weapon, focus, armor or shield: its slot, family and own ATK/MATK/DEF/MDEF (the kind's reference range
+ *           placed by quality, scaled by Rank)
+ * A content gear template by its exact name (the starter staff) keeps the template's values.
+ */
+export function itemProfile(content, { name, kind = 'item' }) {
+    if (!name || kind === 'document' || kind === 'trophy' || kind === 'resource') return null;
+    const q = qualityOf(content, name);
+    const rank = rankInName(name);
+    const fx = itemTemplateOf(content, name);
+    if (fx?.attack) {
+        const r = rank || fx.rank || 'F';
+        const p = {
+            kind: 'attack', base: fx.id, title: fx.name, rank: r, quality: q.tier,
+            power: Math.round(fx.attack.base * q.power * rankFactor(content, r) / rankFactor(content, fx.rank || 'F')),
+            damage_type: fx.attack.damage_type, range: fx.range?.band || 'SHORT',
+            area: (fx.effects || []).find((e) => e.kind === 'area') ? { shape: fx.effects.find((e) => e.kind === 'area').shape, size: fx.effects.find((e) => e.kind === 'area').size || null } : null,
+            uses: fx.uses ?? 1, ...(fx.requires_rank ? { requires_rank: fx.requires_rank } : {}),
+        };
+        return { ...p, value_cp: valueOf(content, p) };
+    }
+    const tpl = gearOf(content, name);
+    if (tpl?.slot && !['ammo', 'container', 'quiver', 'clothing'].includes(tpl.slot)) {
+        const p = { kind: 'gear', base: tpl.id, title: tpl.name, rank: tpl.rank || 'F', quality: 'common', slot: tpl.slot, family: tpl.family || null, atk: tpl.atk || 0, matk: tpl.matk || 0, def: tpl.def || 0, mdef: tpl.mdef || 0 };
+        return { ...p, value_cp: valueOf(content, p) };
+    }
+    const g = gearKindOf(content, name);
+    if (!g) return null;
+    const r = rank || 'F';
+    const ref = content.gear?.f_rank_reference || {};
+    const stat = (key) => {
+        const [lo, hi] = ref[key] || [0, 0];
+        return Math.max(1, Math.round((lo + q.at * (hi - lo)) * rankFactor(content, r)));
+    };
+    const vals = Object.fromEntries(Object.entries(g.values).map(([k, key]) => [k, stat(key)]));
+    const family = g.family === 'by_words' ? weaponFamily(content, name) || 'melee' : g.family;
+    const p = { kind: 'gear', base: g.id, title: null, rank: r, quality: q.tier, slot: g.slot, family, atk: vals.atk || 0, matk: vals.matk || 0, def: vals.def || 0, mdef: vals.mdef || 0 };
+    return { ...p, value_cp: valueOf(content, p) };
+}
+
+/**
+ * A guideline price in copper for a profile (content gear instances.value): what an ordinary merchant would ask for an
+ * item like it; a stronger variant of the same kind is worth more. Never a price itself: offers keep their own.
+ */
+export function valueOf(content, p) {
+    const v = content.gear?.instances?.value || {};
+    const f = rankFactor(content, p.rank) ** 2;
+    if (p.kind === 'attack') return Math.max(1, Math.round(p.power * (v.attack_cp_per_power ?? 0.6) * (p.area ? v.area_factor ?? 1.5 : 1) * (p.uses ?? 1) * f / rankFactor(content, p.rank)));
+    if (p.kind === 'gear') return Math.max(1, Math.round(((p.atk || 0) + (p.matk || 0) + (p.def || 0) + (p.mdef || 0)) * (v.gear_cp_per_point ?? 8) * f / rankFactor(content, p.rank)));
+    return null;
+}
+
+/**
+ * The plausibility of a price for a profile: null when it lies within the guideline's span (content gear
+ * instances.value.plausible, per unit), else a note for the audit. Merchants differ; nothing is refused for it.
+ */
+export function priceAudit(content, p, price_cp, qty = 1) {
+    if (!p?.value_cp || !Number.isInteger(price_cp)) return null;
+    const [lo, hi] = content.gear?.instances?.value?.plausible || [0.5, 2];
+    const each = price_cp / Math.max(1, qty || 1);
+    if (each >= p.value_cp * lo && each <= p.value_cp * hi) return null;
+    return `${each} cp for a ${p.quality} ${p.rank}-Rank ${p.kind === 'attack' ? `${p.title} (power ${p.power})` : `${p.slot} (${['atk', 'matk', 'def', 'mdef'].filter((k) => p[k]).map((k) => `${k.toUpperCase()} ${p[k]}`).join(', ')})`} is ${each < p.value_cp * lo ? 'far below' : 'far above'} the guideline of about ${p.value_cp} cp`;
+}
+
+/**
+ * The profile of a thing as it stands: its own snapshot; a loot piece of c.6.6.4 by its stored rank and gear values;
+ * else null (an ordinary thing, or one established before snapshots: its kind's standard profile, src/content.js).
+ */
+export function profileOf(content, o) {
+    if (o?.profile?.kind) return o.profile;
+    if (o?.gear?.slot) return { kind: 'gear', base: null, title: null, rank: o.rank || 'F', quality: 'common', slot: o.gear.slot, family: o.gear.family || (o.gear.slot === 'weapon' ? weaponFamily(content, o.name) || 'melee' : null), atk: o.gear.atk || 0, matk: o.gear.matk || 0, def: o.gear.def || 0, mdef: o.gear.mdef || 0 };
+    return null;
+}
+
+/**
+ * Patch 7.1: may Alaric (or anyone of this level) use a ranked item? Up to his own Power-Rank (F uses F; E uses F and E),
+ * or the Rank the item's profile names as its own requirement (an exceptional piece). Unranked things always.
+ * @returns {null | string} why not
+ */
+export function rankRefusal(content, level, p) {
+    const need = p?.requires_rank || p?.rank;
+    if (!need) return null;
+    const own = rankOf(level || 1, content);
+    if (rankIndex(own, content) >= rankIndex(need, content)) return null;
+    return `${p.title || 'it'} is ${/^[AEFS]/.test(p.rank) ? 'an' : 'a'} ${p.rank}-Rank item${p.requires_rank && p.requires_rank !== p.rank ? ` that needs Power Rank ${p.requires_rank}` : ''}; Alaric's Power Rank is ${own}: he may carry, keep or sell it, but not ${p.kind === 'gear' ? 'wear or wield' : 'activate'} it`;
+}
+
 /**
  * The fields a new object of Alaric's world carries for its behaviour: use, and for food its unit (portion) and the
- * minute it keeps until. Spread into object.created.
+ * minute it keeps until; Patch 7.1: an item with values of its own (gear, an attack item) its profile, fixed now. Spread
+ * into object.created; a purchase carries the offer line's profile instead (src/v4/trade.js).
  */
-export function itemTraits(content, { name, kind = 'item', unit = null }, minute) {
-    const use = useOf(content, { name, kind });
+export function itemTraits(content, { name, kind = 'item', unit = null }, minute, profile = undefined) {
+    const own = profile !== undefined ? profile : itemProfile(content, { name, kind });
+    const use = own?.kind === 'gear' ? 'equipment' : useOf(content, { name, kind });
+    if (own) return { use, profile: own };
     if (use !== 'food') return { use };
     const p = patterns(content);
     const keep = p.preserved?.test(words(name)) ? p.keeps.preserved : p.keeps.fresh;

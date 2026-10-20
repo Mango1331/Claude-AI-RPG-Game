@@ -11,6 +11,8 @@
 // - never: a foe that fled, surrendered or survived, a fight Alaric fled or died in, a foe already looted, equipping
 import { hash32, slug, normText } from '../util.js';
 import { rankOf } from '../derived.js';
+import { weaponFamily } from '../content.js';
+import { valueOf as itemValue } from './items.js';
 
 const ORDER = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
 /** A draw in [min, max] fixed by the fight, the foe and what is drawn. */
@@ -111,7 +113,9 @@ export function lootEvents(s, content, enc) {
         const id = `obj.loot.${slug(enc.id.replace(/\./g, '_'))}.${slug(g.from.replace(/\./g, '_'))}.${i + 1}`;
         if (s.objects?.[id]) continue;
         events.push({ t: 'object.created', d: { object: { id, name: g.name, kind: 'item', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'loot', encounter: enc.id },
-            rank: g.rank, gear: { slot: g.slot, atk: g.atk || 0, matk: g.matk || 0, def: g.def || 0, mdef: g.mdef || 0 } } } });
+            rank: g.rank, gear: { slot: g.slot, atk: g.atk || 0, matk: g.matk || 0, def: g.def || 0, mdef: g.mdef || 0 },
+            // Patch 7.1: the piece's own values as its profile (what it is worth, what it needs), fixed now
+            ...gearTraits(content, g) } } });
         lines.push(g.name);
     }
     if (coin > 0) {
@@ -120,6 +124,12 @@ export function lootEvents(s, content, enc) {
     }
     for (const e of events.filter((x) => x.t === 'item.changed')) lines.push(`${content.items.get(e.d.item)?.name || e.d.item} ×${e.d.qty}`);
     return { events, lines };
+}
+
+/** Patch 7.1: a looted piece of gear keeps the values it was fought with: its profile, its use as equipment. */
+function gearTraits(content, g) {
+    const p = { kind: 'gear', base: null, title: null, rank: g.rank || 'F', quality: 'common', slot: g.slot, family: g.slot === 'weapon' ? weaponFamily(content, g.name) || 'melee' : null, atk: g.atk || 0, matk: g.matk || 0, def: g.def || 0, mdef: g.mdef || 0 };
+    return { use: 'equipment', profile: { ...p, value_cp: itemValue(content, p) } };
 }
 
 /** "loot the beast", "search the bodies", "skin the wolf": what the engine already credited at the fight's end. */

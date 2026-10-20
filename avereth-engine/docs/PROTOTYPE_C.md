@@ -1435,7 +1435,7 @@ Patch 7 ist damit bereit für den Live-Test mit GLM-5.3-Flash.
 - **Scorchburst-Profil:**
   - F-Rang, magisch, Feuer, geworfen bis SHORT.
   - Fester Rohwert 22. Das ist der Wert des Scrolls selbst, vergleichbar mit Arcane Burst eines F-Rang-Magiers (INT 6, MATK 6: 21,5). Er hängt nicht an Alarics Level, Werten oder Power-Rank und nicht an den Gegnern.
-  - Fläche `burst` mit höchstens 3 Zielen, 1 Nutzung.
+  - Fläche `burst` mit höchstens 3 Zielen, 1 Nutzung. (Überholt durch Patch 7.1: Power 32, kein Trefferlimit, Cluster-Modell.)
 - **Erkennung:** `itemEffectOf` nimmt das eigene `effect` eines Objekts, sonst das Profil, dessen `match`-Wörter (`scorchburst`, `scroll`) alle im Namen stehen. Damit wird auch der unter c.6.6.17 gekaufte Scroll erkannt, unabhängig von Turn und Objekt-Id. Neue offensive Verbrauchsgüter brauchen nur einen weiteren Eintrag.
 - **Planner-Abbildung:** `mapPlan` macht aus dem `use` eines gehaltenen Dings mit Angriffsprofil (`itemAttack`) einen Angriff mit diesem Profil (`item`).
   - Ein genanntes Ziel bleibt das Ziel.
@@ -1473,4 +1473,82 @@ Patch 7 ist damit bereit für den Live-Test mit GLM-5.3-Flash.
 - Mit dem Live-Seed trifft der Wurf die Käfer E, F und G in SHORT (Level 5, 13, 14): 23, 19 und 18 Schaden.
 - Die drei schlagen sofort zurück: 27 + 27 + 13 in Runde 1, 24 in Runde 2. Alaric (71 HP) stirbt deterministisch in Runde 2.
 - Das ist die Folge der festen Käfer-Level und seiner Wahl, kein Fehler des Scrolls. Das Balancing des F-Bands gegen Level-1-Charaktere bleibt eine Frage für Patch 9/10B.
+
+### Patch 7.1 (4.3.0-c.6.6.19): Item-Stärke, Rank-Anforderungen und echte AoE
+
+**Item-Werte als Snapshot (`objects[id].profile`):**
+- Ein konkreter Gegenstand bekommt seine Werte einmal, wenn er etabliert wird. Wege dorthin: eine Angebotszeile, Loot, die Story (`object.new`) oder das Nehmen.
+- Beim Kauf wird genau das Profil der Angebotszeile übertragen (`src/v4/trade.js`), ohne neue Berechnung und ohne Würfel. Spätere Änderungen an `content/gear.json` ändern kein bestehendes Item.
+- Die Werte kommen aus `src/v4/items.js` `itemProfile`:
+  - **Angriffsitems:** Standardprofil der Art (`item_effects`) × Qualität × Rank-Faktor (1 + 0,75 R). Das Profil enthält Power, Schadensart, Reichweite, Fläche, Nutzungen und den Rank.
+  - **Ausrüstung:** Die Art (Fokus, Schild, schwere oder leichte Rüstung, Waffe) wird über Wörter im Namen erkannt. Die Werte liegen im F-Referenzbereich (`f_rank_reference`), dessen Position die Qualität bestimmt; außergewöhnliche Stücke liegen darüber. Ein Rank im Namen („E-Rank“) wird übernommen.
+  - **Content-Vorlagen** (Starter-Stab) behalten ihre Werte.
+- **Qualitätsstufen** (`gear.json` `instances.quality`): crude, common, fine, superior, exceptional. Das stärkste genannte Wort entscheidet.
+- **Gewöhnliche Dinge** (Essen, Werkzeug, Dokumente, Ressourcen) bekommen kein Profil.
+- **Abwärtskompatibilität:** Loot-Ausrüstung aus c.6.6.4 wird über ihre gespeicherten `rank` und `gear` gelesen (`profileOf`). Ein Scroll ohne Snapshot (der Live-Scroll aus c.6.6.17) nutzt das aktuelle Standardprofil seiner Art.
+- **Kein Zugriff für den Extractor:** Ein `profile` in einer Angebotszeile ist nicht Teil seines Vokabulars. Das Schema lehnt es ab, und die Engine übernimmt aus einer Zeile nur Wortlaut, Art, Menge und Preis.
+
+**Ausrüstung mit eigenen Werten:**
+- Ein eigenes Stück wird als Inline-Item getragen (`equipment[slot] = {object, atk, matk, def, mdef, rank, family, …}`). Es fällt nie auf eine gleichnamige Vorlage zurück.
+- Beim Ablegen, Wechseln oder Fallenlassen kehrt das Objekt mit seinen Werten zurück.
+
+**Preise:**
+- Händler nennen ihre Preise weiter selbst (`price_cp`). Die Engine bucht exakt den vereinbarten Preis.
+- Jede Angebotszeile trägt zusätzlich ihren Richtwert (`profile.value_cp`):
+  - Ausrüstung: Punkte × 8 cp × Rank-Faktor.
+  - Angriffsitems: Power × 0,6 cp × 1,5 bei Flächenwirkung × Nutzungen × Rank-Faktor.
+- Bei gleicher Art ist die stärkere Variante mehr wert. Ein Preis außerhalb des 0,5- bis 2-Fachen bekommt einen `audit`-Vermerk an der Zeile. Er wird nicht abgelehnt, denn Händler dürfen abweichen.
+- Beispiele für F-Rang:
+
+| Item | Wert | Richtwert |
+|---|---|---|
+| rusty sword | ATK 4 | 32 cp |
+| iron sword | ATK 6 | 48 cp |
+| fine longsword | ATK 8 | 64 cp |
+| masterwork longsword | ATK 10 | 80 cp |
+| enchanted longsword | ATK 12 | 96 cp |
+| crude scorchburst scroll | Power 24 | 22 cp |
+| scorchburst scroll | Power 32 | 29 cp |
+| fine scorchburst scroll | Power 40 | 36 cp |
+| superior scorchburst scroll | Power 48 | 43 cp |
+| enchanted scorchburst scroll | Power 59 | 53 cp |
+
+**Scorchburst:**
+- Ein gewöhnlicher Scroll hat Power 32. Das sind etwa anderthalb Arcane Bursts eines F-Magiers am Bandanfang (21,5) und liegt unter Flame Lance als Einzelzielangriff (36,25).
+- Gegen gewöhnliche F-Kreaturen (MDEF 0–3, 34–86 HP) richtet er 28–35 Schaden je Ziel an: spürbar, aber kein sicherer Kill über Level 5.
+- Der Richtwert passt zum Livepreis von 25 cp.
+- Die Power gehört dem Item: kein INT, kein MATK, kein Level, keine Proficiency (`share: 0`). Die Schadensrechnung ist unverändert `resolveStrike`.
+
+**Rank-Anforderung (`rankRefusal`):**
+- Rankgebundene Ausrüstung und Angriffsitems sind nur bis zum eigenen Power-Rank nutzbar.
+- Ein Profil kann mit `requires_rank` eine Ausnahme festlegen.
+- Geprüft wird an drei Stellen: beim Ausrüsten (Handler), beim Aktivieren (Engine, vor jedem Kampf) und im Kampfpfad (`attackAction`).
+- Eine Ablehnung verbraucht, bucht und würfelt nichts. Besitzen, Tragen und Verkaufen bleiben möglich.
+
+**AoE ohne Trefferlimit (Cluster):**
+- `max_targets` und jede Kappung sind entfernt.
+- Ein `burst` trifft das Ziel und alle im selben **Cluster** (enger Knoten) in derselben Distanz zu Alaric, wie viele es auch sind (`burstCaught`). Freunde und Unbeteiligte zählen mit.
+- **Herkunft des Clusters:**
+  - Ein neues Feld `cluster` im Position-Delta legt ihn fest: ein kurzes Wort für alle, die die Erzählung dicht zusammenstellt. „apart“ stellt jemanden allein.
+  - Ohne ein solches Wort stehen Kreaturen, die eine Erzählung gemeinsam als Gruppe einführt (ein `creature.new` mit count > 1), zusammen.
+  - Wer allein steht, wird allein getroffen. Dasselbe Distanzband allein reicht nie.
+- **Persistenz:** Ein Engine-Schritt behält den Cluster (der Reducer übernimmt ihn bei einer reinen Band-Änderung). Wer aus dem Band rückt, ist nicht mehr im Knoten.
+- **Unveränderliche Treffer:** Die Treffer werden aus dem gespeicherten Zustand zum Zeitpunkt des Wurfs berechnet. Spätere Berichte ändern sie nicht.
+- **Zielwahl:** Ohne genanntes Ziel wählt `burstAim` den Knoten mit den meisten Feinden in Reichweite.
+- Arcane Burst (`caster_engaged`) trifft wie bisher alle ENGAGED, ohne Limit.
+
+**Tests:**
+- 14 neue Tests in `tests/v4/patch71.test.js` (Fälle 1–18), dazu die angepassten Hotfix-Tests (10 statt 3 Treffer, Power 32) und eine Loot-Profil-Prüfung in `c664`.
+- Gesamt 875/875. Alle vier Smokes grün; `smoke:st` 50/53 mit gleichen false-Schlüsseln.
+- 19 Mutationsproben, alle erkannt.
+
+**Kosten:**
+- Extractor +76 Token (6.415 → 6.491, Feld `cluster`, `delta-0.96`).
+- Planner unverändert (6.300).
+- Keine neuen LLM-Aufrufe.
+
+**Live-Stand Glimmerdeep:**
+- Die zwölf Käfer wurden in #30 als ein Schwarm an einer Ader eingeführt, bilden also einen Knoten.
+- Unter diesem Build trifft der Scroll in #37 alle zehn in SHORT mit 28–35 Schaden und tötet Käfer B (34 HP).
+- Danach greifen zehn F-Band-Käfer (Level 3–14) an, und Alaric (71 HP) stirbt deterministisch in Runde 1.
 

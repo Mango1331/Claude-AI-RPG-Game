@@ -56,7 +56,8 @@ export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = nu
     emit({ t: 'transaction.completed', d: { offer: offer.id, lines: picks.map((p) => p.line.id), ...(counted ? { units: picks.map((p) => p.units) } : {}), cp, seller: offer.seller } });
     emit({ t: 'coin.changed', d: { id: 'pc', value: coin - cp, delta: -cp, why: picksText(picks) } });
     for (const p of picks.filter((x) => x.line.kind === 'goods')) {
-        const traits = content ? itemTraits(content, { name: p.line.what, kind: 'item' }, s.clock.minute) : {};
+        // Patch 7.1: exactly the variant offered: the line's profile, fixed when the offer was made (never rolled again)
+        const traits = content ? itemTraits(content, { name: p.line.what, kind: 'item' }, s.clock.minute, p.line.profile ?? (p.line.profile === null ? null : undefined)) : {};
         emit({ t: 'object.created', d: { object: { id: objectId(p.line.what), name: p.line.what, kind: 'item', stack: p.units > 1, qty: p.units, unit: null, ...traits, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'bought', from: offer.seller } } } });
     }
     for (const p of picks.filter((x) => x.line.kind === 'service' && x.line.service !== 'guild_registration')) {

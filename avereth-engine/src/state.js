@@ -177,7 +177,8 @@ export function applyEvent(state, e) {
         case 'journey.party':
             break;
         case 'scene.position':
-            state.scene.positions[d.id] = { band: d.band, cover: d.cover || 'none' };
+            // Patch 7.1: the knot someone stands in stays theirs until the story sets another (or "apart": null)
+            state.scene.positions[d.id] = { band: d.band, cover: d.cover || 'none', ...(d.cluster !== undefined ? { cluster: d.cluster } : Object.hasOwn(state.scene.positions[d.id] || {}, 'cluster') ? { cluster: state.scene.positions[d.id].cluster } : {}) };
             break;
         case 'scene.awareness':
             state.scene.awareness[d.id] = d.level;

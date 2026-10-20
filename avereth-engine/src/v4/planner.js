@@ -608,7 +608,8 @@ export function mapPlan(commands, ctx, content, message, state) {
         skill = ctx.basic;
         if (!skill) return base({ kind: 'narrative', flags: { attack_without_class: true } });
     }
-    const def = content.skills.get(skill);
+    // Patch 7.1: an attack item acts by its own snapshot (its reach); a skill by the content
+    const def = (main.item && state ? itemEffectOf(content, state.objects?.[main.item]) : null) || content.skills.get(skill);
 
     // Hotfix c.6.6.18: an offensive item is thrown from where he stands, at the one he names or where most foes within its
     // reach stand (src/v4/scene_handles.js burstAim); with no foe in reach it stays his, unused

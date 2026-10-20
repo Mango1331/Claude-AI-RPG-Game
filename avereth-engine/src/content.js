@@ -68,16 +68,43 @@ export function indexContent(pack) {
     return c;
 }
 
+/** The words of a name, as a set (a thing's name against a profile's match words). */
+export const nameWords = (name) => new Set(normText(name || '').split(/[^a-z0-9]+/).filter(Boolean));
+
+/** Hotfix c.6.6.18: the standard profile of an offensive item kind whose match words are all words of this name, or null. */
+export function itemTemplateOf(content, name) {
+    const words = nameWords(name);
+    return (content.itemEffects || []).find((x) => x.match.every((w) => words.has(w))) || null;
+}
+
 /**
- * Hotfix c.6.6.18: the effect profile of a thing (an object of the world or an item template): its own stored one, else
- * the profile whose match words are all words of its name (a scroll bought before the profile existed). Null for an
- * ordinary thing.
+ * Patch 7.1: the combat action of a concrete attack item, from its own snapshot (object.profile): its power, damage,
+ * reach and area are the item's, fixed when it was established; the standard profile of its kind lends only its words
+ * (type, source text). A change of the content later changes no item that exists.
+ */
+export function attackSkillOf(content, p) {
+    const tpl = content.skills.get(p.base) || {};
+    return {
+        ...tpl, id: p.base || tpl.id || 'item.attack', name: p.title || tpl.name || 'attack item', item: true, class: null, rank: p.rank,
+        requires_rank: p.requires_rank ?? null, uses: p.uses ?? 1, cost: null, ammo: null, strikes: 1,
+        type_text: tpl.type_text || `${p.damage_type === 'magical' ? 'Magical' : 'Physical'} / Area (thrown item)`,
+        range: { band: p.range, extra_band: false, area: p.area?.shape || null },
+        attack: { base: p.power, scaling: [], uses: null, share: 0, damage_type: p.damage_type },
+        effects: p.area ? [{ kind: 'area', shape: p.area.shape, size: p.area.size || null, shared_rolls: true }] : [],
+        profile: p,
+    };
+}
+
+/**
+ * The attack a thing makes when it is used, or null for an ordinary thing. Patch 7.1: a thing's own snapshot first
+ * (object.profile, kind attack); then (hotfix c.6.6.18) a stored profile id, and last the standard profile of its kind by
+ * the words of its name (a scroll bought before snapshots existed, as the live scorchburst scroll of 20.10.2026).
  */
 export function itemEffectOf(content, thing) {
     if (!thing) return null;
+    if (thing.profile?.kind === 'attack' && Number.isFinite(thing.profile.power)) return attackSkillOf(content, thing.profile);
     if (thing.effect && content.skills.get(thing.effect)?.item) return content.skills.get(thing.effect);
-    const words = new Set(normText(thing.name || '').split(/[^a-z0-9]+/).filter(Boolean));
-    return (content.itemEffects || []).find((x) => x.match.every((w) => words.has(w))) || null;
+    return itemTemplateOf(content, thing.name);
 }
 
 /** Find a skill by exact id or (case-insensitive) name, preferring the given class. */

@@ -75,25 +75,25 @@ test('hotfix scroll 1-5: the scroll bought under c.6.6.17 is recognised; thrown 
     const hit = thrown(g);
     assert.equal(hit.skill, 'item.scorchburst');
     assert.equal(hit.item, SCROLL);
-    // 3. thrown where most of them stand (SHORT): the one it is thrown at and those at the same distance, at most 3; not
-    // beetle 1 at his side, not the other seven at SHORT, not all eleven because they are beetles in one room
+    // 3. thrown where most of them stand (Patch 7.1: the knot of the swarm the story brought in grazing one vein, at SHORT):
+    // all ten of that knot, however many (no cap); not beetle 1 at his side, which left the knot
     const struck = hit.strikes.map((s) => s.target);
-    assert.deepEqual(struck, [BEETLE(2), BEETLE(3), BEETLE(4)]);
+    assert.deepEqual(struck, [2, 3, 4, 6, 7, 8, 9, 10, 11, 12].map(BEETLE));
     assert.ok(struck.every((id) => short.includes(id)));
     for (const s of hit.strikes) assert.ok(s.hp_after < s.hp_before && s.final > 0, `${s.target} took damage`);
     const enc = r.events.find((e) => e.t === 'encounter.started').d.encounter;
     assert.deepEqual(Object.keys(enc.combatants).filter((id) => id !== 'pc').sort(), [...struck].sort(), 'only those struck are in the fight');
-    // the item's own power: 22 raw, nothing of Alaric's INT or MATK, nothing of the foes
-    assert.equal(hit.raw, 22);
+    // the item's own power (Patch 7.1: 32 for a common scorchburst scroll), nothing of Alaric's INT or MATK, nothing of the foes
+    assert.equal(hit.raw, 32);
     assert.match(hit.raw_text, /the item's own power/);
     assert.equal(hit.cost, undefined, 'no MP');
-    // 4. each keeps the profile the story gave it at first sight (levels 5, 13, 14): its own HP and MDEF
+    // 4. each keeps the profile the story gave it at first sight: its own level, HP and MDEF
     for (const id of struck) {
         const p = before.entities[id].profile;
         assert.equal(enc.combatants[id].fixed.level, p.level);
         assert.equal(enc.combatants[id].fixed.max_hp, p.max_hp);
     }
-    assert.deepEqual(struck.map((id) => enc.combatants[id].fixed.level), [5, 13, 14]);
+    assert.deepEqual(struck.map((id) => enc.combatants[id].fixed.level), [5, 13, 14, 13, 5, 14, 5, 3, 9, 6]);
     assert.deepEqual(hit.strikes.map((s) => s.defense), struck.map((id) => before.entities[id].profile.mdef), 'each against its own MDEF');
     // 5. used up once, when it was resolved
     assert.equal(r.events.filter((e) => e.t === 'object.consumed').length, 1);
@@ -119,13 +119,13 @@ test('hotfix scroll 2b: in the running first fight (after #32) the scroll is his
     assert.match(far.outcome.illegal, /Scorchburst scroll reaches SHORT at most/);
     assert.ok(!far.events.some((e) => e.t === 'object.consumed'));
     assert.equal(far.state.objects[SCROLL].holder.entity, 'pc');
-    // the combat pipeline itself never strikes more than the burst's size, whatever it is handed
+    // the combat pipeline strikes everyone the burst catches (Patch 7.1: no cap of three any more)
     const s = live(33).state();
     for (const n of [1, 2, 3, 4]) s.scene.positions[BEETLE(n)] = { band: 'ENGAGED', cover: 'none' };
     const enc = structuredClone(s.encounter);
     for (const n of [1, 2, 3, 4]) addCombatant(enc, s, content, BEETLE(n), 'hostile', null, { c: true });
     const rec5 = attackAction({ enc: structuredClone(enc), content, dice: Dice.from(s), state: s, c: true }, 'pc', H, 'item.scorchburst', { item: SCROLL, burst: [H, 1, 2, 3, 4].map((n) => (typeof n === 'string' ? n : BEETLE(n))) });
-    assert.equal(rec5.strikes.length, 3);
+    assert.equal(rec5.strikes.length, 5, 'Patch 7.1: everyone the burst catches, no cap');
     // and without the item it is no action of his (he knows no such skill)
     assert.match(attackAction({ enc: structuredClone(enc), content, dice: Dice.from(s), state: s, c: true }, 'pc', H, 'item.scorchburst', {}).illegal, /does not know Scorchburst scroll/);
 });
@@ -196,22 +196,23 @@ test('hotfix scroll 7: a regenerate of the old turn reuses its old events (no fi
 // ------------------------------------------------------------------------------------------------ 3, 6: XP, loot, deaths
 test('hotfix scroll 3b: a burst that fells what it strikes ends the fight through the engine: deaths, XP and loot as for any attack', async () => {
     const g = live(37);
-    // the three at SHORT it will strike, badly hurt already (a scene the live run did not have)
-    inject(g, [2, 3, 4].map((n) => ({ t: 'entity.updated', d: { id: BEETLE(n), set: { profile: { ...g.state().entities[BEETLE(n)].profile, hp: 5 } } } })));
+    // the ten at SHORT it will strike, badly hurt already (a scene the live run did not have)
+    inject(g, [2, 3, 4, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ t: 'entity.updated', d: { id: BEETLE(n), set: { profile: { ...g.state().entities[BEETLE(n)].profile, hp: 5 } } } })));
     const xp = g.state().entities.pc.sheet.xp;
     await say(g, TEXT, USE);
     const r = lastUser(g);
     const o = outcomeOf(g);
-    assert.deepEqual(thrown(g).strikes.map((s) => [s.target, s.defeated]), [[BEETLE(2), true], [BEETLE(3), true], [BEETLE(4), true]]);
-    assert.deepEqual(o.ended.defeated.sort(), [BEETLE(2), BEETLE(3), BEETLE(4)].sort());
+    const ten = [2, 3, 4, 6, 7, 8, 9, 10, 11, 12].map(BEETLE);
+    assert.deepEqual(thrown(g).strikes.map((s) => [s.target, s.defeated]), ten.map((id) => [id, true]));
+    assert.deepEqual(o.ended.defeated.sort(), [...ten].sort());
     const s = g.state();
-    for (const n of [2, 3, 4]) assert.equal(s.entities[BEETLE(n)].status, 'dead');
+    for (const id of ten) assert.equal(s.entities[id].status, 'dead');
     assert.ok(o.ended.xp_awarded > 0);
     assert.equal(r.events.filter((e) => e.t === 'xp.changed').reduce((a, e) => a + e.d.amount, 0), o.ended.xp_awarded, 'the fight\'s XP, once');
     assert.ok(s.entities.pc.sheet.level > 1 || s.entities.pc.sheet.xp === xp + o.ended.xp_awarded);
     assert.ok(o.loot?.length, 'the engine\'s loot of the fight');
     assert.ok(r.events.some((e) => e.t === 'object.created' && e.d.object.source?.how === 'loot'));
-    for (const n of [1, 6, 7]) assert.equal(s.entities[BEETLE(n)].status, 'alive', 'those it did not strike live on');
+    assert.equal(s.entities[BEETLE(1)].status, 'alive', 'the one it did not strike lives on');
     assert.equal(r.events.filter((e) => e.t === 'object.consumed').length, 1);
 });
 
@@ -248,7 +249,7 @@ test('hotfix scroll 9: the narrator hears the engine\'s burst (its strikes, dama
     const g = live(37);
     await say(g, TEXT, USE);
     const block = turnBlock(g.chat, g.chat.length - 1, content, {}).context.text;
-    assert.match(block, /Alaric: Scorchburst scroll \(FIRST STRIKE[^\n]*-> Crystal Beetle [A-L] \[Magical \/ Area \/ Fire \(thrown scroll\): from where he stands, no step and no melee blow; scorchburst scroll, first-circle, one use used up; its burst strikes exactly the 3 below, no one else is hit or burned\]: strike 1: lands: \d+ damage -> Crystal Beetle [A-L] HP \d+->\d+; strike 2: [^\n]*; strike 3: [^\n]*/);
+    assert.match(block, /Alaric: Scorchburst scroll \(FIRST STRIKE[^\n]*-> Crystal Beetle [A-L] \[Magical \/ Area \/ Fire \(thrown scroll\): from where he stands, no step and no melee blow; scorchburst scroll, first-circle, one use used up; its burst strikes exactly the 10 below, no one else is hit or burned\]: strike 1: lands: \d+ damage -> Crystal Beetle [A-L] HP \d+->\d+;[^\n]*; strike 10: [^\n]*/);
     assert.match(block, /Narrate exactly these resolved steps in order/);
     const panel = String(turnPanel(g.state(), content));
     assert.match(panel, /Alaric: Scorchburst scroll \(FIRST STRIKE\) → Crystal Beetle [A-L] · scorchburst scroll, first-circle, one use used up/);

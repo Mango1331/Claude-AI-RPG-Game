@@ -26,7 +26,7 @@ import { shopSearch, findTrades } from './settlement.js';
 import { journeyReady, knownAt } from './catalog.js';
 import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSetsGoal } from './intents.js';
 import { knownByName } from './known.js';
-import { useOf, spoiled, unitsOf } from './items.js';
+import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile } from './items.js';
 import { itemEffectOf } from '../content.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
@@ -563,9 +563,10 @@ const HANDLERS = {
     drop(s, content, c, ctx, emit) {
         // Patch 3 (live 18.10.2026: "he leaves the staff with them" while the staff stayed equipped): gear he wears or
         // wields comes off first, then it lies here; it gives him nothing while it lies here
-        const worn = typeof c.object === 'string' && c.object.startsWith('item.') && !objectOf(s, content, c.object) && Object.values(s.entities.pc.sheet.equipment || {}).includes(c.object.slice(5));
+        const worn = typeof c.object === 'string' && c.object.startsWith('item.') && !objectOf(s, content, c.object) && Object.values(s.entities.pc.sheet.equipment || {}).some((r) => r === c.object.slice(5) || r?.object === c.object.slice(5));
         const off = worn ? HANDLERS.unequip(s, content, { ...c, object: c.object }, ctx, emit) : null;
-        const o = objectOf(s, content, c.object);
+        // Patch 7.1: a piece of his own, taken off, is that object again
+        const o = objectOf(s, content, worn && s.objects[c.object.slice(5)] ? c.object.slice(5) : c.object);
         if (!o || o.holder?.entity !== 'pc') return { status: 'refused', reason: 'he does not hold it', line: `CANNOT DROP — he does not hold ${o ? o.name : 'that'}.` };
         const qty = c.qty && c.qty < (o.qty ?? 1) ? c.qty : null;
         if (o.template) {
@@ -912,20 +913,29 @@ const HANDLERS = {
             return { status: 'resolved', reason: 'already equipped', line: `READIES — ${it?.name || c.object.new} is already equipped; drawing/readying it is not an equipment swap.` };
         }
         const o = objectOf(s, content, c.object);
-        const tpl = o?.template || [...content.items.entries()].find(([, i]) => o && normText(i.name) === normText(o.name))?.[0];
         if (!o || o.holder?.entity !== 'pc') return { status: 'refused', reason: 'he does not hold it', line: 'CANNOT EQUIP — he does not hold that.' };
-        const item = tpl && content.items.get(tpl);
-        if (!item?.slot || item.slot === 'ammo' || item.slot === 'container') return { status: 'refused', reason: 'no gear values', line: `CANNOT EQUIP — the engine knows no gear values for ${o.name}.` };
+        // Patch 7.1: a piece of his own (bought, looted, found) is worn with its own values, never those of a template of
+        // the same name; a template item of the sheet as before
+        let own = !o.template ? profileOf(content, o) : null;
+        const tpl = own ? null : o.template || [...content.items.entries()].find(([, i]) => normText(i.name) === normText(o.name))?.[0];
+        // a thing established before snapshots (an "iron sword" of the story): its values as its name gives them now
+        if (!own && !tpl) own = itemProfile(content, o);
+        const item = own?.kind === 'gear' ? { id: o.id, object: o.id, name: o.name, rank: own.rank, slot: own.slot, family: own.family, atk: own.atk, matk: own.matk, def: own.def, mdef: own.mdef, ...(own.requires_rank ? { requires_rank: own.requires_rank } : {}) } : tpl && content.items.get(tpl);
+        if (!item?.slot || ['ammo', 'container'].includes(item.slot)) return { status: 'refused', reason: 'no gear values', line: `CANNOT EQUIP — the engine knows no gear values for ${o.name}.` };
+        // Patch 7.1: ranked gear only up to his own Power-Rank (or the Rank the piece itself names)
+        const ranked = rankRefusal(content, s.entities.pc.sheet.level, { kind: 'gear', title: o.name, rank: item.rank, requires_rank: item.requires_rank });
+        if (ranked) return { status: 'refused', reason: 'rank', line: `CANNOT EQUIP — ${ranked}. It stays in his pack.` };
         const slot = c.slot || item.slot;
         const current = s.entities.pc.sheet.equipment[slot];
         if (o.template) emit({ t: 'item.changed', d: { id: 'pc', item: tpl, qty: -1, why: 'equipped' } });
         else emit({ t: 'object.consumed', d: { id: o.id, by: 'equipped' } });
         if (current) {
-            const cur = typeof current === 'string' ? current : null;
-            if (cur) emit({ t: 'item.changed', d: { id: 'pc', item: cur, qty: 1, why: 'unequipped' } });
+            if (typeof current === 'string') emit({ t: 'item.changed', d: { id: 'pc', item: current, qty: 1, why: 'unequipped' } });
+            else if (current.object && s.objects[current.object]) emit({ t: 'object.moved', d: { id: current.object, to: { entity: 'pc' } } });
         }
-        emit({ t: 'item.equipped', d: { id: 'pc', slot, item: tpl } });
-        return { status: 'resolved', line: `EQUIPS — ${item.name} (${slot}).` };
+        emit({ t: 'item.equipped', d: { id: 'pc', slot, item: own ? item : tpl } });
+        const vals = ['atk', 'matk', 'def', 'mdef'].filter((k) => item[k]).map((k) => `${k.toUpperCase()} ${item[k]}`).join(', ');
+        return { status: 'resolved', line: `EQUIPS — ${item.name} (${slot}${vals ? `; ${vals}` : ''}).` };
     },
     unequip(s, content, c, ctx, emit) {
         const eq = s.entities.pc.sheet.equipment;
@@ -938,11 +948,14 @@ const HANDLERS = {
             return { status: 'resolved', line: `UNEQUIPS — ${names.join(', ')}: all he wore; in his pack now, no longer worn.` };
         }
         const ref = typeof c.object === 'string' ? c.object.replace(/^item\./, '') : null;
-        const slot = Object.keys(eq).find((k) => eq[k] === ref || (typeof eq[k] === 'object' && normText(eq[k]?.name) === normText(content.items.get(ref)?.name || ref)));
+        // Patch 7.1: a piece of his own is named by its object id (the catalog's "item.<id>")
+        const slot = Object.keys(eq).find((k) => eq[k] === ref || (typeof eq[k] === 'object' && (eq[k]?.object === ref || eq[k]?.id === ref || normText(eq[k]?.name) === normText(content.items.get(ref)?.name || ref))));
         if (!slot) return { status: 'refused', reason: 'not equipped', line: 'NOTHING TO DO — he has nothing like that equipped.' };
         const cur = eq[slot];
         emit({ t: 'item.equipped', d: { id: 'pc', slot, item: null } });
         if (typeof cur === 'string') emit({ t: 'item.changed', d: { id: 'pc', item: cur, qty: 1, why: 'unequipped' } });
+        // Patch 7.1: a piece of his own goes back to his pack with its own values
+        else if (cur?.object && s.objects[cur.object]) emit({ t: 'object.moved', d: { id: cur.object, to: { entity: 'pc' } } });
         return { status: 'resolved', line: `UNEQUIPS — ${typeof cur === 'string' ? content.items.get(cur)?.name || cur : cur.name}.` };
     },
 };

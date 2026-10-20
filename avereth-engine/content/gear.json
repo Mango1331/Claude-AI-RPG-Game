@@ -198,7 +198,7 @@
   },
   "kits_text": "TRANSMIGRATION STARTER KITS — ONE-TIME CAMPAIGN INITIALIZATION\n\nWhen System Character Creation is completed by selecting one Base Class and exactly 2 Base Skills, the System grants exactly one matching F-rank starter kit.\nThis is a one-time bootstrap benefit, not a repeatable Shop or Skill.\n\nAll listed values are fixed item-instance values.\n\nWARRIOR:\n- Starter Longsword [F]: ATK 6\n- Starter Heavy Armor [F]: DEF 6, MDEF 2\n\nMAGE:\n- Starter Arcane Staff [F]: MATK 6\n- Starter Light Robes [F]: DEF 2, MDEF 3\n\nGUARDIAN:\n- Starter Mace [F]: ATK 5\n- Starter Heavy Armor [F]: DEF 6, MDEF 2\n- Starter Shield [F]: DEF 3, MDEF 2\n\nDUELIST:\n- Starter Rapier [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n\nRANGER:\n- Starter Shortbow [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n- Starter Quiver [unranked]: contains 20 Standard Arrows\n- Standard Arrows are ordinary physical ammunition and grant no bonus damage or other modifier.\n\nCOMMON BOOTSTRAP ITEMS:\nBefore Class selection, the player has:\n- Simple Traveler's Clothes [unranked; no combat values]\n- Small Pouch [unranked]\n- 5 Silver\n\nCREATION-COMPLETION EFFECT:\nAfter the Class is chosen and exactly 2 Base Skills from that Class are chosen:\n1. apply the Class's one-time Level-1 Favored-Stat growth if not already applied;\n2. grant/preserve the selected Class's Basic Attack at Proficiency 1, Progress 0, plus the 2 selected Base Skills at Proficiency 1, Progress 0;\n3. materialize and equip the matching starter kit;\n4. preserve Simple Traveler's Clothes as ordinary clothing unless the player later discards/replaces them;\n5. mark the one-time starter kit as claimed.\n\nNo later Class Evolution or Class change grants another starter kit unless an explicit future rule says so.\n",
   "item_effects": {
-    "_note": "Hotfix 4.3.0-c.6.6.18: offensive consumables the engine resolves (a scroll thrown is an attack through the combat pipeline, never a story effect). Each entry is shaped like a skill (src/combat.js attackAction) with item: true; match names the words (all of them) of a held thing's name that make it this item (also for a thing bought before the profile existed). The power is the item's own, fixed: it does not scale with its user's stats, level or Power-Rank nor with the foe.",
+    "_note": "Patch 7.1 (4.3.0-c.6.6.19): offensive consumables the engine resolves (a scroll thrown is an attack through the combat pipeline, never a story effect). Each entry is the standard profile of its kind, shaped like a skill (src/combat.js attackAction) with item: true; match names the words (all of them) of a thing's name that make it this kind. A concrete scroll keeps its own snapshot (object.profile, fixed when it is offered, bought, looted or established): its power is the standard power times its quality, never its user's stats, level or Power-Rank nor the foe's. requires_rank (optional) lowers or raises the Power-Rank needed to use it; without it, the item's own Rank.",
     "effects": [
       {
         "id": "item.scorchburst",
@@ -228,7 +228,7 @@
           "area": "burst"
         },
         "attack": {
-          "base": 22,
+          "base": 32,
           "scaling": [],
           "uses": null,
           "share": 0,
@@ -239,13 +239,215 @@
           {
             "kind": "area",
             "shape": "burst",
-            "max_targets": 3,
+            "size": "cluster",
             "shared_rolls": true
           }
         ],
-        "effect_text": "thrown up to SHORT; the burst strikes the creature it is thrown at and those at the same distance from him, at most 3 in all, each with its own damage roll. No additional status effect. The scroll is used up.",
-        "source_text": "Scorchburst Scroll, first circle [Offensive item, F-Rank]\nType: Magical / Area / Fire\nBase Power: 22 (the scroll's own, fixed: an F-Rank area spell of an F-Rank caster, as Arcane Burst at INT 6 / MATK 6 = 21.5)\nRange: SHORT (thrown)\nArea: a burst about a stride and a half across where it lands: the creature it is thrown at and those at the same distance, at most 3\nUses: 1 (used up when it is resolved)"
+        "effect_text": "thrown up to SHORT; the burst strikes the creature it is thrown at and everyone standing in the same close knot with it (the cluster the story established, at the same distance from him), however many they are, each with its own damage roll; someone standing alone is struck alone. No additional status effect. The scroll is used up.",
+        "source_text": "Scorchburst Scroll, first circle [Offensive item, F-Rank]\nType: Magical / Area / Fire\nBase Power: 32 (the scroll's own, fixed for a common one: about one and a half casts of an F-Rank area spell at the start of the band, Arcane Burst at INT 6 / MATK 6 = 21.5, and below an F single-target lance, Flame Lance 36.25; a crude, fine, superior or exceptional scroll scales it by its quality)\nRange: SHORT (thrown)\nArea: a burst about a stride and a half across where it lands: the creature it is thrown at and everyone in the same close knot with it, no limit on their number\nUses: 1 (used up when it is resolved)"
       }
     ]
+  },
+  "instances": {
+    "_note": "Patch 7.1 (4.3.0-c.6.6.19): a concrete item's own values, fixed once when it is established (an offer line, a purchase, loot, the story) and kept on the object as its profile; a later change of this file changes no item that exists. Ranks are bands, not fixed strengths: within one Rank an item's quality (the words of its name) places it in the reference range of its kind (f_rank_reference) or above it for exceptional pieces, and higher Ranks scale it as HIGHER-RANK GENERATION says. Guidelines for ordinary items; an item the story establishes with an explicit Rank keeps it.",
+    "quality": [
+      {
+        "tier": "crude",
+        "words": [
+          "crude",
+          "rusty",
+          "rusted",
+          "cracked",
+          "battered",
+          "shoddy",
+          "makeshift",
+          "cheap",
+          "worn",
+          "dented",
+          "chipped",
+          "faded"
+        ],
+        "at": 0.0,
+        "power": 0.75
+      },
+      {
+        "tier": "common",
+        "words": [],
+        "at": 0.35,
+        "power": 1.0
+      },
+      {
+        "tier": "fine",
+        "words": [
+          "fine",
+          "good",
+          "quality",
+          "well made",
+          "well-made",
+          "sturdy",
+          "polished",
+          "balanced",
+          "reinforced",
+          "potent"
+        ],
+        "at": 0.7,
+        "power": 1.25
+      },
+      {
+        "tier": "superior",
+        "words": [
+          "superior",
+          "masterwork",
+          "master made",
+          "master-made",
+          "excellent",
+          "exquisite",
+          "high quality",
+          "high-quality",
+          "greater"
+        ],
+        "at": 1.0,
+        "power": 1.5
+      },
+      {
+        "tier": "exceptional",
+        "words": [
+          "enchanted",
+          "runed",
+          "rune-etched",
+          "rare",
+          "exceptional",
+          "blessed",
+          "legendary",
+          "ancient"
+        ],
+        "at": 1.25,
+        "power": 1.85
+      }
+    ],
+    "gear_kinds": [
+      {
+        "id": "arcane_focus",
+        "slot": "weapon",
+        "family": "focus",
+        "words": [
+          "staff",
+          "wand",
+          "focus",
+          "orb",
+          "rod",
+          "sceptre",
+          "scepter"
+        ],
+        "values": {
+          "matk": "arcane_focus_matk"
+        }
+      },
+      {
+        "id": "shield",
+        "slot": "offhand",
+        "family": null,
+        "words": [
+          "shield",
+          "buckler",
+          "kite shield",
+          "tower shield"
+        ],
+        "values": {
+          "def": "shield_def",
+          "mdef": "shield_mdef"
+        }
+      },
+      {
+        "id": "heavy_armor",
+        "slot": "armor",
+        "family": null,
+        "words": [
+          "plate armor",
+          "plate armour",
+          "breastplate",
+          "chainmail",
+          "chain mail",
+          "mail shirt",
+          "hauberk",
+          "brigandine",
+          "scale armor",
+          "scale mail",
+          "heavy armor",
+          "cuirass"
+        ],
+        "values": {
+          "def": "heavy_armor_def",
+          "mdef": "heavy_armor_mdef"
+        }
+      },
+      {
+        "id": "light_armor",
+        "slot": "armor",
+        "family": null,
+        "words": [
+          "robes",
+          "robe",
+          "leathers",
+          "leather armor",
+          "light armor",
+          "gambeson",
+          "jerkin",
+          "padded armor"
+        ],
+        "values": {
+          "def": "light_armor_def",
+          "mdef": "light_armor_mdef"
+        }
+      },
+      {
+        "id": "martial_weapon",
+        "slot": "weapon",
+        "family": "by_words",
+        "words": [
+          "sword",
+          "longsword",
+          "shortsword",
+          "broadsword",
+          "greatsword",
+          "sabre",
+          "saber",
+          "axe",
+          "hand-axe",
+          "hatchet",
+          "battleaxe",
+          "mace",
+          "flail",
+          "maul",
+          "hammer",
+          "warhammer",
+          "spear",
+          "halberd",
+          "glaive",
+          "rapier",
+          "dagger",
+          "stiletto",
+          "knife",
+          "bow",
+          "shortbow",
+          "longbow",
+          "club",
+          "cudgel"
+        ],
+        "values": {
+          "atk": "martial_weapon_atk"
+        }
+      }
+    ],
+    "value": {
+      "_note": "Price guidelines in copper for the plausibility check of offers (an audit, never a fixed price: merchants differ, a rare or useful thing may cost more). value = points x cp per point x Rank factor (1 + 0.75R)^2, area attacks x area_factor, x uses; a stronger variant of the same kind is worth more.",
+      "gear_cp_per_point": 8,
+      "attack_cp_per_power": 0.6,
+      "area_factor": 1.5,
+      "plausible": [
+        0.5,
+        2.0
+      ]
+    }
   }
 }

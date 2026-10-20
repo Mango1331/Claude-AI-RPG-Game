@@ -129,6 +129,8 @@ test('c.6.6.4 loot: a bandit leaves the gear his sheet carries and a purse that 
     const gear = x.events.filter((e) => e.t === 'object.created' && e.d.object.gear).map((e) => e.d.object);
     assert.ok(gear.some((g) => g.name === 'F-Rank Short Blade' && g.gear.slot === 'weapon'));
     assert.ok(gear.some((g) => g.name === 'F-Rank Worn Light Armor' && g.gear.slot === 'armor'));
+    // Patch 7.1: each piece keeps the values it was fought with as its own profile (worn later with exactly these)
+    for (const g of gear) assert.deepEqual([g.use, g.profile.kind, g.profile.slot, g.profile.atk, g.profile.def, g.profile.rank], ['equipment', 'gear', g.gear.slot, g.gear.atk, g.gear.def, 'F'], g.name);
     const coin = x.events.find((e) => e.t === 'coin.changed');
     const purse = [...content.monsters.loot.purse_cp_by_template.bandit].map((n, i) => n + [0, 4][i]); // bandit + goblin at most
     if (coin) assert.ok(coin.d.delta >= 1 && coin.d.delta <= purse[1], JSON.stringify(coin.d));

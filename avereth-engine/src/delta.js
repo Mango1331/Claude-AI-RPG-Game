@@ -463,7 +463,9 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
         if (!band) { reject(p, 'position.band must be ENGAGED|SHORT|MEDIUM|LONG (distance to Alaric)'); continue; }
         placed.add(id);
         if (!present.has(id)) { if (!bringIn(id, p, band, coverOf(p.cover) || 'none')) placed.delete(id); continue; }
-        events.push({ t: 'scene.position', d: { id, band, cover: coverOf(p.cover) || 'none' } }); accepted.push(`${id} at ${band}`);
+        // Patch 7.1: the knot they stand in, as the reply establishes it ("apart": alone); without one, as it was
+        const knot = typeof p.cluster === 'string' && p.cluster.trim() ? (/^(?:apart|alone|none)$/i.test(p.cluster.trim()) ? null : normText(p.cluster).slice(0, 40)) : undefined;
+        events.push({ t: 'scene.position', d: { id, band, cover: coverOf(p.cover) || 'none', ...(knot !== undefined ? { cluster: knot } : {}) } }); accepted.push(`${id} at ${band}`);
     }
     for (const a of arr(report.aware)) {
         const id = who_(a && a.who);

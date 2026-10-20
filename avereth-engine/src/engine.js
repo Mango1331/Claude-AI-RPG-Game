@@ -9,7 +9,8 @@
 // re-running a turn from the same state (swipe/regenerate) yields the same results — dice are never rerolled.
 import { Dice, newSeed } from './rng.js';
 import { applyEvent, fold } from './state.js';
-import { anchorFor, templateFor, locationByName, weaponFamily, startPlace } from './content.js';
+import { anchorFor, templateFor, locationByName, weaponFamily, startPlace, itemEffectOf } from './content.js';
+import { rankRefusal } from './v4/items.js';
 import { deriveCharacter } from './derived.js';
 import { selectClass, selectSkills } from './creation.js';
 import { scaleCreature, chooseCreatureLevel, humanSheet } from './npcgen.js';
@@ -140,8 +141,14 @@ function creationTurn(s, content, intent, emit) {
 
 function storyTurn(s, content, text, intent, dice, emit, situations, c = false) {
     const pcAction = pcActionOf(s, content, intent, text);
-    // Hotfix c.6.6.18: a thrown burst (an offensive item) strikes whom the engine fixes now, from where they stand
-    if (pcAction?.kind === 'attack' && pcAction.item) pcAction.burst = burstOf(s, content, pcAction);
+    // Hotfix c.6.6.18: a thrown burst (an offensive item) strikes whom the engine fixes now, from where they stand;
+    // Patch 7.1: only an item of his Power-Rank (or one whose own profile allows him) is activated at all
+    if (pcAction?.kind === 'attack' && pcAction.item) {
+        const fx = itemEffectOf(content, s.objects?.[pcAction.item]);
+        const no = fx ? rankRefusal(content, s.entities.pc.sheet.level, fx.profile || { kind: 'attack', title: fx.name, rank: fx.rank, requires_rank: fx.requires_rank }) : null;
+        if (no) return { kind: 'note', text: `${no}. Nothing was used up, spent or rolled; nothing burns and nothing is struck.`, notice: `${fx.name}: Rank too high for him (nothing used up, nothing rolled)` };
+        pcAction.burst = burstOf(s, content, pcAction);
+    }
     // 1) an NPC commitment reported last turn resolves first; player input cannot erase it (Core #23 PENDING)
     const committed = (s.pending_combat || []).map((p) => p.by).filter((by) => s.entities[by] && s.entities[by].status !== 'dead' && s.scene.present.includes(by));
     if ((s.pending_combat || []).length) emit({ t: 'combat.pending_cleared', d: {} });
@@ -455,13 +462,13 @@ function caughtBy(s, content, act) {
 }
 
 /**
- * Hotfix c.6.6.18: whom a thrown burst of an offensive item strikes: the one it is thrown at and those at his distance
- * (src/v4/scene_handles.js burstCaught), at most its size, each one the engine can give a combat profile.
+ * Hotfix c.6.6.18, Patch 7.1: whom a thrown burst of an offensive item strikes: the one it is thrown at and everyone in
+ * its knot (src/v4/scene_handles.js burstCaught), however many, each one the engine can give a combat profile.
  */
 function burstOf(s, content, act) {
-    const fx = content.skills.get(act.skill)?.effects?.find((e) => e.kind === 'area' && e.shape === 'burst');
-    if (!fx) return [];
-    return burstCaught(s, act.target, fx.max_targets).filter((id) => {
+    const item = itemEffectOf(content, s.objects?.[act.item]) || content.skills.get(act.skill);
+    if (!item?.effects?.some((e) => e.kind === 'area' && e.shape === 'burst')) return [];
+    return burstCaught(s, act.target).filter((id) => {
         const e = s.entities[id];
         return !!(e.sheet || e.profile || e.kind === 'npc' || content.anchors.get(e.anchor) || anchorFor(content, [e.species, ...(e.descriptors || [])].join(' ')));
     });

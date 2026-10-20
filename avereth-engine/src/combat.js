@@ -10,6 +10,8 @@ import { scaleCreature } from './npcgen.js';
 import { lookOf } from './knowledge.js';
 import { bandIndex, bandName, clone, num, roundHalfUp } from './util.js';
 import { sceneHandle } from './v4/scene_handles.js';
+import { itemEffectOf } from './content.js';
+import { rankRefusal } from './v4/items.js';
 
 const PROF = (content, level) => content.rules.proficiency.levels[String(level || 1)];
 const label = (e) => e.name || (e.descriptors && e.descriptors[0] ? `the ${e.descriptors[0]}` : e.id);
@@ -396,7 +398,9 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
     if (!target || !alive(target)) return { illegal: `target ${targetId} is not an active combatant` };
     // For an area attack targetId is only the routing/nominal target. Its personal full cover must not veto an AoE
     // that may actually strike different ENGAGED foes.
-    const charSkill = actor.model === 'character' ? skillOf(content, skillId) : null;
+    // Patch 7.1: an attack item acts by its own snapshot (its power, reach, area), not by the standard profile of its kind
+    const thing = extra.item ? state?.objects?.[extra.item] : null;
+    const charSkill = actor.model === 'character' ? (thing && itemEffectOf(content, thing)?.attack ? itemEffectOf(content, thing) : skillOf(content, skillId)) : null;
     const charArea = !!charSkill?.effects?.some((e) => e.kind === 'area');
     // Hotfix c.6.6.18: a thrown burst (an offensive item) lands where it is thrown: the one it is thrown at must be seen
     const burst = charSkill?.effects?.find((e) => e.kind === 'area' && e.shape === 'burst') || null;
@@ -408,6 +412,9 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         // knows; it has no proficiency of his
         const byItem = !!(skill.item && extra.item);
         if (!byItem && !actor.fixed.actions[skill.id]) return { illegal: `${actor.name} does not know ${skill.name}` };
+        // Patch 7.1: and only up to his own Power-Rank (or the Rank the item itself names as its requirement)
+        const ranked = byItem ? rankRefusal(content, actor.fixed.level, skill.profile || { kind: 'attack', title: skill.name, rank: skill.rank, requires_rank: skill.requires_rank }) : null;
+        if (ranked) return { illegal: ranked };
         if (!skill.attack) return { illegal: `${skill.name} is not an attack` };
         const prof = PROF(content, byItem ? 1 : actor.fixed.actions[skill.id].prof);
         // range + movement (only the declared/written movement; Core #12, #24 PC ACTION SCOPE)
@@ -498,9 +505,9 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         const opts = { raw, profPower: prof.power, buffPowerPct, ambush: !!extra.opening };
         record.strikes = [];
         if (burst) {
-            // Hotfix c.6.6.18: a thrown burst strikes the one it is thrown at and those the engine fixed with it (the same
-            // distance from him, at most its size: src/engine.js burstOf), each with its own pipeline; no one else
-            const ids = uniqIds([targetId, ...(extra.burst || [])]).filter((id) => enc.combatants[id] && areaVictim(ctx, actor, enc.combatants[id])).slice(0, burst.max_targets);
+            // Hotfix c.6.6.18, Patch 7.1: a thrown burst strikes the one it is thrown at and those the engine fixed with it
+            // (its knot: src/engine.js burstOf, however many), each with its own pipeline; no one else
+            const ids = uniqIds([targetId, ...(extra.burst || [])]).filter((id) => enc.combatants[id] && areaVictim(ctx, actor, enc.combatants[id]));
             for (const tid of ids) record.strikes.push(resolveStrike(ctx, actor, enc.combatants[tid], skill.attack, opts));
         } else if (isArea) {
             // area: every target actually ENGAGED after the declared movement is hit, each with its own pipeline.

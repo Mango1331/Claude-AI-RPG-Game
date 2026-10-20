@@ -118,33 +118,51 @@ function standing(state, id) {
 }
 
 /**
- * Hotfix c.6.6.18: where a thrown burst (an offensive item, reaching `range`) lands when he names no one: of the foes in
- * sight (in a fight its foes too, at the fight's distances), the distance within its reach where most of them stand, the
- * nearer one on a tie; it is thrown at the first of them there. Null when no foe is within its reach.
+ * Patch 7.1: the close knot someone stands in (a cluster: those within a stride or two of each other), or null when they
+ * stand alone. The story establishes it (src/v4/world.js position cluster; "apart" sets someone alone); without such a
+ * word, creatures the story brought in together as one group (creature.new, count > 1: one group name) stand together.
+ * A cluster counts only among those at the same distance from Alaric (src/v4/scene_handles.js burstCaught): one of the
+ * knot that the fight or a step moved away has left it.
+ */
+export function clusterOf(state, id) {
+    const pos = state.scene?.positions?.[id];
+    if (pos && Object.hasOwn(pos, 'cluster')) return pos.cluster ?? null;
+    return state.entities?.[id]?.group || null;
+}
+
+/**
+ * Hotfix c.6.6.18, Patch 7.1: where a thrown burst (an offensive item, reaching `range`) lands when he names no one: of
+ * the foes in sight (in a fight its foes too, at the fight's distances) within its reach, the knot with the most of them
+ * (a foe standing alone is a knot of one), the nearer one on a tie; it is thrown at the first of that knot. Null when no
+ * foe is within its reach.
  */
 export function burstAim(state, range) {
     const reach = BANDS.indexOf(range);
     const fight = Object.values(state.encounter?.combatants || {}).filter((c) => c.side === 'hostile').map((c) => c.id);
     const foes = [...new Set([...fight, ...tacticalHere(state, { friendly: false })])].filter((id) => standing(state, id) && BANDS.indexOf(bandOf(state, id)) >= 0 && BANDS.indexOf(bandOf(state, id)) <= reach);
     let best = null;
-    for (const band of BANDS.slice(0, reach + 1)) {
-        const here = foes.filter((id) => bandOf(state, id) === band);
-        if (here.length && (!best || here.length > best.length)) best = here;
+    for (const id of foes) {
+        const knot = burstCaught(state, id).filter((x) => foes.includes(x));
+        const nearer = best && BANDS.indexOf(bandOf(state, id)) < BANDS.indexOf(bandOf(state, best[0]));
+        if (!best || knot.length > best.length || (knot.length === best.length && nearer)) best = knot;
     }
     return best ? best[0] : null;
 }
 
 /**
- * Hotfix c.6.6.18: whom a burst thrown at `target` strikes: that one and whoever else stands at the same distance from
- * him (foe, bystander or friend: the fire does not choose), in the fight's order and then the scene's, at most `max`.
- * The engine's whole knowledge of where they stand is their distance from him; a burst never reaches everyone of a room
- * or a kind because they are there.
+ * Hotfix c.6.6.18, Patch 7.1: whom a burst thrown at `target` strikes: that one and everyone in the same knot with it
+ * (clusterOf) at the same distance from him, foe, bystander or friend (the fire does not choose), in the fight's order
+ * and then the scene's, however many they are. No cap: the burst's size is the knot's, never a number of victims. The
+ * engine's whole knowledge of where they stand is their distance from him and the knots the story established; it
+ * strikes no one else, never everyone of a room, a distance or a kind because they are there.
  */
-export function burstCaught(state, target, max) {
+export function burstCaught(state, target) {
     const band = bandOf(state, target);
     if (!band || !standing(state, target)) return [];
+    const knot = clusterOf(state, target);
+    if (!knot) return [target];
     const pool = [...new Set([...Object.keys(state.encounter?.combatants || {}), ...(state.scene?.present || [])])];
-    return [target, ...pool.filter((id) => id !== target && standing(state, id) && bandOf(state, id) === band)].slice(0, max);
+    return [target, ...pool.filter((id) => id !== target && standing(state, id) && bandOf(state, id) === band && clusterOf(state, id) === knot)];
 }
 
 /**

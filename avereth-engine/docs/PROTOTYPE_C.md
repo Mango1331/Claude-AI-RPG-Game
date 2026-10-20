@@ -1592,7 +1592,7 @@ Patch 7 ist damit bereit für den Live-Test mit GLM-5.3-Flash.
   - Erst danach wird `planner` für neue Kampagnen auf `true` gesetzt.
   - Ein vor 7.2 gespeichertes „aus“ ist vom alten Standard nicht zu unterscheiden. Laufende Spiele behalten es, neue starten auf V4-C. Wer V4-A für neue Kampagnen will, schaltet den Planner im Panel wieder aus; diese Wahl bleibt.
 - Ein Planner-Fehler bricht den Zug mit Hinweis ab und fällt nie auf den Interpreter zurück. Swipe und Regenerate nutzen die gespeicherten Entscheidungen.
-- Historischer Stand vor 7.2: Git-Tag `avereth-4.3.0-c.6.6.20`.
+- Historischer Stand vor 7.2: Commit `9e949c1` (4.3.0-c.6.6.20). Der Tag `avereth-4.3.0-c.6.6.20` ließ sich aus der Sitzung nicht pushen (Git-Proxy); nachholen mit `git tag avereth-4.3.0-c.6.6.20 9e949c1 && git push origin avereth-4.3.0-c.6.6.20`.
 - Smokes: `smoke:st:c` prüft den neuen Standard (Planner an, Pfad `c`). `smoke:st:v4` und die V4-Seite von `smoke:browser` spielen V4-A bewusst gewählt (Pfad `a`).
 
 **7.2B – Identität und Gruppenkardinalität:**

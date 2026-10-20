@@ -335,7 +335,7 @@ Welt- und NPC-Handlungen (NPC gibt Alaric etwas, NPC geht, Wetter) brauchen kein
 
 ## 13. Konsolidierung 7.2 und Strangler-Regel (ab Patch 8)
 
-**Produktpfad.** Seit 4.3.0-c.6.6.21 ist V4-C (semantischer Planner) der Standard für neue Kampagnen. Jede neue V4-Kampagne speichert ihren Pfad in `campaign.started` (`path: c|a`). Eine laufende Kampagne wechselt ihren Pfad nie durch eine geänderte Einstellung. V3 und V4-A bleiben vorhanden; ihr Rückbau ist eine spätere Aufgabe. Der historische Stand vor 7.2 ist als Git-Tag `avereth-4.3.0-c.6.6.20` gesichert.
+**Produktpfad.** Seit 4.3.0-c.6.6.21 ist V4-C (semantischer Planner) der Standard für neue Kampagnen. Jede neue V4-Kampagne speichert ihren Pfad in `campaign.started` (`path: c|a`). Eine laufende Kampagne wechselt ihren Pfad nie durch eine geänderte Einstellung. V3 und V4-A bleiben vorhanden; ihr Rückbau ist eine spätere Aufgabe. Der historische Stand vor 7.2 ist Commit `9e949c1` (4.3.0-c.6.6.20) auf diesem Branch. Der Git-Tag `avereth-4.3.0-c.6.6.20` existiert lokal; der Push des Tags wurde vom Git-Proxy der Sitzung abgewiesen und kann mit `git tag avereth-4.3.0-c.6.6.20 9e949c1 && git push origin avereth-4.3.0-c.6.6.20` nachgeholt werden.
 
 **Strangler-Regel.**
 - Neue größere Delta-Domänen entstehen ab Patch 8 in eigenen Fachmodulen unter `src/v4/` (Vorbilder: `identity.js`, `combat_truth.js`, `dungeon.js`, `features.js`).

@@ -126,3 +126,27 @@ test('hotfix 7.2.1: once the engine has registered him, the story may say so (no
     ] });
     assert.equal(record.events.filter((e) => e.t === 'delta.rejected' && e.d.item.p === 'registered_alaric').length, 0);
 });
+
+test('hotfix 7.2.1 review: three legs, the middle one not reached: a later leg reported arrived does not carry him past it', async () => {
+    const g = live();
+    const text = '*i walk into the city ahead, make my way over to the adventurers guild and then head out to the old crown catacombs*';
+    const { outcome } = await say(g, text, GOS[0], GOS[1], { type: 'go', to: 'loc.old_crown_catacombs', quote: 'head out to the old crown catacombs', needs: 2 });
+    assert.deepEqual(outcome.resolutions.map((r) => r.status), ['authorized', 'authorized', 'authorized']);
+    const { record } = await g.reply('He passes the gate into Alderwatch; a cart overturns ahead and blocks the street to the Guild, and he stops to watch the drovers argue.', {
+        expected: { 1: { arrived: true, at: 'loc.alderwatch', with: null }, 2: { arrived: false, at: null, with: null }, 3: { arrived: true, at: 'loc.old_crown_catacombs', with: null } },
+        deltas: [{ seq: 1, type: 'arrive', at: 'loc.alderwatch', with: null, forced_by: null }],
+    });
+    assert.deepEqual(moves(record), ['loc.alderwatch'], 'no leg past the one he did not reach');
+    assert.equal(g.state().scene.at, 'loc.alderwatch');
+});
+
+test('hotfix 7.2.1 review: the same without an arrive delta (expected only): he stops at the city, not at the catacombs', async () => {
+    const g = live();
+    const text = '*i walk into the city ahead, make my way over to the adventurers guild and then head out to the old crown catacombs*';
+    await say(g, text, GOS[0], GOS[1], { type: 'go', to: 'loc.old_crown_catacombs', quote: 'head out to the old crown catacombs', needs: 2 });
+    const { record } = await g.reply('He passes the gate into Alderwatch; a cart overturns ahead and blocks the street to the Guild, and he stops to watch the drovers argue.', {
+        expected: { 1: { arrived: true, at: 'loc.alderwatch', with: null }, 2: { arrived: false, at: null, with: null }, 3: { arrived: true, at: 'loc.old_crown_catacombs', with: null } },
+        deltas: [],
+    });
+    assert.deepEqual(moves(record), ['loc.alderwatch']);
+});

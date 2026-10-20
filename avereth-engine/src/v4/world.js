@@ -495,10 +495,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
 
     const explicitArrival = fw.accept.some((d) => d.type === 'arrive');
     if (!explicitArrival && !s.encounter) {
+        let onWay = false; // review of Hotfix 7.2.1: after a leg he reached, one he did not reach ends the way
         for (const [k, type] of Object.entries(outcome.expected_keys || {}).sort((a, b) => Number(a[0]) - Number(b[0]))) {
             if (type !== 'go') continue;
             const e = expected[k];
-            if (!e || e.arrived !== true) continue;
+            if (!e || e.arrived !== true) { if (onWay) break; continue; }
+            onWay = true;
             const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
             const at = viaStop(place(reportedTarget(s, auth, expected, e.at, k) || e.at || go?.to || null));
             if (!at.error && at.id !== s.scene.at && !wayRefused(at.id, { seq: Number(k), type: 'expected' })) {
@@ -1295,10 +1297,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
      */
     /** Hotfix 7.2.1: the GO legs after the one that reached `id`, each reported arrived, in order; none when no leg names it. */
     function laterLegs(id) {
-        const legs = Object.entries(outcome.expected_keys || {}).filter(([k, type]) => type === 'go' && expected[k]?.arrived === true).map(([k]) => Number(k)).sort((a, b) => a - b);
+        const all = Object.entries(outcome.expected_keys || {}).filter(([, type]) => type === 'go').map(([k]) => Number(k)).sort((a, b) => a - b);
         const to = (k) => [expected[k]?.at, (auth.gos || []).find((g) => String(g.seq) === String(k))?.to];
-        const reached = legs.filter((k) => to(k).includes(id));
-        return reached.length ? legs.filter((k) => k > Math.max(...reached)) : [];
+        const reached = all.filter((k) => expected[k]?.arrived === true && to(k).includes(id));
+        if (!reached.length) return [];
+        // the way goes leg by leg: one not reached ends it, whatever a later leg reports
+        const out = [];
+        for (const k of all.filter((x) => x > Math.max(...reached))) {
+            if (expected[k]?.arrived !== true) break;
+            out.push(k);
+        }
+        return out;
     }
 
     function viaStop(at) {

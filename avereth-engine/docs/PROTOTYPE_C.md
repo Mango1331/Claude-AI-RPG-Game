@@ -1707,3 +1707,9 @@ Livetest 20.10.2026 13:37 (`tests/v4/live_1020b.json`, Build c.6.6.21).
 - erlaubter Fakt nach der Registrierung.
 
 Ohne den Fix scheitern 1, 4 und 5.
+
+**Nachprüfung (drei Etappen):**
+- Eine nicht erreichte Zwischenetappe beendet den Weg, auch wenn eine spätere Etappe fälschlich als erreicht gemeldet wird.
+- Das gilt nach dem `arrive`-Delta (`laterLegs`) und, schon vor 7.2 offen, ebenso ohne Delta (Schleife vor den Deltas).
+- Wird nur die Endetappe gemeldet, geht er wie bisher dorthin.
+- Tests 7 und 8 scheitern ohne die Korrektur.

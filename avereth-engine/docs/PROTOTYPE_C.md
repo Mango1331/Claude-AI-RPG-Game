@@ -1264,7 +1264,21 @@ Leitsatz: Die Umgebung bietet Probleme und Entdeckungen. Der Spieler entscheidet
 **Grenzen:**
 - Merkmale gehören zu dem Ort, an dem Alaric ist, als die Erzählung sie etabliert; keine Raumgraphen (Patch 7).
 - Wiedererkennung per ID oder mit denselben Worten. Ganz andere Worte für dasselbe Ding erzeugen ein zweites Merkmal, wenn der Extractor die ID nicht nutzt.
-- Eine verborgene `enter`-Falle löst beim GO in den bekannten Ort aus, bevor die Erzählung zeigt, ob er ankommt.
+- ~~Eine verborgene `enter`-Falle löst beim GO in den bekannten Ort aus, bevor die Erzählung zeigt, ob er ankommt.~~ Behoben in der Review-Nachbesserung (unten).
 - Ortsgefahren töten nicht (HP mindestens 1); DEF und Resistenzen mindern ihren Schaden nicht.
 - Ob ein Weg „plainly impossible“ ist, liest der Planner (`possible: false`); die Engine prüft das nicht inhaltlich.
 - Kein XP für Erkundung (bewusst: gehört ins Progression-Review).
+
+#### Review-Nachbesserung zu 32c7d2c (gleicher Build 4.3.0-c.6.6.14)
+
+| Befund (reproduziert, Test vorher rot) | Fix |
+|---|---|
+| Eine verborgene `enter`-Falle sprang schon beim autorisierten GO (`springHidden` in `commands.js`): Wurde die Reise unterbrochen und der Extractor bestätigte keine Ankunft, waren Schaden, Wurf und `disabled` trotzdem gebucht | `pendingSpring` würfelt beim GO vor (gleiche Würfel des Zugs, swipe-stabil) und bucht nichts. Ein Conditional `{kind: 'spring', condition: 'arrive', at, feature, success, record}` geht ins Outcome. Erst `arrive(at)` im World-Applier (bindend bestätigte Ankunft dort) bucht `check.recorded`, Schaden und Fallenstatus (`applySpring`), einmal und nur wenn die Falle noch verborgen und aktiv ist. Ohne Ankunft verfällt das Conditional still (kein `cmd.expired`: das GO bleibt, wie es lief) |
+| Verborgene `touch`/`cross`-Fallen sprangen bei jedem Versuch an irgendeinem anderen Merkmal desselben Ortes (Truhe öffnen → Stolperdraht am Fenster) | Neues Feld `on` an Merkmalen (Delta `feature.on`, `delta-0.93`): Die Erzählung sagt, zu welchem Merkmal eine verborgene Gefahr gehört (die Nadel im Schloss *dieser* Truhe). `attemptEvents` löst nur eine Gefahr aus, deren `on` das gehandhabte Merkmal ist. Ohne `on` löst ein Versuch an etwas anderem nichts aus; die Engine rät keine räumliche Beziehung. Betreten (`enter`) bleibt davon unberührt |
+| SEARCH-Spam-Schutz per EXAMINE umgehbar: jeder neuere History-Eintrag eines Merkmals (auch „examined“ oder ein gescheiterter Versuch) galt als Veränderung | Die Suche merkt sich den Ortszustand als Signatur (`placeState`: id, Status, verborgen/sichtbar aller Merkmale dort; `searches[].sig`). Dieselbe Suche würfelt nur neu, wenn sich diese Signatur geändert hat: etwas gefunden, überwunden, entschärft, zerstört oder neu etabliert. Ansehen oder ein gescheiterter Versuch ändern sie nicht. Anderer Fokus und anderes Werkzeug bleiben eigenständige Suchen. Ein Fund wird vor dem Suchprotokoll gebucht, damit die Signatur den Ort so festhält, wie die Suche ihn hinterlässt |
+
+**Gewählte Semantik (Erzähl-Timing):** Die Engine würfelt die Reaktion vor der Erzählung, damit der Erzähler das Ergebnis kennt. Er bekommt es als Bedingung: „IF HE GETS IN — … Only if the story has him get in; if he does not reach it in this reply, nothing springs.“ Gebucht wird nur, was die Ankunft bestätigt. Ein späterer neuer GO an denselben Ort würfelt neu (neuer Zug, neue Würfel), solange die Falle verborgen und aktiv ist.
+
+**Tests:** `patch 6 review 1–3` in `tests/v4/patch6.test.js`. Test 12/13/17 wurde auf die neue Semantik umgestellt: Wurf vor der Erzählung, Buchung erst mit der Ankunft, Swipe der Antwort mit denselben Würfeln und ohne zweiten Schaden, ausgelöste Falle springt nicht wieder. Gegenproben: Jeder der drei Fixes einzeln zurückgenommen → genau der zugehörige Review-Test rot. Gesamt 827/827. Browser-Smoke, ST-V3 (Checks identisch zu Patch 5), ST-V4 und ST-C grün.
+
+**Kosten:** Extractor-Systemprompt +42 Token (5.931 → 5.973, Feld `on`). Planner unverändert. Keine neuen LLM-Aufrufe.

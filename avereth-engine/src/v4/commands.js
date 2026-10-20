@@ -29,7 +29,7 @@ import { knownByName } from './known.js';
 import { useOf, spoiled, unitsOf } from './items.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
-import { attemptEvents, springHidden, searchedBefore, searchFinds, featureEvent, keyOf } from './features.js';
+import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, keyOf, placeState } from './features.js';
 import {
     REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, abandonContract, contractReady, objectiveText,
     promotion, takenByOthers, bookBoard, isHunt, trophyText, proofTerms, handoverTerms,
@@ -331,10 +331,11 @@ const HANDLERS = {
             if (!ctx.auth.journey) Object.assign(go, companionOf(s, envx));
             roadLine(s, content, c, ctx, go);
         }
-        // Patch 6: a hidden hazard at the place he goes into springs as he enters it (src/v4/features.js), the engine's roll
+        // Patch 6: a hidden hazard at the place he goes into springs as he enters it (src/v4/features.js), the engine's roll;
+        // review of 32c7d2c: booked only where the reply's arrival there is confirmed (a conditional of the arrival)
         if (envx?.c && known && envx.dice) {
-            const sprung = springHidden(s, content, envx.dice, emit, { place: c.to, triggers: ['enter'], seq: c.seq });
-            if (sprung) ctx.extra.push(sprung);
+            const pending = pendingSpring(s, content, envx.dice, { place: c.to, seq: c.seq });
+            if (pending) { ctx.conditionals.push(pending.conditional); ctx.extra.push(pending.line); }
         }
         // Patch 2: a destination beyond his settlement, or a place he knows by report, is his goal until he reaches it
         // (src/v4/intents.js); a quest's journey is that quest's own
@@ -430,15 +431,16 @@ const HANDLERS = {
             const check = resolveCheck(envx.dice, { label: `Search: ${c.what || 'the area'}`, actor, opposition });
             // Patch 6: a hidden feature of this place the search finds is found, by the engine (what it is, not a hint)
             const found = envx.c && check.success ? searchFinds(s, place, focus) : null;
+            // what it found is found before the search is remembered: the place as this search left it (placeState)
+            if (found) emit(featureEvent({ ...found, hidden: false, found: { turn: s.turn, minute: s.clock.minute, how: 'search' }, history: [...(found.history || []), { turn: s.turn, minute: s.clock.minute, what: 'found by his search' }] }));
             const record = {
                 what: String(c.what || 'search the area').slice(0, 80), stat: 'PER', actor: check.actor_score,
                 opposition: check.opposition, chance: check.chance, roll: check.roll, success: check.success,
                 claimed: check.success, by: 'engine', seq: c.seq,
-                ...(envx.c ? { search: true, at: place, focus: keyOf(focus), found: found?.id || null } : {}),
+                ...(envx.c ? { search: true, at: place, focus: keyOf(focus), found: found?.id || null, sig: placeState(s, place) } : {}),
             };
             emit({ t: 'check.recorded', d: record });
             ctx.searchChecks.push(record);
-            if (found) emit(featureEvent({ ...found, hidden: false, found: { turn: s.turn, minute: s.clock.minute, how: 'search' }, history: [...(found.history || []), { turn: s.turn, minute: s.clock.minute, what: 'found by his search' }] }));
             const result = found
                 ? `SUCCESS — he finds ${found.name} (${found.id}, a ${found.kind}${found.trigger ? ` that springs on ${found.trigger}` : ''}): tell plainly what it is and where; he knows it now`
                 : check.success

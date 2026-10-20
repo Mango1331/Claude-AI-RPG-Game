@@ -28,7 +28,7 @@ import { completeContract, contractReady, owedObjects, abandonContract, acceptCo
 import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents, setIntentEvents } from './intents.js';
-import { featureNamed, featureEvent } from './features.js';
+import { featureNamed, featureEvent, applySpring } from './features.js';
 import { itemTraits, useOf } from './items.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
@@ -762,10 +762,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 if (!kindOk(d)) { reject(d, 'world_rule', 'a feature needs a name and a kind'); break; }
                 const id = `feat.${Object.keys(s.features || {}).length + 1}`;
                 const harm = d.harm || (d.kind === 'hazard' ? 'hp' : null);
+                // review of 32c7d2c: a hidden hazard that is part of a feature here (the needle in that chest's lock)
+                const on = d.kind === 'hazard' && d.on ? ((typeof d.on === 'string' && s.features?.[d.on]?.at === here ? s.features[d.on] : null) || featureNamed(s, here, d.on))?.id || null : null;
                 emit(featureEvent({
                     id, at: here, name: String(d.name || d.feature).slice(0, 80), kind: d.kind, hidden: d.hidden === true,
                     status: d.status === 'destroyed' ? 'destroyed' : 'active', trigger: d.kind === 'hazard' ? d.trigger || 'touch' : d.trigger || null,
-                    stat: d.stat || null, difficulty: d.difficulty || 'moderate', harm,
+                    stat: d.stat || null, difficulty: d.difficulty || 'moderate', harm, on,
                     since: { turn: s.turn, minute: s.clock.minute }, found: d.hidden === true ? null : { turn: s.turn, minute: s.clock.minute, how: 'seen' },
                     history: [{ turn: s.turn, minute: s.clock.minute, what: 'established' }], by: 'reply',
                 }));
@@ -1068,7 +1070,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         }
         emit({ t: 'cmd.completed', d: { seq: k.seq, ok: true, reason: null } });
     }
-    for (const c of conditionals.filter((x) => !x.done)) emit({ t: 'cmd.expired', d: { seq: c.seq, reason: 'the condition did not happen in this reply' } });
+    // a trap of a place he did not get into does not spring (no expiry of his GO for it: the GO stands as it went)
+    for (const c of conditionals.filter((x) => !x.done && x.kind !== 'spring')) emit({ t: 'cmd.expired', d: { seq: c.seq, reason: 'the condition did not happen in this reply' } });
 
     // 5. who noticed him, his introduction, his own record of the turn, a fight the reply committed to
     step = { kind: 'engine' };
@@ -1253,6 +1256,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         for (const dec of s.decisions.filter((x) => x.at && x.at !== id && x.kind !== 'registration')) {
             if (dec.turn === s.turn) emit({ t: 'decision.opened', d: { decision: { ...dec, at: id } } });
             else emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } });
+        }
+        // Patch 6 (review of 32c7d2c): the hidden trap his GO rolled for springs now that he is in (src/v4/features.js)
+        for (const k of conditionals.filter((x) => !x.done && x.kind === 'spring' && x.at === id)) {
+            k.done = true;
+            applySpring(s, content, emit, k);
         }
         const hall = hallOf(s, id);
         if (hall) {

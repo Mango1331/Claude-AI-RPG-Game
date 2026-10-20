@@ -206,31 +206,33 @@ test('patch 6 (10, 11): what he got past stays behind him; a trap he disarmed do
     });
 });
 
-test('patch 6 (12, 13, 17): a hidden trap at the door springs when he goes back in: the engine rolls before the story, books the harm once, and a swipe or a replay books nothing again', async () => {
+test('patch 6 (12, 13, 17): a hidden trap at the door springs when he goes back in: the engine rolls before the story, books the harm once he is in, and a swipe or a replay books nothing again', async () => {
     await scores({ moderate: NEVER }, async () => {
         const { g, at } = await tower([feature('tripwire at the doorway', 'hazard', { hidden: true, trigger: 'enter', stat: 'AGI', difficulty: 'moderate' })]);
         await out(g);
         const before = hp(g.state());
         await say(g, '*I go back into the watchtower*', { type: 'go', to: at, quote: 'I go back into the watchtower' });
-        const o = outcome(g);
-        assert.match(o.extra.join('\n'), /HIDDEN DANGER — tripwire at the doorway \(feat\.\d+\), which he had not found, springs as he goes in: his reaction AGI \d+ vs moderate .* → FAILURE; it catches him: HP \d+->\d+/);
+        const line = outcome(g).extra.join('\n');
+        assert.match(line, /HIDDEN DANGER, IF HE GETS IN — tripwire at the doorway \(feat\.\d+\), which he has not found, springs as he enters: his reaction AGI \d+ vs moderate .* → FAILURE; it catches him \(HP -\d+\)/);
+        assert.equal(hp(g.state()), before, 'rolled before the story, booked only once he is in');
+        await g.reply('A wire snaps across his shins as he steps in.', { expected: { 1: { arrived: true, at, with: null } }, deltas: [] });
         let s = g.state();
         const harm = content.rules.exploration.harm.moderate;
         assert.equal(hp(s), before - harm, 'booked by the engine, its number');
         const wire = featNamed(s, /tripwire/);
         assert.deepEqual([wire.hidden, wire.status], [false, 'disabled']);
-        const n = checksOf(lastRec(g)).length;
-        assert.equal(n, 1);
-        // a swipe of the same message: the same record, no second harm
+        assert.equal(g.chat.flatMap((m) => m.extra?.avereth?.events || []).filter((e) => e.t === 'check.recorded' && e.d.feature === wire.id).length, 1);
+        // a swipe of the reply: the same roll told again, the old booking replaced, no second harm
         await prepareGenerationAsync(g.chat, content, { type: 'swipe', settings: { planner: true }, llm: g.llm });
-        assert.equal(hp(g.state()), before - harm);
+        assert.equal(outcome(g).extra.join('\n'), line, 'the same dice');
         await g.reply('A wire snaps across his shins.', { expected: { 1: { arrived: true, at, with: null } }, deltas: [] });
         assert.equal(hp(g.state()), before - harm);
-        assert.deepEqual(foldChat(g.chat).state.entities.pc.sheet.hp, before - harm, 'the fold books it once');
+        assert.equal(foldChat(g.chat).state.entities.pc.sheet.hp, before - harm, 'the fold books it once');
         // a spent trap springs no more
         await out(g);
         await back(g, at);
         assert.equal(hp(g.state()), before - harm);
+        assert.doesNotMatch(outcome(g).extra.join('\n'), /HIDDEN DANGER/);
     });
 });
 
@@ -444,4 +446,107 @@ test('patch 6 (37): in a fight an attempt on a feature is not taken; the planner
     const stairs = featNamed(g.state(), /stairs/);
     await say(g, '*I climb the stairs to get away*', attempt(stairs.id, 'pass', { stat: 'STR' }));
     assert.equal(g.state().features[stairs.id].status, 'active', 'not resolved in a fight');
+});
+
+// ------------------------------------------------------------------------------------------------ review of 32c7d2c
+test('patch 6 review 1: a hidden trap at a place he sets off for does not spring when the story stops him on the way: no roll booked, no harm, the trap as it was; when he does get in, it springs, once', async () => {
+    await scores({ moderate: NEVER }, async () => {
+        const { g, at } = await tower([feature('tripwire at the doorway', 'hazard', { hidden: true, trigger: 'enter', stat: 'AGI', difficulty: 'moderate' })]);
+        await say(g, '*I walk off down the road*', { type: 'go', to: 'loc.ashbridge', quote: 'I walk off down the road' });
+        await g.reply('He walks back toward Ashbridge for an hour, then stops on the road.', { expected: { 1: { arrived: false, at: null, with: null } }, deltas: [{ seq: 1, type: 'time', minutes: 60 }] });
+        const before = g.state();
+        const wire = featNamed(before, /tripwire/);
+        await say(g, '*I head back to the watchtower*', { type: 'go', to: at, quote: 'I head back to the watchtower' });
+        await g.reply('Halfway back, a cart blocks the track; he waits by the roadside.', { expected: { 1: { arrived: false, at: null, with: null } }, deltas: [{ seq: 1, type: 'time', minutes: 30 }] });
+        let s = g.state();
+        assert.notEqual(s.scene.at, at);
+        assert.equal(hp(s), hp(before), 'no harm without arriving');
+        assert.deepEqual([s.features[wire.id].hidden, s.features[wire.id].status, s.features[wire.id].found], [true, 'active', null], 'the trap as it was');
+        assert.ok(!g.chat.flatMap((m) => m.extra?.avereth?.events || []).some((e) => e.t === 'check.recorded' && e.d.feature === wire.id), 'no roll booked for it');
+        // he gets in: it springs as he enters, once; a swipe of the reply books it again only in place of the old one
+        await say(g, '*I go into the watchtower*', { type: 'go', to: at, quote: 'I go into the watchtower' });
+        assert.match(outcome(g).extra.join('\n'), /IF HE GETS IN — tripwire at the doorway .*FAILURE/);
+        const r = await g.reply('He steps through the doorway.', { expected: { 1: { arrived: true, at, with: null } }, deltas: [] });
+        s = g.state();
+        assert.equal(hp(s), hp(before) - content.rules.exploration.harm.moderate);
+        assert.deepEqual([s.features[wire.id].hidden, s.features[wire.id].status], [false, 'disabled']);
+        assert.equal(r.record.events.filter((e) => e.t === 'check.recorded' && e.d.feature === wire.id).length, 1);
+        assert.equal(foldChat(g.chat).state.entities.pc.sheet.hp, hp(before) - content.rules.exploration.harm.moderate, 'the fold books it once');
+    });
+});
+
+test('patch 6 review 2: a hidden tripwire elsewhere in the room does not spring because he opens the chest; one that is part of the chest does', async () => {
+    await scores({ moderate: NEVER }, async () => {
+        const { g } = await tower([
+            feature('locked iron chest', 'obstacle', { stat: 'INT', difficulty: 'moderate' }),
+            feature('tripwire by the far window', 'hazard', { hidden: true, trigger: 'cross', stat: 'AGI' }, 2),
+            feature('loose stone over the hearth', 'hazard', { hidden: true, trigger: 'touch', stat: 'AGI' }, 3),
+            feature('heap of rubble', 'obstacle', { stat: 'STR' }, 4),
+        ]);
+        const chest = featNamed(g.state(), /chest/);
+        const wire = featNamed(g.state(), /tripwire/);
+        const stone = featNamed(g.state(), /loose stone/);
+        const rubble = featNamed(g.state(), /rubble/);
+        const before = hp(g.state());
+        await say(g, '*I pick the lock of the chest*', attempt(chest.id, 'disable', { stat: 'INT' }));
+        assert.doesNotMatch(outcome(g).actions.join('\n'), /HIDDEN DANGER/, 'nothing elsewhere in the room springs');
+        await g.reply('The lock resists.', { expected: {}, deltas: [] });
+        await say(g, '*I climb over the rubble*', attempt(rubble.id, 'pass', { stat: 'STR' }));
+        assert.doesNotMatch(outcome(g).actions.join('\n'), /HIDDEN DANGER/);
+        await g.reply('The rubble shifts under him.', { expected: {}, deltas: [] });
+        let s = g.state();
+        for (const f of [wire, stone]) assert.deepEqual([s.features[f.id].hidden, s.features[f.id].status, s.features[f.id].found], [true, 'active', null], f.name);
+        assert.equal(hp(s), before - 0, 'no harm from either (the chest and the rubble do not hurt)');
+        // a needle that is part of the chest's lock (on: the chest) springs when he handles the chest
+        await say(g, '*I look closer*');
+        await g.reply('He does not see the needle hidden in the second chest\'s lock.', { expected: {}, deltas: [
+            feature('banded oak chest', 'obstacle', { stat: 'INT' }),
+            { ...feature('poison needle in the lock', 'hazard', { hidden: true, trigger: 'touch', stat: 'AGI' }, 2), on: 'banded oak chest' },
+        ] });
+        s = g.state();
+        const oak = featNamed(s, /oak chest/);
+        const needle = featNamed(s, /needle/);
+        assert.equal(needle.on, oak.id);
+        await say(g, '*I try to open the oak chest*', attempt(oak.id, 'disable', { stat: 'INT' }));
+        assert.match(outcome(g).actions.join('\n'), /HIDDEN DANGER — poison needle in the lock/);
+        s = g.state();
+        assert.deepEqual([s.features[needle.id].hidden, s.features[needle.id].status], [false, 'disabled']);
+        assert.deepEqual([s.features[wire.id].hidden, s.features[wire.id].status], [true, 'active'], 'the tripwire still untouched');
+    });
+});
+
+test('patch 6 review 3: looking a visible stair over is no change at the place: the same failed search for traps is still no new roll; a real change, another focus or a found thing still is', async () => {
+    await scores({ moderate: NEVER }, async () => {
+        const { g } = await tower([STAIRS, feature('loose flagstone', 'obstacle', { hidden: true }, 2)]);
+        const search = (what) => ({ type: 'activity', kind: 'search', what, minutes: null, until: null, quote: `I search ${what}` });
+        const stairs = featNamed(g.state(), /stairs/);
+        await say(g, '*I search the floor for traps*', search('the floor for traps'));
+        await g.reply('Nothing.', { expected: { 1: { minutes: 20, done: true } }, deltas: [] });
+        await say(g, '*I examine the stairs*', attempt(stairs.id, 'examine'));
+        await g.reply('Rotten treads.', { expected: {}, deltas: [] });
+        await say(g, '*I fail to climb the stairs*', attempt(stairs.id, 'pass', { stat: 'STR' }));
+        await g.reply('He slips back down.', { expected: {}, deltas: [] });
+        await say(g, '*I search the floor for traps*', search('the floor for traps'));
+        assert.match(outcome(g).actions.join('\n'), /SEARCHED ALREADY/, 'looking at or failing on the stairs changed nothing there');
+        assert.deepEqual(checksOf(lastRec(g)), []);
+        await g.reply('He has been over that floor.', { expected: {}, deltas: [] });
+        // another focus is its own search
+        await say(g, '*I search the ceiling for a hatch*', search('the ceiling for a hatch'));
+        assert.equal(checksOf(lastRec(g)).length, 1);
+        await g.reply('Nothing up there.', { expected: { 1: { minutes: 20, done: true } }, deltas: [] });
+    });
+    // a real change: a feature found (here by another search) makes the floor worth searching again
+    await scores({ moderate: SURE }, async () => {
+        const { g } = await tower([feature('loose flagstone', 'obstacle', { hidden: true })]);
+        const search = (what) => ({ type: 'activity', kind: 'search', what, minutes: null, until: null, quote: `I search ${what}` });
+        await scores({ moderate: NEVER }, async () => {
+            await say(g, '*I search the floor for traps*', search('the floor for traps'));
+            await g.reply('Nothing.', { expected: { 1: { minutes: 20, done: true } }, deltas: [] });
+        });
+        await say(g, '*I search the walls for loose stones*', search('the walls for loose stones'));
+        await g.reply('A flagstone is loose.', { expected: { 1: { minutes: 20, done: true } }, deltas: [] });
+        assert.equal(featNamed(g.state(), /flagstone/).hidden, false);
+        await say(g, '*I search the floor for traps*', search('the floor for traps'));
+        assert.equal(checksOf(lastRec(g)).length, 1, 'something there changed since');
+    });
 });

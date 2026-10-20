@@ -332,7 +332,7 @@ export function applyEvent(state, e) {
         case 'check.recorded':
             state.last.check = clone(d);
             // Patch 6: what he searched for where, so the same search is not rolled again (src/v4/features.js)
-            if (d.search) state.searches = [...(state.searches || []), { at: d.at, focus: d.focus || [], tool: d.tool || null, success: d.success, turn: state.turn, minute: state.clock.minute, found: d.found || null }].slice(-40);
+            if (d.search) state.searches = [...(state.searches || []), { at: d.at, focus: d.focus || [], tool: d.tool || null, success: d.success, turn: state.turn, minute: state.clock.minute, found: d.found || null, sig: d.sig ?? null }].slice(-40);
             break;
         case 'note':
             break;

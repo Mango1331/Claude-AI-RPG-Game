@@ -48,6 +48,12 @@ function inject(g, events) {
     const m = g.chat.at(-1);
     m.extra.avereth.events.splice(-1, 0, ...events);
 }
+/** Final review of Patch 7.1: beetles `ns` standing in one close knot (`word`) where they are, as a reply that showed
+ * them packed together would have stored it (src/v4/world.js position cluster; a scene the live run's state does not hold). */
+function knot(g, ns, word = 'vein') {
+    const s = g.state();
+    inject(g, ns.map((n) => ({ t: 'scene.position', d: { id: BEETLE(n), band: s.scene.positions[BEETLE(n)].band, cover: 'none', cluster: word } })));
+}
 /** Every object.consumed of the scroll the whole chat holds (its records folded, as the HUD and the next turn see them). */
 const consumedInChat = (g) => g.chat.flatMap((m) => rec(m)?.events || []).filter((e) => e.t === 'object.consumed' && e.d.id === SCROLL).length;
 
@@ -75,11 +81,14 @@ test('hotfix scroll 1-5: the scroll bought under c.6.6.17 is recognised; thrown 
     const hit = thrown(g);
     assert.equal(hit.skill, 'item.scorchburst');
     assert.equal(hit.item, SCROLL);
-    // 3. thrown where most of them stand (Patch 7.1: the knot of the swarm the story brought in grazing one vein, at SHORT):
-    // all ten of that knot, however many (no cap); not beetle 1 at his side, which left the knot
+    // 3. final review of Patch 7.1: the live state holds no knot. The swarm was one group "clustered along a wall vein"
+    // (#30, extracted under c.6.6.17, which had no cluster), and by #36 it had "fanned out ... into a loose half-circle".
+    // One group at one distance is no knot: the burst lands on the nearest, beetle 1 at his side, and strikes it alone
+    for (const n of [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12]) assert.equal(before.scene.positions[BEETLE(n)].cluster, undefined, 'no knot established');
+    assert.equal(new Set(short.map((id) => before.entities[id].group)).size, 1, 'one group, all ten at SHORT');
     const struck = hit.strikes.map((s) => s.target);
-    assert.deepEqual(struck, [2, 3, 4, 6, 7, 8, 9, 10, 11, 12].map(BEETLE));
-    assert.ok(struck.every((id) => short.includes(id)));
+    assert.deepEqual(struck, [BEETLE(1)]);
+    assert.deepEqual(hit.strikes.map((s) => [s.final, s.hp_before, s.hp_after]), [[28, 82, 54]]);
     for (const s of hit.strikes) assert.ok(s.hp_after < s.hp_before && s.final > 0, `${s.target} took damage`);
     const enc = r.events.find((e) => e.t === 'encounter.started').d.encounter;
     assert.deepEqual(Object.keys(enc.combatants).filter((id) => id !== 'pc').sort(), [...struck].sort(), 'only those struck are in the fight');
@@ -93,12 +102,20 @@ test('hotfix scroll 1-5: the scroll bought under c.6.6.17 is recognised; thrown 
         assert.equal(enc.combatants[id].fixed.level, p.level);
         assert.equal(enc.combatants[id].fixed.max_hp, p.max_hp);
     }
-    assert.deepEqual(struck.map((id) => enc.combatants[id].fixed.level), [5, 13, 14, 13, 5, 14, 5, 3, 9, 6]);
+    assert.deepEqual(struck.map((id) => enc.combatants[id].fixed.level), [13]);
     assert.deepEqual(hit.strikes.map((s) => s.defense), struck.map((id) => before.entities[id].profile.mdef), 'each against its own MDEF');
     // 5. used up once, when it was resolved
     assert.equal(r.events.filter((e) => e.t === 'object.consumed').length, 1);
     assert.equal(g.state().objects[SCROLL].holder.consumed, 'pc');
     assert.equal(hit.used_up, 'used up');
+    // the former forecast (all ten at SHORT) holds only where the story has packed them together: then the whole knot,
+    // however many (no cap), each by its own profile; not beetle 1 at his side, outside it
+    const k = live(37);
+    knot(k, [2, 3, 4, 6, 7, 8, 9, 10, 11, 12]);
+    await say(k, TEXT, USE);
+    const ten = thrown(k).strikes;
+    assert.deepEqual(ten.map((x) => x.target), [2, 3, 4, 6, 7, 8, 9, 10, 11, 12].map(BEETLE));
+    assert.deepEqual(ten.map((x) => k.state().encounter?.combatants?.[x.target]?.fixed.level ?? before.entities[x.target].profile.level), [5, 13, 14, 13, 5, 14, 5, 3, 9, 6]);
 });
 
 // ------------------------------------------------------------------------------------------------ 2b: in a running fight
@@ -106,7 +123,7 @@ test('hotfix scroll 2b: in the running first fight (after #32) the scroll is his
     const H = BEETLE(5);
     // beetles 1 and 2 at his side with Beetle H (a scene the live run did not have)
     const g = live(33);
-    inject(g, [1, 2].map((n) => ({ t: 'scene.position', d: { id: BEETLE(n), band: 'ENGAGED', cover: 'none' } })));
+    inject(g, [5, 1, 2].map((n) => ({ t: 'scene.position', d: { id: BEETLE(n), band: 'ENGAGED', cover: 'none', cluster: 'boot' } })));
     assert.equal(g.state().encounter.combatants[H].current.band, 'ENGAGED');
     await say(g, TEXT, USE);
     const hit = thrown(g);
@@ -196,7 +213,8 @@ test('hotfix scroll 7: a regenerate of the old turn reuses its old events (no fi
 // ------------------------------------------------------------------------------------------------ 3, 6: XP, loot, deaths
 test('hotfix scroll 3b: a burst that fells what it strikes ends the fight through the engine: deaths, XP and loot as for any attack', async () => {
     const g = live(37);
-    // the ten at SHORT it will strike, badly hurt already (a scene the live run did not have)
+    // the ten at SHORT it will strike, packed at the vein and badly hurt already (a scene the live run did not have)
+    knot(g, [2, 3, 4, 6, 7, 8, 9, 10, 11, 12]);
     inject(g, [2, 3, 4, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ t: 'entity.updated', d: { id: BEETLE(n), set: { profile: { ...g.state().entities[BEETLE(n)].profile, hp: 5 } } } })));
     const xp = g.state().entities.pc.sheet.xp;
     await say(g, TEXT, USE);
@@ -247,6 +265,7 @@ test('hotfix scroll 8: food, a potion, a tool and gear are used as before; only 
 // ------------------------------------------------------------------------------------------------ 9: the narrator
 test('hotfix scroll 9: the narrator hears the engine\'s burst (its strikes, damage and the scroll used up) and, when nothing was resolved, that nothing burns and nothing is struck', async () => {
     const g = live(37);
+    knot(g, [2, 3, 4, 6, 7, 8, 9, 10, 11, 12]);
     await say(g, TEXT, USE);
     const block = turnBlock(g.chat, g.chat.length - 1, content, {}).context.text;
     assert.match(block, /Alaric: Scorchburst scroll \(FIRST STRIKE[^\n]*-> Crystal Beetle [A-L] \[Magical \/ Area \/ Fire \(thrown scroll\): from where he stands, no step and no melee blow; scorchburst scroll, first-circle, one use used up; its burst strikes exactly the 10 below, no one else is hit or burned\]: strike 1: lands: \d+ damage -> Crystal Beetle [A-L] HP \d+->\d+;[^\n]*; strike 10: [^\n]*/);

@@ -461,6 +461,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (d.more === true || !joined.length) for (let n = 2; taken.has(name); n++) name = `${normText(d.ref)} ${n}`;
         const group = joined.length === 1 ? joined[0] : name;
         if (count > 1 || joined.length === 1) for (const id of [...again.filter((x) => !s.entities[x].group), ...created]) emit({ t: 'entity.updated', d: { id, set: { group } } });
+        // final review of Patch 7.1: the knot they stand in only when the reply shows them packed close (cluster); a group
+        // brought in together is one group, not one knot (src/v4/scene_handles.js clusterOf); "apart" is none (src/delta.js)
+        const knot = typeof d.cluster === 'string' && d.cluster.trim() ? d.cluster : null;
+        if (knot) {
+            const placed = ids.filter((id) => s.scene.present.includes(id) && s.scene.positions?.[id] && !s.encounter?.combatants?.[id]);
+            if (placed.length) v3({ position: placed.map((who) => ({ who, band: s.scene.positions[who].band, cover: s.scene.positions[who].cover || undefined, cluster: knot })) }, d);
+        }
         // the group's ref in this reply (a hostile after it) is the whole group here, its newcomers with it
         if (own.length) groups.set(normText(d.ref), s.scene.present.filter((id) => s.entities[id]?.group === group && statusOf(s, id) !== 'dead'));
         if (ids.length) refs.set(normText(d.ref), ids[0]);

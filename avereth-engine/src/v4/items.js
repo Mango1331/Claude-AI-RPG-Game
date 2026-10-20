@@ -57,12 +57,15 @@ export function useOf(content, o) {
 // places it in the reference range of its kind (content gear instances), higher Ranks scale it (gear references_text:
 // HIGHER-RANK GENERATION). Ordinary things (food, tools, documents) have none and stay as they were.
 
-const RANK_RE = /\b(?:\[([fedcbas])\]|([fedcbas])\s*-?\s*rank|rank\s*-?\s*([fedcbas]))\b/;
+// Final review of Patch 7.1: "[D] wand" was read as no Rank (a "\b" before the bracket never matches) and stored as F.
+// A Rank is stated as "[D]" / "[D-Rank]", "D-Rank" / "D rank" / "D-ranked", or "Rank D" / "Rank-D", in any case; only a
+// lower-case "a rank" stands apart: it is the adjective ("a rank, rotting hide"), never an A-Rank thing.
+const RANK_RE = /\[\s*([fedcbasFEDCBAS])(?:\s*-?\s*[Rr][Aa][Nn][Kk](?:ed)?)?\s*\]|\b([fedcbsFEDCBAS](?:\s+|\s*-\s*)|[Aa]\s*-\s*)[Rr][Aa][Nn][Kk](?:ed)?\b|\b[Rr][Aa][Nn][Kk](?:\s+|\s*-\s*)([fedcbasFEDCBAS])\b/;
 
-/** The Rank a name states ("E-Rank longsword", "[D] wand"), or null. */
+/** The Rank a name states ("E-Rank longsword", "[D] wand", "Rank C staff"), or null. */
 export function rankInName(name) {
-    const m = RANK_RE.exec(normText(name || ''));
-    return m ? (m[1] || m[2] || m[3]).toUpperCase() : null;
+    const m = RANK_RE.exec(String(name || ''));
+    return m ? (m[1] || m[2] || m[3])[0].toUpperCase() : null;
 }
 
 /** The quality tier the words of a name give a thing (content gear instances.quality); common when none says. */

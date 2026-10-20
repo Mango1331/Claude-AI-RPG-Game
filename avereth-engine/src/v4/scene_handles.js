@@ -119,15 +119,14 @@ function standing(state, id) {
 
 /**
  * Patch 7.1: the close knot someone stands in (a cluster: those within a stride or two of each other), or null when they
- * stand alone. The story establishes it (src/v4/world.js position cluster; "apart" sets someone alone); without such a
- * word, creatures the story brought in together as one group (creature.new, count > 1: one group name) stand together.
- * A cluster counts only among those at the same distance from Alaric (src/v4/scene_handles.js burstCaught): one of the
+ * stand alone. Only the story establishes it (src/v4/world.js: the cluster of a position, or of creature.new when the
+ * reply shows a group packed close; "apart" sets someone alone). A group's name is who they are, never where they stand
+ * (final review of Patch 7.1): a pack of twelve may be spread over a cavern, so belonging to one group, or one kind,
+ * puts no one in a knot. A cluster counts only among those at the same distance from Alaric (burstCaught): one of the
  * knot that the fight or a step moved away has left it.
  */
 export function clusterOf(state, id) {
-    const pos = state.scene?.positions?.[id];
-    if (pos && Object.hasOwn(pos, 'cluster')) return pos.cluster ?? null;
-    return state.entities?.[id]?.group || null;
+    return state.scene?.positions?.[id]?.cluster ?? null;
 }
 
 /**

@@ -15,7 +15,7 @@ import { itemEffectOf } from '../../src/content.js';
 import { deriveCharacter } from '../../src/derived.js';
 import { playerTurn } from '../../src/engine.js';
 import { turnPanel } from '../../src/display.js';
-import { itemProfile, itemTraits, priceAudit, rankRefusal } from '../../src/v4/items.js';
+import { itemProfile, itemTraits, priceAudit, rankRefusal, rankInName } from '../../src/v4/items.js';
 import { burstCaught, burstAim, clusterOf } from '../../src/v4/scene_handles.js';
 import { initEncounter, attackAction } from '../../src/combat.js';
 import { Dice } from '../../src/rng.js';
@@ -281,9 +281,13 @@ test('patch 7.1 (11): a person standing in the knot is struck by the fire too (n
 test('patch 7.1 (13, 14): in the running first fight the burst strikes Beetle H and the two of its knot beside him, not one of them set apart at his side; each by its own HP, MDEF and XP', async () => {
     const H = BEETLE(5);
     const g = live(33);
-    inject(g, [at(1, 'ENGAGED', undefined), at(2, 'ENGAGED', undefined), at(3, 'ENGAGED', null)]);
+    // final review: beetles of one swarm at his side are no knot by being one swarm
+    inject(g, [at(1, 'ENGAGED', undefined), at(2, 'ENGAGED', undefined), at(3, 'ENGAGED', undefined)]);
+    assert.deepEqual(burstCaught(g.state(), H), [H], 'one swarm at one distance: H alone');
+    // the story packs H, 1 and 2 together at his boots; 3 stands apart
+    inject(g, [at(5, 'ENGAGED', 'boots'), at(1, 'ENGAGED', 'boots'), at(2, 'ENGAGED', 'boots'), at(3, 'ENGAGED', null)]);
     const s = g.state();
-    assert.deepEqual(burstCaught(s, H).sort(), [H, BEETLE(1), BEETLE(2)].sort(), 'the swarm brought in together is one knot; 3 is apart');
+    assert.deepEqual(burstCaught(s, H).sort(), [H, BEETLE(1), BEETLE(2)].sort(), 'the knot the story established; 3 is apart');
     await say(g, TEXT, USE());
     const hit = thrown(g);
     assert.deepEqual(hit.strikes.map((x) => x.target).sort(), [H, BEETLE(1), BEETLE(2)].sort());
@@ -354,7 +358,7 @@ test('patch 7.1: the story establishes the knots through the position delta (clu
     const s = g.state();
     assert.deepEqual([2, 3, 4, 6].map((n) => clusterOf(s, BEETLE(n))), ['knot', 'knot', 'knot', 'knot']);
     assert.equal(clusterOf(s, BEETLE(7)), null);
-    assert.equal(clusterOf(s, BEETLE(8)), 'crystal_beetle_swarm', 'the rest as brought in: one swarm');
+    assert.equal(clusterOf(s, BEETLE(8)), null, 'the rest of the swarm: one group, no knot (final review of Patch 7.1)');
     assert.deepEqual(burstCaught(s, BEETLE(2)), [2, 3, 4, 6].map(BEETLE));
     assert.deepEqual(burstCaught(s, BEETLE(7)), [BEETLE(7)]);
     // an engine step moves them all one band nearer and keeps the knot (the reducer keeps the cluster when only the band changes)
@@ -368,4 +372,79 @@ test('patch 7.1: the story establishes the knots through the position delta (clu
     // a report after the throw that puts everyone into the knot changes nothing of what was struck
     await g.reply('All of them were caught, the story claims.', { expected: {}, deltas: ALIVE.map((n, i) => ({ seq: i + 1, type: 'position', who: BEETLE(n), band: 'SHORT', cover: null, cluster: 'knot' })) });
     assert.deepEqual(rec(g.chat.findLast((m) => m.is_user)).events.findLast((e) => e.t === 'outcome.recorded').d.outcome.records.find((r) => r.item).strikes.map((x) => x.target), struck);
+});
+
+// ------------------------------------------------------------------------------------------- final review of Patch 7.1
+const GOBLIN = (n) => `mon.tunnel_goblins_${n}`;
+const TWELVE = Array.from({ length: 12 }, (_, i) => i + 1);
+/** Twelve tunnel goblins come in as one group at SHORT (creature.new count 12), packed close only when `cluster` says so. */
+async function goblins(cluster = null) {
+    const g = live(37);
+    await say(g, '*i watch the side passage*');
+    await g.reply('Twelve tunnel goblins spill out of the side passage and spread across the chamber floor.', { expected: {}, deltas: [
+        { seq: 1, type: 'creature.new', ref: 'tunnel goblins', species: 'tunnel goblin', anchor: 'goblin', desc: ['grey-skinned'], count: 12, present: true, band: 'SHORT', cluster, stronger: null, threat: null, more: null },
+    ] });
+    return g;
+}
+
+test('patch 7.1 final review (1): a group of twelve at one distance is no knot; four of it packed close are struck, the other eight are not', async () => {
+    const g = await goblins();
+    let s = g.state();
+    assert.deepEqual(TWELVE.map((n) => s.scene.positions[GOBLIN(n)]?.band), TWELVE.map(() => 'SHORT'), 'all twelve at SHORT');
+    assert.equal(new Set(TWELVE.map((n) => s.entities[GOBLIN(n)].group)).size, 1, 'one group');
+    assert.deepEqual(TWELVE.map((n) => clusterOf(s, GOBLIN(n))), TWELVE.map(() => null), 'one group is who they are, not where they stand');
+    assert.deepEqual(burstCaught(s, GOBLIN(1)), [GOBLIN(1)]);
+    // the story packs four of them together
+    await say(g, '*i wait*');
+    await g.reply('Four of them crowd shoulder to shoulder around a dropped crust; the rest hang back along the walls.', { expected: {}, deltas: [1, 2, 3, 4].map((n, i) => ({ seq: i + 1, type: 'position', who: GOBLIN(n), band: 'SHORT', cover: null, cluster: 'crust' })) });
+    s = g.state();
+    assert.deepEqual(burstCaught(s, GOBLIN(1)), [1, 2, 3, 4].map(GOBLIN));
+    for (const n of [5, 6, 12]) assert.deepEqual(burstCaught(s, GOBLIN(n)), [GOBLIN(n)], `goblin ${n} stands alone`);
+    await say(g, TEXT, USE());
+    const struck = thrown(g).strikes.map((x) => x.target);
+    assert.deepEqual([...struck].sort(), [1, 2, 3, 4].map(GOBLIN).sort(), 'the knot of four, the largest within reach');
+    for (const n of [5, 6, 7, 8, 9, 10, 11, 12]) assert.ok(!struck.includes(GOBLIN(n)), `goblin ${n} is not struck`);
+    assert.equal(lastUser(g).events.filter((e) => e.t === 'object.consumed').length, 1);
+});
+
+test('patch 7.1 final review (1): a reply that shows a group packed close stores the knot as it brings them in (creature.new cluster) or later (position by the group\'s ref); "apart" takes one out', async () => {
+    const g = await goblins('passage mouth');
+    let s = g.state();
+    assert.deepEqual(TWELVE.map((n) => clusterOf(s, GOBLIN(n))), TWELVE.map(() => 'passage mouth'));
+    assert.equal(burstCaught(s, GOBLIN(1)).length, 12, 'no cap: the whole knot');
+    await say(g, '*i wait*');
+    await g.reply('One of them slinks off from the others toward the vein.', { expected: {}, deltas: [{ seq: 1, type: 'position', who: GOBLIN(12), band: 'SHORT', cover: null, cluster: 'apart' }] });
+    s = g.state();
+    assert.equal(clusterOf(s, GOBLIN(12)), null);
+    assert.deepEqual(burstCaught(s, GOBLIN(1)), TWELVE.slice(0, 11).map(GOBLIN));
+    // "apart" for a group brought in is no knot of that name
+    const a = await goblins('apart');
+    assert.deepEqual(TWELVE.map((n) => clusterOf(a.state(), GOBLIN(n))), TWELVE.map(() => null));
+    // spread out, then crowded together again: the group's ref moves each of them into the knot
+    const h = await goblins();
+    await say(h, '*i wait*');
+    await h.reply('The goblins bunch together at the passage mouth, jostling.', { expected: {}, deltas: [{ seq: 1, type: 'position', who: 'tunnel goblins', band: 'SHORT', cover: null, cluster: 'passage mouth' }] });
+    assert.deepEqual(TWELVE.map((n) => clusterOf(h.state(), GOBLIN(n))), TWELVE.map(() => 'passage mouth'));
+});
+
+test('patch 7.1 final review (2): a Rank in brackets, before or after the word Rank is read for F, E, D, C, B, A and S; never stored as F', () => {
+    const forms = ['[X] wand', '[X-Rank] wand', 'X-Rank wand', 'X rank wand', 'Rank X wand', 'rank-x wand', 'a fine [X] longsword'];
+    for (const r of ['F', 'E', 'D', 'C', 'B', 'A', 'S']) {
+        for (const f of forms) {
+            const name = f.replace('X', r).replace('x', r.toLowerCase());
+            assert.equal(rankInName(name), r, name);
+            const p = itemProfile(content, { name });
+            assert.equal(p?.rank, r, `${name}: profile rank`);
+        }
+        const scroll = itemProfile(content, { name: `[${r}] scorchburst scroll` });
+        assert.equal(scroll.kind, 'attack');
+        assert.equal(scroll.rank, r);
+    }
+    // the higher Rank scales the piece and is kept on the object
+    assert.ok(itemProfile(content, { name: '[D] wand' }).matk > itemProfile(content, { name: 'wand' }).matk);
+    assert.equal(itemTraits(content, { name: '[D] wand' }, 0).profile.rank, 'D');
+    // and an F-Rank Alaric may not use it
+    assert.match(rankRefusal(content, 1, itemProfile(content, { name: '[D] wand' })), /D-Rank item; Alaric's Power Rank is F/);
+    // no Rank where none is stated: the adjective, words that merely contain the letters
+    for (const name of ['a rank, rotting hide', 'iron sword', 'frank\'s dagger', 'ranks of spears', 'cranky old wand', 'rank and file shield']) assert.equal(rankInName(name), null, name);
 });

@@ -1530,7 +1530,7 @@ Patch 7 ist damit bereit für den Live-Test mit GLM-5.3-Flash.
 - Ein `burst` trifft das Ziel und alle im selben **Cluster** (enger Knoten) in derselben Distanz zu Alaric, wie viele es auch sind (`burstCaught`). Freunde und Unbeteiligte zählen mit.
 - **Herkunft des Clusters:**
   - Ein neues Feld `cluster` im Position-Delta legt ihn fest: ein kurzes Wort für alle, die die Erzählung dicht zusammenstellt. „apart“ stellt jemanden allein.
-  - Ohne ein solches Wort stehen Kreaturen, die eine Erzählung gemeinsam als Gruppe einführt (ein `creature.new` mit count > 1), zusammen.
+  - ~~Ohne ein solches Wort stehen Kreaturen, die eine Erzählung gemeinsam als Gruppe einführt, zusammen.~~ Korrigiert in c.6.6.20, siehe unten.
   - Wer allein steht, wird allein getroffen. Dasselbe Distanzband allein reicht nie.
 - **Persistenz:** Ein Engine-Schritt behält den Cluster (der Reducer übernimmt ihn bei einer reinen Band-Änderung). Wer aus dem Band rückt, ist nicht mehr im Knoten.
 - **Unveränderliche Treffer:** Die Treffer werden aus dem gespeicherten Zustand zum Zeitpunkt des Wurfs berechnet. Spätere Berichte ändern sie nicht.
@@ -1547,8 +1547,37 @@ Patch 7 ist damit bereit für den Live-Test mit GLM-5.3-Flash.
 - Planner unverändert (6.300).
 - Keine neuen LLM-Aufrufe.
 
-**Live-Stand Glimmerdeep:**
-- Die zwölf Käfer wurden in #30 als ein Schwarm an einer Ader eingeführt, bilden also einen Knoten.
-- Unter diesem Build trifft der Scroll in #37 alle zehn in SHORT mit 28–35 Schaden und tötet Käfer B (34 HP).
-- Danach greifen zehn F-Band-Käfer (Level 3–14) an, und Alaric (71 HP) stirbt deterministisch in Runde 1.
+**Live-Stand Glimmerdeep (c.6.6.19, überholt durch c.6.6.20):** Die Prognose von zehn getroffenen Käfern beruhte auf dem Gruppen-Fallback und gilt nicht mehr.
+
+### Patch 7.1 Final Review (4.3.0-c.6.6.20): Gruppe ist kein Cluster, Rank in Klammern
+
+**1. Gruppe ist kein räumlicher Cluster:**
+- `clusterOf` (`src/v4/scene_handles.js`) liest nur noch `scene.positions[id].cluster`. Der Rückfall auf `entities[id].group` ist entfernt. Die Gruppe beschreibt, wer jemand ist, nicht wo er steht.
+- Ohne etablierten Cluster steht jeder allein, und ein Burst trifft nur sein Ziel. Es werden keine Treffer erfunden.
+- **Woher der Cluster kommt:**
+  - `creature.new` hat ein neues, optionales Feld `cluster`. Der Extractor setzt es nur, wenn die Antwort die Gruppe dicht gedrängt zeigt. Die Engine speichert es beim Einführen für alle Anwesenden (`src/v4/world.js`).
+  - Später setzt das Position-Delta den Cluster, für Einzelne oder für eine Gruppe über ihren Ref.
+  - „apart“ nimmt jemanden heraus.
+- Unverändert bleiben: kein Trefferlimit, alle im Knoten werden getroffen, Friendly Fire, persistente Positionen, deterministische Treffer und Replay, keine zusätzliche LLM-Phase.
+- Extractor-Vokabular `delta-0.97`: +53 Token (6.491 → 6.544). Planner unverändert (6.300).
+
+**2. Rank in eckigen Klammern:**
+- `rankInName` (`src/v4/items.js`) erkennt `[D] wand`, `[D-Rank] wand`, `D-Rank wand`, `D rank wand`, `Rank D wand`, `Rank-D wand` und `D-ranked` für F, E, D, C, B, A und S, in jeder Groß- und Kleinschreibung.
+- Vorher fand das `\b` vor `[` nie einen Treffer, und `[D] wand` wurde als F gespeichert.
+- Nicht als Rank gelesen werden „a rank, rotting hide“ (Adjektiv), „frank“, „ranks“ und „cranky“.
+
+**Glimmerdeep-Livefixture neu geprüft:**
+- #30 beschreibt die Käfer als „clustered along a wall vein“. Die Extraktion lief unter c.6.6.17 und kannte noch kein Feld `cluster`.
+- #36 beschreibt sie danach als „spreading into a loose half-circle“, also aufgefächert.
+- Der gespeicherte Zustand bei #37 enthält deshalb keinen Knoten: zwölf Käfer einer Gruppe, zehn davon in SHORT, jeder für sich.
+- Ein erneut gesendetes #37 trifft nur Käfer A, den nächsten bei Alaric (ENGAGED, Level 13): 28 Schaden, 82 → 54 HP.
+- Käfer A beißt zweimal (28 und 25). Alaric bleibt mit 18 von 71 HP am Leben. Der Scroll ist verbraucht.
+- Die Prognose „zehn Treffer“ gilt nur, wenn die Erzählung die zehn ausdrücklich zusammenstellt. Der Test injiziert diesen Fall und prüft ihn getrennt.
+
+**Tests:**
+- 3 neue Tests in `tests/v4/patch71.test.js`:
+  - zwölf Goblins in SHORT, vier davon im Knoten → genau vier Treffer;
+  - Knoten über `creature.new`, über den Gruppen-Ref und „apart“;
+  - Rank-Schreibweisen F bis S.
+- Angepasst: `hotfix_scroll` 1–5, 2b, 3b, 9 und Patch-7.1-Test 13/14 und Extractor-Pfad. Wo zehn oder drei Treffer erwartet werden, ist der Knoten jetzt ausdrücklich gesetzt.
 

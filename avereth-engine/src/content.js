@@ -51,6 +51,10 @@ export function indexContent(pack) {
         if (!c.skillsByName.has(key)) c.skillsByName.set(key, []);
         c.skillsByName.get(key).push(s);
     }
+    // Hotfix c.6.6.18: an offensive consumable's effect is an action of the combat pipeline (by id, never by a player's
+    // skill name: he holds the thing, he does not know a skill)
+    c.itemEffects = pack.gear.item_effects?.effects || [];
+    for (const x of c.itemEffects) c.skills.set(x.id, x);
     for (const a of pack.monsters.anchors) {
         c.anchors.set(a.id, a);
         for (const alias of a.aliases) c.anchorAliases.push([normText(alias), a.id]);
@@ -62,6 +66,18 @@ export function indexContent(pack) {
     }
     c.templateDescriptors.sort((x, y) => y[0].length - x[0].length);
     return c;
+}
+
+/**
+ * Hotfix c.6.6.18: the effect profile of a thing (an object of the world or an item template): its own stored one, else
+ * the profile whose match words are all words of its name (a scroll bought before the profile existed). Null for an
+ * ordinary thing.
+ */
+export function itemEffectOf(content, thing) {
+    if (!thing) return null;
+    if (thing.effect && content.skills.get(thing.effect)?.item) return content.skills.get(thing.effect);
+    const words = new Set(normText(thing.name || '').split(/[^a-z0-9]+/).filter(Boolean));
+    return (content.itemEffects || []).find((x) => x.match.every((w) => words.has(w))) || null;
 }
 
 /** Find a skill by exact id or (case-insensitive) name, preferring the given class. */

@@ -63,7 +63,7 @@ export function rawPower(skill, stats, derived) {
     const a = skill.attack;
     let raw = a.base;
     for (const t of a.scaling) raw += stats[t.stat] * t.coef;
-    raw += (a.uses === 'MATK' ? derived.matk : derived.atk) * a.share;
+    if (a.share) raw += (a.uses === 'MATK' ? derived.matk : derived.atk) * a.share;
     return num(raw);
 }
 
@@ -73,6 +73,8 @@ export function rawPowerText(skill, stats, derived) {
     const parts = [String(a.base)];
     for (const t of a.scaling) parts.push(`${t.stat} ${stats[t.stat]}×${t.text ?? t.coef}`);
     const power = a.uses === 'MATK' ? derived.matk : derived.atk;
-    parts.push(a.share === 1 ? `${a.uses} ${power}` : `${Math.round(a.share * 100)}% ${a.uses} ${power}`);
+    // an item's own fixed power (hotfix c.6.6.18: share 0) adds nothing of its user's
+    if (a.share) parts.push(a.share === 1 ? `${a.uses} ${power}` : `${Math.round(a.share * 100)}% ${a.uses} ${power}`);
+    else parts[0] = `${a.base} (the item's own power)`;
     return `${parts.join(' + ')} = ${rawPower(skill, stats, derived)}`;
 }

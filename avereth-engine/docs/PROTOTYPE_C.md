@@ -1421,3 +1421,56 @@ Ausgangsstand e4d61b8. Alle drei Lücken habe ich vor dem Fix mit Tests reproduz
 - Ein Dungeon-Auftrag wird über den exakten Dungeon-Namen erkannt, so wie der Prompt es verlangt.
 
 Patch 7 ist damit bereit für den Live-Test mit GLM-5.3-Flash.
+
+### Hotfix 4.3.0-c.6.6.18: Scorchburst Scroll (Live-Test 20.10.2026, kein Patch 8)
+
+**Fehler (reproduziert am Live-Chat `tests/v4/live_1020.json`, #37):**
+- Alaric warf den bei Marrec gekauften `scorchburst scroll, first-circle, one use` auf die elf übrigen Kristallkäfer.
+- Der Planner las richtig `use` des Scrolls.
+- Der `use`-Handler (`src/v4/commands.js`) kennt Verbrauchsgüter nur als verbrauchbar. Er buchte deshalb `object.consumed` und `cmd.resolved` und sonst nichts: kein Kampf, kein Schaden.
+- Der Narrator erzählte trotzdem die Feuerexplosion.
+
+**Effektmodell (klein, datengetrieben):**
+- **Profil:** `content/gear.json` `item_effects` beschreibt offensive Verbrauchsgüter in der Form eines Skills (`item: true`). Der Loader registriert sie unter ihrer Id in `content.skills`, aber nicht unter einem Namen: Alaric kennt keinen Skill, er hält ein Ding.
+- **Scorchburst-Profil:**
+  - F-Rang, magisch, Feuer, geworfen bis SHORT.
+  - Fester Rohwert 22. Das ist der Wert des Scrolls selbst, vergleichbar mit Arcane Burst eines F-Rang-Magiers (INT 6, MATK 6: 21,5). Er hängt nicht an Alarics Level, Werten oder Power-Rank und nicht an den Gegnern.
+  - Fläche `burst` mit höchstens 3 Zielen, 1 Nutzung.
+- **Erkennung:** `itemEffectOf` nimmt das eigene `effect` eines Objekts, sonst das Profil, dessen `match`-Wörter (`scorchburst`, `scroll`) alle im Namen stehen. Damit wird auch der unter c.6.6.17 gekaufte Scroll erkannt, unabhängig von Turn und Objekt-Id. Neue offensive Verbrauchsgüter brauchen nur einen weiteren Eintrag.
+- **Planner-Abbildung:** `mapPlan` macht aus dem `use` eines gehaltenen Dings mit Angriffsprofil (`itemAttack`) einen Angriff mit diesem Profil (`item`).
+  - Ein genanntes Ziel bleibt das Ziel.
+  - Sonst wählt `burstAim` die Distanz innerhalb der Reichweite, in der die meisten sichtbaren Gegner stehen (bei Gleichstand die nähere), und darin den ersten.
+  - Ist niemand in Reichweite, kommt das vorhandene System-Panel „TARGET NEEDED — Nothing was spent or rolled“ ohne Narrator-Aufruf.
+  - Ein Schritt in derselben Nachricht wird nicht mitgenommen („er wirft von dort, wo er steht“).
+  - Planner-Schema und Prompt bleiben unverändert.
+- **Ziele (`burstCaught`):** Getroffen wird das Ziel und, wer in derselben Distanz zu Alaric steht, Freund wie Feind, in Kampf- und dann Szenenreihenfolge, höchstens 3. Die Distanz zu Alaric ist das einzige räumliche Wissen der Engine. Ein Burst trifft nie alle eines Raums oder einer Art, nur weil sie dort sind.
+- **Kampf:** Alles läuft über den bestehenden Pfad (`storyTurn` → `combatTurn` → `runCombat` → `attackAction`/`resolveStrike`). Es gibt keine zweite Schadensrechnung.
+  - Ohne Kampf eröffnet der Wurf einen Kampf (First Strike), mit den Getroffenen als Combatants.
+  - In einem Kampf treten Getroffene außerhalb dazu.
+  - Jede Kreatur behält ihr eigenes Profil (Level, HP, MDEF).
+  - HP, Tode, XP, Loot und Auftragsfortschritt laufen über die vorhandenen Verfahren.
+  - `attackAction` erlaubt das Profil nur mit dem gehaltenen Item (`extra.item`): ohne Proficiency, ohne MP, mit Reichweitenprüfung.
+- **Verbrauch:** `object.consumed` wird genau einmal gebucht, und erst wenn der Angriff aufgelöst wurde (`usedUp`). Ein abgelehnter Wurf (niemand in Reichweite, Ziel zu weit, unzulässig im Kampf) verbraucht nichts. Der alte `use`-Handler lehnt ein Angriffs-Item ab, statt es still zu verbrauchen.
+- **Narrator und Panel:** Der Record nennt das Item und „used up“ und dass der Burst genau die gelisteten Ziele trifft, niemanden sonst. Es gilt die bestehende Regel „Narrate exactly these resolved steps“.
+
+**Tests:** 7 neue Tests in `tests/v4/hotfix_scroll.test.js` (Fälle 1–9 der Vorgabe, dazu Kampf-im-Kampf und XP/Loot), alle am Live-Chat. Gesamt 861/861. Alle vier Smokes grün; `smoke:st` 50/53 mit unveränderten false-Schlüsseln. 11 Mutationsproben, alle erkannt. Extractor 6.415 und Planner 6.300 Token unverändert; kein zusätzlicher LLM-Aufruf.
+
+**Swipe, Regenerate und Replay:**
+- Der Spielerzug liegt mit seinen Events auf der Spielernachricht. Swipe und Regenerate verwenden diese Events wieder, solange der Text der Nachricht gleich ist (Hash). Das ist die gewollte Replay-Semantik: gleiche Würfel, keine Doppelbuchung.
+- Ein bloßes Regenerate von #38 behebt den alten Zug deshalb **nicht**: Es nutzt die c.6.6.17-Events von #37 (Verbrauch ohne Wirkung) weiter. Das prüft Test 7.
+- Neu ausgeführt wird der Zug erst, wenn die Spielernachricht neu ist (gelöscht und neu gesendet) oder ihr Text sich ändert (bearbeitet). Dann sind die alten Events mit der alten Nachricht verschwunden; im ganzen Chat gibt es genau einen Verbrauch.
+- Weitere Swipes des neuen Zugs nutzen wieder dessen eigene Events: kein doppelter Schaden, keine doppelte XP, kein zweiter Verbrauch.
+
+**So führst du #37 unter dem neuen Build erneut aus:**
+1. Extension auf `4.3.0-c.6.6.18` aktualisieren und SillyTavern neu laden. Die Statuszeile der Extension zeigt dann „Avereth Engine 4.3.0-c.6.6.18“.
+2. Im Chat die letzte Narrator-Antwort (#38, „The word left his mouth …“) und deine Nachricht #37 („\*i say\* Thornash \*and throw the scroll at them\*“) löschen. Danach steht der Chat bei #36: Der Scroll ist wieder in „Carried“, kein Kampf.
+3. Denselben Text erneut senden. Der Planner liest wieder `use`; die Engine löst den Wurf jetzt als Kampf auf. Das System-Panel zeigt „Alaric: Scorchburst scroll (FIRST STRIKE) → … · scorchburst scroll, first-circle, one use used up“ mit drei Treffern.
+4. Danach nur noch normal swipen oder regenerieren. Das verwendet die neuen Events wieder.
+- Alternativ kannst du nur #38 löschen und #37 bearbeiten (jede Textänderung) und dann regenerieren.
+
+**Hinweis zum Live-Stand (kein Teil dieses Fixes):**
+- Die zwölf Käfer haben seit Turn 15 feste Profile aus dem F-Band des Final Reviews: Level 13, 5, 13, 14, 3, 13, 5, 14, 5, 3, 9, 6.
+- Mit dem Live-Seed trifft der Wurf die Käfer E, F und G in SHORT (Level 5, 13, 14): 23, 19 und 18 Schaden.
+- Die drei schlagen sofort zurück: 27 + 27 + 13 in Runde 1, 24 in Runde 2. Alaric (71 HP) stirbt deterministisch in Runde 2.
+- Das ist die Folge der festen Käfer-Level und seiner Wahl, kein Fehler des Scrolls. Das Balancing des F-Bands gegen Level-1-Charaktere bleibt eine Frage für Patch 9/10B.
+

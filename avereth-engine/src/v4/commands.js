@@ -27,6 +27,7 @@ import { journeyReady, knownAt } from './catalog.js';
 import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSetsGoal } from './intents.js';
 import { knownByName } from './known.js';
 import { useOf, spoiled, unitsOf } from './items.js';
+import { itemEffectOf } from '../content.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
@@ -610,6 +611,9 @@ const HANDLERS = {
         }
         const o = objectOf(s, content, c.object);
         if (!o || o.holder?.entity !== 'pc') return { status: 'refused', reason: 'he does not hold it', line: `CANNOT USE — he does not hold ${o ? o.name : 'that'}.` };
+        // Hotfix c.6.6.18: an attack item (the scorchburst scroll) is resolved as an attack (src/v4/planner.js itemAttack),
+        // never used up here with its effect left to the story; where no attack is made of it, it stays his
+        if (itemEffectOf(content, o)?.attack) return { status: 'refused', reason: 'an attack item', line: `CANNOT USE — ${o.name} is an attack: thrown at a foe, the engine resolves it in a fight; nothing was used up, it stays his, nothing burns and nothing is struck.` };
         const use = useOf(content, o);
         // a tool, gear or a document is used, not used up (live 18.10.2026: the flint and steel)
         if (use === 'tool' || use === 'equipment') return { status: 'resolved', line: `USES — ${o.name} (a tool: it stays with him, not used up; the story tells what it achieves).` };

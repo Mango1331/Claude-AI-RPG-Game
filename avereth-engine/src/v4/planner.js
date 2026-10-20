@@ -15,7 +15,8 @@
 import { normText } from '../util.js';
 import { mentionedSkills } from '../intent.js';
 import { activeHostiles } from '../combat.js';
-import { sceneHandle, tacticalHere, areaCaught, approachedBy } from './scene_handles.js';
+import { sceneHandle, tacticalHere, areaCaught, approachedBy, burstAim } from './scene_handles.js';
+import { itemEffectOf } from '../content.js';
 import { settlementOf } from './domain.js';
 import { extractJsonObject } from './json.js';
 import { validate } from './schema.js';
@@ -510,6 +511,9 @@ export function mapPlan(commands, ctx, content, message, state) {
     // steel" and the "continue" after it was dropped): a thing he holds, named where a skill would stand, is that thing
     // used, a story command among the others, never a skill
     commands = (commands || []).map((c) => heldUse(c, ctx) || c);
+    // Hotfix c.6.6.18 (live 20.10.2026: "*i say* Thornash *and throw the scroll at them*" used the scorchburst scroll up
+    // and the story burned the beetles): a held thing with an offensive effect profile, used, is an attack made with it
+    commands = commands.map((c) => itemAttack(c, content, state) || c);
     const story = (commands || []).filter((c) => !MECH_TYPES.includes(c.type));
     const mech = (commands || []).filter((c) => MECH_TYPES.includes(c.type));
     const label = (id) => ctx.opponents.find((o) => o.id === id)?.label || (ctx.catalog.present || []).find((p) => p.id === id)?.handle || id;
@@ -593,7 +597,7 @@ export function mapPlan(commands, ctx, content, message, state) {
     const others = quotes.filter((q) => q !== main.quote);
     let skill = main.skill;
     if (isNew(skill)) return base({ kind: 'unknown_skill', name: String(skill.new).slice(0, 60) });
-    if (typeof skill === 'string' && !ctx.known.includes(skill)) return base({ kind: 'unknown_skill', skill, name: skillName(skill) });
+    if (typeof skill === 'string' && !ctx.known.includes(skill) && !main.item) return base({ kind: 'unknown_skill', skill, name: skillName(skill) });
     const basicNamed = typeof skill === 'string' && skill === ctx.basic && /\bbasic\s+attack\b/.test(flat(message));
     if (skill === null || (skill === ctx.basic && !basicNamed)) {
         const hint = skillHint(message, main, others, ctx, content);
@@ -605,6 +609,14 @@ export function mapPlan(commands, ctx, content, message, state) {
         if (!skill) return base({ kind: 'narrative', flags: { attack_without_class: true } });
     }
     const def = content.skills.get(skill);
+
+    // Hotfix c.6.6.18: an offensive item is thrown from where he stands, at the one he names or where most foes within its
+    // reach stand (src/v4/scene_handles.js burstAim); with no foe in reach it stays his, unused
+    if (main.item) {
+        leaveMove('not taken this turn (he throws it from where he stands)');
+        const aim = typeof main.target === 'string' ? main.target : !isNew(main.target) && state ? burstAim(state, def.range?.band || 'SHORT') : null;
+        return base(aim ? { kind: 'attack', skill, target: aim, target_how: typeof main.target === 'string' ? 'planner' : 'area', move: null, move_target: null, item: main.item } : { kind: 'no_target', skill, item: main.item });
+    }
 
     if (main.type === 'ability_world') {
         leaveMove('not taken this turn (a step with a skill on a thing is not resolved by the engine yet)');
@@ -667,6 +679,20 @@ function heldUse(c, ctx) {
     const named = byId && namesThing(c.skill.new, byId.name) ? [byId] : held.filter((o) => namesThing(c.skill.new, o.name));
     if (named.length !== 1) return null;
     return { seq: c.seq, type: 'use', object: named[0].id, qty: null, quote: c.quote, ...(Number.isInteger(c.needs) ? { needs: c.needs } : {}) };
+}
+
+/**
+ * Hotfix c.6.6.18: a use of a thing he holds whose effect profile is an attack (content gear item_effects, by the thing's
+ * own profile or the words of its name): that attack, made with the thing, as a main action of the message. Null for
+ * anything else (food, tools, gear, an ordinary consumable: the story command use as before).
+ */
+function itemAttack(c, content, state) {
+    if (c?.type !== 'use' || typeof c.object !== 'string' || !state) return null;
+    const o = state.objects?.[c.object];
+    if (!o || o.holder?.entity !== 'pc') return null;
+    const fx = itemEffectOf(content, o);
+    if (!fx?.attack) return null;
+    return { seq: c.seq, type: 'use_skill', skill: fx.id, item: o.id, target: null, quote: c.quote };
 }
 
 /** The planner's view of the content: every skill id (for the validator's "is this a skill at all"). */

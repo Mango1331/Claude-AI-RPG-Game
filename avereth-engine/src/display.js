@@ -387,7 +387,7 @@ function recordLines(name, r) {
     const who = `${name(r.actor)}${r.turned ? ` (turns on Alaric, ${r.turned})` : ''}`;
     // only Alaric's resources are shown; NPC costs stay in #combat / #audit
     const cost = r.actor === 'pc' && r.cost ? ` · ${r.cost.resource.toUpperCase()} ${r.cost.before} - ${r.cost.amount} = ${r.cost.after}` : '';
-    const ammo = r.ammo ? ` · ${r.ammo.used} arrow${r.ammo.used > 1 ? 's' : ''}` : '';
+    const ammo = r.ammo ? ` · ${r.ammo.used} arrow${r.ammo.used > 1 ? 's' : ''}` : r.item ? ` · ${String(r.item_name || 'item').replace(/[<>`]/g, '')} ${r.used_up || 'used up'}` : '';
     if (r.kind === 'attack') {
         const move = r.move ? (r.move.change
             ? ` (moves closer: ${String(r.move.change).replace(/ -> /g, ' → ')})`

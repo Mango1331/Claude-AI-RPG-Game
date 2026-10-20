@@ -196,5 +196,56 @@
     ],
     "coin_cp": 50
   },
-  "kits_text": "TRANSMIGRATION STARTER KITS — ONE-TIME CAMPAIGN INITIALIZATION\n\nWhen System Character Creation is completed by selecting one Base Class and exactly 2 Base Skills, the System grants exactly one matching F-rank starter kit.\nThis is a one-time bootstrap benefit, not a repeatable Shop or Skill.\n\nAll listed values are fixed item-instance values.\n\nWARRIOR:\n- Starter Longsword [F]: ATK 6\n- Starter Heavy Armor [F]: DEF 6, MDEF 2\n\nMAGE:\n- Starter Arcane Staff [F]: MATK 6\n- Starter Light Robes [F]: DEF 2, MDEF 3\n\nGUARDIAN:\n- Starter Mace [F]: ATK 5\n- Starter Heavy Armor [F]: DEF 6, MDEF 2\n- Starter Shield [F]: DEF 3, MDEF 2\n\nDUELIST:\n- Starter Rapier [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n\nRANGER:\n- Starter Shortbow [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n- Starter Quiver [unranked]: contains 20 Standard Arrows\n- Standard Arrows are ordinary physical ammunition and grant no bonus damage or other modifier.\n\nCOMMON BOOTSTRAP ITEMS:\nBefore Class selection, the player has:\n- Simple Traveler's Clothes [unranked; no combat values]\n- Small Pouch [unranked]\n- 5 Silver\n\nCREATION-COMPLETION EFFECT:\nAfter the Class is chosen and exactly 2 Base Skills from that Class are chosen:\n1. apply the Class's one-time Level-1 Favored-Stat growth if not already applied;\n2. grant/preserve the selected Class's Basic Attack at Proficiency 1, Progress 0, plus the 2 selected Base Skills at Proficiency 1, Progress 0;\n3. materialize and equip the matching starter kit;\n4. preserve Simple Traveler's Clothes as ordinary clothing unless the player later discards/replaces them;\n5. mark the one-time starter kit as claimed.\n\nNo later Class Evolution or Class change grants another starter kit unless an explicit future rule says so.\n"
+  "kits_text": "TRANSMIGRATION STARTER KITS — ONE-TIME CAMPAIGN INITIALIZATION\n\nWhen System Character Creation is completed by selecting one Base Class and exactly 2 Base Skills, the System grants exactly one matching F-rank starter kit.\nThis is a one-time bootstrap benefit, not a repeatable Shop or Skill.\n\nAll listed values are fixed item-instance values.\n\nWARRIOR:\n- Starter Longsword [F]: ATK 6\n- Starter Heavy Armor [F]: DEF 6, MDEF 2\n\nMAGE:\n- Starter Arcane Staff [F]: MATK 6\n- Starter Light Robes [F]: DEF 2, MDEF 3\n\nGUARDIAN:\n- Starter Mace [F]: ATK 5\n- Starter Heavy Armor [F]: DEF 6, MDEF 2\n- Starter Shield [F]: DEF 3, MDEF 2\n\nDUELIST:\n- Starter Rapier [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n\nRANGER:\n- Starter Shortbow [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n- Starter Quiver [unranked]: contains 20 Standard Arrows\n- Standard Arrows are ordinary physical ammunition and grant no bonus damage or other modifier.\n\nCOMMON BOOTSTRAP ITEMS:\nBefore Class selection, the player has:\n- Simple Traveler's Clothes [unranked; no combat values]\n- Small Pouch [unranked]\n- 5 Silver\n\nCREATION-COMPLETION EFFECT:\nAfter the Class is chosen and exactly 2 Base Skills from that Class are chosen:\n1. apply the Class's one-time Level-1 Favored-Stat growth if not already applied;\n2. grant/preserve the selected Class's Basic Attack at Proficiency 1, Progress 0, plus the 2 selected Base Skills at Proficiency 1, Progress 0;\n3. materialize and equip the matching starter kit;\n4. preserve Simple Traveler's Clothes as ordinary clothing unless the player later discards/replaces them;\n5. mark the one-time starter kit as claimed.\n\nNo later Class Evolution or Class change grants another starter kit unless an explicit future rule says so.\n",
+  "item_effects": {
+    "_note": "Hotfix 4.3.0-c.6.6.18: offensive consumables the engine resolves (a scroll thrown is an attack through the combat pipeline, never a story effect). Each entry is shaped like a skill (src/combat.js attackAction) with item: true; match names the words (all of them) of a held thing's name that make it this item (also for a thing bought before the profile existed). The power is the item's own, fixed: it does not scale with its user's stats, level or Power-Rank nor with the foe.",
+    "effects": [
+      {
+        "id": "item.scorchburst",
+        "name": "Scorchburst scroll",
+        "item": true,
+        "item_kind": "scroll",
+        "match": [
+          "scorchburst",
+          "scroll"
+        ],
+        "uses": 1,
+        "class": null,
+        "basic": false,
+        "category": "Offensive",
+        "rank": "F",
+        "complexity": null,
+        "tags": [
+          "item",
+          "scroll"
+        ],
+        "type_text": "Magical / Area / Fire (thrown scroll)",
+        "cost": null,
+        "ammo": null,
+        "range": {
+          "band": "SHORT",
+          "extra_band": false,
+          "area": "burst"
+        },
+        "attack": {
+          "base": 22,
+          "scaling": [],
+          "uses": null,
+          "share": 0,
+          "damage_type": "magical"
+        },
+        "strikes": 1,
+        "effects": [
+          {
+            "kind": "area",
+            "shape": "burst",
+            "max_targets": 3,
+            "shared_rolls": true
+          }
+        ],
+        "effect_text": "thrown up to SHORT; the burst strikes the creature it is thrown at and those at the same distance from him, at most 3 in all, each with its own damage roll. No additional status effect. The scroll is used up.",
+        "source_text": "Scorchburst Scroll, first circle [Offensive item, F-Rank]\nType: Magical / Area / Fire\nBase Power: 22 (the scroll's own, fixed: an F-Rank area spell of an F-Rank caster, as Arcane Burst at INT 6 / MATK 6 = 21.5)\nRange: SHORT (thrown)\nArea: a burst about a stride and a half across where it lands: the creature it is thrown at and those at the same distance, at most 3\nUses: 1 (used up when it is resolved)"
+      }
+    ]
+  }
 }

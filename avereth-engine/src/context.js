@@ -216,6 +216,8 @@ export function recordLine(state, r, name = (id) => fightLabel(state, id), conte
         const head = `${who}:${before} ${r.skill_name}${r.opening ? ' (AMBUSH Opening Action)' : ''}${r.first_strike ? ' (FIRST STRIKE: opens the fight before the Turn order; no Ambush bonus)' : ''} -> ${name(r.strikes?.[0]?.target || r.target)}`;
         if (r.cost) parts.push(`${r.cost.resource.toUpperCase()} ${r.cost.before}->${r.cost.after}`);
         if (r.ammo) parts.push(`${r.ammo.used} arrow${r.ammo.used > 1 ? 's' : ''} fired`);
+        // Hotfix c.6.6.18: an offensive item, thrown: its one use is spent, and its burst strikes these and no one else
+        if (r.item) parts.push(`${r.item_name || 'the item'} ${r.used_up || 'used up'}; its burst strikes exactly the ${(r.strikes || []).length} below, no one else is hit or burned`);
         if (r.after_move) parts.push(`then steps back: ${r.after_move.change}`);
         const strikes = (r.strikes || []).map((s, i) => {
             const pre = r.strikes.length > 1 ? `strike ${i + 1}: ` : '';

@@ -398,15 +398,20 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
     // that may actually strike different ENGAGED foes.
     const charSkill = actor.model === 'character' ? skillOf(content, skillId) : null;
     const charArea = !!charSkill?.effects?.some((e) => e.kind === 'area');
-    if (target.current.cover === 'full' && !charArea) return { illegal: `${target.name} is behind full cover (no line of sight)` };
+    // Hotfix c.6.6.18: a thrown burst (an offensive item) lands where it is thrown: the one it is thrown at must be seen
+    const burst = charSkill?.effects?.find((e) => e.kind === 'area' && e.shape === 'burst') || null;
+    if (target.current.cover === 'full' && (!charArea || burst)) return { illegal: `${target.name} is behind full cover (no line of sight)` };
     // ---- character attack (Skill)
     if (actor.model === 'character') {
         const skill = charSkill;
-        if (!actor.fixed.actions[skill.id]) return { illegal: `${actor.name} does not know ${skill.name}` };
+        // Hotfix c.6.6.18: an offensive item is his action because he holds it (the engine checked that), not a skill he
+        // knows; it has no proficiency of his
+        const byItem = !!(skill.item && extra.item);
+        if (!byItem && !actor.fixed.actions[skill.id]) return { illegal: `${actor.name} does not know ${skill.name}` };
         if (!skill.attack) return { illegal: `${skill.name} is not an attack` };
-        const prof = PROF(content, actor.fixed.actions[skill.id].prof);
+        const prof = PROF(content, byItem ? 1 : actor.fixed.actions[skill.id].prof);
         // range + movement (only the declared/written movement; Core #12, #24 PC ACTION SCOPE)
-        const isArea = charArea;
+        const isArea = charArea && !burst;
         const bandBefore = distance(enc, actorId, targetId);
         let band = bandBefore;
         let moved = 0;
@@ -486,12 +491,18 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         }
         record.skill = skill.id;
         record.skill_name = skill.name;
+        if (byItem) record.item = extra.item;
         const raw = rawPower(skill, actor.fixed.stats, { atk: actor.fixed.atk, matk: actor.fixed.matk });
         record.raw = raw;
         record.raw_text = rawPowerText(skill, actor.fixed.stats, { atk: actor.fixed.atk, matk: actor.fixed.matk });
         const opts = { raw, profPower: prof.power, buffPowerPct, ambush: !!extra.opening };
         record.strikes = [];
-        if (isArea) {
+        if (burst) {
+            // Hotfix c.6.6.18: a thrown burst strikes the one it is thrown at and those the engine fixed with it (the same
+            // distance from him, at most its size: src/engine.js burstOf), each with its own pipeline; no one else
+            const ids = uniqIds([targetId, ...(extra.burst || [])]).filter((id) => enc.combatants[id] && areaVictim(ctx, actor, enc.combatants[id])).slice(0, burst.max_targets);
+            for (const tid of ids) record.strikes.push(resolveStrike(ctx, actor, enc.combatants[tid], skill.attack, opts));
+        } else if (isArea) {
             // area: every target actually ENGAGED after the declared movement is hit, each with its own pipeline.
             const areaTargets = Object.values(enc.combatants)
                 .filter((c) => areaVictim(ctx, actor, c) && distance(enc, actorId, c.id) === 'ENGAGED')
@@ -534,6 +545,8 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
     for (const s of record.strikes) if (s.defeated) onDefeat(ctx, enc.combatants[s.target], record);
     return record;
 }
+
+const uniqIds = (ids) => [...new Set(ids)];
 
 function addEffect(c, eff) {
     // same named effect does not stack magnitude (Core #13): replace, keep the stronger value
@@ -1039,7 +1052,7 @@ export function runCombat(ctx, pcAction) {
         const t = enc.trigger;
         let r;
         if (t.actor === 'pc') {
-            r = attackAction(ctx, 'pc', t.target, t.skill, { opening: true, move: t.move, moveTarget: t.move_target });
+            r = attackAction(ctx, 'pc', t.target, t.skill, { opening: true, move: t.move, moveTarget: t.move_target, item: t.item, burst: t.burst });
             if (r.illegal) return { enc, records, stopped: 'illegal', illegal: r.illegal };
             pcActed = true;
         } else {
@@ -1061,7 +1074,7 @@ export function runCombat(ctx, pcAction) {
         const t = enc.trigger;
         let r;
         if (t.actor === 'pc') {
-            r = attackAction(ctx, 'pc', t.target, t.skill, { move: t.move, moveTarget: t.move_target });
+            r = attackAction(ctx, 'pc', t.target, t.skill, { move: t.move, moveTarget: t.move_target, item: t.item, burst: t.burst });
             if (r.illegal) return { enc, records, stopped: 'illegal', illegal: r.illegal };
             pcActed = true;
         } else {
@@ -1108,11 +1121,11 @@ export function runCombat(ctx, pcAction) {
         startTurn(enc, actorId);
         if (actorId === 'pc') {
             if (pcActed) return { enc, records, stopped: 'pc_turn' };
-            const act = pcAction || (enc.trigger && enc.trigger.actor === 'pc' && !enc.trigger_done ? { kind: 'attack', skill: enc.trigger.skill, target: enc.trigger.target, move: enc.trigger.move, move_target: enc.trigger.move_target } : null);
+            const act = pcAction || (enc.trigger && enc.trigger.actor === 'pc' && !enc.trigger_done ? { kind: 'attack', skill: enc.trigger.skill, target: enc.trigger.target, move: enc.trigger.move, move_target: enc.trigger.move_target, item: enc.trigger.item, burst: enc.trigger.burst } : null);
             if (enc.trigger && enc.trigger.actor === 'pc') enc.trigger_done = true;
             if (!act) return { enc, records, stopped: 'pc_turn' };
             let r;
-            if (act.kind === 'attack') r = attackAction(ctx, 'pc', act.target, act.skill, { move: act.move, moveTarget: act.move_target });
+            if (act.kind === 'attack') r = attackAction(ctx, 'pc', act.target, act.skill, { move: act.move, moveTarget: act.move_target, item: act.item, burst: act.burst });
             else if (act.kind === 'skill') r = skillAction(ctx, 'pc', act.skill, { dir: act.dir, target: act.target });
             else if (act.kind === 'move') r = ctx.c && act.dir === 'closer' && fleeing(enc, act.target) ? chase(ctx, act.target) : moveAction(ctx, 'pc', act.dir, act.target);
             else if (act.kind === 'ability_world') r = worldAction(ctx, 'pc', act);

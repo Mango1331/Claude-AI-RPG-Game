@@ -25,7 +25,7 @@ import { parseCoin } from './economy.js';
 import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, roundHalfUp, ENGINE_VERSION } from './util.js';
 import { seedPlaces } from './v4/domain.js';
 import { rankAt, dungeonOf } from './v4/dungeon.js';
-import { tacticalHere, areaCaught, approachedBy, sideOf } from './v4/scene_handles.js';
+import { tacticalHere, areaCaught, approachedBy, sideOf, burstCaught } from './v4/scene_handles.js';
 import { lootEvents } from './v4/loot.js';
 import { featureEvent } from './v4/features.js';
 
@@ -140,6 +140,8 @@ function creationTurn(s, content, intent, emit) {
 
 function storyTurn(s, content, text, intent, dice, emit, situations, c = false) {
     const pcAction = pcActionOf(s, content, intent, text);
+    // Hotfix c.6.6.18: a thrown burst (an offensive item) strikes whom the engine fixes now, from where they stand
+    if (pcAction?.kind === 'attack' && pcAction.item) pcAction.burst = burstOf(s, content, pcAction);
     // 1) an NPC commitment reported last turn resolves first; player input cannot erase it (Core #23 PENDING)
     const committed = (s.pending_combat || []).map((p) => p.by).filter((by) => s.entities[by] && s.entities[by].status !== 'dead' && s.scene.present.includes(by));
     if ((s.pending_combat || []).length) emit({ t: 'combat.pending_cleared', d: {} });
@@ -160,7 +162,8 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
         const caught = c ? caughtBy(s, content, pcAction) : [];
         const committed = uniq([...field, ...caught]);
         const sides = c && areaSkill(content, pcAction.skill) ? Object.fromEntries([pcAction.target, ...committed].filter(Boolean).map((id) => [id, sideOf(s, id)])) : null;
-        return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move, move_target: pcAction.move_target }, committed, sides, pcAction: null, c }, situations);
+        const item = pcAction.item ? { item: pcAction.item, burst: pcAction.burst } : {};
+        return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move, move_target: pcAction.move_target, ...item }, committed, sides, pcAction: null, c }, situations);
     }
     if (pcAction?.kind === 'engage') return engagementTurn(s, content, dice, emit, pcAction.targets, { c });
     // 3) declared stealth: opposed check (or automatic with nobody around)
@@ -240,7 +243,7 @@ function pcActionOf(s, content, intent, text) {
                 note: `Alaric attacks ${name(intent.target)}, a group the game holds as one creature: nothing was spent or rolled. Show its animals: each one that fights as its own "new" entry, their refs in "combat". Alaric acts on his next Turn.`,
                 notice: `Alaric's attack: ${playerLabel(s, intent.target)} is a group; the story shows its animals first (nothing spent, nothing rolled)`,
             };
-            return { kind: 'attack', skill: intent.skill, target: intent.target, move: intent.move, move_target: intent.move_target, ...(intent.field ? { field: intent.field } : {}), ...(intent.crowd ? { crowd: true } : {}) };
+            return { kind: 'attack', skill: intent.skill, target: intent.target, move: intent.move, move_target: intent.move_target, ...(intent.field ? { field: intent.field } : {}), ...(intent.crowd ? { crowd: true } : {}), ...(intent.item ? { item: intent.item } : {}) };
         case 'skill': return { kind: 'skill', skill: intent.skill, dir: intent.dir, target: intent.target };
         case 'move': return { kind: 'move', dir: intent.dir, target: intent.target };
         case 'flee': return { kind: 'flee' };
@@ -390,6 +393,9 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
         }
     }
     const res = runCombat({ enc, content, dice, state: s, c }, pcAction);
+    // Hotfix c.6.6.18: the offensive item his resolved attack used is used up, once; a refused one stays his
+    const thrown = res.illegal ? null : res.records.find((r) => r.actor === 'pc' && r.item);
+    if (thrown) usedUp(s, content, emit, thrown);
     // Prototype C (4.3.0-c.6.6.6, live 18.10.2026: "I walk in range of Feral Hound B and C and D" moved him nearer to no
     // one: B, C and D were not in the fight): his step brings him nearer to those outside the fight he moves among too
     // (src/v4/scene_handles.js approachedBy); their distances are the engine's then, not the story's
@@ -421,6 +427,16 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
     return outcome;
 }
 
+/** Hotfix c.6.6.18: the item a resolved attack was made with is used up (one use of it; the rest stays his). */
+function usedUp(s, content, emit, record) {
+    const o = s.objects?.[record.item];
+    if (!o || o.holder?.entity !== 'pc') return;
+    const left = (o.qty ?? 1) - 1;
+    emit({ t: 'object.consumed', d: { id: o.id, by: 'pc', ...(left > 0 ? { qty: 1 } : {}) } });
+    record.item_name = o.name;
+    record.used_up = left > 0 ? `one used, ${left} left` : 'used up';
+}
+
 /** An area attack's skill (Arcane Burst: effects kind "area"). */
 const areaSkill = (content, id) => !!content.skills.get(id)?.effects?.some((e) => e.kind === 'area');
 
@@ -429,8 +445,23 @@ const areaSkill = (content, id) => !!content.skills.get(id)?.effects?.some((e) =
  * those the engine can give a combat profile: everyone ENGAGED with him after his declared step.
  */
 function caughtBy(s, content, act) {
+    // Hotfix c.6.6.18: a thrown burst catches whom it was fixed to strike (burstOf), those outside the fight with them
+    if (act.item) return (act.burst || []).filter((id) => id !== act.target && !s.encounter?.combatants?.[id]);
     if (!areaSkill(content, act.skill)) return [];
     return areaCaught(s, { move: act.move, moveTarget: act.move_target ?? null }).filter((id) => {
+        const e = s.entities[id];
+        return !!(e.sheet || e.profile || e.kind === 'npc' || content.anchors.get(e.anchor) || anchorFor(content, [e.species, ...(e.descriptors || [])].join(' ')));
+    });
+}
+
+/**
+ * Hotfix c.6.6.18: whom a thrown burst of an offensive item strikes: the one it is thrown at and those at his distance
+ * (src/v4/scene_handles.js burstCaught), at most its size, each one the engine can give a combat profile.
+ */
+function burstOf(s, content, act) {
+    const fx = content.skills.get(act.skill)?.effects?.find((e) => e.kind === 'area' && e.shape === 'burst');
+    if (!fx) return [];
+    return burstCaught(s, act.target, fx.max_targets).filter((id) => {
         const e = s.entities[id];
         return !!(e.sheet || e.profile || e.kind === 'npc' || content.anchors.get(e.anchor) || anchorFor(content, [e.species, ...(e.descriptors || [])].join(' ')));
     });

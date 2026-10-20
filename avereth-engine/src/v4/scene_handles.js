@@ -107,6 +107,46 @@ export function areaCaught(state, { move = null, moveTarget = null } = {}) {
     });
 }
 
+/** Where someone stands from him: the fight's distance for a combatant, the scene's for anyone else. */
+const bandOf = (state, id) => state.encounter?.combatants?.[id]?.current?.band ?? state.scene?.positions?.[id]?.band ?? null;
+/** Someone a strike can still land on: alive, and in a fight neither down, gone nor yielded. */
+function standing(state, id) {
+    const e = state.entities?.[id];
+    if (id === 'pc' || !e || e.status === 'dead' || !['npc', 'creature'].includes(e.kind)) return false;
+    const c = state.encounter?.combatants?.[id];
+    return !c || (!c.current.defeated && !c.current.escaped && !c.current.surrendered);
+}
+
+/**
+ * Hotfix c.6.6.18: where a thrown burst (an offensive item, reaching `range`) lands when he names no one: of the foes in
+ * sight (in a fight its foes too, at the fight's distances), the distance within its reach where most of them stand, the
+ * nearer one on a tie; it is thrown at the first of them there. Null when no foe is within its reach.
+ */
+export function burstAim(state, range) {
+    const reach = BANDS.indexOf(range);
+    const fight = Object.values(state.encounter?.combatants || {}).filter((c) => c.side === 'hostile').map((c) => c.id);
+    const foes = [...new Set([...fight, ...tacticalHere(state, { friendly: false })])].filter((id) => standing(state, id) && BANDS.indexOf(bandOf(state, id)) >= 0 && BANDS.indexOf(bandOf(state, id)) <= reach);
+    let best = null;
+    for (const band of BANDS.slice(0, reach + 1)) {
+        const here = foes.filter((id) => bandOf(state, id) === band);
+        if (here.length && (!best || here.length > best.length)) best = here;
+    }
+    return best ? best[0] : null;
+}
+
+/**
+ * Hotfix c.6.6.18: whom a burst thrown at `target` strikes: that one and whoever else stands at the same distance from
+ * him (foe, bystander or friend: the fire does not choose), in the fight's order and then the scene's, at most `max`.
+ * The engine's whole knowledge of where they stand is their distance from him; a burst never reaches everyone of a room
+ * or a kind because they are there.
+ */
+export function burstCaught(state, target, max) {
+    const band = bandOf(state, target);
+    if (!band || !standing(state, target)) return [];
+    const pool = [...new Set([...Object.keys(state.encounter?.combatants || {}), ...(state.scene?.present || [])])];
+    return [target, ...pool.filter((id) => id !== target && standing(state, id) && bandOf(state, id) === band)].slice(0, max);
+}
+
 /**
  * Prototype C (4.3.0-c.6.6.6, review): the side someone his area attack catches stands on in the fight it opens or
  * joins: a foe of the scene stays one (tacticalHere without the friendly), someone friendly toward Alaric (attitude

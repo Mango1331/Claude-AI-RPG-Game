@@ -74,7 +74,14 @@ export const nameWords = (name) => new Set(normText(name || '').split(/[^a-z0-9]
 /** Hotfix c.6.6.18: the standard profile of an offensive item kind whose match words are all words of this name, or null. */
 export function itemTemplateOf(content, name) {
     const words = nameWords(name);
-    return (content.itemEffects || []).find((x) => x.match.every((w) => words.has(w))) || null;
+    // Patch 7.2: a kind named in several ways (match_any: "healing potion", "health potion") is any one of them
+    const has = (ws) => ws.length > 0 && ws.every((w) => words.has(w));
+    return (content.itemEffects || []).find((x) => has(x.match || []) || (x.match_any || []).some(has)) || null;
+}
+
+/** Patch 7.2: the standard restorative of an effect class (heal, restore_mp, restore_sta), or null. */
+export function restoreTemplateOf(content, effect) {
+    return (content.itemEffects || []).find((x) => x.restore && x.effect === effect) || null;
 }
 
 /**

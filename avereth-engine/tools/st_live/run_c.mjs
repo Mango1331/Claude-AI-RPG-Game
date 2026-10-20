@@ -42,7 +42,8 @@ const TURNS = [
         reply: 'Alaric lowers himself into the burrow. The air is dry and smells of resin. Three barkscorpions skitter out of the dark and rush at him, pincers raised.',
         answer: { expected: { 1: { arrived: true, at: { new: { name: 'the old burrow', kind: 'wilderness', parent: 'loc.alderwatch' } }, with: null } }, deltas: [
             { seq: 1, type: 'creature.new', ref: 'barkscorpion', species: 'barkscorpion', anchor: 'arthropod', desc: ['bark-plated'], count: 3, present: true, band: 'SHORT', stronger: null },
-            { seq: 2, type: 'hostile', by: ['barkscorpion'] },
+            // Patch 7.2B (delta-0.98): the whole group attacks, said with scope all and the reply's own words
+            { seq: 2, type: 'hostile', by: ['barkscorpion'], scope: 'all', evidence: 'Three barkscorpions skitter out of the dark and rush at him' },
         ] } },
     { key: 'alias', player: 'I Fire Lance Barkscorpion B', plan: plan({ type: 'use_skill', skill: 'mage.flame_lance', target: B, quote: 'I Fire Lance Barkscorpion B' }),
         reply: 'A lance of flame leaves Alaric\'s palm and bores into Barkscorpion B. Its bark plates blacken and split.' },
@@ -84,7 +85,7 @@ const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
 settings.firstRun = false;
 settings.username = 'Alaric';
 Object.assign(settings.oai_settings, { openai_max_context: 32000, openai_max_tokens: 1200, max_context_unlocked: true });
-if (settings.extension_settings) delete settings.extension_settings.avereth; // the defaults: V4, planner off
+if (settings.extension_settings) delete settings.extension_settings.avereth; // the defaults: V4 with the planner (V4-C, Patch 7.2)
 fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 4));
 const secretsFile = path.join(USER, 'secrets.json');
 const secretsBefore = fs.existsSync(secretsFile) ? fs.readFileSync(secretsFile, 'utf8') : null;
@@ -187,19 +188,18 @@ try {
         $('#settings_preset_openai').val(opt.value).trigger('change');
     }, PRESET);
     await page.waitForTimeout(1500);
-    // the planner switched on in the extension's settings panel, as a player does (off by default)
+    // Patch 7.2: the planner is on by default (V4-C, the product path); the panel shows it, nothing to switch
     const toggle = await page.evaluate(() => {
         const el = document.getElementById('avereth_planner');
         const before = { exists: !!el, checked: !!el?.checked, setting: SillyTavern.getContext().extensionSettings?.avereth?.planner ?? null };
-        if (el && !el.checked) el.click();
-        return { before, after: { checked: !!el?.checked, setting: SillyTavern.getContext().extensionSettings?.avereth?.planner ?? null } };
+        return { before, after: before };
     });
     await page.waitForTimeout(800);
     const chid = await page.evaluate((name) => SillyTavern.getContext().characters.findIndex((c) => c.name === name), CARD);
     await page.evaluate(async (id) => { await SillyTavern.getContext().selectCharacterById(String(id)); }, chid);
     await page.waitForFunction(() => SillyTavern.getContext().chat.length >= 1, null, { timeout: 30000 });
     await page.waitForTimeout(1500);
-    const greeting = await page.evaluate(() => (SillyTavern.getContext().chat[0].extra?.avereth?.events || []).map((e) => ({ t: e.t, runtime: e.d?.runtime })));
+    const greeting = await page.evaluate(() => (SillyTavern.getContext().chat[0].extra?.avereth?.events || []).map((e) => ({ t: e.t, runtime: e.d?.runtime, path: e.d?.path })));
 
     const extraction = () => page.evaluate(() => {
         const chat = SillyTavern.getContext().chat;
@@ -279,7 +279,8 @@ const engineOf = (c) => String(c?.messages?.find((m) => String(m.content).starts
 const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((t) => t.key === key).player));
 const checks = {
     campaignV4AtGreeting: greeting.some((e) => e.t === 'campaign.started' && e.runtime === 'v4'),
-    plannerSwitchedOnInPanel: toggle.before.exists && !toggle.before.checked && toggle.after.checked && toggle.after.setting === true,
+    plannerOnByDefault: toggle.before.exists && toggle.before.checked && toggle.before.setting === true,
+    campaignPinnedToC: greeting.some((e) => e.t === 'campaign.started' && e.path === 'c'),
     creationWithoutPlanner: afterCreation === 0,
     // one planner call per free-text message, none for the question back and none for the swipe
     onePlanPerMessage: plans.length === TURNS.length && !calls.some((c) => c.purpose === 'interpret'),

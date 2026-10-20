@@ -17,6 +17,7 @@ import { mentionedSkills } from '../intent.js';
 import { activeHostiles } from '../combat.js';
 import { sceneHandle, tacticalHere, areaCaught, approachedBy, burstAim } from './scene_handles.js';
 import { itemEffectOf } from '../content.js';
+import { restoreOf } from './items.js';
 import { settlementOf } from './domain.js';
 import { extractJsonObject } from './json.js';
 import { validate } from './schema.js';
@@ -514,6 +515,8 @@ export function mapPlan(commands, ctx, content, message, state) {
     // Hotfix c.6.6.18 (live 20.10.2026: "*i say* Thornash *and throw the scroll at them*" used the scorchburst scroll up
     // and the story burned the beetles): a held thing with an offensive effect profile, used, is an attack made with it
     commands = commands.map((c) => itemAttack(c, content, state) || c);
+    // Patch 7.2: in a fight a restorative he drinks is his main action, as a skill (one per Turn, Core #12/#24)
+    if (ctx.fight) commands = commands.map((c) => itemRestore(c, content, state) || c);
     const story = (commands || []).filter((c) => !MECH_TYPES.includes(c.type));
     const mech = (commands || []).filter((c) => MECH_TYPES.includes(c.type));
     const label = (id) => ctx.opponents.find((o) => o.id === id)?.label || (ctx.catalog.present || []).find((p) => p.id === id)?.handle || id;
@@ -597,6 +600,8 @@ export function mapPlan(commands, ctx, content, message, state) {
     const others = quotes.filter((q) => q !== main.quote);
     let skill = main.skill;
     if (isNew(skill)) return base({ kind: 'unknown_skill', name: String(skill.new).slice(0, 60) });
+    // Patch 7.2: a restorative drunk in a fight: no target, his one step of the Turn before it (src/combat.js itemAction)
+    if (main.item && content.skills.get(skill)?.restore) return base({ kind: 'item', item: main.item, ...(move ? { move: move.dir, move_target: move.target || null } : {}) });
     if (typeof skill === 'string' && !ctx.known.includes(skill) && !main.item) return base({ kind: 'unknown_skill', skill, name: skillName(skill) });
     const basicNamed = typeof skill === 'string' && skill === ctx.basic && /\bbasic\s+attack\b/.test(flat(message));
     if (skill === null || (skill === ctx.basic && !basicNamed)) {
@@ -694,6 +699,19 @@ function itemAttack(c, content, state) {
     const fx = itemEffectOf(content, o);
     if (!fx?.attack) return null;
     return { seq: c.seq, type: 'use_skill', skill: fx.id, item: o.id, target: null, quote: c.quote };
+}
+
+/**
+ * Patch 7.2: a use, in a fight, of a thing he holds that is a restorative (src/v4/items.js restoreOf): a main action made
+ * with it. Null for anything else (outside a fight a restorative stays the story command use: src/v4/commands.js).
+ */
+function itemRestore(c, content, state) {
+    if (c?.type !== 'use' || typeof c.object !== 'string' || !state) return null;
+    const o = state.objects?.[c.object];
+    if (!o || o.holder?.entity !== 'pc') return null;
+    const p = restoreOf(content, o);
+    if (!p) return null;
+    return { seq: c.seq, type: 'use_skill', skill: p.base, item: o.id, target: null, quote: c.quote };
 }
 
 /** The planner's view of the content: every skill id (for the validator's "is this a skill at all"). */

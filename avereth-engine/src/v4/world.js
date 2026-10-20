@@ -31,6 +31,8 @@ import { reachedEvents, setIntentEvents } from './intents.js';
 import { featureNamed, featureEvent, applySpring } from './features.js';
 import { complexOf, dungeonOf, trueDungeonOf, classified, rankText, linkBetween, sameWay, linksAt, wayBetween, roomByName, roomKnown, markEvents, newLink, linkEvent, levelVia, blockerOf, visited } from './dungeon.js';
 import { itemTraits, useOf, itemProfile, priceAudit } from './items.js';
+import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
+import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
@@ -77,6 +79,8 @@ export function firewallContext(s, content) {
             return e && (e.profile || s.encounter?.combatants?.[id]) ? (e.status === 'dead' ? 'dead' : 'alive') : null;
         },
         labelOf: (ref) => (s.entities[ref] ? entityLabel(s, ref) : null),
+        // Patch 7.2C: a death of a fight the engine has not booked (src/v4/combat_truth.js)
+        combatClaim: combatTruth(s, content),
         pcHurt: (s.entities.pc?.sheet?.hp ?? 0) < deriveCharacter(s.entities.pc.sheet, content).maxHp,
         actedOn: (p) => {
             const done = new Set((o.resolutions || []).filter((r) => !['refused', 'clarify'].includes(r.status)).map((r) => r.type));
@@ -272,45 +276,33 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         return local.length === 1 ? local[0].id : null;
     };
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
-    // Patch 4 (live 18.10.2026: "the two survivors ... calling the rest of the pack in"; a hostile by "the wolves" or by
-    // the pack's own ref committed no wolf at all, and the request for them asked for new ones): a group the story names
-    // as a whole is each living member of it here: the group by its ref (creature.new count > 1, this reply or an
-    // earlier one), or a plural kind or collective ("the wolves", "the pack") by the creatures here it names. A number
-    // the story gives must be theirs ("two wolves" of four is no one in particular: null, as an unknown name)
-    const QUANT = new Set(['the', 'all', 'both', 'those', 'these', 'of', 'whole', 'entire', 'rest', 'remaining', 'other', 'others']);
-    const members = (ref) => {
-        if (typeof ref !== 'string') return null;
-        const k = normText(ref);
-        if (groups.has(k)) return groups.get(k);
-        if (refs.has(k) || s.entities[ref]) return null;
-        const words = k.replace(/[_.]+/g, ' ').split(' ').filter((w) => w && !QUANT.has(w) && !numbersIn(w).size);
-        const bare = words.join(' ');
-        // review of c.6.6.12: a group the story showed as no foe (threat false) is still that group; whether it may turn
-        // on him is the World Envelope's to decide for each (hostile), never the reference's
-        const here = s.scene.present.filter((id) => s.entities[id]?.kind === 'creature' && statusOf(s, id) !== 'dead');
-        let ids = here.filter((id) => [k, bare].includes(s.entities[id].group));
-        if (!ids.length && bare && isGroup(content, bare)) {
-            const kind = words.filter((w) => !GROUP_WORDS.has(w)).join(' ');
-            ids = kind ? here.filter((id) => namesKind(kind, s.entities[id].species || '', content.anchors.get(s.entities[id].anchor || s.entities[id].profile?.anchor)))
-                : here.filter((id) => s.entities[id].group);
-            // a kind or a collective over two groups ("the wolves" with the quarry pack and the eastern pair here) is no
-            // one in particular: as an unknown name (the hostile case tells the narrator)
-            if (new Set(ids.map((id) => s.entities[id].group || id)).size > 1) ids = [];
-        }
-        const said = [...numbersIn(k)];
-        if (!ids.length || (said.length && !said.includes(ids.length))) return null;
-        return ids;
+    // Patch 4 (live 18.10.2026: "the two survivors ... calling the rest of the pack in"): a group the story names as a
+    // whole, by its ref or as a plural kind or collective; Patch 7.2B: resolved in src/v4/identity.js, which also says
+    // whether the delta means all of it (scope)
+    const members = (ref) => groupMembers(s, content, ref, { groups, refs });
+    const groupWords = (ref) => groupWordsOf(s, content, ref, { refs });
+    // Patch 7.2B: whom a delta's reference means, with the cardinality the delta gives a group's ref (scope): one entity,
+    // every member of one group (scope all), or no one the engine can tell apart (a group's ref without scope all, "three
+    // of the twelve"). Unclear is rejected with its reason; the caller decides whether the narrator hears of it
+    const whoOf = (d, ref) => {
+        const r = resolveRef(s, content, ref, { scope: d.scope ?? null, evidence: d.evidence ?? null, prose, groups, refs, single: mapRef });
+        if (r.kind === 'unclear') reject({ ...d, ref }, 'group_unclear', r.why);
+        return r;
     };
-    // a plural kind or a collective that names no one group here ("the wolves" over two packs): never one of them by a
-    // guess of the name resolver (Patch 5, position)
-    const groupWords = (ref) => {
-        if (typeof ref !== 'string' || refs.has(normText(ref)) || s.entities[ref]) return false;
-        const bare = normText(ref).replace(/[_.]+/g, ' ').split(' ').filter((w) => w && !QUANT.has(w) && !numbersIn(w).size).join(' ');
-        return !!bare && isGroup(content, bare);
+    // Patch 7.2C: a story store (memory, thread, quest note) keeps no death of a fight the engine has not booked as the
+    // world's truth: those clauses go, the rest stays, the narrator hears the engine's count once
+    const trueDeaths = (text) => {
+        const cut = stripFalseDeaths(combatTruth(s, content), text);
+        for (const x of cut.refused) if (!corrections.includes(x.correction)) corrections.push(x.correction);
+        return cut;
+    };
+    const unbooked = (ref, why) => {
+        const correction = `The attack of "${String(ref).slice(0, 60)}" in the last reply was not booked: ${why}. Only those the engine has fighting attack and deal damage; name each attacker by its handle, or show the whole group attacking together.`;
+        if (!corrections.includes(correction)) corrections.push(correction);
     };
     // whom this reply establishes as not having noticed Alaric (aware: unaware), whatever step of it reports that: they do
     // not see him at an earlier step either (perceiveAll)
-    const seeing = () => ({ unaware: new Set((fw.accept || []).filter((d) => d?.type === 'aware' && d.level === 'unaware').flatMap((d) => members(d.who) || [mapRef(d.who)]).filter((x) => typeof x === 'string')) });
+    const seeing = () => ({ unaware: new Set((fw.accept || []).filter((d) => d?.type === 'aware' && d.level === 'unaware').flatMap((d) => resolveRef(s, content, d.who, { scope: d.scope ?? null, evidence: d.evidence ?? null, prose, groups, refs, single: mapRef }).ids).filter((x) => typeof x === 'string')) });
     // the World Envelope at this step (docs/ARCHITECTURE_GEN35.md §2.3): may this actor turn on Alaric of its own accord?
     const envelopeAllows = (id, d) => {
         if (typeof id !== 'string' || !s.entities[id] || !['npc', 'creature'].includes(s.entities[id].kind)) { grant('envelope.fight'); return true; } // the V3 rules refuse unknown attackers
@@ -351,6 +343,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         && (e.left.leg ? e.left.turn === s.turn : s.clock.minute - (e.left.minute ?? 0) <= (content.rules.combat?.wary_min ?? 360));
     const kindOk = (d) => !!String(d.name || d.feature || '').trim() && ['obstacle', 'hazard'].includes(d.kind);
     // a ref the V3 rules resolve to a creature that is not here (dead, or left elsewhere)
+    const takenRef = (ref) => { const id = makeResolver(s, new Map(), content)(ref); return !!id && s.entities[id]?.kind === 'creature'; };
     const absentRef = (ref) => { const id = makeResolver(s, new Map(), content)(ref); return !!id && s.entities[id]?.kind === 'creature' && !s.scene.present.includes(id); };
     const newEntity = (d, kind) => {
         // A large group of skittish animals (their body-plan's temperament: a flock, a herd, a flight of birds) that nobody
@@ -437,7 +430,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             let ref = own.length ? `${d.ref} ${own.length + i - again.length}` : count > 1 ? `${d.ref} ${i}` : d.ref;
             // Patch 5: a newcomer's ref is its own, never one an earlier creature of that name had (a dead wolf of the
             // last pack, one left far behind): the V3 rules would take it for that one, and the newcomer would be lost
-            for (let n = count + 1; kind === 'creature' && n < count + 64 && (entries.some((x) => normText(x.ref) === normText(ref)) || absentRef(ref)); n++) ref = `${d.ref} ${n}`;
+            // Patch 7.2B (live Glimmerdeep: the twelfth beetle of a swarm of eleven living, one dead, was numbered 12, the ref
+            // of beetle L, and taken for it): a ref the engine numbers for a newcomer names no creature that exists at all
+            const numbered = own.length > 0 || count > 1;
+            for (let n = count + 1; kind === 'creature' && n < count + 64 && (entries.some((x) => normText(x.ref) === normText(ref)) || (numbered ? takenRef(ref) : absentRef(ref))); n++) ref = `${d.ref} ${n}`;
             entries.push(kind === 'npc'
                 ? { ref, kind: 'npc', name: d.name || undefined, anonymous: !d.name, desc: [...(d.role ? [d.role] : []), ...(d.desc || [])], traits: (d.desc || []).join(', '), band: d.band || undefined }
                 : { ref, kind: 'creature', name: undefined, species: d.species, anchor: d.anchor, desc: d.desc || [], band: d.band || undefined });
@@ -661,9 +657,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'position': {
                 // Patch 5 (the Patch 4 gap): a group's ref moves each living member of it here, as aware, intent and
                 // hostile do ("the east pair closes in"), never only the first; one creature's own ref moves that one
-                const whos = members(d.who);
-                if (!whos && groupWords(d.who)) { reject(d, 'group_unclear', `"${String(d.who).slice(0, 60)}" names no one group here`); break; }
-                v3({ position: (whos || [mapRef(d.who)]).map((who) => ({ who, band: d.band, cover: d.cover || undefined, ...(d.cluster ? { cluster: d.cluster } : {}) })) }, d);
+                // Patch 7.2B: a group's ref moves all of it only with scope all
+                const r = whoOf(d, d.who);
+                if (r.kind === 'unclear') break;
+                v3({ position: r.ids.map((who) => ({ who, band: d.band, cover: d.cover || undefined, ...(d.cluster ? { cluster: d.cluster } : {}) })) }, d);
                 break;
             }
             case 'aware':
@@ -671,7 +668,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 // unaware reached only the first of the two small kobolds); its own Ambush awareness, not perception's
                 // Patch 4: one that fought him (or watched his fight) a short while ago has not lost track of him because the
                 // story says so: no Ambush from it (rules.combat.wary_min); his own stealth check is the engine's way
-                const whos = members(d.who) || [mapRef(d.who)];
+                const whos = whoOf(d, d.who).ids; // Patch 7.2B: a group only with scope all
+                if (!whos.length) break;
                 const wary = d.level === 'unaware' ? whos.filter((who) => { const w = s.entities[who]?.wary; return !!w && s.clock.minute - (w.minute ?? 0) < (content.rules.combat?.wary_min ?? 360); }) : [];
                 if (wary.length) {
                     reject({ ...d, who: wary.length === whos.length ? d.who : wary }, 'engine_owned', `${wary.map((x) => entityLabel(s, x)).join(', ')} fought Alaric or watched his fight a short while ago and is still aware of him`);
@@ -684,7 +682,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'intent': {
                 // an intent to attack him is the same decision as turning on him: the World Envelope's (outside a fight);
                 // Patch 4: a group's intent is each member's ("the wolves break and run")
-                const whos = (members(d.who) || [mapRef(d.who)]).filter((who) => !(d.intent === 'attack' && !s.encounter && !envelopeAllows(who, d)));
+                // Patch 7.2B: a group only with scope all; an attack of a group the engine cannot tell apart is not booked
+                const r = whoOf(d, d.who);
+                if (r.kind === 'unclear' && d.intent === 'attack') unbooked(d.who, r.why);
+                const whos = r.ids.filter((who) => !(d.intent === 'attack' && !s.encounter && !envelopeAllows(who, d)));
                 if (!whos.length) break;
                 grant('narrated_intent');
                 v3({ intent: whos.map((who) => ({ who, intent: d.intent })) }, d);
@@ -693,8 +694,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'hostile': {
                 // Patch 4: a group named as a whole is each member here, except one this reply shows doing something else
                 // (fleeing, holding back, giving up: its own intent); presence or kinship alone commits no one
-                const other = new Set(fw.accept.filter((x) => x.type === 'intent' && x.intent !== 'attack').flatMap((x) => members(x.who) || [mapRef(x.who)]));
-                const by = (d.by || []).flatMap((x) => { const m = members(x); return m ? m.filter((id) => !other.has(id)) : [mapRef(x)]; }).filter((x) => !joinedByNew.has(normText(x)));
+                // Patch 7.2B: a group's ref commits all of it only with scope all (src/v4/identity.js); one beetle's lunge
+                // under the swarm's ref commits no swarm, and an attack of some of them the engine cannot tell apart
+                // ("three of the twelve") commits none, the narrator hears why
+                const other = new Set(fw.accept.filter((x) => x.type === 'intent' && x.intent !== 'attack').flatMap((x) => resolveRef(s, content, x.who, { scope: x.scope ?? null, evidence: x.evidence ?? null, prose, groups, refs, single: mapRef }).ids));
+                const by = (d.by || []).flatMap((x) => {
+                    const r = whoOf(d, x);
+                    if (r.kind === 'unclear') { if (!joinedByNew.has(normText(x))) unbooked(x, r.why); return []; }
+                    return r.kind === 'all' ? r.ids.filter((id) => !other.has(id)) : r.ids;
+                }).filter((x) => !joinedByNew.has(normText(x)));
                 // who turns on Alaric: inside the World Envelope at this step (an attitude the reply lowered before is
                 // a cause); outside it nobody attacks, the next engine block says why
                 const left = by.filter((x) => !(typeof x === 'string' && s.encounter?.combatants?.[x])).filter((x) => envelopeAllows(x, d));
@@ -747,20 +755,31 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 // "He" opening a later clause of a memory about Alaric is Alaric
                 const actOf = (c) => pcActIn(/^\s*alaric\b/i.test(d.text) ? c.replace(/^\s*he\b/i, 'Alaric') : c);
                 const invented = (c) => { const act = actOf(c); return !!act && !fw.actedOn(act); };
-                const cut = stripOwned(d.text, { store: 'memory', extra: invented });
+                const deaths = trueDeaths(d.text);
+                if (deaths.refused.length && !deaths.text) { reject(d, 'engine_owned_combat', `a memory of deaths the engine has not booked (${deaths.refused.map((x) => x.why).join('; ')})`); break; }
+                const cut = stripOwned(deaths.text, { store: 'memory', extra: invented });
                 const acts = cut.other.map(actOf);
                 if (acts.length) {
                     const correction = `Alaric did not ${[...new Set(acts)].join(' or ')} anything in the last reply: hunting, eating, buying, using up or leaving behind his things is his decision, and he did not make it. His food, coin and things are as the engine has them.`;
                     if (!corrections.includes(correction)) corrections.push(correction);
                 }
                 if (!cut.kept.length) { reject(d, acts.length ? 'pc_decision' : 'engine_owned_memory', acts.length ? `a memory of his own act he did not choose (${acts.join(', ')})` : `a memory keeps the moment; ${cut.kinds.join(', ')} is the engine's state, recorded by the engine`); break; }
-                v3({ memory: [{ text: cut.owned.length || cut.other.length ? cut.kept.join(' ') : d.text, who: (d.who || []).map(mapRef), imp: d.imp }] }, d);
+                v3({ memory: [{ text: cut.owned.length || cut.other.length || deaths.refused.length ? cut.kept.join(' ') : d.text, who: (d.who || []).map(mapRef), imp: d.imp }] }, d);
                 break;
             }
-            case 'thread':
+            case 'thread': {
                 // Patch 2: an id from the catalog's THREADS updates or resolves that thread (src/threads.js)
-                v3({ threads: [{ id: d.id || null, text: d.text, kind: d.kind, status: d.status, resolution: d.resolution || null }] }, d);
+                // Patch 7.2C: no death the engine has not booked, in its text or its resolution; a rumour is someone's claim
+                const rumour = d.kind === 'rumor';
+                const text = rumour ? { text: d.text, refused: [] } : trueDeaths(d.text);
+                const resolution = rumour || !d.resolution ? { text: d.resolution || null, refused: [] } : trueDeaths(d.resolution);
+                if ((text.refused.length && !text.text) || (resolution.refused.length && !resolution.text && d.status === 'resolved')) {
+                    reject(d, 'engine_owned_combat', `a thread of deaths the engine has not booked (${[...text.refused, ...resolution.refused].map((x) => x.why).join('; ')})`);
+                    break;
+                }
+                v3({ threads: [{ id: d.id || null, text: text.text, kind: d.kind, status: d.status, resolution: resolution.text || null }] }, d);
                 break;
+            }
             case 'place.reported': {
                 // Patch 2: a place someone tells of, a map shows or a rumour names: a known place by report, not a
                 // place in the world as the story has shown it (src/v4/known.js)
@@ -880,7 +899,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 // local inspection or signature the story makes a condition is no part of it (live 30.09.2026 14:56:
                 // "the steward must inspect and sign before payment"). The rest of the note (route, contacts, what was
                 // seen) stays.
-                let note = String(d.note);
+                // Patch 7.2C: a quest note keeps no death the engine has not booked either
+                const deaths = trueDeaths(String(d.note));
+                if (deaths.refused.length && !deaths.text) { reject(d, 'engine_owned_combat', `a quest note of deaths the engine has not booked (${deaths.refused.map((x) => x.why).join('; ')})`); break; }
+                let note = deaths.text;
                 if (q.kind === 'guild_contract') {
                     // the one free-text rule of the Decision Ownership (src/v4/ownership.js), with the hunt's sign-off
                     const cut = stripOwned(note, { store: 'note', quest: q, extra: isHunt(q, content) ? (x) => SIGN_OFF.test(x) && REQUIRE.test(x) : null });
@@ -900,6 +922,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             case 'quest.progress': {
                 const q = questRef(d.quest);
                 if (!q) { reject(d, 'quest', 'unknown quest'); break; }
+                // Patch 7.2C: progress that counts deaths the engine has not booked is no progress
+                const deaths = trueDeaths(String(d.objective));
+                if (deaths.refused.length) { reject(d, 'engine_owned_combat', `quest progress of deaths the engine has not booked (${deaths.refused.map((x) => x.why).join('; ')})`); break; }
                 // Prototype C (4.3.0-c.6.6.6): the same word on the same objective again is no news (one entry each)
                 const said = String(d.objective).slice(0, 160);
                 if (cPath && (q.progress || []).some((p) => progressKey(q, p.objective) === progressKey(q, said) && p.status === d.status)) break;
@@ -1581,7 +1606,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // audit, never a refusal: merchants differ)
         const lines = priced.filter((l) => !unproven.includes(l)).map((l, i) => {
             const line = { id: `l${i + 1}`, what: l.what, kind: l.kind, service: l.service ?? null, qty: l.qty ?? 1, price_cp: l.price_cp, ...(l.said !== undefined ? { said: l.said } : {}) };
-            const profile = line.kind === 'goods' ? itemProfile(content, { name: line.what }) : null;
+            // Patch 7.2: a restorative's kind as the extractor gave it (effect), checked by itemProfile (a consumable at all)
+            const profile = line.kind === 'goods' ? itemProfile(content, { name: line.what, effect: l.effect ?? null }) : null;
             if (!profile) return line;
             const audit = priceAudit(content, profile, line.price_cp, line.qty);
             return { ...line, profile, ...(audit ? { audit } : {}) };

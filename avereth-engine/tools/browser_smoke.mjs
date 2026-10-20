@@ -192,7 +192,8 @@ async function v4Page(DATA) {
     window.toastr = { warning: (m) => window.__log.push('warn ' + m), error: (m) => window.__log.push('error ' + m), info: () => {} };
     let rawCalls = 0;
     const ctx = {
-        chat, extensionSettings: {}, // the defaults: new campaigns run V4
+        // new campaigns run V4; Patch 7.2: this page plays the historical V4-A path (planner off), chosen as a player would
+        chat, extensionSettings: { avereth: { planner: false, settingsRev: 2 } },
         saveSettingsDebounced() {}, saveChat: async () => { window.__saved = (window.__saved || 0) + 1; },
         updateMessageBlock(id) { window.__rerendered = (window.__rerendered || []).concat(id); },
         setExtensionPrompt(key, value) { if (key === 'avereth_engine') window.__prompt = value; },

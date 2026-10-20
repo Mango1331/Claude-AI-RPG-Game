@@ -40,7 +40,7 @@ const TRADE_RE = /\b(?:buy|buys|bought|sell|sells|sold|pay|pays|paid|price|cost|
  * Initial campaign events from content/campaign_start.json and the First Message's location line. runtime 'v4' starts
  * a Runtime V4 campaign (docs/RUNTIME_V4_PLAN.md): the same start, plus the place tree and the start node.
  */
-export function startCampaign(content, { seed = newSeed(), firstMessage = '', runtime = 'v3' } = {}) {
+export function startCampaign(content, { seed = newSeed(), firstMessage = '', runtime = 'v3', planner } = {}) {
     const st = content.start;
     const m = /Location:\s*[^\n`]*?\boutside\s+([A-Z][\w' -]*?)\s*,\s*([A-Z][\w' -]*)/.exec(String(firstMessage));
     let loc = m ? locationByName(content, m[1].trim()) : null;
@@ -66,7 +66,9 @@ export function startCampaign(content, { seed = newSeed(), firstMessage = '', ru
         d: {
             seed: seed >>> 0, minute: at.minute, entities: [pc], location: loc.id, place: startPlace(content, loc),
             facts, knowledge, campaign: content.manifest.id, content_version: content.manifest.version, engine_version: ENGINE_VERSION,
-            ...(v4 ? { runtime: 'v4', places: v4.places, at: v4.at } : {}),
+            // Patch 7.2: a V4 campaign keeps the path it started on (c: the semantic planner, the product path; a: the
+            // interpreter of Runtime V4-A), whatever the setting says later (src/v4/runtime.js campaignPath)
+            ...(v4 ? { runtime: 'v4', ...(typeof planner === 'boolean' ? { path: planner ? 'c' : 'a' } : {}), places: v4.places, at: v4.at } : {}),
         },
     }];
 }
@@ -252,6 +254,8 @@ function pcActionOf(s, content, intent, text) {
             };
             return { kind: 'attack', skill: intent.skill, target: intent.target, move: intent.move, move_target: intent.move_target, ...(intent.field ? { field: intent.field } : {}), ...(intent.crowd ? { crowd: true } : {}), ...(intent.item ? { item: intent.item } : {}) };
         case 'skill': return { kind: 'skill', skill: intent.skill, dir: intent.dir, target: intent.target };
+        // Patch 7.2: a restorative drunk in a fight, his main action (src/combat.js itemAction)
+        case 'item': return s.encounter || (s.pending_combat || []).length ? { kind: 'item', item: intent.item, move: intent.move || null, move_target: intent.move_target ?? null } : { note: 'A potion is drunk outside a fight as a story command; nothing was used up here.', notice: 'Not in a fight (nothing used up)' };
         case 'move': return { kind: 'move', dir: intent.dir, target: intent.target };
         case 'flee': return { kind: 'flee' };
         // prototype C (src/v4/planner.js): a declared wait in a fight (the same hold as A's HOLD_RE below), a known skill

@@ -88,7 +88,8 @@ const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
 settings.firstRun = false;
 settings.username = 'Alaric';
 Object.assign(settings.oai_settings, { openai_max_context: 32000, openai_max_tokens: 1200, max_context_unlocked: true });
-if (settings.extension_settings) delete settings.extension_settings.avereth; // the defaults: new campaigns run V4
+// Patch 7.2: V4-C is the default for new campaigns; this smoke plays the historical V4-A path, chosen as a player would
+settings.extension_settings = { ...(settings.extension_settings || {}), avereth: { runtime: 'v4', planner: false, settingsRev: 2 } };
 fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 4));
 const secretsFile = path.join(USER, 'secrets.json');
 const secretsBefore = fs.existsSync(secretsFile) ? fs.readFileSync(secretsFile, 'utf8') : null;
@@ -199,7 +200,7 @@ try {
     await page.waitForTimeout(1500);
     const greeting = await page.evaluate(() => {
         const m = SillyTavern.getContext().chat[0];
-        return { events: (m.extra?.avereth?.events || []).map((e) => ({ t: e.t, runtime: e.d?.runtime })), status: document.getElementById('avereth_status')?.textContent || '' };
+        return { events: (m.extra?.avereth?.events || []).map((e) => ({ t: e.t, runtime: e.d?.runtime, path: e.d?.path })), status: document.getElementById('avereth_status')?.textContent || '' };
     });
 
     const extraction = () => page.evaluate(() => {
@@ -290,6 +291,7 @@ const jailbreak = presetFile.prompts.find((p) => p.identifier === 'jailbreak')?.
 const EXPECTED_REJECTED = { 1: ['1:fact:guild_canon'], 2: ['3:listing.gone:board_first_display'] };
 const checks = {
     campaignV4AtGreeting: greeting.events.some((e) => e.t === 'campaign.started' && e.runtime === 'v4'),
+    campaignPinnedToA: greeting.events.some((e) => e.t === 'campaign.started' && e.path === 'a'),
     creationBySystem: T('Warrior').system && /CLASS SELECTED: WARRIOR/.test(T('Warrior').panelText) && T(SKILLS).system && /CHARACTER CREATION COMPLETE/.test(T(SKILLS).panelText)
         && !calls.some((c) => c.lastUser === 'Warrior' || c.lastUser === SKILLS),
     // the Board generator runs when Alaric reads the board (t3, 4.0.7), not on the arrival at the hall

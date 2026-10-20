@@ -200,7 +200,7 @@ test('patch 5 (6): no journey while a fight runs; the towers in sight are no arr
 });
 async function roadFightStart(g) {
     await say(g, '*I continue my journey*', CONTINUE);
-    await g.reply('Four wolves trot out onto the road and rush him.', { expected: NOT_THERE, deltas: [{ seq: 1, type: 'time', minutes: 60 }, wolvesNew('wolves', 4, 'SHORT'), { seq: 3, type: 'hostile', by: ['wolves'] }] });
+    await g.reply('Four wolves trot out onto the road and rush him.', { expected: NOT_THERE, deltas: [{ seq: 1, type: 'time', minutes: 60 }, wolvesNew('wolves', 4, 'SHORT'), { seq: 3, type: 'hostile', by: ['wolves'], scope: 'all', evidence: 'Four wolves trot out onto the road and rush him' }] });
 }
 
 test('patch 5 (7, 14): a stopover keeps the goal; a detour pauses it; giving it up drops it; only arriving does it', async () => {
@@ -262,7 +262,7 @@ test('patch 5 (10): on an uneventful leg nobody the reply brings onto the road a
     await withRoad(0, async () => {
         const g = await onTheRoad();
         await say(g, '*I continue my journey*', CONTINUE);
-        const r = await g.reply('Wolves burst from the pines and rush him.', { expected: NOT_THERE, deltas: [{ seq: 1, type: 'time', minutes: 120 }, wolvesNew('wolves', 2, 'SHORT'), { seq: 3, type: 'hostile', by: ['wolves'] }] });
+        const r = await g.reply('Wolves burst from the pines and rush him.', { expected: NOT_THERE, deltas: [{ seq: 1, type: 'time', minutes: 120 }, wolvesNew('wolves', 2, 'SHORT'), { seq: 3, type: 'hostile', by: ['wolves'], scope: 'all', evidence: 'Wolves burst from the pines and rush him' }] });
         const s = g.state();
         assert.equal(s.encounter, null);
         assert.ok(rejectedRules(r).includes('road'));
@@ -477,7 +477,7 @@ test('patch 5 (21, 22): an escort goes the whole way: Brother Aldric is with him
         assert.ok(s.scene.present.includes('npc.aldric'));
         assert.ok(s.quests[MED].journey);
         await say(g, '*we go on*', { type: 'journey.continue', quote: 'we go on' });
-        await g.reply('Another three hours; two wolves block the track.', { expected: {}, deltas: [{ seq: 1, type: 'time', minutes: 180 }, wolvesNew('wolves', 2, 'SHORT'), { seq: 3, type: 'hostile', by: ['wolves'] }] });
+        await g.reply('Another three hours; two wolves block the track.', { expected: {}, deltas: [{ seq: 1, type: 'time', minutes: 180 }, wolvesNew('wolves', 2, 'SHORT'), { seq: 3, type: 'hostile', by: ['wolves'], scope: 'all' }] });
         s = g.state();
         assert.ok(s.scene.present.includes('npc.aldric'), 'a further leg does not leave him at the roadside');
         assert.ok(s.encounter, 'the wolves fight');
@@ -603,7 +603,7 @@ test('patch 5 (28): the Patch 4 gap: "the east pair closes in" moves both wolves
     const quarry = bands(g.state(), W);
     assert.deepEqual(bands(g.state(), pair), ['MEDIUM', 'MEDIUM']);
     await say(g, '*i wait and watch*');
-    const r = await g.reply('The eastern pair closes in.', { expected: {}, deltas: [{ seq: 1, type: 'position', who: 'east pair', band: 'SHORT', cover: 'none' }] });
+    const r = await g.reply('The eastern pair closes in.', { expected: {}, deltas: [{ seq: 1, type: 'position', who: 'east pair', band: 'SHORT', cover: 'none', scope: 'all', evidence: 'The eastern pair closes in' }] });
     const s = g.state();
     assert.deepEqual(bands(s, pair), ['SHORT', 'SHORT'], JSON.stringify(rejectedRules(r)));
     assert.deepEqual(bands(s, W), quarry);
@@ -618,7 +618,7 @@ test('patch 5 (29, 30): one wolf\'s own ref moves that wolf alone; "the wolves" 
     assert.deepEqual(bands(s, pair), ['SHORT', 'MEDIUM']);
     assert.deepEqual(bands(s, W), bands(before, W));
     await say(g, '*i wait and watch*');
-    const r = await g.reply('The wolves close in.', { expected: {}, deltas: [{ seq: 1, type: 'position', who: 'the wolves', band: 'ENGAGED', cover: 'none' }] });
+    const r = await g.reply('The wolves close in.', { expected: {}, deltas: [{ seq: 1, type: 'position', who: 'the wolves', band: 'ENGAGED', cover: 'none', scope: 'all' }] });
     s = g.state();
     assert.ok(![...pair, ...W].some((id) => s.scene.positions[id]?.band === 'ENGAGED'), 'nobody picked');
     assert.ok(rejectedRules(r).includes('group_unclear'));
@@ -663,7 +663,7 @@ test('patch 5 (33, 34): Patch 4 holds on the road: the wolves that fought him ar
         const loot = Object.values(s.objects).filter((o) => o.source?.how === 'loot').length;
         assert.ok(loot > 0);
         assert.ok(rest.every((id) => s.entities[id].wary), 'the two that watched are wary');
-        const r = await g.reply('The two wolves at the treeline lose track of him.', { expected: {}, deltas: [{ seq: 1, type: 'aware', who: 'wolves', level: 'unaware' }] });
+        const r = await g.reply('The two wolves at the treeline lose track of him.', { expected: {}, deltas: [{ seq: 1, type: 'aware', who: 'wolves', level: 'unaware', scope: 'all', evidence: 'The two wolves at the treeline lose track of him' }] });
         assert.ok(rejectedRules(r).includes('engine_owned'));
         await say(g, '*I continue my journey*', CONTINUE);
         await g.reply('He walks on; the two wolves trail him.', { expected: NOT_THERE, deltas: [{ seq: 1, type: 'time', minutes: 120 }, wolvesNew('wolves', 2, 'LONG')] });

@@ -16,6 +16,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadContent, ROOT } from '../helpers.js';
+import { answerOf } from './replay_lib.js';
 import { Chat4 } from './harness.js';
 import { validateState } from '../../src/validate.js';
 import { routeTurn } from '../../src/v4/turn.js';
@@ -55,7 +56,7 @@ async function replay() {
             at[t.i].state = g.state();
             check(t.i);
         } else if (story) {
-            const r = await g.reply(t.reply, t.answer ?? { expected: {}, deltas: [] });
+            const r = await g.reply(t.reply, answerOf(t));
             at[t.i] = { rec: r.record, state: g.state() };
             check(t.i);
         }

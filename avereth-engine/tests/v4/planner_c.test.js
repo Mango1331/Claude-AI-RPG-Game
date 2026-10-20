@@ -70,7 +70,7 @@ async function fight(band = 'SHORT') {
     await g.player('I climb down into the old burrow.', [{ seq: 1, type: 'go', to: { new: 'the old burrow' }, quote: 'I climb down into the old burrow' }]);
     await g.reply('Three barkscorpions skitter out of the dark and rush at Alaric.', { expected: {}, deltas: [
         { seq: 1, type: 'creature.new', ref: 'barkscorpion', species: 'barkscorpion', anchor: 'arthropod', desc: ['bark-plated'], count: 3, present: true, band, stronger: null },
-        { seq: 2, type: 'hostile', by: ['barkscorpion'] },
+        { seq: 2, type: 'hostile', by: ['barkscorpion'], scope: 'all', evidence: 'rush at Alaric' },
     ] });
     assert.ok(g.state().encounter, 'the fight is on');
     g.planner = true;

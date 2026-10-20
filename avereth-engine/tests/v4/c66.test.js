@@ -209,7 +209,7 @@ test('c.6.6 group awareness: "unaware" on a group ref reaches each of its creatu
         deltas: [
             { seq: 1, type: 'creature.new', ref: 'kobold_small_a', species: 'gnaw-tooth kobold', anchor: 'goblin', desc: ['waist-high, hunched'], count: 2, present: true, band: 'MEDIUM', stronger: null },
             { seq: 2, type: 'creature.new', ref: 'kobold_big', species: 'gnaw-tooth kobold', anchor: 'goblin', desc: ['half again the size of the small ones'], count: 1, present: true, band: 'MEDIUM', stronger: true },
-            { seq: 3, type: 'aware', who: 'kobold_small_a', level: 'unaware' },
+            { seq: 3, type: 'aware', who: 'kobold_small_a', level: 'unaware', scope: 'all', evidence: 'None of them looks up' },
             { seq: 4, type: 'aware', who: 'kobold_big', level: 'unaware' },
         ],
     });

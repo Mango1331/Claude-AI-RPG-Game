@@ -344,7 +344,8 @@ test('patch 7.1: the guideline grows with quality and Rank; ordinary things get 
     assert.ok(values[0] < values[1] && values[1] < values[2], values.join());
     assert.equal(p('E-Rank longsword').rank, 'E');
     assert.ok(p('E-Rank longsword').value_cp > p('fine longsword').value_cp);
-    for (const n of ['heel of bread', 'flint and steel', 'Guild plate', 'minor healing potion']) assert.equal(p(n), null, n);
+    for (const n of ['heel of bread', 'flint and steel', 'Guild plate']) assert.equal(p(n), null, n);
+    assert.equal(p('minor healing potion').kind, 'restore', 'Patch 7.2: a healing potion restores HP');
     assert.equal(p('Starter Arcane Staff').matk, 6, 'a content template keeps its values');
 });
 
@@ -423,7 +424,7 @@ test('patch 7.1 final review (1): a reply that shows a group packed close stores
     // spread out, then crowded together again: the group's ref moves each of them into the knot
     const h = await goblins();
     await say(h, '*i wait*');
-    await h.reply('The goblins bunch together at the passage mouth, jostling.', { expected: {}, deltas: [{ seq: 1, type: 'position', who: 'tunnel goblins', band: 'SHORT', cover: null, cluster: 'passage mouth' }] });
+    await h.reply('The goblins bunch together at the passage mouth, jostling.', { expected: {}, deltas: [{ seq: 1, type: 'position', who: 'tunnel goblins', band: 'SHORT', cover: null, cluster: 'passage mouth', scope: 'all', evidence: 'The goblins bunch together' }] });
     assert.deepEqual(TWELVE.map((n) => clusterOf(h.state(), GOBLIN(n))), TWELVE.map(() => 'passage mouth'));
 });
 

@@ -26,7 +26,7 @@ import { shopSearch, findTrades } from './settlement.js';
 import { journeyReady, knownAt } from './catalog.js';
 import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSetsGoal } from './intents.js';
 import { knownByName } from './known.js';
-import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile } from './items.js';
+import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect } from './items.js';
 import { itemEffectOf } from '../content.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
@@ -615,6 +615,33 @@ const HANDLERS = {
         // Hotfix c.6.6.18: an attack item (the scorchburst scroll) is resolved as an attack (src/v4/planner.js itemAttack),
         // never used up here with its effect left to the story; where no attack is made of it, it stays his
         if (itemEffectOf(content, o)?.attack) return { status: 'refused', reason: 'an attack item', line: `CANNOT USE — ${o.name} is an attack: thrown at a foe, the engine resolves it in a fight; nothing was used up, it stays his, nothing burns and nothing is struck.` };
+        // Patch 7.2: a restorative (a healing potion, a mana potion, a stamina tonic) restores what its own profile says,
+        // never more than his maximum and never what the story claims; outside a fight here, in one it is his main action
+        // on his Turn (src/combat.js itemAction). One that would do nothing is refused and stays his
+        const rp = restoreOf(content, o);
+        if (rp) {
+            if (s.encounter || (s.pending_combat || []).length) return { status: 'refused', reason: 'in a fight', line: `CANNOT USE — in a fight ${o.name} is his main action on his Turn; nothing was drunk or used up.` };
+            const sheet = s.entities.pc.sheet;
+            const dv = deriveCharacter(sheet, content);
+            const max = { hp: dv.maxHp, mp: dv.maxMp, sta: dv.maxSta };
+            const current = { hp: sheet.hp, mp: sheet.mp, sta: sheet.sta };
+            const n = Math.min(c.qty || 1, o.qty ?? 1);
+            const done = [];
+            for (let i = 0; i < n; i++) {
+                const x = restoreEffect(content, rp, { level: sheet.level, current, max });
+                if (x.refused) { if (!done.length) return { status: 'refused', reason: 'no effect', line: `CANNOT USE — ${x.refused}; nothing was drunk or used up, it stays his.` }; break; }
+                current[x.resource] = x.after;
+                done.push(x);
+            }
+            const R = rp.resource.toUpperCase();
+            emit({ t: 'resource.changed', d: { id: 'pc', resource: rp.resource, value: current[rp.resource], why: `${o.name} (${done.length > 1 ? `${done.length} × ` : ''}${rp.amount} ${R})` } });
+            const left = (o.qty ?? 1) - done.length;
+            if (o.template) emit({ t: 'item.changed', d: { id: 'pc', item: o.template, qty: -done.length, why: 'used' } });
+            else emit({ t: 'object.consumed', d: { id: o.id, by: 'pc', ...(left > 0 ? { qty: done.length } : {}) } });
+            const gained = done.reduce((a, x) => a + x.amount, 0);
+            const lost = done.length * rp.amount - gained;
+            return { status: 'resolved', line: `USES — ${o.name}${done.length > 1 ? ` (${done.length})` : ''}: ${R} ${done[0].before} → ${current[rp.resource]} (+${gained}${lost ? `; ${lost} beyond his maximum of ${max[rp.resource]} is lost` : ''}); ${left > 0 ? `${left} left` : 'it is used up'}. The engine booked it; no other effect.` };
+        }
         const use = useOf(content, o);
         // a tool, gear or a document is used, not used up (live 18.10.2026: the flint and steel)
         if (use === 'tool' || use === 'equipment') return { status: 'resolved', line: `USES — ${o.name} (a tool: it stays with him, not used up; the story tells what it achieves).` };

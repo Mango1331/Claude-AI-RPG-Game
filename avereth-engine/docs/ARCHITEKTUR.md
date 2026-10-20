@@ -332,3 +332,18 @@ Welt- und NPC-Handlungen (NPC gibt Alaric etwas, NPC geht, Wetter) brauchen kein
   - Loot-Instanzen mit individuellen Werten.
 
   Erweiterungspunkte siehe [MIGRATION.md](MIGRATION.md) und den Abschlussbericht.
+
+## 13. Konsolidierung 7.2 und Strangler-Regel (ab Patch 8)
+
+**Produktpfad.** Seit 4.3.0-c.6.6.21 ist V4-C (semantischer Planner) der Standard für neue Kampagnen. Jede neue V4-Kampagne speichert ihren Pfad in `campaign.started` (`path: c|a`). Eine laufende Kampagne wechselt ihren Pfad nie durch eine geänderte Einstellung. V3 und V4-A bleiben vorhanden; ihr Rückbau ist eine spätere Aufgabe. Der historische Stand vor 7.2 ist als Git-Tag `avereth-4.3.0-c.6.6.20` gesichert.
+
+**Strangler-Regel.**
+- Neue größere Delta-Domänen entstehen ab Patch 8 in eigenen Fachmodulen unter `src/v4/` (Vorbilder: `identity.js`, `combat_truth.js`, `dungeon.js`, `features.js`).
+- Der World-Applier (`src/v4/world.js`) koordiniert nur: Er ruft das Modul, setzt dessen Ergebnis in Events um und sammelt Ablehnungen und Korrekturen. Er nimmt keine neue Fachlogik auf.
+- Eine kleine Änderung braucht keine eigene Datei. Aufgeteilt wird nach Verantwortung, nicht nach Ästhetik.
+
+**Semantik strukturiert, nicht per Regex.**
+- Neue semantische Informationen kommen als validierte Planner- oder Extractor-Felder (Beispiele aus 7.2: `scope`/`evidence` für Gruppen, `effect` für Verbrauchsgüter).
+- Die Engine prüft jedes Feld gegen bekannte Referenzen, den Zustand und, soweit prüfbar, die Prosa.
+- Bestehende Regex-Fallbacks bleiben, solange sie gebraucht werden. Neue Wortlisten sind nur für eng begrenzte Evidenzprüfungen erlaubt, mit dokumentierten Grenzen (Beispiel: `combat_truth.js`).
+

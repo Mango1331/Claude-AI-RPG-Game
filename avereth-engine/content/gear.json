@@ -245,6 +245,160 @@
         ],
         "effect_text": "thrown up to SHORT; the burst strikes the creature it is thrown at and everyone standing in the same close knot with it (the cluster the story established, at the same distance from him), however many they are, each with its own damage roll; someone standing alone is struck alone. No additional status effect. The scroll is used up.",
         "source_text": "Scorchburst Scroll, first circle [Offensive item, F-Rank]\nType: Magical / Area / Fire\nBase Power: 32 (the scroll's own, fixed for a common one: about one and a half casts of an F-Rank area spell at the start of the band, Arcane Burst at INT 6 / MATK 6 = 21.5, and below an F single-target lance, Flame Lance 36.25; a crude, fine, superior or exceptional scroll scales it by its quality)\nRange: SHORT (thrown)\nArea: a burst about a stride and a half across where it lands: the creature it is thrown at and everyone in the same close knot with it, no limit on their number\nUses: 1 (used up when it is resolved)"
+      },
+      {
+        "id": "item.healing_potion",
+        "name": "Healing potion",
+        "item": true,
+        "item_kind": "potion",
+        "match": [],
+        "match_any": [
+          [
+            "healing",
+            "potion"
+          ],
+          [
+            "health",
+            "potion"
+          ],
+          [
+            "healing",
+            "draught"
+          ],
+          [
+            "healing",
+            "tonic"
+          ],
+          [
+            "healing",
+            "elixir"
+          ]
+        ],
+        "effect": "heal",
+        "uses": 1,
+        "class": null,
+        "basic": false,
+        "category": "Restorative",
+        "rank": "F",
+        "complexity": null,
+        "tags": [
+          "item",
+          "consumable",
+          "restorative"
+        ],
+        "type_text": "Restorative / HP (drunk)",
+        "cost": null,
+        "ammo": null,
+        "range": null,
+        "attack": null,
+        "strikes": 0,
+        "effects": [],
+        "restore": {
+          "resource": "hp",
+          "amount": 30
+        },
+        "effect_text": "drunk: restores 30 HP (common F; quality and Rank scale it), never above his maximum; in a fight it is his main action",
+        "source_text": "Patch 7.2 (4.3.0-c.6.6.21): an ordinary F-Rank restorative. The amount is the standard of its kind, scaled by the item's quality and Rank when it is established (object.profile) and never set by the story. Core [POWER] Injuries, Healing, and Recovery: consumables are an explicit source of recovery in a fight; no overhealing; ordinary healing never affects the dead or removes a status."
+      },
+      {
+        "id": "item.mana_potion",
+        "name": "Mana potion",
+        "item": true,
+        "item_kind": "potion",
+        "match": [],
+        "match_any": [
+          [
+            "mana",
+            "potion"
+          ],
+          [
+            "mana",
+            "draught"
+          ],
+          [
+            "mana",
+            "tonic"
+          ],
+          [
+            "mana",
+            "elixir"
+          ]
+        ],
+        "effect": "restore_mp",
+        "uses": 1,
+        "class": null,
+        "basic": false,
+        "category": "Restorative",
+        "rank": "F",
+        "complexity": null,
+        "tags": [
+          "item",
+          "consumable",
+          "restorative"
+        ],
+        "type_text": "Restorative / MP (drunk)",
+        "cost": null,
+        "ammo": null,
+        "range": null,
+        "attack": null,
+        "strikes": 0,
+        "effects": [],
+        "restore": {
+          "resource": "mp",
+          "amount": 25
+        },
+        "effect_text": "drunk: restores 25 MP (common F; quality and Rank scale it), never above his maximum; in a fight it is his main action",
+        "source_text": "Patch 7.2 (4.3.0-c.6.6.21): an ordinary F-Rank restorative. The amount is the standard of its kind, scaled by the item's quality and Rank when it is established (object.profile) and never set by the story. Core [POWER] Injuries, Healing, and Recovery: consumables are an explicit source of recovery in a fight; no overhealing; ordinary healing never affects the dead or removes a status."
+      },
+      {
+        "id": "item.stamina_tonic",
+        "name": "Stamina tonic",
+        "item": true,
+        "item_kind": "potion",
+        "match": [],
+        "match_any": [
+          [
+            "stamina",
+            "tonic"
+          ],
+          [
+            "stamina",
+            "potion"
+          ],
+          [
+            "stamina",
+            "draught"
+          ],
+          [
+            "stamina",
+            "elixir"
+          ]
+        ],
+        "effect": "restore_sta",
+        "uses": 1,
+        "class": null,
+        "basic": false,
+        "category": "Restorative",
+        "rank": "F",
+        "complexity": null,
+        "tags": [
+          "item",
+          "consumable",
+          "restorative"
+        ],
+        "type_text": "Restorative / STA (drunk)",
+        "cost": null,
+        "ammo": null,
+        "range": null,
+        "attack": null,
+        "strikes": 0,
+        "effects": [],
+        "restore": {
+          "resource": "sta",
+          "amount": 30
+        },
+        "effect_text": "drunk: restores 30 STA (common F; quality and Rank scale it), never above his maximum; in a fight it is his main action",
+        "source_text": "Patch 7.2 (4.3.0-c.6.6.21): an ordinary F-Rank restorative. The amount is the standard of its kind, scaled by the item's quality and Rank when it is established (object.profile) and never set by the story. Core [POWER] Injuries, Healing, and Recovery: consumables are an explicit source of recovery in a fight; no overhealing; ordinary healing never affects the dead or removes a status."
       }
     ]
   },
@@ -447,7 +601,13 @@
       "plausible": [
         0.5,
         2.0
-      ]
+      ],
+      "restore_cp_per_point": {
+        "hp": 0.8,
+        "mp": 0.8,
+        "sta": 0.5
+      },
+      "_restore_note": "Patch 7.2: a restorative's guideline is the points it restores × the rate of its resource × the Rank factor (a common F Healing potion, 30 HP: 24 cp; Mana potion, 25 MP: 20 cp; Stamina tonic, 30 STA: 15 cp). A first guideline, not the balance of potions, which a later patch sets."
     }
   }
 }

@@ -11,7 +11,7 @@ import { lookOf } from './knowledge.js';
 import { bandIndex, bandName, clone, num, roundHalfUp } from './util.js';
 import { sceneHandle } from './v4/scene_handles.js';
 import { itemEffectOf } from './content.js';
-import { rankRefusal } from './v4/items.js';
+import { rankRefusal, restoreOf, restoreEffect } from './v4/items.js';
 
 const PROF = (content, level) => content.rules.proficiency.levels[String(level || 1)];
 const label = (e) => e.name || (e.descriptors && e.descriptors[0] ? `the ${e.descriptors[0]}` : e.id);
@@ -660,6 +660,27 @@ function repositionPc(enc, actorId, dir, focusId) {
     return moved.join('; ');
 }
 
+/**
+ * Patch 7.2: a restorative drunk in a fight (a healing potion, a mana potion, a stamina tonic): Alaric's main action of
+ * his Turn, as a skill would be. Its own amount (the item's profile), never above his maximum; with the one step a Turn
+ * allows before it. Illegal, at no cost (nothing moved, drunk or used up), when he does not hold it, it is no
+ * restorative the engine knows, or it would do nothing. The item is used up by the caller once it is resolved
+ * (src/engine.js usedUp), as an attack item is.
+ */
+export function itemAction(ctx, actorId, act) {
+    const { enc, content, state } = ctx;
+    const actor = enc.combatants[actorId];
+    const o = state?.objects?.[act.item];
+    if (!o || o.holder?.entity !== actorId) return { illegal: `${actor.name} does not hold ${o ? o.name : 'that'}` };
+    const p = restoreOf(content, o);
+    if (!p) return { illegal: `${o.name} is no restorative the engine knows` };
+    const x = restoreEffect(content, p, { level: actor.fixed.level, current: actor.current, max: { hp: actor.fixed.max_hp, mp: actor.fixed.max_mp, sta: actor.fixed.max_sta } });
+    if (x.refused) return { illegal: `${o.name}: ${x.refused}; nothing was drunk or used up` };
+    const step = act.move ? moveAction(ctx, actorId, act.move, act.move_target) : null;
+    actor.current[x.resource] = x.after;
+    return { round: enc.round, actor: actorId, kind: 'item', item: o.id, item_name: o.name, restore: { resource: x.resource, amount: x.amount, of: p.amount, before: x.before, after: x.after, max: x.max }, ...(step ? { step: step.change } : {}) };
+}
+
 export function moveAction(ctx, actorId, dir, focusId) {
     const { enc } = ctx;
     const record = { round: enc.round, actor: actorId, kind: 'move', dir };
@@ -1136,6 +1157,7 @@ export function runCombat(ctx, pcAction) {
             else if (act.kind === 'skill') r = skillAction(ctx, 'pc', act.skill, { dir: act.dir, target: act.target });
             else if (act.kind === 'move') r = ctx.c && act.dir === 'closer' && fleeing(enc, act.target) ? chase(ctx, act.target) : moveAction(ctx, 'pc', act.dir, act.target);
             else if (act.kind === 'ability_world') r = worldAction(ctx, 'pc', act);
+            else if (act.kind === 'item') r = itemAction(ctx, 'pc', act);
             else if (act.kind === 'flee' && ctx.c) r = pcFlee(ctx);
             else if (act.kind === 'flee') {
                 const far = Object.values(enc.combatants).filter((c) => c.side === 'hostile' && alive(c)).every((c) => c.current.band === 'LONG');

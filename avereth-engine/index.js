@@ -19,11 +19,12 @@ import { prepareGenerationAsync, processReplyAny, runExtraction, pendingExtracti
 import { validateState } from './src/validate.js';
 import { newSeed } from './src/rng.js';
 import { parseSwaps, ENGINE_VERSION, NARRATOR_CONTRACT_REVISION } from './src/util.js';
+import { migrateSettings, SETTINGS_REV } from './src/settings.js';
 
 const MODULE = 'avereth';
 const PROMPT_KEY = 'avereth_engine';
 const LORE_KEY = 'avereth_lore_keys';
-const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: 'ledger=register', hud: 'closed', historyTurns: 4, stripTrackers: true, recoverReports: true, runtime: 'v4', planner: false };
+const DEFAULTS = { enabled: true, budget: 1400, rulesBudget: 800, recentTurns: 4, depth: 0, showDebug: false, loreSource: 'auto', wordSwaps: 'ledger=register', hud: 'closed', historyTurns: 4, stripTrackers: true, recoverReports: true, runtime: 'v4', planner: true, settingsRev: SETTINGS_REV };
 const REPORT_WAIT_MS = 60000; // the next turn waits this long at most for a report still being asked for
 const LLM_TIMEOUT_MS = 120000;
 
@@ -41,7 +42,8 @@ function ctx() {
 
 function settings() {
     const { extensionSettings } = ctx();
-    extensionSettings[MODULE] = { ...DEFAULTS, ...(extensionSettings[MODULE] || {}) };
+    // Patch 7.2: settings saved before 4.3.0-c.6.6.21 keep their planner value for the campaigns started then (src/settings.js)
+    extensionSettings[MODULE] = migrateSettings(extensionSettings[MODULE], DEFAULTS);
     return extensionSettings[MODULE];
 }
 
@@ -81,6 +83,11 @@ function loreFromWorldInfo() {
 /** The runtime a campaign started in this chat gets (the setting applies to new campaigns only). */
 function newRuntime() {
     return settings().runtime === 'v3' ? 'v3' : 'v4';
+}
+
+/** Patch 7.2: the path a V4 campaign started now keeps (true: V4-C, the semantic planner; false: V4-A). */
+function newPlanner() {
+    return settings().planner !== false;
 }
 
 function engineSettings() {
@@ -163,7 +170,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
     const c = ctx();
     try {
         if (!hasCampaign(c.chat)) {
-            const created = ensureCampaign(c.chat, content, { seed: newSeed(), runtime: newRuntime() });
+            const created = ensureCampaign(c.chat, content, { seed: newSeed(), runtime: newRuntime(), planner: newPlanner() });
             if (created === 'legacy') {
                 if (legacyWarned !== c.getCurrentChatId()) toastr.warning('Avereth Engine: this chat was played without the engine. Start a new chat to use it.');
                 legacyWarned = c.getCurrentChatId();
@@ -240,7 +247,7 @@ async function onMessageReceived(messageId) {
     try {
         const recover = settings().recoverReports && typeof c.generateRaw === 'function';
         // the greeting of a new chat arrives here too (SillyTavern: MESSAGE_RECEIVED 'first_message') and starts the campaign
-        const r = processReplyAny(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover, runtime: newRuntime() });
+        const r = processReplyAny(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover, runtime: newRuntime(), planner: newPlanner() });
         if (!r.changed) return;
         rerender(c, Number(messageId));
         await c.saveChat();
@@ -370,7 +377,7 @@ function mountSettings() {
         <option value="v4">V4 (interpreter + extractor, prose only)</option>
         <option value="v3">V3 (fact report in the reply)</option>
       </select></label>
-      <label class="avereth-row" title="Prototype C (V4 campaigns): one planner call reads every free-text message, in fights too (skill aliases, free target references, skills on things, several actions); a small validator checks it and the engine resolves it as before. Off: Runtime V4 as before (regex in fights, interpreter in the story).">Prototype C: semantic planner <input type="checkbox" id="avereth_planner"></label>
+      <label class="avereth-row" title="V4-C, the product path (V4 campaigns): one planner call reads every free-text message, in fights too (skill aliases, free target references, skills on things, several actions); a validator checks it and the engine resolves it. Off: the historical V4-A path (regex in fights, interpreter in the story). Applies to campaigns started from now on; a running campaign keeps its path.">Semantic planner (V4-C) for new campaigns <input type="checkbox" id="avereth_planner"></label>
       <label class="avereth-row">Context budget (tokens) <input type="number" id="avereth_budget" min="400" max="6000" step="100"></label>
       <label class="avereth-row">Rules allowance (tokens) <input type="number" id="avereth_rules" min="0" max="3000" step="100"></label>
       <label class="avereth-row">Recent turns not re-retrieved <input type="number" id="avereth_recent" min="0" max="50" step="1"></label>

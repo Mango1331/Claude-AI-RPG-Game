@@ -229,6 +229,8 @@ export function recordLine(state, r, name = (id) => fightLabel(state, id), conte
         return `${head}${parts.length ? ` [${parts.join('; ')}]` : ''}: ${strikes.join('; ')}${r.pending_xp_added ? ` (Pending XP +${r.pending_xp_added})` : ''}`;
     }
     if (r.kind === 'skill') return `${who}: ${r.skill_name} [${r.cost ? `${r.cost.resource.toUpperCase()} ${r.cost.before}->${r.cost.after}` : 'no cost'}]: ${r.effects.join('; ')}`;
+    // Patch 7.2: a restorative drunk as his main action of the Turn: exactly this much, nothing else
+    if (r.kind === 'item' && r.restore) return `${who}: ${r.step ? `moves (${r.step}), then ` : ''}drinks ${r.item_name} (his main action this Turn; ${r.used_up || 'used up'}): ${r.restore.resource.toUpperCase()} ${r.restore.before}->${r.restore.after} (+${r.restore.amount}${r.restore.amount < r.restore.of ? `, the rest lost at his maximum ${r.restore.max}` : ''}); no other effect`;
     if (r.kind === 'move' || r.kind === 'flee') return `${who}: ${r.kind === 'flee' ? 'flees' : `moves ${r.dir}`} (${r.change || ''})${r.escaped ? ' — ESCAPED' : ''}${r.why ? ` — ${r.why}` : ''}`;
     if (r.kind === 'cover') return `${who}: takes cover (${r.change})${r.why ? ` — ${r.why}` : ''}`;
     if (r.kind === 'surrender') return `${who}: SURRENDERS${r.pending_xp_added ? ` (Pending XP +${r.pending_xp_added})` : ''}`;

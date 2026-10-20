@@ -219,7 +219,7 @@ test('patch 7 (23): the abandoned watchtower: in, a locked armory, its blade tak
         await say(g, '*I stand ready*');
         await g.reply('Three rats rear up and rush him.', { expected: {}, deltas: [
             { seq: 1, type: 'creature.new', ref: 'crypt rats', species: 'giant rat', anchor: 'rat', desc: ['crypt rats'], count: 3, present: true, band: 'SHORT', stronger: null, threat: null, more: false },
-            { seq: 2, type: 'hostile', by: ['crypt rats'] },
+            { seq: 2, type: 'hostile', by: ['crypt rats'], scope: 'all' },
         ] });
         s = g.state();
         const rats = Object.values(s.entities).filter((e) => e.kind === 'creature' && e.species === 'giant rat').map((e) => e.id);

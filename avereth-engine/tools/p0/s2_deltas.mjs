@@ -177,7 +177,8 @@ export function concreteDelta(pattern, seq, vocab, catalog) {
     const c = concrete(pattern);
     const d = { seq, type: pattern.type };
     // the product vocabulary since Patch 3: an offer line carries the reply's words for its price (said, nullable)
-    const said = vocab.deltas.some((x) => x.fields?.said) ? { said: null } : {};
+    // and since Patch 7.2 the kind of a restorative it sells (effect, nullable)
+    const said = { ...(vocab.deltas.some((x) => x.fields?.said) ? { said: null } : {}), ...(vocab.deltas.some((x) => x.fields?.effect) ? { effect: null } : {}) };
     for (const [k, f] of Object.entries(spec.fields)) {
         if (k in c && k !== '$any') d[k] = f.ref === 'place' ? placeFor(c[k], catalog) : c[k];
         else if (f.ref === 'person') d[k] = c.$any ? String(c.$any) : 'someone';

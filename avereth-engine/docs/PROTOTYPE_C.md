@@ -1581,3 +1581,85 @@ Patch 7 ist damit bereit für den Live-Test mit GLM-5.3-Flash.
   - Rank-Schreibweisen F bis S.
 - Angepasst: `hotfix_scroll` 1–5, 2b, 3b, 9 und Patch-7.1-Test 13/14 und Extractor-Pfad. Wo zehn oder drei Treffer erwartet werden, ist der Knoten jetzt ausdrücklich gesetzt.
 
+
+### Patch 7.2 (4.3.0-c.6.6.21): Konsolidierung und Grundlage für Verbrauchsgüter
+
+**7.2A – V4-C als Produktpfad:**
+- Der Planner ist Standard für neue Kampagnen (`index.js` `DEFAULTS.planner: true`). Das Panel heißt „Semantic planner (V4-C) for new campaigns“.
+- Eine neue V4-Kampagne speichert ihren Pfad in `campaign.started` (`path: 'c'|'a'`). `campaignPath` (`src/v4/runtime.js`) liest ihn, die Einstellung ändert ihn nie.
+- **Ältere Kampagnen** haben keinen Pfad gespeichert. Sie folgen der Planner-Einstellung, wie sie vor 7.2 gespeichert war:
+  - `src/settings.js` `migrateSettings` friert beim ersten Laden ohne `settingsRev` den gespeicherten Wert als `legacyPlanner` ein.
+  - Erst danach wird `planner` für neue Kampagnen auf `true` gesetzt.
+  - Ein vor 7.2 gespeichertes „aus“ ist vom alten Standard nicht zu unterscheiden. Laufende Spiele behalten es, neue starten auf V4-C. Wer V4-A für neue Kampagnen will, schaltet den Planner im Panel wieder aus; diese Wahl bleibt.
+- Ein Planner-Fehler bricht den Zug mit Hinweis ab und fällt nie auf den Interpreter zurück. Swipe und Regenerate nutzen die gespeicherten Entscheidungen.
+- Historischer Stand vor 7.2: Git-Tag `avereth-4.3.0-c.6.6.20`.
+- Smokes: `smoke:st:c` prüft den neuen Standard (Planner an, Pfad `c`). `smoke:st:v4` und die V4-Seite von `smoke:browser` spielen V4-A bewusst gewählt (Pfad `a`).
+
+**7.2B – Identität und Gruppenkardinalität:**
+- **Neues Modul `src/v4/identity.js`** (nebenwirkungsfrei):
+  - `groupMembers`: welche Kreaturen hier eine Gruppenreferenz meint.
+  - `groupWords`: ob eine Referenz eine Gruppe nennt, die die Engine nicht auflösen kann.
+  - `resolveRef` → `single` | `all` | `unclear`.
+  - Die bisherigen Closures `members` und `groupWords` in `world.js` sind jetzt dünne Aufrufe. Stufe A lief ohne Verhaltensänderung: 882/882 Tests unverändert grün.
+- **Vertrag `delta-0.98`:** `hostile`, `intent`, `aware` und `position` haben `scope` (`all`|`part`|null) und `evidence` (Zitat). Regel GROUP REFS: Ein Wesen nennt der Extractor über sein Handle. Ein Gruppen-Ref zählt nur mit `scope: "all"`. `"part"` und `null` buchen niemanden.
+- **Prüfung von `evidence`:**
+  - Das Zitat muss in der Antwort stehen.
+  - Eine darin genannte Zahl muss der Gruppengröße entsprechen.
+  - Das ist kein Beweis für „alle“. Diese Deutung bleibt beim Extractor.
+- **Ablehnung:** Ein ungeklärter Gruppen-Ref wird als `group_unclear` auditiert. Bei `hostile` und `intent attack` bekommt der Narrator eine kurze Korrektur.
+- **Live-Fall Glimmerdeep:** Der Swarm-Ref ohne `scope` für den Biss eines einzelnen Käfers bucht keinen Schwarm mehr. Das eigene Handle bucht genau diesen Käfer.
+- **Gefundener Fehler:** Ein Neuzugang einer Gruppe wurde nach der Zahl der Lebenden nummeriert (11 + 1 = „12“). Diese Nummer gehörte durch den toten Käfer E schon Käfer L, der Neue ging verloren. Neue Nummern meiden jetzt jede bestehende Kreatur (`takenRef`).
+- **Aufgezeichnete Live-Läufe:** Sie stammen aus dem alten Vertrag. `tests/v4/replay_lib.js` `answerOf` ergänzt für ihre drei Gruppen-Refs `scope: "all"` mit dem wörtlichen Zitat; die Engine prüft das Zitat gegen die Prosa.
+- **Extractor-Kosten:** +223 Token (6.544 → 6.767), gemeinsam mit 7.2D. Planner unverändert (6.300).
+
+**7.2C – Kampfwahrheit in Facts, Memories, Threads und Questnotizen:**
+- **Eine gemeinsame Prüfung:** `src/v4/combat_truth.js` `combatTruth` arbeitet Satz für Satz:
+  - Ein Satz, der Tote einer Art zählt oder einen Kämpfer tötet, wird gegen die gebuchten Tode geprüft.
+  - Ein Kämpfer, den die Engine lebend führt, gilt als lebend.
+  - Eine unbekannte Art zählt nur, wenn Alaric der Töter ist.
+- **Angebunden an:**
+  - die Fact-Firewall (`ctx.combatClaim`);
+  - Memory (Satz weg, Rest bleibt);
+  - Thread (Text und Auflösung; eine Auflösung allein aus falschen Toden löst nichts);
+  - `quest.detail` (Satz weg);
+  - `quest.progress` (abgelehnt).
+- **Narrator:** bekommt die Zahl der Engine einmal als Korrektur.
+- **Bleibt erhalten:**
+  - Was jemand sagt, glaubt oder als Gerücht erzählt (Zuschreibungswort vor der Behauptung).
+  - Jeder Thread der Art `rumor`.
+  - Die Weltgeschichte anderer („the hunter killed two deer“).
+  - Das Kampferinnern ohne falsche Zahl.
+- **Grenzen:** Tode in anderen Worten („the swarm is no more“) werden nicht gelesen.
+
+**7.2D – Verbrauchsgüter (heal, restore_mp, restore_sta):**
+- **Content:** `content/gear.json` `item_effects` hat drei neue Einträge: Healing potion 30 HP, Mana potion 25 MP, Stamina tonic 30 STA (gewöhnlich, F).
+  - Erkennung über `match_any`.
+  - Richtwert in `instances.value.restore_cp_per_point` (HP und MP 0,8 cp, STA 0,5 cp je Punkt). Das ist bewusst kein Balancing.
+- **Snapshot:** `itemProfile` legt `kind: restore` mit Betrag fest: Standard × Qualität × Rank-Faktor (crude 23, fine 38, superior 45, E-Rank 53 HP).
+- **Strukturierte Klassifikation:**
+  - `object.new` und Angebotszeilen haben `effect` (heal|restore_mp|restore_sta|null).
+  - Die Engine nimmt das Feld nur für ein Verbrauchsgut (`useOf` = consumable). „Rope“ mit `heal` bleibt ohne Wirkung.
+  - Unbekannte Tränke haben keine Wirkung.
+- **Außerhalb eines Kampfes:**
+  - Der `use`-Befehl bucht die Wirkung, nie über das Maximum. Er verbraucht genau die getrunkene Menge.
+  - Bei vollem Wert lehnt er ab: nichts wird verbraucht, das Item bleibt.
+  - Ein „trotzdem trinken“ ohne Wirkung ist nicht vorgesehen, dafür gibt es kein Feld im Vertrag.
+- **Im Kampf (V4-C):**
+  - Der Planner macht aus `use` die Hauptaktion (`itemRestore`). Neben dem bestehenden Kampf-Dispatcher läuft der kleine Pfad `src/combat.js` `itemAction`, analog zu `skillAction`.
+  - Ein Schritt ist erlaubt. Eine zweite Hauptaktion bleibt NOT TAKEN.
+  - Die Initiative bleibt, eine Verpflichtung (Core #23) geht vor. Die Gegner handeln danach.
+  - Verbrauch nur nach legaler Auflösung (`usedUp`, wie Scorchburst).
+  - Eine Ablehnung kostet nichts, auch keinen Schritt.
+- **V4-A:** Der Story-Befehl `use` lehnt im Kampf ab. V4-A hat keinen Item-Pfad im Kampf.
+- **Rank:** Eine Rank-Anforderung gilt nur, wenn das Profil `requires_rank` nennt. Der Core bindet Heilmittel an keinen Power-Rank.
+- **Anzeige:** Panel und Narrator-Block zeigen den Wert vorher → nachher.
+- **Scorchburst:** unverändert. `itemAttack` greift vor `itemRestore`, `itemEffectOf` liefert Angriffsprofile wie zuvor.
+
+**Tests:**
+- Neu sind 20 Tests in vier Dateien:
+  - `patch72_path` (5, davon einer zur Settings-Migration);
+  - `patch72_identity` (7);
+  - `patch72_truth` (4);
+  - `patch72_items` (4).
+- Angepasst wurden Tests, die Gruppen-Refs ohne `scope` nutzten, mit dem Zitat der jeweiligen Prosa: `patch4`, `patch5`, `patch7`, `planner_c`, `runtime`, `c66`, `patch71`, `hotfix_scroll`.
+- Gesamt 898/898. 20 Mutationsproben, 19 erkannt. Die überlebende ist gleichwertig zum Original: Ein Schritt vor einer abgelehnten Trank-Aktion würde ohnehin nie gespeichert.

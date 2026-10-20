@@ -242,7 +242,7 @@ test('hotfix scroll 8: food, a potion, a tool and gear are used as before; only 
         { t: 'object.created', d: { object: { id: 'obj.test.bread', name: 'heel of bread', kind: 'item', stack: false, qty: 2, unit: 'portion', use: 'food', holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: 18, how: 'story' } } } },
         { t: 'object.created', d: { object: { id: 'obj.test.flint', name: 'flint and steel', kind: 'item', stack: false, qty: 1, unit: null, use: 'tool', holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: 18, how: 'story' } } } },
     ]);
-    for (const id of ['obj.test.potion', 'obj.test.bread', 'obj.test.flint', 'obj.guild_plate']) assert.equal(itemEffectOf(content, g.state().objects[id]), null, id);
+    for (const id of ['obj.test.potion', 'obj.test.bread', 'obj.test.flint', 'obj.guild_plate']) assert.equal(itemEffectOf(content, g.state().objects[id])?.attack ?? null, null, id);
     await say(g, '*i drink the potion, eat some bread and strike a light*',
         { type: 'use', object: 'obj.test.potion', qty: 1, quote: 'i drink the potion' },
         { type: 'use', object: 'obj.test.bread', qty: 1, quote: 'eat some bread' },
@@ -251,7 +251,8 @@ test('hotfix scroll 8: food, a potion, a tool and gear are used as before; only 
     assert.equal(r.route, 'v4');
     assert.ok(!r.events.some((e) => e.t === 'encounter.started'));
     const actions = outcomeOf(g).actions.join('\n');
-    assert.match(actions, /USES — minor healing potion; it is used up/);
+    // Patch 7.2: a healing potion heals (71 of 80 HP: +9, never above the maximum) and is used up
+    assert.match(actions, /USES — minor healing potion: HP 71 → 80 \(\+9; 21 beyond his maximum of 80 is lost\); it is used up/);
     assert.match(actions, /EATS — 1 portion of heel of bread; 1 portion left/);
     assert.match(actions, /USES — flint and steel \(a tool: it stays with him, not used up/);
     assert.deepEqual(r.events.filter((e) => e.t === 'object.consumed').map((e) => e.d.id), ['obj.test.potion', 'obj.test.bread']);

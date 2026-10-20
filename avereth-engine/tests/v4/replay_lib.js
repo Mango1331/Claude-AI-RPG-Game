@@ -7,6 +7,25 @@ import { performance } from 'node:perf_hooks';
 import { Chat4 } from './harness.js';
 import { turnBlock } from '../../src/host.js';
 
+// Patch 7.2B (delta-0.98): a group's ref in hostile, intent, aware or position commits all of the group only with scope
+// "all". The runs were recorded under the older contract, where the ref alone meant all of it; the three group refs
+// they hold each name the whole group in the reply's own words (checked: the engine refuses an evidence quote the
+// reply does not hold), so they are replayed as the extractor writes them now. Nothing else of an answer changes.
+const CONTRACT_098 = new Map([
+    ['26 mon.roadwolves_1', { scope: 'all', evidence: 'The wolves on the ridge came down the rocks together' }],
+    ['18 npc.bog_strider_flankers', { scope: 'all', evidence: 'two more long-legged silhouettes slide sideways through them, low and deliberate, cutting off the plank path' }],
+    ['22 cre.boar_pair', { scope: 'all', evidence: 'The boars had not lifted their heads' }],
+]);
+/** A recorded turn's extractor answer in the delta-0.98 form (see CONTRACT_098). */
+export function answerOf(t) {
+    const a = t.answer ?? { expected: {}, deltas: [] };
+    return { ...a, deltas: (a.deltas || []).map((d) => {
+        const ref = d.type === 'hostile' ? (d.by || []).find((x) => CONTRACT_098.has(`${t.i} ${x}`)) : d.who;
+        const up = ['hostile', 'intent', 'aware', 'position'].includes(d.type) ? CONTRACT_098.get(`${t.i} ${ref}`) : null;
+        return up ? { ...d, ...up } : d;
+    }) };
+}
+
 /**
  * @param {object} content
  * @param {object} fx a fixture ({seed, greeting, creation, listings, turns})
@@ -45,7 +64,7 @@ export async function replayRun(content, fx, { onPlayer = null, onReply = null, 
             onPlayer?.(step, g);
         } else if (story) {
             const t0 = performance.now();
-            const r = await g.reply(t.reply, t.answer ?? { expected: {}, deltas: [] });
+            const r = await g.reply(t.reply, answerOf(t));
             const step = { i: t.i, kind: 'reply', ms: performance.now() - t0, record: r.record, state: g.state() };
             steps.push(step);
             onReply?.(step, g);

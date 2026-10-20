@@ -313,6 +313,13 @@ export function firewall(deltas, ctx = {}) {
                         claim === life ? null : `${ctx.labelOf?.(text(d.s)) || text(d.s)} is ${life}, as the engine has it: the last reply's ${claim === 'dead' ? 'death' : 'survival'} of it did not happen.${life === 'alive' ? ' Only a fight the engine resolves (or a cause the story shows) kills it.' : ''}`);
                     continue;
                 }
+                // Patch 7.2C: a fact that counts the dead of a fight (or kills a fighter) the engine has not booked
+                // (src/v4/combat_truth.js); a fact of what someone says or believes stays theirs
+                const kill = ctx.combatClaim?.(`${text(d.s)} ${words(d.p)} ${words(d.o)}`);
+                if (kill) {
+                    no(d, 'engine_owned_fact', `a fight's dead are the engine's: ${kill.why}`, kill.correction);
+                    continue;
+                }
                 if (isPc(d.s) && PC_MECHANICAL.test(p)) {
                     no(d, 'engine_owned_fact', 'Alaric\'s hit points, mana, stamina, level and gear are the engine\'s state');
                     continue;

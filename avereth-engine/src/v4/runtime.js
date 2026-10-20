@@ -53,6 +53,22 @@ export function campaignRuntime(chat) {
     return null;
 }
 
+/**
+ * Patch 7.2: the path a V4 campaign plays on, 'c' (the semantic planner, the product path) or 'a' (the interpreter of
+ * Runtime V4-A). A campaign started from 4.3.0-c.6.6.21 on keeps the path it started with (campaign.started path), so
+ * a later change of the setting never moves a running game to another path. A campaign started before has none and
+ * follows `unpinned` as it always did: the planner setting as it stood before 7.2 (index.js keeps it as legacyPlanner).
+ * @returns {'c'|'a'|null} null without a V4 campaign
+ */
+export function campaignPath(chat, unpinned) {
+    if (campaignRuntime(chat) !== 'v4') return null;
+    for (const m of chat) {
+        const e = messageEvents(m).find((x) => x.t === 'campaign.started');
+        if (e) return e.d.path === 'c' || e.d.path === 'a' ? e.d.path : unpinned ? 'c' : 'a';
+    }
+    return unpinned ? 'c' : 'a';
+}
+
 async function ask(llm, messages, purpose) {
     const t0 = Date.now();
     try {
@@ -275,7 +291,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         // prototype C: the planner reads every free-text message; '#' commands, character creation and a dead PC stay
         // the deterministic control channels they are in A
         const control = ir.reason === 'creation' || ir.reason === 'dead' || ir.intent?.kind === 'command';
-        if (settings.planner && !control) {
+        if (campaignPath(chat, settings.legacyPlanner ?? settings.planner) === 'c' && !control) {
             if (typeof llm !== 'function') throw new Error('Runtime V4 needs an LLM call for the planner');
             r = await plannedTurn(chat, content, { u, before, ir, inputHash, llm, previous: retryBoard ? r : null });
             setRec(msg, r);

@@ -410,6 +410,8 @@ function recordLines(name, r) {
         return lines;
     }
     if (r.kind === 'skill') return [sys(`${who}: ${r.skill_name}${cost}${r.effects?.length ? ` — ${r.effects.join('; ')}` : ''}`)];
+    // Patch 7.2: a restorative drunk as his main action
+    if (r.kind === 'item' && r.restore) return [sys(`${who}: ${r.step ? `moves (${String(r.step).replace(/ -> /g, ' → ')}), then ` : ''}drinks ${String(r.item_name).replace(/[<>`]/g, '')} → ${r.restore.resource.toUpperCase()} ${r.restore.before} + ${r.restore.amount} = ${r.restore.after}${r.restore.amount < r.restore.of ? ` (max ${r.restore.max})` : ''}${ammo}`)];
     const change = String(r.change || '').replace(/ -> /g, ' → ');
     if (r.kind === 'move' || r.kind === 'flee') return [sys(`${who}: ${r.kind === 'flee' ? 'flees' : `moves ${r.dir}`}${change ? ` (${change})` : ''}${r.escaped ? ' — ESCAPED' : ''}${r.why ? ` — ${r.why}` : ''}`)];
     if (r.kind === 'cover') return [sys(`${who}: takes cover (${change})`)];

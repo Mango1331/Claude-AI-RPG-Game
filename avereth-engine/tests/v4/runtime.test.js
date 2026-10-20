@@ -222,7 +222,7 @@ test('a fight in a V4 campaign: an attack goes to the V3 combat engine; a commit
     const r1 = await g.reply('Two rats rush at him from the dark.', fill({ expected: { 1: { arrived: true, at: { new: { name: 'cellar', kind: 'site', parent: 'loc.redmarch' } } } }, deltas: [
         { seq: 1, type: 'arrive', at: { new: { name: 'cellar', kind: 'site', parent: 'loc.redmarch' } } },
         { seq: 2, type: 'creature.new', ref: 'cellar rat', species: 'rat', anchor: 'rat', desc: ['grey'], count: 2, present: true, band: 'SHORT' },
-        { seq: 3, type: 'hostile', by: ['cellar rat'] },
+        { seq: 3, type: 'hostile', by: ['cellar rat'], scope: 'all' },
     ] }));
     assert.equal(r1.record.extraction.status, 'applied');
     let s = g.state();

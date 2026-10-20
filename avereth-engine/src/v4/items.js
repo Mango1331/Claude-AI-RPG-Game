@@ -11,7 +11,7 @@
 // The words of a thing's name decide (content/rules.json items), once, when the thing comes into his hands: the object
 // keeps its `use` and, for food, `fresh_until`. A document or a trophy is kept, never used up.
 import { normText } from '../util.js';
-import { itemTemplateOf, weaponFamily } from '../content.js';
+import { itemTemplateOf, restoreTemplateOf, weaponFamily } from '../content.js';
 import { rankOf, rankIndex } from '../derived.js';
 
 const cache = new WeakMap();
@@ -95,11 +95,24 @@ function gearKindOf(content, name) {
  *           placed by quality, scaled by Rank)
  * A content gear template by its exact name (the starter staff) keeps the template's values.
  */
-export function itemProfile(content, { name, kind = 'item' }) {
+export function itemProfile(content, { name, kind = 'item', effect = null }) {
     if (!name || kind === 'document' || kind === 'trophy' || kind === 'resource') return null;
     const q = qualityOf(content, name);
     const rank = rankInName(name);
-    const fx = itemTemplateOf(content, name);
+    // Patch 7.2: a restorative the story establishes as one (object.new / offer line effect: heal, restore_mp,
+    // restore_sta) is that kind, when the thing is a consumable at all (a potion, a tonic: content rules item_use); its
+    // name's words name it otherwise. An effect the engine does not know, or one on a thing that is no consumable, is none
+    const said = typeof effect === 'string' && useOf(content, { name, kind }) === 'consumable' ? restoreTemplateOf(content, effect) : null;
+    const fx = said || itemTemplateOf(content, name);
+    if (fx?.restore) {
+        const r = rank || fx.rank || 'F';
+        const p = {
+            kind: 'restore', base: fx.id, title: fx.name, rank: r, quality: q.tier, effect: fx.effect, resource: fx.restore.resource,
+            amount: Math.max(1, Math.round(fx.restore.amount * q.power * rankFactor(content, r) / rankFactor(content, fx.rank || 'F'))),
+            uses: fx.uses ?? 1, ...(fx.requires_rank ? { requires_rank: fx.requires_rank } : {}),
+        };
+        return { ...p, value_cp: valueOf(content, p) };
+    }
     if (fx?.attack) {
         const r = rank || fx.rank || 'F';
         const p = {
@@ -138,6 +151,7 @@ export function valueOf(content, p) {
     const v = content.gear?.instances?.value || {};
     const f = rankFactor(content, p.rank) ** 2;
     if (p.kind === 'attack') return Math.max(1, Math.round(p.power * (v.attack_cp_per_power ?? 0.6) * (p.area ? v.area_factor ?? 1.5 : 1) * (p.uses ?? 1) * f / rankFactor(content, p.rank)));
+    if (p.kind === 'restore') return Math.max(1, Math.round(p.amount * (v.restore_cp_per_point?.[p.resource] ?? 0.8) * (p.uses ?? 1) * f / rankFactor(content, p.rank)));
     if (p.kind === 'gear') return Math.max(1, Math.round(((p.atk || 0) + (p.matk || 0) + (p.def || 0) + (p.mdef || 0)) * (v.gear_cp_per_point ?? 8) * f / rankFactor(content, p.rank)));
     return null;
 }
@@ -151,7 +165,7 @@ export function priceAudit(content, p, price_cp, qty = 1) {
     const [lo, hi] = content.gear?.instances?.value?.plausible || [0.5, 2];
     const each = price_cp / Math.max(1, qty || 1);
     if (each >= p.value_cp * lo && each <= p.value_cp * hi) return null;
-    return `${each} cp for a ${p.quality} ${p.rank}-Rank ${p.kind === 'attack' ? `${p.title} (power ${p.power})` : `${p.slot} (${['atk', 'matk', 'def', 'mdef'].filter((k) => p[k]).map((k) => `${k.toUpperCase()} ${p[k]}`).join(', ')})`} is ${each < p.value_cp * lo ? 'far below' : 'far above'} the guideline of about ${p.value_cp} cp`;
+    return `${each} cp for a ${p.quality} ${p.rank}-Rank ${p.kind === 'attack' ? `${p.title} (power ${p.power})` : p.kind === 'restore' ? `${p.title} (${p.amount} ${p.resource.toUpperCase()})` : `${p.slot} (${['atk', 'matk', 'def', 'mdef'].filter((k) => p[k]).map((k) => `${k.toUpperCase()} ${p[k]}`).join(', ')})`} is ${each < p.value_cp * lo ? 'far below' : 'far above'} the guideline of about ${p.value_cp} cp`;
 }
 
 /**
@@ -178,12 +192,43 @@ export function rankRefusal(content, level, p) {
 }
 
 /**
+ * Patch 7.2: the restorative a thing is, as its profile: its own snapshot (kind restore, fixed when it was established),
+ * else the standard of its kind by the words of its name (one established before 7.2); null for anything else, and
+ * never an effect the story told of without the engine knowing the kind.
+ */
+export function restoreOf(content, o) {
+    if (!o) return null;
+    if (o.profile?.kind === 'restore' && Number.isFinite(o.profile.amount)) return o.profile;
+    if (o.profile?.kind) return null;
+    const p = itemProfile(content, { name: o.name, kind: o.kind || 'item' });
+    return p?.kind === 'restore' ? p : null;
+}
+
+/**
+ * Patch 7.2: may Alaric drink it now, and what does it do? One of his own resources, never above its maximum; refused
+ * (nothing used up) at the maximum, as a draught that does nothing is no action of his. A Rank requirement only where
+ * the item's profile names one (requires_rank): the Core binds no restorative to a Power-Rank.
+ * @returns {{refused: string} | {resource: string, amount: number, before: number, after: number, max: number}}
+ */
+export function restoreEffect(content, p, { level, current, max }) {
+    if (p.requires_rank) {
+        const no = rankRefusal(content, level, { ...p, rank: p.requires_rank });
+        if (no) return { refused: no };
+    }
+    const r = p.resource;
+    const before = current[r] ?? 0;
+    if (before >= max[r]) return { refused: `his ${r.toUpperCase()} is full (${before}/${max[r]}): the ${p.title.toLowerCase()} would do nothing` };
+    const after = Math.min(max[r], before + p.amount);
+    return { resource: r, amount: after - before, before, after, max: max[r] };
+}
+
+/**
  * The fields a new object of Alaric's world carries for its behaviour: use, and for food its unit (portion) and the
  * minute it keeps until; Patch 7.1: an item with values of its own (gear, an attack item) its profile, fixed now. Spread
  * into object.created; a purchase carries the offer line's profile instead (src/v4/trade.js).
  */
-export function itemTraits(content, { name, kind = 'item', unit = null }, minute, profile = undefined) {
-    const own = profile !== undefined ? profile : itemProfile(content, { name, kind });
+export function itemTraits(content, { name, kind = 'item', unit = null, effect = null }, minute, profile = undefined) {
+    const own = profile !== undefined ? profile : itemProfile(content, { name, kind, effect });
     const use = own?.kind === 'gear' ? 'equipment' : useOf(content, { name, kind });
     if (own) return { use, profile: own };
     if (use !== 'food') return { use };

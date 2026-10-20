@@ -18,7 +18,10 @@ import { renderHud, worldRows } from '../../src/hud.js';
 import { runCommands } from '../../src/commands.js';
 import { buildCatalog, extractorCatalog } from '../../src/v4/catalog.js';
 import { dungeonOf, roomsOf, linkBetween, linksAt, exitsFrom } from '../../src/v4/dungeon.js';
-import { contractReady, boardRequest } from '../../src/v4/guild.js';
+import { contractReady, boardRequest, parseBoard } from '../../src/v4/guild.js';
+import { materialise } from '../../src/engine.js';
+import { applyEvent } from '../../src/state.js';
+import { Dice } from '../../src/rng.js';
 import { Chat4 } from './harness.js';
 
 const content = await loadProductContent();
@@ -931,4 +934,154 @@ test('patch 7 review C3, 15, 16, 17: Ashbridge knows the Mossback Warrens (F–E
     assert.equal(s.scene.at, warrens, 'the same place');
     assert.equal(byName(s, 'Mossback Warrens').length, 1, 'no copy');
     assert.match(Object.fromEntries(worldRows(s, content)).Dungeon, /Mossback Warrens — goblin warrens.*Rank F–E/);
+});
+
+// ------------------------------------------------------------------------------------------------ final review of e4d61b8
+const gob = (ref, more = {}, seq = 1) => ({ seq, type: 'creature.new', ref, species: 'goblin', anchor: 'goblin', desc: [ref], count: 1, present: true, band: 'LONG', stronger: null, threat: false, more: null, ...more });
+const levelOf = (s, ref) => Object.values(s.entities).filter((e) => e.kind === 'creature' && (e.descriptors || []).some((x) => x.includes(ref))).map((e) => e.profile?.level);
+const bandOf = (r) => content.rules.ranks.bands.find((b) => b.rank === r);
+
+/** Alaric in the Mossback Warrens: its upper tunnels (level 1, F) and the burrows below (level 2, E). */
+async function warrens() {
+    const g = await campaign();
+    await walk(g, 'loc.mossback_warrens', { text: '*I go to the Mossback Warrens*', prose: 'The moss-grown hill; a tunnel mouth.', deltas: [way(room('Upper tunnels'), { name: 'tunnel mouth' })] });
+    const upper = idOf(g.state(), 'Upper tunnels');
+    await walk(g, upper, { text: '*I go into the tunnels*', prose: 'The upper tunnels; a ramp goes down to the burrows.', deltas: [way(room('Lower burrows'), { name: 'ramp down', dir: 'down' })] });
+    return { g, upper, lower: idOf(g.state(), 'Lower burrows') };
+}
+
+test('patch 7 final 1, 2, 4: a new goblin of the Warrens\' F-Rank level gets a level of the F band, one of its E-Rank level one of the E band; locked once, the same when he comes back', async () => {
+    const { g, upper, lower } = await warrens();
+    let s = g.state();
+    assert.equal(s.places[upper].level, 1);
+    assert.equal(s.places[lower].level, 2);
+    await say(g, '*I watch*');
+    await g.reply('A goblin scout peers from a side tunnel.', { expected: {}, deltas: [gob('tunnel scout')] });
+    s = g.state();
+    const [lv1] = levelOf(s, 'tunnel scout');
+    const F = bandOf('F');
+    assert.ok(lv1 >= F.min && lv1 <= F.max, `F band (${lv1})`);
+    const scout = Object.values(s.entities).find((e) => (e.descriptors || []).includes('tunnel scout'));
+    assert.equal(scout.met_at, upper, 'its profile was locked in the upper tunnels');
+    const profile = JSON.stringify(scout.profile);
+    await walk(g, lower, { text: '*I go down the ramp*', prose: 'The burrows.' });
+    await say(g, '*I watch*');
+    await g.reply('A goblin warrior squats by a fire.', { expected: {}, deltas: [gob('burrow warrior')] });
+    s = g.state();
+    const [lv2] = levelOf(s, 'burrow warrior');
+    const E = bandOf('E');
+    assert.ok(lv2 >= E.min && lv2 <= E.max, `E band (${lv2})`);
+    await walk(g, upper, { text: '*I go back up*', prose: 'The upper tunnels; the scout is still there.', deltas: [gob('tunnel scout')] });
+    s = g.state();
+    assert.equal(JSON.stringify(Object.values(s.entities).find((e) => (e.descriptors || []).includes('tunnel scout')).profile), profile, 'the same scout, the same profile');
+    assert.equal(levelOf(s, 'tunnel scout').length, 1);
+    assert.equal(foldChat(g.chat).state.entities[scout.id].profile.level, lv1, 'the fold agrees');
+});
+
+test('patch 7 final 3, 6: in an A-Rank Dungeon a level-1 Alaric meets A-band creatures; in an unclassified ruin and in the open land the level stays as before', async () => {
+    const { g, corridor } = await inHall();
+    await walk(g, corridor, { text: '*I go on*', prose: 'The corridor.' });
+    await say(g, '*I watch*');
+    await g.reply('A goblin in the corridor.', { expected: {}, deltas: [gob('corridor goblin')] });
+    assert.deepEqual(levelOf(g.state(), 'corridor goblin'), [1], 'an ordinary ruin: the area\'s level, as before');
+    await say(g, '*I leave*', GO(REALM, 'I leave'));
+    await g.reply('The road.', { expected: { 1: { arrived: true, at: REALM, with: null } }, deltas: [gob('road goblin')] });
+    assert.deepEqual(levelOf(g.state(), 'road goblin'), [1], 'the open land: as before');
+    await say(g, '*I go to the sunken crypt*', GO({ new: 'the sunken crypt' }, 'I go to the sunken crypt'));
+    await g.reply('A sunken crypt, A-Rank by the Guild\'s marks; a ghoul stirs.', { expected: { 1: { arrived: true, at: { new: { name: 'Sunken crypt', kind: 'site', parent: REALM } }, with: null } }, deltas: [
+        classify({ theme: 'undead catacombs', rank_min: 'A', rank_max: 'A' }, 1), gob('crypt ghoul', {}, 2),
+    ] });
+    const s = g.state();
+    assert.equal(s.entities.pc.sheet.level, 1);
+    const [lv] = levelOf(s, 'crypt ghoul');
+    const A = bandOf('A');
+    assert.ok(lv >= A.min && lv <= A.max, `A band, not his (${lv})`);
+});
+
+test('patch 7 final 5: a creature\'s own established level, or a profile it has, is never replaced by the Dungeon\'s', async () => {
+    const { g, upper } = await warrens();
+    const s = structuredClone(g.state());
+    s.entities['mon.t1'] = { id: 'mon.t1', kind: 'creature', species: 'goblin', anchor: 'goblin', level: 40, descriptors: ['goblin champion'], status: 'alive' };
+    s.entities['mon.t2'] = { id: 'mon.t2', kind: 'creature', species: 'goblin', anchor: 'goblin', descriptors: ['old goblin'], status: 'alive', profile: { level: 2, keep: true } };
+    assert.equal(s.scene.at, upper);
+    const events = [];
+    const emit = (e) => { events.push(e); applyEvent(s, e); };
+    materialise(s, content, Dice.from(s), emit, 'mon.t1');
+    materialise(s, content, Dice.from(s), emit, 'mon.t2');
+    assert.equal(s.entities['mon.t1'].profile.level, 40, 'its own level stands');
+    assert.deepEqual(s.entities['mon.t2'].profile, { level: 2, keep: true }, 'its profile stands');
+});
+
+test('patch 7 final 7, 8: what is hidden of a Dungeon is not the Guild\'s to post; what the Guild was told or keeps on record is', async () => {
+    const { g, tower } = await inHall();
+    await say(g, '*I look around*');
+    await g.reply('Spider sign everywhere.', { expected: {}, deltas: [classify({ theme: 'spider nest', rank_min: 'D', rank_max: 'C', how: 'hidden' })] });
+    let s = g.state();
+    s.places[tower].near = 'loc.ashbridge';
+    let req = boardRequest(s, content, { branch: 'loc.ashbridge', rank: 'Novice', missing: 5, day: 1, have: [] }).user;
+    assert.doesNotMatch(req, /spider|Rank D|Old watchtower/, 'nothing hidden reaches the board');
+    assert.match(req, /Mossback Warrens \(goblin warrens.*Rank F–E/, 'the public Dungeon is still there');
+    // what Ashbridge knows, asked in Ashbridge
+    const town = (st) => buildContext({ ...st, scene: { ...st.scene, at: 'loc.ashbridge', location: 'loc.ashbridge' } }, content, { input: 'what dungeons are near?' }).text;
+    assert.match(town(s), /KNOWN DUNGEONS NEAR ASHBRIDGE[^\n]*Mossback Warrens/);
+    assert.doesNotMatch(town(s), /KNOWN DUNGEONS[^\n]*(Old watchtower|spider)/, 'nor in what Ashbridge knows');
+    // seen by Alaric alone: still not the Guild's
+    await say(g, '*I look around*');
+    await g.reply('He sees it plainly now: a spider nest.', { expected: {}, deltas: [classify({ theme: 'spider nest', how: 'seen' })] });
+    s = g.state();
+    s.places[tower].near = 'loc.ashbridge';
+    req = boardRequest(s, content, { branch: 'loc.ashbridge', rank: 'Novice', missing: 5, day: 1, have: [] }).user;
+    assert.doesNotMatch(req, /spider/, 'what he saw is his, not the Guild\'s');
+    assert.doesNotMatch(town(s), /KNOWN DUNGEONS[^\n]*(Old watchtower|spider)/, 'nor Ashbridge\'s common knowledge');
+    // the Guild's own record
+    await say(g, '*I read the Guild notice*');
+    await g.reply('A Guild notice: a spider nest, D–C.', { expected: {}, deltas: [classify({ theme: 'spider nest', rank_min: 'D', rank_max: 'C', how: 'guild' })] });
+    s = g.state();
+    s.places[tower].near = 'loc.ashbridge';
+    req = boardRequest(s, content, { branch: 'loc.ashbridge', rank: 'Novice', missing: 5, day: 1, have: [] }).user;
+    assert.match(req, /Old watchtower \(spider nest; Rank D–C/);
+    // a deeper level the world keeps hidden and a master only Alaric has seen stay off the Guild's record
+    await say(g, '*I look around*');
+    await g.reply('Below, something older stirs.', { expected: {}, deltas: [classify({ level: 2, rank_min: 'B', rank_max: 'B', how: 'hidden' }), classify({ control: 'a brood-mother', how: 'seen' }, 2)] });
+    s = g.state();
+    s.places[tower].near = 'loc.ashbridge';
+    assert.deepEqual(s.places[tower].dungeon.levels[2], { min: 'B', max: 'B' }, 'the hidden level is canon');
+    assert.equal(s.places[tower].dungeon.control, 'a brood-mother');
+    req = boardRequest(s, content, { branch: 'loc.ashbridge', rank: 'Novice', missing: 5, day: 1, have: [] }).user;
+    assert.match(req, /Old watchtower \(spider nest; Rank D–C\)/, 'neither the hidden depth nor what he alone saw');
+    assert.doesNotMatch(req, /Rank B|brood-mother/);
+    // a level of a public Dungeon only Alaric has seen is his; a campaign begun before the Guild's record still has the
+    // public Dungeons as they were seeded
+    const mb = s.places['loc.mossback_warrens'].dungeon;
+    mb.levels[3] = { min: 'D', max: 'D' };
+    assert.doesNotMatch(boardRequest(s, content, { branch: 'loc.ashbridge', rank: 'Novice', missing: 5, day: 1, have: [] }).user, /level 3/);
+    delete mb.levels[3];
+    delete mb.guild;
+    assert.match(boardRequest(s, content, { branch: 'loc.ashbridge', rank: 'Novice', missing: 5, day: 1, have: [] }).user, /Mossback Warrens \(goblin warrens.*Rank F–E; level 1: F, level 2: E/);
+});
+
+test('patch 7 final 9, 10, 11: of two Dungeon jobs the board takes one; a part above the board\'s Rank, or none named in a Dungeon of mixed Ranks, is refused; a refill keeps the one already up; an ordinary Novice mix stays whole', async () => {
+    const g = await campaign();
+    const s = g.state();
+    const need = { branch: 'loc.ashbridge', rank: 'Novice', missing: 5, day: 1, have: [], c: true };
+    const L = (title, where, more = {}) => ({ title, client: 'the Ashbridge Guild', rank: 'Novice', level: 3, qtype: 'standard', payout_cp: 50, task: `${title}.`, desired_end_state: `${title}: done.`, objectives: [{ verb: 'DEFEAT', what: 'goblin', qty: 3, unit: null, where }], proof: [], ...more });
+    const ordinary = [L('Cull the quarry rats', 'the old quarry'), { ...L('Wagon guard to Blackgate', 'Blackgate'), objectives: [{ verb: 'ESCORT', what: 'the wool wagon', qty: null, unit: null, where: 'Blackgate' }] }, { ...L('Letters to the ford', 'the ford'), objectives: [{ verb: 'DELIVER', what: 'satchel of letters', qty: 1, unit: null, where: 'the ford' }] }, L('Drive off the reed wolves', 'the reed beds')];
+    const answer = (ls) => JSON.stringify({ listings: ls });
+    // a regular mix with one Dungeon job: all five
+    let p = parseBoard(answer([L('Clear the first level of the Mossback Warrens', 'Mossback Warrens, upper tunnels'), ...ordinary]), content, need, s);
+    assert.equal(p.listings.length, 5, 'one Dungeon job in an ordinary mix (its part named in words)');
+    assert.equal(parseBoard(answer([L('Cull the quarry rats', 'the old quarry'), ...ordinary.slice(1), L('Cull the marsh rats', 'the marsh')]), content, need, s).listings.length, 5, 'no Dungeon job: as before');
+    // two Dungeon jobs: the second refused
+    p = parseBoard(answer([L('Clear the first level of the Mossback Warrens', 'Mossback Warrens, level 1'), L('Scour the Mossback Warrens upper tunnels', 'the first level of the Mossback Warrens'), ...ordinary.slice(0, 3)]), content, need, s);
+    assert.equal(p.listings.filter((l) => /Mossback/.test(l.title)).length, 1);
+    assert.match(p.refused.map((r) => r.why).join(' '), /at most one Dungeon job/);
+    // above the board's Rank, or no part named in an F–E Dungeon
+    p = parseBoard(answer([L('Clear the burrows of the Mossback Warrens', 'Mossback Warrens, level 2'), ...ordinary]), content, need, s);
+    assert.match(p.refused.map((r) => r.why).join(' '), /level 2 .*Rank E.*not Novice work/);
+    p = parseBoard(answer([L('Clear the Mossback Warrens', 'Mossback Warrens'), ...ordinary]), content, need, s);
+    assert.match(p.refused.map((r) => r.why).join(' '), /names no part of Mossback Warrens/);
+    // a refill with one up already: no second
+    p = parseBoard(answer([L('Clear the first level of the Mossback Warrens', 'Mossback Warrens, level 1')]), content, { ...need, c: false, missing: 1, have: ['Clear the goblin scouts from the first level of the Mossback Warrens'] }, s);
+    assert.equal(p.listings.length, 0);
+    assert.match(p.refused[0].why, /at most one Dungeon job/);
 });

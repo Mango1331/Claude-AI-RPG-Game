@@ -3,7 +3,7 @@
 // board and its listings (from the Board generator, validated and booked before the narrator describes them), the
 // acceptance with its contract slip, the turn-in with the proof check, the payout, Quest XP, the contract count and
 // the promotion. The narrator only tells what the engine booked; the extractor's deltas cannot change any of it.
-import { nearDungeons, dungeonText } from './dungeon.js';
+import { nearDungeons, dungeonText, rankText, guildRecord } from './dungeon.js';
 import { O, S, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 import { setFactEvents, perceivers, knows, truth, PC_NAME_FACT } from '../knowledge.js';
@@ -499,12 +499,15 @@ export function boardRequest(s, content, need) {
     ].join('\n');
     // review of Patch 7: the known Dungeons near this branch, by their names (the same places on every board); work
     // there is clearance of a part whose Rank this board's work fits (a Novice board: the F-Rank part), one listing
+    // final review: only what the Guild was told or keeps on record (dungeon.guild), never the engine's hidden truth
     const order = content.rules.ranks.order;
-    const fits = content.rules.ranks.bands.filter((b) => b.max >= lo && b.min <= hi).map((b) => b.rank);
-    const dungeons = nearDungeons(s, need.branch, town?.realm).map((id) => `${s.places[id].name} (${dungeonText(s, id, { all: true }).replace(/^a Dungeon: /, '')}${s.places[id].where ? `; ${s.places[id].where}` : ''})`);
+    const fits = rankFits(content, need.rank);
+    const near = nearDungeons(s, need.branch, town?.realm, { guild: true });
+    const dungeons = near.map((id) => `${s.places[id].name} (${dungeonText(s, id, { guild: true }).replace(/^a Dungeon: /, '')}${s.places[id].where ? `; ${s.places[id].where}` : ''})`);
+    const up = need.have.some((t) => dungeonNamed(s, near, t));
     const user = [
         `BRANCH: ${town?.name || need.branch}${realm ? `, ${realm}` : ''} (${town?.sub || 'settlement'})`,
-        ...(dungeons.length ? [`KNOWN DUNGEONS NEAR THIS BRANCH (the Guild's records): ${dungeons.join(' · ')}. At most one listing may be clearance work in one of them, and only in a part whose danger Rank is ${fits.join(' or ')} (this board's work; ${order.filter((r) => !fits.includes(r)).length ? 'deeper or stronger parts are not this board\'s' : 'any part'}): name the Dungeon exactly as written, the part (a level, a gallery) and its concrete outcome; it counts as one of the culling jobs.`] : []),
+        ...(dungeons.length ? [`KNOWN DUNGEONS NEAR THIS BRANCH (the Guild's records): ${dungeons.join(' · ')}. ${up ? 'A Dungeon job is on the board already: write no other work in them.' : `At most one listing may be clearance work in one of them, and only in a part whose danger Rank is ${fits.join(' or ')} (this board's work; ${order.filter((r) => !fits.includes(r)).length ? 'deeper or stronger parts are not this board\'s' : 'any part'}): name the Dungeon exactly as written, the part (a level, a gallery) and its concrete outcome; it counts as one of the culling jobs.`}`] : []),
         `RANK: ${need.rank} · DAY ${need.day}`,
         `ON THE BOARD ALREADY: ${need.have.length ? need.have.join(' | ') : 'nothing'}`,
         `WRITE: ${need.missing} new listing${need.missing > 1 ? 's' : ''}.`,
@@ -512,8 +515,43 @@ export function boardRequest(s, content, need) {
     return { system, user, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] };
 }
 
+/** The danger Ranks whose level band meets a board Rank's quest levels (a Novice board: F). */
+function rankFits(content, rank) {
+    const [lo, hi] = content.rules.guild.rank_levels[rank];
+    return content.rules.ranks.bands.filter((b) => b.max >= lo && b.min <= hi).map((b) => b.rank);
+}
+
+/** The first of these Dungeons a text names (its exact name, any case). */
+function dungeonNamed(s, ids, text) {
+    const low = String(text || '').toLowerCase();
+    return ids.find((id) => low.includes(String(s.places[id].name).toLowerCase())) || null;
+}
+
+const ORDINAL = { first: 1, second: 2, third: 3, fourth: 4, fifth: 5, sixth: 6 };
+
+/**
+ * Final review of Patch 7: a listing's Dungeon work must stay in a part the board's Rank fits, by the Guild's own
+ * records. A Dungeon whose whole known range fits needs no part named; otherwise each level the listing names must be
+ * on record with a fitting Rank. Returns the refusal, or null.
+ */
+function dungeonPartWhy(s, content, rank, id, text) {
+    const d = s.places[id];
+    const c = d.dungeon;
+    const known = guildRecord(c, d.by);
+    const fits = rankFits(content, rank);
+    if (known.includes('rank') && c.rank && fits.includes(c.rank.min) && fits.includes(c.rank.max)) return null;
+    const levels = [...new Set([...text.matchAll(/\blevel\s+(\d+)\b/g)].map((m) => Number(m[1])).concat([...text.matchAll(/\b(first|second|third|fourth|fifth|sixth)\s+(?:level|floor)\b/g)].map((m) => ORDINAL[m[1]])))];
+    if (!levels.length) return `names no part of ${d.name}: only a part whose Rank is ${fits.join(' or ')} is ${rank} work`;
+    for (const n of levels) {
+        const r = known.includes(`level:${n}`) ? c.levels?.[n] : null;
+        if (!r) return `level ${n} of ${d.name} has no Rank on the Guild's record: not ${rank} work`;
+        if (!fits.includes(r.min) || !fits.includes(r.max)) return `level ${n} of ${d.name} is Rank ${rankText(r)}: not ${rank} work`;
+    }
+    return null;
+}
+
 /** Read the generator's answer: the listings that pass the hard checks, the rest refused with a reason. */
-export function parseBoard(answer, content, need) {
+export function parseBoard(answer, content, need, s = null) {
     const { value, error } = extractJsonObject(answer);
     if (!value) return { listings: null, errors: [error || 'no JSON object'] };
     // a listing without its board text is still a listing: the board then shows the desired end state (as before 4.1.2)
@@ -523,10 +561,19 @@ export function parseBoard(answer, content, need) {
     const [lo, hi] = content.rules.guild.rank_levels[need.rank];
     const ok = [];
     const refused = [];
+    // final review of Patch 7: at most one Dungeon job on a board, the one already up counted (a refill adds none)
+    const near = s ? nearDungeons(s, need.branch, s.places[need.branch]?.realm, { guild: true }) : [];
+    let inDungeon = (need.have || []).some((t) => dungeonNamed(s, near, t));
     for (const l of value.listings) {
-        const why = l.rank !== need.rank ? `rank ${l.rank} is not ${need.rank}` : l.level < lo || l.level > hi ? `level ${l.level} outside ${lo}–${hi}` : l.objectives.length > 4 ? 'more than 4 objectives' : l.proof.length > 2 ? 'more than 2 verification examples' : null;
+        const text = [l.title, l.task, l.desired_end_state, ...l.objectives.map((o) => `${o.what} ${o.where || ''}`)].join(' \n ').toLowerCase();
+        const at = near.length ? dungeonNamed(s, near, text) : null;
+        const why = l.rank !== need.rank ? `rank ${l.rank} is not ${need.rank}` : l.level < lo || l.level > hi ? `level ${l.level} outside ${lo}–${hi}` : l.objectives.length > 4 ? 'more than 4 objectives' : l.proof.length > 2 ? 'more than 2 verification examples'
+            : at && inDungeon ? 'at most one Dungeon job on this board, and one is there already' : at ? dungeonPartWhy(s, content, need.rank, at, text) : null;
         if (why) refused.push({ title: l.title, why });
-        else ok.push(l);
+        else {
+            ok.push(l);
+            if (at && ok.length <= need.missing) inDungeon = true;
+        }
     }
     return { listings: ok.slice(0, need.missing), refused, errors: [] };
 }

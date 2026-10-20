@@ -1341,7 +1341,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (!root) { reject(d, 'world_rule', 'a Dungeon is a cave, ruin or site of its own, not a settlement or a land'); return; }
         const order = content.rules.ranks.order;
         const [lo, hi] = [d.rank_min || d.rank_max, d.rank_max || d.rank_min].sort((a, b) => order.indexOf(a) - order.indexOf(b));
-        const r = classified(s.places[root].dungeon, { theme: d.theme, rank: lo ? { min: lo, max: hi } : null, level: d.level, control: d.control, how: d.how }, s.turn);
+        const r = classified(s.places[root].dungeon, { theme: d.theme, rank: lo ? { min: lo, max: hi } : null, level: d.level, control: d.control, how: d.how }, s.turn, s.places[root].by);
         if (r.conflicts.length) {
             const c = s.places[root].dungeon;
             const was = r.conflicts.map((k) => (k === 'rank' ? `Rank ${rankText(c.rank)}` : k.startsWith('level:') ? `level ${k.slice(6)} Rank ${rankText(c.levels[k.slice(6)])}` : `${k} "${c[k]}"`)).join(', ');

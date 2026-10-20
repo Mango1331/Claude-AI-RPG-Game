@@ -1391,7 +1391,33 @@ Leitsatz: Die Umgebung bietet Probleme und Entdeckungen. Der Spieler entscheidet
 - Keine neuen LLM-Aufrufe.
 
 **Grenzen:**
-- Kreaturenstärke in Dungeon-Ebenen folgt noch nicht dem Ebenen-Rang (Balancing, Patch 9/10B); der Narrator kennt den Rang.
+- ~~Kreaturenstärke in Dungeon-Ebenen folgt noch nicht dem Ebenen-Rang (Balancing, Patch 9/10B); der Narrator kennt den Rang.~~ Behoben im Final Review (unten): Die Stufe neuer Kreaturen folgt dem Rang-Band. Weiteres Balancing bleibt Patch 9/10B.
 - Kontrolle und Zugang sind Information, keine Lizenz- oder Gebührenmechanik.
 - `rooms` ersetzt das `dungeon: true` aus c.6.6.15; ein so markierter Altstand gilt weiter als in Räumen erkundbar, nicht als echter Dungeon.
 
+#### Final Review: Rang-Konsistenz, Wissensgrenzen und Board-Limit (4.3.0-c.6.6.17, Abschluss Patch 7)
+
+Ausgangsstand e4d61b8. Alle drei Lücken habe ich vor dem Fix mit Tests reproduziert (rot).
+
+| Fall | Ursache | Fix |
+|---|---|---|
+| 1: Ein Goblin der Mossback Warrens (Rank F–E) bekam Stufe 1, eine Kreatur einer A-Rang-Krypta ebenfalls | `materialise()` wählte die Stufe nur aus dem Gefahrenfakt des Ortes (`danger`); im Dungeon fehlt er, `unknown` ergibt 1–1. Die Dungeon-Klassifikation floss nie ein | In einem echten Dungeon (`trueDungeonOf`) würfelt die Engine die Stufe einer neuen Kreatur ohne eigene Stufe einmal aus dem Rang-Band (`rules.ranks.bands`, F 1–14 … S 90–104). Maßgeblich ist der Rang der Ebene, auf der sie getroffen wird (`rankAt`: `levels[n]`, sonst der Gesamtrang des Dungeons). Das Ergebnis steht im Profil. `met_at` hält den Raum der ersten Materialisierung fest. Alarics Level, Power-Rank und Gilden-Rang fließen nicht ein. Eine eigene Stufe der Kreatur und ein vorhandenes Profil bleiben. Unklassifizierte Ruinen und Wildnis nutzen weiter `chooseCreatureLevel` |
+| 2: Das Board veröffentlichte, was die Welt verborgen hält | `boardRequest` nutzte `dungeonText(…, {all: true})`, also auch `hidden`-Felder | Kleine Trennung der Wissensebenen: `dungeon.guild` listet die Felder, die die Gilde in ihren Akten hat (Content-Dungeons beim Seed vollständig; im Spiel nur durch `how: 'guild'`). Board und die Narrator-Zeile „KNOWN DUNGEONS NEAR …“ nutzen `dungeonText(…, {guild: true})` und `nearDungeons(…, {guild: true})`: weder Verborgenes noch das, was nur Alaric gesehen hat, noch Gerüchte. Spielstände von vor diesem Build ohne `guild` zeigen Content-Dungeons wie gesät (`guildRecord`) |
+| 3: Zwei Dungeon-Aufträge auf einem Novice-Board wurden angenommen | `parseBoard` kannte nur Rang, Level und Anzahlen | `parseBoard(answer, content, need, state)`: Ein Listing, das einen gildenbekannten nahen Dungeon beim Namen nennt, ist ein Dungeon-Auftrag. Höchstens einer pro Board, auch über einen Nachschub hinweg (ein Titel in `need.have`, der den Dungeon nennt, zählt mit). Liegt nicht der ganze Rang-Bereich des Dungeons im Board-Rang, muss das Listing eine Ebene nennen (`level 1`, `first level`), deren Rang die Gilde kennt und die passt. Ein abgelehntes Listing löst wie bisher die eine Reparaturrunde aus. Kein Ersatzauftrag, kein zusätzlicher Aufruf. Beim Nachschub sagt der Prompt zudem: „A Dungeon job is on the board already“ |
+
+**Tests:** 5 neue Tests in `tests/v4/patch7.test.js` (final 1/2/4, 3/6, 5, 7/8, 9/10/11). Sie decken die zwölf geforderten Fälle ab. Fall 12 (Fold, Swipe/Replay) prüfen Test final 1/2/4 (Fold gleich Live-Stand) und die bestehenden Patch-7-Tests. Gesamt 854/854; alle vier Smokes grün (`smoke:st` 50/53 wie zuvor, gleiche false-Schlüssel).
+
+**Mutationsproben:** 13 Proben, alle erkannt: Rang ignoriert, Ebenen-Rang ignoriert, `met_at` entfernt, Board-Text `all` statt `guild`, Board-Liste ohne Gilden-Filter, Gilden-Sicht gleich öffentliche Sicht, Altstand-Fallback entfernt, Seed ohne Gilden-Schlüssel, Kontext ohne Gilden-Sicht, Zählprüfung entfernt, bestehender Auftrag nicht gezählt, Abschnittsprüfung entfernt, Ordinalzahlen nicht gelesen.
+
+**Kosten:**
+- Board-Prompt bei frischem Board byte-identisch (System 1.625, User 189 Token).
+- Beim Nachschub mit bestehendem Dungeon-Auftrag 54 Token kürzer (203 → 149).
+- Extractor 6.415 und Planner 6.300 unverändert.
+- Keine neuen LLM-Aufrufe.
+
+**Grenzen:**
+- Kreaturen, die vor diesem Build ein Profil bekamen, behalten es; es wird nichts neu berechnet.
+- Die Abschnittsprüfung erkennt Ebenen über Zahl oder Ordinalzahl. Ein Listing, das einen Teil nur poetisch benennt („the burrows“), gilt als „kein Abschnitt“ und wird in einem gemischtrangigen Dungeon abgelehnt.
+- Ein Dungeon-Auftrag wird über den exakten Dungeon-Namen erkannt, so wie der Prompt es verlangt.
+
+Patch 7 ist damit bereit für den Live-Test mit GLM-5.3-Flash.

@@ -24,6 +24,7 @@ import { targetQuestion } from './display.js';
 import { parseCoin } from './economy.js';
 import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, roundHalfUp, ENGINE_VERSION } from './util.js';
 import { seedPlaces } from './v4/domain.js';
+import { rankAt, dungeonOf } from './v4/dungeon.js';
 import { tacticalHere, areaCaught, approachedBy, sideOf } from './v4/scene_handles.js';
 import { lootEvents } from './v4/loot.js';
 import { featureEvent } from './v4/features.js';
@@ -298,8 +299,15 @@ export function materialise(s, content, dice, emit, id) {
         const anchor = content.anchors.get(e.anchor) || anchorFor(content, [e.species, ...(e.descriptors || [])].join(' '));
         if (!anchor) throw new Error(`creature ${id} has no valid body-plan anchor`);
         const area = truth(s, s.scene.location, 'danger')[0]?.o || 'unknown';
-        const level = e.level || chooseCreatureLevel(area, content, dice);
-        emit({ t: 'entity.updated', d: { id, set: { profile: scaleCreature(anchor, level, e.type || 'normal', content, e.variation || null) } } });
+        // final review of Patch 7: in a true Dungeon, a level of the band of the Rank established where it is met (that
+        // level's, else the Dungeon's own), drawn once; its own level, an ordinary ruin or the open land as before.
+        // Never Alaric's level
+        const at = e.met_at || e.left?.at || s.scene.at;
+        const rank = !e.level ? rankAt(s, at) : null;
+        const lo = rank && content.rules.ranks.bands.find((b) => b.rank === rank.min);
+        const hi = rank && content.rules.ranks.bands.find((b) => b.rank === rank.max);
+        const level = e.level || (lo && hi ? dice.int(lo.min, hi.max, 'creature level') : chooseCreatureLevel(area, content, dice));
+        emit({ t: 'entity.updated', d: { id, set: { profile: scaleCreature(anchor, level, e.type || 'normal', content, e.variation || null), ...(dungeonOf(s, at) && !e.met_at ? { met_at: at } : {}) } } });
         return;
     }
     const words = [...(e.descriptors || []), e.traits || ''].join(' ');

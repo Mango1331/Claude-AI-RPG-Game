@@ -224,7 +224,7 @@ export async function generateBoard(llm, state, content, need) {
         const a = await ask(llm, attempt ? [...req.messages, { role: 'assistant', content: String(last?.answer || '') }, { role: 'user', content: `That answer was not valid: ${(last?.errors || ['no answer']).join('; ')}. Answer again with only the corrected JSON object.` }] : req.messages, 'board');
         ms += a.ms;
         if (!a.ok) { last = { errors: [a.error] }; continue; }
-        const p = parseBoard(a.content, content, need);
+        const p = parseBoard(a.content, content, need, state);
         // Prototype C (4.3.0-c.6.1): fewer valid listings than the day's board asks for are no board (repaired once, else
         // failed: yesterday's stays up), never a smaller day
         const n = p.listings?.length;

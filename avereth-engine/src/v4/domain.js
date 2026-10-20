@@ -453,7 +453,9 @@ export function seedPlaces(content, loc, startName) {
         const near = content.locations.get(x.near);
         if (!near) continue;
         places.push({ id: x.id, name: x.name, kind: 'site', parent: near.realm || null, realm: near.realm || null, tags: [], by: 'content', near: x.near, where: x.where || null,
-            rooms: true, dungeon: { real: true, theme: x.theme || null, rank: x.rank || null, levels: x.levels || {}, control: x.control || null, hidden: [], heard: [] } });
+            rooms: true, dungeon: { real: true, theme: x.theme || null, rank: x.rank || null, levels: x.levels || {}, control: x.control || null, hidden: [], heard: [],
+                // a public Dungeon: all of it is on the Guild's record
+                guild: [...(x.theme ? ['theme'] : []), ...(x.rank ? ['rank'] : []), ...Object.keys(x.levels || {}).map((n) => `level:${n}`), ...(x.control ? ['control'] : [])] } });
     }
     const at = `${loc.id}.verge`;
     places.push({ id: at, name: startName, kind: 'site', parent: loc.id, realm: loc.realm || null, tags: [], by: 'content' });

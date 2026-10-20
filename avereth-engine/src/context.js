@@ -580,11 +580,12 @@ export function buildContext(state, content, opts = {}) {
         ].filter(Boolean).join('\n'), 1);
     }
     // review of Patch 7: the known Dungeons near the town he is in, only when they matter (at the Guild hall, or when
-    // a Dungeon or one of them is spoken of): common knowledge here, as the world has them
+    // a Dungeon or one of them is spoken of): common knowledge here, as the Guild has them on record (final review: never
+    // what the world keeps hidden or Alaric alone saw)
     const town = v4 && !dun ? settlementOf(state, state.scene.at) : null;
-    const near = town ? nearDungeons(state, town, realmOf(state, town)) : [];
+    const near = town ? nearDungeons(state, town, realmOf(state, town), { guild: true }) : [];
     if (near.length && (hallOf(state, state.scene.at) || /\bdungeons?\b/.test(scan) || near.some((id) => scan.includes(normText(state.places[id].name))))) {
-        add('dungeon', `KNOWN DUNGEONS NEAR ${state.places[town].name.toUpperCase()} (common knowledge here; the Guild keeps records of them; the same places in every telling): ${near.map((id) => `${state.places[id].name} — ${dungeonText(state, id, { all: true }).replace(/^a Dungeon: /, '')}${state.places[id].where ? `; ${state.places[id].where}` : ''}`).join(' · ')}`, 2);
+        add('dungeon', `KNOWN DUNGEONS NEAR ${state.places[town].name.toUpperCase()} (common knowledge here; the Guild keeps records of them; the same places in every telling): ${near.map((id) => `${state.places[id].name} — ${dungeonText(state, id, { guild: true }).replace(/^a Dungeon: /, '')}${state.places[id].where ? `; ${state.places[id].where}` : ''}`).join(' · ')}`, 2);
     }
     // relevant memories / facts / quests / threads
     const rel = retrieveRelevant(state, content, { input, lastReply, budget, pinnedIds: new Set(pinned.map((f) => f.id)), recentTurns: opts.recentTurns ?? DEFAULT_RECENT_TURNS, weights: opts.weights });

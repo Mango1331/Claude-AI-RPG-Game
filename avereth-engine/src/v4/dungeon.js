@@ -11,7 +11,8 @@
 //   places[id].level    a room's level, when known (1 the entry level, 2 one floor down, 0 one up)
 //   places[id].visited  {turn, minute} when he first stood in a room of it
 //   places[id].dungeon  a true Dungeon: {theme, rank: {min, max}|null, levels: {n: {min, max}}, control, hidden: [the
-//                       established fields he does not know], heard: [what reports say, not canon]}
+//                       established fields he does not know], guild: [the fields on the Guild's record], heard: [what
+//                       reports say, not canon]}
 //   links      id -> {id, a, b, name, both, hidden, feature, dir: up|down|null (from a to b), since, found, by}; two
 //              rooms can be joined by more than one way (an iron door and a ventilation shaft)
 //
@@ -55,22 +56,48 @@ export const rankText = (r) => (!r ? null : r.min === r.max ? r.min : `${r.min}â
  * (the narrator, the extractor); else only what Alaric knows (the HUD, the planner): the established fields not hidden
  * from him, and rumours as rumours. Null when there is nothing to tell.
  */
-export function dungeonText(s, id, { all = false } = {}) {
+/**
+ * What of a Dungeon is on the Guild's record (final review of e4d61b8): its keys. A content Dungeon of a campaign
+ * started before the record existed is public as it was seeded: all of it that is not hidden.
+ */
+export function guildRecord(c, by = null) {
+    if (c?.guild) return c.guild;
+    if (by !== 'content') return [];
+    return ['theme', 'rank', 'control', ...Object.keys(c?.levels || {}).map((n) => `level:${n}`)].filter((k) => !(c?.hidden || []).includes(k));
+}
+
+export function dungeonText(s, id, { all = false, guild = false } = {}) {
     const p = s.places?.[id];
     const c = p?.dungeon;
     if (!c) return null;
-    const shown = (k) => all || !(c.hidden || []).includes(k);
+    // guild (final review of e4d61b8): only what the Guild has on record (c.guild: its own telling, or the content's
+    // public Dungeons), never what is hidden nor what Alaric alone saw, and no rumour
+    const record = guild ? guildRecord(c, p.by) : null;
+    const shown = (k) => (guild ? record.includes(k) : all || !(c.hidden || []).includes(k));
     const levels = Object.entries(c.levels || {}).filter(([n]) => shown(`level:${n}`)).map(([n, r]) => `level ${n}: ${rankText(r)}`);
     const bits = c.real ? [shown('theme') ? c.theme : null, shown('rank') && c.rank ? `Rank ${rankText(c.rank)}` : null, levels.length ? levels.join(', ') : null, shown('control') ? c.control : null].filter(Boolean) : [];
-    const heard = (c.heard || []).map((h) => [h.theme, h.rank ? `Rank ${rankText(h.rank)}` : null, h.level ? `level ${h.level}` : null, h.control].filter(Boolean).join(', ')).filter(Boolean);
+    const heard = (guild ? [] : c.heard || []).map((h) => [h.theme, h.rank ? `Rank ${rankText(h.rank)}` : null, h.level ? `level ${h.level}` : null, h.control].filter(Boolean).join(', ')).filter(Boolean);
     if (!bits.length && !heard.length) return null;
     return [bits.length ? `a Dungeon: ${bits.join('; ')}` : null, heard.length ? `rumoured: ${heard.slice(-2).join(' / ')}` : null].filter(Boolean).join('; ');
 }
 
 /** The true Dungeons Alaric can know of near a settlement (or in its land, out in it): the content's and those play classified. */
-export function nearDungeons(s, town, realm) {
-    return Object.values(s.places || {}).filter((p) => p.dungeon?.real && dungeonText(s, p.id) && (town ? p.near === town || (!p.near && p.realm === realm) : p.realm === realm))
+export function nearDungeons(s, town, realm, { guild = false } = {}) {
+    return Object.values(s.places || {}).filter((p) => p.dungeon?.real && dungeonText(s, p.id, { guild }) && (town ? p.near === town || (!p.near && p.realm === realm) : p.realm === realm))
         .map((p) => p.id);
+}
+
+/**
+ * Final review of e4d61b8: the danger Rank the world established where a creature is met: the Rank of that level of a
+ * true Dungeon, else the Dungeon's own; null outside a true Dungeon or where no Rank is established (canon only, never
+ * a rumour; never anything of Alaric's).
+ */
+export function rankAt(s, place) {
+    const d = trueDungeonOf(s, place);
+    if (!d) return null;
+    const c = s.places[d].dungeon;
+    const level = s.places[place]?.level;
+    return (Number.isInteger(level) && c.levels?.[level]) || c.rank || null;
 }
 
 /**
@@ -80,11 +107,11 @@ export function nearDungeons(s, town, realm) {
  * @param {{theme?, rank?: {min, max}|null, level?: number|null, control?, how: 'seen'|'guild'|'hidden'|'rumor'}} d
  * @returns {{next: object, conflicts: string[]}}
  */
-export function classified(cur, d, turn) {
+export function classified(cur, d, turn, by = null) {
     const c = { real: false, theme: null, rank: null, levels: {}, control: null, hidden: [], heard: [], ...(cur || {}) };
     if (d.how === 'rumor') return { next: { ...c, heard: [...c.heard, { theme: d.theme || null, rank: d.rank || null, level: d.level ?? null, control: d.control || null, turn }].slice(-6) }, conflicts: [] };
     const conflicts = [];
-    const next = { ...c, real: true, levels: { ...c.levels }, hidden: [...c.hidden] };
+    const next = { ...c, real: true, levels: { ...c.levels }, hidden: [...c.hidden], guild: [...guildRecord(c, by)] };
     const set = (key, field, value, same) => {
         if (value === null || value === undefined) return;
         const had = key.startsWith('level:') ? next.levels[key.slice(6)] : next[field];
@@ -93,6 +120,8 @@ export function classified(cur, d, turn) {
         else next[field] = value;
         // hidden: the world's, not his yet; seen or told: he knows it now (also what was hidden before)
         next.hidden = d.how === 'hidden' && !(had && !next.hidden.includes(key)) ? [...new Set([...next.hidden, key])] : next.hidden.filter((k) => k !== key);
+        // what the Guild's records told him is on the Guild's record (its board may use it)
+        if (d.how === 'guild') next.guild = [...new Set([...next.guild, key])];
     };
     const sameRank = (a, b) => a.min === b.min && a.max === b.max;
     set('theme', 'theme', d.theme ? String(d.theme).slice(0, 120) : null, (a, b) => normText(a) === normText(b));

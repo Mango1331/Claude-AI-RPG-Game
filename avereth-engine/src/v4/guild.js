@@ -4,7 +4,7 @@
 // acceptance with its contract slip, the turn-in with the proof check, the payout, Quest XP, the contract count and
 // the promotion. The narrator only tells what the engine booked; the extractor's deltas cannot change any of it.
 import { nearDungeons, dungeonText, rankText, guildRecord, trueDungeonOf } from './dungeon.js';
-import { clearOf, clearDone, clearTarget } from './living.js';
+import { clearOf, clearDone, clearTarget, cullPopulation, slotNameOf } from './living.js';
 import { O, S, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 import { setFactEvents, perceivers, knows, truth, PC_NAME_FACT } from '../knowledge.js';
@@ -188,9 +188,12 @@ export function defeatTally(s, content, q) {
             return [o.what, o.unit].filter(Boolean).some((w) => namesKind(w, e.species || '', anchor, same))
                 && (young || !namesYoung(content, `${e.species || ''} ${e.name || ''}`));
         };
+        // Patch 8.1 (§10): a Dungeon's guardian or boss is no beast of a cull by its kind ("crystal beetles" is not the
+        // Glimmer Queen); it counts for a contract that names it
+        const role = (e) => !e.slot || e.slot.role === 'minion' || namesBoss(o.what, slotNameOf(s, e));
         const counts = (e) => area(e) && (people.size
             ? e.kind === 'npc' && (e.descriptors || []).some((d) => [...peopleNamed(d, content)].some((t) => people.has(t)))
-            : e.kind === 'creature' && kind(e));
+            : e.kind === 'creature' && kind(e) && role(e));
         const killed = dead.filter(counts).length;
         const driven = fled.filter(counts).length;
         return { what: o.what, qty: o.qty, done: killed + driven, killed, driven };
@@ -610,6 +613,13 @@ function dungeonPartWhy(s, content, rank, id, text) {
     return null;
 }
 
+/** Patch 8.1 (§10): a Dungeon cull whose beasts no regular cycle of it holds is no Dungeon cull (refused, regenerated). */
+function noCullWhy(s, content, need, at, l, text) {
+    if (!need.c || !isHunt(l, content)) return null;
+    const o = huntObjectives(l, content).find((x) => KILL_WORK.has(x.verb) && dungeonCull(s, content, at, x, levelsNamed(text)) === 0);
+    return o ? `${s.places[at].name} holds no "${o.what}" among its renewing foes (a guardian or boss only by its own name): no cull there` : null;
+}
+
 /** Read the generator's answer: the listings that pass the hard checks, the rest refused with a reason. */
 export function parseBoard(answer, content, need, s = null) {
     const { value, error } = extractJsonObject(answer);
@@ -628,7 +638,9 @@ export function parseBoard(answer, content, need, s = null) {
         const text = [l.title, l.task, l.desired_end_state, ...l.objectives.map((o) => `${o.what} ${o.where || ''}`)].join(' \n ').toLowerCase();
         const at = near.length ? dungeonNamed(s, near, text) : null;
         const why = l.rank !== need.rank ? `rank ${l.rank} is not ${need.rank}` : l.level < lo || l.level > hi ? `level ${l.level} outside ${lo}–${hi}` : l.objectives.length > 4 ? 'more than 4 objectives' : l.proof.length > 2 ? 'more than 2 verification examples'
-            : at && inDungeon ? 'at most one Dungeon job on this board, and one is there already' : at ? dungeonPartWhy(s, content, need.rank, at, text) : null;
+            : at && inDungeon ? 'at most one Dungeon job on this board, and one is there already' : at ? dungeonPartWhy(s, content, need.rank, at, text) || noCullWhy(s, content, need, at, l, text) : null;
+        // Patch 8.1 (§3, §10): the Dungeon its work lies in, fixed with the listing (the gate and the count read this)
+        if (at) l.dungeon = at;
         if (why) refused.push({ title: l.title, why });
         else {
             ok.push(l);
@@ -637,6 +649,32 @@ export function parseBoard(answer, content, need, s = null) {
     }
     return { listings: ok.slice(0, need.missing), refused, errors: [] };
 }
+
+/** Does an objective name a Dungeon's guardian or boss by its own name ("the Glimmer Queen")? */
+function namesBoss(what, name) {
+    const n = normText(name || '').replace(/^the /, '');
+    return !!n && normText(what || '').includes(n);
+}
+
+/**
+ * Patch 8.1 (§10, live 21.10.2026 10:17: "Cull the Crystal Beetles" of Glimmerdeep asked 6 where one cycle holds 2 to
+ * 4): how many of an objective's kind a Living Dungeon holds in one regular cycle at the least, by its encounters'
+ * roles: its ordinary foes by their kind, a guardian or boss only where the objective names it. Null when the
+ * listing's work is not in a Living Dungeon (or names no kill).
+ */
+function dungeonCull(s, content, root, o, levels) {
+    if (!s || !root || !KILL_WORK.has(o.verb)) return null;
+    const same = sameKinds(content);
+    const kind = (sp, anchor) => [].concat(sp).some((x) => namesKind(o.what, x, content.anchors.get(anchor), same));
+    return cullPopulation(s, content, root, (sl) => (sl.role === 'minion' ? kind(sl.species, sl.anchor) : namesBoss(o.what, sl.name)), { levels });
+}
+/** The levels a listing's text names ("level 2", "the first level"), or null for none. */
+function levelsNamed(text) {
+    const t = String(text || '').toLowerCase();
+    const ns = [...new Set([...t.matchAll(/\blevel\s+(\d+)\b/g)].map((m) => Number(m[1])).concat([...t.matchAll(/\b(first|second|third|fourth|fifth|sixth)\s+(?:level|floor)\b/g)].map((m) => ORDINAL[m[1]])))];
+    return ns.length ? ns : null;
+}
+const listingText = (l) => [l.title, l.task, l.desired_end_state, ...l.objectives.map((o) => `${o.what} ${o.where || ''}`)].join(' \n ').toLowerCase();
 
 /**
  * Patch 8: a cull's number. A hunt the generator wrote without one (live 21.10.2026: "bog striders nesting in the weir
@@ -649,12 +687,15 @@ function cullNumbers(s, content, l, need) {
     // its kills are what the engine counts (DEFEAT): an ATTACK of the notice is the same work
     return objectives.map((o) => {
         if (!KILL_WORK.has(o.verb)) return o;
-        if (Number.isInteger(o.qty) && o.qty > 0) return { ...o, verb: 'DEFEAT' };
+        // Patch 8.1 (§10): in a Living Dungeon never more than one regular cycle holds of them at the least
+        const most = l.dungeon ? dungeonCull(s, content, l.dungeon, o, levelsNamed(listingText(l))) : null;
+        const fit = (n) => (most ? Math.min(n, most) : n);
+        if (Number.isInteger(o.qty) && o.qty > 0) return { ...o, verb: 'DEFEAT', qty: fit(o.qty) };
         const words = normText(o.what || '').split(' ');
         const cut = words.findIndex((w) => RELATION.has(w));
         const before = cut > 0 ? words.slice(0, cut) : words;
         const plural = before.some((w) => w.length > 3 && /[^s]s$/.test(w));
-        return { ...o, verb: 'DEFEAT', qty: plural ? 3 + (parseInt(hash32(`${l.title}|${o.what}`), 16) % 3) : 1 };
+        return { ...o, verb: 'DEFEAT', qty: fit(plural ? 3 + (parseInt(hash32(`${l.title}|${o.what}`), 16) % 3) : 1) };
     });
 }
 
@@ -678,6 +719,13 @@ export function bookBoard(s, content, need, listings, emit) {
         // Patch 8: a level of a Dungeon to clear, booked with the contract (src/v4/living.js)
         const clear = need.c ? clearTarget(s, quest) : null;
         if (clear) quest.clear = clear;
+        // Patch 8.1 (§3): the Dungeon its work lies in, a stable reference (its gate's waiver and its count read it)
+        const where = need.c ? clear?.dungeon || l.dungeon || null : null;
+        if (where) {
+            quest.dungeon = where;
+            const floors = clear ? [clear.floor] : levelsNamed(listingText(l));
+            if (floors?.length === 1) quest.floor = floors[0];
+        }
         emit({ t: 'quest.created', d: { quest } });
         ids.push(id);
     }

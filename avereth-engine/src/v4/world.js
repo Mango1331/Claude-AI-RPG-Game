@@ -34,7 +34,7 @@ import { itemTraits, useOf, itemProfile, priceAudit } from './items.js';
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor } from '../content.js';
-import { entranceOf, sealRefusal, gateCheck, livingOf, floorAt, slotForNew, resolvedSlotNamed, slotEntityEvents, syncEvents, insideOf } from './living.js';
+import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotForNew, resolvedSlotNamed, slotEntityEvents, syncEvents, insideOf } from './living.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
@@ -1734,6 +1734,19 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     function offer(d) {
         const seller = idOf(d.seller);
         if (!seller || seller === 'pc' || !s.scene.present.includes(seller)) { reject(d, 'offer', `the seller ${String(d.seller).slice(0, 40)} is not present`); return; }
+        // Patch 8.1 (live 21.10.2026 10:17: the watchman's own "entry, 10 cp" was paid and no pass followed): at a Living
+        // Dungeon's gate, entry is sold only by the gate's own fee, the engine's; his other wares (a torch) stand
+        const gateRoot = cPath ? trueDungeonOf(s, s.scene.at) : null;
+        const entry = gateRoot && livingOf(s, gateRoot) && !insideOf(s, gateRoot) ? d.lines.filter((l) => entryLine(s, gateRoot, l)) : [];
+        if (entry.length) {
+            reject({ ...d, lines: entry }, 'gate_fee', `entry to ${placeName(s, gateRoot)} is the gate's own (the engine's), never an offer of the story`);
+            const g = gateState(s, content, gateRoot) || {};
+            const terms = g.fee ? `its fee is ${g.fee} cp, the gate's own offer (${gateOfferId(gateRoot)})` : g.waived ? `its fee is waived for his contract "${g.waived.title}"` : g.pass ? 'he has paid it already' : 'it asks no fee';
+            const correction = `Entry to ${placeName(s, gateRoot)} is fixed by the engine at its gate: ${terms}. No one sells another entry or names another price for it; the entry offered in the last reply was not recorded.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+            if (entry.length === d.lines.length) return;
+            d = { ...d, lines: d.lines.filter((l) => !entry.includes(l)) };
+        }
         const priced = d.lines.map((l) => ({ ...l, price_cp: evidenced(l.price_cp, l.said, d) }));
         // a price the reply does not say is not offered (review of c.6.6.11); the seller's other lines stand
         const unproven = priced.filter((l, i) => l.price_cp === null && Number.isInteger(d.lines[i].price_cp));

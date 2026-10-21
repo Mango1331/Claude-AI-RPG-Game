@@ -36,7 +36,10 @@ function live({ hp = 40, mp = 20, sta = 50, potions = 3 } = {}) {
     const thing = (id, name, qty = 1) => ({ t: 'object.created', d: { object: { id, name, kind: 'item', stack: qty > 1, qty, unit: null, ...itemTraits(content, { name }, s.clock.minute), holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'bought' } } } });
     g.chat.at(-1).extra.avereth.events.splice(-1, 0,
         thing(POTION, 'healing potion', potions), thing(MANA, 'mana potion'), thing(TONIC, 'stamina tonic'),
-        ...[['hp', hp], ['mp', mp], ['sta', sta]].map(([resource, value]) => ({ t: 'resource.changed', d: { id: 'pc', resource, value } })));
+        ...[['hp', hp], ['mp', mp], ['sta', sta]].map(([resource, value]) => ({ t: 'resource.changed', d: { id: 'pc', resource, value } })),
+        // Patch 8.1: an attack on one of the swarm brings the rest of it in (src/v4/group_combat.js); these are one-beetle
+        // fights, so the rest of the swarm has scattered (a scene the live run did not have)
+        ...[2, 3, 4, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ t: 'scene.left', d: { id: BEETLE(n) } })));
     return g;
 }
 async function say(g, text, ...commands) {

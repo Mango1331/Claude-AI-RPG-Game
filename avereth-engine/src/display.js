@@ -10,6 +10,7 @@ import { formatCoin } from './economy.js';
 import { bandIndex, itemLabel } from './util.js';
 import { damagePreview, combatTargets, targetLabel } from './combat.js';
 import { sceneHandle, tacticalHere } from './v4/scene_handles.js';
+import { livingOf, gateCard } from './v4/living.js';
 
 const sys = (text) => `\`${text}\``;
 // a combatant by its target label (from the board of that step, which outlives the fight), anyone else as the player knows them
@@ -245,6 +246,9 @@ export function worldPanel(state, content, reply = {}) {
     for (const x of reply.system || []) lines.push(sys(String(x).replace(/[<>`]/g, '')));
     if (reply.rejected?.length) lines.push(sys(`ENGINE REFUSED ${reply.rejected.length} reported change${reply.rejected.length > 1 ? 's' : ''} (${[...new Set(reply.rejected.map((r) => r.rule))].join(', ')}): see #audit or the event export`));
     if (reply.opened && reply.state) lines.push(...openedLines(reply.state, content, reply.opened));
+    // Patch 8.1 (§4): the reply that brings him to a Living Dungeon's gate shows its System card (once, on arrival)
+    const at = reply.state && reply.events?.findLast((e) => e.t === 'scene.moved')?.d.at;
+    if (at && at === reply.state.scene.at && livingOf(reply.state, at)) lines.push(...gateCard(reply.state, content, at).map(sys));
     return lines.join('\n');
 }
 

@@ -304,7 +304,10 @@ test('patch 7.1 (15, 17): a burst that fells a whole knot of four gives XP and l
     const g = live(37);
     const knot = [2, 3, 4, 6];
     inject(g, [...knot.map((n) => at(n, 'SHORT', 'vein')), ...[7, 8, 9, 10, 11, 12].map((n) => at(n, 'MEDIUM', null)),
-        ...knot.map((n) => ({ t: 'entity.updated', d: { id: BEETLE(n), set: { profile: { ...g.state().entities[BEETLE(n)].profile, hp: 4 } } } }))]);
+        ...knot.map((n) => ({ t: 'entity.updated', d: { id: BEETLE(n), set: { profile: { ...g.state().entities[BEETLE(n)].profile, hp: 4 } } } })),
+        // Patch 8.1: the swarm's others would enter the fight with the knot it strikes (src/v4/group_combat.js); here only
+        // the knot is left at the vein (a scene the live run did not have)
+        ...[1, 7, 8, 9, 10, 11, 12].map((n) => ({ t: 'scene.left', d: { id: BEETLE(n) } }))]);
     await say(g, TEXT, USE());
     const r = lastUser(g);
     const o = outcomeOf(g);

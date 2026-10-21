@@ -26,7 +26,8 @@ export function personLabel(state, content, id) {
     const e = state.entities[id];
     if (!e) return String(id);
     // Patch 4 (review): a creature of a group shows the group's ref, so a reply about one of two packs can name it
-    if (e.kind === 'creature') return [e.species || e.descriptors?.[0] || 'creature', ...(e.descriptors || []).filter((d) => d !== e.species).slice(0, 2), ...(e.group ? [`group ${e.group}`] : [])].join(', ');
+    // (Patch 8.1: never a ref that slipped into its descriptors, "glimmerdeep_grotto_c1_l1_e1 1")
+    if (e.kind === 'creature') return [e.species || e.descriptors?.[0] || 'creature', ...(e.descriptors || []).filter((d) => d !== e.species && !/_/.test(d)).slice(0, 2), ...(e.group ? [`group ${e.group}`] : [])].join(', ');
     const role = truth(state, id, 'occupation')[0]?.o || (e.template && e.template !== 'commoner' ? content.templates.get(e.template)?.label?.toLowerCase() : null) || e.role || null;
     const look = e.traits ? String(e.traits).split(/[;,.]/)[0].trim() : (e.descriptors || []).find((d) => normText(d) !== normText(role || ''));
     return [e.name, role, look].filter(Boolean).filter((x, i, a) => a.findIndex((y) => normText(y) === normText(x)) === i).join(', ') || entityLabel(state, id);
@@ -326,8 +327,13 @@ export function extractorCatalog(state, content, opts = {}) {
     const short = (t) => (t.length > 80 ? `${t.slice(0, 79)}…` : t);
     const threads = currentThreads(state).slice(0, 6);
     const threadText = threads.length ? `\nTHREADS (open; update or resolve by id): ${threads.map((t) => `${t.id} (${t.kind}: ${short(t.text)})`).join(' · ')}` : '';
+    // Patch 8.1 (§9, live 21.10.2026 10:17: Glass Beetle B, killed a turn before, was in no list; twice the extractor
+    // spent all 2,500 tokens wondering whether "the second beetle" was a newcomer): the dead of the last turns here
+    const dead = (state.scene.present || []).filter((id) => ['creature', 'npc'].includes(state.entities[id]?.kind) && statusOf(state, id) === 'dead'
+        && (truth(state, id, 'status')[0]?.since?.turn ?? -1) >= state.turn - 3);
+    const deadText = dead.length ? `\nRECENT DEAD (here, killed in the engine's fights; never a creature.new, never alive, never fleeing): ${dead.map((id) => `${id} [${sceneHandle(state, content, id)}] (${personLabel(state, content, id)})`).join(' · ')}` : '';
     return {
-        text: catalogText(c) + threadText,
+        text: catalogText(c) + deadText + threadText,
         places: [...new Set([c.here.id, ...c.places.map((p) => p.id)].filter(Boolean))],
         quests: [...new Set([...c.quests, ...c.board, ...c.completed, ...(c.known || [])].map((q) => q.id))],
         objects: c.objects.map((o) => o.id),

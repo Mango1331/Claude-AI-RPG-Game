@@ -38,7 +38,9 @@ const PAYOUT_WHY = /\b(?:reward|bounty|payout|pay(?:ment)?\s+for|contract|quest|
 const TURN_IN_OBJECTIVE = /\b(?:turn(?:ed|s|ing)?|hand(?:ed|s|ing)?)\s+(?:it\s+|them\s+|the\s+\w+\s+)?in\b|\b(?:deliver\w*|return\w*|report\w*|bring\w*|brought|tak(?:e|es|ing)|hand\w*)\b[^.;]*\b(?:guild|desk|hall|clerk)\b/i;
 const PC_REF = /^(?:pc|alaric(?: red)?)$/i;
 const ENGINE_FACT = /\b(?:regist\w*|guild rank|member\w*|novice|proven|veteran|power rank|coin|copper|silver|paid|reward|payout|xp|level)\b/i;
-const GUILD_QUEST_STATE = /\b(?:status|state|complete\w*|done|closed|cleared|turn(?:ed|ing)?\s+in|paid|payment|payout|reward)\b/i;
+// Patch 8.1 (§12, live 21.10.2026 10:17: "wool cart notice — taken" while the board still listed it): whether a listed
+// contract is still to be had (taken, claimed, gone) and its terms (count, forfeit) are the engine's as well
+const GUILD_QUEST_STATE = /\b(?:status|state|complete\w*|done|closed|cleared|turn(?:ed|ing)?\s+in|paid|payment|payout|reward|taken|claimed|gone|filled|snapped|withdrawn|cancel\w*|forfeit\w*|available|count)\b/i;
 // Hotfix 7.2.1: that Alaric is registered (or a member) with the Guild, said of him by anyone ("the clerk registered_alaric:
 // registration completed"); never what registration requires or costs
 const PC_REGISTERED = /\b(?:registered|registration (?:is |was |now )?(?:complete[d]?|done|finished)|(?:joined|enrolled (?:in|with)) the guild|(?:is|became|becomes|now) a (?:guild )?member)\b/;
@@ -164,7 +166,8 @@ export function firewall(deltas, ctx = {}) {
     const auth = ctx.auth || {};
     const live = (q) => q.status === 'active' || booked.turnIns.includes(q.id) || booked.accepted.includes(q.id);
     const titleWords = (t) => words(t).split(/[^a-z0-9]+/).filter((w) => w.length > 3);
-    const namesContract = (s) => contracts.some((q) => { const w = titleWords(q.title); return w.length && w.filter((x) => words(s).includes(x)).length >= Math.min(2, w.length); });
+    const contractNamed = (s) => contracts.find((q) => { const w = titleWords(q.title); return w.length && w.filter((x) => words(s).includes(x)).length >= Math.min(2, w.length); }) || null;
+    const namesContract = (s) => !!contractNamed(s);
     // What the engine booked this turn is created by the engine, never again by the story (4.3.0-c.6.6.2):
     // - its Guild documents are identities, not bags of shared words: "contract slip" and "oil requisition slip" are
     //   separate documents although both are slips (live 10.10.2026); the contract's title qualifies its slip;
@@ -296,7 +299,7 @@ export function firewall(deltas, ctx = {}) {
                     || (!!ctx.inGuildHall && /\b(?:contract|quest|slip)\b/.test(factText) && GUILD_QUEST_STATE.test(factText));
                 if (guildQuestState && GUILD_QUEST_STATE.test(`${words(d.p)} ${words(d.o)}`)) {
                     // a claimed state the contract is not in is corrected (live run 30.09.2026 22:41: "active" while listed)
-                    const q = questOf(text(d.s)) || ctx.guildContractForObject?.(text(d.s)) || null;
+                    const q = questOf(text(d.s)) || ctx.guildContractForObject?.(text(d.s)) || contractNamed(factText) || null;
                     const claim = claimedStatus(`${words(d.p)} ${words(d.o)}`);
                     no(d, 'engine_owned_fact', 'a known Guild contract keeps payout and formal status/completion in the engine domain; use quest.detail/quest.progress/quest.ready for story progress instead of overriding that state with a free fact',
                         wrongClaim(claim, q) ? statusCorrection(q) : null);

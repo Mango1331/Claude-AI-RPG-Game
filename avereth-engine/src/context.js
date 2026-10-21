@@ -44,7 +44,10 @@ const fightLabel = (state, id, labels = null) => labels?.[id] || state.encounter
 function fightName(state, id) {
     const label = state.encounter?.combatants?.[id]?.label;
     const e = state.entities[id];
-    const natural = !e?.name && lookOf(e || {}) ? `the ${lookOf(e)}` : entityLabel(state, id); // "the rat", never the ref "rat_a"
+    // Patch 8.1 (§8): one of a group whose look is the group's own ("dog-sized beetles with glassy faceted sh") goes by
+    // its kind alone, never by the shared, cut plural (the label tells them apart)
+    const shared = !!e?.group && !e.name && Object.values(state.entities).some((x) => x.id !== id && x.group === e.group && normText(x.descriptors?.[0] || '') === normText(e.descriptors?.[0] || ''));
+    const natural = shared ? (e.species ? `a ${e.species}` : label) : !e?.name && lookOf(e || {}) ? `the ${lookOf(e)}` : entityLabel(state, id); // "the rat", never the ref "rat_a"
     if (!label || normText(label) === normText(natural)) return label || natural;
     const known = state.entities[id]?.known_name;
     return `${label} (${natural}${known === '' ? '; the story has not said this name yet' : known ? `; the story has said only "${known}"` : ''})`;
@@ -259,6 +262,28 @@ export function playerActionsBlock(outcome) {
     return lines.join('\n');
 }
 
+/**
+ * Patch 8.1 (§8): STATE NOW — BINDING, after a combat step on the planner path: each fighter of this fight alive (HP) or
+ * dead, fled or surrendered; the dead of their groups here from before; Alaric; whether the fight goes on. Only what the
+ * engine holds, so a reply cannot end with a foe dead that lives, or a second one that is not there.
+ */
+function stateNow(state, content, outcome) {
+    const b = outcome.board;
+    const name = (id) => fightLabel(state, id, b.labels);
+    const fate = (h) => (h.state === 'defeated' ? 'DEAD' : h.state === 'fled' ? 'FLED' : h.state === 'surrendered' ? 'SURRENDERED' : `alive ${h.hp}/${h.max} HP`);
+    const fought = new Set(b.hp.map((h) => h.id));
+    const groups = new Set(b.hp.map((h) => state.entities[h.id]?.group).filter(Boolean));
+    const before = (state.scene.present || []).filter((id) => !fought.has(id) && groups.has(state.entities[id]?.group) && state.entities[id].status === 'dead');
+    const pc = b.hp.find((h) => h.id === 'pc');
+    const bits = [
+        ...b.hp.filter((h) => h.id !== 'pc').map((h) => `${name(h.id)} ${fate(h)}`),
+        ...before.map((id) => `${sceneHandle(state, content, id)} DEAD (earlier)`),
+        `Alaric ${pc?.state === 'defeated' ? 'DOWN' : `${pc?.hp}/${pc?.max} HP`}`,
+        outcome.ended ? 'fight OVER' : 'fight goes on, Alaric\'s Turn',
+    ];
+    return `STATE NOW — BINDING (end the reply so; no other foe): ${bits.join(' · ')}.`;
+}
+
 function outcomeBlock(state, content, outcome, opts = {}) {
     const block = outcomeLines(state, content, outcome, opts);
     // prototype C (src/v4/planner.js): what of the player's message the engine did not take this turn
@@ -290,6 +315,9 @@ function outcomeLines(state, content, outcome, { v4 = false } = {}) {
             if (outcome.loot) lines.push(`- LOOT (the engine's automatic loot at the fight's end, already in Alaric's pack): ${outcome.loot.join(', ')}. It is no decision of his and took no time: mention it in a few words or leave it to the HUD; do not show him skinning, carving or searching bodies, and add no other drop, coin or item. It sits in his magic pouch: no weight, bulk, packing, straps or carrying effort, now or later.`);
         } else if (outcome.next) lines.push(`- Next: ${outcome.next}. Stop the narration at Alaric's decision.`);
         if (outcome.records.length) lines.push(`Narrate exactly these resolved steps in order: the same number of attacks/projectiles, every one landing with the damage given (no misses, grazes or dodges), no extra movement, attacks or combatants${outcome.ended ? '' : ', and no dialogue (combat silence; it overrides any habit of opening with speech)'}.${report(' Then write the fact report.')}`);
+        // Patch 8.1 (§8, live 21.10.2026 10:17: Glass Beetle A at 1/38 HP "burst apart", and a beetle dead a turn before
+        // "fled"): the state these steps leave, the last line of the mechanics, one entry per fighter
+        if (outcome.c && outcome.board) lines.push(stateNow(state, content, outcome));
     } else if (outcome.kind === 'creation.step2') {
         const cls = content.classes.get(outcome.class);
         const s = state.entities.pc.sheet;
@@ -549,7 +577,7 @@ export function buildContext(state, content, opts = {}) {
     if (activeQuests.length) add('quests', `ACTIVE QUEST MEMORY — use this to preserve continuity, not as a word-for-word checklist. For Guild contracts only payout, active/completed status, Quest XP/credit and Guild rank mechanics are hard engine state; objectives, witnesses and verification are story guidance and may be satisfied by credible alternatives:\n${activeQuests.map((q) => {
         const progress = (q.progress || []).slice(-4).map((p) => `${p.objective}: ${p.status}`).join('; ');
         const req = q.kind === 'guild_contract'
-            ? ` | desired outcome: ${q.desired_end_state || objectiveText(q)} | remembered work: ${objectiveText(q)}${progress ? ` | progress: ${progress}` : ''}${q.status === 'active' && defeatTally(state, content, q).length ? ` | defeated (engine count): ${tallyText(defeatTally(state, content, q))}` : ''}${readyText(state, content, q, { c: cTurn }) ? ` | ${readyText(state, content, q, { c: cTurn })}` : ''} | ${cTurn ? proofMemory(state, content, q) : `verification examples: ${guildProofText(q) || 'none listed'}`} | payout: ${q.payout_cp ?? 0} cp (paid only by the Guild on explicit accepted turn-in)`
+            ? ` | desired outcome: ${q.desired_end_state || objectiveText(q)} | remembered work: ${objectiveText(q)}${progress ? ` | progress: ${progress}` : ''}${q.status === 'active' && defeatTally(state, content, q).length ? ` | defeated (engine count): ${tallyText(defeatTally(state, content, q))}` : ''}${readyText(state, content, q, { c: cTurn }) ? ` | ${readyText(state, content, q, { c: cTurn })}` : ''} | ${cTurn ? proofMemory(state, content, q) : `verification examples: ${guildProofText(q) || 'none listed'}`} | payout: ${q.payout_cp ?? 0} cp (paid only by the Guild on explicit accepted turn-in)${cTurn ? ' | these are its whole terms: no clause the story adds binds it' : ''}`
             : q.objectives?.length ? ` | remembered work: ${objectiveText(q)}` : '';
         return `- ${q.title}${req}`;
     }).join('\n')}\nQUEST PLAY: only when the current scene/action is actually pursuing a nontrivial active Quest, let that Quest develop at least one causal, meaningful complication or active situation before ordinary resolution. Do not inject Quest complications into unrelated scenes merely because a Quest is active. Combat is not required. Once the desired outcome is genuinely achieved, let the extractor store quest.ready; do not manufacture extra bureaucracy merely to satisfy a generated proof phrase.`, 0);
@@ -583,7 +611,7 @@ export function buildContext(state, content, opts = {}) {
             hid.length ? `HIDDEN WAYS (he has not found them; do not reveal them by yourself: only his search finds them): ${hid.join(' · ')}` : '',
             out?.path?.length > 2 ? `WAY OUT he knows: ${out.path.slice(1).map((id) => state.places[id]?.name || id).join(' › ')}` : '',
             // Patch 8: the engine's level of a Living Dungeon (src/v4/living.js)
-            ...livingLines(state),
+            ...livingLines(state, content),
         ].filter(Boolean).join('\n'), 1);
     }
     // review of Patch 7: the known Dungeons near the town he is in, only when they matter (at the Guild hall, or when

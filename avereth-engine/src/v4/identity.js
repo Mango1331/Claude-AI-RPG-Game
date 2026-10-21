@@ -86,8 +86,14 @@ export function resolveRef(s, content, ref, { scope = null, evidence = null, pro
     if (typeof evidence === 'string' && evidence.trim()) {
         const flat = (x) => normText(x).replace(/[^a-z0-9]+/g, ' ').trim();
         const q = flat(evidence);
-        if (prose && !flat(prose).includes(q)) return { kind: 'unclear', ids: [], group: members, why: `the evidence "${evidence.slice(0, 60)}" is not in the reply` };
-        const said = [...numbersIn(q)];
+        // Patch 8.1 (§9, live 21.10.2026 10:17: "the nearer one's head came up at the sound of his boots; both watched him
+        // now" joined two sentences of the reply): a quote of several clauses holds when each clause is in the reply;
+        // the scope and the count are checked as before
+        const clauses = String(evidence).split(/[;.!?…]+|\s[—–-]\s|—/).map(flat).filter((c) => c.split(' ').length >= 3);
+        const quoted = (c) => flat(prose).includes(c);
+        if (prose && !quoted(q) && !(clauses.length > 1 && clauses.every(quoted))) return { kind: 'unclear', ids: [], group: members, why: `the evidence "${evidence.slice(0, 60)}" is not in the reply` };
+        // "the nearer one", "the second one's head": a pronoun, no count (Patch 8.1)
+        const said = [...numbersIn(q.replace(/\b(?:the|this|that|each|every|any|which|another|other|first|second|third|last|next|\w+er|\w+est)\s+one(?:\s+s)?\b/g, ' '))];
         if (said.length && !said.includes(members.length)) return { kind: 'unclear', ids: [], group: members, why: `the evidence "${evidence.slice(0, 60)}" counts ${said.join(' or ')}, the group is ${members.length}` };
     }
     return { kind: 'all', ids: members };

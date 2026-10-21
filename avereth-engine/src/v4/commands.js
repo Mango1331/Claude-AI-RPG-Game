@@ -32,7 +32,7 @@ import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bid
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
 import { dungeonOf, trueDungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed, hiddenWayFinds, linkEvent, otherEnd, linksAt, blockerOf, goesFrom, firstStop } from './dungeon.js';
-import { livingOf, establishEvents, gateCheck, aheadEvents, insideOf, returnStone, sealRefusal, floorAt, gatherEvents } from './living.js';
+import { livingOf, establishEvents, gateCheck, gateOfferEvents, gateOfferId, gateCard, namesGate, aheadEvents, insideOf, returnStone, sealRefusal, floorAt, gatherEvents } from './living.js';
 import {
     REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, abandonContract, contractReady, objectiveText,
     promotion, takenByOthers, bookBoard, isHunt, trophyText, proofTerms, handoverTerms, goalText,
@@ -322,14 +322,13 @@ function livingGo(s, content, c, ctx, emit, { known, nav, envx }) {
         // he and whoever travels with him (an escort's charge) take places
         const group = 1 + (companionOf(s, envx).with || []).length;
         const g = gateCheck(s, content, dest, { group });
+        // Patch 8.1 (§4): the gate's System card whenever it turns him back or waits for its fee
+        if (g?.refuse || g?.fee) ctx.engineLines.push(...gateCard(s, content, dest, { group }));
         if (g?.refuse) return { refuse: { status: 'refused', reason: 'gate', line: `CANNOT ENTER — ${g.refuse}. He stays at the gate of ${x.name}.` } };
         if (g?.fee) {
-            const id = `offer.gate.${dest.replace(/^loc\./, '')}`;
-            if (s.offers[id]?.status !== 'open') {
-                emit({ t: 'offer.created', d: { offer: { id, seller: 'gate', at: dest, status: 'open', canon: true, gate: dest, turn: s.turn, lines: [{ id: 'l1', what: `Entry to ${x.name}`, kind: 'service', service: 'dungeon_entry', qty: 1, price_cp: g.fee }] } } });
-                emit({ t: 'decision.opened', d: { decision: { id: `dec.gate.${dest.replace(/^loc\./, '')}`, kind: 'payment', what: `the entry fee of ${x.name}`, offer: id, at: dest, turn: s.turn, price_cp: g.fee } } });
-            }
-            return { refuse: { status: 'pending', reason: 'fee', line: `ENTRY FEE — ${g.keeper} asks ${cpText(g.fee, content)} to let him into ${x.name}; he has not agreed to pay: he is still at the gate. Let the keeper name the fee; stop there.` } };
+            // the gate's one offer (created when he came to the gate, else now): never a second price
+            for (const e of gateOfferEvents(s, content, dest, g.fee)) emit(e);
+            return { refuse: { status: 'pending', reason: 'fee', line: `ENTRY FEE — ${g.keeper} asks ${cpText(g.fee, content)} to let him into ${x.name} (the gate's fixed fee, ${gateOfferId(dest)}); he has not agreed to pay: he is still at the gate. Let the keeper name this fee; stop there.` } };
         }
     }
     // a sealed level stays sealed however he words it
@@ -345,6 +344,14 @@ function livingGo(s, content, c, ctx, emit, { known, nav, envx }) {
         ctx.extra.push(...a.lines);
     }
     return null;
+}
+
+/** Patch 8.1 (§11): the System card of a Guild board's official listings (canonical data only). */
+function boardCard(s, content, rank, branch, listed) {
+    return [
+        `SYSTEM — GUILD BOARD · ${rank} · ${placeName(s, branch)}`,
+        ...listed.map((q) => `${q.title}${goalText(s, content, q, { board: true })} · ${q.rank || rank} · client: ${q.client || 'unspecified'} · reward: ${cpText(q.payout_cp, content)} · ${String(q.task || q.desired_end_state || objectiveText(q)).replace(/\s+/g, ' ').slice(0, 120)}`),
+    ];
 }
 
 const HANDLERS = {
@@ -489,6 +496,8 @@ const HANDLERS = {
     },
     activity(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT — not while the fight runs.' };
+        // Patch 8.1 (§4): looking over a Living Dungeon's gate shows its System card (the act itself goes on as ever)
+        if (envx?.c && livingOf(s, s.scene.at) && namesGate(s, s.scene.at, `${c.what || ''} ${c.quote || ''}`)) ctx.engineLines.push(...gateCard(s, content, s.scene.at));
         // Prototype C (4.3.0-c.6.6.4): looting the foes of a fight he won is no search: the engine credited their loot at
         // the fight's end (src/v4/loot.js); no check, no time, nothing more on them (live 15.10.2026: a failed SEARCH)
         const looted = envx?.c && c.kind === 'search' && LOOT_WORDS.test(`${c.what || ''} ${c.quote || ''}`) ? lootedHere(s) : [];
@@ -999,6 +1008,9 @@ const HANDLERS = {
         const fresh = !envx.c || !!gen?.listings?.length;
         const line = `READS the ${rank} board${when} — BOARD (${fresh ? 'these listings now become canonical because Alaric actually reads them; ' : ''}show exactly these, invent no other official contract; present the notices in the existing title-first readable format; ${fresh ? 'these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display' : 'these are the notices posted earlier today, the same as before, nothing new: do not call them new, fresh or just posted, and do not claim, withdraw or remove any of them during this display'}):\n${rows}\nStored objectives and any verification examples are continuity memory only.`;
         if (ahead) return { status: 'conditional', condition: 'arrive_guild_hall', line: `${line}\nIf the reply does not reach the hall, he sees none of it.` };
+        // Patch 8.1 (§11): the official listings as the engine has them, in the System card (the story may word the
+        // notices; their number, client, reward, Rank and goal are these)
+        if (envx.c) ctx.engineLines.push(...boardCard(s, content, rank, settlementOf(s, hall), listed));
         return { status: 'resolved', line };
     },
     equip(s, content, c, ctx, emit) {

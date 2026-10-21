@@ -29,6 +29,7 @@ import { rankAt, dungeonOf } from './v4/dungeon.js';
 import { syncEvents, levelSpan } from './v4/living.js';
 import { tacticalHere, areaCaught, approachedBy, sideOf, burstCaught } from './v4/scene_handles.js';
 import { lootEvents } from './v4/loot.js';
+import { groupJoiners } from './v4/group_combat.js';
 import { featureEvent } from './v4/features.js';
 
 const GROUP_RE = /\b(?:everyone|everybody|all of you|you all|the (?:group|room|crowd|table|company)|(?:to|at|toward|towards) them)\b/i;
@@ -285,7 +286,8 @@ function pcActionOf(s, content, intent, text) {
 /**
  * Who fights: only actual commitment — the target Alaric attacks, and every NPC/creature the narrator reported as
  * committing to an attack. Bystanders are never combatants because of attitude or kinship; if they join later, the
- * narrator reports their commitment and they are inserted into the fixed Turn Order.
+ * narrator reports their commitment and they are inserted into the fixed Turn Order. Patch 8.1: on the planner path a
+ * present member of an established hostile group is no bystander (src/v4/group_combat.js groupJoiners).
  */
 function combatants(s, leadId, committed = []) {
     return uniq([leadId, ...committed]).filter((id) => s.entities[id] && s.entities[id].status !== 'dead');
@@ -293,8 +295,11 @@ function combatants(s, leadId, committed = []) {
 
 /** Start a confrontation because Alaric explicitly committed to fight, but do not spend, move or attack for him. */
 function engagementTurn(s, content, dice, emit, targets = [], { c = false } = {}) {
-    const ids = uniq(targets).filter((id) => id !== 'pc' && s.scene.present.includes(id) && s.entities[id]?.status !== 'dead');
+    let ids = uniq(targets).filter((id) => id !== 'pc' && s.scene.present.includes(id) && s.entities[id]?.status !== 'dead');
     if (!ids.length) return { kind: 'note', text: 'Alaric is ready to fight, but there is no concrete opposing actor the engine can put into an encounter yet.' };
+    // Patch 8.1: the hostile group he squares up to stands with them (an open confrontation: no one is unaware of it)
+    const mates = groupJoiners(s, content, ids, { c });
+    ids = uniq([...ids, ...mates.now, ...mates.later]);
     for (const id of ids) materialise(s, content, dice, emit, id);
     const enc = initEncounter(s, content, dice, { actor: 'pc', target: ids[0], engage: true }, ids.map((id) => ({ id, side: 'hostile' })), `enc.t${s.turn}`, { c });
     Object.assign(enc.intents, s.pending_intents || {});
@@ -365,9 +370,13 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
     let enc;
     // the fight's own names: every combatant by its target label (Cellar Rat A), others as the engine names them
     const named = (id) => enc?.combatants[id]?.label || entityLabel(s, id);
+    // Patch 8.1: the members of a hostile group who enter only once the fight goes on past its opening (unaware of him)
+    let alerted = [];
     if (!s.encounter) {
         const lead = trigger.actor === 'pc' ? trigger.target : trigger.actor;
-        const ids = combatants(s, lead, committed);
+        const group = groupJoiners(s, content, combatants(s, lead, committed), { c, pcAttacks: trigger.actor === 'pc' });
+        alerted = group.later;
+        const ids = uniq([...combatants(s, lead, committed), ...group.now]);
         // legality first: an attack that is impossible from the start begins nothing and costs nothing (Core #24)
         if (trigger.actor === 'pc') {
             const trial = clone(s);
@@ -393,7 +402,8 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
             addCombatant(enc, s, content, id, 'hostile', 'attack', { c });
         }
         if (joiners.length) started = { reason: `${joiners.map(named).join(', ')} ${joiners.length > 1 ? 'join' : 'joins'} the fight`, order: enc.order.map(named).join(' > '), joined: joiners };
-        if (pcAction?.kind === 'attack' && pcAction.target && !enc.combatants[pcAction.target]) {
+        const fresh = pcAction?.kind === 'attack' && pcAction.target && !enc.combatants[pcAction.target] ? pcAction.target : null;
+        if (fresh) {
             materialise(s, content, dice, emit, pcAction.target);
             addCombatant(enc, s, content, pcAction.target, 'hostile', null, { c });
         }
@@ -410,8 +420,27 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
             const skill = content.skills.get(pcAction.skill)?.name || 'the attack';
             started = { ...(started || {}), reason: `${caught.map(named).join(', ')} ${caught.length > 1 ? 'are' : 'is'} caught in ${skill} and ${caught.length > 1 ? 'join' : 'joins'} the fight`, order: enc.order.map(named).join(' > '), joined: [...(started?.joined || []), ...caught] };
         }
+        // Patch 8.1: one who enters the fight now (he attacks one outside it, an attacker joins, his area attack catches
+        // one) brings in the rest of its hostile group, each once; a group already in the fight made its choice when it
+        // entered (two wolves rushed him, two hung back: Patch 5), striking one of the fighters drags no one in
+        const leads = [...joiners, ...(fresh ? [fresh] : []), ...caught].filter((id) => enc.combatants[id]);
+        const group = groupJoiners(s, content, leads, { c, pcAttacks: !!fresh || caught.length > 0, exclude: Object.keys(enc.combatants) });
+        alerted = group.later;
+        for (const id of group.now) {
+            materialise(s, content, dice, emit, id);
+            addCombatant(enc, s, content, id, 'hostile', null, { c });
+        }
+        if (group.now.length) started = { ...(started || {}), reason: `${[started?.reason, `${group.now.map(named).join(', ')} ${group.now.length > 1 ? 'join' : 'joins'} the fight with ${group.now.length > 1 ? 'their' : 'its'} group`].filter(Boolean).join('; ')}`, order: enc.order.map(named).join(' > '), joined: [...(started?.joined || []), ...group.now] };
     }
     const res = runCombat({ enc, content, dice, state: s, c }, pcAction);
+    // Patch 8.1: those of the group who were unaware of him enter once the fight goes on past its opening (never one
+    // that ended it); they take their place in the fixed Turn order from here, no Turn is replayed for them
+    const late = res.illegal || res.stopped === 'terminal' ? [] : alerted.filter((id) => !enc.combatants[id] && s.entities[id]?.status !== 'dead');
+    for (const id of late) {
+        materialise(s, content, dice, emit, id);
+        addCombatant(enc, s, content, id, 'hostile', null, { c });
+    }
+    if (late.length) started = { ...(started || {}), reason: `${[started?.reason, `${late.map(named).join(', ')} ${late.length > 1 ? 'join' : 'joins'} the fight, alerted by it`].filter(Boolean).join('; ')}`, order: enc.order.map(named).join(' > '), joined: [...(started?.joined || []), ...late] };
     // Hotfix c.6.6.18: the offensive item his resolved attack used is used up, once; a refused one stays his
     const thrown = res.illegal ? null : res.records.find((r) => r.actor === 'pc' && r.item);
     if (thrown) usedUp(s, content, emit, thrown);
@@ -716,7 +745,10 @@ export function openCommitted(s, content, dice, emit, { hold = false, c = false 
     let enc;
     let ids;
     if (!s.encounter) {
-        ids = combatants(s, committed[0], committed);
+        // Patch 8.1: an attacker's hostile group attacks with it (those unaware of him are none of them: he is not hidden
+        // from one that attacks him, and its pack hears it)
+        const group = groupJoiners(s, content, committed, { c });
+        ids = uniq([...combatants(s, committed[0], committed), ...group.now, ...group.later]);
         for (const id of ids) materialise(s, content, dice, emit, id);
         enc = initEncounter(s, content, dice, { actor: committed[0], target: 'pc' }, ids.map((id) => ({ id, side: 'hostile' })), `enc.t${s.turn}r`, { c });
         // Prototype C (4.3.0-c.4): every attacker the reply committed attacks on its own turn, its hostility the intent
@@ -735,6 +767,8 @@ export function openCommitted(s, content, dice, emit, { hold = false, c = false 
         enc = clone(s.encounter);
         ids = committed.filter((id) => !enc.combatants[id]);
         if (!ids.length) return null;
+        const group = groupJoiners(s, content, ids, { c, exclude: Object.keys(enc.combatants) });
+        ids = uniq([...ids, ...group.now, ...group.later]);
         for (const id of ids) {
             materialise(s, content, dice, emit, id);
             addCombatant(enc, s, content, id, 'hostile', 'attack', { c });

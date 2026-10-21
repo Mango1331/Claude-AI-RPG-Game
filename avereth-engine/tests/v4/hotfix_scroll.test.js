@@ -91,7 +91,11 @@ test('hotfix scroll 1-5: the scroll bought under c.6.6.17 is recognised; thrown 
     assert.deepEqual(hit.strikes.map((s) => [s.final, s.hp_before, s.hp_after]), [[28, 82, 54]]);
     for (const s of hit.strikes) assert.ok(s.hp_after < s.hp_before && s.final > 0, `${s.target} took damage`);
     const enc = r.events.find((e) => e.t === 'encounter.started').d.encounter;
-    assert.deepEqual(Object.keys(enc.combatants).filter((id) => id !== 'pc').sort(), [...struck].sort(), 'only those struck are in the fight');
+    // Patch 8.1: the burst strikes beetle 1 alone; the rest of its swarm (one group, present, aware) enters the fight with
+    // it, unstruck (src/v4/group_combat.js)
+    const swarm = before.scene.present.filter((id) => before.entities[id]?.group === before.entities[BEETLE(1)].group && before.entities[id].status !== 'dead');
+    assert.deepEqual(Object.keys(enc.combatants).filter((id) => id !== 'pc').sort(), [...swarm].sort(), 'the struck one and its swarm are in the fight');
+    assert.ok(swarm.filter((id) => !struck.includes(id)).every((id) => enc.combatants[id].current.hp === enc.combatants[id].fixed.max_hp || enc.combatants[id].current.hp === before.entities[id].profile.hp), 'the others are not struck');
     // the item's own power (Patch 7.1: 32 for a common scorchburst scroll), nothing of Alaric's INT or MATK, nothing of the foes
     assert.equal(hit.raw, 32);
     assert.match(hit.raw_text, /the item's own power/);
@@ -128,7 +132,11 @@ test('hotfix scroll 2b: in the running first fight (after #32) the scroll is his
     await say(g, TEXT, USE);
     const hit = thrown(g);
     assert.deepEqual(hit.strikes.map((s) => s.target), [H, BEETLE(1), BEETLE(2)]);
-    assert.deepEqual(outcomeOf(g).started.joined, [BEETLE(1), BEETLE(2)], 'those it catches outside the fight join it');
+    const joined = outcomeOf(g).started.joined;
+    assert.deepEqual(joined.slice(0, 2), [BEETLE(1), BEETLE(2)], 'those it catches outside the fight join it');
+    // Patch 8.1: and with them the rest of their swarm, unstruck, each once
+    assert.equal(new Set(joined).size, joined.length);
+    assert.ok(joined.slice(2).every((id) => !hit.strikes.some((k) => k.target === id)));
     assert.equal(lastUser(g).events.filter((e) => e.t === 'object.consumed').length, 1);
     // thrown at one beyond its reach in the fight: refused (nothing spent), the scroll stays his
     const h = live(33);
@@ -216,6 +224,8 @@ test('hotfix scroll 3b: a burst that fells what it strikes ends the fight throug
     // the ten at SHORT it will strike, packed at the vein and badly hurt already (a scene the live run did not have)
     knot(g, [2, 3, 4, 6, 7, 8, 9, 10, 11, 12]);
     inject(g, [2, 3, 4, 6, 7, 8, 9, 10, 11, 12].map((n) => ({ t: 'entity.updated', d: { id: BEETLE(n), set: { profile: { ...g.state().entities[BEETLE(n)].profile, hp: 5 } } } })));
+    // Patch 8.1: beetle 1 of the same swarm would enter the fight unstruck; here it has wandered off (src/v4/group_combat.js)
+    inject(g, [{ t: 'scene.left', d: { id: BEETLE(1) } }]);
     const xp = g.state().entities.pc.sheet.xp;
     await say(g, TEXT, USE);
     const r = lastUser(g);

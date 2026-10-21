@@ -367,3 +367,16 @@ Erstes Fachmodul nach der Strangler-Regel: `src/v4/living.js` besitzt die lebend
 
 Details: `docs/PATCH8_LIVING_DUNGEONS.md`.
 
+## 15. Gate und Gruppenkampf (Patch 8.1, 4.3.0-c.6.6.26)
+
+**Gate.** `living.js` besitzt das Gate vollständig:
+- `gateState` ist die eine Sicht auf Zugang, Gebühr, Waiver, Pass und Belegung. `gateCheck`, `gateCard` und die GATE-Kontextzeile lesen sie.
+- `gateOfferEvents` erzeugt bzw. schließt das kanonische Angebot.
+- `world.js offer` verwirft Story-Angebote über Eintritt (`entryLine`).
+
+**Gruppenkampf.** `src/v4/group_combat.js` (`groupJoiners`) ist die einzige Stelle, die entscheidet, welche Gruppenmitglieder einem Encounter beitreten. Sie gilt nur auf Pfad C. Aufrufer in `engine.js` sind `combatTurn` (Start und Beitritt), `engagementTurn` und `openCommitted`. Das Modul entscheidet nicht, wie gekämpft wird; das bleibt `combat.js npcDecide`.
+
+**Kampfwahrheit im Prompt.** `context.js stateNow` gibt nach jedem Kampfschritt auf Pfad C den bindenden Endzustand. `catalog.js` gibt dem Extractor die Toten der letzten Züge (RECENT DEAD).
+
+Details: `docs/PATCH8_1_GATE_GROUP_COMBAT.md`.
+

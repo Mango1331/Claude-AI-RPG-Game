@@ -1816,3 +1816,33 @@ Vollständige Beschreibung, Architekturentscheidungen, die drei Review-Runden un
   - Treppe → Level 2;
   - neue Anchors Ghul, Schleim, Goblin-Schamane.
 - **Tests:** `tests/v4/patch8.test.js` (16), Fixture `tests/v4/live_1021c.json`.
+
+### Patch 8.1 (4.3.0-c.6.6.26): Dungeon-Gate, Gruppenkampf, Spielintegration
+
+Livetest 21.10.2026 10:17 (`tests/v4/live_1021d.json`). Vollständige Beschreibung, Entscheidungen, drei Reviews und Grenzen: `docs/PATCH8_1_GATE_GROUP_COMBAT.md`.
+
+- **Gate.**
+  - Das kanonische Gebührenangebot `offer.gate.*` entsteht idempotent beim Ankommen am Gate.
+  - Ein Story-Angebot über Eintritt wird verworfen (`gate_fee`). Andere Waren des Wächters bleiben.
+  - Zahlen, Zahlen-und-Eintreten, freie Gates und gültige Pässe verlangen nie einen zweiten Preis.
+  - Ein Gildenvertrag für Arbeit in diesem Dungeon (`q.dungeon`) erlässt die Gebühr, wo das Gate es erlaubt (`gate.contract_free`).
+- **Anzeige.**
+  - Die System-Karte „SYSTEM — DUNGEON GATE“ zeigt Belegung, Kapazität, Zyklus mit Reset in d/h/m, bekannte Ebenen, Zugang und Gebühr.
+  - Lore-Sätze erklären Gate-Displays. Glimmerdeep hat Beuterechte.
+- **Gruppenkampf (`src/v4/group_combat.js`).**
+  - Anwesende Mitglieder einer feindlichen Gruppe kämpfen im selben Encounter.
+  - Ein Rudel verteidigt sein Mitglied.
+  - `threat: false`, Fliehende, Haltende und Aufgebende bleiben draußen.
+  - Unbemerkte Mitglieder kommen erst nach der Eröffnung.
+- **Kampfwahrheit.**
+  - Die Ebenenzeile zählt lebend/tot.
+  - Der Kampfschritt endet mit „STATE NOW — BINDING“.
+  - Der Extractor-Katalog nennt RECENT DEAD.
+  - Eine leere Extractor-Antwort bekommt eine kurze Nachforderung ohne Echo.
+  - Awareness-Evidenz wird teilsatzweise geprüft.
+- **Board.**
+  - Ein Dungeon-Cull wird auf die Mindestpopulation eines Zyklus begrenzt. Hält der Dungeon die Art nicht, wird das Listing verworfen.
+  - `q.dungeon` und `q.floor` werden beim Buchen gesetzt.
+  - Die System-Karte „SYSTEM — GUILD BOARD“ zeigt die Listings.
+  - „taken/claimed/gone“ über einen Vertrag ist Engine-Zustand.
+- **Tests:** `tests/v4/patch81.test.js` (29). Angepasst: `v4_firewall`, `hotfix_scroll`, `patch71`, `patch72_items`.

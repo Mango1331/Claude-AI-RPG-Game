@@ -305,6 +305,8 @@ export const clausesOf = (text) => String(text || '').split(/(?<=[.;])\s+/).filt
 export function claimedStatus(x) {
     if (/\b(?:complete|completed|turned\s+in|handed\s+in|closed|finished|paid\s+out)\b/i.test(x)) return 'completed';
     if (/\bfailed\b/i.test(x)) return 'failed';
+    // Patch 8.1 (§12): someone else took the notice
+    if (/\b(?:taken|claimed|snapped\s+up|gone)\b/i.test(x)) return 'taken_by_other';
     if (/\b(?:registered|logged|accepted|active|stamped)\b/i.test(x)) return 'active';
     return null;
 }

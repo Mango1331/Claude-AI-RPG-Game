@@ -160,7 +160,11 @@ export function extractorRequest(vocab, { catalog, actions, player = null, expec
     const system = `${extractorSystem(vocab)}\n\n${EXTRACT_PLAIN_FORMAT}`;
     const user = extractorUser({ catalog, actions, player, expectedKeys, vocab, reply });
     const messages = [{ role: 'system', content: system }, { role: 'user', content: user }];
-    if (previous !== null && errors) {
+    // Patch 8.1 (§9, live 21.10.2026 10:17: twice all 2,500 tokens went to deliberation and the answer was empty): an
+    // empty answer is not repeated back; the one repair asks for the report at once, short, without deliberating
+    if (previous !== null && errors && !String(previous).trim()) {
+        messages.push({ role: 'user', content: 'Your previous answer was empty: it ran out of room before the JSON. Answer now with the JSON object alone, at once and short: report only what the reply plainly establishes, leave out anything you are unsure of (an empty deltas list is a valid answer). Do not deliberate.' });
+    } else if (previous !== null && errors) {
         messages.push({ role: 'assistant', content: String(previous) }, { role: 'user', content: `Your answer was not valid: ${errors.slice(0, 8).join('; ')}. Answer again with only the corrected JSON object, nothing else.` });
     }
     return { system, user, messages };

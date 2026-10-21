@@ -189,7 +189,9 @@ test('P0/S2 offline: the firewall refuses 6 of the 7 forbidden deltas of variant
     const neither = s.refused.filter((x) => x.gold === 'neither');
     // since 4.0.x (integration 30.09.): an object the engine books (the Guild's register entry, a contract half) is not
     // created again by the story wherever it lies, and a fact that closes or settles a known Guild contract is engine-owned
-    assert.deepEqual(neither.filter((x) => x.rule !== 'guild_canon').map((x) => `${x.id}:${x.rule}`), ['v8_04:engine_booked', 'v10_03:engine_owned_fact', 'v10_03:engine_owned_fact', 'v10_05:engine_booked', 'v11_03:engine_booked', 'v11_11:engine_owned_fact']);
+    // since Patch 8.1 (§12): whether a known contract is still to be had is the board's ("quest.wolf_sightings taken_by
+    // J. Vess", "Miller's Run Escort: second slot taken"), as in the live run of 21.10.2026 10:17
+    assert.deepEqual(neither.filter((x) => x.rule !== 'guild_canon').map((x) => `${x.id}:${x.rule}`), ['v8_04:engine_booked', 'v9_04:engine_owned_fact', 'v10_03:engine_owned_fact', 'v10_03:engine_owned_fact', 'v10_05:engine_booked', 'v11_03:engine_booked', 'v11_11:engine_owned_fact', 'v12_04:engine_owned_fact']);
     // since the live run of 28.09.: the Guild's mechanics as facts (fees, starting rank, contract rights, payouts), among
     // them wrong ones (v9_02 "one silver", v12_02 the "desk clerk waiver", v11_11 "nothing owed by the Guild")
     // since 4.0.4: the price of a Guild item (the plate's replacement cost, v8_03, v9_03) is Guild money too

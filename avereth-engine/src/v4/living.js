@@ -5,7 +5,8 @@
 // Canonical state (one owner per fact, never two copies of it):
 //   places[root].dungeon   the classification (theme, Rank, level Ranks, control): dungeon.js, unchanged
 //   dungeons[root]         the living structure, fixed when the Dungeon is first established in play (dungeon.established):
-//     gate {names, text, requires, fee_cp, keeper}, capacity, reset_min, seed, parties [the companies that delve it]
+//     gate {names, text, requires, fee_cp, keeper, contract_free}, capacity, reset_min, seed, parties [the companies
+//                          that delve it]; contract_free (Patch 8.1): an active Guild contract for work in it waives the fee
 //     floors {n: {rank, spans {minion, guard, boss}: [lo, hi], slots [spec], manifest, sealed}}  per level, fixed
 //     cycle, cycle_start   the reset cycle (game minutes, never real time)
 //     run {floors {n: {parts, pace, slots [instance], cleared}}, resources {node: left}}   the current cycle
@@ -23,7 +24,7 @@
 // dice stream, so nothing else of a campaign changes); everything drawn is stored in an event, a replay or a swipe
 // re-applies it, and nothing is rolled again.
 import { clone, hash32, normText, slug } from '../util.js';
-import { trueDungeonOf, dungeonOf, rankText } from './dungeon.js';
+import { trueDungeonOf, dungeonOf, rankText, guildRecord } from './dungeon.js';
 import { placeName, settlementOf, realmOf } from './domain.js';
 
 const DAY = 1440;
@@ -181,7 +182,7 @@ export function establishEvents(s, content, root) {
     const requires = spec.gate?.requires !== undefined ? spec.gate.requires : /\b(?:guild|registered)\b/i.test(c.control || '') ? 'guild' : null;
     const dungeon = {
         id: root, name: p.name, since: { turn: s.turn, minute: s.clock.minute }, seed: key,
-        gate: { names: spec.gate?.names || [], text: spec.gate?.text || `the way into ${p.name}`, requires, fee_cp: spec.gate?.fee_cp || 0, keeper: spec.gate?.keeper || null },
+        gate: { names: spec.gate?.names || [], text: spec.gate?.text || `the way into ${p.name}`, requires, fee_cp: spec.gate?.fee_cp || 0, keeper: spec.gate?.keeper || null, ...(spec.gate?.contract_free ? { contract_free: true } : {}) },
         capacity: spec.capacity || L.capacity_by_rank[rootRank.min] || 8,
         reset_min: (spec.reset_days || L.reset_days_by_rank[rootRank.min] || 3) * DAY,
         floors, parties: partiesFor(content, root, levels.length, spec.parties ?? L.parties, key),
@@ -372,18 +373,88 @@ export function occupancy(s, x) {
 }
 
 /**
+ * Patch 8.1 (§3): the active Guild contract whose work the gate lets in without its fee, or null. Only where the gate
+ * waives it for authorized work (gate.contract_free, its content entry for a Dungeon established before 8.1), and only
+ * for a contract booked for this very Dungeon (q.dungeon, a level clear's own) and its kind of work (a cull or a
+ * clear): derived from state, never a stored free pass; another Dungeon's contract, or one done or given up, waives
+ * nothing. No text of the contract is read here.
+ */
+export function waiverOf(s, content, root) {
+    const x = livingOf(s, root);
+    if (!x || !(x.gate.contract_free ?? content?.dungeons?.get(root)?.living?.gate?.contract_free)) return null;
+    return Object.values(s.quests || {}).find((q) => q.kind === 'guild_contract' && q.status === 'active' && (q.dungeon || q.clear?.dungeon) === root
+        && (!!q.clear || (q.objectives || []).some((o) => o.verb === 'DEFEAT'))) || null;
+}
+
+/**
+ * The gate as it stands for him now (the System panel and gateCheck read the same): refused and why, the fee due, or
+ * waived by a contract, or his paid pass; how many are inside.
+ * @returns {null|{refuse?: string, full?: boolean, fee?: number, keeper: string, waived?: object, pass?: object, occupancy: object}}
+ */
+export function gateState(s, content, root, { group = 1 } = {}) {
+    const x = livingOf(s, root);
+    if (!x) return null;
+    const keeper = x.gate.keeper || 'the gate-keeper';
+    const o = occupancy(s, x);
+    if (x.gate.requires === 'guild' && !s.guild?.membership) return { refuse: `${x.gate.keeper || 'the gate'} lets only registered Guild members into ${x.name}; he is not registered`, keeper, occupancy: o };
+    if (o.parties + group > x.capacity) return { refuse: `${x.name} is full: ${o.parties} adventurers are inside and it holds at most ${x.capacity} at once; he has to wait until some come out`, full: true, keeper, occupancy: o };
+    if (!(x.gate.fee_cp > 0)) return { keeper, occupancy: o };
+    if (x.pass) return { keeper, pass: x.pass, occupancy: o };
+    const waived = waiverOf(s, content, root);
+    if (waived) return { keeper, waived, occupancy: o };
+    return { fee: x.gate.fee_cp, keeper, occupancy: o };
+}
+
+/**
  * Whether Alaric may pass the gate into the Dungeon now (from outside it, or from its gate into a room): its access
- * rule, its fee (paid only with his consent: an offer he accepts) and how many are inside. Inside already: nothing.
+ * rule, its fee (paid only with his consent: an offer he accepts; waived for a contract's work) and how many are inside.
+ * Inside already: nothing.
  * @returns {null|{refuse: string}|{fee: number, keeper: string}}
  */
 export function gateCheck(s, content, root, { group = 1 } = {}) {
+    if (!livingOf(s, root) || insideOf(s, root)) return null;
+    const g = gateState(s, content, root, { group });
+    if (g.refuse) return { refuse: g.refuse };
+    return g.fee ? { fee: g.fee, keeper: g.keeper } : null;
+}
+
+/** Patch 8.1: the canonical offer of a gate's fee (one id per Dungeon; one decision for it). */
+export const gateOfferId = (root) => `offer.gate.${root.replace(/^loc\./, '')}`;
+
+/**
+ * Patch 8.1 (§1, live 21.10.2026 10:17: the watchman's own "entry, 10 cp" was paid, no pass followed, and the gate asked
+ * the same 10 cp again): the gate's own fee offer, created once when he stands at a gate whose fee is due (not first
+ * when he tries to enter), so the planner, the catalog and the panel all know the one price. Idempotent: an open one
+ * stays. One whose fee is no longer due (a contract waives it, a pass) is withdrawn.
+ */
+export function gateOfferEvents(s, content, root, fee = null) {
     const x = livingOf(s, root);
-    if (!x || insideOf(s, root)) return null;
-    if (x.gate.requires === 'guild' && !s.guild?.membership) return { refuse: `${x.gate.keeper || 'the gate'} lets only registered Guild members into ${x.name}; he is not registered` };
-    const o = occupancy(s, x);
-    if (o.parties + group > x.capacity) return { refuse: `${x.name} is full: ${o.parties} adventurers are inside and it holds at most ${x.capacity} at once; he has to wait until some come out` };
-    if (x.gate.fee_cp > 0 && !x.pass) return { fee: x.gate.fee_cp, keeper: x.gate.keeper || 'the gate-keeper' };
-    return null;
+    if (!x) return [];
+    const id = gateOfferId(root);
+    const open = s.offers?.[id]?.status === 'open';
+    const due = fee ?? (insideOf(s, root) ? null : gateCheck(s, content, root)?.fee ?? null);
+    if (due && !open) return [
+        { t: 'offer.created', d: { offer: { id, seller: 'gate', at: root, status: 'open', canon: true, gate: root, turn: s.turn, lines: [{ id: 'l1', what: `Entry to ${x.name}`, kind: 'service', service: 'dungeon_entry', qty: 1, price_cp: due }] } } },
+        { t: 'decision.opened', d: { decision: { id: `dec.gate.${root.replace(/^loc\./, '')}`, kind: 'payment', what: `the entry fee of ${x.name}`, offer: id, at: root, turn: s.turn, price_cp: due } } },
+    ];
+    if (!due && open && !insideOf(s, root)) return [
+        { t: 'offer.closed', d: { id, status: 'expired' } },
+        ...(s.decisions || []).filter((d) => d.offer === id).map((d) => ({ t: 'decision.closed', d: { id: d.id, status: 'expired' } })),
+    ];
+    return [];
+}
+
+// what an offer of entry to a Dungeon is called: entry, admission, a toll, the way in (never a torch or a guide's lamp)
+const ENTRY = /\b(?:entry|enter(?:ing)?|entrance|admission|admit(?:tance)?|toll|fee|pass(?:age)?|way in|let (?:him|you|alaric) (?:in|through|pass))\b/;
+/**
+ * Patch 8.1 (§1): whether an offer line the story made at a Living Dungeon's gate sells entry to it, which only the
+ * gate's own fee (the engine's) does. A guard may still sell a torch, a map or any other thing of his own.
+ */
+export function entryLine(s, root, line) {
+    const x = livingOf(s, root);
+    if (!x || line?.kind !== 'service') return false;
+    const t = normText(line.what || '');
+    return ENTRY.test(t) || t.includes(normText(x.name)) || (x.gate.names || []).some((g) => t.includes(normText(g)));
 }
 
 /**
@@ -443,6 +514,8 @@ export function syncEvents(s, content, emit, { touch = [] } = {}) {
         const pass = s.dungeons[x.id].pass;
         if (pass && insideOf(s, x.id) && !pass.inside) emit({ t: 'dungeon.pass', d: { id: x.id, pass: { ...pass, inside: true } } });
         else if (pass?.inside && !insideOf(s, x.id)) emit({ t: 'dungeon.pass', d: { id: x.id, pass: null } });
+        // Patch 8.1: at its gate, the gate's own fee is on offer as soon as it is due (and withdrawn once it is not)
+        if (s.scene.at === x.id && !s.encounter) for (const e of gateOfferEvents(s, content, x.id)) emit(e);
     }
 }
 
@@ -565,6 +638,28 @@ function withdrawnEvents(s, root, floor) {
     return out;
 }
 
+/**
+ * Patch 8.1 (§10): how many of what a contract counts one regular cycle of a Dungeon holds at the least (the smallest
+ * count of each matching encounter, over its levels or the levels named), from its fixed structure; one not
+ * established yet is read from what establishing it will fix (the same deterministic draw), nothing is emitted and
+ * nothing hidden is told. counts(slotSpec) says which encounters are of the kind. Null for no Living Dungeon.
+ */
+export function cullPopulation(s, content, root, counts, { levels = null } = {}) {
+    const x = livingOf(s, root) || establishEvents(s, content, root)[0]?.d.dungeon || null;
+    if (!x) return null;
+    let n = 0;
+    for (const [k, f] of Object.entries(x.floors)) {
+        if (levels?.length && !levels.includes(Number(k))) continue;
+        for (const sl of f.slots) if (counts(sl)) n += sl.role === 'minion' ? Math.max(1, (sl.count || [1, 2])[0]) : 1;
+    }
+    return n;
+}
+/** The name of the encounter a Living Dungeon's creature belongs to (its slot's spec), or null. */
+export function slotNameOf(s, e) {
+    const sl = e?.slot && s.dungeons?.[e.slot.dungeon]?.floors?.[e.slot.floor]?.slots?.find((y) => y.id === e.slot.id);
+    return sl?.name || null;
+}
+
 // ------------------------------------------------------------------------------------------------ Guild contracts
 /** The level of a Dungeon a contract is to clear: its where names the level ("Old Crown Catacombs, level 1"). */
 export function clearTarget(s, q) {
@@ -633,12 +728,24 @@ export function returnStone(s, content, o) {
 
 // ------------------------------------------------------------------------------------------------ views
 const roleText = (sl) => (sl.role === 'boss' ? 'boss' : sl.role === 'guard' ? 'guardian' : 'foes');
+/**
+ * Patch 8.1 (§8, live 21.10.2026 10:17: "glass beetle — met, still standing" with one of the two dead): how a met
+ * encounter stands, counted from its own individuals: how many of them are up, and how the others went down.
+ */
 function slotState(s, sl) {
     if (sl.taken) return 'dealt with by another company';
     if (!sl.entities.length) return 'not met';
-    if (resolved(s, sl)) return 'defeated';
-    return 'met, still standing';
+    const n = sl.entities.length;
+    const up = sl.entities.filter((id) => !DONE(s, id)).length;
+    const dead = sl.entities.filter((id) => s.entities[id]?.status === 'dead').length;
+    const fled = sl.entities.filter((id) => s.entities[id]?.status !== 'dead' && s.entities[id]?.fled).length;
+    const gave = n - up - dead - fled;
+    const down = [dead ? `${dead} dead` : '', fled ? `${fled} fled` : '', gave > 0 ? `${gave} surrendered` : ''].filter(Boolean).join(', ');
+    if (n === 1) return up ? 'met, alive' : `defeated (${down})`;
+    return up ? `${up} of ${n} alive${down ? `; ${down}` : ''}` : `all ${n} defeated (${down})`;
 }
+/** A slot's encounter by its name, or its kind and how many of them (met: the individuals the engine made). */
+const slotName = (sl) => (sl.name ? titled(sl.name) : `${sl.entities.length || sl.count} ${sl.species}`);
 /** What he knows of a level (the HUD, the planner): met encounters, cleared or not; nothing he has not seen. */
 export function floorText(s, x, n, { all = false } = {}) {
     const f = x.run.floors[n];
@@ -646,10 +753,25 @@ export function floorText(s, x, n, { all = false } = {}) {
     const seen = f.slots.filter((sl) => all || sl.entities.length || f.cleared);
     const head = f.slots.find((sl) => sl.role !== 'minion');
     const bits = [f.cleared ? `CLEARED this cycle${f.cleared.credit === 'pc' ? ' (by him)' : ' (by others)'}` : `${f.slots.filter((sl) => resolved(s, sl) && (all || sl.entities.length)).length} of ${all ? f.slots.length : '?'} threats dealt with`];
-    if (all) bits.push(...f.slots.map((sl) => `${sl.name ? titled(sl.name) : `${sl.count} ${sl.species}`} (${roleText(sl)}): ${slotState(s, sl)}`));
-    else if (seen.length) bits.push(...seen.map((sl) => `${sl.name ? titled(sl.name) : sl.species} — ${slotState(s, sl)}`));
+    if (all) bits.push(...f.slots.map((sl) => `${slotName(sl)} (${roleText(sl)}): ${slotState(s, sl)}`));
+    else if (seen.length) bits.push(...seen.map((sl) => `${slotName(sl)} — ${slotState(s, sl)}`));
     if (head && (all || head.entities.length) && !f.cleared) bits.push(`its ${roleText(head)} ${resolved(s, head) ? 'is down' : 'still stands'}`);
     return `level ${n} (${rankText(x.floors[n].rank)}): ${bits.join('; ')}`;
+}
+
+/**
+ * Patch 8.1 (§5): when the Dungeon renews, to the minute: "2d 4h", "59m"; "renewal pending" once it is due but held (a
+ * fight, or the level he stands on), never a negative time.
+ */
+export function renewText(s, x) {
+    const left = x.cycle_start + x.reset_min - s.clock.minute;
+    if (left <= 0) return 'renewal pending';
+    const d = Math.floor(left / DAY);
+    const h = Math.floor((left % DAY) / 60);
+    const m = left % 60;
+    const time = d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m`;
+    const held = (x.deferred || []).length ? `; level ${x.deferred.join(', ')} renewal pending (once he has left it)` : '';
+    return `renews in ${time}${held}`;
 }
 
 /** The HUD rows of the Dungeon he is in or at. */
@@ -662,21 +784,54 @@ export function hudRows(s) {
     const levels = Object.keys(x.run.floors).map(Number).filter((n) => n === mine || x.run.floors[n].cleared || x.run.floors[n].slots.some((sl) => sl.entities.length));
     rows.push(['Levels', levels.map((n) => floorText(s, x, n)).join(' · ') || 'nothing met yet']);
     const o = occupancy(s, x);
-    const left = Math.max(0, Math.ceil((x.cycle_start + x.reset_min - s.clock.minute) / DAY));
-    rows.push(['Dungeon cycle', `cycle ${x.cycle} (renews in ${left} day${left === 1 ? '' : 's'}) · inside: ${o.total}/${x.capacity}`]);
+    rows.push(['Dungeon cycle', `cycle ${x.cycle} (${renewText(s, x)}) · inside: ${o.total}/${x.capacity}`]);
     return rows;
 }
 
+/**
+ * Patch 8.1 (§4): the System card of a Living Dungeon's gate, from the engine's state only: status, how many are inside
+ * of how many, his party, when it renews, the Ranks of the levels he knows (the Guild's record or his own visit, never a
+ * hidden one), who may enter, the fee (due, waived, paid). "ENTER DUNGEON?" is information: entering is his GO.
+ * Shown on arrival at the gate, on looking at it, and when entry or its fee is pending or refused, never every message.
+ */
+export function gateCard(s, content, root, { group = 1 } = {}) {
+    const x = livingOf(s, root);
+    if (!x) return [];
+    const p = s.places[root];
+    const c = p.dungeon || {};
+    const g = gateState(s, content, root, { group });
+    const record = guildRecord(c, p.by);
+    const been = new Set(Object.values(s.places).filter((q) => q.visited && Number.isInteger(q.level) && trueDungeonOf(s, q.id) === root).map((q) => q.level));
+    const levels = Object.keys(x.floors).map(Number).filter((n) => !(c.hidden || []).includes(`level:${n}`) && (record.includes(`level:${n}`) || been.has(n)));
+    const ranks = levels.map((n) => `level ${n}: Rank ${rankText(c.levels?.[n] || x.floors[n].rank)}`);
+    const fee = !(x.gate.fee_cp > 0) ? 'none' : g.pass ? `${x.gate.fee_cp} cp, paid (valid until he comes out)` : g.waived ? `Waived — authorized contract ("${g.waived.title}")` : `${x.gate.fee_cp} cp (the gate's own offer; paid only when he agrees)`;
+    return [
+        `SYSTEM — DUNGEON GATE · ${x.name}`,
+        `Status: ${g.full ? 'FULL' : g.refuse ? 'CLOSED to him' : 'OPEN'} · Inside: ${g.occupancy.total}/${x.capacity} · His party: ${group} · Cycle ${x.cycle}: ${renewText(s, x)}`,
+        `Known levels: ${ranks.join(' · ') || 'none on record'}`,
+        `Access: ${x.gate.requires === 'guild' ? 'registered Guild members' : 'anyone'} · Fee: ${fee}`,
+        g.refuse ? `ENTRY REFUSED — ${g.refuse}` : 'ENTER DUNGEON? — he goes in when he says so (this card books nothing)',
+    ];
+}
+/** Patch 8.1: does an act at a gate look at the gate itself (its entrance, its display), by its names? */
+export function namesGate(s, root, text) {
+    const x = livingOf(s, root);
+    const t = normText(text || '');
+    return !!x && (/\b(?:gate|entrance|entry|way in|display|sigil|runes?)\b/.test(t) || (x.gate.names || []).some((g) => t.includes(normText(g))));
+}
+
 /** The narrator's lines for the Dungeon he is in (state only: the level, its threats, a clear to show, companies). */
-export function contextLines(s) {
+export function contextLines(s, content = null) {
     const root = trueDungeonOf(s, s.scene.at);
     const x = livingOf(s, root);
     if (!x) return [];
     const mine = floorAt(s, s.scene.at);
     const L = [];
     if (mine === 0) {
-        const o = occupancy(s, x);
-        L.push(`GATE — ${titled(x.gate.text)}${x.gate.keeper ? `, kept by ${x.gate.keeper}` : ''}: ${x.gate.requires === 'guild' ? 'registered Guild members only; ' : ''}${x.gate.fee_cp ? `entry fee ${x.gate.fee_cp} cp (only when he agrees to pay); ` : ''}at most ${x.capacity} inside at once, ${o.parties} inside now.`);
+        const g = gateState(s, content, root);
+        // Patch 8.1: the fee is the gate's own, fixed by the engine (one offer); nobody asks another or a second time
+        const fee = !x.gate.fee_cp ? '' : g.pass ? 'his entry fee is paid; ' : g.waived ? `no fee for him: his Guild contract "${g.waived.title}" is work the gate lets in; ` : `entry fee ${x.gate.fee_cp} cp, the engine's one fixed price (only when he agrees; nobody asks it twice or sells entry); `;
+        L.push(`GATE — ${titled(x.gate.text)}${x.gate.keeper ? `, kept by ${x.gate.keeper}` : ''}: ${x.gate.requires === 'guild' ? 'registered Guild members only; ' : ''}${fee}at most ${x.capacity} inside at once, ${g.occupancy.parties} inside now.`);
     }
     const here = companiesOn(s, x, mine).filter((p) => p.npc);
     if (here.length) L.push(`OTHER ADVENTURERS ${mine === 0 ? 'at the gate' : `on level ${mine}`} now (the engine's; if the story brings them in, they are these people): ${here.map((p) => `${p.name}, ${p.size} strong, led by ${p.leader} (${p.npc}; ${p.affiliation})`).join(' · ')}.`);

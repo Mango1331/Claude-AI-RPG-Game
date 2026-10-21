@@ -1,7 +1,7 @@
 # Avereth Engine — Verbindlicher Design-Kanon und Leitplanken
 
 **Dokumenttyp:** langfristige Spiel- und Architekturentscheidungen  
-**Stand:** 21. Oktober 2026 · Fassung 1  
+**Stand:** 21. Oktober 2026 · Fassung 2 (Abgrenzung zum offenen Ideenarchiv)  
 **Pflege:** nur bei neuen verbindlichen Designentscheidungen  
 **Status-Legende:** **[VERBINDLICH]** = gewolltes Spiel-/Architekturverhalten; **[GEPLANT]** = verbindliches Ziel, aber nicht zwingend implementiert; **[OFFEN]** = noch nicht abschließend beschlossen. Die Implementierung ist gesondert in Datei 03 zu prüfen.
 
@@ -121,7 +121,7 @@
 - Neutrale, transnationale **Adventurers' Guild** als wichtige, nicht überall herrschende Institution. S-Ranks seltene, strategisch relevante Akteure; nicht für jedes kleine Problem ausrückende Plotretter.
 - **Monster** ist eine mechanisch/ökologische Kategorie, **nicht** automatisch „feindlich“. Auch normale Wildtiere oder Nutztiere haben Level/Rank. Sapienz und Macht sind getrennte Dimensionen. Monsterpopulationen gehören zur Ökologie.
 - Standard-Basisklassen: **Warrior, Mage, Guardian, Duelist, Ranger**. Fähigkeiten sollen aus Quellen auch klassenübergreifend lernbar sein; Class Affinity beeinflusst Lern-/Proficiencygeschwindigkeit und ist nicht bloß ein direkter Schadensmultiplikator.
-- **[GEPLANT / Patch 9] Organic Classes:** spätere Evolutions-/Klassenpfade ergeben sich organisch aus tatsächlicher Entwicklung; **kein starrer vorausgeschriebener Evolutionsbaum**. Kreative Skillkombinationen und Charakterentwicklung unterstützen.
+- **[GEPLANT / Patch 9] Organic Classes:** spätere Evolutions-/Klassenpfade ergeben sich organisch aus tatsächlicher Entwicklung; **kein starrer vorausgeschriebener Evolutionsbaum**. Kreative Skillkombinationen und Charakterentwicklung unterstützen. **Ausdrückliche Klarstellung vom 21.10.2026:** Der im Videospielisierungskatalog vorgeschlagene Umbau der Standard-Basisklassen (F1/#71) soll ignoriert werden. Die oben genannten fünf kanonischen Basisklassen bleiben unverändert; organische *spätere* Entwicklung ist eine andere Frage.
 - Neue Figuren, Orte, Faktionen und Quests nur nach Bedarf entwickeln und anschließend konsequent als persistenten Kanon behandeln. Nicht die Welt vorschnell vollständig festschreiben.
 
 ## 9. UI und technische Komfortprinzipien
@@ -133,6 +133,14 @@
 - **[GEPLANT / eigener Combat-/UI-Fix oder Patch 10B]** Nichtoffensive Fähigkeiten (Defense/Utility) samt Name, Kosten und kurzer Wirkung auch in der Kampfanzeige; das aktuelle HUD zeigt überwiegend Angriffsreichweiten.
 - Zahlen und Ressourcen nur aus der Engine, nicht als improvisierte Trackertabelle des Narrators.
 - Ein UI-Fix muss nicht zu einem großen Redesign führen; kleine nützliche Änderungen sind vorzuziehen.
+
+## 9a. Noch offene Video-Gameification-Kandidaten – ausdrücklich KEIN neuer Kanon
+
+**[OFFEN / NICHT AUTOMATISCH IMPLEMENTIEREN]** Der ausführliche 141-Punkte-Ideenkatalog, 20 priorisierte Kandidaten, Claude-Gegenreviews sowie der technische Performance-Reviewentwurf stehen in `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md`.
+
+Als **Diskussionsstand**, nicht als Freigabe: Reine Informationsaktionen (etwa das bereits enginegebuchte Guild-Board) könnten ohne Narrator/Extractor dargestellt werden; sichere Rest-/Schlaf-/Wartehandlungen und bekannte Wege könnten engine-only verarbeitet werden. In gefährlichen Dungeons, Wildnis und Reisen ist noch offen, **welcher Zufalls-/Pacing-Wurf eine Unterbrechung auslösen kann**. Der aktuelle deterministische Reise-Wurf autorisiert nur eine mögliche erzählte Unterbrechung; ein analoger orts-/zeitabhängiger Rest-Eventwurf und eine steigende Pacing-Chance sind noch nicht implementiert. Nicht einfach stundenlange Ruhe und vollständige Regeneration im gefährlichen Dungeon als risikolos garantieren.
+
+Ebenfalls **offen:** ROAD AHEAD (gewöhnliche mechanische Reisebegegnungen vor Narration durch Engine verankern), verbesserte Questmeilensteine für E-/D-Rang, SillyTavern Quick Replies, Prompt-/Extractor-Optimierung und ein minimal abgeleitetes `panel/full`-Ausführungsprofil. Eine erstellte Review-Vorlage für den Arbeitstitel Patch 8.2 ist **keine** verbindliche Genehmigung. Über ROAD AHEAD vs. Patch 9 wird anhand der tatsächlichen .26-Reise-/Suchtests entschieden.
 
 ## 10. Explizit unerwünschte Auswüchse
 
@@ -152,4 +160,4 @@
 
 ## 11. Lesen und Aktualisieren
 
-Dieses Dokument beschreibt das **gewollte Produkt**, nicht automatisch den Stand von Git. Abweichungen zwischen diesem Kanon und `content/lore.json`, Narrator Contract oder aktueller Engine offen markieren und als geplante Arbeit einordnen. Besonders Patch 8, Patch 9 und große UI-Arbeiten sind zum Stand dieser Datei Zukunftsziele. Der bestätigte technische Iststand steht in Datei 03.
+Dieses Dokument beschreibt das **gewollte Produkt**, nicht automatisch den Stand von Git. Abweichungen zwischen Kanon, `content/lore.json`, Narrator Contract und aktueller Engine offen markieren. Patch 8/8.1 sind im Code umgesetzt, werden weiterhin im echten Gameplay validiert; Patch 9 und größere QoL-/ROAD-AHEAD-Mechaniken sind nicht automatisch implementiert. Iststand in Datei 03, **offene Vorschläge und Claude-Gegenreviews ausdrücklich separat in Datei 04**. Nur neue Nutzerentscheidungen aus Datei 04 in den bindenden Kanon übernehmen.

@@ -17,7 +17,7 @@
 | **Build direkt aus package.json geprüft** | 4.3.0-c.6.6.25 |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
 | **Patchstatus** | **Patch 8 – Living Dungeons implementiert und gepusht; echter LLM-Dungeon-Livetest steht noch aus** |
-| **Nächster Schritt** | Echter SillyTavern-GLM-Livetest, Event-/JSONL-/Completion-Log-Auswertung, nur daraus begründete Nachbesserungen |
+| **Nächster Schritt** | Doppelzahlungsfehler und Gate-/Quest-Darstellung gezielt korrigieren, danach vollständigen Dungeon-Run live testen |
 | Dokumentationsbranch | main – Dateien 01, 02, 03 im Repository-Root; nicht mit Entwicklungsbranch verwechseln |
 
 Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f3b55819dad21249d871a62b7ede38bd926598cd
@@ -98,7 +98,28 @@ Dort bestätigt bzw. beobachtet:
 
 Die drei erstgenannten Probleme wurden in .25 mit Regressionstests adressiert. Das allgemeine Pacing hat jetzt nur eine ergänzende GO-Anweisung; **echte Verhaltensverbesserung im Modelllauf nicht behaupten, bevor sie getestet wurde**. Focused Ward + Movement sowie Defense/Utility-Combat-HUD bleiben **getrennte Combat-/UI-Themen** (mögliche spätere Korrektur/Patch 10B), kein Patch-8-Blocker.
 
-## 6. Nächster Schritt: erster echter Patch-8-SillyTavern-Livetest
+## 5a. Erster echter Patch-8-Livetest (.25, Glassmere → Glimmerdeep, 21.10.2026)
+
+**Quellen:** JSONL, Avereth-Events und Chat-Completion-TXT des neuen Runs. Build .25 in Events verifiziert. **Der Test endete vor dem Dungeon-Eintritt.** Kein Kampf, Floor-Clear, Boss- oder Reset-Livetest; diese Komponenten bleiben mit echtem GLM offen.
+
+**Positiv:** Charaktererstellung, Gildenregistrierung, Guild-Board mit gespeicherten Cull-Zahlen, Questannahme und zusammenhängende Reisen funktionierten. Dungeon-Etablierung erzeugte ein Gate mit Kapazität 6, einen F-Rank-Floor, drei Begegnungsslots (2 Glasbeetles, 2 Mineralschleime, Glimmer Queen) und 3-Tage-Zyklus. Das eingeklappte World-HUD zeigt Belegung 0/6 und Reset in 3 Tagen, nicht jedoch eine auffällige Eintrittskarte. Der Narrator erzählte diese Daten nicht, obwohl sie in seinem Kontext standen.
+
+**Bestätigter Blocker: doppelte Dungeon-Eintrittsforderung.** Der Wachmann erzeugte per Narrator/Extractor das gewöhnliche, nichtkanonische Angebot offer.t18.2 über 10 cp (service other). Alaric bezahlte und die Engine buchte -10 cp, transaction.completed und service.granted. Aber es gab kein dungeon.pass: commands.js erstellt diesen nur bei kanonischen Angeboten mit o.gate. Beim ausdrücklichen Eintrittsbefehl wurde daher ein zweites Angebot offer.gate.glimmerdeep_grotto über dieselben 10 cp geöffnet, und Alaric blieb draußen. Die vom Narrator zuvor behauptete Ankunft in der ersten Galerie wurde von world.js mit no_go berechtigt abgelehnt, weil in diesem Zug noch keine Bewegung autorisiert war.
+
+**Weitere Befunde:**
+- Cull Crystal Beetles verlangt 6 Kills; die in diesem Zyklus verankerte Population bietet nur 2 Glasbeetles plus ggf. die Glimmer Queen (höchstens drei passende Ziele in einem Run). Mehrere Resetzyklen wären erforderlich. Kein Kill erfolgte, also tatsächliche Questzählung noch nicht live geprüft.
+- Engine-Board lieferte die Zahl (6), Narrator ließ sie in der angezeigten Boardliste weg; erst HUD zeigte 0/6.
+- Narrator behauptete eine Übernahme des Wool-Cart-Auftrags durch andere Abenteurer, obwohl das kanonische Board den Auftrag weiter listete. Ein narratives fact.asserted über die angebliche Übernahme wurde gespeichert; Board-Truth-Grenze prüfen.
+- Narrator ergänzte nicht mechanisch abgesicherte Details zu einem zweiten Akademie-Gate, Loot-Verboten und Reward-Verfall; diese sind im Gildenvertrag als freier Quest-Detailtext gelandet. Kanon und Kreativfreiheit gezielt abgleichen.
+- Reise-Pacing in zwei Etappen positiv; Dungeon-Pacing weiterhin nicht getestet.
+
+**Nutzerfeedback (zu prüfen, noch nicht implementiert):**
+- Die 10-cp-Gebühr wirkt bei einem offiziellen Guild-Auftrag, der auch der Akademie dient, wenig plausibel. Eine Guild-Quest-Freistellung erwägen, keine allgemeine Abschaffung sämtlicher Gebühren.
+- Die Videospiel-Dungeonaspekte sollen als Welt-Lore verständlich werden.
+- Eine **Engine-eigene, sofort sichtbare Gate-/System-Anzeige** erwünscht: belegte Plätze / Kapazität, eigene Gruppengröße, aktuelle Reset-Restzeit (nicht nur Tage gerundet), bekannte Etagen-Ranks, Zutrittsvoraussetzungen/Gebühr und Enter?-Entscheidung. Zahlen aus Engine-State, nicht narrativ geschätzt. Bereits ausdrücklich erklärter Eintritt benötigt keine zweite Bestätigung; unbekannte Floors nicht vorzeitig verraten.
+- Vor dem ersten vollständigen .25-Dungeonlauf den bestätigten Gate-Payment-Bug beheben; weitere zusammenhängende Integrations-/Darstellungsprobleme sinnvoll bündeln statt erneut einen Minifix-Loop zu beginnen.
+
+## 6. Nächster Schritt nach dem ersten Gate-Livetest
 
 **Keinen automatischen weiteren Dungeon-Hotfix starten.** Zuerst neuen Live-Run auf .25 durchführen und mit Exporten analysieren. Sinnvolle Testreihenfolge:
 
@@ -123,7 +144,7 @@ Auf folgende Fälle besonders achten:
 
 ## 7. Danach – Roadmap und bewusste Grenzen
 
-- **Jetzt:** .25-Livetest und echte Integrationsergebnisse.
+- **Jetzt:** Erster .25-Gate-Livetest ausgewertet; der doppelte Eintrittspreis blockiert das Weiterkommen.
 - **Bei Bedarf:** Nur konkrete, im .25-Livetest bestätigte Regressionen beheben; eine neue Minifix-Schleife vermeiden.
 - **Patch 9:** Organic Classes und Entwicklung aufgrund tatsächlichen Spielerhandelns.
 - **Patch 10B:** Abschließendes Polish, HUD/Utility-Skills, allgemeines Balancing/Scaling; Focused-Ward-Plus-Move ist bekannte separate Combat-Aufgabe.

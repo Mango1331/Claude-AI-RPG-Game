@@ -4,3 +4,5 @@ p0_out/
 .env
 *.env
 .env.*
+# Patch 8.2: local results of the extractor benchmark (docs/PATCH8_2_LLM_PERFORMANCE.md)
+bench_extract_out*.json

@@ -1846,3 +1846,29 @@ Livetest 21.10.2026 10:17 (`tests/v4/live_1021d.json`). Vollständige Beschreibu
   - Die System-Karte „SYSTEM — GUILD BOARD“ zeigt die Listings.
   - „taken/claimed/gone“ über einen Vertrag ist Engine-Zustand.
 - **Tests:** `tests/v4/patch81.test.js` (29). Angepasst: `v4_firewall`, `hotfix_scroll`, `patch71`, `patch72_items`.
+
+### Patch 8.2 (4.3.0-c.6.6.27): LLM-Performance, Diagnose und Zuverlässigkeit
+
+Livetest 21.10.2026 13:33 (`tests/v4/live_1021e.json`). Vollständige Beschreibung, Messwerte, Benchmark und Grenzen: `docs/PATCH8_2_LLM_PERFORMANCE.md`.
+
+- **Befund .26.**
+  - Der Extractor braucht im Median 22,8 s statt 5,1 s, bei gleichem Systemprompt und +1,6 % Prompt-Token.
+  - Gewachsen ist das Reasoning: Completion-Median 702 statt 390 Token, 7 von 18 Erstaufrufen mit ≥ 2.000 Token.
+  - Nachricht 36: Der Narrator lieferte nach 4.096 Token keinen Text, der Extractor las die leere Antwort 17,6 s lang.
+- **Telemetrie (nur Records, nie Events).**
+  - `v4Llm` gibt auf dem Custom-Endpoint `{content, finish_reason, usage}` zurück. `ask()` liest String und Objekt gleich.
+  - `callMeta` übernimmt nur Gemeldetes (`finish`, `prompt`, `cached`, `completion`, `reasoning`).
+  - Die Aufrufe stehen in `plan.llm`, `interp.llm`, `board.llm` und `extraction.llm`.
+  - Die lokalen Kosten stehen in `perf` (`wait_ms`, `engine_ms`, `folds`, `fold_ms`), die Narrator-Zeit in `narration.ms`.
+  - Die Statuszeile zeigt „last turn: …“.
+- **Leere Narrator-Antwort.**
+  - Kein Extractor-Aufruf, `extraction.status: 'skipped'`.
+  - Die Warnzeile „NO STORY TEXT …“ und ein Toast melden es.
+  - Die Engine-Ergebnisse des Zuges bleiben. Swipe und Regenerate lesen die neue Antwort genau einmal.
+  - Die Extractor-Sperre ist unverändert.
+- **Benchmark (`tools/bench_extract.mjs`).**
+  - Varianten A0 (ohne `reasoning_effort`), A (wie geloggt) und C (A plus Schlussanweisung), verschränkt und mehrfach.
+  - Die Engine bewertet nach übernommenen und abgelehnten Deltas und nach der Abweichung zur Live-Welt.
+  - Dry-Run auf .26: 17 von 18 Requests zugeordnet und byte-gleich neu gebaut.
+  - Der echte Lauf braucht einen Provider-Schlüssel.
+- **Tests:** `tests/v4/patch82.test.js` (15).

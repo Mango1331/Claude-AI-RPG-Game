@@ -3,7 +3,9 @@
 // LLM calls are the host's; this module gets them as an injected function, so the whole flow runs in the Node tests
 // with scripted answers exactly as in SillyTavern (index.js passes a generateRaw-like call):
 //
-//   llm({messages, purpose, temperature, maxTokens}) -> Promise<string>   (throws or returns null on failure)
+//   llm({messages, purpose, temperature, maxTokens}) -> Promise<string | {content, finish_reason?, usage?}>
+//                                                       (throws or returns null on failure; Patch 8.2: the object form
+//                                                       carries what the provider reported, kept as telemetry: callMeta)
 //
 //   before the narrator   prepareGenerationAsync: interpreter -> agency guard -> (Board generator) -> command handlers
 //   after the reply       processReplyV4 (prose only, extraction pending) -> runExtraction (extractor, firewall, world)
@@ -13,7 +15,7 @@
 // A V3 campaign never reaches this module's V4 branches: prepareGenerationAsync and processReplyAny hand it to host.js.
 import {
     rec, setRec, foldChat, hasCampaign, lastUserIndex, lastPlayerIndex, lastReplyIndex, prepareGeneration, processReply,
-    turnBlock, laterTurns, showPanel, messageEvents,
+    turnBlock, laterTurns, showPanel, messageEvents, foldStats,
 } from '../host.js';
 import { playerTurn } from '../engine.js';
 import { loreKeys } from '../context.js';
@@ -43,6 +45,9 @@ export const LLM = {
 };
 export const LATE_CORRECTION = 'The engine could not record what your last reply established (it was not read in time): nothing of it changed the game state. The state above is authoritative.';
 export const FAILED_CORRECTION = 'The engine could not read what your last reply established: nothing of it changed the game state. The state above is authoritative.';
+// Patch 8.2: the System line under a reply that arrived without story text (no cause is claimed: generateRaw and the
+// narrator's own generation report none)
+export const EMPTY_REPLY_NOTICE = 'NO STORY TEXT — the narrator\'s reply arrived empty, so nothing was read from it. The engine\'s results of this turn stand as shown above. Swipe or regenerate the reply for the story.';
 
 /** The runtime a chat's campaign started with ('v4' or 'v3'); null without a campaign. */
 export function campaignRuntime(chat) {
@@ -69,14 +74,40 @@ export function campaignPath(chat, unpinned) {
     return unpinned ? 'c' : 'a';
 }
 
+/**
+ * Patch 8.2 (live 21.10.2026 13:33: the extractor's median went from 4 s to 23 s with prompts 1.6 % longer): one LLM
+ * call as the record keeps it (plan, interp, board, extraction: technical telemetry, never a game event): its purpose,
+ * its time, and what the provider reported of it — why it ended and the tokens it counted. Nothing is estimated: a
+ * plain string answer (SillyTavern's generateRaw, the tests' scripted calls) carries no more than purpose and time.
+ */
+export function callMeta(purpose, ms, answer = null) {
+    const call = { purpose, ms };
+    if (!answer || typeof answer !== 'object') return call;
+    if (typeof answer.finish_reason === 'string') call.finish = answer.finish_reason;
+    const u = answer.usage && typeof answer.usage === 'object' ? answer.usage : {};
+    const count = {
+        prompt: u.prompt_tokens, cached: u.prompt_tokens_details?.cached_tokens ?? u.cached_tokens,
+        completion: u.completion_tokens, reasoning: u.completion_tokens_details?.reasoning_tokens,
+    };
+    for (const [k, v] of Object.entries(count)) if (Number.isFinite(v)) call[k] = v;
+    return call;
+}
+
+/**
+ * One LLM call. The host's call answers a string, or (Patch 8.2, index.js v4Llm on a custom endpoint) an object
+ * {content, finish_reason, usage}; both are read the same way, and `call` keeps what was reported (callMeta).
+ */
 async function ask(llm, messages, purpose) {
     const t0 = Date.now();
     try {
-        const content = await llm({ messages, purpose, ...(LLM[purpose.replace(/_repair$/, '')] || {}) });
-        if (content === null || content === undefined) return { ok: false, error: 'no answer', ms: Date.now() - t0 };
-        return { ok: true, content: String(content), ms: Date.now() - t0 };
+        const answer = await llm({ messages, purpose, ...(LLM[purpose.replace(/_repair$/, '')] || {}) });
+        const text = answer && typeof answer === 'object' ? answer.content : answer;
+        const call = callMeta(purpose, Date.now() - t0, answer);
+        if (text === null || text === undefined) return { ok: false, error: 'no answer', ms: call.ms, call };
+        return { ok: true, content: String(text), ms: call.ms, call };
     } catch (err) {
-        return { ok: false, error: String(err?.message || err).slice(0, 200), ms: Date.now() - t0 };
+        const ms = Date.now() - t0;
+        return { ok: false, error: String(err?.message || err).slice(0, 200), ms, call: { purpose, ms, error: true } };
     }
 }
 
@@ -87,17 +118,19 @@ export async function interpretMessage(llm, content, catalog, text) {
     const req = interpreterRequest(vocab, catalog, text);
     const first = await ask(llm, req.messages, 'interpret');
     let ms = first.ms;
-    if (!first.ok) return { commands: null, failed: true, error: first.error, ms, repaired: false };
+    const calls = [first.call];
+    if (!first.ok) return { commands: null, failed: true, error: first.error, ms, repaired: false, calls };
     let p = parseInterpretation(first.content, vocab, catalog, { currency: content.rules.currency });
     let repaired = false;
     if (!p.commands) {
         const rep = interpreterRequest(vocab, catalog, text, { previous: first.content, errors: p.errors });
         const second = await ask(llm, rep.messages, 'interpret_repair');
         ms += second.ms;
+        calls.push(second.call);
         repaired = true;
         if (second.ok) p = parseInterpretation(second.content, vocab, catalog, { currency: content.rules.currency });
     }
-    return p.commands ? { commands: p.commands, failed: false, error: null, ms, repaired, raw: p.raw } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired };
+    return p.commands ? { commands: p.commands, failed: false, error: null, ms, repaired, raw: p.raw, calls } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired, calls };
 }
 
 // ------------------------------------------------------------------------------------------------ planner (prototype C)
@@ -107,7 +140,8 @@ export async function planMessage(llm, content, ctx, text, { recent = '' } = {})
     const req = plannerRequest(vocab, ctx, text, { recent });
     const first = await ask(llm, req.messages, 'plan');
     let ms = first.ms;
-    if (!first.ok) return { commands: null, failed: true, error: first.error, ms, repaired: false, raw: [] };
+    const calls = [first.call];
+    if (!first.ok) return { commands: null, failed: true, error: first.error, ms, repaired: false, raw: [], calls };
     const raw = [String(first.content).slice(0, 2000)];
     let p = parsePlan(first.content, vocab, ctx, text);
     let repaired = false;
@@ -115,13 +149,14 @@ export async function planMessage(llm, content, ctx, text, { recent = '' } = {})
         const rep = plannerRequest(vocab, ctx, text, { recent, previous: first.content, errors: p.errors });
         const second = await ask(llm, rep.messages, 'plan_repair');
         ms += second.ms;
+        calls.push(second.call);
         repaired = true;
         if (second.ok) {
             raw.push(String(second.content).slice(0, 2000));
             p = parsePlan(second.content, vocab, ctx, text);
         }
     }
-    return p.commands ? { commands: p.commands, failed: false, error: null, ms, repaired, raw } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired, raw };
+    return p.commands ? { commands: p.commands, failed: false, error: null, ms, repaired, raw, calls } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired, raw, calls };
 }
 
 /**
@@ -135,11 +170,11 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const recent = p >= 0 ? recentText(chat[p].mes) : '';
     const catalog = buildCatalog(before, content, { known: true, c: true });
     const ctx = withContentSkills(planContext(before, content, catalog), content);
-    const reuse = previous?.plan && previous.interp?.commands ? { commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [] } : null;
+    const reuse = previous?.plan && previous.interp?.commands ? { commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [], calls: previous.plan.llm } : null;
     const pl = reuse || await planMessage(llm, content, ctx, msg.mes, { recent });
     const plan = {
         version: PLANNER_VERSION, mode: ctx.fight ? 'fight' : 'story', ms: pl.ms, repaired: pl.repaired, failed: pl.failed,
-        ...(pl.error ? { error: pl.error } : {}), raw: pl.raw,
+        ...(pl.error ? { error: pl.error } : {}), raw: pl.raw, ...(pl.calls?.length ? { llm: pl.calls } : {}),
         a0: { route: ir.route, kind: ir.intent?.kind ?? null, skill: ir.intent?.skill ?? null, target: ir.intent?.target ?? null },
     };
     const interp = { version: PLANNER_VERSION, ms: pl.ms, failed: !!pl.failed, repaired: !!pl.repaired, commands: pl.commands, ...(pl.error ? { error: pl.error } : {}) };
@@ -178,7 +213,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     });
     return {
         v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: irRec, plan, interp,
-        board: board ? { branch: board.branch, rank: board.rank, ms: board.ms, failed: board.failed || undefined, listings: board.listings.length } : undefined,
+        board: board ? { branch: board.branch, rank: board.rank, ms: board.ms, failed: board.failed || undefined, listings: board.listings.length, ...(board.calls?.length ? { llm: board.calls } : {}) } : undefined,
         events: t.events, command: t.command ? { panels: t.command.panels, llm: null } : null,
     };
 }
@@ -236,19 +271,21 @@ export async function generateBoard(llm, state, content, need) {
     const req = boardRequest(state, content, need);
     let ms = 0;
     let last = null;
+    const calls = [];
     for (let attempt = 0; attempt < 2; attempt++) {
         const a = await ask(llm, attempt ? [...req.messages, { role: 'assistant', content: String(last?.answer || '') }, { role: 'user', content: `That answer was not valid: ${(last?.errors || ['no answer']).join('; ')}. Answer again with only the corrected JSON object.` }] : req.messages, 'board');
         ms += a.ms;
+        calls.push(a.call);
         if (!a.ok) { last = { errors: [a.error] }; continue; }
         const p = parseBoard(a.content, content, need, state);
         // Prototype C (4.3.0-c.6.1): fewer valid listings than the day's board asks for are no board (repaired once, else
         // failed: yesterday's stays up), never a smaller day
         const n = p.listings?.length;
         const short = need.c && p.listings && n < need.missing ? [`${n} valid listing${n === 1 ? '' : 's'} of the ${need.missing} asked for${p.refused.length ? `; refused: ${p.refused.map((r) => `"${r.title}" (${r.why})`).join(', ')}` : ''}; write all ${need.missing}`] : null;
-        if (p.listings && p.listings.length && !short) return { ...need, listings: p.listings, refused: p.refused, ms, version: BOARD_VERSION };
+        if (p.listings && p.listings.length && !short) return { ...need, listings: p.listings, refused: p.refused, ms, calls, version: BOARD_VERSION };
         last = { answer: a.content, errors: short || (p.errors.length ? p.errors : ['no valid listing']) };
     }
-    return { ...need, listings: [], failed: (last?.errors || ['failed']).join('; ').slice(0, 200), ms, version: BOARD_VERSION };
+    return { ...need, listings: [], failed: (last?.errors || ['failed']).join('; ').slice(0, 200), ms, calls, version: BOARD_VERSION };
 }
 
 // ------------------------------------------------------------------------------------------------ before the narrator
@@ -265,15 +302,31 @@ function closeLatePending(chat, u) {
 }
 
 /**
+ * Patch 8.2: the local cost of resolving a player message, kept with its record (telemetry, never a game event): the
+ * time it waited for the previous reply's extraction (index.js, the barrier), the engine's own time without its LLM
+ * calls, and how often and how long the chat was folded meanwhile.
+ */
+function turnPerf(r, t0, f0, waited) {
+    const llm = (r.plan ? r.plan.ms || 0 : r.interp?.ms || 0) + (r.board?.ms || 0);
+    const f = foldStats();
+    return {
+        ...(Number.isFinite(waited) ? { wait_ms: waited } : {}),
+        engine_ms: Math.max(0, Date.now() - t0 - llm), folds: f.calls - f0.calls, fold_ms: Math.round(f.ms - f0.ms),
+    };
+}
+
+/**
  * Before a generation: V3 campaigns as prepareGeneration (host.js). A V4 campaign resolves the latest player message
  * once (stored on it, so swipes and regenerations reuse the interpretation, the board and the dice): V3-routed turns
  * (commands, creation, combat, stealth) through the V3 engine, story turns through interpreter and handlers.
  * @returns the same shape as prepareGeneration
  */
-export async function prepareGenerationAsync(chat, content, { type = 'normal', settings = {}, llm = null } = {}) {
+export async function prepareGenerationAsync(chat, content, { type = 'normal', settings = {}, llm = null, waited = null } = {}) {
     if (type === 'quiet' || type === 'impersonate') return { action: 'clear', dirty: false };
     if (!hasCampaign(chat)) return { action: 'none', dirty: false };
     if (campaignRuntime(chat) !== 'v4') return prepareGeneration(chat, content, { type, settings });
+    const t0 = Date.now();
+    const f0 = foldStats();
     const u = lastPlayerIndex(chat);
     if (u < 0) return { action: 'none', dirty: false };
     const msg = chat[u];
@@ -294,6 +347,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         if (campaignPath(chat, settings.legacyPlanner ?? settings.planner) === 'c' && !control) {
             if (typeof llm !== 'function') throw new Error('Runtime V4 needs an LLM call for the planner');
             r = await plannedTurn(chat, content, { u, before, ir, inputHash, llm, previous: retryBoard ? r : null });
+            r.perf = turnPerf(r, t0, f0, waited);
             setRec(msg, r);
             if (r.interp?.failed) {
                 return {
@@ -312,9 +366,10 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
             if (ip.failed) {
                 r = {
                     v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: irRecord(ir, []),
-                    interp: { version: INTERPRETER_VERSION, ms: ip.ms, failed: true, repaired: ip.repaired, commands: null, error: ip.error || undefined },
+                    interp: { version: INTERPRETER_VERSION, ms: ip.ms, failed: true, repaired: ip.repaired, commands: null, error: ip.error || undefined, ...(ip.calls?.length ? { llm: ip.calls } : {}) },
                     events: [], command: null,
                 };
+                r.perf = turnPerf(r, t0, f0, waited);
                 setRec(msg, r);
                 return {
                     action: 'abort', dirty: true,
@@ -330,11 +385,12 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
             });
             r = {
                 v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: irRecord(ir, interpretedActs(guarded.kept, guarded.dropped)),
-                interp: { version: INTERPRETER_VERSION, ms: ip.ms, failed: false, repaired: ip.repaired, commands: ip.commands },
-                board: board ? { branch: board.branch, rank: board.rank, ms: board.ms, failed: board.failed || undefined, listings: board.listings.length } : undefined,
+                interp: { version: INTERPRETER_VERSION, ms: ip.ms, failed: false, repaired: ip.repaired, commands: ip.commands, ...(ip.calls?.length ? { llm: ip.calls } : {}) },
+                board: board ? { branch: board.branch, rank: board.rank, ms: board.ms, failed: board.failed || undefined, listings: board.listings.length, ...(board.calls?.length ? { llm: board.calls } : {}) } : undefined,
                 events: t.events, command: t.command ? { panels: t.command.panels, llm: null } : null,
             };
         }
+        if (!r.perf) r.perf = turnPerf(r, t0, f0, waited);
         setRec(msg, r);
         dirty = true;
     }
@@ -384,11 +440,22 @@ export function processReplyAny(chat, id, content, opts = {}) {
         return { changed: true };
     }
     const { state } = foldChat(chat, id);
+    // Patch 8.2: the narrator's time (index.js: engine block handed over → reply received), telemetry with the record
+    const narration = Number.isFinite(opts.narrationMs) ? { ms: opts.narrationMs } : null;
+    // Patch 8.2 (live 21.10.2026 13:33, message 36: the narrator's 4,096 tokens went to its reasoning, the reply was
+    // empty, and the extractor still read it for 17.6 s, 0 deltas, while the next turn waited for it): a reply without
+    // story text has nothing to read. No extraction runs; the engine's results of the turn stand on the player's
+    // message, untouched; the System block says so; a swipe or a regeneration brings a reply that is read as usual.
+    if (!msg.mes.trim()) {
+        const view = display(msg, content, state, { state, system: [EMPTY_REPLY_NOTICE] }, opts.hud || 'closed');
+        setRec(msg, { v: RECORD_V4, events: [], text_hash: hash32(msg.mes), extraction: { status: 'skipped', reason: 'empty reply', version: EXTRACTOR_VERSION }, narration: { ...(narration || {}), empty: true }, corrections: [], ...view });
+        return { changed: true, empty: true };
+    }
     // Soft-world V4: the player reads the narrator immediately. Extraction is persistence/bookkeeping and may take
     // tens of seconds; it must not hide ordinary story prose. The next-turn barrier still waits for the commit.
     // When extraction finishes, showPanel refreshes this same reply with newly recorded state (including creature HP).
     const view = display(msg, content, state, { pending: true, state }, opts.hud || 'closed');
-    setRec(msg, { v: RECORD_V4, events: [], text_hash: hash32(msg.mes), extraction: { status: 'pending', version: EXTRACTOR_VERSION }, corrections: [], ...view });
+    setRec(msg, { v: RECORD_V4, events: [], text_hash: hash32(msg.mes), extraction: { status: 'pending', version: EXTRACTOR_VERSION }, ...(narration ? { narration } : {}), corrections: [], ...view });
     return { changed: true, extract: true };
 }
 
@@ -428,6 +495,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed' } =
 
     const first = await ask(llm, req.messages, 'extract');
     ms += first.ms;
+    const calls = [first.call];
     if (first.ok) {
         const p1 = parseExtraction(first.content, vocab, req.ids, req.expectedKeys);
         if (p1.valid) parsed = p1;
@@ -437,6 +505,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed' } =
             const rep = extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player, expectedKeys: req.expectedKeys, reply: chat[id].mes }, { previous: first.content, errors: p1.errors });
             const second = await ask(llm, rep.messages, 'extract_repair');
             ms += second.ms;
+            calls.push(second.call);
             repaired = true;
             if (second.ok) {
                 const p2 = parseExtraction(second.content, vocab, req.ids, req.expectedKeys);
@@ -446,11 +515,11 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed' } =
         }
     } else error = first.error;
 
-    return applyExtraction(chat, id, content, parsed, { hash: req.hash, ms, repaired, error, hud });
+    return applyExtraction(chat, id, content, parsed, { hash: req.hash, ms, repaired, error, hud, calls });
 }
 
 /** Commit an extractor result (or its failure) to reply id; refused when the reply changed or a later turn began. */
-export function applyExtraction(chat, id, content, parsed, { hash, ms = null, repaired = false, error = null, hud = 'closed' } = {}) {
+export function applyExtraction(chat, id, content, parsed, { hash, ms = null, repaired = false, error = null, hud = 'closed', calls = [] } = {}) {
     const msg = chat[id];
     const r = rec(msg);
     if (!msg || !r || r.extraction?.status !== 'pending' || r.text_hash !== hash || hash32(msg.mes) !== hash) return { changed: false };
@@ -459,7 +528,7 @@ export function applyExtraction(chat, id, content, parsed, { hash, ms = null, re
     if (!parsed?.valid) {
         const events = extractionFailedEvents(error || 'no valid answer', ms);
         const view = display(msg, content, state, { failed: `the extractor gave no valid answer (${String(error || 'no answer').slice(0, 80)})`, state }, hud);
-        setRec(msg, { ...r, events, extraction: { status: 'failed', version: EXTRACTOR_VERSION, ms, repaired, error: String(error || '').slice(0, 200) }, corrections: [FAILED_CORRECTION], ...view });
+        setRec(msg, { ...r, events, extraction: { status: 'failed', version: EXTRACTOR_VERSION, ms, repaired, error: String(error || '').slice(0, 200), ...(calls.length ? { llm: calls } : {}) }, corrections: [FAILED_CORRECTION], ...view });
         return { changed: true, applied: false, failed: error || 'no valid answer' };
     }
     const res = replyTurnV4(state, content, parsed.value, { msg: id, prose: msg.mes, ms, repaired });
@@ -468,10 +537,40 @@ export function applyExtraction(chat, id, content, parsed, { hash, ms = null, re
     const view = display(msg, content, state, res, hud);
     setRec(msg, {
         v: RECORD_V4, events: res.events, text_hash: hash, corrections,
-        extraction: { status: 'applied', version: EXTRACTOR_VERSION, ms, repaired, deltas: (parsed.value.deltas || []).length, missing: parsed.missing.length ? parsed.missing : undefined, raw: parsed.value },
+        extraction: { status: 'applied', version: EXTRACTOR_VERSION, ms, repaired, deltas: (parsed.value.deltas || []).length, missing: parsed.missing.length ? parsed.missing : undefined, raw: parsed.value, ...(calls.length ? { llm: calls } : {}) },
+        ...(r.narration ? { narration: r.narration } : {}),
         rejected: res.rejected.length ? res.rejected : undefined, system: res.system.length ? res.system : undefined, ...view,
     });
     return { changed: true, applied: true };
+}
+
+/**
+ * Patch 8.2: the latest turn's times for the status line (index.js renderDebug), from the records' telemetry only:
+ * the wait for the previous extraction, the engine's own time, the planner (or interpreter), the Board generator, the
+ * narrator and the extractor, each call's end where the provider reported it ("length"). Null without a V4 turn.
+ */
+export function perfSummary(chat) {
+    const u = lastUserIndex(chat);
+    const r = u >= 0 ? rec(chat[u]) : null;
+    if (!r?.perf) return null;
+    const reply = chat.slice(u + 1).find((m) => !m.is_user && !m.is_system);
+    const x = reply ? rec(reply) : null;
+    const sec = (ms) => `${(ms / 1000).toFixed(1)} s`;
+    const ends = (calls) => (calls || []).map((c) => c.finish).filter((f) => f && f !== 'stop');
+    const llm = (label, part) => {
+        if (!part || !Number.isFinite(part.ms)) return null;
+        const odd = ends(part.llm);
+        return `${label} ${sec(part.ms)}${part.repaired ? ' (repaired)' : ''}${odd.length ? ` [${odd.join(', ')}]` : ''}`;
+    };
+    const bits = [
+        Number.isFinite(r.perf.wait_ms) && r.perf.wait_ms > 0 ? `waited ${sec(r.perf.wait_ms)}` : null,
+        `engine ${sec(r.perf.engine_ms)} (${r.perf.folds} folds, ${r.perf.fold_ms} ms)`,
+        llm(r.plan ? 'planner' : 'interpreter', r.plan || r.interp),
+        llm('board', r.board),
+        x?.narration ? `narrator ${Number.isFinite(x.narration.ms) ? sec(x.narration.ms) : '?'}${x.narration.empty ? ' (empty)' : ''}` : null,
+        x?.extraction && x.extraction.status !== 'skipped' ? (llm('extractor', x.extraction) || `extractor ${x.extraction.status}`) : null,
+    ];
+    return bits.filter(Boolean).join(' · ');
 }
 
 /** The reply whose extraction a reload or a chat switch cut off (index.js resumes it), or -1. */

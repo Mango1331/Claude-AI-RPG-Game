@@ -380,3 +380,23 @@ Details: `docs/PATCH8_LIVING_DUNGEONS.md`.
 
 Details: `docs/PATCH8_1_GATE_GROUP_COMBAT.md`.
 
+
+## 16. LLM-Telemetrie und leere Antworten (Patch 8.2, 4.3.0-c.6.6.27)
+
+**Ein Eingang für LLM-Antworten.** Jeder Engine-Aufruf läuft über `runtime.js ask()`. Das Host-LLM liefert:
+- einen String (`generateRaw`, Test-Mocks);
+- oder `{content, finish_reason, usage}` (`index.js v4Llm` auf dem Custom-Endpoint).
+
+`callMeta` übernimmt daraus nur, was der Provider gemeldet hat.
+
+**Telemetrie in Records, nicht in Events.**
+- Jeder Aufruf steht in `plan.llm`, `interp.llm`, `board.llm` und `extraction.llm`.
+- Die lokalen Kosten eines Zuges stehen in `perf`. `host.js foldStats` zählt die `foldChat`-Aufrufe.
+- Die Narrator-Zeit steht in `narration`.
+- Diese Felder wirken nie auf `fold`, Replay oder Swipe. `perfSummary` liest sie für die Statuszeile.
+
+**Leere Antwort.** `processReplyAny` setzt eine Antwort ohne Story-Text auf `extraction.status: 'skipped'`. Sie startet keinen Extractor und belegt keine Barriere. Die Barriere selbst (`index.js`, `closeLatePending`, `laterTurns`) ist unverändert.
+
+**Benchmark.** `tools/bench_extract.mjs` sendet die geloggten Extractor-Requests in den Varianten A0, A und C. Bewertet werden die Antworten mit `parseExtraction` und `applyExtraction` gegen den Chat des Laufs.
+
+Details: `docs/PATCH8_2_LLM_PERFORMANCE.md`.

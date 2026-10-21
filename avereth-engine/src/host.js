@@ -44,8 +44,14 @@ export function messageEvents(msg) {
     return r.events;
 }
 
+// Patch 8.2: how often the chat was folded and how long it took (telemetry: runtime.js turnPerf, the status line)
+const FOLDS = { calls: 0, ms: 0 };
+const clock = () => (typeof performance !== 'undefined' && typeof performance.now === 'function' ? performance.now() : Date.now());
+export const foldStats = () => ({ ...FOLDS });
+
 /** Fold messages [0, end) into the campaign state. Events that no longer apply (e.g. after deletions) are skipped. */
 export function foldChat(chat, end = chat.length) {
+    const t0 = clock();
     const state = emptyState();
     const errors = [];
     for (let i = 0; i < Math.min(end, chat.length); i++) {
@@ -57,6 +63,8 @@ export function foldChat(chat, end = chat.length) {
             }
         }
     }
+    FOLDS.calls += 1;
+    FOLDS.ms += clock() - t0;
     return { state, errors };
 }
 
@@ -380,7 +388,7 @@ function displaySystemPanel(panel, { tactical = false, playerFacing = false } = 
     // action/log/refusal record instead of repeating the target table, HP, Range, resources and "Next" a second time.
     if (tactical) raw = raw.filter((line) => !/^(?:COMBAT TARGETS|HP:|Range:|Alaric: MP |Next:)/.test(clean(line)));
     const klass = (line) => {
-        if (/not possible|NEEDS CLARIFICATION|NOT TAKEN|REFUSED|FAILED|NOT RECORDED|NOT APPLIED/i.test(line)) return 'avereth-system-line avereth-system-warning';
+        if (/not possible|NEEDS CLARIFICATION|NOT TAKEN|REFUSED|FAILED|NOT RECORDED|NOT APPLIED|NO STORY TEXT/i.test(line)) return 'avereth-system-line avereth-system-warning';
         if (/^(?:COMBAT(?: START| END| —)|— (?:Round|Opening)|Next:|SYSTEM — )/.test(line)) return 'avereth-system-line avereth-system-heading';
         if (/^(?:COMBAT TARGETS|HP:|Range:|Alaric: MP|ACTIVE SCENE)/.test(line)) return 'avereth-system-line avereth-system-state';
         if (/^(?:Initiative:|Alaric's attacks vs )/.test(line)) return 'avereth-system-line avereth-system-info';

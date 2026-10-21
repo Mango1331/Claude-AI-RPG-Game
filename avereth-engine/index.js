@@ -15,7 +15,7 @@
 //                              the narrator card's lorebook (lorebook/, docs/LOREBOOK.md) activates the right entries
 import { loadContentPack } from './src/content.js';
 import { onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory, reportRequest, applyReportAnswer } from './src/host.js';
-import { prepareGenerationAsync, processReplyAny, runExtraction, pendingExtraction, campaignRuntime, onEditedV4 } from './src/v4/runtime.js';
+import { prepareGenerationAsync, processReplyAny, runExtraction, pendingExtraction, campaignRuntime, onEditedV4, perfSummary } from './src/v4/runtime.js';
 import { validateState } from './src/validate.js';
 import { newSeed } from './src/rng.js';
 import { parseSwaps, ENGINE_VERSION, NARRATOR_CONTRACT_REVISION } from './src/util.js';
@@ -35,6 +35,7 @@ let legacyWarned = null;
 let pendingReport = null; // {chatId, id, hash, job}: the report request of the latest reply, while it runs
 let pendingWorld = null; // Runtime V4: {chatId, id, job}: the extraction of the latest reply, while it runs
 let llmPath = null; // Runtime V4: which call the last LLM request used ('custom endpoint' | 'generateRaw')
+let narrationStart = null; // Patch 8.2: {chatId, user, t}: when the engine block of a story turn was handed to SillyTavern
 
 function ctx() {
     return SillyTavern.getContext();
@@ -131,7 +132,9 @@ async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500 }) {
             const json = await res.json().catch(() => null);
             if (!res.ok || !json || json.error || !json.choices) throw new Error(`the LLM call failed (HTTP ${res.status}${json?.error?.message ? `: ${String(json.error.message).slice(0, 120)}` : ''})`);
             const m = json.choices[0]?.message || {};
-            return typeof m.content === 'string' ? m.content : Array.isArray(m.content) ? m.content.map((x) => x?.text || '').join('') : '';
+            const text = typeof m.content === 'string' ? m.content : Array.isArray(m.content) ? m.content.map((x) => x?.text || '').join('') : '';
+            // Patch 8.2: why the answer ended and the provider's token counts go along as telemetry (runtime.js callMeta)
+            return { content: text, finish_reason: json.choices[0]?.finish_reason ?? null, usage: json.usage ?? null };
         } finally {
             clearTimeout(timer);
         }
@@ -184,10 +187,14 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         }
         // Runtime V4 barrier: never overlap a new normal turn with the previous reply's extractor/repair.
         // The LLM call itself has a finite timeout; letting a second call overtake it can exceed provider concurrency.
+        // Patch 8.2: how long it waited is kept with the turn's record (telemetry)
+        let waited = null;
         if (pendingWorld && pendingWorld.chatId === c.getCurrentChatId() && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingWorld.id) {
+            const w0 = Date.now();
             await pendingWorld.job;
+            waited = Date.now() - w0;
         }
-        const r = await prepareGenerationAsync(c.chat, content, { type, settings: engineSettings(), llm: v4Llm });
+        const r = await prepareGenerationAsync(c.chat, content, { type, settings: engineSettings(), llm: v4Llm, waited });
         setLoreKeys(r.loreKeys);
         if (r.action === 'clear' || r.action === 'none') {
             // 'clear': quiet/impersonate generations get no engine block; 'none': no campaign or no player message yet
@@ -214,6 +221,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         }
         lastContext = r.context;
         setPrompt(r.context.text);
+        narrationStart = { chatId: c.getCurrentChatId(), user: c.chat.findLastIndex((m) => m.is_user), t: Date.now() };
         // prompt-only: retired tracker blocks out of the history, and only the last exchanges (the saved chat is untouched)
         lastProjection = projectPromptHistory(chat, { keepTurns: Number(s.historyTurns) || 0 });
         if (r.errors?.length) console.warn('[Avereth] fold errors', r.errors);
@@ -247,7 +255,10 @@ async function onMessageReceived(messageId) {
     try {
         const recover = settings().recoverReports && typeof c.generateRaw === 'function';
         // the greeting of a new chat arrives here too (SillyTavern: MESSAGE_RECEIVED 'first_message') and starts the campaign
-        const r = processReplyAny(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover, runtime: newRuntime(), planner: newPlanner() });
+        // Patch 8.2: the narrator's time, from the engine block handed over to the reply received (telemetry)
+        const started = narrationStart?.chatId === c.getCurrentChatId() && Number(messageId) > narrationStart.user ? narrationStart.t : null;
+        narrationStart = null;
+        const r = processReplyAny(c.chat, Number(messageId), content, { seed: newSeed(), swaps: parseSwaps(settings().wordSwaps), hud: settings().hud, stripTrackers: settings().stripTrackers, recover, runtime: newRuntime(), planner: newPlanner(), narrationMs: started === null ? null : Date.now() - started });
         if (!r.changed) return;
         rerender(c, Number(messageId));
         await c.saveChat();
@@ -255,6 +266,8 @@ async function onMessageReceived(messageId) {
         renderDebug();
         if (r.recover) requestReport(Number(messageId));
         if (r.extract) startWorld(Number(messageId));
+        // Patch 8.2: a reply without story text is not read (runtime.js processReplyAny); the System block says so too
+        if (r.empty) toastr.warning('Avereth Engine: the narrator returned no story text. Swipe or regenerate the reply.');
     } catch (err) {
         console.error('[Avereth] reply processing failed', err);
         toastr.error(`Avereth Engine: ${err.message}`);
@@ -347,8 +360,9 @@ function renderDebug() {
         toastr.warning(`Avereth Engine: the narrator contract on this character card is ${contract === 'OUTDATED' ? 'outdated' : 'missing'}. Replace the card description with content/narrator/Avereth_Narrator_Contract_v4.txt of this build (${NARRATOR_CONTRACT_REVISION}).`);
     }
     const problems = state.meta.started ? validateState(state, content) : [];
+    const perf = state.meta.runtime === 'v4' ? perfSummary(c.chat) : null; // Patch 8.2: the last turn's times
     el.textContent = `Avereth Engine ${ENGINE_VERSION} | ` + (state.meta.started
-        ? `runtime ${state.meta.runtime || 'v3'}${state.meta.runtime === 'v4' && llmPath ? ` (LLM: ${llmPath})` : ''} | turn ${state.turn} | mode ${state.mode} | events ${c.chat.reduce((a, m) => a + (m.extra?.avereth?.events?.length || 0), 0)} | integrity: ${problems.length || errors.length ? `${problems.length + errors.length} problem(s)` : 'OK'}${lastContext ? ` | last block ~${lastContext.tokens} tokens` : ''}${lastProjection ? ` | history: ${lastProjection.removed} older message(s) left out, ${lastProjection.stripped} tracker block(s) removed` : ''} | lore: ${loreFromWorldInfo() ? `World Info${cardLorebook() ? ` (${cardLorebook()})` : ''}` : 'engine'}${contract ? ` | narrator contract: ${contract}` : ''}`
+        ? `runtime ${state.meta.runtime || 'v3'}${state.meta.runtime === 'v4' && llmPath ? ` (LLM: ${llmPath})` : ''} | turn ${state.turn} | mode ${state.mode} | events ${c.chat.reduce((a, m) => a + (m.extra?.avereth?.events?.length || 0), 0)} | integrity: ${problems.length || errors.length ? `${problems.length + errors.length} problem(s)` : 'OK'}${lastContext ? ` | last block ~${lastContext.tokens} tokens` : ''}${lastProjection ? ` | history: ${lastProjection.removed} older message(s) left out, ${lastProjection.stripped} tracker block(s) removed` : ''} | lore: ${loreFromWorldInfo() ? `World Info${cardLorebook() ? ` (${cardLorebook()})` : ''}` : 'engine'}${contract ? ` | narrator contract: ${contract}` : ''}${perf ? ` | last turn: ${perf}` : ''}`
         : 'no campaign in this chat');
     const dbg = document.getElementById('avereth_debug');
     if (dbg) dbg.value = settings().showDebug ? [lastContext?.text || '', ...problems, ...errors].join('\n') : '';

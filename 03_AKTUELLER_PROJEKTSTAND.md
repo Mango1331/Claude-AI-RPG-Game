@@ -17,7 +17,7 @@
 | **Build direkt aus package.json und manifest.json geprüft** | 4.3.0-c.6.6.26 |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
 | **Patchstatus** | **Patch 8.1 (.26) implementiert und im aktuellen GLM-5.3-Flash-Livetest bereits teilweise bestätigt; auffällige Extractor-Latenz, Performance-Review als nächster Schritt** |
-| **Nächster Schritt** | Fortgeschrittenen .26-Run und Performance-Logs weiter auswerten. **Vorläufigen Patch 8.2 ausschließlich unabhängig von Claude reviewen lassen**, danach über Implementierung entscheiden. QoL-/Quest-/ROAD-AHEAD-Ideen separat in Datei 04. |
+| **Nächster Schritt** | **Unabhängiges Claude-Performance-Review ist abgeschlossen**; ein engerer Entwurf **8.2a (Telemetrie, LLM-Rückgabekompatibilität, leere Narrator-Antwort)** steht zur möglichen Nutzerfreigabe. A0/A/C-Benchmark danach, 8.2b nur bei nachgewiesenem Gewinn. Noch kein 8.2-Code. Kandidaten in Datei 04. |
 | Dokumentationsbranch | main – Dateien 01, 02, 03 im Repository-Root; nicht mit Entwicklungsbranch verwechseln |
 
 Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c6baa06e159f16069efd728844c7afe7c7dc186a  
@@ -193,7 +193,7 @@ Diese Werte **belegen eine aktuelle Latenzverschlechterung im Test**, jedoch **n
 
 **Offene Risiken:** Das leere Narrator-Resultat nach Tokenlimit gesondert auswerten; keine Verdoppelung des Tokenslimits ohne Grund. Friedliche Tiergruppen mit fehlender Threat-Kennzeichnung und Cull-Ortsbezug (`q.dungeon`) bleiben zu prüfende codebasierte Risiken; nicht ungeprüft als neue .26-Spielbugs deklarieren.
 
-**Nächste Handlung:** Performance-Review-Prompt (vorläufig „Patch 8.2 – Runtime Performance & Fast System Actions“) an **zweite Claude-Sitzung nur zur kritischen Gegenprüfung** geben. Die Vorlage deckt Messung, Extractor-Reasoning/Repair, sichere schnelle #Kommandos, LLM-Abkürzungen, separaten Caching-A/B-Test und Fold-Profiling ab. **Noch kein Implementierungsauftrag/Commit.**
+**Nachtrag zum Performance-Review:** Zwei unabhängige Claude-Rückmeldungen liegen inzwischen vor. Die Extractor-Prompts stiegen laut Vergleich nur um ~1,6 %, Laufzeitzuwachs beruht primär auf langen Reasoning-Ausgaben; Ursache der Modell-/Provider-Verhaltensänderung bleibt offen. **Vorläufig konsentiert:** 8.2a nur Telemetrie, kompatible `v4Llm/ask`-Metadaten-Rückgabe, Latenzprofiling und keine Extraktion leerer Narrator-Antworten (reale Nachricht 36: leere Antwort, 17,6 s Extractor, 0 Deltas). Danach Benchmark **A0 (Reasoning-Parameter fehlt), A (`low`), C (`low` + knappe Promptanweisung)**, echte Requests und Engine-Endzustände vergleichen. `low` ist kleinste dokumentierte GLM-5.3-Flash-Stufe; A0=A beweist noch keine Ignorierung des Parameters durch Provider. Keine rollenbezogenen Request-Extras, kein `#assign`-Fast-Path, Board-/QoL-Änderung oder Promptdefault in 8.2a. **Review fertig, 8.2a noch nicht beauftragt oder implementiert.** Details Datei 04, Abschnitte 9/10.
 
 ## 5e. Neue Patchideen und Claude-Gegenreviews – keine Implementierung (21.10.2026)
 
@@ -234,7 +234,7 @@ Auf folgende Fälle besonders achten:
 
 ## 7. Danach – Roadmap und bewusste Grenzen (Status in 5d/5e beachten)
 
-- **Jetzt:** Patch 8.1 (.26) ist in Git verifiziert und der GLM-Livetest wurde fortgesetzt. Mechanikverbesserungen sowie massive Extractor-Verzögerungen dokumentiert; zuerst unabhängiges Claude-Review des **vorläufigen** Performance-Patches 8.2 und kontrollierte Ursachenanalyse.
+- **Jetzt:** Patch 8.1 (.26) ist in Git verifiziert, GLM-Test wurde fortgesetzt, Extractor-Reasoning-Ausreißer dokumentiert. **Unabhängiges Claude-Review zu 8.2 abgeschlossen; kleiner 8.2a-Entwurf zur möglichen Freigabe, danach kontrollierter A0/A/C-Benchmark, optional 8.2b.** Noch keine Performance-Implementierung.
 - **Bei Bedarf:** Nach .26-Livetest und Review bestätigte Integrations- und Latenzprobleme gezielt beheben; keine vorschnelle Minifix-Schleife, keine globalen Balance-/XP-Änderungen.
 - **Patch 9 (verbindlich geplant, Implementierung ausstehend):** Organic Classes/Growth anhand tatsächlichen Spielerhandelns einschließlich sinnvoller Skill-Bausteine und besonderer Entwicklungsmomente. **Keine** Änderung der Standard-Basisklassen aus dem verworfenen Katalogpunkt F1/#71 ableiten.
 - **Patch 10B / späteres Polish:** HUD/Defense-/Utility-Skills, allgemeines Balancing/Scaling; Focused-Ward-Plus-Move bleibt bekannte separate Aufgabe. Exakter Umfang noch offen.
@@ -267,7 +267,7 @@ Auf folgende Fälle besonders achten:
 
 1. Dateien **01–04** **vom Branch main** vollständig lesen (`04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` ist das Review-/Katalogarchiv). Den tatsächlichen Entwicklungsbranch und Build unabhängig per Git prüfen.
 2. **Aktueller Code ist Patch 8.1 (.26), `c6baa06`**, nicht Patch 8 (.25). Ein echter .26-GLM-Dungeonlauf wurde bereits teilweise ausgewertet; vollständiger Boss/Clear/Reset-Nachweis steht aus.
-3. Die .25-Livetest-Befunde in 5a/5b führten zu Patch 8.1 (.26, Abschnitt 5c). **Neuen .26-Befund in 5d lesen:** Gruppencombat besser, Extractor auffällig langsam, deterministisches `#assign` blockiert. Performance-Patch 8.2 **nur Reviewentwurf**, noch nicht implementieren.
+3. Die .25-Livetest-Befunde in 5a/5b führten zu Patch 8.1 (.26, Abschnitt 5c). **Abschnitt 5d und Datei 04, Abschnitte 9/10 lesen:** Gruppencombat besser, Extractor ungewöhnlich langes Reasoning, deterministisches `#assign` wartet. **Claude-Review abgeschlossen**, 8.2a jetzt als nicht freigegebener Diagnose-/Fehlerschutz-Patch umrissen; noch nicht implementiert.
 4. Bei Live-Exports zuerst Engine-Events, Chat-JSONL und LLM-TXT korrelieren; Gameplay- und Designregeln der Dateien 01/02 berücksichtigen.
 5. **Datei 04** enthält die 141-Ideen-Zusammenfassung, 20 ausgewählten K-Kandidaten, Claude-Gegenreviews, Engine-only-Board, Rest/Wait/Fast-Travel/Quick Replies und die offene Patch-9-/ROAD-AHEAD-Reihenfolge. Keine Ideen ohne Nutzerfreigabe in den bindenden Kanon oder die Implementierung übernehmen.
 6. Nach neuen Meilensteinen nur betroffene Projektdateien auf `main` aktualisieren; Implementierungsbranch nicht für Dokumentationspflege mergen.

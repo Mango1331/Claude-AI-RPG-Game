@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 21. Oktober 2026 · Fassung 5 (.26-Livetest, Performance- und Videospielisierungsreviews)  
+**Stichtag:** 21. Oktober 2026 · Fassung 6 (Patch 8.2 implementiert, Code-Review; Benchmark noch ausstehend)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,14 +13,15 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 21.10.2026 unabhängig über GitHub geprüft** | c6baa06e159f16069efd728844c7afe7c7dc186a |
-| **Build direkt aus package.json und manifest.json geprüft** | 4.3.0-c.6.6.26 |
+| **HEAD am 21.10.2026 unabhängig über GitHub geprüft** | ef4a819d5b1be76b4229745268172d0da5ce5dd5 |
+| **Build direkt aus package.json und manifest.json geprüft** | 4.3.0-c.6.6.27 |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | **Patch 8.1 (.26) implementiert und im aktuellen GLM-5.3-Flash-Livetest bereits teilweise bestätigt; auffällige Extractor-Latenz, Performance-Review als nächster Schritt** |
-| **Nächster Schritt** | **Unabhängiges Claude-Performance-Review ist abgeschlossen**; ein engerer Entwurf **8.2a (Telemetrie, LLM-Rückgabekompatibilität, leere Narrator-Antwort)** steht zur möglichen Nutzerfreigabe. A0/A/C-Benchmark danach, 8.2b nur bei nachgewiesenem Gewinn. Noch kein 8.2-Code. Kandidaten in Datei 04. |
-| Dokumentationsbranch | main – Dateien 01, 02, 03 im Repository-Root; nicht mit Entwicklungsbranch verwechseln |
+| **Patchstatus** | **Patch 8.2 (.27) implementiert und gepusht**: LLM-Telemetrie, Latenzprofiling, leere Narrator-Responses ohne Extractor, A0/A/C-Benchmark-Werkzeug. **Keine allgemein nachgewiesene Beschleunigung; echter Benchmark steht aus.** |
+| **Nächster Schritt** | **.27 als aktuellen Build verwenden; kurzes reales GLM-Livetest-Sample mit neuen Telemetriedaten.** Benchmark A0/A/C mit tatsächlichem Provider noch offen. Vor einem kostenpflichtigen Benchmark den Bewertungsvergleich von `tools/bench_extract.mjs` erweitern (einige Weltfelder fehlen). Erst dann über etwaige 8.2b-Optimierung entscheiden. |
+| Dokumentationsbranch | main – vier Dateien 01–04 im Repository-Root; von Entwicklungsbranch getrennt |
 
-Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c6baa06e159f16069efd728844c7afe7c7dc186a  
+Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/ef4a819d5b1be76b4229745268172d0da5ce5dd5  
+Vorheriger Patch-8.1-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c6baa06e159f16069efd728844c7afe7c7dc186a  
 Vorheriger Patch-8-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f3b55819dad21249d871a62b7ede38bd926598cd
 
 **Testnachweise:** Für Patch 8.1 meldet Claude **960/960 npm test** (davon **29/29 neue Tests** in `tests/v4/patch81.test.js`) sowie `smoke:st:c` mit **19/19 Prüfungen**, keine Browserseitenfehler oder offengelegten Keys. Dies sind **Claudes berichtete Läufe**, nicht von ChatGPT unabhängig ausgeführte Tests. Code, Testdateien und Versionsnummern wurden über GitHub verifiziert. Ein vollständiger Dungeon-Clear/Boss-/Reset-Livetest für .26 ist noch nicht als erfolgreich abgeschlossen belegt; **ein echter .26-GLM-Run mit Gate, Gruppencombat, Slimes und Level-up wurde inzwischen gespielt und teilweise ausgewertet**. Zuvor für Patch 8 (.25) meldete Claude 931/931 Tests und einen C-Smoke mit 21/21.
@@ -209,6 +210,22 @@ Das neue **`04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md`** sichert ausführlich die
 - **Patch 9 Organic Growth** bleibt geplantes Kernsystem. Der frühere Klassen-Katalogpunkt F1/#71 wird **ausdrücklich ignoriert**; derzeitige fünf Basisklassen nicht heimlich ersetzen.
 - **Reihenfolge:** Patch 9 vs. ROAD AHEAD nach realem Reise-/Suchverhalten im .26-Run entscheiden; Performance-Review und kleinere QoL-Kandidaten zunächst getrennt.
 
+## 5f. Patch 8.2 implementiert (.27, 21.10.2026) – neuer technischer Iststand
+
+**Entwicklungsbranch/Commit:** `claude/c-planner-prototype-2026-10-02-gpt-c666` auf `ef4a819d5b1be76b4229745268172d0da5ce5dd5` (genau ein Commit nach `c6baa06`). **Build 4.3.0-c.6.6.27** in `package.json` und `manifest.json` unabhängig geprüft. Neue Docs `avereth-engine/docs/PATCH8_2_LLM_PERFORMANCE.md`, Tests `tests/v4/patch82.test.js`, anonymisierte .26-Fixture `tests/v4/live_1021e.json`, Benchmark `tools/bench_extract.mjs`.
+
+**Codebasierter Independent Review (ChatGPT):** `src/v4/runtime.js` normalisiert String-/Objektantworten in `ask()`; Provider-`finish_reason`/`usage` werden optional als technische `llm[]`-Records in `plan`, `interp`, `board`, `extraction` gespeichert. `index.js` ergänzt Narrator-Zeit und die Wartezeit auf `pendingWorld.job`; `host.js` instrumentiert `foldChat`. Die Engine belässt ursprüngliche Mechanik-Events und die Sperre unverändert.
+
+**Konkreter Stabilitätsfix:** `processReplyAny()` behandelt leere/blanke Narrator-Nachricht als `extraction.status='skipped'`, zeigt `NO STORY TEXT`, startet keinen Extractor und erhält bereits gebuchte Kampfergebnisse. Test auf .26-Nachricht 36 und Swipe/Regenerate vorhanden. Sonderfall „Host erzeugt gar keine Assistant-Nachricht“ bleibt Host-Fehlerweg, nicht als vom Code vollständig getestet behaupten.
+
+**Testberichte von Claude, nicht unabhängig von ChatGPT ausgeführt:** `npm test` **975/975**, darunter 15 neue Tests, `smoke:st:c` mit SillyTavern 1.19.0 erfolgreich im finalen Stand. Ein erster Smoke-Ausreißer in ST-Status-Check, bei Basis und erneutem Patch-Lauf nicht reproduziert. Code/Tests über Git überprüft. **Noch kein echter .27-GLM-Spiel- oder A0/A/C-Providerlauf.**
+
+**Benchmark-Umfang:** Trockenlauf mit 17 von 18 .26-Extractor-Anfragen zuordenbar, Promptnachbau für jene laut Claude byte-gleich; die 18. Extraktion betraf die leere Narrator-Nachricht, die Patch 8.2 künftig vermeidet. Die Varianten A0 (ohne `reasoning_effort`), A (bestehendes `low`) und C (`low` plus knappe Anweisung) werden alternierend geprüft. Es sind 153 echte Requests bei 3 Runden/17 Fällen (~1,3 Mio. Prompttokens), daher erst kleine `--only`-Auswahl.
+
+**Konkreter Code-Review-Hinweis vor kostenpflichtigem Benchmark:** `tools/bench_extract.mjs worldSummary()` vergleicht eine **verkürzte Projektion**, keinen vollständigen Engine-Zustand. Nicht in der Vergleichsprojektion sind u. a. PC-Inventar/Charakterwerte, Mengen und Attribute von Objekten, konkrete Entity-Stats, Questdetails, Inhalt von Erinnerungen, Relations/Claims/Knowledge, Inhalte von Locations/Links. Auch `facts` berücksichtigt nur einen Teil der Felder. Deshalb kann `identical_world` gleiche Summaries trotz relevanter Divergenzen anzeigen. **Nicht automatisch Gameplay-Blocker** und `.27` kann live gespielt werden; **vor Leistungsentscheidung aus dem A0/A/C-Benchmark** Vergleich um jene Weltfelder erweitern, die der Extractor legitim ändern kann, oder als stichprobenartige manuelle Prüfung ergänzen. Nicht unnötig komplette State-Objekte einschließlich RNG/Telemetrie vergleichen.
+
+**Weiterhin offen:** Schwankendes GLM-Reasoning; `low` wird möglicherweise providerseitig anders interpretiert. `#assign` wartet weiterhin an Extraktorbarriere; kein genereller Fast-Path, Engine-only-Board, REST-/Reiseevent-Wurf, ROAD AHEAD, Patch 9 oder neue Default-Promptoptimierung. Kein Commit-History-Forcepush nur wegen kosmetischer Commit-Nachricht.
+
 ## 6. Fortgesetzter .26-GLM-Dungeonlauf – verbleibende Testziele
 
 **Keinen automatischen weiteren Dungeon-Hotfix starten.** Der .26-Live-Run ist bereits begonnen und teilweise ausgewertet worden (Abschnitt 5d). Den vorhandenen Run mit Exporten weiter analysieren; .25 als historische Regression heranziehen und von einem kontrollierten Performance-A/B-Test getrennt halten. Sinnvolle Testreihenfolge:
@@ -234,7 +251,7 @@ Auf folgende Fälle besonders achten:
 
 ## 7. Danach – Roadmap und bewusste Grenzen (Status in 5d/5e beachten)
 
-- **Jetzt:** Patch 8.1 (.26) ist in Git verifiziert, GLM-Test wurde fortgesetzt, Extractor-Reasoning-Ausreißer dokumentiert. **Unabhängiges Claude-Review zu 8.2 abgeschlossen; kleiner 8.2a-Entwurf zur möglichen Freigabe, danach kontrollierter A0/A/C-Benchmark, optional 8.2b.** Noch keine Performance-Implementierung.
+- **Jetzt:** Patch 8.2 (.27) ist implementiert und in Git überprüft, 975/975 Tests und erfolgreicher SillyTavern-C-Smoke von Claude berichtet. **Als Nächstes .27-Livetest und echter A0/A/C-Providerbenchmark** (nach kleinem Qualitätsvergleichs-Fix), erst dann 8.2b entscheiden.
 - **Bei Bedarf:** Nach .26-Livetest und Review bestätigte Integrations- und Latenzprobleme gezielt beheben; keine vorschnelle Minifix-Schleife, keine globalen Balance-/XP-Änderungen.
 - **Patch 9 (verbindlich geplant, Implementierung ausstehend):** Organic Classes/Growth anhand tatsächlichen Spielerhandelns einschließlich sinnvoller Skill-Bausteine und besonderer Entwicklungsmomente. **Keine** Änderung der Standard-Basisklassen aus dem verworfenen Katalogpunkt F1/#71 ableiten.
 - **Patch 10B / späteres Polish:** HUD/Defense-/Utility-Skills, allgemeines Balancing/Scaling; Focused-Ward-Plus-Move bleibt bekannte separate Aufgabe. Exakter Umfang noch offen.
@@ -244,6 +261,9 @@ Auf folgende Fälle besonders achten:
 **Unveränderliche Designpräferenzen:** Player Agency, Quality of Life, bedeutungsvolle Entscheidungen und ein echtes Spiel vor Simulationsrealismus; keine Traglastverwaltung, keine Trophäen-Zwangsbeweise, keine bedeutungslosen Zwischenstopps, kein Level-Scaling an Alaric, kein unbegründetes XP-Farm-Nerf. Living Dungeons sind geteilte Weltorte, keine privaten Instanzen. Der Narrator bleibt kreativ, aber die Engine entscheidet Mechanik.
 
 ## 8. Wichtigste aktuelle Dateien
+
+- **avereth-engine/docs/PATCH8_2_LLM_PERFORMANCE.md** – Details zu .27, Metadaten, leerer Narrator-Antwort, Benchmark.
+- **avereth-engine/tools/bench_extract.mjs; tests/v4/patch82.test.js; tests/v4/live_1021e.json** – A0/A/C-Benchmark und Regressionen.
 
 - **04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md** (Repository-Root auf `main`) – 141er-Katalog, K01–K20, Claude-Gegenreviews, Patch-8.2-Review, noch nicht beschlossene QoL-/ROAD-AHEAD-/Organic-Growth-Ideen.
 
@@ -266,8 +286,8 @@ Auf folgende Fälle besonders achten:
 ## 9. Übergabe an den nächsten Chat (vier Projektdateien)
 
 1. Dateien **01–04** **vom Branch main** vollständig lesen (`04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` ist das Review-/Katalogarchiv). Den tatsächlichen Entwicklungsbranch und Build unabhängig per Git prüfen.
-2. **Aktueller Code ist Patch 8.1 (.26), `c6baa06`**, nicht Patch 8 (.25). Ein echter .26-GLM-Dungeonlauf wurde bereits teilweise ausgewertet; vollständiger Boss/Clear/Reset-Nachweis steht aus.
-3. Die .25-Livetest-Befunde in 5a/5b führten zu Patch 8.1 (.26, Abschnitt 5c). **Abschnitt 5d und Datei 04, Abschnitte 9/10 lesen:** Gruppencombat besser, Extractor ungewöhnlich langes Reasoning, deterministisches `#assign` wartet. **Claude-Review abgeschlossen**, 8.2a jetzt als nicht freigegebener Diagnose-/Fehlerschutz-Patch umrissen; noch nicht implementiert.
+2. **Aktueller Code ist Patch 8.2 (.27), `ef4a819`**, nicht mehr .26. Ein echter .26-GLM-Dungeonlauf wurde teilweise ausgewertet; .27 ist noch nicht live mit dem echten Provider nachgetestet.
+3. Die .25-Befunde führten zu Patch 8.1 (.26), dessen Latenzproblem zu **implementiertem Patch 8.2 (.27), Abschnitt 5f**, führte. Der `#assign`-Fastpath, Engine-only-Board, ROAD AHEAD und Organic Growth sind **nicht** implementiert. Benchmark/echte Performanceverbesserung noch offen.
 4. Bei Live-Exports zuerst Engine-Events, Chat-JSONL und LLM-TXT korrelieren; Gameplay- und Designregeln der Dateien 01/02 berücksichtigen.
 5. **Datei 04** enthält die 141-Ideen-Zusammenfassung, 20 ausgewählten K-Kandidaten, Claude-Gegenreviews, Engine-only-Board, Rest/Wait/Fast-Travel/Quick Replies und die offene Patch-9-/ROAD-AHEAD-Reihenfolge. Keine Ideen ohne Nutzerfreigabe in den bindenden Kanon oder die Implementierung übernehmen.
 6. Nach neuen Meilensteinen nur betroffene Projektdateien auf `main` aktualisieren; Implementierungsbranch nicht für Dokumentationspflege mergen.

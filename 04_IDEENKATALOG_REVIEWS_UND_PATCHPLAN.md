@@ -182,3 +182,47 @@ Nach Review **Befunde/Alternative kritisch abgleichen**, erst dann Implementieru
 7. Keine Git-Veränderung im Entwicklungsbranch oder neue Patchimplementierung nur aufgrund dieser Dokumentation.
 
 **Quellenhinweis:** Der vollständige historische 141er-Katalog und die Reviewdialoge befinden sich in den früheren ChatGPT-Projektchats; diese MD ist die konsolidierte Wiederaufnahme, keine wortgetreue Abschrift. Die konkrete 20-Kandidaten-Auswahl, Designentscheidungen, Gegenargumente und der Performance-Patchreview sind hier möglichst vollständig zusammengefasst.
+
+
+## 9. Neues unabhängiges Claude-Review des Performance-Patches 8.2 – 21.10.2026
+
+**Quelle:** zweite Claude-Architektursitzung, vom Nutzer als Textdatei `Eingefügter Text(20261021-131712).txt` im anschließenden Projektchat übergeben. **Nur Review/Lesen – keine Codeänderung.** Aktueller Code-HEAD bei Review `c6baa06`. Der Performance-Patch ist **noch nicht freigegeben oder implementiert**.
+
+### 9.1 Neue wesentliche Messbefunde aus Claudes Vergleich .25 vs. .26
+
+| Messung | Ergebnis / Einordnung |
+|---|---|
+| Extractor-Systemprompt | Laut Claude in .25/.26 exakt gleich: 30.089 Zeichen |
+| Extractor-Promptgröße insgesamt | durchschnittlich 8.376 → 8.509 Tokens (**+1,6 %**) |
+| GLM-Durchsatz | etwa 72–78 generierte Tokens/s in beiden Builds |
+| Board-Extractor vergleichbare Anfrage | .25: **297 Tokens, 3,8 s**; .26: **2.271 Tokens, 31,5 s**, Prompt ~9.077 vs. ~9.071 Tokens |
+| .26 Extractor | 18 Aufrufe, Median **22,8 s**, p90 laut Claude **37,6 s**, 5 Reparaturen, 6 Length-Abbrüche am 2.500-Tokenlimit |
+| .26 Narrator | Einzelne ausufernde Reasoning-Spuren, ein leerer Reply am 4.096-Tokenlimit |
+| Planner | Weiterhin ~2,2 s Median, wenig betroffen |
+| Repair nach leerem Extraktor | Laut Claude kurz und effektiv; aufwendiges Reasoning geschah vor allem im ersten Request |
+| Im ST-Preset | `reasoning_effort: low`, `clear_thinking: true` für alle Rollen; `v4Llm` berücksichtigt gegenwärtig den `purpose` nicht für separate Requestparameter |
+| Narrator-Cache | Laut Claude im neuen .26-Lauf im Mittel ~48 % statt ~6 % bei .25; Änderungen an World-Info-Settings vor Interpretation klären |
+
+**Kausale Bewertung:** Längere Reasoning-Ausgaben bei praktisch gleich großem Prompt sind belegt; reine Katalog-Aufblähung als Hauptursache **unwahrscheinlich**. Provider-/Modellschwankung **plausibel, nicht bewiesen**. Kleine neue Kataloginhalte könnten das Entscheidungsverhalten trotzdem beeinflussen; keine voreilige vollständige Entwarnung für alle Promptänderungen.
+
+### 9.2 Claudes Empfehlungen für einen kleineren 8.2a-Patch
+
+- **S1 Messung:** optionale Provider-`usage`/`finish_reason`, Latenzen und Zeit an `pendingWorld.job`, `foldChat`-Messung; kein Mitschreiben kompletter Prompts.
+- **S2 rollenspezifische Request-Extras:** `plan`, `extract`, `board` getrennt steuerbar, ohne bestehendes globales ST-Preset oder den Narrator umzuschalten; bei leeren Zusatzfeldern aktuelle Requests unverändert.
+- **S3 Benchmark:** originale bzw. aus echten .25/.26-Fixtures exakt reproduzierte Extractor-Anfragen A/B/C mehrfach ausführen; Token, Zeit, Length-Fehler und **inhaltliche Korrektheit** der Delta-Ergebnisse vergleichen; kein normaler npm-Unit-Test.
+- **S4 leerer Narrator-Reply:** keine Extractor-Verarbeitung für leere Erzählung; sichtbarer Fehler-/Regenerate-Hinweis.
+- **Auslagern:** `#assign`-Fast-Path wegen komplizierter Eventreihenfolge; Engine-only-Board in separaten QoL-Patch; Lore-Caching-Konfiguration separat vergleichen; `foldChat` nur optimieren, wenn messbar relevant.
+
+**Warum `#assign` nicht blind beschleunigen:** `closeLatePending()` und `laterTurns()` schützen den vorherigen Extractor-Commit. Ein Systembefehl mit Stats-Events vor diesem Commit könnte dessen Weltänderungen entwerten. Schutzbarriere nicht einfach überspringen; kurzere Extractor-Laufzeit soll Wartezeit bereits reduzieren.
+
+### 9.3 ChatGPTs kritische Rückprüfung des neuen Reviews
+
+Am unveränderten Code `index.js` und `src/v4/runtime.js` überprüft:
+
+1. **Provider-Steuerung nicht überschätzen.** Offizielle Modelldokumentation `https://huggingface.co/zai-org/GLM-5.3-Flash` nennt für GLM-5.3-Flash lediglich `reasoning_effort: low|high|max`, und `max` ist Standard, wenn Parameter fehlt oder falsch ist. Das aktuell verwendete `low` ist bereits die kleinste dokumentierte Stufe. Der Benchmark darf **„Reasoning disabled“ nicht als garantiert verfügbare Variante B voraussetzen**; zunächst realen Provider-Request und seine tatsächliche Wirkung prüfen. Variant C (kürzere gezielte Promptanweisung, etwa unsichere optionale Deltas nicht lange abzuwägen) erscheint interessant, aber **kein impliziter neuer Default**.
+2. **Telemetrie an technischen Records:** Statt Provider-Daten ohne Not in kanonische `extract.failed`/`cmd.interpreted`/Gameplay-Events zu mischen, vorzugsweise optionale Felder in `plan`, `interp`, `board` und `extraction`-Records. Event-Fold, Swipe und bestehende Fixtures unverändert absichern.
+3. **Kompatible `v4Llm/ask`-Rückgabe:** Derzeit erwartet `ask()` einen String. Bei Metadatenobjekten vorhandene String-Mocks, Reparaturpfade und `generateRaw`-Fallback weiter unterstützen. Bei ST-Custom-Endpoint `custom_include_body` strukturiert und ohne mögliche unbeabsichtigte Überschreibung von `messages`, `model`, `max_tokens`, `stream` etc. mischen; ein leeres Extra bleibt exakt neutral.
+4. **Leere Narration:** Guard für sichtbar leere `MESSAGE_RECEIVED`-Antwort **und** prüfen, was ST tut, wenn gar keine Assistant-Nachricht erzeugt wird. Keine Behauptung `finish_reason:length`, wenn diese Information im Narrator-Hook nicht vorliegt.
+5. **Benchmarkqualität:** Nicht nur Delta-Mengen vergleichen; Validität, Vollständigkeit, falsche/fehlende Fakten, vom World-Applier angenommene/abgelehnte Deltas und End-State vergleichen. Wiederholungen und A/B/C-Varianten zeitlich ausbalancieren, Providerrauschen beachten; möglichst **exakte Originalrequests** statt unbemerkt anders aufgebauter Fixture-Prompts.
+
+**Vorläufige Bewertung:** 8.2a als **Mess-/Konfigurationsbasis** sinnvoll; die standardmäßig verhaltensneutrale Version ist **noch kein belegter Performance-Fix**. Welche Prompt- oder Provider-Einstellung tatsächlich beschleunigt, erst **nach** Benchmark entscheiden. `#assign`, ROAD AHEAD, Patch 9 und QoL-Katalog bleiben getrennt und unverändert.

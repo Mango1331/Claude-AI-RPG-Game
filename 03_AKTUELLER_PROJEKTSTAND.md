@@ -1,186 +1,157 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 21. Oktober 2026 · Fassung 1  
-**Pflege:** **nach größeren Patches, Reviews und wichtigen Livetests** aktualisieren  
-**Wichtig:** Die unten stehenden Ist-Angaben gelten **nur für den genannten Commit**. Zu Beginn jedes neuen Chats **Git-HEAD prüfen** und neue Änderungen nachtragen.
+**Stichtag:** 21. Oktober 2026 · Fassung 2 (nach Patch 8)  
+**Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
+**Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
-## 1. Git- und Build-Fakten (geprüft am 21.10.2026)
+## 1. Git, Version und Nachweisstatus
 
 | Feld | Stand |
 |---|---|
-| ChatGPT-Projekt | `RPG Engine` |
-| Produkt | `Avereth Engine`, Fantasy-Sandbox-RPG als SillyTavern-Extension |
-| GitHub | `https://github.com/Mango1331/Claude-AI-RPG-Game` |
-| **Aktiver Produkt-/Entwicklungsbranch** | `claude/c-planner-prototype-2026-10-02-gpt-c666` |
-| **HEAD, unabhängig über GitHub geprüft** | `2294b9b00a58e83025b9c04925a18eb2ff62b883` |
-| **Build (package.json geprüft)** | `4.3.0-c.6.6.24` |
-| Produktpfad | **Runtime V4-C** (semantischer Planner); V3/V4-A als Legacy erhalten |
-| Nächster großer Patch | **Patch 8 — Living Dungeons**, **noch nicht implementiert** |
-| Nächste erwartete Übergabe | Antwort einer **zweiten, unabhängigen Claude-Architektursitzung** zum bereits erstellten Patch-8-Auftrag; danach abschließende Prüfung/ggf. Auftrag überarbeiten |
+| ChatGPT-Projekt | RPG Engine |
+| Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
+| GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
+| **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
+| **HEAD am 21.10.2026 unabhängig über GitHub geprüft** | f3b55819dad21249d871a62b7ede38bd926598cd |
+| **Build direkt aus package.json geprüft** | 4.3.0-c.6.6.25 |
+| **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
+| **Patchstatus** | **Patch 8 – Living Dungeons implementiert und gepusht; echter LLM-Dungeon-Livetest steht noch aus** |
+| **Nächster Schritt** | Echter SillyTavern-GLM-Livetest, Event-/JSONL-/Completion-Log-Auswertung, nur daraus begründete Nachbesserungen |
+| Dokumentationsbranch | main – Dateien 01, 02, 03 im Repository-Root; nicht mit Entwicklungsbranch verwechseln |
 
-Commit-Link: `https://github.com/Mango1331/Claude-AI-RPG-Game/commit/2294b9b00a58e83025b9c04925a18eb2ff62b883`
+Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f3b55819dad21249d871a62b7ede38bd926598cd
 
-### Testnachweise am Stand .24
+**Testnachweise:** Claude meldet für Patch 8 **931/931 npm test** (16 neue Patch-8-Szenarien) und **smoke:st:c 21/21**, Exit 0, keine Seitenfehler oder im Browser exponierten Schlüssel. Diese Läufe wurden von ChatGPT **nicht unabhängig lokal ausgeführt**. Die Testdatei, der Build und die Implementierung sind im Git-Branch vorhanden. Der Smoke deckt laut Claude keinen echten Dungeonlauf ab. Synthetische Skripte bestätigen keinen realen Narrator-/Extractor-Erfolg mit GLM-5.3-Flash.
 
-- **915/915 `npm test`** laut Claudes Implementierungsbericht (von ChatGPT nicht eigenständig lokal ausgeführt).
-- **LIVE SILLYTAVERN SMOKE C: OK**, Exit-Code 0, **21/21 Prüfpunkte `true`**, keiner `false`, vom Nutzer nach dem echten Smoke übermittelt.
-- Smoke zeigte `Avereth Engine 4.3.0-c.6.6.24 | runtime v4 | integrity: OK`; Planner/Narrator/Extractor-Aufrufe, Kampferöffnung, Swipe-Plan-Wiederverwendung und Skillnamen-Rückfrage funktionierten; keine gemeldeten Seitenfehler oder API-Key-Lecks.
-- Vorherige Patch-7-Dokumentation und Tests liegen im Repository, ersetzen aber nicht die Prüfung des aktuellen HEAD.
+## 2. Architektur – was bereits vorhanden ist
 
-**Nicht verwechseln:** Ein bestandener Smoke bescheinigt die Integration, **nicht** die vollständige Korrektheit von Gameplay, Dungeon-Fortschritt und neuer Engine-Logik.
+- Leitlinie: **LLM versteht wie ein Game Master; deterministische JavaScript-Engine rechnet wie ein Spiel**.
+- SillyTavern-Extension ohne eigene Server-/Datenbank-Infrastruktur; Node-Testumgebung.
+- Zustand aus Event-Fold, deterministischer RNG, Replay- und Swipe-Stabilität, Decision Ownership, Player Agency, Knowledge-Firewall.
+- V4-C: src/v4/planner.js interpretiert freie Spielernachrichten; src/v4/commands.js / Engine lösen Mechaniken; Narrator erzählt; Extractor und src/v4/world.js persistieren zulässige Weltänderungen. Runtime-Orchestrierung in src/v4/runtime.js.
+- Kampf, Monsteranker, NPC-Materialisierung und XP in src/combat.js, src/engine.js, Content und verwandten Modulen; Loot in src/v4/loot.js.
+- Gildenboard, Vertragsstatus, DEFEAT-Zählung, READY und Auszahlung in src/v4/guild.js.
+- Patch 7: src/v4/dungeon.js für echte räumliche Graphen, bekannte Wege, Fallen, Etagen und feste Ranks; rooms sind von echten Dungeon-Klassifikationen (places[id].dungeon.real) getrennt.
+- **Patch 8:** src/v4/living.js für die operative Dungeon-Struktur (dungeons[root]) mit Slots, Gate, Gruppen, Clear-Status, Reset und Ressourcen. Dungeon-Klassifikation bleibt in places[root].dungeon, konkrete Individuen bleiben Entities, Räume bleiben places und Links.
+- Neue Fachlogik soll der Strangler-Regel in docs/ARCHITEKTUR.md §13 folgen; kein neues monolithisches World-Applier-System.
 
-## 2. Ausgangsarchitektur (bestehend, nicht neu planen)
+**Nicht verwechseln:** Eine funktionierende Engine-Struktur bedeutet noch nicht, dass der Narrator sie in einem echten Modelllauf zuverlässig befolgt.
 
-- **Hybridarchitektur:** LLM interpretiert und erzählt; JS besitzt Regeln und persistenten Kampagnenzustand.
-- **Engine-Autorität:** `src/state.js` mit Event-Fold, `src/v4/domain.js` mit V4-Domains und Ownership, `src/v4/runtime.js` mit Live-Orchestrierung, `src/v4/world.js` für Extraktor-Deltas und Firewall.
-- **V4-C:** `src/v4/planner.js` liest freie natürliche Eingaben in strukturierte Commands; vorhandene Story-/Combat-Handler buchen das Ergebnis. `src/v4/catalog.js` erstellt den bekannten Kontext. `src/v4/envelope.js` und `src/policy.js` begrenzen gültige Weltreaktionen.
-- **Combat:** `src/combat.js`; Progression, Monsterprofile, Reichweiten, Wirkung und Tod Engine-owned. `src/display.js`/`src/hud.js` präsentieren Ergebnisse.
-- **Quests/Guild:** `src/v4/guild.js` mit Board-Generator, Quest-ID, Status, Engine-gezähltem `DEFEAT`, READY/Turn-in und Belohnung. Board-Tagesangebot im C-Pfad stabil.
-- **Dungeons:** `src/v4/dungeon.js` mit Raumgraph, `rooms` vs. echter `dungeon.real`-Klassifikation, Links, Blockern, Levels und Rank-Information. `src/v4/world.js` und `src/v4/commands.js` übernehmen GO, Ankunft und Wege. **Patch 7 bietet die räumliche Grundlage, aber noch nicht das vollständige Living-Dungeons-System.**
-- **Loot:** `src/v4/loot.js`, automatisch nach Kampf; einmalige Belohnung aus tatsächlichen besiegten Monstern. Monsteranker/Grundlagen in `content/monsters.json`.
-- **Lore:** `content/lore.json`, Narrator-Preset und WorldInfo/Lorebook; Kanon und Wissenstrennung gelten weiter.
-- **Installation:** SillyTavern-Extension ohne Server/DB, Browser-JavaScript plus Node-Tests; `npm run smoke:st:c` testet echte ST-C-Integration, wenn Umgebung existiert.
+## 3. Entwicklung bis Patch 8 – Kurzchronik
 
-Für Details lieber aktuelle Dateien lesen als aus der verkürzten Beschreibung Implementationstiefe abzuleiten.
+1. Frühe Runtime V3/V4 und Gen 3.5: Event-Sourcing, LLM-Narrator, Interpreter/Extractor, Ownership, kausaler World Envelope und persistentes Figuren-/Weltwissen.
+2. Prototype C / V4-C: semantischer Planner für natürliche Eingaben und Handlungsabfolgen statt ausschließlich lexikalischer Erkennung; Validierung, Commit-Barriere, Replay.
+3. Patches 1–3: Memory Retrieval, Threads und HUD, aktive Spielerabsichten, bekannte und berichtete Orte; gegen verlorene Ziele und Kontextrangfolgefehler.
+4. Patches 4–6: Mechanik- und Questkonsistenz, Gruppen-/Encounter-Integration, Reisen, Suche, Fallen und Hindernisse.
+5. Patch 7 (.15–.17): Raumgraph, physische Wege, versteckte/gesperrte Passagen, Rückwege, Dungeonebenen und Rank pro Ebene; drei bekannte Start-Dungeons.
+6. Patches 7.1 und 7.2 (.19–.22): Items/Skill-Effekte, AoE, Cluster, C-Integration, Combat-/Weltidentität und Stabilität. Details in docs/PROTOTYPE_C.md.
+7. Hotfix .24 (2294b9b): Skelettanker statt Ratte, Temperament-Kiting auf C entfernt, keine XP bei Kapitulation, Kill-XP einmalig, explizit tote Angriffsziele schützen, Combat-Truth.
+8. **Patch 8 – Living Dungeons (.25, f3b5581):** Neues lebendiges Dungeonmodell; Details Abschnitt 4. Grundlage war der unabhängige Review des großen Implementierungsauftrags durch eine zweite Claude-Architektursitzung und Revision 2 des Auftrags.
 
-## 3. Bereits erreichte Patch-Meilensteine (Kurzchronik)
+Die Chronik ist keine Behauptung, dass jedes historische Randproblem vollständig gelöst ist.
 
-1. **Gen 3 / Runtime V3/V4, Gen 3.5** — JS-Engine, LLM-Narrator, Event-Sourcing, Interpreter/Extractor, Entscheidungs-Ownership, World Envelope, Knowledge- und Agency-Firewalls, persistente Weltfakten. Historische Branches bestehen, sind aber nicht aktuelle Produktbasis.
-2. **Prototype C / 4.3.0-C** — semantischer Planner statt fragiler rein lexikalischer Aktionserkennung; natürlicher Kampf-, Skill- und Handlungsinput, Validierung, Mehrfachhandlungssequenzen, Replays.
-3. **Patch 1–3** — Memory-Retrieval, Threads/HUD sowie aktive Spielerabsichten und bekannte/berichtete Orte; wichtige Gründe: Retrieval driftete vom Questziel weg und wertlose Threads verdrängten relevante Weltfakten.
-4. **Patch 4–6** — mechanische Kohärenz, NPC-/Monstergruppen und Präsenz/Wahrnehmung, Reise/Encounter, Suche, Hindernisse und Fallen, bereits definierte Entscheidungen und echte Konsequenzen. Branch-Historie und Tests für Details konsultieren.
-5. **Patch 7 (`.15–.17`)** — Dungeon Foundation: physische Raumverbindungen, offene/gesperrte/verborgene Wege, Ebenen, `#map`, persistente Erkundung, echte Dungeonklassifikation und Rank-Gefahr je Ebene; bekannte Start-Dungeons samt Guild-Board-Anbindung.
-6. **Patch 7.1 (`.19–.20`)** — Item-Stärke, Rank-Anforderungen, echte AoE und Cluster/Gruppe präzisiert.
-7. **Patch 7.2 (`.21–.22` und Folgefixes)** — zusammenhängende Action-/Item-/Quest-/Narrator-Integration; C-Pfad für Kampagnen verankert. Genaue Chronik in `docs/PROTOTYPE_C.md`.
-8. **Hotfix `.24`, Commit `2294b9b`** — letzte Stabilisierung aus dem 21.10.-Dungeon-Livetest (siehe nächster Abschnitt).
+## 4. Patch 8 (.25): Implementiert und im Code dokumentiert
 
-**Achtung:** Die Meilensteine sind Einordnung, keine Zusage, dass jede künftige Livetestsituation bereits korrekt funktioniert.
+Die vollständige technische Beschreibung und Claudes drei Review-Durchgänge stehen in **avereth-engine/docs/PATCH8_LIVING_DUNGEONS.md** auf dem Entwicklungsbranch. Neue Tests: **avereth-engine/tests/v4/patch8.test.js**; Hilfen: patch8_lib.js; .24-Fixture: live_1021c.json.
 
-## 4. Hotfix .24: tatsächlich implementierte Korrekturen
+| Feature | Implementierungsstand |
+|---|---|
+| Dungeonaufbau | Einmalige Engine-etablierte lebendige Struktur je Dungeon; eigene Ebenen, Slots und Rollen-Levelbereiche; auch generierte neue Dungeons |
+| Raum- und Begegnungsfortschritt | DUNGEON AHEAD vor Erzählung, stabile Slot-Refs; Engine-Bindung an konkrete Kreaturen-Entities; ein vom Narrator ausgelassener Gegner wird trotzdem materialisiert und im nächsten Zug korrigiert |
+| Minibosse/Bosse | Wächter je relevanter Ebene, Endboss, eindeutige Rollen-/Zyklusidentität und vorhandene Kampf-/Lootmechanik |
+| Ebenenabschluss | Alle verpflichtenden Slots aufgelöst, Floor-Clear mit Credit für PC oder andere; sichtbare Manifestation/Siegel |
+| Boss-/Dungeon-Reset | Eigener Spielweltzeit-Zyklus, keine echten Timer; alte ungenommene Zyklusbeute verfällt unter Ausnahmen; neue Individuen je Zyklus |
+| Andere Abenteurer | Deterministische Besuchs-/Belegungspläne, eigene Gruppen und stabile Anführer; Konkurrenz um freie Slots und Bosse; keine vollständige Offscreen-NPC-Kampfsimulation |
+| Gate | Definierter Eingangsknoten, Kapazität, Gate-Zugang, ggf. Gebühr über explizites Angebot; bestehende Seed-Kontrollregeln |
+| Materialien | Einfaches wiederkehrendes Ressourcenmodell; konkrete Fundstelle bisher in Glimmerdeep |
+| Rückkehrstein | Seltener Warden-/Boss-Drop; außerhalb Kampf explizit nutzbar, Verbrauch plus Teleport zum Gate |
+| Quests | Sichtbare Cull-Zielzahlen und n/N, Zeit-/Orts-/Akteurs-Zurechnung; Dungeon-Clear je Ebene, Auszahlung an der Gildentheke, fremd erledigte Contracts nicht unverdient bezahlt |
+| Pacing | Eine zusätzliche GO-Anweisung und Engine-Fortschrittspunkte im Dungeon; weniger künstliche Zwischenstopps beabsichtigt, **reale LLM-Wirkung noch offen** |
+| Monster-Content | Ghoul, Slime und Goblin Shaman als eigene Anchors; Skelett weiterhin korrekt |
+| Kompatibilität | Vorhandene Orte und Kreaturen bleiben erhalten; neue Dungeonstruktur lazily ergänzt; alte falsche Level werden absichtlich nicht rückwirkend repariert |
 
-Basierend auf dem Test vom 21. Oktober (vor `.24`) und überprüftem Commit `2294b9b`:
+**Die drei .24-Regressionen:** Kapelle wird auf Gate/Eingang aufgelöst; Abstieg von Bier Chamber über Stairway Down nach Black Corridor wird Level 2 und nicht erneut Level 1; Ghoul verwendet fleischlichen Untotenanker und ein Dungeon-Rollenfenster statt des Skeleton-Profils. Claude reproduzierte diese Fälle mit den .24-Originalen vor der Korrektur. Nachweise: tests/v4/patch8.test.js und die neue anonymisierte Fixture.
 
-- **Skelett-Anchor:** neues korrektes `skeleton`-Bodyplan/Monster-Anchor, Aliase und passendes Loot. Skelette benutzen **Bony Strike**, keine Rat-Bites, Pelts oder Tails.
-- **Kein mechanisches Temperament für V4-C:** keine automatische Skittish-Flucht-/Retreat-Schleife; tatsächlich kausale Flucht/Kapitulation weiter möglich. Legacy-Verhalten unberührt.
-- **Kapitulation gibt 0 XP;** späterer tatsächlicher Kill kann die dafür vorgesehene XP genau einmal geben.
-- **Expliziter toter Gegner:** `Basic Attack D`, falls D tot, schlägt nicht automatisch C; Ziel-Fehler ohne Kosten.
-- **Combat-Truth:** „X killed in the First Burial Gallery“ interpretiert nicht mehr den Ortsnamen als gestorbene Kreatur.
-- **Regression:** `tests/v4/combat_1021.test.js`; 5 gezielte Fälle laut Claude vor Fix rot, danach grün.
+**Konkret definierte Seeds:** Mossback Warrens bei Ashbridge (Goblins, F/E; Guild-Zugang), Glimmerdeep Grotto bei Glassmere (Kristalle, F; Guild + 10 cp), Old Crown Catacombs bei Alderwatch (Untote, F/E; freier Eingang). Die Content-Seeds besitzen nun Gate, Kapazität, Reset und Ebenenslots; die drei Seed-Zyklen sind im aktuellen Code jeweils 3 Spieltage. Das sind Seed-Parameter, kein universelles Gesetz für neue Dungeons.
 
-Diese Korrekturen haben im nächsten .24-Livetest grundsätzlich den gewünschten Effekt gezeigt: Ein Skelett kämpfte statt ständig wegzulaufen; korrekte Attack-/Lootgrundlagen. Das bedeutet **nicht**, dass alle Dungeonmechaniken schon richtig sind.
+**Bekannte Grenzen laut Claude:**
+- Kein nachträgliches Reparieren falscher alter Etagen/Monsterprofile.
+- Nur ein NPC-Anführer je fremder Gruppe; andere Mitglieder als persistente Gruppe, nicht Einzelagenten.
+- Vorhandene Ressourcenvorlage Glimmerdeep; neu klassifizierte Dungeons ohne definierte Fundstellen.
+- Die Siegelregel Old Crown schließt Level 2 bis zum Clear von Level 1; alte bereits betretene Räume haben eine Übergangsausnahme.
+- Wenn der Board-Generator eine Cull-Anzahl weglässt, ergänzt die Engine beim Buchen eine Zielzahl.
+- Keine neue Extractor-Delta-Art und laut Bericht keine zusätzlichen LLM-Aufrufe.
 
-## 5. Letzter echter .24-Livetest: Befunde und Nutzerfeedback
+## 5. Letzter echter LLM-Livetest (.24) – historische Ausgangslage
 
-**Test-PC:** Alaric Red, Mage, Level 1 bei Start (Testkonfiguration). **LLM:** `zai-org/GLM-5.3-Flash` in diesem Lauf. **Nicht als allgemeine Kampagnenpflicht behandeln.**
+Der letzte vollständig ausgewertete echte Dungeon-Livetest lief mit **Build .24** und **GLM-5.3-Flash**. PC Alaric, Mage. Er besiegte ein Skelett (XP/Level-up funktionierten) und starb später beim Ghul. Ein Charaktertod ist kein Fehler.
 
-### Funktionierende Aspekte
+Dort bestätigt bzw. beobachtet:
+- Kapellen-Ankunft widersprach Engineposition.
+- Black Corridor/Ghoul Hollow wurden nach einer abwärtsführenden Treppe fälschlich Level 1.
+- Ghoul bekam Skeleton-Kampfprofil.
+- Mehrere atmosphärische Dungeon-Zwischenmeldungen ohne echte Entscheidung.
+- Gleiche Art von unnötigen Zwischenstopps besteht prinzipiell auch bei Reisen, Escorts, Deliveries und Culling außerhalb.
+- Focused Ward schützte real (24 Barrier-HP), aber C-Planer verwarf die gewünschte zusätzliche Rückwärtsbewegung. Combat-HUD listete offensive Skills, nicht Ward/Utility.
+- Eine Ghul-LLM-Antwort dauerte deutlich länger als normale Antwort, ohne belegten Retry; nur beobachten.
 
-- Spieler geht zur Guild, nimmt Aufgaben an, reist zum Dungeon und kämpft; die einfache Skeleton-Anchor-Reparatur aus `.24` funktioniert sichtbar.
-- Erstes Skelett Level 10: Alaric gewinnt, bekommt 120 XP, erreicht Level 2; frühe Level-Fortschritte wurden nicht als Fehler angesehen.
-- Kampf gegen Level-14-Ghul endet mit Alarics Tod. **Tod allein ist kein Bug;** fehlender Plot-Armor ist gewollt. Die Schadens-/Barriere-Mechanik des Kampfs wurde im vorigen Review als weitgehend nachvollziehbar bewertet.
+Die drei erstgenannten Probleme wurden in .25 mit Regressionstests adressiert. Das allgemeine Pacing hat jetzt nur eine ergänzende GO-Anweisung; **echte Verhaltensverbesserung im Modelllauf nicht behaupten, bevor sie getestet wurde**. Focused Ward + Movement sowie Defense/Utility-Combat-HUD bleiben **getrennte Combat-/UI-Themen** (mögliche spätere Korrektur/Patch 10B), kein Patch-8-Blocker.
 
-### Bestätigte bzw. zu reproduzierende Probleme
+## 6. Nächster Schritt: erster echter Patch-8-SillyTavern-Livetest
 
-| Thema | Beobachtung | Plan |
-|---|---|---|
-| **Kapellen-Ankunft** | Narrator zeigt Reise/Ankunft, Engine verwirft `arrive`/Passage, Engineposition bleibt in Guild Hall | In Patch 8 als reproduzierbare Orts-/Gate-Regression beheben |
-| **Etagenzuordnung** | Von Bier Chamber (Level 1) über bekannte Stairway Down (Level 2) wird ein Black Corridor/Ghoul Hollow dennoch fälschlich wieder Level 1 zugeordnet | Patch 8: Ebenengraph-/GO-/Extractor-Kontinuität und RankAt testen |
-| **Ghul-Anchor** | Ghoul wurde mit `skeleton`-Anker und „Bony Strike“ statt geeignetem fleischlichem Untotenprofil materialisiert | In Patch 8 kleiner Content-/Extractor-Fix |
-| **Dungeon-Pacing** | Mehrere Räume/Etappen: Geräusch, Stille, erneut tiefer, bis endlich ein Gegner auftaucht; bedeutungslose Zwischenstopps | Patch 8 UND allgemeines Quest-/Travel-Pacing adressieren |
-| **Allgemeines Pacing** | Dasselbe Problem existiert bei Escort, Delivery, Culling und Reisestrecken, nicht nur Dungeons | Übergreifender Gameplay-Grundsatz, in Patch 8 mit überprüfen |
-| **Focused Ward + normale Bewegung** | Ward wird angewendet, kombinierte Rückwärtsbewegung im C-Planner verworfen, während Attack+Move funktioniert | **Separater Combat-Fix**, nicht als zwingende Patch-8-Voraussetzung |
-| **Combat-HUD ohne Defensivskill** | Während Fight ersetzt Combat-HUD die unteren Normal-HUDs; die `Attack reach`-Zeile listet nur Skills mit `attack`, nicht Focused Ward | Kleiner UI-/Polish-Fix, eventuell Patch 10B, nicht im Dungeon-Core verstecken |
-| **Ghul-Nachricht länger** | Die Begegnungsantwort dauerte deutlich länger als normale Schritte; längere LLM-Completion/Reasoning, keine bestätigte Retry-/Engine-Fehlerkette | **Nur beobachten**, keinen unbelegten Performance-Hotfix |
-| **Culling-UX** | Monsterjagden sollen konkrete Zielzahl schon am Board (`Cull Wolves (4)`) zeigen und als `2/4` weiterzählen | In Patch 8 zusammen mit Guild-Quest-UX |
-| **Dungeon-Clear** | `Floor 1 cleared` statt willkürlicher Killzahl; echte Engine-Progression statt Erzählerbehauptung | In Patch 8 |
+**Keinen automatischen weiteren Dungeon-Hotfix starten.** Zuerst neuen Live-Run auf .25 durchführen und mit Exporten analysieren. Sinnvolle Testreihenfolge:
 
-**Wichtig für die Diagnose:** Die vorigen Reviews identifizierten mehrere Konflikte. Claude muss anhand der echten .24-Exporte die jeweiligen Ursachen nachstellen; nicht jede technische Vermutung als bereits nachgewiesene Ursache behandeln.
+1. **Ein neuer frischer C-Chat:** Build .25 im Engine-Panel kontrollieren; Startstadt und Guild-Beitritt prüfen. Eine neue Kampagne ist wichtig: Der alte .24-Black-Corridor wird nicht rückwirkend auf Level 2 korrigiert.
+2. **Glimmerdeep als zusammenhängender F-Rank-Run** (wenn die Startstadt Glassmere ist): Gate + Registrierung + ausdrückliche 10-cp-Zustimmung, wenige ruhige Schritte, Kristallkäfer/Schleim, Boss, Clear, Loot/Ressourcen, Rückweg. Bei anderem Startort den dortigen Seed-Dungeon statt Ortswechsel erzwingen.
+3. **Old Crown als gezielter zweiter Run oder eigener neuer Chat** (wenn Alderwatch): Kapelle/Gate, Skelettslots, Gallery Warden, Level-1-Clear/Siegel und Abstieg. Ebene 2 ist E und darf für schwache PCs riskant sein; kein Spieler-Scaling fordern.
+4. **Begleitetes Quest-Pacing außerhalb des Dungeons:** Wenn in diesem Run erreichbar, eine kurze Escort-/Delivery-/Culling-Reise mit klarer Spielerabsicht durchführen.
+5. **Optionaler Reset-/Wiederbesuchstest** per legitimer Weltzeit-Rast (3 Tage); prüfen, ob neue Zyklusbegegnungen und andere Abenteurer den Zustand glaubwürdig beeinflussen.
 
-### Relevante .24-Testartefakte (Namen aus der Übergabe)
+Auf folgende Fälle besonders achten:
+- Der Narrator bringt **das angekündigte Engine-Monster in derselben Antwort**. Nicht erst eine Engine-Korrektur im nächsten Zug.
+- Extractor verwendet dieselbe Slot-Identität; keine Doppelmonster, falschen Namen/Levels oder Phantomgegner.
+- Keine bedeutungslosen „I continue deeper“-Schleifen, auch nicht durch ein einziges künstliches „quiet part“ zwischen jeder Begegnung.
+- Spieler behält die Entscheidung bei neuen Gefahren, Abzweigungen oder Zielen.
+- Etagen-/Raumgraph und Quest-Credit stimmen; kein Clear trotz lebendem Pflichtgegner, kein unverdientes Credit aus NPC-Kills.
+- HUD kennt nur den tatsächlich sichtbar werdenden Fortschritt.
+- Nach längerem Zeitverlauf Reset/andere Gruppen korrekt, ohne alte Slot-Rollen aus falschen Zyklen.
 
-- `avereth-events-Avereth Engine Test v4 - 2026-10-21@02h22m54s828ms.json`
-- `Avereth Engine Test v4 - 2026-10-21@02h22m54s828ms.jsonl`
-- `Chat Completion request {(20261021-051150).txt`
+**Exporte für Analyse:** SillyTavern-Chat als JSONL, Avereth-Events als JSON und vollständiger Chat-Completion-/Planner-/Extractor-Log als TXT. Nur Dateien des aktuellen Runs nötig. Im Review **genau die realen Ereignisse** von Story-Bugs, bestätigten Mechanikfehlern und bloßen Stilfragen unterscheiden. Nicht ungefragt automatisch Balance ändern.
 
-Diese Dateien **können im Workspace der implementierenden Claude-Sitzung vorliegen, sind durch die Namen allein aber nicht im neuen Chat verfügbar**. Nicht behaupten, sie lägen lokal bereit, bevor sie gefunden wurden. Wenn der Nutzer die Dateien übergeben muss, gezielt nur diese anfordern.
+**Zusätzliche technische Prüfidee (noch kein bestätigter Fehler):** Lange Weltzeit-Sprünge über mehrere Resetintervalle auf korrekte chronologische Gruppenevents prüfen. Im Code wird ein langer Zeitabschnitt über Reset- und Gruppenfunktionen verarbeitet; der normale Ein-Zyklus-Test garantiert nicht jeden Langzeitsprung. Nur priorisieren, wenn relevant oder reproduziert.
 
-## 6. JETZT: Patch 8 — Living Dungeons
+## 7. Danach – Roadmap und bewusste Grenzen
 
-**Projektentscheidung:** Statt einer weiteren vorgelagerten Dungeon-Minifix-Schleife soll **ein größerer, zusammenhängender Patch 8** die ursprüngliche Dungeon-Vision plus verwandte .24-Dungeon-/Pacing-Probleme bearbeiten.
+- **Jetzt:** .25-Livetest und echte Integrationsergebnisse.
+- **Bei Bedarf:** Nur konkrete, im .25-Livetest bestätigte Regressionen beheben; eine neue Minifix-Schleife vermeiden.
+- **Patch 9:** Organic Classes und Entwicklung aufgrund tatsächlichen Spielerhandelns.
+- **Patch 10B:** Abschließendes Polish, HUD/Utility-Skills, allgemeines Balancing/Scaling; Focused-Ward-Plus-Move ist bekannte separate Combat-Aufgabe.
+- **Langfristig:** möglicher CraftRPG-Port, derzeit keine aktive Umstellung.
 
-**Stand am Stichtag:** ChatGPT hat bereits einen umfangreichen **Patch-8-Implementierungsauftrag** erstellt. Der Nutzer plant, diesen in der **zweiten Claude-Architektursitzung unabhängig reviewen** zu lassen und das Feedback anschließend an ChatGPT zurückzugeben. **Weder Review-Ergebnis noch Implementierung liegen in diesem Dokument bereits vor.**
+**Unveränderliche Designpräferenzen:** Player Agency, Quality of Life, bedeutungsvolle Entscheidungen und ein echtes Spiel vor Simulationsrealismus; keine Traglastverwaltung, keine Trophäen-Zwangsbeweise, keine bedeutungslosen Zwischenstopps, kein Level-Scaling an Alaric, kein unbegründetes XP-Farm-Nerf. Living Dungeons sind geteilte Weltorte, keine privaten Instanzen. Der Narrator bleibt kreativ, aber die Engine entscheidet Mechanik.
 
-### Verbindlicher Patch-8-Umfang, kurz
+## 8. Wichtigste aktuelle Dateien
 
-1. **System-Dungeons mit individuellen Parametern:** Dungeon-Gates, Zugangs-/Belegungslimits, eigene Ebenenzahlen/-Ranks, individuelle Resetintervalle.
-2. **Ein tatsächlich spielbarer Dungeon-Run:** Eintritt → Erkundung/Bekämpfung/kleine Entscheidungen → Floor-Clear/Minibosse → Endboss → einmalige Beute → Exit → spätere Rückkehr/Reset.
-3. **Echte gemeinsame Welt:** andere Abenteurer besuchen denselben Dungeon, belegen Plätze, beeinflussen Monster/Bosse/Ressourcen; keine kompletten parallel simulierten NPC-Charakterzüge.
-4. **Zeitbasierte Respawns** als autoritative Events; keine Verdopplung bei Swipe, kein plötzliches Aufpoppen mitten im Kampf.
-5. **Physische Kontinuität:** Kapellen-Ankunft und abwärtsführende Treppe aus .24 reproduzieren/fixen; keine Umgehung von gesperrten/verborgenen Wegen.
-6. **Monster-Grundlagen:** Ghoul nicht als Skeleton; Speziesidentität mit passendem Anchor.
-7. **Gameplay-Pacing:** Keine Kette bedeutungsloser Geräusch- und „continue“-Züge. Gilt ausdrücklich **auch außerhalb des Dungeons**.
-8. **Quest-UX:** Culling-Zahlen und mechanisches `n/N`; Dungeon-Clears pro Etage statt einer künstlichen Killanzahl.
-9. **Kompakte Dungeon-Fortschrittsanzeige**, nur soweit der Spieler Kenntnis davon haben darf.
-10. **Regressionen, Replay/Savegame-Sicherheit und echter ST-C-Smoke** nach Implementierung.
+- avereth-engine/docs/PATCH8_LIVING_DUNGEONS.md – Implementierungs- und Reviewbericht Patch 8.
+- avereth-engine/src/v4/living.js – Dungeonstruktur, Slots, Bosse, NPC-Gruppen, Gate, Reset, Ressourcen, Return Stone.
+- avereth-engine/src/v4/dungeon.js – Räume, Wege, Ebenen, Rank.
+- avereth-engine/src/v4/commands.js – GO, Gateprüfung, DUNGEON AHEAD, Pacing.
+- avereth-engine/src/v4/world.js – Extractor-Ankunft, Slot-Zuordnung, Wegtreue, World-Applier.
+- avereth-engine/src/v4/guild.js – Board, Cull und Dungeon-Clear, Zurechnung/Turn-in.
+- avereth-engine/src/v4/domain.js; src/state.js – Events und Fold.
+- avereth-engine/tests/v4/patch8.test.js; patch8_lib.js; live_1021c.json – Regressionstests, Testhelfer und .24-Fixture.
+- avereth-engine/docs/PROTOTYPE_C.md – Entwicklungshistorie, insbesondere Patch 7–7.2.
+- avereth-engine/docs/ARCHITEKTUR.md – grundlegende Architektur und Strangler-Regel.
+- avereth-engine/content/lore.json; content/monsters.json; content/rules.json – Welt-/Monster-/Dungeonparameter.
+- avereth-engine/package.json – aktuelle Version.
 
-### Explizite Nicht-Ziele dieses Patches
+## 9. Übergabe an den nächsten Chat
 
-- Kein allgemeines XP-/Monster-Balancing oder XP-Farm-Nerf.
-- Keine zweite Kampfengine, neue allgemeine Skill-Mechanik oder vollständige NPC-Agentensimulation.
-- Keine universellen Dungeon-Zimmer-Templates, starren Kampfzahlen oder neue Server-/DB-Infrastruktur.
-- **Focused Ward+Move** und **Defense/Utility-Combat-HUD** nicht einfach ungeprüft in den Dungeon-Patch ziehen; als separate Combat-/UI-Aufgaben erhalten.
-- Legacy V3/V4-A bewahren.
+1. Dateien 01, 02 und 03 **vom Branch main** lesen. Den tatsächlichen Entwicklungsbranch und Build unabhängig per Git prüfen.
+2. Am Stand dieser Datei ist Patch 8 auf **f3b5581** implementiert, **aber noch nicht mit echtem LLM-Dungeonlauf validiert**.
+3. Als nächstes Patch-8-Livetest abwarten/auswerten, danach erst entscheiden, ob ein spezifischer Fix nötig ist. Keine automatische Wiederaufnahme der alten Patch-8-Planungsdiskussion.
+4. Bei Live-Exports zuerst Engine-Events, Chat-JSONL und LLM-TXT korrelieren; Gameplay- und Designregeln der Dateien 01/02 berücksichtigen.
+5. Nach einem verifizierten neuen Meilenstein **nur die betroffenen Projektdateien auf main** aktualisieren; die Arbeitsweise (Datei 01) und der Design-Kanon (Datei 02) bleiben ohne echte Änderungen unverändert.
 
-### Technische Review-Leitlinien für Claude
-
-- Vor Start Bestandsaufnahme in `src/v4/dungeon.js`, `world.js`, `commands.js`, `planner.js`, `guild.js`, `domain.js`, `catalog.js`, `runtime.js`, `state.js`, `combat.js`, Content, Schemas und Tests.
-- Kein Doppelmodell: bestehende `places[id].dungeon`, `s.links`, Quest-/Event-/Encounter- und Zeitmechaniken weiterverwenden.
-- Bei großer Patcharbeit **drei Reviews**: Architektur vor Implementierung, Integration nach Implementierung, kritischer Final Review auf Gameplay und Overengineering.
-- Für externe zweite Claude-Sitzung: **nur unabhängig reviewen, nichts implementieren**; technische Widersprüche/Abhängigkeiten, fehlende ursprüngliche Features und vereinfachte Lösungen benennen. ChatGPT gleicht den Bericht ab und aktualisiert erst dann den finalen Code-Auftrag.
-
-### Starter-Dungeons im Seed
-
-- **Mossback Warrens** nahe Ashbridge — Goblins, F–E.
-- **Glimmerdeep Grotto** nahe Glassmere — Kristallhöhlen, F.
-- **Old Crown Catacombs** nahe Alderwatch — Untote, F–E.
-
-Als Integrationsfälle wiederverwenden. Ein bestehender 1-Level-Dungeon muss nicht künstlich weitere Ebenen erhalten, nur um einen finalen Boss zu haben.
-
-## 7. Danach geplante Roadmap
-
-- **Patch 8:** Living Dungeons – als nächstes, noch nicht implementiert.
-- **Patch 9:** Organic Classes / organische Entwicklung aus dem wirklichen Spielverhalten statt festem Evolutionsbaum.
-- **Patch 10B:** Übergreifendes Polish und späteres Balancing/Scaling; Combat-/Skill-HUD und ggf. der separate Focused-Ward-Move-Fix sind Kandidaten, über genaue Einordnung später entscheiden.
-- **CraftRPG:** mögliche spätere Integration/Portierung, derzeit nicht der aktive Entwicklungszweig.
-
-Kleinere Änderungen bei konkreten kritischen Bugs bleiben möglich. Keine generelle Rückkehr zum Minifix-Loop vor jedem größeren geplanten Patch.
-
-## 8. Wichtige Code- und Dokumentationspfade
-
-- `avereth-engine/docs/PROTOTYPE_C.md` — umgesetzte Entwicklung C und Patch-7/7.1/7.2-Historie.
-- `avereth-engine/docs/ARCHITEKTUR.md` und `docs/ARCHITECTURE_GEN35.md` — Architekturprinzipien, Decision Ownership und World Envelope.
-- `avereth-engine/docs/LOREBOOK.md` und `content/lore.json` — Welt- und Dungeon-Kanon, Guild und Monster-Ökologie.
-- `avereth-engine/src/v4/dungeon.js` — Ort-/Room-/Level-Graph, `wayBetween`, `levelVia`, `rankAt`.
-- `avereth-engine/src/v4/world.js` — Extraktor-Deltas, `arrive`, `passage`, `wayRefused`.
-- `avereth-engine/src/v4/commands.js` — GO und Dungeon-Navigation, Travel-Pacing.
-- `avereth-engine/src/v4/planner.js` — Freitext → strukturierte Aktionen.
-- `avereth-engine/src/v4/guild.js` — Guild Boards, `defeatTally`, Quest-Turn-in.
-- `avereth-engine/src/v4/domain.js`, `src/state.js` — State-Events und Fold.
-- `avereth-engine/src/combat.js`, `src/hud.js`, `src/display.js` — Combat, Skill-Wirkung und UI.
-- `avereth-engine/content/monsters.json` — Monsteranker und Loot.
-- `avereth-engine/tests/v4/patch7.test.js`, `combat_1021.test.js` — existierende Dungeon-/Regressionstests.
-- `avereth-engine/package.json` — echte aktuelle Versionsnummer und Testbefehle.
-
-Repository-Dokumentation kann ältere Überschriften/Startdaten enthalten; **bevorzugt Commit, `package.json` und verifizierte Quellcodepfade** für aktuellen Zustand.
-
-## 9. Übergabe an einen neuen Chat: sofortige nächste Schritte
-
-1. Dateien **01 → 02 → 03** lesen, aktuelles Nutzerziel aus dem neuen Chat übernehmen.
-2. GitHub-Verbindung prüfen und aktuellen HEAD des Branches `claude/c-planner-prototype-2026-10-02-gpt-c666` lesen. Ist dieser nicht mehr `2294b9b`, Build/Tests/Status aus echtem Git und dem Nutzernachtrag aktualisieren.
-3. **Nicht** ungefragt erneut alte Patch-8-Designfragen aufrollen: der große Implementierungsauftrag ist verfasst; nun steht **die kritische zweite Claude-Gegenprüfung** an.
-4. Wenn der Nutzer Claudes Review schickt: Befunde punktweise gegen Originalplan, bestehenden Code, Nutzer-UX und Overengineering prüfen. Nur fundierte Änderungsvorschläge in einen finalen Auftrag übernehmen.
-5. Wenn Implementierung erfolgt: Commit-/Diff-Review, Tests und echten Live-Smoke prüfen; anschließend Nutzer-Livetest vorbereiten.
-6. Nach verifiziertem größerem Meilenstein **diese Datei aktualisieren**, ohne Datei 01/02 zu einer wöchentlichen Versionschronik aufzublähen.
-
-**Keine Annahme, dass eine laufende Aufgabe bereits abgeschlossen ist, nur weil ihre Zielbeschreibung hier detailliert steht.**
+**Letzter dokumentierter Git-Stand ist ein überprüfter Zeitpunkt, kein dauerhaft garantierter HEAD.**

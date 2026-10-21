@@ -16,8 +16,8 @@
 | **HEAD am 21.10.2026 unabhängig über GitHub geprüft** | f3b55819dad21249d871a62b7ede38bd926598cd |
 | **Build direkt aus package.json geprüft** | 4.3.0-c.6.6.25 |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | **Patch 8 – Living Dungeons implementiert und gepusht; echter LLM-Dungeon-Livetest steht noch aus** |
-| **Nächster Schritt** | Doppelzahlungsfehler und Gate-/Quest-Darstellung gezielt korrigieren, danach vollständigen Dungeon-Run live testen |
+| **Patchstatus** | **Patch 8 – Living Dungeons implementiert und gepusht; erster echter GLM-Dungeon-Encounter getestet, mehrere Integrations-/Combat-Truth-Fehler offen** |
+| **Nächster Schritt** | Gebündelten Patch 8.1 zu Gate/Quest/Anzeige, Gruppen-Encounter und Narrator-Combat-Truth planen, mit Tests absichern; danach Dungeon-Run fortsetzen |
 | Dokumentationsbranch | main – Dateien 01, 02, 03 im Repository-Root; nicht mit Entwicklungsbranch verwechseln |
 
 Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f3b55819dad21249d871a62b7ede38bd926598cd
@@ -100,14 +100,14 @@ Die drei erstgenannten Probleme wurden in .25 mit Regressionstests adressiert. D
 
 ## 5a. Erster echter Patch-8-Livetest (.25, Glassmere → Glimmerdeep, 21.10.2026)
 
-**Quellen:** JSONL, Avereth-Events und Chat-Completion-TXT des neuen Runs. Build .25 in Events verifiziert. **Der Test endete vor dem Dungeon-Eintritt.** Kein Kampf, Floor-Clear, Boss- oder Reset-Livetest; diese Komponenten bleiben mit echtem GLM offen.
+**Quellen:** JSONL, Avereth-Events und Chat-Completion-TXT des neuen Runs. Build .25 in Events verifiziert. **Dieser erste Teilexport endete vor dem Dungeon-Eintritt.** Die anschließende Fortsetzung mit zwei Glas-Käfer-Kämpfen steht in Abschnitt 5b. Floor-Clear, Boss und Reset bleiben mit echtem GLM offen.
 
 **Positiv:** Charaktererstellung, Gildenregistrierung, Guild-Board mit gespeicherten Cull-Zahlen, Questannahme und zusammenhängende Reisen funktionierten. Dungeon-Etablierung erzeugte ein Gate mit Kapazität 6, einen F-Rank-Floor, drei Begegnungsslots (2 Glasbeetles, 2 Mineralschleime, Glimmer Queen) und 3-Tage-Zyklus. Das eingeklappte World-HUD zeigt Belegung 0/6 und Reset in 3 Tagen, nicht jedoch eine auffällige Eintrittskarte. Der Narrator erzählte diese Daten nicht, obwohl sie in seinem Kontext standen.
 
 **Bestätigter Blocker: doppelte Dungeon-Eintrittsforderung.** Der Wachmann erzeugte per Narrator/Extractor das gewöhnliche, nichtkanonische Angebot offer.t18.2 über 10 cp (service other). Alaric bezahlte und die Engine buchte -10 cp, transaction.completed und service.granted. Aber es gab kein dungeon.pass: commands.js erstellt diesen nur bei kanonischen Angeboten mit o.gate. Beim ausdrücklichen Eintrittsbefehl wurde daher ein zweites Angebot offer.gate.glimmerdeep_grotto über dieselben 10 cp geöffnet, und Alaric blieb draußen. Die vom Narrator zuvor behauptete Ankunft in der ersten Galerie wurde von world.js mit no_go berechtigt abgelehnt, weil in diesem Zug noch keine Bewegung autorisiert war.
 
 **Weitere Befunde:**
-- Cull Crystal Beetles verlangt 6 Kills; die in diesem Zyklus verankerte Population bietet nur 2 Glasbeetles plus ggf. die Glimmer Queen (höchstens drei passende Ziele in einem Run). Mehrere Resetzyklen wären erforderlich. Kein Kill erfolgte, also tatsächliche Questzählung noch nicht live geprüft.
+- Cull Crystal Beetles verlangt 6 Kills; die in diesem Zyklus verankerte Population bietet nur 2 Glasbeetles plus ggf. die Glimmer Queen (höchstens drei passende Ziele in einem Run). Mehrere Resetzyklen wären erforderlich. In diesem Teilexport erfolgte kein Kill; der nachfolgende zweite Export zeigt 1/6 nach dem ersten Kill.
 - Engine-Board lieferte die Zahl (6), Narrator ließ sie in der angezeigten Boardliste weg; erst HUD zeigte 0/6.
 - Narrator behauptete eine Übernahme des Wool-Cart-Auftrags durch andere Abenteurer, obwohl das kanonische Board den Auftrag weiter listete. Ein narratives fact.asserted über die angebliche Übernahme wurde gespeichert; Board-Truth-Grenze prüfen.
 - Narrator ergänzte nicht mechanisch abgesicherte Details zu einem zweiten Akademie-Gate, Loot-Verboten und Reward-Verfall; diese sind im Gildenvertrag als freier Quest-Detailtext gelandet. Kanon und Kreativfreiheit gezielt abgleichen.
@@ -119,7 +119,32 @@ Die drei erstgenannten Probleme wurden in .25 mit Regressionstests adressiert. D
 - Eine **Engine-eigene, sofort sichtbare Gate-/System-Anzeige** erwünscht: belegte Plätze / Kapazität, eigene Gruppengröße, aktuelle Reset-Restzeit (nicht nur Tage gerundet), bekannte Etagen-Ranks, Zutrittsvoraussetzungen/Gebühr und Enter?-Entscheidung. Zahlen aus Engine-State, nicht narrativ geschätzt. Bereits ausdrücklich erklärter Eintritt benötigt keine zweite Bestätigung; unbekannte Floors nicht vorzeitig verraten.
 - Vor dem ersten vollständigen .25-Dungeonlauf den bestätigten Gate-Payment-Bug beheben; weitere zusammenhängende Integrations-/Darstellungsprobleme sinnvoll bündeln statt erneut einen Minifix-Loop zu beginnen.
 
-## 6. Nächster Schritt nach dem ersten Gate-Livetest
+## 5b. Fortgesetzter Patch-8-Livetest (.25, erster Dungeon-Encounter, 21.10.2026)
+
+**Quellen:** Nachgelieferte erweiterte JSONL-, Avereth-Events- und Chat-Completion-TXT-Dateien desselben GLM-5.3-Flash-Runs. Entwicklungsbranch unverändert f3b5581, Build .25. Der Test enthält keinen vollständigen Floor-Clear, Boss und Reset; nach der letzten Narrator-Antwort sind keine neuen Engine-Deltas angewendet.
+
+**Gate:** Der Spieler zahlte die 10 cp ein zweites Mal über das kanonische Angebot offer.gate.glimmerdeep_grotto. Jetzt entstanden dungeon.pass und die GO-Autorisierung, danach Erstgalerie und korrektes dungeon.ahead für zwei Glas-Käfer. Das bestätigt die in 5a identifizierte Doppelzahlungsursache; *kein* Bugfix wurde zwischen beiden Teiltests vorgenommen.
+
+**Bestätigter Gruppen-Encounter-Bug (Gameplay-Schwerpunkt):**
+- Die ersten beiden Glass Beetles sind unterschiedliche Entities mon.glimmerdeep_grotto_c1_l1_e1_1 (A, Level 4, 38 HP) und _2 (B, Level 5, 43 HP), **mit demselben gespeicherten group-Wert** glimmerdeep_grotto_c1_l1_e1, demselben Dungeon-Slot und demselben Raum.
+- Spieler greift B mit Flame Lance an. encounter.started enc.t13 umfasst **nur B und PC**; Initiative B > PC. Der erste Angriff kostet 16 MP, macht B 43→9 HP, B beißt PC 80→69 HP.
+- A bleibt außerhalb des Combats und schaut trotz gruppenbezogener Wahrnehmung untätig zu. Beim nächsten Basic Attack stirbt B und PC erhält 60 XP; A wird als aware/wary gespeichert, tritt aber nicht dem Encounter bei.
+- Erst expliziter Spielerangriff auf A startet **neuen** encounter.started enc.t15 mit A und PC. Ursache im verifizierten Code: engine.js Funktion combatants(s, leadId, committed) übernimmt ausschließlich Attack-Target und explizit angreifende NPCs, ignoriert das bereits vorhandene entity.group. Das ist ein globaler Core-Combat-Fehler, kein Dungeon-only-Problem.
+- **Verbindliche Designkorrektur in 02_DESIGN_KANON.md:** Ein Angriff auf ein Mitglied einer gemeinsamen, anwesenden und feindlichen Monstergruppe aktiviert die ebenfalls beteiligten Gruppenmitglieder **im selben Encounter mit eigener Initiative**; nicht automatisch AoE/alle getroffen; nicht wahllos neutrale Nebenstehende oder getrennte/unerreichbare Mitglieder. Gruppenzugehörigkeit über bestehende IDs, keine neue AI-Architektur. Besonders FIRST-STRIKE/Initiative, addCombatant und Trennung von Awareness vs. Aggression regressionstesten.
+
+**Zusätzlich gravierender Narrator-Combat-Truth-Verstoß beim zweiten Angriff:**
+- enc.t15 löst Flame Lance auf A auf: **37 Schaden, A von 38 auf 1 HP**, danach schließt A von MEDIUM zu ENGAGED und beißt Alaric für **9 HP (69→60)**. A lebt, aktiver Kampf mit A und PC.
+- Der echte Narrator-Prompt enthielt diese exakten Werte und den Hinweis „stop on Alaric's turn“; trotzdem erfand GLM eine tödliche Explosion von A und die Flucht eines angeblichen zweiten Käfers, der tatsächlich im vorherigen Encounter gestorben war. Das ist **kein fehlender Engine-Input** und **kein Schaden-/RNG-Bug**.
+- Der letzte nachgeschaltete Extractor-Aufruf endete mit finish_reason=length bei 2500 Completion-Tokens und inhaltlich leerer Antwort; der letzte Export enthält deshalb keine angewendeten Deltas zu dieser falschen Schlussnarration. Sichtbarer Narrator-Verstoß trotzdem bestätigt, Speicherung des erfundenen Todes/Flee **nicht** behaupten.
+- Regression gegen Toten-/Lebend-Identität, HP, Combat-Mode und Zahl der Gegner; nicht nachträglich einen weiteren echten Beetle erfinden. Prüfen, ob Engine-Truth direkt in noch robuster, knapper, unmissverständlicher Form als letzte bindende Kampfzusammenfassung in den Narrator-Kontext gelangt und ob eine gezielte Post-Narration-Verletzungsprüfung ohne zusätzliche LLM-Schleifen möglich ist. Keine übereilte vollständige natural-language Wahrheits-Firewall bauen.
+
+**Nebenbefund:** Beim Ersteintritt wurde eine Awareness-Delta für beide Beetles mit group_unclear abgelehnt, weil der angegebene Evidenztext nicht im Wortlaut der Narration stand. Bei tatsächlichem Angriff wurden Awareness später gesetzt; dieser Delta-Fall allein ist **nicht** die Gruppen-Encounter-Ursache. Prüfen, ob er ein gezielter Testfall sein sollte.
+
+**Positive Ergebnisse:** Engine reservierte die Begegnungsgruppe/Slots deterministisch und materialisierte individuelle Level/Profile; Angriff auf B und dessen Tod, XP 60, MP-/HP-Verbrauch sowie anschließender Angriff auf A waren im Engine-Eventverlauf rechnerisch stimmig. Die Engine-Zielreferenzen A/B waren eindeutig. Doch Gruppenkoordination und finale Narrator-Ergebniswiedergabe noch fehlerhaft.
+
+**Patch-Reihenfolge / Status:** Noch kein Patch 8.1 implementiert. Vor neuen langen Runs erst einen **gebündelten Integrationspatch** aus Doppelzahlung/Gate-UX, Dungeon-Quests/Board-Truth, Combat-Gruppenaufnahme und Combat-Narrator-Truth formulieren. Große Aufträge vor Claude Code wie vereinbart optional in zweiter Architektur-Review-Sitzung gegenprüfen. Balancing, zusätzliche Dungeons, komplette NPC-Party-KI und neue Simulation explizit nicht automatisch erweitern.
+
+## 6. Nächster Schritt: Patch 8.1 gebündelt planen und danach Dungeon-Run fortsetzen
 
 **Keinen automatischen weiteren Dungeon-Hotfix starten.** Zuerst neuen Live-Run auf .25 durchführen und mit Exporten analysieren. Sinnvolle Testreihenfolge:
 
@@ -144,7 +169,7 @@ Auf folgende Fälle besonders achten:
 
 ## 7. Danach – Roadmap und bewusste Grenzen
 
-- **Jetzt:** Erster .25-Gate-Livetest ausgewertet; der doppelte Eintrittspreis blockiert das Weiterkommen.
+- **Jetzt:** Zwei .25-Livetest-Exporte desselben Runs ausgewertet. Nach nochmaliger Gebühr gelang der Einstieg und der erste Monsterkampf; Gate-Doppelzahlung, getrennte Gruppenkämpfe und Narrator-Combat-Truth sind bestätigt. Nächster Schritt gebündelter Patch 8.1.
 - **Bei Bedarf:** Nur konkrete, im .25-Livetest bestätigte Regressionen beheben; eine neue Minifix-Schleife vermeiden.
 - **Patch 9:** Organic Classes und Entwicklung aufgrund tatsächlichen Spielerhandelns.
 - **Patch 10B:** Abschließendes Polish, HUD/Utility-Skills, allgemeines Balancing/Scaling; Focused-Ward-Plus-Move ist bekannte separate Combat-Aufgabe.
@@ -171,7 +196,7 @@ Auf folgende Fälle besonders achten:
 
 1. Dateien 01, 02 und 03 **vom Branch main** lesen. Den tatsächlichen Entwicklungsbranch und Build unabhängig per Git prüfen.
 2. Am Stand dieser Datei ist Patch 8 auf **f3b5581** implementiert, **aber noch nicht mit echtem LLM-Dungeonlauf validiert**.
-3. Als nächstes Patch-8-Livetest abwarten/auswerten, danach erst entscheiden, ob ein spezifischer Fix nötig ist. Keine automatische Wiederaufnahme der alten Patch-8-Planungsdiskussion.
+3. Der .25-Livetest wurde bis zu zwei Glas-Käfer-Angriffen fortgesetzt und ausgewertet. Bei der Planung des nächsten gebündelten Integrationspatches die Befunde in 5a und 5b berücksichtigen; keine neue Minifix-Schleife.
 4. Bei Live-Exports zuerst Engine-Events, Chat-JSONL und LLM-TXT korrelieren; Gameplay- und Designregeln der Dateien 01/02 berücksichtigen.
 5. Nach einem verifizierten neuen Meilenstein **nur die betroffenen Projektdateien auf main** aktualisieren; die Arbeitsweise (Datei 01) und der Design-Kanon (Datei 02) bleiben ohne echte Änderungen unverändert.
 

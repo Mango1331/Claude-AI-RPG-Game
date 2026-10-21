@@ -1,11 +1,11 @@
 # Avereth Engine / RPG Engine — Arbeitsweise und Chat-Übergabe
 
 **Dokumenttyp:** dauerhafte Projektanweisung und Zusammenarbeit  
-**Stand:** 21. Oktober 2026 · Fassung 1  
+**Stand:** 21. Oktober 2026 · Fassung 2 (nach .26-Livetest und Architekturreviews)  
 **Geltungsbereich:** ChatGPT-Chats im Projekt „RPG Engine“ und die Übergabe von Aufträgen an Claude Code  
 **Pflege:** nur bei Änderungen der Arbeitsweise, nicht nach jedem Patch
 
-> **Diese Datei ist Arbeitskontext, keine Behauptung über den aktuellen Code.** Technische Ist-Stände aus `03_AKTUELLER_PROJEKTSTAND.md` immer mit dem echten Git-HEAD abgleichen.
+> **Diese Datei ist Arbeitskontext, keine Behauptung über den aktuellen Code.** Technische Ist-Stände aus `03_AKTUELLER_PROJEKTSTAND.md` immer mit dem echten Git-HEAD abgleichen. **Neu:** `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` bewahrt den 141er-Ideenkatalog, die priorisierten 20 Kandidaten, Claude-Gegenreviews und die noch offenen Patchentscheidungen; sie ist **kein** verbindlicher Kanon.
 
 ## 1. Auftrag und Rollen
 
@@ -22,7 +22,7 @@ Die übliche Aufgabenverteilung:
 
 ## 2. Verbindlicher Arbeitszyklus
 
-1. **Kontext sichern:** Diese drei Dokumente lesen, den relevanten aktuellen Chat und bereitgestellte Livetest-Artefakte prüfen. Vor technischen Aussagen den angegebenen Git-Branch und sein HEAD kontrollieren.
+1. **Kontext sichern:** Die vier Projekt-MDs `01` bis `04` auf `main` lesen, den relevanten aktuellen Chat und bereitgestellte Livetest-Artefakte prüfen. Vor technischen Aussagen den angegebenen Entwicklungsbranch und sein HEAD kontrollieren.
 2. **Problem korrekt beschreiben:** Was **hat der Nutzer tatsächlich erlebt**? Was zeigen Spielerchat, Engine-Events, Planner, Narrator und Extractor getrennt? Was ist durch Code bestätigt, was bisher nur Hypothese?
 3. **Ursache bewerten:** Engine/Planner/Extractor/World/Content/UI/Lore unterscheiden. Gameplay-Feedback nicht automatisch als Bug oder Balancing-Fehler auslegen. Ein falsch zugeordneter Monster-Anchor ist etwas anderes als hohe Monster-Level.
 4. **Technische Tiefe wählen:** Minimaler, gezielter Fix bei klarer Ursache; vollständiger Architektur- und Design-Review bei einem zusammenhängenden großen Systemausbau. Bereits geplanter neuer Patch soll zusammengehörige alte Mängel integrieren, statt doppelte Vorarbeit auszulösen.
@@ -30,7 +30,7 @@ Die übliche Aufgabenverteilung:
 6. **Claude-Auftrag:** Ziel und Spielerwirkung zuerst; konkrete Reproduktion, betroffene Schichten, Grenzen/Nicht-Ziele, Tests, Legacy- und Replay-Verträglichkeit. Lösungsvorschläge dort begründen, wo sie helfen, aber Claude nicht zu einer unnötig komplexen Architektur verpflichten.
 7. **Nach Claude-Implementierung:** Bericht **nicht ungeprüft** als Beweis behandeln. Git-HEAD/Commit und betroffene Dateien nach Möglichkeit selbst lesen. „Tests laut Claude“ von „hier unabhängig geprüft“ unterscheiden. Smokes nur als bestanden bezeichnen, wenn tatsächlich gemeldet/nachgewiesen.
 8. **Echter Livetest:** Nutzer spielt frei und beurteilt insbesondere Spaß, Tempo, Entscheidungsfreiheit und Glaubwürdigkeit. ChatGPT wertet bei Problemen die Exporte aus; Synthetiktests allein ersetzen den Livetest nicht.
-9. **Nach Abschluss eines Meilensteins:** `03_AKTUELLER_PROJEKTSTAND.md` anhand des verifizierten Branches, Commits und der echten Ergebnisse aktualisieren. Das vorliegende Chatprotokoll bleibt ergänzende Historie, nicht die einzige Wissensträgerin.
+9. **Nach Abschluss eines Meilensteins:** `03_AKTUELLER_PROJEKTSTAND.md` anhand des verifizierten Branches, Commits und der echten Ergebnisse aktualisieren. Neue **verbindliche** Designentscheide nur in `02` übernehmen; nicht beschlossene Ideen und Reviews in `04` als Kandidaten/Experimente fortführen. Das Chatprotokoll bleibt ergänzende Historie, nicht die einzige Wissensträgerin.
 
 ## 3. Qualitätsmaßstäbe für Reviews
 
@@ -61,6 +61,11 @@ Die übliche Aufgabenverteilung:
 - **Keine künstliche Projektbürokratie:** Neue Protokolle oder Dokumente nur, wenn sie den Entwicklungsprozess wirklich vereinfachen.
 - **Patch-Reihenfolge und Testziel berücksichtigen:** User möchte zunächst relevante Mechaniken und brauchbares Gameplay fertigstellen; umfassendes Zahlenscaling/Balance später. Nicht vor jedem großen geplanten Patch wieder umfangreiche Vorab-Hotfix-Schleifen eröffnen.
 
+
+**Neue Regel nach dem .26-Livetest und dem dreifachen Claude-Gegenreview:** Performance nicht als „fühlt sich langsamer an“ stehenlassen, sondern mit Event-JSON, Chat-JSONL und Completion-TXT die `planner.ms`, `extract.ms`, Reparaturzahlen, `finish_reason`, Cache-Tokens und **Blockade durch `pendingWorld.job`** voneinander trennen. Eine verifizierte Korrelation ist nicht automatisch eine Patch-Kausalität. Bei deterministischen Systembefehlen die vollständige Event-Reihenfolge schützen; niemals einfach die Extractor-Barriere entfernen. Bei großen Architekturideen zuerst **kleine vorhandene Integrationspunkte** prüfen (z. B. Panelroute mit vollständiger Boardbuchung), keine zweite Statequelle bauen.
+
+**Statusdisziplin für Folge-Chats:** Ein **Review-Prompt** ist kein beschlossener Implementierungsauftrag; ein **Kandidat** keine verbindliche Roadmap. Über Patch 9 versus ROAD AHEAD erst aufgrund des fortgeführten .26-Livetests entscheiden. Nicht den alten Zeitpunkt aus Datei 03 („Livetest steht aus“) als neuen Iststand übernehmen. Nutzerfeedback zum Zufallsereignis beim langen Dungeon-Resten als ausdrücklich noch offene Mechanik bewahren.
+
 ## 5. Prioritäten und Quellenhierarchie
 
 Bei Konflikten unterscheiden:
@@ -88,16 +93,17 @@ Bei umfangreichen Patches eine **dreifache Prüfung** einplanen: (1) Architektur
 
 ## 7. Nutzung in einem neuen Chat (Startanweisung)
 
-Der Nutzer kann drei Dateien in das ChatGPT-Projekt laden und folgende Startanweisung verwenden:
+Der Nutzer kann die vier Dateien aus dem Repository-Root auf `main` in das ChatGPT-Projekt laden oder sie direkt über den GitHub-Zugriff lesen lassen und folgende Startanweisung verwenden:
 
-> Lies im Projekt „RPG Engine“ vollständig und in dieser Reihenfolge die drei Dateien `01_ARBEITSWEISE_CHATGPT_CLAUDE.md`, `02_DESIGN_KANON.md` und `03_AKTUELLER_PROJEKTSTAND.md`. Behandle diesen Chat als Fortsetzung der Avereth-Engine-Entwicklung, nicht als Neustart. Übernimm Arbeitsweise und verbindliche Designentscheidungen, unterscheide implementiert/geplant/offen und prüfe dann über den verbundenen GitHub-Zugriff den angegebenen Entwicklungsbranch samt HEAD, Build und relevanten Dateien. Sage mir knapp, was du verstanden und verifiziert hast, welche Informationen eventuell veraltet sind und was unser nächster Schritt ist. Erfinde keine Git- oder Testergebnisse. Frage mich nicht erneut nach Informationen, die bereits in den drei Dateien stehen.
+> Lies im Projekt „RPG Engine“ vollständig die vier Markdown-Dateien `01_ARBEITSWEISE_CHATGPT_CLAUDE.md`, `02_DESIGN_KANON.md`, `03_AKTUELLER_PROJEKTSTAND.md` und `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` aus dem GitHub-Branch `main`. Dieser Chat setzt Avereth fort, kein Neustart. Prüfe danach den aktuellen Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`, HEAD und Build. Unterscheide ausdrücklich IMPLEMENTIERT / AKTIVER LIVETEST / VERBINDLICH GEPLANT / REVIEW-ENTWURF / OFFENE IDEE. Insbesondere: `.26`-Test bereits gespielt; Performance-Patch 8.2 nur Reviewentwurf; 20 QoL-/Quest-/ROAD-AHEAD-Kandidaten und Claude-Gegenreviews in Datei 04; keine neue Klassenentscheidung aus F1/#71. Nenne den gesicherten Stand und den nächsten Schritt. Keine erfundenen Git-, LLM- oder Testnachweise; frage bereits dokumentierten Kontext nicht erneut ab.
 
 Falls Dateien nicht gefunden werden, den Nutzer genau darauf hinweisen. Kein „gelesen“ behaupten, bevor sie tatsächlich verfügbar und gelesen sind.
 
-## 8. Aktualisierungsregel für diese drei Dateien
+## 8. Aktualisierungsregel für diese vier Dateien
 
 - `01_ARBEITSWEISE_CHATGPT_CLAUDE.md`: bei neuen Rollen, Abläufen, Review-Regeln oder bewährten Kollaborationsänderungen.
 - `02_DESIGN_KANON.md`: bei einer **verbindlichen** Spiel- oder Architekturentscheidung, die langfristig gilt. Strittige/optionale Vorschläge ausdrücklich als solche markieren.
 - `03_AKTUELLER_PROJEKTSTAND.md`: nach jedem größeren implementierten Patch und nach wichtigen Livetests, jeweils mit Datum, Branch, SHA, Stand der Tests und noch offenen Punkten.
+- `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md`: konkrete, noch nicht beschlossene Verbesserungen, ausgearbeitete Review-Prompts, Claude-Gegenargumente, priorisierte Kandidaten und offen gebliebene Patchreihenfolgen. Bei Freigabe/Implementierung den Status nachführen und ggf. in 02/03 spiegeln.
 
-Keines der drei Dokumente ist ein Ersatz für den tatsächlichen Code oder Original-Testlogs. Ihre Aufgabe ist die **verlustarme Wiederaufnahme des Projekts in neuen Chats**.
+Keines der vier Dokumente ist ein Ersatz für den tatsächlichen Code oder Original-Testlogs. Ihre Aufgabe ist die **verlustarme Wiederaufnahme des Projekts in neuen Chats**.

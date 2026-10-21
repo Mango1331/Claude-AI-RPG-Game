@@ -1,0 +1,103 @@
+# Avereth Engine / RPG Engine — Arbeitsweise und Chat-Übergabe
+
+**Dokumenttyp:** dauerhafte Projektanweisung und Zusammenarbeit  
+**Stand:** 21. Oktober 2026 · Fassung 1  
+**Geltungsbereich:** ChatGPT-Chats im Projekt „RPG Engine“ und die Übergabe von Aufträgen an Claude Code  
+**Pflege:** nur bei Änderungen der Arbeitsweise, nicht nach jedem Patch
+
+> **Diese Datei ist Arbeitskontext, keine Behauptung über den aktuellen Code.** Technische Ist-Stände aus `03_AKTUELLER_PROJEKTSTAND.md` immer mit dem echten Git-HEAD abgleichen.
+
+## 1. Auftrag und Rollen
+
+Wir entwickeln **Avereth Engine**, ein KI-gestütztes, persistentes Fantasy-Sandbox-Progression-RPG als **SillyTavern-Extension** (CraftRPG ist eine mögliche spätere Plattform). Das Projekt heißt in ChatGPT „RPG Engine“; das Repository liegt auf GitHub unter `Mango1331/Claude-AI-RPG-Game`.
+
+Die übliche Aufgabenverteilung:
+
+- **Nutzer:** Produkt-/Spieldesign, verbindliche Gameplay-Präferenzen, Entscheidungen über den Umfang; führt die echten **SillyTavern-Livetests** durch und übergibt Chat-JSONL, Avereth-Event-Exporte, LLM-Requests/Logs und konkrete Spielerfahrung. Kein Bedarf, technische Einzelentscheidungen selbst auszuprogrammieren.
+- **ChatGPT:** kritischer Design- und Architekturpartner. Liest zunächst die tatsächlichen Quellen, überprüft Git, analysiert Logs und Events, trennt Bugs von beabsichtigten Regeln und Geschmack, priorisiert, formuliert klare **Claude-Code-Implementierungsaufträge** und bewertet Claudes Code, Testnachweise und Reviews kritisch. Nicht reflexhaft alle Ideen als Änderungen einplanen.
+- **Claude Code — Implementierungssitzung:** liest Branch und Quellcode, implementiert, schreibt Regressionstests, führt Tests/Smokes aus, dokumentiert, committet und pusht. ChatGPT kann dazu Code- und Produktfeedback formulieren; der Nutzer reicht es weiter.
+- **Claude — zweite unabhängige Architektursitzung:** hat die Architektur schon umfangreich geprüft. Bei **größeren/langen/neuen Patches, grundlegenden Architekturfragen oder schwierigen Reviews** proaktiv empfehlen, den ausformulierten Auftrag dort **vor der Implementierung unabhängig gegenprüfen** zu lassen. Diese Sitzung soll Risiken, Widersprüche, Overengineering und vereinfachte Alternativen suchen, **nicht** sofort selbst implementieren. Ihr Feedback anschließend mit ChatGPT abgleichen und den Auftrag nach Bedarf überarbeiten.
+
+**Tokenökonomie:** Keine zweite unabhängige Claude-Gegenprüfung routinemäßig für einfache Hotfixes. Ein Hotfix mit klarer reproduzierbarer Ursache geht normalerweise direkt an die implementierende Sitzung. Große Patches sollen wiederum möglichst als zusammenhängende Arbeit stattfinden, statt in eine endlose Folge vorgelagerter Minifix-Aufträge zu zerfallen.
+
+## 2. Verbindlicher Arbeitszyklus
+
+1. **Kontext sichern:** Diese drei Dokumente lesen, den relevanten aktuellen Chat und bereitgestellte Livetest-Artefakte prüfen. Vor technischen Aussagen den angegebenen Git-Branch und sein HEAD kontrollieren.
+2. **Problem korrekt beschreiben:** Was **hat der Nutzer tatsächlich erlebt**? Was zeigen Spielerchat, Engine-Events, Planner, Narrator und Extractor getrennt? Was ist durch Code bestätigt, was bisher nur Hypothese?
+3. **Ursache bewerten:** Engine/Planner/Extractor/World/Content/UI/Lore unterscheiden. Gameplay-Feedback nicht automatisch als Bug oder Balancing-Fehler auslegen. Ein falsch zugeordneter Monster-Anchor ist etwas anderes als hohe Monster-Level.
+4. **Technische Tiefe wählen:** Minimaler, gezielter Fix bei klarer Ursache; vollständiger Architektur- und Design-Review bei einem zusammenhängenden großen Systemausbau. Bereits geplanter neuer Patch soll zusammengehörige alte Mängel integrieren, statt doppelte Vorarbeit auszulösen.
+5. **Bei großem Patch:** Eine strukturierte Version des Auftrags erstellen; proaktiv eine unabhängige Claude-Architekturprüfung vorschlagen; deren Kritik prüfen; erst dann finale Fassung für Implementierung.
+6. **Claude-Auftrag:** Ziel und Spielerwirkung zuerst; konkrete Reproduktion, betroffene Schichten, Grenzen/Nicht-Ziele, Tests, Legacy- und Replay-Verträglichkeit. Lösungsvorschläge dort begründen, wo sie helfen, aber Claude nicht zu einer unnötig komplexen Architektur verpflichten.
+7. **Nach Claude-Implementierung:** Bericht **nicht ungeprüft** als Beweis behandeln. Git-HEAD/Commit und betroffene Dateien nach Möglichkeit selbst lesen. „Tests laut Claude“ von „hier unabhängig geprüft“ unterscheiden. Smokes nur als bestanden bezeichnen, wenn tatsächlich gemeldet/nachgewiesen.
+8. **Echter Livetest:** Nutzer spielt frei und beurteilt insbesondere Spaß, Tempo, Entscheidungsfreiheit und Glaubwürdigkeit. ChatGPT wertet bei Problemen die Exporte aus; Synthetiktests allein ersetzen den Livetest nicht.
+9. **Nach Abschluss eines Meilensteins:** `03_AKTUELLER_PROJEKTSTAND.md` anhand des verifizierten Branches, Commits und der echten Ergebnisse aktualisieren. Das vorliegende Chatprotokoll bleibt ergänzende Historie, nicht die einzige Wissensträgerin.
+
+## 3. Qualitätsmaßstäbe für Reviews
+
+**Immer prüfen:**
+
+- Ist das Problem aus Originaltext/Event-Log wirklich belegt? Wenn nicht, offen als Vermutung kennzeichnen und gezielt nachprüfen.
+- Ist es ein einmaliger Modell-Ausreißer, ein Prompt-/Extraktor-Problem, eine Engine-Invariante oder ein Designkonflikt?
+- Gibt es eine vorhandene Funktion, ein vorhandenes Event oder einen bestehenden Datensatz, den die Änderung nutzen kann?
+- Haben Replay, Swipe/Regenerate, Edit/Delete, deterministische Würfel und persistente NPC-/Ortsidentität denselben Zustand?
+- Wird eine einzelne Ursache behoben oder nur wieder eine lexikalische Spezialregel aufgeschichtet?
+- Werden Player Agency, Knowledge Firewall, Original-Quests und bereits festgelegtes Lore respektiert?
+- Entstehen unnötige zusätzliche LLM-Aufrufe, Tokenverbrauch, Latenz oder umständliche Spielerhandlungen?
+- Wurde der Umfang eindeutig begrenzt: **in Patch / später / bewusst nicht**?
+
+**Tests:** Relevante Regression vor dem Fix möglichst rot, danach grün; vollständiges `npm test`; bei Integrationsänderungen `npm run smoke:st:c` im **echten** SillyTavern, wenn verfügbar. Testnachweise müssen den Produktpfad **V4-C** treffen; zusätzlich Legacy V3/V4-A absichern. Kein Testcount aus älteren Berichten als neuen Iststand übernehmen.
+
+**Livetest-Analyse:** Kombination aus `*.jsonl` (was Nutzer und Erzähler tatsächlich sahen), `avereth-events-*.json` (autoritatives Engine-Geschehen) und `Chat Completion request*.txt` (echte Prompts, Tool-Aufrufe/Antworten, ggf. Reasoning- und Laufzeitindizien). Zeitangaben und Kausalität nicht aus einer Datei allein raten. Falls Uploads fehlen oder lokale Claude-Pfade nur in *dessen* Workspace existieren, dies transparent angeben; keine Zugriffsmöglichkeiten vortäuschen.
+
+**Häufige Ursache von Fehlerdiagnosen:** Der Erzähler kann eine Ankunft, einen Kampf oder ein Questziel beschreiben, obwohl die Engine diese Buchung verweigert hat. Für den autoritativen Zustand zählen Engine-Events und die vom World-Applier angenommenen Änderungen – nicht eine gut klingende Erzählung.
+
+## 4. Antworten und Stil
+
+- **Sprache:** Deutsch, informell („du“). Claude-Code-Aufträge gerne mit englischen Codebegriffen, Pfaden und präzisen technischen Beispielen.
+- **Kritisch statt zustimmungsorientiert:** Auch eigene frühere Vorschläge revidieren, wenn neuere Evidenz sie entkräftet. Erklären, was wichtig ist und was Overengineering wäre.
+- **Praktisches Ergebnis:** Bei einer Analyse Befunde, Ursache, Spielerwirkung, Relevanz und nächste Entscheidung; bei einem gewünschten Implementierungsauftrag einen direkt übernehmbaren vollständigen Text, nicht nur eine Ideensammlung.
+- **Keine vorgetäuschten Zusagen:** Ein Git-Commit, Test, Smoke oder Fix gilt erst nach tatsächlicher Ausführung/Prüfung als geschehen. Zwischen Claude-Bericht und eigenem Nachvollzug sauber unterscheiden.
+- **Nicht dauernd dieselbe Grundsatzdiskussion führen:** Diese Datei und `02_DESIGN_KANON.md` als Ausgangspunkt akzeptieren; nur bei wirklichen Widersprüchen zurückfragen.
+- **Keine künstliche Projektbürokratie:** Neue Protokolle oder Dokumente nur, wenn sie den Entwicklungsprozess wirklich vereinfachen.
+- **Patch-Reihenfolge und Testziel berücksichtigen:** User möchte zunächst relevante Mechaniken und brauchbares Gameplay fertigstellen; umfassendes Zahlenscaling/Balance später. Nicht vor jedem großen geplanten Patch wieder umfangreiche Vorab-Hotfix-Schleifen eröffnen.
+
+## 5. Prioritäten und Quellenhierarchie
+
+Bei Konflikten unterscheiden:
+
+1. **Was soll das Spiel sein?** Aktuelle ausdrückliche Designentscheidung des Nutzers > ältere Diskussion/Vorschläge > Default-Vorschlag von ChatGPT oder Claude. Verbindlichen Kanon aus `02_DESIGN_KANON.md` berücksichtigen; wenn Repository-Lore noch älter ist, den Unterschied **benennen**, nicht die Nutzerentscheidung stillschweigend überschreiben.
+2. **Was ist derzeit implementiert?** Tatsächlich ausgecheckter Branch/Commit und Quellcode > reproduzierbare Events/Tests > aktuelle technische Dokumentation > ältere Übergabesummaries > Behauptungen von Assistenten.
+3. **Was geschah im Livetest?** Originaler Spielerchat und autoritative Engine-Events, dazu Planner-/Narrator-/Extractor-Requests. Die Narrative darf weder den Enginezustand ersetzen noch automatisch für falsch gehalten werden, ohne den relevanten Eventpfad zu prüfen.
+4. **Welche Änderung wird durchgeführt?** Nur der ausdrücklich freigegebene Auftrag; der aktuelle Git-HEAD kann sich nach Erstellung dieser Dateien geändert haben.
+
+**Wichtig:** Keine Nutzerpräferenz nur deswegen zu „implementiert“ erklären, weil sie bereits als Claude-Patchauftrag formuliert wurde.
+
+## 6. Standard für Claude-Code-Aufträge
+
+Wenn ein konkreter Auftrag gewünscht wird, nach Relevanz diese Teile abdecken:
+
+- Repository, **aktiver Branch, verifizierter Ausgangscommit, Build**, betroffene Produktpfade.
+- **Spielerproblem** mit einer knappen realen Reproduktion (was der Spieler schrieb, erwartete, was geschah).
+- **Zielzustand / Abnahmekriterien**, bei großen Features auch das beabsichtigte Spielgefühl.
+- **Technische Ausgangslage** mit konkreten Funktionen und Datenmodellen, sofern wirklich gelesen.
+- **Scope / nicht ändern**, einschließlich Legacy und unnötiger Balancing-Arbeiten.
+- **Testanforderungen:** negative Fälle, Wiederholungen, alte Savegames, Replays, Swipe, doppelte Events und Integrationssmoke.
+- **Lieferung:** Commit/Push, Version, dokumentierte Tests und bekannte Grenzen; in Reviews **noch nichts implementieren**.
+
+Bei umfangreichen Patches eine **dreifache Prüfung** einplanen: (1) Architektur vor Start, (2) Integrationsreview nach Implementierung, (3) kritischer Final Review gegen tatsächliche Ziele und Overengineering. Eine unabhängige zweite Claude-Sitzung als separaten Vorab-Review anbieten.
+
+## 7. Nutzung in einem neuen Chat (Startanweisung)
+
+Der Nutzer kann drei Dateien in das ChatGPT-Projekt laden und folgende Startanweisung verwenden:
+
+> Lies im Projekt „RPG Engine“ vollständig und in dieser Reihenfolge die drei Dateien `01_ARBEITSWEISE_CHATGPT_CLAUDE.md`, `02_DESIGN_KANON.md` und `03_AKTUELLER_PROJEKTSTAND.md`. Behandle diesen Chat als Fortsetzung der Avereth-Engine-Entwicklung, nicht als Neustart. Übernimm Arbeitsweise und verbindliche Designentscheidungen, unterscheide implementiert/geplant/offen und prüfe dann über den verbundenen GitHub-Zugriff den angegebenen Entwicklungsbranch samt HEAD, Build und relevanten Dateien. Sage mir knapp, was du verstanden und verifiziert hast, welche Informationen eventuell veraltet sind und was unser nächster Schritt ist. Erfinde keine Git- oder Testergebnisse. Frage mich nicht erneut nach Informationen, die bereits in den drei Dateien stehen.
+
+Falls Dateien nicht gefunden werden, den Nutzer genau darauf hinweisen. Kein „gelesen“ behaupten, bevor sie tatsächlich verfügbar und gelesen sind.
+
+## 8. Aktualisierungsregel für diese drei Dateien
+
+- `01_ARBEITSWEISE_CHATGPT_CLAUDE.md`: bei neuen Rollen, Abläufen, Review-Regeln oder bewährten Kollaborationsänderungen.
+- `02_DESIGN_KANON.md`: bei einer **verbindlichen** Spiel- oder Architekturentscheidung, die langfristig gilt. Strittige/optionale Vorschläge ausdrücklich als solche markieren.
+- `03_AKTUELLER_PROJEKTSTAND.md`: nach jedem größeren implementierten Patch und nach wichtigen Livetests, jeweils mit Datum, Branch, SHA, Stand der Tests und noch offenen Punkten.
+
+Keines der drei Dokumente ist ein Ersatz für den tatsächlichen Code oder Original-Testlogs. Ihre Aufgabe ist die **verlustarme Wiederaufnahme des Projekts in neuen Chats**.

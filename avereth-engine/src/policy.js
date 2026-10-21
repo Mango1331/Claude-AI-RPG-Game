@@ -4,11 +4,12 @@
 // extractor reports that someone turned on him. Pure: the caller reads the inputs from its own state.
 
 /**
- * @param {{sapient: boolean, temperament?: string|null, attitude?: number, harmed?: boolean, band?: string|null}} a
- *   attitude: toward Alaric (-100..100); harmed: hurt or attacked by Alaric; band: distance to Alaric
+ * @param {{sapient: boolean, temperament?: string|null, attitude?: number, harmed?: boolean, band?: string|null, hostileRole?: boolean}} a
+ *   attitude: toward Alaric (-100..100); harmed: hurt or attacked by Alaric; band: distance to Alaric; temperament: the
+ *   legacy paths only (V3, V4-A); the planner path (4.3.0-c.6.6.24) passes none and hostileRole instead
  * @returns {{ok: boolean, rule?: string, why: string}}
  */
-export function opensViolence({ sapient, temperament = null, attitude = 0, harmed = false, band = null }) {
+export function opensViolence({ sapient, temperament = null, attitude = 0, harmed = false, band = null, hostileRole = false }) {
     const temper = temperament || (sapient ? 'cautious' : 'aggressive');
     if (sapient) {
         // a sapient NPC that is not hostile toward Alaric and has been neither hurt nor attacked does not open with
@@ -16,6 +17,8 @@ export function opensViolence({ sapient, temperament = null, attitude = 0, harme
         if (temper === 'aggressive') return { ok: true, why: 'aggressive by temperament' };
         if (harmed) return { ok: true, why: 'hurt or attacked by Alaric' };
         if (attitude <= -20) return { ok: true, why: 'hostile toward Alaric' };
+        // 4.3.0-c.6.6.24 (planner path, no temperament): an outlaw by trade (a bandit, a robber) is hostile by role
+        if (hostileRole) return { ok: true, why: 'an outlaw who preys on travellers by trade' };
         return { ok: false, rule: 'provoked_only', why: 'not hostile toward Alaric and not harmed by him' };
     }
     // animals by their body plan's temperament (npcDecide): a skittish one flees from threats and fights only when

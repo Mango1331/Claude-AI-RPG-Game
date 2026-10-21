@@ -378,10 +378,14 @@ test('c.6.6.5 B1-B2: a defensive creature struck in its cover closes to defend i
     assert.equal(npcDecide({ enc: structuredClone(enc), c: false, state: null, content }, 'mon.c').kind, 'hold');
     const quiet = structuredClone(enc);
     quiet.log = [{ actor: 'pc', kind: 'attack', target: 'mon.c', strikes: [{ target: 'mon.c' }] }, { actor: 'mon.c', kind: 'hold' }];
-    assert.equal(npcDecide({ enc: quiet, c: true, state: null, content }, 'mon.c').kind, 'hold', 'not struck since its last Turn: it keeps its cover');
+    // 4.3.0-c.6.6.24: on the planner path no temperament ("defensive") holds it in its cover; out of reach it closes in
+    assert.equal(npcDecide({ enc: quiet, c: true, state: null, content }, 'mon.c').kind, 'close_and_attack', 'no category keeps it in cover');
     const low = structuredClone(enc);
     low.combatants['mon.c'].current.hp = 13;
-    assert.equal(npcDecide({ enc: low, c: true, state: null, content }, 'mon.c').kind, 'flee');
+    assert.equal(npcDecide({ enc: low, c: true, state: null, content }, 'mon.c').kind, 'close_and_attack', 'badly hurt is no flight by itself');
+    low.intents['mon.c'] = 'flee';
+    assert.equal(npcDecide({ enc: low, c: true, state: null, content }, 'mon.c').kind, 'flee', 'the story\'s flight stands');
+    assert.equal(npcDecide({ enc: structuredClone(quiet), c: false, state: null, content }, 'mon.c').kind, 'hold', 'the old path keeps its cover');
     const loot = (species, desc) => {
         const s = { turn: 9, entities: { pc: { id: 'pc', kind: 'pc', sheet: { coin_cp: 0, inventory: {}, equipment: {} } }, 'mon.x': { id: 'mon.x', status: 'dead', kind: 'creature', species, descriptors: desc, profile: { anchor: 'serpent', rank: 'F', level: 1, attack: { name: 'Bite' } } } }, objects: {}, scene: { present: ['pc'] } };
         return lootEvents(s, content, { id: 'enc.t9', combatants: { pc: { id: 'pc', current: { hp: 20 } }, 'mon.x': { id: 'mon.x', current: { hp: 0 } } } }).lines.join(' ');

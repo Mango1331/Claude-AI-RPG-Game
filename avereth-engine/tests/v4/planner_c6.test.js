@@ -684,7 +684,7 @@ test('c.6.6: seeing Alaric (knowledge) and Ambush awareness are separate: co-pre
     assert.equal(sawHim(smugglers('aware')), true);
 });
 
-test('c.6.5-gpt: skittish is a C bias: retreat gains distance, while leaving the encounter needs more than temperament', () => {
+test('c.6.5-gpt, 4.3.0-c.6.6.24: no temperament on the planner path: a "skittish" NPC neither retreats nor flees by its label; the story\'s flight stands', () => {
     const s = structuredClone(live(4).state());
     const id = 'npc.skittish_test';
     s.entities[id] = {
@@ -698,20 +698,18 @@ test('c.6.5-gpt: skittish is a C bias: retreat gains distance, while leaving the
     const me = enc.combatants[id];
 
     let d = npcDecide({ enc, content, state: s, c: true }, id);
-    assert.notEqual(d.kind, 'flee', 'temperament alone does not make an unharmed sapient NPC flee');
+    assert.notEqual(d.kind, 'flee', 'an unharmed NPC does not flee by its label');
 
     enc.log.push({ round: 1, actor: 'pc', kind: 'attack', target: id, strikes: [{ target: id, final: 1 }] });
     d = npcDecide({ enc, content, state: s, c: true }, id);
-    assert.equal(d.kind, 'retreat', 'a threatened skittish actor at SHORT/MEDIUM may gain distance without leaving');
+    assert.ok(!['retreat', 'flee'].includes(d.kind), `struck, it answers by the fight, not by "skittish": ${d.kind}`);
 
     me.current.band = 'LONG';
-    me.current.hp = Math.ceil(me.fixed.max_hp * 0.6);
-    d = npcDecide({ enc, content, state: s, c: true }, id);
-    assert.notEqual(d.kind, 'flee', 'at LONG, temperament alone is still not escape');
-
     me.current.hp = Math.floor(me.fixed.max_hp * 0.2);
     d = npcDecide({ enc, content, state: s, c: true }, id);
-    assert.equal(d.kind, 'flee', 'a genuinely badly wounded skittish actor may try to leave');
+    assert.notEqual(d.kind, 'flee', 'badly wounded is no flight by itself');
+    enc.intents[id] = 'flee';
+    assert.equal(npcDecide({ enc, content, state: s, c: true }, id).kind, 'flee', 'the story\'s flight stands');
 });
 
 test('c.6.5-gpt: planner gets recent route memory for semantic return references', () => {

@@ -21,11 +21,14 @@ const COUNT = '(?:\\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|t
 // a kind of one to three words ("beetles", "crystal beetles", "of the cave rats"), never a clause ("beetle lunged at the")
 const NOUN = "([a-z][a-z'\\-]*(?:\\s+[a-z][a-z'\\-]*){0,2}?)";
 const NEGATED = /\b(?:no|not|none|never|nobody|neither|nor|without|failed to|almost|nearly)\b/;
+// a count right after a word of place names the place, not the dead ("the skeleton in the first burial gallery was
+// destroyed": livetest 21.10.2026, read as a gallery killed while the engine had the skeleton dead)
+const NOT_AFTER_PLACE = '(?<!\\b(?:in|at|on|into|inside|within|near|beneath|under|across|through|from)\\s)';
 // "four beetles were killed", "all of the wolves lay dead", "the beetles died"
-const COUNTED_DEAD = new RegExp(`\\b(${COUNT})\\s+(?:of\\s+(?:the|them|those)\\s+)?${NOUN}\\s+(?:were|was|are|is|lay|lie|had been|have been|has been|got|now|all)?\\s*${DEATH}\\b`);
+const COUNTED_DEAD = new RegExp(`${NOT_AFTER_PLACE}\\b(${COUNT})\\s+(?:of\\s+(?:the|them|those)\\s+)?${NOUN}\\s+(?:were|was|are|is|lay|lie|had been|have been|has been|got|now|all)?\\s*${DEATH}\\b`);
 // "killed four beetles", "slew all the wolves", "four dead beetles"
 const KILLED_COUNT = new RegExp(`\\b${DEATH}\\s+(${COUNT})\\s+(?:of\\s+(?:the|them|those)\\s+)?(?:the\\s+)?${NOUN}(?=[,.;!]|\\s+(?:and|with|in|at|on|before|after|while|but|that|who|which)\\b|$)`);
-const DEAD_COUNT = new RegExp(`\\b(${COUNT})\\s+dead\\s+${NOUN}(?=[,.;!]|\\s|$)`);
+const DEAD_COUNT = new RegExp(`${NOT_AFTER_PLACE}\\b(${COUNT})\\s+dead\\s+${NOUN}(?=[,.;!]|\\s|$)`);
 // "four of them were killed": the pronoun is those here
 const COUNTED_THEM = new RegExp(`\\b(${COUNT})\\s+of\\s+(them|those)\\s+(?:were|was|are|lay|lie|had been|have been|got|now|all)?\\s*${DEATH}\\b`);
 const DEATH_RE = new RegExp(`\\b${DEATH}\\b`);

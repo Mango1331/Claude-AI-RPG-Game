@@ -267,7 +267,9 @@ function pcActionOf(s, content, intent, text) {
             notice: `Alaric: which target? ${intent.candidates.map((id) => playerLabel(s, id)).join(' or ')} (nothing spent, nothing rolled)`,
         };
         case 'unknown_skill': return { note: `Alaric does not know ${intent.name}. Nothing was spent or rolled.`, notice: `Alaric does not know ${intent.name} (nothing spent, nothing rolled)` };
-        case 'no_target': return intent.ref
+        case 'no_target': return intent.dead
+            ? { note: `Alaric's attack needs a target: ${intent.ref} is already dead. Nothing was spent or rolled, and no one else was attacked in its place; stop at his decision and let the player name a living one.`, notice: `${intent.ref} is already dead: nothing attacked (nothing spent, nothing rolled)` }
+            : intent.ref
             ? { note: `Alaric's attack needs a target: "${intent.ref}" is no one in this fight. Nothing was spent or rolled; stop at his decision and let the player name one.`, notice: `Alaric's attack needs a target: "${intent.ref}" is not in the fight (nothing spent, nothing rolled)` }
             : { note: 'There is no valid target for an attack here. Nothing was spent or rolled.', notice: 'No valid target here (nothing spent, nothing rolled)' };
         default:

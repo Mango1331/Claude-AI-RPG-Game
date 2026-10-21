@@ -352,6 +352,33 @@
       ],
       "temperament": "aggressive",
       "source_line": "40 / 14 / 0 / 5 / 10 | Magical discharge | Magical | MEDIUM"
+    },
+    {
+      "id": "skeleton",
+      "name": "Skeleton / animated bones",
+      "hp": 30,
+      "atk": 10,
+      "def": 2,
+      "mdef": 0,
+      "init": 8,
+      "attack": "Bony strike",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [
+        "Engine addition (4.3.0-c.6.6.24, livetest 21.10.2026): Content #7 lists no body plan for animated dead, and the restless skeletons of a catacomb were fought as rats (Bite, rat numbers, pelt and tail). A man-sized frame of bones: tougher than vermin, slower than a wolf, no flesh to bleed or skin; it strikes with bony hands or whatever rusted blade it still holds."
+      ],
+      "aliases": [
+        "skeleton",
+        "skeletons",
+        "skeletal",
+        "animated bones",
+        "bone warrior",
+        "bone walker"
+      ],
+      "source_line": "30 / 10 / 2 / 0 / 8 | Bony strike | Physical | ENGAGED (engine addition, not in Content #7)",
+      "kinds": [
+        "undead"
+      ]
     }
   ],
   "kind_words": {
@@ -703,6 +730,26 @@
             1
           ],
           "value_cp": 10
+        }
+      ],
+      "skeleton": [
+        {
+          "key": "bone",
+          "name": "{species} Bone",
+          "qty": [
+            1,
+            2
+          ],
+          "value_cp": 1
+        },
+        {
+          "key": "dust",
+          "name": "{species} Grave Dust",
+          "qty": [
+            0,
+            1
+          ],
+          "value_cp": 2
         }
       ],
       "goblin": {

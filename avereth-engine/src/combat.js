@@ -4,6 +4,7 @@
 // The only roll left in an attack is the damage variance. Every step is written into the encounter snapshot (the
 // FIXED+CURRENT snapshot that Testrun-v1 lost), so the next turn copies it instead of re-guessing.
 import { opensViolence } from './policy.js';
+import { actorTraits } from './v4/envelope.js';
 import { deriveCharacter, rawPower, rawPowerText } from './derived.js';
 import { defeatXp, awardXp, strengthOf } from './progression.js';
 import { scaleCreature } from './npcgen.js';
@@ -379,9 +380,12 @@ function resolveStrike(ctx, attacker, target, attack, opts) {
 
 function onDefeat(ctx, target, record) {
     const enc = ctx.enc;
-    if (!enc.defeated.includes(target.id)) {
-        enc.defeated.push(target.id);
+    // livetest 21.10.2026: one that surrendered gave no XP; struck down after it, it gives its XP, once (xp_counted)
+    const afterSurrender = target.current.surrendered && !target.current.xp_counted;
+    if (!enc.defeated.includes(target.id) || afterSurrender) {
+        if (!enc.defeated.includes(target.id)) enc.defeated.push(target.id);
         if (target.side === 'hostile' && typeof target.fixed.defeat_xp === 'number') {
+            if (afterSurrender) target.current.xp_counted = true;
             enc.pending_xp += target.fixed.defeat_xp;
             // Prototype C (4.3.0-c.6.6.6): an area attack may defeat several at once; the record shows all they add
             record.pending_xp_added = (ctx.c ? record.pending_xp_added || 0 : 0) + target.fixed.defeat_xp;
@@ -755,7 +759,9 @@ export function npcDecide(ctx, npcId) {
     const pc = enc.combatants.pc;
     const hpPct = me.current.hp / me.fixed.max_hp;
     const band = me.current.band;
-    const temper = me.fixed.temperament || (me.fixed.sapient ? 'cautious' : 'aggressive');
+    // 4.3.0-c.6.6.24 (livetest 21.10.2026: restless skeletons on the rat body plan, "skittish", retreated and were chased
+    // round after round): on the planner path no personality category decides; the legacy paths keep theirs
+    const temper = ctx.c ? null : me.fixed.temperament || (me.fixed.sapient ? 'cautious' : 'aggressive');
     let intent = enc.intents[npcId];
     const reach = me.model === 'creature' ? me.fixed.attack.range : npcReach(ctx, me);
     const inRange = bandIndex(band) <= bandIndex(reach);
@@ -775,7 +781,13 @@ export function npcDecide(ctx, npcId) {
     // harmed does not open with violence merely because of a label such as "skittish". It may seek cover or hold.
     const attitude = ctx.state?.relations?.[`rel.${npcId}.attitude.pc`]?.value ?? 0;
     const harmed = me.current.hp < me.fixed.max_hp || wasHit || enc.log.some(attackOn);
-    if (!intent && me.fixed.sapient && !opensViolence({ sapient: true, temperament: temper, attitude, harmed }).ok) {
+    // on the planner path by what is established, not a temperament: harm, hostility toward him, an outlaw's role, or the
+    // fight its own (it opened it); a person none of that holds for does not open with violence (no guard by label)
+    const outlaw = () => !!ctx.state?.entities?.[npcId] && !!actorTraits(ctx.state, ctx.content, npcId, { c: true }).hostileRole;
+    const holdsBack = ctx.c
+        ? enc.trigger?.actor !== npcId && !opensViolence({ sapient: true, attitude, harmed, hostileRole: outlaw() }).ok
+        : !opensViolence({ sapient: true, temperament: temper, attitude, harmed }).ok;
+    if (!intent && me.fixed.sapient && holdsBack) {
         return me.current.cover === 'none' && band !== 'ENGAGED' ? { kind: 'cover', why: 'not hostile, not yet harmed: seeks cover' } : { kind: 'hold', why: 'not hostile, not yet harmed' };
     }
     // Patch 4 (Prototype C): one that fled on its own last Turn goes on fleeing until it is out of the fight (live:
@@ -789,6 +801,16 @@ export function npcDecide(ctx, npcId) {
         if (intent === 'take_cover') return { kind: 'cover', why: 'narrated intent' };
         if (intent === 'hold' || intent === 'parley') return { kind: 'hold', why: `narrated intent (${intent})` };
         if (intent === 'attack') return inRange ? { kind: 'attack' } : { kind: 'close_and_attack' };
+    }
+    if (ctx.c) {
+        // the fight as it stands: in reach it strikes, out of reach it closes in; one that can only strike in melee and is
+        // shot at from range takes cover once (a person); flight and surrender come from the story's intent (above),
+        // never from a label
+        if (inRange) return { kind: 'attack' };
+        const lastShot = [...enc.log].reverse().find((r) => r.actor === 'pc' && r.kind === 'attack');
+        const shot = lastShot && (lastShot.strikes || []).some((k) => k.target === npcId);
+        if (me.fixed.sapient && shot && me.current.cover === 'none') return { kind: 'cover', why: 'shot from range, out of its reach: takes cover' };
+        return { kind: 'close_and_attack' };
     }
     if (temper === 'skittish') {
         // Prototype C: skittish biases positioning; it does not itself mean "leave the encounter". An explicit narrated
@@ -890,8 +912,9 @@ function asideTurn(ctx, npcId) {
         me.side = side;
         // 4.3.0-c.6.6.7: only one its nature lets open violence (src/policy.js: a skittish animal flees what hurt it)
         const attitude = ctx.state?.relations?.[`rel.${npcId}.attitude.pc`]?.value ?? 0;
-        const temperament = me.fixed.temperament || (me.fixed.sapient ? 'cautious' : 'aggressive');
-        const may = opensViolence({ sapient: me.fixed.sapient, temperament, attitude, harmed: true, band: me.current.band }).ok;
+        // 4.3.0-c.6.6.24: by what is established, not a temperament: a person struck by him may fight back; a creature
+        // the story showed as no foe (threat: false, the packhorse) backs away; any other creature struck answers
+        const may = me.fixed.sapient ? opensViolence({ sapient: true, attitude, harmed: true, band: me.current.band }).ok : ctx.state?.entities?.[npcId]?.threat !== false;
         if (may && (decision.kind === 'attack' || decision.kind === 'close_and_attack')) return turnOn(`struck by his ${struck.skill_name || 'attack'}`, decision);
         if (!['surrender', 'hold', 'attack', 'close_and_attack'].includes(decision.kind)) return { ...npcAct(ctx, npcId, decision), why: `${who}, struck by his ${struck.skill_name || 'attack'}: ${decision.why || decision.kind}` };
     }
@@ -917,11 +940,9 @@ function npcAct(ctx, npcId, decided = null) {
     if (ctx.c && me.current.caught && (decision.kind === 'flee' || decision.kind === 'retreat')) decision = { kind: 'attack', why: 'caught: cornered' };
     if (decision.kind === 'surrender') {
         me.current.surrendered = true;
-        if (!enc.defeated.includes(npcId)) {
-            enc.defeated.push(npcId);
-            if (typeof me.fixed.defeat_xp === 'number') enc.pending_xp += me.fixed.defeat_xp;
-        }
-        return { round: enc.round, actor: npcId, kind: 'surrender', why: decision.why, pending_xp_added: me.fixed.defeat_xp };
+        // livetest 21.10.2026: a surrender ends its part in the fight but is no defeat: no XP (a kill later gives it, once)
+        if (!enc.defeated.includes(npcId)) enc.defeated.push(npcId);
+        return { round: enc.round, actor: npcId, kind: 'surrender', why: decision.why, pending_xp_added: 0 };
     }
     if (decision.kind === 'flee') return { ...moveAction(ctx, npcId, 'away'), why: decision.why, ...(ctx.c ? { fleeing: true } : {}) };
     if (decision.kind === 'retreat') return { ...moveAction(ctx, npcId, 'away'), kind: 'move', dir: 'away', why: decision.why };
@@ -1190,7 +1211,8 @@ export function endEncounterEvents(state, content, enc) {
     };
     if (xp > 0) {
         const sheet = { ...state.entities.pc.sheet };
-        events.push(...awardXp(sheet, xp, content, `Combat XP (${enc.defeated.map((id) => `${enc.combatants[id].name} ${enc.combatants[id].fixed.defeat_xp}`).join(', ')})`));
+        const earned = enc.defeated.filter((id) => !enc.combatants[id].current.surrendered || enc.combatants[id].current.xp_counted);
+        events.push(...awardXp(sheet, xp, content, `Combat XP (${earned.map((id) => `${enc.combatants[id].name} ${enc.combatants[id].fixed.defeat_xp}`).join(', ')})`));
     }
     events.push({ t: 'encounter.ended', d: { id: enc.id, summary } });
     return { events, summary };

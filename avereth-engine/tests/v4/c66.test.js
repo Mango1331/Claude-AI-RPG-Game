@@ -263,9 +263,11 @@ test('c.6.6 chase: "I chase him" after a fleeing goblin is one roll, caught (ENG
     const seen = new Map();
     for (let seed = 1; seed < 60 && seen.size < 2; seed++) {
         const ctx = duel({ band: 'SHORT', hpPct: 0.2, seed });
+        // 4.3.0-c.6.6.24: flight is the story's intent, never a temperament ("cautious" and wounded)
+        ctx.enc.intents['mon.g'] = 'flee';
         runCombat(ctx, { kind: 'hold' });
         const ran = mine(ctx, 'mon.g').at(-1);
-        assert.equal(ran.fleeing, true, 'wounded and cautious, it runs');
+        assert.equal(ran.fleeing, true, 'wounded, the story has it run');
         runCombat(ctx, { kind: 'move', dir: 'closer', target: 'mon.g' });
         const chase = mine(ctx, 'pc').at(-1);
         assert.equal(chase.chase, true);
@@ -276,7 +278,8 @@ test('c.6.6 chase: "I chase him" after a fleeing goblin is one roll, caught (ENG
     const caught = seen.get(true);
     assert.equal(caught.enc.combatants['mon.g'].current.band, 'ENGAGED');
     assert.equal(caught.enc.combatants['mon.g'].current.caught, true);
-    assert.deepEqual(npcDecide({ ...caught }, 'mon.g').kind, 'flee', 'its own wish is still to run …');
+    // 4.3.0-c.6.6.24: with no temperament its wish to run was the story's one flight; caught, it fights (no new urge)
+    assert.deepEqual(npcDecide({ ...caught }, 'mon.g').kind, 'attack', 'caught, it does not run again by itself …');
     const next = mine(caught, 'mon.g').at(-1);
     assert.equal(next.kind, 'attack', '… but caught, it fights back instead');
     // a foe that only gave ground (retreat) is closed in on as before, no roll

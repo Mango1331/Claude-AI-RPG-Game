@@ -31,14 +31,16 @@ function hurt(content, e) {
 }
 
 /** What the violence policy reads about an actor, from the state as it is now. */
-export function actorTraits(state, content, id) {
+export function actorTraits(state, content, id, { c = false } = {}) {
     const e = state.entities[id];
     const sapient = e.kind !== 'creature';
-    const temperament = sapient
+    // 4.3.0-c.6.6.24 (livetest 21.10.2026): on the planner path no personality category decides (skeletons fought as
+    // skittish rats retreated turn after turn); what counts is harm, hostility and an outlaw's role
+    const temperament = c ? null : sapient
         ? e.card?.temperament || e.sheet?.generated?.temperament || templateOf(content, e)?.temperament || null
         : e.profile?.temperament || content.anchors.get(e.anchor || e.profile?.anchor)?.temperament || null;
     return {
-        sapient, temperament,
+        sapient, temperament, ...(c && sapient ? { hostileRole: HOSTILE_ROLE.test(roleText(state, id)) } : {}),
         attitude: state.relations?.[`rel.${id}.attitude.pc`]?.value ?? 0,
         harmed: hurt(content, e),
         band: state.scene?.positions?.[id]?.band || null,
@@ -56,7 +58,7 @@ export function mayOpenFight(state, content, id, { newInAnswer = false, c = fals
     if (newInAnswer) return { ok: true, why: 'introduced by this reply' };
     if (state.encounter?.combatants?.[id]) return { ok: true, why: 'already fighting' };
     if ((state.pending_combat || []).some((p) => p.by === id)) return { ok: true, why: 'already committed' };
-    const traits = actorTraits(state, content, id);
+    const traits = actorTraits(state, content, id, { c });
     const v = opensViolence(traits);
     // Prototype C (4.3.0-c.4): an animal's temperament is a strong tendency, not a law. The story may give it a cause
     // (cornered, its mate killed); the engine still resolves the attack on the animal's own turn, damage included.

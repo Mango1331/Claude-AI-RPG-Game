@@ -96,20 +96,16 @@ async function live({ planner = true } = {}) {
 }
 
 // ------------------------------------------------------------------------------------------------ 1. no intent
-test('1. a skittish creature without an intent: a deterministic fallback; a pursuit that only closes in ends at arm\'s length, not in a flee-and-chase loop', () => {
-    // the fallback on the planner path, by situation: startled by the fight Alaric opened, it seeks distance; left alone
-    // it holds, wary; attacked since its own last turn, it seeks distance again; at arm's length it fights back, hurt or not
+test('1. a creature without an intent: on the planner path its fight decides, not a temperament; no flee-and-chase loop (A keeps its skittish flight)', () => {
+    // 4.3.0-c.6.6.24 (livetest 21.10.2026: restless skeletons on the rat body plan retreated and were chased round after
+    // round): on the planner path a creature with no intent of the story's strikes when in reach and closes in when not,
+    // whatever its body plan's old temperament; startled, pressed or left alone alike
     const kind = (o) => `${o.kind}${o.why ? ` (${o.why})` : ''}`;
-    // c.6.5-gpt (kept in c.6.6): skittish is a bias on the planner path; threatened it RETREATS one band (at LONG it
-    // holds its distance in cover), left alone it seeks cover; leaving the fight needs more than the temperament
     for (const band of ['SHORT', 'MEDIUM', 'LONG']) {
-        const threatened = band === 'LONG' ? 'cover (skittish at LONG: holds distance in cover)' : 'retreat (skittish, threatened: gains distance)';
-        assert.equal(kind(decide({ band })), threatened, `${band}, its first turn in Alaric's fight`);
-        assert.equal(kind(decide({ band, log: [OWN_MOVE] })), 'cover (skittish, wary: seeks cover)', `${band}, nobody pressed it since its last turn`);
-        assert.equal(kind(decide({ band, log: [OWN_MOVE, PC_HIT] })), threatened, `${band}, attacked since its last turn`);
+        for (const log of [[], [OWN_MOVE], [OWN_MOVE, PC_HIT]]) assert.equal(kind(decide({ band, log })), 'close_and_attack', `${band}, ${log.length} records`);
         assert.deepEqual(decide({ band, log: [OWN_MOVE] }), decide({ band, log: [OWN_MOVE] }), 'deterministic');
     }
-    for (const log of [[], [OWN_MOVE], [OWN_MOVE, PC_HIT], [PC_HIT, OWN_MOVE, PC_HIT]]) assert.equal(kind(decide({ band: 'ENGAGED', log })), 'attack (cornered)');
+    for (const log of [[], [OWN_MOVE], [OWN_MOVE, PC_HIT], [PC_HIT, OWN_MOVE, PC_HIT]]) assert.equal(kind(decide({ band: 'ENGAGED', log })), 'attack');
     // without the planner A decides as before: hit once, it flees for the rest of the fight, at arm's length too
     assert.equal(kind(decide({ c: false, band: 'ENGAGED', log: [PC_HIT] })), 'flee (skittish, threatened)');
     assert.equal(kind(decide({ c: false, band: 'MEDIUM', log: [OWN_MOVE] })), 'flee (skittish)');
@@ -123,13 +119,11 @@ test('1. a skittish creature without an intent: a deterministic fallback; a purs
     const a = chase(false);
     assert.ok(a.mine.length >= 6 && a.mine.every((r) => r.kind === 'move' && r.dir === 'away'), a.mine.map((r) => r.kind).join(','));
     assert.ok(!a.ctx.enc.combatants['mon.x'].current.escaped && a.ctx.enc.combatants['mon.x'].current.band !== 'ENGAGED', 'A: neither caught nor gone');
-    // the planner path: it flees once (startled), then holds while only followed; at arm's length it fights back
+    // the planner path: it never gives ground by itself; it comes at him and fights at arm's length
     const c = chase(true);
     const kinds = c.mine.map((r) => r.kind);
-    assert.equal(kinds.filter((k) => k === 'move').length, 1, kinds.join(','));
-    assert.equal(kinds[0], 'move');
-    assert.ok(kinds.includes('hold') && kinds.includes('attack'), kinds.join(','));
-    assert.equal(c.mine.find((r) => r.kind === 'attack').why, undefined, 'an engine attack record (the fallback: cornered)');
+    assert.ok(!c.mine.some((r) => r.dir === 'away'), kinds.join(','));
+    assert.ok(kinds.includes('attack'), kinds.join(','));
     assert.equal(c.ctx.enc.combatants['mon.x'].current.band, 'ENGAGED');
     // the same fight, the same records
     assert.deepEqual(chase(true).mine, c.mine);
@@ -195,25 +189,25 @@ test('3b. still refused on the planner path: a dead creature, one elsewhere; the
     const r2 = world(away, [{ seq: 1, type: 'hostile', by: ['mon.deer'] }]);
     assert.match(refused(r2)[0][1], /mon\.deer is not in the scene/);
     assert.equal(r2.opened, null);
-    // the WORLD ENVELOPE: the same animals, named as a tendency; people keep their limit; A's lines as before
+    // the WORLD ENVELOPE: 4.3.0-c.6.6.24, on the planner path no temperament line for the animals (the story decides);
+    // people keep their limit; A's lines as before
     const s = scene([BREN, DEER, ADDER]);
     const c = envelopeLines(s, content, { c: true });
     assert.deepEqual(c, [
         'Violent only once the story gives them cause first (an insult, a threat, harm): Bren.',
-        'Skittish by nature, a tendency and not a law: they flee from threats and fight when cornered or given cause: Red Deer A.',
-        'Defensive by nature, a tendency and not a law: they fight what comes within reach, or when given cause: Marsh Adder A.',
     ]);
     assert.deepEqual(envelopeLines(s, content).slice(0, 3), [
         'Violent only once the story gives them cause first (an insult, a threat, harm): Bren.',
         'Flee from threats; fight only when cornered (ENGAGED): Red Deer A.',
         'Fight only what comes within reach (ENGAGED): Marsh Adder A.',
     ]);
-    // the engine block of a turn the planner read carries the tendency
+    // the engine block of a turn the planner read names no temperament; A's still does
     const block = (outcome) => buildContext(s, content, { input: 'I watch them.', outcome }).text;
-    assert.match(block({ kind: 'v4', actions: ['1. NOTHING TO BOOK'], auth: { c: true } }), /- Skittish by nature, a tendency and not a law: .*Red Deer A\./);
-    assert.match(block({ kind: 'narrative', c: true }), /- Skittish by nature, a tendency and not a law/);
+    assert.doesNotMatch(block({ kind: 'v4', actions: ['1. NOTHING TO BOOK'], auth: { c: true } }), /Skittish|Flee from threats/);
+    assert.doesNotMatch(block({ kind: 'narrative', c: true }), /Skittish by nature/);
     assert.match(block({ kind: 'v4', actions: ['1. NOTHING TO BOOK'], auth: {} }), /- Flee from threats; fight only when cornered \(ENGAGED\): Red Deer A\./);
-    assert.deepEqual(mayOpenFight(s, content, 'mon.deer', { c: true }), { ok: true, rule: 'cornered_only', why: SKITTISH, tendency: true });
+    assert.equal(mayOpenFight(s, content, 'mon.deer', { c: true }).ok, true);
+    assert.equal(mayOpenFight(s, content, 'mon.deer', { c: true }).tendency, undefined);
 });
 
 // ------------------------------------------------------------------------------------------------ 4. no narrated damage
@@ -264,7 +258,7 @@ test('5. live 03.10.2026 23:43 #45: the cornered Quarry Strider mate turns on Al
     assert.deepEqual(r.rejected.map((x) => ({ seq: x.seq, type: x.type, rule: x.rule, why: x.why })), fx.c3_rejected);
 });
 
-test('5b. live, one turn on: Alaric steps back from the mate; on the planner path it keeps its distance, wary (A: it flees, skittish)', async () => {
+test('5b. live, one turn on: Alaric steps back from the mate; on the planner path it fights on (no temperament), A: it flees, skittish', async () => {
     const step = { commands: [{ seq: 1, type: 'move', dir: 'away', target: 'mon.strider_mate', quote: 'i step back' }] };
     const next = async (planner) => {
         const { g } = await live({ planner: true });
@@ -276,8 +270,8 @@ test('5b. live, one turn on: Alaric steps back from the mate; on the planner pat
         return enc.log.filter((r) => r.actor === 'mon.strider_mate').at(-1);
     };
     const c = await next(true);
-    // c.6.5-gpt: wary and in the open, it seeks cover (keeping its distance), it does not flee
-    assert.equal(`${c.kind} (${c.why})`, 'cover (skittish, wary: seeks cover)');
+    // 4.3.0-c.6.6.24: no temperament on the planner path: the mate that turned on him fights on, it does not flee or hide
+    assert.ok(['attack', 'close_and_attack'].includes(c.kind) || (c.kind === 'move' && c.dir === 'closer'), `${c.kind} (${c.why})`);
     const a = await next(false);
     assert.equal(`${a.kind} ${a.dir} (${a.why})`, 'move away (skittish)');
 });

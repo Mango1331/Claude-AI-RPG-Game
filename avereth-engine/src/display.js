@@ -79,6 +79,7 @@ export function targetQuestion(state, content, intent) {
         });
         const ask = intent.kind === 'ambiguous_target'
             ? `which target — ${intent.candidates.map((id) => sceneHandle(state, content, id)).join(' or ')}?`
+            : intent.dead ? `${intent.ref} is already dead; no one else is attacked in its place.`
             : intent.ref ? `"${intent.ref}" is not a valid target in the active scene.` : 'there is no valid target in the active scene.';
         return [
             '[SYSTEM // ATTACK — TARGET NEEDED]',
@@ -88,6 +89,7 @@ export function targetQuestion(state, content, intent) {
     }
     const targets = combatTargets(state.encounter);
     const ask = intent.kind === 'ambiguous_target' ? `which target — ${intent.candidates.map(name).join(' or ')}?`
+        : intent.dead ? `${intent.ref} is already dead; no one else is attacked in its place.`
         : intent.ref ? `"${intent.ref}" is not a target in this fight.` : 'no target in this fight.';
     return [
         '[SYSTEM // COMBAT — TARGET NEEDED]',

@@ -1741,3 +1741,49 @@ Livetest 21.10.2026 00:16 (`tests/v4/live_1021.json`).
 - Das Lorebook ist unverändert.
 
 **Tests:** `board_1021` (4).
+
+### 4.3.0-c.6.6.24: Kampf ohne Temperament, Skelett-Anchor, Kapitulation ohne XP
+
+Livetest 21.10.2026 00:53 in den Old Crown Catacombs (`tests/v4/live_1021b.json`).
+
+**1. Kein Temperament auf dem Planner-Pfad (C).**
+- Der Ansatz stammt aus dem Branch `…-gpt-no-temperament` und ist minimal übertragen, nicht gemergt.
+- Im Kampf (`npcDecide`) entscheidet keine Kategorie mehr (skittish, aggressive, defensive, cautious):
+  - In Reichweite schlägt der Gegner zu, außer Reichweite rückt er nach.
+  - Eine Person, die aus der Ferne getroffen wird und nur im Nahkampf zuschlagen kann, sucht einmal Deckung.
+  - Flucht und Kapitulation kommen nur aus dem Intent der Geschichte. Eine laufende Flucht läuft weiter, ein Gefangener kämpft.
+- Eine Person greift von sich aus nur an, wenn mindestens eines davon gilt:
+  - Schaden;
+  - feindliche Haltung (`attitude ≤ -20`);
+  - Rolle eines Gesetzlosen (bandit, robber …);
+  - sie hat den Kampf selbst eröffnet.
+- Wachen sind damit nicht mehr per Etikett aggressiv. Ein Unbeteiligter, den Alaric trifft, wehrt sich als Person. Ein Tier, das die Geschichte als kein Feind zeigt (`threat: false`), weicht zurück.
+- Die Story-Hülle nennt für Tiere keine „Skittish by nature“-Zeile mehr.
+- Hintergrund-Herden erkennt die Engine an `threat: false`, nicht an „skittish“.
+- V3 und V4-A sind unverändert.
+- Im Livetest wichen die Skelette auf dem Ratten-Body-Plan („skittish, threatened: gains distance“, „skittish, wary: seeks cover“) Runde um Runde zurück.
+
+**2. Skelett-Anchor.**
+- Neuer Body-Plan `skeleton` als Engine-Ergänzung, nicht aus Content #7:
+  - Werte 30/10/2/0/8;
+  - Angriff „Bony strike“;
+  - Loot: Bone und Grave Dust statt Pelt und Tail.
+- Er steht im Anchor-Enum des Extractors.
+- Benennt die Spezies eindeutig die Aliase eines anderen Body-Plans („restless skeleton“) und die des gewählten nicht, gilt der benannte. Im Livetest wählte der Extractor „rat“.
+- Das Schema verlangt `temperament` nicht mehr.
+
+**3. Kapitulation ohne XP.**
+- Eine Kapitulation beendet die Teilnahme des Gegners, gibt aber keine Defeat-XP.
+- Wird derselbe Gegner danach getötet, zählt seine XP genau einmal (`xp_counted`).
+- Im Livetest: 156 XP für die Kapitulation, 156 erneut für den Kill. Jetzt: 0 und dann 156.
+- Die XP-Werte (60/96/156 aus Level 5/8/13) sind unverändert.
+
+**4. Toter Gegner als Ziel.**
+- „*i Basic Attack D*“ mit D tot: Der Planner setzte C ein.
+- Nennen die Worte das Handle eines anderen Wesens derselben Art, gilt dieses (`namedPeer`). Ein toter Gegner wird nicht angegriffen und nicht ersetzt; nichts wird verbraucht, das Panel sagt es.
+
+**5. Combat Truth.**
+- „the restless skeleton in the First Burial Gallery was destroyed … Alaric's bolt“ wurde als getötete „first burial gallery“ gelesen, mit der Korrektur „killed none“.
+- Ein Zählausdruck direkt nach einer Ortspräposition benennt den Ort, nicht die Toten.
+
+**Tests:** `combat_1021` (5). Ohne Fix scheitern alle 5. Angepasst wurden die Temperament-Erwartungen auf Pfad C in `planner_c4`, `planner_c6`, `c66` und `c665`; die Legacy-Erwartungen bleiben.

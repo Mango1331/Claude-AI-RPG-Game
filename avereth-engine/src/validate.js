@@ -62,7 +62,8 @@ export function validateState(state, content) {
             if (!state.entities[id]) p.push(`combatant ${id} has no entity`);
             if (c.current.hp < 0 || c.current.hp > c.fixed.max_hp) p.push(`combatant ${id} HP ${c.current.hp}/${c.fixed.max_hp}`);
             if (c.side === 'hostile' && typeof c.fixed.defeat_xp !== 'number') p.push(`hostile ${id} without locked DefeatXP`);
-            if (enc.defeated.includes(id) && c.side === 'hostile') pending += c.fixed.defeat_xp;
+            // a surrender gives no XP; one killed after it gives its XP once (src/combat.js onDefeat)
+            if (enc.defeated.includes(id) && c.side === 'hostile' && (!c.current.surrendered || c.current.xp_counted)) pending += c.fixed.defeat_xp;
         }
         if (pending !== enc.pending_xp) p.push(`Pending XP ${enc.pending_xp} != sum of defeated DefeatXP ${pending}`);
         for (const id of enc.order) if (!enc.combatants[id]) p.push(`turn order contains unknown ${id}`);

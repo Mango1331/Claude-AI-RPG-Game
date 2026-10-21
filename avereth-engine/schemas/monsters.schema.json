@@ -28,7 +28,6 @@
           "damage_type",
           "range",
           "aliases",
-          "temperament",
           "source_line"
         ],
         "properties": {
@@ -81,6 +80,7 @@
             }
           },
           "temperament": {
+            "description": "Legacy paths only (V3, V4-A; an anchor without one is aggressive there). The planner path decides from the fight, not from this (4.3.0-c.6.6.24).",
             "enum": [
               "aggressive",
               "cautious",

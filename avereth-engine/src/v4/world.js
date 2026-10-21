@@ -33,6 +33,7 @@ import { complexOf, dungeonOf, trueDungeonOf, classified, rankText, linkBetween,
 import { itemTraits, useOf, itemProfile, priceAudit } from './items.js';
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
+import { anchorFor } from '../content.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
@@ -348,13 +349,25 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const takenRef = (ref) => { const id = makeResolver(s, new Map(), content)(ref); return !!id && s.entities[id]?.kind === 'creature'; };
     const absentRef = (ref) => { const id = makeResolver(s, new Map(), content)(ref); return !!id && s.entities[id]?.kind === 'creature' && !s.scene.present.includes(id); };
     const newEntity = (d, kind) => {
+        // 4.3.0-c.6.6.24 (livetest 21.10.2026: "restless skeleton" on the rat body plan, Bite and pelts): a species the
+        // content names by one of its body plan's own words ("skeleton") is that body plan, whatever anchor came with it,
+        // unless the given anchor's words name the species too
+        if (kind === 'creature' && d.species) {
+            const named = anchorFor(content, d.species);
+            const given = content.anchors.get(d.anchor);
+            const fits = given && given.aliases.some((a) => anchorFor({ anchorAliases: [[normText(a), given.id]], anchors: content.anchors }, d.species));
+            if (named && named.id !== d.anchor && !fits) d = { ...d, anchor: named.id };
+        }
         // A large group of skittish animals (their body-plan's temperament: a flock, a herd, a flight of birds) that nobody
         // set on Alaric is the scene's background, one fact, not a dozen combat profiles (live 30.09.2026: twelve penned
         // sheep). A pack of aggressive, defensive or cautious creatures stays individual, whatever its size, and so do
         // the animals an active contract is to attack or defeat (the rats of a cellar job); one animal singled out later
         // is a creature.new of its own.
         const anchor = kind === 'creature' ? content.anchors.get(d.anchor) : null;
-        if (anchor?.temperament === 'skittish' && d.count > 4 && !hunted(d, anchor) && !s.encounter && !hostileRefs.has(normText(d.ref))) {
+        // 4.3.0-c.6.6.24: on the planner path a background group is one the reply shows as no foe (threat: false), not one
+        // of a "skittish" body plan
+        const background = cPath ? d.threat === false : anchor?.temperament === 'skittish';
+        if (background && d.count > 4 && !hunted(d, anchor) && !s.encounter && !hostileRefs.has(normText(d.ref))) {
             setFactEvents(s, { s: s.scene.at, p: 'background_fauna', o: `${d.count} ${d.species}`, source: { kind: 'narration', msg }, importance: 0.3 }).forEach(emit);
             return [];
         }

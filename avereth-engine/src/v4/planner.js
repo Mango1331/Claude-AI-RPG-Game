@@ -637,7 +637,13 @@ export function mapPlan(commands, ctx, content, message, state) {
         ? { kind: 'attack', skill, target, target_how: how, move: dir, move_target: move?.target || null }
         : { kind: 'skill', skill, dir: dir || 'away', target });
     if (isNew(main.target)) return base({ kind: 'no_target', skill, ref: String(main.target.new).slice(0, 60) });
-    if (typeof main.target === 'string') return base(asAction(main.target, 'planner'));
+    if (typeof main.target === 'string') {
+        // livetest 21.10.2026 ("*i Basic Attack D*", D dead, C the planner's target): the handle he names is the target
+        const other = def.attack ? namedPeer(state, content, main.target, main.quote) : null;
+        if (other?.dead) return base({ kind: 'no_target', skill, ref: other.handle, dead: true });
+        if (other) return base(asAction(other.id, 'handle'));
+        return base(asAction(main.target, 'planner'));
+    }
     if (!def.attack) return base(asAction(null, 'none'));
     const hostiles = ctx.opponents.map((o) => o.id);
     if (area(def)) {
@@ -667,6 +673,26 @@ export function mapPlan(commands, ctx, content, message, state) {
     if (candidates.length >= 2) return base({ kind: 'ambiguous_target', skill, candidates });
     if (candidates.length === 1 && !fight) return base({ kind: 'ambiguous_target', skill, candidates });
     return base({ kind: 'no_target', skill });
+}
+
+/**
+ * Livetest 21.10.2026: the scene handle of another of the target's kind that his words name ("Basic Attack D" while the
+ * planner chose Restless Skeleton C, D already dead): {id, handle, dead}, else null. The full handle, or its letter as a
+ * word of its own at the end or before a joining word; never the target's own letter as well, never "I".
+ */
+function namedPeer(state, content, target, quote) {
+    if (!state?.entities?.[target] || !quote) return null;
+    const split = (h) => /^(.*\S)\s([A-Z])$/.exec(h);
+    const mine = split(sceneHandle(state, content, target, { c: true }));
+    if (!mine) return null;
+    const q = String(quote).replace(/[*_]/g, ' ');
+    const names = (h) => flat(q).includes(flat(h[0])) || (h[2] !== 'I' && new RegExp(`(?:^|[^A-Za-z'])${h[2]}(?=\\s*(?:$|[.,;:!?]|\\s(?:and|then|with|again|before|after|first|now)\\b))`).test(q.trim()));
+    if (names(mine)) return null;
+    const peers = Object.values(state.entities).filter((e) => e.id !== target && (e.kind === 'creature' || e.kind === 'npc'))
+        .map((e) => [e, split(sceneHandle(state, content, e.id, { c: true }))]).filter(([, h]) => h && flat(h[1]) === flat(mine[1]) && names(h));
+    if (peers.length !== 1) return null;
+    const [e, h] = peers[0];
+    return { id: e.id, handle: h[0], dead: e.status === 'dead' };
 }
 
 const THING_FILLER = new Set(['the', 'and', 'with', 'his', 'my', 'some', 'a', 'an', 'of', 'in', 'to', 'on']);

@@ -226,3 +226,32 @@ Am unveränderten Code `index.js` und `src/v4/runtime.js` überprüft:
 5. **Benchmarkqualität:** Nicht nur Delta-Mengen vergleichen; Validität, Vollständigkeit, falsche/fehlende Fakten, vom World-Applier angenommene/abgelehnte Deltas und End-State vergleichen. Wiederholungen und A/B/C-Varianten zeitlich ausbalancieren, Providerrauschen beachten; möglichst **exakte Originalrequests** statt unbemerkt anders aufgebauter Fixture-Prompts.
 
 **Vorläufige Bewertung:** 8.2a als **Mess-/Konfigurationsbasis** sinnvoll; die standardmäßig verhaltensneutrale Version ist **noch kein belegter Performance-Fix**. Welche Prompt- oder Provider-Einstellung tatsächlich beschleunigt, erst **nach** Benchmark entscheiden. `#assign`, ROAD AHEAD, Patch 9 und QoL-Katalog bleiben getrennt und unverändert.
+
+## 10. Zweite Claude-Rückmeldung zum Performance-Review – abschließender Entwurfsstand (21.10.2026)
+
+**Noch keine Codeimplementierung und keine ausdrückliche Nutzerfreigabe.** Claude hat die vorherigen ChatGPT-Präzisierungen akzeptiert und den Performance-Patch weiter verkleinert. Ihr Review wurde nur lesend gegen `c6baa06` sowie den .26-Chat geprüft.
+
+### 10.1 Benchmark-Hypothese: Wirkt das vermeintliche `low` überhaupt?
+
+Die offizielle GLM-5.3-Flash-Modellkarte (`https://huggingface.co/zai-org/GLM-5.3-Flash`) und das vLLM-Rezept (`https://recipes.vllm.ai/zai-org/GLM-5.3-Flash`) nennen `reasoning_effort = low|high|max`; fehlende/ungültige Werte fallen auf `max` zurück, **Thinking kann laut Modellvorlage nicht ausgeschaltet werden**. Im ST-Completion-Log steht `low`, aber das ist **kein Beleg**, dass der finale Provider/Serving-Endpoint es tatsächlich verwendet.
+
+**Benchmarkvarianten, bei ansonsten identischen Parametern einschließlich `clear_thinking`:**
+- **A0:** kein `reasoning_effort` gesendet (voraussichtlich Modell-Default `max`, wenn Serving es so umsetzt);
+- **A:** `reasoning_effort: low`;
+- **C:** identisch zu A, plus kurze konkrete Promptanweisung, unsichere optionale Deltas nicht unnötig auszudiskutieren.
+- **Wiederholungen in gemischten Runden** `A0/A/C/A0/A/C`, nicht drei zeitliche Blöcke. Exakte bzw. gegen Logs verglichene `extractionRequest()`-Requests aus .25/.26-Fixtures; Zeit, Reasoning-/Completion-Tokens, Abbrüche, Delta-Korrektheit und **angewendeten Engine-Endzustand** vergleichen.
+
+**Wichtige Interpretationsgrenze:** Gleiche Werte für A0 und A **beweisen nicht**, dass `low` ignoriert wird (Stochastik, Endpoint-Defaults, Proxy-Übertragung, verborgenes Serving-Verhalten). Ein starker wiederholter Unterschied stützt die Wirksamkeit von `low`; idealerweise die Provider-/Serving-Request-Weitergabe selbst prüfen. Nicht ohne Nachweis Engine-Prompt oder Provider voreilig als Ursache festlegen.
+
+### 10.2 Gemeinsamer kleiner 8.2a-Zuschnitt
+
+1. **Metadaten und Profiling, verhaltensneutral:** `v4Llm()` gibt auf Custom-Endpoint bei Verfügbarkeit `finish_reason` und `usage` mit; `ask()` akzeptiert **String oder Objekt**, `generateRaw` und bestehende Test-Mocks bleiben funktionsfähig. Technische Daten als **optionale Felder vorhandener Chat-Records** (`plan`, `interp`, `board`, `extraction`), nicht als neue Kanon-Gameplay-Events. Bereits vorhandene Event-`ms` belassen. Keine Tokenwerte schätzen, wenn Provider sie nicht liefert.
+2. **Warte-/Laufzeiten:** `pendingWorld.job`-Wartezeit, `foldChat()` und soweit im Host realistisch Narrator-Gesamtzeit erfassen. Keine kompletten Prompts in Debuglogs, keine unnötigen zusätzlichen LLM-Aufrufe.
+3. **Leere Narrator-Antwort:** `MESSAGE_RECEIVED` mit vorhandener leerer Assistant-`mes` **startet keinen Extractor**; neutraler Systemhinweis. Nachricht 36 des .26-Runs war `mes:''`, danach trotzdem 17,6 Sekunden nutzlose Extraktion mit 0 Deltas – konkreter Regressionstest. Auch Host-Fall „gar keine Assistant-Nachricht“ prüfen, keine erfundene `finish_reason`-Angabe. Bereits auf User-Record gebuchte Kampfergebnisse erhalten, kein doppeltes Replay.
+4. **Keine rollenspezifischen Request-Extra-Einstellungen** in 8.2a; `low` ist bereits die kleinste dokumentierte Stufe, weshalb eine weitere UI vor Messung keinen nachgewiesenen Nutzen bringt. **Kein `#assign`-Fast-Path**, kein Engine-only-Board, kein Fold-Cache, kein `combat_lite`, kein ROAD AHEAD/Organic Growth.
+
+**8.2a alleine ist ein Diagnose-/Fehlerschutz-Patch, noch kein nachgewiesener Performancegewinn.** A0/A/C-Benchmark anschließend als eigenständiges Werkzeug ohne Eingriff in das laufende .26-Spiel, `8.2b` nur auf Basis wirklich belegter Verbesserungen und ohne Verlust gültiger Engine-Weltänderungen.
+
+### 10.3 Nächster Schritt
+
+Wenn Nutzer 8.2a freigibt: kleinen Implementierungsauftrag mit obigen Grenzen an Claude Code; automatisierte Regressionen, `npm test`, relevanter SillyTavern-C-Smoke, aktueller Git-HEAD, event-/record-kompatible Implementierung. Danach A0/A/C-Benchmark prüfen, **erst dann** Prompt-/Provider-Defaults in 8.2b ändern. Kein weiteres endloses Design-Pingpong ohne neue Messung.

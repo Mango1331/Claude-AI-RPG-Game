@@ -114,7 +114,7 @@ Die drei erstgenannten Probleme wurden in .25 mit Regressionstests adressiert. D
 - Narrator ergänzte nicht mechanisch abgesicherte Details zu einem zweiten Akademie-Gate, Loot-Verboten und Reward-Verfall; diese sind im Gildenvertrag als freier Quest-Detailtext gelandet. Kanon und Kreativfreiheit gezielt abgleichen.
 - Reise-Pacing in zwei Etappen positiv; Dungeon-Pacing weiterhin nicht getestet.
 
-**Nutzerfeedback (zu prüfen, noch nicht implementiert):**
+**Historisches Nutzerfeedback aus dem ersten .25-Teilexport (in Patch 8.1 .26 weitgehend umgesetzt; siehe Abschnitt 5c):**
 - Die 10-cp-Gebühr wirkt bei einem offiziellen Guild-Auftrag, der auch der Akademie dient, wenig plausibel. Eine Guild-Quest-Freistellung erwägen, keine allgemeine Abschaffung sämtlicher Gebühren.
 - Die Videospiel-Dungeonaspekte sollen als Welt-Lore verständlich werden.
 - Eine **Engine-eigene, sofort sichtbare Gate-/System-Anzeige** erwünscht: belegte Plätze / Kapazität, eigene Gruppengröße, aktuelle Reset-Restzeit (nicht nur Tage gerundet), bekannte Etagen-Ranks, Zutrittsvoraussetzungen/Gebühr und Enter?-Entscheidung. Zahlen aus Engine-State, nicht narrativ geschätzt. Bereits ausdrücklich erklärter Eintritt benötigt keine zweite Bestätigung; unbekannte Floors nicht vorzeitig verraten.

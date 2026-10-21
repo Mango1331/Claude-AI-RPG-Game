@@ -379,6 +379,80 @@
       "kinds": [
         "undead"
       ]
+    },
+    {
+      "id": "ghoul",
+      "name": "Ghoul / flesh-eating undead",
+      "hp": 40,
+      "atk": 12,
+      "def": 1,
+      "mdef": 0,
+      "init": 10,
+      "attack": "Rending claws",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [
+        "Engine addition (Patch 8, livetest 21.10.2026 02:22): the ghoul of the Old Crown Catacombs was fought on the skeleton body plan (Bony strike, bones and grave dust). A gaunt dead thing of flesh: tougher and quicker than animated bones, it tears with long claws and teeth."
+      ],
+      "aliases": [
+        "ghoul",
+        "ghouls",
+        "ghast",
+        "ghasts",
+        "flesh eater",
+        "corpse eater"
+      ],
+      "source_line": "40 / 12 / 1 / 0 / 10 | Rending claws | Physical | ENGAGED (engine addition, not in Content #7)",
+      "kinds": [
+        "undead"
+      ]
+    },
+    {
+      "id": "slime",
+      "name": "Slime / ooze",
+      "hp": 36,
+      "atk": 8,
+      "def": 3,
+      "mdef": 0,
+      "init": 4,
+      "attack": "Corroding touch",
+      "damage_type": "physical",
+      "range": "ENGAGED",
+      "notes": [
+        "Engine addition (Patch 8, content audit of the seed Dungeons): the mineral slimes of Glimmerdeep Grotto had no body plan. A slow mass of jelly or mineral sludge: hard to cut apart, slow to act, it dissolves what it touches."
+      ],
+      "aliases": [
+        "slime",
+        "slimes",
+        "ooze",
+        "oozes",
+        "jelly",
+        "mineral slime"
+      ],
+      "source_line": "36 / 8 / 3 / 0 / 4 | Corroding touch | Physical | ENGAGED (engine addition, not in Content #7)"
+    },
+    {
+      "id": "goblin_shaman",
+      "name": "Goblin caster",
+      "hp": 36,
+      "atk": 12,
+      "def": 0,
+      "mdef": 3,
+      "init": 9,
+      "attack": "Hex bolt",
+      "damage_type": "magical",
+      "range": "MEDIUM",
+      "notes": [
+        "Engine addition (Patch 8, content audit of the seed Dungeons): the shaman deeper in Mossback Warrens was a plain goblin. A goblin who throws hexes: frailer than its warriors, it strikes from range with magic."
+      ],
+      "aliases": [
+        "goblin shaman",
+        "goblin shamans",
+        "goblin mystic",
+        "goblin hexer",
+        "kobold shaman"
+      ],
+      "source_line": "36 / 12 / 0 / 3 / 9 | Hex bolt | Magical | MEDIUM (engine addition, not in Content #7)"
     }
   ],
   "kind_words": {
@@ -752,6 +826,61 @@
           "value_cp": 2
         }
       ],
+      "ghoul": [
+        {
+          "key": "claw",
+          "name": "{species} Claw",
+          "qty": [
+            0,
+            2
+          ],
+          "value_cp": 2
+        },
+        {
+          "key": "dust",
+          "name": "{species} Grave Dust",
+          "qty": [
+            0,
+            1
+          ],
+          "value_cp": 2
+        }
+      ],
+      "slime": [
+        {
+          "key": "gel",
+          "name": "{species} Gel",
+          "qty": [
+            1,
+            2
+          ],
+          "value_cp": 2
+        },
+        {
+          "key": "core",
+          "name": "{species} Core",
+          "qty": [
+            0,
+            1
+          ],
+          "value_cp": 6
+        }
+      ],
+      "goblin_shaman": {
+        "humanoid": true,
+        "purse_cp": [
+          1,
+          6
+        ],
+        "gear": [
+          {
+            "name": "Crude {species} Fetish",
+            "slot": "weapon",
+            "chance": 0.4,
+            "atk": 1
+          }
+        ]
+      },
       "goblin": {
         "humanoid": true,
         "purse_cp": [

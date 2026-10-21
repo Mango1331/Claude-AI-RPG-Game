@@ -14,6 +14,8 @@ import { targetLabel } from './combat.js';
 import { bandIndex, formatClock, itemLabel, normText } from './util.js';
 import { sceneHandle } from './v4/scene_handles.js';
 import { dungeonOf, trueDungeonOf, dungeonText, exitsFrom, exitText } from './v4/dungeon.js';
+import { hudRows as livingRows } from './v4/living.js';
+import { goalText } from './v4/guild.js';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const list = (xs, none = '—') => (xs.length ? xs.join(' · ') : none);
@@ -90,6 +92,8 @@ export function worldRows(state, content) {
     const classed = real ? dungeonText(state, real) : null;
     if (classed) rows.push(['Dungeon', `${state.places[real].name} — ${classed.replace(/^a Dungeon: /, '')}`]);
     if (dungeonOf(state, state.scene.at)) rows.push(['Exits', list(exitsFrom(state, state.scene.at).map((e) => exitText(state, e, { ids: false })), 'none known yet (#map)')]);
+    // Patch 8: a Living Dungeon's levels as he knows them, its cycle and how many are inside (src/v4/living.js)
+    rows.push(...livingRows(state));
     const enc = state.encounter;
     // in a fight everyone by the target label the combat panel shows (Cellar Rat A), else as the player knows them
     // Runtime V4 shows the stable scene handle before a fight (Wolf A); V3 as the player knows them
@@ -110,7 +114,7 @@ export function worldRows(state, content) {
     } else if ((state.pending_combat || []).length) {
         rows.push(['Combat', `${state.pending_combat.map((p) => label(p.by)).join(', ')} committed to attack`]);
     }
-    const quests = Object.values(state.quests).filter((q) => q.status === 'active').map((q) => q.title);
+    const quests = Object.values(state.quests).filter((q) => q.status === 'active').map((q) => `${q.title}${state.meta?.runtime === 'v4' && q.kind === 'guild_contract' ? goalText(state, content, q) : ''}`);
     if (quests.length) rows.push(['Active quests', `${list(quests.slice(0, 3))}${quests.length > 3 ? ` · +${quests.length - 3} more (#quests)` : ''}`]);
     // Patch 2: his goals; the hints of this place; a few lasting leads. Everything else is in #journal
     const goals = goalLines(state, { max: 3, ids: false }).map((g) => `${g.status === 'paused' ? '(paused) ' : ''}${g.text}`);

@@ -31,10 +31,11 @@ import { itemEffectOf } from '../content.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
-import { dungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed, hiddenWayFinds, linkEvent, otherEnd, linksAt, blockerOf, goesFrom, firstStop } from './dungeon.js';
+import { dungeonOf, trueDungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed, hiddenWayFinds, linkEvent, otherEnd, linksAt, blockerOf, goesFrom, firstStop } from './dungeon.js';
+import { livingOf, establishEvents, gateCheck, aheadEvents, insideOf, returnStone, sealRefusal, floorAt, gatherEvents } from './living.js';
 import {
     REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, abandonContract, contractReady, objectiveText,
-    promotion, takenByOthers, bookBoard, isHunt, trophyText, proofTerms, handoverTerms,
+    promotion, takenByOthers, bookBoard, isHunt, trophyText, proofTerms, handoverTerms, goalText,
 } from './guild.js';
 
 const VERBS = { rest: 'RESTS', sleep: 'SLEEPS', wait: 'WAITS', work: 'WORKS', train: 'TRAINS', study: 'STUDIES', craft: 'CRAFTS', search: 'SEARCHES', gather: 'GATHERS', errand: 'RUNS ERRANDS' };
@@ -303,6 +304,49 @@ function dungeonGo(s, c) {
     return { to, route: w, ...(stop ? { stop: stop.at } : {}) };
 }
 
+/**
+ * Patch 8: a GO at, into or inside a true Dungeon (src/v4/living.js). Its establishment at first contact, the gate he
+ * passes going from its gate (or from outside) into its parts, and the engine's encounter ahead of a GO into a part he
+ * has not seen. Returns {refuse} when the gate turns him back (or asks its fee first), else null.
+ */
+function livingGo(s, content, c, ctx, emit, { known, nav, envx }) {
+    const here = trueDungeonOf(s, s.scene.at);
+    const dest = known ? trueDungeonOf(s, c.to) : here;
+    if (!dest) return null;
+    for (const e of establishEvents(s, content, dest)) emit(e);
+    const x = livingOf(s, dest);
+    if (!x) return null;
+    // past the gate: from the gate (or from outside) into a part of it
+    const passing = !insideOf(s, dest) && (known ? c.to !== dest : s.scene.at === dest);
+    if (passing) {
+        // he and whoever travels with him (an escort's charge) take places
+        const group = 1 + (companionOf(s, envx).with || []).length;
+        const g = gateCheck(s, content, dest, { group });
+        if (g?.refuse) return { refuse: { status: 'refused', reason: 'gate', line: `CANNOT ENTER — ${g.refuse}. He stays at the gate of ${x.name}.` } };
+        if (g?.fee) {
+            const id = `offer.gate.${dest.replace(/^loc\./, '')}`;
+            if (s.offers[id]?.status !== 'open') {
+                emit({ t: 'offer.created', d: { offer: { id, seller: 'gate', at: dest, status: 'open', canon: true, gate: dest, turn: s.turn, lines: [{ id: 'l1', what: `Entry to ${x.name}`, kind: 'service', service: 'dungeon_entry', qty: 1, price_cp: g.fee }] } } });
+                emit({ t: 'decision.opened', d: { decision: { id: `dec.gate.${dest.replace(/^loc\./, '')}`, kind: 'payment', what: `the entry fee of ${x.name}`, offer: id, at: dest, turn: s.turn, price_cp: g.fee } } });
+            }
+            return { refuse: { status: 'pending', reason: 'fee', line: `ENTRY FEE — ${g.keeper} asks ${cpText(g.fee, content)} to let him into ${x.name}; he has not agreed to pay: he is still at the gate. Let the keeper name the fee; stop there.` } };
+        }
+    }
+    // a sealed level stays sealed however he words it
+    const sealed = known ? sealRefusal(s, c.to) : null;
+    if (sealed) return { refuse: { status: 'refused', reason: 'sealed', line: `SEALED — ${sealed}. He stays where he is.` } };
+    // the engine's encounter ahead: a GO into a part he has not stood in (from the gate or inside): one nobody showed
+    // yet, or one he has only seen (the stair down he knows of)
+    const fresh = known && c.to !== dest && !s.places[c.to]?.visited && trueDungeonOf(s, c.to) === dest;
+    const into = (s.scene.at === dest || insideOf(s, dest)) && (!known || !!nav?.explore || fresh);
+    const a = into ? aheadEvents(s, content, { into: true, root: dest, floor: fresh ? floorAt(s, c.to) : null }) : null;
+    if (a) {
+        a.events.forEach(emit);
+        ctx.extra.push(...a.lines);
+    }
+    return null;
+}
+
 const HANDLERS = {
     'journey.continue'(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
@@ -357,6 +401,8 @@ const HANDLERS = {
             const hall = guildHallMeant(s);
             if (hall) c = { ...c, to: hall };
         }
+        // Patch 8: at a Dungeon's gate, going "in" (the Dungeon he stands at) is the step past the gate into its first part
+        if (envx?.c && typeof c.to === 'string' && c.to === s.scene.at && s.places[c.to]?.dungeon?.real) c = { ...c, to: { new: `the way into ${placeName(s, c.to)}` } };
         // Patch 7: in a dungeon he goes by the ways he knows (src/v4/dungeon.js)
         const nav = envx?.c ? dungeonGo(s, c) : {};
         if (nav.refuse) return nav.refuse;
@@ -372,6 +418,11 @@ const HANDLERS = {
         const inside = known && !!dungeonOf(s, s.scene.at) && dungeonOf(s, s.scene.at) === dungeonOf(s, c.to);
         const cap = !known ? t.unknown_place_cap_min : inside || sameSettlement(s, c.to, s.scene.at) ? t.default_cap_min : t.travel_cap_min;
         const go = { seq: c.seq, to: known ? c.to : null, name, hall: known && !!hallOf(s, c.to), newName: known ? null : name };
+        // Patch 8 (src/v4/living.js): a true Dungeon is established at its first contact; passing its gate is checked
+        // (who may enter, its fee only with his consent, how many are inside); and going on into a part he has not seen,
+        // the engine places what that part holds before the story tells it
+        const lived = envx?.c ? livingGo(s, content, c, ctx, emit, { known, nav, envx }) : null;
+        if (lived?.refuse) return lived.refuse;
         ctx.auth.go = go;
         ctx.auth.gos.push(go);
         ctx.auth.timeCap = Math.max(ctx.auth.timeCap, cap);
@@ -410,8 +461,10 @@ const HANDLERS = {
         // Prototype C (4.3.0-c.6): the people he met there before are that place's people, not new ones
         const there = envx?.c && known && !ctx.extra.some((x) => x.startsWith(`KNOWN AT ${name} (`)) ? knownAt(s, content, c.to) : [];
         if (there.length) ctx.extra.push(`KNOWN AT ${name} (met there before; when the story shows the people of that place, they are these, not new ones; whoever works there is at work unless the story establishes otherwise): ${there.map((p) => `${p.label} (${p.id})`).join(' · ')}`);
-        if (sought) return { status: 'authorized', line: `GOES — on to find a way to ${sought}: he knows of it, not of a way there; he gets there only by a way the story shows him find (a stair, a door, a passage), never straight.` };
-        return { status: 'authorized', line: `GOES — to ${name} (the story decides whether and where he arrives).` };
+        // Patch 8 (pacing): a way he chose is carried to its end, never stopped for what changes nothing
+        const pace = envx?.c ? ' Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop.' : '';
+        if (sought) return { status: 'authorized', line: `GOES — on to find a way to ${sought}: he knows of it, not of a way there; he gets there only by a way the story shows him find (a stair, a door, a passage), never straight.${pace}` };
+        return { status: 'authorized', line: `GOES — to ${name} (the story decides whether and where he arrives).${pace}` };
     },
     // Patch 2: his goals are his own decisions (src/v4/intents.js); setting one changes nothing in the world
     'intent.set'(s, content, c, ctx, emit) {
@@ -473,7 +526,15 @@ const HANDLERS = {
         const span = c.until ? UNTIL[c.until] || `until ${c.until}` : c.minutes ? `for ${c.minutes} minutes` : 'for a while';
         // Prototype C: the engine books a duration it can name, and the recovery of rest and sleep, in this turn's
         // record (a swipe or a regeneration reuses it); the extractor's time for the same span is not counted again
+        // Patch 8: a find of a Living Dungeon's level (the crystal vein): its yield of this cycle, booked now (src/v4/living.js)
+        const find = envx?.c && c.kind === 'gather' ? gatherEvents(s, trueDungeonOf(s, s.scene.at), `${c.what || ''} ${c.quote || ''}`) : null;
+        if (find) {
+            find.events.forEach(emit);
+            ctx.auth.gather = false;
+            if (find.item) ctx.booked.grants.push(find.item);
+        }
         const booked = envx?.c && c.kind !== 'search' ? engineMinutes(content, s, c) : null;
+        if (find && !booked) return { status: 'resolved', cap, line: find.line };
         if (booked) {
             emit({ t: 'time.advanced', d: { minutes: booked, why: c.kind } });
             ctx.auth.booked_min = (ctx.auth.booked_min || 0) + booked;
@@ -487,6 +548,7 @@ const HANDLERS = {
                 ctx.engineLines.push(`RECOVERY — ${r.text}`);
                 rec = ` Recovery booked: ${r.text}.`;
             }
+            if (find) return { status: 'resolved', cap, line: `${find.line} ${booked} minutes pass; it is now ${formatClock(s.clock.minute)}.` };
             return { status: 'resolved', cap, line: `${VERBS[c.kind] || String(c.kind).toUpperCase()} ${c.what ? `${c.what} ` : ''}${span} — resolved by the engine: ${booked} minutes pass; it is now ${formatClock(s.clock.minute)}.${rec} Narrate it as done, at that length; do not cut it short or add time.` };
         }
         if (c.kind === 'search' && envx?.dice) {
@@ -596,7 +658,7 @@ const HANDLERS = {
         } else emit({ t: 'object.moved', d: { id: o.id, to: { entity: c.to }, ...(qty ? { qty, split: `${o.id}_${s.turn}` } : {}) } });
         return { status: 'resolved', line: `GIVES — ${o.name}${qty ? ` (${qty})` : ''} to ${who(s, c.to)}.` };
     },
-    use(s, content, c, ctx, emit) {
+    use(s, content, c, ctx, emit, envx) {
         // Patch 3: a thing he takes in this very message ("cut some meat out ... cook it and eat it") is used once the
         // story has him take it (the world applier books it then); never before it is his
         if (c.object && typeof c.object === 'object' && typeof c.object.new === 'string') {
@@ -612,6 +674,13 @@ const HANDLERS = {
         }
         const o = objectOf(s, content, c.object);
         if (!o || o.holder?.entity !== 'pc') return { status: 'refused', reason: 'he does not hold it', line: `CANNOT USE — he does not hold ${o ? o.name : 'that'}.` };
+        // Patch 8: a Return Stone carries him to the gate of the Dungeon he is in, used up in the same step
+        const back = envx?.c ? returnStone(s, content, o) : null;
+        if (back?.refuse) return { status: 'refused', reason: back.refuse, line: `CANNOT USE — ${o.name}: ${back.refuse}; it stays his, unused.` };
+        if (back) {
+            back.events.forEach(emit);
+            return { status: 'resolved', line: `USES — ${o.name}: crushed in his hand, it carries him out to the gate of ${placeName(s, back.to)}; the stone is spent. He stands at the gate now (the engine moved him).` };
+        }
         // Hotfix c.6.6.18: an attack item (the scorchburst scroll) is resolved as an attack (src/v4/planner.js itemAttack),
         // never used up here with its effect left to the story; where no attack is made of it, it stays his
         if (itemEffectOf(content, o)?.attack) return { status: 'refused', reason: 'an attack item', line: `CANNOT USE — ${o.name} is an attack: thrown at a foe, the engine resolves it in a fight; nothing was used up, it stays his, nothing burns and nothing is struck.` };
@@ -756,7 +825,8 @@ const HANDLERS = {
         if (pick.clarify) return { status: 'clarify', reason: 'which line?', line: `CLARIFY — ${c.qty} of which: ${pick.clarify.join(' or ')}?` };
         if (pick.error === 'the offer has no such item') return { status: 'refused', reason: 'no such line', line: 'CANNOT ACCEPT — the offer has no such item.' };
         if (pick.error) return { status: 'refused', reason: 'not in that amount', line: `CANNOT BUY ${c.qty} — ${pick.error}.` };
-        if (o.canon && !hallOf(s, s.scene.at)) return { status: 'refused', reason: 'not at a Guild hall', line: 'CANNOT PAY — the Guild registers members at a Guild hall.' };
+        if (o.gate && s.scene.at !== o.gate) return { status: 'refused', reason: 'not at the gate', line: `CANNOT PAY — the entry fee is paid at the gate of ${placeName(s, o.gate)}.` };
+        if (o.canon && !o.gate && !hallOf(s, s.scene.at)) return { status: 'refused', reason: 'not at a Guild hall', line: 'CANNOT PAY — the Guild registers members at a Guild hall.' };
         if (!o.canon && !present(s, o.seller)) return { status: 'refused', reason: 'the seller is not here', line: `CANNOT ACCEPT — ${who(s, o.seller)} is not here.` };
         const price = pick.cp;
         // a limit he set ("if it's no more than 6 copper") holds for what he actually buys
@@ -769,6 +839,8 @@ const HANDLERS = {
         if (coin < price) return { status: 'refused', reason: 'not enough coin', line: `CANNOT PAY — ${cpText(price, content)} needed, he has ${coin} cp. The price stays as ${who(s, o.seller)} named it; nothing is bought, and the story does not change the price to explain it.` };
         bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (what) => `obj.t${env(ctx).msg}.${slug(what)}`, content });
         const reg = pick.picks.some((p) => p.line.service === 'guild_registration');
+        // Patch 8: the gate's fee paid: he may pass the gate (src/v4/living.js), until he is out again
+        if (o.gate) emit({ t: 'dungeon.pass', d: { id: o.gate, pass: { turn: s.turn, cp: price } } });
         let power = null;
         if (reg) {
             power = registerEvents(s, content, emit).power;
@@ -780,6 +852,7 @@ const HANDLERS = {
         if (!o.canon) ctx.booked.sellers.push(o.seller);
         emit({ t: 'offer.closed', d: { id: o.id, status: 'accepted' } });
         for (const d of s.decisions.filter((x) => x.offer === o.id || (reg && x.kind === 'registration') || (x.kind === 'purchase' && x.seller === o.seller) || (x.kind === 'purchase' && !x.seller && x.at === s.scene.at))) emit({ t: 'decision.closed', d: { id: d.id, status: 'accepted' } });
+        if (o.gate) return { status: 'resolved', line: `PAYS — the entry fee of ${placeName(s, o.gate)}, ${cpText(price, content)}: he may pass the gate (until he comes out again).` };
         if (reg) return { status: 'resolved', line: `PAYS — the Guild registration fee, ${price} cp: registered at Guild Rank ${content.rules.guild.ranks[0]}; the crystal reads his Power Rank: ${power} (his measured strength, a separate scale from the Guild's ranks); he receives his Guild plate.` };
         return { status: 'resolved', line: `ACCEPTS the offer — ${picksText(pick.picks)} for ${cpText(price, content)}; he pays ${who(s, o.seller)}.` };
     },
@@ -919,7 +992,8 @@ const HANDLERS = {
         if (!ahead) emit({ t: 'board.shown', d: { branch, rank, listings: listed.map((q) => q.id) } });
         else ctx.conditionals.push({ seq: c.seq, kind: 'board', condition: 'arrive_guild_hall', hall, branch, rank, listings: listed.map((q) => q.id) });
         ctx.boardShown = { branch, rank, listings: listed.map((q) => q.id) };
-        const rows = listed.map((q) => `**${q.title}** — client: ${q.client || 'unspecified'} · reward: ${q.payout_cp} cp · ${q.task || q.desired_end_state || objectiveText(q)}`).join('\n');
+        // Patch 8: a cull's number and a Dungeon level to clear show on the board (src/v4/guild.js goalText)
+        const rows = listed.map((q) => `**${q.title}**${envx?.c ? goalText(s, content, q, { board: true }) : ''} — client: ${q.client || 'unspecified'} · reward: ${q.payout_cp} cp · ${q.task || q.desired_end_state || objectiveText(q)}`).join('\n');
         // Prototype C (4.3.0-c.6.2): only the reading that posts the day's board shows new notices; a later reading that
         // day shows the same ones again, not as new
         const fresh = !envx.c || !!gen?.listings?.length;

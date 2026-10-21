@@ -34,6 +34,7 @@ import { itemTraits, useOf, itemProfile, priceAudit } from './items.js';
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor } from '../content.js';
+import { entranceOf, sealRefusal, gateCheck, livingOf, floorAt, slotForNew, resolvedSlotNamed, slotEntityEvents, syncEvents, insideOf } from './living.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
@@ -222,8 +223,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     // Prototype C: the turn the planner read (a story turn: auth.c; a V3-routed one: the outcome's c)
     const cPath = !!(auth.c || outcome.c);
     const place = (ref) => resolvePlace(s, ref, emit, 0, { c: cPath });
+    // Patch 8 (13A): an arrival at a Dungeon's gate by any of its names (the ruined chapel above the Old Crown Catacombs)
+    // is at the Dungeon itself, its way in: never a room of it, never a new place beside it
+    const arrivalPlace = (ref) => { const gate = cPath ? entranceOf(s, content, ref) : null; return gate ? { id: gate } : place(ref); };
     const expected = answer.expected || {};
     const tag = msg !== null && msg !== undefined ? msg : s.turn;
+
+    // Patch 8: the Living Dungeon he is in, established before the reply's creatures are met (an older campaign's too)
+    if (cPath) syncEvents(s, content, emit);
 
     // 1. authority first: what the story may not decide is never applied
     const fw = firewall(answer.deltas, firewallContext(s, content));
@@ -254,6 +261,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const startAt = s.scene.at;
     let arrived = null;
     let arrivedHall = null;
+    let freshPart = null; // Patch 8: the new part of a Living Dungeon this reply brought him into
     const conditionals = (outcome.conditionals || []).map((c) => ({ ...c, done: false }));
     const idOf = (ref) => {
         if (ref === null || ref === undefined || typeof ref !== 'string') return null;
@@ -348,14 +356,31 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     // a ref the V3 rules resolve to a creature that is not here (dead, or left elsewhere)
     const takenRef = (ref) => { const id = makeResolver(s, new Map(), content)(ref); return !!id && s.entities[id]?.kind === 'creature'; };
     const absentRef = (ref) => { const id = makeResolver(s, new Map(), content)(ref); return !!id && s.entities[id]?.kind === 'creature' && !s.scene.present.includes(id); };
-    const newEntity = (d, kind) => {
+    const newEntity = (d, kind, { slot = null } = {}) => {
+        // Patch 8 (src/v4/living.js): a creature of an encounter the engine placed ahead is that encounter, its slot of
+        // this cycle (its ref, else its kind where he went on); one of a slot already resolved (the boss he killed) is
+        // not brought back by the story
+        let hit = slot;
+        if (cPath && kind === 'creature' && d.present !== false && !hit) {
+            const dead = resolvedSlotNamed(s, d);
+            if (dead) {
+                reject(d, 'dungeon_slot', `${dead.slot.name || dead.slot.species} of this cycle is already defeated; it stays so until the Dungeon renews`);
+                const fix = `${dead.slot.name ? dead.slot.name : `The ${dead.slot.species}s`} of level ${dead.floor} ${dead.slot.count > 1 ? 'are' : 'is'} defeated (the engine's); nothing takes ${dead.slot.count > 1 ? 'their' : 'its'} place until the Dungeon renews.`;
+                if (!corrections.includes(fix)) corrections.push(fix);
+                return [];
+            }
+            hit = slotForNew(s, content, d, s.scene.at);
+        }
+        if (hit) d = { ...d, ref: hit.slot.ref, species: hit.slot.species, anchor: hit.slot.anchor, count: hit.slot.count, stronger: null, more: true };
         // 4.3.0-c.6.6.24 (livetest 21.10.2026: "restless skeleton" on the rat body plan, Bite and pelts): a species the
         // content names by one of its body plan's own words ("skeleton") is that body plan, whatever anchor came with it,
         // unless the given anchor's words name the species too
         if (kind === 'creature' && d.species) {
             const named = anchorFor(content, d.species);
             const given = content.anchors.get(d.anchor);
-            const fits = given && given.aliases.some((a) => anchorFor({ anchorAliases: [[normText(a), given.id]], anchors: content.anchors }, d.species));
+            // Patch 8: the more specific name decides ("goblin shaman" is the caster, not the goblin its words also name)
+            const said = (a) => Math.max(0, ...a.aliases.filter((x) => anchorFor({ anchorAliases: [[normText(x), a.id]], anchors: content.anchors }, d.species)).map((x) => normText(x).length));
+            const fits = given && named && said(given) >= said(named);
             if (named && named.id !== d.anchor && !fits) d = { ...d, anchor: named.id };
         }
         // A large group of skittish animals (their body-plan's temperament: a flock, a herd, a flight of birds) that nobody
@@ -501,6 +526,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (cPath && kind === 'creature' && d.threat === false) for (const id of created) emit({ t: 'entity.updated', d: { id, set: { threat: false } } });
         // Gameplay visibility: once an actual creature is visibly present, lock its deterministic profile immediately.
         // This gives the player a canonical target handle + HP + Range before deciding whether to attack; Initiative still waits for Combat START.
+        if (hit && created.length) { grant('dungeon.slot'); for (const e of slotEntityEvents(s, content, hit, created, s.scene.at)) emit(e); }
         if (kind === 'creature' && d.present !== false) for (const id of ids) materialise(s, content, dice, emit, id);
         for (const id of ids) namedHere.add(id);
         return ids;
@@ -515,11 +541,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             if (!e || e.arrived !== true) { if (onWay) break; continue; }
             onWay = true;
             const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
-            const at = viaStop(place(reportedTarget(s, auth, expected, e.at, k) || e.at || go?.to || null));
+            const at = viaStop(arrivalPlace(reportedTarget(s, auth, expected, e.at, k) || e.at || go?.to || null));
             if (!at.error && at.id !== s.scene.at && !wayRefused(at.id, { seq: Number(k), type: 'expected' })) {
                 const party = companions(e.with, { seq: Number(k), type: 'expected' });
                 perceiveAll(s, emit, seeing());
-                arrive(at.id, party);
+                arriveThrough(at.id, party);
                 travel.push({ seq: 0, ok: true });
             }
         }
@@ -592,23 +618,23 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 if (s.encounter) { reject(d, 'combat', 'no travel while combat is ACTIVE'); refusedArrival(d); break; }
                 const ref = reportedTarget(s, auth, expected, d.at) || onward(d.at);
                 const away = leavesHere(ref);
-                const at = viaStop(place(ref));
+                const at = viaStop(arrivalPlace(ref));
                 if (at.error) { reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 if (at.id === s.scene.at) break;
                 if (wayRefused(at.id, d, { forced: !!String(d.forced_by || '').trim() })) { travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 const party = companions(d.with, d);
                 perceiveAll(s, emit, seeing());
-                arrive(at.id, party);
+                arriveThrough(at.id, party);
                 // Hotfix 7.2.1: the arrive delta answers one leg of his GOs; a later leg the answer reports arrived as well
                 // takes him on, before the rest of the answer is applied there (live 20.10.2026: road → Alderwatch →
                 // Guild hall, both arrived, one arrive delta for Alderwatch: he stayed in the street, and the clerk of
                 // the hall would have been met there). A leg not reported arrived ends his way where he is
                 for (const k of laterLegs(at.id)) {
                     const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
-                    const next = viaStop(place(reportedTarget(s, auth, expected, expected[k].at, k) || expected[k].at || go?.to || null));
+                    const next = viaStop(arrivalPlace(reportedTarget(s, auth, expected, expected[k].at, k) || expected[k].at || go?.to || null));
                     if (next.error || next.id === s.scene.at || wayRefused(next.id, { seq: k, type: 'expected' })) break;
                     perceiveAll(s, emit, seeing());
-                    arrive(next.id, party);
+                    arriveThrough(next.id, party);
                 }
                 travel.push({ seq: d.seq ?? 0, ok: true });
                 break;
@@ -1106,11 +1132,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (type === 'go' && e.arrived === true && !arrived && !s.encounter) {
             // the arrival the story showed without an arrive delta: where the answer says, else where he set off to
             const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
-            const at = viaStop(place(reportedTarget(s, auth, expected, e.at, k) || e.at || go?.to || null));
+            const at = viaStop(arrivalPlace(reportedTarget(s, auth, expected, e.at, k) || e.at || go?.to || null));
             if (!at.error && at.id !== s.scene.at && !wayRefused(at.id, { seq: Number(k), type: 'expected' })) {
                 const party = companions(e.with, { seq: Number(k), type: 'expected' });
                 perceiveAll(s, emit, seeing());
-                arrive(at.id, party);
+                arriveThrough(at.id, party);
             }
         }
         if (type === 'activity' && !timeUsed && Number.isInteger(e.minutes) && e.minutes > 0) {
@@ -1149,6 +1175,20 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (travelled < floor) { emit({ t: 'time.advanced', d: { minutes: floor - travelled, why: 'travel' } }); timeUsed += floor - travelled; }
     }
 
+    // Patch 8: he went on into a new part of a Living Dungeon where the engine placed its encounter ahead, and the story
+    // did not bring it: it is there all the same (the next reply shows it); the level's progress never rests on wording
+    const placed = freshPart && livingOf(s, trueDungeonOf(s, freshPart))?.ahead;
+    if (placed && placed.turn === s.turn && !s.encounter) {
+        const x = livingOf(s, trueDungeonOf(s, freshPart));
+        const a = [placed, placed.next].filter(Boolean).find((y) => y.floor === floorAt(s, freshPart));
+        const sl = a && x.run.floors[a.floor]?.slots.find((y) => y.id === a.slot);
+        if (sl && !sl.entities.length && !sl.taken) {
+            step = { kind: 'engine' };
+            const ids = newEntity({ seq: 0, type: 'creature.new', ref: sl.ref, species: sl.species, anchor: sl.anchor, desc: [], count: sl.count, present: true, band: 'MEDIUM', more: true }, 'creature', { slot: { root: x.id, floor: a.floor, slot: sl } });
+            if (ids.length) corrections.push(`ENGINE ENCOUNTER — ${sl.name ? sl.name : `${sl.count} ${sl.species}${sl.count > 1 ? 's' : ''}`} ${sl.count > 1 ? 'are' : 'is'} here in ${placeName(s, freshPart)} (the engine placed ${sl.count > 1 ? 'them' : 'it'} for this part of level ${a.floor}): the next reply shows ${sl.count > 1 ? 'them' : 'it'} at once.`);
+        }
+    }
+
     // 4. what waited for the reply and did not happen
     step = { kind: 'conditional' };
     // Patch 3: what he uses of a thing he took in this very reply (commands.js use, condition 'taken'): the thing the
@@ -1172,6 +1212,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     // 5. who noticed him, his introduction, his own record of the turn, a fight the reply committed to
     step = { kind: 'engine' };
     // Prototype C (4.3.0-c.6): his contract slips show what the engine holds of their contracts (READY, COMPLETED)
+    // Patch 8: what the reply's arrivals and deaths bring about in a Living Dungeon (a level cleared, its contracts)
+    if (cPath) syncEvents(s, content, emit, { touch: [trueDungeonOf(s, s.scene.at)] });
     if (cPath) slipMarks(s, content, emit);
     perceiveAll(s, emit, seeing());
     selfIntro(s, emit);
@@ -1332,6 +1374,20 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     function wayRefused(to, d, { forced = false } = {}) {
         const from = s.scene.at;
         if (to === from || (!dungeonOf(s, from) && !dungeonOf(s, to))) return null;
+        // Patch 8 (13B): a part he had not seen, reached beyond the room his GO named, is reached through that room
+        const via = throughGoal(to);
+        if (via) return wayRefused(via, d, { forced });
+        // Patch 8: a sealed level, and the gate of a Living Dungeon (who may enter, its fee, how many are inside)
+        // a new room the answer shows below (its passage down) lies on the level that way leads to
+        const shown = cPath && !Number.isInteger(s.places[to]?.level) ? passageInto(to) : null;
+        const lv = shown && dungeonOf(s, from) ? levelVia(s, from, { a: from, dir: shown.dir }) : null;
+        const barred = cPath ? sealRefusal(s, to, lv) || gateRefusal(to) : null;
+        if (barred) {
+            reject(d, 'passage', barred);
+            const fix = `Alaric is still in ${placeName(s, from)}: ${barred}; he did not get there.`;
+            if (!corrections.includes(fix)) corrections.push(fix);
+            return barred;
+        }
         const direct = linkBetween(s, from, to);
         // a part he has not seen: new in this reply, or a place nobody showed him (no way, not known, not stood in)
         // that his GO into the unknown found; a room he knows of (by report too) is reached only by a way (review of
@@ -1354,6 +1410,35 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         return why;
     }
 
+    /**
+     * Patch 8 (13B, live 21.10.2026 02:22: "I walk down the stairs" to the stairway room of level 2, and the story went on
+     * into a new corridor beyond it; the corridor was joined to the Bier Chamber of level 1 and inherited its level):
+     * a part he had not seen, reached in a reply whose GO named a room he knows (and can reach), lies beyond that room:
+     * the walk goes through it. Null when there is no such room.
+     */
+    function throughGoal(to) {
+        if (!cPath || visited(s, to) || linksAt(s, to, { hidden: true }).length || !dungeonOf(s, to)) return null;
+        const goal = (auth.gos || []).map((g) => g.to).find((x) => x && x !== to && x !== s.scene.at && dungeonOf(s, x) === dungeonOf(s, to) && dungeonOf(s, x) !== x && s.places[x]);
+        return goal && wayBetween(s, s.scene.at, goal).path ? goal : null;
+    }
+    /** Patch 8: the passage of this answer into a room of this name (its way and direction), or null. */
+    function passageInto(id) {
+        const name = normText(s.places[id]?.name || '');
+        return fw.accept.find((d) => d.type === 'passage' && d.dir && (d.to === id || normText(d.to?.new?.name || d.to?.new || '') === name)) || null;
+    }
+    function arriveThrough(id, party) {
+        const via = throughGoal(id);
+        if (via) arrive(via, party);
+        arrive(id, party);
+    }
+    /** Patch 8: why the gate of a Living Dungeon turns him back on a step from its gate (or from outside) into its parts. */
+    function gateRefusal(to) {
+        const root = trueDungeonOf(s, to);
+        if (!root || to === root || insideOf(s, root) || !livingOf(s, root)) return null;
+        const g = gateCheck(s, content, root);
+        return g?.refuse || (g?.fee ? `${g.keeper} has not let him past the gate: the entry fee (${g.fee} cp) is not paid` : null);
+    }
+
     /** Patch 7: the feature a way, a hazard or a thing names (its id or its name), at these places. */
     function wayFeature(ref, at) {
         const places = [].concat(at);
@@ -1368,7 +1453,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
      * same way. What the story may not do: find a hidden way (his search does) or open a barred one (his attempt does).
      */
     function passage(d) {
-        const a0 = d.from === null || d.from === undefined ? { id: s.scene.at } : place(d.from);
+        // Patch 8: a way into the room this reply already brought him to (the stair he went down) starts where he was
+        const made = (id) => events.some((e) => e.t === 'place.created' && e.d.place.id === id);
+        const into = arrived && made(arrived) && (d.to === arrived || normText(d.to?.new?.name || d.to?.new || '') === normText(s.places[arrived]?.name || ''));
+        const a0 = d.from === null || d.from === undefined ? { id: into ? s.scene.history?.at(-1) || startAt : s.scene.at } : place(d.from);
         if (a0.error) { reject(d, 'place', a0.error); return; }
         markEvents(s, a0.id).forEach(emit);
         // a way up or down leads to a room of another level: a room of the same name there is another room
@@ -1456,15 +1544,25 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             }
         }
         const near = cPath ? soughtHere(id, party) : [];
+        const fresh = cPath && !!livingOf(s, trueDungeonOf(s, id)) && id !== trueDungeonOf(s, id) && !visited(s, id);
         emit({ t: 'scene.moved', d: { at: id, location: town, place: dun && dun !== id ? `${s.places[dun].name} › ${s.places[id].name}` : placeName(s, id), reset_present: true, ...(cPath ? { track_history: true } : {}) } });
         // Patch 7: in a dungeon, the way he took (found by walking it), the room's level, and that he has stood there
         if (dun) {
             const a = dungeonOf(s, from) === dun ? from : dun;
             let way = linkBetween(s, a, id);
-            if (!knownWay && a !== id && !way) { way = newLink(s, { a, b: id, how: 'walked', by: 'walked' }); emit(linkEvent(way)); }
+            // Patch 8 (13B): the way this very answer shows into the new room (a stair down) is the way he took
+            const shown = passageInto(id);
+            if (!knownWay && a !== id && !way) { way = newLink(s, { a, b: id, how: 'walked', by: 'walked', dir: shown?.dir || null, name: shown?.name || null }); emit(linkEvent(way)); }
             else if (!knownWay && way?.hidden) emit(linkEvent({ ...way, hidden: false, found: { turn: s.turn, minute: s.clock.minute, how: 'walked' } }));
             const level = id !== dun && way && !Number.isInteger(s.places[id].level) ? levelVia(s, a, way) : null;
             if (!s.places[id].visited || Number.isInteger(level)) emit({ t: 'place.updated', d: { id, set: { ...(s.places[id].visited ? {} : { visited: { turn: s.turn, minute: s.clock.minute } }), ...(Number.isInteger(level) ? { level } : {}) } } });
+        }
+        // Patch 8: a part of a Living Dungeon he had not stood in counts toward its level's progress (src/v4/living.js)
+        if (fresh) {
+            const root = trueDungeonOf(s, id);
+            grant('dungeon.part');
+            emit({ t: 'dungeon.part', d: { id: root, cycle: s.dungeons[root].cycle, floor: floorAt(s, id), at: id } });
+            freshPart = id;
         }
         // who travelled with him arrives with him
         for (const who of party) emit({ t: 'scene.entered', d: { id: who, band: 'SHORT' } });

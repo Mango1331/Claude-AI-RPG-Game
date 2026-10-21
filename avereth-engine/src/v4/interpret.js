@@ -118,6 +118,8 @@ export function catalogText(catalog) {
     if ((catalog.features || []).length) L.push(`FEATURES (obstacles and dangers here): ${catalog.features.map((f) => f.text).join(' · ')}`);
     // Patch 7: the ways from this room of a dungeon (src/v4/dungeon.js)
     if ((catalog.exits || []).length) L.push(`EXITS (the ways from here; a blocked one is passed only by dealing with what blocks it): ${catalog.exits.map((e) => e.text).join(' · ')}`);
+    // Patch 8: a Living Dungeon's level (src/v4/living.js)
+    if ((catalog.dungeon || []).length) L.push(`DUNGEON: ${catalog.dungeon.join(' · ')}`);
     if ((catalog.open || []).length) L.push(`OPEN DECISIONS: ${catalog.open.join(' · ')}`);
     return L.join('\n');
 }

@@ -95,6 +95,17 @@ export function lootEvents(s, content, enc) {
             const purse = e.sheet.coin_cp > 0 ? [e.sheet.coin_cp, e.sheet.coin_cp] : table.purse_cp_by_template?.[e.template] || [0, 5];
             coin += draw(`${seed}|purse`, purse);
         }
+        // Patch 8: a Dungeon's guardian or boss may leave a Return Stone (src/v4/living.js), by its role's chance
+        const stone = content.rules.living?.return_stone;
+        const p = e.slot && stone ? stone[e.slot.role] : 0;
+        if (p && chance(`${seed}|return_stone`, p)) {
+            const id = `obj.loot.return_stone.${slug(enc.id.replace(/\./g, '_'))}.${slug(c.id.replace(/\./g, '_'))}`;
+            if (!s.objects?.[id]) {
+                events.push({ t: 'object.created', d: { object: { id, name: stone.name, kind: 'item', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'loot', encounter: enc.id },
+                    return_stone: true, use: 'consumable', value_cp: stone.value_cp, text: stone.text } } });
+                lines.push(stone.name);
+            }
+        }
         events.push({ t: 'entity.updated', d: { id: c.id, set: { looted: enc.id } } });
     }
     for (const [k, m] of stacks) {

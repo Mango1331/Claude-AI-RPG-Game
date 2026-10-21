@@ -193,7 +193,10 @@
             "ogre",
             "armored_beast",
             "spirit",
-            "skeleton"
+            "skeleton",
+            "ghoul",
+            "slime",
+            "goblin_shaman"
           ]
         },
         "desc": {

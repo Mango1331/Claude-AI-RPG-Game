@@ -20,6 +20,7 @@
 //   features   id -> an obstacle or hazard of a place (Patch 6, src/v4/features.js)
 //   links      id -> a way between two rooms of a dungeon (Patch 7, src/v4/dungeon.js)
 import { clone, normText } from '../util.js';
+import { applyLivingEvent } from './living.js';
 
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 /** Which parent a place may have (plan §6.1). */
@@ -44,6 +45,8 @@ export const V4_EVENTS = new Set([
     'decision.opened', 'decision.closed',
     'cmd.interpreted', 'cmd.resolved', 'cmd.completed', 'cmd.expired',
     'extract.applied', 'extract.failed', 'overreach.noted',
+    // Patch 8: a Living Dungeon's structure, cycle and companies (src/v4/living.js)
+    'dungeon.established', 'dungeon.ahead', 'dungeon.slot', 'dungeon.part', 'dungeon.cleared', 'dungeon.reset', 'dungeon.party', 'dungeon.booked', 'dungeon.pass', 'dungeon.resource',
 ]);
 
 /** The V4 part of an empty state (state.js emptyState). */
@@ -106,10 +109,14 @@ export function applyDomainEvent(state, e) {
             if (!o) throw new Error(`unknown object ${d.id}`);
             if (d.split && d.qty && d.qty < (o.qty ?? 1)) {
                 // part of a stack changes hands: the part becomes its own object
-                state.objects[d.split] = { ...clone(o), id: d.split, qty: d.qty, holder: clone(d.to) };
+                state.objects[d.split] = { ...clone(o), id: d.split, qty: d.qty, holder: clone(d.to), ...(o.holder?.entity === 'pc' ? { had_pc: true } : {}) };
                 o.qty -= d.qty;
                 mirror(state, d.split);
-            } else o.holder = clone(d.to);
+            } else {
+                // Patch 8: what was ever his stays his to find where he left it (a Dungeon's reset never clears it away)
+                if (o.holder?.entity === 'pc') o.had_pc = true;
+                o.holder = clone(d.to);
+            }
             mirror(state, d.id);
             break;
         }
@@ -252,6 +259,7 @@ export function applyDomainEvent(state, e) {
             }].slice(-12);
             break;
         default:
+            if (e.t.startsWith('dungeon.')) { applyLivingEvent(state, e); break; }
             throw new Error(`unknown V4 event type: ${e.t}`);
     }
 }

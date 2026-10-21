@@ -944,6 +944,8 @@ const bandOf = (r) => content.rules.ranks.bands.find((b) => b.rank === r);
 /** Alaric in the Mossback Warrens: its upper tunnels (level 1, F) and the burrows below (level 2, E). */
 async function warrens() {
     const g = await campaign();
+    // Patch 8: the Warrens' gate lets only registered Guild members in (lore.json living.gate.requires): he is one
+    rec(g.chat.findLast((m) => m.extra?.avereth?.events)).events.push({ t: 'guild.registered', d: { rank: 'Novice', branch: 'loc.ashbridge', power_rank: 'F' } });
     await walk(g, 'loc.mossback_warrens', { text: '*I go to the Mossback Warrens*', prose: 'The moss-grown hill; a tunnel mouth.', deltas: [way(room('Upper tunnels'), { name: 'tunnel mouth' })] });
     const upper = idOf(g.state(), 'Upper tunnels');
     await walk(g, upper, { text: '*I go into the tunnels*', prose: 'The upper tunnels; a ramp goes down to the burrows.', deltas: [way(room('Lower burrows'), { name: 'ramp down', dir: 'down' })] });

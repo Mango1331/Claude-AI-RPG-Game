@@ -436,7 +436,90 @@
         }
       },
       "control": "the Adventurers' Guild of Ashbridge keeps its entry ledger under a charter of the Duskreach crown",
-      "source": "Patch 7 review: the novice Dungeon near the start city Ashbridge"
+      "source": "Patch 7 review: the novice Dungeon near the start city Ashbridge",
+      "living": {
+        "gate": {
+          "names": [
+            "warren mouth",
+            "palisade gate",
+            "palisade",
+            "mossy hill"
+          ],
+          "text": "the palisaded mouth of the warrens in the hillside",
+          "requires": "guild",
+          "fee_cp": 0,
+          "keeper": "the Guild's ledger-keeper at the palisade"
+        },
+        "capacity": 8,
+        "reset_days": 3,
+        "parties": 2,
+        "floors": {
+          "1": {
+            "slots": [
+              {
+                "id": "scouts",
+                "role": "minion",
+                "species": [
+                  "goblin scout",
+                  "goblin lookout"
+                ],
+                "anchor": "goblin",
+                "count": [
+                  2,
+                  3
+                ]
+              },
+              {
+                "id": "warband",
+                "role": "minion",
+                "species": [
+                  "goblin warrior",
+                  "goblin spearman"
+                ],
+                "anchor": "goblin",
+                "count": [
+                  2,
+                  3
+                ]
+              },
+              {
+                "id": "chief",
+                "role": "guard",
+                "name": "the Palisade Chief",
+                "species": "goblin chief",
+                "anchor": "goblin"
+              }
+            ],
+            "manifest": "the war-drum deeper in the tunnels falls silent and the crude barricade before the lower tunnels stands unmanned",
+            "sealed": false
+          },
+          "2": {
+            "slots": [
+              {
+                "id": "guards",
+                "role": "minion",
+                "species": [
+                  "goblin warrior",
+                  "goblin brute"
+                ],
+                "anchor": "goblin",
+                "count": [
+                  2,
+                  3
+                ]
+              },
+              {
+                "id": "shaman",
+                "role": "boss",
+                "name": "the Moss Shaman",
+                "species": "goblin shaman",
+                "anchor": "goblin_shaman"
+              }
+            ],
+            "manifest": "the green fire in the shaman's hollow gutters out and the warrens go quiet"
+          }
+        }
+      }
     },
     {
       "id": "loc.glimmerdeep_grotto",
@@ -455,7 +538,74 @@
         }
       },
       "control": "a Glassmere academy of magic holds the cleft and lets registered adventurers cull its outer grottos",
-      "source": "Patch 7 review: the novice Dungeon near the start city Glassmere"
+      "source": "Patch 7 review: the novice Dungeon near the start city Glassmere",
+      "living": {
+        "gate": {
+          "names": [
+            "cleft",
+            "rock cleft",
+            "stream cleft",
+            "academy gate"
+          ],
+          "text": "the cleft where the stream runs out of the rock, under the academy's watch",
+          "requires": "guild",
+          "fee_cp": 10,
+          "keeper": "the academy's gate-warden"
+        },
+        "capacity": 6,
+        "reset_days": 3,
+        "parties": 2,
+        "floors": {
+          "1": {
+            "slots": [
+              {
+                "id": "beetles",
+                "role": "minion",
+                "species": [
+                  "crystal beetle",
+                  "glass beetle"
+                ],
+                "anchor": "arthropod",
+                "count": [
+                  2,
+                  4
+                ]
+              },
+              {
+                "id": "slimes",
+                "role": "minion",
+                "species": [
+                  "mineral slime",
+                  "quartz ooze"
+                ],
+                "anchor": "slime",
+                "count": [
+                  1,
+                  2
+                ]
+              },
+              {
+                "id": "queen",
+                "role": "boss",
+                "name": "the Glimmer Queen",
+                "species": "crystal beetle queen",
+                "anchor": "arthropod"
+              }
+            ],
+            "manifest": "the hum in the crystal walls fades and the grotto's light settles to a still, even glow"
+          }
+        },
+        "resources": [
+          {
+            "id": "vein",
+            "floor": 1,
+            "name": "glimmer crystal vein",
+            "item": "Glimmer Crystal Shard",
+            "qty": 3,
+            "value_cp": 4
+          }
+        ]
+      }
     },
     {
       "id": "loc.old_crown_catacombs",
@@ -478,7 +628,90 @@
         }
       },
       "control": "the temple wardens of Alderwatch, who ask the Guild to keep the upper galleries culled",
-      "source": "Patch 7 review: the novice Dungeon near the start city Alderwatch"
+      "source": "Patch 7 review: the novice Dungeon near the start city Alderwatch",
+      "living": {
+        "gate": {
+          "names": [
+            "ruined chapel",
+            "chapel stair",
+            "chapel yard",
+            "chapel lodge"
+          ],
+          "text": "the stair beneath the ruined chapel, watched by the temple wardens",
+          "requires": null,
+          "fee_cp": 0,
+          "keeper": "the temple wardens"
+        },
+        "capacity": 6,
+        "reset_days": 3,
+        "parties": 2,
+        "floors": {
+          "1": {
+            "slots": [
+              {
+                "id": "bones",
+                "role": "minion",
+                "species": [
+                  "restless skeleton",
+                  "risen bones"
+                ],
+                "anchor": "skeleton",
+                "count": [
+                  2,
+                  3
+                ]
+              },
+              {
+                "id": "gallery",
+                "role": "minion",
+                "species": [
+                  "restless skeleton",
+                  "skeletal gravekeeper"
+                ],
+                "anchor": "skeleton",
+                "count": [
+                  1,
+                  2
+                ]
+              },
+              {
+                "id": "warden",
+                "role": "guard",
+                "name": "the Gallery Warden",
+                "species": "armoured skeleton",
+                "anchor": "skeleton"
+              }
+            ],
+            "manifest": "the pale grave-light in the seal over the lower stair gutters out, and the seal's chalk lines crack",
+            "sealed": true
+          },
+          "2": {
+            "slots": [
+              {
+                "id": "ghouls",
+                "role": "minion",
+                "species": [
+                  "ghoul",
+                  "ghast"
+                ],
+                "anchor": "ghoul",
+                "count": [
+                  1,
+                  2
+                ]
+              },
+              {
+                "id": "lord",
+                "role": "boss",
+                "name": "the Ossuary Lord",
+                "species": "ghoul lord",
+                "anchor": "ghoul"
+              }
+            ],
+            "manifest": "the charnel stink thins and the lower galleries fall still"
+          }
+        }
+      }
     }
   ]
 }

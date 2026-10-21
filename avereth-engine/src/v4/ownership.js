@@ -35,6 +35,8 @@ export const STATE_KINDS = {
     threads: { owner: 'threads', engine: false, about: 'story threads' },
     intents: { owner: 'player', engine: true, about: "Alaric's goals: only his own commands set them, an arrival reaches them" },
     time: { owner: 'clock', engine: false, about: 'story time' },
+    // Patch 8: a Living Dungeon's levels, encounters, cycle and companies: the engine's alone (src/v4/living.js)
+    dungeons: { owner: 'dungeon', engine: true, about: "a Living Dungeon's structure, its encounters' slots, cycle, companies and gate" },
     audit: { owner: 'audit', engine: false, about: 'records of the turn (no game state)' },
 };
 
@@ -86,6 +88,10 @@ export function eventKind(e, s = null) {
             return 'quests';
         case 'board.refreshed': case 'board.failed': case 'board.shown': return 'guild.board';
         case 'guild.registered': case 'guild.promoted': return 'guild.standing';
+        // Patch 8: a Living Dungeon's structure, cycle and companies (src/v4/living.js)
+        case 'dungeon.established': case 'dungeon.ahead': case 'dungeon.slot': case 'dungeon.part': case 'dungeon.cleared': case 'dungeon.reset':
+        case 'dungeon.party': case 'dungeon.booked': case 'dungeon.pass': case 'dungeon.resource':
+            return 'dungeons';
         default:
             return AUDIT_EVENTS.has(e.t) ? 'audit' : null;
     }
@@ -166,6 +172,7 @@ export function stateRegions(s) {
         places: j([s.places, s.links]),
         intents: j(s.intents),
         objects: j(worldObjects),
+        dungeons: j(s.dungeons),
     };
 }
 
@@ -191,10 +198,12 @@ export const DELTA_WRITES = {
     // their quest ties with them); Prototype C (4.3.0-c.5): also the contract he takes and the board he reads at that
     // hall, which take a listing off its board and show the board
     // Patch 2: and reaches a goal of his there (player.goal: the place his own goal leads to)
-    arrive: { writes: ['pc.location', 'scene', 'entities', 'places', 'quests', 'trade', 'knowledge', 'facts', 'memory', 'objects'], gates: { intents: 'player.goal', 'quest.status': 'conditional', 'pc.coin': 'conditional', 'pc.progress': 'conditional', 'pc.inventory': 'conditional', 'guild.standing': 'conditional', 'guild.board': 'conditional' } },
+    // Patch 8: and counts a new part of a Living Dungeon toward its level (dungeons)
+    arrive: { writes: ['pc.location', 'scene', 'entities', 'places', 'quests', 'trade', 'knowledge', 'facts', 'memory', 'objects'], gates: { dungeons: 'dungeon.part', intents: 'player.goal', 'quest.status': 'conditional', 'pc.coin': 'conditional', 'pc.progress': 'conditional', 'pc.inventory': 'conditional', 'guild.standing': 'conditional', 'guild.board': 'conditional' } },
     'person.new': { writes: ['entities', 'scene', 'facts', 'places', 'knowledge'] },
     'person.named': { writes: ['entities'] },
-    'creature.new': { writes: ['entities', 'scene', 'facts'], gates: { combat: 'envelope.fight' } },
+    // Patch 8: a creature of the encounter the engine placed ahead is that slot's individual (dungeons)
+    'creature.new': { writes: ['entities', 'scene', 'facts'], gates: { combat: 'envelope.fight', dungeons: 'dungeon.slot' } },
     enter: { writes: ['scene', 'entities'] },
     leave: { writes: ['scene', 'entities', 'knowledge'] },
     position: { writes: ['scene', 'entities'] },

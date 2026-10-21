@@ -26,6 +26,7 @@ import { parseCoin } from './economy.js';
 import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, roundHalfUp, ENGINE_VERSION } from './util.js';
 import { seedPlaces } from './v4/domain.js';
 import { rankAt, dungeonOf } from './v4/dungeon.js';
+import { syncEvents, levelSpan } from './v4/living.js';
 import { tacticalHere, areaCaught, approachedBy, sideOf, burstCaught } from './v4/scene_handles.js';
 import { lootEvents } from './v4/loot.js';
 import { featureEvent } from './v4/features.js';
@@ -119,6 +120,8 @@ export function playerTurn(state, content, input, { msg = null, intent: parsed =
     // prototype C: a V3-routed turn the planner read; its fights and its reply's world applier know it (4.3.0-c.4)
     if (c && outcome) outcome = { ...outcome, c: true };
     if (TRADE_RE.test(text) && s.mode !== 'creation') situations.push('trade');
+    // Patch 8: a level of a Living Dungeon its fight cleared, and what follows (src/v4/living.js)
+    if (c && s.meta?.runtime === 'v4') syncEvents(s, content, emit);
     emit({ t: 'outcome.recorded', d: { outcome, situations } });
     // character creation is a menu: the engine answers it with a System panel, the narrator is not called
     const command = creation ? { panels: [creationPanel(s, content, outcome)], llm: null } : null;
@@ -322,7 +325,10 @@ export function materialise(s, content, dice, emit, id) {
         const rank = !e.level ? rankAt(s, at) : null;
         const lo = rank && content.rules.ranks.bands.find((b) => b.rank === rank.min);
         const hi = rank && content.rules.ranks.bands.find((b) => b.rank === rank.max);
-        const level = e.level || (lo && hi ? dice.int(lo.min, hi.max, 'creature level') : chooseCreatureLevel(area, content, dice));
+        // Patch 8: in a Living Dungeon, an ordinary foe of a level is drawn from that level's own window (its Rank band's
+        // lower part, fixed when the Dungeon was established: src/v4/living.js), never across the whole band
+        const span = !e.level && rank ? levelSpan(s, at) : null;
+        const level = e.level || (span ? dice.int(span[0], span[1], 'creature level') : lo && hi ? dice.int(lo.min, hi.max, 'creature level') : chooseCreatureLevel(area, content, dice));
         emit({ t: 'entity.updated', d: { id, set: { profile: scaleCreature(anchor, level, e.type || 'normal', content, e.variation || null), ...(dungeonOf(s, at) && !e.met_at ? { met_at: at } : {}) } } });
         return;
     }

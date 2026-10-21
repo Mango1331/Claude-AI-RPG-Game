@@ -13,6 +13,7 @@ import { threadCurrent } from './threads.js';
 import { goalLines } from './v4/intents.js';
 import { featuresAt, featureText } from './v4/features.js';
 import { dungeonOf, trueDungeonOf, dungeonText, nearDungeons, exitsFrom, exitText, roomLabel, wayBetween } from './v4/dungeon.js';
+import { contextLines as livingLines } from './v4/living.js';
 import { settlementOf, realmOf, hallOf } from './v4/domain.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
 import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText, proofMemory } from './v4/guild.js';
@@ -581,6 +582,8 @@ export function buildContext(state, content, opts = {}) {
             `ROOMS — he is in ${roomLabel(state, state.scene.at)}. WAYS FROM HERE (the engine's; he moves only by these, or on into a part nobody has shown yet; a blocked one stays blocked until the engine says he got past what blocks it): ${seen.join(' · ') || 'none known yet'}`,
             hid.length ? `HIDDEN WAYS (he has not found them; do not reveal them by yourself: only his search finds them): ${hid.join(' · ')}` : '',
             out?.path?.length > 2 ? `WAY OUT he knows: ${out.path.slice(1).map((id) => state.places[id]?.name || id).join(' › ')}` : '',
+            // Patch 8: the engine's level of a Living Dungeon (src/v4/living.js)
+            ...livingLines(state),
         ].filter(Boolean).join('\n'), 1);
     }
     // review of Patch 7: the known Dungeons near the town he is in, only when they matter (at the Guild hall, or when

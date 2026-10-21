@@ -12,12 +12,13 @@ import {
     membership, listingsOf, today, contracts, listedToday,
 } from './domain.js';
 import { catalogText } from './interpret.js';
-import { defeatTally, tallyText, readyText, proofMemory } from './guild.js';
+import { defeatTally, tallyText, readyText, proofMemory, goalText } from './guild.js';
 import { knownNote, reportedPlaces } from './known.js';
 import { spoiled } from './items.js';
 import { continueOptions, goalLines } from './intents.js';
 import { featuresAt, featureText } from './features.js';
 import { dungeonOf, roomKnown, exitsFrom, exitText, dungeonText, nearDungeons } from './dungeon.js';
+import { catalogLines as livingLines } from './living.js';
 import { currentThreads } from '../threads.js';
 
 /** A person or creature as the catalog labels it: name, role, look ("Marta, Guild receptionist"). */
@@ -126,6 +127,7 @@ function questInfo(state, content, q, { c = false } = {}) {
     if (q.kind === 'guild_contract') {
         const progress = (q.progress || []).slice(-3).map((p) => `${p.objective}: ${p.status}`).join('; ');
         return ['Guild contract', q.status, q.rank, q.payout_cp !== null && q.payout_cp !== undefined ? `${q.payout_cp} cp` : null,
+            c && goalText(state, content, q) ? `goal${goalText(state, content, q).replace(/^ — | \(/, ': ').replace(/\)$/, '')}` : null,
             q.desired_end_state ? `desired outcome: ${q.desired_end_state}` : null,
             (q.objectives || []).length ? `job memory: ${objectiveText(q)}` : null,
             progress ? `progress: ${progress}` : null,
@@ -273,11 +275,11 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
             seen.push({ id: q.id, title: q.title, info: `Guild contract · ${q.rank} · no longer on the board (posted on day ${q.source?.listed?.day}; the Guild renews its board every day)` });
         }
     }
-    const offers = openOffers(state).filter((o) => o.canon ? (!o.at || hallOf(state, o.at) === hall) : state.scene.present.includes(o.seller))
+    const offers = openOffers(state).filter((o) => o.gate ? state.scene.at === o.gate : o.canon ? (!o.at || hallOf(state, o.at) === hall) : state.scene.present.includes(o.seller))
         .map((o) => (o.bid
             // 4.3.0-c.6.6.5: a buyer's bid for his things (he would be paid), by the ids of his things
             ? { id: o.id, seller: personLabel(state, content, o.seller), bid: true, price_cp: o.price_cp, lines: o.lines.map((l) => ({ id: l.id, what: l.what, object: l.object, qty: l.qty, ...(Number.isInteger(l.price_cp) ? { price_cp: l.price_cp } : {}) })) }
-            : { id: o.id, seller: o.canon ? 'Guild' : personLabel(state, content, o.seller), lines: o.lines.map((l) => ({ id: l.id, what: l.what, price_cp: l.price_cp, ...(l.qty > 1 ? { qty: l.qty } : {}) })) }));
+            : { id: o.id, seller: o.gate ? 'the gate' : o.canon ? 'Guild' : personLabel(state, content, o.seller), lines: o.lines.map((l) => ({ id: l.id, what: l.what, price_cp: l.price_cp, ...(l.qty > 1 ? { qty: l.qty } : {}) })) }));
     const objects = [
         ...heldBy(state, 'pc').map((o) => objectEntry(state, content, o)),
         ...sheetObjects(state, content),
@@ -303,6 +305,8 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         features: featuresAt(state, at, { hidden: hiddenFeatures }).map((f) => ({ id: f.id, name: f.name, text: `${featureText(f)}${f.hidden ? ' — HIDDEN: Alaric has not found it' : ''}` })),
         // Patch 7: the ways from here (src/v4/dungeon.js); hidden ones only for the extractor
         exits: exitsFrom(state, at, { hidden: hiddenFeatures }).map((e) => ({ id: e.link.id, to: e.to, text: exitText(state, e) })),
+        // Patch 8: the level of a Living Dungeon he is on; the extractor also the encounter the engine placed (src/v4/living.js)
+        dungeon: c ? livingLines(state, { extractor: hiddenFeatures }) : [],
         open: openDecisionTexts(state),
     };
 }

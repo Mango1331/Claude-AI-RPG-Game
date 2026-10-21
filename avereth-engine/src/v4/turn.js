@@ -13,6 +13,7 @@ import { clone, hash32 } from '../util.js';
 import { readTurn } from '../ir.js';
 import { resolveCommands } from './commands.js';
 import { applyWorld } from './world.js';
+import { syncEvents } from './living.js';
 import { INTERPRETER_VERSION } from './interpret.js';
 import { EXTRACTOR_VERSION } from './extract.js';
 
@@ -73,7 +74,10 @@ export function playerTurnV4(state, content, text, { msg = null, commands = [], 
         ...(interp.error ? { error: String(interp.error).slice(0, 200) } : {}),
         commands: commands.map((c) => ({ ...c })), dropped: dropped.map((x) => ({ type: x.command?.type, rule: x.rule, quote: x.command?.quote ?? null })),
     } });
+    // Patch 8: the Dungeon he is at, its cycle and its companies, as time has brought them (src/v4/living.js)
+    if (c) syncEvents(s, content, emit);
     const ctx = resolveCommands(s, content, commands, emit, { msg, dice, board, c, dropped });
+    if (c) syncEvents(s, content, emit);
     const clarify = ctx.resolutions.find((r) => r.status === 'clarify');
     // Patch 3 (live 18.10.2026: "I settle on the ring of stones for my camp this night and go looking for animals to
     // hunt": the camp's length was a question, and the hunt was lost with it): a question about one step stops that

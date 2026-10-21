@@ -3,14 +3,15 @@
 // board and its listings (from the Board generator, validated and booked before the narrator describes them), the
 // acceptance with its contract slip, the turn-in with the proof check, the payout, Quest XP, the contract count and
 // the promotion. The narrator only tells what the engine booked; the extractor's deltas cannot change any of it.
-import { nearDungeons, dungeonText, rankText, guildRecord } from './dungeon.js';
+import { nearDungeons, dungeonText, rankText, guildRecord, trueDungeonOf } from './dungeon.js';
+import { clearOf, clearDone, clearTarget } from './living.js';
 import { O, S, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 import { setFactEvents, perceivers, knows, truth, PC_NAME_FACT } from '../knowledge.js';
 import { awardXp, questXp } from '../progression.js';
 import { rankOf, rankIndex } from '../derived.js';
-import { slug, normText } from '../util.js';
-import { hallOf, settlementOf, heldBy, membership, listingsOf, boardKey, today, contracts, supportedRanks, placeName, namesKind, namesPeople, peopleNamed, sameKinds, namesYoung } from './domain.js';
+import { slug, normText, hash32 } from '../util.js';
+import { hallOf, settlementOf, realmOf, heldBy, membership, listingsOf, boardKey, today, contracts, supportedRanks, placeName, namesKind, namesPeople, peopleNamed, sameKinds, namesYoung } from './domain.js';
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
@@ -173,6 +174,10 @@ export function defeatTally(s, content, q) {
     const dead = beings.filter((e) => status(e)?.o === 'dead' && (status(e).since?.turn ?? 0) >= since);
     const fled = drivesOff(content, q) ? beings.filter((e) => status(e)?.o !== 'dead' && e.fled && (e.fled.turn ?? 0) >= since) : [];
     const same = sameKinds(content);
+    // Patch 8: where a death counts for this contract: in the Dungeon (and level) it names, else in its branch's land
+    // (wolves along the way to the den are the same hunt; a wolf of another realm is not). Only beings met in his own
+    // story count: the companies of a Living Dungeon never make entities, so what they kill never fills his count
+    const area = areaOf(s, q);
     return (q.objectives || []).filter((o) => o.verb === 'DEFEAT' && Number.isInteger(o.qty) && o.qty > 0).map((o) => {
         // animals and monsters by their kind; people by their role ("raiders": a dead brigand counts, review of 4.1.3:
         // 4.1.2 counted creatures only, so five dead bandits made 0 of 5)
@@ -183,13 +188,44 @@ export function defeatTally(s, content, q) {
             return [o.what, o.unit].filter(Boolean).some((w) => namesKind(w, e.species || '', anchor, same))
                 && (young || !namesYoung(content, `${e.species || ''} ${e.name || ''}`));
         };
-        const counts = (e) => (people.size
+        const counts = (e) => area(e) && (people.size
             ? e.kind === 'npc' && (e.descriptors || []).some((d) => [...peopleNamed(d, content)].some((t) => people.has(t)))
             : e.kind === 'creature' && kind(e));
         const killed = dead.filter(counts).length;
         const driven = fled.filter(counts).length;
         return { what: o.what, qty: o.qty, done: killed + driven, killed, driven };
     });
+}
+
+/**
+ * Patch 8: the area a contract's kills count in (coarse on purpose): the Dungeon (and level) it is to clear, else the
+ * land of the branch that posted it. A being with no known place counts (an older campaign's).
+ */
+function areaOf(s, q) {
+    const clear = clearOf(s, q);
+    const where = (e) => e.met_at || e.left?.at || e.at || e.location || null;
+    if (clear) return (e) => { const p = where(e); return !p || !s.places[p] || trueDungeonOf(s, p) === clear.dungeon; };
+    const realm = q.source?.branch ? realmOf(s, q.source.branch) : null;
+    if (!realm) return () => true;
+    return (e) => { const p = where(e); return !p || !s.places[p] || !realmOf(s, p) || realmOf(s, p) === realm; };
+}
+
+/**
+ * Patch 8: what a contract's goal is, as the board, the catalog and the HUD show it: "(4)" for a cull with its number
+ * (on the board), "— 2/4 defeated" once taken; "— Clear Old Crown Catacombs, level 1" for a Dungeon level, with its
+ * state once taken. Empty for other work.
+ */
+export function goalText(s, content, q, { board = false } = {}) {
+    const clear = clearOf(s, q);
+    if (clear) {
+        const name = s.places[clear.dungeon]?.name || clear.dungeon;
+        if (board || q.status !== 'active') return ` — Clear ${name}, level ${clear.floor}`;
+        return ` — Clear ${name}, level ${clear.floor}: ${clearDone(s, q).text}`;
+    }
+    const kills = (q.objectives || []).filter((o) => o.verb === 'DEFEAT' && Number.isInteger(o.qty) && o.qty > 0);
+    if (!kills.length) return '';
+    if (board || q.status !== 'active') return ` (${kills.map((o) => o.qty).join(' + ')})`;
+    return ` — ${defeatTally(s, content, q).map((t) => `${t.done}/${t.qty} defeated`).join(', ')}`;
 }
 
 /** Does the contract allow its targets to be driven off ("driven off or destroyed", "Clear the hounds from …")? */
@@ -228,9 +264,9 @@ const NOT_READY_COUNT = 'NOT READY FOR TURN-IN: fewer defeated than named and no
  */
 export function readyText(s, content, q, { c = false } = {}) {
     const r = contractReady(s, content, q, { c });
-    if (r.ok) return `READY FOR TURN-IN: ${r.mode === 'story_outcome' ? q.ready_note || 'desired outcome achieved' : r.mode === 'goods' ? `the goods are in his hands (${goodsText(q)})` : `the listed proof is in hand (${proofText(q)})`}`;
+    if (r.ok) return `READY FOR TURN-IN: ${r.mode === 'dungeon_clear' ? 'he cleared the level' : r.mode === 'story_outcome' ? q.ready_note || 'desired outcome achieved' : r.mode === 'goods' ? `the goods are in his hands (${goodsText(q)})` : `the listed proof is in hand (${proofText(q)})`}`;
     // Prototype C (4.3.0-c.6): the story's readiness that the goods do not bear out (not in his hands, not handed over)
-    if (c && q.ready && (r.mode === 'goods_missing' || r.mode === 'not_delivered')) return `NOT READY FOR TURN-IN: ${r.reason}`;
+    if (c && ((q.ready && (r.mode === 'goods_missing' || r.mode === 'not_delivered')) || r.mode === 'not_cleared')) return `NOT READY FOR TURN-IN: ${r.reason}`;
     return q.ready ? NOT_READY_COUNT : null;
 }
 
@@ -363,6 +399,9 @@ export function slipMarks(s, content, emit) {
  * @returns {{ok: boolean, mode: 'story_outcome'|'legacy_verification'|'not_ready'|'count_short', reason: string|null, consume: object[]}}
  */
 export function contractReady(s, content, q, { c = false } = {}) {
+    // Patch 8: a contract to clear a level of a Dungeon is done when he cleared it (the engine's level state, his credit)
+    const clear = c ? clearDone(s, q) : null;
+    if (clear) return clear.ok ? { ok: true, mode: 'dungeon_clear', reason: null, consume: [] } : { ok: false, mode: 'not_cleared', reason: `${clear.name}, level ${clear.floor}: ${clear.text}; the Guild pays for the level cleared`, consume: [] };
     if (c) {
         // Prototype C (4.3.0-c.6): goods he is to gather or get are the work itself: in his hands at the hall, whatever
         // the story says, and the Guild takes them; a delivery is not done while he still carries what it delivers
@@ -490,6 +529,7 @@ export function boardRequest(s, content, need) {
         ...noviceProfile,
         `- rank is "${need.rank}"; level is the quest level, an integer from ${lo} to ${hi}; qtype is minor, standard, dangerous or major.`,
         `- payout_cp is the Guild's one fixed payout in copper (1 silver = 10 copper)${guide ? `; for ${need.rank} work ${guide[0]}–${guide[1]} cp is usual (a guide, not a limit)` : ''}.`,
+        '- A cull names how many its notice asks for: the DEFEAT objective\'s qty (4 wolves; 1 for a single beast). A clearance of a Dungeon level names the level ("level 1") and no number: the level is cleared when its threats are.',
         '- 1 to 4 objectives: {verb, what, qty, unit, where}; verb is one of GO, FIND, TALK, GET, GATHER, GIVE, DELIVER, USE, REPAIR, DEFEND, ESCORT, ATTACK, DEFEAT. These are continuity memories for play, not a rigid checklist the narrator must force in order.',
         '- proof contains 0–2 optional verification examples the Guild could recognize. Prefer [] when return, witnesses or a credible report can establish the outcome naturally. If used, EVERY entry must be an object with all fields present: {"kind":"object"|"mark","what":"...","qty":integer>=1|null,"unit":string|null,"on":string|null,"consume":true|false|null}. These are story guidance, NOT exclusive completion tokens.',
         '- Do not use GO merely as a travel checklist item. Objectives should describe meaningful work/outcomes (find, rescue, repair, defend, escort, investigate through FIND/TALK/GET, defeat, deliver, etc.); travel itself is normally just how play reaches them. Do not invent paperwork solely to make verification possible.',
@@ -598,6 +638,26 @@ export function parseBoard(answer, content, need, s = null) {
     return { listings: ok.slice(0, need.missing), refused, errors: [] };
 }
 
+/**
+ * Patch 8: a cull's number. A hunt the generator wrote without one (live 21.10.2026: "bog striders nesting in the weir
+ * stakes", qty null) gets one from the engine, fixed now and shown on the board: one for a single named beast, else
+ * three to five by the listing itself; a contract to clear a Dungeon's level counts no number (its level does).
+ */
+function cullNumbers(s, content, l, need) {
+    const objectives = huntObjectives(l, content);
+    if (!need.c || !isHunt(l, content) || clearTarget(s, { objectives })) return objectives;
+    // its kills are what the engine counts (DEFEAT): an ATTACK of the notice is the same work
+    return objectives.map((o) => {
+        if (!KILL_WORK.has(o.verb)) return o;
+        if (Number.isInteger(o.qty) && o.qty > 0) return { ...o, verb: 'DEFEAT' };
+        const words = normText(o.what || '').split(' ');
+        const cut = words.findIndex((w) => RELATION.has(w));
+        const before = cut > 0 ? words.slice(0, cut) : words;
+        const plural = before.some((w) => w.length > 3 && /[^s]s$/.test(w));
+        return { ...o, verb: 'DEFEAT', qty: plural ? 3 + (parseInt(hash32(`${l.title}|${o.what}`), 16) % 3) : 1 };
+    });
+}
+
 /** Book validated listings: quest.created (listed) for each, and the board. The payout is fixed from here on. */
 export function bookBoard(s, content, need, listings, emit) {
     const ids = [];
@@ -609,12 +669,15 @@ export function bookBoard(s, content, need, listings, emit) {
         const quest = {
             id, title: String(l.title).slice(0, 80), kind: 'guild_contract', client: String(l.client || '').slice(0, 80) || null, giver: null,
             rank: need.rank, level: l.level, qtype: l.qtype, payout_cp: l.payout_cp, reward: `${l.payout_cp} cp`,
-            task: l.task ? String(l.task).slice(0, 240) : null, desired_end_state: l.desired_end_state, objectives: huntObjectives(l, content).map((o, i) => ({ id: `o${i + 1}`, ...o, status: 'open' })),
+            task: l.task ? String(l.task).slice(0, 240) : null, desired_end_state: l.desired_end_state, objectives: cullNumbers(s, content, l, need).map((o, i) => ({ id: `o${i + 1}`, ...o, status: 'open' })),
             proof: l.proof.map((p, i) => ({ id: `p${i + 1}`, ...p, consume: p.kind === 'object' ? p.consume !== false : undefined })),
             source: { board: `${need.branch}.guild_hall`, branch: need.branch, listed: { turn: s.turn, minute: s.clock.minute, day: need.day } },
             schedule: { starts_at: null, deadline: null }, status: 'listed', taker: null, history: [{ turn: s.turn, minute: s.clock.minute, status: 'listed' }],
             details: [], notes: [], ...(guide && (l.payout_cp < guide[0] || l.payout_cp > guide[1]) ? { audit: [`payout ${l.payout_cp} cp outside the guide ${guide[0]}–${guide[1]} cp`] } : {}),
         };
+        // Patch 8: a level of a Dungeon to clear, booked with the contract (src/v4/living.js)
+        const clear = need.c ? clearTarget(s, quest) : null;
+        if (clear) quest.clear = clear;
         emit({ t: 'quest.created', d: { quest } });
         ids.push(id);
     }

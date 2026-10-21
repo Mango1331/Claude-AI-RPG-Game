@@ -1787,3 +1787,32 @@ Livetest 21.10.2026 00:53 in den Old Crown Catacombs (`tests/v4/live_1021b.json`
 - Ein Zählausdruck direkt nach einer Ortspräposition benennt den Ort, nicht die Toten.
 
 **Tests:** `combat_1021` (5). Ohne Fix scheitern alle 5. Angepasst wurden die Temperament-Erwartungen auf Pfad C in `planner_c4`, `planner_c6`, `c66` und `c665`; die Legacy-Erwartungen bleiben.
+
+### Patch 8 (4.3.0-c.6.6.25): Living Dungeons
+
+Vollständige Beschreibung, Architekturentscheidungen, die drei Review-Runden und die Grenzen: `docs/PATCH8_LIVING_DUNGEONS.md`.
+
+- **Neues Modul `src/v4/living.js`.** Ein System-Dungeon wird beim ersten Kontakt einmal festgelegt (`dungeon.established`):
+  - Gate mit Zugang, Gebühr und Kapazität;
+  - Ebenen mit Rank, Level-Fenstern je Rolle und Begegnungs-Slots;
+  - Wächter und Endboss;
+  - Zyklus und Gruppen;
+  - Fundstellen.
+- **Seeds und neue Dungeons.** Die Seeds haben eigene Einträge (`lore.json dungeons[].living`). Neue Dungeons erhalten die Struktur aus ihrer Klassifikation.
+- **Begegnungen.** Die Engine platziert die nächste Begegnung, bevor der Narrator erzählt („DUNGEON AHEAD“). Der Extractor meldet sie per Slot-Ref. Bleibt sie aus, ist sie trotzdem da.
+- **Ebenenabschluss.**
+  - Floor-Clear mit Credit.
+  - Siegel (Old Crown).
+  - Reset nie im Kampf und nie vor Alarics Augen, mit Verfallsregel für Altbeute.
+- **Gruppen.** Andere Gruppen gehen nach einem deterministischen Tagesplan in den Dungeon. Sie füllen die Belegung und nehmen Begegnungen. Ihre Anführer sind stabile NPCs.
+- **Aufträge.**
+  - Cull-Aufträge zeigen ihre Zahl („(4)“, „2/4 defeated“).
+  - Clear-Aufträge zeigen ihre Ebene und hängen am Ebenenstatus.
+  - Bei fremdem Clear werden sie zurückgezogen.
+- **Rückkehrstein** als seltener Wächter- oder Boss-Drop.
+- **Pacing-Klausel** auf jeder GO-Zeile.
+- **.24-Fehler:**
+  - Kapelle → Gate;
+  - Treppe → Level 2;
+  - neue Anchors Ghul, Schleim, Goblin-Schamane.
+- **Tests:** `tests/v4/patch8.test.js` (16), Fixture `tests/v4/live_1021c.json`.

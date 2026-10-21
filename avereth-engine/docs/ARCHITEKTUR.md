@@ -347,3 +347,23 @@ Welt- und NPC-Handlungen (NPC gibt Alaric etwas, NPC geht, Wetter) brauchen kein
 - Die Engine prüft jedes Feld gegen bekannte Referenzen, den Zustand und, soweit prüfbar, die Prosa.
 - Bestehende Regex-Fallbacks bleiben, solange sie gebraucht werden. Neue Wortlisten sind nur für eng begrenzte Evidenzprüfungen erlaubt, mit dokumentierten Grenzen (Beispiel: `combat_truth.js`).
 
+## 14. Living Dungeons (Patch 8, 4.3.0-c.6.6.25)
+
+Erstes Fachmodul nach der Strangler-Regel: `src/v4/living.js` besitzt die lebende Struktur eines System-Dungeons (`dungeons[root]`, Engine-Domäne `dungeons` in `ownership.js`).
+
+**Kanonische Zuständigkeiten:**
+
+| Ort | Inhalt |
+|---|---|
+| `places[root].dungeon` | Klassifikation |
+| `dungeons[root]` | Gate, Zyklus, Ebenen, Slots, Gruppen |
+| Entity | das konkrete Individuum eines Slots |
+| `places[id].level` | die Ebene eines Raums |
+
+**Aufrufer:**
+- `world.js` koordiniert (Gate-Abbildung, Weg durch den Zielraum, Siegel- und Gate-Prüfung, Slot-Zuordnung, Garantie).
+- `commands.js` kündigt Begegnungen an und prüft das Gate.
+- `turn.js`, `world.js` und `engine.js` rufen `syncEvents` (Etablierung, Reset, Gruppen, Clear).
+
+Details: `docs/PATCH8_LIVING_DUNGEONS.md`.
+

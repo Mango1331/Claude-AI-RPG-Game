@@ -311,5 +311,23 @@
     "preserved": "jerky|dried|salted|smoked|hardtack|biscuits?|rations?|cheese|honey|nuts|pickled|cured",
     "consumable": "potions?|tonics?|elixirs?|draughts?|salves?|ointments?|poultices?|bandages?|antidotes?|tinctures?|oil|torch|torches|candles?|arrows?|bolts?|herbs?|powder|scrolls?|vials?|bombs?|kindling|tinder|firewood",
     "keeps_min": { "fresh": 2880, "preserved": 20160 }
+  },
+  "living": {
+    "src": "Patch 8 (Living Dungeons, src/v4/living.js, docs/PATCH8_LIVING_DUNGEONS.md): what a true Dungeon gets when it is first established, where its own content entry (lore.json dungeons[].living) says nothing. Fixed into the campaign's events at its establishment; a later change here never changes an established Dungeon. Provisional values, no balance",
+    "role_spans": { "minion": [0, 0.3], "guard": [0.25, 0.5], "boss": [0.35, 0.6] },
+    "role_spans_note": "the level window of each encounter role on a level of a Dungeon, as parts of that level's Rank band (F: 1-14 gives minion 1-5, guard 4-8, boss 5-9); never outside the band, never Alaric's level",
+    "role_type": { "minion": "normal", "guard": "elite", "boss": "boss" },
+    "capacity_by_rank": { "F": 8, "E": 8, "D": 6, "C": 6, "B": 5, "A": 4, "S": 4 },
+    "reset_days_by_rank": { "F": 3, "E": 4, "D": 5, "C": 6, "B": 7, "A": 7, "S": 7 },
+    "parties": 2,
+    "party": { "visit_pct": 35, "enter_min": [420, 840], "stay_min": [150, 330], "floor_min": 70, "size": [2, 4] },
+    "party_names": ["the Grey Pennants", "Kettle's Company", "the Lantern Five", "the Low Road Brothers", "the Three Oaks Company", "the Ashen Hands", "the Millward Blades", "the Wren Company"],
+    "leader_names": ["Brannoc", "Ysolde Marr", "Tamsin Reed", "Old Harl", "Mira Fenwick", "Corvin Ash", "Edda Lusk", "Rook Tallow"],
+    "affiliations": ["a Guild-registered company", "a Guild-registered company", "hired blades of a local house", "a crew of independent delvers"],
+    "return_stone": { "name": "Return Stone", "value_cp": 60, "guard": 0.25, "boss": 0.6, "text": "a palm-sized grey stone etched with a gate rune; crushed in the hand inside a Dungeon, it carries its holder back to that Dungeon's gate" },
+    "boss_titles": ["Warden", "Matriarch", "Old One", "Tyrant", "Overseer", "Hollow King"],
+    "guard_titles": ["Warden", "Sentinel", "Brute", "Chief"],
+    "pace": [0, 1],
+    "pace_note": "the quiet parts (no engine encounter) a level may have before each of its encounters, drawn per cycle from this list: a level is never an endless string of empty rooms, and never a fixed number of rooms"
   }
 }

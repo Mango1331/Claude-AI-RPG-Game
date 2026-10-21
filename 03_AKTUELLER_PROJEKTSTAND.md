@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 21. Oktober 2026 · Fassung 2 (nach Patch 8)  
+**Stichtag:** 21. Oktober 2026 · Fassung 4 (nach Patch 8.1)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,16 +13,17 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 21.10.2026 unabhängig über GitHub geprüft** | f3b55819dad21249d871a62b7ede38bd926598cd |
-| **Build direkt aus package.json geprüft** | 4.3.0-c.6.6.25 |
+| **HEAD am 21.10.2026 unabhängig über GitHub geprüft** | c6baa06e159f16069efd728844c7afe7c7dc186a |
+| **Build direkt aus package.json und manifest.json geprüft** | 4.3.0-c.6.6.26 |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | **Patch 8 – Living Dungeons implementiert und gepusht; erster echter GLM-Dungeon-Encounter getestet, mehrere Integrations-/Combat-Truth-Fehler offen** |
-| **Nächster Schritt** | Gebündelten Patch 8.1 zu Gate/Quest/Anzeige, Gruppen-Encounter und Narrator-Combat-Truth planen, mit Tests absichern; danach Dungeon-Run fortsetzen |
+| **Patchstatus** | **Patch 8.1 – Gate, Group Combat & Gameplay Integration implementiert und gepusht; echter .26-GLM-Livetest steht aus** |
+| **Nächster Schritt** | Neuen .26-Glimmerdeep-Livetest (Gate, Board, Beetle A/B, Combat-Truth und weiterer Dungeon-Verlauf) durchführen und Exporte auswerten; keine neue Hotfix-Schleife ohne realen Befund |
 | Dokumentationsbranch | main – Dateien 01, 02, 03 im Repository-Root; nicht mit Entwicklungsbranch verwechseln |
 
-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f3b55819dad21249d871a62b7ede38bd926598cd
+Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c6baa06e159f16069efd728844c7afe7c7dc186a  
+Vorheriger Patch-8-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f3b55819dad21249d871a62b7ede38bd926598cd
 
-**Testnachweise:** Claude meldet für Patch 8 **931/931 npm test** (16 neue Patch-8-Szenarien) und **smoke:st:c 21/21**, Exit 0, keine Seitenfehler oder im Browser exponierten Schlüssel. Diese Läufe wurden von ChatGPT **nicht unabhängig lokal ausgeführt**. Die Testdatei, der Build und die Implementierung sind im Git-Branch vorhanden. Der Smoke deckt laut Claude keinen echten Dungeonlauf ab. Synthetische Skripte bestätigen keinen realen Narrator-/Extractor-Erfolg mit GLM-5.3-Flash.
+**Testnachweise:** Für Patch 8.1 meldet Claude **960/960 npm test** (davon **29/29 neue Tests** in `tests/v4/patch81.test.js`) sowie `smoke:st:c` mit **19/19 Prüfungen**, keine Browserseitenfehler oder offengelegten Keys. Dies sind **Claudes berichtete Läufe**, nicht von ChatGPT unabhängig ausgeführte Tests. Code, Testdateien und Versionsnummern wurden über GitHub verifiziert. Ein echter vollständiger .26-GLM-Dungeonlauf steht weiterhin aus. Zuvor für Patch 8 (.25) meldete Claude 931/931 Tests und einen C-Smoke mit 21/21.
 
 ## 2. Architektur – was bereits vorhanden ist
 
@@ -144,12 +145,38 @@ Die drei erstgenannten Probleme wurden in .25 mit Regressionstests adressiert. D
 
 **Patch-Reihenfolge / Status:** Noch kein Patch 8.1 implementiert. Vor neuen langen Runs erst einen **gebündelten Integrationspatch** aus Doppelzahlung/Gate-UX, Dungeon-Quests/Board-Truth, Combat-Gruppenaufnahme und Combat-Narrator-Truth formulieren. Große Aufträge vor Claude Code wie vereinbart optional in zweiter Architektur-Review-Sitzung gegenprüfen. Balancing, zusätzliche Dungeons, komplette NPC-Party-KI und neue Simulation explizit nicht automatisch erweitern.
 
-## 6. Nächster Schritt: Patch 8.1 gebündelt planen und danach Dungeon-Run fortsetzen
+## 5c. Patch 8.1 fertig implementiert (.26, 21.10.2026) – echter neuer Livetest steht aus
 
-**Keinen automatischen weiteren Dungeon-Hotfix starten.** Zuerst neuen Live-Run auf .25 durchführen und mit Exporten analysieren. Sinnvolle Testreihenfolge:
+**Entwicklungscommit (GitHub-Branch überprüft):** `c6baa06e159f16069efd728844c7afe7c7dc186a`. **Build 4.3.0-c.6.6.26** in `package.json` und `manifest.json` unabhängig bestätigt. Vorheriger Build .25 auf `f3b5581`. Ausführlicher technischer Bericht: `avereth-engine/docs/PATCH8_1_GATE_GROUP_COMBAT.md`; Regressionen `tests/v4/patch81.test.js`; anonymisierte .25-Fixture `tests/v4/live_1021d.json` (31 Nachrichten).
 
-1. **Ein neuer frischer C-Chat:** Build .25 im Engine-Panel kontrollieren; Startstadt und Guild-Beitritt prüfen. Eine neue Kampagne ist wichtig: Der alte .24-Black-Corridor wird nicht rückwirkend auf Level 2 korrigiert.
-2. **Glimmerdeep als zusammenhängender F-Rank-Run** (wenn die Startstadt Glassmere ist): Gate + Registrierung + ausdrückliche 10-cp-Zustimmung, wenige ruhige Schritte, Kristallkäfer/Schleim, Boss, Clear, Loot/Ressourcen, Rückweg. Bei anderem Startort den dortigen Seed-Dungeon statt Ortswechsel erzwingen.
+**Berichtete Tests:** Claude meldet `npm test` **960/960**, davon 29 neue Patch-8.1-Tests, und `smoke:st:c` **19/19** ohne Seitenfehler oder Schlüssel-Exposure. Testläufe von ChatGPT nicht selbst lokal durchgeführt; echte GLM-5.3-Flash-Erprobung des Builds .26 fehlt.
+
+**Im Git-Code verifizierte Implementierung:**
+
+1. **Gate/Payment:** `living.js gateOfferEvents` erzeugt ein kanonisches `offer.gate.*` bei Gate-Ankunft und schließt nicht mehr erforderliche Angebote. `world.js offer` verhindert konkurrierende Story-Eintrittsangebote (`gate_fee`), ohne den Handel mit anderen Waren zu sperren. Bestehendes `dungeon.pass` bleibt autoritativ; keine zweite Pass-Tabelle.
+2. **Questbezogene Freistellung:** Glimmerdeep hat `gate.contract_free: true`; bei aktivem zur Glimmerdeep gehörigem offiziellen Cull-/Clear-Auftrag mit `q.dungeon` bzw. `q.clear.dungeon` entfällt die Gebühr. Keine Freistellung allein für beliebige Guild-Mitgliedschaft. Alte vor .26 gebuchte Aufträge ohne strukturierten Dungeonbezug bekommen laut Claude keinen Erlass.
+3. **Sichtbares Spielsystem:** `SYSTEM — DUNGEON GATE` aus dem Engine-Fold mit Belegung, Gruppengröße, Resetrestzeit (d/h/min), bekannten Levels/Ranks, Gebühren-/Access-Status und Enter-Hinweis; keine neue Bestätigung. `SYSTEM — GUILD BOARD` zeigt kanonische Listings und Zielzahlen direkt im System-Panel. Lore-Gate-Displays und Glimmerdeep-Monsterloot/freie Kristallressourcen festgelegt.
+4. **Zusammenhängende Gruppen-Encounter:** Neues `src/v4/group_combat.js`; `groupJoiners` wird durch `engine.js` für relevante V4-C-Kampfstarts und laufende Eintritte verwendet. Die zwei aktiven Glimmerdeep-Beetles gehen bei Angriff auf B in denselben Encounter, mit individuellen Zügen; Single-Target-Schaden trifft nur das gewählte Ziel. Unaufmerksame Mitglieder werden im Ambush zeitlich verzögert berücksichtigt. Keine neue NPC-Gruppen-KI oder Balanceänderung.
+5. **Combat-Truth und Extraktor:** `floorText` berichtet verbleibende lebende, tote und geflohene Einzelwesen statt pauschal zwei stehende Käfer. `context.js stateNow` liefert aktuelle bindende Kampfergebnisse; Einzelmonster-Beschreibungen präzisiert; Extractor-Katalog enthält relevante RECENT DEAD. Bei leerer `finish_reason=length`-Antwort eine andere, kurze Reparaturaufforderung statt Wiederholung derselben Antwort. Der bestehende Zustandsschutz bleibt bestehen.
+6. **Cull-Quests und Board-Kanon:** Board-Spezifikation kann Dungeon-Mindestpopulation ohne vorangegangenen Spielerbesuch deterministisch berechnen. Ziele auf den Mindestbestand passender Minion-Slots pro Zyklus begrenzt; Boss zählt nur bei expliziter Benennung. `q.dungeon` und gegebenenfalls `q.floor` werden für neue Listings strukturiert gespeichert. Firewall schützt Board-Vertragsstatus stärker gegen freie falsche Weltfakten.
+
+**Wichtige Grenzen / Code-Risiken für spätere Prüfung (nicht als im Livetest bestätigte Fehler ausgeben):**
+
+- **Friedliche Tiergruppen:** `groupJoiners` lässt bei PC-Angriff auf ein Mitglied einer Kreaturengruppe auch weitere Mitglieder ohne positiv gesetztes Threat-Merkmal einsteigen, sofern sie nicht ausdrücklich `threat:false` sind. Claude benennt selbst das Risiko einer aggressiv reagierenden Rehherde bei fehlender Threat-Kennzeichnung. Ein Test mit korrekt markiertem `threat:false` genügt nicht, diesen Grenzfall zu widerlegen. Beobachten/gezielt testen, keine pauschale Wiedereinführung von Temperament.
+- **Gebietsbezug des Cull-Fortschritts:** In `guild.js areaOf()` wird für Dungeongebiete nur `clearOf(s,q)` geprüft, für reguläre neue Cull-Quests mit `q.dungeon` aber weiterhin auf das ganze Herkunfts-Reich ausgewichen. Somit *könnten* passende anderswo besiegte Monster auf eine dungeonbezogene Jagd zählen, obwohl neue strukturierte `q.dungeon`-Daten vorhanden sind. Codebasierter Verdacht, noch kein beobachteter .26-Livetest-Fehler; vor ggf. größerem Patch gezielt testen.
+- **Nachträgliche Gruppenmitglieder:** Neue Ankömmlinge im laufenden Encounter brauchen weiterhin eine erzählte Kampfabsicht/Join; keine vollständige dynamische Gruppenreaktion für jeden Neuankömmling.
+- **Vorhandene .25-Kampagnen:** Alte Questzahlen (etwa sechs Käfer) bleiben unverändert, kein rückwirkendes Clamping und kein alter Eintrittsgebührenerlass ohne `q.dungeon`.
+- **Narrator-Compliance:** Synthetische Tests prüfen Enginekontext und Guards, keine Garantie, dass GLM bei 1 HP keinen Tod erzählt. Das muss ein neuer echter Livetest zeigen.
+- **Promptbudget:** Claude meldet etwa +29 bis +40 Narrator-Tokens und bis +67 Extractor-Tokens in den untersuchten Zügen. Der Kontextabschnitt RELEVANT kann bei Kampf unter dem Budget zurückstehen; Mechanik-Wahrheit hat Vorrang.
+
+**Nächster echter .26-Test:** möglichst frischer GLM-5.3-Flash-Run in Glassmere: Guild-Board lesen (Crystal Beetles idealerweise 2 statt 6), Auftrag annehmen, kostenfreie Berechtigung am Glimmerdeep-Gate prüfen, sichtbare Systemkarte inkl. Rank/Timer/Slots, bewusstes Eintreten ohne Doppelzahlung, Encounter mit Beetle A/B als *einem* Kampf und Single-Target-Mechanik, tatsächliche HP/Narrator-Übereinstimmung, Extractor-Events, Fortgang Richtung Floor-Clear. Separat bei Gelegenheit neutrale Tiergruppe/Stealth, Board-Status, echte Questzählung, Rückkehr und Dungeon-Reset. Analyse erneut mit Event-JSON, Chat-JSONL und Completion-TXT; keine neuen großen Patches vor Auswertung.
+
+## 6. Nächster Schritt: Patch 8.1 in echtem GLM-Dungeonlauf testen
+
+**Keinen automatischen weiteren Dungeon-Hotfix starten.** Einen neuen Live-Run auf .26 durchführen und mit Exporten analysieren; vorherigen .25-Lauf nur als Regression heranziehen. Sinnvolle Testreihenfolge:
+
+1. **Ein neuer frischer C-Chat:** Build .26 im Engine-Panel kontrollieren; Startstadt und Guild-Beitritt prüfen. Eine neue Kampagne ist wichtig: Der alte .24-Black-Corridor wird nicht rückwirkend auf Level 2 korrigiert.
+2. **Glimmerdeep als zusammenhängender F-Rank-Run** (wenn die Startstadt Glassmere ist): Gate + Registrierung + Auftrag als gebührenfreie Berechtigung (ohne passenden Auftrag ggf. einmalige ausdrückliche 10-cp-Zustimmung), wenige ruhige Schritte, Kristallkäfer/Schleim, Boss, Clear, Loot/Ressourcen, Rückweg. Bei anderem Startort den dortigen Seed-Dungeon statt Ortswechsel erzwingen.
 3. **Old Crown als gezielter zweiter Run oder eigener neuer Chat** (wenn Alderwatch): Kapelle/Gate, Skelettslots, Gallery Warden, Level-1-Clear/Siegel und Abstieg. Ebene 2 ist E und darf für schwache PCs riskant sein; kein Spieler-Scaling fordern.
 4. **Begleitetes Quest-Pacing außerhalb des Dungeons:** Wenn in diesem Run erreichbar, eine kurze Escort-/Delivery-/Culling-Reise mit klarer Spielerabsicht durchführen.
 5. **Optionaler Reset-/Wiederbesuchstest** per legitimer Weltzeit-Rast (3 Tage); prüfen, ob neue Zyklusbegegnungen und andere Abenteurer den Zustand glaubwürdig beeinflussen.
@@ -169,8 +196,8 @@ Auf folgende Fälle besonders achten:
 
 ## 7. Danach – Roadmap und bewusste Grenzen
 
-- **Jetzt:** Zwei .25-Livetest-Exporte desselben Runs ausgewertet. Nach nochmaliger Gebühr gelang der Einstieg und der erste Monsterkampf; Gate-Doppelzahlung, getrennte Gruppenkämpfe und Narrator-Combat-Truth sind bestätigt. Nächster Schritt gebündelter Patch 8.1.
-- **Bei Bedarf:** Nur konkrete, im .25-Livetest bestätigte Regressionen beheben; eine neue Minifix-Schleife vermeiden.
+- **Jetzt:** Patch 8.1 (.26) implementiert und in Git verifiziert; zuerst neuer echter GLM-Livetest zur Kontrolle der Gate-Anzeige, des einmaligen Zugangs, des Gruppencombats und der Narrator-/Extractor-Kohärenz.
+- **Bei Bedarf:** Nur nach dem .26-Livetest reproduzierbare Integrationsfehler gesammelt beheben; keine vorschnelle Minifix-Schleife oder Änderung an Balance/XP.
 - **Patch 9:** Organic Classes und Entwicklung aufgrund tatsächlichen Spielerhandelns.
 - **Patch 10B:** Abschließendes Polish, HUD/Utility-Skills, allgemeines Balancing/Scaling; Focused-Ward-Plus-Move ist bekannte separate Combat-Aufgabe.
 - **Langfristig:** möglicher CraftRPG-Port, derzeit keine aktive Umstellung.
@@ -179,6 +206,9 @@ Auf folgende Fälle besonders achten:
 
 ## 8. Wichtigste aktuelle Dateien
 
+- avereth-engine/docs/PATCH8_1_GATE_GROUP_COMBAT.md – aktueller Patch-8.1-Implementierungs- und Reviewbericht.
+- avereth-engine/src/v4/group_combat.js – Gruppenbeitritt zu Combat-Encountern (V4-C).
+- avereth-engine/tests/v4/patch81.test.js; live_1021d.json – .26-Regressionstests und anonymisierte .25-Live-Fixture.
 - avereth-engine/docs/PATCH8_LIVING_DUNGEONS.md – Implementierungs- und Reviewbericht Patch 8.
 - avereth-engine/src/v4/living.js – Dungeonstruktur, Slots, Bosse, NPC-Gruppen, Gate, Reset, Ressourcen, Return Stone.
 - avereth-engine/src/v4/dungeon.js – Räume, Wege, Ebenen, Rank.
@@ -196,7 +226,7 @@ Auf folgende Fälle besonders achten:
 
 1. Dateien 01, 02 und 03 **vom Branch main** lesen. Den tatsächlichen Entwicklungsbranch und Build unabhängig per Git prüfen.
 2. Am Stand dieser Datei ist Patch 8 auf **f3b5581** implementiert, **aber noch nicht mit echtem LLM-Dungeonlauf validiert**.
-3. Der .25-Livetest wurde bis zu zwei Glas-Käfer-Angriffen fortgesetzt und ausgewertet. Bei der Planung des nächsten gebündelten Integrationspatches die Befunde in 5a und 5b berücksichtigen; keine neue Minifix-Schleife.
+3. Die .25-Livetest-Befunde in 5a/5b führten zum implementierten Patch 8.1 (.26, Abschnitt 5c). Jetzt neuen .26-Livetest auswerten, nicht den alten Patch-Auftrag erneut implementieren.
 4. Bei Live-Exports zuerst Engine-Events, Chat-JSONL und LLM-TXT korrelieren; Gameplay- und Designregeln der Dateien 01/02 berücksichtigen.
 5. Nach einem verifizierten neuen Meilenstein **nur die betroffenen Projektdateien auf main** aktualisieren; die Arbeitsweise (Datei 01) und der Design-Kanon (Datei 02) bleiben ohne echte Änderungen unverändert.
 

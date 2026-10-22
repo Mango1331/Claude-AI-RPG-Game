@@ -161,6 +161,21 @@
   },
   "skill_design": {
     "src": "content.6.r2 F-rank calibration (offensive Skill at P1, by Complexity); Patch 9B-1 validates a dynamic Skill against it (src/skills.js)",
+    "aspects_note": "Review of 9B-1: the thematic aspects a dynamic Skill may carry besides its affinity tags; metadata only, no mechanical effect",
+    "aspects": [
+      "Fire",
+      "Ice",
+      "Lightning",
+      "Water",
+      "Earth",
+      "Wind",
+      "Shadow",
+      "Light",
+      "Poison",
+      "Nature",
+      "Blood",
+      "Sound"
+    ],
     "f_rank": {
       "1": {
         "base": 12,

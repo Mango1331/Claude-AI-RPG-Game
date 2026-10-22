@@ -1977,3 +1977,4 @@ Vollständige Beschreibung: `docs/PATCH9B1_DYNAMIC_SKILLS_PROFICIENCY.md`.
 - **Proficiency.** P1–P5 mit Schwellen nach Complexity (75/100/150) und Übertrag; P5 ist das Ende. Effektfaktoren 1,05/1,10/1,15 für DEF/MDEF/Barrier, gleiche Rundung in Kampf und `#skill`.
 - **PP.** 12 × höchste Affinität, einmal pro Skill und Kampf, gebucht am Kampfende. Bedingungen: sinnvolle Nutzung und eine echte Herausforderung. Außerhalb eines Kampfes: eine gewürfelte Probe einmal pro Feature. Legacy unverändert.
 - **Tests:** `tests/v4/patch9b1.test.js` (14).
+- **Nachbesserung (4.3.0-c.6.6.37):** Effektfaktoren nur unter Regelstand 2 (Legacy behält die geschriebenen Werte). Optionale, validierte `aspects` (Fire, Ice, …) als reine Metadaten dynamischer Skills, getrennt von den Affinitäts-Tags. Tests: 16.

@@ -531,7 +531,7 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         for (const s of record.strikes) if (s.defeated) onDefeat(ctx, enc.combatants[s.target], record);
         // post-attack effects (Guarded Thrust)
         for (const eff of skill.effects) {
-            if (eff.kind === 'post_attack_temp_def') addEffect(actor, { kind: 'temp_def', value: postAttackDef(content, eff, actor, skill), source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
+            if (eff.kind === 'post_attack_temp_def') addEffect(actor, { kind: 'temp_def', value: postAttackDef(content, state, eff, actor, skill), source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
         }
         // a declared step back ("I kite backwards and Power Shot", Testrun 4) is the Turn's normal one-band move (Core
         // #12/#24: one move + one Main Action, either order); taken after the attack, so the attack keeps its range
@@ -563,8 +563,8 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
 const uniqIds = (ids) => [...new Set(ids)];
 
 /** Patch 9B-1: the DEF an attack leaves him (Guarded Cut), by the Proficiency he locked for this fight. */
-function postAttackDef(content, eff, actor, skill) {
-    return flatEffectValue(content, eff.flat, actor.fixed.actions[skill.id]?.prof);
+function postAttackDef(content, state, eff, actor, skill) {
+    return flatEffectValue(content, eff.flat, actor.fixed.actions[skill.id]?.prof, rulesetOf(state));
 }
 
 function addEffect(c, eff) {
@@ -593,18 +593,20 @@ export function skillAction(ctx, actorId, skillId, extra = {}) {
         record.cost.after = actor.current[skill.cost.resource];
     }
     const st = actor.fixed.stats;
-    // Patch 9B-1: a numeric non-damage effect grows with the Proficiency he locked for this fight (src/skills.js effectValue)
+    // Patch 9B-1: a numeric non-damage effect grows with the Proficiency he locked for this fight (src/skills.js effectValue;
+    // ruleset 2 only)
     const level = actor.fixed.actions[skill.id].prof;
+    const ruleset = rulesetOf(ctx.state);
     for (const eff of skill.effects) {
         if (eff.kind === 'temp_def' || eff.kind === 'temp_mdef') {
-            const v = effectValue(content, eff, st, level);
+            const v = effectValue(content, eff, st, level, ruleset);
             addEffect(actor, { kind: eff.kind, value: v, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
             record.effects.push(`${eff.kind === 'temp_def' ? 'DEF' : 'MDEF'} +${v} until the start of ${actor.name}'s next turn`);
         } else if (eff.kind === 'incoming_damage_reduction') {
             addEffect(actor, { kind: 'incoming_damage_reduction', pct: eff.pct, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
             record.effects.push(`incoming damage -${eff.pct}% until the start of ${actor.name}'s next turn`);
         } else if (eff.kind === 'barrier') {
-            const v = effectValue(content, eff, st, level);
+            const v = effectValue(content, eff, st, level, ruleset);
             addEffect(actor, { kind: 'barrier', hp: v, value: v, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
             record.effects.push(`Barrier ${v} HP (until destroyed or the start of ${actor.name}'s next turn)`);
         } else if (eff.kind === 'damage_reduction_next') {

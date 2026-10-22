@@ -14,7 +14,7 @@ const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
 const BANDS = ['ENGAGED', 'SHORT', 'MEDIUM', 'LONG'];
 const DAMAGE_STATS = ['STR', 'VIT', 'AGI', 'INT', 'WIL']; // Combat V3: PER never scales damage
 const CATEGORIES = ['Offensive', 'Offensive / Utility', 'Offensive / Defensive', 'Offensive / Multi-Hit', 'Defensive', 'Utility', 'Defensive / Utility'];
-const TOP_KEYS = new Set(['id', 'name', 'description', 'origin', 'rank', 'complexity', 'tags', 'category', 'activation', 'target', 'cost', 'range', 'attack', 'effects']);
+const TOP_KEYS = new Set(['id', 'name', 'description', 'origin', 'rank', 'complexity', 'tags', 'aspects', 'category', 'activation', 'target', 'cost', 'range', 'attack', 'effects']);
 const ATTACK_KEYS = new Set(['base', 'scaling', 'damage_type', 'strikes', 'share', 'ignores_partial_cover']);
 // the effect kinds the combat engine executes (src/combat.js attackAction / skillAction), their fields and the F-rank
 // bounds of the content's own Skills (the strongest starter or legacy F Skill of each kind); a rider on an attack, or
@@ -39,6 +39,14 @@ function calibration(content) {
     return content.rules.skill_design?.f_rank || {
         1: { base: 12, coef: 1.9, cost: [5, 10] }, 2: { base: 16, coef: 2.4, cost: [8, 16] }, 3: { base: 18, coef: 2.6, cost: [12, 22] },
     };
+}
+
+/**
+ * Review of 9B-1: the thematic aspects a dynamic Skill may carry (rules.json skill_design.aspects: Fire, Ice, ...),
+ * separate from its affinity tags. Persistent metadata for later patches; nothing in the engine acts on them.
+ */
+export function skillAspects(content) {
+    return content.rules.skill_design?.aspects || [];
 }
 
 /** The discipline tags a Skill may carry: those the Class Affinities know (content classes.json affinity). */
@@ -69,6 +77,8 @@ export function skillDefErrors(def, content, state = null) {
     if (![1, 2, 3].includes(def.complexity)) e.push('complexity: 1, 2 or 3');
     const tags = disciplineTags(content);
     if (!Array.isArray(def.tags) || !def.tags.length || def.tags.length > 3 || def.tags.some((t) => !tags.includes(t)) || new Set(def.tags).size !== def.tags.length) e.push(`tags: 1-3 of ${tags.join(', ')}`);
+    const aspects = skillAspects(content);
+    if (def.aspects !== undefined && (!Array.isArray(def.aspects) || def.aspects.length > 3 || def.aspects.some((a) => !aspects.includes(a)) || new Set(def.aspects).size !== def.aspects.length)) e.push(`aspects: 0-3 of ${aspects.join(', ')}`);
     if (!CATEGORIES.includes(def.category)) e.push(`category: one of ${CATEGORIES.join(', ')}`);
     if (def.activation !== 'action') e.push('activation: action (his Main Action)');
     const attack = def.attack ?? null;
@@ -141,7 +151,7 @@ function runtimeSkill(def) {
     const a = def.attack;
     const physical = a?.damage_type === 'physical';
     const skill = {
-        id: def.id, name: def.name, class: null, basic: false, dynamic: true, category: def.category, rank: def.rank, complexity: def.complexity, tags: [...def.tags],
+        id: def.id, name: def.name, class: null, basic: false, dynamic: true, category: def.category, rank: def.rank, complexity: def.complexity, tags: [...def.tags], aspects: [...(def.aspects || [])],
         type_text: a ? `${physical ? 'Physical' : 'Magical'} / ${def.range.band === 'ENGAGED' ? 'Melee' : 'Ranged'}` : def.category,
         cost: { resource: def.cost.resource, amount: def.cost.amount }, ammo: null,
         range: a ? { band: def.range.band, extra_band: !!def.range.extra_band, area: null } : null,
@@ -149,7 +159,7 @@ function runtimeSkill(def) {
         strikes: a?.strikes ?? 1, effects: def.effects.map((x) => ({ ...x })), effect_text: def.description,
         target: def.target, activation: def.activation, origin: { ...def.origin },
     };
-    const lines = [`${skill.name} [${skill.category}] (dynamic, ${def.origin.kind})`, `Rank: ${skill.rank}`, `Complexity: ${skill.complexity}`, `Tags: ${skill.tags.join(', ')}`];
+    const lines = [`${skill.name} [${skill.category}] (dynamic, ${def.origin.kind})`, `Rank: ${skill.rank}`, `Complexity: ${skill.complexity}`, `Tags: ${skill.tags.join(', ')}`, ...(skill.aspects.length ? [`Aspects: ${skill.aspects.join(', ')}`] : [])];
     if (a) lines.push(`Base Power: ${a.base}`, `Scaling: ${skill.attack.scaling.map((t) => `${t.stat} × ${t.text}`).join(' + ')}`, `Uses: ${skill.attack.share === 1 ? '' : `${skill.attack.share * 100}% of `}${skill.attack.uses}`, `Range: ${def.range.band}${def.range.extra_band ? ' after movement' : ''}`);
     lines.push(`Cost: ${skill.cost.amount} ${skill.cost.resource.toUpperCase()}`, `Effect: ${def.description}`);
     skill.source_text = lines.join('\n');
@@ -210,21 +220,25 @@ export function advancePp(content, entry, skill, gained) {
     return { prof, pp };
 }
 
-/** The Proficiency factor for a numeric non-damage effect (Core #5: P3 ×1.05, P4 ×1.10, P5 ×1.15; totals). */
-export function effectFactor(content, prof) {
+/**
+ * The Proficiency factor for a numeric non-damage effect (Core #5: P3 ×1.05, P4 ×1.10, P5 ×1.15; totals). Only under
+ * ruleset 2 (review of 9B-1): a legacy campaign keeps the written values at every Proficiency.
+ */
+export function effectFactor(content, prof, ruleset = 1) {
+    if (ruleset < 2) return 1;
     return content.rules.proficiency.levels[String(prof || 1)]?.effect ?? 1;
 }
 
 /** One numeric effect value at a Proficiency: the written value, its factor applied once, rounded half up when it applies. */
-export function effectValue(content, eff, stats, prof) {
+export function effectValue(content, eff, stats, prof, ruleset = 1) {
     const raw = eff.floor ? eff.base + Math.floor(stats[eff.stat] * eff.coef) : num(eff.base + stats[eff.stat] * eff.coef);
-    const f = effectFactor(content, prof);
+    const f = effectFactor(content, prof, ruleset);
     return f === 1 ? raw : roundHalfUp(raw * f);
 }
 
 /** A flat numeric effect at a Proficiency (Guarded Cut's DEF +4): its factor applied once, rounded half up. */
-export function flatEffectValue(content, flat, prof) {
-    const f = effectFactor(content, prof);
+export function flatEffectValue(content, flat, prof, ruleset = 1) {
+    const f = effectFactor(content, prof, ruleset);
     return f === 1 ? flat : roundHalfUp(flat * f);
 }
 

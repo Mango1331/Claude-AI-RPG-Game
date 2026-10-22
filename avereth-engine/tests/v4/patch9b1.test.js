@@ -387,7 +387,7 @@ test('9B-1 (7): cost, power and the non-damage factors by Proficiency; #skill sh
     const ward = content.skills.get('mage.arcane_ward');
     const st = sheet(m).stats;
     assert.equal(st.WIL, 6);
-    assert.deepEqual([1, 2, 3, 4, 5].map((p) => effectValue(content, ward.effects[0], st, p)), [15, 15, 16, 17, 17], '6 + WIL 6×1.5 = 15; ×1.05 15.75 → 16; ×1.10 16.5 → 17; ×1.15 17.25 → 17');
+    assert.deepEqual([1, 2, 3, 4, 5].map((p) => effectValue(content, ward.effects[0], st, p, 2)), [15, 15, 16, 17, 17], '6 + WIL 6×1.5 = 15; ×1.05 15.75 → 16; ×1.10 16.5 → 17; ×1.15 17.25 → 17');
     setProf(m, 'mage.arcane_ward', 3);
     setProf(m, 'mage.arcane_bolt', 4);
     spawn(m, 'mon.boar', { anchor: 'boar', band: 'SHORT' });
@@ -468,4 +468,72 @@ test('9B-1 (9): a legacy campaign gains no PP from a fight; its sheets, saves an
     const ctx = { enc: { pp: { used: { 'duelist.feint': 'x' }, threatened: true }, combatants: { pc: { current: {}, fixed: { level: 1 } }, 'mon.x': { side: 'hostile', fixed: { level: 1 } } }, id: 'enc.x' } };
     assert.deepEqual(fightProgress(g.state, legacy, ctx.enc), []);
     assert.deepEqual(endEncounterEvents(g.state, legacy, { ...ctx.enc, defeated: [], escaped: [], pending_xp: 0, combatants: { pc: { current: { defeated: false }, fixed: { level: 1 } } } }).events.map((e) => e.t), ['encounter.ended']);
+});
+
+// ------------------------------------------------------------------------------------------------ review of 9B-1
+test('9B-1 review (1): a legacy campaign keeps its written effect values at P3-P5 (Arcane Ward, Guard, Guarded Thrust); a new one grows', () => {
+    const m = hero('Mage', 'Arcane Bolt + Arcane Ward', legacy);
+    assert.equal(m.state.meta.ruleset, 1);
+    assert.equal(sheet(m).stats.WIL, 6);
+    for (const prof of [3, 4]) {
+        setProf(m, 'mage.arcane_ward', prof);
+        spawn(m, `mon.boar${prof}`, { anchor: 'boar', band: 'SHORT' });
+        const ctx = fight(m, [`mon.boar${prof}`]);
+        assert.deepEqual(skillAction(ctx, 'pc', 'mage.arcane_ward').effects, ['Barrier 15 HP (until destroyed or the start of Alaric\'s next turn)'], `legacy P${prof}: 6 + WIL 6×1.5, no factor`);
+        const one = panel(m, '#skill Arcane Ward');
+        assert.match(one, /Current effect: Barrier 15 HP$/m, `legacy P${prof}: #skill shows what the fight books`);
+        assert.doesNotMatch(one, /Proficiency, rounded/);
+    }
+    const w = hero('Warrior', 'Guard + Deflect', legacy);
+    setProf(w, 'warrior.guard', 4);
+    spawn(w, 'mon.boar', { anchor: 'boar' });
+    assert.deepEqual(skillAction(fight(w, ['mon.boar']), 'pc', 'warrior.guard').effects, ['DEF +6 until the start of Alaric\'s next turn'], 'legacy P4: 3 + floor(VIT 6×0.5)');
+    const d = hero('Duelist', 'Guarded Thrust + Feint', legacy);
+    setProf(d, 'duelist.guarded_thrust', 5);
+    spawn(d, 'mon.boar', { anchor: 'boar', hp: 500 });
+    const cd = fight(d, ['mon.boar']);
+    attackAction(cd, 'pc', 'mon.boar', 'duelist.guarded_thrust');
+    assert.equal(cd.enc.combatants.pc.current.effects.find((e) => e.kind === 'temp_def').value, 4, 'legacy P5: the flat 4');
+    // the same Skills in a new campaign keep the 9B-1 factors
+    const n = hero('Mage', 'Arcane Bolt + Arcane Ward');
+    setProf(n, 'mage.arcane_ward', 4);
+    spawn(n, 'mon.boar', { anchor: 'boar', band: 'SHORT' });
+    assert.deepEqual(skillAction(fight(n, ['mon.boar']), 'pc', 'mage.arcane_ward').effects, ['Barrier 17 HP (until destroyed or the start of Alaric\'s next turn)']);
+});
+
+test('9B-1 review (2): a dynamic Arcane Skill with the aspect Fire: validated, stored, replayed and shown; aspects are metadata apart from the affinity tags', () => {
+    const EMBER = {
+        id: 'dyn.ember_dart', name: 'Ember Dart', description: 'A dart of burning mana thrown from the palm.', origin: { kind: 'self_development', note: 'practised at the forge' }, rank: 'F', complexity: 1,
+        tags: ['Arcane'], aspects: ['Fire'], category: 'Offensive', activation: 'action', target: 'enemy', cost: { resource: 'mp', amount: 8 }, range: { band: 'MEDIUM' },
+        attack: { base: 10, scaling: [{ stat: 'INT', coef: 1.75 }], damage_type: 'magical' }, effects: [],
+    };
+    const g = hero('Mage', 'Arcane Bolt + Arcane Ward');
+    assert.deepEqual(skillDefErrors(EMBER, content, g.state), []);
+    const d = defineSkill(g.state, content, EMBER);
+    book(g, ...d.events);
+    book(g, ...learnSkill(g.state, content, 'pc', 'dyn.ember_dart').events);
+    const s = g.state.skill_defs['dyn.ember_dart'];
+    assert.deepEqual([s.tags, s.aspects], [['Arcane'], ['Fire']]);
+    assert.match(s.source_text, /Tags: Arcane\nAspects: Fire/);
+    assert.deepEqual(fold(g.log).skill_defs['dyn.ember_dart'], s, 'replay');
+    assert.match(panel(g, '#skills'), /Ember Dart \(learned in this campaign\) \| Offensive \| Rank F \| Complexity 1 \| P1 \(PP 0\/75\) \| Tags Arcane \| Aspects Fire \| Cost 8 MP/);
+    assert.match(panel(g, '#skill Ember Dart'), /\| Tags Arcane \| Aspects Fire\n/);
+    // no mechanical effect: the affinity reads the tags only, the attack is the plain magical one
+    assert.equal(affinityFor(content, 'mage', s), 1.5);
+    assert.equal(affinityFor(content, 'mage', { ...s, aspects: ['Shadow', 'Ice'] }), 1.5);
+    spawn(g, 'mon.boar', { anchor: 'boar', band: 'MEDIUM' });
+    const ctx = fight(g, ['mon.boar']);
+    const r = attackAction(ctx, 'pc', 'mon.boar', 'dyn.ember_dart');
+    assert.equal(r.illegal, undefined, r.illegal);
+    assert.equal(r.raw_text, '10 + INT 6×1.75 + MATK 6 = 26.5');
+    // without aspects a definition stays valid (an empty list); an unknown, a doubled, too many or an affinity tag as aspect is refused
+    assert.deepEqual(defineSkill(g.state, content, { ...EMBER, id: 'dyn.plain_dart', name: 'Plain Dart', aspects: undefined }).skill.aspects, []);
+    for (const aspects of [['Plasma'], ['Fire', 'Fire'], ['Fire', 'Ice', 'Shadow', 'Light'], ['Arcane'], 'Fire', [{ kind: 'Fire', burn: 3 }]]) {
+        const bad = defineSkill(g.state, content, { ...EMBER, id: 'dyn.bad_dart', name: 'Bad Dart', aspects });
+        assert.deepEqual(bad.events, [], JSON.stringify(aspects));
+        assert.match(bad.errors.join(), /aspects: 0-3 of Fire, Ice, Lightning/, JSON.stringify(aspects));
+    }
+    // the static Skills carry none and show none
+    assert.equal(content.skills.get('mage.flame_lance').aspects, undefined);
+    assert.doesNotMatch(panel(g, '#skills'), /Arcane Bolt[^\n]*Aspects/);
 });

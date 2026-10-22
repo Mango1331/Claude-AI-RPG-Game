@@ -170,9 +170,18 @@ Sichtbare Änderungen für Legacy:
 - Die Schwelle steht nach Complexity, z. B. Power Strike 0/100 statt 0/75.
 - `#skill` hat eine Zeile mit den aktuellen Effektwerten, bei P1 identisch mit den geschriebenen Werten.
 
+## 8b. Nachbesserung nach dem Review (4.3.0-c.6.6.37)
+
+- **Effektfaktoren nur unter Regelstand 2.** Auf .36 wendete `combat.js` die P3–P5-Faktoren auch in Legacy-Kampagnen an. Beispiel: Ein Legacy-Mage mit Arcane Ward auf P3 bekam 16 statt 15 Barrier-HP. `effectFactor` (`src/skills.js`) ist jetzt unter Regelstand 1 immer 1. Kampf (`skillAction`, Guarded Thrust/Cut) und `#skill` lesen den Regelstand der Kampagne. Legacy behält die geschriebenen Werte auf jeder Proficiency; neue Kampagnen behalten die Faktoren.
+- **`aspects` für dynamische Skills.**
+  - Optional, 0–3 Einträge aus einer geschlossenen Liste: `rules.json skill_design.aspects` (Fire, Ice, Lightning, Water, Earth, Wind, Shadow, Light, Poison, Nature, Blood, Sound).
+  - Getrennt von den Affinitäts-`tags`.
+  - Nur Metadaten: gespeichert in der Definition (fehlt die Angabe, eine leere Liste), im Replay erhalten und in `#skills`, `#skill` und `source_text` angezeigt.
+  - Keine mechanische Wirkung: Affinität, Schaden und Effekte lesen die Aspekte nicht. Keine Elementwechselwirkungen, keine neuen Effektarten. Statische Skills haben keine Aspekte.
+
 ## 9. Tests
 
-`tests/v4/patch9b1.test.js` (14): Definition, Replay und andere Kampagne; Ownership; ein Resolver (direkt und im ganzen Kampf über den Namen); Planner, HUD, `#skills`, `#skill`; ungültige Definitionen ohne Zustandsänderung (41 Fälle); Complexity, Tags und höchste Affinität; PP-Vergabe, Missbrauchsschutz und Beförderungen; Probe außerhalb des Kampfes; Kosten-, Kraft- und Effektfaktoren; bestehende Skills; Legacy.
+`tests/v4/patch9b1.test.js` (14, nach dem Review 16: Legacy-Effektwerte auf P3–P5 mit Arcane Ward, Guard und Guarded Thrust; ein Arcane-Skill mit Aspekt Fire): Definition, Replay und andere Kampagne; Ownership; ein Resolver (direkt und im ganzen Kampf über den Namen); Planner, HUD, `#skills`, `#skill`; ungültige Definitionen ohne Zustandsänderung (41 Fälle); Complexity, Tags und höchste Affinität; PP-Vergabe, Missbrauchsschutz und Beförderungen; Probe außerhalb des Kampfes; Kosten-, Kraft- und Effektfaktoren; bestehende Skills; Legacy.
 
 `tests/v4/gen35_ownership.test.js`: Die Liste der Engine-Arten enthält `skills`.
 

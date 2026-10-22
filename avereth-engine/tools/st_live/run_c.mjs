@@ -57,7 +57,7 @@ const turnOf = (text) => TURNS.find((t) => text.includes(`PLAYER MESSAGE:\n${t.p
 
 // ------------------------------------------------------------------------------------------------ setup (as run_v4.mjs)
 const contract = fs.readFileSync(path.join(ENGINE, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
-const first = 'SYSTEM INITIALIZATION COMPLETE\n\n`Location: Public roadside verge outside Alderwatch, Valedorn Crown`\n\nCHARACTER CREATION — STEP 1/2: choose a Base Class (Warrior, Mage, Guardian, Duelist, Ranger).';
+const first = 'SYSTEM INITIALIZATION COMPLETE\n\n`Location: Public roadside verge outside Alderwatch, Valedorn Crown`\n\nCHARACTER CREATION — STEP 1/2: choose a Base Class (Warrior, Mage, Rogue).';
 const card = {
     spec: 'chara_card_v2', spec_version: '2.0',
     name: CARD, description: contract, personality: '', scenario: '', first_mes: first, mes_example: '',

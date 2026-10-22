@@ -109,9 +109,17 @@ Engine/Content und Runner sind getrennte Commits.
 - `loadProductContent` startet mit Regelstand 2. Die Patch-2- bis Patch-8-Tests auf Produkt-Content laufen ohne Änderung grün.
 - Angepasst wurden nur: das Schema (neue Felder), die Liste der Skills, die Partial Cover ignorieren (+ `rogue.piercing_thrust`), und der HUD-Test (Zeile „Attack“ statt „Attack reach“).
 
-**Ergebnis:** `npm test` 1090/1090 (vorher 1074).
+**Ergebnis:** `npm test` 1090/1090 mit dem Engine-Commit (vorher 1074), 1092/1092 mit dem Runner-Commit.
 
-## 7. Bewusste Grenzen und Schnittstellen für 9B
+## 7. Runner (eigener Commit)
+
+- **Leitfäden:** Sie bleiben unverändert. Der Mage mit Flame Lance + Blink ist bei zwei freien Mage-Skills weiter gültig. Alte Fixtures bleiben nutzbar, weil sie ohne `ruleset` als Legacy falten.
+- **Bericht:** Die Kurzfassung nennt den Charakter und den Regelstand der Kampagne („Regelstand 2 (Warrior, Mage, Rogue)“ bzw. „Regelstand 1 (Legacy, fünf Klassen)“), gelesen aus `campaign.started` (`evaluator.mjs character`, `report.mjs`).
+- **Begrüßungstexte:** Die Ersatz-Begrüßung und die Begrüßungen der Smoke-Werkzeuge nennen die drei Klassen. Die Begrüßung deiner SillyTavern-Karte liegt in deinem Profil und wurde nicht geändert. Nennt sie noch fünf Klassen, korrigiert das Erstellungs-Panel der Engine eine Wahl wie „Ranger“ mit einer klaren Ablehnung; die Karte solltest du bei Gelegenheit selbst anpassen.
+- **Keine Änderung** an Provider, Reasoning, API oder Modell; keine neue Runner-Architektur.
+- **Tests:** `tests/live_runner/patch9a_runner.test.js` (2). Der Stub-Selbsttest (SillyTavern 1.19.0) hat 48/48 Prüfungen, neu `newRulesetMage`.
+
+## 8. Bewusste Grenzen und Schnittstellen für 9B
 
 - **NPC-KI:** Sie wählt weiterhin den stärksten erreichbaren Angriff (`combat.js npcAttackSkill`). Defensive Skills von NPCs stehen im Bogen, werden aber nicht eingesetzt; die kleine Defensivlogik ist für 9B vorgesehen.
 - **Basic Attack bleibt verfügbar.** Der Basic Attack der Klasse bleibt auch neben einem Waffenangriff verfügbar, z. B. ein Warrior mit Bogen hat weiter seinen Nahkampf-Basic-Attack. Eine Entfernung wäre eine Verhaltensänderung für bestehende Spielweisen.

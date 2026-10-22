@@ -105,6 +105,8 @@ export function evaluate(chat, { guide = null } = {}) {
     const reg = { fee: null, paid: [], at: null };
     let dungeonListed = false;
     let boardSeen = false;
+    // Patch 9A: the rules the campaign plays by (campaign.started ruleset; none: 1, legacy) and the character it made
+    const character = { ruleset: null, class: null, skills: [] };
 
     for (let i = 0; i < chat.length; i++) {
         const m = chat[i];
@@ -142,7 +144,9 @@ export function evaluate(chat, { guide = null } = {}) {
         for (const e of ev) {
             const d = e.d || {};
             switch (e.t) {
-                case 'creation.completed': hit('creation_complete', i, { skills: d.skills }); break;
+                case 'campaign.started': character.ruleset = d.ruleset || 1; break;
+                case 'creation.class_selected': character.class = d.class; break;
+                case 'creation.completed': character.skills = d.skills; hit('creation_complete', i, { skills: d.skills, class: character.class }); break;
                 case 'guild.registered': hit('guild_registered', i, { rank: d.rank, branch: d.branch }); if (reg.at == null) reg.at = i; break;
                 case 'offer.created':
                     if (d.offer?.id === 'offer.registration') reg.fee = d.offer.lines?.[0]?.price_cp ?? reg.fee;
@@ -359,7 +363,7 @@ export function evaluate(chat, { guide = null } = {}) {
         return { id: ms.id, check, required: ms.required !== false, goal: ms.goal || CHECKS[check], reached: false, ...(unavailable[check] ? { unavailable: unavailable[check] } : {}) };
     });
     const dungeon = root ? { root, name: placeName(foldChat(chat, chat.length).state, root), floor: level, quest: mine?.id || null } : null;
-    return { milestones: list, reached, encounters, quests: Object.values(quests), defeat, issues, counts, turns, dungeon };
+    return { milestones: list, reached, encounters, quests: Object.values(quests), defeat, issues, counts, turns, dungeon, character };
 }
 
 /** The guide's next required milestone not reached yet and not out of reach (the run's progress), or null. */

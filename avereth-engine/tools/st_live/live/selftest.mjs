@@ -21,7 +21,7 @@ const ST = process.env.AVERETH_ST_DIR;
 if (!ST || !fs.existsSync(path.join(ST, 'server.js'))) throw new Error('set AVERETH_ST_DIR to a SillyTavern checkout');
 const BAIT_KEY = 'PERSONAL-KEY-must-never-be-read-7f3a9c';
 const BAIT_PROXY = 'PERSONAL-PROXY-PASSWORD-2b8e41';
-const GREETING = 'SYSTEM INITIALIZATION COMPLETE\n\n`Location: Public roadside verge outside Alderwatch, Valedorn Crown`\n\nCHARACTER CREATION — STEP 1/2: choose a Base Class (Warrior, Mage, Guardian, Duelist, Ranger).';
+const GREETING = 'SYSTEM INITIALIZATION COMPLETE\n\n`Location: Public roadside verge outside Alderwatch, Valedorn Crown`\n\nCHARACTER CREATION — STEP 1/2: choose a Base Class (Warrior, Mage, Rogue).';
 
 // ------------------------------------------------------------------------------------------------ the fake profile
 const base = fs.mkdtempSync(path.join(os.tmpdir(), 'avereth-selftest-'));
@@ -124,6 +124,8 @@ const checks = {
     // Patch 8.4.2: the stub player's "done" with only creation reached is incomplete, the open milestones named
     playerDoneChecked: r.end.kind === 'incomplete' && /^the player reported done; 1\/\d+ required reached; open: guild_registered, /.test(r.end.why) && /\*\*unvollständig\*\*/.test(report) && /- \*\*Offen:\*\* guild_registered \(nicht erreicht\)/.test(report),
     creationMilestone: evaluation.milestones?.find((m) => m.id === 'creation_complete')?.reached === true,
+    // Patch 9A: a new campaign plays by ruleset 2; the Mage of the guide (Flame Lance + Blink) is still a valid choice
+    newRulesetMage: evaluation.character?.ruleset === 2 && evaluation.character?.class === 'mage' && /\*\*Charakter:\*\* mage \(mage\.flame_lance, mage\.blink\) · Regelstand 2 \(Warrior, Mage, Rogue\)/.test(report),
     reportMarksStub: /STUB-SELBSTTEST — kein echter Livetest/.test(report) && /Profil unverändert:\*\* ja/.test(report) && /Geheimnis-Scan:\*\* sauber/.test(report),
     noPageErrors: runJson(r.runDir).pageErrors.length === 0,
     noServerErrors: runJson(r.runDir).serverErrors.length === 0,

@@ -321,7 +321,7 @@ Treffer werden geschwärzt und im Bericht genannt.
 ## 9. Bericht
 
 `report.md`, auf Deutsch, mit diesen Abschnitten:
-- **Kurzfassung:** Ergebnis, Etappen, offene Pflicht-Etappen mit „nicht erreicht“ oder „nicht durchgeführt: Grund“, Ziel-Dungeon, Leitfaden, Spieler, Züge, Dauer, Auffälligkeiten, Profilschutz, Scan. Ein Blocker (`player_stop`), das Zuglimit (`limit`) und ein nicht durchführbares Ziel sind so voneinander zu unterscheiden.
+- **Kurzfassung:** Ergebnis, Etappen, offene Pflicht-Etappen mit „nicht erreicht“ oder „nicht durchgeführt: Grund“, Charakter mit dem Regelstand der Kampagne (Patch 9A: 2 = Warrior, Mage, Rogue; 1 = Legacy), Ziel-Dungeon, Leitfaden, Spieler, Züge, Dauer, Auffälligkeiten, Profilschutz, Scan. Ein Blocker (`player_stop`), das Zuglimit (`limit`) und ein nicht durchführbares Ziel sind so voneinander zu unterscheiden.
 - **Aufbau** mit der Verbindung deines SillyTavern und der des Laufs (dieselbe?) und dem Preflight (Modellliste, Modell enthalten?).
 - **Laufzeit (gemessen):** Gesamtzeit, Einrichtung, Spiel- und Spielerzeit je Zug (Median, p90, max), Aufteilung laut Records, Hochrechnung auf 40 und 80 Züge.
 - **Aufbau:** Build, Git-Commit und nicht committete Dateien, SillyTavern, Browser, Provider und Modell, Preset (Abweichungen von Build und Datei), Generierung, Streaming, Karte, Lorebook, Engine-Einstellungen, nicht Übernommenes, Kampagne und Seed.
@@ -366,6 +366,7 @@ Geprüft wird:
 - Die Requests des Spielers tragen dieselben Reasoning-Felder wie die des Spiels, der Bericht nennt sie; auf dem Proxy-Weg (Quelle `openai`) trägt er keine.
 - `#status` ist ein System-Zug, kein leerer; die leere Erzählerantwort in Zug 4 beendet den Lauf (`narrator_empty`) ohne zweiten Erzähleraufruf, mit Grund, Bildschirmfoto und allen Exporten.
 - Der Bericht kennzeichnet den Stub, der Scan ist sauber.
+- Patch 9A: Die neue Kampagne spielt nach Regelstand 2, der Mage des Leitfadens (Flame Lance + Blink) bleibt gültig, der Bericht nennt beides.
 - Es gibt keine Seiten- und keine Serverfehler.
 
 Der Bericht eines Stub-Laufs trägt oben: **„STUB-SELBSTTEST — kein echter Livetest.“** Über das Verhalten der Engine oder eines Modells sagt er nichts.

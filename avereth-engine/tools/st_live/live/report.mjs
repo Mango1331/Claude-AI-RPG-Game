@@ -35,6 +35,8 @@ export function buildReport(x) {
     // Patch 8.4.2: what is open, and why: not reached (a blocker, the limit) or not performed (out of this run's reach)
     const open = req.filter((m) => !m.reached);
     if (open.length) L.push(`- **Offen:** ${open.map((m) => (m.unavailable ? `${m.id} (**nicht durchgeführt**: ${cell(m.unavailable)})` : `${m.id} (nicht erreicht)`)).join(' · ')}`);
+    // Patch 9A: the campaign's ruleset (2: Warrior, Mage, Rogue; 1: the five legacy classes) and the character it made
+    if (ev.character?.ruleset) L.push(`- **Charakter:** ${ev.character.class ? `${cell(ev.character.class)}${ev.character.skills.length ? ` (${ev.character.skills.map(cell).join(', ')})` : ''}` : 'nicht erstellt'} · Regelstand ${ev.character.ruleset}${ev.character.ruleset >= 2 ? ' (Warrior, Mage, Rogue)' : ' (Legacy, fünf Klassen)'}`);
     if (ev.dungeon) L.push(`- **Ziel-Dungeon:** ${cell(ev.dungeon.name || ev.dungeon.root)}, Ebene ${ev.dungeon.floor}${ev.dungeon.quest ? ` (Vertrag ${ev.dungeon.quest})` : ' (ohne Dungeon-Vertrag: der erste betretene)'}`);
     L.push(`- **Leitfaden:** ${guide.chain.join(' → ')} („${guide.title || guide.id}“)`);
     L.push(`- **Spieler:** ${player.type === 'llm' ? `LLM ${player.model} (${player.endpoint}, Temperatur ${player.temperature})${player.persona ? `, Stil: ${player.persona}` : ''}` : `regelbasiert (${player.steps} Schritte)`}`);

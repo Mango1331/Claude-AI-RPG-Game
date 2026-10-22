@@ -17,7 +17,7 @@ export const WORLD_FILE = path.join(ENGINE, 'lorebook', 'Avereth_World_Lore_v0.1
 export const CONTRACT_FILE = path.join(ENGINE, 'content', 'narrator', 'Avereth_Narrator_Contract_v4.txt');
 // the runner's own greeting when the profile has no Avereth card (the selftest; README: First Message v0.4 sets the city
 // by its Location line)
-export const FALLBACK_GREETING = 'SYSTEM INITIALIZATION COMPLETE\n\n`Location: Public roadside verge outside Glassmere, Caelreth`\n\nCHARACTER CREATION — STEP 1/2: choose a Base Class (Warrior, Mage, Guardian, Duelist, Ranger).';
+export const FALLBACK_GREETING = 'SYSTEM INITIALIZATION COMPLETE\n\n`Location: Public roadside verge outside Glassmere, Caelreth`\n\nCHARACTER CREATION — STEP 1/2: choose a Base Class (Warrior, Mage, Rogue).';
 export const EXTENSION_FILES = ['index.js', 'manifest.json', 'style.css'];
 export const EXTENSION_DIRS = ['src', 'content', 'regex'];
 

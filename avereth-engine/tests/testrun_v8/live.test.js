@@ -142,7 +142,7 @@ test('the report re-describing the fighting rats ("rat1 bit his calf", "rat2 gna
     assert.ok(!s.entities['mon.rat1'] && !s.entities['mon.rat2']);
     assert.deepEqual(at[16].rec.accepted, ['known mon.big_cellar_rat (not duplicated)', 'mon.cellar_rat fights on', 'mon.cellar_rat fights on']);
     assert.deepEqual(at[16].rec.rejected.map((r) => r.reason), ['rat1', 'rat2'].map((ref) => `new creature "${ref}" during the fight: the creatures fighting are named by their labels (as in the engine block), and a creature that joins is introduced in "new" and named in "combat"`));
-    assert.equal(Object.fromEntries(worldRows(s, content)).Present, 'Big Cellar Rat (dead, ENGAGED) · Cellar Rat A (HP 16/16, ENGAGED) · Cellar Rat B (HP 16/16, ENGAGED)');
+    assert.equal(Object.fromEntries(worldRows(s, content)).Present, 'Big Cellar Rat (dead) · Cellar Rat A (HP 16/16, ENGAGED) · Cellar Rat B (HP 16/16, ENGAGED)', 'Patch 8.4.2: the dead at no range band');
     // the narrator is told in its next engine block
     const next = say(chat.slice(), '*i Basic Attack Cellar Rat B*');
     assert.match(next.context.text, /Rejected from your fact report: new creature "rat1" during the fight: the creatures fighting are named by their labels/);

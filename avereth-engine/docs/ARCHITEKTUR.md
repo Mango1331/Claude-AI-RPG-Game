@@ -448,3 +448,11 @@ Details: `docs/PATCH8_4_GROUP_AWARENESS_CULLS.md`.
 
 Details: `docs/PATCH8_4_1_LIVETEST_STABILIZATION.md`.
 
+
+## 20. Gebühr, Thread-Bezüge, Tote im HUD (Patch 8.4.2, 4.3.0-c.6.6.31)
+
+- **Registrierungsgebühr.** `v4/commands.js pay`: Eine Zahlung, die erkennbar der Registrierung gilt (ein `guild.register` derselben Nachricht oder ein Zweck „registration/membership/guild/fee“), aber nicht der Gebühr entspricht, wird nicht gebucht (refused, NOT PAID). Die Registrierung bleibt zu ihrer Gebühr offen. Eine Zahlung, die einen anderen Zweck nennt, bleibt gewöhnlich.
+- **Thread-Bezüge.** `threads.js threadById`: Ein Thread gilt mit seiner ID (`thread.t10.1`) und ohne das Präfix (`t10.1`); es bleibt immer der bestehende Thread. Unbekannte IDs werden weiter abgewiesen.
+- **Tote im HUD.** `hud.js worldRows`: Tote stehen unter Present ohne Entfernung und Deckung.
+
+Details: `docs/PATCH8_4_2_FINAL_INTEGRATION.md`.

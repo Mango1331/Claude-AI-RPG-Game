@@ -102,9 +102,11 @@ export function worldRows(state, content) {
         const e = state.entities[id];
         const c = enc?.combatants?.[id];
         const role = e.kind === 'npc' ? truth(state, id, 'occupation')[0]?.o : null;
-        const band = c?.current?.band || state.scene.positions[id]?.band;
+        // Patch 8.4.2: the dead lie where they fell, at no range band and in no cover (no fighting target)
+        const dead = statusOf(state, id) === 'dead';
+        const band = dead ? null : c?.current?.band || state.scene.positions[id]?.band;
         const cover = c?.current?.cover || state.scene.positions[id]?.cover;
-        const bits = [role, statusOf(state, id) === 'dead' ? 'dead' : c ? `HP ${c.current.hp}/${c.fixed.max_hp}` : null, band ? `${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : null].filter(Boolean);
+        const bits = [role, dead ? 'dead' : c ? `HP ${c.current.hp}/${c.fixed.max_hp}` : null, band ? `${band}${cover && cover !== 'none' ? `, ${cover} cover` : ''}` : null].filter(Boolean);
         return `${label(id)}${bits.length ? ` (${bits.join(', ')})` : ''}`;
     });
     rows.push(['Present', list(present, 'nobody besides Alaric')]);

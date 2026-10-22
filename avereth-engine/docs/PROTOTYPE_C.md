@@ -1930,3 +1930,12 @@ Erster automatisierter Livetest 22.10.2026 05:43 (`tests/v4/live_1022c.json`). V
   - Neue Prüfungen `numeric_cull_active` und `open_group_attack` im Leitfaden `patch_8_4`.
   - Tests: `tests/live_runner/patch841_runner.test.js` (13), Stub-Selbsttest 46 Prüfungen (11 neu).
 
+### Patch 8.4.2 (4.3.0-c.6.6.31): Letzte Integrationskorrekturen
+
+Zweiter automatisierter Livetest 22.10.2026 07:49 (`tests/v4/live_1022d.json`). Vollständige Beschreibung: `docs/PATCH8_4_2_FINAL_INTEGRATION.md`.
+
+- **Registrierungsgebühr.** Ein falscher Betrag für die Registrierung wird nicht gebucht (NOT PAID); die Gebühr danach bucht genau einmal.
+- **Thread-Bezüge.** Threads gelten mit und ohne Präfix `thread.`; die Auflösungen des Extraktors greifen wieder.
+- **HUD.** Tote stehen ohne Entfernung unter Present.
+- **Tests:** `tests/v4/patch842.test.js` (7; auf .30 sechs rot, eine Absicherung grün).
+

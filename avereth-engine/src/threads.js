@@ -88,6 +88,15 @@ export function currentThreads(state) {
 }
 
 /**
+ * A thread by the id a reply gives for it: its own ("thread.t10.1") or that without the "thread." prefix ("t10.1"), as
+ * the extractor gave it in the live test of 22.10.2026 07:49 (Patch 8.4.2); always the thread that exists, never a new one.
+ */
+export function threadById(state, id) {
+    const key = String(id);
+    return state.threads[key] || state.threads[`thread.${key}`] || (key.startsWith('thread.') ? state.threads[key.slice(7)] : null) || null;
+}
+
+/**
  * The events for one reported thread {id?, text, kind, status, resolution?}, or a reason it cannot apply.
  * @returns {{events: object[], accepted?: string, reject?: string}}
  */
@@ -96,7 +105,7 @@ export function threadEvents(state, th, { at, src, place = null }) {
     const status = th.status === 'resolved' ? 'resolved' : 'open';
     let cur = null;
     if (th.id) {
-        cur = state.threads[th.id] || null;
+        cur = threadById(state, th.id);
         if (!cur) return { events: [], reject: `unknown thread ${th.id}` };
     } else cur = matchThread(state, th.text, th.kind || null);
     if (!cur && status === 'resolved') return { events: [], reject: 'cannot resolve an unknown thread' };

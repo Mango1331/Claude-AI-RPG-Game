@@ -62,6 +62,7 @@ export function newTurnContext(content) {
 const who = (s, id) => (id === 'guild' ? 'the Guild' : entityLabel(s, id));
 const present = (s, id) => typeof id === 'string' && s.scene.present.includes(id) && s.entities[id]?.status !== 'dead';
 const cpText = (cp, content) => `${cp} cp${cp >= 10 ? ` (${formatCoin(cp, content)})` : ''}`;
+const feeWords = (fee) => (fee % 10 === 0 ? `${fee / 10} silver (${fee} cp)` : `${fee} cp`);
 
 /** A catalog object id: a V4 object, or "item.<template>" for what Alaric's own sheet carries. */
 function objectOf(s, content, ref) {
@@ -756,6 +757,18 @@ const HANDLERS = {
             openRegistration(s, content, emit);
             return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: REGISTRATION_OFFER, lines: null }, ctx, emit);
         }
+        // Patch 8.4.2 (live 22.10.2026 07:49: "I put one silver on the counter" for the 2 silver fee was booked as a payment
+        // to the clerk, then the fee again: 30 cp): another amount for a registration is no payment; the registration
+        // stays open at its fee. A payment that names something else (a tip for her help) stays an ordinary one
+        const other = !!c.for && !/\b(?:regist\w*|membership|guild|fee)\b/i.test(c.for);
+        if (asks && !other && !theFee && hallOf(s, s.scene.at) && !membership(s)) {
+            openRegistration(s, content, emit);
+            const offered = cpText(c.amount_cp, content);
+            return {
+                status: 'refused', reason: `the Guild's registration fee is ${feeWords(fee)}, not ${offered}; nothing was paid`,
+                line: `NOT PAID — ${offered} is not the Guild's registration fee (${feeWords(fee)}, one-time): nothing is paid, his coin stays ${cpText(s.entities.pc.sheet.coin_cp, content)}. Let the clerk name the fee; he has not paid it.`,
+            };
+        }
         // an open offer of the one he pays: paying it is accepting it
         const offer = Object.values(s.offers).find((o) => o.status === 'open' && !o.canon && !o.bid && o.seller === c.to && (c.amount_cp === null || c.amount_cp === undefined || pickLines(o).cp === c.amount_cp));
         if (offer) return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: offer.id, lines: null }, ctx, emit);
@@ -972,7 +985,7 @@ const HANDLERS = {
         if (membership(s) && ctx.booked.registration) return { status: 'resolved', line: 'REGISTERS — done: the fee he paid above registered him.' };
         if (membership(s)) return { status: 'refused', reason: 'already a member', done: true, line: 'NOTHING TO DO — he is already a member.' };
         const fee = openRegistration(s, content, emit, ahead ? hallOf(s, ahead.to) : s.scene.at);
-        return { status: 'pending', reason: 'fee', line: `REGISTERS${ahead ? ', when he reaches the Guild hall' : ''} — pending: the Guild's registration fee is ${fee % 10 === 0 ? `${fee / 10} silver (${fee} cp)` : `${fee} cp`}, one-time; ${rankCanon(content)}. Let the clerk name the fee and explain; stop there: he has not agreed to pay.` };
+        return { status: 'pending', reason: 'fee', line: `REGISTERS${ahead ? ', when he reaches the Guild hall' : ''} — pending: the Guild's registration fee is ${feeWords(fee)}, one-time; ${rankCanon(content)}. Let the clerk name the fee and explain; stop there: he has not agreed to pay.` };
     },
     'guild.promote'(s, content, c, ctx, emit) {
         if (!hallOf(s, s.scene.at)) return { status: 'refused', reason: 'not at a Guild hall', line: 'CANNOT ASK FOR PROMOTION — only at a Guild hall.' };

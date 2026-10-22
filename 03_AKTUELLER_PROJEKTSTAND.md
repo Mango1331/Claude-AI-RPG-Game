@@ -13,14 +13,15 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 22.10.2026 unabhängig über GitHub geprüft** | b0221181602ddbaf7c05b08bae4b2d4633e04983 |
+| **HEAD am 22.10.2026 unabhängig über GitHub geprüft** | 35ead9c21564c8aa134dfd93978184cdef2bd883 |
 | **Build direkt aus package.json und manifest.json geprüft** | 4.3.0-c.6.6.29 |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
 | **Patchstatus** | **Patch 8.4 Gameplay (.29) plus automatisierter ST-Live-Runner implementiert** (`044d5b3`, §5m); Gameplay-/Engine-Version weiter .29, kein echter GLM-Runner-Livetest. Guard-/DEFEND-Cull-Text-Randfall (§5l) offen. |
 | **Nächster Schritt** | **Zuerst lokaler Windows-Preflight:** Featherless-Proxy im ST-Profil als `Custom URL` oder separates Reverse-Proxy-Feld? `--inspect`/`--check --ping`, tatsächliche GLM-ID/5er-Modellliste prüfen; dann erster `.29`-Runner-Livetest mit Guide `patch_8_4` und Exportkontrolle. Guard-/DEFEND-Cull-Text (§5l), Boss/Floor-Clear und Old Crown gesondert. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
-Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b0221181602ddbaf7c05b08bae4b2d4633e04983
+Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/35ead9c21564c8aa134dfd93978184cdef2bd883
+Vorheriger Browsernachtrag: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b0221181602ddbaf7c05b08bae4b2d4633e04983
 Runner-Hauptcommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/044d5b38057367f94bdd7273b7296f3254bae8be
 Vorheriger Patch-8.4-Gameplay-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/4d08d4f6c8eb7a96e0534066d4b38a1f18d74098
 Vorheriger Patch-8.3-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/70cbb5e4ec77ea1ad9fe24fc46b86c2c42cb12ed  
@@ -332,6 +333,8 @@ Das neue **`04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md`** sichert ausführlich die
 **Laufzeit und Modell:** Beim LLM-Spieler wird standardmäßig dasselbe Modell/der gleiche lokale Endpoint wie für das Spiel verwendet; das erzeugt zusätzliche echte Modellaufrufe. `player.maxTokens=3000` und optionales Reasoning können Kosten und Dauer erhöhen; separate Einstellung möglich. Claudes Angabe 1–2 Stunden ist eine konservative Schätzung, **kein Messwert**. 80 Züge und 240 Minuten sind Stopplimits; für einen ungestörten 25–40-Züge-Test sprechen .28-Medianzeiten plus Spieler-LLM eher für eine Größenordnung ~15–30 Minuten, mit Ausreißern/Umwegen entsprechend länger. Erster echter Lauf muss empirisch gemessen werden, ohne dessen Tempo vorwegzunehmen.
 
 **Abnahme:** Lokal Proxy separat laufen lassen, `.config` + GLM-Modell per `--inspect` überprüfen; nicht die echten Keys im Chat/Git teilen. Falls Importquelle nicht Custom-URL, Kompatibilität zuerst gezielt ergänzen. Danach kurzen echten `.29`-Run mit Guide `patch_8_4` und begrenzten Turns ausführen, Exporte und Headless-Steuerung auswerten. DEFEND-Schutz-Cull-Task-Fehler bleibt eigener Mini-Fix (§5l); keinen weiteren Gameplay-Großpatch mit Runner vermischen.
+**Nachtrag `35ead9c` (22.10.2026; Git-Code geprüft, kein echter Windows/GLM-Test):** Neues `preflight.mjs` überprüft `/models` und die genaue Modell-ID (auch mit enger Featherless-Proxy-Liste) bei `--check --ping`, `--inspect --ping` und vor echtem Lauf. `import_profile.mjs` berücksichtigt bei ST 1.19 den aktiven `selected_proxy`-/`proxies`-Datensatz anstelle eines möglicherweise überschriebenen `oai_settings.reverse_proxy`; `custom_url` bleibt eigener Weg. `profile.mjs` setzt das Proxy-Preset samt temporär aus Umgebungsvariable stammendem Schlüssel ausschließlich in isolierter Instanz und entfernt das Passwort am Ende. `driver.mjs` behandelt Proxy-Bestätigung und Welcome-Screen-/Chat-Race, Bericht enthält gemessene Zeiten und Hochrechnungen, Beispielkonfiguration `maxTurns=40`. Claude meldet 1023/1023 Tests, darunter 28 Runner-Tests plus drei Stub-Wege. Unabhängige Ausführung noch offen. Bei `--inspect --ping` werden rote Prüfergebnisse angezeigt, aber der Inspektionspfad setzt nicht zwingend einen Fehler-Exit-Code; Ausgabe aktiv lesen. Der bestehende Featherless-Proxy wird nicht gestartet/beendet. **Nächster Schritt:** Windows `git pull`, Playwright, `stDir` in gitignorierter `live.config.json`, API-Schlüssel als env, dann `--inspect --ping`; nur bei passender URL/Modell-ID Test mit `--guide patch_8_4 --headed` und 40-Züge-Grenze. Keine Secrets im Chat.**
+
 ## 6. Fortgesetzter .26-GLM-Dungeonlauf – verbleibende Testziele
 
 **Keinen automatischen weiteren Dungeon-Hotfix starten.** Der .26-Live-Run ist bereits begonnen und teilweise ausgewertet worden (Abschnitt 5d). Den vorhandenen Run mit Exporten weiter analysieren; .25 als historische Regression heranziehen und von einem kontrollierten Performance-A/B-Test getrennt halten. Sinnvolle Testreihenfolge:
@@ -393,7 +396,7 @@ Auf folgende Fälle besonders achten:
 ## 9. Übergabe an den nächsten Chat (vier Projektdateien)
 
 1. Dateien **01–04** **vom Branch main** vollständig lesen (`04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` ist das Review-/Katalogarchiv). Den tatsächlichen Entwicklungsbranch und Build unabhängig per Git prüfen.
-2. **Aktueller HEAD `b022118` enthält den automatisierten ST-Live-Runner (Hauptcommit `044d5b3`, §5m) samt Chrome-Nachtrag; Engine bleibt Patch 8.4/.29 aus `4d08d4f` (§5l).** Nur Cloud-Stub, kein echter Windows-/GLM-Livetest. DEFEND-Cull-Task-Randfall, Boss/Floor-Clear/Old-Crown-Siegel weiterhin offen.
+2. **Aktueller HEAD `35ead9c` enthält den automatisierten ST-Live-Runner (Hauptcommit `044d5b3`, §5m), Chrome und den Proxy-/Modell-Preflight-Fix; Engine bleibt Patch 8.4/.29 aus `4d08d4f` (§5l).** Nur Cloud-Stub, kein echter Windows-/GLM-Livetest. DEFEND-Cull-Task-Randfall, Boss/Floor-Clear/Old-Crown-Siegel weiterhin offen.
 3. Entwicklungskette: Patch 8.1 (.26) → Performance-Diagnose 8.2 (.27, §5f) → Dungeon-/Cull-Fix 8.3 (.28, §5i) → Group-Awareness-/Cull-Text-Fix 8.4 (.29, §5l). `#assign`-Fastpath, Engine-only-Board, ROAD AHEAD und Organic Growth sind **nicht** implementiert. Echte Performanceverbesserung, A0/A/C, Board-Retry und Narrator-Cache-Versuch offen.
 4. Bei Live-Exports zuerst Engine-Events, Chat-JSONL und LLM-TXT korrelieren; Gameplay- und Designregeln der Dateien 01/02 berücksichtigen.
 5. **Datei 04** enthält die 141-Ideen-Zusammenfassung, 20 ausgewählten K-Kandidaten, Claude-Gegenreviews, Engine-only-Board, Rest/Wait/Fast-Travel/Quick Replies und die offene Patch-9-/ROAD-AHEAD-Reihenfolge. Keine Ideen ohne Nutzerfreigabe in den bindenden Kanon oder die Implementierung übernehmen.

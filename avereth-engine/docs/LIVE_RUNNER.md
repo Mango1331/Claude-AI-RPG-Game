@@ -28,7 +28,10 @@ Werkzeug: `tools/st_live/live/` (ab Build 4.3.0-c.6.6.29). Er spielt einen Livet
    ```powershell
    npm install --no-save playwright-core
    ```
-   Alternativ global mit `npm install -g playwright-core`. Ein Browser-Download ist nicht nötig. Fehlt Playwrights eigenes Chromium, nimmt der Runner das installierte **Microsoft Edge** (`"browser": "auto"`), sonst Chrome.
+   Alternativ global mit `npm install -g playwright-core`. Ein Browser-Download ist nicht nötig: Der Runner nimmt dein installiertes **Google Chrome**. Es wird mit einem frischen, temporären Profil gestartet; dein eigenes Chrome, seine Anmeldungen und Daten bleiben unberührt, und es darf dabei offen sein.
+   - `"browser": "chrome"` (Beispielkonfiguration): nur Chrome. Erwartet wird es am Standardort `C:\Program Files\Google\Chrome\Application\chrome.exe`.
+   - `"auto"`: Chrome, sonst Playwrights eigenes Chromium (`npx playwright-core install chromium`), sonst Edge.
+   - `"chromium"` oder `"msedge"`: nur dieser.
 3. **Konfiguration.** Kopiere `tools/st_live/live.config.example.json` nach `tools/st_live/live.config.json`. Diese Datei ist in `.gitignore`. Trage ein:
    - `stDir`: der Ordner deiner SillyTavern-Installation, in JSON mit doppelten Backslashes, z. B. `"C:\\SillyTavern"`;
    - `stUser`: nur nötig, wenn du ST-Benutzerkonten nutzt (Standard `default-user`);

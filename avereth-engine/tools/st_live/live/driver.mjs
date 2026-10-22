@@ -21,9 +21,9 @@ export function loadPlaywright() {
     return null;
 }
 
-/** A Chromium browser: Playwright's own, else the installed Edge or Chrome (Windows: Edge is always there). */
+/** A Chromium browser: the installed Chrome, else Playwright's own Chromium, else Edge (auto); or the one named. */
 export async function launchBrowser(pw, { browser = 'auto', headless = true } = {}) {
-    const order = browser === 'auto' ? [null, 'msedge', 'chrome'] : [browser === 'chromium' ? null : browser];
+    const order = browser === 'auto' ? ['chrome', null, 'msedge'] : [browser === 'chromium' ? null : browser];
     const errs = [];
     for (const channel of order) {
         try {

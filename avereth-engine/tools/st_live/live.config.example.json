@@ -5,7 +5,7 @@
   "preset": "profile",
   "keyEnv": "AVERETH_LIVE_API_KEY",
   "guide": "patch_8_4",
-  "browser": "auto",
+  "browser": "chrome",
   "headless": true,
   "port": 8123,
   "turnTimeoutSec": 900,

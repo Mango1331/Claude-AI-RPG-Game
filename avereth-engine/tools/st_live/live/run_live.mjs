@@ -85,7 +85,7 @@ export async function check(o) {
     const pw = loadPlaywright();
     ok(!!pw, 'Playwright (playwright oder playwright-core)', pw ? 'gefunden' : 'npm install -g playwright-core  (oder im Repo: npm install --no-save playwright-core)');
     if (pw) {
-        try { const b = await launchBrowser(pw, { browser: o.browser, headless: true }); ok(true, 'Browser', `${b.name} ${b.version}`); await b.browser.close(); } catch (e) { ok(false, 'Browser', String(e.message)); }
+        try { const b = await launchBrowser(pw, { browser: o.browser, headless: true }); ok(true, 'Browser', `${b.name} ${b.version}`); await b.browser.close(); } catch (e) { ok(false, 'Browser', `${e.message} — Chrome von google.com/chrome installieren (Standardort), oder: npx playwright-core install chromium und "browser": "chromium"`); }
     }
     let imp = null;
     ok(!!o.stDir && fs.existsSync(path.join(o.stDir, 'server.js')), 'SillyTavern-Installation', o.stDir || 'nicht gesetzt: "stDir" in live.config.json, --st oder AVERETH_ST_DIR');

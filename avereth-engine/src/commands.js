@@ -4,6 +4,7 @@
 import { deriveCharacter, rawPowerText, itemOf, actionsOf, weaponAttackOf } from './derived.js';
 import { formatCoin } from './economy.js';
 import { findSkill, rulesetOf, startClasses, skillOf } from './content.js';
+import { passiveTotals, skillCostAmount, passivesOf, passiveText } from './passives.js';
 import { promotionPp, effectValue, effectFactor, flatEffectValue, affinityFor } from './skills.js';
 import { assignStat } from './progression.js';
 import { knowledgeOf, memoriesOf, memoryText, propText, playerLabel, statusOf } from './knowledge.js';
@@ -37,10 +38,13 @@ function pcSheet(state) {
     return state.entities.pc.sheet;
 }
 
-function skillCost(skill, prof, content) {
+function skillCost(skill, prof, content, sheet = null) {
     if (!skill.cost) return 'none';
+    // Patch 9B-2: what the fight books, his Passives' cost reductions too (src/passives.js skillCostAmount)
+    const mods = sheet ? passiveTotals(sheet, content).cost : null;
+    const amount = skillCostAmount(content, skill, prof, mods);
     const mult = content.rules.proficiency.levels[String(prof || 1)].cost;
-    return `${roundHalfUp(skill.cost.amount * mult)} ${skill.cost.resource.toUpperCase()}${mult !== 1 ? ` (base ${skill.cost.amount})` : ''}`;
+    return `${amount} ${skill.cost.resource.toUpperCase()}${mult !== 1 || amount !== skill.cost.amount ? ` (base ${skill.cost.amount})` : ''}`;
 }
 
 /** Patch 9B-1: what a Skill's numeric effects give at this Proficiency, as the combat engine books them. */
@@ -66,6 +70,8 @@ function status(state, content) {
         `STR ${s.stats.STR} | VIT ${s.stats.VIT} | AGI ${s.stats.AGI} | INT ${s.stats.INT} | PER ${s.stats.PER} | WIL ${s.stats.WIL} | Free Stat Points ${s.free_points}`,
         `ATK ${dv.atk} | MATK ${dv.matk} | DEF ${dv.def} (base ${dv.baseDef}) | MDEF ${dv.mdef} (base ${dv.baseMdef}) | Initiative ${dv.init} (floor(1.5 × AGI))`,
         `Active Effects: ${fx.length ? fx.map((x) => x.name).join(', ') : 'none'} | Domain: NOT YET UNLOCKED`,
+        // Patch 9B-2: his Passives (their lasting bonuses are in the values above), only when he has any
+        ...(passivesOf(s).length ? [`Passives: ${passivesOf(s).map((p) => p.name).join(', ')} (#class for what they do)`] : []),
         `Equipment: ${equipmentList(s, content).join(', ') || 'none'}`,
     ].join('\n');
 }
@@ -143,12 +149,12 @@ function skills(state, content) {
     for (const [id, v] of Object.entries(s.skills)) {
         const sk = skillOf(content, id, state);
         if (!sk) { lines.push(`${id} | UNKNOWN DEFINITION`); continue; }
-        lines.push(`${sk.name}${sk.dynamic ? ' (learned in this campaign)' : ''} | ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | P${v.prof} (${ppText(content, sk, v)}) | Tags ${joinList(sk.tags, '-')}${aspectsText(sk)} | Cost ${skillCost(sk, v.prof, content)}`);
+        lines.push(`${sk.name}${sk.dynamic ? ' (learned in this campaign)' : ''} | ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | P${v.prof} (${ppText(content, sk, v)}) | Tags ${joinList(sk.tags, '-')}${aspectsText(sk)} | Cost ${skillCost(sk, v.prof, content, s)}`);
     }
     if (lines.length === 1) lines.push('No Skills known yet.');
     // Patch 9A: the plain attack of the weapon he holds, no learned Skill (it comes and goes with the weapon)
     const w = weaponAttackOf(s, content, rulesetOf(state));
-    if (w) lines.push(`${w.skill.name} | weapon attack of the equipped ${w.weapon.name} (not a learned Skill) | Cost ${skillCost(w.skill, 1, content)}${w.skill.ammo ? ` + ${w.skill.ammo.qty} arrow` : ''}`);
+    if (w) lines.push(`${w.skill.name} | weapon attack of the equipped ${w.weapon.name} (not a learned Skill) | Cost ${skillCost(w.skill, 1, content, s)}${w.skill.ammo ? ` + ${w.skill.ammo.qty} arrow` : ''}`);
     lines.push('Use #skill <Skill Name> for full details.');
     return lines.join('\n');
 }
@@ -170,7 +176,7 @@ function skill(state, content, arg) {
     const dv = deriveCharacter(s, content);
     const prof = content.rules.proficiency.levels[String(known.prof)];
     const lines = [`[SYSTEM // SKILL] ${sk.name}`, `Category ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | ${known.weapon ? `weapon attack of the equipped ${known.weapon} (not a learned Skill)` : `Proficiency P${known.prof} (${ppText(content, sk, known)})`} | Tags ${joinList(sk.tags, '-')}${aspectsText(sk)}`];
-    lines.push(`Cost: ${skillCost(sk, known.prof, content)}${sk.ammo ? ` | Ammo: ${sk.ammo.qty} ${content.items.get(sk.ammo.item)?.name || sk.ammo.item} when fired from a bow` : ''}`);
+    lines.push(`Cost: ${skillCost(sk, known.prof, content, s)}${sk.ammo ? ` | Ammo: ${sk.ammo.qty} ${content.items.get(sk.ammo.item)?.name || sk.ammo.item} when fired from a bow` : ''}`);
     if (sk.range) lines.push(`Range: ${sk.range.band}${sk.range.extra_band ? ' (EXTRA-BAND movement: may move one additional band and must end ENGAGED)' : ''}${sk.range.area ? ` | Area: ${sk.range.area}` : ''}`);
     if (sk.attack) {
         lines.push(`Base Power ${sk.attack.base} | Scaling ${sk.attack.scaling.map((t) => `${t.stat} ×${t.text ?? t.coef}`).join(' + ')} | Uses ${sk.attack.share === 1 ? '' : `${sk.attack.share * 100}% of `}${sk.attack.uses} | ${sk.attack.damage_type}`);
@@ -192,7 +198,10 @@ function klass(state, content) {
     const head = ['[SYSTEM // CLASS]', `Base Class: ${c.name} | Rank ${deriveCharacter(s, content).rank} | Favored Stats: ${c.favored.join(' / ')}`, `Class Growth: ${c.growth_text}`];
     // Patch 9A: no class evolution is tied to a Level any more; organic class growth is not unlocked yet (Patch 9D). A
     // legacy campaign keeps the panel it always showed
-    if (rulesetOf(state) >= 2) return [...head, 'Evolution history: none', 'Passives: none', 'Class evolution: not tied to any Level; it can only grow from how he plays (organic class growth is not unlocked yet)'].join('\n');
+    // Patch 9B-2: the Passives he actually has, each with what it does and when
+    const passives = passivesOf(s);
+    const plist = passives.length ? ['Passives:', ...passives.map((p) => `- ${passiveText(p)}`)] : ['Passives: none'];
+    if (rulesetOf(state) >= 2) return [...head, 'Evolution history: none', ...plist, 'Class evolution: not tied to any Level; it can only grow from how he plays (organic class growth is not unlocked yet)'].join('\n');
     const next = [15, 30, 45, 60, 75, 90].find((l) => l > s.level);
     return [...head, 'Evolution history: none', `Next known evolution milestone: Level ${next ?? '-'}`].join('\n');
 }

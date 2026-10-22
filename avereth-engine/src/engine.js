@@ -10,7 +10,8 @@
 import { Dice, newSeed } from './rng.js';
 import { applyEvent, fold } from './state.js';
 import { anchorFor, templateFor, locationByName, weaponFamily, startPlace, itemEffectOf, rulesetOf, rulesetDef, npcTemplate, skillOf } from './content.js';
-import { checkProgress } from './skills.js';
+import { checkProgress, restoration } from './skills.js';
+import { skillCostAmount, passiveTotals } from './passives.js';
 import { rankRefusal, itemProfile } from './v4/items.js';
 import { deriveCharacter, actionsOf } from './derived.js';
 import { selectClass, selectSkills } from './creation.js';
@@ -185,6 +186,8 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
     // 3) declared stealth: opposed check (or automatic with nobody around)
     // prototype C: a known skill used on a thing, outside a fight (in a fight runCombat resolves it as Alaric's action)
     if (pcAction?.kind === 'ability_world') return worldUse(s, content, pcAction, dice, emit);
+    // Patch 9B-2: a heal or a restore on himself outside a fight is the engine's, as in one (src/skills.js restoration)
+    if (pcAction?.kind === 'skill' && restorative(s, content, pcAction.skill)) return selfRestore(s, content, pcAction, emit);
     if (intent.kind === 'stealth') {
         const r = stealthEvents(s, content, dice);
         r.events.forEach(emit);
@@ -193,6 +196,36 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
     }
     // 4) ordinary story turn: one pre-committed CHECK DIE the narrator may use for a Core #7 check
     return { kind: 'narrative', check_die: dice.d100('check die'), flags: intent.flags || {} };
+}
+
+const restorative = (s, content, id) => !!skillOf(content, id, s)?.effects?.some((e) => e.kind === 'heal' || e.kind === 'restore');
+
+/**
+ * Patch 9B-2: a learned heal or restore used on himself outside a fight: its cost, then what it restores, booked by the
+ * same rule as in a fight; refused at no cost when he does not know it, cannot pay it or has nothing to restore.
+ */
+function selfRestore(s, content, act, emit) {
+    const sheet = s.entities.pc.sheet;
+    const skill = skillOf(content, act.skill, s);
+    const known = sheet.skills[skill.id];
+    const nothing = (why) => ({ kind: 'note', text: `${why}. Nothing was spent or restored.`, notice: `${why} (nothing spent, nothing restored)` });
+    if (!known) return nothing(`Alaric does not know ${skill.name}`);
+    const amount = skillCostAmount(content, skill, known.prof, passiveTotals(sheet, content).cost);
+    const res = skill.cost?.resource;
+    if (amount && Number(sheet[res] || 0) < amount) return nothing(`Alaric lacks ${res.toUpperCase()} for ${skill.name} (${sheet[res] || 0} < ${amount})`);
+    const dv = deriveCharacter(sheet, content);
+    const who = (pools) => ({ stats: sheet.stats, pools, max: { hp: dv.maxHp, mp: dv.maxMp, sta: dv.maxSta } });
+    const pools = { hp: sheet.hp, mp: sheet.mp, sta: sheet.sta };
+    const ahead = restoration(content, skill, known.prof, rulesetOf(s), who(pools), amount);
+    if (ahead.full) return nothing(`Alaric is at full ${ahead.resource.toUpperCase()}: ${skill.name} has nothing to restore`);
+    if (amount) {
+        pools[res] -= amount;
+        emit({ t: 'resource.changed', d: { id: 'pc', resource: res, value: pools[res], why: skill.name } });
+    }
+    const r = restoration(content, skill, known.prof, rulesetOf(s), who(pools), amount);
+    emit({ t: 'resource.changed', d: { id: 'pc', resource: r.resource, value: r.after, why: skill.name } });
+    const text = `Alaric uses ${skill.name} on himself: ${amount ? `${res.toUpperCase()} -${amount}, ` : ''}${r.resource.toUpperCase()} +${r.after - r.before} (${r.before} -> ${r.after}/${r.max}). The engine booked it; narrate exactly this, nothing more.`;
+    return { kind: 'note', text, notice: `${skill.name}: ${r.resource.toUpperCase()} +${r.after - r.before} (${r.before} -> ${r.after}/${r.max})` };
 }
 
 /**
@@ -205,8 +238,7 @@ function worldUse(s, content, act, dice, emit) {
     const skill = skillOf(content, act.skill, s);
     const known = actionsOf(sheet, content, rulesetOf(s), s)[skill?.id]; // Patch 9A: a weapon attack too
     if (!skill || !known) return { kind: 'note', text: `Alaric does not know ${skill?.name || act.skill}. Nothing was spent or rolled.`, notice: `Alaric does not know ${skill?.name || act.skill} (nothing spent, nothing rolled)` };
-    const prof = content.rules.proficiency.levels[String(known.prof || 1)] || { cost: 1 };
-    const amount = skill.cost ? roundHalfUp(skill.cost.amount * (prof.cost ?? 1)) : 0;
+    const amount = skillCostAmount(content, skill, known.prof, passiveTotals(sheet, content).cost); // Patch 9B-2: his Passives too
     const res = skill.cost?.resource;
     if (amount && Number(sheet[res] || 0) < amount) return { kind: 'note', text: `Alaric lacks ${res.toUpperCase()} for ${skill.name} (${sheet[res] || 0} < ${amount}). Nothing was spent or rolled.`, notice: `${skill.name}: not enough ${res.toUpperCase()} (${sheet[res] || 0} < ${amount}; nothing spent, nothing rolled)` };
     // arrows as in a fight (src/combat.js): only a bow shoots them, only what he carries

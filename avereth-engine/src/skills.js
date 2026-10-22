@@ -30,9 +30,15 @@ const EFFECTS = {
     post_attack_temp_def: { on: 'attack', fields: { flat: [1, 4], until: ['own_next_turn'] } },
     extra_band: { on: 'attack', fields: {} },
     area: { on: 'attack', fields: { shape: ['caster_engaged'], shared_rolls: 'bool' } },
+    // Patch 9B-2: his own HP restored (a fixed amount by a stat), and MP or STA restored from the other resource's cost
+    heal: { on: 'self', fields: { base: [1, 16], stat: ['VIT', 'WIL', 'INT'], coef: [0, 2], floor: 'bool' } },
+    restore: { on: 'self', fields: { resource: ['mp', 'sta'], amount: [1, 22] } },
 };
 // barrier strength by Complexity (Arcane Ward C1, Focused Ward C2)
 const BARRIER_CAP = { 1: { base: 6, coef: 1.5 }, 2: { base: 10, coef: 2 }, 3: { base: 10, coef: 2 } };
+// Patch 9B-2: healing by Complexity: below a Barrier of the same Complexity (a Barrier lasts a Turn, HP stay)
+const HEAL_CAP = { 1: { base: 8, coef: 1 }, 2: { base: 12, coef: 1.5 }, 3: { base: 16, coef: 2 } };
+const RESTORES = new Set(['heal', 'restore']);
 
 /** content.6 (F-rank offensive P1 calibration): Base, total stat coefficients and Cost by Complexity. */
 function calibration(content) {
@@ -101,10 +107,14 @@ export function skillDefErrors(def, content, state = null) {
             else if (!within(v, rule)) e.push(`effects[${i}] ${x.kind}.${k}: ${rule[0]}-${rule[1]}`);
         }
         if (x.kind === 'barrier' && def.complexity && (x.base > BARRIER_CAP[def.complexity].base || x.coef > BARRIER_CAP[def.complexity].coef)) e.push(`effects[${i}] barrier: at most ${BARRIER_CAP[def.complexity].base} + stat ×${BARRIER_CAP[def.complexity].coef} at Complexity ${def.complexity}`);
+        if (x.kind === 'heal' && def.complexity && (x.base > HEAL_CAP[def.complexity].base || x.coef > HEAL_CAP[def.complexity].coef)) e.push(`effects[${i}] heal: at most ${HEAL_CAP[def.complexity].base} + stat ×${HEAL_CAP[def.complexity].coef} at Complexity ${def.complexity}`);
+        // no resource from nothing: what it restores is the other resource than its cost, never more than the cost
+        if (x.kind === 'restore' && def.cost && (x.resource === def.cost.resource || x.amount > def.cost.amount)) e.push(`effects[${i}] restore: the other resource than its cost, at most its cost (${def.cost.amount})`);
         if (spec.on === 'attack' && !attack) e.push(`effects[${i}] ${x.kind}: only on an attack`);
         if (spec.on === 'self' && attack) e.push(`effects[${i}] ${x.kind}: not on an attack (an action of its own)`);
     }
     if (new Set(kinds).size !== kinds.length) e.push('effects: each kind once');
+    if (kinds.some((k) => RESTORES.has(k)) && kinds.length > 1) e.push('effects: a heal or a restore is the Skill\'s only effect');
     if (kinds.includes('temp_def') && kinds.includes('barrier')) e.push('effects: a Barrier and a DEF bonus together are not supported');
     if (!attack && effects && !effects.length) e.push('a Skill without an attack needs an effect');
     if (!attack && kinds.length > 2) e.push('effects: at most two');
@@ -233,13 +243,31 @@ export function effectFactor(content, prof, ruleset = 1) {
 export function effectValue(content, eff, stats, prof, ruleset = 1) {
     const raw = eff.floor ? eff.base + Math.floor(stats[eff.stat] * eff.coef) : num(eff.base + stats[eff.stat] * eff.coef);
     const f = effectFactor(content, prof, ruleset);
-    return f === 1 ? raw : roundHalfUp(raw * f);
+    // Patch 9B-2: a whole number in every case (a Barrier of 6 + WIL 5×1.5 was 13.5 HP and left a fractional HP)
+    return f === 1 ? roundHalfUp(raw) : roundHalfUp(raw * f);
 }
 
 /** A flat numeric effect at a Proficiency (Guarded Cut's DEF +4): its factor applied once, rounded half up. */
 export function flatEffectValue(content, flat, prof, ruleset = 1) {
     const f = effectFactor(content, prof, ruleset);
     return f === 1 ? flat : roundHalfUp(flat * f);
+}
+
+/**
+ * Patch 9B-2: what a heal or restore Skill gives him now, or null for any other Skill: {resource, amount, before,
+ * after, max, full}. A heal is its numeric effect at his Proficiency (effectValue, ruleset 2 only grows it); a restore
+ * is its amount, never more than the cost this use pays (so no two Skills turn resources round in a gaining cycle);
+ * neither goes past the maximum. full: nothing to restore (the use is refused before anything is paid).
+ * @param {{stats: object, pools: {hp, mp, sta}, max: {hp, mp, sta}}} who
+ */
+export function restoration(content, skill, prof, ruleset, who, paid) {
+    const eff = (skill?.effects || []).find((e) => RESTORES.has(e.kind));
+    if (!eff) return null;
+    const resource = eff.kind === 'heal' ? 'hp' : eff.resource;
+    const amount = eff.kind === 'heal' ? effectValue(content, eff, who.stats, prof, ruleset) : Math.min(eff.amount, paid);
+    const before = who.pools[resource];
+    const max = who.max[resource];
+    return { resource, amount, before, after: Math.min(max, before + amount), max, full: before >= max };
 }
 
 /** The progress events of a gain (none when nothing is gained or the Skill is at P5). */
@@ -282,6 +310,8 @@ export function noteUse(ctx, r) {
     else if (r.kind === 'skill') {
         const kinds = (skill.effects || []).map((e) => e.kind);
         if (kinds.includes('reposition') && r.reposition) pp.used[skill.id] ||= 'a step that moved him';
+        // Patch 9B-2: a heal or a restore that gave him something back is its effect, shown
+        if (r.restore?.amount > 0) pp.used[skill.id] ||= `a ${r.restore.resource === 'hp' ? 'heal' : 'restore'} that gave him ${r.restore.amount} ${r.restore.resource.toUpperCase()}`;
         if (kinds.some((k) => DEFENSE.has(k))) pp.wait = { skill: skill.id, kind: 'defense' };
         else if (kinds.includes('next_attack_buff')) pp.wait = { skill: skill.id, kind: 'buff' };
     }

@@ -40,6 +40,7 @@ export function emptyState() {
         pending_combat: [], // NPC commitments reported by the narrator (Core #23 PENDING), resolved next turn
         pending_intents: {},
         skill_defs: {}, // Patch 9B-1: the campaign's dynamic Skill definitions (skill.defined), fixed once defined
+        passive_defs: {}, // Patch 9B-2: the campaign's dynamic Passive definitions (passive.defined)
         ...emptyDomains(),
     };
 }
@@ -265,6 +266,25 @@ export function applyEvent(state, e) {
             if (!state.skill_defs) state.skill_defs = {};
             if (state.skill_defs[d.skill.id]) throw new Error(`skill defined twice: ${d.skill.id}`);
             state.skill_defs[d.skill.id] = clone(d.skill);
+            break;
+        }
+        // Patch 9B-2: a dynamic Passive definition of this campaign (src/passives.js definePassive validated it); fixed
+        // once booked, gained by no one by it
+        case 'passive.defined': {
+            if (!state.passive_defs) state.passive_defs = {};
+            if (state.passive_defs[d.passive.id]) throw new Error(`passive defined twice: ${d.passive.id}`);
+            state.passive_defs[d.passive.id] = clone(d.passive);
+            break;
+        }
+        // Patch 9B-2: a person gains a defined Passive; the sheet keeps the fixed definition (src/derived.js reads it)
+        case 'passive.gained': {
+            const s = sheetOf(state, d.id);
+            const p = state.passive_defs?.[d.passive];
+            if (!p) throw new Error(`gain of an unknown passive ${d.passive}`);
+            if (!s.passives) s.passives = {};
+            if (s.passives[d.passive]) throw new Error(`passive gained twice: ${d.passive}`);
+            const { id, name, scope, condition, effects } = clone(p);
+            s.passives[d.passive] = { id, name, scope, condition, effects };
             break;
         }
         // Patch 9B-1: Proficiency Progress of a known Skill (src/skills.js): the PP and Proficiency it stands at after it

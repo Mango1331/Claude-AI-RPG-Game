@@ -2,6 +2,7 @@
 // no Crit Chance (legal attacks connect; only a true Ambush crits), and PER is not part of Initiative.
 import { num, normText } from './util.js';
 import { skillOf } from './content.js';
+import { passiveTotals } from './passives.js';
 
 export function rankOf(level, content) {
     for (const b of content.rules.ranks.bands) if (level >= b.min && level <= b.max) return b.rank;
@@ -79,7 +80,7 @@ export function initiativeOf(agi, content) {
 
 /**
  * Derived values for a core-stat character sheet.
- * sheet: {level, stats, equipment: {slot: itemRef}, bonuses?: {atk, matk, def, mdef}, temp?: {def, mdef}}
+ * sheet: {level, stats, equipment: {slot: itemRef}, bonuses?: {atk, matk, def, mdef}, passives?: {id: Passive}, temp?: {def, mdef}}
  */
 export function deriveCharacter(sheet, content) {
     const r = content.rules.derived;
@@ -102,11 +103,17 @@ export function deriveCharacter(sheet, content) {
         out.gearDef += it.def || 0;
         out.gearMdef += it.mdef || 0;
     }
+    // explicit bonuses (sheet.bonuses) and, Patch 9B-2, the lasting bonuses of his Passives: one path for every derived
+    // value, read from the sheet alone (a reload, a replay or a new fight snapshot computes them once, the same)
     const b = sheet.bonuses || {};
-    out.atk += b.atk || 0;
-    out.matk += b.matk || 0;
-    out.def = out.baseDef + out.gearDef + (b.def || 0);
-    out.mdef = out.baseMdef + out.gearMdef + (b.mdef || 0);
+    const p = passiveTotals(sheet, content);
+    out.atk += (b.atk || 0) + p.stat.ATK;
+    out.matk += (b.matk || 0) + p.stat.MATK;
+    out.def = out.baseDef + out.gearDef + (b.def || 0) + p.stat.DEF;
+    out.mdef = out.baseMdef + out.gearMdef + (b.mdef || 0) + p.stat.MDEF;
+    out.maxHp += p.max.hp;
+    out.maxMp += p.max.mp;
+    out.maxSta += p.max.sta;
     return out;
 }
 

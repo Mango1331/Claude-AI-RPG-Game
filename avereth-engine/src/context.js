@@ -5,6 +5,7 @@
 import { deriveCharacter, weaponAttackOf } from './derived.js';
 import { formatCoin } from './economy.js';
 import { rulesetOf, rulesTextFor, skillOf } from './content.js';
+import { passivesOf, passiveText } from './passives.js';
 import {
     knowledgeOf, memoriesOf, memoryText, entityLabel, anyLabel, propText, currentFacts, statusOf, pcIdentityFor, truth, lookOf,
     isMeaningful, PC_NAME_FACT, PC_LOOK_FACT,
@@ -95,6 +96,8 @@ export function pcLine(state, content, { combat = !!state.encounter, items = tru
         `STR ${s.stats.STR} VIT ${s.stats.VIT} AGI ${s.stats.AGI} INT ${s.stats.INT} PER ${s.stats.PER} WIL ${s.stats.WIL}${combat ? ` | ATK ${dv.atk} MATK ${dv.matk} DEF ${dv.def} MDEF ${dv.mdef} | Init ${dv.init}` : ''} | Equipped: ${joinList(equip)}${arrows !== undefined ? ` | Arrows ${arrows}` : ''}`,
     ];
     if (skills) lines.push(`Skills: ${joinList(skillList)}`);
+    // Patch 9B-2: his Passives, what they do (the numbers above already hold the lasting ones)
+    if (passivesOf(s).length) lines.push(`Passives (the engine's; never narrate one he does not have): ${passivesOf(s).map(passiveText).join('; ')}`);
     if (items) lines.push(`Carried: ${joinList(inv)} | Coin ${formatCoin(s.coin_cp, content)}`);
     return lines.join('\n');
 }

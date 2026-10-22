@@ -44,6 +44,12 @@ export function validateState(state, content) {
             // Patch 9B-1: PP below the next promotion, none at P5
             if (sk && v.pp !== undefined && (!isInt(v.pp) || v.pp < 0 || (v.prof >= 5 ? v.pp !== 0 : v.pp >= promotionPp(content, sk)))) p.push(`${where}: skill ${sid} PP ${v.pp} at P${v.prof}`);
         }
+        // Patch 9B-2: a Passive he has is one of this campaign's, as it was defined
+        for (const [pid, had] of Object.entries(s.passives || {})) {
+            const def = state.passive_defs?.[pid];
+            if (!def) p.push(`${where}: unknown passive ${pid}`);
+            else if (JSON.stringify([had.scope, had.condition, had.effects]) !== JSON.stringify([def.scope, def.condition, def.effects])) p.push(`${where}: passive ${pid} differs from its definition`);
+        }
         for (const [slot, ref] of Object.entries(s.equipment)) {
             if (typeof ref === 'string' && !content.items.has(ref)) p.push(`${where}: unknown item ${ref} in ${slot}`);
             if (typeof ref === 'object' && (!ref || !ref.name)) p.push(`${where}: invalid inline item in ${slot}`);

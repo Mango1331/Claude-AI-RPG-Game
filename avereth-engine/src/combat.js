@@ -12,7 +12,8 @@ import { lookOf } from './knowledge.js';
 import { bandIndex, bandName, clone, num, roundHalfUp } from './util.js';
 import { sceneHandle } from './v4/scene_handles.js';
 import { itemEffectOf, rulesetOf, skillOf as resolveSkill } from './content.js';
-import { effectValue, flatEffectValue, noteUse, fightProgress } from './skills.js';
+import { effectValue, flatEffectValue, noteUse, fightProgress, restoration } from './skills.js';
+import { passiveSnapshot, skillCostAmount, combatPassive } from './passives.js';
 import { rankRefusal, restoreOf, restoreEffect } from './v4/items.js';
 
 const PROF = (content, level) => content.rules.proficiency.levels[String(level || 1)];
@@ -23,6 +24,9 @@ export function characterCombatant(state, id, content, side) {
     const e = state.entities[id];
     const s = e.sheet;
     const dv = deriveCharacter(s, content);
+    // Patch 9B-2: his Passives as the fight sees them (lasting ones are in dv already; resistances, cost reductions and
+    // the combat Passives with their conditions); none, no field: a snapshot without Passives is the one of before
+    const passive = passiveSnapshot(s, content);
     return {
         id, name: label(e), side, model: 'character',
         fixed: {
@@ -34,6 +38,7 @@ export function characterCombatant(state, id, content, side) {
                 .find((it) => it && it.slot === 'weapon') || {}).family || null,
             temperament: e.card?.temperament || s.generated?.temperament || null,
             sapient: true,
+            ...(passive ? { passive } : {}),
         },
         current: { hp: s.hp, mp: s.mp, sta: s.sta, ammo: ammoOf(s, content), band: null, cover: 'none', effects: [], defeated: false, escaped: false, surrendered: false },
     };
@@ -293,6 +298,12 @@ function skillOf(content, id, state = null) {
     return s;
 }
 
+/** Patch 9B-2: what a combatant's combat Passives give now (src/passives.js combatPassive): their conditions on this fight. */
+function passiveNow(ctx, c) {
+    const engagedFoe = (me) => Object.values(ctx.enc.combatants).some((o) => isOpponent(me, o) && alive(o) && !o.current.surrendered && distance(ctx.enc, me.id, o.id) === 'ENGAGED');
+    return combatPassive(ctx.content, c, engagedFoe);
+}
+
 function rangeReaches(listedBand, targetBand) {
     return bandIndex(targetBand) <= bandIndex(listedBand);
 }
@@ -323,7 +334,9 @@ function resolveStrike(ctx, attacker, target, attack, opts) {
     const steps = [`Raw ${num(power)}`];
     if (opts.profPower && opts.profPower !== 1) { power = num(power * opts.profPower); steps.push(`×${opts.profPower} Proficiency = ${power}`); }
     if (opts.buffPowerPct) { power = num(power * (1 + opts.buffPowerPct / 100)); steps.push(`+${opts.buffPowerPct}% prepared = ${power}`); }
-    const defense = (magical ? target.fixed.mdef : target.fixed.def) + tempDefense(target, magical);
+    // Patch 9B-2: a combat Passive of the target whose condition holds now adds its DEF/MDEF; its resistances below
+    const guard = target.fixed.passive ? passiveNow(ctx, target) : null;
+    const defense = (magical ? target.fixed.mdef : target.fixed.def) + tempDefense(target, magical) + (guard ? guard.stat[magical ? 'MDEF' : 'DEF'] : 0);
     const postDef = num(Math.max(power - defense, power * content.rules.damage.defense_floor_share));
     steps.push(`${magical ? 'MDEF' : 'DEF'} ${defense}: max(${power}-${defense}, ${power}×0.10) = ${postDef}`);
     const variance = dice.variance(`variance ${attacker.id}->${target.id}`); // variance is per target and strike
@@ -358,6 +371,12 @@ function resolveStrike(ctx, attacker, target, attack, opts) {
         dmg = num(dmg * (1 - endure.pct / 100));
         steps.push(`Endure -${endure.pct}% = ${dmg}`);
         target.current.effects = target.current.effects.filter((e) => e !== endure);
+    }
+    const resist = guard ? guard.resist[magical ? 'magical' : 'physical'] : 0;
+    if (resist) {
+        dmg = num(dmg * (1 - resist / 100));
+        rec.resisted = resist;
+        steps.push(`${magical ? 'magical' : 'physical'} resistance -${resist}% = ${dmg}`);
     }
     let final = Math.max(1, roundHalfUp(dmg));
     steps.push(`round once = ${final}`);
@@ -462,8 +481,7 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
             .map((c) => c.id) : [];
         if (isArea && !plannedAreaTargets.length) return { illegal: `${skill.name} needs a valid target ENGAGED with ${actor.name} after the declared movement` };
         // resources (after legality of target/range, before RNG): Cost + Ammo committed together (Core #21)
-        const costMult = prof.cost;
-        const cost = skill.cost ? roundHalfUp(skill.cost.amount * costMult) : 0;
+        const cost = skillCostAmount(content, skill, byItem ? 1 : actor.fixed.actions[skill.id].prof, actor.fixed.passive?.cost);
         if (skill.cost && actor.current[skill.cost.resource] < cost) {
             return { illegal: `${actor.name} lacks ${skill.cost.resource.toUpperCase()} for ${skill.name} (${actor.current[skill.cost.resource]} < ${cost})` };
         }
@@ -506,9 +524,13 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         record.skill = skill.id;
         record.skill_name = skill.name;
         if (byItem) record.item = extra.item;
-        const raw = rawPower(skill, actor.fixed.stats, { atk: actor.fixed.atk, matk: actor.fixed.matk });
+        // Patch 9B-2: a combat Passive whose condition holds now adds its ATK/MATK to the attack's
+        const edge = actor.fixed.passive ? passiveNow(ctx, actor) : null;
+        const power = { atk: actor.fixed.atk + (edge?.stat.ATK || 0), matk: actor.fixed.matk + (edge?.stat.MATK || 0) };
+        if (edge && (edge.stat.ATK || edge.stat.MATK)) record.passive = edge.names;
+        const raw = rawPower(skill, actor.fixed.stats, power);
         record.raw = raw;
-        record.raw_text = rawPowerText(skill, actor.fixed.stats, { atk: actor.fixed.atk, matk: actor.fixed.matk });
+        record.raw_text = rawPowerText(skill, actor.fixed.stats, power);
         const opts = { raw, profPower: prof.power, buffPowerPct, ambush: !!extra.opening };
         record.strikes = [];
         if (burst) {
@@ -583,9 +605,12 @@ export function skillAction(ctx, actorId, skillId, extra = {}) {
     const actor = enc.combatants[actorId];
     const skill = skillOf(content, skillId, ctx.state);
     if (actor.model !== 'character' || !actor.fixed.actions[skill.id]) return { illegal: `${actor.name} does not know ${skill.name}` };
-    const prof = PROF(content, actor.fixed.actions[skill.id].prof);
-    const cost = skill.cost ? roundHalfUp(skill.cost.amount * prof.cost) : 0;
+    const cost = skillCostAmount(content, skill, actor.fixed.actions[skill.id].prof, actor.fixed.passive?.cost);
     if (skill.cost && actor.current[skill.cost.resource] < cost) return { illegal: `${actor.name} lacks ${skill.cost.resource.toUpperCase()} for ${skill.name}` };
+    // Patch 9B-2: a heal or a restore with nothing to restore is refused before anything is paid
+    const who = () => ({ stats: actor.fixed.stats, pools: { hp: actor.current.hp, mp: actor.current.mp, sta: actor.current.sta }, max: { hp: actor.fixed.max_hp, mp: actor.fixed.max_mp, sta: actor.fixed.max_sta } });
+    const ahead = restoration(content, skill, actor.fixed.actions[skill.id].prof, rulesetOf(ctx.state), who(), cost);
+    if (ahead?.full) return { illegal: `${actor.name} is at full ${ahead.resource.toUpperCase()}: ${skill.name} has nothing to restore` };
     const record = { round: enc.round, actor: actorId, kind: 'skill', skill: skill.id, skill_name: skill.name, effects: [] };
     if (cost) {
         record.cost = { resource: skill.cost.resource, amount: cost, before: actor.current[skill.cost.resource] };
@@ -615,6 +640,12 @@ export function skillAction(ctx, actorId, skillId, extra = {}) {
         } else if (eff.kind === 'next_attack_buff') {
             addEffect(actor, { kind: 'next_attack_buff', power_pct: eff.power_pct, scope: eff.scope, source: actorId, expires: 'end_of_source_next_turn', name: skill.name, round: enc.round });
             record.effects.push(`next ${eff.scope === 'ranged' ? 'ranged ' : ''}attack +${eff.power_pct}% Modified Power`);
+        } else if (eff.kind === 'heal' || eff.kind === 'restore') {
+            // Patch 9B-2: after the cost, by the same rule as outside a fight (src/skills.js restoration)
+            const r = restoration(content, skill, level, ruleset, who(), cost);
+            actor.current[r.resource] = r.after;
+            record.restore = { resource: r.resource, amount: r.after - r.before, before: r.before, after: r.after };
+            record.effects.push(`${r.resource.toUpperCase()} +${r.after - r.before} (${r.before} -> ${r.after}/${r.max})`);
         } else if (eff.kind === 'reposition') {
             const dir = extra.dir === 'closer' ? -1 : 1;
             record.reposition = repositionPc(enc, actorId, dir, extra.target);
@@ -634,8 +665,7 @@ export function worldAction(ctx, actorId, act) {
     const actor = enc.combatants[actorId];
     const skill = skillOf(content, act.skill, ctx.state);
     if (!skill || actor.model !== 'character' || !actor.fixed.actions[skill.id]) return { illegal: `${actor.name} does not know ${skill?.name || act.skill}` };
-    const prof = PROF(content, actor.fixed.actions[skill.id].prof);
-    const cost = skill.cost ? roundHalfUp(skill.cost.amount * prof.cost) : 0;
+    const cost = skillCostAmount(content, skill, actor.fixed.actions[skill.id].prof, actor.fixed.passive?.cost);
     if (skill.cost && actor.current[skill.cost.resource] < cost) return { illegal: `${actor.name} lacks ${skill.cost.resource.toUpperCase()} for ${skill.name} (${actor.current[skill.cost.resource]} < ${cost})` };
     let ammoUsed = 0;
     if (skill.ammo && actor.fixed.weapon_family === 'bow') {
@@ -737,7 +767,7 @@ export function damagePreview(enc, content, targetId, state = null) {
         const band = target.current.band;
         const reach = rangeReaches(skill.range.band, band) || (bandIndex(band) > 0 && rangeReaches(skill.range.band, bandName(bandIndex(band) - 1)));
         const prof = PROF(content, known.prof);
-        const cost = skill.cost ? roundHalfUp(skill.cost.amount * prof.cost) : 0;
+        const cost = skillCostAmount(content, skill, known.prof, pc.fixed.passive?.cost);
         const arrows = skill.ammo && pc.fixed.weapon_family === 'bow' ? (pc.current.ammo?.[skill.ammo.item] || 0) >= skill.ammo.qty : true;
         if (!reach || (skill.cost && pc.current[skill.cost.resource] < cost) || !arrows) continue;
         const isRanged = skill.range.band !== 'ENGAGED';
@@ -975,6 +1005,15 @@ function npcAct(ctx, npcId, decided = null) {
         }
         return r;
     }
+    // Patch 9B-2 (ruleset 2): a trained person uses a defense or a feint it knows when the fight calls for it
+    const tactic = npcTactic(ctx, me, decision);
+    if (tactic) {
+        const t = skillAction(ctx, npcId, tactic.skill, { dir: 'away' });
+        if (!t.illegal) {
+            me.current.tactics = (me.current.tactics || 0) + 1;
+            return { ...t, why: tactic.why };
+        }
+    }
     let sid = npcAttackSkill(ctx, me);
     if (!sid) return move ? { ...moveAction(ctx, npcId, 'closer'), why: 'closing distance (no attack reaches)' } : { round: enc.round, actor: npcId, kind: 'hold', why: 'no usable attack' };
     const r = attackAction(ctx, npcId, 'pc', sid, { move, autoNormalMove: true });
@@ -983,6 +1022,63 @@ function npcAct(ctx, npcId, decided = null) {
         return { round: enc.round, actor: npcId, kind: 'hold', why: r.illegal };
     }
     return r;
+}
+
+const GUARDS = { temp_def: 'physical', temp_mdef: 'magical', barrier: 'any', incoming_damage_reduction: 'any', damage_reduction_next: 'any' };
+const NPC_TACTICS_PER_FIGHT = 3;
+
+/**
+ * Patch 9B-2: a defense or a feint a trained person (an NPC with a character sheet) uses instead of its attack, or null
+ * (then it attacks as before). Ruleset 2 only, and only when it would attack anyway (flight, cover, holding and
+ * surrender are decided as before). From the fight's snapshot alone, deterministic:
+ *  - a defense when it is under concrete threat: struck since its own last Turn by a foe still in the fight, down to
+ *    75% of its HP or less, with no protection of its own on it; one that guards against what struck it (a DEF bonus
+ *    against a physical blow, an MDEF bonus against magic, a Barrier or a damage reduction against either);
+ *  - a feint when it was not struck, its foe is in its reach, it can pay the feint and then its best attack, and the
+ *    foe's defense makes a prepared blow the better one (DEF at least 65% of its attack's power: then a feint and one
+ *    blow do more than two blows);
+ *  - never two such actions in a row, never more than three in one fight; one it cannot pay is none.
+ */
+export function npcTactic(ctx, me, decision) {
+    const { enc, content } = ctx;
+    if (rulesetOf(ctx.state) < 2 || me.model !== 'character' || !['attack', 'close_and_attack'].includes(decision.kind)) return null;
+    if ((me.current.tactics || 0) >= NPC_TACTICS_PER_FIGHT) return null;
+    const ownLast = enc.log.findLastIndex((r) => r.actor === me.id);
+    if (ownLast >= 0 && enc.log[ownLast].kind === 'skill') return null;
+    const known = Object.keys(me.fixed.actions).map((sid) => resolveSkill(content, sid, ctx.state)).filter((s) => s && !s.attack && !s.item);
+    const payable = (s, spent = 0) => !s.cost || me.current[s.cost.resource] - spent >= skillCostAmount(content, s, me.fixed.actions[s.id].prof, me.fixed.passive?.cost);
+    const blows = enc.log.slice(ownLast + 1).filter((r) => r.kind === 'attack' && enc.combatants[r.actor] && isOpponent(me, enc.combatants[r.actor]) && (r.strikes || []).some((k) => k.target === me.id));
+    if (blows.length) {
+        const by = enc.combatants[blows.at(-1).actor];
+        const kind = attackType(ctx, blows.at(-1));
+        const guarded = me.current.effects.some((e) => GUARDS[e.kind]);
+        if (!alive(by) || guarded || me.current.hp > 0.75 * me.fixed.max_hp) return null;
+        const fits = (s) => s.effects.some((e) => GUARDS[e.kind] === 'any' || GUARDS[e.kind] === kind);
+        const guard = known.find((s) => fits(s) && payable(s));
+        return guard ? { skill: guard.id, why: `struck by ${by.name} and hurt (${me.current.hp}/${me.fixed.max_hp} HP): guards with ${guard.name}` } : null;
+    }
+    if (decision.kind !== 'attack') return null;
+    const feint = known.find((s) => s.effects.some((e) => e.kind === 'next_attack_buff' && e.scope === 'attack') && payable(s));
+    if (!feint || me.current.effects.some((e) => e.kind === 'next_attack_buff')) return null;
+    const sid = npcAttackSkill(ctx, me);
+    const blow = sid ? resolveSkill(content, sid, ctx.state) : null;
+    if (!blow || blow.range.band !== 'ENGAGED' || me.current.band !== 'ENGAGED') return null;
+    const spent = feint.cost ? skillCostAmount(content, feint, me.fixed.actions[feint.id].prof, me.fixed.passive?.cost) : 0;
+    const then = blow.cost ? skillCostAmount(content, blow, me.fixed.actions[blow.id].prof, me.fixed.passive?.cost) : 0;
+    if (blow.cost && (blow.cost.resource === feint.cost?.resource ? me.current[blow.cost.resource] - spent : me.current[blow.cost.resource]) < then) return null;
+    const pc = enc.combatants.pc;
+    const magical = blow.attack.damage_type === 'magical';
+    const defense = (magical ? pc.fixed.mdef : pc.fixed.def) + tempDefense(pc, magical);
+    const power = rawPower(blow, me.fixed.stats, { atk: me.fixed.atk, matk: me.fixed.matk });
+    if (defense < 0.65 * power) return null;
+    return { skill: feint.id, why: `${pc.name}'s guard (${magical ? 'MDEF' : 'DEF'} ${defense}) blunts a plain blow: feints first` };
+}
+
+/** The damage type of a record's attack (a skill's, or a creature's natural attack). */
+function attackType(ctx, r) {
+    const actor = ctx.enc.combatants[r.actor];
+    if (actor?.model === 'creature') return actor.fixed.attack?.damage_type === 'magical' ? 'magical' : 'physical';
+    return resolveSkill(ctx.content, r.skill, ctx.state)?.attack?.damage_type === 'magical' ? 'magical' : 'physical';
 }
 
 // ------------------------------------------------------------------------------------------ turn loop

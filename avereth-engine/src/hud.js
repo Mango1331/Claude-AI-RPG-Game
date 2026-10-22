@@ -7,6 +7,7 @@
 // message text. It shows only what the player may know: no NPC attitudes, agendas, secrets or hidden numbers.
 import { deriveCharacter, weaponAttackOf } from './derived.js';
 import { rulesetOf, skillOf } from './content.js';
+import { skillCostAmount } from './passives.js';
 import { currentThreads, threadHere, LOCAL_KINDS } from './threads.js';
 import { goalLines } from './v4/intents.js';
 import { formatCoin } from './economy.js';
@@ -154,10 +155,10 @@ function skillKind(skill) {
 }
 
 /** What an action costs him now (its Proficiency's cost factor), or null. */
-function skillCostOf(skill, known, content) {
+function skillCostOf(skill, known, content, mods = null) {
     if (!skill.cost || !skill.cost.amount) return null;
-    const mult = content.rules.proficiency.levels[String(known?.prof || 1)]?.cost ?? 1;
-    return { resource: skill.cost.resource, amount: roundHalfUp(skill.cost.amount * mult) };
+    // Patch 9B-2: the cost the fight books, his Passives' reductions too
+    return { resource: skill.cost.resource, amount: skillCostAmount(content, skill, known?.prof || 1, mods) };
 }
 
 /** A few words of what a defense or utility does (from its effects; the full text is #skill). */
@@ -171,6 +172,9 @@ function effectShort(skill) {
             case 'incoming_damage_reduction': case 'damage_reduction_next': return `−${e.pct}% damage taken${until(e)}`;
             case 'reposition': return `move ${e.bands || 1} band`;
             case 'next_attack_buff': return `next attack +${e.power_pct}%`;
+            // Patch 9B-2
+            case 'heal': return 'restores HP';
+            case 'restore': return `restores ${e.resource.toUpperCase()}`;
             default: return null;
         }
     }).filter(Boolean);
@@ -206,7 +210,7 @@ function combatHud(state, content) {
     // cost, defenses and utilities with cost and a short effect; one he cannot pay now stays listed, marked
     const known = Object.entries(pc.fixed.actions || {}).map(([sid, v]) => [skillOf(content, sid, state), v]).filter(([s]) => s);
     const skillRow = (kind) => known.filter(([s]) => skillKind(s) === kind).map(([s, v]) => {
-        const cost = skillCostOf(s, v, content);
+        const cost = skillCostOf(s, v, content, pc.fixed.passive?.cost);
         const short = cost && Number(pc.current[cost.resource] ?? 0) < cost.amount ? cost.resource.toUpperCase()
             : s.ammo && pc.fixed.weapon_family === 'bow' && (pc.current.ammo?.[s.ammo.item] || 0) < s.ammo.qty ? 'arrows' : null;
         const bits = [cost ? `${cost.amount} ${cost.resource.toUpperCase()}` : null, s.ammo && pc.fixed.weapon_family === 'bow' ? `${s.ammo.qty} arrow` : null, kind === 'attack' ? null : effectShort(s)].filter(Boolean).join(', ');

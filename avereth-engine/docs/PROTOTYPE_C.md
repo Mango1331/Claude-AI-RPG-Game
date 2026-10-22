@@ -1978,3 +1978,13 @@ Vollständige Beschreibung: `docs/PATCH9B1_DYNAMIC_SKILLS_PROFICIENCY.md`.
 - **PP.** 12 × höchste Affinität, einmal pro Skill und Kampf, gebucht am Kampfende. Bedingungen: sinnvolle Nutzung und eine echte Herausforderung. Außerhalb eines Kampfes: eine gewürfelte Probe einmal pro Feature. Legacy unverändert.
 - **Tests:** `tests/v4/patch9b1.test.js` (14).
 - **Nachbesserung (4.3.0-c.6.6.37):** Effektfaktoren nur unter Regelstand 2 (Legacy behält die geschriebenen Werte). Optionale, validierte `aspects` (Fire, Ice, …) als reine Metadaten dynamischer Skills, getrennt von den Affinitäts-Tags. Tests: 16.
+
+### Patch 9B-2 (4.3.0-c.6.6.38): Dynamische Passives, Heil- und Ressourceneffekte, NPC-Verteidigung
+
+Vollständige Beschreibung: `docs/PATCH9B2_PASSIVES_EFFECTS_NPC_DEFENSE.md`.
+
+- **Passives.** Eigene Definitionen pro Kampagne (`passive.defined`), Besitz erst durch `passive.gained`; nur Engine, nur Regelstand 2. Dauerhafte Boni über `deriveCharacter`. Kostenreduktion einmal gerundet in einer gemeinsamen Funktion. Resistenzen als Final-Damage-Modifikator, bedingte Boni zum Ausführungszeitpunkt. Grenzen pro Passive und in Summe.
+- **Effekte.** `heal` und `restore` (MP ↔ STA, höchstens die bezahlten Kosten), im Kampf und außerhalb nach derselben Regel; bei vollem Wert abgelehnt ohne Kosten.
+- **NPCs.** Trainierte NPCs verteidigen sich unter konkreter Bedrohung (Guard, Deflect, Arcane/Focused Ward, Evasive Step) und nutzen Feint, wenn ein vorbereiteter Schlag mehr bringt. Nie zweimal hintereinander, höchstens dreimal pro Kampf; sonst wie bisher.
+- **Korrektur.** Numerische Effektwerte sind ganzzahlig (eine Barrier von 13,5 HP ließ gebrochene HP zurück).
+- **Tests:** `tests/v4/patch9b2.test.js` (13).

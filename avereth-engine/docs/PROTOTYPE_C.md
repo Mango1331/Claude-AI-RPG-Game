@@ -1952,4 +1952,6 @@ Automatisierter Living-Dungeon-Livetest 22.10.2026 09:00 (`tests/v4/live_1022e.j
 - **Rückzug.** Außerhalb eines Kampfes ist ein Rückzug an einen Ort `go` (Planner-Regel 7); ein `flee` mit bekanntem Ziel oder „back through“ wird zum `go` auf dem gewöhnlichen Weg. Ohne Ziel bucht die Engine keinen Ort.
 - **Erholung.** Die Rastzeile verlangt, die gebuchte Erholung so zu erzählen.
 - **Tests:** `tests/v4/patch843.test.js` (9; auf .31 fünf rot, vier grün).
+- **Live-Runner** (eigener Commit): Die Wächter-Etappe behält ihre ID (das Monster als `entityId`); „nicht durchgeführt“ nennt nur, was gebucht ist (keine Gruppe mit zwei als `unaware` gebuchten Mitgliedern). Tests: `tests/live_runner/patch843_runner.test.js` (2).
+- **Nachweise ohne neue Expedition:** Awareness (`patch84.test.js`, Wiedergabe des `.28`-Falls), bezahltes Gate (`patch8`, `patch81`, neu: erneutes Betreten), Reset (`patch8 (reset)`, `patch8 (1)`, `8.3 cull 4`).
 

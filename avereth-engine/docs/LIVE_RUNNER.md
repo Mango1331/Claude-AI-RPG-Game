@@ -268,8 +268,8 @@ Fold, Ereignisse und Records bekommt er nie. Einen eigenen Inventar- oder Zustan
 | `dungeon_gate` | er steht auf Ebene ≥ 1 des Ziel-Dungeons; vor dem Eintritt höchstens eine Eintrittszahlung, und sie entspricht dem Gate-Angebot der Engine | — (`gate_fee`) |
 | `dungeon_population` | eine Begegnung der Zielebene ist mit ihren Kreaturen gebucht (`dungeon.slot`) | — |
 | `dungeon_group_fight` | ein Kampf mit zwei oder mehr Mitgliedern einer Begegnung der Engine, alle von Beginn an | auf der Zielebene traf er keine Begegnung mit zwei oder mehr |
-| `dungeon_open_group_attack` | seine Nachricht eröffnet offen (nicht verborgen) einen Kampf gegen eine Begegnung der Engine, von der mindestens zwei ihn nicht bemerkt hatten; alle sind von Beginn an im Kampf, höchstens eine Eröffnung, jedes Mitglied handelt in einem eigenen Zug oder stirbt vorher | keine Begegnung der Zielebene mit zwei oder mehr Unaufmerksamen (alle kannten ihn schon) |
-| `dungeon_guardian` | `entity.status dead` des Wächters der Zielebene (Slot `guard` oder `boss`) | — |
+| `dungeon_open_group_attack` | seine Nachricht eröffnet offen (nicht verborgen) einen Kampf gegen eine Begegnung der Engine, von der mindestens zwei ihn nicht bemerkt hatten; alle sind von Beginn an im Kampf, höchstens eine Eröffnung, jedes Mitglied handelt in einem eigenen Zug oder stirbt vorher | keine Begegnung der Zielebene, von der mindestens zwei als `unaware` gebucht sind (`aware` und nicht gebuchte Awareness zählen nicht als unaufmerksam; `unaware` bucht der Extraktor aus der Erzählung) |
+| `dungeon_guardian` | `entity.status dead` des Wächters der Zielebene (Slot `guard` oder `boss`); das Monster steht als `entityId` dabei | — |
 | `dungeon_floor_cleared` | `dungeon.cleared` der Zielebene mit seinem Verdienst (`credit: pc`) | — (`floor_cleared_by_others`) |
 | `dungeon_quest_ready` | `quest.ready` seines Dungeon-Vertrags | kein Dungeon-Vertrag auf dem Board |
 | `dungeon_quest_completed` | sein Dungeon-Vertrag `completed` in einer Gildenhalle, die Auszahlung gebucht und gleich der des Vertrags | kein Dungeon-Vertrag auf dem Board (`turn_in` meldet eine Abweichung) |

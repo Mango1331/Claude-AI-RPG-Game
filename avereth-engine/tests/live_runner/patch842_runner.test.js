@@ -115,7 +115,7 @@ test('8.4.2 C: the .29 run (Old Crown Catacombs): the three skeletons of one enc
     assert.deepEqual([at(ev, 'dungeon_population').at, at(ev, 'dungeon_population').slot, at(ev, 'dungeon_population').creatures], [20, 'bones', 3]);
     assert.deepEqual([at(ev, 'dungeon_group_fight').at, at(ev, 'dungeon_group_fight').foes], [20, 3]);
     assert.equal(at(ev, 'dungeon_open_group_attack').reached, false);
-    assert.match(at(ev, 'dungeon_open_group_attack').unavailable, /no engine group with two or more unaware of him was met on level 1/);
+    assert.match(at(ev, 'dungeon_open_group_attack').unavailable, /no group of foes with at least two members booked as unaware was met on level 1/);
     assert.equal(at(ev, 'dungeon_guardian').reached, false, 'the robed thing killed at #36 was no slot of the engine');
 });
 
@@ -145,7 +145,7 @@ test('8.4.2 C: the report: an incomplete run names what is open and why, and its
         protection: { unchanged: true, changedRead: [], tree: { same: true, added: [], removed: [], changed: [] }, files: 10 },
     });
     assert.match(r, /- \*\*Ergebnis:\*\* \*\*unvollständig\*\*: nicht alle Pflicht-Etappen von der Engine nachgewiesen — the player reported done; 6\/11 required reached; open: dungeon_open_group_attack \(not performed: /);
-    assert.match(r, /- \*\*Offen:\*\* dungeon_open_group_attack \(\*\*nicht durchgeführt\*\*: no engine group with two or more unaware of him was met on level 1 of loc\.old_crown_catacombs [^)]*\)\) · dungeon_guardian \(nicht erreicht\)/);
+    assert.match(r, /- \*\*Offen:\*\* dungeon_open_group_attack \(\*\*nicht durchgeführt\*\*: no group of foes with at least two members booked as unaware was met on level 1 of loc\.old_crown_catacombs\) · dungeon_guardian \(nicht erreicht\)/);
     assert.match(r, /- \*\*Ziel-Dungeon:\*\* Old Crown Catacombs, Ebene 1 \(Vertrag quest\.cull_the_burial_gallery_skeletons\)/);
-    assert.match(r, /\| dungeon_open_group_attack \| ja \| – nicht durchgeführt: no engine group/);
+    assert.match(r, /\| dungeon_open_group_attack \| ja \| – nicht durchgeführt: no group of foes with at least two members booked as unaware/);
 });

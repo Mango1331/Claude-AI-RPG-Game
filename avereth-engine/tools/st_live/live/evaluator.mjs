@@ -253,7 +253,7 @@ export function evaluate(chat, { guide = null } = {}) {
                 case 'entity.status': {
                     if (d.id === 'pc' && d.status === 'dead') defeat = defeat || { at: i, turn: turnAt[i], why: 'he died' };
                     const role = (before || after)?.entities?.[d.id]?.slot?.role;
-                    if (d.status === 'dead' && (role === 'guard' || role === 'boss')) hit('guardian_defeated', i, { id: d.id, role });
+                    if (d.status === 'dead' && (role === 'guard' || role === 'boss')) hit('guardian_defeated', i, { entityId: d.id, role });
                     const slot = (before || after)?.entities?.[d.id]?.slot;
                     if (d.status === 'dead' && slot?.dungeon && (role === 'guard' || role === 'boss')) dun(slot.dungeon).guardians.push({ at: i, turn: turnAt[i], floor: slot.floor, id: d.id, role });
                     if (d.status === 'dead') for (const x of Object.values(D)) for (const c of x.candidates) if (!c.ended && c.members.includes(d.id) && !c.acted.has(d.id)) c.dead.add(d.id);
@@ -317,14 +317,15 @@ export function evaluate(chat, { guide = null } = {}) {
         if (fight) hit('dungeon_group_fight', fight.at, { dungeon: root, floor: level, foes: fight.foes, encounter: fight.enc });
         if (x.open?.floor === level) hit('dungeon_open_group_attack', x.open.at, { dungeon: root, floor: level, foes: x.open.foes, unaware: x.open.unaware, acted: x.open.acted });
         const guard = onLevel(x.guardians);
-        if (guard) hit('dungeon_guardian', guard.at, { dungeon: root, floor: level, id: guard.id, role: guard.role });
+        if (guard) hit('dungeon_guardian', guard.at, { dungeon: root, floor: level, entityId: guard.id, role: guard.role });
         const clear = x.clears.find((y) => y.floor === level && y.credit === 'pc');
         if (clear) hit('dungeon_floor_cleared', clear.at, { dungeon: root, floor: level });
         else if (x.clears.some((y) => y.floor === level)) issue(x.clears.find((y) => y.floor === level).at, 'floor_cleared_by_others', `level ${level} of ${root} was cleared, not by him (credit: others)`);
         if (x.entered) {
             const met = x.sets.filter((y) => y.floor === level);
             if (!met.some((y) => y.n >= 2) && !fight) unavailable.dungeon_group_fight = `no engine encounter of two or more was met on level ${level} of ${root}`;
-            if (!met.some((y) => y.unaware >= 2) && x.unawareSeen?.floor !== level) unavailable.dungeon_open_group_attack = `no engine group with two or more unaware of him was met on level ${level} of ${root} (every group met knew of him already)`;
+            // Patch 8.4.3: what the engine booked, no more: aware, unaware and no awareness booked are not the same
+            if (!met.some((y) => y.unaware >= 2) && x.unawareSeen?.floor !== level) unavailable.dungeon_open_group_attack = `no group of foes with at least two members booked as unaware was met on level ${level} of ${root}`;
         }
     }
     if (mine?.ready != null) hit('dungeon_quest_ready', mine.ready, { quest: mine.id, title: mine.title });
@@ -354,7 +355,7 @@ export function evaluate(chat, { guide = null } = {}) {
     }
     const list = (guide?.milestones || Object.keys(CHECKS).map((id) => ({ id, check: id, required: false }))).map((ms) => {
         const check = ms.check || ms.id;
-        if (reached[check]) return { id: ms.id, check, required: ms.required !== false, goal: ms.goal || CHECKS[check], reached: true, ...reached[check] };
+        if (reached[check]) return { ...reached[check], id: ms.id, check, required: ms.required !== false, goal: ms.goal || CHECKS[check], reached: true };
         return { id: ms.id, check, required: ms.required !== false, goal: ms.goal || CHECKS[check], reached: false, ...(unavailable[check] ? { unavailable: unavailable[check] } : {}) };
     });
     const dungeon = root ? { root, name: placeName(foldChat(chat, chat.length).state, root), floor: level, quest: mine?.id || null } : null;

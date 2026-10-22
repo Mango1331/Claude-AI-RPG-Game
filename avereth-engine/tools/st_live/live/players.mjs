@@ -93,6 +93,8 @@ export function playerSystemPrompt(guide, { username, persona }) {
         PLAYER_COMMANDS,
         '',
         `THE TEST: ${guide.brief}`,
+        // the guide's character is binding for the creation (tools/st_live/live/guides/current_test.json)
+        ...(guide.character?.class ? ['', `YOUR CHARACTER (binding): create exactly this one: the Base Class ${guide.character.class}, then the two skills ${(guide.character.skills || []).join(' and ')}. No other class or skills.`] : []),
         '',
         `MILESTONES (in this order; the words, skills, targets and tactics are yours):\n${ms}`,
         focus,

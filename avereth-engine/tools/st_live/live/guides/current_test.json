@@ -1,0 +1,32 @@
+{
+  "id": "current_test",
+  "title": "Aktueller Livetest: Patch 9A, Rogue mit Razor Cut und Evasive Step",
+  "brief": "Start a new campaign as a new player would and create the character below. Right after creation, look at #skills once. Then find a fight, if possible with a human opponent: ask the people near the road and the gate about bandits, robbers or thugs and go after them, or answer a human who threatens or attacks you. Never attack a harmless person; if no human opponent turns up within about eight turns, fight whatever attacks you and say so in your observations. In the fight use both of your skills at least once each. After the fight look at #status. A short test: no Guild registration and no dungeon.",
+  "character": { "class": "Rogue", "skills": ["Razor Cut", "Evasive Step"] },
+  "milestones": [
+    { "id": "creation_complete", "goal": "Create the character: the Base Class Rogue, then the two skills Razor Cut and Evasive Step.", "maxTurns": 4 },
+    { "id": "fight_started", "goal": "Get into a fight, if possible with a human opponent (a bandit, robber or thug).", "maxTurns": 8 },
+    { "id": "fight_won", "goal": "Win the fight, using Razor Cut and Evasive Step at least once each.", "maxTurns": 8 }
+  ],
+  "focus": [
+    "Does the creation menu offer exactly Warrior, Mage and Rogue, and the Rogue pool six skills?",
+    "Do #skills and the HUD show Razor Cut and Evasive Step with their costs (5 STA each)?",
+    "In the combat HUD, are your actions listed as Attack (with reach and cost) and Defense (Evasive Step with cost and effect)?",
+    "After each skill, does your STA in the HUD drop by its cost, and does the story match what the System says happened?",
+    "If you fight a human: what does he do in the fight, and does it fit what he is?",
+    "Note waits that feel too long and replies that cut off or come back empty."
+  ],
+  "limits": { "maxTurns": 15, "maxMinutes": 60, "sameFailure": 3 },
+  "personas": [
+    "direct and brief: you go straight for each goal, your messages are short actions",
+    "tactical and experimental: you pick your moment for each skill and compare the costs in the HUD after each turn"
+  ],
+  "scripted": [
+    { "say": "Rogue", "milestone": "creation_complete" },
+    { "say": "Razor Cut + Evasive Step", "milestone": "creation_complete" },
+    { "say": "#skills" },
+    { "say": ["*i ask the nearest traveller whether there are bandits or robbers on this road*", "*i follow the road toward where the bandits were seen*"], "until": "⚔ COMBAT", "max": 6, "milestone": "fight_started" },
+    { "say": ["*i attack the nearest foe with Razor Cut*", "*i use Evasive Step to slip back and guard*", "*i attack the nearest foe with Razor Cut*"], "until": "Combat is over", "max": 6, "milestone": "fight_won" },
+    { "say": "#status" }
+  ]
+}

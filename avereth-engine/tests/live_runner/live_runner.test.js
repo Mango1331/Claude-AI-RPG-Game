@@ -73,7 +73,7 @@ test('evaluation: a death ends a run as a defeat', () => {
 
 test('every evaluator check has its text, and every shipped guide is valid', () => {
     assert.ok(Object.values(CHECKS).every((t) => typeof t === 'string' && t.length > 10));
-    assert.deepEqual(listGuides().sort(), ['guild_dungeon_loop', 'patch_8_4', 'patch_8_dungeon_full']);
+    assert.deepEqual(listGuides().sort(), ['current_test', 'guild_dungeon_loop', 'patch_8_4', 'patch_8_dungeon_full']);
     for (const id of listGuides()) assert.doesNotThrow(() => loadGuide(id), id);
 });
 

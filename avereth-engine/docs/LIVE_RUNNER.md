@@ -229,6 +229,7 @@ Fold, Ereignisse und Records bekommt er nie. Einen eigenen Inventar- oder Zustan
 - `required: false` markiert eine Etappe, die nur genommen wird, wenn sie in Reichweite kommt (Wächter, Ebene geräumt).
 - `maxTurns` ist das Budget einer Etappe: Darüber gilt sie im Bericht als „überschritten“, beim Dreifachen endet der Lauf als festgefahren.
 - Mitgeliefert:
+  - **`current_test`: der eine Leitfaden für den jeweils aktuellen Livetest.** Für einen neuen Test wird nur diese Datei angepasst (Charakter, Ziele, Fokus, Zuglimit), kein neuer Patch-Leitfaden. `character.class` und `character.skills` bekommt der LLM-Spieler als verbindliche Erstellung;
   - `guild_dungeon_loop`: der Grundablauf;
   - `patch_8_dungeon_full` (Patch 8.4.2): die Abnahme einer vollständigen Living-Dungeon-Expedition auf Ebene 1, 60 Züge, elf Pflicht-Etappen (§7). Ein Vertrag außerhalb eines Dungeons zählt nicht; bietet das Board keinen Dungeon-Vertrag, liest der Spieler es am nächsten Morgen erneut und geht sonst ohne Vertrag in einen Dungeon;
   - `patch_8_4`: Gruppenreaktion und Cull-Zahl, mit eigenen Etappen (Patch 8.4.1): `numeric_cull_active` (ein Cull-Vertrag, der seine Zahl nennt; ein reiner Clear-Vertrag zählt nicht; bietet das Board keinen, liest der Spieler es am nächsten Morgen erneut: An einem späteren Tag füllt das Board die Lücken, die andere Abenteurer hinterlassen haben. Der Runner verändert dafür keinen Zustand), `inside_dungeon` (optional), `open_group_attack` (offener Angriff auf ein Mitglied einer Gruppe, die ihn nicht bemerkt hat), dann Kampf, READY und Abgabe.

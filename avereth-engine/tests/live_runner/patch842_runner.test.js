@@ -70,7 +70,7 @@ test('8.4.2 B2 (live #59–#62): after #assign the player sees his command with 
 
 // ------------------------------------------------------------------------------------------------ C: the dungeon guide
 test('8.4.2 C: the guide patch_8_dungeon_full: eleven required milestones of a Living Dungeon expedition, 60 turns; patch_8_4 kept', () => {
-    assert.deepEqual(listGuides().sort(), ['guild_dungeon_loop', 'patch_8_4', 'patch_8_dungeon_full']);
+    assert.deepEqual(listGuides().sort(), ['current_test', 'guild_dungeon_loop', 'patch_8_4', 'patch_8_dungeon_full']);
     assert.deepEqual(FULL.chain, ['guild_dungeon_loop', 'patch_8_dungeon_full']);
     assert.deepEqual(FULL.milestones.map((m) => [m.id, m.required !== false]), [
         ['creation_complete', true], ['guild_registered_fee', true], ['dungeon_quest_active', true], ['dungeon_gate', true], ['dungeon_population', true], ['dungeon_group_fight', true],

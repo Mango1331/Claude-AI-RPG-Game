@@ -1,7 +1,7 @@
 {
   "id": "current_test",
   "title": "Aktueller Livetest: Patch 9A, Rogue mit Razor Cut und Evasive Step",
-  "brief": "Start a new campaign as a new player would and create the character below. Right after creation, look at #skills once. Then find a fight, if possible with a human opponent: ask the people near the road and the gate about bandits, robbers or thugs and go after them, or answer a human who threatens or attacks you. Never attack a harmless person; if no human opponent turns up within about eight turns, fight whatever attacks you and say so in your observations. In the fight use both of your skills at least once each. After the fight look at #status. A short test: no Guild registration and no dungeon.",
+  "brief": "Start a new campaign as a new player would and create exactly this character: the Base Class Rogue, then the two skills Razor Cut and Evasive Step (no other class or skills). Right after creation, look at #skills once. Then find a fight, if possible with a human opponent: ask the people near the road and the gate about bandits, robbers or thugs and go after them, or answer a human who threatens or attacks you. Never attack a harmless person; if no human opponent turns up within about eight turns, fight whatever attacks you and say so in your observations. In the fight use both of your skills at least once each. After the fight look at #status. A short test: no Guild registration and no dungeon.",
   "character": { "class": "Rogue", "skills": ["Razor Cut", "Evasive Step"] },
   "milestones": [
     { "id": "creation_complete", "goal": "Create the character: the Base Class Rogue, then the two skills Razor Cut and Evasive Step.", "maxTurns": 4 },

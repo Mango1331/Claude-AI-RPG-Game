@@ -125,6 +125,35 @@ Engine/Content und Runner sind getrennte Commits.
   - Gegenprobe auf dem Stand vor der Korrektur: Bandit-Test rot (`commoner` statt `bandit`), Legacy-Test grün.
 - **Ergebnis:** `npm test` 1095/1095.
 
+## 6b. Patch 9A.1: NPC-Rollen und erzählte Bewaffnung (4.3.0-c.6.6.35)
+
+Anlass ist der Livetest `20261022-125117Z-current_test`. Zwei Räuber im versteckten Lager hatten die Rollen „leader of the hidden camp men“ und „younger camp man“, dazu Kurzschwert und Messer. Sie kämpften als untrainierte `commoner` mit Bare-Handed Blow.
+
+- **Wo die Information verloren ging:**
+  - Rolle: Der Extraktor beschrieb, wo die Männer sitzen, nicht was sie sind. Die Vorlagen werden über Rollenwörter gefunden.
+  - Waffe: Das gehaltene Schwert stand nur in `evidence`-Texten von `position`/`intent`, die nirgends gespeichert werden; `desc` sagte „whetting a short sword“. Das Messer kam erst nach der Materialisierung als Fakt.
+- **Rolle:**
+  - Extraktor-Regel: `role` ist ein schlichtes Rollenwort; wer von Raub lebt, ist `bandit`, auch ohne das Wort. Verstecktes Lager, Waffe, Feindseligkeit oder sein Angriff allein machen niemanden zum Banditen.
+  - Eine später etablierte Rolle wird `fact occupation`.
+  - Materialisierung unter Regelstand 2 (`engine.js rulesetTwoPerson`): das gespeicherte Template, bei `commoner` die etablierte Rolle (Occupation-Fakt) bzw. die Beschreibung.
+  - Die Rollenwörter der Regelstand-2-Vorlagen gelten auch im Plural, dazu einige Synonyme für Banditen (`content.js templateFor`, `npc_templates.json ruleset_2`).
+- **Waffe:**
+  - Neues optionales Feld `person.new armed`: nur eine bereit gehaltene Waffe; erwähnt, gelagert oder bearbeitet zählt nicht. Später gezogen: `fact armed`.
+  - Unter Regelstand 2 wird es zum Fakt `armed` (`v4/world.js`). Die erste Materialisierung nimmt den jüngsten davon mit den Werten von `items.js itemProfile` (Familie, F-Rang-Referenz, Qualitätswörter; „rusty knife“ ATK 4, „short sword“ ATK 6) statt der Vorlagen- oder Kit-Waffe.
+  - Die Waffe gibt keine Klasse und keinen Skill.
+- **Unverändert:**
+  - Vorhandene Sheets und laufende Kampf-Snapshots: Eine Waffe, die erst im Kampf gezogen wird, ändert diesen Kampf nicht. Vorhandene Ausrüstungsereignisse (`item.equipped`) könnten das Sheet ändern, nicht aber den gesperrten Snapshot; deshalb ist das nicht umgesetzt.
+  - Legacy-Kampagnen: kein `armed`-Fakt, alte Vorlagen und Erkennung.
+  - Klassen- und Skillgenerierung von 9A.
+- **Separates Gameplay-Thema, nicht 9A:** Im Lauf stand der Anführer mit gezogenem Schwert vier Runden neben dem Kampf. Seine `hostile`-Meldung verwarf die Hülle („not hostile toward Alaric and not harmed by him“), er kam erst in den Kampf, als Alaric ihn angriff. Das sind die Beitrittsregeln aus Patch 8 und bleibt so; ein Mensch wird nicht feindlich, nur weil ein anderer neben ihm angegriffen wird.
+- **Tests:** vier in `tests/v4/patch9a.test.js` (A Bandit, B Wache/Magier, C–E Lagerbewohner/untrainierter Bewaffneter/bearbeitete Waffe, F Replay/Snapshot/Legacy), über Erzählerantwort, Extraktor-JSON, World und Kampf.
+  - Gegenprobe auf `.34`: Rolle erst per späterem Fakt, Rolle „robbers“ und Messer erst per Fakt ergeben dort jeweils untrainiert mit Improvised tool; ein `person.new` mit `armed` verwirft `.34` ganz.
+  - `npm test` 1099/1099.
+- **Grenzen:**
+  - Die Rolle steht und fällt mit dem Extraktor. Beschreibt er weiter nur die Szene, bleibt die Person untrainiert, und das ist dann so gewollt.
+  - Die neuen Extraktor-Regeln gelten für alle Kampagnen, weil der Prompt gemeinsam ist; ihre mechanische Wirkung haben sie nur unter Regelstand 2.
+  - Ein NPC mit erzähltem Bogen hat Pfeile nur, wenn seine Vorlage welche mitbringt.
+
 ## 7. Runner (eigener Commit)
 
 - **Leitfäden:** Sie bleiben unverändert. Der Mage mit Flame Lance + Blink ist bei zwei freien Mage-Skills weiter gültig. Alte Fixtures bleiben nutzbar, weil sie ohne `ruleset` als Legacy falten.

@@ -65,6 +65,8 @@ export function indexContent(pack) {
     // Patch 9A: the templates of a ruleset-2 campaign (same ids and descriptors; npcTemplate below); 'templates' stays the
     // legacy set a campaign started before keeps
     c.npcTemplates = { 1: c.templates, 2: new Map((pack.npc_templates.ruleset_2?.templates || []).map((t) => [t.id, t])) };
+    // Patch 9A.1: the role words of the ruleset-2 templates, longest first (templateFor with a ruleset)
+    c.templateDescriptors2 = [...c.npcTemplates[2].values()].flatMap((t) => t.descriptors.map((d) => [normText(d), t.id])).sort((x, y) => y[0].length - x[0].length);
     for (const t of pack.npc_templates.templates) {
         c.templates.set(t.id, t);
         for (const d of t.descriptors) c.templateDescriptors.push([normText(d), t.id]);
@@ -170,9 +172,17 @@ export function anchorFor(content, text) {
     return null;
 }
 
-/** Human NPC template by descriptor words (proposed content, npc_templates.json). */
-export function templateFor(content, text) {
+/**
+ * Human NPC template by descriptor words (proposed content, npc_templates.json). Patch 9A.1: with ruleset 2, by the
+ * ruleset-2 templates' role words, a plural too ("bandits", "robbers"), returning that ruleset's template; without a
+ * ruleset exactly as before (the legacy set).
+ */
+export function templateFor(content, text, ruleset = null) {
     const t = normText(text);
+    if (ruleset >= 2 && content.templateDescriptors2?.length) {
+        for (const [d, id] of content.templateDescriptors2) if (wordMatch(t, d) || wordMatch(t, `${d}s`) || wordMatch(t, `${d}es`)) return npcTemplate(content, ruleset, id);
+        return null;
+    }
     for (const [d, id] of content.templateDescriptors) if (wordMatch(t, d)) return content.templates.get(id);
     return null;
 }

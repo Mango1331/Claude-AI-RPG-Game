@@ -534,6 +534,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // who the person is shows on their card (occupation), as text: the V3 fact rule would read "Guild clerk" as a
         // reference to the clerk himself
         if (kind === 'npc' && d.role && created.length && !truth(s, created[0], 'occupation').length) occupation(created[0], d.role);
+        // Patch 9A.1: the weapon a new person holds ready (person.new armed), as their fact; their sheet takes it when it is
+        // first built (src/engine.js rulesetTwoPerson). A legacy campaign keeps no such fact
+        if (kind === 'npc' && created.length) armedFact(created[0], d.armed);
         // an individual the story establishes as bigger or stronger than ordinary ones of its kind (creature.new stronger):
         // the individual variation of Content #7, fixed with its profile (live run 30.09.2026 22:41: the big boar had the
         // numbers of a common one); the name it goes by decides nothing
@@ -689,11 +692,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     const traits = (d.desc || []).join(', ').slice(0, 240);
                     // Patch 9A review: under ruleset 2 a person established elsewhere gets the template of their role as
                     // anyone met here does (a bandit, a hedge mage), fixed now; a legacy campaign keeps 'commoner'
-                    const template = rulesetOf(s) >= 2 ? templateFor(content, [...descriptors, traits].join(' '))?.id || 'commoner' : 'commoner';
+                    const template = rulesetOf(s) >= 2 ? templateFor(content, [...descriptors, traits].join(' '), rulesetOf(s))?.id || 'commoner' : 'commoner';
                     emit({ t: 'entity.created', d: { entity: { id, kind: 'npc', name: d.name ? String(d.name).slice(0, 60) : null, descriptors, traits, status: 'alive', location: where ? locationOf(s, where) : s.scene.location, at: where, created: { turn: s.turn, minute: s.clock.minute }, source: { kind: 'narration', msg }, card: {}, template } } });
                     refs.set(normText(d.ref), id);
                     if (d.name) refs.set(normText(d.name), id);
                     if (d.role) occupation(id, d.role);
+                    armedFact(id, d.armed);
                     break;
                 }
                 newEntity(d, 'npc');
@@ -1268,6 +1272,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
 
     function occupation(id, role) {
         setFactEvents(s, { s: id, p: 'occupation', o: String(role).slice(0, 80), source: { kind: 'narration', msg }, importance: 0.5 }).forEach(emit);
+    }
+
+    /** Patch 9A.1 (ruleset 2): the weapon a person holds ready, as the reply shows it (person.new armed). */
+    function armedFact(id, armed) {
+        if (rulesetOf(s) < 2 || typeof armed !== 'string' || !armed.trim()) return;
+        setFactEvents(s, { s: id, p: 'armed', o: armed.trim().slice(0, 80), source: { kind: 'narration', msg }, importance: 0.5 }).forEach(emit);
     }
 
     /** The people an arrival brings along (arrive.with, an expected go's with): known, alive, here before the move. */

@@ -491,3 +491,82 @@ test('9A review: the lorebook class entries tell the rulesets apart by the engin
     assert.match(evo, /In a campaign without that mark \(begun with the five older Base Classes\) the standard milestones are Levels 15\/30\/45\/60\/75\/90/);
     assert.match(panel(old, '#class'), /Next known evolution milestone: Level 15/, 'what the legacy lorebook text says, the legacy #class shows');
 });
+
+// ------------------------------------------------------------------------------------------------ Patch 9A.1
+/**
+ * Patch 9A.1 (live run 20261022-125117Z-current_test: robbers in a hidden camp, roles "leader of the hidden camp men"
+ * and "younger camp man", a short sword and a knife, fought as untrained commoners bare-handed): a person the story
+ * brings in (the extractor's person.new, later facts), first fought: the sheet the engine builds for them.
+ */
+async function foe(c, person, later = []) {
+    const g = await campaign(c, { cls: 'Warrior', skills: 'Heavy Slash + Guard' });
+    await say(g, '*i look around*', { type: 'other', what: 'look around', quote: 'i look around' });
+    await g.reply('Someone steps up right in front of him.', { expected: {}, deltas: [{ seq: 1, type: 'person.new', ref: 'p.x', name: null, desc: [], present: true, relevant: true, threat: true, at: null, band: 'ENGAGED', ...person }] });
+    const id = Object.values(g.state().entities).find((e) => e.kind === 'npc' && (e.descriptors || []).includes('p.x')).id;
+    if (later.length) {
+        await say(g, '*i watch him*', { type: 'other', what: 'watch him', quote: 'i watch him' });
+        await g.reply('He moves.', { expected: {}, deltas: later.map((d, i) => ({ seq: i + 1, ...d, s: id })) });
+    }
+    assert.equal(g.state().entities[id].sheet, undefined, 'no sheet before the fight');
+    await say(g, '*i attack him*', { type: 'use_skill', skill: null, target: id, quote: 'i attack him' });
+    const s = g.state();
+    const sh = s.entities[id].sheet;
+    return { g, id, e: s.entities[id], sh, actions: Object.keys(actionsOf(sh, c, s.meta.ruleset)), hits: (outcomeOf(g)?.records || []).filter((r) => r.actor === id).map((r) => r.skill) };
+}
+const starters = (sh) => Object.keys(sh.skills).filter((id) => !content.skills.get(id).basic);
+
+test('9A.1 A: an established bandit (the role word, a later occupation fact) fights as a trained Rogue with two starter Skills and the sword he holds', async () => {
+    const a = await foe(content, { role: 'bandit', desc: ['scarred'], armed: 'short sword' });
+    assert.deepEqual([a.e.template, a.sh.class, a.sh.training], ['bandit', 'rogue', 'trained']);
+    assert.ok(a.sh.skills['rogue.basic_attack']);
+    assert.ok(fills(a.sh, ['attack', 'utility']), JSON.stringify(a.sh.skills));
+    assert.deepEqual([a.sh.equipment.weapon.name, a.sh.equipment.weapon.family, a.sh.equipment.weapon.atk, a.sh.generated.weapon], ['Short sword', 'melee', 6, 'established']);
+    // created as a camp man, established as a bandit before he is fought: the bandit's sheet
+    const b = await foe(content, { role: 'camp man', desc: ['by the fire'] }, [{ type: 'fact', p: 'occupation', o: 'bandit' }]);
+    assert.equal(b.e.template, 'commoner', 'his creation is not rewritten');
+    assert.deepEqual([b.sh.class, b.sh.training, starters(b.sh).length, b.sh.template], ['rogue', 'trained', 2, 'bandit']);
+    // the extractor is told what a role and a held weapon are
+    const rules = content.deltaVocab.rules.join('\n');
+    assert.match(rules, /role is a short plain word for what the person is in the world .* are bandit even when it never says the word/);
+    assert.match(rules, /a hidden camp, a weapon, hostility or Alaric's own attack alone make no one a bandit or a trained fighter/);
+    assert.match(rules, /armed is the weapon the person holds ready .* being worked on \(whetted, mended, cleaned\) is not armed/);
+    assert.deepEqual(content.deltaVocab.deltas.find((d) => d.type === 'person.new').fields.armed, { type: 'string', nullable: true });
+});
+
+test('9A.1 B: an established guard and a fighting mage are a trained Warrior and a trained Mage; the guard keeps the spear he holds', async () => {
+    const guard = await foe(content, { role: 'guard', desc: ['town watch'], armed: 'spear' });
+    assert.deepEqual([guard.sh.class, guard.sh.training, guard.sh.equipment.weapon.name], ['warrior', 'trained', 'Spear']);
+    assert.ok(fills(guard.sh, ['attack', 'defense']), JSON.stringify(guard.sh.skills));
+    const mage = await foe(content, { role: 'mage', desc: ['robed'], armed: null });
+    assert.deepEqual([mage.sh.class, mage.sh.training, mage.sh.equipment.weapon.name], ['mage', 'trained', 'Wooden staff']);
+    assert.ok(fills(mage.sh, ['attack', 'defense']), JSON.stringify(mage.sh.skills));
+});
+
+test('9A.1 C-E: a camp leader with no established role stays untrained; an untrained farmer with a knife strikes with it, no Skill; a sword being whetted is no weapon in hand', async () => {
+    const c = await foe(content, { role: 'leader of the hidden camp men', desc: ['big man'] });
+    assert.deepEqual([c.e.template, c.sh.class, c.sh.training, starters(c.sh)], ['commoner', null, 'untrained', []]);
+    const d = await foe(content, { role: 'farmer', desc: ['angry'], armed: 'rusty knife' });
+    assert.deepEqual([d.sh.class, d.sh.training, starters(d.sh), Object.keys(d.sh.skills)], [null, 'untrained', [], []]);
+    assert.deepEqual([d.sh.equipment.weapon.name, d.sh.equipment.weapon.family, d.sh.equipment.weapon.atk], ['Rusty knife', 'melee', 4], 'a crude knife: the low end of the martial reference');
+    assert.deepEqual(d.actions, ['weapon.strike']);
+    assert.ok(d.hits.every((x) => x === 'weapon.strike') && d.hits.length, JSON.stringify(d.hits));
+    const e = await foe(content, { role: 'camp man', desc: ['sits on a log whetting a short sword'], armed: null });
+    assert.deepEqual([e.sh.equipment.weapon.name, e.actions], ['Improvised tool', ['weapon.unarmed_blow']]);
+    assert.equal(truthOf(e.g.state(), e.id, 'armed'), undefined);
+});
+const truthOf = (s, id, p) => Object.values(s.facts).find((f) => f.s === id && f.p === p && !f.until)?.o;
+
+test('9A.1 F: the sheet stays as built (replay, a weapon drawn in the fight); a legacy campaign builds as before and keeps no armed fact', async () => {
+    const a = await foe(content, { role: 'bandit', desc: ['scarred'], armed: 'short sword' });
+    assert.deepEqual(foldChat(a.g.chat).state.entities[a.id].sheet, a.sh, 'replay gives the same sheet');
+    const fixed = JSON.stringify(a.g.state().encounter.combatants[a.id].fixed);
+    await say(a.g, '*i parry*', { type: 'use_skill', skill: 'warrior.guard', target: null, quote: 'i parry' });
+    await a.g.reply('He draws a second blade.', { expected: {}, deltas: [{ seq: 1, type: 'fact', s: a.id, p: 'armed', o: 'long knife' }] });
+    assert.equal(JSON.stringify(a.g.state().entities[a.id].sheet), JSON.stringify(a.sh), 'no rebuilt sheet');
+    if (a.g.state().encounter) assert.equal(JSON.stringify(a.g.state().encounter.combatants[a.id].fixed), fixed, 'the fight\'s snapshot is unchanged');
+    const old = await foe(legacy, { role: 'farmer', desc: ['angry'], armed: 'short sword' });
+    assert.deepEqual([old.e.template, old.sh.class, old.sh.training, Object.keys(old.sh.skills), old.sh.equipment.weapon.name], ['commoner', 'warrior', undefined, ['warrior.basic_attack'], 'Improvised tool']);
+    assert.equal(truthOf(old.g.state(), old.id, 'armed'), undefined);
+    const thug = await foe(legacy, { role: 'bandit', desc: ['scarred'], armed: 'short sword' });
+    assert.deepEqual([thug.sh.class, Object.keys(thug.sh.skills), thug.sh.equipment.weapon.name], ['duelist', ['duelist.basic_attack', 'duelist.precision_thrust'], 'Short blade'], 'the legacy bandit');
+});

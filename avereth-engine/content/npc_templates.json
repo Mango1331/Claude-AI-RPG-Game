@@ -88,7 +88,7 @@
     }
   ],
   "ruleset_2": {
-    "_note": "Patch 9A: the templates of a campaign started under ruleset 2 (content/campaign_start.json); a legacy campaign keeps 'templates' above unchanged. Same ids, descriptors, labels and temperaments, so a person is the same template under either rules. A person's class (a lore fact, possibly unknown) and their combat training are separate: 'untrained' gets no starter Skills (the class Basic Attack only when a class is established, else the plain attack of what they hold), 'trained' gets the class Basic Attack and exactly two starter Skills of the class pool chosen by starter_roles (attack / defense / utility; equal choices by the campaign seed and the person's id, fixed in entity.sheet_set). stat_basis: the favored stats used internally for a person without an established class (never told as their class). Weapons do not decide classes: a bow gives anyone its Bow Shot (classes.json weapon_attacks).",
+    "_note": "Patch 9A: the templates of a campaign started under ruleset 2 (content/campaign_start.json); a legacy campaign keeps 'templates' above unchanged. Same ids, labels and temperaments, so a person is the same template under either rules; the descriptors are those of the legacy set and a few more of the same roles (Patch 9A.1: footpad, road agent ...), matched in the plural too (src/content.js templateFor). A person's class (a lore fact, possibly unknown) and their combat training are separate: 'untrained' gets no starter Skills (the class Basic Attack only when a class is established, else the plain attack of what they hold), 'trained' gets the class Basic Attack and exactly two starter Skills of the class pool chosen by starter_roles (attack / defense / utility; equal choices by the campaign seed and the person's id, fixed in entity.sheet_set). stat_basis: the favored stats used internally for a person without an established class (never told as their class). Weapons do not decide classes: a bow gives anyone its Bow Shot (classes.json weapon_attacks).",
     "templates": [
       {
         "id": "commoner", "label": "Commoner / townsfolk",
@@ -126,7 +126,7 @@
       },
       {
         "id": "bandit", "label": "Bandit / brigand",
-        "descriptors": ["bandit", "brigand", "highwayman", "robber", "thug", "cutthroat", "raider", "outlaw"],
+        "descriptors": ["bandit", "brigand", "highwayman", "robber", "thug", "cutthroat", "raider", "outlaw", "footpad", "road agent", "highway robber", "waylayer", "marauder", "mugger"],
         "class": "rogue", "training": "trained", "starter_roles": ["attack", "utility"], "level": {"default": 2, "min": 1, "max": 6},
         "priority": ["AGI", "STR", "VIT"],
         "weapon": {"name": "Short blade", "family": "precision", "atk": 5},

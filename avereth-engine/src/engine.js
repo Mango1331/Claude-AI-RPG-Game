@@ -10,7 +10,7 @@
 import { Dice, newSeed } from './rng.js';
 import { applyEvent, fold } from './state.js';
 import { anchorFor, templateFor, locationByName, weaponFamily, startPlace, itemEffectOf, rulesetOf, rulesetDef, npcTemplate } from './content.js';
-import { rankRefusal } from './v4/items.js';
+import { rankRefusal, itemProfile } from './v4/items.js';
 import { deriveCharacter, actionsOf } from './derived.js';
 import { selectClass, selectSkills } from './creation.js';
 import { scaleCreature, chooseCreatureLevel, humanSheet } from './npcgen.js';
@@ -376,8 +376,11 @@ export function materialise(s, content, dice, emit, id) {
  * warrior), else by the campaign seed; the class's starter kit, a bow and quiver for an archer. Weapons decide no class.
  */
 function rulesetTwoPerson(s, content, e, words) {
-    const id = templateFor(content, words)?.id;
-    const tpl = npcTemplate(content, 2, e.template) || npcTemplate(content, 2, id) || npcTemplate(content, 2, 'commoner');
+    // Patch 9A.1: the template of their established role: the one fixed at their creation, else (a person created as
+    // a commoner) the role the story has established for them since (their occupation fact) or their words now
+    const stored = e.template && e.template !== 'commoner' ? npcTemplate(content, 2, e.template) : null;
+    const role = truth(s, e.id, 'occupation')[0]?.o || '';
+    const tpl = stored || templateFor(content, role, 2) || templateFor(content, words, 2) || npcTemplate(content, 2, 'commoner');
     const key = `${s.rng.seed}|${e.id}`;
     const overrides = { key };
     if (e.level) overrides.level = e.level;
@@ -398,14 +401,35 @@ function rulesetTwoPerson(s, content, e, words) {
         overrides.weapon = { name: w.name, family: w.family, atk: w.atk || 0, matk: w.matk || 0 };
         overrides.armor = a ? { name: a.name, def: a.def || 0, mdef: a.mdef || 0 } : null;
     }
+    // Patch 9A.1: the weapon the story shows them holding ready (their armed fact: person.new armed, a later fact),
+    // with the values of its kind (src/v4/items.js itemProfile: gear references, its quality words), in place of the
+    // template's or the kit's; it gives no class and no Skill. One only mentioned, stored or worked on is no armed fact
+    const held = heldWeapon(s, content, e.id);
+    if (held) overrides.weapon = held;
     const sheet = humanSheet(tpl, overrides, content);
     sheet.generated.temperament = tpl.temperament;
+    if (held) sheet.generated.weapon = 'established';
     // kit containers (quiver) fill the inventory: an NPC archer carries real, finite arrows like Alaric
     if (tpl.gear_from_starter_kit) {
         const carried = [...content.kits[overrides.class], ...(bow ? ['starter_quiver'] : [])].map((x) => content.items.get(x));
         for (const i of carried) for (const [item, qty] of Object.entries(i?.contains || {})) sheet.inventory[item] = (sheet.inventory[item] || 0) + qty;
     }
     return sheet;
+}
+
+/** Patch 9A.1: the weapon a person holds ready by their armed fact, as a sheet weapon {name, family, atk, matk}, or null. */
+const WEAPON_STOP = new Set(['a', 'an', 'the', 'his', 'her', 'their', 'its', 'has', 'have', 'drawn', 'draws', 'drew', 'holds', 'holding', 'held', 'with', 'out', 'in', 'hand', 'of']);
+function heldWeapon(s, content, id) {
+    // the latest of them (a knife drawn, then a sword taken up)
+    const text = truth(s, id, 'armed').sort((a, b) => (a.since?.turn ?? 0) - (b.since?.turn ?? 0) || (a.since?.minute ?? 0) - (b.since?.minute ?? 0)).at(-1)?.o;
+    const p = text ? itemProfile(content, { name: text }) : null;
+    if (p?.kind !== 'gear' || p.slot !== 'weapon') return null;
+    // its name: the weapon word of the text with the word before it ("short sword", "belt knife")
+    const words = normText(text).split(/[^a-z-]+/).filter(Boolean);
+    const kinds = (content.gear?.instances?.gear_kinds || []).filter((k) => k.slot === 'weapon').flatMap((k) => k.words);
+    const at = words.findIndex((w) => kinds.includes(w));
+    const name = at < 0 ? text : [at > 0 && !WEAPON_STOP.has(words[at - 1]) ? words[at - 1] : null, words[at]].filter(Boolean).join(' ');
+    return { name: name.charAt(0).toUpperCase() + name.slice(1), family: p.family, atk: p.atk || 0, matk: p.matk || 0 };
 }
 
 /**

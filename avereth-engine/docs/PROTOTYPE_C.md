@@ -1944,3 +1944,12 @@ Zweiter automatisierter Livetest 22.10.2026 07:49 (`tests/v4/live_1022d.json`). 
   - Neuer Leitfaden `patch_8_dungeon_full`: elf Etappen einer Living-Dungeon-Expedition, nur von der Engine Gebuchtes zählt, „nicht durchgeführt“ statt Fehler. Start: `npm run live:st -- --guide patch_8_dungeon_full --max-turns 60 --headed`.
   - Tests: `tests/live_runner/patch842_runner.test.js` (9).
 
+### Patch 8.4.3 (4.3.0-c.6.6.32): Letzte Dungeon-Konsistenz
+
+Automatisierter Living-Dungeon-Livetest 22.10.2026 09:00 (`tests/v4/live_1022e.json`, 10/11). Vollständige Beschreibung: `docs/PATCH8_4_3_FINAL_DUNGEON_CONSISTENCY.md`.
+
+- **Kapazität.** Simulierte Gruppen treten nur ein, wo Platz ist, sein eigener Platz gezählt (live 7/6).
+- **Rückzug.** Außerhalb eines Kampfes ist ein Rückzug an einen Ort `go` (Planner-Regel 7); ein `flee` mit bekanntem Ziel oder „back through“ wird zum `go` auf dem gewöhnlichen Weg. Ohne Ziel bucht die Engine keinen Ort.
+- **Erholung.** Die Rastzeile verlangt, die gebuchte Erholung so zu erzählen.
+- **Tests:** `tests/v4/patch843.test.js` (9; auf .31 fünf rot, vier grün).
+

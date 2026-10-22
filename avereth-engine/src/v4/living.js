@@ -593,7 +593,9 @@ function partyEvents(s, content, emit, root, to) {
     }
     for (const st of steps.filter((y) => y.at > from && y.at <= to).sort((a, b) => a.at - b.at || a.p.id.localeCompare(b.p.id))) {
         const now = s.dungeons[root];
-        if (st.kind === 'enter') { if (!now.inside[st.p.id] && occupancy(s, now).parties + st.p.size <= now.capacity) emit({ t: 'dungeon.party', d: { id: root, party: st.p.id, kind: 'enter', until: st.until, minute: st.at } }); continue; }
+        // Patch 8.4.3 (live 22.10.2026 09:00: with Alaric inside, Wren Company (2) and Ashen Hands (4) both came in, 7 of
+        // 6): a company comes in only where every place it takes is free, his own counted (occupancy's total)
+        if (st.kind === 'enter') { if (!now.inside[st.p.id] && occupancy(s, now).total + st.p.size <= now.capacity) emit({ t: 'dungeon.party', d: { id: root, party: st.p.id, kind: 'enter', until: st.until, minute: st.at } }); continue; }
         if (!now.inside[st.p.id]) continue;
         if (st.kind === 'exit') { emit({ t: 'dungeon.party', d: { id: root, party: st.p.id, kind: 'exit', minute: st.at } }); continue; }
         // a step of a day before this cycle began dealt with what the reset renewed: nothing of it stays

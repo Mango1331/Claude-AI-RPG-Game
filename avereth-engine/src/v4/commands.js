@@ -561,7 +561,8 @@ const HANDLERS = {
                 r.events.forEach(emit);
                 ctx.auth.recovered = true;
                 ctx.engineLines.push(`RECOVERY — ${r.text}`);
-                rec = ` Recovery booked: ${r.text}.`;
+                // Patch 8.4.3 (live 22.10.2026 09:00: MP 8→29 booked, the story said the mana stayed spent): what came back
+                rec = ` Recovery booked: ${r.text}; tell what came back as it came back, never that it did not.`;
             }
             if (find) return { status: 'resolved', cap, line: `${find.line} ${booked} minutes pass; it is now ${formatClock(s.clock.minute)}.` };
             return { status: 'resolved', cap, line: `${VERBS[c.kind] || String(c.kind).toUpperCase()} ${c.what ? `${c.what} ` : ''}${span} — resolved by the engine: ${booked} minutes pass; it is now ${formatClock(s.clock.minute)}.${rec} Narrate it as done, at that length; do not cut it short or add time.` };

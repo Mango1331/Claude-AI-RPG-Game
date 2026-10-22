@@ -456,3 +456,10 @@ Details: `docs/PATCH8_4_1_LIVETEST_STABILIZATION.md`.
 - **Tote im HUD.** `hud.js worldRows`: Tote stehen unter Present ohne Entfernung und Deckung.
 
 Details: `docs/PATCH8_4_2_FINAL_INTEGRATION.md`.
+
+## 21. Kapazität und Rückzug im Dungeon (Patch 8.4.3, 4.3.0-c.6.6.32)
+
+- **Kapazität.** `v4/living.js partyEvents`: Eine simulierte Gruppe tritt nur ein, wenn die gesamte Belegung (`occupancy().total`, sein eigener Platz eingeschlossen) plus ihre Größe die Kapazität nicht übersteigt.
+- **Rückzug.** Planner-Regel 7: Außerhalb eines Kampfes ist ein Rückzug an einen anderen Ort `go`, `flee` nur ohne genannten Ort. Liefert das Modell trotzdem `flee`, macht `v4/planner.js retreatGo` daraus ein `go`, wenn der Satz einen bekannten Ort nennt oder „back through/back out/the way I came“ sagt (dann der Raum, aus dem er kam). Es gilt der gewöhnliche `go`-Pfad mit allen Wegprüfungen. Ohne erkennbares Ziel bleibt es Erzählung, und die Engine bucht keinen Ort.
+
+Details: `docs/PATCH8_4_3_FINAL_DUNGEON_CONSISTENCY.md`.

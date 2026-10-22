@@ -19,7 +19,8 @@ import { activeHostiles } from '../combat.js';
 import { sceneHandle, tacticalHere, areaCaught, approachedBy, burstAim } from './scene_handles.js';
 import { itemEffectOf } from '../content.js';
 import { restoreOf } from './items.js';
-import { settlementOf } from './domain.js';
+import { settlementOf, placeName } from './domain.js';
+import { dungeonOf, roomKnown } from './dungeon.js';
 import { extractJsonObject } from './json.js';
 import { validate } from './schema.js';
 import { interpreterSystem, vocabularyText, catalogText, interpreterSchema, PLAIN_FORMAT, repairMessage, amountErrors } from './interpret.js';
@@ -43,7 +44,7 @@ export const MECH_RULES = [
     '4. Targets: opponents and people by their id. Resolve labels and parts of labels ("B" for "Cave Rat B"), descriptions against the catalog (wounded, ENGAGED = right in front of him, the farthest, a size or kind), pronouns, ENGINE FACTS and RECENT. A target who is not here: {"new": "<description>"}. An area skill needs no target (null). When he names no target at all, null.',
     '5. A known skill used on a thing instead of a creature or person is ability_world: target = an OBJECTS or FEATURES id or {"new": "<the thing>"}; target_words = his exact words for the thing the skill acts on (not the thing he wants to affect in the end); goal = what he wants to happen, in a few of his words. Do not judge whether it can work.',
     '6. Ask instead of guessing: if, after the catalog, ENGINE FACTS and RECENT, two or more readings remain that would play out differently (another target, another skill, another kind of action), answer with one clarify about that point and nothing else. If exactly one reading fits, act and do not ask.',
-    '7. Write what he means: getting away from danger is flee; stepping back or closing in during a fight is move (chasing one who runs: move "closer" with its target); looking for someone or something is activity with kind "search"; going somewhere is go; waiting is activity with kind "wait". Write every action he intends, even if it may be impossible now: the engine decides what is possible.',
+    '7. Write what he means: in a fight, getting away from it is flee; outside a fight, getting away to another place (back the way he came, through a way he knows, to a room or place) is go, also when he calls it fleeing, backing away or withdrawing (7a and 7c say where "back" leads), and flee only when he names no place to go; stepping back or closing in during a fight is move (chasing one who runs: move "closer" with its target); looking for someone or something is activity with kind "search"; going somewhere is go; waiting is activity with kind "wait". Write every action he intends, even if it may be impossible now: the engine decides what is possible.',
     '7a. Return words such as "back", "return", "the city", "where I came from" are semantic references, not names for new places. Use RECENT ROUTE and known PLACES to resolve them to an existing destination when one clearly fits; if more than one route destination genuinely fits, clarify instead of inventing a generic new place.',
     '7b. go.to is the destination, never the way there. A route, path or way he names ("through the forests", "along the river", "not past the waystation", "by the coast road") is how he travels: to is the destination\'s known id (or {"new": "<the destination>"} when it is not known), and the route stays in his words for the story. A route is never a place of its own.',
     '7c. In a dungeon (EXITS listed): going through a way is go with the id of the room it leads to, also when he names the door, stair or passage ("I take the stair down"); "back" or "the previous room" is the room he came from (RECENT ROUTE); a known room further on is go with its id (the engine checks the way). Going on into a part nobody has shown yet is go {"new": "<his words>"}. Opening or forcing what blocks a way is attempt on its FEATURES id; looking for another way is activity search.',
@@ -75,6 +76,7 @@ export const MECH_EXAMPLES = [
     '- "I back off a step and Frost Dart Rat A" → {"commands":[{"seq":1,"type":"move","dir":"away","target":null,"quote":"I back off a step"},{"seq":2,"type":"use_skill","skill":"mage.frost_dart","target":"mon.x1","quote":"Frost Dart Rat A"}]}',
     '- "I step right in among them and then Ember Ring" → {"commands":[{"seq":1,"type":"move","dir":"closer","target":null,"quote":"I step right in among them"},{"seq":2,"type":"use_skill","skill":"mage.ember_ring","target":null,"quote":"Ember Ring"}]}',
     '- "I bolt for the exit" → {"commands":[{"seq":1,"type":"flee","quote":"I bolt for the exit"}]}',
+    '- (no fight) "I back away from the sleeping bear and slip back out to the old mill" → {"commands":[{"seq":1,"type":"go","to":"loc.mill","quote":"I back away from the sleeping bear and slip back out to the old mill"}]}',
     '- "Would Frost Dart even hurt them?" → {"commands":[]}',
     '- "\\"Back off or I\'ll freeze you,\\" I snarl." → {"commands":[]}',
     '- (no fight) "I search the nest for coins" → {"commands":[{"seq":1,"type":"activity","kind":"search","what":"coins in the nest","minutes":null,"until":null,"quote":"I search the nest for coins"}]}',
@@ -508,6 +510,32 @@ function clarifyPanel(question, options, waiting = []) {
  * question, a refusal the engine already knows (unknown skill, no such target) or a visible "not taken" note.
  * @returns {{route: 'v3', intent: object} | {route: 'v4', commands: object[]} | {route: 'panel', panel: string}} plus notes
  */
+// Patch 8.4.3 (live 22.10.2026 09:00, turn 20: "I back away quietly between the columns and slip back through the cleft,
+// away from the queen" came as flee outside a fight: story fiction, the narrator told the walk out, the engine kept him
+// in the Queen's Crystal Bowl): outside a fight, a flight that says where it goes is a go there, on the ordinary way of
+// go with all its checks. The place: a known one he names (every word of its name, the Dungeon's "of …" aside), else,
+// when he says he goes back ("back through", "back out", "the way I came"), the room he came from. A flight that says
+// neither, or names a place he does not know ("back to …"), gets no place
+const BACK_WAY = /\b(?:back\s+(?:out|through|the way|into|past|down|up|along)|the way (?:i|he) came|where (?:i|he) came from|retrac(?:e|es|ing) (?:my|his) steps)\b/i;
+const placeWords = (name) => normText(String(name || '').replace(/\s+of\s+.*$/i, '').replace(/,.*$/, '')).split(/[^a-z0-9']+/).filter((w) => w.length > 2 && w !== 'the');
+export function retreatGo(state, c) {
+    const here = state?.scene?.at;
+    const quote = String(c?.quote || '');
+    if (!here || !quote) return null;
+    const said = ` ${normText(quote).replace(/[^a-z0-9']+/g, ' ')} `;
+    const route = (state.scene.history || []).slice(-12);
+    const d = dungeonOf(state, here);
+    const rooms = d ? Object.keys(state.places || {}).filter((id) => dungeonOf(state, id) === d && roomKnown(state, id)) : [];
+    const named = [...new Set([...route, ...rooms])].filter((id) => id !== here && state.places?.[id]).filter((id) => {
+        const w = placeWords(state.places[id].name || placeName(state, id));
+        return w.length > 0 && w.every((x) => said.includes(` ${x} `));
+    });
+    if (named.length === 1) return { seq: c.seq, type: 'go', to: named[0], quote: c.quote };
+    if (named.length > 1 || /\bback to\b/i.test(quote) || !BACK_WAY.test(quote)) return null;
+    const from = [...route].reverse().find((id) => id !== here && state.places?.[id]);
+    return from ? { seq: c.seq, type: 'go', to: from, quote: c.quote } : null;
+}
+
 export function mapPlan(commands, ctx, content, message, state) {
     // Patch 3 (live 18.10.2026: "I use the flint and steel to make a small light" became the unknown skill "flint and
     // steel" and the "continue" after it was dropped): a thing he holds, named where a skill would stand, is that thing
@@ -547,7 +575,14 @@ export function mapPlan(commands, ctx, content, message, state) {
     // outside a fight a flight or a deed no command fits is story fiction: the narrator tells it as A's V4 turn does
     // (PLAYER ACTIONS / NOTHING TO BOOK); the record keeps it, so a session shows where it happened
     const mechMain = mains.filter((c) => fight || c.type !== 'flee');
-    if (!fight) for (const c of mech.filter((x) => x.type === 'flee')) free.push(`${c.type}: ${said(c)}`);
+    // Patch 8.4.3: a flight outside a fight that says where it goes is a go there (retreatGo); one that does not stays
+    // story fiction, and the engine books no place for it
+    if (!fight) {
+        for (const c of mech.filter((x) => x.type === 'flee')) {
+            const back = retreatGo(state, c);
+            if (back) story.push(back); else free.push(`${c.type}: ${said(c)}`);
+        }
+    }
     if (!fight && !mechMain.length) {
         // 4.3.0-c.6.6.6: a step toward (or back from) the creatures or people of the scene is the engine's to set, one per
         // message; one that brings him nearer to no one, or toward something that is no one here ({new: "the well"}),

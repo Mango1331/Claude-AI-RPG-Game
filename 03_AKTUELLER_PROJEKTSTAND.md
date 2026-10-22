@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 22. Oktober 2026 · Fassung 7 (erster echter .27-GLM-Livetest und Dungeon-/Latenzbefunde; Benchmark weiter ausstehend)  
+**Stichtag:** 22. Oktober 2026 · Fassung 8 (Patch 8.3 / .28 auf Git verifiziert, unabhängiger Source-Review; echter .28-Livetest und Providerbenchmark ausstehend)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,14 +13,14 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 21.10.2026 unabhängig über GitHub geprüft** | ef4a819d5b1be76b4229745268172d0da5ce5dd5 |
-| **Build direkt aus package.json und manifest.json geprüft** | 4.3.0-c.6.6.27 |
+| **HEAD am 22.10.2026 unabhängig über GitHub geprüft** | 70cbb5e4ec77ea1ad9fe24fc46b86c2c42cb12ed |
+| **Build direkt aus package.json und manifest.json geprüft** | 4.3.0-c.6.6.28 |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | **Patch 8.2 (.27) implementiert und gepusht**: LLM-Telemetrie, Latenzprofiling, leere Narrator-Responses ohne Extractor, A0/A/C-Benchmark-Werkzeug. **Keine allgemein nachgewiesene Beschleunigung; echter Benchmark steht aus.** |
-| **Nächster Schritt** | **.27 als aktuellen Build verwenden; kurzes reales GLM-Livetest-Sample mit neuen Telemetriedaten.** Benchmark A0/A/C mit tatsächlichem Provider noch offen. Vor einem kostenpflichtigen Benchmark den Bewertungsvergleich von `tools/bench_extract.mjs` erweitern (einige Weltfelder fehlen). Erst dann über etwaige 8.2b-Optimierung entscheiden. |
-| Dokumentationsbranch | main – vier Dateien 01–04 im Repository-Root; von Entwicklungsbranch getrennt |
+| **Patchstatus** | **Patch 8.3 (.28) implementiert und gepusht:** Dungeon-Root als Gate (Ebene 0), erste Ebene korrekt; auf tatsächlicher Zykluspopulation beruhende Culls, räumlich korrekter Kill-Credit, klare Cull-/Clear-Semantik, Quest-Kontext. **Quelle:** Git-Commit und Source-Review. Voller .28-GLM-Livetest weiterhin offen. |
+| **Nächster Schritt** | **Neuer .28-GLM-Livetest auf frischer Kampagne:** Gilde → Dungeon → erster Encounter/Combat → Level-1-Clear/Questabschluss prüfen. Zusätzlichen Review-Randfall bei gemischten Dungeon-Verträgen mit numerischer DEFEAT-Aufgabe gegenprüfen (§5i). A0/A/C und Narrator-Cache-A/B bleiben separate, nicht abgeschlossene Performancearbeiten. |
+| Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
-Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/ef4a819d5b1be76b4229745268172d0da5ce5dd5  
+Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/70cbb5e4ec77ea1ad9fe24fc46b86c2c42cb12ed  
 Vorheriger Patch-8.1-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c6baa06e159f16069efd728844c7afe7c7dc186a  
 Vorheriger Patch-8-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f3b55819dad21249d871a62b7ede38bd926598cd
 
@@ -258,6 +258,22 @@ Das neue **`04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md`** sichert ausführlich die
 
 **Empfohlene Reihenfolge:** (1) enger Patch 8.3 zu Etagenidentität, einer Zähl-/Scope-Regel und klarer Quest-Kommunikation, (2) gezielter Replay/Regenerate-Test bzw. frischer Dungeon-Run bis Floor-Clear, (3) separate Cache-/Planner-/Extractor-Leistungsversuche. Regenerate des alten .27-Chats kann nur nach Prüfung der korrekten Eventrücknahme als Reparaturweg gelten; ein bereits persistierter Raum mit `level:2` korrigiert sich nicht automatisch durch bloßen Codewechsel.
 
+## 5i. Patch 8.3 wirklich umgesetzt – unabhängiger Git-Code-Review (22.10.2026)
+
+**Entwicklungsbranch/Commit:** `claude/c-planner-prototype-2026-10-02-gpt-c666`, `70cbb5e4ec77ea1ad9fe24fc46b86c2c42cb12ed` (**genau ein Commit nach `ef4a819`**); Build `4.3.0-c.6.6.28` in `package.json` und `manifest.json` unabhängig per GitHub geprüft. Produktpfad bleibt V4-C. 15 Dateien im Diff, darunter `src/v4/{dungeon,living,guild,commands}.js`, `src/context.js`, `tests/v4/patch83.test.js`, `tests/v4/live_1022a.json` und `docs/PATCH8_3_DUNGEON_FLOORS_CULLS.md`.
+
+**Codebasiert bestätigt:**
+- `levelVia()` gibt beim Eintritt von einem **echten Dungeon-Root** nun Level 1 zurück, unabhängig von `down`/seitlichem Eingang; danach bestimmt die Richtungslogik Level 1→2. Gewöhnliche Nicht-Dungeon-Gebäude behalten ihre bisherige Etagenlogik. Für den alten .27-Spielstand werden bereits gespeicherte `place.created … level:2`-Events nicht überschrieben.
+- `runNow()` in `living.js` ermittelt den zur Weltzeit relevanten deterministischen Dungeon-Zyklus **ohne neue Zustandsereignisse**. `cullPopulation()` arbeitet mit gezogenen Slot-Individuen; `cullKind()` ist gemeinsame Art-/Guardian-Regel für Boardobergrenze und `defeatTally()`. Der konkrete Old-Crown-Zyklus verlangt damit **2 statt 3** `restless skeletons`; `risen bones` und der Gallery Warden zählen für diese Art nicht. `areaOf()` begrenzt numerische Dungeon-Culls auf `q.dungeon` und `q.floor` statt auf das ganze Reich.
+- Numerischer Dungeon-Cull erhält nach der Buchung einen auf Zahl statt „Etage cleared“ bezogenen `desired_end_state`; echte `quest.clear`-Verträge ohne Killzahl behalten die Floor-Clear-Prüfung. Board-Generator `board-4.7`; `src/context.js` entfernt `locals confirm` und präzisiert QUEST PLAY bei strukturierten Living Dungeons. `commands.js` erläutert korrektes Herantreten bis zu einer BLOCKED-Barriere.
+- `tests/v4/patch83.test.js` enthält **11 gezielte Tests** für Gate/Level 1, Level 1→2/Siegel, Glimmerdeep-Seiteneingang, Live-Fixture, gezogene Population, Killscope, Cull vs. Clear, Kontext, BLOCKED, Replay. **Claude berichtet** 986/986 Node-Tests (11 neu) und 21/21 SillyTavern-C-Smoke, inklusive Gegenprobe: die 11 Tests seien auf .27 rot und auf .28 grün gewesen. ChatGPT hat den Commit, die Implementation und die Testdateien eingesehen, **nicht** diese beiden Läufe unabhängig ausgeführt. Der Host-Smoke testet nicht den kompletten Dungeon-Livepfad.
+
+**Zusätzlicher enger Review-Hinweis (noch kein bestätigter Live-Bug, für Folge-Test):** `guild.js cullEndState()` prüft nur `q.dungeon`, eine numerische `DEFEAT`-Aufgabe und das Fehlen von `q.clear`. Es grenzt einen reinen Cull **nicht** mit `isHunt()` bzw. weiteren substantiellen Aufgaben ab. Deshalb kann es bei einem **gemischten Dungeon-Vertrag** („N Monster besiegen und einen Mechanismus reparieren / einen Gegenstand liefern“) den gesamten `desired_end_state` durch ausschließlich einen Killzähler ersetzen und andere vereinbarte Ziele aus der narrativen Readiness entfernen. Codepfad eindeutig vorhanden, reale Fehlbuchung nicht beobachtet; **vor allgemeiner Freigabe gemischter Dungeon-Quests** mit eigener Regression prüfen und den Endzustand ausschließlich für echte reine Culls ersetzen. Der reine aktuelle Skelett-Test wird dadurch nicht blockiert.
+
+**Weitere Beobachtungsgrenze:** `areaOf()` lässt bei numerischem Dungeon-Cull Wesen mit fehlendem oder unbekanntem Ort weiterhin durch (`!p || !s.places[p]`) – eine bewusst beibehaltene Legacy-Toleranz, die bei neuen Dungeon-Entities nicht als normaler Beleg für Kill-Credit dienen sollte. Der neue Test deckt bekannte fremde Orte und falsche Ebenen ab, nicht den ortslosen Grenzfall. Bei relevantem Live-Befund gezielt testen; keine breite Legacy-Migration auf Verdacht.
+
+**Nächste Schritte:** Eine **frische** .28-Kampagne statt Fortsetzen der in .27 fehlerhaft gebuchten Level-2-Treppe und des alten 3er-Culls; durchgängiger GLM-Test von Guild/Quest über Gate und erste F-Rank-Skelette bis Floor-Clear, Guardian und Turn-in. Notwendige Änderungen nur bei belastbarem Befund; die bereits belegte `cullEndState`-Lücke mit kleinem Mixed-Quest-Test prüfen. Die Narrator-Cache-Positionierung (frühe wechselnde Lorebook-Einträge, 5/7 Requests ohne Cache im .27-Lauf) und Planner-Reparatur-Latenz getrennt messen. `tools/bench_extract.mjs worldSummary()` vor A0/A/C-Qualitätsentscheidung weiter härten. Patch 9 Organic Growth und ROAD AHEAD bleiben unverändert offen.
+
 ## 6. Fortgesetzter .26-GLM-Dungeonlauf – verbleibende Testziele
 
 **Keinen automatischen weiteren Dungeon-Hotfix starten.** Der .26-Live-Run ist bereits begonnen und teilweise ausgewertet worden (Abschnitt 5d). Den vorhandenen Run mit Exporten weiter analysieren; .25 als historische Regression heranziehen und von einem kontrollierten Performance-A/B-Test getrennt halten. Sinnvolle Testreihenfolge:
@@ -294,7 +310,8 @@ Auf folgende Fälle besonders achten:
 
 ## 8. Wichtigste aktuelle Dateien
 
-- **avereth-engine/docs/PATCH8_2_LLM_PERFORMANCE.md** – Details zu .27, Metadaten, leerer Narrator-Antwort, Benchmark.
+- **avereth-engine/docs/PATCH8_3_DUNGEON_FLOORS_CULLS.md; tests/v4/patch83.test.js; tests/v4/live_1022a.json** – aktueller Patch 8.3 (.28), Regressionen und .27-GLM-Fixture.
+- **avereth-engine/docs/PATCH8_2_LLM_PERFORMANCE.md** – Details zum zuvor implementierten Diagnosepatch .27, Metadaten, leerer Narrator-Antwort, Benchmark.
 - **avereth-engine/tools/bench_extract.mjs; tests/v4/patch82.test.js; tests/v4/live_1021e.json** – A0/A/C-Benchmark und Regressionen.
 
 - **04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md** (Repository-Root auf `main`) – 141er-Katalog, K01–K20, Claude-Gegenreviews, Patch-8.2-Review, noch nicht beschlossene QoL-/ROAD-AHEAD-/Organic-Growth-Ideen.
@@ -318,8 +335,8 @@ Auf folgende Fälle besonders achten:
 ## 9. Übergabe an den nächsten Chat (vier Projektdateien)
 
 1. Dateien **01–04** **vom Branch main** vollständig lesen (`04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` ist das Review-/Katalogarchiv). Den tatsächlichen Entwicklungsbranch und Build unabhängig per Git prüfen.
-2. **Aktueller Code ist Patch 8.2 (.27), `ef4a819`**, nicht mehr .26. Ein echter .26-GLM-Dungeonlauf wurde teilweise ausgewertet; .27 ist noch nicht live mit dem echten Provider nachgetestet.
-3. Die .25-Befunde führten zu Patch 8.1 (.26), dessen Latenzproblem zu **implementiertem Patch 8.2 (.27), Abschnitt 5f**, führte. Der `#assign`-Fastpath, Engine-only-Board, ROAD AHEAD und Organic Growth sind **nicht** implementiert. Benchmark/echte Performanceverbesserung noch offen.
+2. **Aktueller Code ist Patch 8.3 (.28), `70cbb5e`**, nicht mehr .27. Ein echter .27-GLM-Livetest vom 22.10.2026 zeigte die P0-Dungeonfehler; .28 behebt sie laut Code/Tests, der echte .28-Dungeonlauf ist noch ausstehend (§5g–5i).
+3. Die .25-Befunde führten zu .26, die Latenzprobleme zu **Patch 8.2 (.27, §5f)**; dessen Livetest führte zu **Patch 8.3 (.28, §5i)**. `#assign`-Fastpath, Engine-only-Board, ROAD AHEAD und Organic Growth sind **nicht** implementiert. Echte Performanceverbesserung, A0/A/C und Narrator-Cache-Versuch weiter offen.
 4. Bei Live-Exports zuerst Engine-Events, Chat-JSONL und LLM-TXT korrelieren; Gameplay- und Designregeln der Dateien 01/02 berücksichtigen.
 5. **Datei 04** enthält die 141-Ideen-Zusammenfassung, 20 ausgewählten K-Kandidaten, Claude-Gegenreviews, Engine-only-Board, Rest/Wait/Fast-Travel/Quick Replies und die offene Patch-9-/ROAD-AHEAD-Reihenfolge. Keine Ideen ohne Nutzerfreigabe in den bindenden Kanon oder die Implementierung übernehmen.
 6. Nach neuen Meilensteinen nur betroffene Projektdateien auf `main` aktualisieren; Implementierungsbranch nicht für Dokumentationspflege mergen.

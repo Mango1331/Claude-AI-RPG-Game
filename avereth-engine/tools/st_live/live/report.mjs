@@ -18,7 +18,9 @@ const END_TEXT = {
     limit: 'abgebrochen: Limit erreicht',
     ui: 'abgebrochen: unerwarteter UI-Zustand',
     harness: 'abgebrochen: Fehler im Runner',
+    narrator_empty: 'abgebrochen: leere Erzählerantwort in einem Story-Zug (kein Swipe, kein Regenerieren)',
 };
+const OUTCOME_TEXT = { story: 'Erzähler', system: 'System (Befehl)', engine: 'Engine (Menü/Rückfrage)', narrator_empty: '**leer**', missing: '**keine**' };
 
 export function buildReport(x) {
     const { runId, stub, guide, player, end, ev, calls, setup, imp, git, build, st, browser, turnsLog, playerLog, driverNotes, toasts, pageErrors, serverErrors, protection, scan, files, startedAt, endedAt, instanceKept } = x;
@@ -50,6 +52,8 @@ export function buildReport(x) {
     L.push(`| Preset | ${cell(imp.preset.name)} (${imp.preset.mode === 'repo' ? 'aus diesem Build' : 'aus dem Profil'})${imp.preset.unsaved.length ? `, ungespeicherte Werte in Gebrauch: ${imp.preset.unsaved.join(', ')}` : ''}${imp.preset.vsRepo.length ? `, weicht vom Build-Preset ab in: ${imp.preset.vsRepo.join(', ')}` : ', gleich dem Build-Preset'} |`);
     L.push(`| Generierung | Temperatur ${imp.generation.temp_openai ?? '?'}, max. Tokens ${imp.generation.openai_max_tokens ?? '?'}, Kontext ${imp.generation.openai_max_context ?? '?'}, Reasoning ${imp.generation.reasoning_effort ?? '?'} |`);
     L.push(`| Streaming | aus${imp.streaming ? ' (im Profil an: für das Log abgeschaltet, ändert keine Inhalte)' : ''} |`);
+    const ps = x.playerSetup;
+    if (player.type === 'llm' && ps?.reasoning) L.push(`| Spieler-Reasoning (wirksam) | ${ps.reasoning.keys.length ? ps.reasoning.keys.map((k) => `\`${k}\`=${cell(JSON.stringify(ps.reasoning.body[k]))}`).join(', ') : 'keine Felder'} — ${cell(ps.reasoning.note)}${ps.probe ? ` · Probe: ${ps.probe.ok ? `angenommen (finish ${ps.probe.finish}, Reasoning ${ps.probe.reasoningChars} Zeichen)` : cell(ps.probe.error)}` : ''}${ps.dropped ? ` · **${cell(ps.dropped)}**` : ''} · max. ${x.playerMaxTokens ?? 3000} Tokens |`);
     L.push(`| Karte | ${cell(setup.card)}: Begrüßung ${setup.greeting === 'profile' ? 'aus dem Profil' : 'des Runners'}, Beschreibung = Erzählervertrag dieses Builds${imp.card?.contract ? ` (im Profil: ${imp.card.contract})` : ''} |`);
     L.push(`| Lorebook | ${setup.world} aus diesem Build${imp.world ? ` (Profil verknüpft „${cell(imp.world.name)}“${x.worldSame === true ? ', inhaltsgleich' : x.worldSame === false ? ', **abweichend**' : ''})` : ''} |`);
     L.push(`| Engine-Einstellungen | ${imp.engineSettings ? cell(JSON.stringify(imp.engineSettings)) : 'Standard'} |`);
@@ -65,15 +69,17 @@ export function buildReport(x) {
     }
     L.push('');
 
-    L.push('## Spielereingaben', '', '| Zug | Eingabe | Etappe (Spieler) | Absicht | Ort danach | HP/MP | Zug-Zeit |', '|---:|---|---|---|---|---|---:|');
+    L.push('## Spielereingaben', '', '| Zug | Eingabe | Antwort | Etappe (Spieler) | Absicht | Ort danach | HP/MP | Zug-Zeit |', '|---:|---|---|---|---|---|---|---:|');
     for (const t of turnsLog) {
         const evt = ev.turns[t.turn - 1];
-        L.push(`| ${t.turn} | ${cell(clip(t.text, 140))} | ${cell(t.decision?.milestone || '')} | ${cell(clip(t.decision?.intent || '', 90))} | ${cell(evt?.placeName || evt?.place || '')} | ${evt ? `${evt.hp ?? '?'}/${evt.mp ?? '?'}` : ''} | ${sec(t.ms)}${t.ok ? '' : ` **${cell(t.problem)}**`} |`);
+        L.push(`| ${t.turn} | ${cell(clip(t.text, 140))} | ${OUTCOME_TEXT[t.outcome] || (t.ok ? '' : '–')} | ${cell(t.decision?.milestone || '')} | ${cell(clip(t.decision?.intent || '', 90))} | ${cell(evt?.placeName || evt?.place || '')} | ${evt ? `${evt.hp ?? '?'}/${evt.mp ?? '?'}` : ''} | ${sec(t.ms)}${t.ok ? '' : ` **${cell(t.problem)}**`} |`);
     }
-    const obs = turnsLog.filter((t) => t.decision?.observations);
-    if (obs.length) {
-        L.push('', '**Beobachtungen des Spielers** (nur aus dem, was er auf dem Bildschirm sah):', '');
-        for (const t of obs) L.push(`- Zug ${t.turn}: ${cell(clip(t.decision.observations, 400))}`);
+    // Patch 8.4.1: what he noted before turn N is about the result of turn N−1 (the screen he decided on)
+    const seen = new Map();
+    for (const p of playerLog) if (p.decision?.observations) seen.set(p.turn, p);
+    if (seen.size) {
+        L.push('', '**Beobachtungen des Spielers** (nur aus dem, was er auf dem Bildschirm sah; jeweils zum Ergebnis des Zugs davor):', '');
+        for (const [turn, p] of seen) L.push(`- ${turn === 1 ? 'zum Start' : `zu Zug ${turn - 1}`} (notiert vor ${turnsLog.some((t) => t.turn === turn) ? `Zug ${turn}` : 'dem Ende'}): ${cell(clip(p.decision.observations, 400))}`);
     }
     L.push('');
 
@@ -100,7 +106,13 @@ export function buildReport(x) {
     for (const t of turnsLog.filter((y) => !y.ok)) A.push(`Zug ${t.turn} (Runner/UI): ${t.problem}${t.dialogs?.length ? ` — Dialog: ${clip(t.dialogs.join(' | '), 300)}` : ''}`);
     for (const i of ev.issues) A.push(`Zug ${i.turn}, Nachricht ${i.at} (${i.kind}): ${i.text}`);
     for (const e of pageErrors.slice(0, 20)) A.push(`Seitenfehler: ${clip(e.text, 300)}`);
-    for (const t of toasts.filter((y) => y.kind === 'error' || y.kind === 'warning').slice(0, 20)) A.push(`Hinweis (${t.kind}): ${clip(t.text, 300)}`);
+    for (const t of toasts.filter((y) => y.origin !== 'runner' && (y.kind === 'error' || y.kind === 'warning')).slice(0, 20)) A.push(`Hinweis (${t.kind}): ${clip(t.text, 300)}`);
+    for (const t of toasts.filter((y) => y.origin === 'runner').slice(0, 5)) A.push(`Runner-Hinweis (dem Spieler nicht gezeigt): ${clip(t.text, 200)}`);
+    // Patch 8.4.1: the player's own failures, by cause
+    const causes = {};
+    for (const p of playerLog) if (p.cause) (causes[p.cause] ||= []).push(p.turn);
+    const CAUSE_TEXT = { reasoning_exhausted: 'Reasoning verbrauchte das ganze Tokenbudget ohne Antwort (finish_reason length)', invalid_json: 'keine gültige JSON-Entscheidung', http: 'HTTP-Fehler', long_message: 'Nachricht zu lang (Erzählung statt Spielerzug), einmal nachgefragt' };
+    for (const [c, turns] of Object.entries(causes)) if (turns.length >= (c === 'long_message' ? 1 : 2) || c === 'http') A.push(`Spieler: ${turns.length}× ${CAUSE_TEXT[c] || c} (Züge ${[...new Set(turns)].join(', ')})`);
     for (const s of serverErrors.slice(0, 10)) A.push(`Server: ${clip(s.line, 300)}`);
     for (const n of driverNotes) A.push(`Einrichtung: ${n}`);
     const bare = calls.filter((c) => c.role === 'other');

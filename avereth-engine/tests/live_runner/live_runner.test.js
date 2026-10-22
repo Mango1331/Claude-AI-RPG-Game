@@ -82,10 +82,13 @@ test('guides: a patch guide extends the base one; a wrong check is refused', () 
     const g = loadGuide('patch_8_4');
     const base = loadGuide('guild_dungeon_loop');
     assert.deepEqual(g.chain, ['guild_dungeon_loop', 'patch_8_4']);
-    assert.deepEqual(g.milestones, base.milestones);
+    // Patch 8.4.1: its own milestones, the numeric cull and the open attack on an unaware group among them
+    assert.deepEqual(g.milestones.map((m) => [m.id, m.required !== false]), [['creation_complete', true], ['guild_registered', true], ['board_shown', true], ['numeric_cull_active', true], ['inside_dungeon', false], ['open_group_attack', true], ['fight_won', true], ['quest_ready', true], ['quest_completed', true]]);
+    assert.notDeepEqual(g.milestones, base.milestones);
     assert.equal(g.focus.length, base.focus.length + 3);
-    assert.ok(g.brief.startsWith(base.brief) && g.brief.includes('whole group'));
+    assert.ok(g.brief.includes('see whether the whole group fights') && g.brief.endsWith('does not count for this test.'));
     assert.deepEqual(g.scripted, base.scripted);
+    assert.deepEqual(g.personas, base.personas);
     assert.match(guideErrors({ id: 'x', brief: 'b', milestones: [{ id: 'y', goal: 'g', check: 'teleported' }] }).join(), /no evaluator check "teleported"/);
     assert.match(guideErrors({ id: 'x', brief: 'b', milestones: [{ id: 'board_shown', goal: 'g', required: false }] }).join(), /no required milestone/);
     const dir = tmp();
@@ -294,9 +297,9 @@ test('players: the screen as the player gets it, the system prompt with the guid
     assert.match(s, /\[NOTICES ON SCREEN\]\n- \(warning\) the narrator contract is outdated$/);
     const p = playerSystemPrompt(loadGuide('patch_8_4'), { username: 'Alaric', persona: 'direct' });
     assert.match(p, /1\. creation_complete: Create the character/);
-    assert.match(p, /guardian_defeated: .*\(if it comes within reach\)/);
-    assert.match(p, /Patch 8\.4: attack one member of a group openly/);
-    assert.match(p, /YOUR STYLE THIS RUN: direct/);
+    assert.match(p, /5\. inside_dungeon: .*\(if it comes within reach\)/);
+    assert.match(p, /Patch 8\.4: when you attack one member of an unaware group openly/);
+    assert.match(p, /YOUR STYLE THIS RUN \(a player's style, never a writer's\): direct/);
     assert.match(p, /the same failure 3 times/);
 });
 
@@ -336,7 +339,7 @@ test('players: the LLM player repairs a bad answer, keeps its notes, and never l
     assert.ok(!JSON.stringify(log).includes('SECRET-KEY-1'));
     assert.equal(p.notes.length, 1);
     await p.decide(VIEW, { turn: 2, maxTurns: 80 }).catch(() => {});
-    assert.match(sent.at(-1).body.messages[1].content, /1\. you wrote: "Mage" — creation_complete: class — you noted: a warning about the contract/);
+    assert.match(sent.at(-1).body.messages[1].content, /1\. you wrote: "Mage" — creation_complete: class — noted: a warning about the contract/);
     const dead = llmPlayer({ guide: loadGuide('guild_dungeon_loop'), username: 'Alaric', url: 'http://x/v1', model: 'm', key: 'k', fetchImpl: async () => ({ ok: false, status: 503, json: async () => ({ error: { message: 'down' } }) }) });
     const t0 = Date.now();
     const stop = await dead.decide(VIEW, { turn: 1, maxTurns: 1 });

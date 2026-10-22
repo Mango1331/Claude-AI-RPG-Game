@@ -51,6 +51,11 @@ const TOAST_SCRIPT = `(() => {
     new MutationObserver((ms) => { for (const m of ms) m.addedNodes.forEach(take); }).observe(document, { childList: true, subtree: true });
 })();`;
 
+/** A notice's origin (Patch 8.4.1): "runner" inside a span of the runner's own action (its tail included), else "game". */
+export function toastOrigin(t, spans, now = Date.now()) {
+    return spans.some((s) => t.at >= s.from && t.at <= (s.to ?? now)) ? 'runner' : 'game';
+}
+
 export class Driver {
     constructor(page, { turnTimeoutMs = 15 * 60 * 1000, quietMs = 1500, log = () => {} } = {}) {
         this.page = page;
@@ -60,6 +65,10 @@ export class Driver {
         this.pageErrors = [];
         this.toastsSeen = 0;
         this.setupNotes = [];
+        // Patch 8.4.1 (live 22.10.2026 05:43: the notice of the runner's own chat rename reached the player, who took it
+        // for an oddity of the game): the time spans of the runner's own actions in the page; a notice that comes in one
+        // of them is the runner's, never shown to the player (kept for the report)
+        this.runnerSpans = [];
         page.on('pageerror', (e) => this.pageErrors.push({ at: Date.now(), text: `${e.message} ${String(e.stack || '').split('\n').slice(1, 3).join(' ')}`.slice(0, 600) }));
         page.on('console', (m) => {
             if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) this.pageErrors.push({ at: Date.now(), text: `${m.text()} @ ${m.location()?.url?.split('/').pop()}:${m.location()?.lineNumber}`.slice(0, 600) });
@@ -67,7 +76,8 @@ export class Driver {
     }
 
     static async create(browser, opts) {
-        const context = await browser.newContext({ viewport: { width: 1400, height: 1000 } });
+        // Patch 8.4.1 (live 22.10.2026 05:43: a German Chrome gave SillyTavern a German UI in an English game): English
+        const context = await browser.newContext({ viewport: { width: 1400, height: 1000 }, locale: 'en-US' });
         await context.addInitScript(TOAST_SCRIPT);
         const page = await context.newPage();
         return new Driver(page, opts);
@@ -159,6 +169,8 @@ export class Driver {
         }
         let chatId = await p.evaluate(() => SillyTavern.getContext().getCurrentChatId());
         if (chatName && started) {
+            const span = { what: 'chat rename', from: Date.now(), to: null };
+            this.runnerSpans.push(span);
             const renamed = await p.evaluate(async ({ from, to }) => {
                 const c = SillyTavern.getContext();
                 if (typeof c.renameChat !== 'function') return null;
@@ -166,6 +178,8 @@ export class Driver {
             }, { from: chatId, to: chatName });
             if (renamed && !String(renamed).startsWith('error')) chatId = renamed;
             else this.setupNotes.push(`the chat could not be renamed (${renamed ?? 'no renameChat'}); it keeps "${chatId}"`);
+            await p.waitForTimeout(1500); // its notice shows within this span
+            span.to = Date.now();
         }
         await p.waitForTimeout(800);
         return { started, chatId };
@@ -236,24 +250,40 @@ export class Driver {
      * (the HUD under the newest reply unfolded, older ones folded as they are), and the notices since the last look.
      */
     async view({ back = 2 } = {}) {
-        const messages = await this.page.evaluate((k) => {
+        // Patch 8.4.1: the messages without their HUD panels, and the newest HUD on screen once, unfolded as a player
+        // clicks it open: what he carries, wears and has (HP, MP, stats, free Stat Points, quests) on every turn, read
+        // from the page, never kept or written on by the runner
+        const { messages, hud } = await this.page.evaluate((k) => {
             const els = [...document.querySelectorAll('#chat .mes')];
-            const newest = [...els].reverse().find((el) => el.getAttribute('is_user') !== 'true');
-            for (const el of els) for (const d of el.querySelectorAll('.mes_text details')) d.open = el === newest;
+            // SillyTavern prefixes the classes of a message's HTML with "custom-" (its sanitizer)
+            const huds = (el) => [...el.querySelectorAll('.mes_text details.avereth-hud, .mes_text details.custom-avereth-hud')];
+            const textOf = (el) => {
+                let t = (el.querySelector('.mes_text')?.innerText || '');
+                for (const d of huds(el)) { const x = d.innerText || ''; if (x) t = t.replace(x, ''); }
+                return t.replace(/\n{3,}/g, '\n\n').trim();
+            };
             const users = els.map((el, i) => (el.getAttribute('is_user') === 'true' ? i : -1)).filter((i) => i >= 0);
             const from = users.length > k ? users[users.length - 1 - k] : 0;
-            return els.slice(from).map((el) => ({
+            const messages = els.slice(from).map((el) => ({
                 mesid: Number(el.getAttribute('mesid')), user: el.getAttribute('is_user') === 'true', system: el.getAttribute('is_system') === 'true',
-                name: (el.querySelector('.name_text')?.innerText || '').trim(), text: (el.querySelector('.mes_text')?.innerText || '').trim(),
+                name: (el.querySelector('.name_text')?.innerText || '').trim(), text: textOf(el),
             }));
+            const newest = [...els].reverse().find((el) => huds(el).length);
+            for (const el of els) for (const d of huds(el)) d.open = el === newest;
+            const hud = newest ? huds(newest).map((d) => (d.innerText || '').trim()).filter(Boolean).join('\n\n') : null;
+            return { messages, hud };
         }, back);
-        const all = await this.page.evaluate(() => window.__liveToasts || []);
-        const toasts = all.slice(this.toastsSeen);
+        const all = await this.toasts();
+        const toasts = all.slice(this.toastsSeen).filter((t) => t.origin !== 'runner');
         this.toastsSeen = all.length;
-        return { messages, toasts };
+        return { messages, hud, toasts };
     }
 
-    async toasts() { return this.page.evaluate(() => window.__liveToasts || []); }
+    /** Every notice since the page opened, each with its origin: the runner's own action ("runner") or the game. */
+    async toasts() {
+        const all = await this.page.evaluate(() => window.__liveToasts || []);
+        return all.map((t) => ({ ...t, origin: toastOrigin(t, this.runnerSpans) }));
+    }
 
     /** SillyTavern's chat with the engine's records: for the evaluation, never for the player. */
     async chat() { return this.page.evaluate(() => JSON.parse(JSON.stringify(SillyTavern.getContext().chat))); }

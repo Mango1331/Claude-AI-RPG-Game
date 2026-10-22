@@ -19,6 +19,7 @@
     "keyEnv": null,
     "temperature": 0.8,
     "maxTokens": 3000,
+    "reasoning": "profile",
     "extraBody": null
   }
 }

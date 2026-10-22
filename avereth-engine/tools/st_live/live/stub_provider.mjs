@@ -7,6 +7,7 @@ import http from 'node:http';
 import { roleOf } from './calls.mjs';
 
 export const STUB_MODEL = 'stub-model';
+export const EMPTY_MARK = '[stub-empty]';
 export const PLAYER_SCRIPT = [
     { message: 'Mage', milestone: 'creation_complete', intent: 'pick the Base Class Mage' },
     { message: 'Flame Lance + Blink', milestone: 'creation_complete', intent: 'pick the two skills' },
@@ -31,6 +32,10 @@ export async function startStub({ port = 0, key = null, delayMs = 50 } = {}) {
         const msgs = j.messages || [];
         const lastUser = String([...msgs].reverse().find((m) => m.role === 'user')?.content || '');
         let text;
+        let finish = 'stop';
+        // Patch 8.4.1: a narrator reply without story text, as GLM gave twice in the first live test (its 4,096
+        // tokens spent on reasoning), wherever the player's message carries the marker
+        const empty = role === 'narrator' && lastUser.includes(EMPTY_MARK);
         if (role === 'plan' || role === 'interpret') text = JSON.stringify({ commands: [] });
         else if (role === 'extract') text = JSON.stringify({ expected: {}, deltas: [] });
         else if (role === 'board') text = JSON.stringify({ listings: [] });
@@ -38,14 +43,18 @@ export async function startStub({ port = 0, key = null, delayMs = 50 } = {}) {
             const d = PLAYER_SCRIPT[playerTurn] || { message: '', stop: true, stop_reason: 'done', milestone: null, intent: null };
             playerTurn += 1;
             text = `Here is my move:\n\`\`\`json\n${JSON.stringify({ stop: false, stop_reason: null, observations: '', ...d })}\n\`\`\``;
+        } else if (empty) {
+            text = '';
+            finish = 'length';
         } else {
             const said = lastUser.split('\n').filter(Boolean).at(-1) || '';
             text = `The world answers quietly. (Stub narrator: no model behind this reply; the player wrote: ${said.slice(0, 120)})`;
         }
-        calls.push({ role, at: Date.now(), auth: req.headers.authorization ? (key && req.headers.authorization === `Bearer ${key}` ? 'key' : 'other') : 'none', model: j.model ?? null, stream: !!j.stream, max_tokens: j.max_tokens ?? null });
+        const steer = Object.fromEntries(['reasoning_effort', 'clear_thinking', 'thinking'].filter((k) => j[k] !== undefined).map((k) => [k, j[k]]));
+        calls.push({ role, at: Date.now(), auth: req.headers.authorization ? (key && req.headers.authorization === `Bearer ${key}` ? 'key' : 'other') : 'none', model: j.model ?? null, stream: !!j.stream, max_tokens: j.max_tokens ?? null, steer });
         if (delayMs) await new Promise((r) => setTimeout(r, delayMs));
         res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ id: `stub-${calls.length}`, object: 'chat.completion', created: Math.floor(Date.now() / 1000), model: STUB_MODEL, choices: [{ index: 0, message: { role: 'assistant', content: text }, finish_reason: 'stop' }], usage: { prompt_tokens: Math.ceil(body.length / 4), completion_tokens: Math.ceil(text.length / 4), total_tokens: Math.ceil((body.length + text.length) / 4) } }));
+        res.end(JSON.stringify({ id: `stub-${calls.length}`, object: 'chat.completion', created: Math.floor(Date.now() / 1000), model: STUB_MODEL, choices: [{ index: 0, message: { role: 'assistant', content: text, ...(empty ? { reasoning_content: 'stub reasoning that used up the budget' } : {}) }, finish_reason: finish }], usage: { prompt_tokens: Math.ceil(body.length / 4), completion_tokens: Math.ceil(text.length / 4), total_tokens: Math.ceil((body.length + text.length) / 4) } }));
     });
     await new Promise((r) => server.listen(port, '127.0.0.1', r));
     const url = `http://127.0.0.1:${server.address().port}/v1`;

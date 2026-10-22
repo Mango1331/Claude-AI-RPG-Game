@@ -17,13 +17,13 @@ import { execSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { ENGINE, stamp, pick, isInside, changedSince, treeStat, treeDiff, sha256, clip } from './lib.mjs';
 import { importProfile, describeImport, routeOf, routeText, modelKeyOf } from './import_profile.mjs';
-import { probeModels, probeRows, probeBlocks } from './preflight.mjs';
+import { probeModels, probeRows, probeBlocks, probePlayer, playerRows } from './preflight.mjs';
 import { createInstance, writeConfig, seedProfile, chatFiles, removeKey, removeInstance, WORLD_FILE } from './profile.mjs';
 import { startServer, freePort } from './server.mjs';
 import { loadPlaywright, launchBrowser, Driver } from './driver.mjs';
-import { llmPlayer, scriptedPlayer, screenText } from './players.mjs';
+import { llmPlayer, scriptedPlayer, screenText, playerReasoning } from './players.mjs';
 import { loadGuide } from './guide.mjs';
-import { evaluate, finished, nextMilestone } from './evaluator.mjs';
+import { evaluate, finished, nextMilestone, turnOutcome } from './evaluator.mjs';
 import { parseCalls } from './calls.mjs';
 import { readChatJsonl, eventsLog, jsonl, secretScan } from './export.mjs';
 import { buildReport } from './report.mjs';
@@ -35,7 +35,7 @@ export const STUB_KEY = 'stub-key-not-a-real-key-0000';
 export const DEFAULTS = {
     stDir: null, stUser: 'default-user', stData: null, card: null, preset: 'profile', port: 8123, browser: 'auto', headless: true,
     keyEnv: 'AVERETH_LIVE_API_KEY', guide: 'guild_dungeon_loop', seed: null, maxTurns: null, turnTimeoutSec: 900, runsDir: null, keepProfile: false,
-    player: { type: 'llm', url: null, model: null, keyEnv: null, temperature: 0.8, maxTokens: 3000, extraBody: null },
+    player: { type: 'llm', url: null, model: null, keyEnv: null, temperature: 0.8, maxTokens: 3000, reasoning: 'profile', extraBody: null },
 };
 
 /** Options: defaults, then the config file, then the command line. */
@@ -124,6 +124,12 @@ export async function preflight(o, imp, key, { fetchImpl = fetch } = {}) {
         const q = await probeModels({ url: o.player.url || r.url, key: pk, model: o.player.model || r.model, fetchImpl });
         rows.push(...probeRows(q, { model: o.player.model || r.model, who: 'Spieler' }).map((x) => ({ ...x, what: `${x.what} [Spieler]` })));
     }
+    // Patch 8.4.1: the player's reasoning fields, and whether the endpoint takes them
+    if (o.player.type === 'llm') {
+        const reasoning = playerReasoning(imp, o.player);
+        const pk = o.player.keyEnv ? process.env[o.player.keyEnv] : key;
+        rows.push(...playerRows(await probePlayer({ url: o.player.url || r.url, key: pk, model: o.player.model || r.model, body: { ...reasoning.body, ...(o.player.extraBody || {}) }, fetchImpl }), reasoning));
+    }
     return rows;
 }
 
@@ -149,6 +155,7 @@ export async function run(o) {
         key = STUB_KEY;
         // the profile's route, its URL the stub's: a reverse proxy stays a reverse proxy
         if (imp.route.runner.via === 'reverse_proxy') imp.connection = { ...imp.connection, reverse_proxy: stub.url, [modelKeyOf(imp.source)]: STUB_MODEL, bypass_status_check: false };
+        else if (imp.source === 'custom') imp.connection = { ...imp.connection, custom_url: stub.url, custom_model: STUB_MODEL, bypass_status_check: false };
         else { imp.source = 'custom'; imp.connection = { chat_completion_source: 'custom', custom_url: stub.url, custom_model: STUB_MODEL, bypass_status_check: false }; }
         imp.route = { ...imp.route, runner: routeOf(imp.connection), same: false, differences: ['Stub-Provider statt des Endpoints deines Profils'] };
     } else {
@@ -165,6 +172,21 @@ export async function run(o) {
         log(`preflight: ${p.endpoint} ${p.ids ? `offers ${p.ids.length} model(s), "${imp.route.runner.model}" among them` : `(${p.error}; model not checkable)`}`);
     }
     const playerKey = o.stub ? STUB_KEY : o.player.keyEnv ? process.env[o.player.keyEnv] : key;
+    // Patch 8.4.1 (live 22.10.2026 05:43: the game's requests carried reasoning_effort low and clear_thinking, the
+    // player's none; 8 of its 27 calls spent their 3,000 tokens on reasoning): the player's reasoning fields, the
+    // profile's own for the game's endpoint and model, asked once whether the endpoint takes them
+    const playerSetup = { reasoning: o.player.type === 'llm' ? playerReasoning(imp, o.player) : null, probe: null, dropped: null };
+    if (playerSetup.reasoning?.keys.length) {
+        const purl = o.player.url || imp.route.runner.url;
+        const pmodel = o.player.model || imp.route.runner.model;
+        const p = purl ? await probePlayer({ url: purl, key: playerKey, model: pmodel, body: playerSetup.reasoning.body }) : null;
+        playerSetup.probe = p;
+        if (p && !p.ok && (p.status === 400 || p.status === 422)) {
+            playerSetup.dropped = `the endpoint refused the player's reasoning fields (${p.error}): the player sends none`;
+            playerSetup.reasoning = { ...playerSetup.reasoning, body: {}, keys: [], source: 'none', note: playerSetup.dropped };
+        }
+        log(`player reasoning: ${playerSetup.reasoning.keys.length ? playerSetup.reasoning.keys.map((k) => `${k}=${JSON.stringify(playerSetup.reasoning.body[k])}`).join(', ') : 'none'} (${playerSetup.reasoning.note})`);
+    }
     const inst = createInstance({ runId, protect: [imp.st.dir, imp.st.dataRoot, imp.st.userDir], runDir });
     const g = inst.guard;
     g.mkdir(runDir);
@@ -225,7 +247,7 @@ export async function run(o) {
             : llmPlayer({
                 guide, username: imp.username, persona,
                 url: o.player.url || imp.route.runner.url, model: o.player.model || imp.route.runner.model, key: playerKey,
-                temperature: o.player.temperature, maxTokens: o.player.maxTokens, extraBody: o.player.extraBody, record: (e) => playerLog.push({ at: new Date().toISOString(), ...e }),
+                temperature: o.player.temperature, maxTokens: o.player.maxTokens, body: playerSetup.reasoning?.body, extraBody: o.player.extraBody, record: (e) => playerLog.push({ at: new Date().toISOString(), ...e }),
             });
         if (o.player.type === 'llm' && !(o.player.url || imp.route.runner.url)) throw new Error('the LLM player needs an OpenAI-compatible URL: player.url in live.config.json');
         const maxTurns = guide.limits.maxTurns;
@@ -242,6 +264,8 @@ export async function run(o) {
             const decideMs = Date.now() - td;
             if (!firstTurnAt) firstTurnAt = td;
             if (o.player.type === 'scripted') playerLog.push({ at: new Date().toISOString(), turn, decision: d });
+            // Patch 8.4.1: what he saw is the result of the turn before (0: the start); his notes are about that turn
+            for (const e of playerLog.filter((x) => x.turn === turn)) e.about_turn = turn - 1;
             if (playerLog.length) playerLog.at(-1).screen = screenText(view);
             if (d.stop) { end = { kind: d.harness ? 'harness' : d.stop_reason === 'done' ? 'player_done' : 'player_stop', why: d.stop_reason }; log(`player stops: ${d.stop_reason}`); break; }
             log(`turn ${turn}: ${clip(d.message, 100)}`);
@@ -257,6 +281,16 @@ export async function run(o) {
             }
             chat = await driver.chat();
             if (!(chat[0]?.extra?.avereth?.events || []).some((e) => e.t === 'campaign.started')) { end = { kind: 'ui', why: `the engine started no campaign, neither at the greeting nor with the message of turn ${turn}` }; break; }
+            // Patch 8.4.1: a story turn needs the narrator's story; a command's System answer or the engine's own one is
+            // a turn of its own kind. No swipe, no regeneration: the run ends there, its data kept
+            const outcome = turnOutcome(chat, chat.findLastIndex((m) => m.is_user));
+            turnsLog.at(-1).outcome = outcome.kind;
+            if (outcome.kind === 'narrator_empty' || outcome.kind === 'missing') {
+                await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-${outcome.kind}.png`)));
+                end = { kind: outcome.kind === 'missing' ? 'ui' : 'narrator_empty', why: outcome.kind === 'missing' ? `turn ${turn}: neither the narrator nor the engine answered` : `turn ${turn}: the narrator's reply has no story text (message ${outcome.at})`, turn };
+                log(`stopped: ${end.why}`);
+                break;
+            }
             const ev = evaluate(chat, { guide });
             if (ev.defeat) { await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-defeat.png`))); end = { kind: 'defeat', why: `turn ${ev.defeat.turn}: ${ev.defeat.why}` }; break; }
             if (finished(ev)) { end = { kind: 'done', why: null }; log('all required milestones reached'); break; }
@@ -302,13 +336,17 @@ export async function run(o) {
         const logText = fs.existsSync(path.join(runDir, 'server.log')) ? fs.readFileSync(path.join(runDir, 'server.log'), 'utf8') : '';
         files.push(['server.log', 'die Konsole der isolierten SillyTavern-Instanz (alle Requests und Antworten)'], ['server.timed.log', 'dieselbe Konsole mit Uhrzeit je Zeile']);
         const { calls, errors: callErrors } = parseCalls(logText, server?.markers || [], sends);
+        if (end.kind === 'narrator_empty') {
+            const c = calls.filter((x) => x.role === 'narrator' && x.turn === end.turn).at(-1);
+            if (c) end.why += ` — the narrator call ended with finish_reason "${c.finish}" after ${c.completion_tokens ?? '?'} completion tokens (max ${c.max_tokens}), ${c.reasoning_chars} characters of reasoning, ${c.content_chars} of text`;
+        }
         put('chat-completions.jsonl', jsonl(calls.map((c) => ({ n: c.n, role: c.role, repair: c.repair, turn: c.turn, at: c.at, ms: c.ms, ...c.full }))), 'jeder Chat-Completion-Request mit seiner Antwort');
         put('calls.json', JSON.stringify(calls.map(({ full, ...c }) => c), null, 1), 'je Aufruf: Rolle, Modell, Zeit, Tokens, finish_reason, Reparatur');
         put('player.jsonl', jsonl(playerLog), 'jede Entscheidung des Spielers mit dem Bildschirmtext, den er sah');
         const ev = evaluate(messages, { guide });
         put('evaluation.json', JSON.stringify({ end, ...ev }, null, 1), 'die Auswertung (Etappen, Kämpfe, Quests, Auffälligkeiten)');
         const driverNotes = [...(driver?.setupNotes || []), ...callErrors.slice(0, 5).map((e) => `server log: ${e}`)];
-        put('run.json', JSON.stringify({ runId, stub: !!stub, seed, persona, guide: { id: guide.id, chain: guide.chain, files: guide.files.map((f) => path.relative(ENGINE, f)) }, end, timing, preflight: preflightResult, route: imp.route, setup, conn, chatId: opened?.chatId || null, turns: turnsLog.map(({ decision, ...t }) => ({ ...t, milestone: decision?.milestone || null })), status: statusLine, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [], notes: driverNotes, stubCalls: stub ? stub.calls : undefined }, null, 1), 'Ablauf des Laufs: Züge, Zeiten, Hinweise, Seitenfehler, Statuszeile');
+        put('run.json', JSON.stringify({ runId, stub: !!stub, seed, persona, guide: { id: guide.id, chain: guide.chain, files: guide.files.map((f) => path.relative(ENGINE, f)) }, end, timing, preflight: preflightResult, route: imp.route, player: { type: o.player.type, ...playerSetup }, setup, conn, chatId: opened?.chatId || null, turns: turnsLog.map(({ decision, ...t }) => ({ ...t, milestone: decision?.milestone || null })), status: statusLine, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [], notes: driverNotes, stubCalls: stub ? stub.calls : undefined }, null, 1), 'Ablauf des Laufs: Züge, Zeiten, Hinweise, Seitenfehler, Statuszeile');
         put('import.json', JSON.stringify({ ...imp, preset: { ...imp.preset, text: undefined, sha256: imp.preset.text ? sha256(Buffer.from(imp.preset.text)) : null } }, null, 1), 'was aus dem Profil übernommen wurde (ohne Schlüssel)');
 
         const changedRead = changedSince(imp.read);
@@ -322,7 +360,7 @@ export async function run(o) {
             end, ev, calls, setup: setup || { source: imp.source, card: '?', world: '?', greeting: '?' }, imp, git: gitInfo(), build: buildOf(), st: { version: imp.st.version, dir: imp.st.dir, port, startMs: server?.startMs },
             browser: { name: br?.name || '?', version: br?.version || '?', headless: o.headless }, turnsLog, playerLog, driverNotes, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [],
             protection, scan, files: [...files, ['report.md', 'dieser Bericht'], ['screens/', 'Bildschirmfotos (Ende, Probleme)']], startedAt, endedAt, instanceKept: o.keepProfile ? inst.root : null,
-            chatId: opened?.chatId, seed, slow, timing, preflight: preflightResult, keyEnv: o.keyEnv, worldSame: imp.world ? imp.world.sha256 === sha256(fs.readFileSync(WORLD_FILE)) : null,
+            chatId: opened?.chatId, seed, slow, timing, preflight: preflightResult, keyEnv: o.keyEnv, playerSetup, playerMaxTokens: o.player.maxTokens, worldSame: imp.world ? imp.world.sha256 === sha256(fs.readFileSync(WORLD_FILE)) : null,
         });
         put('report.md', report, 'dieser Bericht');
         const again = secretScan(runDir, secrets, g);

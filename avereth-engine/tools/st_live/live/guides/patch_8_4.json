@@ -1,11 +1,23 @@
 {
   "id": "patch_8_4",
   "extends": "guild_dungeon_loop",
-  "title": "Patch 8.4: Gruppen-Awareness und Cull-Zahlen (Build 4.3.0-c.6.6.29)",
-  "brief_extra": "This build changed two things the test looks at closely: when you attack one enemy of a group openly (not hidden), the whole group should take part in that fight; and a cull contract should name one count of foes everywhere (board, slip, front desk).",
+  "title": "Patch 8.4: Gruppen-Awareness und Cull-Zahl (Build 4.3.0-c.6.6.30)",
+  "brief": "Start a new campaign as a new player would. Create a Mage with the skills Flame Lance and Blink. Go into the city you start near, register at the Adventurers' Guild and read the board for your rank. Take a cull contract whose notice names how many foes to defeat, if possible one in a dungeon. In the field, attack one member of a group of foes that has not noticed you, openly (without sneaking or hiding first), and see whether the whole group fights. Finish the cull and turn it in at the front desk.",
+  "brief_extra": "Build .29 made a group that had not noticed you join the fight as a whole when you attack one of them openly, and a cull contract name one count everywhere (board, slip, front desk). A contract that only says \"clear level 1\" names no count and does not count for this test.",
+  "milestones": [
+    { "id": "creation_complete", "goal": "Create the character: the Base Class Mage, then the two skills Flame Lance and Blink.", "maxTurns": 4 },
+    { "id": "guild_registered", "goal": "Go into the city to the Adventurers' Guild and register as a member (pay what the Guild asks).", "maxTurns": 10 },
+    { "id": "board_shown", "goal": "Read the Guild's board for your rank.", "maxTurns": 5 },
+    { "id": "numeric_cull_active", "goal": "Take a cull contract whose notice names how many foes to defeat (\"Cull four …\", \"(4)\"), a dungeon one if the board has it, and register it at the front desk. A contract that only says to clear a level does not count. If the board offers no such contract, write that in your observations and read it again on a later day: by then other adventurers may have taken some of its work and new contracts fill the gaps. So rest until the next morning (at an inn or in the hall) and read it again.", "maxTurns": 12 },
+    { "id": "inside_dungeon", "goal": "If your cull lies in a dungeon, travel there and go in past its gate.", "required": false },
+    { "id": "open_group_attack", "goal": "Find a group of foes that has not noticed you and attack one of them openly, without sneaking or hiding first. Watch whether the whole group takes part in the fight from its start.", "maxTurns": 15 },
+    { "id": "fight_won", "goal": "Win the fight.", "maxTurns": 10 },
+    { "id": "quest_ready", "goal": "Defeat as many as the contract names, until the contract slip shows it is done (READY).", "maxTurns": 20 },
+    { "id": "quest_completed", "goal": "Go back to the Guild hall and turn the contract in at the front desk. Compare the count it names there with the board and the slip.", "maxTurns": 8 }
+  ],
   "focus": [
-    "Patch 8.4: attack one member of a group openly at least once. Does the fight list every member of the group from its start, and do the others act on their own turns?",
-    "Patch 8.4: if you manage to stay hidden (sneaking up unseen) before an attack, note whether only the target is taken by surprise.",
-    "Patch 8.4: compare the cull count on the board listing, in the contract text on the slip (HUD) and when you turn it in."
+    "Patch 8.4: when you attack one member of an unaware group openly, does the fight list every member of the group from its start, and do the others act on their own turns?",
+    "Patch 8.4: if you do sneak up hidden once, note whether only the target is taken by surprise.",
+    "Patch 8.4: compare the cull count on the board, in the contract text on the slip (HUD) and when you turn it in."
   ]
 }

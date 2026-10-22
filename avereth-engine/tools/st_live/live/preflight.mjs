@@ -51,3 +51,32 @@ export function probeBlocks(p) {
     if (p.ids && !p.found) return `the model is not in the model list of ${p.endpoint} (${p.ids.join(', ') || 'empty'})`;
     return null;
 }
+
+/**
+ * Patch 8.4.1: does the endpoint take the player's reasoning fields? One small request with them (no game content);
+ * an HTTP 400/422 says the provider refuses one of them. Returns {ok, status, finish, content, reasoningChars, error}.
+ */
+export async function probePlayer({ url, key = null, model, body = {}, fetchImpl = fetch, timeoutMs = 60000 }) {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), timeoutMs);
+    try {
+        const res = await fetchImpl(`${String(url).replace(/\/+$/, '')}/chat/completions`, {
+            method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', ...(key ? { authorization: `Bearer ${key}` } : {}) },
+            body: JSON.stringify({ model, messages: [{ role: 'user', content: 'Reply with the single word OK.' }], max_tokens: 300, temperature: 0, stream: false, ...body }),
+        });
+        const json = await res.json().catch(() => null);
+        if (!res.ok) return { ok: false, status: res.status, error: `HTTP ${res.status}${json?.error?.message ? `: ${String(json.error.message).slice(0, 160)}` : ''}` };
+        const m = json?.choices?.[0]?.message || {};
+        return { ok: true, status: res.status, finish: json?.choices?.[0]?.finish_reason ?? null, content: String(m.content || '').slice(0, 40), reasoningChars: String(m.reasoning_content || m.reasoning || '').length, error: null };
+    } catch (e) {
+        return { ok: false, status: 0, error: e?.name === 'AbortError' ? `keine Antwort in ${timeoutMs / 1000} s` : String(e?.cause?.code || e?.message || e) };
+    } finally { clearTimeout(timer); }
+}
+
+/** The player probe as --check rows. */
+export function playerRows(p, reasoning) {
+    const what = `Spieler-Reasoning (${reasoning.keys.length ? reasoning.keys.map((k) => `${k}=${JSON.stringify(reasoning.body[k])}`).join(', ') : 'keine Felder'})`;
+    if (!p.ok && (p.status === 400 || p.status === 422)) return [{ good: false, what, detail: `der Provider lehnt sie ab: ${p.error}. Der Lauf schickt sie dann nicht mit (player.reasoning "none" oder eigene Felder setzen)` }];
+    if (!p.ok) return [{ good: false, what, detail: p.error }];
+    return [{ good: true, what, detail: `angenommen (${reasoning.note}); Probe: finish ${p.finish}, Antwort „${p.content}“, Reasoning ${p.reasoningChars} Zeichen` }];
+}

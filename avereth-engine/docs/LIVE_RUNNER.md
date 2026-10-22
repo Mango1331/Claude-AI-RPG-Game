@@ -50,7 +50,7 @@ Werkzeug: `tools/st_live/live/` (ab Build 4.3.0-c.6.6.29). Er spielt einen Livet
    node tools/st_live/live/run_live.mjs --inspect --ping
    ```
    - `--inspect` zeigt, was aus deinem Profil übernommen würde, ohne Schlüssel. Oben steht der Block **VERBINDUNG**: dein SillyTavern und der Runner nebeneinander (Quelle, Feld `custom_url` oder `reverse_proxy`, URL, Modell, woher der Schlüssel kommt), was mit einem `reverse_proxy` deines Profils geschieht, und am Ende ✔ „dieselbe Verbindung wie dein SillyTavern“ oder ✖ mit den Unterschieden (§3).
-   - `--ping` fragt `GET <URL>/models` ab, wie SillyTavern es beim Verbinden tut, und prüft, ob die Modell-ID aus deinem Profil genau so in der Liste steht. Fehlt sie, nennt die Meldung die angebotenen Modelle und ähnliche IDs. Ein eigenes Spieler-Modell (`player.model`) wird mitgeprüft.
+   - `--ping` fragt `GET <URL>/models` ab, wie SillyTavern es beim Verbinden tut, und prüft, ob die Modell-ID aus deinem Profil genau so in der Liste steht. Fehlt sie, nennt die Meldung die angebotenen Modelle und ähnliche IDs. Ein eigenes Spieler-Modell (`player.model`) wird mitgeprüft, ebenso mit einem kurzen Probe-Request, ob der Endpoint die Reasoning-Felder des Spielers annimmt (§6).
 6. **Lauf.**
    ```powershell
    npm run live:st -- --guide patch_8_4
@@ -125,7 +125,7 @@ Eine URL mit Zugangsdaten (`user:pw@`, `?key=`) bricht den Import ab, ob `custom
 
 ## 5. Browser-Treiber
 
-Ein frischer Browser-Kontext ohne deine Anmeldungen und ohne deinen Speicher. Der Treiber macht nur, was ein Spieler macht:
+Ein frischer Browser-Kontext ohne deine Anmeldungen und ohne deinen Speicher, mit englischer Oberfläche (`en-US`, wie die Engine spielt). Der Treiber macht nur, was ein Spieler macht:
 - verbinden;
 - die Karte öffnen (neuer Chat „Avereth Live <lauf-id>“);
 - eine Nachricht eingeben und senden;
@@ -147,27 +147,64 @@ Abgebrochen und dokumentiert, mit Bildschirmfoto in `screens/`, wird bei:
 - keiner Antwort nach 20 s Ruhe;
 - einer Zug-Zeit über `turnTimeoutSec` (Standard 900 s).
 
-Es gibt kein stilles Wiederholen. Eine leere Erzählerantwort bleibt im Chat und steht im Bericht. Der Spieler sieht den Hinweis der Engine und spielt weiter, wie ein Mensch es täte.
+Es gibt kein stilles Wiederholen, keinen Swipe und kein Regenerieren.
+
+**Ergebnis eines Zugs** (Patch 8.4.1, `evaluator.mjs turnOutcome`). Nach jedem Senden ordnet der Runner ein, was zurückkam:
+
+| Ergebnis | bedeutet |
+|---|---|
+| `story` | eine Erzählerantwort mit Text |
+| `system` | die System-Antwort auf einen Befehl (`#status`, `#assign` …): ein gültiger Zug ohne Erzähler |
+| `engine` | die Antwort der Engine statt des Erzählers (Charaktererstellung, Rückfrage, Ablehnung) |
+| `narrator_empty` | eine Erzählerantwort ohne Text (im ersten Livetest zweimal: GLM verbrauchte die 4.096 Tokens im Reasoning) |
+| `missing` | gar keine Antwort |
+
+Bei `narrator_empty` endet der Lauf kontrolliert (`narrator_empty`), mit Bildschirmfoto `screens/turn-NNN-narrator_empty.png`. Der Grund nennt finish_reason, Antwort-Tokens, max. Tokens und die Zeichen von Reasoning und Text des Erzähleraufrufs. Chat, Aufrufe und Auswertung bleiben vollständig erhalten. Bei `missing` endet er als UI-Fehler. Das Ausgabelimit des Erzählers bleibt, wie es im Profil steht.
+
+**Hinweise (Toasts).** Jeder Hinweis trägt seine Herkunft: `runner`, wenn er während einer eigenen Aktion des Runners erscheint (das Umbenennen des Chats und 1,5 s danach), sonst `game`. Der Spieler sieht nur die des Spiels; die des Runners stehen im Bericht getrennt. Echte Warnungen von SillyTavern und der Engine bleiben Auffälligkeiten.
 
 ## 6. Spieler und Leitfäden
 
 **Was der Spieler sieht.** Nur `view()`:
-- den sichtbaren Text des Chats ab zwei Spielernachrichten zurück, wie die Seite ihn rendert;
-- den HUD unter der neuesten Antwort, aufgeklappt, wie ein Spieler ihn aufklickt;
-- die neuen Hinweise (Toasts).
+- den sichtbaren Text des Chats ab zwei Spielernachrichten zurück, wie die Seite ihn rendert, ohne die HUD-Panels;
+- den HUD unter der neuesten Antwort einmal als eigenen Abschnitt („YOUR CHARACTER AND THE WORLD“), aufgeklappt, wie ein Spieler ihn aufklickt: HP, MP, STA, Werte, freie Statpunkte, Ausrüstung, Mitgeführtes, Münzen, Quests, Ort. SillyTavern stellt den Klassen im Nachrichten-HTML `custom-` voran; der Treiber sucht beide Namen;
+- die neuen Hinweise des Spiels (Toasts), nicht die des Runners.
 
-Fold, Ereignisse und Records bekommt er nie. Den Bildschirmtext jedes Zugs speichert `player.jsonl`, nachprüfbar.
+Fold, Ereignisse und Records bekommt er nie. Einen eigenen Inventar- oder Zustandsspeicher führt der Runner nicht: Was der Spieler weiß, liest er Zug für Zug von der Seite. Den Bildschirmtext jedes Zugs speichert `player.jsonl`, nachprüfbar.
 
 **LLM-Spieler.**
 - Er ruft einen OpenAI-kompatiblen Endpoint direkt auf, nicht über SillyTavern. Seine Aufrufe stehen deshalb nur in `player.jsonl`, nicht zwischen den Spiel-Aufrufen.
 - Standard ist dasselbe Modell wie das Spiel. Ein eigenes stellst du mit `player.url`, `player.model` und `player.keyEnv` ein.
-- `player.extraBody` wird jedem Aufruf beigefügt, z. B. `{"thinking": {"type": "disabled"}}`, wenn GLM sonst die Tokens im Reasoning verbraucht.
+- **Rolle** (Patch 8.4.1, `PLAYER_ROLE`, `PLAYER_COMMANDS`). Er ist die Spielfigur, nie der Erzähler. Seine Nachricht enthält nur:
+  - was Alaric jetzt konkret tut („I cast Flame Lance at the closest skeleton.“);
+  - was er zu jemandem sagt;
+  - mehrere Handlungen nur, wo sie zusammengehören („I examine the doorway for traps. If I find nothing suspicious, I carefully open it.“);
+  - einen System-Befehl, als eigene Nachricht.
+
+  Nie darin: Gedanken, Gefühle, Beschreibungen von Ort oder Stimmung, Ergebnisse, Handlungen anderer Figuren, nicht bestätigte Dinge oder Erfolge, OOC-Bitten. Meist ein kurzer Satz.
+- **Befehle.** Freie Statpunkte nach einem Level-up verteilt er mit `#assign` (`#assign WIL 2 INT 2 VIT 1`) und prüft das Ergebnis an der System-Antwort oder am HUD. `#bag`, `#equipment`, `#status` nutzt er bei Unsicherheit, nicht vor jedem Schritt. Gegenstände, die HUD oder `#bag` nicht zeigen, benutzt er nicht.
+- **Reasoning-Einstellungen** (`player.reasoning`):
+  - `"profile"` (Standard): die Felder, die die Spiel-Requests deines Profils tragen. Das sind `reasoning_effort` des Presets (nur bei der Custom-Quelle, nicht `auto`) und die Reasoning-Felder aus `custom_include_body` (`reasoning_effort`, `clear_thinking`, `thinking`, `enable_thinking`, `reasoning`, `include_reasoning`, `chat_template_kwargs`). Sie gelten nur, wenn der Spieler denselben Endpoint und dasselbe Modell wie das Spiel nutzt. Mit einem anderen Modell werden sie nicht blind mitgeschickt.
+  - `"none"`: keine.
+  - ein Objekt: genau diese Felder.
+
+  Andere Felder des Include-Body (z. B. `top_k`, Provider-Routing) und Zugangsdaten übernimmt der Spieler nie. Vor dem Lauf schickt der Runner einen kurzen Probe-Request („Reply with the single word OK.“, 300 Tokens) mit den Feldern. Lehnt der Endpoint sie ab (HTTP 400/422), spielt der Spieler ohne sie, und der Bericht sagt das. `--check --ping` zeigt dieselbe Probe.
+- `player.extraBody` wird jedem Aufruf zusätzlich beigefügt (Vorrang vor `player.reasoning`).
+- Sein Limit bleibt 3.000 Tokens (`player.maxTokens`).
 - Antwort je Zug:
   ```json
   {"message": "…", "milestone": "<etappe>", "intent": "…", "stop": false, "stop_reason": null, "observations": "…"}
   ```
-- Eine unbrauchbare Antwort wird bis zu zweimal mit der Fehlermeldung nachgefragt, danach endet der Lauf als Runner-Fehler.
-- Wortlaut, Fähigkeiten, Ziele und Taktik wählt der Spieler selbst. Ein Stil pro Lauf (`personas` des Leitfadens, über `--seed` wählbar) sorgt für Abwechslung.
+  `observations` sind höchstens zwei kurze Sätze über Neues, sonst `""`.
+- **Fehlschläge** (je Versuch mit `strategy` und `cause` in `player.jsonl`). Höchstens drei Versuche je Zug:
+  - `reasoning_exhausted`: Das Reasoning verbrauchte das ganze Budget ohne Antwort (`finish_reason: length`, kein Inhalt). Derselbe Request würde dasselbe tun. Der zweite Versuch nimmt deshalb einen kurzen Prompt (die zwei neuesten Nachrichten, HUD, Etappe, die letzten Notizen) mit Temperatur ≤ 0,4, der dritte einen minimalen (die neueste Nachricht und der HUD) mit ≤ 0,2.
+  - `long_message`: eine Nachricht über 600 Zeichen Erzählung (Befehle ausgenommen). Sie wird einmal mit der Bitte um den Spielerzug allein nachgefragt.
+  - `invalid_json`: mit der Fehlermeldung nachgefragt.
+  - `http`: nach einer Wartezeit erneut.
+
+  Nach drei Fehlschlägen endet der Lauf als Runner-Fehler. Der Grund nennt die Ursache, bei Reasoning-Erschöpfung ausdrücklich.
+- **Notizen.** Die letzten sechs Züge stehen kurz da („4. you wrote: "…" — etappe: absicht — noted: …“), frühere nur als Etappen mit ihren Zügen. So wächst der Prompt nicht mit dem Lauf.
+- Wortlaut, Fähigkeiten, Ziele und Taktik wählt der Spieler selbst. Ein Stil pro Lauf (`personas` des Leitfadens, über `--seed` wählbar) sorgt für Abwechslung: direkt und knapp, dialogorientiert, taktisch und experimentierfreudig, gelegentlich kombinierte Handlungen.
 - Kleine Probleme umgeht er. Er bricht nur ab, wenn ein echter Blocker den Test sinnlos macht.
 
 **Regelbasierter Spieler** (`--player scripted`): die `scripted`-Schritte des Leitfadens.
@@ -192,7 +229,7 @@ Fold, Ereignisse und Records bekommt er nie. Den Bildschirmtext jedes Zugs speic
 - `maxTurns` ist das Budget einer Etappe: Darüber gilt sie im Bericht als „überschritten“, beim Dreifachen endet der Lauf als festgefahren.
 - Mitgeliefert:
   - `guild_dungeon_loop`: der Grundablauf;
-  - `patch_8_4`: Gruppenreaktion und Cull-Zahl.
+  - `patch_8_4`: Gruppenreaktion und Cull-Zahl, mit eigenen Etappen (Patch 8.4.1): `numeric_cull_active` (ein Cull-Vertrag, der seine Zahl nennt; ein reiner Clear-Vertrag zählt nicht; bietet das Board keinen, liest der Spieler es am nächsten Morgen erneut: An einem späteren Tag füllt das Board die Lücken, die andere Abenteurer hinterlassen haben. Der Runner verändert dafür keinen Zustand), `inside_dungeon` (optional), `open_group_attack` (offener Angriff auf ein Mitglied einer Gruppe, die ihn nicht bemerkt hat), dann Kampf, READY und Abgabe.
 
 ## 7. Auswertung
 
@@ -215,6 +252,8 @@ Fold, Ereignisse und Records bekommt er nie. Den Bildschirmtext jedes Zugs speic
 | `floor_cleared` | `dungeon.cleared` |
 | `quest_ready` / `quest_completed` | `quest.ready` / `quest.status → completed` |
 | `returned_to_guild` | nach dem Dungeon wieder in einer Gildenhalle |
+| `numeric_cull_active` | ein Vertrag mit einem DEFEAT/ATTACK-Ziel mit Zahl wird `active` |
+| `open_group_attack` | seine eigene Nachricht eröffnet einen Kampf gegen eine Gruppe, von der mindestens zwei ihn nicht bemerkt hatten, er war nicht verborgen, und niemand der Gruppe blieb draußen |
 
 **Kämpfe.** Für jeden Kampfbeginn hält die Auswertung fest:
 - wer im Kampf ist;
@@ -224,7 +263,10 @@ Fold, Ereignisse und Records bekommt er nie. Den Bildschirmtext jedes Zugs speic
 Gruppenmitglieder, die draußen bleiben, obwohl er nicht verborgen war, meldet sie als `group_stayed_out`. Am `.28`-Lauf (`tests/v4/live_1022b.json`) ist das dreimal der Fehler, den Patch 8.4 behebt.
 
 **Auffälligkeiten:**
-- leere Antwort;
+- leere Antwort (`empty_reply`);
+- Statpunkte in Worten statt mit `#assign` (`stat_words`, zur Prüfung: hat die Erzählung sie als verteilt erzählt?);
+- ein Gegner im Living Dungeon, den die Engine abwies (`dungeon_foe_refused`), oder eine Kreatur dort ohne Begegnung der Engine (`unslotted_dungeon_creature`, zur Prüfung);
+- ein Cull-Vertrag, dessen Texte eine andere Zahl nennen als sein Ziel (`cull_count`);
 - Extraktor fehlgeschlagen, spät oder repariert;
 - Planner fehlgeschlagen oder repariert;
 - Board fehlgeschlagen;
@@ -263,7 +305,9 @@ Treffer werden geschwärzt und im Bericht genannt.
 - **Laufzeit (gemessen):** Gesamtzeit, Einrichtung, Spiel- und Spielerzeit je Zug (Median, p90, max), Aufteilung laut Records, Hochrechnung auf 40 und 80 Züge.
 - **Aufbau:** Build, Git-Commit und nicht committete Dateien, SillyTavern, Browser, Provider und Modell, Preset (Abweichungen von Build und Datei), Generierung, Streaming, Karte, Lorebook, Engine-Einstellungen, nicht Übernommenes, Kampagne und Seed.
 - **Etappen** mit Zug und Nachricht.
-- **Spielereingaben** mit Absicht, Ort, HP/MP und Zug-Zeit, dazu die Beobachtungen des Spielers.
+- **Spielereingaben** mit Antwort (Erzähler, System, Engine, leer, keine), Absicht, Ort, HP/MP und Zug-Zeit, dazu die Beobachtungen des Spielers. Eine Beobachtung, die er vor Zug N notierte, betrifft das Ergebnis von Zug N−1 (den Bildschirm, auf dem er entschied); der Bericht schreibt „zu Zug N−1 (notiert vor Zug N)“, vor dem ersten Zug „zum Start“.
+- **Spieler-Reasoning (wirksam)** im Aufbau: die Felder, die seine Requests tatsächlich trugen, ihre Herkunft, das Ergebnis der Probe und sein Tokenlimit; ohne Schlüssel und Header.
+- Unter **Auffälligkeiten** zusätzlich: wiederholte Fehlschläge des Spielers nach Ursache (mit Zügen) und die Hinweise des Runners getrennt („dem Spieler nicht gezeigt“).
 - **Kämpfe**, **Quests** und **Auffälligkeiten**.
 - **Performance** je Rolle: Median, p90, Tokens, Cache, Reasoning, finish_reason, leere Antworten.
 - **Schutz und Geheimnisse:** Gelesenes unverändert? Profilordner unverändert? Wurde `secrets.json` nicht gelesen? Scan-Ergebnis? Instanz gelöscht?
@@ -288,7 +332,8 @@ Der Selbsttest ist für die Cloud und für jede Änderung am Runner gedacht.
   - Avereth-Karte mit eigener Begrüßung und eine fremde Karte;
   - Lorebook und ein persönlicher Chat;
   - als Köder eine `secrets.json` mit Schlüssel, ein Authorization-Header und ein Proxy-Passwort.
-- Dann spielt er einen Lauf mit dem LLM-Spieler (über den Stub) und einen mit dem regelbasierten Spieler.
+- Das Profil trägt wie das des ersten Livetests `custom_include_body` mit `clear_thinking` und `reasoning_effort`.
+- Dann spielt er vier Läufe: mit dem LLM-Spieler (über den Stub), mit dem regelbasierten Spieler, über den Reverse-Proxy-Weg, und einen regelbasierten Lauf, dessen vierte Nachricht die Stub-Marke `[stub-empty]` trägt: Der Stub antwortet dem Erzähler darauf ohne Text mit `finish_reason: length`.
 
 Geprüft wird:
 - Fake-Profil und SillyTavern-Checkout bleiben unverändert.
@@ -296,18 +341,21 @@ Geprüft wird:
 - Kein Köder erscheint im Laufordner.
 - Der Stub-Schlüssel kommt nur über SillyTavern beim Provider an.
 - Alle Exporte sind da, jeder Aufruf hat Rolle, Zeit, Modell und Tokens, der Erzähler bekommt Vertrag und Engine-Block ohne Streaming.
-- Der Spieler sah nur Seitentext.
+- Der Spieler sah nur Seitentext, den HUD als eigenen Abschnitt, keinen Hinweis des Runners; seine Beobachtungen gehören zum Zug davor.
+- Die Requests des Spielers tragen dieselben Reasoning-Felder wie die des Spiels, der Bericht nennt sie; auf dem Proxy-Weg (Quelle `openai`) trägt er keine.
+- `#status` ist ein System-Zug, kein leerer; die leere Erzählerantwort in Zug 4 beendet den Lauf (`narrator_empty`) ohne zweiten Erzähleraufruf, mit Grund, Bildschirmfoto und allen Exporten.
 - Der Bericht kennzeichnet den Stub, der Scan ist sauber.
 - Es gibt keine Seiten- und keine Serverfehler.
 
 Der Bericht eines Stub-Laufs trägt oben: **„STUB-SELBSTTEST — kein echter Livetest.“** Über das Verhalten der Engine oder eines Modells sagt er nichts.
 
-Die Bausteine ohne SillyTavern testet `tests/live_runner/live_runner.test.js`, Teil von `npm test`:
+Die Bausteine ohne SillyTavern testen `tests/live_runner/*.test.js`, Teil von `npm test`:
 - Auswertung am `.28`-Lauf;
 - Aufrufe aus einem Server-Log;
 - Scan und Schreibschutz;
-- Import an einem Fake-Profil;
-- Spieler, Leitfäden, Optionen, Bericht.
+- Import an einem Fake-Profil, Verbindungsweg und Preflight;
+- Spieler, Leitfäden, Optionen, Bericht;
+- Patch 8.4.1 (`patch841_runner.test.js`): Spielerregeln, Reasoning-Felder und ihre Herkunft, Strategien bei Reasoning-Erschöpfung und langer Nachricht, Zug-Ergebnisse am ersten Livetest (`live_1022c.json`: Züge 17 und 18 leer) und am `.28`-Lauf (`#assign` als System-Zug), die neuen Prüfungen und Auffälligkeiten, `open_group_attack` am nachgespielten offenen Flame Lance, Herkunft der Hinweise, Bericht.
 
 ## 11. Grenzen
 
@@ -316,6 +364,7 @@ Die Bausteine ohne SillyTavern testet `tests/live_runner/live_runner.test.js`, T
 - **Reverse Proxy.** SillyTavern schickt das Proxy-Passwort vom Browser im Request an seinen Server (so arbeitet SillyTavern selbst); in der isolierten Instanz ist das der Schlüssel aus der Umgebungsvariable. Er steht während des Laufs in der `settings.json` der Instanz und wird am Ende dort geleert und mit der Instanz gelöscht.
 - **Karte und Lorebook** kommen aus diesem Build: Getestet wird der Build, nicht der Stand deines Profils. Abweichungen nennt der Bericht.
 - **Streaming ist aus** (§4).
-- **Kein Swipe, kein Regenerieren.** Diese Wege testet weiter `npm run smoke:st:c`.
+- **Kein Swipe, kein Regenerieren.** Diese Wege testet weiter `npm run smoke:st:c`. Eine leere Erzählerantwort beendet den Lauf (§5).
+- **Spielerregeln.** Ob das Modell die Regeln für Länge und Rolle einhält, zeigt erst ein echter Lauf; der Runner fragt eine zu lange Nachricht nur einmal nach.
 - **ST-Start.** SillyTavern baut pro Instanz sein Frontend neu (etwa 20–60 s beim Start).
 - **Regelbasierter Spieler.** Seine `until`-Ausdrücke prüfen nur Text. Für einen echten Lauf ist der LLM-Spieler gedacht.

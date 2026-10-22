@@ -1921,4 +1921,12 @@ Erster automatisierter Livetest 22.10.2026 05:43 (`tests/v4/live_1022c.json`). V
   - Eine Kreatur, die die Geschichte dort bringt und die keine Begegnung der Engine ist, wird abgewiesen (`dungeon_foe`): kein Wesen, kein Kampf, keine XP. Der nächste Erzählerblock erhält eine Korrektur. Wesen ohne Gefahr und alles außerhalb bleiben.
 - **Board.** Ein Clear-Vertrag heißt nicht „Cull …“ (`board-4.8`).
 - **Tests:** `tests/v4/patch841.test.js` (11; auf .29 acht rot, drei Absicherungen grün).
+- **Live-Runner** (eigener Commit, `docs/LIVE_RUNNER.md`):
+  - Der LLM-Spieler spielt die Spielfigur mit kurzen Handlungen, Rede und Befehlen (`#assign` nach dem Level-up).
+  - Er schickt die Reasoning-Felder des Profils an denselben Endpoint und dasselbe Modell. Eine Reasoning-Schleife bekommt kürzere Requests statt desselben.
+  - Der HUD erscheint als eigener Abschnitt.
+  - Eine leere Erzählerantwort beendet den Lauf kontrolliert; ein Befehl mit System-Antwort ist ein gültiger Zug.
+  - Hinweise des Runners sind vom Spiel getrennt; Beobachtungen gehören zum Zug davor.
+  - Neue Prüfungen `numeric_cull_active` und `open_group_attack` im Leitfaden `patch_8_4`.
+  - Tests: `tests/live_runner/patch841_runner.test.js` (13), Stub-Selbsttest 46 Prüfungen (11 neu).
 

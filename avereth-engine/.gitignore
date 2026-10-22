@@ -9,3 +9,5 @@ bench_extract_out*.json
 # Live runner (docs/LIVE_RUNNER.md): the local config (paths) and the run folders (chats, logs) stay local
 tools/st_live/live.config.json
 tools/st_live/runs/
+# Patch 8.4.1: the live runner's Playwright (npm install --no-save playwright-core, docs/LIVE_RUNNER.md §2)
+node_modules/

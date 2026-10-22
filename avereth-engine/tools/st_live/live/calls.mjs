@@ -15,7 +15,7 @@ export function roleOf(req) {
     if (sys.startsWith('You are the command interpreter')) return sys.includes('Actions with skills, in fights and on things') ? 'plan' : 'interpret';
     if (sys.startsWith('You read one reply')) return 'extract';
     if (sys.startsWith("You write the official contracts on an Adventurers' Guild board")) return 'board';
-    if (sys.startsWith('You are a human test player')) return 'player';
+    if (sys.startsWith('You are a test player') || sys.startsWith('You are a human test player')) return 'player';
     if (msgs.some((m) => String(m.content ?? '').startsWith('[AVERETH ENGINE'))) return 'narrator';
     return { 900: 'plan', 2500: 'extract', 3000: 'board' }[req?.max_tokens] || 'other';
 }

@@ -24,10 +24,10 @@
   ],
   "limits": { "maxTurns": 80, "maxMinutes": 240, "sameFailure": 3 },
   "personas": [
-    "cautious: you look around before you act, ask before you commit, and keep an eye on your mana",
-    "direct: you go straight for each goal and attack early",
-    "talkative: you speak with the clerk and the people you meet and ask them questions before you act",
-    "tactical: you use both skills on purpose, pick your targets (the nearest, the wounded) and keep your distance"
+    "direct and brief: you go straight for each goal, your messages are short actions",
+    "dialogue-oriented: you talk with the clerk and the people you meet and ask before you act; your messages are often one line of speech",
+    "tactical and experimental: you use both skills, pick your targets on purpose (the nearest, the wounded) and try another way when one fails",
+    "now and then a combined action: you join two or three steps that belong together into one message, otherwise you keep it short"
   ],
   "scripted": [
     { "say": "Mage", "milestone": "creation_complete" },

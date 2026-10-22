@@ -6,6 +6,20 @@
 import { foldChat, rec } from '../../../src/host.js';
 import { floorAt } from '../../../src/v4/living.js';
 import { hallOf, placeName } from '../../../src/v4/domain.js';
+import { trueDungeonOf } from '../../../src/v4/dungeon.js';
+import { spendsStatPoints } from '../../../src/commands.js';
+
+const STATS = { rules: { stats: ['STR', 'VIT', 'AGI', 'INT', 'PER', 'WIL'] } };
+const KILLS = new Set(['ATTACK', 'DEFEAT']);
+const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+/** The counts a contract text says (digits and number words), "level 1" and the like left out. */
+function countsIn(text) {
+    const t = String(text || '').toLowerCase().replace(/\blevels?\s+\d+\b/g, ' ');
+    const out = new Set();
+    for (const m of t.matchAll(/\b(\d+)\b/g)) out.add(Number(m[1]));
+    for (const [i, w] of NUMBER_WORDS.entries()) if (new RegExp(`\\b${w}\\b`).test(t)) out.add(i);
+    return [...out];
+}
 
 export const CHECKS = {
     creation_complete: 'the character is created (creation.completed)',
@@ -21,9 +35,34 @@ export const CHECKS = {
     quest_ready: 'a contract reached its end state (quest.ready)',
     returned_to_guild: 'back in a Guild hall after the Dungeon',
     quest_completed: 'a contract turned in (quest.status → completed)',
+    // Patch 8.4.1: the two cases of Patch 8.4 a run has to reach to say something about it
+    open_group_attack: 'his open attack (not hidden) on one of a group unaware of him: the whole group in the fight from its start',
+    numeric_cull_active: 'a cull contract that names its number of foes became his (a DEFEAT/ATTACK objective with a count)',
 };
+
+/**
+ * Patch 8.4.1 (live 22.10.2026 05:43: two narrator replies without story text were played on as turns): what came back
+ * for the player message at u. story: a narrator reply with text; narrator_empty: a narrator reply without it; system:
+ * a command's System answer; engine: the engine's own answer instead of the narrator's (creation, a question back, a
+ * refusal); missing: nothing.
+ */
+export function turnOutcome(chat, u) {
+    const user = chat[u];
+    const end = chat.findIndex((m, i) => i > u && m.is_user);
+    const after = chat.slice(u + 1, end < 0 ? chat.length : end);
+    const reply = after.find((m) => !m.is_user && !m.is_system);
+    const panel = after.find((m) => m.is_system);
+    const command = /^\s*#\s*[a-z]+/i.test(String(user?.mes || ''));
+    if (reply) {
+        const r = rec(reply);
+        const empty = !String(reply.mes || '').trim() || !!r?.narration?.empty;
+        return { kind: empty ? 'narrator_empty' : 'story', at: chat.indexOf(reply) };
+    }
+    if (panel) return { kind: command ? 'system' : 'engine', at: chat.indexOf(panel), reason: rec(user)?.ir?.reason || null };
+    return { kind: 'missing', at: null };
+}
 const PANEL_MARKS = { clarify: /\bCLARIFY\b/, not_taken: /\bNOT TAKEN\b/, refused: /\bREFUSED\b/, blocked: /\bBLOCKED\b/, failed: /\bFAILED\b/, not_recorded: /\bNOT RECORDED\b/ };
-const FOLD_ON = new Set(['scene.moved', 'quest.status', 'entity.status']);
+const FOLD_ON = new Set(['scene.moved', 'quest.status', 'entity.status', 'entity.created']);
 
 /** The record's LLM calls (Patch 8.2 telemetry): plan/interp, board, extraction. */
 function recordCalls(r) {
@@ -63,6 +102,12 @@ export function evaluate(chat, { guide = null } = {}) {
             if (r.extraction?.status === 'late') issue(i, 'extraction_late', 'the extraction came late');
             if (r.extraction?.repaired) issue(i, 'extraction_repaired', 'the extractor\'s first answer needed a repair');
         }
+        // Patch 8.4.1: Stat Points spent in words (only #assign spends them): for review, did the story tell them as done?
+        if (m.is_user && !/^\s*#/.test(String(m.mes || '')) && spendsStatPoints(m.mes, STATS)) {
+            const end = chat.findIndex((x, j) => j > i && x.is_user);
+            const assigned = chat.slice(i, end < 0 ? chat.length : end).some((x) => (rec(x)?.events || []).some((e) => e.t === 'stat.assigned'));
+            if (!assigned) issue(i, 'stat_words', `the player spent Stat Points in words, not with #assign; nothing was assigned (for review: did the story tell them as done?)`);
+        }
         if (m.is_user && r) {
             if (r.plan?.failed || r.interp?.failed) issue(i, 'planner_failed', `the planner failed${r.plan?.error ? `: ${r.plan.error}` : ''}`);
             if (r.plan?.repaired || r.interp?.repaired) issue(i, 'planner_repaired', 'the planner\'s first answer needed a repair');
@@ -90,6 +135,13 @@ export function evaluate(chat, { guide = null } = {}) {
                     const sq = after?.quests?.[d.id];
                     if (sq) Object.assign(q, { title: sq.title, dungeon: sq.dungeon || null, floor: sq.floor ?? null, task: sq.task, end_state: sq.desired_end_state });
                     if (d.to === 'active' && (d.taker || 'pc') === 'pc' && (sq?.dungeon || q.dungeon)) hit('dungeon_quest_active', i, { quest: d.id, title: q.title });
+                    // Patch 8.4.1: a cull that names its number, and whether its texts say that number
+                    const kill = (sq?.objectives || []).find((o) => KILLS.has(o.verb) && Number(o.qty) > 0);
+                    if (d.to === 'active' && (d.taker || 'pc') === 'pc' && kill) {
+                        hit('numeric_cull_active', i, { quest: d.id, title: q.title, count: Number(kill.qty), dungeon: sq.dungeon || null });
+                        const said = countsIn(`${sq.title} ${sq.task || ''} ${sq.desired_end_state || ''}`);
+                        if (said.some((n) => n !== Number(kill.qty))) issue(i, 'cull_count', `${q.title}: its objective counts ${kill.qty}, its texts say ${said.join(', ')} (for review)`);
+                    }
                     if (d.to === 'completed') hit('quest_completed', i, { quest: d.id, title: q.title });
                     break;
                 }
@@ -115,6 +167,10 @@ export function evaluate(chat, { guide = null } = {}) {
                     encounters.push(x);
                     hit('fight_started', i);
                     if (foes.length >= 2) hit('group_fight', i, { foes: foes.length });
+                    // Patch 8.4.1: his own message opened it, on a group of whom two or more had not noticed him, while
+                    // he was not hidden, and nobody of the group stayed out
+                    const unaware = foes.filter((id) => before?.scene?.awareness?.[id] === 'unaware');
+                    if (m.is_user && !concealed && unaware.length >= 2 && groups.length === 1 && !out.length) hit('open_group_attack', i, { foes: foes.length, unaware: unaware.length });
                     if (out.length && !concealed) issue(i, 'group_stayed_out', `fight ${enc.id}: ${out.length} member(s) of the fought group stayed out though he was not hidden (${out.join(', ')})`);
                     break;
                 }
@@ -132,7 +188,19 @@ export function evaluate(chat, { guide = null } = {}) {
                     if (d.status === 'dead' && (role === 'guard' || role === 'boss')) hit('guardian_defeated', i, { id: d.id, role });
                     break;
                 }
-                case 'delta.rejected': counts.rejected[d.rule || '?'] = (counts.rejected[d.rule || '?'] || 0) + 1; break;
+                case 'delta.rejected':
+                    counts.rejected[d.rule || '?'] = (counts.rejected[d.rule || '?'] || 0) + 1;
+                    if (d.rule === 'dungeon_foe') issue(i, 'dungeon_foe_refused', `the narrator brought a foe the Dungeon's engine did not (${d.item?.species || d.item?.ref || '?'}): refused, no fight (Patch 8.4.1 guard)`);
+                    break;
+                case 'entity.created': {
+                    // a creature inside a Living Dungeon that is none of its encounters and no harmless one: for review
+                    const en = d.entity || {};
+                    const root = after?.scene?.at ? trueDungeonOf(after, after.scene.at) : null;
+                    if (en.kind === 'creature' && root && after.dungeons?.[root] && after.scene.at !== root && !after.entities?.[en.id]?.slot && en.threat !== false) {
+                        issue(i, 'unslotted_dungeon_creature', `${en.species || en.id} came into ${after.places[root]?.name || root} without an encounter of the engine (for review)`);
+                    }
+                    break;
+                }
                 default: break;
             }
         }

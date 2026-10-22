@@ -169,8 +169,18 @@ test('preflight of --check: the player\'s own model is asked for too', async () 
     const imp = importProfile({ stDir: profile({ chat_completion_source: 'custom', custom_url: PROXY, custom_model: 'zai-org/GLM-4.6' }) });
     const list = { data: FIVE.map((id) => ({ id })) };
     const o = options(['--config', path.join(tmp(), 'none.json')], {});
-    assert.deepEqual((await preflight(o, imp, 'K', { fetchImpl: fakeFetch(200, list) })).map((r) => r.good), [true, true]);
+    // Patch 8.4.1: and one short request with the player's reasoning fields (the preset's reasoning_effort here)
+    const sent = [];
+    const both = async (u, init) => { sent.push([u, init.body ? JSON.parse(init.body) : null]); return /\/models$/.test(u) ? fakeFetch(200, list)() : fakeFetch(200, { choices: [{ message: { content: 'OK', reasoning_content: 'r' }, finish_reason: 'stop' }] })(); };
+    const first = await preflight(o, imp, 'K', { fetchImpl: both });
+    assert.deepEqual(first.map((r) => r.good), [true, true, true]);
+    assert.equal(first[2].what, 'Spieler-Reasoning (reasoning_effort="low")');
+    assert.match(first[2].detail, /^angenommen \(as the game's own requests carry them .*, same endpoint and model\); Probe: finish stop, Antwort „OK“, Reasoning 1 Zeichen$/);
+    assert.deepEqual([sent[1][0], sent[1][1].reasoning_effort, sent[1][1].model, sent[1][1].max_tokens], [`${PROXY}/chat/completions`, 'low', 'zai-org/GLM-4.6', 300]);
+    const refused = await preflight(o, imp, 'K', { fetchImpl: async (u) => (/\/models$/.test(u) ? fakeFetch(200, list)() : fakeFetch(400, { error: { message: 'unknown field reasoning_effort' } })()) });
+    assert.deepEqual([refused[2].good, /lehnt sie ab: HTTP 400: unknown field reasoning_effort/.test(refused[2].detail)], [false, true]);
     o.player.model = 'meta-llama/Llama-3.3-70B';
     const rows = await preflight(o, imp, 'K', { fetchImpl: fakeFetch(200, list) });
-    assert.deepEqual(rows.map((r) => [r.good, r.what]), [[true, 'Endpoint erreichbar (GET /models)'], [true, 'Modell-ID (SillyTavern) in der Modellliste'], [true, 'Endpoint erreichbar (GET /models) [Spieler]'], [false, 'Modell-ID (Spieler) in der Modellliste [Spieler]']]);
+    assert.deepEqual(rows.map((r) => [r.good, r.what]), [[true, 'Endpoint erreichbar (GET /models)'], [true, 'Modell-ID (SillyTavern) in der Modellliste'], [true, 'Endpoint erreichbar (GET /models) [Spieler]'], [false, 'Modell-ID (Spieler) in der Modellliste [Spieler]'], [true, 'Spieler-Reasoning (keine Felder)']]);
+    assert.match(rows[4].detail, /another endpoint or model/, 'another model gets none of the profile\'s fields');
 });

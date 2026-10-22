@@ -80,7 +80,9 @@ export function pcLine(state, content, { combat = !!state.encounter, items = tru
     const e = state.entities.pc;
     const s = e.sheet;
     const dv = deriveCharacter(s, content);
-    const cls = s.class ? content.classes.get(s.class).name : 'no Class yet';
+    // Patch 9A review: a campaign of the three-class rules says so after his class (the lorebook's class entries tell
+    // the two rulesets apart by it); a legacy campaign's line is as it was
+    const cls = `${s.class ? content.classes.get(s.class).name : 'no Class yet'}${rulesetOf(state) >= 2 ? ' (three-class rules)' : ''}`;
     const guild = truth(state, 'pc', 'guild_rank')[0]?.o;
     const skillList = Object.entries(s.skills).map(([id, v]) => `${content.skills.get(id)?.name || id} P${v.prof}`);
     const weapon = weaponAttackOf(s, content, rulesetOf(state)); // Patch 9A: his weapon's own attack, no learned Skill

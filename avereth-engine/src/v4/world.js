@@ -33,7 +33,7 @@ import { complexOf, dungeonOf, trueDungeonOf, classified, rankText, linkBetween,
 import { itemTraits, useOf, itemProfile, priceAudit } from './items.js';
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
-import { anchorFor } from '../content.js';
+import { anchorFor, templateFor, rulesetOf } from '../content.js';
 import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotForNew, resolvedSlotNamed, slotEntityEvents, syncEvents, insideOf } from './living.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
@@ -685,7 +685,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                     }
                     const id = uniqueEntityId(s, d.name || d.role || d.ref);
                     bornHere.add(id);
-                    emit({ t: 'entity.created', d: { entity: { id, kind: 'npc', name: d.name ? String(d.name).slice(0, 60) : null, descriptors: [...new Set([...(d.role ? [d.role] : []), ...(d.desc || []), d.ref].map((x) => String(x).toLowerCase().slice(0, 40)))], traits: (d.desc || []).join(', ').slice(0, 240), status: 'alive', location: where ? locationOf(s, where) : s.scene.location, at: where, created: { turn: s.turn, minute: s.clock.minute }, source: { kind: 'narration', msg }, card: {}, template: 'commoner' } } });
+                    const descriptors = [...new Set([...(d.role ? [d.role] : []), ...(d.desc || []), d.ref].map((x) => String(x).toLowerCase().slice(0, 40)))];
+                    const traits = (d.desc || []).join(', ').slice(0, 240);
+                    // Patch 9A review: under ruleset 2 a person established elsewhere gets the template of their role as
+                    // anyone met here does (a bandit, a hedge mage), fixed now; a legacy campaign keeps 'commoner'
+                    const template = rulesetOf(s) >= 2 ? templateFor(content, [...descriptors, traits].join(' '))?.id || 'commoner' : 'commoner';
+                    emit({ t: 'entity.created', d: { entity: { id, kind: 'npc', name: d.name ? String(d.name).slice(0, 60) : null, descriptors, traits, status: 'alive', location: where ? locationOf(s, where) : s.scene.location, at: where, created: { turn: s.turn, minute: s.clock.minute }, source: { kind: 'narration', msg }, card: {}, template } } });
                     refs.set(normText(d.ref), id);
                     if (d.name) refs.set(normText(d.name), id);
                     if (d.role) occupation(id, d.role);

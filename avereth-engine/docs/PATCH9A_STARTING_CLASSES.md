@@ -111,6 +111,20 @@ Engine/Content und Runner sind getrennte Commits.
 
 **Ergebnis:** `npm test` 1090/1090 mit dem Engine-Commit (vorher 1074), 1092/1092 mit dem Runner-Commit.
 
+## 6a. Nachtrag nach dem Review (4.3.0-c.6.6.34)
+
+- **Abwesend etablierte Personen** (`v4/world.js`, `person.new` mit `present:false`) wurden immer mit `template: 'commoner'` erzeugt. Weil `rulesetTwoPerson` das gespeicherte Template vor der Rollenerkennung nimmt, kämpfte ein so etablierter Bandit oder Magier später als untrainierter Bürger ohne Skills. Das ist im Produktpfad nachgestellt: Erwähnung, später `enter`, Sheet erst beim Angriff.
+  - **Korrektur:** Unter Regelstand 2 bekommt die Person bei ihrer Erzeugung das Template ihrer Rolle (`templateFor` über Rolle, Beschreibung, Ref), wie jemand, der in der Szene eingeführt wird. Danach bleibt es fest.
+  - **Unverändert:** Legacy-Kampagnen behalten `commoner`. Bestehende Personen, gespeicherte Sheets und die Bevorzugung des gespeicherten Templates bleiben, es wird nichts rückwirkend umgestuft.
+- **Lorebook in historischen Kampagnen.** Die Klasseneinträge 13 und 14 gelten in SillyTavern global, der Erzähler sah aber nur „Warrior“ oder „Mage“. Ein historischer Warrior hätte daher „keine Evolution an einem Level“ und „jede Klasse kann jeden Bogen nutzen“ gelesen; dort gelten aber die Meilensteine, und es gibt keinen Bow Shot.
+  - **Korrektur:** Die Charakterzeile des Engine-Blocks trägt **nur unter Regelstand 2** den Vermerk „(three-class rules)“ (`context.js pcLine`); die Zeile historischer Kampagnen ist unverändert. Die beiden Einträge unterscheiden danach: mit Vermerk drei Klassen, Waffen frei, keine Evolution; ohne Vermerk fünf Klassen, Waffenangriffe der Klasse, Meilensteine 15/30/45/60/75/90.
+- **Tests:** drei neue in `patch9a.test.js`:
+  - Bandit und Hedge Mage, später getroffen: trainierter Rogue bzw. Mage mit Basic Attack und zwei passenden Skills; ein Händler bleibt untrainiert.
+  - Legacy-Gegenfall: `commoner`, das alte Sheet.
+  - Charakterzeile mit und ohne Vermerk; die Lorebook-Texte für beide Regelstände.
+  - Gegenprobe auf dem Stand vor der Korrektur: Bandit-Test rot (`commoner` statt `bandit`), Legacy-Test grün.
+- **Ergebnis:** `npm test` 1095/1095.
+
 ## 7. Runner (eigener Commit)
 
 - **Leitfäden:** Sie bleiben unverändert. Der Mage mit Flame Lance + Blink ist bei zwei freien Mage-Skills weiter gültig. Alte Fixtures bleiben nutzbar, weil sie ohne `ruleset` als Legacy falten.

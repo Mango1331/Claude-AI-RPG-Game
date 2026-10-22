@@ -423,3 +423,71 @@ test('9A F: the combat HUD shows every action: attacks with reach and cost, defe
     const low = renderHud(w.state, content, 'closed');
     assert.match(low, /<strong>Defense<\/strong> · <span class="avereth-skill avereth-skill-unusable">Guard <span class="avereth-skill-cost">\(5 STA, \+DEF till his next turn\)<\/span> <span class="avereth-skill-short">not enough STA<\/span>/);
 });
+
+// ------------------------------------------------------------------------------------------------ review: absent first
+/**
+ * Review of Patch 9A: the narrator establishes a person elsewhere (person.new present:false with their role), they come
+ * into the scene later (enter), and their sheet is built only when he attacks them: the template of their role, fixed at
+ * their creation, not the commoner's.
+ */
+async function metLater(c, { name, role, desc, cls = 'Warrior', skills = 'Heavy Slash + Guard' }) {
+    const g = await campaign(c, { cls, skills });
+    await say(g, '*i ask the carter about the road*', { type: 'talk', to: null, quote: 'i ask the carter about the road' });
+    await g.reply(`The carter warns him of ${name}, a ${role} out on the north road.`, { expected: {}, deltas: [
+        { seq: 1, type: 'person.new', ref: name, name, role, desc, present: false, relevant: true, threat: null, at: null, band: null },
+    ] });
+    const id = Object.values(g.state().entities).find((e) => e.name === name).id;
+    const created = { ...g.state().entities[id] };
+    assert.ok(!g.state().scene.present.includes(id), `${name}: not here when established`);
+    assert.equal(created.sheet, undefined);
+    await say(g, '*i wait by the road*', { type: 'wait', minutes: 30, quote: 'i wait by the road' });
+    await g.reply(`${name} steps out onto the road right in front of him.`, { expected: {}, deltas: [
+        { seq: 1, type: 'enter', who: id },
+        { seq: 2, type: 'position', who: id, band: 'ENGAGED', cover: null, cluster: null, scope: null, evidence: 'right in front of him' },
+    ] });
+    assert.ok(g.state().scene.present.includes(id), `${name}: met now`);
+    assert.equal(g.state().entities[id].sheet, undefined, 'no sheet before the fight');
+    await say(g, `*i attack ${name}*`, { type: 'use_skill', skill: null, target: id, quote: `i attack ${name}` });
+    return { created, sheet: g.state().entities[id].sheet };
+}
+
+test('9A review: a bandit and a hedge mage established elsewhere and met later fight as a trained Rogue and a trained Mage, not as untrained commoners', async () => {
+    const bandit = await metLater(content, { name: 'Garrick', role: 'bandit', desc: ['bandit', 'scarred'] });
+    assert.equal(bandit.created.template, 'bandit');
+    assert.deepEqual([bandit.sheet.class, bandit.sheet.training, bandit.sheet.template], ['rogue', 'trained', 'bandit']);
+    assert.ok(bandit.sheet.skills['rogue.basic_attack']);
+    assert.ok(fills(bandit.sheet, ['attack', 'utility']), JSON.stringify(bandit.sheet.skills));
+    const mage = await metLater(content, { name: 'Ilsa', role: 'hedge mage', desc: ['hedge mage'] });
+    assert.equal(mage.created.template, 'hedge_mage');
+    assert.deepEqual([mage.sheet.class, mage.sheet.training, mage.sheet.template], ['mage', 'trained', 'hedge_mage']);
+    assert.ok(mage.sheet.skills['mage.basic_attack']);
+    assert.ok(fills(mage.sheet, ['attack', 'defense']), JSON.stringify(mage.sheet.skills));
+    // an ordinary role stays an untrained commoner
+    const merchant = await metLater(content, { name: 'Odo', role: 'merchant', desc: ['merchant'] });
+    assert.deepEqual([merchant.created.template, merchant.sheet.training, Object.keys(merchant.sheet.skills)], ['commoner', 'untrained', []]);
+});
+
+test('9A review: in a legacy campaign a person established elsewhere is created as before (commoner, the legacy sheet)', async () => {
+    const bandit = await metLater(legacy, { name: 'Garrick', role: 'bandit', desc: ['bandit', 'scarred'] });
+    assert.equal(bandit.created.template, 'commoner');
+    assert.deepEqual([bandit.sheet.class, bandit.sheet.training, Object.keys(bandit.sheet.skills)], ['warrior', undefined, ['warrior.basic_attack']]);
+});
+
+test('9A review: the lorebook class entries tell the rulesets apart by the engine\'s mark; a legacy campaign\'s PC line carries none, so its five-class milestones stand', async () => {
+    const { pcLine } = await import('../../src/context.js');
+    const book = JSON.parse(fs.readFileSync(path.join(ROOT, 'lorebook/Avereth_World_Lore_v0.14.json'), 'utf8'));
+    const entry = (c) => Object.values(book.entries).find((e) => e.comment === c).content;
+    const frame = entry('POWER — Class framework');
+    const evo = entry('POWER — Class Evolution generation body');
+    assert.match(pcLine(hero('Warrior', 'Heavy Slash + Guard').state, content), /^Alaric — Level 1 Warrior \(three-class rules\), Power Rank F \|/);
+    const old = new Game(legacy);
+    old.input('Warrior');
+    old.input('Heavy Slash + Guard');
+    assert.match(pcLine(old.state, legacy), /^Alaric — Level 1 Warrior, Power Rank F \|/, 'the legacy line is as it was');
+    // the three-class rules: three classes, any weapon, no evolution; without the mark: the five classes and the milestones
+    assert.match(frame, /Marked "\(three-class rules\)" after his class: the Base Classes are Warrior .* Mage .* and Rogue .*Any class may use any weapon/);
+    assert.match(frame, /Without that mark \(a campaign begun earlier\): the five Base Classes Warrior \(STR\/VIT\), Mage \(INT\/WIL\), Guardian .*Duelist .*Ranger .*a weapon's attacks are those of the class/);
+    assert.match(evo, /Under the three-class rules \(the engine's line for Alaric marks his class "\(three-class rules\)"\) no Class Evolution is tied to a Level/);
+    assert.match(evo, /In a campaign without that mark \(begun with the five older Base Classes\) the standard milestones are Levels 15\/30\/45\/60\/75\/90/);
+    assert.match(panel(old, '#class'), /Next known evolution milestone: Level 15/, 'what the legacy lorebook text says, the legacy #class shows');
+});

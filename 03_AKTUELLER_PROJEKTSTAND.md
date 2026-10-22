@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 22. Oktober 2026 · Fassung 11 (Patch 8.4/.29 unabhängiger Git-Code-Review; kleine Schutz-Cull-Restinkonsistenz; neuer GLM-Livetest noch ausstehend)  
+**Stichtag:** 22. Oktober 2026 · Fassung 12 (automatisierter ST-Live-Runner 044d5b3 unabhängig im Git-Code geprüft; echter Windows-/GLM-Test weiter offen)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,14 +13,15 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 22.10.2026 unabhängig über GitHub geprüft** | 4d08d4f6c8eb7a96e0534066d4b38a1f18d74098 |
+| **HEAD am 22.10.2026 unabhängig über GitHub geprüft** | 044d5b38057367f94bdd7273b7296f3254bae8be |
 | **Build direkt aus package.json und manifest.json geprüft** | 4.3.0-c.6.6.29 |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | **Patch 8.4 (.29) implementiert und gepusht, unabhängig im Code geprüft:** Gruppen-Combat bei offener Attacke mit `unaware`-Mitgliedern (Concealment getrennt), reine Dungeon-Culls mit synchronem Task/Qty/EndState, gemeinsame Mengendarstellung. **Ein Schutz-Cull-Randfall bleibt** (§5l). Kein echter .29-Provider-Livetest. |
-| **Nächster Schritt** | **Kleinen Schutz-Cull-Task-Randfall aus §5l** bei Gelegenheit mit eigener Regression bereinigen (DEFEND erlaubt `cullNumbers`-Clamp, `cullTask` belässt aber alte Menge). **Danach echte .29-GLM-Fortsetzung** mit mehreren Gegneraktionen bis Dungeon-Boss/Floor-Clear sowie Old-Crown-Gate/Siegel. A0/A/C, Board-Retry und Narrator-Cache bleiben separate Performancearbeiten. |
+| **Patchstatus** | **Patch 8.4 Gameplay (.29) plus automatisierter ST-Live-Runner implementiert** (`044d5b3`, §5m); Gameplay-/Engine-Version weiter .29, kein echter GLM-Runner-Livetest. Guard-/DEFEND-Cull-Text-Randfall (§5l) offen. |
+| **Nächster Schritt** | **Zuerst lokaler Windows-Preflight:** Featherless-Proxy im ST-Profil als `Custom URL` oder separates Reverse-Proxy-Feld? `--inspect`/`--check --ping`, tatsächliche GLM-ID/5er-Modellliste prüfen; dann erster `.29`-Runner-Livetest mit Guide `patch_8_4` und Exportkontrolle. Guard-/DEFEND-Cull-Text (§5l), Boss/Floor-Clear und Old Crown gesondert. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
-Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/4d08d4f6c8eb7a96e0534066d4b38a1f18d74098
+Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/044d5b38057367f94bdd7273b7296f3254bae8be
+Vorheriger Patch-8.4-Gameplay-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/4d08d4f6c8eb7a96e0534066d4b38a1f18d74098
 Vorheriger Patch-8.3-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/70cbb5e4ec77ea1ad9fe24fc46b86c2c42cb12ed  
 Vorheriger Patch-8.1-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c6baa06e159f16069efd728844c7afe7c7dc186a  
 Vorheriger Patch-8-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f3b55819dad21249d871a62b7ede38bd926598cd
@@ -319,6 +320,17 @@ Das neue **`04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md`** sichert ausführlich die
 
 **Nächster Schritt:** winzige Guard-/DEFEND-Task-Korrektur ohne Combat-Änderung, sofern vollständige öffentliche Vertragskonsistenz Voraussetzung ist; danach echte .29-GLM-Kampfszene bis Glimmer Queen/Level Clear sowie gesonderte Old-Crown-Treppe und Seal. Nicht den Lärm-/Stealth-Sonderfall, Board-Nachgenerierung, Bench A0/A/C, Narrator-Cache, Scaling oder Organic Growth in einen weiteren großen Patch ziehen.
 
+## 5m. Automatisierter SillyTavern-GLM-Livetest-Runner – unabhängiger Git-Review (22.10.2026)
+
+**Verifiziert:** Entwicklungsbranch HEAD `044d5b38057367f94bdd7273b7296f3254bae8be` (ein Commit nach `4d08d4f`); Engine/Manifest weiterhin `4.3.0-c.6.6.29`. Unter `avereth-engine/tools/st_live/live/` sind isolate Profile, ST-Server, Playwright-Driver, LLM-/scripted-Spieler, Guide-Framework, Evaluator, Callparser, Export und Bericht implementiert. Die Leitfäden `guild_dungeon_loop` und `patch_8_4` decken Mage/Flame Lance/Blink → Guild → Dungeon-Auftrag → Kampfschleife → READY → Questabgabe ab, mit optionalem Guardian/Floor-Clear. Claude berichtet 1015/1015 Node-Tests und Cloud-Stub-Selbsttest 26/26 inklusive Abbruch- und Profil-Schutzprüfungen. ChatGPT hat den Code und den Commit gelesen, aber **nicht selbst Node, Windows, Proxy oder GLM-Livetest ausgeführt**. Ein Stub-Test ist ausdrücklich kein echter Livetest.
+
+**Architektur-Plus:** Der LLM-Spieler in `players.mjs` bekommt ausschließlich den von `Driver.view()` extrahierten, sichtbaren Chat/HUD/Toast-Bildschirm und eigene Notizen. Er kann frei formulierend und taktisch reagieren; das vollständige Chat-Record-/Engine-Fold erhält allein `evaluator.mjs`. Scripted-Spieler steht für Vergleiche bereit. Driver regeneriert/swipt nicht. `run_live.mjs` baut separates SillyTavern-Profil mit eigener `--dataRoot`/`--configPath`-Instanz auf und zeichnet `chat.jsonl`, `avereth-events.json`, Requests/Responses, `calls.json`, Spieler-Sicht und -Aktionen, Server-Logs und `report.md` auf. Secret-Scan und Schlüssellöschung nach Server-Stopp sind vorgesehen. Ob das alles unter Nutzer-Windows funktioniert, muss noch lokal nachgewiesen werden. Evaluator prüft Event-Meilensteine und Regel-Auffälligkeiten, nicht umfassende Narrator-/Gameplayqualität.
+
+**Offene lokale Featherless-Proxyschnittstelle:** Der Runner startet/stoppt den bestehenden Featherless-Proxy **nicht**, sondern importiert das ST-Providerprofil read-only. Für volle Telemetrie ist `chat_completion_source=custom` mit `custom_url` vorgesehen. ST-Felder `reverse_proxy` und `proxy_password` werden bewusst nicht übernommen; falls der Nutzer seine Fünf-Modelle-Filterung gerade über das separate OpenAI-Reverse-Proxy-Feld statt über `custom_url` nutzt, kann der erste Lauf so **nicht** 1:1 starten. Per `--inspect` und `--check --ping` vor dem Lauf nachweisen, welche Anbindung vorliegt. `--ping` testet derzeit lediglich HTTP `GET /models`, nicht ob die exakte GLM-Modell-ID existiert oder die erwartete gefilterte Modellliste vorliegt; enger Preflight-Fix empfehlenswert, ohne Proxy-Autostart oder Profiländerung.
+
+**Laufzeit und Modell:** Beim LLM-Spieler wird standardmäßig dasselbe Modell/der gleiche lokale Endpoint wie für das Spiel verwendet; das erzeugt zusätzliche echte Modellaufrufe. `player.maxTokens=3000` und optionales Reasoning können Kosten und Dauer erhöhen; separate Einstellung möglich. Claudes Angabe 1–2 Stunden ist eine konservative Schätzung, **kein Messwert**. 80 Züge und 240 Minuten sind Stopplimits; für einen ungestörten 25–40-Züge-Test sprechen .28-Medianzeiten plus Spieler-LLM eher für eine Größenordnung ~15–30 Minuten, mit Ausreißern/Umwegen entsprechend länger. Erster echter Lauf muss empirisch gemessen werden, ohne dessen Tempo vorwegzunehmen.
+
+**Abnahme:** Lokal Proxy separat laufen lassen, `.config` + GLM-Modell per `--inspect` überprüfen; nicht die echten Keys im Chat/Git teilen. Falls Importquelle nicht Custom-URL, Kompatibilität zuerst gezielt ergänzen. Danach kurzen echten `.29`-Run mit Guide `patch_8_4` und begrenzten Turns ausführen, Exporte und Headless-Steuerung auswerten. DEFEND-Schutz-Cull-Task-Fehler bleibt eigener Mini-Fix (§5l); keinen weiteren Gameplay-Großpatch mit Runner vermischen.
 ## 6. Fortgesetzter .26-GLM-Dungeonlauf – verbleibende Testziele
 
 **Keinen automatischen weiteren Dungeon-Hotfix starten.** Der .26-Live-Run ist bereits begonnen und teilweise ausgewertet worden (Abschnitt 5d). Den vorhandenen Run mit Exporten weiter analysieren; .25 als historische Regression heranziehen und von einem kontrollierten Performance-A/B-Test getrennt halten. Sinnvolle Testreihenfolge:
@@ -380,7 +392,7 @@ Auf folgende Fälle besonders achten:
 ## 9. Übergabe an den nächsten Chat (vier Projektdateien)
 
 1. Dateien **01–04** **vom Branch main** vollständig lesen (`04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` ist das Review-/Katalogarchiv). Den tatsächlichen Entwicklungsbranch und Build unabhängig per Git prüfen.
-2. **Aktueller Code ist Patch 8.4 (.29), `4d08d4f`**: Gruppen-Ambush-/Awareness-Loop und reiner Dungeon-Cull-Task sind im Code behoben (Independent Review §5l). Ein Schutz-Cull (DEFEAT + DEFEND) behält jedoch im Task möglicherweise noch die alte, im Objective begrenzte Zahl. Der echte .29-GLM-Livetest und der volle Floor-Clear/Boss/Siegel-Lauf bleiben ausstehend.
+2. **Aktueller HEAD `044d5b3` enthält den automatisierten ST-Live-Runner (§5m); Engine bleibt Patch 8.4/.29 aus `4d08d4f` (§5l).** Nur Cloud-Stub, kein echter Windows-/GLM-Livetest. DEFEND-Cull-Task-Randfall, Boss/Floor-Clear/Old-Crown-Siegel weiterhin offen.
 3. Entwicklungskette: Patch 8.1 (.26) → Performance-Diagnose 8.2 (.27, §5f) → Dungeon-/Cull-Fix 8.3 (.28, §5i) → Group-Awareness-/Cull-Text-Fix 8.4 (.29, §5l). `#assign`-Fastpath, Engine-only-Board, ROAD AHEAD und Organic Growth sind **nicht** implementiert. Echte Performanceverbesserung, A0/A/C, Board-Retry und Narrator-Cache-Versuch offen.
 4. Bei Live-Exports zuerst Engine-Events, Chat-JSONL und LLM-TXT korrelieren; Gameplay- und Designregeln der Dateien 01/02 berücksichtigen.
 5. **Datei 04** enthält die 141-Ideen-Zusammenfassung, 20 ausgewählten K-Kandidaten, Claude-Gegenreviews, Engine-only-Board, Rest/Wait/Fast-Travel/Quick Replies und die offene Patch-9-/ROAD-AHEAD-Reihenfolge. Keine Ideen ohne Nutzerfreigabe in den bindenden Kanon oder die Implementierung übernehmen.

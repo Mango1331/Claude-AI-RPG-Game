@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 22. Oktober 2026 · Fassung 10 (unabhängiges Claude-Gegenreview des .28-Laufs kritisch gegen Source bestätigt; fokussierte Combat-/Cull-Entscheidung; keine neue Implementierung)  
+**Stichtag:** 22. Oktober 2026 · Fassung 11 (Patch 8.4/.29 unabhängiger Git-Code-Review; kleine Schutz-Cull-Restinkonsistenz; neuer GLM-Livetest noch ausstehend)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,14 +13,15 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 22.10.2026 unabhängig über GitHub geprüft** | 70cbb5e4ec77ea1ad9fe24fc46b86c2c42cb12ed |
-| **Build direkt aus package.json und manifest.json geprüft** | 4.3.0-c.6.6.28 |
+| **HEAD am 22.10.2026 unabhängig über GitHub geprüft** | 4d08d4f6c8eb7a96e0534066d4b38a1f18d74098 |
+| **Build direkt aus package.json und manifest.json geprüft** | 4.3.0-c.6.6.29 |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | **Patch 8.3 (.28) implementiert und gepusht:** Dungeon-Root als Gate (Ebene 0), erste Ebene korrekt; auf tatsächlicher Zykluspopulation beruhende Culls, räumlich korrekter Kill-Credit, klare Cull-/Clear-Semantik, Quest-Kontext. **Quelle:** Git-Commit und Source-Review. Voller .28-GLM-Livetest weiterhin offen. |
-| **Nächster Schritt** | **Nach dem ersten .28-GLM-Glimmerdeep-Livetest** zunächst wiederholte Einzel-Ambushes trotz vier sichtbarer Gruppenmitglieder sowie widersprüchliche Anzeige „(4)“/„at least six“ gezielt unabhängig gegen Combat-/Guild-Code reviewen (§5j), ohne XP-/Damage-Nerf oder Großumbau. Danach realen Floor-Clear/Guardian/Boss und Siegelweg durchtesten. A0/A/C und Narrator-Cache-A/B bleiben separat ausstehend. |
+| **Patchstatus** | **Patch 8.4 (.29) implementiert und gepusht, unabhängig im Code geprüft:** Gruppen-Combat bei offener Attacke mit `unaware`-Mitgliedern (Concealment getrennt), reine Dungeon-Culls mit synchronem Task/Qty/EndState, gemeinsame Mengendarstellung. **Ein Schutz-Cull-Randfall bleibt** (§5l). Kein echter .29-Provider-Livetest. |
+| **Nächster Schritt** | **Kleinen Schutz-Cull-Task-Randfall aus §5l** bei Gelegenheit mit eigener Regression bereinigen (DEFEND erlaubt `cullNumbers`-Clamp, `cullTask` belässt aber alte Menge). **Danach echte .29-GLM-Fortsetzung** mit mehreren Gegneraktionen bis Dungeon-Boss/Floor-Clear sowie Old-Crown-Gate/Siegel. A0/A/C, Board-Retry und Narrator-Cache bleiben separate Performancearbeiten. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
-Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/70cbb5e4ec77ea1ad9fe24fc46b86c2c42cb12ed  
+Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/4d08d4f6c8eb7a96e0534066d4b38a1f18d74098
+Vorheriger Patch-8.3-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/70cbb5e4ec77ea1ad9fe24fc46b86c2c42cb12ed  
 Vorheriger Patch-8.1-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c6baa06e159f16069efd728844c7afe7c7dc186a  
 Vorheriger Patch-8-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f3b55819dad21249d871a62b7ede38bd926598cd
 
@@ -304,6 +305,20 @@ Das neue **`04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md`** sichert ausführlich die
 
 **Separater Performance-Nachtrag:** Der Glimmerdeep-Board-Generator brauchte **zwei** Requests insgesamt 31,3 s. Der erste enthielt zwei Glimmerdeep-Aufträge (Verstoß gegen max. einen Dungeon-Job je Board); der zweite nach Ablehnung eines Eintrags generierte **alle fünf** erneut, statt nur fehlende. Der Nachversuch kostete ca. 12,4 s. Eine partielle Ergänzung fehlender Listings wäre eine spätere **eigenständige** QoL-/Performance-Verbesserung, nicht Teil der Combat-Mechanik. Narrator-Cache-A/B und Extractor-Ausreißer ebenfalls getrennt.
 
+## 5l. Patch 8.4 (.29) – unabhängiger Code-Review und Restinkonsistenz (22.10.2026)
+
+**Git-Stand unabhängig bestätigt:** Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666` HEAD `4d08d4f6c8eb7a96e0534066d4b38a1f18d74098`; ein Commit nach `70cbb5e`/.28; Build `4.3.0-c.6.6.29` in `package.json`, `manifest.json` und `src/util.js`. Diff umfasst 12 Dateien: nur `group_combat.js`, `guild.js`, `catalog.js` als relevante Mechanik-/Darstellungsänderungen, Tests, Version und Dokumentation. **Claude berichtet** `npm test` 995/995, 9 neue Tests (`tests/v4/patch84.test.js`), 7 davon auf .28 erwartungsgemäß rot, 2 grüne Invarianten. Erfolgreicher `smoke:st:c` 21/21; einzelne Läufe mit ST-eigenem `/status`-Abort bei Preset-Setup und dadurch Fehler in `noPageErrors`, laut Claude anhand Phasen-Markern vor dem ersten Engine-Zug lokalisiert. **ChatGPT hat Code, Testfälle und Commit gelesen, nicht die Tests selbst ausgeführt oder das ST-Race selbst reproduziert.** Dokumentation des Produktcommits: `avereth-engine/docs/PATCH8_4_GROUP_AWARENESS_CULLS.md`.
+
+**Group Combat technisch korrekt gelöst:** `groupJoiners()` sortiert `unaware`-Mitglieder derselben begründeten feindlichen Gruppe nur noch nach `later`, wenn `scene.concealed` den PC enthält. Bei **unverdeckter** Attacke landen sie in `now` vor `initEncounter`; dadurch hält `terminal()` den Encounter nach dem sofortigen Tod des Hauptziels nicht für beendet. `initEncounter` gibt dem tatsächlich `unaware` Hauptziel weiter genau eine Ambush-Opening Action; die übrigen Teilnehmer handeln danach in der regulären Initiative, `persistCombat` übernimmt sie als `aware` und nach Kampfende `wary`. Der neue produktnahe Test benutzt den exakten .28-GLM-Beetle-Snapshot, weist **einen zusammenhängenden Vier-Gegner-Kampf mit Aktionen in Runde 1** nach (Beispiel: HP 80→53), verteidigt gegen nachträgliches `unaware`, gegen zweiten Ambush, gegen Replay-/Swipe-Duplikation und gegen unerlaubte Attacke. Der frühere 8.1-Stealth-Test war tatsächlich mit `concealed=[]` falsch modelliert und ist nun auf `['pc']` korrigiert; `threat:false`, friedliche Gruppen und Flucht/Parley bleiben getrennt. **GLM-Erzählqualität noch ungetestet.** Laute Angriffe aus echtem Concealment mit korrekter Hörbarkeit/Alarmierung sind absichtlich weiter offen.
+
+**Reiner Dungeon-Cull jetzt konsistent:** `guild.js bookBoard()` setzt nach `cullNumbers`/EndState auch `quest.task=cullTask(...)`. `countText()` gleicht die eindeutig der eigenen Monsterart zuordenbare Zahl im Task ab, ohne fremde Mengen/Etagen blind umzuschreiben; bei mehreren passenden Mengen wird ein schlichter struktureller Task benutzt. `pureCull()` verhindert, dass `cullEndState()` den gesamten Zielzustand eines gemischten oder Schutzauftrags durch ausschließlich Kills ersetzt. `amountText()` in beiden Katalog-/Gilden-`objectiveText`-Pfaden dedupliziert `qty + unit + what`. Für die konkrete .28-Beetle-Quest stimmt „Cull four ...“ mit `DEFEAT qty:4`, `desired_end_state:4`, Guild-Board, HUD und Memory überein.
+
+**Neu bei unabhängiger Prüfung entdeckt – RESTFEHLER in Schutz-Culls (direkt im Git-Test belegt):** Ein `DEFEAT + DEFEND`-Vertrag ist nach `isHunt()` weiterhin Jagd und wird durch `cullNumbers()` von 6 auf 4 begrenzt. `pureCull()` schließt `DEFEND` aber aus, sodass `cullTask()` den ursprünglichen Text **„Cull six ... and guard the apprentices“** unverändert lässt; `cullEndState()` ändert dagegen die Killzahl im `desired_end_state` auf **„Four ... and apprentices come to no harm“**. Der neue Test `8.4 cull 2` enthält diesen konkreten Widerspruch und erwartet ausdrücklich den alten Task. **Das ist eine bestehende Anzeigeinkonsistenz und eine Test-Erwartungslücke, kein belegter neuer Kampf- oder Abgabefehler.** Zielgerichtet nur bei solchen nach `cullNumbers()` tatsächlich gekürzten Schutzaufträgen die eindeutig zuordenbare Killzahl im `task` ebenfalls mit `countText()` ändern, ohne das `DEFEND`-Ziel oder sonstige Mengen zu entfernen. Den Test von „alte Task-Zahl bleibt“ auf „gleiche Zahl in Task, Objective, EndState“ ändern. Gemischte `REPAIR`-Aufträge bleiben unverändert, wenn ihre `DEFEAT`-Zahl nicht gekürzt wurde; deren gesonderte Erfüllbarkeitsgrenze ist bekannt.
+
+**Smoke-/Qualitätsgrenze:** Claudes Preset-Setup-Race-Diagnose ist plausibel und durch seine Vergleichsläufe gestützt, aber nicht von ChatGPT unabhängig im Browser nachgestellt. 21/21 beschreibt erfolgreiche Läufe, **nicht** eine deterministisch immer grüne Smoke-Prüfung. Das Preset-Warten im Smoke wäre ein separater Testharness-Fix, keine Gameplay-Regel.
+
+**Nächster Schritt:** winzige Guard-/DEFEND-Task-Korrektur ohne Combat-Änderung, sofern vollständige öffentliche Vertragskonsistenz Voraussetzung ist; danach echte .29-GLM-Kampfszene bis Glimmer Queen/Level Clear sowie gesonderte Old-Crown-Treppe und Seal. Nicht den Lärm-/Stealth-Sonderfall, Board-Nachgenerierung, Bench A0/A/C, Narrator-Cache, Scaling oder Organic Growth in einen weiteren großen Patch ziehen.
+
 ## 6. Fortgesetzter .26-GLM-Dungeonlauf – verbleibende Testziele
 
 **Keinen automatischen weiteren Dungeon-Hotfix starten.** Der .26-Live-Run ist bereits begonnen und teilweise ausgewertet worden (Abschnitt 5d). Den vorhandenen Run mit Exporten weiter analysieren; .25 als historische Regression heranziehen und von einem kontrollierten Performance-A/B-Test getrennt halten. Sinnvolle Testreihenfolge:
@@ -365,8 +380,8 @@ Auf folgende Fälle besonders achten:
 ## 9. Übergabe an den nächsten Chat (vier Projektdateien)
 
 1. Dateien **01–04** **vom Branch main** vollständig lesen (`04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` ist das Review-/Katalogarchiv). Den tatsächlichen Entwicklungsbranch und Build unabhängig per Git prüfen.
-2. **Aktueller Code ist Patch 8.3 (.28), `70cbb5e`**; der neue reale .28-Glimmerdeep-Livetest bestätigt Gate→Level 1 und Quest-Turn-in, zeigt aber vier Einzel-Ambushes trotz vier gemeinsamer Gruppenmitglieder sowie „(4)“/„at least six“ auf demselben Board (siehe §5j). Der volle Floor-Clear/Boss/Siegel-Livetest bleibt ausstehend.
-3. Die .25-Befunde führten zu .26, die Latenzprobleme zu **Patch 8.2 (.27, §5f)**; dessen Livetest führte zu **Patch 8.3 (.28, §5i)**. `#assign`-Fastpath, Engine-only-Board, ROAD AHEAD und Organic Growth sind **nicht** implementiert. Echte Performanceverbesserung, A0/A/C und Narrator-Cache-Versuch weiter offen.
+2. **Aktueller Code ist Patch 8.4 (.29), `4d08d4f`**: Gruppen-Ambush-/Awareness-Loop und reiner Dungeon-Cull-Task sind im Code behoben (Independent Review §5l). Ein Schutz-Cull (DEFEAT + DEFEND) behält jedoch im Task möglicherweise noch die alte, im Objective begrenzte Zahl. Der echte .29-GLM-Livetest und der volle Floor-Clear/Boss/Siegel-Lauf bleiben ausstehend.
+3. Entwicklungskette: Patch 8.1 (.26) → Performance-Diagnose 8.2 (.27, §5f) → Dungeon-/Cull-Fix 8.3 (.28, §5i) → Group-Awareness-/Cull-Text-Fix 8.4 (.29, §5l). `#assign`-Fastpath, Engine-only-Board, ROAD AHEAD und Organic Growth sind **nicht** implementiert. Echte Performanceverbesserung, A0/A/C, Board-Retry und Narrator-Cache-Versuch offen.
 4. Bei Live-Exports zuerst Engine-Events, Chat-JSONL und LLM-TXT korrelieren; Gameplay- und Designregeln der Dateien 01/02 berücksichtigen.
 5. **Datei 04** enthält die 141-Ideen-Zusammenfassung, 20 ausgewählten K-Kandidaten, Claude-Gegenreviews, Engine-only-Board, Rest/Wait/Fast-Travel/Quick Replies und die offene Patch-9-/ROAD-AHEAD-Reihenfolge. Keine Ideen ohne Nutzerfreigabe in den bindenden Kanon oder die Implementierung übernehmen.
 6. Nach neuen Meilensteinen nur betroffene Projektdateien auf `main` aktualisieren; Implementierungsbranch nicht für Dokumentationspflege mergen.

@@ -195,6 +195,9 @@ node tools/browser_smoke.mjs           # optional: index.js in echtem Chromium m
 AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st   # optional: Live-Smoke (V3) in echtem SillyTavern mit streamendem Mock-Erzähler (docs/RUNTIME_V3.md §8); mit AVERETH_ST_PRESET="Avereth Narrator" für das eigene Preset (docs/NARRATOR_AB.md §2.4)
 AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st:v4   # optional: Live-Smoke Runtime V4 in echtem SillyTavern, Mock-Provider hinter der Quelle Custom (docs/LIVETEST_V4.md §1); nur gegen ein Wegwerf-SillyTavern
 AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run smoke:st:c    # optional: Live-Smoke Prototyp C (Planner an, gescriptete Pläne; docs/PROTOTYPE_C.md §8); nur gegen ein Wegwerf-SillyTavern
+npm run live:st:check                  # Live-Runner: Voraussetzungen für einen echten Livetest (docs/LIVE_RUNNER.md §2)
+npm run live:st -- --guide patch_8_4   # Live-Runner: echter Livetest in deinem SillyTavern auf einer isolierten Instanz, Profil nur gelesen, LLM-Spieler nach Leitfaden, Laufordner mit Chat, Ereignissen, Aufrufen und Bericht
+AVERETH_ST_DIR=/pfad/zu/SillyTavern npm run live:st:selftest   # Live-Runner gegen einen Stub (kein Livetest; docs/LIVE_RUNNER.md §10)
 node tools/c_flag_off_diff.mjs <Basis-Engine> .   # Prototyp C, Schalter aus: Live-Läufe und Kampf-Eingaben durch zwei Stände, byte-gleich? (docs/PROTOTYPE_C.md §8)
 node tools/run_report.mjs <Server-Log> [<Chat.jsonl>]   # Messung eines Laufs: Prompt je Kategorie, Output-Aufteilung, Dauer (docs/TEST5_PLAN.md §4)
 node tools/narrator_ab.mjs --log <Server-Log> --chat <Chat.jsonl> [--log … --chat …] --dry-run   # Narrator-Vergleich A/B/C; ohne --dry-run mit AVERETH_AB_API_BASE/_KEY (docs/NARRATOR_AB.md §3)

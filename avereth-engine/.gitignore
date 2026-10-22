@@ -6,3 +6,6 @@ p0_out/
 .env.*
 # Patch 8.2: local results of the extractor benchmark (docs/PATCH8_2_LLM_PERFORMANCE.md)
 bench_extract_out*.json
+# Live runner (docs/LIVE_RUNNER.md): the local config (paths) and the run folders (chats, logs) stay local
+tools/st_live/live.config.json
+tools/st_live/runs/

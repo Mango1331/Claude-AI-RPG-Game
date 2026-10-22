@@ -1,0 +1,23 @@
+{
+  "stDir": "C:\\SillyTavern",
+  "stUser": "default-user",
+  "card": null,
+  "preset": "profile",
+  "keyEnv": "AVERETH_LIVE_API_KEY",
+  "guide": "patch_8_4",
+  "browser": "auto",
+  "headless": true,
+  "port": 8123,
+  "turnTimeoutSec": 900,
+  "runsDir": null,
+  "keepProfile": false,
+  "player": {
+    "type": "llm",
+    "url": null,
+    "model": null,
+    "keyEnv": null,
+    "temperature": 0.8,
+    "maxTokens": 3000,
+    "extraBody": null
+  }
+}

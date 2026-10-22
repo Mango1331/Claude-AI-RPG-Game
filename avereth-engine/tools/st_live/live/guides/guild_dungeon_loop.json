@@ -1,0 +1,44 @@
+{
+  "id": "guild_dungeon_loop",
+  "title": "Grundablauf: Erstellung, Gilde, Dungeon-Vertrag, Kampf, Abgabe",
+  "brief": "Start a new campaign as a new player would. Create a Mage with the skills Flame Lance and Blink. Go into the city you start near, find the Adventurers' Guild, register as a member and read the board for your rank (Novice). Take a contract that sends you into a dungeon to fight, register it at the front desk, travel to that dungeon and go in onto its first level. Fight what the contract asks for until it is done, then go back to the Guild hall and turn the contract in.",
+  "character": { "class": "Mage", "skills": ["Flame Lance", "Blink"] },
+  "milestones": [
+    { "id": "creation_complete", "goal": "Create the character: the Base Class Mage, then the two skills Flame Lance and Blink.", "maxTurns": 4 },
+    { "id": "guild_registered", "goal": "Go into the city to the Adventurers' Guild and register as a member (pay what the Guild asks).", "maxTurns": 10 },
+    { "id": "board_shown", "goal": "Read the Guild's board for your rank.", "maxTurns": 5 },
+    { "id": "dungeon_quest_active", "goal": "Take a contract from the board that sends you into a dungeon to fight (a cull, a clear or a hunt there) and register it at the front desk.", "maxTurns": 6 },
+    { "id": "inside_dungeon", "goal": "Travel to that dungeon and go in past its gate onto level 1.", "maxTurns": 8 },
+    { "id": "fight_won", "goal": "Fight the dungeon's foes and win a fight. When you attack one of a group, watch how the others react.", "maxTurns": 10 },
+    { "id": "quest_ready", "goal": "Do what the contract asks until the contract slip shows it is done (READY).", "maxTurns": 20 },
+    { "id": "guardian_defeated", "goal": "If the level's guardian comes within reach and you feel strong enough, fight it.", "required": false },
+    { "id": "floor_cleared", "goal": "If it comes within reach, clear the level.", "required": false },
+    { "id": "quest_completed", "goal": "Leave the dungeon, go back to the Guild hall and turn the contract in at the front desk.", "maxTurns": 8 }
+  ],
+  "focus": [
+    "When you attack one enemy of a group in the open, do the others of the group react and join the fight, or do they stay where they were?",
+    "Do the numbers agree: how many foes the contract asks for on the board, on the contract slip in the HUD, and what the front desk says?",
+    "Do the HUD (HP, MP, enemies, the contract) and the narrator's story agree after each turn?",
+    "Does the story narrate things a System panel says did not happen (NOT TAKEN, REFUSED, BLOCKED)?",
+    "Note waits that feel too long and replies that cut off or come back empty."
+  ],
+  "limits": { "maxTurns": 80, "maxMinutes": 240, "sameFailure": 3 },
+  "personas": [
+    "cautious: you look around before you act, ask before you commit, and keep an eye on your mana",
+    "direct: you go straight for each goal and attack early",
+    "talkative: you speak with the clerk and the people you meet and ask them questions before you act",
+    "tactical: you use both skills on purpose, pick your targets (the nearest, the wounded) and keep your distance"
+  ],
+  "scripted": [
+    { "say": "Mage", "milestone": "creation_complete" },
+    { "say": "Flame Lance + Blink", "milestone": "creation_complete" },
+    { "say": ["*i walk into the city ahead and travel to the adventurers guild*", "*i ask someone for the way to the adventurers guild and go there*"], "until": "guild", "max": 3, "milestone": "guild_registered" },
+    { "say": ["*i walk up to the front desk and say* hello, i'm here to register as an adventurer", "*i pay the registration fee and finish registration*"], "until": "registered|member|novice", "max": 4, "milestone": "guild_registered" },
+    { "say": "*i walk over to the board and look at it*", "until": "board|contract|novice", "max": 2, "milestone": "board_shown" },
+    { "say": ["*i take the dungeon contract from the board and register it at the front desk*", "*i take the contract that sends me into the dungeon and register it at the front desk*"], "until": "accept|register|active|slip", "max": 3, "milestone": "dungeon_quest_active" },
+    { "say": ["*i make my way over to the dungeon*", "*i keep travelling to the dungeon*"], "until": "gate|entrance|dungeon", "max": 4, "milestone": "inside_dungeon" },
+    { "say": "*i enter the gate*", "milestone": "inside_dungeon" },
+    { "say": ["*i cast Flame Lance at the nearest enemy*", "*i cast Flame Lance at the closest foe*", "*i blink back and cast Flame Lance at the nearest enemy*"], "until": "READY", "max": 14, "milestone": "quest_ready" },
+    { "say": ["*i walk back to the gate and leave the dungeon*", "*i make my way back to the Guild Hall and turn in the contract*"], "until": "complete|paid|reward|turned in", "max": 4, "milestone": "quest_completed" }
+  ]
+}

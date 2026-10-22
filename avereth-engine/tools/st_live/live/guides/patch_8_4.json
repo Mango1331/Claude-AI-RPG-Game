@@ -1,0 +1,11 @@
+{
+  "id": "patch_8_4",
+  "extends": "guild_dungeon_loop",
+  "title": "Patch 8.4: Gruppen-Awareness und Cull-Zahlen (Build 4.3.0-c.6.6.29)",
+  "brief_extra": "This build changed two things the test looks at closely: when you attack one enemy of a group openly (not hidden), the whole group should take part in that fight; and a cull contract should name one count of foes everywhere (board, slip, front desk).",
+  "focus": [
+    "Patch 8.4: attack one member of a group openly at least once. Does the fight list every member of the group from its start, and do the others act on their own turns?",
+    "Patch 8.4: if you manage to stay hidden (sneaking up unseen) before an attack, note whether only the target is taken by surprise.",
+    "Patch 8.4: compare the cull count on the board listing, in the contract text on the slip (HUD) and when you turn it in."
+  ]
+}

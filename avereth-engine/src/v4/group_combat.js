@@ -16,8 +16,13 @@
 //   - a beast whose pack-mate he attacks defends it (a wolf pack), unless the story marked it as no foe (threat: false:
 //     grazing deer, livestock, a pet); a person joins only a group established as hostile (no faction makes a
 //     peaceful person a foe); one the story has fleeing, holding, parleying or giving up stays out;
-//   - awareness: one unaware of him (his stealth) does not know where he is when the fight opens; it enters only if the
-//     fight goes on past its opening (later), never when the opening ended it.
+//   - awareness: one unaware of him while he is hidden (his stealth: scene.concealed holds him) does not know where he
+//     is when the fight opens; it enters only if the fight goes on past its opening (later), never when the opening
+//     ended it. Patch 8.4 (live 22.10.2026 03:42: four glass beetles of one encounter, unaware of him and none hidden
+//     from; each Flame Lance was a new Ambush that killed its one target, the other three stayed out and unaware, four
+//     times): his open attack on one of them is no unnoticed one. The members not yet aware of him are in the fight from
+//     its start (now): the unaware target keeps its Ambush Opening Action, the others act on their own Turns after it
+//     (Initiative, src/combat.js npcDecide), and the fight goes on past a first target the opening killed.
 import { actorTraits } from './envelope.js';
 
 const STAYS_OUT = new Set(['flee', 'hold', 'surrender', 'parley', 'take_cover']);
@@ -37,12 +42,15 @@ function hostileSign(s, content, id) {
  * @param {string[]} leads who is fought (his target) or fights (a committed attacker)
  * @param {{c?: boolean, pcAttacks?: boolean, exclude?: string[]}} opts pcAttacks: he attacks a lead (a beast defends its
  *   pack-mate); exclude: already in the fight
- * @returns {{now: string[], later: string[]}} now: in from the start; later: unaware of him, in once the fight goes on
+ * @returns {{now: string[], later: string[]}} now: in from the start; later: unaware of him while he is hidden, in once
+ *   the fight goes on
  */
 export function groupJoiners(s, content, leads, { c = false, pcAttacks = false, exclude = [] } = {}) {
     const out = { now: [], later: [] };
     if (!c || s.meta?.runtime !== 'v4') return out;
     const taken = new Set([...leads, ...exclude, ...Object.keys(s.encounter?.combatants || {})]);
+    // Patch 8.4: only his stealth keeps an unaware member out of the opening; the story's "had not noticed him" does not
+    const hidden = (s.scene.concealed || []).includes('pc');
     for (const lead of leads) {
         const group = s.entities[lead]?.group;
         if (!group) continue;
@@ -56,7 +64,7 @@ export function groupJoiners(s, content, leads, { c = false, pcAttacks = false, 
             const e = s.entities[id];
             if (e.threat === false || STAYS_OUT.has(s.pending_intents?.[id])) continue;
             if (!hostile && !(pcAttacks && e.kind === 'creature')) continue;
-            (s.scene.awareness?.[id] === 'unaware' ? out.later : out.now).push(id);
+            (hidden && s.scene.awareness?.[id] === 'unaware' ? out.later : out.now).push(id);
             taken.add(id);
         }
     }

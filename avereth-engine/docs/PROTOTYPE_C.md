@@ -1892,3 +1892,18 @@ Livetest 22.10.2026 02:00 (`tests/v4/live_1022a.json`). Vollständige Beschreibu
   - BLOCKED erlaubt das Herantreten an das Hindernis, aber kein Darüberhinaus.
 - **Alte Spielstände:** Gespeicherte Ebenen bleiben unverändert. Der .27-Raum wird nur durch eine neu generierte Nachricht 16 korrigiert. Für den nächsten Dungeon-Livetest wird eine neue Kampagne empfohlen.
 - **Tests:** `tests/v4/patch83.test.js` (11, auf `ef4a819` alle rot). Angepasst: `review_4_1_3`, `testrun_v11/live`.
+
+### Patch 8.4 (4.3.0-c.6.6.29): Gruppenreaktion, einheitliche Cull-Zahl
+
+Livetest 22.10.2026 03:42 (`tests/v4/live_1022b.json`). Vollständige Beschreibung, Entscheidungen und Grenzen: `docs/PATCH8_4_GROUP_AWARENESS_CULLS.md`.
+
+- **Gruppenreaktion.**
+  - Nur echte Deckung (`scene.concealed`) hält unbemerkte Gruppenmitglieder aus der Eröffnung heraus.
+  - Bei einem offenen Angriff sind sie von Beginn an im Kampf: Das Ziel behält seinen Hinterhalt, die anderen handeln danach nach Initiative.
+  - Der Kampf geht über einen in der Eröffnung getöteten ersten Gegner hinaus; alle Kämpfer sind `aware`.
+  - Ein unbemerkter Kill aus der Deckung bleibt unbemerkt.
+- **Cull-Zahl.**
+  - Der Task eines reinen Dungeon-Culls nennt die Zahl der Engine: Ersetzt wird nur die eigene Zahl vor dem Art-Wort; ist sie mehrdeutig, gilt der Task der Engine.
+  - Gemischte und schützende Aufträge behalten Zielzustand und Pflichten.
+  - Die Mengenangabe nennt eine Einheit nur einmal.
+- **Tests:** `tests/v4/patch84.test.js` (9; auf .28 sieben rot, zwei Absicherungen grün). Angepasst: `8.1 group 5 (stealth)` nutzt echte Deckung.

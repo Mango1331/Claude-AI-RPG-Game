@@ -418,3 +418,18 @@ Alle drei entstehen aus derselben deterministischen Ziehung `runFor`. Das Board 
 **Eine Zählregel.** `guild.js cullKind` entscheidet sowohl für die Zahl auf dem Board (`dungeonCull`) als auch für die gezählten Kills (`defeatTally`), ob ein Wesen für ein `DEFEAT`-Ziel zählt. `areaOf` begrenzt Dungeon-Culls auf ihren Dungeon und ihre Ebene.
 
 Details: `docs/PATCH8_3_DUNGEON_FLOORS_CULLS.md`.
+
+## 18. Gruppenbeitritt und Deckung, Cull-Zahl im Text (Patch 8.4, 4.3.0-c.6.6.29)
+
+**Deckung statt Bewusstsein.**
+- `group_combat.js groupJoiners` stellt ein unbemerktes Gruppenmitglied nur dann auf „später“ (nach der Eröffnung), wenn Alaric in `scene.concealed` steht (Stealth).
+- Bei einem offenen Angriff ist es sofort Kämpfer. Den Hinterhalt bestimmt weiter nur das Bewusstsein des Ziels (`combat.js initEncounter`).
+- Die Kämpfer werden `aware` (`engine.js persistCombat`) und am Ende `wary`.
+- §15 gilt damit präzisiert: Mit „Unbemerkte Mitglieder kommen erst nach der Eröffnung“ ist echte Deckung gemeint.
+
+**Eine Zahl im Text.**
+- `guild.js countText` ersetzt in Task und Zielzustand eines Dungeon-Culls nur die eigene Zahl vor dem Art-Wort des Ziels; ist sie mehrdeutig, schreibt `cullTask` einen strukturierten Task.
+- `cullEndState` ersetzt den Zielzustand nur bei einem reinen Cull (`pureCull`).
+- `amountText` ist die eine Mengenangabe beider `objectiveText`.
+
+Details: `docs/PATCH8_4_GROUP_AWARENESS_CULLS.md`.

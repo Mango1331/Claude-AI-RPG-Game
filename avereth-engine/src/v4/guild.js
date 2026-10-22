@@ -306,14 +306,30 @@ export const trophyText = (q) => {
     return objects.length ? proofText({ proof: objects }) : 'trophies of the kills';
 };
 
+/** Patch 8.4: a word with its plain singular forms ("beetles": beetle; "wolves": wolf; "flies": fly), to tell one kind. */
+const wordForms = (w) => [...new Set([w, w.replace(/s$/, ''), w.replace(/es$/, ''), w.replace(/ies$/, 'y'), w.replace(/ves$/, 'f')])];
+
+/**
+ * An objective's amount and what it is about, as prose. Patch 8.4 (live 22.10.2026: "DEFEAT 4 beetles crystal beetles in
+ * the outer galleries"): a unit the what already names is said once ("4 crystal beetles …"; "the sealed ledger satchel
+ * (1)"); a unit of its own stays ("2 casks ale").
+ */
+export function amountText(o) {
+    const what = o.what || 'the objective';
+    if (o.qty === null || o.qty === undefined) return what;
+    const unit = o.unit ? normText(o.unit).split(' ').at(-1) : null;
+    const theUnit = new Set(unit ? wordForms(unit) : []);
+    if (!unit || !normText(what).split(' ').some((w) => wordForms(w).some((f) => theUnit.has(f)))) return `${o.qty}${o.unit ? ` ${o.unit}` : ''} ${what}`;
+    return /^(?:the|a|an|his|her|their|its|this|that|these|those|my|our)\b/i.test(what) ? `${what} (${o.qty})` : `${o.qty} ${what}`;
+}
+
 /** Canonical objectives in compact narrator-facing prose (the Board generator owns their structure). */
 export function objectiveText(q) {
     const objectives = q?.objectives || [];
     if (!objectives.length) return 'the stated objective';
     return objectives.map((o) => {
-        const qty = o.qty !== null && o.qty !== undefined ? `${o.qty}${o.unit ? ` ${o.unit}` : ''} ` : '';
         const where = o.where ? ` at ${o.where}` : '';
-        return `${String(o.verb || 'DO').toUpperCase()} ${qty}${o.what || 'the objective'}${where}`.replace(/\s+/g, ' ').trim();
+        return `${String(o.verb || 'DO').toUpperCase()} ${amountText(o)}${where}`.replace(/\s+/g, ' ').trim();
     }).join('; ');
 }
 
@@ -730,10 +746,70 @@ function cullNumbers(s, content, l, need) {
 function cullEndState(s, content, q) {
     const kills = (q.objectives || []).filter((o) => o.verb === 'DEFEAT' && Number.isInteger(o.qty) && o.qty > 0);
     if (q.clear || !q.dungeon || !kills.length) return q.desired_end_state;
+    // Patch 8.4 (review of 8.3): mixed or guarding work keeps the generator's end state, its other outcomes in it; only
+    // the count of its kills follows the engine's number where the text names it plainly (countText)
+    if (!pureCull(q, content)) return countText(q.desired_end_state, kills).text;
     const name = s.places[q.dungeon]?.name || q.dungeon;
     const where = Number.isInteger(q.floor) ? `level ${q.floor} of ${name}` : name;
     const how = drivesOff(content, q) ? 'defeated or driven off' : 'defeated';
     return `${kills.map((o) => `${o.qty} ${o.what}`).join(' and ')} of ${where} ${how} (a cull: done at that count, whatever else is left on the level)`;
+}
+
+/** Patch 8.4: a pure cull's work is its kills and reaching them (GO, FIND); guarding (DEFEND) or other work besides is more. */
+const pureCull = (q, content) => isHunt(q, content) && (q.objectives || []).filter((o) => !confirmsOnly(o)).every((o) => KILL_WORK.has(o.verb) || o.verb === 'GO' || o.verb === 'FIND');
+
+// Patch 8.4: how a notice says a count ("at least six", "6", "half a dozen"): a number and the words that only qualify it
+const COUNT_WORDS = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+const COUNT_PHRASE = `(?:(?:at least|no fewer than|no less than|up to|some|about|around|roughly)\\s+)?(?:\\d+|${COUNT_WORDS.join('|')}|half a dozen|a dozen|a pair of|a couple of)`;
+const escapeRe = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/** The forms a DEFEAT objective names its kind by: the head word of its what (before a relation word) and its unit. */
+function kindHeads(o) {
+    const words = normText(o.what || '').split(' ').filter(Boolean);
+    const cut = words.findIndex((w) => RELATION.has(w));
+    const head = (cut > 0 ? words.slice(0, cut) : words).at(-1);
+    return [...new Set([head, normText(o.unit || '').split(' ').at(-1)].filter((w) => w && w.length > 2).flatMap(wordForms).filter((w) => w.length > 2))];
+}
+
+/**
+ * Patch 8.4 (live 22.10.2026 03:42: "Cull the Crystal Beetles of the Outer Grottos (4)", its task "Cull at least six
+ * crystal beetles in the outer galleries of Glimmerdeep Grotto, level 1, …"): a text's own mention of a cull's count
+ * follows the engine's number. Only a count that stands right before the objective's own kind word ("six crystal
+ * beetles", "at least 6 beetles") is the cull's; other numbers ("level 1", "two wool carts") are left alone. Each kind
+ * must be named once with a count: none leaves the text as it is (nothing to contradict), more than one is ambiguous.
+ * @returns {{text: string, ambiguous: boolean}}
+ */
+function countText(text, kills) {
+    if (!text) return { text, ambiguous: false };
+    let out = String(text);
+    let ambiguous = false;
+    for (const o of kills) {
+        const heads = kindHeads(o);
+        if (!heads.length) continue;
+        const re = new RegExp(`\\b(${COUNT_PHRASE})((?:\\s+[a-z'-]+){0,3}?\\s+(?:${heads.map(escapeRe).join('|')})(?:es|s)?)\\b`, 'gi');
+        const hits = [...out.matchAll(re)];
+        if (hits.length > 1) ambiguous = true;
+        if (hits.length !== 1) continue;
+        const [whole, count, rest] = hits[0];
+        const digits = /\d/.test(count);
+        let n = digits ? String(o.qty) : (COUNT_WORDS[o.qty - 1] || String(o.qty));
+        if (/^[A-Z]/.test(count)) n = n[0].toUpperCase() + n.slice(1);
+        out = out.slice(0, hits[0].index) + n + rest + out.slice(hits[0].index + whole.length);
+    }
+    return { text: out, ambiguous };
+}
+
+/**
+ * Patch 8.4: a pure cull in a Living Dungeon says its count in its task as its objective and end state do: the notice's
+ * own count follows the engine's (countText); where it names the kind with a count more than once, the task is the
+ * engine's plain one (what, count, where), never a guess at which number is the cull's. Other contracts keep their task.
+ */
+function cullTask(s, content, q) {
+    const kills = (q.objectives || []).filter((o) => o.verb === 'DEFEAT' && Number.isInteger(o.qty) && o.qty > 0);
+    if (q.clear || !q.dungeon || !kills.length || !q.task || !pureCull(q, content)) return q.task;
+    const r = countText(q.task, kills);
+    if (!r.ambiguous) return r.text;
+    const name = s.places[q.dungeon]?.name || q.dungeon;
+    return `Cull ${kills.map((o) => `${o.qty} ${o.what}`).join(' and ')} on ${Number.isInteger(q.floor) ? `level ${q.floor} of ${name}` : name}.`;
 }
 
 /** Book validated listings: quest.created (listed) for each, and the board. The payout is fixed from here on. */
@@ -763,6 +839,7 @@ export function bookBoard(s, content, need, listings, emit) {
             const floors = clear ? [clear.floor] : levelsNamed(listingText(l));
             if (floors?.length === 1) quest.floor = floors[0];
             quest.desired_end_state = cullEndState(s, content, quest);
+            quest.task = cullTask(s, content, quest);
         }
         emit({ t: 'quest.created', d: { quest } });
         ids.push(id);

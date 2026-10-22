@@ -12,7 +12,7 @@ import {
     membership, listingsOf, today, contracts, listedToday,
 } from './domain.js';
 import { catalogText } from './interpret.js';
-import { defeatTally, tallyText, readyText, proofMemory, goalText } from './guild.js';
+import { defeatTally, tallyText, readyText, proofMemory, goalText, amountText } from './guild.js';
 import { knownNote, reportedPlaces } from './known.js';
 import { spoiled } from './items.js';
 import { continueOptions, goalLines } from './intents.js';
@@ -118,10 +118,8 @@ function proofText(q) {
 }
 
 function objectiveText(q) {
-    return (q.objectives || []).map((o) => {
-        const qty = o.qty !== null && o.qty !== undefined ? `${o.qty}${o.unit ? ` ${o.unit}` : ''} ` : '';
-        return `${String(o.verb || 'DO').toUpperCase()} ${qty}${o.what || 'the objective'}${o.where ? ` at ${o.where}` : ''}`.replace(/\s+/g, ' ').trim();
-    }).join('; ');
+    // Patch 8.4: the amount said once (guild.js amountText)
+    return (q.objectives || []).map((o) => `${String(o.verb || 'DO').toUpperCase()} ${amountText(o)}${o.where ? ` at ${o.where}` : ''}`.replace(/\s+/g, ' ').trim()).join('; ');
 }
 
 function questInfo(state, content, q, { c = false } = {}) {

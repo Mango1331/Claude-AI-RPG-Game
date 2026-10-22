@@ -337,7 +337,9 @@ test('8.1 group 5 (stealth): an unaware member does not know where he is: an amb
         const s = structuredClone(base);
         s.scene.awareness[A] = 'unaware';
         s.scene.awareness[B] = 'unaware';
-        s.scene.concealed = [];
+        // Patch 8.4: hidden by his stealth (8.1 set none here, and so tested an open attack as a stealthy one; the open
+        // one is tests/v4/patch84.test.js)
+        s.scene.concealed = ['pc'];
         // a beetle the opening cannot kill (a tough one: a scene the live run did not have), or one it surely kills
         s.entities[B].profile = hp === null ? { ...s.entities[B].profile, hp: 300, max_hp: 300 } : { ...s.entities[B].profile, hp };
         return playerTurn(s, content, '*i flame lance beetle b from hiding*', { msg: 25, c: true, intent: { kind: 'attack', skill: 'mage.flame_lance', target: B, target_how: 'planner', move: null, move_target: null } });

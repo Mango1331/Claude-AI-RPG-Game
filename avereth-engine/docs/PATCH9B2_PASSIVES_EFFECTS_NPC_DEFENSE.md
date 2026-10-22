@@ -100,6 +100,18 @@ Bedingte Effekte sind nur `stat_bonus` und `resist`. Maximalwerte und Kosten än
 - Höchstens drei pro Kampf.
 - Dazwischen greift der NPC an, bewegt sich oder flieht nach den bisherigen Regeln.
 
+## 3b. Nachbesserung nach dem Review (4.3.0-c.6.6.39)
+
+- **Schadensvorschau (`damagePreview`)** rechnet jetzt dieselbe Pipeline wie `attackAction`/`resolveStrike`, in derselben Reihenfolge und mit denselben Rundungen:
+  - seine bedingten ATK/MATK-Boni, geprüft von der Position aus, auf die ihn der Schritt des Angriffs bringt;
+  - DEF/MDEF-Boni und Resistenz des Ziels;
+  - Proficiency-Kraft und vorbereitete Angriffe als Summe, wie bei der Ausführung;
+  - Deckung, Schutzeffekte und Endure.
+  Die Spanne entspricht den Varianzgrenzen 0,9 und 1,1.
+- **NPC-Angriffswahl (`npcAttackSkill`)** prüft die Kosten mit derselben Funktion wie die Ausführung (`skillCostAmount`: Proficiency und Kostenreduktion der Passives).
+- Die ganzzahlige Rundung der Barrier-HP bleibt in beiden Regelständen (vom Review bestätigt).
+- **Tests:** zwei weitere in `tests/v4/patch9b2.test.js` (Vorschau gleich realem Schaden bei Varianz 0,9 und 1,1 mit bedingter offensiver, bedingter defensiver Passive und Resistenz, auch mit Schritt; NPC mit genau 8 STA wählt Piercing Thrust nur dank der Reduktion). Beide waren auf .38 rot.
+
 ## 4. Grenzen für 9C
 
 - Kein Erwerbspfad für Passives und dynamische Skills (Lehrer, Skill Stones, Training, organisches Lernen). `definePassive`/`gainPassive` und `defineSkill`/`learnSkill` sind die geprüften Schnittstellen.

@@ -7,7 +7,7 @@ import { loadContent, loadProductContent, Game, scriptedDice } from '../helpers.
 import { applyEvent, fold } from '../../src/state.js';
 import { validateState } from '../../src/validate.js';
 import { deriveCharacter } from '../../src/derived.js';
-import { initEncounter, attackAction, skillAction, npcTactic } from '../../src/combat.js';
+import { initEncounter, attackAction, skillAction, npcTactic, damagePreview } from '../../src/combat.js';
 import { scaleCreature, humanSheet } from '../../src/npcgen.js';
 import { runCommands } from '../../src/commands.js';
 import { renderHud } from '../../src/hud.js';
@@ -37,9 +37,10 @@ function spawn(g, id, { anchor = 'wolf', band = 'ENGAGED', level = 1, hp = null 
         { t: 'scene.awareness', d: { id, level: 'aware' } });
 }
 /** A trained person of the story (a sheet as Patch 9A builds it) knowing these Skills, here with him. */
-function person(g, id, tpl, cls, skills, { ruleset = 2, band = 'ENGAGED' } = {}) {
+function person(g, id, tpl, cls, skills, { ruleset = 2, band = 'ENGAGED', set = {} } = {}) {
     const s = humanSheet(npcTemplate(g.content, ruleset, tpl), { class: cls }, g.content);
     s.skills = Object.fromEntries([g.content.classes.get(cls).basic_attack, ...skills].map((x) => [x, { prof: 1, pp: 0 }]));
+    Object.assign(s, set);
     book(g,
         { t: 'entity.created', d: { entity: { id, kind: 'npc', name: 'Brannoc', descriptors: [tpl], status: 'alive', location: g.state.scene.location, sheet: s } } },
         { t: 'scene.entered', d: { id, band, cover: 'none' } },
@@ -486,4 +487,74 @@ test('9B-2 I: a dynamic Skill, Proficiency, a starter Skill, a Passive and a hea
     assert.deepEqual(validateState(g.state, content), []);
     const again = fold(g.log);
     assert.deepEqual([again.entities.pc.sheet, again.skill_defs, again.passive_defs, again.pp_keys], [sheet(g), g.state.skill_defs, g.state.passive_defs, g.state.pp_keys]);
+});
+
+// ------------------------------------------------------------------------------------------------ review of 9B-2
+/** Give a person of the story (an NPC) a defined Passive: the engine's events. */
+function grantTo(g, who, ...defs) {
+    for (const def of defs) {
+        const d = definePassive(g.state, g.content, def);
+        assert.deepEqual(d.errors, [], def.id);
+        book(g, ...d.events);
+        const r = gainPassive(g.state, g.content, who, def.id);
+        assert.deepEqual(r.errors, [], def.id);
+        book(g, ...r.events);
+    }
+}
+/** The attack as it resolves with the variance at one end, on a copy of the fight (the fight itself stays as it is). */
+function strikeWith(ctx, variance, skill, extra = {}) {
+    const copy = { ...ctx, enc: structuredClone(ctx.enc), dice: scriptedDice({ variance: [variance, variance, variance] }) };
+    return attackAction(copy, 'pc', 'npc.foe', skill, extra);
+}
+
+test('9B-2 review (1): the damage preview is the pipeline: his conditional ATK, the target\'s conditional DEF and its resistance, variance and rounding', () => {
+    const g = hero('Warrior', 'Heavy Slash + Guard');
+    grant(g, CLOSE);
+    person(g, 'npc.foe', 'guard', 'warrior', ['warrior.guard']);
+    grantTo(g, 'npc.foe', { ...LAST, id: 'dyn.passive_foe_stand', name: 'Foe Stand' }, { ...HIDE, id: 'dyn.passive_foe_hide', name: 'Foe Hide' });
+    const ctx = fight(g, ['npc.foe']);
+    const foe = ctx.enc.combatants['npc.foe'];
+    foe.current.hp = Math.floor(foe.fixed.max_hp * 0.4);
+    const { variance_min: lo, variance_max: hi } = content.rules.damage;
+    const check = (extra) => {
+        const p = damagePreview(ctx.enc, content, 'npc.foe', g.state).find((o) => o.skill === 'warrior.heavy_slash');
+        const [a, b] = [strikeWith(ctx, lo, 'warrior.heavy_slash', extra), strikeWith(ctx, hi, 'warrior.heavy_slash', extra)];
+        assert.equal(a.illegal, undefined, a.illegal);
+        // all three Passives took part in the real strike
+        assert.deepEqual(a.passive, ['Close Work']);
+        assert.equal(a.strikes[0].defense, foe.fixed.def + 2, 'Foe Stand: DEF +2 at 40% HP');
+        assert.ok(a.strikes[0].steps.some((x) => /physical resistance -10%/.test(x)));
+        assert.deepEqual([p.min, p.max], [a.strikes[0].final, b.strikes[0].final], JSON.stringify([p, a.strikes[0].steps]));
+        return p;
+    };
+    const near = check({});
+    // one band away: the preview reckons from where the attack's step leaves him (a foe ENGAGED then: Close Work)
+    foe.current.band = 'SHORT';
+    assert.deepEqual(check({ move: 'closer' }), near);
+    // at full HP the condition is gone, in the preview as in the strike
+    foe.current.band = 'ENGAGED';
+    foe.current.hp = foe.fixed.max_hp;
+    const p = damagePreview(ctx.enc, content, 'npc.foe', g.state).find((o) => o.skill === 'warrior.heavy_slash');
+    const a = strikeWith(ctx, lo, 'warrior.heavy_slash');
+    assert.equal(a.strikes[0].defense, foe.fixed.def);
+    assert.equal(p.min, a.strikes[0].final);
+    assert.ok(p.min > near.min, 'without Foe Stand more gets through');
+});
+
+test('9B-2 review (2): an NPC chooses and makes an attack it can pay only with its Passive\'s cost reduction', () => {
+    // Piercing Thrust: 9 STA, with Light Hand (Precision -10%) 8.1 → 8; he has exactly 8
+    const g = hero('Warrior', 'Heavy Slash + Guard');
+    person(g, 'npc.foe', 'bandit', 'rogue', ['rogue.piercing_thrust'], { set: { sta: 8 } });
+    grantTo(g, 'npc.foe', { ...THRIFT, id: 'dyn.passive_foe_hand', name: 'Foe Hand' });
+    const recs = fightOut(g, 'Heavy Slash Brannoc');
+    const first = recs.find((r) => r.actor === 'npc.foe' && r.kind === 'attack');
+    assert.ok(first, JSON.stringify(recs.filter((r) => r.actor === 'npc.foe').map((r) => [r.kind, r.skill, r.why])));
+    assert.equal(first.skill, 'rogue.piercing_thrust');
+    assert.deepEqual([first.cost.amount, first.cost.before, first.cost.after], [8, 8, 0]);
+    assert.deepEqual(validateState(g.state, content), []);
+    // without the Passive the same 8 STA pay no Piercing Thrust: its Basic Attack (5) instead
+    const h = hero('Warrior', 'Heavy Slash + Guard');
+    person(h, 'npc.foe', 'bandit', 'rogue', ['rogue.piercing_thrust'], { set: { sta: 8 } });
+    const plain = fightOut(h, 'Heavy Slash Brannoc').find((r) => r.actor === 'npc.foe' && r.kind === 'attack');
+    assert.equal(plain.skill, 'rogue.basic_attack');
 });

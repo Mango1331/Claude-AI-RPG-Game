@@ -1988,3 +1988,4 @@ Vollständige Beschreibung: `docs/PATCH9B2_PASSIVES_EFFECTS_NPC_DEFENSE.md`.
 - **NPCs.** Trainierte NPCs verteidigen sich unter konkreter Bedrohung (Guard, Deflect, Arcane/Focused Ward, Evasive Step) und nutzen Feint, wenn ein vorbereiteter Schlag mehr bringt. Nie zweimal hintereinander, höchstens dreimal pro Kampf; sonst wie bisher.
 - **Korrektur.** Numerische Effektwerte sind ganzzahlig (eine Barrier von 13,5 HP ließ gebrochene HP zurück).
 - **Tests:** `tests/v4/patch9b2.test.js` (13).
+- **Nachbesserung (4.3.0-c.6.6.39):** Die Schadensvorschau folgt der echten Pipeline (bedingte Passives, Resistenz, Endure, Rundung); die NPC-Angriffswahl prüft reduzierte Kosten. Tests: 15.

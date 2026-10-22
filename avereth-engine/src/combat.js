@@ -772,19 +772,38 @@ export function damagePreview(enc, content, targetId, state = null) {
         if (!reach || (skill.cost && pc.current[skill.cost.resource] < cost) || !arrows) continue;
         const isRanged = skill.range.band !== 'ENGAGED';
         const magical = skill.attack.damage_type === 'magical';
-        let power = rawPower(skill, pc.fixed.stats, { atk: pc.fixed.atk, matk: pc.fixed.matk }) * (prof.power || 1);
-        for (const b of effectsOf(pc, 'next_attack_buff')) if (b.scope !== 'ranged' || isRanged) power *= 1 + b.power_pct / 100;
-        const defense = (magical ? target.fixed.mdef : target.fixed.def) + tempDefense(target, magical);
-        let factor = 1;
+        // review of 9B-2: the same steps, in the same order and with the same roundings, as attackAction and
+        // resolveStrike: his combat Passives where he would strike from (one band closer when it needs the step), the
+        // target's, its resistance; the variance at its two ends
+        const ctx = { enc, content, state };
+        const struckAt = rangeReaches(skill.range.band, band) ? band : bandName(bandIndex(band) - 1);
+        target.current.band = struckAt;
+        const edge = pc.fixed.passive ? passiveNow(ctx, pc) : null;
+        const guard = target.fixed.passive ? passiveNow(ctx, target) : null;
+        target.current.band = band;
+        let power = rawPower(skill, pc.fixed.stats, { atk: pc.fixed.atk + (edge?.stat.ATK || 0), matk: pc.fixed.matk + (edge?.stat.MATK || 0) });
+        if (prof.power && prof.power !== 1) power = num(power * prof.power);
+        const buff = effectsOf(pc, 'next_attack_buff').filter((b) => b.scope !== 'ranged' || isRanged).reduce((a, b) => a + b.power_pct, 0);
+        if (buff) power = num(power * (1 + buff / 100));
+        const defense = (magical ? target.fixed.mdef : target.fixed.def) + tempDefense(target, magical) + (guard ? guard.stat[magical ? 'MDEF' : 'DEF'] : 0);
+        const postDef = num(Math.max(power - defense, power * d.defense_floor_share));
         let cover = null;
-        if (target.current.cover === 'partial') {
-            cover = skill.attack.ignores_partial_cover ? 'ignored' : 'applies';
-            if (cover === 'applies') factor *= 1 - content.rules.cover.partial_damage_reduction_pct / 100;
-        }
-        for (const e of target.current.effects) factor *= 1 - reductionPct(e) / 100;
-        const post = Math.max(power - defense, power * d.defense_floor_share) * factor;
-        const min = Math.max(1, roundHalfUp(num(post * d.variance_min)));
-        const max = Math.max(1, roundHalfUp(num(post * d.variance_max)));
+        if (target.current.cover === 'partial') cover = skill.attack.ignores_partial_cover ? 'ignored' : 'applies';
+        const resist = guard ? guard.resist[magical ? 'magical' : 'physical'] : 0;
+        const endure = effectsOf(target, 'damage_reduction_next')[0];
+        const final = (variance) => {
+            let dmg = num(postDef * variance);
+            if (cover === 'applies') dmg = num(dmg * (1 - content.rules.cover.partial_damage_reduction_pct / 100));
+            for (const e of target.current.effects) {
+                const pct = reductionPct(e);
+                if (pct) dmg = num(dmg * (1 - pct / 100));
+            }
+            if (endure && dmg > 0) dmg = num(dmg * (1 - endure.pct / 100));
+            if (resist) dmg = num(dmg * (1 - resist / 100));
+            return Math.max(1, roundHalfUp(dmg));
+        };
+        const min = final(d.variance_min);
+        const max = final(d.variance_max);
         out.push({ skill: sid, name: skill.name, min, max, strikes: skill.strikes || 1, cover });
     }
     return out;
@@ -914,7 +933,8 @@ function npcAttackSkill(ctx, me) {
         const s = resolveSkill(ctx.content, sid, ctx.state);
         if (!s || !s.attack) continue;
         if (s.ammo && (me.fixed.weapon_family !== 'bow' || !hasAmmo(me, s))) continue;
-        const cost = s.cost ? s.cost.amount : 0;
+        // review of 9B-2: the cost its execution books (its Proficiency, its Passives' reductions)
+        const cost = skillCostAmount(ctx.content, s, me.fixed.actions[s.id].prof, me.fixed.passive?.cost);
         if (s.cost && me.current[s.cost.resource] < cost) continue;
         const reach = s.range.extra_band ? 'SHORT' : s.range.band;
         if (bandIndex(band) > bandIndex(reach) + 1) continue;

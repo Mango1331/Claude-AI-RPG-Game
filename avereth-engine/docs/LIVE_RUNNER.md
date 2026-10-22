@@ -42,26 +42,29 @@ Werkzeug: `tools/st_live/live/` (ab Build 4.3.0-c.6.6.29). Er spielt einen Livet
    $env:AVERETH_LIVE_API_KEY = "dein-schlüssel"
    ```
    Das gilt nur für dieses PowerShell-Fenster. Der Runner liest `secrets.json` deines Profils nie.
-5. **Prüfen.** Diese Schritte starten nichts:
+5. **Prüfen.** Diese Schritte starten nichts, auch keinen Proxy. Ein lokaler Proxy (z. B. der Featherless-Proxy, der die Modellliste auf fünf Modelle verkleinert) muss schon laufen; der Runner startet und beendet ihn nie:
    ```powershell
    npm run live:st:check
    npm run live:st:check -- --ping
    node tools/st_live/live/run_live.mjs --inspect
+   node tools/st_live/live/run_live.mjs --inspect --ping
    ```
-   - `--ping` fragt zusätzlich `GET /models` beim Provider ab.
-   - `--inspect` zeigt, was aus deinem Profil übernommen würde, ohne Schlüssel.
+   - `--inspect` zeigt, was aus deinem Profil übernommen würde, ohne Schlüssel. Oben steht der Block **VERBINDUNG**: dein SillyTavern und der Runner nebeneinander (Quelle, Feld `custom_url` oder `reverse_proxy`, URL, Modell, woher der Schlüssel kommt), was mit einem `reverse_proxy` deines Profils geschieht, und am Ende ✔ „dieselbe Verbindung wie dein SillyTavern“ oder ✖ mit den Unterschieden (§3).
+   - `--ping` fragt `GET <URL>/models` ab, wie SillyTavern es beim Verbinden tut, und prüft, ob die Modell-ID aus deinem Profil genau so in der Liste steht. Fehlt sie, nennt die Meldung die angebotenen Modelle und ähnliche IDs. Ein eigenes Spieler-Modell (`player.model`) wird mitgeprüft.
 6. **Lauf.**
    ```powershell
    npm run live:st -- --guide patch_8_4
    npm run live:st -- --guide patch_8_4 --headed
    ```
+   - Für den ersten echten GLM-Lauf gelten 40 Züge als Obergrenze (`"maxTurns": 40` in der Beispielkonfiguration, sonst `--max-turns 40`).
+   - Vor dem Start fragt der Runner dieselbe Modellliste ab wie `--ping`. Antwortet der Endpoint nicht, lehnt er den Schlüssel ab oder fehlt das Modell in der Liste, startet er nichts und sagt, warum. Liefert der Endpoint keine Modellliste (dann braucht SillyTavern „Bypass status check“), läuft er weiter; der Bericht vermerkt es.
    - `--headed` zeigt den Browser, sodass du zusehen kannst.
    - Weitere Optionen: `--seed <n>`, `--max-turns <n>`, `--player scripted`, `--preset repo`, `--keep-profile`, `--port <n>`, `--runs <ordner>`.
 7. **Ergebnis.** Es liegt in `tools/st_live/runs/<lauf-id>/` (in `.gitignore`). Liegt das Repo innerhalb deiner SillyTavern-Installation, nimmt der Runner `%USERPROFILE%\avereth-live-runs`.
 
 **Abbruch.** Ein erstes Strg+C beendet den Lauf nach dem laufenden Warten. Exporte und Bericht werden trotzdem geschrieben. Ein zweites Strg+C stoppt sofort. In beiden Fällen werden SillyTavern beendet und Schlüsseldatei sowie Instanz gelöscht.
 
-**Dauer.** Mit GLM dauert ein Zug etwa 0,5–2 Minuten (Planner, Erzähler, Extraktor, Spieler). Der Grundablauf braucht 25–60 Züge. Die Limits stehen im Leitfaden (Standard: 80 Züge, 240 Minuten).
+**Dauer.** Wie lange ein echter GLM-Lauf dauert, ist noch nicht gemessen; eine Schätzung gibt es hier deshalb nicht. Der Bericht misst es (Abschnitt „Laufzeit (gemessen)“): Einrichtung, Spielzeit und Spielerzeit je Zug, die Aufteilung auf Planner, Board, Erzähler, Extraktor und Warten laut Records, und eine Hochrechnung auf 40 und 80 Züge. Die Konsole nennt am Ende Gesamtzeit und Zeit je Zug. Die Limits stehen im Leitfaden (Standard: 80 Züge, 240 Minuten) und lassen sich mit `maxTurns` oder `--max-turns` senken.
 
 ## 3. Lesender, selektiver Import
 
@@ -73,7 +76,7 @@ Werkzeug: `tools/st_live/live/` (ab Build 4.3.0-c.6.6.29). Er spielt einen Livet
 - das Lorebook, das die Karte verknüpft (nur zum Vergleich).
 
 **Übernommen** wird:
-- **Verbindung** der aktiven Chat-Completion-Quelle. Bei Custom: URL, Modell, include/exclude body, Header, Prompt-Post-Processing, „Bypass status check“. Bei anderen Quellen deren Modell- und Endpoint-Felder.
+- **Verbindung** der aktiven Chat-Completion-Quelle, so wie SillyTavern sie benutzt (unten). Bei Custom: URL, Modell, include/exclude body, Header, Prompt-Post-Processing, „Bypass status check“. Bei anderen Quellen deren Modell- und Endpoint-Felder, und der Reverse Proxy, wenn SillyTavern ihn mit dieser Quelle benutzt.
 - **Generierungswerte, wie sie in Gebrauch sind** (aus `settings.json`, also auch ungespeicherte Preset-Änderungen; der Bericht nennt sie): Temperatur, Penalties, Kontext, max. Tokens, Reasoning, Prompts und Reihenfolge.
   - Mit `--preset repo` gilt stattdessen das Preset dieses Builds.
 - **Persona-Name** und `extension_settings.avereth`.
@@ -81,10 +84,21 @@ Werkzeug: `tools/st_live/live/` (ab Build 4.3.0-c.6.6.29). Er spielt einen Livet
 
 **Nie übernommen** wird:
 - `secrets.json`, Chats, andere Karten;
-- Reverse Proxy und Proxy-Passwort;
+- das Proxy-Passwort (`proxy_password`);
+- ein `reverse_proxy`, den SillyTavern mit der gewählten Quelle gar nicht benutzt;
 - ein include-Header oder -Body, der nach Zugangsdaten aussieht (Authorization, Bearer, api_key, token …).
 
-Eine URL mit Zugangsdaten (`user:pw@`, `?key=`) bricht den Import ab.
+Eine URL mit Zugangsdaten (`user:pw@`, `?key=`) bricht den Import ab, ob `custom_url` oder `reverse_proxy`.
+
+**`custom_url` oder `reverse_proxy`.** SillyTavern hat zwei getrennte Wege zu einem eigenen Endpoint, und welcher gilt, hängt nur von der Quelle ab (`public/scripts/openai.js` `proxySupportedSources`, `src/endpoints/backends/chat-completions.js`):
+
+| Quelle | SillyTavern sendet an | Schlüssel | Runner |
+|---|---|---|---|
+| Custom (OpenAI-compatible) | `custom_url` (+ `/chat/completions`); ein gesetztes `reverse_proxy` wird nicht mitgeschickt und hat keine Wirkung | `secrets.json` `api_key_custom` | übernimmt `custom_url`; ein `reverse_proxy` des Profils bleibt draußen und wird als „ohne Wirkung“ genannt; Schlüssel aus der Umgebungsvariable als `api_key_custom` der Instanz |
+| OpenAI, Claude, Mistral, Google AI Studio, Vertex AI, DeepSeek, xAI, Z.AI, Moonshot **mit** `reverse_proxy` | `reverse_proxy` | `proxy_password` aus den Einstellungen | übernimmt `reverse_proxy` und das Modell der Quelle; das Proxy-Passwort deines Profils nicht: die Instanz bekommt den Schlüssel aus der Umgebungsvariable als `proxy_password`; die Proxy-Warnung von SillyTavern („Connecting To Proxy“) bestätigt der Treiber für genau diese URL |
+| dieselben **ohne** `reverse_proxy`, alle anderen | die eigene API der Quelle | `secrets.json` | übernimmt Modell- und Endpoint-Felder |
+
+`--inspect` und `--check` vergleichen die Verbindung deines Profils mit der des Runners: Quelle, Weg, URL und Modell müssen gleich sein, und kein Header oder Body der Verbindung darf weggefallen sein; sonst ✖ mit den Unterschieden. Dein Profil bleibt dabei, wie es ist. Ob der Schlüssel in der Umgebungsvariable derselbe ist wie in deinem Profil, vergleicht der Runner nicht (er liest `secrets.json` und das Proxy-Passwort nie); ob der Endpoint ihn annimmt, zeigt `--ping`.
 
 **Hinweise im Bericht:**
 - Eine Quelle ≠ Custom bedeutet: Die Engine-Aufrufe laufen über `generateRaw` ohne Metadaten in den Records. Das Server-Log hat sie trotzdem.
@@ -107,7 +121,7 @@ Eine URL mit Zugangsdaten (`user:pw@`, `?key=`) bricht den Import ab.
   - `secrets.json` mit dem Schlüssel aus der Umgebungsvariable.
 - **Streaming ist aus**, damit SillyTavern jede Antwort loggt. Die Inhalte ändert das nicht, nur die Anzeige.
 - Alle Schreibzugriffe gehen über einen Schreibschutz (`lib.mjs` `Guard`), der nur Instanz und Laufordner zulässt. Ein Pfad in deiner Installation oder deinem Profil wirft einen Fehler, bevor geschrieben wird.
-- Nach dem Lauf werden `secrets.json` der Instanz und (ohne `--keep-profile`) die ganze Instanz gelöscht.
+- Nach dem Lauf werden `secrets.json` der Instanz gelöscht, ein Proxy-Passwort in ihrer `settings.json` geleert und (ohne `--keep-profile`) die ganze Instanz gelöscht.
 
 ## 5. Browser-Treiber
 
@@ -117,6 +131,10 @@ Ein frischer Browser-Kontext ohne deine Anmeldungen und ohne deinen Speicher. De
 - eine Nachricht eingeben und senden;
 - warten;
 - lesen.
+
+Beim Start zwei Eigenheiten von SillyTavern 1.19:
+- **Begrüßungsbildschirm.** SillyTavern öffnet beim Start einen Begrüßungsbildschirm (Assistent und System-Panel) und schreibt dessen Nachrichten nach einer Wartezeit in den gerade offenen Chat. Wird die Karte in diesem Moment gewählt, landen sie im neuen Kampagnen-Chat vor der Begrüßung der Karte, und die Engine startet dort keine Kampagne (im Stub-Selbsttest beim zweiten Lauf eines Prozesses beobachtet). Der Treiber wählt die Karte deshalb erst, wenn der Begrüßungsbildschirm stillsteht, und ersetzt einen Chat, der trotzdem die Nachricht eines anderen Sprechers enthält, durch einen frischen (`/newchat`). Startet die Engine an der Begrüßung trotzdem keine Kampagne, wird das mit Bildschirmfoto notiert; der Interceptor der Engine legt sie mit der ersten Spielernachricht an. Fehlt sie auch dann, endet der Lauf.
+- **Proxy-Warnung.** Mit einem Reverse Proxy fragt SillyTavern einmal je URL „Connecting To Proxy“. Ein frischer Browser hat keine gespeicherte Antwort; der Treiber bestätigt sie für genau die URL deines Profils und vermerkt das.
 
 Ein Zug ist zu Ende, wenn diese drei Bedingungen erfüllt sind:
 - Die Generierung ist beendet.
@@ -241,6 +259,8 @@ Treffer werden geschwärzt und im Bericht genannt.
 
 `report.md`, auf Deutsch, mit diesen Abschnitten:
 - **Kurzfassung:** Ergebnis, Etappen, Leitfaden, Spieler, Züge, Dauer, Auffälligkeiten, Profilschutz, Scan.
+- **Aufbau** mit der Verbindung deines SillyTavern und der des Laufs (dieselbe?) und dem Preflight (Modellliste, Modell enthalten?).
+- **Laufzeit (gemessen):** Gesamtzeit, Einrichtung, Spiel- und Spielerzeit je Zug (Median, p90, max), Aufteilung laut Records, Hochrechnung auf 40 und 80 Züge.
 - **Aufbau:** Build, Git-Commit und nicht committete Dateien, SillyTavern, Browser, Provider und Modell, Preset (Abweichungen von Build und Datei), Generierung, Streaming, Karte, Lorebook, Engine-Einstellungen, nicht Übernommenes, Kampagne und Seed.
 - **Etappen** mit Zug und Nachricht.
 - **Spielereingaben** mit Absicht, Ort, HP/MP und Zug-Zeit, dazu die Beobachtungen des Spielers.
@@ -292,7 +312,8 @@ Die Bausteine ohne SillyTavern testet `tests/live_runner/live_runner.test.js`, T
 ## 11. Grenzen
 
 - **Spieler-Kosten.** Der LLM-Spieler kostet Tokens, standardmäßig beim selben Provider. Er läuft nie gleichzeitig mit einem Spiel-Aufruf, denn der Treiber wartet den Extraktor ab.
-- **Andere Quelle als Custom.** Die Engine nimmt dann `generateRaw` ohne Metadaten in den Records. Der LLM-Spieler braucht dann `player.url` und `player.model`.
+- **Andere Quelle als Custom.** Die Engine nimmt dann `generateRaw` ohne Metadaten in den Records. Mit `reverse_proxy` nimmt der LLM-Spieler dessen URL und das Modell der Quelle; ohne braucht er `player.url` und `player.model`.
+- **Reverse Proxy.** SillyTavern schickt das Proxy-Passwort vom Browser im Request an seinen Server (so arbeitet SillyTavern selbst); in der isolierten Instanz ist das der Schlüssel aus der Umgebungsvariable. Er steht während des Laufs in der `settings.json` der Instanz und wird am Ende dort geleert und mit der Instanz gelöscht.
 - **Karte und Lorebook** kommen aus diesem Build: Getestet wird der Build, nicht der Stand deines Profils. Abweichungen nennt der Bericht.
 - **Streaming ist aus** (§4).
 - **Kein Swipe, kein Regenerieren.** Diese Wege testet weiter `npm run smoke:st:c`.

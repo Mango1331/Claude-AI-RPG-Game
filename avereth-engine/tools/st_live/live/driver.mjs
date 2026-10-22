@@ -81,7 +81,7 @@ export class Driver {
         await p.waitForTimeout(1500);
         // SillyTavern's own loading dialog goes away by itself
         await p.waitForFunction(() => ![...document.querySelectorAll('dialog[open]')].some((d) => /^\s*Initializing/.test(d.innerText || '')), null, { timeout: 60000 }).catch(() => {});
-        const closed = await this.closeDialogs();
+        const closed = (await this.closeDialogs()).filter(Boolean); // an empty one is SillyTavern's own loader
         if (closed.length) this.setupNotes.push(`start dialogs closed: ${closed.join(' | ')}`);
         await p.waitForFunction(() => !!document.getElementById('avereth_status'), null, { timeout: 60000 }).catch(() => this.setupNotes.push('the engine\'s settings panel did not appear'));
         const conn = await p.evaluate(() => {
@@ -90,9 +90,29 @@ export class Driver {
             return { mainApi: c.mainApi, source: o.chat_completion_source, url: o.custom_url || null, model: o.custom_model || null, stream: !!o.stream_openai, preset: o.preset_settings_openai || null };
         });
         await p.evaluate(() => { $('#api_button_openai').trigger('click'); });
-        const ok = await p.waitForFunction(() => { const s = SillyTavern.getContext().onlineStatus; return s && s !== 'no_connection'; }, null, { timeout: 90000 }).then(() => true).catch(() => false);
+        let ok = false;
+        for (const t0 = Date.now(); Date.now() - t0 < 90000;) {
+            if (await p.evaluate(() => { const s = SillyTavern.getContext().onlineStatus; return !!s && s !== 'no_connection'; })) { ok = true; break; }
+            await this.acceptProxyWarning();
+            await sleep(500);
+        }
         const status = await p.evaluate(() => SillyTavern.getContext().onlineStatus);
         return { ...conn, connected: ok, status };
+    }
+
+    /**
+     * SillyTavern asks once per reverse proxy URL before it connects to it ("Connecting To Proxy"); a fresh browser has
+     * no answer stored. The URL is the one the profile uses (import_profile.mjs), so it is confirmed as the player did.
+     */
+    async acceptProxyWarning() {
+        const text = await this.page.evaluate(() => {
+            const d = [...document.querySelectorAll('dialog[open]')].find((x) => /proxy/i.test(x.innerText || ''));
+            if (!d) return null;
+            d.querySelector('.popup-button-ok')?.click();
+            return (d.innerText || '').trim().split('\n')[0].slice(0, 120);
+        });
+        if (text) this.setupNotes.push(`reverse proxy warning of SillyTavern confirmed ("${text}"): the proxy URL of your profile`);
+        return !!text;
     }
 
     /** Click OK/Cancel away on every open dialog; returns their texts. */
@@ -108,14 +128,35 @@ export class Driver {
         return this.page.evaluate(() => [...document.querySelectorAll('dialog[open]')].map((d) => (d.innerText || '').trim().slice(0, 400)));
     }
 
-    /** Open the card's chat (a new one: the instance has no chats) and wait for the engine's campaign at the greeting. */
+    /**
+     * Open the card's chat (a new one: the instance has no chats) and wait for the engine's campaign at the greeting.
+     * SillyTavern 1.19 opens its welcome screen on start (public/scripts/welcome-screen.js openWelcomeScreen: a panel
+     * and the assistant's greeting pushed into the open chat after an await); a card chosen meanwhile gets them in its
+     * new chat, before its own greeting, and the engine finds no greeting to start the campaign on. So the card is
+     * chosen once the welcome screen stands still, and a chat that holds another speaker's message all the same is
+     * replaced by a fresh one (/newchat).
+     */
     async openCard(name, { chatName = null } = {}) {
         const p = this.page;
+        if (!await this.welcomeDone()) this.setupNotes.push('SillyTavern\'s welcome screen did not settle within 30 s');
         const chid = await p.evaluate((n) => SillyTavern.getContext().characters.findIndex((c) => c.name === n), name);
         if (chid < 0) throw new Error(`the card "${name}" is not in the instance`);
         await p.evaluate(async (id) => { await SillyTavern.getContext().selectCharacterById(String(id)); }, chid);
         await p.waitForFunction(() => SillyTavern.getContext().chat.length >= 1, null, { timeout: 60000 });
-        const started = await p.waitForFunction(() => (SillyTavern.getContext().chat[0]?.extra?.avereth?.events || []).some((e) => e.t === 'campaign.started'), null, { timeout: 60000 }).then(() => true).catch(() => false);
+        await p.waitForTimeout(1500);
+        let foreign = await this.foreign(name);
+        if (foreign.length) {
+            this.setupNotes.push(`SillyTavern's welcome screen wrote into the card's new chat (${foreign.join(', ')}): a fresh chat was started`);
+            await p.evaluate(async () => { await SillyTavern.getContext().executeSlashCommandsWithOptions('/newchat'); });
+            await p.waitForFunction((n) => { const c = SillyTavern.getContext().chat; return c.length >= 1 && c.every((m) => m.is_user || m.name === n); }, name, { timeout: 60000 }).catch(() => {});
+            foreign = await this.foreign(name);
+            if (foreign.length) this.setupNotes.push(`the fresh chat holds another speaker's message as well (${foreign.join(', ')})`);
+        }
+        const started = await p.waitForFunction(() => (SillyTavern.getContext().chat[0]?.extra?.avereth?.events || []).some((e) => e.t === 'campaign.started'), null, { timeout: 90000 }).then(() => true).catch(() => false);
+        if (!started) {
+            const d = await p.evaluate(() => { const c = SillyTavern.getContext(); return { chat: c.chat.length, first: Object.keys(c.chat[0]?.extra || {}), status: document.getElementById('avereth_status')?.textContent || '' }; });
+            this.setupNotes.push(`no campaign at the greeting after 90 s (chat ${d.chat} message(s), greeting extra: ${d.first.join(', ') || 'none'}, status: ${d.status.slice(0, 160)}); the engine's interceptor starts it with the first message`);
+        }
         let chatId = await p.evaluate(() => SillyTavern.getContext().getCurrentChatId());
         if (chatName && started) {
             const renamed = await p.evaluate(async ({ from, to }) => {
@@ -129,6 +170,21 @@ export class Driver {
         await p.waitForTimeout(800);
         return { started, chatId };
     }
+
+    /** Has SillyTavern's start settled: a chat open, or the welcome screen's messages unchanged for 2 s (at most 30 s)? */
+    async welcomeDone() {
+        let last = null;
+        let since = Date.now();
+        for (const t0 = Date.now(); Date.now() - t0 < 30000;) {
+            const s = await this.page.evaluate(() => { const c = SillyTavern.getContext(); return `${c.getCurrentChatId() ?? ''}|${c.chat.length}`; });
+            if (s !== last) { last = s; since = Date.now(); } else if (Date.now() - since >= 2000 && !s.endsWith('|0')) return true;
+            await sleep(250);
+        }
+        return false;
+    }
+
+    /** The names of the messages in the open chat that are neither the player's nor the card's. */
+    async foreign(name) { return this.page.evaluate((n) => SillyTavern.getContext().chat.filter((m) => !m.is_user && m.name !== n).map((m) => m.name || '?'), name); }
 
     /** One look at the page's state (no game state: busy, the length of the chat, the newest reply's reading status). */
     async probe() {
@@ -159,6 +215,7 @@ export class Driver {
         while (Date.now() - t0 < this.turnTimeoutMs) {
             if (this.aborted) return { ok: false, problem: 'interrupted', ms: Date.now() - t0 };
             last = await this.probe();
+            if (last.dialogs && await this.acceptProxyWarning()) continue;
             if (last.dialogs) return { ok: false, problem: 'a dialog opened', dialogs: await this.openDialogs(), ms: Date.now() - t0 };
             const answered = last.len > last.lastUser + 1;
             if (answered && !replyAt) replyAt = Date.now();

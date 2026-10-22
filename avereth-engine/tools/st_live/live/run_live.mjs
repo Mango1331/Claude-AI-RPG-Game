@@ -16,7 +16,8 @@ import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { ENGINE, stamp, pick, isInside, changedSince, treeStat, treeDiff, sha256, clip } from './lib.mjs';
-import { importProfile, describeImport } from './import_profile.mjs';
+import { importProfile, describeImport, routeOf, routeText, modelKeyOf } from './import_profile.mjs';
+import { probeModels, probeRows, probeBlocks } from './preflight.mjs';
 import { createInstance, writeConfig, seedProfile, chatFiles, removeKey, removeInstance, WORLD_FILE } from './profile.mjs';
 import { startServer, freePort } from './server.mjs';
 import { loadPlaywright, launchBrowser, Driver } from './driver.mjs';
@@ -93,7 +94,8 @@ export async function check(o) {
     else if (o.stDir) ok(false, 'SillyTavern-Abhängigkeiten', 'node_modules fehlt: SillyTavern einmal normal starten (Start.bat)');
     try { imp = importProfile({ stDir: o.stDir, user: o.stUser, card: o.card, preset: o.preset, dataRoot: o.stData }); ok(true, 'Profil lesbar (nur lesend)', `${imp.st.userDir}, SillyTavern ${imp.st.version}`); } catch (e) { ok(false, 'Profil lesbar', String(e.message)); }
     if (imp) {
-        ok(imp.source === 'custom', 'Chat-Completion-Quelle "Custom"', imp.source === 'custom' ? `${new URL(imp.connection.custom_url).host}, Modell ${imp.connection.custom_model}` : `Quelle "${imp.source}": Engine-Aufrufe ohne Metadaten; Spieler-LLM braucht player.url/player.model`);
+        ok(imp.route.same, 'Dieselbe Verbindung wie dein SillyTavern', imp.route.same ? routeText(imp.route.runner, { keyFrom: o.keyEnv }) : imp.route.differences.join('; '));
+        if (imp.source !== 'custom') ok(true, 'Hinweis', `Quelle "${imp.source}" statt "custom": die Engine-Aufrufe laufen über generateRaw, ohne Metadaten in den Records${o.player.type === 'llm' && !imp.route.runner.url && !o.player.url ? '; der LLM-Spieler braucht player.url und player.model' : ''}`);
         ok(!!imp.card, 'Avereth-Karte im Profil', imp.card ? `${imp.card.name} (Vertrag ${imp.card.contract})` : 'keine: der Runner nimmt seine eigene Karte und Begrüßung');
         for (const w of imp.warnings) ok(true, 'Hinweis', w);
         for (const d of imp.dropped) ok(true, 'nicht übernommen', `${d.key}: ${d.why}`);
@@ -104,16 +106,25 @@ export async function check(o) {
     try { const g = loadGuide(o.guide); ok(true, 'Leitfaden', `${g.chain.join(' → ')} (${g.milestones.length} Etappen)`); } catch (e) { ok(false, 'Leitfaden', e.message); }
     try { const p = await freePort(o.port); ok(true, 'Port', p === o.port ? `${p} frei` : `${o.port} belegt, nehme ${p}`); } catch (e) { ok(false, 'Port', String(e.message)); }
     if (imp) { try { const d = runsDirFor(o, imp); ok(true, 'Laufordner', d); } catch (e) { ok(false, 'Laufordner', e.message); } }
-    if (o.ping && imp?.source === 'custom' && key) {
-        try {
-            const r = await fetch(`${String(imp.connection.custom_url).replace(/\/+$/, '')}/models`, { headers: { authorization: `Bearer ${key}` } });
-            ok(r.ok, 'Provider erreichbar (GET /models)', `HTTP ${r.status}${r.ok ? '' : ' (ohne /models: im Profil "Bypass status check" setzen)'}`);
-        } catch (e) { ok(false, 'Provider erreichbar', String(e.message)); }
-    }
+    if (o.ping && imp) for (const r of await preflight(o, imp, key)) ok(r.good, r.what, r.detail);
     for (const r of rows) console.log(`${r.good ? '✔' : '✖'} ${r.what}${r.detail ? ` — ${r.detail}` : ''}`);
     const bad = rows.filter((r) => !r.good);
     console.log(bad.length ? `\n${bad.length} Voraussetzung(en) fehlen.` : '\nAlles bereit für einen Live-Lauf.');
     return bad.length ? 1 : 0;
+}
+
+/** --ping: the endpoint's model list against the profile's model (and the player's, when it has its own). */
+export async function preflight(o, imp, key, { fetchImpl = fetch } = {}) {
+    const r = imp.route.runner;
+    if (!r.url) return [{ good: true, what: 'Endpoint (GET /models)', detail: `Quelle "${r.source}" ohne eigene URL im Profil (die API der Quelle): nicht geprüft` }];
+    const p = await probeModels({ url: r.url, key, model: r.model, fetchImpl });
+    const rows = probeRows(p, { model: r.model, who: 'SillyTavern' });
+    if (o.player.type === 'llm' && (o.player.model && o.player.model !== r.model || o.player.url && o.player.url !== r.url)) {
+        const pk = o.player.keyEnv ? process.env[o.player.keyEnv] : key;
+        const q = await probeModels({ url: o.player.url || r.url, key: pk, model: o.player.model || r.model, fetchImpl });
+        rows.push(...probeRows(q, { model: o.player.model || r.model, who: 'Spieler' }).map((x) => ({ ...x, what: `${x.what} [Spieler]` })));
+    }
+    return rows;
 }
 
 // ------------------------------------------------------------------------------------------------ a run
@@ -136,11 +147,22 @@ export async function run(o) {
     if (o.stub) {
         stub = await startStub({ key: STUB_KEY });
         key = STUB_KEY;
-        imp.source = 'custom';
-        imp.connection = { chat_completion_source: 'custom', custom_url: stub.url, custom_model: STUB_MODEL, bypass_status_check: false };
+        // the profile's route, its URL the stub's: a reverse proxy stays a reverse proxy
+        if (imp.route.runner.via === 'reverse_proxy') imp.connection = { ...imp.connection, reverse_proxy: stub.url, [modelKeyOf(imp.source)]: STUB_MODEL, bypass_status_check: false };
+        else { imp.source = 'custom'; imp.connection = { chat_completion_source: 'custom', custom_url: stub.url, custom_model: STUB_MODEL, bypass_status_check: false }; }
+        imp.route = { ...imp.route, runner: routeOf(imp.connection), same: false, differences: ['Stub-Provider statt des Endpoints deines Profils'] };
     } else {
         key = process.env[o.keyEnv];
         if (!key) throw new Error(`no API key: set the environment variable ${o.keyEnv} (it is never read from the profile)`);
+    }
+    // the provider before anything starts: the model the profile names must be on offer (a proxy's narrowed list)
+    let preflightResult = null;
+    if (imp.route.runner.url) {
+        const p = await probeModels({ url: imp.route.runner.url, key, model: imp.route.runner.model });
+        preflightResult = { endpoint: p.endpoint, reachable: p.reachable, status: p.status, models: p.ids, found: p.found, error: p.error };
+        const block = probeBlocks(p);
+        if (block) { await stub?.close(); throw new Error(`Preflight, nichts gestartet: ${probeRows(p, { model: imp.route.runner.model }).filter((x) => !x.good).map((x) => `${x.what}: ${x.detail}`).join(' ') || block}`); }
+        log(`preflight: ${p.endpoint} ${p.ids ? `offers ${p.ids.length} model(s), "${imp.route.runner.model}" among them` : `(${p.error}; model not checkable)`}`);
     }
     const playerKey = o.stub ? STUB_KEY : o.player.keyEnv ? process.env[o.player.keyEnv] : key;
     const inst = createInstance({ runId, protect: [imp.st.dir, imp.st.dataRoot, imp.st.userDir], runDir });
@@ -165,6 +187,7 @@ export async function run(o) {
     let slow = [];
     let statusLine = '';
     let toasts = [];
+    let firstTurnAt = null;
     const port = await freePort(o.port);
     // Ctrl+C: the first ends the run after the current wait (the run folder is still written), the second at once
     let interrupted = 0;
@@ -182,7 +205,7 @@ export async function run(o) {
         server = await startServer({ stDir: imp.st.dir, inst, port, logFile: path.join(runDir, 'server.log'), timedFile: path.join(runDir, 'server.timed.log') });
         log(`SillyTavern ${imp.st.version} on ${server.url} (${(server.startMs / 1000).toFixed(1)} s)`);
         setup = seedProfile(inst, imp, { key });
-        setup.host = (() => { try { return new URL(imp.connection.custom_url || '').host; } catch { return null; } })();
+        setup.host = (() => { try { return new URL(imp.route.runner.url || '').host; } catch { return null; } })();
         const pw = loadPlaywright();
         if (!pw) throw new Error('Playwright is not installed (npm install -g playwright-core)');
         br = await launchBrowser(pw, { browser: o.browser, headless: o.headless });
@@ -192,17 +215,19 @@ export async function run(o) {
         if (!conn.connected) { end = { kind: 'ui', why: `no connection to the provider (status "${conn.status}"); a provider without /models needs "Bypass status check" in the profile` }; throw new Error('stop'); }
         if (conn.source !== imp.source || conn.stream) driver.setupNotes.push(`the page shows source ${conn.source}, streaming ${conn.stream}`);
         opened = await driver.openCard(setup.card, { chatName: `Avereth Live ${runId}` });
-        if (!opened.started) { end = { kind: 'ui', why: 'the engine did not start a campaign at the greeting' }; throw new Error('stop'); }
-        log(`campaign started in chat "${opened.chatId}"`);
+        if (!opened.started) {
+            await driver.screenshot(g.check(path.join(runDir, 'screens', 'greeting-no-campaign.png')));
+            log('no campaign at the greeting: noted; the engine starts it with the first message');
+        } else log(`campaign started in chat "${opened.chatId}"`);
 
         const player = o.player.type === 'scripted'
             ? scriptedPlayer({ steps: guide.scripted || [] })
             : llmPlayer({
                 guide, username: imp.username, persona,
-                url: o.player.url || imp.connection.custom_url, model: o.player.model || imp.connection.custom_model, key: playerKey,
+                url: o.player.url || imp.route.runner.url, model: o.player.model || imp.route.runner.model, key: playerKey,
                 temperature: o.player.temperature, maxTokens: o.player.maxTokens, extraBody: o.player.extraBody, record: (e) => playerLog.push({ at: new Date().toISOString(), ...e }),
             });
-        if (o.player.type === 'llm' && !(o.player.url || imp.connection.custom_url)) throw new Error('the LLM player needs an OpenAI-compatible URL: player.url in live.config.json');
+        if (o.player.type === 'llm' && !(o.player.url || imp.route.runner.url)) throw new Error('the LLM player needs an OpenAI-compatible URL: player.url in live.config.json');
         const maxTurns = guide.limits.maxTurns;
         const t0 = Date.now();
         let since = 0;
@@ -212,14 +237,17 @@ export async function run(o) {
             if (turn > maxTurns) { end = { kind: 'limit', why: `${maxTurns} turns` }; break; }
             if (Date.now() - t0 > guide.limits.maxMinutes * 60000) { end = { kind: 'limit', why: `${guide.limits.maxMinutes} minutes` }; break; }
             const view = await driver.view();
+            const td = Date.now();
             const d = await player.decide(view, { turn, maxTurns });
+            const decideMs = Date.now() - td;
+            if (!firstTurnAt) firstTurnAt = td;
             if (o.player.type === 'scripted') playerLog.push({ at: new Date().toISOString(), turn, decision: d });
             if (playerLog.length) playerLog.at(-1).screen = screenText(view);
             if (d.stop) { end = { kind: d.harness ? 'harness' : d.stop_reason === 'done' ? 'player_done' : 'player_stop', why: d.stop_reason }; log(`player stops: ${d.stop_reason}`); break; }
             log(`turn ${turn}: ${clip(d.message, 100)}`);
             sends.push({ turn, at: Date.now() });
             const r = await driver.send(d.message);
-            turnsLog.push({ turn, text: d.message, decision: d, ...r });
+            turnsLog.push({ turn, text: d.message, decision: d, decideMs, ...r });
             if (!r.ok && interrupted) { end = { kind: 'harness', why: `interrupted (Ctrl+C) in turn ${turn}` }; break; }
             if (!r.ok) {
                 await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-problem.png`)));
@@ -228,6 +256,7 @@ export async function run(o) {
                 break;
             }
             chat = await driver.chat();
+            if (!(chat[0]?.extra?.avereth?.events || []).some((e) => e.t === 'campaign.started')) { end = { kind: 'ui', why: `the engine started no campaign, neither at the greeting nor with the message of turn ${turn}` }; break; }
             const ev = evaluate(chat, { guide });
             if (ev.defeat) { await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-defeat.png`))); end = { kind: 'defeat', why: `turn ${ev.defeat.turn}: ${ev.defeat.why}` }; break; }
             if (finished(ev)) { end = { kind: 'done', why: null }; log('all required milestones reached'); break; }
@@ -254,6 +283,8 @@ export async function run(o) {
     }
     end = end || { kind: 'harness', why: 'the run ended without a reason' };
     const endedAt = Date.now();
+    const total = (xs) => xs.filter(Number.isFinite).reduce((a, b) => a + b, 0);
+    const timing = { totalMs: endedAt - startedAt, stStartMs: server?.startMs ?? null, setupMs: firstTurnAt ? firstTurnAt - startedAt : null, turns: turnsLog.length, gameMs: total(turnsLog.map((t) => t.ms)), decideMs: total(turnsLog.map((t) => t.decideMs)) };
 
     try {
         // ---------------------------------------------------------------------------------------------- the run folder
@@ -277,7 +308,7 @@ export async function run(o) {
         const ev = evaluate(messages, { guide });
         put('evaluation.json', JSON.stringify({ end, ...ev }, null, 1), 'die Auswertung (Etappen, Kämpfe, Quests, Auffälligkeiten)');
         const driverNotes = [...(driver?.setupNotes || []), ...callErrors.slice(0, 5).map((e) => `server log: ${e}`)];
-        put('run.json', JSON.stringify({ runId, stub: !!stub, seed, persona, guide: { id: guide.id, chain: guide.chain, files: guide.files.map((f) => path.relative(ENGINE, f)) }, end, setup, conn, chatId: opened?.chatId || null, turns: turnsLog.map(({ decision, ...t }) => ({ ...t, milestone: decision?.milestone || null })), status: statusLine, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [], notes: driverNotes, stubCalls: stub ? stub.calls : undefined }, null, 1), 'Ablauf des Laufs: Züge, Zeiten, Hinweise, Seitenfehler, Statuszeile');
+        put('run.json', JSON.stringify({ runId, stub: !!stub, seed, persona, guide: { id: guide.id, chain: guide.chain, files: guide.files.map((f) => path.relative(ENGINE, f)) }, end, timing, preflight: preflightResult, route: imp.route, setup, conn, chatId: opened?.chatId || null, turns: turnsLog.map(({ decision, ...t }) => ({ ...t, milestone: decision?.milestone || null })), status: statusLine, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [], notes: driverNotes, stubCalls: stub ? stub.calls : undefined }, null, 1), 'Ablauf des Laufs: Züge, Zeiten, Hinweise, Seitenfehler, Statuszeile');
         put('import.json', JSON.stringify({ ...imp, preset: { ...imp.preset, text: undefined, sha256: imp.preset.text ? sha256(Buffer.from(imp.preset.text)) : null } }, null, 1), 'was aus dem Profil übernommen wurde (ohne Schlüssel)');
 
         const changedRead = changedSince(imp.read);
@@ -287,16 +318,17 @@ export async function run(o) {
         const secrets = [...new Set([key, playerKey, process.env[o.keyEnv]].filter(Boolean))];
         const scan = secretScan(runDir, secrets, g);
         const report = buildReport({
-            runId, stub: !!stub, guide, player: o.player.type === 'llm' ? { type: 'llm', model: o.player.model || imp.connection.custom_model, endpoint: (() => { try { return new URL(o.player.url || imp.connection.custom_url).host; } catch { return '?'; } })(), temperature: o.player.temperature, persona } : { type: 'scripted', steps: (guide.scripted || []).length },
+            runId, stub: !!stub, guide, player: o.player.type === 'llm' ? { type: 'llm', model: o.player.model || imp.route.runner.model, endpoint: (() => { try { return new URL(o.player.url || imp.route.runner.url).host; } catch { return '?'; } })(), temperature: o.player.temperature, persona } : { type: 'scripted', steps: (guide.scripted || []).length },
             end, ev, calls, setup: setup || { source: imp.source, card: '?', world: '?', greeting: '?' }, imp, git: gitInfo(), build: buildOf(), st: { version: imp.st.version, dir: imp.st.dir, port, startMs: server?.startMs },
             browser: { name: br?.name || '?', version: br?.version || '?', headless: o.headless }, turnsLog, playerLog, driverNotes, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [],
             protection, scan, files: [...files, ['report.md', 'dieser Bericht'], ['screens/', 'Bildschirmfotos (Ende, Probleme)']], startedAt, endedAt, instanceKept: o.keepProfile ? inst.root : null,
-            chatId: opened?.chatId, seed, slow, worldSame: imp.world ? imp.world.sha256 === sha256(fs.readFileSync(WORLD_FILE)) : null,
+            chatId: opened?.chatId, seed, slow, timing, preflight: preflightResult, keyEnv: o.keyEnv, worldSame: imp.world ? imp.world.sha256 === sha256(fs.readFileSync(WORLD_FILE)) : null,
         });
         put('report.md', report, 'dieser Bericht');
         const again = secretScan(runDir, secrets, g);
         scan.hits.push(...again.hits);
         if (scan.hits.length) log(`SECRET SCAN: ${scan.hits.length} hit(s) blanked (${scan.hits.map((h) => h.file).join(', ')})`);
+        log(`time: ${Math.round(timing.totalMs / 60000)} min in all, ${timing.turns} turns, ${timing.turns ? `${Math.round((timing.gameMs + timing.decideMs) / timing.turns / 1000)} s per turn (game ${Math.round(timing.gameMs / Math.max(1, timing.turns) / 1000)} s, player ${Math.round(timing.decideMs / Math.max(1, timing.turns) / 1000)} s)` : 'no turn'}`);
         log(`result: ${end.kind}${end.why ? ` (${end.why})` : ''}; milestones ${ev.milestones.filter((m) => m.required && m.reached).length}/${ev.milestones.filter((m) => m.required).length}; profile unchanged: ${protection.unchanged}; secret scan: ${scan.hits.length ? 'HITS' : 'clean'}`);
         log(`run folder: ${runDir}`);
         return { runDir, end, ev, protection, scan, calls, stub, inst, playerLog, turnsLog };
@@ -309,7 +341,12 @@ async function main() {
     const o = options();
     if (o.check) process.exit(await check(o));
     try {
-        if (o.inspect) { console.log(describeImport(importProfile({ stDir: o.stDir, user: o.stUser, card: o.card, preset: o.preset, dataRoot: o.stData }))); return; }
+        if (o.inspect) {
+            const imp = importProfile({ stDir: o.stDir, user: o.stUser, card: o.card, preset: o.preset, dataRoot: o.stData });
+            console.log(describeImport(imp, { keyEnv: o.keyEnv }));
+            if (o.ping) for (const r of await preflight(o, imp, process.env[o.keyEnv])) console.log(`${r.good ? '✔' : '✖'} ${r.what}${r.detail ? ` — ${r.detail}` : ''}`);
+            return;
+        }
         const r = await run(o);
         process.exit(r.end.kind === 'done' ? 0 : r.end.kind === 'harness' ? 1 : 2);
     } catch (e) {

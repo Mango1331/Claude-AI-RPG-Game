@@ -3,6 +3,7 @@
 // key reached the exports.
 import { callStats } from './calls.mjs';
 import { median, quantile, clip } from './lib.mjs';
+import { routeText } from './import_profile.mjs';
 
 const sec = (ms) => (Number.isFinite(ms) ? `${(ms / 1000).toFixed(1)} s` : '–');
 const dur = (ms) => { const s = Math.round(ms / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} min`; };
@@ -41,7 +42,11 @@ export function buildReport(x) {
     L.push(`| Git | ${git ? `${git.commit}${git.branch ? ` (${git.branch})` : ''}${git.dirty.length ? ` — **nicht committete Änderungen:** ${cell(git.dirty.slice(0, 12).join(', '))}${git.dirty.length > 12 ? ' …' : ''}` : ' — sauber'}` : 'unbekannt'} |`);
     L.push(`| SillyTavern | ${st.version} (${cell(st.dir)}), isolierte Instanz auf Port ${st.port}, Start ${sec(st.startMs)} |`);
     L.push(`| Browser | ${browser.name} ${browser.version}${browser.headless ? ' (headless)' : ''} |`);
-    L.push(`| Provider | Quelle ${setup.source}, ${setup.host || '?'}, Modell ${setup.model || '?'} |`);
+    if (imp.route) {
+        L.push(`| Verbindung deines SillyTavern | ${cell(routeText(imp.route.profile))} |`);
+        L.push(`| Verbindung des Laufs | ${cell(routeText(imp.route.runner, { keyFrom: x.keyEnv || 'Umgebungsvariable' }))} — ${imp.route.same ? 'dieselbe' : `**nicht dieselbe:** ${cell(imp.route.differences.join('; '))}`}${imp.route.reverseProxy && !imp.route.reverseProxy.used ? ` (reverse_proxy des Profils ohne Wirkung für Quelle „${imp.route.profile.source}“, nicht übernommen)` : ''} |`);
+    } else L.push(`| Provider | Quelle ${setup.source}, ${setup.host || '?'}, Modell ${setup.model || '?'} |`);
+    if (x.preflight) L.push(`| Preflight (GET /models) | ${cell(x.preflight.endpoint)}: ${x.preflight.models ? `${x.preflight.models.length} Modell(e) (${cell(x.preflight.models.join(', '))}), Modell ${x.preflight.found ? 'enthalten' : '**nicht enthalten**'}` : cell(x.preflight.error || '?')} |`);
     L.push(`| Preset | ${cell(imp.preset.name)} (${imp.preset.mode === 'repo' ? 'aus diesem Build' : 'aus dem Profil'})${imp.preset.unsaved.length ? `, ungespeicherte Werte in Gebrauch: ${imp.preset.unsaved.join(', ')}` : ''}${imp.preset.vsRepo.length ? `, weicht vom Build-Preset ab in: ${imp.preset.vsRepo.join(', ')}` : ', gleich dem Build-Preset'} |`);
     L.push(`| Generierung | Temperatur ${imp.generation.temp_openai ?? '?'}, max. Tokens ${imp.generation.openai_max_tokens ?? '?'}, Kontext ${imp.generation.openai_max_context ?? '?'}, Reasoning ${imp.generation.reasoning_effort ?? '?'} |`);
     L.push(`| Streaming | aus${imp.streaming ? ' (im Profil an: für das Log abgeschaltet, ändert keine Inhalte)' : ''} |`);
@@ -109,8 +114,25 @@ export function buildReport(x) {
     L.push('## Performance', '', '| Rolle | Aufrufe | Reparaturen | Median | p90 | Prompt-Tokens (Median) | davon Cache | Antwort-Tokens (Median) | Reasoning (Median) | finish_reason | leer |', '|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|');
     const st2 = callStats(calls);
     for (const [role, s] of Object.entries(st2)) L.push(`| ${role} | ${s.n} | ${s.repairs} | ${sec(median(s.ms))} | ${sec(quantile(s.ms, 0.9))} | ${tok(median(s.prompt))} | ${tok(median(s.cached))} | ${tok(median(s.completion))} | ${tok(median(s.reasoning))} | ${Object.entries(s.finish).map(([k, v]) => `${k} ${v}`).join(', ') || '–'} | ${s.empty} |`);
+    L.push('');
+
+    // the measured time of the run (no estimate): set-up, the game's part of each turn, the player's part, and what the
+    // records say the game's part was spent on
     const tms = turnsLog.map((t) => t.ms);
-    L.push('', `Zug-Zeit (Senden bis HUD nach der Extraktion): Median ${sec(median(tms))}, p90 ${sec(quantile(tms, 0.9))}, max ${sec(Math.max(0, ...tms.filter(Number.isFinite)))}. Spieler-LLM: ${playerLog.length} Aufrufe, Median ${sec(median(playerLog.map((p) => p.ms)))}${playerLog.some((p) => p.error) ? `, ${playerLog.filter((p) => p.error).length} unbrauchbare Antworten` : ''}.`, '');
+    const dms = turnsLog.map((t) => t.decideMs);
+    const sum = (xs) => xs.filter(Number.isFinite).reduce((a, b) => a + b, 0);
+    const T = x.timing || { totalMs: endedAt - startedAt, setupMs: null, stStartMs: st.startMs, turns: turnsLog.length, gameMs: sum(tms), decideMs: sum(dms) };
+    const per = T.turns ? (T.gameMs + T.decideMs) / T.turns : null;
+    const part = (k) => sum(ev.turns.map((t) => t.perf?.[k]));
+    L.push('## Laufzeit (gemessen)', '', '| | Zeit |', '|---|---:|');
+    L.push(`| Gesamt (Start bis Ende des Spiels) | ${dur(T.totalMs)} |`);
+    L.push(`| Einrichtung bis zum ersten Zug (davon SillyTavern-Start ${sec(T.stStartMs)}) | ${T.setupMs != null ? dur(T.setupMs) : '–'} |`);
+    L.push(`| ${T.turns} Züge, Spiel (Senden bis HUD nach der Extraktion) | ${dur(T.gameMs)} — Median ${sec(median(tms))}, p90 ${sec(quantile(tms, 0.9))}, max ${sec(Math.max(0, ...tms.filter(Number.isFinite)))} |`);
+    L.push(`| ${T.turns} Züge, Spieler-Entscheidung | ${dur(T.decideMs)} — Median ${sec(median(dms))}${playerLog.some((p) => p.error) ? `, ${playerLog.filter((p) => p.error).length} unbrauchbare Antworten` : ''} |`);
+    L.push(`| davon laut Records: Planner / Board / Erzähler / Extraktor / Warten | ${dur(part('plan'))} / ${dur(part('board'))} / ${dur(part('narrator'))} / ${dur(part('extract'))} / ${dur(part('wait'))} |`);
+    L.push(`| Ø je Zug (Spiel + Spieler) | ${per != null ? sec(per) : '–'} |`);
+    if (per != null) L.push(`| Hochrechnung bei diesem Tempo | 40 Züge ≈ ${dur(40 * per)}, 80 Züge ≈ ${dur(80 * per)} (ohne Einrichtung) |`);
+    L.push('');
 
     L.push('## Schutz und Geheimnisse', '');
     L.push(`- Aus dem Profil gelesen (nur lesend): ${imp.read.length} Dateien; danach ${protection.changedRead.length ? `**verändert: ${protection.changedRead.map((c) => `${c.file} (${c.why})`).join(', ')}**` : 'alle unverändert'}.`);

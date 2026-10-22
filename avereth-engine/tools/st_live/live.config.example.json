@@ -5,6 +5,7 @@
   "preset": "profile",
   "keyEnv": "AVERETH_LIVE_API_KEY",
   "guide": "patch_8_4",
+  "maxTurns": 40,
   "browser": "chrome",
   "headless": true,
   "port": 8123,

@@ -102,14 +102,25 @@ export function seedProfile(inst, imp, { key, cardName = null } = {}) {
     s.username = imp.username;
     s.main_api = 'openai';
     s.oai_settings = { ...(s.oai_settings || {}), ...imp.generation, ...imp.connection, stream_openai: false, preset_settings_openai: presetName };
+    // the reverse proxy only on the route that uses it (import_profile.mjs routeOf), its password the key from the
+    // environment; as a proxy preset, because SillyTavern loads the selected preset over oai_settings (loadProxyPresets)
     for (const k of ['reverse_proxy', 'proxy_password']) s.oai_settings[k] = '';
+    const none = { name: 'None', url: '', password: '' };
+    s.proxies = [none];
+    s.selected_proxy = none;
+    if (imp.route?.runner.via === 'reverse_proxy') {
+        const proxy = { name: imp.route.reverseProxy?.preset && imp.route.reverseProxy.preset !== 'None' ? imp.route.reverseProxy.preset : 'Avereth Live', url: imp.connection.reverse_proxy, password: key || '' };
+        Object.assign(s.oai_settings, { reverse_proxy: proxy.url, proxy_password: proxy.password });
+        s.proxies = [none, proxy];
+        s.selected_proxy = proxy;
+    }
     s.extension_settings = s.extension_settings || {};
     if (imp.engineSettings) s.extension_settings.avereth = structuredClone(imp.engineSettings);
     else delete s.extension_settings.avereth;
     g.write(file, JSON.stringify(s, null, 4));
     // the key, from the environment, in the instance's own secrets file (removeKey deletes it at the end)
     if (key) g.write(path.join(u, 'secrets.json'), JSON.stringify({ [secretKeyOf(imp.source)]: [{ id: 'avereth-live', value: key, label: 'avereth-live', active: true }], _migrated: [] }, null, 4));
-    return { card: name, greeting: imp.card?.first_mes ? 'profile' : 'runner', world: WORLD, preset: presetName, source: imp.source, model: imp.connection.custom_model || Object.entries(imp.connection).find(([k]) => k.endsWith('_model'))?.[1] || null, stream: false };
+    return { card: name, greeting: imp.card?.first_mes ? 'profile' : 'runner', world: WORLD, preset: presetName, source: imp.source, via: imp.route?.runner.via || null, model: imp.route?.runner.model ?? imp.connection.custom_model ?? null, stream: false };
 }
 
 /** The chat files of the run's card in the instance. */
@@ -118,5 +129,17 @@ export function chatFiles(inst, card) {
     return fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith('.jsonl')).map((f) => path.join(dir, f)) : [];
 }
 
-export function removeKey(inst) { inst.guard.remove(path.join(inst.user, 'secrets.json')); }
+/** The key out of the instance: its secrets file, and the proxy password in its settings (SillyTavern may have saved them again). */
+export function removeKey(inst) {
+    inst.guard.remove(path.join(inst.user, 'secrets.json'));
+    const file = path.join(inst.user, 'settings.json');
+    if (!fs.existsSync(file)) return;
+    const s = JSON.parse(fs.readFileSync(file, 'utf8'));
+    const had = !!s.oai_settings?.proxy_password || !!s.selected_proxy?.password || (s.proxies || []).some((p) => p.password);
+    if (!had) return;
+    if (s.oai_settings) s.oai_settings.proxy_password = '';
+    if (s.selected_proxy) s.selected_proxy.password = '';
+    for (const p of s.proxies || []) p.password = '';
+    inst.guard.write(file, JSON.stringify(s, null, 4));
+}
 export function removeInstance(inst) { inst.guard.remove(inst.root); }

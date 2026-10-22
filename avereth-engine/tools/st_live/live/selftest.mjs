@@ -45,7 +45,17 @@ g.write(path.join(user, 'characters', 'Someone Else.png'), cardPng({ name: 'Some
 g.copy(WORLD_FILE, path.join(user, 'worlds', `${WORLD}.json`));
 g.write(path.join(user, 'chats', 'Avereth V4', 'My long campaign.jsonl'), `${JSON.stringify({ user_name: 'Alaric', character_name: 'Avereth V4', chat_metadata: {} })}\n${JSON.stringify({ name: 'Alaric', is_user: true, mes: `personal chat ${BAIT_KEY}` })}\n`);
 g.write(path.join(user, 'secrets.json'), JSON.stringify({ api_key_custom: [{ id: 'mine', value: BAIT_KEY, label: 'mine', active: true }], _migrated: [] }, null, 4));
+// a second profile: the OpenAI source through a reverse proxy (a local proxy in front of the provider), its password bait
+const data2 = path.join(base, 'st-data-proxy');
+g.copyDir(data, data2);
+const settings2 = structuredClone(settings);
+// as SillyTavern 1.19 keeps a reverse proxy: a proxy preset at the top of settings.json, loaded over oai_settings
+const feather = { name: 'Featherless', url: 'http://127.0.0.1:9/v1', password: BAIT_PROXY };
+Object.assign(settings2, { proxies: [{ name: 'None', url: '', password: '' }, feather], selected_proxy: feather });
+Object.assign(settings2.oai_settings, { chat_completion_source: 'openai', reverse_proxy: feather.url, openai_model: 'personal-model', proxy_password: BAIT_PROXY, custom_include_headers: '' });
+g.write(path.join(data2, 'default-user', 'settings.json'), JSON.stringify(settings2, null, 4));
 const profileBefore = treeStat(data);
+const profile2Before = treeStat(data2);
 const stBefore = treeStat(ST, { skip: ['node_modules', '.git'] });
 
 // ------------------------------------------------------------------------------------------------ the run
@@ -57,6 +67,13 @@ const r = await run(o);
 const o2 = options(['--stub', '--st', ST, '--st-data', data, '--runs', path.join(base, 'runs'), '--player', 'scripted', '--max-turns', '3'], { ...process.env, AVERETH_LIVE_API_KEY: '' });
 o2.configFile = null;
 const r2 = await run(o2);
+// the reverse proxy route: the stub stands where the proxy is
+const o3 = options(['--stub', '--st', ST, '--st-data', data2, '--runs', path.join(base, 'runs'), '--seed', '3', '--max-turns', '8'], { ...process.env, AVERETH_LIVE_API_KEY: '' });
+o3.configFile = null;
+const r3 = await run(o3);
+const run3 = runJson(r3.runDir);
+const text3 = fs.readdirSync(r3.runDir, { recursive: true }).map(String).filter((f) => /\.(json|jsonl|md|log)$/.test(f)).map((f) => fs.readFileSync(path.join(r3.runDir, f), 'utf8')).join('\n');
+const report3 = fs.readFileSync(path.join(r3.runDir, 'report.md'), 'utf8');
 
 // ------------------------------------------------------------------------------------------------ checks
 const has = (f) => fs.existsSync(path.join(r.runDir, f));
@@ -67,6 +84,7 @@ const imp = JSON.parse(read('import.json') || '{}');
 const players = read('player.jsonl').split('\n').filter(Boolean).map((l) => JSON.parse(l));
 const evaluation = JSON.parse(read('evaluation.json') || '{}');
 const report = read('report.md');
+const run1 = runJson(r.runDir);
 const game = r.stub.calls.filter((c) => c.role !== 'player');
 const roles = new Set(calls.map((c) => c.role));
 const checks = {
@@ -95,6 +113,19 @@ const checks = {
     noServerErrors: runJson(r.runDir).serverErrors.length === 0,
     scriptedPlayerRuns: r2.end.kind === 'limit' && r2.turnsLog.length === 3 && r2.turnsLog[0].text === 'Mage' && r2.playerLog.every((p) => p.decision && typeof p.screen === 'string'),
     profileUntouchedAfterBoth: treeDiff(profileBefore, treeStat(data)).same && r2.protection.unchanged,
+    customRouteNamesTheStrayProxy: run1.route?.profile?.via === 'custom_url' && (imp.dropped || []).some((d) => d.key === 'reverse_proxy'),
+    preflightInReport: /\| Preflight \(GET \/models\) \| http:\/\/127\.0\.0\.1:\d+\/v1\/models: 1 Modell\(e\) \(stub-model\), Modell enthalten \|/.test(report),
+    runtimeMeasured: /## Laufzeit \(gemessen\)/.test(report) && /Hochrechnung bei diesem Tempo \| 40 Züge ≈/.test(report) && Number.isFinite(run1.timing?.totalMs) && run1.timing.turns === 4,
+    proxyRouteTaken: run3.route?.profile?.via === 'reverse_proxy' && run3.route?.runner?.via === 'reverse_proxy' && run3.route?.reverseProxy?.preset === 'Featherless' && /Verbindung des Laufs \| Quelle "openai" → reverse_proxy http:\/\/127\.0\.0\.1:\d+\/v1/.test(report3),
+    proxyWarningConfirmed: run3.notes.some((n) => /reverse proxy warning of SillyTavern confirmed/.test(n)),
+    proxyRunPlays: r3.end.kind === 'player_done' && r3.stub.calls.filter((c) => c.role === 'narrator').length >= 2 && r3.stub.calls.filter((c) => c.role !== 'player').every((c) => c.auth === 'key'),
+    proxyPasswordNeverExported: !text3.includes(BAIT_PROXY) && !text3.includes(BAIT_KEY) && !text3.includes('stub-key-not-a-real-key-0000') && r3.scan.hits.length === 0,
+    proxyProfileUntouched: treeDiff(profile2Before, treeStat(data2)).same && r3.protection.unchanged,
+    // every run's chat: the card's greeting with the campaign first, no message of SillyTavern's welcome screen in it
+    cleanCampaignChats: [r, r2, r3].every((x) => {
+        const msgs = fs.readFileSync(path.join(x.runDir, 'chat.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l)).filter((m) => 'mes' in m);
+        return msgs[0]?.name === 'Avereth V4' && (msgs[0].extra?.avereth?.events || []).some((e) => e.t === 'campaign.started') && msgs.every((m) => m.is_user || ['Avereth V4', 'Avereth System'].includes(m.name)) && !runJson(x.runDir).notes.some((n) => /no campaign at the greeting/.test(n));
+    }),
     eventsExported: JSON.parse(read('avereth-events.json') || '[]').some((x) => x.events.some((e) => e.t === 'campaign.started')),
 };
 console.log(JSON.stringify(checks, null, 1));

@@ -61,9 +61,10 @@ test('every delta type of the vocabulary declares what it may write; a gate only
             assert.equal(engineOwned(k), true, `${type}: a gate (${gate}) for ${k}, which the story may write anyway`);
         }
     }
-    // each kind has exactly one owner domain; the engine owns coin, possessions, vitals, progress and the Guild
+    // each kind has exactly one owner domain; the engine owns coin, possessions, vitals, progress and the Guild (Patch
+    // 9B-1: and the campaign's dynamic Skill definitions)
     for (const [k, v] of Object.entries(STATE_KINDS)) assert.equal(typeof v.owner, 'string', k);
-    assert.deepEqual(Object.keys(STATE_KINDS).filter(engineOwned).sort(), ['combat', 'dungeons', 'guild.board', 'guild.standing', 'intents', 'pc.coin', 'pc.inventory', 'pc.progress', 'pc.vitals', 'quest.status']);
+    assert.deepEqual(Object.keys(STATE_KINDS).filter(engineOwned).sort(), ['combat', 'dungeons', 'guild.board', 'guild.standing', 'intents', 'pc.coin', 'pc.inventory', 'pc.progress', 'pc.vitals', 'quest.status', 'skills']);
 });
 
 test('every event the reducers know belongs to exactly one declared kind (no game state hides as "audit")', () => {

@@ -152,10 +152,32 @@ export function itemEffectOf(content, thing) {
     return itemTemplateOf(content, thing.name);
 }
 
+/**
+ * Patch 9B-1: a Skill by its id: the campaign's own dynamic definitions (state.skill_defs, booked by skill.defined)
+ * first, then the static content. The content maps are never changed by a campaign; without a state, the content only.
+ */
+export function skillOf(content, id, state = null) {
+    const defs = state?.skill_defs;
+    return (defs && Object.prototype.hasOwnProperty.call(defs, id) ? defs[id] : null) || content.skills.get(id) || null;
+}
+
+/** Patch 9B-1: the Skills of a name, static and this campaign's dynamic ones (normalized name). */
+export function skillsNamed(content, name, state = null) {
+    const key = normText(name);
+    const own = Object.values(state?.skill_defs || {}).filter((s) => normText(s.name) === key);
+    return [...own, ...(content.skillsByName.get(key) || [])];
+}
+
+/** The names of all Skills a campaign can name (normalized): the content's and its dynamic ones. */
+export function skillNames(content, state = null) {
+    return [...new Set([...content.skillsByName.keys(), ...Object.values(state?.skill_defs || {}).map((s) => normText(s.name))])];
+}
+
 /** Find a skill by exact id or (case-insensitive) name, preferring the given class. */
-export function findSkill(content, nameOrId, preferClass = null) {
-    if (content.skills.has(nameOrId)) return content.skills.get(nameOrId);
-    const list = content.skillsByName.get(normText(nameOrId)) || [];
+export function findSkill(content, nameOrId, preferClass = null, state = null) {
+    const byId = skillOf(content, nameOrId, state);
+    if (byId) return byId;
+    const list = skillsNamed(content, nameOrId, state);
     if (!list.length) return null;
     return list.find((s) => s.class === preferClass) || list[0];
 }

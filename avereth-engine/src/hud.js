@@ -6,7 +6,7 @@
 // extra.display_text (like the System block above the reply) and never enters a prompt, which quotes the plain
 // message text. It shows only what the player may know: no NPC attitudes, agendas, secrets or hidden numbers.
 import { deriveCharacter, weaponAttackOf } from './derived.js';
-import { rulesetOf } from './content.js';
+import { rulesetOf, skillOf } from './content.js';
 import { currentThreads, threadHere, LOCAL_KINDS } from './threads.js';
 import { goalLines } from './v4/intents.js';
 import { formatCoin } from './economy.js';
@@ -55,7 +55,7 @@ export function characterRows(state, content) {
     const dv = deriveCharacter(s, content);
     const cls = s.class ? content.classes.get(s.class)?.name || s.class : 'no Class yet';
     const per = content.rules.progression.xp_to_next_per_level;
-    const skills = Object.entries(s.skills).map(([id, v]) => `${content.skills.get(id)?.name || id} P${v.prof}`);
+    const skills = Object.entries(s.skills).map(([id, v]) => `${skillOf(content, id, state)?.name || id} P${v.prof}`);
     const weapon = weaponAttackOf(s, content, rulesetOf(state)); // Patch 9A: his weapon's own attack, no learned Skill
     if (weapon) skills.push(`${weapon.skill.name} (weapon)`);
     const equip = Object.values(s.equipment || {}).map((r) => (typeof r === 'string' ? content.items.get(r)?.name || r : r.name));
@@ -204,7 +204,7 @@ function combatHud(state, content) {
         .map((id) => id === enc.current ? `<strong>${esc(name(id))}</strong>` : esc(name(id))).join(' <span class="avereth-turn-arrow">›</span> ');
     // Patch 9A: every action he has in this fight (his Skills and his weapon's attack), by kind: attacks with reach and
     // cost, defenses and utilities with cost and a short effect; one he cannot pay now stays listed, marked
-    const known = Object.entries(pc.fixed.actions || {}).map(([sid, v]) => [content.skills.get(sid), v]).filter(([s]) => s);
+    const known = Object.entries(pc.fixed.actions || {}).map(([sid, v]) => [skillOf(content, sid, state), v]).filter(([s]) => s);
     const skillRow = (kind) => known.filter(([s]) => skillKind(s) === kind).map(([s, v]) => {
         const cost = skillCostOf(s, v, content);
         const short = cost && Number(pc.current[cost.resource] ?? 0) < cost.amount ? cost.resource.toUpperCase()

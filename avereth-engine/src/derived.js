@@ -1,6 +1,7 @@
 // Derived character values (Core #2, #6). Pure functions of a character sheet + content. Combat V3: no Base Hit and
 // no Crit Chance (legal attacks connect; only a true Ambush crits), and PER is not part of Initiative.
 import { num, normText } from './util.js';
+import { skillOf } from './content.js';
 
 export function rankOf(level, content) {
     for (const b of content.rules.ranks.bands) if (level >= b.min && level <= b.max) return b.rank;
@@ -44,8 +45,9 @@ export function weaponAttackOf(sheet, content, ruleset) {
  * The actions a character can take in a fight: its learned Skills (known to the content) and, Patch 9A, the plain attack
  * of the weapon it holds ({prof: 1, pp: 0, weapon: name}; src/combat.js keeps them in the encounter snapshot).
  */
-export function actionsOf(sheet, content, ruleset) {
-    const out = Object.fromEntries(Object.entries(sheet?.skills || {}).filter(([sid]) => content.skills.has(sid)));
+export function actionsOf(sheet, content, ruleset, state = null) {
+    // Patch 9B-1: a learned Skill of the campaign's own definitions too (src/content.js skillOf)
+    const out = Object.fromEntries(Object.entries(sheet?.skills || {}).filter(([sid]) => skillOf(content, sid, state)));
     const w = weaponAttackOf(sheet, content, ruleset);
     if (w && !out[w.skill.id]) out[w.skill.id] = { prof: 1, pp: 0, weapon: w.weapon.name };
     return out;

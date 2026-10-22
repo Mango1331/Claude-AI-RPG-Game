@@ -4,7 +4,7 @@
 // (Lost-in-the-Middle). NPC cards contain ONLY that NPC's own knowledge -> knowledge boundaries by construction.
 import { deriveCharacter, weaponAttackOf } from './derived.js';
 import { formatCoin } from './economy.js';
-import { rulesetOf, rulesTextFor } from './content.js';
+import { rulesetOf, rulesTextFor, skillOf } from './content.js';
 import {
     knowledgeOf, memoriesOf, memoryText, entityLabel, anyLabel, propText, currentFacts, statusOf, pcIdentityFor, truth, lookOf,
     isMeaningful, PC_NAME_FACT, PC_LOOK_FACT,
@@ -84,7 +84,7 @@ export function pcLine(state, content, { combat = !!state.encounter, items = tru
     // the two rulesets apart by it); a legacy campaign's line is as it was
     const cls = `${s.class ? content.classes.get(s.class).name : 'no Class yet'}${rulesetOf(state) >= 2 ? ' (three-class rules)' : ''}`;
     const guild = truth(state, 'pc', 'guild_rank')[0]?.o;
-    const skillList = Object.entries(s.skills).map(([id, v]) => `${content.skills.get(id)?.name || id} P${v.prof}`);
+    const skillList = Object.entries(s.skills).map(([id, v]) => `${skillOf(content, id, state)?.name || id} P${v.prof}`);
     const weapon = weaponAttackOf(s, content, rulesetOf(state)); // Patch 9A: his weapon's own attack, no learned Skill
     if (weapon) skillList.push(`${weapon.skill.name} (attack of his ${weapon.weapon.name}, no learned Skill)`);
     const arrows = s.inventory.standard_arrow;
@@ -219,7 +219,7 @@ export function recordLine(state, r, name = (id) => fightLabel(state, id), conte
         if (r.move && !before) parts.push(`moves ${r.move.from} -> ${r.move.to}`);
         // 4.3.0-c.6.6.5 (live 15.10.2026: the Mage's Basic Attack, a magical bolt at MEDIUM, was told as a staff blow after
         // walking around the roots): what kind of attack it is and that a ranged one leaves him where he stands
-        const sk = r.actor === 'pc' && content ? content.skills.get(r.skill) : null;
+        const sk = r.actor === 'pc' && content ? skillOf(content, r.skill, state) : null;
         const ranged = sk && (sk.range?.band !== 'ENGAGED' || sk.attack?.damage_type === 'magical');
         if (sk?.type_text && ranged && !r.move) parts.push(`${sk.type_text}: from where he stands, no step and no melee blow`);
         const head = `${who}:${before} ${r.skill_name}${r.opening ? ' (AMBUSH Opening Action)' : ''}${r.first_strike ? ' (FIRST STRIKE: opens the fight before the Turn order; no Ambush bonus)' : ''} -> ${name(r.strikes?.[0]?.target || r.target)}`;
@@ -315,7 +315,7 @@ function outcomeLines(state, content, outcome, { v4 = false } = {}) {
         if (outcome.illegal) lines.push(`- Alaric's declared action is NOT possible now: ${outcome.illegal}. Nothing was spent or rolled for it; it is still Alaric's decision.`);
         if (outcome.ended) {
             const s = outcome.ended;
-            lines.push(`- Combat is over.${s.pc_dead ? ' Alaric is dead.' : ''}${s.xp_awarded ? ` Alaric gains ${s.xp_awarded} XP.` : ''}${outcome.levelups?.length ? ` LEVEL UP -> ${outcome.levelups.join(', ')} (+5 free Stat Points each; resources are not refilled).` : ''}${outcome.loot ? '' : ' Loot is only what the defeated actually carried or what can be harvested; nothing is taken automatically.'}`);
+            lines.push(`- Combat is over.${s.pc_dead ? ' Alaric is dead.' : ''}${s.xp_awarded ? ` Alaric gains ${s.xp_awarded} XP.` : ''}${outcome.levelups?.length ? ` LEVEL UP -> ${outcome.levelups.join(', ')} (+5 free Stat Points each; resources are not refilled).` : ''}${s.pp?.length ? ` Skill Proficiency (the engine's, from how he fought; mention it at most in passing): ${s.pp.map((p) => `${skillOf(content, p.skill, state)?.name || p.skill} +${p.gained} PP${p.to.prof > p.from.prof ? `, now P${p.to.prof}` : ''}`).join(', ')}.` : ''}${outcome.loot ? '' : ' Loot is only what the defeated actually carried or what can be harvested; nothing is taken automatically.'}`);
             // Prototype C (4.3.0-c.6.6.4): the engine's automatic loot, already in his pack (src/v4/loot.js)
             if (outcome.loot) lines.push(`- LOOT (the engine's automatic loot at the fight's end, already in Alaric's pack): ${outcome.loot.join(', ')}. It is no decision of his and took no time: mention it in a few words or leave it to the HUD; do not show him skinning, carving or searching bodies, and add no other drop, coin or item. It sits in his magic pouch: no weight, bulk, packing, straps or carrying effort, now or later.`);
         } else if (outcome.next) lines.push(`- Next: ${outcome.next}. Stop the narration at Alaric's decision.`);
@@ -563,7 +563,7 @@ export function buildContext(state, content, opts = {}) {
     add('header', `[AVERETH ENGINE — authoritative game state, turn ${state.turn}. Numbers, rolls, positions and knowledge below are binding; narrate, never recalculate.]\n${formatClock(state.clock.minute)} | ${loc ? `${loc.name}${realm && (!v4 || normText(realm) !== normText(loc.name)) ? `, ${realm}` : ''}` : 'unknown location'}${placeSuffix} | mode: ${state.mode}${locStatus !== 'exists' && locStatus !== 'alive' ? ` | LOCATION STATUS: ${String(locStatus).toUpperCase()}` : ''}\nSetting: Western-fantasy medieval material culture with mana/high magic; letters and messengers for distance; no modern technology.`, 0);
     // what Alaric's line carries depends on the turn: items and coin only when trade, loot or items are in play
     const itemScan = `${input} ${lastReply}`;
-    const skillNamed = Object.keys(state.entities.pc.sheet?.skills || {}).some((id) => mentioned(content.skills.get(id)?.name || id, normText(input)));
+    const skillNamed = Object.keys(state.entities.pc.sheet?.skills || {}).some((id) => mentioned(skillOf(content, id, state)?.name || id, normText(input)));
     add('pc', pcLine(state, content, {
         combat: !!state.encounter || opts.outcome?.kind === 'combat',
         items: state.mode === 'creation' || ITEM_RE.test(itemScan) || (opts.situations || []).some((x) => x === 'trade' || x === 'loot'),

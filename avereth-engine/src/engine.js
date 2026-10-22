@@ -9,7 +9,8 @@
 // re-running a turn from the same state (swipe/regenerate) yields the same results — dice are never rerolled.
 import { Dice, newSeed } from './rng.js';
 import { applyEvent, fold } from './state.js';
-import { anchorFor, templateFor, locationByName, weaponFamily, startPlace, itemEffectOf, rulesetOf, rulesetDef, npcTemplate } from './content.js';
+import { anchorFor, templateFor, locationByName, weaponFamily, startPlace, itemEffectOf, rulesetOf, rulesetDef, npcTemplate, skillOf } from './content.js';
+import { checkProgress } from './skills.js';
 import { rankRefusal, itemProfile } from './v4/items.js';
 import { deriveCharacter, actionsOf } from './derived.js';
 import { selectClass, selectSkills } from './creation.js';
@@ -176,7 +177,7 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
         // enters on the side they stand on (review: a bystander or a friend is no foe because he caught them)
         const caught = c ? caughtBy(s, content, pcAction) : [];
         const committed = uniq([...field, ...caught]);
-        const sides = c && areaSkill(content, pcAction.skill) ? Object.fromEntries([pcAction.target, ...committed].filter(Boolean).map((id) => [id, sideOf(s, id)])) : null;
+        const sides = c && areaSkill(content, pcAction.skill, s) ? Object.fromEntries([pcAction.target, ...committed].filter(Boolean).map((id) => [id, sideOf(s, id)])) : null;
         const item = pcAction.item ? { item: pcAction.item, burst: pcAction.burst } : {};
         return combatTurn(s, content, dice, emit, { trigger: { actor: 'pc', target: pcAction.target, skill: pcAction.skill, move: pcAction.move, move_target: pcAction.move_target, ...item }, committed, sides, pcAction: null, c }, situations);
     }
@@ -201,8 +202,8 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
  */
 function worldUse(s, content, act, dice, emit) {
     const sheet = s.entities.pc.sheet;
-    const skill = content.skills.get(act.skill);
-    const known = actionsOf(sheet, content, rulesetOf(s))[skill?.id]; // Patch 9A: a weapon attack too
+    const skill = skillOf(content, act.skill, s);
+    const known = actionsOf(sheet, content, rulesetOf(s), s)[skill?.id]; // Patch 9A: a weapon attack too
     if (!skill || !known) return { kind: 'note', text: `Alaric does not know ${skill?.name || act.skill}. Nothing was spent or rolled.`, notice: `Alaric does not know ${skill?.name || act.skill} (nothing spent, nothing rolled)` };
     const prof = content.rules.proficiency.levels[String(known.prof || 1)] || { cost: 1 };
     const amount = skill.cost ? roundHalfUp(skill.cost.amount * (prof.cost ?? 1)) : 0;
@@ -237,6 +238,9 @@ function worldUse(s, content, act, dice, emit) {
             emit({ t: 'check.recorded', d: { what: `${skill.name} on ${f.name}`.slice(0, 80), stat, actor: r.actor_score, opposition: r.opposition, chance: r.chance, roll: r.roll, success: r.success, claimed: r.success, by: 'engine', feature: f.id, aim: 'skill', difficulty } });
             success = r.success;
             text = `${stat} ${r.actor_score} vs ${difficulty.replace('_', ' ')} ${r.opposition}: ${r.chance}% (d100 ${r.roll}) → ${r.success ? 'SUCCESS' : 'FAILURE'}`;
+            // Patch 9B-1: a learned Skill used in a check of real difficulty on a thing is Proficiency Progress, once per
+            // Skill and thing, success or failure (ruleset 2; a weapon's attack is no learned Skill)
+            if (!known.weapon) checkProgress(s, content, skill.id, f.id).forEach(emit);
         }
         if (success) emit(featureEvent({ ...f, status: 'disabled', history: [...(f.history || []), { turn: s.turn, minute: s.clock.minute, what: `made harmless: ${skill.name}` }] }));
         feature = { id: f.id, name: f.name, success, text };
@@ -489,7 +493,7 @@ function combatTurn(s, content, dice, emit, { trigger = null, pcAction: declared
                 materialise(s, content, dice, emit, id);
                 addCombatant(enc, s, content, id, sideOf(s, id), null, { c });
             }
-            const skill = content.skills.get(pcAction.skill)?.name || 'the attack';
+            const skill = skillOf(content, pcAction.skill, s)?.name || 'the attack';
             started = { ...(started || {}), reason: `${caught.map(named).join(', ')} ${caught.length > 1 ? 'are' : 'is'} caught in ${skill} and ${caught.length > 1 ? 'join' : 'joins'} the fight`, order: enc.order.map(named).join(' > '), joined: [...(started?.joined || []), ...caught] };
         }
         // Patch 8.1: one who enters the fight now (he attacks one outside it, an attacker joins, his area attack catches
@@ -558,7 +562,7 @@ function usedUp(s, content, emit, record) {
 }
 
 /** An area attack's skill (Arcane Burst: effects kind "area"). */
-const areaSkill = (content, id) => !!content.skills.get(id)?.effects?.some((e) => e.kind === 'area');
+const areaSkill = (content, id, s = null) => !!skillOf(content, id, s)?.effects?.some((e) => e.kind === 'area');
 
 /**
  * Prototype C (4.3.0-c.6.6.6): who Alaric's area attack catches outside the fight (src/v4/scene_handles.js areaCaught),
@@ -567,7 +571,7 @@ const areaSkill = (content, id) => !!content.skills.get(id)?.effects?.some((e) =
 function caughtBy(s, content, act) {
     // Hotfix c.6.6.18: a thrown burst catches whom it was fixed to strike (burstOf), those outside the fight with them
     if (act.item) return (act.burst || []).filter((id) => id !== act.target && !s.encounter?.combatants?.[id]);
-    if (!areaSkill(content, act.skill)) return [];
+    if (!areaSkill(content, act.skill, s)) return [];
     return areaCaught(s, { move: act.move, moveTarget: act.move_target ?? null }).filter((id) => {
         const e = s.entities[id];
         return !!(e.sheet || e.profile || e.kind === 'npc' || content.anchors.get(e.anchor) || anchorFor(content, [e.species, ...(e.descriptors || [])].join(' ')));
@@ -579,7 +583,7 @@ function caughtBy(s, content, act) {
  * its knot (src/v4/scene_handles.js burstCaught), however many, each one the engine can give a combat profile.
  */
 function burstOf(s, content, act) {
-    const item = itemEffectOf(content, s.objects?.[act.item]) || content.skills.get(act.skill);
+    const item = itemEffectOf(content, s.objects?.[act.item]) || skillOf(content, act.skill, s);
     if (!item?.effects?.some((e) => e.kind === 'area' && e.shape === 'burst')) return [];
     return burstCaught(s, act.target).filter((id) => {
         const e = s.entities[id];

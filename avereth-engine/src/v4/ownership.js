@@ -15,6 +15,8 @@ export const STATE_KINDS = {
     'pc.inventory': { owner: 'inventory', engine: true, about: 'what Alaric holds and wears' },
     'pc.vitals': { owner: 'combat', engine: true, about: "Alaric's HP, MP, STA and life" },
     'pc.progress': { owner: 'progression', engine: true, about: "Alaric's XP, level, stats, Skills, his creation" },
+    // Patch 9B-1: the campaign's dynamic Skill definitions (skill.defined), the engine's alone
+    skills: { owner: 'progression', engine: true, about: 'dynamic Skill definitions of this campaign (src/skills.js)' },
     'pc.location': { owner: 'movement', engine: false, about: 'where Alaric is (his go, or an arrival the story shows)' },
     'quest.status': { owner: 'guild', engine: true, about: "a Guild contract's formal status (accepted, completed, failed)" },
     'guild.standing': { owner: 'guild', engine: true, about: 'membership, Guild rank, promotion' },
@@ -56,6 +58,8 @@ export function eventKind(e, s = null) {
         case 'item.changed': case 'item.equipped': return PC(d.id ?? 'pc') ? 'pc.inventory' : 'entities';
         case 'resource.changed': return PC(d.id) ? 'pc.vitals' : 'entities';
         case 'entity.status': return PC(d.id) ? 'pc.vitals' : 'entities';
+        case 'skill.defined': return 'skills';
+        case 'skill.progress': return PC(d.id) ? 'pc.progress' : 'entities';
         case 'xp.changed': case 'level.up': case 'stat.assigned': case 'skill.learned':
         case 'creation.class_selected': case 'creation.completed':
             return 'pc.progress';
@@ -153,7 +157,8 @@ export function stateRegions(s) {
         'pc.coin': j(sh.coin_cp),
         'pc.inventory': j([sh.inventory, sh.equipment, held]),
         'pc.vitals': j([sh.hp, sh.mp, sh.sta, status]),
-        'pc.progress': j([sh.level, sh.class, sh.stats, sh.skills, sh.xp, sh.free_points, s.creation]),
+        'pc.progress': j([sh.level, sh.class, sh.stats, sh.skills, sh.xp, sh.free_points, s.creation, s.pp_keys]),
+        skills: j(s.skill_defs),
         'pc.location': j([s.scene?.location, s.scene?.place, s.scene?.at, location, at]),
         entities: j([Object.entries(s.entities || {}).filter(([id]) => id !== 'pc'), pcRest]),
         scene: j([s.scene?.present, s.scene?.positions, s.scene?.awareness, s.scene?.concealed, s.scene?.relevant, s.scene?.threats]),

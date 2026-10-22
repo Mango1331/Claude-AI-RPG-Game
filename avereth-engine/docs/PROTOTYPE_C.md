@@ -1966,3 +1966,14 @@ Erster Teil von Patch 9 (Organic Character Growth). Vollständige Beschreibung: 
 - **Anzeige.** `#class` ohne feste Evolutions-Level; Combat-HUD mit Attack, Defense, Utility und Kosten.
 - **Tests:** `tests/v4/patch9a.test.js` (16); `npm test` 1090/1090.
 
+
+### Patch 9B-1 (4.3.0-c.6.6.36): Dynamische Skills und Proficiency
+
+Vollständige Beschreibung: `docs/PATCH9B1_DYNAMIC_SKILLS_PROFICIENCY.md`.
+
+- **Registry.** Eigene Skill-Definitionen pro Kampagne (`skill.defined`, nur Engine, nur Regelstand 2), getrennt vom Erwerb (`skill.learned`). Ein Resolver (`content.js skillOf`) für statische und dynamische Skills in Kampf, Planner, Intent, HUD, Befehlen, Kontext und Validierung.
+- **Validator.** Geschlossenes Schema; nur F-Rang nach der Kalibrierung von `content.6.r2`; keine PER-Schadensskalierung, kein Freitext-Code.
+- **Content.** Complexity und Disziplin-Tags der 18 Starter-Skills (Werte unverändert). Es zählt die höchste Affinität.
+- **Proficiency.** P1–P5 mit Schwellen nach Complexity (75/100/150) und Übertrag; P5 ist das Ende. Effektfaktoren 1,05/1,10/1,15 für DEF/MDEF/Barrier, gleiche Rundung in Kampf und `#skill`.
+- **PP.** 12 × höchste Affinität, einmal pro Skill und Kampf, gebucht am Kampfende. Bedingungen: sinnvolle Nutzung und eine echte Herausforderung. Außerhalb eines Kampfes: eine gewürfelte Probe einmal pro Feature. Legacy unverändert.
+- **Tests:** `tests/v4/patch9b1.test.js` (14).

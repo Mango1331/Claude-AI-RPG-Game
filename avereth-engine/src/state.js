@@ -39,6 +39,7 @@ export function emptyState() {
         inputs: [], // the player's recent messages {turn, input}: a decision whose reply missed it can still be recorded
         pending_combat: [], // NPC commitments reported by the narrator (Core #23 PENDING), resolved next turn
         pending_intents: {},
+        skill_defs: {}, // Patch 9B-1: the campaign's dynamic Skill definitions (skill.defined), fixed once defined
         ...emptyDomains(),
     };
 }
@@ -258,6 +259,22 @@ export function applyEvent(state, e) {
         case 'skill.learned':
             sheetOf(state, d.id).skills[d.skill] = { prof: d.prof ?? 1, pp: 0 };
             break;
+        // Patch 9B-1: a dynamic Skill definition of this campaign (src/skills.js defineSkill validated it); defining is
+        // not learning, and a definition never changes once it is booked
+        case 'skill.defined': {
+            if (!state.skill_defs) state.skill_defs = {};
+            if (state.skill_defs[d.skill.id]) throw new Error(`skill defined twice: ${d.skill.id}`);
+            state.skill_defs[d.skill.id] = clone(d.skill);
+            break;
+        }
+        // Patch 9B-1: Proficiency Progress of a known Skill (src/skills.js): the PP and Proficiency it stands at after it
+        case 'skill.progress': {
+            const s = sheetOf(state, d.id);
+            if (!s.skills[d.skill]) throw new Error(`progress of an unknown skill ${d.skill}`);
+            s.skills[d.skill] = { ...s.skills[d.skill], prof: d.to.prof, pp: d.to.pp };
+            if (d.key) { if (!state.pp_keys) state.pp_keys = {}; state.pp_keys[d.key] = true; }
+            break;
+        }
         case 'entity.status':
             state.entities[d.id].status = d.status;
             if (d.status === 'dead' && state.entities[d.id].sheet) state.entities[d.id].sheet.hp = 0;

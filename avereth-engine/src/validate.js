@@ -6,6 +6,8 @@
 //    so the content pack, events and reports are checked against schemas/ without any dependency.
 import { deriveCharacter } from './derived.js';
 import { FUNCTIONAL } from './knowledge.js';
+import { skillOf } from './content.js';
+import { promotionPp } from './skills.js';
 
 const AWARENESS = new Set(['unaware', 'suspicious', 'aware']);
 // V3: offered|active|completed|failed; Runtime V4 adds the listing states of a Guild board and giving up
@@ -36,8 +38,11 @@ export function validateState(state, content) {
         if (!isInt(s.coin_cp) || s.coin_cp < 0) p.push(`${where}: coin ${s.coin_cp}`);
         for (const [item, q] of Object.entries(s.inventory)) if (!isInt(q) || q <= 0) p.push(`${where}: inventory ${item} ×${q}`);
         for (const [sid, v] of Object.entries(s.skills)) {
-            if (!content.skills.has(sid)) p.push(`${where}: unknown skill ${sid}`);
+            const sk = skillOf(content, sid, state); // Patch 9B-1: the campaign's own Skills too
+            if (!sk) p.push(`${where}: unknown skill ${sid}`);
             if (!isInt(v.prof) || v.prof < 1 || v.prof > 5) p.push(`${where}: skill ${sid} proficiency ${v.prof}`);
+            // Patch 9B-1: PP below the next promotion, none at P5
+            if (sk && v.pp !== undefined && (!isInt(v.pp) || v.pp < 0 || (v.prof >= 5 ? v.pp !== 0 : v.pp >= promotionPp(content, sk)))) p.push(`${where}: skill ${sid} PP ${v.pp} at P${v.prof}`);
         }
         for (const [slot, ref] of Object.entries(s.equipment)) {
             if (typeof ref === 'string' && !content.items.has(ref)) p.push(`${where}: unknown item ${ref} in ${slot}`);

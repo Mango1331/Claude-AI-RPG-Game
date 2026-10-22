@@ -3,7 +3,8 @@
 // #system <question> is the one natural-language query; it is passed to the narrator in System-only mode.
 import { deriveCharacter, rawPowerText, itemOf, actionsOf, weaponAttackOf } from './derived.js';
 import { formatCoin } from './economy.js';
-import { findSkill, rulesetOf, startClasses } from './content.js';
+import { findSkill, rulesetOf, startClasses, skillOf } from './content.js';
+import { promotionPp, effectValue, effectFactor, flatEffectValue, affinityFor } from './skills.js';
 import { assignStat } from './progression.js';
 import { knowledgeOf, memoriesOf, memoryText, propText, playerLabel, statusOf } from './knowledge.js';
 import { applyEvent } from './state.js';
@@ -40,6 +41,16 @@ function skillCost(skill, prof, content) {
     if (!skill.cost) return 'none';
     const mult = content.rules.proficiency.levels[String(prof || 1)].cost;
     return `${roundHalfUp(skill.cost.amount * mult)} ${skill.cost.resource.toUpperCase()}${mult !== 1 ? ` (base ${skill.cost.amount})` : ''}`;
+}
+
+/** Patch 9B-1: what a Skill's numeric effects give at this Proficiency, as the combat engine books them. */
+function effectsNow(content, sk, stats, prof) {
+    return (sk.effects || []).map((e) => {
+        if (e.kind === 'temp_def' || e.kind === 'temp_mdef') return `${e.kind === 'temp_def' ? 'DEF' : 'MDEF'} +${effectValue(content, e, stats, prof)}`;
+        if (e.kind === 'barrier') return `Barrier ${effectValue(content, e, stats, prof)} HP`;
+        if (e.kind === 'post_attack_temp_def') return `DEF +${flatEffectValue(content, e.flat, prof)} after the attack`;
+        return null;
+    }).filter(Boolean);
 }
 
 function status(state, content) {
@@ -130,10 +141,9 @@ function skills(state, content) {
     const s = pcSheet(state);
     const lines = ['[SYSTEM // SKILLS]'];
     for (const [id, v] of Object.entries(s.skills)) {
-        const sk = content.skills.get(id);
+        const sk = skillOf(content, id, state);
         if (!sk) { lines.push(`${id} | UNKNOWN DEFINITION`); continue; }
-        const next = content.rules.proficiency.promotion_progress[String(v.prof)];
-        lines.push(`${sk.name} | ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | P${v.prof} (PP ${v.pp}${next ? `/${next}` : ''}) | Tags ${joinList(sk.tags, '-')} | Cost ${skillCost(sk, v.prof, content)}`);
+        lines.push(`${sk.name}${sk.dynamic ? ' (learned in this campaign)' : ''} | ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | P${v.prof} (${ppText(content, sk, v)}) | Tags ${joinList(sk.tags, '-')} | Cost ${skillCost(sk, v.prof, content)}`);
     }
     if (lines.length === 1) lines.push('No Skills known yet.');
     // Patch 9A: the plain attack of the weapon he holds, no learned Skill (it comes and goes with the weapon)
@@ -143,15 +153,20 @@ function skills(state, content) {
     return lines.join('\n');
 }
 
+/** Patch 9B-1: his PP toward the next Proficiency (its threshold by the Skill's Complexity), "max" at P5. */
+function ppText(content, sk, v) {
+    return v.prof >= 5 ? 'PP max' : `PP ${v.pp || 0}/${promotionPp(content, sk)}`;
+}
+
 function skill(state, content, arg) {
     const s = pcSheet(state);
-    const sk = findSkill(content, arg, s.class);
+    const sk = findSkill(content, arg, s.class, state);
     if (!sk) return `[SYSTEM // SKILL]\nUNKNOWN SKILL "${arg}".`;
-    const known = actionsOf(s, content, rulesetOf(state))[sk.id]; // Patch 9A: his weapon's attack too
+    const known = actionsOf(s, content, rulesetOf(state), state)[sk.id]; // Patch 9A: his weapon's attack too
     if (!known) return `[SYSTEM // SKILL]\n${sk.name} is not a Skill Alaric knows.`;
     const dv = deriveCharacter(s, content);
     const prof = content.rules.proficiency.levels[String(known.prof)];
-    const lines = [`[SYSTEM // SKILL] ${sk.name}`, `Category ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | ${known.weapon ? `weapon attack of the equipped ${known.weapon} (not a learned Skill)` : `Proficiency P${known.prof} (PP ${known.pp})`} | Tags ${joinList(sk.tags, '-')}`];
+    const lines = [`[SYSTEM // SKILL] ${sk.name}`, `Category ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | ${known.weapon ? `weapon attack of the equipped ${known.weapon} (not a learned Skill)` : `Proficiency P${known.prof} (${ppText(content, sk, known)})`} | Tags ${joinList(sk.tags, '-')}`];
     lines.push(`Cost: ${skillCost(sk, known.prof, content)}${sk.ammo ? ` | Ammo: ${sk.ammo.qty} ${content.items.get(sk.ammo.item)?.name || sk.ammo.item} when fired from a bow` : ''}`);
     if (sk.range) lines.push(`Range: ${sk.range.band}${sk.range.extra_band ? ' (EXTRA-BAND movement: may move one additional band and must end ENGAGED)' : ''}${sk.range.area ? ` | Area: ${sk.range.area}` : ''}`);
     if (sk.attack) {
@@ -160,6 +175,10 @@ function skill(state, content, arg) {
         lines.push(`Current Raw Power: ${rawPowerText(sk, s.stats, dv)}${prof.power !== 1 ? ` (×${prof.power} Proficiency on Modified Power)` : ''}`);
     }
     if (sk.effect_text && !/^none\.?$/i.test(sk.effect_text)) lines.push(`Effect: ${sk.effect_text}`);
+    // Patch 9B-1: the numbers its effects give now, at his Proficiency (the same values src/combat.js books)
+    const now = effectsNow(content, sk, s.stats, known.prof);
+    if (now.length) lines.push(`Current effect: ${now.join(' | ')}${effectFactor(content, known.prof) !== 1 ? ` (×${effectFactor(content, known.prof)} Proficiency, rounded)` : ''}`);
+    if (!known.weapon && rulesetOf(state) >= 2 && s.class) lines.push(`Proficiency Progress: ${ppText(content, sk, known)} · Affinity ×${affinityFor(content, s.class, sk)} (highest of its tags)`);
     return lines.join('\n');
 }
 

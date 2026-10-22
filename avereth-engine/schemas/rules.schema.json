@@ -94,7 +94,8 @@
             "type": "object",
             "required": [
               "cost",
-              "power"
+              "power",
+              "effect"
             ]
           }
         }

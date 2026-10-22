@@ -11,6 +11,7 @@ import { bandIndex, itemLabel } from './util.js';
 import { damagePreview, combatTargets, targetLabel } from './combat.js';
 import { sceneHandle, tacticalHere } from './v4/scene_handles.js';
 import { livingOf, gateCard } from './v4/living.js';
+import { skillOf } from './content.js';
 
 const sys = (text) => `\`${text}\``;
 // a combatant by its target label (from the board of that step, which outlives the fight), anyone else as the player knows them
@@ -71,7 +72,7 @@ export function turnPanel(state, content, narratorCheck = null, reply = null) {
  */
 export function targetQuestion(state, content, intent) {
     const name = namer(state, null);
-    const skill = content.skills.get(intent.skill)?.name || 'Attack';
+    const skill = skillOf(content, intent.skill, state)?.name || 'Attack';
     if (!state.encounter) {
         const scene = (state.scene?.present || []).filter((id) => id !== 'pc' && state.entities[id]?.status !== 'dead').map((id) => {
             const e = state.entities[id];
@@ -141,6 +142,9 @@ function changeLines(before, after, content, events) {
                 [level, xp] = [x.d.level, x.d.xp_after];
             }
             out.push(sys(`+${d.amount} XP → XP ${xp}/${level * per}${d.reason ? ` · ${d.reason}` : ''}`));
+        } else if (e.t === 'skill.progress' && d.id === 'pc' && /^check:/.test(d.key || '')) {
+            // Patch 9B-1: a check of real difficulty with a learned Skill (a fight's progress is told at its end, endLines)
+            out.push(sys(progressText(d)));
         } else if (e.t === 'level.up' && d.id === 'pc') {
             lvl = d.level;
             out.push(sys(`LEVEL UP → Level ${d.level} (+${d.free_points} free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`));
@@ -290,7 +294,7 @@ function optionsLine(state, content) {
     const foes = Object.values(enc.combatants).filter((c) => c.side === 'hostile' && !c.current.defeated && !c.current.escaped && !c.current.surrendered && c.current.band);
     if (!foes.length) return [];
     const near = foes.sort((a, b) => bandIndex(a.current.band) - bandIndex(b.current.band))[0];
-    const opts = damagePreview(enc, content, near.id);
+    const opts = damagePreview(enc, content, near.id, state);
     if (!opts.length) return [];
     const dmg = (o) => `${o.strikes > 1 ? `${o.strikes}×` : ''}${o.min === o.max ? o.min : `${o.min}–${o.max}`}${o.cover === 'ignored' ? ' (ignores cover)' : ''}`;
     const cover = near.current.cover === 'partial' ? ' (partial cover: -25%)' : '';
@@ -386,7 +390,15 @@ function endLines(state, content, name, e, levelups = [], loot = null) {
     const xp = e.xp_awarded ? ` · +${e.xp_awarded} XP → XP ${sheet.xp}/${sheet.level * content.rules.progression.xp_to_next_per_level}` : '';
     // Prototype C (4.3.0-c.6.6.5): the automatic loot the fight's end booked (src/v4/loot.js), what came in by this fight
     const got = (loot || []).length ? [sys('LOOT ACQUIRED:'), ...loot.map((l) => sys(`  ${l}`))] : [];
-    return [sys(`COMBAT END${fates.length ? ` — ${fates.join(', ')}` : ''}${xp}`), ...got, ...levelups.map((lv) => sys(`LEVEL UP → ${lv} (+5 free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`))];
+    // Patch 9B-1: the Proficiency Progress of the fight, booked at its end
+    const pp = (e.pp || []).map((p) => sys(progressText({ ...p, name: skillOf(content, p.skill, state)?.name || p.skill })));
+    return [sys(`COMBAT END${fates.length ? ` — ${fates.join(', ')}` : ''}${xp}`), ...got, ...pp, ...levelups.map((lv) => sys(`LEVEL UP → ${lv} (+5 free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`))];
+}
+
+/** Patch 9B-1: one Skill's Proficiency Progress: "+18 PP Razor Cut → P1 18/75", a promotion named. */
+function progressText(p) {
+    const up = p.from && p.to.prof > p.from.prof ? ` · PROFICIENCY P${p.from.prof} → P${p.to.prof}` : '';
+    return `SKILL +${p.gained} PP ${p.name} → P${p.to.prof}${p.to.prof >= 5 ? ' (max)' : ` ${p.to.pp}/${p.need}`}${up}`;
 }
 
 function recordLines(name, r) {

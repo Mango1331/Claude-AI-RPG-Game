@@ -171,8 +171,10 @@
       "basic": false,
       "category": "Offensive",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 1,
+      "tags": [
+        "Martial"
+      ],
       "type_text": "Physical / Melee",
       "cost": {
         "resource": "sta",
@@ -209,8 +211,10 @@
       "basic": false,
       "category": "Defensive",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 1,
+      "tags": [
+        "Defense"
+      ],
       "type_text": "Defensive",
       "cost": {
         "resource": "sta",
@@ -240,8 +244,10 @@
       "basic": false,
       "category": "Offensive",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 2,
+      "tags": [
+        "Martial"
+      ],
       "type_text": null,
       "cost": {
         "resource": "sta",
@@ -278,8 +284,10 @@
       "basic": false,
       "category": "Offensive",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 1,
+      "tags": [
+        "Martial"
+      ],
       "type_text": null,
       "cost": {
         "resource": "sta",
@@ -321,8 +329,11 @@
       "basic": false,
       "category": "Offensive / Utility",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 1,
+      "tags": [
+        "Martial",
+        "Mobility"
+      ],
       "type_text": null,
       "cost": {
         "resource": "sta",
@@ -368,8 +379,10 @@
       "basic": false,
       "category": "Defensive",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 1,
+      "tags": [
+        "Defense"
+      ],
       "type_text": null,
       "cost": {
         "resource": "sta",
@@ -440,8 +453,10 @@
       "basic": false,
       "category": "Offensive",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 1,
+      "tags": [
+        "Arcane"
+      ],
       "type_text": "Magical / Projectile",
       "cost": {
         "resource": "mp",
@@ -478,8 +493,11 @@
       "basic": false,
       "category": "Defensive",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 1,
+      "tags": [
+        "Arcane",
+        "Defense"
+      ],
       "type_text": "Barrier",
       "cost": {
         "resource": "mp",
@@ -509,8 +527,10 @@
       "basic": false,
       "category": "Offensive",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 2,
+      "tags": [
+        "Arcane"
+      ],
       "type_text": "Magical / Projectile / Fire",
       "cost": {
         "resource": "mp",
@@ -547,8 +567,10 @@
       "basic": false,
       "category": "Offensive",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 2,
+      "tags": [
+        "Arcane"
+      ],
       "type_text": "Magical / Area",
       "cost": {
         "resource": "mp",
@@ -591,8 +613,11 @@
       "basic": false,
       "category": "Utility",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 1,
+      "tags": [
+        "Arcane",
+        "Mobility"
+      ],
       "type_text": "Magical / Movement",
       "cost": {
         "resource": "mp",
@@ -619,8 +644,11 @@
       "basic": false,
       "category": "Defensive",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 2,
+      "tags": [
+        "Arcane",
+        "Defense"
+      ],
       "type_text": "Barrier",
       "cost": {
         "resource": "mp",
@@ -1551,8 +1579,10 @@
       "basic": false,
       "category": "Offensive",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 1,
+      "tags": [
+        "Precision"
+      ],
       "type_text": "Physical / Melee",
       "cost": {
         "resource": "sta",
@@ -1589,8 +1619,10 @@
       "basic": false,
       "category": "Offensive",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 1,
+      "tags": [
+        "Precision"
+      ],
       "type_text": "Physical / Melee",
       "cost": {
         "resource": "sta",
@@ -1628,8 +1660,11 @@
       "basic": false,
       "category": "Offensive / Utility",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 1,
+      "tags": [
+        "Precision",
+        "Mobility"
+      ],
       "type_text": "Physical / Melee",
       "cost": {
         "resource": "sta",
@@ -1670,8 +1705,11 @@
       "basic": false,
       "category": "Defensive / Utility",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 1,
+      "tags": [
+        "Mobility",
+        "Defense"
+      ],
       "type_text": "Movement",
       "cost": {
         "resource": "sta",
@@ -1703,8 +1741,10 @@
       "basic": false,
       "category": "Utility",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 1,
+      "tags": [
+        "Precision"
+      ],
       "type_text": "Tactical",
       "cost": {
         "resource": "sta",
@@ -1732,8 +1772,11 @@
       "basic": false,
       "category": "Offensive / Defensive",
       "rank": "F",
-      "complexity": null,
-      "tags": [],
+      "complexity": 1,
+      "tags": [
+        "Precision",
+        "Defense"
+      ],
       "type_text": "Physical / Melee",
       "cost": {
         "resource": "sta",

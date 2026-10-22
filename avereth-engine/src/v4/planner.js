@@ -17,7 +17,7 @@ import { spendsStatPoints, assignHint } from '../commands.js';
 import { mentionedSkills } from '../intent.js';
 import { activeHostiles } from '../combat.js';
 import { sceneHandle, tacticalHere, areaCaught, approachedBy, burstAim } from './scene_handles.js';
-import { itemEffectOf, rulesetOf } from '../content.js';
+import { itemEffectOf, rulesetOf, skillOf } from '../content.js';
 import { actionsOf, weaponAttackOf, weaponAttackNamed } from '../derived.js';
 import { restoreOf } from './items.js';
 import { settlementOf, placeName } from './domain.js';
@@ -243,8 +243,8 @@ export function planContext(state, content, catalog) {
     const fight = isFight(state);
     const sheet = state.entities.pc?.sheet || {};
     // Patch 9A: his learned Skills and the plain attack of the weapon he holds (src/derived.js actionsOf)
-    const known = Object.keys(actionsOf(sheet, content, rulesetOf(state)));
-    const skills = known.map((id) => ({ id, name: content.skills.get(id).name, text: skillText(content.skills.get(id)) }));
+    const known = Object.keys(actionsOf(sheet, content, rulesetOf(state), state));
+    const skills = known.map((id) => skillOf(content, id, state)).map((sk) => ({ id: sk.id, name: sk.name, text: skillText(sk) }));
     let opponents = [];
     const enc = state.encounter;
     if (enc) {
@@ -468,10 +468,10 @@ function scopeOf(message, quote, others) {
  * Does the command's sentence hint at a skill? Returns the hint (for the record) or null.
  * @param {object} ctx planContext; @param {object} content
  */
-export function skillHint(message, cmd, others, ctx, content) {
+export function skillHint(message, cmd, others, ctx, content, state = null) {
     const text = scopeOf(message, cmd.quote, others);
     if (!text) return null;
-    const named = mentionedSkills(text, content).filter((n) => n !== 'basic attack');
+    const named = mentionedSkills(text, content, state).filter((n) => n !== 'basic attack');
     if (named.length) return `names ${named[0]}`;
     const words = text.split(/[^a-z']+/).filter(Boolean);
     const joined = words.join('');
@@ -552,7 +552,7 @@ export function mapPlan(commands, ctx, content, message, state) {
     const story = (commands || []).filter((c) => !MECH_TYPES.includes(c.type));
     const mech = (commands || []).filter((c) => MECH_TYPES.includes(c.type));
     const label = (id) => ctx.opponents.find((o) => o.id === id)?.label || (ctx.catalog.present || []).find((p) => p.id === id)?.handle || id;
-    const skillName = (id) => content.skills.get(id)?.name || id;
+    const skillName = (id) => skillOf(content, id, state)?.name || id;
     const quotes = (commands || []).map((c) => c.quote).filter(Boolean);
 
     // a question back to the player stands alone: nothing else of the message is booked (the whole plan waits). It is
@@ -641,22 +641,22 @@ export function mapPlan(commands, ctx, content, message, state) {
     let skill = main.skill;
     if (isNew(skill)) return base({ kind: 'unknown_skill', name: String(skill.new).slice(0, 60) });
     // Patch 7.2: a restorative drunk in a fight: no target, his one step of the Turn before it (src/combat.js itemAction)
-    if (main.item && content.skills.get(skill)?.restore) return base({ kind: 'item', item: main.item, ...(move ? { move: move.dir, move_target: move.target || null } : {}) });
+    if (main.item && skillOf(content, skill, state)?.restore) return base({ kind: 'item', item: main.item, ...(move ? { move: move.dir, move_target: move.target || null } : {}) });
     if (typeof skill === 'string' && !ctx.known.includes(skill) && !main.item) return base({ kind: 'unknown_skill', skill, name: skillName(skill) });
     const basicNamed = typeof skill === 'string' && skill === ctx.basic && /\bbasic\s+attack\b/.test(flat(message));
     // Patch 9A: an attack that names no skill but the weapon he holds is that weapon's plain attack (Bow Shot)
     if (skill === null && ctx.weapon && state && weaponAttackNamed(state.entities.pc.sheet, content, rulesetOf(state), scopeOf(message, main.quote, others) || message)) skill = ctx.weapon;
     if (skill === null || (skill === ctx.basic && !basicNamed)) {
-        const hint = skillHint(message, main, others, ctx, content);
+        const hint = skillHint(message, main, others, ctx, content, state);
         if (hint) {
-            const opts = ctx.skills.filter((s) => content.skills.get(s.id)?.attack).map((s) => s.name);
+            const opts = ctx.skills.filter((s) => skillOf(content, s.id, state)?.attack).map((s) => s.name);
             return { route: 'panel', panel: clarifyPanel(`Which skill does Alaric use for "${String(main.quote).replace(/[<>`]/g, '').slice(0, 80)}"? (${hint})`, opts), notes, free, hint };
         }
         skill = ctx.basic;
         if (!skill) return base({ kind: 'narrative', flags: { attack_without_class: true } });
     }
     // Patch 7.1: an attack item acts by its own snapshot (its reach); a skill by the content
-    const def = (main.item && state ? itemEffectOf(content, state.objects?.[main.item]) : null) || content.skills.get(skill);
+    const def = (main.item && state ? itemEffectOf(content, state.objects?.[main.item]) : null) || skillOf(content, skill, state);
 
     // Hotfix c.6.6.18: an offensive item is thrown from where he stands, at the one he names or where most foes within its
     // reach stand (src/v4/scene_handles.js burstAim); with no foe in reach it stays his, unused
@@ -782,7 +782,7 @@ function itemRestore(c, content, state) {
     return { seq: c.seq, type: 'use_skill', skill: p.base, item: o.id, target: null, quote: c.quote };
 }
 
-/** The planner's view of the content: every skill id (for the validator's "is this a skill at all"). */
-export function withContentSkills(ctx, content) {
-    return { ...ctx, contentSkills: new Set(content.skills.keys()), currency: content.rules.currency };
+/** The planner's view of the content: every skill id (for the validator's "is this a skill at all"), Patch 9B-1 the campaign's own too. */
+export function withContentSkills(ctx, content, state = null) {
+    return { ...ctx, contentSkills: new Set([...content.skills.keys(), ...Object.keys(state?.skill_defs || {})]), currency: content.rules.currency };
 }

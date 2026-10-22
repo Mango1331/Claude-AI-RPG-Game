@@ -5,7 +5,7 @@
 // routing WorldInfo entries.
 import { bandIndex, normText } from './util.js';
 import { sceneHandle } from './v4/scene_handles.js';
-import { rulesetOf, startClasses } from './content.js';
+import { rulesetOf, startClasses, skillOf, skillsNamed, skillNames } from './content.js';
 import { actionsOf, weaponAttackNamed } from './derived.js';
 
 const ATTACK_VERBS = String.raw`attack(?:s|ed|ing)?|shoot(?:s|ing)?(?!\s+(?:(?:him|her|them|me|us|it)\s+)?(?:a|an)\s+(?:look|glance|glare|smile|grin|wink|question)\b)|stab(?:s|bed|bing)?|slash(?:es|ed|ing)?|(?:strike|strikes|struck|striking)(?!\s+(?:up|out|a\s+(?:deal|bargain|match|pose|chord|balance|light))\b)|hit(?:s|ting)?(?!\s+(?:it\s+off|the\s+(?:road|trail|hay|sack|books|bottle|town|streets|tavern|inn|market))\b)|punch(?:es|ed|ing)?(?!\s+in\b)|kick(?:s|ed|ing)?(?!\s+(?:off|back|in)\b)|smash(?:es|ed|ing)?|kill(?:s|ed|ing)?(?!\s+time\b)|bash(?:es|ed|ing)?|pierce(?:s|d)?|swing(?:s|ing)?(?!\s+by\b)|swung(?!\s+by\b)`;
@@ -134,9 +134,10 @@ function wordRe(term) {
 }
 
 /** Skills mentioned by name (longest names first so "Twin Shot" wins over "Shot"). */
-export function mentionedSkills(text, content) {
+export function mentionedSkills(text, content, state = null) {
     const t = normText(text);
-    const names = [...content.skillsByName.keys()].sort((a, b) => b.length - a.length);
+    // Patch 9B-1: the campaign's own Skills by their names too (src/content.js skillNames)
+    const names = skillNames(content, state).sort((a, b) => b.length - a.length);
     const found = [];
     let rest = t;
     for (const n of names) {
@@ -247,7 +248,7 @@ export function parseIntent(text, state, content, { masked = null } = {}) {
     }
 
     const sheet = state.entities.pc?.sheet;
-    const known = sheet ? Object.keys(actionsOf(sheet, content, rulesetOf(state))) : []; // Patch 9A: with his weapon's attack
+    const known = sheet ? Object.keys(actionsOf(sheet, content, rulesetOf(state), state)) : []; // Patch 9A: with his weapon's attack
     const v4 = state.meta?.runtime === 'v4';
     const decl = declarative(v4 ? deedsOf(masked ?? maskNames(raw, state)) : raw);
     const d = normText(decl);
@@ -256,8 +257,8 @@ export function parseIntent(text, state, content, { masked = null } = {}) {
     // ordinary words that are also Skill names ("guard", "charge", "blink") are not misread as Skill use
     const skills = [];
     let unknownSkill = null;
-    for (const n of mentionedSkills(decl, content)) {
-        const list = content.skillsByName.get(n);
+    for (const n of mentionedSkills(decl, content, state)) {
+        const list = skillsNamed(content, n, state);
         const mine = list.find((s) => known.includes(s.id));
         if (mine) skills.push(mine);
         else if (!unknownSkill && (n.includes(' ') || USE_RE.test(d.slice(0, d.indexOf(n))))) unknownSkill = list.find((s) => s.class === sheet?.class) || list[0];
@@ -274,7 +275,7 @@ export function parseIntent(text, state, content, { masked = null } = {}) {
 
     if (unknownSkill && !offensive && !nonOffensive) return { kind: 'unknown_skill', skill: unknownSkill.id, name: unknownSkill.name };
     if (offensive || attackWords) {
-        const skill = offensive || (sheet ? weaponAttackNamed(sheet, content, rulesetOf(state), d) : null) || (sheet && sheet.class ? content.skills.get(content.classes.get(sheet.class).basic_attack) : null);
+        const skill = offensive || (sheet ? weaponAttackNamed(sheet, content, rulesetOf(state), d) : null) || (sheet && sheet.class ? skillOf(content, content.classes.get(sheet.class).basic_attack, state) : null);
         if (!skill) return { kind: 'narrative', flags: { attack_without_class: true } };
         const target = resolveTarget(raw, state, content, { hostileOnly: !!state.encounter });
         if (target.ambiguous) return { kind: 'ambiguous_target', skill: skill.id, candidates: target.ambiguous };

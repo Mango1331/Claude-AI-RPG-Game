@@ -11,7 +11,8 @@ import { scaleCreature } from './npcgen.js';
 import { lookOf } from './knowledge.js';
 import { bandIndex, bandName, clone, num, roundHalfUp } from './util.js';
 import { sceneHandle } from './v4/scene_handles.js';
-import { itemEffectOf, rulesetOf } from './content.js';
+import { itemEffectOf, rulesetOf, skillOf as resolveSkill } from './content.js';
+import { effectValue, flatEffectValue, noteUse, fightProgress } from './skills.js';
 import { rankRefusal, restoreOf, restoreEffect } from './v4/items.js';
 
 const PROF = (content, level) => content.rules.proficiency.levels[String(level || 1)];
@@ -28,7 +29,7 @@ export function characterCombatant(state, id, content, side) {
             level: s.level, rank: dv.rank, class: s.class, stats: { ...s.stats }, max_hp: dv.maxHp, max_mp: dv.maxMp,
             max_sta: dv.maxSta, atk: dv.atk, matk: dv.matk, def: dv.def, mdef: dv.mdef, init: dv.init, type: 'normal',
             // Patch 9A: his learned Skills and the plain attack of the weapon he holds (src/derived.js actionsOf)
-            actions: actionsOf(s, content, rulesetOf(state)),
+            actions: actionsOf(s, content, rulesetOf(state), state),
             weapon_family: (Object.values(s.equipment || {}).map((r) => (typeof r === 'string' ? content.items.get(r) : r))
                 .find((it) => it && it.slot === 'weapon') || {}).family || null,
             temperament: e.card?.temperament || s.generated?.temperament || null,
@@ -285,8 +286,9 @@ function setDistance(enc, a, b, band) {
     else enc.combatants[a].current.band = band;
 }
 
-function skillOf(content, id) {
-    const s = content.skills.get(id);
+// Patch 9B-1: the content's Skills and the campaign's own (src/content.js skillOf)
+function skillOf(content, id, state = null) {
+    const s = resolveSkill(content, id, state);
     if (!s) throw new Error(`unknown skill ${id}`);
     return s;
 }
@@ -405,7 +407,7 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
     // that may actually strike different ENGAGED foes.
     // Patch 7.1: an attack item acts by its own snapshot (its power, reach, area), not by the standard profile of its kind
     const thing = extra.item ? state?.objects?.[extra.item] : null;
-    const charSkill = actor.model === 'character' ? (thing && itemEffectOf(content, thing)?.attack ? itemEffectOf(content, thing) : skillOf(content, skillId)) : null;
+    const charSkill = actor.model === 'character' ? (thing && itemEffectOf(content, thing)?.attack ? itemEffectOf(content, thing) : skillOf(content, skillId, state)) : null;
     const charArea = !!charSkill?.effects?.some((e) => e.kind === 'area');
     // Hotfix c.6.6.18: a thrown burst (an offensive item) lands where it is thrown: the one it is thrown at must be seen
     const burst = charSkill?.effects?.find((e) => e.kind === 'area' && e.shape === 'burst') || null;
@@ -529,7 +531,7 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
         for (const s of record.strikes) if (s.defeated) onDefeat(ctx, enc.combatants[s.target], record);
         // post-attack effects (Guarded Thrust)
         for (const eff of skill.effects) {
-            if (eff.kind === 'post_attack_temp_def') addEffect(actor, { kind: 'temp_def', value: eff.flat, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
+            if (eff.kind === 'post_attack_temp_def') addEffect(actor, { kind: 'temp_def', value: postAttackDef(content, eff, actor, skill), source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
         }
         // a declared step back ("I kite backwards and Power Shot", Testrun 4) is the Turn's normal one-band move (Core
         // #12/#24: one move + one Main Action, either order); taken after the attack, so the attack keeps its range
@@ -560,6 +562,11 @@ export function attackAction(ctx, actorId, targetId, skillId, extra = {}) {
 
 const uniqIds = (ids) => [...new Set(ids)];
 
+/** Patch 9B-1: the DEF an attack leaves him (Guarded Cut), by the Proficiency he locked for this fight. */
+function postAttackDef(content, eff, actor, skill) {
+    return flatEffectValue(content, eff.flat, actor.fixed.actions[skill.id]?.prof);
+}
+
 function addEffect(c, eff) {
     // same named effect does not stack magnitude (Core #13): replace, keep the stronger value
     const same = c.current.effects.find((e) => e.kind === eff.kind && e.name === eff.name);
@@ -574,7 +581,7 @@ function addEffect(c, eff) {
 export function skillAction(ctx, actorId, skillId, extra = {}) {
     const { enc, content } = ctx;
     const actor = enc.combatants[actorId];
-    const skill = skillOf(content, skillId);
+    const skill = skillOf(content, skillId, ctx.state);
     if (actor.model !== 'character' || !actor.fixed.actions[skill.id]) return { illegal: `${actor.name} does not know ${skill.name}` };
     const prof = PROF(content, actor.fixed.actions[skill.id].prof);
     const cost = skill.cost ? roundHalfUp(skill.cost.amount * prof.cost) : 0;
@@ -586,17 +593,18 @@ export function skillAction(ctx, actorId, skillId, extra = {}) {
         record.cost.after = actor.current[skill.cost.resource];
     }
     const st = actor.fixed.stats;
+    // Patch 9B-1: a numeric non-damage effect grows with the Proficiency he locked for this fight (src/skills.js effectValue)
+    const level = actor.fixed.actions[skill.id].prof;
     for (const eff of skill.effects) {
-        const val = (base, stat, coef, floor) => (floor ? base + Math.floor(st[stat] * coef) : num(base + st[stat] * coef));
         if (eff.kind === 'temp_def' || eff.kind === 'temp_mdef') {
-            const v = val(eff.base, eff.stat, eff.coef, eff.floor);
+            const v = effectValue(content, eff, st, level);
             addEffect(actor, { kind: eff.kind, value: v, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
             record.effects.push(`${eff.kind === 'temp_def' ? 'DEF' : 'MDEF'} +${v} until the start of ${actor.name}'s next turn`);
         } else if (eff.kind === 'incoming_damage_reduction') {
             addEffect(actor, { kind: 'incoming_damage_reduction', pct: eff.pct, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
             record.effects.push(`incoming damage -${eff.pct}% until the start of ${actor.name}'s next turn`);
         } else if (eff.kind === 'barrier') {
-            const v = val(eff.base, eff.stat, eff.coef, eff.floor);
+            const v = effectValue(content, eff, st, level);
             addEffect(actor, { kind: 'barrier', hp: v, value: v, source: actorId, expires: 'start_of_source_next_turn', name: skill.name, round: enc.round });
             record.effects.push(`Barrier ${v} HP (until destroyed or the start of ${actor.name}'s next turn)`);
         } else if (eff.kind === 'damage_reduction_next') {
@@ -622,7 +630,7 @@ export function skillAction(ctx, actorId, skillId, extra = {}) {
 export function worldAction(ctx, actorId, act) {
     const { enc, content } = ctx;
     const actor = enc.combatants[actorId];
-    const skill = skillOf(content, act.skill);
+    const skill = skillOf(content, act.skill, ctx.state);
     if (!skill || actor.model !== 'character' || !actor.fixed.actions[skill.id]) return { illegal: `${actor.name} does not know ${skill?.name || act.skill}` };
     const prof = PROF(content, actor.fixed.actions[skill.id].prof);
     const cost = skill.cost ? roundHalfUp(skill.cost.amount * prof.cost) : 0;
@@ -715,14 +723,14 @@ export function moveAction(ctx, actorId, dir, focusId) {
  * arrows) are left out.
  * @returns {{skill, name, min, max, strikes, cover: null|'ignored'|'applies'}[]}
  */
-export function damagePreview(enc, content, targetId) {
+export function damagePreview(enc, content, targetId, state = null) {
     const pc = enc?.combatants?.pc;
     const target = enc?.combatants?.[targetId];
     if (!pc || !target || !alive(target) || target.current.cover === 'full') return [];
     const out = [];
     const d = content.rules.damage;
     for (const [sid, known] of Object.entries(pc.fixed.actions || {})) {
-        const skill = content.skills.get(sid);
+        const skill = resolveSkill(content, sid, state);
         if (!skill?.attack || skill.effects?.some((e) => e.kind === 'area')) continue;
         const band = target.current.band;
         const reach = rangeReaches(skill.range.band, band) || (bandIndex(band) > 0 && rangeReaches(skill.range.band, bandName(bandIndex(band) - 1)));
@@ -857,7 +865,7 @@ function npcReach(ctx, me) {
     if (me.model !== 'character') return 'ENGAGED';
     let best = 'ENGAGED';
     for (const sid of Object.keys(me.fixed.actions)) {
-        const s = ctx.content.skills.get(sid);
+        const s = resolveSkill(ctx.content, sid, ctx.state);
         if (s && s.attack && s.range && !s.range.extra_band && bandIndex(s.range.band) > bandIndex(best)) {
             if (s.ammo && (me.fixed.weapon_family !== 'bow' || !hasAmmo(me, s))) continue;
             best = s.range.band;
@@ -871,7 +879,7 @@ function npcAttackSkill(ctx, me) {
     const band = me.current.band;
     let best = null;
     for (const sid of Object.keys(me.fixed.actions)) {
-        const s = ctx.content.skills.get(sid);
+        const s = resolveSkill(ctx.content, sid, ctx.state);
         if (!s || !s.attack) continue;
         if (s.ammo && (me.fixed.weapon_family !== 'bow' || !hasAmmo(me, s))) continue;
         const cost = s.cost ? s.cost.amount : 0;
@@ -1093,7 +1101,8 @@ function chase(ctx, id) {
 export function runCombat(ctx, pcAction) {
     const { enc } = ctx;
     const records = [];
-    const push = (r) => { enc.log.push(r); records.push(r); };
+    // Patch 9B-1: every record also tells what it shows of his use of a Skill (src/skills.js noteUse; ruleset 2)
+    const push = (r) => { enc.log.push(r); records.push(r); noteUse(ctx, r); };
     // snapshots saved before carried ammunition was tracked per combatant: take it from the sheet once
     for (const c of Object.values(enc.combatants)) if (c.model === 'character' && !c.current.ammo) c.current.ammo = ammoOf(ctx.state?.entities[c.id]?.sheet || {}, ctx.content);
     let pcActed = false;
@@ -1215,6 +1224,10 @@ export function endEncounterEvents(state, content, enc) {
         const earned = enc.defeated.filter((id) => !enc.combatants[id].current.surrendered || enc.combatants[id].current.xp_counted);
         events.push(...awardXp(sheet, xp, content, `Combat XP (${earned.map((id) => `${enc.combatants[id].name} ${enc.combatants[id].fixed.defeat_xp}`).join(', ')})`));
     }
+    // Patch 9B-1: the Proficiency Progress of the Skills he used meaningfully in it, now that it is over (ruleset 2)
+    const progress = fightProgress(state, content, enc);
+    if (progress.length) summary.pp = progress.map((e) => ({ skill: e.d.skill, gained: e.d.gained, from: e.d.from, to: e.d.to, need: e.d.need }));
+    events.push(...progress);
     events.push({ t: 'encounter.ended', d: { id: enc.id, summary } });
     return { events, summary };
 }

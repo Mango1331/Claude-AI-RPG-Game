@@ -35,6 +35,7 @@ import { extractionFailedEvents } from './world.js';
 import { hallOf, settlementOf, membership, boardKey, today, listingsOf, supportedRanks } from './domain.js';
 import { PLANNER_VERSION, MECH_TYPES, planContext, withContentSkills, plannerRequest, parsePlan, mapPlan, recentText, announcedAbandon } from './planner.js';
 import { crowdCount, personWords, bystanderEvents } from './settlement.js';
+import { skillOf } from '../content.js';
 
 export const RECORD_V4 = 3;
 export const LLM = {
@@ -169,7 +170,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const p = lastReplyIndex(chat, u);
     const recent = p >= 0 ? recentText(chat[p].mes) : '';
     const catalog = buildCatalog(before, content, { known: true, c: true });
-    const ctx = withContentSkills(planContext(before, content, catalog), content);
+    const ctx = withContentSkills(planContext(before, content, catalog), content, before);
     const reuse = previous?.plan && previous.interp?.commands ? { commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [], calls: previous.plan.llm } : null;
     const pl = reuse || await planMessage(llm, content, ctx, msg.mes, { recent });
     const plan = {
@@ -227,7 +228,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
 export function crowdIntent(state, content, intent) {
     if (!intent || intent.kind !== 'no_target' || state.encounter) return null;
     const people = crowdCount(state, content);
-    const def = content.skills.get(intent.skill);
+    const def = skillOf(content, intent.skill, state);
     if (!people || !def?.attack) return null;
     const area = (def.effects || []).some((e) => e.kind === 'area');
     if (intent.ref && !personWords(intent.ref)) return null;

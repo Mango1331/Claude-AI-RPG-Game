@@ -229,7 +229,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const expected = answer.expected || {};
     const tag = msg !== null && msg !== undefined ? msg : s.turn;
 
-    // Patch 8: the Living Dungeon he is in, established before the reply's creatures are met (an older campaign's too)
+    // Patch 8: the Living Dungeon he is in, established before the reply's creatures are met (an older campaign's too).
+    // Patch 8.4.1: the ones that stood before this reply are those whose rules the narrator was given for it
+    const livingBefore = new Set(Object.keys(s.dungeons || {}));
     if (cPath) syncEvents(s, content, emit);
 
     // 1. authority first: what the story may not decide is never applied
@@ -370,6 +372,21 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 return [];
             }
             hit = slotForNew(s, content, d, s.scene.at);
+            // Patch 8.4.1 (live 22.10.2026 05:43, turn 16: a search's SUCCESS on level 1 of the Old Crown Catacombs, a
+            // "robed waiting thing" the reply brought that was no encounter of the level; its fight gave 13 XP and level
+            // 2): inside a Living Dungeon only the engine adds the foes (its encounters, placed ahead and filled here). A
+            // creature the reply brings there that fills none is no foe of the world: no entity, so no fight, no XP, no
+            // loot and no progress. One the story shows as no foe (threat: false: a bat, rats in the dust) stays a
+            // creature as before, and so does every creature outside a Living Dungeon. A Dungeon an older campaign is in
+            // that this very reply establishes (Patch 8 (7)) was not one its narrator had the rules of: not yet.
+            const root = !hit && d.threat !== false ? trueDungeonOf(s, s.scene.at) : null;
+            if (root && livingBefore.has(root) && livingOf(s, root) && insideOf(s, root)) {
+                const name = s.places[root]?.name || root;
+                reject(d, 'dungeon_foe', `only the engine adds the foes of ${name}: ${d.species || d.ref} is no encounter of this level`);
+                const fix = `The ${d.species || d.ref} of the last reply is no foe here: in ${name} only the engine adds foes (its DUNGEON lines). It is not there as one: nothing of it acts, attacks or can be fought.`;
+                if (!corrections.includes(fix)) corrections.push(fix);
+                return [];
+            }
         }
         if (hit) d = { ...d, ref: hit.slot.ref, species: hit.slot.species, anchor: hit.slot.anchor, count: hit.slot.count, stronger: null, more: true };
         // 4.3.0-c.6.6.24 (livetest 21.10.2026: "restless skeleton" on the rat body plan, Bite and pelts): a species the

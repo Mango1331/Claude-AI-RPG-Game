@@ -1907,3 +1907,18 @@ Livetest 22.10.2026 03:42 (`tests/v4/live_1022b.json`). Vollständige Beschreibu
   - Gemischte und schützende Aufträge behalten Zielzustand und Pflichten.
   - Die Mengenangabe nennt eine Einheit nur einmal.
 - **Tests:** `tests/v4/patch84.test.js` (9; auf .28 sieben rot, zwei Absicherungen grün). Angepasst: `8.1 group 5 (stealth)` nutzt echte Deckung.
+
+### Patch 8.4.1 (4.3.0-c.6.6.30): Stabilisierung nach dem ersten echten Livetest
+
+Erster automatisierter Livetest 22.10.2026 05:43 (`tests/v4/live_1022c.json`). Vollständige Beschreibung: `docs/PATCH8_4_1_LIVETEST_STABILIZATION.md`.
+
+- **Statpunkte.**
+  - Worte, die freie Stat Points ausgeben, sind keine Handlung: Die Engine weist sie ab (NOT DONE), der Spieler wird auf `#assign <STAT> <n>` hingewiesen, im Kampf ebenso.
+  - Die DOES-Zeile schließt Werte, Statpunkte und Skills aus.
+  - Das Level-up-Panel nennt `#assign`.
+- **Gegner im Living Dungeon.**
+  - Eine erfolgreiche Suche verlangt dort einen Fund oder eine Spur, keinen Gegner.
+  - Eine Kreatur, die die Geschichte dort bringt und die keine Begegnung der Engine ist, wird abgewiesen (`dungeon_foe`): kein Wesen, kein Kampf, keine XP. Der nächste Erzählerblock erhält eine Korrektur. Wesen ohne Gefahr und alles außerhalb bleiben.
+- **Board.** Ein Clear-Vertrag heißt nicht „Cull …“ (`board-4.8`).
+- **Tests:** `tests/v4/patch841.test.js` (11; auf .29 acht rot, drei Absicherungen grün).
+

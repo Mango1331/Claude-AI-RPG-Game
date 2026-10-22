@@ -401,6 +401,26 @@ export function runCommands(state, content, text) {
     return { panels, events, llm };
 }
 
+// Patch 8.4.1 (live 22.10.2026 05:43, turn 19: "I put two of the five free points into WIL, two into INT, and the last
+// one into VIT"): words that spend free Stat Points. Only #assign spends them (an explicitly state-changing command,
+// System #1); words are no command. The planner booked them as "other", the narrator was told to tell them as they
+// happen, and a better Alaric was told while his five points stayed free.
+const SPEND = /\b(?:put|puts|putting|assign|assigns|assigning|spend|spends|spending|invest|invests|investing|allocate|allocates|allocating|distribute|distributes|distributing|add|adds|adding|place|places|placing|pour|pours|pouring|raise|raises|raising|increase|increases|increasing)\b/i;
+const POINTS = /\b(?:free|stat|attribute|ability)\s+points?\b|\bpoints?\s+(?:into|in|to|on)\b/i;
+const STAT_NAMES = ['strength', 'vitality', 'agility', 'intelligence', 'perception', 'willpower'];
+/** Do these words spend free Stat Points ("two points into WIL", "assign my stat points")? */
+export function spendsStatPoints(text, content) {
+    const t = String(text || '');
+    if (!SPEND.test(t)) return false;
+    const stats = [...(content?.rules?.stats || []), ...STAT_NAMES].join('|');
+    const pair = new RegExp(`\\b(?:\\d+|one|two|three|four|five|six|seven|eight|nine|ten|the last one|the rest)\\b[^.;!?]{0,30}?\\b(?:into|in|to|on)\\s+(?:my\\s+)?(?:${stats})\\b`, 'i');
+    return POINTS.test(t) || pair.test(t);
+}
+/** What the player is told when words spend Stat Points (the engine's refusal reason, the planner's note). */
+export function assignHint(free) {
+    return `Stat Points are spent only with the command #assign <STAT> <n>, e.g. #assign WIL 2 INT 2 VIT 1; Free Stat Points: ${free}`;
+}
+
 /**
  * The STAT/number pairs of #assign, in their order: "INT 3 WIL 1", "INT +3", "INT 3, WIL 1". Any token that is not part
  * of a valid pair makes the whole command invalid.

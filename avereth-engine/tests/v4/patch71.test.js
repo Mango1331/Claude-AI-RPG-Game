@@ -382,8 +382,18 @@ test('patch 7.1: the story establishes the knots through the position delta (clu
 const GOBLIN = (n) => `mon.tunnel_goblins_${n}`;
 const TWELVE = Array.from({ length: 12 }, (_, i) => i + 1);
 /** Twelve tunnel goblins come in as one group at SHORT (creature.new count 12), packed close only when `cluster` says so. */
+/**
+ * Patch 8.4.1: the grotto as a cave of the sandbox, not a Living Dungeon. There only the engine adds foes (a creature the
+ * story brings in fills an encounter of the engine or is no foe, src/v4/world.js); these cases are about a group the
+ * story brings, wherever it is.
+ */
+function sandboxCave(g) {
+    const p = g.state().places['loc.glimmerdeep_grotto'];
+    inject(g, [{ t: 'place.updated', d: { id: p.id, set: { dungeon: { ...p.dungeon, real: false } } } }]);
+}
 async function goblins(cluster = null) {
     const g = live(37);
+    sandboxCave(g);
     await say(g, '*i watch the side passage*');
     await g.reply('Twelve tunnel goblins spill out of the side passage and spread across the chamber floor.', { expected: {}, deltas: [
         { seq: 1, type: 'creature.new', ref: 'tunnel goblins', species: 'tunnel goblin', anchor: 'goblin', desc: ['grey-skinned'], count: 12, present: true, band: 'SHORT', cluster, stronger: null, threat: null, more: null },

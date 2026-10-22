@@ -143,7 +143,7 @@ function changeLines(before, after, content, events) {
             out.push(sys(`+${d.amount} XP → XP ${xp}/${level * per}${d.reason ? ` · ${d.reason}` : ''}`));
         } else if (e.t === 'level.up' && d.id === 'pc') {
             lvl = d.level;
-            out.push(sys(`LEVEL UP → Level ${d.level} (+${d.free_points} free Stat Points)`));
+            out.push(sys(`LEVEL UP → Level ${d.level} (+${d.free_points} free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`));
         } else if (e.t === 'quest.ready') {
             const q = after.quests[d.id];
             out.push(sys(`QUEST READY FOR TURN-IN — ${q?.title || d.id}${d.note ? ` · ${d.note}` : ''}`));
@@ -386,7 +386,7 @@ function endLines(state, content, name, e, levelups = [], loot = null) {
     const xp = e.xp_awarded ? ` · +${e.xp_awarded} XP → XP ${sheet.xp}/${sheet.level * content.rules.progression.xp_to_next_per_level}` : '';
     // Prototype C (4.3.0-c.6.6.5): the automatic loot the fight's end booked (src/v4/loot.js), what came in by this fight
     const got = (loot || []).length ? [sys('LOOT ACQUIRED:'), ...loot.map((l) => sys(`  ${l}`))] : [];
-    return [sys(`COMBAT END${fates.length ? ` — ${fates.join(', ')}` : ''}${xp}`), ...got, ...levelups.map((lv) => sys(`LEVEL UP → ${lv} (+5 free Stat Points)`))];
+    return [sys(`COMBAT END${fates.length ? ` — ${fates.join(', ')}` : ''}${xp}`), ...got, ...levelups.map((lv) => sys(`LEVEL UP → ${lv} (+5 free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`))];
 }
 
 function recordLines(name, r) {

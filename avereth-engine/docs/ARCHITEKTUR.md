@@ -433,3 +433,18 @@ Details: `docs/PATCH8_3_DUNGEON_FLOORS_CULLS.md`.
 - `amountText` ist die eine Mengenangabe beider `objectiveText`.
 
 Details: `docs/PATCH8_4_GROUP_AWARENESS_CULLS.md`.
+
+## 19. Worte sind keine Befehle, nur die Engine bringt Dungeon-Gegner (Patch 8.4.1, 4.3.0-c.6.6.30)
+
+**Statpunkte nur per Befehl.**
+- `commands.js spendsStatPoints` erkennt Worte, die Stat Points ausgeben.
+- `v4/commands.js otherStep` weist sie ab (refused, mit `assignHint`), `v4/planner.js mapPlan` im Kampf ebenso.
+- `#assign` bleibt der einzige Weg (System #1).
+
+**Gegner im Living Dungeon.**
+- `v4/world.js newEntity` legt im Inneren eines Living Dungeons, der vor der Antwort bestand, nur Kreaturen an, die eine Begegnung der Engine füllen (`slotForNew`) oder keine Gefahr sind (`threat: false`).
+- Andere werden mit der Regel `dungeon_foe` abgewiesen und als Korrektur an den Erzähler gemeldet.
+- Die Suchzeile verlangt dort keinen Gegner.
+
+Details: `docs/PATCH8_4_1_LIVETEST_STABILIZATION.md`.
+

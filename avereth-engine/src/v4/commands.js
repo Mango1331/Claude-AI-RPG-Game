@@ -13,6 +13,7 @@
 // reply may change because of a command (auth), what the extractor must answer (expectedKeys) and what waits for the
 // reply (conditionals) go into the turn's outcome; the world applier (src/v4/world.js) reads them from there.
 import { formatCoin } from '../economy.js';
+import { spendsStatPoints, assignHint } from '../commands.js';
 import { resolveCheck } from '../checks.js';
 import { entityLabel, setFactEvents, truth } from '../knowledge.js';
 import { normText, slug, formatClock, hash32 } from '../util.js';
@@ -595,7 +596,11 @@ const HANDLERS = {
                 : found
                 ? `SUCCESS — he finds ${found.name} (${found.id}, a ${found.kind}${found.trigger ? ` that springs on ${found.trigger}` : ''}): tell plainly what it is and where; he knows it now`
                 : check.success
-                    ? 'SUCCESS — reveal a concrete discovery, encounter or actionable lead; a teaser-only answer is not a resolved search'
+                    // Patch 8.4.1 (live 22.10.2026 05:43, turn 16): in a Living Dungeon a found foe would be the story's, not
+                    // the engine's; there the search finds a thing, a way or a lead, never a foe
+                    ? (envx.c && livingOf(s, trueDungeonOf(s, place)) && insideOf(s, trueDungeonOf(s, place))
+                        ? 'SUCCESS — reveal a concrete discovery or an actionable lead (a thing, a hidden mark, tracks or a sound that lead on into the level); it brings no foe: the foes of this level come only as the engine adds them (the LEVEL line); a teaser-only answer is not a resolved search'
+                        : 'SUCCESS — reveal a concrete discovery, encounter or actionable lead; a teaser-only answer is not a resolved search')
                     : envx.c
                         ? 'FAILURE — he finds nothing new this way: say so plainly (no false lead, nothing he wrongly believes, no interchangeable hint); what is there stays as it is, and another place, method or tool may still find it'
                         : 'FAILURE — resolve it concretely as no relevant find, a false lead, danger/complication, or this avenue being exhausted; do not repeat an interchangeable hint';
@@ -1114,7 +1119,12 @@ function attemptStep(s, content, c, ctx, emit, envx) {
 
 function otherStep(s, content, c) {
     const what = c.quote ? `"${String(c.quote).replace(/[<>`]/g, '').slice(0, 100)}"` : String(c.what || 'something').replace(/[<>`]/g, '').slice(0, 100);
-    return { status: 'resolved', line: `DOES — ${what}: his own action; tell it as it happens. It books nothing: no HP, MP, STA, coin or possessions change by it.` };
+    // Patch 8.4.1 (live 22.10.2026 05:43, turn 19): words that spend his Stat Points change nothing; #assign does
+    if (spendsStatPoints(`${c.what || ''} ${c.quote || ''}`, content)) {
+        const free = s.entities.pc?.sheet?.free_points ?? 0;
+        return { status: 'refused', reason: assignHint(free), line: `NOT DONE — ${what}: his Free Stat Points are spent only by the System command #assign, never by words; nothing is assigned, his stats and his ${free} Free Stat Point${free === 1 ? '' : 's'} stay as they are. Tell no change in him from it (no new strength, mana, toughness or focus).` };
+    }
+    return { status: 'resolved', line: `DOES — ${what}: his own action; tell it as it happens. It books nothing: no HP, MP, STA, stats or Stat Points, Skills, coin or possessions change by it.` };
 }
 
 /**

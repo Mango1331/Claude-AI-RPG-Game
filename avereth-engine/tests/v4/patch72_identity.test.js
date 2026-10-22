@@ -26,6 +26,15 @@ function live(n = 37) {
     g.llm = async (req) => (req.purpose.startsWith('plan') ? g.plans.shift() ?? null : ask(req));
     return g;
 }
+/**
+ * Patch 8.4.1: the grotto as a cave of the sandbox, not a Living Dungeon. There only the engine adds foes (a creature the
+ * story brings in fills an encounter of the engine or is no foe, src/v4/world.js); these cases are about groups the story
+ * brings, wherever they are.
+ */
+function sandboxCave(g) {
+    const p = g.state().places['loc.glimmerdeep_grotto'];
+    rec(g.chat.findLast((m) => m.extra?.avereth?.events)).events.push({ t: 'place.updated', d: { id: p.id, set: { dungeon: { ...p.dungeon, real: false } } } });
+}
 async function watch(g) {
     g.chat.push({ mes: '*i hold still and watch them*', is_user: true, is_system: false, extra: {} });
     g.plans = [JSON.stringify({ commands: [{ seq: 1, type: 'activity', kind: 'wait', what: 'watching the beetles', minutes: 1, until: null, quote: 'i hold still and watch them' }] })];
@@ -118,6 +127,7 @@ test('patch 7.2B (6): intent, aware and position follow the same rule: a group\'
 
 test('patch 7.2B (7): two separate groups of one kind: "the goblins" over both is no one; each group by its own ref with scope all is that group', async () => {
     const g = live();
+    sandboxCave(g);
     await watch(g);
     await g.reply('Two bands of tunnel goblins spill in, three from the side passage and two from the main way.', { expected: {}, deltas: [
         { seq: 1, type: 'creature.new', ref: 'side goblins', species: 'tunnel goblin', anchor: 'goblin', desc: ['from the side passage'], count: 3, present: true, band: 'MEDIUM', cluster: null, stronger: null, threat: null, more: true },
@@ -134,6 +144,7 @@ test('patch 7.2B (7): two separate groups of one kind: "the goblins" over both i
 
 test('patch 7.2B (8, 9, 10): a newcomer joins its group and the group\'s ref with scope all then means it too; a returning beetle stays itself; a vague singular names no one', async () => {
     const g = live();
+    sandboxCave(g);
     await watch(g);
     await g.reply('A twelfth beetle crawls out of a crack and joins the swarm on the vein.', { expected: {}, deltas: [
         { seq: 1, type: 'creature.new', ref: SWARM, species: 'crystal beetle', anchor: 'arthropod', desc: ['fist-sized, grey-blue shell'], count: 1, present: true, band: 'SHORT', cluster: null, stronger: null, threat: null, more: true },

@@ -13,6 +13,7 @@
 // reused unchanged; the planner adds eight types: use_skill, ability_world, move, flee, stealth, attempt, other, clarify.
 // Pure module: the host makes the call (src/v4/runtime.js), the same state and answer give the same result.
 import { normText } from '../util.js';
+import { spendsStatPoints, assignHint } from '../commands.js';
 import { mentionedSkills } from '../intent.js';
 import { activeHostiles } from '../combat.js';
 import { sceneHandle, tacticalHere, areaCaught, approachedBy, burstAim } from './scene_handles.js';
@@ -573,7 +574,8 @@ export function mapPlan(commands, ctx, content, message, state) {
         if (c.type === 'go') { notTaken(c, 'travel is not possible during a fight; to get away, flee'); continue; }
         notTaken(c, 'not possible during a fight');
     }
-    if (fight) for (const c of mech.filter((x) => x.type === 'other')) notTaken(c, 'not resolved by the engine');
+    // Patch 8.4.1: words that spend Stat Points are no deed of the fight either; the player is pointed to #assign
+    if (fight) for (const c of mech.filter((x) => x.type === 'other')) notTaken(c, spendsStatPoints(`${c.what || ''} ${c.quote || ''}`, content) ? assignHint(state?.entities?.pc?.sheet?.free_points ?? 0) : 'not resolved by the engine');
     if (fight) for (const c of mech.filter((x) => x.type === 'attempt')) notTaken(c, 'not possible during a fight');
 
     // the first main action is taken; a second one waits for its own turn (one main action per turn, Core #12/#24)

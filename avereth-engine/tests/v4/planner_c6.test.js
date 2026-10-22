@@ -290,7 +290,7 @@ test('9. "use some cloth to stop my bleeding" keeps its place between the tusk a
     assert.deepEqual(outcomeOf(g).resolutions.map((r) => [r.seq, r.type, r.status]), [[1, 'take', 'authorized'], [2, 'other', 'resolved'], [3, 'go', 'authorized']]);
     const a = outcomeOf(g).actions;
     assert.match(a[0], /^1\. TAKES — a thorn-backed boar tusk/);
-    assert.equal(a[1], '2. DOES — "use some cloth to stop my bleeding": his own action; tell it as it happens. It books nothing: no HP, MP, STA, coin or possessions change by it.');
+    assert.equal(a[1], '2. DOES — "use some cloth to stop my bleeding": his own action; tell it as it happens. It books nothing: no HP, MP, STA, stats or Stat Points, Skills, coin or possessions change by it.');
     assert.match(a[2], /^3\. GOES — to into the boar den/);
     assert.ok(block(g).indexOf('2. DOES') > block(g).indexOf('1. TAKES') && block(g).indexOf('2. DOES') < block(g).indexOf('3. GOES'), 'in order, in the narrator\'s block');
     assert.ok(!last(g).plan.free?.some((x) => /bleeding/.test(x)), 'not left in the record only');

@@ -15,7 +15,7 @@ import { hallOf, settlementOf, realmOf, heldBy, membership, listingsOf, boardKey
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
-export const BOARD_VERSION = 'board-4.7';
+export const BOARD_VERSION = 'board-4.8';
 const QTYPES = ['minor', 'standard', 'dangerous', 'major'];
 const VERBS = ['GO', 'FIND', 'TALK', 'GET', 'GATHER', 'GIVE', 'DELIVER', 'USE', 'REPAIR', 'DEFEND', 'ESCORT', 'ATTACK', 'DEFEAT'];
 
@@ -552,7 +552,7 @@ export function boardRequest(s, content, need) {
         ...noviceProfile,
         `- rank is "${need.rank}"; level is the quest level, an integer from ${lo} to ${hi}; qtype is minor, standard, dangerous or major.`,
         `- payout_cp is the Guild's one fixed payout in copper (1 silver = 10 copper)${guide ? `; for ${need.rank} work ${guide[0]}–${guide[1]} cp is usual (a guide, not a limit)` : ''}.`,
-        '- A cull names how many its notice asks for: the DEFEAT objective\'s qty (4 wolves; 1 for a single beast). A clearance of a Dungeon level names the level ("level 1") and no number: the level is cleared when its threats are. One listing is one of the two, never both: a cull\'s desired_end_state is that number of them dealt with, not a cleared level or place; a clearance\'s is the level cleared, with no number.',
+        '- A cull names how many its notice asks for: the DEFEAT objective\'s qty (4 wolves; 1 for a single beast). A clearance of a Dungeon level names the level ("level 1") and no number: the level is cleared when its threats are. One listing is one of the two, never both: a cull\'s desired_end_state is that number of them dealt with, not a cleared level or place; a clearance\'s is the level cleared, with no number. Its title says the same: a clearance is titled by what is cleared ("Clear …", "Purge …", "Secure …"), never "Cull" or "Thin", which promise a number.',
         '- 1 to 4 objectives: {verb, what, qty, unit, where}; verb is one of GO, FIND, TALK, GET, GATHER, GIVE, DELIVER, USE, REPAIR, DEFEND, ESCORT, ATTACK, DEFEAT. These are continuity memories for play, not a rigid checklist the narrator must force in order.',
         '- proof contains 0–2 optional verification examples the Guild could recognize. Prefer [] when return, witnesses or a credible report can establish the outcome naturally. If used, EVERY entry must be an object with all fields present: {"kind":"object"|"mark","what":"...","qty":integer>=1|null,"unit":string|null,"on":string|null,"consume":true|false|null}. These are story guidance, NOT exclusive completion tokens.',
         '- Do not use GO merely as a travel checklist item. Objectives should describe meaningful work/outcomes (find, rescue, repair, defend, escort, investigate through FIND/TALK/GET, defeat, deliver, etc.); travel itself is normally just how play reaches them. Do not invent paperwork solely to make verification possible.',
@@ -662,6 +662,9 @@ export function parseBoard(answer, content, need, s = null) {
             : at && inDungeon ? 'at most one Dungeon job on this board, and one is there already' : at ? dungeonPartWhy(s, content, need.rank, at, text) || noCullWhy(s, content, need, at, l, text) : null;
         // Patch 8.1 (§3, §10): the Dungeon its work lies in, fixed with the listing (the gate and the count read this)
         if (at) l.dungeon = at;
+        // Patch 8.4.1 (live 22.10.2026 05:43: "Cull the Burial Gallery Skeletons", a clearance of level 1 with no number):
+        // a clearance's title says clearing; a cull's verb would promise a count the contract does not have
+        if (at && clearanceListing(l, text)) l.title = l.title.replace(CULL_VERB, 'Clear');
         if (why) refused.push({ title: l.title, why });
         else {
             ok.push(l);
@@ -669,6 +672,12 @@ export function parseBoard(answer, content, need, s = null) {
         }
     }
     return { listings: ok.slice(0, need.missing), refused, errors: [] };
+}
+
+const CULL_VERB = /^\s*(?:cull|thin)(?:\s+out)?\b/i;
+/** A Dungeon listing that clears a level (it names one, and none of its kills has a number), titled as a cull? */
+function clearanceListing(l, text) {
+    return CULL_VERB.test(l.title || '') && /\blevel\s+\d+\b/.test(text) && !l.objectives.some((o) => KILL_WORK.has(o.verb) && Number(o.qty) > 0);
 }
 
 /** Does an objective name a Dungeon's guardian or boss by its own name ("the Glimmer Queen")? */

@@ -1,5 +1,11 @@
 {
   "_source": "First Message v0.4 + Content #0/#11 + System #12 (New Campaign and Character Creation). The engine creates the initial state from this file; the start city is read from the First Message line 'Location: Public roadside verge outside <City>, <Realm>' (it is chosen by the {{pick}} macro). Lorebook v0.14: the start cities are Alderwatch, Glassmere and Ashbridge.",
+  "ruleset": 2,
+  "rulesets": {
+    "_note": "Patch 9A: the rules a campaign plays by are fixed when it starts (campaign.started ruleset). A campaign started before Patch 9A has none and keeps ruleset 1 for good: its Base Classes, its NPC templates (npc_templates.json legacy), its weapon attacks and its texts. A change of the content never moves a running campaign onto other rules.",
+    "1": {"name": "legacy (before Patch 9A)", "classes": ["warrior", "mage", "guardian", "duelist", "ranger"], "weapon_attacks": false},
+    "2": {"name": "Patch 9A: three starting classes", "classes": ["warrior", "mage", "rogue"], "weapon_attacks": true}
+  },
   "pc": {
     "id": "pc",
     "name": "Alaric",

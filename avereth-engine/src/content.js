@@ -23,6 +23,8 @@ export function indexContent(pack) {
         skills: new Map(),
         skillsByName: new Map(),
         affinity: pack.classes.affinity,
+        // Patch 9A: a weapon family's own plain attack, for any class (ruleset 2; src/derived.js weaponAttackOf)
+        weaponAttacks: pack.classes.weapon_attacks || {},
         anchors: new Map(),
         anchorAliases: [],
         monsters: pack.monsters,
@@ -60,12 +62,46 @@ export function indexContent(pack) {
         for (const alias of a.aliases) c.anchorAliases.push([normText(alias), a.id]);
     }
     c.anchorAliases.sort((x, y) => y[0].length - x[0].length);
+    // Patch 9A: the templates of a ruleset-2 campaign (same ids and descriptors; npcTemplate below); 'templates' stays the
+    // legacy set a campaign started before keeps
+    c.npcTemplates = { 1: c.templates, 2: new Map((pack.npc_templates.ruleset_2?.templates || []).map((t) => [t.id, t])) };
     for (const t of pack.npc_templates.templates) {
         c.templates.set(t.id, t);
         for (const d of t.descriptors) c.templateDescriptors.push([normText(d), t.id]);
     }
     c.templateDescriptors.sort((x, y) => y[0].length - x[0].length);
     return c;
+}
+
+/**
+ * Patch 9A: the rules a campaign plays by, fixed when it starts (campaign.started ruleset, content/campaign_start.json
+ * rulesets). A campaign started before Patch 9A has no ruleset and keeps the legacy one for good: its five Base Classes,
+ * its NPC templates and its texts. A newer content never moves a running campaign onto other rules.
+ */
+export const LEGACY_RULESET = 1;
+export function rulesetOf(state) {
+    return Number(state?.meta?.ruleset) || LEGACY_RULESET;
+}
+
+/** The ruleset's definition (its starting classes, whether a weapon brings its own attack). */
+export function rulesetDef(content, ruleset) {
+    const sets = content.start.rulesets || {};
+    return sets[String(ruleset)] || sets[String(LEGACY_RULESET)] || { classes: [...content.classes.keys()], weapon_attacks: false };
+}
+
+/**
+ * The rule texts a campaign of this ruleset reads (rules_text.json): an entry written for a ruleset (ruleset, replaces)
+ * stands in for the entry it replaces there; a legacy campaign reads the texts it always read.
+ */
+export function rulesTextFor(content, ruleset) {
+    const all = [...content.rulesText.values()];
+    const replaced = new Set(all.filter((r) => r.ruleset === ruleset && r.replaces).map((r) => r.replaces));
+    return all.filter((r) => (r.ruleset ? r.ruleset === ruleset : !replaced.has(r.id)));
+}
+
+/** The Base Classes a new character of this ruleset may start with, in menu order. */
+export function startClasses(content, ruleset) {
+    return rulesetDef(content, ruleset).classes.map((id) => content.classes.get(id)).filter(Boolean);
 }
 
 /** The words of a name, as a set (a thing's name against a profile's match words). */
@@ -139,6 +175,12 @@ export function templateFor(content, text) {
     const t = normText(text);
     for (const [d, id] of content.templateDescriptors) if (wordMatch(t, d)) return content.templates.get(id);
     return null;
+}
+
+/** Patch 9A: a human NPC template of a ruleset by its id (a ruleset without its own set: the legacy one), or null. */
+export function npcTemplate(content, ruleset, id) {
+    const set = content.npcTemplates?.[ruleset]?.size ? content.npcTemplates[ruleset] : content.templates;
+    return set.get(id) || null;
 }
 
 export function weaponFamily(content, weaponText) {

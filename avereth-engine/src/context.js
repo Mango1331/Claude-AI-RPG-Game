@@ -2,8 +2,9 @@
 // ("smallest possible set of high-signal tokens", Anthropic context engineering). Sections are prioritised and
 // packed under a token budget; the most important section (RESOLVED) is placed last, closest to generation
 // (Lost-in-the-Middle). NPC cards contain ONLY that NPC's own knowledge -> knowledge boundaries by construction.
-import { deriveCharacter } from './derived.js';
+import { deriveCharacter, weaponAttackOf } from './derived.js';
 import { formatCoin } from './economy.js';
+import { rulesetOf, rulesTextFor } from './content.js';
 import {
     knowledgeOf, memoriesOf, memoryText, entityLabel, anyLabel, propText, currentFacts, statusOf, pcIdentityFor, truth, lookOf,
     isMeaningful, PC_NAME_FACT, PC_LOOK_FACT,
@@ -82,6 +83,8 @@ export function pcLine(state, content, { combat = !!state.encounter, items = tru
     const cls = s.class ? content.classes.get(s.class).name : 'no Class yet';
     const guild = truth(state, 'pc', 'guild_rank')[0]?.o;
     const skillList = Object.entries(s.skills).map(([id, v]) => `${content.skills.get(id)?.name || id} P${v.prof}`);
+    const weapon = weaponAttackOf(s, content, rulesetOf(state)); // Patch 9A: his weapon's own attack, no learned Skill
+    if (weapon) skillList.push(`${weapon.skill.name} (attack of his ${weapon.weapon.name}, no learned Skill)`);
     const arrows = s.inventory.standard_arrow;
     const inv = Object.entries(s.inventory).filter(([k]) => k !== 'standard_arrow').map(([k, q]) => `${itemLabel(state, content, k)}${q > 1 ? ` ×${q}` : ''}`);
     const equip = Object.values(s.equipment).map((r) => (typeof r === 'string' ? content.items.get(r)?.name || r : r.name));
@@ -504,16 +507,18 @@ function proseOnly(text) {
 const paragraphIndex = new WeakMap();
 
 /** Top rule paragraphs (Core/Content, verbatim) for a System question, via BM25 over paragraphs. */
-function ruleParagraphs(content, query, k) {
-    let idx = paragraphIndex.get(content);
+function ruleParagraphs(content, query, k, ruleset = 1) {
+    // Patch 9A: the texts of the campaign's ruleset (src/content.js rulesTextFor), one index per ruleset
+    if (!paragraphIndex.has(content)) paragraphIndex.set(content, new Map());
+    let idx = paragraphIndex.get(content).get(ruleset);
     if (!idx) {
         const paras = [];
-        for (const r of content.rulesText.values()) {
+        for (const r of rulesTextFor(content, ruleset)) {
             if (!/^(core|content)\./.test(r.id)) continue;
             for (const p of r.text.split(/\n\s*\n/)) if (p.trim().length > 20) paras.push({ id: r.id, text: `${r.title.replace(/^\[[^\]]+\]\s*/, '')} (${r.id}): ${p.trim()}` });
         }
         idx = { paras, bm: new Bm25(paras.map((p) => p.text)) };
-        paragraphIndex.set(content, idx);
+        paragraphIndex.get(content).set(ruleset, idx);
     }
     return idx.paras.map((p, i) => [p.text, idx.bm.score(query, i)]).filter(([, sc]) => sc > 0).sort((a, b) => b[1] - a[1]).slice(0, k).map(([t]) => t);
 }
@@ -649,7 +654,7 @@ export function buildContext(state, content, opts = {}) {
     const rulesCap = opts.rulesBudget ?? DEFAULT_RULES_BUDGET;
     if (opts.systemQuery) {
         // just-in-time retrieval: the few rule paragraphs that answer the question (not whole entries)
-        for (const para of ruleParagraphs(content, opts.systemQuery, 4)) {
+        for (const para of ruleParagraphs(content, opts.systemQuery, 4, rulesetOf(state))) {
             if (rulesUsed + estimateTokens(para) > rulesCap) continue;
             rulesTexts.push(para);
             rulesUsed += estimateTokens(para);

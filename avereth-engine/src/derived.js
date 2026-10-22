@@ -1,6 +1,6 @@
 // Derived character values (Core #2, #6). Pure functions of a character sheet + content. Combat V3: no Base Hit and
 // no Crit Chance (legal attacks connect; only a true Ambush crits), and PER is not part of Initiative.
-import { num } from './util.js';
+import { num, normText } from './util.js';
 
 export function rankOf(level, content) {
     for (const b of content.rules.ranks.bands) if (level >= b.min && level <= b.max) return b.rank;
@@ -16,6 +16,56 @@ export function itemOf(ref, content) {
     if (!ref) return null;
     if (typeof ref === 'string') return content.items.get(ref) || { id: ref, name: ref };
     return ref;
+}
+
+/** The weapon a sheet holds (its weapon slot), or null. */
+export function weaponOf(sheet, content) {
+    return Object.values(sheet?.equipment || {}).map((r) => itemOf(r, content)).find((it) => it && it.slot === 'weapon') || null;
+}
+
+/**
+ * Patch 9A: the plain attack of the weapon a character holds, when its class Basic Attack does not use that weapon's
+ * family (a Mage or a Warrior with a bow: Bow Shot). Any class can use it; it is no learned Skill (not in sheet.skills,
+ * no Proficiency of its own) and comes and goes with the weapon. Only under the rules of Patch 9A (ruleset 2): a legacy
+ * campaign keeps its classes' own attacks.
+ */
+export function weaponAttackOf(sheet, content, ruleset) {
+    if (!content.start?.rulesets?.[String(ruleset)]?.weapon_attacks) return null;
+    const weapon = weaponOf(sheet, content);
+    const id = weapon?.family ? content.weaponAttacks?.[weapon.family] : null;
+    const skill = id ? content.skills.get(id) : null;
+    if (!skill) return null;
+    const basic = content.skills.get(content.classes.get(sheet.class)?.basic_attack);
+    if (basic?.weapon_families?.includes(weapon.family)) return null;
+    return { skill, weapon };
+}
+
+/**
+ * The actions a character can take in a fight: its learned Skills (known to the content) and, Patch 9A, the plain attack
+ * of the weapon it holds ({prof: 1, pp: 0, weapon: name}; src/combat.js keeps them in the encounter snapshot).
+ */
+export function actionsOf(sheet, content, ruleset) {
+    const out = Object.fromEntries(Object.entries(sheet?.skills || {}).filter(([sid]) => content.skills.has(sid)));
+    const w = weaponAttackOf(sheet, content, ruleset);
+    if (w && !out[w.skill.id]) out[w.skill.id] = { prof: 1, pp: 0, weapon: w.weapon.name };
+    return out;
+}
+
+// an attack with the weapon he holds, named: the weapon by its name, its family's words, a bow by its arrows or a shot
+const WEAPON_USE = { bow: /\b(?:bows?|arrows?|shoot(?:s|ing)?|shot|loos(?:e|es|ing)|nocks?)\b/ };
+
+/**
+ * Patch 9A: the weapon's plain attack when the words of an attack name the weapon he holds ("I shoot the wolf", "with my
+ * shortbow"); null when it has none or they do not (then an attack that names no skill is his class Basic Attack).
+ */
+export function weaponAttackNamed(sheet, content, ruleset, text) {
+    const w = weaponAttackOf(sheet, content, ruleset);
+    if (!w) return null;
+    const t = normText(text);
+    const words = [...normText(w.weapon.name).split(/[^a-z]+/), ...(content.npc?.weapon_words?.[w.weapon.family] || []).map(normText)]
+        .filter((x) => x.length > 2 && x !== 'starter' && x !== 'the');
+    const named = words.some((x) => new RegExp(`(^|[^a-z])${x.replace(/[^a-z ]/g, '')}($|[^a-z])`).test(t));
+    return named || WEAPON_USE[w.weapon.family]?.test(t) ? w.skill : null;
 }
 
 /** Core #24 (V3): Initiative = floor(1.5 × AGI). */

@@ -117,7 +117,7 @@ test('Combat V3 content: no Hit or Crit value anywhere, no PER damage scaling, d
         }
         assert.doesNotMatch(`${s.source_text}\n${s.effect_text || ''}`, /Hit Chance|Hit Modifier|Crit Chance|hit and critical check/i, s.id);
     }
-    assert.deepEqual([...c.skills.values()].filter((s) => s.attack?.ignores_partial_cover).map((s) => s.id).sort(), ['duelist.precision_thrust', 'ranger.aimed_shot']);
+    assert.deepEqual([...c.skills.values()].filter((s) => s.attack?.ignores_partial_cover).map((s) => s.id).sort(), ['duelist.precision_thrust', 'ranger.aimed_shot', 'rogue.piercing_thrust']);
     for (const a of c.anchors.values()) assert.equal(a.hit, undefined, a.id);
     assert.equal(c.monsters.scaling.hit, undefined);
     for (const k of ['elite', 'boss', 'variation']) assert.equal(c.monsters[k].hit_pp, undefined, k);

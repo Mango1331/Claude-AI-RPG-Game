@@ -463,3 +463,13 @@ Details: `docs/PATCH8_4_2_FINAL_INTEGRATION.md`.
 - **Rückzug.** Planner-Regel 7: Außerhalb eines Kampfes ist ein Rückzug an einen anderen Ort `go`, `flee` nur ohne genannten Ort. Liefert das Modell trotzdem `flee`, macht `v4/planner.js retreatGo` daraus ein `go`, wenn der Satz einen bekannten Ort nennt oder „back through/back out/the way I came“ sagt (dann der Raum, aus dem er kam). Es gilt der gewöhnliche `go`-Pfad mit allen Wegprüfungen. Ohne erkennbares Ziel bleibt es Erzählung, und die Engine bucht keinen Ort.
 
 Details: `docs/PATCH8_4_3_FINAL_DUNGEON_CONSISTENCY.md`.
+
+## 22. Drei Startklassen, Waffenangriffe, NPC-Ausbildung, Regelstand (Patch 9A, 4.3.0-c.6.6.33)
+
+- **Regelstand.** `campaign.started.ruleset` (neu: 2; ohne Feld: 1). `content.js rulesetOf`/`rulesetDef`/`startClasses`/`rulesTextFor`: Startklassen, Waffenangriffe, NPC-Vorlagen und Regeltexte folgen dem Regelstand der Kampagne, nie der installierten Content-Version.
+- **Klassen.** Regelstand 2: Warrior, Mage, Rogue (neu in `classes.json`, sechs F-Rang-Skills aus vorhandenen Effektarten, Kit Dolch + leichte Rüstung). Zwei aus sechs bleibt.
+- **Waffenangriffe.** `derived.js weaponAttackOf`/`actionsOf`: der schlichte Angriff der gehaltenen Waffe (`classes.json weapon_attacks`), wenn der Basic Attack der Klasse deren Familie nicht nutzt. Kein gelernter Skill. Eine Stelle für Kampf-Snapshot, Weltnutzung, Parser, Planner, Befehle, HUD.
+- **NPCs.** `npc_templates.json ruleset_2`, `npcgen.js rulesetTwoSheet`/`chooseStarters`, `engine.js rulesetTwoPerson`: Klasse (Lore) und Ausbildung getrennt; trained = Basic Attack + zwei Starter-Skills nach Rolle (Seed + Person), untrained = keine; festgehalten in `entity.sheet_set`. Legacy-Kampagnen bauen exakt wie vorher.
+- **Anzeige.** `#class` ohne Evolutions-Level (Regelstand 2); Combat-HUD mit Attack/Defense/Utility.
+
+Details: `docs/PATCH9A_STARTING_CLASSES.md`.

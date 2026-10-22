@@ -9,9 +9,9 @@
 // re-running a turn from the same state (swipe/regenerate) yields the same results — dice are never rerolled.
 import { Dice, newSeed } from './rng.js';
 import { applyEvent, fold } from './state.js';
-import { anchorFor, templateFor, locationByName, weaponFamily, startPlace, itemEffectOf } from './content.js';
+import { anchorFor, templateFor, locationByName, weaponFamily, startPlace, itemEffectOf, rulesetOf, rulesetDef, npcTemplate } from './content.js';
 import { rankRefusal } from './v4/items.js';
-import { deriveCharacter } from './derived.js';
+import { deriveCharacter, actionsOf } from './derived.js';
 import { selectClass, selectSkills } from './creation.js';
 import { scaleCreature, chooseCreatureLevel, humanSheet } from './npcgen.js';
 import { initEncounter, addCombatant, runCombat, endEncounterEvents, terminal } from './combat.js';
@@ -42,7 +42,7 @@ const TRADE_RE = /\b(?:buy|buys|bought|sell|sells|sold|pay|pays|paid|price|cost|
  * Initial campaign events from content/campaign_start.json and the First Message's location line. runtime 'v4' starts
  * a Runtime V4 campaign (docs/RUNTIME_V4_PLAN.md): the same start, plus the place tree and the start node.
  */
-export function startCampaign(content, { seed = newSeed(), firstMessage = '', runtime = 'v3', planner } = {}) {
+export function startCampaign(content, { seed = newSeed(), firstMessage = '', runtime = 'v3', planner, ruleset = content.start.ruleset || 1 } = {}) {
     const st = content.start;
     const m = /Location:\s*[^\n`]*?\boutside\s+([A-Z][\w' -]*?)\s*,\s*([A-Z][\w' -]*)/.exec(String(firstMessage));
     let loc = m ? locationByName(content, m[1].trim()) : null;
@@ -68,6 +68,8 @@ export function startCampaign(content, { seed = newSeed(), firstMessage = '', ru
         d: {
             seed: seed >>> 0, minute: at.minute, entities: [pc], location: loc.id, place: startPlace(content, loc),
             facts, knowledge, campaign: content.manifest.id, content_version: content.manifest.version, engine_version: ENGINE_VERSION,
+            // Patch 9A: the rules this campaign plays by, for good (src/content.js rulesetOf)
+            ruleset,
             // Patch 7.2: a V4 campaign keeps the path it started on (c: the semantic planner, the product path; a: the
             // interpreter of Runtime V4-A), whatever the setting says later (src/v4/runtime.js campaignPath)
             ...(v4 ? { runtime: 'v4', ...(typeof planner === 'boolean' ? { path: planner ? 'c' : 'a' } : {}), places: v4.places, at: v4.at } : {}),
@@ -200,8 +202,9 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
 function worldUse(s, content, act, dice, emit) {
     const sheet = s.entities.pc.sheet;
     const skill = content.skills.get(act.skill);
-    if (!skill || !sheet.skills?.[skill.id]) return { kind: 'note', text: `Alaric does not know ${skill?.name || act.skill}. Nothing was spent or rolled.`, notice: `Alaric does not know ${skill?.name || act.skill} (nothing spent, nothing rolled)` };
-    const prof = content.rules.proficiency.levels[String(sheet.skills[skill.id].prof || 1)] || { cost: 1 };
+    const known = actionsOf(sheet, content, rulesetOf(s))[skill?.id]; // Patch 9A: a weapon attack too
+    if (!skill || !known) return { kind: 'note', text: `Alaric does not know ${skill?.name || act.skill}. Nothing was spent or rolled.`, notice: `Alaric does not know ${skill?.name || act.skill} (nothing spent, nothing rolled)` };
+    const prof = content.rules.proficiency.levels[String(known.prof || 1)] || { cost: 1 };
     const amount = skill.cost ? roundHalfUp(skill.cost.amount * (prof.cost ?? 1)) : 0;
     const res = skill.cost?.resource;
     if (amount && Number(sheet[res] || 0) < amount) return { kind: 'note', text: `Alaric lacks ${res.toUpperCase()} for ${skill.name} (${sheet[res] || 0} < ${amount}). Nothing was spent or rolled.`, notice: `${skill.name}: not enough ${res.toUpperCase()} (${sheet[res] || 0} < ${amount}; nothing spent, nothing rolled)` };
@@ -338,6 +341,11 @@ export function materialise(s, content, dice, emit, id) {
         return;
     }
     const words = [...(e.descriptors || []), e.traits || ''].join(' ');
+    // Patch 9A: a campaign of ruleset 2 builds its people by its own templates; a legacy campaign exactly as before
+    if (rulesetOf(s) >= 2) {
+        emit({ t: 'entity.sheet_set', d: { id, sheet: rulesetTwoPerson(s, content, e, words) } });
+        return;
+    }
     let tpl = content.templates.get(e.template) || templateFor(content, words) || content.templates.get('commoner');
     const overrides = {};
     if (e.level) overrides.level = e.level;
@@ -358,6 +366,46 @@ export function materialise(s, content, dice, emit, id) {
     // kit containers (quiver) fill the inventory: an NPC archer carries real, finite arrows like Alaric
     if (tpl.gear_from_starter_kit) for (const i of content.kits[overrides.class].map((x) => content.items.get(x))) for (const [item, qty] of Object.entries(i?.contains || {})) sheet.inventory[item] = (sheet.inventory[item] || 0) + qty;
     emit({ t: 'entity.sheet_set', d: { id, sheet } });
+}
+
+/**
+ * Patch 9A (ruleset 2): a person's combat sheet when it is first needed, fixed then in entity.sheet_set (a later meeting
+ * reads it, never builds another). The template by the same id as ever (npc_templates.json ruleset_2); its Level by the
+ * engine (an established one, else the template's), never a number of the story. An adventurer's class: one
+ * established (e.class), else a class word of theirs, else the style of the weapon they are shown with (a bow: rogue or
+ * warrior), else by the campaign seed; the class's starter kit, a bow and quiver for an archer. Weapons decide no class.
+ */
+function rulesetTwoPerson(s, content, e, words) {
+    const id = templateFor(content, words)?.id;
+    const tpl = npcTemplate(content, 2, e.template) || npcTemplate(content, 2, id) || npcTemplate(content, 2, 'commoner');
+    const key = `${s.rng.seed}|${e.id}`;
+    const overrides = { key };
+    if (e.level) overrides.level = e.level;
+    if (content.classes.get(e.class) && rulesetDef(content, 2).classes.includes(e.class)) Object.assign(overrides, { class: e.class, established: true });
+    let bow = false;
+    if (tpl.gear_from_starter_kit) {
+        const t = normText(words);
+        const has = (w) => new RegExp(`(^|[^a-z])${normText(w)}($|[^a-z])`).test(t);
+        bow = (tpl.bow_words || []).some(has);
+        if (!overrides.class) {
+            const byWord = Object.entries(tpl.class_words || {}).find(([, ws]) => ws.some(has))?.[0];
+            const style = tpl.style_classes?.[bow ? 'bow' : weaponFamily(content, words)] || rulesetDef(content, 2).classes;
+            overrides.class = byWord || style[parseInt(hash32(`${key}|class`), 16) % style.length];
+        }
+        const kit = content.kits[overrides.class].map((i) => content.items.get(i));
+        const w = bow ? content.items.get('starter_shortbow') : kit.find((i) => i.slot === 'weapon');
+        const a = kit.find((i) => i.slot === 'armor');
+        overrides.weapon = { name: w.name, family: w.family, atk: w.atk || 0, matk: w.matk || 0 };
+        overrides.armor = a ? { name: a.name, def: a.def || 0, mdef: a.mdef || 0 } : null;
+    }
+    const sheet = humanSheet(tpl, overrides, content);
+    sheet.generated.temperament = tpl.temperament;
+    // kit containers (quiver) fill the inventory: an NPC archer carries real, finite arrows like Alaric
+    if (tpl.gear_from_starter_kit) {
+        const carried = [...content.kits[overrides.class], ...(bow ? ['starter_quiver'] : [])].map((x) => content.items.get(x));
+        for (const i of carried) for (const [item, qty] of Object.entries(i?.contains || {})) sheet.inventory[item] = (sheet.inventory[item] || 0) + qty;
+    }
+    return sheet;
 }
 
 /**

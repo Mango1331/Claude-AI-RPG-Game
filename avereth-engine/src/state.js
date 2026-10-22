@@ -83,7 +83,8 @@ export function applyEvent(state, e) {
         case 'campaign.started': {
             // runtime: 'v4' for a campaign started under Runtime V4 (its story turns go through the interpreter and the
             // extractor); a campaign without it is a V3 campaign and stays one
-            state.meta = { started: true, campaign: d.campaign, content_version: d.content_version, runtime: d.runtime || 'v3' };
+            // Patch 9A: ruleset, the rules it plays by (src/content.js rulesetOf); a campaign started before has none: 1
+            state.meta = { started: true, campaign: d.campaign, content_version: d.content_version, runtime: d.runtime || 'v3', ruleset: d.ruleset || 1 };
             state.rng = { seed: d.seed >>> 0, n: 0 };
             state.clock.minute = d.minute;
             state.mode = 'creation';

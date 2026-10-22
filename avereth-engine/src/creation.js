@@ -1,6 +1,7 @@
 // Character creation (System #12, Content #0/#11): deterministic two-step flow. The LLM only renders the result.
 import { deriveCharacter } from './derived.js';
 import { clone } from './util.js';
+import { rulesetOf, startClasses } from './content.js';
 
 export function selectClass(state, content, classId) {
     if (state.mode !== 'creation' || state.creation.step !== 1) {
@@ -8,6 +9,10 @@ export function selectClass(state, content, classId) {
     }
     const cls = content.classes.get(classId);
     if (!cls) return { events: [], errors: [`Unknown Base Class "${classId}".`] };
+    // Patch 9A: only a starting class of this campaign's ruleset (a new campaign: Warrior, Mage, Rogue); the classes
+    // of the legacy rules stay for the campaigns that started with them
+    const offered = startClasses(content, rulesetOf(state));
+    if (!offered.includes(cls)) return { events: [], errors: [`${cls.name} is not a starting Base Class of this campaign (choose ${offered.map((c) => c.name).join(', ')}).`] };
     const events = [{ t: 'creation.class_selected', d: { class: cls.id, favored: cls.favored, basic_attack: cls.basic_attack } }];
     return { events, outcome: { kind: 'creation.step2', class: cls.id } };
 }

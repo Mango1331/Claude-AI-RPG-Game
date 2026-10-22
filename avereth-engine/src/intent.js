@@ -5,6 +5,8 @@
 // routing WorldInfo entries.
 import { bandIndex, normText } from './util.js';
 import { sceneHandle } from './v4/scene_handles.js';
+import { rulesetOf, startClasses } from './content.js';
+import { actionsOf, weaponAttackNamed } from './derived.js';
 
 const ATTACK_VERBS = String.raw`attack(?:s|ed|ing)?|shoot(?:s|ing)?(?!\s+(?:(?:him|her|them|me|us|it)\s+)?(?:a|an)\s+(?:look|glance|glare|smile|grin|wink|question)\b)|stab(?:s|bed|bing)?|slash(?:es|ed|ing)?|(?:strike|strikes|struck|striking)(?!\s+(?:up|out|a\s+(?:deal|bargain|match|pose|chord|balance|light))\b)|hit(?:s|ting)?(?!\s+(?:it\s+off|the\s+(?:road|trail|hay|sack|books|bottle|town|streets|tavern|inn|market))\b)|punch(?:es|ed|ing)?(?!\s+in\b)|kick(?:s|ed|ing)?(?!\s+(?:off|back|in)\b)|smash(?:es|ed|ing)?|kill(?:s|ed|ing)?(?!\s+time\b)|bash(?:es|ed|ing)?|pierce(?:s|d)?|swing(?:s|ing)?(?!\s+by\b)|swung(?!\s+by\b)`;
 const DIRECTED = String.raw`(?:fire|fires|fired|firing|loose|looses|loosed|loosing|throw|throws|threw|thrown|throwing|cast|casts|casting|release|releases|released|releasing|hurl|hurls|hurled)\b(?!\s+(?:(?:a|an|my|his|her|the|one|another|quick|last|long|wary|sidelong)\s+){0,2}(?:glance|glances|look|looks|line|lines|net|nets|eye|eyes|shadow|shadows|vote|votes|doubt|light|dice|lots|anchor)\b)(?:\s+\w+){0,4}?\s+(?:at|on|into|against|toward|towards)\b`;
@@ -229,7 +231,11 @@ export function parseIntent(text, state, content, { masked = null } = {}) {
 
     if (state.mode === 'creation') {
         if (state.creation.step === 1) {
-            const cls = [...content.classes.values()].filter((c) => wordRe(c.name.toLowerCase()).test(t));
+            // Patch 9A: the starting classes of this campaign first; another class named alone is chosen so the engine
+            // can say it is no starting class here (src/creation.js)
+            const named = [...content.classes.values()].filter((c) => wordRe(c.name.toLowerCase()).test(t));
+            const offered = startClasses(content, rulesetOf(state));
+            const cls = named.some((c) => offered.includes(c)) ? named.filter((c) => offered.includes(c)) : named;
             if (cls.length === 1) return { kind: 'creation.class', class: cls[0].id };
             return { kind: 'creation.invalid', reason: cls.length ? 'choose exactly one Base Class' : 'no Base Class named' };
         }
@@ -241,7 +247,7 @@ export function parseIntent(text, state, content, { masked = null } = {}) {
     }
 
     const sheet = state.entities.pc?.sheet;
-    const known = sheet ? Object.keys(sheet.skills) : [];
+    const known = sheet ? Object.keys(actionsOf(sheet, content, rulesetOf(state))) : []; // Patch 9A: with his weapon's attack
     const v4 = state.meta?.runtime === 'v4';
     const decl = declarative(v4 ? deedsOf(masked ?? maskNames(raw, state)) : raw);
     const d = normText(decl);
@@ -268,7 +274,7 @@ export function parseIntent(text, state, content, { masked = null } = {}) {
 
     if (unknownSkill && !offensive && !nonOffensive) return { kind: 'unknown_skill', skill: unknownSkill.id, name: unknownSkill.name };
     if (offensive || attackWords) {
-        const skill = offensive || (sheet && sheet.class ? content.skills.get(content.classes.get(sheet.class).basic_attack) : null);
+        const skill = offensive || (sheet ? weaponAttackNamed(sheet, content, rulesetOf(state), d) : null) || (sheet && sheet.class ? content.skills.get(content.classes.get(sheet.class).basic_attack) : null);
         if (!skill) return { kind: 'narrative', flags: { attack_without_class: true } };
         const target = resolveTarget(raw, state, content, { hostileOnly: !!state.encounter });
         if (target.ambiguous) return { kind: 'ambiguous_target', skill: skill.id, candidates: target.ambiguous };

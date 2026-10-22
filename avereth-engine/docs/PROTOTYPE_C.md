@@ -1955,3 +1955,14 @@ Automatisierter Living-Dungeon-Livetest 22.10.2026 09:00 (`tests/v4/live_1022e.j
 - **Live-Runner** (eigener Commit): Die Wächter-Etappe behält ihre ID (das Monster als `entityId`); „nicht durchgeführt“ nennt nur, was gebucht ist (keine Gruppe mit zwei als `unaware` gebuchten Mitgliedern). Tests: `tests/live_runner/patch843_runner.test.js` (2).
 - **Nachweise ohne neue Expedition:** Awareness (`patch84.test.js`, Wiedergabe des `.28`-Falls), bezahltes Gate (`patch8`, `patch81`, neu: erneutes Betreten), Reset (`patch8 (reset)`, `patch8 (1)`, `8.3 cull 4`).
 
+### Patch 9A (4.3.0-c.6.6.33): Drei Startklassen und NPC-Grundlagen
+
+Erster Teil von Patch 9 (Organic Character Growth). Vollständige Beschreibung: `docs/PATCH9A_STARTING_CLASSES.md`.
+
+- **Regelstand pro Kampagne.** Neue Kampagnen spielen nach Regelstand 2, aufgezeichnete und laufende behalten Regelstand 1 (fünf Klassen, alte NPC-Vorlagen, alte Texte).
+- **Startklassen.** Warrior, Mage, Rogue; weiter zwei aus sechs Starter-Skills, Basic Attack automatisch, keine Starter-Passives. Mage mit Flame Lance + Blink bleibt möglich; Blink unverändert.
+- **Waffen.** Jede Klasse kann einen Bogen nutzen (Bow Shot, Pfeile werden verbraucht); kein gelernter Skill, keine Klassenänderung.
+- **NPCs.** Ausgebildete Kämpfer: Basic Attack + zwei Starter-Skills nach Rolle, festgehalten; Zivilisten untrainiert, auch mit Lore-Klasse.
+- **Anzeige.** `#class` ohne feste Evolutions-Level; Combat-HUD mit Attack, Defense, Utility und Kosten.
+- **Tests:** `tests/v4/patch9a.test.js` (16); `npm test` 1090/1090.
+

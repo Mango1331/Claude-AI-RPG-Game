@@ -17,7 +17,8 @@ import { spendsStatPoints, assignHint } from '../commands.js';
 import { mentionedSkills } from '../intent.js';
 import { activeHostiles } from '../combat.js';
 import { sceneHandle, tacticalHere, areaCaught, approachedBy, burstAim } from './scene_handles.js';
-import { itemEffectOf } from '../content.js';
+import { itemEffectOf, rulesetOf } from '../content.js';
+import { actionsOf, weaponAttackOf, weaponAttackNamed } from '../derived.js';
 import { restoreOf } from './items.js';
 import { settlementOf, placeName } from './domain.js';
 import { dungeonOf, roomKnown } from './dungeon.js';
@@ -241,7 +242,8 @@ const isFight = (state) => !!state.encounter || (state.pending_combat || []).len
 export function planContext(state, content, catalog) {
     const fight = isFight(state);
     const sheet = state.entities.pc?.sheet || {};
-    const known = Object.keys(sheet.skills || {}).filter((id) => content.skills.has(id));
+    // Patch 9A: his learned Skills and the plain attack of the weapon he holds (src/derived.js actionsOf)
+    const known = Object.keys(actionsOf(sheet, content, rulesetOf(state)));
     const skills = known.map((id) => ({ id, name: content.skills.get(id).name, text: skillText(content.skills.get(id)) }));
     let opponents = [];
     const enc = state.encounter;
@@ -267,6 +269,7 @@ export function planContext(state, content, catalog) {
         }
     }
     const basic = content.classes.get(sheet.class)?.basic_attack || null;
+    const weapon = sheet.class ? weaponAttackOf(sheet, content, rulesetOf(state))?.skill.id || null : null;
     const route = [];
     for (const id of (state.scene?.history || []).slice(-12)) {
         const resolved = settlementOf(state, id) || id;
@@ -274,7 +277,7 @@ export function planContext(state, content, catalog) {
         if (!p || route.at(-1)?.id === resolved) continue;
         route.push({ id: resolved, name: p.name, kind: p.kind });
     }
-    return { fight, skills, known, basic, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null };
+    return { fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null };
 }
 
 /** The user message: the interpreter's CATALOG, then skills, opponents, engine facts, RECENT and the message. */
@@ -473,7 +476,7 @@ export function skillHint(message, cmd, others, ctx, content) {
     const words = text.split(/[^a-z']+/).filter(Boolean);
     const joined = words.join('');
     for (const s of ctx.skills) {
-        if (s.id === ctx.basic) continue;
+        if (s.id === ctx.basic || s.id === ctx.weapon) continue;
         const name = s.name.toLowerCase();
         if (name.replace(/[^a-z]/g, '').length >= 8 && joined.includes(name.replace(/[^a-z]/g, ''))) return `names ${s.name}`;
         for (const d of name.split(/[^a-z]+/).filter((w) => w.length >= 4 && !GENERIC.has(w))) {
@@ -641,6 +644,8 @@ export function mapPlan(commands, ctx, content, message, state) {
     if (main.item && content.skills.get(skill)?.restore) return base({ kind: 'item', item: main.item, ...(move ? { move: move.dir, move_target: move.target || null } : {}) });
     if (typeof skill === 'string' && !ctx.known.includes(skill) && !main.item) return base({ kind: 'unknown_skill', skill, name: skillName(skill) });
     const basicNamed = typeof skill === 'string' && skill === ctx.basic && /\bbasic\s+attack\b/.test(flat(message));
+    // Patch 9A: an attack that names no skill but the weapon he holds is that weapon's plain attack (Bow Shot)
+    if (skill === null && ctx.weapon && state && weaponAttackNamed(state.entities.pc.sheet, content, rulesetOf(state), scopeOf(message, main.quote, others) || message)) skill = ctx.weapon;
     if (skill === null || (skill === ctx.basic && !basicNamed)) {
         const hint = skillHint(message, main, others, ctx, content);
         if (hint) {

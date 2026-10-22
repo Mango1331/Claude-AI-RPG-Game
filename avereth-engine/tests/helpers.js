@@ -21,13 +21,16 @@ let product = null;
 const contentFile = async (name) => JSON.parse(await readFile(path.join(ROOT, 'content', name), 'utf8'));
 /**
  * The content the tests play with: the product content plus the realms and cities of the world before Lorebook v0.14
- * (tests/legacy_world.json), where the recorded runs these tests replay were played. Test data only.
+ * (tests/legacy_world.json), where the recorded runs these tests replay were played. Test data only. Patch 9A: a campaign
+ * these tests start plays by the legacy rules (ruleset 1: the five classes, the legacy NPC templates) the runs they
+ * replay were played by; the product content (loadProductContent) and tests that pass ruleset 2 start new campaigns.
  */
 export async function loadContent() {
     if (!cached) {
         const legacy = await readJson('tests/legacy_world.json');
         cached = await loadContentPack(async (name) => {
             const json = await contentFile(name);
+            if (name === 'campaign_start.json') return { ...json, ruleset: 1 };
             return name === 'lore.json' ? { ...json, locations: [...json.locations, ...legacy.locations], factions: [...json.factions, ...legacy.factions] } : json;
         });
     }
@@ -48,9 +51,9 @@ export const FIRST_MESSAGE = 'SYSTEM INITIALIZATION COMPLETE\n`Location: Public 
 
 /** Plays a campaign turn by turn; every step is checked against the state invariants. */
 export class Game {
-    constructor(content, { seed = 7, firstMessage = FIRST_MESSAGE } = {}) {
+    constructor(content, { seed = 7, firstMessage = FIRST_MESSAGE, ruleset } = {}) {
         this.content = content;
-        this.log = startCampaign(content, { seed, firstMessage });
+        this.log = startCampaign(content, { seed, firstMessage, ...(ruleset ? { ruleset } : {}) });
         this.state = fold(this.log);
         this.lastInput = '';
         this.lastReply = '';

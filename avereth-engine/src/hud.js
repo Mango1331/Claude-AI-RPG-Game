@@ -5,13 +5,14 @@
 // A view, never a second state: renderHud(state) is a pure function of the fold. It is shown through SillyTavern's
 // extra.display_text (like the System block above the reply) and never enters a prompt, which quotes the plain
 // message text. It shows only what the player may know: no NPC attitudes, agendas, secrets or hidden numbers.
-import { deriveCharacter } from './derived.js';
+import { deriveCharacter, weaponAttackOf } from './derived.js';
+import { rulesetOf } from './content.js';
 import { currentThreads, threadHere, LOCAL_KINDS } from './threads.js';
 import { goalLines } from './v4/intents.js';
 import { formatCoin } from './economy.js';
 import { playerLabel, statusOf, truth, currentFacts, propText } from './knowledge.js';
 import { targetLabel } from './combat.js';
-import { bandIndex, formatClock, itemLabel, normText } from './util.js';
+import { bandIndex, formatClock, itemLabel, normText, roundHalfUp } from './util.js';
 import { sceneHandle } from './v4/scene_handles.js';
 import { dungeonOf, trueDungeonOf, dungeonText, exitsFrom, exitText } from './v4/dungeon.js';
 import { hudRows as livingRows } from './v4/living.js';
@@ -55,6 +56,8 @@ export function characterRows(state, content) {
     const cls = s.class ? content.classes.get(s.class)?.name || s.class : 'no Class yet';
     const per = content.rules.progression.xp_to_next_per_level;
     const skills = Object.entries(s.skills).map(([id, v]) => `${content.skills.get(id)?.name || id} P${v.prof}`);
+    const weapon = weaponAttackOf(s, content, rulesetOf(state)); // Patch 9A: his weapon's own attack, no learned Skill
+    if (weapon) skills.push(`${weapon.skill.name} (weapon)`);
     const equip = Object.values(s.equipment || {}).map((r) => (typeof r === 'string' ? content.items.get(r)?.name || r : r.name));
     const inv = Object.entries(s.inventory || {}).map(([k, q]) => `${itemLabel(state, content, k)}${q > 1 ? ` ×${q}` : ''}`);
     const quests = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered')
@@ -144,6 +147,36 @@ function panel(title, summary, rows, open) {
     return `<details class="avereth-hud"${open ? ' open' : ''}><summary>${esc(title)} — ${esc(summary)}</summary><div class="avereth-hud-body">${body}</div></details>`;
 }
 
+/** Patch 9A: a skill's kind in the combat HUD: it attacks; else a defense ("Defensive", also "Defensive / Utility"); else a utility. */
+function skillKind(skill) {
+    if (skill.attack) return 'attack';
+    return /Defensive/.test(skill.category || '') ? 'defense' : 'utility';
+}
+
+/** What an action costs him now (its Proficiency's cost factor), or null. */
+function skillCostOf(skill, known, content) {
+    if (!skill.cost || !skill.cost.amount) return null;
+    const mult = content.rules.proficiency.levels[String(known?.prof || 1)]?.cost ?? 1;
+    return { resource: skill.cost.resource, amount: roundHalfUp(skill.cost.amount * mult) };
+}
+
+/** A few words of what a defense or utility does (from its effects; the full text is #skill). */
+function effectShort(skill) {
+    const until = (e) => (/next_turn/.test(e.until || '') ? ' till his next turn' : '');
+    const words = (skill.effects || []).map((e) => {
+        switch (e.kind) {
+            case 'temp_def': return `+DEF${until(e)}`;
+            case 'temp_mdef': return `+MDEF${until(e)}`;
+            case 'barrier': return `barrier${until(e)}`;
+            case 'incoming_damage_reduction': case 'damage_reduction_next': return `−${e.pct}% damage taken${until(e)}`;
+            case 'reposition': return `move ${e.bands || 1} band`;
+            case 'next_attack_buff': return `next attack +${e.power_pct}%`;
+            default: return null;
+        }
+    }).filter(Boolean);
+    return words.join(', ') || null;
+}
+
 function combatHud(state, content) {
     const enc = state.encounter;
     if (!enc) return '';
@@ -169,8 +202,20 @@ function combatHud(state, content) {
     const visibleRows = visible.map((x) => `<div class="avereth-combat-row avereth-combat-visible-row"><span class="avereth-combat-name">${esc(sceneHandle(state, content, x.id))}</span><span class="avereth-combat-hp">—</span><span class="avereth-combat-range">${range(x.band)}</span><span class="avereth-combat-cover">${esc(x.cover && x.cover !== 'none' ? x.cover : '—')}</span></div>`).join('');
     const order = enc.order.filter((id) => enc.combatants[id] && !enc.combatants[id].current.defeated && !enc.combatants[id].current.escaped && !enc.combatants[id].current.surrendered)
         .map((id) => id === enc.current ? `<strong>${esc(name(id))}</strong>` : esc(name(id))).join(' <span class="avereth-turn-arrow">›</span> ');
-    const attacks = Object.keys(pc.fixed.actions || {}).map((sid) => content.skills.get(sid)).filter((s) => s?.attack)
-        .map((s) => `${esc(s.name)} <span class="avereth-skill-range">${range(s.range?.band)}${(s.effects || []).some((e) => e.kind === 'area') ? ' AoE' : ''}</span>`).join(' · ');
+    // Patch 9A: every action he has in this fight (his Skills and his weapon's attack), by kind: attacks with reach and
+    // cost, defenses and utilities with cost and a short effect; one he cannot pay now stays listed, marked
+    const known = Object.entries(pc.fixed.actions || {}).map(([sid, v]) => [content.skills.get(sid), v]).filter(([s]) => s);
+    const skillRow = (kind) => known.filter(([s]) => skillKind(s) === kind).map(([s, v]) => {
+        const cost = skillCostOf(s, v, content);
+        const short = cost && Number(pc.current[cost.resource] ?? 0) < cost.amount ? cost.resource.toUpperCase()
+            : s.ammo && pc.fixed.weapon_family === 'bow' && (pc.current.ammo?.[s.ammo.item] || 0) < s.ammo.qty ? 'arrows' : null;
+        const bits = [cost ? `${cost.amount} ${cost.resource.toUpperCase()}` : null, s.ammo && pc.fixed.weapon_family === 'bow' ? `${s.ammo.qty} arrow` : null, kind === 'attack' ? null : effectShort(s)].filter(Boolean).join(', ');
+        const reach = kind === 'attack' ? ` <span class="avereth-skill-range">${range(s.range?.band)}${(s.effects || []).some((e) => e.kind === 'area') ? ' AoE' : ''}</span>` : '';
+        return `<span class="avereth-skill${short ? ' avereth-skill-unusable' : ''}">${esc(s.name)}${reach}${bits ? ` <span class="avereth-skill-cost">(${esc(bits)})</span>` : ''}${short ? ` <span class="avereth-skill-short">not enough ${esc(short)}</span>` : ''}</span>`;
+    }).join(' · ');
+    const attacks = skillRow('attack');
+    const defenses = skillRow('defense');
+    const utilities = skillRow('utility');
     const current = enc.current === 'pc' ? "Alaric's turn" : `${name(enc.current)} to act`;
     const arrows = Object.values(pc.current.ammo || {}).reduce((a, n) => a + n, 0);
     const arrowText = arrows || state.entities.pc?.sheet?.equipment?.quiver ? ` · Arrows ${arrows}` : '';
@@ -178,8 +223,8 @@ function combatHud(state, content) {
 <div class="avereth-combat-resources"><strong>Alaric</strong> · HP ${pc.current.hp}/${pc.fixed.max_hp} · MP ${pc.current.mp}/${pc.fixed.max_mp} · STA ${pc.current.sta}/${pc.fixed.max_sta}${arrowText}</div>
 <div class="avereth-combat-table"><div class="avereth-combat-row avereth-combat-head"><span>Target</span><span>HP</span><span>Range</span><span>Cover</span></div>${rows || '<div class="avereth-combat-empty">No active enemies</div>'}${otherRows ? `<div class="avereth-combat-subhead">Other combatants · not hostile</div>${otherRows}` : ''}${visibleRows ? `<div class="avereth-combat-subhead">Visible · not in the fight yet</div>${visibleRows}` : ''}</div>
 <div class="avereth-combat-meta"><strong>Turn order</strong> · ${order}</div>
-<div class="avereth-combat-meta"><strong>Attack reach</strong> · ${attacks || '—'}</div>
-</div></details>`;
+<div class="avereth-combat-meta"><strong>Attack</strong> · ${attacks || '—'}</div>
+${defenses ? `<div class="avereth-combat-meta"><strong>Defense</strong> · ${defenses}</div>\n` : ''}${utilities ? `<div class="avereth-combat-meta"><strong>Utility</strong> · ${utilities}</div>\n` : ''}</div></details>`;
 }
 
 /**

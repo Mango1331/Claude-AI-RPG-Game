@@ -127,3 +127,6 @@
   .mes_text [class*="avereth-combat-range"]::before { content: "Range "; display: block; font-size: 0.86em; opacity: 0.8; }
   .mes_text [class*="avereth-combat-cover"]::before { content: "Cover "; display: block; font-size: 0.86em; opacity: 0.8; }
 }
+.mes_text [class*="avereth-skill-unusable"] { opacity: 0.55; }
+.mes_text [class*="avereth-skill-cost"] { opacity: 0.8; white-space: nowrap; }
+.mes_text [class*="avereth-skill-short"] { font-style: italic; white-space: nowrap; }

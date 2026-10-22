@@ -5,13 +5,13 @@
 // FIXED+CURRENT snapshot that Testrun-v1 lost), so the next turn copies it instead of re-guessing.
 import { opensViolence } from './policy.js';
 import { actorTraits } from './v4/envelope.js';
-import { deriveCharacter, rawPower, rawPowerText } from './derived.js';
+import { deriveCharacter, rawPower, rawPowerText, actionsOf } from './derived.js';
 import { defeatXp, awardXp, strengthOf } from './progression.js';
 import { scaleCreature } from './npcgen.js';
 import { lookOf } from './knowledge.js';
 import { bandIndex, bandName, clone, num, roundHalfUp } from './util.js';
 import { sceneHandle } from './v4/scene_handles.js';
-import { itemEffectOf } from './content.js';
+import { itemEffectOf, rulesetOf } from './content.js';
 import { rankRefusal, restoreOf, restoreEffect } from './v4/items.js';
 
 const PROF = (content, level) => content.rules.proficiency.levels[String(level || 1)];
@@ -27,7 +27,8 @@ export function characterCombatant(state, id, content, side) {
         fixed: {
             level: s.level, rank: dv.rank, class: s.class, stats: { ...s.stats }, max_hp: dv.maxHp, max_mp: dv.maxMp,
             max_sta: dv.maxSta, atk: dv.atk, matk: dv.matk, def: dv.def, mdef: dv.mdef, init: dv.init, type: 'normal',
-            actions: Object.fromEntries(Object.entries(s.skills).filter(([sid]) => content.skills.has(sid))),
+            // Patch 9A: his learned Skills and the plain attack of the weapon he holds (src/derived.js actionsOf)
+            actions: actionsOf(s, content, rulesetOf(state)),
             weapon_family: (Object.values(s.equipment || {}).map((r) => (typeof r === 'string' ? content.items.get(r) : r))
                 .find((it) => it && it.slot === 'weapon') || {}).family || null,
             temperament: e.card?.temperament || s.generated?.temperament || null,

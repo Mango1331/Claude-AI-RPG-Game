@@ -112,7 +112,10 @@
           "minLength": 1
         },
         "class": {
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "basic": {
           "type": "boolean"
@@ -282,6 +285,15 @@
         "source_text": {
           "type": "string",
           "minLength": 1
+        },
+        "weapon_attack": {
+          "type": "boolean"
+        },
+        "weapon_families": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },

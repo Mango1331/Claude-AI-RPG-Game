@@ -24,7 +24,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^(core|system|content)\\.[0-9]+$"
+            "pattern": "^(core|system|content)\\.[0-9]+(\\.r[0-9]+)?$"
           },
           "title": {
             "type": "string"
@@ -44,6 +44,16 @@
           },
           "source": {
             "type": "string"
+          },
+          "replaces": {
+            "type": "string",
+            "pattern": "^(core|system|content)\\.[0-9]+$",
+            "description": "Patch 9A: the entry this text stands in for in a campaign of its ruleset"
+          },
+          "ruleset": {
+            "type": "integer",
+            "minimum": 2,
+            "description": "Patch 9A: the ruleset (content/campaign_start.json rulesets) this text belongs to"
           }
         }
       }

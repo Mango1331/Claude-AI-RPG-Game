@@ -96,6 +96,25 @@
         "ranger.focus_aim"
       ],
       "source": "Content v1.13 #5"
+    },
+    {
+      "id": "rogue",
+      "name": "Rogue",
+      "favored": [
+        "AGI",
+        "PER"
+      ],
+      "growth_text": "Automatic Class Growth: apply once at initial Level-1 Class selection, then on each later Level gained: AGI +1 and PER +1.",
+      "basic_attack": "rogue.basic_attack",
+      "skill_pool": [
+        "rogue.razor_cut",
+        "rogue.piercing_thrust",
+        "rogue.long_lunge",
+        "rogue.evasive_step",
+        "rogue.feint",
+        "rogue.guarded_cut"
+      ],
+      "source": "Patch 9A (Rogue starter pool; F-rank C1 calibration of content.6)"
     }
   ],
   "skills": [
@@ -137,7 +156,13 @@
       "strikes": 1,
       "effects": [],
       "effect_text": "none.",
-      "source_text": "Basic Attack\nRank: F\nComplexity: 1\nTags: Martial\nType: Physical / Melee\nBase Power: 4\nScaling: STR × 1.25\nUses: ATK\nCost: 5 STA\nRange: ENGAGED\nEffect: none.\nGranted automatically at P1/PP0 when Warrior is selected. It is tracked as a Skill and gains normal Proficiency. It does not count toward the exactly 2 Base Skills chosen during Character Creation."
+      "source_text": "Basic Attack\nRank: F\nComplexity: 1\nTags: Martial\nType: Physical / Melee\nBase Power: 4\nScaling: STR × 1.25\nUses: ATK\nCost: 5 STA\nRange: ENGAGED\nEffect: none.\nGranted automatically at P1/PP0 when Warrior is selected. It is tracked as a Skill and gains normal Proficiency. It does not count toward the exactly 2 Base Skills chosen during Character Creation.",
+      "weapon_families": [
+        "melee",
+        "heavy_melee",
+        "precision",
+        "unarmed"
+      ]
     },
     {
       "id": "warrior.heavy_slash",
@@ -402,7 +427,11 @@
       "strikes": 1,
       "effects": [],
       "effect_text": "none. This is a minimal class cantrip/arcane discharge.",
-      "source_text": "Basic Attack\nRank: F\nComplexity: 1\nTags: Arcane\nType: Magical / Ranged / Projectile\nBase Power: 4\nScaling: INT × 1.25\nUses: MATK\nCost: 0 MP\nRange: MEDIUM\nEffect: none. This is a minimal class cantrip/arcane discharge.\nGranted automatically at P1/PP0 when Mage is selected. It is tracked as a Skill and gains normal Proficiency. It does not count toward the exactly 2 Base Skills chosen during Character Creation."
+      "source_text": "Basic Attack\nRank: F\nComplexity: 1\nTags: Arcane\nType: Magical / Ranged / Projectile\nBase Power: 4\nScaling: INT × 1.25\nUses: MATK\nCost: 0 MP\nRange: MEDIUM\nEffect: none. This is a minimal class cantrip/arcane discharge.\nGranted automatically at P1/PP0 when Mage is selected. It is tracked as a Skill and gains normal Proficiency. It does not count toward the exactly 2 Base Skills chosen during Character Creation.",
+      "weapon_families": [
+        "focus",
+        "unarmed"
+      ]
     },
     {
       "id": "mage.arcane_bolt",
@@ -1468,8 +1497,415 @@
       ],
       "effect_text": "the Ranger's next ranged attack made before the end of the next turn gains +35% Modified Power. The effect is consumed by that attack.",
       "source_text": "Focus Aim [Utility]\nCost: 5 STA\nEffect: the Ranger's next ranged attack made before the end of the next turn gains +35% Modified Power. The effect is consumed by that attack."
+    },
+    {
+      "id": "rogue.basic_attack",
+      "name": "Basic Attack",
+      "class": "rogue",
+      "basic": true,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": 1,
+      "tags": [
+        "Precision",
+        "Martial"
+      ],
+      "type_text": "Physical / Melee",
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 4,
+        "scaling": [
+          {
+            "stat": "AGI",
+            "coef": 1.25,
+            "text": "1.25"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1,
+        "damage_type": "physical"
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none.",
+      "source_text": "Basic Attack\nRank: F\nComplexity: 1\nTags: Precision, Martial\nType: Physical / Melee\nBase Power: 4\nScaling: AGI × 1.25\nUses: ATK\nCost: 5 STA\nRange: ENGAGED\nEffect: none.\nGranted automatically at P1/PP0 when Rogue is selected. It is tracked as a Skill and gains normal Proficiency. It does not count toward the exactly 2 Base Skills chosen during Character Creation.",
+      "weapon_families": [
+        "precision",
+        "melee",
+        "unarmed"
+      ]
+    },
+    {
+      "id": "rogue.razor_cut",
+      "name": "Razor Cut",
+      "class": "rogue",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Physical / Melee",
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 6,
+        "scaling": [
+          {
+            "stat": "AGI",
+            "coef": 1.5,
+            "text": "1.50"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1,
+        "damage_type": "physical"
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none. A quick, reliable cut for little Stamina.",
+      "source_text": "Razor Cut [Offensive]\nType: Physical / Melee\nBase Power: 6\nScaling: AGI × 1.50\nUses: ATK\nCost: 5 STA\nRange: ENGAGED\nEffect: none. A quick, reliable cut for little Stamina."
+    },
+    {
+      "id": "rogue.piercing_thrust",
+      "name": "Piercing Thrust",
+      "class": "rogue",
+      "basic": false,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Physical / Melee",
+      "cost": {
+        "resource": "sta",
+        "amount": 9
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 11,
+        "scaling": [
+          {
+            "stat": "AGI",
+            "coef": 1.75,
+            "text": "1.75"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1,
+        "damage_type": "physical",
+        "ignores_partial_cover": true
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "ignores Partial Cover.",
+      "source_text": "Piercing Thrust [Offensive]\nType: Physical / Melee\nBase Power: 11\nScaling: AGI × 1.75\nUses: ATK\nCost: 9 STA\nRange: ENGAGED\nEffect: ignores Partial Cover."
+    },
+    {
+      "id": "rogue.long_lunge",
+      "name": "Long Lunge",
+      "class": "rogue",
+      "basic": false,
+      "category": "Offensive / Utility",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Physical / Melee",
+      "cost": {
+        "resource": "sta",
+        "amount": 8
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": true,
+        "area": null
+      },
+      "attack": {
+        "base": 8,
+        "scaling": [
+          {
+            "stat": "AGI",
+            "coef": 1.5,
+            "text": "1.50"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1,
+        "damage_type": "physical"
+      },
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "extra_band"
+        }
+      ],
+      "effect_text": "as part of this Skill, close 1 additional Range Band before the attack. This explicit extra shift may combine with the normal one-band Turn movement. The target must be ENGAGED when the attack resolves.",
+      "source_text": "Long Lunge [Offensive / Utility]\nType: Physical / Melee\nBase Power: 8\nScaling: AGI × 1.50\nUses: ATK\nCost: 8 STA\nRange: ENGAGED after movement\nEffect: as part of this Skill, close 1 additional Range Band before the attack. This explicit extra shift may combine with the normal one-band Turn movement. The target must be ENGAGED when the attack resolves."
+    },
+    {
+      "id": "rogue.evasive_step",
+      "name": "Evasive Step",
+      "class": "rogue",
+      "basic": false,
+      "category": "Defensive / Utility",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Movement",
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": null,
+      "range": null,
+      "attack": null,
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "reposition",
+          "bands": 1,
+          "extra": true
+        },
+        {
+          "kind": "incoming_damage_reduction",
+          "until": "own_next_turn",
+          "pct": 25
+        }
+      ],
+      "effect_text": "may reposition by 1 Range Band in a plausible chosen direction and, until the start of the Rogue's next turn, incoming damage is reduced by 25%.",
+      "source_text": "Evasive Step [Defensive / Utility]\nType: Movement\nCost: 5 STA\nEffect: may reposition by 1 Range Band in a plausible chosen direction and, until the start of the Rogue's next turn, incoming damage is reduced by 25%."
+    },
+    {
+      "id": "rogue.feint",
+      "name": "Feint",
+      "class": "rogue",
+      "basic": false,
+      "category": "Utility",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Tactical",
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": null,
+      "range": null,
+      "attack": null,
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "next_attack_buff",
+          "power_pct": 35,
+          "scope": "attack",
+          "expires": "end_of_next_turn"
+        }
+      ],
+      "effect_text": "the Rogue's next attack made before the end of the next turn gains +35% Modified Power. The effect is consumed by that attack.",
+      "source_text": "Feint [Utility]\nType: Tactical\nCost: 5 STA\nEffect: the Rogue's next attack made before the end of the next turn gains +35% Modified Power. The effect is consumed by that attack."
+    },
+    {
+      "id": "rogue.guarded_cut",
+      "name": "Guarded Cut",
+      "class": "rogue",
+      "basic": false,
+      "category": "Offensive / Defensive",
+      "rank": "F",
+      "complexity": null,
+      "tags": [],
+      "type_text": "Physical / Melee",
+      "cost": {
+        "resource": "sta",
+        "amount": 8
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 6,
+        "scaling": [
+          {
+            "stat": "AGI",
+            "coef": 1.375,
+            "text": "1.375"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1,
+        "damage_type": "physical"
+      },
+      "strikes": 1,
+      "effects": [
+        {
+          "kind": "post_attack_temp_def",
+          "flat": 4,
+          "until": "own_next_turn"
+        }
+      ],
+      "effect_text": "after resolving the attack, gain +4 temporary DEF until the start of the Rogue's next turn.",
+      "source_text": "Guarded Cut [Offensive / Defensive]\nType: Physical / Melee\nBase Power: 6\nScaling: AGI × 1.375\nUses: ATK\nCost: 8 STA\nRange: ENGAGED\nEffect: after resolving the attack, gain +4 temporary DEF until the start of the Rogue's next turn."
+    },
+    {
+      "id": "weapon.bow_shot",
+      "name": "Bow Shot",
+      "class": null,
+      "basic": true,
+      "weapon_attack": true,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": 1,
+      "tags": [
+        "Precision"
+      ],
+      "type_text": "Physical / Ranged / Projectile (weapon attack)",
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": {
+        "item": "standard_arrow",
+        "qty": 1,
+        "condition": "bow"
+      },
+      "range": {
+        "band": "MEDIUM",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 4,
+        "scaling": [
+          {
+            "stat": "AGI",
+            "coef": 1.25,
+            "text": "1.25"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1,
+        "damage_type": "physical"
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none. The plain shot of an equipped bow: any class can loose it while it holds a bow and carries arrows; it is no learned Skill and teaches no bow technique.",
+      "source_text": "Bow Shot (weapon attack, Patch 9A)\nRank: F\nComplexity: 1\nTags: Precision\nType: Physical / Ranged / Projectile\nBase Power: 4\nScaling: AGI × 1.25\nUses: ATK\nCost: 5 STA\nAmmo: 1 arrow\nRange: MEDIUM\nEffect: none.\nAvailable to any class while a bow is equipped (the bow family's basic attack). It is not a learned Skill: it does not count toward the starter Skills, comes and goes with the bow and grants no former Ranger technique."
+    },
+    {
+      "id": "weapon.strike",
+      "name": "Weapon Strike",
+      "class": null,
+      "basic": true,
+      "weapon_attack": true,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": 1,
+      "tags": [
+        "Martial"
+      ],
+      "type_text": "Physical / Melee (weapon attack)",
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 4,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 1.25,
+            "text": "1.25"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1,
+        "damage_type": "physical"
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none. The plain blow of an equipped melee weapon for one whose class Basic Attack does not use it (a Mage with a sword); it is no learned Skill.",
+      "source_text": "Weapon Strike (weapon attack, Patch 9A)\nRank: F\nComplexity: 1\nTags: Martial\nType: Physical / Melee\nBase Power: 4\nScaling: STR × 1.25\nUses: ATK\nCost: 5 STA\nRange: ENGAGED\nEffect: none.\nAvailable while a melee weapon is equipped whose family the class Basic Attack does not use. It is not a learned Skill: it does not count toward the starter Skills and comes and goes with the weapon."
+    },
+    {
+      "id": "weapon.unarmed_blow",
+      "name": "Bare-Handed Blow",
+      "class": null,
+      "basic": true,
+      "weapon_attack": true,
+      "category": "Offensive",
+      "rank": "F",
+      "complexity": 1,
+      "tags": [
+        "Martial"
+      ],
+      "type_text": "Physical / Melee (untrained)",
+      "cost": {
+        "resource": "sta",
+        "amount": 5
+      },
+      "ammo": null,
+      "range": {
+        "band": "ENGAGED",
+        "extra_band": false,
+        "area": null
+      },
+      "attack": {
+        "base": 3,
+        "scaling": [
+          {
+            "stat": "STR",
+            "coef": 1,
+            "text": "1.00"
+          }
+        ],
+        "uses": "ATK",
+        "share": 1,
+        "damage_type": "physical"
+      },
+      "strikes": 1,
+      "effects": [],
+      "effect_text": "none. The blow of a person without a weapon or any combat training (fists, an improvised tool); it is no learned Skill.",
+      "source_text": "Bare-Handed Blow (untrained attack, Patch 9A)\nRank: F\nComplexity: 1\nTags: Martial\nType: Physical / Melee\nBase Power: 3\nScaling: STR × 1.00\nUses: ATK\nCost: 5 STA\nRange: ENGAGED\nEffect: none.\nThe attack of someone who holds no weapon and knows no class Basic Attack (an untrained person, Patch 9A). It is not a learned Skill."
     }
   ],
+  "weapon_attacks": {
+    "_note": "Patch 9A (ruleset 2): a weapon family's own plain attack, for any class. A character holding a weapon of a family its class Basic Attack does not use (the Basic Attack's weapon_families) can attack with this; it is no learned Skill and does not change the class. A legacy campaign (ruleset 1) has none: there an NPC's Basic Attack follows npc_templates.json legacy weapon_family_basic.",
+    "bow": "weapon.bow_shot",
+    "melee": "weapon.strike",
+    "heavy_melee": "weapon.strike",
+    "precision": "weapon.strike",
+    "focus": "weapon.strike",
+    "unarmed": "weapon.unarmed_blow"
+  },
   "affinity": {
     "warrior": {
       "Martial": 1.5,
@@ -1499,6 +1935,12 @@
       "otherwise": 1
     },
     "ranger": {
+      "Precision": 1.5,
+      "Mobility": 1.25,
+      "Arcane": 0.75,
+      "otherwise": 1
+    },
+    "rogue": {
       "Precision": 1.5,
       "Mobility": 1.25,
       "Arcane": 0.75,

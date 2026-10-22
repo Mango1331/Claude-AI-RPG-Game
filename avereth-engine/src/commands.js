@@ -1,9 +1,9 @@
 // System commands (System #1-#10) answered by the engine from state + content: zero LLM calls, zero story time,
 // no combat Turn advance. Only #assign changes state (an explicitly defined state-changing command, System #1).
 // #system <question> is the one natural-language query; it is passed to the narrator in System-only mode.
-import { deriveCharacter, rawPowerText, itemOf } from './derived.js';
+import { deriveCharacter, rawPowerText, itemOf, actionsOf, weaponAttackOf } from './derived.js';
 import { formatCoin } from './economy.js';
-import { findSkill } from './content.js';
+import { findSkill, rulesetOf, startClasses } from './content.js';
 import { assignStat } from './progression.js';
 import { knowledgeOf, memoriesOf, memoryText, propText, playerLabel, statusOf } from './knowledge.js';
 import { applyEvent } from './state.js';
@@ -15,7 +15,7 @@ import { dungeonOf, mapText } from './v4/dungeon.js';
 
 const HELP = [
     ['#status', 'full current status (alias #stats)'], ['#skills', 'all known Skills'], ['#skill <name>', 'full Skill definition with current values'],
-    ['#class', 'Base Class, growth, next milestone'], ['#domain', 'Domain state'], ['#equipment', 'equipped Gear and totals'],
+    ['#class', 'Base Class, growth, evolution'], ['#domain', 'Domain state'], ['#equipment', 'equipped Gear and totals'],
     ['#bag', 'inventory and coin (alias #inventory)'], ['#item <name>', 'Item definition'], ['#quests', 'known Quests'],
     ['#quest <name>', 'Quest details'], ['#effects', 'active effects'], ['#effect <name>', 'effect details'],
     ['#combat', 'encounter audit (read-only)'], ['#system <question>', 'mechanics question answered by the System'],
@@ -72,7 +72,8 @@ export function creationPanel(state, content, outcome) {
     const cls = s.class ? content.classes.get(s.class) : null;
     const classMenu = () => [
         'Choose your Base Class (reply with its name, for example "Warrior"):',
-        ...[...content.classes.values()].map((c) => `- ${c.name} — Favored Stats ${c.favored.join(' / ')}`),
+        // Patch 9A: the starting classes of this campaign's ruleset (a new campaign: Warrior, Mage, Rogue)
+        ...startClasses(content, rulesetOf(state)).map((c) => `- ${c.name} — Favored Stats ${c.favored.join(' / ')}`),
     ];
     const poolMenu = () => {
         const pool = cls.skill_pool.map((id) => content.skills.get(id));
@@ -135,6 +136,9 @@ function skills(state, content) {
         lines.push(`${sk.name} | ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | P${v.prof} (PP ${v.pp}${next ? `/${next}` : ''}) | Tags ${joinList(sk.tags, '-')} | Cost ${skillCost(sk, v.prof, content)}`);
     }
     if (lines.length === 1) lines.push('No Skills known yet.');
+    // Patch 9A: the plain attack of the weapon he holds, no learned Skill (it comes and goes with the weapon)
+    const w = weaponAttackOf(s, content, rulesetOf(state));
+    if (w) lines.push(`${w.skill.name} | weapon attack of the equipped ${w.weapon.name} (not a learned Skill) | Cost ${skillCost(w.skill, 1, content)}${w.skill.ammo ? ` + ${w.skill.ammo.qty} arrow` : ''}`);
     lines.push('Use #skill <Skill Name> for full details.');
     return lines.join('\n');
 }
@@ -143,11 +147,11 @@ function skill(state, content, arg) {
     const s = pcSheet(state);
     const sk = findSkill(content, arg, s.class);
     if (!sk) return `[SYSTEM // SKILL]\nUNKNOWN SKILL "${arg}".`;
-    const known = s.skills[sk.id];
+    const known = actionsOf(s, content, rulesetOf(state))[sk.id]; // Patch 9A: his weapon's attack too
     if (!known) return `[SYSTEM // SKILL]\n${sk.name} is not a Skill Alaric knows.`;
     const dv = deriveCharacter(s, content);
     const prof = content.rules.proficiency.levels[String(known.prof)];
-    const lines = [`[SYSTEM // SKILL] ${sk.name}`, `Category ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | Proficiency P${known.prof} (PP ${known.pp}) | Tags ${joinList(sk.tags, '-')}`];
+    const lines = [`[SYSTEM // SKILL] ${sk.name}`, `Category ${sk.category} | Rank ${sk.rank || '-'} | Complexity ${sk.complexity || '-'} | ${known.weapon ? `weapon attack of the equipped ${known.weapon} (not a learned Skill)` : `Proficiency P${known.prof} (PP ${known.pp})`} | Tags ${joinList(sk.tags, '-')}`];
     lines.push(`Cost: ${skillCost(sk, known.prof, content)}${sk.ammo ? ` | Ammo: ${sk.ammo.qty} ${content.items.get(sk.ammo.item)?.name || sk.ammo.item} when fired from a bow` : ''}`);
     if (sk.range) lines.push(`Range: ${sk.range.band}${sk.range.extra_band ? ' (EXTRA-BAND movement: may move one additional band and must end ENGAGED)' : ''}${sk.range.area ? ` | Area: ${sk.range.area}` : ''}`);
     if (sk.attack) {
@@ -163,9 +167,12 @@ function klass(state, content) {
     const s = pcSheet(state);
     if (!s.class) return '[SYSTEM // CLASS]\nNo Base Class selected yet (Character Creation).';
     const c = content.classes.get(s.class);
+    const head = ['[SYSTEM // CLASS]', `Base Class: ${c.name} | Rank ${deriveCharacter(s, content).rank} | Favored Stats: ${c.favored.join(' / ')}`, `Class Growth: ${c.growth_text}`];
+    // Patch 9A: no class evolution is tied to a Level any more; organic class growth is not unlocked yet (Patch 9D). A
+    // legacy campaign keeps the panel it always showed
+    if (rulesetOf(state) >= 2) return [...head, 'Evolution history: none', 'Passives: none', 'Class evolution: not tied to any Level; it can only grow from how he plays (organic class growth is not unlocked yet)'].join('\n');
     const next = [15, 30, 45, 60, 75, 90].find((l) => l > s.level);
-    return ['[SYSTEM // CLASS]', `Base Class: ${c.name} | Rank ${deriveCharacter(s, content).rank} | Favored Stats: ${c.favored.join(' / ')}`,
-        `Class Growth: ${c.growth_text}`, 'Evolution history: none', `Next known evolution milestone: Level ${next ?? '-'}`].join('\n');
+    return [...head, 'Evolution history: none', `Next known evolution milestone: Level ${next ?? '-'}`].join('\n');
 }
 
 function equipment(state, content) {

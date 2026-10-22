@@ -191,7 +191,7 @@ test('active combat uses one open tactical HUD with fixed Target/HP/Range/Cover 
     assert.match(html, /Cellar Rat B/);
     assert.match(html, /avereth-range-(?:engaged|short|medium|long)/);
     assert.match(html, /<strong>Turn order<\/strong>/);
-    assert.match(html, /<strong>Attack reach<\/strong>/);
+    assert.match(html, /<strong>Attack<\/strong>/);
     assert.match(html, /Basic Attack/);
     assert.match(html, /Power Shot/);
     assert.doesNotMatch(html, /<summary>World —|<summary>Alaric —/, 'generic Character/World HUDs are replaced during active combat');

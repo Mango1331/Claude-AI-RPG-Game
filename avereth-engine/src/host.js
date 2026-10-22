@@ -93,13 +93,13 @@ export function lastReplyIndex(chat, before) {
  * alone ('legacy') unless force is set: its history cannot be reconstructed into mechanical state.
  * @returns {'exists'|'created'|'legacy'|'none'}
  */
-export function ensureCampaign(chat, content, { seed, force = false, runtime = 'v3', planner } = {}) {
+export function ensureCampaign(chat, content, { seed, force = false, runtime = 'v3', planner, ruleset } = {}) {
     if (hasCampaign(chat)) return 'exists';
     const first = chat[0];
     if (!first || first.is_user) return 'none';
     const played = chat.filter((m) => m.is_user && !m.is_system).length;
     if (played > 1 && !force) return 'legacy';
-    const events = startCampaign(content, { seed, firstMessage: first.mes, runtime, planner });
+    const events = startCampaign(content, { seed, firstMessage: first.mes, runtime, planner, ...(ruleset ? { ruleset } : {}) });
     setRec(first, { v: RECORD_VERSION, events, text_hash: hash32(first.mes) });
     return 'created';
 }

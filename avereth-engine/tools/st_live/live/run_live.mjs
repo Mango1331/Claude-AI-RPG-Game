@@ -23,7 +23,7 @@ import { startServer, freePort } from './server.mjs';
 import { loadPlaywright, launchBrowser, Driver } from './driver.mjs';
 import { llmPlayer, scriptedPlayer, screenText, playerReasoning } from './players.mjs';
 import { loadGuide } from './guide.mjs';
-import { evaluate, finished, nextMilestone, turnOutcome } from './evaluator.mjs';
+import { evaluate, finished, nextMilestone, turnOutcome, settled, openMilestones } from './evaluator.mjs';
 import { parseCalls } from './calls.mjs';
 import { readChatJsonl, eventsLog, jsonl, secretScan } from './export.mjs';
 import { buildReport } from './report.mjs';
@@ -37,6 +37,18 @@ export const DEFAULTS = {
     keyEnv: 'AVERETH_LIVE_API_KEY', guide: 'guild_dungeon_loop', seed: null, maxTurns: null, turnTimeoutSec: 900, runsDir: null, keepProfile: false,
     player: { type: 'llm', url: null, model: null, keyEnv: null, temperature: 0.8, maxTokens: 3000, reasoning: 'profile', extraBody: null },
 };
+
+/** The open required milestones in a line: "10/11 required reached; open: x (not performed: why), y". */
+export function openText(ev) {
+    const req = ev.milestones.filter((m) => m.required);
+    const open = openMilestones(ev);
+    return `${req.length - open.length}/${req.length} required reached; open: ${open.map((m) => (m.unavailable ? `${m.id} (not performed: ${m.unavailable})` : m.id)).join(', ')}`;
+}
+
+/** The end of a run the player reported done: done when the engine booked every required milestone, else incomplete. */
+export function doneEnd(ev) {
+    return finished(ev) ? { kind: 'done', why: 'the player reported done; every required milestone is reached' } : { kind: 'incomplete', why: `the player reported done; ${openText(ev)}` };
+}
 
 /** Options: defaults, then the config file, then the command line. */
 export function options(argv = process.argv.slice(2), env = process.env) {
@@ -267,7 +279,14 @@ export async function run(o) {
             // Patch 8.4.1: what he saw is the result of the turn before (0: the start); his notes are about that turn
             for (const e of playerLog.filter((x) => x.turn === turn)) e.about_turn = turn - 1;
             if (playerLog.length) playerLog.at(-1).screen = screenText(view);
-            if (d.stop) { end = { kind: d.harness ? 'harness' : d.stop_reason === 'done' ? 'player_done' : 'player_stop', why: d.stop_reason }; log(`player stops: ${d.stop_reason}`); break; }
+            if (d.stop) {
+                // Patch 8.4.2 (live 22.10.2026 07:49: "done" after 7 of 8 required milestones was taken as done): his "done"
+                // is checked against what the engine booked, after his decision; he is never told
+                if (!d.harness && d.stop_reason === 'done') end = doneEnd(evaluate(await driver.chat(), { guide }));
+                else end = { kind: d.harness ? 'harness' : 'player_stop', why: d.stop_reason };
+                log(`player stops: ${d.stop_reason}`);
+                break;
+            }
             log(`turn ${turn}: ${clip(d.message, 100)}`);
             sends.push({ turn, at: Date.now() });
             const r = await driver.send(d.message);
@@ -294,6 +313,8 @@ export async function run(o) {
             const ev = evaluate(chat, { guide });
             if (ev.defeat) { await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-defeat.png`))); end = { kind: 'defeat', why: `turn ${ev.defeat.turn}: ${ev.defeat.why}` }; break; }
             if (finished(ev)) { end = { kind: 'done', why: null }; log('all required milestones reached'); break; }
+            // Patch 8.4.2: the last milestone reached, the rest out of this run's reach: no turns played on for nothing
+            if (settled(ev)) { end = { kind: 'incomplete', why: `the last milestone is reached; ${openText(ev)}` }; log(`stopped: ${end.why}`); break; }
             // a milestone that takes far too long: marked slow past its budget, the run stops at three times it
             const reachedNow = ev.milestones.filter((m) => m.required && m.reached).length;
             if (reachedNow > lastReached) { lastReached = reachedNow; since = turn; }

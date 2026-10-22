@@ -53,10 +53,10 @@ Werkzeug: `tools/st_live/live/` (ab Build 4.3.0-c.6.6.29). Er spielt einen Livet
    - `--ping` fragt `GET <URL>/models` ab, wie SillyTavern es beim Verbinden tut, und prüft, ob die Modell-ID aus deinem Profil genau so in der Liste steht. Fehlt sie, nennt die Meldung die angebotenen Modelle und ähnliche IDs. Ein eigenes Spieler-Modell (`player.model`) wird mitgeprüft, ebenso mit einem kurzen Probe-Request, ob der Endpoint die Reasoning-Felder des Spielers annimmt (§6).
 6. **Lauf.**
    ```powershell
+   npm run live:st -- --guide patch_8_dungeon_full --max-turns 60 --headed
    npm run live:st -- --guide patch_8_4
-   npm run live:st -- --guide patch_8_4 --headed
    ```
-   - Für den ersten echten GLM-Lauf gelten 40 Züge als Obergrenze (`"maxTurns": 40` in der Beispielkonfiguration, sonst `--max-turns 40`).
+   - Die Abnahme eines vollständigen Living Dungeons (Patch 8.4.2) läuft mit `patch_8_dungeon_full` und höchstens 60 Zügen. `--max-turns 60` gehört in den Befehl, weil `maxTurns` aus `live.config.json` (Beispiel: 40) sonst den Wert des Leitfadens überschreibt.
    - Vor dem Start fragt der Runner dieselbe Modellliste ab wie `--ping`. Antwortet der Endpoint nicht, lehnt er den Schlüssel ab oder fehlt das Modell in der Liste, startet er nichts und sagt, warum. Liefert der Endpoint keine Modellliste (dann braucht SillyTavern „Bypass status check“), läuft er weiter; der Bericht vermerkt es.
    - `--headed` zeigt den Browser, sodass du zusehen kannst.
    - Weitere Optionen: `--seed <n>`, `--max-turns <n>`, `--player scripted`, `--preset repo`, `--keep-profile`, `--port <n>`, `--runs <ordner>`.
@@ -167,7 +167,8 @@ Bei `narrator_empty` endet der Lauf kontrolliert (`narrator_empty`), mit Bildsch
 
 **Was der Spieler sieht.** Nur `view()`:
 - den sichtbaren Text des Chats ab zwei Spielernachrichten zurück, wie die Seite ihn rendert, ohne die HUD-Panels;
-- den HUD unter der neuesten Antwort einmal als eigenen Abschnitt („YOUR CHARACTER AND THE WORLD“), aufgeklappt, wie ein Spieler ihn aufklickt: HP, MP, STA, Werte, freie Statpunkte, Ausrüstung, Mitgeführtes, Münzen, Quests, Ort. SillyTavern stellt den Klassen im Nachrichten-HTML `custom-` voran; der Treiber sucht beide Namen;
+- den HUD unter der neuesten Antwort einmal als eigenen Abschnitt („YOUR CHARACTER AND THE WORLD“), aufgeklappt, wie ein Spieler ihn aufklickt: HP, MP, STA, Werte, freie Statpunkte, Ausrüstung, Mitgeführtes, Münzen, Quests, Ort. SillyTavern stellt den Klassen im Nachrichten-HTML `custom-` voran; der Treiber sucht beide Namen. Steht unter dem HUD noch eine neuere Antwort ohne HUD (die System-Antwort auf einen Befehl, Patch 8.4.2), heißt der Abschnitt „the HUD of an EARLIER reply, NOT updated since: the System answer above is newer and what it says counts“;
+- seine eigenen Nachrichten so, wie er sie schrieb (`mes` des Chats): SillyTavern zeigt `#assign …` sonst als Überschrift ohne `#`;
 - die neuen Hinweise des Spiels (Toasts), nicht die des Runners.
 
 Fold, Ereignisse und Records bekommt er nie. Einen eigenen Inventar- oder Zustandsspeicher führt der Runner nicht: Was der Spieler weiß, liest er Zug für Zug von der Seite. Den Bildschirmtext jedes Zugs speichert `player.jsonl`, nachprüfbar.
@@ -229,12 +230,15 @@ Fold, Ereignisse und Records bekommt er nie. Einen eigenen Inventar- oder Zustan
 - `maxTurns` ist das Budget einer Etappe: Darüber gilt sie im Bericht als „überschritten“, beim Dreifachen endet der Lauf als festgefahren.
 - Mitgeliefert:
   - `guild_dungeon_loop`: der Grundablauf;
+  - `patch_8_dungeon_full` (Patch 8.4.2): die Abnahme einer vollständigen Living-Dungeon-Expedition auf Ebene 1, 60 Züge, elf Pflicht-Etappen (§7). Ein Vertrag außerhalb eines Dungeons zählt nicht; bietet das Board keinen Dungeon-Vertrag, liest der Spieler es am nächsten Morgen erneut und geht sonst ohne Vertrag in einen Dungeon;
   - `patch_8_4`: Gruppenreaktion und Cull-Zahl, mit eigenen Etappen (Patch 8.4.1): `numeric_cull_active` (ein Cull-Vertrag, der seine Zahl nennt; ein reiner Clear-Vertrag zählt nicht; bietet das Board keinen, liest der Spieler es am nächsten Morgen erneut: An einem späteren Tag füllt das Board die Lücken, die andere Abenteurer hinterlassen haben. Der Runner verändert dafür keinen Zustand), `inside_dungeon` (optional), `open_group_attack` (offener Angriff auf ein Mitglied einer Gruppe, die ihn nicht bemerkt hat), dann Kampf, READY und Abgabe.
 
 ## 7. Auswertung
 
 `evaluator.mjs` liest den Chat mit den Records der Engine. Der Spieler sieht davon nichts. Der Runner nutzt die Auswertung zwischen den Zügen nur zur Laufsteuerung:
 - `done`: alle Pflicht-Etappen erreicht;
+- `incomplete` (Patch 8.4.2): der Spieler meldet „done“, aber die Engine hat nicht alle Pflicht-Etappen gebucht; oder die letzte Pflicht-Etappe ist erreicht und alle offenen sind in diesem Lauf nicht durchführbar (dann werden keine Züge mehr gespielt). Der Spieler erfährt davon nichts; die Prüfung folgt seiner Entscheidung;
+- `player_stop`: der Spieler bricht wegen eines Blockers ab;
 - `defeat`: Alaric tot;
 - `stuck`: eine Etappe dauert das Dreifache ihres Budgets;
 - `limit`: Zug- oder Zeitlimit erreicht.
@@ -254,6 +258,23 @@ Fold, Ereignisse und Records bekommt er nie. Einen eigenen Inventar- oder Zustan
 | `returned_to_guild` | nach dem Dungeon wieder in einer Gildenhalle |
 | `numeric_cull_active` | ein Vertrag mit einem DEFEAT/ATTACK-Ziel mit Zahl wird `active` |
 | `open_group_attack` | seine eigene Nachricht eröffnet einen Kampf gegen eine Gruppe, von der mindestens zwei ihn nicht bemerkt hatten, er war nicht verborgen, und niemand der Gruppe blieb draußen |
+
+**Living-Dungeon-Expedition** (Patch 8.4.2, Leitfaden `patch_8_dungeon_full`). Jede Prüfung zählt nur, was die Engine für den **Ziel-Dungeon** gebucht hat: der Dungeon seines Dungeon-Vertrags, sonst der erste, den er betrat; die **Zielebene** ist die des Vertrags, sonst 1. Erzählte Gegner, ein Floor-Clear in Worten oder ein Feld-Cull zählen nie.
+
+| Prüfung | erreicht, wenn | nicht durchgeführt, wenn |
+|---|---|---|
+| `guild_registered_fee` | registriert, und alle Registrierungszahlungen ergeben genau die Gebühr des Registrierungsangebots | — (eine Doppelzahlung meldet `registration_fee`) |
+| `dungeon_quest_active` | ein Vertrag mit `dungeon` wird seiner | das Board, das er las, bot nie einen Dungeon-Vertrag |
+| `dungeon_gate` | er steht auf Ebene ≥ 1 des Ziel-Dungeons; vor dem Eintritt höchstens eine Eintrittszahlung, und sie entspricht dem Gate-Angebot der Engine | — (`gate_fee`) |
+| `dungeon_population` | eine Begegnung der Zielebene ist mit ihren Kreaturen gebucht (`dungeon.slot`) | — |
+| `dungeon_group_fight` | ein Kampf mit zwei oder mehr Mitgliedern einer Begegnung der Engine, alle von Beginn an | auf der Zielebene traf er keine Begegnung mit zwei oder mehr |
+| `dungeon_open_group_attack` | seine Nachricht eröffnet offen (nicht verborgen) einen Kampf gegen eine Begegnung der Engine, von der mindestens zwei ihn nicht bemerkt hatten; alle sind von Beginn an im Kampf, höchstens eine Eröffnung, jedes Mitglied handelt in einem eigenen Zug oder stirbt vorher | keine Begegnung der Zielebene mit zwei oder mehr Unaufmerksamen (alle kannten ihn schon) |
+| `dungeon_guardian` | `entity.status dead` des Wächters der Zielebene (Slot `guard` oder `boss`) | — |
+| `dungeon_floor_cleared` | `dungeon.cleared` der Zielebene mit seinem Verdienst (`credit: pc`) | — (`floor_cleared_by_others`) |
+| `dungeon_quest_ready` | `quest.ready` seines Dungeon-Vertrags | kein Dungeon-Vertrag auf dem Board |
+| `dungeon_quest_completed` | sein Dungeon-Vertrag `completed` in einer Gildenhalle, die Auszahlung gebucht und gleich der des Vertrags | kein Dungeon-Vertrag auf dem Board (`turn_in` meldet eine Abweichung) |
+
+„Nicht durchgeführt“ ist kein Engine-Fehler und kein Bestehen: Die Etappe bleibt offen und steht im Bericht mit Grund. Den Sonderfall sichern die deterministischen Tests (`tests/v4/patch84.test.js`, `tests/live_runner/patch842_runner.test.js`).
 
 **Kämpfe.** Für jeden Kampfbeginn hält die Auswertung fest:
 - wer im Kampf ist;
@@ -300,7 +321,7 @@ Treffer werden geschwärzt und im Bericht genannt.
 ## 9. Bericht
 
 `report.md`, auf Deutsch, mit diesen Abschnitten:
-- **Kurzfassung:** Ergebnis, Etappen, Leitfaden, Spieler, Züge, Dauer, Auffälligkeiten, Profilschutz, Scan.
+- **Kurzfassung:** Ergebnis, Etappen, offene Pflicht-Etappen mit „nicht erreicht“ oder „nicht durchgeführt: Grund“, Ziel-Dungeon, Leitfaden, Spieler, Züge, Dauer, Auffälligkeiten, Profilschutz, Scan. Ein Blocker (`player_stop`), das Zuglimit (`limit`) und ein nicht durchführbares Ziel sind so voneinander zu unterscheiden.
 - **Aufbau** mit der Verbindung deines SillyTavern und der des Laufs (dieselbe?) und dem Preflight (Modellliste, Modell enthalten?).
 - **Laufzeit (gemessen):** Gesamtzeit, Einrichtung, Spiel- und Spielerzeit je Zug (Median, p90, max), Aufteilung laut Records, Hochrechnung auf 40 und 80 Züge.
 - **Aufbau:** Build, Git-Commit und nicht committete Dateien, SillyTavern, Browser, Provider und Modell, Preset (Abweichungen von Build und Datei), Generierung, Streaming, Karte, Lorebook, Engine-Einstellungen, nicht Übernommenes, Kampagne und Seed.

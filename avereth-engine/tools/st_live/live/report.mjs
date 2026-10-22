@@ -19,6 +19,7 @@ const END_TEXT = {
     ui: 'abgebrochen: unerwarteter UI-Zustand',
     harness: 'abgebrochen: Fehler im Runner',
     narrator_empty: 'abgebrochen: leere Erzählerantwort in einem Story-Zug (kein Swipe, kein Regenerieren)',
+    incomplete: '**unvollständig**: nicht alle Pflicht-Etappen von der Engine nachgewiesen',
 };
 const OUTCOME_TEXT = { story: 'Erzähler', system: 'System (Befehl)', engine: 'Engine (Menü/Rückfrage)', narrator_empty: '**leer**', missing: '**keine**' };
 
@@ -31,6 +32,10 @@ export function buildReport(x) {
     L.push('## Kurzfassung', '');
     L.push(`- **Ergebnis:** ${END_TEXT[end.kind] || end.kind}${end.why ? ` — ${cell(end.why)}` : ''}`);
     L.push(`- **Etappen:** ${req.filter((m) => m.reached).length}/${req.length} Pflicht erreicht${ev.milestones.some((m) => !m.required) ? `, optional: ${ev.milestones.filter((m) => !m.required).map((m) => `${m.id} ${m.reached ? '✔' : '–'}`).join(', ')}` : ''}`);
+    // Patch 8.4.2: what is open, and why: not reached (a blocker, the limit) or not performed (out of this run's reach)
+    const open = req.filter((m) => !m.reached);
+    if (open.length) L.push(`- **Offen:** ${open.map((m) => (m.unavailable ? `${m.id} (**nicht durchgeführt**: ${cell(m.unavailable)})` : `${m.id} (nicht erreicht)`)).join(' · ')}`);
+    if (ev.dungeon) L.push(`- **Ziel-Dungeon:** ${cell(ev.dungeon.name || ev.dungeon.root)}, Ebene ${ev.dungeon.floor}${ev.dungeon.quest ? ` (Vertrag ${ev.dungeon.quest})` : ' (ohne Dungeon-Vertrag: der erste betretene)'}`);
     L.push(`- **Leitfaden:** ${guide.chain.join(' → ')} („${guide.title || guide.id}“)`);
     L.push(`- **Spieler:** ${player.type === 'llm' ? `LLM ${player.model} (${player.endpoint}, Temperatur ${player.temperature})${player.persona ? `, Stil: ${player.persona}` : ''}` : `regelbasiert (${player.steps} Schritte)`}`);
     L.push(`- **Züge:** ${turnsLog.length} · **Dauer:** ${dur(endedAt - startedAt)} · **LLM-Aufrufe der Engine/des Erzählers:** ${calls.length}`);
@@ -65,7 +70,7 @@ export function buildReport(x) {
     L.push('## Etappen', '', '| Etappe | Pflicht | erreicht | Zug | Nachricht | Budget |', '|---|---|---|---:|---:|---:|');
     for (const m of ev.milestones) {
         const g = guide.milestones.find((y) => y.id === m.id);
-        L.push(`| ${m.id} | ${m.required ? 'ja' : 'optional'} | ${m.reached ? '✔' : '–'} | ${m.turn ?? ''} | ${m.at ?? ''} | ${g?.maxTurns ?? ''}${x.slow?.includes(m.id) ? ' (überschritten)' : ''} |`);
+        L.push(`| ${m.id} | ${m.required ? 'ja' : 'optional'} | ${m.reached ? '✔' : m.unavailable ? `– nicht durchgeführt: ${cell(m.unavailable)}` : '–'} | ${m.turn ?? ''} | ${m.at ?? ''} | ${g?.maxTurns ?? ''}${x.slow?.includes(m.id) ? ' (überschritten)' : ''} |`);
     }
     L.push('');
 

@@ -53,7 +53,8 @@ export function parseDecision(text) {
 export function screenText(view, { maxChars = 4000, hudChars = 3000 } = {}) {
     const who = (m) => (m.user ? 'YOU' : m.system ? `SYSTEM${m.name ? ` (${m.name})` : ''}` : `NARRATOR${m.name ? ` (${m.name})` : ''}`);
     const parts = view.messages.map((m) => `[${who(m)}]\n${clip(m.text, maxChars) || '(no text)'}`);
-    if (view.hud) parts.push(`[YOUR CHARACTER AND THE WORLD — the HUD under the newest reply]\n${clip(view.hud, hudChars)}`);
+    // Patch 8.4.2: a HUD older than the System answer below it is said to be so (that answer is the newer state)
+    if (view.hud) parts.push(`${view.hudStale ? '[YOUR CHARACTER AND THE WORLD — the HUD of an EARLIER reply, NOT updated since: the System answer above is newer and what it says counts]' : '[YOUR CHARACTER AND THE WORLD — the HUD under the newest reply]'}\n${clip(view.hud, hudChars)}`);
     if (view.toasts?.length) parts.push(`[NOTICES ON SCREEN]\n${view.toasts.map((t) => `- (${t.kind}) ${clip(t.text, 400)}`).join('\n')}`);
     return parts.join('\n\n');
 }

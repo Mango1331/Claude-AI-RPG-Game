@@ -1938,4 +1938,9 @@ Zweiter automatisierter Livetest 22.10.2026 07:49 (`tests/v4/live_1022d.json`). 
 - **Thread-Bezüge.** Threads gelten mit und ohne Präfix `thread.`; die Auflösungen des Extraktors greifen wieder.
 - **HUD.** Tote stehen ohne Entfernung unter Present.
 - **Tests:** `tests/v4/patch842.test.js` (7; auf .30 sechs rot, eine Absicherung grün).
+- **Live-Runner** (eigener Commit, `docs/LIVE_RUNNER.md`):
+  - „done“ des Spielers wird gegen die gebuchten Etappen geprüft (sonst `incomplete`).
+  - Nach einer System-Antwort ist das ältere HUD als nicht aktualisiert gekennzeichnet; eigene Nachrichten erscheinen mit `#`.
+  - Neuer Leitfaden `patch_8_dungeon_full`: elf Etappen einer Living-Dungeon-Expedition, nur von der Engine Gebuchtes zählt, „nicht durchgeführt“ statt Fehler. Start: `npm run live:st -- --guide patch_8_dungeon_full --max-turns 60 --headed`.
+  - Tests: `tests/live_runner/patch842_runner.test.js` (9).
 

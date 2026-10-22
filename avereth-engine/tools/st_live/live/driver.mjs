@@ -51,6 +51,14 @@ const TOAST_SCRIPT = `(() => {
     new MutationObserver((ms) => { for (const m of ms) m.addedNodes.forEach(take); }).observe(document, { childList: true, subtree: true });
 })();`;
 
+/**
+ * Patch 8.4.2 (live 22.10.2026 07:49: after "#assign" the player was shown the HUD of the reply before, as the newest,
+ * and took the booked points for not booked): is the HUD on screen older than a reply below it (a System answer)?
+ */
+export function hudStale(messages, hudMesid) {
+    return hudMesid != null && messages.some((m) => !m.user && m.mesid > hudMesid);
+}
+
 /** A notice's origin (Patch 8.4.1): "runner" inside a span of the runner's own action (its tail included), else "game". */
 export function toastOrigin(t, spans, now = Date.now()) {
     return spans.some((s) => t.at >= s.from && t.at <= (s.to ?? now)) ? 'runner' : 'game';
@@ -253,8 +261,9 @@ export class Driver {
         // Patch 8.4.1: the messages without their HUD panels, and the newest HUD on screen once, unfolded as a player
         // clicks it open: what he carries, wears and has (HP, MP, stats, free Stat Points, quests) on every turn, read
         // from the page, never kept or written on by the runner
-        const { messages, hud } = await this.page.evaluate((k) => {
+        const { messages, hud, hudMesid } = await this.page.evaluate((k) => {
             const els = [...document.querySelectorAll('#chat .mes')];
+            const chat = SillyTavern.getContext().chat;
             // SillyTavern prefixes the classes of a message's HTML with "custom-" (its sanitizer)
             const huds = (el) => [...el.querySelectorAll('.mes_text details.avereth-hud, .mes_text details.custom-avereth-hud')];
             const textOf = (el) => {
@@ -264,19 +273,24 @@ export class Driver {
             };
             const users = els.map((el, i) => (el.getAttribute('is_user') === 'true' ? i : -1)).filter((i) => i >= 0);
             const from = users.length > k ? users[users.length - 1 - k] : 0;
-            const messages = els.slice(from).map((el) => ({
-                mesid: Number(el.getAttribute('mesid')), user: el.getAttribute('is_user') === 'true', system: el.getAttribute('is_system') === 'true',
-                name: (el.querySelector('.name_text')?.innerText || '').trim(), text: textOf(el),
-            }));
+            // Patch 8.4.2: his own message as he wrote it (the page renders "#assign …" as a heading, without its "#")
+            const own = (el) => { const m = chat[Number(el.getAttribute('mesid'))]; return typeof m?.mes === 'string' ? m.mes.trim() : textOf(el); };
+            const messages = els.slice(from).map((el) => {
+                const user = el.getAttribute('is_user') === 'true';
+                return {
+                    mesid: Number(el.getAttribute('mesid')), user, system: el.getAttribute('is_system') === 'true',
+                    name: (el.querySelector('.name_text')?.innerText || '').trim(), text: user ? own(el) : textOf(el),
+                };
+            });
             const newest = [...els].reverse().find((el) => huds(el).length);
             for (const el of els) for (const d of huds(el)) d.open = el === newest;
             const hud = newest ? huds(newest).map((d) => (d.innerText || '').trim()).filter(Boolean).join('\n\n') : null;
-            return { messages, hud };
+            return { messages, hud, hudMesid: newest ? Number(newest.getAttribute('mesid')) : null };
         }, back);
         const all = await this.toasts();
         const toasts = all.slice(this.toastsSeen).filter((t) => t.origin !== 'runner');
         this.toastsSeen = all.length;
-        return { messages, hud, toasts };
+        return { messages, hud, hudStale: hudStale(messages, hudMesid), toasts };
     }
 
     /** Every notice since the page opened, each with its origin: the runner's own action ("runner") or the game. */

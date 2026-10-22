@@ -80,13 +80,14 @@ const report3 = fs.readFileSync(path.join(r3.runDir, 'report.md'), 'utf8');
 // Patch 8.4.1: a command's System answer, then a story turn the narrator answers without text (the stub's marker): the
 // run ends there with its reason, no swipe, no regeneration
 const guide4 = path.join(base, 'guide-empty-narrator.json');
-g.write(guide4, JSON.stringify({ id: 'selftest_empty_narrator', extends: 'guild_dungeon_loop', brief: 'selftest: an empty narrator reply', scripted: [{ say: 'Mage' }, { say: 'Flame Lance + Blink' }, { say: '#status' }, { say: `*i look around the roadside* ${EMPTY_MARK}` }, { say: '*i walk on*' }] }, null, 1));
+g.write(guide4, JSON.stringify({ id: 'selftest_empty_narrator', extends: 'guild_dungeon_loop', brief: 'selftest: an empty narrator reply', scripted: [{ say: 'Mage' }, { say: 'Flame Lance + Blink' }, { say: '*i look around the roadside*' }, { say: '#status' }, { say: `*i walk on along the road* ${EMPTY_MARK}` }, { say: '*i walk on*' }] }, null, 1));
 const o4 = options(['--stub', '--st', ST, '--st-data', data, '--runs', path.join(base, 'runs'), '--player', 'scripted', '--guide', guide4, '--max-turns', '8'], { ...process.env, AVERETH_LIVE_API_KEY: '' });
 o4.configFile = null;
 const r4 = await run(o4);
 const run4 = runJson(r4.runDir);
 const report4 = fs.readFileSync(path.join(r4.runDir, 'report.md'), 'utf8');
 const calls4 = JSON.parse(fs.readFileSync(path.join(r4.runDir, 'calls.json'), 'utf8'));
+const players4 = fs.readFileSync(path.join(r4.runDir, 'player.jsonl'), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
 
 // ------------------------------------------------------------------------------------------------ checks
 const has = (f) => fs.existsSync(path.join(r.runDir, f));
@@ -120,7 +121,8 @@ const checks = {
     narratorGetsEngineBlockAndContract: (() => { const n = read('chat-completions.jsonl').split('\n').filter(Boolean).map((l) => JSON.parse(l)).find((c) => c.role === 'narrator'); const t = JSON.stringify(n?.request?.messages || []); return t.includes('[AVERETH ENGINE') && t.includes('SANDBOX NARRATOR CONTRACT') && n.request.max_tokens === preset.openai_max_tokens; })(),
     greetingFromProfile: /outside Alderwatch/.test(read('chat.jsonl')),
     playerSawOnlyThePage: players.length >= 4 && players.every((p) => typeof p.screen === 'string' && !/"events"|campaign\.started|extra\.avereth|text_hash/.test(p.screen)) && /CHARACTER CREATION/.test(players[0].screen),
-    playerStoppedDone: r.end.kind === 'player_done',
+    // Patch 8.4.2: the stub player's "done" with only creation reached is incomplete, the open milestones named
+    playerDoneChecked: r.end.kind === 'incomplete' && /^the player reported done; 1\/\d+ required reached; open: guild_registered, /.test(r.end.why) && /\*\*unvollständig\*\*/.test(report) && /- \*\*Offen:\*\* guild_registered \(nicht erreicht\)/.test(report),
     creationMilestone: evaluation.milestones?.find((m) => m.id === 'creation_complete')?.reached === true,
     reportMarksStub: /STUB-SELBSTTEST — kein echter Livetest/.test(report) && /Profil unverändert:\*\* ja/.test(report) && /Geheimnis-Scan:\*\* sauber/.test(report),
     noPageErrors: runJson(r.runDir).pageErrors.length === 0,
@@ -132,7 +134,7 @@ const checks = {
     runtimeMeasured: /## Laufzeit \(gemessen\)/.test(report) && /Hochrechnung bei diesem Tempo \| 40 Züge ≈/.test(report) && Number.isFinite(run1.timing?.totalMs) && run1.timing.turns === 4,
     proxyRouteTaken: run3.route?.profile?.via === 'reverse_proxy' && run3.route?.runner?.via === 'reverse_proxy' && run3.route?.reverseProxy?.preset === 'Featherless' && /Verbindung des Laufs \| Quelle "openai" → reverse_proxy http:\/\/127\.0\.0\.1:\d+\/v1/.test(report3),
     proxyWarningConfirmed: run3.notes.some((n) => /reverse proxy warning of SillyTavern confirmed/.test(n)),
-    proxyRunPlays: r3.end.kind === 'player_done' && r3.stub.calls.filter((c) => c.role === 'narrator').length >= 2 && r3.stub.calls.filter((c) => c.role !== 'player').every((c) => c.auth === 'key'),
+    proxyRunPlays: r3.end.kind === 'incomplete' && r3.stub.calls.filter((c) => c.role === 'narrator').length >= 2 && r3.stub.calls.filter((c) => c.role !== 'player').every((c) => c.auth === 'key'),
     proxyPasswordNeverExported: !text3.includes(BAIT_PROXY) && !text3.includes(BAIT_KEY) && !text3.includes('stub-key-not-a-real-key-0000') && r3.scan.hits.length === 0,
     proxyProfileUntouched: treeDiff(profile2Before, treeStat(data2)).same && r3.protection.unchanged,
     // every run's chat: the card's greeting with the campaign first, no message of SillyTavern's welcome screen in it
@@ -146,10 +148,14 @@ const checks = {
     runnerToastsNotForThePlayer: (run1.toasts || []).every((t) => t.origin === 'runner' || t.origin === 'game') && (run1.toasts || []).filter((t) => t.origin === 'runner').every((t) => !players.some((p) => p.screen.includes(String(t.text || '').slice(0, 40)))),
     observationsMapped: players.every((p) => p.about_turn === p.turn - 1),
     // the empty narrator reply
-    systemTurnIsNoEmptyReply: r4.turnsLog[2]?.text === '#status' && r4.turnsLog[2]?.outcome === 'system' && r4.turnsLog[0]?.outcome === 'engine',
-    emptyNarratorStops: r4.end.kind === 'narrator_empty' && r4.end.turn === 4 && r4.turnsLog.length === 4 && /finish_reason "length"/.test(r4.end.why) && /characters of reasoning, 0 of text/.test(r4.end.why),
-    emptyNarratorNoSwipe: calls4.filter((c) => c.role === 'narrator' && c.turn === 4).length === 1 && r4.stub.calls.filter((c) => c.role === 'narrator').length === calls4.filter((c) => c.role === 'narrator').length,
-    emptyNarratorReported: /Ergebnis:\*\* abgebrochen: leere Erzählerantwort in einem Story-Zug \(kein Swipe, kein Regenerieren\)/.test(report4) && fs.existsSync(path.join(r4.runDir, 'screens', 'turn-004-narrator_empty.png')) && run4.turns[3]?.outcome === 'narrator_empty',
+    systemTurnIsNoEmptyReply: r4.turnsLog[3]?.text === '#status' && r4.turnsLog[3]?.outcome === 'system' && r4.turnsLog[2]?.outcome === 'story' && r4.turnsLog[0]?.outcome === 'engine',
+    // Patch 8.4.2: after #status he sees his command as he wrote it and the HUD of the reply before as not updated;
+    // after a story reply the HUD is the newest
+    ownCommandAndOlderHud: (() => { const p = players4.find((x) => x.turn === 5)?.screen || ''; return /\[YOU\]\n#status\n/.test(p) && /the HUD of an EARLIER reply, NOT updated since: the System answer above is newer/.test(p); })()
+        && /the HUD under the newest reply/.test(players4.find((x) => x.turn === 4)?.screen || ''),
+    emptyNarratorStops: r4.end.kind === 'narrator_empty' && r4.end.turn === 5 && r4.turnsLog.length === 5 && /finish_reason "length"/.test(r4.end.why) && /characters of reasoning, 0 of text/.test(r4.end.why),
+    emptyNarratorNoSwipe: calls4.filter((c) => c.role === 'narrator' && c.turn === 5).length === 1 && r4.stub.calls.filter((c) => c.role === 'narrator').length === calls4.filter((c) => c.role === 'narrator').length,
+    emptyNarratorReported: /Ergebnis:\*\* abgebrochen: leere Erzählerantwort in einem Story-Zug \(kein Swipe, kein Regenerieren\)/.test(report4) && fs.existsSync(path.join(r4.runDir, 'screens', 'turn-005-narrator_empty.png')) && run4.turns[4]?.outcome === 'narrator_empty',
     emptyNarratorDataKept: ['chat.jsonl', 'calls.json', 'chat-completions.jsonl', 'evaluation.json'].every((f) => fs.existsSync(path.join(r4.runDir, f))) && r4.scan.hits.length === 0 && r4.protection.unchanged,
     cleanCampaignChats: [r, r2, r3, r4].every((x) => {
         const msgs = fs.readFileSync(path.join(x.runDir, 'chat.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l)).filter((m) => 'mes' in m);

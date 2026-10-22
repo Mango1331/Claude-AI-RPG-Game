@@ -4,7 +4,7 @@
 // acceptance with its contract slip, the turn-in with the proof check, the payout, Quest XP, the contract count and
 // the promotion. The narrator only tells what the engine booked; the extractor's deltas cannot change any of it.
 import { nearDungeons, dungeonText, rankText, guildRecord, trueDungeonOf } from './dungeon.js';
-import { clearOf, clearDone, clearTarget, cullPopulation, slotNameOf } from './living.js';
+import { clearOf, clearDone, clearTarget, cullPopulation, slotNameOf, floorAt } from './living.js';
 import { O, S, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 import { setFactEvents, perceivers, knows, truth, PC_NAME_FACT } from '../knowledge.js';
@@ -15,7 +15,7 @@ import { hallOf, settlementOf, realmOf, heldBy, membership, listingsOf, boardKey
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
-export const BOARD_VERSION = 'board-4.6';
+export const BOARD_VERSION = 'board-4.7';
 const QTYPES = ['minor', 'standard', 'dangerous', 'major'];
 const VERBS = ['GO', 'FIND', 'TALK', 'GET', 'GATHER', 'GIVE', 'DELIVER', 'USE', 'REPAIR', 'DEFEND', 'ESCORT', 'ATTACK', 'DEFEAT'];
 
@@ -182,18 +182,11 @@ export function defeatTally(s, content, q) {
         // animals and monsters by their kind; people by their role ("raiders": a dead brigand counts, review of 4.1.3:
         // 4.1.2 counted creatures only, so five dead bandits made 0 of 5)
         const people = peopleNamed(o.what, content);
-        const young = namesYoung(content, `${o.what} ${o.unit || ''}`);
-        const kind = (e) => {
-            const anchor = content.anchors.get(e.anchor || e.profile?.anchor);
-            return [o.what, o.unit].filter(Boolean).some((w) => namesKind(w, e.species || '', anchor, same))
-                && (young || !namesYoung(content, `${e.species || ''} ${e.name || ''}`));
-        };
-        // Patch 8.1 (§10): a Dungeon's guardian or boss is no beast of a cull by its kind ("crystal beetles" is not the
-        // Glimmer Queen); it counts for a contract that names it
-        const role = (e) => !e.slot || e.slot.role === 'minion' || namesBoss(o.what, slotNameOf(s, e));
+        // Patch 8.3: by its kind and its part in a Dungeon's encounter, the rule the board's count was fixed by (cullKind)
+        const kind = (e) => cullKind(content, o, { species: e.species, anchor: e.anchor || e.profile?.anchor, role: e.slot?.role, title: slotNameOf(s, e), name: e.name }, same);
         const counts = (e) => area(e) && (people.size
             ? e.kind === 'npc' && (e.descriptors || []).some((d) => [...peopleNamed(d, content)].some((t) => people.has(t)))
-            : e.kind === 'creature' && kind(e) && role(e));
+            : e.kind === 'creature' && kind(e));
         const killed = dead.filter(counts).length;
         const driven = fled.filter(counts).length;
         return { what: o.what, qty: o.qty, done: killed + driven, killed, driven };
@@ -208,6 +201,17 @@ function areaOf(s, q) {
     const clear = clearOf(s, q);
     const where = (e) => e.met_at || e.left?.at || e.at || e.location || null;
     if (clear) return (e) => { const p = where(e); return !p || !s.places[p] || trueDungeonOf(s, p) === clear.dungeon; };
+    // Patch 8.3: a cull booked for a Dungeon (Patch 8.1: q.dungeon, q.floor) counts in it, on its level where it names
+    // one: an encounter's creature by the level its slot belongs to, another by the place it was met at (the gate is
+    // no level). Before, such a cull counted in the branch's whole land, as a hunt outside does
+    if (q.dungeon && s.places[q.dungeon]?.dungeon?.real) {
+        const level = Number.isInteger(q.floor) ? q.floor : null;
+        return (e) => {
+            if (e.slot?.dungeon) return e.slot.dungeon === q.dungeon && (level === null || e.slot.floor === level);
+            const p = where(e);
+            return !p || !s.places[p] || (trueDungeonOf(s, p) === q.dungeon && (level === null || floorAt(s, p) === level));
+        };
+    }
     const realm = q.source?.branch ? realmOf(s, q.source.branch) : null;
     if (!realm) return () => true;
     return (e) => { const p = where(e); return !p || !s.places[p] || !realmOf(s, p) || realmOf(s, p) === realm; };
@@ -532,7 +536,7 @@ export function boardRequest(s, content, need) {
         ...noviceProfile,
         `- rank is "${need.rank}"; level is the quest level, an integer from ${lo} to ${hi}; qtype is minor, standard, dangerous or major.`,
         `- payout_cp is the Guild's one fixed payout in copper (1 silver = 10 copper)${guide ? `; for ${need.rank} work ${guide[0]}–${guide[1]} cp is usual (a guide, not a limit)` : ''}.`,
-        '- A cull names how many its notice asks for: the DEFEAT objective\'s qty (4 wolves; 1 for a single beast). A clearance of a Dungeon level names the level ("level 1") and no number: the level is cleared when its threats are.',
+        '- A cull names how many its notice asks for: the DEFEAT objective\'s qty (4 wolves; 1 for a single beast). A clearance of a Dungeon level names the level ("level 1") and no number: the level is cleared when its threats are. One listing is one of the two, never both: a cull\'s desired_end_state is that number of them dealt with, not a cleared level or place; a clearance\'s is the level cleared, with no number.',
         '- 1 to 4 objectives: {verb, what, qty, unit, where}; verb is one of GO, FIND, TALK, GET, GATHER, GIVE, DELIVER, USE, REPAIR, DEFEND, ESCORT, ATTACK, DEFEAT. These are continuity memories for play, not a rigid checklist the narrator must force in order.',
         '- proof contains 0–2 optional verification examples the Guild could recognize. Prefer [] when return, witnesses or a credible report can establish the outcome naturally. If used, EVERY entry must be an object with all fields present: {"kind":"object"|"mark","what":"...","qty":integer>=1|null,"unit":string|null,"on":string|null,"consume":true|false|null}. These are story guidance, NOT exclusive completion tokens.',
         '- Do not use GO merely as a travel checklist item. Objectives should describe meaningful work/outcomes (find, rescue, repair, defend, escort, investigate through FIND/TALK/GET, defeat, deliver, etc.); travel itself is normally just how play reaches them. Do not invent paperwork solely to make verification possible.',
@@ -615,7 +619,8 @@ function dungeonPartWhy(s, content, rank, id, text) {
 
 /** Patch 8.1 (§10): a Dungeon cull whose beasts no regular cycle of it holds is no Dungeon cull (refused, regenerated). */
 function noCullWhy(s, content, need, at, l, text) {
-    if (!need.c || !isHunt(l, content)) return null;
+    // Patch 8.3: a clearance of a level counts no kills (the level's state does): its foes' words are no cull's kind
+    if (!need.c || !isHunt(l, content) || clearTarget(s, { objectives: huntObjectives(l, content) })) return null;
     const o = huntObjectives(l, content).find((x) => KILL_WORK.has(x.verb) && dungeonCull(s, content, at, x, levelsNamed(text)) === 0);
     return o ? `${s.places[at].name} holds no "${o.what}" among its renewing foes (a guardian or boss only by its own name): no cull there` : null;
 }
@@ -665,8 +670,23 @@ function namesBoss(what, name) {
 function dungeonCull(s, content, root, o, levels) {
     if (!s || !root || !KILL_WORK.has(o.verb)) return null;
     const same = sameKinds(content);
-    const kind = (sp, anchor) => [].concat(sp).some((x) => namesKind(o.what, x, content.anchors.get(anchor), same));
-    return cullPopulation(s, content, root, (sl) => (sl.role === 'minion' ? kind(sl.species, sl.anchor) : namesBoss(o.what, sl.name)), { levels });
+    // Patch 8.3: the encounters as drawn for the cycle he meets, by the rule the engine counts their kills with
+    return cullPopulation(s, content, root, (sl) => cullKind(content, o, { species: sl.species, anchor: sl.anchor, role: sl.role, title: sl.name }, same), { levels });
+}
+
+/**
+ * Patch 8.3 (live 22.10.2026: the board asked 3 "restless skeletons" of a level whose cycle held 2 of them and 2 "risen
+ * bones"; the count read the encounters' possible kinds, the tally the kind drawn): whether a creature counts for a
+ * cull's DEFEAT objective, the one rule for the number the board asks (dungeonCull) and the kills the engine counts
+ * (defeatTally). An ordinary foe by its kind (namesKind on the objective's words or unit, with content's same-kind
+ * words; the young of a kind only where the objective names them); a Dungeon's guardian or boss only where the
+ * objective names it by its own name (8.1 §10: "crystal beetles" is not the Glimmer Queen). Different kinds stay apart.
+ */
+function cullKind(content, o, { species, anchor, role = null, title = null, name = null }, same = sameKinds(content)) {
+    if (role && role !== 'minion') return namesBoss(o.what, title);
+    const young = namesYoung(content, `${o.what} ${o.unit || ''}`);
+    return [o.what, o.unit].filter(Boolean).some((w) => namesKind(w, species || '', content.anchors.get(anchor), same))
+        && (young || !namesYoung(content, `${species || ''} ${name || ''}`));
 }
 /** The levels a listing's text names ("level 2", "the first level"), or null for none. */
 function levelsNamed(text) {
@@ -699,6 +719,23 @@ function cullNumbers(s, content, l, need) {
     });
 }
 
+/**
+ * Patch 8.3 (live 22.10.2026: "Skeletons in the Burial Galleries (3)", its desired end state "Level 1 of the Old Crown
+ * Catacombs is cleared of restless skeletons …"): a numeric cull in a Living Dungeon is done by its count (the board
+ * shows "(2)", the HUD "0/2 defeated", the turn-in counts the kills), so its desired end state, what the narrator and
+ * the extractor are told the contract wants, says that count, never a cleared level: a clearance has no number
+ * (clearTarget) and keeps its own words. Whether it allows driving them off stays as the generator wrote it (drivesOff
+ * reads this text); the purpose stays in the task. Any other contract keeps its end state.
+ */
+function cullEndState(s, content, q) {
+    const kills = (q.objectives || []).filter((o) => o.verb === 'DEFEAT' && Number.isInteger(o.qty) && o.qty > 0);
+    if (q.clear || !q.dungeon || !kills.length) return q.desired_end_state;
+    const name = s.places[q.dungeon]?.name || q.dungeon;
+    const where = Number.isInteger(q.floor) ? `level ${q.floor} of ${name}` : name;
+    const how = drivesOff(content, q) ? 'defeated or driven off' : 'defeated';
+    return `${kills.map((o) => `${o.qty} ${o.what}`).join(' and ')} of ${where} ${how} (a cull: done at that count, whatever else is left on the level)`;
+}
+
 /** Book validated listings: quest.created (listed) for each, and the board. The payout is fixed from here on. */
 export function bookBoard(s, content, need, listings, emit) {
     const ids = [];
@@ -725,6 +762,7 @@ export function bookBoard(s, content, need, listings, emit) {
             quest.dungeon = where;
             const floors = clear ? [clear.floor] : levelsNamed(listingText(l));
             if (floors?.length === 1) quest.floor = floors[0];
+            quest.desired_end_state = cullEndState(s, content, quest);
         }
         emit({ t: 'quest.created', d: { quest } });
         ids.push(id);

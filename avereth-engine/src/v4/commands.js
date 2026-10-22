@@ -256,9 +256,13 @@ function acceptBid(s, content, c, ctx, emit, o) {
     return { status: 'resolved', line: `SELLS — ${what} to ${who(s, o.seller)} for ${cpText(sale.cp, content)}: the coin is his now, the things are ${who(s, o.seller)}'s (the engine booked both).` };
 }
 
-/** Patch 7: the line of a way barred by an obstacle he has not got past (src/v4/dungeon.js). */
+/**
+ * Patch 7: the line of a way barred by an obstacle he has not got past (src/v4/dungeon.js). Patch 8.3 (live
+ * 22.10.2026: he went down the sound steps to the fallen flight): he may come up to it and see it; he does not get past
+ * or over it, and nothing of an attempt on it happens.
+ */
 function barred(f, toward) {
-    return { status: 'refused', reason: 'blocked', line: `BLOCKED — the way to ${toward} is barred by ${f.name} (${f.id}): going there does not get him past it. He stays where he is; dealing with it (an attempt), another way or turning back is his choice.` };
+    return { status: 'refused', reason: 'blocked', line: `BLOCKED — the way to ${toward} is barred by ${f.name} (${f.id}): going there does not get him past it. He may come up to it and see it, but he does not get past or over it and makes no attempt on it: he stays on this side, where he is; dealing with it (an attempt), another way or turning back is his choice.` };
 }
 
 /**

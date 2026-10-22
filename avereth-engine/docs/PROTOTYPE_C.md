@@ -1872,3 +1872,23 @@ Livetest 21.10.2026 13:33 (`tests/v4/live_1021e.json`). Vollständige Beschreibu
   - Dry-Run auf .26: 17 von 18 Requests zugeordnet und byte-gleich neu gebaut.
   - Der echte Lauf braucht einen Provider-Schlüssel.
 - **Tests:** `tests/v4/patch82.test.js` (15).
+
+### Patch 8.3 (4.3.0-c.6.6.28): Dungeon-Etagen, erreichbare Culls, Quest-Kontext
+
+Livetest 22.10.2026 02:00 (`tests/v4/live_1022a.json`). Vollständige Beschreibung, Entscheidungen, alte Spielstände und Grenzen: `docs/PATCH8_3_DUNGEON_FLOORS_CULLS.md`.
+
+- **Etagen.** Das Gate eines echten Dungeons ist Ebene 0. Jeder Weg vom Gate hinein führt auf Ebene 1 (`levelVia`, angepasst an `floorAt`). Gebäude ohne `dungeon.real` bleiben unverändert.
+- **Erreichbare Culls.**
+  - Die Zahl auf dem Board kommt aus der gezogenen Population des Zyklus, den Alaric antrifft (`runNow`).
+  - Zahl und Zählung nutzen dieselbe Regel (`cullKind`): Art nach `namesKind`, Wächter und Boss nur beim Namen.
+  - Ein Dungeon-Cull zählt nur in seinem Dungeon und auf seiner Ebene.
+- **Cull oder Clear.**
+  - Ein Dungeon-Cull mit Zahl bekommt einen Zielzustand aus dieser Zahl.
+  - Ein Clear ohne Zahl bleibt ein Clear und wird nicht mehr von der Cull-Prüfung abgewiesen.
+  - Der Generator wird angewiesen: „One listing is one of the two, never both“ (`board-4.7`).
+- **Kontext.**
+  - „locals confirm“ entfällt.
+  - QUEST PLAY nennt bei Dungeon-Aufträgen den Dungeon selbst als Komplikation.
+  - BLOCKED erlaubt das Herantreten an das Hindernis, aber kein Darüberhinaus.
+- **Alte Spielstände:** Gespeicherte Ebenen bleiben unverändert. Der .27-Raum wird nur durch eine neu generierte Nachricht 16 korrigiert. Für den nächsten Dungeon-Livetest wird eine neue Kampagne empfohlen.
+- **Tests:** `tests/v4/patch83.test.js` (11, auf `ef4a819` alle rot). Angepasst: `review_4_1_3`, `testrun_v11/live`.

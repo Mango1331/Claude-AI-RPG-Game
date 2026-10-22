@@ -348,8 +348,15 @@ export function newLink(s, { a, b, name = null, both = true, hidden = false, fea
     return { id, a, b, name: name ? String(name).slice(0, 60) : null, both, hidden, feature, dir, since: at, found: hidden ? null : { ...at, how }, by };
 }
 
-/** The level a room has when reached from another by a way (one down from level 1 is level 2). */
+/**
+ * The level a room has when reached from another by a way (one down from level 1 is level 2). Patch 8.3 (live
+ * 22.10.2026 02:00: the stair down from the gate of the Old Crown Catacombs led to "level 1" booked as level 2, behind
+ * the seal of level 1): a true Dungeon's own place is its gate (living.js floorAt: level 0), not a room of level 1;
+ * every way from the gate into the Dungeon, down or level, reaches level 1. A building or cave explored room by room
+ * that is no true Dungeon counts its own place as level 1, as before.
+ */
 export function levelVia(s, from, l) {
+    if (trueDungeonOf(s, from) === from) return 1;
     const base = s.places[from]?.level ?? (dungeonOf(s, from) === from || !dungeonOf(s, from) ? 1 : null);
     if (!Number.isInteger(base)) return null;
     const dir = l ? dirFrom(l, from) : null;

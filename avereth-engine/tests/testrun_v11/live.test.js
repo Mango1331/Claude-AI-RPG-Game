@@ -150,7 +150,7 @@ test('C: in Millbrook the contract stays active: the heads and the reeve\'s seal
     assert.equal(s.entities.pc.sheet.xp, WOLVES_XP); // the two wolves, nothing else
     // the next engine block: the contract, who pays it, and the correction
     const text = run.at[29].gen.context.text;
-    assert.match(text, /- Quest \(active, Novice Guild contract\): Wolf Problem — Millbrook Hamlet — from Millbrook Hamlet — reward: 8 silver on proof of at least two wolves \(paid by the Guild when turned in at a front desk; locals confirm, never pay\)/);
+    assert.match(text, /- Quest \(active, Novice Guild contract\): Wolf Problem — Millbrook Hamlet — from Millbrook Hamlet — reward: 8 silver on proof of at least two wolves \(paid by the Guild when turned in at a front desk, never by its client or other locals\)/, 'Patch 8.3: the Guild pays; no local is said to confirm it');
     assert.match(text, /CORRECTIONS[^\n]*\n- quest "Wolf Problem — Millbrook Hamlet" stays active/);
 });
 

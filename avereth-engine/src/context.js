@@ -393,7 +393,7 @@ function retrievalItems(state, content, pinnedIds, recentTurns) {
     for (const q of Object.values(state.quests)) {
         if (q.status !== 'active' && q.status !== 'offered') continue;
         // a Guild contract says where it ends: its reward is the Guild's to pay at a front desk (delta.js)
-        items.push({ kind: 'quest', text: `${q.title} ${q.notes.join(' ')}`, entities: [q.giver].filter(Boolean), quests: [q.id], turn: q.history.at(-1)?.turn ?? 0, importance: 0.8, label: `Quest (${q.status}${q.rank ? `, ${q.rank} Guild contract` : ''}): ${q.title}${q.giver ? ` — from ${anyLabel(state, content, q.giver)}` : ''}${q.reward ? ` — reward: ${q.reward}` : ''}${q.rank && q.status === 'active' ? ' (paid by the Guild when turned in at a front desk; locals confirm, never pay)' : ''}${q.notes.length ? ` — ${q.notes.at(-1)}` : ''}` });
+        items.push({ kind: 'quest', text: `${q.title} ${q.notes.join(' ')}`, entities: [q.giver].filter(Boolean), quests: [q.id], turn: q.history.at(-1)?.turn ?? 0, importance: 0.8, label: `Quest (${q.status}${q.rank ? `, ${q.rank} Guild contract` : ''}): ${q.title}${q.giver ? ` — from ${anyLabel(state, content, q.giver)}` : ''}${q.reward ? ` — reward: ${q.reward}` : ''}${q.rank && q.status === 'active' ? ' (paid by the Guild when turned in at a front desk, never by its client or other locals)' : ''}${q.notes.length ? ` — ${q.notes.at(-1)}` : ''}` });
     }
     // Patch 2 (src/threads.js): the open threads that matter now; a faded or resolved one is history, found only when this
     // turn's words are about it (low importance: the lexical match has to carry it)
@@ -523,6 +523,19 @@ function ruleParagraphs(content, query, k) {
 const SITUATIONS = ['stealth', 'loot', 'trade'];
 
 /**
+ * Patch 8.3 (live 22.10.2026: QUEST PLAY asked a complication of the skeleton cull; the clerk warned of a crumbled
+ * stair, the next reply put it on the only stair down from the gate and the extractor booked it as an obstacle there):
+ * for a contract booked in a Living Dungeon, the Dungeon is its complication. The engine places its encounters,
+ * guardian and seals; a hazard the place itself plausibly holds stays the story's. Empty without such a contract.
+ */
+function dungeonWork(state, quests) {
+    const names = [...new Set(quests.map((q) => q.dungeon || q.clear?.dungeon).filter((id) => state.places[id]?.dungeon?.real).map((id) => state.places[id].name))];
+    return names.length
+        ? ` For a contract in a Living Dungeon (${names.join(', ')}) the Dungeon itself is that complication: its foes, dangerous parts, guardian and seals, which the engine places; invent no further hurdle for the contract in front of it or on the way in. A hazard the place plausibly holds of itself (a trap, a damaged stair) stays possible.`
+        : '';
+}
+
+/**
  * Build the per-turn engine block.
  * opts: {input, outcome, corrections: string[], budget, rulesBudget, recentTurns, situations: string[], weights, lastReply, systemQuery, lore, envelope}
  */
@@ -580,7 +593,7 @@ export function buildContext(state, content, opts = {}) {
             ? ` | desired outcome: ${q.desired_end_state || objectiveText(q)} | remembered work: ${objectiveText(q)}${progress ? ` | progress: ${progress}` : ''}${q.status === 'active' && defeatTally(state, content, q).length ? ` | defeated (engine count): ${tallyText(defeatTally(state, content, q))}` : ''}${readyText(state, content, q, { c: cTurn }) ? ` | ${readyText(state, content, q, { c: cTurn })}` : ''} | ${cTurn ? proofMemory(state, content, q) : `verification examples: ${guildProofText(q) || 'none listed'}`} | payout: ${q.payout_cp ?? 0} cp (paid only by the Guild on explicit accepted turn-in)${cTurn ? ' | these are its whole terms: no clause the story adds binds it' : ''}`
             : q.objectives?.length ? ` | remembered work: ${objectiveText(q)}` : '';
         return `- ${q.title}${req}`;
-    }).join('\n')}\nQUEST PLAY: only when the current scene/action is actually pursuing a nontrivial active Quest, let that Quest develop at least one causal, meaningful complication or active situation before ordinary resolution. Do not inject Quest complications into unrelated scenes merely because a Quest is active. Combat is not required. Once the desired outcome is genuinely achieved, let the extractor store quest.ready; do not manufacture extra bureaucracy merely to satisfy a generated proof phrase.`, 0);
+    }).join('\n')}\nQUEST PLAY: only when the current scene/action is actually pursuing a nontrivial active Quest, let that Quest develop at least one causal, meaningful complication or active situation before ordinary resolution. Do not inject Quest complications into unrelated scenes merely because a Quest is active. Combat is not required.${dungeonWork(state, activeQuests)} Once the desired outcome is genuinely achieved, let the extractor store quest.ready; do not manufacture extra bureaucracy merely to satisfy a generated proof phrase.`, 0);
 
     // Patch 2: Alaric's own goals (src/v4/intents.js): a few short lines, so the story knows where he is headed
     const goals = v4 ? goalLines(state) : [];

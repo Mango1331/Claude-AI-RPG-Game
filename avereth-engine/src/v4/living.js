@@ -639,18 +639,31 @@ function withdrawnEvents(s, root, floor) {
 }
 
 /**
- * Patch 8.1 (§10): how many of what a contract counts one regular cycle of a Dungeon holds at the least (the smallest
- * count of each matching encounter, over its levels or the levels named), from its fixed structure; one not
- * established yet is read from what establishing it will fix (the same deterministic draw), nothing is emitted and
- * nothing hidden is told. counts(slotSpec) says which encounters are of the kind. Null for no Living Dungeon.
+ * Patch 8.3: the encounters a Living Dungeon holds at the world's time, as drawn: its cycle's (the one a reset due by
+ * now brings, as cycleEvents books it when he comes, or, not established yet, the first, as establishing it will fix
+ * it: the same deterministic draws, runFor). Nothing is emitted. Null for no Living Dungeon.
  */
-export function cullPopulation(s, content, root, counts, { levels = null } = {}) {
+export function runNow(s, content, root) {
     const x = livingOf(s, root) || establishEvents(s, content, root)[0]?.d.dungeon || null;
     if (!x) return null;
+    const periods = x.reset_min > 0 && s.clock.minute >= x.cycle_start + x.reset_min ? Math.floor((s.clock.minute - x.cycle_start) / x.reset_min) : 0;
+    return periods ? runFor(x, x.cycle + periods) : x.run;
+}
+
+/**
+ * How many of what a contract counts a Dungeon holds, over its levels or the levels named. Patch 8.3 (live 22.10.2026:
+ * "Skeletons in the Burial Galleries (3)" where its cycle held 2 restless skeletons and 2 risen bones; 8.1 counted
+ * the smallest count of each encounter whose possible kinds included the one asked): the encounters as drawn for the
+ * cycle he meets (runNow), each with its drawn kind and number. counts(slot) says which count, by the rule the engine
+ * counts the kills with (guild.js cullKind). Nothing hidden is told. Null for no Living Dungeon.
+ */
+export function cullPopulation(s, content, root, counts, { levels = null } = {}) {
+    const run = runNow(s, content, root);
+    if (!run) return null;
     let n = 0;
-    for (const [k, f] of Object.entries(x.floors)) {
+    for (const [k, f] of Object.entries(run.floors)) {
         if (levels?.length && !levels.includes(Number(k))) continue;
-        for (const sl of f.slots) if (counts(sl)) n += sl.role === 'minion' ? Math.max(1, (sl.count || [1, 2])[0]) : 1;
+        for (const sl of f.slots) if (counts(sl)) n += sl.count || 1;
     }
     return n;
 }

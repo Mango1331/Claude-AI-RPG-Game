@@ -400,3 +400,21 @@ Details: `docs/PATCH8_1_GATE_GROUP_COMBAT.md`.
 **Benchmark.** `tools/bench_extract.mjs` sendet die geloggten Extractor-Requests in den Varianten A0, A und C. Bewertet werden die Antworten mit `parseExtraction` und `applyExtraction` gegen den Chat des Laufs.
 
 Details: `docs/PATCH8_2_LLM_PERFORMANCE.md`.
+
+## 17. Etagen-Identität und Cull-Zählung (Patch 8.3, 4.3.0-c.6.6.28)
+
+**Eine Etagen-Definition.**
+- `living.js floorAt` definiert sie: Der Root eines echten Dungeons ist sein Gate, Ebene 0. Jeder andere Raum hat seine gespeicherte Ebene.
+- `dungeon.js levelVia` vergibt die Ebene neuer Räume nach dieser Definition: Vom Gate führt jeder Weg auf Ebene 1, sonst gilt Ebene n ± 1.
+- Siegel, Slots, Spannen, Clears und Kill-Zurechnung lesen dieselbe Ebene.
+
+**Eine Population.** `living.js runNow` ist die Population, die ein Living Dungeon zur aktuellen Weltzeit hält:
+- der gespeicherte Zyklus,
+- oder der Zyklus, den ein fälliger Reset bucht,
+- oder der erste, wenn der Dungeon noch nicht etabliert ist.
+
+Alle drei entstehen aus derselben deterministischen Ziehung `runFor`. Das Board (`cullPopulation`) liest daraus, ohne etwas zu speichern.
+
+**Eine Zählregel.** `guild.js cullKind` entscheidet sowohl für die Zahl auf dem Board (`dungeonCull`) als auch für die gezählten Kills (`defeatTally`), ob ein Wesen für ein `DEFEAT`-Ziel zählt. `areaOf` begrenzt Dungeon-Culls auf ihren Dungeon und ihre Ebene.
+
+Details: `docs/PATCH8_3_DUNGEON_FLOORS_CULLS.md`.

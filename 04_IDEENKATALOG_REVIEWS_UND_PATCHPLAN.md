@@ -1,8 +1,8 @@
 # Avereth Engine – Ideenarchiv, Claude-Gegenreviews und mögliche Patches
 
-**Dokumenttyp:** nichtbindendes Entscheidungsarchiv für Chat-Übergaben; **Stand:** 22.10.2026 · Patch 8.4 (.29) und separater automatisierter ST-GLM-Livetest-Runner (044d5b3) im Git-Code geprüft; echter GLM-Runner-Test weiterhin offen.  
+**Dokumenttyp:** Ideen-/Reviewarchiv mit **verbindlicher Hauptroadmap in §1a**; **Stand:** 22.10.2026 · Patch 8.4 (.29) und Live-Runner im Code geprüft, erster echter automatischer Windows-GLM-Lauf (19 Züge) ausgewertet; Patch 8.4.1 beauftragt, Umsetzung noch nicht bestätigt.  
 **Quelle:** intensive Auswertung von Git, älteren Projekt-Chats, realen SillyTavern-Tests, externen Referenzen und **mehreren unabhängigen Gegenreviews in einer zweiten Claude-Sitzung**.  
-**WICHTIG:** Dieses Dokument unterscheidet streng **IMPLEMENTIERT**, **BESTEHENDER DESIGN-KANON**, **ZUR REVIEW VORBEREITET**, **PLANKANDIDAT**, **EXPERIMENT**. Die Aufnahme einer Idee bedeutet **keine Freigabe**. Maßgeblich bleiben `02_DESIGN_KANON.md`, `03_AKTUELLER_PROJEKTSTAND.md` und aktueller Git-Code.
+**WICHTIG:** Dieses Dokument unterscheidet **IMPLEMENTIERT**, **VERBINDLICH GEPLANT**, **HISTORISCHER/ÜBERHOLTER REVIEWSTAND**, **PLANKANDIDAT** und **EXPERIMENT**. Einzelne Katalogideen sind nicht freigegeben; **die explizit beschlossene Roadmap in §1a ist verbindlich**. Git-Code und Datei 03 entscheiden über Implementierung und Teststatus; Datei 02 über den Design-Kanon. Ältere Review-Aussagen, die drei Startklassen dauerhaft ausschließen, wurden von der späteren ausdrücklichen Patch-9-Entscheidung überholt.
 
 ## 1. Aktueller Entscheidungsstand – nicht verwechseln
 
@@ -13,13 +13,85 @@
 | **Patch 8.2 (.27, ef4a819)** | **IMPLEMENTIERT / Git-Code verifiziert**; .27-GLM-Livetest 22.10. mit Telemetrie: Extractor-Median 4,87 s (7), Narrator-Median 17,85 s (7; zwei extreme Ausreißer), keine kausale Beschleunigung bewiesen | Diagnosepatch bleibt als Grundlage; A0/A/C erst mit belastbarem Weltvergleich und separaten Providerläufen bewerten |
 | **Patch 8.3 (.28, 70cbb5e)** | **IMPLEMENTIERT / historisch:** echter .28-Glimmerdeep-Lauf bewies Zugang zu Ebene 1, Kill-/Loot-/XP-/Questlogik, aber vier Solo-Ambushes und falschen Cull-Task. **Diese beiden direkten reinen Beetle-Fälle führte zu Patch 8.4.** Boss/Floor-Clear noch nicht live | Regressionen als historisch dokumentierte Prüffälle behalten, nicht den alten Bug als aktuellen Stand darstellen |
 | **Patch 8.4 (.29, 4d08d4f)** | **IMPLEMENTIERT / unabhängig im Git-Code geprüft:** Unverdeckte Angriffe holen bereits etablierte feindliche Gruppenmitglieder sofort in denselben Encounter, bewahren einzelnes Ambush-Opening und echte Stealth. Reiner Dungeon-Cull zeigt angeglichene Task-Zahl; `amountText` entfernt Doppelmengen. Claude: 995/995, erfolgreicher C-Smoke 21/21 mit sporadischem ST-Preset-Status-Race. **Restfehler:** DEFEAT+DEFEND kann im Task noch „six“ bei Objective/EndState „four“ zeigen | Kleiner Guard-Cull-Task-Nachtest/-Fix, dann echter .29-Providerkampf bis Boss/Floor-Clear; Testqualität und Smoke-Race separat (§15, 03 §5l) |
-| **Automatischer ST-Live-Runner (`044d5b3`)** | **IMPLEMENTIERT / Code geprüft**, Engine bleibt .29: lokale isolierte ST-Instanz mit Playwright, LLM-Spieler, Guide `patch_8_4`, automatische Chat-/Engine-/Provider-/Spieler-Logs und Bewertung. Claude berichtet 1015/1015 sowie 26/26 Cloud-Stub. **Kein realer lokaler GLM-Lauf bestätigt** | Proxy-Quelle/GLM-ID unter Windows prüfen; erster echter Runner-Livetest mit 20–40-Züge-Orientierung statt ungeprüfter 1–2h-Prognose, Ergebnis-Dateien unabhängig auswerten (§16, 03 §5m) |
+| **Automatischer ST-Live-Runner (35ead9c)** | **IMPLEMENTIERT / echter Windows-GLM-Lauf vom 22.10.2026 ausgewertet**: 19 Züge, Integrität OK, kontrollierter Player-Failure, Reasoning-/Leerantwort- und Spielerverhaltensprobleme erkannt. | **Patch 8.4.1 beauftragt**, noch nicht verifiziert: gezielte Runner-/Spieler- und Engine-Fixes; dann nächster Livetest (§16) |
 | **Engine Actions & QoL** | **KANDIDAT**, einschließlich Engine-only-Gildenboard, Rest/Schlaf/Wait, sichere Rückwege, ST-Quick-Replies; noch kein Patch beschlossen | Umfang und mögliche Bündelung nach Performance-Review entscheiden |
-| **Patch 9 Organic Classes/Growth** | **VERBINDLICHES LANGFRISTIGES ZIEL, NICHT IMPLEMENTIERT.** Organische Entwicklung, Skill-Bausteine, bedeutende Nutzungsereignisse; *keine* Änderung der kanonischen Ausgangsklassen aus dieser Ideensammlung ableiten | Ausführliche Patchplanung nach .26-/Performance-Befunden; Reihenfolge zu ROAD AHEAD noch offen |
-| **ROAD AHEAD** | **NOCH NICHT FREIGEGEBENER KANDIDAT** für Engine-verankerte Reiseetappen und Suche | Bei wiederholt schlechten Reise-/Such-Livetests ggf. vor Patch 9; sonst Patch 9 gemäß früherer Roadmap |
-| **Patch 10B / Polish** | Bisheriger Plan: Combat-Utility-HUD, Focused Ward/Bewegung, weitere UI-/Balancingarbeit; Umfang noch nicht abschließend | Nicht still zu einem neuen Großpatch ausweiten |
+| **Patch 9 Organic Character Growth** | **VERBINDLICH GEPLANT, NICHT IMPLEMENTIERT:** genau **drei Startklassen Warrior/Mage/Rogue** (statt aktuell fünf), feste Starter-Skills und -Ausrüstung, danach organische Klassen-/Skill-/Passive-Entwicklung ohne Bäume. Details §1a. | Nächster großer Mechanikpatch nach notwendigen Patch-8-Integrationsfixes; keine heimliche Vorabumstellung |
+| **ROAD AHEAD** | **Separater, NICHT freigegebener Kandidat** für Engine-verankerte Reiseetappen und Suche | Nur bei wiederholt belegten gravierenden Reise-/Such-Blockern gesondert priorisieren; sonst Patch 9 → 10B |
+| **Patch 10A – HUD/QoL** | **Bereits implementierte frühere UI-/QoL-Arbeit**, nicht erneut als Großpatch beauftragen; offene konkrete Fälle weiterhin möglich. | Keine Dopplung mit Patch 10B | 
+| **Patch 10B Balancing, Performance & Final Polish** | **VERBINDLICH GEPLANT, NICHT IMPLEMENTIERT:** XP-/Farm- und Progressionsbalance, LLM-/Prompt-/API-/Runtime-Performance, Gameplay-Polish, Langzeit- und Replay-Regressionen. Bestehende **53-Punkte-Abnahmeliste** gilt weiter. Details §1a. | Nach Patch 9, messen und simulieren statt Zahlen oder Architektur voreilig festlegen |
 
-**Wichtig bei jedem neuen Chat:** Nutzer hat ausdrücklich gebeten, **F1/#71 (Umstellung auf drei Standardklassen) aus der Videospielisierungsdebatte zu ignorieren**. Kanonische Ausgangsklassen bleiben `Warrior, Mage, Guardian, Duelist, Ranger` (Datei 02). Diskussionen über Organic Growth sind davon getrennt. Nichts dazu ungefragt ändern.
+**Wichtig bei jedem neuen Chat:** Der heutige **IMPLEMENTIERTE** Stand hat fünf Startklassen (Warrior, Mage, Guardian, Duelist, Ranger). Die frühere Ablehnung der isolierten Katalogidee F1/#71 wurde durch die **spätere explizite Nutzerentscheidung vom 20.10.2026 für Patch 9** ersetzt: **Warrior, Mage, Rogue** als genau drei Starterklassen. **Vor Patch 9 am bestehenden Code nichts heimlich ändern; ab Patch 9 die neue verbindliche Designentscheidung anwenden.** Die früheren Texte in §3/§4 sind historische Reviewnotizen.
+
+
+## 1a. Verbindliche Roadmap nach Patch 8 – ausführliche Planungsbasis
+
+**Geltung und Status:** Die folgenden Grundsatzentscheidungen wurden für die Roadmap am 20.10.2026 ausdrücklich getroffen und am 22.10.2026 im Projektkontext erneut überprüft. Bei Widerspruch haben sie Vorrang vor älteren Kandidaten-/Review-Sätzen in dieser Datei. **Geplant bedeutet nicht implementiert.**
+
+### 1a.1 Reihenfolge
+
+1. **Patch 8 Living Dungeons und gezielte Integration:** Die Builds .25–.29 sind implementiert; echte Livetests bestehen. **Patch 8.4.1** zur gezielten Verbesserung von Testspieler, Runner und bestätigten Engine-Konsistenzproblemen ist beauftragt, aber noch nicht als umgesetzt verifiziert. Danach erneuter echter GLM-Lauf. Patch 8 darf nicht zum unendlichen Sammelpatch werden.
+2. **Patch 9 Organic Character Growth:** der nächste **eigenständige große Mechanikpatch**. Drei neue Startklassen und organische Charakterentwicklung, genau wie unten festgelegt.
+3. **Patch 10A HUD / QoL:** bezeichnet **bereits vorhandene frühere UI-/Quality-of-Life-Arbeit**; kein neuer noch ausstehender Großpatch. Verbliebene kleine UI-Probleme sind gezielt zu prüfen.
+4. **Patch 10B Balancing, Performance & Final Polish:** abschließende Balance-, Optimierungs-, Integrations- und Abnahmephase **nach Patch 9**, mit der zuvor ausgearbeiteten **53-Punkte-Abnahmeliste** als Grundlage.
+5. **ROAD AHEAD, Engine-only-Aktionen, Quick Replies und weitere Großideen:** **getrennte, nicht automatisch freigegebene Kandidaten**. Eine neue Priorisierung vor Patch 9 setzt belegte kritische Reise-/Suchprobleme und eine separate Entscheidung voraus.
+
+### 1a.2 Patch 9 – Organic Character Growth
+
+**STATUS: VERBINDLICHES DESIGN, NOCH NICHT IMPLEMENTIERT.**
+
+**Spielerfahrung:** Fähigkeiten, Klasse und dauerhaftes Charakterprofil wachsen aus dem tatsächlichen Spielen: Entscheidungen, Kampfstil, Training, experimentellem Einsatz, besonderen Erlebnissen und Entdeckungen. Kein Spieler soll einen vorgefertigten Skill- oder Evolutionsbaum abarbeiten müssen. Entwicklung muss **tatsächlich mechanisch wirksam** und dauerhaft sein, nicht bloß behauptete Narrator-Prosa.
+
+**Genau drei Startklassen ab Patch 9:**
+
+| Neue Starterklasse | Favored Stats | Vorgegebene Anfangsinhalte |
+|---|---|---|
+| **Warrior** | **STR / VIT** | Feste Starter-Skills und Startausrüstung |
+| **Mage** | **INT / WIL** | Feste Starter-Skills und Startausrüstung |
+| **Rogue** | **AGI / PER** | Feste Starter-Skills und Startausrüstung |
+
+- **Zeitliche Klärung:** Die heutige Engine hat noch **fünf Klassen**: Warrior, Mage, Guardian, Duelist, Ranger. Diese fünf sind **Bestandscode bis Patch 9**. Die spätere ausdrückliche Patch-9-Entscheidung lautet **nur drei Startklassen**. Ältere Sätze aus dem 141er-Videospiel-Katalog, dass Punkt F1/#71 verworfen sei und fünf Klassen für immer bleiben, sind in Bezug auf Patch 9 **überholt**. Vor Patch 9 **keine heimliche Umstellung**; Auswirkungen auf bestehende Spielstände bei Umsetzung gesondert prüfen.
+- **Nur der Einstieg ist fest:** Anfangsklassen, feste Starter-Skills und Starter-Ausrüstung. **Keine feste Liste später lernbarer Skills**, keine vordefinierten Evolutionsklassen, kein versteckter Evolutionsbaum in Guidelines, JS oder Lore.
+- **Mögliche organische Resultate:** neu entstehende aktive Fähigkeiten; Weiterentwicklung/Evolution vorhandener Skills; Passives; dauerhafte Boni/Charaktermerkmale; neue oder gewandelte Klassenidentität. Unterschiedliche Builds und hybride Entwicklungen müssen möglich bleiben.
+- **Wodurch Entwicklung entsteht:** reale Spielerhandlungen, wiederholte und **bedeutsame** Fähigkeitsnutzung, Training, Experimente, kreative Anwendung, besondere überstandene Situationen und neu gewonnene Erkenntnisse. Reine Nutzungszähler, XP-Schwellen oder bloße Erwähnungen allein ersetzen diese Begründung nicht. Nicht jede Handlung muss eine Belohnung ergeben; kein automatisches Klassenupgrade auf festem Level.
+- **Autorität:** Die LLM-Schicht erkennt Chancen und schlägt **narrativ/strukturiert** organische Entwicklungen anhand Guidelines vor. Die **deterministische JS-Engine** validiert anhand tatsächlicher Ereignisse und zulässiger Mechanik, entscheidet, bucht und persistiert Skills, Kosten, Effekte, Reichweiten, Ressourcenverbrauch, Passives und Boni. **Guidelines sind Leitplanken, keine Rezept- oder Evolutionslisten.**
+- **Skill-/Effektbausteine:** Ein offenes Kombinationssystem auf **mechanisch definierten, validierbaren** Effekten statt beliebiger LLM-Zahlen. Kreative Umwelt-/Utility-Anwendungen dürfen entstehen; die Engine prüft Grenzen, Ziel, Dauer und Wirkung. Der Narrator kann keinen neuen Skill, Statbonus oder Klasseneintrag ohne autorisiertes Ereignis schenken.
+- **Fairness und Player Agency:** Lernen bleibt durch die Spielerfigur begründet, keine ungefragte Umklassifizierung und kein bedeutungsloser Pflichtgrind. Der Spieler kann unterschiedliche Schwerpunkte verfolgen; nicht jedes Abenteuer führt denselben Warrior/Mage/Rogue entlang eines vorgezeichneten Pfades.
+- **Replay/Persistenz:** Neue Fähigkeiten, Evolutions-, Passive- und Bonusereignisse müssen reproduzierbar nach Save/Reload, Chat-Replay, Swipe/Regenerate und langen Runs bestehen. Keine doppelten Belohnungen; fehlgeschlagene Extraktion oder erfundene Erzählung darf keinen Powergewinn eintragen.
+- **Abnahmefälle:** alle drei Startklassen korrekt; bestätigte Startskills und Startausrüstung; mehrere unterschiedliche Spielstile erzeugen plausible unterschiedliche Entwicklungen; fehlende tatsächliche Lernereignisse führen zu keinem Bonus; neue Skills/Skill-Evolutionen/Passives/permanente Boni funktionieren im Kampf und außerhalb; unberechtigte LLM-Vorschläge werden abgelehnt; Langzeit- und Replay-Stabilität bleibt erhalten.
+
+**Nicht vorziehen:** globales XP-/Damage-Feintuning, grundsätzliche LLM-Provider-/API-Umbauten oder feste Skill-/Klassenbäume. Diese gehören nicht zur Patch-9-Mechanik; allgemeine Balance ist Patch 10B.
+
+### 1a.3 Patch 10B – Balancing, Performance & Final Polish
+
+**STATUS: VERBINDLICHE ABSCHLUSSPHASE, NOCH NICHT IMPLEMENTIERT. Patch 10A ist nicht erneut zu entwickeln.** Die bestehende **53-Punkte-Abnahmeliste** bleibt Grundlage. Dieser Abschnitt bündelt nachgewiesene Hauptentscheidungen; er **erfindet keine 53 Einzelpunkte** und ersetzt deren Originalfassung nicht.
+
+**A. XP, Progression, Loot und Farm-Balance**
+- Bestehende Levelschwelle **Level × 100 XP** als Ausgangsbasis prüfen; Gegner-XP **12 / 18 / 20** als **Simulationsvarianten**, nicht bereits festgelegte Endwerte vergleichen. Elite **×1,5**, Boss **×2,5** als vorhandene Balancingannahmen mitprüfen.
+- Spürbarer, eher zügiger früher Fortschritt; langfristig sinnvolle Powerkurve einschließlich Patch-9-Entwicklung. Monsterjagd, Exploration und Dungeons sollen **auch ohne Gildenquest** Fortschritt erlauben. Questreward, Kampf-XP, Loot, Risiko und Aufwand zusammen simulieren.
+- **Kein Farm-XP-Nerf** oder künstliche Diminishing Returns nur wegen wiederholter Gegnerjagd. Kein automatisches Level-Scaling von Monstern an Alaric; Rang, Ort und Monsterprofil bleiben maßgeblich. Nicht vor belastbaren Langzeitdaten pauschal an Zahlen drehen.
+
+**B. LLM-/Prompt-/Provider- und Engine-Performance**
+- Unabhängig messen: Interpreter/Planner, Board, Narrator, Extractor, System-Panels; Input-/Output-Tokens, Reasoning, Caching, Latenz, Reparaturen und Fehler. Die **103 LLM-Aufrufe** aus einem früheren Audit (je 34 Interpreter/Narrator/Extractor plus 1 Planner) sind **historische Messung**, nicht automatisch die aktuelle Runtime.
+- Prompt-Reihenfolge, Lorebook-/Vertrag-Prefixe, dynamische World-Info, Kontextbudget und echte Provider-Cache-Treffer systematisch A/B prüfen; strukturierte Ausgaben und Antwort-/Reasoning-Limits so abstimmen, dass keine wichtigen Fakten oder Narrative verloren gehen.
+- Unnötige LLM-Aufrufe nur dann vermeiden, wenn Mechanik, World-Persistenz und Erzählerqualität gleich bleiben. Engine-only-Anzeigen bei wirklich reinen Systemaktionen sind Kandidaten. **Kein Qualitätsverlust bloß für Geschwindigkeit; keine unbewiesene 3→2-Aufruf-Zusammenlegung oder zusätzliche große Persistenz-/Memory-Architektur.**
+- Lange Event-Chats, Fold-/Replay-Kosten und State-Wachstum messen; keine Optimierung, die deterministischen Replay, Save/Load, Regenerate oder Authority-Firewall beeinträchtigt.
+
+**C. Gameplay-Qualität, UI und Integration**
+- **Vorhandenes 10A-/Runtime-HUD erhalten**, keine zweite UI-Großimplementierung. Gezielt prüfen: Defense-/Utility-Skill-Anzeige samt Kosten/Wirkung, Focused Ward + Movement, Inventar, Status, Quest- und Level-up-Systemkarten, Lesbarkeit und sinnvolle kurze Engine-Meldungen.
+- Kompletten Sandbox-Spielablauf abnehmen: Charakteraufbau und organische Entwicklung, Gildenquests, Reisen, Suchen, NPC-Gespräche, Kampfgruppen, Dungeon-Gates/Etagen/Bosse/Reset, Loot, Shop, READY/Turn-in, freie Entscheidungen. Keine bedeutungslosen Reisezwischenstopps, Trophäenpflicht oder starren Hauptquestketten.
+- Narrator-Kreativität beibehalten, aber keine nicht gebuchten Gegenstände, Gegner, Skills, Statpunkte, XP oder Erfolge als tatsächlich erfolgt darstellen. Keine vermischten Zuständigkeiten von Spieler, LLM-Erzähler, Planner und JS-Engine.
+
+**D. Langzeit-/Regressionstests und Freigabe**
+- Echte und automatisierte Mehrstufenläufe sowie Stresstests um **100 / 500 / 1.000 Züge**: Promptwachstum, Latenz, State-/Eventwachstum, Inventar, offene Quests, NPC-/Weltgedächtnis, Save/Reload, Swipe/Replay und Stabilität.
+- Reale Fehlerfälle als Regressionen: Gruppencombat, Quest-Cull-Zahlen, Boss/Etage/Reset, mehrfacher Verkauf, XP/Level-up und echte Statbuchung, leere Narrator-Ausgabe, Fehlinterpretation langer Spieleraktionen, unautorisiertes Gegner-Spawning, Inventar-/Questwahrheit.
+- **53-Punkte-Abnahmeliste** vollständig gegen Code, Regressionstests und echte GLM-/SillyTavern-Runs prüfen; nicht nur Zahl bestandener Tests, sondern belastbare mechanische und erzählerische Qualität. Restpunkte sichtbar dokumentieren und priorisieren.
+
+**Abschlusskriterium:** Patch 10B ist **keine Sammelstelle für unbegrenzt neue Features**. Finale Balance beruht auf Messung, die wichtigsten Qualitäts-/Performance-Ausreißer sind korrigiert oder transparent bewertet, und die bestehende Abnahmeliste belegt ein dauerhaft stabiles und unterhaltsames RPG.
+
+### 1a.4 Historische Notizen richtig lesen
+
+Alle älteren Hinweise „F1/#71 Klassenumbau verworfen“, „fünf Starterklassen bleiben dauerhaft“, „Patch 8.2 noch nicht implementiert“ oder „kein realer automatisierter GLM-Test“ sind **historische Aussagen**, sofern durch die jüngeren Designentscheidungen oder die echten Implementierungs- und Testnachweise überholt. **Patch 9: drei Klassen verbindlich. Patch 10A: nicht wiederholen. Patch 10B: ausdrücklich geplant.** Später folgende Abschnitte des Archivs bleiben als Review-Geschichte erhalten, nicht als gleichrangige aktuelle Arbeitsaufträge.
+
 
 ## 2. Übergeordnete Erkenntnis – die zentrale Richtung
 

@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 23. Oktober 2026 · Fassung 27 (.51 Git-reviewt: Budgets korrekt, Unterkunfts-Guard mit zwei Reviewlücken)  
+**Stichtag:** 23. Oktober 2026 · Fassung 28 (.51 Unterkunfts-Reviewkorrektur c2e5540 Git-geprüft, Livetest freigegeben)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,11 +13,11 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 23.10.2026 (Snapshot)** | **1965f02** (Runner `.51`) nach **933384c** (Engine `.51`). Letzter wirklich live bestätigter Skill-Stone-Stand `.48`; `.50`-Ordinary-Training live nur bis 140/200 LP. Git-HEAD vor neuer Übergabe prüfen. |
+| **HEAD am 23.10.2026 (Snapshot)** | **c2e5540** (`.51` Unterkunfts-Reviewfix), davor Engine `933384c`, Runner `1965f02`. Letzter real bis Abschluss bestätigter Skill-Stone-Patch `.48`; `.50`-Ordinary-Training live bis 140/200 LP. Git-HEAD künftig neu prüfen. |
 | **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.51**; persönlicher Narrator-Vertrag bleibt Revision **.49**. Für Narrator in SillyTavern 8.192 Max-Response-Tokens separat einstellen. |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | **`.51` implementiert und unabhängig im Git geprüft:** Planner/Repair 2000, Extractor/Repair 4000, Forge/Repair 1500; `needs`-Prompts konsistent und neue Unterbringungsregel samt Tests. Claude: **1207/1207 npm-Tests** (von ChatGPT nicht erneut ausgeführt). **Zwei konkrete Grenzfälle im neuen Unterkunfts-Guard vor Live noch offen**; kein `.51`-Livetest. |
-| **Nächster Schritt** | **Nur den `.51`-Unterkunfts-Guard gezielt korrigieren**: (A) freie/andere Schlaforte nach fehlgeschlagener Zimmerbuchung nicht blockieren; (B) `pay` gilt nur bei bestätigter Lodging-Leistung als Zimmerbuchung, nicht schon wegen `coin.changed`/`transaction.completed` (auch Teilzahlung bei offener Room-Offer). Zwei Regressionen, gezieltes Rot/Grün, Vollsuite, kleiner Commit/Push und Git-Review; dann Ordinary-Livetest mit `current_test` bis Training 200/200, angeboten, angenommen, drei Panel-Prüfungen. Kein neues Unterbringungssystem und kein Passive-Redesign. |
+| **Patchstatus** | **`.51` Reviewfix `c2e5540` unabhängig im Git geprüft und zum erneuten echten Ordinary-Livetest FREIGEGEBEN.** Unabhängiger Schlaf bei anderer Ortswahl und nur tatsächlich gebuchtes Zimmer (`service.granted`) korrigiert. Claude: **1209/1209 npm-Testfälle grün** (nicht von ChatGPT erneut ausgeführt). Tokenbudgets 2000/4000/1500 inkl. Repair; Narrator-Contract `.49`. `.51` selbst noch nicht live abgenommen. |
+| **Nächster Schritt** | **Echten `.51`-Ordinary-Livetest starten** mit unverändertem `current_test.json`; SillyTavern-Erzähler auf 8192 Max Response Tokens, Narrator-Karte auf Contract `.49`. Ziel: Training 200/200 LP → Ordinary-Angebot → explizite Annahme → `#status`, `#passives` und `#skill Arcane Bolt` vom System beantwortet. Danach Originalexport und LLM-Calls auswerten. Keine weiteren Vorab-Hotfixes. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
 Aktueller Korrekturcommit (.50): https://github.com/Mango1331/Claude-AI-RPG-Game/commit/dc1265259e5aa3654e618248c7786e0766ec287f; Runner-/Guide-Commit https://github.com/Mango1331/Claude-AI-RPG-Game/commit/73c24445c81d4b68f49d2b0e6134458c746e0d6d
@@ -36,7 +36,11 @@ Vorheriger Patch-8-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commi
 **Historischer Teststand von .44 (nicht der aktuelle):** ChatGPT/Codex führte auf .44 **`npm test` 1164/1164** und gezielt **34/34** aus. Die ergänzten Duplikat- und Host-Erwartungen sind auf .43 rot (12/15), nach Fix grün. Claude bestätigte .43 unabhängig mit 33/33 gezielten und 1163/1163 Gesamttests. R1 wurde zusätzlich am offiziellen ST-1.19.0-Quellcode geprüft: der Interceptor-Abbruchcallback hält sein Flag lokal je Aufruf. **Gegenreview der .44 noch offen; kein echter ST-/GLM-Livetest.** Historisch: .42 19/19 und 1149/1149 durch beide Sitzungen bestätigt.
 
 
-### AKTUELL: `.51`-Code-Review (23.10.2026) – Tokenfix korrekt, zwei kleine Unterkunftsgrenzen
+### Aktuell: `.51` Reviewkorrektur `c2e5540` – Livetest FREIGEGEBEN (23.10.2026)
+
+Entwicklungs-HEAD `c2e55405b48faaa5d29d0209afa17be1e33e89c4`, auf `.51` nach Engine `933384c`/Runner `1965f02`. **Zwei vorherige Befunde behoben:** `roomSteps` lässt ausdrücklich selbstständigen Schlaf an anderer Stelle (Hayloft/Stall etc.) unabhängig von unerledigter Zimmeranfrage; `resolveCommands` erkennt wirkliche Lodging-Zuteilung pro Kaufschritt über `service.granted` statt `resolved`/`happened` oder bloße Coin-Zahlung. Zwei neue gezielte Tests, laut Claude gegen vorherigen Stand rot, auf Fix grün, **1209/1209 Gesamttests laut Claude**. ChatGPT prüfte Commit, Buchungspfad in `src/v4/trade.js` und Tests, führte sie nicht selbst aus. **Freigabe für ersten vollständigen `.51`-Ordinary-Livetest, noch kein echter `.51`-Live-Nachweis.** Der folgende Abschnitt ist der HISTORISCHE Reviewbefund vor der Behebung. Seltene sprachliche Grenzfälle der Ortsheuristik sind derzeit kein Blocker.
+
+### Historischer `.51`-Review vor Korrektur `c2e5540` (23.10.2026)
 
 Engine `933384cdd249a92a736e8a79ef34e3e8a4736071`, Runner `1965f0276b27927c6e8a8ac73bf6a847e7340b19`; Claude meldet 132/132 gezielte und 1207/1207 gesamte Tests, ChatGPT hat Diffs/Regressionen auf GitHub geprüft. Budgets Plan 2000, Extract 4000, Forge 1500 samt Repair und Runnerrollen korrekt. Neue `needs`-Beispiele konsistent; bekannte/offene Zimmerangebote als reguläre Tests abgedeckt. **Reviewlücken in `commands.js` `roomStep`/`roomWaits`:** (A) jede vorangegangene Zimmer-Kaufanfrage wird ohne Prüfung des tatsächlich beabsichtigten Schlaforts auf einen späteren `activity.sleep`/`rest` bezogen. Gegenbeispiel „Wenn das Zimmer zu teuer ist, schlafe ich draußen“: der eigenständige Außenschlaf würde fälschlich `NOT DONE` erhalten. (B) `pay` kann auch **ohne** passendes Zimmer-Angebot `resolved` liefern, dabei nur `coin.changed`/`transaction.completed`, aber **kein `service.granted` Lodging** buchen; `roomWaits` wertet das bloße `happened` als bestätigte Zimmerbuchung. Beispiel: Raumofferte 4 cp, `pay` von 2 cp für room → allgemeine Teilzahlung, danach fälschlich Schlaf im gebuchten Privatzimmer. **Minimale Revision:** die Zimmerabhängigkeit nur bei tatsächlich darauf bezogenem Schlaf erzwingen und für diese eine echte Lodging-Buchung/Leistung im Eventzustand verlangen; generisches Pay-/Preislimit ist nicht ausreichend. Zwei Regressionen, bestehende Tests erhalten; keinen neuen Unterkunfts-/Passive-Patch starten. **Noch keine echte `.51`-Live-Abnahme.**
 

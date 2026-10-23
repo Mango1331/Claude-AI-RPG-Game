@@ -34,7 +34,8 @@ import { boardRequest, parseBoard, bookBoard, BOARD_VERSION } from './guild.js';
 import { extractionFailedEvents } from './world.js';
 import { hallOf, settlementOf, membership, boardKey, today, listingsOf, supportedRanks } from './domain.js';
 import { finalizeGrowth, growthDrafts, activationsOf } from './growth.js';
-import { FORGE_VERSION, forgeRequest, parseForge } from './forge.js';
+import { FORGE_VERSION, forgeRequest, parseForge, passiveForgeRequest, parsePassiveForge } from './forge.js';
+import { passiveDrafts, offerPassives } from './passive_growth.js';
 import { PLANNER_VERSION, MECH_TYPES, planContext, withContentSkills, plannerRequest, parsePlan, mapPlan, recentText, announcedAbandon } from './planner.js';
 import { crowdCount, personWords, bystanderEvents } from './settlement.js';
 import { skillOf } from '../content.js';
@@ -224,6 +225,13 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     };
 }
 
+/** Apply events to a private copy (the state a finalization leaves, for what this same step offers next). */
+function after(state, events) {
+    const s = clone(state);
+    for (const e of events) applyEvent(s, e);
+    return s;
+}
+
 /**
  * Patch 9C-1: the shared finalization of a regular planned turn (both routes): every learning goal that is ready in the
  * state the turn left, whenever it became ready (a session, a fight, a fight a reply opened), becomes its Skill
@@ -242,9 +250,23 @@ async function withGrowth(t, content, llm, previous) {
         const skill = close && previous.events.find((e) => e.t === 'skill.defined' && e.d.skill.id === close.d.skill)?.d.skill;
         if (skill && !cached.entries[d.key]) cached.entries[d.key] = { hash: d.hash, name: skill.name, ...(skill.flavor ? { flavor: skill.flavor } : {}) };
     }
-    const forge = drafts.length ? await generateForge(llm, t.state, content, drafts, cached) : null;
+    let forge = drafts.length ? await generateForge(llm, t.state, content, drafts, cached) : null;
     const f = finalizeGrowth(t.state, content, forge?.entries, activations);
+    // Patch 9C-2c: the developments this safe turn offers (src/v4/passive_growth.js): every pending evidence, the one an
+    // ordinary goal just completed in it too, named by its own Forge request (the same reuse by key and hash)
+    let s2 = null;
+    try { s2 = after(t.state, f.events); } catch { s2 = null; }
+    const pdrafts = s2 ? passiveDrafts(s2, content) : [];
+    const pforge = pdrafts.length ? await generateForge(llm, s2, content, pdrafts, cached, { request: passiveForgeRequest, parse: parsePassiveForge }) : null;
+    const offered = pdrafts.length ? offerPassives(s2, content, pdrafts, pforge?.entries) : { events: [], offers: [] };
+    f.events.push(...offered.events);
+    if (pforge) forge = forge ? { ...forge, entries: { ...forge.entries, ...pforge.entries }, ms: forge.ms + pforge.ms, llm: [...forge.llm, ...pforge.llm], repaired: forge.repaired || pforge.repaired } : pforge;
     if (forge) {
+        // Patch 9C-2c: and the name an offer actually holds (its fallback, when the Forge's was not free at the offer)
+        for (const o of offered.offers) {
+            const entry = forge.entries[o.key];
+            if (entry && entry.name !== o.name) forge.entries[o.key] = { hash: entry.hash, name: o.name, fallback: true };
+        }
         // Record the name actually booked, including a late collision's deterministic fallback.
         for (const e of f.events.filter((e) => e.t === 'skill.defined')) {
             const def = e.d.skill;
@@ -255,19 +277,20 @@ async function withGrowth(t, content, llm, previous) {
     }
     const meta = forge ? { forge } : {};
     if (!f.events.length && !f.failed.length) return { events: t.events, ...meta };
+    const passiveOffered = offered.offers;
     const i = t.events.findLastIndex((e) => e.t === 'outcome.recorded');
     if (i < 0) return { events: [...t.events, ...f.events], ...meta };
     const rec = t.events[i];
     // Review of 9C-2b (R2): a goal kept from its grant (its manual not in hand) is told in the turn that worked on it,
     // not again in every later turn
     const touched = new Set(t.events.filter((e) => e.t === 'growth.session' || e.t === 'growth.progress').map((e) => e.d.goal));
-    const failed = f.failed.map((x) => (x.source === 'material' && touched.has(x.goal) ? { ...x, notice: true } : x));
-    const outcome = rec.d.outcome ? { ...rec.d.outcome, ...(f.learned.length ? { learned: f.learned } : {}), ...(failed.length ? { learn_failed: failed } : {}) } : rec.d.outcome;
+    const failed = f.failed.map((x) => ((x.source === 'material' || x.source === 'practice') && touched.has(x.goal) ? { ...x, notice: true } : x));
+    const outcome = rec.d.outcome ? { ...rec.d.outcome, ...(f.learned.length ? { learned: f.learned } : {}), ...(failed.length ? { learn_failed: failed } : {}), ...(passiveOffered.length ? { passive_offers: passiveOffered } : {}) } : rec.d.outcome;
     return { events: [...t.events.slice(0, i), ...f.events, { ...rec, d: { ...rec.d, outcome } }, ...t.events.slice(i + 1)], ...meta };
 }
 
 /** One batched prose request and at most one repair. Valid siblings and recorded fallbacks are final. */
-export async function generateForge(llm, state, content, drafts, previous = null) {
+export async function generateForge(llm, state, content, drafts, previous = null, { request = forgeRequest, parse = parseForge } = {}) {
     const entries = {};
     for (const d of drafts) if (previous?.entries?.[d.key]?.hash === d.hash) entries[d.key] = { ...previous.entries[d.key] };
     const reused = Object.keys(entries).length;
@@ -278,14 +301,14 @@ export async function generateForge(llm, state, content, drafts, previous = null
     for (let attempt = 0; attempt < 2; attempt++) {
         const missing = drafts.filter((d) => !entries[d.key]);
         if (!missing.length) break;
-        const messages = forgeRequest(missing);
+        const messages = request(missing);
         if (attempt) messages.push({ role: 'assistant', content: last.slice(0, 3000) }, { role: 'user', content: `Repair only these entries. Errors: ${errors.join('; ').slice(0, 1000)}. Already reserved names: ${Object.values(entries).map((e) => e.name).join(', ')}. Return JSON only.` });
         const a = await ask(llm, messages, attempt ? 'forge_repair' : 'forge');
         ms += a.ms;
         calls.push(a.call);
         if (!a.ok) { errors = [a.error]; continue; }
         last = a.content;
-        const p = parseForge(a.content, missing, content, state, Object.values(entries).map((e) => e.name));
+        const p = parse(a.content, missing, content, state, Object.values(entries).map((e) => e.name));
         Object.assign(entries, p.entries);
         errors = p.errors;
     }

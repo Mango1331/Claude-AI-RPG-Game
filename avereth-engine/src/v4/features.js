@@ -14,6 +14,7 @@
 import { normText } from '../util.js';
 import { resolveCheck } from '../checks.js';
 import { useOf } from './items.js';
+import { effectiveStats } from '../passives.js';
 
 export const FEATURE_KINDS = ['obstacle', 'hazard'];
 export const FEATURE_STATUS = ['active', 'passed', 'disabled', 'destroyed'];
@@ -91,7 +92,7 @@ const easier = (d, steps) => DIFFICULTIES[Math.max(1, DIFFICULTIES.indexOf(d) - 
 function roll(s, content, dice, { label, stat, difficulty, feature, aim, seq }) {
     if (difficulty === 'trivial') return { success: true, auto: 'trivial: no roll' };
     if (difficulty === 'impossible') return { success: false, auto: 'impossible this way: no roll' };
-    const actor = s.entities.pc.sheet.stats?.[stat] ?? 5;
+    const actor = effectiveStats(s.entities.pc.sheet, content)?.[stat] ?? 5;
     const r = resolveCheck(dice, { label, actor, opposition: score(content, difficulty) });
     const record = { what: label.slice(0, 80), stat, actor: r.actor_score, opposition: r.opposition, chance: r.chance, roll: r.roll, success: r.success, claimed: r.success, by: 'engine', seq, feature, aim, difficulty };
     return { success: r.success, record, text: `${stat} ${r.actor_score} vs ${difficulty.replace('_', ' ')} ${r.opposition}: ${r.chance}% (d100 ${r.roll}) → ${r.success ? 'SUCCESS' : 'FAILURE'}` };

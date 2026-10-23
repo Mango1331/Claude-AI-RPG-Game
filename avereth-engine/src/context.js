@@ -5,7 +5,8 @@
 import { deriveCharacter, weaponAttackOf } from './derived.js';
 import { formatCoin } from './economy.js';
 import { rulesetOf, rulesTextFor, skillOf } from './content.js';
-import { passivesOf, passiveText } from './passives.js';
+import { passivesOf, passiveText, statsText } from './passives.js';
+import { passiveOffers } from './v4/passive_growth.js';
 import {
     knowledgeOf, memoriesOf, memoryText, entityLabel, anyLabel, propText, currentFacts, statusOf, pcIdentityFor, truth, lookOf,
     isMeaningful, PC_NAME_FACT, PC_LOOK_FACT,
@@ -95,11 +96,14 @@ export function pcLine(state, content, { combat = !!state.encounter, items = tru
     const equip = Object.values(s.equipment).map((r) => (typeof r === 'string' ? content.items.get(r)?.name || r : r.name));
     const lines = [
         `${e.name} — Level ${s.level} ${cls}, Power Rank ${dv.rank}${guild ? `, Guild ${guild}` : ''} | HP ${s.hp}/${dv.maxHp} (${conditionLabel(s.hp, dv.maxHp)}) MP ${s.mp}/${dv.maxMp} STA ${s.sta}/${dv.maxSta}${s.free_points ? ` | Free Stat Points ${s.free_points}` : ''}${e.status === 'dead' ? ' | DEAD' : ''}`,
-        `STR ${s.stats.STR} VIT ${s.stats.VIT} AGI ${s.stats.AGI} INT ${s.stats.INT} PER ${s.stats.PER} WIL ${s.stats.WIL}${combat ? ` | ATK ${dv.atk} MATK ${dv.matk} DEF ${dv.def} MDEF ${dv.mdef} | Init ${dv.init}` : ''} | Equipped: ${joinList(equip)}${arrows !== undefined ? ` | Arrows ${arrows}` : ''}`,
+        `${statsText(s, content, ' ')}${combat ? ` | ATK ${dv.atk} MATK ${dv.matk} DEF ${dv.def} MDEF ${dv.mdef} | Init ${dv.init}` : ''} | Equipped: ${joinList(equip)}${arrows !== undefined ? ` | Arrows ${arrows}` : ''}`,
     ];
     if (skills) lines.push(`Skills: ${joinList(skillList)}`);
     // Patch 9B-2: his Passives, what they do (the numbers above already hold the lasting ones)
     if (passivesOf(s).length) lines.push(`Passives (the engine's; never narrate one he does not have): ${passivesOf(s).map(passiveText).join('; ')}`);
+    // Patch 9C-2c: a development offered to him is no Passive of his
+    const offered = passiveOffers(state);
+    if (offered.length) lines.push(`Offered to him, NOT his (he decides; tell no change in him from it): ${offered.map((d) => passiveText(d.passive)).join('; ')}`);
     if (items) lines.push(`Carried: ${joinList(inv)} | Coin ${formatCoin(s.coin_cp, content)}`);
     return lines.join('\n');
 }
@@ -310,7 +314,11 @@ function outcomeBlock(state, content, outcome, opts = {}) {
     const inert = (outcome?.learn_failed || []).filter((f) => f.object).map((f) => `NOT LEARNED — ${f.name}: ${f.errors.join('; ')}. The stone stays whole and his; he learns nothing from it now. Tell no new Skill.`);
     // Review of 9C-2b (R2): study complete, its manual not in his hands: no Skill yet, the progress is kept
     inert.push(...(outcome?.learn_failed || []).filter((f) => f.source === 'material' && f.notice).map((f) => `NOT LEARNED YET — ${f.technique} from ${f.name}: ${f.errors.join('; ')}. His Learning Progress stays (${f.lp}/${f.need}); he knows no new Skill yet. Tell no new Skill.`));
-    return [block, ...notes, ...learned, ...inert].filter(Boolean).join('\n');
+    // Patch 9C-2c (src/v4/passive_growth.js): a development the engine offers him now, and a Passive it booked for him
+    const offers = (outcome?.passive_offers || []).map((o) => `POSSIBLE PASSIVE — the engine offers Alaric a development, NOT his yet: ${o.text} (${o.why}). He alone accepts or declines it in a later message; tell at most a stirring sense of it, no change in him, no new power, and never that he accepted it.`);
+    const gained = (outcome?.booked?.passives || []).map((g) => `NEW PASSIVE — booked by the engine in this turn: ${g.text}${g.replaced ? `; ${g.replaced} is given up for good, its effects end` : ''} (Passive slots ${g.slots}). Show it settling in him in a sentence or two; its numbers are the engine's. No other new Passive, Skill or change.`);
+    const notYet = (outcome?.learn_failed || []).filter((f) => f.source === 'practice' && f.notice).map((f) => `NO PASSIVE YET — his training of ${f.technique} is complete, but ${f.errors.join('; ')}; nothing is offered, nothing about him changes.`);
+    return [block, ...notes, ...learned, ...inert, ...offers, ...gained, ...notYet].filter(Boolean).join('\n');
 }
 
 function outcomeLines(state, content, outcome, { v4 = false } = {}) {

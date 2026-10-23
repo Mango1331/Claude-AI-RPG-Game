@@ -284,8 +284,18 @@ export function applyEvent(state, e) {
             if (!p) throw new Error(`gain of an unknown passive ${d.passive}`);
             if (!s.passives) s.passives = {};
             if (s.passives[d.passive]) throw new Error(`passive gained twice: ${d.passive}`);
-            const { id, name, scope, condition, effects } = clone(p);
-            s.passives[d.passive] = { id, name, scope, condition, effects };
+            const { id, name, quality, scope, condition, effects } = clone(p);
+            s.passives[d.passive] = { id, name, ...(quality ? { quality } : {}), scope, condition, effects };
+            break;
+        }
+        // Patch 9C-2c: a Passive he gave up for good (the exchange for a new rare or legendary one): its effects end, its
+        // record stays on the sheet's history (src/passives.js losePassive); the definition stays in passive_defs
+        case 'passive.lost': {
+            const s = sheetOf(state, d.id);
+            const had = s.passives?.[d.passive];
+            if (!had) throw new Error(`loss of a passive not held: ${d.passive}`);
+            delete s.passives[d.passive];
+            s.passive_history = [...(s.passive_history || []), { id: had.id, name: had.name, ...(had.quality ? { quality: had.quality } : {}), lost: { turn: state.turn, minute: state.clock.minute }, why: d.why ?? null, replaced_by: d.replaced_by ?? null }];
             break;
         }
         // Patch 9B-1: Proficiency Progress of a known Skill (src/skills.js): the PP and Proficiency it stands at after it
@@ -298,6 +308,7 @@ export function applyEvent(state, e) {
         }
         // Patch 9C-1: his learning goals and training (src/v4/growth.js): opened, a session, progress, closed
         case 'growth.opened': case 'growth.session': case 'growth.progress': case 'growth.closed':
+        case 'growth.evidence': case 'growth.offered': case 'growth.decided':
             applyGrowthEvent(state, e);
             break;
         case 'entity.status':

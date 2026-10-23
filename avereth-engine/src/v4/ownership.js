@@ -59,10 +59,13 @@ export function eventKind(e, s = null) {
         case 'resource.changed': return PC(d.id) ? 'pc.vitals' : 'entities';
         case 'entity.status': return PC(d.id) ? 'pc.vitals' : 'entities';
         case 'skill.defined': case 'passive.defined': return 'skills';
-        case 'passive.gained': return PC(d.id) ? 'pc.progress' : 'entities';
+        case 'passive.gained': case 'passive.lost': return PC(d.id) ? 'pc.progress' : 'entities';
         case 'skill.progress': return PC(d.id) ? 'pc.progress' : 'entities';
         // Patch 9C-1: his learning goals, sessions and their progress (src/v4/growth.js)
-        case 'growth.opened': case 'growth.session': case 'growth.progress': case 'growth.closed': return 'pc.progress';
+        // Patch 9C-2c: the evidence of a development toward a Passive, its offer and his decision on it
+        case 'growth.opened': case 'growth.session': case 'growth.progress': case 'growth.closed':
+        case 'growth.evidence': case 'growth.offered': case 'growth.decided':
+            return 'pc.progress';
         case 'xp.changed': case 'level.up': case 'stat.assigned': case 'skill.learned':
         case 'creation.class_selected': case 'creation.completed':
             return 'pc.progress';
@@ -160,7 +163,7 @@ export function stateRegions(s) {
         'pc.coin': j(sh.coin_cp),
         'pc.inventory': j([sh.inventory, sh.equipment, held]),
         'pc.vitals': j([sh.hp, sh.mp, sh.sta, status]),
-        'pc.progress': j([sh.level, sh.class, sh.stats, sh.skills, sh.passives, sh.xp, sh.free_points, s.creation, s.pp_keys, s.growth ?? null]),
+        'pc.progress': j([sh.level, sh.class, sh.stats, sh.skills, sh.passives, sh.passive_history ?? null, sh.xp, sh.free_points, s.creation, s.pp_keys, s.growth ?? null]),
         skills: j([s.skill_defs, s.passive_defs]),
         'pc.location': j([s.scene?.location, s.scene?.place, s.scene?.at, location, at]),
         entities: j([Object.entries(s.entities || {}).filter(([id]) => id !== 'pc'), pcRest]),

@@ -30,6 +30,8 @@ import { knownByName } from './known.js';
 import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect, namedSource } from './items.js';
 import { itemEffectOf, rulesetOf } from '../content.js';
 import { learningActivity, stoneActivation } from './growth.js';
+import { effectiveStats } from '../passives.js';
+import { acceptPassive, declinePassive } from './passive_growth.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
@@ -591,7 +593,7 @@ const HANDLERS = {
             // roll (src/v4/features.js); another focus or method is a new search
             const place = s.scene.at;
             const focus = String(c.what || c.quote || 'the area');
-            const actor = s.entities.pc?.sheet?.stats?.PER ?? 5;
+            const actor = s.entities.pc?.sheet ? effectiveStats(s.entities.pc.sheet, content).PER ?? 5 : 5;
             const opposition = content.rules.checks?.difficulty_scores?.moderate ?? 6;
             const check = resolveCheck(envx.dice, { label: `Search: ${c.what || 'the area'}`, actor, opposition });
             // Patch 6: a hidden feature of this place the search finds is found, by the engine (what it is, not a hint)
@@ -735,6 +737,8 @@ const HANDLERS = {
         // never told as a tool that does something
         const called = envx?.c && rulesetOf(s) >= 2 && profileOf(content, o)?.kind !== 'skill_source' ? namedSource(content, o) : null;
         if (called === 'stone') return { status: 'refused', reason: 'stone', line: `CANNOT USE — ${o.name}: what it holds was never established, so it teaches nothing; it stays his, whole and unused, and he learns nothing from it.` };
+        // Patch 9C-2c: a Passive Stone's power only the engine establishes; one the story or a trader called so gives nothing
+        if (called === 'passive_stone') return { status: 'refused', reason: 'passive stone', line: `CANNOT USE — ${o.name}: no power of it was ever established by the engine, so it awakens nothing; it stays his, whole and unused, and nothing about him changes. Tell no new Passive or power.` };
         // Patch 9C-2b: reading a manual teaches nothing by itself; studying it for a time is (activity study)
         const manual = called === 'manual' || (envx?.c && rulesetOf(s) >= 2 && profileOf(content, o)?.kind === 'skill_source' && profileOf(content, o).source === 'manual');
         if (manual) return { status: 'resolved', line: `READS — ${o.name}: he looks it over; it stays his. Reading teaches him nothing by itself: no Skill and no Learning Progress unless he studies it for a time (the engine books study).` };
@@ -932,6 +936,22 @@ const HANDLERS = {
         if (o.gate) return { status: 'resolved', line: `PAYS — the entry fee of ${placeName(s, o.gate)}, ${cpText(price, content)}: he may pass the gate (until he comes out again).` };
         if (reg) return { status: 'resolved', line: `PAYS — the Guild registration fee, ${price} cp: registered at Guild Rank ${content.rules.guild.ranks[0]}; the crystal reads his Power Rank: ${power} (his measured strength, a separate scale from the Guild's ranks); he receives his Guild plate.` };
         return { status: 'resolved', line: `ACCEPTS the offer — ${picksText(pick.picks)} for ${cpText(price, content)}; he pays ${who(s, o.seller)}.` };
+    },
+    // Patch 9C-2c (src/v4/passive_growth.js): his answer to a development the engine offers him (a POSSIBLE PASSIVE)
+    'passive.accept'(s, content, c, ctx, emit, envx) {
+        if (!envx?.c) return { status: 'refused', reason: 'not here', line: 'NO NEW PASSIVE — no development is offered to him.' };
+        const r = acceptPassive(s, content, c.offer ?? null, c.replace ?? null);
+        if (r.refuse) return { status: 'refused', reason: r.refuse, line: r.line };
+        for (const e of r.events) emit(e);
+        (ctx.booked.passives ||= []).push(r.gained);
+        return { status: 'resolved', line: r.line };
+    },
+    'passive.decline'(s, content, c, ctx, emit, envx) {
+        if (!envx?.c) return { status: 'refused', reason: 'not here', line: 'NOTHING TO DECLINE — no development is offered to him.' };
+        const r = declinePassive(s, content, c.offer ?? null);
+        if (r.refuse) return { status: 'refused', reason: r.refuse, line: r.line };
+        for (const e of r.events) emit(e);
+        return { status: 'resolved', line: r.line };
     },
     'offer.decline'(s, content, c, ctx, emit) {
         const o = s.offers[c.offer];

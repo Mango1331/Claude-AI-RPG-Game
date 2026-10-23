@@ -106,6 +106,8 @@ const has = (name, list) => (list || []).some((w) => words(name).includes(` ${no
 export function skillSource(content, { name, kind = 'item', teaches = null }) {
     const r = content.rules.growth?.sources;
     if (!r || !name || !teaches || typeof teaches !== 'object' || !['stone', 'manual'].includes(teaches.source)) return null;
+    // Patch 9C-2c: what is called a Passive Stone is no Skill Stone of the story's: its power is the engine's alone
+    if (has(name, r.passive_stone_words)) return null;
     // 4.3.0-c.6.6.48: a stone established as teaching (teaches.source stone) is one by any name calling it a stone
     const recognised = teaches.source === 'stone' ? has(name, r.stone_words) || has(name, r.stone_objects) : (kind === 'document' || has(name, r.manual_words));
     if (!recognised) return null;
@@ -123,6 +125,7 @@ export function skillSource(content, { name, kind = 'item', teaches = null }) {
 export function namedSource(content, { name, kind = 'item' }) {
     const r = content.rules.growth?.sources;
     if (!r || !name) return null;
+    if (has(name, r.passive_stone_words)) return 'passive_stone';
     if (has(name, r.stone_words)) return 'stone';
     return has(name, r.manual_words) ? 'manual' : null;
 }

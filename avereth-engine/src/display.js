@@ -337,6 +337,11 @@ function planLines(o) {
     for (const l of o?.learned || []) out.push(sys(`NEW SKILL — ${l.name} (${l.category} · ${l.cost.amount} ${l.cost.resource.toUpperCase()}) · ${l.source === 'stone' ? 'drawn from' : l.source === 'material' ? 'studied from' : 'learned from'} ${String(l.teacher).replace(/[<>`]/g, '')} · #skill ${l.name}`));
     // Patch 9C-2b: a Skill Stone the engine could not book stays whole
     for (const f of (o?.learn_failed || []).filter((x) => x.object)) out.push(sys(`NOT LEARNED — ${String(f.name).replace(/[<>`]/g, '')}: ${String(f.errors.join('; ')).replace(/[<>`]/g, '')} · the stone stays whole`));
+    // Patch 9C-2c: a development offered (not his yet), a Passive booked, a complete training with no slot for it
+    const t = (x) => String(x).replace(/[<>`]/g, '');
+    for (const p of o?.passive_offers || []) out.push(sys(`POSSIBLE PASSIVE — ${t(p.text)} · not his yet: accept or decline it (#passives)`));
+    for (const g of o?.booked?.passives || []) out.push(sys(`NEW PASSIVE — ${t(g.text)} · slots ${g.slots}${g.replaced ? ` · given up for good: ${t(g.replaced)}` : ''}`));
+    for (const f of (o?.learn_failed || []).filter((x) => x.source === 'practice' && x.notice)) out.push(sys(`NO PASSIVE YET — ${t(f.technique)}: ${t(f.errors.join('; '))}`));
     // Review of 9C-2b (R2): a complete goal whose manual is not in his hands
     for (const f of (o?.learn_failed || []).filter((x) => x.source === 'material' && x.notice)) out.push(sys(`NOT LEARNED YET — ${String(f.technique).replace(/[<>`]/g, '')} from ${String(f.name).replace(/[<>`]/g, '')}: ${String(f.errors.join('; ')).replace(/[<>`]/g, '')} · ${f.lp}/${f.need} LP kept`));
     return out;

@@ -160,19 +160,25 @@
     }
   },
   "passive_design": {
-    "src": "Patch 9B-2: F-rank bounds of a dynamic Passive (src/passives.js): per Passive, and the total over all Passives of one person (stacking: the same bonus sums, up to the total)",
+    "src": "Patch 9B-2: the bounds of a dynamic Passive (src/passives.js); Patch 9C-2c (docs/PATCH9C2C_PASSIVE_ACQUISITION.md): three qualities (ordinary, rare, legendary; independent of the F-S Rank) with their own provisional budget per Passive, and one total per bonus over all Passives of a person whatever their quality (stacking: the same bonus sums, up to the total). Provisional numbers, balanced in 10B",
+    "qualities": ["ordinary", "rare", "legendary"],
     "per": {
-      "stat_bonus": 2,
-      "max_bonus": 10,
-      "cost_reduction": 10,
-      "resist": 10
+      "ordinary": { "core_stat_bonus": 2, "stat_bonus": 2, "max_bonus": 10, "cost_reduction": 5, "resist": 5 },
+      "rare": { "core_stat_bonus": 3, "stat_bonus": 4, "max_bonus": 25, "cost_reduction": 10, "resist": 10 },
+      "legendary": { "core_stat_bonus": 4, "stat_bonus": 6, "max_bonus": 50, "cost_reduction": 15, "resist": 15 }
     },
+    "effects": { "ordinary": [1, 1], "rare": [1, 2], "legendary": [1, 3] },
+    "unrated_note": "a Passive defined before 9C-2c carries no quality: it keeps the F-rank bounds of 9B-2 (no core stats, one or two effects); the totals are the shared ones",
+    "unrated": { "per": { "stat_bonus": 2, "max_bonus": 10, "cost_reduction": 10, "resist": 10 }, "effects": [1, 2] },
     "total": {
-      "stat_bonus": 4,
-      "max_bonus": 20,
-      "cost_reduction": 20,
-      "resist": 20
-    }
+      "core_stat_bonus": 6,
+      "stat_bonus": 10,
+      "max_bonus": 80,
+      "cost_reduction": 30,
+      "resist": 30
+    },
+    "slots": 4,
+    "slots_note": "Passives a person holds at once below B-Rank, of every quality together; from B-Rank on no further slots until a later design allows them (the same four)"
   },
   "skill_design": {
     "src": "content.6.r2 F-rank calibration (offensive Skill at P1, by Complexity); Patch 9B-1 validates a dynamic Skill against it (src/skills.js)",
@@ -234,6 +240,8 @@
     "src": "Patch 9C-2b (docs/PATCH9C2B_STONES_MATERIALS.md): what makes a thing a source of a technique (src/v4/items.js skillSource). A thing is one only when its words name the kind (stone_words, manual_words; a manual also as a document) AND the story or the offer established what it teaches (the extractor's teaches); its profile is fixed then. value_cp: the guideline price an audit compares offers with (never a refusal)",
     "stone_words": ["skill stone", "skill-stone", "skillstone", "technique stone"],
     "stone_objects": ["stone", "stones"],
+    "passive_stone_words": ["passive stone", "passive skill stone", "passive-stone", "passive stones"],
+    "passive_stone_note": "Patch 9C-2c: a Passive Stone is a legendary treasure whose power only the engine establishes (src/v4/passive_growth.js engineEvidence); a thing the story or an offer calls one is never a source of a technique, and using it gives nothing",
     "stone_objects_note": "4.3.0-c.6.6.48 (live 23.10.2026: the offered \"Lesser Spark Stone\" with its established teaches was no source): a stone the story or the offer established as teaching a technique (teaches.source stone) is a Skill Stone by any name that calls it a stone; without teaches no stone is one, whatever its name",
     "manual_words": ["manual", "primer", "treatise", "grimoire", "spellbook", "spell book", "handbook", "codex", "training book", "technique book", "lesson book", "instruction book"],
     "value_cp": {"stone": 400, "manual": 120}
@@ -244,7 +252,14 @@
       "pp": 12,
       "min_minutes": 60
     },
-    "train_note": "practising a Skill he knows: once per Skill and game day when that day's practice of it reaches min_minutes, pp times his affinity rounded half up (as proficiency.award)"
+    "train_note": "practising a Skill he knows: once per Skill and game day when that day's practice of it reaches min_minutes, pp times his affinity rounded half up (as proficiency.award)",
+    "passive": {
+      "src": "Patch 9C-2c (docs/PATCH9C2C_PASSIVE_ACQUISITION.md): provisional numbers of the Passives a person develops (src/v4/passive_growth.js), balanced in 10B",
+      "ordinary_need": 200,
+      "ordinary_note": "an Ordinary Passive goal: a core stat he trains on his own (activity train/study with learn: STR, VIT, AGI, INT, PER or WIL), Learning Progress at the own-practice rate and its day cap (no teacher, no fight, no affinity), complete at ordinary_need; then an offer, never the Passive itself",
+      "trial": { "level_gap": 5, "low_pct": 25, "start_pct": 50, "near": { "level_gap": 3, "low_pct": 35, "chance_pct": 40 } },
+      "trial_note": "a fight he won alive against a foe that struck him, at least level_gap Levels above him, after it drove him from start_pct of his HP or more down to low_pct or less, using a Skill of his own: a Rare candidate for sure; a near case (near.*) once by a die of its own, kept with the evidence"
+    }
   },
   "composer": {
     "src": "Patch 9C-1: the deterministic Skill composer (src/skill_composer.js): a supported main function, discipline tags and aspects make one C1 F-rank definition; its numbers sit inside skill_design.f_rank and the effect bounds of src/skills.js (provisional)",

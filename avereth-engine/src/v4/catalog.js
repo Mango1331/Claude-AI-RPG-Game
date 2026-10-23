@@ -20,6 +20,9 @@ import { featuresAt, featureText } from './features.js';
 import { dungeonOf, roomKnown, exitsFrom, exitText, dungeonText, nearDungeons } from './dungeon.js';
 import { catalogLines as livingLines } from './living.js';
 import { currentThreads } from '../threads.js';
+import { rulesetOf } from '../content.js';
+import { passivesOf, passiveSlots, passiveText } from '../passives.js';
+import { passiveOffers } from './passive_growth.js';
 
 /** A person or creature as the catalog labels it: name, role, look ("Marta, Guild receptionist"). */
 export function personLabel(state, content, id) {
@@ -172,7 +175,8 @@ function objectEntry(state, content, o) {
 
 /** The open decisions at this place, as the catalog and the engine block name them. */
 export function openDecisionTexts(state) {
-    return (state.decisions || []).filter((d) => !d.at || d.at === state.scene.at).map((d) => {
+    // Patch 9C-2c: an offered Passive is no decision of a place: the catalog lists it as POSSIBLE PASSIVE
+    return (state.decisions || []).filter((d) => d.kind !== 'passive' && (!d.at || d.at === state.scene.at)).map((d) => {
         if (d.kind === 'registration') return `registration: the Guild's fee ${d.price_cp} cp is due (${d.offer}); he has not paid yet`;
         if (d.kind === 'purchase') return `purchase: ${d.qty > 1 ? `${d.qty} × ` : ''}${d.what}${d.max_cp !== null && d.max_cp !== undefined ? ` (at most ${d.max_cp} cp)` : d.any_price ? ' (any price)' : ''}; ${d.priced ? 'priced, not agreed' : 'no price known yet'}`;
         if (d.kind === 'sale') return `sale: ${d.qty > 1 ? `${d.qty} × ` : ''}${d.what}${d.min_cp ? ` (at least ${d.min_cp} cp)` : ''}; no price agreed yet`;
@@ -309,6 +313,25 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         // Patch 8: the level of a Living Dungeon he is on; the extractor also the encounter the engine placed (src/v4/living.js)
         dungeon: c ? livingLines(state, { extractor: hiddenFeatures }) : [],
         open: openDecisionTexts(state),
+        // Patch 9C-2c: the developments offered to him (not his yet) and the Passives he holds (src/v4/passive_growth.js);
+        // the planner's alone (the extractor's catalog shows the hidden things instead, and no Passive is a delta)
+        ...(hiddenFeatures ? {} : passiveCatalog(state, content)),
+    };
+}
+
+/** Patch 9C-2c: POSSIBLE PASSIVE and PASSIVES of the catalog (ruleset 2; nothing in a campaign without Passives). */
+function passiveCatalog(state, content) {
+    const sheet = state.entities?.pc?.sheet;
+    if (!sheet || rulesetOf(state) < 2) return {};
+    const held = passivesOf(sheet);
+    const offers = passiveOffers(state);
+    if (!held.length && !offers.length) return {};
+    const slots = passiveSlots(content);
+    const full = held.length >= slots;
+    return {
+        passive_slots: `${held.length}/${slots}`,
+        passives: held.map((p) => ({ id: p.id, text: passiveText(p) })),
+        passive_offers: offers.map((d) => ({ id: d.id, text: `${passiveText(d.passive)}; not his yet${full ? (d.passive.quality === 'ordinary' ? ' (all slots held: it cannot be taken)' : ' (all slots held: taking it gives up one PASSIVES he names)') : ''}` })),
     };
 }
 

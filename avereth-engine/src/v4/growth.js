@@ -16,6 +16,10 @@
 //                   growth.closed
 //   practice        a session on a Skill he knows gives Proficiency Progress once per Skill and day (skill.progress).
 //
+//   Patch 9C-2c   an Ordinary Passive goal: a core stat he trains on his own for long (the same sessions, ledger and day
+//                 cap, at the own rate, no fight, no affinity); complete, it becomes evidence for an offer
+//                 (src/v4/passive_growth.js), never the Passive itself. growth.evidence, growth.offered, growth.decided
+//
 // Pure functions of the state; nothing here calls an LLM, and nothing is booked in a legacy campaign.
 import { rulesetOf, skillOf, npcTemplate } from '../content.js';
 import { affinityFor, defineSkill, learnSkill, fightQualifies, practiceProgress, skillDefErrors } from '../skills.js';
@@ -24,6 +28,7 @@ import { applyEvent } from '../state.js';
 import { truth, entityLabel } from '../knowledge.js';
 import { clone, normText, hash32 } from '../util.js';
 import { profileOf, rankRefusal } from './items.js';
+import { CORE_STATS, passiveGain, passivesOf, passiveSlots, qualityBudget } from '../passives.js';
 
 const EMPTY = { n: 0, goals: {}, done: [], training: {} };
 const DAY = 1440;
@@ -47,6 +52,7 @@ export function openGoals(state) {
 }
 
 function knownTechnique(state, target) {
+    if (target.passive) return null;
     const key = techniqueSignature(target);
     const ids = new Set([...Object.keys(state.entities?.pc?.sheet?.skills || {}), ...growthOf(state).done.map((g) => g.skill)]);
     return [...ids].find((id) => {
@@ -140,7 +146,8 @@ function dayClaim(content, cls, goal, day) {
     const m = goal.days?.[day] || {};
     const self = Math.min(r.lp_day_cap.self, (r.lp_per_hour.self * (m.self || 0)) / 60);
     const raw = Math.min(r.lp_day_cap.teacher, (r.lp_per_hour.teacher * (m.teacher || 0)) / 60 + self);
-    return Math.floor(raw * affinityFor(content, cls, { tags: goal.target.tags }));
+    // Patch 9C-2c: a quality of himself he trains has no discipline: no affinity
+    return Math.floor(raw * (goal.target.passive ? 1 : affinityFor(content, cls, { tags: goal.target.tags })));
 }
 
 /** Apply events to a private copy and give the copy (each step is checked against the state after the ones before). */
@@ -167,7 +174,15 @@ function sessionProgress(state, content, goalId, days) {
     return out;
 }
 
-const techniqueText = (t) => `${t.aspects?.length ? `${t.aspects.join('/')} ` : ''}${t.fn} (${t.tags.join(', ')})`;
+const STAT_WORDS = { STR: 'strength', VIT: 'toughness', AGI: 'agility', INT: 'mind', PER: 'senses', WIL: 'will' };
+const techniqueText = (t) => (t.passive ? `an Ordinary Passive of his ${STAT_WORDS[t.stat]} (${t.stat})` : `${t.aspects?.length ? `${t.aspects.join('/')} ` : ''}${t.fn} (${t.tags.join(', ')})`);
+
+/** A learning goal in a few words (the planner's LEARNING, #skills): what, from what, how far. */
+export const goalText = (g) => `${techniqueText(g.target)} from ${g.source.name}, ${g.lp}/${g.need} LP`;
+
+/** Patch 9C-2c: the Ordinary Passive his training of this core stat would make (its budget, rules.json passive_design). */
+const ordinaryProbe = (content, stat) => ({ id: 'dyn.passive_probe', scope: 'always', effects: [{ kind: 'core_stat_bonus', stat, value: qualityBudget(content, 'ordinary')?.per.core_stat_bonus ?? 2 }] });
+const passiveTraining = (s, content, stat) => passiveGain(s.entities.pc.sheet, content, ordinaryProbe(content, stat))[0] > 0;
 
 // ------------------------------------------------------------------------------------------------ Patch 9C-2b: sources
 /** The technique a source's fixed profile legitimizes, or why none: {target} | {refuse}. */
@@ -243,6 +258,9 @@ export function learningActivity(s, content, c, minutes, start) {
     const g = growthOf(s);
     const goals = openGoals(s);
     let goal = typeof c.learn === 'string' && g.goals[c.learn] ? g.goals[c.learn] : null;
+    // Patch 9C-2c: a core stat he trains (learn STR … WIL), or the goal of one: an Ordinary Passive goal
+    const focus = typeof c.learn === 'string' && CORE_STATS.includes(c.learn.toUpperCase()) ? c.learn.toUpperCase() : null;
+    if (focus || goal?.target.passive) return passiveActivity(s, content, c, minutes, start, goal, focus);
     const known = typeof c.learn === 'string' && sheet.skills?.[c.learn] ? skillOf(content, c.learn, s) : null;
     let fresh = !goal && !known && isTechnique(content, c.learn) ? c.learn : null;
     // Patch 9C-2b: the manual he studies from: the one he names; else, without a teacher, the one manual he holds that
@@ -257,6 +275,7 @@ export function learningActivity(s, content, c, minutes, start) {
         const mine = goals.filter((x) => !c.teacher || x.source.who === c.teacher);
         if (mine.length !== 1) return { status: 'clarify', reason: 'what does he learn?', line: `CLARIFY — What does he train or study${mine.length ? `: ${mine.map((x) => techniqueText(x.target)).join(' or ')}` : ''}? Name the Skill or the technique.` };
         goal = mine[0];
+        if (goal.target.passive) return passiveActivity(s, content, c, minutes, start, goal, null);
     }
     if (!minutes) return { status: 'clarify', reason: 'how long?', line: `CLARIFY — How long does he ${c.kind}? Name a duration ("for 2 hours") or an end ("until evening").` };
     const parts = dayParts(start, minutes);
@@ -351,6 +370,50 @@ export function learningActivity(s, content, c, minutes, start) {
     };
 }
 
+/**
+ * Patch 9C-2c: training a quality of himself toward an Ordinary Passive (learn: a core stat, or its goal's id): on his
+ * own (a teacher teaches techniques; the hours count as his own practice), at the own rate within its day cap, toward
+ * growth.passive.ordinary_need. A new goal needs a Passive slot nothing else holds or awaits (an Ordinary Passive never
+ * takes another's place) and a stat his Passives can still raise. Complete, the engine offers what came of it.
+ */
+function passiveActivity(s, content, c, minutes, start, goal, focus) {
+    const g = growthOf(s);
+    const goals = openGoals(s);
+    const sheet = s.entities.pc.sheet;
+    if (!goal) goal = goals.find((x) => x.target.passive && x.target.stat === focus) || null;
+    const stat = goal?.target.stat || focus;
+    if (!minutes) return { status: 'clarify', reason: 'how long?', line: `CLARIFY — How long does he ${c.kind}? Name a duration ("for 2 hours") or an end ("until evening").` };
+    const events = [];
+    if (!goal) {
+        const slots = passiveSlots(content);
+        const promised = passivesOf(sheet).length + goals.filter((x) => x.target.passive).length + (s.decisions || []).filter((d) => d.kind === 'passive' && d.quality === 'ordinary').length;
+        if (promised >= slots) return { status: 'refused', reason: 'no passive slot', line: `NOT TRAINING — all ${slots} of his Passive slots are held or awaited (${passivesOf(sheet).length} held); an Ordinary Passive never takes another's place, so nothing comes of training toward one now. Nothing is booked, no time passes for it.` };
+        if (!passiveTraining(s, content, stat)) return { status: 'refused', reason: 'stat at its cap', line: `NOT TRAINING — his Passives raise his ${STAT_WORDS[stat]} (${stat}) as far as they can; nothing is booked, no time passes for it.` };
+        if (goals.length >= R(content).max_active) return { status: 'refused', reason: 'too many goals', line: `NOT TRAINING — he already works on ${goals.length} goals (${goals.map((x) => techniqueText(x.target)).join('; ')}); finish one first. Nothing is booked.` };
+        const n = (g.n || 0) + 1;
+        goal = { id: `learn.${n}`, n, status: 'active', target: { passive: 'ordinary', stat }, source: { kind: 'practice', name: 'his own practice', basis: 'self', key: `practice:learn.${n}`, turn: s.turn, minute: start }, lp: 0, need: R(content).passive?.ordinary_need ?? 200, opened: { turn: s.turn, minute: start }, days: {}, fights: [] };
+        events.push({ t: 'growth.opened', d: { goal } });
+    }
+    let view = after(s, events);
+    for (const p of dayParts(start, minutes)) {
+        const session = { t: 'growth.session', d: { goal: goal.id, kind: 'self', parts: [p] } };
+        events.push(session);
+        view = after(view, [session]);
+        const progress = sessionProgress(view, content, goal.id, [p.day]);
+        events.push(...progress);
+        view = after(view, progress);
+    }
+    const total = growthOf(view).goals[goal.id].lp;
+    const gained = events.filter((e) => e.t === 'growth.progress').reduce((a, e) => a + e.d.lp, 0);
+    const ready = total >= goal.need;
+    const alone = c.teacher ? ' (as his own practice: a lasting quality of himself he trains by himself)' : '';
+    return {
+        status: 'resolved', events, open: events[0]?.t === 'growth.opened',
+        engine: `TRAINING — his ${STAT_WORDS[stat]} (${stat}) toward an Ordinary Passive: ${minutes} min, +${gained} LP → ${total}/${goal.need}${ready ? ' (complete: the engine offers what came of it)' : ''}${gained ? '' : ' (today\'s training is used up)'}`,
+        line: `TRAINS — his ${STAT_WORDS[stat]} (${stat}) for ${minutes} minutes on his own${alone}, booked by the engine: Learning Progress ${total}/${goal.need} toward an Ordinary Passive.${ready ? ' The training is complete; what came of it is offered only if the engine names it below (POSSIBLE PASSIVE), and nothing about him changes before he accepts it.' : ' Nothing about him changes yet: narrate effort and progress, no new Passive, no stronger mind or body.'}`,
+    };
+}
+
 // ------------------------------------------------------------------------------------------------ fights
 /**
  * Patch 9C-1: the Learning Progress of a fight that is over (src/combat.js endEncounterEvents): a fight that qualifies
@@ -359,7 +422,7 @@ export function learningActivity(s, content, c, minutes, start) {
 export function fightGrowth(state, content, enc) {
     if (rulesetOf(state) < 2 || !fightQualifies(state, content, enc)) return [];
     const tags = new Set(Object.keys(enc.pp?.used || {}).flatMap((id) => skillOf(content, id, state)?.tags || []));
-    const goal = openGoals(state).find((g) => g.lp < g.need && !(g.fights || []).includes(enc.id) && !knownTechnique(state, g.target) && g.target.tags.some((t) => tags.has(t)));
+    const goal = openGoals(state).find((g) => !g.target.passive && g.lp < g.need && !(g.fights || []).includes(enc.id) && !knownTechnique(state, g.target) && g.target.tags.some((t) => tags.has(t)));
     if (!goal) return [];
     const gain = Math.min(goal.need - goal.lp, Math.floor(R(content).fight_lp * affinityFor(content, state.entities.pc.sheet.class, { tags: goal.target.tags })));
     if (gain <= 0) return [];
@@ -387,7 +450,7 @@ export function growthDrafts(state, content, activations = []) {
         const c = composeGoal(state, content, g);
         if (!c.errors.length) drafts.push({ key, hash: hash32(JSON.stringify(c.def)), def: c.def });
     };
-    for (const g of openGoals(state).filter((x) => x.status === 'ready' && !sourceMissing(state, x))) add(g.id, g);
+    for (const g of openGoals(state).filter((x) => x.status === 'ready' && !x.target.passive && !sourceMissing(state, x))) add(g.id, g);
     for (const a of activations) {
         const o = state.objects?.[a.object];
         const chk = o ? stoneActivation(state, content, o) : null;
@@ -402,7 +465,7 @@ function grant(s, content, g, chosen) {
     if (comp.errors.length) return { errors: comp.errors };
     if (chosen && !chosen.fallback) {
         const candidate = { ...comp.def, name: chosen.name, ...(chosen.flavor ? { flavor: chosen.flavor } : {}) };
-        const passiveCollision = Object.values(s.passive_defs || {}).some((p) => normText(p.name) === normText(candidate.name));
+        const passiveCollision = [...Object.values(s.passive_defs || {}), ...(s.decisions || []).filter((d) => d.kind === 'passive').map((d) => d.passive)].some((p) => normText(p?.name) === normText(candidate.name));
         if (!passiveCollision && !skillDefErrors(candidate, content, s).length) comp.def = candidate;
     }
     const def = defineSkill(s, content, comp.def);
@@ -437,6 +500,19 @@ export function finalizeGrowth(state, content, names = {}, activations = []) {
             continue;
         }
         if (g.status !== 'ready') continue;
+        // Patch 9C-2c: a complete Ordinary Passive goal becomes evidence (src/v4/passive_growth.js offers it in this same
+        // step); while no slot is free or his Passives raise the stat no further it stays complete, nothing is lost
+        if (g.target.passive) {
+            const full = passivesOf(s.entities.pc.sheet).length >= passiveSlots(content);
+            const why = full ? `all ${passiveSlots(content)} of his Passive slots are held` : !passiveTraining(s, content, g.target.stat) ? `his Passives raise ${g.target.stat} as far as they can` : null;
+            if (why) { out.failed.push({ goal: g.id, source: 'practice', name: g.source.name, technique: techniqueText(g.target), lp: g.lp, need: g.need, errors: [why] }); continue; }
+            const key = `train:${g.id}`;
+            const close = { t: 'growth.closed', d: { goal: g.id, evidence: key, name: techniqueText(g.target) } };
+            const evidence = { t: 'growth.evidence', d: { evidence: { key, kind: 'training', quality: 'ordinary', focus: g.target.stat, goal: g.id, why: `long practice of his ${STAT_WORDS[g.target.stat]}`, turn: s.turn, minute: s.clock.minute } } };
+            s = after(s, [close, evidence]);
+            out.events.push(close, evidence);
+            continue;
+        }
         const missing = sourceMissing(s, g);
         if (missing) { out.failed.push({ goal: g.id, source: 'material', name: g.source.name, technique: techniqueText(g.target), lp: g.lp, need: g.need, errors: [missing] }); continue; }
         try {
@@ -517,7 +593,29 @@ export function applyGrowthEvent(state, e) {
             const goal = g.goals[d.goal];
             if (!goal) throw new Error(`close of an unknown learning goal ${d.goal}`);
             delete g.goals[d.goal];
-            g.done = [...g.done, { id: d.goal, skill: d.skill, name: d.name, fn: goal.target.fn, who: goal.source.who, key: goal.source.key, keys: goalSources(goal).map((s) => s.key), turn: state.turn, minute: state.clock.minute }].slice(-KEEP_DONE);
+            g.done = [...g.done, { id: d.goal, ...(d.evidence ? { evidence: d.evidence } : { skill: d.skill }), name: d.name, fn: goal.target.fn ?? null, who: goal.source.who, key: goal.source.key, keys: goalSources(goal).map((s) => s.key), turn: state.turn, minute: state.clock.minute }].slice(-KEEP_DONE);
+            break;
+        }
+        // Patch 9C-2c (src/v4/passive_growth.js): a development's evidence, its offer, his decision on it; kept for good,
+        // so the same evidence is never offered or rolled again
+        case 'growth.evidence': {
+            const ev = (g.evidence ||= {});
+            if (ev[d.evidence.key]) throw new Error(`evidence exists: ${d.evidence.key}`);
+            ev[d.evidence.key] = { ...clone(d.evidence), status: d.evidence.status || 'pending' };
+            break;
+        }
+        case 'growth.offered': {
+            const ev = g.evidence?.[d.key];
+            if (!ev || ev.status !== 'pending') throw new Error(`offer of evidence not pending: ${d.key}`);
+            ev.status = 'offered';
+            ev.decision = d.decision;
+            break;
+        }
+        case 'growth.decided': {
+            const ev = g.evidence?.[d.key];
+            if (!ev || ev.status !== 'offered') throw new Error(`decision on evidence not offered: ${d.key}`);
+            ev.status = d.status;
+            if (d.passive) ev.passive = d.passive;
             break;
         }
         default:
@@ -527,6 +625,6 @@ export function applyGrowthEvent(state, e) {
 
 /** The #skills lines of his learning goals. */
 export function goalLines(state) {
-    return openGoals(state).map((g) => `- ${g.id}: ${techniqueText(g.target)} from ${g.source.name} · ${g.lp}/${g.need} LP${g.status === 'ready' ? ' · complete (booked on his next turn outside a fight)' : ''}`);
+    return openGoals(state).map((g) => `- ${g.id}: ${techniqueText(g.target)} from ${g.source.name} · ${g.lp}/${g.need} LP${g.status === 'ready' ? (g.target.passive ? ' · complete (offered on his next turn outside a fight, while a Passive slot is free)' : ' · complete (booked on his next turn outside a fight)') : ''}`);
 }
 

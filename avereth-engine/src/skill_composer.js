@@ -48,7 +48,8 @@ export function composeAspects(content, aspects = null) {
 
 /** The first free name of the word pair: "Ember Bolt", else "Ember Bolt II" … "Ember Bolt X". */
 function freeName(content, state, base) {
-    const taken = new Set([...skillNames(content, state), ...Object.values(state?.passive_defs || {}).map((p) => normText(p.name))]);
+    // Patch 9C-2c: a name a Passive offered to him holds (src/v4/passive_growth.js) is taken too
+    const taken = new Set([...skillNames(content, state), ...Object.values(state?.passive_defs || {}).map((p) => normText(p.name)), ...(state?.decisions || []).filter((d) => d.kind === 'passive').map((d) => normText(d.passive?.name))]);
     for (const n of [base, ...ROMAN.map((r) => `${base} ${r}`)]) if (!taken.has(normText(n))) return n;
     return null;
 }

@@ -11,7 +11,7 @@ import { Dice, newSeed } from './rng.js';
 import { applyEvent, fold } from './state.js';
 import { anchorFor, templateFor, locationByName, weaponFamily, startPlace, itemEffectOf, rulesetOf, rulesetDef, npcTemplate, skillOf } from './content.js';
 import { checkProgress, restoration } from './skills.js';
-import { skillCostAmount, passiveTotals } from './passives.js';
+import { skillCostAmount, passiveTotals, effectiveStats } from './passives.js';
 import { rankRefusal, itemProfile } from './v4/items.js';
 import { deriveCharacter, actionsOf } from './derived.js';
 import { selectClass, selectSkills } from './creation.js';
@@ -214,7 +214,7 @@ function selfRestore(s, content, act, emit) {
     const res = skill.cost?.resource;
     if (amount && Number(sheet[res] || 0) < amount) return nothing(`Alaric lacks ${res.toUpperCase()} for ${skill.name} (${sheet[res] || 0} < ${amount})`);
     const dv = deriveCharacter(sheet, content);
-    const who = (pools) => ({ stats: sheet.stats, pools, max: { hp: dv.maxHp, mp: dv.maxMp, sta: dv.maxSta } });
+    const who = (pools) => ({ stats: effectiveStats(sheet, content), pools, max: { hp: dv.maxHp, mp: dv.maxMp, sta: dv.maxSta } });
     const pools = { hp: sheet.hp, mp: sheet.mp, sta: sheet.sta };
     const ahead = restoration(content, skill, known.prof, rulesetOf(s), who(pools), amount);
     if (ahead.full) return nothing(`Alaric is at full ${ahead.resource.toUpperCase()}: ${skill.name} has nothing to restore`);
@@ -266,7 +266,7 @@ function worldUse(s, content, act, dice, emit) {
             success = difficulty === 'trivial';
             text = `${difficulty}: no roll`;
         } else {
-            const r = resolveCheck(dice, { label: `${skill.name} on ${f.name}`, actor: sheet.stats?.[stat] ?? 5, opposition: opp });
+            const r = resolveCheck(dice, { label: `${skill.name} on ${f.name}`, actor: effectiveStats(sheet, content)?.[stat] ?? 5, opposition: opp });
             emit({ t: 'check.recorded', d: { what: `${skill.name} on ${f.name}`.slice(0, 80), stat, actor: r.actor_score, opposition: r.opposition, chance: r.chance, roll: r.roll, success: r.success, claimed: r.success, by: 'engine', feature: f.id, aim: 'skill', difficulty } });
             success = r.success;
             text = `${stat} ${r.actor_score} vs ${difficulty.replace('_', ' ')} ${r.opposition}: ${r.chance}% (d100 ${r.roll}) → ${r.success ? 'SUCCESS' : 'FAILURE'}`;

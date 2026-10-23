@@ -14,7 +14,8 @@ import { sceneHandle } from './v4/scene_handles.js';
 import { itemEffectOf, rulesetOf, skillOf as resolveSkill } from './content.js';
 import { effectValue, flatEffectValue, noteUse, fightProgress, restoration } from './skills.js';
 import { fightGrowth } from './v4/growth.js';
-import { passiveSnapshot, skillCostAmount, combatPassive } from './passives.js';
+import { trialEvidence } from './v4/passive_growth.js';
+import { passiveSnapshot, skillCostAmount, combatPassive, effectiveStats } from './passives.js';
 import { rankRefusal, restoreOf, restoreEffect } from './v4/items.js';
 
 const PROF = (content, level) => content.rules.proficiency.levels[String(level || 1)];
@@ -31,7 +32,7 @@ export function characterCombatant(state, id, content, side) {
     return {
         id, name: label(e), side, model: 'character',
         fixed: {
-            level: s.level, rank: dv.rank, class: s.class, stats: { ...s.stats }, max_hp: dv.maxHp, max_mp: dv.maxMp,
+            level: s.level, rank: dv.rank, class: s.class, stats: { ...effectiveStats(s, content) }, max_hp: dv.maxHp, max_mp: dv.maxMp,
             max_sta: dv.maxSta, atk: dv.atk, matk: dv.matk, def: dv.def, mdef: dv.mdef, init: dv.init, type: 'normal',
             // Patch 9A: his learned Skills and the plain attack of the weapon he holds (src/derived.js actionsOf)
             actions: actionsOf(s, content, rulesetOf(state), state),
@@ -1352,6 +1353,11 @@ export function endEncounterEvents(state, content, enc) {
     const learning = fightGrowth(state, content, enc);
     if (learning.length) summary.lp = learning.map((e) => ({ goal: e.d.goal, lp: e.d.lp, total: e.d.total, need: e.d.need }));
     events.push(...learning);
+    // Patch 9C-2c: an outstanding fight he survived and won leaves the evidence of a development (src/v4/passive_growth.js);
+    // what comes of it is offered at his next turn outside a fight, never inside this one
+    const trial = trialEvidence(state, content, enc);
+    if (trial.length) summary.trial = { key: trial[0].d.evidence.key, sure: trial[0].d.evidence.sure, ...(trial[0].d.evidence.roll ? { roll: trial[0].d.evidence.roll, chance: trial[0].d.evidence.chance } : {}), passed: trial[0].d.evidence.status !== 'failed' };
+    events.push(...trial);
     events.push({ t: 'encounter.ended', d: { id: enc.id, summary } });
     return { events, summary };
 }

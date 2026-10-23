@@ -8,6 +8,7 @@ import { deriveCharacter } from './derived.js';
 import { FUNCTIONAL } from './knowledge.js';
 import { skillOf } from './content.js';
 import { promotionPp } from './skills.js';
+import { passiveSlots } from './passives.js';
 
 const AWARENESS = new Set(['unaware', 'suspicious', 'aware']);
 // V3: offered|active|completed|failed; Runtime V4 adds the listing states of a Guild board and giving up
@@ -49,7 +50,11 @@ export function validateState(state, content) {
             const def = state.passive_defs?.[pid];
             if (!def) p.push(`${where}: unknown passive ${pid}`);
             else if (JSON.stringify([had.scope, had.condition, had.effects]) !== JSON.stringify([def.scope, def.condition, def.effects])) p.push(`${where}: passive ${pid} differs from its definition`);
+            // Patch 9C-2c: one he gave up is not his again
+            if ((s.passive_history || []).some((h) => h.id === pid)) p.push(`${where}: passive ${pid} held after it was given up`);
         }
+        // Patch 9C-2c: four Passives at most, of every quality together
+        if (Object.keys(s.passives || {}).length > passiveSlots(content)) p.push(`${where}: ${Object.keys(s.passives).length} Passives, more than the ${passiveSlots(content)} slots`);
         for (const [slot, ref] of Object.entries(s.equipment)) {
             if (typeof ref === 'string' && !content.items.has(ref)) p.push(`${where}: unknown item ${ref} in ${slot}`);
             if (typeof ref === 'object' && (!ref || !ref.name)) p.push(`${where}: invalid inline item in ${slot}`);
@@ -64,7 +69,15 @@ export function validateState(state, content) {
         if (!isInt(g.lp) || g.lp < 0 || g.lp > g.need) p.push(`learning goal ${g.id}: LP ${g.lp}/${g.need}`);
         if ((g.status === 'ready') !== (g.lp >= g.need)) p.push(`learning goal ${g.id}: ${g.status} at ${g.lp}/${g.need}`);
     }
-    for (const d of state.growth?.done || []) if (!pc.sheet.skills[d.skill]) p.push(`the Skill ${d.skill} of learning goal ${d.id} is not his`);
+    for (const d of state.growth?.done || []) if (!d.evidence && !pc.sheet.skills[d.skill]) p.push(`the Skill ${d.skill} of learning goal ${d.id} is not his`);
+    // Patch 9C-2c: every open Passive offer rests on its evidence, offered; an accepted evidence's Passive was his
+    for (const d of (state.decisions || []).filter((x) => x.kind === 'passive')) {
+        const ev = state.growth?.evidence?.[d.evidence];
+        if (!ev || ev.status !== 'offered' || ev.decision !== d.id) p.push(`passive offer ${d.id}: its evidence ${d.evidence} is not offered`);
+    }
+    for (const ev of Object.values(state.growth?.evidence || {}).filter((x) => x.status === 'accepted')) {
+        if (!state.passive_defs?.[ev.passive]) p.push(`evidence ${ev.key}: its Passive ${ev.passive} is not defined`);
+    }
     const sc = state.scene;
     // Runtime V4 keeps its place nodes in state.places; wilderness outside a settlement lies in its realm (live 30.09.2026)
     if (sc.location && !state.entities[sc.location] && !content.locations.has(sc.location) && !state.places?.[sc.location]) p.push(`unknown scene location ${sc.location}`);

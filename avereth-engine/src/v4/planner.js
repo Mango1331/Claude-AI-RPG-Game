@@ -26,9 +26,10 @@ import { extractJsonObject } from './json.js';
 import { validate } from './schema.js';
 import { interpreterSystem, vocabularyText, catalogText, interpreterSchema, PLAIN_FORMAT, repairMessage, amountErrors } from './interpret.js';
 import { anchorQuote } from './agency.js';
-import { openGoals } from './growth.js';
+import { openGoals, goalText } from './growth.js';
 import { composerFunctions } from '../skill_composer.js';
 import { disciplineTags, skillAspects } from '../skills.js';
+import { CORE_STATS } from '../passives.js';
 
 export const PLANNER_VERSION = 'plan-c0.1';
 
@@ -196,11 +197,15 @@ export const LEARNING_RULES = [
     '- Asking to be taught, a wish ("I\'d like to learn …", "teach me someday"), a question about a technique, a price or a plan for later is no command: words, the story lets the other answer.',
     '- Studying a manual or primer he holds (OBJECTS: manual · … teaches …) for a time is activity study with material: its id, and learn: the technique it teaches or the LEARNING id he goes on with. Only looking at it or reading its title is no study.',
     '- Activating a Skill Stone he holds (OBJECTS: Skill Stone · … holds …) now is use with its id; wanting to, asking about it or examining it is no command.',
+    '- Training a lasting quality of himself NOW, not a technique (conditioning his body, sharpening his mind or senses, hardening his will, building strength or agility), is activity train or study with learn: the core stat it builds (STR strength, VIT toughness, AGI agility, INT mind, PER senses, WIL will), or the LEARNING id he goes on with.',
+    '- A POSSIBLE PASSIVE in the CATALOG is a development offered to him, not his yet: passive.accept when he clearly takes it now (replace: the PASSIVES id he gives up for it, only when all his slots are held and he names one), passive.decline when he clearly lets it pass. Thinking it over, asking about it or wanting it later is no command.',
     'Examples (another town): CATALOG: PRESENT: npc.tutor (Brannoc, sword tutor) · KNOWN SKILLS warrior.cleave (Cleave: attack · single target) · LEARNING learn.1 (guard (Defense) from Brannoc, 40/100 LP)',
     '- "*i spend the next two hours with Brannoc drilling the stance he shows me*" → {"commands":[{"seq":1,"type":"activity","kind":"train","what":"the stance Brannoc shows him","minutes":120,"until":null,"learn":"learn.1","teacher":"npc.tutor","tags":null,"aspects":null,"quote":"i spend the next two hours with Brannoc drilling the stance he shows me"}]}',
     '- "*i practise my cleave on the post for an hour*" → {"commands":[{"seq":1,"type":"activity","kind":"train","what":"Cleave on the post","minutes":60,"until":null,"learn":"warrior.cleave","teacher":null,"tags":null,"aspects":null,"quote":"i practise my cleave on the post for an hour"}]}',
     '- "Could you teach me a fire spell some day?" → {"commands":[]}',
     '- (OBJECTS: obj.t4.primer (Primer of the Steady Guard, held by Alaric, manual · F · teaches guard (Defense))) "*i sit down with the primer and work through it for two hours*" → {"commands":[{"seq":1,"type":"activity","kind":"study","what":"the Primer of the Steady Guard","minutes":120,"until":null,"learn":"guard","teacher":null,"tags":null,"aspects":null,"material":"obj.t4.primer","quote":"i sit down with the primer and work through it for two hours"}]}',
+    '- "*i spend two hours in meditation, drilling my concentration*" → {"commands":[{"seq":1,"type":"activity","kind":"train","what":"concentration drills","minutes":120,"until":null,"learn":"INT","teacher":null,"tags":null,"aspects":null,"material":null,"quote":"i spend two hours in meditation, drilling my concentration"}]}',
+    '- (POSSIBLE PASSIVE dec.passive.trial_enc_t9 (Unbroken Stance [Rare] …)) "I accept it. Let it settle in me." → {"commands":[{"seq":1,"type":"passive.accept","offer":"dec.passive.trial_enc_t9","replace":null,"quote":"I accept it"}]}',
 ].join('\n');
 
 /**
@@ -295,7 +300,7 @@ export function planContext(state, content, catalog) {
         route.push({ id: resolved, name: p.name, kind: p.kind });
     }
     // Patch 9C-1: his open learning goals and what a learning activity may name (src/v4/growth.js)
-    const learning = rulesetOf(state) >= 2 ? openGoals(state).map((g) => ({ id: g.id, text: `${g.target.aspects?.length ? `${g.target.aspects.join('/')} ` : ''}${g.target.fn} (${g.target.tags.join(', ')}) from ${g.source.name}, ${g.lp}/${g.need} LP` })) : [];
+    const learning = rulesetOf(state) >= 2 ? openGoals(state).map((g) => ({ id: g.id, text: goalText(g) })) : [];
     const techniques = rulesetOf(state) >= 2 ? composerFunctions(content) : [];
     return { fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content) };
 }
@@ -370,8 +375,9 @@ function learningErrors(c, ctx, at) {
     // a legacy campaign learns nothing this way: the engine takes such an activity as an ordinary one
     if (!set.length || !(ctx.techniques || []).length) return e;
     if (!['train', 'study'].includes(c.kind)) return [`${at}: learn, teacher, tags, aspects and material belong only to kind train or study (null otherwise)`];
-    const known = new Set([...(ctx.known || []), ...(ctx.learning || []).map((g) => g.id), ...(ctx.techniques || [])]);
-    if (c.learn !== null && !known.has(c.learn)) e.push(`${at}: learn must be an id from KNOWN SKILLS, an id from LEARNING, one of ${ctx.techniques.join(', ')}, or null`);
+    // Patch 9C-2c: a core stat he trains (an Ordinary Passive goal)
+    const known = new Set([...(ctx.known || []), ...(ctx.learning || []).map((g) => g.id), ...(ctx.techniques || []), ...CORE_STATS]);
+    if (c.learn !== null && !known.has(c.learn)) e.push(`${at}: learn must be an id from KNOWN SKILLS, an id from LEARNING, one of ${ctx.techniques.join(', ')}, a core stat (${CORE_STATS.join(', ')}), or null`);
     if (Array.isArray(c.tags) && c.tags.some((t) => !(ctx.disciplines || []).includes(t))) e.push(`${at}: tags must be of ${(ctx.disciplines || []).join(', ')}, or null`);
     if (Array.isArray(c.aspects) && c.aspects.some((a) => !(ctx.aspects || []).includes(a))) e.push(`${at}: aspects must be of ${(ctx.aspects || []).join(', ')}, or null`);
     return e;

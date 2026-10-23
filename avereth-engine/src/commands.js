@@ -6,7 +6,8 @@ import { goalLines } from './v4/growth.js';
 import { profileOf, sourceText } from './v4/items.js';
 import { formatCoin } from './economy.js';
 import { findSkill, rulesetOf, startClasses, skillOf } from './content.js';
-import { passiveTotals, skillCostAmount, passivesOf, passiveText } from './passives.js';
+import { passiveTotals, skillCostAmount, passivesOf, passiveText, effectiveStats, statsText, passiveSlots } from './passives.js';
+import { passiveLines, passiveOffers } from './v4/passive_growth.js';
 import { promotionPp, effectValue, effectFactor, flatEffectValue, affinityFor } from './skills.js';
 import { assignStat } from './progression.js';
 import { knowledgeOf, memoriesOf, memoryText, propText, playerLabel, statusOf } from './knowledge.js';
@@ -19,7 +20,7 @@ import { dungeonOf, mapText } from './v4/dungeon.js';
 
 const HELP = [
     ['#status', 'full current status (alias #stats)'], ['#skills', 'all known Skills'], ['#skill <name>', 'full Skill definition with current values'],
-    ['#class', 'Base Class, growth, evolution'], ['#domain', 'Domain state'], ['#equipment', 'equipped Gear and totals'],
+    ['#class', 'Base Class, growth, evolution'], ['#passives', 'Passive slots, his Passives and developments offered to him'], ['#domain', 'Domain state'], ['#equipment', 'equipped Gear and totals'],
     ['#bag', 'inventory and coin (alias #inventory)'], ['#item <name>', 'Item definition'], ['#quests', 'known Quests'],
     ['#quest <name>', 'Quest details'], ['#effects', 'active effects'], ['#effect <name>', 'effect details'],
     ['#combat', 'encounter audit (read-only)'], ['#system <question>', 'mechanics question answered by the System'],
@@ -69,7 +70,7 @@ function status(state, content) {
         '[SYSTEM // STATUS]',
         `${e.name} | ${e.race || 'Human'} | Level ${s.level} | XP ${s.xp}/${s.level * content.rules.progression.xp_to_next_per_level} | Power Rank ${dv.rank} | Class: ${cls}`,
         `HP ${s.hp}/${dv.maxHp} | MP ${s.mp}/${dv.maxMp} | STA ${s.sta}/${dv.maxSta}`,
-        `STR ${s.stats.STR} | VIT ${s.stats.VIT} | AGI ${s.stats.AGI} | INT ${s.stats.INT} | PER ${s.stats.PER} | WIL ${s.stats.WIL} | Free Stat Points ${s.free_points}`,
+        `${statsText(s, content)} | Free Stat Points ${s.free_points}`,
         `ATK ${dv.atk} | MATK ${dv.matk} | DEF ${dv.def} (base ${dv.baseDef}) | MDEF ${dv.mdef} (base ${dv.baseMdef}) | Initiative ${dv.init} (floor(1.5 × AGI))`,
         `Active Effects: ${fx.length ? fx.map((x) => x.name).join(', ') : 'none'} | Domain: NOT YET UNLOCKED`,
         // Patch 9B-2: his Passives (their lasting bonuses are in the values above), only when he has any
@@ -186,12 +187,12 @@ function skill(state, content, arg) {
     if (sk.attack) {
         lines.push(`Base Power ${sk.attack.base} | Scaling ${sk.attack.scaling.map((t) => `${t.stat} ×${t.text ?? t.coef}`).join(' + ')} | Uses ${sk.attack.share === 1 ? '' : `${sk.attack.share * 100}% of `}${sk.attack.uses} | ${sk.attack.damage_type}`);
         lines.push(`A legal attack always lands (no Hit or Crit roll; only a true Ambush Opening Action crits ×${content.rules.crit.multiplier})${sk.attack.ignores_partial_cover ? ' | ignores Partial Cover' : ''}${sk.strikes > 1 ? ` | ${sk.strikes} strikes (separate damage each)` : ''}`);
-        lines.push(`Current Raw Power: ${rawPowerText(sk, s.stats, dv)}${prof.power !== 1 ? ` (×${prof.power} Proficiency on Modified Power)` : ''}`);
+        lines.push(`Current Raw Power: ${rawPowerText(sk, effectiveStats(s, content), dv)}${prof.power !== 1 ? ` (×${prof.power} Proficiency on Modified Power)` : ''}`);
     }
     if (sk.effect_text && !/^none\.?$/i.test(sk.effect_text)) lines.push(`Effect: ${sk.effect_text}`);
     if (sk.flavor) lines.push(`Description (appearance only, no mechanical effect): ${sk.flavor}`);
     // Patch 9B-1: the numbers its effects give now, at his Proficiency (the same values src/combat.js books)
-    const now = effectsNow(content, sk, s.stats, known.prof, rulesetOf(state));
+    const now = effectsNow(content, sk, effectiveStats(s, content), known.prof, rulesetOf(state));
     if (now.length) lines.push(`Current effect: ${now.join(' | ')}${effectFactor(content, known.prof, rulesetOf(state)) !== 1 ? ` (×${effectFactor(content, known.prof, rulesetOf(state))} Proficiency, rounded)` : ''}`);
     if (!known.weapon && rulesetOf(state) >= 2 && s.class) lines.push(`Proficiency Progress: ${ppText(content, sk, known)} · Affinity ×${affinityFor(content, s.class, sk)} (highest of its tags)`);
     return lines.join('\n');
@@ -207,6 +208,8 @@ function klass(state, content) {
     // Patch 9B-2: the Passives he actually has, each with what it does and when
     const passives = passivesOf(s);
     const plist = passives.length ? ['Passives:', ...passives.map((p) => `- ${passiveText(p)}`)] : ['Passives: none'];
+    // Patch 9C-2c: his slots and what is offered to him (src/v4/passive_growth.js)
+    if (rulesetOf(state) >= 2) plist.push(`Passive slots: ${passives.length}/${passiveSlots(content)}${passiveOffers(state).length ? ` · ${passiveOffers(state).length} development${passiveOffers(state).length > 1 ? 's' : ''} offered` : ''} (#passives)`);
     if (rulesetOf(state) >= 2) return [...head, 'Evolution history: none', ...plist, 'Class evolution: not tied to any Level; it can only grow from how he plays (organic class growth is not unlocked yet)'].join('\n');
     const next = [15, 30, 45, 60, 75, 90].find((l) => l > s.level);
     return [...head, 'Evolution history: none', `Next known evolution milestone: Level ${next ?? '-'}`].join('\n');
@@ -403,6 +406,7 @@ export function runCommands(state, content, text) {
             case 'skills': panels.push(skills(s, content)); break;
             case 'skill': panels.push(arg ? skill(s, content, arg) : skills(s, content)); break;
             case 'class': panels.push(klass(s, content)); break;
+            case 'passives': panels.push(['[SYSTEM // PASSIVES]', ...(rulesetOf(s) >= 2 ? passiveLines(s, content) : ['No dynamic Passives under these rules.'])].join('\n')); break;
             case 'domain': panels.push('[SYSTEM // DOMAIN]\nSTATUS: NOT YET UNLOCKED'); break;
             case 'equipment': panels.push(equipment(s, content)); break;
             case 'bag': case 'inventory': panels.push(bag(s, content)); break;

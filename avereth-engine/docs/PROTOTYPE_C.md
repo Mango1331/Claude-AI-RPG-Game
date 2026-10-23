@@ -2027,3 +2027,14 @@ Vollständige Beschreibung: `docs/PATCH9C2B_STONES_MATERIALS.md`.
 - **Tests:** `tests/v4/patch9c2b.test.js` (11).
 - **Review-Korrektur (4.3.0-c.6.6.47):** Ein „Skill Stone“ ohne belegte Lehre wird bei Aktivierung abgelehnt (nicht als Werkzeug erzählt). Ein aus einem Manual bereites Vorhaben wird nur vergeben, solange er das Manual hält; die LP bleiben. Tests: 13.
 - **Live-Korrektur (4.3.0-c.6.6.48):** Aus dem Livetest von `.47`. Ein Stein mit belegter Lehre ist bei jedem Namen mit „stone“ eine Quelle. Ein Eigenname trifft nur die eine anwesende Person, deren Name oder Handle ihn trägt. Die Übergabe einer gebuchten Ware durch denselben Verkäufer in derselben Menge ist der Kauf selbst, in beiden Kaufpfaden. `buy` trifft bei genau passender Zeile nur diese. Ein gewöhnliches Werkzeug gibt beim Benutzen keinen Skill, keine LP und keine Fähigkeit. Tests: `patch9c2b_live` (5).
+
+### Patch 9C-2c (4.3.0-c.6.6.49): Passive-Erwerb in drei Qualitätsstufen
+
+Einzelheiten: `docs/PATCH9C2C_PASSIVE_ACQUISITION.md`.
+
+- **Qualitäten und Grenzen.** Ordinary, Rare, Legendary auf einer Passive-Engine; Budgets je Qualität, gemeinsame Summen, vier Plätze (PC und NPC).
+- **Core-Stats.** Neuer Effekt `core_stat_bonus`; `effectiveStats` gilt an jeder Lesestelle.
+- **Ablauf.** Ein Beleg der Engine wird beim nächsten sicheren Zug zum Angebot (Forge nur für den Namen) und erst durch Annahme gebucht (`passive.accept`, `passive.decline`, `cmd-1.3`). Ablehnung ist endgültig; Rare oder Legendary können bei vollen Plätzen ein benanntes Passive atomar ersetzen (`passive.lost`).
+- **Quellen.** Ordinary durch zehn Tage Eigentraining eines Core-Stats; Rare durch einen gewonnenen Kampf gegen einen Gegner 5 Level höher bei höchstens 25 % HP (Grenzfall mit gespeichertem Wurf); Legendary nur über eine autorisierte Engine-Quelle. Ein „Passive Stone“ der Erzählung ist nichts.
+- **Texte.** Narrator-Vertrag Revision .49.
+- **Tests.** `patch9c2c` (9).

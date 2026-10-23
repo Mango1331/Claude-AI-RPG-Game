@@ -2,7 +2,7 @@
 // no Crit Chance (legal attacks connect; only a true Ambush crits), and PER is not part of Initiative.
 import { num, normText } from './util.js';
 import { skillOf } from './content.js';
-import { passiveTotals } from './passives.js';
+import { passiveTotals, effectiveStats } from './passives.js';
 
 export function rankOf(level, content) {
     for (const b of content.rules.ranks.bands) if (level >= b.min && level <= b.max) return b.rank;
@@ -84,7 +84,8 @@ export function initiativeOf(agi, content) {
  */
 export function deriveCharacter(sheet, content) {
     const r = content.rules.derived;
-    const s = sheet.stats;
+    // Patch 9C-2c: the stats his Passives raise count for every derived value (his assigned stats stay as they are)
+    const s = effectiveStats(sheet, content);
     const out = {
         maxHp: r.max_hp.base + sheet.level * r.max_hp.per_level + s.VIT * r.max_hp.per_vit,
         maxMp: s.INT * r.max_mp.per_int + s.WIL * r.max_mp.per_wil,

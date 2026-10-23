@@ -3,6 +3,7 @@
 // The engine resolves the checks it can recognise deterministically (declared stealth); for other checks it issues
 // one pre-committed CHECK DIE per turn that the narrator must use (Core #9: one roll, never rerolled).
 import { num } from './util.js';
+import { effectiveStats } from './passives.js';
 
 export function checkChance(actor, opposition, actorMods = [], oppMods = []) {
     const a = num(actor * (1 + actorMods.reduce((s, x) => s + (Number(x) || 0), 0) / 100));
@@ -21,7 +22,7 @@ export function resolveCheck(dice, { label, actor, opposition, actorMods = [], o
 /** Detection Score of an observer (Core #8: PER + explicit Detection bonus). */
 export function detectionScore(state, content, id) {
     const e = state.entities[id];
-    if (e?.sheet) return e.sheet.stats.PER;
+    if (e?.sheet) return effectiveStats(e.sheet, content).PER;
     // Direct-stat creatures have no PER. PROPOSED default (rules.checks.creature_detection): Human baseline PER.
     return content.rules.checks.creature_detection?.value ?? 5;
 }
@@ -34,7 +35,7 @@ export function detectionScore(state, content, id) {
  */
 export function stealthEvents(state, content, dice, { mods = [] } = {}) {
     const observers = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && state.entities[id].status !== 'dead');
-    const pc = state.entities.pc.sheet;
+    const pc = { stats: effectiveStats(state.entities.pc.sheet, content) };
     const concealedOthers = state.scene.concealed.filter((x) => x !== 'pc');
     if (!observers.length) {
         return {

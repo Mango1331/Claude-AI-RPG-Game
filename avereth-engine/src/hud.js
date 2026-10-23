@@ -7,7 +7,8 @@
 // message text. It shows only what the player may know: no NPC attitudes, agendas, secrets or hidden numbers.
 import { deriveCharacter, weaponAttackOf } from './derived.js';
 import { rulesetOf, skillOf } from './content.js';
-import { skillCostAmount } from './passives.js';
+import { skillCostAmount, statsText, passivesOf, passiveSlots, QUALITY_TEXT } from './passives.js';
+import { passiveOffers } from './v4/passive_growth.js';
 import { currentThreads, threadHere, LOCAL_KINDS } from './threads.js';
 import { goalLines } from './v4/intents.js';
 import { formatCoin } from './economy.js';
@@ -69,9 +70,12 @@ export function characterRows(state, content) {
     return [
         ['Level', `${s.level} ${cls} · Power Rank ${dv.rank} · Guild Rank ${guildRankOf(state) || '— (not registered)'}${e.status === 'dead' ? ' · DEAD' : ''}`],
         ['Resources', `HP ${s.hp}/${dv.maxHp} (${condition(s.hp, dv.maxHp)}) · MP ${s.mp}/${dv.maxMp} · STA ${s.sta}/${dv.maxSta} · XP ${s.xp}/${s.level * per}`],
-        ['Stats', `STR ${s.stats.STR} · VIT ${s.stats.VIT} · AGI ${s.stats.AGI} · INT ${s.stats.INT} · PER ${s.stats.PER} · WIL ${s.stats.WIL}${s.free_points ? ` · Free Stat Points ${s.free_points}` : ''}`],
+        ['Stats', `${statsText(s, content, ' · ')}${s.free_points ? ` · Free Stat Points ${s.free_points}` : ''}`],
         ['Combat', `ATK ${dv.atk} · MATK ${dv.matk} · DEF ${dv.def} · MDEF ${dv.mdef} · Initiative ${dv.init}`],
         ['Skills', list(skills)],
+        // Patch 9C-2c: his Passive slots, and a development offered to him (not his yet)
+        ...(rulesetOf(state) >= 2 && (passivesOf(s).length || passiveOffers(state).length)
+            ? [['Passives', `${passivesOf(s).length}/${passiveSlots(content)}${passivesOf(s).length ? ` · ${passivesOf(s).map((p) => `${p.name}${p.quality ? ` (${QUALITY_TEXT[p.quality]})` : ''}`).join(' · ')}` : ''}${passiveOffers(state).length ? ` · offered: ${passiveOffers(state).map((d) => d.passive.name).join(', ')} (#passives)` : ''}`]] : []),
         ['Equipped', list(equip)],
         ['Carried', brief(inv, 8, '#bag')],
         ['Coin', formatCoin(s.coin_cp, content)],

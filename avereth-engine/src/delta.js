@@ -11,6 +11,7 @@ import { checkChance } from './checks.js';
 import { authorization, takesQuest, turnsInQuest, namesQuest, titleWords } from './intent.js';
 import { clamp, normText, slug, uniq } from './util.js';
 import { threadEvents } from './threads.js';
+import { effectiveStats } from './passives.js';
 
 const TAG_RE = /<avereth>\s*([\s\S]*?)\s*<\/avereth>/gi;
 const ENGINE_OWNED = new Set(['hp', 'mp', 'sta', 'xp', 'level', 'stats', 'skills', 'damage', 'roll', 'rolls', 'init', 'initiative', 'atk', 'def', 'mdef', 'rank', 'defeat_xp']);
@@ -907,7 +908,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
         else if (stat && !content.rules.stats.includes(stat)) reject(c, `unknown stat ${c.stat}`);
         else if (!(A > 0) || !(O > 0)) reject(c, 'check needs positive actor and opposition scores');
         else {
-            const pcStat = stat && state.entities.pc?.sheet ? state.entities.pc.sheet.stats[stat] : null;
+            const pcStat = stat && state.entities.pc?.sheet ? effectiveStats(state.entities.pc.sheet, content)[stat] : null;
             const res = checkChance(A, O, arr(c.actor_mods).map(Number), arr(c.opp_mods).map(Number));
             const success = die <= res.chance;
             const rec = { what: String(c.what || 'check').slice(0, 80), stat, actor: res.actor, opposition: res.opposition, chance: res.chance, roll: die, success, claimed: c.success === undefined ? null : !!c.success };

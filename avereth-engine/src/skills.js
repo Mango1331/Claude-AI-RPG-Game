@@ -300,6 +300,7 @@ export function noteUse(ctx, r) {
         if (onHim && hostile(r.actor)) {
             pp.threatened = true;
             if (pp.wait?.kind === 'defense') { pp.used[pp.wait.skill] ||= 'a defense under attack'; pp.wait = null; }
+            trialNote(ctx, pp, r);
         }
         return;
     }
@@ -317,6 +318,25 @@ export function noteUse(ctx, r) {
         if (kinds.some((k) => DEFENSE.has(k))) pp.wait = { skill: skill.id, kind: 'defense' };
         else if (kinds.includes('next_attack_buff')) pp.wait = { skill: skill.id, kind: 'buff' };
     }
+}
+
+/**
+ * Patch 9C-2c: what a foe's strikes did to him, for the evidence of an outstanding fight (src/v4/passive_growth.js
+ * trialEvidence): his HP when the first foe struck him and the lowest any strike left him at (percent of his maximum),
+ * the foes who struck him, and the damage by type. Only the foes' own strikes count: no wound of his own making.
+ */
+function trialNote(ctx, pp, r) {
+    const pc = ctx.enc.combatants.pc;
+    const max = pc.fixed.max_hp || 1;
+    const t = (pp.trial ||= { start: null, low: 100, foes: [], taken: { physical: 0, magical: 0 } });
+    const foe = ctx.enc.combatants[r.actor];
+    const magical = foe?.model === 'creature' ? foe.fixed.attack?.damage_type === 'magical' : skillOf(ctx.content, r.skill, ctx.state)?.attack?.damage_type === 'magical';
+    for (const s of (r.strikes || []).filter((x) => x.target === 'pc' && Number.isFinite(x.hp_after))) {
+        if (t.start === null) t.start = Math.floor((s.hp_before * 100) / max);
+        t.low = Math.min(t.low, Math.floor((s.hp_after * 100) / max));
+        t.taken[magical ? 'magical' : 'physical'] += s.final || 0;
+    }
+    if (!t.foes.includes(r.actor)) t.foes.push(r.actor);
 }
 
 /**

@@ -182,11 +182,15 @@ test('9B-2 B: ATK/MATK/DEF/MDEF and the maxima change once; no refill; no double
         const pc = fight(g, ['mon.boar']).enc.combatants.pc;
         assert.deepEqual([pc.fixed.atk, pc.fixed.matk, pc.fixed.def, pc.fixed.mdef, pc.fixed.max_hp, pc.current.hp], [a.atk, a.matk, a.def, a.mdef, a.maxHp, hp], `snapshot ${i}`);
     }
-    // stacking: the same bonus sums, up to its total (DEF 4, Max HP 20)
-    grant(g, variant(IRON, 2), variant(IRON, 3));
+    // stacking: the same bonus sums (Patch 9C-2c: up to the shared total, DEF 10, Max HP 80); four Passives at most, a
+    // fifth finds no free slot
+    grant(g, variant(IRON, 2));
     const s = dv(g);
     assert.deepEqual([s.def - b.def, s.maxHp - b.maxHp], [4, 20]);
     assert.deepEqual(passiveTotals(sheet(g), content).stat.DEF, 4);
+    const fifth = definePassive(g.state, content, variant(IRON, 3));
+    book(g, ...fifth.events);
+    assert.match(gainPassive(g.state, content, 'pc', fifth.passive.id).errors.join(), /holds 4 Passives already \(4\/4\): no free slot/);
     assert.deepEqual(validateState(g.state, content), []);
 });
 
@@ -205,13 +209,14 @@ test('9B-2 C: a cost reduction acts once, only on its resource and tag, rounded 
     assert.equal(cut.cost.amount, 7);
     assert.equal(skillAction(ctx, 'pc', 'rogue.evasive_step', { dir: 'closer' }).cost.amount, 5);
     assert.match(renderHud({ ...g.state, encounter: ctx.enc }, content), /Guarded Cut[^·]*7 STA/);
-    // a reduction of MP lowers no STA cost; more reductions are capped at 20% in total
+    // a reduction of MP lowers no STA cost; more reductions are capped (Patch 9C-2c: at the shared 30% in total)
     const h = hero('Rogue', 'Piercing Thrust + Feint');
     grant(h, { ...THRIFT, id: 'dyn.passive_mana_thrift', name: 'Mana Thrift', effects: [{ kind: 'cost_reduction', resource: 'mp', pct: 10 }] });
     assert.match(panel(h, '#skill Piercing Thrust'), /Cost: 9 STA\n|Cost: 9 STA \|/);
-    grant(h, THRIFT, variant(THRIFT, 2), { ...THRIFT, id: 'dyn.passive_breath', name: 'Breath', effects: [{ kind: 'cost_reduction', resource: 'sta', pct: 10 }] });
-    // Piercing Thrust 9 STA: 10 + 10 + 10 = 30% capped at 20%: 9 × 0.8 = 7.2 → 7
-    assert.match(panel(h, '#skill Piercing Thrust'), /Cost: 7 STA \(base 9\)/);
+    grant(h, THRIFT, { ...THRIFT, id: 'dyn.passive_breath', name: 'Breath', effects: [{ kind: 'cost_reduction', resource: 'sta', pct: 10 }] },
+        { ...THRIFT, id: 'dyn.passive_second_wind', name: 'Second Wind', quality: 'legendary', effects: [{ kind: 'cost_reduction', resource: 'sta', pct: 15 }] });
+    // Piercing Thrust 9 STA: 10 + 10 + 15 = 35% capped at 30%: 9 × 0.7 = 6.3 → 6
+    assert.match(panel(h, '#skill Piercing Thrust'), /Cost: 6 STA \(base 9\)/);
 });
 
 test('9B-2 C: a resistance lowers its damage type only, once; a combat Passive acts only while its condition holds', () => {

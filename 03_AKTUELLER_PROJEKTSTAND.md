@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 23. Oktober 2026 · Fassung 25 (9C-2c .50 R1-R4 Reviewfix Git-geprüft und für echten Livetest freigegeben)  
+**Stichtag:** 23. Oktober 2026 · Fassung 26 (9C-2c .50 Ordinary-Livetest nach 7/10 Trainingseinheiten an Planner-Budget abgebrochen)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -16,8 +16,8 @@
 | **HEAD am 23.10.2026 (Snapshot)** | **73c2444** (Runner/Guide `.50`) nach **dc12652** (Engine `.50`). Letzter tatsächlich live bestätigter Code `.48` (`4f6c677`); Git-HEAD bei Übergabe neu prüfen. |
 | **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.50**; Narrator-Vertragsrevision unverändert **.49** (persönliche SillyTavern-Karte braucht diesen Stand). |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | **9C-2c `.50` Reviewfix implementiert und im Git unabhängig geprüft; Freigabe zum echten Ordinary-Passive-Livetest, aber NOCH NICHT live bestätigt.** Claude meldet 1199/1199 Tests; ChatGPT hat gezielte Code-/Regressionstests inspiziert, nicht selbst erneut ausgeführt. 9C-2b `.48` und 9C-2a `.45` bleiben echt live bestätigt. |
-| **Nächster Schritt** | **Echten `.50`-SillyTavern-Livetest starten**, persönliche Narrator-Karte Revision `.49`, zentralen `current_test` verwenden. Pflichtziele: Ordinary aus Training angeboten, aktiv angenommen, anschließend `#status`, `#passives`, `#skill Arcane Bolt` beantwortet; Rare optional. Originalexport (Events/Chat/LLM-Calls) unabhängig prüfen, dann 03/04 aktualisieren. Vorab KEIN weiterer Hotfix erforderlich. Anti-Farming für wiederholte ähnliche Rare-Encounter bleibt bewusst spätere Arbeit. |
+| **Patchstatus** | **`.50`-Livetest `20261023-110702Z-current_test` abgebrochen, 1/4 Pflichtetappen.** Erste 7 Ordinary-Trainingseinheiten (je 120 min/20 LP) korrekt gebucht, **140/200 LP**, keine Passive-Offerte oder -Vergabe. Zug 10 Planner/Repair beide `finish_reason:length` bei 900 Tokens, kein Engine-Turn gebucht. **Mechanischer Passive-Erwerb weiterhin NICHT live bestätigt.** Letzter vollständig live bestätigter Teilpatch bleibt 9C-2b `.48`. |
+| **Nächster Schritt** | **Gezielte Planner-Zuverlässigkeitskorrektur** gegen den echten Zug-10-Abbruch (900-Tokens-Reasoning erschöpft selbst die Reparatur), möglichst ohne Neubau: Planner-/Repair-Budget, Antwort-/Reasoningsteuerung bzw. Promptgröße eng prüfen und den Drei-Aktionen-Fall Trainieren + Zimmer bezahlen + Schlafen reproduzieren; dann gezielt testen und echten `.50`-Nachtest. Ordinary-Training und Passive-Erwerb bis dahin nicht als defekt oder bestätigt einstufen. `import.json` meldet Kartenversion `.6.6.6`, Engine-HUD „narrator contract: current“: Abweichung getrennt prüfen, nicht als Abbruchursache behaupten. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
 Aktueller Korrekturcommit (.50): https://github.com/Mango1331/Claude-AI-RPG-Game/commit/dc1265259e5aa3654e618248c7786e0766ec287f; Runner-/Guide-Commit https://github.com/Mango1331/Claude-AI-RPG-Game/commit/73c24445c81d4b68f49d2b0e6134458c746e0d6d
@@ -36,7 +36,18 @@ Vorheriger Patch-8-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commi
 **Historischer Teststand von .44 (nicht der aktuelle):** ChatGPT/Codex führte auf .44 **`npm test` 1164/1164** und gezielt **34/34** aus. Die ergänzten Duplikat- und Host-Erwartungen sind auf .43 rot (12/15), nach Fix grün. Claude bestätigte .43 unabhängig mit 33/33 gezielten und 1163/1163 Gesamttests. R1 wurde zusätzlich am offiziellen ST-1.19.0-Quellcode geprüft: der Interceptor-Abbruchcallback hält sein Flag lokal je Aufruf. **Gegenreview der .44 noch offen; kein echter ST-/GLM-Livetest.** Historisch: .42 19/19 und 1149/1149 durch beide Sitzungen bestätigt.
 
 
-### AKTUELL: 9C-2c Reviewfix `.50` – Git-geprüft, LIVE-TEST FREIGEGEBEN (23.10.2026)
+### ECHTER `.50`-Livetest – `20261023-110702Z-current_test` (23.10.2026) – ABBRUCH, KEIN PASSIVE-ERWERB
+
+**Original-ZIP:** `20261023-110702Z-current_test.zip`, analysiert: `report.md`, `run.json`, `evaluation.json`, `avereth-events.json`, `chat.jsonl`, `chat-completions.jsonl`, `calls.json`, `import.json`. Build `4.3.0-c.6.6.50`, Entwicklungs-HEAD `73c2444`, ST 1.19.0, GLM-5.3-Flash. **10 Spielerzüge, 5:50 min, 1/4 Pflicht-Meilensteine (nur Charaktererschaffung)**. Endgrund `turn 10: no reply after the message`; keine Kämpfe/Quests und keine Rare-Offerte.
+
+**Mechanischer Positivbefund:** Mage mit Arcane Bolt/Ward, INT 6/Max MP 72. Engine-Ereignisse `growth.opened` (Ordinary/INT-Ziel `learn.1`, Need 200) und **7×** `growth.session`/`growth.progress`, jeweils **120 Minuten und +20 LP an unterschiedlichen Spieltagen** (Tage 0–6): **140/200 LP**. Zeitfortschritt/Schlaf und Coin-Transaktionen tatsächlich gebucht; Kontostand 50→46→42→38 cp. Erzähler sprach zwischenzeitlich andere Münzreste aus, Enginekonto war konsistent. **Kein** `growth.evidence`, `decision.opened` Passive, `passive.defined` oder `passive.gained`; diese Abschlussmechanik wurde im echten Test **noch nicht erreicht und daher weder bestätigt noch widerlegt**.
+
+**Abbruchursache aus ursprünglichen LLM-Responses:** Zug 9 Planner zuerst `max_tokens:900`, `finish_reason:length`, leere Textantwort nach Reasoning; Reparatur erfolgreich. Zug 10 **beide** Planner-Aufrufe (`plan` und `plan_repair`) endeten bei **900/900 Completion-Tokens, `finish_reason:length`**, Reasoning ohne gültiges JSON. Der Engine-Toast war `planner failed (report is not valid JSON)`; **kein** gebuchter Zug 10, keine Narration, kein Zustandsschaden, Runner meldete UI-Abbruch. Weitere Ausreißer: Zug 7 Extractor erst nach Length-/JSON-Reparatur erfolgreich, vier Length-Abschlüsse insgesamt (Extract 1, Plan 3). `reasoning_effort: low` und `clear_thinking: true` wurden im Request bereits gesendet, verhinderten das wiederholte Problem nicht. Kein Hinweis, dass Passive-Funktion den Abbruch verursacht hätte.
+
+**Profilhinweis:** `import.json` bezeichnet `card.contract` als `4.3.0-c.6.6.6`, während `run.json.status` gleichzeitig `narrator contract: current` meldet. Versionsquelle/aktive Einbindung vor dem nächsten Test kurz abgleichen, **keine gesicherte Abbruchursache**. Sonst keine Seiten-/Serverfehler, Profil blieb unmodifiziert.
+
+**Empfehlung:** **Kleiner robuster Planner-Fix statt weiterer Passive-Hotfix**: primären und Reparatur-Tokenrahmen/Denkanweisungen gezielt auf einfache mehrteilige Spielereingaben prüfen, reale Zug-10-Probe als Rot/Grün verwenden, keine generelle Runtime-Umstrukturierung; danach erneuter Ordinary-Livetest bis `200/200 LP`, `POSSIBLE PASSIVE`, ausdrückliche Annahme und beantwortete `#status`, `#passives`, `#skill Arcane Bolt`. Der `.50`-Reviewfix bleibt git-geprüft, aber **nicht live abgenommen**. Der folgende Freigabe-Abschnitt war der Status **vor** diesem fehlgeschlagenen Test.
+### Historische Freigabe vor dem `.50`-Livetest (23.10.2026)
 
 **Commits:** Engine `dc1265259e5aa3654e618248c7786e0766ec287f`, Runner/Guide und Branch-HEAD `73c24445c81d4b68f49d2b0e6134458c746e0d6d`. Build **4.3.0-c.6.6.50**, Narrator-Contract weiterhin **.49**. **1199/1199 `npm test` laut Claude**; Git-Diffs und neue Regressionen durch ChatGPT unabhängig gelesen, Suite nicht selbst erneut ausgeführt. Rot/Grün `.49` zu `.50` von Claude berichtet. **Noch kein echter `.50`-Livetest.**
 

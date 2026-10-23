@@ -54,6 +54,10 @@ test('.52 runner: current_test is the short 9C completion test: a Warrior, requi
     assert.deepEqual(g.character, { class: 'Warrior', skills: ['Heavy Slash', 'Guard'] });
     assert.deepEqual(g.milestones.filter((m) => m.required !== false).map((m) => m.id), ['creation_complete', 'skill_development_offered', 'skill_development_accepted', 'skill_development_verified', 'developed_skill_used']);
     assert.ok(g.limits.maxTurns <= 35);
+    // 4.3.0-c.6.6.53 (both .52 live runs ended in his death): survival before the pattern
+    assert.match(g.brief, /Survival comes first, before any pattern/);
+    assert.match(g.brief, /about 40% or below, stop the pattern and retreat/);
+    assert.match(g.brief, /rest or sleep in a safe place until your HP is full/);
 });
 
 test('.52 runner: the evaluator follows a development from his fights: noted, offered, accepted, checked, used; not done before its use', async () => {

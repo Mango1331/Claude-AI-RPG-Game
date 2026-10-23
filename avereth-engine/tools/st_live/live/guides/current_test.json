@@ -1,7 +1,7 @@
 {
   "id": "current_test",
-  "title": "Kurztest .52: 9C-Abschluss – Skill-Durchbruch aus eigenen Kämpfen, Angebot, Annahme, Einsatz (NPC-Signatur nur wenn natürlich)",
-  "brief": "Create a Warrior with Heavy Slash and Guard. Your objective is to let a new Skill grow out of the way you really fight, take it only when the System offers it, and then use it. Go into the city, register with the Adventurers' Guild, read the board for your rank and take a contract that sends you into a dungeon to fight; travel there and go in onto its first level. Fight its foes in a steady way of your own: whenever a foe is ENGAGED with you, raise Guard first and strike with Heavy Slash on your next turn (when your Stamina is too low, use your Basic Attack). Real fights against foes that attack you are what counts; the engine notes your way of fighting at the end of each fight and needs about three such fights. Do not seek a hopeless fight, do not provoke one on purpose and rest when your HP is low. Only when the System shows POSSIBLE SKILL (it is offered, not yours yet), read #skills, then accept it in one clear sentence outside a fight (for example: I accept it). After the System reports NEW SKILL (or EVOLVED), send #skills and #skill with the exact name of the new Skill (one command per message), then use the new Skill against a foe in your next fight. If a trained fighter or mage of the world fights you or beside you, watch whether they use a technique of their own and note its name, but never fight an innocent person for it. Follow System state, not narrator claims: if POSSIBLE SKILL does not come after three or four hard fights, report that and how your fights went instead of inventing progress. If a POSSIBLE PASSIVE appears, decide on it deliberately and note what the System says. Do not manipulate engine state, use developer shortcuts or reset the chat to force success.",
+  "title": "Kurztest .53: 9C-Abschluss – Skill-Durchbruch aus eigenen Kämpfen, Angebot, Annahme, Einsatz; Überleben vor Muster (NPC-Signatur nur wenn natürlich)",
+  "brief": "Create a Warrior with Heavy Slash and Guard. Your objective is to let a new Skill grow out of the way you really fight, take it only when the System offers it, and then use it. Go into the city, register with the Adventurers' Guild, read the board for your rank and take a contract that sends you into a dungeon to fight; travel there and go in onto its first level. Survival comes first, before any pattern: start a fight only with at least about 70% of your HP, and as soon as your HP falls to about 40% or below, stop the pattern and retreat: break off and leave the fight back toward the way you came (out of the Dungeon if you must), then rest or sleep in a safe place until your HP is full again before you look for the next fight. A fight you leave alive is better than a fight you finish dead. While your HP is healthy, fight its foes in a steady way of your own: whenever a foe is ENGAGED with you, raise Guard first and strike with Heavy Slash on your next turn (when your Stamina is too low, use your Basic Attack). Real fights against foes that attack you are what counts; the engine notes your way of fighting at the end of each fight that you win and needs about three such fights. Do not seek a hopeless fight (more foes than you can face, or foes far stronger than you) and do not provoke one on purpose. Only when the System shows POSSIBLE SKILL (it is offered, not yours yet), read #skills, then accept it in one clear sentence outside a fight (for example: I accept it). After the System reports NEW SKILL (or EVOLVED), send #skills and #skill with the exact name of the new Skill (one command per message), then use the new Skill against a foe in your next fight. If a trained fighter or mage of the world fights you or beside you, watch whether they use a technique of their own and note its name, but never fight an innocent person for it. Follow System state, not narrator claims: if POSSIBLE SKILL does not come after three or four hard fights, report that and how your fights went instead of inventing progress. If a POSSIBLE PASSIVE appears, decide on it deliberately and note what the System says. Do not manipulate engine state, use developer shortcuts or reset the chat to force success.",
   "character": {
     "class": "Warrior",
     "skills": [
@@ -29,7 +29,7 @@
     },
     {
       "id": "skill_pattern_noted",
-      "goal": "Win a real fight in which a foe attacks you, fighting your own steady way (Guard, then Heavy Slash).",
+      "goal": "Win a real fight in which a foe attacks you, fighting your own steady way (Guard, then Heavy Slash) while your HP is healthy; at about 40% HP or below, retreat and recover instead.",
       "maxTurns": 10,
       "required": false
     },
@@ -65,6 +65,7 @@
     }
   ],
   "focus": [
+    "Survival first: at about 40% HP or below he breaks off and retreats, then rests in safety until his HP is full; note whether the engine books the retreat (flee or GO), the rest and the healing, and whether the narrator agrees with the System.",
     "A new Skill comes only from real fights: the engine notes what a fight showed at its end, and only fights against foes that attacked you count; the offer comes after the fight (never during it), in a safe turn.",
     "POSSIBLE SKILL is an offer: before your acceptance #skills must not list it and the narrator must not tell it as yours; after NEW SKILL your Basic Attack, Heavy Slash and Guard stay yours beside it.",
     "Record the exact name, cost, range and effect of the offered Skill and compare offer, NEW SKILL, #skills and #skill: the same Skill, the same numbers.",
@@ -78,7 +79,7 @@
     "sameFailure": 3
   },
   "personas": [
-    "Steady fighter: one way of fighting every time (Guard, then Heavy Slash), short action messages, no detours",
+    "Steady but careful fighter: one way of fighting while healthy (Guard, then Heavy Slash), retreat and full rest at low HP, short action messages, no detours",
     "Mechanics observer: read #skills and #skill at the right moments; compare offer, acceptance and the actual combat results with the narration"
   ],
   "scripted": [

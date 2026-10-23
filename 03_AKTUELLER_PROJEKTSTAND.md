@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 23. Oktober 2026 · Fassung 26 (9C-2c .50 Ordinary-Livetest nach 7/10 Trainingseinheiten an Planner-Budget abgebrochen)  
+**Stichtag:** 23. Oktober 2026 · Fassung 27 (.51 Git-reviewt: Budgets korrekt, Unterkunfts-Guard mit zwei Reviewlücken)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,11 +13,11 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 23.10.2026 (Snapshot)** | **73c2444** (Runner/Guide `.50`) nach **dc12652** (Engine `.50`). Letzter tatsächlich live bestätigter Code `.48` (`4f6c677`); Git-HEAD bei Übergabe neu prüfen. |
-| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.50**; Narrator-Vertragsrevision unverändert **.49** (persönliche SillyTavern-Karte braucht diesen Stand). |
+| **HEAD am 23.10.2026 (Snapshot)** | **1965f02** (Runner `.51`) nach **933384c** (Engine `.51`). Letzter wirklich live bestätigter Skill-Stone-Stand `.48`; `.50`-Ordinary-Training live nur bis 140/200 LP. Git-HEAD vor neuer Übergabe prüfen. |
+| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.51**; persönlicher Narrator-Vertrag bleibt Revision **.49**. Für Narrator in SillyTavern 8.192 Max-Response-Tokens separat einstellen. |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | **`.50`-Livetest `20261023-110702Z-current_test` abgebrochen, 1/4 Pflichtetappen.** Erste 7 Ordinary-Trainingseinheiten (je 120 min/20 LP) korrekt gebucht, **140/200 LP**, keine Passive-Offerte oder -Vergabe. Zug 10 Planner/Repair beide `finish_reason:length` bei 900 Tokens, kein Engine-Turn gebucht. **Mechanischer Passive-Erwerb weiterhin NICHT live bestätigt.** Letzter vollständig live bestätigter Teilpatch bleibt 9C-2b `.48`. |
-| **Nächster Schritt** | **Gezielte Planner-Zuverlässigkeitskorrektur** gegen den echten Zug-10-Abbruch (900-Tokens-Reasoning erschöpft selbst die Reparatur), möglichst ohne Neubau: Planner-/Repair-Budget, Antwort-/Reasoningsteuerung bzw. Promptgröße eng prüfen und den Drei-Aktionen-Fall Trainieren + Zimmer bezahlen + Schlafen reproduzieren; dann gezielt testen und echten `.50`-Nachtest. Ordinary-Training und Passive-Erwerb bis dahin nicht als defekt oder bestätigt einstufen. `import.json` meldet Kartenversion `.6.6.6`, Engine-HUD „narrator contract: current“: Abweichung getrennt prüfen, nicht als Abbruchursache behaupten. |
+| **Patchstatus** | **`.51` implementiert und unabhängig im Git geprüft:** Planner/Repair 2000, Extractor/Repair 4000, Forge/Repair 1500; `needs`-Prompts konsistent und neue Unterbringungsregel samt Tests. Claude: **1207/1207 npm-Tests** (von ChatGPT nicht erneut ausgeführt). **Zwei konkrete Grenzfälle im neuen Unterkunfts-Guard vor Live noch offen**; kein `.51`-Livetest. |
+| **Nächster Schritt** | **Nur den `.51`-Unterkunfts-Guard gezielt korrigieren**: (A) freie/andere Schlaforte nach fehlgeschlagener Zimmerbuchung nicht blockieren; (B) `pay` gilt nur bei bestätigter Lodging-Leistung als Zimmerbuchung, nicht schon wegen `coin.changed`/`transaction.completed` (auch Teilzahlung bei offener Room-Offer). Zwei Regressionen, gezieltes Rot/Grün, Vollsuite, kleiner Commit/Push und Git-Review; dann Ordinary-Livetest mit `current_test` bis Training 200/200, angeboten, angenommen, drei Panel-Prüfungen. Kein neues Unterbringungssystem und kein Passive-Redesign. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
 Aktueller Korrekturcommit (.50): https://github.com/Mango1331/Claude-AI-RPG-Game/commit/dc1265259e5aa3654e618248c7786e0766ec287f; Runner-/Guide-Commit https://github.com/Mango1331/Claude-AI-RPG-Game/commit/73c24445c81d4b68f49d2b0e6134458c746e0d6d
@@ -35,6 +35,10 @@ Vorheriger Patch-8-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commi
 
 **Historischer Teststand von .44 (nicht der aktuelle):** ChatGPT/Codex führte auf .44 **`npm test` 1164/1164** und gezielt **34/34** aus. Die ergänzten Duplikat- und Host-Erwartungen sind auf .43 rot (12/15), nach Fix grün. Claude bestätigte .43 unabhängig mit 33/33 gezielten und 1163/1163 Gesamttests. R1 wurde zusätzlich am offiziellen ST-1.19.0-Quellcode geprüft: der Interceptor-Abbruchcallback hält sein Flag lokal je Aufruf. **Gegenreview der .44 noch offen; kein echter ST-/GLM-Livetest.** Historisch: .42 19/19 und 1149/1149 durch beide Sitzungen bestätigt.
 
+
+### AKTUELL: `.51`-Code-Review (23.10.2026) – Tokenfix korrekt, zwei kleine Unterkunftsgrenzen
+
+Engine `933384cdd249a92a736e8a79ef34e3e8a4736071`, Runner `1965f0276b27927c6e8a8ac73bf6a847e7340b19`; Claude meldet 132/132 gezielte und 1207/1207 gesamte Tests, ChatGPT hat Diffs/Regressionen auf GitHub geprüft. Budgets Plan 2000, Extract 4000, Forge 1500 samt Repair und Runnerrollen korrekt. Neue `needs`-Beispiele konsistent; bekannte/offene Zimmerangebote als reguläre Tests abgedeckt. **Reviewlücken in `commands.js` `roomStep`/`roomWaits`:** (A) jede vorangegangene Zimmer-Kaufanfrage wird ohne Prüfung des tatsächlich beabsichtigten Schlaforts auf einen späteren `activity.sleep`/`rest` bezogen. Gegenbeispiel „Wenn das Zimmer zu teuer ist, schlafe ich draußen“: der eigenständige Außenschlaf würde fälschlich `NOT DONE` erhalten. (B) `pay` kann auch **ohne** passendes Zimmer-Angebot `resolved` liefern, dabei nur `coin.changed`/`transaction.completed`, aber **kein `service.granted` Lodging** buchen; `roomWaits` wertet das bloße `happened` als bestätigte Zimmerbuchung. Beispiel: Raumofferte 4 cp, `pay` von 2 cp für room → allgemeine Teilzahlung, danach fälschlich Schlaf im gebuchten Privatzimmer. **Minimale Revision:** die Zimmerabhängigkeit nur bei tatsächlich darauf bezogenem Schlaf erzwingen und für diese eine echte Lodging-Buchung/Leistung im Eventzustand verlangen; generisches Pay-/Preislimit ist nicht ausreichend. Zwei Regressionen, bestehende Tests erhalten; keinen neuen Unterkunfts-/Passive-Patch starten. **Noch keine echte `.51`-Live-Abnahme.**
 
 ### ECHTER `.50`-Livetest – `20261023-110702Z-current_test` (23.10.2026) – ABBRUCH, KEIN PASSIVE-ERWERB
 

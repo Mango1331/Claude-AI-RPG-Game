@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 23. Oktober 2026 · Fassung 19 (9C-2a Restkorrektur .45 und aktueller Liveguide vorbereitet; echter Growth-Livetest ausstehend)  
+**Stichtag:** 23. Oktober 2026 · Fassung 20 (9C-2a echter ST-/GLM-Livetest 16 Züge, Erwerb und Kampf bestätigt; .45-Duplikatrest nicht live exponiert)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -16,8 +16,8 @@
 | **HEAD am 23.10.2026** | `cdd610d97537c980b0d1a7c4d8ce50d404d6729f` (aktualisierter Liveguide); Engine `b67910ae7fa4ad38cef5667fce10a184a9756e40` (.45), zuvor `ddf1ea3` (.44) |
 | **Build (package.json, manifest.json, `ENGINE_VERSION`)** | 4.3.0-c.6.6.45 |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | Patch 8, 9A/9A.1, 9B-1/9B-2 und 9C-1 technisch gegengeprüft. 9C-2a .43 unabhängig bestätigt; .44 gezielt 34/34 und gesamt 1164/1164. **.45 ergänzt die aktive Duplikatbereinigung und Kampf-LP-Sperre** (zwei neue Regressionen, noch nicht ausgeführt). Kein echter 9C-Livetest. |
-| **Nächster Schritt** | Auf `.45` `npm test` im geklonten Repository ausführen, danach den bereits angepassten `current_test` für echten Lehrer-/Forge-Erwerb und Kampfeinsatz starten. R3-Engine-Zeit beobachten; keine weitere Vorab-Reviewrunde ohne echten neuen Befund. |
+| **Patchstatus** | Patch 8, 9A/9A.1, 9B-1/9B-2 und 9C-1 technisch gegengeprüft. 9C-2a .43 unabhängig bestätigt; .44 gezielt 34/34 und gesamt 1164/1164. **.45 ergänzt die aktive Duplikatbereinigung und Kampf-LP-Sperre** (zwei neue Regressionen, noch nicht ausgeführt). Echter 9C-Forge-Livetest erfolgreich: 16 Züge, Lehrer-Erwerb und Kampfsieg; bekannte Altdaten-Duplikate nicht live getestet. |
+| **Nächster Schritt** | **Erster echter `.45`-Forge-Livetest bestanden.** Kein zusätzlicher Vorab-Fix. Bei nächstem lokalen Zugriff `.45`-Regressionssuite ausführen (zwei neue Fälle ungetestet), bei Bedarf .42-Altdaten-Duplikat separat prüfen. Danach 9C-Fortsetzung gemäß Freigabe; kein neuer Planungskreislauf. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
 Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b67910ae7fa4ad38cef5667fce10a184a9756e40
@@ -32,6 +32,15 @@ Vorheriger Patch-8.1-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/com
 Vorheriger Patch-8-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f3b55819dad21249d871a62b7ede38bd926598cd
 
 **Letzte ausgeführte Tests (Stand .44; für .45 nicht erneut ausgeführt):** ChatGPT/Codex führte auf .44 **`npm test` 1164/1164** und gezielt **34/34** aus. Die ergänzten Duplikat- und Host-Erwartungen sind auf .43 rot (12/15), nach Fix grün. Claude bestätigte .43 unabhängig mit 33/33 gezielten und 1163/1163 Gesamttests. R1 wurde zusätzlich am offiziellen ST-1.19.0-Quellcode geprüft: der Interceptor-Abbruchcallback hält sein Flag lokal je Aufruf. **Gegenreview der .44 noch offen; kein echter ST-/GLM-Livetest.** Historisch: .42 19/19 und 1149/1149 durch beide Sitzungen bestätigt.
+
+### Echter ST-Livetest 23.10.2026 — 20261023-041901Z-current_test (Build .45)
+
+**Quelle:** vollständiges vom Nutzer hochgeladenes Runner-ZIP mit `report.md`, `run.json`, `evaluation.json`, `avereth-events.json`, Chat und Call-Protokollen. Git-Commit `cdd610d`; 16 Züge, 8:04 min, **3/3 Runner-Meilensteine**; GLM-5.3-Flash, ST 1.19.0, keine Seiten- oder Serverfehler, Integrität OK. Die Engine-Events wurden unabhängig vom Runner-Report auf Lern-/Kampfnachweise geprüft.
+
+- Vor Erwerb echtes Angebot von Kel Dunmar angenommen, **50 CP** abgebucht, `service.granted` für Lehrer-Unterricht; erste zwei Stunden `growth.opened` plus **60/100 LP**; weitere zwei Stunden am selben Tag **+0 LP** (Tageslimit); am Folgetag nach Schlaf **+40 LP** = 100/100. Genau einmal `skill.defined`, `skill.learned`, `growth.closed` für `dyn.ember_bolt`.
+- Forge-Beleg **im Spielerrecord**, nicht nur in Erzählerprosa: `forge-1.0`, genau **ein LLM-Aufruf 1.235 s**, `finish:stop`, Name **Kel's Cindering Dart**, gesonderter visueller `flavor` und Composer-Effekte unverändert. `#skill`: **7 MP**, MEDIUM, Raw Power 25. Reale Anwendung zweimal im Kampf, je 7 MP und 24 Schaden; Boar besiegt, **12 XP**, **18 PP** auf dem neuen Skill. Hiermit **Lehrer-/Forge-/Kampferwerb technisch und live bestätigt**.
+- Kleinere Beobachtungen: Narration bei der ersten Kel-Ansprache mitten im Wort beendet (`finish_reason:length`); eine Extractor-Reparatur; fünf ungültige JSON-Spielerentscheidungen intern wiederholt, ohne Spielabbruch. Abgewiesene Quest-/Combat-Position-Deltas blieben außerhalb der Engine-Wahrheit. `calls.json`/Runner-Bericht summieren **39** Planner-/Narrator-/Extractor-Calls, erfassen den einen tatsächlichen Forge-Aufruf aber nicht als eigene Tabellenzeile; dessen Beleg steht korrekt in `record.forge`. Automatisches Ende nach dem Kampf, daher kein abschließendes `#status`, obwohl Guide es erwähnt.
+- **Grenze:** Neuer .45-R2-Fix für **aktive Duplikate aus .42** wird durch einen frischen Durchlauf mit nur einem Lernziel nicht geprüft; auch der Stale-Abbruch wurde nicht absichtlich provoziert. Keine erfolgreiche Ausführung der zwei neuen .45-Tests behaupten. Kein Grund, den funktionierenden Hauptpfad wegen Testnebenbefunden nochmals umzubauen. R3 kein sichtbares Problem: letzte HUD-Angabe Engine 0.0 s (1 fold, 2 ms).
 
 ### Teilpatch 9C-2a (.43–.45) – enger Umfang, Reviewkorrekturen
 

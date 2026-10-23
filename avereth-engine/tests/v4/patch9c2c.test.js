@@ -314,7 +314,7 @@ test('9C-2c (5, 6): four slots held: no Ordinary goal; a Rare or Legendary Passi
     await say(g, '*i rest for ten minutes*', ACT('rest', { minutes: 10, quote: 'i rest for ten minutes' }));
     const offer = passiveOffers(g.state())[0];
     assert.deepEqual([offer.quality, offer.passive.name, offer.passive.effects.length], ['legendary', 'Crown of Embers', 3]);
-    assert.match(panel(g, '#passives'), /all slots are held: accept it by naming the Passive he gives up for good \(Iron Hide, Deep Wells, Keen Edge, Quiet Mind\)/);
+    assert.match(panel(g, '#passives'), /all slots are held: accept it by naming the Passive he gives up for good; in the place of Iron Hide it adds INT \+4, Max MP \+50, magical damage taken -15% \(Iron Hide's DEF \+2 ends\); of Deep Wells it adds .*; of Keen Edge .*; of Quiet Mind .*; or decline it/);
     await reply(g, 'He rests.');
     const before = { int: effectiveStats(sheetOf(g), content).INT, mp: dv(g).maxMp, def: dv(g).def };
     // without naming one, or naming one he does not hold: nothing

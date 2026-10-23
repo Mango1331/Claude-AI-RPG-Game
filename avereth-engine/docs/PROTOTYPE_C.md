@@ -2038,3 +2038,4 @@ Einzelheiten: `docs/PATCH9C2C_PASSIVE_ACQUISITION.md`.
 - **Quellen.** Ordinary durch zehn Tage Eigentraining eines Core-Stats; Rare durch einen gewonnenen Kampf gegen einen Gegner 5 Level höher bei höchstens 25 % HP (Grenzfall mit gespeichertem Wurf); Legendary nur über eine autorisierte Engine-Quelle. Ein „Passive Stone“ der Erzählung ist nichts.
 - **Texte.** Narrator-Vertrag Revision .49.
 - **Tests.** `patch9c2c` (9).
+- **Review-Korrektur (4.3.0-c.6.6.50):** Ein Austausch senkt HP, MP und STA auf die neuen Maxima ab, auch über einen verlorenen Core-Stat, ohne aufzufüllen. Kostenreduktionen zählen wie bei der echten Kostenberechnung zusammen. Bei 4/4 wird jeder Rare- oder Legendary-Kandidat gegen jeden Einzelersatz geprüft, und `#passives` nennt die lohnenden. Die Live-Abnahme ist an Ordinary und Trainingsbeleg gebunden und endet erst mit `passive_verified`. Tests: `patch9c2c_review` (3), Runner +1.

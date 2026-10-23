@@ -18,6 +18,7 @@ import { applyEvent } from '../state.js';
 import { clone, hash32, normText, slug } from '../util.js';
 import { definePassive, gainPassive, losePassive, passiveDefErrors, passiveGain, passivesOf, passiveSlots, passiveText, passiveWhen, passiveEffects, qualityBudget, CORE_STATS, QUALITY_TEXT } from '../passives.js';
 import { growthOf } from './growth.js';
+import { deriveCharacter } from '../derived.js';
 
 const ROMAN = ['II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 const P = (content) => content.rules.growth?.passive || {};
@@ -129,17 +130,30 @@ function effectOptions(content, ev) {
 const originNote = (ev) => (ev.kind === 'training' ? `trained for long on his own (${ev.goal})` : String(ev.why).slice(0, 160));
 
 /**
+ * 4.3.0-c.6.6.50 (review of 9C-2c): the ways a new Passive of this quality can be his: into a free slot (null), or, all
+ * slots held, in the place of each one he holds (a rare or legendary one only; an ordinary one has none).
+ */
+export function exchangeOptions(sheet, content, quality) {
+    const held = passivesOf(sheet);
+    if (held.length < passiveSlots(content)) return [null];
+    return quality === 'ordinary' ? [] : held.map((p) => p.id);
+}
+
+/**
  * The Passive a piece of evidence makes, for this sheet now: composed, validated, and each effect adding something
- * within the totals (one that would add nothing is left out; a candidate of no real effect is none). def | {refuse}.
+ * within the totals in at least one way it can be his (a free slot, or in the place of one he holds): one that adds
+ * nothing in every way is left out; a candidate of no real effect is none. def | {refuse}.
  */
 export function composeCandidate(state, content, ev) {
     const sheet = state.entities?.pc?.sheet;
     if (!sheet) return { refuse: 'no character' };
     const budget = qualityBudget(content, ev.quality);
+    const ways = exchangeOptions(sheet, content, ev.quality);
+    if (!ways.length) return { refuse: 'all his Passive slots are held, and an Ordinary Passive takes no other\'s place' };
     for (const o of effectOptions(content, ev)) {
         const probe = { id: 'dyn.passive_probe', scope: o.scope, condition: o.condition, effects: o.effects };
-        const gain = passiveGain(sheet, content, probe);
-        const effects = o.effects.filter((_, i) => gain[i] > 0);
+        const gains = ways.map((w) => passiveGain(sheet, content, probe, w));
+        const effects = o.effects.filter((_, i) => gains.some((g) => g[i] > 0));
         if (effects.length < (budget?.effects?.[0] || 1)) continue;
         const free = freeName(state, content, o.base);
         if (!free) return { refuse: `no free name for ${o.base}` };
@@ -272,12 +286,22 @@ export function acceptPassive(s, content, ref, replace = null) {
             const o = view.objects[offer.object];
             events.push({ t: 'object.consumed', d: { id: o.id, by: 'pc', ...((o.qty ?? 1) > 1 ? { qty: 1 } : {}) } });
         }
+        // 4.3.0-c.6.6.50 (review of 9C-2c): what the Passive he gave up raised (a maximum, or a core stat behind one) ends
+        // with it: HP, MP and STA above their new maxima come down to them in the same booking, nothing is filled up
+        const settled = after(s, events).entities.pc.sheet;
+        const dv = deriveCharacter(settled, content);
+        const lowered = [];
+        for (const [r, max] of [['hp', dv.maxHp], ['mp', dv.maxMp], ['sta', dv.maxSta]]) {
+            if (!(settled[r] > max)) continue;
+            events.push({ t: 'resource.changed', d: { id: 'pc', resource: r, value: max, why: `${lose?.name || def.name}: its maximum ended` } });
+            lowered.push(`${r.toUpperCase()} ${settled[r]} → ${max}`);
+        }
         events.push({ t: 'growth.decided', d: { key: ev.key, status: 'accepted', passive: def.id } }, { t: 'decision.closed', d: { id: offer.id, status: 'accepted' } });
         after(s, events);
-        const gained = { passive: def.id, name: def.name, quality: def.quality, text: passiveText(def), ...(lose ? { replaced: lose.name } : {}), slots: `${held.length - (lose ? 1 : 0) + 1}/${slots}` };
+        const gained = { passive: def.id, name: def.name, quality: def.quality, text: passiveText(def), ...(lose ? { replaced: lose.name } : {}), ...(lowered.length ? { lowered } : {}), slots: `${held.length - (lose ? 1 : 0) + 1}/${slots}` };
         return {
             events, gained,
-            line: `NEW PASSIVE — ${def.name} (${quality(def.quality)}), booked by the engine: ${passiveWhen(def)}, ${passiveEffects(def)}${lose ? `; ${lose.name} is given up for good (its effects end)` : ''}. Passive slots ${gained.slots}. Show the change settling in him in a sentence or two; its numbers are the engine's, nothing else about him changes.`,
+            line: `NEW PASSIVE — ${def.name} (${quality(def.quality)}), booked by the engine: ${passiveWhen(def)}, ${passiveEffects(def)}${lose ? `; ${lose.name} is given up for good (its effects end${lowered.length ? `: ${lowered.join(', ')}` : ''})` : ''}. Passive slots ${gained.slots}. Show the change settling in him in a sentence or two; its numbers are the engine's, nothing else about him changes.`,
         };
     } catch (err) {
         return no(`${def.name} cannot be booked (${String(err?.message || err)})`);
@@ -293,6 +317,21 @@ export function declinePassive(s, content, ref) {
 }
 
 // ------------------------------------------------------------------------------------------------ texts
+/**
+ * 4.3.0-c.6.6.50: the exchanges worth making for an offered Passive, all slots held: for each Passive he holds whose
+ * place it could take with a real gain, what it would add there and what would end. ["Iron Hide it adds INT +2 (Iron
+ * Hide's DEF +2 ends)", …]
+ */
+export function exchangeTexts(sheet, content, def) {
+    const out = [];
+    for (const p of passivesOf(sheet)) {
+        const g = passiveGain(sheet, content, def, p.id);
+        const fx = def.effects.map((x, i) => (g[i] > 0 ? { ...x, ...('value' in x ? { value: g[i] } : { pct: g[i] }) } : null)).filter(Boolean);
+        if (fx.length) out.push(`${p.name} it adds ${passiveEffects({ effects: fx })} (${p.name}'s ${passiveEffects(p)} ends)`);
+    }
+    return out;
+}
+
 /** The lines of his Passive slots and open offers (#passives, #class): "PASSIVES — 2/4", each Passive, each offer. */
 export function passiveLines(state, content) {
     const sheet = state.entities?.pc?.sheet;
@@ -302,7 +341,9 @@ export function passiveLines(state, content) {
     const lines = [`PASSIVES — ${held.length}/${slots}`, ...(held.length ? held.map((p) => `- ${passiveText(p)}`) : ['- none'])];
     for (const d of passiveOffers(state)) {
         const full = held.length >= slots;
-        const how = !full ? 'accept it into a free slot, or decline it' : d.passive.quality === 'ordinary' ? 'all slots are held: an Ordinary Passive cannot be taken' : `all slots are held: accept it by naming the Passive he gives up for good (${held.map((p) => p.name).join(', ')}), or decline it`;
+        const worth = full && d.passive.quality !== 'ordinary' ? exchangeTexts(sheet, content, d.passive) : [];
+        const how = !full ? 'accept it into a free slot, or decline it' : d.passive.quality === 'ordinary' ? 'all slots are held: an Ordinary Passive cannot be taken'
+            : worth.length ? `all slots are held: accept it by naming the Passive he gives up for good; in the place of ${worth.join('; of ')}; or decline it` : 'all slots are held, and in the place of none he holds would it add anything now; decline it or keep it open';
         lines.push(`POSSIBLE PASSIVE — ${passiveText(d.passive)} · ${d.passive.origin?.note || ''} · not his yet: ${how} (${d.id})`);
     }
     for (const h of sheet.passive_history || []) lines.push(`- given up: ${h.name}${h.quality ? ` [${quality(h.quality)}]` : ''}${h.replaced_by ? ` (for ${state.passive_defs?.[h.replaced_by]?.name || h.replaced_by})` : ''}`);

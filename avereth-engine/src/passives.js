@@ -219,8 +219,11 @@ export function passiveGain(sheet, content, def, without = null) {
         if (x.kind === 'stat_bonus') return after.stat[x.stat] - before.stat[x.stat];
         if (x.kind === 'max_bonus') return after.max[x.resource] - before.max[x.resource];
         if (x.kind === 'resist') return after.resist[x.damage_type] - before.resist[x.damage_type];
-        const sum = (t) => t.cost.filter((m) => m.resource === x.resource && (m.tag || null) === (x.tag || null)).reduce((a, m) => a + m.pct, 0);
-        return Math.max(0, Math.min(sum(after), total.cost_reduction) - Math.min(sum(before), total.cost_reduction));
+        // 4.3.0-c.6.6.50 (review of 9C-2c): a cost reduction counts as a Skill's cost does (costReductionPct): every
+        // reduction of its resource, general and of its tags together, capped once; its gain is the most any Skill of
+        // that resource gets from it (one without tags, one of each discipline)
+        const probes = [[], ...disciplineTags(content).map((t) => [t])].map((tags) => ({ cost: { resource: x.resource }, tags }));
+        return Math.max(0, ...probes.map((k) => costReductionPct(content, after.cost, k) - costReductionPct(content, before.cost, k)));
     });
 }
 

@@ -192,3 +192,36 @@ Gilt nur unter Regelstand 2 und auf dem Planner-Pfad (C). Es gibt eine Passive-E
 - Legendary nur über die autorisierte Engine-Quelle; Passive Stones sind vorbereitet (Objektbindung, Verbrauch bei Annahme), aber ohne Verteilung.
 - Eine Engine-Quelle, deren Effekte die Summen vollständig ausschöpfen, bleibt als offener Beleg liegen und wird nicht angeboten.
 - Alle Zahlen sind provisorisch (10B).
+
+## 7. Review-Korrektur (4.3.0-c.6.6.50)
+
+Vier Befunde aus dem Git-Review von `.49`. Es gibt kein Redesign und keine Balancing-Änderung. Die Narrator-Vertragsrevision bleibt `.49`.
+
+**1. Ressourcen nach dem Austausch.**
+- `acceptPassive` berechnet nach `passive.lost` und `passive.gained` auf der privaten Kopie die neuen Maxima.
+- Liegen HP, MP oder STA darüber, folgt in derselben Buchung ein `resource.changed` auf das neue Maximum. Das gilt für einen direkten `max_bonus` und auch für einen verlorenen `core_stat_bonus`: VIT senkt Max HP, INT und WIL senken Max MP.
+- Es wird nie aufgefüllt. Die Annahmezeile nennt die Absenkung („HP 100 → 90“).
+
+**2. Kostenreduktion.**
+- `passiveGain` bewertet eine Kostenreduktion jetzt wie `costReductionPct`: allgemeine und taggebundene Reduktionen der Ressource zusammen, einmal gedeckelt.
+- Der Nutzen ist der höchste Zuwachs über Probe-Skills: einer ohne Tag und je einer pro Disziplin.
+- 30 % allgemeine MP-Reduktion plus 15 % Arcane ergibt also keinen Zuwachs. Ein solches Angebot entsteht nicht, und kein Platz wird belegt.
+
+**3. Angebote mit möglichem Austausch.**
+- `exchangeOptions` liefert die zulässigen Konstellationen: ein freier Platz, oder bei 4/4 jedes gehaltene Passive einzeln ersetzt (nur Rare und Legendary).
+- `composeCandidate` behält einen Effekt, wenn er in mindestens einer Konstellation etwas hinzufügt. Es entfernt also nichts vorzeitig, was nach einem Austausch wirken würde.
+- Bei der Annahme wird der gewählte Ersatz erneut geprüft. Ein Ersatz, mit dem nichts dazukommt, wird abgelehnt.
+- `#passives` nennt die lohnenden Ersatzmöglichkeiten mit dem, was das Passive dort hinzufügt und was endet (`exchangeTexts`).
+
+**4. Live-Abnahme (Runner/Guide).**
+- Die Pflichtmeilensteine sind jetzt quellengebunden:
+  - `ordinary_passive_offered`: ein Angebot der Qualität ordinary aus einem Trainingsbeleg `train:…`;
+  - `ordinary_passive_gained`: das Passive ist ordinary und hat die Herkunft `training`.
+- Neu ist `passive_verified`: erst erreicht, wenn nach dem Gain `#status`, `#passives` und `#skill Arcane Bolt` gesendet und vom System beantwortet wurden. Das ist die letzte Pflichtetappe, der Runner bricht also nicht mehr vorher ab.
+- Rare bleibt optional.
+
+**Tests:**
+- `tests/v4/patch9c2c_review.test.js` (3, R1–R3);
+- `tests/live_runner/patch9c2c_runner.test.js` (+1);
+- alle vier mit den `.49`-Quellen rot und mit `.50` grün;
+- angepasst: die `#passives`-Erwartung in `patch9c2c` (5, 6), die jetzt die Ersatzmöglichkeiten nennt.

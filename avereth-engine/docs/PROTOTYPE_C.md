@@ -2025,3 +2025,4 @@ Vollständige Beschreibung: `docs/PATCH9C2B_STONES_MATERIALS.md`.
 - **Manual.** `activity study` mit `material` (`cmd-1.2`) bindet das Material an das Vorhaben. Eigenstudium mit Tageskappe; das Material wird nicht verbraucht. Lesen allein lehrt nichts.
 - **Texte.** `content.10.r2`, Vertrag v4 Revision 4.3.0-c.6.6.46.
 - **Tests:** `tests/v4/patch9c2b.test.js` (11).
+- **Review-Korrektur (4.3.0-c.6.6.47):** Ein „Skill Stone“ ohne belegte Lehre wird bei Aktivierung abgelehnt (nicht als Werkzeug erzählt). Ein aus einem Manual bereites Vorhaben wird nur vergeben, solange er das Manual hält; die LP bleiben. Tests: 13.

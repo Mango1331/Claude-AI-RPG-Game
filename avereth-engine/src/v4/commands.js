@@ -27,7 +27,7 @@ import { shopSearch, findTrades } from './settlement.js';
 import { journeyReady, knownAt } from './catalog.js';
 import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSetsGoal } from './intents.js';
 import { knownByName } from './known.js';
-import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect } from './items.js';
+import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect, namedSource } from './items.js';
 import { itemEffectOf, rulesetOf } from '../content.js';
 import { learningActivity, stoneActivation } from './growth.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
@@ -731,8 +731,12 @@ const HANDLERS = {
             ctx.booked.activations = [...(ctx.booked.activations || []), { key, object: o.id, seq: c.seq }];
             return { status: 'resolved', line: `ACTIVATES — ${o.name} (it holds ${stone.target.aspects.length ? `${stone.target.aspects.join('/')} ` : ''}${stone.target.fn}): he wakes the stone and takes in what it holds. The engine books what he learns from it below (NEW SKILL), and the stone is spent then; if no NEW SKILL is named, the stone stays whole and he learns nothing.` };
         }
+        // Review of 9C-2b (R1): a thing called a Skill Stone whose teaching was never established is no source: refused,
+        // never told as a tool that does something
+        const called = envx?.c && rulesetOf(s) >= 2 && profileOf(content, o)?.kind !== 'skill_source' ? namedSource(content, o) : null;
+        if (called === 'stone') return { status: 'refused', reason: 'stone', line: `CANNOT USE — ${o.name}: what it holds was never established, so it teaches nothing; it stays his, whole and unused, and he learns nothing from it.` };
         // Patch 9C-2b: reading a manual teaches nothing by itself; studying it for a time is (activity study)
-        const manual = envx?.c && rulesetOf(s) >= 2 && profileOf(content, o)?.kind === 'skill_source' && profileOf(content, o).source === 'manual';
+        const manual = called === 'manual' || (envx?.c && rulesetOf(s) >= 2 && profileOf(content, o)?.kind === 'skill_source' && profileOf(content, o).source === 'manual');
         if (manual) return { status: 'resolved', line: `READS — ${o.name}: he looks it over; it stays his. Reading teaches him nothing by itself: no Skill and no Learning Progress unless he studies it for a time (the engine books study).` };
         // Hotfix c.6.6.18: an attack item (the scorchburst scroll) is resolved as an attack (src/v4/planner.js itemAttack),
         // never used up here with its effect left to the story; where no attack is made of it, it stays his

@@ -115,6 +115,17 @@ export function skillSource(content, { name, kind = 'item', teaches = null }) {
     return { kind: 'skill_source', source: teaches.source, title: teaches.source === 'stone' ? 'Skill Stone' : 'manual', rank: rankInName(name) || 'F', fn, tags, aspects, value_cp: r.value_cp?.[teaches.source] ?? 0 };
 }
 
+/**
+ * Review of 9C-2b (R1): what a thing's words call it, a Skill Stone or a manual, whether or not anything it teaches was
+ * established ('stone' | 'manual' | null). Only to refuse or to say plainly that it teaches nothing; never a profile.
+ */
+export function namedSource(content, { name, kind = 'item' }) {
+    const r = content.rules.growth?.sources;
+    if (!r || !name) return null;
+    if (has(name, r.stone_words)) return 'stone';
+    return has(name, r.manual_words) ? 'manual' : null;
+}
+
 /** "Skill Stone · F · Fire bolt (Arcane)", "manual · F · teaches no technique the story named". */
 export function sourceText(p) {
     if (p?.kind !== 'skill_source') return '';

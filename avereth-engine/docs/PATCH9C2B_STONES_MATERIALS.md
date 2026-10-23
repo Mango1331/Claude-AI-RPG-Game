@@ -117,3 +117,22 @@ Die Lehrer-Tests aus 9C-1/9C-2a laufen unverändert weiter. Angepasst wurde nur 
 - Ein Studium ohne `learn`, `teacher` und `material` bleibt ein gewöhnliches Studium; der Planner muss das Material nennen.
 - Material-Studium nutzt die Eigenrate (Abstimmung in 10B).
 - Live-Ergebnisse liegen noch nicht vor.
+
+## 6. Review-Korrektur (4.3.0-c.6.6.47)
+
+Zwei Randfälle aus dem Git-Review von `.46`, beide mit Rot/Grün-Regressionen. Es gibt keine Architektur-, Forge-, Inventar- oder Growth-Umstrukturierung.
+
+**R1 – Skill Stone ohne belegte Lehre.**
+- Ein Gegenstand, der dem Namen nach ein Skill Stone ist, aber kein Quellenprofil hat (nie `teaches`), wurde vom allgemeinen `use` als Werkzeug behandelt („the story tells what it achieves“).
+- Jetzt wird er auf dem Planner-Pfad unter Regelstand 2 ausdrücklich abgelehnt („what it holds was never established“). Der Stein bleibt ganz, nichts wird gebucht.
+- Ein manualartig benannter Gegenstand ohne Profil wird mit „READS … teaches him nothing by itself“ gelesen.
+- Erkennung nur über den Namen (`namedSource`), nie als Profil. Legacy bleibt unverändert.
+
+**R2 – Quelle beim Abschluss.**
+- Ein bereites Vorhaben, das aus einem Manual gelernt wurde, wird nur vergeben, solange er dieses Manual hält.
+- Gibt er es im selben Zug weg, bleibt das Vorhaben mit seinen LP bereit. Narrator und System-Block melden in diesem Zug „NOT LEARNED YET … he needs … in hand“; in späteren Zügen schweigen sie.
+- Sobald er das Manual wieder hält, vergibt der nächste reguläre Zug den Skill genau einmal.
+- Solange es fehlt, entsteht kein Forge-Entwurf.
+- Die Lernzeile eines vollständigen Vorhabens sagt jetzt bedingt: „he knows a new Skill only if the engine names it below“.
+
+Tests: `tests/v4/patch9c2b.test.js` (13). Die beiden neuen Fälle sind mit den `.46`-Quellen rot und mit `.47` grün.

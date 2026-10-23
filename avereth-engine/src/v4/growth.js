@@ -216,6 +216,15 @@ export function stoneActivation(s, content, o) {
     return { target: t.target, profile: p };
 }
 
+/**
+ * Review of 9C-2b (R2): a goal studied from a manual is granted only while he holds that manual (the source of what he
+ * learns); without it the goal stays ready with its progress. null when its source allows the grant.
+ */
+function sourceMissing(s, g) {
+    if (g.source?.kind !== 'material' || holds(s.objects?.[g.source.object])) return null;
+    return `he needs ${g.source.name} in hand to finish learning it`;
+}
+
 /** A Skill Stone activation as the transient goal finalization books (opened and closed in one step). */
 function stoneGoal(s, content, o, chk, key) {
     const n = (growthOf(s).n || 0) + 1;
@@ -338,7 +347,7 @@ export function learningActivity(s, content, c, minutes, start) {
     return {
         status: 'resolved', events, open: events[0].t === 'growth.opened',
         engine: `LEARNING — ${techniqueText(target)}${by}: ${span}, +${gained} LP → ${total}/${goal.need}${ready ? ' (complete: the engine books the Skill now)' : ''}${gained ? '' : ' (today\'s learning is used up)'}`,
-        line: `LEARNS — ${techniqueText(target)}${by} for ${minutes} minutes, booked by the engine: Learning Progress ${total}/${goal.need}.${ready ? ' The learning is complete; the engine names the new Skill below.' : ' He does not know the technique yet: narrate effort and progress, no new Skill.'}`,
+        line: `LEARNS — ${techniqueText(target)}${by} for ${minutes} minutes, booked by the engine: Learning Progress ${total}/${goal.need}.${ready ? ' The learning is complete; he knows a new Skill only if the engine names it below (NEW SKILL).' : ' He does not know the technique yet: narrate effort and progress, no new Skill.'}`,
     };
 }
 
@@ -378,7 +387,7 @@ export function growthDrafts(state, content, activations = []) {
         const c = composeGoal(state, content, g);
         if (!c.errors.length) drafts.push({ key, hash: hash32(JSON.stringify(c.def)), def: c.def });
     };
-    for (const g of openGoals(state).filter((x) => x.status === 'ready')) add(g.id, g);
+    for (const g of openGoals(state).filter((x) => x.status === 'ready' && !sourceMissing(state, x))) add(g.id, g);
     for (const a of activations) {
         const o = state.objects?.[a.object];
         const chk = o ? stoneActivation(state, content, o) : null;
@@ -428,6 +437,8 @@ export function finalizeGrowth(state, content, names = {}, activations = []) {
             continue;
         }
         if (g.status !== 'ready') continue;
+        const missing = sourceMissing(s, g);
+        if (missing) { out.failed.push({ goal: g.id, source: 'material', name: g.source.name, technique: techniqueText(g.target), lp: g.lp, need: g.need, errors: [missing] }); continue; }
         try {
             const r = grant(s, content, g, names[g.id]);
             if (r.errors) { out.failed.push({ goal: g.id, errors: r.errors }); continue; }

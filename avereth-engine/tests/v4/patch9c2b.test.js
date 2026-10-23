@@ -368,3 +368,51 @@ test('9C-2b (2): studying a named primer without naming the technique learns wha
     assert.match(outcomeOf(g).actions.join(' '), /Primer of the Steady Guard teaches guard \(Defense\), not bolt/);
     assert.equal(clockOf(g), t0);
 });
+
+// ------------------------------------------------------------------------------------------------ review of .46
+test('9C-2b review R1: a Skill Stone whose teaching was never established is refused when activated; it stays whole and no tool use is told', async () => {
+    const g = await campaign(content, { cls: 'Mage', skills: 'Arcane Bolt + Arcane Ward' });
+    thing(g, 'obj.plain', 'Skill Stone of Embers', null);
+    assert.equal(g.state().objects['obj.plain'].profile, undefined, 'no source profile: nothing established');
+    await use(g, '*i press the skill stone to my brow and wake it*', 'obj.plain');
+    const line = outcomeOf(g).actions.join(' ');
+    assert.match(line, /CANNOT USE — Skill Stone of Embers: what it holds was never established/);
+    assert.doesNotMatch(line, /a tool|the story tells what it achieves/);
+    assert.equal(lastUser(g).events.some((e) => ['object.consumed', 'skill.defined', 'growth.opened'].includes(e.t)), false);
+    assert.equal(g.state().objects['obj.plain'].holder.entity, 'pc');
+    // a manual-like thing that teaches nothing the story named: reading it books nothing and says so
+    thing(g, 'obj.manual', 'Tattered Manual', null, { kind: 'document' });
+    await reply(g);
+    await use(g, '*i read the tattered manual*', 'obj.manual');
+    assert.match(outcomeOf(g).actions.join(' '), /READS — Tattered Manual.*teaches him nothing by itself/);
+});
+
+test('9C-2b review R2: a goal completed by study whose bound primer leaves his hands in the same message is not granted; its progress stays until he holds it again', async () => {
+    const g = await campaign(content, { cls: 'Warrior', skills: 'Heavy Slash + Charge' });
+    person(g, 'npc.old', 'Old Hesk');
+    thing(g, 'obj.primer', 'Primer of the Steady Guard', PRIMER, { kind: 'document' });
+    await study(g, '*i study the primer for two hours*', { minutes: 120, learn: 'guard', material: 'obj.primer' });
+    await reply(g);
+    inject(g, [{ t: 'growth.progress', d: { goal: 'learn.1', lp: 70, total: 95, need: 100 } }]);
+    await sleepTillMorning(g);
+    const text = '*i study the primer for an hour and then give it to Old Hesk*';
+    g.chat.push({ mes: text, is_user: true, is_system: false, extra: {} });
+    g.plans = [JSON.stringify({ commands: [
+        { seq: 1, ...ACT('study', { minutes: 60, learn: 'learn.1', material: 'obj.primer' }), quote: 'i study the primer for an hour' },
+        { seq: 2, type: 'give', object: 'obj.primer', qty: null, to: 'npc.old', quote: 'give it to Old Hesk' },
+    ] })];
+    const r = await prepareGenerationAsync(g.chat, content, { type: 'normal', settings: { planner: true }, llm: g.llm });
+    const o = outcomeOf(g);
+    assert.equal(g.state().objects['obj.primer'].holder.entity, 'npc.old', 'given away in the same message');
+    assert.equal(o.learned, undefined, 'no Skill without the primer in hand');
+    assert.deepEqual(dyn(g), []);
+    assert.deepEqual([g.state().growth.goals['learn.1'].status, g.state().growth.goals['learn.1'].lp], ['ready', 100], 'the progress stays');
+    assert.match(r.context.text, /he knows a new Skill only if the engine names it below/);
+    assert.match(r.context.text, /NOT LEARNED YET — guard \(Defense\) from Primer of the Steady Guard: he needs Primer of the Steady Guard in hand/);
+    await reply(g);
+    // his again: the next regular turn grants it, once
+    inject(g, [{ t: 'object.moved', d: { id: 'obj.primer', to: { entity: 'pc' } } }]);
+    await say(g, '*i look at the primer again*');
+    assert.equal(outcomeOf(g).learned?.length, 1);
+    assert.equal(dyn(g).length, 1);
+});

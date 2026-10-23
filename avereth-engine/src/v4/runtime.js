@@ -258,7 +258,11 @@ async function withGrowth(t, content, llm, previous) {
     const i = t.events.findLastIndex((e) => e.t === 'outcome.recorded');
     if (i < 0) return { events: [...t.events, ...f.events], ...meta };
     const rec = t.events[i];
-    const outcome = rec.d.outcome ? { ...rec.d.outcome, ...(f.learned.length ? { learned: f.learned } : {}), ...(f.failed.length ? { learn_failed: f.failed } : {}) } : rec.d.outcome;
+    // Review of 9C-2b (R2): a goal kept from its grant (its manual not in hand) is told in the turn that worked on it,
+    // not again in every later turn
+    const touched = new Set(t.events.filter((e) => e.t === 'growth.session' || e.t === 'growth.progress').map((e) => e.d.goal));
+    const failed = f.failed.map((x) => (x.source === 'material' && touched.has(x.goal) ? { ...x, notice: true } : x));
+    const outcome = rec.d.outcome ? { ...rec.d.outcome, ...(f.learned.length ? { learned: f.learned } : {}), ...(failed.length ? { learn_failed: failed } : {}) } : rec.d.outcome;
     return { events: [...t.events.slice(0, i), ...f.events, { ...rec, d: { ...rec.d, outcome } }, ...t.events.slice(i + 1)], ...meta };
 }
 

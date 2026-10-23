@@ -308,6 +308,8 @@ function outcomeBlock(state, content, outcome, opts = {}) {
     });
     // Patch 9C-2b: a Skill Stone whose activation the engine could not book: it stays whole, nothing is learned
     const inert = (outcome?.learn_failed || []).filter((f) => f.object).map((f) => `NOT LEARNED — ${f.name}: ${f.errors.join('; ')}. The stone stays whole and his; he learns nothing from it now. Tell no new Skill.`);
+    // Review of 9C-2b (R2): study complete, its manual not in his hands: no Skill yet, the progress is kept
+    inert.push(...(outcome?.learn_failed || []).filter((f) => f.source === 'material' && f.notice).map((f) => `NOT LEARNED YET — ${f.technique} from ${f.name}: ${f.errors.join('; ')}. His Learning Progress stays (${f.lp}/${f.need}); he knows no new Skill yet. Tell no new Skill.`));
     return [block, ...notes, ...learned, ...inert].filter(Boolean).join('\n');
 }
 

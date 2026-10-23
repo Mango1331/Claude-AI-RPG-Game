@@ -23,7 +23,7 @@
 // Pure functions of the state; nothing here calls an LLM, and nothing is booked in a legacy campaign.
 import { rulesetOf, skillOf, npcTemplate } from '../content.js';
 import { affinityFor, defineSkill, learnSkill, fightQualifies, practiceProgress, skillDefErrors } from '../skills.js';
-import { composeSkill, composeTags, composeAspects, composerFunctions, techniqueSignature, acquiredTechnique } from '../skill_composer.js';
+import { composeSkill, composeTags, composeAspects, composerFunctions, techniqueSignature, acquiredTechnique, techniqueOf } from '../skill_composer.js';
 import { applyEvent } from '../state.js';
 import { truth, entityLabel } from '../knowledge.js';
 import { clone, normText, hash32 } from '../util.js';
@@ -37,6 +37,9 @@ const DAY = 1440;
 const KEEP_DAYS = 2;
 const KEEP_FIGHTS = 6;
 const KEEP_DONE = 20;
+// 9C completion: the qualifying fights a Skill's patterns are kept for (rules.json growth.development.keep_fights is the
+// content's copy of it; a reducer reads no content)
+const KEEP_NOTED = 8;
 
 const R = (content) => content.rules.growth;
 const dayOf = (minute) => Math.floor(minute / DAY);
@@ -51,14 +54,29 @@ export function openGoals(state) {
     return Object.values(growthOf(state).goals).sort((a, b) => a.n - b.n);
 }
 
-function knownTechnique(state, target) {
+// 9C completion: a Skill his own evolved from (a chosen starter, or one of a teacher, a stone or a manual) is not learned
+// again: its technique, by its kind, leading discipline and aspects, counts as known (a starter he still holds blocks
+// nothing, as in 9C-2a)
+const looseKey = (t) => JSON.stringify([t.fn, (t.tags || [])[0] ?? null, [...new Set(t.aspects || [])].sort()]);
+export function knownTechnique(state, target, content = null) {
     if (target.passive) return null;
     const key = techniqueSignature(target);
-    const ids = new Set([...Object.keys(state.entities?.pc?.sheet?.skills || {}), ...growthOf(state).done.map((g) => g.skill)]);
-    return [...ids].find((id) => {
+    const sheet = state.entities?.pc?.sheet;
+    const ids = new Set([...Object.keys(sheet?.skills || {}), ...growthOf(state).done.map((g) => g.skill)]);
+    const exact = [...ids].find((id) => {
         const t = acquiredTechnique(state.skill_defs?.[id]);
         return t && techniqueSignature(t) === key;
     });
+    if (exact || !content) return exact;
+    const loose = looseKey(target);
+    const old = (sheet?.skill_history || []).find((h) => {
+        const t = techniqueOf(skillOf(content, h.id, state));
+        return t && looseKey(t) === loose;
+    });
+    // the Skill that line stands at now (an evolution of an evolution)
+    let id = old?.evolved_to;
+    for (let i = 0; id && !sheet.skills[id] && i < 10; i++) id = sheet.skill_history.find((h) => h.id === id)?.evolved_to;
+    return id && sheet.skills[id] ? id : undefined;
 }
 
 /** Is this word a technique the composer makes (a new main function)? */
@@ -227,7 +245,7 @@ export function stoneActivation(s, content, o) {
     if (own) return { refuse: own };
     const t = sourceTarget(content, p);
     if (t.refuse) return t;
-    if (knownTechnique(s, t.target)) return { refuse: `he knows this technique (${techniqueText(t.target)}) already` };
+    if (knownTechnique(s, t.target, content)) return { refuse: `he knows this technique (${techniqueText(t.target)}) already` };
     return { target: t.target, profile: p };
 }
 
@@ -319,7 +337,7 @@ export function learningActivity(s, content, c, minutes, start) {
         const same = goals.find((x) => techniqueSignature(x.target) === techniqueSignature(target));
         if (same) { goal = same; source = same.source; }
     }
-    if (knownTechnique(s, target)) return { status: 'refused', reason: 'already learned', line: `NOT LEARNING — he knows this technique already; practise the known Skill instead. Nothing is booked, no time passes.` };
+    if (knownTechnique(s, target, content)) return { status: 'refused', reason: 'already learned', line: `NOT LEARNING — he knows this technique already; practise the known Skill instead. Nothing is booked, no time passes.` };
     // a teacher session: the teacher he names, else the goal's own teacher when present; a new goal needs one
     if (c.teacher && typeof c.teacher !== 'string') return { status: 'refused', reason: 'no teacher', line: `NOT LEARNING — no known teacher is named ("${String(c.teacher.new ?? '').replace(/[<>`]/g, '').slice(0, 40)}" is nobody the engine knows here); nothing is booked, no time passes for it.` };
     const teacher = typeof c.teacher === 'string' ? c.teacher : null;
@@ -422,7 +440,7 @@ function passiveActivity(s, content, c, minutes, start, goal, focus) {
 export function fightGrowth(state, content, enc) {
     if (rulesetOf(state) < 2 || !fightQualifies(state, content, enc)) return [];
     const tags = new Set(Object.keys(enc.pp?.used || {}).flatMap((id) => skillOf(content, id, state)?.tags || []));
-    const goal = openGoals(state).find((g) => !g.target.passive && g.lp < g.need && !(g.fights || []).includes(enc.id) && !knownTechnique(state, g.target) && g.target.tags.some((t) => tags.has(t)));
+    const goal = openGoals(state).find((g) => !g.target.passive && g.lp < g.need && !(g.fights || []).includes(enc.id) && !knownTechnique(state, g.target, content) && g.target.tags.some((t) => tags.has(t)));
     if (!goal) return [];
     const gain = Math.min(goal.need - goal.lp, Math.floor(R(content).fight_lp * affinityFor(content, state.entities.pc.sheet.class, { tags: goal.target.tags })));
     if (gain <= 0) return [];
@@ -445,7 +463,7 @@ export function growthDrafts(state, content, activations = []) {
     const drafts = [];
     const add = (key, g) => {
         const sig = techniqueSignature(g.target);
-        if (seen.has(sig) || knownTechnique(state, g.target)) return;
+        if (seen.has(sig) || knownTechnique(state, g.target, content)) return;
         seen.add(sig);
         const c = composeGoal(state, content, g);
         if (!c.errors.length) drafts.push({ key, hash: hash32(JSON.stringify(c.def)), def: c.def });
@@ -491,7 +509,7 @@ export function finalizeGrowth(state, content, names = {}, activations = []) {
     let s = state;
     const learned = (key, g, skill) => out.learned.push({ key, skill: skill.id, name: skill.name, goal: g.id, technique: techniqueText(g.target), teacher: g.source.name, source: g.source.kind, category: skill.category, cost: skill.cost });
     for (const g of openGoals(state)) {
-        const known = knownTechnique(s, g.target);
+        const known = knownTechnique(s, g.target, content);
         if (known) {
             // Retire .42 duplicates even if still active: they cannot progress or consume a learning slot.
             const close = { t: 'growth.closed', d: { goal: g.id, skill: known, name: skillOf(content, known, s).name } };
@@ -596,6 +614,19 @@ export function applyGrowthEvent(state, e) {
             g.done = [...g.done, { id: d.goal, ...(d.evidence ? { evidence: d.evidence } : { skill: d.skill }), name: d.name, fn: goal.target.fn ?? null, who: goal.source.who, key: goal.source.key, keys: goalSources(goal).map((s) => s.key), turn: state.turn, minute: state.clock.minute }].slice(-KEEP_DONE);
             break;
         }
+        // 9C completion (src/v4/skill_growth.js): the patterns his Skills showed in a qualifying fight, and the Skills he used
+        // one after the other in it: the last few fights of each, by fight (a fight is noted once)
+        case 'growth.noted': {
+            const marks = (g.marks ||= {});
+            const pairs = (g.pairs ||= {});
+            const at = { fight: d.fight, turn: state.turn, minute: state.clock.minute };
+            for (const [sid, m] of Object.entries(d.marks || {})) {
+                if ((marks[sid] || []).some((x) => x.fight === d.fight)) throw new Error(`fight noted twice: ${d.fight}`);
+                marks[sid] = [...(marks[sid] || []), { ...at, prof: m.prof, patterns: [...m.patterns] }].slice(-KEEP_NOTED);
+            }
+            for (const k of d.pairs || []) pairs[k] = [...(pairs[k] || []), at].slice(-KEEP_NOTED);
+            break;
+        }
         // Patch 9C-2c (src/v4/passive_growth.js): a development's evidence, its offer, his decision on it; kept for good,
         // so the same evidence is never offered or rolled again
         case 'growth.evidence': {
@@ -616,6 +647,7 @@ export function applyGrowthEvent(state, e) {
             if (!ev || ev.status !== 'offered') throw new Error(`decision on evidence not offered: ${d.key}`);
             ev.status = d.status;
             if (d.passive) ev.passive = d.passive;
+            if (d.skill) ev.skill_booked = d.skill;
             break;
         }
         default:

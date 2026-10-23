@@ -15,6 +15,7 @@ export function forgeRequest(drafts) {
         'Each key appears once. No other fields. Names: two to forty ASCII letters, spaces, apostrophes or hyphens; start with a letter.',
         'Flavor is optional: one line, at most one hundred sixty characters, without digits, markup or backticks. Describe appearance, never added powers, status effects or mechanical benefits.',
         'Use the actual technique and its aspects. Do not name a close strike as a ranged spell or invent fire effects beyond its appearance.',
+        'A definition whose description says it is an earlier Skill one step further develops that Skill: its name may echo the earlier one and should show the step it took.',
     ].join('\n') }, { role: 'user', content: JSON.stringify({ drafts: drafts.map(({ key, def }) => ({ key, definition: def })) }) }];
 }
 
@@ -26,7 +27,7 @@ export function parseForge(answer, drafts, content, state, reserved = []) {
     if (!value || Object.keys(value).some((k) => k !== 'skills') || !Array.isArray(value.skills) || value.skills.length > drafts.length) {
         return { entries, errors: [error || 'expected only a skills array, at most one entry per requested key'] };
     }
-    const taken = new Set([...skillNames(content, state), ...Object.values(state.passive_defs || {}).map((p) => normText(p.name)), ...(state.decisions || []).filter((d) => d.kind === 'passive').map((d) => normText(d.passive?.name)), ...reserved.map(normText)]);
+    const taken = new Set([...skillNames(content, state), ...Object.values(state.passive_defs || {}).map((p) => normText(p.name)), ...(state.decisions || []).flatMap((d) => (d.kind === 'passive' ? [d.passive?.name] : d.kind === 'skill' ? [d.skill?.name] : [])).filter(Boolean).map(normText), ...reserved.map(normText)]);
     if (value.skills.some((x) => !drafts.some((d) => d.key === x?.key))) errors.push('unknown key');
     for (const d of drafts) {
         const matches = value.skills.filter((x) => x?.key === d.key);
@@ -66,7 +67,7 @@ export function parsePassiveForge(answer, drafts, content, state, reserved = [])
     if (!value || Object.keys(value).some((k) => k !== 'skills') || !Array.isArray(value.skills) || value.skills.length > drafts.length) {
         return { entries, errors: [error || 'expected only a skills array, at most one entry per requested key'] };
     }
-    const taken = new Set([...skillNames(content, state), ...Object.values(state.passive_defs || {}).map((p) => normText(p.name)), ...(state.decisions || []).filter((d) => d.kind === 'passive').map((d) => normText(d.passive.name)), ...reserved.map(normText)]);
+    const taken = new Set([...skillNames(content, state), ...Object.values(state.passive_defs || {}).map((p) => normText(p.name)), ...(state.decisions || []).flatMap((d) => (d.kind === 'passive' ? [d.passive?.name] : d.kind === 'skill' ? [d.skill?.name] : [])).filter(Boolean).map(normText), ...reserved.map(normText)]);
     if (value.skills.some((x) => !drafts.some((d) => d.key === x?.key))) errors.push('unknown key');
     for (const d of drafts) {
         const matches = value.skills.filter((x) => x?.key === d.key);

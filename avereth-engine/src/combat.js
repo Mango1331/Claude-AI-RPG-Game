@@ -15,6 +15,7 @@ import { itemEffectOf, rulesetOf, skillOf as resolveSkill } from './content.js';
 import { effectValue, flatEffectValue, noteUse, fightProgress, restoration } from './skills.js';
 import { fightGrowth } from './v4/growth.js';
 import { trialEvidence } from './v4/passive_growth.js';
+import { developmentEvents } from './v4/skill_growth.js';
 import { passiveSnapshot, skillCostAmount, combatPassive, effectiveStats } from './passives.js';
 import { rankRefusal, restoreOf, restoreEffect } from './v4/items.js';
 
@@ -1358,6 +1359,14 @@ export function endEncounterEvents(state, content, enc) {
     const trial = trialEvidence(state, content, enc);
     if (trial.length) summary.trial = { key: trial[0].d.evidence.key, sure: trial[0].d.evidence.sure, ...(trial[0].d.evidence.roll ? { roll: trial[0].d.evidence.roll, chance: trial[0].d.evidence.chance } : {}), passed: trial[0].d.evidence.status !== 'failed' };
     events.push(...trial);
+    // 9C completion: what his Skills showed in a fight that was a real challenge, and the developments it makes possible
+    // (src/v4/skill_growth.js); offered at his next turn outside a fight
+    const developed = developmentEvents(state, content, enc);
+    const noted = developed.find((e) => e.t === 'growth.noted');
+    if (noted) summary.noted = { skills: Object.keys(noted.d.marks), ...(noted.d.pairs ? { pairs: noted.d.pairs } : {}) };
+    const found = developed.filter((e) => e.t === 'growth.evidence').map((e) => e.d.evidence.key);
+    if (found.length) summary.developments = found;
+    events.push(...developed);
     events.push({ t: 'encounter.ended', d: { id: enc.id, summary } });
     return { events, summary };
 }

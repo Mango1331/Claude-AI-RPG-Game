@@ -14,6 +14,9 @@ import { clone, uniq } from './util.js';
 import { emptyDomains, applyDomainEvent, V4_EVENTS } from './v4/domain.js';
 import { applyGrowthEvent } from './v4/growth.js';
 
+// 9C completion: the core stats a check of his tests (src/passives.js CORE_STATS; a reducer reads no content)
+const DEED_STATS = new Set(['STR', 'VIT', 'AGI', 'INT', 'PER', 'WIL']);
+
 export const STATE_VERSION = 3;
 
 export function emptyState() {
@@ -298,6 +301,20 @@ export function applyEvent(state, e) {
             s.passive_history = [...(s.passive_history || []), { id: had.id, name: had.name, ...(had.quality ? { quality: had.quality } : {}), lost: { turn: state.turn, minute: state.clock.minute }, why: d.why ?? null, replaced_by: d.replaced_by ?? null }];
             break;
         }
+        // 9C completion (src/v4/skill_growth.js): a Skill of his evolved: its successor (defined just before) takes its place
+        // with the Proficiency it had, the Skill he evolved from leaves his Skills for good and stays on the sheet's history
+        // (its definition stays in skill_defs or the content)
+        case 'skill.evolved': {
+            const s = sheetOf(state, d.id);
+            const had = s.skills[d.from];
+            if (!had) throw new Error(`evolution of a skill not held: ${d.from}`);
+            if (s.skills[d.to]) throw new Error(`evolution into a skill held already: ${d.to}`);
+            if (!state.skill_defs?.[d.to]) throw new Error(`evolution into an undefined skill: ${d.to}`);
+            delete s.skills[d.from];
+            s.skills[d.to] = { prof: d.prof ?? had.prof ?? 1, pp: d.pp ?? 0 };
+            s.skill_history = [...(s.skill_history || []), { id: d.from, name: d.from_name ?? null, prof: had.prof ?? 1, evolved_to: d.to, turn: state.turn, minute: state.clock.minute }];
+            break;
+        }
         // Patch 9B-1: Proficiency Progress of a known Skill (src/skills.js): the PP and Proficiency it stands at after it
         case 'skill.progress': {
             const s = sheetOf(state, d.id);
@@ -308,7 +325,7 @@ export function applyEvent(state, e) {
         }
         // Patch 9C-1: his learning goals and training (src/v4/growth.js): opened, a session, progress, closed
         case 'growth.opened': case 'growth.session': case 'growth.progress': case 'growth.closed':
-        case 'growth.evidence': case 'growth.offered': case 'growth.decided':
+        case 'growth.evidence': case 'growth.offered': case 'growth.decided': case 'growth.noted':
             applyGrowthEvent(state, e);
             break;
         case 'entity.status':
@@ -388,6 +405,11 @@ export function applyEvent(state, e) {
             state.last.check = clone(d);
             // Patch 6: what he searched for where, so the same search is not rolled again (src/v4/features.js)
             if (d.search) state.searches = [...(state.searches || []), { at: d.at, focus: d.focus || [], tool: d.tool || null, success: d.success, turn: state.turn, minute: state.clock.minute, found: d.found || null, sig: d.sig ?? null }].slice(-40);
+            // 9C completion (src/v4/passive_growth.js deedEvidence): a check of his core stat the engine itself rolled and he
+            // passed, on a feature (one made harmless, a hidden one found, a hazard avoided): the last few, ruleset 2 only
+            if (Number(state.meta?.ruleset) >= 2 && d.by === 'engine' && d.success && DEED_STATS.has(d.stat) && (d.feature || d.found) && d.difficulty !== 'trivial') {
+                state.deeds = [...(state.deeds || []), { stat: d.stat, thing: d.feature || d.found, turn: state.turn, minute: state.clock.minute }].slice(-30);
+            }
             break;
         case 'note':
             break;

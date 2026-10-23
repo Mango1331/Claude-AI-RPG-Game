@@ -222,6 +222,13 @@
           22
         ]
       }
+    },
+    "e_rank_note": "9C completion (docs/PATCH9C_COMPLETION.md): the first Rank above F, provisional (balanced in 10B): its attack calibration by Complexity (most of the growth in Base Power, the coefficients close to F) and effect_scale on the Barrier and heal bounds of its Complexity; a Skill of Rank E is learned only from Rank E (Level 15) on, and no path of the game composes one by itself yet. D-S have no bounds: refused",
+    "e_rank": {
+      "1": { "base": 18, "coef": 2.0, "cost": [8, 14] },
+      "2": { "base": 24, "coef": 2.5, "cost": [12, 22] },
+      "3": { "base": 27, "coef": 2.7, "cost": [16, 30] },
+      "effect_scale": 1.5
     }
   },
   "growth": {
@@ -258,7 +265,19 @@
       "ordinary_need": 200,
       "ordinary_note": "an Ordinary Passive goal: a core stat he trains on his own (activity train/study with learn: STR, VIT, AGI, INT, PER or WIL), Learning Progress at the own-practice rate and its day cap (no teacher, no fight, no affinity), complete at ordinary_need; then an offer, never the Passive itself",
       "trial": { "level_gap": 5, "low_pct": 25, "start_pct": 50, "near": { "level_gap": 3, "low_pct": 35, "chance_pct": 40 } },
-      "trial_note": "a fight he won alive against a foe that struck him, at least level_gap Levels above him, after it drove him from start_pct of his HP or more down to low_pct or less, using a Skill of his own: a Rare candidate for sure; a near case (near.*) once by a die of its own, kept with the evidence"
+      "trial_note": "a fight he won alive against a foe that struck him, at least level_gap Levels above him, after it drove him from start_pct of his HP or more down to low_pct or less, using a Skill of his own: a Rare candidate for sure; a near case (near.*) once by a die of its own, kept with the evidence",
+      "trial_similar_note": "9C completion: a fight like one that already gave such evidence (the same kinds of foes beaten, in the same Dungeon or realm) gives none again, whatever became of the first (offered, declined, its die failed); another kind of foe or another place can",
+      "deeds": { "checks": 3, "days": 2 },
+      "deeds_note": "9C completion: Ordinary evidence from what he did, not from training: this many successful checks of the same core stat the engine itself rolled (check.recorded by the engine, never trivial), each on another feature (a thing made harmless, a hidden thing a search found, a hazard avoided), over at least this many game days; a feature counts once, and the checks of one evidence never count for another"
+    },
+    "development": {
+      "src": "9C completion (docs/PATCH9C_COMPLETION.md): how a Skill develops from how he fights (src/v4/skill_growth.js), provisional numbers balanced in 10B",
+      "evolution_fights": 2,
+      "breakthrough_fights": 3,
+      "keep_fights": 8,
+      "max_offers": 3,
+      "npc_signature_level": 5,
+      "note": "a qualifying fight (proficiency.award.challenge) notes the patterns of each Skill he used (the engine's records: two or more foes ENGAGED with him as it struck, a Range Band closed with it, a foe in partial cover, a MEDIUM attack at its full reach, a foe's strike before his next turn, a defense that still let damage through) and the Skills he used one after the other. Evolution: a Skill at P5 that showed one pattern in evolution_fights qualifying fights at P5 (after the last evolution: its successor's own fights) is offered its successor (Complexity +1, the step of that pattern, Rank and Proficiency kept); breakthrough: a pattern of his Basic Attack, or two Skills used one after the other, in breakthrough_fights qualifying fights offer a new technique beside them. Fights of one evidence never count for another of the same Skill. At most max_offers developments (Passives and Skills) are open at a time, one evolution per Skill; the rest waits. A trained person of the world of at least npc_signature_level Levels has one technique of their own (one of their starter Skills developed one step, never an area or multi-strike one), fixed with their sheet"
     }
   },
   "composer": {

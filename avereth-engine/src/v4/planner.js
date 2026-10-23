@@ -202,14 +202,15 @@ export const LEARNING_RULES = [
     '- Studying a manual or primer he holds (OBJECTS: manual · … teaches …) for a time is activity study with material: its id, and learn: the technique it teaches or the LEARNING id he goes on with. Only looking at it or reading its title is no study.',
     '- Activating a Skill Stone he holds (OBJECTS: Skill Stone · … holds …) now is use with its id; wanting to, asking about it or examining it is no command.',
     '- Training a lasting quality of himself NOW, not a technique (conditioning his body, sharpening his mind or senses, hardening his will, building strength or agility), is activity train or study with learn: the core stat it builds (STR strength, VIT toughness, AGI agility, INT mind, PER senses, WIL will), or the LEARNING id he goes on with.',
-    '- A POSSIBLE PASSIVE in the CATALOG is a development offered to him, not his yet: passive.accept when he clearly takes it now (replace: the PASSIVES id he gives up for it, only when all his slots are held and he names one), passive.decline when he clearly lets it pass. Thinking it over, asking about it or wanting it later is no command.',
+    '- A POSSIBLE PASSIVE or a POSSIBLE SKILL in the CATALOG is a development offered to him, not his yet: development.accept when he clearly takes it now (replace: for a Passive, the PASSIVES id he gives up for it, only when all his slots are held and he names one; else null), development.decline when he clearly lets it pass (passive.accept and passive.decline are older names of the same for a Passive). Thinking it over, asking about it or wanting it later is no command.',
     'Examples (another town): CATALOG: PRESENT: npc.tutor (Brannoc, sword tutor) · KNOWN SKILLS warrior.cleave (Cleave: attack · single target) · LEARNING learn.1 (guard (Defense) from Brannoc, 40/100 LP)',
     '- "*i spend the next two hours with Brannoc drilling the stance he shows me*" → {"commands":[{"seq":1,"type":"activity","kind":"train","what":"the stance Brannoc shows him","minutes":120,"until":null,"learn":"learn.1","teacher":"npc.tutor","tags":null,"aspects":null,"quote":"i spend the next two hours with Brannoc drilling the stance he shows me"}]}',
     '- "*i practise my cleave on the post for an hour*" → {"commands":[{"seq":1,"type":"activity","kind":"train","what":"Cleave on the post","minutes":60,"until":null,"learn":"warrior.cleave","teacher":null,"tags":null,"aspects":null,"quote":"i practise my cleave on the post for an hour"}]}',
     '- "Could you teach me a fire spell some day?" → {"commands":[]}',
     '- (OBJECTS: obj.t4.primer (Primer of the Steady Guard, held by Alaric, manual · F · teaches guard (Defense))) "*i sit down with the primer and work through it for two hours*" → {"commands":[{"seq":1,"type":"activity","kind":"study","what":"the Primer of the Steady Guard","minutes":120,"until":null,"learn":"guard","teacher":null,"tags":null,"aspects":null,"material":"obj.t4.primer","quote":"i sit down with the primer and work through it for two hours"}]}',
     '- "*i spend two hours in meditation, drilling my concentration*" → {"commands":[{"seq":1,"type":"activity","kind":"train","what":"concentration drills","minutes":120,"until":null,"learn":"INT","teacher":null,"tags":null,"aspects":null,"material":null,"quote":"i spend two hours in meditation, drilling my concentration"}]}',
-    '- (POSSIBLE PASSIVE dec.passive.trial_enc_t9 (Unbroken Stance [Rare] …)) "I accept it. Let it settle in me." → {"commands":[{"seq":1,"type":"passive.accept","offer":"dec.passive.trial_enc_t9","replace":null,"quote":"I accept it"}]}',
+    '- (POSSIBLE PASSIVE dec.passive.trial_enc_t9 (Unbroken Stance [Rare] …)) "I accept it. Let it settle in me." → {"commands":[{"seq":1,"type":"development.accept","offer":"dec.passive.trial_enc_t9","replace":null,"quote":"I accept it"}]}',
+    '- (POSSIBLE SKILL dec.skill.evo_x (Far Frost Dart … It would replace Frost Dart)) "No, I keep my Frost Dart as it is." → {"commands":[{"seq":1,"type":"development.decline","offer":"dec.skill.evo_x","quote":"No, I keep my Frost Dart as it is."}]}',
 ].join('\n');
 
 /**
@@ -270,7 +271,9 @@ export function planContext(state, content, catalog) {
     const sheet = state.entities.pc?.sheet || {};
     // Patch 9A: his learned Skills and the plain attack of the weapon he holds (src/derived.js actionsOf)
     const known = Object.keys(actionsOf(sheet, content, rulesetOf(state), state));
-    const skills = known.map((id) => skillOf(content, id, state)).map((sk) => ({ id: sk.id, name: sk.name, text: skillText(sk) }));
+    // 9C completion: a Skill that evolved from one of his carries the old name too (he may still call it by it)
+    const from = Object.fromEntries((sheet.skill_history || []).map((h) => [h.evolved_to, h.name || skillOf(content, h.id, state)?.name || h.id]));
+    const skills = known.map((id) => skillOf(content, id, state)).map((sk) => ({ id: sk.id, name: sk.name, text: `${skillText(sk)}${from[sk.id] ? ` · evolved from ${from[sk.id]} (the old name means this Skill now)` : ''}` }));
     let opponents = [];
     const enc = state.encounter;
     if (enc) {

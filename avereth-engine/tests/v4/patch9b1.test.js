@@ -183,7 +183,7 @@ test('9B-1 (4): an invalid id or definition books nothing; a legacy campaign def
         [{ ...VIPER, id: 'rogue.razor_cut' }, /id: "dyn\."/],
         [{ ...VIPER, name: 'Razor Cut' }, /name Razor Cut is the name of a Skill that exists/],
         [{ ...VIPER, name: '<script>' }, /name/],
-        [{ ...VIPER, rank: 'E' }, /rank E: only F-rank/],
+        [{ ...VIPER, rank: 'D' }, /rank D: only F- and E-rank/],
         [{ ...VIPER, rank: 'Z' }, /rank: F-S/],
         [{ ...VIPER, complexity: 4 }, /complexity/],
         [{ ...VIPER, tags: ['Necromancy'] }, /tags/],

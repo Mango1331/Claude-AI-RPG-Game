@@ -7,6 +7,7 @@ import { formatCoin } from './economy.js';
 import { rulesetOf, rulesTextFor, skillOf } from './content.js';
 import { passivesOf, passiveText, statsText } from './passives.js';
 import { passiveOffers } from './v4/passive_growth.js';
+import { skillOffers } from './v4/skill_growth.js';
 import {
     knowledgeOf, memoriesOf, memoryText, entityLabel, anyLabel, propText, currentFacts, statusOf, pcIdentityFor, truth, lookOf,
     isMeaningful, PC_NAME_FACT, PC_LOOK_FACT,
@@ -104,6 +105,9 @@ export function pcLine(state, content, { combat = !!state.encounter, items = tru
     // Patch 9C-2c: a development offered to him is no Passive of his
     const offered = passiveOffers(state);
     if (offered.length) lines.push(`Offered to him, NOT his (he decides; tell no change in him from it): ${offered.map((d) => passiveText(d.passive)).join('; ')}`);
+    // 9C completion: nor is a Skill offered to him
+    const skillsOffered = skillOffers(state);
+    if (skillsOffered.length) lines.push(`Skills offered to him, NOT his (he decides; he cannot use them): ${skillsOffered.map((d) => `${d.skill.name}${d.replaces ? ` (would replace ${d.replaces_name})` : ''}`).join('; ')}`);
     if (items) lines.push(`Carried: ${joinList(inv)} | Coin ${formatCoin(s.coin_cp, content)}`);
     return lines.join('\n');
 }
@@ -318,7 +322,12 @@ function outcomeBlock(state, content, outcome, opts = {}) {
     const offers = (outcome?.passive_offers || []).map((o) => `POSSIBLE PASSIVE — the engine offers Alaric a development, NOT his yet: ${o.text} (${o.why}). He alone accepts or declines it in a later message; tell at most a stirring sense of it, no change in him, no new power, and never that he accepted it.`);
     const gained = (outcome?.booked?.passives || []).map((g) => `NEW PASSIVE — booked by the engine in this turn: ${g.text}${g.replaced ? `; ${g.replaced} is given up for good, its effects end` : ''} (Passive slots ${g.slots}). Show it settling in him in a sentence or two; its numbers are the engine's. No other new Passive, Skill or change.`);
     const notYet = (outcome?.learn_failed || []).filter((f) => f.source === 'practice' && f.notice).map((f) => `NO PASSIVE YET — his training of ${f.technique} is complete, but ${f.errors.join('; ')}; nothing is offered, nothing about him changes.`);
-    return [block, ...notes, ...learned, ...inert, ...offers, ...gained, ...notYet].filter(Boolean).join('\n');
+    // 9C completion (src/v4/skill_growth.js): a Skill development the engine offers him now, and one it booked
+    const skillOffered = (outcome?.skill_offers || []).map((o) => `POSSIBLE SKILL — the engine offers Alaric a development, NOT his yet: ${o.text}${o.replaces ? ` It would replace ${o.replaces}.` : ''} (${o.why}). He alone accepts or declines it in a later message; tell at most a sense that his way of fighting could change, no new power, and never that he accepted it or used it.`);
+    const skillBooked = (outcome?.booked?.skills || []).map((g) => (g.replaced
+        ? `EVOLVED SKILL — booked by the engine in this turn: ${g.replaced} has become ${g.text} ${g.replaced} is his no longer. Show the change in a sentence or two; its numbers are the engine's. No other new Skill or change.`
+        : `NEW SKILL — booked by the engine in this turn: ${g.text} Show it coming to him in a sentence or two; its numbers are the engine's. No other new Skill or change.`));
+    return [block, ...notes, ...learned, ...inert, ...offers, ...gained, ...notYet, ...skillOffered, ...skillBooked].filter(Boolean).join('\n');
 }
 
 function outcomeLines(state, content, outcome, { v4 = false } = {}) {

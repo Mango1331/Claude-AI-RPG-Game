@@ -36,7 +36,7 @@ const thingWords = (t) => normText(t).split(/[^a-z0-9]+/).map((w) => w.replace(/
 const sameWant = (a, b) => { const k = thingWords(b); return thingWords(a).some((w) => k.includes(w)); };
 
 /** Commands that commit Alaric to something (the dangerous kind of false agency; same list as the P0 scoring). */
-export const COMMITMENTS = new Set(['pay', 'buy', 'sell', 'give', 'drop', 'use', 'offer.accept', 'offer.decline', 'passive.accept', 'passive.decline', 'quest.accept', 'quest.turn_in', 'quest.abandon', 'guild.register', 'guild.promote', 'journey.continue']);
+export const COMMITMENTS = new Set(['pay', 'buy', 'sell', 'give', 'drop', 'use', 'offer.accept', 'offer.decline', 'passive.accept', 'passive.decline', 'development.accept', 'development.decline', 'quest.accept', 'quest.turn_in', 'quest.abandon', 'guild.register', 'guild.promote', 'journey.continue']);
 
 /** The verbs that express a command's own act (for the negation and plan checks, not for recognising commands). */
 export const LEMMAS = {
@@ -55,6 +55,9 @@ export const LEMMAS = {
     // Patch 9C-2c: his answer to an offered development
     'passive.accept': ['accept', 'accepting', 'take', 'taking', 'embrace', 'embracing', 'let', 'welcome', 'yes'],
     'passive.decline': ['decline', 'declining', 'refuse', 'refusing', 'reject', 'rejecting', 'let', 'pass', 'no'],
+    // 9C completion: the same for any offered development (a Passive or a Skill)
+    'development.accept': ['accept', 'accepting', 'take', 'taking', 'embrace', 'embracing', 'let', 'welcome', 'yes', 'make'],
+    'development.decline': ['decline', 'declining', 'refuse', 'refusing', 'reject', 'rejecting', 'let', 'pass', 'no', 'keep'],
     'quest.accept': ['take', 'taking', 'accept', 'accepting', 'sign', 'signing', 'register', 'registering'],
     'quest.turn_in': ['turn', 'turning', 'hand', 'handing', 'deliver', 'delivering', 'report'],
     'quest.abandon': ['quit', 'quitting', 'abandon', 'give up', 'drop'],
@@ -81,6 +84,8 @@ export const PAST = {
     'offer.decline': ['declined', 'refused', 'passed'],
     'passive.accept': ['accepted', 'took', 'taken', 'embraced', 'welcomed'],
     'passive.decline': ['declined', 'refused', 'rejected', 'passed'],
+    'development.accept': ['accepted', 'took', 'taken', 'embraced', 'welcomed'],
+    'development.decline': ['declined', 'refused', 'rejected', 'passed'],
     'quest.accept': ['took', 'taken', 'accepted', 'signed', 'registered'],
     'quest.turn_in': ['turned in', 'handed in', 'turned', 'handed', 'delivered', 'reported'],
     'quest.abandon': ['quit', 'abandoned', 'gave up', 'dropped'],

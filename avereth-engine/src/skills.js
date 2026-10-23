@@ -40,11 +40,42 @@ const BARRIER_CAP = { 1: { base: 6, coef: 1.5 }, 2: { base: 10, coef: 2 }, 3: { 
 const HEAL_CAP = { 1: { base: 8, coef: 1 }, 2: { base: 12, coef: 1.5 }, 3: { base: 16, coef: 2 } };
 const RESTORES = new Set(['heal', 'restore']);
 
-/** content.6 (F-rank offensive P1 calibration): Base, total stat coefficients and Cost by Complexity. */
-function calibration(content) {
+/**
+ * content.6 (F-rank offensive P1 calibration): Base, total stat coefficients and Cost by Complexity. 9C completion: the
+ * provisional Rank E table (rules.json skill_design.e_rank); null for a Rank without calibrated bounds (D-S).
+ */
+export function calibration(content, rank = 'F') {
+    if (rank === 'E') return content.rules.skill_design?.e_rank || null;
+    if (rank !== 'F') return null;
     return content.rules.skill_design?.f_rank || {
         1: { base: 12, coef: 1.9, cost: [5, 10] }, 2: { base: 16, coef: 2.4, cost: [8, 16] }, 3: { base: 18, coef: 2.6, cost: [12, 22] },
     };
+}
+
+/** 9C completion: the Barrier and heal bounds of a Complexity at a Rank (Rank E: their bases × its effect_scale). */
+function effectCap(content, caps, rank, complexity) {
+    const cap = caps[complexity];
+    const scale = rank === 'E' ? content.rules.skill_design?.e_rank?.effect_scale ?? 1 : 1;
+    return { base: Math.floor(cap.base * scale), coef: cap.coef };
+}
+
+/** 9C completion: the Rank of a Level (rules.json ranks), and the lowest Level of a Rank. */
+export function rankOfLevel(content, level) {
+    const bands = content.rules.ranks?.bands || [];
+    return bands.find((b) => level >= b.min && level <= b.max)?.rank || (level < 1 ? 'F' : bands.at(-1)?.rank || 'F');
+}
+const rankMin = (content, rank) => (content.rules.ranks?.bands || []).find((b) => b.rank === rank)?.min ?? 1;
+
+/**
+ * 9C completion: why a person of this Level may not learn or hold a Skill of its Rank (a Rank above their own), or null.
+ * Only under ruleset 2; a Skill without a Rank is F.
+ */
+export function rankBar(content, skill, level) {
+    const order = content.rules.ranks?.order || RANKS;
+    const rank = skill?.rank || 'F';
+    const own = rankOfLevel(content, level || 1);
+    if (order.indexOf(rank) <= order.indexOf(own)) return null;
+    return `${skill.name} is a Rank ${rank} Skill: it takes Rank ${rank} (Level ${rankMin(content, rank)}); he is Rank ${own} (Level ${level || 1})`;
 }
 
 /**
@@ -80,7 +111,7 @@ export function skillDefErrors(def, content, state = null) {
     if (def.flavor !== undefined && (!plain(def.flavor, 160) || /[\d\u0000-\u001f\u007f]/.test(def.flavor))) e.push('flavor: one line, up to 160 characters, without digits or control characters');
     if (!def.origin || typeof def.origin !== 'object' || !plain(def.origin.kind, 40) || Object.keys(def.origin).some((k) => !['kind', 'note'].includes(k)) || (def.origin.note !== undefined && !plain(def.origin.note, 200))) e.push('origin: {kind, note?}');
     if (!RANKS.includes(def.rank)) e.push('rank: F-S');
-    else if (def.rank !== 'F') e.push(`rank ${def.rank}: only F-rank Skills have calibrated bounds yet`);
+    else if (!calibration(content, def.rank)) e.push(`rank ${def.rank}: only F- and E-rank Skills have calibrated bounds yet`);
     if (![1, 2, 3].includes(def.complexity)) e.push('complexity: 1, 2 or 3');
     const tags = disciplineTags(content);
     if (!Array.isArray(def.tags) || !def.tags.length || def.tags.length > 3 || def.tags.some((t) => !tags.includes(t)) || new Set(def.tags).size !== def.tags.length) e.push(`tags: 1-3 of ${tags.join(', ')}`);
@@ -91,7 +122,7 @@ export function skillDefErrors(def, content, state = null) {
     const attack = def.attack ?? null;
     if (!!attack !== /^Offensive/.test(def.category || '')) e.push('category: Offensive exactly when it attacks');
     if (def.target !== (attack ? 'enemy' : 'self')) e.push(`target: ${attack ? 'enemy for an attack' : 'self for a Skill without an attack'}`);
-    const cal = calibration(content)[def.complexity];
+    const cal = calibration(content, RANKS.includes(def.rank) ? def.rank : 'F')?.[def.complexity];
     if (!def.cost || typeof def.cost !== 'object' || Object.keys(def.cost).some((k) => !['resource', 'amount'].includes(k)) || !['sta', 'mp'].includes(def.cost.resource) || !Number.isInteger(def.cost.amount)) e.push('cost: {resource: sta|mp, amount: whole number}');
     else if (cal && !within(def.cost.amount, cal.cost)) e.push(`cost ${def.cost.amount}: ${cal.cost[0]}-${cal.cost[1]} at Complexity ${def.complexity}`);
     const effects = Array.isArray(def.effects) ? def.effects : null;
@@ -107,8 +138,13 @@ export function skillDefErrors(def, content, state = null) {
             else if (typeof rule[0] === 'string') { if (!rule.includes(v)) e.push(`effects[${i}] ${x.kind}.${k}: one of ${rule.join(', ')}`); }
             else if (!within(v, rule)) e.push(`effects[${i}] ${x.kind}.${k}: ${rule[0]}-${rule[1]}`);
         }
-        if (x.kind === 'barrier' && def.complexity && (x.base > BARRIER_CAP[def.complexity].base || x.coef > BARRIER_CAP[def.complexity].coef)) e.push(`effects[${i}] barrier: at most ${BARRIER_CAP[def.complexity].base} + stat ×${BARRIER_CAP[def.complexity].coef} at Complexity ${def.complexity}`);
-        if (x.kind === 'heal' && def.complexity && (x.base > HEAL_CAP[def.complexity].base || x.coef > HEAL_CAP[def.complexity].coef)) e.push(`effects[${i}] heal: at most ${HEAL_CAP[def.complexity].base} + stat ×${HEAL_CAP[def.complexity].coef} at Complexity ${def.complexity}`);
+        const capped = (caps, what) => {
+            if (!BARRIER_CAP[def.complexity] || !calibration(content, def.rank)) return;
+            const cap = effectCap(content, caps, def.rank, def.complexity);
+            if (x.base > cap.base || x.coef > cap.coef) e.push(`effects[${i}] ${what}: at most ${cap.base} + stat ×${cap.coef} at Complexity ${def.complexity}${def.rank === 'E' ? ', Rank E' : ''}`);
+        };
+        if (x.kind === 'barrier') capped(BARRIER_CAP, 'barrier');
+        if (x.kind === 'heal') capped(HEAL_CAP, 'heal');
         // no resource from nothing: what it restores is the other resource than its cost, never more than the cost
         if (x.kind === 'restore' && def.cost && (x.resource === def.cost.resource || x.amount > def.cost.amount)) e.push(`effects[${i}] restore: the other resource than its cost, at most its cost (${def.cost.amount})`);
         if (spec.on === 'attack' && !attack) e.push(`effects[${i}] ${x.kind}: only on an attack`);
@@ -197,6 +233,9 @@ export function learnSkill(state, content, who, skillId, why = null) {
     if (!sheet) return { events: [], errors: [`${who} has no character sheet`] };
     if (!skill || skill.item || skill.weapon_attack) return { events: [], errors: [`no Skill ${skillId}`] };
     if (sheet.skills[skill.id]) return { events: [], errors: [`${who} knows ${skill.name} already`] };
+    // 9C completion: a Skill of a Rank above his own is learned by no one (ruleset 2)
+    const bar = rulesetOf(state) >= 2 ? rankBar(content, skill, sheet.level) : null;
+    if (bar) return { events: [], errors: [bar] };
     return { events: [{ t: 'skill.learned', d: { id: who, skill: skill.id, prof: 1, ...(why ? { why } : {}) } }], errors: [] };
 }
 
@@ -301,14 +340,28 @@ export function noteUse(ctx, r) {
             pp.threatened = true;
             if (pp.wait?.kind === 'defense') { pp.used[pp.wait.skill] ||= 'a defense under attack'; pp.wait = null; }
             trialNote(ctx, pp, r);
+            // 9C completion: a foe's strike before his next turn answers the attack he made; a defense that still let
+            // damage through to his HP is one that was not enough
+            if (pp.answer) mark(pp, pp.answer, 'riposte');
+            if (pp.guarding && (r.strikes || []).some((s) => s.target === 'pc' && (s.final || 0) - (s.absorbed || 0) > 0)) mark(pp, pp.guarding, 'layered');
+            pp.guarding = null;
         }
         return;
     }
     const waiting = pp.wait;
     pp.wait = null;
+    const before = pp.last ?? null;
+    pp.last = null;
+    pp.answer = null;
+    pp.guarding = null;
     const skill = r.skill ? skillOf(ctx.content, r.skill, ctx.state) : null;
     if (waiting?.kind === 'buff' && r.kind === 'attack') pp.used[waiting.skill] ||= 'a feint his next attack used';
     if (!skill || skill.item || skill.weapon_attack || !enc.combatants.pc.fixed.actions[skill.id] || enc.combatants.pc.fixed.actions[skill.id].weapon) return;
+    // 9C completion (src/v4/skill_growth.js): what his use showed, for the development of the Skill, and the Skill he used
+    // the turn before it (two Skills one after the other)
+    usePatterns(ctx, pp, skill, r);
+    if (before && before !== skill.id) pp.pairs = [...new Set([...(pp.pairs || []), [before, skill.id].sort().join('+')])];
+    pp.last = skill.id;
     if (r.kind === 'attack' && (r.strikes || []).some((s) => hostile(s.target))) pp.used[skill.id] ||= 'an attack on a foe';
     else if (r.kind === 'skill') {
         const kinds = (skill.effects || []).map((e) => e.kind);
@@ -317,6 +370,38 @@ export function noteUse(ctx, r) {
         if (r.restore?.amount > 0) pp.used[skill.id] ||= `a ${r.restore.resource === 'hp' ? 'heal' : 'restore'} that gave him ${r.restore.amount} ${r.restore.resource.toUpperCase()}`;
         if (kinds.some((k) => DEFENSE.has(k))) pp.wait = { skill: skill.id, kind: 'defense' };
         else if (kinds.includes('next_attack_buff')) pp.wait = { skill: skill.id, kind: 'buff' };
+    }
+}
+
+/** 9C completion: a pattern a Skill showed in this fight (once each; the fight's end books them, src/v4/skill_growth.js). */
+function mark(pp, sid, pattern) {
+    const m = (pp.marks ||= {});
+    if (!(m[sid] ||= []).includes(pattern)) m[sid].push(pattern);
+}
+
+/**
+ * 9C completion: the patterns of one use of his, read from the engine's record and the fight as it stands after it:
+ *  crowd    an attack that struck a foe while two or more foes stood ENGAGED with him
+ *  closing  an attack he closed a Range Band with
+ *  cover    an attack on a foe in partial cover
+ *  reach    a MEDIUM attack at its full reach (the foe at MEDIUM)
+ * and what the next foe's turn will show of it (riposte: struck before his next turn; layered: a defense that still let
+ * damage through).
+ */
+function usePatterns(ctx, pp, skill, r) {
+    const { enc } = ctx;
+    const foes = Object.values(enc.combatants).filter((c) => c.side === 'hostile');
+    if (r.kind === 'attack' && skill.attack) {
+        const struck = new Set((r.strikes || []).map((x) => x.target));
+        if (![...struck].some((id) => enc.combatants[id]?.side === 'hostile')) return;
+        const engaged = foes.filter((c) => c.current.band === 'ENGAGED' && (struck.has(c.id) || !c.current.defeated)).length;
+        if (engaged >= 2) mark(pp, skill.id, 'crowd');
+        if ((r.move?.bands || 0) > 0) mark(pp, skill.id, 'closing');
+        if ((r.strikes || []).some((x) => x.cover)) mark(pp, skill.id, 'cover');
+        if (skill.range?.band === 'MEDIUM' && enc.combatants[r.target]?.current.band === 'MEDIUM') mark(pp, skill.id, 'reach');
+        pp.answer = skill.id;
+    } else if (r.kind === 'skill' && (skill.effects || []).some((e) => DEFENSE.has(e.kind))) {
+        pp.guarding = skill.id;
     }
 }
 

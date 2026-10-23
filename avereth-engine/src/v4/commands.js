@@ -32,6 +32,7 @@ import { itemEffectOf, rulesetOf } from '../content.js';
 import { learningActivity, stoneActivation } from './growth.js';
 import { effectiveStats } from '../passives.js';
 import { acceptPassive, declinePassive } from './passive_growth.js';
+import { acceptSkill, declineSkill, developmentOffers, skillOffers } from './skill_growth.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
@@ -942,8 +943,10 @@ const HANDLERS = {
         if (reg) return { status: 'resolved', line: `PAYS — the Guild registration fee, ${price} cp: registered at Guild Rank ${content.rules.guild.ranks[0]}; the crystal reads his Power Rank: ${power} (his measured strength, a separate scale from the Guild's ranks); he receives his Guild plate.` };
         return { status: 'resolved', line: `ACCEPTS the offer — ${picksText(pick.picks)} for ${cpText(price, content)}; he pays ${who(s, o.seller)}.` };
     },
-    // Patch 9C-2c (src/v4/passive_growth.js): his answer to a development the engine offers him (a POSSIBLE PASSIVE)
+    // Patch 9C-2c (src/v4/passive_growth.js): his answer to a development the engine offers him (a POSSIBLE PASSIVE);
+    // 9C completion: the older names of development.accept/decline, for a Passive (an offered Skill's id goes there too)
     'passive.accept'(s, content, c, ctx, emit, envx) {
+        if (skillOffers(s).some((d) => d.id === c.offer)) return HANDLERS['development.accept'](s, content, c, ctx, emit, envx);
         if (!envx?.c) return { status: 'refused', reason: 'not here', line: 'NO NEW PASSIVE — no development is offered to him.' };
         const r = acceptPassive(s, content, c.offer ?? null, c.replace ?? null);
         if (r.refuse) return { status: 'refused', reason: r.refuse, line: r.line };
@@ -952,8 +955,34 @@ const HANDLERS = {
         return { status: 'resolved', line: r.line };
     },
     'passive.decline'(s, content, c, ctx, emit, envx) {
+        if (skillOffers(s).some((d) => d.id === c.offer)) return HANDLERS['development.decline'](s, content, c, ctx, emit, envx);
         if (!envx?.c) return { status: 'refused', reason: 'not here', line: 'NOTHING TO DECLINE — no development is offered to him.' };
         const r = declinePassive(s, content, c.offer ?? null);
+        if (r.refuse) return { status: 'refused', reason: r.refuse, line: r.line };
+        for (const e of r.events) emit(e);
+        return { status: 'resolved', line: r.line };
+    },
+    // 9C completion (src/v4/skill_growth.js): his answer to any development the engine offers him, a Passive or a Skill:
+    // the offer he names, else the one offered when there is exactly one
+    'development.accept'(s, content, c, ctx, emit, envx) {
+        if (!envx?.c) return { status: 'refused', reason: 'not here', line: 'NOTHING TO ACCEPT — no development is offered to him.' };
+        const all = developmentOffers(s);
+        const d = typeof c.offer === 'string' ? all.find((x) => x.id === c.offer) : all.length === 1 ? all[0] : null;
+        if (!d) return { status: 'refused', reason: all.length ? 'which offer?' : 'no offer', line: `NOTHING TO ACCEPT — ${all.length ? `which of the offered developments: ${all.map((x) => `${x.kind === 'skill' ? x.skill.name : x.passive.name} (${x.id})`).join(' or ')}` : 'no development is offered to him'}. Nothing changes.` };
+        if (d.kind === 'passive') return HANDLERS['passive.accept'](s, content, { ...c, offer: d.id }, ctx, emit, envx);
+        const r = acceptSkill(s, content, d.id);
+        if (r.refuse) return { status: 'refused', reason: r.refuse, line: r.line };
+        for (const e of r.events) emit(e);
+        (ctx.booked.skills ||= []).push(r.booked);
+        return { status: 'resolved', line: r.line };
+    },
+    'development.decline'(s, content, c, ctx, emit, envx) {
+        if (!envx?.c) return { status: 'refused', reason: 'not here', line: 'NOTHING TO DECLINE — no development is offered to him.' };
+        const all = developmentOffers(s);
+        const d = typeof c.offer === 'string' ? all.find((x) => x.id === c.offer) : all.length === 1 ? all[0] : null;
+        if (!d) return { status: 'refused', reason: all.length ? 'which offer?' : 'no offer', line: `NOTHING TO DECLINE — ${all.length ? `which of ${all.map((x) => (x.kind === 'skill' ? x.skill.name : x.passive.name)).join(' or ')}?` : 'no development is offered to him'}` };
+        if (d.kind === 'passive') return HANDLERS['passive.decline'](s, content, { ...c, offer: d.id }, ctx, emit, envx);
+        const r = declineSkill(s, content, d.id);
         if (r.refuse) return { status: 'refused', reason: r.refuse, line: r.line };
         for (const e of r.events) emit(e);
         return { status: 'resolved', line: r.line };

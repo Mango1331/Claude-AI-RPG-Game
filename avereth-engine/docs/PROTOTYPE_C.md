@@ -2061,3 +2061,24 @@ Aus dem Livetest von `.50` (23.10.2026, 11:07). In Zug 10 brachen Planner und Re
   - Ein Schlaf, der selbst einen anderen Ort nennt („in the hayloft“), oder ein Schlaf nach einem `go` an einen anderen Ort („out to the stable“) steht für sich. Eine Zimmeranfrage blockiert ihn nicht. Ein `go` hinauf ins Zimmer ist kein anderer Ort.
   - Als gebucht gilt nur ein Zimmer oder Bett, das die Engine ihm in dieser Nachricht zugeteilt hat (`service.granted`, Lodging oder Zimmerzeile). Eine allgemeine Zahlung „für das Zimmer“ ohne Buchung oder ein Teil des Preises reicht nicht.
   - Tests: +2.
+
+### Patch 9C-Abschluss (4.3.0-c.6.6.52): Organic Breakthroughs, Skill-Evolution, C2/C3, minimaler E-Rang, NPC-Signaturen
+
+Einzelheiten: `docs/PATCH9C_COMPLETION.md`. 9C-2d und 9C-3 bilden einen Patch nach den Beschlüssen vom 23.10.2026 auf `main`.
+
+- **Nutzungsbuch:** Qualifizierende Kämpfe buchen die Muster jedes Skills (`growth.noted`): Gegnergruppe ENGAGED, Bandwechsel, Teildeckung, volle MEDIUM-Reichweite, Gegenschlag, durchgelassener Schaden, dazu Skills nacheinander.
+- **Belege:**
+  - Evolution: P5 plus 2 Kämpfe auf P5 mit Muster.
+  - Durchbruch: Basic Attack mit Muster in 3 Kämpfen.
+  - Kombination: zwei Skills nacheinander in 3 Kämpfen.
+  - Kämpfe eines Belegs zählen nie doppelt; kein Beleg für eine bereits vorhandene Form.
+- **Angebot und Annahme:**
+  - im sicheren Zug, höchstens 3 offene Entwicklungen insgesamt, eine Evolution pro Skill;
+  - generisches Paar `development.accept`/`development.decline` (`cmd-1.4`), `passive.*` bleibt Alias;
+  - Evolution ersetzt den Vorgänger atomar (`skill.evolved`, P5/0 PP, `skill_history`); Basic Attack bleibt;
+  - die Abstammung blockiert das Neuerlernen des Vorgängers.
+- **Composer:** ein Schritt ist Complexity +1 mit vorhandenem Feature; C3 ist das Ende. Lehrer, Stones und Manuals bleiben C1. E-Rang hat eine provisorische Tabelle und eine Rangprüfung ab Level 15, aber keinen eigenen Spielpfad. D–S werden abgelehnt.
+- **NPC-Signaturen:** trainiert und Level ≥ 5, eine Technik (Starter einen Schritt weiter, nie Fläche oder Mehrfachtreffer), vor `entity.sheet_set`, deterministisch, ohne LLM; im Kampf genutzt.
+- **Passives:** Ordinary aus 3 erfolgreichen Engine-Proben eines Core-Stats an verschiedenen Features über 2 Tage; Rare-Duplikatschutz nach Gegnerart und Ort (`similar`).
+- **Texte:** Narrator-Vertrag Revision .52, `content.10.r2` SKILL DEVELOPMENT IN PLAY, Katalog POSSIBLE SKILL.
+- **Tests:** `patch9c_completion` (11); `patch9b1` (4) an E angepasst.

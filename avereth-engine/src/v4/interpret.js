@@ -133,6 +133,8 @@ export function catalogText(catalog) {
     // Patch 9C-2c: his Passives and the developments offered to him
     if ((catalog.passives || []).length || (catalog.passive_offers || []).length) L.push(`PASSIVES (${catalog.passive_slots} slots): ${(catalog.passives || []).map((p) => `${p.id} (${p.text})`).join(' · ') || 'none'}`);
     if ((catalog.passive_offers || []).length) L.push(`POSSIBLE PASSIVE (offered by the engine; his only if he accepts): ${catalog.passive_offers.map((p) => `${p.id} (${p.text})`).join(' · ')}`);
+    // 9C completion: a Skill development offered to him (a new technique, or the evolution of one of his)
+    if ((catalog.skill_offers || []).length) L.push(`POSSIBLE SKILL (offered by the engine; his only if he accepts): ${catalog.skill_offers.map((p) => `${p.id} (${p.text})`).join(' · ')}`);
     return L.join('\n');
 }
 
@@ -151,8 +153,10 @@ export function catalogIds(catalog) {
         offer: ids(catalog.offers),
         intent: ids(catalog.goals),
         // Patch 9C-2c
-        passive_offer: ids(catalog.passive_offers),
+        // 9C completion: the older passive.accept/decline may name an offered Skill too (src/v4/commands.js sends it on)
+        passive_offer: [...ids(catalog.passive_offers), ...ids(catalog.skill_offers)],
         passive: ids(catalog.passives),
+        development_offer: [...ids(catalog.passive_offers), ...ids(catalog.skill_offers)],
     };
 }
 

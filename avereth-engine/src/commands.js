@@ -3,6 +3,7 @@
 // #system <question> is the one natural-language query; it is passed to the narrator in System-only mode.
 import { deriveCharacter, rawPowerText, itemOf, actionsOf, weaponAttackOf } from './derived.js';
 import { goalLines } from './v4/growth.js';
+import { skillOfferLines, lineageText } from './v4/skill_growth.js';
 import { profileOf, sourceText } from './v4/items.js';
 import { formatCoin } from './economy.js';
 import { findSkill, rulesetOf, startClasses, skillOf } from './content.js';
@@ -161,6 +162,9 @@ function skills(state, content) {
     // Patch 9C-1: the techniques he is learning, with their source and Learning Progress (src/v4/growth.js)
     const goals = goalLines(state);
     if (goals.length) lines.push('LEARNING:', ...goals);
+    // 9C completion (src/v4/skill_growth.js): the Skills offered to him, and the Skills his own evolved from
+    const offered = rulesetOf(state) >= 2 ? skillOfferLines(state, content) : [];
+    if (offered.length) lines.push(...offered);
     lines.push('Use #skill <Skill Name> for full details.');
     return lines.join('\n');
 }
@@ -178,6 +182,9 @@ function skill(state, content, arg) {
     const sk = findSkill(content, arg, s.class, state);
     if (!sk) return `[SYSTEM // SKILL]\nUNKNOWN SKILL "${arg}".`;
     const known = actionsOf(s, content, rulesetOf(state), state)[sk.id]; // Patch 9A: his weapon's attack too
+    // 9C completion: one he evolved from names what it became
+    const became = (s.skill_history || []).find((h) => h.id === sk.id);
+    if (!known && became) return `[SYSTEM // SKILL]\n${sk.name} evolved into ${skillOf(content, became.evolved_to, state)?.name || became.evolved_to}: #skill ${skillOf(content, became.evolved_to, state)?.name || became.evolved_to}.`;
     if (!known) return `[SYSTEM // SKILL]\n${sk.name} is not a Skill Alaric knows.`;
     const dv = deriveCharacter(s, content);
     const prof = content.rules.proficiency.levels[String(known.prof)];
@@ -195,6 +202,8 @@ function skill(state, content, arg) {
     const now = effectsNow(content, sk, effectiveStats(s, content), known.prof, rulesetOf(state));
     if (now.length) lines.push(`Current effect: ${now.join(' | ')}${effectFactor(content, known.prof, rulesetOf(state)) !== 1 ? ` (×${effectFactor(content, known.prof, rulesetOf(state))} Proficiency, rounded)` : ''}`);
     if (!known.weapon && rulesetOf(state) >= 2 && s.class) lines.push(`Proficiency Progress: ${ppText(content, sk, known)} · Affinity ×${affinityFor(content, s.class, sk)} (highest of its tags)`);
+    const lineage = rulesetOf(state) >= 2 ? lineageText(state, content, sk.id) : null;
+    if (lineage) lines.push(lineage);
     return lines.join('\n');
 }
 

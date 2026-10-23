@@ -35,7 +35,8 @@ import { extractionFailedEvents } from './world.js';
 import { hallOf, settlementOf, membership, boardKey, today, listingsOf, supportedRanks } from './domain.js';
 import { finalizeGrowth, growthDrafts, activationsOf } from './growth.js';
 import { FORGE_VERSION, forgeRequest, parseForge, passiveForgeRequest, parsePassiveForge } from './forge.js';
-import { passiveDrafts, offerPassives } from './passive_growth.js';
+import { passiveDrafts, offerPassives, deedEvidence } from './passive_growth.js';
+import { skillDrafts, offerSkills } from './skill_growth.js';
 import { PLANNER_VERSION, MECH_TYPES, planContext, withContentSkills, plannerRequest, parsePlan, mapPlan, recentText, announcedAbandon } from './planner.js';
 import { crowdCount, personWords, bystanderEvents } from './settlement.js';
 import { skillOf } from '../content.js';
@@ -259,14 +260,29 @@ async function withGrowth(t, content, llm, previous) {
     // ordinary goal just completed in it too, named by its own Forge request (the same reuse by key and hash)
     let s2 = null;
     try { s2 = after(t.state, f.events); } catch { s2 = null; }
+    // 9C completion: the Ordinary evidence of what he did (successful checks the engine rolled), found at a safe turn
+    const deeds = s2 && !s2.encounter && !(s2.pending_combat || []).length ? deedEvidence(s2, content) : [];
+    if (deeds.length) {
+        f.events.push(...deeds);
+        try { s2 = after(s2, deeds); } catch { s2 = null; }
+    }
     const pdrafts = s2 ? passiveDrafts(s2, content) : [];
     const pforge = pdrafts.length ? await generateForge(llm, s2, content, pdrafts, cached, { request: passiveForgeRequest, parse: parsePassiveForge }) : null;
     const offered = pdrafts.length ? offerPassives(s2, content, pdrafts, pforge?.entries) : { events: [], offers: [] };
     f.events.push(...offered.events);
     if (pforge) forge = forge ? { ...forge, entries: { ...forge.entries, ...pforge.entries }, ms: forge.ms + pforge.ms, llm: [...forge.llm, ...pforge.llm], repaired: forge.repaired || pforge.repaired } : pforge;
+    // 9C completion (src/v4/skill_growth.js): the Skill developments this safe turn offers, within the room the Passive
+    // offers left (one Forge request of their own, the same reuse by key and hash)
+    let s3 = null;
+    if (s2) { try { s3 = after(s2, offered.events); } catch { s3 = null; } }
+    const sdrafts = s3 ? skillDrafts(s3, content) : [];
+    const sforge = sdrafts.length ? await generateForge(llm, s3, content, sdrafts, cached) : null;
+    const skilled = sdrafts.length ? offerSkills(s3, content, sdrafts, sforge?.entries) : { events: [], offers: [] };
+    f.events.push(...skilled.events);
+    if (sforge) forge = forge ? { ...forge, entries: { ...forge.entries, ...sforge.entries }, ms: forge.ms + sforge.ms, llm: [...forge.llm, ...sforge.llm], repaired: forge.repaired || sforge.repaired } : sforge;
     if (forge) {
         // Patch 9C-2c: and the name an offer actually holds (its fallback, when the Forge's was not free at the offer)
-        for (const o of offered.offers) {
+        for (const o of [...offered.offers, ...skilled.offers]) {
             const entry = forge.entries[o.key];
             if (entry && entry.name !== o.name) forge.entries[o.key] = { hash: entry.hash, name: o.name, fallback: true };
         }
@@ -281,6 +297,7 @@ async function withGrowth(t, content, llm, previous) {
     const meta = forge ? { forge } : {};
     if (!f.events.length && !f.failed.length) return { events: t.events, ...meta };
     const passiveOffered = offered.offers;
+    const skillOffered = skilled.offers;
     const i = t.events.findLastIndex((e) => e.t === 'outcome.recorded');
     if (i < 0) return { events: [...t.events, ...f.events], ...meta };
     const rec = t.events[i];
@@ -288,7 +305,7 @@ async function withGrowth(t, content, llm, previous) {
     // not again in every later turn
     const touched = new Set(t.events.filter((e) => e.t === 'growth.session' || e.t === 'growth.progress').map((e) => e.d.goal));
     const failed = f.failed.map((x) => ((x.source === 'material' || x.source === 'practice') && touched.has(x.goal) ? { ...x, notice: true } : x));
-    const outcome = rec.d.outcome ? { ...rec.d.outcome, ...(f.learned.length ? { learned: f.learned } : {}), ...(failed.length ? { learn_failed: failed } : {}), ...(passiveOffered.length ? { passive_offers: passiveOffered } : {}) } : rec.d.outcome;
+    const outcome = rec.d.outcome ? { ...rec.d.outcome, ...(f.learned.length ? { learned: f.learned } : {}), ...(failed.length ? { learn_failed: failed } : {}), ...(passiveOffered.length ? { passive_offers: passiveOffered } : {}), ...(skillOffered.length ? { skill_offers: skillOffered } : {}) } : rec.d.outcome;
     return { events: [...t.events.slice(0, i), ...f.events, { ...rec, d: { ...rec.d, outcome } }, ...t.events.slice(i + 1)], ...meta };
 }
 

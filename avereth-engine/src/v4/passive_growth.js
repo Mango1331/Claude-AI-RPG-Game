@@ -19,6 +19,7 @@ import { clone, hash32, normText, slug } from '../util.js';
 import { definePassive, gainPassive, losePassive, passiveDefErrors, passiveGain, passivesOf, passiveSlots, passiveText, passiveWhen, passiveEffects, qualityBudget, CORE_STATS, QUALITY_TEXT } from '../passives.js';
 import { growthOf } from './growth.js';
 import { deriveCharacter } from '../derived.js';
+import { offerRoom, SKILL_EVIDENCE } from './skill_growth.js';
 
 const ROMAN = ['II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 const P = (content) => content.rules.growth?.passive || {};
@@ -39,7 +40,9 @@ export const passiveOffers = (state) => (state.decisions || []).filter((d) => d.
 /** Names and ids an open offer holds for its Passive: no Skill, no other Passive takes them meanwhile. */
 export function reservedPassive(state) {
     const offers = passiveOffers(state).map((d) => d.passive).filter(Boolean);
-    return { names: offers.map((p) => normText(p.name)), ids: offers.map((p) => p.id) };
+    // 9C completion: and the name a Skill offered to him holds
+    const skills = (state.decisions || []).filter((d) => d.kind === 'skill').map((d) => normText(d.skill?.name));
+    return { names: [...offers.map((p) => normText(p.name)), ...skills], ids: offers.map((p) => p.id) };
 }
 
 // ------------------------------------------------------------------------------------------------ evidence
@@ -83,12 +86,55 @@ export function trialEvidence(state, content, enc) {
     const sure = gap >= r.level_gap && t.low <= r.low_pct;
     const near = !sure && gap >= r.near.level_gap && t.low <= r.near.low_pct;
     if (!sure && !near) return [];
+    // 9C completion: a fight like one that gave such evidence already (the same kinds of foes, the same place) gives none
+    // again, whatever became of the first; it is kept as similar (no offer, no die), so a repetition is no new chance
+    const similar = trialSignature(state, beaten);
+    const before = Object.values(evidenceOf(state)).find((x) => x.kind === 'trial' && x.facts?.similar === similar);
+    if (before) {
+        const why = `like ${before.key}: the same kinds of foes in the same place (${enc.id})`;
+        return [evidenceEvent(state, { key, kind: 'trial', quality: 'rare', why, facts: { gap, low: t.low, start: t.start, similar }, sure, status: 'similar' })];
+    }
     const roll = near ? (parseInt(hash32(`${state.rng?.seed ?? 0}|${key}|passive`), 16) % 100) + 1 : null;
     const passed = sure || roll <= r.near.chance_pct;
     const foe = beaten.reduce((a, id) => ((enc.combatants[id].fixed.level ?? 0) > (enc.combatants[a].fixed.level ?? 0) ? id : a), beaten[0]);
-    const facts = { gap, low: t.low, start: t.start, foe: enc.combatants[foe].name || foe, taken: { ...t.taken } };
+    const facts = { gap, low: t.low, start: t.start, foe: enc.combatants[foe].name || foe, taken: { ...t.taken }, similar };
     const why = `won against ${facts.foe} ${gap} Levels above him, driven down to ${t.low}% HP (${enc.id})`;
     return [evidenceEvent(state, { key, kind: 'trial', quality: 'rare', why, facts, sure, ...(near ? { roll, chance: r.near.chance_pct } : {}), ...(passed ? {} : { status: 'failed' }) })];
+}
+
+/** 9C completion: what makes two outstanding fights alike: the kinds of foes he beat (their body plan, or their kind of
+ * person) and the place (the Dungeon or the land it was in). */
+function trialSignature(state, beaten) {
+    const kinds = [...new Set(beaten.map((id) => {
+        const e = state.entities?.[id] || {};
+        return e.kind === 'creature' || e.profile ? `creature:${e.anchor || e.profile?.anchor || e.species || 'unknown'}` : `person:${e.sheet?.template || e.template || 'person'}`;
+    }))].sort();
+    return `${kinds.join(',')}@${state.scene?.location || state.places?.[state.scene?.at]?.realm || 'unknown'}`;
+}
+
+/**
+ * 9C completion: the Ordinary evidence of what he did (rules.json growth.passive.deeds): `checks` successful checks of one
+ * core stat the engine itself rolled (state.deeds, src/state.js), each on another feature, over at least `days` game days,
+ * none of them counted for an evidence before. At most one such evidence per stat open at a time. Events.
+ */
+export function deedEvidence(state, content) {
+    const r = P(content).deeds;
+    if (rulesetOf(state) < 2 || !r) return [];
+    const all = Object.values(evidenceOf(state)).filter((x) => x.kind === 'deeds');
+    const out = [];
+    for (const stat of CORE_STATS) {
+        if (all.some((x) => x.focus === stat && ['pending', 'offered'].includes(x.status))) continue;
+        const spent = new Set(all.filter((x) => x.focus === stat).flatMap((x) => x.things || []));
+        const seen = new Set();
+        const deeds = (state.deeds || []).filter((d) => d.stat === stat && !spent.has(d.thing) && !seen.has(d.thing) && seen.add(d.thing));
+        if (deeds.length < r.checks) continue;
+        const picked = deeds.slice(-r.checks);
+        const days = new Set(picked.map((d) => Math.floor((d.minute ?? 0) / 1440)));
+        if (days.size < r.days) continue;
+        const things = picked.map((d) => d.thing);
+        out.push(evidenceEvent(state, { key: `deeds:${stat}:${things.join('+')}`.slice(0, 160), kind: 'deeds', quality: 'ordinary', focus: stat, things, why: `${r.checks} hard tests of his ${stat} passed on ${days.size} days` }));
+    }
+    return out;
 }
 
 // ------------------------------------------------------------------------------------------------ candidates
@@ -115,7 +161,7 @@ function freeName(state, content, base) {
  */
 function effectOptions(content, ev) {
     const per = qualityBudget(content, ev.quality)?.per || {};
-    if (ev.kind === 'training') return [{ scope: 'always', condition: null, effects: [{ kind: 'core_stat_bonus', stat: ev.focus, value: per.core_stat_bonus }], base: FALLBACK.core[ev.focus] }];
+    if (ev.kind === 'training' || ev.kind === 'deeds') return [{ scope: 'always', condition: null, effects: [{ kind: 'core_stat_bonus', stat: ev.focus, value: per.core_stat_bonus }], base: FALLBACK.core[ev.focus] }];
     if (ev.kind === 'trial') {
         // the danger he lived through: the damage that brought him down (physical or magical), braced against at the edge
         const order = (ev.facts?.taken?.magical || 0) > (ev.facts?.taken?.physical || 0) ? ['magical', 'physical'] : ['physical', 'magical'];
@@ -176,7 +222,11 @@ export function passiveDrafts(state, content) {
     const full = passivesOf(sheet).length >= passiveSlots(content);
     const out = [];
     let view = state;
-    for (const ev of Object.values(evidenceOf(state)).filter((x) => x.status === 'pending').sort((a, b) => (a.turn - b.turn) || a.key.localeCompare(b.key))) {
+    // 9C completion: within the room left for offers of every kind (rules.json growth.development.max_offers); the
+    // evidence of a Skill's development is src/v4/skill_growth.js's
+    const room = offerRoom(state, content);
+    for (const ev of Object.values(evidenceOf(state)).filter((x) => x.status === 'pending' && !SKILL_EVIDENCE.has(x.kind)).sort((a, b) => (a.turn - b.turn) || a.key.localeCompare(b.key))) {
+        if (out.length >= room) break;
         if (ev.quality === 'ordinary' && full) continue;
         const c = composeCandidate(view, content, ev);
         if (!c.def) continue;

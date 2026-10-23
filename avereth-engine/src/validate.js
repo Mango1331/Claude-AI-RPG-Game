@@ -69,14 +69,22 @@ export function validateState(state, content) {
         if (!isInt(g.lp) || g.lp < 0 || g.lp > g.need) p.push(`learning goal ${g.id}: LP ${g.lp}/${g.need}`);
         if ((g.status === 'ready') !== (g.lp >= g.need)) p.push(`learning goal ${g.id}: ${g.status} at ${g.lp}/${g.need}`);
     }
-    for (const d of state.growth?.done || []) if (!d.evidence && !pc.sheet.skills[d.skill]) p.push(`the Skill ${d.skill} of learning goal ${d.id} is not his`);
+    // 9C completion: or it evolved into another of his
+    for (const d of state.growth?.done || []) if (!d.evidence && !pc.sheet.skills[d.skill] && !(pc.sheet.skill_history || []).some((h) => h.id === d.skill)) p.push(`the Skill ${d.skill} of learning goal ${d.id} is not his`);
     // Patch 9C-2c: every open Passive offer rests on its evidence, offered; an accepted evidence's Passive was his
-    for (const d of (state.decisions || []).filter((x) => x.kind === 'passive')) {
+    // 9C completion: and every open Skill offer, the same way; an accepted Skill evidence's Skill is defined
+    for (const d of (state.decisions || []).filter((x) => x.kind === 'passive' || x.kind === 'skill')) {
         const ev = state.growth?.evidence?.[d.evidence];
-        if (!ev || ev.status !== 'offered' || ev.decision !== d.id) p.push(`passive offer ${d.id}: its evidence ${d.evidence} is not offered`);
+        if (!ev || ev.status !== 'offered' || ev.decision !== d.id) p.push(`${d.kind} offer ${d.id}: its evidence ${d.evidence} is not offered`);
     }
+    const SKILL_KINDS = new Set(['evolution', 'breakthrough', 'combination']);
     for (const ev of Object.values(state.growth?.evidence || {}).filter((x) => x.status === 'accepted')) {
-        if (!state.passive_defs?.[ev.passive]) p.push(`evidence ${ev.key}: its Passive ${ev.passive} is not defined`);
+        if (SKILL_KINDS.has(ev.kind) ? !state.skill_defs?.[ev.skill_booked] : !state.passive_defs?.[ev.passive]) p.push(`evidence ${ev.key}: its ${SKILL_KINDS.has(ev.kind) ? `Skill ${ev.skill_booked}` : `Passive ${ev.passive}`} is not defined`);
+    }
+    // 9C completion: a Skill he evolved from is his no longer, and what it became is a defined Skill
+    for (const h of pc?.sheet?.skill_history || []) {
+        if (pc.sheet.skills[h.id]) p.push(`skill ${h.id} held after it evolved`);
+        if (!state.skill_defs?.[h.evolved_to]) p.push(`skill ${h.id} evolved into an undefined ${h.evolved_to}`);
     }
     const sc = state.scene;
     // Runtime V4 keeps its place nodes in state.places; wilderness outside a settlement lies in its realm (live 30.09.2026)

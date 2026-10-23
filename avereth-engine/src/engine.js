@@ -10,7 +10,8 @@
 import { Dice, newSeed } from './rng.js';
 import { applyEvent, fold } from './state.js';
 import { anchorFor, templateFor, locationByName, weaponFamily, startPlace, itemEffectOf, rulesetOf, rulesetDef, npcTemplate, skillOf } from './content.js';
-import { checkProgress, restoration } from './skills.js';
+import { checkProgress, restoration, defineSkill } from './skills.js';
+import { signatureSkill } from './skill_composer.js';
 import { skillCostAmount, passiveTotals, effectiveStats } from './passives.js';
 import { rankRefusal, itemProfile } from './v4/items.js';
 import { deriveCharacter, actionsOf } from './derived.js';
@@ -379,7 +380,21 @@ export function materialise(s, content, dice, emit, id) {
     const words = [...(e.descriptors || []), e.traits || ''].join(' ');
     // Patch 9A: a campaign of ruleset 2 builds its people by its own templates; a legacy campaign exactly as before
     if (rulesetOf(s) >= 2) {
-        emit({ t: 'entity.sheet_set', d: { id, sheet: rulesetTwoPerson(s, content, e, words) } });
+        const sheet = rulesetTwoPerson(s, content, e, words);
+        // 9C completion (src/skill_composer.js signatureSkill): a trained person of npc_signature_level Levels or more has
+        // one technique of their own, defined before the sheet is set (and so before any fight snapshot), fixed with it:
+        // a later meeting reads the sheet and composes nothing (a trial of an area attack books it on its copy only)
+        const min = content.rules.growth?.development?.npc_signature_level ?? 5;
+        if (sheet.training === 'trained' && (sheet.level || 1) >= min) {
+            const def = signatureSkill(s, content, e, sheet);
+            const d = def ? defineSkill(s, content, def) : null;
+            if (d && !d.errors.length) {
+                d.events.forEach(emit);
+                sheet.skills[def.id] = { prof: 1, pp: 0 };
+                sheet.generated.signature = def.id;
+            }
+        }
+        emit({ t: 'entity.sheet_set', d: { id, sheet } });
         return;
     }
     let tpl = content.templates.get(e.template) || templateFor(content, words) || content.templates.get('commoner');

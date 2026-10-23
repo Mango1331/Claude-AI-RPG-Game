@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 23. Oktober 2026 · Fassung 23 (9C-2b .48 Stone-Erwerb, Verbrauch und Kampf im echten ST-Livetest bestätigt)  
+**Stichtag:** 23. Oktober 2026 · Fassung 24 (9C-2c .49 Git-Implementierung geprüft, R1-R3 vor echter Live-Abnahme offen)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,15 +13,16 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 23.10.2026 (Snapshot)** | **b4dae52** (separater `.48`-Liveguide), **4f6c677** (Engine `.48`); zuvor aa3400a (.47). Dokument-HEAD als Snapshot verstehen, stets neu prüfen. |
-| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.48**; Narrator-Vertrag weiterhin Revision **.46**. |
+| **HEAD am 23.10.2026 (Snapshot)** | **d30c5c5** (Runner/Guide `.49`), **69a4616** (Engine `.49`); letzter echt live getesteter Engine-Stand `.48` (`4f6c677`). HEAD bei neuem Chat immer neu prüfen. |
+| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.49**; Narrator-Vertrag Revision **.49** (persönliche SillyTavern-Narrator-Karte vor `.49`-Livetest aktualisieren). |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | 9C-1/9C-2a umgesetzt und Lehrer-Forge-Erwerb `.45` live bestätigt. **9C-2b `.48` Stone-Hauptpfad im echten SillyTavern-Livetest erfolgreich** (20 Spielzüge, 3/3, autoritative Events für Kauf/Skill/Verbrauch/Kampfsieg); Manuals technisch implementiert, aber in diesem Lauf nicht live getestet. Früherer `.47`-Fehler behoben. |
+| **Patchstatus** | 9C-1/9C-2a `.45` Lehrer/Forge live bestätigt; **9C-2b `.48` Stone-Hauptpfad echt live bestätigt**. **9C-2c `.49` durch Claude implementiert und unabhängig im Git begutachtet**, Tests 1194/1194 + 56/56 Runner laut Claude, **Reviewfixes R1/R2/R3 offen, noch kein `.49`-Livetest**. |
 | **Nächster Schritt** | **9C-2c `.49` ist durch Claude implementiert und auf GitHub gepusht; unabhängiges Git-Review durch ChatGPT läuft, noch KEINE echte Live-Abnahme.** Zwei nachweisbare Reviewpunkte R1/R2: außergewöhnliche Passive-Angebote müssen bei vier Slots eine mögliche Ersatzkonfiguration berücksichtigen; taggebundene und allgemeine Kostenreduktionen müssen über ihre tatsächliche gemeinsame Wirkung auf Skills gegen Nullwirkung geprüft werden. R3: Anti-Farming bei wiederholten ähnlichen Rare-Encountern mit Challenge-/Tagesregeln vervollständigen. Claude um gezielten Reviewfix mit Regressionen bitten; erst danach echten `.49`-Livetest. Weitere Details im neuen Topabschnitt und Datei 04. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
-Aktueller Implementierungscommit (.48): https://github.com/Mango1331/Claude-AI-RPG-Game/commit/4f6c677bf59858c9052792844136f5531977144b
-Patch-9-Commits (chronologisch): 9A Engine `25ffe95` (.33), 9A Runner `7610df1`, 9A-Review `d71ff91` (.34), zentraler Guide `ad3eb2c` + `35d7168`, 9A.1 `a4e499f` (.35), 9B-1 `b632011` (.36), 9B-1-Review `3620b09` (.37), 9B-2 `6fb6176` (.38) + Doku `dd4c2c9`, 9B-2-Review `0cd22d3` (.39), 9C-1 `d0808eb` (.40), 9C-1-Reviewkorrektur `d27e877` (.41), Bezahlfix `c02bdb0` (.42), 9C-2a `9ff76c6` (.43), separater Liveguide `13b19ec`, 9C-2a-Reviewkorrektur `ddf1ea3` (.44), aktiver Duplikatrest `b67910a` (.45), Lehrer-Liveguide `cdd610d`, **9C-2b Feature `.46` `4b5c5ad`, Stone-Liveguide `9d77449`, Review `.47` `aa3400a`, **Integrationsfix `.48` `4f6c677`, Guide `b4dae52`**.
+Aktueller Implementierungscommit (.49): https://github.com/Mango1331/Claude-AI-RPG-Game/commit/69a4616993c2c52987d4fe9e96ad4a8d4157bdc1; Runner-/Guide-Commit https://github.com/Mango1331/Claude-AI-RPG-Game/commit/d30c5c5b50fb2da40bf7705f4b3e9c72136b0059
+Letzter echt live bestätigter Implementierungscommit (.48): https://github.com/Mango1331/Claude-AI-RPG-Game/commit/4f6c677bf59858c9052792844136f5531977144b
+Patch-9-Commits (chronologisch): 9A Engine `25ffe95` (.33), 9A Runner `7610df1`, 9A-Review `d71ff91` (.34), zentraler Guide `ad3eb2c` + `35d7168`, 9A.1 `a4e499f` (.35), 9B-1 `b632011` (.36), 9B-1-Review `3620b09` (.37), 9B-2 `6fb6176` (.38) + Doku `dd4c2c9`, 9B-2-Review `0cd22d3` (.39), 9C-1 `d0808eb` (.40), 9C-1-Reviewkorrektur `d27e877` (.41), Bezahlfix `c02bdb0` (.42), 9C-2a `9ff76c6` (.43), separater Liveguide `13b19ec`, 9C-2a-Reviewkorrektur `ddf1ea3` (.44), aktiver Duplikatrest `b67910a` (.45), Lehrer-Liveguide `cdd610d`, **9C-2b Feature `.46` `4b5c5ad`, Stone-Liveguide `9d77449`, Review `.47` `aa3400a`, **Integrationsfix `.48` `4f6c677`, Guide `b4dae52`**, **9C-2c `.49` Engine `69a4616`, Runner/Guide `d30c5c5`**.
 Vorheriger Patch-8-final-Stand: `1f38bd1` (.32, Runner) / `211ee65` (Engine).
 Früherer Runner-/Preflight-Stand: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/35ead9c21564c8aa134dfd93978184cdef2bd883
 Vorheriger Browsernachtrag: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b0221181602ddbaf7c05b08bae4b2d4633e04983

@@ -1,4 +1,4 @@
-# Patch 9C-1: Deterministischer Skill-Erwerb und Training (4.3.0-c.6.6.40)
+# Patch 9C-1: Deterministischer Skill-Erwerb und Training (4.3.0-c.6.6.40 / Reviewkorrektur .41)
 
 Erster Teil von Patch 9C auf der Basis von 9B-1/9B-2. Plan: `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` §1a.2b (main `e4d1f00`). Alles Neue gilt nur unter Regelstand 2 und nur auf dem Planner-Pfad (C).
 
@@ -61,7 +61,7 @@ Schema, Kontext (Liste `LEARNING`), Parser und Mapping sind konsistent:
 
 **Quelle (nur Lehrer-Pfad), geprüft von der Engine:**
 1. **Anwesend:** in `scene.present`, nicht tot.
-2. **Kompetent:** im Kampf trainiert (Sheet, sonst Template), mit Klassen-Affinität > 1 für einen Tag der Technik oder einem bekannten Skill dieses Tags. Ein Händler, Bauer oder untrainierter Jäger lehrt nichts.
+2. **Kompetent:** im Kampf trainiert (Sheet, sonst Template); jeder Disziplin-Tag der Technik muss durch Klassen-Affinität > 1 oder einen bekannten Skill dieses Tags gedeckt sein. Ein passender Zweittag legitimiert keine fachfremde Disziplin. Ein Händler, Bauer oder untrainierter Jäger lehrt nichts.
 3. **Zusage:** eine gekaufte Trainingsleistung dieser Person (`service.granted` mit `training`), die noch kein Ziel verbraucht hat, oder der Fakt `teaches` → Alaric.
    - Der Extraktor meldet diesen Fakt nur bei klarer Zusage; neue Regel in `deltas.json`, `delta-1.0`.
 
@@ -72,9 +72,10 @@ Die Evidenz (Basis, Schlüssel, Zug, Minute) wird am Ziel gespeichert, weil die 
 ## 3. Ziele und Fortschritt
 
 **Zustand** `state.growth` (entsteht mit dem ersten Event):
-- `goals`: id, target {fn, tags, aspects}, source, lp, need, status `active|ready`, `days` (die letzten zwei Spieltage), `fights` (begrenzt);
+- `goals`: id, target {fn, tags, aspects}, source, zusätzlich gebundene `teachers`, lp, need, status `active|ready`, `days` (die letzten zwei Spieltage), `fights` (begrenzt);
 - `done`: kompakt, begrenzt;
 - `training`: Minuten bekannter Skills pro Tag.
+- `used_services`: verbrauchte Trainingsschlüssel, beschränkt auf die noch vorhandene kurze Services-Ansicht. Das Kürzen von `done` macht eine Zahlung nicht erneut verfügbar.
 
 **Events** (Ownership-Art `pc.progress`, nur Engine; Fingerabdruck enthält `s.growth`): `growth.opened`, `growth.session`, `growth.progress`, `growth.closed`.
 
@@ -122,7 +123,7 @@ Die Evidenz (Basis, Schlüssel, Zug, Minute) wird am Ziel gespeichert, weil die 
 
 ## 6. Tests und Grenzen
 
-`tests/v4/patch9c1.test.js` (12) deckt ab:
+`tests/v4/patch9c1.test.js` deckt ursprünglich diese 12 Fälle ab (mit Reviewkorrektur .41 insgesamt 17):
 
 | Test | Inhalt |
 |---|---|
@@ -145,5 +146,16 @@ Die Evidenz (Basis, Schlüssel, Zug, Minute) wird am Ziel gespeichert, weil die 
 - Nur der Lehrer-Pfad für neue Techniken.
 - Zahlen sind vorläufig.
 - Eine Trainingsleistung öffnet genau ein Ziel; ein Fakt `teaches` gilt für alle Ziele dieses Lehrers.
-- Ein Lehrer, der das Ziel nicht eröffnet hat, braucht eine eigene Zusage, wird aber nicht als Quelle nachgetragen.
+- Ein zusätzlicher Lehrer braucht eine eigene Zusage; diese wird am Ziel gebunden. Weiteres Training desselben Ziels benötigt keine zweite Zahlung, andere Ziele dürfen die gebundene Zahlung nicht wiederverwenden.
 - Live-Ergebnisse liegen nicht vor.
+
+## 7. Reviewkorrektur .41
+
+Ausgangsbasis: `d0808eb` (.40). Vier begrenzte Korrekturen in `src/v4/growth.js`, keine neuen Module oder Eventtypen:
+
+- Tagesabschnitte werden einzeln gebucht und ausgewertet, bevor das Konto gekürzt wird. Eine mehrtägige Einheit gibt dieselben LP wie die entsprechende Aufteilung.
+- PP-Gutschriften verwenden jeweils den bereits fortgeschriebenen Skillstand; zwei Übungstage können auch eine Promotion korrekt überschreiten.
+- Der Lehrer muss alle beanspruchten Disziplinen abdecken.
+- Zusagen zusätzlicher Lehrer bleiben am Ziel nachvollziehbar und werden nicht für andere Ziele frei. Ein begrenzter Index verhindert die Wiederverwendung nach dem Kürzen abgeschlossener Ziele; vorhandene .40-Events werden weiter gefaltet, ohne historische LP-/PP-Werte neu auszurechnen.
+
+Fünf neue Regressionen waren auf .40 rot und sind mit .41 grün. Gezielte Suite: **17/17**; vollständiges `npm test`: **1147/1147** (hier ausgeführt). Kein neuer Browser-Smoke oder LLM-Livetest. Narrator-Vertrag bleibt Revision .40, da unverändert. Zahlen, Planner, Runner und Scope von 9C-2 bleiben unverändert. Unabhängiges Claude-Gegenreview steht aus.

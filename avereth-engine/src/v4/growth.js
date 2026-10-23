@@ -26,8 +26,8 @@ import { clone, normText } from '../util.js';
 
 const EMPTY = { n: 0, goals: {}, done: [], training: {} };
 const DAY = 1440;
-// what the state keeps (fixed: a reducer reads no content): the last two game days of a ledger (a session spans at most
-// one midnight), the last fights a goal was credited for, the last closed goals
+// what the state keeps (fixed: a reducer reads no content): the last two game days of a ledger (new sessions book
+// each day before trimming it), the last fights a goal was credited for, the last closed goals
 const KEEP_DAYS = 2;
 const KEEP_FIGHTS = 6;
 const KEEP_DONE = 20;
@@ -65,6 +65,16 @@ export function dayParts(start, minutes) {
 
 // ------------------------------------------------------------------------------------------------ teachers
 const PC_WORDS = /\b(?:alaric|pc|him|me)\b/;
+const serviceKey = (x) => `svc:${x.turn}:${x.minute}:${x.by}`;
+const goalSources = (g) => [g.source, ...Object.values(g.teachers || {})].filter(Boolean);
+
+// Keep consumed service keys only while the short services view can still offer them. This survives completed-goal
+// compaction without keeping an unbounded history of purchases. Old events acquire the same index when folded.
+function rememberService(state, source) {
+    if (source?.basis !== 'service') return;
+    const available = new Set((state.services || []).filter((x) => x.service === 'training').map(serviceKey));
+    state.growth.used_services = [...new Set([...(state.growth.used_services || []), source.key])].filter((key) => available.has(key));
+}
 
 /**
  * The disciplines a person can teach: those their class favours (affinity above 1) and the tags of the Skills they
@@ -91,9 +101,9 @@ export function teacherTags(state, content, id) {
  */
 export function teachingCommitment(state, id) {
     const g = growthOf(state);
-    const used = new Set([...Object.values(g.goals).map((x) => x.source?.key), ...g.done.map((x) => x.key)].filter(Boolean));
-    const svc = [...(state.services || [])].reverse().find((x) => x.service === 'training' && x.by === id && !used.has(`svc:${x.turn}:${x.minute}:${id}`));
-    if (svc) return { basis: 'service', key: `svc:${svc.turn}:${svc.minute}:${id}`, turn: svc.turn, minute: svc.minute };
+    const used = new Set([...(g.used_services || []), ...Object.values(g.goals).flatMap((x) => goalSources(x).map((s) => s.key)), ...g.done.flatMap((x) => x.keys || [x.key])].filter(Boolean));
+    const svc = [...(state.services || [])].reverse().find((x) => x.service === 'training' && x.by === id && !used.has(serviceKey(x)));
+    if (svc) return { basis: 'service', key: serviceKey(svc), turn: svc.turn, minute: svc.minute };
     const fact = [...truth(state, id, 'teaches'), ...truth(state, id, 'trains')].find((f) => PC_WORDS.test(normText(String(f.o))));
     if (fact) return { basis: 'fact', key: `fact:${fact.id}`, turn: fact.since?.turn ?? null, minute: fact.since?.minute ?? null };
     return null;
@@ -108,7 +118,7 @@ function teacherNow(state, content, id, tags) {
     if (!here(state, id)) return { ok: false, why: `${name} is not here` };
     const can = teacherTags(state, content, id);
     if (!can.length) return { ok: false, why: `${name} has no combat training to teach` };
-    if (!tags.some((t) => can.includes(t))) return { ok: false, why: `${name} has no mastery of ${tags.join(', ')} (${can.join(', ')})` };
+    if (!tags.every((t) => can.includes(t))) return { ok: false, why: `${name} has no mastery of ${tags.join(', ')} (${can.join(', ')})` };
     return { ok: true, name };
 }
 
@@ -172,16 +182,17 @@ export function learningActivity(s, content, c, minutes, start) {
     const span = `${minutes} min`;
     if (known) {
         const r = R(content).train_pp;
-        const ledger = g.training?.[known.id] || {};
-        const session = { t: 'growth.session', d: { skill: known.id, kind: 'self', parts } };
-        const events = [session];
+        const events = [];
         const lines = [];
-        const view = after(s, [session]);
+        let view = s;
         for (const p of parts) {
-            const total = (ledger[p.day] || 0) + p.minutes;
-            if (total < r.min_minutes || (ledger[p.day] || 0) >= r.min_minutes) continue;
+            const session = { t: 'growth.session', d: { skill: known.id, kind: 'self', parts: [p] } };
+            events.push(session);
+            view = after(view, [session]);
+            if ((growthOf(view).training[known.id]?.[p.day] || 0) < r.min_minutes) continue;
             const ev = practiceProgress(view, content, known.id, r.pp, `practice on day ${p.day + 1}`, `train:${p.day}:${known.id}`);
             events.push(...ev);
+            view = after(view, ev);
             for (const e of ev) lines.push(`${known.name} +${e.d.gained} PP${e.d.to.prof > e.d.from.prof ? `, now P${e.d.to.prof}` : ''}`);
         }
         const done = parts.reduce((a, p) => a + p.minutes, 0);
@@ -205,13 +216,15 @@ export function learningActivity(s, content, c, minutes, start) {
     const named = typeof c.teacher === 'string' ? c.teacher : null;
     const who = named || (source?.who && here(s, source.who) ? source.who : null);
     let kind = 'self';
+    let boundSource = null;
     if (who) {
         const t = teacherNow(s, content, who, target.tags);
         if (!t.ok) return { status: 'refused', reason: 'no teacher', line: `NOT LEARNING — ${t.why}; nothing is booked, no time passes for it.` };
-        const consent = who === source?.who ? source : teachingCommitment(s, who);
+        const consent = goal?.teachers?.[who] || (who === source?.who ? source : teachingCommitment(s, who));
         if (!consent) return { status: 'refused', reason: 'no teaching commitment', line: `NOT LEARNING — ${t.name} has not agreed to teach him (no training paid for, no promise to teach him on record); nothing is booked, no time passes for it. Asking is words: the story may let them answer.` };
         kind = 'teacher';
         if (!goal) source = { kind: 'teacher', who, name: t.name, basis: consent.basis, key: consent.key, turn: s.turn, minute: start };
+        else if (who !== source?.who && !goal.teachers?.[who]) boundSource = { kind: 'teacher', who, name: t.name, basis: consent.basis, key: consent.key, turn: s.turn, minute: start };
     } else if (!goal) {
         return { status: 'refused', reason: 'no source', line: `NOT LEARNING — a new technique needs a teacher here who has agreed to teach him (Skill Stones and study material come later); nothing is booked.` };
     }
@@ -221,8 +234,15 @@ export function learningActivity(s, content, c, minutes, start) {
         goal = { id: `learn.${n}`, n, status: 'active', target, source, lp: 0, need: content.rules.proficiency.learning_progress['1'], opened: { turn: s.turn, minute: start }, days: {}, fights: [] };
         events.push({ t: 'growth.opened', d: { goal } });
     }
-    events.push({ t: 'growth.session', d: { goal: goal.id, kind, parts, ...(kind === 'teacher' ? { by: who } : {}) } });
-    events.push(...sessionProgress(after(s, events), content, goal.id, parts.map((p) => p.day)));
+    let view = after(s, events);
+    for (const [i, p] of parts.entries()) {
+        const session = { t: 'growth.session', d: { goal: goal.id, kind, parts: [p], ...(kind === 'teacher' ? { by: who } : {}), ...(i === 0 && boundSource ? { source: boundSource } : {}) } };
+        events.push(session);
+        view = after(view, [session]);
+        const progress = sessionProgress(view, content, goal.id, [p.day]);
+        events.push(...progress);
+        view = after(view, progress);
+    }
     const last = events.filter((e) => e.t === 'growth.progress').at(-1);
     const total = last ? last.d.total : goal.lp;
     const gained = events.filter((e) => e.t === 'growth.progress').reduce((a, e) => a + e.d.lp, 0);
@@ -294,11 +314,16 @@ export function applyGrowthEvent(state, e) {
             if (g.goals[d.goal.id]) throw new Error(`learning goal exists: ${d.goal.id}`);
             g.goals[d.goal.id] = clone(d.goal);
             g.n = Math.max(g.n || 0, d.goal.n || 0);
+            rememberService(state, d.goal.source);
             break;
         case 'growth.session': {
             if (d.goal) {
                 const goal = g.goals[d.goal];
                 if (!goal) throw new Error(`session of an unknown learning goal ${d.goal}`);
+                if (d.source) {
+                    (goal.teachers ||= {})[d.source.who] = clone(d.source);
+                    rememberService(state, d.source);
+                }
                 for (const p of d.parts) {
                     const day = goal.days[p.day] || (goal.days[p.day] = { teacher: 0, self: 0, lp: 0 });
                     day[d.kind === 'teacher' ? 'teacher' : 'self'] += p.minutes;
@@ -324,7 +349,7 @@ export function applyGrowthEvent(state, e) {
             const goal = g.goals[d.goal];
             if (!goal) throw new Error(`close of an unknown learning goal ${d.goal}`);
             delete g.goals[d.goal];
-            g.done = [...g.done, { id: d.goal, skill: d.skill, name: d.name, fn: goal.target.fn, who: goal.source.who, key: goal.source.key, turn: state.turn, minute: state.clock.minute }].slice(-KEEP_DONE);
+            g.done = [...g.done, { id: d.goal, skill: d.skill, name: d.name, fn: goal.target.fn, who: goal.source.who, key: goal.source.key, keys: goalSources(goal).map((s) => s.key), turn: state.turn, minute: state.clock.minute }].slice(-KEEP_DONE);
             break;
         }
         default:

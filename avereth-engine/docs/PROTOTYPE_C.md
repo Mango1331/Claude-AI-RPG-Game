@@ -2000,3 +2000,4 @@ Vollständige Beschreibung: `docs/PATCH9C1_SKILL_ACQUISITION_TRAINING.md`.
 - **Abschluss.** Nach beiden regulären Planner-Routen: bereite Ziele werden atomar Definition, Skill und geschlossenes Ziel, im selben Record vor dem Outcome (`learned`). Nichts bei Panels, fehlgeschlagener Planung oder im Kampf.
 - **Texte.** `#skills` LEARNING, NEW SKILL im System-Block und im Kontext, `content.10.r2`, Vertrag v4 Revision 4.3.0-c.6.6.40, Extraktor-Regel `teaches` (`delta-1.0`).
 - **Tests:** `tests/v4/patch9c1.test.js` (12).
+- **Reviewkorrektur (4.3.0-c.6.6.41):** Tagesabschnitte vor Konto-Kürzung auswerten; PP auf fortgeschriebenem Stand buchen; alle Lehrerdisziplinen prüfen; Zusagen zusätzlicher Lehrer am Ziel binden und verbrauchte Services gegen Wiederverwendung nach Historienkürzung schützen. Kein neues Modul oder Eventtyp. Fünf Regressionen vorher rot, danach grün; gezielt 17/17, `npm test` 1147/1147. Unabhängiges Gegenreview ausstehend; kein neuer Livetest.

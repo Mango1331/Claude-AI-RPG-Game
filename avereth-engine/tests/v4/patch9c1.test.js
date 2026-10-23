@@ -17,7 +17,7 @@ import { runCommands } from '../../src/commands.js';
 import { turnPanel } from '../../src/display.js';
 import { skillDefErrors } from '../../src/skills.js';
 import { composeSkill, composerFunctions } from '../../src/skill_composer.js';
-import { dayParts, finalizeGrowth, teacherTags, learningActivity } from '../../src/v4/growth.js';
+import { dayParts, finalizeGrowth, teacherTags, teachingCommitment, learningActivity } from '../../src/v4/growth.js';
 import { parsePlan, planContext, withContentSkills } from '../../src/v4/planner.js';
 import { buildCatalog } from '../../src/v4/catalog.js';
 import { eventKind, STATE_KINDS } from '../../src/v4/ownership.js';
@@ -387,4 +387,105 @@ test('9C-1 K: a legacy campaign learns nothing this way (an ordinary training); 
     assert.deepEqual(Object.keys(g.state().skill_defs || {}), []);
     for (const t of ['growth.opened', 'growth.session', 'growth.progress', 'growth.closed']) assert.equal(eventKind({ t, d: {} }), 'pc.progress');
     assert.equal(STATE_KINDS['pc.progress'].engine, true);
+});
+
+
+// ------------------------------------------------------------------------------------------------ 9C-1 review corrections
+test('9C-1 review: overnight practice adds both daily PP awards sequentially, including a promotion', async () => {
+    for (const initial of [0, 70]) {
+        const g = await campaign(content, { cls: 'Mage', skills: 'Arcane Bolt + Arcane Ward' });
+        if (initial) inject(g, [{ t: 'skill.progress', d: { id: 'pc', skill: 'mage.arcane_bolt', gained: initial, from: { prof: 1, pp: 0 }, to: { prof: 1, pp: initial }, need: 75, why: 'test precondition' } }]);
+        await say(g, '*i wait until late at night*', ACT('wait', { minutes: 1380 - clockOf(g) }));
+        await reply(g);
+        await train(g, '*i practise my arcane bolt for two hours*', { minutes: 120, learn: 'mage.arcane_bolt' });
+        const progress = lastUser(g).events.filter((e) => e.t === 'skill.progress');
+        assert.equal(progress.length, 2);
+        assert.deepEqual(progress[1].d.from, progress[0].d.to, 'the second day starts from the first award, not the old sheet');
+        assert.deepEqual(sheetOf(g).skills['mage.arcane_bolt'], initial ? { prof: 2, pp: 31 } : { prof: 1, pp: 36 });
+        assert.deepEqual(foldChat(JSON.parse(JSON.stringify(g.chat))).state.growth, g.state().growth);
+        assert.deepEqual(validateState(g.state(), content), []);
+    }
+});
+
+test('9C-1 review: a multi-day lesson earns the same LP and Skill as the same time split at midnight', async () => {
+    async function lessons(parts) {
+        const g = await campaign(content, { cls: 'Warrior', skills: 'Heavy Slash + Charge' });
+        person(g, 'npc.mira', 'hedge_mage', { cls: 'mage', consent: 'fact' });
+        for (const minutes of parts) {
+            await train(g, '*i train the force bolt with Mira for a long time*', { minutes, learn: goalOf(g) ? 'learn.1' : 'bolt', teacher: 'npc.mira', tags: ['Control'] });
+            await reply(g);
+        }
+        return g;
+    }
+    const one = await lessons([2880]);
+    const split = await lessons([900, 1440, 540]);
+    assert.equal(clockOf(one), clockOf(split));
+    assert.equal(goalOf(one), undefined, 'all three calendar days count before the ledger is trimmed');
+    assert.ok(sheetOf(one).skills['dyn.binding_bolt']);
+    assert.deepEqual(sheetOf(one).skills, sheetOf(split).skills);
+    assert.deepEqual(one.state().skill_defs, split.state().skill_defs);
+    assert.deepEqual(validateState(one.state(), content), []);
+});
+
+test('9C-1 review: a matching secondary tag does not license a discipline the teacher cannot teach', async () => {
+    const g = await campaign(content, { cls: 'Warrior', skills: 'Heavy Slash + Charge' });
+    person(g, 'npc.brannoc', 'guard', { name: 'Brannoc', cls: 'warrior', consent: 'fact' });
+    assert.ok(!teacherTags(g.state(), content, 'npc.brannoc').includes('Arcane'));
+    const start = clockOf(g);
+    await train(g, '*i train an arcane ward with Brannoc for an hour*', { minutes: 60, learn: 'ward', teacher: 'npc.brannoc', tags: ['Arcane', 'Defense'] });
+    assert.equal(resolution(g).status, 'refused');
+    assert.equal(clockOf(g), start);
+    assert.equal(g.state().growth, undefined);
+    await reply(g);
+    await train(g, '*i train the guard stance with Brannoc for an hour*', { minutes: 60, learn: 'guard', teacher: 'npc.brannoc', tags: ['Defense', 'Martial'] });
+    assert.equal(resolution(g).status, 'resolved', 'a source that covers both tags still works');
+    assert.deepEqual(goalOf(g).target.tags, ['Defense', 'Martial']);
+});
+
+test('9C-1 review: a replacement teacher commitment is bound to one goal and remains usable on that goal', async () => {
+    const g = await campaign(content, { cls: 'Mage', skills: 'Arcane Bolt + Arcane Ward' });
+    person(g, 'npc.mira', 'hedge_mage', { cls: 'mage', consent: 'fact' });
+    person(g, 'npc.orla', 'hedge_mage', { name: 'Orla', cls: 'mage', consent: 'service' });
+    for (const learn of ['bolt', 'ward']) {
+        await train(g, '*i train with Mira for an hour*', { minutes: 60, learn, teacher: 'npc.mira' });
+        await reply(g);
+    }
+    await train(g, '*i train the bolt with Orla for half an hour*', { minutes: 30, learn: 'learn.1', teacher: 'npc.orla' });
+    assert.equal(resolution(g).status, 'resolved');
+    assert.equal(teachingCommitment(g.state(), 'npc.orla'), null, 'the paid commitment is no longer free for another goal');
+    await reply(g);
+    const before = clockOf(g);
+    await train(g, '*i train the ward with Orla for half an hour*', { minutes: 30, learn: 'learn.2', teacher: 'npc.orla' });
+    assert.equal(resolution(g).status, 'refused');
+    assert.equal(clockOf(g), before);
+    await reply(g);
+    await train(g, '*i keep training the bolt with Orla for half an hour*', { minutes: 30, learn: 'learn.1', teacher: 'npc.orla' });
+    assert.equal(resolution(g).status, 'resolved', 'continuing the same goal needs no second payment');
+    await reply(g);
+    await sleepTillMorning(g);
+    await train(g, '*i train the bolt with Orla for two hours*', { minutes: 120, learn: 'learn.1', teacher: 'npc.orla' });
+    assert.equal(goalOf(g), undefined);
+    assert.equal(teachingCommitment(g.state(), 'npc.orla'), null, 'completion does not release the paid commitment');
+    assert.deepEqual(foldChat(JSON.parse(JSON.stringify(g.chat))).state.growth, g.state().growth);
+    assert.deepEqual(validateState(g.state(), content), []);
+});
+
+test('9C-1 review: compacting old completed goals never makes an old paid commitment available again', async () => {
+    const g = await campaign(content, { cls: 'Mage', skills: 'Arcane Bolt + Arcane Ward' });
+    person(g, 'npc.mira', 'hedge_mage', { cls: 'mage', consent: 'service' });
+    await train(g, '*i train the bolt with Mira for two hours*', { minutes: 120, learn: 'bolt', teacher: 'npc.mira' });
+    await reply(g);
+    await sleepTillMorning(g);
+    await train(g, '*i train the bolt with Mira for two hours*', { minutes: 120, learn: 'learn.1', teacher: 'npc.mira' });
+    const done = g.state().growth.done[0];
+    const events = [];
+    for (let n = 2; n <= 22; n++) {
+        events.push({ t: 'growth.opened', d: { goal: { id: 'learn.' + n, n, status: 'ready', target: { fn: 'bolt', tags: ['Arcane'], aspects: [] }, source: { kind: 'teacher', who: 'npc.other', name: 'Other', basis: 'fact', key: 'fact:other' }, lp: 100, need: 100, days: {}, fights: [] } } });
+        events.push({ t: 'growth.closed', d: { goal: 'learn.' + n, skill: done.skill, name: done.name } });
+    }
+    inject(g, events);
+    assert.equal(g.state().growth.done.length, 20);
+    assert.ok(!g.state().growth.done.some((x) => x.id === done.id), 'the original completed goal has been compacted');
+    assert.equal(teachingCommitment(g.state(), 'npc.mira'), null);
+    assert.deepEqual(validateState(g.state(), content), []);
 });

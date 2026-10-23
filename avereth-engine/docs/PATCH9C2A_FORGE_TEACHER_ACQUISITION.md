@@ -1,6 +1,6 @@
 # Patch 9C-2a — Forge am bestehenden Lehrer-Erwerb
 
-Build **4.3.0-c.6.6.43**, Basis `c02bdb0` (.42). Implementierung durch ChatGPT/Codex; unabhängiges Claude-Review und echter ST-Livetest stehen aus.
+Erststand **4.3.0-c.6.6.43** (`9ff76c6`), Basis `c02bdb0` (.42). Claude bestätigte unabhängig 33/33 gezielt und 1163/1163 gesamt und fand die unten korrigierten Randfälle. Reviewkorrektur **4.3.0-c.6.6.44**; deren Gegenreview und echter ST-Livetest stehen noch aus.
 
 ## Spielerwirkung und Umfang
 
@@ -40,3 +40,12 @@ Der Host entwertet ältere Aufträge durch neue Interceptor-Aufrufe, Chatwechsel
 - `live:st --check`: hier nicht ausführbar; Browser, SillyTavern-Installation/Profil und API-Schlüssel fehlen. Kein echter GLM-/ST-Erwerb behauptet.
 
 Der zentrale Guide `tools/st_live/live/guides/current_test.json` wird in einem separaten Guide-Commit für den Lehrerpfad vorbereitet. Der unveränderte Evaluator hat noch keine Growth-Etappen: Skill-Erwerb, Forge-Text und anschließender Einsatz müssen zusätzlich anhand der Chats und Events geprüft werden; ein automatisches Kampf-Pass ist keine Growth-Abnahme.
+
+## Reviewkorrektur .44 — eigener Abbruch und doppelte alte Ziele
+
+- **R1:** Ein ungültig gewordener Interceptor ruft vor dem Rückkehren immer seinen eigenen `abort(true)` auf, auch nach einer Barriere oder im Fehlerpfad. Kein veralteter Record, Prompt oder Save wird dadurch veröffentlicht. Der bisherige Host-Test verlangte fälschlich, dass kein Abbruch erfolgt; er prüft jetzt pro Generierung getrennte Abbruchflags und überspringt die simulierte Narration entsprechend. Abgedeckt sind neuerer Auftrag, Chatwechsel einschließlich Rückkehr, Edit, Löschen und Swipe während der Forge.
+- **Quellnachweis:** In SillyTavern **1.19.0** hält [`runGenerationInterceptors`](https://github.com/SillyTavern/SillyTavern/blob/1.19.0/public/scripts/extensions.js) `aborted` und `exitImmediately` lokal im jeweiligen Aufruf; der Callback verändert keinen globalen `AbortController`. [`Generate`](https://github.com/SillyTavern/SillyTavern/blob/1.19.0/public/script.js) prüft das zurückgegebene Flag vor der Narrator-Anfrage. Deshalb braucht die Extension keine zusätzliche Unterscheidung zwischen neuem Auftrag und Edit-Invalidierung: Sie verwirft ihren eigenen alten Durchlauf. Das ist eine Quellenprüfung und ein Host-Test, kein durchgeführter echter ST-Lauf.
+- **R2:** Bereite alte Duplikat-Ziele werden mit dem vorhandenen `growth.closed` auf den bereits bekannten Skill geschlossen. Keine neue Definition, kein zweites `skill.learned`, keine NEW-SKILL-Meldung und kein wiederholtes `learn_failed`. Die Plätze werden frei; Quellenbindungen bleiben in der Abschlussliste wie bei einem normalen Abschluss erhalten. Das funktioniert auch für ein zweites Ziel, dessen erstes gerade im selben Abschluss gelernt wurde.
+- **Rot/Grün:** Auf .43 sind die neue Produktpfad-Regression, die ergänzte bestehende Duplikatprüfung und die korrigierte Host-Erwartung rot (12/15). Nach Fix einschließlich 9C-1 **34/34 grün**; ein vollständiger Abschlusslauf **1164/1164 grün**.
+- **Unverändert:** Zahlen, Quellen, Forge-Protokoll, Runner und Narrator-Vertragsrevision **.43**. Keine zusätzliche Migration oder neuer Eventtyp.
+- **R3 bleibt Messpunkt:** Kein Umbau von `historyKey`. Claude meldete etwa 17 ms pro Aufruf an 93 Nachrichten/0,29 MB, dreimal pro Zug; hier nicht unabhängig nachgemessen. Im echten ST-Lauf zusätzlich Engine-Zeit eines längeren Chats ablesen. Vor dem Lehrer-/Forge-Lauf einmal eine Generierung während der Wartezeit durch Edit/Chatwechsel ungültig machen und prüfen, dass keine alte Narration nachläuft.

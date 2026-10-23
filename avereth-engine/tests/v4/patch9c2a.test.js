@@ -190,8 +190,42 @@ test('9C-2a: reordered open techniques resume one goal, and duplicate ready goal
     assert.equal(growthDrafts(h.state(), content).length, 1);
     const f = finalizeGrowth(h.state(), content);
     assert.equal(f.learned.length, 1);
-    assert.equal(f.failed[0].goal, 'learn.2');
+    assert.deepEqual(f.failed, []);
+    assert.equal(f.events.filter((e) => e.t === 'growth.closed').length, 2);
     assert.equal(h.state().growth.goals['learn.1'].status, 'ready', 'finalization does not mutate its input');
+});
+
+test('9C-2a review R2: old duplicate ready goals close against the one learned Skill, freeing both slots without repeated failures', async () => {
+    const g = await campaign(content);
+    ready(g, { tags: ['Arcane', 'Control'] });
+    ready(g, { id: 'learn.2', n: 2, tags: ['Control', 'Arcane'] });
+    const calls = forge(g);
+    await rest(g);
+    let s = g.state();
+    const skill = Object.keys(s.skill_defs)[0];
+    assert.deepEqual(s.growth.goals, {});
+    assert.deepEqual(s.growth.done.map((d) => [d.id, d.skill]), [['learn.1', skill], ['learn.2', skill]]);
+    assert.equal(lastUser(g).events.filter((e) => e.t === 'skill.defined').length, 1);
+    assert.equal(lastUser(g).events.filter((e) => e.t === 'skill.learned').length, 1);
+    assert.equal(outcomeOf(g).learned.length, 1);
+    assert.equal(outcomeOf(g).learn_failed, undefined);
+    assert.equal(calls.length, 1);
+    await reply(g);
+    await rest(g);
+    assert.equal(outcomeOf(g).learn_failed, undefined);
+    assert.equal(calls.length, 1);
+    // A duplicate already present when entering a later turn needs no Forge or new acquisition either.
+    ready(g, { id: 'learn.3', n: 3, tags: ['Control', 'Arcane'] });
+    await reply(g);
+    await rest(g);
+    s = g.state();
+    assert.deepEqual(s.growth.goals, {});
+    assert.equal(s.growth.done.at(-1).skill, skill);
+    assert.equal(outcomeOf(g).learned, undefined);
+    assert.equal(outcomeOf(g).learn_failed, undefined);
+    assert.equal(calls.length, 1);
+    assert.deepEqual(foldChat(JSON.parse(JSON.stringify(g.chat))).state, s);
+    assert.deepEqual(validateState(s, content), []);
 });
 
 test('9C-2a: actual board retry reuses a committed Forge fallback and never renames the acquisition', async () => {

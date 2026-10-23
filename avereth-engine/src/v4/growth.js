@@ -311,7 +311,14 @@ export function finalizeGrowth(state, content, names = {}) {
     if (!canFinalize(state)) return out;
     let s = state;
     for (const g of openGoals(state).filter((x) => x.status === 'ready')) {
-        if (knownTechnique(s, g.target)) { out.failed.push({ goal: g.id, errors: ['this technique is already learned'] }); continue; }
+        const known = knownTechnique(s, g.target);
+        if (known) {
+            // .42 could open the same technique twice with reordered tags. Retire the redundant goal, no new grant.
+            const close = { t: 'growth.closed', d: { goal: g.id, skill: known, name: skillOf(content, known, s).name } };
+            s = after(s, [close]);
+            out.events.push(close);
+            continue;
+        }
         const comp = composeGoal(s, content, g);
         if (comp.errors.length) { out.failed.push({ goal: g.id, errors: comp.errors }); continue; }
         try {

@@ -188,7 +188,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         // the report still being asked for belongs to the turn before this new message: its facts come first
         if (pendingReport && pendingReport.chatId === c.getCurrentChatId() && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingReport.id) {
             await Promise.race([pendingReport.job, new Promise((done) => setTimeout(done, REPORT_WAIT_MS))]);
-            if (!isCurrent()) return;
+            if (!isCurrent()) { abort(true); return; }
         }
         // Runtime V4 barrier: never overlap a new normal turn with the previous reply's extractor/repair.
         // The LLM call itself has a finite timeout; letting a second call overtake it can exceed provider concurrency.
@@ -197,11 +197,12 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         if (pendingWorld && pendingWorld.chatId === c.getCurrentChatId() && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingWorld.id) {
             const w0 = Date.now();
             await pendingWorld.job;
-            if (!isCurrent()) return;
+            if (!isCurrent()) { abort(true); return; }
             waited = Date.now() - w0;
         }
         const r = await prepareGenerationAsync(c.chat, content, { type, settings: engineSettings(), llm: v4Llm, waited, isCurrent });
-        if (!isCurrent()) return;
+        // ST's abort callback is local to this interceptor invocation, not the shared generation AbortController.
+        if (!isCurrent()) { abort(true); return; }
         if (r.stale) { abort(true); return; }
         setLoreKeys(r.loreKeys);
         if (r.action === 'clear' || r.action === 'none') {
@@ -236,7 +237,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         if (r.dirty) await c.saveChat();
         renderDebug();
     } catch (err) {
-        if (!isCurrent()) return;
+        if (!isCurrent()) { abort(true); return; }
         console.error('[Avereth] interceptor failed', err);
         toastr.error(`Avereth Engine: ${err.message}`);
         setPrompt('');

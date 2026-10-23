@@ -6,7 +6,7 @@ import { loadProductContent } from '../helpers.js';
 import { campaign, inject } from './patch8_lib.js';
 import { rec } from '../../src/host.js';
 
-test('9C-2a host: a newer request or chat switch discards an old Forge without changing prompts, records, saves or aborting the new generation', async () => {
+test('9C-2a host: stale calls abort their own generation without changing prompts, records, saves or aborting the new generation', async () => {
     const content = await loadProductContent();
     const g = await campaign(content);
     inject(g, [
@@ -20,7 +20,7 @@ test('9C-2a host: a newer request or chat switch discards an old Forge without c
     let chatId = 'first';
     let saves = 0;
     const prompts = [];
-    const aborts = [];
+    const generations = [];
     let forgeCall = 0;
     let started;
     let release;
@@ -48,7 +48,13 @@ test('9C-2a host: a newer request or chat switch discards an old Forge without c
         await import('../../index.js');
         await initialized;
         const input = () => c.chat.push({ mes: '*i rest for one minute*', is_user: true, is_system: false, extra: {} });
-        const run = () => globalThis.averethInterceptor([], 8000, (...args) => aborts.push(args), 'normal');
+        // ST 1.19.0 runGenerationInterceptors owns this flag per invocation. Its caller skips narration when true.
+        const run = async () => {
+            const generation = { aborted: false, narrated: false };
+            generations.push(generation);
+            await globalThis.averethInterceptor([], 8000, () => { generation.aborted = true; }, 'normal');
+            if (!generation.aborted) generation.narrated = true;
+        };
         input();
         const old = c.chat.at(-1);
         const first = run();
@@ -63,7 +69,7 @@ test('9C-2a host: a newer request or chat switch discards an old Forge without c
         assert.equal(saves, published.saves);
         assert.deepEqual(prompts, published.prompts);
         assert.equal(JSON.stringify(c.chat), published.chat);
-        assert.deepEqual(aborts, []);
+        assert.deepEqual(generations, [{ aborted: true, narrated: false }, { aborted: false, narrated: true }]);
 
         // Switch away and back to the same chat id while the next Forge is pending.
         c.chat = structuredClone(base);
@@ -79,7 +85,25 @@ test('9C-2a host: a newer request or chat switch discards an old Forge without c
         assert.equal(saves, afterSwitch.saves);
         assert.deepEqual(prompts, afterSwitch.prompts);
         assert.equal(JSON.stringify(c.chat), afterSwitch.chat);
-        assert.deepEqual(aborts, []);
+        assert.deepEqual(generations.at(-1), { aborted: true, narrated: false });
+
+        // No newer generation: edit, deletion and swipe still have to stop this invocation before narration.
+        for (const event of ['edited', 'deleted', 'swiped']) {
+            if (forgeCall % 2) forgeCall++;
+            c.chat = structuredClone(base);
+            reached = new Promise((r) => { started = r; });
+            input();
+            const stale = run();
+            await reached;
+            await handlers[event](c.chat.length - 1);
+            const expected = { saves, prompts: structuredClone(prompts), chat: JSON.stringify(c.chat) };
+            release();
+            await stale;
+            assert.equal(saves, expected.saves);
+            assert.deepEqual(prompts, expected.prompts);
+            assert.equal(JSON.stringify(c.chat), expected.chat);
+            assert.deepEqual(generations.at(-1), { aborted: true, narrated: false });
+        }
     } finally {
         for (const [k, v] of Object.entries(globals)) {
             if (v === undefined) delete globalThis[k]; else globalThis[k] = v;

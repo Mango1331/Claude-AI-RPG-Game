@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 23. Oktober 2026 · Fassung 14 (9C-1 implementiert; Reviewkorrektur .41 durch ChatGPT/Codex, unabhängiges Claude-Gegenreview ausstehend)  
+**Stichtag:** 23. Oktober 2026 · Fassung 15 (9C-1 implementiert; .41 unabhängig von Claude bestätigt; kleiner Bezahlfix .42, gezieltes Gegenreview ausstehend)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,15 +13,15 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 23.10.2026** | `d27e8777626f7f14cb4dd3eba5351db99c473a2c` (.41, 9C-1-Reviewkorrektur), direkt nach `d0808eb` (.40, Claude-Implementierung); vorher `0cd22d3` (.39) |
-| **Build (package.json, manifest.json, `ENGINE_VERSION`)** | 4.3.0-c.6.6.41 |
+| **HEAD am 23.10.2026** | `c02bdb07f079a671103c6bb5f55597868790ef1a` (.42, stabile IDs bezahlter Trainingszeilen), nach `d27e877` (.41, von Claude unabhängig bestätigt) und `d0808eb` (.40) |
+| **Build (package.json, manifest.json, `ENGINE_VERSION`)** | 4.3.0-c.6.6.42 |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | Patch 8, 9A/9A.1 und 9B-1/9B-2 implementiert. **9C-1 (.40/.41) implementiert:** deterministischer C1/F-Erwerb über Lehrer, LP/PP-Training und Abschluss über beide C-Routen. ChatGPT prüfte .40 und implementierte vier gezielte Korrekturen in .41. **Unabhängiges Claude-Gegenreview von .41 noch ausstehend.** Kein 9C-Livetest. |
-| **Nächster Schritt** | Claude prüft ausschließlich den Diff `d0808eb` → `d27e877` und seine Regressionen; keine automatische Fortsetzung. Danach Freigabe für 9C-2 separat. Die offenen Entscheidungen zu Durchbruch und Evolution gelten vor 9C-2 bzw. 9C-3; sie blockierten 9C-1 nicht. |
+| **Patchstatus** | Patch 8, 9A/9A.1, 9B-1/9B-2 und **9C-1 (.40–.42) implementiert**. .41 samt Rot/Grün und 1147/1147 von Claude unabhängig bestätigt. .42 behebt zusätzlich die Kollision zweier bezahlter Trainingszeilen desselben Kaufs; **gezieltes Gegenreview der .42 ausstehend**. Kein 9C-Livetest. |
+| **Nächster Schritt** | Claude prüft ausschließlich `d27e877` → `c02bdb0`: stabile Trainings-IDs, alte Records und die zwei zusätzlichen Regressionen. Danach 9C-2 separat freigeben; kein automatischer Start. Offene Entscheidungen zu Durchbruch und Evolution gelten vor 9C-2 bzw. 9C-3. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
-Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/d27e8777626f7f14cb4dd3eba5351db99c473a2c
-Patch-9-Commits (chronologisch): 9A Engine `25ffe95` (.33), 9A Runner `7610df1`, 9A-Review `d71ff91` (.34), zentraler Guide `ad3eb2c` + `35d7168`, 9A.1 `a4e499f` (.35), 9B-1 `b632011` (.36), 9B-1-Review `3620b09` (.37), 9B-2 `6fb6176` (.38) + Doku `dd4c2c9`, 9B-2-Review `0cd22d3` (.39), 9C-1 `d0808eb` (.40), 9C-1-Reviewkorrektur `d27e877` (.41).
+Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c02bdb07f079a671103c6bb5f55597868790ef1a
+Patch-9-Commits (chronologisch): 9A Engine `25ffe95` (.33), 9A Runner `7610df1`, 9A-Review `d71ff91` (.34), zentraler Guide `ad3eb2c` + `35d7168`, 9A.1 `a4e499f` (.35), 9B-1 `b632011` (.36), 9B-1-Review `3620b09` (.37), 9B-2 `6fb6176` (.38) + Doku `dd4c2c9`, 9B-2-Review `0cd22d3` (.39), 9C-1 `d0808eb` (.40), 9C-1-Reviewkorrektur `d27e877` (.41), Bezahlfix `c02bdb0` (.42).
 Vorheriger Patch-8-final-Stand: `1f38bd1` (.32, Runner) / `211ee65` (Engine).
 Früherer Runner-/Preflight-Stand: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/35ead9c21564c8aa134dfd93978184cdef2bd883
 Vorheriger Browsernachtrag: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b0221181602ddbaf7c05b08bae4b2d4633e04983
@@ -31,7 +31,7 @@ Vorheriger Patch-8.3-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/com
 Vorheriger Patch-8.1-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c6baa06e159f16069efd728844c7afe7c7dc186a  
 Vorheriger Patch-8-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f3b55819dad21249d871a62b7ede38bd926598cd
 
-**Testnachweise (aktuell):** ChatGPT/Codex führte auf .41 **`npm test` 1147/1147** sowie gezielt **17/17** in `tests/v4/patch9c1.test.js` aus. Fünf neue Regressionen waren auf unverändertem .40 rot und nach dem Fix grün. Claude meldete für .40 1142/1142 und V4-Browser-Smoke OK bei weiterhin fehlgeschlagenem V3-Anteil; kein neuer Browser-Smoke oder LLM-Livetest für .41. Älter: Claude meldete .39 1130/1130. Die Smoke-Aussagen sind Claudes Ausführung, nicht hier erneut verifiziert.
+**Testnachweise (aktuell):** ChatGPT/Codex führte auf .42 **`npm test` 1149/1149** und gezielt **19/19** aus. Kauf mit zwei Trainingszeilen auf .41 reproduziert (rot), auf .42 grün; zweiter neuer Test sichert alte Records ohne ID. .41: 1147/1147 und fünf Rot/Grün-Regressionen zusätzlich von Claude unabhängig bestätigt. Kein neuer Browser-Smoke oder LLM-Livetest. Historisch meldete Claude für .40 V4-Browser-Smoke OK, V3-Anteil fehlgeschlagen.
 
 **Ältere Testnachweise:** Für Patch 8.1 meldet Claude **960/960 npm test** (davon **29/29 neue Tests** in `tests/v4/patch81.test.js`) sowie `smoke:st:c` mit **19/19 Prüfungen**, keine Browserseitenfehler oder offengelegten Keys. Dies sind **Claudes berichtete Läufe**, nicht von ChatGPT unabhängig ausgeführte Tests. Code, Testdateien und Versionsnummern wurden über GitHub verifiziert. Ein vollständiger Dungeon-Clear/Boss-/Reset-Livetest für .26 ist noch nicht als erfolgreich abgeschlossen belegt; **ein echter .26-GLM-Run mit Gate, Gruppencombat, Slimes und Level-up wurde inzwischen gespielt und teilweise ausgewertet**. Zuvor für Patch 8 (.25) meldete Claude 931/931 Tests und einen C-Smoke mit 21/21.
 
@@ -369,7 +369,7 @@ Auf folgende Fälle besonders achten:
 
 ## 7. Danach – verbindliche Roadmap und bewusste Grenzen (ausführlich in Datei 04 §1a)
 
-- **Jetzt (23.10.2026):** 9C-1 einschließlich gezielter Reviewkorrektur implementiert (Build .41, `d27e877`); unabhängiges Claude-Gegenreview steht aus. Danach 9C-2/9C-3 und 9D; Balance bleibt 10B.
+- **Jetzt (23.10.2026):** 9C-1 implementiert; .41 von Claude unabhängig bestätigt. Bezahlfix .42 (`c02bdb0`) getestet und gepusht, gezieltes Gegenreview offen. Danach 9C-2/9C-3 und 9D; Balance bleibt 10B.
 - **Historisch (Stand Patch 8.4):** Patch 8.4 (.29) ist implementiert; der erste echte automatische Windows-/Featherless-/GLM-Livetest über 19 Züge ist ausgewertet (§5m und die unten angehängte ZIP-Auswertung). **Patch 8.4.1 ist implementiert (Engine `.30`, Runner `8f67953`), Git-Code geprüft, echter Nachtest offen**: gezielte Robustheitsfixes für LLM-Testspieler/Reasoning, leere Narrator-Antworten, Statzuweisung und den unautorisierten Dungeon-Gegner. Danach echten Regressionstest durchführen. Patch 8 nicht unbegrenzt für andere Features verlängern.
 - **Patch 9 – Organic Character Growth (VERBINDLICH; 9A und 9B IMPLEMENTIERT, 9C-1 IMPLEMENTIERT mit offenem Gegenreview, 9C-2/9C-3 und 9D geplant). Der folgende Absatz ist der ursprüngliche Planungstext:** **Genau drei Starterklassen Warrior (STR/VIT), Mage (INT/WIL), Rogue (AGI/PER)**, feste Starter-Skills/-Ausrüstung. Danach organisch entstehende Klassen-/Skill-Evolutionen, neue Skills, Passives und dauerhafte Boni allein aus tatsächlichem Spiel, Training, Entdeckungen und bedeutsamer Erfahrung; **keine festen Evolutions-/Skillbäume**. LLM schlägt vor; die JS-Engine prüft, berechnet und persistiert. **Aktuell noch fünf Klassen im Code; Umstellung erst mit Patch 9.** Die ältere Ablehnung von F1/#71 ist durch den ausdrücklichen Patch-9-Beschluss vom 20.10.2026 überholt (vollständig in Datei 04 §1a.2).
 - **Patch 10A (historisch schon vorhanden):** frühere HUD-/QoL-Arbeit ist implementiert und darf nicht nochmals als Großpatch beauftragt werden. Bestimmte offene Anzeige-/Focused-Ward-Details bleiben gezielte Einzelthemen.
@@ -407,8 +407,8 @@ Auf folgende Fälle besonders achten:
 ## 9. Übergabe an den nächsten Chat (vier Projektdateien)
 
 1. Dateien **01–04** **vom Branch main** vollständig lesen (`04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` ist das Review-/Katalogarchiv). Den tatsächlichen Entwicklungsbranch und Build unabhängig per Git prüfen.
-2. **Aktueller HEAD `d27e877`, Build .41:** 9C-1 implementiert, vier Reviewfehler korrigiert; Gegenreview durch Claude ausstehend. Regelstand 2 lernt C1/F-Skills über Lehrer, Legacy bleibt beim bisherigen Verhalten. Erst danach 9C-2 gesondert freigeben.
-3. Entwicklungskette: Patch 8 bis .32 → 9A (.33/.34) → 9A.1 (.35) → 9B-1 (.36/.37) → 9B-2 (.38/.39) → 9C-1 (.40/.41). Forge, Stones, Durchbrüche, Passive-Erwerb, Skill-Evolution, NPC-Signaturen, E-Unterstützung und Klassen-Evolution fehlen weiterhin. `#assign`-Fastpath, Engine-only-Board, ROAD AHEAD und Performancekandidaten sind nicht dadurch umgesetzt.
+2. **Aktueller HEAD `c02bdb0`, Build .42:** 9C-1 implementiert, .41 unabhängig bestätigt, kleiner Bezahlfix .42 wartet auf Gegenreview. Regelstand 2 lernt C1/F-Skills über Lehrer; Legacy bleibt beim bisherigen Verhalten. Erst danach 9C-2 gesondert freigeben.
+3. Entwicklungskette: Patch 8 bis .32 → 9A (.33/.34) → 9A.1 (.35) → 9B-1 (.36/.37) → 9B-2 (.38/.39) → 9C-1 (.40–.42). Forge, Stones, Durchbrüche, Passive-Erwerb, Skill-Evolution, NPC-Signaturen, E-Unterstützung und Klassen-Evolution fehlen weiterhin. `#assign`-Fastpath, Engine-only-Board, ROAD AHEAD und Performancekandidaten sind nicht dadurch umgesetzt.
 4. Bei Live-Exports zuerst Engine-Events, Chat-JSONL und LLM-TXT korrelieren; Gameplay- und Designregeln der Dateien 01/02 berücksichtigen.
 5. **Datei 04** enthält die 141-Ideen-Zusammenfassung, 20 ausgewählten K-Kandidaten, Claude-Gegenreviews, Engine-only-Board, Rest/Wait/Fast-Travel/Quick Replies und die offene Patch-9-/ROAD-AHEAD-Reihenfolge. Keine Ideen ohne Nutzerfreigabe in den bindenden Kanon oder die Implementierung übernehmen.
 6. Nach neuen Meilensteinen nur betroffene Projektdateien auf `main` aktualisieren; Implementierungsbranch nicht für Dokumentationspflege mergen.
@@ -589,18 +589,18 @@ Spielerseite und Charaktererstellung funktionierten (Rogue, zwei Skills, Kampf).
 - **Review .39:** Die Schadensvorschau folgt jetzt exakt der Schadenspipeline (bedingte Passives, Resistenz, Endure, Rundung, Varianzgrenzen). Die NPC-Angriffswahl prüft die reduzierten Kosten. Beide Regressionen waren auf .38 rot.
 - **Tests:** 1128/1128 (.38), 1130/1130 (.39).
 
-### Patch 9C-1 – Skill-Erwerb und Training (.40 `d0808eb`; Reviewkorrektur .41 `d27e877`)
+### Patch 9C-1 – Skill-Erwerb und Training (.40 `d0808eb`; Reviewkorrekturen .41 `d27e877`, .42 `c02bdb0`)
 
 - **Implementiert:** zwei Fachmodule (`skill_composer.js`, `v4/growth.js`); neue C1/F-Techniken über anwesende, kompetente und zugesagte Lehrer; Lernvorhaben, Tages-LP, Trainings-PP und Kampf-LP. Fünf Grundfunktionen: strike, bolt, guard, ward, mend. Kein zusätzlicher LLM-Aufruf.
 - **Integration:** Planner-Lernangaben, Agency-Guard, `#skills`, NEW-SKILL-Kontext/Anzeige, gezielter Regeltext und Narrator-Vertrag Revision .40. Atomarer Abschluss nach beiden regulären C-Routen; kein Erwerb im laufenden Kampf oder durch Panels.
 - **Review .40:** vier reproduzierte Fehler: PP-Gutschriften über Mitternacht überschrieben einander; frühe Tages-LP langer Sessions wurden gekürzt; ein passender Zweittag umging Lehrerkompetenz; Zusagen zusätzlicher Lehrer blieben mehrfach verwendbar.
 - **Korrektur .41 durch ChatGPT/Codex:** Tagesabschnitte nacheinander auswerten; alle beanspruchten Lehrerdisziplinen prüfen; zusätzliche Zusagen am Ziel binden. Ein auf die vorhandene Service-Ansicht begrenzter Verbrauchsindex verhindert Wiederverwendung nach dem Kürzen von Abschlussnachweisen. Keine neuen Module/Eventtypen, keine Änderungen an Zahlen, Planner oder Runner.
 - **Nachweise:** fünf Regressionen auf .40 rot, auf .41 grün; gezielt 17/17, vollständig `npm test` 1147/1147 hier ausgeführt. .40: 1142/1142 laut Claude. Kein neuer Browser-Smoke oder LLM-Livetest. Technische Doku: `avereth-engine/docs/PATCH9C1_SKILL_ACQUISITION_TRAINING.md`.
-- **Status:** commit/push verifiziert; **unabhängiges Claude-Gegenreview von .41 ausstehend**. 9C-2 noch nicht freigegeben. Alte gespeicherte .40-LP-/PP-Ergebnisse werden nicht rückwirkend neu berechnet.
+- **Status:** .41 von Claude unabhängig bestätigt. .42 (`c02bdb0`) behebt zwei Trainingszeilen desselben Kaufs durch stabile IDs im vorhandenen `service.granted`; alte Records behalten den bisherigen Schlüssel. Zusätzliche Regressionen für echten Doppelkauf, Listenkürzung, Replay und alte Records; **19/19 gezielt, 1149/1149 gesamt hier ausgeführt**. Commit/Push verifiziert, **Gegenreview der .42 ausstehend**, 9C-2 nicht freigegeben. Keine rückwirkende Aufteilung alter Zusagen oder Neuberechnung gespeicherter LP/PP.
 
 ### Patch 9 – was noch fehlt (Stand 23.10.2026)
 
-- **9C-2/9C-3 (GEPLANT, nicht freigegeben):** Forge, Skill Stones/Lernmaterial, Durchbrüche, Passive-Erwerb, Skill-Evolution, NPC-Signaturtechniken und E-Rang. 9C-1 ist bereits implementiert; zuerst das Gegenreview der .41 abschließen. Plan und offene Entscheidungen: Datei 04 §1a.2b.
+- **9C-2/9C-3 (GEPLANT, nicht freigegeben):** Forge, Skill Stones/Lernmaterial, Durchbrüche, Passive-Erwerb, Skill-Evolution, NPC-Signaturtechniken und E-Rang. 9C-1 ist bereits implementiert; zuerst das gezielte Gegenreview der .42 abschließen. Plan und offene Entscheidungen: Datei 04 §1a.2b.
 - **9D – Organic Class Identity (GEPLANT):** organische Klassenentwicklung, Klassen-Evolution bleibt bis dahin gesperrt.
 - **Nicht in Patch 9:** Blink-Buff, allgemeines Balancing und Scaling über E-Rang hinaus (10B).
 - **Bekannte Grenzen aus 9B:** nur F-Rang; Bedingungen nur `hp_at_most_pct` und `foe_engaged`; Heilung nur auf sich selbst; NPCs nutzen weder Heal, Restore noch Blink; die Schwellen der NPC-Taktik (75 %, 65 %, drei pro Kampf) sind einfache Startwerte.

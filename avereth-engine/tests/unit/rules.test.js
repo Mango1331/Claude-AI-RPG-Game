@@ -170,9 +170,12 @@ test('Partial Cover: -25% damage for that attack; Aimed Shot and Precision Thrus
     const through = shot('ranger.aimed_shot', 'partial').r.strikes[0];
     assert.equal(through.final, 25);
     assert.equal(through.cover, 'ignored');
+    // 4.3.0-c.6.6.54: between fighters ENGAGED with each other no cover of the place stands (src/combat.js partialCoverAt)
     const thrust = shot('duelist.precision_thrust', 'partial', 'Duelist', 'Precision Thrust and Lunge', 'ENGAGED').r.strikes[0];
-    assert.equal(thrust.cover, 'ignored');
-    assert.equal(shot('duelist.basic_attack', 'partial', 'Duelist', 'Precision Thrust and Lunge', 'ENGAGED').r.strikes[0].cover, '-25%');
+    assert.equal(thrust.cover, undefined);
+    const plain = shot('duelist.basic_attack', 'partial', 'Duelist', 'Precision Thrust and Lunge', 'ENGAGED').r.strikes[0];
+    assert.equal(plain.cover, undefined);
+    assert.equal(plain.final, shot('duelist.basic_attack', 'none', 'Duelist', 'Precision Thrust and Lunge', 'ENGAGED').r.strikes[0].final);
     // Full Cover: no line of sight, nothing spent, nothing rolled
     const blocked = shot('ranger.power_shot', 'full');
     assert.match(blocked.r.illegal, /behind full cover/);

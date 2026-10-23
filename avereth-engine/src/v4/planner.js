@@ -351,6 +351,17 @@ export function plannerRequest(vocab, ctx, text, { recent = '', previous = null,
 // Structure and state only. Every check accepts, rejects (the one repair call gets the error lines) or, after the
 // agency guard, drops a command it cannot stand on; none of them changes a value.
 const flat = (t) => normText(String(t ?? '').replace(/\*/g, ' ')).replace(/\s+/g, ' ').trim();
+// 4.3.0-c.6.6.54: words that tell a defense as part of a withdrawal ("to cover my withdrawal", "as I back away")
+const WITHDRAWING = /\b(?:withdraw(?:al|ing)?|retreat(?:ing)?|flight|flee(?:ing)?|escape|falling back|fall back|backing (?:off|away)|as i (?:go|back off|back away|fall back|retreat|withdraw))\b/;
+/** 4.3.0-c.6.6.54: a defense (no attack) the message tells only as covering the flight: in its words, or said after it. */
+function coversFlight(c, flight, message, content, state) {
+    if (c.type !== 'use_skill' || typeof c.skill !== 'string' || skillOf(content, c.skill, state)?.attack) return false;
+    const q = flat(c.quote);
+    if (WITHDRAWING.test(q)) return true;
+    const all = flat(message);
+    const at = (x) => (x ? all.indexOf(x) : -1);
+    return at(q) >= 0 && at(flat(flight.quote)) >= 0 && at(flat(flight.quote)) < at(q);
+}
 const isNew = (v) => !!v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 1 && typeof v.new === 'string' && v.new.trim() !== '';
 
 /** The quote is in the message word for word, or anchored as the agency guard anchors it. */
@@ -669,8 +680,13 @@ export function mapPlan(commands, ctx, content, message, state) {
     if (fight) for (const c of mech.filter((x) => x.type === 'attempt')) notTaken(c, 'not possible during a fight');
 
     // the first main action is taken; a second one waits for its own turn (one main action per turn, Core #12/#24)
-    const main = mechMain[0] || null;
-    for (const c of mechMain.slice(1)) notTaken(c, 'not taken this turn (one main action per turn)');
+    // 4.3.0-c.6.6.54 (live 23.10.2026 21:44, turn 13: "I break off and retreat ..., Guard raised to cover my withdrawal":
+    // Guard was taken, the flight was not): the flight he declares is his action; a defense told only as covering it
+    // (in the words of the flight, or said after it) does not take its place. One he means to raise first stays his
+    const flight = fight ? mechMain.find((c) => c.type === 'flee') : null;
+    const ordered = flight && mechMain[0] !== flight && mechMain.every((c) => c === flight || coversFlight(c, flight, message, content, state)) ? [flight, ...mechMain.filter((c) => c !== flight)] : mechMain;
+    const main = ordered[0] || null;
+    for (const c of ordered.slice(1)) notTaken(c, 'not taken this turn (one main action per turn)');
     if (main?.type === 'stealth' && fight) { notTaken(main, 'hiding is not possible during a fight'); }
     const move = moves[0] || null;
     for (const c of moves.slice(1)) notTaken(c, 'not taken this turn (one move per turn)');

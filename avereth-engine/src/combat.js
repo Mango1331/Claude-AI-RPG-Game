@@ -327,6 +327,14 @@ function reductionPct(e) {
  * Only a true Ambush Opening Action crits (guaranteed ×1.5 on every strike). Partial Cover (-25% unless the attack
  * ignores it) and defensive reductions are Final Damage modifiers (Core #11 step 11), applied after the Crit.
  */
+/**
+ * 4.3.0-c.6.6.54 (live 23.10.2026 21:44: Heavy Slash on a goblin ENGAGED with him lost a quarter of its damage to a
+ * partial cover the story had given it): a partial cover of the place keeps an attack off only across a distance;
+ * between fighters ENGAGED with each other nothing of the place stands. The one rule of the strike (resolveStrike) and of
+ * its preview (damagePreview); band is the distance between attacker and target as the attack strikes.
+ */
+export const partialCoverAt = (target, band) => target.current.cover === 'partial' && band !== 'ENGAGED';
+
 function resolveStrike(ctx, attacker, target, attack, opts) {
     const { dice, content } = ctx;
     const rec = { target: target.id };
@@ -351,7 +359,7 @@ function resolveStrike(ctx, attacker, target, attack, opts) {
         dmg = num(dmg * m);
         steps.push(`×${m} Ambush Crit = ${dmg}`);
     }
-    if (target.current.cover === 'partial') {
+    if (partialCoverAt(target, distance(ctx.enc, attacker.id, target.id))) {
         if (attack.ignores_partial_cover) {
             rec.cover = 'ignored';
             steps.push('Partial Cover ignored');
@@ -791,7 +799,7 @@ export function damagePreview(enc, content, targetId, state = null) {
         const defense = (magical ? target.fixed.mdef : target.fixed.def) + tempDefense(target, magical) + (guard ? guard.stat[magical ? 'MDEF' : 'DEF'] : 0);
         const postDef = num(Math.max(power - defense, power * d.defense_floor_share));
         let cover = null;
-        if (target.current.cover === 'partial') cover = skill.attack.ignores_partial_cover ? 'ignored' : 'applies';
+        if (partialCoverAt(target, struckAt)) cover = skill.attack.ignores_partial_cover ? 'ignored' : 'applies';
         const resist = guard ? guard.resist[magical ? 'magical' : 'physical'] : 0;
         const endure = effectsOf(target, 'damage_reduction_next')[0];
         const final = (variance) => {

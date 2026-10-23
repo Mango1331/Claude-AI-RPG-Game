@@ -230,3 +230,31 @@ Kein Fehler im Skill-Wachstum. Schwellen, XP und Dungeon-Regeln bleiben unverän
   - `tests/v4/live_1023_fix.test.js` (7) auf dem Live-Chat `tests/v4/live_1023b.json`, dazu die Reparaturantwort. Sechs waren vor dem Fix rot; die siebte sichert Legacy und NPC ab.
   - Angepasst sind acht ältere Tests auf die neuen Starterwerte und `*_r2`-ids: `patch9a` (3), `patch9b1` (4, davon einer mit 30-HP-Wolf, damit der Kampf so lange dauert wie vorher), `patch3` (1).
 - **Leitfaden `current_test`:** Überleben vor Muster. Kampf nur ab etwa 70 % HP; bei etwa 40 % HP oder weniger Rückzug und Ruhe an einem sicheren Ort bis volle HP. Muster nur bei gesunden HP. Runner-Test prüft die Regel.
+
+## 15. Livetest-Korrektur `.54` (dritter echter Kurztest, `20261023-214438Z`)
+
+Der dritte Lauf (`.53`, 14 Züge) bestätigt den gebuchten Dungeon-Eintritt und die saubere Integritätszeile. Der Warrior starb im ersten Kampf gegen drei reguläre Scouts. Zwei mechanische Fehler; dazu der Leitfaden. Startwaffen, Gegnerwerte, Dungeon-Level, XP und Skill-Schwellen bleiben unverändert.
+
+- **Flucht vor beschreibender Abwehr** (`src/v4/planner.js mapPlan`):
+  - Der Fall: Zug 13, „I break off and retreat back toward the tunnel I came in by, Guard raised to cover my withdrawal“. Der Planner lieferte Guard (seq 1) vor `flee` (seq 2). Die erste Hauptaktion galt, die Flucht wurde „not taken“.
+  - Neu: Ist eine Flucht erklärt und ist jede andere Hauptaktion eine Abwehr (kein Angriff), die nur die Flucht deckt, dann ist die Flucht die Hauptaktion. „Nur deckt“ heißt: Rückzugswörter in ihrem Zitat, oder in der Nachricht erst nach der Flucht gesagt. Die Abwehr wird als „not taken“ vermerkt.
+  - „I raise Guard, then next turn I retreat“ bleibt Guard.
+  - Weiter eine Hauptaktion pro Zug; keine garantierte Flucht, Fluchtchance unverändert.
+- **Partial Cover nur über Distanz** (`src/combat.js partialCoverAt`):
+  - Der Fall: Zug 12, Heavy Slash ENGAGED auf Goblin Scout A mit `partial` (vom Extraktor gebucht), −25 % (22 statt 30).
+  - Neu: Eine Regel für Schlag und Vorschau. Partial Cover des Ortes wirkt nur, wenn Angreifer und Ziel nicht ENGAGED sind; die Distanz zählt so, wie der Angriff trifft.
+  - `resolveStrike` nutzt die tatsächliche Distanz, `damagePreview` die Band, aus der er zuschlagen würde. Ein Fernangriff auf ein gedecktes Ziel verliert weiter 25 %; „ignores Partial Cover“ zählt nur, wo die Deckung stünde.
+  - Wer seine Position verlässt, hat schon bisher keine Deckung mehr (`cover: none` bei jedem Schritt eines Gegners). Die Regression sichert das ab.
+  - Das 9C-Muster `cover` liest `strikes[].cover`. Es entsteht damit nur aus wirksamer Deckung.
+  - Schilde, Guard, DEF/MDEF und defensive Skills bleiben unverändert. Keine neue Hindernismechanik.
+- **Leitfaden `current_test`:**
+  - Erst Gilde und ein Novice-Auftrag gegen einzelne Tiere oder Ungeziefer im Freien; Dungeon optional und nie allein gegen eine Gruppe.
+  - Gefahr vor dem Kampf einschätzen, ein Gegner zur Zeit.
+  - Bei etwa 40 % HP die Flucht als ganze Aktion, dann volle Ruhe. Guard → Heavy Slash nur, solange es taktisch und gesundheitlich trägt.
+  - Ziel unverändert (Angebot → Annahme → `#skills`/`#skill` → Einsatz); `inside_dungeon` optional.
+- **Tests:**
+  - `tests/v4/live_1023c_fix.test.js` (7) auf dem Live-Chat `tests/v4/live_1023c.json`. Rot vor dem Fix: Flucht, Originalfall Cover, Vorschau = Schlag, 9C-Beleg.
+  - Grün vor und nach dem Fix (Absicherung bestehenden Verhaltens): Guard zuerst, Fernangriff gedeckt, verlassene Deckung.
+  - Runner-Test prüft den Leitfaden.
+- **Angepasst:** `tests/unit/rules.test.js` (Partial Cover). Die zwei ENGAGED-Fälle (Duelist Basic Attack −25 %, Precision Thrust „ignored“) erwarten jetzt keine Deckung. Die Fernkampffälle (Power Shot −25 %, Aimed Shot „ignored“, Full Cover) bleiben.
+- **Offenes Risiko:** Nahkampf-Skills mit „ignores Partial Cover“ (Legacy Duelist Precision Thrust, Rogue Piercing Thrust) behalten die Eigenschaft, sie wirkt ENGAGED aber nicht mehr. Ob sie etwas anderes bekommen, ist eine Design-/Balancefrage für 10B; hier keine Änderung.

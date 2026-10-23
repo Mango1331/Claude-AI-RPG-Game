@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 23. Oktober 2026 · Fassung 29 (.51 Ordinary-Passive 4/4 im echten ST-Livetest bestanden; Runner nutzt aktuellen Vertrag)  
+**Stichtag:** 23. Oktober 2026 · Fassung 30 (9C-Abschluss Build .52 implementiert, Git-Review: zwei kleine Korrekturbedarfe)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,11 +13,11 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 23.10.2026 (Snapshot)** | **c2e5540** (Build `.51`, Engine `933384c`, Runner `1965f02`); derselbe Stand ist jetzt im echten Ordinary-Passive-Livetest bestätigt. Git-HEAD bei neuem Chat stets prüfen. |
-| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.51**; persönlicher Narrator-Vertrag bleibt Revision **.49**. Für Narrator in SillyTavern 8.192 Max-Response-Tokens separat einstellen. |
+| **HEAD am 23.10.2026 (Snapshot)** | **79c8e36** (gemeinsamer Patch 9C-2d + 9C-3 als Build `.52`, nach `.51`/`c2e5540`); Claude meldet 1220/1220 Tests; ChatGPT hat Commit/Diff/Quellpfade geprüft, nicht npm neu ausgeführt. |
+| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.52**, aktiver Narrator-Vertrag Revision **`.52`** (Build `.51` nutzte `.49`). ST-Profilkarte für eigene Spiele auf neueste Vertragsdatei bringen; Runner ersetzt sie isoliert automatisch. ST-Narrator-Limit 8192. |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | **9C-2c `.51` im echten ST-GLM-Livetest `20261023-120058Z-current_test` erfolgreich: 29 Züge, 4/4 Pflichtziele, 10×20 LP = 200/200, Ordinary-Passive `Quiet Scholar's Habit` angeboten und erst nach ausdrücklicher Annahme als `passive.defined`/`passive.gained` gebucht. INT 6→8, MP-Max 72→88, Slot 0/4→1/4, Arcane Bolt Raw Power nutzt INT 8; drei Panelantworten geprüft. Rare/Legendary und Austausch NICHT live geprüft.** Git/npm zuvor 1209/1209 laut Claude. |
-| **Nächster Schritt** | **Patch 9C-Abschluss (9C-2d + 9C-3) nach Claudes Gegenreview verbindlich designt und als EIN Implementierungspatch freigegeben; noch nicht programmiert.** Entscheidungsdetails in 02 (neuer Designbeschluss) und 04 (finaler Scope). Kerne: spontane Angebote mit Annahme, P5-Evolution mit 2 neuen qualifizierten Kämpfen und atomarem Vorgängerersatz/P5-Bewahrung, F-C2/C3, minimale E-Rank-Gate-Tabellen, max. 1 NPC-Signatur ab trainiertem Level 5, erfolgreiche Engine-Checks als Ordinary-Evidenz und Rare-Deduplizierung. Kein Expose/Slow/Brennen, keine NPC-AoE/Multi-Hit/Levelnamen-Parser; Endbalancing später. **Als nächstes Claude-Implementierung dieses EINEN Patches, danach unabhängiger Git-Review/gezielte Abnahme.** Nach 9C folgt 9D eigenständig; langer offener ST-Test erst nach 9D für 10B. |
+| **Patchstatus** | **9C-Abschluss (`.52`) implementiert, vor Live-Reviewnachbesserung:** echte Skill-/Evolutionsangebote, C2/C3, minimale E-Rank-Prüfung, NPC-Signaturen und Nichtkampf-Ordinary-Erwerb. Git-Code-/Testreview weitgehend positiv; **zwei kleine Korrekturen offen**: Nichtkampf-Ordinary wählt nur letzte drei Checks und übersieht 1+3 erfolgreich über 2 Tage; Rare-Signatur nutzt grobe `scene.location` statt dungeonbezogener Gebietseinheit und kann unterschiedliche Dungeons im selben Gebiet pauschal sperren. 1220/1220 Tests **laut Claude**, kein `.52`-Live-Nachweis. |
+| **Nächster Schritt** | **Gezielter Reviewfix ohne neue Featureentwicklung:** (1) `deedEvidence` soll aus allen ungenutzten unterschiedlichen erfolgreichen Features deterministisch drei mit >=2 Spieltagen wählen (auch Tag 1 ein Check, Tag 2 drei), nicht bloß letzte 3; (2) Rare-Doppelguard so ortsgebunden, dass gleiche Gegnerart im selben Dungeon/Gebiet weiterhin blockiert, aber eigenständiger anderer Dungeon im selben größeren Ort als neue Quelle möglich bleibt, kein leichtes Farmen durch Wechsel zwischen Zimmern. Je eine Rot/Grün-Regression, komplette `npm test`, enger Commit/Push. Danach Git-Check und kurzer offener ST-/Provider-Smoke für neue Skillangebote/NPC. 9D folgt separat; langer RPG-Livetest nach 9D. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
 Aktueller Korrekturcommit (.50): https://github.com/Mango1331/Claude-AI-RPG-Game/commit/dc1265259e5aa3654e618248c7786e0766ec287f; Runner-/Guide-Commit https://github.com/Mango1331/Claude-AI-RPG-Game/commit/73c24445c81d4b68f49d2b0e6134458c746e0d6d
@@ -663,6 +663,10 @@ Claude hat 9A–9D und die beiden jüngsten Kanonergänzungen am Entwicklungssta
 
 
 **Überholt durch die 9C-Planung (23.10.2026):** Zwei Empfehlungen des vorstehenden Reviews gelten nicht mehr. (1) Dynamische NPC-Skills werden **nicht** asynchron per LLM erzeugt, sondern deterministisch beim Bau des NPC-Sheets (`materialise`): Ein NPC kann in derselben Erzählantwort erscheinen und angreifen (`engine.js openCommitted`), davor ist kein LLM-Aufruf möglich. (2) Ein Skill Stone erhält beim Etablieren nur ein festes **Profil** (Rang, Disziplin, Aspekte); die konkrete Technik entsteht erst bei der ersten berechtigten Aktivierung. Siehe Datei 04 §1a.2b.
+
+### AKTUELLER GIT-REVIEW 23.10.2026 – gemeinsamer 9C-Abschluss `.52`, Commit `79c8e36`
+
+**Unabhängig im Git geprüft:** 30 Dateien geändert; 11 neue Regressionen, 1220/1220 Vollsuite laut Claude (keine lokale Wiederholung durch ChatGPT). Implementiert: gemeinsame Skill-/Passive-/Evolutionsangebote (max. 3), persistente Nutzungsbelege, P5-Nachfolger-Ersatz via `skill.evolved`, C2/C3 über vorhandene Effektgrammatik, E-Level-Gate, deterministische Level-5-NPC-Signaturen sowie Ordinary aus echten Engine-Checks. Tests belegen einen ausführbaren AoE-Nachfolger und NPC-Signatur-Kampfeinsatz, Legacy erhalten. **Zwei nachweisbare Reviewrisiken:** `passive_growth.js` `deedEvidence` wählt die letzten drei Checks **vor** Prüfung der Tagesstreuung. Folge: Tag 1 Erfolg Feature A, Tag 2 Erfolge B,C,D → letzte 3 B,C,D nur an Tag 2 ⇒ trotz erfüllter Bedingung kein Ordinary-Beleg. Deterministische gültige Auswahl aus allen ungenutzten Features nötig. Rare-Fingerprint `trialSignature` nutzt `scene.location` (gröberer Siedlungs-/Gebietsschlüssel) und unterscheidet derzeit möglicherweise zwei **verschiedene Dungeons innerhalb derselben Siedlung** nicht; denselben Dungeon/Raumwechsel weiterhin zusammenfassen, unabhängige Dungeonwurzeln jedoch unterscheiden. Zwei gezielte Rot/Grün-Proben, Gesamt-Tests, enger Fix; kein 9C-Redesign. **Nicht als live abgenommen kennzeichnen.**
 
 ### 23.10.2026 – Claude-Gegenreview entschieden: 9C-2d + 9C-3 EIN gemeinsamer Abschluss-Patch
 

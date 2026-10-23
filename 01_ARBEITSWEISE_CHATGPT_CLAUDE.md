@@ -1,8 +1,8 @@
 # Avereth Engine / RPG Engine — Arbeitsweise und Chat-Übergabe
 
 **Dokumenttyp:** dauerhafte Projektanweisung und Zusammenarbeit  
-**Stand:** 23. Oktober 2026 · Fassung 3 (bewährte Abläufe aus Patch 8.4–9B ergänzt; Startanweisung aktualisiert)  
-**Geltungsbereich:** ChatGPT-Chats im Projekt „RPG Engine“ und die Übergabe von Aufträgen an Claude Code  
+**Stand:** 23. Oktober 2026 · Fassung 4 (gezielte Kontextnutzung; ChatGPT als möglicher Implementierer; unabhängige Gegenreviews)  
+**Geltungsbereich:** ChatGPT-Chats im Projekt „RPG Engine“ sowie Implementierungs- und Review-Aufträge an ChatGPT/Codex und Claude Code  
 **Pflege:** nur bei Änderungen der Arbeitsweise, nicht nach jedem Patch
 
 > **Diese Datei ist Arbeitskontext, keine Behauptung über den aktuellen Code.** Technische Ist-Stände aus `03_AKTUELLER_PROJEKTSTAND.md` immer mit dem echten Git-HEAD abgleichen. **Neu:** `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` bewahrt den 141er-Ideenkatalog, die priorisierten 20 Kandidaten, Claude-Gegenreviews und die noch offenen Patchentscheidungen; sie ist **kein** verbindlicher Kanon.
@@ -14,9 +14,11 @@ Wir entwickeln **Avereth Engine**, ein KI-gestütztes, persistentes Fantasy-Sand
 Die übliche Aufgabenverteilung:
 
 - **Nutzer:** Produkt-/Spieldesign, verbindliche Gameplay-Präferenzen, Entscheidungen über den Umfang; führt die echten **SillyTavern-Livetests** durch und übergibt Chat-JSONL, Avereth-Event-Exporte, LLM-Requests/Logs und konkrete Spielerfahrung. Kein Bedarf, technische Einzelentscheidungen selbst auszuprogrammieren.
-- **ChatGPT:** kritischer Design- und Architekturpartner. Liest zunächst die tatsächlichen Quellen, überprüft Git, analysiert Logs und Events, trennt Bugs von beabsichtigten Regeln und Geschmack, priorisiert, formuliert klare **Claude-Code-Implementierungsaufträge** und bewertet Claudes Code, Testnachweise und Reviews kritisch. Nicht reflexhaft alle Ideen als Änderungen einplanen.
-- **Claude Code — Implementierungssitzung:** liest Branch und Quellcode, implementiert, schreibt Regressionstests, führt Tests/Smokes aus, dokumentiert, committet und pusht. ChatGPT kann dazu Code- und Produktfeedback formulieren; der Nutzer reicht es weiter.
+- **ChatGPT/Codex:** kritischer Design- und Architekturpartner. Liest die tatsächlichen Quellen, überprüft Git, analysiert Logs und Events, trennt Bugs von beabsichtigten Regeln und Geschmack, priorisiert, formuliert klare Implementierungsaufträge und bewertet Claudes Code, Testnachweise und Reviews kritisch. Kann auf Auftrag des Nutzers selbst implementieren, testen, dokumentieren, committen und pushen. Nicht reflexhaft alle Ideen als Änderungen einplanen.
+- **Claude Code — Implementierung oder Gegenreview:** liest Branch und Quellcode, implementiert freigegebene Aufträge, schreibt Regressionstests, führt Tests/Smokes aus, dokumentiert, committet und pusht. Implementiert ChatGPT/Codex, übernimmt Claude das unabhängige Review; implementiert Claude, prüft ChatGPT. Der Nutzer bestimmt den Implementierer je Auftrag; bisherige Claude-Aufträge werden dadurch nicht automatisch umverteilt.
 - **Claude — zweite unabhängige Architektursitzung:** hat die Architektur schon umfangreich geprüft. Bei **größeren/langen/neuen Patches, grundlegenden Architekturfragen oder schwierigen Reviews** proaktiv empfehlen, den ausformulierten Auftrag dort **vor der Implementierung unabhängig gegenprüfen** zu lassen. Diese Sitzung soll Risiken, Widersprüche, Overengineering und vereinfachte Alternativen suchen, **nicht** sofort selbst implementieren. Ihr Feedback anschließend mit ChatGPT abgleichen und den Auftrag nach Bedarf überarbeiten.
+
+**Gegenseitige Prüfung:** Eigene Tests und Selbstprüfung ersetzen das unabhängige Review nicht. Der Reviewer prüft Originalproblem, tatsächlichen Diff, betroffene Aufruf- und Zustandspfade sowie Testnachweise und darf der vorgeschlagenen Lösung widersprechen. Die Rollen können je Teilpatch wechseln; ein Wechsel muss Ausgangscommit und offenen Arbeitsstand eindeutig übergeben. Keine parallelen Änderungen am selben Arbeitsstand ohne ausdrückliche Abstimmung.
 
 **Tokenökonomie:** Keine zweite unabhängige Claude-Gegenprüfung routinemäßig für einfache Hotfixes. Ein Hotfix mit klarer reproduzierbarer Ursache geht normalerweise direkt an die implementierende Sitzung. Große Patches sollen wiederum möglichst als zusammenhängende Arbeit stattfinden, statt in eine endlose Folge vorgelagerter Minifix-Aufträge zu zerfallen.
 
@@ -27,14 +29,14 @@ Die übliche Aufgabenverteilung:
 3. **Ursache bewerten:** Engine/Planner/Extractor/World/Content/UI/Lore unterscheiden. Gameplay-Feedback nicht automatisch als Bug oder Balancing-Fehler auslegen. Ein falsch zugeordneter Monster-Anchor ist etwas anderes als hohe Monster-Level.
 4. **Technische Tiefe wählen:** Minimaler, gezielter Fix bei klarer Ursache; vollständiger Architektur- und Design-Review bei einem zusammenhängenden großen Systemausbau. Bereits geplanter neuer Patch soll zusammengehörige alte Mängel integrieren, statt doppelte Vorarbeit auszulösen.
 5. **Bei großem Patch:** Eine strukturierte Version des Auftrags erstellen; proaktiv eine unabhängige Claude-Architekturprüfung vorschlagen; deren Kritik prüfen; erst dann finale Fassung für Implementierung.
-6. **Claude-Auftrag:** Ziel und Spielerwirkung zuerst; konkrete Reproduktion, betroffene Schichten, Grenzen/Nicht-Ziele, Tests, Legacy- und Replay-Verträglichkeit. Lösungsvorschläge dort begründen, wo sie helfen, aber Claude nicht zu einer unnötig komplexen Architektur verpflichten.
-7. **Nach Claude-Implementierung:** Bericht **nicht ungeprüft** als Beweis behandeln. Git-HEAD/Commit und betroffene Dateien nach Möglichkeit selbst lesen. „Tests laut Claude“ von „hier unabhängig geprüft“ unterscheiden. Smokes nur als bestanden bezeichnen, wenn tatsächlich gemeldet/nachgewiesen.
+6. **Implementierungsauftrag an Claude oder ChatGPT/Codex:** Ziel und Spielerwirkung zuerst; konkrete Reproduktion, betroffene Schichten, Grenzen/Nicht-Ziele, Tests, Legacy- und Replay-Verträglichkeit. Lösungsvorschläge dort begründen, wo sie helfen, aber Claude nicht zu einer unnötig komplexen Architektur verpflichten.
+7. **Nach Implementierung:** Bericht **nicht ungeprüft** als Beweis behandeln. Die jeweils andere Sitzung prüft Git-HEAD/Commit und betroffene Dateien. „Tests laut implementierender Sitzung“ von „hier unabhängig ausgeführt/geprüft“ unterscheiden. Smokes nur als bestanden bezeichnen, wenn tatsächlich gemeldet/nachgewiesen.
 8. **Echter Livetest:** Nutzer spielt frei und beurteilt insbesondere Spaß, Tempo, Entscheidungsfreiheit und Glaubwürdigkeit. ChatGPT wertet bei Problemen die Exporte aus; Synthetiktests allein ersetzen den Livetest nicht.
 9. **Nach Abschluss eines Meilensteins:** `03_AKTUELLER_PROJEKTSTAND.md` anhand des verifizierten Branches, Commits und der echten Ergebnisse aktualisieren. Neue **verbindliche** Designentscheide nur in `02` übernehmen; nicht beschlossene Ideen und Reviews in `04` als Kandidaten/Experimente fortführen. Das Chatprotokoll bleibt ergänzende Historie, nicht die einzige Wissensträgerin.
 
 ## 2a. Bewährte Regeln aus Patch 8.4 bis 9B (Stand 23.10.2026)
 
-1. **Teilpatches:** Große Patches (z. B. 9 → 9A, 9B-1, 9B-2, 9C-1 …) werden einzeln freigegeben. Claude implementiert **nur den freigegebenen Teil**, berichtet (Commit, Build, Tests, Grenzen) und **hält für das unabhängige Git-Review an**. Der nächste Teil beginnt erst nach Freigabe.
+1. **Teilpatches:** Große Patches (z. B. 9 → 9A, 9B-1, 9B-2, 9C-1 …) werden einzeln freigegeben. Die beauftragte Sitzung (Claude oder ChatGPT/Codex) implementiert **nur den freigegebenen Teil**, berichtet (Commit, Build, Tests, Grenzen) und **hält für das unabhängige Git-Review an**. Der nächste Teil beginnt erst nach Freigabe.
 2. **Review-Nachbesserungen** sind kleine, gezielte Folgecommits mit eigener Build-Nummer (z. B. .37 nach .36). Nur die benannten Punkte werden geändert; die Regression ist vor dem Fix rot und danach grün.
 3. **Upload ohne Auftrag:** Lädt der Nutzer ein ChatGPT-Feedback oder ein Livetest-ZIP mit „bewerten“ / „noch nicht umsetzen“ hoch, wird **nur geprüft und bewertet**, nichts implementiert. Claude soll dabei kritisch gegenprüfen, Alternativen vorschlagen und Designvereinfachungen nennen, wenn sie die Technik deutlich einfacher machen.
 4. **Tests:** Während der Arbeit gezielte Regressionen; **eine** vollständige `npm test`-Abschlussprüfung pro Teilpatch. Bei reinen Guide-Änderungen nur eine kurze Lade-/Validierungsprüfung, keine volle Suite und kein Stub-Selbsttest.
@@ -85,6 +87,18 @@ Die übliche Aufgabenverteilung:
 
 **Statusdisziplin für Folge-Chats:** Ein **Review-Prompt** ist kein beschlossener Implementierungsauftrag; ein **Kandidat** keine verbindliche Roadmap. Über Patch 9 versus ROAD AHEAD erst aufgrund des fortgeführten .26-Livetests entscheiden. Nicht den alten Zeitpunkt aus Datei 03 („Livetest steht aus“) als neuen Iststand übernehmen. Nutzerfeedback zum Zufallsereignis beim langen Dungeon-Resten als ausdrücklich noch offene Mechanik bewahren.
 
+## 4a. Effizienz bei Kontext, Antworten und Implementierungen
+
+- **Gezielt und ausreichend lesen:** Nach der vollständigen Erstübergabe aus 01–04 zunächst Dateisuche, relevante Symbole, Diffs und gezielte Ausschnitte nutzen. Bereits gelesene unveränderte Inhalte nicht routinemäßig erneut laden. Vor einer Dokumentationsänderung jedoch immer die aktuelle Fassung auf `main` lesen.
+- **Lesetiefe nach Risiko:** Funktionsköpfe und Typen dienen der Orientierung. Für belastbare Änderungen und Reviews die nötigen Funktionskörper, Aufrufer, Validierung, Zustands-/Eventpfade und Tests prüfen. Ganze Dateien oder zusammenhängende Module lesen, wenn Abhängigkeiten, Architektur oder unklare Fehler es verlangen. Tokenersparnis rechtfertigt keine unbelegten Aussagen.
+- **Knappe, vollständige Antworten:** Ergebnis, relevante Begründung, Entscheidung beziehungsweise nächster Schritt. Keine wiederholten Grundlagen, unnötigen Beispiel-JSONs oder vollständigen Logs. Bei Implementierungen kurz Änderungen, Commit/Build, tatsächlich ausgeführte Tests und verbleibende Grenzen nennen. Umfangreiche Erklärungen nur, wenn Aufgabe oder Verständnis sie erfordern.
+- **Code nur bei Bedarf zeigen:** Änderungen in den beauftragten Dateien vornehmen; im Chat normalerweise Zusammenfassung und Commit-/Dateiverweise. Wenn Code gewünscht oder zur Beurteilung nötig ist, gezielte Diffs oder relevante Abschnitte zeigen. Keine unveränderten Dateien abdrucken. Vollständige Implementierungsaufträge und nötige Review-Begründungen bleiben ausdrücklich erlaubt.
+- **Prüfungen gezielt ausführen:** Die Testregeln aus §2a/§3 gelten weiter. Ohne neue Änderung, Fehler oder offene Frage bereits erfolgreiche Prüfungen nicht unnötig wiederholen. Rohberichte nur bei relevantem Befund ausgeben.
+- **Denkaufwand passend wählen:** Normale, klar begrenzte Implementierungen und Reviews benötigen nicht automatisch die höchste Denkstufe. Höhere Stufen gezielt für schwierige Ursachenanalyse, Architektur und widersprüchliche Befunde nutzen. Eine kurze sichtbare Antwort garantiert keinen geringen internen Tokenverbrauch. Konkrete Modelllimits bei Bedarf aktuell prüfen, keine dauerhaften Kontingentversprechen dokumentieren.
+- **Caching korrekt einordnen:** Gezieltes Lesen reduziert unnötigen Kontext. Prompt-Caching beruht auf wiederverwendbaren identischen Prompt-Präfixen und ist kein durch diese Arbeitsanweisung garantierter Speicher oder Schutz vor Nutzungslimits.
+
+Diese Regeln ändern weder die vollständige Projektübernahme bei einem neuen Chat noch Design-Kanon, Patchfreigaben, unabhängige Reviews oder erforderliche Integrationsprüfungen.
+
 ## 5. Prioritäten und Quellenhierarchie
 
 Bei Konflikten unterscheiden:
@@ -96,7 +110,7 @@ Bei Konflikten unterscheiden:
 
 **Wichtig:** Keine Nutzerpräferenz nur deswegen zu „implementiert“ erklären, weil sie bereits als Claude-Patchauftrag formuliert wurde.
 
-## 6. Standard für Claude-Code-Aufträge
+## 6. Standard für Implementierungsaufträge (Claude Code oder ChatGPT/Codex)
 
 Wenn ein konkreter Auftrag gewünscht wird, nach Relevanz diese Teile abdecken:
 
@@ -114,7 +128,7 @@ Bei umfangreichen Patches eine **dreifache Prüfung** einplanen: (1) Architektur
 
 Der Nutzer kann die vier Dateien aus dem Repository-Root auf `main` in das ChatGPT-Projekt laden oder sie direkt über den GitHub-Zugriff lesen lassen und folgende Startanweisung verwenden:
 
-> Lies im Projekt „RPG Engine“ vollständig die vier Markdown-Dateien `01_ARBEITSWEISE_CHATGPT_CLAUDE.md`, `02_DESIGN_KANON.md`, `03_AKTUELLER_PROJEKTSTAND.md` und `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` aus dem GitHub-Branch `main`. Dieser Chat setzt Avereth fort, kein Neustart. Prüfe danach den aktuellen Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`, HEAD und Build (Stand der Dateien: `0cd22d3`, Build .39). Unterscheide ausdrücklich IMPLEMENTIERT / AKTIVER LIVETEST / VERBINDLICH GEPLANT / REVIEW-ENTWURF / OFFENE IDEE. Insbesondere: Patch 8 ist abgeschlossen; **Patch 9A, 9A.1, 9B-1 und 9B-2 sind implementiert** (neue Kampagnen: Warrior/Mage/Rogue; Legacy-Kampagnen behalten fünf Klassen); **Patch 9C ist als überarbeiteter Gesamtplan in Datei 04 §1a.2b festgehalten, aber noch kein Auftrag**; dort stehen zwei offene Spielentscheidungen. Livetests laufen über den einen zentralen Guide `current_test.json`. Nenne den gesicherten Stand und den nächsten Schritt. Keine erfundenen Git-, LLM- oder Testnachweise; frage bereits dokumentierten Kontext nicht erneut ab.
+> Lies im Projekt „RPG Engine“ vollständig die vier Markdown-Dateien `01_ARBEITSWEISE_CHATGPT_CLAUDE.md`, `02_DESIGN_KANON.md`, `03_AKTUELLER_PROJEKTSTAND.md` und `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` aus dem GitHub-Branch `main`. Dieser Chat setzt Avereth fort, kein Neustart. Prüfe danach den aktuellen Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`, HEAD und Build (Stand der Dateien: `0cd22d3`, Build .39). Unterscheide ausdrücklich IMPLEMENTIERT / AKTIVER LIVETEST / VERBINDLICH GEPLANT / REVIEW-ENTWURF / OFFENE IDEE. Insbesondere: Patch 8 ist abgeschlossen; **Patch 9A, 9A.1, 9B-1 und 9B-2 sind implementiert** (neue Kampagnen: Warrior/Mage/Rogue; Legacy-Kampagnen behalten fünf Klassen); **Patch 9C ist als überarbeiteter Gesamtplan in Datei 04 §1a.2b festgehalten, aber noch kein Auftrag**; dort stehen zwei offene Spielentscheidungen. Livetests laufen über den einen zentralen Guide `current_test.json`. Nenne den gesicherten Stand und den nächsten Schritt. Danach gezielt nach §4a arbeiten; ChatGPT/Codex kann auf Auftrag selbst implementieren, das unabhängige Gegenreview bleibt. Keine erfundenen Git-, LLM- oder Testnachweise; frage bereits dokumentierten Kontext nicht erneut ab.
 
 Falls Dateien nicht gefunden werden, den Nutzer genau darauf hinweisen. Kein „gelesen“ behaupten, bevor sie tatsächlich verfügbar und gelesen sind.
 

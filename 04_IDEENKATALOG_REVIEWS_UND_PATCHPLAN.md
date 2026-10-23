@@ -1,6 +1,6 @@
 # Avereth Engine – Ideenarchiv, Claude-Gegenreviews und mögliche Patches
 
-**Dokumenttyp:** Ideen-/Reviewarchiv mit **verbindlicher Hauptroadmap in §1a**; **Stand:** 23.10.2026 · 9C-1 auf .42 gegengeprüft; Forge .43 unabhängig geprüft, .44 und .45 implementiert; **erster `.45`-Forge-Livetest am 23.10. erfolgreich (16 Züge, Skill und Kampf durch Engine-Events belegt)**. Altdaten-Duplikatrest bleibt live ungetestet. Weitere Quellen/9C-3 nicht freigegeben; Balance in 10B.  
+**Dokumenttyp:** Ideen-/Reviewarchiv mit verbindlicher Roadmap in §1a; **Stand 23.10.2026: 9C-2a `.45` LIVE BESTÄTIGT; 9C-2b `.46` implementiert, `.47` Reviewfix (1179/1179 laut Claude), echter Stone-Livetest `.47` FEHLGESCHLAGEN (24 Züge, 1/3, kein Skill). `.48`-Integrationsfix FREIGEGEBEN, noch NICHT implementiert.** Balance bleibt 10B.  
 **Quelle:** intensive Auswertung von Git, älteren Projekt-Chats, realen SillyTavern-Tests, externen Referenzen und **mehreren unabhängigen Gegenreviews in einer zweiten Claude-Sitzung**.  
 **WICHTIG:** Dieses Dokument unterscheidet **IMPLEMENTIERT**, **VERBINDLICH GEPLANT**, **HISTORISCHER/ÜBERHOLTER REVIEWSTAND**, **PLANKANDIDAT** und **EXPERIMENT**. Einzelne Katalogideen sind nicht freigegeben; **die explizit beschlossene Roadmap in §1a ist verbindlich**. Git-Code und Datei 03 entscheiden über Implementierung und Teststatus; Datei 02 über den Design-Kanon. Ältere Review-Aussagen, die drei Startklassen dauerhaft ausschließen, wurden von der späteren ausdrücklichen Patch-9-Entscheidung überholt.
 
@@ -17,7 +17,7 @@
 | **Engine Actions & QoL** | **KANDIDAT**, einschließlich Engine-only-Gildenboard, Rest/Schlaf/Wait, sichere Rückwege, ST-Quick-Replies; noch kein Patch beschlossen | Umfang und mögliche Bündelung nach Performance-Review entscheiden |
 | **Patch 9A / 9A.1 (.33–.35)** | **IMPLEMENTIERT:** drei Startklassen Warrior/Mage/Rogue mit Wahl 2 aus 6 plus Basic Attack, Rogue-Pool und -Kit, Waffenangriffe für jede Klasse, trainierte/untrainierte NPCs, Regelstand pro Kampagne (Legacy behält fünf Klassen), NPC-Rollen und erzählte Bewaffnung. Details Datei 03 „Patch 9 – Umsetzungsstand“ | Kein weiterer Schritt; 9A-Livetest (.34) ausgewertet |
 | **Patch 9B-1 / 9B-2 (.36–.39)** | **IMPLEMENTIERT, Git-Review bestanden:** dynamische Skills und Passives (Definition ≠ Erwerb), ein Resolver, geschlossener F-Rang-Validator, Proficiency P1–P5 mit PP-Vergabe, Effektfaktoren, Heal/Restore, erste NPC-Defensive. Erwerbspfad ab 9C-1 | Historischer 9B-Stand; aktueller Erwerb siehe 9C-1 |
-| **Patch 9C Organic Skill Acquisition & Growth** | 9C-1 technisch gegengeprüft; Forge .43 unabhängig bestätigt; .44 1164/1164. **.45** `b67910a`: aktiver Altduplikatfix, zwei neue Tests noch ohne Lauf. **Erster echter `.45`-Lehrer-/Forge-Livetest bestanden: 16 Züge, 3/3, 1 neues Skill und Kampfsieg.** | `.45`-Regressionssuite bei nächster Gelegenheit ausführen; aktive .42-Duplikate und Host-Abbruch durch diesen frischen Lauf nicht abgedeckt. Danach weitere 9C-Teile nur mit Nutzerfreigabe |
+| **Patch 9C Organic Skill Acquisition & Growth** | 9C-1 und 9C-2a implementiert, `.45` Lehrer-/Forge-Livetest erfolgreich. 9C-2b Stones/Manuals `.46` umgesetzt und `.47` Reviewfix mit 1179/1179 Tests laut Claude; echter `.47`-Stone-Livetest **fehlgeschlagen** (kein Erwerb, kein Forge, Kaufdoppelung). | **`.48` Integration freigegeben, noch nicht umgesetzt**; dann echter Stone-/Kampf-Nachtest. Danach 9C-2c Passive-Erwerb, 2d Durchbrüche, 9C-3 und 9D. |
 | **Patch 9D Organic Class Identity** | **VERBINDLICH GEPLANT, NICHT IMPLEMENTIERT:** organische Klassenentwicklung; Klassen-Evolution bis dahin gesperrt | Nach 9C |
 | **ROAD AHEAD** | **Separater, NICHT freigegebener Kandidat** für Engine-verankerte Reiseetappen und Suche | Nur bei wiederholt belegten gravierenden Reise-/Such-Blockern gesondert priorisieren; sonst Patch 9 → 10B |
 | **Patch 10A – HUD/QoL** | **Bereits implementierte frühere UI-/QoL-Arbeit**, nicht erneut als Großpatch beauftragen; offene konkrete Fälle weiterhin möglich. | Keine Dopplung mit Patch 10B | 
@@ -33,7 +33,7 @@
 ### 1a.1 Reihenfolge
 
 1. **Patch 8 Living Dungeons und gezielte Integration:** Die Builds .25–.29 sind implementiert; echte Livetests bestehen. **Patch 8.4.1** ist als Engine-Build `.30` plus Runner implementiert und per Git-Code-Review geprüft; echter `.30`-GLM-Livetest ausstehend. Danach erneuter echter GLM-Lauf. Patch 8 darf nicht zum unendlichen Sammelpatch werden.
-2. **Patch 9 Organic Character Growth:** der nächste **eigenständige große Mechanikpatch**. Drei neue Startklassen und organische Charakterentwicklung, genau wie unten festgelegt. **Stand 23.10.2026:** 9A, 9A.1, 9B-1, 9B-2 und 9C-1 implementiert; technisches Gegenreview der .42 bestanden. 9C-2a (Forge am Lehrerpfad) auf .43 unabhängig geprüft; Reviewkorrektur .44 implementiert, Gegenreview offen; weitere Quellen/9C-3 (§1a.2b) und 9D geplant.
+2. **Patch 9 Organic Character Growth:** der nächste **eigenständige große Mechanikpatch**. Drei neue Startklassen und organische Charakterentwicklung, genau wie unten festgelegt. **Aktueller Stand 23.10.2026:** 9A/9B und 9C-1 fertig; 9C-2a `.45` live erfolgreich. **9C-2b Stones/Materialien `.46` umgesetzt, `.47` Reviewfix, aber Stone-Live-Abnahme fehlgeschlagen.** `.48` als enger Integrationsfix freigegeben, noch nicht umgesetzt; danach Stone-Nachtest. Weitere 9C-/9D-Teile geplant.
 3. **Patch 10A HUD / QoL:** bezeichnet **bereits vorhandene frühere UI-/Quality-of-Life-Arbeit**; kein neuer noch ausstehender Großpatch. Verbliebene kleine UI-Probleme sind gezielt zu prüfen.
 4. **Patch 10B Balancing, Performance & Final Polish:** abschließende Balance-, Optimierungs-, Integrations- und Abnahmephase **nach Patch 9**, mit der zuvor ausgearbeiteten **53-Punkte-Abnahmeliste** als Grundlage.
 5. **ROAD AHEAD, Engine-only-Aktionen, Quick Replies und weitere Großideen:** **getrennte, nicht automatisch freigegebene Kandidaten**. Eine neue Priorisierung vor Patch 9 setzt belegte kritische Reise-/Suchprobleme und eine separate Entscheidung voraus.
@@ -300,9 +300,19 @@ Fertige Lernvorhaben vergeben während eines aktiven Kampfes nichts; sie warten 
 | Teilpatch | Lieferumfang | Nachweis |
 |---|---|---|
 | **9C-1: Composer & Learning – IMPLEMENTIERT .42, technisches Gegenreview bestanden** | Zwei Fachmodule; F-Komponist für vorhandene Effekte; strukturierte Lernabsicht und Quellen; tatsächliche Trainings-LP/PP; Vorhaben; gemeinsame deterministische Abschlussbuchung; vorhandene Anzeigen/Ownership; Regeltexte und Narrator zum ersten Erwerb | Eine neue, nicht im Content vorhandene F-Technik aus echter Lernaktion erwerben und im Produktpfad ausführen; Angriff UND mindestens ein nichtoffensiver Formfall; PP-Training; falsche Quelle/ungültiger Entwurf ohne Erwerb; Session-/Replay-Deduplizierung; Legacy |
-| **9C-2a: Forge am Lehrerpfad — .43 unabhängig geprüft, Reviewkorrektur .44 offen** | Unveränderte Mechanik; Name/Flavor, Signaturen, Cache und Stale-Schutz; .44 eigener Abbruch und Duplikatbereinigung | .43 33/33 und 1163/1163 von Claude bestätigt; .44 34/34 und 1164/1164 durch ChatGPT/Codex. Gegenreview und echter ST-Livetest ausstehend |
-| **Weitere 9C-2-Teile: Special Acquisition — NICHT IMPLEMENTIERT/FREIGEGEBEN** | Stones/Materialien über legitimierte Objekte; neuer Passive-Erwerb; belegte spontane Kandidaten, erst nach separater Festlegung | Erreichbare Quellen, atomarer Verbrauch, tatsächlicher Nutzen, gesicherte Engine-Belege und passende Live-Abnahme; bisherigen größeren Entwurf nicht automatisch implementieren |
+| **9C-2a: Forge am Lehrerpfad — IMPLEMENTIERT UND LIVE BESTÄTIGT (.45)** | Name/Flavor über Forge, feste Engine-Mechanik, Stale-/Replay-/Duplikatsschutz | Echtes ST-/GLM-Run `20261023-041901Z-current_test`: 16 Züge, 3/3, Kel-Unterricht, 100 LP, Kel’s Cindering Dart, Skill zweimal im Kampf eingesetzt, Sieg; `.45` 1166/1166 Linux laut Claude. |
+| **9C-2b: Skill Stones & Lernmaterialien — IMPLEMENTIERT .46/.47, LIVE-ABNAHME OFFEN** | Belegte `teaches`-Quellen in Objekt/Angebot, Stone-Aktivierung mit Composer/Forge/Grant/Verbrauch, Materialstudium mit LP; `.47` R1/R2 | 11 Tests in `.46`, 13 in `.47`, vollständig 1179/1179 laut Claude; realer Stone-Livetest `.47` scheitert an Händler-Identität, Stone-Profilerkennung und Kaufdoppelung. `.48` freigegeben, noch nicht implementiert. |
 | **9C-3: Evolution & NPC Integration** | Herkunft/Nachfolger und angenommener Austausch; NPC-Signaturen vor Snapshot; kontrollierte E-Unterstützung | P5-Entwicklung mit sichtbarer Linie; keine kostenlose Dopplung/ungefragter Verlust; wiederkehrender NPC mit persistenter eingesetzter Technik; NPC-Start aus Narrator-Antwort; F/E-Prüfung, Legacy und Replay |
+
+
+**Stand der nächsten 9C-Teilpatches nach dem fehlgeschlagenen Stone-Livetest (23.10.2026):**
+
+- **9C-2b / Build .48 — FREIGEGEBENER FIX, NOCH NICHT IMPLEMENTIERT.** Rot/Grün am echten Run: namenloser Händler Drossell (NPC-Identität eindeutig auflösen), Angebot für Lesser Spark Stone mit `teaches {source:stone,fn:bolt,tags:[Arcane],aspects:[Lightning]}`, Quellenprofil auch ohne zusammenhängendes „Skill Stone“; Kauf für **40 cp** (400 cp nur unverbindlicher Richtwert), **genau ein** profiliertes Objekt und nach Aktivierung genau ein neues Skill und ein verbrauchter Stone; danach realer Kampf. Generischer `use`-Text darf keine Skills/LP/Mechanik aus der Erzählung behaupten. Kein Profil ohne strukturiertes `teaches` und keine unsichere NPC-Zuordnung. Beide Kaufwege, Geschenke, Mehrdeutigkeit, Mengen, Replay und Legacy absichern. Eine vollständige `npm test`-Suite und ein echter Stone-Livetest erst nach dem Fix.
+- **9C-2c — Organic Passive Acquisition: GEPLANT, nicht implementiert.** Bestehende Passive-Engine mit seltenen tatsächlichen legitimen Quellen verbinden, Engineowned Definition und Besitz, kein Starter-Passive. Eigener Patch, nicht mit `.48` vermischen.
+- **9C-2d — Organic Breakthroughs: GEPLANT, nicht implementiert.** Echte Engine-Ereignisse als Grundlage. Ein dezentes Entwicklungsangebot ist empfohlen, aber **automatisch vs. angeboten bleibt unentschieden**.
+- **9C-3a/3b/3c: GEPLANT.** E-Rang / höhere Skill-Komplexität; organische Skill-Evolution (Vorgänger ersetzt vs. beide nutzbar noch offen); individuelle NPC-Signaturen mit deterministischer Persistenz. Danach 9D organische Klassenidentität und 10B Balancing.
+
+**Livetestbeleg `.47`:** Nutzer-ZIP `20261023-062346Z-current_test.zip`, 24 Züge, 11:28 Minuten, 1/3 Meilensteine. Gültiges `teaches`-Angebot wurde wegen „seller Drossell is not present“ abgelehnt; später `teaches:null` und zwei identische Stones für einen Kauf; dreimal `use` als Werkzeug, **kein** `skill.defined`, `skill.learned`, Forge-Aufruf oder `object.consumed`; kein Kampf. Leere Narrator-Antwort nach Tokenlimit in Zug 24 ist separates Modell-/Presetproblem. Nicht als bestätigten Skill-Erwerb auslegen.
 
 Keine zusätzliche neue Testspieler-Infrastruktur. `tools/st_live/live/guides/current_test.json` bleibt der einzige neue Live-Guide. Engine- und Runner-Commits getrennt, falls überhaupt ein Runner-Fix nötig ist.
 
@@ -317,17 +327,13 @@ Keine zusätzliche neue Testspieler-Infrastruktur. `tools/st_live/live/guides/cu
 - Neue Skillform im Planner, Combat-HUD, `#skills/#skill`, Context und realer Ausführung; tatsächlicher Narrator-Prompt erlaubt nur gebuchten Erwerb und weiterhin keine Klassen-Evolution. Vokabular-/Planner-/Extractor-/Ownership-Versionen bei ihren Änderungen nachvollziehbar erhöhen; optionale neue Felder dürfen alte Records nicht ungültig machen.
 - Echte Weltanwendung bleibt über die vorhandenen Autoritätsgrenzen eingeschränkt.
 
-#### J. Review-Freigabe und Abgrenzung zu 10B
+#### J. Review-Freigabe und Abgrenzung zu 10B (aktueller Stand 23.10.2026)
 
-**Aktuelle Freigabegrenze:** 9C-1 technisch gegengeprüft; 9C-2a .43 unabhängig geprüft, dessen R1/R2 in .44 gezielt korrigiert. Hier für Gegenreview des Folgecommits anhalten. Andere Quellen, Durchbrüche und 9C-3 bleiben gesondert freizugeben.
+**Umgesetzt:** 9C-1, 9C-2a (echter erfolgreicher `.45`-Livetest) sowie 9C-2b `.46` mit `.47`-Reviewfix (1179/1179 Tests laut Claude). **9C-2b NICHT live abgenommen:** Der realistische `.47`-Run scheiterte an Quellen-/Kauf-/Identitätsintegration.
 
-**Jetzt festlegen:** Datenmodell, Einheiten, Ownership, unterstützte Hauptfunktionen, Buchungsreihenfolge, Persistenz, Fehlerverhalten und Integrationspfade.
+**Freigabegrenze:** Nur den gezielten `.48`-Fix umsetzen und anhand der konkreten Drossell-/Lesser-Spark-Stone-Folge samt 40-cp-Transaktion nachtesten. Keine ungeprüfte zweite Source-Datenbank, kein zusätzlicher LLM-Call, kein Runner-Redesign. Nach Rot/Grün und vollständiger Suite erneuter echter Livetest bis NEW SKILL, Verbrauch und Kampfeinsatz. **Bis dahin kein 9C-2c-Start.**
 
-**10B:** endgültige Power-/Kosten-/Dauergrenzen, LP-/PP-Raten und Tageslimits, Seltenheit, NPC-Häufigkeit, Progressionstempo, Gesamtbalance, Blink-Buff, breite Rangkalibrierung und Performance-Feintuning. Diese spätere Abstimmung ist kein Grund, technische Validierung oder tatsächliche Effektwirkung heute wegzulassen.
-
-**Nicht als bereits implementiert ausgeben:** Stones/Lernmaterial, Shops, Durchbrüche, neuer Passive-Erwerb, Evolution, NPC-Signaturen, E und Burn/Slow. Implementiert sind 9C-1 und die reine Lehrer-Forge in 9C-2a. .43 unabhängig geprüft; .44 Reviewkorrektur mit 1164/1164 durch ChatGPT/Codex, Gegenreview offen. Kein echter Growth-Livetest.
-
-
+**Nicht vorziehen:** Passive-Erwerb, Durchbrüche, Evolution, NPC-Signaturen, höhere Rangbalance, Burn/Slow, Blink-Buff und globales Balancing. Diese gehören zu den folgenden Teilpatches beziehungsweise 10B.
 #### K. Review-Verlauf und ausdrücklich offene Entscheidungen
 
 **Nachvollziehbarkeit:** `b557f14` hat §1a.2b neu gefasst, die frühere Claude-Bewertung und die Entscheidungstabelle also nicht wörtlich erhalten. Der [vollständige vorherige Plan einschließlich aller 13 Claude-Anmerkungen und beider offenen Fragen](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/c918973/04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md) bleibt unverändert in Git lesbar. Die folgende Übersicht hält den gültigen Verlauf und die verbleibenden Entscheidungen im aktuellen Arbeitsstand sichtbar.
@@ -342,7 +348,7 @@ Keine zusätzliche neue Testspieler-Infrastruktur. `tools/st_live/live/guides/cu
 | Spontaner Durchbruch | Einmaliges dezentes Angebot, passende Spielerhandlung greift es auf | Automatischer Erwerb bei eindeutig qualifizierendem Ereignis | **A empfohlen, nicht beschlossen**; vor dem Durchbruchsteil von 9C-2. Automatischer Fortschritt ist nicht grundsätzlich ein Agency-Verstoß. |
 | Umgang mit Vorgänger nach Evolution | Konkreter angenommener Nachfolger ersetzt aktiven Vorgänger; Historie bleibt | Beide bleiben nutzbar | **A leicht bevorzugt, nicht beschlossen**; vor 9C-3. Begründung: übersichtliche Entwicklungslinie, kein pauschaler Stärkevergleich. Training des eindeutigen Kandidaten als Zustimmung ist ebenfalls nur ein Vorschlag. |
 
-**9C-1 ist von diesen beiden Gameplayentscheidungen unabhängig.** Numerische Startwerte bleiben provisorisch; endgültige Abstimmung in 10B. Diese offenen Gameplayfragen blockieren den separat beauftragten Forge-Teil 9C-2a nicht, geben aber keine weiteren Erwerbs-/Evolutionsimplementierungen frei.
+**9C-1, 9C-2a und 9C-2b sind von den beiden offenen Entscheidungen zu Durchbrüchen und Skill-Evolution unabhängig.** Numerische Startwerte bleiben provisorisch; endgültige Abstimmung in 10B. Diese offenen Gameplayfragen blockieren den separat beauftragten Forge-Teil 9C-2a nicht, geben aber keine weiteren Erwerbs-/Evolutionsimplementierungen frei.
 
 ### 1a.3 Patch 10B – Balancing, Performance & Final Polish
 

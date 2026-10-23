@@ -14,7 +14,7 @@ const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
 const BANDS = ['ENGAGED', 'SHORT', 'MEDIUM', 'LONG'];
 const DAMAGE_STATS = ['STR', 'VIT', 'AGI', 'INT', 'WIL']; // Combat V3: PER never scales damage
 const CATEGORIES = ['Offensive', 'Offensive / Utility', 'Offensive / Defensive', 'Offensive / Multi-Hit', 'Defensive', 'Utility', 'Defensive / Utility'];
-const TOP_KEYS = new Set(['id', 'name', 'description', 'origin', 'rank', 'complexity', 'tags', 'aspects', 'category', 'activation', 'target', 'cost', 'range', 'attack', 'effects']);
+const TOP_KEYS = new Set(['id', 'name', 'description', 'flavor', 'origin', 'rank', 'complexity', 'tags', 'aspects', 'category', 'activation', 'target', 'cost', 'range', 'attack', 'effects']);
 const ATTACK_KEYS = new Set(['base', 'scaling', 'damage_type', 'strikes', 'share', 'ignores_partial_cover']);
 // the effect kinds the combat engine executes (src/combat.js attackAction / skillAction), their fields and the F-rank
 // bounds of the content's own Skills (the strongest starter or legacy F Skill of each kind); a rider on an attack, or
@@ -77,6 +77,7 @@ export function skillDefErrors(def, content, state = null) {
     if (!plain(def.name, 40) || !/^[A-Za-z][A-Za-z' -]{1,39}$/.test(def.name)) e.push('name: 2-40 letters');
     else if (skillNames(content, state).includes(normText(def.name))) e.push(`name ${def.name} is the name of a Skill that exists`);
     if (!plain(def.description, 300)) e.push('description: up to 300 characters');
+    if (def.flavor !== undefined && (!plain(def.flavor, 160) || /[\d\u0000-\u001f\u007f]/.test(def.flavor))) e.push('flavor: one line, up to 160 characters, without digits or control characters');
     if (!def.origin || typeof def.origin !== 'object' || !plain(def.origin.kind, 40) || Object.keys(def.origin).some((k) => !['kind', 'note'].includes(k)) || (def.origin.note !== undefined && !plain(def.origin.note, 200))) e.push('origin: {kind, note?}');
     if (!RANKS.includes(def.rank)) e.push('rank: F-S');
     else if (def.rank !== 'F') e.push(`rank ${def.rank}: only F-rank Skills have calibrated bounds yet`);
@@ -167,11 +168,12 @@ function runtimeSkill(def) {
         range: a ? { band: def.range.band, extra_band: !!def.range.extra_band, area: null } : null,
         attack: a ? { base: a.base, scaling: a.scaling.map((t) => ({ stat: t.stat, coef: t.coef, text: coefText(t.coef) })), uses: physical ? 'ATK' : 'MATK', share: a.share ?? 1, damage_type: a.damage_type, ...(a.ignores_partial_cover ? { ignores_partial_cover: true } : {}) } : null,
         strikes: a?.strikes ?? 1, effects: def.effects.map((x) => ({ ...x })), effect_text: def.description,
-        target: def.target, activation: def.activation, origin: { ...def.origin },
+        target: def.target, activation: def.activation, origin: { ...def.origin }, ...(def.flavor ? { flavor: def.flavor } : {}),
     };
     const lines = [`${skill.name} [${skill.category}] (dynamic, ${def.origin.kind})`, `Rank: ${skill.rank}`, `Complexity: ${skill.complexity}`, `Tags: ${skill.tags.join(', ')}`, ...(skill.aspects.length ? [`Aspects: ${skill.aspects.join(', ')}`] : [])];
     if (a) lines.push(`Base Power: ${a.base}`, `Scaling: ${skill.attack.scaling.map((t) => `${t.stat} × ${t.text}`).join(' + ')}`, `Uses: ${skill.attack.share === 1 ? '' : `${skill.attack.share * 100}% of `}${skill.attack.uses}`, `Range: ${def.range.band}${def.range.extra_band ? ' after movement' : ''}`);
     lines.push(`Cost: ${skill.cost.amount} ${skill.cost.resource.toUpperCase()}`, `Effect: ${def.description}`);
+    if (def.flavor) lines.push(`Description (appearance only, no mechanical effect): ${def.flavor}`);
     skill.source_text = lines.join('\n');
     return skill;
 }

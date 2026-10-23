@@ -48,9 +48,20 @@ export function composeAspects(content, aspects = null) {
 
 /** The first free name of the word pair: "Ember Bolt", else "Ember Bolt II" … "Ember Bolt X". */
 function freeName(content, state, base) {
-    const taken = new Set(skillNames(content, state));
+    const taken = new Set([...skillNames(content, state), ...Object.values(state?.passive_defs || {}).map((p) => normText(p.name))]);
     for (const n of [base, ...ROMAN.map((r) => `${base} ${r}`)]) if (!taken.has(normText(n))) return n;
     return null;
+}
+
+/** Technique identity ignores prose, source and ordering; the composer still preserves the primary scaling tag. */
+export const techniqueSignature = ({ fn, tags = [], aspects = [] }) => JSON.stringify([fn, [...new Set(tags)].sort(), [...new Set(aspects)].sort()]);
+
+/** Older .42 acquisitions carry no function field. Recover it from the closed composer shapes, without rewriting. */
+export function acquiredTechnique(def) {
+    if (!['teacher', 'stone', 'material'].includes(def?.origin?.kind)) return null;
+    const fn = def.attack ? (def.range?.band === 'ENGAGED' ? 'strike' : def.attack.damage_type === 'magical' ? 'bolt' : null)
+        : ({ temp_def: 'guard', barrier: 'ward', heal: 'mend' })[def.effects?.[0]?.kind];
+    return fn ? { fn, tags: def.tags, aspects: def.aspects || [] } : null;
 }
 
 /** The first free id for a name: dyn.<name> (letters, digits, _), else with _2 … _9. */

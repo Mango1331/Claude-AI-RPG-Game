@@ -33,7 +33,8 @@ import { extractorRequest, parseExtraction, EXTRACTOR_VERSION } from './extract.
 import { boardRequest, parseBoard, bookBoard, BOARD_VERSION } from './guild.js';
 import { extractionFailedEvents } from './world.js';
 import { hallOf, settlementOf, membership, boardKey, today, listingsOf, supportedRanks } from './domain.js';
-import { finalizeGrowth } from './growth.js';
+import { finalizeGrowth, growthDrafts } from './growth.js';
+import { FORGE_VERSION, forgeRequest, parseForge } from './forge.js';
 import { PLANNER_VERSION, MECH_TYPES, planContext, withContentSkills, plannerRequest, parsePlan, mapPlan, recentText, announcedAbandon } from './planner.js';
 import { crowdCount, personWords, bystanderEvents } from './settlement.js';
 import { skillOf } from '../content.js';
@@ -44,6 +45,7 @@ export const LLM = {
     extract: { temperature: 0.1, maxTokens: 2500 },
     board: { temperature: 0.6, maxTokens: 3000 },
     plan: { temperature: 0.1, maxTokens: 900 },
+    forge: { temperature: 0.6, maxTokens: 900 },
 };
 export const LATE_CORRECTION = 'The engine could not record what your last reply established (it was not read in time): nothing of it changed the game state. The state above is authoritative.';
 export const FAILED_CORRECTION = 'The engine could not read what your last reply established: nothing of it changed the game state. The state above is authoritative.';
@@ -205,7 +207,8 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
         const at = crowd ? clone(before) : before;
         if (crowd) for (const e of crowd.events) applyEvent(at, e);
         const t = playerTurn(at, content, msg.mes, { msg: u, intent: crowd ? crowd.intent : m.intent, c: true });
-        return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, events: [...(crowd && t.events.length ? crowd.events : []), ...withGrowth(t, content)], command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
+        const growth = await withGrowth(t, content, llm, previous);
+        return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, ...growth, events: [...(crowd && t.events.length ? crowd.events : []), ...growth.events], command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
     }
     const need = boardFor(before, content, m.commands, { c: true });
     const board = need ? await generateBoard(llm, before, content, need) : null;
@@ -213,10 +216,11 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
         msg: u, commands: m.commands, dropped: guarded.dropped.filter((x) => !MECH_TYPES.includes(x.command?.type)), board, c: true,
         interp: { version: PLANNER_VERSION, ms: pl.ms, source: pl.repaired ? 'json_repaired' : 'json', failed: false, error: null },
     });
+    const growth = await withGrowth(t, content, llm, previous);
     return {
         v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: irRec, plan, interp,
         board: board ? { branch: board.branch, rank: board.rank, ms: board.ms, failed: board.failed || undefined, listings: board.listings.length, ...(board.calls?.length ? { llm: board.calls } : {}) } : undefined,
-        events: withGrowth(t, content), command: t.command ? { panels: t.command.panels, llm: null } : null,
+        ...growth, command: t.command ? { panels: t.command.panels, llm: null } : null,
     };
 }
 
@@ -226,15 +230,61 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
  * (src/v4/growth.js finalizeGrowth: checked on a private copy, all or nothing per goal). Its events join the turn's
  * record before the outcome, which names what he learned. A question, a panel or a running fight books none.
  */
-function withGrowth(t, content) {
-    if (!t?.state || t.command || !t.events.length) return t.events;
-    const f = finalizeGrowth(t.state, content);
-    if (!f.events.length && !f.failed.length) return t.events;
+async function withGrowth(t, content, llm, previous) {
+    if (!t?.state || t.command || !t.events.length) return { events: t.events };
+    const drafts = growthDrafts(t.state, content);
+    // Pre-Forge records (.42) already booked deterministic names. Board retry must retain those too.
+    const cached = { entries: { ...previous?.forge?.entries } };
+    for (const d of drafts) {
+        const close = previous?.events?.find((e) => e.t === 'growth.closed' && e.d.goal === d.key);
+        const skill = close && previous.events.find((e) => e.t === 'skill.defined' && e.d.skill.id === close.d.skill)?.d.skill;
+        if (skill && !cached.entries[d.key]) cached.entries[d.key] = { hash: d.hash, name: skill.name, ...(skill.flavor ? { flavor: skill.flavor } : {}) };
+    }
+    const forge = drafts.length ? await generateForge(llm, t.state, content, drafts, cached) : null;
+    const f = finalizeGrowth(t.state, content, forge?.entries);
+    if (forge) {
+        // Record the name actually booked, including a late collision's deterministic fallback.
+        for (const e of f.events.filter((e) => e.t === 'skill.defined')) {
+            const def = e.d.skill;
+            const learned = f.learned.find((l) => l.skill === def.id);
+            const entry = learned && forge.entries[learned.goal];
+            if (entry && entry.name !== def.name) forge.entries[learned.goal] = { hash: entry.hash, name: def.name, fallback: true };
+        }
+    }
+    const meta = forge ? { forge } : {};
+    if (!f.events.length && !f.failed.length) return { events: t.events, ...meta };
     const i = t.events.findLastIndex((e) => e.t === 'outcome.recorded');
-    if (i < 0) return [...t.events, ...f.events];
+    if (i < 0) return { events: [...t.events, ...f.events], ...meta };
     const rec = t.events[i];
     const outcome = rec.d.outcome ? { ...rec.d.outcome, ...(f.learned.length ? { learned: f.learned } : {}), ...(f.failed.length ? { learn_failed: f.failed } : {}) } : rec.d.outcome;
-    return [...t.events.slice(0, i), ...f.events, { ...rec, d: { ...rec.d, outcome } }, ...t.events.slice(i + 1)];
+    return { events: [...t.events.slice(0, i), ...f.events, { ...rec, d: { ...rec.d, outcome } }, ...t.events.slice(i + 1)], ...meta };
+}
+
+/** One batched prose request and at most one repair. Valid siblings and recorded fallbacks are final. */
+export async function generateForge(llm, state, content, drafts, previous = null) {
+    const entries = {};
+    for (const d of drafts) if (previous?.entries?.[d.key]?.hash === d.hash) entries[d.key] = { ...previous.entries[d.key] };
+    const reused = Object.keys(entries).length;
+    const calls = [];
+    let ms = 0;
+    let errors = [];
+    let last = '';
+    for (let attempt = 0; attempt < 2; attempt++) {
+        const missing = drafts.filter((d) => !entries[d.key]);
+        if (!missing.length) break;
+        const messages = forgeRequest(missing);
+        if (attempt) messages.push({ role: 'assistant', content: last.slice(0, 3000) }, { role: 'user', content: `Repair only these entries. Errors: ${errors.join('; ').slice(0, 1000)}. Already reserved names: ${Object.values(entries).map((e) => e.name).join(', ')}. Return JSON only.` });
+        const a = await ask(llm, messages, attempt ? 'forge_repair' : 'forge');
+        ms += a.ms;
+        calls.push(a.call);
+        if (!a.ok) { errors = [a.error]; continue; }
+        last = a.content;
+        const p = parseForge(a.content, missing, content, state, Object.values(entries).map((e) => e.name));
+        Object.assign(entries, p.entries);
+        errors = p.errors;
+    }
+    for (const d of drafts) if (!entries[d.key]) entries[d.key] = { hash: d.hash, name: d.def.name, fallback: true };
+    return { version: FORGE_VERSION, entries, ms, llm: calls, repaired: calls.some((c) => c.purpose === 'forge_repair'), ...(reused ? { reused } : {}) };
 }
 
 /**
@@ -326,7 +376,7 @@ function closeLatePending(chat, u) {
  * calls, and how often and how long the chat was folded meanwhile.
  */
 function turnPerf(r, t0, f0, waited) {
-    const llm = (r.plan ? r.plan.ms || 0 : r.interp?.ms || 0) + (r.board?.ms || 0);
+    const llm = (r.plan ? r.plan.ms || 0 : r.interp?.ms || 0) + (r.board?.ms || 0) + (r.forge?.ms || 0);
     const f = foldStats();
     return {
         ...(Number.isFinite(waited) ? { wait_ms: waited } : {}),
@@ -340,7 +390,9 @@ function turnPerf(r, t0, f0, waited) {
  * (commands, creation, combat, stealth) through the V3 engine, story turns through interpreter and handlers.
  * @returns the same shape as prepareGeneration
  */
-export async function prepareGenerationAsync(chat, content, { type = 'normal', settings = {}, llm = null, waited = null } = {}) {
+export async function prepareGenerationAsync(chat, content, { type = 'normal', settings = {}, llm = null, waited = null, isCurrent = () => true } = {}) {
+    const stale = () => ({ action: 'abort', dirty: false, stale: true });
+    if (!isCurrent()) return stale();
     if (type === 'quiet' || type === 'impersonate') return { action: 'clear', dirty: false };
     if (!hasCampaign(chat)) return { action: 'none', dirty: false };
     if (campaignRuntime(chat) !== 'v4') return prepareGeneration(chat, content, { type, settings });
@@ -349,6 +401,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
     const u = lastPlayerIndex(chat);
     if (u < 0) return { action: 'none', dirty: false };
     const msg = chat[u];
+    const originalRecord = rec(msg);
     let dirty = false;
     let r = rec(msg);
     const inputHash = hash32(msg.mes);
@@ -356,8 +409,18 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
     // failed: a new generation of the same message asks for the board again, with the interpretation it came with
     const retryBoard = !!r && r.route === 'v4' && r.input_hash === inputHash && !r.interp?.failed && !!r.board?.failed;
     if (type !== 'continue' && (!r || r.input_hash !== inputHash || r.interp?.failed || retryBoard)) {
-        if (closeLatePending(chat, u)) dirty = true;
-        const before = foldChat(chat, u).state;
+        const history = historyKey(chat, u);
+        const current = () => isCurrent() && chat[u] === msg && lastPlayerIndex(chat) === u && hash32(msg.mes) === inputHash && rec(msg) === originalRecord && historyKey(chat, u) === history;
+        // Stage a missed extraction's gap too: a stale async request must leave every record untouched.
+        const p = lastReplyIndex(chat, u);
+        const staged = [...chat];
+        if (p >= 0) staged[p] = clone(chat[p]);
+        const late = closeLatePending(staged, u);
+        const commit = () => {
+            if (late) setRec(chat[p], rec(staged[p]));
+            setRec(msg, r);
+        };
+        const before = foldChat(staged, u).state;
         // the message read once (Gen 3.5 Intent IR): its route, its links, the parsed act the V3 engine resolves
         const ir = readTurn(msg.mes, before, content);
         // prototype C: the planner reads every free-text message; '#' commands, character creation and a dead PC stay
@@ -366,9 +429,10 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         if (campaignPath(chat, settings.legacyPlanner ?? settings.planner) === 'c' && !control) {
             if (typeof llm !== 'function') throw new Error('Runtime V4 needs an LLM call for the planner');
             r = await plannedTurn(chat, content, { u, before, ir, inputHash, llm, previous: retryBoard ? r : null });
+            if (!current()) return stale();
             r.perf = turnPerf(r, t0, f0, waited);
-            setRec(msg, r);
             if (r.interp?.failed) {
+                commit();
                 return {
                     action: 'abort', dirty: true,
                     notice: `Avereth Engine: planner failed${r.interp.error ? ` (${r.interp.error})` : ''}. Regenerate or send the message again; no story turn was generated.`,
@@ -382,6 +446,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
             if (typeof llm !== 'function') throw new Error('Runtime V4 needs an LLM call for the interpreter');
             const catalog = buildCatalog(before, content);
             const ip = retryBoard ? { commands: r.interp.commands, ms: 0, repaired: !!r.interp.repaired, failed: false } : await interpretMessage(llm, content, catalog, msg.mes);
+            if (!current()) return stale();
             if (ip.failed) {
                 r = {
                     v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: irRecord(ir, []),
@@ -389,7 +454,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
                     events: [], command: null,
                 };
                 r.perf = turnPerf(r, t0, f0, waited);
-                setRec(msg, r);
+                commit();
                 return {
                     action: 'abort', dirty: true,
                     notice: `Avereth Engine: interpreter failed${ip.error ? ` (${ip.error})` : ''}. Regenerate or send the message again; no story turn was generated.`,
@@ -409,8 +474,9 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
                 events: t.events, command: t.command ? { panels: t.command.panels, llm: null } : null,
             };
         }
+        if (!current()) return stale();
         if (!r.perf) r.perf = turnPerf(r, t0, f0, waited);
-        setRec(msg, r);
+        commit();
         dirty = true;
     }
     if (r?.route === 'v4' && r.interp?.failed) {
@@ -427,6 +493,11 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
     }
     const { state, errors, context } = turnBlock(chat, u, content, settings);
     return { action: 'context', context, loreKeys: loreKeys(state, content), dirty, errors };
+}
+
+// Include event payloads, not just their count: a swipe or an extraction can replace an equal-sized record.
+function historyKey(chat, end) {
+    return hash32(JSON.stringify(chat.slice(0, end).map((m) => [!!m.is_user, !!m.is_system, m.mes, messageEvents(m), rec(m)?.extraction?.status])));
 }
 
 // ------------------------------------------------------------------------------------------------ after the reply
@@ -586,6 +657,7 @@ export function perfSummary(chat) {
         `engine ${sec(r.perf.engine_ms)} (${r.perf.folds} folds, ${r.perf.fold_ms} ms)`,
         llm(r.plan ? 'planner' : 'interpreter', r.plan || r.interp),
         llm('board', r.board),
+        llm('forge', r.forge),
         x?.narration ? `narrator ${Number.isFinite(x.narration.ms) ? sec(x.narration.ms) : '?'}${x.narration.empty ? ' (empty)' : ''}` : null,
         x?.extraction && x.extraction.status !== 'skipped' ? (llm('extractor', x.extraction) || `extractor ${x.extraction.status}`) : null,
     ];

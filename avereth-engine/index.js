@@ -36,6 +36,7 @@ let pendingReport = null; // {chatId, id, hash, job}: the report request of the 
 let pendingWorld = null; // Runtime V4: {chatId, id, job}: the extraction of the latest reply, while it runs
 let llmPath = null; // Runtime V4: which call the last LLM request used ('custom endpoint' | 'generateRaw')
 let narrationStart = null; // Patch 8.2: {chatId, user, t}: when the engine block of a story turn was handed to SillyTavern
+let generationRequest = 0; // an older async interceptor must never publish into a newer request or chat
 
 function ctx() {
     return SillyTavern.getContext();
@@ -165,12 +166,15 @@ function startWorld(id) {
 
 // ------------------------------------------------------------------------------------------ interceptor
 globalThis.averethInterceptor = async function (chat, contextSize, abort, type) {
+    const request = ++generationRequest;
+    const c = ctx();
+    const chatId = c.getCurrentChatId();
+    const isCurrent = () => request === generationRequest && ctx().chat === c.chat && ctx().getCurrentChatId() === chatId;
     const s = settings();
     if (!s.enabled || !content) {
         if (content) { setPrompt(''); setLoreKeys([]); }
         return;
     }
-    const c = ctx();
     try {
         if (!hasCampaign(c.chat)) {
             const created = ensureCampaign(c.chat, content, { seed: newSeed(), runtime: newRuntime(), planner: newPlanner() });
@@ -184,6 +188,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         // the report still being asked for belongs to the turn before this new message: its facts come first
         if (pendingReport && pendingReport.chatId === c.getCurrentChatId() && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingReport.id) {
             await Promise.race([pendingReport.job, new Promise((done) => setTimeout(done, REPORT_WAIT_MS))]);
+            if (!isCurrent()) return;
         }
         // Runtime V4 barrier: never overlap a new normal turn with the previous reply's extractor/repair.
         // The LLM call itself has a finite timeout; letting a second call overtake it can exceed provider concurrency.
@@ -192,9 +197,12 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         if (pendingWorld && pendingWorld.chatId === c.getCurrentChatId() && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingWorld.id) {
             const w0 = Date.now();
             await pendingWorld.job;
+            if (!isCurrent()) return;
             waited = Date.now() - w0;
         }
-        const r = await prepareGenerationAsync(c.chat, content, { type, settings: engineSettings(), llm: v4Llm, waited });
+        const r = await prepareGenerationAsync(c.chat, content, { type, settings: engineSettings(), llm: v4Llm, waited, isCurrent });
+        if (!isCurrent()) return;
+        if (r.stale) { abort(true); return; }
         setLoreKeys(r.loreKeys);
         if (r.action === 'clear' || r.action === 'none') {
             // 'clear': quiet/impersonate generations get no engine block; 'none': no campaign or no player message yet
@@ -228,6 +236,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         if (r.dirty) await c.saveChat();
         renderDebug();
     } catch (err) {
+        if (!isCurrent()) return;
         console.error('[Avereth] interceptor failed', err);
         toastr.error(`Avereth Engine: ${err.message}`);
         setPrompt('');
@@ -320,6 +329,7 @@ function resumeReport() {
 }
 
 async function onMessageEdited(messageId) {
+    generationRequest++;
     if (!settings().enabled) return;
     const c = ctx();
     try {
@@ -461,8 +471,8 @@ function mountSettings() {
     c.eventSource.on(ev.MESSAGE_EDITED, onMessageEdited);
     // state is always re-folded from the chat, so these events only refresh the status line; the interceptor sets
     // the engine block before every generation (normal, swipe, regenerate, continue)
-    c.eventSource.on(ev.CHAT_CHANGED, () => { lastContext = null; lastProjection = null; setPrompt(''); setLoreKeys([]); renderDebug(); resumeReport(); });
-    for (const t of [ev.MESSAGE_DELETED, ev.MESSAGE_SWIPED]) c.eventSource.on(t, () => renderDebug());
+    c.eventSource.on(ev.CHAT_CHANGED, () => { generationRequest++; lastContext = null; lastProjection = null; setPrompt(''); setLoreKeys([]); renderDebug(); resumeReport(); });
+    for (const t of [ev.MESSAGE_DELETED, ev.MESSAGE_SWIPED]) c.eventSource.on(t, () => { generationRequest++; renderDebug(); });
     mountSettings();
     renderDebug();
 })();

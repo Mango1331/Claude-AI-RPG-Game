@@ -18,11 +18,11 @@
 //
 // Pure functions of the state; nothing here calls an LLM, and nothing is booked in a legacy campaign.
 import { rulesetOf, skillOf, npcTemplate } from '../content.js';
-import { affinityFor, defineSkill, learnSkill, fightQualifies, practiceProgress } from '../skills.js';
-import { composeSkill, composeTags, composeAspects, composerFunctions } from '../skill_composer.js';
+import { affinityFor, defineSkill, learnSkill, fightQualifies, practiceProgress, skillDefErrors } from '../skills.js';
+import { composeSkill, composeTags, composeAspects, composerFunctions, techniqueSignature, acquiredTechnique } from '../skill_composer.js';
 import { applyEvent } from '../state.js';
 import { truth, entityLabel } from '../knowledge.js';
-import { clone, normText } from '../util.js';
+import { clone, normText, hash32 } from '../util.js';
 
 const EMPTY = { n: 0, goals: {}, done: [], training: {} };
 const DAY = 1440;
@@ -43,6 +43,15 @@ export function growthOf(state) {
 /** His open learning goals, oldest first. */
 export function openGoals(state) {
     return Object.values(growthOf(state).goals).sort((a, b) => a.n - b.n);
+}
+
+function knownTechnique(state, target) {
+    const key = techniqueSignature(target);
+    const ids = new Set([...Object.keys(state.entities?.pc?.sheet?.skills || {}), ...growthOf(state).done.map((g) => g.skill)]);
+    return [...ids].find((id) => {
+        const t = acquiredTechnique(state.skill_defs?.[id]);
+        return t && techniqueSignature(t) === key;
+    });
 }
 
 /** Is this word a technique the composer makes (a new main function)? */
@@ -209,9 +218,10 @@ export function learningActivity(s, content, c, minutes, start) {
         const a = composeAspects(content, c.aspects);
         if (a.error) return { status: 'refused', reason: 'not this aspect', line: `NOT LEARNING — ${a.error}; nothing is booked.` };
         target = { fn: fresh, tags: t.tags, aspects: a.aspects };
-        const same = goals.find((x) => x.target.fn === fresh && x.target.tags.join() === target.tags.join() && (x.target.aspects || []).join() === target.aspects.join());
+        const same = goals.find((x) => techniqueSignature(x.target) === techniqueSignature(target));
         if (same) { goal = same; source = same.source; }
     }
+    if (knownTechnique(s, target)) return { status: 'refused', reason: 'already learned', line: `NOT LEARNING — he knows this technique already; practise the known Skill instead. Nothing is booked, no time passes.` };
     // a teacher session: the teacher he names, else the goal's own teacher when present; a new goal needs one
     if (c.teacher && typeof c.teacher !== 'string') return { status: 'refused', reason: 'no teacher', line: `NOT LEARNING — no known teacher is named ("${String(c.teacher.new ?? '').replace(/[<>`]/g, '').slice(0, 40)}" is nobody the engine knows here); nothing is booked, no time passes for it.` };
     const named = typeof c.teacher === 'string' ? c.teacher : null;
@@ -272,20 +282,45 @@ export function fightGrowth(state, content, enc) {
 }
 
 // ------------------------------------------------------------------------------------------------ finalization
+const canFinalize = (state) => rulesetOf(state) >= 2 && !state.encounter && !(state.pending_combat || []).length && state.entities?.pc?.status !== 'dead';
+const composeGoal = (state, content, g) => composeSkill(state, content, { ...g.target, origin: { kind: g.source.kind, note: `taught by ${g.source.name}` }, source: `taught by ${g.source.name}` });
+
+/** Read-only, legitimized drafts for the asynchronous host. The actual grant below stays synchronous. */
+export function growthDrafts(state, content) {
+    if (!canFinalize(state)) return [];
+    const seen = new Set();
+    const drafts = [];
+    for (const g of openGoals(state).filter((x) => x.status === 'ready')) {
+        const key = techniqueSignature(g.target);
+        if (seen.has(key) || knownTechnique(state, g.target)) continue;
+        seen.add(key);
+        const c = composeGoal(state, content, g);
+        if (!c.errors.length) drafts.push({ key: g.id, hash: hash32(JSON.stringify(c.def)), def: c.def });
+    }
+    return drafts;
+}
+
 /**
  * Patch 9C-1: the ready goals become Skills (after a regular planned turn; src/v4/runtime.js). Each one: composed,
  * defined, learned and closed, checked on a private copy of the state; a goal that fails stays ready with its
  * Learning Progress and source (a later turn tries again). Nothing during a fight, nothing for a dead PC.
  * @returns {{events: object[], learned: {skill, name, goal, technique, teacher}[], failed: {goal, errors}[]}}
  */
-export function finalizeGrowth(state, content) {
+export function finalizeGrowth(state, content, names = {}) {
     const out = { events: [], learned: [], failed: [] };
-    if (rulesetOf(state) < 2 || state.encounter || state.entities?.pc?.status === 'dead') return out;
+    if (!canFinalize(state)) return out;
     let s = state;
     for (const g of openGoals(state).filter((x) => x.status === 'ready')) {
-        const comp = composeSkill(s, content, { fn: g.target.fn, tags: g.target.tags, aspects: g.target.aspects, origin: { kind: g.source.kind, note: `taught by ${g.source.name}` }, source: `taught by ${g.source.name}` });
+        if (knownTechnique(s, g.target)) { out.failed.push({ goal: g.id, errors: ['this technique is already learned'] }); continue; }
+        const comp = composeGoal(s, content, g);
         if (comp.errors.length) { out.failed.push({ goal: g.id, errors: comp.errors }); continue; }
         try {
+            const chosen = names[g.id];
+            if (chosen && !chosen.fallback) {
+                const candidate = { ...comp.def, name: chosen.name, ...(chosen.flavor ? { flavor: chosen.flavor } : {}) };
+                const passiveCollision = Object.values(s.passive_defs || {}).some((p) => normText(p.name) === normText(candidate.name));
+                if (!passiveCollision && !skillDefErrors(candidate, content, s).length) comp.def = candidate;
+            }
             const def = defineSkill(s, content, comp.def);
             if (def.errors.length) { out.failed.push({ goal: g.id, errors: def.errors }); continue; }
             const s1 = after(s, def.events);

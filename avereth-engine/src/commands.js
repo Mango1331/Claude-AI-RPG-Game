@@ -188,6 +188,7 @@ function skill(state, content, arg) {
         lines.push(`Current Raw Power: ${rawPowerText(sk, s.stats, dv)}${prof.power !== 1 ? ` (×${prof.power} Proficiency on Modified Power)` : ''}`);
     }
     if (sk.effect_text && !/^none\.?$/i.test(sk.effect_text)) lines.push(`Effect: ${sk.effect_text}`);
+    if (sk.flavor) lines.push(`Description (appearance only, no mechanical effect): ${sk.flavor}`);
     // Patch 9B-1: the numbers its effects give now, at his Proficiency (the same values src/combat.js books)
     const now = effectsNow(content, sk, s.stats, known.prof, rulesetOf(state));
     if (now.length) lines.push(`Current effect: ${now.join(' | ')}${effectFactor(content, known.prof, rulesetOf(state)) !== 1 ? ` (×${effectFactor(content, known.prof, rulesetOf(state))} Proficiency, rounded)` : ''}`);

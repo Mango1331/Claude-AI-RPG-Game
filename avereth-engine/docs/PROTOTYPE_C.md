@@ -2002,3 +2002,14 @@ Vollständige Beschreibung: `docs/PATCH9C1_SKILL_ACQUISITION_TRAINING.md`.
 - **Tests:** `tests/v4/patch9c1.test.js` (12).
 - **Reviewkorrektur (4.3.0-c.6.6.41):** Tagesabschnitte vor Konto-Kürzung auswerten; PP auf fortgeschriebenem Stand buchen; alle Lehrerdisziplinen prüfen; Zusagen zusätzlicher Lehrer am Ziel binden und verbrauchte Services gegen Wiederverwendung nach Historienkürzung schützen. Kein neues Modul oder Eventtyp. Fünf Regressionen vorher rot, danach grün; gezielt 17/17, `npm test` 1147/1147. Unabhängiges Gegenreview ausstehend; kein neuer Livetest.
 - **Nachkorrektur (4.3.0-c.6.6.42):** .41 von Claude unabhängig bestätigt. Trainingszeilen desselben Kaufs erhalten unterschiedliche stabile IDs; alte Records behalten ihre bisherigen Schlüssel. Kauf mit zwei Lernzielen vorher rot, danach grün; zusätzliche Prüfung von Listenkürzung, Replay und alten Records. Gezielt 19/19, `npm test` 1149/1149. Kein neuer Eventtyp oder neues Modul, gezieltes Gegenreview der .42 ausstehend.
+
+### Patch 9C-2a (4.3.0-c.6.6.43): Forge am bestehenden Lehrer-Erwerb
+
+Beschreibung: `docs/PATCH9C2A_FORGE_TEACHER_ACQUISITION.md`. Implementierung durch ChatGPT/Codex; Claude-Gegenreview offen.
+
+- Ein gebündelter Forge-Aufruf für bereite Lehrer-Ziele, höchstens ein Repair; die Engine bestimmt die unveränderte Mechanik und schließt synchron und atomar ab. Ungültige Einträge erhalten einzeln freie Composer-Namen.
+- Forge-Name und optionales `flavor`; Flavor ist eine kurze, separate Beschreibung und niemals Effekttext. Vertragsrevision `.43`.
+- Doppelerwerb nach Technik-Signatur gesperrt, auch für .42-Definitionen und nach Kürzung der Abschlussliste; bestehende Skalierung und statische Starter unverändert.
+- Record-Cache für Board-Retry/Regenerate, auch für bereits gebuchte alte Namen; Telemetrie; Stale-Schutz vor Record- und Host-Veröffentlichung. Keine neuen Events, Zahlen oder Quellen.
+- 14 neue Regressionen einschließlich tatsächlichem Host-Binding mit simulierten LLM-Antworten. Vollständiges Testergebnis siehe Patch-Doku. Echter ST-/GLM-Livetest hier mangels Installation, Browser und Schlüssel nicht möglich; keine Live-Abnahme.
+- Stones, Material, neuer Passive-Erwerb, Durchbrüche und Evolution folgen separat.

@@ -297,7 +297,10 @@ function outcomeBlock(state, content, outcome, opts = {}) {
     // prototype C (src/v4/planner.js): what of the player's message the engine did not take this turn
     const notes = (outcome?.plan_notes || []).map((n) => `- NOT TAKEN THIS TURN (it does not happen; do not narrate it as done): ${n}`);
     // Patch 9C-1: a Skill the engine booked as learned in this turn (src/v4/growth.js); the only new Skill there is
-    const learned = (outcome?.learned || []).map((l) => `NEW SKILL — booked by the engine in this turn: Alaric now knows ${l.name} (${l.category}; ${l.technique}), learned from ${l.teacher}. Show the moment it takes hold in a sentence or two; its numbers are the engine's. No other new Skill, Passive, Skill evolution or class change.`);
+    const learned = (outcome?.learned || []).map((l) => {
+        const sk = skillOf(content, l.skill, state);
+        return `NEW SKILL — booked by the engine in this turn: Alaric now knows ${l.name} (${l.category}; ${l.technique}), learned from ${l.teacher}. Show the moment it takes hold in a sentence or two; its numbers are the engine's. No other new Skill, Passive, Skill evolution or class change.${sk ? `\n${skillSummary(sk)}` : ''}`;
+    });
     return [block, ...notes, ...learned].filter(Boolean).join('\n');
 }
 
@@ -374,7 +377,7 @@ export function skillSummary(skill) {
         bits.push(skill.strikes > 1 ? `${skill.strikes} strikes, each Raw = ${f}` : `Raw = ${f}`);
     }
     if (skill.effect_text && !/^none\.?$/i.test(skill.effect_text) && skill.effect_text !== 'no additional status effect.') bits.push(`Effect: ${skill.effect_text}`);
-    return bits.join(' | ');
+    return bits.join(' | ') + (skill.flavor ? `\nDescription (appearance only, no mechanical effect): ${skill.flavor}` : '');
 }
 
 function isLocationId(state, content, id) {

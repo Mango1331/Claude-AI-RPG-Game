@@ -17,6 +17,7 @@ import { CONTRACT_RULES, plannerSystem, announcedAbandon } from '../../src/v4/pl
 import { awardXp } from '../../src/progression.js';
 import { applyEvent } from '../../src/state.js';
 import { Game } from '../helpers.js';
+import { NARRATOR_CONTRACT_REVISION } from '../../src/util.js';
 
 const content = await loadContent();
 const live = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests/v4/live_1003.json'), 'utf8'));
@@ -403,5 +404,6 @@ test('the narrator preset asks for familiar modern words for ordinary medieval t
     assert.match(style, /Prefer familiar, modern English words for ordinary medieval things\. Avoid rare or archaic historical terms used only for atmosphere; when a period term is genuinely useful, make its meaning clear from context the first time it appears\. Modern wording is fine; modern technology is not\./);
     const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
     // later Prototype C builds changed the contract; c.2 still owns only the style assertion above
-    assert.match(contract, /^AVERETH RPG — SANDBOX NARRATOR CONTRACT\nContract revision: 4\.3\.0-c\.6\.6\.40\n/);
+    assert.equal(contract.split('\n')[0], 'AVERETH RPG — SANDBOX NARRATOR CONTRACT');
+    assert.equal(contract.split('\n')[1], NARRATOR_CONTRACT_REVISION);
 });

@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 23. Oktober 2026 · Fassung 37 (dritter echter .53-Livetest: Dungeon und Integrität OK; Fluchtpriorität und Testpfad offen)  
+**Stichtag:** 23. Oktober 2026 · Fassung 38 (`.54` von Claude umgesetzt: Flucht vor beschreibendem Guard, Partial Cover nur über Distanz, Leitfaden Einzelkämpfe; vor Git-Review)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,11 +13,11 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 23.10.2026 (Snapshot)** | **3cb908c** (Leitfaden `.53`) auf **3d7c767** (Engine `.53`, Livetest-Korrektur), davor **da28acc** (Runner/Leitfaden `.52`-Kurztest) auf **c50da2d** (`.52` Reviewkorrektur, ursprünglicher 9C-Abschluss `79c8e36`); alle vier R1–R4-Befunde per Git-Diff und Testquellen unabhängig geprüft. Vollsuite für `.53` **1234/1234 laut Claude**, nicht von ChatGPT ausgeführt; HEAD neu prüfen. |
-| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.53**, aktiver Narrator-Vertrag weiterhin Revision **`.52`** (in `.53` unverändert; Build `.51` nutzte `.49`). ST-Profilkarte für eigene Spiele auf neueste Vertragsdatei bringen; Runner ersetzt sie isoliert automatisch. ST-Narrator-Limit 8192. |
+| **HEAD am 23.10.2026 (Snapshot)** | **072b7a8** (Leitfaden `.54`) auf **db57b53** (Engine `.54`), davor **3cb908c** (Leitfaden `.53`) auf **3d7c767** (Engine `.53`, Livetest-Korrektur), davor **da28acc** (Runner/Leitfaden `.52`-Kurztest) auf **c50da2d** (`.52` Reviewkorrektur, ursprünglicher 9C-Abschluss `79c8e36`); alle vier R1–R4-Befunde per Git-Diff und Testquellen unabhängig geprüft. Vollsuite für `.53` **1234/1234 laut Claude**, nicht von ChatGPT ausgeführt; HEAD neu prüfen. |
+| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.54**, aktiver Narrator-Vertrag weiterhin Revision **`.52`** (in `.53`/`.54` unverändert; Build `.51` nutzte `.49`). ST-Profilkarte für eigene Spiele auf neueste Vertragsdatei bringen; Runner ersetzt sie isoliert automatisch. ST-Narrator-Limit 8192. |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | **Neu: `.53` Livetest-Korrektur umgesetzt und Git-Review ohne blockierenden Codebefund bestanden (Engine `3d7c767`, Leitfaden `3cb908c`)**: Integrität (Validator-Fehlalarm), Extraktor-Wortliste, Dungeon-Wurzel, Ort nach `extract.failed`, Startwaffen Ruleset 2 ATK/MATK 10, Leitfaden Überleben; 1234/1234 laut Claude. Zwei `.52`-Kurztests endeten mit Tod, ohne Skillangebot. Vorher: **9C-Abschluss `.52` implementiert und im Git-Review für KURZEN ST-/Provider-Livetest FREIGEGEBEN**: spontane Skillangebote, P5-Evolution, F/C2/C3, minimale E-Rang-Prüfung, 1 NPC-Signatur (trainiert, Level ≥5), Ordinary aus Engine-Prüfungen, Rare-Deduplizierung. **Vier Reviewfixes `c50da2d` geprüft:** gültige Tagesstreuung bei Ordinary; Dungeonwurzel beim Rare-Fingerprint; Signaturen ohne geerbte AoE-/Multi-Hits; bezahlbare passende Defensive-Signatur vor einfachem Guard. Keine `.52`-Liveabnahme bisher. 1224/1224 npm-Tests laut Claude. |
-| **Nächster Schritt** | **Vor dem nächsten Smoke den Flucht-/Guard-Priorisierungsbefund und den Testpfad eng korrigieren, dann erneut** der **kurze ECHTE ST/GLM-Provider-Smoketest (nicht 80–120 Züge):** wenn natürlich erreichbar, spontanen Skill-Durchbruch aus wiederholten qualifizierenden Gilden-/Kämpfen sowie ein neues Entwicklungsangebot/Annahme/Systempanel und die tatsächliche Nutzung eines Skills prüfen; trainierter Level-≥5-NPC/Signatur optional als realer Beleg, nicht künstlich Level oder Kampfausgang erzwingen. Test in 25–35 Zügen deckeln, Erfolg/Nichterreichbarkeit ehrlich protokollieren und Originalexport/LLM/Events zur unabhängigen Analyse liefern. **Danach 9D** eigenständig, langer offener Kampagnentest erst nach 9D vor Balancing 10B. Altversion gespeicherte Rare-Fingerprints in nie live abgenommener `.52`-Zwischenversion nicht migrieren. |
+| **Patchstatus** | **Neuer: `.54` umgesetzt (Engine `db57b53`, Leitfaden `072b7a8`), vor Git-Review**: Flucht als Hauptaktion vor einer nur deckenden Abwehr, Partial Cover nur über Distanz (Schlag, Vorschau und 9C-Muster eine Regel), Leitfaden Novice-Einzelkämpfe/Dungeon optional; 1241/1241 laut Claude. Davor: **`.53` Livetest-Korrektur umgesetzt und Git-Review ohne blockierenden Codebefund bestanden (Engine `3d7c767`, Leitfaden `3cb908c`)**: Integrität (Validator-Fehlalarm), Extraktor-Wortliste, Dungeon-Wurzel, Ort nach `extract.failed`, Startwaffen Ruleset 2 ATK/MATK 10, Leitfaden Überleben; 1234/1234 laut Claude. Zwei `.52`-Kurztests endeten mit Tod, ohne Skillangebot. Vorher: **9C-Abschluss `.52` implementiert und im Git-Review für KURZEN ST-/Provider-Livetest FREIGEGEBEN**: spontane Skillangebote, P5-Evolution, F/C2/C3, minimale E-Rang-Prüfung, 1 NPC-Signatur (trainiert, Level ≥5), Ordinary aus Engine-Prüfungen, Rare-Deduplizierung. **Vier Reviewfixes `c50da2d` geprüft:** gültige Tagesstreuung bei Ordinary; Dungeonwurzel beim Rare-Fingerprint; Signaturen ohne geerbte AoE-/Multi-Hits; bezahlbare passende Defensive-Signatur vor einfachem Guard. Keine `.52`-Liveabnahme bisher. 1224/1224 npm-Tests laut Claude. |
+| **Nächster Schritt** | **Git-Review von `.54` (`db57b53`, `072b7a8`); Flucht-/Guard-Befund und Testpfad sind darin umgesetzt. Dann erneut** der **kurze ECHTE ST/GLM-Provider-Smoketest (nicht 80–120 Züge):** wenn natürlich erreichbar, spontanen Skill-Durchbruch aus wiederholten qualifizierenden Gilden-/Kämpfen sowie ein neues Entwicklungsangebot/Annahme/Systempanel und die tatsächliche Nutzung eines Skills prüfen; trainierter Level-≥5-NPC/Signatur optional als realer Beleg, nicht künstlich Level oder Kampfausgang erzwingen. Test in 25–35 Zügen deckeln, Erfolg/Nichterreichbarkeit ehrlich protokollieren und Originalexport/LLM/Events zur unabhängigen Analyse liefern. **Danach 9D** eigenständig, langer offener Kampagnentest erst nach 9D vor Balancing 10B. Altversion gespeicherte Rare-Fingerprints in nie live abgenommener `.52`-Zwischenversion nicht migrieren. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
 Aktueller Korrekturcommit (.50): https://github.com/Mango1331/Claude-AI-RPG-Game/commit/dc1265259e5aa3654e618248c7786e0766ec287f; Runner-/Guide-Commit https://github.com/Mango1331/Claude-AI-RPG-Game/commit/73c24445c81d4b68f49d2b0e6134458c746e0d6d
@@ -37,6 +37,30 @@ Vorheriger Patch-8-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commi
 
 
 **Eigenständiges Review vom 23.10.2026:** `src/v4/extract.js` normalisiert nur `person.new.role/armed`-Stringlisten, ohne `ref` aufzuweichen; `src/v4/world.js` schließt Dungeon-Wurzel+passende Slot-Arten in die Feind-Sperre ein; `src/v4/runtime.js` speichert die Ortskorrektur im `corrections`-Pfad (der nächste Turn liest diese über `src/host.js`); `src/validate.js` erkennt legitime Orte als Fakt-Subjekte. Die getrennten `*_r2`-Startwaffen, Ruleset-Kits und die `source.item`-Erhaltung nach Ablegen/Weitergeben sind nachvollziehbar; bestehende Kampagnen behalten ihre bisherigen Gegenstands-IDs. Neue rote/grüne Live-Regressionen sind im Commit vorhanden. **Freigabe zum kurzen Provider-Livetest, keine vollständige 9C-Abnahme.** 1234/1234 ist Claudes Bericht, nicht eine unabhängige npm-Ausführung. **Beobachtung im Leitfaden:** 40-%-HP-Rückzug kann bei geringer Escape-Chance dennoch tödlich sein; vorausschauende Begegnungsauswahl ist entscheidender als eine starre Fluchtpflicht.
+
+### AKTUELL: `.54` Livetest-Korrektur umgesetzt (23.10.2026) – vor Git-Review
+
+**Umsetzung durch Claude:** Engine `db57b53` (Build `4.3.0-c.6.6.54`, Narrator-Vertrag unverändert `.52`), Leitfaden `072b7a8`. **Noch kein ChatGPT-Git-Review, kein neuer Livetest.**
+- **Flucht vor beschreibender Abwehr** (`src/v4/planner.js mapPlan`):
+  - Live Zug 13: „I break off and retreat back toward the tunnel I came in by, Guard raised to cover my withdrawal“ → Planner Guard (seq 1), `flee` (seq 2) → Guard ausgeführt, Flucht „not taken“.
+  - Neu: Ist eine Flucht erklärt und jede andere Hauptaktion eine Abwehr ohne Angriff, die nur die Flucht deckt, ist die Flucht die Hauptaktion. „Nur deckt“: Rückzugswörter in ihrem Zitat, oder in der Nachricht nach der Flucht gesagt.
+  - „I raise Guard, then next turn I retreat“ bleibt Guard. Eine Hauptaktion pro Zug, Fluchtchance unverändert.
+- **Partial Cover nur über Distanz** (`src/combat.js partialCoverAt`):
+  - Live Zug 12: Heavy Slash ENGAGED auf Goblin Scout A mit vom Extraktor gesetztem `partial`, −25 % (22 statt 30).
+  - Neu: eine Regel für Schlag (`resolveStrike`, tatsächliche Distanz) und Vorschau (`damagePreview`, Band des Zuschlagens). Deckung wirkt nur, wenn Angreifer und Ziel nicht ENGAGED sind.
+  - Fernangriff auf gedecktes Ziel weiter −25 %. Verlassene Position verliert die Deckung (schon bisher, jetzt abgesichert).
+  - 9C-Muster `cover` nur aus wirksamer Deckung. Schilde, Guard, DEF/MDEF und Skills unverändert.
+- **Leitfaden `current_test`:** Novice-Auftrag gegen einzelne Tiere oder Ungeziefer im Freien zuerst; Dungeon optional (nur nach gewonnenen Kämpfen, nie allein gegen Gruppen). Gefahr vor dem Kampf einschätzen. Bei etwa 40 % HP Flucht als ganze Aktion, dann volle Ruhe. Testziel unverändert.
+- **Tests laut Claude:**
+  - `tests/v4/live_1023c_fix.test.js` (7) auf dem Live-Chat `tests/v4/live_1023c.json`. Vor dem Fix rot: Flucht, Cover-Originalfall, Vorschau = Schlag, 9C-Beleg. Vor und nach grün (Absicherung): Guard zuerst, Fernangriff gedeckt, verlassene Deckung.
+  - `tests/unit/rules.test.js`: zwei ENGAGED-Cover-Erwartungen der alten Regel angepasst.
+  - Gesamt **1241/1241**, Runner-Tests 61/61.
+- **Offene Risiken:**
+  - Nahkampf-Skills mit „ignores Partial Cover“ (Legacy Precision Thrust, Rogue Piercing Thrust) verlieren ENGAGED ihren praktischen Nutzen (Design/10B, unverändert).
+  - Die Flucht-Regel erkennt „nur deckend“ an Wortlaut und Reihenfolge; eine anders formulierte deckende Abwehr vor der Flucht kann weiter vorgehen.
+  - Der Extraktor kann ENGAGED weiter `partial` buchen; mechanisch ist das jetzt folgenlos, Anzeigen zeigen es aber noch.
+- **Unverändert:** Startwaffen ATK/MATK 10, Gegnerwerte, Dungeon-Level, XP, Skill-Schwellen, Klassen.
+- **Nächster Schritt:** ChatGPT-Git-Review `db57b53`/`072b7a8`, danach neuer kurzer echter ST/GLM-Lauf `npm run live:st -- --guide current_test --headed`; dann 9D.
 
 ### NEUSTER LIVETEST .53 – 20261023-214438Z-current_test: TOD NACH 14 ZÜGEN, DUNGEON-FIX LIVE BESTÄTIGT (23.10.2026)
 

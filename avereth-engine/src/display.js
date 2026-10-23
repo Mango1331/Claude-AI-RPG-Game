@@ -333,6 +333,8 @@ function planLines(o) {
         out.push(sys(`Alaric: ${o.skill_name} on ${String(o.feature?.name || o.target_text).replace(/[<>`]/g, '')}${cost}${o.ammo ? ` · ${o.ammo.used} arrow${o.ammo.used > 1 ? 's' : ''}` : ''} — ${roll}`));
     }
     for (const n of o?.plan_notes || []) out.push(sys(`NOT TAKEN — ${String(n).replace(/[<>`]/g, '')}`));
+    // Patch 9C-1: a Skill the engine booked as learned this turn (src/v4/growth.js finalizeGrowth)
+    for (const l of o?.learned || []) out.push(sys(`NEW SKILL — ${l.name} (${l.category} · ${l.cost.amount} ${l.cost.resource.toUpperCase()}) · learned from ${String(l.teacher).replace(/[<>`]/g, '')} · #skill ${l.name}`));
     return out;
 }
 
@@ -392,7 +394,9 @@ function endLines(state, content, name, e, levelups = [], loot = null) {
     const got = (loot || []).length ? [sys('LOOT ACQUIRED:'), ...loot.map((l) => sys(`  ${l}`))] : [];
     // Patch 9B-1: the Proficiency Progress of the fight, booked at its end
     const pp = (e.pp || []).map((p) => sys(progressText({ ...p, name: skillOf(content, p.skill, state)?.name || p.skill })));
-    return [sys(`COMBAT END${fates.length ? ` — ${fates.join(', ')}` : ''}${xp}`), ...got, ...pp, ...levelups.map((lv) => sys(`LEVEL UP → ${lv} (+5 free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`))];
+    // Patch 9C-1: the Learning Progress the fight gave a learning goal (src/v4/growth.js)
+    const lp = (e.lp || []).map((l) => sys(`LEARNING +${l.lp} LP ${l.goal} → ${l.total}/${l.need}${l.total >= l.need ? ' (complete)' : ''}`));
+    return [sys(`COMBAT END${fates.length ? ` — ${fates.join(', ')}` : ''}${xp}`), ...got, ...pp, ...lp, ...levelups.map((lv) => sys(`LEVEL UP → ${lv} (+5 free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`))];
 }
 
 /** Patch 9B-1: one Skill's Proficiency Progress: "+18 PP Razor Cut → P1 18/75", a promotion named. */

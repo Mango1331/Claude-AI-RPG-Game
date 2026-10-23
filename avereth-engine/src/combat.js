@@ -13,6 +13,7 @@ import { bandIndex, bandName, clone, num, roundHalfUp } from './util.js';
 import { sceneHandle } from './v4/scene_handles.js';
 import { itemEffectOf, rulesetOf, skillOf as resolveSkill } from './content.js';
 import { effectValue, flatEffectValue, noteUse, fightProgress, restoration } from './skills.js';
+import { fightGrowth } from './v4/growth.js';
 import { passiveSnapshot, skillCostAmount, combatPassive } from './passives.js';
 import { rankRefusal, restoreOf, restoreEffect } from './v4/items.js';
 
@@ -1346,6 +1347,11 @@ export function endEncounterEvents(state, content, enc) {
     const progress = fightProgress(state, content, enc);
     if (progress.length) summary.pp = progress.map((e) => ({ skill: e.d.skill, gained: e.d.gained, from: e.d.from, to: e.d.to, need: e.d.need }));
     events.push(...progress);
+    // Patch 9C-1: the Learning Progress of a goal whose disciplines he fought with (src/v4/growth.js), on the same path
+    // for every fight that ends (a fight a reply opened too)
+    const learning = fightGrowth(state, content, enc);
+    if (learning.length) summary.lp = learning.map((e) => ({ goal: e.d.goal, lp: e.d.lp, total: e.d.total, need: e.d.need }));
+    events.push(...learning);
     events.push({ t: 'encounter.ended', d: { id: enc.id, summary } });
     return { events, summary };
 }

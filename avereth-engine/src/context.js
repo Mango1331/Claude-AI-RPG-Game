@@ -296,7 +296,9 @@ function outcomeBlock(state, content, outcome, opts = {}) {
     const block = outcomeLines(state, content, outcome, opts);
     // prototype C (src/v4/planner.js): what of the player's message the engine did not take this turn
     const notes = (outcome?.plan_notes || []).map((n) => `- NOT TAKEN THIS TURN (it does not happen; do not narrate it as done): ${n}`);
-    return [block, ...notes].filter(Boolean).join('\n');
+    // Patch 9C-1: a Skill the engine booked as learned in this turn (src/v4/growth.js); the only new Skill there is
+    const learned = (outcome?.learned || []).map((l) => `NEW SKILL — booked by the engine in this turn: Alaric now knows ${l.name} (${l.category}; ${l.technique}), learned from ${l.teacher}. Show the moment it takes hold in a sentence or two; its numbers are the engine's. No other new Skill, Passive, Skill evolution or class change.`);
+    return [block, ...notes, ...learned].filter(Boolean).join('\n');
 }
 
 function outcomeLines(state, content, outcome, { v4 = false } = {}) {
@@ -318,7 +320,7 @@ function outcomeLines(state, content, outcome, { v4 = false } = {}) {
         if (outcome.illegal) lines.push(`- Alaric's declared action is NOT possible now: ${outcome.illegal}. Nothing was spent or rolled for it; it is still Alaric's decision.`);
         if (outcome.ended) {
             const s = outcome.ended;
-            lines.push(`- Combat is over.${s.pc_dead ? ' Alaric is dead.' : ''}${s.xp_awarded ? ` Alaric gains ${s.xp_awarded} XP.` : ''}${outcome.levelups?.length ? ` LEVEL UP -> ${outcome.levelups.join(', ')} (+5 free Stat Points each; resources are not refilled).` : ''}${s.pp?.length ? ` Skill Proficiency (the engine's, from how he fought; mention it at most in passing): ${s.pp.map((p) => `${skillOf(content, p.skill, state)?.name || p.skill} +${p.gained} PP${p.to.prof > p.from.prof ? `, now P${p.to.prof}` : ''}`).join(', ')}.` : ''}${outcome.loot ? '' : ' Loot is only what the defeated actually carried or what can be harvested; nothing is taken automatically.'}`);
+            lines.push(`- Combat is over.${s.pc_dead ? ' Alaric is dead.' : ''}${s.xp_awarded ? ` Alaric gains ${s.xp_awarded} XP.` : ''}${outcome.levelups?.length ? ` LEVEL UP -> ${outcome.levelups.join(', ')} (+5 free Stat Points each; resources are not refilled).` : ''}${s.pp?.length ? ` Skill Proficiency (the engine's, from how he fought; mention it at most in passing): ${s.pp.map((p) => `${skillOf(content, p.skill, state)?.name || p.skill} +${p.gained} PP${p.to.prof > p.from.prof ? `, now P${p.to.prof}` : ''}`).join(', ')}.` : ''}${s.lp?.length ? ` Learning Progress (the engine's; no new Skill until the engine names one): ${s.lp.map((l) => `${l.goal} +${l.lp} LP, ${l.total}/${l.need}`).join(', ')}.` : ''}${outcome.loot ? '' : ' Loot is only what the defeated actually carried or what can be harvested; nothing is taken automatically.'}`);
             // Prototype C (4.3.0-c.6.6.4): the engine's automatic loot, already in his pack (src/v4/loot.js)
             if (outcome.loot) lines.push(`- LOOT (the engine's automatic loot at the fight's end, already in Alaric's pack): ${outcome.loot.join(', ')}. It is no decision of his and took no time: mention it in a few words or leave it to the HUD; do not show him skinning, carving or searching bodies, and add no other drop, coin or item. It sits in his magic pouch: no weight, bulk, packing, straps or carrying effort, now or later.`);
         } else if (outcome.next) lines.push(`- Next: ${outcome.next}. Stop the narration at Alaric's decision.`);

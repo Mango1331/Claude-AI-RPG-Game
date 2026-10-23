@@ -1989,3 +1989,14 @@ Vollständige Beschreibung: `docs/PATCH9B2_PASSIVES_EFFECTS_NPC_DEFENSE.md`.
 - **Korrektur.** Numerische Effektwerte sind ganzzahlig (eine Barrier von 13,5 HP ließ gebrochene HP zurück).
 - **Tests:** `tests/v4/patch9b2.test.js` (13).
 - **Nachbesserung (4.3.0-c.6.6.39):** Die Schadensvorschau folgt der echten Pipeline (bedingte Passives, Resistenz, Endure, Rundung); die NPC-Angriffswahl prüft reduzierte Kosten. Tests: 15.
+
+### Patch 9C-1 (4.3.0-c.6.6.40): Deterministischer Skill-Erwerb und Training
+
+Vollständige Beschreibung: `docs/PATCH9C1_SKILL_ACQUISITION_TRAINING.md`.
+
+- **Composer.** `src/skill_composer.js` baut aus `strike|bolt|guard|ward|mend`, Tags und Aspekten eine C1-F-Definition. Zahlen aus `rules.json composer`. Name und ID sind kampagnenweit eindeutig („Ember Bolt“, „Ember Bolt II“). Gebucht wird über `defineSkill`.
+- **Lernen.** `activity train/study` mit `learn`, `teacher`, `tags`, `aspects` (Vokabular `cmd-1.1`). Der Lehrer muss anwesend, kompetent und zugesagt sein (Trainingsleistung oder Fakt `teaches`); die Evidenz steht am Ziel. Wünsche und Bitten verwirft der Guard (`wish`).
+- **Fortschritt.** Tageskonto pro Ziel und Spieltag mit Kappen, Lehrer- und Eigenzeit getrennt, Teilung an Mitternacht. Kampf-LP auf dem gemeinsamen Kampfende-Pfad. Bekannte Skills: 12 PP × Affinität ab 60 Minuten pro Tag.
+- **Abschluss.** Nach beiden regulären Planner-Routen: bereite Ziele werden atomar Definition, Skill und geschlossenes Ziel, im selben Record vor dem Outcome (`learned`). Nichts bei Panels, fehlgeschlagener Planung oder im Kampf.
+- **Texte.** `#skills` LEARNING, NEW SKILL im System-Block und im Kontext, `content.10.r2`, Vertrag v4 Revision 4.3.0-c.6.6.40, Extraktor-Regel `teaches` (`delta-1.0`).
+- **Tests:** `tests/v4/patch9c1.test.js` (12).

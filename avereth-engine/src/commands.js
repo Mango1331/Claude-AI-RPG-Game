@@ -2,6 +2,7 @@
 // no combat Turn advance. Only #assign changes state (an explicitly defined state-changing command, System #1).
 // #system <question> is the one natural-language query; it is passed to the narrator in System-only mode.
 import { deriveCharacter, rawPowerText, itemOf, actionsOf, weaponAttackOf } from './derived.js';
+import { goalLines } from './v4/growth.js';
 import { formatCoin } from './economy.js';
 import { findSkill, rulesetOf, startClasses, skillOf } from './content.js';
 import { passiveTotals, skillCostAmount, passivesOf, passiveText } from './passives.js';
@@ -155,6 +156,9 @@ function skills(state, content) {
     // Patch 9A: the plain attack of the weapon he holds, no learned Skill (it comes and goes with the weapon)
     const w = weaponAttackOf(s, content, rulesetOf(state));
     if (w) lines.push(`${w.skill.name} | weapon attack of the equipped ${w.weapon.name} (not a learned Skill) | Cost ${skillCost(w.skill, 1, content, s)}${w.skill.ammo ? ` + ${w.skill.ammo.qty} arrow` : ''}`);
+    // Patch 9C-1: the techniques he is learning, with their source and Learning Progress (src/v4/growth.js)
+    const goals = goalLines(state);
+    if (goals.length) lines.push('LEARNING:', ...goals);
     lines.push('Use #skill <Skill Name> for full details.');
     return lines.join('\n');
 }

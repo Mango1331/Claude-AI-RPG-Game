@@ -33,6 +33,7 @@ import { extractorRequest, parseExtraction, EXTRACTOR_VERSION } from './extract.
 import { boardRequest, parseBoard, bookBoard, BOARD_VERSION } from './guild.js';
 import { extractionFailedEvents } from './world.js';
 import { hallOf, settlementOf, membership, boardKey, today, listingsOf, supportedRanks } from './domain.js';
+import { finalizeGrowth } from './growth.js';
 import { PLANNER_VERSION, MECH_TYPES, planContext, withContentSkills, plannerRequest, parsePlan, mapPlan, recentText, announcedAbandon } from './planner.js';
 import { crowdCount, personWords, bystanderEvents } from './settlement.js';
 import { skillOf } from '../content.js';
@@ -204,7 +205,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
         const at = crowd ? clone(before) : before;
         if (crowd) for (const e of crowd.events) applyEvent(at, e);
         const t = playerTurn(at, content, msg.mes, { msg: u, intent: crowd ? crowd.intent : m.intent, c: true });
-        return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, events: [...(crowd && t.events.length ? crowd.events : []), ...t.events], command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
+        return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, events: [...(crowd && t.events.length ? crowd.events : []), ...withGrowth(t, content)], command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
     }
     const need = boardFor(before, content, m.commands, { c: true });
     const board = need ? await generateBoard(llm, before, content, need) : null;
@@ -215,8 +216,25 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     return {
         v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: irRec, plan, interp,
         board: board ? { branch: board.branch, rank: board.rank, ms: board.ms, failed: board.failed || undefined, listings: board.listings.length, ...(board.calls?.length ? { llm: board.calls } : {}) } : undefined,
-        events: t.events, command: t.command ? { panels: t.command.panels, llm: null } : null,
+        events: withGrowth(t, content), command: t.command ? { panels: t.command.panels, llm: null } : null,
     };
+}
+
+/**
+ * Patch 9C-1: the shared finalization of a regular planned turn (both routes): every learning goal that is ready in the
+ * state the turn left, whenever it became ready (a session, a fight, a fight a reply opened), becomes its Skill
+ * (src/v4/growth.js finalizeGrowth: checked on a private copy, all or nothing per goal). Its events join the turn's
+ * record before the outcome, which names what he learned. A question, a panel or a running fight books none.
+ */
+function withGrowth(t, content) {
+    if (!t?.state || t.command || !t.events.length) return t.events;
+    const f = finalizeGrowth(t.state, content);
+    if (!f.events.length && !f.failed.length) return t.events;
+    const i = t.events.findLastIndex((e) => e.t === 'outcome.recorded');
+    if (i < 0) return [...t.events, ...f.events];
+    const rec = t.events[i];
+    const outcome = rec.d.outcome ? { ...rec.d.outcome, ...(f.learned.length ? { learned: f.learned } : {}), ...(f.failed.length ? { learn_failed: f.failed } : {}) } : rec.d.outcome;
+    return [...t.events.slice(0, i), ...f.events, { ...rec, d: { ...rec.d, outcome } }, ...t.events.slice(i + 1)];
 }
 
 /**

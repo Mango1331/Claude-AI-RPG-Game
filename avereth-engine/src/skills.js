@@ -318,17 +318,26 @@ export function noteUse(ctx, r) {
 }
 
 /**
+ * Patch 9B-1 (Patch 9C-1: shared with the Learning Progress of a fight, src/v4/growth.js): a fight that is over counts
+ * as a real challenge: ruleset 2, he neither died nor ran, a foe at most `challenge.levels_below` Levels below him took
+ * part and a foe attacked him.
+ */
+export function fightQualifies(state, content, enc) {
+    if (rulesetOf(state) < 2 || !enc.pp || enc.combatants.pc.current.defeated || enc.combatants.pc.current.escaped) return false;
+    const rule = content.rules.proficiency.award || {};
+    const lvl = enc.combatants.pc.fixed.level;
+    const below = rule.challenge?.levels_below ?? 2;
+    const worthy = Object.values(enc.combatants).some((c) => c.side === 'hostile' && (c.fixed.level ?? 0) >= lvl - below);
+    return worthy && !(rule.challenge?.foe_attack !== false && !enc.pp.threatened);
+}
+
+/**
  * Patch 9B-1: the Proficiency Progress of a fight that is over (src/combat.js endEncounterEvents): for each Skill he
  * used meaningfully, once, when the fight was a real challenge: a foe at most `challenge.levels_below` Levels below him
  * and a foe's attack on him. None when he died or ran from it, none in a legacy campaign.
  */
 export function fightProgress(state, content, enc) {
-    if (rulesetOf(state) < 2 || !enc.pp || enc.combatants.pc.current.defeated || enc.combatants.pc.current.escaped) return [];
-    const rule = content.rules.proficiency.award || {};
-    const lvl = enc.combatants.pc.fixed.level;
-    const below = rule.challenge?.levels_below ?? 2;
-    const worthy = Object.values(enc.combatants).some((c) => c.side === 'hostile' && (c.fixed.level ?? 0) >= lvl - below);
-    if (!worthy || (rule.challenge?.foe_attack !== false && !enc.pp.threatened)) return [];
+    if (!fightQualifies(state, content, enc)) return [];
     const sheet = state.entities.pc.sheet;
     const out = [];
     const after = { ...sheet, skills: { ...sheet.skills } };
@@ -354,4 +363,16 @@ export function checkProgress(state, content, skillId, featureId) {
     const skill = skillOf(content, skillId, state);
     if (!skill || !state.entities.pc.sheet.skills[skillId]) return [];
     return progressEvents(content, state, skillId, ppAward(content, state.entities.pc.sheet, skill), `a check of real difficulty on ${featureId}`, key);
+}
+
+/**
+ * Patch 9C-1: the Proficiency Progress of practising a Skill he knows (src/v4/growth.js): pp times his highest
+ * affinity, rounded half up, once per key (one Skill and game day). Not in a legacy campaign.
+ */
+export function practiceProgress(state, content, skillId, pp, why, key) {
+    if (rulesetOf(state) < 2 || state.pp_keys?.[key]) return [];
+    const skill = skillOf(content, skillId, state);
+    const sheet = state.entities.pc.sheet;
+    if (!skill || !sheet.skills[skillId]) return [];
+    return progressEvents(content, state, skillId, roundHalfUp(pp * affinityFor(content, sheet.class, skill)), why, key);
 }

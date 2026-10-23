@@ -12,6 +12,7 @@
 //   places, objects, offers, guild, decisions, services – Runtime V4 domains (src/v4/domain.js); empty in a V3 campaign
 import { clone, uniq } from './util.js';
 import { emptyDomains, applyDomainEvent, V4_EVENTS } from './v4/domain.js';
+import { applyGrowthEvent } from './v4/growth.js';
 
 export const STATE_VERSION = 3;
 
@@ -295,6 +296,10 @@ export function applyEvent(state, e) {
             if (d.key) { if (!state.pp_keys) state.pp_keys = {}; state.pp_keys[d.key] = true; }
             break;
         }
+        // Patch 9C-1: his learning goals and training (src/v4/growth.js): opened, a session, progress, closed
+        case 'growth.opened': case 'growth.session': case 'growth.progress': case 'growth.closed':
+            applyGrowthEvent(state, e);
+            break;
         case 'entity.status':
             state.entities[d.id].status = d.status;
             if (d.status === 'dead' && state.entities[d.id].sheet) state.entities[d.id].sheet.hp = 0;

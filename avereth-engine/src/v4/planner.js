@@ -26,6 +26,9 @@ import { extractJsonObject } from './json.js';
 import { validate } from './schema.js';
 import { interpreterSystem, vocabularyText, catalogText, interpreterSchema, PLAIN_FORMAT, repairMessage, amountErrors } from './interpret.js';
 import { anchorQuote } from './agency.js';
+import { openGoals } from './growth.js';
+import { composerFunctions } from '../skill_composer.js';
+import { disciplineTags, skillAspects } from '../skills.js';
 
 export const PLANNER_VERSION = 'plan-c0.1';
 
@@ -186,6 +189,17 @@ export function announcedAbandon(message, commands, state = null) {
     return { kept, dropped };
 }
 
+// Patch 9C-1: learning and training are activity train/study with a learning target; a wish to learn books nothing
+export const LEARNING_RULES = [
+    'Learning and training (story commands):',
+    '- Only when he trains, studies or takes a lesson NOW is it activity train or study with learn: a KNOWN SKILLS id he practises, a LEARNING id he goes on with, or the kind of a new technique he is taught (strike, bolt, guard, ward, mend). teacher: the PRESENT person who teaches him in this message, else null. tags and aspects: only those his words or the lesson name, else null. minutes or until as he says them.',
+    '- Asking to be taught, a wish ("I\'d like to learn …", "teach me someday"), a question about a technique, a price or a plan for later is no command: words, the story lets the other answer.',
+    'Examples (another town): CATALOG: PRESENT: npc.tutor (Brannoc, sword tutor) · KNOWN SKILLS warrior.cleave (Cleave: attack · single target) · LEARNING learn.1 (guard (Defense) from Brannoc, 40/100 LP)',
+    '- "*i spend the next two hours with Brannoc drilling the stance he shows me*" → {"commands":[{"seq":1,"type":"activity","kind":"train","what":"the stance Brannoc shows him","minutes":120,"until":null,"learn":"learn.1","teacher":"npc.tutor","tags":null,"aspects":null,"quote":"i spend the next two hours with Brannoc drilling the stance he shows me"}]}',
+    '- "*i practise my cleave on the post for an hour*" → {"commands":[{"seq":1,"type":"activity","kind":"train","what":"Cleave on the post","minutes":60,"until":null,"learn":"warrior.cleave","teacher":null,"tags":null,"aspects":null,"quote":"i practise my cleave on the post for an hour"}]}',
+    '- "Could you teach me a fire spell some day?" → {"commands":[]}',
+].join('\n');
+
 /**
  * The fight prompt shows only the story commands a fight can mean (activity: wait, search); the story prompt all of
  * them. Prototype C (4.3.0-c.6.2): no go in a fight, where it is never taken (mapPlan) — live: "i walk towards the next
@@ -213,7 +227,7 @@ export function plannerSystem(vocab, { fight = false } = {}) {
         const story = vocabularyText({ commands: vocab.commands.filter((c) => FIGHT_STORY_TYPES.has(c.type)) });
         return [PLANNER_ROLE, '', mech, '', FIGHT_RULES, '', 'Story commands (the same list):', story, '', 'Answer with {"commands": [...]}; an empty list when the message contains no action of his.', '', PLAIN_FORMAT].join('\n');
     }
-    return [interpreterSystem(vocab), '', CONTRACT_RULES, '', HANDOVER_RULES, '', ORDER_RULES, '', mech, '', PLAIN_FORMAT].join('\n');
+    return [interpreterSystem(vocab), '', CONTRACT_RULES, '', HANDOVER_RULES, '', ORDER_RULES, '', LEARNING_RULES, '', mech, '', PLAIN_FORMAT].join('\n');
 }
 
 function skillText(skill) {
@@ -277,7 +291,10 @@ export function planContext(state, content, catalog) {
         if (!p || route.at(-1)?.id === resolved) continue;
         route.push({ id: resolved, name: p.name, kind: p.kind });
     }
-    return { fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null };
+    // Patch 9C-1: his open learning goals and what a learning activity may name (src/v4/growth.js)
+    const learning = rulesetOf(state) >= 2 ? openGoals(state).map((g) => ({ id: g.id, text: `${g.target.aspects?.length ? `${g.target.aspects.join('/')} ` : ''}${g.target.fn} (${g.target.tags.join(', ')}) from ${g.source.name}, ${g.lp}/${g.need} LP` })) : [];
+    const techniques = rulesetOf(state) >= 2 ? composerFunctions(content) : [];
+    return { fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content) };
 }
 
 /** The user message: the interpreter's CATALOG, then skills, opponents, engine facts, RECENT and the message. */
@@ -286,6 +303,7 @@ export function plannerUser(ctx, text, { recent = '' } = {}) {
     L.push('KNOWN SKILLS (the only skill ids):');
     for (const s of ctx.skills) L.push(`- ${s.id}: ${s.name} — ${s.text}`);
     if (!ctx.skills.length) L.push('- none');
+    if (ctx.learning?.length) L.push('LEARNING (his open learning goals; the only learning ids):', ...ctx.learning.map((g) => `- ${g.id}: ${g.text}`));
     if (ctx.fight) {
         L.push(ctx.opponents.length ? 'OPPONENTS (in the fight):' : 'OPPONENTS: none');
         for (const o of ctx.opponents) L.push(`- ${o.id}: ${o.label} — ${o.hp} · ${o.band}`);
@@ -340,6 +358,23 @@ const FIELDS = {
 const NULLABLE = { use_skill: ['skill', 'target'], ability_world: ['skill', 'goal'], move: ['target'], attempt: ['approach', 'stat', 'tool', 'possible'] };
 
 /**
+ * Patch 9C-1: the learning arguments of an activity: only for train or study; learn a known Skill, a learning goal or a
+ * technique; tags and aspects of the rules' lists. Error lines for the repair, nothing replaced.
+ */
+function learningErrors(c, ctx, at) {
+    const e = [];
+    const set = ['learn', 'teacher', 'tags', 'aspects'].filter((k) => c[k] !== null && c[k] !== undefined);
+    // a legacy campaign learns nothing this way: the engine takes such an activity as an ordinary one
+    if (!set.length || !(ctx.techniques || []).length) return e;
+    if (!['train', 'study'].includes(c.kind)) return [`${at}: learn, teacher, tags and aspects belong only to kind train or study (null otherwise)`];
+    const known = new Set([...(ctx.known || []), ...(ctx.learning || []).map((g) => g.id), ...(ctx.techniques || [])]);
+    if (c.learn !== null && !known.has(c.learn)) e.push(`${at}: learn must be an id from KNOWN SKILLS, an id from LEARNING, one of ${ctx.techniques.join(', ')}, or null`);
+    if (Array.isArray(c.tags) && c.tags.some((t) => !(ctx.disciplines || []).includes(t))) e.push(`${at}: tags must be of ${(ctx.disciplines || []).join(', ')}, or null`);
+    if (Array.isArray(c.aspects) && c.aspects.some((a) => !(ctx.aspects || []).includes(a))) e.push(`${at}: aspects must be of ${(ctx.aspects || []).join(', ')}, or null`);
+    return e;
+}
+
+/**
  * Read and check a planner answer.
  * @returns {{commands: object[]|null, errors: string[]}} commands in the planner's order (seq), or the error lines
  */
@@ -380,6 +415,7 @@ export function parsePlan(answer, vocab, ctx, message) {
                 errors.push(`${at}: ${slip} is the contract slip (an object), not the contract${(ctx.catalog.quests || []).some((q) => q.id === qid) ? `; the contract is ${qid}` : ''}`);
             }
             if (typeof c.quote === 'string' && !inMessage(message, c.quote)) errors.push(`${at}: quote "${c.quote.slice(0, 60)}" is not in the message (copy his exact words)`);
+            if (type === 'activity' && !bad.length) errors.push(...learningErrors(c, ctx, at));
             continue;
         }
         if (!FIELDS[type]) { errors.push(`${at}: "type" must be a story command or one of ${MECH_TYPES.join(', ')}`); continue; }

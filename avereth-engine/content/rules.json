@@ -218,6 +218,163 @@
       }
     }
   },
+  "growth": {
+    "src": "Patch 9C-1 (docs/PATCH9C1_SKILL_ACQUISITION_TRAINING.md): provisional numbers of Skill acquisition and training under ruleset 2 (src/v4/growth.js); Learning Progress needed is proficiency.learning_progress by Complexity",
+    "max_active": 3,
+    "lp_per_hour": {
+      "teacher": 20,
+      "self": 10
+    },
+    "lp_day_cap": {
+      "teacher": 40,
+      "self": 20
+    },
+    "lp_note": "per learning target and game day: the day's teacher minutes at the teacher rate plus the day's own-practice minutes at the self rate (each capped), the sum capped at the teacher cap, times his single highest Class Affinity for the target's tags, rounded down; what the day already gave is subtracted, so sessions split over a day never add more than the day's claim",
+    "fight_lp": 12,
+    "fight_note": "a fight that qualifies for Proficiency Progress (proficiency.award.challenge) in which he used a Skill sharing a tag with an open learning goal: once per fight, to the oldest such goal, times his affinity, rounded down",
+    "train_pp": {
+      "pp": 12,
+      "min_minutes": 60
+    },
+    "train_note": "practising a Skill he knows: once per Skill and game day when that day's practice of it reaches min_minutes, pp times his affinity rounded half up (as proficiency.award)"
+  },
+  "composer": {
+    "src": "Patch 9C-1: the deterministic Skill composer (src/skill_composer.js): a supported main function, discipline tags and aspects make one C1 F-rank definition; its numbers sit inside skill_design.f_rank and the effect bounds of src/skills.js (provisional)",
+    "functions": {
+      "strike": {
+        "category": "Offensive",
+        "tags": [
+          "Martial",
+          "Precision",
+          "Mobility"
+        ],
+        "attack": {
+          "base": 10,
+          "coef": 1.5,
+          "band": "ENGAGED"
+        },
+        "cost": 6,
+        "noun": "Strike",
+        "text": "a close strike"
+      },
+      "bolt": {
+        "category": "Offensive",
+        "tags": [
+          "Arcane",
+          "Control"
+        ],
+        "attack": {
+          "base": 10,
+          "coef": 1.5,
+          "band": "MEDIUM"
+        },
+        "cost": 7,
+        "noun": "Bolt",
+        "text": "a bolt of force at MEDIUM range"
+      },
+      "guard": {
+        "category": "Defensive",
+        "tags": [
+          "Defense",
+          "Martial"
+        ],
+        "effect": {
+          "kind": "temp_def",
+          "base": 4,
+          "coef": 0.5,
+          "floor": true,
+          "until": "own_next_turn"
+        },
+        "cost": 5,
+        "noun": "Guard",
+        "text": "a braced guard that raises his DEF until his next turn"
+      },
+      "ward": {
+        "category": "Defensive",
+        "tags": [
+          "Arcane",
+          "Control",
+          "Defense"
+        ],
+        "effect": {
+          "kind": "barrier",
+          "base": 5,
+          "coef": 1.2,
+          "floor": true,
+          "until": "destroyed_or_own_next_turn"
+        },
+        "cost": 6,
+        "noun": "Ward",
+        "text": "a barrier that takes damage for him until his next turn"
+      },
+      "mend": {
+        "category": "Utility",
+        "tags": [
+          "Control",
+          "Arcane",
+          "Defense"
+        ],
+        "effect": {
+          "kind": "heal",
+          "base": 6,
+          "coef": 0.8,
+          "floor": true
+        },
+        "cost": 7,
+        "noun": "Mend",
+        "text": "a mending that restores some of his HP"
+      }
+    },
+    "stat_by_tag": {
+      "Martial": "STR",
+      "Precision": "AGI",
+      "Mobility": "AGI",
+      "Defense": "VIT",
+      "Arcane": "INT",
+      "Control": "WIL"
+    },
+    "effect_stats": {
+      "temp_def": [
+        "VIT",
+        "WIL"
+      ],
+      "barrier": [
+        "WIL",
+        "INT"
+      ],
+      "heal": [
+        "VIT",
+        "WIL",
+        "INT"
+      ]
+    },
+    "magical_tags": [
+      "Arcane",
+      "Control"
+    ],
+    "tag_words": {
+      "Martial": "Iron",
+      "Precision": "Keen",
+      "Mobility": "Swift",
+      "Defense": "Steady",
+      "Arcane": "Runic",
+      "Control": "Binding"
+    },
+    "aspect_words": {
+      "Fire": "Ember",
+      "Ice": "Frost",
+      "Lightning": "Storm",
+      "Water": "Tide",
+      "Earth": "Stone",
+      "Wind": "Gale",
+      "Shadow": "Shade",
+      "Light": "Dawn",
+      "Poison": "Venom",
+      "Nature": "Thorn",
+      "Blood": "Crimson",
+      "Sound": "Echo"
+    }
+  },
   "xp": {
     "src": "Core #25",
     "base_per_level": 12,

@@ -28,7 +28,8 @@ import { journeyReady, knownAt } from './catalog.js';
 import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSetsGoal } from './intents.js';
 import { knownByName } from './known.js';
 import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect } from './items.js';
-import { itemEffectOf } from '../content.js';
+import { itemEffectOf, rulesetOf } from '../content.js';
+import { learningActivity } from './growth.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
@@ -44,6 +45,8 @@ const UNTIL = { done: 'until it is done', noon: 'until noon', evening: 'until ev
 const YIELDING = new Set(['gather', 'search', 'craft']);
 const ROAMING = new Set(['gather', 'search', 'errand']);
 const RESTING = new Set(['rest', 'sleep']);
+// Patch 9C-1: the activities that learn or practise (src/v4/growth.js)
+const LEARNING = new Set(['train', 'study']);
 // the slots of what he holds in his hands (wielded, not worn): "everything I wear" leaves them as they are
 const HELD_SLOTS = new Set(['weapon', 'offhand']);
 
@@ -530,6 +533,22 @@ const HANDLERS = {
         const before = envx?.c && envx.dice && c.kind === 'search' ? searchedBefore(s, s.scene.at, String(c.what || c.quote || 'the area')) : null;
         if (before) {
             return { status: 'resolved', reason: 'searched already', done: true, line: `SEARCHED ALREADY — he searched ${c.what || 'here'} here before (turn ${before.turn}: ${before.success ? 'found what there was to find' : 'found nothing'}), and nothing here has changed since: the same search yields nothing new, no roll, nothing more to take. Looking elsewhere, another way or with a tool is a new search; say plainly that this one is done.` };
+        }
+        // Patch 9C-1 (ruleset 2, the planner path): training or study with a learning target. The engine decides what
+        // it is (a Skill he knows, a learning goal, a new technique), checks its teacher and books time, the session and
+        // its progress, or nothing at all (a question, a refusal)
+        if (envx?.c && LEARNING.has(c.kind) && rulesetOf(s) >= 2 && (c.learn || c.teacher)) {
+            const minutes = engineMinutes(content, s, c);
+            const r = learningActivity(s, content, c, minutes, s.clock.minute);
+            if (r.status !== 'resolved') return { status: r.status, reason: r.reason, line: r.line };
+            emit({ t: 'time.advanced', d: { minutes, why: c.kind } });
+            ctx.auth.booked_min = (ctx.auth.booked_min || 0) + minutes;
+            ctx.auth.timeCap = Math.max(ctx.auth.timeCap, ctx.auth.booked_min);
+            ctx.expectedKeys[String(c.seq)] = 'activity';
+            ctx.engineLines.push(`TIME — ${c.kind}: ${minutes} min (now ${formatClock(s.clock.minute)})`);
+            r.events.forEach(emit);
+            ctx.engineLines.push(r.engine);
+            return { status: 'resolved', cap: minutes, line: `${r.line} ${minutes} minutes pass; it is now ${formatClock(s.clock.minute)}. Narrate it at that length.` };
         }
         const t = content.rules.time;
         const cap = c.until ? untilMinutes(content, s, c.until) : c.minutes ? Math.ceil(c.minutes * t.minutes_factor) : t.default_cap_min;

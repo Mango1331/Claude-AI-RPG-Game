@@ -20,6 +20,8 @@
 //   purpose       a purpose frame ("I'm here to register", "so I can get my silver at the  purpose
 //                 guild") for a Guild act that cannot happen where he is, with no go there before it in the message
 //   negation      a negation right before the command's own verb ("I'm not paying")        negation
+//   wish          a training or study he only wishes or asks for ("I'd like to learn …",   wish
+//                 "teach me the ward"; Patch 9C-1)
 //   other actor   the quote's subject is a person present, not Alaric ("the clerk takes …") npc_actor
 //   other speech  the quote sits in someone else's quoted words ('"…," says the furrier')   npc_speech
 //   state         drop/give/sell/use/equip of something he does not hold; a turn-in of a    not_held, same_message,
@@ -40,7 +42,7 @@ export const COMMITMENTS = new Set(['pay', 'buy', 'sell', 'give', 'drop', 'use',
 export const LEMMAS = {
     'journey.continue': ['ready', 'go', 'leave', 'depart', 'set off', 'continue'],
     go: ['go', 'goes', 'going', 'went', 'head', 'heading', 'walk', 'walking', 'travel', 'travelling', 'traveling', 'ride', 'riding', 'return', 'returning', 'be at', 'set off', 'leave', 'leaving'],
-    activity: ['sleep', 'sleeping', 'rest', 'resting', 'wait', 'waiting', 'work', 'working', 'train', 'training', 'gather', 'gathering', 'search', 'searching', 'study', 'studying', 'craft', 'crafting'],
+    activity: ['sleep', 'sleeping', 'rest', 'resting', 'wait', 'waiting', 'work', 'working', 'train', 'training', 'gather', 'gathering', 'search', 'searching', 'study', 'studying', 'craft', 'crafting', 'learn', 'learning', 'practise', 'practising', 'practice', 'practicing', 'drill', 'drilling'],
     take: ['take', 'taking', 'pick up', 'picking up', 'grab', 'grabbing', 'pocket', 'collect', 'collecting'],
     drop: ['drop', 'dropping', 'put down', 'set down', 'leave', 'leaving'],
     give: ['give', 'giving', 'hand', 'handing'],
@@ -64,7 +66,7 @@ export const LEMMAS = {
 export const PAST = {
     'journey.continue': ['left', 'departed', 'continued', 'set off'],
     go: ['went', 'walked', 'headed', 'travelled', 'traveled', 'rode', 'returned', 'came', 'left', 'gone'],
-    activity: ['slept', 'rested', 'waited', 'worked', 'trained', 'gathered', 'searched', 'studied', 'crafted'],
+    activity: ['slept', 'rested', 'waited', 'worked', 'trained', 'gathered', 'searched', 'studied', 'crafted', 'learned', 'learnt', 'practised', 'practiced', 'drilled'],
     take: ['took', 'taken', 'picked up', 'grabbed', 'pocketed', 'collected'],
     drop: ['dropped', 'left', 'put down', 'set down'],
     give: ['gave', 'given', 'handed'],
@@ -96,6 +98,9 @@ const FUTURE_MODAL = "(?:will|'ll|ll|ill|shall|going to|gonna|plan to|intend to|
 const PURPOSE = /\b(?:so (?:that )?(?:i|we) (?:can|could|may|might)|in order to|to be able to|(?:i'm|im|i am) here to)\b/;
 // an inverted auxiliary opens a question ("Could I take …", "did the clerk already log …"), a wh-word with an auxiliary too
 const QUESTION_START = /^(?:(?:could|can|may|might|should|shall|would|will|do|does|did|is|are|am|was|were|have|has)\s+(?:i|we|you|he|she|they|it|the|my|your|his|her|their|this|that)\b|(?:what|where|which|who|why)\s+(?:is|are|was|were|do|does|did|can|could|would|should|will)\b|how (?:much|many|long|far|do|does|can|could|would|should|is|are)\b)/;
+// Patch 9C-1: a wish or a request to be taught is no lesson now ("I'd like to learn a fire spell", "teach me the ward")
+const WISH = /\b(?:(?:i'd|id|i would|we'd|we would) (?:really )?(?:like|love|want) to|(?:i|we) (?:really )?(?:want|wish|hope|wanna) to|i wish i could|if only i could|wanna|(?:please )?teach me|show me how)\s+(?:[a-z']+\s+){0,3}?(?:learn|learning|train|training|study|studying|practi[sc]e|practi[sc]ing|be taught|master|how|the|a|an|your|that|this)\b|\b(?:please )?teach me\b/;
+const LEARNING_KINDS = new Set(['train', 'study']);
 const NEGATOR = "(?:not|never|n't|won't|wont|don't|dont|didn't|didnt|cannot|can't|cant|no longer|refuse to|refuses to|decline to)";
 const FIRST_PERSON = new Set(['i', "i'm", 'im', "i'll", 'ill', "i've", 'ive', "i'd", 'we', "we're", "we'll"]);
 const SPEECH_VERB = /\b(?:says|said|asks|asked|replies|replied|shouts|calls|calls out|whispers|adds|mutters|offers|tells|answers|insists|demands|suggests|orders|snaps|grunts|yells|murmurs|explains|repeats|continues|warns|promises|sighs|laughs|growls|barks)\b/;
@@ -326,6 +331,7 @@ export function guardCommands(message, commands, context = {}, { language = true
         if (RETRO_ANCHOR.test(text) && pastRe(type) && new RegExp(`\\b(?:${pastRe(type)})\\b`).test(text)) { drop(c, 'retrospective', 'the evidence recalls an earlier deed'); continue; }
         if (planned(parts, type)) { drop(c, 'plan', 'the evidence plans it for later'); continue; }
         if (negated(text, type)) { drop(c, 'negation', 'the evidence negates it'); continue; }
+        if (type === 'activity' && LEARNING_KINDS.has(c.kind) && WISH.test(evidence)) { drop(c, 'wish', 'the evidence wishes or asks to learn; no lesson happens now'); continue; }
         if (otherSpeech(message, evidence, context)) { drop(c, 'npc_speech', "the evidence is someone else's quoted words"); continue; }
         if (otherActor(evidence, context)) { drop(c, 'npc_actor', 'the evidence is what someone else does'); continue; }
         const goesToHall = kept.some((k) => k.type === 'go' && (halls.has(idOf(k.to)) || /guild/i.test(String(k.to?.new ?? ''))));

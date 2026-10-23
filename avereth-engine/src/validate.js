@@ -56,6 +56,15 @@ export function validateState(state, content) {
         }
         if (e.status === 'dead' && s.hp !== 0) p.push(`${where}: dead with HP ${s.hp}`);
     }
+    // Patch 9C-1: his learning goals (src/v4/growth.js): at most max_active open, Learning Progress whole and up to its
+    // need, ready exactly at the need; the Skill of a closed goal is his
+    const goals = Object.values(state.growth?.goals || {});
+    if (goals.length > (content.rules.growth?.max_active ?? 3)) p.push(`${goals.length} learning goals open`);
+    for (const g of goals) {
+        if (!isInt(g.lp) || g.lp < 0 || g.lp > g.need) p.push(`learning goal ${g.id}: LP ${g.lp}/${g.need}`);
+        if ((g.status === 'ready') !== (g.lp >= g.need)) p.push(`learning goal ${g.id}: ${g.status} at ${g.lp}/${g.need}`);
+    }
+    for (const d of state.growth?.done || []) if (!pc.sheet.skills[d.skill]) p.push(`the Skill ${d.skill} of learning goal ${d.id} is not his`);
     const sc = state.scene;
     // Runtime V4 keeps its place nodes in state.places; wilderness outside a settlement lies in its realm (live 30.09.2026)
     if (sc.location && !state.entities[sc.location] && !content.locations.has(sc.location) && !state.places?.[sc.location]) p.push(`unknown scene location ${sc.location}`);

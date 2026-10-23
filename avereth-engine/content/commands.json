@@ -1,6 +1,6 @@
 {
-  "version": "cmd-1.0",
-  "note": "Runtime V4 command vocabulary (docs/RUNTIME_V4_PLAN.md §4.1, §4.2). One source for the interpreter prompt, its schema and the validator (src/v4/interpret.js). cmd-0.2 against the P0 draft cmd-0.1-draft (docs/P0_BERICHT.md §5): guild.register no longer teaches the phrase \"I'm here to register\"; quest.turn_in no longer teaches a purpose clause as a turn-in; reading the Guild board is board.read, not 'looking around'; \"register it\" after taking a slip is part of quest.accept. The positive/negative lists document intent for readers and are never put into a prompt: several of them are cases of the evaluation corpus (tests/eval/commands.jsonl). cmd-0.3: GO explicitly includes moving toward a perceived sound, trail or direction (live 28.09. afternoon). cmd-0.4: add journey.continue for clear consent to an already-established escort journey; scene handles are targetable by the deterministic combat parser. cmd-0.5: JOURNEY READY may come from any persisted travel/departure context with a present participant, not only an ESCORT objective. cmd-0.6: explicit present-tense continuation after a persisted journey, current return travel despite 'came from'; witness-signature requests are never Guild turn-ins. cmd-0.7 (review of 4.1.0): offer.accept carries qty, the number of units he takes of one line (\"three flasks\"); an OFFER line may be a lot (\"3 for 9 cp\"); buy and sell count units the same way. cmd-0.8 (live 15.10.2026, 4.3.0-c.6.6.5): a BID in the catalog is someone buying Alaric's things; agreeing to it is offer.accept with that bid, never a purchase; laying things out or showing them to a trader is no give.",
+  "version": "cmd-1.1",
+  "note": "Runtime V4 command vocabulary (docs/RUNTIME_V4_PLAN.md §4.1, §4.2). One source for the interpreter prompt, its schema and the validator (src/v4/interpret.js). cmd-0.2 against the P0 draft cmd-0.1-draft (docs/P0_BERICHT.md §5): guild.register no longer teaches the phrase \"I'm here to register\"; quest.turn_in no longer teaches a purpose clause as a turn-in; reading the Guild board is board.read, not 'looking around'; \"register it\" after taking a slip is part of quest.accept. The positive/negative lists document intent for readers and are never put into a prompt: several of them are cases of the evaluation corpus (tests/eval/commands.jsonl). cmd-0.3: GO explicitly includes moving toward a perceived sound, trail or direction (live 28.09. afternoon). cmd-0.4: add journey.continue for clear consent to an already-established escort journey; scene handles are targetable by the deterministic combat parser. cmd-0.5: JOURNEY READY may come from any persisted travel/departure context with a present participant, not only an ESCORT objective. cmd-0.6: explicit present-tense continuation after a persisted journey, current return travel despite 'came from'; witness-signature requests are never Guild turn-ins. cmd-0.7 (review of 4.1.0): offer.accept carries qty, the number of units he takes of one line (\"three flasks\"); an OFFER line may be a lot (\"3 for 9 cp\"); buy and sell count units the same way. cmd-0.8 (live 15.10.2026, 4.3.0-c.6.6.5): a BID in the catalog is someone buying Alaric's things; agreeing to it is offer.accept with that bid, never a purchase; laying things out or showing them to a trader is no give. cmd-1.1 (Patch 9C-1): activity train/study carries what he learns or practises (learn: a KNOWN SKILL id, a LEARNING id, or a new technique strike|bolt|guard|ward|mend), from whom (teacher: a person PRESENT), and the technique's disciplines and aspects (tags, aspects); only when he trains or studies now, never for a wish, a question or a plan to learn.",
   "rules": [
     "Only what Alaric himself does or commits to in this message. A deed he narrates in the past tense in this message counts.",
     "No command for a question, a thought or wish, a hypothetical (\"if I …, would …\"), a plan for later (\"tomorrow I'll …\"; only a firm decision on a goal is intent.set), a memory of an earlier turn, a negation (\"I don't pay\"), or what other people do or say, even when the player writes it.",
@@ -46,7 +46,7 @@
     },
     {
       "type": "activity",
-      "summary": "Alaric spends time on something: rest, sleep, wait, work, train, study, craft, search, gather, errand. minutes when he names a duration; until when he names an end (noon, evening, end_of_day, night, dawn, morning; done = until the task is finished).",
+      "summary": "Alaric spends time on something: rest, sleep, wait, work, train, study, craft, search, gather, errand. minutes when he names a duration; until when he names an end (noon, evening, end_of_day, night, dawn, morning; done = until the task is finished). For train and study only: learn = what he trains or studies, a KNOWN SKILLS id he practises, a LEARNING id he goes on with, or the kind of a new technique he is taught (strike: a close weapon or body technique; bolt: a ranged spell; guard: a defensive stance; ward: a magical barrier; mend: a healing); teacher = the PRESENT person who teaches him now; tags = the disciplines of a new technique he names (Martial, Precision, Mobility, Defense, Arcane, Control); aspects = its elements he names (Fire, Ice, Lightning, Water, Earth, Wind, Shadow, Light, Poison, Nature, Blood, Sound). null for what he does not say; all four null for any other activity.",
       "args": {
         "kind": {
           "enum": [
@@ -82,15 +82,33 @@
             "morning"
           ],
           "nullable": true
+        },
+        "learn": {
+          "type": "string",
+          "nullable": true
+        },
+        "teacher": {
+          "ref": "person",
+          "nullable": true
+        },
+        "tags": {
+          "array": true,
+          "nullable": true
+        },
+        "aspects": {
+          "array": true,
+          "nullable": true
         }
       },
       "positive": [
         "*i gather herbs until the basket is full*",
-        "*i rest for an hour*"
+        "*i rest for an hour*",
+        "*i spend two hours with the hedge mage practising the bolt she shows me*"
       ],
       "negative": [
         "I'd love to sleep for a week.",
-        "How long until dawn?"
+        "How long until dawn?",
+        "I'd like to learn a fire spell someday."
       ]
     },
     {

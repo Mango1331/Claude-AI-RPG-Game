@@ -1,7 +1,7 @@
 {
   "id": "current_test",
-  "title": "Aktueller Livetest: 9C-2b Skill Stone (Hauptweg), Lernmaterial (Zusatz) und Kampfeinsatz (.48)",
-  "brief": "Create a Mage with Arcane Bolt and Arcane Ward. Your primary objective is to legitimately acquire and use ONE new technique from a Skill Stone. Look for a real Skill Stone in the world: ask at a shop that deals in magical goods, a trader or a mage; buy one that is actually offered at a price you can pay, or take one you are actually given or find. Do not invent a stone, a price, coin or a gift; if every stone is beyond your coin, bargain or look for another way in play, and report the blocker instead of fabricating progress. Before activating it, read #bag: the stone must show as 'Skill Stone · F · holds …'; if it holds no technique the story named, note that. If #bag shows no 'Skill Stone · F · holds <technique>' for it, that is a blocker: report it and do not activate the stone again and again hoping for a result. Then, outside any fight, explicitly activate it in one clear action (for example: press the stone to your brow and wake it). Follow System state, not narrator claims. After the System actually reports NEW SKILL and the stone is spent, read #skills and #skill with the exact name; distinguish the appearance-only Description from Effect, cost and range. Secondary, only if it does not delay the main run: if a manual or primer that teaches a technique is offered cheaply or given, check it in #bag, study it explicitly for two hours and read #skills for the booked Learning Progress (finishing it is not required; the manual must stay in your bag). ONLY THEN seek a genuinely hostile ordinary foe, use the newly acquired Skill, finish the fight and read #status. No Guild quest or dungeon is required. Do not manipulate engine state, use developer shortcuts or reset the chat to force success.",
+  "title": "Aktueller Livetest: 9C-2c Ordinary-Passive durch Training (Hauptweg), Rare-Passive durch Kampf (Zusatz) (.49)",
+  "brief": "Create a Mage with Arcane Bolt and Arcane Ward. Your primary objective is to legitimately develop ONE Ordinary Passive by real training and accept it. Train a lasting quality of yourself, your mind: once each in-game day, explicitly spend two hours on focused practice of your concentration (for example: I spend two hours in meditation, drilling my concentration), then sleep until morning, and repeat. One such session a day is all that counts (more on the same day adds nothing); the engine needs about ten days of it. Read #skills now and then for the learning goal and its Learning Progress, and #passives for your Passive slots. Do not invent progress, a teacher, a blessing or a shortcut; if the System answers NOT TRAINING or NO PASSIVE YET, or the progress does not rise on a new day, treat it as a blocker and report it instead of repeating. Only when the System shows POSSIBLE PASSIVE, read #passives (it is offered, not yours yet), then explicitly accept it in one clear sentence (for example: I accept it). After the System reports NEW PASSIVE, read #status (INT must read like INT 8 (6 +2), Max MP higher), #skill Arcane Bolt (Raw Power with the raised INT) and #passives (1/4). Follow System state, not narrator claims. Secondary, only after that and only if it happens naturally: a Rare Passive can be offered only after an outstanding fight you win at very low HP against a much stronger foe; never seek a hopeless fight or provoke one on purpose, and do not fake danger. If any POSSIBLE PASSIVE appears, decide on it deliberately (accept or decline) and note what the System says. No Guild quest or dungeon is required. Do not manipulate engine state, use developer shortcuts or reset the chat to force success.",
   "character": {
     "class": "Mage",
     "skills": [
@@ -16,34 +16,38 @@
       "maxTurns": 4
     },
     {
-      "id": "fight_started",
-      "goal": "Only after a Skill Stone was activated and NEW SKILL is confirmed by the System, engage a legitimate hostile foe and cast the exact newly acquired Skill.",
-      "maxTurns": 26
+      "id": "passive_offered",
+      "goal": "Train your mind on your own, two hours on each of about ten in-game days with sleep between, until the System offers a POSSIBLE PASSIVE.",
+      "maxTurns": 34
     },
     {
-      "id": "fight_won",
-      "goal": "Finish that encounter and verify Engine damage, resource cost, effect and #status against #skill.",
-      "maxTurns": 10
+      "id": "passive_gained",
+      "goal": "Accept the offered Passive explicitly and verify #status, #skill Arcane Bolt and #passives against it.",
+      "maxTurns": 6
+    },
+    {
+      "id": "rare_passive_offered",
+      "goal": "Optional: only if an outstanding, genuinely dangerous fight happens naturally and you win it at very low HP, note the Rare offer and decide on it.",
+      "maxTurns": 6,
+      "required": false
     }
   ],
   "focus": [
-    "A Skill Stone must be a real object of the world (bought, given or found in the story), never invented by the player; #bag must show what it holds before activation.",
-    "Activation needs an explicit action outside a fight; wanting to use it, asking about it or examining it must change nothing.",
-    "Record the exact NEW SKILL name, that no training time passed, and that exactly one stone was spent (it leaves #bag); no Skill from narration alone.",
-    "If activation is refused (no technique established, a known technique, a fight), the stone must stay in #bag and no Skill appear.",
-    "A purchase gives exactly the units paid, with the offer's profile: after buying one stone #bag shows one stone, never a second unprofiled copy from the story's hand-over.",
-    "A manual, if tried: study books Learning Progress within the daily cap, the manual stays, reading alone books nothing.",
-    "The Forge Description is appearance-only and must never be presented as the mechanical Effect; use the new Skill in a real fight and compare MP, effect and narration with Engine truth.",
-    "Observe stalls, duplicate grants, errors, unexpected extra LLM calls and Engine/Forge timing. The automated evaluator tracks creation/combat, not acquisition: check stone, NEW SKILL and spending by the chat and events."
+    "An Ordinary Passive comes only from real, booked training over many in-game days (20 Learning Progress per day, 200 needed); one session or repeated sessions on one day must not unlock it.",
+    "The engine offers it first (POSSIBLE PASSIVE): before your acceptance nothing about you changes (#status, Max MP, Raw Power); the narrator must not tell a new power or a stronger mind before NEW PASSIVE.",
+    "After acceptance: INT shows the bonus separately (INT 8 (6 +2)), the assigned INT stays 6, Max MP rises by 16, Arcane Bolt's Raw Power uses the raised INT; #passives shows 1/4 with the quality Ordinary.",
+    "Record the exact name of the Passive and that the name and effects were the same when offered and when gained.",
+    "If a Rare offer appears, it must come only after the fight is over (never during it) and name an outstanding victory at low HP; declining must leave nothing changed.",
+    "Observe stalls, repeated offers, offers that grant nothing or more than shown, errors, unexpected extra LLM calls and Forge timing (the call table now counts Forge calls as forge)."
   ],
   "limits": {
-    "maxTurns": 40,
-    "maxMinutes": 90,
+    "maxTurns": 46,
+    "maxMinutes": 110,
     "sameFailure": 3
   },
   "personas": [
-    "Focused test player: obtain a real Skill Stone and activate it explicitly before starting combat",
-    "Mechanics observer: read #bag, #skills and #skill; compare the engine's acquisition and the actual combat outcome with the narration"
+    "Patient test player: train one quality of yourself every day without shortcuts, accept the offered Passive explicitly",
+    "Mechanics observer: read #skills, #passives, #status and #skill; compare offer, acceptance and the actual values with the narration"
   ],
   "scripted": [
     {
@@ -55,7 +59,7 @@
       "milestone": "creation_complete"
     },
     {
-      "say": "#bag"
+      "say": "#passives"
     }
   ]
 }

@@ -49,6 +49,10 @@ export const CHECKS = {
     dungeon_floor_cleared: 'the target level cleared by him (dungeon.cleared, his credit)',
     dungeon_quest_ready: 'the Dungeon contract reached its end state (quest.ready)',
     dungeon_quest_completed: 'the Dungeon contract turned in at a Guild hall, its payout booked',
+    // Patch 9C-2c: a Passive development the engine offered him, a rare or legendary one, and a Passive it booked as his
+    passive_offered: 'a Passive development offered to him by the engine (decision.opened kind passive)',
+    rare_passive_offered: 'a Rare or Legendary Passive development offered to him by the engine',
+    passive_gained: 'a Passive booked as his after his own acceptance (passive.gained for him)',
 };
 // what a payment at a Dungeon's gate is for: its entry (the gate's own offer is "Entry to <Dungeon>")
 const ENTRY_PAID = /\b(?:entry|enter(?:ing)?|entrance|admission|toll|fee|pass(?:age)?)\b/i;
@@ -148,6 +152,12 @@ export function evaluate(chat, { guide = null } = {}) {
                 case 'creation.class_selected': character.class = d.class; break;
                 case 'creation.completed': character.skills = d.skills; hit('creation_complete', i, { skills: d.skills, class: character.class }); break;
                 case 'guild.registered': hit('guild_registered', i, { rank: d.rank, branch: d.branch }); if (reg.at == null) reg.at = i; break;
+                case 'decision.opened':
+                    if (d.decision?.kind !== 'passive') break;
+                    hit('passive_offered', i, { name: d.decision.passive?.name ?? null, quality: d.decision.quality ?? null });
+                    if (['rare', 'legendary'].includes(d.decision.quality)) hit('rare_passive_offered', i, { name: d.decision.passive?.name ?? null, quality: d.decision.quality });
+                    break;
+                case 'passive.gained': if (d.id === 'pc') hit('passive_gained', i, { passive: d.passive }); break;
                 case 'offer.created':
                     if (d.offer?.id === 'offer.registration') reg.fee = d.offer.lines?.[0]?.price_cp ?? reg.fee;
                     if (d.offer?.gate) dun(d.offer.gate).gateOffer = { at: i, cp: d.offer.lines?.[0]?.price_cp ?? 0 };

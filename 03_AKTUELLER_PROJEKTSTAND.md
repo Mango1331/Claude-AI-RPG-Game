@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 23. Oktober 2026 · Fassung 20 (9C-2a echter ST-/GLM-Livetest 16 Züge, Erwerb und Kampf bestätigt; .45-Duplikatrest nicht live exponiert)  
+**Stichtag:** 23. Oktober 2026 · Fassung 21 (9C-2b Build .47 umgesetzt; echter Stone-Livetest gescheitert; .48-Korrektur noch offen)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,15 +13,15 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 23.10.2026** | `cdd610d97537c980b0d1a7c4d8ce50d404d6729f` (aktualisierter Liveguide); Engine `b67910ae7fa4ad38cef5667fce10a184a9756e40` (.45), zuvor `ddf1ea3` (.44) |
-| **Build (package.json, manifest.json, `ENGINE_VERSION`)** | 4.3.0-c.6.6.45 |
+| **HEAD am 23.10.2026 (Snapshot)** | aa3400ae70608ffaf9276d8c864380f679c10a68 (.47 Reviewfix); davor 4b5c5ad (.46 Feature), 9d77449 (Liveguide) |
+| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.47**; Narrator-Vertragsrevision **.46** |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | Patch 8, 9A/9A.1, 9B-1/9B-2 und 9C-1 technisch gegengeprüft. 9C-2a .43 unabhängig bestätigt; .44 gezielt 34/34 und gesamt 1164/1164. **.45 ergänzt die aktive Duplikatbereinigung und Kampf-LP-Sperre** (zwei neue Regressionen, noch nicht ausgeführt). Echter 9C-Forge-Livetest erfolgreich: 16 Züge, Lehrer-Erwerb und Kampfsieg; bekannte Altdaten-Duplikate nicht live getestet. |
-| **Nächster Schritt** | **Erster echter `.45`-Forge-Livetest bestanden.** Kein zusätzlicher Vorab-Fix. Bei nächstem lokalen Zugriff `.45`-Regressionssuite ausführen (zwei neue Fälle ungetestet), bei Bedarf .42-Altdaten-Duplikat separat prüfen. Danach 9C-Fortsetzung gemäß Freigabe; kein neuer Planungskreislauf. |
+| **Patchstatus** | Patch 8 und 9A/9B abgeschlossen; 9C-1 Lehrertraining, 9C-2a Forge (Build .45 live erfolgreich); **9C-2b Stones/Materialien in .46 umgesetzt, .47-Reviewfix getestet, erster echter Stone-Livetest jedoch FEHLGESCHLAGEN**. |
+| **Nächster Schritt** | **9C-2b Integrationsfix .48 freigegeben, aber noch NICHT implementiert:** Stone-Quellenname, eindeutige Händleridentität, Kauf-Doppelbuchung und generische Werkzeugnarration korrigieren; Rot/Grün anhand echter Live-Folge; danach vollständiges npm test und erneuter Stone-Livetest. Erst nach Live-Abnahme 9C-2c Passive-Erwerb. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
-Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b67910ae7fa4ad38cef5667fce10a184a9756e40
-Patch-9-Commits (chronologisch): 9A Engine `25ffe95` (.33), 9A Runner `7610df1`, 9A-Review `d71ff91` (.34), zentraler Guide `ad3eb2c` + `35d7168`, 9A.1 `a4e499f` (.35), 9B-1 `b632011` (.36), 9B-1-Review `3620b09` (.37), 9B-2 `6fb6176` (.38) + Doku `dd4c2c9`, 9B-2-Review `0cd22d3` (.39), 9C-1 `d0808eb` (.40), 9C-1-Reviewkorrektur `d27e877` (.41), Bezahlfix `c02bdb0` (.42), 9C-2a `9ff76c6` (.43), separater Liveguide `13b19ec`, 9C-2a-Reviewkorrektur `ddf1ea3` (.44), aktiver Duplikatrest `b67910a` (.45), aktueller Liveguide `cdd610d`.
+Aktueller Implementierungscommit (.47): https://github.com/Mango1331/Claude-AI-RPG-Game/commit/aa3400ae70608ffaf9276d8c864380f679c10a68
+Patch-9-Commits (chronologisch): 9A Engine `25ffe95` (.33), 9A Runner `7610df1`, 9A-Review `d71ff91` (.34), zentraler Guide `ad3eb2c` + `35d7168`, 9A.1 `a4e499f` (.35), 9B-1 `b632011` (.36), 9B-1-Review `3620b09` (.37), 9B-2 `6fb6176` (.38) + Doku `dd4c2c9`, 9B-2-Review `0cd22d3` (.39), 9C-1 `d0808eb` (.40), 9C-1-Reviewkorrektur `d27e877` (.41), Bezahlfix `c02bdb0` (.42), 9C-2a `9ff76c6` (.43), separater Liveguide `13b19ec`, 9C-2a-Reviewkorrektur `ddf1ea3` (.44), aktiver Duplikatrest `b67910a` (.45), Lehrer-Liveguide `cdd610d`, **9C-2b Feature `.46` `4b5c5ad`, Stone-Liveguide `9d77449`, Review `.47` `aa3400a`**.
 Vorheriger Patch-8-final-Stand: `1f38bd1` (.32, Runner) / `211ee65` (Engine).
 Früherer Runner-/Preflight-Stand: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/35ead9c21564c8aa134dfd93978184cdef2bd883
 Vorheriger Browsernachtrag: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b0221181602ddbaf7c05b08bae4b2d4633e04983
@@ -31,7 +31,25 @@ Vorheriger Patch-8.3-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/com
 Vorheriger Patch-8.1-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c6baa06e159f16069efd728844c7afe7c7dc186a  
 Vorheriger Patch-8-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f3b55819dad21249d871a62b7ede38bd926598cd
 
-**Letzte ausgeführte Tests (Stand .44; für .45 nicht erneut ausgeführt):** ChatGPT/Codex führte auf .44 **`npm test` 1164/1164** und gezielt **34/34** aus. Die ergänzten Duplikat- und Host-Erwartungen sind auf .43 rot (12/15), nach Fix grün. Claude bestätigte .43 unabhängig mit 33/33 gezielten und 1163/1163 Gesamttests. R1 wurde zusätzlich am offiziellen ST-1.19.0-Quellcode geprüft: der Interceptor-Abbruchcallback hält sein Flag lokal je Aufruf. **Gegenreview der .44 noch offen; kein echter ST-/GLM-Livetest.** Historisch: .42 19/19 und 1149/1149 durch beide Sitzungen bestätigt.
+**Historischer Teststand von .44 (nicht der aktuelle):** ChatGPT/Codex führte auf .44 **`npm test` 1164/1164** und gezielt **34/34** aus. Die ergänzten Duplikat- und Host-Erwartungen sind auf .43 rot (12/15), nach Fix grün. Claude bestätigte .43 unabhängig mit 33/33 gezielten und 1163/1163 Gesamttests. R1 wurde zusätzlich am offiziellen ST-1.19.0-Quellcode geprüft: der Interceptor-Abbruchcallback hält sein Flag lokal je Aufruf. **Gegenreview der .44 noch offen; kein echter ST-/GLM-Livetest.** Historisch: .42 19/19 und 1149/1149 durch beide Sitzungen bestätigt.
+
+
+### Neuer Übergabestand: Patch 9C-2b (.46/.47) und fehlgeschlagener Stone-Livetest (23.10.2026)
+
+**Stand geprüft:** Entwicklungs-HEAD aa3400a (.47), technischer Featurecommit 4b5c5ad (.46), separater zentraler Testguide 9d77449. Narrator-Vertrag v4 bleibt auf Revision .46. Technische Quelle im Entwicklungsbranch: avereth-engine/docs/PATCH9C2B_STONES_MATERIALS.md, Tests: tests/v4/patch9c2b.test.js.
+
+**Implementiert:** Skill-Stone-Quellenprofil aus belegtem strukturiertem teaches in Objekt/Angebot, explizite Stone-Aktivierung über use, gemeinsamer Composer/Forge/Skillgrant und atomarer Verbrauch genau einer Einheit; Manual als nicht verbrauchtes Lernmaterial mit study/material, LP und Tageslimit. Nur F/C1 und vorhandene fünf Techniken. Kein neuer Passive-Erwerb. **.47-Reviewfix** korrigiert profillose explizit benannte Skill Stones (kein irreführendes Werkzeug-USE) und fehlenden Manual-Besitz beim Abschluss bereits bereiter Lernziele. Claude meldet zwei Rot/Grün-Regressionen, 140/140 gezielt und 1179/1179 gesamt; hier nicht selbst erneut ausgeführt. Für .46 zuvor 1177/1177 laut Claude; .45 1166/1166 Linux, fünf Windows-CRLF-Tests (keine Enginefunktion, dauerhafte .gitattributes-Lösung noch offen).
+
+**Realer ST-/GLM-Livetest:** Nutzer-ZIP 20261023-062346Z-current_test.zip, Build .47, Git aa3400a, ST 1.19.0, GLM-5.3-Flash; 24 Züge, 11:28, nur **1/3 Runner-Ziele** (Charaktererstellung), kein Kampf, **kein skill.defined, skill.learned, Forge-Aufruf oder object.consumed** für den Stone. Der Runner endete im Zug 24 nach leerer Narrator-Ausgabe (finish_reason:length, 4096 Completion-Tokens, 17.112 Zeichen Reasoning, null Prosa): separates Modell-/Presetproblem, nicht Ursache des misslungenen Erwerbs.
+
+**Kausalität aus Chat/Events:**
+- Zug 13: Der Extraktor lieferte für angebotenen Lesser Spark Stone korrekte Quelle (stone, bolt, Arcane, Lightning); Angebot scheiterte an Verkäuferauflösung: npc.npcdrossell_shopkeeper war namenlos gespeichert, idOf("Drossell") erkannte ihn nicht. Selbst bei erfolgreicher Verkäuferauflösung hätte die alte Quellenprofil-Erkennung den Namen Lesser Spark Stone abgewiesen, weil die zusammenhängenden Wörter "skill stone" fehlten.
+- Spätere Transaktion in Zug 16: neue zweite Händleridentität npc.drossell; erneut extrahiertes teaches:null, daraufhin kein Quellenprofil. Tatsächlich bezahlt **40 cp (vier Silber)**, nicht 400 cp; 400 cp ist lediglich der unverbindliche guideline-Preis. Erzähltes object.new + object.moved und Kaufbuchung bookPurchase erzeugten **zwei** gleichnamige Objekte für eine Bezahlung.
+- Aktivierungsversuche Züge 18, 20, 22: Planner korrekt use, Engine generischer Werkzeugpfad "USES … a tool; story tells what it achieves"; kein Erwerb und kein Verbrauch. Narrator beschrieb fälschlich magischen Fortschritt. Der .47-Schutz für den wörtlichen Namen "Skill Stone" erkannte "Lesser Spark Stone" nicht.
+
+**Freigegeben, aber zum Dokumentationszeitpunkt NICHT implementiert: gezielter Integrationsfix .48.** (1) Strukturierte Quelle stone mit Namen, der stone enthält; Manual bei Buchwort oder document; aus bloßem Namen nie eine Technik erfinden. (2) Anwesenden NPC nur anhand eindeutig passender Identität/Beschreibung auflösen, sonst ablehnen; keine freie Zuordnung zum einzigen Händler. (3) Bei nachweislich gebuchtem Kauf passende erzählte Übergabe derselben Ware/Menge nicht doppelt vergeben; Angebotsprofil und echter Preis maßgeblich, beide Kaufwege, Teilmengen und unabhängige Geschenke testen. (4) Generischen Werkzeug-use-Text explizit ohne Skill, LP oder neue Mechanik; gewöhnliche Steine nicht pauschal blockieren. **Rot/Grün-End-to-End-Fall aus diesem Export:** namenloser Drossell → Angebot Lesser Spark Stone mit teaches stone/bolt/Arcane/Lightning → 40 cp → genau ein profiliertes Objekt → genau ein Erwerb/Verbrauch → Skill im Kampf nutzbar. Dann npm test und neuer Live-Run. **9C-2b ist noch nicht live abgenommen.**
+
+**Danach geplante Roadmap:** 9C-2c Passive-Erwerb, 9C-2d Durchbrüche (Angebot statt Automatismus noch nicht beschlossen), 9C-3a E-Rang/Komplexität, 9C-3b Evolution, 9C-3c individuelle NPC-Signaturen, 9D Klassenidentität; anschließend 10B Balancing. Keine ungeprüfte Weiterentwicklung vor dem Stone-Nachtest.
 
 ### Echter ST-Livetest 23.10.2026 — 20261023-041901Z-current_test (Build .45)
 
@@ -388,7 +406,7 @@ Auf folgende Fälle besonders achten:
 
 ## 7. Danach – verbindliche Roadmap und bewusste Grenzen (ausführlich in Datei 04 §1a)
 
-- **Jetzt (23.10.2026):** 9C-2a .43 von Claude unabhängig geprüft; dessen R1/R2 gezielt in .44 korrigiert (34/34 und 1164/1164 durch ChatGPT/Codex). Gegenreview der Korrektur und echter Lehrer-/Forge-Livetest als Nächstes. Weitere Quellen, 9C-3 und 9D bleiben getrennt; Balance in 10B.
+- **Jetzt (23.10.2026):** 9C-2a .45 erfolgreich live; 9C-2b .46/.47 technisch umgesetzt, aber der echte Stone-Livetest .47 scheiterte. Freigegebene .48-Integrationskorrektur ist noch nicht implementiert; erst nach erfolgreichem Erwerbs-/Kampfnachtest 9C-2c. 9C-3/9D bleiben geplant, Balance 10B.
 - **Historisch (Stand Patch 8.4):** Patch 8.4 (.29) ist implementiert; der erste echte automatische Windows-/Featherless-/GLM-Livetest über 19 Züge ist ausgewertet (§5m und die unten angehängte ZIP-Auswertung). **Patch 8.4.1 ist implementiert (Engine `.30`, Runner `8f67953`), Git-Code geprüft, echter Nachtest offen**: gezielte Robustheitsfixes für LLM-Testspieler/Reasoning, leere Narrator-Antworten, Statzuweisung und den unautorisierten Dungeon-Gegner. Danach echten Regressionstest durchführen. Patch 8 nicht unbegrenzt für andere Features verlängern.
 - **Patch 9 – Organic Character Growth (VERBINDLICH; 9A und 9B IMPLEMENTIERT, 9C-1 IMPLEMENTIERT und technisch gegengeprüft, 9C-2a IMPLEMENTIERT mit Gegenreview offen, weitere 9C-/9D-Teile geplant). Der folgende Absatz ist der ursprüngliche Planungstext:** **Genau drei Starterklassen Warrior (STR/VIT), Mage (INT/WIL), Rogue (AGI/PER)**, feste Starter-Skills/-Ausrüstung. Danach organisch entstehende Klassen-/Skill-Evolutionen, neue Skills, Passives und dauerhafte Boni allein aus tatsächlichem Spiel, Training, Entdeckungen und bedeutsamer Erfahrung; **keine festen Evolutions-/Skillbäume**. LLM schlägt vor; die JS-Engine prüft, berechnet und persistiert. **Aktuell noch fünf Klassen im Code; Umstellung erst mit Patch 9.** Die ältere Ablehnung von F1/#71 ist durch den ausdrücklichen Patch-9-Beschluss vom 20.10.2026 überholt (vollständig in Datei 04 §1a.2).
 - **Patch 10A (historisch schon vorhanden):** frühere HUD-/QoL-Arbeit ist implementiert und darf nicht nochmals als Großpatch beauftragt werden. Bestimmte offene Anzeige-/Focused-Ward-Details bleiben gezielte Einzelthemen.
@@ -426,8 +444,8 @@ Auf folgende Fälle besonders achten:
 ## 9. Übergabe an den nächsten Chat (vier Projektdateien)
 
 1. Dateien **01–04** **vom Branch main** vollständig lesen (`04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` ist das Review-/Katalogarchiv). Den tatsächlichen Entwicklungsbranch und Build unabhängig per Git prüfen.
-2. **Aktueller HEAD `ddf1ea3`, Build .44:** Reviewkorrektur von 9C-2a implementiert, 34/34 gezielt und 1164/1164 gesamt durch ChatGPT/Codex; Gegenreview offen. .43 unabhängig bestätigt (33/33, 1163/1163). Kein echter Growth-Livetest und keine neuen Quellen.
-3. Entwicklungskette: Patch 8 bis .32 → 9A (.33/.34) → 9A.1 (.35) → 9B-1 (.36/.37) → 9B-2 (.38/.39) → 9C-1 (.40–.42) → 9C-2a (.43, Forge am Lehrerpfad) → Reviewkorrektur .44. Stones, Materialien, Durchbrüche, neuer Passive-Erwerb, Skill-Evolution, NPC-Signaturen, E-Unterstützung und Klassen-Evolution fehlen weiterhin. `#assign`-Fastpath, Engine-only-Board, ROAD AHEAD und Performancekandidaten sind dadurch nicht umgesetzt.
+2. **Zum Dokuzeitpunkt HEAD `aa3400a`, Build .47:** 9C-2a .45 live erfolgreich; 9C-2b Stones/Materialien implementiert (.46), Reviewfix .47 (1179/1179 laut Claude), aber Stone-Livetest 20261023-062346Z-current_test gescheitert. .48-Korrektur freigegeben, noch nicht umgesetzt; HEAD stets neu prüfen.
+3. Entwicklungskette: Patch 8 bis .32 → 9A (.33/.34) → 9A.1 (.35) → 9B-1 (.36/.37) → 9B-2 (.38/.39) → 9C-1 (.40–.42) → 9C-2a (.43, Forge am Lehrerpfad) → Reviewkorrektur .44. **Stones und Materialien sind implementiert, aber noch nicht live bestätigt**; offen bleiben .48-Integrationsfix, Durchbrüche, neuer Passive-Erwerb, Skill-Evolution, NPC-Signaturen, E-Unterstützung und Klassen-Evolution. `#assign`-Fastpath, Engine-only-Board, ROAD AHEAD und Performancekandidaten sind dadurch nicht umgesetzt.
 4. Bei Live-Exports zuerst Engine-Events, Chat-JSONL und LLM-TXT korrelieren; Gameplay- und Designregeln der Dateien 01/02 berücksichtigen.
 5. **Datei 04** enthält die 141-Ideen-Zusammenfassung, 20 ausgewählten K-Kandidaten, Claude-Gegenreviews, Engine-only-Board, Rest/Wait/Fast-Travel/Quick Replies und die offene Patch-9-/ROAD-AHEAD-Reihenfolge. Keine Ideen ohne Nutzerfreigabe in den bindenden Kanon oder die Implementierung übernehmen.
 6. Nach neuen Meilensteinen nur betroffene Projektdateien auf `main` aktualisieren; Implementierungsbranch nicht für Dokumentationspflege mergen.
@@ -619,7 +637,7 @@ Spielerseite und Charaktererstellung funktionierten (Rogue, zwei Skills, Kampf).
 
 ### Patch 9 – was noch fehlt (Stand 23.10.2026)
 
-- **9C-2a umgesetzt, weitere 9C-Teile offen:** Forge am Lehrerpfad .43 von Claude geprüft, R1/R2 in .44 (`ddf1ea3`) korrigiert; Gegenreview der Korrektur offen. Andere Quellen, Durchbrüche, neuer Passive-Erwerb und 9C-3 weiterhin gesonderte Aufträge. Plan: Datei 04 §1a.2b.
+- **9C-2a live bestätigt, 9C-2b noch nicht live abgenommen:** .47 Tests 1179/1179 laut Claude, echter Stone-Livetest fehlgeschlagen. .48-Fixauftrag freigegeben, noch nicht implementiert; nach Nachtest 9C-2c Passives, 9C-2d Durchbrüche, 9C-3 Rang/Evolution/NPC. Plan Datei 04 §1a.2b.
 - **9D – Organic Class Identity (GEPLANT):** organische Klassenentwicklung, Klassen-Evolution bleibt bis dahin gesperrt.
 - **Nicht in Patch 9:** Blink-Buff, allgemeines Balancing und Scaling über E-Rang hinaus (10B).
 - **Bekannte Grenzen aus 9B:** nur F-Rang; Bedingungen nur `hp_at_most_pct` und `foe_engaged`; Heilung nur auf sich selbst; NPCs nutzen weder Heal, Restore noch Blink; die Schwellen der NPC-Taktik (75 %, 65 %, drei pro Kampf) sind einfache Startwerte.

@@ -9,7 +9,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadProductContent, ROOT, Game, scriptedDice } from '../helpers.js';
-import { rec } from '../../src/host.js';
+import { rec, foldChat } from '../../src/host.js';
+import { mapPlan } from '../../src/v4/planner.js';
 import { applyEvent } from '../../src/state.js';
 import { initEncounter, attackAction, moveAction, damagePreview } from '../../src/combat.js';
 import { scaleCreature } from '../../src/npcgen.js';
@@ -54,6 +55,25 @@ test('.54 flight: a Guard he means to raise first ("I raise Guard, then next tur
     const mine = pcActs(g);
     assert.ok(mine.some((r) => r.kind === 'skill' && r.skill === 'warrior.guard'));
     assert.ok(!mine.some((r) => r.kind === 'flee'));
+});
+
+// review of .54: a Guard he raises now to cover a flight of the next turn is his action now; only a defense covers it
+test('.54 review: "I raise Guard to cover my retreat next turn. Then next turn I flee." is Guard now; the flight waits', async () => {
+    const g = live(25);
+    await say(g, 'I raise Guard to cover my retreat next turn. Then next turn I flee.',
+        { type: 'use_skill', skill: 'warrior.guard', target: null, quote: 'I raise Guard to cover my retreat next turn' },
+        { type: 'flee', quote: 'Then next turn I flee' });
+    const mine = pcActs(g);
+    assert.ok(mine.some((r) => r.kind === 'skill' && r.skill === 'warrior.guard'), JSON.stringify(mine).slice(0, 300));
+    assert.ok(!mine.some((r) => r.kind === 'flee'));
+});
+
+test('.54 review: only a defense covers a flight; a step like Blink in the words of the flight does not make the flight his action', () => {
+    const state = foldChat(fx.messages, 25).state;
+    const ctx = { fight: true, known: ['warrior.guard', 'mage.blink'], basic: 'warrior.basic_attack', cls: 'warrior', skills: [], opponents: [{ id: GOB_A, label: 'Goblin Scout A', engaged: true }], catalog: { present: [], objects: [] } };
+    const plan = (skill, quote) => mapPlan([{ seq: 1, type: 'use_skill', skill, target: null, quote }, { seq: 2, type: 'flee', quote: 'I break off and retreat back toward the tunnel' }], ctx, content, `I break off and retreat back toward the tunnel, ${quote}.`, state);
+    assert.equal(plan('warrior.guard', 'Guard raised to cover my withdrawal').intent.kind, 'flee', 'the live case');
+    assert.notEqual(plan('mage.blink', 'Blink to cover my withdrawal').intent.kind, 'flee');
 });
 
 // ------------------------------------------------------------------------------------------------ 2. partial cover

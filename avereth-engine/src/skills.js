@@ -322,7 +322,7 @@ function progressEvents(content, state, skillId, gained, why, key) {
     return [{ t: 'skill.progress', d: { id: 'pc', skill: skillId, name: skill.name, gained, from: { prof: entry.prof || 1, pp: entry.pp || 0 }, to, need: promotionPp(content, skill), why, key } }];
 }
 
-const DEFENSE = new Set(['temp_def', 'temp_mdef', 'barrier', 'incoming_damage_reduction', 'damage_reduction_next']);
+export const DEFENSE = new Set(['temp_def', 'temp_mdef', 'barrier', 'incoming_damage_reduction', 'damage_reduction_next']);
 
 /**
  * Patch 9B-1: note what a combat record shows of his use of a Skill (src/combat.js runCombat, every record): an attack

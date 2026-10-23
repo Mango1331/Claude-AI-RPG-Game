@@ -28,7 +28,7 @@ import { interpreterSystem, vocabularyText, catalogText, interpreterSchema, PLAI
 import { anchorQuote } from './agency.js';
 import { openGoals, goalText } from './growth.js';
 import { composerFunctions } from '../skill_composer.js';
-import { disciplineTags, skillAspects } from '../skills.js';
+import { disciplineTags, skillAspects, DEFENSE } from '../skills.js';
 import { CORE_STATS } from '../passives.js';
 
 export const PLANNER_VERSION = 'plan-c0.1';
@@ -353,10 +353,19 @@ export function plannerRequest(vocab, ctx, text, { recent = '', previous = null,
 const flat = (t) => normText(String(t ?? '').replace(/\*/g, ' ')).replace(/\s+/g, ' ').trim();
 // 4.3.0-c.6.6.54: words that tell a defense as part of a withdrawal ("to cover my withdrawal", "as I back away")
 const WITHDRAWING = /\b(?:withdraw(?:al|ing)?|retreat(?:ing)?|flight|flee(?:ing)?|escape|falling back|fall back|backing (?:off|away)|as i (?:go|back off|back away|fall back|retreat|withdraw))\b/;
-/** 4.3.0-c.6.6.54: a defense (no attack) the message tells only as covering the flight: in its words, or said after it. */
+// review of .54: words that put the flight on a later turn ("to cover my retreat next turn. Then next turn I flee")
+const LATER = /\b(?:next (?:turn|round)|after that|afterwards|later|then)\b/;
+/**
+ * 4.3.0-c.6.6.54: a defense the message tells only as covering the flight of this turn: in its words, or said after it.
+ * Review of .54: a defense only (a guard, a ward: src/skills.js DEFENSE), never another step such as Blink; and none
+ * when either says the flight comes later.
+ */
 function coversFlight(c, flight, message, content, state) {
-    if (c.type !== 'use_skill' || typeof c.skill !== 'string' || skillOf(content, c.skill, state)?.attack) return false;
+    if (c.type !== 'use_skill' || typeof c.skill !== 'string') return false;
+    const k = skillOf(content, c.skill, state);
+    if (!k || k.attack || !(k.effects || []).some((e) => DEFENSE.has(e.kind))) return false;
     const q = flat(c.quote);
+    if (LATER.test(q) || LATER.test(flat(flight.quote))) return false;
     if (WITHDRAWING.test(q)) return true;
     const all = flat(message);
     const at = (x) => (x ? all.indexOf(x) : -1);

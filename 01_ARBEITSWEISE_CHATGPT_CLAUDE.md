@@ -1,7 +1,7 @@
 # Avereth Engine / RPG Engine — Arbeitsweise und Chat-Übergabe
 
 **Dokumenttyp:** dauerhafte Projektanweisung und Zusammenarbeit  
-**Stand:** 21. Oktober 2026 · Fassung 2 (nach .26-Livetest und Architekturreviews)  
+**Stand:** 23. Oktober 2026 · Fassung 3 (bewährte Abläufe aus Patch 8.4–9B ergänzt; Startanweisung aktualisiert)  
 **Geltungsbereich:** ChatGPT-Chats im Projekt „RPG Engine“ und die Übergabe von Aufträgen an Claude Code  
 **Pflege:** nur bei Änderungen der Arbeitsweise, nicht nach jedem Patch
 
@@ -31,6 +31,25 @@ Die übliche Aufgabenverteilung:
 7. **Nach Claude-Implementierung:** Bericht **nicht ungeprüft** als Beweis behandeln. Git-HEAD/Commit und betroffene Dateien nach Möglichkeit selbst lesen. „Tests laut Claude“ von „hier unabhängig geprüft“ unterscheiden. Smokes nur als bestanden bezeichnen, wenn tatsächlich gemeldet/nachgewiesen.
 8. **Echter Livetest:** Nutzer spielt frei und beurteilt insbesondere Spaß, Tempo, Entscheidungsfreiheit und Glaubwürdigkeit. ChatGPT wertet bei Problemen die Exporte aus; Synthetiktests allein ersetzen den Livetest nicht.
 9. **Nach Abschluss eines Meilensteins:** `03_AKTUELLER_PROJEKTSTAND.md` anhand des verifizierten Branches, Commits und der echten Ergebnisse aktualisieren. Neue **verbindliche** Designentscheide nur in `02` übernehmen; nicht beschlossene Ideen und Reviews in `04` als Kandidaten/Experimente fortführen. Das Chatprotokoll bleibt ergänzende Historie, nicht die einzige Wissensträgerin.
+
+## 2a. Bewährte Regeln aus Patch 8.4 bis 9B (Stand 23.10.2026)
+
+1. **Teilpatches:** Große Patches (z. B. 9 → 9A, 9B-1, 9B-2, 9C-1 …) werden einzeln freigegeben. Claude implementiert **nur den freigegebenen Teil**, berichtet (Commit, Build, Tests, Grenzen) und **hält für das unabhängige Git-Review an**. Der nächste Teil beginnt erst nach Freigabe.
+2. **Review-Nachbesserungen** sind kleine, gezielte Folgecommits mit eigener Build-Nummer (z. B. .37 nach .36). Nur die benannten Punkte werden geändert; die Regression ist vor dem Fix rot und danach grün.
+3. **Upload ohne Auftrag:** Lädt der Nutzer ein ChatGPT-Feedback oder ein Livetest-ZIP mit „bewerten“ / „noch nicht umsetzen“ hoch, wird **nur geprüft und bewertet**, nichts implementiert. Claude soll dabei kritisch gegenprüfen, Alternativen vorschlagen und Designvereinfachungen nennen, wenn sie die Technik deutlich einfacher machen.
+4. **Tests:** Während der Arbeit gezielte Regressionen; **eine** vollständige `npm test`-Abschlussprüfung pro Teilpatch. Bei reinen Guide-Änderungen nur eine kurze Lade-/Validierungsprüfung, keine volle Suite und kein Stub-Selbsttest.
+5. **Livetests über einen zentralen Guide:** Für alle künftigen Livetests gibt es nur `avereth-engine/tools/st_live/live/guides/current_test.json`.
+   - Pro Test wird nur dessen Inhalt angepasst: Charakter (Klasse, Skills) im `brief`, Ziele, Fokus, Zuglimit. Keine neuen patchspezifischen Guides; die historischen bleiben.
+   - Keine Runner-, Evaluator-, Report- oder Selbsttest-Änderungen, wenn sie nicht nötig sind.
+   - Start: `npm run live:st -- --guide current_test --headed` (optional `--max-turns N`).
+6. **Getrennte Commits** für Runner- und Engine-Änderungen.
+7. **Sicherheitsregeln des Live-Runners:**
+   - Das persönliche SillyTavern-Profil wird nur lesend und selektiv übernommen, nie verändert oder gelöscht; vorhandene lokale Nutzerdaten bleiben.
+   - API-Schlüssel kommen nur aus Umgebungsvariablen, nie in Exporte oder Git; `secrets.json` wird nicht gelesen.
+   - Keine ununterstützten Einstellungen blind an andere Modelle senden.
+   - Der LLM-Testspieler trifft nur Spielerentscheidungen und sieht nur Chat und sichtbares HUD. Er manipuliert keine Engine-Zustände und überdeckt keine Fehler durch stilles Regenerieren.
+8. **Legacy-Schutz:** Neue Mechaniken gelten nur unter Regelstand 2 (Kampagnen ab Patch 9A). Jede Mechanikänderung bekommt einen Legacy-Regressionstest; Änderungen, die auch Legacy betreffen (z. B. ganzzahlige Barrier), werden ausdrücklich genannt und begründet.
+9. **Dokumentation:** Technische Patchbeschreibungen liegen im Entwicklungsbranch (`avereth-engine/docs/PATCH*.md`, Kurzfassung in `docs/PROTOTYPE_C.md`). Die Projektdateien 01–04 auf `main` werden nach Meilensteinen nachgeführt, auf Wunsch des Nutzers auch durch Claude direkt auf `main`.
 
 ## 3. Qualitätsmaßstäbe für Reviews
 
@@ -95,7 +114,7 @@ Bei umfangreichen Patches eine **dreifache Prüfung** einplanen: (1) Architektur
 
 Der Nutzer kann die vier Dateien aus dem Repository-Root auf `main` in das ChatGPT-Projekt laden oder sie direkt über den GitHub-Zugriff lesen lassen und folgende Startanweisung verwenden:
 
-> Lies im Projekt „RPG Engine“ vollständig die vier Markdown-Dateien `01_ARBEITSWEISE_CHATGPT_CLAUDE.md`, `02_DESIGN_KANON.md`, `03_AKTUELLER_PROJEKTSTAND.md` und `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` aus dem GitHub-Branch `main`. Dieser Chat setzt Avereth fort, kein Neustart. Prüfe danach den aktuellen Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`, HEAD und Build. Unterscheide ausdrücklich IMPLEMENTIERT / AKTIVER LIVETEST / VERBINDLICH GEPLANT / REVIEW-ENTWURF / OFFENE IDEE. Insbesondere: `.26`-Test bereits gespielt; Performance-Patch 8.2 nur Reviewentwurf; 20 QoL-/Quest-/ROAD-AHEAD-Kandidaten und Claude-Gegenreviews in Datei 04; keine neue Klassenentscheidung aus F1/#71. Nenne den gesicherten Stand und den nächsten Schritt. Keine erfundenen Git-, LLM- oder Testnachweise; frage bereits dokumentierten Kontext nicht erneut ab.
+> Lies im Projekt „RPG Engine“ vollständig die vier Markdown-Dateien `01_ARBEITSWEISE_CHATGPT_CLAUDE.md`, `02_DESIGN_KANON.md`, `03_AKTUELLER_PROJEKTSTAND.md` und `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` aus dem GitHub-Branch `main`. Dieser Chat setzt Avereth fort, kein Neustart. Prüfe danach den aktuellen Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`, HEAD und Build (Stand der Dateien: `0cd22d3`, Build .39). Unterscheide ausdrücklich IMPLEMENTIERT / AKTIVER LIVETEST / VERBINDLICH GEPLANT / REVIEW-ENTWURF / OFFENE IDEE. Insbesondere: Patch 8 ist abgeschlossen; **Patch 9A, 9A.1, 9B-1 und 9B-2 sind implementiert** (neue Kampagnen: Warrior/Mage/Rogue; Legacy-Kampagnen behalten fünf Klassen); **Patch 9C ist als überarbeiteter Gesamtplan in Datei 04 §1a.2b festgehalten, aber noch kein Auftrag**; dort stehen zwei offene Spielentscheidungen. Livetests laufen über den einen zentralen Guide `current_test.json`. Nenne den gesicherten Stand und den nächsten Schritt. Keine erfundenen Git-, LLM- oder Testnachweise; frage bereits dokumentierten Kontext nicht erneut ab.
 
 Falls Dateien nicht gefunden werden, den Nutzer genau darauf hinweisen. Kein „gelesen“ behaupten, bevor sie tatsächlich verfügbar und gelesen sind.
 

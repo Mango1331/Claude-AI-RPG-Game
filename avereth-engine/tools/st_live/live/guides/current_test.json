@@ -1,32 +1,59 @@
 {
   "id": "current_test",
-  "title": "Aktueller Livetest: Patch 9A, Rogue mit Razor Cut und Evasive Step",
-  "brief": "Start a new campaign as a new player would and create exactly this character: the Base Class Rogue, then the two skills Razor Cut and Evasive Step (no other class or skills). Right after creation, look at #skills once. Then find a fight, if possible with a human opponent: ask the people near the road and the gate about bandits, robbers or thugs and go after them, or answer a human who threatens or attacks you. Never attack a harmless person; if no human opponent turns up within about eight turns, fight whatever attacks you and say so in your observations. In the fight use both of your skills at least once each. After the fight look at #status. A short test: no Guild registration and no dungeon.",
-  "character": { "class": "Rogue", "skills": ["Razor Cut", "Evasive Step"] },
+  "title": "Aktueller Livetest: Patch 9C-2a, Lehrer-Erwerb und Forge",
+  "brief": "Create a Mage with exactly Arcane Bolt and Arcane Ward. Find a competent hedge mage or other trained mage willing to teach a new fire bolt technique. Talk to them and obtain an actual agreement or buy their offered lessons; a request alone is not training. Do not claim a Skill or teacher agreement yourself. Once the teacher agrees, explicitly train the fire bolt with them for two hours. Read #skills to see the learning goal and its progress. Continue real training on later game days: sleep until morning when the daily allowance is used, then train that goal with the teacher for two hours. Follow the actual System progress rather than the narrator's claims. When NEW SKILL appears, read #skills and #skill with the new Skill's exact name. Note its name, appearance description, effect, cost and range. Only after the new Skill is actually learned, find an ordinary hostile foe and use the acquired Skill in combat; never attack an innocent person. Use Arcane Ward if useful and finish the fight. Read #status afterwards. The automated milestones cover creation and combat only: report the actual learning, new Skill and use in your observations. If no legitimate teacher can be found or learning is blocked, report that instead of inventing progress, repeatedly asking the System for free Skills, or fighting early just to satisfy the milestones. No Guild registration or dungeon is required.",
+  "character": {
+    "class": "Mage",
+    "skills": [
+      "Arcane Bolt",
+      "Arcane Ward"
+    ]
+  },
   "milestones": [
-    { "id": "creation_complete", "goal": "Create the character: the Base Class Rogue, then the two skills Razor Cut and Evasive Step.", "maxTurns": 4 },
-    { "id": "fight_started", "goal": "Get into a fight, if possible with a human opponent (a bandit, robber or thug).", "maxTurns": 8 },
-    { "id": "fight_won", "goal": "Win the fight, using Razor Cut and Evasive Step at least once each.", "maxTurns": 8 }
+    {
+      "id": "creation_complete",
+      "goal": "Create a Mage with Arcane Bolt and Arcane Ward.",
+      "maxTurns": 4
+    },
+    {
+      "id": "fight_started",
+      "goal": "After a genuinely learned new fire bolt appears in the System, find a hostile foe and use the acquired Skill.",
+      "maxTurns": 26
+    },
+    {
+      "id": "fight_won",
+      "goal": "Finish the fight, compare the acquired Skill's actual cost and result with its System description, then inspect #status.",
+      "maxTurns": 10
+    }
   ],
   "focus": [
-    "Does the creation menu offer exactly Warrior, Mage and Rogue, and the Rogue pool six skills?",
-    "Do #skills and the HUD show Razor Cut and Evasive Step with their costs (5 STA each)?",
-    "In the combat HUD, are your actions listed as Attack (with reach and cost) and Defense (Evasive Step with cost and effect)?",
-    "After each skill, does your STA in the HUD drop by its cost, and does the story match what the System says happened?",
-    "If you fight a human: what does he do in the fight, and does it fit what he is?",
-    "Note waits that feel too long and replies that cut off or come back empty."
+    "Does the world establish a competent teacher and an actual agreement before any learning is booked? A spoken request alone is not a training session.",
+    "Do explicitly timed lessons show Learning Progress and a daily allowance? Does waiting or sleeping to the next day allow further progress?",
+    "Does the System book exactly one new Skill when learning finishes? Record its exact name and engine definition; narrator claims alone do not count.",
+    "Is the appearance-only description shown separately from Effect, and does the narrator avoid extra powers suggested only by the name or atmosphere?",
+    "Is the acquired Skill selectable and usable in combat with the displayed cost, range and actual engine effect?",
+    "Note long waits, empty replies, failed teacher discovery, inconsistent names or attempts to grant the same technique again. The evaluator has no automatic Growth check yet."
   ],
-  "limits": { "maxTurns": 15, "maxMinutes": 60, "sameFailure": 3 },
+  "limits": {
+    "maxTurns": 40,
+    "maxMinutes": 90,
+    "sameFailure": 3
+  },
   "personas": [
-    "direct and brief: you go straight for each goal, your messages are short actions",
-    "tactical and experimental: you pick your moment for each skill and compare the costs in the HUD after each turn"
+    "direct and brief: seek a willing teacher, name real training durations and follow the System's learning progress",
+    "observant: compare the new Skill's separate description and effect with its actual use; report concrete mismatches"
   ],
   "scripted": [
-    { "say": "Rogue", "milestone": "creation_complete" },
-    { "say": "Razor Cut + Evasive Step", "milestone": "creation_complete" },
-    { "say": "#skills" },
-    { "say": ["*i ask the nearest traveller whether there are bandits or robbers on this road*", "*i follow the road toward where the bandits were seen*"], "until": "⚔ COMBAT", "max": 6, "milestone": "fight_started" },
-    { "say": ["*i attack the nearest foe with Razor Cut*", "*i use Evasive Step to slip back and guard*", "*i attack the nearest foe with Razor Cut*"], "until": "Combat is over", "max": 6, "milestone": "fight_won" },
-    { "say": "#status" }
+    {
+      "say": "Mage",
+      "milestone": "creation_complete"
+    },
+    {
+      "say": "Arcane Bolt + Arcane Ward",
+      "milestone": "creation_complete"
+    },
+    {
+      "say": "#skills"
+    }
   ]
 }

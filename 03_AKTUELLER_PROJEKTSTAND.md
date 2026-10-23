@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 23. Oktober 2026 · Fassung 18 (9C-2a .43 unabhängig geprüft; gezielte Reviewkorrektur .44 implementiert, deren Gegenreview und echter Growth-Livetest ausstehend)  
+**Stichtag:** 23. Oktober 2026 · Fassung 19 (9C-2a Restkorrektur .45 und aktueller Liveguide vorbereitet; echter Growth-Livetest ausstehend)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,15 +13,15 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 23.10.2026** | `ddf1ea3928b8db9e1a9b590451580ab9bd20aa5d` (.44, Reviewkorrektur); zuvor Engine `9ff76c6` (.43) und separater Liveguide `13b19ec` |
-| **Build (package.json, manifest.json, `ENGINE_VERSION`)** | 4.3.0-c.6.6.44 |
+| **HEAD am 23.10.2026** | `cdd610d97537c980b0d1a7c4d8ce50d404d6729f` (aktualisierter Liveguide); Engine `b67910ae7fa4ad38cef5667fce10a184a9756e40` (.45), zuvor `ddf1ea3` (.44) |
+| **Build (package.json, manifest.json, `ENGINE_VERSION`)** | 4.3.0-c.6.6.45 |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | Patch 8, 9A/9A.1, 9B-1/9B-2 und 9C-1 technisch gegengeprüft. **9C-2a .43 durch Claude unabhängig geprüft** (33/33, 1163/1163). Dessen R1/R2 in **.44 implementiert**, gezielt 34/34 und gesamt 1164/1164 durch ChatGPT/Codex; Gegenreview der Korrektur offen. Kein echter 9C-Livetest. |
-| **Nächster Schritt** | Claude prüft Reviewkorrektur `ddf1ea3` gegen `13b19ec`: eigener Interceptor-Abbruch und Abschluss alter Duplikat-Ziele. Danach echter Lehrer-/Forge-Livetest mit `current_test`; R3-Engine-Zeit beobachten. Keine Freigabe weiterer Quellen oder 9C-3. |
+| **Patchstatus** | Patch 8, 9A/9A.1, 9B-1/9B-2 und 9C-1 technisch gegengeprüft. 9C-2a .43 unabhängig bestätigt; .44 gezielt 34/34 und gesamt 1164/1164. **.45 ergänzt die aktive Duplikatbereinigung und Kampf-LP-Sperre** (zwei neue Regressionen, noch nicht ausgeführt). Kein echter 9C-Livetest. |
+| **Nächster Schritt** | Auf `.45` `npm test` im geklonten Repository ausführen, danach den bereits angepassten `current_test` für echten Lehrer-/Forge-Erwerb und Kampfeinsatz starten. R3-Engine-Zeit beobachten; keine weitere Vorab-Reviewrunde ohne echten neuen Befund. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
-Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/ddf1ea3928b8db9e1a9b590451580ab9bd20aa5d
-Patch-9-Commits (chronologisch): 9A Engine `25ffe95` (.33), 9A Runner `7610df1`, 9A-Review `d71ff91` (.34), zentraler Guide `ad3eb2c` + `35d7168`, 9A.1 `a4e499f` (.35), 9B-1 `b632011` (.36), 9B-1-Review `3620b09` (.37), 9B-2 `6fb6176` (.38) + Doku `dd4c2c9`, 9B-2-Review `0cd22d3` (.39), 9C-1 `d0808eb` (.40), 9C-1-Reviewkorrektur `d27e877` (.41), Bezahlfix `c02bdb0` (.42), 9C-2a `9ff76c6` (.43), separater Liveguide `13b19ec`, 9C-2a-Reviewkorrektur `ddf1ea3` (.44).
+Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b67910ae7fa4ad38cef5667fce10a184a9756e40
+Patch-9-Commits (chronologisch): 9A Engine `25ffe95` (.33), 9A Runner `7610df1`, 9A-Review `d71ff91` (.34), zentraler Guide `ad3eb2c` + `35d7168`, 9A.1 `a4e499f` (.35), 9B-1 `b632011` (.36), 9B-1-Review `3620b09` (.37), 9B-2 `6fb6176` (.38) + Doku `dd4c2c9`, 9B-2-Review `0cd22d3` (.39), 9C-1 `d0808eb` (.40), 9C-1-Reviewkorrektur `d27e877` (.41), Bezahlfix `c02bdb0` (.42), 9C-2a `9ff76c6` (.43), separater Liveguide `13b19ec`, 9C-2a-Reviewkorrektur `ddf1ea3` (.44), aktiver Duplikatrest `b67910a` (.45), aktueller Liveguide `cdd610d`.
 Vorheriger Patch-8-final-Stand: `1f38bd1` (.32, Runner) / `211ee65` (Engine).
 Früherer Runner-/Preflight-Stand: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/35ead9c21564c8aa134dfd93978184cdef2bd883
 Vorheriger Browsernachtrag: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b0221181602ddbaf7c05b08bae4b2d4633e04983
@@ -31,9 +31,11 @@ Vorheriger Patch-8.3-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/com
 Vorheriger Patch-8.1-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c6baa06e159f16069efd728844c7afe7c7dc186a  
 Vorheriger Patch-8-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f3b55819dad21249d871a62b7ede38bd926598cd
 
-**Testnachweise (aktuell):** ChatGPT/Codex führte auf .44 **`npm test` 1164/1164** und gezielt **34/34** aus. Die ergänzten Duplikat- und Host-Erwartungen sind auf .43 rot (12/15), nach Fix grün. Claude bestätigte .43 unabhängig mit 33/33 gezielten und 1163/1163 Gesamttests. R1 wurde zusätzlich am offiziellen ST-1.19.0-Quellcode geprüft: der Interceptor-Abbruchcallback hält sein Flag lokal je Aufruf. **Gegenreview der .44 noch offen; kein echter ST-/GLM-Livetest.** Historisch: .42 19/19 und 1149/1149 durch beide Sitzungen bestätigt.
+**Letzte ausgeführte Tests (Stand .44; für .45 nicht erneut ausgeführt):** ChatGPT/Codex führte auf .44 **`npm test` 1164/1164** und gezielt **34/34** aus. Die ergänzten Duplikat- und Host-Erwartungen sind auf .43 rot (12/15), nach Fix grün. Claude bestätigte .43 unabhängig mit 33/33 gezielten und 1163/1163 Gesamttests. R1 wurde zusätzlich am offiziellen ST-1.19.0-Quellcode geprüft: der Interceptor-Abbruchcallback hält sein Flag lokal je Aufruf. **Gegenreview der .44 noch offen; kein echter ST-/GLM-Livetest.** Historisch: .42 19/19 und 1149/1149 durch beide Sitzungen bestätigt.
 
-### Teilpatch 9C-2a (.43/.44) – enger Umfang, Reviewkorrektur
+### Teilpatch 9C-2a (.43–.45) – enger Umfang, Reviewkorrekturen
+
+**Nachtrag .45:** Claude reproduzierte in .44 zusätzlich ein noch aktives Duplikat aus .42, das einen Platz belegte und vor gültigen Zielen Kampf-LP erhielt. Commit `b67910a` schließt nun alle bekannten Duplikatziele unabhängig von `ready` und überspringt sie in `fightGrowth`. Zwei Regressionen ergänzt (noch nicht ausgeführt). Der Guide `current_test` wurde separat in `cdd610d` gezielt auf Lehrer → echte LP → NEW SKILL → Forge-Text → Kampfeinsatz ausgerichtet; keine Runner-Codeänderung. **Nächste Aktion: lokal `npm test`, dann echter Live-Run.**
 
 **Claude-Review .43:** Umfang, Forge-/Effekttrennung, Signaturen, Cache und atomarer Erwerb bestätigt. Zwei Korrekturen in .44: veraltete Interceptor-Aufrufe beenden ihre eigene Narration mit dem lokalen `abort`-Callback; alte doppelte bereite Vorhaben werden mit `growth.closed` auf den vorhandenen Skill geschlossen, ohne zweiten Erwerb oder dauerhafte Fehlermeldungen. Der anfangs unzureichende Host-Test bildet jetzt getrennte Abbruchflags je Generation ab. Keine neue Vertragsrevision: **Narrator bleibt .43**. `historyKey` unverändert; Claudes R3-Messung (etwa 17 ms/Aufruf bei 93 Nachrichten, dreimal pro Zug) als Livetest-/Performancebeobachtung bewahren, hier nicht unabhängig nachgemessen.
 

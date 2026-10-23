@@ -1,7 +1,7 @@
 # Avereth Engine / RPG Engine — Arbeitsweise und Chat-Übergabe
 
 **Dokumenttyp:** dauerhafte Projektanweisung und Zusammenarbeit  
-**Stand:** 23. Oktober 2026 · Fassung 4 (gezielte Kontextnutzung; ChatGPT als möglicher Implementierer; unabhängige Gegenreviews)  
+**Stand:** 23. Oktober 2026 · Fassung 5 (verbindliche Aktualisierung von main nach Patch/Review/Livetest; Chat-Handoff)  
 **Geltungsbereich:** ChatGPT-Chats im Projekt „RPG Engine“ sowie Implementierungs- und Review-Aufträge an ChatGPT/Codex und Claude Code  
 **Pflege:** nur bei Änderungen der Arbeitsweise, nicht nach jedem Patch
 
@@ -32,7 +32,7 @@ Die übliche Aufgabenverteilung:
 6. **Implementierungsauftrag an Claude oder ChatGPT/Codex:** Ziel und Spielerwirkung zuerst; konkrete Reproduktion, betroffene Schichten, Grenzen/Nicht-Ziele, Tests, Legacy- und Replay-Verträglichkeit. Lösungsvorschläge dort begründen, wo sie helfen, aber Claude nicht zu einer unnötig komplexen Architektur verpflichten.
 7. **Nach Implementierung:** Bericht **nicht ungeprüft** als Beweis behandeln. Die jeweils andere Sitzung prüft Git-HEAD/Commit und betroffene Dateien. „Tests laut implementierender Sitzung“ von „hier unabhängig ausgeführt/geprüft“ unterscheiden. Smokes nur als bestanden bezeichnen, wenn tatsächlich gemeldet/nachgewiesen.
 8. **Echter Livetest:** Nutzer spielt frei und beurteilt insbesondere Spaß, Tempo, Entscheidungsfreiheit und Glaubwürdigkeit. ChatGPT wertet bei Problemen die Exporte aus; Synthetiktests allein ersetzen den Livetest nicht.
-9. **Nach Abschluss eines Meilensteins:** `03_AKTUELLER_PROJEKTSTAND.md` anhand des verifizierten Branches, Commits und der echten Ergebnisse aktualisieren. Neue **verbindliche** Designentscheide nur in `02` übernehmen; nicht beschlossene Ideen und Reviews in `04` als Kandidaten/Experimente fortführen. Das Chatprotokoll bleibt ergänzende Historie, nicht die einzige Wissensträgerin.
+9. **Dokumentation als Teil jedes Entwicklungsschritts:** Nach jedem implementierten Teilpatch, Review-Fix und wichtigen Livetest **ohne weitere Nachfrage des Nutzers** `03_AKTUELLER_PROJEKTSTAND.md` und den Status/den nächsten Auftrag in `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` auf `main` aktualisieren, sobald der tatsächliche Git-Stand und die Nachweise feststehen. **IMPLEMENTIERT, TESTS NUR LAUT CLAUDE, LIVE BESTÄTIGT, LIVE GESCHEITERT, GEPLANT** trennen. Die technische Patchdoku bleibt im Entwicklungsbranch. `01` nur bei Prozessänderungen, `02` nur bei verbindlichen Designentscheidungen oder zur Korrektur veralteter Statusverweise ändern. Die `main`-Dokumentation muss einen neuen Chat ohne alte Konversation handlungsfähig machen.
 
 ## 2a. Bewährte Regeln aus Patch 8.4 bis 9B (Stand 23.10.2026)
 
@@ -51,7 +51,7 @@ Die übliche Aufgabenverteilung:
    - Keine ununterstützten Einstellungen blind an andere Modelle senden.
    - Der LLM-Testspieler trifft nur Spielerentscheidungen und sieht nur Chat und sichtbares HUD. Er manipuliert keine Engine-Zustände und überdeckt keine Fehler durch stilles Regenerieren.
 8. **Legacy-Schutz:** Neue Mechaniken gelten nur unter Regelstand 2 (Kampagnen ab Patch 9A). Jede Mechanikänderung bekommt einen Legacy-Regressionstest; Änderungen, die auch Legacy betreffen (z. B. ganzzahlige Barrier), werden ausdrücklich genannt und begründet.
-9. **Dokumentation:** Technische Patchbeschreibungen liegen im Entwicklungsbranch (`avereth-engine/docs/PATCH*.md`, Kurzfassung in `docs/PROTOTYPE_C.md`). Die Projektdateien 01–04 auf `main` werden nach Meilensteinen nachgeführt, auf Wunsch des Nutzers auch durch Claude direkt auf `main`.
+9. **Dokumentation:** Technische Patchbeschreibungen liegen im Entwicklungsbranch (`avereth-engine/docs/PATCH*.md`, Kurzfassung in `docs/PROTOTYPE_C.md`). `03` und `04` auf `main` werden nach **jedem Patch, Review-Fix und relevanten echten Livetest zeitnah aktualisiert, auch wenn der Patch noch nicht erfolgreich abgeschlossen ist**. Ein zukünftiger Fixauftrag wird als OFFEN geführt, niemals vor dem Git-Commit als umgesetzt. `01`/`02` nur bei Bedarf. Keine ganze Branch-Merges für Doku.
 
 ## 3. Qualitätsmaßstäbe für Reviews
 
@@ -129,7 +129,7 @@ Bei umfangreichen Patches eine **dreifache Prüfung** einplanen: (1) Architektur
 
 Der Nutzer kann die vier Dateien aus dem Repository-Root auf `main` in das ChatGPT-Projekt laden oder sie direkt über den GitHub-Zugriff lesen lassen und folgende Startanweisung verwenden:
 
-> Lies im Projekt „RPG Engine“ vollständig die vier Markdown-Dateien `01_ARBEITSWEISE_CHATGPT_CLAUDE.md`, `02_DESIGN_KANON.md`, `03_AKTUELLER_PROJEKTSTAND.md` und `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` aus dem GitHub-Branch `main`. Dieser Chat setzt Avereth fort, kein Neustart. Prüfe danach den aktuellen Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`, HEAD und Build (Stand der Dateien: `0cd22d3`, Build .39). Unterscheide ausdrücklich IMPLEMENTIERT / AKTIVER LIVETEST / VERBINDLICH GEPLANT / REVIEW-ENTWURF / OFFENE IDEE. Insbesondere: Patch 8 ist abgeschlossen; **Patch 9A, 9A.1, 9B-1 und 9B-2 sind implementiert** (neue Kampagnen: Warrior/Mage/Rogue; Legacy-Kampagnen behalten fünf Klassen); **Patch 9C ist als überarbeiteter Gesamtplan in Datei 04 §1a.2b festgehalten, aber noch kein Auftrag**; dort stehen zwei offene Spielentscheidungen. Livetests laufen über den einen zentralen Guide `current_test.json`. Nenne den gesicherten Stand und den nächsten Schritt. Danach gezielt nach §4a arbeiten; ChatGPT/Codex kann auf Auftrag selbst implementieren, das unabhängige Gegenreview bleibt. Keine erfundenen Git-, LLM- oder Testnachweise; frage bereits dokumentierten Kontext nicht erneut ab.
+> Lies im Projekt „RPG Engine“ vollständig die vier Markdown-Dateien `01_ARBEITSWEISE_CHATGPT_CLAUDE.md`, `02_DESIGN_KANON.md`, `03_AKTUELLER_PROJEKTSTAND.md` und `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` aus `main`. Dieser Chat setzt die Entwicklung unmittelbar fort, kein Neustart. **Prüfe anschließend live den HEAD des Entwicklungsbranches** `claude/c-planner-prototype-2026-10-02-gpt-c666`, Build, neue Commits und Test-/Livetest-Status; alte Dokument-HEADs sind Snapshots. **Dokumentierter Übergabestand 23.10.2026:** Patch 8 und 9A/9B abgeschlossen; 9C-1 (Lehrertraining) und 9C-2a (Forge, echter `.45`-Livetest erfolgreich) implementiert. 9C-2b (Stones/Manuals) bis **`.47`, Commit `aa3400a`** implementiert und technisch gegengeprüft, **aber `.47`-Livetest `20261023-062346Z-current_test` gescheitert** (1/3 Meilensteine, kein neuer Skill, doppelter Kaufgegenstand). **`.48`-Integrationskorrekturen sind freigegeben, aber auf diesem Dokumentationsstand noch NICHT umgesetzt**; den Git-HEAD vor einer Aussage neu prüfen. Details, Bugs und nächste konkrete Korrekturen stehen in 03/04. 9C-2c Passives, 9C-2d Durchbrüche, 9C-3 Evolution/NPC und 9D bleiben später. `current_test.json` ist der zentrale Live-Guide. Folge der Arbeitsweise, prüfe Ergebnisse kritisch und aktualisiere 03/04 nach jedem neuen Implementierungs- oder Testergebnis auf `main`, damit künftige Chats keinen Projektstand verlieren.
 
 Falls Dateien nicht gefunden werden, den Nutzer genau darauf hinweisen. Kein „gelesen“ behaupten, bevor sie tatsächlich verfügbar und gelesen sind.
 
@@ -137,7 +137,7 @@ Falls Dateien nicht gefunden werden, den Nutzer genau darauf hinweisen. Kein „
 
 - `01_ARBEITSWEISE_CHATGPT_CLAUDE.md`: bei neuen Rollen, Abläufen, Review-Regeln oder bewährten Kollaborationsänderungen.
 - `02_DESIGN_KANON.md`: bei einer **verbindlichen** Spiel- oder Architekturentscheidung, die langfristig gilt. Strittige/optionale Vorschläge ausdrücklich als solche markieren.
-- `03_AKTUELLER_PROJEKTSTAND.md`: nach jedem größeren implementierten Patch und nach wichtigen Livetests, jeweils mit Datum, Branch, SHA, Stand der Tests und noch offenen Punkten.
-- `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md`: konkrete, noch nicht beschlossene Verbesserungen, ausgearbeitete Review-Prompts, Claude-Gegenargumente, priorisierte Kandidaten und offen gebliebene Patchreihenfolgen. Bei Freigabe/Implementierung den Status nachführen und ggf. in 02/03 spiegeln.
+- `03_AKTUELLER_PROJEKTSTAND.md`: nach jedem Teilpatch, Review-Fix und relevanten echten Livetest (auch Fehltest), mit Datum, Branch, SHA, Build, Testnachweis, Ursache, offenen Punkten und nächsten Schritten.
+- `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md`: Roadmap mit aktuellem Status (implementiert, Review, Live-Abnahme, freigegebener nächster Auftrag), offene Entscheidungen, Kandidaten und Reviews. **Nach jedem Teilpatch/Fix/Livetest den Status nachführen**, ohne ungeprüfte Fehlerhypothesen oder geplante Änderungen als erledigt auszugeben.
 
 Keines der vier Dokumente ist ein Ersatz für den tatsächlichen Code oder Original-Testlogs. Ihre Aufgabe ist die **verlustarme Wiederaufnahme des Projekts in neuen Chats**.

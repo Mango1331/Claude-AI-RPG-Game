@@ -22,6 +22,7 @@ import { objectiveText, proofText as guildProofText, defeatTally, tallyText, rea
 import { envelopeBlock } from './v4/envelope.js';
 import { sceneHandle } from './v4/scene_handles.js';
 import { settlementLife } from './v4/settlement.js';
+import { profileOf, sourceText } from './v4/items.js';
 
 export const DEFAULT_BUDGET = 1400;
 export const DEFAULT_RULES_BUDGET = 800;
@@ -89,7 +90,8 @@ export function pcLine(state, content, { combat = !!state.encounter, items = tru
     const weapon = weaponAttackOf(s, content, rulesetOf(state)); // Patch 9A: his weapon's own attack, no learned Skill
     if (weapon) skillList.push(`${weapon.skill.name} (attack of his ${weapon.weapon.name}, no learned Skill)`);
     const arrows = s.inventory.standard_arrow;
-    const inv = Object.entries(s.inventory).filter(([k]) => k !== 'standard_arrow').map(([k, q]) => `${itemLabel(state, content, k)}${q > 1 ? ` ×${q}` : ''}`);
+    // Patch 9C-2b: a Skill Stone or a manual says what it holds or teaches (learning from it is the engine's)
+    const inv = Object.entries(s.inventory).filter(([k]) => k !== 'standard_arrow').map(([k, q]) => { const src = sourceText(profileOf(content, state.objects?.[k])); return `${itemLabel(state, content, k)}${q > 1 ? ` ×${q}` : ''}${src ? ` (${src})` : ''}`; });
     const equip = Object.values(s.equipment).map((r) => (typeof r === 'string' ? content.items.get(r)?.name || r : r.name));
     const lines = [
         `${e.name} — Level ${s.level} ${cls}, Power Rank ${dv.rank}${guild ? `, Guild ${guild}` : ''} | HP ${s.hp}/${dv.maxHp} (${conditionLabel(s.hp, dv.maxHp)}) MP ${s.mp}/${dv.maxMp} STA ${s.sta}/${dv.maxSta}${s.free_points ? ` | Free Stat Points ${s.free_points}` : ''}${e.status === 'dead' ? ' | DEAD' : ''}`,
@@ -292,6 +294,9 @@ function stateNow(state, content, outcome) {
     return `STATE NOW — BINDING (end the reply so; no other foe): ${bits.join(' · ')}.`;
 }
 
+/** Patch 9C-2b: how a learned Skill came to him (its source's kind). */
+export const fromWord = (l) => (l.source === 'stone' ? 'drawn from' : l.source === 'material' ? 'studied from' : 'learned from');
+
 function outcomeBlock(state, content, outcome, opts = {}) {
     const block = outcomeLines(state, content, outcome, opts);
     // prototype C (src/v4/planner.js): what of the player's message the engine did not take this turn
@@ -299,9 +304,11 @@ function outcomeBlock(state, content, outcome, opts = {}) {
     // Patch 9C-1: a Skill the engine booked as learned in this turn (src/v4/growth.js); the only new Skill there is
     const learned = (outcome?.learned || []).map((l) => {
         const sk = skillOf(content, l.skill, state);
-        return `NEW SKILL — booked by the engine in this turn: Alaric now knows ${l.name} (${l.category}; ${l.technique}), learned from ${l.teacher}. Show the moment it takes hold in a sentence or two; its numbers are the engine's. No other new Skill, Passive, Skill evolution or class change.${sk ? `\n${skillSummary(sk)}` : ''}`;
+        return `NEW SKILL — booked by the engine in this turn: Alaric now knows ${l.name} (${l.category}; ${l.technique}), ${fromWord(l)} ${l.teacher}. Show the moment it takes hold in a sentence or two; its numbers are the engine's. No other new Skill, Passive, Skill evolution or class change.${sk ? `\n${skillSummary(sk)}` : ''}`;
     });
-    return [block, ...notes, ...learned].filter(Boolean).join('\n');
+    // Patch 9C-2b: a Skill Stone whose activation the engine could not book: it stays whole, nothing is learned
+    const inert = (outcome?.learn_failed || []).filter((f) => f.object).map((f) => `NOT LEARNED — ${f.name}: ${f.errors.join('; ')}. The stone stays whole and his; he learns nothing from it now. Tell no new Skill.`);
+    return [block, ...notes, ...learned, ...inert].filter(Boolean).join('\n');
 }
 
 function outcomeLines(state, content, outcome, { v4 = false } = {}) {

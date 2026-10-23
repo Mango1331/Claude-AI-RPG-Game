@@ -1793,7 +1793,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const lines = priced.filter((l) => !unproven.includes(l)).map((l, i) => {
             const line = { id: `l${i + 1}`, what: l.what, kind: l.kind, service: l.service ?? null, qty: l.qty ?? 1, price_cp: l.price_cp, ...(l.said !== undefined ? { said: l.said } : {}) };
             // Patch 7.2: a restorative's kind as the extractor gave it (effect), checked by itemProfile (a consumable at all)
-            const profile = line.kind === 'goods' ? itemProfile(content, { name: line.what, effect: l.effect ?? null }) : null;
+            // Patch 9C-2b: a Skill Stone or a manual by what the reply says it teaches (fixed with the line)
+            const profile = line.kind === 'goods' ? itemProfile(content, { name: line.what, effect: l.effect ?? null, teaches: l.teaches ?? null }) : null;
             if (!profile) return line;
             const audit = priceAudit(content, profile, line.price_cp, line.qty);
             return { ...line, profile, ...(audit ? { audit } : {}) };

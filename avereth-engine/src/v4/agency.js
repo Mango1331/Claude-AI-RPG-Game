@@ -332,6 +332,8 @@ export function guardCommands(message, commands, context = {}, { language = true
         if (planned(parts, type)) { drop(c, 'plan', 'the evidence plans it for later'); continue; }
         if (negated(text, type)) { drop(c, 'negation', 'the evidence negates it'); continue; }
         if (type === 'activity' && LEARNING_KINDS.has(c.kind) && WISH.test(evidence)) { drop(c, 'wish', 'the evidence wishes or asks to learn; no lesson happens now'); continue; }
+        // Patch 9C-2b: wanting to use a Skill Stone is no activation
+        if (type === 'use' && objects.get(idOf(c.object))?.source === 'stone' && WISH.test(evidence)) { drop(c, 'wish', 'the evidence wishes to use the Skill Stone; it is not activated now'); continue; }
         if (otherSpeech(message, evidence, context)) { drop(c, 'npc_speech', "the evidence is someone else's quoted words"); continue; }
         if (otherActor(evidence, context)) { drop(c, 'npc_actor', 'the evidence is what someone else does'); continue; }
         const goesToHall = kept.some((k) => k.type === 'go' && (halls.has(idOf(k.to)) || /guild/i.test(String(k.to?.new ?? ''))));

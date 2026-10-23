@@ -33,7 +33,7 @@ import { extractorRequest, parseExtraction, EXTRACTOR_VERSION } from './extract.
 import { boardRequest, parseBoard, bookBoard, BOARD_VERSION } from './guild.js';
 import { extractionFailedEvents } from './world.js';
 import { hallOf, settlementOf, membership, boardKey, today, listingsOf, supportedRanks } from './domain.js';
-import { finalizeGrowth, growthDrafts } from './growth.js';
+import { finalizeGrowth, growthDrafts, activationsOf } from './growth.js';
 import { FORGE_VERSION, forgeRequest, parseForge } from './forge.js';
 import { PLANNER_VERSION, MECH_TYPES, planContext, withContentSkills, plannerRequest, parsePlan, mapPlan, recentText, announcedAbandon } from './planner.js';
 import { crowdCount, personWords, bystanderEvents } from './settlement.js';
@@ -232,7 +232,9 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
  */
 async function withGrowth(t, content, llm, previous) {
     if (!t?.state || t.command || !t.events.length) return { events: t.events };
-    const drafts = growthDrafts(t.state, content);
+    // Patch 9C-2b: the Skill Stones this turn activated join the same drafts, Forge and grant
+    const activations = activationsOf(t.outcome);
+    const drafts = growthDrafts(t.state, content, activations);
     // Pre-Forge records (.42) already booked deterministic names. Board retry must retain those too.
     const cached = { entries: { ...previous?.forge?.entries } };
     for (const d of drafts) {
@@ -241,14 +243,14 @@ async function withGrowth(t, content, llm, previous) {
         if (skill && !cached.entries[d.key]) cached.entries[d.key] = { hash: d.hash, name: skill.name, ...(skill.flavor ? { flavor: skill.flavor } : {}) };
     }
     const forge = drafts.length ? await generateForge(llm, t.state, content, drafts, cached) : null;
-    const f = finalizeGrowth(t.state, content, forge?.entries);
+    const f = finalizeGrowth(t.state, content, forge?.entries, activations);
     if (forge) {
         // Record the name actually booked, including a late collision's deterministic fallback.
         for (const e of f.events.filter((e) => e.t === 'skill.defined')) {
             const def = e.d.skill;
             const learned = f.learned.find((l) => l.skill === def.id);
-            const entry = learned && forge.entries[learned.goal];
-            if (entry && entry.name !== def.name) forge.entries[learned.goal] = { hash: entry.hash, name: def.name, fallback: true };
+            const entry = learned && forge.entries[learned.key];
+            if (entry && entry.name !== def.name) forge.entries[learned.key] = { hash: entry.hash, name: def.name, fallback: true };
         }
     }
     const meta = forge ? { forge } : {};

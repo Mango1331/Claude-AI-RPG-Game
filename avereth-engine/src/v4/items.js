@@ -13,6 +13,7 @@
 import { normText } from '../util.js';
 import { itemTemplateOf, restoreTemplateOf, weaponFamily } from '../content.js';
 import { rankOf, rankIndex } from '../derived.js';
+import { composerFunctions, composeTags, composeAspects } from '../skill_composer.js';
 
 const cache = new WeakMap();
 function patterns(content) {
@@ -95,7 +96,35 @@ function gearKindOf(content, name) {
  *           placed by quality, scaled by Rank)
  * A content gear template by its exact name (the starter staff) keeps the template's values.
  */
-export function itemProfile(content, { name, kind = 'item', effect = null }) {
+// Patch 9C-2b (docs/PATCH9C2B_STONES_MATERIALS.md): a Skill Stone or a manual is a source of one technique. It is one
+// only when its words name the kind (rules.json growth.sources; a manual also as a document) AND what it teaches was
+// established with it (the extractor's teaches of object.new or of an offer line, an engine source): the function,
+// and the tags and aspects the source states; nothing the source does not state is filled in (a function it does
+// not name stays null and teaches nothing). The profile describes the source, never a finished Skill; the engine
+// composes the Skill when it is learned (src/v4/growth.js). A return stone, a pebble or a storybook is none.
+const has = (name, list) => (list || []).some((w) => words(name).includes(` ${normText(w)} `));
+export function skillSource(content, { name, kind = 'item', teaches = null }) {
+    const r = content.rules.growth?.sources;
+    if (!r || !name || !teaches || typeof teaches !== 'object' || !['stone', 'manual'].includes(teaches.source)) return null;
+    const recognised = teaches.source === 'stone' ? has(name, r.stone_words) : (kind === 'document' || has(name, r.manual_words));
+    if (!recognised) return null;
+    const fn = composerFunctions(content).includes(teaches.fn) ? teaches.fn : null;
+    // only tags and aspects the technique supports; an unsupported one is not taken (nor replaced)
+    const tags = fn ? [...new Set((Array.isArray(teaches.tags) ? teaches.tags : []).filter((t) => !composeTags(content, fn, [t]).error))].slice(0, 2) : [];
+    const aspects = [...new Set((Array.isArray(teaches.aspects) ? teaches.aspects : []).filter((a) => !composeAspects(content, [a]).error))].slice(0, 2);
+    return { kind: 'skill_source', source: teaches.source, title: teaches.source === 'stone' ? 'Skill Stone' : 'manual', rank: rankInName(name) || 'F', fn, tags, aspects, value_cp: r.value_cp?.[teaches.source] ?? 0 };
+}
+
+/** "Skill Stone · F · Fire bolt (Arcane)", "manual · F · teaches no technique the story named". */
+export function sourceText(p) {
+    if (p?.kind !== 'skill_source') return '';
+    const what = p.fn ? `${p.aspects.length ? `${p.aspects.join('/')} ` : ''}${p.fn}${p.tags.length ? ` (${p.tags.join(', ')})` : ''}` : 'no technique the story named';
+    return `${p.title} · ${p.rank} · ${p.fn ? (p.source === 'stone' ? 'holds' : 'teaches') : 'holds'} ${what}`;
+}
+
+export function itemProfile(content, { name, kind = 'item', effect = null, teaches = null }) {
+    const src = skillSource(content, { name, kind, teaches });
+    if (src) return src;
     if (!name || kind === 'document' || kind === 'trophy' || kind === 'resource') return null;
     const q = qualityOf(content, name);
     const rank = rankInName(name);
@@ -165,6 +194,7 @@ export function priceAudit(content, p, price_cp, qty = 1) {
     const [lo, hi] = content.gear?.instances?.value?.plausible || [0.5, 2];
     const each = price_cp / Math.max(1, qty || 1);
     if (each >= p.value_cp * lo && each <= p.value_cp * hi) return null;
+    if (p.kind === 'skill_source') return `${each} cp for a ${p.rank}-Rank ${p.title} is ${each < p.value_cp * lo ? 'far below' : 'far above'} the guideline of about ${p.value_cp} cp`;
     return `${each} cp for a ${p.quality} ${p.rank}-Rank ${p.kind === 'attack' ? `${p.title} (power ${p.power})` : p.kind === 'restore' ? `${p.title} (${p.amount} ${p.resource.toUpperCase()})` : `${p.slot} (${['atk', 'matk', 'def', 'mdef'].filter((k) => p[k]).map((k) => `${k.toUpperCase()} ${p[k]}`).join(', ')})`} is ${each < p.value_cp * lo ? 'far below' : 'far above'} the guideline of about ${p.value_cp} cp`;
 }
 
@@ -227,8 +257,8 @@ export function restoreEffect(content, p, { level, current, max }) {
  * minute it keeps until; Patch 7.1: an item with values of its own (gear, an attack item) its profile, fixed now. Spread
  * into object.created; a purchase carries the offer line's profile instead (src/v4/trade.js).
  */
-export function itemTraits(content, { name, kind = 'item', unit = null, effect = null }, minute, profile = undefined) {
-    const own = profile !== undefined ? profile : itemProfile(content, { name, kind, effect });
+export function itemTraits(content, { name, kind = 'item', unit = null, effect = null, teaches = null }, minute, profile = undefined) {
+    const own = profile !== undefined ? profile : itemProfile(content, { name, kind, effect, teaches });
     const use = own?.kind === 'gear' ? 'equipment' : useOf(content, { name, kind });
     if (own) return { use, profile: own };
     if (use !== 'food') return { use };

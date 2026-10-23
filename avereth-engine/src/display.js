@@ -334,7 +334,9 @@ function planLines(o) {
     }
     for (const n of o?.plan_notes || []) out.push(sys(`NOT TAKEN — ${String(n).replace(/[<>`]/g, '')}`));
     // Patch 9C-1: a Skill the engine booked as learned this turn (src/v4/growth.js finalizeGrowth)
-    for (const l of o?.learned || []) out.push(sys(`NEW SKILL — ${l.name} (${l.category} · ${l.cost.amount} ${l.cost.resource.toUpperCase()}) · learned from ${String(l.teacher).replace(/[<>`]/g, '')} · #skill ${l.name}`));
+    for (const l of o?.learned || []) out.push(sys(`NEW SKILL — ${l.name} (${l.category} · ${l.cost.amount} ${l.cost.resource.toUpperCase()}) · ${l.source === 'stone' ? 'drawn from' : l.source === 'material' ? 'studied from' : 'learned from'} ${String(l.teacher).replace(/[<>`]/g, '')} · #skill ${l.name}`));
+    // Patch 9C-2b: a Skill Stone the engine could not book stays whole
+    for (const f of (o?.learn_failed || []).filter((x) => x.object)) out.push(sys(`NOT LEARNED — ${String(f.name).replace(/[<>`]/g, '')}: ${String(f.errors.join('; ')).replace(/[<>`]/g, '')} · the stone stays whole`));
     return out;
 }
 

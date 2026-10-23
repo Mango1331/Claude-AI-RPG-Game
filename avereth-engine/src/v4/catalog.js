@@ -14,7 +14,7 @@ import {
 import { catalogText } from './interpret.js';
 import { defeatTally, tallyText, readyText, proofMemory, goalText, amountText } from './guild.js';
 import { knownNote, reportedPlaces } from './known.js';
-import { spoiled } from './items.js';
+import { spoiled, profileOf, sourceText } from './items.js';
 import { continueOptions, goalLines } from './intents.js';
 import { featuresAt, featureText } from './features.js';
 import { dungeonOf, roomKnown, exitsFrom, exitText, dungeonText, nearDungeons } from './dungeon.js';
@@ -164,7 +164,9 @@ function objectEntry(state, content, o) {
     const holder = o.holder?.entity === 'pc' ? undefined : o.holder?.loc ? 'here' : o.holder?.entity ? personLabel(state, content, o.holder.entity) : undefined;
     // Patch 3: food counts in portions and can spoil (src/v4/items.js)
     const food = o.use === 'food' ? (spoiled(state, o) ? 'food, spoiled' : 'food') : null;
-    const notes = [(o.marks || []).length ? `marked: ${o.marks.map((m) => m.text).join('; ')}` : null, food].filter(Boolean).join('; ') || undefined;
+    // Patch 9C-2b: a Skill Stone or a manual, with what it holds or teaches (its fixed profile)
+    const source = sourceText(profileOf(content, o)) || null;
+    const notes = [(o.marks || []).length ? `marked: ${o.marks.map((m) => m.text).join('; ')}` : null, food, source].filter(Boolean).join('; ') || undefined;
     return { id: o.id, name: o.name, qty: o.stack || (o.qty ?? 1) > 1 || o.use === 'food' ? o.qty : undefined, unit: o.unit || undefined, holder, state: notes };
 }
 
@@ -343,7 +345,8 @@ export function extractorCatalog(state, content, opts = {}) {
 export function guardContext(state, content, catalog = buildCatalog(state, content)) {
     const reg = (catalog.offers || []).find((o) => o.id === 'offer.registration');
     const objects = new Map();
-    for (const o of catalog.objects) objects.set(o.id, { held: !o.holder, name: o.name });
+    // Patch 9C-2b: whether a thing is a Skill Stone (wishing to use one is no activation)
+    for (const o of catalog.objects) objects.set(o.id, { held: !o.holder, name: o.name, source: profileOf(content, state.objects?.[o.id])?.kind === 'skill_source' ? profileOf(content, state.objects[o.id]).source : null });
     return {
         inGuildHall: !!hallOf(state, state.scene.at),
         guildHalls: new Set([catalog.here.id, ...catalog.places.map((p) => p.id)].filter((id) => hallOf(state, id) === id)),

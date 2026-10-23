@@ -3,6 +3,7 @@
 // #system <question> is the one natural-language query; it is passed to the narrator in System-only mode.
 import { deriveCharacter, rawPowerText, itemOf, actionsOf, weaponAttackOf } from './derived.js';
 import { goalLines } from './v4/growth.js';
+import { profileOf, sourceText } from './v4/items.js';
 import { formatCoin } from './economy.js';
 import { findSkill, rulesetOf, startClasses, skillOf } from './content.js';
 import { passiveTotals, skillCostAmount, passivesOf, passiveText } from './passives.js';
@@ -229,7 +230,9 @@ function bag(state, content) {
     const lines = ['[SYSTEM // BAG]'];
     for (const [id, q] of Object.entries(s.inventory)) {
         const it = content.items.get(id);
-        lines.push(`${itemLabel(state, content, id)}${it?.rank ? ` [${it.rank}]` : ''} ×${q}${id === 'standard_arrow' && s.equipment.quiver ? ' (in quiver)' : ''}`);
+        // Patch 9C-2b: a Skill Stone or a manual says what it holds or teaches
+        const src = sourceText(profileOf(content, state.objects?.[id]));
+        lines.push(`${itemLabel(state, content, id)}${it?.rank ? ` [${it.rank}]` : ''} ×${q}${id === 'standard_arrow' && s.equipment.quiver ? ' (in quiver)' : ''}${src ? ` · ${src}` : ''}`);
     }
     if (lines.length === 1) lines.push('empty');
     lines.push(`Coin: ${formatCoin(s.coin_cp, content)} (${s.coin_cp} Copper)`);

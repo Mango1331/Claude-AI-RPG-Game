@@ -9,7 +9,7 @@
 import { O, S, B, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 
-export const EXTRACTOR_VERSION = 'extract-5.1';
+export const EXTRACTOR_VERSION = 'extract-5.2';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -25,7 +25,10 @@ export function placeRef(placeIds) {
 // Patch 7.2: effect, the kind of a restorative the line sells (a healing potion: heal), the engine fixes how much
 const EFFECTS = ['heal', 'restore_mp', 'restore_sta'];
 // (left out it is null: the parser fills it, src/v4/extract.js normalizeSoftFields)
-const OFFER_LINE = O({ what: S(), kind: E(['goods', 'service']), service: N(E(SERVICES)), qty: I(1), price_cp: I(0), said: N(S()), effect: N(E(EFFECTS)) });
+// Patch 9C-2b: what a Skill Stone or a manual teaches, as the story establishes it (the engine checks it against the
+// techniques it can compose, src/v4/items.js skillSource); every field left out is null
+const TEACHES = O({ source: E(['stone', 'manual']), fn: N(S()), tags: N(A(S())), aspects: N(A(S())) });
+const OFFER_LINE = O({ what: S(), kind: E(['goods', 'service']), service: N(E(SERVICES)), qty: I(1), price_cp: I(0), said: N(S()), effect: N(E(EFFECTS)), teaches: N(TEACHES) });
 // 4.3.0-c.6.6.5: a bid's line is one of Alaric's things and how many of it the buyer would take
 const bidLine = (refs) => A(O({ object: refs.object, qty: I(1) }), 1);
 
@@ -35,6 +38,7 @@ function fieldSchema(spec, refs) {
     else if (spec.ref) s = refs[spec.ref] ?? S();
     else if (spec.enum) s = E(spec.enum);
     else if (spec.array === 'offer_line') s = A(OFFER_LINE, 1);
+    else if (spec.object === 'teaches') s = TEACHES;
     else if (spec.array === 'bid_line') s = bidLine(refs);
     else if (spec.array) s = A(S());
     else if (spec.type === 'integer') s = I(spec.min, spec.max);
@@ -79,6 +83,7 @@ function fieldType(spec) {
     if (spec.ref) return `${spec.ref}-ref`;
     if (spec.enum) return spec.enum.map((v) => JSON.stringify(v)).join('|');
     if (spec.array === 'offer_line') return 'offer_line[]';
+    if (spec.object === 'teaches') return 'teaches';
     if (spec.array === 'bid_line') return 'bid_line[]';
     if (spec.array) return 'string[]';
     if (spec.type === 'integer') {
@@ -100,7 +105,8 @@ export const FORMAT_RULES = [
     'When the CATALOG already contains the place, quest or object, copy its id exactly. Never rewrite an id, invent another id for it, or substitute its title/name.',
     'quest-ref and object-ref mean the exact matching CATALOG id; use {"new":"..."} only when the thing is genuinely new and that reference type permits it.',
     'person-ref is a person id from PRESENT or the CATALOG, or the ref of a person.new/creature.new earlier in the same answer.',
-    'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0,"said":string|null (the reply\'s words for the price),"effect":"heal"|"restore_mp"|"restore_sta"|null (only for a potion, draught or tonic that restores HP, MP or STA; the engine fixes how much)}.',
+    'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0,"said":string|null (the reply\'s words for the price),"effect":"heal"|"restore_mp"|"restore_sta"|null (only for a potion, draught or tonic that restores HP, MP or STA; the engine fixes how much),"teaches":teaches|null}.',
+    'teaches is {"source":"stone"|"manual","fn":"strike"|"bolt"|"guard"|"ward"|"mend"|null,"tags":string[]|null,"aspects":string[]|null} or null: only for a Skill Stone, or a manual, primer or treatise, that the reply establishes as teaching a technique. fn: strike (a close weapon or body technique), bolt (a ranged spell), guard (a defensive stance), ward (a magical barrier), mend (a healing); tags (Martial, Precision, Mobility, Defense, Arcane, Control) and aspects (Fire, Ice, Lightning, Water, Earth, Wind, Shadow, Light, Poison, Nature, Blood, Sound) only as the reply states them; null for anything the reply does not say. Never for an ordinary stone, a return stone, a storybook or a letter.',
     'bid_line is {"object":object-ref (an exact OBJECTS id of a thing held by Alaric),"qty":integer>=1}.',
     'expected must contain exactly the keys requested below, no other keys.',
 ];
@@ -174,6 +180,8 @@ export function extractorRequest(vocab, { catalog, actions, player = null, expec
  * Read an extractor answer: valid (JSON + schema) and complete (every expected key answered).
  * @returns {{value: object|null, valid: boolean, complete: boolean, errors: string[], missing: string[], raw: boolean}}
  */
+const softTeaches = (t) => (t && typeof t === 'object' && !Array.isArray(t) ? { fn: null, tags: null, aspects: null, ...t } : t ?? null);
+
 function normalizeSoftFields(value, vocab) {
     if (!value || typeof value !== 'object') return value;
     const specs = new Map((vocab.deltas || []).map((d) => [d.type, d]));
@@ -191,7 +199,9 @@ function normalizeSoftFields(value, vocab) {
         }
         if (d.type === 'memory' && x.who === undefined) x.who = [];
         // Patch 3: an offer line's words for its price may be left out like a |null field
-        if (d.type === 'offer' && Array.isArray(x.lines)) x.lines = x.lines.map((l) => (l && typeof l === 'object' ? { ...l, ...(l.said === undefined ? { said: null } : {}), ...(l.effect === undefined ? { effect: null } : {}) } : l));
+        if (d.type === 'offer' && Array.isArray(x.lines)) x.lines = x.lines.map((l) => (l && typeof l === 'object' ? { ...l, ...(l.said === undefined ? { said: null } : {}), ...(l.effect === undefined ? { effect: null } : {}), teaches: softTeaches(l.teaches) } : l));
+        // Patch 9C-2b: the fields of a teaches the reply does not state are null
+        if (d.type === 'object.new') x.teaches = softTeaches(x.teaches);
         return x;
     }) : value.deltas;
     return { ...value, expected: value.expected && typeof value.expected === 'object' ? value.expected : {}, deltas };

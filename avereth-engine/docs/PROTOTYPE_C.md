@@ -2015,3 +2015,13 @@ Beschreibung: `docs/PATCH9C2A_FORGE_TEACHER_ACQUISITION.md`. Implementierung dur
 - Stones, Material, neuer Passive-Erwerb, Durchbrüche und Evolution folgen separat.
 
 **Reviewkorrektur .44:** Claude bestätigte .43 unabhängig mit 33/33 gezielten und 1163/1163 Gesamttests. Ein alter doppelter Lernauftrag wird jetzt auf den bestehenden Skill geschlossen und gibt seinen Platz frei. Ein veralteter Interceptor bricht seinen eigenen Durchlauf ab; der Abbruchcallback ist laut ST-1.19.0-Quellcode aufruflokal. Korrigierter Host-Test für überholte Aufträge, Edit, Swipe, Löschen und Chatwechsel; produktpfadbasierter Duplikat-/Replay-Test. Rot/Grün und vollständige Ergebnisse in der Patch-Doku. Vertrag bleibt .43, Performanceumbau unterbleibt; R3 wird im Livetest beobachtet. Gegenreview der .44 und echter ST-Livetest noch offen.
+
+### Patch 9C-2b (4.3.0-c.6.6.46): Skill Stones und Lernmaterial
+
+Vollständige Beschreibung: `docs/PATCH9C2B_STONES_MATERIALS.md`.
+
+- **Quellen.** Ein erkennbarer Skill Stone oder ein Manual mit belegter Lehre (`teaches` an `object.new` oder an einer Angebotszeile, `delta-1.1`) erhält bei der Etablierung ein festes Profil: Funktion, Tags, Aspekte, Rang. Es ist keine fertige Definition, und Fehlendes wird nicht ergänzt.
+- **Stone.** Aktivierung über `use`. Die Engine prüft und merkt vor; der gemeinsame Abschluss bucht mit derselben Forge Definition, Besitz, Vorhaben und genau eine verbrauchte Einheit, oder nichts.
+- **Manual.** `activity study` mit `material` (`cmd-1.2`) bindet das Material an das Vorhaben. Eigenstudium mit Tageskappe; das Material wird nicht verbraucht. Lesen allein lehrt nichts.
+- **Texte.** `content.10.r2`, Vertrag v4 Revision 4.3.0-c.6.6.46.
+- **Tests:** `tests/v4/patch9c2b.test.js` (11).

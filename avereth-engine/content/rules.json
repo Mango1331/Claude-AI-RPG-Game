@@ -230,7 +230,13 @@
       "self": 20
     },
     "lp_note": "per learning target and game day: the day's teacher minutes at the teacher rate plus the day's own-practice minutes at the self rate (each capped), the sum capped at the teacher cap, times his single highest Class Affinity for the target's tags, rounded down; what the day already gave is subtracted, so sessions split over a day never add more than the day's claim",
-    "fight_lp": 12,
+    "sources": {
+    "src": "Patch 9C-2b (docs/PATCH9C2B_STONES_MATERIALS.md): what makes a thing a source of a technique (src/v4/items.js skillSource). A thing is one only when its words name the kind (stone_words, manual_words; a manual also as a document) AND the story or the offer established what it teaches (the extractor's teaches); its profile is fixed then. value_cp: the guideline price an audit compares offers with (never a refusal)",
+    "stone_words": ["skill stone", "skill-stone", "skillstone", "technique stone"],
+    "manual_words": ["manual", "primer", "treatise", "grimoire", "spellbook", "spell book", "handbook", "codex", "training book", "technique book", "lesson book", "instruction book"],
+    "value_cp": {"stone": 400, "manual": 120}
+  },
+  "fight_lp": 12,
     "fight_note": "a fight that qualifies for Proficiency Progress (proficiency.award.challenge) in which he used a Skill sharing a tag with an open learning goal: once per fight, to the oldest such goal, times his affinity, rounded down",
     "train_pp": {
       "pp": 12,

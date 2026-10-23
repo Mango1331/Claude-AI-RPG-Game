@@ -194,10 +194,13 @@ export const LEARNING_RULES = [
     'Learning and training (story commands):',
     '- Only when he trains, studies or takes a lesson NOW is it activity train or study with learn: a KNOWN SKILLS id he practises, a LEARNING id he goes on with, or the kind of a new technique he is taught (strike, bolt, guard, ward, mend). teacher: the PRESENT person who teaches him in this message, else null. tags and aspects: only those his words or the lesson name, else null. minutes or until as he says them.',
     '- Asking to be taught, a wish ("I\'d like to learn …", "teach me someday"), a question about a technique, a price or a plan for later is no command: words, the story lets the other answer.',
+    '- Studying a manual or primer he holds (OBJECTS: manual · … teaches …) for a time is activity study with material: its id, and learn: the technique it teaches or the LEARNING id he goes on with. Only looking at it or reading its title is no study.',
+    '- Activating a Skill Stone he holds (OBJECTS: Skill Stone · … holds …) now is use with its id; wanting to, asking about it or examining it is no command.',
     'Examples (another town): CATALOG: PRESENT: npc.tutor (Brannoc, sword tutor) · KNOWN SKILLS warrior.cleave (Cleave: attack · single target) · LEARNING learn.1 (guard (Defense) from Brannoc, 40/100 LP)',
     '- "*i spend the next two hours with Brannoc drilling the stance he shows me*" → {"commands":[{"seq":1,"type":"activity","kind":"train","what":"the stance Brannoc shows him","minutes":120,"until":null,"learn":"learn.1","teacher":"npc.tutor","tags":null,"aspects":null,"quote":"i spend the next two hours with Brannoc drilling the stance he shows me"}]}',
     '- "*i practise my cleave on the post for an hour*" → {"commands":[{"seq":1,"type":"activity","kind":"train","what":"Cleave on the post","minutes":60,"until":null,"learn":"warrior.cleave","teacher":null,"tags":null,"aspects":null,"quote":"i practise my cleave on the post for an hour"}]}',
     '- "Could you teach me a fire spell some day?" → {"commands":[]}',
+    '- (OBJECTS: obj.t4.primer (Primer of the Steady Guard, held by Alaric, manual · F · teaches guard (Defense))) "*i sit down with the primer and work through it for two hours*" → {"commands":[{"seq":1,"type":"activity","kind":"study","what":"the Primer of the Steady Guard","minutes":120,"until":null,"learn":"guard","teacher":null,"tags":null,"aspects":null,"material":"obj.t4.primer","quote":"i sit down with the primer and work through it for two hours"}]}',
 ].join('\n');
 
 /**
@@ -363,10 +366,10 @@ const NULLABLE = { use_skill: ['skill', 'target'], ability_world: ['skill', 'goa
  */
 function learningErrors(c, ctx, at) {
     const e = [];
-    const set = ['learn', 'teacher', 'tags', 'aspects'].filter((k) => c[k] !== null && c[k] !== undefined);
+    const set = ['learn', 'teacher', 'tags', 'aspects', 'material'].filter((k) => c[k] !== null && c[k] !== undefined);
     // a legacy campaign learns nothing this way: the engine takes such an activity as an ordinary one
     if (!set.length || !(ctx.techniques || []).length) return e;
-    if (!['train', 'study'].includes(c.kind)) return [`${at}: learn, teacher, tags and aspects belong only to kind train or study (null otherwise)`];
+    if (!['train', 'study'].includes(c.kind)) return [`${at}: learn, teacher, tags, aspects and material belong only to kind train or study (null otherwise)`];
     const known = new Set([...(ctx.known || []), ...(ctx.learning || []).map((g) => g.id), ...(ctx.techniques || [])]);
     if (c.learn !== null && !known.has(c.learn)) e.push(`${at}: learn must be an id from KNOWN SKILLS, an id from LEARNING, one of ${ctx.techniques.join(', ')}, or null`);
     if (Array.isArray(c.tags) && c.tags.some((t) => !(ctx.disciplines || []).includes(t))) e.push(`${at}: tags must be of ${(ctx.disciplines || []).join(', ')}, or null`);

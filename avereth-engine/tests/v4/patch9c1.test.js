@@ -164,7 +164,7 @@ test('9C-1 D: a teacher not here, without training, without a commitment, withou
         ['npc.quiet', /Vell has not agreed to teach him/],
         ['npc.sword', /Brannoc has no mastery of Arcane/],
         [{ new: 'a wandering wizard' }, /no known teacher is named/],
-        [null, /a new technique needs a teacher here/],
+        [null, /a new technique needs a source: a teacher here/],
     ];
     for (const [teacher, why] of cases) {
         const t0 = clockOf(g);

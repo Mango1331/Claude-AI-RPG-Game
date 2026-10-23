@@ -29,7 +29,7 @@ import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSet
 import { knownByName } from './known.js';
 import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect } from './items.js';
 import { itemEffectOf, rulesetOf } from '../content.js';
-import { learningActivity } from './growth.js';
+import { learningActivity, stoneActivation } from './growth.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
@@ -537,7 +537,7 @@ const HANDLERS = {
         // Patch 9C-1 (ruleset 2, the planner path): training or study with a learning target. The engine decides what
         // it is (a Skill he knows, a learning goal, a new technique), checks its teacher and books time, the session and
         // its progress, or nothing at all (a question, a refusal)
-        if (envx?.c && LEARNING.has(c.kind) && rulesetOf(s) >= 2 && (c.learn || c.teacher)) {
+        if (envx?.c && LEARNING.has(c.kind) && rulesetOf(s) >= 2 && (c.learn || c.teacher || c.material)) {
             const minutes = engineMinutes(content, s, c);
             const r = learningActivity(s, content, c, minutes, s.clock.minute);
             if (r.status !== 'resolved') return { status: r.status, reason: r.reason, line: r.line };
@@ -720,6 +720,20 @@ const HANDLERS = {
             back.events.forEach(emit);
             return { status: 'resolved', line: `USES — ${o.name}: crushed in his hand, it carries him out to the gate of ${placeName(s, back.to)}; the stone is spent. He stands at the gate now (the engine moved him).` };
         }
+        // Patch 9C-2b: a Skill Stone he activates (ruleset 2, the planner path): checked here, booked by the shared
+        // finalization after the turn (src/v4/growth.js finalizeGrowth) together with the one unit it spends; one that
+        // fails there books nothing and stays his
+        const stone = envx?.c ? stoneActivation(s, content, o) : null;
+        if (stone?.refuse) return { status: 'refused', reason: 'stone', line: `CANNOT USE — ${o.name}: ${stone.refuse}; it stays his, whole and unused, and he learns nothing from it.` };
+        if (stone) {
+            const key = `stone:${o.id}:t${s.turn}`;
+            if ((ctx.booked.activations || []).some((a) => a.object === o.id)) return { status: 'refused', reason: 'stone', line: `CANNOT USE — ${o.name} is activated once in this message already.` };
+            ctx.booked.activations = [...(ctx.booked.activations || []), { key, object: o.id, seq: c.seq }];
+            return { status: 'resolved', line: `ACTIVATES — ${o.name} (it holds ${stone.target.aspects.length ? `${stone.target.aspects.join('/')} ` : ''}${stone.target.fn}): he wakes the stone and takes in what it holds. The engine books what he learns from it below (NEW SKILL), and the stone is spent then; if no NEW SKILL is named, the stone stays whole and he learns nothing.` };
+        }
+        // Patch 9C-2b: reading a manual teaches nothing by itself; studying it for a time is (activity study)
+        const manual = envx?.c && rulesetOf(s) >= 2 && profileOf(content, o)?.kind === 'skill_source' && profileOf(content, o).source === 'manual';
+        if (manual) return { status: 'resolved', line: `READS — ${o.name}: he looks it over; it stays his. Reading teaches him nothing by itself: no Skill and no Learning Progress unless he studies it for a time (the engine books study).` };
         // Hotfix c.6.6.18: an attack item (the scorchburst scroll) is resolved as an attack (src/v4/planner.js itemAttack),
         // never used up here with its effect left to the story; where no attack is made of it, it stays his
         if (itemEffectOf(content, o)?.attack) return { status: 'refused', reason: 'an attack item', line: `CANNOT USE — ${o.name} is an attack: thrown at a foe, the engine resolves it in a fight; nothing was used up, it stays his, nothing burns and nothing is struck.` };

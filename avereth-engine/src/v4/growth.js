@@ -23,6 +23,7 @@ import { composeSkill, composeTags, composeAspects, composerFunctions, technique
 import { applyEvent } from '../state.js';
 import { truth, entityLabel } from '../knowledge.js';
 import { clone, normText, hash32 } from '../util.js';
+import { profileOf, rankRefusal } from './items.js';
 
 const EMPTY = { n: 0, goals: {}, done: [], training: {} };
 const DAY = 1440;
@@ -168,6 +169,60 @@ function sessionProgress(state, content, goalId, days) {
 
 const techniqueText = (t) => `${t.aspects?.length ? `${t.aspects.join('/')} ` : ''}${t.fn} (${t.tags.join(', ')})`;
 
+// ------------------------------------------------------------------------------------------------ Patch 9C-2b: sources
+/** The technique a source's fixed profile legitimizes, or why none: {target} | {refuse}. */
+function sourceTarget(content, p) {
+    if (!p?.fn) return { refuse: 'what technique it holds was never established, so it teaches none' };
+    if (p.rank !== 'F') return { refuse: `${p.rank}-Rank techniques cannot be learned yet (only F-Rank)` };
+    const t = composeTags(content, p.fn, p.tags?.length ? p.tags : null);
+    if (t.error) return { refuse: t.error };
+    return { target: { fn: p.fn, tags: t.tags, aspects: [...(p.aspects || [])] } };
+}
+
+const manualOf = (content, o) => { const p = profileOf(content, o); return p?.kind === 'skill_source' && p.source === 'manual' ? p : null; };
+const holds = (o) => !!o && o.holder?.entity === 'pc' && (o.qty ?? 1) >= 1;
+
+/** The manual he names for his study: {object, profile} | {refuse} | null (none named). */
+function materialFor(s, content, ref) {
+    if (ref === null || ref === undefined) return null;
+    if (typeof ref !== 'string') return { refuse: `he holds no "${String(ref?.new ?? '').replace(/[<>`]/g, '').slice(0, 40)}" the engine knows` };
+    const o = s.objects?.[ref];
+    if (!holds(o)) return { refuse: `he does not hold ${o?.name || 'that'}` };
+    const p = manualOf(content, o);
+    if (!p) return { refuse: `${o.name} is no manual that teaches a technique` };
+    return { object: o, profile: p };
+}
+
+/** The one manual he holds that teaches a technique (this function, when one is named), else null (none, or several). */
+function heldManual(s, content, fn) {
+    const all = Object.values(s.objects || {}).filter((o) => holds(o) && manualOf(content, o)?.fn && (!fn || manualOf(content, o).fn === fn));
+    return all.length === 1 ? { object: all[0], profile: manualOf(content, all[0]) } : null;
+}
+
+/**
+ * Patch 9C-2b: may he learn from this Skill Stone now (src/v4/commands.js use; checked again in finalizeGrowth)?
+ * {target, profile} | {refuse} | null when it is no Skill Stone (or a legacy campaign: nothing changes there).
+ */
+export function stoneActivation(s, content, o) {
+    const p = profileOf(content, o);
+    if (rulesetOf(s) < 2 || p?.kind !== 'skill_source' || p.source !== 'stone') return null;
+    if (s.encounter || (s.pending_combat || []).length) return { refuse: 'not in a fight: a Skill Stone is learned from in a quiet moment' };
+    if (!holds(o)) return { refuse: 'he does not hold it' };
+    const own = rankRefusal(content, s.entities.pc.sheet.level, p);
+    if (own) return { refuse: own };
+    const t = sourceTarget(content, p);
+    if (t.refuse) return t;
+    if (knownTechnique(s, t.target)) return { refuse: `he knows this technique (${techniqueText(t.target)}) already` };
+    return { target: t.target, profile: p };
+}
+
+/** A Skill Stone activation as the transient goal finalization books (opened and closed in one step). */
+function stoneGoal(s, content, o, chk, key) {
+    const n = (growthOf(s).n || 0) + 1;
+    const need = content.rules.proficiency.learning_progress['1'];
+    return { id: `learn.${n}`, n, status: 'ready', target: chk.target, source: { kind: 'stone', object: o.id, name: o.name, basis: 'stone', key, turn: s.turn, minute: s.clock.minute }, lp: need, need, opened: { turn: s.turn, minute: s.clock.minute }, days: {}, fights: [] };
+}
+
 /**
  * Patch 9C-1: an activity train/study with a learning target (src/v4/commands.js activity, planner path). Decides
  * what it is, checks the source and gives the events to book after the time: {status, line, events, open?} or a
@@ -180,7 +235,14 @@ export function learningActivity(s, content, c, minutes, start) {
     const goals = openGoals(s);
     let goal = typeof c.learn === 'string' && g.goals[c.learn] ? g.goals[c.learn] : null;
     const known = typeof c.learn === 'string' && sheet.skills?.[c.learn] ? skillOf(content, c.learn, s) : null;
-    const fresh = !goal && !known && isTechnique(content, c.learn) ? c.learn : null;
+    let fresh = !goal && !known && isTechnique(content, c.learn) ? c.learn : null;
+    // Patch 9C-2b: the manual he studies from: the one he names; else, without a teacher, the one manual he holds that
+    // teaches the technique he names (or, naming none and working on no goal, the one manual he holds)
+    const named = materialFor(s, content, c.material);
+    if (named?.refuse) return { status: 'refused', reason: 'no material', line: `NOT LEARNING — ${named.refuse}; nothing is booked, no time passes for it.` };
+    let material = named;
+    if (!material && !c.teacher && !goal && !known && (fresh || (!c.learn && !goals.length))) material = heldManual(s, content, fresh);
+    if (!goal && !known && !fresh && !c.learn && material) fresh = material.profile.fn;
     if (!goal && !known && !fresh) {
         if (c.learn) return { status: 'refused', reason: 'nothing to learn', line: `NOT LEARNING — "${String(c.learn).slice(0, 40)}" is neither a Skill he knows, nor one of his learning goals, nor a technique that can be learned (${composerFunctions(content).join(', ')}); nothing is booked.` };
         const mine = goals.filter((x) => !c.teacher || x.source.who === c.teacher);
@@ -218,14 +280,22 @@ export function learningActivity(s, content, c, minutes, start) {
         const a = composeAspects(content, c.aspects);
         if (a.error) return { status: 'refused', reason: 'not this aspect', line: `NOT LEARNING — ${a.error}; nothing is booked.` };
         target = { fn: fresh, tags: t.tags, aspects: a.aspects };
+        // Patch 9C-2b: a manual teaches the technique its profile names, nothing else
+        if (material) {
+            const m = sourceTarget(content, material.profile);
+            if (m.refuse) return { status: 'refused', reason: 'not this material', line: `NOT LEARNING — ${material.object.name}: ${m.refuse}; nothing is booked, no time passes for it.` };
+            const asked = c.tags?.length || c.aspects?.length;
+            if (m.target.fn !== fresh || (asked && techniqueSignature(target) !== techniqueSignature(m.target))) return { status: 'refused', reason: 'not this material', line: `NOT LEARNING — ${material.object.name} teaches ${techniqueText(m.target)}, not ${techniqueText(target)}; nothing is booked, no time passes for it.` };
+            target = m.target;
+        }
         const same = goals.find((x) => techniqueSignature(x.target) === techniqueSignature(target));
         if (same) { goal = same; source = same.source; }
     }
     if (knownTechnique(s, target)) return { status: 'refused', reason: 'already learned', line: `NOT LEARNING — he knows this technique already; practise the known Skill instead. Nothing is booked, no time passes.` };
     // a teacher session: the teacher he names, else the goal's own teacher when present; a new goal needs one
     if (c.teacher && typeof c.teacher !== 'string') return { status: 'refused', reason: 'no teacher', line: `NOT LEARNING — no known teacher is named ("${String(c.teacher.new ?? '').replace(/[<>`]/g, '').slice(0, 40)}" is nobody the engine knows here); nothing is booked, no time passes for it.` };
-    const named = typeof c.teacher === 'string' ? c.teacher : null;
-    const who = named || (source?.who && here(s, source.who) ? source.who : null);
+    const teacher = typeof c.teacher === 'string' ? c.teacher : null;
+    const who = teacher || (source?.who && here(s, source.who) ? source.who : null);
     let kind = 'self';
     let boundSource = null;
     if (who) {
@@ -236,8 +306,14 @@ export function learningActivity(s, content, c, minutes, start) {
         kind = 'teacher';
         if (!goal) source = { kind: 'teacher', who, name: t.name, basis: consent.basis, key: consent.key, turn: s.turn, minute: start };
         else if (who !== source?.who && !goal.teachers?.[who]) boundSource = { kind: 'teacher', who, name: t.name, basis: consent.basis, key: consent.key, turn: s.turn, minute: start };
+    } else if (!goal && material) {
+        // Patch 9C-2b: a manual he holds opens the goal; it is bound to it (later study needs it again)
+        source = { kind: 'material', object: material.object.id, name: material.object.name, basis: 'material', key: `mat:${material.object.id}`, turn: s.turn, minute: start };
     } else if (!goal) {
-        return { status: 'refused', reason: 'no source', line: `NOT LEARNING — a new technique needs a teacher here who has agreed to teach him (Skill Stones and study material come later); nothing is booked.` };
+        return { status: 'refused', reason: 'no source', line: `NOT LEARNING — a new technique needs a source: a teacher here who has agreed to teach him, or a manual he holds that teaches it (a Skill Stone is used, not studied); nothing is booked.` };
+    } else if (source?.kind === 'material') {
+        const bound = s.objects?.[source.object];
+        if (!bound || bound.holder?.entity !== 'pc') return { status: 'refused', reason: 'no material', line: `NOT LEARNING — he studies ${techniqueText(target)} from ${source.name}, and he does not hold it now; nothing is booked, no time passes for it.` };
     }
     if (!goal) {
         if (goals.length >= R(content).max_active) return { status: 'refused', reason: 'too many goals', line: `NOT LEARNING — he already works on ${goals.length} techniques (${goals.map((x) => techniqueText(x.target)).join('; ')}); finish one first. Nothing is booked.` };
@@ -258,7 +334,7 @@ export function learningActivity(s, content, c, minutes, start) {
     const total = last ? last.d.total : goal.lp;
     const gained = events.filter((e) => e.t === 'growth.progress').reduce((a, e) => a + e.d.lp, 0);
     const ready = total >= goal.need;
-    const by = kind === 'teacher' ? ` with ${entityLabel(s, who)}` : ' on his own';
+    const by = kind === 'teacher' ? ` with ${entityLabel(s, who)}` : goal.source?.kind === 'material' ? ` from ${goal.source.name}` : ' on his own';
     return {
         status: 'resolved', events, open: events[0].t === 'growth.opened',
         engine: `LEARNING — ${techniqueText(target)}${by}: ${span}, +${gained} LP → ${total}/${goal.need}${ready ? ' (complete: the engine books the Skill now)' : ''}${gained ? '' : ' (today\'s learning is used up)'}`,
@@ -283,33 +359,65 @@ export function fightGrowth(state, content, enc) {
 
 // ------------------------------------------------------------------------------------------------ finalization
 const canFinalize = (state) => rulesetOf(state) >= 2 && !state.encounter && !(state.pending_combat || []).length && state.entities?.pc?.status !== 'dead';
-const composeGoal = (state, content, g) => composeSkill(state, content, { ...g.target, origin: { kind: g.source.kind, note: `taught by ${g.source.name}` }, source: `taught by ${g.source.name}` });
+// Patch 9C-2b: how a Skill names its source (the composer's engine description and its origin note)
+const sourceNote = (src) => (src.kind === 'stone' ? `drawn from a Skill Stone (${src.name})` : src.kind === 'material' ? `studied from ${src.name}` : `taught by ${src.name}`);
+const composeGoal = (state, content, g) => composeSkill(state, content, { ...g.target, origin: { kind: g.source.kind, note: sourceNote(g.source) }, source: sourceNote(g.source) });
+
+/** The Skill Stones a turn activated (src/v4/commands.js use): [{key, object}] of its outcome. */
+export const activationsOf = (outcome) => outcome?.booked?.activations || [];
 
 /** Read-only, legitimized drafts for the asynchronous host. The actual grant below stays synchronous. */
-export function growthDrafts(state, content) {
+export function growthDrafts(state, content, activations = []) {
     if (!canFinalize(state)) return [];
     const seen = new Set();
     const drafts = [];
-    for (const g of openGoals(state).filter((x) => x.status === 'ready')) {
-        const key = techniqueSignature(g.target);
-        if (seen.has(key) || knownTechnique(state, g.target)) continue;
-        seen.add(key);
+    const add = (key, g) => {
+        const sig = techniqueSignature(g.target);
+        if (seen.has(sig) || knownTechnique(state, g.target)) return;
+        seen.add(sig);
         const c = composeGoal(state, content, g);
-        if (!c.errors.length) drafts.push({ key: g.id, hash: hash32(JSON.stringify(c.def)), def: c.def });
+        if (!c.errors.length) drafts.push({ key, hash: hash32(JSON.stringify(c.def)), def: c.def });
+    };
+    for (const g of openGoals(state).filter((x) => x.status === 'ready')) add(g.id, g);
+    for (const a of activations) {
+        const o = state.objects?.[a.object];
+        const chk = o ? stoneActivation(state, content, o) : null;
+        if (chk && !chk.refuse) add(a.key, stoneGoal(state, content, o, chk, a.key));
     }
     return drafts;
+}
+
+/** One grant on a private copy: composed, named (the Forge's name when it is valid), defined, learned, closed. */
+function grant(s, content, g, chosen) {
+    const comp = composeGoal(s, content, g);
+    if (comp.errors.length) return { errors: comp.errors };
+    if (chosen && !chosen.fallback) {
+        const candidate = { ...comp.def, name: chosen.name, ...(chosen.flavor ? { flavor: chosen.flavor } : {}) };
+        const passiveCollision = Object.values(s.passive_defs || {}).some((p) => normText(p.name) === normText(candidate.name));
+        if (!passiveCollision && !skillDefErrors(candidate, content, s).length) comp.def = candidate;
+    }
+    const def = defineSkill(s, content, comp.def);
+    if (def.errors.length) return { errors: def.errors };
+    const s1 = after(s, def.events);
+    const learn = learnSkill(s1, content, 'pc', def.skill.id, `learned ${sourceNote(g.source)} (${g.id})`);
+    if (learn.errors.length) return { errors: learn.errors };
+    const close = { t: 'growth.closed', d: { goal: g.id, skill: def.skill.id, name: def.skill.name } };
+    return { events: [...def.events, ...learn.events, close], state: after(s1, [...learn.events, close]), skill: def.skill };
 }
 
 /**
  * Patch 9C-1: the ready goals become Skills (after a regular planned turn; src/v4/runtime.js). Each one: composed,
  * defined, learned and closed, checked on a private copy of the state; a goal that fails stays ready with its
  * Learning Progress and source (a later turn tries again). Nothing during a fight, nothing for a dead PC.
- * @returns {{events: object[], learned: {skill, name, goal, technique, teacher}[], failed: {goal, errors}[]}}
+ * Patch 9C-2b: then the Skill Stones the turn activated, each checked again here and booked with the same grant plus
+ * its transient goal and the one unit it spends; one that fails books nothing, the stone stays his.
+ * @returns {{events: object[], learned: {key, skill, name, goal, technique, teacher}[], failed: {goal|key, errors}[]}}
  */
-export function finalizeGrowth(state, content, names = {}) {
+export function finalizeGrowth(state, content, names = {}, activations = []) {
     const out = { events: [], learned: [], failed: [] };
     if (!canFinalize(state)) return out;
     let s = state;
+    const learned = (key, g, skill) => out.learned.push({ key, skill: skill.id, name: skill.name, goal: g.id, technique: techniqueText(g.target), teacher: g.source.name, source: g.source.kind, category: skill.category, cost: skill.cost });
     for (const g of openGoals(state)) {
         const known = knownTechnique(s, g.target);
         if (known) {
@@ -320,27 +428,32 @@ export function finalizeGrowth(state, content, names = {}) {
             continue;
         }
         if (g.status !== 'ready') continue;
-        const comp = composeGoal(s, content, g);
-        if (comp.errors.length) { out.failed.push({ goal: g.id, errors: comp.errors }); continue; }
         try {
-            const chosen = names[g.id];
-            if (chosen && !chosen.fallback) {
-                const candidate = { ...comp.def, name: chosen.name, ...(chosen.flavor ? { flavor: chosen.flavor } : {}) };
-                const passiveCollision = Object.values(s.passive_defs || {}).some((p) => normText(p.name) === normText(candidate.name));
-                if (!passiveCollision && !skillDefErrors(candidate, content, s).length) comp.def = candidate;
-            }
-            const def = defineSkill(s, content, comp.def);
-            if (def.errors.length) { out.failed.push({ goal: g.id, errors: def.errors }); continue; }
-            const s1 = after(s, def.events);
-            const learn = learnSkill(s1, content, 'pc', def.skill.id, `learned from ${g.source.name} (${g.id})`);
-            if (learn.errors.length) { out.failed.push({ goal: g.id, errors: learn.errors }); continue; }
-            const close = { t: 'growth.closed', d: { goal: g.id, skill: def.skill.id, name: def.skill.name } };
-            const events = [...def.events, ...learn.events, close];
-            s = after(s1, [...learn.events, close]);
-            out.events.push(...events);
-            out.learned.push({ skill: def.skill.id, name: def.skill.name, goal: g.id, technique: techniqueText(g.target), teacher: g.source.name, category: def.skill.category, cost: def.skill.cost });
+            const r = grant(s, content, g, names[g.id]);
+            if (r.errors) { out.failed.push({ goal: g.id, errors: r.errors }); continue; }
+            s = r.state;
+            out.events.push(...r.events);
+            learned(g.id, g, r.skill);
         } catch (err) {
             out.failed.push({ goal: g.id, errors: [String(err?.message || err)] });
+        }
+    }
+    for (const a of activations) {
+        const o = s.objects?.[a.object];
+        const fail = (why) => out.failed.push({ key: a.key, object: a.object, name: o?.name || a.object, errors: [why] });
+        const chk = o ? stoneActivation(s, content, o) : null;
+        if (!chk || chk.refuse) { fail(chk?.refuse || 'it is no longer his'); continue; }
+        try {
+            const goal = stoneGoal(s, content, o, chk, a.key);
+            const open = { t: 'growth.opened', d: { goal } };
+            const r = grant(after(s, [open]), content, goal, names[a.key]);
+            if (r.errors) { fail(r.errors.join('; ')); continue; }
+            const spend = { t: 'object.consumed', d: { id: o.id, by: 'pc', ...((o.qty ?? 1) > 1 ? { qty: 1 } : {}) } };
+            s = after(r.state, [spend]);
+            out.events.push(open, ...r.events, spend);
+            learned(a.key, goal, r.skill);
+        } catch (err) {
+            fail(String(err?.message || err));
         }
     }
     return out;

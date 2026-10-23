@@ -1,6 +1,6 @@
 # Avereth Engine – Ideenarchiv, Claude-Gegenreviews und mögliche Patches
 
-**Dokumenttyp:** Ideen-/Reviewarchiv mit **verbindlicher Hauptroadmap in §1a**; **Stand:** 23.10.2026 · Patch 8 abgeschlossen (.32); **Patch 9A, 9A.1, 9B-1, 9B-2 implementiert (Build .39, `0cd22d3`)**; Patch-9C-Gesamtplan nach mehreren Reviews überarbeitet (**§1a.2b**), noch kein Auftrag.  
+**Dokumenttyp:** Ideen-/Reviewarchiv mit **verbindlicher Hauptroadmap in §1a**; **Stand:** 23.10.2026 · Patch 8 abgeschlossen (.32); **Patch 9A, 9A.1, 9B-1, 9B-2 implementiert (Build .39, `0cd22d3`)**; Patch-9C-Plan nach erneuter Codeprüfung technisch konkretisiert (**§1a.2b**, technische Grundlagen jetzt, Balance in 10B), noch kein Implementierungsauftrag.  
 **Quelle:** intensive Auswertung von Git, älteren Projekt-Chats, realen SillyTavern-Tests, externen Referenzen und **mehreren unabhängigen Gegenreviews in einer zweiten Claude-Sitzung**.  
 **WICHTIG:** Dieses Dokument unterscheidet **IMPLEMENTIERT**, **VERBINDLICH GEPLANT**, **HISTORISCHER/ÜBERHOLTER REVIEWSTAND**, **PLANKANDIDAT** und **EXPERIMENT**. Einzelne Katalogideen sind nicht freigegeben; **die explizit beschlossene Roadmap in §1a ist verbindlich**. Git-Code und Datei 03 entscheiden über Implementierung und Teststatus; Datei 02 über den Design-Kanon. Ältere Review-Aussagen, die drei Startklassen dauerhaft ausschließen, wurden von der späteren ausdrücklichen Patch-9-Entscheidung überholt.
 
@@ -17,7 +17,7 @@
 | **Engine Actions & QoL** | **KANDIDAT**, einschließlich Engine-only-Gildenboard, Rest/Schlaf/Wait, sichere Rückwege, ST-Quick-Replies; noch kein Patch beschlossen | Umfang und mögliche Bündelung nach Performance-Review entscheiden |
 | **Patch 9A / 9A.1 (.33–.35)** | **IMPLEMENTIERT:** drei Startklassen Warrior/Mage/Rogue mit Wahl 2 aus 6 plus Basic Attack, Rogue-Pool und -Kit, Waffenangriffe für jede Klasse, trainierte/untrainierte NPCs, Regelstand pro Kampagne (Legacy behält fünf Klassen), NPC-Rollen und erzählte Bewaffnung. Details Datei 03 „Patch 9 – Umsetzungsstand“ | Kein weiterer Schritt; 9A-Livetest (.34) ausgewertet |
 | **Patch 9B-1 / 9B-2 (.36–.39)** | **IMPLEMENTIERT, Git-Review bestanden:** dynamische Skills und Passives (Definition ≠ Erwerb), ein Resolver, geschlossener F-Rang-Validator, Proficiency P1–P5 mit PP-Vergabe, Effektfaktoren, Heal/Restore, erste NPC-Defensive. Noch kein Erwerbspfad im Spiel | Optionaler kurzer GLM-Lauf; sonst weiter mit 9C |
-| **Patch 9C Organic Skill Acquisition & Growth** | **VERBINDLICH GEPLANT, überarbeiteter Gesamtplan §1a.2b; noch kein Auftrag.** Teilpatches 9C-1 (Lernen, deterministischer Erwerb), 9C-2 (Forge, Skill Stones, Durchbrüche, Passives), 9C-3 (Evolution, NPC-Signaturtechniken, E-Rang) | Zwei offene Spielentscheidungen treffen (§1a.2b), dann nur 9C-1 freigeben |
+| **Patch 9C Organic Skill Acquisition & Growth** | **VERBINDLICH GEPLANT, überarbeiteter Gesamtplan §1a.2b; noch kein Auftrag.** Teilpatches 9C-1 (Komponist, Quellen, Lernen und deterministischer Erwerb), 9C-2 (Forge, Stones, Durchbrüche, Passives), 9C-3 (Evolution, NPC-Signaturen, vorläufige E-Unterstützung) | Konkreten 9C-1-Auftrag anhand §1a.2b unabhängig gegenprüfen und nur diesen Teil freigeben; Interaktionsdefaults vor 9C-2/9C-3 bestätigen |
 | **Patch 9D Organic Class Identity** | **VERBINDLICH GEPLANT, NICHT IMPLEMENTIERT:** organische Klassenentwicklung; Klassen-Evolution bis dahin gesperrt | Nach 9C |
 | **ROAD AHEAD** | **Separater, NICHT freigegebener Kandidat** für Engine-verankerte Reiseetappen und Suche | Nur bei wiederholt belegten gravierenden Reise-/Such-Blockern gesondert priorisieren; sonst Patch 9 → 10B |
 | **Patch 10A – HUD/QoL** | **Bereits implementierte frühere UI-/QoL-Arbeit**, nicht erneut als Großpatch beauftragen; offene konkrete Fälle weiterhin möglich. | Keine Dopplung mit Patch 10B | 
@@ -91,161 +91,225 @@
 
 **Arbeitsökonomie:** gezielte Regressionen während jedes Teilpatches, eine komplette npm-Test-Abschlussprüfung je fertiggestelltem Teilpatch. Browser-Stubs nur bei geänderter Browseranbindung, kein GLM-Dauerlauf bei Claude. 9A kurzer Creation-Smoke; 9B überwiegend deterministische Tests; 9C kurzer echter Growth-Lauf inklusive klassifiziertem erfahrenem NPC mit dynamischem Skill; 9D gezielte volle Gameplay-Integration einschließlich NPC-Skill-Einsatz und seltenem Passive. Vor 9A den Rogue-Auswahlpool und die Rogue-Ausrüstung sowie die vorhandenen Pools prüfen, ohne aus ihnen einen fest zugewiesenen Zwei-Skill-Loadout abzuleiten. Nutzer führt parallel weiteren Dungeon-Livetest durch; dessen Befunde separat prüfen.
 
-### 1a.2b Patch 9C – überarbeiteter Gesamtplan (Stand 23.10.2026; Planung, noch kein Auftrag)
+### 1a.2b Patch 9C – technischer Plan nach Architekturprüfung (23.10.2026)
 
-**Status:** VERBINDLICH GEPLANT als Gesamtrahmen; **kein Implementierungsauftrag**. Freigegeben wird jeweils nur ein Teilpatch, danach unabhängiges Git-Review.
+**Status:** Die Hauptroadmap Organic Character Growth bleibt verbindlich. Die folgenden Implementierungsdetails sind ein **technischer Review-Entwurf, keine Freigabe für Engine-Änderungen**. Nur der jeweils ausdrücklich freigegebene Teilpatch wird implementiert; danach Git-Review. Der Nutzer hat ausdrücklich technische Einfachheit vor Detailtreue erlaubt. Balancing, endgültige Zahlen, Lernraten und vollständiges Scaling gehören zu **Patch 10B**.
 
-**Review-Verlauf:**
-1. ChatGPTs erster 9C-Katalog (16 Funktionsbereiche, 18 Punkte).
-2. Claudes Architektur-Gegenprüfung am Code `0cd22d3`.
-3. ChatGPTs Neuprüfung „Spielnutzen vs. Aufwand“ mit überarbeitetem Plan.
-4. Claudes Bewertung dieser Neuprüfung (unten).
+**Verifizierte Ausgangsbasis:** Repository `Mango1331/Claude-AI-RPG-Game`, Branch `claude/c-planner-prototype-2026-10-02-gpt-c666`, HEAD `0cd22d32b6a814fc7729b9ad55efd3b6b5190d17`, Build `4.3.0-c.6.6.39`. Code und bestehende Schnittstellen wurden gelesen; für diesen Plan wurden keine neuen Engine-Tests oder LLM-Läufe ausgeführt.
 
-Ausgangsbasis bleibt `0cd22d3`, Build .39.
+**Reviewgeschichte:** erster GPT-Entwurf → Claude-Gegenprüfung → GPT-Vereinfachung → Claude-Bewertung → erneute kritische GPT-Prüfung → vorliegender technischer Plan. Er ersetzt die Implementierungsdetails der vorherigen Fassung dieses Abschnitts. Keine Rückkehr zu fertigen späteren Skillkatalogen, festen Evolutionsbäumen, einer Passive pro Rang, einem allgemeinen Lernagenten oder einer vollständigen NPC-Simulation.
 
-**Leitprinzip:** Spielerqualität und bedeutsame Entscheidungen vor Simulationsrealismus. Vorhandene Mechanismen nutzen, keine parallelen Systeme für Skills, Passives, Training oder Fortschritt.
+#### A. Architektur, auf der der Plan tatsächlich aufsetzt
 
-#### Architektur (Konsens aus den Reviews)
-
-1. **Engine-Komponist (deterministisch):** erzeugt aus strukturierten Parametern eine gültige Skill-Definition.
-   - **Eingaben:** Form/Hauptfunktion, Rang, Complexity, Disziplin-Tags, Aspekte, Skalierungs-Stat, Ressource, mechanische Priorität bzw. unterstützter Trade-off.
-   - **Zahlen:** Power, Scaling, Kosten und Effektwerte setzt **die Engine** aus der vorhandenen Kalibrierung.
-   - **Formen:** nur die bereits implementierten Effektarten und Kombinationen; keine Effektarten auf Vorrat. Der Komponist ist eine mechanische Grammatik, **kein Katalog fertiger Skills**.
-   - **Prüfung:** Der 9B-Validator prüft zusätzlich.
-2. **LLM-Forge:** ein eigener, seltener LLM-Aufruf nach dem Muster `v4/runtime.js generateBoard()` (geschlossenes Schema, eine Reparatur, ganz oder gar nicht, Ergebnis im Nachrichten-Record, also swipe- und replaystabil).
-   - **Liefert nur:** Name, Beschreibung, Form, zulässige Tags/Aspekte und Priorität. Die Zahlen bestimmt die Engine.
-   - **Wann:** nur bei tatsächlich anstehendem Erwerb oder Evolution, nie im Kampf, nie in gewöhnlichen Zügen.
-   - **Fehlerfall:** Bei ungültiger Ausgabe einmal reparieren, dann Komponist als Fallback; kein Nachfragen beim Spieler.
-   - **Einbindung (Claude-Empfehlung):** nach der Engine-Auflösung des Zugs, vor dem Narrator, damit der Narrator den gelernten Skill bereits im Engine-Block sieht.
-3. **Erwerbsberechtigung:** Ein neuer Skill braucht eine nachgewiesene Quelle.
-   - **Mögliche Quellen:** Lehrer bzw. vereinbartes Training, Studium und glaubwürdige Selbstübung, Skill Stone oder vergleichbarer Gegenstand, bedeutsame eigene Erfahrung, besondere Entdeckung, ausdrücklich legitimierte Belohnung, Skill-Evolution.
-   - **Weltfakten** können eine Quelle belegen, aber nie allein etwas vergeben. Eine Spielerbehauptung („ich kann jetzt Feuerball“) reicht nicht.
-   - **Klassenübergreifendes Lernen** ist erlaubt. Eine neue Disziplin braucht eine passende Quelle, aber keinen bekannten Skill derselben Disziplin.
-4. **Commit:** Validierung, dann Engine-Events (`skill.defined` + `skill.learned` bzw. `passive.defined` + `passive.gained`, Abschluss des Vorhabens) zusammen, dann Persistenz, Anzeige und Narration.
-
-**Technische Belege im Code:**
-- **Training:** `activity train/study` mit gebuchten Minuten (`commands.json`, `v4/commands.js activity`, `engineMinutes`); bezahlter Service `training` → `service.granted` (`deltas.json offer`, `v4/trade.js bookPurchase`, bisher ohne Wirkung).
-- **Gegenstände:** Item-Profile mit Rang-Sperre (`v4/items.js itemProfile`, `rankRefusal`); Befehl `use`.
-- **Fortschritt:** PP-Logik (`skills.js noteUse/fightProgress/checkProgress`, `pp_keys`).
-- **Kampfstart aus der Erzählung:** `engine.js openCommitted` startet Kämpfe im Antwortpfad und baut NPC-Sheets dabei synchron. Davor ist kein LLM-Aufruf möglich, deshalb sind NPC-Fähigkeiten ohne LLM.
-
-#### 9C-1 – Learning & Deterministic Acquisition
-
-Ziel: Eine neue Fähigkeit kann ohne zusätzlichen LLM-Aufruf vollständig erworben und benutzt werden.
-
-- **Persistente Lernvorhaben:**
-  - Inhalt: ID, Ziel, Quelle mit Belegen, Disziplin, Aspekte, Complexity, LP, Status, bereits angerechnete Ereignisse.
-  - Getrennt von bekannten Skills und deren PP.
-  - Höchstens drei gleichzeitig aktiv; abschließbar und aufgebbar.
-- **Learning Progress** (Core: C1 100, C2 200, C3 300). Vorläufige, konfigurierbare Werte:
-
-  | Quelle | Basis-LP | Grenze |
-  |---|---|---|
-  | Lehrertraining | 20 je Stunde | 40 Basis-LP pro Tag und Vorhaben |
-  | Selbsttraining/Studium | 10 je Stunde | 20 pro Tag und Vorhaben |
-  | Qualifizierender Kampf | 12 | einmal, für ein tatsächlich passendes Vorhaben |
-
-  - Danach × höchste passende Class Affinity. Die Affinität wirkt **nach** der Tagesgrenze, sonst wird sie bei langen Sitzungen bedeutungslos.
-  - Kein LP-Pool, keine Übertragung, keine doppelte Belohnung desselben Ereignisses.
-  - Ein Kampf darf PP für benutzte Skills **und** LP für ein passendes Vorhaben geben.
-- **Training mit vorhandenen Mitteln:** `activity train/study`, `engineMinutes` und `service.granted`. Eine Sitzung ist eine gewöhnliche Spieleraktion („bis zum Abend“), keine Pflichtdialoge, keine Wiederholungen.
-  - **Lehrer:** muss nachweislich kompetent und verfügbar sein. Kompetenz kann aus Rolle, Ausbildung, Weltfakten oder vorhandenem Sheet stammen; ein Kampfsheet wird dafür nicht erzwungen. Glaubwürdige Varianten seines Fachs sind möglich.
-- **Bekannte Skills trainieren:** PP statt LP. Vorläufig 12 Basis-PP ab 60 Minuten, einmal pro Tag und Skill, × höchste Affinität; P5 bleibt das Maximum.
-- **Erste echte Skillvergabe:** Vorhaben fertig → Komponist (F-Rang) → `defineSkill` → `learnSkill` → Vorhaben abgeschlossen → sofort nutzbar; als zusammengehörige Engine-Events gebucht.
-- **Abnahme:**
-  - Warrior, Mage oder Rogue lernt bei glaubwürdiger Quelle eine neue F-Rang-Fähigkeit, die mechanisch ausgeführt wird.
-  - Training bekannter Skills steigert PP.
-  - Unzulässige Versuche verändern nichts.
-  - Reload/Replay sind identisch, Legacy bleibt unverändert.
-  - Danach Git-Review.
-
-#### 9C-2 – Organic Forge & Special Acquisition
-
-- **Forge** in den Runtime-Ablauf integrieren, mit nur belegten Erwerbsinformationen. Fehlschläge löschen keine LP und erzwingen keinen ungültigen Skill.
-- **Skill Stones:**
-  - Beim Etablieren ein festes **Profil**: Identität, Rang bzw. Rangvoraussetzung, Disziplin, Aspekte, ggf. Grundfunktion.
-  - Die vollständige Definition entsteht erst bei berechtigter Aktivierung (`use`).
-  - Vorher werden Besitz, Rang, Voraussetzungen und Dubletten geprüft.
-  - Verbrauch nur zusammen mit erfolgreicher Registrierung und Vergabe; bestehende Object-/Inventory-Mechanik nutzen.
-- **Eigene Entwicklungen:** Kleine, dauerhaft gespeicherte Nachweise aus den PP-Ereignissen können auf eine Richtung hinweisen. Keine Inhaltsanalyse aller Chatnachrichten. Eine entdeckte Richtung ist noch kein Skill; neue Disziplinen sind mit passender Quelle möglich.
-- **Besondere Ereignisse:** können unmittelbar oder über ein Vorhaben zu Skills oder Passives führen; nicht jede Quelle ist ein Gegenstand. Die Engine entscheidet über die mechanische Vergabe.
-- **Passives:**
-  - Über `definePassive`/`gainPassive`, keine neue Berechnung.
-  - Nur durch außergewöhnliche, belegte Grundlagen.
-  - **Keine** Passive pro Level und **keine** feste Obergrenze „eine pro Power Rank“; Einzel- und Summengrenzen des Validators gelten.
-  - Dauerhafte ATK/DEF-, Ressourcen- und Resistenzboni als benannte, ursprungsgebundene Passives. Nur echte Core-Stat-Änderungen (STR +1) über ein eigenes autorisiertes Fortschrittsereignis.
-- **Abnahme:**
-  - Mindestens ein echter GLM-Livetest (zentraler Guide `current_test`, nur Inhalt anpassen), in dem eine individuelle Fähigkeit entsteht, registriert wird und funktioniert.
-  - Ein Stone wird genau einmal verbraucht.
-  - Ein ungültiger Erwerb vernichtet weder Stone noch LP.
-
-#### 9C-3 – Skill Evolution & NPC Growth
-
-- **Evolution:**
-  - **Auslöser:** P5 erlaubt sie, löst sie aber nicht aus; nötig sind passende Erfahrung, besondere Erfolge oder relevantes Training. Kein zusätzlicher Pflicht-EP-Grind.
-  - **Definition:** eigene unveränderliche Definition und ID, dokumentierte Abstammung, nachvollziehbare Veränderung, Validierung im unterstützten Rang/Complexity-Budget.
-  - **Proficiency:** konsistent behandelt; laufende Kampfsnapshots bleiben unberührt.
-  - **Budget:** Nicht jede Evolution bekommt Complexity +1; qualitative Verbesserung mit Trade-off ist erlaubt. Die Behandlung des Vorgängers ist offen (unten).
-- **NPC-Signaturtechniken:**
-  - **Wann:** deterministisch beim Bau des NPC-Sheets bzw. bei einem nachweisbaren späteren Entwicklungsereignis.
-  - **Grundlage:** Rolle, Ausbildung, Rang, Erfahrung, vorhandene Fähigkeiten, etablierte Eigenschaften, Kampagnen-Seed und NPC-Identität.
-  - **Ausgeschlossen:** pauschale Zusatzfähigkeiten ab Level 5/10; Sonderausstattung für untrainierte Zivilisten; LLM-Aufrufe bei NPC-Entscheidungen oder beim synchronen Sheet-Bau.
-  - **Garantien:** vor Kampfbeginn definiert und gespeichert; wiederkehrende NPCs behalten ihr Profil; Engine-Folgeereignisse werden keine Extractor-Berechtigung.
-- **Rang:** F voll, **E** als erste höhere Stufe mit kontrollierter Generierung und Validierung. D–S nicht in 9C (Scaling/Balancing später). Ein Peer-Schadensvergleich ist eine Zusatzprüfung, kein Ersatz für Heil-, Defensiv- und Utility-Budgets.
-- **Abnahme:** P5-Evolution unter passenden Voraussetzungen mit gespeicherter, angezeigter Linie; besonderer NPC mit Technik, die bei Wiederbegegnung erhalten bleibt; F und E korrekt validiert.
-
-#### Gemeinsame Regeln
-
-- Keine selbstautorisierten Skill- oder Passive-Events durch Narrator oder Extractor; keine Erwerbe durch Behauptung.
-- Kein zusätzlicher LLM-Aufruf in gewöhnlichen Zügen oder im Kampf.
-- Keine stille Änderung gelernter Definitionen; keine doppelte Fortschrittsbuchung; kein Ressourcenverlust bei ungültigem Erwerb; kein Erwerb in einem gesperrten Kampfsnapshot.
-- Kein späterer Skillkatalog; keine generische Status-/Debuff-Engine ohne Bedarf.
-- Nur Regelstand 2; korrekte Anzeigen, Narrator-Kontext und replaystabile Speicherung.
-- Keine neue Runner-Infrastruktur, keine Pflichtbefehle oder repetitiven Trainingsdialoge.
-- **Regeltexte gezielt anpassen:** `content.10.r2` sagt heute „no evolution, passive or class change is offered or narrated as gained“. Skills und Passives werden mit 9C organisch erwerbbar; die Klassen-Evolution bleibt bis 9D gesperrt.
-
-#### Verworfen bzw. geändert gegenüber früheren Entwürfen
-
-| Thema | Entscheidung |
+| Vorhandener Code | Verifizierte Aufgabe und Konsequenz |
 |---|---|
-| Selbstentwicklung nur mit bereits passendem Skill | ersetzt durch „passende Quelle“ |
-| Höchstens eine Passive pro Power Rank | abgelehnt |
-| C3-Evolution zwingend auf höheren Rang | abgelehnt |
-| Eigener Evolutions-EP-Grind | gestrichen |
-| D–S schon in 9C | zurückgestellt |
-| Vollständige automatische Analyse jedes Erlebnisses | stark vereinfacht |
-| NPC-Skills per asynchronem LLM-Schritt | ersetzt durch deterministischen Komponisten |
-| Skill Stone beim Fund vollständig definieren | ersetzt durch Profil beim Etablieren plus Konkretisierung bei Aktivierung |
+| `src/v4/runtime.js plannedTurn` | Planner → Guard → `mapPlan`; danach V4-Commands oder V3-Kampfauflösung mit `c:true`. Erwerb muss beide Produkt-Routen erreichen. Eine Hook ausschließlich hinter `playerTurnV4` würde Kampfabschlüsse verpassen. |
+| `src/v4/turn.js playerTurnV4`, `src/v4/commands.js` | Synchroner Event-Emitter, `activity train/study`, `engineMinutes`, `time.advanced`, `outcome.recorded`. Noch keine Lernwirkung. |
+| `src/v4/trade.js bookPurchase` | `service.granted` entsteht beim Erwerb eines Services. Das ist eine Unterrichtsberechtigung, **kein Nachweis absolvierter Lernzeit**. |
+| `src/skills.js` | Geschlossener Validator, `defineSkill`/`learnSkill`, PP-Buchung, Effect- und Restoration-Rechnung. Dynamische Skills bisher nur F; Definition und Besitz getrennt. |
+| `src/passives.js`, `src/derived.js` | Passive-Definition/Besitz, dauerhafte und bedingte Boni, Kosten, Resistenz und abgeleitete Werte. Wiederverwenden, keine zweite Passive-Berechnung. |
+| `src/content.js skillOf`, `derived.js actionsOf` | Gemeinsame Auflösung statischer und dynamischer Fähigkeiten; bestehende Combat-, Planner-, HUD- und Befehlswege nutzen sie bereits. |
+| `src/combat.js` | `attackAction`/`resolveStrike`, `skillAction`, konkrete Reichweiten, Kosten, Effekte, Zugschleife und XP. Aktive Effekte liegen im Kampfsnapshot unter `current.effects`. |
+| `src/engine.js` | `worldUse` für Weltanwendungen/Feature-Proben; `materialise` und `openCommitted` bauen NPC-Sheets synchron, auch im Antwortpfad. |
+| `src/state.js`, `src/v4/domain.js` | Fold und Reducer. Nur gebuchte Events rekonstruieren den Zustand; keine Generierung, Würfel oder LLM-Aufrufe beim Fold. |
+| `src/v4/world.js`, `ownership.js` | Extractor-Weltänderungen und deklarierte Ownership-Gates. Neue Fachlogik gehört gemäß Strangler-Regel in ein Fachmodul. |
+| `src/v4/items.js` | Bereits persistente Item-Profile und Rank-Prüfung; Skill Stones erweitern vorhandene Objekte, keine zweite Inventarliste. |
 
-#### Claudes Bewertung der Neuprüfung (23.10.2026) – Ergänzungen, die vor dem jeweiligen Teilpatch einzuplanen sind
+**Wichtige Grenzen:** Feuer/Eis usw. sind derzeit `aspects` ohne Elementarmechanik. Dynamisches AoE ist auf das vorhandene `caster_engaged` begrenzt; ein Item-Burst ist keine automatische Freigabe für beliebige Spellflächen. `reposition.bands` existiert, die aktuelle Ausführung bewegt aber nur einen Band-Schritt. Brennen, Slow und eine allgemeine Statusmaschine existieren nicht.
 
-1. **Durchbruch ohne Gegenstand:** Ausreichende Belege nur aus **engine-gebuchten** Ereignissen: Kampf-Records (z. B. mehrfach magischem Schaden standgehalten), gewürfelte Feature-Proben, Objektprofile, Dungeon-Ereignisse, abgeschlossene Trainings. Extractor-Fakten dürfen Thema und Aspekt ergänzen, aber **nie allein** eine Quelle begründen; sonst genügt ein erzähltes „ein Blitz weckte seine Magie“. Das ist eine geschlossene Liste von **Belegarten**, keine Skillliste.
-2. **Neue Disziplin durch Selbstübung:** nur mit einer Quelle (Lehrer, Gegenstand, Durchbruch-Beleg). Reine Selbstübung setzt eine bereits begonnene Richtung fort.
-3. **Evolution ohne EP-Leiste:** Der Auslöser muss trotzdem prüfbar sein. Vorschlag: Evolution ist ein **normales Lernvorhaben** mit Quelle „eigener P5-Skill“ (LP aus Training und Kämpfen mit diesem Skill, Schwelle der Ziel-Complexity). Kein zweiter Mechanismus.
-4. **Kein Rückschritt bei Evolution:**
-   - Ist Complexity +1 möglich, startet der Nachfolger auf P1. Gerechnet liegt C2 auf P1 über C1 auf P5: 16 + 2,4 × Stat gegenüber (12 + 1,9 × Stat) × 1,2.
-   - Ist der Skill schon C3 im eigenen Rang, ist die Evolution eine **Seitwärts-Evolution** (Form oder Trade-off ändert sich) und übernimmt die Proficiency.
-5. **NPC-Budget ohne Levelschwellen:** eine mit Seed deterministisch gezogene Wahrscheinlichkeit, die mit Level und etablierter Rolle bzw. Fakten (Veteran, Hauptmann, Meister) steigt. Keine starre Tabelle, Untrainierte nie.
-6. **Ownership:** NPC-Signaturen entstehen auch im Antwortpfad (Sheet-Bau in `openCommitted` während der Extraktion). `skill.defined` aus einem Extractor-Schritt braucht eine deklarierte Engine-Folge in `DELTA_WRITES`, mit Test.
-7. **Planner-Erweiterung in 9C-1:** `activity train/study` braucht kleine optionale Argumente (bekannter Skill, Lehrer, Gegenstand, Ideentext, Disziplin-Tags aus fester Liste). Das ist die einzige Planner-Änderung in 9C-1: `commands.json` und `PLANNER_VERSION` anpassen, Planner-Tests ergänzen.
-8. **Lehrer ohne Sheet:** Kompetenz aus dem Rollen-Template (Klasse, Standard-Level). Zustimmung durch gebuchten Training-Service **oder** etabliertes Fakt; der Lehrer muss anwesend sein.
-9. **Namen in 9C-1:** Ohne Forge sind die Namen technisch („Precision Technique“), und Definitionen sind unveränderlich. In 9C-1-Testkampagnen bleiben diese Namen; echte Kampagnen bekommen Forge-Namen ab 9C-2.
-10. **E-Rang:**
-    - **Für Spieler kaum relevant:** Level 15 braucht Σ 100 × (1…14) = 10.500 XP, also grob über hundert Kämpfe.
-    - **Für NPCs:** relevant nur an E-Orten (z. B. Old Crown Ebene 2), daher niedrige Priorität innerhalb von 9C-3.
-    - **STA-Grenze:** STA ist bei Menschen fest auf 100. Ranggewinn darf deshalb nicht in STA-Kosten gehen.
-11. **„Legitimierte Belohnung“** immer als Gegenstand (Stone, Handbuch). So gibt es nur einen Pfad und keine Direktvergabe.
-12. **Fallback nach einer Reparatur:** Der so entstandene Skill bleibt dauerhaft schlicht benannt (unveränderlich). Das ist akzeptabel, weil es selten ist.
-13. **Abhängigkeit:** Der Komponist trägt 9C-1, den Fallback, die NPCs und deterministische Tests. Die Forge gibt es nur im V4-C-Pfad; der V3-Pfad (Tests) bleibt beim Komponisten.
+#### B. Spellmodell: vorhandene Berechnung plus typisierte Effekte
 
-#### Offene Entscheidungen (vor 9C-2 bzw. 9C-3 festlegen; 9C-1 ist unabhängig)
+Die Nutzervorstellung „Basiszahl plus Effekt“ passt grundsätzlich. Sie wird **in das bestehende Skillformat eingebaut**, nicht als zweites Spellformat daneben:
 
-| Frage | A | B | Empfehlung (ChatGPT und Claude) |
-|---|---|---|---|
-| 1. Wie wird eine spontan entstandene Fähigkeit erworben? | Engine meldet einen möglichen Durchbruch einmal dezent; der Spieler greift ihn in einer passenden Aktion auf | Fähigkeit entsteht bei eindeutigem Ereignis automatisch | **A**: Player Agency, keine Skills gegen den gespielten Charakter, technisch einfacher |
-| 2. Was passiert mit einem Skill nach seiner Evolution? | Nachfolger ersetzt den Vorgänger, der in der Historie bleibt | beide bleiben nutzbar | **A**, mit der Regel gegen Rückschritt aus Punkt 4; bei B würde der alte P5-Skill den neuen P1-Skill meist schlagen |
+- Angriff: `attack.base` + vorhandene Stat-Skalierungen + ATK/MATK-Anteil; dieselbe bestehende Schadenspipeline.
+- Schutz/Heilung: vorhandenes `effects[]` mit Basis, Stat und Koeffizient.
+- Bewegung: `reposition.bands`, also eine Zahl in Reichweitenbändern; keine vorgetäuschten Meter und kein allgemeines Feld `base` für alle Einheiten.
+- Zusatzfunktion: eine unterstützte Kombination aus `effects[]`; Kosten, Ziel und Ablauf gehören zur validierten Definition.
+- Thema: `aspects` sowie Name/Beschreibung; ein Aspekt allein autorisiert keinen zusätzlichen mechanischen Effekt.
 
-Weitere kleinere Festlegungen beim jeweiligen Auftrag: Startwerte LP/PP (oben, vorläufig), Form der Lehrer-Zustimmung (Service und/oder Fakt), Liste der Durchbruch-Belegarten.
+| Beispiel | Mechanisch in der Definition | Aufgabe des Narrators |
+|---|---|---|
+| Feuerprojektil | Magischer Angriff, vorhandene Berechnung, Aspekt Fire | Hitze, Flammen und Treffer passend zum gebuchten Ergebnis beschreiben |
+| Wirbel/Explosion | Nur eine tatsächlich unterstützte AoE-Form mit festgelegten Zielregeln | Gebuchte Ziele beschreiben, keine weiteren Opfer oder Schäden erfinden |
+| Schutzzauber | Barrier oder DEF/MDEF-Effekt mit festem Wert und Ablauf | Sichtbare Gestalt und Wirkung erzählen |
+| Blinkartige Technik | Reposition um die definierte Zahl von Bändern | Den gebuchten Ortswechsel im Kampfraum erzählen |
+| Eis mit echtem Slow | Erst zulässig, wenn ein Slow-Executor und dessen Regeln implementiert sind | Keine erfundene verlorene Aktion oder Bewegungsreduktion |
+| Feuer mit laufendem Brennschaden | Erst zulässig, wenn ein periodischer Schadenseffekt vollständig implementiert ist | Keine nachträglichen HP-Abzüge durch Verbrennungsprosa |
+
+**Entscheidende Richtung:** Bei normalen Skills **Definition → Engine-Auflösung → Narration**. Keine zweite Entscheidung „Narrator erzählt Slow → Extractor trägt es als Kampfstatus nach“. Letzteres macht Formulierungen und Regenerate mechanisch wirksam und widerspricht dem bereits engine-eigenen Kampf.
+
+**Freie Weltanwendungen bleiben möglich:** Planner autorisiert den Einsatz und sein Ziel; Engine bucht Kosten/Probe, Narrator gestaltet die offene Weltwirkung, Extractor meldet erlaubte Weltfakten/Feature-Änderungen. `worldUse` und Feature-Prüfungen wiederverwenden. Ein brennender Vorhang oder eine veränderte Umgebung ist eine andere Domäne als freie HP-, Stat-, Initiative- oder Skilländerungen. Keine kostenlose Weltteleportation aus einem Combat-Reposition-Skill.
+
+**Technische Vereinfachung:** Der verbindliche Erwerbskern von 9C braucht zunächst nur vorhandene Effektarten. Kein generisches Feuer/Eis/Poison-Interaktionssystem, keine frei programmierbaren Effekte, keine Pflicht, alle Ideen des LLM umzusetzen. Bei einer nicht unterstützten Hauptwirkung benennt die Engine die Grenze; sie vergibt keinen kosmetischen „Slow“-Skill und behauptet keine Wirkung.
+
+**Spätere schmale Erweiterungspunkte, noch kein freigegebener Featureumfang:**
+- Periodischer Schaden braucht eine gespeicherte Quelle, ein betroffenes Ziel, eine feste Tick-Phase, Betrag, Restdauer und eine einfache Stacking-Regel. Anbindung an die Zugschleife, denselben HP-/Barrier-Abzug und `onDefeat`; nicht als erneuter Angriff mit nochmals Kosten, Varianz oder Crit. Kill-Credit/XP, PC-Tod, Kampfende und Replay gehören dazu.
+- Slow braucht eine eindeutige beeinträchtigte Mechanik. Am einfachsten zunächst **eine begrenzte Behinderung gewöhnlicher Bewegung**, ohne zusätzliche Zugausfälle oder neue Initiativeberechnung. Angriff mit Annäherung, selbständige Bewegung, NPC-Schließen und Flucht dürfen keinen unbeabsichtigten Umgehungsweg bilden; magische Reposition ist getrennt zu behandeln.
+- Für beide zunächst kampfgebunden und ohne außerweltliche Dauertimer. Noch keine Weltzeit-Statuspersistenz.
+- Neue Art erst in Validator, Executor, Ablauf, Anzeige und Regression vollständig unterstützen, **danach** dem Komponisten anbieten. Keine automatische Regel „jedes Feuer brennt, jedes Eis verlangsamt“.
+- Diese mechanischen Erweiterungen verlangen eine eigene begrenzte Freigabe; sie sind kein Vorwand, den ersten Lern-/Erwerbspfad zu verschieben. 10B stimmt Zahlen ab, ersetzt aber keine fehlenden Executoren.
+
+#### C. Kleinster sinnvoller Modulzuschnitt
+
+**Zwei neue Fachmodule genügen für den Kern:**
+1. `src/skill_composer.js`: reine deterministische Komposition für PC, NPC und Fallback; liefert eine vorhandene Skill- oder Passive-Definition bzw. strukturierte Fehler. Keine Zustandsänderung, kein LLM, keine zweite Kampf-DSL.
+2. `src/v4/growth.js`: Quellenprüfung, Vorhaben, Lern-/Trainingsfortschritt, Erwerbsberechtigung, Kandidaten und Transaktionsvorbereitung. Die Funktionen arbeiten mit Zustand, geprüften Eingaben und Events; keine Abhängigkeit vom SillyTavern-UI.
+
+`src/v4/runtime.js` erhält nur die kleine asynchrone Forge-Orchestrierung. Sollte deren Schema/Prompt/Parser umfangreich werden, darf Claude es in ein kleines `src/v4/forge.js` auslagern. Kein Pflichtmodul auf Vorrat, kein Plugin-Framework und keine Queue-Infrastruktur.
+
+`skills.js` und `passives.js` bleiben Besitzer ihrer Validatoren und Registry-Schnittstellen. `combat.js` bleibt zuständig für Kampfauflösung. World-Applier und Engine-Fassade delegieren, statt neue umfangreiche Fachlogik aufzunehmen.
+
+#### D. Ein Entwurf, ein Komponist, eine Definition
+
+Ein kleiner interner **Entwurf** beschreibt die gewünschte Mechanik, z. B.:
+
+- Hauptfunktion: Angriff, Schutz, Reposition, Heilung, Ressourcenumwandlung oder Vorbereitung.
+- Unterstützte Angriffsform bzw. Zusatzfunktion; getrennt von thematischen Aspekten.
+- Rang, Complexity, Disziplin-Tags, Aspekte.
+- Zulässige Ressourcen- und Skalierungsart.
+- Eine mechanische Priorität, z. B. Wirkung, Reichweite oder Effizienz.
+- Referenz auf die geprüfte Erwerbsgrundlage.
+
+Das ist eine geschlossene Auswahl **mechanischer Bauformen**, keine Liste fertiger Fähigkeiten. Nicht jedes Feld muss der Spieler nennen; der vorhandene Planner übersetzt die erklärte Absicht in diese Felder, und der Komponist ergänzt technische Defaults. Fehlende entscheidende Semantik darf er nicht frei erfinden.
+
+**Komposition:**
+1. Quelle und unterstützte Hauptfunktion prüfen.
+2. Rang-/Complexity-Grenzen und vorhandene Effekte wählen.
+3. Mit einer kleinen deterministischen Regel Basis, Koeffizienten, Kosten und Effektwerte erzeugen. Nicht für jedes Merkmal gleichzeitig das Maximum wählen; eine einfache konfigurierbare Verteilung genügt, kein Optimierungsalgorithmus.
+4. Namen/ID innerhalb der Kampagne eindeutig machen.
+5. Bestehenden vollständigen Validator ausführen.
+6. Exakte Definition liefern oder ohne Buchung fehlschlagen.
+
+**Numerische Regeln:** Vorläufige Kalibrierung und Lernraten stehen zentral im Content, möglichst als Erweiterung von `rules.json`. Bestehende 9B-Grenzen verwenden, statt in mehreren Modulen neue Werte zu erfinden. Gültigkeitsregeln wie bekannte Effektart, endliche Zahlen, zulässige Referenzen, keine Ressourcenzyklen und unterstützte Targets gelten sofort; exakte Balance kommt in 10B.
+
+**Blink:** `reposition` soll langfristig seinen `bands`-Parameter tatsächlich ausführen. Das technische Weiterreichen und Begrenzen des Parameters darf ergänzt werden, ohne `mage.blink` zu buffen: dessen 8 MP und ein Band bleiben in Patch 9 unverändert. Neue zulässige größere Bandwerte erst nach passender Freigabe; keine vorgezogene Reichweitenentscheidung.
+
+**Persistenz:** Gespeichert wird die fertig berechnete Definition. Der Fold komponiert sie nie neu. Neue Defaults in 10B verändern deshalb nicht stillschweigend die gespeicherten Basiswerte alter dynamischer Skills. Eine umfassende Garantie, dass beliebige spätere globale Kampfregeländerungen historische Ergebnisse unverändert lassen, wird damit nicht behauptet.
+
+**IDs/Namen:** Stabile Ableitung aus Kampagnen-/Quellen-/Vorhabenidentität, Kollisionsprüfung und deterministische Auflösung. Namen müssen den aktuellen Zeichen-/Längenregeln und der kampagnenweiten Eindeutigkeit entsprechen; ein wiederholtes „Precision Technique“ ist kein zulässiger Fallback. Nicht blind Ziffern anhängen, die der aktuelle Namensvalidator verbietet.
+
+#### E. Quellen und Lernvorhaben
+
+**Keine zweite Quellen-Datenbank:** Lehrer bleiben Entities, Stones/Handbücher bleiben Objects, Kämpfe/Proben bleiben Engine-Ereignisse. Ein Vorhaben referenziert diese Quellen und hält die für das Lernen relevanten, geprüften Angaben fest.
+
+**Kleine typisierte Quellenbeschreibung:** Für echte neue Lernquellen braucht es mehr als frei interpretierten Text. Ein enges `growth.source`-Delta darf ausschließlich eine belegte Quelle beschreiben:
+- Art `teacher`, `study_material` oder `skill_stone`.
+- Bereits vorhandene Personen-/Objektreferenz, Disziplin-Tags, Aspekte, ggf. unterstützte Hauptfunktion.
+- Bei Lehrer zusätzlich ausdrückliche Unterrichtszusage; Rolle allein ist keine Zusage.
+- Wörtliche Evidenz aus der Narration, gegen bekannte Rolle, Sheet bzw. Objekt und unterstützte Grenzen geprüft.
+- Keine LP, PP, Skilldefinition, Lernerfolge oder Statboni in diesem Delta.
+
+Quellenmerkmale werden am bestehenden Entity/Object gespeichert und im Katalog knapp sichtbar gemacht. Bei Stones sind die mechanisch relevanten Profile nach Etablierung fest. Ein Narrator darf sie später nicht beliebig umschreiben. Existierende Rollen/Sheets, `service.granted` und Fakten können Angaben bestätigen; widersprüchliche Tatsachen haben Vorrang. Ein generischer Klassen- oder Commoner-Fallback ist kein Beleg für Meisterkompetenz. Kein Kampfsheet nur für Unterricht erzeugen.
+
+**Zustandsgerüst:** Ein neuer, vom Event-Fold rekonstruierter Teil `state.growth` hält Vorhaben, offene Kandidaten und eine begrenzte Ansicht relevanter Engine-Belege. Quellen selbst bleiben an Entities/Objects. Eventfamilien für Vorhabenstart, Fortschritt, Angebot und Abschluss genügen; Namen beim Implementieren an bestehende Konventionen anpassen. Definition/Besitz bleiben die vorhandenen Skill-/Passive-Events. Historische Kampfdetails nicht unbegrenzt zusätzlich kopieren; ein gebundener Beleg bleibt am Vorhaben/Kandidaten nachvollziehbar, auch wenn er aus der aktuellen Promptauswahl fällt. Keine zweite Ereignischronik.
+
+**Neue Vorhaben:** Ziel, Quellreferenz/Belege, Entwurf, LP, Zustand `active|ready|completed|abandoned` und bereits angerechnete Belege. Zum Einstieg höchstens drei aktiv als **vorläufiger Content-Default**, keine neue Verwaltungsoberfläche. `#skills` zeigt die Vorhaben kurz an; natürlicher Text genügt zum Starten, Fortsetzen und Aufgeben.
+
+**Planner-Erweiterung:** `activity train/study` erhält eine kleine optionale Lernangabe: bekanntes Skill-/Vorhaben-/Kandidatenziel oder neues Ziel, Lehrer/Gegenstand, Hauptfunktion, Tags/Aspekte. Schema, Vokabular, `planContext`, `parsePlan`, `mapPlan` und Guard auf denselben Feldern halten; keine isolierte Schemaänderung. Quote muss die eigene Handlung des Spielers tragen. Fragen, Wunschdenken und NPC-Handlungen starten kein Training.
+
+**Quellenprüfung vor Gutschrift:** Lehrer kompetent, anwesend und bereit; Material besessen/zutreffend; keine neue Disziplin allein durch Behauptung. Klassenübergreifend bleibt Lernen mit passender Quelle erlaubt. Selbstübung kann eine bereits legitimierte Richtung oder bekannte Skills vertiefen. Eine Quelle darf Themen einführen, aber keine höhere numerische Macht frei deklarieren.
+
+**Fortschritt:**
+- Gebuchte Trainingszeit → LP eines neuen Vorhabens oder PP eines bekannten Skills.
+- `service.granted` allein → keine LP.
+- Qualifizierender Kampf → PP wie bisher und zusätzlich LP nur für ein tatsächlich passendes aktives Vorhaben.
+- Höchste passende Affinität einmal anwenden.
+- Eine Stunde wird nicht dreimal voll an drei Vorhaben vergeben.
+- Schlüssel pro Session/Kampf/Probe schützen gegen Wiederholung; unabhängig von bloß gleicher Uhrzeit.
+- Spieltage verwenden; bei Tagesgrenzen Zeitabschnitte konsistent behandeln. Kurze Sessions dürfen ihre Restzeit behalten, statt durch bloßes Aufteilen Fortschritt zu verlieren oder zu vervielfachen.
+
+Die bestehenden LP-Schwellen C1/C2/C3 (100/200/300) und die früher vorgeschlagenen Raten (Lehrer 20/h, selbst 10/h, Kampf 12) sind **Test-/Startdefaults, keine neu beschlossene Balance**. Tagesgrenzen und Vorhabenzahl konfigurierbar halten. Keine komplizierte Anti-Farm-Simulation. P5 bleibt das Proficiency-Maximum.
+
+#### F. Eine gemeinsame Abschlussbuchung
+
+Progression und Definition bleiben getrennt:
+1. Synchroner Engine-Zug prüft Handlung, bucht legitime Zeit/Fortschritt und markiert ein Vorhaben als `ready`.
+2. Eine gemeinsame Abschlussstufe betrachtet den tatsächlich entstandenen Zustand, auch nach einem Kampf über den V3-gerouteten C-Pfad.
+3. Sie bereitet den Entwurf vor; in 9C-1 deterministisch, in 9C-2 optional durch die Forge gestaltet.
+4. `defineSkill`/`learnSkill` bzw. `definePassive`/`gainPassive` und alle Quellen-/Abschlussereignisse werden auf einer privaten Zustandskopie vollständig geprüft.
+5. Erst bei vollständigem Erfolg wird die ganze Eventfolge in den **bestehenden** Nachrichten-Record übernommen. Keine zusätzliche Event-Datei oder Datenbank.
+6. Outcome/Systemanzeige und Narrator-Kontext nennen die wirklich gebuchte Fähigkeit.
+
+**Atomar bedeutet hier:** Bei fehlgeschlagenem Abschluss keine halbe Definition, kein Stone-Verbrauch, kein entferntes Vorgängerskill und kein verlorenes LP. Eine zuvor legitim durchgeführte Trainingsstunde bleibt eine durchgeführte Stunde; ein Fehler beim letzten Erwerb ist kein Grund, den ganzen Tag rückwirkend zu erstatten.
+
+Fertige Lernvorhaben vergeben während eines aktiven Kampfes nichts; sie warten auf das reguläre Ende. Laufende Snapshots bleiben unverändert. Quellen-, Rang- und Besitzprüfung unmittelbar vor Abschluss wiederholen.
+
+**Integration:** Gemeinsame Finalisierung hinter beiden erfolgreichen `plannedTurn`-Routen, vor Übergabe an den Narrator. Keine Finalisierung bei bloßen Info-Panels oder fehlgeschlagenem Planner. Direkte synchrone Engine-/Node-Tests verwenden dieselbe deterministische Abschlussfunktion; kein Engine-Kern wird wegen der Forge asynchron. V3/V4-A bekommen keinen neuen LLM-Erwerbsworkflow als Nebenaufgabe.
+
+#### G. Forge, besondere Erwerbe und Passives
+
+**Forge erst in 9C-2:** Kleines geschlossenes Schema nach dem Board-Muster. Name, Beschreibung und erlaubte kreative Formwahl; keine frei gewählten Zahlen, Preise, Ränge, Quellen oder zusätzlichen Effektarten. Die geprüfte Quelle beschränkt die Auswahl. Der Komponist und danach der Validator bleiben maßgeblich.
+
+- Nur bei echtem anstehendem Abschluss, außerhalb eines laufenden Kampfes.
+- Eine Reparatur, danach gültiger deterministischer Fallback. Ist auch kein gültiger Fallback möglich, bleibt das Vorhaben bereit bzw. der Gegenstand erhalten.
+- Antwort, Entwurf, Ausführungs-/Quellschlüssel, Version und technische Call-Metadaten im bestehenden User-Record ablegen.
+- Bei gültigem Record wiederverwenden; Fold/Reload ruft kein LLM auf.
+- Nach asynchronem Aufruf Kampagne, Input-Hash, Quelle und Gültigkeit des Records nochmals prüfen. Ein veraltetes Ergebnis darf nichts buchen.
+- Bestehende Extractor-/Commit-Barriere erhalten; keine Hintergrundjobs oder parallele Zustandsautorität.
+
+**Skill Stones:** Profil bei Etablierung, vollständige Definition bei erster gültiger Aktivierung. Besitz, Rang, Quelle und Dopplungen zuerst prüfen. Verbrauch einer konkreten Einheit nur zusammen mit erfolgreichem Abschluss. Quelle/Objektidentität legt die Bindung fest; Regenerate erzeugt nicht wiederholt neue Techniken aus demselben gespeicherten Erwerbsversuch. Ein bereits gebuchter Skill wird nie still umbenannt oder neu komponiert.
+
+**Besondere Erfahrung:** Keine vollständige Chatanalyse. Kleine Belege aus den tatsächlichen Engine-Auflösungen verwenden. Weil `enc.log` gekürzt wird, nötige zusammenfassende Belege während der Auflösung bzw. am Kampfende festhalten; spätere Herkunft nicht aus den letzten 20 Zeilen raten. Ein passender PP-Beleg kann helfen, ist aber nicht die einzige zulässige Quelle für eine neue Disziplin.
+
+Ein optionales enges `growth.hint`-Delta darf aus dem bestehenden Extractor-Aufruf eine Richtung vorschlagen und **konkrete bekannte Belegreferenzen** nennen. Engine prüft Art, tatsächliches Geschehen, Zusammenhang, Dopplung und ausreichende Quelle. Es meldet weder einen erlernten Skill noch erhält es Schreibrecht auf Progression. Kein Forge-Aufruf bloß für jeden Hint.
+
+**Vorgeschlagener Interaktionsdefault, noch als Gameplay-Detail zu bestätigen:** mögliche spontane Entwicklung einmal dezent anzeigen; eine passende Handlung des Spielers greift sie auf. Keine Pflicht-Popups und keine Zwangsaktionen. Bereits ausreichend belegte Entwicklung darf dann sofort bereit sein; kein allgemeiner nachgeschalteter Vollgrind.
+
+**Passives:** Dieselben Quellen-/Abschlussregeln und der vorhandene Passive-Validator. Keine Starter-Passives, keine Passive pro Level/Rang. Seltenheit über außergewöhnliche Quellen und vorläufige Vergaberegeln, nicht über eine neue Besitzobergrenze. Dauerhafte ATK/DEF-, Pool- und Resistenzwirkungen über Passives; neue Core-Stat-Bonusregeln sind kein Pflichtumfang von 9C. Belohnungen können Unterricht, ein Gegenstand oder eine belegte besondere Erfahrung sein; kein Gegenstandszwang.
+
+#### H. Evolution, NPCs und Rangunterstützung
+
+**Evolution:** eigener unveränderlicher Nachfolger mit gespeicherter Vorgängerreferenz. P5 erlaubt die Entwicklung, ist allein aber kein Auslöser. Dasselbe Vorhaben-/Quellmodell nutzen; keine zweite EP-Leiste. Bereits maßgebliche Erfahrung anrechnen, statt nach P5 pauschal ein vollständiges LP-Ziel von null zu verlangen.
+
+**Vorgeschlagener Default:** konkreten Nachfolger anbieten und nach Zustimmung den Vorgänger aus den aktiven Skills nehmen. Definition, vorherige Proficiency und Abstammung bleiben über Events/Historie erhalten. Ein kleines gemeinsames Austauschereignis bzw. geprüfte Abschlussfolge genügt; kein Klassenbaum und keine Migrationsmaschine.
+
+**Kein automatisches „Complexity +1 → P1“:** Das frühere Argument war unvollständig. `rawPower` enthält ATK/MATK-Anteile; P5 wirkt auch darauf und auf Kosten. Bei Stat 10 und Waffenanteil 20 ergibt ein C1-Maximalangriff auf P5 61,2 Rohkraft, ein C2-Maximalangriff auf P1 nur 60, dazu möglicherweise höhere Kosten. Obergrenzen sind keine Mindestwerte. Nachfolger nach tatsächlicher Hauptwirkung, Kosten und Funktion prüfen. **Einfacher vorläufiger Implementierungsdefault:** die erreichte Proficiency übernehmen (bei P5: P5 und 0 PP), statt einen automatischen Reset oder eine komplizierte Umrechnung einzuführen. Neue Evolution braucht neue passende Belege nach dem letzten Erwerb; kein Wiederverwenden derselben Grundlage für eine Evolutionsschleife. Kein universeller Nachweis, dass ein neuer Skill in jeder Situation stärker ist. Trade-offs sichtbar anbieten; 10B stimmt die Werte ab.
+
+**NPC-Signaturen:** deterministischer Komponist an `materialise` vor `entity.sheet_set` und Encounter-Snapshot. `humanSheet` bleibt eine Berechnung ohne eigenen Event-Emitter. Ein umgebender Engine-Schritt erstellt die Definitionen, validiert die Folge, gibt sie vor dem finalen Sheet aus und setzt das Sheet einmalig. Bei Wiederbegegnung wird nichts neu generiert.
+
+- Seed + NPC-Identität + etablierte Rolle/Ausbildung/Rang/Fähigkeiten.
+- Kein Verbrauch zusätzlicher Kampf-RNG-Würfe nur für das Skilldesign.
+- Fakten/Sheet vor Template-Fallback; ein dramatisches Adjektiv erzeugt keinen beliebigen Level.
+- Ein einfacher konfigurierbarer Umfang genügt. Seed-Variation füllt offene Details, überstimmt keine bereits etablierte Technik.
+- Keine allgemeinen Zusatzkampftechniken für untrainierte Zivilisten. Das ist kein Verbot aller denkbaren nichtkämpferischen Besonderheiten der Welt.
+- Zunächst NPC-Kompositionen erzeugen, die die vorhandene Angriffs-/Defensivpolicy tatsächlich nutzen kann. Heal/Restore/Blink für NPCs sind heute nicht ausgewählt; sie nicht als funktionierende neue NPC-KI behaupten. Deren umfassendere Integration bleibt 9D bzw. einer konkreten Freigabe.
+- Keine LLM-Aufrufe bei Sheet-Bau oder NPC-Zügen.
+
+**Ownership:** Definitionen sind weiterhin Engine-eigen. Im Antwortpfad eine gezielte deklarierte Engine-Folge mit Gate, keine pauschalen `skills`-Schreibrechte für `person.new`, `hostile`, `fact` oder die neuen Quellen-/Hint-Deltas. Quellen dürfen Weltattribute melden; mechanischer Erwerb bleibt ausschließlich der geprüften Abschlusslogik vorbehalten. `state.growth` im Ownership-Fingerprint der Progression berücksichtigen; reine Quellenbeschreibungen bleiben Weltattribute. Fingerprints, State-Validierung und Tests erweitern.
+
+**Ränge:** Tabellenbasierter Zugriff ab 9C-1, zunächst nur vorhandene F-Werte aktiv. In 9C-3 E als erste kontrollierte höhere Stufe mit ausdrücklich provisorischen Grenzen abnehmen. Unbekannte/nicht kalibrierte Ränge werden verständlich abgelehnt, nicht still auf F zurückgesetzt. D–S-Kalibrierung ist kein Pflichtumfang. Ranggrenzen für Erwerb UND Ausführung prüfen. STA-Basis ist 100, kann durch vorhandene Passives steigen; keine blinde Kostenmultiplikation und kein daraus abgeleitetes generelles Verbot höherer Kosten.
+
+#### I. Teilpatches und konkrete Abnahme
+
+| Teilpatch | Lieferumfang | Nachweis |
+|---|---|---|
+| **9C-1: Composer & Learning** | Zwei Fachmodule; F-Komponist für vorhandene Effekte; strukturierte Lernabsicht und Quellen; tatsächliche Trainings-LP/PP; Vorhaben; gemeinsame deterministische Abschlussbuchung; vorhandene Anzeigen/Ownership | Eine neue, nicht im Content vorhandene F-Technik aus echter Lernaktion erwerben und im Produktpfad ausführen; Angriff UND mindestens ein nichtoffensiver Formfall; PP-Training; falsche Quelle/ungültiger Entwurf ohne Erwerb; Session-/Replay-Deduplizierung; Legacy |
+| **9C-2: Forge & Special Acquisition** | Seltener Forge-Aufruf; Stones/Materialien über vorhandene Objekte; belegte spontane Kandidaten; echter Passive-Erwerb; Fehler-/Stale-Record-Schutz | Echte individuelle Fähigkeit im GLM-Lauf erwerben UND einsetzen; Stone genau einmal verbraucht; Quelle/LP bei Fehlschlag erhalten; Passive mechanisch wirksam; Regenerate/Reload ohne neue Vergabe |
+| **9C-3: Evolution & NPC Integration** | Herkunft/Nachfolger und angenommener Austausch; NPC-Signaturen vor Snapshot; kontrollierte E-Unterstützung | P5-Entwicklung mit sichtbarer Linie; keine kostenlose Dopplung/ungefragter Verlust; wiederkehrender NPC mit persistenter eingesetzter Technik; NPC-Start aus Narrator-Antwort; F/E-Prüfung, Legacy und Replay |
+
+Keine zusätzliche neue Testspieler-Infrastruktur. `tools/st_live/live/guides/current_test.json` bleibt der einzige neue Live-Guide. Engine- und Runner-Commits getrennt, falls überhaupt ein Runner-Fix nötig ist.
+
+**Pro Teilpatch:** gezielte Regressionen während der Arbeit, eine vollständige `npm test`-Abschlussprüfung; nur bei relevanter Hostintegration zusätzlicher verfügbarer ST-Smoke. Keine Tests für jede Beispielzahl, sondern echte Invarianten und mindestens ein vollständiger Produktpfad. Testberichte nennen Ausführung und Grenzen; keine erfundenen Live-Passes.
+
+**Besonders wichtige Regressionen:**
+- Forge-/Erwerbsabschluss nach V4-Aktivität **und** nach C-Kampfabschluss über den V3-gerouteten Pfad.
+- Zwei gleich benannte Entwürfe, doppelte Quelle, bereits gelernter Skill, keine Fallback-Namenskollision.
+- Training nur gekauft vs. tatsächlich absolviert; Quelle abwesend/ungeeignet; Zeit aufgeteilt oder über Tagesgrenze; keine Mehrfachgutschrift derselben Session.
+- Definition/Erwerb/Stone-Verbrauch/Austausch als vollständige Folge; Rücknahme des zugehörigen Records nimmt alles zurück.
+- Keine Definition beim Fold, keine Content-Map-Mutation, keine Änderung gesperrter Snapshots, keine neue Fähigkeit allein aus Erzählerbehauptung.
+- Neue Skillform im Planner, Combat-HUD, `#skills/#skill`, Context und realer Ausführung. Vokabular-/Planner-/Extractor-/Ownership-Versionen bei ihren Änderungen nachvollziehbar erhöhen; optionale neue Felder dürfen alte Records nicht ungültig machen.
+- Echte Weltanwendung bleibt über die vorhandenen Autoritätsgrenzen eingeschränkt.
+
+#### J. Review-Freigabe und Abgrenzung zu 10B
+
+**Vor Implementierung:** den konkreten 9C-1-Auftrag in der zweiten Claude-Sitzung unabhängig gegenprüfen lassen. Besonders: gemeinsamer Finalisierungspunkt, Quellenbeschreibung ohne Grant-Recht, deterministische Fallbacks und kleine Anzahl neuer Zustände/Events. Keine erneute allgemeine Debatte über bereits beschlossene Startklassen.
+
+**Jetzt festlegen:** Datenmodell, Einheiten, Ownership, unterstützte Hauptfunktionen, Buchungsreihenfolge, Persistenz, Fehlerverhalten und Integrationspfade.
+
+**10B:** endgültige Power-/Kosten-/Dauergrenzen, LP-/PP-Raten und Tageslimits, Seltenheit, NPC-Häufigkeit, Progressionstempo, Gesamtbalance, Blink-Buff, breite Rangkalibrierung und Performance-Feintuning. Diese spätere Abstimmung ist kein Grund, technische Validierung oder tatsächliche Effektwirkung heute wegzulassen.
+
+**Nicht als bereits implementiert ausgeben:** dieser ganze Abschnitt. Aktueller Code bleibt .39 mit 9A/9B-Kern; kein organischer Spiel-Erwerb, keine Forge, keine Skill Stones, keine neuen Burn-/Slow-Mechaniken.
+
 
 ### 1a.3 Patch 10B – Balancing, Performance & Final Polish
 

@@ -1,4 +1,4 @@
-# Patch 9C-1: Deterministischer Skill-Erwerb und Training (4.3.0-c.6.6.40 / Reviewkorrektur .41)
+# Patch 9C-1: Deterministischer Skill-Erwerb und Training (4.3.0-c.6.6.40 / Reviewkorrekturen .41–.42)
 
 Erster Teil von Patch 9C auf der Basis von 9B-1/9B-2. Plan: `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` §1a.2b (main `e4d1f00`). Alles Neue gilt nur unter Regelstand 2 und nur auf dem Planner-Pfad (C).
 
@@ -123,7 +123,7 @@ Die Evidenz (Basis, Schlüssel, Zug, Minute) wird am Ziel gespeichert, weil die 
 
 ## 6. Tests und Grenzen
 
-`tests/v4/patch9c1.test.js` deckt ursprünglich diese 12 Fälle ab (mit Reviewkorrektur .41 insgesamt 17):
+`tests/v4/patch9c1.test.js` deckt ursprünglich diese 12 Fälle ab (mit Reviewkorrektur .41 insgesamt 17, mit .42 insgesamt 19):
 
 | Test | Inhalt |
 |---|---|
@@ -159,3 +159,9 @@ Ausgangsbasis: `d0808eb` (.40). Vier begrenzte Korrekturen in `src/v4/growth.js`
 - Zusagen zusätzlicher Lehrer bleiben am Ziel nachvollziehbar und werden nicht für andere Ziele frei. Ein begrenzter Index verhindert die Wiederverwendung nach dem Kürzen abgeschlossener Ziele; vorhandene .40-Events werden weiter gefaltet, ohne historische LP-/PP-Werte neu auszurechnen.
 
 Fünf neue Regressionen waren auf .40 rot und sind mit .41 grün. Gezielte Suite: **17/17**; vollständiges `npm test`: **1147/1147** (hier ausgeführt). Kein neuer Browser-Smoke oder LLM-Livetest. Narrator-Vertrag bleibt Revision .40, da unverändert. Zahlen, Planner, Runner und Scope von 9C-2 bleiben unverändert. Unabhängiges Claude-Gegenreview steht aus.
+
+## 8. Stabile Trainingszusagen .42
+
+Claude bestätigte .41 einschließlich Rot/Grün und 1147/1147 unabhängig. Ein weiterer kleiner Bezahlfehler blieb: Zwei Trainingszeilen desselben Kaufs hatten denselben Schlüssel. Neue Trainingsleistungen bekommen deshalb beim Kauf eine ID aus Zug, Minute, Verkäufer, Angebot und Zeile; `service.granted` und der Reducer bewahren sie. Das Lernen verwendet diese ID, bei alten Records unverändert den bisherigen Schlüssel. Kein Listenindex, neuer Zähler, Eventtyp oder Migrationslauf. Bereits gespeicherte alte Zusagen werden nicht rückwirkend aufgeteilt.
+
+Zwei Regressionen prüfen den echten Kauf mit zwei Lernzielen (vorher rot), die Identität nach Kürzung der Services-Liste, Replay und alte Records ohne ID. Gezielte Suite **19/19**, `npm test` **1149/1149**, hier ausgeführt. .42 wartet auf das gezielte Gegenreview. Keine neuen Live-/Browser-Smokes; 9C-2 bleibt nicht freigegeben.

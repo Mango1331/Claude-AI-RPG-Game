@@ -61,7 +61,9 @@ export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = nu
         emit({ t: 'object.created', d: { object: { id: objectId(p.line.what), name: p.line.what, kind: 'item', stack: p.units > 1, qty: p.units, unit: null, ...traits, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'bought', from: offer.seller } } } });
     }
     for (const p of picks.filter((x) => x.line.kind === 'service' && x.line.service !== 'guild_registration')) {
-        emit({ t: 'service.granted', d: { service: p.line.service || 'other', what: p.line.what, by: offer.seller, at: s.scene.at, turn: s.turn } });
+        // Each bought training line is a separate commitment, even in the same transaction and minute.
+        const id = p.line.service === 'training' ? `svc:${s.turn}:${s.clock.minute}:${offer.seller}:${offer.id}:${p.line.id}` : null;
+        emit({ t: 'service.granted', d: { ...(id ? { id } : {}), service: p.line.service || 'other', what: p.line.what, by: offer.seller, at: s.scene.at, turn: s.turn } });
     }
 }
 

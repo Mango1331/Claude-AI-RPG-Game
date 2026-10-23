@@ -489,3 +489,60 @@ test('9C-1 review: compacting old completed goals never makes an old paid commit
     assert.equal(teachingCommitment(g.state(), 'npc.mira'), null);
     assert.deepEqual(validateState(g.state(), content), []);
 });
+
+
+test('9C-1 review: two training lines bought together fund two goals with stable, distinct commitments', async () => {
+    const g = await campaign(content, { cls: 'Mage', skills: 'Arcane Bolt + Arcane Ward' });
+    person(g, 'npc.mira', 'hedge_mage', { cls: 'mage', consent: null });
+    inject(g, [
+        { t: 'coin.changed', d: { id: 'pc', value: 50, delta: 0, why: 'test precondition' } },
+        ...Array.from({ length: 8 }, (_, i) => ({ t: 'service.granted', d: { service: 'lodging', by: 'npc.inn', at: g.state().scene.at, turn: i } })),
+        { t: 'offer.created', d: { offer: { id: 'offer.mira.lessons', seller: 'npc.mira', at: g.state().scene.at, status: 'open', canon: false, turn: g.state().turn, lines: [
+            { id: 'l1', what: 'bolt lesson', kind: 'service', service: 'training', qty: 1, price_cp: 5 },
+            { id: 'l2', what: 'ward lesson', kind: 'service', service: 'training', qty: 1, price_cp: 7 },
+        ] } } },
+    ]);
+    await say(g, '*i buy both lessons from Mira*', { type: 'offer.accept', offer: 'offer.mira.lessons', lines: null, qty: null });
+    assert.equal(sheetOf(g).coin_cp, 38);
+    assert.equal(lastUser(g).events.filter((e) => e.t === 'service.granted').length, 2);
+    await reply(g);
+    const first = teachingCommitment(g.state(), 'npc.mira').key;
+    await train(g, '*i train the bolt with Mira for an hour*', { minutes: 60, learn: 'bolt', teacher: 'npc.mira' });
+    assert.equal(resolution(g).status, 'resolved');
+    assert.equal(goalOf(g).source.key, first);
+    await reply(g);
+    const second = teachingCommitment(g.state(), 'npc.mira')?.key;
+    // Shorten the services view from its front: an identity must not depend on a current list position.
+    inject(g, Array.from({ length: 4 }, (_, i) => ({ t: 'service.granted', d: { service: 'lodging', by: 'npc.inn', at: g.state().scene.at, turn: 30 + i } })));
+    await train(g, '*i train the ward with Mira for an hour*', { minutes: 60, learn: 'ward', teacher: 'npc.mira' });
+    assert.equal(resolution(g).status, 'resolved', 'the second paid lesson must still open its own goal');
+    assert.notEqual(first, second);
+    assert.equal(goalOf(g, 'learn.2').source.key, second, 'trimming older services did not rename the grant');
+    const grants = g.state().services.filter((s) => s.service === 'training');
+    assert.equal(new Set(grants.map((s) => s.id)).size, 2);
+    assert.ok(grants.every((s) => typeof s.id === 'string'));
+    assert.equal(teachingCommitment(g.state(), 'npc.mira'), null);
+    await reply(g);
+    const before = clockOf(g);
+    await train(g, '*i study mending with Mira for an hour*', { minutes: 60, learn: 'mend', teacher: 'npc.mira' });
+    assert.equal(resolution(g).status, 'refused', 'two paid lessons do not fund a third goal');
+    assert.equal(clockOf(g), before);
+    const replay = foldChat(JSON.parse(JSON.stringify(g.chat))).state;
+    assert.deepEqual(replay.services, g.state().services);
+    assert.deepEqual(replay.growth, g.state().growth);
+    assert.deepEqual(validateState(replay, content), []);
+});
+
+test('9C-1 review: old grants without an id keep their stored legacy commitment key', async () => {
+    const g = await campaign(content, { cls: 'Mage', skills: 'Arcane Bolt + Arcane Ward' });
+    person(g, 'npc.mira', 'hedge_mage', { cls: 'mage', consent: 'service' });
+    const service = g.state().services.find((s) => s.service === 'training');
+    assert.equal(service.id, undefined, 'the historical event contains no id');
+    const expected = 'svc:' + service.turn + ':' + service.minute + ':' + service.by;
+    await train(g, '*i train the bolt with Mira for an hour*', { minutes: 60, learn: 'bolt', teacher: 'npc.mira' });
+    assert.equal(goalOf(g).source.key, expected);
+    assert.equal(teachingCommitment(g.state(), 'npc.mira'), null);
+    const replay = foldChat(JSON.parse(JSON.stringify(g.chat))).state;
+    assert.equal(replay.growth.goals['learn.1'].source.key, expected);
+    assert.deepEqual(replay.services, g.state().services);
+});

@@ -65,7 +65,8 @@ export function dayParts(start, minutes) {
 
 // ------------------------------------------------------------------------------------------------ teachers
 const PC_WORDS = /\b(?:alaric|pc|him|me)\b/;
-const serviceKey = (x) => `svc:${x.turn}:${x.minute}:${x.by}`;
+// New purchase lines have a stable id; old records retain exactly the key their goals already reference.
+const serviceKey = (x) => x.id || `svc:${x.turn}:${x.minute}:${x.by}`;
 const goalSources = (g) => [g.source, ...Object.values(g.teachers || {})].filter(Boolean);
 
 // Keep consumed service keys only while the short services view can still offer them. This survives completed-goal

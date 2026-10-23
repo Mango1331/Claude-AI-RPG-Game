@@ -149,7 +149,7 @@ export function applyDomainEvent(state, e) {
             if (state.offers[d.id]) state.offers[d.id].status = d.status;
             break;
         case 'service.granted':
-            state.services = [...(state.services || []), { service: d.service, by: d.by ?? null, at: d.at ?? null, turn: d.turn ?? state.turn, minute: state.clock.minute }].slice(-10);
+            state.services = [...(state.services || []), { ...(d.id ? { id: d.id } : {}), service: d.service, by: d.by ?? null, at: d.at ?? null, turn: d.turn ?? state.turn, minute: state.clock.minute }].slice(-10);
             break;
         case 'quest.created':
             state.quests[d.quest.id] = clone(d.quest);

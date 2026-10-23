@@ -136,3 +136,45 @@ Zwei Randfälle aus dem Git-Review von `.46`, beide mit Rot/Grün-Regressionen. 
 - Die Lernzeile eines vollständigen Vorhabens sagt jetzt bedingt: „he knows a new Skill only if the engine names it below“.
 
 Tests: `tests/v4/patch9c2b.test.js` (13). Die beiden neuen Fälle sind mit den `.46`-Quellen rot und mit `.47` grün.
+
+## 7. Live-Korrektur (4.3.0-c.6.6.48)
+
+Aus dem Livetest von `.47` (23.10.2026): Der Kauf des „Lesser Spark Stone“ ergab keinen Skill. Die Ursachen waren vier, alle in bestehenden Pfaden. Es gibt keine neue Architektur, keinen neuen Eventtyp und keine Vertragsänderung; die Narrator-Vertragsrevision bleibt `.46`.
+
+| Befund live | Korrektur |
+|---|---|
+| A: „Lesser Spark Stone (minor arcana Skill, …)“ mit `teaches` war keine Quelle, weil „skill stone“ nicht zusammenhängend im Namen stand | Mit `teaches.source: stone` genügt ein Name, der den Gegenstand einen Stein nennt (`rules.json growth.sources.stone_objects`). Ohne `teaches` ist kein Stein eine Quelle; die R1-Ablehnung für „Skill Stone“ ohne Profil bleibt, ein gewöhnlicher Stein wird nicht abgelehnt |
+| B: Das Angebot von „Drossell“ wurde abgelehnt („not present“). Der Händler hatte keinen Namen, nur den Handle `npc.drossell_shopkeeper`; später entstand eine zweite Person „Drossell“ | Ein Eigenname trifft genau die eine anwesende, lebende Person, deren Name oder Story-Handle ihn als Wort enthält (`world.js ownNamed`, nur C-Pfad). Bei zwei Kandidaten niemand. Kein Rückfall auf „den einzigen Händler“ oder „die einzige Person“. Ein `person.new` mit diesem Namen benennt die vorhandene unbenannte Person, statt eine zweite anzulegen |
+| C: Die Erzählung übergab den Stein (`object.new` beim Verkäufer, `object.move` zu Alaric), die Kaufentscheidung buchte ihn zusätzlich: zwei Steine, beide ohne Profil | Siehe unten |
+| D: Das Benutzen des profillosen Steins lief als Werkzeug („the story tells what it achieves“); der Narrator erzählte dreimal ein Erwachen | Die Werkzeugzeile sagt unter Regelstand 2 auf dem C-Pfad zusätzlich: kein Skill, keine LP, keine neue Fähigkeit; die bucht nur die Engine |
+
+**C – Kauf und Übergabe.**
+- Maßgeblich ist eine konkret gebuchte Transaktion, nicht der Name. Gebucht sind Ware, Stückzahl und Verkäufer:
+  - auf dem Befehlspfad (`offer.accept`, auch über `buy`) in `outcome.booked.goods`;
+  - auf dem Entscheidungspfad beim Abschluss im Angebots-Delta.
+- Eine Übergabe in derselben Antwort wird als `engine_booked` abgelehnt, wenn alles zutrifft:
+  - derselbe Verkäufer;
+  - dieselbe Ware (die Schlüsselwörter des einen Namens sind alle im anderen);
+  - genau die bezahlte Stückzahl.
+- Erfasst sind `object.new` beim Verkäufer mit dem zugehörigen `object.move {new}` und das `object.move` eines Gegenstands, den der Verkäufer schon hielt.
+- Steht die Übergabe vor dem Angebot, auf das eine offene Kaufentscheidung wartet, wird sie bis nach diesem Angebot zurückgestellt. Kommt der Kauf zustande, wird sie abgelehnt; sonst gilt sie wie erzählt. Der Kauf ergibt also genau die bezahlte Menge mit dem Profil der Angebotszeile.
+- Unberührt bleiben:
+  - Geschenke und andere Dinge;
+  - dieselbe Ware von einer anderen Person;
+  - eine Teilmenge;
+  - Einheiten über die bezahlten hinaus;
+  - jeder weitere Kauf als eigene Transaktion.
+- Ohne Planner bleibt die bisherige namensbasierte Sperre (`booked.grants`).
+- Nebenbefund: `buy "Lesser Spark Stone"` traf über ein gemeinsames Wort jede Steinzeile und hätte ohne Mengenangabe alle drei gekauft. Gibt es Zeilen, die genau diese Ware sind, nimmt `buy` (und die Kaufentscheidung) nur diese (`world.js wantedLines`).
+
+**Tests:** `tests/v4/patch9c2b_live.test.js` (5), alle mit den `.47`-Quellen rot und mit `.48` grün.
+
+| Test | Inhalt |
+|---|---|
+| Live-Sequenz, Befehl | Unbenannter Händler mit Handle bietet als „Drossell“ drei Steine an. `buy` kauft genau den Spark Stone für 40 cp. Die Übergabe aus msg 33 (mit `person.new "Drossell"`) erzeugt weder einen zweiten Stein noch einen zweiten Drossell. Aktivierung ergibt genau einen Skill, der Stein ist einmal verbraucht, der Skill trifft einen Wolf |
+| Live-Sequenz, Entscheidung | Übergabe vor und nach dem Angebot: ein Stein mit Profil, gekauft, 40 cp |
+| Verkäufer | Zwei Kandidaten, nur ein Händler ohne passenden Namen, nur eine anders benannte Person, Handle-Träger abwesend: abgelehnt. Ein Treffer neben einem fremden Händler: angenommen |
+| Steine | Profil nur mit `teaches`. Gewöhnlicher Stein und profilloser „Lesser Spark Stone“ werden benutzt, nicht abgelehnt, mit dem Satz „no Skill …“. „Skill Stone“ ohne Profil bleibt abgelehnt |
+| Kauf | Geschenk, andere Geberin, freie zweite Einheit stehen. Teilmenge von Pfeilen steht, die volle Menge ist der Kauf. Ein zweiter Kauf ist ein eigener |
+
+Ein Isolationslauf mit direkten Verkäufer-IDs zeigt den Doppelkauf auch ohne die Namensauflösung rot auf `.47`. Bekannte Grenze: Eine Übergabe in anderer Stückzahl als bezahlt (etwa drei einzelne `object.new` für drei gekaufte Pfeile) gilt als eigene Übergabe.

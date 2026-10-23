@@ -233,6 +233,8 @@
     "sources": {
     "src": "Patch 9C-2b (docs/PATCH9C2B_STONES_MATERIALS.md): what makes a thing a source of a technique (src/v4/items.js skillSource). A thing is one only when its words name the kind (stone_words, manual_words; a manual also as a document) AND the story or the offer established what it teaches (the extractor's teaches); its profile is fixed then. value_cp: the guideline price an audit compares offers with (never a refusal)",
     "stone_words": ["skill stone", "skill-stone", "skillstone", "technique stone"],
+    "stone_objects": ["stone", "stones"],
+    "stone_objects_note": "4.3.0-c.6.6.48 (live 23.10.2026: the offered \"Lesser Spark Stone\" with its established teaches was no source): a stone the story or the offer established as teaching a technique (teaches.source stone) is a Skill Stone by any name that calls it a stone; without teaches no stone is one, whatever its name",
     "manual_words": ["manual", "primer", "treatise", "grimoire", "spellbook", "spell book", "handbook", "codex", "training book", "technique book", "lesson book", "instruction book"],
     "value_cp": {"stone": 400, "manual": 120}
   },

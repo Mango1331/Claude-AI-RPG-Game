@@ -54,6 +54,8 @@ const LASTING_MARK = /\b(?:lost|loses|missing|severed|scar\w*|maimed|crippled|bl
 let OWNERSHIP_ASSERT = false;
 export function assertOwnership(on = true) { OWNERSHIP_ASSERT = !!on; }
 
+// the kind a story handle starts with ("npc.drossell_shopkeeper"), never a name
+const HANDLE_PREFIX = new Set(['npc', 'person', 'creature', 'mon']);
 // the words that end a person's name or role in a description ("clerk at the Walk", "steward of the weirs")
 const RELATION_WORDS = new Set(['of', 'at', 'in', 'on', 'with', 'by', 'from', 'near', 'behind', 'beside', 'to', 'for', 'who', 'that']);
 // a local sign-off made a condition ("must inspect and sign before payment", "will sign once …")
@@ -248,6 +250,24 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     const refs = new Map(); // a delta's ref -> the entity it names (person.new, creature.new of this answer)
     const groups = new Map(); // a creature.new ref with count > 1 -> its individual ids
     const objectsNew = new Map(); // name -> object id, for object.move {new: name} of this answer
+    // 4.3.0-c.6.6.48 (live 23.10.2026: the stone the shopkeeper pressed into his hand and the stone the purchase booked
+    // were two stones, the bought one without its profile): goods a purchase of this turn booked are the purchase's,
+    // with the offer's profile, in exactly the units paid. The story's hand-over of the same goods by that seller, in
+    // that number, is that purchase and no second thing; a gift, another thing, a part of them or a unit beyond the
+    // paid ones stands as the story has it. Purchases: the one his command booked (offer.accept) and the ones his
+    // decision books on an offer of this answer (offer below); a hand-over told before that offer waits for it
+    const bought = cPath ? (outcome.booked?.goods || []).map((g) => ({ ...g, left: g.units })) : [];
+    const boughtNames = new Set(); // a refused object.new's name: its object.move {new: name} goes with it
+    const deferred = []; // the hand-overs waiting for the offer of this answer that his purchase decision may take
+    const purchaseOf = (name, from, units) => bought.find((g) => g.left > 0 && g.seller === from && g.left === units && sameGoods(name, g.what)) || null;
+    const awaitsPurchase = (name, from, units, seq) => cPath
+        && s.decisions.some((x) => x.kind === 'purchase' && (x.max_cp !== null || x.any_price) && x.at === s.scene.at && (!x.seller || x.seller === from) && sameWant(x.what, name))
+        && fw.accept.some((y) => y.type === 'offer' && (y.seq ?? 0) > (seq ?? 0) && idOf(y.seller) === from
+            && (y.lines || []).some((l) => (l.kind ?? 'goods') === 'goods' && sameGoods(name, l.what) && (Number(l.qty) || 1) === units));
+    const handedBought = (d, g) => {
+        g.left = 0;
+        reject(d, 'engine_booked', `the purchase of ${g.what} from ${entityLabel(s, g.seller)} handed it to him already, with the offer's profile`);
+    };
     // Patch 7: a feature this answer names (a hazard's on, the obstacle in a way) before reporting it
     const pendingRefs = [];
     const hostileRefs = new Set(fw.accept.filter((d) => d.type === 'hostile').flatMap((d) => d.by || []).map((x) => normText(x)));
@@ -286,7 +306,20 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         const head = (x) => { const w = normText(x).split(' '); const end = w.findIndex((y) => RELATION_WORDS.has(y)); return (end < 0 ? w : w.slice(0, end)).at(-1); };
         const local = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.status !== 'dead' && (s.scene.present.includes(e.id) || (e.location === s.scene.location && (!e.at || e.at === s.scene.at)))
             && [...(e.descriptors || []), truth(s, e.id, 'occupation')[0]?.o].filter(Boolean).some((x) => head(x) === last));
-        return local.length === 1 ? local[0].id : null;
+        if (local.length === 1) return local[0].id;
+        return ownNamed(ref);
+    };
+    // 4.3.0-c.6.6.48 (live 23.10.2026: the shopkeeper met without a name, stored by the story's handle
+    // "npc.drossell_shopkeeper", sold nothing as "Drossell" and was then made a second person of that name): a proper
+    // name is the one person here whose own identity holds it as a word, their name or the handle the story gave them;
+    // never the only merchant or the only person here by default, and with two such people no one
+    const ownNamed = (ref) => {
+        const word = typeof ref === 'string' ? normText(ref.trim()) : '';
+        if (!cPath || !/^[a-z][a-z'\u2019-]{2,}$/.test(word) || HANDLE_PREFIX.has(word)) return null;
+        const own = (e) => [e.name, ...(e.descriptors || []).filter((x) => /^[a-z0-9_.]+$/.test(x) && /[._]/.test(x))].filter(Boolean)
+            .flatMap((x) => normText(x).split(/[^a-z0-9]+/));
+        const named = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.status !== 'dead' && s.scene.present.includes(e.id) && own(e).includes(word));
+        return named.length === 1 ? named[0].id : null;
     };
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
     // Patch 4 (live 18.10.2026: "the two survivors ... calling the rest of the pack in"): a group the story names as a
@@ -676,6 +709,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                         reject(d, 'ambient', 'scene colour: an unnamed person nothing else of the reply deals with is not kept; the story brings them back when they matter');
                         break;
                     }
+                }
+                // 4.3.0-c.6.6.48: the one person here known without a name whose handle holds this name is that person,
+                // now named (as person.named), never a second one of that name
+                const unnamed = cPath && d.name && d.present !== false ? ownNamed(String(d.name)) : null;
+                if (unnamed && !s.entities[unnamed].name) {
+                    const name = String(d.name).trim().slice(0, 60);
+                    emit({ t: 'entity.updated', d: { id: unnamed, set: { name, known_name: name } } });
+                    refs.set(normText(d.ref), unnamed);
+                    refs.set(normText(name), unnamed);
+                    break;
                 }
                 if (d.present === false) {
                     // someone the reply mentions who is elsewhere: exists, not here, not met (P0/S3 E3, Ossler)
@@ -1128,6 +1171,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 reject(d, 'unknown', `the engine has no handler for ${d.type}`);
         }
     }
+    // a hand-over whose offer never came to be (refused) stands as the story told it
+    settleDeferred();
 
     // Patch 7 (the open point of the Patch 6 review): a feature that a hazard is part of (on), that stands in a way or
     // holds a thing, named before the same report established it: found now by its name where it was named, once,
@@ -1692,9 +1737,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         return null;
     }
 
-    function objectNew(d) {
+    function objectNew(d, settling = false) {
         const holder = holderOf(d.holder);
         if (!holder) { reject(d, 'object', `unknown holder ${String(d.holder).slice(0, 40)}`); return; }
+        if (holder.entity && holder.entity !== 'pc') {
+            const units = Number.isInteger(d.qty) && d.qty > 0 ? d.qty : 1;
+            const g = purchaseOf(d.name, holder.entity, units);
+            if (g) { boughtNames.add(normText(d.name)); handedBought(d, g); return; }
+            if (!settling && awaitsPurchase(d.name, holder.entity, units, d.seq)) { deferred.push(d); return; }
+        }
         const q = d.for_quest ? questRef(d.for_quest) : null;
         // Patch 7: what lies in a container that is still shut (the locked chest) is not in his hands before it opens
         const box = d.in ? wayFeature(d.in, s.scene.at) : null;
@@ -1705,11 +1756,22 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         objectsNew.set(normText(d.name), id);
     }
 
-    function objectMove(d) {
+    function objectMove(d, settling = false) {
+        const fresh = typeof d.object?.new === 'string' ? normText(d.object.new) : null;
+        if (fresh && !objectsNew.has(fresh)) {
+            if (boughtNames.has(fresh)) { reject(d, 'engine_booked', 'the purchase handed it to him already'); return; }
+            if (!settling && deferred.some((x) => x.type === 'object.new' && normText(x.name) === fresh)) { deferred.push(d); return; }
+        }
         const o = objectRef(d.object);
         if (!o) { reject(d, 'object', 'unknown object'); return; }
         const to = holderOf(d.to);
         if (!to) { reject(d, 'object', `unknown receiver ${String(d.to).slice(0, 40)}`); return; }
+        if (to.entity === 'pc' && o.holder?.entity && o.holder.entity !== 'pc') {
+            const units = d.qty && d.qty < (o.qty ?? 1) ? d.qty : (o.qty ?? 1);
+            const g = purchaseOf(o.name, o.holder.entity, units);
+            if (g) { handedBought(d, g); return; }
+            if (!settling && awaitsPurchase(o.name, o.holder.entity, units, d.seq)) { deferred.push(d); return; }
+        }
         // Prototype C (4.3.0-c.6.6.3): the hand-over he set out to make where he went (commands.js give): booked as the story
         // has it change hands, into someone's hands there
         const handOver = o.holder?.entity === 'pc' && conditionals.find((k) => !k.done && k.kind === 'give' && k.object === o.id);
@@ -1763,7 +1825,23 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         return near[0];
     }
 
+    /** An offer, and then the hand-overs that waited for it: refused when its purchase booked them, else as told. */
     function offer(d) {
+        offerLines(d);
+        settleDeferred();
+    }
+
+    function settleDeferred() {
+        const was = step;
+        for (const x of deferred.splice(0)) {
+            step = { kind: 'delta', type: x.type, seq: x.seq ?? 0, granted: new Set() };
+            if (x.type === 'object.new') objectNew(x, true);
+            else objectMove(x, true);
+        }
+        step = was;
+    }
+
+    function offerLines(d) {
         const seller = idOf(d.seller);
         if (!seller || seller === 'pc' || !s.scene.present.includes(seller)) { reject(d, 'offer', `the seller ${String(d.seller).slice(0, 40)} is not present`); return; }
         // Patch 8.1 (live 21.10.2026 10:17: the watchman's own "entry, 10 cp" was paid and no pass followed): at a Living
@@ -1810,7 +1888,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // a purchase Alaric agreed to in advance, within his limit (buy with max_cp or any_price), in the number he named
         for (const dec of s.decisions.filter((x) => x.kind === 'purchase' && (x.max_cp !== null || x.any_price) && x.at === s.scene.at && (!x.seller || x.seller === seller))) {
             const o = s.offers[id];
-            const lines = o.lines.filter((l) => sameWant(dec.what, l.what));
+            const lines = wantedLines(dec.what, o.lines);
             if (!lines.length) continue;
             const pick = pickLines(o, lines.map((l) => l.id), dec.qty ?? null);
             if (pick.clarify || pick.error) { system.push(`NOT BOUGHT — ${pick.error || `which of ${pick.clarify.join(' or ')} he wants ${dec.qty} of is open`}`); continue; }
@@ -1821,6 +1899,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             if (coin < price) { system.push(`NOT BOUGHT — ${price} cp needed, he has ${coin} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'no_coin' } }); continue; }
             grant('player.buy');
             bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (name) => uniqueObjectId(s, tag, name), content });
+            for (const p of pick.picks.filter((x) => x.line.kind === 'goods')) bought.push({ what: p.line.what, units: p.units, seller, left: p.units });
             counterparts.add(seller);
             emit({ t: 'offer.closed', d: { id, status: 'accepted' } });
             emit({ t: 'decision.closed', d: { id: dec.id, status: 'accepted' } });
@@ -1943,6 +2022,13 @@ const FILLER = new Set(['the', 'and', 'for', 'with', 'some', 'any', 'one', 'his'
 /** The words that name a want or an offer's line ("a bed for the night" ~ "bed in the Guild dormitory"). */
 export const keyWords = (t) => normText(t).split(/[^a-z0-9]+/).map((w) => w.replace(/s$/, '')).filter((w) => w.length >= 3 && !FILLER.has(w));
 export const sameWant = (want, what) => { const k = keyWords(what); return keyWords(want).some((w) => k.includes(w)); };
+/** The same goods: one name's key words are all the other's ("Lesser Spark Stone" ~ "Lesser Spark Stone (minor …)"). */
+export const sameGoods = (a, b) => { const x = keyWords(a); const y = keyWords(b); return x.length > 0 && y.length > 0 && (x.every((w) => y.includes(w)) || y.every((w) => x.includes(w))); };
+/**
+ * 4.3.0-c.6.6.48 (live 23.10.2026: "Lesser Spark Stone" shares "stone" with every stone of the cabinet): the lines a want
+ * means, those that are exactly those goods where any are, else every line sharing a word with it (as before)
+ */
+export const wantedLines = (want, lines) => { const near = lines.filter((l) => sameWant(want, l.what)); const exact = near.filter((l) => sameGoods(want, l.what)); return exact.length ? exact : near; };
 
 function uniqueEntityId(s, base) {
     let id = `npc.${slug(base) || 'unnamed'}`;

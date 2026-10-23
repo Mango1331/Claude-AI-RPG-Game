@@ -2026,3 +2026,4 @@ Vollständige Beschreibung: `docs/PATCH9C2B_STONES_MATERIALS.md`.
 - **Texte.** `content.10.r2`, Vertrag v4 Revision 4.3.0-c.6.6.46.
 - **Tests:** `tests/v4/patch9c2b.test.js` (11).
 - **Review-Korrektur (4.3.0-c.6.6.47):** Ein „Skill Stone“ ohne belegte Lehre wird bei Aktivierung abgelehnt (nicht als Werkzeug erzählt). Ein aus einem Manual bereites Vorhaben wird nur vergeben, solange er das Manual hält; die LP bleiben. Tests: 13.
+- **Live-Korrektur (4.3.0-c.6.6.48):** Aus dem Livetest von `.47`. Ein Stein mit belegter Lehre ist bei jedem Namen mit „stone“ eine Quelle. Ein Eigenname trifft nur die eine anwesende Person, deren Name oder Handle ihn trägt. Die Übergabe einer gebuchten Ware durch denselben Verkäufer in derselben Menge ist der Kauf selbst, in beiden Kaufpfaden. `buy` trifft bei genau passender Zeile nur diese. Ein gewöhnliches Werkzeug gibt beim Benutzen keinen Skill, keine LP und keine Fähigkeit. Tests: `patch9c2b_live` (5).

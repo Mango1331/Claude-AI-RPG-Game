@@ -21,7 +21,7 @@ import { deriveCharacter } from '../derived.js';
 import {
     placeName, hallOf, hallOfSettlement, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin, listedToday,
 } from './domain.js';
-import { sameWant, keyWords } from './world.js';
+import { sameWant, keyWords, wantedLines } from './world.js';
 import { LOOT_WORDS, lootedHere } from './loot.js';
 import { shopSearch, findTrades } from './settlement.js';
 import { journeyReady, knownAt } from './catalog.js';
@@ -55,7 +55,7 @@ export function newTurnContext(content) {
     return {
         auth: { go: null, gos: [], roam: false, take: [], gather: false, rest: false, timeCap: content.rules.time.default_cap_min, journey: null },
         conditionals: [], expectedKeys: {}, actions: [], extra: [], resolutions: [],
-        booked: { registration: false, grants: [], turnIns: [], accepted: [], sellers: [] },
+        booked: { registration: false, grants: [], turnIns: [], accepted: [], sellers: [], goods: [] },
         searchChecks: [],
         boardShown: null,
     };
@@ -769,8 +769,11 @@ const HANDLERS = {
             return { status: 'resolved', line: `USES — ${o.name}${done.length > 1 ? ` (${done.length})` : ''}: ${R} ${done[0].before} → ${current[rp.resource]} (+${gained}${lost ? `; ${lost} beyond his maximum of ${max[rp.resource]} is lost` : ''}); ${left > 0 ? `${left} left` : 'it is used up'}. The engine booked it; no other effect.` };
         }
         const use = useOf(content, o);
-        // a tool, gear or a document is used, not used up (live 18.10.2026: the flint and steel)
-        if (use === 'tool' || use === 'equipment') return { status: 'resolved', line: `USES — ${o.name} (a tool: it stays with him, not used up; the story tells what it achieves).` };
+        // a tool, gear or a document is used, not used up (live 18.10.2026: the flint and steel). 4.3.0-c.6.6.48 (live
+        // 23.10.2026: the unprofiled "Lesser Spark Stone" used three times, each told as a power waking in him): what it
+        // achieves is the story's, in the world; a Skill, Learning Progress or a new ability only the engine books
+        const growth = envx?.c && rulesetOf(s) >= 2 ? ' Using it gives him no Skill, no Learning Progress and no new ability or power: the engine books those, and it booked none here.' : '';
+        if (use === 'tool' || use === 'equipment') return { status: 'resolved', line: `USES — ${o.name} (a tool: it stays with him, not used up; the story tells what it achieves).${growth}` };
         const qty = Math.min(c.qty || 1, o.qty ?? 1);
         const left = (o.qty ?? 1) - qty;
         if (o.template) emit({ t: 'item.changed', d: { id: 'pc', item: o.template, qty: -qty, why: 'used' } });
@@ -827,7 +830,7 @@ const HANDLERS = {
     },
     buy(s, content, c, ctx, emit) {
         const offers = Object.values(s.offers).filter((o) => o.status === 'open' && !o.canon && !o.bid && present(s, o.seller) && (!c.from || o.seller === c.from));
-        const match = offers.map((o) => ({ o, lines: o.lines.filter((l) => sameWant(c.what, l.what)) })).find((x) => x.lines.length);
+        const match = offers.map((o) => ({ o, lines: wantedLines(c.what, o.lines) })).find((x) => x.lines.length);
         // an offer lists it: buying is accepting that line, in the number he names and within the limit he set
         if (match) return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: match.o.id, lines: match.lines.map((l) => l.id), qty: c.qty ?? null }, ctx, emit);
         const limit = c.max_cp !== null && c.max_cp !== undefined;
@@ -916,7 +919,12 @@ const HANDLERS = {
             ctx.booked.registration = true;
             ctx.booked.grants.push('Guild plate');
         }
-        for (const p of pick.picks.filter((x) => x.line.kind === 'goods')) ctx.booked.grants.push(p.line.what);
+        // the goods are the engine's: on the planner's path the story's hand-over of exactly these, by this seller, is
+        // this purchase (world.js, 4.3.0-c.6.6.48), anything else it tells stands; without the planner, by their name
+        for (const p of pick.picks.filter((x) => x.line.kind === 'goods')) {
+            if (ctx.auth.c) (ctx.booked.goods ||= []).push({ what: p.line.what, units: p.units, seller: o.seller });
+            else ctx.booked.grants.push(p.line.what);
+        }
         // the seller was paid exactly the price: coin from the seller in the reply (change) is not a gift
         if (!o.canon) ctx.booked.sellers.push(o.seller);
         emit({ t: 'offer.closed', d: { id: o.id, status: 'accepted' } });

@@ -106,7 +106,8 @@ const has = (name, list) => (list || []).some((w) => words(name).includes(` ${no
 export function skillSource(content, { name, kind = 'item', teaches = null }) {
     const r = content.rules.growth?.sources;
     if (!r || !name || !teaches || typeof teaches !== 'object' || !['stone', 'manual'].includes(teaches.source)) return null;
-    const recognised = teaches.source === 'stone' ? has(name, r.stone_words) : (kind === 'document' || has(name, r.manual_words));
+    // 4.3.0-c.6.6.48: a stone established as teaching (teaches.source stone) is one by any name calling it a stone
+    const recognised = teaches.source === 'stone' ? has(name, r.stone_words) || has(name, r.stone_objects) : (kind === 'document' || has(name, r.manual_words));
     if (!recognised) return null;
     const fn = composerFunctions(content).includes(teaches.fn) ? teaches.fn : null;
     // only tags and aspects the technique supports; an unsupported one is not taken (nor replaced)

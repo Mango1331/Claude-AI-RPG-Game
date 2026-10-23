@@ -1,7 +1,7 @@
 {
   "id": "current_test",
-  "title": "Aktueller Livetest: Patch 9C-2a, Lehrer-Erwerb und Forge",
-  "brief": "Create a Mage with exactly Arcane Bolt and Arcane Ward. Find a competent hedge mage or other trained mage willing to teach a new fire bolt technique. Talk to them and obtain an actual agreement or buy their offered lessons; a request alone is not training. Do not claim a Skill or teacher agreement yourself. Once the teacher agrees, explicitly train the fire bolt with them for two hours. Read #skills to see the learning goal and its progress. Continue real training on later game days: sleep until morning when the daily allowance is used, then train that goal with the teacher for two hours. Follow the actual System progress rather than the narrator's claims. When NEW SKILL appears, read #skills and #skill with the new Skill's exact name. Note its name, appearance description, effect, cost and range. Only after the new Skill is actually learned, find an ordinary hostile foe and use the acquired Skill in combat; never attack an innocent person. Use Arcane Ward if useful and finish the fight. Read #status afterwards. The automated milestones cover creation and combat only: report the actual learning, new Skill and use in your observations. If no legitimate teacher can be found or learning is blocked, report that instead of inventing progress, repeatedly asking the System for free Skills, or fighting early just to satisfy the milestones. No Guild registration or dungeon is required.",
+  "title": "Aktueller Livetest: 9C-2a Forge, echter Lehrer-Erwerb und Kampfeinsatz (.45)",
+  "brief": "Create a Mage with Arcane Bolt and Arcane Ward. Your primary objective is to legitimately learn and use ONE new Fire bolt technique. Find an actual present, combat-trained Mage teacher (for example a hedge mage) and secure their explicit agreement to teach Alaric or buy an actual offered training lesson. Do not invent a teacher, a promise, a purchase or a Skill; asking to be taught does not itself count as training. Explicitly spend two hours training the Fire bolt with that teacher. Read #skills, note the engine-booked LP and the daily cap. Sleep until the next morning when the daily cap is reached, and train the same learning goal with that teacher for another two hours; repeat on another game day only if the System still shows it incomplete. Follow System state, not narrator claims. After the System actually reports NEW SKILL, read #skills and #skill using its exact name; distinguish the nonmechanical Description from Effect, cost and range. ONLY THEN seek a genuinely hostile ordinary foe, use the newly acquired Skill, finish the fight and read #status. Try no free repeat-acquisition of the same technique; if convenient, a single duplicate-training request can test a clean refusal, but never delay the main run for it. If no legitimate teacher/commitment can be obtained, report that blocker instead of fabricating progress or fighting early. No Guild quest or dungeon is required. Do not manipulate engine state, use developer shortcuts or reset the chat to force success.",
   "character": {
     "class": "Mage",
     "skills": [
@@ -17,22 +17,22 @@
     },
     {
       "id": "fight_started",
-      "goal": "After a genuinely learned new fire bolt appears in the System, find a hostile foe and use the acquired Skill.",
+      "goal": "Only after NEW SKILL is confirmed by System, engage a legitimate hostile foe and cast the exact newly acquired Skill.",
       "maxTurns": 26
     },
     {
       "id": "fight_won",
-      "goal": "Finish the fight, compare the acquired Skill's actual cost and result with its System description, then inspect #status.",
+      "goal": "Finish that encounter and verify Engine damage, resource cost, effect and #status against #skill.",
       "maxTurns": 10
     }
   ],
   "focus": [
-    "Does the world establish a competent teacher and an actual agreement before any learning is booked? A spoken request alone is not a training session.",
-    "Do explicitly timed lessons show Learning Progress and a daily allowance? Does waiting or sleeping to the next day allow further progress?",
-    "Does the System book exactly one new Skill when learning finishes? Record its exact name and engine definition; narrator claims alone do not count.",
-    "Is the appearance-only description shown separately from Effect, and does the narrator avoid extra powers suggested only by the name or atmosphere?",
-    "Is the acquired Skill selectable and usable in combat with the displayed cost, range and actual engine effect?",
-    "Note long waits, empty replies, failed teacher discovery, inconsistent names or attempts to grant the same technique again. The evaluator has no automatic Growth check yet."
+    "A competent present teacher and real agreement or paid lesson must precede any LP; a request alone must not grant learning.",
+    "Time-booked lessons and daily LP caps must work; use later game days if required, and note actual LP totals.",
+    "Record the exact NEW SKILL name and engine event. No new ability based only on narration or an incomplete goal.",
+    "The Forge Description is appearance-only and must never be presented as the mechanical Effect.",
+    "Use the exact newly learned Skill in a real fight and compare spent MP, effect, range and narration with Engine truth.",
+    "Observe stalls, duplicate goals, repeat-grants, errors, unexpected extra LLM calls and Engine/Forge timing. The automated evaluator tracks creation/combat, not skill acquisition."
   ],
   "limits": {
     "maxTurns": 40,
@@ -40,8 +40,8 @@
     "sameFailure": 3
   },
   "personas": [
-    "direct and brief: seek a willing teacher, name real training durations and follow the System's learning progress",
-    "observant: compare the new Skill's separate description and effect with its actual use; report concrete mismatches"
+    "Focused test player: secure a valid teacher and complete explicitly timed training before starting combat",
+    "Mechanics observer: read #skills and #skill; compare Engine acquisition and actual combat outcome with narration"
   ],
   "scripted": [
     {

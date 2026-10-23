@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 23. Oktober 2026 · Fassung 32 (9C-Abschluss .52 Reviewfix c50da2d unabhängig geprüft; Kurztest-Leitfaden `current_test` von Claude vorbereitet)  
+**Stichtag:** 23. Oktober 2026 · Fassung 33 (erster echter .52-9C-Kurztest ausgewertet: Tod, zwei Kampfbelege, keine 9C-Abschlussabnahme)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -36,7 +36,17 @@ Vorheriger Patch-8-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commi
 **Historischer Teststand von .44 (nicht der aktuelle):** ChatGPT/Codex führte auf .44 **`npm test` 1164/1164** und gezielt **34/34** aus. Die ergänzten Duplikat- und Host-Erwartungen sind auf .43 rot (12/15), nach Fix grün. Claude bestätigte .43 unabhängig mit 33/33 gezielten und 1163/1163 Gesamttests. R1 wurde zusätzlich am offiziellen ST-1.19.0-Quellcode geprüft: der Interceptor-Abbruchcallback hält sein Flag lokal je Aufruf. **Gegenreview der .44 noch offen; kein echter ST-/GLM-Livetest.** Historisch: .42 19/19 und 1149/1149 durch beide Sitzungen bestätigt.
 
 
-### NEUSTER LIVETEST `.51`: 9C-2c Ordinary-Training und Erwerb erfolgreich (23.10.2026, 12:00)
+### NEUSTER ECHTER LIVETEST .52 – 20261023-202730Z-current_test: TOD, KEINE 9C-ABSCHLUSSABNAHME (23.10.2026)
+
+**Original-ZIP unabhängig analysiert:** Entwicklungs-HEAD da28acc, Build 4.3.0-c.6.6.52, SillyTavern 1.19.0 und GLM-5.3-Flash; **29 Züge, 12:36 Minuten, 1/5 Pflichtetappen**. Optionale Gildenregistrierung, Dungeon Ebene 1 und skill_pattern_noted bestanden. Zwei gewonnene Encounter: enc.t14 (40 XP) und enc.t18r (26 XP). Beide erzeugten enginegebuchtes growth.noted mit Guard + Heavy Slash, darunter die Muster layered / riposte. Der dritte Encounter enc.t26 endete mit PC-Tod (Level-1-Warrior gegen Dungeon-Goblins Level 4 und 5, vor dem neuen Raum 37 HP, danach 16 → 11 → 0/85). **Nur zwei qualifizierte Kampfabschlüsse** statt nötiger drei. Es entstand kein skillbezogenes growth.evidence, kein Angebot, keine Annahme und keine neue Skillverwendung. **Das Fehlen des Angebots ist auf diesen zwei Belegen kein bewiesener 9C-Codefehler**; Durchbruch-End-to-End, P5-Evolution und NPC-Signaturen sind weiterhin nicht live bestätigt.
+
+**Warnungen einordnen:** Der Runner markierte zweimal group_stayed_out. Jeweils blieb das zweite Gruppenmitglied gemäß autoritativem combat.intent auf hold bzw. parley; group_combat.js nimmt solche Gegner bewusst nicht automatisch in einen Fight. Somit **noch kein nachgewiesener Patch-8.4-Rückfall**. Goblins trugen narrativ Speere, kämpften jedoch mit Natural/unarmed-Engine-Angriffen: begrenzte Narrations-/Profilinkonsistenz, gesondert beobachten. Münzanzeige 50→30 cp und HUD 3 Silver nach 20 cp Gildengebühr sind derselbe Geldbetrag, kein Kontofehler. Das Testspieler-LLM folgte bei 37/85 und erst recht 11/85 HP weiter dem Guard/Heavy-Slash-Muster statt sicherer Erholung; Überlebens-/Testführung, keine Patch-9C-Growth-Regel.
+
+**Noch nicht lokalisiert:** Der finale run.json-Status nennt ausdrücklich **integrity: 1 problem(s)**, der Export liefert in der Statuszeile aber nicht die Ursache. Kein ehrliches Integrität-OK und keine erfundene Diagnose: Originalevents mit Event-Fold und validateState gezielt gegenprüfen, vor weiterer Abnahme. Sonst 83 Engine-/Narrator-LLM-Aufrufe ohne Forge (kein Kandidat), 2 Planner-Reparaturen, Turn-Median 17,5 s; keine Browser-/Serverfehler. 1227/1227 npm-Tests **nur laut vorausgegangenem Claude-Bericht**, in dieser Analyse nicht ausgeführt.
+
+**Weiter:** Keine vorschnelle Skill-Engine-Änderung. Integritätswarnung gezielt klären, dann den kurzen echten ST/Provider-Test überlebensbewusster wiederholen (bei kritischem HP-Stand Rückzug/Erholung außerhalb gefährlicher Encounter; keine gefälschten Kämpfe/Level). Erst nach auswertbarem Test weiter zu 9D; lange offene Kampagne und numerisches Balancing bleiben 10B.
+
+### LETZTER ERFOLGREICHER PASSIVE-LIVETEST `.51`: 9C-2c Ordinary-Training und Erwerb erfolgreich (23.10.2026, 12:00)
 
 **Export `20261023-120058Z-current_test.zip` unabhängig geprüft:** 29 Spielerzüge, 11:04 Minuten, **4/4 Pflichtmeilensteine** (Erstellung, Ordinary-Angebot aus Training Turn 24, ausdrückliche Annahme Turn 26, Panels Turn 27–29), Rare-Angebot optional nicht erfolgt. Ten distinct days of 120-minute INT focus at 20 LP per day → 200/200; `growth.evidence` key `train:learn.1` → `growth.offered` → `decision.opened` mit **nicht erworbenem** Kandidaten. Annehmen erzeugt erst `passive.defined`, `passive.gained`, `growth.decided` und `decision.closed`. Ordinary `Quiet Scholar's Habit` `core_stat_bonus INT +2`: Basis INT 6, effektiv 8; Max-MP **72→88**, MP-Ist bleibt 72/88 (kein kostenloses Auffüllen); `#skill Arcane Bolt` rechnet Raw Power **31** mit INT 8, `#passives` zeigt 1/4. Engine-Events und Systemnachrichten aus ZIP separat nachvollzogen. **Mechanischer Ordinary-End-to-End-Livetest bestanden.** Rare/Legendary, vier volle Plätze/Ersatz, Rare-Stones und Kampf nicht live geprüft.
 

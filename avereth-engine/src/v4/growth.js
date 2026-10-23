@@ -274,7 +274,7 @@ export function learningActivity(s, content, c, minutes, start) {
 export function fightGrowth(state, content, enc) {
     if (rulesetOf(state) < 2 || !fightQualifies(state, content, enc)) return [];
     const tags = new Set(Object.keys(enc.pp?.used || {}).flatMap((id) => skillOf(content, id, state)?.tags || []));
-    const goal = openGoals(state).find((g) => g.lp < g.need && !(g.fights || []).includes(enc.id) && g.target.tags.some((t) => tags.has(t)));
+    const goal = openGoals(state).find((g) => g.lp < g.need && !(g.fights || []).includes(enc.id) && !knownTechnique(state, g.target) && g.target.tags.some((t) => tags.has(t)));
     if (!goal) return [];
     const gain = Math.min(goal.need - goal.lp, Math.floor(R(content).fight_lp * affinityFor(content, state.entities.pc.sheet.class, { tags: goal.target.tags })));
     if (gain <= 0) return [];
@@ -310,15 +310,16 @@ export function finalizeGrowth(state, content, names = {}) {
     const out = { events: [], learned: [], failed: [] };
     if (!canFinalize(state)) return out;
     let s = state;
-    for (const g of openGoals(state).filter((x) => x.status === 'ready')) {
+    for (const g of openGoals(state)) {
         const known = knownTechnique(s, g.target);
         if (known) {
-            // .42 could open the same technique twice with reordered tags. Retire the redundant goal, no new grant.
+            // Retire .42 duplicates even if still active: they cannot progress or consume a learning slot.
             const close = { t: 'growth.closed', d: { goal: g.id, skill: known, name: skillOf(content, known, s).name } };
             s = after(s, [close]);
             out.events.push(close);
             continue;
         }
+        if (g.status !== 'ready') continue;
         const comp = composeGoal(s, content, g);
         if (comp.errors.length) { out.failed.push({ goal: g.id, errors: comp.errors }); continue; }
         try {

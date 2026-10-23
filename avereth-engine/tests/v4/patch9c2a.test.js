@@ -12,7 +12,7 @@ import { npcTemplate } from '../../src/content.js';
 import { composeSkill } from '../../src/skill_composer.js';
 import { defineSkill, learnSkill } from '../../src/skills.js';
 import { definePassive } from '../../src/passives.js';
-import { finalizeGrowth, growthDrafts, learningActivity } from '../../src/v4/growth.js';
+import { finalizeGrowth, growthDrafts, learningActivity, fightGrowth } from '../../src/v4/growth.js';
 import { runCommands } from '../../src/commands.js';
 import { skillSummary } from '../../src/context.js';
 import { validateState } from '../../src/validate.js';
@@ -36,10 +36,10 @@ function forge(g, answer = (q) => named(q)) {
     return calls;
 }
 
-function ready(g, { id = 'learn.1', n = 1, fn = 'bolt', tags = ['Arcane'], aspects = ['Fire'] } = {}) {
+function ready(g, { id = 'learn.1', n = 1, fn = 'bolt', tags = ['Arcane'], aspects = ['Fire'], lp = 100 } = {}) {
     inject(g, [
         { t: 'growth.opened', d: { goal: { id, n, status: 'active', target: { fn, tags, aspects }, source: { kind: 'teacher', who: 'npc.mira', name: 'Mira', basis: 'fact', key: 'fact:teaches', turn: 1, minute: 540 }, lp: 0, need: 100, opened: { turn: 1, minute: 540 }, days: {}, fights: [] } } },
-        { t: 'growth.progress', d: { goal: id, lp: 100, total: 100, need: 100 } },
+        { t: 'growth.progress', d: { goal: id, lp, total: lp, need: 100 } },
     ]);
 }
 
@@ -226,6 +226,50 @@ test('9C-2a review R2: old duplicate ready goals close against the one learned S
     assert.equal(calls.length, 1);
     assert.deepEqual(foldChat(JSON.parse(JSON.stringify(g.chat))).state, s);
     assert.deepEqual(validateState(s, content), []);
+});
+
+test('9C-2a review R2: active .42 duplicate retires with its learned sibling and frees the learning slot', async () => {
+    const g = await campaign(content);
+    ready(g, { tags: ['Arcane', 'Control'] });
+    ready(g, { id: 'learn.2', n: 2, tags: ['Control', 'Arcane'], lp: 40 });
+    const calls = forge(g);
+    await rest(g);
+    const s = g.state();
+    const skill = Object.keys(s.skill_defs)[0];
+    assert.deepEqual(s.growth.goals, {});
+    assert.deepEqual(s.growth.done.map((d) => [d.id, d.skill]), [['learn.1', skill], ['learn.2', skill]]);
+    assert.equal(lastUser(g).events.filter((e) => e.t === 'skill.learned').length, 1);
+    assert.equal(outcomeOf(g).learned.length, 1);
+    assert.equal(outcomeOf(g).learn_failed, undefined);
+    assert.equal(calls.length, 1);
+    await reply(g);
+    await rest(g);
+    assert.equal(outcomeOf(g).learn_failed, undefined);
+    assert.equal(calls.length, 1);
+    assert.deepEqual(validateState(g.state(), content), []);
+    assert.deepEqual(foldChat(JSON.parse(JSON.stringify(g.chat))).state, g.state());
+});
+
+test('9C-2a review R2: qualifying combat LP skips a stale active duplicate and credits a valid goal', async () => {
+    const g = await campaign(content, { skills: 'Arcane Bolt + Arcane Ward' });
+    const c = composeSkill(g.state(), content, { fn: 'bolt', tags: ['Arcane', 'Control'], aspects: ['Fire'], origin: { kind: 'teacher' } });
+    assert.deepEqual(c.errors, []);
+    const d = defineSkill(g.state(), content, c.def);
+    inject(g, d.events);
+    inject(g, learnSkill(g.state(), content, 'pc', d.skill.id).events);
+    ready(g, { tags: ['Control', 'Arcane'], lp: 40 });
+    ready(g, { id: 'learn.2', n: 2, fn: 'ward', tags: ['Arcane'], aspects: ['Ice'], lp: 30 });
+    const enc = {
+        id: 'enc.qualifying', pp: { threatened: true, used: { 'mage.arcane_bolt': 'attack' } },
+        combatants: {
+            pc: { side: 'pc', fixed: { level: 1 }, current: { defeated: false, escaped: false } },
+            wolf: { side: 'hostile', fixed: { level: 1 }, current: {} },
+        },
+    };
+    const progress = fightGrowth(g.state(), content, enc);
+    assert.equal(progress.length, 1);
+    assert.equal(progress[0].d.goal, 'learn.2');
+    assert.equal(g.state().growth.goals['learn.1'].lp, 40, 'read-only fight progress');
 });
 
 test('9C-2a: actual board retry reuses a committed Forge fallback and never renames the acquisition', async () => {

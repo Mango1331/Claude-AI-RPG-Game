@@ -49,3 +49,7 @@ Der zentrale Guide `tools/st_live/live/guides/current_test.json` wird in einem s
 - **Rot/Grün:** Auf .43 sind die neue Produktpfad-Regression, die ergänzte bestehende Duplikatprüfung und die korrigierte Host-Erwartung rot (12/15). Nach Fix einschließlich 9C-1 **34/34 grün**; ein vollständiger Abschlusslauf **1164/1164 grün**.
 - **Unverändert:** Zahlen, Quellen, Forge-Protokoll, Runner und Narrator-Vertragsrevision **.43**. Keine zusätzliche Migration oder neuer Eventtyp.
 - **R3 bleibt Messpunkt:** Kein Umbau von `historyKey`. Claude meldete etwa 17 ms pro Aufruf an 93 Nachrichten/0,29 MB, dreimal pro Zug; hier nicht unabhängig nachgemessen. Im echten ST-Lauf zusätzlich Engine-Zeit eines längeren Chats ablesen. Vor dem Lehrer-/Forge-Lauf einmal eine Generierung während der Wartezeit durch Edit/Chatwechsel ungültig machen und prüfen, dass keine alte Narration nachläuft.
+
+## Reviewrest R2 — aktive Altdaten-Duplikate (.45)
+
+Auch noch nicht bereite doppelte Vorhaben aus .42 werden beim nächsten regulären Abschluss mit dem bereits gelernten Skill durch `growth.closed` geschlossen. `fightGrowth` überspringt solche Vorhaben, damit sie keinen Kampf-LP-Kredit vor einem echten Lernziel belegen. Kein neuer Eventtyp, keine Migration, keine Änderung an Forge, Balance oder Narrator-Vertrag (.43). Zwei zusätzliche Regressionen dokumentieren Abschluss und LP-Vorrang; vollständiger Live-Nachweis steht aus.

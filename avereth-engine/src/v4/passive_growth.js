@@ -20,6 +20,7 @@ import { definePassive, gainPassive, losePassive, passiveDefErrors, passiveGain,
 import { growthOf } from './growth.js';
 import { deriveCharacter } from '../derived.js';
 import { offerRoom, SKILL_EVIDENCE } from './skill_growth.js';
+import { dungeonOf } from './dungeon.js';
 
 const ROMAN = ['II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 const P = (content) => content.rules.growth?.passive || {};
@@ -109,7 +110,9 @@ function trialSignature(state, beaten) {
         const e = state.entities?.[id] || {};
         return e.kind === 'creature' || e.profile ? `creature:${e.anchor || e.profile?.anchor || e.species || 'unknown'}` : `person:${e.sheet?.template || e.template || 'person'}`;
     }))].sort();
-    return `${kinds.join(',')}@${state.scene?.location || state.places?.[state.scene?.at]?.realm || 'unknown'}`;
+    // review of .52: a Dungeon is a source of its own (all its rooms one), two of one settlement two; elsewhere the area
+    const dungeon = state.scene?.at ? dungeonOf(state, state.scene.at) : null;
+    return `${kinds.join(',')}@${dungeon ? `dungeon:${dungeon}` : state.scene?.location || state.places?.[state.scene?.at]?.realm || 'unknown'}`;
 }
 
 /**
@@ -128,9 +131,13 @@ export function deedEvidence(state, content) {
         const seen = new Set();
         const deeds = (state.deeds || []).filter((d) => d.stat === stat && !spent.has(d.thing) && !seen.has(d.thing) && seen.add(d.thing));
         if (deeds.length < r.checks) continue;
-        const picked = deeds.slice(-r.checks);
-        const days = new Set(picked.map((d) => Math.floor((d.minute ?? 0) / 1440)));
-        if (days.size < r.days) continue;
+        // review of .52: a valid choice of all of them, not only the last ones (day 1 A, day 2 B, C, D qualifies): the
+        // first check of each of the first `days` game days, then the oldest of the rest; oldest first
+        const dayOf = (d) => Math.floor((d.minute ?? 0) / 1440);
+        const firsts = [...new Set(deeds.map(dayOf))].slice(0, r.days).map((day) => deeds.find((d) => dayOf(d) === day));
+        if (firsts.length < r.days) continue;
+        const picked = [...firsts, ...deeds.filter((d) => !firsts.includes(d)).slice(0, r.checks - firsts.length)].sort((a, b) => deeds.indexOf(a) - deeds.indexOf(b));
+        const days = new Set(picked.map(dayOf));
         const things = picked.map((d) => d.thing);
         out.push(evidenceEvent(state, { key: `deeds:${stat}:${things.join('+')}`.slice(0, 160), kind: 'deeds', quality: 'ordinary', focus: stat, things, why: `${r.checks} hard tests of his ${stat} passed on ${days.size} days` }));
     }

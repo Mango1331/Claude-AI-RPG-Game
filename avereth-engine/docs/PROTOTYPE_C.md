@@ -2082,3 +2082,4 @@ Einzelheiten: `docs/PATCH9C_COMPLETION.md`. 9C-2d und 9C-3 bilden einen Patch na
 - **Passives:** Ordinary aus 3 erfolgreichen Engine-Proben eines Core-Stats an verschiedenen Features über 2 Tage; Rare-Duplikatschutz nach Gegnerart und Ort (`similar`).
 - **Texte:** Narrator-Vertrag Revision .52, `content.10.r2` SKILL DEVELOPMENT IN PLAY, Katalog POSSIBLE SKILL.
 - **Tests:** `patch9c_completion` (11); `patch9b1` (4) an E angepasst.
+- **Review-Korrektur (.52):** Ordinary-Proben als gültige Auswahl über alle unbenutzten; Rare-Quelle ist der Dungeon, sonst der Bereich; keine Signatur aus oder als Fläche/Mehrfachtreffer; defensive Signatur vor ihrem Guard. Tests: `patch9c_completion_review` (4).

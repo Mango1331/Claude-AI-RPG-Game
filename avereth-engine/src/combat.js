@@ -1077,7 +1077,8 @@ export function npcTactic(ctx, me, decision) {
         const guarded = me.current.effects.some((e) => GUARDS[e.kind]);
         if (!alive(by) || guarded || me.current.hp > 0.75 * me.fixed.max_hp) return null;
         const fits = (s) => s.effects.some((e) => GUARDS[e.kind] === 'any' || GUARDS[e.kind] === kind);
-        const guard = known.find((s) => fits(s) && payable(s));
+        // review of .52: their own technique (a defensive signature) first, when it fits and they can pay it; else as before
+        const guard = known.find((s) => s.origin?.kind === 'signature' && fits(s) && payable(s)) || known.find((s) => fits(s) && payable(s));
         return guard ? { skill: guard.id, why: `struck by ${by.name} and hurt (${me.current.hp}/${me.fixed.max_hp} HP): guards with ${guard.name}` } : null;
     }
     if (decision.kind !== 'attack') return null;

@@ -160,3 +160,14 @@ Am Kampfende wird der Kampf nur gebucht (`growth.noted`), wenn er eine echte Her
 - **E-Rang** ist validiert und geprüft, im Spiel aber erst ab Level 15 erreichbar.
 - **NPC-Signaturen** brauchen vorhandene NPC-Level ≥ 5 (siehe 6).
 - Alle Zahlen sind provisorisch; das Balancing folgt in 10B.
+
+## 12. Review-Korrektur (Git-Review, Version bleibt .52)
+
+Vier Befunde, ein gemeinsamer Fix. Regressionen in `tests/v4/patch9c_completion_review.test.js` (4); alle vier waren auf `.52` rot und sind jetzt grün.
+
+- **R1 – Nichtkampf-Ordinary** (`deedEvidence`): Es zählten nur die letzten 3 Proben. Jetzt wird aus allen unbenutzten erfolgreichen Engine-Proben eines Core-Stats eine gültige Auswahl über 2 Tage gebildet: die erste Probe jedes der ersten zwei Spieltage, aufgefüllt mit den ältesten übrigen, in Zeitfolge. Tag 1 A, Tag 2 B/C/D ergibt A, B, C.
+- **R2 – Rare-Deduplizierung** (`trialSignature`): Der Ort ist jetzt der Dungeon (`dungeonOf`), wenn die Szene in einem liegt. Zwei Dungeons einer Siedlung sind zwei Quellen, die Räume eines Dungeons eine. Außerhalb von Dungeons bleibt der stabile Bereichsschlüssel (`scene.location`).
+- **R3 – NPC-Signaturen ohne AoE/Multi-Hit:** `signatureSteps` gibt für einen Skill, der schon Fläche oder Mehrfachtreffer hat (z. B. `Arcane Burst`), keine Schritte. `signatureSkill` prüft die fertige Definition und verwirft eine Fläche oder einen Mehrfachtreffer.
+- **R4 – defensive Signaturen** (`npcTactic`): Unter konkreter Bedrohung wird eine passende, bezahlbare Signatur (`origin.kind === 'signature'`) vor dem ursprünglichen Guard-Skill gewählt. Sonst gilt das bisherige Verhalten: der erste passende, bezahlbare Guard, oder keine Taktik.
+- Kein KI-Redesign, keine neuen Features, keine Balanceänderung.
+

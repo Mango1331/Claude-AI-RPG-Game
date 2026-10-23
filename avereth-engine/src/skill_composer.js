@@ -251,8 +251,15 @@ export function developSkill(state, content, base, step, { origin, name = null, 
     return { def: ordered, errors: [] };
 }
 
-/** The steps a Skill may take (in order), for a person of the world: never an area or a strike that splits. */
+/** Review of .52: neither the base nor the finished signature is an area or a strike that splits. */
+const signatureFit = (def) => !!def && !featureList(def).some((f) => f === 'area' || f === 'multi');
+
+/**
+ * The steps a Skill may take (in order), for a person of the world: never into an area, and (review of .52) never from a
+ * Skill that is an area or a strike that splits already.
+ */
 export function signatureSteps(skill) {
+    if (!skill || !signatureFit(skill)) return [];
     return STEP_ORDER.filter((k) => k !== 'crowd' && STEPS[k].applies(skill));
 }
 
@@ -270,5 +277,5 @@ export function signatureSkill(state, content, person, sheet) {
     const first = String(person.name || '').trim().split(/\s+/)[0] || '';
     const own = /^[A-Za-z][A-Za-z'-]{1,15}$/.test(first) ? `${first}'s ${STEPS[pick.step].word} ${pick.k.name}` : null;
     const r = developSkill(state, content, pick.k, pick.step, { rank: 'F', name: own, origin: { kind: 'signature', note: `${person.name || 'their'} own way with ${pick.k.name}` } });
-    return r.def || null;
+    return signatureFit(r.def) ? r.def : null;
 }

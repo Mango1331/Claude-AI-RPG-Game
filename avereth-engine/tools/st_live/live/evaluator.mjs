@@ -53,7 +53,14 @@ export const CHECKS = {
     passive_offered: 'a Passive development offered to him by the engine (decision.opened kind passive)',
     rare_passive_offered: 'a Rare or Legendary Passive development offered to him by the engine',
     passive_gained: 'a Passive booked as his after his own acceptance (passive.gained for him)',
+    // 4.3.0-c.6.6.50 (review of 9C-2c): the Ordinary path of the guide, bound to its quality and its training evidence,
+    // and the checks the player makes after it (a run is not done before they were answered)
+    ordinary_passive_offered: 'an Ordinary Passive offered from his own training (decision.opened kind passive, quality ordinary, evidence train:…)',
+    ordinary_passive_gained: 'that Ordinary Passive of his training booked as his after his acceptance',
+    passive_verified: 'after the Ordinary Passive was booked: #status, #passives and #skill Arcane Bolt asked and answered by the System',
 };
+// the System's answers the Passive checks wait for: the command he sends, and the head of its panel
+const PASSIVE_CHECKS = [[/^#status\b/i, '[SYSTEM // STATUS]'], [/^#passives\b/i, '[SYSTEM // PASSIVES]'], [/^#skill\s+arcane bolt\b/i, '[SYSTEM // SKILL] Arcane Bolt']];
 // what a payment at a Dungeon's gate is for: its entry (the gate's own offer is "Entry to <Dungeon>")
 const ENTRY_PAID = /\b(?:entry|enter(?:ing)?|entrance|admission|toll|fee|pass(?:age)?)\b/i;
 
@@ -92,6 +99,7 @@ function recordCalls(r) {
  */
 export function evaluate(chat, { guide = null } = {}) {
     const reached = {};
+    const passiveDefs = {}; // 4.3.0-c.6.6.50: the Passives defined in the run, by id (whose quality and source a gain has)
     const turnAt = [];
     let turn = 0;
     for (let i = 0; i < chat.length; i++) { if (chat[i].is_user) turn += 1; turnAt[i] = turn; }
@@ -156,8 +164,16 @@ export function evaluate(chat, { guide = null } = {}) {
                     if (d.decision?.kind !== 'passive') break;
                     hit('passive_offered', i, { name: d.decision.passive?.name ?? null, quality: d.decision.quality ?? null });
                     if (['rare', 'legendary'].includes(d.decision.quality)) hit('rare_passive_offered', i, { name: d.decision.passive?.name ?? null, quality: d.decision.quality });
+                    if (d.decision.quality === 'ordinary' && String(d.decision.evidence || '').startsWith('train:')) hit('ordinary_passive_offered', i, { name: d.decision.passive?.name ?? null });
                     break;
-                case 'passive.gained': if (d.id === 'pc') hit('passive_gained', i, { passive: d.passive }); break;
+                case 'passive.defined': passiveDefs[d.passive?.id] = d.passive; break;
+                case 'passive.gained': {
+                    if (d.id !== 'pc') break;
+                    hit('passive_gained', i, { passive: d.passive });
+                    const def = passiveDefs[d.passive];
+                    if (def?.quality === 'ordinary' && def.origin?.kind === 'training') hit('ordinary_passive_gained', i, { passive: d.passive, name: def.name });
+                    break;
+                }
                 case 'offer.created':
                     if (d.offer?.id === 'offer.registration') reg.fee = d.offer.lines?.[0]?.price_cp ?? reg.fee;
                     if (d.offer?.gate) dun(d.offer.gate).gateOffer = { at: i, cp: d.offer.lines?.[0]?.price_cp ?? 0 };
@@ -366,6 +382,19 @@ export function evaluate(chat, { guide = null } = {}) {
             perf: { wait: r?.perf?.wait_ms ?? null, engine: r?.perf?.engine_ms ?? null, plan: (r?.plan || r?.interp)?.ms ?? null, board: r?.board?.ms ?? null, narrator: x?.narration?.ms ?? null, extract: x?.extraction?.ms ?? null },
             calls: [...recordCalls(r), ...recordCalls(x)],
         });
+    }
+    // 4.3.0-c.6.6.50: the checks after the Ordinary Passive, each a command of his answered by its System panel
+    if (reached.ordinary_passive_gained) {
+        const answered = PASSIVE_CHECKS.map(([cmd, head]) => {
+            for (let j = reached.ordinary_passive_gained.at + 1; j < chat.length; j++) {
+                if (!chat[j].is_user || !cmd.test(String(chat[j].mes || '').trim())) continue;
+                const k = chat.slice(j + 1).findIndex((m) => !m.is_user && String(m.mes || '').includes(head));
+                const next = chat.slice(j + 1).findIndex((m) => m.is_user);
+                if (k >= 0 && (next < 0 || k < next)) return j + 1 + k;
+            }
+            return -1;
+        });
+        if (answered.every((x) => x >= 0)) hit('passive_verified', Math.max(...answered), { answered: answered.length });
     }
     const list = (guide?.milestones || Object.keys(CHECKS).map((id) => ({ id, check: id, required: false }))).map((ms) => {
         const check = ms.check || ms.id;

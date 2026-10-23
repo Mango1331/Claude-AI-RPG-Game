@@ -1,6 +1,6 @@
 {
   "id": "current_test",
-  "title": "Aktueller Livetest: 9C-2c Ordinary-Passive durch Training (Hauptweg), Rare-Passive durch Kampf (Zusatz) (.49)",
+  "title": "Aktueller Livetest: 9C-2c Ordinary-Passive durch Training (Hauptweg), Rare-Passive durch Kampf (Zusatz) (.50)",
   "brief": "Create a Mage with Arcane Bolt and Arcane Ward. Your primary objective is to legitimately develop ONE Ordinary Passive by real training and accept it. Train a lasting quality of yourself, your mind: once each in-game day, explicitly spend two hours on focused practice of your concentration (for example: I spend two hours in meditation, drilling my concentration), then sleep until morning, and repeat. One such session a day is all that counts (more on the same day adds nothing); the engine needs about ten days of it. Read #skills now and then for the learning goal and its Learning Progress, and #passives for your Passive slots. Do not invent progress, a teacher, a blessing or a shortcut; if the System answers NOT TRAINING or NO PASSIVE YET, or the progress does not rise on a new day, treat it as a blocker and report it instead of repeating. Only when the System shows POSSIBLE PASSIVE, read #passives (it is offered, not yours yet), then explicitly accept it in one clear sentence (for example: I accept it). After the System reports NEW PASSIVE, read #status (INT must read like INT 8 (6 +2), Max MP higher), #skill Arcane Bolt (Raw Power with the raised INT) and #passives (1/4). Follow System state, not narrator claims. Secondary, only after that and only if it happens naturally: a Rare Passive can be offered only after an outstanding fight you win at very low HP against a much stronger foe; never seek a hopeless fight or provoke one on purpose, and do not fake danger. If any POSSIBLE PASSIVE appears, decide on it deliberately (accept or decline) and note what the System says. No Guild quest or dungeon is required. Do not manipulate engine state, use developer shortcuts or reset the chat to force success.",
   "character": {
     "class": "Mage",
@@ -16,13 +16,18 @@
       "maxTurns": 4
     },
     {
-      "id": "passive_offered",
-      "goal": "Train your mind on your own, two hours on each of about ten in-game days with sleep between, until the System offers a POSSIBLE PASSIVE.",
+      "id": "ordinary_passive_offered",
+      "goal": "Train your mind on your own, two hours on each of about ten in-game days with sleep between, until the System offers a POSSIBLE PASSIVE of Ordinary quality from that training.",
       "maxTurns": 34
     },
     {
-      "id": "passive_gained",
-      "goal": "Accept the offered Passive explicitly and verify #status, #skill Arcane Bolt and #passives against it.",
+      "id": "ordinary_passive_gained",
+      "goal": "Accept the offered Ordinary Passive explicitly (for example: I accept it).",
+      "maxTurns": 4
+    },
+    {
+      "id": "passive_verified",
+      "goal": "After NEW PASSIVE, send #status, #passives and #skill Arcane Bolt (one command per message) and compare each System answer with the offer: INT 8 (6 +2), Max MP higher, Raw Power with INT 8, Passives 1/4.",
       "maxTurns": 6
     },
     {

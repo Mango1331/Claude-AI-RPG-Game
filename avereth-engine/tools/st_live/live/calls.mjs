@@ -12,7 +12,7 @@ const REQ = /^Chat Completion request: /gm;
 export function roleOf(req) {
     const msgs = Array.isArray(req?.messages) ? req.messages : [];
     const sys = String(msgs[0]?.content ?? '');
-    // Patch 9C-2c: the Forge has the planner's token limit (900): its own prompt tells it apart, its repair too
+    // Patch 9C-2c: the Forge had the planner's token limit (900): its own prompt tells it apart, its repair too
     if (sys.startsWith('Name new fantasy Skills') || sys.startsWith('Name new fantasy Passives')) return msgs.some((m) => m.role === 'assistant') ? 'forge_repair' : 'forge';
     if (sys.startsWith('You are the intent planner')) return 'plan';
     if (sys.startsWith('You are the command interpreter')) return sys.includes('Actions with skills, in fights and on things') ? 'plan' : 'interpret';
@@ -20,7 +20,8 @@ export function roleOf(req) {
     if (sys.startsWith("You write the official contracts on an Adventurers' Guild board")) return 'board';
     if (sys.startsWith('You are a test player') || sys.startsWith('You are a human test player')) return 'player';
     if (msgs.some((m) => String(m.content ?? '').startsWith('[AVERETH ENGINE'))) return 'narrator';
-    return { 900: 'plan', 2500: 'extract', 3000: 'board' }[req?.max_tokens] || 'other';
+    // 4.3.0-c.6.6.51: the limits from .51 on (planner 2000, extractor 4000, Forge 1500) and those of the builds before
+    return { 900: 'plan', 2000: 'plan', 2500: 'extract', 4000: 'extract', 1500: 'forge', 3000: 'board' }[req?.max_tokens] || 'other';
 }
 
 const textOf = (c) => (typeof c === 'string' ? c : Array.isArray(c) ? c.map((x) => x?.text || '').join('') : '');

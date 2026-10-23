@@ -286,7 +286,7 @@ const checks = {
     onePlanPerMessage: plans.length === TURNS.length && !calls.some((c) => c.purpose === 'interpret'),
     // every reply read once (the swiped one too): the barrier and the extractor as in Runtime V4
     extractPerReply: calls.filter((c) => c.purpose === 'extract').length === narr.length,
-    planCallParams: plans.every((c) => !c.stream && c.model === 'mock-narrator' && c.temperature === 0.1 && c.maxTokens === 900),
+    planCallParams: plans.every((c) => !c.stream && c.model === 'mock-narrator' && c.temperature === 0.1 && c.maxTokens === 2000),
     fightPromptInFight: plans.slice(1).every((c) => String(c.messages[0].content).startsWith('You are the intent planner')) && String(plans[0].messages[0].content).startsWith('You are the command interpreter'),
     keyAddedBySillyTavern: calls.length > 0 && calls.every((c) => c.auth === `Bearer ${DUMMY_KEY}`),
     keyNeverInBrowser: keyInBrowser.length === 0,

@@ -1,7 +1,7 @@
 {
   "id": "current_test",
-  "title": "Aktueller Livetest: 9C-2a Forge, echter Lehrer-Erwerb und Kampfeinsatz (.45)",
-  "brief": "Create a Mage with Arcane Bolt and Arcane Ward. Your primary objective is to legitimately learn and use ONE new Fire bolt technique. Find an actual present, combat-trained Mage teacher (for example a hedge mage) and secure their explicit agreement to teach Alaric or buy an actual offered training lesson. Do not invent a teacher, a promise, a purchase or a Skill; asking to be taught does not itself count as training. Explicitly spend two hours training the Fire bolt with that teacher. Read #skills, note the engine-booked LP and the daily cap. Sleep until the next morning when the daily cap is reached, and train the same learning goal with that teacher for another two hours; repeat on another game day only if the System still shows it incomplete. Follow System state, not narrator claims. After the System actually reports NEW SKILL, read #skills and #skill using its exact name; distinguish the nonmechanical Description from Effect, cost and range. ONLY THEN seek a genuinely hostile ordinary foe, use the newly acquired Skill, finish the fight and read #status. Try no free repeat-acquisition of the same technique; if convenient, a single duplicate-training request can test a clean refusal, but never delay the main run for it. If no legitimate teacher/commitment can be obtained, report that blocker instead of fabricating progress or fighting early. No Guild quest or dungeon is required. Do not manipulate engine state, use developer shortcuts or reset the chat to force success.",
+  "title": "Aktueller Livetest: 9C-2b Skill Stone (Hauptweg), Lernmaterial (Zusatz) und Kampfeinsatz (.46)",
+  "brief": "Create a Mage with Arcane Bolt and Arcane Ward. Your primary objective is to legitimately acquire and use ONE new technique from a Skill Stone. Look for a real Skill Stone in the world: ask at a shop that deals in magical goods, a trader or a mage; buy one that is actually offered at a price you can pay, or take one you are actually given or find. Do not invent a stone, a price, coin or a gift; if every stone is beyond your coin, bargain or look for another way in play, and report the blocker instead of fabricating progress. Before activating it, read #bag: the stone must show as 'Skill Stone · F · holds …'; if it holds no technique the story named, note that. Then, outside any fight, explicitly activate it in one clear action (for example: press the stone to your brow and wake it). Follow System state, not narrator claims. After the System actually reports NEW SKILL and the stone is spent, read #skills and #skill with the exact name; distinguish the appearance-only Description from Effect, cost and range. Secondary, only if it does not delay the main run: if a manual or primer that teaches a technique is offered cheaply or given, check it in #bag, study it explicitly for two hours and read #skills for the booked Learning Progress (finishing it is not required; the manual must stay in your bag). ONLY THEN seek a genuinely hostile ordinary foe, use the newly acquired Skill, finish the fight and read #status. No Guild quest or dungeon is required. Do not manipulate engine state, use developer shortcuts or reset the chat to force success.",
   "character": {
     "class": "Mage",
     "skills": [
@@ -17,7 +17,7 @@
     },
     {
       "id": "fight_started",
-      "goal": "Only after NEW SKILL is confirmed by System, engage a legitimate hostile foe and cast the exact newly acquired Skill.",
+      "goal": "Only after a Skill Stone was activated and NEW SKILL is confirmed by the System, engage a legitimate hostile foe and cast the exact newly acquired Skill.",
       "maxTurns": 26
     },
     {
@@ -27,12 +27,13 @@
     }
   ],
   "focus": [
-    "A competent present teacher and real agreement or paid lesson must precede any LP; a request alone must not grant learning.",
-    "Time-booked lessons and daily LP caps must work; use later game days if required, and note actual LP totals.",
-    "Record the exact NEW SKILL name and engine event. No new ability based only on narration or an incomplete goal.",
-    "The Forge Description is appearance-only and must never be presented as the mechanical Effect.",
-    "Use the exact newly learned Skill in a real fight and compare spent MP, effect, range and narration with Engine truth.",
-    "Observe stalls, duplicate goals, repeat-grants, errors, unexpected extra LLM calls and Engine/Forge timing. The automated evaluator tracks creation/combat, not skill acquisition."
+    "A Skill Stone must be a real object of the world (bought, given or found in the story), never invented by the player; #bag must show what it holds before activation.",
+    "Activation needs an explicit action outside a fight; wanting to use it, asking about it or examining it must change nothing.",
+    "Record the exact NEW SKILL name, that no training time passed, and that exactly one stone was spent (it leaves #bag); no Skill from narration alone.",
+    "If activation is refused (no technique established, a known technique, a fight), the stone must stay in #bag and no Skill appear.",
+    "A manual, if tried: study books Learning Progress within the daily cap, the manual stays, reading alone books nothing.",
+    "The Forge Description is appearance-only and must never be presented as the mechanical Effect; use the new Skill in a real fight and compare MP, effect and narration with Engine truth.",
+    "Observe stalls, duplicate grants, errors, unexpected extra LLM calls and Engine/Forge timing. The automated evaluator tracks creation/combat, not acquisition: check stone, NEW SKILL and spending by the chat and events."
   ],
   "limits": {
     "maxTurns": 40,
@@ -40,8 +41,8 @@
     "sameFailure": 3
   },
   "personas": [
-    "Focused test player: secure a valid teacher and complete explicitly timed training before starting combat",
-    "Mechanics observer: read #skills and #skill; compare Engine acquisition and actual combat outcome with narration"
+    "Focused test player: obtain a real Skill Stone and activate it explicitly before starting combat",
+    "Mechanics observer: read #bag, #skills and #skill; compare the engine's acquisition and the actual combat outcome with the narration"
   ],
   "scripted": [
     {
@@ -53,7 +54,7 @@
       "milestone": "creation_complete"
     },
     {
-      "say": "#skills"
+      "say": "#bag"
     }
   ]
 }

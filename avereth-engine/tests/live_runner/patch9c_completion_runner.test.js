@@ -58,6 +58,13 @@ test('.52 runner: current_test is the short 9C completion test: a Warrior, requi
     assert.match(g.brief, /Survival comes first, before any pattern/);
     assert.match(g.brief, /about 40% or below, stop the pattern and retreat/);
     assert.match(g.brief, /rest or sleep in a safe place until your HP is full/);
+    // 4.3.0-c.6.6.54 (the third run died in a Dungeon fight against three goblins): fights he can survive first, one foe
+    // at a time; the Dungeon optional; the flight his whole action
+    assert.match(g.brief, /Prefer a Novice contract that sends you against single hostile beasts or vermin in the open/);
+    assert.match(g.brief, /A Dungeon is optional/);
+    assert.match(g.brief, /face one foe at a time/);
+    assert.match(g.brief, /flee from the fight \(only that, as your whole action/);
+    assert.equal(g.milestones.find((m) => m.id === 'inside_dungeon').required, false);
 });
 
 test('.52 runner: the evaluator follows a development from his fights: noted, offered, accepted, checked, used; not done before its use', async () => {

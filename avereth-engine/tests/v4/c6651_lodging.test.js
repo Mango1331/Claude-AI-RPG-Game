@@ -163,3 +163,53 @@ test('.51 (6): one rule for "needs" in the planner\'s prompt: the bed example sl
     assert.match(a, /"until":"morning","quote":"then sleep till morning"/);
     assert.doesNotMatch(a, /needs/);
 });
+
+// ------------------------------------------------------------------------------------------------ 7, 8 review of .51
+test('.51 review (7): a room he asks for does not hold up a sleep he places elsewhere himself: in the hayloft, or after going out to the stable; going up to the room is no elsewhere', async () => {
+    const BUY = { type: 'buy', what: 'a room', from: 'npc.keeper', qty: null, max_cp: null, any_price: false };
+    // his sleep names its own place
+    const g = await atInn(null);
+    const minute = g.state().clock.minute;
+    await say(g, '*i ask the innkeeper for a room, but i sleep in the hayloft until morning*', { ...BUY, quote: 'i ask the innkeeper for a room' },
+        SLEEP({ what: 'in the hayloft', quote: 'i sleep in the hayloft until morning' }));
+    assert.deepEqual(statuses(g), [['buy', 'pending', 'no_price'], ['activity', 'resolved', null]]);
+    assert.ok(g.state().clock.minute > minute, 'the night passes, in the hayloft');
+    assert.equal(lodging(g).length, 0, 'and no room is his by it');
+    // he goes out to the stable and sleeps there, marked as building on the go or not
+    for (const needs of [2, null]) {
+        const h = await atInn(null);
+        await say(h, '*i ask about a room, then go out to the stable and sleep there until morning*', { ...BUY, quote: 'i ask about a room' },
+            { type: 'go', to: { new: 'the stable' }, quote: 'go out to the stable' }, SLEEP({ ...(needs ? { needs } : {}), quote: 'sleep there until morning' }));
+        assert.deepEqual(statuses(h).map((x) => x.slice(0, 2)), [['buy', 'pending'], ['go', 'authorized'], ['activity', 'resolved']], String(needs));
+    }
+    // up to the room he asked for: still that room, still waiting for it
+    const k = await atInn(null);
+    await say(k, '*i ask about a room, go up to it and sleep until morning*', { ...BUY, quote: 'i ask about a room' },
+        { type: 'go', to: { new: 'the room upstairs' }, quote: 'go up to it' }, SLEEP());
+    assert.deepEqual(statuses(k).map((x) => x.slice(0, 2)), [['buy', 'pending'], ['go', 'authorized'], ['activity', 'refused']]);
+});
+
+test('.51 review (8): only a room or bed booked for him lets him sleep in it: a payment "for the room" that books none, or a part of its price, is no booking', async () => {
+    const PAY = (cp, words) => ({ type: 'pay', to: 'npc.keeper', amount_cp: cp, for: 'the room', quote: `I pay the innkeeper ${words}` });
+    // no room on offer: a plain payment for it
+    const g = await atInn(null);
+    const coin = sheet(g).coin_cp;
+    const minute = g.state().clock.minute;
+    await say(g, 'I pay the innkeeper four copper for the room and sleep until morning.', PAY(4, 'four copper for the room'), SLEEP());
+    assert.deepEqual(statuses(g), [['pay', 'resolved', null], ['activity', 'refused', 'room not booked']]);
+    assert.match(outcomeOf(g).actions[1], /it is not his yet: what it paid books no room or bed for him \(a payment, not a booking\)\. He does not sleep in this reply/);
+    assert.equal(sheet(g).coin_cp, coin - 4, 'the payment itself stands');
+    assert.equal(lodging(g).length, 0);
+    assert.equal(g.state().clock.minute, minute);
+    // a part of the price of the room on offer (2 of 4 cp)
+    const h = await atInn(4);
+    await say(h, 'I pay the innkeeper two copper toward the room and sleep until morning.', PAY(2, 'two copper toward the room'), SLEEP());
+    assert.deepEqual(statuses(h), [['pay', 'resolved', null], ['activity', 'refused', 'room not booked']]);
+    assert.equal(lodging(h).length, 0);
+    assert.ok(openOffer(h), 'the room is still on offer');
+    // its whole price: the room is booked, he sleeps in it
+    const k = await atInn(4);
+    await say(k, 'I pay the innkeeper four copper for the room and sleep until morning.', PAY(4, 'four copper for the room'), SLEEP());
+    assert.deepEqual(statuses(k), [['pay', 'resolved', null], ['activity', 'resolved', null]]);
+    assert.equal(lodging(k).length, 1);
+});

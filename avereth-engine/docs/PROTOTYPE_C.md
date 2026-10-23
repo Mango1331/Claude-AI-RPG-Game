@@ -2057,3 +2057,7 @@ Aus dem Livetest von `.50` (23.10.2026, 11:07). In Zug 10 brachen Planner und Re
   - Es gibt kein neues Unterkunftssystem.
 - **Runner:** `roleOf` erkennt die neuen Limits neben den alten. Die Stub-Smoke `run_c.mjs` erwartet für den Planner 2000.
 - **Tests:** `tests/v4/c6651_lodging.test.js` (7), `tests/live_runner/c6651_runner.test.js` (1).
+- **Review-Korrektur (.51):**
+  - Ein Schlaf, der selbst einen anderen Ort nennt („in the hayloft“), oder ein Schlaf nach einem `go` an einen anderen Ort („out to the stable“) steht für sich. Eine Zimmeranfrage blockiert ihn nicht. Ein `go` hinauf ins Zimmer ist kein anderer Ort.
+  - Als gebucht gilt nur ein Zimmer oder Bett, das die Engine ihm in dieser Nachricht zugeteilt hat (`service.granted`, Lodging oder Zimmerzeile). Eine allgemeine Zahlung „für das Zimmer“ ohne Buchung oder ein Teil des Preises reicht nicht.
+  - Tests: +2.

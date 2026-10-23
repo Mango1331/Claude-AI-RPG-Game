@@ -50,6 +50,8 @@ const RESTING = new Set(['rest', 'sleep']);
 // 4.3.0-c.6.6.51: the steps that pay for something, and the words of a room or bed he takes to sleep in
 const PURCHASES = new Set(['offer.accept', 'buy', 'pay']);
 const ROOM_WORDS = /\b(?:rooms?|beds?|bunks?|cots?|berths?|lodgings?|quarters)\b/;
+// review of .51: a place to sleep that is no room or bed he takes ("in the hayloft", "under the stars", "out to the stable")
+const ELSEWHERE = /\b(?:stables?|hayloft|loft|barn|shed|byre|bench|floor|ground|grass|road|roadside|verge|camp|campfire|fire|hearth|trees?|stars|open|outside|outdoors|wagon|cart|alley|street|square|ditch|hedge|field|woods|forest|tent|bedroll|rough)\b/;
 // Patch 9C-1: the activities that learn or practise (src/v4/growth.js)
 const LEARNING = new Set(['train', 'study']);
 // the slots of what he holds in his hands (wielded, not worn): "everything I wear" leaves them as they are
@@ -1213,7 +1215,19 @@ function otherStep(s, content, c) {
 function roomWhy(res) {
     if (res?.status === 'pending') return 'no price is agreed and nothing is paid for it';
     if (res?.status === 'conditional') return 'its price is still to be named, nothing is paid for it yet';
+    if (res?.status === 'resolved') return 'what it paid books no room or bed for him (a payment, not a booking)';
     return 'that step did not happen';
+}
+
+/** Review of .51: a go of the message that takes him somewhere to sleep other than a room or bed of this place. */
+function goesElsewhere(s, x) {
+    if (x.type !== 'go') return false;
+    if (typeof x.to === 'string') {
+        const p = s.places[x.to];
+        return !!p && x.to !== s.scene.at && p.parent !== s.scene.at && !ROOM_WORDS.test(normText(p.name || ''));
+    }
+    const name = normText(String(x.to?.new?.name ?? x.to?.new ?? ''));
+    return ELSEWHERE.test(name) && !ROOM_WORDS.test(name);
 }
 
 /** 4.3.0-c.6.6.51: does this step of the message take a room or a bed (a lodging line of an offer, or one in its words)? */
@@ -1226,13 +1240,18 @@ function takesRoom(s, x) {
 }
 
 /**
- * 4.3.0-c.6.6.51: the step of the message that takes the room or bed a rest or sleep (c) is in: the purchase its
- * "needs" names, else the last earlier step that takes a room; null when there is none.
+ * 4.3.0-c.6.6.51: the steps of the message that take the room or bed a rest or sleep (c) is in: the room its "needs"
+ * names, else every earlier step that takes one. Review of .51: none when his sleep names another place for itself ("in
+ * the hayloft") or he goes elsewhere after them ("out to the stable"): that sleep stands on its own.
  */
-function roomStep(s, ordered, c) {
-    const named = Number.isInteger(c.needs) ? ordered.find((x) => x.seq === c.needs) : null;
-    if (named && PURCHASES.has(named.type)) return named;
-    return ordered.filter((x) => (x.seq ?? 0) < (c.seq ?? 0) && takesRoom(s, x)).at(-1) || null;
+function roomSteps(s, ordered, c) {
+    const own = normText(`${c.what || ''} ${c.quote || ''}`);
+    if (ELSEWHERE.test(own) && !ROOM_WORDS.test(own)) return [];
+    const earlier = ordered.filter((x) => (x.seq ?? 0) < (c.seq ?? 0));
+    const away = Math.max(-Infinity, ...earlier.filter((x) => goesElsewhere(s, x)).map((x) => x.seq ?? 0));
+    const named = Number.isInteger(c.needs) ? earlier.find((x) => x.seq === c.needs) : null;
+    if (named && PURCHASES.has(named.type) && takesRoom(s, named)) return (named.seq ?? 0) > away ? [named] : [];
+    return earlier.filter((x) => (x.seq ?? 0) > away && takesRoom(s, x));
 }
 
 /**
@@ -1260,7 +1279,7 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
     const lines = new Map();
     const happened = new Set();
     const uncertain = new Set();
-    const unbooked = new Set();
+    const lodged = new Set();
     for (const c of ordered) {
         const h = HANDLERS[c.type] || (envx.c && c.type === 'other' ? otherStep : null) || (envx.c && c.type === 'move' ? moveStep : null) || (envx.c && c.type === 'attempt' ? attemptStep : null);
         // Prototype C (4.3.0-c.5): a step the planner marked as building on an earlier one of the message (needs) is not
@@ -1272,18 +1291,22 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
             .some((x) => x.seq === need && x.type === 'guild.register'));
         // 4.3.0-c.6.6.51 (live 23.10.2026 11:07: "take the room and sleep until morning" with no price known yet booked the
         // night, told in the room and paid for the next morning): he rests or sleeps in a room he takes in this message
-        // only once it is booked, marked by the planner or not; a purchase that waits for its price (none named, or "if
-        // it is no more than ...") is not booked yet. A training of the same message needs nothing of it
-        const room = envx.c && c.type === 'activity' && RESTING.has(c.kind) ? roomStep(s, ordered, c) : null;
-        const roomWaits = !!room && (!happened.has(room.seq) || unbooked.has(room.seq));
+        // only once it is booked, marked by the planner or not. Review of .51: booked is a room or bed the engine granted
+        // him in this message (service.granted); a price still to be named, a payment that books none or a part of the
+        // price is no booking. A training of the same message needs nothing of it
+        const rooms = envx.c && c.type === 'activity' && RESTING.has(c.kind) ? roomSteps(s, ordered, c) : [];
+        const room = rooms.length && !rooms.some((x) => lodged.has(x.seq)) ? rooms.at(-1) : null;
         const quoted = c.quote ? `"${String(c.quote).slice(0, 80)}"` : c.type;
-        const r = roomWaits ? { status: 'refused', reason: 'room not booked', line: `NOT DONE — ${quoted}: he would ${c.kind} in the room or bed of step ${room.seq}, and it is not his yet: ${roomWhy(ctx.resolutions.find((x) => x.seq === room.seq))}. He does not ${c.kind} in this reply; tell no ${c.kind === 'sleep' ? 'night' : 'rest'} in it.` }
+        const booking = (e) => {
+            if (e.t === 'service.granted' && (e.d?.service === 'lodging' || ROOM_WORDS.test(normText(e.d?.what || '')))) lodged.add(c.seq);
+            emit(e);
+        };
+        const r = room ? { status: 'refused', reason: 'room not booked', line: `NOT DONE — ${quoted}: he would ${c.kind} in the room or bed of step ${room.seq}, and it is not his yet: ${roomWhy(ctx.resolutions.find((x) => x.seq === room.seq))}. He does not ${c.kind} in this reply; tell no ${c.kind === 'sleep' ? 'night' : 'rest'} in it.` }
             : unmet ? { status: 'refused', reason: `needs step ${c.needs}`, line: `NOT DONE — ${quoted}: it was to follow step ${c.needs}, which did not happen; it does not happen in this reply (someone else's help does not do it for him).` }
-            : h ? h(s, content, c, ctx, emit, envx) : { status: 'refused', reason: `unknown command ${c.type}`, line: null };
+            : h ? h(s, content, c, ctx, booking, envx) : { status: 'refused', reason: `unknown command ${c.type}`, line: null };
         // 4.3.0-c.6.6.3: a step that builds on one the story still decides (a take from someone's keeping) follows it there
         if (!unmet && Number.isInteger(c.needs) && uncertain.has(c.needs) && r.line) r.line = `${r.line} Only once step ${c.needs} has happened in the story; if it does not, this does not happen either.`;
         if (r.uncertain) uncertain.add(c.seq);
-        if (r.status === 'conditional') unbooked.add(c.seq);
         if (r.done || !['refused', 'pending', 'clarify'].includes(r.status)) happened.add(c.seq);
         ctx.resolutions.push({ seq: c.seq, type: c.type, status: r.status, ...(r.reason ? { reason: r.reason } : {}), ...(r.cap ? { cap: r.cap } : {}), ...(r.condition ? { condition: r.condition } : {}), quote: c.quote ?? null });
         if (r.line) lines.set(c.seq, r.line);

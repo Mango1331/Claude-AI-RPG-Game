@@ -47,6 +47,9 @@ const UNTIL = { done: 'until it is done', noon: 'until noon', evening: 'until ev
 const YIELDING = new Set(['gather', 'search', 'craft']);
 const ROAMING = new Set(['gather', 'search', 'errand']);
 const RESTING = new Set(['rest', 'sleep']);
+// 4.3.0-c.6.6.51: the steps that pay for something, and the words of a room or bed he takes to sleep in
+const PURCHASES = new Set(['offer.accept', 'buy', 'pay']);
+const ROOM_WORDS = /\b(?:rooms?|beds?|bunks?|cots?|berths?|lodgings?|quarters)\b/;
 // Patch 9C-1: the activities that learn or practise (src/v4/growth.js)
 const LEARNING = new Set(['train', 'study']);
 // the slots of what he holds in his hands (wielded, not worn): "everything I wear" leaves them as they are
@@ -1206,6 +1209,32 @@ function otherStep(s, content, c) {
     return { status: 'resolved', line: `DOES — ${what}: his own action; tell it as it happens. It books nothing: no HP, MP, STA, stats or Stat Points, Skills, coin or possessions change by it.` };
 }
 
+/** 4.3.0-c.6.6.51: why the room of a step (its resolution) is not his yet. */
+function roomWhy(res) {
+    if (res?.status === 'pending') return 'no price is agreed and nothing is paid for it';
+    if (res?.status === 'conditional') return 'its price is still to be named, nothing is paid for it yet';
+    return 'that step did not happen';
+}
+
+/** 4.3.0-c.6.6.51: does this step of the message take a room or a bed (a lodging line of an offer, or one in its words)? */
+function takesRoom(s, x) {
+    if (x.type === 'offer.accept') {
+        const lines = (s.offers?.[x.offer]?.lines || []).filter((l) => !Array.isArray(x.lines) || !x.lines.length || x.lines.includes(l.id));
+        return lines.some((l) => l.service === 'lodging' || ROOM_WORDS.test(normText(l.what || '')));
+    }
+    return (x.type === 'buy' || x.type === 'pay') && ROOM_WORDS.test(normText(String((x.type === 'buy' ? x.what : x.for) || '')));
+}
+
+/**
+ * 4.3.0-c.6.6.51: the step of the message that takes the room or bed a rest or sleep (c) is in: the purchase its
+ * "needs" names, else the last earlier step that takes a room; null when there is none.
+ */
+function roomStep(s, ordered, c) {
+    const named = Number.isInteger(c.needs) ? ordered.find((x) => x.seq === c.needs) : null;
+    if (named && PURCHASES.has(named.type)) return named;
+    return ordered.filter((x) => (x.seq ?? 0) < (c.seq ?? 0) && takesRoom(s, x)).at(-1) || null;
+}
+
 /**
  * Resolve the commands of one message in order. emit applies each event to s at once, so every command is checked
  * against the state after the ones before it ("pay the fee, then read the board").
@@ -1231,6 +1260,7 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
     const lines = new Map();
     const happened = new Set();
     const uncertain = new Set();
+    const unbooked = new Set();
     for (const c of ordered) {
         const h = HANDLERS[c.type] || (envx.c && c.type === 'other' ? otherStep : null) || (envx.c && c.type === 'move' ? moveStep : null) || (envx.c && c.type === 'attempt' ? attemptStep : null);
         // Prototype C (4.3.0-c.5): a step the planner marked as building on an earlier one of the message (needs) is not
@@ -1240,11 +1270,20 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
         const need = envx.c && Number.isInteger(c.needs) && !happened.has(c.needs) ? c.needs : null;
         const unmet = need !== null && !(membership(s) && [...ctx.resolutions, ...(envx.dropped || []).map((x) => x.command || {})]
             .some((x) => x.seq === need && x.type === 'guild.register'));
-        const r = unmet ? { status: 'refused', reason: `needs step ${c.needs}`, line: `NOT DONE — ${c.quote ? `"${String(c.quote).slice(0, 80)}"` : c.type}: it was to follow step ${c.needs}, which did not happen; it does not happen in this reply (someone else's help does not do it for him).` }
+        // 4.3.0-c.6.6.51 (live 23.10.2026 11:07: "take the room and sleep until morning" with no price known yet booked the
+        // night, told in the room and paid for the next morning): he rests or sleeps in a room he takes in this message
+        // only once it is booked, marked by the planner or not; a purchase that waits for its price (none named, or "if
+        // it is no more than ...") is not booked yet. A training of the same message needs nothing of it
+        const room = envx.c && c.type === 'activity' && RESTING.has(c.kind) ? roomStep(s, ordered, c) : null;
+        const roomWaits = !!room && (!happened.has(room.seq) || unbooked.has(room.seq));
+        const quoted = c.quote ? `"${String(c.quote).slice(0, 80)}"` : c.type;
+        const r = roomWaits ? { status: 'refused', reason: 'room not booked', line: `NOT DONE — ${quoted}: he would ${c.kind} in the room or bed of step ${room.seq}, and it is not his yet: ${roomWhy(ctx.resolutions.find((x) => x.seq === room.seq))}. He does not ${c.kind} in this reply; tell no ${c.kind === 'sleep' ? 'night' : 'rest'} in it.` }
+            : unmet ? { status: 'refused', reason: `needs step ${c.needs}`, line: `NOT DONE — ${quoted}: it was to follow step ${c.needs}, which did not happen; it does not happen in this reply (someone else's help does not do it for him).` }
             : h ? h(s, content, c, ctx, emit, envx) : { status: 'refused', reason: `unknown command ${c.type}`, line: null };
         // 4.3.0-c.6.6.3: a step that builds on one the story still decides (a take from someone's keeping) follows it there
         if (!unmet && Number.isInteger(c.needs) && uncertain.has(c.needs) && r.line) r.line = `${r.line} Only once step ${c.needs} has happened in the story; if it does not, this does not happen either.`;
         if (r.uncertain) uncertain.add(c.seq);
+        if (r.status === 'conditional') unbooked.add(c.seq);
         if (r.done || !['refused', 'pending', 'clarify'].includes(r.status)) happened.add(c.seq);
         ctx.resolutions.push({ seq: c.seq, type: c.type, status: r.status, ...(r.reason ? { reason: r.reason } : {}), ...(r.cap ? { cap: r.cap } : {}), ...(r.condition ? { condition: r.condition } : {}), quote: c.quote ?? null });
         if (r.line) lines.set(c.seq, r.line);

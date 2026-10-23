@@ -41,12 +41,15 @@ import { crowdCount, personWords, bystanderEvents } from './settlement.js';
 import { skillOf } from '../content.js';
 
 export const RECORD_V4 = 3;
+// 4.3.0-c.6.6.51 (live 23.10.2026 11:07): the planner's reasoning used up its 900 tokens on a message of three steps, in
+// the first call and in its repair (no answer left: no story turn); the extractor its 2500 once. The Forge, at 900 as the
+// planner, gets room as well. A repair asks with the budget of its call (ask below)
 export const LLM = {
     interpret: { temperature: 0.1, maxTokens: 2500 },
-    extract: { temperature: 0.1, maxTokens: 2500 },
+    extract: { temperature: 0.1, maxTokens: 4000 },
     board: { temperature: 0.6, maxTokens: 3000 },
-    plan: { temperature: 0.1, maxTokens: 900 },
-    forge: { temperature: 0.6, maxTokens: 900 },
+    plan: { temperature: 0.1, maxTokens: 2000 },
+    forge: { temperature: 0.6, maxTokens: 1500 },
 };
 export const LATE_CORRECTION = 'The engine could not record what your last reply established (it was not read in time): nothing of it changed the game state. The state above is authoritative.';
 export const FAILED_CORRECTION = 'The engine could not read what your last reply established: nothing of it changed the game state. The state above is authoritative.';

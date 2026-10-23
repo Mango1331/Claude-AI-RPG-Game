@@ -130,13 +130,17 @@ export const HANDOVER_RULES = [
 
 // Steps that build on each other (live run 04.10.2026: "go back to the guild and take the Cull the Bog Striders quest
 // and register it ad make my way over to the eel weirs": the contract could not be taken and he set off for its site
-// anyway). The engine does not take a step whose "needs" did not happen (src/v4/commands.js resolveCommands)
+// anyway). The engine does not take a step whose "needs" did not happen (src/v4/commands.js resolveCommands).
+// 4.3.0-c.6.6.51 (live 23.10.2026 11:07): one rule for the room he takes and sleeps in, the bed example of the shared
+// examples with it (src/v4/interpret.js); training and sleep need nothing of each other
 export const ORDER_RULES = [
     'Steps that build on each other (story commands):',
-    '- A step that only makes sense once an earlier step of the same message has happened carries "needs": <that step\'s seq>. He takes a contract and then sets off to do it: the go needs the quest.accept. He pays the ferryman and then crosses: the go needs the pay. If that step does not happen, the engine does not take this one either.',
-    '- A step that stands on its own carries no "needs": "I drop the broken cup and walk home" — the walk happens whether or not the drop does.',
+    '- A step that only makes sense once an earlier step of the same message has happened carries "needs": <that step\'s seq>. He takes a contract and then sets off to do it: the go needs the quest.accept. He pays the ferryman and then crosses: the go needs the pay. He takes a room or a bed and then sleeps or rests in it: the sleep needs the step that takes it (offer.accept, buy or pay). If that step does not happen, the engine does not take this one either; a room whose price is still to be named, or that he takes only if it costs no more than a sum, is not his yet, and he does not sleep in it in this reply.',
+    '- A step that stands on its own carries no "needs": "I drop the broken cup and walk home" — the walk happens whether or not the drop does. Training, study and sleep stand on their own: no "needs" between them, and none from a training or a study to a purchase.',
     'Example (another town): CATALOG: PLACES: loc.kf.guild_hall (Guild office, Kestrel Ford) · KNOWN CONTRACTS: quest.ferry_job (Ferry Job · Guild contract · Novice · 40 cp · on the board of Guild office, Kestrel Ford)',
     '- "*i head to the guild office, take the ferry job and go down to the ferry*" → {"commands":[{"seq":1,"type":"go","to":"loc.kf.guild_hall","quote":"i head to the guild office"},{"seq":2,"type":"quest.accept","quest":"quest.ferry_job","quote":"take the ferry job"},{"seq":3,"type":"go","to":{"new":"the ferry"},"needs":2,"quote":"go down to the ferry"}]}',
+    'Example (another town): CATALOG: PRESENT: npc.innkeeper (innkeeper) · OFFERS: offer.inn (innkeeper: l1 a room for the night 5 cp)',
+    '- "*i spend two hours drilling my footwork in the yard, then pay for the room and sleep till morning*" → {"commands":[{"seq":1,"type":"activity","kind":"train","what":"footwork drills","minutes":120,"until":null,"learn":"AGI","teacher":null,"tags":null,"aspects":null,"material":null,"quote":"i spend two hours drilling my footwork in the yard"},{"seq":2,"type":"offer.accept","offer":"offer.inn","lines":["l1"],"qty":null,"quote":"pay for the room"},{"seq":3,"type":"activity","kind":"sleep","what":null,"minutes":null,"until":"morning","needs":2,"quote":"sleep till morning"}]}',
 ].join('\n');
 
 // A contract given up only in words for later: "ill decline the quest myself", "I'll go cancel it at the Guild", "I'm
@@ -235,7 +239,7 @@ export function plannerSystem(vocab, { fight = false } = {}) {
         const story = vocabularyText({ commands: vocab.commands.filter((c) => FIGHT_STORY_TYPES.has(c.type)) });
         return [PLANNER_ROLE, '', mech, '', FIGHT_RULES, '', 'Story commands (the same list):', story, '', 'Answer with {"commands": [...]}; an empty list when the message contains no action of his.', '', PLAIN_FORMAT].join('\n');
     }
-    return [interpreterSystem(vocab), '', CONTRACT_RULES, '', HANDOVER_RULES, '', ORDER_RULES, '', LEARNING_RULES, '', mech, '', PLAIN_FORMAT].join('\n');
+    return [interpreterSystem(vocab, { needs: true }), '', CONTRACT_RULES, '', HANDOVER_RULES, '', ORDER_RULES, '', LEARNING_RULES, '', mech, '', PLAIN_FORMAT].join('\n');
 }
 
 function skillText(skill) {

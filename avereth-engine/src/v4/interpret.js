@@ -53,6 +53,12 @@ MESSAGE: *I walk back along the road I came from.*
 
 export const EXAMPLE_MESSAGES = [...EXAMPLES.matchAll(/^MESSAGE: (.*)$/gm)].map((m) => m[1]);
 
+// 4.3.0-c.6.6.51 (live 23.10.2026 11:07: the planner spent its reasoning on whether the sleep needs the payment, its
+// ORDER_RULES saying "the go needs the pay" and this example none): in the planner's prompt the sleep in the bed he takes
+// builds on taking it ("needs"); the interpreter of Runtime V4-A knows no "needs" and keeps the example as it was
+const BED_SLEEP = '{"seq":2,"type":"activity","kind":"sleep","what":null,"minutes":null,"until":"morning","quote":"then sleep till morning"}';
+const BED_SLEEP_NEEDS = '{"seq":2,"type":"activity","kind":"sleep","what":null,"minutes":null,"until":"morning","needs":1,"quote":"then sleep till morning"}';
+
 function argSummary(args) {
     const keys = Object.keys(args || {});
     return keys.length ? ` {${keys.join(', ')}}` : '';
@@ -63,8 +69,11 @@ export function vocabularyText(vocab) {
     return vocab.commands.map((c) => `- ${c.type}${argSummary(c.args)}: ${c.summary}`).join('\n');
 }
 
-/** System prompt of the interpreter (the same for every turn; the catalog goes into the user message). */
-export function interpreterSystem(vocab, { examples = true } = {}) {
+/**
+ * System prompt of the interpreter (the same for every turn; the catalog goes into the user message). needs: the
+ * planner's form of the examples (its steps carry "needs", src/v4/planner.js ORDER_RULES).
+ */
+export function interpreterSystem(vocab, { examples = true, needs = false } = {}) {
     return [
         'You are the command interpreter of a text RPG engine. Translate the PLAYER MESSAGE into engine commands for Alaric, the player character. You decide no outcomes; the engine checks and books them.',
         '',
@@ -74,7 +83,7 @@ export function interpreterSystem(vocab, { examples = true } = {}) {
         'Commands:',
         vocabularyText(vocab),
         '',
-        ...(examples ? [EXAMPLES, ''] : []),
+        ...(examples ? [needs ? EXAMPLES.replace(BED_SLEEP, BED_SLEEP_NEEDS) : EXAMPLES, ''] : []),
         'Answer with {"commands": [...]}; an empty list when the message contains no such action.',
     ].join('\n');
 }

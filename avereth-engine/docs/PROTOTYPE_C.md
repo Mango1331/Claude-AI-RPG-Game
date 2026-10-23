@@ -2039,3 +2039,21 @@ Einzelheiten: `docs/PATCH9C2C_PASSIVE_ACQUISITION.md`.
 - **Texte.** Narrator-Vertrag Revision .49.
 - **Tests.** `patch9c2c` (9).
 - **Review-Korrektur (4.3.0-c.6.6.50):** Ein Austausch senkt HP, MP und STA auf die neuen Maxima ab, auch über einen verlorenen Core-Stat, ohne aufzufüllen. Kostenreduktionen zählen wie bei der echten Kostenberechnung zusammen. Bei 4/4 wird jeder Rare- oder Legendary-Kandidat gegen jeden Einzelersatz geprüft, und `#passives` nennt die lohnenden. Die Live-Abnahme ist an Ordinary und Trainingsbeleg gebunden und endet erst mit `passive_verified`. Tests: `patch9c2c_review` (3), Runner +1.
+
+### Mini-Fix 4.3.0-c.6.6.51: Tokenbudgets und Planner-Abhängigkeiten
+
+Aus dem Livetest von `.50` (23.10.2026, 11:07). In Zug 10 brachen Planner und Repair bei 900 Tokens ohne Antwort ab, und es gab keinen Story-Zug. Das Reasoning drehte sich darum, ob der Schlaf ein `needs` auf das Bezahlen braucht: `ORDER_RULES` sagte „the go needs the pay“, das gemeinsame Bett-Beispiel hatte keins. An anderen Tagen buchte „take the room and sleep“ die Nacht, obwohl noch kein Preis bekannt war. Der Erzähler erzählte sie im Zimmer, bezahlt wurde erst am nächsten Morgen.
+
+- **Budgets** (`src/v4/runtime.js LLM`, Repair jeweils mit dem Budget seines Aufrufs): Planner 900 → 2000, Extraktor 2500 → 4000, Forge 900 → 1500. Board und Interpreter bleiben unverändert.
+- **Eine `needs`-Regel.**
+  - `ORDER_RULES`: Wer ein Zimmer oder Bett nimmt und darin schläft oder rastet, braucht für den Schlaf den Schritt, der es nimmt (`offer.accept`, `buy` oder `pay`). Ein Zimmer mit noch offenem Preis oder einer bloßen Preisgrenze gehört ihm noch nicht.
+  - Training, Studium und Schlaf stehen für sich und haben kein `needs` untereinander oder auf einen Kauf.
+  - Neues Beispiel: Training, Zimmer, Schlaf.
+  - Im Prompt des Planners trägt das Bett-Beispiel nun `needs` (`interpreterSystem(vocab, { needs: true })`). Der Interpreter von Runtime V4-A kennt kein `needs` und behält es unverändert.
+- **Engine** (`src/v4/commands.js resolveCommands`, nur Planner-Pfad):
+  - Eine Rast oder ein Schlaf in einem Zimmer, das er in derselben Nachricht nimmt, findet erst statt, wenn das Zimmer gebucht ist. Das gilt mit oder ohne `needs` des Planners. Das Zimmer erkennt die Engine an einer Lodging-Zeile des Angebots oder an Zimmer- oder Bettwörtern.
+  - Ein offener Preis (`pending`), ein bedingter Kauf (`conditional`) und ein abgelehnter Kauf gelten nicht als gebucht. Dann: `NOT DONE`, es vergeht keine Zeit, es gibt keine Erholung, keine Münzen werden bewegt und kein `service.granted` entsteht.
+  - Alle anderen `needs` bleiben unverändert: Quest, Fähre (auch ein bedingt vereinbarter Kauf vor einem `go`), Übergabe, Schlaf nach einem `go`.
+  - Es gibt kein neues Unterkunftssystem.
+- **Runner:** `roleOf` erkennt die neuen Limits neben den alten. Die Stub-Smoke `run_c.mjs` erwartet für den Planner 2000.
+- **Tests:** `tests/v4/c6651_lodging.test.js` (7), `tests/live_runner/c6651_runner.test.js` (1).

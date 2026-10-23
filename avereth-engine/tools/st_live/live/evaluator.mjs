@@ -58,6 +58,15 @@ export const CHECKS = {
     ordinary_passive_offered: 'an Ordinary Passive offered from his own training (decision.opened kind passive, quality ordinary, evidence train:…)',
     ordinary_passive_gained: 'that Ordinary Passive of his training booked as his after his acceptance',
     passive_verified: 'after the Ordinary Passive was booked: #status, #passives and #skill Arcane Bolt asked and answered by the System',
+    // 4.3.0-c.6.6.52 (9C completion): a Skill development from his own fights, his acceptance, his checks and its use;
+    // a person's own technique (NPC signature) met and used. Each from the engine's events, never the story's words
+    skill_pattern_noted: 'a qualifying fight noted the patterns of his Skills (growth.noted)',
+    skill_development_offered: 'a Skill development offered to him by the engine from his fights (decision.opened kind skill: breakthrough, combination or evolution)',
+    skill_development_accepted: 'an offered Skill development booked as his after his acceptance (growth.decided accepted, a Skill)',
+    skill_development_verified: 'after it was booked: #skills and #skill <its name> asked and answered by the System',
+    developed_skill_used: 'the developed Skill used by him in a fight after it was booked (a combat record of his with that Skill)',
+    npc_signature_met: 'a trained person of Level 5 or more met whose sheet holds a technique of their own (entity.sheet_set, generated.signature)',
+    npc_signature_used: 'such a person used their own technique in a fight (a combat record of theirs with it)',
 };
 // the System's answers the Passive checks wait for: the command he sends, and the head of its panel
 const PASSIVE_CHECKS = [[/^#status\b/i, '[SYSTEM // STATUS]'], [/^#passives\b/i, '[SYSTEM // PASSIVES]'], [/^#skill\s+arcane bolt\b/i, '[SYSTEM // SKILL] Arcane Bolt']];
@@ -119,6 +128,10 @@ export function evaluate(chat, { guide = null } = {}) {
     let boardSeen = false;
     // Patch 9A: the rules the campaign plays by (campaign.started ruleset; none: 1, legacy) and the character it made
     const character = { ruleset: null, class: null, skills: [] };
+    // 4.3.0-c.6.6.52: the Skill developments of the run (the qualifying fights noted, the offers, the one he took) and
+    // the people met with a technique of their own
+    const growth = { noted: [], offers: [], accepted: null, signatures: {} };
+    const skillNames = {};
 
     for (let i = 0; i < chat.length; i++) {
         const m = chat[i];
@@ -161,12 +174,33 @@ export function evaluate(chat, { guide = null } = {}) {
                 case 'creation.completed': character.skills = d.skills; hit('creation_complete', i, { skills: d.skills, class: character.class }); break;
                 case 'guild.registered': hit('guild_registered', i, { rank: d.rank, branch: d.branch }); if (reg.at == null) reg.at = i; break;
                 case 'decision.opened':
+                    if (d.decision?.kind === 'skill') {
+                        const o = { at: i, turn: turnAt[i], id: d.decision.id, skill: d.decision.skill?.id ?? null, name: d.decision.skill?.name ?? null, development: d.decision.development ?? null, replaces: d.decision.replaces ?? null };
+                        growth.offers.push(o);
+                        if (o.skill) skillNames[o.skill] = o.name;
+                        hit('skill_development_offered', i, { name: o.name, development: o.development, skill: o.skill });
+                        break;
+                    }
                     if (d.decision?.kind !== 'passive') break;
                     hit('passive_offered', i, { name: d.decision.passive?.name ?? null, quality: d.decision.quality ?? null });
                     if (['rare', 'legendary'].includes(d.decision.quality)) hit('rare_passive_offered', i, { name: d.decision.passive?.name ?? null, quality: d.decision.quality });
                     if (d.decision.quality === 'ordinary' && String(d.decision.evidence || '').startsWith('train:')) hit('ordinary_passive_offered', i, { name: d.decision.passive?.name ?? null });
                     break;
                 case 'passive.defined': passiveDefs[d.passive?.id] = d.passive; break;
+                case 'skill.defined': if (d.skill?.id) skillNames[d.skill.id] = d.skill.name; break;
+                case 'growth.noted': growth.noted.push({ at: i, turn: turnAt[i], fight: d.fight, marks: d.marks || {}, pairs: d.pairs || [] }); hit('skill_pattern_noted', i, { fight: d.fight }); break;
+                case 'growth.decided':
+                    if (d.status !== 'accepted' || !d.skill) break;
+                    growth.accepted ||= { at: i, turn: turnAt[i], skill: d.skill, name: skillNames[d.skill] ?? null, key: d.key };
+                    hit('skill_development_accepted', i, { skill: d.skill, name: skillNames[d.skill] ?? null });
+                    break;
+                case 'entity.sheet_set': {
+                    const sig = d.sheet?.generated?.signature;
+                    if (!sig || d.id === 'pc') break;
+                    growth.signatures[d.id] ||= { at: i, turn: turnAt[i], id: d.id, skill: sig, name: skillNames[sig] ?? null, used: null };
+                    hit('npc_signature_met', i, { entityId: d.id, skill: sig, name: skillNames[sig] ?? null });
+                    break;
+                }
                 case 'passive.gained': {
                     if (d.id !== 'pc') break;
                     hit('passive_gained', i, { passive: d.passive });
@@ -306,7 +340,15 @@ export function evaluate(chat, { guide = null } = {}) {
             }
         }
         // Patch 8.4.2: who of an open attack's group acted on his own turn (the records of this message's resolution)
-        const actors = ev.filter((e) => e.t === 'outcome.recorded').flatMap((e) => e.d?.outcome?.records || []).map((r) => r.actor);
+        const records = ev.filter((e) => e.t === 'outcome.recorded').flatMap((e) => e.d?.outcome?.records || []);
+        const actors = records.map((r) => r.actor);
+        // 4.3.0-c.6.6.52: the developed Skill in his hands after he took it, a person's own technique in theirs
+        for (const r of records) {
+            if (!r?.skill) continue;
+            if (r.actor === 'pc' && growth.accepted && r.skill === growth.accepted.skill && i > growth.accepted.at) hit('developed_skill_used', i, { skill: r.skill, name: growth.accepted.name, kind: r.kind });
+            const sg = growth.signatures[r.actor];
+            if (sg && r.skill === sg.skill) { sg.used ||= i; hit('npc_signature_used', i, { entityId: r.actor, skill: r.skill, name: sg.name }); }
+        }
         for (const x of Object.values(D)) {
             for (const c of x.candidates) {
                 if (c.done || (c.ended != null && c.ended < i)) continue;
@@ -396,13 +438,32 @@ export function evaluate(chat, { guide = null } = {}) {
         });
         if (answered.every((x) => x >= 0)) hit('passive_verified', Math.max(...answered), { answered: answered.length });
     }
+    // 4.3.0-c.6.6.52: the checks after the developed Skill was booked: #skills and #skill with its name, each answered
+    if (growth.accepted?.name) {
+        const at = answeredAfter(chat, growth.accepted.at, [[/^#skills\b/i, '[SYSTEM // SKILLS]'], [new RegExp(`^#skill\\s+${escapeRe(growth.accepted.name)}\\s*$`, 'i'), `[SYSTEM // SKILL] ${growth.accepted.name}`]]);
+        if (at.every((x) => x >= 0)) hit('skill_development_verified', Math.max(...at), { name: growth.accepted.name });
+    }
     const list = (guide?.milestones || Object.keys(CHECKS).map((id) => ({ id, check: id, required: false }))).map((ms) => {
         const check = ms.check || ms.id;
         if (reached[check]) return { ...reached[check], id: ms.id, check, required: ms.required !== false, goal: ms.goal || CHECKS[check], reached: true };
         return { id: ms.id, check, required: ms.required !== false, goal: ms.goal || CHECKS[check], reached: false, ...(unavailable[check] ? { unavailable: unavailable[check] } : {}) };
     });
     const dungeon = root ? { root, name: placeName(foldChat(chat, chat.length).state, root), floor: level, quest: mine?.id || null } : null;
-    return { milestones: list, reached, encounters, quests: Object.values(quests), defeat, issues, counts, turns, dungeon, character };
+    return { milestones: list, reached, encounters, quests: Object.values(quests), defeat, issues, counts, turns, dungeon, character, growth };
+}
+
+const escapeRe = (t) => String(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/** For each [command, panel head]: the index of the System answer to the first such command of his after `from`, or -1. */
+function answeredAfter(chat, from, checks) {
+    return checks.map(([cmd, head]) => {
+        for (let j = from + 1; j < chat.length; j++) {
+            if (!chat[j].is_user || !cmd.test(String(chat[j].mes || '').trim())) continue;
+            const k = chat.slice(j + 1).findIndex((m) => !m.is_user && String(m.mes || '').includes(head));
+            const next = chat.slice(j + 1).findIndex((m) => m.is_user);
+            if (k >= 0 && (next < 0 || k < next)) return j + 1 + k;
+        }
+        return -1;
+    });
 }
 
 /** The guide's next required milestone not reached yet and not out of reach (the run's progress), or null. */

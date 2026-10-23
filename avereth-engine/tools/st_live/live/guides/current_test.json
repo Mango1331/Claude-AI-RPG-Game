@@ -1,70 +1,97 @@
 {
   "id": "current_test",
-  "title": "Aktueller Livetest: 9C-2c Ordinary-Passive durch Training (Hauptweg), Rare-Passive durch Kampf (Zusatz) (.50)",
-  "brief": "Create a Mage with Arcane Bolt and Arcane Ward. Your primary objective is to legitimately develop ONE Ordinary Passive by real training and accept it. Train a lasting quality of yourself, your mind: once each in-game day, explicitly spend two hours on focused practice of your concentration (for example: I spend two hours in meditation, drilling my concentration), then sleep until morning, and repeat. One such session a day is all that counts (more on the same day adds nothing); the engine needs about ten days of it. Read #skills now and then for the learning goal and its Learning Progress, and #passives for your Passive slots. Do not invent progress, a teacher, a blessing or a shortcut; if the System answers NOT TRAINING or NO PASSIVE YET, or the progress does not rise on a new day, treat it as a blocker and report it instead of repeating. Only when the System shows POSSIBLE PASSIVE, read #passives (it is offered, not yours yet), then explicitly accept it in one clear sentence (for example: I accept it). After the System reports NEW PASSIVE, read #status (INT must read like INT 8 (6 +2), Max MP higher), #skill Arcane Bolt (Raw Power with the raised INT) and #passives (1/4). Follow System state, not narrator claims. Secondary, only after that and only if it happens naturally: a Rare Passive can be offered only after an outstanding fight you win at very low HP against a much stronger foe; never seek a hopeless fight or provoke one on purpose, and do not fake danger. If any POSSIBLE PASSIVE appears, decide on it deliberately (accept or decline) and note what the System says. No Guild quest or dungeon is required. Do not manipulate engine state, use developer shortcuts or reset the chat to force success.",
+  "title": "Kurztest .52: 9C-Abschluss – Skill-Durchbruch aus eigenen Kämpfen, Angebot, Annahme, Einsatz (NPC-Signatur nur wenn natürlich)",
+  "brief": "Create a Warrior with Heavy Slash and Guard. Your objective is to let a new Skill grow out of the way you really fight, take it only when the System offers it, and then use it. Go into the city, register with the Adventurers' Guild, read the board for your rank and take a contract that sends you into a dungeon to fight; travel there and go in onto its first level. Fight its foes in a steady way of your own: whenever a foe is ENGAGED with you, raise Guard first and strike with Heavy Slash on your next turn (when your Stamina is too low, use your Basic Attack). Real fights against foes that attack you are what counts; the engine notes your way of fighting at the end of each fight and needs about three such fights. Do not seek a hopeless fight, do not provoke one on purpose and rest when your HP is low. Only when the System shows POSSIBLE SKILL (it is offered, not yours yet), read #skills, then accept it in one clear sentence outside a fight (for example: I accept it). After the System reports NEW SKILL (or EVOLVED), send #skills and #skill with the exact name of the new Skill (one command per message), then use the new Skill against a foe in your next fight. If a trained fighter or mage of the world fights you or beside you, watch whether they use a technique of their own and note its name, but never fight an innocent person for it. Follow System state, not narrator claims: if POSSIBLE SKILL does not come after three or four hard fights, report that and how your fights went instead of inventing progress. If a POSSIBLE PASSIVE appears, decide on it deliberately and note what the System says. Do not manipulate engine state, use developer shortcuts or reset the chat to force success.",
   "character": {
-    "class": "Mage",
+    "class": "Warrior",
     "skills": [
-      "Arcane Bolt",
-      "Arcane Ward"
+      "Heavy Slash",
+      "Guard"
     ]
   },
   "milestones": [
     {
       "id": "creation_complete",
-      "goal": "Create a Mage with Arcane Bolt and Arcane Ward.",
+      "goal": "Create a Warrior with Heavy Slash and Guard.",
       "maxTurns": 4
     },
     {
-      "id": "ordinary_passive_offered",
-      "goal": "Train your mind on your own, two hours on each of about ten in-game days with sleep between, until the System offers a POSSIBLE PASSIVE of Ordinary quality from that training.",
-      "maxTurns": 34
+      "id": "guild_registered",
+      "goal": "Go into the city to the Adventurers' Guild and register as a member (pay what the Guild asks).",
+      "maxTurns": 8,
+      "required": false
     },
     {
-      "id": "ordinary_passive_gained",
-      "goal": "Accept the offered Ordinary Passive explicitly (for example: I accept it).",
+      "id": "inside_dungeon",
+      "goal": "Take a dungeon contract from the board, travel to that dungeon and go in past its gate onto level 1.",
+      "maxTurns": 12,
+      "required": false
+    },
+    {
+      "id": "skill_pattern_noted",
+      "goal": "Win a real fight in which a foe attacks you, fighting your own steady way (Guard, then Heavy Slash).",
+      "maxTurns": 10,
+      "required": false
+    },
+    {
+      "id": "skill_development_offered",
+      "goal": "Keep fighting the dungeon's foes the same way until the System offers a POSSIBLE SKILL that grew out of your fights (about three hard fights).",
+      "maxTurns": 22
+    },
+    {
+      "id": "skill_development_accepted",
+      "goal": "Outside a fight, read #skills, then accept the offered Skill explicitly (for example: I accept it).",
       "maxTurns": 4
     },
     {
-      "id": "passive_verified",
-      "goal": "After NEW PASSIVE, send #status, #passives and #skill Arcane Bolt (one command per message) and compare each System answer with the offer: INT 8 (6 +2), Max MP higher, Raw Power with INT 8, Passives 1/4.",
-      "maxTurns": 6
+      "id": "skill_development_verified",
+      "goal": "After NEW SKILL (or EVOLVED), send #skills and #skill with the new Skill's exact name (one command per message) and compare them with the offer.",
+      "maxTurns": 4
     },
     {
-      "id": "rare_passive_offered",
-      "goal": "Optional: only if an outstanding, genuinely dangerous fight happens naturally and you win it at very low HP, note the Rare offer and decide on it.",
-      "maxTurns": 6,
+      "id": "developed_skill_used",
+      "goal": "Use the new Skill against a foe in your next fight.",
+      "maxTurns": 8
+    },
+    {
+      "id": "npc_signature_met",
+      "goal": "Optional: only if a trained person of the world (Level 5 or more) meets you in a fight naturally, note their own technique.",
+      "required": false
+    },
+    {
+      "id": "npc_signature_used",
+      "goal": "Optional: such a person uses their own technique in the fight.",
       "required": false
     }
   ],
   "focus": [
-    "An Ordinary Passive comes only from real, booked training over many in-game days (20 Learning Progress per day, 200 needed); one session or repeated sessions on one day must not unlock it.",
-    "The engine offers it first (POSSIBLE PASSIVE): before your acceptance nothing about you changes (#status, Max MP, Raw Power); the narrator must not tell a new power or a stronger mind before NEW PASSIVE.",
-    "After acceptance: INT shows the bonus separately (INT 8 (6 +2)), the assigned INT stays 6, Max MP rises by 16, Arcane Bolt's Raw Power uses the raised INT; #passives shows 1/4 with the quality Ordinary.",
-    "Record the exact name of the Passive and that the name and effects were the same when offered and when gained.",
-    "If a Rare offer appears, it must come only after the fight is over (never during it) and name an outstanding victory at low HP; declining must leave nothing changed.",
-    "Observe stalls, repeated offers, offers that grant nothing or more than shown, errors, unexpected extra LLM calls and Forge timing (the call table now counts Forge calls as forge)."
+    "A new Skill comes only from real fights: the engine notes what a fight showed at its end, and only fights against foes that attacked you count; the offer comes after the fight (never during it), in a safe turn.",
+    "POSSIBLE SKILL is an offer: before your acceptance #skills must not list it and the narrator must not tell it as yours; after NEW SKILL your Basic Attack, Heavy Slash and Guard stay yours beside it.",
+    "Record the exact name, cost, range and effect of the offered Skill and compare offer, NEW SKILL, #skills and #skill: the same Skill, the same numbers.",
+    "When you use the new Skill in a fight, compare the System's combat result with its #skill description (cost, guard after the blow, damage).",
+    "If a trained person fights with a technique of their own, it must never strike an area or several times; note who it was and what it did.",
+    "Observe stalls, repeated or vanished offers, offers that grant nothing or more than shown, errors, unexpected extra LLM calls and Forge timing (the call table counts Forge calls as forge)."
   ],
   "limits": {
-    "maxTurns": 46,
+    "maxTurns": 35,
     "maxMinutes": 110,
     "sameFailure": 3
   },
   "personas": [
-    "Patient test player: train one quality of yourself every day without shortcuts, accept the offered Passive explicitly",
-    "Mechanics observer: read #skills, #passives, #status and #skill; compare offer, acceptance and the actual values with the narration"
+    "Steady fighter: one way of fighting every time (Guard, then Heavy Slash), short action messages, no detours",
+    "Mechanics observer: read #skills and #skill at the right moments; compare offer, acceptance and the actual combat results with the narration"
   ],
   "scripted": [
     {
-      "say": "Mage",
+      "say": "Warrior",
       "milestone": "creation_complete"
     },
     {
-      "say": "Arcane Bolt + Arcane Ward",
+      "say": "Heavy Slash + Guard",
       "milestone": "creation_complete"
     },
     {
-      "say": "#passives"
+      "say": "#skills"
     }
   ]
 }

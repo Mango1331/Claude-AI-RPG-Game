@@ -2083,3 +2083,4 @@ Einzelheiten: `docs/PATCH9C_COMPLETION.md`. 9C-2d und 9C-3 bilden einen Patch na
 - **Texte:** Narrator-Vertrag Revision .52, `content.10.r2` SKILL DEVELOPMENT IN PLAY, Katalog POSSIBLE SKILL.
 - **Tests:** `patch9c_completion` (11); `patch9b1` (4) an E angepasst.
 - **Review-Korrektur (.52):** Ordinary-Proben als gültige Auswahl über alle unbenutzten; Rare-Quelle ist der Dungeon, sonst der Bereich; keine Signatur aus oder als Fläche/Mehrfachtreffer; defensive Signatur vor ihrem Guard. Tests: `patch9c_completion_review` (4).
+- **Kurzer Livetest (.52):** Leitfaden `current_test` (Warrior, Guard und Heavy Slash, Durchbruch/Kombination aus etwa drei Kämpfen, Annahme, `#skills`/`#skill`, Einsatz; NPC-Signatur optional; ≤ 35 Züge), neue Auswerter-Etappen für Skill-Entwicklung und NPC-Signatur. Tests: `patch9c_completion_runner` (3).

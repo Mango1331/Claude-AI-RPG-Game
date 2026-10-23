@@ -171,3 +171,30 @@ Vier Befunde, ein gemeinsamer Fix. Regressionen in `tests/v4/patch9c_completion_
 - **R4 – defensive Signaturen** (`npcTactic`): Unter konkreter Bedrohung wird eine passende, bezahlbare Signatur (`origin.kind === 'signature'`) vor dem ursprünglichen Guard-Skill gewählt. Sonst gilt das bisherige Verhalten: der erste passende, bezahlbare Guard, oder keine Taktik.
 - Kein KI-Redesign, keine neuen Features, keine Balanceänderung.
 
+
+## 13. Kurzer Livetest `.52` (Runner und Leitfaden)
+
+Freigegeben nach dem Git-Review von `c50da2d`: ein kurzer echter ST/GLM-Lauf, kein 80–120-Züge-Test und keine erzwungene P5-Evolution.
+
+- **Leitfaden `current_test`** (der eine Leitfaden für den jeweils aktuellen Test, `docs/LIVE_RUNNER.md` §6):
+  - Warrior mit Heavy Slash + Guard; Gilde, Board, Dungeon-Vertrag, Ebene 1;
+  - in jedem Kampf eine gleichbleibende Kampfweise: Guard, dann Heavy Slash im nächsten Zug (bei wenig STA der Basic Attack);
+  - etwa drei qualifizierende Kämpfe ergeben eine Kombination („Guarded Heavy Slash“) oder einen Durchbruch des Basic Attack;
+  - POSSIBLE SKILL → `#skills` → ausdrückliche Annahme außerhalb des Kampfs → NEW SKILL → `#skills` und `#skill <Name>` → Einsatz im nächsten Kampf;
+  - höchstens 35 Züge und 110 Minuten. Kein Zustand wird gesetzt; bleibt das Angebot nach drei, vier harten Kämpfen aus, meldet der Spieler das.
+- **Pflicht-Etappen:** `creation_complete`, `skill_development_offered`, `skill_development_accepted`, `skill_development_verified`, `developed_skill_used`.
+- **Optional:**
+  - `guild_registered`, `inside_dungeon`, `skill_pattern_noted`;
+  - `npc_signature_met` und `npc_signature_used`, nur wenn ein trainierter Mensch ab Level 5 natürlich begegnet.
+- **Neue Auswerter-Prüfungen** (`evaluator.mjs`), alle aus Engine-Events, nie aus Erzähltext:
+  - `growth.noted` → `skill_pattern_noted`;
+  - `decision.opened` (kind `skill`) → `skill_development_offered`, mit Name und Art;
+  - `growth.decided` (accepted, mit Skill) → `skill_development_accepted`;
+  - die System-Antworten auf `#skills` und `#skill <Name>` danach → `skill_development_verified`;
+  - ein eigener Kampf-Record mit dem neuen Skill nach der Annahme → `developed_skill_used`;
+  - `entity.sheet_set` mit `generated.signature` (nicht für ihn) → `npc_signature_met`, und ein Kampf-Record dieser Person mit der Technik → `npc_signature_used`.
+  
+  Die Auswertung trägt zusätzlich `growth` (notierte Kämpfe, Angebote, angenommene Entwicklung, Signaturen).
+- **Tests:**
+  - `tests/live_runner/patch9c_completion_runner.test.js` (3): der Leitfaden; der Weg aus echten Kämpfen bis zum Einsatz, nicht fertig vor dem Einsatz; die NPC-Signatur, nie für ihn selbst;
+  - `patch9c2c_runner` (.50) prüft die Ordinary-Etappen jetzt an seinen eigenen Etappen statt an `current_test`.

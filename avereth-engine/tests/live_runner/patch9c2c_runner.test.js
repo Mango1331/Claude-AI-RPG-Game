@@ -43,15 +43,13 @@ test('9C-2c runner: the evaluator sees a Passive offered, a rare one, and one ga
 // 4.3.0-c.6.6.50 (review of 9C-2c): the guide's Ordinary path is bound to its quality and its training evidence, and a
 // run is done only after #status, #passives and #skill Arcane Bolt were asked and answered once the Passive was his
 test('.50 runner: a Rare Passive does not pass the Ordinary milestones; the run is not finished before the checks are answered', async () => {
-    const fs = await import('node:fs');
-    const path = await import('node:path');
-    const { loadProductContent, ROOT } = await import('../helpers.js');
+    const { loadProductContent } = await import('../helpers.js');
     const { campaign, say, inject } = await import('../v4/patch8_lib.js');
     const { engineEvidence, passiveOffers } = await import('../../src/v4/passive_growth.js');
     const { evaluate, finished } = await import('../../tools/st_live/live/evaluator.mjs');
     const content = await loadProductContent();
-    const guide = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/st_live/live/guides/current_test.json'), 'utf8'));
-    assert.deepEqual(guide.milestones.filter((m) => m.required !== false).map((m) => m.id), ['creation_complete', 'ordinary_passive_offered', 'ordinary_passive_gained', 'passive_verified']);
+    // the milestones of the .50/.51 current_test (the guide holds the .52 test now, docs/LIVE_RUNNER.md §6)
+    const guide = { milestones: ['creation_complete', 'ordinary_passive_offered', 'ordinary_passive_gained', 'passive_verified'].map((id) => ({ id })).concat([{ id: 'rare_passive_offered', required: false }]) };
     const rest = { type: 'activity', kind: 'rest', what: null, minutes: 10, until: null, learn: null, teacher: null, tags: null, aspects: null, material: null, quote: 'i rest for ten minutes' };
     const hero = async () => {
         const g = await campaign(content, { cls: 'Mage', skills: 'Arcane Bolt + Arcane Ward' });

@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 23. Oktober 2026 · Fassung 24 (9C-2c .49 Git-Implementierung geprüft, R1-R3 vor echter Live-Abnahme offen)  
+**Stichtag:** 23. Oktober 2026 · Fassung 25 (9C-2c .50 R1-R4 Reviewfix Git-geprüft und für echten Livetest freigegeben)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,14 +13,15 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 23.10.2026 (Snapshot)** | **d30c5c5** (Runner/Guide `.49`), **69a4616** (Engine `.49`); letzter echt live getesteter Engine-Stand `.48` (`4f6c677`). HEAD bei neuem Chat immer neu prüfen. |
-| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.49**; Narrator-Vertrag Revision **.49** (persönliche SillyTavern-Narrator-Karte vor `.49`-Livetest aktualisieren). |
+| **HEAD am 23.10.2026 (Snapshot)** | **73c2444** (Runner/Guide `.50`) nach **dc12652** (Engine `.50`). Letzter tatsächlich live bestätigter Code `.48` (`4f6c677`); Git-HEAD bei Übergabe neu prüfen. |
+| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.50**; Narrator-Vertragsrevision unverändert **.49** (persönliche SillyTavern-Karte braucht diesen Stand). |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | 9C-1/9C-2a `.45` Lehrer/Forge live bestätigt; **9C-2b `.48` Stone-Hauptpfad echt live bestätigt**. **9C-2c `.49` durch Claude implementiert und unabhängig im Git begutachtet**, Tests 1194/1194 + 56/56 Runner laut Claude, **Reviewfixes R1/R2/R3 offen, noch kein `.49`-Livetest**. |
-| **Nächster Schritt** | **9C-2c `.49` ist durch Claude implementiert und auf GitHub gepusht; unabhängiges Git-Review durch ChatGPT läuft, noch KEINE echte Live-Abnahme.** Zwei nachweisbare Reviewpunkte R1/R2: außergewöhnliche Passive-Angebote müssen bei vier Slots eine mögliche Ersatzkonfiguration berücksichtigen; taggebundene und allgemeine Kostenreduktionen müssen über ihre tatsächliche gemeinsame Wirkung auf Skills gegen Nullwirkung geprüft werden. R3: Anti-Farming bei wiederholten ähnlichen Rare-Encountern mit Challenge-/Tagesregeln vervollständigen. Claude um gezielten Reviewfix mit Regressionen bitten; erst danach echten `.49`-Livetest. Weitere Details im neuen Topabschnitt und Datei 04. |
+| **Patchstatus** | **9C-2c `.50` Reviewfix implementiert und im Git unabhängig geprüft; Freigabe zum echten Ordinary-Passive-Livetest, aber NOCH NICHT live bestätigt.** Claude meldet 1199/1199 Tests; ChatGPT hat gezielte Code-/Regressionstests inspiziert, nicht selbst erneut ausgeführt. 9C-2b `.48` und 9C-2a `.45` bleiben echt live bestätigt. |
+| **Nächster Schritt** | **Echten `.50`-SillyTavern-Livetest starten**, persönliche Narrator-Karte Revision `.49`, zentralen `current_test` verwenden. Pflichtziele: Ordinary aus Training angeboten, aktiv angenommen, anschließend `#status`, `#passives`, `#skill Arcane Bolt` beantwortet; Rare optional. Originalexport (Events/Chat/LLM-Calls) unabhängig prüfen, dann 03/04 aktualisieren. Vorab KEIN weiterer Hotfix erforderlich. Anti-Farming für wiederholte ähnliche Rare-Encounter bleibt bewusst spätere Arbeit. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
-Aktueller Implementierungscommit (.49): https://github.com/Mango1331/Claude-AI-RPG-Game/commit/69a4616993c2c52987d4fe9e96ad4a8d4157bdc1; Runner-/Guide-Commit https://github.com/Mango1331/Claude-AI-RPG-Game/commit/d30c5c5b50fb2da40bf7705f4b3e9c72136b0059
+Aktueller Korrekturcommit (.50): https://github.com/Mango1331/Claude-AI-RPG-Game/commit/dc1265259e5aa3654e618248c7786e0766ec287f; Runner-/Guide-Commit https://github.com/Mango1331/Claude-AI-RPG-Game/commit/73c24445c81d4b68f49d2b0e6134458c746e0d6d
+Vorausgehender 9C-2c-Implementierungscommit (.49): https://github.com/Mango1331/Claude-AI-RPG-Game/commit/69a4616993c2c52987d4fe9e96ad4a8d4157bdc1; Guide https://github.com/Mango1331/Claude-AI-RPG-Game/commit/d30c5c5b50fb2da40bf7705f4b3e9c72136b0059
 Letzter echt live bestätigter Implementierungscommit (.48): https://github.com/Mango1331/Claude-AI-RPG-Game/commit/4f6c677bf59858c9052792844136f5531977144b
 Patch-9-Commits (chronologisch): 9A Engine `25ffe95` (.33), 9A Runner `7610df1`, 9A-Review `d71ff91` (.34), zentraler Guide `ad3eb2c` + `35d7168`, 9A.1 `a4e499f` (.35), 9B-1 `b632011` (.36), 9B-1-Review `3620b09` (.37), 9B-2 `6fb6176` (.38) + Doku `dd4c2c9`, 9B-2-Review `0cd22d3` (.39), 9C-1 `d0808eb` (.40), 9C-1-Reviewkorrektur `d27e877` (.41), Bezahlfix `c02bdb0` (.42), 9C-2a `9ff76c6` (.43), separater Liveguide `13b19ec`, 9C-2a-Reviewkorrektur `ddf1ea3` (.44), aktiver Duplikatrest `b67910a` (.45), Lehrer-Liveguide `cdd610d`, **9C-2b Feature `.46` `4b5c5ad`, Stone-Liveguide `9d77449`, Review `.47` `aa3400a`, **Integrationsfix `.48` `4f6c677`, Guide `b4dae52`**, **9C-2c `.49` Engine `69a4616`, Runner/Guide `d30c5c5`**.
 Vorheriger Patch-8-final-Stand: `1f38bd1` (.32, Runner) / `211ee65` (Engine).
@@ -35,7 +36,14 @@ Vorheriger Patch-8-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commi
 **Historischer Teststand von .44 (nicht der aktuelle):** ChatGPT/Codex führte auf .44 **`npm test` 1164/1164** und gezielt **34/34** aus. Die ergänzten Duplikat- und Host-Erwartungen sind auf .43 rot (12/15), nach Fix grün. Claude bestätigte .43 unabhängig mit 33/33 gezielten und 1163/1163 Gesamttests. R1 wurde zusätzlich am offiziellen ST-1.19.0-Quellcode geprüft: der Interceptor-Abbruchcallback hält sein Flag lokal je Aufruf. **Gegenreview der .44 noch offen; kein echter ST-/GLM-Livetest.** Historisch: .42 19/19 und 1149/1149 durch beide Sitzungen bestätigt.
 
 
-### Aktuellster Implementierungs- und Reviewstand: 9C-2c `.49` (23.10.2026)
+### AKTUELL: 9C-2c Reviewfix `.50` – Git-geprüft, LIVE-TEST FREIGEGEBEN (23.10.2026)
+
+**Commits:** Engine `dc1265259e5aa3654e618248c7786e0766ec287f`, Runner/Guide und Branch-HEAD `73c24445c81d4b68f49d2b0e6134458c746e0d6d`. Build **4.3.0-c.6.6.50**, Narrator-Contract weiterhin **.49**. **1199/1199 `npm test` laut Claude**; Git-Diffs und neue Regressionen durch ChatGPT unabhängig gelesen, Suite nicht selbst erneut ausgeführt. Rot/Grün `.49` zu `.50` von Claude berichtet. **Noch kein echter `.50`-Livetest.**
+
+**Vier Reviewbefunde behoben und für Live freigegeben:** (1) Nach atomarem Passive-Austausch neue HP/MP/STA-Maxima berechnen, überschüssige Istwerte im selben Eventbatch mit `resource.changed` ausschließlich absenken; (2) `passiveGain()` vergleicht MP-/STA-Reduktion nun mit `costReductionPct` über allgemeine und taggebundene Probe-Skills, sodass ein durch gemeinsames Cap wirkungsloser Kandidat keinen Slot erhält; (3) `composeCandidate()` bewertet bei vollen 4/4 Plätzen jeden zulässigen Einzelersatz und erhält dadurch nutzbare Rare/Legendary-Effekte, Annahme validiert gewählten Ersatz erneut, `#passives` zeigt wirksame Tauschoptionen; (4) Runnerpflichtziele sind ausdrücklich `ordinary_passive_offered` (Training), `ordinary_passive_gained` und **`passive_verified` erst nach beantworteten** `#status`, `#passives`, `#skill Arcane Bolt`; Rare bleibt optional. Neue Regressionen `patch9c2c_review.test.js` und `patch9c2c_runner.test.js` im Git geprüft.
+
+**Als Nächstes:** `.50` mit zentralem `current_test` in SillyTavern wirklich spielen, persönliche Narrator-Karte auf Vertragsrevision `.49` prüfen. Engine-Events, tatsächlichen Core-Stat- und Skill-Mehrwert, vollständige drei Panelantworten und eventuelle Narrator-/Planner-Abweichungen aus dem Originalexport auswerten. Wiederholte ähnliche Rare-Kämpfe/Daily-Anti-Farming bleiben **separat offen**, nicht Teil des freigegebenen vierteiligen `.50`-Korrekturauftrags. Die folgende `.49`-Reviewsektion ist HISTORISCH.
+### Historischer Stand: 9C-2c `.49` – damalige Reviewbefunde (23.10.2026)
 
 **Git tatsächlich unabhängig verifiziert:** Entwicklungs-HEAD `d30c5c5b50fb2da40bf7705f4b3e9c72136b0059`; Engine-Commit `69a4616993c2c52987d4fe9e96ad4a8d4157bdc1`, getrennter Runner-/Guide-Commit `d30c5c5`. **Build `.49`**, Narrator-Vertrag Revision `.49`; SillyTavern-Karte muss vor Livetest damit synchronisiert werden. Claude berichtete **1194/1194 npm-Tests** und später **56/56 Runner-Tests**; diese Läufe wurden von ChatGPT noch **nicht eigenständig lokal wiederholt** (Github-Quellcode und gezielte Regressionsfälle aber geprüft). **KEIN `.49`-SillyTavern-Livetest**.
 

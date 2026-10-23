@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 23. Oktober 2026 · Fassung 17 (9C-2a auf .43 implementiert; Claude-Gegenreview und echter Growth-Livetest ausstehend)  
+**Stichtag:** 23. Oktober 2026 · Fassung 18 (9C-2a .43 unabhängig geprüft; gezielte Reviewkorrektur .44 implementiert, deren Gegenreview und echter Growth-Livetest ausstehend)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,15 +13,15 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 23.10.2026** | `13b19ec95423baba4dcf4f3fba75a8bdbc029145` (separater Lehrer-/Forge-Liveguide); Engine `9ff76c60856ca01a7e21ef8b301f1224cfac6023` (.43), Basis `c02bdb0` (.42) |
-| **Build (package.json, manifest.json, `ENGINE_VERSION`)** | 4.3.0-c.6.6.43 |
+| **HEAD am 23.10.2026** | `ddf1ea3928b8db9e1a9b590451580ab9bd20aa5d` (.44, Reviewkorrektur); zuvor Engine `9ff76c6` (.43) und separater Liveguide `13b19ec` |
+| **Build (package.json, manifest.json, `ENGINE_VERSION`)** | 4.3.0-c.6.6.44 |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | Patch 8, 9A/9A.1, 9B-1/9B-2 und 9C-1 (.40–.42) implementiert und technisch gegengeprüft. **9C-2a (.43) durch ChatGPT/Codex implementiert und gepusht; Claude-Gegenreview offen.** Forge ausschließlich für Lehrer-Erwerb, kein neuer Quellenweg. Kein echter 9C-Livetest. |
-| **Nächster Schritt** | Claude prüft `9ff76c6` gegen `c02bdb0`: Forge-/Effekttrennung, Erwerbssignatur, Board-Retry und Stale-Schutz. Danach echter Lehrer-/Forge-Livetest mit `current_test`. Weitere Erwerbswege und 9C-3 beginnen erst nach Freigabe. |
+| **Patchstatus** | Patch 8, 9A/9A.1, 9B-1/9B-2 und 9C-1 technisch gegengeprüft. **9C-2a .43 durch Claude unabhängig geprüft** (33/33, 1163/1163). Dessen R1/R2 in **.44 implementiert**, gezielt 34/34 und gesamt 1164/1164 durch ChatGPT/Codex; Gegenreview der Korrektur offen. Kein echter 9C-Livetest. |
+| **Nächster Schritt** | Claude prüft Reviewkorrektur `ddf1ea3` gegen `13b19ec`: eigener Interceptor-Abbruch und Abschluss alter Duplikat-Ziele. Danach echter Lehrer-/Forge-Livetest mit `current_test`; R3-Engine-Zeit beobachten. Keine Freigabe weiterer Quellen oder 9C-3. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
-Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/9ff76c60856ca01a7e21ef8b301f1224cfac6023
-Patch-9-Commits (chronologisch): 9A Engine `25ffe95` (.33), 9A Runner `7610df1`, 9A-Review `d71ff91` (.34), zentraler Guide `ad3eb2c` + `35d7168`, 9A.1 `a4e499f` (.35), 9B-1 `b632011` (.36), 9B-1-Review `3620b09` (.37), 9B-2 `6fb6176` (.38) + Doku `dd4c2c9`, 9B-2-Review `0cd22d3` (.39), 9C-1 `d0808eb` (.40), 9C-1-Reviewkorrektur `d27e877` (.41), Bezahlfix `c02bdb0` (.42), 9C-2a `9ff76c6` (.43), separater Liveguide `13b19ec`.
+Aktueller Implementierungscommit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/ddf1ea3928b8db9e1a9b590451580ab9bd20aa5d
+Patch-9-Commits (chronologisch): 9A Engine `25ffe95` (.33), 9A Runner `7610df1`, 9A-Review `d71ff91` (.34), zentraler Guide `ad3eb2c` + `35d7168`, 9A.1 `a4e499f` (.35), 9B-1 `b632011` (.36), 9B-1-Review `3620b09` (.37), 9B-2 `6fb6176` (.38) + Doku `dd4c2c9`, 9B-2-Review `0cd22d3` (.39), 9C-1 `d0808eb` (.40), 9C-1-Reviewkorrektur `d27e877` (.41), Bezahlfix `c02bdb0` (.42), 9C-2a `9ff76c6` (.43), separater Liveguide `13b19ec`, 9C-2a-Reviewkorrektur `ddf1ea3` (.44).
 Vorheriger Patch-8-final-Stand: `1f38bd1` (.32, Runner) / `211ee65` (Engine).
 Früherer Runner-/Preflight-Stand: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/35ead9c21564c8aa134dfd93978184cdef2bd883
 Vorheriger Browsernachtrag: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b0221181602ddbaf7c05b08bae4b2d4633e04983
@@ -31,9 +31,11 @@ Vorheriger Patch-8.3-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/com
 Vorheriger Patch-8.1-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c6baa06e159f16069efd728844c7afe7c7dc186a  
 Vorheriger Patch-8-Commit: https://github.com/Mango1331/Claude-AI-RPG-Game/commit/f3b55819dad21249d871a62b7ede38bd926598cd
 
-**Testnachweise (aktuell):** ChatGPT/Codex führte auf .43 **`npm test` 1163/1163** aus (14 neue Regressionen), außerdem neue Fälle samt angepasstem Vertragstest gezielt **27/27**. Der erste Gesamtlauf hatte ausschließlich einen veralteten .40-Vertragspin rot; nach Anpassung und Flavor-Zeilenprüfung war der Abschlusslauf vollständig grün. Ein kontrollierter Host-Test importiert den echten `index.js` mit simulierten LLM-Antworten; kein Browser-Smoke. Vergleichsprobe mit .42-`growth.js`: eine zweite identische Lektion wird dort angenommen, auf .43 vor Zeitbuchung verweigert. **Keine unabhängige Bestätigung der .43 durch Claude.** .42 historisch: 19/19 und 1149/1149 durch beide Sitzungen bestätigt. Kein echter neuer ST-/GLM-Livetest.
+**Testnachweise (aktuell):** ChatGPT/Codex führte auf .44 **`npm test` 1164/1164** und gezielt **34/34** aus. Die ergänzten Duplikat- und Host-Erwartungen sind auf .43 rot (12/15), nach Fix grün. Claude bestätigte .43 unabhängig mit 33/33 gezielten und 1163/1163 Gesamttests. R1 wurde zusätzlich am offiziellen ST-1.19.0-Quellcode geprüft: der Interceptor-Abbruchcallback hält sein Flag lokal je Aufruf. **Gegenreview der .44 noch offen; kein echter ST-/GLM-Livetest.** Historisch: .42 19/19 und 1149/1149 durch beide Sitzungen bestätigt.
 
-### Neuer Teilpatch 9C-2a (.43) – enger Umfang, Review offen
+### Teilpatch 9C-2a (.43/.44) – enger Umfang, Reviewkorrektur
+
+**Claude-Review .43:** Umfang, Forge-/Effekttrennung, Signaturen, Cache und atomarer Erwerb bestätigt. Zwei Korrekturen in .44: veraltete Interceptor-Aufrufe beenden ihre eigene Narration mit dem lokalen `abort`-Callback; alte doppelte bereite Vorhaben werden mit `growth.closed` auf den vorhandenen Skill geschlossen, ohne zweiten Erwerb oder dauerhafte Fehlermeldungen. Der anfangs unzureichende Host-Test bildet jetzt getrennte Abbruchflags je Generation ab. Keine neue Vertragsrevision: **Narrator bleibt .43**. `historyKey` unverändert; Claudes R3-Messung (etwa 17 ms/Aufruf bei 93 Nachrichten, dreimal pro Zug) als Livetest-/Performancebeobachtung bewahren, hier nicht unabhängig nachgemessen.
 
 Der Nutzer beauftragte ausdrücklich ChatGPT/Codex mit der Implementierung und bestimmte Claude als unabhängigen Reviewer. Nach den Planprüfungen wurde der Umfang auf den vorhandenen Lehrerpfad reduziert: gebündelte Forge für Name und separates `flavor`, unveränderte Engine-Mechanik, synchroner atomarer Abschluss, Doppelerwerbsschutz einschließlich .42-Definitionen, persistente Benennung bei Board-Retry/Regenerate und Stale-Prüfung vor Record und Host-Ausgabe. **Keine Stones, Materialien, Shops, neuen Passives, Varianten oder Durchbrüche.** Weitere Quellen und 9C-Teile bleiben separat freizugeben; Balance bleibt 10B.
 
@@ -375,7 +377,7 @@ Auf folgende Fälle besonders achten:
 
 ## 7. Danach – verbindliche Roadmap und bewusste Grenzen (ausführlich in Datei 04 §1a)
 
-- **Jetzt (23.10.2026):** 9C-2a auf .43 implementiert, 1163/1163 durch ChatGPT/Codex; Claude-Gegenreview und echter Lehrer-/Forge-Livetest als Nächstes. 9C-1 auf .42 bereits unabhängig technisch bestätigt. Weitere Quellen, 9C-3 und 9D bleiben getrennt; Balance in 10B.
+- **Jetzt (23.10.2026):** 9C-2a .43 von Claude unabhängig geprüft; dessen R1/R2 gezielt in .44 korrigiert (34/34 und 1164/1164 durch ChatGPT/Codex). Gegenreview der Korrektur und echter Lehrer-/Forge-Livetest als Nächstes. Weitere Quellen, 9C-3 und 9D bleiben getrennt; Balance in 10B.
 - **Historisch (Stand Patch 8.4):** Patch 8.4 (.29) ist implementiert; der erste echte automatische Windows-/Featherless-/GLM-Livetest über 19 Züge ist ausgewertet (§5m und die unten angehängte ZIP-Auswertung). **Patch 8.4.1 ist implementiert (Engine `.30`, Runner `8f67953`), Git-Code geprüft, echter Nachtest offen**: gezielte Robustheitsfixes für LLM-Testspieler/Reasoning, leere Narrator-Antworten, Statzuweisung und den unautorisierten Dungeon-Gegner. Danach echten Regressionstest durchführen. Patch 8 nicht unbegrenzt für andere Features verlängern.
 - **Patch 9 – Organic Character Growth (VERBINDLICH; 9A und 9B IMPLEMENTIERT, 9C-1 IMPLEMENTIERT und technisch gegengeprüft, 9C-2a IMPLEMENTIERT mit Gegenreview offen, weitere 9C-/9D-Teile geplant). Der folgende Absatz ist der ursprüngliche Planungstext:** **Genau drei Starterklassen Warrior (STR/VIT), Mage (INT/WIL), Rogue (AGI/PER)**, feste Starter-Skills/-Ausrüstung. Danach organisch entstehende Klassen-/Skill-Evolutionen, neue Skills, Passives und dauerhafte Boni allein aus tatsächlichem Spiel, Training, Entdeckungen und bedeutsamer Erfahrung; **keine festen Evolutions-/Skillbäume**. LLM schlägt vor; die JS-Engine prüft, berechnet und persistiert. **Aktuell noch fünf Klassen im Code; Umstellung erst mit Patch 9.** Die ältere Ablehnung von F1/#71 ist durch den ausdrücklichen Patch-9-Beschluss vom 20.10.2026 überholt (vollständig in Datei 04 §1a.2).
 - **Patch 10A (historisch schon vorhanden):** frühere HUD-/QoL-Arbeit ist implementiert und darf nicht nochmals als Großpatch beauftragt werden. Bestimmte offene Anzeige-/Focused-Ward-Details bleiben gezielte Einzelthemen.
@@ -413,8 +415,8 @@ Auf folgende Fälle besonders achten:
 ## 9. Übergabe an den nächsten Chat (vier Projektdateien)
 
 1. Dateien **01–04** **vom Branch main** vollständig lesen (`04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` ist das Review-/Katalogarchiv). Den tatsächlichen Entwicklungsbranch und Build unabhängig per Git prüfen.
-2. **Aktueller HEAD `13b19ec`, Engine `9ff76c6`, Build .43:** 9C-2a auf dem Lehrerpfad implementiert; 14 neue Regressionen, 1163/1163 durch ChatGPT/Codex, Claude-Review offen. Kein echter Growth-Livetest. Andere Erwerbsquellen nicht umgesetzt.
-3. Entwicklungskette: Patch 8 bis .32 → 9A (.33/.34) → 9A.1 (.35) → 9B-1 (.36/.37) → 9B-2 (.38/.39) → 9C-1 (.40–.42) → 9C-2a (.43, Forge am Lehrerpfad). Stones, Materialien, Durchbrüche, neuer Passive-Erwerb, Skill-Evolution, NPC-Signaturen, E-Unterstützung und Klassen-Evolution fehlen weiterhin. `#assign`-Fastpath, Engine-only-Board, ROAD AHEAD und Performancekandidaten sind dadurch nicht umgesetzt.
+2. **Aktueller HEAD `ddf1ea3`, Build .44:** Reviewkorrektur von 9C-2a implementiert, 34/34 gezielt und 1164/1164 gesamt durch ChatGPT/Codex; Gegenreview offen. .43 unabhängig bestätigt (33/33, 1163/1163). Kein echter Growth-Livetest und keine neuen Quellen.
+3. Entwicklungskette: Patch 8 bis .32 → 9A (.33/.34) → 9A.1 (.35) → 9B-1 (.36/.37) → 9B-2 (.38/.39) → 9C-1 (.40–.42) → 9C-2a (.43, Forge am Lehrerpfad) → Reviewkorrektur .44. Stones, Materialien, Durchbrüche, neuer Passive-Erwerb, Skill-Evolution, NPC-Signaturen, E-Unterstützung und Klassen-Evolution fehlen weiterhin. `#assign`-Fastpath, Engine-only-Board, ROAD AHEAD und Performancekandidaten sind dadurch nicht umgesetzt.
 4. Bei Live-Exports zuerst Engine-Events, Chat-JSONL und LLM-TXT korrelieren; Gameplay- und Designregeln der Dateien 01/02 berücksichtigen.
 5. **Datei 04** enthält die 141-Ideen-Zusammenfassung, 20 ausgewählten K-Kandidaten, Claude-Gegenreviews, Engine-only-Board, Rest/Wait/Fast-Travel/Quick Replies und die offene Patch-9-/ROAD-AHEAD-Reihenfolge. Keine Ideen ohne Nutzerfreigabe in den bindenden Kanon oder die Implementierung übernehmen.
 6. Nach neuen Meilensteinen nur betroffene Projektdateien auf `main` aktualisieren; Implementierungsbranch nicht für Dokumentationspflege mergen.
@@ -606,7 +608,7 @@ Spielerseite und Charaktererstellung funktionierten (Rogue, zwei Skills, Kampf).
 
 ### Patch 9 – was noch fehlt (Stand 23.10.2026)
 
-- **9C-2a umgesetzt, weitere 9C-Teile offen:** Forge ausschließlich für Lehrer-Erwerb auf .43 (`9ff76c6`); Gegenreview offen. Stones/Lernmaterial, Durchbrüche, neuer Passive-Erwerb, Evolution, NPC-Signaturen und E-Rang bleiben gesonderte Aufträge. Plan und offene Entscheidungen: Datei 04 §1a.2b.
+- **9C-2a umgesetzt, weitere 9C-Teile offen:** Forge am Lehrerpfad .43 von Claude geprüft, R1/R2 in .44 (`ddf1ea3`) korrigiert; Gegenreview der Korrektur offen. Andere Quellen, Durchbrüche, neuer Passive-Erwerb und 9C-3 weiterhin gesonderte Aufträge. Plan: Datei 04 §1a.2b.
 - **9D – Organic Class Identity (GEPLANT):** organische Klassenentwicklung, Klassen-Evolution bleibt bis dahin gesperrt.
 - **Nicht in Patch 9:** Blink-Buff, allgemeines Balancing und Scaling über E-Rang hinaus (10B).
 - **Bekannte Grenzen aus 9B:** nur F-Rang; Bedingungen nur `hp_at_most_pct` und `foe_engaged`; Heilung nur auf sich selbst; NPCs nutzen weder Heal, Restore noch Blink; die Schwellen der NPC-Taktik (75 %, 65 %, drei pro Kampf) sind einfache Startwerte.

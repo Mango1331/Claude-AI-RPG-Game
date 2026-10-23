@@ -198,3 +198,35 @@ Freigegeben nach dem Git-Review von `c50da2d`: ein kurzer echter ST/GLM-Lauf, ke
 - **Tests:**
   - `tests/live_runner/patch9c_completion_runner.test.js` (3): der Leitfaden; der Weg aus echten Kämpfen bis zum Einsatz, nicht fertig vor dem Einsatz; die NPC-Signatur, nie für ihn selbst;
   - `patch9c2c_runner` (.50) prüft die Ordinary-Etappen jetzt an seinen eigenen Etappen statt an `current_test`.
+
+## 14. Livetest-Korrektur `.53` (zwei echte Kurztests `.52`, 23.10.2026)
+
+Zwei echte GLM/ST-Kurztests mit `current_test`:
+- **`20261023-202730Z`:** Tod nach 29 Zügen, zwei gewonnene Kämpfe mit korrekt gebuchtem `growth.noted` (Guard + Heavy Slash).
+- **`20261023-205619Z`:** Tod nach 15 Zügen, Dungeon-Eintritt nicht gebucht.
+
+Kein Fehler im Skill-Wachstum. Schwellen, XP und Dungeon-Regeln bleiben unverändert.
+
+- **Integrität (beide Läufe, 1 bzw. 2 „problem(s)“):**
+  - Ursache: Fakten über den Ort `loc.mossback_warrens` (Dungeon-Wurzel, `state.places`), die der Validator als „fact about missing entity“ zählte. Die Szene-Prüfung derselben Datei kannte `state.places` schon, die Fakt-Prüfung nicht.
+  - Fix: Fakten über einen Ort der Welt sind gültig; ein Fakt über eine fehlende Kreatur bleibt ein Problem.
+  - Kein Zustandsfehler. Beide Live-Chats validieren jetzt ohne Befund.
+- **Extraktor (Lauf 2, Zug 10):**
+  - Die erste Antwort verbrauchte die 4000 Tokens im Reasoning (`finish=length`, kein Inhalt). Die vorhandene kurze Reparatur antwortete in 9,9 s mit 494 Tokens, inhaltlich richtig: Eintritt auf Ebene 1, die angekündigten Scouts mit ihrer `ref`.
+  - Abgewiesen wurde sie nur wegen `person.new.role: ["camp man"]`.
+  - Fix: Freie Wörter einer Person (`role`, `armed`) als Liste von Wörtern werden zusammengefügt. Eine Liste für eine `ref` bleibt ein Fehler.
+  - Das Tokenbudget bleibt 4000 (Beschluss `.51`): Nicht das Limit war die Ursache. Ein höheres Limit verlängert nur den Leerlauf (77 s).
+- **Nach `extract.failed`:**
+  - Die Korrektur für den Erzähler nennt jetzt, wo Alaric steht: „Alaric is still at Mossback Warrens, before its gate: not inside it.“ An anderen Orten nennt sie nur den Ort.
+- **Dungeon-Wurzel (Lauf 2, Zug 11):**
+  - Die 8.4.1-Sperre („nur die Engine setzt die Gegner eines Living Dungeon“) galt nur innerhalb (`insideOf` schließt die Wurzel aus). Drei frei erzählte Goblins vor dem Tor wurden so freie Level-5-Kreaturen ohne Slot.
+  - Fix: An der Wurzel wird eine Kreatur der eigenen Arten des Dungeons (Anker oder Spezies seiner Slots) abgewiesen (`dungeon_foe`, mit Korrektur). Andere Kreaturen bleiben (eine Krähe am Palisadenzaun).
+- **Starthilfe Ruleset 2 (vorläufig bis 10B):**
+  - Warrior Starter Longsword ATK 10, Mage Starter Arcane Staff MATK 10, Rogue Starter Dagger ATK 10, alle Rang F.
+  - Umsetzung: eigene Gegenstände (`*_r2`) und `gear.json ruleset_kits` (`content.js kitOf`). Nur die Erstellung neuer Ruleset-2-Kampagnen und das Erstellungsmenü nutzen sie.
+  - Legacy-Kampagnen, schon begonnene `.52`-Kampagnen (ihre Gegenstände nach id) und die NPCs (`gear_from_starter_kit` aus `starter_kits`) behalten ATK/MATK 6. Rüstungen bleiben unverändert.
+  - Weil zwei Gegenstände denselben Namen tragen, merkt sich ein abgelegter oder weitergegebener Gegenstand seine Vorlage (`source.item`). Wieder angelegt ist er derselbe (gefunden von `patch3` „take off everything“).
+- **Tests:**
+  - `tests/v4/live_1023_fix.test.js` (7) auf dem Live-Chat `tests/v4/live_1023b.json`, dazu die Reparaturantwort. Sechs waren vor dem Fix rot; die siebte sichert Legacy und NPC ab.
+  - Angepasst sind acht ältere Tests auf die neuen Starterwerte und `*_r2`-ids: `patch9a` (3), `patch9b1` (4, davon einer mit 30-HP-Wolf, damit der Kampf so lange dauert wie vorher), `patch3` (1).
+- **Leitfaden `current_test`:** Überleben vor Muster. Kampf nur ab etwa 70 % HP; bei etwa 40 % HP oder weniger Rückzug und Ruhe an einem sicheren Ort bis volle HP. Muster nur bei gesunden HP. Runner-Test prüft die Regel.

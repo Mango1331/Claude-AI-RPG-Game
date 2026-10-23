@@ -33,6 +33,8 @@ export function indexContent(pack) {
         npc: pack.npc_templates,
         items: new Map(Object.entries(pack.gear.items)),
         kits: pack.gear.starter_kits,
+        // 4.3.0-c.6.6.53: the creation kits of a ruleset in place of starter_kits (kitOf)
+        rulesetKits: pack.gear.ruleset_kits || {},
         gear: pack.gear,
         lore: pack.lore.entries,
         locations: new Map(pack.lore.locations.map((l) => [l.id, l])),
@@ -83,6 +85,11 @@ export function indexContent(pack) {
 export const LEGACY_RULESET = 1;
 export function rulesetOf(state) {
     return Number(state?.meta?.ruleset) || LEGACY_RULESET;
+}
+
+/** 4.3.0-c.6.6.53: the starter kit Alaric is given at creation by a campaign's ruleset (gear.json ruleset_kits), else the class's. */
+export function kitOf(content, classId, ruleset) {
+    return content.rulesetKits?.[String(ruleset)]?.[classId] || content.kits[classId];
 }
 
 /** The ruleset's definition (its starting classes, whether a weapon brings its own attack). */

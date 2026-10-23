@@ -681,7 +681,8 @@ const HANDLERS = {
         if (o.template) {
             const n = qty || o.qty;
             emit({ t: 'item.changed', d: { id: 'pc', item: o.template, qty: -n, why: 'dropped' } });
-            emit({ t: 'object.created', d: { object: { id: `obj.t${env(ctx).msg}.${slug(o.name)}`, name: o.name, kind: 'item', stack: n > 1, qty: n, unit: null, holder: { loc: s.scene.at }, marks: [], for_quests: [], source: { turn: s.turn, how: 'dropped' } } } });
+            // 4.3.0-c.6.6.53: the content item it was (two may share a name: the Starter Longsword of ruleset 2 and the older one)
+            emit({ t: 'object.created', d: { object: { id: `obj.t${env(ctx).msg}.${slug(o.name)}`, name: o.name, kind: 'item', stack: n > 1, qty: n, unit: null, holder: { loc: s.scene.at }, marks: [], for_quests: [], source: { turn: s.turn, how: 'dropped', item: o.template } } } });
         } else emit({ t: 'object.moved', d: { id: o.id, to: { loc: s.scene.at }, ...(qty ? { qty, split: `${o.id}_${s.turn}` } : {}) } });
         return { status: 'resolved', line: `DROPS — ${o.name}${qty ? ` (${qty})` : ''}${off ? ' (taken off first: no longer equipped)' : ''}; it stays here, not his gear until he takes it again.` };
     },
@@ -701,7 +702,7 @@ const HANDLERS = {
         if (o.template) {
             const n = qty || o.qty;
             emit({ t: 'item.changed', d: { id: 'pc', item: o.template, qty: -n, why: `given to ${who(s, c.to)}` } });
-            emit({ t: 'object.created', d: { object: { id: `obj.t${env(ctx).msg}.${slug(o.name)}`, name: o.name, kind: 'item', stack: n > 1, qty: n, unit: null, holder: { entity: c.to }, marks: [], for_quests: [], source: { turn: s.turn, how: 'given' } } } });
+            emit({ t: 'object.created', d: { object: { id: `obj.t${env(ctx).msg}.${slug(o.name)}`, name: o.name, kind: 'item', stack: n > 1, qty: n, unit: null, holder: { entity: c.to }, marks: [], for_quests: [], source: { turn: s.turn, how: 'given', item: o.template } } } });
         } else emit({ t: 'object.moved', d: { id: o.id, to: { entity: c.to }, ...(qty ? { qty, split: `${o.id}_${s.turn}` } : {}) } });
         return { status: 'resolved', line: `GIVES — ${o.name}${qty ? ` (${qty})` : ''} to ${who(s, c.to)}.` };
     },
@@ -1152,7 +1153,7 @@ const HANDLERS = {
         // Patch 7.1: a piece of his own (bought, looted, found) is worn with its own values, never those of a template of
         // the same name; a template item of the sheet as before
         let own = !o.template ? profileOf(content, o) : null;
-        const tpl = own ? null : o.template || [...content.items.entries()].find(([, i]) => normText(i.name) === normText(o.name))?.[0];
+        const tpl = own ? null : o.template || (content.items.has(o.source?.item) ? o.source.item : null) || [...content.items.entries()].find(([, i]) => normText(i.name) === normText(o.name))?.[0];
         // a thing established before snapshots (an "iron sword" of the story): its values as its name gives them now
         if (!own && !tpl) own = itemProfile(content, o);
         const item = own?.kind === 'gear' ? { id: o.id, object: o.id, name: o.name, rank: own.rank, slot: own.slot, family: own.family, atk: own.atk, matk: own.matk, def: own.def, mdef: own.mdef, ...(own.requires_rank ? { requires_rank: own.requires_rank } : {}) } : tpl && content.items.get(tpl);

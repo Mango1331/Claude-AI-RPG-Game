@@ -132,7 +132,7 @@ test('9B-1 (2): static and dynamic Skills go through the same resolver: id, name
     assert.deepEqual(ctx.enc.combatants.pc.fixed.actions['dyn.viper_sting'], { prof: 1, pp: 0 });
     const hit = attackAction(ctx, 'pc', 'mon.boar', 'dyn.viper_sting');
     assert.equal(hit.illegal, undefined, hit.illegal);
-    assert.equal(hit.raw_text, '9 + AGI 6×1.6 + ATK 6 = 24.6');
+    assert.equal(hit.raw_text, '9 + AGI 6×1.6 + ATK 10 = 28.6'); // 4.3.0-c.6.6.53: the Starter Dagger of ruleset 2, ATK 10
     assert.equal(ctx.enc.combatants.pc.current.sta, 94, 'its own cost');
     const g2 = taught(STONE, 'Razor Cut + Feint');
     spawn(g2, 'mon.boar', { anchor: 'boar' });
@@ -269,7 +269,7 @@ test('9B-1 (5): the 18 starter Skills of Warrior, Mage and Rogue have a Complexi
 // ------------------------------------------------------------------------------------------------ 6. PP award
 test('9B-1 (6): a real fight books PP once per Skill when it is over, by the highest affinity; replay is identical', () => {
     const g = hero('Rogue', 'Razor Cut + Evasive Step');
-    spawn(g, 'mon.wolf');
+    spawn(g, 'mon.wolf', { hp: 30 }); // 4.3.0-c.6.6.53: the dagger hits harder (ATK 10); the wolf lasts as before
     const turns = fightOut(g, ['Razor Cut the wolf', 'I use Evasive Step', 'Razor Cut the wolf']);
     assert.equal(g.state.encounter, null);
     const pp = progressOf(turns);
@@ -433,7 +433,7 @@ test('9B-1 (8): the Warrior, Mage and Rogue Skills keep their values; at P1 a fi
     const g = hero('Rogue', 'Razor Cut + Long Lunge');
     spawn(g, 'mon.boar', { anchor: 'boar' });
     const ctx = fight(g, ['mon.boar']);
-    assert.equal(attackAction(ctx, 'pc', 'mon.boar', 'rogue.razor_cut').raw_text, '6 + AGI 6×1.50 + ATK 6 = 21');
+    assert.equal(attackAction(ctx, 'pc', 'mon.boar', 'rogue.razor_cut').raw_text, '6 + AGI 6×1.50 + ATK 10 = 25'); // .53: Starter Dagger ATK 10
     // the static Skills meet the validator's own bounds (a dynamic Skill is held to what the content itself does)
     for (const cls of ['warrior', 'mage', 'rogue']) {
         for (const id of content.classes.get(cls).skill_pool) {
@@ -525,7 +525,7 @@ test('9B-1 review (2): a dynamic Arcane Skill with the aspect Fire: validated, s
     const ctx = fight(g, ['mon.boar']);
     const r = attackAction(ctx, 'pc', 'mon.boar', 'dyn.ember_dart');
     assert.equal(r.illegal, undefined, r.illegal);
-    assert.equal(r.raw_text, '10 + INT 6×1.75 + MATK 6 = 26.5');
+    assert.equal(r.raw_text, '10 + INT 6×1.75 + MATK 10 = 30.5'); // .53: Starter Arcane Staff MATK 10
     // without aspects a definition stays valid (an empty list); an unknown, a doubled, too many or an affinity tag as aspect is refused
     assert.deepEqual(defineSkill(g.state, content, { ...EMBER, id: 'dyn.plain_dart', name: 'Plain Dart', aspects: undefined }).skill.aspects, []);
     for (const aspects of [['Plasma'], ['Fire', 'Fire'], ['Fire', 'Ice', 'Shadow', 'Light'], ['Arcane'], 'Fire', [{ kind: 'Fire', burn: 3 }]]) {

@@ -193,6 +193,9 @@ function normalizeSoftFields(value, vocab) {
         for (const [k, f] of Object.entries(spec.fields || {})) if (x[k] === undefined && f.nullable) x[k] = null;
         // Harmless persistence defaults: their omission should not trigger another LLM call.
         if (d.type === 'person.new' && x.desc === undefined) x.desc = [];
+        // 4.3.0-c.6.6.53 (live 23.10.2026 20:56: the repair of a Dungeon entry was right but for role ["camp man"], and
+        // the whole entry was refused): a person's free words given as a list of words are those words, joined
+        if (d.type === 'person.new') for (const k of ['role', 'armed']) if (Array.isArray(x[k]) && x[k].length && x[k].every((w) => typeof w === 'string')) x[k] = x[k].join(', ');
         if (d.type === 'creature.new') {
             if (x.desc === undefined) x.desc = [];
             if (x.count === undefined) x.count = 1;

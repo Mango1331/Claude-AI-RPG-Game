@@ -32,7 +32,8 @@ import { guardCommands } from './agency.js';
 import { extractorRequest, parseExtraction, EXTRACTOR_VERSION } from './extract.js';
 import { boardRequest, parseBoard, bookBoard, BOARD_VERSION } from './guild.js';
 import { extractionFailedEvents } from './world.js';
-import { hallOf, settlementOf, membership, boardKey, today, listingsOf, supportedRanks } from './domain.js';
+import { hallOf, settlementOf, membership, boardKey, today, listingsOf, supportedRanks, placeName } from './domain.js';
+import { trueDungeonOf } from './dungeon.js';
 import { finalizeGrowth, growthDrafts, activationsOf } from './growth.js';
 import { FORGE_VERSION, forgeRequest, parseForge, passiveForgeRequest, parsePassiveForge } from './forge.js';
 import { passiveDrafts, offerPassives, deedEvidence } from './passive_growth.js';
@@ -54,6 +55,17 @@ export const LLM = {
 };
 export const LATE_CORRECTION = 'The engine could not record what your last reply established (it was not read in time): nothing of it changed the game state. The state above is authoritative.';
 export const FAILED_CORRECTION = 'The engine could not read what your last reply established: nothing of it changed the game state. The state above is authoritative.';
+/**
+ * 4.3.0-c.6.6.53 (live 23.10.2026 20:56: the reply that took him into the Mossback Warrens was not read, he stayed before
+ * its gate, and the next reply went on inside, with goblins): where he still is after a reply the engine could not read,
+ * a Dungeon's root as before its gate.
+ */
+export function stillAt(state) {
+    const at = state.scene?.at;
+    if (!at || !state.places?.[at]) return null;
+    const gate = trueDungeonOf(state, at) === at && !!state.dungeons?.[at];
+    return `${state.entities?.pc?.name || 'Alaric'} is still at ${placeName(state, at)}${gate ? ', before its gate: not inside it' : ''}.`;
+}
 // Patch 8.2: the System line under a reply that arrived without story text (no cause is claimed: generateRaw and the
 // narrator's own generation report none)
 export const EMPTY_REPLY_NOTICE = 'NO STORY TEXT — the narrator\'s reply arrived empty, so nothing was read from it. The engine\'s results of this turn stand as shown above. Swipe or regenerate the reply for the story.';
@@ -667,7 +679,7 @@ export function applyExtraction(chat, id, content, parsed, { hash, ms = null, re
     if (!parsed?.valid) {
         const events = extractionFailedEvents(error || 'no valid answer', ms);
         const view = display(msg, content, state, { failed: `the extractor gave no valid answer (${String(error || 'no answer').slice(0, 80)})`, state }, hud);
-        setRec(msg, { ...r, events, extraction: { status: 'failed', version: EXTRACTOR_VERSION, ms, repaired, error: String(error || '').slice(0, 200), ...(calls.length ? { llm: calls } : {}) }, corrections: [FAILED_CORRECTION], ...view });
+        setRec(msg, { ...r, events, extraction: { status: 'failed', version: EXTRACTOR_VERSION, ms, repaired, error: String(error || '').slice(0, 200), ...(calls.length ? { llm: calls } : {}) }, corrections: [FAILED_CORRECTION, ...(stillAt(state) ? [stillAt(state)] : [])], ...view });
         return { changed: true, applied: false, failed: error || 'no valid answer' };
     }
     const res = replyTurnV4(state, content, parsed.value, { msg: id, prose: msg.mes, ms, repaired });

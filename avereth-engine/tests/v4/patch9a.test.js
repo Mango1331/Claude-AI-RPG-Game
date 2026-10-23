@@ -47,9 +47,9 @@ function bow(g, arrows) {
 // ------------------------------------------------------------------------------------------------ A. creation
 test('9A A1-A4, A8-A9: Warrior, Mage (Flame Lance + Blink) and Rogue each choose two of their six; one Basic Attack, the kit, the favored stats, no Passive', () => {
     const cases = [
-        ['Warrior', 'Heavy Slash + Guard', 'warrior', ['warrior.heavy_slash', 'warrior.guard'], ['starter_longsword', 'starter_heavy_armor'], { STR: 6, VIT: 6 }],
-        ['Mage', 'Flame Lance + Blink', 'mage', ['mage.flame_lance', 'mage.blink'], ['starter_arcane_staff', 'starter_light_robes'], { INT: 6, WIL: 6 }],
-        ['Rogue', 'Razor Cut + Long Lunge', 'rogue', ['rogue.razor_cut', 'rogue.long_lunge'], ['starter_dagger', 'starter_light_armor'], { AGI: 6, PER: 6 }],
+        ['Warrior', 'Heavy Slash + Guard', 'warrior', ['warrior.heavy_slash', 'warrior.guard'], ['starter_longsword_r2', 'starter_heavy_armor'], { STR: 6, VIT: 6 }],
+        ['Mage', 'Flame Lance + Blink', 'mage', ['mage.flame_lance', 'mage.blink'], ['starter_arcane_staff_r2', 'starter_light_robes'], { INT: 6, WIL: 6 }],
+        ['Rogue', 'Razor Cut + Long Lunge', 'rogue', ['rogue.razor_cut', 'rogue.long_lunge'], ['starter_dagger_r2', 'starter_light_armor'], { AGI: 6, PER: 6 }],
     ];
     for (const [cls, skills, id, chosen, kit, favored] of cases) {
         const g = hero(cls, skills);
@@ -125,7 +125,7 @@ test('9A B: the Rogue fights with his Skills: Razor Cut, Long Lunge across an ex
     const cut = attackAction(ctx, 'pc', 'mon.boar', 'rogue.razor_cut');
     assert.equal(cut.illegal, undefined);
     assert.equal(cut.skill, 'rogue.razor_cut');
-    assert.equal(cut.raw_text, '6 + AGI 6×1.50 + ATK 6 = 21');
+    assert.equal(cut.raw_text, '6 + AGI 6×1.50 + ATK 10 = 25'); // 4.3.0-c.6.6.53: the Starter Dagger of ruleset 2, ATK 10
     assert.equal(pc.current.sta, 95, 'Razor Cut: 5 STA');
     // the wolf at MEDIUM: Long Lunge closes the extra band (SHORT) and the Turn's one band (ENGAGED)
     const lunge = attackAction(ctx, 'pc', 'mon.wolf', 'rogue.long_lunge', { move: 'closer' });
@@ -161,7 +161,7 @@ test('9A B: #skills and #skill show the Rogue\'s Skills with their real cost, re
     assert.match(one, /Range: ENGAGED/);
     assert.match(one, /Base Power 11 \| Scaling AGI ×1\.75 \| Uses ATK \| physical/);
     assert.match(one, /ignores Partial Cover/);
-    assert.match(one, /Current Raw Power: 11 \+ AGI 6×1\.75 \+ ATK 6 = 27\.5/);
+    assert.match(one, /Current Raw Power: 11 \+ AGI 6×1\.75 \+ ATK 10 = 31\.5/); // .53: Starter Dagger ATK 10
     assert.match(panel(g, '#skill Guarded Cut'), /Effect: after resolving the attack, gain \+4 temporary DEF/);
     assert.match(panel(g, '#skill Razor Cut'), /Razor Cut is not a Skill Alaric knows/);
 });

@@ -172,6 +172,36 @@
       "atk": 6,
       "slot": "weapon",
       "family": "precision"
+    },
+    "starter_longsword_r2": {
+      "id": "starter_longsword_r2",
+      "name": "Starter Longsword",
+      "rank": "F",
+      "source_line": "Starter Longsword [F]: ATK 10",
+      "atk": 10,
+      "slot": "weapon",
+      "family": "melee",
+      "note": "4.3.0-c.6.6.53: the provisional starting weapon of ruleset 2 (live 23.10.2026); legacy campaigns and the people of the world keep Starter Longsword ATK 6"
+    },
+    "starter_arcane_staff_r2": {
+      "id": "starter_arcane_staff_r2",
+      "name": "Starter Arcane Staff",
+      "rank": "F",
+      "source_line": "Starter Arcane Staff [F]: MATK 10",
+      "matk": 10,
+      "slot": "weapon",
+      "family": "focus",
+      "note": "4.3.0-c.6.6.53: the provisional starting weapon of ruleset 2; legacy campaigns and the people of the world keep MATK 6"
+    },
+    "starter_dagger_r2": {
+      "id": "starter_dagger_r2",
+      "name": "Starter Dagger",
+      "rank": "F",
+      "source_line": "Starter Dagger [F]: ATK 10",
+      "atk": 10,
+      "slot": "weapon",
+      "family": "precision",
+      "note": "4.3.0-c.6.6.53: the provisional starting weapon of ruleset 2; the people of the world keep ATK 6"
     }
   },
   "starter_kits": {
@@ -202,6 +232,14 @@
       "starter_light_armor"
     ]
   },
+  "ruleset_kits": {
+    "_note": "4.3.0-c.6.6.53 (live 23.10.2026: two Level-1 Warriors died in their first Dungeon fights): the kit Alaric is given at creation under ruleset 2, in place of starter_kits; a provisional start help until the balancing of 10B. starter_kits stays the kit of legacy campaigns and of the people of the world (gear_from_starter_kit); a campaign keeps the kit it was given (its items by id).",
+    "2": {
+      "warrior": ["starter_longsword_r2", "starter_heavy_armor"],
+      "mage": ["starter_arcane_staff_r2", "starter_light_robes"],
+      "rogue": ["starter_dagger_r2", "starter_light_armor"]
+    }
+  },
   "bootstrap": {
     "items": [
       "simple_travelers_clothes",
@@ -209,7 +247,7 @@
     ],
     "coin_cp": 50
   },
-  "kits_text": "TRANSMIGRATION STARTER KITS — ONE-TIME CAMPAIGN INITIALIZATION\n\nWhen System Character Creation is completed by selecting one Base Class and exactly 2 Base Skills, the System grants exactly one matching F-rank starter kit.\nThis is a one-time bootstrap benefit, not a repeatable Shop or Skill.\n\nAll listed values are fixed item-instance values.\n\nWARRIOR:\n- Starter Longsword [F]: ATK 6\n- Starter Heavy Armor [F]: DEF 6, MDEF 2\n\nMAGE:\n- Starter Arcane Staff [F]: MATK 6\n- Starter Light Robes [F]: DEF 2, MDEF 3\n\nGUARDIAN:\n- Starter Mace [F]: ATK 5\n- Starter Heavy Armor [F]: DEF 6, MDEF 2\n- Starter Shield [F]: DEF 3, MDEF 2\n\nDUELIST:\n- Starter Rapier [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n\nRANGER:\n- Starter Shortbow [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n- Starter Quiver [unranked]: contains 20 Standard Arrows\n- Standard Arrows are ordinary physical ammunition and grant no bonus damage or other modifier.\n\nROGUE (Patch 9A):\n- Starter Dagger [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n\nA new campaign (Patch 9A) offers Warrior, Mage and Rogue; Guardian, Duelist and Ranger kits stay for the campaigns that started with them.\n\nCOMMON BOOTSTRAP ITEMS:\nBefore Class selection, the player has:\n- Simple Traveler's Clothes [unranked; no combat values]\n- Small Pouch [unranked]\n- 5 Silver\n\nCREATION-COMPLETION EFFECT:\nAfter the Class is chosen and exactly 2 Base Skills from that Class are chosen:\n1. apply the Class's one-time Level-1 Favored-Stat growth if not already applied;\n2. grant/preserve the selected Class's Basic Attack at Proficiency 1, Progress 0, plus the 2 selected Base Skills at Proficiency 1, Progress 0;\n3. materialize and equip the matching starter kit;\n4. preserve Simple Traveler's Clothes as ordinary clothing unless the player later discards/replaces them;\n5. mark the one-time starter kit as claimed.\n\nNo later Class Evolution or Class change grants another starter kit unless an explicit future rule says so.\n",
+  "kits_text": "TRANSMIGRATION STARTER KITS — ONE-TIME CAMPAIGN INITIALIZATION\n\nWhen System Character Creation is completed by selecting one Base Class and exactly 2 Base Skills, the System grants exactly one matching F-rank starter kit.\nThis is a one-time bootstrap benefit, not a repeatable Shop or Skill.\n\nAll listed values are fixed item-instance values.\n\nWARRIOR:\n- Starter Longsword [F]: ATK 6\n- Starter Heavy Armor [F]: DEF 6, MDEF 2\n\nMAGE:\n- Starter Arcane Staff [F]: MATK 6\n- Starter Light Robes [F]: DEF 2, MDEF 3\n\nGUARDIAN:\n- Starter Mace [F]: ATK 5\n- Starter Heavy Armor [F]: DEF 6, MDEF 2\n- Starter Shield [F]: DEF 3, MDEF 2\n\nDUELIST:\n- Starter Rapier [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n\nRANGER:\n- Starter Shortbow [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n- Starter Quiver [unranked]: contains 20 Standard Arrows\n- Standard Arrows are ordinary physical ammunition and grant no bonus damage or other modifier.\n\nROGUE (Patch 9A):\n- Starter Dagger [F]: ATK 6\n- Starter Light Armor [F]: DEF 2, MDEF 3\n\nA new campaign (Patch 9A) offers Warrior, Mage and Rogue; Guardian, Duelist and Ranger kits stay for the campaigns that started with them.\nA new campaign (4.3.0-c.6.6.53, provisional until balancing) gives a stronger starting weapon: Starter Longsword [F]: ATK 10, Starter Arcane Staff [F]: MATK 10, Starter Dagger [F]: ATK 10; its armor as above.\n\nCOMMON BOOTSTRAP ITEMS:\nBefore Class selection, the player has:\n- Simple Traveler's Clothes [unranked; no combat values]\n- Small Pouch [unranked]\n- 5 Silver\n\nCREATION-COMPLETION EFFECT:\nAfter the Class is chosen and exactly 2 Base Skills from that Class are chosen:\n1. apply the Class's one-time Level-1 Favored-Stat growth if not already applied;\n2. grant/preserve the selected Class's Basic Attack at Proficiency 1, Progress 0, plus the 2 selected Base Skills at Proficiency 1, Progress 0;\n3. materialize and equip the matching starter kit;\n4. preserve Simple Traveler's Clothes as ordinary clothing unless the player later discards/replaces them;\n5. mark the one-time starter kit as claimed.\n\nNo later Class Evolution or Class change grants another starter kit unless an explicit future rule says so.\n",
   "item_effects": {
     "_note": "Patch 7.1 (4.3.0-c.6.6.19): offensive consumables the engine resolves (a scroll thrown is an attack through the combat pipeline, never a story effect). Each entry is the standard profile of its kind, shaped like a skill (src/combat.js attackAction) with item: true; match names the words (all of them) of a thing's name that make it this kind. A concrete scroll keeps its own snapshot (object.profile, fixed when it is offered, bought, looted or established): its power is the standard power times its quality, never its user's stats, level or Power-Rank nor the foe's. requires_rank (optional) lowers or raises the Power-Rank needed to use it; without it, the item's own Rank.",
     "effects": [

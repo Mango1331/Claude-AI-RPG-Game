@@ -6,7 +6,7 @@ import { goalLines } from './v4/growth.js';
 import { skillOfferLines, lineageText } from './v4/skill_growth.js';
 import { profileOf, sourceText } from './v4/items.js';
 import { formatCoin } from './economy.js';
-import { findSkill, rulesetOf, startClasses, skillOf } from './content.js';
+import { findSkill, rulesetOf, startClasses, skillOf, kitOf } from './content.js';
 import { passiveTotals, skillCostAmount, passivesOf, passiveText, effectiveStats, statsText, passiveSlots } from './passives.js';
 import { passiveLines, passiveOffers } from './v4/passive_growth.js';
 import { promotionPp, effectValue, effectFactor, flatEffectValue, affinityFor } from './skills.js';
@@ -101,7 +101,7 @@ export function creationPanel(state, content, outcome) {
         return [
             `Choose exactly ${content.start.creation.choose_skills} Skills from the ${cls.name} Base Pool (for example "${pool[0].name} + ${pool[1].name}"):`,
             ...pool.map((sk) => `- ${skillSummary(sk)}`),
-            `Starter Gear, equipped when Step 2 is complete: ${content.kits[cls.id].map((id) => gearText(content.items.get(id))).join(', ')}.`,
+            `Starter Gear, equipped when Step 2 is complete: ${kitOf(content, cls.id, rulesetOf(state)).map((id) => gearText(content.items.get(id))).join(', ')}.`,
         ];
     };
     if (outcome?.kind === 'creation.complete') {

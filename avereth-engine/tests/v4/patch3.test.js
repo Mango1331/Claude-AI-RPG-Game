@@ -213,7 +213,7 @@ test('gear: "I take off everything I\'m wearing" takes off what he wears; the st
     const def = deriveCharacter(s.entities.pc.sheet, content).def;
     await say(g, '*i take off everything im wearing and leave my staff with my clothes on the stone, then i walk into the pool*',
         { type: 'unequip', object: null, quote: 'i take off everything im wearing' },
-        { type: 'drop', object: 'item.starter_arcane_staff', qty: null, quote: 'leave my staff with my clothes on the stone' },
+        { type: 'drop', object: 'item.starter_arcane_staff_r2', qty: null, quote: 'leave my staff with my clothes on the stone' }, // .53: the staff of ruleset 2
         { type: 'go', to: { new: 'the pool' }, quote: 'i walk into the pool' });
     const o = outcome(g);
     assert.deepEqual(o.resolutions.map((x) => [x.type, x.status]), [['unequip', 'resolved'], ['drop', 'resolved'], ['go', 'authorized']]);
@@ -236,7 +236,7 @@ test('gear: "I take off everything I\'m wearing" takes off what he wears; the st
         { type: 'equip', object: 'item.starter_light_robes', slot: null, quote: 'put my robes back on' });
     s = g.state();
     assert.deepEqual(outcome(g).resolutions.map((x) => x.status), ['resolved', 'resolved', 'resolved']);
-    assert.equal(s.entities.pc.sheet.equipment.weapon, 'starter_arcane_staff');
+    assert.equal(s.entities.pc.sheet.equipment.weapon, 'starter_arcane_staff_r2');
     assert.equal(deriveCharacter(s.entities.pc.sheet, content).matk, matk);
 });
 

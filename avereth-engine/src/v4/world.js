@@ -413,7 +413,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             // creature as before, and so does every creature outside a Living Dungeon. A Dungeon an older campaign is in
             // that this very reply establishes (Patch 8 (7)) was not one its narrator had the rules of: not yet.
             const root = !hit && d.threat !== false ? trueDungeonOf(s, s.scene.at) : null;
-            if (root && livingBefore.has(root) && livingOf(s, root) && insideOf(s, root)) {
+            // 4.3.0-c.6.6.53 (live 23.10.2026 20:56: the entry not read, three goblins of the Mossback Warrens the next
+            // reply brought before its gate were booked at Level 5, outside its encounters): at its root too, a creature
+            // of the Dungeon's own kinds (its slots' anchors and species) is none of the world's; any other stays
+            if (root && livingBefore.has(root) && livingOf(s, root) && (insideOf(s, root) || (s.scene.at === root && dungeonKind(livingOf(s, root), d)))) {
                 const name = s.places[root]?.name || root;
                 reject(d, 'dungeon_foe', `only the engine adds the foes of ${name}: ${d.species || d.ref} is no encounter of this level`);
                 const fix = `The ${d.species || d.ref} of the last reply is no foe here: in ${name} only the engine adds foes (its DUNGEON lines). It is not there as one: nothing of it acts, attacks or can be fought.`;
@@ -2049,3 +2052,12 @@ export function extractionFailedEvents(error, ms = null) {
 }
 
 export { HALL_NAME, REGISTRATION_OFFER, membership, deriveCharacter };
+
+/** 4.3.0-c.6.6.53: is a creature the reply brings one of the kinds a Living Dungeon's levels hold (anchor or species)? */
+function dungeonKind(living, d) {
+    const words = (x) => (Array.isArray(x) ? x : [x]).filter(Boolean).map((w) => String(w).toLowerCase());
+    const slots = Object.values(living.floors || {}).flatMap((f) => f.slots || []);
+    const anchors = new Set(slots.flatMap((x) => words(x.anchor)));
+    const species = new Set(slots.flatMap((x) => words(x.species)));
+    return anchors.has(String(d.anchor || '').toLowerCase()) || species.has(String(d.species || '').toLowerCase());
+}

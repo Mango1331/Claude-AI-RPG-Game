@@ -1,4 +1,3 @@
-import { transferCargo, bookDelivery, cargoProvenance } from './delivery.js';
 // Runtime V4: the command handlers (docs/RUNTIME_V4_PLAN.md §4.1, §4.4). The interpreter translated the player's story
 // message into typed commands (src/v4/interpret.js), the agency guard dropped what was no decision (src/v4/agency.js);
 // here the engine checks each command against the state at its step and books it. Every command gets a status:
@@ -13,6 +12,7 @@ import { transferCargo, bookDelivery, cargoProvenance } from './delivery.js';
 // and one PLAYER ACTIONS line for the narrator (the engine block, src/context.js), in the order of the message. What the
 // reply may change because of a command (auth), what the extractor must answer (expectedKeys) and what waits for the
 // reply (conditionals) go into the turn's outcome; the world applier (src/v4/world.js) reads them from there.
+import { transferCargo, bookDelivery, cargoProvenance } from './delivery.js';
 import { formatCoin } from '../economy.js';
 import { spendsStatPoints, assignHint } from '../commands.js';
 import { resolveCheck } from '../checks.js';
@@ -86,6 +86,22 @@ function objectOf(s, content, ref) {
         return qty ? { id: ref, template: tpl, name: content.items.get(tpl)?.name || s.item_names?.[tpl] || tpl, qty, holder: { entity: 'pc' } } : null;
     }
     return s.objects[ref] || null;
+}
+
+/** Materialise outgoing sheet units once; a returned object keeps this physical identity. */
+function transferTemplate(s, o, to, n, seq, ctx, emit, envx, { drop = false } = {}) {
+    const base = `obj.t${env(ctx).msg}.${slug(o.name)}`;
+    let id = base;
+    const delivery = envx?.c && rulesetOf(s) >= 2;
+    if (delivery) for (let i = 2; s.objects[id]; i++) id = `${base}_${i}`;
+    const provenance = delivery ? cargoProvenance(s, o, { objectId: id, qty: n }) : {};
+    emit({ t: 'item.changed', d: { id: 'pc', item: o.template, qty: -n, why: drop ? 'dropped' : `given to ${who(s, to.entity)}` } });
+    emit({ t: 'object.created', d: { object: {
+        id, name: o.name, kind: 'item', stack: n > 1, qty: n, unit: null, holder: to,
+        ...provenance, marks: [], for_quests: [],
+        source: { turn: s.turn, how: drop ? 'dropped' : 'given', item: o.template },
+    } } });
+    if (envx?.c) bookDelivery(s, emit, o, to, n, seq, { drop, objectId: id });
 }
 
 /** Minutes until a named time of day (next occurrence), or the fixed allowance for "done". */
@@ -682,10 +698,7 @@ const HANDLERS = {
         const qty = c.qty && c.qty < (o.qty ?? 1) ? c.qty : null;
         if (o.template) {
             const n = qty || o.qty;
-            emit({ t: 'item.changed', d: { id: 'pc', item: o.template, qty: -n, why: 'dropped' } });
-            // 4.3.0-c.6.6.53: the content item it was (two may share a name: the Starter Longsword of ruleset 2 and the older one)
-            emit({ t: 'object.created', d: { object: { id: `obj.t${env(ctx).msg}.${slug(o.name)}`, name: o.name, kind: 'item', stack: n > 1, qty: n, unit: null, holder: { loc: s.scene.at }, ...(envx?.c && rulesetOf(s) >= 2 ? cargoProvenance(s,o) : {}), marks: [], for_quests: [], source: { turn: s.turn, how: 'dropped', item: o.template } } } });
-            if (envx?.c) bookDelivery(s, emit, o, { loc: s.scene.at }, n, c.seq, { drop: true, objectId: `obj.t${env(ctx).msg}.${slug(o.name)}` });
+            transferTemplate(s, o, { loc: s.scene.at }, n, c.seq, ctx, emit, envx, { drop: true });
         } else if (envx?.c) transferCargo(s, content, emit, o, { loc: s.scene.at }, qty, c.seq, { drop: true });
         else emit({ t: 'object.moved', d: { id: o.id, to: { loc: s.scene.at }, ...(qty ? { qty, split: `${o.id}_${s.turn}` } : {}) } });
         return { status: 'resolved', line: `DROPS — ${o.name}${qty ? ` (${qty})` : ''}${off ? ' (taken off first: no longer equipped)' : ''}; it stays here, not his gear until he takes it again.` };
@@ -705,9 +718,7 @@ const HANDLERS = {
         const qty = c.qty && c.qty < (o.qty ?? 1) ? c.qty : null;
         if (o.template) {
             const n = qty || o.qty;
-            emit({ t: 'item.changed', d: { id: 'pc', item: o.template, qty: -n, why: `given to ${who(s, c.to)}` } });
-            emit({ t: 'object.created', d: { object: { id: `obj.t${env(ctx).msg}.${slug(o.name)}`, name: o.name, kind: 'item', stack: n > 1, qty: n, unit: null, holder: { entity: c.to }, ...(envx?.c && rulesetOf(s) >= 2 ? cargoProvenance(s,o) : {}), marks: [], for_quests: [], source: { turn: s.turn, how: 'given', item: o.template } } } });
-            if (envx?.c) bookDelivery(s, emit, o, { entity: c.to }, n, c.seq, { objectId: `obj.t${env(ctx).msg}.${slug(o.name)}` });
+            transferTemplate(s, o, { entity: c.to }, n, c.seq, ctx, emit, envx);
         } else if (envx?.c) transferCargo(s, content, emit, o, { entity: c.to }, qty, c.seq);
         else emit({ t: 'object.moved', d: { id: o.id, to: { entity: c.to }, ...(qty ? { qty, split: `${o.id}_${s.turn}` } : {}) } });
         return { status: 'resolved', line: `GIVES — ${o.name}${qty ? ` (${qty})` : ''} to ${who(s, c.to)}.` };

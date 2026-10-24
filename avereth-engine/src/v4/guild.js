@@ -1,10 +1,10 @@
-import { rulesetOf as deliveryRuleset } from '../content.js';
-import { deliveryStatus, confirmsOnly } from './delivery.js';
 // Runtime V4: the Adventurers' Guild as engine procedure (docs/RUNTIME_V4_PLAN.md §6.3, §6.4). Everything here is
 // engine_resolution in the authority matrix (src/v4/firewall.js): the registration and its canon fee, the plate, the
 // board and its listings (from the Board generator, validated and booked before the narrator describes them), the
 // acceptance with its contract slip, the turn-in with the proof check, the payout, Quest XP, the contract count and
 // the promotion. The narrator only tells what the engine booked; the extractor's deltas cannot change any of it.
+import { rulesetOf as deliveryRuleset } from '../content.js';
+import { deliveryStatus, confirmsOnly, nonphysicalDelivery } from './delivery.js';
 import { nearDungeons, dungeonText, rankText, guildRecord, trueDungeonOf } from './dungeon.js';
 import { clearOf, clearDone, clearTarget, cullPopulation, slotNameOf, floorAt } from './living.js';
 import { O, S, I, E, A, N, validate } from './schema.js';
@@ -544,6 +544,7 @@ export function boardRequest(s, content, need) {
         '- task is what the notice asks the adventurer to do, one imperative sentence the board shows ("Hunt and cull the bog strider colony at the eel-weirs of the Reed Flats so the eel boats can launch safely again."). desired_end_state is the COMPLETE outcome the Guild recognizes when it is reached ("The bog strider colony is culled and the eel boats launch again."). Keep the two apart.',
         '- desired_end_state is the single semantic completion gate and MUST cover every substantive result the contract actually requires. Never leave required work only in objectives. Example: if the job ESCORTS a cart/driver to a ford AND DELIVERS six casks to a trading yard, the desired end state must include both safe arrival and the casks reaching that yard; arrival in town alone is not completion. Objectives may remember useful route/work detail, but they may not secretly add a required result that desired_end_state omits.',
         hunt,
+        ...(need.c && deliveryRuleset(s) >= 2 ? ['- DELIVER/GIVE objectives name physical cargo (a parcel, ledger, written letter), never spoken news, warnings or abstract services. Use TALK for a spoken message or warning; do not invent a cargo object for it.'] : []),
         '- Rank limits scope, risk and complexity — not whether the subject is mundane or fantastical. Low-rank work may involve a manageable Monster, minor magic or a minor ruin, one dangerous animal, or a small clearly defined weak group such as wolves, goblins or feral dogs.',
         '- Do not preferentially default to rats, cellar vermin or indistinct swarms. Rats are allowed occasionally, not the standard low-rank combat answer.',
         '- The listings generated together must differ materially in underlying problem, location and likely play experience. Outside an explicit rank profile, do not make a balanced checklist of predefined quest categories.',
@@ -661,7 +662,8 @@ export function parseBoard(answer, content, need, s = null) {
         const text = [l.title, l.task, l.desired_end_state, ...l.objectives.map((o) => `${o.what} ${o.where || ''}`)].join(' \n ').toLowerCase();
         const at = near.length ? dungeonNamed(s, near, text) : null;
         const why = l.rank !== need.rank ? `rank ${l.rank} is not ${need.rank}` : l.level < lo || l.level > hi ? `level ${l.level} outside ${lo}–${hi}` : l.objectives.length > 4 ? 'more than 4 objectives' : l.proof.length > 2 ? 'more than 2 verification examples'
-            : at && inDungeon ? 'at most one Dungeon job on this board, and one is there already' : at ? dungeonPartWhy(s, content, need.rank, at, text) || noCullWhy(s, content, need, at, l, text) : null;
+            : need.c && (!s || deliveryRuleset(s) >= 2) && l.objectives.some(nonphysicalDelivery) ? 'DELIVER/GIVE requires physical cargo; use TALK for a spoken message or warning'
+                : at && inDungeon ? 'at most one Dungeon job on this board, and one is there already' : at ? dungeonPartWhy(s, content, need.rank, at, text) || noCullWhy(s, content, need, at, l, text) : null;
         // Patch 8.1 (§3, §10): the Dungeon its work lies in, fixed with the listing (the gate and the count read this)
         if (at) l.dungeon = at;
         // Patch 8.4.1 (live 22.10.2026 05:43: "Cull the Burial Gallery Skeletons", a clearance of level 1 with no number):

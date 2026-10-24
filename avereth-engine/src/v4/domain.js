@@ -133,6 +133,12 @@ export function applyDomainEvent(state, e) {
         case 'object.added': {
             const o = state.objects[d.id];
             if (!o) throw new Error(`unknown object ${d.id}`);
+            // Real new units enlarge this batch. Moving existing units back never passes through object.added.
+            if (o.delivery_origin && (d.qty ?? 1) > 0) {
+                const capacities = Object.values(state.objects).filter(x => x.delivery_origin === o.delivery_origin)
+                    .map(x => x.delivery_capacity || 0);
+                o.delivery_capacity = Math.max(o.delivery_capacity || o.qty || 1, ...capacities) + (d.qty ?? 1);
+            }
             o.qty = (o.qty ?? 1) + (d.qty ?? 1);
             mirror(state, d.id);
             break;

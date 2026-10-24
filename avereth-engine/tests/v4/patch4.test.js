@@ -347,7 +347,7 @@ test('review 3: a group shown as no foe can still turn on him as a group once th
     assert.equal(g.state().encounter, null);
     // he gives them cause; the story has the group turn on him
     await say(g, '*i throw a stone at the dogs*');
-    await g.reply('The stone cracks off a flank; all three farm dogs turn on him, snarling.', { expected: {}, deltas: [{ seq: 1, type: 'hostile', by: ['farm dogs'], scope: 'all', evidence: 'all three farm dogs turn on him' }] });
+    await g.reply('The stone cracks off a flank; all three farm dogs turn on him, snarling, and lunge at Alaric.', { expected: {}, deltas: [{ seq: 1, type: 'hostile', by: ['farm dogs'], scope: 'all', evidence: 'all three farm dogs turn on him' }] });
     s = g.state();
     assert.deepEqual(Object.keys(s.encounter?.combatants || {}).filter((id) => id !== 'pc').sort(), dogs.slice().sort());
     assert.ok(W.every((id) => !s.encounter.combatants[id]), 'the wolves are no part of it');

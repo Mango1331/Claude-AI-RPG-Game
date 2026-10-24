@@ -10,6 +10,7 @@ import path from 'node:path';
 import { loadContent, ROOT } from '../helpers.js';
 import { rec } from '../../src/host.js';
 import { prepareGenerationAsync } from '../../src/v4/runtime.js';
+import { sceneHandle } from '../../src/v4/scene_handles.js';
 import { groupMembers, resolveRef } from '../../src/v4/identity.js';
 import { Chat4 } from './harness.js';
 
@@ -162,7 +163,7 @@ test('patch 7.2B (8, 9, 10): a newcomer joins its group and the group\'s ref wit
     assert.deepEqual(vague.foes, []);
     // the newcomer and beetle A by their handles: exactly those two
     s = g.state();
-    const two = await reply(g, 'The newcomer and the notched one come at him.', [{ type: 'hostile', by: [newcomer, BEETLE(1)], scope: null, evidence: null }]);
+    const two = await reply(g, `${sceneHandle(s, content, newcomer)} and ${sceneHandle(s, content, BEETLE(1))} come at him.`, [{ type: 'hostile', by: [newcomer, BEETLE(1)], scope: null, evidence: null }]);
     assert.deepEqual(two.foes, [newcomer, BEETLE(1)].sort());
     assert.equal(g.state().entities[BEETLE(1)].profile.max_hp, s.entities[BEETLE(1)].profile.max_hp, 'its own profile, as fixed at first sight');
 });

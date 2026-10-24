@@ -53,7 +53,7 @@ function after(state, way = 'c') {
     s.last = { ...s.last, input: 'x', outcome: way === 'v3c' ? { kind: 'narrative', c: true } : story };
     return s;
 }
-const world = (s, deltas, way = 'c') => applyWorld(after(s, way), content, { expected: {}, deltas }, { msg: 9 });
+const world = (s, deltas, way = 'c') => applyWorld(after(s, way), content, { expected: {}, deltas }, { msg: 9, prose: deltas.flatMap((d) => d.type === 'hostile' ? d.by : d.type === 'intent' && d.intent === 'attack' ? [d.who] : []).map((id) => `${s.entities[id]?.name || id.replace(/^[a-z]+\./, '').replace(/_/g, ' ')} attacks Alaric.`).join(' ') });
 const refused = (r) => r.events.filter((e) => e.t === 'delta.rejected').map((e) => [e.d.rule, e.d.reason]);
 const pcHp = (s) => s.entities.pc.sheet.hp;
 /** What every strike the engine resolved on Alaric in these combat records took from his HP. */

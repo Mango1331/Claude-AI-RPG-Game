@@ -252,7 +252,7 @@ test('c.6.6.6 review: a townsperson caught in the burst enters the fight as no f
     await say(h, '*i hold my ground*', { type: 'activity', kind: 'wait', what: null, minutes: null, until: null, quote: 'i hold my ground' });
     assert.equal(h.state().encounter.combatants[DOG].side, 'ally');
     assert.ok(outcomeOf(h).records.filter((r) => r.actor === DOG).every((r) => r.kind === 'hold'), 'unstruck, it keeps out of it');
-    const x = await h.reply('Brindle snarls and rounds on Alaric.', { expected: {}, deltas: [{ seq: 1, type: 'hostile', by: [DOG] }] });
+    const x = await h.reply('Brindle snarls and lunges at Alaric.', { expected: {}, deltas: [{ seq: 1, type: 'hostile', by: [DOG] }] });
     assert.ok(x.record.events.some((e) => e.t === 'combat.intent' && e.d.who === DOG && e.d.intent === 'attack'));
     await say(h, '*i hold my ground*', { type: 'activity', kind: 'wait', what: null, minutes: null, until: null, quote: 'i hold my ground' });
     const turn = outcomeOf(h).records.find((r) => r.actor === DOG);

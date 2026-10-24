@@ -24,7 +24,7 @@ function after(state) {
         auth: { go: null, gos: [], roam: false, take: [], gather: false, rest: false, timeCap: 120 } } };
     return s;
 }
-const world = (s, deltas) => applyWorld(after(s), content, { expected: {}, deltas }, { msg: 9 }).state;
+const world = (s, deltas) => applyWorld(after(s), content, { expected: {}, deltas }, { msg: 9, prose: deltas.flatMap((d) => d.type === 'hostile' ? d.by : d.type === 'intent' && d.intent === 'attack' ? [d.who] : []).map((id) => `${s.entities[id]?.name || id.replace(/^[a-z]+\./, '').replace(/_/g, ' ')} attacks Alaric.`).join(' ') }).state;
 const wolf = (id) => ({ id, kind: 'creature', name: null, descriptors: ['grey wolf'], traits: '', status: 'alive', location: base.scene.location, at: base.scene.at, card: {}, species: 'grey wolf', anchor: 'wolf', created: { turn: 1, minute: 0 } });
 /** Two wolves turn on him: the fight runs after this reply. */
 function fight() {

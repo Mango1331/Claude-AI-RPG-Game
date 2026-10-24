@@ -146,18 +146,38 @@ export function envelopeBlock(state, content, { c = false } = {}) {
 }
 
 /** A threat permits a response, but is not yet an attack. Evidence quotes must come from this reply. */
-export function attackCommitted(prose, evidence = null, labels = []) {
-    if (!prose?.trim()) return true; // legacy/direct reports without narrator text
+export function attackCommitted(prose, evidence = null, labels = [], others = []) {
+    if (!prose?.trim()) return false;
     if (evidence && !normText(prose).includes(normText(evidence))) return false;
-    const clauses = normText(prose).replace(/"[^"\n]*"|“[^”\n]*”/g, '').split(/[.!?;\n]+/);
-    const named = labels.map(normText).filter((x) => x && x.length > 2);
-    const own = clauses.filter((c) => named.some((n) => c.includes(n)));
-    const relevant = own.length ? clauses.filter((c, i) => own.includes(c) || (i > 0 && own.includes(clauses[i - 1]) && /^\s*(?:he|she|it|they)\b/.test(c))) : clauses;
-    // The extractor identifies the commitment; reject explicit non-commitments, rather than whitelist every
-    // possible way a generative creature attacks. Existing identity/group and violence gates still apply.
-    const actual = (c) => !/\b(?:if|unless|would|could|might|will|yesterday|previously|ago|last (?:night|spring|year)|rumou?rs?|believes?|threaten\w*|ready to|prepar\w* to|about to|pretend\w* to|refus\w* to|does not|do not|did not|never)\b/.test(c)
-        && /\b(?:attack\w*|lung\w*|pounc\w*|charg\w*|rush\w*|surg\w*|ambush\w*|strik\w*|struck|stabs?|stabbed|swings?|swung|shoots?|shot|looses?|fired|fires|launch\w*|leaps?|springs?|bites?|snaps? at|comes? at|are on him|opens? fire|straight at him|both of them committed)\b/.test(c);
-    if (relevant.some(actual)) return true;
-    if (/"[^"]*\b(?:attack|shoot|kill|fire)\b[^"]*"/i.test(normText(evidence || prose))) return false;
-    return !relevant.some((c) => /(?:\b(?:bow|arrowhead|knife|weapon)s?\b.*\b(?:half.draw|held|sloped|raised|aimed)\b)|\b(?:does not|do not|did not|never attacks|refus\w*|surrender\w*|threat\w*|demands?|unless|if|ultimatum|aim\w*|raised|raises?|draws?|drawn|blocks?|wait\w*|watch\w*|circl\w*|growl\w*|hold\w* back|holds? (?:his|her|its|their|the) ground|parley|negotia\w*)\b/.test(c));
+    const escape = (x) => normText(x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const mentions = (names, own) => [...new Set(names.filter(Boolean).map(normText))].map((name) => ({ re: new RegExp(`\\b${escape(name)}\\b`, 'g'), own, length: name.length }));
+    const actors = [...mentions(labels, true), ...mentions(others, false)];
+    // This is positive, local evidence, not a default permission based on an extractor label.
+    // One attack may have an unusual weapon/body; it still needs a directed action by this actor.
+    const action = /\b(?:attacks?|attacked|lung\w*|pounc\w*|charg\w*|rush\w*|surg\w*|ambush\w*|strik\w*|struck|stabs?|stabbed|swings?|swung|shoots?|shot|looses?|fired|fires|launch\w*|leaps?|springs?|bites?|snaps? at|comes? at|are on him|opens? fire|straight at him|both of them committed|comes? down[^.!?;]{0,40} at|claws first[^.!?;]{0,60} at|(?:hurls?|hurled|drives?|drove|brings?)\b[^.!?;]{0,45}\b(?:knife|blade|sword|axe|spear|stone|boulder|fist|claw)s?\b(?:[^.!?;]{0,25}\bdown)?|slams? into|rams? into|spews?[^.!?;]{0,40} toward|tears? toward)\b/g;
+    let previous = null;
+    const clauses = prose.replace(/"[^"\n]*"|“[^”\n]*”/g, '').split(/[.!?;\n]+/).map(normText);
+    for (const clause of clauses) {
+        const found = actors.flatMap((a) => [...clause.matchAll(a.re)].map((m) => ({ index: m.index, ...a })));
+        // A specific handle outranks a kind contained in it ('Wolf B', not merely 'wolf').
+        const named = found.filter((a) => !found.some((b) => b.length > a.length && b.index <= a.index && b.index + b.length >= a.index + a.length)).sort((a, b) => a.index - b.index);
+        const uncertain = /\b(?:if|unless|would|could|might|will|yesterday|previously|ago|last (?:night|spring|year)|rumou?rs?|believes?|threaten\w*|ready to|prepar\w* to|about to|pretend\w* to|refus\w* to|does not|do not|did not|never)\b/.test(clause);
+        if (!uncertain) for (const m of clause.matchAll(action)) {
+            const prefix = clause.slice(0, m.index);
+            if (/\b(?:a|an|the|his|her|their|of|about|after|before)\s+$/.test(prefix) && !named.some((a) => a.index + a.length === prefix.trimEnd().length)) continue; // exclude noun mentions, but keep handles ending in A
+            const before = named.filter((a) => a.index < m.index);
+            let subject = before.at(-1) || (/\b(?:he|she|it|they)\b/.test(clause.slice(0, m.index)) ? previous : null);
+            // Coordinated subjects act together; an intervening predicate ('Rask smiles while Bren ...') does not.
+            for (let i = before.length - 2; i >= 0; i--) {
+                const a = before[i]; const next = before[i + 1];
+                if (a.index + a.length > next.index || !/^[\s,]*(?:and|&)?[\s,]*$/.test(clause.slice(a.index + a.length, next.index))) break;
+                if (a.own) subject = a;
+            }
+            const target = clause.slice(m.index + m[0].length);
+            const otherTarget = named.some((a) => !a.own && a.index > m.index);
+            if (subject?.own && (!otherTarget || /\b(?:alaric|him|pc)\b/.test(target))) return true;
+        }
+        if (named.length) previous = named.at(-1);
+    }
+    return false;
 }

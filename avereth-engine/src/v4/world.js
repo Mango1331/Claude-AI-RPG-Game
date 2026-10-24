@@ -366,7 +366,21 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         const v = mayOpenFight(s, content, id, { newInAnswer: bornHere.has(id), c: cPath });
         if (v.ok) {
-            if (!attackCommitted(prose, d.evidence, [s.entities[id].name, sceneHandle(s, content, id)])) {
+            const actor = s.entities[id];
+            const aliases = [actor.name, sceneHandle(s, content, id), ...[...refs].filter(([, who]) => who === id).map(([ref]) => ref)];
+            if (!actor.name || actor.kind === 'creature') {
+                const anchor = content.anchors.get(actor.anchor || actor.profile?.anchor);
+                aliases.push(actor.species, actor.descriptors?.[0], ...(anchor?.aliases || []));
+                const kind = actor.species?.split(/\s+/).at(-1);
+                if (kind) aliases.push(kind, `${kind}s`);
+                for (const desc of actor.descriptors || []) if (/^[a-z]+(?:_[a-z]+)+$/i.test(desc)) aliases.push(desc.replace(/_/g, ' '), desc.split('_').at(-1));
+                if (actor.group) aliases.push(actor.group.split(/[._\s]/).at(-1));
+                for (const [ref, ids] of groups) if (ids.includes(id)) aliases.push(ref.replace(/^[a-z]+\./, '').replace(/_/g, ' '));
+                // A collective noun still goes through the existing group identity/scope gate first.
+                if (actor.group) aliases.push(...GROUP_WORDS);
+            }
+            const otherActors = s.scene.present.filter((who) => who !== id && who !== 'pc').flatMap((who) => [s.entities[who]?.name, sceneHandle(s, content, who)]).filter(Boolean);
+            if (!attackCommitted(prose, d.evidence, aliases, otherActors)) {
                 reject(d, 'attack_commitment', `${id}: no immediate attack established in this reply`);
                 const correction = `${entityLabel(s, id)} has not committed an attack. Threats, demands and raised weapons leave negotiation and Alaric's next choice open; no First Strike or damage was booked.`;
                 if (!corrections.includes(correction)) corrections.push(correction);
@@ -430,9 +444,21 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             hit = slotForNew(s, content, d, s.scene.at, prose);
             if (hit?.existing) {
                 const ids = hit.slot.entities.filter((id) => s.entities[id]?.status !== 'dead');
-                if (ids.length === 1) refs.set(normText(d.ref), ids[0]);
-                for (const id of ids) emit({ t: 'scene.entered', d: { id, band: d.band || 'MEDIUM' } });
-                return ids;
+                const here = ids.filter((id) => {
+                    if (s.scene.present.includes(id)) return true; // an explicit enter/arrival already moved it
+                    const e = s.entities[id];
+                    const at = e.left?.at || e.at || hit.slot.at;
+                    if (at !== s.scene.at) {
+                        reject(d, 'dungeon_presence', `${id} remains at ${at || 'its last known room'}; a story reference alone does not move it`);
+                        const fix = `${entityLabel(s, id)} was not brought into this room. It remains at its last booked location unless an actual entrance or arrival establishes its movement.`;
+                        if (!corrections.includes(fix)) corrections.push(fix);
+                        return false;
+                    }
+                    emit({ t: 'scene.entered', d: { id, band: d.band || 'MEDIUM' } });
+                    return true;
+                });
+                if (here.length === 1) refs.set(normText(d.ref), here[0]);
+                return here;
             }
             // Patch 8.4.1 (live 22.10.2026 05:43, turn 16: a search's SUCCESS on level 1 of the Old Crown Catacombs, a
             // "robed waiting thing" the reply brought that was no encounter of the level; its fight gave 13 XP and level

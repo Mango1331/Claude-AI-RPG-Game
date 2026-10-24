@@ -40,7 +40,7 @@ function scene(actors, bands = {}) {
     for (const a of actors) { s.entities[a.id] = a; s.scene.present.push(a.id); s.scene.positions[a.id] = { band: bands[a.id] || 'MEDIUM', cover: 'none' }; }
     return s;
 }
-const world = (s, deltas) => applyWorld(after(s), content, { expected: {}, deltas }, { msg: 9 });
+const world = (s, deltas) => applyWorld(after(s), content, { expected: {}, deltas }, { msg: 9, prose: deltas.flatMap((d) => d.type === 'hostile' ? d.by : d.type === 'intent' && d.intent === 'attack' ? [d.who] : []).map((id) => `${s.entities[id]?.name || id.replace(/^[a-z]+\./, '').replace(/_/g, ' ')} attacks Alaric.`).join(' ') });
 const rules = (r) => r.events.filter((e) => e.t === 'delta.rejected').map((e) => e.d.rule);
 const committed = (r) => r.events.some((e) => e.t === 'combat.pending' || e.t === 'encounter.started');
 const BREN = npc('npc.bren', 'Bren', ['barkeep'], 'commoner');

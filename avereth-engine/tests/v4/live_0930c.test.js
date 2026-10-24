@@ -56,7 +56,10 @@ async function replay() {
             at[t.i].state = g.state();
             check(t.i);
         } else if (story) {
-            const r = await g.reply(t.reply, answerOf(t));
+            // Controlled reward/loot replay: its setup commits both boars. The archived reply only had the second
+            // circling at #28, which no longer proves an attack; keep that original JSON unchanged.
+            const prose = t.i === 28 ? `${t.reply} Both wild boars charge at Alaric.` : t.reply;
+            const r = await g.reply(prose, answerOf(t));
             at[t.i] = { rec: r.record, state: g.state() };
             check(t.i);
         }

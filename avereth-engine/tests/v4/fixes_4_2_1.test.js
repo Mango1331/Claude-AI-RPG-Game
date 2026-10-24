@@ -24,7 +24,7 @@ function after(state) {
         auth: { go: null, gos: [], roam: false, take: [], gather: false, rest: false, timeCap: 120 } } };
     return s;
 }
-const world = (s, deltas) => applyWorld(after(s), content, { expected: {}, deltas }, { msg: 9 });
+const world = (s, deltas) => applyWorld(after(s), content, { expected: {}, deltas }, { msg: 9, prose: deltas.flatMap((d) => d.type === 'hostile' ? d.by : d.type === 'intent' && d.intent === 'attack' ? [d.who] : []).map((id) => `${s.entities[id]?.name || id.replace(/^[a-z]+\./, '').replace(/_/g, ' ')} attacks Alaric.`).join(' ') });
 const rules = (r) => r.events.filter((e) => e.t === 'delta.rejected').map((e) => e.d.rule);
 const boar = (extra = {}) => ({ seq: 1, type: 'creature.new', ref: 'wild boar', species: 'wild boar', anchor: 'boar', desc: ['grey-bristled'], count: 1, present: true, band: 'MEDIUM', ...extra });
 const npc = (id, name, descriptors) => ({ id, kind: 'npc', name, descriptors, traits: '', status: 'alive', location: base.scene.location, at: base.scene.at, card: {}, created: { turn: 1, minute: 0 } });

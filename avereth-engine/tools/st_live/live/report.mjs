@@ -144,7 +144,10 @@ export function buildReport(x) {
     if (cut.length) A.push(`${cut.length} Aufruf(e) mit finish_reason "length" (${cut.map((c) => `Nr. ${c.n} ${c.role}`).join(', ')})`);
     if (A.length) L.push(...A.map((a) => `- ${cell(a)}`)); else L.push('Keine.');
     const pc = ev.counts.panels;
-    L.push('', `System-Panels: CLARIFY ${pc.clarify}, NOT TAKEN ${pc.not_taken}, REFUSED ${pc.refused}, BLOCKED ${pc.blocked}, FAILED ${pc.failed}. Zurückgewiesene Deltas: ${Object.entries(ev.counts.rejected).map(([k, v]) => `${k} ${v}`).join(', ') || 'keine'}.`, '');
+    L.push('', `System-Panels: CLARIFY ${pc.clarify}, NOT TAKEN ${pc.not_taken}, REFUSED ${pc.refused}, BLOCKED ${pc.blocked}, FAILED ${pc.failed}. Zurückgewiesene Deltas: ${Object.entries(ev.counts.rejected).map(([k, v]) => `${k} ${v}`).join(', ') || 'keine'}.`);
+    const recovery = ev.counts.recovery || {};
+    const plan = recovery.planner || {}, extract = recovery.extractor || {};
+    L.push(`Recovery-Beobachtung: Planner leer ${plan.empty || 0}, Transport ${plan.transport || 0}, davon erfolgreich mit 0 Commands ${plan.zeroCommands || 0}; Extractor leer ${extract.empty || 0}, Transport ${extract.transport || 0}, davon angewendet mit 0 Deltas ${extract.zeroDeltas || 0}. Null-Ergebnisse sind Prüfhinweise, keine bewiesenen Spielweltfehler.`, '');
 
     L.push('## Performance', '', '| Rolle | Aufrufe | Reparaturen | Median | p90 | Prompt-Tokens (Median) | davon Cache | Antwort-Tokens (Median) | Reasoning (Median) | finish_reason | leer |', '|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|');
     const st2 = callStats(calls);

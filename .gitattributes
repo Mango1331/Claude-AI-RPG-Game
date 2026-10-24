@@ -1,0 +1,3 @@
+# Preserve the LF-canonical narrator contract used verbatim by narrator.json.
+# Windows autocrlf must not alter its bytes or line-sensitive contract checks.
+avereth-engine/content/narrator/Avereth_Narrator_Contract_v4.txt text eol=lf

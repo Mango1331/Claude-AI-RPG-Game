@@ -42,7 +42,7 @@ test('cross references resolve (classes, skills, kits, items, templates, locatio
 test('narrator.json embeds the contract file verbatim and its report keys equal the validator keys', async () => {
     const c = await loadContent();
     const txt = await readFile(path.join(ROOT, 'content', c.narrator.contract_file), 'utf8');
-    assert.equal(c.narrator.contract_text, txt);
+    assert.equal(c.narrator.contract_text, txt.replace(/\r\n/g, '\n'));
     assert.deepEqual(Object.keys(c.narrator.report.keys).sort(), [...REPORT_KEYS].sort());
     assert.match(txt, /ENGINE AUTHORITY/);
     assert.match(txt, /CHECK DIE/);

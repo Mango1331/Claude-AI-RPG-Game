@@ -490,7 +490,7 @@ test('c.6.2: the second reading of the day shows the same notices, not as new; t
 });
 
 test('c.6.2: the narrator contract asks no trophies of a hunt; the Guild\'s contract slips only reflect the status the Guild and the engine have established', () => {
-    const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
+    const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8').replace(/\r\n/g, '\n');
     assert.ok(!/proven by trophies|trophies of the kills/.test(contract), 'no hunt-trophy rule');
     assert.match(contract, /What proves a contract is what the engine block says for it; ask for nothing it does not name \(no trophies or body parts, no local inspection, witness or signature\)\./);
     assert.match(contract, /The Adventurers' Guild issues standardized, lightly enchanted contract slips at its recognized branches\. A slip only reflects the contract status the Guild and the engine have established \(e\.g\. ACTIVE, READY, COMPLETED\); it does not watch the world on its own and pays nothing out\./);
@@ -539,7 +539,7 @@ test('c.6.3-gpt: the extractor is explicitly required to turn a clearly achieved
 });
 
 test('c.6.3-gpt: narrator contract treats refused actions as absent, never supplies Alaric dialogue, and preserves canonical place names', () => {
-    const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
+    const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8').replace(/\r\n/g, '\n');
     assert.match(contract, /A PLAYER ACTION marked NOT DONE, CANNOT, REFUSED, NOT TAKEN or otherwise explicitly saying it did not happen is a prohibition/);
     assert.match(contract, /Do not narrate that action or its ordinary execution steps: no travel\/arrival, payment, hand-over, turn-in, attack or other consequence from it/);
     assert.match(contract, /Never write spoken words for Alaric that the current PLAYER MESSAGE did not actually give him as speech/);
@@ -632,7 +632,7 @@ test('c.6.4-gpt: a visible tactical person survives the ambient filter, gets a p
 });
 
 test('c.6.4-gpt: narrator contract also forbids implied PC answers and partial narration of an illegal combat action', () => {
-    const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
+    const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8').replace(/\r\n/g, '\n');
     assert.match(contract, /Do not evade this by implying an invented reply \("whatever he answered", "after he replied", "his answer satisfied them"\)/);
     assert.match(contract, /combat resolution says Alaric's declared action is NOT possible, illegal, or that nothing was spent\/rolled/);
     assert.match(contract, /none of that declared action happened, including any movement bundled into it/);
@@ -732,7 +732,7 @@ test('c.6.5-gpt: journey pacing, complete desired outcomes, awareness and retrea
     assert.match(board, /desired_end_state is the single semantic completion gate and MUST cover every substantive result/);
     assert.match(board, /ESCORTS a cart\/driver to a ford AND DELIVERS six casks to a trading yard/);
 
-    const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
+    const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8').replace(/\r\n/g, '\n');
     assert.match(contract, /Do not make Alaric crouch, creep, sneak, hide behind cover, take a concealed firing position/);
     assert.match(contract, /Carry ordinary road, scenery, harmless conversation and uneventful time forward in that same reply until the destination or a concrete event creates a real new decision\/stop/);
     assert.match(contract, /Range movement is not escape/);

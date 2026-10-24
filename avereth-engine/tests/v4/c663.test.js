@@ -196,7 +196,7 @@ test('c.6.6.3 road: someone met on a long road is met on the road, not remembere
 
 // ------------------------------------------------------------------------------------------------ 6. friction
 test('c.6.6.3 quest friction: living actors with their own aims first, water and weather secondary and not twice running, the goal never moved; the board says why a road needs a Guild hand', () => {
-    const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8');
+    const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8').replace(/\r\n/g, '\n');
     const friction = contract.slice(contract.indexOf('QUEST FRICTION\n-'), contract.indexOf('When coincidence genuinely occurs'));
     assert.match(friction, /Prefer a complication with a living actor that wants something/);
     assert.match(friction, /bandits or waylayers, thieves, a rival crew/);

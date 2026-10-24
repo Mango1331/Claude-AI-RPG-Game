@@ -1,7 +1,8 @@
 {
   "id": "current_test",
-  "title": "Kurztest .54: 9C-Abschluss – Skill-Durchbruch aus eigenen, überlebbaren Kämpfen (Novice-Aufträge zuerst, Dungeon optional), Angebot, Annahme, Einsatz",
-  "brief": "Create a Warrior with Heavy Slash and Guard. Your objective is to let a new Skill grow out of the way you really fight, take it only when the System offers it, and then use it. Go into the city, register with the Adventurers' Guild and read the board for your rank. Prefer a Novice contract that sends you against single hostile beasts or vermin in the open (a cull of wolves, boars, rats or the like near the city) over a Dungeon: what counts are several real fights you can survive, not the place. A Dungeon is optional; go into one only once you have won such fights, and never take on a group of foes there alone. Before every fight, judge the danger from what you see and what the System shows (how many foes, how hurt you are): face one foe at a time, and if more than one foe or a clearly stronger one comes at you, withdraw before the fight begins instead of meeting it. Survival comes first, before any pattern: start a fight only with at least about 70% of your HP, and as soon as your HP falls to about 40% or below, stop the pattern and retreat: say plainly that you break off and flee from the fight (only that, as your whole action, no other skill in the same message), back toward the way you came, then rest or sleep in a safe place until your HP is full again before you look for the next fight. A fight you leave alive is better than a fight you finish dead. While your HP is healthy and the fight is one you can win, fight in a steady way of your own: whenever a foe is ENGAGED with you, raise Guard first and strike with Heavy Slash on your next turn (when your Stamina is too low, use your Basic Attack); drop the pattern whenever it would cost you the fight. Real fights against foes that attack you are what counts; the engine notes your way of fighting at the end of each fight that you win and needs about three such fights. Do not provoke a hopeless fight and never attack an innocent person. Only when the System shows POSSIBLE SKILL (it is offered, not yours yet), read #skills, then accept it in one clear sentence outside a fight (for example: I accept it). After the System reports NEW SKILL (or EVOLVED), send #skills and #skill with the exact name of the new Skill (one command per message), then use the new Skill against a foe in your next fight. If a trained fighter or mage of the world fights you or beside you, watch whether they use a technique of their own and note its name. Follow System state, not narrator claims: if POSSIBLE SKILL does not come after three or four won fights, report that and how your fights went instead of inventing progress. If a POSSIBLE PASSIVE appears, decide on it deliberately and note what the System says. Do not manipulate engine state, use developer shortcuts or reset the chat to force success.",
+  "title": "Patch 9D — explicit Level-14 class-evolution fixture",
+  "fixture": "9d-rare",
+  "brief": "This is an explicitly prepared Level-14 fixture, NOT a natural lifetime run. Creation is already complete: Warrior, Heavy Slash and Guard, one XP before Level 15. The historical feats shown by #feats are synthetic fixture data. Do not create another character. First read #status and #feats. Gain the last XP normally through one safe fight against a single weak hostile animal or a small completed Guild task; never attack an innocent person. After reaching E, wait for the engine's CLASS CHOICE, read #class, compare the alternative directions and their actual numbers. Choose the offensive melee class option explicitly by its exact name, outside any fight. After CLASS EVOLVED, send #class and #feats as separate messages. Then use Heavy Slash in one safe fight against a single weak foe and read the actual attack power and cost. Report the class name, quality and the one class trait you observed. No new Skill or Domain is granted by the class name. A postponed choice must remain the same. Do not manipulate state, regenerate, reroll or seek a stronger foe just to finish. Stop after the checks and actual class-trait combat usage. The harness will save/reload and check that the class and feats survive.",
   "character": {
     "class": "Warrior",
     "skills": [
@@ -11,89 +12,55 @@
   },
   "milestones": [
     {
-      "id": "creation_complete",
-      "goal": "Create a Warrior with Heavy Slash and Guard.",
+      "id": "class_rank_e",
+      "goal": "Gain the last XP normally and reach Level 15 / E.",
+      "maxTurns": 10
+    },
+    {
+      "id": "class_offered",
+      "goal": "The engine offers one group of alternative E Classes.",
+      "maxTurns": 2
+    },
+    {
+      "id": "class_accepted",
+      "goal": "Read #class and explicitly choose the offensive melee option by its exact name.",
       "maxTurns": 4
     },
     {
-      "id": "guild_registered",
-      "goal": "Go into the city to the Adventurers' Guild and register as a member (pay what the Guild asks).",
-      "maxTurns": 8,
-      "required": false
-    },
-    {
-      "id": "skill_pattern_noted",
-      "goal": "Win a real fight against one foe that attacks you, fighting your own steady way (Guard, then Heavy Slash) while your HP is healthy; at about 40% HP or below, flee and recover instead.",
-      "maxTurns": 10,
-      "required": false
-    },
-    {
-      "id": "skill_development_offered",
-      "goal": "Keep winning such fights, one foe at a time and resting between them, until the System offers a POSSIBLE SKILL that grew out of your fights (about three won hard fights).",
-      "maxTurns": 22
-    },
-    {
-      "id": "skill_development_accepted",
-      "goal": "Outside a fight, read #skills, then accept the offered Skill explicitly (for example: I accept it).",
+      "id": "class_verified",
+      "goal": "After CLASS EVOLVED, send #class and #feats separately and read both System panels.",
       "maxTurns": 4
     },
     {
-      "id": "skill_development_verified",
-      "goal": "After NEW SKILL (or EVOLVED), send #skills and #skill with the new Skill's exact name (one command per message) and compare them with the offer.",
-      "maxTurns": 4
-    },
-    {
-      "id": "developed_skill_used",
-      "goal": "Use the new Skill against a foe in your next fight.",
+      "id": "class_trait_used",
+      "goal": "Use Heavy Slash in a safe subsequent fight; inspect the actual cost and raw power with the selected class active.",
       "maxTurns": 8
-    },
-    {
-      "id": "inside_dungeon",
-      "goal": "Optional: only after won fights in the open, and never against a group alone, go into a Dungeon past its gate.",
-      "maxTurns": 12,
-      "required": false
-    },
-    {
-      "id": "npc_signature_met",
-      "goal": "Optional: only if a trained person of the world (Level 5 or more) meets you in a fight naturally, note their own technique.",
-      "required": false
-    },
-    {
-      "id": "npc_signature_used",
-      "goal": "Optional: such a person uses their own technique in the fight.",
-      "required": false
     }
   ],
   "focus": [
-    "Survival first: before a fight he judges the danger and withdraws from more than one foe or a clearly stronger one; at about 40% HP or below he flees (the flight as his whole action) and rests in safety until his HP is full; note whether the engine books the flight (one main action: the flight, not a Guard in its place), the rest and the healing, and whether the narrator agrees with the System.",
-    "Partial cover: a foe ENGAGED with him in melee must take his full damage (no 'Partial Cover' step in the System's combat lines); only a ranged attack across a distance may be softened by cover.",
-    "A new Skill comes only from real fights: the engine notes what a fight showed at its end, and only fights against foes that attacked you count; the offer comes after the fight (never during it), in a safe turn.",
-    "POSSIBLE SKILL is an offer: before your acceptance #skills must not list it and the narrator must not tell it as yours; after NEW SKILL your Basic Attack, Heavy Slash and Guard stay yours beside it.",
-    "Record the exact name, cost, range and effect of the offered Skill and compare offer, NEW SKILL, #skills and #skill: the same Skill, the same numbers.",
-    "When you use the new Skill in a fight, compare the System's combat result with its #skill description (cost, guard after the blow, damage).",
-    "If a trained person fights with a technique of their own, it must never strike an area or several times; note who it was and what it did.",
-    "Observe stalls, repeated or vanished offers, offers that grant nothing or more than shown, errors, unexpected extra LLM calls and Forge timing (the call table counts Forge calls as forge)."
+    "Explicit fixture test: history is seeded data; the last XP, offer, choice, System panels and combat use are actual runtime operations.",
+    "All options have the same earned Normal/Rare quality; only one is acquired, no ordinary Passive slot is used.",
+    "The root Warrior class and its Favored Stats, known Skills and Passives stay intact.",
+    "No free refill, extra Skill, Legendary class or Domain from the evolution.",
+    "The saved/reloaded selected class, trait and feats must be identical."
   ],
   "limits": {
-    "maxTurns": 35,
-    "maxMinutes": 110,
+    "maxTurns": 25,
+    "maxMinutes": 90,
     "sameFailure": 3
   },
   "personas": [
-    "Careful fighter: one foe at a time, Guard then Heavy Slash while healthy, an early flight and a full rest at low HP, short action messages, no detours",
-    "Mechanics observer: read #skills and #skill at the right moments; compare offer, acceptance and the actual combat results with the narration"
+    "Careful mechanics observer; read the two panels after choosing; one weak foe at a time."
   ],
   "scripted": [
     {
-      "say": "Warrior",
-      "milestone": "creation_complete"
+      "say": "#status"
     },
     {
-      "say": "Heavy Slash + Guard",
-      "milestone": "creation_complete"
+      "say": "#feats"
     },
     {
-      "say": "#skills"
+      "say": "#class"
     }
   ]
 }

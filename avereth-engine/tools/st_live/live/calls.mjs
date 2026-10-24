@@ -13,7 +13,7 @@ export function roleOf(req) {
     const msgs = Array.isArray(req?.messages) ? req.messages : [];
     const sys = String(msgs[0]?.content ?? '');
     // Patch 9C-2c: the Forge had the planner's token limit (900): its own prompt tells it apart, its repair too
-    if (sys.startsWith('Name new fantasy Skills') || sys.startsWith('Name new fantasy Passives')) return msgs.some((m) => m.role === 'assistant') ? 'forge_repair' : 'forge';
+    if (sys.startsWith('Name new fantasy Skills') || sys.startsWith('Name new fantasy Passives') || sys.startsWith('Name new fantasy evolved Classes')) return msgs.some((m) => m.role === 'assistant') ? 'forge_repair' : 'forge';
     if (sys.startsWith('You are the intent planner')) return 'plan';
     if (sys.startsWith('You are the command interpreter')) return sys.includes('Actions with skills, in fights and on things') ? 'plan' : 'interpret';
     if (sys.startsWith('You read one reply')) return 'extract';

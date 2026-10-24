@@ -300,6 +300,22 @@ export class Driver {
     }
 
     /** SillyTavern's chat with the engine's records: for the evaluation, never for the player. */
+    /** Runner-only opt-in setup; the caller has already created an isolated instance. */
+    async installFixture(messages) {
+        await this.page.evaluate(async (messages) => {
+            const c = SillyTavern.getContext();
+            c.chat.splice(0, c.chat.length, ...messages);
+            await c.saveChat();
+        }, messages);
+        await this.reload();
+    }
+    async reload() {
+        await this.save();
+        await this.page.reload({ waitUntil: 'domcontentloaded' });
+        await this.page.waitForFunction(() => typeof SillyTavern !== 'undefined' && (SillyTavern.getContext().chat[0]?.extra?.avereth?.events || []).some((e) => e.t === 'campaign.started'), null, { timeout: 60000 });
+        await this.page.waitForTimeout(1500);
+    }
+
     async chat() { return this.page.evaluate(() => JSON.parse(JSON.stringify(SillyTavern.getContext().chat))); }
 
     async status() { return this.page.evaluate(() => document.getElementById('avereth_status')?.textContent || ''); }

@@ -1,3 +1,5 @@
+import { foldChat } from '../../../src/host.js';
+import { makeClassFixture, CLASS_FIXTURES } from './class_fixture.mjs';
 // Automated live test in a real SillyTavern (docs/LIVE_RUNNER.md): the player's own SillyTavern program on an
 // isolated instance, the configuration taken read-only from the player's profile, the real provider, a player that
 // plays by a test guide, and a run folder with the chat, the engine's events, every Chat Completion call and a report.
@@ -59,6 +61,8 @@ export function options(argv = process.argv.slice(2), env = process.env) {
     const o = { ...DEFAULTS, ...file, player: { ...DEFAULTS.player, ...(file.player || {}) }, configFile: fs.existsSync(cfgFile) ? cfgFile : null };
     o.stDir = arg('--st') || o.stDir || env.AVERETH_ST_DIR || null;
     for (const [k, f] of [['stUser', '--user'], ['card', '--card'], ['preset', '--preset'], ['guide', '--guide'], ['browser', '--browser'], ['runsDir', '--runs'], ['stData', '--st-data']]) if (arg(f)) o[k] = arg(f);
+    if (arg('--fixture')) o.fixture = arg('--fixture');
+    if (o.fixture && !CLASS_FIXTURES.includes(o.fixture)) throw new Error(`Unknown fixture ${o.fixture}`);
     if (arg('--player')) o.player.type = arg('--player');
     if (arg('--seed')) o.seed = Number(arg('--seed'));
     if (arg('--max-turns')) o.maxTurns = Number(arg('--max-turns'));
@@ -151,6 +155,7 @@ export async function run(o) {
     const log = (s) => console.log(`[${new Date().toISOString().slice(11, 19)}] ${s}`);
     const imp = importProfile({ stDir: o.stDir, user: o.stUser, card: o.card, preset: o.preset, dataRoot: o.stData });
     const guide = loadGuide(o.guide);
+    if (guide.fixture && !o.fixture) throw new Error(`This explicit fixture guide requires --fixture ${guide.fixture}`);
     if (o.maxTurns) guide.limits.maxTurns = o.maxTurns;
     const seed = Number.isFinite(o.seed) ? o.seed : Math.floor(Math.random() * 2 ** 31);
     const persona = o.player.type === 'llm' ? pick(guide.personas, seed) : null;
@@ -218,6 +223,7 @@ export async function run(o) {
     let opened = null;
     let end = null;
     let chat = null;
+    let fixtureReload = null;
     let slow = [];
     let statusLine = '';
     let toasts = [];
@@ -254,6 +260,11 @@ export async function run(o) {
             log('no campaign at the greeting: noted; the engine starts it with the first message');
         } else log(`campaign started in chat "${opened.chatId}"`);
 
+        if (o.fixture) {
+            await driver.installFixture(await makeClassFixture(o.fixture, seed, setup.card));
+            log(`EXPLICIT LEVEL-14 FIXTURE ${o.fixture}, seed ${seed}; historical feats are synthetic test data`);
+            opened.started = true;
+        }
         const player = o.player.type === 'scripted'
             ? scriptedPlayer({ steps: guide.scripted || [] })
             : llmPlayer({
@@ -312,7 +323,14 @@ export async function run(o) {
             }
             const ev = evaluate(chat, { guide });
             if (ev.defeat) { await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-defeat.png`))); end = { kind: 'defeat', why: `turn ${ev.defeat.turn}: ${ev.defeat.why}` }; break; }
-            if (finished(ev)) { end = { kind: 'done', why: null }; log('all required milestones reached'); break; }
+            if (finished(ev)) {
+                if (o.fixture) {
+                    const before = foldChat(chat).state;
+                    await driver.reload();
+                    const after = foldChat(await driver.chat()).state;
+                    fixtureReload = JSON.stringify(before.entities.pc.sheet) === JSON.stringify(after.entities.pc.sheet) && JSON.stringify(before.career) === JSON.stringify(after.career);
+                    if (!fixtureReload) { end = {kind:'fixture_reload_failed',why:'saved/reloaded class or feats changed'}; break; }
+                } end = { kind: 'done', why: null }; log('all required milestones reached'); break; }
             // Patch 8.4.2: the last milestone reached, the rest out of this run's reach: no turns played on for nothing
             if (settled(ev)) { end = { kind: 'incomplete', why: `the last milestone is reached; ${openText(ev)}` }; log(`stopped: ${end.why}`); break; }
             // a milestone that takes far too long: marked slow past its budget, the run stops at three times it
@@ -367,7 +385,7 @@ export async function run(o) {
         const ev = evaluate(messages, { guide });
         put('evaluation.json', JSON.stringify({ end, ...ev }, null, 1), 'die Auswertung (Etappen, Kämpfe, Quests, Auffälligkeiten)');
         const driverNotes = [...(driver?.setupNotes || []), ...callErrors.slice(0, 5).map((e) => `server log: ${e}`)];
-        put('run.json', JSON.stringify({ runId, stub: !!stub, seed, persona, guide: { id: guide.id, chain: guide.chain, files: guide.files.map((f) => path.relative(ENGINE, f)) }, end, timing, preflight: preflightResult, route: imp.route, player: { type: o.player.type, ...playerSetup }, setup, conn, chatId: opened?.chatId || null, turns: turnsLog.map(({ decision, ...t }) => ({ ...t, milestone: decision?.milestone || null })), status: statusLine, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [], notes: driverNotes, stubCalls: stub ? stub.calls : undefined }, null, 1), 'Ablauf des Laufs: Züge, Zeiten, Hinweise, Seitenfehler, Statuszeile');
+        put('run.json', JSON.stringify({ runId, stub: !!stub, seed, fixture: o.fixture || null, fixtureReload, persona, guide: { id: guide.id, chain: guide.chain, files: guide.files.map((f) => path.relative(ENGINE, f)) }, end, timing, preflight: preflightResult, route: imp.route, player: { type: o.player.type, ...playerSetup }, setup, conn, chatId: opened?.chatId || null, turns: turnsLog.map(({ decision, ...t }) => ({ ...t, milestone: decision?.milestone || null })), status: statusLine, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [], notes: driverNotes, stubCalls: stub ? stub.calls : undefined }, null, 1), 'Ablauf des Laufs: Züge, Zeiten, Hinweise, Seitenfehler, Statuszeile');
         put('import.json', JSON.stringify({ ...imp, preset: { ...imp.preset, text: undefined, sha256: imp.preset.text ? sha256(Buffer.from(imp.preset.text)) : null } }, null, 1), 'was aus dem Profil übernommen wurde (ohne Schlüssel)');
 
         const changedRead = changedSince(imp.read);

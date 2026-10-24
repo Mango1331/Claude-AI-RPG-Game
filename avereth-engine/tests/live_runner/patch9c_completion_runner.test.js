@@ -48,27 +48,19 @@ async function fight(g, plan) {
 // a fight opens with an attack; Guard and Heavy Slash one after the other from then on (the pair is the same either way)
 const guardThenSlash = (t) => (t % 2 ? 'warrior.guard' : 'warrior.heavy_slash');
 
-test('.52 runner: current_test is the short 9C completion test: a Warrior, required development milestones, at most 35 turns', () => {
-    const g = loadGuide('current_test');
-    assert.deepEqual(guideErrors(g), []);
-    assert.deepEqual(g.character, { class: 'Warrior', skills: ['Heavy Slash', 'Guard'] });
-    assert.deepEqual(g.milestones.filter((m) => m.required !== false).map((m) => m.id), ['creation_complete', 'skill_development_offered', 'skill_development_accepted', 'skill_development_verified', 'developed_skill_used']);
-    assert.ok(g.limits.maxTurns <= 35);
-    // 4.3.0-c.6.6.53 (both .52 live runs ended in his death): survival before the pattern
-    assert.match(g.brief, /Survival comes first, before any pattern/);
-    assert.match(g.brief, /about 40% or below, stop the pattern and retreat/);
-    assert.match(g.brief, /rest or sleep in a safe place until your HP is full/);
-    // 4.3.0-c.6.6.54 (the third run died in a Dungeon fight against three goblins): fights he can survive first, one foe
-    // at a time; the Dungeon optional; the flight his whole action
-    assert.match(g.brief, /Prefer a Novice contract that sends you against single hostile beasts or vermin in the open/);
-    assert.match(g.brief, /A Dungeon is optional/);
-    assert.match(g.brief, /face one foe at a time/);
-    assert.match(g.brief, /flee from the fight \(only that, as your whole action/);
-    assert.equal(g.milestones.find((m) => m.id === 'inside_dungeon').required, false);
+test('9D runner: current_test is an explicit Level-14 fixture with class choice, verification and actual use', () => {
+    const g=loadGuide('current_test');
+    assert.deepEqual(guideErrors(g),[]);
+    assert.equal(g.fixture,'9d-rare');
+    assert.deepEqual(g.character,{class:'Warrior',skills:['Heavy Slash','Guard']});
+    assert.deepEqual(g.milestones.map((m)=>m.id),['class_rank_e','class_offered','class_accepted','class_verified','class_trait_used']);
+    assert.ok(g.limits.maxTurns<=25);
+    assert.match(g.brief,/synthetic fixture data/);
+    assert.match(g.brief,/#class and #feats/);
 });
 
 test('.52 runner: the evaluator follows a development from his fights: noted, offered, accepted, checked, used; not done before its use', async () => {
-    const guide = loadGuide('current_test');
+    const guide = { milestones: ['creation_complete','skill_pattern_noted','skill_development_offered','skill_development_accepted','skill_development_verified','developed_skill_used'].map((id)=>({id,required:id!=='skill_pattern_noted'})) };
     const g = await hero();
     const ms = () => Object.fromEntries(evaluate(g.chat, { guide }).milestones.map((m) => [m.id, m.reached]));
     await fight(g, guardThenSlash);

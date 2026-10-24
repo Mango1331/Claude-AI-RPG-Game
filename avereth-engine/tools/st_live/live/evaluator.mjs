@@ -22,6 +22,12 @@ function countsIn(text) {
 }
 
 export const CHECKS = {
+    class_rank_e: 'an actual level.up reaches E',
+    class_offered: 'the engine offers one class choice group',
+    class_accepted: 'the engine books class.evolved after player choice',
+    class_verified: '#class and #feats are answered after the class was accepted',
+    class_trait_used: 'a post-evolution snapshot contains the selected class and the PC attacks with actual cost/raw resolution',
+
     creation_complete: 'the character is created (creation.completed)',
     guild_registered: 'registered with the Guild (guild.registered)',
     board_shown: 'a Guild board was shown (board.shown)',
@@ -130,6 +136,7 @@ export function evaluate(chat, { guide = null } = {}) {
     const character = { ruleset: null, class: null, skills: [] };
     // 4.3.0-c.6.6.52: the Skill developments of the run (the qualifying fights noted, the offers, the one he took) and
     // the people met with a technique of their own
+    let evolvedClass = null;
     const growth = { noted: [], offers: [], accepted: null, signatures: {} };
     const skillNames = {};
 
@@ -138,6 +145,17 @@ export function evaluate(chat, { guide = null } = {}) {
         const r = rec(m);
         const ev = r?.events || [];
         counts.events += ev.length;
+        for (const e of ev) {
+            if (e.t === 'level.up' && e.d.id === 'pc' && e.d.rank === 'E') hit('class_rank_e', i);
+            if (e.t === 'decision.opened' && e.d.decision.kind === 'class') hit('class_offered', i);
+            if (e.t === 'class.evolved' && e.d.id === 'pc') { evolvedClass = { ...e.d.profile, at:i }; hit('class_accepted',i,{name:e.d.profile.name}); }
+        }
+        if (evolvedClass && i > evolvedClass.at) {
+            const snapshot = ev.find((e) => ['encounter.started','encounter.updated'].includes(e.t))?.d.encounter;
+            const records = ev.findLast((e) => e.t === 'outcome.recorded')?.d.outcome?.records || [];
+            if (snapshot?.combatants?.pc?.fixed?.evolution?.id === evolvedClass.id && records.some((r) => r.actor === 'pc' && r.kind === 'attack' && Number.isFinite(r.raw))) hit('class_trait_used',i,{name:evolvedClass.name});
+        }
+
         // what the page showed: System panels (own messages, or the block above a reply)
         const shown = `${m.is_system ? m.mes || '' : ''}\n${m.extra?.display_text || ''}`;
         for (const [k, re] of Object.entries(PANEL_MARKS)) if (re.test(shown)) counts.panels[k] += 1;
@@ -442,6 +460,10 @@ export function evaluate(chat, { guide = null } = {}) {
     if (growth.accepted?.name) {
         const at = answeredAfter(chat, growth.accepted.at, [[/^#skills\b/i, '[SYSTEM // SKILLS]'], [new RegExp(`^#skill\\s+${escapeRe(growth.accepted.name)}\\s*$`, 'i'), `[SYSTEM // SKILL] ${growth.accepted.name}`]]);
         if (at.every((x) => x >= 0)) hit('skill_development_verified', Math.max(...at), { name: growth.accepted.name });
+    }
+    if (evolvedClass) {
+        const checks = answeredAfter(chat,evolvedClass.at,[[/^#class\b/i,'[SYSTEM // CLASS]'],[/^#feats\b/i,'[SYSTEM // FEATS]']]);
+        if (checks.every((n) => n >= 0)) hit('class_verified',Math.max(...checks),{name:evolvedClass.name});
     }
     const list = (guide?.milestones || Object.keys(CHECKS).map((id) => ({ id, check: id, required: false }))).map((ms) => {
         const check = ms.check || ms.id;

@@ -12,6 +12,9 @@
 
 **Spätere eigenständige Fachkandidaten** (ausdrückliche Designfreigabe noch offen): [Monsteridentität/Anatomie/Auto-Loot](PATCH10B_MONSTER_ANATOMY_AND_LOOT_CANDIDATE.md) mit freien Species, existierenden Ankern und ohne zweites Species-System; [Jagd/Flucht/Verfolgungs-Pacing](PATCH10B_CHASE_ESCAPE_PACING_CANDIDATE.md) über vorhandenes Chase/Rangesystem, keine zweite Bewegungssimulation. Diese Kandidaten **nicht automatisch implementieren** und nicht als Minipatches zerstückeln.
 
+
+**Run-7-Entscheidung für 10B-3B:** [100-Turn-Review auf main](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/testrun_10b/20261024-120700Z-current_test/REVIEW.md) bestätigt P1 fehlenden `quest.delivered`-Beleg trotz explizit gebundener Kofferübergabe, P1 falsche Kaufbuchungen für tatsächlich bezahlte NPC-Arbeit und wiederholte Phantom-Guildangebote. Diese drei Ursachen **im bestehenden Guild-Fachplan §7 als einen zusammenhängenden Patch** behandeln; nicht erst neue Mini-Hotfixes bauen. Build `.67` hatte **100/100** freie Züge, keine neue technische P0, aber nur Level 2. 10B-3B kann vor 10B-3A priorisiert werden, **Ausführung erst nach Nutzerfreigabe**. Keine weitere XP-Erhöhung parallel.
+
 ## Reihenfolge, Freigabe und Abschluss
 
 1. **Nächsten echten .67-Run zuerst lesen:** Zeitpunkt Level 2/3, Statpunkte, Kampf- versus Quest-XP, mehrere Tage, tatsächliche Quest-/Gear-Auswahl, Gruppenrisiko, Host/Provider-Stabilität. Ein Levelaufstieg ist noch kein erwiesener Gameplay-Tempoerfolg; kein paralleler Monster-/HP-/Schadensnerf.

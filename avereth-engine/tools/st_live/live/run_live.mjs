@@ -25,7 +25,7 @@ import { startServer, freePort } from './server.mjs';
 import { loadPlaywright, launchBrowser, Driver } from './driver.mjs';
 import { llmPlayer, scriptedPlayer, screenText, playerReasoning } from './players.mjs';
 import { loadGuide } from './guide.mjs';
-import { evaluate, finished, nextMilestone, turnOutcome, turnFailure, failureEnd, settled, openMilestones } from './evaluator.mjs';
+import { evaluate, finished, nextMilestone, turnOutcome, turnFailure, softExtractionFailure, driverFailure, failureEnd, settled, openMilestones } from './evaluator.mjs';
 import { parseCalls } from './calls.mjs';
 import { readChatJsonl, eventsLog, jsonl, secretScan } from './export.mjs';
 import { buildReport } from './report.mjs';
@@ -330,23 +330,27 @@ export async function run(o) {
             turnsLog.push({ turn, text: d.message, decision: d, decideMs, ...r });
             if (!r.ok && interrupted) { end = { kind: 'harness', why: `interrupted (Ctrl+C) in turn ${turn}` }; break; }
             if (!r.ok) {
-                await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-problem.png`)));
-                // After a Planner abort SillyTavern may create no assistant
-                // message. The Driver then times out waiting for a reply, but
-                // the user record already has the real phase failure.
-                if (r.problem === 'no reply after the message') {
+                // The browser may time out with a Planner abort (no assistant
+                // reply), or with a visible reply whose Extractor stayed pending.
+                // Diagnose from the saved engine record, never the timeout text alone.
+                let fault = null;
+                let failedChat = null;
+                if (r.problem === 'no reply after the message' || String(r.problem).startsWith('the turn did not end within ')) {
                     try {
-                        const failedChat = await driver.chat();
-                        const userAt = failedChat.findLastIndex((m) => m.is_user);
-                        const fault = userAt >= 0 ? turnFailure(failedChat, userAt) : null;
-                        if (fault && ['planner_failed', 'interpreter_failed'].includes(fault.kind)) {
-                            end = failureEnd(fault, turn);
-                            turnsLog.at(-1).outcome = fault.kind;
-                            chat = failedChat; // keep the terminal user record in the exported run, too
-                        }
-                    } catch { /* leave this as the original UI failure if the chat cannot be inspected */ }
+                        failedChat = await driver.chat();
+                        fault = driverFailure(failedChat, r.problem);
+                    } catch (error) {
+                        log(`could not inspect the timeout's engine record: ${String(error?.message || error).slice(0, 160)}`);
+                    }
                 }
-                end = end || { kind: 'ui', why: `turn ${turn}: ${r.problem}` };
+                await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-${fault?.kind || 'problem'}.png`)));
+                if (fault) {
+                    end = failureEnd(fault, turn);
+                    turnsLog.at(-1).outcome = fault.kind;
+                    chat = failedChat; // preserve the terminal reply or player record in the export
+                } else {
+                    end = { kind: 'ui', why: `turn ${turn}: ${r.problem}` };
+                }
                 log(`stopped: ${end.why}`);
                 break;
             }
@@ -357,12 +361,18 @@ export async function run(o) {
             const userAt = chat.findLastIndex((m) => m.is_user);
             const outcome = turnOutcome(chat, userAt);
             const fault = turnFailure(chat, userAt);
-            turnsLog.at(-1).outcome = fault?.kind || outcome.kind;
-            // 10B-4b: stop this diagnostic run at a confirmed phase failure.
-            // Do not keep playing after a failed world extraction: it can leave
-            // a visible narrative journey with no booked arrival (Run 4).
-            // No swipe or regeneration: keep the original failure evidence.
-            if (fault) {
+            const soft = softExtractionFailure(chat, userAt, fault);
+            turnsLog.at(-1).outcome = soft ? 'extractor_failed_soft' : fault?.kind || outcome.kind;
+            if (soft) {
+                // A purely conversational turn had nothing mechanical to apply.
+                // Its failure is preserved in chat/evaluation; the runner can
+                // continue observing real play instead of truncating 100 turns.
+                turnsLog.at(-1).softFailure = fault.reason || 'Extractor failed without expected mechanical effects';
+                log(`turn ${turn}: soft Extractor failure; continue observation (the Engine still records FAILED_CORRECTION)`);
+            }
+            // Never continue after unrecorded travel, GIVE, combat or any other
+            // expected world change; no swipe/regeneration, original evidence kept.
+            if (fault && !soft) {
                 await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-${fault.kind}.png`)));
                 end = failureEnd(fault, turn);
                 log(`stopped: ${end.why}`);

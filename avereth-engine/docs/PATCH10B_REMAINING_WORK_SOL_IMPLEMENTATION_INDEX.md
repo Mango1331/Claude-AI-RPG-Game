@@ -23,3 +23,5 @@
 4. Fachliche Positiv- und Negativtests stehen **jeweils im verlinkten Fachplan**. Codepatch: gezielte Rot/Grün-Regressionen, vollständiges npm test, ST-Smoke bei Host-/World-Bezug, unabhängiger Diff-Review. Nachweise einmal in der bestehenden **Patchnote**, Originalrun einmal in seiner **REVIEW.md**, aktueller Status einmal in [03](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/03_AKTUELLER_PROJEKTSTAND.md); [10B-Journal](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) nur Entscheidung plus Link.
 
 **Keine Änderung an Produktcode, Ruleset, Tests, Runner, Build oder Liveguide durch diese Planung.**
+
+**Nachtrag 10B-3A Run 8:** [Kampf-Fachplan §8](PATCH10B3_COMBAT_ESCALATION_AND_TRUTH_PLAN.md) umfasst jetzt die kontrollierte kreative Bindung freier Dungeon-Slots, einschließlich früher Warden-Aktivierung trotz ungelöstem Gravekeeper, mit Clear-/Reset-/Schlüssel-/Narrator-Truth-Gates und Tests. Der separate Planner-Hotfix ist bereits .69; 3A bleibt ungeprüfter Produktcode und noch nicht implementiert.

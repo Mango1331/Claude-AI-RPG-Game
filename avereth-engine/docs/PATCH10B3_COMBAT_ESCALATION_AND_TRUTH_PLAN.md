@@ -1,7 +1,7 @@
 # 10B-3 – Kampfeskalation und mechanische Kampfchronik
 **Fachlicher Implementierungsentwurf für Sol – noch NICHT implementiert oder freigegeben.**
 
-**Aktuelle Planungsbasis:** Historische Fehler aus .57 sowie [Run 6 auf .66](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/testrun_10b/20261024-104654Z-current_test/REVIEW.md); neuer Produktcommit .67 7bfb7f25 (XP ×2). Vor Implementierung HEAD und neue .67-Originalbelege prüfen. Eine zusammenhängende Implementierung, keine Mini-Hotfix-Serie; noch nicht freigegeben.
+**Aktuelle Planungsbasis:** Natürliche Runs 1 (.57), 6 (.66), [8 (.68)](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/testrun_10b/20261024-142854Z-current_test/REVIEW.md). Der separate Planner-Sequenz-Hotfix ist inzwischen als **Build .69** implementiert; er ist kein Bestandteil von 3A. Vor 3A-Implementierung tatsächlichen Git-HEAD prüfen. Fachlich ein zusammenhängender Combat-/Dungeon-Truth-Patch, **noch nicht implementiert oder freigegeben**.
 
 ## 1. Verbindliches Problem und Quelle
 
@@ -53,7 +53,7 @@ Gemeinsame Arbeits-/Testregeln: [01](https://github.com/Mango1331/Claude-AI-RPG-
 
 ## 5. Grenzen und Abnahmestatus
 
-**Kein Build, Commit, Red-/Green-/Smoke-Resultat durch dieses Dokument.** Version erst bei tatsächlicher Implementierung erhöhen. 10B-3-Guild-Board ist ein **eigener** fachlicher Patchplan, nicht in diesen Kampfcode ziehen. Zahlenbalance, NPC-Sapienz-/Temperament-Redesign, Combat-Scaling, Monsterdatabase, generelles Pacing, Escort-Risikostufen und Chase bleiben außerhalb. Eventuelle neue Befunde aus dem laufenden `.66`-Run haben Vorrang gegenüber dieser auf historischen Quellen beruhenden Testmatrix.
+**Kein Build, Commit, Red-/Green-/Smoke-Resultat durch dieses Dokument.** Version erst bei tatsächlicher Implementierung erhöhen. 10B-3-Guild-Board ist ein **eigener** fachlicher Patchplan, nicht in diesen Kampfcode ziehen. Zahlenbalance, NPC-Sapienz-/Temperament-Redesign, Combat-Scaling, Monsterdatabase, generelles Pacing, Escort-Risikostufen und Chase bleiben außerhalb. Neuere echte Runs gehen historischen Hypothesen vor. Die ergebnisoffene Slot-Entscheidung nach Sols Run-8-Gegenreview ist in §§7–8 eingearbeitet.
 
 **Definition of Done:** keine fehlerhafte Kampföffnung auf reine Drohung; positive autonome echte NPC-Attacke bleibt möglich; keine phantomhaften, dauerhaft gespeicherten Zusatztreffer; positive echte Mehrfachaktionen bleiben; Run-/Replay-/Fullsuite und ST-Smoke dokumentiert; eigener Diff-Review.
 
@@ -65,10 +65,50 @@ Gemeinsame Arbeits-/Testregeln: [01](https://github.com/Mango1331/Claude-AI-RPG-
 
 **Trennung von Balance:** Sol hat in Build .67 Kampf-/Quest-XP nach Rundung verdoppelt ([Patchnote](PATCH10B_XP_REWARDS.md)); diese Combat-Korrektur darf keine weitere Multiplikation, Schadensänderung, HP-/Monster-Nerfs oder geänderte Levelkurve enthalten. Drohung, tatsächlich erfolgter NPC-Angriff, positiver Ambush und neutrale Anwesende gemeinsam mit den vorhandenen Tests überprüfen. Vorher Original-Beleg und relevanten Combat-/World-Consumer prüfen, danach Rot/Grün, Vollsuite und echten ST-Host-Smoke.
 
-## 7. Run 8 (.68) – Phantom-Dungeon-Gegner als unerreichbarer Schlüsselträger
 
-[Originalreview](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/testrun_10b/20261024-142854Z-current_test/REVIEW.md): Der Narrator erzeugt einen `patched greater skeleton` mit Schlüsseln am Hals. Extractor `creature.new` wird in Engine-Record 122 mit `dungeon_foe` korrekt zurückgewiesen. Trotzdem behauptet der Narrator weiterhin einen realen patrouillierenden Gegner und macht dessen Schlüssel zum notwendigen Zugangsobjekt. Sechs Angriffsversuche (Inputs 62,63,64,66,67,70) enden mit `ATTACK — TARGET NEEDED`, ohne Ressourcenverlust. **Mechanik sicher, Gameplay/Plot blockiert.**
+## 7. Run 8: frei erfundener Dungeon-Gegner als Plotblockade
 
-**In diesem vollständigen Combat-/Truth-Patch ergänzen:** Ein abgelehnter nicht autorisierter Dungeon-Gegner darf beim nächsten Narrator/Extractor-/Memory-Durchlauf nicht weiter als aktueller Kampftarget oder notwendiger Key-Carrier als Fakt gelten. An der tatsächlichen `dungeon_foe`-Rejection und dem Context-/Narrator-Korrekturpfad ansetzen. Echte engineautorisierte Dungeon-Feinde, echte Schlüssel, neutraler NPC und subjektives Gerücht bleiben möglich. Nicht alle beschriebenen Wesen spawnen und keine Dungeon-Gates umgehen. **Rot/Grün:** abgelehnter Gegner samt Schlüsselbindung wird nachvollziehbar korrigiert; legitimer engineautorisierter Encounter bleibt targetierbar; keine Phantomfakten/Blockaden bei Replay/Reload.
+[Unabhängiger Originalreview](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/testrun_10b/20261024-142854Z-current_test/REVIEW.md): Ein „patched greater skeleton“ trägt angeblich den einzigen Schlüssel für den Abstieg. Der Narrator beschreibt es als aktiv, die Engine lehnt creature.new mit dungeon_foe ab (Record 122). Sechs vergebliche Angriffsversuche enden als ATTACK — TARGET NEEDED. Die Engine verhindert regelwidrige Kampfwerte, lässt aber die spielerische und narrative Blockade bestehen.
 
-**Unabhängiger technischer Defekt aus demselben Run:** Input 75 scheitert an `src/v4/planner.js:parsePlan`, weil auch die reparierte legale `take→attempt`-Kette das Tool gegen den Inventory-Startsnapshot validiert. **Vor neuem Langlauf ein eigener enger Planner-Sequenz-Hotfix**, keine Aufweichung des Besitzrechts. Nicht mit Combat-Ursache oder neuer Balance vermischen.
+**Revision nach Sols Gegenreview:** Der Narrator soll passende Feinde **innerhalb bereits vorhandener freier Dungeon-Encounter-Slots** kreativ ausgestalten dürfen. Nur unzulässige Zuordnungen werden weiterhin verworfen; eine Ablehnung muss außerdem im nachfolgenden Story-/Memory-Kontext wirken. Das reine zusätzliche Verbot neuer erzählter Gegner wäre zu restriktiv. Die dafür erforderlichen technischen und spielerischen Bedingungen stehen in §8.
+
+## 8. Kontolliert flexible Dungeon-Slot-Zuordnung
+
+### 8.1 Belegte Zustände und Ist-Mechanik
+
+Old Crown Catacombs, Floor 1, Cycle 1, echter Run 8:
+
+- **bones:** 3 autorisierte Skeletons, Level 5/4/3; tatsächlich besiegt.
+- **gallery:** Skeletal Gravekeeper, **Level 1**, konkrete Entity mon.old_crown_catacombs_c1_l1_e2 bereits erzeugt, noch **lebendig/unresolved**. Das ist **kein** freier Slot.
+- **warden:** Gallery Warden, **ein freier Guard-Slot Level 4** (armoured skeleton). Diese Gelegenheit dürfte die Szene mit dem patched greater skeleton glaubwürdig ausgestalten, aber nicht mechanisch aufwerten.
+
+**Ursache ist zweifach:** living.js:slotForNew (um Zeile 267) akzeptiert nur ein für den aktuellen Turn gesetztes dungeon.ahead. Zugleich sperrt living.js:nextWaiting (um Zeile 246) den Guard regulär, solange ein früherer Minion-Slot nicht resolved ist. **Nur ahead optional zu machen reicht nicht.** world.js:newEntity verweigert richtigerweise ungeordnete Dungeon-Foes; slotEntityEvents erzeugt bereits die vorgesehenen autoritativen Entity-/Slot-Events, clearEvents verlangt alle Slots resolved. Diese vorhandenen Wege sind wiederzuverwenden.
+
+### 8.2 Fachlich vollständige Lösung innerhalb von 10B-3A
+
+1. **Default bleibt wie bisher:** GO, aheadEvents und nextSlot bestimmen reguläre Begegnungen und ruhige Abschnitte. Ein gültiges aktuelles ahead hat Vorrang; kein Narrator-Gegner darf den autorisierten Encounter ersetzen.
+2. **Kreative Zuordnung als enger zusätzlicher Weg:** Wird ein Gegner tatsächlich **gegenwärtig** und **kausal in der Szene** eingeführt, darf die Engine ihn einem **eindeutigen freien Slot auf demselben Floor und im selben Cycle** zuordnen, auch ohne ahead. Abgleich mit Species/Anchor, Role, Orts-/Szenenbeleg, existierenden Entities und bereits belegten oder entschiedenen Slots. Bloß das Wort „skeleton“ ist bei mehreren Kandidaten **kein eindeutiger Nachweis**. Ein Gerücht oder ein entfernter Feind führt nicht zu Spawn.
+3. **Bewusste begrenzte Out-of-Order-Ausnahme:** Ein konkret passender **Warden** darf bei glaubhafter Begegnung **vor Abschluss** eines vorherigen Minion-Slots als realer Gegner auftreten. Nicht automatisch alle Guards freischalten oder den Dungeon-Standardrhythmus beseitigen. Der schon erzeugte Gravekeeper bleibt unabhängig lebendig und ungelöst. Die frühe Guard-Belegung muss **persistent, atomar und einmalig** sein und darf frühere Slots nicht löschen oder als resolved markieren.
+4. **Mechanik ausschließlich aus dem Slot:** Level 4, Anzahl 1, Combattyp, HP, Attacken, XP/PP, Loot, Reset, IDs und Kampfregeln für den Gallery Warden sind verbindlich. „Riesig“, „geflickt“ oder „unheimlich“ sind freie Beschreibung, **kein Monster-Level- oder Schaden-Upgrade**. Kein zweites Spawnsystem, kein neues Monsterarchiv und keine Bonusgegner außerhalb des vorhandenen Budgets. Echte autonom handelnde Feinde bleiben möglich; Drohungen allein eröffnen weiterhin keinen falschen Treffer.
+5. **Dungeon-Clear und Gate bleiben autoritativ:** Der Warden darf vorzeitig sichtbar, angesprochen, vermieden oder bekämpft werden. Selbst sein Tod öffnet den nächsten Floor **nicht automatisch**, wenn der bestehende gallery-Slot noch unresolved ist. Vorhandene dungeon.cleared-/sealRefusal-/Quest- und Resetbedingungen bleiben bestehen. Begegnung ist **keine erzwungene PC-Kampfentscheidung**.
+6. **Schlüsselgeschichte nur mit echter Objekt-/Gate-Authority:** Ein echter Gegner kann glaubwürdig einen Schlüssel tragen, aber ein **notwendiger** Schlüssel muss als gültiger Gegenstands-/Gate-/Questfakt entstehen und darf keinen unlösbaren Zugang schaffen. Der Narrator darf nicht durch ein ausgedachtes Schlüsselattribut die enginekontrollierte Dungeon-Versiegelung aufheben. Echte vorhandene Schlüssel/alternative Wege bleiben erhalten.
+7. **Wenn kein Slot zulässig ist:** dungeon_foe bleibt korrekt; das Narrator-Folgekontext-/World-/Memory-Gate muss **die spezifische Falschbehauptung** (aktiver unbesiegbarer Feind, zwingender Schlüsselträger) korrigieren oder als unbestätigte Wahrnehmung kennzeichnen. Keine endlosen ATTACK-TARGET-NEEDED-Schleifen. Atmosphäre, Schatten, Gerüchte, historische Kreaturen, friedliche NPCs sowie freie Monster **außerhalb** echter System-Dungeons bleiben möglich. Keine pauschale Prosa-Zensur.
+
+### 8.3 Positiv- und Negativtests (Red/Green)
+
+| Fall | Erwartung |
+|---|---|
+| Run 8: gallery-Gravekeeper lebt, warden frei, kein ahead | Eindeutige kreative Warden-Darstellung kann einmalig zu **einem Level-4-Warden** gebunden werden; Gallery bleibt unresolved |
+| Gültiges ahead benennt anderen Slot | ahead gewinnt; kein willkürlicher Austausch |
+| Warden zuerst getötet, Gallery offen | Floor-/Clear-/Gate-/Queststatus **nicht** unverdient abgeschlossen |
+| Identischer Warden nochmals genannt, Swipe/Reload, Reset, Firmen-/NPC-Entscheidung | Keine zweite Slotbelegung, kein doppeltes XP/Loot, Zyklus/Identität konsistent |
+| Bereits occupied, killed, fled, taken; anderer Floor/Cycle | Keine unzulässige Kreatur und kein Revival aus Prosa |
+| Mehrere ähnlich passende freie Slots oder falscher Anchor | Keine Zufallsauswahl; auf zulässigen Weg/Klärung zurückfallen |
+| Visuelle Vorahnung, Gerücht, friedlicher Besucher | Darf als Erzählung vorkommen, erzeugt **keinen** unerlaubten Encounter |
+| Abgelehnter Feind mit einzigem Schlüssel | Korrigierte Folge-Narration/Facts; mechanischer Fortschritt bleibt möglich |
+| Wirklich gebundener Warden, echtes Schlüsselobjekt | Objekt-/Gate-Authority, Loot und Dungeon-Sperre sind konsistent; keine Gratisöffnung |
+| Echte Ambushes, Gruppenangriffe, ein Treffer vs. drei Phantomhits | Sämtliche ursprünglichen Combat-/Chronik-Regressionen bleiben wirksam |
+
+### 8.4 Abnahme und Umfangsgrenze
+
+**10B-3A bleibt ein normal großer, fachlich zusammenhängender Patch:** Kampfeskalation und Combat-Facts (§§1–6) **sowie** kreative, enginegebundene Dungeon-Gegner mit aktivem Narrator-/Plotabgleich (§§7–8). Sol soll die Ursache zuerst an bestehenden Event-/Encounter-/World-Verbrauchern reproduzieren; bevorzugt die vorhandenen slotEntityEvents und Ownership-/Replay-Schutzmechanismen. Keine vollständige Neuarchitektur von Living Dungeons und keine Anpassung von XP, Startdistanzen oder globalem Schaden. Insbesondere die bestehende Testfamilie patch83/patch841 und relevante World-/Combat-/Context-Tests erweitern; Gesamtsuite, echter ST-Smoke, danach natürlicher GLM-Test. **Keine Produktcodeänderung durch diesen Plan.**

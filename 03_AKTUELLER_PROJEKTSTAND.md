@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 24. Oktober 2026 · Fassung 43 (9D `.55` von Claude gegengeprüft; gezielter Reviewfix `.56`, 1262/1262 Selbsttests; echter Fixture-Livetest offen)  
+**Stichtag:** 24. Oktober 2026 · Fassung 44 (echter .56-Fixture-Lauf: 5/5 Mechanik, manueller Verbindungs-/Sendeschritt, Abschluss-Reload gescheitert; Follow-up .57 implementiert, 1269/1269 Tests)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,16 +13,35 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 24.10.2026 (Snapshot)** | **bdda871e1aaf94c79f6834181e81c666c71d04e2** (separater Runner-Reviewfix), Engine **d06003bbe8492f0a0685e3db9c4a852beba6343c**, Basis `c15177a` (.55). Von Codex umgesetzt, getestet und gepusht; HEAD vor neuer Arbeit erneut prüfen. |
-| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.56**, Narrator-Vertrag unverändert Revision **.55**. Persönliche ST-Karte .55 bleibt gültig; isolierter Runner übernimmt diese Datei. Planner und Vokabular unverändert. |
+| **HEAD am 24.10.2026 (Snapshot)** | **eb4015667cd941cddd3f69e6ebf66a5f8062a254** (Runner-Follow-up), Engine **54ffd9e9c71a0a9406348531aa6e9bad19770239**, Basis `bdda871` (.56). HEAD vor neuer Arbeit erneut prüfen. |
+| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.57**, Narrator-Vertrag weiterhin **.55**. Kein neuer Kartenwechsel gegenüber .55/.56. Vokabular/Planner-Version unverändert. |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | **9D IMPLEMENTIERT, .55 unabhängig von Claude gegengeprüft; fünf Reviewbefunde gezielt in .56 korrigiert.** Kernarchitektur, gemeinsame Caps, atomare Wahl/Replay und isoliertes Fixture tragen laut Gegenreview; 1258/1258 unabhängig laut Claude. .56: sechs betroffene Prüfungen vor Fix rot/nach Fix grün; 92/92 angrenzend, volle1262/1262 durch Codex. Kein echter 9D-ST/GLM-Lauf; D–S/Domain/E-Legendary bleiben ausgenommen. |
-| **Nächster Schritt** | Kurzer expliziter Level14-Fixture-Lauf im eingerichteten isolierten ST-/GLM-Profil: `npm run live:st -- --guide current_test --fixture 9d-rare --seed 7 --headed`. Letzten XP-Schritt, Angebot, Annahme, #class/#feats, echte Wirkung im Folgeangriff und Save/Reload anhand Original-Events/Calls/Report bewerten. Keine weitere Entwurfsrunde für diesen gezielten Fix. Hier fehlen ST-Installation/Profil, Browserbinary und Provider-Key; 9D bleibt bis zum echten Run nicht live abgenommen. Danach offener Langtest/10B, kein ungefragter High-Rank-Ausbau. |
+| **Patchstatus** | **9D-MECHANIK IM ECHTEN .56-FIXTURE-LAUF 5/5 BELEGT; RUNNERABSCHLUSS/PERSISTENZ OFFEN.** 25 Züge/25:13min, Level15/E, Rare-Angebot, Ironbound Fury ausdrücklich angenommen, #class/#feats und reale Eigenschaft im Folgeangriff. Nutzer musste nach Start-Reload verbinden/senden; finaler Reload auf Startbildschirm mit60s-Timeout gescheitert. Kein vollständig automatischer Erfolg und keine Live-Persistenzbestätigung. .57 korrigiert Runner und natürliche Klassenwahl, Selbsttests1269/1269; neuer echter Run ausstehend. |
+| **Nächster Schritt** | Nach `git pull --ff-only` im Entwicklungsbranch kurzer echter Nachtest: `npm run live:st -- --guide current_test --fixture 9d-rare --seed 7 --headed`. Muss ohne manuelles API-Verbinden/Senden starten und nach5/5 dieselbe gespeicherte Klasse/Laufbahn erfolgreich laden und sauber enden. Originalexport prüfen; .57 noch nicht real ST/GLM-getestet. Keine neue 9D-Implementierung, Balance-/XP-/Rarity-/NPC-Änderung oder natürlicher1–15-Lauf. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
 
 
-### 9D Reviewfix .56 – fünf bestätigte Befunde korrigiert (24.10.2026)
+
+### 9D .56 – echter Fixture-Livetest ausgewertet; gezielter Follow-up .57 (24.10.2026)
+
+**Originalquellen hier geprüft:** `20261024-010241Z-current_test.zip` (erneute Uploadkopie mit gleichem Run-ID), Nutzerfeedback und `Chatgpt Feedback(6).md`. Ausgewertet wurden run/report/evaluation, Originalchat, Engine-Events, Call-Zeiten und Planner-Rohantworten. Basis `bdda871`, Build .56, ST1.19.0, GLM-5.3-Flash, explizites Level14-Fixture `9d-rare` Seed7. Keine Behauptung einer natürlichen Laufbahn.
+
+**LIVE BELEGT:** 25 tatsächliche Testspielerzüge, 25:13min, alle5/5 Mechanik-Etappen. Letzter XP-Schritt bis E, offene Rare-Auswahl, Annahme von **Ironbound Fury**, beide Systempanels und anschließender Heavy-Slash-Angriff. Snapshot: Klasse E/Rare, ATK16 einschließlich+6, Martial-STA-Reduktion15%; Heavy Slash6 STA, Raw114,5. Bestehende Grundklasse erhalten. Die synthetischen Vorgeschichtsrecords erzeugen im Evaluator höhere Turnnummern als die25 gesendeten Live-Züge; das ist kein zusätzlicher Livefortschritt.
+
+**RUNNER GESCHEITERT:** Nach dem Start-Reload musste der Nutzer API-Verbindung und erste Nachricht manuell auslösen. Nach5/5 lädt der Driver die Seite erneut; ST zeigt Startbildschirm/keinen aktiven Testchat, API getrennt. Der alte Code wartet60s nur auf `campaign.started`; `end:harness`, `fixtureReload:null`. Keine Livebestätigung von Save/Reload und kein vollständig automatischer Pass. 5/5 Mechanik bleibt dadurch belegt.
+
+**Natürliche Auswahl konkret:** `I choose Ironbound Fury as my class.` erzeugte zunächst die ungültige `dec.class.e.offense`; Repair ersetzte sie durch Gruppen-ID `dec.class.e`. Gleiches bei `I accept …`; erst spätere Sonderformulierung und weiterer Repair lieferten `class.e.offense`. Zahlreiche #class-Unterbefehle waren reine Anzeigen, kein Erwerb. Nicht dem Nutzer eine versteckte Syntax abverlangen.
+
+**IMPLEMENTIERT .57:** [Engine 54ffd9e](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/54ffd9e9c71a0a9406348531aa6e9bad19770239), [separater Runner eb40156](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/eb4015667cd941cddd3f69e6ebf66a5f8062a254), [Doku](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/54ffd9e9c71a0a9406348531aa6e9bad19770239/avereth-engine/docs/PATCH9D_CLASS_EVOLUTION.md). Konkrete gespeicherte Karten-/Chatidentität und Kampagne nach Reload wieder öffnen, keine neue Begrüßung als Ersatz; ST-Kontext-APIs gegen offiziellen Tag1.19.0 gelesen. API-Route/Verbindung prüfen und verbinden, Senden/Speichern bei falschem Chat und Senden ohne Verbindung verweigern. Abschluss prüft Bogen/Laufbahn; Fehler explizit `fixture_reload_failed` mit false, kein vager Erfolg. Vor Schema-Prüfung eindeutige ausdrücklich gewählte offene Klassennamen auf echte Options-ID auflösen; Consent/Agency/Combat/Replay bleiben. Katalog/Panel/Guide erklären natürliche Wahl und verhindern erfolglose Variantenserie. Keine neuen Systembefehle.
+
+**Performancebefund:** 7:37min Spielerentscheidungen, 14:12min Spiel einschließlich Modell/Extraktion; Spieler-Median10,4s/Maximum92,7s, Spiel-Median11,4s/Maximum251,9s. Narrator-Call32 dauerte229,8s. Vorhandene Einzelzeiten werden im Bericht als Ausreißer mit Phase/Zug/Call markiert (über30s und dreifacher Median, maximal3 je Kategorie), ohne Providerzeit doppelt zu addieren. Keine Modell-/Token-/Reasoningänderung und keine behauptete kausale JavaScript-Beschleunigung.
+
+**Hier ausgeführte Nachweise:** Sieben neue Regressionen (2Engine,5Runner), erweiterte Berichtskontrolle. Auf isolierter unveränderter .56-Quelle7 rot,3/10 grün; mit Fix10/10. Angrenzend132/132, vollständige `npm test` **1269/1269**, 0 Fehler. VM-Browsercallbacks simulieren den tatsächlichen Startbildschirm, fehlende Datei/falschen Chat/getrennte API; echte Fixtures werden gefaltet/verglichen. **Kein neuer echter .57-ST-/GLM-Lauf und kein unabhängiges .57-Claude-Gegenreview.** Narrator-Vertrag .55 bleibt. Rarity, Klassenbudgets, XP, höhere Ränge und NPC-KI unverändert.
+
+**Nächste echte Abnahme:** denselben kurzen Fixture-Guide starten; keine manuelle Reparatur überdecken, Verbindungs-/Chatfehler direkt melden. 5/5 plus erfolgreichen abschließenden Reload mit `fixtureReload:true` belegen. Hier weiterhin keine ST-Installation/Profil, Browserbinary oder Provider-Key; nur deterministische/VM-Nachweise möglich. Danach erst vollständige 9D-Liveabnahme, dann längerer offener Test für10B.
+
+### 9D Reviewfix .56 – fünf bestätigte Befunde korrigiert (24.10.2026) — historischer Stand vor dem echten Fixture-Lauf
 
 **Commits:** [Engine d06003b](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/d06003bbe8492f0a0685e3db9c4a852beba6343c), [Runner bdda871](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/bdda871e1aaf94c79f6834181e81c666c71d04e2); [aktuelle Patchdoku](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/d06003bbe8492f0a0685e3db9c4a852beba6343c/avereth-engine/docs/PATCH9D_CLASS_EVOLUTION.md). Basis `c15177a`, Build .56, Narrator-Vertrag unverändert .55.
 

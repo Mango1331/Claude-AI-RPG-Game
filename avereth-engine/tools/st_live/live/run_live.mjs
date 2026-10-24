@@ -25,7 +25,7 @@ import { startServer, freePort } from './server.mjs';
 import { loadPlaywright, launchBrowser, Driver } from './driver.mjs';
 import { llmPlayer, scriptedPlayer, screenText, playerReasoning } from './players.mjs';
 import { loadGuide } from './guide.mjs';
-import { evaluate, finished, nextMilestone, turnOutcome, settled, openMilestones } from './evaluator.mjs';
+import { evaluate, finished, nextMilestone, turnOutcome, turnFailure, settled, openMilestones } from './evaluator.mjs';
 import { parseCalls } from './calls.mjs';
 import { readChatJsonl, eventsLog, jsonl, secretScan } from './export.mjs';
 import { buildReport } from './report.mjs';
@@ -339,11 +339,26 @@ export async function run(o) {
             if (!(chat[0]?.extra?.avereth?.events || []).some((e) => e.t === 'campaign.started')) { end = { kind: 'ui', why: `the engine started no campaign, neither at the greeting nor with the message of turn ${turn}` }; break; }
             // Patch 8.4.1: a story turn needs the narrator's story; a command's System answer or the engine's own one is
             // a turn of its own kind. No swipe, no regeneration: the run ends there, its data kept
-            const outcome = turnOutcome(chat, chat.findLastIndex((m) => m.is_user));
-            turnsLog.at(-1).outcome = outcome.kind;
-            if (outcome.kind === 'narrator_empty' || outcome.kind === 'missing') {
-                await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-${outcome.kind}.png`)));
-                end = { kind: outcome.kind === 'missing' ? 'ui' : 'narrator_empty', why: outcome.kind === 'missing' ? `turn ${turn}: neither the narrator nor the engine answered` : `turn ${turn}: the narrator's reply has no story text (message ${outcome.at})`, turn };
+            const userAt = chat.findLastIndex((m) => m.is_user);
+            const outcome = turnOutcome(chat, userAt);
+            const fault = turnFailure(chat, userAt);
+            turnsLog.at(-1).outcome = fault?.kind || outcome.kind;
+            // 10B-4b: stop this diagnostic run at a confirmed phase failure.
+            // Do not keep playing after a failed world extraction: it can leave
+            // a visible narrative journey with no booked arrival (Run 4).
+            // No swipe or regeneration: keep the original failure evidence.
+            if (fault) {
+                const kind = fault.kind === 'missing' ? 'ui' : fault.kind;
+                await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-${fault.kind}.png`)));
+                const reasons = {
+                    missing: 'neither the narrator nor the engine answered',
+                    narrator_empty: `the narrator's reply has no story text (message ${fault.at})`,
+                    planner_failed: 'the semantic Planner failed before story generation',
+                    interpreter_failed: 'the V4 Interpreter failed before story generation',
+                    extractor_failed: `the World Extractor failed after story message ${fault.at}; its world changes were not committed`,
+                    extractor_late: `the World Extractor was too late after story message ${fault.at}; its world changes were not committed`,
+                };
+                end = { kind, why: `turn ${turn}: ${reasons[fault.kind] || fault.kind}${fault.reason ? ` (${String(fault.reason).slice(0, 160)})` : ''}`, turn };
                 log(`stopped: ${end.why}`);
                 break;
             }

@@ -48,8 +48,8 @@ async function fight(g, plan) {
 // a fight opens with an attack; Guard and Heavy Slash one after the other from then on (the pair is the same either way)
 const guardThenSlash = (t) => (t % 2 ? 'warrior.guard' : 'warrior.heavy_slash');
 
-test('9D runner: current_test is an explicit Level-14 fixture with class choice, verification and actual use', () => {
-    const g=loadGuide('current_test');
+test('9D runner: preserved patch9d_fixture has the original Level-14 acceptance checks', () => {
+    const g=loadGuide('patch9d_fixture');
     assert.deepEqual(guideErrors(g),[]);
     assert.equal(g.fixture,'9d-rare');
     assert.deepEqual(g.character,{class:'Warrior',skills:['Heavy Slash','Guard']});

@@ -38,6 +38,10 @@ export function timingOutliers(turns, calls) {
     return rows;
 }
 
+/** A soft failure keeps the run going; it is not proof that world facts were preserved. */
+export const countSoftExtractorFailures = (turnsLog) =>
+    (turnsLog || []).filter((t) => t.outcome === 'extractor_failed_soft').length;
+
 export function buildReport(x) {
     const { runId, stub, guide, player, end, ev, calls, setup, imp, git, build, st, browser, turnsLog, playerLog, driverNotes, toasts, pageErrors, serverErrors, protection, scan, files, startedAt, endedAt, instanceKept } = x;
     const L = [];
@@ -145,6 +149,7 @@ export function buildReport(x) {
     if (A.length) L.push(...A.map((a) => `- ${cell(a)}`)); else L.push('Keine.');
     const pc = ev.counts.panels;
     L.push('', `System-Panels: CLARIFY ${pc.clarify}, NOT TAKEN ${pc.not_taken}, REFUSED ${pc.refused}, BLOCKED ${pc.blocked}, FAILED ${pc.failed}. Zurückgewiesene Deltas: ${Object.entries(ev.counts.rejected).map(([k, v]) => `${k} ${v}`).join(', ') || 'keine'}.`);
+    L.push(`Soft-Extractor-Fehler mit Fortsetzung: ${countSoftExtractorFailures(turnsLog)}. Ein Dialogzug kann trotz leerer Planner-Commands neue NPCs, Gaben oder Ereignisse enthalten; der fortgesetzte Test beweist **keine** vollständige Weltübernahme.`);
     const recovery = ev.counts.recovery || {};
     const plan = recovery.planner || {}, extract = recovery.extractor || {};
     L.push(`Recovery-Beobachtung: Planner leer ${plan.empty || 0}, Transport ${plan.transport || 0}, davon erfolgreich mit 0 Commands ${plan.zeroCommands || 0}; Extractor leer ${extract.empty || 0}, Transport ${extract.transport || 0}, davon angewendet mit 0 Deltas ${extract.zeroDeltas || 0}. Null-Ergebnisse sind Prüfhinweise, keine bewiesenen Spielweltfehler.`, '');

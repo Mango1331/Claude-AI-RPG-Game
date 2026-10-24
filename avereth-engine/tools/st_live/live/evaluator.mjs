@@ -197,11 +197,12 @@ function recordCalls(r) {
 export function recoveryObservation(chat, u) {
     if (!chat?.[u]?.is_user) return { planner: null, extractor: null };
     const user = rec(chat[u]);
-    let i = u + 1;
-    while (i < chat.length && !chat[i].is_user && (chat[i].is_system || !chat[i].mes && !rec(chat[i])?.extraction)) i++;
-    const reply = i < chat.length && !chat[i].is_user && !chat[i].is_system ? rec(chat[i]) : null;
+    const end = chat.findIndex((m, i) => i > u && m.is_user);
+    const reply = chat.slice(u + 1, end < 0 ? chat.length : end)
+        .find((m) => !m.is_user && !m.is_system);
+    const replyRecord = reply ? rec(reply) : null;
     const pl = user?.plan;
-    const ex = reply?.extraction;
+    const ex = replyRecord?.extraction;
     const validType = x => x === 'empty' || x === 'transport';
     return {
         planner: validType(pl?.recovery) ? {

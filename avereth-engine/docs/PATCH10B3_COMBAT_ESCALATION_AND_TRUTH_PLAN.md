@@ -45,13 +45,11 @@
 15. Memory/Thread/Questnote mit Mischung aus echtem Moment und falschem Zusatztreffer → **klauselscharf** korrigieren, belegte Teile behalten; Replay/Reload identisch.
 16. Vorherige Engine-Buchung bleibt bei Narrator-/Extractor-Failure bestehen; niemals nachträglich einen zweiten Angriff buchen.
 
-## 4. Vorgehen für einen normalen Sol-Fachpatch
+## 4. Fachliche Umsetzung und Abnahme
 
-1. Current `.66`-Diff, Original-Run-1-Logs und existierende Combat-/Firewall-Tests vollständig prüfen. **Kausalpfade dokumentieren**: welche Event-/Deltafolge öffnete tatsächlich Kampf und welche speicherte die falschen „3 hits“? Wenn Originalexport nur als Review aber nicht rohe Eventdaten verfügbar ist, das ausdrücklich kennzeichnen und die angelehnten Fixtures nicht als Original-Replay bezeichnen.
-2. Negative Fälle als Red-Regressionen, positive Ambush-/Gruppenkampf- und Multiple-Hit-Kontrollen dazu; **nicht** alle beliebigen NPC-Angriffe verbieten.
-3. Produktlogik eng verbessern, Firewalls/Replay/Legacy kontrollieren. Fachpatch darf mehrere benötigte Module ändern; kein künstlicher Mini-Patch-Limit, aber **keine** unrelated Guild-/Chase-/Loot-/Provideränderung.
-4. Eigene Regressionen, betroffene `combat`-/`world`-/`context`-/`ownership`-Suites, **vollständiges `npm test`**, anschließend echter `npm run smoke:st:c` in ST 1.19, mit Head/Version/Testlogs belegen; falls ST nicht verfügbar, keine gefälschte Freigabe.
-5. unabhängiger Gegenreview anhand Diff und Tests; anschließend **natürlicher GLM-`current_test`** für Storyqualität und Bedrohungsfreiheit von Player Agency. **Nicht** nur 1 synthetisches Kampfbeispiel als 100-Züge-Abnahme verkaufen.
+Original-Run-1-Events und die betroffenen Combat-/Firewall-Pfade prüfen: welche Folge öffnete den Kampf, welche speicherte „3 hits“? Fehlende Rohdaten ausdrücklich benennen; abgeleitete Fixtures sind kein Original-Replay. Die Testmatrix oben schützt echte Ambushes, Gruppenangriffe und Mehrfachtreffer.
+
+Gemeinsame Arbeits-/Testregeln: [01](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/01_ARBEITSWEISE_CHATGPT_CLAUDE.md). Zusätzlich betroffene `combat`-/`world`-/`context`-/`ownership`-Suites und echter ST-1.19-Smoke; anschließend natürlicher GLM-Run zur Narrations-/Agency-Qualität. Ein synthetischer Kampf ersetzt keine 100-Züge-Abnahme.
 
 ## 5. Grenzen und Abnahmestatus
 

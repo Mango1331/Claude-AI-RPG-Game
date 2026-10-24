@@ -2153,4 +2153,4 @@ Technische Details, alle akzeptierten und verworfenen Claude-Punkte: `docs/PATCH
 
 ### 10B-4c.2 Hotfix (.66, 24.10.2026)
 
-Initiale Swipe-ID undefined/null wird bei Job-Zugehörigkeit und Deduplizierung wie 0 behandelt: ST 1.19 setzt diese ID erst nach MESSAGE_RECEIVED. Echte Swipewechsel, Chat-/Message-/Hash-/Turn- und Commit-/Save-Guards bleiben. Fünf neue Regressionen: .65 drei rot/zwei grün, danach World-Jobs19/19; Vollsuite1426/1426. Echte ST-Smoke-Ergebnisse und offene swipe_info-Beobachtung in `PATCH10B4C2_SWIPE_ZERO_HOTFIX.md`; unabhängiges Review und neuer natürlicher Run bleiben separat. Keine Recovery-/Gameplay-/Runner-/Guideänderung, Kartenvertrag .55.
+Initial fehlende Swipe-ID wird für Job-Zugehörigkeit und Deduplizierung als `0` behandelt; echte Swipewechsel und übrige Guards bleiben. Ursache, Rot/Grün, vollständige Node-/ST-Ergebnisse und offene Beobachtungen einmalig in der [Hotfixnote](PATCH10B4C2_SWIPE_ZERO_HOTFIX.md).

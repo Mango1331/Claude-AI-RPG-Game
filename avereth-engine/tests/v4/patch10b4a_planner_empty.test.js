@@ -67,10 +67,12 @@ test('10B-4a: nonempty but invalid JSON gets no extra recovery call', async () =
     assert.equal(calls.length, 2);
 });
 
-test('10B-4a: provider failure on the first call does not start a recovery loop', async () => {
+test('10B-4a / 4c.4: provider failure gets one bounded fresh call, never a loop', async () => {
     const { result, calls } = await scripted([null, EMPTY, VALID]);
     assert.equal(result.failed, true);
-    assert.equal(calls.length, 1);
+    assert.equal(result.recovery, 'transport');
+    assert.deepEqual(calls.map(x => x.purpose), ['plan', 'plan_recovery']);
+    assert.equal(calls.length, 2);
 });
 
 test('10B-4a: host commits Planner success only once after recovery and reuses it on regenerate', async () => {

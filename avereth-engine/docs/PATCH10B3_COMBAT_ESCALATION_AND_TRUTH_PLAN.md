@@ -1,4 +1,6 @@
 # 10B-3 – Kampfeskalation und mechanische Kampfchronik
+
+**Abschluss 24.10.2026:** Als Build **.70** implementiert und technisch abgenommen; Ergebnisse und Grenzen stehen einmalig in der [Patchnote](PATCH10B3A_COMBAT_ESCALATION_AND_TRUTH.md). Die folgenden Abschnitte bleiben der historische Fachplan.
 **Fachlicher Implementierungsentwurf für Sol – noch NICHT implementiert oder freigegeben.**
 
 **Aktuelle Planungsbasis:** Natürliche Runs 1 (.57), 6 (.66), [8 (.68)](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/testrun_10b/20261024-142854Z-current_test/REVIEW.md). Der separate Planner-Sequenz-Hotfix ist inzwischen als **Build .69** implementiert; er ist kein Bestandteil von 3A. Vor 3A-Implementierung tatsächlichen Git-HEAD prüfen. Fachlich ein zusammenhängender Combat-/Dungeon-Truth-Patch, **noch nicht implementiert oder freigegeben**.

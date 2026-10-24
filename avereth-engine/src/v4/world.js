@@ -21,7 +21,7 @@ import { truth, entityLabel, setFactEvents, statusOf, normPredicate } from '../k
 import { perceiveAll, selfIntro, episode, openCommitted, materialise } from '../engine.js';
 import { firewall, pcWound, pcActIn } from './firewall.js';
 import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolation } from './ownership.js';
-import { mayOpenFight, mayTake } from './envelope.js';
+import { mayOpenFight, mayTake, attackCommitted } from './envelope.js';
 import {
     PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE,
     progressKey, sameKinds, kindOf,
@@ -65,7 +65,7 @@ const SIGN_OFF = /\b(?:sign(?:s|ed|ing)?|signature|countersign\w*|inspect\w*|con
 const REQUIRE = /\b(?:must|required?|requires|need(?:s|ed)?|before|until|unless|only|once)\b/i;
 
 /** The firewall's view of the state after the player's turn (src/v4/firewall.js FirewallContext). */
-export function firewallContext(s, content) {
+export function firewallContext(s, content, chronicle = null, excludedFoes = []) {
     const o = s.last?.outcome || {};
     const guildish = (id) => {
         const e = s.entities[id];
@@ -86,7 +86,7 @@ export function firewallContext(s, content) {
         },
         labelOf: (ref) => (s.entities[ref] ? entityLabel(s, ref) : null),
         // Patch 7.2C: a death of a fight the engine has not booked (src/v4/combat_truth.js)
-        combatClaim: combatTruth(s, content),
+        combatClaim: combatTruth(s, content, chronicle, excludedFoes),
         // Hotfix 7.2.1: his Guild standing (a fact claiming a registration the engine has not booked is refused)
         pcRegistered: !!s.guild?.membership,
         pcHurt: (s.entities.pc?.sheet?.hp ?? 0) < deriveCharacter(s.entities.pc.sheet, content).maxHp,
@@ -189,7 +189,7 @@ function locationOf(s, id) {
  * @param {{msg?: number|null, prose?: string}} opts msg: the reply's chat index (ids); prose: the reply's text
  * @returns {{events, rejected, corrections, system, opened, state, arrivedHall}}
  */
-export function applyWorld(state, content, answer, { msg = null, prose = '' } = {}) {
+export function applyWorld(state, content, answer, { msg = null, prose = '', chronicle = null } = {}) {
     const s = clone(state);
     const dice = Dice.from(s);
     const events = [];
@@ -239,7 +239,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     if (cPath) syncEvents(s, content, emit);
 
     // 1. authority first: what the story may not decide is never applied
-    const fw = firewall(answer.deltas, firewallContext(s, content));
+    const excludedFoes = [];
+    const fw = firewall(answer.deltas, firewallContext(s, content, chronicle, excludedFoes));
     for (const x of fw.reject) { reject(x.delta, x.rule, x.why); refusedArrival(x.delta); }
     // Prototype C (4.3.0-c.6.6.3): what of Alaric's the story moved to someone else without his hand-over (quest.ready below)
     const refusedMoves = new Set(fw.reject.filter((x) => x.rule === 'pc_inventory' && x.delta?.type === 'object.move').map((x) => objectRef(x.delta.object)?.id).filter(Boolean));
@@ -341,7 +342,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     // Patch 7.2C: a story store (memory, thread, quest note) keeps no death of a fight the engine has not booked as the
     // world's truth: those clauses go, the rest stays, the narrator hears the engine's count once
     const trueDeaths = (text) => {
-        const cut = stripFalseDeaths(combatTruth(s, content), text);
+        const cut = stripFalseDeaths(combatTruth(s, content, chronicle, excludedFoes), text);
         for (const x of cut.refused) if (!corrections.includes(x.correction)) corrections.push(x.correction);
         return cut;
     };
@@ -364,7 +365,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             return false;
         }
         const v = mayOpenFight(s, content, id, { newInAnswer: bornHere.has(id), c: cPath });
-        if (v.ok) { grant('envelope.fight'); return true; }
+        if (v.ok) {
+            if (!attackCommitted(prose, d.evidence, [s.entities[id].name, sceneHandle(s, content, id)])) {
+                reject(d, 'attack_commitment', `${id}: no immediate attack established in this reply`);
+                const correction = `${entityLabel(s, id)} has not committed an attack. Threats, demands and raised weapons leave negotiation and Alaric's next choice open; no First Strike or damage was booked.`;
+                if (!corrections.includes(correction)) corrections.push(correction);
+                return false;
+            }
+            grant('envelope.fight'); return true;
+        }
         const label = entityLabel(s, id);
         reject(d, 'envelope', `${id} does not turn on Alaric: ${v.why}`);
         const correction = `${label} did not turn on Alaric in the last reply (${v.why}); no fight started. ${v.rule === 'provoked_only' ? 'Only a cause the story establishes first (an insult, a threat, harm) turns them against him.' : 'An animal like this one attacks only when cornered or within reach.'}`;
@@ -398,6 +407,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // Patch 8 (src/v4/living.js): a creature of an encounter the engine placed ahead is that encounter, its slot of
         // this cycle (its ref, else its kind where he went on); one of a slot already resolved (the boss he killed) is
         // not brought back by the story
+        // 4.3.0-c.6.6.24 (livetest 21.10.2026: "restless skeleton" on the rat body plan, Bite and pelts): a species the
+        // content names by one of its body plan's own words ("skeleton") is that body plan, whatever anchor came with it,
+        // unless the given anchor's words name the species too
+        if (kind === 'creature' && d.species) {
+            const named = anchorFor(content, d.species);
+            const given = content.anchors.get(d.anchor);
+            // Patch 8: the more specific name decides ("goblin shaman" is the caster, not the goblin its words also name)
+            const said = (a) => Math.max(0, ...a.aliases.filter((x) => anchorFor({ anchorAliases: [[normText(x), a.id]], anchors: content.anchors }, d.species)).map((x) => normText(x).length));
+            const fits = given && named && said(given) >= said(named);
+            if (named && named.id !== d.anchor && !fits) d = { ...d, anchor: named.id };
+        }
         let hit = slot;
         if (cPath && kind === 'creature' && d.present !== false && !hit) {
             const dead = resolvedSlotNamed(s, d);
@@ -407,7 +427,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 if (!corrections.includes(fix)) corrections.push(fix);
                 return [];
             }
-            hit = slotForNew(s, content, d, s.scene.at);
+            hit = slotForNew(s, content, d, s.scene.at, prose);
+            if (hit?.existing) {
+                const ids = hit.slot.entities.filter((id) => s.entities[id]?.status !== 'dead');
+                if (ids.length === 1) refs.set(normText(d.ref), ids[0]);
+                for (const id of ids) emit({ t: 'scene.entered', d: { id, band: d.band || 'MEDIUM' } });
+                return ids;
+            }
             // Patch 8.4.1 (live 22.10.2026 05:43, turn 16: a search's SUCCESS on level 1 of the Old Crown Catacombs, a
             // "robed waiting thing" the reply brought that was no encounter of the level; its fight gave 13 XP and level
             // 2): inside a Living Dungeon only the engine adds the foes (its encounters, placed ahead and filled here). A
@@ -421,24 +447,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             // of the Dungeon's own kinds (its slots' anchors and species) is none of the world's; any other stays
             if (root && livingBefore.has(root) && livingOf(s, root) && (insideOf(s, root) || (s.scene.at === root && dungeonKind(livingOf(s, root), d)))) {
                 const name = s.places[root]?.name || root;
+                excludedFoes.push({ ref: d.ref, species: d.species });
                 reject(d, 'dungeon_foe', `only the engine adds the foes of ${name}: ${d.species || d.ref} is no encounter of this level`);
-                const fix = `The ${d.species || d.ref} of the last reply is no foe here: in ${name} only the engine adds foes (its DUNGEON lines). It is not there as one: nothing of it acts, attacks or can be fought.`;
+                const fix = `The ${d.species || d.ref} of the last reply is no foe here: in ${name} only the engine adds foes (its DUNGEON lines). It is not there as one: nothing of it acts, attacks or can be fought. Its imagined keys add no gate requirement; use the existing Dungeon seal and booked objects.`;
                 if (!corrections.includes(fix)) corrections.push(fix);
                 return [];
             }
         }
         if (hit) d = { ...d, ref: hit.slot.ref, species: hit.slot.species, anchor: hit.slot.anchor, count: hit.slot.count, stronger: null, more: true };
-        // 4.3.0-c.6.6.24 (livetest 21.10.2026: "restless skeleton" on the rat body plan, Bite and pelts): a species the
-        // content names by one of its body plan's own words ("skeleton") is that body plan, whatever anchor came with it,
-        // unless the given anchor's words name the species too
-        if (kind === 'creature' && d.species) {
-            const named = anchorFor(content, d.species);
-            const given = content.anchors.get(d.anchor);
-            // Patch 8: the more specific name decides ("goblin shaman" is the caster, not the goblin its words also name)
-            const said = (a) => Math.max(0, ...a.aliases.filter((x) => anchorFor({ anchorAliases: [[normText(x), a.id]], anchors: content.anchors }, d.species)).map((x) => normText(x).length));
-            const fits = given && named && said(given) >= said(named);
-            if (named && named.id !== d.anchor && !fits) d = { ...d, anchor: named.id };
-        }
         // A large group of skittish animals (their body-plan's temperament: a flock, a herd, a flight of birds) that nobody
         // set on Alaric is the scene's background, one fact, not a dozen combat profiles (live 30.09.2026: twelve penned
         // sheep). A pack of aggressive, defensive or cautious creatures stays individual, whatever its size, and so do
@@ -656,7 +672,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     for (const d of [...fw.accept].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0))) {
         step = { kind: 'delta', type: d.type, seq: d.seq ?? 0, granted: new Set() };
         // Authority is checked again at the actual story step: earlier deltas may have changed its context.
-        const stepFw = firewall([d], firewallContext(s, content));
+        const stepFw = firewall([d], firewallContext(s, content, chronicle, excludedFoes));
         if (!stepFw.accept.length) {
             for (const x of stepFw.reject) { reject(x.delta, x.rule, x.why); refusedArrival(x.delta); }
             for (const x of stepFw.corrections) if (!corrections.includes(x)) corrections.push(x);
@@ -880,7 +896,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 // that states a contract's status, a payout, Quest XP, Guild rank or membership goes; the rest stays
                 // Patch 3 (review): nor an act of his he did not choose (the fact firewall's pc_decision, in a memory's words:
                 // "Alaric hunted and roasted wood pigeons" on a road he only travelled); what he did stays
-                const fw = firewallContext(s, content);
+                const fw = firewallContext(s, content, chronicle, excludedFoes);
                 // "He" opening a later clause of a memory about Alaric is Alaric
                 const actOf = (c) => pcActIn(/^\s*alaric\b/i.test(d.text) ? c.replace(/^\s*he\b/i, 'Alaric') : c);
                 const invented = (c) => { const act = actOf(c); return !!act && !fw.actedOn(act); };

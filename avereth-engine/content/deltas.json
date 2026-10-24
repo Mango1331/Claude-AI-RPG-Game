@@ -625,7 +625,7 @@
           "nullable": true
         }
       },
-      "summary": "who commits to attack Alaric right now: each attacker the reply shows by its handle from PRESENT; a group's ref only per GROUP REFS; one that only watches, circles, growls or holds back is no attacker"
+      "summary": "who commits to attack Alaric right now, not merely a threat, demand, aimed weapon or conditional ultimatum; copy the actual immediate commitment from this reply in evidence: each attacker the reply shows by its handle from PRESENT; a group's ref only per GROUP REFS; one that only watches, circles, growls or holds back is no attacker"
     },
     {
       "type": "position",
@@ -722,7 +722,7 @@
           "nullable": true
         }
       },
-      "summary": "what someone hostile means to do on their next turn; flee means a real attempt to leave the encounter, not merely backing away or gaining one Range Band; a group's ref per GROUP REFS"
+      "summary": "what someone hostile means to do on their next turn; attack needs an immediate commitment copied in evidence, never merely a conditional threat or raised weapon; flee means a real attempt to leave the encounter, not merely backing away or gaining one Range Band; a group's ref per GROUP REFS"
     },
     {
       "type": "thread",

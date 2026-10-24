@@ -264,26 +264,37 @@ export function nextSlot(s, d, floor) {
 }
 
 /** The slot a creature the reply brings in fills: the one the engine placed ahead (by its ref, else by its kind there). */
-export function slotForNew(s, content, d, arrivedAt) {
+export function slotForNew(s, content, d, arrivedAt, prose = '') {
     const root = trueDungeonOf(s, arrivedAt || s.scene.at);
     const x = livingOf(s, root);
-    if (!x?.ahead || x.ahead.turn !== s.turn || x.ahead.cycle !== x.cycle) return null;
+    if (!x || d.present === false) return null;
     const floor = floorAt(s, arrivedAt || s.scene.at);
-    const cands = [x.ahead, ...(x.ahead.next ? [x.ahead.next] : [])].filter((a) => a.floor === floor);
-    for (const a of cands) {
-        const sl = x.run.floors[a.floor]?.slots.find((y) => y.id === a.slot);
-        if (!sl || sl.entities.length || sl.taken) continue;
-        if (normText(d.ref) === normText(sl.ref)) return { root, floor: a.floor, slot: sl };
-        // the reply named them otherwise: the engine's encounter of this kind, where he went on into a new part
-        if (d.anchor === sl.anchor && d.more !== true) return { root, floor: a.floor, slot: sl };
+    const slots = x.run.floors[floor]?.slots || [];
+    const known = slots.find((sl) => sl.story_ref && normText(sl.story_ref) === normText(d.ref) && sl.entities.length);
+    if (known) return resolved(s, known) ? null : { root, floor, slot: known, existing: true };
+    const free = slots.filter((sl) => !sl.entities.length && !sl.taken);
+    const hit = (sl) => ({ root, floor, slot: sl, story_ref: d.ref });
+    // Keep normal pacing and the engine's explicit encounter refs.
+    const ahead = x.ahead?.turn === s.turn && x.ahead.cycle === x.cycle ? [x.ahead, ...(x.ahead.next ? [x.ahead.next] : [])] : [];
+    for (const a of ahead.filter((a) => a.floor === floor)) {
+        const sl = free.find((sl) => sl.id === a.slot);
+        if (sl && (normText(d.ref) === normText(sl.ref) || (d.anchor === sl.anchor && d.more !== true))) return hit(sl);
     }
+    // An explicitly visible creative foe may fill one unambiguous compatible slot, including a later guard.
+    // Occupied slots (even elsewhere), other floors/cycles, and larger/smaller groups are never repurposed.
+    if (d.present !== true || d.more === true || d.threat === false || ahead.some((a) => a.floor === floor && free.some((sl) => sl.id === a.slot))) return null;
+    const guardScene = /\b(?:warden|guardian|guard(?:s|ing)?|patrol\w*|circuit|sentinel)\b/i.test([d.ref, d.species, ...(d.desc || []), prose].join(' '));
+    const compatible = free.filter((sl) => sl.anchor === d.anchor && sl.count === (d.count ?? 1) && (sl.role === 'minion' || (sl.role === 'guard' && guardScene)));
+    const named = compatible.find((sl) => normText(d.ref) === normText(sl.ref) || (sl.name && normText(d.ref) === normText(sl.name)));
+    if (named) return hit(named);
+    if (compatible.length === 1) return hit(compatible[0]);
     return null;
 }
 /** Is this creature.new a slot of this cycle that is already resolved (the boss he killed, shown again)? */
 export function resolvedSlotNamed(s, d) {
     for (const x of Object.values(s.dungeons || {})) {
         for (const [n, f] of Object.entries(x.run.floors)) {
-            const sl = f.slots.find((y) => normText(y.ref) === normText(d.ref) || (y.name && normText(y.name) === normText(d.ref)));
+            const sl = f.slots.find((y) => normText(y.ref) === normText(d.ref) || (y.story_ref && x.id === trueDungeonOf(s, s.scene.at) && Number(n) === floorAt(s, s.scene.at) && normText(y.story_ref) === normText(d.ref)) || (y.name && normText(y.name) === normText(d.ref)));
             if (sl && resolved(s, sl)) return { root: x.id, floor: Number(n), slot: sl };
         }
     }
@@ -299,7 +310,7 @@ export function slotEntityEvents(s, content, hit, ids, at) {
         level: slot.levels[i] ?? slot.levels[0], type, slot: { dungeon: root, cycle: x.cycle, floor, id: slot.id, role: slot.role },
         ...(slot.name && ids.length === 1 ? { name: titled(slot.name.replace(/^the /i, '')), known_name: null } : {}),
     } } }));
-    ev.push({ t: 'dungeon.slot', d: { id: root, cycle: x.cycle, floor, slot: slot.id, set: { entities: ids, at, met_turn: s.turn } } });
+    ev.push({ t: 'dungeon.slot', d: { id: root, cycle: x.cycle, floor, slot: slot.id, set: { entities: ids, at, met_turn: s.turn, ...(hit.story_ref && /^[a-z]+\.[a-z0-9_]+$/i.test(hit.story_ref) && hit.story_ref !== slot.ref ? { story_ref: hit.story_ref } : {}) } } });
     return ev;
 }
 
@@ -852,7 +863,7 @@ export function contextLines(s, content = null) {
     if (here.length) L.push(`OTHER ADVENTURERS ${mine === 0 ? 'at the gate' : `on level ${mine}`} now (the engine's; if the story brings them in, they are these people): ${here.map((p) => `${p.name}, ${p.size} strong, led by ${p.leader} (${p.npc}; ${p.affiliation})`).join(' · ')}.`);
     const f = x.run.floors[Math.max(1, mine)];
     if (f) {
-        L.push(`LEVEL ${Math.max(1, mine)} (the engine's, cycle ${x.cycle}): ${floorText(s, x, Math.max(1, mine), { all: true })}. Only the engine adds this level's foes, guardian and boss; a foe it marks defeated stays so until the Dungeon renews; never bring a slain guardian or boss back.`);
+        L.push(`LEVEL ${Math.max(1, mine)} (the engine's, cycle ${x.cycle}): ${floorText(s, x, Math.max(1, mine), { all: true })}. The story may give a visible foe a creative appearance within one uniquely matching free slot of this level (same body plan and count), even before an earlier encounter is resolved; its slot fixes Level, power and loot. Otherwise only the engine adds foes, guardian and boss; no extra key or delivery condition opens its seal; a foe it marks defeated stays so until the Dungeon renews; never bring a slain guardian or boss back.`);
         if (f.cleared?.turn === s.turn && f.cleared.credit === 'pc') L.push(`LEVEL ${Math.max(1, mine)} CLEARED NOW — show it in the world: ${x.floors[Math.max(1, mine)].manifest}.`);
         const taken = f.slots.filter((sl) => sl.taken && !sl.told);
         if (taken.length) L.push(`SIGNS OF OTHERS — ${taken.map((sl) => `${sl.name ? titled(sl.name) : `the ${sl.species}s`} of this level ${sl.count > 1 ? 'were' : 'was'} already dealt with by ${(x.parties.find((p) => p.id === sl.taken.party) || {}).name || 'another company'} earlier`).join('; ')}: remains, scorch marks, tracks; nothing of it is his.`);

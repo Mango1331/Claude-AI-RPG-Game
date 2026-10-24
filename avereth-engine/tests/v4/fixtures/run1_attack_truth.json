@@ -1,0 +1,349 @@
+{
+  "source": "Run 1 original final three messages, mechanical excerpts only",
+  "threatProse": "Tam answered with a click of his tongue and a chirrup to the oxen, and the yard gate swung shut behind the cart.\n\nThe low stretch past the west gate was as bad as the landlady had promised \u2014 Thursday's rain still stood in the bowl of the road, and the near wheel went in to the hub at the worst of it. They lost the better part of an hour levering it out with the spare stave, Tam swearing steadily at the oxen, who ignored him, and the morning was half gone before the road firmed.\n\nAfter that the river road ran easy. Hedgerows, a roadside shrine with fresh-cut flowers, woodsmoke off a hamlet at midday. Tam drove and watched and said nothing worth saying; he ate his own sausage one-handed at a walk and let the silence sit. Past midday the land began tilting toward the water, and late in the afternoon the river showed itself \u2014 broad and brown-green, running quick, with the Reedford landing plain on the south bank: a crane, drying racks strung with dyed cloth, a walled yard. Between it and the water lay the ford, marked with stakes, and along the south bank the willow scrub came down thick and green right to the edge of the gravel.\n\nThe sun was leaning on the western hills. Tam looked at it, then at the scrub, and clicked the oxen up. \"Would've beat this by an hour, without the wet road. Sit tight.\"\n\nThe cart took the water. Cold rolled off the river, the wheels found the stony shelf, and the oxen leaned into the current with their ears back. Halfway across, water white at the axles \u2014\n\nThe scrub moved.\n\nFive men rose out of it on the south bank, four with bows already at half-draw, arrowheads sloped toward the cart. The fifth stood out ahead of them at the gravel's edge, a long knife held loose in one hand, and called across the water in an easy, carrying voice.\n\n\"That's far enough. Walk her in slow and tip the vats onto the bank \u2014 drivers keep their teeth, every time, so long as the dye comes out.\"\n\nTam hauled back on the reins and the oxen plashed to a halt, the cart sitting broadside in the current. \"Hold,\" he said, low, without turning his head.",
+  "deltas": [
+    {
+      "seq": 2,
+      "type": "person.new",
+      "ref": "npc.ford_robber_leader",
+      "name": null,
+      "role": "bandit",
+      "desc": [
+        "stands out ahead at the gravel's edge on the south bank",
+        "long knife held loose in one hand",
+        "easy, carrying voice demanding the dye"
+      ],
+      "armed": "long knife",
+      "present": true,
+      "relevant": true,
+      "threat": true,
+      "at": null,
+      "band": "MEDIUM"
+    },
+    {
+      "seq": 3,
+      "type": "person.new",
+      "ref": "npc.ford_robber_archer_1",
+      "name": null,
+      "role": "bandit",
+      "desc": [
+        "rose from the willow scrub on the south bank",
+        "bow at half-draw, arrowhead sloped toward the cart"
+      ],
+      "armed": "bow",
+      "present": true,
+      "relevant": true,
+      "threat": true,
+      "at": null,
+      "band": "MEDIUM"
+    },
+    {
+      "seq": 4,
+      "type": "person.new",
+      "ref": "npc.ford_robber_archer_2",
+      "name": null,
+      "role": "bandit",
+      "desc": [
+        "rose from the willow scrub on the south bank",
+        "bow at half-draw, arrowhead sloped toward the cart"
+      ],
+      "armed": "bow",
+      "present": true,
+      "relevant": true,
+      "threat": true,
+      "at": null,
+      "band": "MEDIUM"
+    },
+    {
+      "seq": 5,
+      "type": "person.new",
+      "ref": "npc.ford_robber_archer_3",
+      "name": null,
+      "role": "bandit",
+      "desc": [
+        "rose from the willow scrub on the south bank",
+        "bow at half-draw, arrowhead sloped toward the cart"
+      ],
+      "armed": "bow",
+      "present": true,
+      "relevant": true,
+      "threat": true,
+      "at": null,
+      "band": "MEDIUM"
+    },
+    {
+      "seq": 6,
+      "type": "person.new",
+      "ref": "npc.ford_robber_archer_4",
+      "name": null,
+      "role": "bandit",
+      "desc": [
+        "rose from the willow scrub on the south bank",
+        "bow at half-draw, arrowhead sloped toward the cart"
+      ],
+      "armed": "bow",
+      "present": true,
+      "relevant": true,
+      "threat": true,
+      "at": null,
+      "band": "MEDIUM"
+    },
+    {
+      "seq": 7,
+      "type": "hostile",
+      "by": [
+        "npc.ford_robber_leader",
+        "npc.ford_robber_archer_1",
+        "npc.ford_robber_archer_2",
+        "npc.ford_robber_archer_3",
+        "npc.ford_robber_archer_4"
+      ],
+      "scope": "all",
+      "evidence": "four with bows already at half-draw, arrowheads sloped toward the cart; the fifth demands the vats be tipped onto the bank"
+    }
+  ],
+  "records": [
+    {
+      "round": 1,
+      "actor": "npc.npcford_robber_archer_2",
+      "kind": "attack",
+      "target": "pc",
+      "opening": false,
+      "move": {
+        "bands": 2,
+        "from": "MEDIUM",
+        "to": "ENGAGED"
+      },
+      "cost": {
+        "resource": "sta",
+        "amount": 8,
+        "before": 100,
+        "after": 92
+      },
+      "skill": "rogue.long_lunge",
+      "skill_name": "Long Lunge",
+      "raw": 26.5,
+      "raw_text": "8 + AGI 9\u00d71.50 + ATK 5 = 26.5",
+      "strikes": [
+        {
+          "target": "pc",
+          "power": 26.5,
+          "defense": 3,
+          "post_def": 23.5,
+          "variance": 1.1,
+          "final": 26,
+          "absorbed": 0,
+          "hp_before": 80,
+          "hp_after": 54,
+          "steps": [
+            "Raw 26.5",
+            "DEF 3: max(26.5-3, 26.5\u00d70.10) = 23.5",
+            "\u00d71.1 variance = 25.85",
+            "round once = 26"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "actor": "npc.npcford_robber_leader",
+      "kind": "move",
+      "dir": "closer",
+      "change": "MEDIUM -> SHORT",
+      "why": "closing distance (no attack reaches)"
+    },
+    {
+      "round": 1,
+      "actor": "npc.npcford_robber_archer_3",
+      "kind": "move",
+      "dir": "closer",
+      "change": "MEDIUM -> SHORT",
+      "why": "closing distance (no attack reaches)"
+    },
+    {
+      "round": 1,
+      "actor": "npc.npcford_robber_archer_1",
+      "kind": "move",
+      "dir": "closer",
+      "change": "MEDIUM -> SHORT",
+      "why": "closing distance (no attack reaches)"
+    },
+    {
+      "round": 1,
+      "actor": "npc.npcford_robber_archer_4",
+      "kind": "move",
+      "dir": "closer",
+      "change": "MEDIUM -> SHORT",
+      "why": "closing distance (no attack reaches)"
+    },
+    {
+      "round": 1,
+      "actor": "pc",
+      "kind": "attack",
+      "target": "npc.npcford_robber_archer_2",
+      "opening": false,
+      "cost": {
+        "resource": "mp",
+        "amount": 10,
+        "before": 72,
+        "after": 62
+      },
+      "skill": "mage.arcane_bolt",
+      "skill_name": "Arcane Bolt",
+      "raw": 31.25,
+      "raw_text": "10 + INT 6\u00d71.875 + MATK 10 = 31.25",
+      "strikes": [
+        {
+          "target": "npc.npcford_robber_archer_2",
+          "power": 31.25,
+          "defense": 3,
+          "post_def": 28.25,
+          "variance": 1.01,
+          "final": 29,
+          "absorbed": 0,
+          "hp_before": 90,
+          "hp_after": 61,
+          "steps": [
+            "Raw 31.25",
+            "MDEF 3: max(31.25-3, 31.25\u00d70.10) = 28.25",
+            "\u00d71.01 variance = 28.5325",
+            "round once = 29"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "actor": "npc.npcford_robber_archer_2",
+      "kind": "attack",
+      "target": "pc",
+      "opening": false,
+      "cost": {
+        "resource": "sta",
+        "amount": 8,
+        "before": 92,
+        "after": 84
+      },
+      "skill": "rogue.long_lunge",
+      "skill_name": "Long Lunge",
+      "raw": 26.5,
+      "raw_text": "8 + AGI 9\u00d71.50 + ATK 5 = 26.5",
+      "strikes": [
+        {
+          "target": "pc",
+          "power": 26.5,
+          "defense": 3,
+          "post_def": 23.5,
+          "variance": 0.9,
+          "final": 21,
+          "absorbed": 0,
+          "hp_before": 54,
+          "hp_after": 33,
+          "steps": [
+            "Raw 26.5",
+            "DEF 3: max(26.5-3, 26.5\u00d70.10) = 23.5",
+            "\u00d70.9 variance = 21.15",
+            "round once = 21"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "actor": "npc.npcford_robber_leader",
+      "kind": "attack",
+      "target": "pc",
+      "opening": false,
+      "move": {
+        "bands": 1,
+        "from": "SHORT",
+        "to": "ENGAGED"
+      },
+      "cost": {
+        "resource": "sta",
+        "amount": 8,
+        "before": 100,
+        "after": 92
+      },
+      "skill": "rogue.guarded_cut",
+      "skill_name": "Guarded Cut",
+      "raw": 24.375,
+      "raw_text": "6 + AGI 9\u00d71.375 + ATK 6 = 24.375",
+      "strikes": [
+        {
+          "target": "pc",
+          "power": 24.375,
+          "defense": 3,
+          "post_def": 21.375,
+          "variance": 0.98,
+          "final": 21,
+          "absorbed": 0,
+          "hp_before": 33,
+          "hp_after": 12,
+          "steps": [
+            "Raw 24.375",
+            "DEF 3: max(24.375-3, 24.375\u00d70.10) = 21.375",
+            "\u00d70.98 variance = 20.9475",
+            "round once = 21"
+          ]
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "actor": "npc.npcford_robber_archer_3",
+      "kind": "attack",
+      "target": "pc",
+      "opening": false,
+      "move": {
+        "bands": 1,
+        "from": "SHORT",
+        "to": "ENGAGED"
+      },
+      "cost": {
+        "resource": "sta",
+        "amount": 8,
+        "before": 100,
+        "after": 92
+      },
+      "skill": "rogue.guarded_cut",
+      "skill_name": "Guarded Cut",
+      "raw": 23.375,
+      "raw_text": "6 + AGI 9\u00d71.375 + ATK 5 = 23.375",
+      "strikes": [
+        {
+          "target": "pc",
+          "power": 23.375,
+          "defense": 3,
+          "post_def": 20.375,
+          "variance": 0.93,
+          "final": 19,
+          "absorbed": 0,
+          "hp_before": 12,
+          "hp_after": 0,
+          "steps": [
+            "Raw 23.375",
+            "DEF 3: max(23.375-3, 23.375\u00d70.10) = 20.375",
+            "\u00d70.93 variance = 18.94875",
+            "round once = 19"
+          ],
+          "defeated": true
+        }
+      ]
+    }
+  ],
+  "memory": {
+    "seq": 8,
+    "type": "memory",
+    "text": "The Guild mage fell at the Reedford ford: three bolts struck the bowman before the blades brought him down in the shallows, the staff floating off on the water.",
+    "who": [
+      "npc.tam",
+      "npc.npcford_robber_leader",
+      "npc.npcford_robber_archer_1",
+      "npc.npcford_robber_archer_2",
+      "npc.npcford_robber_archer_3",
+      "npc.npcford_robber_archer_4"
+    ],
+    "imp": 9
+  }
+}

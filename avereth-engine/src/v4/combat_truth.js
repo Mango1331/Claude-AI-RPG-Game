@@ -52,7 +52,10 @@ function countOf(word, noun) {
  * @param {object} s state
  * @param {object} content
  */
-export function combatTruth(s, content) {
+export function combatTruth(s, content, chronicle = null, excludedFoes = []) {
+    const o = s.last?.outcome;
+    const history = chronicle || (o?.kind === 'combat' && o.started ? { records: o.records || [], complete: true } : null);
+    const casts = castCounts(history?.records || []);
     const creatures = Object.values(s.entities || {}).filter((e) => e.kind === 'creature' && e.id !== 'pc');
     const fighters = Object.values(s.entities || {}).filter((e) => e.id !== 'pc' && (e.profile || s.encounter?.combatants?.[e.id]));
     const anchor = (e) => content.anchors.get(e.anchor || e.profile?.anchor);
@@ -63,6 +66,48 @@ export function combatTruth(s, content) {
     const labels = (e) => [e.name, s.scene.present.includes(e.id) ? sceneHandle(s, content, e.id) : null].filter(Boolean).map(normText).filter((x) => x.length > 2);
     return (clause) => {
         const c = normText(clause);
+        if (!SAID.test(c) && !/\b(?:once|ago|ancient|historical|yesterday|previously)\b/.test(c)) {
+            const excluded = excludedFoes.find((e) => [e.ref, e.species].filter(Boolean).some((name) => c.includes(normText(name))));
+            if (excluded && /\b(?:attacks?|guards?|guarded|blocks?|carries|carried|keys?|must|requires?)\b/.test(c)) return {
+                why: `${excluded.species || excluded.ref} was not admitted as a Dungeon foe`,
+                correction: `The ${excluded.species || excluded.ref} is no active foe here and its imagined keys impose no gate requirement. Keep the Dungeon's booked encounters and seal; a rumor remains only a rumor.`,
+            };
+        }
+        // Counts of actual casts, never visual sparks, projectiles or victims of one area/multi-hit action.
+        if (history?.complete && !SAID.test(c) && !NEGATED.test(c)) {
+            for (const [name, n] of casts) {
+                const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const claim = new RegExp(`\\b(?:cast|casts|casted|fired|fires|used|uses|launched|launches)\\s+(${COUNT})\\s+(?:successive\\s+)?${escaped}s?\\b`).exec(c);
+                if (!claim || !/\b(?:alaric|he|pc)\b/.test(c.slice(0, claim.index))) continue;
+                const count = countOf(claim[1], name);
+                if (typeof count === 'number' && count > n) return {
+                    why: `${name}: ${count} casts claimed, ${n} booked in this encounter`,
+                    correction: `COMBAT CHRONICLE: Alaric used ${name} ${n} time(s) in this encounter. Additional casts in the last reply did not happen; retain the engine's actions in narration and memory.`,
+                };
+            }
+        }
+        // A counted impact is checked against resolved strikes, not casts (area/multi-hit may hit several times).
+        if (history?.complete && !SAID.test(c) && !NEGATED.test(c)) {
+            const impact = new RegExp(`\\b(${COUNT})\\s+(?:arcane\\s+)?bolts?\\s+(?:struck|hit|landed|caught)\\b`).exec(c);
+            const bolts = history.records.filter((r) => r.kind === 'attack' && /\bbolt\b/i.test(r.skill_name || ''));
+            if (impact && bolts.length) {
+                const n = bolts.reduce((sum, r) => sum + (r.strikes || []).length, 0);
+                const claimed = countOf(impact[1], 'bolts');
+                if (typeof claimed === 'number' && claimed > n) return {
+                    why: `${claimed} bolt impacts claimed, ${n} resolved`,
+                    correction: `COMBAT CHRONICLE: only ${n} bolt impact(s) were resolved in this encounter. Extra hits in the last reply did not happen; do not retain them in memory.`,
+                };
+            }
+        }
+        const remains = /\b(\d+|one|two|three|four|five|six|all|both)\s+(?:heaps?|piles?)\s+of\s+bones?\b/.exec(c);
+        if (remains && (s.encounter || o?.kind === 'combat') && !SAID.test(c) && !NEGATED.test(c)) {
+            const skeletons = creatures.filter((e) => (s.scene.present.includes(e.id) || e.at === s.scene.at) && (e.anchor === 'skeleton' || e.profile?.anchor === 'skeleton'));
+            const n = countOf(remains[1], 'skeletons');
+            if (skeletons.length && (n === 'all' ? dead(skeletons).length < skeletons.length : n > dead(skeletons).length)) return {
+                why: 'bone heaps exceed the skeletons actually killed here',
+                correction: `Only ${dead(skeletons).length} skeleton(s) are dead here; ${skeletons.length - dead(skeletons).length} remain alive. Extra heaps of defeated skeletons in the last reply did not happen.`,
+            };
+        }
         if (!DEATH_RE.test(c)) return null;
         const said = SAID.exec(c);
         const at = (i) => !said || said.index > i; // the claim comes before any "he said" / "they believe" of the clause
@@ -102,7 +147,7 @@ export function combatTruth(s, content) {
 }
 
 /**
- * A text with the clauses that claim a death the engine contradicts taken out.
+ * Keep neighboring clauses; remove concrete death/cast/impact counts contradicted by engine evidence.
  * @returns {{text: string, refused: {clause: string, why: string, correction: string}[]}}
  */
 export function stripFalseDeaths(check, text) {
@@ -113,4 +158,48 @@ export function stripFalseDeaths(check, text) {
         return !x;
     });
     return { text: kept.join(' '), refused };
+}
+
+
+/** Reconstruct just the latest encounter from existing message events, stopping at its start.
+ * Snapshot overlap is deduplicated; outcome records also cover steps longer than the 20-line display log.
+ * No new event, state region or counter is persisted. Missing old history is never treated as proof of absence.
+ */
+export function combatChronicle(messages, eventsOf) {
+    const events = [];
+    let found = false;
+    let complete = false;
+    outer: for (let i = messages.length - 1; i >= 0; i--) {
+        const list = eventsOf(messages[i]);
+        for (let j = list.length - 1; j >= 0; j--) {
+            const e = list[j];
+            if (e.t.startsWith('encounter.')) found = true;
+            if (found || e.t === 'outcome.recorded') events.push(e);
+            if (e.t === 'encounter.started') { complete = true; break outer; }
+        }
+    }
+    if (!found) return null;
+    const unique = new Map();
+    for (const e of events.reverse()) {
+        const records = e.d.encounter?.log || (e.t === 'outcome.recorded' && e.d.outcome?.kind === 'combat' ? e.d.outcome.records : []) || [];
+        for (const r of records) if (r.actor && r.kind) unique.set(JSON.stringify(r), r);
+    }
+    return { records: [...unique.values()], complete };
+}
+
+function castCounts(records) {
+    const casts = new Map();
+    for (const r of records) if (r.actor === 'pc' && r.skill && r.kind === 'attack') {
+        const name = normText(r.skill_name || r.skill);
+        casts.set(name, (casts.get(name) || 0) + 1);
+    }
+    return casts;
+}
+
+export function chronicleLine(history) {
+    if (!history?.complete) return '';
+    const casts = castCounts(history.records);
+    if (!casts.size) return '';
+    const names = new Map(history.records.filter((r) => r.skill).map((r) => [normText(r.skill_name || r.skill), r.skill_name || r.skill]));
+    return `COMBAT CHRONICLE (this encounter, cumulative; each use is one action, not one per target or visual projectile): ${[...casts].map(([name, n]) => `${names.get(name)}: ${n}`).join('; ')}. These actions and the engine's living/dead state bind narration and lasting memory. Add no casts, damage or deaths; scenery and sensory detail remain free.`;
 }

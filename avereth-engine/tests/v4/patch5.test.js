@@ -477,7 +477,7 @@ test('patch 5 (21, 22): an escort goes the whole way: Brother Aldric is with him
         assert.ok(s.scene.present.includes('npc.aldric'));
         assert.ok(s.quests[MED].journey);
         await say(g, '*we go on*', { type: 'journey.continue', quote: 'we go on' });
-        await g.reply('Another three hours; two wolves block the track.', { expected: {}, deltas: [{ seq: 1, type: 'time', minutes: 180 }, wolvesNew('wolves', 2, 'SHORT'), { seq: 3, type: 'hostile', by: ['wolves'], scope: 'all' }] });
+        await g.reply('Another three hours; two wolves block the track, then rush at him.', { expected: {}, deltas: [{ seq: 1, type: 'time', minutes: 180 }, wolvesNew('wolves', 2, 'SHORT'), { seq: 3, type: 'hostile', by: ['wolves'], scope: 'all' }] });
         s = g.state();
         assert.ok(s.scene.present.includes('npc.aldric'), 'a further leg does not leave him at the roadside');
         assert.ok(s.encounter, 'the wolves fight');

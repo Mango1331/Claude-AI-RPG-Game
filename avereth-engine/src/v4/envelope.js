@@ -5,6 +5,7 @@
 // hesitates. After the reply, the world applier asks the same functions about what the extractor reported, at the
 // state of each step: one constraint, two uses. Nothing here is a new rule: the violence policy is the fight's own
 // (src/policy.js, shared with npcDecide), who may take Alaric's coin or things is the world applier's coercion rule.
+import { normText } from '../util.js';
 import { opensViolence } from '../policy.js';
 import { templateFor } from '../content.js';
 import { deriveCharacter } from '../derived.js';
@@ -142,4 +143,21 @@ export function envelopeLines(state, content, { c = false } = {}) {
 export function envelopeBlock(state, content, { c = false } = {}) {
     const lines = envelopeLines(state, content, { c });
     return lines.length ? `WORLD ENVELOPE (causal limits for this reply; inside them the story is free):\n${lines.map((l) => `- ${l}`).join('\n')}` : '';
+}
+
+/** A threat permits a response, but is not yet an attack. Evidence quotes must come from this reply. */
+export function attackCommitted(prose, evidence = null, labels = []) {
+    if (!prose?.trim()) return true; // legacy/direct reports without narrator text
+    if (evidence && !normText(prose).includes(normText(evidence))) return false;
+    const clauses = normText(prose).replace(/"[^"\n]*"|“[^”\n]*”/g, '').split(/[.!?;\n]+/);
+    const named = labels.map(normText).filter((x) => x && x.length > 2);
+    const own = clauses.filter((c) => named.some((n) => c.includes(n)));
+    const relevant = own.length ? clauses.filter((c, i) => own.includes(c) || (i > 0 && own.includes(clauses[i - 1]) && /^\s*(?:he|she|it|they)\b/.test(c))) : clauses;
+    // The extractor identifies the commitment; reject explicit non-commitments, rather than whitelist every
+    // possible way a generative creature attacks. Existing identity/group and violence gates still apply.
+    const actual = (c) => !/\b(?:if|unless|would|could|might|will|yesterday|previously|ago|last (?:night|spring|year)|rumou?rs?|believes?|threaten\w*|ready to|prepar\w* to|about to|pretend\w* to|refus\w* to|does not|do not|did not|never)\b/.test(c)
+        && /\b(?:attack\w*|lung\w*|pounc\w*|charg\w*|rush\w*|surg\w*|ambush\w*|strik\w*|struck|stabs?|stabbed|swings?|swung|shoots?|shot|looses?|fired|fires|launch\w*|leaps?|springs?|bites?|snaps? at|comes? at|are on him|opens? fire|straight at him|both of them committed)\b/.test(c);
+    if (relevant.some(actual)) return true;
+    if (/"[^"]*\b(?:attack|shoot|kill|fire)\b[^"]*"/i.test(normText(evidence || prose))) return false;
+    return !relevant.some((c) => /(?:\b(?:bow|arrowhead|knife|weapon)s?\b.*\b(?:half.draw|held|sloped|raised|aimed)\b)|\b(?:does not|do not|did not|never attacks|refus\w*|surrender\w*|threat\w*|demands?|unless|if|ultimatum|aim\w*|raised|raises?|draws?|drawn|blocks?|wait\w*|watch\w*|circl\w*|growl\w*|hold\w* back|holds? (?:his|her|its|their|the) ground|parley|negotia\w*)\b/.test(c));
 }

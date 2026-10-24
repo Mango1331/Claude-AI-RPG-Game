@@ -1,3 +1,4 @@
+import { chronicleLine } from './v4/combat_truth.js';
 // Context Builder: turns the campaign state into the smallest high-signal prompt block for this turn
 // ("smallest possible set of high-signal tokens", Anthropic context engineering). Sections are prioritised and
 // packed under a token budget; the most important section (RESOLVED) is placed last, closest to generation
@@ -266,7 +267,7 @@ export function recordLine(state, r, name = (id) => fightLabel(state, id), conte
 }
 
 /** Runtime V4: the narrator writes only prose; the engine reads the reply afterwards (src/v4/extract.js). */
-export const V4_OUTPUT_LINE = 'OUTPUT: write only the story. No <avereth> block, no fact report, no tags, no tracker, sheet or status block: the engine reads the reply afterwards.';
+export const V4_OUTPUT_LINE = 'OUTPUT: write only the story. No <avereth> block, no fact report, no tags, no tracker, sheet or status block: the engine reads the reply afterwards. Threats, demands and raised weapons leave negotiation open. Real NPC attacks and ambushes remain possible: stop at their immediate commitment, without inventing damage.';
 
 /** The engine's instructions to the narrator for a V4 story turn. Search/combat checks are engine-owned; ordinary fiction is narrated plausibly and then stored. */
 export function playerActionsBlock(outcome) {
@@ -720,6 +721,7 @@ export function buildContext(state, content, opts = {}) {
     // Gen 3.5: the World Envelope (src/v4/envelope.js): the causal limits of this reply, nothing for a scene without them.
     // Its own allowance, like the rules and the output line: it displaces no retrieved section (memories, lore)
     if (v4 && !opts.systemQuery && opts.envelope !== false) add('envelope', envelopeBlock(state, content, { c: !!(opts.outcome?.auth?.c || opts.outcome?.c) }), 0, true);
+    if (v4) add('chronicle', chronicleLine(opts.chronicle), 0, true);
     if (opts.corrections && opts.corrections.length) add('corrections', `CORRECTIONS (the previous reply conflicted with the engine; keep the engine's version):\n${opts.corrections.map((c) => `- ${c}`).join('\n')}`, 1);
     if (opts.systemQuery) {
         add('resolved', `SYSTEM QUERY (#system): ${opts.systemQuery}\nAnswer ONLY as the System (neutral, private, computer-like): no narration, no NPC reactions, story time and combat stay frozen. Use the state above, Core rules and player-known content; show formulas and arithmetic when useful; say INSUFFICIENT INFORMATION when data is missing. Never reveal hidden NPC data.`, 0);
@@ -739,7 +741,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'named', 'combat', 'guild_authority', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'named', 'combat', 'guild_authority', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };

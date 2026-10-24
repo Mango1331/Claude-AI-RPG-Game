@@ -113,8 +113,8 @@ export function playerTurnV4(state, content, text, { msg = null, commands = [], 
  * Apply the extractor's answer to the reply of a V4 campaign turn (story or V3-routed): the firewall, then the world.
  * @returns see world.js applyWorld; plus `extraction` for the record
  */
-export function replyTurnV4(state, content, answer, { msg = null, prose = '', ms = null, source = 'extractor', repaired = false } = {}) {
-    const r = applyWorld(state, content, answer, { msg, prose });
+export function replyTurnV4(state, content, answer, { msg = null, prose = '', ms = null, source = 'extractor', repaired = false, chronicle = null } = {}) {
+    const r = applyWorld(state, content, answer, { msg, prose, chronicle });
     const s = r.state;
     const summary = { t: 'extract.applied', d: { version: EXTRACTOR_VERSION, source, ms, repaired, deltas: (answer.deltas || []).length, rejected: r.rejected.length } };
     applyEvent(s, summary);

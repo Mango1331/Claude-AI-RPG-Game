@@ -43,6 +43,7 @@ import { developmentFeats } from './feats.js';
 import { classForgeRequest, parseClassForge } from './forge.js';
 import { PLANNER_VERSION, MECH_TYPES, planContext, withContentSkills, plannerRequest, parsePlan, mapPlan, recentText, announcedAbandon } from './planner.js';
 import { crowdCount, personWords, bystanderEvents } from './settlement.js';
+import { combatChronicle, chronicleLine } from './combat_truth.js';
 import { skillOf } from '../content.js';
 
 export const RECORD_V4 = 3;
@@ -679,10 +680,11 @@ export function extractionRequest(chat, id, content) {
     const gos = (o.auth?.gos || []).map((g) => g.to).filter(Boolean);
     // Prototype C (4.3.0-c.5): the contracts he read on a board, by id, also for a contract or board taken on arrival
     const cat = extractorCatalog(state, content, { extraPlaces: gos, known: !!(o.auth?.c || o.c), c: !!(o.auth?.c || o.c) });
-    const actions = o.kind === 'v4' ? [...o.actions, ...(o.extra || [])].join('\n')
+    let actions = o.kind === 'v4' ? [...o.actions, ...(o.extra || [])].join('\n')
         : o.kind === 'combat' ? 'COMBAT — the engine resolved this round (attacks, damage, movement); report only what else the reply established.'
             : o.kind === 'check' ? `CHECK — the engine resolved: ${o.check?.label || 'a check'}, ${o.check?.success ? 'success' : 'failure'}.`
                 : 'NOTHING TO BOOK — Alaric decided nothing the engine resolves.';
+    if (state.encounter || o.kind === 'combat') actions += `\n${chronicleLine(combatChronicle(chat.slice(0, id), messageEvents))}`;
     const expectedKeys = o.expected_keys || {};
     const player = state.last?.input || null;
     const req = extractorRequest(content.deltaVocab, { catalog: cat.text, actions, player, expectedKeys, reply: msg.mes });
@@ -788,7 +790,7 @@ export function applyExtraction(chat, id, content, parsed, { hash, ms = null, re
         setRec(msg, { ...r, events, extraction: { status: 'failed', version: EXTRACTOR_VERSION, ms, repaired, ...(recovery ? { recovery } : {}), error: String(error || '').slice(0, 200), ...(calls.length ? { llm: calls } : {}) }, corrections: [FAILED_CORRECTION, ...(stillAt(state) ? [stillAt(state)] : [])], ...view });
         return { changed: true, applied: false, failed: error || 'no valid answer' };
     }
-    const res = replyTurnV4(state, content, parsed.value, { msg: id, prose: msg.mes, ms, repaired });
+    const res = replyTurnV4(state, content, parsed.value, { msg: id, prose: msg.mes, ms, repaired, chronicle: state.encounter || state.last?.outcome?.kind === 'combat' ? combatChronicle(chat.slice(0, id), messageEvents) : null });
     const corrections = [...res.corrections];
     if (!parsed.complete) corrections.push(`Your last reply left open what happened to: ${parsed.missing.map((k) => `action ${k}`).join(', ')}; the engine treats it as not done.`);
     const view = display(msg, content, state, res, hud);

@@ -1,0 +1,934 @@
+{
+  "source": "Run 8, original chat before rejected patched greater skeleton; mechanical subset, no provider traffic",
+  "turn": 59,
+  "clock": {
+    "minute": 2520
+  },
+  "scene": {
+    "location": "realm.valedorn_crown",
+    "place": "Old Crown Catacombs › bone niche chamber",
+    "at": "loc.old_crown_catacombs.bone_niche_chamber",
+    "present": [
+      "pc"
+    ],
+    "positions": {},
+    "awareness": {},
+    "concealed": [],
+    "history": [
+      "loc.alderwatch.guild_hall",
+      "loc.alderwatch.chantry_of_the_temple_quarter",
+      "loc.hermitage_of_saint_vell",
+      "loc.black_pool_bog_beyond_the_ford",
+      "loc.hermitage_of_saint_vell",
+      "loc.woodcutters_cot",
+      "loc.valedorn",
+      "loc.alderwatch.guild_hall",
+      "loc.old_crown_catacombs",
+      "loc.old_crown_catacombs.catacombs_stair_hall",
+      "loc.old_crown_catacombs",
+      "loc.old_crown_catacombs.catacombs_stair_hall",
+      "loc.old_crown_catacombs.round_burial_chamber",
+      "loc.old_crown_catacombs.dark_archway_beyond_the_bier",
+      "loc.old_crown_catacombs.gravekeepers_workroom",
+      "loc.old_crown_catacombs.narrow_cold_passage"
+    ],
+    "relevant": [],
+    "threats": []
+  },
+  "places": {
+    "loc.old_crown_catacombs": {
+      "id": "loc.old_crown_catacombs",
+      "name": "Old Crown Catacombs",
+      "kind": "site",
+      "parent": "realm.valedorn_crown",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "by": "content",
+      "near": "loc.alderwatch",
+      "where": "beneath a ruined chapel an hour's ride west of Alderwatch",
+      "rooms": true,
+      "dungeon": {
+        "real": true,
+        "theme": "undead catacombs: burial galleries, restless skeletons, ghouls deeper down",
+        "rank": {
+          "min": "F",
+          "max": "E"
+        },
+        "levels": {
+          "1": {
+            "min": "F",
+            "max": "F"
+          },
+          "2": {
+            "min": "E",
+            "max": "E"
+          }
+        },
+        "control": "the temple wardens of Alderwatch, who ask the Guild to keep the upper galleries culled",
+        "hidden": [],
+        "heard": [],
+        "guild": [
+          "theme",
+          "rank",
+          "level:1",
+          "level:2",
+          "control"
+        ]
+      },
+      "visited": {
+        "turn": 31,
+        "minute": 2000
+      }
+    },
+    "loc.old_crown_catacombs.catacombs_stair_hall": {
+      "id": "loc.old_crown_catacombs.catacombs_stair_hall",
+      "name": "Catacombs stair hall",
+      "kind": "interior",
+      "parent": "loc.old_crown_catacombs",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "by": "reply",
+      "created": {
+        "turn": 31,
+        "minute": 2000
+      },
+      "level": 1,
+      "visited": {
+        "turn": 32,
+        "minute": 2000
+      }
+    },
+    "loc.old_crown_catacombs.spring_behind_the_chapel_wall": {
+      "id": "loc.old_crown_catacombs.spring_behind_the_chapel_wall",
+      "name": "spring behind the chapel wall",
+      "kind": "site",
+      "parent": "loc.old_crown_catacombs",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "by": "reply",
+      "created": {
+        "turn": 41,
+        "minute": 2035
+      },
+      "known": "reported",
+      "reports": [
+        {
+          "by": "npc.warden_hale",
+          "how": "told",
+          "where": "east side, behind the chapel wall; old Crown patrols used to water there",
+          "turn": 41,
+          "minute": 2035
+        }
+      ]
+    },
+    "loc.old_crown_catacombs.round_burial_chamber": {
+      "id": "loc.old_crown_catacombs.round_burial_chamber",
+      "name": "round burial chamber",
+      "kind": "interior",
+      "parent": "loc.old_crown_catacombs",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "by": "reply",
+      "created": {
+        "turn": 46,
+        "minute": 2425
+      },
+      "visited": {
+        "turn": 46,
+        "minute": 2425
+      },
+      "level": 1
+    },
+    "loc.old_crown_catacombs.dark_archway_beyond_the_bier": {
+      "id": "loc.old_crown_catacombs.dark_archway_beyond_the_bier",
+      "name": "dark archway beyond the bier",
+      "kind": "interior",
+      "parent": "loc.old_crown_catacombs",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "by": "reply",
+      "created": {
+        "turn": 46,
+        "minute": 2425
+      },
+      "level": 1,
+      "visited": {
+        "turn": 47,
+        "minute": 2445
+      }
+    },
+    "loc.old_crown_catacombs.gravekeepers_workroom": {
+      "id": "loc.old_crown_catacombs.gravekeepers_workroom",
+      "name": "gravekeeper's workroom",
+      "kind": "interior",
+      "parent": "loc.old_crown_catacombs",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "by": "reply",
+      "created": {
+        "turn": 47,
+        "minute": 2445
+      },
+      "visited": {
+        "turn": 47,
+        "minute": 2445
+      },
+      "level": 1
+    },
+    "loc.old_crown_catacombs.long_dark_corridor_beyond_the_archway": {
+      "id": "loc.old_crown_catacombs.long_dark_corridor_beyond_the_archway",
+      "name": "long dark corridor beyond the archway",
+      "kind": "interior",
+      "parent": "loc.old_crown_catacombs",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "by": "reply",
+      "created": {
+        "turn": 55,
+        "minute": 2472
+      },
+      "level": 1
+    },
+    "loc.old_crown_catacombs.large_gray_half_lit_chamber": {
+      "id": "loc.old_crown_catacombs.large_gray_half_lit_chamber",
+      "name": "large gray half-lit chamber",
+      "kind": "interior",
+      "parent": "loc.old_crown_catacombs",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "by": "reply",
+      "created": {
+        "turn": 55,
+        "minute": 2472
+      },
+      "level": 1
+    },
+    "loc.old_crown_catacombs.narrow_cold_passage": {
+      "id": "loc.old_crown_catacombs.narrow_cold_passage",
+      "name": "narrow cold passage",
+      "kind": "interior",
+      "parent": "loc.old_crown_catacombs",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "by": "reply",
+      "created": {
+        "turn": 56,
+        "minute": 2480
+      },
+      "level": 1,
+      "visited": {
+        "turn": 57,
+        "minute": 2500
+      }
+    },
+    "loc.old_crown_catacombs.bone_niche_chamber": {
+      "id": "loc.old_crown_catacombs.bone_niche_chamber",
+      "name": "bone niche chamber",
+      "kind": "interior",
+      "parent": "loc.old_crown_catacombs",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "by": "reply",
+      "created": {
+        "turn": 57,
+        "minute": 2500
+      },
+      "visited": {
+        "turn": 57,
+        "minute": 2500
+      },
+      "level": 1
+    },
+    "loc.old_crown_catacombs.deeper_narrow_passage": {
+      "id": "loc.old_crown_catacombs.deeper_narrow_passage",
+      "name": "deeper narrow passage",
+      "kind": "interior",
+      "parent": "loc.old_crown_catacombs",
+      "realm": "realm.valedorn_crown",
+      "tags": [],
+      "by": "reply",
+      "created": {
+        "turn": 57,
+        "minute": 2500
+      },
+      "level": 2
+    }
+  },
+  "entities": {
+    "pc": {
+      "id": "pc",
+      "kind": "pc",
+      "name": "Alaric",
+      "race": "Human",
+      "age": 18,
+      "origin": "Earth",
+      "descriptors": [
+        "alaric",
+        "stranger",
+        "traveler"
+      ],
+      "status": "alive",
+      "location": "realm.valedorn_crown",
+      "sheet": {
+        "level": 3,
+        "class": "mage",
+        "stats": {
+          "STR": 5,
+          "VIT": 10,
+          "AGI": 5,
+          "INT": 8,
+          "PER": 5,
+          "WIL": 13
+        },
+        "skills": {
+          "mage.basic_attack": {
+            "prof": 1,
+            "pp": 0
+          },
+          "mage.arcane_bolt": {
+            "prof": 1,
+            "pp": 18
+          },
+          "mage.arcane_ward": {
+            "prof": 1,
+            "pp": 18
+          }
+        },
+        "equipment": {
+          "clothing": "simple_travelers_clothes",
+          "weapon": "starter_arcane_staff_r2",
+          "armor": "starter_light_robes"
+        },
+        "inventory": {
+          "small_pouch": 1,
+          "obj.guild_plate": 1,
+          "obj.t30.hermitage_receipt_slip": 1,
+          "obj.t30.wooden_bottle_of_water": 1,
+          "obj.slip.clear_the_old_crown_catacombs_level_1": 1,
+          "obj.loot.restless_skeleton.bone.f": 5,
+          "obj.loot.restless_skeleton.dust.f": 2
+        },
+        "coin_cp": 88,
+        "xp": 34,
+        "free_points": 0,
+        "hp": 74,
+        "mp": 105,
+        "sta": 100,
+        "passives": {
+          "dyn.passive_unbroken_stance": {
+            "id": "dyn.passive_unbroken_stance",
+            "name": "Bone-Yard Grit",
+            "quality": "rare",
+            "scope": "combat",
+            "condition": {
+              "kind": "hp_at_most_pct",
+              "pct": 50
+            },
+            "effects": [
+              {
+                "kind": "stat_bonus",
+                "stat": "DEF",
+                "value": 4
+              },
+              {
+                "kind": "resist",
+                "damage_type": "physical",
+                "pct": 10
+              }
+            ]
+          }
+        }
+      }
+    },
+    "mon.old_crown_catacombs_c1_l1_e1_1": {
+      "id": "mon.old_crown_catacombs_c1_l1_e1_1",
+      "kind": "creature",
+      "name": null,
+      "descriptors": [
+        "bone-white shapes in tattered grave-line",
+        "old_crown_catacombs_c1_l1_e1 1"
+      ],
+      "traits": "",
+      "status": "dead",
+      "location": "realm.valedorn_crown",
+      "created": {
+        "turn": 32,
+        "minute": 2008
+      },
+      "source": {
+        "kind": "narration",
+        "msg": 64
+      },
+      "card": {},
+      "species": "restless skeleton",
+      "anchor": "skeleton",
+      "group": "old_crown_catacombs_c1_l1_e1",
+      "level": 5,
+      "type": "normal",
+      "slot": {
+        "dungeon": "loc.old_crown_catacombs",
+        "cycle": 1,
+        "floor": 1,
+        "id": "bones",
+        "role": "minion"
+      },
+      "profile": {
+        "model": "creature",
+        "anchor": "skeleton",
+        "body_plan": "Skeleton / animated bones",
+        "level": 5,
+        "rank": "F",
+        "type": "normal",
+        "max_hp": 54,
+        "atk": 19,
+        "def": 4,
+        "mdef": 1,
+        "init": 10,
+        "attack": {
+          "name": "Bony strike",
+          "damage_type": "physical",
+          "range": "ENGAGED"
+        }
+      },
+      "met_at": "loc.old_crown_catacombs.catacombs_stair_hall",
+      "looted": "enc.t32r"
+    },
+    "mon.old_crown_catacombs_c1_l1_e1_2": {
+      "id": "mon.old_crown_catacombs_c1_l1_e1_2",
+      "kind": "creature",
+      "name": null,
+      "descriptors": [
+        "bone-white shapes in tattered grave-line",
+        "old_crown_catacombs_c1_l1_e1 2"
+      ],
+      "traits": "",
+      "status": "dead",
+      "location": "realm.valedorn_crown",
+      "created": {
+        "turn": 32,
+        "minute": 2008
+      },
+      "source": {
+        "kind": "narration",
+        "msg": 64
+      },
+      "card": {},
+      "species": "restless skeleton",
+      "anchor": "skeleton",
+      "group": "old_crown_catacombs_c1_l1_e1",
+      "level": 4,
+      "type": "normal",
+      "slot": {
+        "dungeon": "loc.old_crown_catacombs",
+        "cycle": 1,
+        "floor": 1,
+        "id": "bones",
+        "role": "minion"
+      },
+      "profile": {
+        "model": "creature",
+        "anchor": "skeleton",
+        "body_plan": "Skeleton / animated bones",
+        "level": 4,
+        "rank": "F",
+        "type": "normal",
+        "max_hp": 48,
+        "atk": 17,
+        "def": 4,
+        "mdef": 1,
+        "init": 9,
+        "attack": {
+          "name": "Bony strike",
+          "damage_type": "physical",
+          "range": "ENGAGED"
+        }
+      },
+      "met_at": "loc.old_crown_catacombs.catacombs_stair_hall",
+      "looted": "enc.t32r"
+    },
+    "mon.old_crown_catacombs_c1_l1_e1_3": {
+      "id": "mon.old_crown_catacombs_c1_l1_e1_3",
+      "kind": "creature",
+      "name": null,
+      "descriptors": [
+        "bone-white shapes in tattered grave-line",
+        "old_crown_catacombs_c1_l1_e1 3"
+      ],
+      "traits": "",
+      "status": "dead",
+      "location": "realm.valedorn_crown",
+      "created": {
+        "turn": 32,
+        "minute": 2008
+      },
+      "source": {
+        "kind": "narration",
+        "msg": 64
+      },
+      "card": {},
+      "species": "restless skeleton",
+      "anchor": "skeleton",
+      "group": "old_crown_catacombs_c1_l1_e1",
+      "level": 3,
+      "type": "normal",
+      "slot": {
+        "dungeon": "loc.old_crown_catacombs",
+        "cycle": 1,
+        "floor": 1,
+        "id": "bones",
+        "role": "minion"
+      },
+      "profile": {
+        "model": "creature",
+        "anchor": "skeleton",
+        "body_plan": "Skeleton / animated bones",
+        "level": 3,
+        "rank": "F",
+        "type": "normal",
+        "max_hp": 42,
+        "atk": 14,
+        "def": 3,
+        "mdef": 0,
+        "init": 9,
+        "attack": {
+          "name": "Bony strike",
+          "damage_type": "physical",
+          "range": "ENGAGED"
+        }
+      },
+      "met_at": "loc.old_crown_catacombs.catacombs_stair_hall",
+      "looted": "enc.t32r"
+    },
+    "mon.old_crown_catacombs_c1_l1_e2": {
+      "id": "mon.old_crown_catacombs_c1_l1_e2",
+      "kind": "creature",
+      "name": null,
+      "descriptors": [
+        "upright skeleton in rotted gray robe, ru",
+        "old_crown_catacombs_c1_l1_e2"
+      ],
+      "traits": "",
+      "status": "alive",
+      "location": "realm.valedorn_crown",
+      "created": {
+        "turn": 47,
+        "minute": 2445
+      },
+      "source": {
+        "kind": "narration",
+        "msg": 98
+      },
+      "card": {},
+      "species": "skeletal gravekeeper",
+      "anchor": "skeleton",
+      "level": 1,
+      "type": "normal",
+      "slot": {
+        "dungeon": "loc.old_crown_catacombs",
+        "cycle": 1,
+        "floor": 1,
+        "id": "gallery",
+        "role": "minion"
+      },
+      "profile": {
+        "model": "creature",
+        "anchor": "skeleton",
+        "body_plan": "Skeleton / animated bones",
+        "level": 1,
+        "rank": "F",
+        "type": "normal",
+        "max_hp": 30,
+        "atk": 10,
+        "def": 2,
+        "mdef": 0,
+        "init": 8,
+        "attack": {
+          "name": "Bony strike",
+          "damage_type": "physical",
+          "range": "ENGAGED"
+        }
+      },
+      "met_at": "loc.old_crown_catacombs.gravekeepers_workroom",
+      "left": {
+        "at": "loc.old_crown_catacombs.gravekeepers_workroom",
+        "minute": 2500,
+        "turn": 57,
+        "leg": false
+      }
+    }
+  },
+  "dungeon": {
+    "id": "loc.old_crown_catacombs",
+    "name": "Old Crown Catacombs",
+    "since": {
+      "turn": 31,
+      "minute": 2000
+    },
+    "seed": "3732014077|loc.old_crown_catacombs",
+    "gate": {
+      "names": [
+        "ruined chapel",
+        "chapel stair",
+        "chapel yard",
+        "chapel lodge"
+      ],
+      "text": "the stair beneath the ruined chapel, watched by the temple wardens",
+      "requires": null,
+      "fee_cp": 0,
+      "keeper": "the temple wardens"
+    },
+    "capacity": 6,
+    "reset_min": 4320,
+    "floors": {
+      "1": {
+        "rank": {
+          "min": "F",
+          "max": "F"
+        },
+        "spans": {
+          "minion": [
+            1,
+            5
+          ],
+          "guard": [
+            4,
+            8
+          ],
+          "boss": [
+            5,
+            9
+          ]
+        },
+        "slots": [
+          {
+            "id": "bones",
+            "role": "minion",
+            "species": [
+              "restless skeleton",
+              "risen bones"
+            ],
+            "anchor": "skeleton",
+            "count": [
+              2,
+              3
+            ]
+          },
+          {
+            "id": "gallery",
+            "role": "minion",
+            "species": [
+              "restless skeleton",
+              "skeletal gravekeeper"
+            ],
+            "anchor": "skeleton",
+            "count": [
+              1,
+              2
+            ]
+          },
+          {
+            "id": "warden",
+            "role": "guard",
+            "name": "the Gallery Warden",
+            "species": "armoured skeleton",
+            "anchor": "skeleton"
+          }
+        ],
+        "manifest": "the pale grave-light in the seal over the lower stair gutters out, and the seal's chalk lines crack",
+        "sealed": true,
+        "pace": [
+          0,
+          1
+        ]
+      },
+      "2": {
+        "rank": {
+          "min": "E",
+          "max": "E"
+        },
+        "spans": {
+          "minion": [
+            15,
+            19
+          ],
+          "guard": [
+            18,
+            22
+          ],
+          "boss": [
+            20,
+            24
+          ]
+        },
+        "slots": [
+          {
+            "id": "ghouls",
+            "role": "minion",
+            "species": [
+              "ghoul",
+              "ghast"
+            ],
+            "anchor": "ghoul",
+            "count": [
+              1,
+              2
+            ]
+          },
+          {
+            "id": "lord",
+            "role": "boss",
+            "name": "the Ossuary Lord",
+            "species": "ghoul lord",
+            "anchor": "ghoul"
+          }
+        ],
+        "manifest": "the charnel stink thins and the lower galleries fall still",
+        "sealed": false,
+        "pace": [
+          0,
+          1
+        ]
+      }
+    },
+    "parties": [
+      {
+        "id": "party.millward_blades",
+        "name": "the Millward Blades",
+        "size": 2,
+        "leader": "Rook Tallow",
+        "affiliation": "a Guild-registered company",
+        "reach": 2
+      },
+      {
+        "id": "party.lantern_five",
+        "name": "the Lantern Five",
+        "size": 3,
+        "leader": "Corvin Ash",
+        "affiliation": "hired blades of a local house",
+        "reach": 1
+      }
+    ],
+    "resources_spec": [],
+    "cycle": 1,
+    "cycle_start": 2000,
+    "booked_to": 2520,
+    "inside": {},
+    "clears": [],
+    "ahead": null,
+    "pass": null,
+    "run": {
+      "floors": {
+        "1": {
+          "parts": 6,
+          "pace": [
+            0,
+            1,
+            0
+          ],
+          "slots": [
+            {
+              "id": "bones",
+              "role": "minion",
+              "name": null,
+              "species": "restless skeleton",
+              "anchor": "skeleton",
+              "count": 3,
+              "type": null,
+              "levels": [
+                5,
+                4,
+                3
+              ],
+              "ref": "old_crown_catacombs_c1_l1_e1",
+              "entities": [
+                "mon.old_crown_catacombs_c1_l1_e1_1",
+                "mon.old_crown_catacombs_c1_l1_e1_2",
+                "mon.old_crown_catacombs_c1_l1_e1_3"
+              ],
+              "at": "loc.old_crown_catacombs.catacombs_stair_hall",
+              "taken": null,
+              "met_turn": 32
+            },
+            {
+              "id": "gallery",
+              "role": "minion",
+              "name": null,
+              "species": "skeletal gravekeeper",
+              "anchor": "skeleton",
+              "count": 1,
+              "type": null,
+              "levels": [
+                1
+              ],
+              "ref": "old_crown_catacombs_c1_l1_e2",
+              "entities": [
+                "mon.old_crown_catacombs_c1_l1_e2"
+              ],
+              "at": "loc.old_crown_catacombs.gravekeepers_workroom",
+              "taken": null,
+              "met_turn": 47
+            },
+            {
+              "id": "warden",
+              "role": "guard",
+              "name": "the Gallery Warden",
+              "species": "armoured skeleton",
+              "anchor": "skeleton",
+              "count": 1,
+              "type": null,
+              "levels": [
+                4
+              ],
+              "ref": "old_crown_catacombs_c1_l1_e3",
+              "entities": [],
+              "at": null,
+              "taken": null
+            }
+          ],
+          "cleared": null
+        },
+        "2": {
+          "parts": 0,
+          "pace": [
+            0,
+            0
+          ],
+          "slots": [
+            {
+              "id": "ghouls",
+              "role": "minion",
+              "name": null,
+              "species": "ghoul",
+              "anchor": "ghoul",
+              "count": 2,
+              "type": null,
+              "levels": [
+                18,
+                17
+              ],
+              "ref": "old_crown_catacombs_c1_l2_e1",
+              "entities": [],
+              "at": null,
+              "taken": null
+            },
+            {
+              "id": "lord",
+              "role": "boss",
+              "name": "the Ossuary Lord",
+              "species": "ghoul lord",
+              "anchor": "ghoul",
+              "count": 1,
+              "type": null,
+              "levels": [
+                20
+              ],
+              "ref": "old_crown_catacombs_c1_l2_e2",
+              "entities": [],
+              "at": null,
+              "taken": null
+            }
+          ],
+          "cleared": null
+        }
+      },
+      "resources": {}
+    }
+  },
+  "prose": "He went back the way he had come, hand on the wall, and the narrow passage gave him up its bends in reverse until the niche chamber's cold quiet opened around him once more. The skull rows watched him pass with their one shared facing. At the junction he paused, back to the wall a last moment, and the dragging was still there — out in the gray, unchanged, patient.\n\nThen he moved toward the main gallery, careful, staff ready, weight rolling heel to toe on the worn floor.\n\nThe gray half-light grew as he went. It came from somewhere ahead and left — a pale seep around a corner of the gallery, like moon-fall through a broken roof, and he kept to the deep shadow of the near wall and worked toward the corner's edge. The dragging sound strengthened with each step. Drag, settle. Drag, settle. Close now. Close enough that he could hear a second note under it: a faint dry click, bone on stone, riding each settle.\n\nHe put his eye to the corner's edge.\n\nThe gallery opened into a long hall under that pale seep, and the thing was there in the middle distance, walking its slow circuit.\n\nIt was a skeleton, but wrong for the word. The lesser restless dead he had broken already had been man-sized, hurried, empty. This one had been built to a larger plan — head nearly brushing the gallery's high ceiling, limbs long and heavy-boned, its frame pieced and patched with added stock: extra vertebrae worked into the spine, a second layer of rib, one arm ending in a great cleaved scapula it used as a crutch-blade, which was the drag. It went its round of the hall at a walk, foot and blade-edge, foot and blade-edge, past a dais at the far end where a stone stair went down and stopped at a cold sealed face he knew the feel of already. Around its neck, dull in the gray light, hung a ring of old keys on a chain.\n\nIt did not look toward the corner. It walked its round, and the light fell on it, and it passed behind a pillar, and came out again, and walked.\n\nTwenty paces of open floor lay between the corner and the hall's nearest cover.",
+  "answer": {
+    "expected": {
+      "1": {
+        "arrived": false,
+        "at": null,
+        "with": null
+      },
+      "2": {
+        "arrived": true,
+        "at": {
+          "new": {
+            "name": "main gallery",
+            "kind": "interior",
+            "parent": "loc.old_crown_catacombs"
+          }
+        },
+        "with": null
+      }
+    },
+    "deltas": [
+      {
+        "seq": 1,
+        "type": "time",
+        "minutes": 10
+      },
+      {
+        "seq": 2,
+        "type": "creature.new",
+        "ref": "cr.patched_greater_skeleton",
+        "species": "patched greater skeleton",
+        "anchor": "skeleton",
+        "desc": [
+          "head nearly brushing the high ceiling, long heavy-boned limbs, frame pieced with extra vertebrae and a second layer of rib, one arm ending in a great cleaved scapula used as a crutch-blade — the source of the drag",
+          "a ring of old keys on a chain hangs at its neck"
+        ],
+        "count": 1,
+        "present": true,
+        "band": "MEDIUM",
+        "cluster": null,
+        "stronger": true,
+        "threat": null,
+        "more": null
+      },
+      {
+        "seq": 3,
+        "type": "aware",
+        "who": "cr.patched_greater_skeleton",
+        "level": "unaware",
+        "evidence": "It did not look toward the corner; it walked its round",
+        "scope": null
+      },
+      {
+        "seq": 4,
+        "type": "position",
+        "who": "cr.patched_greater_skeleton",
+        "band": "MEDIUM",
+        "cover": null,
+        "cluster": null,
+        "scope": null,
+        "evidence": "in the middle distance, walking its slow circuit of the hall; twenty paces of open floor between the corner and the nearest cover"
+      },
+      {
+        "seq": 5,
+        "type": "passage",
+        "from": null,
+        "to": {
+          "new": {
+            "name": "sealed stair landing on the dais",
+            "kind": "interior",
+            "parent": null
+          }
+        },
+        "name": "stone stair down from the dais",
+        "hidden": null,
+        "one_way": null,
+        "dir": "down",
+        "feature": "cold sealed face blocking the stair down"
+      },
+      {
+        "seq": 6,
+        "type": "fact",
+        "s": "cr.patched_greater_skeleton",
+        "p": "carries",
+        "o": "a ring of old keys on a chain around its neck"
+      },
+      {
+        "seq": 7,
+        "type": "thread",
+        "id": "thread.t55.1",
+        "text": "The slow rhythmic drag and settle in the main gallery is identified: a large patched greater skeleton walking its circuit, dragging a cleaved scapula-blade.",
+        "kind": "threat",
+        "status": "resolved",
+        "resolution": "Alaric saw the source from the corner's edge: a greater patched skeleton on its round."
+      }
+    ]
+  }
+}

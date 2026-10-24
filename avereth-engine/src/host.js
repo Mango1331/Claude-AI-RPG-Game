@@ -13,6 +13,8 @@ import { turnPanel } from './display.js';
 import { renderHud } from './hud.js';
 import { hash32, clone, normText, swapWords, hasTrackerBlocks, stripTrackerBlocks, ENGINE_VERSION } from './util.js';
 
+import { combatChronicle } from './v4/combat_truth.js';
+
 export const KEY = 'avereth';
 export const RECORD_VERSION = 2;
 
@@ -147,6 +149,7 @@ export function turnBlock(chat, u, content, settings = {}) {
         input: chat[u].mes,
         corrections: prev && !prev.system_answer ? prev.corrections || [] : [],
         lastReply: p >= 0 ? chat[p].mes : '',
+        chronicle: state.meta?.runtime === 'v4' && (state.encounter || state.last?.outcome?.kind === 'combat') ? combatChronicle(chat.slice(0, u + 1), messageEvents) : null,
         budget: settings.budget,
         rulesBudget: settings.rulesBudget,
         recentTurns: settings.recentTurns,

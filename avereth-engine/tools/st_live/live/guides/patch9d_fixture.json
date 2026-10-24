@@ -1,0 +1,66 @@
+{
+  "id": "patch9d_fixture",
+  "title": "Patch 9D — preserved explicit Level-14 F-to-E class fixture",
+  "fixture": "9d-rare",
+  "brief": "This is an explicitly prepared Level-14 fixture, NOT a natural lifetime run. Creation is already complete: Warrior, Heavy Slash and Guard, one XP before Level 15. The historical feats shown by #feats are synthetic fixture data. Do not create another character. First read #status and #feats. Gain the last XP normally through one safe fight against a single weak hostile animal or a small completed Guild task; never attack an innocent person. After reaching E, wait for the engine's CLASS CHOICE, read #class, compare the alternative directions and their actual numbers. Choose the offensive melee class option outside any fight with the plain sentence: I choose <exact offered name> as my class. #class only displays options; do not invent #class choose/select/evolve commands or #system questions. If that precise choice is refused, report the blocker rather than cycling through variants. After CLASS EVOLVED, send #class and #feats as separate messages. Then use Heavy Slash in one safe fight against a single weak foe and read the actual attack power and cost. Report the class name, quality and the one class trait you observed. No new Skill or Domain is granted by the class name. A postponed choice must remain the same. Do not manipulate state, regenerate, reroll or seek a stronger foe just to finish. Stop after the checks and actual class-trait combat usage. The harness will save/reload and check that the class and feats survive.",
+  "character": {
+    "class": "Warrior",
+    "skills": [
+      "Heavy Slash",
+      "Guard"
+    ]
+  },
+  "milestones": [
+    {
+      "id": "class_rank_e",
+      "goal": "Gain the last XP normally and reach Level 15 / E.",
+      "maxTurns": 10
+    },
+    {
+      "id": "class_offered",
+      "goal": "The engine offers one group of alternative E Classes.",
+      "maxTurns": 2
+    },
+    {
+      "id": "class_accepted",
+      "goal": "Read #class and explicitly choose the offensive melee option by its exact name.",
+      "maxTurns": 4
+    },
+    {
+      "id": "class_verified",
+      "goal": "After CLASS EVOLVED, send #class and #feats separately and read both System panels.",
+      "maxTurns": 4
+    },
+    {
+      "id": "class_trait_used",
+      "goal": "Use Heavy Slash in a safe subsequent fight; inspect the actual cost and raw power with the selected class active.",
+      "maxTurns": 8
+    }
+  ],
+  "focus": [
+    "Explicit fixture test: history is seeded data; the last XP, offer, choice, System panels and combat use are actual runtime operations.",
+    "All options have the same earned Normal/Rare quality; only one is acquired, no ordinary Passive slot is used.",
+    "The root Warrior class and its Favored Stats, known Skills and Passives stay intact.",
+    "No free refill, extra Skill, Legendary class or Domain from the evolution.",
+    "The saved/reloaded selected class, trait and feats must be identical."
+  ],
+  "limits": {
+    "maxTurns": 25,
+    "maxMinutes": 90,
+    "sameFailure": 3
+  },
+  "personas": [
+    "Careful mechanics observer; read the two panels after choosing; one weak foe at a time."
+  ],
+  "scripted": [
+    {
+      "say": "#status"
+    },
+    {
+      "say": "#feats"
+    },
+    {
+      "say": "#class"
+    }
+  ]
+}

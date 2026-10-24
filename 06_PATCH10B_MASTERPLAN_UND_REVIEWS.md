@@ -683,7 +683,7 @@ Nur bei wirklich notwendigem Befund weitere Dateien berühren. Kein neues Quests
 
 ### 14.5 10B-2 implementiert und selbst getestet – .59, 24.10.2026
 
-**Basis:** `e6c76b4aada6fbb0d2ba18a48a2ed623afa53d7d` / .58. **Dev-Endstand:** [`fe5cc6d1f57affcf98aec3e68c4bfc4a474626c6`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/fe5cc6d1f57affcf98aec3e68c4bfc4a474626c6) / **4.3.0-c.6.6.59**, direkt auf dem bestehenden Entwicklungsbranch gepusht. Ausschließlich 10B-2 durch Codex nach ausdrücklichem Implementierungsauftrag umgesetzt. Noch kein unabhängiges Review und keine echte Live-Abnahme.
+**Basis:** `e6c76b4aada6fbb0d2ba18a48a2ed623afa53d7d` / .58. **Produktcommit:** [`fe5cc6d1f57affcf98aec3e68c4bfc4a474626c6`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/fe5cc6d1f57affcf98aec3e68c4bfc4a474626c6) / **4.3.0-c.6.6.59**, direkt auf dem bestehenden Entwicklungsbranch gepusht. Ausschließlich 10B-2 durch Codex nach ausdrücklichem Implementierungsauftrag umgesetzt. Noch kein unabhängiges Review und keine echte Live-Abnahme.
 
 **Code und Notes:** [`PATCH10B2_DELIVERY_HANDOVER.md`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/fe5cc6d1f57affcf98aec3e68c4bfc4a474626c6/avereth-engine/docs/PATCH10B2_DELIVERY_HANDOVER.md). Neu `src/v4/delivery.js`; geändert `commands.js`, `world.js`, `guild.js`, `domain.js`, `ownership.js`, `planner.js`, `src/context.js`. Buildangaben in util.js/manifest/package synchron, Kurznotiz in Dev PROTOTYPE_C. Neuer Engine-Event `quest.delivered` und Engine-Zustand `quest.delivery`, kein Extractor-Delta/kein neuer Spielerbefehl. PC-Inventar-Firewall unverändert. Narrator-Kartenvertrag .55 unverändert, nur der dynamische Questkontext wurde angepasst.
 
@@ -696,3 +696,6 @@ Nur bei wirklich notwendigem Befund weitere Dateien berühren. Kein neues Quests
 **ST-Smoke ausdrücklich nicht bestanden:** `npm run smoke:st:c` wurde ausgeführt, endet hier mit Exit 1 **vor Host-/Browserstart**: `Error: set AVERETH_ST_DIR to a SillyTavern checkout`. Kein ST-Checkout in dieser Umgebung. Das ist kein erfolgreicher Browser-/GLM-Nachweis; auch der frühere AbortReason-Smoke aus .58 wird dadurch weder wiederholt noch erklärt. Der Smoke muss im vorhandenen lokalen ST-Setup nachgeholt werden. Keine Recovery-/Runneränderung zum Kaschieren des Ergebnisses.
 
 **Nächster Schritt:** unabhängiges Claude-Gegenreview des Commits einschließlich Nachweis-Authority, Inventar, alter Lieferkontrollen und technischer Patchnotes; danach ST-Smoke und Live-Abnahme. Der beim Auftrag lokal laufende natürliche .58-Run bleibt ein .58-Beleg, kein .59-Abnahmelauf. Keine Änderung an current_test/Original-ZIPs/01–04 oder an 10B-3/4, Reise-/Monster-/Chase-/Balanceplanung.
+
+
+**Dokumentationsnachtrag 10B-2:** Der Entwicklungsbranch endet nach dem reinen Doku-Folgecommit [`5fdbd9f`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/5fdbd9f065f27f3dbda538ce4e5ebd7917e95759). Er erhält den bestehenden 10B-1-Abschnitt in PROTOTYPE_C zusätzlich zum neuen 10B-2-Eintrag. Produktcode und Build bleiben exakt beim getesteten .59-Commit `fe5cc6d`; keine neue Mechanik oder neue Testbehauptung.

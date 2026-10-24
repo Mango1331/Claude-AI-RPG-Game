@@ -38,6 +38,12 @@ export function guideErrors(g) {
         if (!CHECKS[m.check || m.id]) errors.push(`milestone ${m.id}: no evaluator check "${m.check || m.id}" (checks: ${Object.keys(CHECKS).join(', ')})`);
     }
     if (!(g.milestones || []).some((m) => m.required !== false)) errors.push('no required milestone (a run would never be done)');
+    if (g.openRun) {
+        if (!Number.isInteger(g.openRun.minTurns) || g.openRun.minTurns < 1) errors.push('openRun.minTurns must be a positive integer');
+        if (g.fixture) errors.push('an open-run guide cannot require a synthetic fixture');
+        if (!g.milestones?.some((m) => (m.check || m.id) === 'open_run_duration' && m.required !== false)) errors.push('open-run guide needs the required open_run_duration milestone');
+        if (g.limits?.maxTurns && g.openRun.minTurns > g.limits.maxTurns) errors.push('openRun.minTurns exceeds maxTurns');
+    }
     for (const [i, st] of (g.scripted || []).entries()) {
         if (!st.say) errors.push(`scripted step ${i + 1}: say missing`);
         if (st.until) { try { new RegExp(st.until, 'i'); } catch (e) { errors.push(`scripted step ${i + 1}: until is no regular expression (${e.message})`); } }

@@ -338,7 +338,7 @@ export async function run(o) {
                 if (r.problem === 'no reply after the message' || String(r.problem).startsWith('the turn did not end within ')) {
                     try {
                         failedChat = await driver.chat();
-                        fault = driverFailure(failedChat, r.problem);
+                        fault = driverFailure(failedChat, r.problem, r.extraction);
                     } catch (error) {
                         log(`could not inspect the timeout's engine record: ${String(error?.message || error).slice(0, 160)}`);
                     }

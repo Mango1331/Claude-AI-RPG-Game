@@ -101,6 +101,31 @@ export function turnOutcome(chat, u) {
     if (panel) return { kind: command ? 'system' : 'engine', at: chat.indexOf(panel), reason: rec(user)?.ir?.reason || null };
     return { kind: 'missing', at: null };
 }
+/**
+ * 10B-4b: one turn's terminal failure, from records the Engine actually wrote.
+ * Does not rewrite visible player history or alter the original turnOutcome API:
+ * this is a runner-only diagnostic/stop decision, not a game rule.
+ */
+export function turnFailure(chat, u) {
+    const o = turnOutcome(chat, u);
+    if (o.kind === 'narrator_empty') return { kind: 'narrator_empty', at: o.at, reason: null };
+    const player = rec(chat[u]);
+    if (o.kind !== 'story' && (player?.plan?.failed || player?.interp?.failed)) {
+        return {
+            kind: player?.plan ? 'planner_failed' : 'interpreter_failed',
+            at: u,
+            reason: player?.plan?.error || player?.interp?.error || null,
+        };
+    }
+    if (o.kind === 'story') {
+        const x = rec(chat[o.at])?.extraction;
+        if (x?.status === 'failed' || x?.status === 'late') {
+            return { kind: x.status === 'late' ? 'extractor_late' : 'extractor_failed', at: o.at, reason: x.error || null };
+        }
+    }
+    if (o.kind === 'missing') return { kind: 'missing', at: null, reason: null };
+    return null;
+}
 const PANEL_MARKS = { clarify: /\bCLARIFY\b/, not_taken: /\bNOT TAKEN\b/, refused: /\bREFUSED\b/, blocked: /\bBLOCKED\b/, failed: /\bFAILED\b/, not_recorded: /\bNOT RECORDED\b/ };
 const FOLD_ON = new Set(['scene.moved', 'quest.status', 'entity.status', 'entity.created', 'dungeon.slot']);
 

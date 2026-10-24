@@ -1,0 +1,25 @@
+{
+  "input": "I try the cold bone slab in the iron-banded door's keyhole, turning it gently if it fits.",
+  "plan": {
+    "commands": [
+      {
+        "seq": 1,
+        "type": "take",
+        "object": "obj.t146.flat_thing_wrapped_in_oilcloth_and_tied_with_cord",
+        "qty": 1,
+        "quote": "the cold bone slab"
+      },
+      {
+        "seq": 2,
+        "type": "attempt",
+        "feature": "feat.3",
+        "aim": "pass",
+        "approach": "trying the cold bone slab in the keyhole, turning it gently",
+        "stat": null,
+        "tool": "obj.t146.flat_thing_wrapped_in_oilcloth_and_tied_with_cord",
+        "possible": null,
+        "quote": "I try the cold bone slab in the iron-banded door's keyhole, turning it gently if it fits."
+      }
+    ]
+  }
+}

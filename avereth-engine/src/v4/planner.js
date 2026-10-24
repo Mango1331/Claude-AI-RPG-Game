@@ -432,6 +432,20 @@ export function parsePlan(answer, vocab, ctx, message) {
     const features = new Set((ctx.catalog.features || []).map((f) => f.id));
     const held = new Set((ctx.catalog.objects || []).filter((o) => !o.holder).map((o) => o.id));
     const list = value.commands.map((c, i) => ({ c, i }));
+    // Forecast only an explicit earlier TAKE of this exact catalog object. This validates a plan, not ownership:
+    // TAKE still checks custody/location/container, and attemptEvents checks actual possession before any roll.
+    const heldBefore = (tool, command) => {
+        let own = held.has(tool);
+        const prior = list.filter(({ c, i }) => c && Number.isInteger(c.seq ?? i + 1)
+            && (c.seq ?? i + 1) < command.seq).sort((a,b) => (a.c.seq ?? a.i + 1) - (b.c.seq ?? b.i + 1));
+        for (const { c } of prior) {
+            if (c.object !== tool) continue;
+            if (c.type === 'take' && objects.has(tool)) own = true;
+            else if (['drop', 'give', 'sell'].includes(c.type)) own = false;
+        }
+        return own;
+    };
+
     for (const { c, i } of list) {
         const at = `commands[${i}]${c && typeof c === 'object' && c.type ? ` (${c.type})` : ''}`;
         if (!c || typeof c !== 'object' || Array.isArray(c)) { errors.push(`${at}: must be an object`); continue; }
@@ -501,7 +515,7 @@ export function parsePlan(answer, vocab, ctx, message) {
             if (!(isNew(c.feature) || (typeof c.feature === 'string' && features.has(c.feature)))) errors.push(`${at}: feature must be an id from FEATURES or {"new": "<the thing>"}`);
             if (!['examine', 'pass', 'disable'].includes(c.aim)) errors.push(`${at}: aim must be "examine", "pass" or "disable"`);
             if (!(c.stat === null || ['STR', 'VIT', 'AGI', 'INT', 'PER', 'WIL'].includes(c.stat))) errors.push(`${at}: stat must be STR, VIT, AGI, INT, PER, WIL or null`);
-            if (!(c.tool === null || (typeof c.tool === 'string' && held.has(c.tool)))) errors.push(`${at}: tool must be the id of a thing Alaric holds (OBJECTS) or null`);
+            if (!(c.tool === null || (typeof c.tool === 'string' && heldBefore(c.tool, c)))) errors.push(`${at}: tool must be the id of a thing Alaric holds (OBJECTS) or null`);
             if (!(c.possible === null || typeof c.possible === 'boolean')) errors.push(`${at}: possible must be false or null`);
             if (!(c.approach === null || typeof c.approach === 'string')) errors.push(`${at}: approach must be a few of his words or null`);
         }

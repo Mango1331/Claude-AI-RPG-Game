@@ -28,7 +28,7 @@ test('9D runner fixture is explicitly selected, deterministic, Level 14, labelle
 });
 
 test('9D review: the report summary labels the synthetic fixture, seed and actual reload result; ordinary runs have no fixture label',()=>{
-    const guide=loadGuide('current_test');
+    const guide=loadGuide('patch9d_fixture');
     const base={runId:'fixture-test',stub:false,guide,player:{type:'scripted',steps:0},end:{kind:'limit'},ev:evaluate([],{guide}),calls:[],
         setup:{card:'test',world:'test'},imp:{preset:{name:'test',unsaved:[],vsRepo:[]},generation:{},dropped:[],warnings:[],read:[]},
         git:null,build:'test',st:{version:'1.19',dir:'/test',port:8123},browser:{name:'test',version:'test'},
@@ -45,7 +45,7 @@ test('9D review: the report summary labels the synthetic fixture, seed and actua
 });
 
 test('9D live evaluator requires accepted class, BOTH answered panels and a later combat snapshot/use; prose does not finish it',async()=>{
-    const c=await loadProductContent(),g=await classFixture(c,{profile:'experienced'}),guide=loadGuide('current_test');
+    const c=await loadProductContent(),g=await classFixture(c,{profile:'experienced'}),guide=loadGuide('patch9d_fixture');
     inject(g,awardXp(g.state().entities.pc.sheet,1,c,'fixture final XP'));
     await say(g,'*I rest for ten minutes*',{type:'activity',kind:'rest',what:null,minutes:10,until:null,quote:'I rest for ten minutes'});
     assert.equal(finished(evaluate(g.chat,{guide})),false);

@@ -662,12 +662,14 @@ export function extractionRequest(chat, id, content) {
  * persistence we have. A reply that changed meanwhile, or a later turn already resolved, is left alone.
  * @returns {{changed: boolean, applied?: boolean, failed?: string, late?: boolean}}
  */
-export async function runExtraction(chat, id, content, llm, { hud = 'closed' } = {}) {
+export async function runExtraction(chat, id, content, llm, { hud = 'closed', isCurrent = () => true } = {}) {
+    if (!isCurrent()) return { changed: false, cancelled: true };
     const req = extractionRequest(chat, id, content);
     if (!req) return { changed: false };
     // A provider failure may be caused by a swipe, edit, or newer Engine turn.
     // Do not spend another LLM call when the original reply is no longer current.
     const current = () => {
+        if (!isCurrent()) return false;
         const msg = chat[id];
         const r = rec(msg);
         return !!msg && r?.extraction?.status === 'pending' && r.text_hash === req.hash
@@ -734,6 +736,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed' } =
         } else error = second.error;
     }
 
+    if (!isCurrent()) return { changed: false, cancelled: true };
     return applyExtraction(chat, id, content, parsed, { hash: req.hash, ms, repaired, error, hud, calls });
 }
 

@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 24. Oktober 2026 · Fassung 44 (echter .56-Fixture-Lauf: 5/5 Mechanik, manueller Verbindungs-/Sendeschritt, Abschluss-Reload gescheitert; Follow-up .57 implementiert, 1269/1269 Tests)  
+**Stichtag:** 24. Oktober 2026 · Fassung 45 (9D F→E im echten `.57`-Fixture vollständig live abgenommen; neue Untersuchungsphase: offener Langlauf, Kampfsimulationen, Verfolgung/Gameplay-Review)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -16,12 +16,22 @@
 | **HEAD am 24.10.2026 (Snapshot)** | **eb4015667cd941cddd3f69e6ebf66a5f8062a254** (Runner-Follow-up), Engine **54ffd9e9c71a0a9406348531aa6e9bad19770239**, Basis `bdda871` (.56). HEAD vor neuer Arbeit erneut prüfen. |
 | **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.57**, Narrator-Vertrag weiterhin **.55**. Kein neuer Kartenwechsel gegenüber .55/.56. Vokabular/Planner-Version unverändert. |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | **9D-MECHANIK IM ECHTEN .56-FIXTURE-LAUF 5/5 BELEGT; RUNNERABSCHLUSS/PERSISTENZ OFFEN.** 25 Züge/25:13min, Level15/E, Rare-Angebot, Ironbound Fury ausdrücklich angenommen, #class/#feats und reale Eigenschaft im Folgeangriff. Nutzer musste nach Start-Reload verbinden/senden; finaler Reload auf Startbildschirm mit60s-Timeout gescheitert. Kein vollständig automatischer Erfolg und keine Live-Persistenzbestätigung. .57 korrigiert Runner und natürliche Klassenwahl, Selbsttests1269/1269; neuer echter Run ausstehend. |
-| **Nächster Schritt** | Nach `git pull --ff-only` im Entwicklungsbranch kurzer echter Nachtest: `npm run live:st -- --guide current_test --fixture 9d-rare --seed 7 --headed`. Muss ohne manuelles API-Verbinden/Senden starten und nach5/5 dieselbe gespeicherte Klasse/Laufbahn erfolgreich laden und sauber enden. Originalexport prüfen; .57 noch nicht real ST/GLM-getestet. Keine neue 9D-Implementierung, Balance-/XP-/Rarity-/NPC-Änderung oder natürlicher1–15-Lauf. |
+| **Patchstatus** | **9D F→E / NORMAL–RARE LIVE ABGENOMMEN auf `.57`.** Zweiter echter Fixture-Lauf `20261024-021009Z-current_test.zip`: 23 echte Spielzüge, 13:16 Minuten, alle 5/5 Pflichtetappen, `end: done`, `fixtureReload: true`, Integrität OK; Start einschließlich API-Verbindung/erstem `#status` und Schluss-Reload vollautomatisch. Level 15/E, zwei Rare-Klassenoptionen, `Ironbreaker Path` natürlich per Namen gewählt, `#class`/`#feats` und Heavy Slash mit aktiver Eigenschaft belegt. Die Feat-Vorgeschichte bleibt ausdrücklich synthetisch. Gesamtsuite `.57` 1269/1269 **laut Sol-Bericht**, nicht hier neu ausgeführt. Nicht freigegeben: Legendary-E, D–S, Domain, abschließendes Zahlenbalancing. |
+| **Nächster Schritt** | **Drei getrennte Diagnoseaufträge vor Patch 10B:** (I) 80–120-Züge-Open-World-Livetest ab echter Charaktererstellung, Minimalleitfaden und ohne Fixture; (II) reproduzierbare Node/JS-Kampfsimulationen der drei aktuellen Startklassen gegen echte Monster-Archetypen und gegeneinander, F und erster E-Rang; (III) Verfolgung/Flucht, Bewegungssemantik und weitere Gameplay-/Engine-Flaws ergebnisoffen untersuchen und Varianten experimentell vergleichen. Befunde priorisieren, erst danach Design-/Balancingfreigaben. Vollauftrag in Datei 04 §1a.2d. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
 
 
+
+### 9D .57 – echter zweiter Fixture-Livetest: F→E vollständig abgenommen (24.10.2026)
+
+**Originalexport:** `20261024-021009Z-current_test.zip`, Build `4.3.0-c.6.6.57`, sauberer Entwicklungs-HEAD `eb4015667cd941cddd3f69e6ebf66a5f8062a254`, ST 1.19.0, GLM-5.3-Flash, ausdrücklich **synthetische** Level-14-/Rare-Vorgeschichte (`9d-rare`, Seed 7). Originale `run.json` und `evaluation.json` geprüft: **23 echte Runner-Spielzüge**, **13:16 min** (`796319 ms`), `5/5` erreichte Etappen, `end.kind: done`, `fixtureReload: true`, Integrität OK. Testspieler-Entscheidungen `140265 ms`, Spiel-/Providerzeit `594335 ms`; 60 Engine-/Erzähler-Aufrufe. Fixture-Historie nicht als natürlich erlebte Level 1–14 behaupten.
+
+**End-to-End real:** Testchat beim Start nach Reload automatisch wieder geöffnet, API selbstständig verbunden, `#status` ohne manuelle Eingabe gesendet. Regulärer XP-Gewinn führte auf Level 15 / E; Rare-Angebot mit zwei organischen Klassen (`Ironbreaker Path` offensive, `Bulwark Adept` defensive). Der Spieler wählte mit dem natürlichen Satz `I choose Ironbreaker Path as my class.` ohne Planner-Repair. Klasse und Eigenschaft wurden gebucht, `#class` und `#feats` geprüft; Heavy Slash im Folgekampf mit effektiver Martial-STA-Kostenreduktion (6 STA) und Klassen-ATK-Bonus. Abschluss-Reload stellte exakt denselben Spielstand wieder her und der Runner endete selbstständig. Damit **F→E-/Normal–Rare-Mechanik innerhalb des vereinbarten 9D-Umfangs live abgenommen**.
+
+**Begrenzung und gesonderte Beobachtungen:** Der Run testet die Verarbeitung **synthetisch vorbereiteter Rare-Taten**, nicht einen vollständigen natürlichen Feat-Erwerb. Lange Hasenverfolgung und mehrmaliges Annähern vor erfolgreichem Nahkampfangriff zeigen Design-/QoL-Reibung. Einzelne langsame Provider-Antworten und Modell-/Extraktor-Reparaturen bleiben Messpunkte, ohne bewiesene Engine-Regression. Kein zusätzlicher 9D-Balancefix beschlossen. Bei späterer Integration zusätzlich Loot-/Inhaltsplausibilität (z. B. `Hare Antler`) untersuchen.
+
+**Übergabe nach 9D:** Keine sofortige Vertikalerweiterung/D–S. Drei getrennte Erkenntnisaufträge: natürlicher offener Langlauf (Gilde, mehrere Quests, Unterkunft/Erholung, Level/Skills, Geld und Ausrüstung), deterministische F/E-Kampfsimulationen (Warrior/Mage/Rogue gegen Monster und im PvP), ergebnisoffener Designvergleich für Verfolgung/Flucht und angrenzende Engine-/Gameplay-Schwächen. Befunde in Testmatrix und 10B-Backlog sammeln; Zahlen/Mechanik **nicht** vor Analyse eigenmächtig verändern. Vollständige Vorgaben in `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md` §1a.2d.
 
 ### 9D .56 – echter Fixture-Livetest ausgewertet; gezielter Follow-up .57 (24.10.2026)
 

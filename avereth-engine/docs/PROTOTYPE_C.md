@@ -2119,3 +2119,10 @@ Lieferablage nur am konkret autorisierten, etablierten Ort; Zusatzpflichten klau
 ## Patch 10B-4a – Planner-Leerantworten (.61, 24.10.2026)
 
 Eng begrenzter Teil von 10B-4: Zwei Planner-Aufrufe ohne JSON-Text (normal + bestehender Repair, je 2000 Ausgabetokens) erhalten genau **einen** frischen dritten Planner-Versuch mit 4000 Tokens. Er nutzt denselben Planner-Validator und denselben Spielerinput; es wird kein Befehl geschätzt oder vor einem gültigen JSON-Ergebnis gebucht. Nichtleere ungültige Antworten, Providerfehler, Narrator und Extractor bleiben bei bisherigen Regeln. Sieben neue Tests in `tests/v4/patch10b4a_planner_empty.test.js`; **in der ChatGPT-Implementierungsumgebung nicht selbst ausgeführt**, ebenso wenig Gesamtsuite oder ST-Smoke. Vor technischer Freigabe lokal ausführen und echtes Ergebnis nachtragen. Detaillierte technische Notes: `docs/PATCH10B4A_PLANNER_EMPTY_RECOVERY.md`. 10B-3 und die übrigen Teile von 10B-4 nicht implementiert.
+
+
+## Patch 10B-4c.1 – bounded Extractor retry (.62, 24.10.2026)
+
+Der World-Extractor erhält innerhalb einer bereits ausstehenden Extraktion genau einen neuen Versuch nach einem primären Transportfehler/null (gleiche Originalanfrage, 4000 Ausgabetokens). Wenn Normalantwort und bisherige JSON-Reparatur beide vollständig leer waren, folgt einmalig ein frischer `extract_recovery`-Aufruf mit 6000 Tokens. Jeder Beleg passiert unverändert `parseExtraction`, erwartete Ergebnisfelder und die `applyExtraction`-Firewall; keine bereits fehlgeschlagenen/abgeschlossenen Turns werden neu geschrieben, keine Aktionen erfunden. Normale valide Antworten und reguläre Reparaturen behalten ihren bisherigen Aufrufumfang.
+
+Neu 11 Regressionstests, zwei Altregressionen mit historischer Zwei-Aufruf-Annahme angepasst. **Lokal noch nicht ausgeführt**; die unabhängig vom Nutzer bestätigten 1370/1370 beziehen sich auf den vorherigen .61-Stand. Die erwartete neue Gesamttestzahl ist 1381, nicht als gemessen ausgeben. ST-Smoke/echter GLM-Lauf und Host-Recovery bleiben getrennt offen. Technische Details: `docs/PATCH10B4C1_EXTRACTOR_RECOVERY.md`; 10B-Master `06`, §21 auf `main`.

@@ -7,9 +7,11 @@
 **SHA-256:** 10e86d8d77ea967918fb13cff8c1054ae1baccc6e77692bd1b83468da12b461c  
 **Format:** ST Live-Runner ZIP mit Original-Chat, Engine-Events, LLM Calls, Spielerentscheidungen, Reports, Serverlogs und Screenshots. **Keine Filterung oder nachträgliche Veränderung** der Rohdaten.
 
-**Archivstatus:** REVIEW.md und dieses Verzeichnisblatt wurden direkt auf main geschrieben. **Die 4,4-MB-Binär-ZIP konnte über den verfügbaren GitHub-Textdatei-Zugang nicht hochgeladen werden.** Sie liegt in der vom Nutzer hochgeladenen Originaldatei vor und muss mit regulärem Git einmalig unter exakt diesem Dateinamen in denselben Ordner gelegt und committed werden. Bis dahin bitte **nicht** behaupten, dass GitHub das vollständige Exportarchiv enthält.
+**Archivstatus:** Die für den Gameplay-Review maßgeblichen Dateien sind als **entpackte, öffentlich verwendbare Schutzfassung** im selben Ordner committed: `avereth-events.json`, `calls.json`, `chat.jsonl`, `evaluation.json`, `player.jsonl`, `report.md`, `run.json`, beide `screens/` und die in Zeilenabschnitte geteilten `chat-completions`- und `server`-Logs. Details einschließlich Dateiliste, Rekonstruktionsanleitung und bewusst ausgeschlossener Konfigurationsdaten: [ARCHIVE_CONTENTS.md](ARCHIVE_CONTENTS.md) sowie [SANITIZATION.md](SANITIZATION.md).
 
-Für die spätere Prüfung nach lokalem Kopieren:
+**Original-ZIP nicht auf GitHub:** Das unveränderte Original bleibt bei der vom Nutzer bereitgestellten ZIP mit der oben genannten SHA-256. Die öffentlich eingecheckten Textdaten sind zum Schutz lokaler Benutzerpfade und E-Mail-Adressen leicht bereinigt. Die `import.json` (private ST-Konfiguration) und die redundante `server.timed.log` wurden nicht veröffentlicht.
+
+Zur Prüfung der separat aufbewahrten Original-ZIP:
 
     Get-FileHash .\testrun_10b\20261024-030002Z-current_test\20261024-030002Z-current_test.zip -Algorithm SHA256
 

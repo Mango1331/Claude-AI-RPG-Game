@@ -19,7 +19,7 @@ Für **jeden** neuen Test eine neue Untermappe mit seiner **tatsächlichen Run-I
 
 | Run-ID | Ergebnis | Umfang | Review | Original-ZIP |
 |---|---|---|---|---|
-| [20261024-030002Z-current_test](20261024-030002Z-current_test/) | defeat: Mage Lv1 durch fünf Banditen, Engine-Integrität OK | 26/100 Züge | [REVIEW](20261024-030002Z-current_test/REVIEW.md) | **Noch nicht auf GitHub hochgeladen**; lokal gesichert und in der Mappe als Upload ausstehend gekennzeichnet |
+| [20261024-030002Z-current_test](20261024-030002Z-current_test/) | defeat: Mage Lv1 durch fünf Banditen, Engine-Integrität OK | 26/100 Züge | [REVIEW](20261024-030002Z-current_test/REVIEW.md) | **Entpackte, datensparsam bereinigte Testdaten auf GitHub** ([Dateiliste](20261024-030002Z-current_test/ARCHIVE_CONTENTS.md)); unveränderte Original-ZIP separat aufbewahrt |
 
 ## Ablauf für weitere Tests
 

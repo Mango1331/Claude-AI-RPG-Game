@@ -1,0 +1,1866 @@
+{
+ "end": {
+  "kind": "defeat",
+  "why": "turn 26: he died"
+ },
+ "milestones": [
+  {
+   "at": 3,
+   "turn": 2,
+   "skills": [
+    "mage.arcane_bolt",
+    "mage.arcane_ward"
+   ],
+   "class": "mage",
+   "id": "creation_complete",
+   "check": "creation_complete",
+   "required": true,
+   "goal": "Create a genuine Level-1 character with your own base class and starter-skill choices.",
+   "reached": true
+  },
+  {
+   "id": "open_run_duration",
+   "check": "open_run_duration",
+   "required": true,
+   "goal": "Keep playing freely until the 100th actual player turn, following your own goals. This is an observation window, not an achievement checklist; do not waste turns to reach the count.",
+   "reached": false
+  }
+ ],
+ "reached": {
+  "creation_complete": {
+   "at": 3,
+   "turn": 2,
+   "skills": [
+    "mage.arcane_bolt",
+    "mage.arcane_ward"
+   ],
+   "class": "mage"
+  },
+  "guild_registered": {
+   "at": 13,
+   "turn": 7,
+   "rank": "Novice",
+   "branch": "loc.alderwatch"
+  },
+  "board_shown": {
+   "at": 15,
+   "turn": 8,
+   "listings": 5
+  },
+  "dungeon_quest_active": {
+   "at": 17,
+   "turn": 9,
+   "quest": "quest.clear_the_old_crown_catacombs_level_1",
+   "title": "Clear the Old Crown Catacombs, Level 1"
+  },
+  "quest_ready": {
+   "at": 32,
+   "turn": 16,
+   "quest": "quest.deliver_wardens_tallow_to_the_chapel_keeper"
+  },
+  "quest_completed": {
+   "at": 36,
+   "turn": 18,
+   "quest": "quest.deliver_wardens_tallow_to_the_chapel_keeper",
+   "title": "Deliver Warden's Tallow to the Chapel Keeper"
+  },
+  "fight_started": {
+   "at": 50,
+   "turn": 25
+  },
+  "group_fight": {
+   "at": 50,
+   "turn": 25,
+   "foes": 5
+  },
+  "guild_registered_fee": {
+   "at": 13,
+   "turn": 7,
+   "fee": 20,
+   "paid": 20,
+   "payments": 1
+  }
+ },
+ "encounters": [
+  {
+   "id": "enc.t25r",
+   "at": 50,
+   "turn": 25,
+   "foes": [
+    "npc.npcford_robber_leader",
+    "npc.npcford_robber_archer_1",
+    "npc.npcford_robber_archer_2",
+    "npc.npcford_robber_archer_3",
+    "npc.npcford_robber_archer_4"
+   ],
+   "groups": [],
+   "stayedOut": [],
+   "concealed": false,
+   "awareness": {},
+   "ended": 51,
+   "defeated": [],
+   "escaped": [],
+   "pcDead": true,
+   "pcEscaped": false,
+   "xp": 0
+  }
+ ],
+ "quests": [
+  {
+   "id": "quest.cull_the_quarry_wolves",
+   "title": "Cull the Quarry Wolves",
+   "kind": "guild_contract",
+   "dungeon": null,
+   "floor": null,
+   "task": "Hunt and cull four of the wolves that have been dragging mules from the Millbrook quarry pens at dusk.",
+   "end_state": "Four of the quarry wolves are dealt with and the mule pens at Millbrook are no longer raided.",
+   "created": 15,
+   "statuses": []
+  },
+  {
+   "id": "quest.clear_the_old_crown_catacombs_level_1",
+   "title": "Clear the Old Crown Catacombs, Level 1",
+   "kind": "guild_contract",
+   "dungeon": "loc.old_crown_catacombs",
+   "floor": 1,
+   "task": "Clear level 1 of the Old Crown Catacombs beneath the ruined chapel west of the city, driving out or destroying the restless skeletons in the burial galleries so the wardens can resume walled burials.",
+   "end_state": "Level 1 of the Old Crown Catacombs is cleared of its restless dead and the temple wardens can resume burials in the upper galleries.",
+   "created": 15,
+   "statuses": [
+    {
+     "to": "active",
+     "at": 17,
+     "turn": 9
+    }
+   ],
+   "mine": 17
+  },
+  {
+   "id": "quest.escort_the_dyers_cart_to_reedford",
+   "title": "Escort the Dyer's Cart to Reedford",
+   "kind": "guild_contract",
+   "dungeon": null,
+   "floor": null,
+   "task": "Escort the dyers' cart carrying two vats of finished madder dye along the river road to the trading yard at Reedford, where waylayers have been reported near the ford.",
+   "end_state": "The dyers' cart and its driver reach the Reedford trading yard safely with the madder dye undamaged.",
+   "created": 15,
+   "statuses": [
+    {
+     "to": "active",
+     "at": 39,
+     "turn": 20
+    }
+   ]
+  },
+  {
+   "id": "quest.deliver_wardens_tallow_to_the_chapel_keeper",
+   "title": "Deliver Warden's Tallow to the Chapel Keeper",
+   "kind": "guild_contract",
+   "dungeon": null,
+   "floor": null,
+   "task": "Deliver six crates of consecrated tallow candles to the chapel keeper at the ruined chapel west of the city, where the temple wardens need them for the catacomb stair.",
+   "end_state": "The six crates of consecrated tallow candles are delivered intact to the chapel keeper at the ruined chapel west of Alderwatch.",
+   "created": 15,
+   "statuses": [
+    {
+     "to": "active",
+     "at": 17,
+     "turn": 9
+    },
+    {
+     "to": "completed",
+     "at": 36,
+     "turn": 18
+    }
+   ],
+   "ready": 32,
+   "payout": 40,
+   "payout_cp": 40,
+   "atHall": true
+  },
+  {
+   "id": "quest.drive_off_the_millpond_eel_snappers",
+   "title": "Drive Off the Millpond Eel Snappers",
+   "kind": "guild_contract",
+   "dungeon": null,
+   "floor": null,
+   "task": "Hunt and drive off the eel snappers nesting in the millpond sluice so the cooperative's fish traps can be worked again.",
+   "end_state": "The eel snappers are driven off or destroyed and the fishers work the millpond traps again.",
+   "created": 15,
+   "statuses": []
+  }
+ ],
+ "defeat": {
+  "at": 51,
+  "turn": 26,
+  "why": "he died"
+ },
+ "issues": [
+  {
+   "at": 30,
+   "turn": 15,
+   "kind": "extraction_repaired",
+   "text": "the extractor's first answer needed a repair"
+  },
+  {
+   "at": 30,
+   "turn": 15,
+   "kind": "finish",
+   "text": "extract ended with finish_reason \"length\""
+  },
+  {
+   "at": 34,
+   "turn": 17,
+   "kind": "extraction_repaired",
+   "text": "the extractor's first answer needed a repair"
+  },
+  {
+   "at": 34,
+   "turn": 17,
+   "kind": "finish",
+   "text": "extract ended with finish_reason \"length\""
+  },
+  {
+   "at": 42,
+   "turn": 21,
+   "kind": "extraction_repaired",
+   "text": "the extractor's first answer needed a repair"
+  },
+  {
+   "at": 46,
+   "turn": 23,
+   "kind": "extraction_failed",
+   "text": "the extractor failed: report is not valid JSON"
+  },
+  {
+   "at": 46,
+   "turn": 23,
+   "kind": "extraction_repaired",
+   "text": "the extractor's first answer needed a repair"
+  },
+  {
+   "at": 46,
+   "turn": 23,
+   "kind": "finish",
+   "text": "extract ended with finish_reason \"length\""
+  }
+ ],
+ "counts": {
+  "rejected": {
+   "ambient": 4,
+   "guild_canon": 2,
+   "pc_inventory": 2,
+   "quest_delivery": 1,
+   "engine_owned_fact": 1
+  },
+  "panels": {
+   "clarify": 0,
+   "not_taken": 0,
+   "refused": 0,
+   "blocked": 0,
+   "failed": 0,
+   "not_recorded": 1
+  },
+  "events": 507
+ },
+ "turns": [
+  {
+   "turn": 1,
+   "at": 1,
+   "input": "I choose Mage.",
+   "route": "v3",
+   "system": true,
+   "place": "loc.alderwatch.verge",
+   "placeName": "public roadside verge outside Alderwatch",
+   "hp": 80,
+   "mp": 60,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "creation.class_selected",
+    "outcome.recorded"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 3,
+    "plan": null,
+    "board": null,
+    "narrator": null,
+    "extract": null
+   },
+   "calls": []
+  },
+  {
+   "turn": 2,
+   "at": 3,
+   "input": "I pick Arcane Bolt and Arcane Ward.",
+   "route": "v3",
+   "system": true,
+   "place": "loc.alderwatch.verge",
+   "placeName": "public roadside verge outside Alderwatch",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "creation.completed",
+    "outcome.recorded"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 1,
+    "plan": null,
+    "board": null,
+    "narrator": null,
+    "extract": null
+   },
+   "calls": []
+  },
+  {
+   "turn": 3,
+   "at": 5,
+   "input": "I walk along the road toward the city gate of Alderwatch.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.alderwatch",
+   "placeName": "Alderwatch",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "scene.moved",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "delta.rejected",
+    "fact.asserted",
+    "time.advanced",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 18,
+    "plan": 2749,
+    "board": null,
+    "narrator": 15487,
+    "extract": 9053
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2749,
+     "finish": "stop",
+     "prompt": 9788,
+     "cached": 9250,
+     "completion": 70
+    },
+    {
+     "purpose": "extract",
+     "ms": 9053,
+     "finish": "stop",
+     "prompt": 8681,
+     "cached": 7733,
+     "completion": 476
+    }
+   ]
+  },
+  {
+   "turn": 4,
+   "at": 7,
+   "input": "\"Coming in,\" I say, and walk through the gate into the city.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.alderwatch",
+   "placeName": "Alderwatch",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "time.advanced",
+    "fact.asserted",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 7,
+    "plan": 1586,
+    "board": null,
+    "narrator": 6641,
+    "extract": 7877
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 1586,
+     "finish": "stop",
+     "prompt": 9826,
+     "cached": 9237,
+     "completion": 39
+    },
+    {
+     "purpose": "extract",
+     "ms": 7877,
+     "finish": "stop",
+     "prompt": 8590,
+     "cached": 7734,
+     "completion": 211
+    }
+   ]
+  },
+  {
+   "turn": 5,
+   "at": 9,
+   "input": "I head uphill to the Guild hall and look for a reception desk or notice board.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.alderwatch.guild_hall",
+   "placeName": "Adventurers' Guild hall, Alderwatch",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "check.recorded",
+    "cmd.resolved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "entity.updated",
+    "scene.moved",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "delta.rejected",
+    "delta.rejected",
+    "fact.asserted",
+    "fact.asserted",
+    "time.advanced",
+    "time.advanced",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 6,
+    "plan": 2723,
+    "board": null,
+    "narrator": 9635,
+    "extract": 12582
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2723,
+     "finish": "stop",
+     "prompt": 9821,
+     "cached": 9228,
+     "completion": 127
+    },
+    {
+     "purpose": "extract",
+     "ms": 12582,
+     "finish": "stop",
+     "prompt": 8783,
+     "cached": 7727,
+     "completion": 550
+    }
+   ]
+  },
+  {
+   "turn": 6,
+   "at": 11,
+   "input": "I go to the middle window. \"Good morning. I'd like to register with the Guild, and hear what work is available for a new mage.\"",
+   "route": "v4",
+   "system": false,
+   "place": "loc.alderwatch.guild_hall",
+   "placeName": "Adventurers' Guild hall, Alderwatch",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "offer.created",
+    "decision.opened",
+    "cmd.resolved",
+    "outcome.recorded",
+    "delta.rejected",
+    "fact.asserted",
+    "fact.asserted",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 8,
+    "plan": 5201,
+    "board": null,
+    "narrator": 37809,
+    "extract": 3750
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 5201,
+     "finish": "stop",
+     "prompt": 9843,
+     "cached": 9231,
+     "completion": 26
+    },
+    {
+     "purpose": "extract",
+     "ms": 3750,
+     "finish": "stop",
+     "prompt": 8617,
+     "cached": 7745,
+     "completion": 247
+    }
+   ]
+  },
+  {
+   "turn": 7,
+   "at": 13,
+   "input": "\"I'm paying,\" I say, and count out two silver.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.alderwatch.guild_hall",
+   "placeName": "Adventurers' Guild hall, Alderwatch",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "transaction.completed",
+    "coin.changed",
+    "guild.registered",
+    "object.created",
+    "fact.asserted",
+    "knowledge.gained",
+    "knowledge.gained",
+    "offer.closed",
+    "decision.closed",
+    "cmd.resolved",
+    "outcome.recorded",
+    "delta.rejected",
+    "fact.asserted",
+    "fact.asserted",
+    "fact.asserted",
+    "time.advanced",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 8,
+    "plan": 5226,
+    "board": null,
+    "narrator": 9164,
+    "extract": 4307
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 5226,
+     "finish": "stop",
+     "prompt": 9873,
+     "cached": 9236,
+     "completion": 51
+    },
+    {
+     "purpose": "extract",
+     "ms": 4307,
+     "finish": "stop",
+     "prompt": 8627,
+     "cached": 7733,
+     "completion": 345
+    }
+   ]
+  },
+  {
+   "turn": 8,
+   "at": 15,
+   "input": "I go through the ajar door to the members' board and look over the catacomb culling postings.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.alderwatch.guild_hall.members_board_room",
+   "placeName": "Members' board room",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "quest.created",
+    "quest.created",
+    "quest.created",
+    "quest.created",
+    "quest.created",
+    "board.refreshed",
+    "board.shown",
+    "cmd.resolved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "time.advanced",
+    "place.created",
+    "entity.updated",
+    "scene.moved",
+    "quest.detailed",
+    "quest.detailed",
+    "time.advanced",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 12,
+    "plan": 2042,
+    "board": 12494,
+    "narrator": 9466,
+    "extract": 4820
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2042,
+     "finish": "stop",
+     "prompt": 9858,
+     "cached": 9234,
+     "completion": 67
+    },
+    {
+     "purpose": "board",
+     "ms": 12494,
+     "finish": "stop",
+     "prompt": 1912,
+     "cached": 0,
+     "completion": 978
+    },
+    {
+     "purpose": "extract",
+     "ms": 4820,
+     "finish": "stop",
+     "prompt": 9982,
+     "cached": 7752,
+     "completion": 339
+    }
+   ]
+  },
+  {
+   "turn": 9,
+   "at": 17,
+   "input": "I take the tallow delivery slip and the catacomb clearing slip, and bring both back to the clerk. \"I'd like to take these two — they're both at the ruined chapel, so I can do the delivery and the clearing in one trip.\"",
+   "route": "v4",
+   "system": false,
+   "place": "loc.alderwatch.guild_hall.members_board_room",
+   "placeName": "Members' board room",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "quest.status",
+    "board.refreshed",
+    "object.created",
+    "fact.asserted",
+    "quest.status",
+    "board.refreshed",
+    "object.created",
+    "fact.asserted",
+    "cmd.resolved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "quest.detailed",
+    "quest.detailed",
+    "place.created",
+    "place.updated",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 7,
+    "plan": 2671,
+    "board": null,
+    "narrator": 10054,
+    "extract": 4494
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2671,
+     "finish": "stop",
+     "prompt": 10549,
+     "cached": 9181,
+     "completion": 74
+    },
+    {
+     "purpose": "extract",
+     "ms": 4494,
+     "finish": "stop",
+     "prompt": 9520,
+     "cached": 7739,
+     "completion": 307
+    }
+   ]
+  },
+  {
+   "turn": 10,
+   "at": 19,
+   "input": "\"Off to Bram's,\" I say, and head out to find the chandlery on Low Street.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.alderwatch.brams_chandlery",
+   "placeName": "Bram's chandlery",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "intent.set",
+    "cmd.resolved",
+    "outcome.recorded",
+    "scene.moved",
+    "place.updated",
+    "intent.set",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "delta.rejected",
+    "object.created",
+    "fact.asserted",
+    "offer.created",
+    "quest.detailed",
+    "time.advanced",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 8,
+    "plan": 9116,
+    "board": null,
+    "narrator": 13733,
+    "extract": 9063
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 9116,
+     "finish": "stop",
+     "prompt": 10655,
+     "cached": 9212,
+     "completion": 260
+    },
+    {
+     "purpose": "extract",
+     "ms": 9063,
+     "finish": "stop",
+     "prompt": 9636,
+     "cached": 7797,
+     "completion": 831
+    }
+   ]
+  },
+  {
+   "turn": 11,
+   "at": 21,
+   "input": "\"I'll take the handcart,\" I say, and hand over the two copper deposit.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.alderwatch.brams_chandlery",
+   "placeName": "Bram's chandlery",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "transaction.completed",
+    "coin.changed",
+    "service.granted",
+    "offer.closed",
+    "cmd.resolved",
+    "outcome.recorded",
+    "delta.rejected",
+    "time.advanced",
+    "object.moved",
+    "place.created",
+    "entity.created",
+    "fact.asserted",
+    "fact.asserted",
+    "fact.asserted",
+    "fact.asserted",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 9,
+    "plan": 1862,
+    "board": null,
+    "narrator": 28440,
+    "extract": 7728
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 1862,
+     "finish": "stop",
+     "prompt": 10512,
+     "cached": 9239,
+     "completion": 76
+    },
+    {
+     "purpose": "extract",
+     "ms": 7728,
+     "finish": "stop",
+     "prompt": 9151,
+     "cached": 7792,
+     "completion": 571
+    }
+   ]
+  },
+  {
+   "turn": 12,
+   "at": 23,
+   "input": "I take the cart's shafts and start hauling west toward the gate, watching for the low, wet stretch Bram warned about.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.ruined_chapel_yard",
+   "placeName": "Ruined chapel yard",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "time.advanced",
+    "place.created",
+    "entity.updated",
+    "scene.moved",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "fact.asserted",
+    "fact.asserted",
+    "quest.detailed",
+    "fact.asserted",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 13,
+    "plan": 1907,
+    "board": null,
+    "narrator": 82236,
+    "extract": 6597
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 1907,
+     "finish": "stop",
+     "prompt": 10473,
+     "cached": 9234,
+     "completion": 58
+    },
+    {
+     "purpose": "extract",
+     "ms": 6597,
+     "finish": "stop",
+     "prompt": 9449,
+     "cached": 7789,
+     "completion": 599
+    }
+   ]
+  },
+  {
+   "turn": 13,
+   "at": 25,
+   "input": "I wheel the cart around to the back of the hut, following the sound of the axe. \"Keeper Odo? Tallow delivery from Bram's.\"",
+   "route": "v4",
+   "system": false,
+   "place": "loc.ruined_chapel_yard.chapel_keepers_hut",
+   "placeName": "Chapel keeper's hut",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "delta.rejected",
+    "place.created",
+    "scene.moved",
+    "scene.entered",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "delta.rejected",
+    "fact.asserted",
+    "thread.set",
+    "time.advanced",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 9,
+    "plan": 2006,
+    "board": null,
+    "narrator": 11907,
+    "extract": 15827
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2006,
+     "finish": "stop",
+     "prompt": 10509,
+     "cached": 9239,
+     "completion": 73
+    },
+    {
+     "purpose": "extract",
+     "ms": 15827,
+     "finish": "stop",
+     "prompt": 9442,
+     "cached": 7818,
+     "completion": 1108
+    }
+   ]
+  },
+  {
+   "turn": 14,
+   "at": 27,
+   "input": "\"No message from Bram. Delivery's done — who do I tell it's complete, or will the Guild clerk hear it from you?\"",
+   "route": "v4",
+   "system": false,
+   "place": "loc.ruined_chapel_yard.chapel_keepers_hut",
+   "placeName": "Chapel keeper's hut",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "outcome.recorded",
+    "fact.asserted",
+    "quest.detailed",
+    "fact.asserted",
+    "time.advanced",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 7,
+    "plan": 2446,
+    "board": null,
+    "narrator": 19853,
+    "extract": 4677
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2446,
+     "finish": "stop",
+     "prompt": 10547,
+     "cached": 9256,
+     "completion": 23
+    },
+    {
+     "purpose": "extract",
+     "ms": 4677,
+     "finish": "stop",
+     "prompt": 9205,
+     "cached": 7820,
+     "completion": 295
+    }
+   ]
+  },
+  {
+   "turn": 15,
+   "at": 29,
+   "input": "I stack the crates back onto the handcart. \"I'll carry them down for you — second door on the left, you said? Show me the way.\"",
+   "route": "v4",
+   "system": false,
+   "place": "loc.ruined_chapel_yard.chapel_keepers_hut.tallow_store",
+   "placeName": "Tallow store",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "place.created",
+    "scene.moved",
+    "scene.entered",
+    "scene.entered",
+    "place.updated",
+    "link.set",
+    "link.set",
+    "place.updated",
+    "place.updated",
+    "place.updated",
+    "place.created",
+    "link.set",
+    "thread.set",
+    "fact.asserted",
+    "time.advanced",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 9,
+    "plan": 2926,
+    "board": null,
+    "narrator": 19561,
+    "extract": 51088
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2926,
+     "finish": "stop",
+     "prompt": 10551,
+     "cached": 9255,
+     "completion": 148
+    },
+    {
+     "purpose": "extract",
+     "ms": 44720,
+     "finish": "length",
+     "prompt": 9502,
+     "cached": 7810,
+     "completion": 4000
+    },
+    {
+     "purpose": "extract_repair",
+     "ms": 6368,
+     "finish": "stop",
+     "prompt": 9560,
+     "cached": 9494,
+     "completion": 292
+    }
+   ]
+  },
+  {
+   "turn": 16,
+   "at": 31,
+   "input": "I haul the crates down three at a time and stack them on the shelves, corners inward, as Odo directs.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.ruined_chapel_yard.chapel_keepers_hut.tallow_store",
+   "placeName": "Tallow store",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "object.moved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "time.advanced",
+    "quest.ready",
+    "thread.set",
+    "relation.set",
+    "memory.recorded",
+    "object.marked",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 12,
+    "plan": 2903,
+    "board": null,
+    "narrator": 54031,
+    "extract": 6161
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2903,
+     "finish": "stop",
+     "prompt": 10691,
+     "cached": 9244,
+     "completion": 116
+    },
+    {
+     "purpose": "extract",
+     "ms": 6161,
+     "finish": "stop",
+     "prompt": 9472,
+     "cached": 7810,
+     "completion": 412
+    }
+   ]
+  },
+  {
+   "turn": 17,
+   "at": 33,
+   "input": "I accept the water and bread, and ask Odo how the delivery slip gets marked done — mine still shows the contract active, so do I turn it in at the Guild clerk myself?",
+   "route": "v4",
+   "system": false,
+   "place": "loc.ruined_chapel_yard.chapel_keepers_hut.tallow_store",
+   "placeName": "Tallow store",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "outcome.recorded",
+    "quest.detailed",
+    "quest.detailed",
+    "thread.set",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 8,
+    "plan": 5689,
+    "board": null,
+    "narrator": 15197,
+    "extract": 53275
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 5689,
+     "finish": "stop",
+     "prompt": 10767,
+     "cached": 9239,
+     "completion": 114
+    },
+    {
+     "purpose": "extract",
+     "ms": 46765,
+     "finish": "length",
+     "prompt": 9534,
+     "cached": 7832,
+     "completion": 4000
+    },
+    {
+     "purpose": "extract_repair",
+     "ms": 6510,
+     "finish": "stop",
+     "prompt": 9592,
+     "cached": 9526,
+     "completion": 299
+    }
+   ]
+  },
+  {
+   "turn": 18,
+   "at": 35,
+   "input": "I thank Odo for the bread and head back along the road toward Alderwatch to turn in the delivery slip with the Guild clerk, glancing back to see whether Guard B signals anything from the stair-top.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.alderwatch.guild_hall",
+   "placeName": "Adventurers' Guild hall, Alderwatch",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "intent.set",
+    "cmd.resolved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "time.advanced",
+    "entity.updated",
+    "entity.updated",
+    "scene.moved",
+    "intent.set",
+    "proof.checked",
+    "coin.changed",
+    "transaction.completed",
+    "xp.changed",
+    "quest.status",
+    "fact.asserted",
+    "cmd.completed",
+    "thread.set",
+    "memory.recorded",
+    "fact.asserted",
+    "object.marked",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 12,
+    "plan": 3394,
+    "board": null,
+    "narrator": 8512,
+    "extract": 8085
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 3394,
+     "finish": "stop",
+     "prompt": 10777,
+     "cached": 9240,
+     "completion": 109
+    },
+    {
+     "purpose": "extract",
+     "ms": 8085,
+     "finish": "stop",
+     "prompt": 9947,
+     "cached": 7813,
+     "completion": 350
+    }
+   ]
+  },
+  {
+   "turn": 19,
+   "at": 37,
+   "input": "I scan the new slips on the board for a Novice-level job suited to a lone mage.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.alderwatch.guild_hall",
+   "placeName": "Adventurers' Guild hall, Alderwatch",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "board.shown",
+    "cmd.resolved",
+    "outcome.recorded",
+    "delta.rejected",
+    "fact.asserted",
+    "quest.detailed",
+    "quest.detailed",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 10,
+    "plan": 2001,
+    "board": null,
+    "narrator": 7828,
+    "extract": 7347
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2001,
+     "finish": "stop",
+     "prompt": 10719,
+     "cached": 9206,
+     "completion": 45
+    },
+    {
+     "purpose": "extract",
+     "ms": 7347,
+     "finish": "stop",
+     "prompt": 9663,
+     "cached": 7782,
+     "completion": 310
+    }
+   ]
+  },
+  {
+   "turn": 20,
+   "at": 39,
+   "input": "I take the escort slip to the counter. \"The cart escort to Reedford — mark that one taken for me. Where's the dyers' yard by the east gate, and is the route safe by day?\"",
+   "route": "v4",
+   "system": false,
+   "place": "loc.alderwatch.guild_hall",
+   "placeName": "Adventurers' Guild hall, Alderwatch",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "quest.status",
+    "board.refreshed",
+    "object.created",
+    "fact.asserted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "time.advanced",
+    "object.marked",
+    "quest.detailed",
+    "place.created",
+    "place.updated",
+    "entity.created",
+    "fact.asserted",
+    "thread.set",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 10,
+    "plan": 2733,
+    "board": null,
+    "narrator": 9200,
+    "extract": 10712
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2733,
+     "finish": "stop",
+     "prompt": 10744,
+     "cached": 9207,
+     "completion": 74
+    },
+    {
+     "purpose": "extract",
+     "ms": 10712,
+     "finish": "stop",
+     "prompt": 9458,
+     "cached": 7779,
+     "completion": 733
+    }
+   ]
+  },
+  {
+   "turn": 21,
+   "at": 41,
+   "input": "I leave the Guild and find the dyers' yard by the east gate to introduce myself to Mistress Odell before tomorrow's muster, then look for a cheap room for the night nearby.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.alderwatch.leaning_bell_inn",
+   "placeName": "Leaning Bell inn",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "intent.set",
+    "cmd.resolved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "scene.moved",
+    "place.updated",
+    "intent.set",
+    "place.created",
+    "scene.moved",
+    "quest.detailed",
+    "fact.asserted",
+    "entity.created",
+    "scene.entered",
+    "fact.asserted",
+    "offer.created",
+    "time.advanced",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 10,
+    "plan": 2425,
+    "board": null,
+    "narrator": 11284,
+    "extract": 39544
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2425,
+     "finish": "stop",
+     "prompt": 10836,
+     "cached": 9205,
+     "completion": 107
+    },
+    {
+     "purpose": "extract",
+     "ms": 15184,
+     "finish": "stop",
+     "prompt": 10183,
+     "cached": 7801,
+     "completion": 861
+    },
+    {
+     "purpose": "extract_repair",
+     "ms": 24360,
+     "finish": "stop",
+     "prompt": 10815,
+     "cached": 10324,
+     "completion": 621
+    }
+   ]
+  },
+  {
+   "turn": 22,
+   "at": 43,
+   "input": "I take the boot of small beer by the fire and ask the carters whether any of them have run the Reedford road lately, and what the waylayers at the ford are like.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.alderwatch.leaning_bell_inn",
+   "placeName": "Leaning Bell inn",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "outcome.recorded",
+    "time.advanced",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "fact.ended",
+    "fact.asserted",
+    "thread.set",
+    "memory.recorded",
+    "knowledge.gained",
+    "memory.recorded",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 10,
+    "plan": 2431,
+    "board": null,
+    "narrator": 12897,
+    "extract": 6861
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2431,
+     "finish": "stop",
+     "prompt": 10751,
+     "cached": 9231,
+     "completion": 120
+    },
+    {
+     "purpose": "extract",
+     "ms": 6861,
+     "finish": "stop",
+     "prompt": 9653,
+     "cached": 7806,
+     "completion": 531
+    }
+   ]
+  },
+  {
+   "turn": 23,
+   "at": 45,
+   "input": "I finish the beer and turn in for the night, sleeping until first light so I'm at the dyers' yard shed in time for the muster with Tam.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.alderwatch.leaning_bell_inn",
+   "placeName": "Leaning Bell inn",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "transaction.completed",
+    "coin.changed",
+    "service.granted",
+    "offer.closed",
+    "time.advanced",
+    "cmd.resolved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "extract.failed"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 13,
+    "plan": 2401,
+    "board": null,
+    "narrator": 5318,
+    "extract": 59732
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2401,
+     "finish": "stop",
+     "prompt": 10818,
+     "cached": 9253,
+     "completion": 106
+    },
+    {
+     "purpose": "extract",
+     "ms": 44532,
+     "finish": "length",
+     "prompt": 9242,
+     "cached": 7827,
+     "completion": 4000
+    },
+    {
+     "purpose": "extract_repair",
+     "ms": 15200,
+     "finish": "stop",
+     "prompt": 9300,
+     "cached": 9234,
+     "completion": 1521
+    }
+   ]
+  },
+  {
+   "turn": 24,
+   "at": 47,
+   "input": "I take the roll and sausage, hand over the copper, and head to the dyers' yard shed for the first-light muster with Tam.",
+   "route": "v4",
+   "system": false,
+   "place": "loc.alderwatch.dyers_yard",
+   "placeName": "Dyers' yard",
+   "hp": 80,
+   "mp": 72,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "coin.changed",
+    "transaction.completed",
+    "cmd.resolved",
+    "cmd.resolved",
+    "cmd.resolved",
+    "outcome.recorded",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "scene.moved",
+    "time.advanced",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "fact.ended",
+    "fact.asserted",
+    "fact.asserted",
+    "quest.detailed",
+    "quest.detailed",
+    "thread.set",
+    "place.created",
+    "place.created",
+    "place.updated",
+    "object.created",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 13,
+    "plan": 2281,
+    "board": null,
+    "narrator": 9742,
+    "extract": 8224
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2281,
+     "finish": "stop",
+     "prompt": 10616,
+     "cached": 9252,
+     "completion": 137
+    },
+    {
+     "purpose": "extract",
+     "ms": 8224,
+     "finish": "stop",
+     "prompt": 9665,
+     "cached": 7850,
+     "completion": 763
+    }
+   ]
+  },
+  {
+   "turn": 25,
+   "at": 49,
+   "input": "I climb onto the bench, left side, with my staff across my knees. \"Understood — get down, hold, and quiet on the road. Ready when you are, Tam.\"",
+   "route": "v4",
+   "system": false,
+   "place": "realm.valedorn_crown",
+   "placeName": "Valedorn Crown",
+   "hp": 54,
+   "mp": 72,
+   "level": 1,
+   "encounter": true,
+   "events": [
+    "turn.begun",
+    "cmd.interpreted",
+    "cmd.resolved",
+    "outcome.recorded",
+    "scene.moved",
+    "scene.entered",
+    "quest.journey",
+    "scene.moved",
+    "intent.set",
+    "time.advanced",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "fact.asserted",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "fact.asserted",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "fact.asserted",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "fact.asserted",
+    "entity.created",
+    "scene.entered",
+    "scene.tactical",
+    "fact.asserted",
+    "fact.asserted",
+    "combat.pending",
+    "combat.pending",
+    "combat.pending",
+    "combat.pending",
+    "combat.pending",
+    "scene.position",
+    "scene.position",
+    "scene.position",
+    "scene.position",
+    "scene.position",
+    "scene.awareness",
+    "scene.awareness",
+    "scene.awareness",
+    "scene.awareness",
+    "scene.awareness",
+    "thread.set",
+    "memory.recorded",
+    "knowledge.gained",
+    "memory.recorded",
+    "knowledge.gained",
+    "memory.recorded",
+    "knowledge.gained",
+    "memory.recorded",
+    "knowledge.gained",
+    "memory.recorded",
+    "knowledge.gained",
+    "memory.recorded",
+    "memory.recorded",
+    "combat.pending_cleared",
+    "entity.sheet_set",
+    "entity.sheet_set",
+    "entity.sheet_set",
+    "entity.sheet_set",
+    "entity.sheet_set",
+    "encounter.started",
+    "resource.changed",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 12,
+    "plan": 3763,
+    "board": null,
+    "narrator": 60241,
+    "extract": 54152
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 3763,
+     "finish": "stop",
+     "prompt": 10694,
+     "cached": 9265,
+     "completion": 201
+    },
+    {
+     "purpose": "extract",
+     "ms": 54152,
+     "finish": "stop",
+     "prompt": 9656,
+     "cached": 7815,
+     "completion": 1762
+    }
+   ]
+  },
+  {
+   "turn": 26,
+   "at": 51,
+   "input": "I cast Arcane Bolt at Bandit B.",
+   "route": "v3",
+   "system": false,
+   "place": "realm.valedorn_crown",
+   "placeName": "Valedorn Crown",
+   "hp": 0,
+   "mp": 62,
+   "level": 1,
+   "encounter": false,
+   "events": [
+    "turn.begun",
+    "encounter.updated",
+    "resource.changed",
+    "resource.changed",
+    "entity.status",
+    "fact.asserted",
+    "knowledge.gained",
+    "knowledge.gained",
+    "knowledge.gained",
+    "knowledge.gained",
+    "knowledge.gained",
+    "knowledge.gained",
+    "career.recorded",
+    "encounter.ended",
+    "resource.changed",
+    "scene.position",
+    "scene.position",
+    "resource.changed",
+    "resource.changed",
+    "scene.position",
+    "resource.changed",
+    "scene.position",
+    "scene.position",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "entity.updated",
+    "memory.recorded",
+    "outcome.recorded",
+    "fact.asserted",
+    "fact.asserted",
+    "scene.position",
+    "scene.position",
+    "scene.position",
+    "scene.position",
+    "scene.position",
+    "memory.recorded",
+    "thread.set",
+    "extract.applied"
+   ],
+   "perf": {
+    "wait": null,
+    "engine": 23,
+    "plan": 2424,
+    "board": null,
+    "narrator": 11499,
+    "extract": 32012
+   },
+   "calls": [
+    {
+     "purpose": "plan",
+     "ms": 2424,
+     "finish": "stop",
+     "prompt": 4843,
+     "cached": 0,
+     "completion": 50
+    },
+    {
+     "purpose": "extract",
+     "ms": 32012,
+     "finish": "stop",
+     "prompt": 9569,
+     "cached": 7847,
+     "completion": 795
+    }
+   ]
+  }
+ ],
+ "dungeon": {
+  "root": "loc.old_crown_catacombs",
+  "name": "Old Crown Catacombs",
+  "floor": 1,
+  "quest": "quest.clear_the_old_crown_catacombs_level_1"
+ },
+ "character": {
+  "ruleset": 2,
+  "class": "mage",
+  "skills": [
+   "mage.arcane_bolt",
+   "mage.arcane_ward"
+  ]
+ },
+ "growth": {
+  "noted": [],
+  "offers": [],
+  "accepted": null,
+  "signatures": {}
+ }
+}

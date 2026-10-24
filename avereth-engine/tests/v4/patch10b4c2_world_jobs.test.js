@@ -162,7 +162,11 @@ test('4c.2: host job stays active through async save, so generation barrier wait
     const a = fixture(), d = deferred(), x = rig(a);
     const manager = createWorldJobs({
         active: () => a,
-        run: async () => ({ changed: true }),
+        run: async () => {
+            // The engine has committed; ST has NOT saved yet.
+            setRec(a.message, { ...rec(a.message), extraction: { status: 'applied' } });
+            return { changed: true };
+        },
         applied: async () => { await d.promise; },
     });
     const p = manager.start(0);

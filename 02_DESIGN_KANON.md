@@ -1,11 +1,13 @@
 # Avereth Engine — Verbindlicher Design-Kanon und Leitplanken
 
 **Dokumenttyp:** langfristige Spiel- und Architekturentscheidungen  
-**Stand:** 24. Oktober 2026 · Fassung 5 (verbindlicher 9D-Auftrag: ranggebundene Klassen-Evolution, Tatenbuch und Vermächtnis; Umsetzung `.55`, Gegenreview und Live offen)  
+**Stand:** 24. Oktober 2026 · Fassung 5, redaktioneller 10B-Verweis (Design-Kanon unverändert; 9D-F→E-Hauptpfad inzwischen auf `.57` gezielt live abgenommen; technische Details in 03/06)  
 **Pflege:** nur bei neuen verbindlichen Designentscheidungen  
 **Status-Legende:** **[VERBINDLICH]** = gewolltes Spiel-/Architekturverhalten; **[GEPLANT]** = verbindliches Ziel, aber nicht zwingend implementiert; **[OFFEN]** = noch nicht abschließend beschlossen. Die Implementierung ist gesondert in Datei 03 zu prüfen.
 
 > Die Grundidee: **„LLM versteht wie ein GM; Engine rechnet wie ein Spiel.“** Avereth soll ein frei spielbares, stimmiges, mechanisch überprüfbares Progression-Fantasy-RPG sein – keine illustrierte Sammlung von Chat-Texten und keine Tabellen-/Bürokratiesimulation.
+
+**10B-Dokumentationsverweis (keine neue Kanonentscheidung):** Die ausführlichen Monster-/Loot-/Sapienzreviews, Teil C zum Verfolgen/Fliehen, laufende Testauswertungen und spätere 10B-Patchaufträge stehen in [`06_PATCH10B_MASTERPLAN_UND_REVIEWS.md`](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). **Reviewempfehlungen sind kein verbindlicher Design-Kanon.** Bei einer ausdrücklichen neuen Nutzerentscheidung wird erst dann diese Datei 02 entsprechend geändert.
 
 ## 1. Spielerfahrung und Prioritätensystem
 

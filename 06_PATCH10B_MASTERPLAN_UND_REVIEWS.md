@@ -1188,3 +1188,39 @@ Neue Datei `tests/v4/patch10b4c2_world_jobs.test.js` mit **14 Regressionen** zu:
 **Abgegrenzte Restunsicherheit:** ST hatte im ersten `.66`-Smoke 20/21 mit zwei PageErrors; beim finalen Lauf ohne Codeänderung 21/21 und keine PageErrors. Die ursprüngliche Ursache der sporadischen Fehler wurde nicht bewiesen und sollte im nächsten Run beobachtet werden. `swipe_info[0].extra` kann zunächst einen `pending`-Snapshot enthalten; die Wiederherstellung eines alten Swipe-Snapshots nach Hin- und Rückwechsel ist noch **nicht** end-to-end geprüft. Nicht ungeprüft synchronisieren oder Identity-Gates entfernen. Smoke nutzt deterministischen Mockprovider, keinen natürlichen GLM-Langlauf. Der `maxTokens:6000`-Recoveryfall, langes Warten und Reload bleiben für den echten Test offen.
 
 **Empfehlung:** Keine weitere `.66`-Codeänderung erforderlich. Mit dem unveränderten natürlichen `current_test` fortfahren, zuerst Build/Commit im Export verifizieren, `extraction.status`, `extract.applied`, Recovery-/Timeout-Telemetrie und eventuelle Wiederherstellung alter Swipe-Snapshots kontrollieren. **10B-3, 10B-4d und F60-2 weiter separat.**
+
+---
+
+## 27. Vorbereitung der verbleibenden 10B-Fachpatches für Sol (24.10.2026)
+
+**[NUR PLANUNG, KEIN PRODUKTCODE, KEINE TESTS]** Nutzer wünscht künftig größere, fachlich sauber abgegrenzte Patchaufträge statt weiterer Mini-Patches. Parallel läuft ein neuer natürlicher current_test auf der Produktbasis .66; dessen ZIP und Ergebnis liegen zum Planungszeitpunkt noch nicht vor. Nachträgliche Befunde können diese Reihenfolge verändern.
+
+**Verifizierte Codebasis:** .66, Produktcommit `4cd9b338773783644a79a39f367629e6aaeead05`; Sol meldet 1426/1426 Node-Tests, 19/19 World-Job-Tests und echten ST-1.19-Mockprovider-Smoke 21/21 (Details §§26.1–26.2). Dieser Plan erzeugt keine neue Buildnummer.
+
+**Einziger aktueller Sol-Index:** [PATCH10B_REMAINING_WORK_SOL_IMPLEMENTATION_INDEX.md](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/claude/c-planner-prototype-2026-10-02-gpt-c666/avereth-engine/docs/PATCH10B_REMAINING_WORK_SOL_IMPLEMENTATION_INDEX.md). Er enthält Reihenfolge und Abnahme-Gates, F60-2-Wartung und alle fachlichen Unterlagen.
+
+### 27.1 Fünf getrennte Fachpatch-Spezifikationen
+
+| Fachgebiet | Inhalt und evidenzbasierter Zuschnitt | Status |
+|---|---|---|
+| [10B-3 Kampfeskalation und Combat-Truth](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/claude/c-planner-prototype-2026-10-02-gpt-c666/avereth-engine/docs/PATCH10B3_COMBAT_ESCALATION_AND_TRUTH_PLAN.md) | Bedrohung statt automatisch gebuchtem Angriff; positive echte Ambushes; Phantom-Arcane-Bolts dürfen nicht im Memory überdauern; echte Treffer/Mehrfachaktionen bleiben | Historischer echter .57-Befund, noch nicht implementiert |
+| [10B-3 Gildenboard-Authority](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/claude/c-planner-prototype-2026-10-02-gpt-c666/avereth-engine/docs/PATCH10B3_GUILD_BOARD_AUTHORITY_PLAN.md) | Offizielle Engine-Listings ohne Phantom-Ratten-/Feuerholzjobs und Re-Listing erledigter Verträge; private NPC-Aufträge frei | Historische .57-Befunde aus Runs 2/4, eigenständiger Fachpatch |
+| [10B-4d Narrator-Empty-Recovery](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/claude/c-planner-prototype-2026-10-02-gpt-c666/avereth-engine/docs/PATCH10B4D_NARRATOR_EMPTY_RECOVERY_PLAN.md) | Höchstens ein legitimer ST-Host-Swipe/Regenerate des schon gebuchten Playerturns nach vollständig leerer Story, kein Doppelturn/Loop | Offen; technische Host-API und Eventreihenfolge vor Code verbindlich nachweisen |
+| [Monsteranatomie und Auto-Loot](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/claude/c-planner-prototype-2026-10-02-gpt-c666/avereth-engine/docs/PATCH10B_MONSTER_ANATOMY_AND_LOOT_CANDIDATE.md) | Hare/Doe/Goat-Antler-Fehler; freie Species und 19 gemischte Kampfanker erhalten, automatisches anatomiegerechtes Loot | **Design-/Bugfixkandidat, nicht für Produktcode freigegeben** |
+| [Verfolgung und Flucht-Pacing](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/claude/c-planner-prototype-2026-10-02-gpt-c666/avereth-engine/docs/PATCH10B_CHASE_ESCAPE_PACING_CANDIDATE.md) | Existierende fleeing/chase/escapeRoll-Pfade statt zweites Bewegungssystem; eindeutiger entkommen/eingeholt-Ausgang ohne leere Range-Loops | **Designkandidat, nicht für Produktcode freigegeben** |
+
+Die drei offenen verpflichtend zu prüfenden 10B-Bereiche werden **fachlich getrennt**: Combat/Chronik zusammen in einem zusammenhängenden Patch, Guild eigenständig, Narrator/Host eigenständig. Keine pauschale Zusammenfassung in einen schwer reviewbaren Sammelcommit. Die beiden Designkandidaten haben jeweils Entscheidungspunkte und Negativ-/Positiv-Tests, aber keine stillschweigende Nutzerfreigabe.
+
+### 27.2 Kleine Wartung und bewusst offene weitere Themen
+
+**10B-2b F60-2:** Die Klauselerkennung in world.js erkennt laut §18.2 noch nicht alle gleichbedeutenden unberechtigt neu eingeführten Pflichtformulierungen für die Rückgabe leerer Behälter, etwa 'You must bring back the empty crate' oder 'The crate must go back'. Die sachlich getrennte kleine Wartung bekommt Red-/Green-Tests für diese Formen und Gegenfälle: eine wirklich vereinbarte Rückgabe sowie 'The wagon must be back by noon' dürfen nicht global verboten werden. Nicht als neuen Großpatch ausgeben. Weitere Reisezeit-/Worldclock-, XP-/Level-, Economy-/Stone-Preis-, Gear-/Monster-/Performance-Kandidaten bleiben nur nach neuen Livebelegen und Nutzerentscheidung patchwürdig (§9).
+
+### 27.3 Übergabe und Qualitätsgates
+
+1. Neuen .66-originalen Run mit dem **unveränderten current_test-Guide** abwarten; tatsächlichen Build/Git-SHA und Event-/LLM-/Runner-Logs aus dem ZIP statt angenommener Ergebnisse auswerten; neue P0-Hostprobleme haben Vorrang.
+2. Danach Fachpatch auswählen und für Sol konkret freigeben. Redtests und positive Gegenfälle **vor** Code; tatsächliche Engine-Ownership, Replay/Reload/Swipe-/Legacy-Kompatibilität und unabhängiges Review.
+3. Für jeden produktiven Host-/Narrator-/World-Job-Umbau echten ST-1.19-Smoke verpflichtend durchführen. Die ursprüngliche MESSAGE_RECEIVED-vor-swipe_id=0-Reihenfolge gehört ausdrücklich in Regressionstests.
+4. Vollständige npm-Testzahlen, tatsächlichen Smoke-/GLM-Nachweis, Commit-SHA und abweichende Open Issues nach Implementierung protokollieren. Bis dahin **keinen** dieser Pläne als implementiert oder getestet ausweisen.
+5. Dokumentationspflege: Dev-Index und die fünf neuen technischen Fachnoten sind Implementierungsentwürfe. Diese Datei 06 bleibt das ausführliche Masterjournal. Root 01–04 und Design-Kanon 02 werden durch diese **reinen Planungsnotizen nicht geändert**.
+
+**Kein neuer Produktpatch, kein Testlauf und keine neue Buildnummer durch §27.**

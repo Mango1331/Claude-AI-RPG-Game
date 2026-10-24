@@ -129,7 +129,9 @@ test('8.2 telemetry 6: a planner that fails keeps its calls and the turn\'s cost
     assert.equal(r.action, 'abort');
     const x = lastUser(g);
     assert.equal(x.interp.failed, true);
-    assert.deepEqual(x.plan.llm.map((c) => c.purpose), ['plan']);
+    assert.deepEqual(x.plan.llm.map((c) => c.purpose), ['plan', 'plan_recovery'], 'one bounded retry after first transport failure');
+    assert.equal(x.plan.recovery, 'transport');
+    assert.equal(x.plan.repaired, true);
     assert.equal(x.perf.wait_ms, 0);
     assert.deepEqual(x.events, []);
 });

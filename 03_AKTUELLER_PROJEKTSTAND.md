@@ -2,7 +2,7 @@
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
 **Stichtag:** 24. Oktober 2026 · Fassung 47 (Patch 10B mit eigener ausführlicher Hauptdatei 06; dieses 03 nur Meilenstein-Kurzstatus und Patchhistorie)  
-**Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
+**Pflege:** Für Patch 10B **nur bei größeren Versions-, Phasen- oder Abnahmemeilensteinen kurz aktualisieren**; laufende Einzelläufe, Reviews und Fixkandidaten in Datei 06 und `testrun_10b`. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
 ## 1. Git, Version und Nachweisstatus

@@ -21,9 +21,9 @@ Der Nutzer lädt den Originalexport als ZIP in den betreffenden Unterordner auf 
 | Run-ID | Build / Spieltest | Ergebnis | Review | Original-ZIP |
 |---|---|---|---|---|
 | [20261024-030002Z-current_test](20261024-030002Z-current_test/) | .57, Mage Level 1, GLM-5.3-Flash, ohne Fixture | 26/100 Züge; Charaktertod gegen fünf Banditen; Engine-Integrität OK | [REVIEW.md](20261024-030002Z-current_test/REVIEW.md) | [20261024-030002Z-current_test.zip](20261024-030002Z-current_test/20261024-030002Z-current_test.zip) |
-| [20261024-033325Z-current_test](20261024-033325Z-current_test/) | .57, Mage Level 1, GLM-5.3-Flash, ohne Fixture | 25/100 Züge; Narrator-Antwort leer nach 8.192 Reasoning-Tokens; Engine-Integrität OK; kein Kampf | [REVIEW.md](20261024-033325Z-current_test/REVIEW.md) | **Original-ZIP noch lokal beim Nutzer / nicht auf GitHub** – `20261024-033325Z-current_test.zip` bitte unverändert im selben Ordner hochladen |
+| [20261024-033325Z-current_test](20261024-033325Z-current_test/) | .57, Mage Level 1, GLM-5.3-Flash, ohne Fixture | 25/100 Züge; Narrator-Antwort leer nach 8.192 Reasoning-Tokens; Engine-Integrität OK; kein Kampf | [REVIEW.md](20261024-033325Z-current_test/REVIEW.md) | [20261024-033325Z-current_test.zip](20261024-033325Z-current_test/20261024-033325Z-current_test.zip) – SHA-256 und Git-Blob verifiziert |
 
-**Integritätsnachweis für Test 2 (hochgeladene Originaldatei):** 4.271.133 Bytes, SHA-256 `638d939bee989e32c1d4bbf92a648eaefc81af7fc463e550b377da92fbe85f90`. Nach dem manuellen ZIP-Upload auf GitHub bitte den Status dieser Indexzeile aktualisieren und den GitHub-Blob gegen das Original prüfen.
+**Integritätsnachweis für Test 2:** 4.271.133 Bytes, SHA-256 `638d939bee989e32c1d4bbf92a648eaefc81af7fc463e550b377da92fbe85f90`, GitHub-Blob `e9f7bc7fd216c34b985eca4656e8d4a1fdd6a11e`; stimmt mit dem unveränderten ZIP-Original bytegenau überein (lokaler Git-Blob-SHA1 identisch; 24.10.2026).
 
 **Integritätsnachweis für Test 1:** 4.393.062 Bytes, SHA-256 `10e86d8d77ea967918fb13cff8c1054ae1baccc6e77692bd1b83468da12b461c`. Der GitHub-Blob-SHA `e51a0ae040eedd7397ff13a64bc5fb1876b5abbb` stimmt mit dem Git-Blob der ursprünglichen hochgeladenen ZIP bytegenau überein (geprüft am 24.10.2026).
 

@@ -116,12 +116,15 @@ function postPanel(text) {
  * SillyTavern adds the API key, the extension never sees it. Any other source uses generateRaw (temperature as the
  * active preset sets it).
  */
-async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500 }) {
+async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500, signal = null }) {
     const c = ctx();
     const oai = c.chatCompletionSettings;
     if (c.mainApi === 'openai' && oai?.chat_completion_source === 'custom' && typeof c.getRequestHeaders === 'function') {
         llmPath = 'custom endpoint';
         const ctl = new AbortController();
+        const abortWithWorld = () => ctl.abort();
+        if (signal?.aborted) ctl.abort();
+        else signal?.addEventListener('abort', abortWithWorld, { once: true });
         const timer = setTimeout(() => ctl.abort(), LLM_TIMEOUT_MS);
         try {
             const body = {
@@ -138,10 +141,12 @@ async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500 }) {
             return { content: text, finish_reason: json.choices[0]?.finish_reason ?? null, usage: json.usage ?? null };
         } finally {
             clearTimeout(timer);
+            signal?.removeEventListener('abort', abortWithWorld);
         }
     }
     llmPath = 'generateRaw';
     if (typeof c.generateRaw !== 'function') throw new Error('SillyTavern offers no generateRaw');
+    if (signal?.aborted) throw new Error('world extraction cancelled');
     // generateRaw takes one prompt: a repair's earlier answer and error list follow the request as text
     const [system, ...rest] = messages;
     const prompt = rest.map((m) => (m.role === 'assistant' ? `YOUR PREVIOUS ANSWER:\n${m.content}` : m.content)).join('\n\n');

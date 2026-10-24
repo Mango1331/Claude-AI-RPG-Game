@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { setRec } from '../../src/host.js';
-import { turnOutcome, turnFailure } from '../../tools/st_live/live/evaluator.mjs';
+import { turnOutcome, turnFailure, failureEnd } from '../../tools/st_live/live/evaluator.mjs';
 
 const pc = (mes = 'I walk to the guild.') => ({ mes, is_user: true, is_system: false, extra: {} });
 const story = (mes = 'He approaches the guild.') => ({ mes, is_user: false, is_system: false, extra: {} });
@@ -64,4 +64,25 @@ test('10B-4b: the failure belongs only to its own turn, not a later normal turn'
     setRec(chat[3], { events: [], extraction: { status: 'applied' } });
     assert.equal(turnFailure(chat, 0).kind, 'extractor_failed');
     assert.equal(turnFailure(chat, 2), null);
+});
+
+test('10B-4b: run end names Planner failure and keeps the underlying provider error', () => {
+    assert.deepEqual(failureEnd({ kind: 'planner_failed', at: 17, reason: 'no valid JSON' }, 21), {
+        kind: 'planner_failed',
+        why: 'turn 21: the semantic Planner failed before story generation (no valid JSON)',
+        turn: 21,
+    });
+});
+
+test('10B-4b: run end reports the Extractor failure without inventing an arrival', () => {
+    const end = failureEnd({ kind: 'extractor_failed', at: 118, reason: 'signal is aborted without reason' }, 59);
+    assert.equal(end.kind, 'extractor_failed');
+    assert.match(end.why, /World Extractor failed.*world changes were not committed/);
+    assert.match(end.why, /turn 59/);
+    assert.equal(failureEnd(null, 59), null);
+});
+
+test('10B-4b: only undiagnosed missing reply is UI; empty narrator stays narrator_empty', () => {
+    assert.equal(failureEnd({ kind: 'missing', at: null, reason: null }, 4).kind, 'ui');
+    assert.equal(failureEnd({ kind: 'narrator_empty', at: 8, reason: null }, 4).kind, 'narrator_empty');
 });

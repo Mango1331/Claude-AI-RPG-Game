@@ -56,3 +56,14 @@ The **only .61 failure** is a wrong assertion in `tests/v4/patch10b4a_planner_em
 Additional independent checks reported: a real ten-minute waiting action following successful recovery and its Regenerate path consumed time/events exactly once; invalid recovery JSON, failed repair transport and whitespace-only answers retained the expected bounded behavior. The reviewer found no concrete product-code defect.
 
 **Updated verification status:** The earlier red/green numbers are **before** this assertion-only fix. The corrected **7/7 target run and final full suite have not yet been re-executed or documented**, and **no smoke result exists** from an actual running ST host. Once independently rerun, record exact counts rather than replacing the historical 1344/1345 report by inference. A third attempt with 4,000 output tokens can still be all reasoning; it is a bounded chance, not a guaranteed provider fix.
+
+
+## Windows-local full suite: CRLF-only test failures (24.10.2026)
+
+After the Planner assertion correction, the user ran the seven 10B-4a tests on Windows: **7/7 passed**. Full npm test reported **1,341 passed / 5 failed / 1,346 total** (19,200.8349 ms). ST smoke cannot be run locally.
+
+All five failures originated in Windows CRLF line endings on the narrator contract file, compared with embedded LF text, strict revision-line comparison or an LF-only substring search. The failing tests were unit/content.test.js, v4/c663.test.js, v4/fixes_4_1_5.test.js, v4/planner_c2.test.js and v4/planner_c6.test.js.
+
+**Non-product correction:** Commit [d14bb86](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/d14bb86a0bb3bb0801df4c8cae75401ee1132fe1) normalizes contract text to LF when the five test files read it (including four separate reads in planner_c6.test.js). A new repository-root .gitattributes additionally pins the narrator contract to LF on future checkouts. The original narrator contract, embedded JSON, engine/runtime JS, version .61, Runner and game mechanics were not changed. Tests remain robust for an already checked-out CRLF contract.
+
+**Verification after this fix is still pending.** The 1,341/1,346 result was before d14bb86, so do not claim a measured 1,346/1,346. The user should pull the current development branch and run npm test again, then report the final pass/fail summary.

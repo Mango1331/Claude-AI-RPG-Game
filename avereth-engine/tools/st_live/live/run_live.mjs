@@ -73,7 +73,10 @@ export function options(argv = process.argv.slice(2), env = process.env) {
     if (o.fixture && !CLASS_FIXTURES.includes(o.fixture)) throw new Error(`Unknown fixture ${o.fixture}`);
     if (arg('--player')) o.player.type = arg('--player');
     if (arg('--seed')) o.seed = Number(arg('--seed'));
-    if (arg('--max-turns')) o.maxTurns = Number(arg('--max-turns'));
+    // A configured default must not silently shorten a guide's explicit open-world observation window.
+    // Only the --max-turns CLI flag is a deliberate per-run override of that guide's horizon.
+    o.maxTurnsExplicit = arg('--max-turns') !== null;
+    if (o.maxTurnsExplicit) o.maxTurns = Number(arg('--max-turns'));
     if (arg('--port')) o.port = Number(arg('--port'));
     if (flag('--headed')) o.headless = false;
     if (flag('--keep-profile')) o.keepProfile = true;
@@ -157,6 +160,20 @@ export async function preflight(o, imp, key, { fetchImpl = fetch } = {}) {
     return rows;
 }
 
+/** Config maxTurns is the old default for milestone guides, not a limit on a longer open run.
+ * An explicit CLI override is respected but must leave the entire observation window possible. */
+export function resolveTurnLimit(guide, o) {
+    const explicit = o.maxTurnsExplicit === true;
+    if (explicit || (!guide.openRun && o.maxTurns != null)) {
+        if (!Number.isInteger(o.maxTurns) || o.maxTurns < 1) throw new Error('--max-turns must be a positive integer');
+        guide.limits.maxTurns = o.maxTurns;
+    }
+    if (guide.openRun && guide.limits.maxTurns < guide.openRun.minTurns) {
+        throw new Error(`open-run requires at least ${guide.openRun.minTurns} turns; --max-turns cannot be shorter`);
+    }
+    return guide.limits.maxTurns;
+}
+
 // ------------------------------------------------------------------------------------------------ a run
 export async function run(o) {
     const startedAt = Date.now();
@@ -165,8 +182,7 @@ export async function run(o) {
     const guide = loadGuide(o.guide);
     if (guide.fixture && !o.fixture) throw new Error(`This explicit fixture guide requires --fixture ${guide.fixture}`);
     if (guide.openRun && o.fixture) throw new Error('current_test is a natural campaign: do not pass --fixture');
-    if (o.maxTurns) guide.limits.maxTurns = o.maxTurns;
-    if (guide.openRun && guide.limits.maxTurns < guide.openRun.minTurns) throw new Error('open-run maxTurns cannot be shorter than its observation window');
+    resolveTurnLimit(guide, o);
     const seed = Number.isFinite(o.seed) ? o.seed : Math.floor(Math.random() * 2 ** 31);
     const persona = o.player.type === 'llm' ? pick(guide.personas, seed) : null;
     let runId = `${stamp()}-${guide.id}${o.stub ? '-stub' : ''}`;

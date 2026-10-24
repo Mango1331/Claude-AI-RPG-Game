@@ -113,7 +113,7 @@ test('"a Basic Attack at the creature": the fight with the Cellar Gnawer starts 
     assert.equal(intent.started.order, 'Cellar Gnawer > Alaric');
     // the same dice: the bite for 1, the Basic Attack for 18, the Gnawer dead; its DefeatXP is Level 1 × base_per_level
     // (the run recorded 10 under the XP constants before the balance of 30.09.; the recorded panel stays as it was)
-    const xp = content.rules.xp.base_per_level;
+    const xp = (content.rules.xp.base_per_level * content.rules.xp.reward_multiplier);
     assert.ok(fx.recorded.panel19.endsWith('`COMBAT END — Cellar Gnawer defeated · +10 XP → XP 10/100`'));
     assert.equal(run.at[18].panel, fx.recorded.panel19.replace('+10 XP → XP 10/100', `+${xp} XP → XP ${xp}/100`));
     assert.equal(run.at[18].state.entities['mon.cellar_gnawer'].status, 'dead');

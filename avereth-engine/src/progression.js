@@ -7,7 +7,7 @@ export function defeatXp(targetLevel, targetType, playerRank, content, strength 
     const x = content.rules.xp;
     const gap = rankIndex(rankOf(targetLevel, content), content) - rankIndex(playerRank, content);
     const key = String(Math.max(-2, Math.min(3, gap)));
-    return roundHalfUp(targetLevel * x.base_per_level * x.rank_gap[key] * x.target_type[targetType || 'normal'] * strength);
+    return roundHalfUp(targetLevel * x.base_per_level * x.rank_gap[key] * x.target_type[targetType || 'normal'] * strength) * (x.reward_multiplier ?? 1);
 }
 
 /**
@@ -52,7 +52,7 @@ export function awardXp(sheet, amount, content, reason, who = 'pc') {
 
 export function questXp(recLevel, questType, content) {
     const x = content.rules.xp;
-    return roundHalfUp(recLevel * x.quest_base_per_level * (x.quest_type[questType] || x.quest_type.standard));
+    return roundHalfUp(recLevel * x.quest_base_per_level * (x.quest_type[questType] || x.quest_type.standard)) * (x.reward_multiplier ?? 1);
 }
 
 export function assignStat(sheet, stat, amount, content) {

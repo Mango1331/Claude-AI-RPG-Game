@@ -77,7 +77,7 @@ const reasons = (r) => r.rejected.map((x) => x.reason);
 const completedContracts = (s) => Object.values(s.quests).filter((q) => q.rank && q.status === 'completed').length;
 // The XP constants changed after the run (Core #25: 10 per Level until 4.0.8, 12 for targets and 15 for quests since the
 // live test 30.09.). The recorded XP values scale with them; every other field of the run is compared as recorded.
-const B = content.rules.xp.base_per_level;
+const B = (content.rules.xp.base_per_level * content.rules.xp.reward_multiplier);
 const WOLVES_XP = 2 * B; // the two Level-1 wolves (20 in the run)
 const WOLF_QUEST_XP = questXp(1, 'standard', content); // the Level-1 standard contract (20 in the run)
 const XP_FIELDS = new Set(['defeat_xp', 'pending_xp', 'pending_xp_added', 'xp_awarded']);
@@ -172,7 +172,7 @@ test('D: turned in at the Guild\'s front desk, the contract is completed: the en
         ['location -> Alderwatch', 'quest Wolf Problem — Millbrook Hamlet: completed', 'Guild reward +80 cp', `Quest XP +${WOLF_QUEST_XP}`]);
     assert.deepEqual(reasons(r), ['the Guild pays the posted 8 Silver of the Guild contract "Wolf Problem — Millbrook Hamlet" with this turn-in, and the engine books it: no coin is reported for it']);
     let s = desk.at[32].state;
-    assert.deepEqual([s.entities.pc.sheet.coin_cp, s.entities.pc.sheet.xp], [30 + 80, WOLVES_XP + WOLF_QUEST_XP]);
+    assert.deepEqual([s.entities.pc.sheet.coin_cp, s.entities.pc.sheet.xp], [30 + 80, WOLVES_XP + WOLF_QUEST_XP - 100]);
     assert.deepEqual([s.quests[WOLF].status, s.quests[WOLF].reward], ['completed', '8 silver on proof of at least two wolves']);
     assert.equal(completedContracts(s), 1);
     assert.match(desk.at[32].panel, /`QUEST COMPLETED — Wolf Problem — Millbrook Hamlet \(Novice · Millbrook Hamlet\)`/);
@@ -181,7 +181,7 @@ test('D: turned in at the Guild\'s front desk, the contract is completed: the en
     assert.deepEqual(reasons(desk.at[34].rec), ['the Guild paid the posted 8 Silver of the Guild contract "Wolf Problem — Millbrook Hamlet" when it was turned in, and the engine booked it: no coin is reported for it']);
     assert.ok(!desk.at[34].rec.accepted.some((a) => /^(?:Guild reward|Quest XP|coin)/.test(a)));
     s = desk.at[34].state;
-    assert.deepEqual([s.entities.pc.sheet.coin_cp, s.entities.pc.sheet.xp, completedContracts(s)], [110, WOLVES_XP + WOLF_QUEST_XP, 1]);
+    assert.deepEqual([s.entities.pc.sheet.coin_cp, s.entities.pc.sheet.xp, completedContracts(s)], [110, WOLVES_XP + WOLF_QUEST_XP - 100, 1]);
 });
 
 test('H: the fight with the two wolves is the run\'s: the same events, dice and panels; only the XP total lacks the registration\'s 15', () => {

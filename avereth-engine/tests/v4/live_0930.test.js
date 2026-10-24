@@ -133,7 +133,7 @@ test('D: the turn-in pays the posted 90 cp once and its Quest XP; four wolves an
     assert.equal(s.quests[ESCORT].status, 'completed');
     assert.equal(s.entities.pc.sheet.coin_cp, 50 - 20 + 90, '120 cp: 1 gold 2 silver, as the run');
     const xp = 4 * defeatXp(1, 'normal', 'F', content) + questXp(2, 'standard', content);
-    assert.equal(xp, 108);
+    assert.equal(xp, 216);
     assert.deepEqual([s.entities.pc.sheet.level, s.entities.pc.sheet.xp], [2, xp - 100]);
 });
 

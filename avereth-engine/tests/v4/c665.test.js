@@ -298,9 +298,9 @@ test('c.6.6.5 XP 19-21: the strong armored mudwyrm (84 HP, ATK 14, DEF 6) is wor
     const xp = (anchor, fixed) => defeatXp(1, 'normal', 'F', content, strengthOf(fixed, scaleCreature(content.anchors.get(anchor), 1, 'normal', content), content, ref));
     const small = xp('serpent', { max_hp: 20, atk: 8, def: 0, mdef: 1 });
     const big = xp('armored_beast', { max_hp: 84, atk: 14, def: 6, mdef: 2 });
-    assert.equal(small, 12);
-    assert.ok(big >= 18 && big < 48, `${big}`);
-    assert.equal(xp('wolf', scaleCreature(content.anchors.get('wolf'), 1, 'normal', content)), 12, 'ordinary fauna keep their Level\'s XP');
+    assert.equal(small, 24);
+    assert.ok(big >= 36 && big < 96, `${big}`);
+    assert.equal(xp('wolf', scaleCreature(content.anchors.get('wolf'), 1, 'normal', content)), 24, 'ordinary fauna keep their Level\'s XP');
     const s = foldChat(fx.messages.slice(0, 89)).state;
     const amounts = fx.messages.slice(59, 89).flatMap((m) => (m.extra?.avereth?.events || []).filter((e) => e.t === 'xp.changed' && /Combat XP/.test(e.d.reason)).map((e) => e.d.amount));
     assert.deepEqual(amounts, [12, 12, 14]);

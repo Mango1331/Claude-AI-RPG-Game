@@ -88,7 +88,7 @@ test('the returning strider is the one that withdrew: three striders in all, all
     assert.equal(striders(S(40)).length, 3, 'the run made a fourth, "Bog Strider D"');
     const end = g.state();
     assert.deepEqual(striders(end).map((e) => [e.id, e.status]).sort(), [['mon.npcbog_strider_flankers_1', 'dead'], ['mon.npcbog_strider_flankers_2', 'dead'], [mound, 'dead']]);
-    assert.equal(end.entities.pc.sheet.xp, 36, 'three striders, 12 XP each, as the run');
+    assert.equal(end.entities.pc.sheet.xp, 72, 'three striders, doubled to 24 XP each');
 });
 
 test('the contract is not ready on four pairs of joints for three kills: the engine count stands, the story may still say how', () => {

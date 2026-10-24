@@ -254,7 +254,7 @@ test('patch 4 (21, 22, 23): a group fight pays each kill once, loots each body o
     assert.equal(s.entities[W[2]].fled?.encounter !== undefined, true, 'driven off, not dead');
     assert.equal(xp, ended.xp_awarded, 'once');
     assert.deepEqual(dead.slice().sort(), [W[0], W[1]], 'A and B killed');
-    assert.equal(ended.xp_awarded, 2 * 12, 'each kill its locked Defeat XP (Level 1 wolf: 12), the runner none');
+    assert.equal(ended.xp_awarded, 2 * 24, 'each kill its locked Defeat XP (Level 1 wolf: 24), the runner none');
     const pelts = Object.values(s.objects).filter((o) => o.holder?.entity === 'pc' && /wolf pelt/i.test(o.name)).reduce((a, o) => a + (o.qty ?? 1), 0);
     assert.equal(pelts, dead.length, 'one pelt per body, no doubles');
     const tally = defeatTally(s, content, s.quests['quest.wolves'])[0];

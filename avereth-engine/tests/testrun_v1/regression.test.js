@@ -86,7 +86,7 @@ test('turn 5 combat: engine-rolled dice, locked human profile, no false ambush, 
     const tr = enc.combatants['npc.trapper'];
     assert.equal(tr.fixed.level, 2);
     assert.equal(tr.fixed.max_hp, 90, 'hunter template L2: 50 + 10 + VIT 6×5 (Testrun improvised "HP 70")');
-    assert.equal(tr.fixed.defeat_xp, 2 * content.rules.xp.base_per_level, 'DefeatXP locked at start (Testrun never computed it): Level 2 × base_per_level');
+    assert.equal(tr.fixed.defeat_xp, 2 * (content.rules.xp.base_per_level * content.rules.xp.reward_multiplier), 'DefeatXP locked at start (Testrun never computed it): Level 2 × base_per_level');
     assert.equal(enc.combatants.pc.fixed.init, 9);
     const shot = outcome.records.find((r) => r.actor === 'pc');
     assert.equal(shot.skill, 'ranger.power_shot');
@@ -111,7 +111,7 @@ test('the combat snapshot survives into the next turn (Testrun lost HP, profile 
     const panel = runCommands(state, content, '#combat').panels[0];
     // the combat panel names him by his target label for this fight (an unnamed trapper: Trapper A)
     assert.match(panel, /Trapper A \(hostile\)/);
-    const defeatXp = 2 * content.rules.xp.base_per_level; // 20 until 4.0.8, 24 since the XP balance of 30.09.
+    const defeatXp = 2 * (content.rules.xp.base_per_level * content.rules.xp.reward_multiplier); // 20 until 4.0.8, 24 since the XP balance of 30.09.
     assert.match(panel, new RegExp(`DefeatXP ${defeatXp}\\b`));
     assert.match(panel, /Turn order: Trapper A > Alaric/);
     chat.push(msg({ is_user: true, mes: 'I shoot him again with Power Shot' }));

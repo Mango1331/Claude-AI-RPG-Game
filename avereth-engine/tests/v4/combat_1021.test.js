@@ -83,7 +83,7 @@ test('combat 21.10: "*i Basic Attack D*" with D dead attacks no one: not C in it
     assert.ok(rc.events.some((e) => e.t === 'encounter.started'));
 });
 
-test('combat 21.10: a surrender gives no XP; the same skeleton killed afterwards gives its Defeat XP once (156, not 312)', async () => {
+test('combat 21.10: a surrender gives no XP; the same skeleton killed afterwards gives its Defeat XP once (no duplicate XP)', async () => {
     const g = live(45);
     const xpBefore = g.state().entities.pc.sheet.xp;
     const surrender = await say(g, '*i Basic Attack C*', { type: 'use_skill', skill: 'mage.basic_attack', target: C, quote: 'i Basic Attack C' });
@@ -96,8 +96,8 @@ test('combat 21.10: a surrender gives no XP; the same skeleton killed afterwards
     await g.reply('The skeleton stays on its knees among the bones.', { expected: {}, deltas: [] });
     const kill = await say(g, fx.messages[47].mes, { type: 'use_skill', skill: 'mage.flame_lance', target: C, quote: 'i finish it off with a flame lance' });
     assert.equal(g.state().entities[C].status, 'dead');
-    assert.equal(xpOf([kill]), 156, 'its Defeat XP, once');
-    assert.equal(xpOf([surrender, kill]), 156);
+    assert.equal(xpOf([kill]), 312, 'its Defeat XP, once');
+    assert.equal(xpOf([surrender, kill]), 312);
 });
 
 test('combat 21.10: combat truth reads the skeleton\'s death in the gallery as the skeleton\'s (dead in the engine), not as a gallery killed', () => {

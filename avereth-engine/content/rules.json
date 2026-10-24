@@ -420,6 +420,7 @@
   "xp": {
     "src": "Core #25",
     "base_per_level": 12,
+    "reward_multiplier": 2,
     "rank_gap": {
       "0": 1,
       "1": 2,

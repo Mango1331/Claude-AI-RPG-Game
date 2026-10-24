@@ -66,10 +66,10 @@ const rules = (r) => r.events.filter((e) => e.t === 'delta.rejected').map((e) =>
 test('XP: four same-rank Level-1 wolves and the Level-2 standard escort reach Level 2 with 8 XP carried over (Core #25)', () => {
     const wolf = defeatXp(1, 'normal', 'F', content);
     const quest = questXp(2, 'standard', content);
-    assert.deepEqual([wolf, quest, 4 * wolf + quest], [12, 60, 108], 'the run had 4 × 10 + 40 = 80: no Level-up');
+    assert.deepEqual([wolf, quest, 4 * wolf + quest], [24, 120, 216], 'the run had 4 × 10 + 40 = 80: no Level-up');
     const events = awardXp({ level: 1, class: 'warrior', xp: 4 * wolf }, quest, content, 'Quest XP');
     assert.equal(events.find((e) => e.t === 'level.up')?.d.level, 2);
-    assert.equal(events.find((e) => e.t === 'level.up')?.d.xp_after, 8);
+    assert.equal(events.find((e) => e.t === 'level.up')?.d.xp_after, 116);
 });
 
 test('a present return journey with "came from" is not dropped as a remembered one', () => {

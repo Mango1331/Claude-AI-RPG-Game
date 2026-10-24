@@ -345,7 +345,7 @@ test('multi-hit stops once the target is dead; DefeatXP enters Pending XP exactl
     const r = attackAction(ctx, 'pc', 'mon.rat', 'ranger.twin_shot');
     assert.equal(r.strikes.length, 1);
     assert.equal(r.strikes[0].defeated, true);
-    assert.equal(ctx.enc.pending_xp, content.rules.xp.base_per_level, 'the Level-1 rat\'s DefeatXP');
+    assert.equal(ctx.enc.pending_xp, (content.rules.xp.base_per_level * content.rules.xp.reward_multiplier), 'the Level-1 rat\'s DefeatXP');
     assert.equal(r.ammo.used, 2, 'both arrows were committed with the Skill');
 });
 
@@ -382,7 +382,7 @@ test('NPC policy: skittish flees, aggressive closes in, non-hostile unharmed per
 
 test('DefeatXP: Level*base_per_level × rank-gap × type, locked against the PC Rank at encounter start (Core #25)', () => {
     // base_per_level was 10 until 4.0.8 and is 12 since the XP balance of the live test 30.09. (content test: Core text)
-    const B = content.rules.xp.base_per_level;
+    const B = (content.rules.xp.base_per_level * content.rules.xp.reward_multiplier);
     assert.equal(defeatXp(1, 'normal', 'F', content), B);
     assert.equal(defeatXp(2, 'normal', 'F', content), 2 * B);
     assert.equal(defeatXp(15, 'normal', 'F', content), 15 * B * 2); // E vs F: x2

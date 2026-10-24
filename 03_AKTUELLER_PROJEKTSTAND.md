@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 24. Oktober 2026 · Fassung 47 (Patch 10B mit eigener ausführlicher Hauptdatei 06; dieses 03 nur Meilenstein-Kurzstatus und Patchhistorie)  
+**Stichtag:** 24. Oktober 2026 · Fassung 48 (10B-Build .65 Node-grün; ausführlicher Prüf- und Patchspeicher ausschließlich in 06; historischer .57-Stand darunter)  
 **Pflege:** Für Patch 10B **nur bei größeren Versions-, Phasen- oder Abnahmemeilensteinen kurz aktualisieren**; laufende Einzelläufe, Reviews und Fixkandidaten in Datei 06 und `testrun_10b`. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,17 +13,25 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 24.10.2026 (neu verifiziert)** | **fd20d0dce0b0fc508b17810872b7933a5f00e994** (Offline-Kampfsimulator auf Entwicklungsbranch), vorheriger Runner-Stand 3181c811; Produkt-Engine weiterhin .57. Snapshot, vor weiterer Arbeit neu prüfen. |
-| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.57**, Narrator-Vertrag weiterhin **.55**. Kein neuer Kartenwechsel gegenüber .55/.56. Vokabular/Planner-Version unverändert. |
+| **Aktueller Produktcode-HEAD 24.10.2026 (verifiziert)** | **d182e900c6cb1cd32a945a52afc101590a60462b** (letzter .65-Code-/Testnachfix vor Sol-Handoff-Dokumentation). Neuerer Branch-HEAD kann reine Doku enthalten; vor Implementierung stets erneut prüfen. Ausgangsstand für 10B war fd20d0d/.57. |
+| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.65**, über alle drei Dateien abgeglichen. Narrator-Vertrag weiterhin **.55**; keine automatische Narrator-Recovery implementiert. |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | **9D F→E / NORMAL–RARE LIVE ABGENOMMEN auf `.57`.** Zweiter echter Fixture-Lauf `20261024-021009Z-current_test.zip`: 23 echte Spielzüge, 13:16 Minuten, alle 5/5 Pflichtetappen, `end: done`, `fixtureReload: true`, Integrität OK; Start einschließlich API-Verbindung/erstem `#status` und Schluss-Reload vollautomatisch. Level 15/E, zwei Rare-Klassenoptionen, `Ironbreaker Path` natürlich per Namen gewählt, `#class`/`#feats` und Heavy Slash mit aktiver Eigenschaft belegt. Die Feat-Vorgeschichte bleibt ausdrücklich synthetisch. Gesamtsuite `.57` 1269/1269 **laut Sol-Bericht**, nicht hier neu ausgeführt. Nicht freigegeben: Legendary-E, D–S, Domain, abschließendes Zahlenbalancing. |
-| **AKTUELLER nächster Schritt** | Weitere natürliche `current_test`-Original-ZIPs mit je `REVIEW.md` unter `testrun_10b` sammeln. Kampfsimulator, Monsterreviews und Chase-Design ausführlich in **[Datei 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md)** weiterverfolgen; **keine** neuen Balance-/Enginefixes ohne Freigabe. |
+| **Patchstatus** | **10B-1 (.58), 10B-2 (.59), 10B-2b (.60), 10B-4a–4c.4 (.61–.65) implementiert**; inklusive positivem Liefernachweis, Faktenidentität, Planner-/Extractor-Recovery, Host-Chat-Lifecycle und Runner-Telemetrie. **Vollsuite 1421/1421 auf .65 laut tatsächlich lokalem Nutzerlauf grün** (9/9 neue .65-Zieltests). Quell- und Testergebnisse sind noch **keine** Live-Abnahme der .65-Provider-/Host-Semantik. 9D-F→E war bereits vorher auf .57 gezielt live bestanden. **10B-3, 10B-4d, F60-2-Restlücke und Monster-/Chase-Designfixes offen.** |
+| **AKTUELLER nächster Schritt** | Nutzer hat neuen natürlichen **100-Züge-`current_test`** mit demselben Guide gestartet; Original-Export noch **nicht** eingegangen und tatsächlicher lokaler Build erst aus dem ZIP zu belegen. Danach Original-Events/Calls und Recoveries auswerten; Sol soll als Grundlage für den nächsten größeren Patch die **vollständige .58–.65-Commithistorie** unabhängig prüfen. Der technische Handoff ist [`avereth-engine/docs/PATCH10B_SOL_REVIEW_AND_NEXT_PATCH_HANDOFF_20261024.md`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/claude/c-planner-prototype-2026-10-02-gpt-c666/avereth-engine/docs/PATCH10B_SOL_REVIEW_AND_NEXT_PATCH_HANDOFF_20261024.md), vollständiges Journal in **[Datei 06](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) §§13–25**. Vorläufig keine weitere Mechanikimplementierung. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
 
 
 
-### Aktuelle 10B-Sammelphase – Details ausschließlich in Datei 06 (24.10.2026)
+### Aktueller 10B-Meilenstein – Node-Abschluss .65 vor erneutem natürlichem Live-Run (24.10.2026)
+
+**Code-/Commitlandkarte:** Start `.57` (`fd20d0d`), .58 Fakten-IDs/Gildenregistrierung, .59/.60 Lieferung, .61 Planner und Runner, .62/.63 Extractor und Host-Lifecycle, .64/.65 Recovery-Telemetrie und Planner-Transport-Wiederholung. Unabhängig vom ChatGPT-Codeeintrag bestätigte der Nutzer alle **1421/1421** vollständigen Node-Tests grün. **Kein echter .65-ST-Smoke oder GLM-Provider-/Reload-/Chatwechseltest nachgewiesen.** Automatische Narrator-Wiederholung (10B-4d) und Kampfdrohung/Combat-Truth/Gildenboard (10B-3) sind nicht implementiert.
+
+**Sol-Handoff:** Vollständiger technisch und historisch referenzierter Überblick auf dem **Entwicklungsbranch**: [`PATCH10B_SOL_REVIEW_AND_NEXT_PATCH_HANDOFF_20261024.md`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/claude/c-planner-prototype-2026-10-02-gpt-c666/avereth-engine/docs/PATCH10B_SOL_REVIEW_AND_NEXT_PATCH_HANDOFF_20261024.md). `06` §§13–25 auf `main` bleibt für jede Detailentscheidung der führende Speicher. Die vier bisherigen **.57**-Langläufe samt Reviews und Original-ZIPs sind im [`testrun_10b`-Index](testrun_10b/README.md) hinterlegt. Der neue Lauf läuft laut Nutzer **mit demselben offenen Guide**; Ergebnis noch ausstehend. Keine erfundene .65-Livefreigabe. **Neue große Umsetzung erst nach Originalrun-Review, kritischem Sol-Diff-Review und konkretem Folgeauftrag.**
+
+### HISTORISCHER 10B-SAMMELSTAND vor .58 – frühere Momentaufnahme
+
+
 
 **Stand:** Dev-HEAD `fd20d0d`, Engine `4.3.0-c.6.6.57`; 9D-F→E-Hauptpfad gezielt live abgenommen. **Freier `current_test` ab Level 1, Ziel 100 Spielerzüge**: Run 1 **26/100** (Mage stirbt nach voreiliger Eskalation einer Drohung), Run 2 **25/100** (Narrator liefert nach ausgeschöpftem Reasoning-Budget keinen Storytext). Beide echten Gildenlieferungen und Geld-/XP-Buchungen funktionieren; beide Runs unabhängig als [REVIEW + Original-ZIP](testrun_10b/README.md) auf `main` archiviert. Die offene Langzeit-/Klassen-Progression ist damit noch nicht abgenommen.
 

@@ -1,0 +1,1741 @@
+[
+  {
+    "run": "20261024-030002Z-current_test",
+    "beforeIndex": 31,
+    "commands": [
+      {
+        "seq": 1,
+        "type": "give",
+        "object": "obj.t20.consecrated_tallow_crates",
+        "qty": 6,
+        "to": "npc.odo",
+        "quote": "I haul the crates down three at a time and stack them on the shelves, corners inward, as Odo directs."
+      }
+    ],
+    "state": {
+      "v": 3,
+      "meta": {
+        "started": true,
+        "campaign": "avereth",
+        "content_version": "4.2.0",
+        "runtime": "v4",
+        "ruleset": 2
+      },
+      "rng": {
+        "seed": 611661449,
+        "n": 1
+      },
+      "clock": {
+        "minute": 740
+      },
+      "turn": 15,
+      "seq": 0,
+      "mode": "story",
+      "creation": {
+        "step": 3,
+        "class": "mage",
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ],
+        "turn": 2
+      },
+      "entities": {
+        "pc": {
+          "id": "pc",
+          "kind": "pc",
+          "name": "Alaric",
+          "race": "Human",
+          "age": 18,
+          "origin": "Earth",
+          "descriptors": [
+            "alaric",
+            "stranger",
+            "traveler"
+          ],
+          "status": "alive",
+          "location": "realm.valedorn_crown",
+          "sheet": {
+            "level": 1,
+            "class": "mage",
+            "stats": {
+              "STR": 5,
+              "VIT": 5,
+              "AGI": 5,
+              "INT": 6,
+              "PER": 5,
+              "WIL": 6
+            },
+            "skills": {
+              "mage.basic_attack": {
+                "prof": 1,
+                "pp": 0
+              },
+              "mage.arcane_bolt": {
+                "prof": 1,
+                "pp": 0
+              },
+              "mage.arcane_ward": {
+                "prof": 1,
+                "pp": 0
+              }
+            },
+            "equipment": {
+              "clothing": "simple_travelers_clothes",
+              "weapon": "starter_arcane_staff_r2",
+              "armor": "starter_light_robes"
+            },
+            "inventory": {
+              "small_pouch": 1,
+              "obj.guild_plate": 1,
+              "obj.slip.deliver_wardens_tallow_to_the_chapel_keeper": 1,
+              "obj.slip.clear_the_old_crown_catacombs_level_1": 1,
+              "obj.t20.consecrated_tallow_crates": 6
+            },
+            "coin_cp": 28,
+            "xp": 0,
+            "free_points": 0,
+            "hp": 80,
+            "mp": 72,
+            "sta": 100
+          }
+        },
+        "npc.odo": {
+          "id": "npc.odo",
+          "kind": "npc",
+          "name": "Odo",
+          "descriptors": [
+            "chapel keeper",
+            "old fellow",
+            "half-deaf since a powder went off wrong ",
+            "shouts but it is not temper",
+            "npc.odo"
+          ],
+          "traits": "old fellow, half-deaf since a powder went off wrong near him years back, shouts but it is not temper",
+          "status": "alive",
+          "location": "realm.valedorn_crown",
+          "at": "loc.old_crown_catacombs.chapel_keepers_hut",
+          "created": {
+            "turn": 11,
+            "minute": 635
+          },
+          "source": {
+            "kind": "narration",
+            "msg": 22
+          },
+          "card": {},
+          "template": "commoner"
+        }
+      },
+      "scene": {
+        "location": "realm.valedorn_crown",
+        "place": "Tallow store",
+        "at": "loc.ruined_chapel_yard.chapel_keepers_hut.tallow_store",
+        "present": [
+          "pc",
+          "npc.odo",
+          "npc.npcchapel_warden"
+        ],
+        "positions": {
+          "npc.odo": {
+            "band": "SHORT",
+            "cover": "none"
+          },
+          "npc.npcchapel_warden": {
+            "band": "SHORT",
+            "cover": "none"
+          }
+        },
+        "awareness": {},
+        "concealed": [],
+        "history": [
+          "loc.alderwatch.verge",
+          "loc.alderwatch",
+          "loc.alderwatch.guild_hall",
+          "loc.alderwatch.guild_hall.members_board_room",
+          "loc.alderwatch.brams_chandlery",
+          "loc.ruined_chapel_yard",
+          "loc.ruined_chapel_yard.chapel_keepers_hut"
+        ],
+        "relevant": [],
+        "threats": []
+      },
+      "encounter": null,
+      "facts": {
+        "f.npc_odo.occupation.t11": {
+          "id": "f.npc_odo.occupation.t11",
+          "s": "npc.odo",
+          "p": "occupation",
+          "o": "chapel keeper",
+          "since": {
+            "turn": 11,
+            "minute": 635
+          },
+          "until": null,
+          "visibility": "public",
+          "importance": 0.5,
+          "hard": false,
+          "source": {
+            "kind": "narration",
+            "msg": 22
+          }
+        }
+      },
+      "claims": {},
+      "knowledge": {},
+      "memories": [],
+      "relations": {},
+      "quests": {
+        "quest.deliver_wardens_tallow_to_the_chapel_keeper": {
+          "id": "quest.deliver_wardens_tallow_to_the_chapel_keeper",
+          "title": "Deliver Warden's Tallow to the Chapel Keeper",
+          "kind": "guild_contract",
+          "client": "Chandler Bram of the Low Street chandlery",
+          "giver": null,
+          "rank": "Novice",
+          "level": 1,
+          "qtype": "minor",
+          "payout_cp": 40,
+          "reward": "40 cp",
+          "task": "Deliver six crates of consecrated tallow candles to the chapel keeper at the ruined chapel west of the city, where the temple wardens need them for the catacomb stair.",
+          "desired_end_state": "The six crates of consecrated tallow candles are delivered intact to the chapel keeper at the ruined chapel west of Alderwatch.",
+          "objectives": [
+            {
+              "id": "o1",
+              "verb": "DELIVER",
+              "what": "crates of consecrated tallow candles",
+              "qty": 6,
+              "unit": "crates",
+              "where": "the chapel keeper's hut at the ruined chapel west of Alderwatch",
+              "status": "open"
+            }
+          ],
+          "proof": [],
+          "source": {
+            "board": "loc.alderwatch.guild_hall",
+            "branch": "loc.alderwatch",
+            "listed": {
+              "turn": 8,
+              "minute": 585,
+              "day": 1
+            }
+          },
+          "schedule": {
+            "starts_at": null,
+            "deadline": null
+          },
+          "status": "active",
+          "taker": "pc",
+          "history": [
+            {
+              "turn": 8,
+              "minute": 585,
+              "status": "listed"
+            },
+            {
+              "turn": 9,
+              "minute": 600,
+              "status": "active",
+              "at": "loc.alderwatch.guild_hall.members_board_room",
+              "step": 1
+            }
+          ],
+          "details": [
+            {
+              "note": "The tallow job and the catacomb clearing point at the same ruined chapel west of the city; their slips hang side by side, and the tallow slip is the only notice on the lower half of the board with its",
+              "schedule": null,
+              "turn": 8
+            },
+            {
+              "note": "The six crates wait at Bram's chandlery on Low Street in Alderwatch; Bram knows to expect someone today. Consecrated tallow sweats in warm weather — mind the top crate and chipped corners.",
+              "schedule": null,
+              "turn": 9
+            },
+            {
+              "note": "The six crates wait at Bram's chandlery on Low Street, banded with rope handles, the top one stamped with a temple mark in black wax; the chapel is an hour west; the handcart deposit is returned only ",
+              "schedule": null,
+              "turn": 10
+            },
+            {
+              "note": "The chapel keeper is round the back of the thatched hut in the chapel yard (follow the axe sound); he counts corners when the crates are carried in, so mind how they are carried.",
+              "schedule": null,
+              "turn": 12
+            },
+            {
+              "note": "Odo says the delivery is not complete: the six crates must be stored in the locked store under the chapel — down the stair, second door on the left, dry and untouched since spring. Odo will not carry ",
+              "schedule": null,
+              "turn": 14
+            }
+          ],
+          "notes": [
+            "The tallow job and the catacomb clearing point at the same ruined chapel west of the city; their slips hang side by side, and the tallow slip is the only notice on the lower half of the board with its",
+            "The six crates wait at Bram's chandlery on Low Street in Alderwatch; Bram knows to expect someone today. Consecrated tallow sweats in warm weather — mind the top crate and chipped corners.",
+            "The six crates wait at Bram's chandlery on Low Street, banded with rope handles, the top one stamped with a temple mark in black wax; the chapel is an hour west; the handcart deposit is returned only ",
+            "The chapel keeper is round the back of the thatched hut in the chapel yard (follow the axe sound); he counts corners when the crates are carried in, so mind how they are carried.",
+            "Odo says the delivery is not complete: the six crates must be stored in the locked store under the chapel — down the stair, second door on the left, dry and untouched since spring. Odo will not carry "
+          ]
+        }
+      },
+      "threads": {},
+      "last": {
+        "input": "",
+        "rejected": [],
+        "outcome": {}
+      },
+      "inputs": [
+        {
+          "turn": 4,
+          "input": "\"Coming in,\" I say, and walk through the gate into the city."
+        },
+        {
+          "turn": 5,
+          "input": "I head uphill to the Guild hall and look for a reception desk or notice board."
+        },
+        {
+          "turn": 6,
+          "input": "I go to the middle window. \"Good morning. I'd like to register with the Guild, and hear what work is available for a new mage.\""
+        },
+        {
+          "turn": 7,
+          "input": "\"I'm paying,\" I say, and count out two silver."
+        },
+        {
+          "turn": 8,
+          "input": "I go through the ajar door to the members' board and look over the catacomb culling postings."
+        },
+        {
+          "turn": 9,
+          "input": "I take the tallow delivery slip and the catacomb clearing slip, and bring both back to the clerk. \"I'd like to take these two — they're both at the ruined chapel, so I can do the delivery and the clearing in one trip.\""
+        },
+        {
+          "turn": 10,
+          "input": "\"Off to Bram's,\" I say, and head out to find the chandlery on Low Street."
+        },
+        {
+          "turn": 11,
+          "input": "\"I'll take the handcart,\" I say, and hand over the two copper deposit."
+        },
+        {
+          "turn": 12,
+          "input": "I take the cart's shafts and start hauling west toward the gate, watching for the low, wet stretch Bram warned about."
+        },
+        {
+          "turn": 13,
+          "input": "I wheel the cart around to the back of the hut, following the sound of the axe. \"Keeper Odo? Tallow delivery from Bram's.\""
+        },
+        {
+          "turn": 14,
+          "input": "\"No message from Bram. Delivery's done — who do I tell it's complete, or will the Guild clerk hear it from you?\""
+        },
+        {
+          "turn": 15,
+          "input": "I stack the crates back onto the handcart. \"I'll carry them down for you — second door on the left, you said? Show me the way.\""
+        }
+      ],
+      "pending_combat": [],
+      "pending_intents": {},
+      "skill_defs": {},
+      "passive_defs": {},
+      "places": {
+        "realm.valedorn_crown": {
+          "id": "realm.valedorn_crown",
+          "name": "Valedorn Crown",
+          "kind": "realm",
+          "parent": null,
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "content"
+        },
+        "realm.caelreth": {
+          "id": "realm.caelreth",
+          "name": "Caelreth",
+          "kind": "realm",
+          "parent": null,
+          "realm": "realm.caelreth",
+          "tags": [],
+          "by": "content"
+        },
+        "realm.duskreach": {
+          "id": "realm.duskreach",
+          "name": "Duskreach",
+          "kind": "realm",
+          "parent": null,
+          "realm": "realm.duskreach",
+          "tags": [],
+          "by": "content"
+        },
+        "realm.ashen_scale_dominion": {
+          "id": "realm.ashen_scale_dominion",
+          "name": "Ashen Scale Dominion",
+          "kind": "realm",
+          "parent": null,
+          "realm": "realm.ashen_scale_dominion",
+          "tags": [],
+          "by": "content"
+        },
+        "realm.verdant_fang_court": {
+          "id": "realm.verdant_fang_court",
+          "name": "Verdant Fang Court",
+          "kind": "realm",
+          "parent": null,
+          "realm": "realm.verdant_fang_court",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.alderwatch": {
+          "id": "loc.alderwatch",
+          "name": "Alderwatch",
+          "kind": "settlement",
+          "sub": "city",
+          "parent": "realm.valedorn_crown",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.alderwatch.guild_hall": {
+          "id": "loc.alderwatch.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.alderwatch",
+          "realm": "realm.valedorn_crown",
+          "tags": [
+            "guild_hall"
+          ],
+          "by": "engine"
+        },
+        "loc.glassmere": {
+          "id": "loc.glassmere",
+          "name": "Glassmere",
+          "kind": "settlement",
+          "sub": "city",
+          "parent": "realm.caelreth",
+          "realm": "realm.caelreth",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.glassmere.guild_hall": {
+          "id": "loc.glassmere.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.glassmere",
+          "realm": "realm.caelreth",
+          "tags": [
+            "guild_hall"
+          ],
+          "by": "engine"
+        },
+        "loc.ashbridge": {
+          "id": "loc.ashbridge",
+          "name": "Ashbridge",
+          "kind": "settlement",
+          "sub": "city",
+          "parent": "realm.duskreach",
+          "realm": "realm.duskreach",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.ashbridge.guild_hall": {
+          "id": "loc.ashbridge.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.ashbridge",
+          "realm": "realm.duskreach",
+          "tags": [
+            "guild_hall"
+          ],
+          "by": "engine"
+        },
+        "loc.crownheart": {
+          "id": "loc.crownheart",
+          "name": "Crownheart",
+          "kind": "settlement",
+          "sub": "capital",
+          "parent": "realm.valedorn_crown",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.crownheart.guild_hall": {
+          "id": "loc.crownheart.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.crownheart",
+          "realm": "realm.valedorn_crown",
+          "tags": [
+            "guild_hall"
+          ],
+          "by": "engine"
+        },
+        "loc.asterhall": {
+          "id": "loc.asterhall",
+          "name": "Asterhall",
+          "kind": "settlement",
+          "sub": "capital",
+          "parent": "realm.caelreth",
+          "realm": "realm.caelreth",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.asterhall.guild_hall": {
+          "id": "loc.asterhall.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.asterhall",
+          "realm": "realm.caelreth",
+          "tags": [
+            "guild_hall"
+          ],
+          "by": "engine"
+        },
+        "loc.blackgate": {
+          "id": "loc.blackgate",
+          "name": "Blackgate",
+          "kind": "settlement",
+          "sub": "capital",
+          "parent": "realm.duskreach",
+          "realm": "realm.duskreach",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.blackgate.guild_hall": {
+          "id": "loc.blackgate.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.blackgate",
+          "realm": "realm.duskreach",
+          "tags": [
+            "guild_hall"
+          ],
+          "by": "engine"
+        },
+        "loc.cinder_throne": {
+          "id": "loc.cinder_throne",
+          "name": "Cinder Throne",
+          "kind": "settlement",
+          "sub": "seat",
+          "parent": "realm.ashen_scale_dominion",
+          "realm": "realm.ashen_scale_dominion",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.thornheart": {
+          "id": "loc.thornheart",
+          "name": "Thornheart",
+          "kind": "settlement",
+          "sub": "seat",
+          "parent": "realm.verdant_fang_court",
+          "realm": "realm.verdant_fang_court",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.mossback_warrens": {
+          "id": "loc.mossback_warrens",
+          "name": "Mossback Warrens",
+          "kind": "site",
+          "parent": "realm.duskreach",
+          "realm": "realm.duskreach",
+          "tags": [],
+          "by": "content",
+          "near": "loc.ashbridge",
+          "where": "a moss-grown hill half a day's walk east of Ashbridge, off the old quarry track",
+          "rooms": true,
+          "dungeon": {
+            "real": true,
+            "theme": "goblin warrens: tunnels dug into a mossy hill, crude palisades, goblin scouts and warriors, a shaman deeper down",
+            "rank": {
+              "min": "F",
+              "max": "E"
+            },
+            "levels": {
+              "1": {
+                "min": "F",
+                "max": "F"
+              },
+              "2": {
+                "min": "E",
+                "max": "E"
+              }
+            },
+            "control": "the Adventurers' Guild of Ashbridge keeps its entry ledger under a charter of the Duskreach crown",
+            "hidden": [],
+            "heard": [],
+            "guild": [
+              "theme",
+              "rank",
+              "level:1",
+              "level:2",
+              "control"
+            ]
+          }
+        },
+        "loc.glimmerdeep_grotto": {
+          "id": "loc.glimmerdeep_grotto",
+          "name": "Glimmerdeep Grotto",
+          "kind": "site",
+          "parent": "realm.caelreth",
+          "realm": "realm.caelreth",
+          "tags": [],
+          "by": "content",
+          "near": "loc.glassmere",
+          "where": "a cleft in the hills a morning's walk north of Glassmere, where the stream runs out of the rock",
+          "rooms": true,
+          "dungeon": {
+            "real": true,
+            "theme": "crystal caverns: glittering grottos of mana-fed crystal, crystal beetles and mineral slimes",
+            "rank": {
+              "min": "F",
+              "max": "F"
+            },
+            "levels": {
+              "1": {
+                "min": "F",
+                "max": "F"
+              }
+            },
+            "control": "a Glassmere academy of magic holds the cleft and lets registered adventurers cull its outer grottos; what they kill and the free crystal there is theirs, the deep galleries the academy's",
+            "hidden": [],
+            "heard": [],
+            "guild": [
+              "theme",
+              "rank",
+              "level:1",
+              "control"
+            ]
+          }
+        },
+        "loc.old_crown_catacombs": {
+          "id": "loc.old_crown_catacombs",
+          "name": "Old Crown Catacombs",
+          "kind": "site",
+          "parent": "realm.valedorn_crown",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "content",
+          "near": "loc.alderwatch",
+          "where": "beneath a ruined chapel an hour's ride west of Alderwatch",
+          "rooms": true,
+          "dungeon": {
+            "real": true,
+            "theme": "undead catacombs: burial galleries, restless skeletons, ghouls deeper down",
+            "rank": {
+              "min": "F",
+              "max": "E"
+            },
+            "levels": {
+              "1": {
+                "min": "F",
+                "max": "F"
+              },
+              "2": {
+                "min": "E",
+                "max": "E"
+              }
+            },
+            "control": "the temple wardens of Alderwatch, who ask the Guild to keep the upper galleries culled",
+            "hidden": [],
+            "heard": [],
+            "guild": [
+              "theme",
+              "rank",
+              "level:1",
+              "level:2",
+              "control"
+            ]
+          }
+        },
+        "loc.alderwatch.verge": {
+          "id": "loc.alderwatch.verge",
+          "name": "public roadside verge outside Alderwatch",
+          "kind": "site",
+          "parent": "loc.alderwatch",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.alderwatch.guild_hall.members_board_room": {
+          "id": "loc.alderwatch.guild_hall.members_board_room",
+          "name": "Members' board room",
+          "kind": "interior",
+          "parent": "loc.alderwatch.guild_hall",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "reply",
+          "created": {
+            "turn": 8,
+            "minute": 588
+          }
+        },
+        "loc.alderwatch.brams_chandlery": {
+          "id": "loc.alderwatch.brams_chandlery",
+          "name": "Bram's chandlery",
+          "kind": "site",
+          "parent": "loc.alderwatch",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "reply",
+          "created": {
+            "turn": 9,
+            "minute": 600
+          },
+          "known": "visited",
+          "reports": [
+            {
+              "by": null,
+              "how": "told",
+              "where": "on Low Street in Alderwatch",
+              "turn": 9,
+              "minute": 600
+            }
+          ],
+          "visited": {
+            "turn": 10,
+            "minute": 600
+          }
+        },
+        "loc.old_crown_catacombs.chapel_keepers_hut": {
+          "id": "loc.old_crown_catacombs.chapel_keepers_hut",
+          "name": "chapel keeper's hut",
+          "kind": "site",
+          "parent": "loc.old_crown_catacombs",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "reply",
+          "created": {
+            "turn": 11,
+            "minute": 635
+          }
+        },
+        "loc.ruined_chapel_yard": {
+          "id": "loc.ruined_chapel_yard",
+          "name": "Ruined chapel yard",
+          "kind": "site",
+          "parent": "realm.valedorn_crown",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "reply",
+          "created": {
+            "turn": 12,
+            "minute": 705
+          },
+          "rooms": true,
+          "visited": {
+            "turn": 15,
+            "minute": 725
+          }
+        },
+        "loc.ruined_chapel_yard.chapel_keepers_hut": {
+          "id": "loc.ruined_chapel_yard.chapel_keepers_hut",
+          "name": "Chapel keeper's hut",
+          "kind": "site",
+          "parent": "loc.ruined_chapel_yard",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "reply",
+          "created": {
+            "turn": 13,
+            "minute": 705
+          },
+          "visited": {
+            "turn": 15,
+            "minute": 725
+          }
+        },
+        "loc.ruined_chapel_yard.chapel_keepers_hut.tallow_store": {
+          "id": "loc.ruined_chapel_yard.chapel_keepers_hut.tallow_store",
+          "name": "Tallow store",
+          "kind": "interior",
+          "parent": "loc.ruined_chapel_yard.chapel_keepers_hut",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "reply",
+          "created": {
+            "turn": 15,
+            "minute": 725
+          },
+          "visited": {
+            "turn": 15,
+            "minute": 725
+          }
+        },
+        "loc.ruined_chapel_yard.gallery_beyond_the_iron_strapped_door": {
+          "id": "loc.ruined_chapel_yard.gallery_beyond_the_iron_strapped_door",
+          "name": "Gallery beyond the iron-strapped door",
+          "kind": "interior",
+          "parent": "loc.ruined_chapel_yard",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "reply",
+          "created": {
+            "turn": 15,
+            "minute": 725
+          }
+        }
+      },
+      "objects": {
+        "obj.slip.deliver_wardens_tallow_to_the_chapel_keeper": {
+          "marks": [],
+          "for_quests": [
+            "quest.deliver_wardens_tallow_to_the_chapel_keeper"
+          ],
+          "id": "obj.slip.deliver_wardens_tallow_to_the_chapel_keeper",
+          "name": "Guild contract slip: Deliver Warden's Tallow to the Chapel Keeper",
+          "kind": "document",
+          "stack": false,
+          "qty": 1,
+          "unit": null,
+          "holder": {
+            "entity": "pc"
+          },
+          "source": {
+            "turn": 9,
+            "how": "guild"
+          }
+        },
+        "obj.slip.clear_the_old_crown_catacombs_level_1": {
+          "marks": [],
+          "for_quests": [
+            "quest.clear_the_old_crown_catacombs_level_1"
+          ],
+          "id": "obj.slip.clear_the_old_crown_catacombs_level_1",
+          "name": "Guild contract slip: Clear the Old Crown Catacombs, Level 1",
+          "kind": "document",
+          "stack": false,
+          "qty": 1,
+          "unit": null,
+          "holder": {
+            "entity": "pc"
+          },
+          "source": {
+            "turn": 9,
+            "how": "guild"
+          }
+        },
+        "obj.t20.consecrated_tallow_crates": {
+          "marks": [],
+          "for_quests": [
+            "quest.deliver_wardens_tallow_to_the_chapel_keeper"
+          ],
+          "id": "obj.t20.consecrated_tallow_crates",
+          "name": "consecrated tallow crates",
+          "kind": "item",
+          "stack": false,
+          "qty": 6,
+          "unit": "crates",
+          "use": "tool",
+          "holder": {
+            "entity": "pc"
+          },
+          "source": {
+            "turn": 10,
+            "how": "story"
+          }
+        }
+      },
+      "offers": {},
+      "guild": {
+        "membership": {
+          "rank": "Novice",
+          "since": {
+            "turn": 7,
+            "minute": 575
+          },
+          "branch": "loc.alderwatch"
+        },
+        "boards": {
+          "loc.alderwatch|Novice": {
+            "branch": "loc.alderwatch",
+            "rank": "Novice",
+            "day": 1,
+            "listings": [
+              "quest.cull_the_quarry_wolves",
+              "quest.escort_the_dyers_cart_to_reedford",
+              "quest.drive_off_the_millpond_eel_snappers"
+            ]
+          }
+        }
+      },
+      "decisions": [],
+      "services": [
+        {
+          "service": "other",
+          "by": "npc.bram",
+          "at": "loc.alderwatch.brams_chandlery",
+          "turn": 11,
+          "minute": 615
+        }
+      ],
+      "intents": {},
+      "features": {},
+      "links": {
+        "link.1": {
+          "id": "link.1",
+          "a": "loc.ruined_chapel_yard",
+          "b": "loc.ruined_chapel_yard.chapel_keepers_hut",
+          "name": null,
+          "both": true,
+          "hidden": false,
+          "feature": null,
+          "dir": null,
+          "since": {
+            "turn": 15,
+            "minute": 725
+          },
+          "found": {
+            "turn": 15,
+            "minute": 725,
+            "how": "walked"
+          },
+          "by": "walked"
+        },
+        "link.2": {
+          "id": "link.2",
+          "a": "loc.ruined_chapel_yard.chapel_keepers_hut",
+          "b": "loc.ruined_chapel_yard.chapel_keepers_hut.tallow_store",
+          "name": null,
+          "both": true,
+          "hidden": false,
+          "feature": null,
+          "dir": null,
+          "since": {
+            "turn": 15,
+            "minute": 725
+          },
+          "found": {
+            "turn": 15,
+            "minute": 725,
+            "how": "walked"
+          },
+          "by": "walked"
+        },
+        "link.3": {
+          "id": "link.3",
+          "a": "loc.ruined_chapel_yard.chapel_keepers_hut.tallow_store",
+          "b": "loc.ruined_chapel_yard.gallery_beyond_the_iron_strapped_door",
+          "name": "iron-strapped door",
+          "both": true,
+          "hidden": false,
+          "feature": null,
+          "dir": null,
+          "since": {
+            "turn": 15,
+            "minute": 725
+          },
+          "found": {
+            "turn": 15,
+            "minute": 725,
+            "how": "seen"
+          },
+          "by": "reply"
+        }
+      },
+      "searches": [
+        {
+          "at": "loc.alderwatch",
+          "focus": [
+            "reception",
+            "desk",
+            "notice",
+            "board"
+          ],
+          "tool": null,
+          "success": false,
+          "turn": 5,
+          "minute": 560,
+          "found": null,
+          "sig": ""
+        }
+      ],
+      "item_names": {
+        "obj.guild_plate": "Guild plate",
+        "obj.slip.deliver_wardens_tallow_to_the_chapel_keeper": "Guild contract slip: Deliver Warden's Tallow to the Chapel Keeper",
+        "obj.slip.clear_the_old_crown_catacombs_level_1": "Guild contract slip: Clear the Old Crown Catacombs, Level 1",
+        "obj.t20.consecrated_tallow_crates": "consecrated tallow crates (crates)"
+      }
+    }
+  },
+  {
+    "run": "20261024-033325Z-current_test",
+    "beforeIndex": 27,
+    "commands": [
+      {
+        "seq": 1,
+        "type": "give",
+        "object": "obj.t22.crate_of_fever_tinctures",
+        "to": "npc.npchollowbrook_healer",
+        "quote": "I set the crate down where she can see it.",
+        "qty": null
+      }
+    ],
+    "state": {
+      "v": 3,
+      "meta": {
+        "started": true,
+        "campaign": "avereth",
+        "content_version": "4.2.0",
+        "runtime": "v4",
+        "ruleset": 2
+      },
+      "rng": {
+        "seed": 1034921401,
+        "n": 0
+      },
+      "clock": {
+        "minute": 1018
+      },
+      "turn": 13,
+      "seq": 0,
+      "mode": "story",
+      "creation": {
+        "step": 3,
+        "class": "mage",
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.focused_ward"
+        ],
+        "turn": 2
+      },
+      "entities": {
+        "pc": {
+          "id": "pc",
+          "kind": "pc",
+          "name": "Alaric",
+          "race": "Human",
+          "age": 18,
+          "origin": "Earth",
+          "descriptors": [
+            "alaric",
+            "stranger",
+            "traveler"
+          ],
+          "status": "alive",
+          "location": "loc.hollowbrook",
+          "sheet": {
+            "level": 1,
+            "class": "mage",
+            "stats": {
+              "STR": 5,
+              "VIT": 5,
+              "AGI": 5,
+              "INT": 6,
+              "PER": 5,
+              "WIL": 6
+            },
+            "skills": {
+              "mage.basic_attack": {
+                "prof": 1,
+                "pp": 0
+              },
+              "mage.arcane_bolt": {
+                "prof": 1,
+                "pp": 0
+              },
+              "mage.focused_ward": {
+                "prof": 1,
+                "pp": 0
+              }
+            },
+            "equipment": {
+              "clothing": "simple_travelers_clothes",
+              "weapon": "starter_arcane_staff_r2",
+              "armor": "starter_light_robes"
+            },
+            "inventory": {
+              "small_pouch": 1,
+              "obj.guild_plate": 1,
+              "obj.slip.carry_the_wardens_tinctures_to_hollowbrook": 1,
+              "obj.t22.crate_of_fever_tinctures": 1
+            },
+            "coin_cp": 30,
+            "xp": 0,
+            "free_points": 0,
+            "hp": 80,
+            "mp": 72,
+            "sta": 100
+          }
+        },
+        "npc.npchollowbrook_healer": {
+          "id": "npc.npchollowbrook_healer",
+          "kind": "npc",
+          "name": null,
+          "descriptors": [
+            "healer",
+            "old woman with a gray braid, sleeves pin",
+            "waiting in the lane before the last cott",
+            "npc.hollowbrook_healer"
+          ],
+          "traits": "old woman with a gray braid, sleeves pinned back, hands like tree roots, waiting in the lane before the last cottage by the stone bridge",
+          "status": "alive",
+          "location": "loc.hollowbrook",
+          "created": {
+            "turn": 13,
+            "minute": 1018
+          },
+          "source": {
+            "kind": "narration",
+            "msg": 26
+          },
+          "card": {},
+          "template": "commoner"
+        }
+      },
+      "scene": {
+        "location": "loc.hollowbrook",
+        "place": "Hollowbrook",
+        "at": "loc.hollowbrook",
+        "present": [
+          "pc",
+          "npc.npchollowbrook_healer"
+        ],
+        "positions": {
+          "npc.npchollowbrook_healer": {
+            "band": "SHORT",
+            "cover": "none"
+          }
+        },
+        "awareness": {
+          "npc.npchollowbrook_healer": "aware"
+        },
+        "concealed": [],
+        "history": [
+          "loc.alderwatch.verge",
+          "loc.alderwatch",
+          "loc.alderwatch.guild_hall",
+          "loc.alderwatch.apothecary_vells_dispensary"
+        ],
+        "relevant": [
+          "npc.npchollowbrook_healer"
+        ],
+        "threats": []
+      },
+      "encounter": null,
+      "facts": {
+        "f.npc_npchollowbrook_heale.occupation.t13": {
+          "id": "f.npc_npchollowbrook_heale.occupation.t13",
+          "s": "npc.npchollowbrook_healer",
+          "p": "occupation",
+          "o": "healer",
+          "since": {
+            "turn": 13,
+            "minute": 1018
+          },
+          "until": {
+            "turn": 13,
+            "minute": 1018
+          },
+          "visibility": "public",
+          "importance": 0.5,
+          "hard": false,
+          "source": {
+            "kind": "narration",
+            "msg": 26
+          }
+        },
+        "f.t13.m26.d7_5.1": {
+          "id": "f.t13.m26.d7_5.1",
+          "s": "npc.npchollowbrook_healer",
+          "p": "occupation",
+          "o": "npc.npchollowbrook_healer",
+          "since": {
+            "turn": 13,
+            "minute": 1018
+          },
+          "until": null,
+          "visibility": "public",
+          "importance": 0.5,
+          "hard": false,
+          "source": {
+            "kind": "narration",
+            "msg": 26,
+            "because": null
+          }
+        }
+      },
+      "claims": {},
+      "knowledge": {},
+      "memories": [],
+      "relations": {},
+      "quests": {
+        "quest.carry_the_wardens_tinctures_to_hollowbrook": {
+          "id": "quest.carry_the_wardens_tinctures_to_hollowbrook",
+          "title": "Carry the Warden's Tinctures to Hollowbrook",
+          "kind": "guild_contract",
+          "client": "Apothecary Vell of the Lamp Row dispensary",
+          "giver": null,
+          "rank": "Novice",
+          "level": 1,
+          "qtype": "minor",
+          "payout_cp": 60,
+          "reward": "60 cp",
+          "task": "Deliver Vell's crate of fever tinctures to the Hollowbrook hamlet healer before the fever there spreads further; the hamlet road crosses open heath where a feral dog pack has been worrying travelers.",
+          "desired_end_state": "The crate of fever tinctures is delivered intact to the Hollowbrook healer.",
+          "objectives": [
+            {
+              "id": "o1",
+              "verb": "GET",
+              "what": "the crate of fever tinctures",
+              "qty": 1,
+              "unit": "crate",
+              "where": "the Lamp Row dispensary, Alderwatch",
+              "status": "open"
+            },
+            {
+              "id": "o2",
+              "verb": "DELIVER",
+              "what": "the crate of fever tinctures",
+              "qty": 1,
+              "unit": "crate",
+              "where": "the Hollowbrook healer's cottage",
+              "status": "open"
+            }
+          ],
+          "proof": [],
+          "source": {
+            "board": "loc.alderwatch.guild_hall",
+            "branch": "loc.alderwatch",
+            "listed": {
+              "turn": 9,
+              "minute": 579,
+              "day": 1
+            }
+          },
+          "schedule": {
+            "starts_at": null,
+            "deadline": null
+          },
+          "status": "active",
+          "taker": "pc",
+          "history": [
+            {
+              "turn": 9,
+              "minute": 579,
+              "status": "listed"
+            },
+            {
+              "turn": 10,
+              "minute": 581,
+              "status": "active",
+              "at": "loc.alderwatch.guild_hall",
+              "step": 1
+            }
+          ],
+          "details": [
+            {
+              "note": "Clerk: Vell keeps the crate at the dispensary on Lamp Row, south quarter of Alderwatch by the tanners' drain; the crate goes to the Hollowbrook healer intact, the healer's name will be on it or neighb",
+              "schedule": null,
+              "turn": 10
+            },
+            {
+              "note": "The crate waits behind the counter at the dispensary on Lamp Row, corded shut with a paper tag; the apothecary will bring it to the door once Alaric says it is the Hollowbrook crate.",
+              "schedule": null,
+              "turn": 11
+            },
+            {
+              "note": "The healer at the Hollowbrook cottage is Reeda, an old woman. Tell her the fever dose is the tall jar, four stoppers in the straw, and that Vell says the tall jar goes by the spoon, not the mouthful. ",
+              "schedule": null,
+              "turn": 12
+            },
+            {
+              "note": "Route: out the south gate of Alderwatch, past the osier beds, then the heath. Dogs have been at the drover's cart near the standing stone — mind past there.",
+              "schedule": null,
+              "turn": 12
+            },
+            {
+              "note": "The Hollowbrook healer is the old woman with the gray braid at the last cottage past the stone bridge; she expects the crate set down where she can see it and intact, not shaken about",
+              "schedule": null,
+              "turn": 13
+            }
+          ],
+          "notes": [
+            "Clerk: Vell keeps the crate at the dispensary on Lamp Row, south quarter of Alderwatch by the tanners' drain; the crate goes to the Hollowbrook healer intact, the healer's name will be on it or neighb",
+            "The crate waits behind the counter at the dispensary on Lamp Row, corded shut with a paper tag; the apothecary will bring it to the door once Alaric says it is the Hollowbrook crate.",
+            "The healer at the Hollowbrook cottage is Reeda, an old woman. Tell her the fever dose is the tall jar, four stoppers in the straw, and that Vell says the tall jar goes by the spoon, not the mouthful. ",
+            "Route: out the south gate of Alderwatch, past the osier beds, then the heath. Dogs have been at the drover's cart near the standing stone — mind past there.",
+            "The Hollowbrook healer is the old woman with the gray braid at the last cottage past the stone bridge; she expects the crate set down where she can see it and intact, not shaken about"
+          ],
+          "journey": {
+            "since": 13,
+            "from": "loc.alderwatch.apothecary_vells_dispensary"
+          }
+        }
+      },
+      "threads": {},
+      "last": {
+        "input": "",
+        "rejected": [],
+        "outcome": {}
+      },
+      "inputs": [
+        {
+          "turn": 2,
+          "input": "I pick Arcane Bolt and Focused Ward."
+        },
+        {
+          "turn": 3,
+          "input": "I walk along the road toward Alderwatch's gate."
+        },
+        {
+          "turn": 4,
+          "input": "I approach a stall vendor and ask for directions to the Adventurers' Guild."
+        },
+        {
+          "turn": 5,
+          "input": "I follow her directions up the street toward the well and the fork, keeping left to find the hall with crossed swords over the door."
+        },
+        {
+          "turn": 6,
+          "input": "I step over the worn threshold and go to the counter to register with the Guild."
+        },
+        {
+          "turn": 7,
+          "input": "\"Alaric Red.\" I place two silver on the counter."
+        },
+        {
+          "turn": 8,
+          "input": "\"Alaric Red.\" I drop two silver into the fee box's slot."
+        },
+        {
+          "turn": 9,
+          "input": "Registered — I take the plate and walk to the Novice board to see what contracts are posted."
+        },
+        {
+          "turn": 10,
+          "input": "I take the tincture slip to the clerk. \"The Hollowbrook delivery, please—make that one active for me.\""
+        },
+        {
+          "turn": 11,
+          "input": "I head south to Lamp Row and find Apothecary Vell's dispensary to pick up the tincture crate."
+        },
+        {
+          "turn": 12,
+          "input": "\"It's the Hollowbrook crate,\" I say. \"I'll carry it to the healer intact.\""
+        },
+        {
+          "turn": 13,
+          "input": "I take the crate and head out the south gate toward Hollowbrook, minding the road past the standing stone."
+        }
+      ],
+      "pending_combat": [],
+      "pending_intents": {},
+      "skill_defs": {},
+      "passive_defs": {},
+      "places": {
+        "realm.valedorn_crown": {
+          "id": "realm.valedorn_crown",
+          "name": "Valedorn Crown",
+          "kind": "realm",
+          "parent": null,
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "content"
+        },
+        "realm.caelreth": {
+          "id": "realm.caelreth",
+          "name": "Caelreth",
+          "kind": "realm",
+          "parent": null,
+          "realm": "realm.caelreth",
+          "tags": [],
+          "by": "content"
+        },
+        "realm.duskreach": {
+          "id": "realm.duskreach",
+          "name": "Duskreach",
+          "kind": "realm",
+          "parent": null,
+          "realm": "realm.duskreach",
+          "tags": [],
+          "by": "content"
+        },
+        "realm.ashen_scale_dominion": {
+          "id": "realm.ashen_scale_dominion",
+          "name": "Ashen Scale Dominion",
+          "kind": "realm",
+          "parent": null,
+          "realm": "realm.ashen_scale_dominion",
+          "tags": [],
+          "by": "content"
+        },
+        "realm.verdant_fang_court": {
+          "id": "realm.verdant_fang_court",
+          "name": "Verdant Fang Court",
+          "kind": "realm",
+          "parent": null,
+          "realm": "realm.verdant_fang_court",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.alderwatch": {
+          "id": "loc.alderwatch",
+          "name": "Alderwatch",
+          "kind": "settlement",
+          "sub": "city",
+          "parent": "realm.valedorn_crown",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.alderwatch.guild_hall": {
+          "id": "loc.alderwatch.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.alderwatch",
+          "realm": "realm.valedorn_crown",
+          "tags": [
+            "guild_hall"
+          ],
+          "by": "engine"
+        },
+        "loc.glassmere": {
+          "id": "loc.glassmere",
+          "name": "Glassmere",
+          "kind": "settlement",
+          "sub": "city",
+          "parent": "realm.caelreth",
+          "realm": "realm.caelreth",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.glassmere.guild_hall": {
+          "id": "loc.glassmere.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.glassmere",
+          "realm": "realm.caelreth",
+          "tags": [
+            "guild_hall"
+          ],
+          "by": "engine"
+        },
+        "loc.ashbridge": {
+          "id": "loc.ashbridge",
+          "name": "Ashbridge",
+          "kind": "settlement",
+          "sub": "city",
+          "parent": "realm.duskreach",
+          "realm": "realm.duskreach",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.ashbridge.guild_hall": {
+          "id": "loc.ashbridge.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.ashbridge",
+          "realm": "realm.duskreach",
+          "tags": [
+            "guild_hall"
+          ],
+          "by": "engine"
+        },
+        "loc.crownheart": {
+          "id": "loc.crownheart",
+          "name": "Crownheart",
+          "kind": "settlement",
+          "sub": "capital",
+          "parent": "realm.valedorn_crown",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.crownheart.guild_hall": {
+          "id": "loc.crownheart.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.crownheart",
+          "realm": "realm.valedorn_crown",
+          "tags": [
+            "guild_hall"
+          ],
+          "by": "engine"
+        },
+        "loc.asterhall": {
+          "id": "loc.asterhall",
+          "name": "Asterhall",
+          "kind": "settlement",
+          "sub": "capital",
+          "parent": "realm.caelreth",
+          "realm": "realm.caelreth",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.asterhall.guild_hall": {
+          "id": "loc.asterhall.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.asterhall",
+          "realm": "realm.caelreth",
+          "tags": [
+            "guild_hall"
+          ],
+          "by": "engine"
+        },
+        "loc.blackgate": {
+          "id": "loc.blackgate",
+          "name": "Blackgate",
+          "kind": "settlement",
+          "sub": "capital",
+          "parent": "realm.duskreach",
+          "realm": "realm.duskreach",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.blackgate.guild_hall": {
+          "id": "loc.blackgate.guild_hall",
+          "name": "Adventurers' Guild hall",
+          "kind": "site",
+          "parent": "loc.blackgate",
+          "realm": "realm.duskreach",
+          "tags": [
+            "guild_hall"
+          ],
+          "by": "engine"
+        },
+        "loc.cinder_throne": {
+          "id": "loc.cinder_throne",
+          "name": "Cinder Throne",
+          "kind": "settlement",
+          "sub": "seat",
+          "parent": "realm.ashen_scale_dominion",
+          "realm": "realm.ashen_scale_dominion",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.thornheart": {
+          "id": "loc.thornheart",
+          "name": "Thornheart",
+          "kind": "settlement",
+          "sub": "seat",
+          "parent": "realm.verdant_fang_court",
+          "realm": "realm.verdant_fang_court",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.mossback_warrens": {
+          "id": "loc.mossback_warrens",
+          "name": "Mossback Warrens",
+          "kind": "site",
+          "parent": "realm.duskreach",
+          "realm": "realm.duskreach",
+          "tags": [],
+          "by": "content",
+          "near": "loc.ashbridge",
+          "where": "a moss-grown hill half a day's walk east of Ashbridge, off the old quarry track",
+          "rooms": true,
+          "dungeon": {
+            "real": true,
+            "theme": "goblin warrens: tunnels dug into a mossy hill, crude palisades, goblin scouts and warriors, a shaman deeper down",
+            "rank": {
+              "min": "F",
+              "max": "E"
+            },
+            "levels": {
+              "1": {
+                "min": "F",
+                "max": "F"
+              },
+              "2": {
+                "min": "E",
+                "max": "E"
+              }
+            },
+            "control": "the Adventurers' Guild of Ashbridge keeps its entry ledger under a charter of the Duskreach crown",
+            "hidden": [],
+            "heard": [],
+            "guild": [
+              "theme",
+              "rank",
+              "level:1",
+              "level:2",
+              "control"
+            ]
+          }
+        },
+        "loc.glimmerdeep_grotto": {
+          "id": "loc.glimmerdeep_grotto",
+          "name": "Glimmerdeep Grotto",
+          "kind": "site",
+          "parent": "realm.caelreth",
+          "realm": "realm.caelreth",
+          "tags": [],
+          "by": "content",
+          "near": "loc.glassmere",
+          "where": "a cleft in the hills a morning's walk north of Glassmere, where the stream runs out of the rock",
+          "rooms": true,
+          "dungeon": {
+            "real": true,
+            "theme": "crystal caverns: glittering grottos of mana-fed crystal, crystal beetles and mineral slimes",
+            "rank": {
+              "min": "F",
+              "max": "F"
+            },
+            "levels": {
+              "1": {
+                "min": "F",
+                "max": "F"
+              }
+            },
+            "control": "a Glassmere academy of magic holds the cleft and lets registered adventurers cull its outer grottos; what they kill and the free crystal there is theirs, the deep galleries the academy's",
+            "hidden": [],
+            "heard": [],
+            "guild": [
+              "theme",
+              "rank",
+              "level:1",
+              "control"
+            ]
+          }
+        },
+        "loc.old_crown_catacombs": {
+          "id": "loc.old_crown_catacombs",
+          "name": "Old Crown Catacombs",
+          "kind": "site",
+          "parent": "realm.valedorn_crown",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "content",
+          "near": "loc.alderwatch",
+          "where": "beneath a ruined chapel an hour's ride west of Alderwatch",
+          "rooms": true,
+          "dungeon": {
+            "real": true,
+            "theme": "undead catacombs: burial galleries, restless skeletons, ghouls deeper down",
+            "rank": {
+              "min": "F",
+              "max": "E"
+            },
+            "levels": {
+              "1": {
+                "min": "F",
+                "max": "F"
+              },
+              "2": {
+                "min": "E",
+                "max": "E"
+              }
+            },
+            "control": "the temple wardens of Alderwatch, who ask the Guild to keep the upper galleries culled",
+            "hidden": [],
+            "heard": [],
+            "guild": [
+              "theme",
+              "rank",
+              "level:1",
+              "level:2",
+              "control"
+            ]
+          }
+        },
+        "loc.alderwatch.verge": {
+          "id": "loc.alderwatch.verge",
+          "name": "public roadside verge outside Alderwatch",
+          "kind": "site",
+          "parent": "loc.alderwatch",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "content"
+        },
+        "loc.alderwatch.apothecary_vells_dispensary": {
+          "id": "loc.alderwatch.apothecary_vells_dispensary",
+          "name": "Apothecary Vell's dispensary",
+          "kind": "site",
+          "parent": "loc.alderwatch",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "reply",
+          "created": {
+            "turn": 11,
+            "minute": 581
+          }
+        },
+        "loc.hollowbrook": {
+          "id": "loc.hollowbrook",
+          "name": "Hollowbrook",
+          "kind": "settlement",
+          "parent": "realm.valedorn_crown",
+          "realm": "realm.valedorn_crown",
+          "tags": [],
+          "by": "reply",
+          "created": {
+            "turn": 13,
+            "minute": 1018
+          }
+        }
+      },
+      "objects": {
+        "obj.slip.carry_the_wardens_tinctures_to_hollowbrook": {
+          "marks": [],
+          "for_quests": [
+            "quest.carry_the_wardens_tinctures_to_hollowbrook"
+          ],
+          "id": "obj.slip.carry_the_wardens_tinctures_to_hollowbrook",
+          "name": "Guild contract slip: Carry the Warden's Tinctures to Hollowbrook",
+          "kind": "document",
+          "stack": false,
+          "qty": 1,
+          "unit": null,
+          "holder": {
+            "entity": "pc"
+          },
+          "source": {
+            "turn": 10,
+            "how": "guild"
+          }
+        },
+        "obj.t22.crate_of_fever_tinctures": {
+          "marks": [],
+          "for_quests": [
+            "quest.carry_the_wardens_tinctures_to_hollowbrook"
+          ],
+          "id": "obj.t22.crate_of_fever_tinctures",
+          "name": "crate of fever tinctures",
+          "kind": "item",
+          "stack": false,
+          "qty": 1,
+          "unit": null,
+          "use": "consumable",
+          "holder": {
+            "entity": "pc"
+          },
+          "source": {
+            "turn": 11,
+            "how": "story"
+          }
+        }
+      },
+      "offers": {},
+      "guild": {
+        "membership": {
+          "rank": "Novice",
+          "since": {
+            "turn": 8,
+            "minute": 573
+          },
+          "branch": "loc.alderwatch"
+        },
+        "boards": {
+          "loc.alderwatch|Novice": {
+            "branch": "loc.alderwatch",
+            "rank": "Novice",
+            "day": 1,
+            "listings": [
+              "quest.clear_the_upper_galleries_of_old_crown_catacombs",
+              "quest.cull_the_reed_flats_bog_striders",
+              "quest.shepherd_the_wool_wain_to_thornmill",
+              "quest.drive_off_the_millpond_snapper"
+            ]
+          }
+        }
+      },
+      "decisions": [],
+      "services": [],
+      "intents": {},
+      "features": {},
+      "links": {},
+      "item_names": {
+        "obj.guild_plate": "Guild plate",
+        "obj.slip.carry_the_wardens_tinctures_to_hollowbrook": "Guild contract slip: Carry the Warden's Tinctures to Hollowbrook",
+        "obj.t22.crate_of_fever_tinctures": "crate of fever tinctures"
+      }
+    }
+  }
+]

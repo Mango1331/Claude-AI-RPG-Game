@@ -18,6 +18,7 @@ export const STATE_KINDS = {
     // Patch 9B-1: the campaign's dynamic Skill definitions (skill.defined), the engine's alone
     skills: { owner: 'progression', engine: true, about: 'dynamic Skill and Passive definitions of this campaign (src/skills.js, src/passives.js)' },
     'pc.location': { owner: 'movement', engine: false, about: 'where Alaric is (his go, or an arrival the story shows)' },
+    'quest.delivery': { owner: 'guild', engine: true, about: 'authorised physical deliveries' },
     'quest.status': { owner: 'guild', engine: true, about: "a Guild contract's formal status (accepted, completed, failed)" },
     'guild.standing': { owner: 'guild', engine: true, about: 'membership, Guild rank, promotion' },
     'guild.board': { owner: 'guild', engine: true, about: 'official listings (the Board generator)' },
@@ -94,6 +95,7 @@ export function eventKind(e, s = null) {
         case 'offer.created': case 'offer.closed': case 'transaction.completed': case 'service.granted':
         case 'decision.opened': case 'decision.closed':
             return 'trade';
+        case 'quest.delivered': return 'quest.delivery';
         case 'quest.status': return s?.quests?.[d.id]?.kind === 'guild_contract' ? 'quest.status' : 'quests';
         case 'quest.created': return d.quest?.kind === 'guild_contract' ? 'guild.board' : 'quests';
         case 'quest.set': case 'quest.detailed': case 'quest.progressed': case 'quest.ready': case 'quest.journey': case 'proof.checked':
@@ -171,10 +173,11 @@ export function stateRegions(s) {
         entities: j([Object.entries(s.entities || {}).filter(([id]) => id !== 'pc'), pcRest]),
         scene: j([s.scene?.present, s.scene?.positions, s.scene?.awareness, s.scene?.concealed, s.scene?.relevant, s.scene?.threats]),
         combat: j([s.encounter, s.pending_combat, s.pending_intents, s.mode]),
+        'quest.delivery': j(contracts.map(q => [q.id, q.deliveries || []])),
         'quest.status': j(contracts.map((q) => [q.id, q.status, q.history])),
         'guild.board': j([s.guild?.boards, contracts.map((q) => q.id)]),
         'guild.standing': j(s.guild?.membership),
-        quests: j(quests.map((q) => (q.kind === 'guild_contract' ? (({ status: st, history, ...rest }) => rest)(q) : q))),
+        quests: j(quests.map((q) => (q.kind === 'guild_contract' ? (({ status: st, history, deliveries, ...rest }) => rest)(q) : q))),
         trade: j([s.offers, s.decisions, s.services]),
         facts: j(s.facts),
         knowledge: j([s.knowledge, s.claims]),
@@ -240,7 +243,7 @@ export const DELTA_WRITES = {
     recover: { writes: ['entities'], gates: { 'pc.vitals': 'player.rest' } },
     'object.new': { writes: ['objects'], gates: { 'pc.inventory': 'player.take' } },
     // a thing handed to him (a gift), or taken from where it lies by his own take
-    'object.move': { writes: ['objects'], gates: { 'pc.inventory': ['envelope.give', 'player.take', 'player.give'] } },
+    'object.move': { writes: ['objects'], gates: { 'pc.inventory': ['envelope.give', 'player.take', 'player.give'], 'quest.delivery': 'player.give' } },
     'object.mark': { writes: ['objects'] },
     // an offer may meet a purchase he agreed to in advance within his limit: the engine books it (trade.js)
     offer: { writes: ['trade'], gates: { 'pc.coin': 'player.buy', 'pc.inventory': 'player.buy' } },

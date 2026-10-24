@@ -1,3 +1,4 @@
+import { transferCargo, bookDelivery, cargoProvenance } from './delivery.js';
 // Runtime V4: the command handlers (docs/RUNTIME_V4_PLAN.md §4.1, §4.4). The interpreter translated the player's story
 // message into typed commands (src/v4/interpret.js), the agency guard dropped what was no decision (src/v4/agency.js);
 // here the engine checks each command against the state at its step and books it. Every command gets a status:
@@ -670,7 +671,7 @@ const HANDLERS = {
         emit({ t: 'object.moved', d: { id: o.id, to: { entity: 'pc' }, ...(part ? { qty: part, split: `${o.id}_${s.turn}` } : {}) } });
         return { status: 'resolved', line: `TAKES — ${o.name}${(part || o.qty) && (o.stack || (o.qty ?? 1) > 1 || o.unit) ? ` (${part || o.qty}${o.unit ? ` ${o.unit}` : ''})` : ''} along.` };
     },
-    drop(s, content, c, ctx, emit) {
+    drop(s, content, c, ctx, emit, envx) {
         // Patch 3 (live 18.10.2026: "he leaves the staff with them" while the staff stayed equipped): gear he wears or
         // wields comes off first, then it lies here; it gives him nothing while it lies here
         const worn = typeof c.object === 'string' && c.object.startsWith('item.') && !objectOf(s, content, c.object) && Object.values(s.entities.pc.sheet.equipment || {}).some((r) => r === c.object.slice(5) || r?.object === c.object.slice(5));
@@ -683,8 +684,10 @@ const HANDLERS = {
             const n = qty || o.qty;
             emit({ t: 'item.changed', d: { id: 'pc', item: o.template, qty: -n, why: 'dropped' } });
             // 4.3.0-c.6.6.53: the content item it was (two may share a name: the Starter Longsword of ruleset 2 and the older one)
-            emit({ t: 'object.created', d: { object: { id: `obj.t${env(ctx).msg}.${slug(o.name)}`, name: o.name, kind: 'item', stack: n > 1, qty: n, unit: null, holder: { loc: s.scene.at }, marks: [], for_quests: [], source: { turn: s.turn, how: 'dropped', item: o.template } } } });
-        } else emit({ t: 'object.moved', d: { id: o.id, to: { loc: s.scene.at }, ...(qty ? { qty, split: `${o.id}_${s.turn}` } : {}) } });
+            emit({ t: 'object.created', d: { object: { id: `obj.t${env(ctx).msg}.${slug(o.name)}`, name: o.name, kind: 'item', stack: n > 1, qty: n, unit: null, holder: { loc: s.scene.at }, ...(envx?.c && rulesetOf(s) >= 2 ? cargoProvenance(s,o) : {}), marks: [], for_quests: [], source: { turn: s.turn, how: 'dropped', item: o.template } } } });
+            if (envx?.c) bookDelivery(s, emit, o, { loc: s.scene.at }, n, c.seq, { drop: true, objectId: `obj.t${env(ctx).msg}.${slug(o.name)}` });
+        } else if (envx?.c) transferCargo(s, content, emit, o, { loc: s.scene.at }, qty, c.seq, { drop: true });
+        else emit({ t: 'object.moved', d: { id: o.id, to: { loc: s.scene.at }, ...(qty ? { qty, split: `${o.id}_${s.turn}` } : {}) } });
         return { status: 'resolved', line: `DROPS — ${o.name}${qty ? ` (${qty})` : ''}${off ? ' (taken off first: no longer equipped)' : ''}; it stays here, not his gear until he takes it again.` };
     },
     give(s, content, c, ctx, emit, envx) {
@@ -693,9 +696,9 @@ const HANDLERS = {
         // Prototype C (4.3.0-c.6.6.3): "I'll follow you up to hand it over myself": he goes to the one he hands it to, in this
         // message. The hand-over waits for them: booked when the story has it change hands there (src/v4/world.js); if the
         // reply does not bring him to them, or they will not take it, he keeps it (live 11.10.2026, Sister Maren)
-        if (envx?.c && c.to !== 'pc' && !present(s, c.to) && !o.template && ctx.auth.gos.some((g) => (g.seq ?? 0) < (c.seq ?? 0))) {
+        if (envx?.c && c.to !== 'pc' && (!present(s, c.to) || (rulesetOf(s) >= 2 && ctx.auth.gos.at(-1)?.to !== s.scene.at)) && (!o.template || rulesetOf(s) >= 2) && ctx.auth.gos.some((g) => (g.seq ?? 0) < (c.seq ?? 0))) {
             const toName = typeof c.to === 'string' && s.entities[c.to] ? who(s, c.to) : String(c.to?.new || c.to || 'the one he goes to').slice(0, 60);
-            ctx.conditionals.push({ seq: c.seq, kind: 'give', object: o.id, to: typeof c.to === 'string' && s.entities[c.to] ? c.to : null, condition: 'hand_over' });
+            ctx.conditionals.push({ seq: c.seq, kind: 'give', object: o.id, template: o.template || null, qty: c.qty ?? null, to: typeof c.to === 'string' && s.entities[c.to] ? c.to : null, toName: c.to?.new || null, at: ctx.auth.gos.at(-1)?.to || null, condition: 'hand_over' });
             return { status: 'conditional', condition: 'hand_over', line: `GIVES, when he reaches ${toName} — ${o.name}, into their own hands. If the reply does not bring him to them, or they will not take it, he keeps it.` };
         }
         if (!present(s, c.to) || c.to === 'pc') return { status: 'refused', reason: 'nobody to give it to', line: `CANNOT GIVE — ${typeof c.to === 'string' && s.entities[c.to] ? `${who(s, c.to)} is not here` : 'there is no such person here'}.` };
@@ -703,8 +706,10 @@ const HANDLERS = {
         if (o.template) {
             const n = qty || o.qty;
             emit({ t: 'item.changed', d: { id: 'pc', item: o.template, qty: -n, why: `given to ${who(s, c.to)}` } });
-            emit({ t: 'object.created', d: { object: { id: `obj.t${env(ctx).msg}.${slug(o.name)}`, name: o.name, kind: 'item', stack: n > 1, qty: n, unit: null, holder: { entity: c.to }, marks: [], for_quests: [], source: { turn: s.turn, how: 'given', item: o.template } } } });
-        } else emit({ t: 'object.moved', d: { id: o.id, to: { entity: c.to }, ...(qty ? { qty, split: `${o.id}_${s.turn}` } : {}) } });
+            emit({ t: 'object.created', d: { object: { id: `obj.t${env(ctx).msg}.${slug(o.name)}`, name: o.name, kind: 'item', stack: n > 1, qty: n, unit: null, holder: { entity: c.to }, ...(envx?.c && rulesetOf(s) >= 2 ? cargoProvenance(s,o) : {}), marks: [], for_quests: [], source: { turn: s.turn, how: 'given', item: o.template } } } });
+            if (envx?.c) bookDelivery(s, emit, o, { entity: c.to }, n, c.seq, { objectId: `obj.t${env(ctx).msg}.${slug(o.name)}` });
+        } else if (envx?.c) transferCargo(s, content, emit, o, { entity: c.to }, qty, c.seq);
+        else emit({ t: 'object.moved', d: { id: o.id, to: { entity: c.to }, ...(qty ? { qty, split: `${o.id}_${s.turn}` } : {}) } });
         return { status: 'resolved', line: `GIVES — ${o.name}${qty ? ` (${qty})` : ''} to ${who(s, c.to)}.` };
     },
     use(s, content, c, ctx, emit, envx) {
@@ -1348,7 +1353,9 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
             if (e.t === 'service.granted' && (e.d?.service === 'lodging' || ROOM_WORDS.test(normText(e.d?.what || '')))) lodged.add(c.seq);
             emit(e);
         };
-        const r = room ? { status: 'refused', reason: 'room not booked', line: `NOT DONE — ${quoted}: he would ${c.kind} in the room or bed of step ${room.seq}, and it is not his yet: ${roomWhy(ctx.resolutions.find((x) => x.seq === room.seq))}. He does not ${c.kind} in this reply; tell no ${c.kind === 'sleep' ? 'night' : 'rest'} in it.` }
+        const waitingGive = envx.c && rulesetOf(s) >= 2 && c.type === 'go' && ctx.conditionals.some(k => k.kind === 'give' && k.seq < c.seq);
+        const r = waitingGive ? { status: 'refused', reason: 'handover still conditional', line: 'NOT DONE — the later journey waits for the handover at the first destination.' }
+            : room ? { status: 'refused', reason: 'room not booked', line: `NOT DONE — ${quoted}: he would ${c.kind} in the room or bed of step ${room.seq}, and it is not his yet: ${roomWhy(ctx.resolutions.find((x) => x.seq === room.seq))}. He does not ${c.kind} in this reply; tell no ${c.kind === 'sleep' ? 'night' : 'rest'} in it.` }
             : unmet ? { status: 'refused', reason: `needs step ${c.needs}`, line: `NOT DONE — ${quoted}: it was to follow step ${c.needs}, which did not happen; it does not happen in this reply (someone else's help does not do it for him).` }
             : h ? h(s, content, c, ctx, booking, envx) : { status: 'refused', reason: `unknown command ${c.type}`, line: null };
         // 4.3.0-c.6.6.3: a step that builds on one the story still decides (a take from someone's keeping) follows it there

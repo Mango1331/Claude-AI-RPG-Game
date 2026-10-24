@@ -1,3 +1,4 @@
+import { deliveryHandover } from './delivery.js';
 // Prototype C (docs/PROTOTYPE_C.md; the working hypothesis is docs/ARCHITECTURE_C.md Rev. 3, frozen at 717e2f7 on the
 // branch chatgpt/narrator-gm-tools-2026-10-02): the semantic planner
 // of a V4 campaign. Behind the setting `planner` (off by default) it replaces the regex reading of free text
@@ -109,6 +110,7 @@ export const CONTRACT_RULES = [
 export const HANDOVER_RULES = [
     'Handing over (story commands):',
     '- When RECENT shows someone asking Alaric for a particular thing and he now holds out, offers or produces exactly that thing for them, that is give {object, to}, even without the word "give": the hand-over is what he does. The object is the one he names, by its OBJECTS id; never another object in its place.',
+    '- For active delivery cargo: explicitly leaving it for the agreed recipient on their receiving counter is GIVE to that recipient; preserve object, quantity and their catalog ID. Merely showing it for inspection, pricing or verification is not GIVE. A shop owner and their assistant are different people; resolve the actual recipient shown, never invent an absent owner.',
     '- No give when he only shows, looks at or examines it, keeps it ("but I don\'t hand it over"), only asks whether they need it, or produces a different thing than the one asked for (then the story lets them answer).',
     '- Saying why he came ("I\'m here to deliver this crate", "I have your delivery") is words, no give: the thing changes hands when he hands it over, holds it out or sets it down for them, or when they reach for it and he lets them.',
     '- He goes to someone in order to hand them a thing himself, now ("I go to Sister Maren and hand her the basket", "I\'ll follow you up to hand it over myself"): go, then give {object, to} with "needs" the go; to is their id, or {"new": "<who>"} when they are not in the catalog. Going somewhere only to ask whether they want it, carrying it along, or handing it over another day is no give.',
@@ -173,7 +175,9 @@ function traderHere(state, id) {
 }
 
 /** A thing he carries for an active contract (a delivery set down on the recipient's counter is handed over). */
-const owed = (state, id) => typeof id === 'string' && (state?.objects?.[id]?.for_quests || []).some((q) => state.quests?.[q]?.status === 'active');
+const owed = (state, id, to) => rulesetOf(state) < 2
+    ? typeof id === 'string' && (state?.objects?.[id]?.for_quests || []).some(q => state.quests?.[q]?.status === 'active')
+    : deliveryHandover(state, id, to);
 
 /**
  * The commands whose quote announces the act instead of doing it: quest.abandon for later, a give that only says why
@@ -188,7 +192,7 @@ export function announcedAbandon(message, commands, state = null) {
         const words = flat(c.quote ?? '');
         if (c.type === 'quest.abandon' && ANNOUNCED_ABANDON.test(words) && inMessage(message, c.quote ?? '')) dropped.push({ command: c, rule: 'plan' });
         else if (c.type === 'give' && PURPOSE_ONLY.test(words) && !HANDING.test(all.replace(PURPOSE_ONLY, ' '))) dropped.push({ command: c, rule: 'plan' });
-        else if (c.type === 'give' && !PARTING.test(all) && (SHOWING.test(words) || (LAYING_OUT.test(words) && !HANDS.test(all) && !owed(state, c.object) && traderHere(state, c.to)))) dropped.push({ command: c, rule: 'shows' });
+        else if (c.type === 'give' && !PARTING.test(all) && (SHOWING.test(words) || (LAYING_OUT.test(words) && !HANDS.test(all) && !owed(state, c.object, c.to) && traderHere(state, c.to)))) dropped.push({ command: c, rule: 'shows' });
         else kept.push(c);
     }
     return { kept, dropped };

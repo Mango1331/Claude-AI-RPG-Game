@@ -1,3 +1,5 @@
+import { rulesetOf as deliveryRuleset } from '../content.js';
+import { deliveryStatus, confirmsOnly } from './delivery.js';
 // Runtime V4: the Adventurers' Guild as engine procedure (docs/RUNTIME_V4_PLAN.md §6.3, §6.4). Everything here is
 // engine_resolution in the authority matrix (src/v4/firewall.js): the registration and its canon fee, the plate, the
 // board and its listings (from the Board generator, validated and booked before the narrator describes them), the
@@ -289,9 +291,7 @@ const HUNT_SUPPORT = new Set(['FIND', 'GO', 'DEFEND']);
 // the trophies at a Guild hall. A talk that is work (asking where the pack dens) keeps its place and makes it mixed.
 // "Witness" counts as the act (have it witnessed, witness the kill), not as the people to ask; an objective that asks
 // something (where the beasts den, about the sightings) is inquiry, real work (review of 4.1.5)
-const CONFIRMS = /\b(?:confirm\w*|sign(?:s|ed|ing|ature|atures|-?off)?|countersign\w*|verif\w*|vouch\w*|witness(?:ed|ing)?\b(?!es)(?=\s+(?:the|it|his|that|their|its)\b|\s*$|[.,;])|witnessed|inspect\w*|attest\w*|receipt)\b/i;
-const INQUIRY = /\b(?:about|where|which|whether|who|how|when|ask\w*|learn\w*|find\s+out|rumou?rs?|sightings?|tracks?|trail|lairs?|dens?|nests?)\b/i;
-const confirmsOnly = (o) => ['TALK', 'GET', 'GIVE'].includes(o.verb) && CONFIRMS.test(o.what || '') && !INQUIRY.test(o.what || '');
+
 /** A hunt or cull contract (proof: trophies of the kills, no local sign-off); mixed work and work against people are none. */
 export const isHunt = (q, content) => {
     const objectives = (q.objectives || []).filter((o) => !confirmsOnly(o));
@@ -429,8 +429,10 @@ export function contractReady(s, content, q, { c = false } = {}) {
         // Prototype C (4.3.0-c.6): goods he is to gather or get are the work itself: in his hands at the hall, whatever
         // the story says, and the Guild takes them; a delivery is not done while he still carries what it delivers
         // (4.3.0-c.6.6.2: before the goods, so mixed work checks both)
+        const delivery = deliveryRuleset(s) >= 2 ? deliveryStatus(q) : null;
+        if (delivery) return delivery;
         const owed = deliveriesOf(q).filter((o) => stillCarried(s, q, o).length);
-        if (owed.length) return { ok: false, mode: 'not_delivered', reason: `he still carries ${owed.map((o) => o.what).join(', ')}: a delivery is done where the goods are handed over`, consume: [] };
+        if (owed.length && (deliveryRuleset(s) < 2 || !deliveriesOf(q).length)) return { ok: false, mode: 'not_delivered', reason: `he still carries ${owed.map((o) => o.what).join(', ')}: a delivery is done where the goods are handed over`, consume: [] };
         const goods = goodsOf(q);
         if (goods.length) {
             const short = goods.map((o) => ({ o, need: o.qty ?? 1, have: carried(s, o.what).reduce((n, x) => n + (x.qty ?? 1), 0) })).filter((x) => x.have < x.need);
@@ -451,7 +453,7 @@ export function contractReady(s, content, q, { c = false } = {}) {
         }
     }
     const legacy = (q.proof || []).length > 0 ? checkProof(s, q) : { ok: false, consume: [] };
-    const mode = q.ready ? 'story_outcome' : legacy.ok ? 'legacy_verification' : 'not_ready';
+    const mode = (q.ready || (c && deliveryRuleset(s) >= 2 && deliveriesOf(q).length && !deliveryStatus(q))) ? 'story_outcome' : legacy.ok ? 'legacy_verification' : 'not_ready';
     if (mode === 'not_ready') return { ok: false, mode, reason: 'the contract outcome has not yet been established as achieved in the world', consume: [] };
     const short = countShort(s, content, q);
     if (short.length && !(q.ready && q.ready_alternative)) {

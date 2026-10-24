@@ -1,3 +1,5 @@
+import { resolveCommands } from './commands.js';
+import { transferCargo, deliveryStatus, deliveryObjectives, confirmDelivery } from './delivery.js';
 // Runtime V4: applying the extractor's world deltas (docs/RUNTIME_V4_PLAN.md §5.2). After the narrator's reply the
 // extractor reported, in story order, what the reply established (src/v4/extract.js); the domain/authority firewall
 // removed what the story may not decide (src/v4/firewall.js). Here the engine applies the rest step by step, each delta
@@ -241,6 +243,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     for (const x of fw.reject) { reject(x.delta, x.rule, x.why); refusedArrival(x.delta); }
     // Prototype C (4.3.0-c.6.6.3): what of Alaric's the story moved to someone else without his hand-over (quest.ready below)
     const refusedMoves = new Set(fw.reject.filter((x) => x.rule === 'pc_inventory' && x.delta?.type === 'object.move').map((x) => objectRef(x.delta.object)?.id).filter(Boolean));
+    const readyClaims = [];
     const readied = []; // the contracts this reply made READY (their open deliveries are told after the deltas)
     corrections.push(...fw.corrections);
     // the other side of a trade the engine books this turn: a sale's buyer, a seller he paid exactly (coin.gift below)
@@ -1031,6 +1034,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
                 let note = deaths.text;
                 if (q.kind === 'guild_contract') {
                     // the one free-text rule of the Decision Ownership (src/v4/ownership.js), with the hunt's sign-off
+                    if (cPath && rulesetOf(s) >= 2 && deliveryObjectives(q).length && /\b(?:must|required|requires|need|needs)\b/i.test(note) && /\b(?:return|back|empty|container)\b/i.test(note) && !/\b(?:return|back|empty|container)\b/i.test(`${q.task||''} ${q.desired_end_state||''}`)) {
+                        reject(d, 'guild_quest_detail', 'no new container-return duty may be added to this delivery contract');
+                        corrections.push(`"${q.title}": the original delivery destination and terms are unchanged. No additional return duty was booked.`);
+                        break;
+                    }
                     const cut = stripOwned(note, { store: 'note', quest: q, extra: isHunt(q, content) ? (x) => SIGN_OFF.test(x) && REQUIRE.test(x) : null });
                     if (cut.claims.some((c) => wrongClaim(c, q)) && !corrections.includes(statusCorrection(q))) corrections.push(statusCorrection(q));
                     if (cut.other.length) {
@@ -1059,66 +1067,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             }
             case 'quest.ready': {
                 const q = questRef(d.quest);
-                if (!q) { reject(d, 'quest', 'unknown quest'); break; }
-                if (q.status !== 'active') { reject(d, 'quest', `the quest is ${q.status}`); break; }
-                // the readiness note is story memory too: the contract's status, payout, XP or rank stay the engine's
-                const ownNote = q.kind === 'guild_contract' && d.note ? stripOwned(d.note, { store: 'note', quest: q }).kept.join(' ') : d.note;
-                const claimed = String(ownNote || q.desired_end_state || '');
-                // an escort or delivery is ready where it arrives: a reply whose journey the engine refused has not
-                // taken it there (live 30.09.2026: Millbrook refused, the escort "ready" in the same reply). What
-                // counts is the story before this claim: a refused journey away with no arrival applied before it.
-                // A refused step inside the place he is in (the factor leads him into her wool hall) or a refused move
-                // after an applied arrival (review of 4.1.0) does not undo where the engine has him.
-                const before = travel.filter((t) => t.seq < (d.seq ?? 0));
-                if (before.some((t) => !t.ok && t.away) && !before.some((t) => t.ok) && (q.objectives || []).some((o) => ['ESCORT', 'DELIVER'].includes(o.verb))) {
-                    reject(d, 'quest_dependency', 'the escort/delivery destination was not canonically reached in this reply; readiness cannot depend on the refused arrival');
-                    const correction = `"${q.title}" is still IN PROGRESS: the destination arrival in the previous reply was not authorized or booked, so the Guild Quest is not ready to turn in yet.`;
-                    if (!corrections.includes(correction)) corrections.push(correction);
-                    break;
-                }
-                // a count the engine keeps is not the story's to settle: fewer defeated than the objective names is ready
-                // only when the story says how the outcome was reached otherwise (alternative); trophies are no count
-                const short = q.kind === 'guild_contract' ? countShort(s, content, q) : [];
-                const alternative = String(d.alternative || '').trim();
-                if (short.length && !alternative) {
-                    reject(d, 'quest_count', `the engine counts ${tallyText(short)} defeated; trophies or a claimed number do not make the count`);
-                    const correction = `"${q.title}" is still IN PROGRESS: the engine counts ${tallyText(short)} defeated. It is ready only when the story establishes that the outcome was reached otherwise (the rest driven off for good, the colony broken).`;
-                    if (!corrections.includes(correction)) corrections.push(correction);
-                    break;
-                }
-                // Prototype C (4.3.0-c.6.6.4): an escort is done by travelling with the charge, not by waiting where it
-                // arrives (live 15.10.2026: Alaric walked to the quarry gate alone, the pay wagon came in, READY and paid).
-                // Its journey (quest.journey: he set off or arrived with them) shows it; another arrangement the client
-                // agreed to is the claim's alternative. Any number of fights, or none
-                if (cPath && q.kind === 'guild_contract' && !q.journey && !String(d.alternative || '').trim() && (q.objectives || []).some((o) => o.verb === 'ESCORT')) {
-                    reject(d, 'quest_escort', 'an escort is done by travelling with the charge; the engine has no journey with them');
-                    const correction = `"${q.title}" is still IN PROGRESS: an escort is done by travelling with the escorted party along the way, and Alaric has not travelled with them. Their safe arrival without him is not his escort. The contract and its goal stay as they are.`;
-                    if (!corrections.includes(correction)) corrections.push(correction);
-                    break;
-                }
-                // Patch 5: nor is it done on the open road between (a washed-out bridge "as good as there"): the charge
-                // arrives where the journey leads, and the arrival must happen
-                if (cPath && q.kind === 'guild_contract' && s.places[s.scene.at]?.kind === 'realm' && !String(d.alternative || '').trim() && (q.objectives || []).some((o) => o.verb === 'ESCORT')) {
-                    reject(d, 'quest_escort', 'the escort is still on the road; it is done where the charge arrives');
-                    const correction = `"${q.title}" is still IN PROGRESS: Alaric and his charge are still on the road, not where the escort leads. It is done when the story has them arrive there together.`;
-                    if (!corrections.includes(correction)) corrections.push(correction);
-                    break;
-                }
-                // Prototype C (4.3.0-c.6.6.3): an outcome that rests on a hand-over this very reply could not book (Alaric
-                // still holds the basket the story put into Sister Maren's hands, live 11.10.2026) is no outcome: no READY
-                // beside the thing in his hands. The real hand-over later is the delivery, and its reply the outcome
-                if (cPath && q.kind === 'guild_contract') {
-                    const refused = owedObjects(s, q).filter((o) => refusedMoves.has(o.id));
-                    if (refused.length) {
-                        reject(d, 'quest_delivery', `the hand-over of ${refused.map((o) => o.name).join(', ')} in this reply was not booked; Alaric still holds it`);
-                        const correction = `"${q.title}" is still IN PROGRESS: the hand-over of ${refused.map((o) => o.name).join(' and ')} in the last reply did not happen in the engine's state; Alaric still holds it. The contract, its goal and its recipient stay exactly as they were: do not invent a new recipient, address or condition to explain it. It is delivered when Alaric hands it over.`;
-                        if (!corrections.includes(correction)) corrections.push(correction);
-                        break;
-                    }
-                    readied.push(q.id);
-                }
-                // the alternative is kept with the contract: the turn-in accepts the short count on it (guild.js contractReady)
-                emit({ t: 'quest.ready', d: { id: q.id, note: `${claimed}${short.length ? ` — ${alternative}` : ''}`.slice(0, 220), ...(short.length ? { alternative: alternative.slice(0, 200) } : {}) } });
+                if (cPath && rulesetOf(s) >= 2 && q?.kind === 'guild_contract' && deliveryObjectives(q).length) readyClaims.push(d);
+                else finishReady(d);
                 break;
             }
             case 'quest.close': {
@@ -1189,15 +1139,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (r.kind === 'way' && s.links[r.id] && !s.links[r.id].feature) emit(linkEvent({ ...s.links[r.id], feature: target }));
     }
 
-    // Prototype C (4.3.0-c.6.6.2/3): the story's outcome stands; what he still carries of a delivery keeps the contract from
-    // the turn-in until it leaves his hands (guild.js contractReady, read anew every time), so a hand-over the engine books
-    // later makes it ready without another claim. Told after all of this reply's hand-overs, and without moving the goal
-    for (const id of readied) {
-        const r = contractReady(s, content, s.quests[id], { c: true });
-        const correction = `"${s.quests[id].title}" is NOT READY for turn-in yet: ${r.reason}. Its goal and recipient stay as they are: it is done when he hands it over there (no new recipient, address or condition).`;
-        if (r.mode === 'not_delivered' && !corrections.includes(correction)) corrections.push(correction);
-    }
-
+    // Resolve delayed acquisition before checking this reply's delivery claims.
     // 3. what the extractor answered about the player's commands
     step = { kind: 'expected' };
     for (const [k, type] of Object.entries(outcome.expected_keys || {})) {
@@ -1249,6 +1191,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         if (travelled < floor) { emit({ t: 'time.advanced', d: { minutes: floor - travelled, why: 'travel' } }); timeUsed += floor - travelled; }
     }
 
+    function giveReceiver(k) {
+        if (k.to) return k.to;
+        const label = normText(k.toName || '').replace(/^the /, '');
+        if (!label) return null;
+        const matches = s.scene.present.filter(id => {
+            const e = s.entities[id];
+            return e?.kind === 'npc' && [e.name, e.known_name, e.descriptors?.[0], truth(s,id,'occupation')[0]?.o]
+                .some(x => x && normText(x).replace(/^the /, '') === label);
+        });
+        return matches.length === 1 ? matches[0] : null;
+    }
     // Patch 8: he went on into a new part of a Living Dungeon where the engine placed its encounter ahead, and the story
     // did not bring it: it is there all the same (the next reply shows it); the level's progress never rests on wording
     const placed = freshPart && livingOf(s, trueDungeonOf(s, freshPart))?.ahead;
@@ -1280,6 +1233,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         }
         emit({ t: 'cmd.completed', d: { seq: k.seq, ok: true, reason: null } });
     }
+    for (const d of readyClaims) { step = { kind: 'delta', type: 'quest.ready', seq: d.seq, granted: new Set() }; finishReady(d); }
+    step = { kind: 'engine' };
+    for (const id of readied) {
+        const r = contractReady(s, content, s.quests[id], { c: true });
+        const correction = `"${s.quests[id].title}" is NOT READY for turn-in yet: ${r.reason}. Its goal and recipient stay as they are: it is done when he hands it over there (no new recipient, address or condition).`;
+        if (r.mode === 'not_delivered' && !corrections.includes(correction)) corrections.push(correction);
+    }
+
+    step = { kind: 'conditional' };
     // a trap of a place he did not get into does not spring (no expiry of his GO for it: the GO stands as it went)
     for (const c of conditionals.filter((x) => !x.done && x.kind !== 'spring')) emit({ t: 'cmd.expired', d: { seq: c.seq, reason: 'the condition did not happen in this reply' } });
 
@@ -1303,6 +1265,84 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
      * Prototype C (4.3.0-c.6): the person in this role Alaric met at this place and left there (entity.at): the only one,
      * or of several the one the newcomer's description alone matches (the clerk "with spectacles"); else nobody
      */
+    function finishReady(d) {
+                const q = questRef(d.quest);
+                if (cPath && rulesetOf(s) >= 2 && q?.kind === 'guild_contract' && deliveryObjectives(q).length && deliveryStatus(q)) {
+                    const previousStep = step;
+                    step = { kind: 'engine' };
+                    const action = (outcome.resolutions || []).find(r => r.type === 'other' && r.status === 'resolved' && r.quote && String(s.last?.input || '').includes(r.quote));
+                    if (action) confirmDelivery(s, q, emit, action.quote, action.seq);
+                    step = previousStep;
+                }
+                if (cPath && rulesetOf(s) >= 2 && q?.kind === 'guild_contract' && deliveryObjectives(q).length && deliveryStatus(q)) {
+                    reject(d, 'quest_delivery', deliveryStatus(q).reason);
+                    const held = owedObjects(s,q);
+                    corrections.push(`"${q.title}" is NOT READY for turn-in yet: ${held.length ? `he still carries ${held.map(o=>o.name).join(', ')}; ` : ''}${deliveryStatus(q).reason}`);
+                    return;
+                }
+                if (!q) { reject(d, 'quest', 'unknown quest'); return; }
+                if (q.status !== 'active') { reject(d, 'quest', `the quest is ${q.status}`); return; }
+                // the readiness note is story memory too: the contract's status, payout, XP or rank stay the engine's
+                const ownNote = q.kind === 'guild_contract' && d.note ? stripOwned(d.note, { store: 'note', quest: q }).kept.join(' ') : d.note;
+                const claimed = String(ownNote || q.desired_end_state || '');
+                // an escort or delivery is ready where it arrives: a reply whose journey the engine refused has not
+                // taken it there (live 30.09.2026: Millbrook refused, the escort "ready" in the same reply). What
+                // counts is the story before this claim: a refused journey away with no arrival applied before it.
+                // A refused step inside the place he is in (the factor leads him into her wool hall) or a refused move
+                // after an applied arrival (review of 4.1.0) does not undo where the engine has him.
+                const before = travel.filter((t) => t.seq < (d.seq ?? 0));
+                if (before.some((t) => !t.ok && t.away) && !before.some((t) => t.ok) && (q.objectives || []).some((o) => ['ESCORT', 'DELIVER'].includes(o.verb))) {
+                    reject(d, 'quest_dependency', 'the escort/delivery destination was not canonically reached in this reply; readiness cannot depend on the refused arrival');
+                    const correction = `"${q.title}" is still IN PROGRESS: the destination arrival in the previous reply was not authorized or booked, so the Guild Quest is not ready to turn in yet.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    return;
+                }
+                // a count the engine keeps is not the story's to settle: fewer defeated than the objective names is ready
+                // only when the story says how the outcome was reached otherwise (alternative); trophies are no count
+                const short = q.kind === 'guild_contract' ? countShort(s, content, q) : [];
+                const alternative = String(d.alternative || '').trim();
+                if (short.length && !alternative) {
+                    reject(d, 'quest_count', `the engine counts ${tallyText(short)} defeated; trophies or a claimed number do not make the count`);
+                    const correction = `"${q.title}" is still IN PROGRESS: the engine counts ${tallyText(short)} defeated. It is ready only when the story establishes that the outcome was reached otherwise (the rest driven off for good, the colony broken).`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    return;
+                }
+                // Prototype C (4.3.0-c.6.6.4): an escort is done by travelling with the charge, not by waiting where it
+                // arrives (live 15.10.2026: Alaric walked to the quarry gate alone, the pay wagon came in, READY and paid).
+                // Its journey (quest.journey: he set off or arrived with them) shows it; another arrangement the client
+                // agreed to is the claim's alternative. Any number of fights, or none
+                if (cPath && q.kind === 'guild_contract' && !q.journey && !String(d.alternative || '').trim() && (q.objectives || []).some((o) => o.verb === 'ESCORT')) {
+                    reject(d, 'quest_escort', 'an escort is done by travelling with the charge; the engine has no journey with them');
+                    const correction = `"${q.title}" is still IN PROGRESS: an escort is done by travelling with the escorted party along the way, and Alaric has not travelled with them. Their safe arrival without him is not his escort. The contract and its goal stay as they are.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    return;
+                }
+                // Patch 5: nor is it done on the open road between (a washed-out bridge "as good as there"): the charge
+                // arrives where the journey leads, and the arrival must happen
+                if (cPath && q.kind === 'guild_contract' && s.places[s.scene.at]?.kind === 'realm' && !String(d.alternative || '').trim() && (q.objectives || []).some((o) => o.verb === 'ESCORT')) {
+                    reject(d, 'quest_escort', 'the escort is still on the road; it is done where the charge arrives');
+                    const correction = `"${q.title}" is still IN PROGRESS: Alaric and his charge are still on the road, not where the escort leads. It is done when the story has them arrive there together.`;
+                    if (!corrections.includes(correction)) corrections.push(correction);
+                    return;
+                }
+                // Prototype C (4.3.0-c.6.6.3): an outcome that rests on a hand-over this very reply could not book (Alaric
+                // still holds the basket the story put into Sister Maren's hands, live 11.10.2026) is no outcome: no READY
+                // beside the thing in his hands. The real hand-over later is the delivery, and its reply the outcome
+                if (cPath && q.kind === 'guild_contract') {
+                    const refused = owedObjects(s, q).filter((o) => refusedMoves.has(o.id));
+                    if (refused.length) {
+                        reject(d, 'quest_delivery', `the hand-over of ${refused.map((o) => o.name).join(', ')} in this reply was not booked; Alaric still holds it`);
+                        const correction = `"${q.title}" is still IN PROGRESS: the hand-over of ${refused.map((o) => o.name).join(' and ')} in the last reply did not happen in the engine's state; Alaric still holds it. The contract, its goal and its recipient stay exactly as they were: do not invent a new recipient, address or condition to explain it. It is delivered when Alaric hands it over.`;
+                        if (!corrections.includes(correction)) corrections.push(correction);
+                        return;
+                    }
+                    readied.push(q.id);
+                }
+                // the alternative is kept with the contract: the turn-in accepts the short count on it (guild.js contractReady)
+                emit({ t: 'quest.ready', d: { id: q.id, note: `${claimed}${short.length ? ` — ${alternative}` : ''}`.slice(0, 220), ...(short.length ? { alternative: alternative.slice(0, 200) } : {}) } });
+                return;
+    }
+
     function keptHere(d) {
         const headOf = (x) => { const w = normText(x).split(' '); const end = w.findIndex((y) => RELATION_WORDS.has(y)); return (end < 0 ? w : w.slice(0, end)).at(-1); };
         const want = headOf(d.role);
@@ -1766,9 +1806,22 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             if (!settling && deferred.some((x) => x.type === 'object.new' && normText(x.name) === fresh)) { deferred.push(d); return; }
         }
         const o = objectRef(d.object);
-        if (!o) { reject(d, 'object', 'unknown object'); return; }
         const to = holderOf(d.to);
         if (!to) { reject(d, 'object', `unknown receiver ${String(d.to).slice(0, 40)}`); return; }
+        if (!o && cPath && rulesetOf(s) >= 2) {
+            const k = conditionals.find(x => !x.done && x.kind === 'give' && x.template && x.object === d.object);
+            if (k && arrived && arrived !== transit && (!k.at || k.at === s.scene.at)
+                && to.entity && giveReceiver(k) === to.entity && s.scene.present.includes(to.entity)) {
+                grant('player.give');
+                const done = resolveCommands(s, content, [{ seq: k.seq, type: 'give', object: k.object, qty: k.qty, to: to.entity }], emit, { c: true, msg });
+                if (done.resolutions[0]?.status === 'resolved') {
+                    k.done = true;
+                    emit({ t: 'cmd.completed', d: { seq: k.seq, ok: true, reason: null } });
+                }
+                return;
+            }
+        }
+        if (!o) { reject(d, 'object', 'unknown object'); return; }
         if (to.entity === 'pc' && o.holder?.entity && o.holder.entity !== 'pc') {
             const units = d.qty && d.qty < (o.qty ?? 1) ? d.qty : (o.qty ?? 1);
             const g = purchaseOf(o.name, o.holder.entity, units);
@@ -1779,10 +1832,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
         // has it change hands, into someone's hands there
         const handOver = o.holder?.entity === 'pc' && conditionals.find((k) => !k.done && k.kind === 'give' && k.object === o.id);
         if (handOver) {
-            if (!to.entity || to.entity === 'pc' || !s.scene.present.includes(to.entity) || (handOver.to && handOver.to !== to.entity)) { reject(d, 'pc_inventory', 'he hands it over only to the one he went to, there'); return; }
+            if (!to.entity || to.entity === 'pc' || !s.scene.present.includes(to.entity) || (handOver.to && handOver.to !== to.entity) || (handOver.toName && giveReceiver(handOver) !== to.entity) || (handOver.at && handOver.at !== s.scene.at) || (rulesetOf(s) >= 2 && (!arrived || arrived === transit))) { reject(d, 'pc_inventory', 'he hands it over only to the one he went to, there'); return; }
             handOver.done = true;
             grant('player.give');
-            emit({ t: 'object.moved', d: { id: o.id, to } });
+            transferCargo(s, content, emit, o, to, handOver.qty, handOver.seq);
             emit({ t: 'cmd.completed', d: { seq: handOver.seq, ok: true, reason: null } });
             return;
         }

@@ -39,7 +39,7 @@ export const V4_EVENTS = new Set([
     'place.created', 'place.updated', 'intent.set', 'feature.set', 'link.set',
     'object.created', 'object.moved', 'object.marked', 'object.consumed', 'object.added',
     'offer.created', 'offer.closed', 'transaction.completed', 'service.granted',
-    'quest.created', 'quest.status', 'quest.detailed', 'quest.progressed', 'quest.ready', 'quest.journey', 'proof.checked',
+    'quest.delivered', 'quest.created', 'quest.status', 'quest.detailed', 'quest.progressed', 'quest.ready', 'quest.journey', 'proof.checked',
     'board.refreshed', 'board.failed', 'board.shown',
     'guild.registered', 'guild.promoted',
     'decision.opened', 'decision.closed',
@@ -117,6 +117,9 @@ export function applyDomainEvent(state, e) {
                 if (o.holder?.entity === 'pc') o.had_pc = true;
                 o.holder = clone(d.to);
             }
+            if (d.delivery_origin) {
+                for (const id of [d.id, d.split].filter(Boolean)) Object.assign(state.objects[id], { delivery_origin: d.delivery_origin, delivery_capacity: d.delivery_capacity });
+            }
             mirror(state, d.id);
             break;
         }
@@ -178,6 +181,13 @@ export function applyDomainEvent(state, e) {
             q.details = [...(q.details || []), { note: d.note, schedule: d.schedule ?? null, turn: state.turn }];
             q.notes = [...(q.notes || []), d.note].slice(-6);
             if (d.schedule) q.schedule = { ...(q.schedule || {}), starts_at: d.schedule };
+            break;
+        }
+        case 'quest.delivered': {
+            const q = state.quests[d.id];
+            if (!q || q.status !== 'active') break;
+            q.deliveries ||= [];
+            if (!q.deliveries.some(r => r.key === d.receipt.key)) q.deliveries.push(clone(d.receipt));
             break;
         }
         case 'quest.progressed': {

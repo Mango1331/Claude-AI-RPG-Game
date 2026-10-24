@@ -25,7 +25,7 @@ import { startServer, freePort } from './server.mjs';
 import { loadPlaywright, launchBrowser, Driver } from './driver.mjs';
 import { llmPlayer, scriptedPlayer, screenText, playerReasoning } from './players.mjs';
 import { loadGuide } from './guide.mjs';
-import { evaluate, finished, nextMilestone, turnOutcome, turnFailure, settled, openMilestones } from './evaluator.mjs';
+import { evaluate, finished, nextMilestone, turnOutcome, turnFailure, failureEnd, settled, openMilestones } from './evaluator.mjs';
 import { parseCalls } from './calls.mjs';
 import { readChatJsonl, eventsLog, jsonl, secretScan } from './export.mjs';
 import { buildReport } from './report.mjs';
@@ -348,17 +348,8 @@ export async function run(o) {
             // a visible narrative journey with no booked arrival (Run 4).
             // No swipe or regeneration: keep the original failure evidence.
             if (fault) {
-                const kind = fault.kind === 'missing' ? 'ui' : fault.kind;
                 await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-${fault.kind}.png`)));
-                const reasons = {
-                    missing: 'neither the narrator nor the engine answered',
-                    narrator_empty: `the narrator's reply has no story text (message ${fault.at})`,
-                    planner_failed: 'the semantic Planner failed before story generation',
-                    interpreter_failed: 'the V4 Interpreter failed before story generation',
-                    extractor_failed: `the World Extractor failed after story message ${fault.at}; its world changes were not committed`,
-                    extractor_late: `the World Extractor was too late after story message ${fault.at}; its world changes were not committed`,
-                };
-                end = { kind, why: `turn ${turn}: ${reasons[fault.kind] || fault.kind}${fault.reason ? ` (${String(fault.reason).slice(0, 160)})` : ''}`, turn };
+                end = failureEnd(fault, turn);
                 log(`stopped: ${end.why}`);
                 break;
             }

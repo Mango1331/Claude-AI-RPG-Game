@@ -29,6 +29,7 @@ export const CHECKS = {
     class_trait_used: 'a post-evolution snapshot contains the selected class and the PC attacks with actual cost/raw resolution',
 
     creation_complete: 'the character is created (creation.completed)',
+    open_run_duration: 'genuine open campaign reached the guide’s observation turn target after character creation',
     guild_registered: 'registered with the Guild (guild.registered)',
     board_shown: 'a Guild board was shown (board.shown)',
     dungeon_quest_active: 'a contract with a Dungeon became his (quest.status → active, quest.dungeon set)',
@@ -464,6 +465,11 @@ export function evaluate(chat, { guide = null } = {}) {
     if (evolvedClass) {
         const checks = answeredAfter(chat,evolvedClass.at,[[/^#class\b/i,'[SYSTEM // CLASS]'],[/^#feats\b/i,'[SYSTEM // FEATS]']]);
         if (checks.every((n) => n >= 0)) hit('class_verified',Math.max(...checks),{name:evolvedClass.name});
+    }
+    // Open long-run evaluation measures the observation window, never forces a quest, victory or predefined route.
+    // Count real player messages only; a campaign cannot pass merely from its greeting or prepared story events.
+    if (guide?.openRun && reached.creation_complete && turn >= guide.openRun.minTurns) {
+        hit('open_run_duration', chat.length - 1, { playerTurns: turn });
     }
     const list = (guide?.milestones || Object.keys(CHECKS).map((id) => ({ id, check: id, required: false }))).map((ms) => {
         const check = ms.check || ms.id;

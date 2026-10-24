@@ -1,7 +1,7 @@
 # 10B – Monsteridentität, Anatomie und plausibles Auto-Loot
 **Fachlicher Patchkandidat (Monster/Loot), KEINE Implementierungsfreigabe.**
 
-**Basis:** Build `.66`, Produkt `4cd9b338773783644a79a39f367629e6aaeead05`. Quellen: `06_PATCH10B_MASTERPLAN_UND_REVIEWS.md` §§5–7 (ChatGPT-Monsteraudit + Sol-Gegenreview), `02_DESIGN_KANON.md` §§4–5 und historische Hasen-/Doe-/Ziegen-Lootbeispiele. Der Nutzer priorisiert **zunächst echte Tests**. Dieser Entwurf darf nicht als bereits gebilligtes Monsterregelsystem ausgelegt werden.
+**Historische Planungsbasis:** Build `.66`, Produkt `4cd9b338773783644a79a39f367629e6aaeead05`. Quellen: `06_PATCH10B_MASTERPLAN_UND_REVIEWS.md` §§5–7 (ChatGPT-Monsteraudit + Sol-Gegenreview), `02_DESIGN_KANON.md` §§4–5 und historische Hasen-/Doe-/Ziegen-Lootbeispiele. Der Nutzer priorisiert **zunächst echte Tests**. Dieser Entwurf darf nicht als bereits gebilligtes Monsterregelsystem ausgelegt werden.
 
 ## 1. Problem, dessen Lösung fachlich sinnvoll erscheint
 
@@ -44,3 +44,5 @@ Im bisherigen generischen Auto-Loot wird Material aus `content/monsters.json:loo
 Vor Code: explizit festlegen, was bei **unbekannter Anatomie** passiert (allgemeine Beute vs. keine spezielle Beute), welche bekannten anatomischen Hinweise verlässlich sind und wie vorhandene Loot-Stapel behandelt werden. Tests zuerst mit bestehendem `loot.js` red reproduzieren; dann einen **normalen fachlichen Lootpatch**, nicht separate Mini-Patches für Hase/Doe/Ziege. `npm test`, echte ST-Smokes, Kampfsimulator zur Qualität der Drops und anschließend mindestens ein relevanter natürlicher Kampf. **Kein** ungefragtes Nerfing aller Lootmengen/Preise/Rankwerte.
 
 **Status:** nach beiden bisherigen Monsterreviews **Design-/Bugfixkandidat, nicht genehmigte Implementierung**. Sol darf den Plan unabhängig reviewen und Varianten empfehlen; ein Produktcommit erfordert eine ausdrückliche Entscheidung.
+
+**Stand nach .67:** Weiterhin ein eigenständiger fachlicher Designkandidat ohne Implementierungsfreigabe. [Run 6](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/testrun_10b/20261024-104654Z-current_test/REVIEW.md) liefert keinen gezielten Positiv-/Negativbeweis für diesen konkreten Mechanikpfad; neuen .67-Run vor Freigabe auf passende Evidenz prüfen. Kein XP-/Schadensbalancing koppeln.

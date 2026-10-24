@@ -1,7 +1,7 @@
 # 10B-3 – Kampfeskalation und mechanische Kampfchronik
 **Fachlicher Implementierungsentwurf für Sol – noch NICHT implementiert oder freigegeben.**
 
-**Baseline:** Build `.66`, Produktcommit `4cd9b338773783644a79a39f367629e6aaeead05`; Development-Branch `claude/c-planner-prototype-2026-10-02-gpt-c666`. Git-HEAD beim Beginn erneut prüfen. Der gerade gestartete neue natürliche `current_test` ist noch **nicht ausgewertet**. Änderungen in dessen ZIP können die Priorisierung/Tests erweitern; nicht durch Vermutungen vorwegnehmen. Umfang: **ein fachlich vollständiger Kampf-/Chronik-Patch**, keine Abfolge von 10B-3a-1/a-2-Mini-Hotfixes.
+**Aktuelle Planungsbasis:** Historische Fehler aus .57 sowie [Run 6 auf .66](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/testrun_10b/20261024-104654Z-current_test/REVIEW.md); neuer Produktcommit .67 7bfb7f25 (XP ×2). Vor Implementierung HEAD und neue .67-Originalbelege prüfen. Eine zusammenhängende Implementierung, keine Mini-Hotfix-Serie; noch nicht freigegeben.
 
 ## 1. Verbindliches Problem und Quelle
 
@@ -56,3 +56,11 @@ Gemeinsame Arbeits-/Testregeln: [01](https://github.com/Mango1331/Claude-AI-RPG-
 **Kein Build, Commit, Red-/Green-/Smoke-Resultat durch dieses Dokument.** Version erst bei tatsächlicher Implementierung erhöhen. 10B-3-Guild-Board ist ein **eigener** fachlicher Patchplan, nicht in diesen Kampfcode ziehen. Zahlenbalance, NPC-Sapienz-/Temperament-Redesign, Combat-Scaling, Monsterdatabase, generelles Pacing, Escort-Risikostufen und Chase bleiben außerhalb. Eventuelle neue Befunde aus dem laufenden `.66`-Run haben Vorrang gegenüber dieser auf historischen Quellen beruhenden Testmatrix.
 
 **Definition of Done:** keine fehlerhafte Kampföffnung auf reine Drohung; positive autonome echte NPC-Attacke bleibt möglich; keine phantomhaften, dauerhaft gespeicherten Zusatztreffer; positive echte Mehrfachaktionen bleiben; Run-/Replay-/Fullsuite und ST-Smoke dokumentiert; eigener Diff-Review.
+
+## 6. Ergänzung zum vollständigen Combat-Fachpatch nach Run 6
+
+[Run 6](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/testrun_10b/20261024-104654Z-current_test/REVIEW.md) bestätigt einen zusätzlichen engen Combat-Truth-Fall: Drei Skelette beteiligen sich am selben Encounter; nur A und B sterben, C lebt mit **36 HP**. Der Narrator schildert trotzdem „three heaps of bone“. Die Engine verbucht Kills, HP und Tod korrekt. **Fehler: präsentierte bzw. potenziell persistierte Erzählbehauptung**, nicht ein zusätzlicher echter Engine-Kill. Zusammen mit den Phantom-Arcane-Bolts aus Run 1 gehört das in **denselben** Combat-/Chronik-Fachpatch.
+
+**Erweiterte Abnahmekontrollen:** (1) Aus zwei tatsächlichen Kills darf keine dritte mechanische Todes-/Loot-/XP-/Memory-Tatsache entstehen; Engine-Combat-Records haben Vorrang. (2) Der Narrator erhält eine eindeutige aktuelle Liste toter und lebender Combatants; wenn freie Prosa dennoch widerspricht, muss wenigstens der folgende Extractor solche Aussagen am Engine-Truth-Gate abweisen. Eine Garantie völlig fehlerfreier freier Prosa ohne belegten Host-Ausgabepfad wird **nicht** behauptet. (3) Eine reale Mehrfachaktion oder Area-Attacke darf weiterhin korrekt dargestellt werden. (4) Ein Doppelwunsch „Basic Attack, then Flame Lance“ bucht nur tatsächlich zulässige PC-Aktionen, keine Phantom-Folgeaktion. (5) Bei PC-Tod im gemeinsamen Encounter bleiben HP, MP, noch lebende Gegner und ausstehende XP konsistent; Run 6 endete mit **0 XP für den verlorenen Encounter**.
+
+**Trennung von Balance:** Sol hat in Build .67 Kampf-/Quest-XP nach Rundung verdoppelt ([Patchnote](PATCH10B_XP_REWARDS.md)); diese Combat-Korrektur darf keine weitere Multiplikation, Schadensänderung, HP-/Monster-Nerfs oder geänderte Levelkurve enthalten. Drohung, tatsächlich erfolgter NPC-Angriff, positiver Ambush und neutrale Anwesende gemeinsam mit den vorhandenen Tests überprüfen. Vorher Original-Beleg und relevanten Combat-/World-Consumer prüfen, danach Rot/Grün, Vollsuite und echten ST-Host-Smoke.

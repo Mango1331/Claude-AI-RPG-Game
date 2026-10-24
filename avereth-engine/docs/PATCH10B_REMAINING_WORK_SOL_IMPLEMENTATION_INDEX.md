@@ -1,23 +1,22 @@
-# Avereth Engine – Patch 10B: offene Fachpläne
+# Avereth Engine – verbleibende 10B-Fachpakete
 
-**Fachindex, keine Implementierungsfreigabe.** Aktueller Produkt-, Test- und Abnahmestand ausschließlich in [03](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/03_AKTUELLER_PROJEKTSTAND.md); verbindliche Arbeitsweise in [01](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/01_ARBEITSWEISE_CHATGPT_CLAUDE.md). Für den gewählten Auftrag nur die passende Spezifikation, ihre Quellcodepfade und nötigen Originalbelege lesen. Frühere Implementierungsnachweise: [10B-Journal](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md).
+**Planungsstand 24.10.2026; keine Produktfreigabe.** Aktuell Build **.67**, Produktcommit [7bfb7f25](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/7bfb7f25e4d1dd2130d5f01f35a0d7c1bf880cdd): [Kampf-/Quest-XP ×2](PATCH10B_XP_REWARDS.md), nach Rundung, laut Sol 1429/1429 Node-Tests. **Noch keine natürliche .67-GLM-Abnahme**; keine zweite XP-Änderung vor dem nächsten Run. [Status auf main](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/03_AKTUELLER_PROJEKTSTAND.md) bleibt maßgeblich.
 
-## Fachpläne und Entscheidungen
+## Normale, fachlich geschlossene Patchpakete
 
-| Fachpaket | Direkte Spezifikation | Offener Entscheidungspunkt |
+| Paket | Umfang | Ausgangslage |
 |---|---|---|
-| **10B-3 Combat und Kampfchronik** | [Kampfeskalation/Truth](PATCH10B3_COMBAT_ESCALATION_AND_TRUTH_PLAN.md) | Drohung ≠ Angriff; echte Ambushes zulassen, Phantom-Aktionen nicht speichern; noch nicht implementiert |
-| **10B-3 Guild-Authority** | [Offizielles Board](PATCH10B3_GUILD_BOARD_AUTHORITY_PLAN.md) | Keine erfundenen offiziellen Listings, private NPC-Aufträge weiterhin zulässig; noch nicht implementiert |
-| **10B-4d Narrator-Recovery** | [Leere Story-Antwort](PATCH10B4D_NARRATOR_EMPTY_RECOVERY_PLAN.md) | Vor Umsetzung ST-Host-Swipe/Regenerate-Lifecycle nachweisen; keine doppelten Playerturns |
-| **Monster und Loot** | [Anatomie-korrektes Auto-Loot](PATCH10B_MONSTER_ANATOMY_AND_LOOT_CANDIDATE.md) | **Design-/Bugfixkandidat, nicht freigegeben**; freie Species und bestehende Anker erhalten |
-| **Chase und Flucht** | [Bestehenden Chase nutzen](PATCH10B_CHASE_ESCAPE_PACING_CANDIDATE.md) | **Designkandidat, nicht freigegeben**; kein zweites Bewegungssystem |
+| **10B-3A: Kampfeskalation und Kampfchronik** | [Fachplan](PATCH10B3_COMBAT_ESCALATION_AND_TRUTH_PLAN.md): Bedrohung ≠ tatsächlicher Angriff; echte Ambushes und autonome NPC-Aktionen bleiben; echte Combat-Records bestimmen Treffer, Skillaktionen, Kills, Tod und Fakten/Memory. | .57 Run 1: Banditendrohung und Phantom-Arcane-Bolts; .66 Run 6: dritter Knochenhaufen ohne dritten Kill. **Erste mögliche Implementierungspriorität**. |
+| **10B-3B: Gildenboard, Questversprechen und Novice-Information** | [Fachplan](PATCH10B3_GUILD_BOARD_AUTHORITY_PLAN.md): offizielle Boardlisten nur autoritativ, Tageswechsel/Status richtig, freie Privatquests erhalten, bekannte Auftrags- und Gruppenrisiken verständlich; F60-2 nur als passender enger Vertrags-Nachtrag. | .57 Runs 2/4 Phantom-Listings; .66 Run 6 positiver Cull/Proof/Payout, echte Tagesrotation, aber gefährlicher Level-1-Dungeon. **Eigenständiger großer Patch**, nicht gemeinsam mit Combat. |
+| **10B-4D: Leere Narratorantworten sicher regenerieren** | [Fachplan](PATCH10B4D_NARRATOR_EMPTY_RECOVERY_PLAN.md): höchstens eine echte Host-Regeneration für denselben gebuchten Zug, Swipe/Reload/Chat-/Stop-Guards, saubere Diagnose; kein erneutes Engine-Commit. | .57 Runs 2/4 endeten leer, .66 Run 6 nicht. **Nur nach technischem ST-Host-API-Beweis**; keine improvisierte Retry-Schicht. |
 
-Die jeweiligen Fachdateien enthalten **Problem, relevante Sourcepfade, Positiv-/Negativfälle und Abnahmegrenzen**. Bei Auftrag nur die passende Fachspezifikation und betroffene Originalquellen lesen. Die neuen Pläne wurden bisher nur geschrieben, nicht als Feature umgesetzt oder live abgenommen.
+**Spätere eigenständige Fachkandidaten** (ausdrückliche Designfreigabe noch offen): [Monsteridentität/Anatomie/Auto-Loot](PATCH10B_MONSTER_ANATOMY_AND_LOOT_CANDIDATE.md) mit freien Species, existierenden Ankern und ohne zweites Species-System; [Jagd/Flucht/Verfolgungs-Pacing](PATCH10B_CHASE_ESCAPE_PACING_CANDIDATE.md) über vorhandenes Chase/Rangesystem, keine zweite Bewegungssimulation. Diese Kandidaten **nicht automatisch implementieren** und nicht als Minipatches zerstückeln.
 
-## Reihenfolge
+## Reihenfolge, Freigabe und Abschluss
 
-Neuen natürlichen .66-Originalrun zuerst auswerten; bestätigte P0-Integrationsfehler gehen vor. Danach einen fachlich zusammenhängenden Patch ausdrücklich freigeben. Monster-/Chase-/Balanceänderungen brauchen eine eigene Designentscheidung. Allgemeine Prüf-/Dokumentationsregeln stehen in 01, zusätzliche fachliche Abnahmebedingungen im jeweiligen Plan. Neue Spielmechaniken bleiben Ruleset-2-spezifisch; Legacy/Replay/Swipe schützen.
+1. **Nächsten echten .67-Run zuerst lesen:** Zeitpunkt Level 2/3, Statpunkte, Kampf- versus Quest-XP, mehrere Tage, tatsächliche Quest-/Gear-Auswahl, Gruppenrisiko, Host/Provider-Stabilität. Ein Levelaufstieg ist noch kein erwiesener Gameplay-Tempoerfolg; kein paralleler Monster-/HP-/Schadensnerf.
+2. Danach **10B-3A**, **10B-3B** nach Spielerwirkung priorisieren und jeweils nur nach ausdrücklicher Nutzerfreigabe **in einem fachlich vollständigen Patch** implementieren. Neue P0-Hostfehler aus .67 gehen vor.
+3. **10B-4D** nach gesichertem ST-API-Pfad bzw. neuem Narrator-Empty-Befund. Monster-/Chase-Kandidaten später mit eigener Originalevidenz und Entscheidung. Ein anderes Balance-/Progressionsdesign erst nach Messung der .67-Wirkung.
+4. Fachliche Positiv- und Negativtests stehen **jeweils im verlinkten Fachplan**. Codepatch: gezielte Rot/Grün-Regressionen, vollständiges npm test, ST-Smoke bei Host-/World-Bezug, unabhängiger Diff-Review. Nachweise einmal in der bestehenden **Patchnote**, Originalrun einmal in seiner **REVIEW.md**, aktueller Status einmal in [03](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/03_AKTUELLER_PROJEKTSTAND.md); [10B-Journal](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) nur Entscheidung plus Link.
 
-**Kleiner offener Wartungspunkt F60-2:** `src/v4/world.js:additionalContainerReturn` erkennt nicht jede erst nachträglich erfundene Behälterrückgabe. Negative/positive Regressionen: `You must bring back the empty crate` und `The crate must go back` unberechtigt neu → verhindern; `The wagon must be back by noon` oder im Originalvertrag ausdrücklich vereinbarte Rückgabe → nicht verbieten. Kein globaler `must/back`-Filter und kein neues Questregelwerk. Nach Freigabe als kleine Ergänzung zur bestehenden [Delivery-Folgepatchnote](PATCH10B2B_DELIVERY_FOLLOWUP.md), nicht als Großpatch.
-
-**Weitere offene Optionen:** XP/Farming, Wirtschaft/Stonepreise, Monster-Sapienz/-Effekte, Blink, Reise-/Tageszeit, Performance und 100/500/1.000-Züge-Stabilität. Befundstand in [03](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/03_AKTUELLER_PROJEKTSTAND.md), Designabwägung bei Bedarf [06 §§5–11](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md); keine stillschweigende Zahlenfreigabe. Kein eigener Statusbericht in diesem Index.
+**Keine Änderung an Produktcode, Ruleset, Tests, Runner, Build oder Liveguide durch diese Planung.**

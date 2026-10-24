@@ -1,7 +1,7 @@
 # 10B-4d – Leere Narrator-Antworten sicher regenerieren
 **Fachlicher Host-/Narrator-Patchentwurf für Sol – kein implementierter Code, keine automatische Swipefreigabe ohne Host-Prüfung.**
 
-**Basis:** Build `.66` / Produktcommit `4cd9b338773783644a79a39f367629e6aaeead05`, SillyTavern 1.19.0. Nur **Narrator-Generation**, nicht Planner-/Extractor-Recovery, nicht 10B-3-Kampf-/Guild-Truth. Der Nutzer führt gerade einen **neuen natürlichen `current_test`** durch; dessen ZIP ist noch nicht bewertet. Dieses Dokument ersetzt keine neue Evidenz.
+**Aktuelle Planungsbasis:** Echte leere Narratorantworten auf .57; [Run 6 auf .66](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/testrun_10b/20261024-104654Z-current_test/REVIEW.md) hatte keine leere Antwort, ist aber keine Langzeitentwarnung. Build .67 betrifft nur XP; vor Umsetzung Host- und Git-Stand prüfen. Noch keine Codefreigabe.
 
 ## 1. Problem aus Originalruns
 
@@ -56,3 +56,9 @@ Sols **Pflicht vorab** anhand echten ST-1.19.0-Codes und laufendem Browser-Smoke
 Kein Neuaufbau des gesamten Model-Retriesystems, keine Änderung der bereits funktionierenden Planner-/Extractor-Recovery-Budgets, keine Umgehung der Engine-Ownership, keine falsche Quest-/Kampfbuchung, kein globales `max_tokens`-Umschalten ohne reale Messung, keine stillen zweiten PC-Entscheidungen.
 
 **Status:** Entwurf für einen **einzigen normalen Narrator-Lifecycle-Fachpatch**, nicht ein Satz kleiner Mini-Fixes. Fachlich prinzipiell gewünscht, **technische Umsetzbarkeit erst nach ST-API-/Lifecycle-Beweis**. Neuer natürlicher .66-Run kann zuerst zeigen, ob dieser Defekt weiterhin prioritätsbestimmend ist.
+
+## 6. Freigabe- und Priorisierungsgate nach Run 6 / Build .67
+
+Dies bleibt **ein vollständiger Host-/Narrator-Recovery-Fachpatch**: echte, leere ST-Storyantwort nach bereits gebuchtem Playerturn, höchstens ein kontrollierter regulärer Host-Regenerate-Versuch; derselbe PC-Zug und dieselben Würfel/Quest-/Combat-Events; ein gültiger neuer Swipe darf genau einmal durch Extractor, Firewall und Save. Zweite Leere, manuelles Stop, Chatwechsel, Reload und alte Swipe-Snapshots müssen begrenzt, sichtbar und datenisoliert sein.
+
+**Neue Evidenz:** Der erste natürliche .66-GLM-Run hatte 32 gültige, angewendete Storyextraktionen und endete durch Charaktertod; kein Narrator-Empty-Fall. Die .57-Ausfälle bleiben belegt. **Voraussetzung vor Implementierung:** den tatsächlichen SillyTavern-1.19-API- und Event-Lifecycle des automatischen Regenerate einschließlich Stop-/Swipe-Verhalten nachweisen. Wenn kein sicherer Aufruf möglich ist, **keine halbfertige Auto-Recovery** implementieren; bestehende Diagnose und manuelles Regenerate bleiben erlaubt. Keine erneute Playeraktion, kein eigenes Ersatz-Narrator-v4Llm und keine globale Tokenänderung. Eigenständiger Patch erst nach Nutzerfreigabe, Rot/Grün plus realer Browser-Smoke und echter GLM-Fall.

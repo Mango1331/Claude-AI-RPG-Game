@@ -1,7 +1,7 @@
 # 10B – Verfolgung, Flucht, Rückzug und sinnvolles Pacing
 **Vollständiger fachlicher Design-Patchkandidat – NICHT als Implementierung freigegeben.**
 
-**Basis:** Build `.66`; `06_PATCH10B_MASTERPLAN_UND_REVIEWS.md` §8 mit ausführlicher Ursachenkette H1–H6, Lösungsstufen C0–C3 und 14 Gegenfällen. Die beschriebenen Hasen-/Fuchs-Erlebnisse stammen aus älteren Läufen; ein isoliertes originales Event-Replay ist dort noch **nicht** vollständig hinterlegt. Aktuellen `.66`-Langlauf vor weiterem Design vergleichen.
+**Historische Planungsbasis:** Build `.66`; `06_PATCH10B_MASTERPLAN_UND_REVIEWS.md` §8 mit ausführlicher Ursachenkette H1–H6, Lösungsstufen C0–C3 und 14 Gegenfällen. Die beschriebenen Hasen-/Fuchs-Erlebnisse stammen aus älteren Läufen; ein isoliertes originales Event-Replay ist dort noch **nicht** vollständig hinterlegt. Aktuellen `.66`-Langlauf vor weiterem Design vergleichen.
 
 ## 1. Spielerproblem und verbindliche Richtung
 
@@ -54,3 +54,5 @@ Der Design-Kanon verlangt **bedeutsame Spielerentscheidungen vor Bewegungsmikrom
 - Kein 10B-3 Guild, kein 10B-4d Auto-Regenerate, kein Monster-/Loot-Redesign im Chasepatch.
 
 **Status:** Kandidat vorbereitet. Benutzerentscheidung zur Implementierung und ggf. Variant C0/C1 weiterhin erforderlich; kein Produktcommit/Build/Test durch dieses Dokument.
+
+**Stand nach .67:** Weiterhin ein eigenständiger fachlicher Designkandidat ohne Implementierungsfreigabe. [Run 6](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/testrun_10b/20261024-104654Z-current_test/REVIEW.md) liefert keinen gezielten Positiv-/Negativbeweis für diesen konkreten Mechanikpfad; neuen .67-Run vor Freigabe auf passende Evidenz prüfen. Kein XP-/Schadensbalancing koppeln.

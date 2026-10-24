@@ -1,7 +1,7 @@
 # 10B-3 – Gildenboard-Wahrheit, echte Angebote und Quest-Zusagen
 **Fachlich eigenständiger Implementierungsentwurf für Sol – NICHT implementiert oder als unbedingter Bauauftrag freigegeben.**
 
-**Basis:** `.66`, Produkt `4cd9b338773783644a79a39f367629e6aaeead05`, aktueller Dev-HEAD neu prüfen. Gehört historisch zu **10B-3**, wird bewusst nicht mit Kampfeskalation, Narrator-Recovery oder Delivery-Refactoring vermischt. Der neu laufende natürliche `current_test` ist bis zur ZIP-Auswertung keine neue Evidenz.
+**Aktuelle Planungsbasis:** Phantom-Boards aus .57; zusätzlich positiver Quest-/Board-Verlauf aus [Run 6 auf .66](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/testrun_10b/20261024-104654Z-current_test/REVIEW.md). Produktstand inzwischen .67, XP ×2; aktuelles Git vor Umsetzung prüfen. Fachentwurf, keine Codefreigabe.
 
 ## 1. Quellbefund und gewünschtes Spielverhalten
 
@@ -52,3 +52,15 @@
 Keine automatische Großänderung an Quest-Typen, Tagesgröße, Reward-Scaling, Nachfrage/Ökonomie, Skillaufstieg oder spontanen privaten NPC-Jobs. Keine „Gildenboard ist allein der ganze Questmarkt“ Einschränkung. Der Run-4-Gedächtnisfehler des Testspielers ist **nicht zwingend Engine-Persistenzkorruption**; Observer-/Memory-Signale separat verifizieren.
 
 **Status:** spezifiziert, weder Sol-Implementierung noch Build-Erhöhung noch Tests erfolgt. Entscheidung, ob dieser Fachpatch vor oder nach Combat 10B-3 kommt, vom neuen natürlichen .66-Run abhängig.
+
+## 6. Ergänzung: Guild-/Quest-Fachpatch mit Anfängerspielbarkeit
+
+**Als EIN zusammengehöriges Paket:** offizielle Board-/Contract-Wahrheit, gültige Tagesrotation und Questzustände, private NPC-Auftragsfreiheit sowie verständliche Kennzeichnung bekannter Anfänger- und Gruppenrisiken. Nicht je Problem neue Quest-, Board- oder Risikosysteme eröffnen.
+
+**Run 6 als Positivkontrolle:** Vier Hounds werden real besiegt; READY, Proof, 80 Kupfer und 30 Quest-XP werden exakt einmal verbucht, Bett/Übernachtung und Tageswechsel funktionieren. Ein neuer Catacombs-Contract am Folgetag besitzt einen eigenen Contract-Key, während der alte abgelaufen ist. **Echte neue Listings dürfen nicht als Phantomoffer gefiltert werden.** In Build .67 entspricht die neu berechnete frühere Questbelohnung 60 XP; alte Replay-Events nicht nachmultiplizieren und keine zweite Auszahlung ermöglichen.
+
+**Gefahreninformation:** Mage Level 1 betritt Old Crown Floor 1 und begegnet sofort drei Skeletten Level 4/3/2. Ein Eintrag „Floor 1“ oder „Novice“ darf nicht irreführend „einfach solo“ suggerieren. Zeige vor Annahme/Betreten nur das Risiko, das Guild/Warden/Engine **tatsächlich kennt** (empfohlene Erfahrung, bekannte Gruppengefahr oder ausdrückliche Ungewissheit). Keine unentdeckten Monster-/Raumdetails als Spoiler und keine garantierte Sicherheit. Echte anspruchsvolle Quests sollen weiterhin möglich sein.
+
+**Noch offener Designentscheid:** mehr verlässlich erreichbare leichte Einzelgegner-, Liefer- und Erkundungsangebote für den frühen Levelbereich. Zuerst im .67-Run tatsächliche Angebotsvielfalt messen; nicht stillschweigend Quoten, Pflichtjobs oder Safe-Dungeon-Scaling einführen. Die kleine bereits belegte F60-2-Klausellücke darf als passende Vertrags-Nachbesserung in diesem Fachpaket mitgeprüft werden; keine vollständige Delivery-Neufassung.
+
+**Regressionen:** echte Daily-Listings und ähnliche, aber unterschiedliche IDs bleiben annehmbar; erfundene offizielle NPC-Angebote ohne Autorität werden korrekt zurückgewiesen; private Jobs bleiben frei; Completed/Expired/Active und einmalige Auszahlung bleiben über Swipe/Reload erhalten; bekannte Risikoinfo wird wahrheitsgemäß, unbekannte Gefahr ohne erfundene Präzision angezeigt. Keine Änderung des .67-XP-Multiplikators.

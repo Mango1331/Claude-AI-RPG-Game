@@ -339,7 +339,11 @@ export async function run(o) {
                         const failedChat = await driver.chat();
                         const userAt = failedChat.findLastIndex((m) => m.is_user);
                         const fault = userAt >= 0 ? turnFailure(failedChat, userAt) : null;
-                        if (fault && ['planner_failed', 'interpreter_failed'].includes(fault.kind)) end = failureEnd(fault, turn);
+                        if (fault && ['planner_failed', 'interpreter_failed'].includes(fault.kind)) {
+                            end = failureEnd(fault, turn);
+                            turnsLog.at(-1).outcome = fault.kind;
+                            chat = failedChat; // keep the terminal user record in the exported run, too
+                        }
                     } catch { /* leave this as the original UI failure if the chat cannot be inspected */ }
                 }
                 end = end || { kind: 'ui', why: `turn ${turn}: ${r.problem}` };

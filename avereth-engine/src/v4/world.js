@@ -1916,6 +1916,20 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
             if (entry.length === d.lines.length) return;
             d = { ...d, lines: d.lines.filter((l) => !entry.includes(l)) };
         }
+        // A service price is not permission to reverse an employer's wage into a purchase.
+        // Use the existing private quest path; completion/payment still need their normal world evidence.
+        const provider = /\bI(?:'ll| will) (?:guard|watch|protect|work)\b/i.test(prose);
+        const employee = !provider && /\b(?:you (?:keep|stand|guard|watch|work)|I (?:want|need) (?:eyes|you)|you(?:'re| are) worth more|(?:pay|hire) you)\b/i.test(prose);
+        const work = employee ? d.lines.filter(l => l.kind === 'service' && l.service === 'other'
+            && /\b(?:keep(?:ing)?|guard(?:ing)?|watch(?:ing)?|work(?:ing)?|shift)\b/i.test(l.what)) : [];
+        for (const l of work) {
+            const title = String(l.what).slice(0, 80);
+            if (!Object.values(s.quests).some(q => q.kind === 'private' && q.giver === seller && q.title === title && ['offered','active'].includes(q.status))) {
+                questOffer({ giver: seller, title, reward_cp: evidenced(l.price_cp, l.said, d), objectives: [l.what], proof: [] });
+            }
+        }
+        d = { ...d, lines: d.lines.filter(l => !work.includes(l)) };
+        if (!d.lines.length) return;
         const priced = d.lines.map((l) => ({ ...l, price_cp: evidenced(l.price_cp, l.said, d) }));
         // a price the reply does not say is not offered (review of c.6.6.11); the seller's other lines stand
         const unproven = priced.filter((l, i) => l.price_cp === null && Number.isInteger(d.lines[i].price_cp));
@@ -2032,6 +2046,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '' } = 
     }
 
     function questOffer(d) {
+        const titleAt = normText(prose).indexOf(normText(d.title));
+        const around = titleAt < 0 ? '' : prose.slice(Math.max(0, titleAt - 100), titleAt + String(d.title).length + 30);
+        if (cPath && /\b(?:official guild|guild contract|on the (?:guild )?board|board listing)\b/i.test(around)) {
+            overreach('guild_listing', d.title); return;
+        }
         const giver = idOf(d.giver);
         let id = `quest.${slug(d.title) || 'job'}`;
         for (let k = 2; s.quests[id]; k++) id = `quest.${slug(d.title)}_${k}`;

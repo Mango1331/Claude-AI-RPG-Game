@@ -244,6 +244,9 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const announced = announcedAbandon(msg.mes, guarded.kept, before);
     guarded.kept = announced.kept;
     guarded.dropped = [...guarded.dropped, ...announced.dropped];
+    // The request is informational: route it through the normal board command, including booking and reuse.
+    const boardRead = implicitBoardRead(before, guarded.kept, msg.mes);
+    if (boardRead) guarded.kept = [...guarded.kept.filter(x => x.seq !== boardRead.seq), boardRead].sort((a,b) => a.seq-b.seq);
     const m = mapPlan(guarded.kept, ctx, content, msg.mes, before);
     plan.dropped = guarded.dropped.map((x) => ({ type: x.command?.type ?? null, rule: x.rule, quote: x.command?.quote ?? null }));
     plan.notes = m.notes;
@@ -419,8 +422,17 @@ export function crowdIntent(state, content, intent) {
  * The board a message reads (board.read), before the narrator describes it: in the Guild hall he is in, or in the one
  * an earlier go of the same message leads to; rank as named, else his rank after an earlier registration in the message.
  */
+function implicitBoardRead(state, commands, input = '') {
+    if (!hallOf(state, state.scene.at) || commands.some(x => x.type === 'board.read')) return null;
+    const asks = text => /\b(?:what|any|available|looking for|show|read|check|browse|look at)\b.{0,70}\b(?:work|jobs|contracts|board|quests|notices)\b/i.test(text)
+        && !/\b(?:not|never|don't|do not|yesterday|would|might|later)\b/i.test(text);
+    const inquiry = commands.find(x => x.type === 'other' && asks(x.quote || ''));
+    if (!inquiry && (commands.length || !asks(input))) return null;
+    return { seq: inquiry?.seq ?? 1, type: 'board.read', rank: null, quote: inquiry?.quote || input };
+}
+
 export function boardFor(state, content, commands, { c = false } = {}) {
-    const read = commands.find((c) => c.type === 'board.read');
+    const read = commands.find((c) => c.type === 'board.read') || (c ? implicitBoardRead(state, commands) : null);
     if (!read) return null;
     let hall = hallOf(state, state.scene.at);
     if (!hall) {

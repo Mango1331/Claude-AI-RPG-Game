@@ -1,0 +1,218 @@
+{
+  "quest": {
+    "id": "quest.carry_the_chirurgeons_case_to_the_mill_hamlet",
+    "title": "Carry the Chirurgeon's Case to the Mill Hamlet",
+    "kind": "guild_contract",
+    "client": "Chirurgeon Odo, Ashbridge",
+    "giver": null,
+    "rank": "Novice",
+    "level": 1,
+    "qtype": "minor",
+    "payout_cp": 40,
+    "reward": "40 cp",
+    "task": "Deliver the chirurgeon's locked case of instruments and bandages to the mill hamlet upstream, where a millwright lies with a crushed leg.",
+    "desired_end_state": "The chirurgeon's locked case arrives intact at the mill hamlet and is handed to the millwright's household.",
+    "objectives": [
+      {
+        "id": "o1",
+        "verb": "DELIVER",
+        "what": "locked case of instruments and bandages",
+        "qty": 1,
+        "unit": "case",
+        "where": "mill hamlet upstream of Ashbridge",
+        "status": "open"
+      }
+    ],
+    "proof": [],
+    "source": {
+      "board": "loc.ashbridge.guild_hall",
+      "branch": "loc.ashbridge",
+      "listed": {
+        "turn": 30,
+        "minute": 3375,
+        "day": 3
+      }
+    },
+    "schedule": {
+      "starts_at": "Odo follows tomorrow",
+      "deadline": null
+    },
+    "status": "active",
+    "taker": "pc",
+    "history": [
+      {
+        "turn": 30,
+        "minute": 3375,
+        "status": "listed"
+      },
+      {
+        "turn": 31,
+        "minute": 3395,
+        "status": "active",
+        "at": "loc.ashbridge.guild_hall",
+        "step": 1
+      }
+    ],
+    "details": [
+      {
+        "note": "Clerk's instructions: first take the locked case to Chirurgeon Odo's rooms off Cordwainer Row, past the tannery cut, door with the brass ring; the case is locked with Odo's lock and he keeps the key —",
+        "schedule": null,
+        "turn": 31
+      },
+      {
+        "note": "Odo's handling instructions: sign nothing, touch nothing, carry it flat with two hands; set it down and stand between it and passing carts; contents are fine steel instruments, bandages, and a bottle ",
+        "schedule": null,
+        "turn": 32
+      },
+      {
+        "note": "Odo signed the contract slip: 'Received in good order, case to be carried as instructed. Odo, chirurgeon.' Carry the case flat, both hands; a strap under the middle handle; if rain turns, stop under a",
+        "schedule": "Odo follows tomorrow",
+        "turn": 33
+      },
+      {
+        "note": "Brac, a mill worker sent by the millwright's wife, met Alaric on the river road an hour out of Ashbridge and asks to carry the case the rest of the way to Garrett's mill; the millwright's daughter is ",
+        "schedule": null,
+        "turn": 34
+      },
+      {
+        "note": "Brac warns Garrett is short of sleep and temper over trouble at the mill and may be brusque at the door; Nella, the millwright's eight-year-old daughter, took bad two nights ago and the mistress has b",
+        "schedule": null,
+        "turn": 35
+      }
+    ],
+    "notes": [
+      "Clerk's instructions: first take the locked case to Chirurgeon Odo's rooms off Cordwainer Row, past the tannery cut, door with the brass ring; the case is locked with Odo's lock and he keeps the key —",
+      "Odo's handling instructions: sign nothing, touch nothing, carry it flat with two hands; set it down and stand between it and passing carts; contents are fine steel instruments, bandages, and a bottle ",
+      "Odo signed the contract slip: 'Received in good order, case to be carried as instructed. Odo, chirurgeon.' Carry the case flat, both hands; a strap under the middle handle; if rain turns, stop under a",
+      "Brac, a mill worker sent by the millwright's wife, met Alaric on the river road an hour out of Ashbridge and asks to carry the case the rest of the way to Garrett's mill; the millwright's daughter is ",
+      "Brac warns Garrett is short of sleep and temper over trouble at the mill and may be brusque at the door; Nella, the millwright's eight-year-old daughter, took bad two nights ago and the mistress has b"
+    ]
+  },
+  "object": {
+    "marks": [],
+    "for_quests": [
+      "quest.carry_the_chirurgeons_case_to_the_mill_hamlet"
+    ],
+    "id": "obj.t66.chirurgeons_locked_case",
+    "name": "chirurgeon's locked case",
+    "kind": "item",
+    "stack": false,
+    "qty": 1,
+    "unit": null,
+    "use": "tool",
+    "holder": {
+      "entity": "pc"
+    },
+    "source": {
+      "turn": 33,
+      "how": "story"
+    }
+  },
+  "places": {
+    "loc.mill_hamlet": {
+      "id": "loc.mill_hamlet",
+      "name": "Mill hamlet",
+      "kind": "settlement",
+      "parent": "realm.duskreach",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "by": "reply",
+      "created": {
+        "turn": 31,
+        "minute": 3395
+      },
+      "known": "visited",
+      "reports": [
+        {
+          "by": "npc.clerk_ashbridge_guild",
+          "how": "told",
+          "where": "upstream along the river road, a half day's walk with a load",
+          "turn": 31,
+          "minute": 3395
+        }
+      ],
+      "visited": {
+        "turn": 36,
+        "minute": 3600
+      }
+    },
+    "loc.mill_hamlet.millwrights_house": {
+      "id": "loc.mill_hamlet.millwrights_house",
+      "name": "Millwright's house",
+      "kind": "interior",
+      "parent": "loc.mill_hamlet",
+      "realm": "realm.duskreach",
+      "tags": [],
+      "by": "reply",
+      "created": {
+        "turn": 37,
+        "minute": 3600
+      }
+    }
+  },
+  "recipient": {
+    "id": "npc.garrett",
+    "kind": "npc",
+    "name": "Garrett",
+    "descriptors": [
+      "millwright",
+      "broad man with mill dust to the elbows, ",
+      "npc.npcmillwright_garrett"
+    ],
+    "traits": "broad man with mill dust to the elbows, two days of grey-streaked beard, rough voice, short of sleep",
+    "status": "alive",
+    "location": "loc.mill_hamlet",
+    "created": {
+      "turn": 40,
+      "minute": 3675
+    },
+    "source": {
+      "kind": "narration",
+      "msg": 80
+    },
+    "card": {},
+    "template": "commoner"
+  },
+  "scene": {
+    "location": "loc.mill_hamlet",
+    "place": "Millwright's house",
+    "at": "loc.mill_hamlet.millwrights_house",
+    "present": [
+      "pc",
+      "npc.npcmillwright_mistress",
+      "npc.garrett"
+    ],
+    "positions": {
+      "npc.npcmillwright_mistress": {
+        "band": "ENGAGED",
+        "cover": "none"
+      },
+      "npc.garrett": {
+        "band": "ENGAGED",
+        "cover": "none"
+      }
+    },
+    "awareness": {},
+    "concealed": [],
+    "history": [
+      "loc.ashbridge.verge",
+      "loc.ashbridge",
+      "loc.ashbridge.guild_hall",
+      "loc.ashbridge.fishmongers_stall_by_the_south_gate",
+      "loc.ashbridge.the_copper_kettle",
+      "loc.ashbridge.fishmongers_stall_by_the_south_gate",
+      "loc.ashbridge.toll_house_by_the_south_gate",
+      "loc.ashbridge.tams_barrow",
+      "loc.ashbridge.martas_house_on_salt_lane",
+      "loc.ashbridge.tams_smoke_shed_behind_the_house_on_salt_lane",
+      "loc.ashbridge.guild_hall",
+      "loc.ashbridge.chirurgeon_odos_rooms_off_cordwainer_row",
+      "loc.mill_hamlet"
+    ],
+    "relevant": [
+      "npc.npcmillwright_mistress",
+      "npc.garrett"
+    ],
+    "threats": []
+  }
+}

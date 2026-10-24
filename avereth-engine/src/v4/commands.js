@@ -911,6 +911,14 @@ const HANDLERS = {
             return { status: 'refused', reason: 'no open offer', line: 'CANNOT ACCEPT — there is no such open offer.' };
         }
         if (o.bid) return acceptBid(s, content, c, ctx, emit, o);
+        const employeeQuote = /\b(?:I(?:'ll| will)? (?:work|guard|watch|keep)|my (?:wage|pay)|hire me)\b/i.test(c.quote || '');
+        const ambiguousWork = o.lines.some(l => l.kind === 'service' && l.service === 'other'
+            && /\b(?:keeping|guarding|watching|working|shift)\b/i.test(l.what))
+            && !/\b(?:buy|purchase|hire|pay|rent)\b/i.test(c.quote || '');
+        if (!o.canon && (employeeQuote || ambiguousWork) && o.lines.some(l => l.kind === 'service')) {
+            return { status: 'clarify', reason: 'work is not a purchase', line: 'CLARIFY — is the NPC hiring Alaric, or is Alaric buying the NPC’s service? Record employer-paid work as a private job. No money was charged.' };
+        }
+
         // Prototype C (4.3.0-c.6.6.5): an offer is the other side SELLING to Alaric; agreeing to sell his own things is
         // never paying for them (live 15.10.2026: "i accept and sell all parts to her" paid 80 cp for his own parts)
         if (!o.canon && SELLING.test(c.quote || '') && !BUYING.test(c.quote || '')) {

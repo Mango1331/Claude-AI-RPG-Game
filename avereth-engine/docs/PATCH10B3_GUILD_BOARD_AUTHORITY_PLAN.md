@@ -1,5 +1,23 @@
 # 10B-3 – Gildenboard-Wahrheit, echte Angebote und Quest-Zusagen
-**Fachlich eigenständiger Implementierungsentwurf für Sol – NICHT implementiert oder als unbedingter Bauauftrag freigegeben.**
+**Implementiert als 10B-3B, Build .68 (24.10.2026).** Der ursprüngliche Fachplan folgt nach dem technischen Ergebnis als datierte Entwurfs-/Entscheidungsquelle; seine früheren Nicht-implementiert-Angaben sind historisch.
+
+## Technisches Ergebnis .68
+
+**Unabhängige Originalprüfung Run 7:** Git-ZIP CRC und SHA-256 stimmen mit der Review überein (`2d2b0c47e4782e3b3e2002c03bbd78abc5aae46e6c8b6d09ce6922ae21bd7ef4`), 1.460 Events, 95 `extract.applied`, keine Lieferquittung. Vier Wolfsiege à 24 und ein Questabschluss mit 46 XP ergeben korrekt 142 Gesamt-XP, Level 2/42 Rest. Falsche Arbeitsabbuchungen −1/−4/−1 und die tatsächliche Kofferübergabe sind bestätigt. Level 2 ist kein weiterer XP-Rechenfehler: wenige belohnte Handlungen und die Lieferblockade begrenzen den Fortschritt. Die Review-Angabe „ZIP noch nicht in Git“ ist inzwischen überholt. Ein weiterer Befund begrenzt den Fix: Auch ein Öltuch und später eine Bescheinigung sind an dieselbe Quest gebunden; Bindung allein darf keine Lieferung beweisen.
+
+**Produktänderungen:**
+- `delivery.js`: gebundene Fracht darf abweichende Inhalts-/Eigentümerwörter haben, braucht aber weiterhin einen gemeinsamen Gegenstandsbegriff; Belegdokumente ersetzen keine Koffer. Orts-/Empfänger-/Besitz-/Mengen-/Origin-Caps bleiben. Klauselfilter erkennt zusätzlich „must bring back“ und „must go back“, keine pauschale Wagen-Rückgabesperre.
+- `world.js`, `ownership.js`, `commands.js`: erkennbare NPC-Arbeitsangebote nutzen bestehende angebotene Privatquests mit Lohn, keine Kaufbuchung. Normale Dienste bleiben Käufe. Bei explizitem Arbeitnehmerangebot oder unklarer Rollenrichtung in alten Arbeits-Serviceoffers wird vor Abbuchung geklärt. Questannahme, Abschluss durch den Auftraggeber und tatsächliches `coin.gift` bleiben getrennt; kein Sofortlohn oder neues Lohnsystem. `offer` darf deshalb auch angebotene private Quests schreiben, keine neue PC-Zustimmung.
+- `runtime.js`, `context.js`: natürliche Jobanfragen im Gildenhaus laufen auch bei leerem Planner-Ergebnis über den regulären `board.read`-Pfad. Tagesboard, Validierung, Buchung und Wiederverwendung bleiben zentral. Der Narrator bekommt eine bindende Liste aktueller lokaler Listings, aktiver Verträge und der letzten fünf abgeschlossenen/abgelaufenen Fälle. Explizite offizielle Angebote können nicht als private `quest.offer` gespeichert werden. Novice/Floor One versprechen keine Solo-Sicherheit; unbekannte Gegnerdaten werden nicht verraten.
+- `deltas.json`: Arbeitgeberauftrag über `quest.offer`, tatsächliche Lohnzahlung über bestehende Mechanismen; keine Schemaerweiterung. `current_test.json`: klare Fortschrittsmotivation und Alternativen bei Blockaden, weiterhin freie Klasse, Route, Rollenspiel, Risikowahl und 100 Inputs. Keine neuen Pflichtetappen oder Fixtures.
+
+**Abnahme:** 23 neue Regressionen mit aus Original-Events abgeleitetem Fracht-Fixture: auf unveränderter .67-Basis 11 rot/12 grün, danach 23/23. Neue Prüfungen decken auch Öltuch, unterstützende Dokumente, fremde/ungebundene Fracht, fehlende Präsenz, falschen Ort, Splits/Origin-Caps, Receipt-Replay, Privatlohn, gekauften Wachdienst, unentgeltliche Hilfe, Phantomangebote und tatsächliche Boardbuchung/Tagesreuse im Produktpfad ab. **Vollsuite: 1452/1452**, keine Fehler/Skips. **Echter ST-1.19-Smoke: 21/21, Exit 0**, fünf Extractor-Aufrufe; `extractPerReply`, `fightOpened`, `swipeReusesPlan` und `noPageErrors` erfolgreich. Vier gespeicherte aktuelle Story-Records sind `applied`, jeweils mit einem `extract.applied`. Der unveränderte Smoke nutzt einen deterministischen Mockprovider; kein neuer natürlicher GLM-Lauf. Angrenzende Deliverytests: 66/66 vor den letzten ergänzten Kontrollen.
+
+**Grenzen:** Englische Rollen-/Textmerkmale bleiben eine konservative Rückfallebene; der Extractor soll Arbeit direkt als Privatquest melden. Vollständig verschiedene Fracht-Synonyme ohne gemeinsamen Gegenstandsbegriff bleiben ein möglicher Matching-Randfall. Kontext/Firewall reduzieren Phantomangebote, garantieren aber keine fehlerfreie LLM-Prosa. Die neue Motivation und die drei korrigierten Spielpfade müssen im nächsten natürlichen GLM-Lauf beobachtet werden. XP-Faktor 2, HP/Schaden/Monster, gespeicherte alte Events und Saveformat unverändert; keine rückwirkende Reparatur des alten Runs.
+
+---
+
+## Historischer Fachplan vor Implementierung
 
 **Aktuelle Planungsbasis:** Phantom-Boards aus .57; zusätzlich positiver Quest-/Board-Verlauf aus [Run 6 auf .66](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/testrun_10b/20261024-104654Z-current_test/REVIEW.md). Produktstand inzwischen .67, XP ×2; aktuelles Git vor Umsetzung prüfen. Fachentwurf, keine Codefreigabe.
 

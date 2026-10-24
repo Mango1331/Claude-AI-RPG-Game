@@ -19,7 +19,7 @@ import { goalLines } from './v4/intents.js';
 import { featuresAt, featureText } from './v4/features.js';
 import { dungeonOf, trueDungeonOf, dungeonText, nearDungeons, exitsFrom, exitText, roomLabel, wayBetween } from './v4/dungeon.js';
 import { contextLines as livingLines } from './v4/living.js';
-import { settlementOf, realmOf, hallOf } from './v4/domain.js';
+import { settlementOf, realmOf, hallOf, listedToday } from './v4/domain.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
 import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText, proofMemory } from './v4/guild.js';
 import { envelopeBlock } from './v4/envelope.js';
@@ -622,6 +622,14 @@ export function buildContext(state, content, opts = {}) {
     const absent = state.mode === 'creation' ? [] : namedAbsent(state, normText(queryText));
     if (absent.length) add('named', `NAMED, NOT PRESENT (continuity only; they are elsewhere unless the story brings them in):\n${absent.map((id) => npcCard(state, content, id, focusWords, { absent: true })).join('\n')}`, 2);
     add('combat', combatBlock(state, content), 0);
+    if (v4 && (opts.outcome?.c || opts.outcome?.auth?.c)) {
+        const known = Object.values(state.quests || {}).filter(q => q.kind === 'guild_contract');
+        const branch = settlementOf(state, state.scene.at);
+        const official = [...known.filter(q => q.status === 'active' || (listedToday(state, q) && q.source?.branch === branch)),
+            ...known.filter(q => ['completed','expired','abandoned'].includes(q.status)).slice(-5)];
+        add('guild_authority', `OFFICIAL GUILD OFFERS — ENGINE AUTHORITY: Only listed contracts below are official selectable offers. Active/completed/expired contracts are not new offers. If none are listed, do not invent notices or claim another adventurer took them; invite a board reading. Private NPC jobs and rumours remain possible, clearly separate from official listings. Novice and Floor One are rank/depth labels, not promises of solo safety; describe only established risks, otherwise uncertainty.\n${official.map(q => `- ${q.id}: ${q.title} [${q.status}]`).join('\n') || '- No official listings established.'}`, 0);
+    }
+
     // Prototype C (4.3.0-c.6.6.5): the settlement around Alaric lives (crowd by time of day, everyday trades by size)
     if (v4 && !state.encounter && (opts.outcome?.auth?.c || opts.outcome?.c)) add('settlement', settlementLife(state, content), 1);
 
@@ -731,7 +739,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'named', 'combat', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'named', 'combat', 'guild_authority', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };

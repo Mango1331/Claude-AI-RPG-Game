@@ -26,8 +26,8 @@ export function nonphysicalDelivery(o) {
 
 // Called per stripOwned clause. A wagon deadline is not a container return obligation.
 export function additionalContainerReturn(q, clause) {
-    const returnObject = /\breturn(?:ed)?\s+(?:(?:of|the|an?|his|her|their|all|empty|used|wooden|delivery)\s+){0,5}(?:crates?|boxes?|containers?|baskets?|casks?|bottles?|packaging|empties)\b/i;
-    const objectReturned = /\b(?:crates?|boxes?|containers?|baskets?|casks?|bottles?|packaging|empties)\b(?:\s+(?:must|needs?|to|be|are|is|has|have|been|should)){0,5}\s+(?:return(?:ed)?|back|(?:brought|sent|taken)\s+back)\b/i;
+    const returnObject = /\b(?:return(?:ed)?|(?:bring|take|send)\s+back)\s+(?:(?:of|the|an?|his|her|their|all|empty|used|wooden|delivery)\s+){0,5}(?:crates?|boxes?|containers?|baskets?|casks?|bottles?|packaging|empties)\b/i;
+    const objectReturned = /\b(?:crates?|boxes?|containers?|baskets?|casks?|bottles?|packaging|empties)\b(?:\s+(?:must|needs?|to|be|are|is|has|have|been|should)){0,5}\s+(?:return(?:ed)?|back|(?:go|brought|sent|taken)\s+back)\b/i;
     const containerReturn = text => returnObject.test(text || '') || objectReturned.test(text || '');
     const duty = text => /\b(?:must|required|requires?|needs?)\b/i.test(text)
         && containerReturn(text);
@@ -39,13 +39,21 @@ function cargoMatches(s, q, o, x) {
     const bound = x.for_quests?.includes(q.id);
     if (x.for_quests?.length && !bound) return false;
     const want = words(o.what), have = words(x.name);
+    // Binding identifies the contract, not every associated item as cargo (Run 7 also bound an oiled cloth).
+    // Retain a shared physical noun while allowing the objective's contents and the owner's name to differ.
+    if (bound) {
+        const documents = /\b(?:letter|note|receipt|slip|paper|document|chit|ledger|book|scroll|journal)\b/i;
+        if (x.kind === 'document' && !documents.test(o.what)) return false;
+        const modifiers = new Set(['locked', 'sealed', 'empty', 'full', 'small', 'large', 'wooden', 'signed']);
+        return have.some(w => !modifiers.has(w) && want.includes(w));
+    }
     if (have.length === 1 && want.length > 1) return false;
     if (!contains(o.what, x.name) && !contains(x.name, o.what)) return false;
     // A generic "crate" does not identify some other herb crate. Explicit cargo binding does.
     if (!bound && want.length === 1 && have.length > 1) return false;
     // Once the contract has identified its goods, an unbound lookalike is not a substitute.
     return bound || !Object.values(s.objects || {}).some(y => y.for_quests?.includes(q.id)
-        && !y.id?.startsWith('obj.slip.') && (contains(o.what, y.name) || contains(y.name, o.what)));
+        && !y.id?.startsWith('obj.slip.') && words(y.name).some(w => want.includes(w)));
 }
 function under(s, at, target) {
     const seen = new Set();

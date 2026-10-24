@@ -190,6 +190,55 @@ function recordCalls(r) {
 }
 
 /**
+ * Evidence-only Recovery observability. An empty post-recovery plan/report may
+ * be legitimate or a hidden omission; it is NOT automatically an Engine error.
+ * A failed recovery is counted as attempted, but never as a zero-result success.
+ */
+export function recoveryObservation(chat, u) {
+    if (!chat?.[u]?.is_user) return { planner: null, extractor: null };
+    const user = rec(chat[u]);
+    let i = u + 1;
+    while (i < chat.length && !chat[i].is_user && (chat[i].is_system || !chat[i].mes && !rec(chat[i])?.extraction)) i++;
+    const reply = i < chat.length && !chat[i].is_user && !chat[i].is_system ? rec(chat[i]) : null;
+    const pl = user?.plan;
+    const ex = reply?.extraction;
+    const validType = x => x === 'empty' || x === 'transport';
+    return {
+        planner: validType(pl?.recovery) ? {
+            type: pl.recovery,
+            zeroCommands: !pl.failed && Array.isArray(user?.interp?.commands) && user.interp.commands.length === 0,
+            failed: !!pl.failed,
+        } : null,
+        extractor: validType(ex?.recovery) ? {
+            type: ex.recovery,
+            zeroDeltas: ex.status === 'applied' && ex.deltas === 0,
+            failed: ex.status === 'failed',
+        } : null,
+    };
+}
+
+/** Count only recorded recovery attempts, not plain JSON repairs or guessed recovery. */
+export function recoverySummary(chat) {
+    const summary = {
+        planner: { empty: 0, transport: 0, zeroCommands: 0 },
+        extractor: { empty: 0, transport: 0, zeroDeltas: 0 },
+    };
+    for (let i = 0; i < chat.length; i++) {
+        if (!chat[i]?.is_user) continue;
+        const o = recoveryObservation(chat, i);
+        if (o.planner) {
+            summary.planner[o.planner.type]++;
+            if (o.planner.zeroCommands) summary.planner.zeroCommands++;
+        }
+        if (o.extractor) {
+            summary.extractor[o.extractor.type]++;
+            if (o.extractor.zeroDeltas) summary.extractor.zeroDeltas++;
+        }
+    }
+    return summary;
+}
+
+/**
  * chat: SillyTavern's chat array (or a fixture's messages). guide: loaded guide (its milestones' checks), optional.
  * Returns {milestones, reached, encounters, quests, defeat, issues, counts, turns, perf}.
  */
@@ -203,7 +252,7 @@ export function evaluate(chat, { guide = null } = {}) {
     const quests = {};
     const encounters = [];
     const issues = [];
-    const counts = { rejected: {}, panels: Object.fromEntries(Object.keys(PANEL_MARKS).map((k) => [k, 0])), events: 0 };
+    const counts = { rejected: {}, panels: Object.fromEntries(Object.keys(PANEL_MARKS).map((k) => [k, 0])), events: 0, recovery: recoverySummary(chat) };
     let defeat = null;
     let inside = false;
     const issue = (i, kind, text) => issues.push({ at: i, turn: turnAt[i], kind, text });
@@ -246,6 +295,11 @@ export function evaluate(chat, { guide = null } = {}) {
             if (r.extraction?.status === 'failed') issue(i, 'extraction_failed', `the extractor failed${r.extraction.error ? `: ${r.extraction.error}` : ''}`);
             if (r.extraction?.status === 'late') issue(i, 'extraction_late', 'the extraction came late');
             if (r.extraction?.repaired) issue(i, 'extraction_repaired', 'the extractor\'s first answer needed a repair');
+            if (['empty', 'transport'].includes(r.extraction?.recovery)) {
+                issue(i, 'extractor_recovery', `the extractor required ${r.extraction.recovery} recovery (status ${r.extraction.status})`);
+                if (r.extraction.status === 'applied' && r.extraction.deltas === 0)
+                    issue(i, 'extractor_recovery_zero_deltas', 'recovery was applied with 0 deltas; review narrated world changes against the saved state (not necessarily an error)');
+            }
         }
         // Patch 8.4.1: Stat Points spent in words (only #assign spends them): for review, did the story tell them as done?
         if (m.is_user && !/^\s*#/.test(String(m.mes || '')) && spendsStatPoints(m.mes, STATS)) {
@@ -256,6 +310,11 @@ export function evaluate(chat, { guide = null } = {}) {
         if (m.is_user && r) {
             if (r.plan?.failed || r.interp?.failed) issue(i, 'planner_failed', `the planner failed${r.plan?.error ? `: ${r.plan.error}` : ''}`);
             if (r.plan?.repaired || r.interp?.repaired) issue(i, 'planner_repaired', 'the planner\'s first answer needed a repair');
+            if (['empty', 'transport'].includes(r.plan?.recovery)) {
+                issue(i, 'planner_recovery', `the planner required ${r.plan.recovery} recovery${r.plan.failed ? ' (failed)' : ''}`);
+                if (!r.plan.failed && Array.isArray(r.interp?.commands) && r.interp.commands.length === 0)
+                    issue(i, 'planner_recovery_zero_commands', 'recovery produced 0 commands; review player intent before accepting NOTHING TO BOOK (not necessarily an error)');
+            }
             if (r.board?.failed) issue(i, 'board_failed', 'the board generator failed');
         }
         for (const c of recordCalls(r)) if (c.finish && c.finish !== 'stop') issue(i, 'finish', `${c.purpose} ended with finish_reason "${c.finish}"`);
@@ -522,6 +581,7 @@ export function evaluate(chat, { guide = null } = {}) {
             events: [...(r?.events || []), ...replies.flatMap((m) => rec(m)?.events || [])].map((e) => e.t),
             perf: { wait: r?.perf?.wait_ms ?? null, engine: r?.perf?.engine_ms ?? null, plan: (r?.plan || r?.interp)?.ms ?? null, board: r?.board?.ms ?? null, narrator: x?.narration?.ms ?? null, extract: x?.extraction?.ms ?? null },
             calls: [...recordCalls(r), ...recordCalls(x)],
+            recovery: recoveryObservation(chat, u),
         });
     }
     // 4.3.0-c.6.6.50: the checks after the Ordinary Passive, each a command of his answered by its System panel

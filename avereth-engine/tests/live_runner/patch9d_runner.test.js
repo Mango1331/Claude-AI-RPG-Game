@@ -39,6 +39,9 @@ test('9D review: the report summary labels the synthetic fixture, seed and actua
     assert.match(text,/Reload.*bestanden/);
     assert.match(buildReport({...base,fixture:'9d-rare',seed:7,fixtureReload:null}),/Reload.*nicht durchgeführt/);
     assert.doesNotMatch(buildReport(base),/FIXTURE/);
+    const diagnostic=buildReport({...base,turnsLog:[{turn:1,ms:2000,decideMs:1000,ok:true,text:'#status'},{turn:2,ms:3000,decideMs:1500,ok:true,text:'#feats'},{turn:17,ms:251860,decideMs:92726,ok:true,text:'I choose this class.'}]});
+    assert.match(diagnostic,/Auffällige Einzelzeiten/);
+    assert.match(diagnostic,/\| Spieler \| 17 \|/);assert.match(diagnostic,/\| Spiel \| 17 \|/);
 });
 
 test('9D live evaluator requires accepted class, BOTH answered panels and a later combat snapshot/use; prose does not finish it',async()=>{

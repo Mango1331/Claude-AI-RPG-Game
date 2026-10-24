@@ -20,8 +20,23 @@ const END_TEXT = {
     harness: 'abgebrochen: Fehler im Runner',
     narrator_empty: 'abgebrochen: leere Erzählerantwort in einem Story-Zug (kein Swipe, kein Regenerieren)',
     incomplete: '**unvollständig**: nicht alle Pflicht-Etappen von der Engine nachgewiesen',
+    fixture_reload_failed: '**Fixture-Reload fehlgeschlagen**: Mechanik-Etappen erreicht, Persistenzprüfung nicht bestanden',
 };
 const OUTCOME_TEXT = { story: 'Erzähler', system: 'System (Befehl)', engine: 'Engine (Menü/Rückfrage)', narrator_empty: '**leer**', missing: '**keine**' };
+
+/** Diagnose existing measurements: at least 30 s and three times the median of that phase/role. */
+export function timingOutliers(turns, calls) {
+    const rows = [];
+    const take = (kind, samples) => {
+        const valid = samples.filter((x) => Number.isFinite(x.ms)), mid = median(valid.map((x) => x.ms));
+        const threshold = Math.max(30000, 3 * (mid || 0));
+        rows.push(...valid.filter((x) => x.ms > threshold).sort((a,b) => b.ms-a.ms).slice(0,3).map((x) => ({...x,kind,median:mid,threshold})));
+    };
+    take('Spieler', turns.map((t) => ({turn:t.turn,ms:t.decideMs})));
+    take('Spiel', turns.map((t) => ({turn:t.turn,ms:t.ms})));
+    for (const role of new Set(calls.map((c) => c.role))) take(`Provider ${role}`, calls.filter((c) => c.role === role).map((c) => ({call:c.n,turn:c.turn,ms:c.ms})));
+    return rows;
+}
 
 export function buildReport(x) {
     const { runId, stub, guide, player, end, ev, calls, setup, imp, git, build, st, browser, turnsLog, playerLog, driverNotes, toasts, pageErrors, serverErrors, protection, scan, files, startedAt, endedAt, instanceKept } = x;
@@ -153,6 +168,12 @@ export function buildReport(x) {
     L.push(`| Ø je Zug (Spiel + Spieler) | ${per != null ? sec(per) : '–'} |`);
     if (per != null) L.push(`| Hochrechnung bei diesem Tempo | 40 Züge ≈ ${dur(40 * per)}, 80 Züge ≈ ${dur(80 * per)} (ohne Einrichtung) |`);
     L.push('');
+    const outliers = timingOutliers(turnsLog, calls);
+    if (outliers.length) {
+        L.push('### Auffällige Einzelzeiten', '', 'Je Phase/Providerrolle: über 30 Sekunden und über dem Dreifachen ihres Medians; höchstens drei Einträge. Providerzeiten liegen innerhalb der Spielzeiten, sie werden nicht zusätzlich summiert.', '', '| Phase | Zug | API-Aufruf | Zeit | Median |', '|---|---:|---:|---:|---:|');
+        for (const o of outliers) L.push(`| ${o.kind} | ${o.turn ?? '–'} | ${o.call ?? '–'} | ${sec(o.ms)} | ${sec(o.median)} |`);
+        L.push('');
+    }
 
     L.push('## Schutz und Geheimnisse', '');
     L.push(`- Aus dem Profil gelesen (nur lesend): ${imp.read.length} Dateien; danach ${protection.changedRead.length ? `**verändert: ${protection.changedRead.map((c) => `${c.file} (${c.why})`).join(', ')}**` : 'alle unverändert'}.`);

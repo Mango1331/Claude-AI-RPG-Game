@@ -65,10 +65,11 @@ export function toastOrigin(t, spans, now = Date.now()) {
 }
 
 export class Driver {
-    constructor(page, { turnTimeoutMs = 15 * 60 * 1000, quietMs = 1500, log = () => {} } = {}) {
+    constructor(page, { turnTimeoutMs = 15 * 60 * 1000, quietMs = 1500, connectTimeoutMs = 20000, log = () => {} } = {}) {
         this.page = page;
         this.turnTimeoutMs = turnTimeoutMs;
         this.quietMs = quietMs;
+        this.connectTimeoutMs = connectTimeoutMs;
         this.log = log;
         this.pageErrors = [];
         this.toastsSeen = 0;
@@ -107,15 +108,23 @@ export class Driver {
             const o = c.chatCompletionSettings || {};
             return { mainApi: c.mainApi, source: o.chat_completion_source, url: o.custom_url || null, model: o.custom_model || null, stream: !!o.stream_openai, preset: o.preset_settings_openai || null };
         });
+        return { ...conn, ...await this.connect(90000) };
+    }
+
+    /** Reuse ST's normal connector after a reload; credentials remain in the isolated profile. */
+    async connect(timeoutMs = this.connectTimeoutMs) {
+        const p = this.page;
+        const connected = () => p.evaluate(() => { const s = SillyTavern.getContext().onlineStatus; return !!s && s !== 'no_connection'; });
+        if (await connected()) return { connected: true, status: await p.evaluate(() => SillyTavern.getContext().onlineStatus) };
         await p.evaluate(() => { $('#api_button_openai').trigger('click'); });
         let ok = false;
-        for (const t0 = Date.now(); Date.now() - t0 < 90000;) {
-            if (await p.evaluate(() => { const s = SillyTavern.getContext().onlineStatus; return !!s && s !== 'no_connection'; })) { ok = true; break; }
+        for (const t0 = Date.now(); Date.now() - t0 < timeoutMs;) {
+            if (await connected()) { ok = true; break; }
             await this.acceptProxyWarning();
             await sleep(500);
         }
         const status = await p.evaluate(() => SillyTavern.getContext().onlineStatus);
-        return { ...conn, connected: ok, status };
+        return { connected: ok, status };
     }
 
     /**
@@ -190,6 +199,7 @@ export class Driver {
             span.to = Date.now();
         }
         await p.waitForTimeout(800);
+        this.testChat = await this.identity();
         return { started, chatId };
     }
 
@@ -215,7 +225,8 @@ export class Driver {
             const stop = document.querySelector('#mes_stop');
             const busy = !!stop && getComputedStyle(stop).display !== 'none';
             const i = c.chat.findLastIndex((m) => !m.is_user && !m.is_system);
-            return { busy, len: c.chat.length, lastUser: c.chat.findLastIndex((m) => m.is_user), extraction: c.chat[i]?.extra?.avereth?.extraction?.status || null, dialogs: document.querySelectorAll('dialog[open]').length };
+            return { busy, len: c.chat.length, lastUser: c.chat.findLastIndex((m) => m.is_user), extraction: c.chat[i]?.extra?.avereth?.extraction?.status || null, dialogs: document.querySelectorAll('dialog[open]').length,
+                online: c.onlineStatus, chatId: c.getCurrentChatId(), avatar: c.characters[c.characterId]?.avatar };
         });
     }
 
@@ -228,6 +239,8 @@ export class Driver {
         const t0 = Date.now();
         const before = await this.probe();
         if (before.busy) return { ok: false, problem: 'busy before sending', ms: 0 };
+        if (!before.online || before.online === 'no_connection') return { ok: false, problem: 'API disconnected before sending; no message entered', ms: 0 };
+        if (!before.chatId || (this.testChat && (before.chatId !== this.testChat.chatId || before.avatar !== this.testChat.avatar))) return { ok: false, problem: 'wrong test chat before sending; no message entered', ms: 0 };
         await p.evaluate((t) => { $('#send_textarea').val(t).trigger('input'); $('#send_but').trigger('click'); }, text);
         const arrived = await p.waitForFunction((n) => SillyTavern.getContext().chat.length > n, before.len, { timeout: 30000 }).then(() => true).catch(() => false);
         if (!arrived) return { ok: false, problem: 'the message did not arrive in the chat', ms: Date.now() - t0 };
@@ -302,25 +315,73 @@ export class Driver {
     /** SillyTavern's chat with the engine's records: for the evaluation, never for the player. */
     /** Runner-only opt-in setup; the caller has already created an isolated instance. */
     async installFixture(messages) {
-        await this.page.evaluate(async (messages) => {
+        const identity = await this.identity();
+        this.requireTestChat(identity);
+        await this.page.evaluate((messages) => {
             const c = SillyTavern.getContext();
             c.chat.splice(0, c.chat.length, ...messages);
-            await c.saveChat();
         }, messages);
         await this.reload();
+        const events = (chat) => chat.map((m) => m.extra?.avereth?.events || []);
+        if (JSON.stringify(events(await this.chat())) !== JSON.stringify(events(messages))) throw new Error('fixture installation: saved test campaign differs after reload');
     }
+
+    async identity() {
+        return this.page.evaluate(() => {
+            const c = SillyTavern.getContext(), card = c.characters[c.characterId];
+            return { chatId: c.getCurrentChatId(), avatar: card?.avatar, card: card?.name, groupId: c.groupId,
+                campaign: (c.chat[0]?.extra?.avereth?.events || []).find((e) => e.t === 'campaign.started') || null,
+                route: [c.mainApi, c.chatCompletionSettings?.chat_completion_source, c.chatCompletionSettings?.custom_url, c.chatCompletionSettings?.custom_model] };
+        });
+    }
+
+    requireTestChat(identity, expected = this.testChat) {
+        if (!identity.chatId || !identity.avatar || identity.groupId || (expected && (identity.chatId !== expected.chatId || identity.avatar !== expected.avatar))) throw new Error('wrong test chat identity; refusing to save or send');
+    }
+
     async reload() {
+        const expected = await this.identity();
+        this.requireTestChat(expected);
+        if (!expected.campaign) throw new Error('reload: active test chat has no saved campaign');
         await this.save();
         await this.page.reload({ waitUntil: 'domcontentloaded' });
-        await this.page.waitForFunction(() => typeof SillyTavern !== 'undefined' && (SillyTavern.getContext().chat[0]?.extra?.avereth?.events || []).some((e) => e.t === 'campaign.started'), null, { timeout: 60000 });
-        await this.page.waitForTimeout(1500);
+        await this.page.waitForFunction(() => window.SillyTavern?.getContext?.()?.characters?.length > 0, null, { timeout: 20000 }).catch(() => { throw new Error('reload: SillyTavern character list did not become ready in 20 s'); });
+        if (!await this.welcomeDone()) throw new Error('reload: SillyTavern welcome screen did not settle');
+        // ST 1.19 exposes selectCharacterById/openCharacterChat through getContext. Check the exact saved file first:
+        // getChat() creates a greeting for a missing file, which must never turn a failed reload into a fresh campaign.
+        await this.page.evaluate(async (expected) => {
+            const c = SillyTavern.getContext();
+            const id = c.characters.findIndex((x) => x.avatar === expected.avatar);
+            if (id < 0) throw new Error('reload: saved test card is missing');
+            const card = c.characters[id];
+            const response = await fetch('/api/chats/get', { method: 'POST', headers: c.getRequestHeaders(), body: JSON.stringify({ ch_name: card.name, file_name: expected.chatId, avatar_url: card.avatar }) });
+            if (!response.ok) throw new Error('reload: saved test chat could not be read');
+            const data = await response.json();
+            const campaign = Array.isArray(data) && (data[1]?.extra?.avereth?.events || []).find((e) => e.t === 'campaign.started');
+            if (!campaign || JSON.stringify(campaign) !== JSON.stringify(expected.campaign)) throw new Error('reload: saved test campaign is missing or belongs to another chat');
+            const route = [c.mainApi, c.chatCompletionSettings?.chat_completion_source, c.chatCompletionSettings?.custom_url, c.chatCompletionSettings?.custom_model];
+            if (JSON.stringify(route) !== JSON.stringify(expected.route)) throw new Error('reload: API route changed; refusing another connection');
+            card.chat = expected.chatId;
+            await c.selectCharacterById(String(id), { switchMenu: false });
+            const selected = SillyTavern.getContext();
+            if (selected.groupId || selected.characters[selected.characterId]?.avatar !== expected.avatar) throw new Error('reload: wrong test card after selection');
+            if (selected.getCurrentChatId() !== expected.chatId) await selected.openCharacterChat(expected.chatId);
+        }, expected);
+        const actual = await this.identity();
+        this.requireTestChat(actual, expected);
+        if (JSON.stringify(actual.campaign) !== JSON.stringify(expected.campaign)) throw new Error('reload: wrong campaign in the restored test chat');
+        if (JSON.stringify(actual.route) !== JSON.stringify(expected.route)) throw new Error('reload: API route changed after selecting the test card');
+        const connection = await this.connect();
+        if (!connection.connected) throw new Error(`reload: API connection failed (${connection.status || 'no status'}); test chat restored, no message sent`);
+        this.testChat = actual;
+        this.setupNotes.push(`reload restored test chat "${actual.chatId}" and its campaign; API connected`);
     }
 
     async chat() { return this.page.evaluate(() => JSON.parse(JSON.stringify(SillyTavern.getContext().chat))); }
 
     async status() { return this.page.evaluate(() => document.getElementById('avereth_status')?.textContent || ''); }
 
-    async save() { await this.page.evaluate(async () => { await SillyTavern.getContext().saveChat(); }); await this.page.waitForTimeout(800); }
+    async save() { this.requireTestChat(await this.identity()); await this.page.evaluate(async () => { await SillyTavern.getContext().saveChat(); }); await this.page.waitForTimeout(800); }
 
     async screenshot(file) { try { await this.page.screenshot({ path: file, fullPage: false }); return file; } catch { return null; } }
 }

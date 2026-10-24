@@ -32,6 +32,14 @@ import { buildReport } from './report.mjs';
 import { startStub, STUB_MODEL } from './stub_provider.mjs';
 
 export const CONFIG_FILE = path.join(ENGINE, 'tools', 'st_live', 'live.config.json');
+
+/** The terminal fixture check uses the same restored chat as the start, never a fresh welcome-screen campaign. */
+export async function verifyFixtureReload(driver, chat) {
+    const before = foldChat(chat).state;
+    await driver.reload();
+    const after = foldChat(await driver.chat()).state;
+    return JSON.stringify(before.entities.pc.sheet) === JSON.stringify(after.entities.pc.sheet) && JSON.stringify(before.career) === JSON.stringify(after.career);
+}
 export const DEFAULT_RUNS = path.join(ENGINE, 'tools', 'st_live', 'runs');
 export const STUB_KEY = 'stub-key-not-a-real-key-0000';
 export const DEFAULTS = {
@@ -325,10 +333,8 @@ export async function run(o) {
             if (ev.defeat) { await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-defeat.png`))); end = { kind: 'defeat', why: `turn ${ev.defeat.turn}: ${ev.defeat.why}` }; break; }
             if (finished(ev)) {
                 if (o.fixture) {
-                    const before = foldChat(chat).state;
-                    await driver.reload();
-                    const after = foldChat(await driver.chat()).state;
-                    fixtureReload = JSON.stringify(before.entities.pc.sheet) === JSON.stringify(after.entities.pc.sheet) && JSON.stringify(before.career) === JSON.stringify(after.career);
+                    try { fixtureReload = await verifyFixtureReload(driver, chat); }
+                    catch (e) { fixtureReload = false; end = { kind: 'fixture_reload_failed', why: `all mechanic milestones reached; ${e.message}` }; log(`stopped: ${end.why}`); break; }
                     if (!fixtureReload) { end = {kind:'fixture_reload_failed',why:'saved/reloaded class or feats changed'}; break; }
                 } end = { kind: 'done', why: null }; log('all required milestones reached'); break; }
             // Patch 8.4.2: the last milestone reached, the rest out of this run's reach: no turns played on for nothing

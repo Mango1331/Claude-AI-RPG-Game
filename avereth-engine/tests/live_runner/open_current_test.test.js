@@ -2,7 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadGuide, guideErrors } from '../../tools/st_live/live/guide.mjs';
 import { evaluate, finished } from '../../tools/st_live/live/evaluator.mjs';
-import { options } from '../../tools/st_live/live/run_live.mjs';
+import { options, resolveTurnLimit } from '../../tools/st_live/live/run_live.mjs';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { loadProductContent } from '../helpers.js';
 import { campaign } from '../v4/patch8_lib.js';
 
@@ -51,4 +54,26 @@ test('invalid open-run guides cannot set impossible horizons or require fixtures
     assert.match(guideErrors({ ...base, openRun: { minTurns: 200 } }).join(' '), /exceeds maxTurns/);
     assert.match(guideErrors({ ...base, fixture: '9d-rare' }).join(' '), /cannot require a synthetic fixture/);
     assert.match(guideErrors({ ...base, openRun: { minTurns: 0 } }).join(' '), /positive integer/);
+});
+
+test('legacy live.config.json maxTurns=40 cannot silently truncate the 100-turn current_test', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'avereth-open-guide-'));
+    const cfg = path.join(dir, 'live.config.json');
+    try {
+        fs.writeFileSync(cfg, JSON.stringify({ maxTurns: 40 }));
+        const local = options(['--config', cfg, '--guide', 'current_test'], {});
+        assert.equal(local.maxTurns, 40);
+        assert.equal(local.maxTurnsExplicit, false);
+        const open = loadGuide('current_test');
+        assert.equal(resolveTurnLimit(open, local), 105, 'open guide keeps its own safe observation horizon');
+        const legacy = loadGuide('guild_dungeon_loop');
+        assert.equal(resolveTurnLimit(legacy, local), 40, 'other guides retain their configured limits');
+        const explicit = options(['--config', cfg, '--guide', 'current_test', '--max-turns', '120'], {});
+        assert.equal(explicit.maxTurnsExplicit, true);
+        assert.equal(resolveTurnLimit(loadGuide('current_test'), explicit), 120);
+        const tooShort = options(['--config', cfg, '--guide', 'current_test', '--max-turns', '99'], {});
+        assert.throws(() => resolveTurnLimit(loadGuide('current_test'), tooShort), /at least 100 turns/);
+    } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+    }
 });

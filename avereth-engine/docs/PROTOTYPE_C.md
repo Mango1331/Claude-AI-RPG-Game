@@ -2140,3 +2140,10 @@ Auf Basis der lokal bestätigten **1386/1386** Node-Tests von Build .62 kapselt 
 Nach unabhängig bestätigten **1400/1400** Node-Tests auf Build .63 speichert Planner-/Extractor-Recovery optional die Ursache (`recovery: 'empty' | 'transport'`) auf dem Player-/Reply-Record. Der `current_test`-Evaluator und `report.md` zählen Recovery-Versuche und kennzeichnen deren validierte Resultate mit **0 Commands** beziehungsweise **0 Deltas** als Prüfhinweis, nicht als nachgewiesenen Defekt oder automatischen Stopp. Kein neuer Retry, kein Eingriff in Mechanik, Firewall, GPT-Provider/Host oder Runner-Abbruchlogik.
 
 **12 neue Regressionstests, noch nicht ausgeführt; erwartete Vollsuite: 1412**. Technische Details: `docs/PATCH10B4C3_RECOVERY_OBSERVABILITY.md`; Master `06_PATCH10B_MASTERPLAN_UND_REVIEWS.md` §23. Echte SillyTavern-/GLM-Liveprüfung ausstehend. Planner-Transportretry, risikoärmeres Edit-Invalidate und Narrator-Recovery bleiben separate Folgearbeiten.
+
+
+## Patch 10B-4c.4 – Review-Nachtrag (.65, 24.10.2026)
+
+Die vom Nutzer nach `.64` bestätigten **1412/1412 Node-Tests** sind Grundlage dieses zusätzlichen kleinen Patches. Nach unabhängiger Neubewertung von Claudes gesamtem 10B-4-Review bekommt der Planner nun **genau einen zusätzlichen Versuch nach einem primären Transportfehler** (`plan_recovery`, unveränderter Prompt/2000 Tokens, kein dritter JSON-Repair; Herkunft `plan.recovery:'transport'`). Vor jedem zusätzlichen Planner-Call wird das aktuelle Host-Input-/Chat-Prädikat geprüft. Der Test-Runner nutzt für `extractor_timeout` den strukturierten `extraction`-Status des Drivers und zählt fortgesetzte `extractor_failed_soft`-Züge mit Vorbehalt zu möglichen verlorenen Weltfakten. Sonstige Empfehlungen bleiben gemäß begründeter Entscheidungstabelle bewusst offen.
+
+Technische Details, alle akzeptierten und verworfenen Claude-Punkte: `docs/PATCH10B4C4_INDEPENDENT_REVIEW_DECISIONS.md`; 10B-Master §24 auf main. **9 neue Tests angelegt, bisher NICHT lokal ausgeführt**, erwartet 1421 insgesamt, Produktbuild `.65`. Echte ST-/GLM-Abnahme weiterhin offen.

@@ -5,7 +5,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "node --test tests/unit/*.test.js tests/scenarios/*.test.js tests/testrun_v1/*.test.js tests/testrun_v2/*.test.js tests/testrun_v3/*.test.js tests/testrun_v4/*.test.js tests/testrun_v5/*.test.js tests/testrun_v6/*.test.js tests/testrun_v7/*.test.js tests/testrun_v8/*.test.js tests/testrun_v9/*.test.js tests/testrun_v10/*.test.js tests/testrun_v11/*.test.js tests/p0/*.test.js tests/v4/*.test.js tests/live_runner/*.test.js",
+    "test": "node --test tests/unit/*.test.js tests/scenarios/*.test.js tests/testrun_v1/*.test.js tests/testrun_v2/*.test.js tests/testrun_v3/*.test.js tests/testrun_v4/*.test.js tests/testrun_v5/*.test.js tests/testrun_v6/*.test.js tests/testrun_v7/*.test.js tests/testrun_v8/*.test.js tests/testrun_v9/*.test.js tests/testrun_v10/*.test.js tests/testrun_v11/*.test.js tests/p0/*.test.js tests/v4/*.test.js tests/live_runner/*.test.js tests/sim/*.test.js",
     "migrate": "python3 tools/migrate_content.py",
     "compare": "node tools/testrun_compare.js",
     "smoke:browser": "node tools/browser_smoke.mjs",
@@ -14,7 +14,8 @@
     "smoke:st:c": "node tools/st_live/run_c.mjs",
     "live:st": "node tools/st_live/live/run_live.mjs",
     "live:st:check": "node tools/st_live/live/run_live.mjs --check",
-    "live:st:selftest": "node tools/st_live/live/selftest.mjs"
+    "live:st:selftest": "node tools/st_live/live/selftest.mjs",
+    "sim:combat": "node tools/sim/combat.mjs"
   },
   "engines": {
     "node": ">=20"

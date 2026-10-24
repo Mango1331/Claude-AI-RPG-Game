@@ -1,0 +1,4296 @@
+{
+  "smoke": [
+    "warrior-0-1-wolf-0-1-ENGAGED",
+    "mage-0-1-wolf-0-1-ENGAGED",
+    "rogue-0-1-wolf-0-1-ENGAGED",
+    "duel-warrior-mage-1-ENGAGED"
+  ],
+  "scenarios": [
+    {
+      "id": "warrior-0-1-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "warrior-0-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 1,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-0-1-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "warrior-0-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 1,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-0-1-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "warrior-0-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 3,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-0-1-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "warrior-0-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 1,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-0-1-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "warrior-0-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 1,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-0-1-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "warrior-0-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 3,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-0-5-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "warrior-0-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 5,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-0-5-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "warrior-0-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 4,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-0-5-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "warrior-0-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 7,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-0-5-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "warrior-0-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 5,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-0-5-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "warrior-0-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 4,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-0-5-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "warrior-0-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 7,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-0-10-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "warrior-0-10",
+        "class": "warrior",
+        "level": 10,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 10,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "warrior-0-10-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "warrior-0-10",
+        "class": "warrior",
+        "level": 10,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 9,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "warrior-0-10-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "warrior-0-10",
+        "class": "warrior",
+        "level": 10,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 12,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "warrior-0-10-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "warrior-0-10",
+        "class": "warrior",
+        "level": 10,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 10,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "warrior-0-10-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "warrior-0-10",
+        "class": "warrior",
+        "level": 10,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 9,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "warrior-0-10-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "warrior-0-10",
+        "class": "warrior",
+        "level": 10,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 12,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "warrior-0-14-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "warrior-0-14",
+        "class": "warrior",
+        "level": 14,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 14,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "warrior-0-14-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "warrior-0-14",
+        "class": "warrior",
+        "level": 14,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 13,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "warrior-0-14-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "warrior-0-14",
+        "class": "warrior",
+        "level": 14,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 16,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "warrior-0-14-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "warrior-0-14",
+        "class": "warrior",
+        "level": 14,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 14,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "warrior-0-14-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "warrior-0-14",
+        "class": "warrior",
+        "level": 14,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 13,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "warrior-0-14-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "warrior-0-14",
+        "class": "warrior",
+        "level": 14,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 16,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "warrior-0-15-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "warrior-0-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 15,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-0-15-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "warrior-0-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 14,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-0-15-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "warrior-0-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 17,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-0-15-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "warrior-0-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 15,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-0-15-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "warrior-0-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 14,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-0-15-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "warrior-0-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 17,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-1-1-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "warrior-1-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 1,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-1-1-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "warrior-1-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 1,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-1-1-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "warrior-1-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 3,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-1-1-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "warrior-1-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 1,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-1-1-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "warrior-1-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 1,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-1-1-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "warrior-1-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 3,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-1-5-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "warrior-1-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 5,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "warrior-1-5-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "warrior-1-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 4,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "warrior-1-5-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "warrior-1-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 7,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "warrior-1-5-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "warrior-1-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 5,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "warrior-1-5-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "warrior-1-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 4,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "warrior-1-5-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "warrior-1-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 7,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "warrior-1-10-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "warrior-1-10",
+        "class": "warrior",
+        "level": 10,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 10,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "warrior-1-10-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "warrior-1-10",
+        "class": "warrior",
+        "level": 10,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 9,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "warrior-1-10-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "warrior-1-10",
+        "class": "warrior",
+        "level": 10,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 12,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "warrior-1-10-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "warrior-1-10",
+        "class": "warrior",
+        "level": 10,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 10,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "warrior-1-10-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "warrior-1-10",
+        "class": "warrior",
+        "level": 10,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 9,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "warrior-1-10-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "warrior-1-10",
+        "class": "warrior",
+        "level": 10,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 12,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "warrior-1-14-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "warrior-1-14",
+        "class": "warrior",
+        "level": 14,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 14,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-1-14-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "warrior-1-14",
+        "class": "warrior",
+        "level": 14,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 13,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-1-14-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "warrior-1-14",
+        "class": "warrior",
+        "level": 14,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 16,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-1-14-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "warrior-1-14",
+        "class": "warrior",
+        "level": 14,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 14,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-1-14-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "warrior-1-14",
+        "class": "warrior",
+        "level": 14,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 13,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-1-14-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "warrior-1-14",
+        "class": "warrior",
+        "level": 14,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 16,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "warrior-1-15-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "warrior-1-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 15,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-1-15-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "warrior-1-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 14,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-1-15-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "warrior-1-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 17,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-1-15-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "warrior-1-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 15,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-1-15-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "warrior-1-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 14,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-1-15-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "warrior-1-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.power_strike",
+          "warrior.quick_slash"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 17,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "mage-0-1-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "mage-0-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 1,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-0-1-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "mage-0-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 1,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-0-1-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "mage-0-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 3,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-0-1-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "mage-0-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 1,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-0-1-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "mage-0-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 1,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-0-1-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "mage-0-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 3,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-0-5-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "mage-0-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 5,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-0-5-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "mage-0-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 4,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-0-5-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "mage-0-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 7,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-0-5-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "mage-0-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 5,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-0-5-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "mage-0-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 4,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-0-5-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "mage-0-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 7,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-0-10-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "mage-0-10",
+        "class": "mage",
+        "level": 10,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 10,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "mage-0-10-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "mage-0-10",
+        "class": "mage",
+        "level": 10,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 9,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "mage-0-10-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "mage-0-10",
+        "class": "mage",
+        "level": 10,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 12,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "mage-0-10-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "mage-0-10",
+        "class": "mage",
+        "level": 10,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 10,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "mage-0-10-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "mage-0-10",
+        "class": "mage",
+        "level": 10,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 9,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "mage-0-10-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "mage-0-10",
+        "class": "mage",
+        "level": 10,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 12,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "mage-0-14-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "mage-0-14",
+        "class": "mage",
+        "level": 14,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 14,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "mage-0-14-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "mage-0-14",
+        "class": "mage",
+        "level": 14,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 13,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "mage-0-14-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "mage-0-14",
+        "class": "mage",
+        "level": 14,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 16,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "mage-0-14-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "mage-0-14",
+        "class": "mage",
+        "level": 14,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 14,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "mage-0-14-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "mage-0-14",
+        "class": "mage",
+        "level": 14,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 13,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "mage-0-14-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "mage-0-14",
+        "class": "mage",
+        "level": 14,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 16,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "mage-0-15-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "mage-0-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 15,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-0-15-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "mage-0-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 14,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-0-15-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "mage-0-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 17,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-0-15-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "mage-0-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 15,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-0-15-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "mage-0-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 14,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-0-15-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "mage-0-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 17,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-1-1-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "mage-1-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 1,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-1-1-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "mage-1-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 1,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-1-1-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "mage-1-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 3,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-1-1-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "mage-1-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 1,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-1-1-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "mage-1-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 1,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-1-1-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "mage-1-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 3,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-1-5-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "mage-1-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 5,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "mage-1-5-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "mage-1-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 4,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "mage-1-5-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "mage-1-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 7,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "mage-1-5-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "mage-1-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 5,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "mage-1-5-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "mage-1-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 4,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "mage-1-5-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "mage-1-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 7,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "mage-1-10-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "mage-1-10",
+        "class": "mage",
+        "level": 10,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 10,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "mage-1-10-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "mage-1-10",
+        "class": "mage",
+        "level": 10,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 9,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "mage-1-10-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "mage-1-10",
+        "class": "mage",
+        "level": 10,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 12,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "mage-1-10-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "mage-1-10",
+        "class": "mage",
+        "level": 10,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 10,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "mage-1-10-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "mage-1-10",
+        "class": "mage",
+        "level": 10,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 9,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "mage-1-10-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "mage-1-10",
+        "class": "mage",
+        "level": 10,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 12,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "mage-1-14-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "mage-1-14",
+        "class": "mage",
+        "level": 14,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 14,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-1-14-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "mage-1-14",
+        "class": "mage",
+        "level": 14,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 13,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-1-14-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "mage-1-14",
+        "class": "mage",
+        "level": 14,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 16,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-1-14-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "mage-1-14",
+        "class": "mage",
+        "level": 14,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 14,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-1-14-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "mage-1-14",
+        "class": "mage",
+        "level": 14,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 13,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-1-14-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "mage-1-14",
+        "class": "mage",
+        "level": 14,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 16,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "mage-1-15-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "mage-1-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 15,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-1-15-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "mage-1-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 14,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-1-15-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "mage-1-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 17,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-1-15-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "mage-1-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 15,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-1-15-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "mage-1-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 14,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "mage-1-15-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "mage-1-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.flame_lance",
+          "mage.arcane_burst"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 17,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "rogue-0-1-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "rogue-0-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 1,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-0-1-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "rogue-0-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 1,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-0-1-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "rogue-0-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 3,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-0-1-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "rogue-0-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 1,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-0-1-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "rogue-0-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 1,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-0-1-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "rogue-0-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 3,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-0-5-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "rogue-0-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 5,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-0-5-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "rogue-0-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 4,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-0-5-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "rogue-0-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 7,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-0-5-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "rogue-0-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 5,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-0-5-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "rogue-0-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 4,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-0-5-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "rogue-0-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 7,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-0-10-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "rogue-0-10",
+        "class": "rogue",
+        "level": 10,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 10,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "rogue-0-10-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "rogue-0-10",
+        "class": "rogue",
+        "level": 10,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 9,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "rogue-0-10-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "rogue-0-10",
+        "class": "rogue",
+        "level": 10,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 12,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "rogue-0-10-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "rogue-0-10",
+        "class": "rogue",
+        "level": 10,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 10,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "rogue-0-10-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "rogue-0-10",
+        "class": "rogue",
+        "level": 10,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 9,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "rogue-0-10-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "rogue-0-10",
+        "class": "rogue",
+        "level": 10,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 12,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "rogue-0-14-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "rogue-0-14",
+        "class": "rogue",
+        "level": 14,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 14,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "rogue-0-14-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "rogue-0-14",
+        "class": "rogue",
+        "level": 14,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 13,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "rogue-0-14-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "rogue-0-14",
+        "class": "rogue",
+        "level": 14,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 16,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "rogue-0-14-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "rogue-0-14",
+        "class": "rogue",
+        "level": 14,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 14,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "rogue-0-14-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "rogue-0-14",
+        "class": "rogue",
+        "level": 14,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 13,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "rogue-0-14-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "rogue-0-14",
+        "class": "rogue",
+        "level": 14,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 16,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "rogue-0-15-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "rogue-0-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 15,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-0-15-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "rogue-0-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 14,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-0-15-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "rogue-0-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 17,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-0-15-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "rogue-0-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 15,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-0-15-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "rogue-0-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 14,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-0-15-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "rogue-0-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 17,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-1-1-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "rogue-1-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 1,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-1-1-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "rogue-1-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 1,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-1-1-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "rogue-1-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 3,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-1-1-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "rogue-1-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 1,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-1-1-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "rogue-1-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 1,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-1-1-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "rogue-1-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 3,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-1-5-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "rogue-1-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 5,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "rogue-1-5-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "rogue-1-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 4,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "rogue-1-5-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "rogue-1-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 7,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "defensive"
+    },
+    {
+      "id": "rogue-1-5-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "rogue-1-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 5,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "rogue-1-5-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "rogue-1-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 4,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "rogue-1-5-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "rogue-1-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 7,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "defensive"
+    },
+    {
+      "id": "rogue-1-10-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "rogue-1-10",
+        "class": "rogue",
+        "level": 10,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 10,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "rogue-1-10-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "rogue-1-10",
+        "class": "rogue",
+        "level": 10,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 9,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "rogue-1-10-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "rogue-1-10",
+        "class": "rogue",
+        "level": 10,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 12,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "resource"
+    },
+    {
+      "id": "rogue-1-10-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "rogue-1-10",
+        "class": "rogue",
+        "level": 10,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 10,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "rogue-1-10-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "rogue-1-10",
+        "class": "rogue",
+        "level": 10,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 9,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "rogue-1-10-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "rogue-1-10",
+        "class": "rogue",
+        "level": 10,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 12,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "resource"
+    },
+    {
+      "id": "rogue-1-14-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "rogue-1-14",
+        "class": "rogue",
+        "level": 14,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 14,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-1-14-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "rogue-1-14",
+        "class": "rogue",
+        "level": 14,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 13,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-1-14-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "rogue-1-14",
+        "class": "rogue",
+        "level": 14,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 16,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-1-14-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "rogue-1-14",
+        "class": "rogue",
+        "level": 14,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 14,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-1-14-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "rogue-1-14",
+        "class": "rogue",
+        "level": 14,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 13,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-1-14-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "rogue-1-14",
+        "class": "rogue",
+        "level": 14,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 16,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "basic"
+    },
+    {
+      "id": "rogue-1-15-wolf-0-1-ENGAGED",
+      "pc": {
+        "id": "rogue-1-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 15,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-1-15-boar--1-2-ENGAGED",
+      "pc": {
+        "id": "rogue-1-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 14,
+        "count": 2
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-1-15-wolf-2-1-ENGAGED",
+      "pc": {
+        "id": "rogue-1-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 17,
+        "count": 1
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-1-15-wolf-0-1-MEDIUM",
+      "pc": {
+        "id": "rogue-1-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 15,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-1-15-boar--1-2-MEDIUM",
+      "pc": {
+        "id": "rogue-1-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "boar",
+        "level": 14,
+        "count": 2
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "rogue-1-15-wolf-2-1-MEDIUM",
+      "pc": {
+        "id": "rogue-1-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.long_lunge",
+          "rogue.evasive_step"
+        ]
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 17,
+        "count": 1
+      },
+      "band": "MEDIUM",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-warrior-mage-1-ENGAGED",
+      "pc": {
+        "id": "warrior-0-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "id": "mage-0-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-mage-warrior-1-ENGAGED",
+      "pc": {
+        "id": "mage-0-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "id": "warrior-0-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-warrior-mage-1-LONG",
+      "pc": {
+        "id": "warrior-0-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "id": "mage-0-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-mage-warrior-1-LONG",
+      "pc": {
+        "id": "mage-0-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "id": "warrior-0-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-warrior-mage-5-ENGAGED",
+      "pc": {
+        "id": "warrior-0-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "id": "mage-0-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-mage-warrior-5-ENGAGED",
+      "pc": {
+        "id": "mage-0-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "id": "warrior-0-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-warrior-mage-5-LONG",
+      "pc": {
+        "id": "warrior-0-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "id": "mage-0-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-mage-warrior-5-LONG",
+      "pc": {
+        "id": "mage-0-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "id": "warrior-0-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-warrior-mage-15-ENGAGED",
+      "pc": {
+        "id": "warrior-0-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "id": "mage-0-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-mage-warrior-15-ENGAGED",
+      "pc": {
+        "id": "mage-0-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "id": "warrior-0-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-warrior-mage-15-LONG",
+      "pc": {
+        "id": "warrior-0-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "id": "mage-0-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-mage-warrior-15-LONG",
+      "pc": {
+        "id": "mage-0-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "id": "warrior-0-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-warrior-rogue-1-ENGAGED",
+      "pc": {
+        "id": "warrior-0-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "id": "rogue-0-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-rogue-warrior-1-ENGAGED",
+      "pc": {
+        "id": "rogue-0-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "id": "warrior-0-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-warrior-rogue-1-LONG",
+      "pc": {
+        "id": "warrior-0-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "id": "rogue-0-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-rogue-warrior-1-LONG",
+      "pc": {
+        "id": "rogue-0-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "id": "warrior-0-1",
+        "class": "warrior",
+        "level": 1,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-warrior-rogue-5-ENGAGED",
+      "pc": {
+        "id": "warrior-0-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "id": "rogue-0-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-rogue-warrior-5-ENGAGED",
+      "pc": {
+        "id": "rogue-0-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "id": "warrior-0-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-warrior-rogue-5-LONG",
+      "pc": {
+        "id": "warrior-0-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "id": "rogue-0-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-rogue-warrior-5-LONG",
+      "pc": {
+        "id": "rogue-0-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "id": "warrior-0-5",
+        "class": "warrior",
+        "level": 5,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-warrior-rogue-15-ENGAGED",
+      "pc": {
+        "id": "warrior-0-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "id": "rogue-0-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-rogue-warrior-15-ENGAGED",
+      "pc": {
+        "id": "rogue-0-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "id": "warrior-0-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-warrior-rogue-15-LONG",
+      "pc": {
+        "id": "warrior-0-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "opponent": {
+        "id": "rogue-0-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-rogue-warrior-15-LONG",
+      "pc": {
+        "id": "rogue-0-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "id": "warrior-0-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-mage-rogue-1-ENGAGED",
+      "pc": {
+        "id": "mage-0-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "id": "rogue-0-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-rogue-mage-1-ENGAGED",
+      "pc": {
+        "id": "rogue-0-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "id": "mage-0-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-mage-rogue-1-LONG",
+      "pc": {
+        "id": "mage-0-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "id": "rogue-0-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-rogue-mage-1-LONG",
+      "pc": {
+        "id": "rogue-0-1",
+        "class": "rogue",
+        "level": 1,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "id": "mage-0-1",
+        "class": "mage",
+        "level": 1,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-mage-rogue-5-ENGAGED",
+      "pc": {
+        "id": "mage-0-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "id": "rogue-0-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-rogue-mage-5-ENGAGED",
+      "pc": {
+        "id": "rogue-0-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "id": "mage-0-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-mage-rogue-5-LONG",
+      "pc": {
+        "id": "mage-0-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "id": "rogue-0-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-rogue-mage-5-LONG",
+      "pc": {
+        "id": "rogue-0-5",
+        "class": "rogue",
+        "level": 5,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "id": "mage-0-5",
+        "class": "mage",
+        "level": 5,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-mage-rogue-15-ENGAGED",
+      "pc": {
+        "id": "mage-0-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "id": "rogue-0-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-rogue-mage-15-ENGAGED",
+      "pc": {
+        "id": "rogue-0-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "id": "mage-0-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "band": "ENGAGED",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-mage-rogue-15-LONG",
+      "pc": {
+        "id": "mage-0-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "opponent": {
+        "id": "rogue-0-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "duel-rogue-mage-15-LONG",
+      "pc": {
+        "id": "rogue-0-15",
+        "class": "rogue",
+        "level": 15,
+        "skills": [
+          "rogue.razor_cut",
+          "rogue.piercing_thrust"
+        ]
+      },
+      "opponent": {
+        "id": "mage-0-15",
+        "class": "mage",
+        "level": 15,
+        "skills": [
+          "mage.arcane_bolt",
+          "mage.arcane_ward"
+        ]
+      },
+      "band": "LONG",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-E-normal",
+      "pc": {
+        "id": "warrior-0-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ],
+        "evolution": "normal"
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 15
+      },
+      "band": "SHORT",
+      "tactic": "skill"
+    },
+    {
+      "id": "warrior-E-rare",
+      "pc": {
+        "id": "warrior-0-15",
+        "class": "warrior",
+        "level": 15,
+        "skills": [
+          "warrior.heavy_slash",
+          "warrior.guard"
+        ],
+        "evolution": "rare"
+      },
+      "opponent": {
+        "anchor": "wolf",
+        "level": 15
+      },
+      "band": "SHORT",
+      "tactic": "skill"
+    }
+  ]
+}

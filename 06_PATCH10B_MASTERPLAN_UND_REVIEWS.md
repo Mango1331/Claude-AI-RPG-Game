@@ -1,6 +1,6 @@
 # Avereth Engine – Patch 10B: Masterplan, Designreviews, Testbefunde und Entscheidungsspeicher
 
-**Status:** Aktive **Beobachtungs-, Design- und Messphase**, **keine produktive 10B-Implementierungsfreigabe**.  
+**Status 24.10.2026:** Übergang von der Drei-Run-Analyse zu einer **gezielten 10B-Korrekturrunde**. Sols technischer Gegenreview und Folgefeedback liegen vor. **Implementierungsauftrag 10B-1 ist formuliert; noch keine Produktänderung, kein Testpatch und keine Live-Abnahme.** Weitere 10B-Pakete bleiben gesondert zu beauftragen.  
 **Erstfassung:** 24.10.2026 · **Hauptdokument auf `main`**.  
 **Entwicklungszweig:** `claude/c-planner-prototype-2026-10-02-gpt-c666`, beim Anlegen verifizierter HEAD `fd20d0dce0b0fc508b17810872b7933a5f00e994`, Engine `4.3.0-c.6.6.57`. Neue Git-HEADs stets live prüfen; diese Zeile ist ein datierter Snapshot.
 
@@ -20,7 +20,7 @@
 
 | Strang | Gegenstand | Belegstatus 24.10.2026 | Aktuelle Aktivität |
 |---|---|---|---|
-| **A – offene freie ST-Kampagnen** | `current_test` ohne Fixture ab echter Level-1-Erstellung; Ziel 100 echte Spielerzüge | Run 1 26 Züge/Tod; Run 2 25 Züge/leerer Narrator; **Run 3 21 Inputs/20 abgewickelte, Planner leer nach Delivery-Loop**. **0/3** erreichen Horizont | **JETZT:** weitere Runs starten und jeweils ausführlich reviewen/archivieren; nicht für Testerfolg manipulieren |
+| **A – offene freie ST-Kampagnen** | `current_test` ohne Fixture ab echter Level-1-Erstellung; Ziel 100 echte Spielerzüge | Run 1 26 Züge/Tod; Run 2 25 Züge/leerer Narrator; **Run 3 21 Inputs/20 abgewickelte, Planner leer nach Delivery-Loop**. **0/3** erreichen Horizont | **JETZT:** vier eng abgegrenzte Korrekturteilpatches vorbereiten; 10B-1 zuerst, dann eigene Reviews; `current_test` und Originalarchive unverändert |
 | **B – deterministische Kampf-/Wirtschaftssimulation** | echte JS-Engine, 3 Startklassen, Builds und Monster, Seeds | Portabler Simulator `fd20d0d` **implementiert**; zusätzliche 60.700 Läufe durch ChatGPT zuvor berichtet; Methodik muss fair eingegrenzt werden | Daten sammeln, Taktik-, Startdistanz- und NPC-Seitenasymmetrien ausweisen; **keine** globalen Nerfs |
 | **C – Verfolgung, Flucht, Rückzug, Bewegung, Monsterverhalten** | scheue Tiere, Band-System, Zeit-/Turn-Aufwand, Flee/Chase-Intent | Reale Hasen-/Fuchsjagd als Reibung dokumentiert; **bestehender** One-Roll-Escape-/Chase-Code verifiziert; genauen Fehlerpfad weiter isolieren | **DESIGN-FIX-KANDIDAT, ZURÜCKGESTELLT**, nach weiteren Runs/gezieltem Repro entscheiden |
 
@@ -34,7 +34,7 @@
 
 **P0/P1 für technische Planung:** 10B-T10 Delivery/Objective/Holder/Proof-Atomarität; T11 Planner`length`-Recovery; T12 keine frei erfundenen Rücklieferpflichten; T13 `give`-/`drop`-Semantik mit NPC-/Ortsangabe; T14 signierter Receipt/HUD-Verbrauch prüfen, **kein** pauschales Pflichtlöschen; T15 `extract.failed` bei ungültigem `place` und daraus folgender falscher Aufenthaltsort. **Dritter echter Lauf = dritter vorzeitiger Abbruch**, aber **drei verschiedene** unmittelbare Ursachen: Run 1 Tod/Agency, Run 2 Narrator vollständig leer, Run 3 Planner zweimal leer. Alle drei Mage, keine natürlichen Warrior/Rogue-/Levelkarrieren. Run 3 hat **kein** neues Kampfbalanceergebnis geliefert.
 
-**Quellen-/Archivstatus (GitHub am 24.10.2026 erneut geprüft):** [ausführlicher Run-3-Review](testrun_10b/20261024-041150Z-current_test/REVIEW.md) und [ZIP `20261024-041150Z-current_test.zip`](testrun_10b/20261024-041150Z-current_test/20261024-041150Z-current_test.zip) liegen auf `main` (3.652.300 Bytes, GitHub-Blob `42b8d4b114d15415257dfe587e874e7ab89941e4`). Der frühere Chat-Export hatte SHA-256 `09e8f7a172921442fd4939dbdf806fb15b326e78230959d439bd2ca7a099979b`; Byteidentität der GitHub-ZIP wurde hier noch nicht durch erneute SHA-256-Berechnung nachgewiesen. **Neue aktuelle Aufgabe:** Sol prüft die **drei originalen ZIPs und alle drei unabhängigen ChatGPT-Reviews** gegen Code und erarbeitet **einen priorisierten, testbaren technischen Patchplan mit Alternativen und minimalem Modulzuschnitt**; **keine Implementierung, keine Tests/Builds/Guides ändern, kein Commit von Produkt-Code ohne Nutzerfreigabe**.
+**Quellen-/Archivstatus (GitHub am 24.10.2026 erneut geprüft):** [ausführlicher Run-3-Review](testrun_10b/20261024-041150Z-current_test/REVIEW.md) und [ZIP `20261024-041150Z-current_test.zip`](testrun_10b/20261024-041150Z-current_test/20261024-041150Z-current_test.zip) liegen auf `main` (3.652.300 Bytes, GitHub-Blob `42b8d4b114d15415257dfe587e874e7ab89941e4`). Der frühere Chat-Export hatte SHA-256 `09e8f7a172921442fd4939dbdf806fb15b326e78230959d439bd2ca7a099979b`; Byteidentität der GitHub-ZIP wurde hier noch nicht durch erneute SHA-256-Berechnung nachgewiesen. **Aktualisierung nach abgeschlossenem Sol-Gegenreview (24.10.2026):** Sol hat nach eigenem Bericht alle drei Original-ZIPs samt drei ChatGPT-Reviews gegen Dev-HEAD `fd20d0d` geprüft, SHA-256-Abgleiche berichtet und zwei kleine lesende Funktionsproben ausgeführt; **keine neuen Red/Green-Tests oder vollständige Suite**. ChatGPT hat die zentralen Codepfade stichprobenartig gegengeprüft. Vier kleine, getrennt freizugebende Korrekturteilpatches wurden formuliert; **10B-1 (Fact-ID-Kollision und Guard/Resolver-`needs`) ist als erster Implementierungsauftrag vorbereitet, noch nicht umgesetzt**. Details und Quellen in §13.
 
 ---
 
@@ -404,7 +404,7 @@ Sterben darf passieren, wenn der Spieler berechtigt ein Risiko eingeht. Ein 26-Z
 | **10B-T03** | Narrator- und Memory-Truth | Run 1 erfundene 2.+3. Arcane Bolts → falscher Fact | P1 | Kampfaktionenzählung aus Engine-Records, Memory-Quellen prüfen | **OFFEN** |
 | **10B-T04** | Guild-Authority | Run 2 zwei Phantomjobs, zweimal `no such contract` | P1 | Offizielle Listings nur aus Board-/Quest-State, private Jobs weiter frei | **OFFEN** |
 | **10B-T05** | Zeit-/Reise-Konsistenz | Run 2 Abend trotz 08:33; Run 1 Phantom-Kutschbock-Ort | P1 | GO-/Zeit-Verträge, Story an bestätigten Zustand binden, keine Reise-Minutenzügepflicht | **OFFEN** |
-| **10B-T06** | Ausrüstung / Kampfdarstellung | Run 1 vier erzählte Bogenschützen, vorwiegend Nahkampf-Sheets | P1 | Materialisierung/Role-Weapon-Reach-Konsistenz | **OFFEN** |
+| **10B-T06** | Fakten-ID-Kollision / Waffenpersistenz | Sol-Gegenreview: vier `armed: bow`-Fakten zunächst erzeugt, identische auf 24 Zeichen gekürzte Subjektpräfixe in `setFactEvents` überschreiben einander in `state.facts[id]` | P1 / lokaler belegter Codefehler | **10B-1:** deterministische, für unterschiedliche Fakten eindeutige IDs; Dedupe und Functional-Historie erhalten | **AUFTRAG FORMULIERT, NICHT IMPLEMENTIERT** |
 | **10B-T07** | Private Quest-Lifecycle | Run 2 +1 cp, Quest aktiv | P1/P2 **Hypothese** | Objectives-/Bestätigung und private Completion prüfen | **OFFEN** |
 | **10B-T08** | LLM-/Extractor-Verträge | Run 2 Extractor failed, Fact `x=x`; 17 Player-JSON-Reparaturen | P2 | atomare Validierung, Dummy-Fact-Filter, JSON-Ausgabevertrag | **OFFEN** |
 | **10B-T09** | NPC/Location/Pacing | Run 2 `no_go` im begleiteten Innenraum, „Present“ leer | P2 | begrenzte Escort-Location-Regel oder ehrliche UI-Semantik | **OFFEN** |
@@ -414,6 +414,7 @@ Sterben darf passieren, wenn der Spieler berechtigt ein Risiko eingeht. Ein 26-Z
 | **10B-T13** | GIVE-/DROP-/Multi-Intent-Integration | Run 3 T14/T16/T18 Give conditional/expired oder nicht interpretiert; T19 Drop funktioniert | **P1 Player Agency/Inventar** | Freiwilliger Player-Give muss möglich bleiben, `pc_inventory`-Firewall erhalten | **OFFEN** |
 | **10B-T14** | unterschriebener Receipt vs. Guild-Slip | Run 3 T20 Narrator behauptet Entgegennahme, Objekt verbleibt beim PC; proof.consume=false | **P2 Prüfen** | echte Paper-/Beleg-Semantik, nicht blind löschen | **OFFEN** |
 | **10B-T15** | Extractor-Ortsstatus / False Progress | Run 3 T6 `extract.failed` unzulässiger `place`-Delta bei narrativem Ladenbesuch | **P1/P2 Prüfen** | atomare Extractor-Verträge, bestätigten Ort statt Narrator-Prosa verwenden | **OFFEN** |
+| **10B-T16** | Guard-/Resolver-`needs` nach redundanter Registrierung | Run 2 E13: Guard entfernt `guild.register` als redundant; `offer.accept needs:1` scheitert trotz laufender Anmeldung (`membership(s)` noch false) | P1 / lokaler belegter Codefehler | **10B-1:** nachweisbar bereits erfüllte/ersetzte Abhängigkeit zulassen, aber unautorisierte Vorgänger weiter sperren | **AUFTRAG FORMULIERT, NICHT IMPLEMENTIERT** |
 | **10B-M01** | Loot/Anatomie | Hare/Doe/Goat Antler reproduzierbar | deutlich / lokaler echter Bug | **D:** Spezialbeute nur bei bestätigtem Körpermerkmal; keine globale Species-Tabelle | **OFFEN** |
 | **10B-M02** | Monster-Sapienz | `creatureCombatant: sapient:false` | Architekturdefizit | nur belegte individuelle Sapienz über vorhandenen State/Consumer | **OFFEN** |
 | **10B-M03** | Monster-Specials | Gift/Flug/Korrosion nur Prosa/Angriffslables | Designlücke bei relevanten Fällen | bestehende typisierte Skill-/Effekt-Primitive punktuell wiederverwenden | **OFFEN** |
@@ -431,7 +432,7 @@ Sterben darf passieren, wenn der Spieler berechtigt ein Risiko eingeht. Ein 26-Z
 
 ## 11. Noch ausstehende Design- und Releaseentscheidungen
 
-**Aktueller nächster Auftrag, ausdrücklich NUR ANALYSE:** Sol soll vor jeder Produktänderung **alle 3 Runs mit Original-ZIPs und 3 ChatGPT-Reviews** unabhängig gegen den Dev-Code überprüfen und daraus einen **konkreten technischen 10B-Patchplan (ohne Implementierung)** schreiben. Danach entscheidet der Nutzer über tatsächliche kleine Fixphasen. Bis dahin werden weitere offene Tests weiterhin gesammelt. Monster-/Chase-Design bleibt als Kandidat erhalten.
+**Aktueller Stand 24.10.2026:** Sols angeforderter unabhängiger Drei-Run-Codegegenreview ist als schriftliche Analyse eingegangen. Darauf folgten ChatGPTs kritischer Review und Sols überarbeiteter Vier-Teilpatchplan. Der Nutzer hat anschließend **den Implementierungsauftrag für 10B-1 zur Formulierung angefordert**. Er ist in §13 dokumentiert; **es gibt zum Zeitpunkt dieses Eintrags keinen ausgeführten 10B-1-Fix, keine implementierten Tests und keine bestätigte neue Buildversion**. Claude soll nur nach ausdrücklicher Übergabe dieses Auftrags den Dev-Branch ändern. Monster-/Chase-Design und numerisches Balancing bleiben zurückgestellt.
 
 Später zu entscheiden, nach Evidenz:
 
@@ -443,7 +444,7 @@ Später zu entscheiden, nach Evidenz:
 - Ab wann ist B methodisch ausreichend für **Klassen- und Monsterbalance**? Sols PC-vs.-NPC-Vergleiche nicht als endgültig spiegelgleich behandeln.
 - Abschließendes XP-/Farm-/Stone-/Gear-Balancing, Blink, Spell-/Passive-Werte, Lootwert, Dungeonprogression und Perf erst mit ausreichendem Gameplaybeleg und ursprünglicher 53-Punkte-Prüfgrundlage entscheiden.
 
-**Verbindlicher Handoff-Satz für neue Chats:** *„Patch 10B befindet sich in der Befundsammlung; die ausführliche lebende Hauptquelle ist `06_PATCH10B_MASTERPLAN_UND_REVIEWS.md`, die echten Einzellaufbelege liegen unverändert unter `testrun_10b`. Bitte nicht aus alten 03/04-Patchnotizen sofort neue Codeaufträge machen. Der Nutzer lässt vorerst freie Tests laufen; neue Design-, Monster- und Chase-Reviews dokumentieren, erst nach ausdrücklicher Freigabe implementieren.“*
+**Verbindlicher Handoff-Satz für neue Chats (24.10.2026):** *„Patch 10B ist nach drei echten `.57`-Läufen und dem unabhängigen Sol-Gegenreview in die Planung kleiner Korrekturpakete übergegangen. Masterquelle: `06_PATCH10B_MASTERPLAN_UND_REVIEWS.md`; unveränderte Original-Runs unter `testrun_10b`. **10B-1** (Fakten-ID-Kollision + verwaistes `needs` nach Guard) ist als Implementierungsauftrag formuliert, **noch nicht umgesetzt**. Weitere Pakete 10B-2 Lieferung, 10B-3 Combat/Authority, 10B-4 LLM-Recovery erst getrennt beauftragen. Design-, Monster-, Chase- und Balancingkandidaten nicht stillschweigend mitfixen; nach jedem Patch main-Dokumentation hier samt Commit/Testbelegen aktualisieren.“*
 
 ---
 
@@ -466,3 +467,58 @@ Später zu entscheiden, nach Evidenz:
 - [Run 1 – REVIEW + ZIP](testrun_10b/20261024-030002Z-current_test/) und [Run 2 – REVIEW + ZIP](testrun_10b/20261024-033325Z-current_test/). Bei neuen Runs bleibt deren eigene vollständige Auswertung führend.
 
 **Pflegevermerk:** Historisches nicht löschen, wenn es eine echte Entscheidung oder eine widerlegte Hypothese erklärt; dabei **klar den aktuellen Status darüberstellen**. Diese MD ist absichtlich ausführlich, die vier anderen Projekt-MDs sollen bei normalen 10B-Runs schlank bleiben.
+
+
+---
+
+## 13. Sols unabhängiger Drei-Run-Gegenreview, Folgeabstimmung und der erste Implementierungsauftrag (24.10.2026)
+
+### 13.1 Quellenstatus und verbindliche Interpretation
+
+**[BERICHTET]** Sols unabhängige technische Analyse (vom Nutzer als \`Chatgpt Feedback(9).md\` übermittelt): alle drei Original-Run-ZIPs einschließlich SHA-256 mit den drei vollständigen ChatGPT-\`REVIEW.md\` verglichen; Dev-HEAD \`fd20d0d\`, Engine \`.57\`. Zwei kleine lesende Funktionsproben, **keine vollständige Testsuite**, keine implementierten Regressionen und keine Produktänderung. Anschließend hat ChatGPT die Befunde bewertet und die neuen Ursachen in den maßgeblichen Codepfaden überprüft. Sols späteres Folgefeedback \`Chatgpt Feedback(20261024-050831).md\` übernimmt insbesondere die Engine-only-Evidenzregel für Lieferungen, den kleinen Scope der ID- und Abhängigkeitsfixes und die strikte Phasentrennung der LLM-Retries. **Die beiden vom Nutzer eingebrachten Feedbackdateien sind Gesprächsquellen; sie werden hier inhaltlich dokumentiert, nicht als bereits zusätzlich auf Git committed behauptet.**
+
+**[BELEGT: Codepfad und Run-Symptom]** 
+- Run 1, vier erzählte Bögen: \`src/knowledge.js:setFactEvents\` erzeugt automatisch \`f.<slugPart(s)>.<slugPart(p)>.t<turn>\`; \`slugPart\` kürzt auf 24 Zeichen. \`src/state.js\` speichert \`state.facts[d.fact.id] = clone(d.fact)\`. Bei langen ähnlich beginnenden NPC-IDs entstehen so identische Fakten-IDs und spätere \`armed: bow\`-Fakten überschreiben frühere. **Kein genereller NPC-Klassen-/Fernkampfumbau erforderlich.**
+- Run 2, Gildenregistrierung E13: \`src/v4/agency.js\` entfernt \`guild.register\` unter Bedingungen als \`redundant\`, wenn bereits ein Registrierungsverfahren läuft und die Zahlung folgen soll. \`src/v4/commands.js:resolveCommands\` prüft \`needs\` jedoch gegen ausgeführte Sequenzschritte; solange \`membership(s)\` noch nicht wahr ist, bleibt \`offer.accept\` an den entfernten Schritt gekoppelt und wird als \`needs step 1\` verweigert. **Nicht Tresen-gegen-Gebührenbox als eigentliche Codeursache reparieren.**
+- Run 3, Delivery-Loop: \`src/v4/guild.js:contractReady\` prüft bei Lieferungen derzeit negativ auf noch vom PC getragene Fracht und kann danach \`q.ready\` als \`story_outcome\` akzeptieren. \`src/v4/world.js\` setzt READY vor später erzeugten Objekten und erfasst in \`refusedMoves\` nicht alle handlerseitigen \`objectMove\`-Ablehnungen. Der echte Transfer am Vertragsziel ist bislang nicht als positiver Nachweis geschützt. **Späterer 10B-2-Fix; NICHT Bestandteil von 10B-1.**
+- Weitere Sol-Diagnosen: Run 1 Drohung ≠ ausgeführter Angriff; Run 2 leere Narratorantwort und Phantom-Gildenangebote; Run 3 doppelt leerer Planner; gleiche Klasse von Authority-/Providerproblemen, aber unterschiedliche Consumer und Sicherheitsregeln. Kein numerischer Balancebeleg aus den drei offenen Runs.
+
+**Aktuelle Pakettrennung (noch nicht pauschal freigegeben):**
+1. **10B-1 – Faktenidentität und redundante \`needs\`-Vorgänger**: Implementierungsauftrag formuliert, zuerst vorgesehen; exakte Arbeitsanweisung nachstehend.
+2. **10B-2 – freiwillige GIVE/GO→GIVE-Übergabe, positiver Engine-only-Lieferbeleg, konsistente READY-/Proof-Prüfung**: eigener mittelgroßer Patch mit strengem Replay-/Migrationsschutz.
+3. **10B-3 – autonome Kampfeskalation nur bei belegtem Angriff, mechanische Kampfchronik/Memory-Truth, offizielle Guild-Board-Authority**: eigenes Paket; negative Drohungs- und positive Hinterhaltsfälle nötig.
+4. **10B-4 – begrenzte leere Planner-/Narrator-Recovery und präzise Runner-Endgründe**: phasensicher; Narrator automatisch regenerieren ausschließlich nach echtem SillyTavern-Hostnachweis.
+
+Reise-/Zeitmodell, ausgreifende NPC-Präsenzreparaturen, Monster- und Chase-Design, XP, Skill-/Kampfbalance und allgemeine Performanceoptimierung sind nicht Teil von 10B-1. Der konkrete Phantom-Kutschbock-Ort aus Run 1 bleibt als später gezielt zu reproduzierender Defekt unter T05 erhalten.
+
+### 13.2 Patch 10B-1 – ausformulierter ausführbarer Auftrag an Claude
+
+**Ziel und Branch:** Ausschließlich **10B-1** implementieren auf \`claude/c-planner-prototype-2026-10-02-gpt-c666\`, verifizierter Ausgangs-HEAD \`fd20d0dce0b0fc508b17810872b7933a5f00e994\` / \`4.3.0-c.6.6.57\`. Bei neuem HEAD den aktuellen Diff prüfen. Keine Änderungen am \`main\`-Enginecode, \`current_test\`, den Test-ZIPs oder an 10B-2/3/4.
+
+**Fehler A: kollisionsfreie automatische Fakten-IDs**
+- Betroffene Module: \`src/knowledge.js\`, ggf. minimaler bereits vorhandener Event-/State-Consumer; bestehende V4-C-NPC-Waffen- und Knowledge-Tests.
+- Unterschiedliche Subjekt-/Prädikat-/Wert-Aussagen und mehrere unterschiedliche Werte desselben Subjekts/Prädikats im selben Turn dürfen keine identische ID besitzen. Auch A→B→A desselben funktionalen Fakts innerhalb eines Turns muss seine Historie bewahren.
+- IDs ausschließlich deterministisch/replayfähig bilden, mit vorhandenen Mitteln und ohne zufällige UUIDs oder neue Bibliothek. Zur Anzeige gekürzte Schlüssel nicht als eindeutige Identität verwenden. Bereits explizit gesetzte stabile IDs, aktuelle Deduplizierung, Functional-\`fact.ended\`, Knowledge-Verweise und alte Event-IDs unangetastet lassen.
+- Test **F1**: vier lange gleich beginnende Banditen-IDs mit vier \`armed: bow\`-Fakten ergeben vier separate persistierte Fakten und vier korrekte materialisierte Fernkampfprofile. Test **F2**: zwei verschiedene nichtfunktionale Werte im selben Turn bleiben getrennt; identische Wiederholung wird dedupliziert. **F3**: mehrfache Änderungen funktionaler Fakten inklusive A→B→A mit korrekter Historie. **F4**: explizite IDs bleiben unverändert. **F5**: deterministisches Fold/Reload, keine verlorenen Wissensreferenzen oder rückwirkend erfundenen historischen Fakten.
+
+**Fehler B: vom Guard zu Recht entfernte redundante Vorgänger**
+- Betroffene Module: \`src/v4/agency.js:guardCommands\`, \`src/v4/commands.js:resolveCommands\`, die unmittelbare Planner-/Runtime-Übergabe nur soweit wirklich nötig.
+- \`needs\` ausschließlich dann als bereits erfüllt/ersetzt behandeln, wenn der gültige Enginezustand beziehungsweise eine nachweisbar dieselbe Transaktion diese Voraussetzung tatsächlich deckt. Ein offenes Registrierungsverfahren allein ist nicht mit abgeschlossener Mitgliedschaft gleichzusetzen. Zahlung, Mitgliedschaft und Replay bleiben Engine-owned; **niemals alle \`needs\` pauschal löschen**.
+- Test **A1**: Registrierung pending, redundantes \`guild.register\` entfernt, \`offer.accept needs\` führt zu exakt **einer** Abbuchung und **einer** Mitgliedschaft. **A2**: \`no_evidence\`/\`npc_actor\`/\`negation\`/\`plan\` und vergleichbare unautorisierte Vorgänger erfüllen keine \`needs\`. **A3**: verweigerter oder noch offener Vorgänger blockiert den Folge-Commit. **A4**: wirklich bereits erfüllte Vorgänger führen nicht zur künstlichen Wiederholung. **A5**: Rephrase, Fold/Reload ohne doppelte Zahlung oder Mitgliedschaft. Bestehende Käufe, Räume, Verkäufe und andere abhängige Kommandos bleiben geschützt.
+
+**Verpflichtender Implementierungs- und Testablauf:** 
+1. Aktuellen Dev-HEAD und relevante Funktionen lesen.
+2. Eng begrenzte Red-Regressionen **vor dem Fix** ausführen und ursprüngliche Ausfallursache protokollieren; keine vorhandenen Tests künstlich rot machen.
+3. Kleinsten passenden Code-Diff implementieren; keine neue Architektur.
+4. Neue Regressionen, betroffene Suites und anschließend vollständige Testsuite mit echten Zahlen ausführen; Event-Replay/Reload gesondert prüfen.
+5. Selbstreview des Diffs auf neue Fact-Kollisionen, versehentlich erweiterte Autorisierungen, doppelte Geldbuchungen und Legacy-/V4-A-Vertragsbrüche.
+6. Version und technische Patchnotes nur entsprechend tatsächlichem Code- und Teststand aktualisieren; Dev-Änderungen committen und HEAD/Build/Testbelege melden.
+7. Sol/ChatGPT unabhängige Reviewvorlage geben. **Nur implementiert/getestet markieren, was tatsächlich bestätigt ist; Live-Abnahme folgt erst nach passenden echten ST-Läufen.**
+
+**Ausdrücklich ausgeschlossen:** Delivery/READY/GIVE-/Questumlagerung (10B-2), Kampfstart/Narrator/Memory/Board (10B-3), LLM-Retries/Provider (10B-4), Reise-/Monster-/Chase-/Balanceänderungen.
+
+### 13.3 Dokumentationsrhythmus und nächste Kontrolle
+
+**Dokumentation auf \`main\` wird nach jedem 10B-Meilenstein aktualisiert, nicht erst am Ende der ganzen 10B-Serie**: nach Auftragserstellung (dieser Eintrag), nach Claude-Implementierung (tatsächlicher Diff/Build/Commit), nach unabhängigem Review (bestätigt/offen), nach eventuellen Nachfixes und nach Live-Abnahme (Test-Run-ID und Ergebnis). Historische Befunde dabei nicht löschen; in §0 und in der Matrix den aktuellen Stand klar darüberstellen. Die Root-Dateien 01–04 nur bei echten Rollen-/Kanon-/großen Projektmeilensteinen knapp nachführen. Noch keine Aussage über den Erfolg oder die Implementierung von 10B-1.
+
+**Quellen:** Einzelreviews mit ZIPs [Run 1](testrun_10b/20261024-030002Z-current_test/REVIEW.md), [Run 2](testrun_10b/20261024-033325Z-current_test/REVIEW.md), [Run 3](testrun_10b/20261024-041150Z-current_test/REVIEW.md). Die beiden Sol-Gegenreview-Dateien wurden vom Nutzer am 24.10.2026 im Projektchat übermittelt. Maßgeblicher Dev-Code-Snapshot: [\`fd20d0d\`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/fd20d0dce0b0fc508b17810872b7933a5f00e994).

@@ -1,6 +1,6 @@
 # Avereth Engine – Patch 10B: Masterplan, Designreviews, Testbefunde und Entscheidungsspeicher
 
-**Status 24.10.2026:** Übergang von der Drei-Run-Analyse zu einer **gezielten 10B-Korrekturrunde**. Sols technischer Gegenreview und Folgefeedback liegen vor. **Implementierungsauftrag 10B-1 ist formuliert; noch keine Produktänderung, kein Testpatch und keine Live-Abnahme.** Weitere 10B-Pakete bleiben gesondert zu beauftragen.  
+**Status 24.10.2026:** Übergang von der Drei-Run-Analyse zu einer **gezielten 10B-Korrekturrunde**. Sols technischer Gegenreview und Folgefeedback liegen vor. **10B-1 ist durch Codex implementiert und selbst getestet: Build `.58`, Commit `e6c76b4`, 1286/1286 Tests. Unabhängiges Review und Live-Abnahme stehen aus.** Weitere 10B-Pakete bleiben gesondert zu beauftragen.  
 **Erstfassung:** 24.10.2026 · **Hauptdokument auf `main`**.  
 **Entwicklungszweig:** `claude/c-planner-prototype-2026-10-02-gpt-c666`, beim Anlegen verifizierter HEAD `fd20d0dce0b0fc508b17810872b7933a5f00e994`, Engine `4.3.0-c.6.6.57`. Neue Git-HEADs stets live prüfen; diese Zeile ist ein datierter Snapshot.
 
@@ -404,7 +404,7 @@ Sterben darf passieren, wenn der Spieler berechtigt ein Risiko eingeht. Ein 26-Z
 | **10B-T03** | Narrator- und Memory-Truth | Run 1 erfundene 2.+3. Arcane Bolts → falscher Fact | P1 | Kampfaktionenzählung aus Engine-Records, Memory-Quellen prüfen | **OFFEN** |
 | **10B-T04** | Guild-Authority | Run 2 zwei Phantomjobs, zweimal `no such contract` | P1 | Offizielle Listings nur aus Board-/Quest-State, private Jobs weiter frei | **OFFEN** |
 | **10B-T05** | Zeit-/Reise-Konsistenz | Run 2 Abend trotz 08:33; Run 1 Phantom-Kutschbock-Ort | P1 | GO-/Zeit-Verträge, Story an bestätigten Zustand binden, keine Reise-Minutenzügepflicht | **OFFEN** |
-| **10B-T06** | Fakten-ID-Kollision / Waffenpersistenz | Sol-Gegenreview: vier `armed: bow`-Fakten zunächst erzeugt, identische auf 24 Zeichen gekürzte Subjektpräfixe in `setFactEvents` überschreiben einander in `state.facts[id]` | P1 / lokaler belegter Codefehler | **10B-1:** deterministische, für unterschiedliche Fakten eindeutige IDs; Dedupe und Functional-Historie erhalten | **AUFTRAG FORMULIERT, NICHT IMPLEMENTIERT** |
+| **10B-T06** | Fakten-ID-Kollision / Waffenpersistenz | Sol-Gegenreview: vier `armed: bow`-Fakten zunächst erzeugt, identische auf 24 Zeichen gekürzte Subjektpräfixe in `setFactEvents` überschreiben einander in `state.facts[id]` | P1 / lokaler belegter Codefehler | **10B-1:** deterministische, für unterschiedliche Fakten eindeutige IDs; Dedupe und Functional-Historie erhalten | **IMPLEMENTIERT / SELBST GETESTET (.58); REVIEW/LIVE OFFEN** |
 | **10B-T07** | Private Quest-Lifecycle | Run 2 +1 cp, Quest aktiv | P1/P2 **Hypothese** | Objectives-/Bestätigung und private Completion prüfen | **OFFEN** |
 | **10B-T08** | LLM-/Extractor-Verträge | Run 2 Extractor failed, Fact `x=x`; 17 Player-JSON-Reparaturen | P2 | atomare Validierung, Dummy-Fact-Filter, JSON-Ausgabevertrag | **OFFEN** |
 | **10B-T09** | NPC/Location/Pacing | Run 2 `no_go` im begleiteten Innenraum, „Present“ leer | P2 | begrenzte Escort-Location-Regel oder ehrliche UI-Semantik | **OFFEN** |
@@ -414,7 +414,7 @@ Sterben darf passieren, wenn der Spieler berechtigt ein Risiko eingeht. Ein 26-Z
 | **10B-T13** | GIVE-/DROP-/Multi-Intent-Integration | Run 3 T14/T16/T18 Give conditional/expired oder nicht interpretiert; T19 Drop funktioniert | **P1 Player Agency/Inventar** | Freiwilliger Player-Give muss möglich bleiben, `pc_inventory`-Firewall erhalten | **OFFEN** |
 | **10B-T14** | unterschriebener Receipt vs. Guild-Slip | Run 3 T20 Narrator behauptet Entgegennahme, Objekt verbleibt beim PC; proof.consume=false | **P2 Prüfen** | echte Paper-/Beleg-Semantik, nicht blind löschen | **OFFEN** |
 | **10B-T15** | Extractor-Ortsstatus / False Progress | Run 3 T6 `extract.failed` unzulässiger `place`-Delta bei narrativem Ladenbesuch | **P1/P2 Prüfen** | atomare Extractor-Verträge, bestätigten Ort statt Narrator-Prosa verwenden | **OFFEN** |
-| **10B-T16** | Guard-/Resolver-`needs` nach redundanter Registrierung | Run 2 E13: Guard entfernt `guild.register` als redundant; `offer.accept needs:1` scheitert trotz laufender Anmeldung (`membership(s)` noch false) | P1 / lokaler belegter Codefehler | **10B-1:** nachweisbar bereits erfüllte/ersetzte Abhängigkeit zulassen, aber unautorisierte Vorgänger weiter sperren | **AUFTRAG FORMULIERT, NICHT IMPLEMENTIERT** |
+| **10B-T16** | Guard-/Resolver-`needs` nach redundanter Registrierung | Run 2 E13: Guard entfernt `guild.register` als redundant; `offer.accept needs:1` scheitert trotz laufender Anmeldung (`membership(s)` noch false) | P1 / lokaler belegter Codefehler | **10B-1:** nachweisbar bereits erfüllte/ersetzte Abhängigkeit zulassen, aber unautorisierte Vorgänger weiter sperren | **IMPLEMENTIERT / SELBST GETESTET (.58); REVIEW/LIVE OFFEN** |
 | **10B-M01** | Loot/Anatomie | Hare/Doe/Goat Antler reproduzierbar | deutlich / lokaler echter Bug | **D:** Spezialbeute nur bei bestätigtem Körpermerkmal; keine globale Species-Tabelle | **OFFEN** |
 | **10B-M02** | Monster-Sapienz | `creatureCombatant: sapient:false` | Architekturdefizit | nur belegte individuelle Sapienz über vorhandenen State/Consumer | **OFFEN** |
 | **10B-M03** | Monster-Specials | Gift/Flug/Korrosion nur Prosa/Angriffslables | Designlücke bei relevanten Fällen | bestehende typisierte Skill-/Effekt-Primitive punktuell wiederverwenden | **OFFEN** |
@@ -432,7 +432,7 @@ Sterben darf passieren, wenn der Spieler berechtigt ein Risiko eingeht. Ein 26-Z
 
 ## 11. Noch ausstehende Design- und Releaseentscheidungen
 
-**Aktueller Stand 24.10.2026:** Sols angeforderter unabhängiger Drei-Run-Codegegenreview ist als schriftliche Analyse eingegangen. Darauf folgten ChatGPTs kritischer Review und Sols überarbeiteter Vier-Teilpatchplan. Der Nutzer hat anschließend **den Implementierungsauftrag für 10B-1 zur Formulierung angefordert**. Er ist in §13 dokumentiert; **es gibt zum Zeitpunkt dieses Eintrags keinen ausgeführten 10B-1-Fix, keine implementierten Tests und keine bestätigte neue Buildversion**. Claude soll nur nach ausdrücklicher Übergabe dieses Auftrags den Dev-Branch ändern. Monster-/Chase-Design und numerisches Balancing bleiben zurückgestellt.
+**Planungsstand vor Implementierung (24.10.2026; durch §13.4 überholt):** Sols angeforderter unabhängiger Drei-Run-Codegegenreview ist als schriftliche Analyse eingegangen. Darauf folgten ChatGPTs kritischer Review und Sols überarbeiteter Vier-Teilpatchplan. Der Nutzer hat anschließend **den Implementierungsauftrag für 10B-1 zur Formulierung angefordert**. Er ist in §13 dokumentiert; **es gibt zum Zeitpunkt dieses Eintrags keinen ausgeführten 10B-1-Fix, keine implementierten Tests und keine bestätigte neue Buildversion**. Claude soll nur nach ausdrücklicher Übergabe dieses Auftrags den Dev-Branch ändern. Monster-/Chase-Design und numerisches Balancing bleiben zurückgestellt.
 
 Später zu entscheiden, nach Evidenz:
 
@@ -444,7 +444,7 @@ Später zu entscheiden, nach Evidenz:
 - Ab wann ist B methodisch ausreichend für **Klassen- und Monsterbalance**? Sols PC-vs.-NPC-Vergleiche nicht als endgültig spiegelgleich behandeln.
 - Abschließendes XP-/Farm-/Stone-/Gear-Balancing, Blink, Spell-/Passive-Werte, Lootwert, Dungeonprogression und Perf erst mit ausreichendem Gameplaybeleg und ursprünglicher 53-Punkte-Prüfgrundlage entscheiden.
 
-**Verbindlicher Handoff-Satz für neue Chats (24.10.2026):** *„Patch 10B ist nach drei echten `.57`-Läufen und dem unabhängigen Sol-Gegenreview in die Planung kleiner Korrekturpakete übergegangen. Masterquelle: `06_PATCH10B_MASTERPLAN_UND_REVIEWS.md`; unveränderte Original-Runs unter `testrun_10b`. **10B-1** (Fakten-ID-Kollision + verwaistes `needs` nach Guard) ist als Implementierungsauftrag formuliert, **noch nicht umgesetzt**. Weitere Pakete 10B-2 Lieferung, 10B-3 Combat/Authority, 10B-4 LLM-Recovery erst getrennt beauftragen. Design-, Monster-, Chase- und Balancingkandidaten nicht stillschweigend mitfixen; nach jedem Patch main-Dokumentation hier samt Commit/Testbelegen aktualisieren.“*
+**Historischer Handoff vor Implementierung (durch §13.4 ersetzt):** *„Patch 10B ist nach drei echten `.57`-Läufen und dem unabhängigen Sol-Gegenreview in die Planung kleiner Korrekturpakete übergegangen. Masterquelle: `06_PATCH10B_MASTERPLAN_UND_REVIEWS.md`; unveränderte Original-Runs unter `testrun_10b`. **10B-1** (Fakten-ID-Kollision + verwaistes `needs` nach Guard) ist als Implementierungsauftrag formuliert, **noch nicht umgesetzt**. Weitere Pakete 10B-2 Lieferung, 10B-3 Combat/Authority, 10B-4 LLM-Recovery erst getrennt beauftragen. Design-, Monster-, Chase- und Balancingkandidaten nicht stillschweigend mitfixen; nach jedem Patch main-Dokumentation hier samt Commit/Testbelegen aktualisieren.“*
 
 ---
 
@@ -491,7 +491,7 @@ Später zu entscheiden, nach Evidenz:
 
 Reise-/Zeitmodell, ausgreifende NPC-Präsenzreparaturen, Monster- und Chase-Design, XP, Skill-/Kampfbalance und allgemeine Performanceoptimierung sind nicht Teil von 10B-1. Der konkrete Phantom-Kutschbock-Ort aus Run 1 bleibt als später gezielt zu reproduzierender Defekt unter T05 erhalten.
 
-### 13.2 Patch 10B-1 – ausformulierter ausführbarer Auftrag an Claude
+### 13.2 Patch 10B-1 – ursprünglicher Implementierungsauftrag (durch Codex umgesetzt; §13.4)
 
 **Ziel und Branch:** Ausschließlich **10B-1** implementieren auf \`claude/c-planner-prototype-2026-10-02-gpt-c666\`, verifizierter Ausgangs-HEAD \`fd20d0dce0b0fc508b17810872b7933a5f00e994\` / \`4.3.0-c.6.6.57\`. Bei neuem HEAD den aktuellen Diff prüfen. Keine Änderungen am \`main\`-Enginecode, \`current_test\`, den Test-ZIPs oder an 10B-2/3/4.
 
@@ -522,3 +522,18 @@ Reise-/Zeitmodell, ausgreifende NPC-Präsenzreparaturen, Monster- und Chase-Desi
 **Dokumentation auf \`main\` wird nach jedem 10B-Meilenstein aktualisiert, nicht erst am Ende der ganzen 10B-Serie**: nach Auftragserstellung (dieser Eintrag), nach Claude-Implementierung (tatsächlicher Diff/Build/Commit), nach unabhängigem Review (bestätigt/offen), nach eventuellen Nachfixes und nach Live-Abnahme (Test-Run-ID und Ergebnis). Historische Befunde dabei nicht löschen; in §0 und in der Matrix den aktuellen Stand klar darüberstellen. Die Root-Dateien 01–04 nur bei echten Rollen-/Kanon-/großen Projektmeilensteinen knapp nachführen. Noch keine Aussage über den Erfolg oder die Implementierung von 10B-1.
 
 **Quellen:** Einzelreviews mit ZIPs [Run 1](testrun_10b/20261024-030002Z-current_test/REVIEW.md), [Run 2](testrun_10b/20261024-033325Z-current_test/REVIEW.md), [Run 3](testrun_10b/20261024-041150Z-current_test/REVIEW.md). Die beiden Sol-Gegenreview-Dateien wurden vom Nutzer am 24.10.2026 im Projektchat übermittelt. Maßgeblicher Dev-Code-Snapshot: [\`fd20d0d\`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/fd20d0dce0b0fc508b17810872b7933a5f00e994).
+
+
+### 13.4 10B-1 durch Codex implementiert und selbst getestet – .58, 24.10.2026
+
+**Aktueller Stand:** Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666` wurde von `fd20d0d` auf [`e6c76b4`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/e6c76b4aada6fbb0d2ba18a48a2ed623afa53d7d) vorgerückt. Build **4.3.0-c.6.6.58**, Narrator-Vertrag **.55 unverändert**. Der Nutzer hat den ausdrücklichen Implementierungsauftrag als Anhang übergeben; Codex hat ausschließlich 10B-1 umgesetzt. Claude übernimmt das unabhängige Gegenreview. **Kein echter ST-/GLM-Livetest in dieser Umsetzung; keine Live-Abnahme.**
+
+**Produktänderungen nur in zwei Fachmodulen:** `src/knowledge.js` erzeugt automatische Fakten-IDs mit vollständiger Subjekt-/Prädikatsidentität im Hash und deterministischem Belegungscheck (auch gegen Hashkollisionen und A→B→A-Historie innerhalb eines Turns). `src/v4/commands.js` lässt die abhängige Annahme des offenen kanonischen Registrierungsangebots nach einem vom Guard redundant entfernten Registrierungswunsch zu. Die normalen Angebots-/Geld-/Ortsprüfungen bleiben zuständig. Echte Guard-Ablehnungen erfüllen auch bei bestehender Mitgliedschaft keine Vorgängerabhängigkeit. Keine Änderungen am Agency-Guard oder allgemeine Freigabe von `needs`.
+
+**Selbst ausgeführte Nachweise:** 11 neue Regressionen (`tests/v4/patch10b1.test.js`), finaler Rotlauf mit unveränderten .57-Modulen **5/11 grün, genau 6 rot**; nach Fix **11/11 grün**. Angrenzende Agency-/c66-Prüfungen samt neuen Tests **125/125**, ein vollständiger npm-test-Abschlusslauf **1286/1286**, keine Fehler. Fakten-/Materialisierungs- und Knowledge-Referenz-Replay nach JSON-Serialisierung, echter V4-C-Planner-/Guard-/Handlerpfad der Registrierung, negative Abhängigkeiten, geschlossene Angebote, fehlendes Geld und V4-A-Verhalten abgedeckt. Keine unabhängige Testbestätigung durch Claude behauptet.
+
+**Legacy-/Save-Grenze:** Neue automatische Fakten-IDs ändern sich auch im gemeinsamen Legacy/V4-A-Knowledge-Helfer: bewusste Korrektur des gemeinsamen Identitätsfehlers, keine Regel-/Balanceänderung. Explizite IDs und existierende Events bleiben unverändert; alte Logs werden weder migriert noch historisch verlorene Fakten spekulativ rekonstruiert. Keine neuen Events/Vokabularversionen. Teilpatches 10B-2/3/4, Guide und Original-ZIPs unverändert.
+
+**Technische Patchnotes:** [`PATCH10B1_FACT_ID_DEPENDENCIES.md`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/e6c76b4aada6fbb0d2ba18a48a2ed623afa53d7d/avereth-engine/docs/PATCH10B1_FACT_ID_DEPENDENCIES.md), Kurzstatus in Dev `docs/PROTOTYPE_C.md`; Versionen in `util.js`, `manifest.json`, `package.json` synchron .58. Root 01–04 bleiben bei diesem Teilmeilenstein unverändert.
+
+**Nächster Schritt:** unabhängiges Claude-Review des tatsächlichen Commits und der Rot/Grün-Belege. Noch kein Start von 10B-2 und keine Behauptung, dass .58 bereits Liefer-/Combat-/Modellabbrüche der drei Runs behebt. Neue natürliche Runs erst nach den separat vereinbarten spielblockierenden Korrekturen und deren Prüfung.

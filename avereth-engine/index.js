@@ -364,7 +364,10 @@ async function onMessageEdited(messageId) {
     const c = ctx();
     try {
         const r = campaignRuntime(c.chat) === 'v4' ? onEditedV4(c.chat, Number(messageId)) : onEdited(c.chat, Number(messageId), content);
-        if (!r.changed) return;
+        if (!r.changed) {
+            resumeReport(); // edits to a player message can also cancel a pending world job
+            return;
+        }
         // SillyTavern redraws the edited message from mes right after this event: draw ours (System block) after that
         if (r.text) setTimeout(() => rerender(c, Number(messageId)), 0);
         if (r.refused) toastr.warning(`Avereth Engine: ${r.refused}`);

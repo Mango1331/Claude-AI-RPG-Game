@@ -164,7 +164,9 @@ export async function run(o) {
     const imp = importProfile({ stDir: o.stDir, user: o.stUser, card: o.card, preset: o.preset, dataRoot: o.stData });
     const guide = loadGuide(o.guide);
     if (guide.fixture && !o.fixture) throw new Error(`This explicit fixture guide requires --fixture ${guide.fixture}`);
+    if (guide.openRun && o.fixture) throw new Error('current_test is a natural campaign: do not pass --fixture');
     if (o.maxTurns) guide.limits.maxTurns = o.maxTurns;
+    if (guide.openRun && guide.limits.maxTurns < guide.openRun.minTurns) throw new Error('open-run maxTurns cannot be shorter than its observation window');
     const seed = Number.isFinite(o.seed) ? o.seed : Math.floor(Math.random() * 2 ** 31);
     const persona = o.player.type === 'llm' ? pick(guide.personas, seed) : null;
     let runId = `${stamp()}-${guide.id}${o.stub ? '-stub' : ''}`;

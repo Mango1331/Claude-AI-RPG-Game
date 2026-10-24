@@ -118,7 +118,7 @@ test('8.2 telemetry 5: the status line of a turn played under this build: wait, 
     processReplyAny(g.chat, id, content, { narrationMs: 9000 });
     await runExtraction(g.chat, id, content, g.llm);
     const line = perfSummary(g.chat);
-    assert.match(line, /^waited 8\.1 s · engine \d+\.\d s \(\d+ folds, \d+ ms\) · planner \d+\.\d s · narrator 9\.0 s · extractor \d+\.\d s \(repaired\) \[length, length\]$/);
+    assert.match(line, /^waited 8\.1 s · engine \d+\.\d s \(\d+ folds, \d+ ms\) · planner \d+\.\d s · narrator 9\.0 s · extractor \d+\.\d s \(repaired\) \[length, length, length\]$/);
 });
 
 test('8.2 telemetry 6: a planner that fails keeps its calls and the turn\'s cost too; the turn aborts as before', async () => {

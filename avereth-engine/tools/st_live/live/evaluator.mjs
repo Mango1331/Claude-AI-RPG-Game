@@ -126,6 +126,23 @@ export function turnFailure(chat, u) {
     if (o.kind === 'missing') return { kind: 'missing', at: null, reason: null };
     return null;
 }
+/** Runner-only end reason from an already-classified phase failure. */
+export function failureEnd(fault, turn) {
+    if (!fault) return null;
+    const reasons = {
+        missing: 'neither the narrator nor the engine answered',
+        narrator_empty: `the narrator's reply has no story text (message ${fault.at})`,
+        planner_failed: 'the semantic Planner failed before story generation',
+        interpreter_failed: 'the V4 Interpreter failed before story generation',
+        extractor_failed: `the World Extractor failed after story message ${fault.at}; its world changes were not committed`,
+        extractor_late: `the World Extractor was too late after story message ${fault.at}; its world changes were not committed`,
+    };
+    return {
+        kind: fault.kind === 'missing' ? 'ui' : fault.kind,
+        why: `turn ${turn}: ${reasons[fault.kind] || fault.kind}${fault.reason ? ` (${String(fault.reason).slice(0, 160)})` : ''}`,
+        turn,
+    };
+}
 const PANEL_MARKS = { clarify: /\bCLARIFY\b/, not_taken: /\bNOT TAKEN\b/, refused: /\bREFUSED\b/, blocked: /\bBLOCKED\b/, failed: /\bFAILED\b/, not_recorded: /\bNOT RECORDED\b/ };
 const FOLD_ON = new Set(['scene.moved', 'quest.status', 'entity.status', 'entity.created', 'dungeon.slot']);
 

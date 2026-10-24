@@ -2101,6 +2101,12 @@ Claude bestätigte .55 unabhängig mit 1258/1258 und fünf konkreten Befunden. S
 
 Original .56-Lauf `20261024-010241Z-current_test`: 25 Züge/25:13min, **5/5 Mechanik-Etappen**, Ironbound Fury angenommen und wirksam eingesetzt; manuelles API-Verbinden/Senden nötig, Abschluss-Reload auf ST-Startbildschirm gescheitert, Persistenz nicht live bestätigt. .57 stellt beim Fixture-Start und Abschluss die genaue gespeicherte Chat-/Kartenidentität und API-Verbindung wieder her, verweigert Senden/Speichern im falschen Chat und benennt Reload-Fehler ausdrücklich. Eindeutig benannte offene Klassenwahl korrigiert fehlerhafte Gruppen-/Kind-ID vor Schema-Prüfung; bestehende Agency-/Consent-/Combat-/Replay-Guards bleiben. #class/Katalog/Guide erklären natürliche Wahl. Bericht markiert Ausreißer aus vorhandenen Spieler-/Spiel-/Providerzeiten, ohne Modellparameter zu ändern. Sieben betroffene Regressionen auf .56 rot (3/10), danach10/10; angrenzend132/132; Gesamtsuite **1269/1269**. VM-/Runtime-Tests, kein erneuter ST-/GLM-Lauf. Build .57, Vertrag .55, Engine/Runner getrennt. Details/Nachtest in `PATCH9D_CLASS_EVOLUTION.md`.
 
+
+### 10B-1 (.58, 24.10.2026)
+
+Kollisionsgeschützte automatische Fakten-IDs einschließlich gleicher Turns und funktionaler Historie; kanonische Registrierungszahlung darf dem vom Guard redundant entfernten Registrierungswunsch folgen. Keine Freigabe echter Guard-Ablehnungen. Zwei Produktmodule, keine neuen Events oder Mechaniken. Rotlauf 5/11, grün 11/11; angrenzend 125/125; Vollsuite 1286/1286. Alte Eventlogs/Explizit-IDs unverändert, neue automatische IDs auch in Legacy/V4-A korrigiert. Unabhängiges Review und Live-Abnahme offen; Vertrag .55 unverändert. Details: `PATCH10B1_FACT_ID_DEPENDENCIES.md`.
+
+
 ### 10B-2 (.59, 24.10.2026)
 
 Positive engine-owned Lieferbelege (`quest.delivered`) statt bloßem Holder-Verlust/Story-READY unter Ruleset 2/C. Direkte und bedingte Übergabe bewahren Menge, Empfänger und Ort; Splits/Zurücknehmen zählen nicht doppelt, falsche Gildenboden-Ablage zahlt nicht. Andere Questarten, Legacy und V4-A bleiben geschützt. 27 neue Prüfungen: .58 rot 6/27, danach 27/27; vollständige Endsuite 1313/1313. Echter Host-Swipe/JSON-Reload und originale Lieferzustände aus Runs 1/2 geprüft. ST-Smoke versucht, aber ohne AVERETH_ST_DIR/ST-Checkout vor Hoststart blockiert; Review und Live-Abnahme offen. Keine Guide-/Balanceänderung; Vertrag .55. Details `PATCH10B2_DELIVERY_HANDOVER.md`.

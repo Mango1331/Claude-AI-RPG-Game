@@ -170,6 +170,7 @@ export async function planMessage(llm, content, ctx, text, { recent = '' } = {})
     const raw = [String(first.content).slice(0, 2000)];
     let p = parsePlan(first.content, vocab, ctx, text);
     let repaired = false;
+    let recovery = null;
     if (!p.commands) {
         const rep = plannerRequest(vocab, ctx, text, { recent, previous: first.content, errors: p.errors });
         const second = await ask(llm, rep.messages, 'plan_repair');
@@ -187,6 +188,7 @@ export async function planMessage(llm, content, ctx, text, { recent = '' } = {})
             const fresh = plannerRequest(vocab, ctx, text, { recent });
             const messages = [...fresh.messages, { role: 'user', content:
                 'Both previous attempts returned no JSON text. Answer the PLAYER MESSAGE now with exactly one short JSON object {"commands":[...]}. If the player takes no action, return {"commands":[]}. Return no prose.' }];
+            recovery = 'empty';
             const third = await ask(llm, messages, 'plan_recovery', { maxTokens: 4000 });
             ms += third.ms;
             calls.push(third.call);
@@ -196,7 +198,7 @@ export async function planMessage(llm, content, ctx, text, { recent = '' } = {})
             }
         }
     }
-    return p.commands ? { commands: p.commands, failed: false, error: null, ms, repaired, raw, calls } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired, raw, calls };
+    return p.commands ? { commands: p.commands, failed: false, error: null, ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired, raw, calls, ...(recovery ? { recovery } : {}) };
 }
 
 /**
@@ -210,11 +212,12 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const recent = p >= 0 ? recentText(chat[p].mes) : '';
     const catalog = buildCatalog(before, content, { known: true, c: true });
     const ctx = withContentSkills(planContext(before, content, catalog), content, before);
-    const reuse = previous?.plan && previous.interp?.commands ? { commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [], calls: previous.plan.llm } : null;
+    const reuse = previous?.plan && previous.interp?.commands ? { commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [], calls: previous.plan.llm, recovery: previous.plan.recovery || null } : null;
     const pl = reuse || await planMessage(llm, content, ctx, msg.mes, { recent });
     const plan = {
         version: PLANNER_VERSION, mode: ctx.fight ? 'fight' : 'story', ms: pl.ms, repaired: pl.repaired, failed: pl.failed,
         ...(pl.error ? { error: pl.error } : {}), raw: pl.raw, ...(pl.calls?.length ? { llm: pl.calls } : {}),
+        ...(pl.recovery ? { recovery: pl.recovery } : {}),
         a0: { route: ir.route, kind: ir.intent?.kind ?? null, skill: ir.intent?.skill ?? null, target: ir.intent?.target ?? null },
     };
     const interp = { version: PLANNER_VERSION, ms: pl.ms, failed: !!pl.failed, repaired: !!pl.repaired, commands: pl.commands, ...(pl.error ? { error: pl.error } : {}) };
@@ -680,6 +683,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
     let ms = 0;
     let parsed = null;
     let repaired = false;
+    let recovery = null;
     let error = null;
 
     const first = await ask(llm, req.messages, 'extract');
@@ -709,6 +713,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
                 const fresh = [...req.messages, { role: 'user', content:
                     'Both previous attempts returned no JSON text. Return one short JSON object now, with the requested expected keys and only verified deltas. Empty deltas are allowed. No prose or reasoning.' }];
                 if (!current()) return stale();
+                recovery = 'empty';
                 const third = await ask(llm, fresh, 'extract_recovery', { maxTokens: 6000 });
                 ms += third.ms;
                 calls.push(third.call);
@@ -725,6 +730,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
         // No events are committed until the validated result below is applied.
         error = first.error;
         if (!current()) return stale();
+        recovery = 'transport';
         const second = await ask(llm, req.messages, 'extract_recovery');
         ms += second.ms;
         calls.push(second.call);
@@ -737,11 +743,11 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
     }
 
     if (!isCurrent()) return { changed: false, cancelled: true };
-    return applyExtraction(chat, id, content, parsed, { hash: req.hash, ms, repaired, error, hud, calls });
+    return applyExtraction(chat, id, content, parsed, { hash: req.hash, ms, repaired, recovery, error, hud, calls });
 }
 
 /** Commit an extractor result (or its failure) to reply id; refused when the reply changed or a later turn began. */
-export function applyExtraction(chat, id, content, parsed, { hash, ms = null, repaired = false, error = null, hud = 'closed', calls = [] } = {}) {
+export function applyExtraction(chat, id, content, parsed, { hash, ms = null, repaired = false, recovery = null, error = null, hud = 'closed', calls = [] } = {}) {
     const msg = chat[id];
     const r = rec(msg);
     if (!msg || !r || r.extraction?.status !== 'pending' || r.text_hash !== hash || hash32(msg.mes) !== hash) return { changed: false };
@@ -750,7 +756,7 @@ export function applyExtraction(chat, id, content, parsed, { hash, ms = null, re
     if (!parsed?.valid) {
         const events = extractionFailedEvents(error || 'no valid answer', ms);
         const view = display(msg, content, state, { failed: `the extractor gave no valid answer (${String(error || 'no answer').slice(0, 80)})`, state }, hud);
-        setRec(msg, { ...r, events, extraction: { status: 'failed', version: EXTRACTOR_VERSION, ms, repaired, error: String(error || '').slice(0, 200), ...(calls.length ? { llm: calls } : {}) }, corrections: [FAILED_CORRECTION, ...(stillAt(state) ? [stillAt(state)] : [])], ...view });
+        setRec(msg, { ...r, events, extraction: { status: 'failed', version: EXTRACTOR_VERSION, ms, repaired, ...(recovery ? { recovery } : {}), error: String(error || '').slice(0, 200), ...(calls.length ? { llm: calls } : {}) }, corrections: [FAILED_CORRECTION, ...(stillAt(state) ? [stillAt(state)] : [])], ...view });
         return { changed: true, applied: false, failed: error || 'no valid answer' };
     }
     const res = replyTurnV4(state, content, parsed.value, { msg: id, prose: msg.mes, ms, repaired });
@@ -759,7 +765,7 @@ export function applyExtraction(chat, id, content, parsed, { hash, ms = null, re
     const view = display(msg, content, state, res, hud);
     setRec(msg, {
         v: RECORD_V4, events: res.events, text_hash: hash, corrections,
-        extraction: { status: 'applied', version: EXTRACTOR_VERSION, ms, repaired, deltas: (parsed.value.deltas || []).length, missing: parsed.missing.length ? parsed.missing : undefined, raw: parsed.value, ...(calls.length ? { llm: calls } : {}) },
+        extraction: { status: 'applied', version: EXTRACTOR_VERSION, ms, repaired, ...(recovery ? { recovery } : {}), deltas: (parsed.value.deltas || []).length, missing: parsed.missing.length ? parsed.missing : undefined, raw: parsed.value, ...(calls.length ? { llm: calls } : {}) },
         ...(r.narration ? { narration: r.narration } : {}),
         rejected: res.rejected.length ? res.rejected : undefined, system: res.system.length ? res.system : undefined, ...view,
     });

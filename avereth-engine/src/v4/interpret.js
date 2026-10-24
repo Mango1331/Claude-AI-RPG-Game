@@ -135,6 +135,7 @@ export function catalogText(catalog) {
     if ((catalog.passive_offers || []).length) L.push(`POSSIBLE PASSIVE (offered by the engine; his only if he accepts): ${catalog.passive_offers.map((p) => `${p.id} (${p.text})`).join(' · ')}`);
     // 9C completion: a Skill development offered to him (a new technique, or the evolution of one of his)
     if ((catalog.skill_offers || []).length) L.push(`POSSIBLE SKILL (offered by the engine; his only if he accepts): ${catalog.skill_offers.map((p) => `${p.id} (${p.text})`).join(' · ')}`);
+    if ((catalog.class_offers || []).length) L.push(`CLASS CHOICE (choose ONE; not his until accepted): ${catalog.class_offers.map((d) => `${d.id}: ${d.options.map((o) => `${o.id} (${o.text})`).join(' OR ')}`).join(' · ')}`);
     return L.join('\n');
 }
 
@@ -156,7 +157,7 @@ export function catalogIds(catalog) {
         // 9C completion: the older passive.accept/decline may name an offered Skill too (src/v4/commands.js sends it on)
         passive_offer: [...ids(catalog.passive_offers), ...ids(catalog.skill_offers)],
         passive: ids(catalog.passives),
-        development_offer: [...ids(catalog.passive_offers), ...ids(catalog.skill_offers)],
+        development_offer: [...ids(catalog.passive_offers), ...ids(catalog.skill_offers), ...ids(catalog.class_offers), ...(catalog.class_offers || []).flatMap((d) => ids(d.options))],
     };
 }
 

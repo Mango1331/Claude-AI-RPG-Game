@@ -1,3 +1,4 @@
+import { classDefErrors, classOffer } from './v4/class_growth.js';
 // Validation layer.
 //  * validateState: invariants the engine guarantees after every fold (used by tests, #audit tooling and the ST
 //    extension's integrity check). A violation means a bug or a corrupted log — never something the LLM may "fix".
@@ -30,6 +31,11 @@ export function validateState(state, content) {
         const where = id === 'pc' ? 'PC' : id;
         if (!isInt(s.level) || s.level < 1) p.push(`${where}: invalid Level ${s.level}`);
         for (const k of content.rules.stats) if (!isInt(s.stats[k]) || s.stats[k] < 1) p.push(`${where}: invalid ${k} ${s.stats[k]}`);
+        if (s.evolution) {
+            p.push(...classDefErrors(s.evolution, content).map((x) => `${where}: ${x}`));
+            if (s.level < 15 || !(s.class_history || []).some((h) => h.id === s.evolution.id && h.rank === 'E' && h.quality === s.evolution.quality)) p.push(`${where}: class history/level does not support its active class`);
+        }
+        if (new Set((s.class_history || []).map((h) => h.rank)).size !== (s.class_history || []).length) p.push(`${where}: duplicate class rank in history`);
         const dv = deriveCharacter(s, content);
         for (const [r, max] of [['hp', dv.maxHp], ['mp', dv.maxMp], ['sta', dv.maxSta]]) {
             if (!isInt(s[r]) || s[r] < 0 || s[r] > max) p.push(`${where}: ${r.toUpperCase()} ${s[r]} outside 0..${max}`);
@@ -86,6 +92,16 @@ export function validateState(state, content) {
         if (pc.sheet.skills[h.id]) p.push(`skill ${h.id} held after it evolved`);
         if (!state.skill_defs?.[h.evolved_to]) p.push(`skill ${h.id} evolved into an undefined ${h.evolved_to}`);
     }
+    const classes = (state.decisions || []).filter((d) => d.kind === 'class');
+    if (classes.length > 1 || (classes.length && pc.sheet.evolution)) p.push('invalid open class choice');
+    for (const d of classes) {
+        if (pc.sheet.level < 15 || d.rank !== 'E' || !Array.isArray(d.options) || !d.options.length) p.push('class choice without a supported rank claim');
+        const opts = d.options || [];
+        if (new Set(opts.map((o) => o.name.toLowerCase())).size !== opts.length) p.push('class choice has repeated names');
+        if (new Set(opts.map((o) => o.id)).size !== opts.length) p.push('class choice has repeated option ids');
+        for (const o of opts) p.push(...classDefErrors(o, content));
+    }
+    for (const [k, n] of Object.entries(state.career?.stats || {})) if (!Number.isInteger(n) || n < 0) p.push(`career ${k}: invalid count`);
     const sc = state.scene;
     // Runtime V4 keeps its place nodes in state.places; wilderness outside a settlement lies in its realm (live 30.09.2026)
     if (sc.location && !state.entities[sc.location] && !content.locations.has(sc.location) && !state.places?.[sc.location]) p.push(`unknown scene location ${sc.location}`);

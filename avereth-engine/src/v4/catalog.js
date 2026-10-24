@@ -24,6 +24,7 @@ import { rulesetOf } from '../content.js';
 import { passivesOf, passiveSlots, passiveText } from '../passives.js';
 import { passiveOffers } from './passive_growth.js';
 import { skillOffers, developmentText } from './skill_growth.js';
+import { classOffer, classText } from './class_growth.js';
 
 /** A person or creature as the catalog labels it: name, role, look ("Marta, Guild receptionist"). */
 export function personLabel(state, content, id) {
@@ -178,7 +179,7 @@ function objectEntry(state, content, o) {
 export function openDecisionTexts(state) {
     // Patch 9C-2c: an offered Passive is no decision of a place: the catalog lists it as POSSIBLE PASSIVE
     // 9C completion: nor an offered Skill (POSSIBLE SKILL)
-    return (state.decisions || []).filter((d) => d.kind !== 'passive' && d.kind !== 'skill' && (!d.at || d.at === state.scene.at)).map((d) => {
+    return (state.decisions || []).filter((d) => d.kind !== 'passive' && d.kind !== 'skill' && d.kind !== 'class' && (!d.at || d.at === state.scene.at)).map((d) => {
         if (d.kind === 'registration') return `registration: the Guild's fee ${d.price_cp} cp is due (${d.offer}); he has not paid yet`;
         if (d.kind === 'purchase') return `purchase: ${d.qty > 1 ? `${d.qty} × ` : ''}${d.what}${d.max_cp !== null && d.max_cp !== undefined ? ` (at most ${d.max_cp} cp)` : d.any_price ? ' (any price)' : ''}; ${d.priced ? 'priced, not agreed' : 'no price known yet'}`;
         if (d.kind === 'sale') return `sale: ${d.qty > 1 ? `${d.qty} × ` : ''}${d.what}${d.min_cp ? ` (at least ${d.min_cp} cp)` : ''}; no price agreed yet`;
@@ -329,7 +330,9 @@ function passiveCatalog(state, content) {
     const offers = passiveOffers(state);
     // 9C completion: the Skills offered to him (a new technique beside his others, or one in the place of a Skill of his)
     const skills = skillOffers(state).map((d) => ({ id: d.id, text: `${developmentText(d.skill)} ${d.replaces ? `It would replace ${d.replaces_name}` : 'A new Skill beside his others'}; not his yet` }));
-    if (!held.length && !offers.length) return skills.length ? { skill_offers: skills } : {};
+    const choice = classOffer(state);
+    const classes = choice ? [{ id: choice.id, text: 'Choose exactly one E class; postponing keeps this choice', options: choice.options.map((o) => ({ id: o.id, text: classText(o) })) }] : [];
+    if (!held.length && !offers.length) return { ...(skills.length ? { skill_offers: skills } : {}), ...(classes.length ? { class_offers: classes } : {}) };
     const slots = passiveSlots(content);
     const full = held.length >= slots;
     return {
@@ -337,6 +340,7 @@ function passiveCatalog(state, content) {
         passives: held.map((p) => ({ id: p.id, text: passiveText(p) })),
         passive_offers: offers.map((d) => ({ id: d.id, text: `${passiveText(d.passive)}; not his yet${full ? (d.passive.quality === 'ordinary' ? ' (all slots held: it cannot be taken)' : ' (all slots held: taking it gives up one PASSIVES he names)') : ''}` })),
         ...(skills.length ? { skill_offers: skills } : {}),
+        ...(classes.length ? { class_offers: classes } : {}),
     };
 }
 

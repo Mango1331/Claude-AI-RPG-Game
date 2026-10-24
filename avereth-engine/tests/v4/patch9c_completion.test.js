@@ -282,7 +282,7 @@ test('9C completion (5): at most three developments are open at a time (Passives
     assert.match(outcomeOf(g).actions[0], /EVOLVED — Heavy Slash becomes Sweeping Heavy Slash/);
     assert.deepEqual(validateState(g.state(), content), []);
     // vocabulary, catalog ids and the planner's rule
-    assert.equal(content.commandVocab.version, 'cmd-1.4');
+    assert.equal(content.commandVocab.version, 'cmd-1.5'); // 9D adds class-choice references
     assert.ok(['development.accept', 'development.decline', 'passive.accept', 'passive.decline'].every((t) => content.commandVocab.commands.some((c) => c.type === t)));
     const ids = catalogIds(buildCatalog(g.state(), content, { known: true, c: true }));
     assert.deepEqual(ids.development_offer, developmentOffers(g.state()).map((d) => d.id));

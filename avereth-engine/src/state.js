@@ -13,6 +13,7 @@
 import { clone, uniq } from './util.js';
 import { emptyDomains, applyDomainEvent, V4_EVENTS } from './v4/domain.js';
 import { applyGrowthEvent } from './v4/growth.js';
+import { applyCareerEvent } from './v4/feats.js';
 
 // 9C completion: the core stats a check of his tests (src/passives.js CORE_STATS; a reducer reads no content)
 const DEED_STATS = new Set(['STR', 'VIT', 'AGI', 'INT', 'PER', 'WIL']);
@@ -246,6 +247,16 @@ export function applyEvent(state, e) {
             const s = sheetOf(state, d.id);
             s.stats[d.stat] += d.amount;
             s.free_points -= d.amount;
+            break;
+        }
+        case 'career.recorded':
+            applyCareerEvent(state, d);
+            break;
+        case 'class.evolved': {
+            const sh = sheetOf(state, d.id);
+            if (Number(state.meta.ruleset) < 2 || sh.level < 15 || sh.evolution || (sh.class_history || []).some((h) => h.rank === d.profile.rank)) throw new Error('class evolution already taken or unavailable');
+            sh.evolution = clone(d.profile);
+            sh.class_history = [...(sh.class_history || []), { id: d.profile.id, name: d.profile.name, rank: d.profile.rank, quality: d.profile.quality, turn: state.turn, minute: state.clock.minute, evidence: clone(d.evidence) }];
             break;
         }
         case 'xp.changed': {

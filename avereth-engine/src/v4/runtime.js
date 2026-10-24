@@ -38,6 +38,9 @@ import { finalizeGrowth, growthDrafts, activationsOf } from './growth.js';
 import { FORGE_VERSION, forgeRequest, parseForge, passiveForgeRequest, parsePassiveForge } from './forge.js';
 import { passiveDrafts, offerPassives, deedEvidence } from './passive_growth.js';
 import { skillDrafts, offerSkills } from './skill_growth.js';
+import { classDrafts, offerClass } from './class_growth.js';
+import { developmentFeats } from './feats.js';
+import { classForgeRequest, parseClassForge } from './forge.js';
 import { PLANNER_VERSION, MECH_TYPES, planContext, withContentSkills, plannerRequest, parsePlan, mapPlan, recentText, announcedAbandon } from './planner.js';
 import { crowdCount, personWords, bystanderEvents } from './settlement.js';
 import { skillOf } from '../content.js';
@@ -272,6 +275,8 @@ async function withGrowth(t, content, llm, previous) {
     // ordinary goal just completed in it too, named by its own Forge request (the same reuse by key and hash)
     let s2 = null;
     try { s2 = after(t.state, f.events); } catch { s2 = null; }
+    const career = s2 ? developmentFeats(t.state, content, t.events) : [];
+    if (career.length) { f.events.push(...career); s2 = after(s2, career); }
     // 9C completion: the Ordinary evidence of what he did (successful checks the engine rolled), found at a safe turn
     const deeds = s2 && !s2.encounter && !(s2.pending_combat || []).length ? deedEvidence(s2, content) : [];
     if (deeds.length) {
@@ -292,9 +297,15 @@ async function withGrowth(t, content, llm, previous) {
     const skilled = sdrafts.length ? offerSkills(s3, content, sdrafts, sforge?.entries) : { events: [], offers: [] };
     f.events.push(...skilled.events);
     if (sforge) forge = forge ? { ...forge, entries: { ...forge.entries, ...sforge.entries }, ms: forge.ms + sforge.ms, llm: [...forge.llm, ...sforge.llm], repaired: forge.repaired || sforge.repaired } : sforge;
+    let s4 = s3 ? after(s3, skilled.events) : null;
+    const cdrafts = s4 ? classDrafts(s4, content) : [];
+    const cforge = cdrafts.length ? await generateForge(llm, s4, content, cdrafts, cached, { request: classForgeRequest, parse: parseClassForge }) : null;
+    const classified = cdrafts.length ? offerClass(s4, content, cdrafts, cforge?.entries) : { events: [], offers: [] };
+    f.events.push(...classified.events);
+    if (cforge) forge = forge ? { ...forge, entries: { ...forge.entries, ...cforge.entries }, ms: forge.ms + cforge.ms, llm: [...forge.llm, ...cforge.llm], repaired: forge.repaired || cforge.repaired } : cforge;
     if (forge) {
         // Patch 9C-2c: and the name an offer actually holds (its fallback, when the Forge's was not free at the offer)
-        for (const o of [...offered.offers, ...skilled.offers]) {
+        for (const o of [...offered.offers, ...skilled.offers, ...classified.offers]) {
             const entry = forge.entries[o.key];
             if (entry && entry.name !== o.name) forge.entries[o.key] = { hash: entry.hash, name: o.name, fallback: true };
         }
@@ -317,7 +328,7 @@ async function withGrowth(t, content, llm, previous) {
     // not again in every later turn
     const touched = new Set(t.events.filter((e) => e.t === 'growth.session' || e.t === 'growth.progress').map((e) => e.d.goal));
     const failed = f.failed.map((x) => ((x.source === 'material' || x.source === 'practice') && touched.has(x.goal) ? { ...x, notice: true } : x));
-    const outcome = rec.d.outcome ? { ...rec.d.outcome, ...(f.learned.length ? { learned: f.learned } : {}), ...(failed.length ? { learn_failed: failed } : {}), ...(passiveOffered.length ? { passive_offers: passiveOffered } : {}), ...(skillOffered.length ? { skill_offers: skillOffered } : {}) } : rec.d.outcome;
+    const outcome = rec.d.outcome ? { ...rec.d.outcome, ...(f.learned.length ? { learned: f.learned } : {}), ...(failed.length ? { learn_failed: failed } : {}), ...(passiveOffered.length ? { passive_offers: passiveOffered } : {}), ...(skillOffered.length ? { skill_offers: skillOffered } : {}), ...(classified.offers.length ? { class_offers: classified.offers } : {}) } : rec.d.outcome;
     return { events: [...t.events.slice(0, i), ...f.events, { ...rec, d: { ...rec.d, outcome } }, ...t.events.slice(i + 1)], ...meta };
 }
 

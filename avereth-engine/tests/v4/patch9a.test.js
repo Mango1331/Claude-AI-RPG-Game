@@ -376,12 +376,12 @@ test('9A E: replaying a new campaign gives the same sheet: no second kit, no dou
 });
 
 // ------------------------------------------------------------------------------------------------ F. System and UI
-test('9A F: #class promises no evolution Level in a new campaign (a legacy one keeps its panel); the rule texts follow the ruleset', () => {
+test('9A F / 9D: #class shows the implemented E milestone in a new campaign (a legacy one keeps its panel); texts follow the ruleset', () => {
     const g = hero('Rogue', 'Razor Cut + Feint');
     const k = panel(g, '#class');
     assert.match(k, /Base Class: Rogue \| Rank F \| Favored Stats: AGI \/ PER/);
-    assert.match(k, /Class evolution: not tied to any Level/);
-    assert.doesNotMatch(k, /milestone|Level 15/);
+    assert.match(k, /Next class evolution: Level 15 \/ E/);
+    assert.match(k, /Next class evolution: Level 15/);
     const old = new Game(legacy);
     old.input('Ranger');
     old.input('Aimed Shot + Power Shot');
@@ -487,7 +487,7 @@ test('9A review: the lorebook class entries tell the rulesets apart by the engin
     // the three-class rules: three classes, any weapon, no evolution; without the mark: the five classes and the milestones
     assert.match(frame, /Marked "\(three-class rules\)" after his class: the Base Classes are Warrior .* Mage .* and Rogue .*Any class may use any weapon/);
     assert.match(frame, /Without that mark \(a campaign begun earlier\): the five Base Classes Warrior \(STR\/VIT\), Mage \(INT\/WIL\), Guardian .*Duelist .*Ranger .*a weapon's attacks are those of the class/);
-    assert.match(evo, /Under the three-class rules \(the engine's line for Alaric marks his class "\(three-class rules\)"\) no Class Evolution is tied to a Level/);
+    assert.match(evo, /Under the three-class rules \(the engine's line for Alaric marks his class "\(three-class rules\)"\) Class Evolution is due at Power Rank milestones/);
     assert.match(evo, /In a campaign without that mark \(begun with the five older Base Classes\) the standard milestones are Levels 15\/30\/45\/60\/75\/90/);
     assert.match(panel(old, '#class'), /Next known evolution milestone: Level 15/, 'what the legacy lorebook text says, the legacy #class shows');
 });

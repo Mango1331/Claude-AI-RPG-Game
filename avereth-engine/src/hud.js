@@ -1,3 +1,4 @@
+import { className } from './v4/class_growth.js';
 // Player HUD (Runtime V3, docs/RUNTIME_V3.md): the Character and World panels the player sees under each reply,
 // rendered from the canonical state and nothing else. It replaces the tracker blocks the narrator used to write
 // (Megumin <Character_Sheet> / <World_State>), which cost a third of every reply and drifted from the engine.
@@ -55,7 +56,7 @@ export function characterRows(state, content) {
     const e = state.entities.pc;
     const s = e.sheet;
     const dv = deriveCharacter(s, content);
-    const cls = s.class ? content.classes.get(s.class)?.name || s.class : 'no Class yet';
+    const cls = s.class ? className(s, content) : 'no Class yet';
     const per = content.rules.progression.xp_to_next_per_level;
     const skills = Object.entries(s.skills).map(([id, v]) => `${skillOf(content, id, state)?.name || id} P${v.prof}`);
     const weapon = weaponAttackOf(s, content, rulesetOf(state)); // Patch 9A: his weapon's own attack, no learned Skill
@@ -245,7 +246,7 @@ export function renderHud(state, content, mode = 'closed') {
     const s = state.entities.pc.sheet;
     const dv = deriveCharacter(s, content);
     const open = mode === 'open';
-    const cls = s.class ? content.classes.get(s.class)?.name || s.class : 'no Class';
+    const cls = s.class ? className(s, content) : 'no Class';
     const location = locationLabels(state, content);
     const others = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && statusOf(state, id) !== 'dead').length;
     const charSummary = `L${s.level} ${cls} · HP ${s.hp}/${dv.maxHp} · MP ${s.mp}/${dv.maxMp} · STA ${s.sta}/${dv.maxSta} · ${formatCoin(s.coin_cp, content)}`;

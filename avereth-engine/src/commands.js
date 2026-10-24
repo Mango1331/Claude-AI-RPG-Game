@@ -4,6 +4,8 @@
 import { deriveCharacter, rawPowerText, itemOf, actionsOf, weaponAttackOf } from './derived.js';
 import { goalLines } from './v4/growth.js';
 import { skillOfferLines, lineageText } from './v4/skill_growth.js';
+import { classLines, className } from './v4/class_growth.js';
+import { featLines } from './v4/feats.js';
 import { profileOf, sourceText } from './v4/items.js';
 import { formatCoin } from './economy.js';
 import { findSkill, rulesetOf, startClasses, skillOf, kitOf } from './content.js';
@@ -21,7 +23,7 @@ import { dungeonOf, mapText } from './v4/dungeon.js';
 
 const HELP = [
     ['#status', 'full current status (alias #stats)'], ['#skills', 'all known Skills'], ['#skill <name>', 'full Skill definition with current values'],
-    ['#class', 'Base Class, growth, evolution'], ['#passives', 'Passive slots, his Passives and developments offered to him'], ['#domain', 'Domain state'], ['#equipment', 'equipped Gear and totals'],
+    ['#feats', 'lifetime career and exceptional deeds'], ['#class', 'Base Class, growth, evolution'], ['#passives', 'Passive slots, his Passives and developments offered to him'], ['#domain', 'Domain state'], ['#equipment', 'equipped Gear and totals'],
     ['#bag', 'inventory and coin (alias #inventory)'], ['#item <name>', 'Item definition'], ['#quests', 'known Quests'],
     ['#quest <name>', 'Quest details'], ['#effects', 'active effects'], ['#effect <name>', 'effect details'],
     ['#combat', 'encounter audit (read-only)'], ['#system <question>', 'mechanics question answered by the System'],
@@ -65,7 +67,7 @@ function status(state, content) {
     const e = state.entities.pc;
     const s = e.sheet;
     const dv = deriveCharacter(s, content);
-    const cls = s.class ? content.classes.get(s.class).name : 'none (Character Creation)';
+    const cls = s.class ? className(s, content) : 'none (Character Creation)';
     const fx = pcEffects(state);
     return [
         '[SYSTEM // STATUS]',
@@ -219,7 +221,7 @@ function klass(state, content) {
     const plist = passives.length ? ['Passives:', ...passives.map((p) => `- ${passiveText(p)}`)] : ['Passives: none'];
     // Patch 9C-2c: his slots and what is offered to him (src/v4/passive_growth.js)
     if (rulesetOf(state) >= 2) plist.push(`Passive slots: ${passives.length}/${passiveSlots(content)}${passiveOffers(state).length ? ` · ${passiveOffers(state).length} development${passiveOffers(state).length > 1 ? 's' : ''} offered` : ''} (#passives)`);
-    if (rulesetOf(state) >= 2) return [...head, 'Evolution history: none', ...plist, 'Class evolution: not tied to any Level; it can only grow from how he plays (organic class growth is not unlocked yet)'].join('\n');
+    if (rulesetOf(state) >= 2) return [...head, ...classLines(state, content), ...plist].join('\n');
     const next = [15, 30, 45, 60, 75, 90].find((l) => l > s.level);
     return [...head, 'Evolution history: none', `Next known evolution milestone: Level ${next ?? '-'}`].join('\n');
 }
@@ -416,6 +418,7 @@ export function runCommands(state, content, text) {
             case 'skill': panels.push(arg ? skill(s, content, arg) : skills(s, content)); break;
             case 'class': panels.push(klass(s, content)); break;
             case 'passives': panels.push(['[SYSTEM // PASSIVES]', ...(rulesetOf(s) >= 2 ? passiveLines(s, content) : ['No dynamic Passives under these rules.'])].join('\n')); break;
+            case 'feats': panels.push(featLines(state, content).join('\n')); break;
             case 'domain': panels.push('[SYSTEM // DOMAIN]\nSTATUS: NOT YET UNLOCKED'); break;
             case 'equipment': panels.push(equipment(s, content)); break;
             case 'bag': case 'inventory': panels.push(bag(s, content)); break;

@@ -602,5 +602,52 @@
     "guard_titles": ["Warden", "Sentinel", "Brute", "Chief"],
     "pace": [0, 1],
     "pace_note": "the quiet parts (no engine encounter) a level may have before each of its encounters, drawn per cycle from this list: a level is never an endless string of empty rooms, and never a fixed number of rooms"
+  },
+  "class_growth": {
+    "level": 15,
+    "personal_share": 0.5,
+    "giant_gap": 5,
+    "outnumbered": 5,
+    "survival": {
+      "gap": 3,
+      "start_pct": 50,
+      "low_pct": 35
+    },
+    "rare": {
+      "feats": 3,
+      "contexts": 2,
+      "per_context": 2
+    },
+    "legacy": {
+      "normal": 1,
+      "rare": 2,
+      "legendary": 4
+    },
+    "budgets": {
+      "normal": {
+        "effects": [
+          1,
+          2
+        ],
+        "per": {
+          "stat_bonus": 4,
+          "max_bonus": 20,
+          "cost_reduction": 8,
+          "resist": 8
+        }
+      },
+      "rare": {
+        "effects": [
+          1,
+          3
+        ],
+        "per": {
+          "stat_bonus": 6,
+          "max_bonus": 35,
+          "cost_reduction": 15,
+          "resist": 15
+        }
+      }
+    }
   }
 }

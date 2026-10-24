@@ -16,6 +16,7 @@ import { effectValue, flatEffectValue, noteUse, fightProgress, restoration } fro
 import { fightGrowth } from './v4/growth.js';
 import { trialEvidence } from './v4/passive_growth.js';
 import { developmentEvents } from './v4/skill_growth.js';
+import { noteContribution, fightFeats } from './v4/feats.js';
 import { passiveSnapshot, skillCostAmount, combatPassive, effectiveStats } from './passives.js';
 import { rankRefusal, restoreOf, restoreEffect } from './v4/items.js';
 
@@ -33,7 +34,7 @@ export function characterCombatant(state, id, content, side) {
     return {
         id, name: label(e), side, model: 'character',
         fixed: {
-            level: s.level, rank: dv.rank, class: s.class, stats: { ...effectiveStats(s, content) }, max_hp: dv.maxHp, max_mp: dv.maxMp,
+            level: s.level, rank: dv.rank, class: s.class, ...(s.evolution ? { evolution: { id:s.evolution.id, name:s.evolution.name, rank:s.evolution.rank, quality:s.evolution.quality } } : {}), stats: { ...effectiveStats(s, content) }, max_hp: dv.maxHp, max_mp: dv.maxMp,
             max_sta: dv.maxSta, atk: dv.atk, matk: dv.matk, def: dv.def, mdef: dv.mdef, init: dv.init, type: 'normal',
             // Patch 9A: his learned Skills and the plain attack of the weapon he holds (src/derived.js actionsOf)
             actions: actionsOf(s, content, rulesetOf(state), state),
@@ -403,6 +404,7 @@ function resolveStrike(ctx, attacker, target, attack, opts) {
     if (absorbed) steps.push(`Barrier absorbs ${absorbed}`);
     const hpBefore = target.current.hp;
     target.current.hp = Math.max(0, hpBefore - (final - absorbed));
+    noteContribution(ctx, attacker, target, hpBefore - target.current.hp);
     Object.assign(rec, { power, defense, post_def: postDef, variance, final, absorbed, hp_before: hpBefore, hp_after: target.current.hp, steps });
     if (target.current.hp === 0) {
         target.current.defeated = true;
@@ -1078,6 +1080,19 @@ export function npcTactic(ctx, me, decision) {
     if (ownLast >= 0 && enc.log[ownLast].kind === 'skill') return null;
     const known = Object.keys(me.fixed.actions).map((sid) => resolveSkill(content, sid, ctx.state)).filter((s) => s && !s.attack && !s.item);
     const payable = (s, spent = 0) => !s.cost || me.current[s.cost.resource] - spent >= skillCostAmount(content, s, me.fixed.actions[s.id].prof, me.fixed.passive?.cost);
+    // 9D: existing self-heals/restores are executable; choose only a concrete recovery, at most the existing tactics cap.
+    for (const skill of known.filter((k) => payable(k))) {
+        const paid = skillCostAmount(content, skill, me.fixed.actions[skill.id].prof, me.fixed.passive?.cost);
+        const r = restoration(content, skill, me.fixed.actions[skill.id].prof, rulesetOf(ctx.state), { stats: me.fixed.stats, pools: me.current, max: { hp: me.fixed.max_hp, mp: me.fixed.max_mp, sta: me.fixed.max_sta } }, paid);
+        if (!r || r.full || r.after <= r.before) continue;
+        if (r.resource === 'hp' && me.current.hp <= 0.5 * me.fixed.max_hp) return { skill: skill.id, why: 'hurt to half HP or less: restores HP with a known Skill' };
+        if (r.resource !== 'hp' && Object.keys(me.fixed.actions).some((id) => {
+            const a = resolveSkill(content, id, ctx.state);
+            if (!a?.attack || a.cost?.resource !== r.resource) return false;
+            const cost = skillCostAmount(content, a, me.fixed.actions[id].prof, me.fixed.passive?.cost);
+            return me.current[r.resource] < cost && r.after >= cost;
+        })) return { skill: skill.id, why: 'a known restore makes an otherwise unaffordable attack payable' };
+    }
     const blows = enc.log.slice(ownLast + 1).filter((r) => r.kind === 'attack' && enc.combatants[r.actor] && isOpponent(me, enc.combatants[r.actor]) && (r.strikes || []).some((k) => k.target === me.id));
     if (blows.length) {
         const by = enc.combatants[blows.at(-1).actor];
@@ -1087,7 +1102,11 @@ export function npcTactic(ctx, me, decision) {
         const fits = (s) => s.effects.some((e) => GUARDS[e.kind] === 'any' || GUARDS[e.kind] === kind);
         // review of .52: their own technique (a defensive signature) first, when it fits and they can pay it; else as before
         const guard = known.find((s) => s.origin?.kind === 'signature' && fits(s) && payable(s)) || known.find((s) => fits(s) && payable(s));
-        return guard ? { skill: guard.id, why: `struck by ${by.name} and hurt (${me.current.hp}/${me.fixed.max_hp} HP): guards with ${guard.name}` } : null;
+        if (guard) return { skill: guard.id, why: `struck by ${by.name} and hurt (${me.current.hp}/${me.fixed.max_hp} HP): guards with ${guard.name}` };
+        // A ranged fighter caught in melee may spend its known step instead of staying in reach of the next blow.
+        const step = known.find((k) => k.effects.some((e) => e.kind === 'reposition') && payable(k));
+        if (step && me.current.band === 'ENGAGED' && bandIndex(npcReach(ctx, me)) > 0) return { skill: step.id, why: 'hurt in melee: repositions with a known Skill to use its ranged attacks' };
+        return null;
     }
     if (decision.kind !== 'attack') return null;
     const feint = known.find((s) => s.effects.some((e) => e.kind === 'next_attack_buff' && e.scope === 'attack') && payable(s));
@@ -1376,6 +1395,7 @@ export function endEncounterEvents(state, content, enc) {
     const found = developed.filter((e) => e.t === 'growth.evidence').map((e) => e.d.evidence.key);
     if (found.length) summary.developments = found;
     events.push(...developed);
+    events.push(...fightFeats(state, content, enc));
     events.push({ t: 'encounter.ended', d: { id: enc.id, summary } });
     return { events, summary };
 }

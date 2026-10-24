@@ -73,6 +73,13 @@ export function passiveDefErrors(def, content, state = null) {
     if (def.rank !== 'F') e.push(`rank ${def.rank}: only F-rank Passives have calibrated bounds yet`);
     const budget = qualityBudget(content, def.quality);
     if (def.quality !== undefined && !budget) e.push(`quality: one of ${passiveRules(content).qualities.join(', ')}`);
+    e.push(...effectErrors(def, content, budget));
+    return e;
+}
+
+/** Shared closed effect primitives; a class supplies its own rank budget, never pretends to be an F Passive. */
+export function effectErrors(def, content, budget) {
+    const e = [];
     if (!['always', 'combat'].includes(def.scope)) e.push('scope: always or combat');
     const c = def.condition ?? null;
     if (c !== null) {
@@ -149,6 +156,9 @@ export function losePassive(state, who, passiveId, why, replacedBy = null) {
 /** The Passives of a sheet, in the order gained. */
 export const passivesOf = (sheet) => Object.values(sheet?.passives || {});
 
+/** 9D: exactly one active class trait shares effect totals, never Passive slots or ownership. */
+export const effectSources = (sheet) => [...passivesOf(sheet), ...(sheet?.evolution?.trait ? [{ ...sheet.evolution.trait, name: sheet.evolution.name, id: sheet.evolution.id }] : [])];
+
 const capped = (sum, cap) => Math.min(sum, cap);
 
 /**
@@ -159,7 +169,7 @@ const capped = (sum, cap) => Math.min(sum, cap);
 export function passiveTotals(sheet, content) {
     const total = passiveRules(content).total;
     const out = { core: Object.fromEntries(CORE_STATS.map((k) => [k, 0])), stat: { ATK: 0, MATK: 0, DEF: 0, MDEF: 0 }, max: { hp: 0, mp: 0, sta: 0 }, resist: { physical: 0, magical: 0 }, cost: [] };
-    for (const p of passivesOf(sheet)) {
+    for (const p of effectSources(sheet)) {
         if (p.scope !== 'always') continue;
         for (const x of p.effects) {
             if (x.kind === 'core_stat_bonus') out.core[x.stat] += x.value;
@@ -182,7 +192,7 @@ export function passiveTotals(sheet, content) {
  */
 export function effectiveStats(sheet, content) {
     const base = sheet?.stats || {};
-    if (!sheet?.passives) return base;
+    if (!sheet?.passives && !sheet?.evolution) return base;
     const core = passiveTotals(sheet, content).core;
     if (!CORE_STATS.some((k) => core[k])) return base;
     return Object.fromEntries(Object.entries(base).map(([k, v]) => [k, v + (core[k] || 0)]));
@@ -205,7 +215,7 @@ export function passiveGain(sheet, content, def, without = null) {
     const after = passiveTotals({ ...sheet, passives: { ...rest, [def.id]: def } }, content);
     const total = passiveRules(content).total;
     const combat = { stat: { ATK: 0, MATK: 0, DEF: 0, MDEF: 0 }, resist: { physical: 0, magical: 0 } };
-    for (const p of Object.values(rest).filter((x) => x.scope === 'combat')) for (const f of p.effects) {
+    for (const p of effectSources({ ...sheet, passives: rest }).filter((x) => x.scope === 'combat')) for (const f of p.effects) {
         if (f.kind === 'stat_bonus') combat.stat[f.stat] += f.value;
         else if (f.kind === 'resist') combat.resist[f.damage_type] += f.pct;
     }
@@ -239,7 +249,7 @@ export function costReductionPct(content, mods, skill) {
 
 /** The combat snapshot's view of his Passives (src/combat.js characterCombatant), or null without any. */
 export function passiveSnapshot(sheet, content) {
-    const list = passivesOf(sheet);
+    const list = effectSources(sheet);
     if (!list.length) return null;
     const t = passiveTotals(sheet, content);
     return {

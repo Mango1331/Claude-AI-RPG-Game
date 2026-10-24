@@ -342,6 +342,8 @@ function planLines(o) {
     for (const p of o?.passive_offers || []) out.push(sys(`POSSIBLE PASSIVE — ${t(p.text)} · not his yet: accept or decline it (#passives)`));
     for (const g of o?.booked?.passives || []) out.push(sys(`NEW PASSIVE — ${t(g.text)} · slots ${g.slots}${g.replaced ? ` · given up for good: ${t(g.replaced)}` : ''}`));
     // 9C completion (src/v4/skill_growth.js): a Skill development offered (not his yet), and one booked
+    for (const p of o?.class_offers || []) out.push(sys(`POSSIBLE CLASS — ${t(p.text)} · choose one, or postpone (#class)`));
+    for (const p of o?.booked?.classes || []) out.push(sys(`CLASS EVOLVED — ${t(p.text)} · #class · #feats`));
     for (const p of o?.skill_offers || []) out.push(sys(`POSSIBLE SKILL — ${t(p.text)}${p.replaces ? ` · it would replace ${t(p.replaces)} (Proficiency kept)` : ' · a new Skill beside his others'} · not his yet: accept or decline it (#skills)`));
     for (const g of o?.booked?.skills || []) out.push(sys(g.replaced ? `EVOLVED — ${t(g.replaced)} → ${t(g.text)} · P${g.prof} kept · #skill ${t(g.name)}` : `NEW SKILL — ${t(g.text)} · #skill ${t(g.name)}`));
     for (const f of (o?.learn_failed || []).filter((x) => x.source === 'practice' && x.notice)) out.push(sys(`NO PASSIVE YET — ${t(f.technique)}: ${t(f.errors.join('; '))}`));

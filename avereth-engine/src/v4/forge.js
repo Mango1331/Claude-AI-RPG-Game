@@ -1,6 +1,7 @@
 // Patch 9C-2a: prose only for an engine-composed acquisition. No numbers, effects or source decisions come back.
 import { skillDefErrors } from '../skills.js';
 import { passiveDefErrors } from '../passives.js';
+import { classDefErrors } from './class_growth.js';
 import { skillNames } from '../content.js';
 import { normText } from '../util.js';
 import { extractJsonObject } from './json.js';
@@ -81,6 +82,30 @@ export function parsePassiveForge(answer, drafts, content, state, reserved = [])
         if (bad.length) { errors.push(`${d.key}: ${bad.join('; ')}`); continue; }
         taken.add(normText(x.name));
         entries[d.key] = { hash: d.hash, name: x.name, ...(x.flavor ? { flavor: x.flavor } : {}) };
+    }
+    return { entries, errors };
+}
+
+/** 9D: same cosmetic request/cache, class profiles have their own validator and E budgets. */
+export function classForgeRequest(drafts) {
+    const q = forgeRequest(drafts);
+    q[0].content = q[0].content.replace('fantasy Skills', 'fantasy evolved Classes').replace('Skills already', 'Classes already');
+    q[1].content = JSON.stringify({ context: drafts[0]?.evidence || {}, drafts: drafts.map(({key,def}) => ({key,definition:def})) });
+    q[0].content += '\nThese are alternative class evolutions from the same character. Name their different directions, never grant a skill, domain or extra trait.';
+    return q;
+}
+export function parseClassForge(answer, drafts, content, state, reserved = []) {
+    const { value, error } = extractJsonObject(answer);
+    const entries = {}, errors = [], taken = new Set(reserved.map(normText));
+    if (!value || Object.keys(value).some((k) => k !== 'skills') || !Array.isArray(value.skills) || value.skills.length > drafts.length) return { entries, errors: [error || 'expected only a skills array'] };
+    if (value.skills.some((x) => !drafts.some((d) => d.key === x?.key))) errors.push('unknown class key');
+    for (const d of drafts) {
+        const list = value.skills.filter((x) => x?.key === d.key), x = list[0];
+        if (list.length !== 1 || !x || Object.keys(x).some((k) => !['key','name','flavor'].includes(k))) { errors.push(`${d.key}: one name and optional flavor`); continue; }
+        const bad = classDefErrors({ ...d.def, name: x.name, ...(x.flavor !== undefined ? { flavor: x.flavor } : {}) }, content);
+        if (taken.has(normText(x.name))) bad.push('class name repeated');
+        if (bad.length) { errors.push(`${d.key}: ${bad.join('; ')}`); continue; }
+        taken.add(normText(x.name)); entries[d.key] = { hash: d.hash, name: x.name, ...(x.flavor ? { flavor: x.flavor } : {}) };
     }
     return { entries, errors };
 }

@@ -33,6 +33,7 @@ import { learningActivity, stoneActivation } from './growth.js';
 import { effectiveStats } from '../passives.js';
 import { acceptPassive, declinePassive } from './passive_growth.js';
 import { acceptSkill, declineSkill, developmentOffers, skillOffers } from './skill_growth.js';
+import { classOffer, classSelection, acceptClass } from './class_growth.js';
 import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
@@ -958,6 +959,7 @@ const HANDLERS = {
     'passive.decline'(s, content, c, ctx, emit, envx) {
         if (skillOffers(s).some((d) => d.id === c.offer)) return HANDLERS['development.decline'](s, content, c, ctx, emit, envx);
         if (!envx?.c) return { status: 'refused', reason: 'not here', line: 'NOTHING TO DECLINE — no development is offered to him.' };
+        if (classSelection(s, c.offer) || (!c.offer && classOffer(s) && !developmentOffers(s).length)) return { status: 'resolved', line: 'CLASS CHOICE POSTPONED — the same options stay available in #class; nothing about him changes.' };
         const r = declinePassive(s, content, c.offer ?? null);
         if (r.refuse) return { status: 'refused', reason: r.refuse, line: r.line };
         for (const e of r.events) emit(e);
@@ -967,9 +969,15 @@ const HANDLERS = {
     // the offer he names, else the one offered when there is exactly one
     'development.accept'(s, content, c, ctx, emit, envx) {
         if (!envx?.c) return { status: 'refused', reason: 'not here', line: 'NOTHING TO ACCEPT — no development is offered to him.' };
-        const all = developmentOffers(s);
+        if (classSelection(s, c.offer) || (!c.offer && classOffer(s) && !developmentOffers(s).length)) {
+            const r = acceptClass(s, content, c.offer || classOffer(s).id);
+            if (r.refuse) return { status: 'refused', reason: r.refuse, line: r.line };
+            r.events.forEach(emit); (ctx.booked.classes ||= []).push(r.booked);
+            return { status: 'resolved', line: r.line };
+        }
+        const all = [...developmentOffers(s), ...(classOffer(s) ? [classOffer(s)] : [])];
         const d = typeof c.offer === 'string' ? all.find((x) => x.id === c.offer) : all.length === 1 ? all[0] : null;
-        if (!d) return { status: 'refused', reason: all.length ? 'which offer?' : 'no offer', line: `NOTHING TO ACCEPT — ${all.length ? `which of the offered developments: ${all.map((x) => `${x.kind === 'skill' ? x.skill.name : x.passive.name} (${x.id})`).join(' or ')}` : 'no development is offered to him'}. Nothing changes.` };
+        if (!d) return { status: 'refused', reason: all.length ? 'which offer?' : 'no offer', line: `NOTHING TO ACCEPT — ${all.length ? `which of the offered developments: ${all.map((x) => `${x.kind === 'class' ? 'E class choice' : x.kind === 'skill' ? x.skill.name : x.passive.name} (${x.id})`).join(' or ')}` : 'no development is offered to him'}. Nothing changes.` };
         if (d.kind === 'passive') return HANDLERS['passive.accept'](s, content, { ...c, offer: d.id }, ctx, emit, envx);
         const r = acceptSkill(s, content, d.id);
         if (r.refuse) return { status: 'refused', reason: r.refuse, line: r.line };
@@ -979,9 +987,10 @@ const HANDLERS = {
     },
     'development.decline'(s, content, c, ctx, emit, envx) {
         if (!envx?.c) return { status: 'refused', reason: 'not here', line: 'NOTHING TO DECLINE — no development is offered to him.' };
-        const all = developmentOffers(s);
+        if (classSelection(s, c.offer) || (!c.offer && classOffer(s) && !developmentOffers(s).length)) return { status: 'resolved', line: 'CLASS CHOICE POSTPONED — the same options stay available in #class; nothing about him changes.' };
+        const all = [...developmentOffers(s), ...(classOffer(s) ? [classOffer(s)] : [])];
         const d = typeof c.offer === 'string' ? all.find((x) => x.id === c.offer) : all.length === 1 ? all[0] : null;
-        if (!d) return { status: 'refused', reason: all.length ? 'which offer?' : 'no offer', line: `NOTHING TO DECLINE — ${all.length ? `which of ${all.map((x) => (x.kind === 'skill' ? x.skill.name : x.passive.name)).join(' or ')}?` : 'no development is offered to him'}` };
+        if (!d) return { status: 'refused', reason: all.length ? 'which offer?' : 'no offer', line: `NOTHING TO DECLINE — ${all.length ? `which of ${all.map((x) => (x.kind === 'class' ? 'E class choice' : x.kind === 'skill' ? x.skill.name : x.passive.name)).join(' or ')}?` : 'no development is offered to him'}` };
         if (d.kind === 'passive') return HANDLERS['passive.decline'](s, content, { ...c, offer: d.id }, ctx, emit, envx);
         const r = declineSkill(s, content, d.id);
         if (r.refuse) return { status: 'refused', reason: r.refuse, line: r.line };

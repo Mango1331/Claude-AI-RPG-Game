@@ -8,6 +8,7 @@ import { rulesetOf, rulesTextFor, skillOf } from './content.js';
 import { passivesOf, passiveText, statsText } from './passives.js';
 import { passiveOffers } from './v4/passive_growth.js';
 import { skillOffers } from './v4/skill_growth.js';
+import { className, classText, classOffer } from './v4/class_growth.js';
 import {
     knowledgeOf, memoriesOf, memoryText, entityLabel, anyLabel, propText, currentFacts, statusOf, pcIdentityFor, truth, lookOf,
     isMeaningful, PC_NAME_FACT, PC_LOOK_FACT,
@@ -86,7 +87,7 @@ export function pcLine(state, content, { combat = !!state.encounter, items = tru
     const dv = deriveCharacter(s, content);
     // Patch 9A review: a campaign of the three-class rules says so after his class (the lorebook's class entries tell
     // the two rulesets apart by it); a legacy campaign's line is as it was
-    const cls = `${s.class ? content.classes.get(s.class).name : 'no Class yet'}${rulesetOf(state) >= 2 ? ' (three-class rules)' : ''}`;
+    const cls = `${s.class ? className(s, content) : 'no Class yet'}${rulesetOf(state) >= 2 ? ' (three-class rules)' : ''}`;
     const guild = truth(state, 'pc', 'guild_rank')[0]?.o;
     const skillList = Object.entries(s.skills).map(([id, v]) => `${skillOf(content, id, state)?.name || id} P${v.prof}`);
     const weapon = weaponAttackOf(s, content, rulesetOf(state)); // Patch 9A: his weapon's own attack, no learned Skill
@@ -102,6 +103,9 @@ export function pcLine(state, content, { combat = !!state.encounter, items = tru
     if (skills) lines.push(`Skills: ${joinList(skillList)}`);
     // Patch 9B-2: his Passives, what they do (the numbers above already hold the lasting ones)
     if (passivesOf(s).length) lines.push(`Passives (the engine's; never narrate one he does not have): ${passivesOf(s).map(passiveText).join('; ')}`);
+    const classChoice = classOffer(state);
+    if (classChoice) lines.push(`Class options offered, NOT his (he alone chooses one): ${classChoice.options.map((o) => o.name).join(' or ')}`);
+    if (s.evolution) lines.push(`Active class trait (engine booked; shared caps): ${classText(s.evolution)}`);
     // Patch 9C-2c: a development offered to him is no Passive of his
     const offered = passiveOffers(state);
     if (offered.length) lines.push(`Offered to him, NOT his (he decides; tell no change in him from it): ${offered.map((d) => passiveText(d.passive)).join('; ')}`);
@@ -327,7 +331,9 @@ function outcomeBlock(state, content, outcome, opts = {}) {
     const skillBooked = (outcome?.booked?.skills || []).map((g) => (g.replaced
         ? `EVOLVED SKILL — booked by the engine in this turn: ${g.replaced} has become ${g.text} ${g.replaced} is his no longer. Show the change in a sentence or two; its numbers are the engine's. No other new Skill or change.`
         : `NEW SKILL — booked by the engine in this turn: ${g.text} Show it coming to him in a sentence or two; its numbers are the engine's. No other new Skill or change.`));
-    return [block, ...notes, ...learned, ...inert, ...offers, ...gained, ...notYet, ...skillOffered, ...skillBooked].filter(Boolean).join('\n');
+    const classOffered = (outcome?.class_offers || []).map((o) => `POSSIBLE CLASS — ${o.text}. One of the alternative class options, NOT his yet. He alone chooses in a later message.`);
+    const classBooked = (outcome?.booked?.classes || []).map((o) => `CLASS EVOLVED — booked by the engine: ${o.text}. Exactly this class and its one trait are his; the class itself grants no additional Skill, Passive or Domain.`);
+    return [block, ...classOffered, ...classBooked, ...notes, ...learned, ...inert, ...offers, ...gained, ...notYet, ...skillOffered, ...skillBooked].filter(Boolean).join('\n');
 }
 
 function outcomeLines(state, content, outcome, { v4 = false } = {}) {

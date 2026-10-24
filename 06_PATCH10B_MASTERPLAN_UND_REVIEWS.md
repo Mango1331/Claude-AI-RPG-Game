@@ -20,11 +20,23 @@
 
 | Strang | Gegenstand | Belegstatus 24.10.2026 | Aktuelle Aktivität |
 |---|---|---|---|
-| **A – offene freie ST-Kampagnen** | `current_test` ohne Fixture ab echter Level-1-Erstellung; Ziel 100 echte Spielerzüge | Run 1 26 Züge/Tod; Run 2 25 Züge/leerer Narrator. **0/2** erreichen Horizont | **JETZT:** weitere Runs starten und jeweils ausführlich reviewen/archivieren; nicht für Testerfolg manipulieren |
+| **A – offene freie ST-Kampagnen** | `current_test` ohne Fixture ab echter Level-1-Erstellung; Ziel 100 echte Spielerzüge | Run 1 26 Züge/Tod; Run 2 25 Züge/leerer Narrator; **Run 3 21 Inputs/20 abgewickelte, Planner leer nach Delivery-Loop**. **0/3** erreichen Horizont | **JETZT:** weitere Runs starten und jeweils ausführlich reviewen/archivieren; nicht für Testerfolg manipulieren |
 | **B – deterministische Kampf-/Wirtschaftssimulation** | echte JS-Engine, 3 Startklassen, Builds und Monster, Seeds | Portabler Simulator `fd20d0d` **implementiert**; zusätzliche 60.700 Läufe durch ChatGPT zuvor berichtet; Methodik muss fair eingegrenzt werden | Daten sammeln, Taktik-, Startdistanz- und NPC-Seitenasymmetrien ausweisen; **keine** globalen Nerfs |
 | **C – Verfolgung, Flucht, Rückzug, Bewegung, Monsterverhalten** | scheue Tiere, Band-System, Zeit-/Turn-Aufwand, Flee/Chase-Intent | Reale Hasen-/Fuchsjagd als Reibung dokumentiert; **bestehender** One-Roll-Escape-/Chase-Code verifiziert; genauen Fehlerpfad weiter isolieren | **DESIGN-FIX-KANDIDAT, ZURÜCKGESTELLT**, nach weiteren Runs/gezieltem Repro entscheiden |
 
 **Querschnitt M – Monster/Lore/Content:** Mein erster Lore-/Monster-Audit und Sols ausführlicher unabhängiger Gegenreview sind in §§5–8 getrennt dokumentiert. **Vorrangige technische Empfehlung für später: D (eng begrenzter Anatomie-/Lootfix), danach nur bei echtem Nutzen C (kleiner Hybrid).** Keine der Varianten ist implementierungsfreigegeben. Teil C und Monsterverhalten haben Schnittmengen, werden nicht isoliert als zwei neue Systeme entworfen.
+
+### Aktueller Nachtrag: Run 3 – 24.10.2026
+
+**[Run 3 – 20261024-041150Z-current_test](testrun_10b/20261024-041150Z-current_test/REVIEW.md)** ist ausgewertet und auf main als ausführlicher Review abgelegt. Ziel 100, **21 Spielerinputs**, davon **20 erfolgreich abgewickelte** Spielzüge, 22:15 min; **technischer Abbruch durch doppelt leeren Planner** (Calls 63/64: jeweils 2000/2000 Completion-Tokens, 8740 bzw. 8306 Zeichen Reasoning, **0 JSON-Text**). Mage Lv1, Arcane Bolt + Flame Lance; **0 Kämpfe**. Eine echte Lieferung wurde nach einer ausgeprägten **Quest-/Frachtübergabe-Schleife** erst in T20 abgeschlossen; einmalig 40 cp und 23 XP korrekt gebucht; Endstand 70 cp/23 XP, HP/MP voll, Engine-Integrität OK.
+
+**Neu bestätigter T10-Komplex (Delivery/Proof/Holder):** Originalvertrag verlangt eine Kiste zum **Steinbruchlager**, Beleg signed delivery chit; **keine Rückgabe der leeren Kiste nach Ashbridge** als Pflicht. T7/E14 und T8/E16 behaupten gültige Lieferung und setzen `quest.ready`, doch `object.created`/Holder führen die Kiste **beim PC**. T9/T15/T17 blockiert `proof.checked` den Abschluss, da PC weiter trägt; Narrator erfindet wechselnde Rückgabeanforderungen (erst Lager, dann Ossians Shop). T14/T16/T18 kann freiwilliges Abstellen/`give` wegen conditional-Intent/`pc_inventory` und Target-/Ortauflösung **nicht** zuverlässig gebucht werden. T19 wird das Cargo real **am Boden der Gildenhalle** abgelegt; T20 nimmt `proof.checked(mode:story_outcome)` den Auftrag nun an und zahlt aus, obwohl keine erfolgreiche Übergabe am eigentlichen Empfänger im Eventlog steht. Die Spannung ist doppelt: **frühe READY-Falschbestätigung**, später **falscher Endnachweis durch bloßes Nichttragen**. Nicht durch Abschalten des PC-Inventarschutzes oder frei erfundene neue Kistenpflichten lösen.
+
+**P0/P1 für technische Planung:** 10B-T10 Delivery/Objective/Holder/Proof-Atomarität; T11 Planner`length`-Recovery; T12 keine frei erfundenen Rücklieferpflichten; T13 `give`-/`drop`-Semantik mit NPC-/Ortsangabe; T14 signierter Receipt/HUD-Verbrauch prüfen, **kein** pauschales Pflichtlöschen; T15 `extract.failed` bei ungültigem `place` und daraus folgender falscher Aufenthaltsort. **Dritter echter Lauf = dritter vorzeitiger Abbruch**, aber **drei verschiedene** unmittelbare Ursachen: Run 1 Tod/Agency, Run 2 Narrator vollständig leer, Run 3 Planner zweimal leer. Alle drei Mage, keine natürlichen Warrior/Rogue-/Levelkarrieren. Run 3 hat **kein** neues Kampfbalanceergebnis geliefert.
+
+**Quellen-/Archivstatus:** [ausführlicher Run-3-Review](testrun_10b/20261024-041150Z-current_test/REVIEW.md), Original-ZIP `20261024-041150Z-current_test.zip`, 3.652.300 Bytes, SHA-256 `09e8f7a172921442fd4939dbdf806fb15b326e78230959d439bd2ca7a099979b`; **Git-Upload der Original-ZIP steht noch aus**, der Nutzer lädt diese wie bei Run 1/2 in den betreffenden Ordner. **Neue aktuelle Aufgabe:** Sol prüft die **drei originalen ZIPs und alle drei unabhängigen ChatGPT-Reviews** gegen Code und erarbeitet **einen priorisierten, testbaren technischen Patchplan mit Alternativen und minimalem Modulzuschnitt**; **keine Implementierung, keine Tests/Builds/Guides ändern, kein Commit von Produkt-Code ohne Nutzerfreigabe**.
+
+---
 
 **Testarchiv:** [`testrun_10b/README.md`](testrun_10b/README.md). Pro Lauf ein Unterordner `testrun_10b/<Run-ID>/` mit **unveränderter Original-ZIP** und **`REVIEW.md`**; nicht doppelt entpackt in Git. Der Nutzer übernimmt nötigen Binär-Webupload, ChatGPT das Review samt Index. Neue Runs in dieser Masterdatei **nur als knappe Querverweise**, vollständige turngenaue forensische Analyse bleibt im jeweiligen `REVIEW.md`.
 
@@ -58,7 +70,7 @@
 - **Open Guide:** `tools/st_live/live/guides/current_test.json`: freie Level-1-Klasse und Startskills, kein Fixture, `openRun.minTurns=100`, Guide-Limit 105. Lokales `live.config.json maxTurns:40` wird seit Runner-Fix für Open-Guides nicht stillschweigend priorisiert; explizites `--max-turns` muss ≥100 sein. Die gezielte 9D-Fixture blieb in `patch9d_fixture.json`.
 - **Kampfsimulator:** `avereth-engine/tools/sim/combat.mjs`, `baseline.json`, `package.py`, `README.md`, `tests/sim/combat.test.js`. Keine veränderten Produktbalancewerte. Sol: drei Kontrolltests und 1275/1275 Gesamttests (seine Ausführung, keine laufende Komplettsuite durch dieses Dokument). Paket wurde zusätzlich in anderer ChatGPT-Auswertung unter Node 22 statt nur Sols Node 24 gestartet.
 - **Sol – Monster-Review:** referenziert selbst `fd20d0d`/Build .57, überprüft reale `content/monsters.json`, `src/content.js`, `src/combat.js`, `src/v4/world.js`, `src/v4/loot.js`; kein eigener Folgecommit, keine neuen Zahlen. Quelle: vom Nutzer übermittelte Datei `Chatgpt Feedback(8).md` (24.10.2026), **Original-Gegenreview, nicht als Implementierung ausgeben**.
-- **Livetest-Status:** Run 1 und 2 haben eigene autoritative ZIPs und Reviews; gemeinsame funktionierende Gilden- und Liefermechanik, aber verschiedene Abbruchursachen; beide Mage. Aus 0 echten Kämpfen in Run 2 kann man weder eine frühere Kampfbughäufigkeit bestätigen noch eine Klassenbalance bewerten.
+- **Livetest-Status:** Run 1, 2 und 3 haben eigene ausführliche Reviews (Original-ZIPs für 1/2 auf main, für 3 noch als Nutzerupload ausstehend). Alle drei Mage, in allen wird Geld/XP bei Gildenturn-in korrekt einmalig gebucht, **Run 3 zeigt aber einen massiven Delivery-/Proof-Loop und eine fälschlich durch Drop an der Gilde erfüllte Quest**. Abbruchursachen sind unterschiedlich (Tod, Narrator leer, Planner leer). Aus 0 echten Kämpfen in Run 2 kann man weder eine frühere Kampfbughäufigkeit bestätigen noch eine Klassenbalance bewerten.
 
 **Quellenrangfolge:** Direktes Event/Commit/Code > unabhängiger reproduzierter Test > technische Dokumentation > Reviewer-Zusammenfassung > freie Narrator-Erzählung. Bei einem unbekannten Lauf keine Zahlen, Aussagen oder Tool-Prüfungen als selbst neu ausgeführt behaupten.
 
@@ -117,7 +129,7 @@ In der vorangegangenen Simulationsauswertung wurde für die Basismatrix berichte
 
 **Gemeinsam:** natürliche Questannahme, physische Lieferung, Preis-/Geldbuchung, Gildenabschluss, +23 XP funktionieren; **beide** bleiben weit unter 100 Zügen und nutzen nur Mage. **Verschiedene** Ursachen: Run 1 Agency/Kampfeskalation und Tod, Run 2 Provider-/Narrator-Budget ohne sichtbaren Text. Die übergeordnete Erzähler↔Engine-Wahrheitsgrenze tritt in beiden auf, aber die Symptome sind **keine** bewiesen identische Softwareursache. Neue Runs, besonders andere Klassen und länger fortgesetzte Wirtschaft/XP/Skills, sind nötig.
 
-**Neue Befunde** künftig zuerst in den jeweiligen Run-Review schreiben, hier unter §11 als eigenständige Kennung/Kategorie ergänzen. Bei 10/20 Runs diese Masterdatei **nicht** mit kompletten chronologischen Wiederholungen auffüllen.
+**Neue Befunde** künftig zuerst in den jeweiligen Run-Review schreiben, hier unter §10 als eigenständige Kennung/Kategorie ergänzen. Bei 10/20 Runs diese Masterdatei **nicht** mit kompletten chronologischen Wiederholungen auffüllen.
 
 ---
 
@@ -396,6 +408,12 @@ Sterben darf passieren, wenn der Spieler berechtigt ein Risiko eingeht. Ein 26-Z
 | **10B-T07** | Private Quest-Lifecycle | Run 2 +1 cp, Quest aktiv | P1/P2 **Hypothese** | Objectives-/Bestätigung und private Completion prüfen | **OFFEN** |
 | **10B-T08** | LLM-/Extractor-Verträge | Run 2 Extractor failed, Fact `x=x`; 17 Player-JSON-Reparaturen | P2 | atomare Validierung, Dummy-Fact-Filter, JSON-Ausgabevertrag | **OFFEN** |
 | **10B-T09** | NPC/Location/Pacing | Run 2 `no_go` im begleiteten Innenraum, „Present“ leer | P2 | begrenzte Escort-Location-Regel oder ehrliche UI-Semantik | **OFFEN** |
+| **10B-T10** | **Delivery: Quest-READY/Proof/Fracht-Holder inkonsistent** | Run 3 E14/E16 READY trotz PC-Holder, E17/E30/E34 mehrfach false, E37 Drop am Gildenboden, E39 Auszahlung | **P0 Gameplay/Quest-Integrität** | Richtige Ziel-/Holder-/Proof-Belege, atomare freiwillige Übergabe, keine durch `not carried` fingierte Liefererfüllung | **OFFEN** |
+| **10B-T11** | Planner-Reasoning-Budget/Empty-Recovery | Run 3 T21 Calls 63+64 zweimal 2000/2000, 0 JSON, Engine-Turn20 bleibt | **P0 Long-Run-Zuverlässigkeit** | Provider-/Repair-Diagnose, begrenzter sicherer Recovery, kein Re-Commit | **OFFEN** |
+| **10B-T12** | Erzähler schreibt neue Delivery-Pflichten | Run 3 T9–18 wechselnde Kisten-Rückgabeauflagen, nicht im ursprünglichen Questvertrag | **P1 Narrator/Quest-Authority** | Engine-Vertragsbedingungen strikt maßgeblich, neue freiwillige Arbeit getrennt | **OFFEN** |
+| **10B-T13** | GIVE-/DROP-/Multi-Intent-Integration | Run 3 T14/T16/T18 Give conditional/expired oder nicht interpretiert; T19 Drop funktioniert | **P1 Player Agency/Inventar** | Freiwilliger Player-Give muss möglich bleiben, `pc_inventory`-Firewall erhalten | **OFFEN** |
+| **10B-T14** | unterschriebener Receipt vs. Guild-Slip | Run 3 T20 Narrator behauptet Entgegennahme, Objekt verbleibt beim PC; proof.consume=false | **P2 Prüfen** | echte Paper-/Beleg-Semantik, nicht blind löschen | **OFFEN** |
+| **10B-T15** | Extractor-Ortsstatus / False Progress | Run 3 T6 `extract.failed` unzulässiger `place`-Delta bei narrativem Ladenbesuch | **P1/P2 Prüfen** | atomare Extractor-Verträge, bestätigten Ort statt Narrator-Prosa verwenden | **OFFEN** |
 | **10B-M01** | Loot/Anatomie | Hare/Doe/Goat Antler reproduzierbar | deutlich / lokaler echter Bug | **D:** Spezialbeute nur bei bestätigtem Körpermerkmal; keine globale Species-Tabelle | **OFFEN** |
 | **10B-M02** | Monster-Sapienz | `creatureCombatant: sapient:false` | Architekturdefizit | nur belegte individuelle Sapienz über vorhandenen State/Consumer | **OFFEN** |
 | **10B-M03** | Monster-Specials | Gift/Flug/Korrosion nur Prosa/Angriffslables | Designlücke bei relevanten Fällen | bestehende typisierte Skill-/Effekt-Primitive punktuell wiederverwenden | **OFFEN** |
@@ -413,7 +431,7 @@ Sterben darf passieren, wenn der Spieler berechtigt ein Risiko eingeht. Ein 26-Z
 
 ## 11. Noch ausstehende Design- und Releaseentscheidungen
 
-**Jetzt keine Entscheidung erforderlich:** Nutzer setzt offene Tests fort. Das ist die aktuelle ausdrücklich gewählte Strategie.
+**Aktueller nächster Auftrag, ausdrücklich NUR ANALYSE:** Sol soll vor jeder Produktänderung **alle 3 Runs mit Original-ZIPs und 3 ChatGPT-Reviews** unabhängig gegen den Dev-Code überprüfen und daraus einen **konkreten technischen 10B-Patchplan (ohne Implementierung)** schreiben. Danach entscheidet der Nutzer über tatsächliche kleine Fixphasen. Bis dahin werden weitere offene Tests weiterhin gesammelt. Monster-/Chase-Design bleibt als Kandidat erhalten.
 
 Später zu entscheiden, nach Evidenz:
 

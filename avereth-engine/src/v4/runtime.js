@@ -665,6 +665,15 @@ export function extractionRequest(chat, id, content) {
 export async function runExtraction(chat, id, content, llm, { hud = 'closed' } = {}) {
     const req = extractionRequest(chat, id, content);
     if (!req) return { changed: false };
+    // A provider failure may be caused by a swipe, edit, or newer Engine turn.
+    // Do not spend another LLM call when the original reply is no longer current.
+    const current = () => {
+        const msg = chat[id];
+        const r = rec(msg);
+        return !!msg && r?.extraction?.status === 'pending' && r.text_hash === req.hash
+            && hash32(msg.mes) === req.hash && !laterTurns(chat, id);
+    };
+    const stale = () => ({ changed: false, ...(laterTurns(chat, id) ? { late: true } : {}) });
     const vocab = content.deltaVocab;
     let ms = 0;
     let parsed = null;
@@ -680,6 +689,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed' } =
         else error = p1.errors.join('; ').slice(0, 200);
 
         if (!(p1.valid && p1.complete)) {
+            if (!current()) return stale();
             const rep = extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player, expectedKeys: req.expectedKeys, reply: chat[id].mes }, { previous: first.content, errors: p1.errors });
             const second = await ask(llm, rep.messages, 'extract_repair');
             ms += second.ms;
@@ -696,6 +706,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed' } =
             if (!parsed && !first.content.trim() && second.ok && !second.content.trim()) {
                 const fresh = [...req.messages, { role: 'user', content:
                     'Both previous attempts returned no JSON text. Return one short JSON object now, with the requested expected keys and only verified deltas. Empty deltas are allowed. No prose or reasoning.' }];
+                if (!current()) return stale();
                 const third = await ask(llm, fresh, 'extract_recovery', { maxTokens: 6000 });
                 ms += third.ms;
                 calls.push(third.call);
@@ -711,6 +722,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed' } =
         // evidence to repair. Retry the SAME untouched request exactly once.
         // No events are committed until the validated result below is applied.
         error = first.error;
+        if (!current()) return stale();
         const second = await ask(llm, req.messages, 'extract_recovery');
         ms += second.ms;
         calls.push(second.call);

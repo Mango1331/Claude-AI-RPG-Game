@@ -160,18 +160,34 @@ export async function interpretMessage(llm, content, catalog, text) {
 
 // ------------------------------------------------------------------------------------------------ planner (prototype C)
 /** Prototype C (src/v4/planner.js): the planner call with its one repair, as the interpreter's. */
-export async function planMessage(llm, content, ctx, text, { recent = '' } = {}) {
+export async function planMessage(llm, content, ctx, text, { recent = '', isCurrent = () => true } = {}) {
     const vocab = content.commandVocab;
     const req = plannerRequest(vocab, ctx, text, { recent });
     const first = await ask(llm, req.messages, 'plan');
     let ms = first.ms;
     const calls = [first.call];
-    if (!first.ok) return { commands: null, failed: true, error: first.error, ms, repaired: false, raw: [], calls };
+    if (!first.ok) {
+        // 10B-4c.4: unlike a malformed JSON answer, a transport failure has
+        // supplied no Planner evidence. Give the same untouched request just
+        // ONE more chance. No normal repair after that retry, no fourth call.
+        // Swipes/chat changes must not spawn a doomed extra provider request.
+        if (!isCurrent()) return { commands: null, failed: true, error: 'stale request', ms, repaired: false, raw: [], calls };
+        const second = await ask(llm, req.messages, 'plan_recovery');
+        ms += second.ms;
+        calls.push(second.call);
+        if (!second.ok) return { commands: null, failed: true, error: second.error, ms, repaired: true, recovery: 'transport', raw: [], calls };
+        const p2 = parsePlan(second.content, vocab, ctx, text);
+        const raw = [String(second.content).slice(0, 2000)];
+        return p2.commands
+            ? { commands: p2.commands, failed: false, error: null, ms, repaired: true, recovery: 'transport', raw, calls }
+            : { commands: null, failed: true, error: (p2.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired: true, recovery: 'transport', raw, calls };
+    }
     const raw = [String(first.content).slice(0, 2000)];
     let p = parsePlan(first.content, vocab, ctx, text);
     let repaired = false;
     let recovery = null;
     if (!p.commands) {
+        if (!isCurrent()) return { commands: null, failed: true, error: 'stale request', ms, repaired: false, raw, calls };
         const rep = plannerRequest(vocab, ctx, text, { recent, previous: first.content, errors: p.errors });
         const second = await ask(llm, rep.messages, 'plan_repair');
         ms += second.ms;
@@ -189,6 +205,7 @@ export async function planMessage(llm, content, ctx, text, { recent = '' } = {})
             const messages = [...fresh.messages, { role: 'user', content:
                 'Both previous attempts returned no JSON text. Answer the PLAYER MESSAGE now with exactly one short JSON object {"commands":[...]}. If the player takes no action, return {"commands":[]}. Return no prose.' }];
             recovery = 'empty';
+            if (!isCurrent()) return { commands: null, failed: true, error: 'stale request', ms, repaired, raw, calls };
             const third = await ask(llm, messages, 'plan_recovery', { maxTokens: 4000 });
             ms += third.ms;
             calls.push(third.call);
@@ -206,14 +223,14 @@ export async function planMessage(llm, content, ctx, text, { recent = '' } = {})
  * existing inputs (src/v4/planner.js mapPlan); the record has the same shape as A's, plus `plan`, so swipes and
  * regenerations reuse it exactly as they reuse the interpreter's (nothing is planned again for the same message).
  */
-async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previous = null }) {
+async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previous = null, isCurrent = () => true }) {
     const msg = chat[u];
     const p = lastReplyIndex(chat, u);
     const recent = p >= 0 ? recentText(chat[p].mes) : '';
     const catalog = buildCatalog(before, content, { known: true, c: true });
     const ctx = withContentSkills(planContext(before, content, catalog), content, before);
     const reuse = previous?.plan && previous.interp?.commands ? { commands: previous.interp.commands, failed: false, error: null, ms: 0, repaired: !!previous.interp.repaired, raw: previous.plan.raw || [], calls: previous.plan.llm, recovery: previous.plan.recovery || null } : null;
-    const pl = reuse || await planMessage(llm, content, ctx, msg.mes, { recent });
+    const pl = reuse || await planMessage(llm, content, ctx, msg.mes, { recent, isCurrent });
     const plan = {
         version: PLANNER_VERSION, mode: ctx.fight ? 'fight' : 'story', ms: pl.ms, repaired: pl.repaired, failed: pl.failed,
         ...(pl.error ? { error: pl.error } : {}), raw: pl.raw, ...(pl.calls?.length ? { llm: pl.calls } : {}),
@@ -519,7 +536,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         const control = ir.reason === 'creation' || ir.reason === 'dead' || ir.intent?.kind === 'command';
         if (campaignPath(chat, settings.legacyPlanner ?? settings.planner) === 'c' && !control) {
             if (typeof llm !== 'function') throw new Error('Runtime V4 needs an LLM call for the planner');
-            r = await plannedTurn(chat, content, { u, before, ir, inputHash, llm, previous: retryBoard ? r : null });
+            r = await plannedTurn(chat, content, { u, before, ir, inputHash, llm, previous: retryBoard ? r : null, isCurrent: current });
             if (!current()) return stale();
             r.perf = turnPerf(r, t0, f0, waited);
             if (r.interp?.failed) {

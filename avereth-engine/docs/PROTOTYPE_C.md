@@ -1,5 +1,8 @@
 # Prototyp C: semantischer Planner hinter einem Feature-Flag (Build 4.3.0-c.6.6)
 
+> **HISTORISCHE ARCHITEKTUR- UND ENTWICKLUNGSCHRONIK seit Prototype C (ab 02.10.2026).** Die folgenden ursprünglichen Ausgangsstände und datierten Patchnotizen sind nicht der aktuelle Code-/Abnahmestand und **keine vollständige Einstiegslektüre**. Bei neuem Chat auf `main` nur [01 Arbeitsweise](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/01_ARBEITSWEISE_CHATGPT_CLAUDE.md) und [03 aktuellen Projektstand](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/main/03_AKTUELLER_PROJEKTSTAND.md) vollständig lesen. Bei einer konkreten Implementierungsfrage diese Chronik nur nach Bedarf zusammen mit Code, Diff und [10B-Fachindex](PATCH10B_REMAINING_WORK_SOL_IMPLEMENTATION_INDEX.md) heranziehen.
+
+
 Stand: 02.10.2026.
 
 | | |

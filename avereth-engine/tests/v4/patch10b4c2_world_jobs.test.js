@@ -168,6 +168,7 @@ test('4c.2: host job stays active through async save, so generation barrier wait
     const p = manager.start(0);
     await tick();
     assert.equal(manager.currentJob(), p);
+    assert.equal(manager.currentId(), 0, 'barrier must still wait on the saving reply');
     d.resolve();
     await p;
     assert.equal(manager.currentJob(), null);
@@ -227,4 +228,53 @@ test('4c.2: raw next user input is not a booked turn; reload resumes the pending
     const second = await runExtraction(g.chat, id, content, async () => VALID);
     assert.equal(second.applied, true);
     assert.equal(pendingExtraction(g.chat), -1);
+});
+
+test('4c.2: real extraction is fenced across a switch and can resume on return', async () => {
+    const { g, id } = await realTurn();
+    const a = { chatId: 'A', chat: g.chat };
+    const b = { chatId: 'B', chat: [{ mes: 'Other chat', extra: {} }] };
+    let active = a, count = 0, saves = 0;
+    const provider = deferred();
+    const manager = createWorldJobs({
+        active: () => active,
+        run: (chat, replyId, { isCurrent }) => runExtraction(chat, replyId, content, async () => {
+            count++;
+            return count === 1 ? provider.promise : VALID;
+        }, { isCurrent }),
+        applied: async () => { saves++; },
+    });
+    const old = manager.start(id);
+    await tick();
+    assert.equal(count, 1);
+    active = b;
+    manager.invalidate();
+    provider.resolve(VALID);
+    await old;
+    assert.equal(saves, 0);
+    assert.equal(rec(g.chat[id]).extraction.status, 'pending');
+    active = a;
+    const resumed = manager.start(id);
+    await resumed;
+    assert.equal(count, 2);
+    assert.equal(saves, 1);
+    assert.equal(rec(g.chat[id]).extraction.status, 'applied');
+    assert.equal(rec(g.chat[id]).events.filter(e => e.t === 'extract.applied').length, 1);
+});
+
+test('4c.2: an Engine-booked later turn makes a pending reply ineligible for resume', async () => {
+    const { g, id } = await realTurn();
+    const later = { mes: 'Next action', is_user: true, is_system: false, extra: {} };
+    setRec(later, { events: [{ t: 'turn.begun', d: { turn: 3 } }] });
+    g.chat.push(later);
+    const a = { chatId: 'A', chat: g.chat };
+    let calls = 0;
+    const manager = createWorldJobs({
+        active: () => a,
+        run: async () => { calls++; return { changed: true }; },
+        applied: () => {},
+    });
+    assert.equal(pendingExtraction(g.chat), -1);
+    assert.equal(manager.start(id), null);
+    assert.equal(calls, 0);
 });

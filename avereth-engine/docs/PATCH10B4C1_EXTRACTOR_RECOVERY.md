@@ -50,3 +50,22 @@ npm test
 **Separate pending work:** ST smoke and real GLM provider test; host-level crash/reload/disconnect recovery and empty Narrator response recovery. This patch **does not retry a finished `failed` extraction** on a subsequent turn and does not modify the automated Runner's 10B-4b.1 soft/hard policy. 10B-3 remains untouched.
 
 **Decision:** The complete Extractor recovery cannot be considered proven in one commit without reproducing real ST-host lifecycle cases. This first part is bounded in-call recovery; after local red/green verification, separately decide whether a small host-level recovery step is needed.
+
+## Independent .62 review and narrow 10B-4c.1a correction (24.10.2026)
+
+The independent reviewer actually executed the first .62 implementation (`4dd8a62`): **10/11 new tests passed; full `npm test` 1380/1381 passed, zero skipped**. The only failure was test 10, *“a following player turn prevents a late recovery commit.”* That test appended a raw player message without any Engine record. `laterTurns(chat,id)` deliberately counts only a later message with **recorded Engine events**, because SillyTavern's normal host barrier waits for the pending extraction **before** resolving the next player turn. Therefore the real `applyExtraction` correctly committed; the test's assumed late condition was false. **No gameplay code defect was demonstrated by this failure.**
+
+**Test 10 corrected:** its later message now carries an actual `turn.begun` Engine event through `setRec`, so `laterTurns` genuinely returns true. A separate positive control demonstrates that **a raw, still-unprocessed player message correctly allows the pending extraction to commit**. No change to `laterTurns` or the existing host barrier.
+
+**Additional small product correction from review:** Before **each extra LLM call** (normal schema repair, last empty-output attempt, or transport retry), `runExtraction` now verifies the originally targeted reply is still present at that index, has `extraction.status === 'pending'`, has the same saved and live text hash, and has no later Engine-booked turn. If not, it exits without issuing the next costly LLM request or booking any events; `late:true` is returned only for a genuinely later Engine-booked turn. The final `applyExtraction` guard remains authoritative after an in-flight call. This avoids unnecessary repeat calls after edits/swipes/replaced replies or a truly newer Engine turn. **Switching the active chat without changing the old chat array is not directly observable inside this helper**; true cross-chat cancellation belongs to the future 10B-4c.2 host lifecycle work.
+
+Five additional regression tests complement the original 11: stale swipe after primary transport failure, edited reply after an empty first answer (skip normal repair), edited reply after two empty answers (skip third call), a later Engine-booked turn after transport failure (skip retry, late), and the positive raw/unprocessed-player-message barrier case. **Total new 10B-4c.1 tests: 16**, with two existing 8.1/8.2 regression updates unchanged.
+
+Other observations retained from the independent review:
+
+- Recovery may prolong the next turn's `pendingWorld.job` barrier; `extraction.ms`, `extraction.llm` and next-turn `waited` are available to measure that in a real run.
+- Whether the GLM/provider endpoint accepts or caps `maxTokens: 6000` has **not** been verified in a live request.
+- `extraction.repaired === true` currently means an additional extraction request occurred, including transport-recovery (not strictly JSON repair); `extraction.llm[].purpose` distinguishes `extract_repair` from `extract_recovery`. No new save/telemetry field was introduced.
+- An empty first response followed by a transport failure on normal repair **does not trigger** the third attempt. This is an intentional conservative limit.
+
+**Updated local validation required:** The reviewer-observed **1380/1381** is the *before-correction* .62 result, not the outcome of this adjustment. Following these test and source changes, run `node --test tests/v4/patch10b4c1_extractor_recovery.test.js` and `npm test` again; **expected only**: 16/16 target and **1386/1386 total**, not yet independently observed. ST smoke and a real GLM/provider run remain pending. Build stays **.62**, because this is a targeted correction prior to technical acceptance of the same build. Do not start 10B-4c.2 before the results are reviewed.

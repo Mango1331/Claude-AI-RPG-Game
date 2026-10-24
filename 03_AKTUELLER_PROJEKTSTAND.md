@@ -1,7 +1,7 @@
 # Avereth Engine — Aktueller Projektstand und nächste Übergabe
 
 **Dokumenttyp:** zeitabhängiger technischer Hand-off  
-**Stichtag:** 24. Oktober 2026 · Fassung 42 (9D `.55` durch Codex implementiert; 1258/1258 selbst ausgeführte Tests, unabhängiges Review und Live offen)  
+**Stichtag:** 24. Oktober 2026 · Fassung 43 (9D `.55` von Claude gegengeprüft; gezielter Reviewfix `.56`, 1262/1262 Selbsttests; echter Fixture-Livetest offen)  
 **Pflege:** Nach großen Patches und wichtigen Reviews/Livetests aktualisieren. **Zu Beginn jedes neuen Chats den Git-HEAD neu prüfen.**  
 **Quellenrangfolge:** aktueller Code/Commit für implementierte Mechanik; dokumentierter Design-Kanon für Ziele; Claude-Berichte für nicht unabhängig ausgeführte Tests; Livetest-Events/LLM-Logs für reales Gameplay.
 
@@ -13,15 +13,28 @@
 | Produkt | Avereth Engine – Fantasy-Sandbox-RPG als SillyTavern-Extension |
 | GitHub | https://github.com/Mango1331/Claude-AI-RPG-Game |
 | **Produkt-/Entwicklungsbranch** | claude/c-planner-prototype-2026-10-02-gpt-c666 |
-| **HEAD am 24.10.2026 (Snapshot)** | **c15177a4cf62bf58db17ef751a31dc3d54a2c7a9** (separater 9D-Runner), Engine **6777e6c02bc3c06f3a4d14ef82fb9e2c5b42c091**, Basis `be276456` (.54). Von Codex implementiert, getestet und gepusht; vor neuer Arbeit HEAD erneut prüfen. |
-| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.55**, aktiver Narrator-Vertrag Revision **.55**. Persönliche ST-Karte aktualisieren; Runner ersetzt nur die isolierte Testkarte. Planner-Version unverändert, Vokabular `cmd-1.5`. |
+| **HEAD am 24.10.2026 (Snapshot)** | **bdda871e1aaf94c79f6834181e81c666c71d04e2** (separater Runner-Reviewfix), Engine **d06003bbe8492f0a0685e3db9c4a852beba6343c**, Basis `c15177a` (.55). Von Codex umgesetzt, getestet und gepusht; HEAD vor neuer Arbeit erneut prüfen. |
+| **Build (package.json, manifest.json, ENGINE_VERSION)** | **4.3.0-c.6.6.56**, Narrator-Vertrag unverändert Revision **.55**. Persönliche ST-Karte .55 bleibt gültig; isolierter Runner übernimmt diese Datei. Planner und Vokabular unverändert. |
 | **Maßgeblicher Produktpfad** | V4-C, semantischer Planner; V3/V4-A als Legacy |
-| **Patchstatus** | **9D IMPLEMENTIERT / Selbsttests grün, noch nicht unabhängig gegengeprüft oder live abgenommen.** F→E ab 15, persistente Normal-/Rare-Auswahl, eine aktive reale Klasseneigenschaft, Lifetime Feats, Historie/Vermächtnis, #class/#feats, kleine NPC-Nutzungslücken. D–S/Domain/E-Legendary nicht implementiert. Der echte 39-Züge-.54-Nachweis des 9C-Kombinationsskills bleibt gültig und ist kein 9D-Livenachweis. |
-| **Nächster Schritt** | Unabhängiges Claude-Review von `6777e6c` und `c15177a`; danach kurzer expliziter Level-14-Fixture-Lauf im eingerichteten isolierten ST-/GLM-Profil: `npm run live:st -- --guide current_test --fixture 9d-rare --seed 7 --headed`. Original-Events/Calls/Report prüfen, erst dann 9D-Abnahme. Hier fehlen ST-Installation/Profil, Browserbinary und Provider-Key. Kein künstlicher natürlicher Level-1-bis-15-Erfolg behaupten. Danach offener Langtest und 10B, keine automatische Freigabe höherer Klassenränge. |
+| **Patchstatus** | **9D IMPLEMENTIERT, .55 unabhängig von Claude gegengeprüft; fünf Reviewbefunde gezielt in .56 korrigiert.** Kernarchitektur, gemeinsame Caps, atomare Wahl/Replay und isoliertes Fixture tragen laut Gegenreview; 1258/1258 unabhängig laut Claude. .56: sechs betroffene Prüfungen vor Fix rot/nach Fix grün; 92/92 angrenzend, volle1262/1262 durch Codex. Kein echter 9D-ST/GLM-Lauf; D–S/Domain/E-Legendary bleiben ausgenommen. |
+| **Nächster Schritt** | Kurzer expliziter Level14-Fixture-Lauf im eingerichteten isolierten ST-/GLM-Profil: `npm run live:st -- --guide current_test --fixture 9d-rare --seed 7 --headed`. Letzten XP-Schritt, Angebot, Annahme, #class/#feats, echte Wirkung im Folgeangriff und Save/Reload anhand Original-Events/Calls/Report bewerten. Keine weitere Entwurfsrunde für diesen gezielten Fix. Hier fehlen ST-Installation/Profil, Browserbinary und Provider-Key; 9D bleibt bis zum echten Run nicht live abgenommen. Danach offener Langtest/10B, kein ungefragter High-Rank-Ausbau. |
 | Dokumentationsbranch | main – vier maßgebliche Projektdateien 01–04 und separate Datei 05 zur Branch-Historie; von Entwicklungsbranch getrennt |
 
 
-### 9D .55 – IMPLEMENTIERT, Selbsttests bestanden, unabhängiges Review und Provider-Abnahme offen (24.10.2026)
+
+### 9D Reviewfix .56 – fünf bestätigte Befunde korrigiert (24.10.2026)
+
+**Commits:** [Engine d06003b](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/d06003bbe8492f0a0685e3db9c4a852beba6343c), [Runner bdda871](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/bdda871e1aaf94c79f6834181e81c666c71d04e2); [aktuelle Patchdoku](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/d06003bbe8492f0a0685e3db9c4a852beba6343c/avereth-engine/docs/PATCH9D_CLASS_EVOLUTION.md). Basis `c15177a`, Build .56, Narrator-Vertrag unverändert .55.
+
+**Unabhängiges Gegenreview der .55:** Claude bestätigt Beitrags-Hook, gemeinsame Effekt-Caps, atomare Auswahl/Replay und Runner-Isolation; 1258/1258 auch dort laut übergebenem Bericht. Zwei mittlere Befunde (Routine-Evolutionen allein schalten Rare frei; angeschlagener Rückkehrer bekommt keinen persönlichen Sieg) und drei niedrige Befunde (nutzloses NPC-Blink, fehlende Fixture-Berichtskennzeichnung/65 alte freie Punkte, feste15/30) hier konkret bestätigt.
+
+**Korrekturen:** Sämtliche Skill-Entwicklung zusammen zählt maximal einen Rare-Punkt/einen Kontext, ohne sichtbare oder alte .55-Taten zu löschen. Persönlicher Anteil bezieht sich auf den positiven tatsächlichen HP-Schaden dieses Encounters; ohne erfassten Schaden keine Gutschrift. Die automatische Blink-Taktik entfällt, Heal/Restore bleiben. Angebot/Annahme/Validierung/Anzeige lesen `class_growth.level`, höhere Hinweise/Extrembeleg die Rank-Bands; keine neue Levelpolitik im Replay-Reducer, keine geänderte Ranggrenze. Im isolierten Runner sind die alten Level14-Punkte passend verteilt; echte Level15-Punkte entstehen normal. `report.md` nennt Fixture/Seed/synthetische Vorgeschichte und tatsächlichen Reload-Status.
+
+**Hier ausgeführt:** Neue/korrigierte Prüfungen auf .55 genau sechs rot, 13/19 grün; mit Fix19/19. Angrenzende Regressionen92/92; ein vollständiger Abschlusslauf **1262/1262**, 0 Fehler, Node24.19.0, rund27 Sekunden. Drei neue Kernfälle und ein neuer Berichtstest. Alle fünf Runner-Fixtures mit Seed7 gefaltet und `validateState`-geprüft: Level14, null alte freie Punkte, keine Invariantenfehler. .56 von Codex getestet, kein weiteres unabhängiges .56-Review behauptet.
+
+**Nächste Abnahme:** Echter expliziter Fixture-ST/GLM-Lauf, hier weiterhin mangels ST/Browser/Key nicht möglich. Keine neue Pflicht zu einem natürlichen1–15-Lauf. Sonstige Hinweise (Endurance-Fallback, Klassenbonusbalance, Runtime-Try-Grenze, Basisklassenzeile) bleiben Hinweise ohne zusätzliche Änderungen dieses Fixes. Keine D–S-/Domain-Erweiterung.
+
+### 9D .55 – historischer Implementierungsbericht vor Gegenreview: IMPLEMENTIERT, Selbsttests bestanden, unabhängiges Review und Provider-Abnahme offen (24.10.2026)
 
 **Tatsächlich gepusht:** [Engine 6777e6c](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/6777e6c02bc3c06f3a4d14ef82fb9e2c5b42c091), [Runner c15177a](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c15177a4cf62bf58db17ef751a31dc3d54a2c7a9). Engine und Runner getrennt, keine Branch-Merges auf main. [Technische Patchdoku](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/6777e6c02bc3c06f3a4d14ef82fb9e2c5b42c091/avereth-engine/docs/PATCH9D_CLASS_EVOLUTION.md), `tests/v4/patch9d.test.js`, `tests/v4/patch9d_fixtures.js`, `tests/live_runner/patch9d_runner.test.js`.
 

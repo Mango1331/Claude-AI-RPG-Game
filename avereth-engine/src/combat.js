@@ -1103,9 +1103,6 @@ export function npcTactic(ctx, me, decision) {
         // review of .52: their own technique (a defensive signature) first, when it fits and they can pay it; else as before
         const guard = known.find((s) => s.origin?.kind === 'signature' && fits(s) && payable(s)) || known.find((s) => fits(s) && payable(s));
         if (guard) return { skill: guard.id, why: `struck by ${by.name} and hurt (${me.current.hp}/${me.fixed.max_hp} HP): guards with ${guard.name}` };
-        // A ranged fighter caught in melee may spend its known step instead of staying in reach of the next blow.
-        const step = known.find((k) => k.effects.some((e) => e.kind === 'reposition') && payable(k));
-        if (step && me.current.band === 'ENGAGED' && bandIndex(npcReach(ctx, me)) > 0) return { skill: step.id, why: 'hurt in melee: repositions with a known Skill to use its ranged attacks' };
         return null;
     }
     if (decision.kind !== 'attack') return null;

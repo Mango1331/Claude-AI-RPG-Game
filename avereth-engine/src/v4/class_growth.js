@@ -153,12 +153,13 @@ export function acceptClass(s, content, ref) {
 
 export function classLines(s, content) {
     const sh = s.entities.pc.sheet;
+    const level = content.rules.class_growth.level;
     const out = [`Current class: ${className(sh, content)} | Class quality: ${sh.evolution?.quality || 'Normal (Base Class)'}`];
     if (sh.evolution) out.push(`Class trait: ${classText(sh.evolution)} (shared effect caps; no Passive slot)`, ...(sh.evolution.flavor ? [`Description (appearance only): ${sh.evolution.flavor}`] : []));
     out.push(`Evolution history: ${(sh.class_history || []).map((h) => `${h.name} [${h.rank}/${h.quality}]`).join(' → ') || 'none'}`, `Class legacy: ${legacyValue(sh.class_history, content)} (future budget potential; no extra active traits)`);
     const d = classOffer(s);
     if (d) out.push('CLASS CHOICE — choose exactly one; postponing keeps these same options:', ...d.options.map((o) => `- ${classText(o)} (${o.id})`));
-    else if (!sh.evolution) out.push(sh.level >= 15 ? (safe(s) && !classDrafts(s,content).length ? 'E class evolution due; no supported trait currently adds an effect within the shared caps. The entitlement stays.' : 'E class evolution due; offered at the next safe regular turn.') : 'Next class evolution: Level 15 / E.');
-    if (sh.level >= 30) out.push('Higher class evolutions D–S and Domains are not implemented; Power Rank still follows Level.');
+    else if (!sh.evolution) out.push(sh.level >= level ? (safe(s) && !classDrafts(s,content).length ? 'E class evolution due; no supported trait currently adds an effect within the shared caps. The entitlement stays.' : 'E class evolution due; offered at the next safe regular turn.') : `Next class evolution: Level ${level} / E.`);
+    if (sh.level >= content.rules.ranks.bands.find((b) => b.rank === 'D').min) out.push('Higher class evolutions D–S and Domains are not implemented; Power Rank still follows Level.');
     return out;
 }

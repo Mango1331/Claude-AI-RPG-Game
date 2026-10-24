@@ -1,6 +1,18 @@
-# Patch 9D — Organic Class Evolution (4.3.0-c.6.6.55)
+# Patch 9D — Organic Class Evolution (.55; Reviewfix 4.3.0-c.6.6.56)
 
 Basis: `be276456` (.54). Implementierungsauftrag: Chatgpt Feedback(5), 24.10.2026.
+
+## Reviewfix .56 (24.10.2026)
+
+Basis: Engine `6777e6c`, separater Runner `c15177a`. Claude hat die vier Prüfschwerpunkte und 1258/1258 Tests unabhängig bestätigt, mit zwei mittleren und drei niedrigen Befunden. Diese Korrektur setzt ausschließlich die bestätigten Befunde um:
+
+- Alle angenommenen Skill-Evolutionen zusammen geben maximal **einen** Rare-Wertungspunkt und einen Entwicklungskontext. Die einzelnen Taten bleiben sichtbar; auch vorhandene .55-Kontexte werden bei der Wertung zusammengefasst. Normale Skill-Entwicklung allein ergibt kein Rare. Bereits angenommene Klassen werden nicht rückwirkend entzogen.
+- Der persönliche Anteil bezieht sich auf den tatsächlich erlittenen HP-Schaden **dieses** Encounters, nicht auf die vollen Max-HP. So zählt auch ein allein besiegter angeschlagener Rückkehrer. Ohne positiven erfassten Schaden keine Gutschrift; fremder Schaden bleibt im Nenner.
+- Die automatische NPC-Blink-Taktik ist entfernt: Fernangriffe erreichen ENGAGED bereits ohne Malus. Heilung/Konversion und bestehende Abwehrregeln bleiben.
+- `report.md` kennzeichnet Fixture, Seed, synthetische Level-14-Vorgeschichte/alte Statzuweisungen und den wirklichen Reload-Status direkt in der Kurzfassung. Nur der isolierte Runner verteilt die 65 alten freien Punkte passend zur Fixture-Richtung und setzt die vorbereiteten Ressourcen neu; der echte Aufstieg auf 15 vergibt regulär neue Punkte. Produktive Kampagnen und Kern-Fixtures bleiben unverändert.
+- Level-Prüfung in Angebot/Annahme/Validierung/Anzeige liest `class_growth.level`; der Reducer prüft beim Replay keine fest eingebaute 15 mehr. Hinweis auf höhere Klassen und E-Extrembeleg lesen die bestehenden Rank-Bands. Keine Ranggrenzen verändert.
+
+Rot/Grün: Auf .55 scheitern genau sechs betroffene Prüfungen (13/19 grün), mit Fix 19/19. Drei neue Kernregressionen und ein neuer Berichtstest; vorhandene NPC-/Fixture-Erwartungen gezielt korrigiert. Angrenzende Regressionen 92/92. Vollsuite und Git-Nachweise siehe Abschluss unten. Build .56, Narrator-Vertrag unverändert .55. Unverändert kein echter ST-/GLM-Lauf in dieser Umgebung; die übrigen Reviewhinweise sind keine zusätzlichen Änderungen dieses Fixes.
 
 ## Vorläufige Budgets vor der Implementierung
 
@@ -11,7 +23,7 @@ Basis: `be276456` (.54). Implementierungsauftrag: Chatgpt Feedback(5), 24.10.202
 - Unterstützte Bedingungen wie bei Passives: Gegner ENGAGED oder HP ≤25–50 %. Keine neuen Effekte, keine Core-Stat-Zuwächse durch Klassenprofile.
 - Persönliche Siege: mindestens 50 % des maßgeblichen HP-Schadens am besiegten Gegner; Overkill zählt nicht. Flucht, Tod, Aufgabe und fremde Kills geben keine besonderen persönlichen Siege.
 - Giant Slayer: persönlicher Sieg bei Levelabstand ≥5. Against the Odds: fünf persönlich mitbesiegte Gegner mindestens auf eigenem Startlevel. Survival: Start-HP ≥50 %, Minimum ≤35 %, Gegnerabstand ≥3 und eigener wesentlicher Beitrag; unabhängig vom Passive-Zufallswurf.
-- Rare: Giant Slayer oder mindestens drei besondere Leistungen aus mindestens zwei Kontexten; höchstens zwei Wertungspunkte je Kontext. Wiederholung desselben Gegner-/Gebietskontexts vermehrt die Wertung nicht.
+- Rare: Giant Slayer oder mindestens drei besondere Leistungen aus mindestens zwei Kontexten; höchstens zwei Wertungspunkte je Kontext, sämtliche Skill-Entwicklung zusammen höchstens ein Punkt/ein Kontext. Wiederholung desselben Gegner-/Gebietskontexts vermehrt die Wertung nicht.
 - Ein Level-1-Sieg gegen E erhält einen dauerhaften extremen Beleg; erste Evolution trotzdem höchstens Rare.
 - Remarkable Development: angenommene echte Skill-Evolution; normales PP-Sammeln zählt nicht. Exceptional Discovery bleibt mangels verlässlich außergewöhnlicher Engine-Quelle ausgespart.
 - Vermächtnis: Normal 1 / Rare 2 / Legendary 4 aus der Historie; noch keine höhere Rangskalierung.
@@ -32,7 +44,7 @@ Annahme bucht atomar `class.evolved` und schließt die ganze Auswahl. `sheet.evo
 
 ## Kleine NPC-Integration
 
-Bestehende Guards, Wards, Feints, Angriffswahl, Signaturpriorität, Flucht und Aufgabe bleiben Grundlage. `npcTactic` ergänzt nur konkrete Lücken: bekannte Selbstheilung unter halben HP; bekannte Ressourcen-Konversion, wenn sie einen sonst unbezahlbaren Angriff ermöglicht; bekannte Repositionierung eines verwundeten Fernkämpfers aus dem Nahkampf, wenn kein passender Schutz verfügbar ist. Keine zwei Taktiken unmittelbar nacheinander und weiterhin höchstens drei je Kampf. Kein neuer Skill, keine NPC-Klassenhistorie, kein LLM im Kampf.
+Bestehende Guards, Wards, Feints, Angriffswahl, Signaturpriorität, Flucht und Aufgabe bleiben Grundlage. `npcTactic` ergänzt nur konkrete Lücken: bekannte Selbstheilung unter halben HP; bekannte Ressourcen-Konversion, wenn sie einen sonst unbezahlbaren Angriff ermöglicht. Die zunächst ergänzte automatische Repositionierung entfällt seit .56, weil Fernangriffe ENGAGED bereits erreichen. Keine zwei Taktiken unmittelbar nacheinander und weiterhin höchstens drei je Kampf. Kein neuer Skill, keine NPC-Klassenhistorie, kein LLM im Kampf.
 
 ## Reproduzierbare Abnahme
 
@@ -60,10 +72,17 @@ Weitere explizite Profile: `9d-normal`, `9d-extreme`, `9d-defense`, `9d-hybrid`.
 - Kein produktives E-Legendary, kein D–S-Klassenprofil, keine Domain und keine vertikale Vermächtnisskalierung.
 - Unabhängiges Claude-Codegegenreview und echter ST-/GLM-Fixture-Lauf stehen aus.
 
-## Ausgeführte Tests
+## Ausgeführte Tests der ursprünglichen .55
 
 - 13 neue Kernregressionen und 2 neue Runner-Regressionen, einschließlich der mehrteiligen Fixture-Matrix.
 - Gezielt: 51/51 (9D, 9A und 9B-2) sowie 37/37 (9D/Runner, 9C und Vertragsregressionen).
 - Vollständiger abschließender Lauf: **1258/1258 bestanden, 0 Fehler**, Node v24.19.0, 24.10.2026. Der erste Gesamtlauf fand fünf alte Versions-/Guide-Erwartungen; Vertragskonstante und die ausdrücklich geänderten Erwartungen wurden korrigiert, danach der volle Lauf erneut ausgeführt.
 - Laufzeit: rund 74 Sekunden im hiesigen Container. Das ist keine Gameplay-/Provider-Latenzmessung.
 - Kein echter Browser-/ST-/GLM-Lauf. Kein unabhängiges Claude-Review durchgeführt.
+
+## Abschluss des Reviewfixes .56
+
+- Drei neue Kernregressionen in `tests/v4/patch9d_review.test.js`, ein neuer Berichtstest und gezielte NPC-/Fixture-Anpassungen: auf .55 genau sechs rot (13/19), mit Fix 19/19 grün.
+- Angrenzende Regressionen: **92/92**. Eine vollständige Abschlussprüfung: **1262/1262**, 0 Fehler, Node24.19.0, rund 27 Sekunden (24.10.2026).
+- Alle fünf isolierten Runner-Fixtures mit Seed7 erzeugt, gefaltet und mit `validateState` geprüft: Level14, null alte freie Punkte, keine Invariantenfehler. Identische Fixtures/Seeds bleiben deterministisch. Das ist keine Browser-/Provider-Abnahme.
+- Claudes unabhängiges Review der .55 bestätigt Kernarchitektur und 1258/1258. Die hier umgesetzten .56-Korrekturen sind durch Codex getestet; kein zusätzliches unabhängiges .56-Gegenreview behauptet. Der echte ST-/GLM-Fixture-Lauf bleibt offen.

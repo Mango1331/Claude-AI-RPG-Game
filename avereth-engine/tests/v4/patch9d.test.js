@@ -210,7 +210,7 @@ test('9D Forge accepts cosmetic class names only; a valid batch stays fixed acro
     assert.equal(new Set(colliding.map((o)=>o.name)).size,colliding.length,'a Forge name cannot take another option fallback twice');
 });
 
-test('9D NPC uses existing Blink, heal and resource conversion only for a concrete need; caps, payment and no-repeat gates remain',async()=>{
+test('9D NPC avoids a pointless Blink and uses existing heal and resource conversion for a concrete need; caps and payment remain',async()=>{
     const g=await classFixture(c),s=g.state();
     const healing={id:'dyn.npc_mend',name:'Quiet Mend',description:'Restores HP.',origin:{kind:'teacher'},rank:'F',complexity:1,tags:['Arcane'],category:'Defensive',activation:'action',target:'self',cost:{resource:'mp',amount:8},effects:[{kind:'heal',base:6,stat:'WIL',coef:1,floor:true}]};
     const restore={id:'dyn.npc_refresh',name:'Measured Breath',description:'Converts STA to MP.',origin:{kind:'teacher'},rank:'F',complexity:1,tags:['Arcane'],category:'Utility',activation:'action',target:'self',cost:{resource:'sta',amount:10},effects:[{kind:'restore',resource:'mp',amount:10}]};
@@ -221,12 +221,11 @@ test('9D NPC uses existing Blink, heal and resource conversion only for a concre
         return {state:s,content:c,c:true,enc:{round:1,combatants:{npc:me,pc},log:[{actor:'pc',kind:'attack',skill:'warrior.heavy_slash',strikes:[{target:'npc',final:25}]}]},me};
     };
     let ctx=build(['mage.arcane_bolt','mage.blink']);
-    assert.equal(npcTactic(ctx,ctx.me,{kind:'attack'}).skill,'mage.blink');const paid=ctx.me.current.mp;
-    const blink=skillAction(ctx,'npc','mage.blink',{dir:'away'});assert.equal(blink.illegal,undefined);assert.equal(ctx.me.current.band,'SHORT');assert.ok(ctx.me.current.mp<paid);
-    ctx.enc.log.push(blink);assert.equal(npcTactic(ctx,ctx.me,{kind:'attack'}),null,'no consecutive tactics');
+    assert.equal(npcTactic(ctx,ctx.me,{kind:'attack'}),null,'its ranged spell already reaches ENGAGED: no turn/MP wasted on Blink');
     ctx=build(['mage.arcane_bolt',healing.id]);ctx.me.current.hp=Math.floor(ctx.me.fixed.max_hp*.4);
     assert.equal(npcTactic(ctx,ctx.me,{kind:'attack'}).skill,healing.id);const hp=ctx.me.current.hp;
-    skillAction(ctx,'npc',healing.id);assert.ok(ctx.me.current.hp>hp);
+    const healed=skillAction(ctx,'npc',healing.id);assert.ok(ctx.me.current.hp>hp);
+    ctx.enc.log.push(healed);assert.equal(npcTactic(ctx,ctx.me,{kind:'attack'}),null,'no consecutive tactics');
     ctx=build(['mage.arcane_bolt',restore.id]);ctx.me.current.mp=0;
     assert.equal(npcTactic(ctx,ctx.me,{kind:'attack'}).skill,restore.id);skillAction(ctx,'npc',restore.id);assert.equal(ctx.me.current.mp,10);
     ctx.me.current.tactics=3;assert.equal(npcTactic(ctx,ctx.me,{kind:'attack'}),null);

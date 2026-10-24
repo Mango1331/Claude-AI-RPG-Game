@@ -254,7 +254,7 @@ export function applyEvent(state, e) {
             break;
         case 'class.evolved': {
             const sh = sheetOf(state, d.id);
-            if (Number(state.meta.ruleset) < 2 || sh.level < 15 || sh.evolution || (sh.class_history || []).some((h) => h.rank === d.profile.rank)) throw new Error('class evolution already taken or unavailable');
+            if (Number(state.meta.ruleset) < 2 || sh.evolution || (sh.class_history || []).some((h) => h.rank === d.profile.rank)) throw new Error('class evolution already taken or unavailable');
             sh.evolution = clone(d.profile);
             sh.class_history = [...(sh.class_history || []), { id: d.profile.id, name: d.profile.name, rank: d.profile.rank, quality: d.profile.quality, turn: state.turn, minute: state.clock.minute, evidence: clone(d.evidence) }];
             break;

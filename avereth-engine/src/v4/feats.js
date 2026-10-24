@@ -31,8 +31,9 @@ export function fightFeats(s, content, enc) {
     const r = content.rules.class_growth;
     const personal = (enc.defeated || []).filter((id) => {
         const c = enc.combatants[id];
+        const damage = enc.career.damage[id] || 0;
         return c?.side === 'hostile' && c.current.hp === 0 && !c.current.surrendered &&
-            (enc.career.personal[id] || 0) >= r.personal_share * Math.max(c.fixed.max_hp, enc.career.damage[id] || 0);
+            damage > 0 && (enc.career.personal[id] || 0) >= r.personal_share * damage;
     });
     const source = `fight:${enc.id}`;
     const stats = { fights_won: won && personal.length ? 1 : 0, foes_defeated: personal.length,
@@ -50,7 +51,7 @@ export function fightFeats(s, content, enc) {
     const gap = personal.length ? Math.max(...personal.map((id) => enc.combatants[id].fixed.level - pc.fixed.level)) : 0;
     const facts = { fight: enc.id, level: pc.fixed.level, gap, personal: personal.length };
     const add = (kind, more = {}) => feats.push({ key: `${kind}:${hash32(context)}`, kind, title: FEAT_TITLES[kind], context, source, turn: s.turn, minute: s.clock.minute, facts: { ...facts, ...more } });
-    if (won && personal.length && gap >= r.giant_gap) add('giant', { extreme: pc.fixed.level === 1 && personal.some((id) => enc.combatants[id].fixed.level >= 15) });
+    if (won && personal.length && gap >= r.giant_gap) add('giant', { extreme: pc.fixed.level === 1 && personal.some((id) => enc.combatants[id].fixed.level >= content.rules.ranks.bands.find((b) => b.rank === 'E').min) });
     if (won && personal.filter((id) => enc.combatants[id].fixed.level >= pc.fixed.level).length >= r.outnumbered) { add('odds'); stats.outnumbered_wins = 1; }
     const t = enc.pp?.trial;
     if (won && personal.length && t && t.start >= r.survival.start_pct && t.low <= r.survival.low_pct && gap >= r.survival.gap && personal.some((id) => t.foes.includes(id))) {
@@ -99,7 +100,11 @@ export function classQuality(s, content) {
     const c = careerOf(s), r = content.rules.class_growth.rare;
     const feats = Object.values(c.feats || {});
     const contexts = {};
-    for (const f of feats) contexts[f.context] = Math.min(r.per_context, (contexts[f.context] || 0) + 1);
+    for (const f of feats) {
+        // All Skill developments together are one contribution, including previously saved .55 contexts.
+        const key = f.kind === 'development' ? 'development' : f.context;
+        contexts[key] = Math.min(f.kind === 'development' ? 1 : r.per_context, (contexts[key] || 0) + 1);
+    }
     const points = Object.values(contexts).reduce((a, b) => a + b, 0);
     return (s.entities?.pc?.sheet?.class_history || []).some((h) => ['rare','legendary'].includes(h.quality)) || feats.some((f) => f.kind === 'giant') || (points >= r.feats && Object.keys(contexts).length >= r.contexts) ? 'rare' : 'normal';
 }

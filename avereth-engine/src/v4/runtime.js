@@ -690,8 +690,37 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed' } =
                 if (p2.valid && (!parsed || p2.complete || p2.missing.length < parsed.missing.length)) parsed = p2;
                 else if (!p2.valid && !parsed) error = p2.errors.join('; ').slice(0, 200);
             } else if (!parsed) error = second.error;
+
+            // 10B-4c.1: two reasoning-only/empty answers have no JSON to
+            // repair. Allow ONE fresh, larger attempt, never a fourth call.
+            if (!parsed && !first.content.trim() && second.ok && !second.content.trim()) {
+                const fresh = [...req.messages, { role: 'user', content:
+                    'Both previous attempts returned no JSON text. Return one short JSON object now, with the requested expected keys and only verified deltas. Empty deltas are allowed. No prose or reasoning.' }];
+                const third = await ask(llm, fresh, 'extract_recovery', { maxTokens: 6000 });
+                ms += third.ms;
+                calls.push(third.call);
+                if (third.ok) {
+                    const p3 = parseExtraction(third.content, vocab, req.ids, req.expectedKeys);
+                    if (p3.valid) parsed = p3;
+                    else error = p3.errors.join('; ').slice(0, 200);
+                } else error = third.error;
+            }
         }
-    } else error = first.error;
+    } else {
+        // 10B-4c.1: a transport timeout/AbortError leaves no extractor
+        // evidence to repair. Retry the SAME untouched request exactly once.
+        // No events are committed until the validated result below is applied.
+        error = first.error;
+        const second = await ask(llm, req.messages, 'extract_recovery');
+        ms += second.ms;
+        calls.push(second.call);
+        repaired = true;
+        if (second.ok) {
+            const p2 = parseExtraction(second.content, vocab, req.ids, req.expectedKeys);
+            if (p2.valid) parsed = p2;
+            else error = p2.errors.join('; ').slice(0, 200);
+        } else error = second.error;
+    }
 
     return applyExtraction(chat, id, content, parsed, { hash: req.hash, ms, repaired, error, hud, calls });
 }

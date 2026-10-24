@@ -939,3 +939,12 @@ Ausführlich in den Abschnitten am Dateianfang und in den technischen Dokus des 
 - **9D – Organic Class Identity (GEPLANT):** organische Klassenentwicklung, Klassen-Evolution bleibt bis dahin gesperrt.
 - **Nicht in Patch 9:** Blink-Buff, allgemeines Balancing und Scaling über E-Rang hinaus (10B).
 - **Bekannte Grenzen aus 9B:** nur F-Rang; Bedingungen nur `hp_at_most_pct` und `foe_engaged`; Heilung nur auf sich selbst; NPCs nutzen weder Heal, Restore noch Blink; die Schwellen der NPC-Taktik (75 %, 65 %, drei pro Kampf) sind einfache Startwerte.
+
+
+### 10B Grundlagen B – Offline-Kampfsimulator bereit (24.10.2026)
+
+Implementiert durch Codex, Commit `fd20d0dce0b0fc508b17810872b7933a5f00e994` auf dem Entwicklungsbranch (Engine weiterhin .57). Werkzeuge `tools/sim/combat.mjs`, `baseline.json`, `package.py`, `README.md`, Tests `tests/sim/combat.test.js`, npm `sim:combat`. Echte Engine-Resolver/Dice/Erstellung/Progression, keine neuen Formeln oder Balanceänderungen; current_test unverändert. 30 Builds Warrior/Mage/Rogue auf1/5/10/14/15, echte Monster/Gruppen und gespiegelte Klassenvergleiche. PC-Taktik versus native NPC-Steuerung ist asymmetrisch und dokumentiert. E-Normal/Rare nur über vorhandene Engine-Komposition, Rare-Vorgeschichte ausdrücklich synthetisch.
+
+Kontrollen3/3, Vollsuite1275/1275 auf Ausgangsstand4ac478b; danach nicht überlappenden Runner-Commit3181c81 erhalten. ZIP `Avereth_Combat_Simulator_10B_20261024.zip` außerhalb des Repositories entpackt: 4 Smoke-Kämpfe und 3 Seed-Replays ohne Abhängigkeiten erfolgreich. Hier Node24.19.0; Node22 Kompatibilitätsziel, nicht separat ausgeführt. Keine großen Reihen oder Balanceinterpretation. Ergebnisse JSONL/CSV/Metadaten mit Quellenhash; CLI unterstützt Szenario/Seed/Runs/Config/Output und Detail-Replay.
+
+Nächster Schritt B: ZIP in frischer Umgebung ausführen und anschließend gezielt größere Messreihen planen. Start `npm run sim:combat -- --smoke`; Beispiel `npm run sim:combat -- --scenario warrior-0-1-wolf-0-1-ENGAGED --seed 100 --runs 500 --out results`. Kein neuer Auftrag zu Balancewerten oder produktiven Mechaniken. Andere offene Live-/Runner-Arbeiten bleiben separat.

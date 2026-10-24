@@ -2,7 +2,7 @@
 // branch chatgpt/narrator-gm-tools-2026-10-02): the semantic planner
 // of a V4 campaign. Behind the setting `planner` (off by default) it replaces the regex reading of free text
 // (src/intent.js parseIntent: fights, attacks, stealth) and the story interpreter (src/v4/interpret.js) with ONE LLM
-// call that writes down what Alaric means. A small validator checks structure and state and never replaces a value;
+// call that writes down what Alaric means. A small validator checks structure/state and resolves explicit offered class names;
 // the mapping hands the result to the engine's existing inputs, so engine, dice, events, state and swipes stay A's:
 //
 //   fight, skill use, world use, stealth  -> a parsed intent for playerTurn (src/engine.js), as parseIntent wrote it
@@ -202,7 +202,7 @@ export const LEARNING_RULES = [
     '- Studying a manual or primer he holds (OBJECTS: manual · … teaches …) for a time is activity study with material: its id, and learn: the technique it teaches or the LEARNING id he goes on with. Only looking at it or reading its title is no study.',
     '- Activating a Skill Stone he holds (OBJECTS: Skill Stone · … holds …) now is use with its id; wanting to, asking about it or examining it is no command.',
     '- Training a lasting quality of himself NOW, not a technique (conditioning his body, sharpening his mind or senses, hardening his will, building strength or agility), is activity train or study with learn: the core stat it builds (STR strength, VIT toughness, AGI agility, INT mind, PER senses, WIL will), or the LEARNING id he goes on with.',
-    '- CLASS CHOICE lists alternative evolved Classes offered by the engine. development.accept offer: the chosen class option id only when he chooses it now. Never choose for him. development.decline on its group or option postpones the same choice; it does not discard or reroll it. Questions and wishes book nothing.',
+    '- CLASS CHOICE lists alternative evolved Classes offered by the engine. "I choose <offered name> as my class" is development.accept with that OPTION id (e.g. class.e.offense), never the group id dec.class.e or an invented dec.class.e.offense. Never choose for him. development.decline on its group or option postpones the same choice; it does not discard or reroll it. Questions and wishes book nothing.',
     '- A POSSIBLE PASSIVE or a POSSIBLE SKILL in the CATALOG is a development offered to him, not his yet: development.accept when he clearly takes it now (replace: for a Passive, the PASSIVES id he gives up for it, only when all his slots are held and he names one; else null), development.decline when he clearly lets it pass (passive.accept and passive.decline are older names of the same for a Passive). Thinking it over, asking about it or wanting it later is no command.',
     'Examples (another town): CATALOG: PRESENT: npc.tutor (Brannoc, sword tutor) · KNOWN SKILLS warrior.cleave (Cleave: attack · single target) · LEARNING learn.1 (guard (Defense) from Brannoc, 40/100 LP)',
     '- "*i spend the next two hours with Brannoc drilling the stance he shows me*" → {"commands":[{"seq":1,"type":"activity","kind":"train","what":"the stance Brannoc shows him","minutes":120,"until":null,"learn":"learn.1","teacher":"npc.tutor","tags":null,"aspects":null,"quote":"i spend the next two hours with Brannoc drilling the stance he shows me"}]}',
@@ -349,7 +349,7 @@ export function plannerRequest(vocab, ctx, text, { recent = '', previous = null,
 }
 
 // --------------------------------------------------------------------------------------------- validator
-// Structure and state only. Every check accepts, rejects (the one repair call gets the error lines) or, after the
+// Structure/state and exact offered-class-name lookup. Other checks accept, reject (the repair gets the error lines) or, after the
 // agency guard, drops a command it cannot stand on; none of them changes a value.
 const flat = (t) => normText(String(t ?? '').replace(/\*/g, ' ')).replace(/\s+/g, ' ').trim();
 // 4.3.0-c.6.6.54: words that tell a defense as part of a withdrawal ("to cover my withdrawal", "as I back away")
@@ -432,6 +432,18 @@ export function parsePlan(answer, vocab, ctx, message) {
         const at = `commands[${i}]${c && typeof c === 'object' && c.type ? ` (${c.type})` : ''}`;
         if (!c || typeof c !== 'object' || Array.isArray(c)) { errors.push(`${at}: must be an object`); continue; }
         const type = String(c.type ?? '');
+        // A name he explicitly chose identifies an offered alternative even if the planner wrote its group id.
+        // This only canonicalizes an already interpreted acceptance; the agency and acquisition guards still run.
+        if (type === 'development.accept' && typeof c.quote === 'string' && inMessage(message, c.quote)) {
+            const words = (s) => ` ${normText(s).replace(/[^a-z' -]/g, ' ').replace(/\s+/g, ' ').trim()} `;
+            const options = (ctx.catalog.class_offers || []).flatMap((d) => d.options);
+            const named = options.filter((o) => o.name && words(c.quote).includes(words(o.name)));
+            const escaped = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const chosen = named.filter((o) => new RegExp(`\\b(?:choose|select|pick|accept|take|embrace) (?:the (?:option|class) )?${escaped(words(o.name).trim())}(?: as my class)?(?: now)? $`).test(words(c.quote)));
+            if (named.length === 1 && chosen.length === 1) c.offer = chosen[0].id;
+            else if (named.length > 1) errors.push(`${at}: choose exactly one offered class name`);
+            else if (options.length && /\bas my class\b/.test(words(c.quote)) && /^(?:dec\.)?class\./.test(c.offer || '')) errors.push(`${at}: that class name is not an offered option`);
+        }
         if (story.has(type)) {
             // a story command: the interpreter's own schema, missing nullable arguments as null (as parseInterpretation)
             for (const [k, spec] of Object.entries(story.get(type).args || {})) if (spec.nullable && c[k] === undefined) c[k] = null;

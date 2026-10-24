@@ -331,7 +331,7 @@ function passiveCatalog(state, content) {
     // 9C completion: the Skills offered to him (a new technique beside his others, or one in the place of a Skill of his)
     const skills = skillOffers(state).map((d) => ({ id: d.id, text: `${developmentText(d.skill)} ${d.replaces ? `It would replace ${d.replaces_name}` : 'A new Skill beside his others'}; not his yet` }));
     const choice = classOffer(state);
-    const classes = choice ? [{ id: choice.id, text: 'Choose exactly one E class; postponing keeps this choice', options: choice.options.map((o) => ({ id: o.id, text: classText(o) })) }] : [];
+    const classes = choice ? [{ id: choice.id, text: 'Choose exactly one E class by its offered name; postponing keeps this choice', options: choice.options.map((o) => ({ id: o.id, name: o.name, text: classText(o) })) }] : [];
     if (!held.length && !offers.length) return { ...(skills.length ? { skill_offers: skills } : {}), ...(classes.length ? { class_offers: classes } : {}) };
     const slots = passiveSlots(content);
     const full = held.length >= slots;

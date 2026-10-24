@@ -56,7 +56,7 @@ export const LEMMAS = {
     'passive.accept': ['accept', 'accepting', 'take', 'taking', 'embrace', 'embracing', 'let', 'welcome', 'yes'],
     'passive.decline': ['decline', 'declining', 'refuse', 'refusing', 'reject', 'rejecting', 'let', 'pass', 'no'],
     // 9C completion: the same for any offered development (a Passive or a Skill)
-    'development.accept': ['accept', 'accepting', 'take', 'taking', 'embrace', 'embracing', 'let', 'welcome', 'yes', 'make'],
+    'development.accept': ['accept', 'accepting', 'take', 'taking', 'embrace', 'embracing', 'let', 'welcome', 'yes', 'make', 'choose', 'choosing', 'select', 'selecting', 'pick', 'picking'],
     'development.decline': ['decline', 'declining', 'refuse', 'refusing', 'reject', 'rejecting', 'let', 'pass', 'no', 'keep'],
     'quest.accept': ['take', 'taking', 'accept', 'accepting', 'sign', 'signing', 'register', 'registering'],
     'quest.turn_in': ['turn', 'turning', 'hand', 'handing', 'deliver', 'delivering', 'report'],
@@ -84,7 +84,7 @@ export const PAST = {
     'offer.decline': ['declined', 'refused', 'passed'],
     'passive.accept': ['accepted', 'took', 'taken', 'embraced', 'welcomed'],
     'passive.decline': ['declined', 'refused', 'rejected', 'passed'],
-    'development.accept': ['accepted', 'took', 'taken', 'embraced', 'welcomed'],
+    'development.accept': ['accepted', 'took', 'taken', 'embraced', 'welcomed', 'chose', 'chosen', 'selected', 'picked'],
     'development.decline': ['declined', 'refused', 'rejected', 'passed'],
     'quest.accept': ['took', 'taken', 'accepted', 'signed', 'registered'],
     'quest.turn_in': ['turned in', 'handed in', 'turned', 'handed', 'delivered', 'reported'],
@@ -341,6 +341,7 @@ export function guardCommands(message, commands, context = {}, { language = true
         if (RETRO_ANCHOR.test(text) && pastRe(type) && new RegExp(`\\b(?:${pastRe(type)})\\b`).test(text)) { drop(c, 'retrospective', 'the evidence recalls an earlier deed'); continue; }
         if (planned(parts, type)) { drop(c, 'plan', 'the evidence plans it for later'); continue; }
         if (negated(text, type)) { drop(c, 'negation', 'the evidence negates it'); continue; }
+        if (type === 'development.accept' && parts.every((p) => /\b(?:i'd|i would|i want|i wish|i hope)\s+(?:really\s+)?(?:(?:like|love)\s+)?to\s+(?:choose|select|pick|accept|take|embrace)\b/.test(p.text))) { drop(c, 'wish', 'the evidence only wishes to choose a development'); continue; }
         if (type === 'activity' && LEARNING_KINDS.has(c.kind) && WISH.test(evidence)) { drop(c, 'wish', 'the evidence wishes or asks to learn; no lesson happens now'); continue; }
         // Patch 9C-2b: wanting to use a Skill Stone is no activation
         if (type === 'use' && objects.get(idOf(c.object))?.source === 'stone' && WISH.test(evidence)) { drop(c, 'wish', 'the evidence wishes to use the Skill Stone; it is not activated now'); continue; }

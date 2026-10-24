@@ -147,14 +147,19 @@ export function softExtractionFailure(chat, u, fault) {
 }
 
 /** Diagnose a Driver timeout only when the chat also proves the pending phase. */
-export function driverFailure(chat, problem) {
+export function driverFailure(chat, problem, extractionStatus = null) {
     const u = chat.findLastIndex((m) => m.is_user);
     if (u < 0) return null;
     if (problem === 'no reply after the message') {
         const fault = turnFailure(chat, u);
         return ['planner_failed', 'interpreter_failed'].includes(fault?.kind) ? fault : null;
     }
-    if (/^the turn did not end within .+\(busy .+, extraction pending\)$/.test(String(problem))) {
+    // Prefer structured Driver.probe().extraction over its human-readable
+    // timeout prose. Legacy callers without that field retain the old fallback.
+    const timeout = String(problem).startsWith('the turn did not end within ');
+    const pending = extractionStatus === 'pending' ||
+        (extractionStatus == null && /^the turn did not end within .+\(busy .+, extraction pending\)$/.test(String(problem)));
+    if (timeout && pending) {
         const outcome = turnOutcome(chat, u);
         if (outcome.kind === 'story' && rec(chat[outcome.at])?.extraction?.status === 'pending') {
             return { kind: 'extractor_timeout', at: outcome.at, reason: 'extraction remained pending at the turn timeout' };

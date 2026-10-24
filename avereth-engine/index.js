@@ -209,7 +209,10 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
             const id = pendingExtraction(c.chat);
             if (id >= 0 && c.chat.findLastIndex((m) => m.is_user) > id) startWorld(id);
             const job = worldJobs.currentJob();
-            if (job && id >= 0 && c.chat.findLastIndex((m) => m.is_user) > id) {
+            // The extraction may have applied its events while the host is
+            // still saving the chat. Await that save before resolving the
+            // next turn even when pendingExtraction() already became -1.
+            if (job && c.chat.findLastIndex((m) => m.is_user) > worldJobs.currentId()) {
                 const w0 = Date.now();
                 await job;
                 if (!isCurrent()) { abort(true); return; }
@@ -278,6 +281,7 @@ function rerender(c, id) {
 async function onMessageReceived(messageId) {
     if (!settings().enabled || !content) return;
     const c = ctx();
+    const chatId = c.getCurrentChatId();
     try {
         const recover = settings().recoverReports && typeof c.generateRaw === 'function';
         // the greeting of a new chat arrives here too (SillyTavern: MESSAGE_RECEIVED 'first_message') and starts the campaign
@@ -288,6 +292,9 @@ async function onMessageReceived(messageId) {
         if (!r.changed) return;
         rerender(c, Number(messageId));
         await c.saveChat();
+        // MESSAGE_RECEIVED can finish saving after the user switched chats.
+        // Never start a world job at the same index in an unrelated chat.
+        if (ctx().chat !== c.chat || ctx().getCurrentChatId() !== chatId) return;
         if (r.result?.rejected?.length) console.info('[Avereth] rejected report items', r.result.rejected);
         renderDebug();
         if (r.recover) requestReport(Number(messageId));

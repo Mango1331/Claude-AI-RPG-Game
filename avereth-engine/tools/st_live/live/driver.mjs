@@ -261,7 +261,7 @@ export class Driver {
             await sleep(250);
         }
         const ms = Date.now() - t0;
-        if (ms >= this.turnTimeoutMs) return { ok: false, problem: `the turn did not end within ${Math.round(this.turnTimeoutMs / 1000)} s (busy ${last?.busy}, extraction ${last?.extraction})`, ms };
+        if (ms >= this.turnTimeoutMs) return { ok: false, problem: `the turn did not end within ${Math.round(this.turnTimeoutMs / 1000)} s (busy ${last?.busy}, extraction ${last?.extraction})`, extraction: last?.extraction ?? null, ms };
         await p.waitForTimeout(600); // the HUD re-renders after the extraction
         return { ok: true, ms, replyMs: replyAt ? replyAt - t0 : null };
     }

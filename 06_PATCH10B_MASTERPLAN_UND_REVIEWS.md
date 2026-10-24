@@ -1077,3 +1077,12 @@ Neue Datei `tests/v4/patch10b4c2_world_jobs.test.js` mit **14 Regressionen** zu:
 - **Soft-Extractor-Verhalten:** Der Nutzer will natürliche 100-Zug-Beobachtung. Weiterlaufen ist eine **bewusste diagnostische Abwägung**, keine Garantie der Weltpersistenz. Der Fehler und die Korrekturhinweise bleiben erhalten, ab .65 zusätzlich im Bericht gezählt.
 
 **Vollständige technische und entscheidungsbezogene Liste:** [`docs/PATCH10B4C4_INDEPENDENT_REVIEW_DECISIONS.md`](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/claude/c-planner-prototype-2026-10-02-gpt-c666/avereth-engine/docs/PATCH10B4C4_INDEPENDENT_REVIEW_DECISIONS.md). **Nächste Reihenfolge:** lokal .65-Zieltests/Vollsuite ausführen; bei grün gezielten echten `current_test` inkl. Chatwechsel/Reload, Token-/Latency-/Nullrecovery-Telemetrie; 10B-4d erst nach Hostbeleg. **10B-3** und F60-2-Restlücke unverändert offen.
+
+
+### 24.3 .65-Lokallauf: 9/9 grün, eine überholte Telemetrie-Assertion behoben (24.10.2026)
+
+**Tatsächlich vom Nutzer ausgeführt, vor Nachfix:** 10B-4c.4-Zieltests **9/9 grün**, vollständiges `npm test` **1420/1421 grün**. Einziger Fehler: alter `tests/v4/patch82.test.js`-Fall **„8.2 telemetry 6“** erwartete bei einem primären Planner-Transportfehler nur `['plan']`. Die ausdrücklich eingeführte `.65`-Recovery führt korrekt `['plan', 'plan_recovery']` aus. Der zweite Call scheitert im Fixture ebenfalls, somit bleibt der Zug abgebrochen, `interp.failed` wahr und `events=[]`. Kein Defekt oder verändertes Verhalten im Produktcode notwendig.
+
+**Reine Testkorrektur:** [Commit `59f2b0b`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/59f2b0bfb4dfa8b2880bb751bf640f3f2d1b0645) korrigiert genau die obsolete Call-Liste und ergänzt Assertions für `plan.recovery='transport'` und `plan.repaired=true`. Ursprüngliche Assertions für sicheren Abort, `perf.wait_ms=0` und keine gebuchten Events bleiben erhalten. **Build bleibt .65**, keine Produktdatei geändert. Entwickler-Notes im Entwicklungsbranch aktualisiert.
+
+**Weiter offene Abnahme:** Nach Pull `node --test tests/v4/patch82.test.js`, dann `npm test` erneut laufen lassen. **1421/1421 wird nur erwartet und ist noch nicht nach Korrektur gemessen.** Neue 9/9 Zieltests bereits bestätigt. ST-/GLM-Live-/Browser-Abnahme unverändert offen.

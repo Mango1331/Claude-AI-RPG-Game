@@ -3,7 +3,7 @@
 // group joined it), what became of the quests, and what went wrong. It is for the test and its report only: the
 // player never sees any of it (players.mjs gets driver.mjs view()). The runner uses it between turns only to end a run
 // (the last milestone reached, a defeat, a milestone that takes far too long).
-import { foldChat, rec } from '../../../src/host.js';
+import { foldChat, rec, messageEvents } from '../../../src/host.js';
 import { floorAt } from '../../../src/v4/living.js';
 import { hallOf, placeName } from '../../../src/v4/domain.js';
 import { trueDungeonOf } from '../../../src/v4/dungeon.js';
@@ -112,9 +112,9 @@ export function turnFailure(chat, u) {
     const player = rec(chat[u]);
     if (o.kind !== 'story' && (player?.plan?.failed || player?.interp?.failed)) {
         return {
-            kind: player?.plan ? 'planner_failed' : 'interpreter_failed',
+            kind: player?.plan?.failed ? 'planner_failed' : 'interpreter_failed',
             at: u,
-            reason: player?.plan?.error || player?.interp?.error || null,
+            reason: (player?.plan?.failed ? player.plan.error : player?.interp?.error) || null,
         };
     }
     if (o.kind === 'story') {
@@ -126,6 +126,43 @@ export function turnFailure(chat, u) {
     if (o.kind === 'missing') return { kind: 'missing', at: null, reason: null };
     return null;
 }
+/**
+ * 10B-4b.1: a failed Extractor may be logged as a soft observation only
+ * when Engine-authored records PROVE no mechanical action was expected.
+ * No heuristic NLP: absent/legacy data and any world event stay hard.
+ */
+export function softExtractionFailure(chat, u, fault) {
+    if (fault?.kind !== 'extractor_failed') return false;
+    const record = rec(chat[u]);
+    if (!Array.isArray(record?.interp?.commands) || record.interp.commands.length) return false;
+    const events = messageEvents(chat[u]);
+    if (!events.length || events.some((e) => !['turn.begun', 'cmd.interpreted', 'outcome.recorded'].includes(e.t))) return false;
+    const recorded = events.filter((e) => e.t === 'outcome.recorded');
+    if (recorded.length !== 1) return false;
+    const o = recorded[0].d?.outcome;
+    if (o?.kind !== 'v4' || Object.keys(o.expected_keys || {}).length) return false;
+    if (!Array.isArray(o.actions) || o.actions.length !== 1 || !String(o.actions[0]).startsWith('NOTHING TO BOOK')) return false;
+    if ((o.resolutions || []).length || (o.conditionals || []).length || (o.booked || []).length) return false;
+    return true;
+}
+
+/** Diagnose a Driver timeout only when the chat also proves the pending phase. */
+export function driverFailure(chat, problem) {
+    const u = chat.findLastIndex((m) => m.is_user);
+    if (u < 0) return null;
+    if (problem === 'no reply after the message') {
+        const fault = turnFailure(chat, u);
+        return ['planner_failed', 'interpreter_failed'].includes(fault?.kind) ? fault : null;
+    }
+    if (/^the turn did not end within .+\(busy .+, extraction pending\)$/.test(String(problem))) {
+        const outcome = turnOutcome(chat, u);
+        if (outcome.kind === 'story' && rec(chat[outcome.at])?.extraction?.status === 'pending') {
+            return { kind: 'extractor_timeout', at: outcome.at, reason: 'extraction remained pending at the turn timeout' };
+        }
+    }
+    return null;
+}
+
 /** Runner-only end reason from an already-classified phase failure. */
 export function failureEnd(fault, turn) {
     if (!fault) return null;
@@ -136,6 +173,7 @@ export function failureEnd(fault, turn) {
         interpreter_failed: 'the V4 Interpreter failed before story generation',
         extractor_failed: `the World Extractor failed after story message ${fault.at}; its world changes were not committed`,
         extractor_late: `the World Extractor was too late after story message ${fault.at}; its world changes were not committed`,
+        extractor_timeout: `the World Extractor remained pending after story message ${fault.at}; its world changes were not committed`,
     };
     return {
         kind: fault.kind === 'missing' ? 'ui' : fault.kind,

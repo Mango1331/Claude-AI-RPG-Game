@@ -13,6 +13,7 @@ import { say, inject } from '../v4/patch8_lib.js';
 import { awardXp } from '../../src/progression.js';
 import { classOptions } from '../../src/v4/class_growth.js';
 import { scaleCreature } from '../../src/npcgen.js';
+import { buildReport } from '../../tools/st_live/live/report.mjs';
 
 test('9D runner fixture is explicitly selected, deterministic, Level 14, labelled synthetic and never already evolved',async()=>{
     assert.equal(roleOf({messages:classForgeRequest([]),max_tokens:1500}),'forge');
@@ -21,8 +22,23 @@ test('9D runner fixture is explicitly selected, deterministic, Level 14, labelle
     const a=await makeClassFixture('9d-rare',19,'Fixture Narrator'),b=await makeClassFixture('9d-rare',19,'Fixture Narrator');
     assert.deepEqual(a,b);const s=foldChat(a).state;
     assert.equal(s.entities.pc.sheet.level,14);assert.equal(s.entities.pc.sheet.evolution,undefined);
+    assert.equal(s.entities.pc.sheet.free_points,0,'old fixture levels are already assigned; the actual Level 15 still grants new points');
     assert.ok(a.some(m=>(m.extra?.avereth?.events||[]).some(e=>e.t==='note'&&e.d.synthetic_history)));
     assert.ok(a.filter(m=>!m.is_user).every(m=>m.name==='Fixture Narrator'));
+});
+
+test('9D review: the report summary labels the synthetic fixture, seed and actual reload result; ordinary runs have no fixture label',()=>{
+    const guide=loadGuide('current_test');
+    const base={runId:'fixture-test',stub:false,guide,player:{type:'scripted',steps:0},end:{kind:'limit'},ev:evaluate([],{guide}),calls:[],
+        setup:{card:'test',world:'test'},imp:{preset:{name:'test',unsaved:[],vsRepo:[]},generation:{},dropped:[],warnings:[],read:[]},
+        git:null,build:'test',st:{version:'1.19',dir:'/test',port:8123},browser:{name:'test',version:'test'},
+        turnsLog:[],playerLog:[],driverNotes:[],toasts:[],pageErrors:[],serverErrors:[],files:[],startedAt:0,endedAt:0,
+        protection:{unchanged:true,changedRead:[],files:0,tree:{same:true}},scan:{files:0,hits:[]}};
+    const text=buildReport({...base,fixture:'9d-rare',seed:7,fixtureReload:true});
+    assert.match(text.split('## Etappen')[0],/FIXTURE.*9d-rare.*Seed 7.*Level 14.*synthetisch/);
+    assert.match(text,/Reload.*bestanden/);
+    assert.match(buildReport({...base,fixture:'9d-rare',seed:7,fixtureReload:null}),/Reload.*nicht durchgeführt/);
+    assert.doesNotMatch(buildReport(base),/FIXTURE/);
 });
 
 test('9D live evaluator requires accepted class, BOTH answered panels and a later combat snapshot/use; prose does not finish it',async()=>{

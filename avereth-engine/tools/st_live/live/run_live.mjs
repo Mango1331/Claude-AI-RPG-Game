@@ -399,7 +399,7 @@ export async function run(o) {
             end, ev, calls, setup: setup || { source: imp.source, card: '?', world: '?', greeting: '?' }, imp, git: gitInfo(), build: buildOf(), st: { version: imp.st.version, dir: imp.st.dir, port, startMs: server?.startMs },
             browser: { name: br?.name || '?', version: br?.version || '?', headless: o.headless }, turnsLog, playerLog, driverNotes, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [],
             protection, scan, files: [...files, ['report.md', 'dieser Bericht'], ['screens/', 'Bildschirmfotos (Ende, Probleme)']], startedAt, endedAt, instanceKept: o.keepProfile ? inst.root : null,
-            chatId: opened?.chatId, seed, slow, timing, preflight: preflightResult, keyEnv: o.keyEnv, playerSetup, playerMaxTokens: o.player.maxTokens, worldSame: imp.world ? imp.world.sha256 === sha256(fs.readFileSync(WORLD_FILE)) : null,
+            chatId: opened?.chatId, seed, fixture: o.fixture || null, fixtureReload, slow, timing, preflight: preflightResult, keyEnv: o.keyEnv, playerSetup, playerMaxTokens: o.player.maxTokens, worldSame: imp.world ? imp.world.sha256 === sha256(fs.readFileSync(WORLD_FILE)) : null,
         });
         put('report.md', report, 'dieser Bericht');
         const again = secretScan(runDir, secrets, g);

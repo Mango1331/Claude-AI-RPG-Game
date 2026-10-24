@@ -1,6 +1,20 @@
 # Avereth Engine – Patch 10B: Masterplan, Designreviews, Testbefunde und Entscheidungsspeicher
 
-**AKTUELLER KONSOLIDIERTER STATUS – 24.10.2026, nach `.66`-Hotfix und unabhängigem Source-Review:**
+## Wegweiser – gezielt lesen, nicht vollständig beim Einstieg
+
+- **Einziger aktueller Produkt-, Test- und Abnahmestand:** [03_AKTUELLER_PROJEKTSTAND.md](03_AKTUELLER_PROJEKTSTAND.md); die folgenden Datumsstände sind historische Einträge.
+- **Offene Fachpläne, Reihenfolge und Freigabestatus:** [§27](#27-vorbereitung-der-verbleibenden-10b-fachpatches-für-sol-24102026) und [aktueller Implementierungsindex auf dem Entwicklungsbranch](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/claude/c-planner-prototype-2026-10-02-gpt-c666/avereth-engine/docs/PATCH10B_REMAINING_WORK_SOL_IMPLEMENTATION_INDEX.md). Dort die getrennten Fachpläne Combat/Chronik, Gildenboard, Narrator-Recovery, Monster/Loot und Chase lesen – **nur soweit für den Auftrag relevant**.
+- **Offene Designfragen:** [§§5–8](#5-monster--lore-audit-von-chatgpt--rekonstruierte-vollständige-analyse) (Monster, Sapienz, Loot, Verfolgung), [§§9–11](#9-andere-10b-prioritäten--vollständige-aber-noch-nicht-freigegebene-fachbereiche) (Balance, Performance, Matrix und Entscheidungen). Nicht automatisch implementierungsfreigegeben.
+- **Frühere Patch-/Implementierungsnachweise:** §§13–26, besonders [§25](#25-konsolidierte-übergabe-an-sol-vor-dem-nächsten-großen-patch-24102026) und [§26](#26-run-5--erster-echter-65-langlauf-extractor-api-fertig-host-bleibt-900-s-pending-24102026). Die passende einzelne technische Patchnote auf Dev ist für Implementierung führend.
+- **Original-Livetests:** [testrun_10b/README.md](testrun_10b/README.md) mit unveränderten ZIPs und jeweils genau einer ausführlichen `REVIEW.md`.
+
+**Pflege ab jetzt:** Hier nur kurze neue Entscheidungen, Statusänderungen und Links zum fachlichen Beleg eintragen; **keine vollständigen Patchnotes oder Einzelrunreviews kopieren**. Aktuellen Status ausschließlich in 03 führen. Vergangene Einträge bleiben als datierte Nachweise unangetastet.
+
+---
+
+## Historischer Kopfstatus (24.10.2026) – damalige Momentaufnahme, nicht aktuelle Einstiegslektüre
+
+**DAMALS KONSOLIDIERTER STATUS – 24.10.2026, nach `.66`-Hotfix und unabhängigem Source-Review:**
 - **Codebasis:** Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666`, verifizierter **Produkt-HEAD `.66` `4cd9b338773783644a79a39f367629e6aaeead05`**. Produkt `4.3.0-c.6.6.66` in `src/util.js`, `package.json`, `manifest.json`; Narrator-Vertrag .55 unverändert. Historischer `.65`-HEAD: `d182e900c6cb`.
 - **Erledigte Patches:** **10B-1 (.58)** Fakten-Identität/Registrierungszahlung, **10B-2 (.59)** positive Lieferbelege, **10B-2b (.60)** F60-1–10-Folgefix, **10B-4a (.61)** begrenzte Planner-Leerantwort-Recovery, **10B-4b/b.1 (.61)** Runner-Phasenfehler und konservative Soft-/Hard-Failure-Politik, **10B-4c.1 (.62)** Extractor-Wiederholung, **10B-4c.2 (.63)** Host-/Chat-/Reload-Lifecycle, **10B-4c.3 (.64)** Recovery-Telemetrie und **10B-4c.4 (.65)** begrenzte Planner-Transport-Wiederholung/Runner-Nachträge.
 - **Aktueller Nachweis `.66`:** Sol berichtet **1426/1426 Node-Tests**, **19/19 World-Job-Tests**, **21/21 ST-1.19-Smoke, Exit 0, fünf Extractor-Aufrufe** (§26.1); die unveränderte `.65`-Gegenprobe scheiterte mit 8 Calls und `pending`. **ChatGPT hat Diff, ST-Originalreihenfolge und Testcode unabhängig geprüft, aber weder Node noch Browser selbst ausgeführt (§26.2).** Ein echter natürlicher `.66`-GLM-100-Züge-Run steht aus.
@@ -18,9 +32,9 @@
 
 ---
 
-## 0. Was wir gerade tun – kompakte laufende Startseite
+## 0. Historische Startseite aus der frühen 10B-Phase
 
-**Neueste verbindliche technische Momentaufnahme steht im obigen Status und in §25. Die ältere Run-3-Einzelbeschreibung in diesem Abschnitt ist historisch, nicht der aktuelle Projektstand.**
+**Dieser Abschnitt und die vorausgehenden datierten Kopfstände sind historische Schnappschüsse. Der einzige aktuelle Stand steht in [03](03_AKTUELLER_PROJEKTSTAND.md).**
 
 **Unveränderter Kern:** „LLM versteht wie ein GM, die Engine rechnet wie ein Spiel“; Player Agency, sinnvolle Entscheidungen, lebendige große Welt und gute Progression **vor** starrer Simulation. Keine unaufgeforderte neue Monster-Speziesdatenbank, kein automatisches Monster-Level-Scaling zum PC, kein künstlicher XP-Farm-Nerf, keine zusätzlichen Pflicht-Reise-/Jagd-Miniturns. Klassische eigenständige Fantasyvölker (Elfen, Zwerge, Orks usw.) sind **bewusst nicht Bestandteil des gegenwärtigen Weltkanons**. Menschen und Monster existieren; Monster können intelligent sein, politische Verbände bilden oder friedlich sein.
 

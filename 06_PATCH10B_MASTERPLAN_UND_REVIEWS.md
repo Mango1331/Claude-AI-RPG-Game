@@ -1,6 +1,6 @@
 # Avereth Engine – Patch 10B: Masterplan, Designreviews, Testbefunde und Entscheidungsspeicher
 
-**Status 24.10.2026:** Übergang von der Drei-Run-Analyse zu einer **gezielten 10B-Korrekturrunde**. Sols technischer Gegenreview und Folgefeedback liegen vor. **10B-1 ist implementiert (Build `.58`, Commit `e6c76b4`). Das unabhängige Diff-Review fand keinen Blocker (11/11 Zieltests). Ein anschließender unabhängiger Prüflauf meldet `npm test`: 1287/1287 grün und `smoke:st:c`: 2 von 3 Läufen OK; Lauf 1 scheiterte an einem nicht abschließend zugeordneten `AbortReason`-Seitenfehler aus SillyTavern. Echte ST-/GLM-Live-Abnahme darf folgen, ist aber noch nicht erfolgt.** Weitere 10B-Pakete bleiben gesondert zu beauftragen.  
+**Status 24.10.2026:** Übergang von der Drei-Run-Analyse zu einer **gezielten 10B-Korrekturrunde**. Sols technischer Gegenreview und Folgefeedback liegen vor. **10B-1 ist implementiert (Build `.58`, Commit `e6c76b4`). Das unabhängige Diff-Review fand keinen Blocker (11/11 Zieltests). Ein anschließender unabhängiger Prüflauf meldet `npm test`: 1287/1287 grün und `smoke:st:c`: 2 von 3 Läufen OK; Lauf 1 scheiterte an einem nicht abschließend zugeordneten `AbortReason`-Seitenfehler aus SillyTavern. Echte ST-/GLM-Live-Abnahme darf folgen, ist aber noch nicht erfolgt.** **Der detaillierte 10B-2-Implementierungs- und Gegenreviewauftrag ist nun in §14 formuliert, aber weder gestartet noch getestet; laufenden natürlichen `.58`-Test nicht verändern.** 10B-3/4 bleiben gesondert zu beauftragen.  
 **Erstfassung:** 24.10.2026 · **Hauptdokument auf `main`**.  
 **Entwicklungszweig:** `claude/c-planner-prototype-2026-10-02-gpt-c666`, beim Anlegen verifizierter HEAD `fd20d0dce0b0fc508b17810872b7933a5f00e994`, Engine `4.3.0-c.6.6.57`. Neue Git-HEADs stets live prüfen; diese Zeile ist ein datierter Snapshot.
 
@@ -578,96 +578,96 @@ Reise-/Zeitmodell, ausgreifende NPC-Präsenzreparaturen, Monster- und Chase-Desi
 
 ## 14. 10B-2 – Lieferungen, freiwillige Übergaben und überprüfbare Erfüllung: Implementierungsauftrag, Review- und Patchnotesplan (24.10.2026)
 
-**Status [AUFTRAG FORMULIERT – NICHT IMPLEMENTIERT/GETESTET]:** Dieser Auftrag wurde während eines **noch laufenden natürlichen ST-Langtests auf Build .58** vorbereitet. Ausgangs-Commit des Code-Snapshots: [\`e6c76b4\`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/e6c76b4aada6fbb0d2ba18a48a2ed623afa53d7d), Engine \`4.3.0-c.6.6.58\`. Der laufende Test ist **nicht Teil der Quellen der drei alten Runs** und darf weder überschrieben noch durch eine Aktualisierung der geladenen Engine-Version beeinträchtigt werden. **Im vorliegenden Schritt wurde kein Codepatch erstellt, kein 10B-2-Test ausgeführt und kein Build verändert.**
+**Status [AUFTRAG FORMULIERT – NICHT IMPLEMENTIERT/GETESTET]:** Dieser Auftrag wurde während eines **noch laufenden natürlichen ST-Langtests auf Build .58** vorbereitet. Ausgangs-Commit des Code-Snapshots: [`e6c76b4`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/e6c76b4aada6fbb0d2ba18a48a2ed623afa53d7d), Engine `4.3.0-c.6.6.58`. Der laufende Test ist **nicht Teil der Quellen der drei alten Runs** und darf weder überschrieben noch durch eine Aktualisierung der geladenen Engine-Version beeinträchtigt werden. **Im vorliegenden Schritt wurde kein Codepatch erstellt, kein 10B-2-Test ausgeführt und kein Build verändert.**
 
 ### 14.1 Der ausführbare Auftrag an den Implementierer (Codex/Claude Code)
 
 **Ziel / Spielerwirkung:** Der Spieler kann eine echte Lieferung in natürlicher Sprache **am richtigen Ort und an den vorgesehenen Empfänger** übergeben und anschließend ohne zusätzliche erfundene Bürokratie abrechnen. Eine Kiste, die lediglich nicht mehr im Inventar liegt, gilt **nicht** als geliefert. Direkte freiwillige Übergaben, Reise mit Übergabe im selben Spielzug und vereinbarte Ablageverträge sollen funktionieren, **ohne** die PC-Inventar-Firewall zu lockern oder zusätzliche Unterschriften/Interaktionszüge zu verlangen.
 
 **Verbindlicher Scope:** Der zusammenhängende Fix betrifft
-- \`src/v4/commands.js\` (\`give\`, \`drop\`, \`go\`, \`needs\`, conditional commands),
-- \`src/v4/world.js\` (Extraktor-/Firewall-Deltas, \`objectMove\`, \`expected.taken\`, \`quest.ready\`, verspätete Ankunft/Übergabe),
-- \`src/v4/guild.js\` (\`deliveriesOf\`, \`contractReady\`, \`readyText\`, \`proofTerms\`, \`slipMarks\`, ggf. Hilfsfunktion für einen Nachweis),
-- \`src/v4/domain.js\` (kleine replayfähige Persistenz ausschließlich Engine-gebuchter Nachweise),
-- \`src/v4/planner.js\` und \`src/v4/catalog.js\` sowie relevante Narrator-/Extractor-Ausgabe, soweit für die korrekte **Interpretation/Darstellung** nötig.
+- `src/v4/commands.js` (`give`, `drop`, `go`, `needs`, conditional commands),
+- `src/v4/world.js` (Extraktor-/Firewall-Deltas, `objectMove`, `expected.taken`, `quest.ready`, verspätete Ankunft/Übergabe),
+- `src/v4/guild.js` (`deliveriesOf`, `contractReady`, `readyText`, `proofTerms`, `slipMarks`, ggf. Hilfsfunktion für einen Nachweis),
+- `src/v4/domain.js` (kleine replayfähige Persistenz ausschließlich Engine-gebuchter Nachweise),
+- `src/v4/planner.js` und `src/v4/catalog.js` sowie relevante Narrator-/Extractor-Ausgabe, soweit für die korrekte **Interpretation/Darstellung** nötig.
 Nur bei wirklich notwendigem Befund weitere Dateien berühren. Kein neues Questsystem, keine globale Orts-/NPC-Identitätsdatenbank oder Mehrort-Transaktionsmaschine.
 
 **Belege aus den Originalruns:**
-- Run 3 [\`REVIEW.md\`](testrun_10b/20261024-041150Z-current_test/REVIEW.md), E7: Questvertrag \`GET\` Kiste im Shop, \`DELIVER\` intakt zum **Quarry Camp/Heilerin Brenna**, unterschriebener Chit als Beleg; **keine** Verpflichtung, leere Kiste an Shop oder Gilde zurückzugeben.
-- E14/T7: \`quest.ready\` vor verspätetem \`object.created\` (Holder PC).
-- E28/T14, E32/T16, E35/T18: Spieler will Kiste freiwillig abgeben, aber Direkt-/bedingte \`give\`-Buchung oder \`object.move\` scheitert. T16 entsteht trotzdem READY, \`cmd.expired\` bleibt offen.
+- Run 3 [`REVIEW.md`](testrun_10b/20261024-041150Z-current_test/REVIEW.md), E7: Questvertrag `GET` Kiste im Shop, `DELIVER` intakt zum **Quarry Camp/Heilerin Brenna**, unterschriebener Chit als Beleg; **keine** Verpflichtung, leere Kiste an Shop oder Gilde zurückzugeben.
+- E14/T7: `quest.ready` vor verspätetem `object.created` (Holder PC).
+- E28/T14, E32/T16, E35/T18: Spieler will Kiste freiwillig abgeben, aber Direkt-/bedingte `give`-Buchung oder `object.move` scheitert. T16 entsteht trotzdem READY, `cmd.expired` bleibt offen.
 - E37/T19: Kiste wird auf **Gildenboden**, nicht am Lieferziel, gedroppt.
-- E39/T20: \`contractReady\` akzeptiert danach \`story_outcome\` und zahlt 40 cp/23 XP, obwohl keine bestätigte Ablieferung am Ziel eingetragen ist.
+- E39/T20: `contractReady` akzeptiert danach `story_outcome` und zahlt 40 cp/23 XP, obwohl keine bestätigte Ablieferung am Ziel eingetragen ist.
 - Run 1 und Run 2 enthalten **gültige, erfolgreich abgewickelte Lieferaufträge**: Diese Pfade sind verpflichtende **grüne Kontrollfälle**; ein neuer positiver Nachweis darf sie nicht künstlich blockieren.
 
 **Codeursachen – vor dem Patch separat mit gezielten Red-Regressionen reproduzieren:**
-1. \`guild.js:contractReady()\`: Das heutige negative Gate prüft nur, ob eine passende Fracht beim PC verbleibt; anschließend genügt \`q.ready\` oder Legacy-Proof. Ein beliebiger Drop kann dadurch \`story_outcome\` freigeben.
-2. \`world.js\`: \`quest.ready\` wird sofort verarbeitet, während \`expected.taken\` ein Cargo-Objekt erst später anlegt. \`refusedMoves\` erfasst initiale Firewall-Ablehnungen, jedoch nicht zuverlässig spätere Ablehnungen aus \`objectMove()\`.
-3. \`commands.js:give()\`: Direkte Übergabe an einen anwesenden realen Empfänger wird bereits engineintern als \`object.moved\` gebucht. \`GO→GIVE\` kann nur bedingt gebucht werden; Objektmenge, gebundener Empfänger und tatsächlicher Ankunftsort müssen über den nachgelagerten Narrator-/Extractor-Pfad erhalten bleiben.
-4. \`planner.js\`: Für eine aktive Quest gilt auf dem vereinbarten Empfängertresen abgegebene Fracht unter bestimmten Bedingungen als tatsächliche Übergabe; allgemeines Auslegen von Waren zum **Prüfen, Wiegen oder Verkauf** darf dagegen weiterhin keine unfreiwillige Gabe sein.
+1. `guild.js:contractReady()`: Das heutige negative Gate prüft nur, ob eine passende Fracht beim PC verbleibt; anschließend genügt `q.ready` oder Legacy-Proof. Ein beliebiger Drop kann dadurch `story_outcome` freigeben.
+2. `world.js`: `quest.ready` wird sofort verarbeitet, während `expected.taken` ein Cargo-Objekt erst später anlegt. `refusedMoves` erfasst initiale Firewall-Ablehnungen, jedoch nicht zuverlässig spätere Ablehnungen aus `objectMove()`.
+3. `commands.js:give()`: Direkte Übergabe an einen anwesenden realen Empfänger wird bereits engineintern als `object.moved` gebucht. `GO→GIVE` kann nur bedingt gebucht werden; Objektmenge, gebundener Empfänger und tatsächlicher Ankunftsort müssen über den nachgelagerten Narrator-/Extractor-Pfad erhalten bleiben.
+4. `planner.js`: Für eine aktive Quest gilt auf dem vereinbarten Empfängertresen abgegebene Fracht unter bestimmten Bedingungen als tatsächliche Übergabe; allgemeines Auslegen von Waren zum **Prüfen, Wiegen oder Verkauf** darf dagegen weiterhin keine unfreiwillige Gabe sein.
 
 **Technische Anforderung A – autorisierte Transfers (so wenig Code wie möglich):**
-- Eindeutiges \`GIVE\` an **anwesenden** Empfänger → vorhandener deterministischer \`object.moved\`-Pfad, einschließlich Teilmenge/Split, bleibt Grundlage. Auch der empfangene Besitz muss technisch beim angegebenen Empfänger landen. Keinen zweiten Extractor-Transfer für die schon gebuchte Aktion generieren.
-- \`GO→GIVE\` → \`needs\`/bedingte Verarbeitung mit ursprünglicher Objekt-ID, Menge, Empfängerreferenz und Zielort; nach **bestätigter** Ankunft ausführen, sofern der richtige Empfänger dort **tatsächlich anwesend** ist und die Spielerhandlung die Abgabe autorisiert. Keine freie Empfängerwahl, kein generisches „irgendein Händler dort“, keine NPC-Duplikate und keine Teleportation.
+- Eindeutiges `GIVE` an **anwesenden** Empfänger → vorhandener deterministischer `object.moved`-Pfad, einschließlich Teilmenge/Split, bleibt Grundlage. Auch der empfangene Besitz muss technisch beim angegebenen Empfänger landen. Keinen zweiten Extractor-Transfer für die schon gebuchte Aktion generieren.
+- `GO→GIVE` → `needs`/bedingte Verarbeitung mit ursprünglicher Objekt-ID, Menge, Empfängerreferenz und Zielort; nach **bestätigter** Ankunft ausführen, sofern der richtige Empfänger dort **tatsächlich anwesend** ist und die Spielerhandlung die Abgabe autorisiert. Keine freie Empfängerwahl, kein generisches „irgendein Händler dort“, keine NPC-Duplikate und keine Teleportation.
 - Unbekannte textualen Empfängernamen ausschließlich **eindeutig** mit bestehenden NPC-/Ortseinträgen verbinden. Bei Mehrdeutigkeit Aktion ehrlich offenlassen, keine beliebige Auflösung.
-- Bewusstes Abstellen an einem vertraglich **ausdrücklich erlaubten** Ablageplatz kann die Lieferung vollenden. Ein beliebiger \`DROP\` am Zielort reicht **nicht automatisch** für persönliche Übergabe; der Gildenboden eines anderen Orts erst recht nicht.
+- Bewusstes Abstellen an einem vertraglich **ausdrücklich erlaubten** Ablageplatz kann die Lieferung vollenden. Ein beliebiger `DROP` am Zielort reicht **nicht automatisch** für persönliche Übergabe; der Gildenboden eines anderen Orts erst recht nicht.
 - Der Spieler kann eine Kiste ausdrücklich auf dem Tresen **zur Übergabe stehen lassen**. Das ist etwas anderes als „zur Begutachtung hinlegen“ oder „den Beleg vorzeigen“. Planner- und Agency-Filter nur so weit präzisieren, dass diese Unterscheidung zuverlässig getroffen wird.
-- \`pc_inventory\`-Schutz **nicht** global aufweichen. Bloß vom Narrator behauptete Übergabe bleibt ohne Spielerautorisierung wirkungslos.
+- `pc_inventory`-Schutz **nicht** global aufweichen. Bloß vom Narrator behauptete Übergabe bleibt ohne Spielerautorisierung wirkungslos.
 
 **Technische Anforderung B – ein kleiner positiver, replayfähiger Liefernachweis:**
-- Für jedes erfüllte \`DELIVER\`-/gegenständliche \`GIVE\`-Objective persistiert die **Engine** einen strukturierten Nachweis mit mindestens \`questId\`, stabiler Objective-Zuordnung (\`objectiveId\` oder vergleichbar), \`objectId\`, tatsächlich gebuchter Menge, Empfänger **oder zulässigem Ablageort**, tatsächlichem Ereignisort und zugrundeliegendem Buchungs-/Sequenzbezug.
-- Der Beleg entsteht **ausschließlich aus einem gültigen Engine-Transfer** bzw. einem ausdrücklich autorisierten vertraglichen Ablagepfad, nicht aus freier \`quest.ready\`-/\`quest.progress\`-Prosa, nicht aus einem nachträglich erfundenen \`proof\`, nicht aus \`!heldBy(pc)\`. Eine vom Extractor selbst gemeldete Zahl/Quelle ist kein Engine-Beweis.
+- Für jedes erfüllte `DELIVER`-/gegenständliche `GIVE`-Objective persistiert die **Engine** einen strukturierten Nachweis mit mindestens `questId`, stabiler Objective-Zuordnung (`objectiveId` oder vergleichbar), `objectId`, tatsächlich gebuchter Menge, Empfänger **oder zulässigem Ablageort**, tatsächlichem Ereignisort und zugrundeliegendem Buchungs-/Sequenzbezug.
+- Der Beleg entsteht **ausschließlich aus einem gültigen Engine-Transfer** bzw. einem ausdrücklich autorisierten vertraglichen Ablagepfad, nicht aus freier `quest.ready`-/`quest.progress`-Prosa, nicht aus einem nachträglich erfundenen `proof`, nicht aus `!heldBy(pc)`. Eine vom Extractor selbst gemeldete Zahl/Quelle ist kein Engine-Beweis.
 - Verwende das bestehende Eventmodell: möglichst ein eng ergänztes vorhandenes Engine-event plus zugehöriger Reducer. Falls ein gesonderter Eventtyp **nachweisbar** weniger Risikofläche hat, kurze Begründung im technischen Patchnote. Keine allgemeine Quest-DSL oder unabhängige Belegverwaltung.
 - Nachweis muss Mengen und mehrere Objective-/Teil-Lieferungen korrekt behandeln (idempotente Verarbeitung, kein doppelter Fortschritt). Ein bewiesener Transfer eines Teilstapels darf den Rest nicht fälschlich als geliefert ausweisen.
 - Replay/Fold und Swipe/Regenerate dürfen weder doppelte Nachweise noch zweite Kisten, zweite Auszahlung oder zusätzliche Questfortschritte erzeugen. Bereits abgeschlossene Quests auf alten Saves bleiben abgeschlossen.
 - Interner Nachweis ist **kein** neuer Gegenstand, Quittungsauftrag, Unterschriftenzwang oder Spielerinteraktion. Der im ursprünglichen Questvertrag ggf. verlangte unterschriebene Chit darf weiterhin als Geschichte/Verifikationsbeleg bestehen; er ersetzt die reale Warenübergabe aber nicht automatisch.
 
 **Technische Anforderung C – konsistente READY-/Turn-in-Prüfung:**
-- \`quest.ready\` mit Lieferbezug bis nach allen relevanten Objektänderungen, verspäteter \`expected.taken\`-Aufnahme und erlaubten Transfers des Zuges **prüfen bzw. finalisieren**. Auch handlerseitige \`objectMove\`-Ablehnungen in den tatsächlichen Entscheidungszustand einbeziehen.
-- \`guild.js:contractReady()\` verlangt bei einem V4-C-Lieferobjective eine positive ausreichende Erfüllung **am richtigen Ziel**. \`q.ready\` allein oder Besitzverlust reichen ausdrücklich nicht. Alle vorhandenen Wege, über die \`completeContract\`, \`slipMarks\`, Katalog/HUD und Turn-in prüfen, müssen dieselbe Aussage liefern.
-- **Bestehende Regeln für reine Sammelquests, Jagden/DEFEAT, Dungeonräumung und Private Jobs nicht stillschweigend ändern.** Gemischte \`GET+DELIVER\`-Aufträge müssen funktionieren, ohne GET als extra spätere Warenabgabe an die Gilde zu behandeln.
+- `quest.ready` mit Lieferbezug bis nach allen relevanten Objektänderungen, verspäteter `expected.taken`-Aufnahme und erlaubten Transfers des Zuges **prüfen bzw. finalisieren**. Auch handlerseitige `objectMove`-Ablehnungen in den tatsächlichen Entscheidungszustand einbeziehen.
+- `guild.js:contractReady()` verlangt bei einem V4-C-Lieferobjective eine positive ausreichende Erfüllung **am richtigen Ziel**. `q.ready` allein oder Besitzverlust reichen ausdrücklich nicht. Alle vorhandenen Wege, über die `completeContract`, `slipMarks`, Katalog/HUD und Turn-in prüfen, müssen dieselbe Aussage liefern.
+- **Bestehende Regeln für reine Sammelquests, Jagden/DEFEAT, Dungeonräumung und Private Jobs nicht stillschweigend ändern.** Gemischte `GET+DELIVER`-Aufträge müssen funktionieren, ohne GET als extra spätere Warenabgabe an die Gilde zu behandeln.
 - Eine nachweislich abgeschlossene Lieferung bleibt abgeschlossen, auch wenn der Spieler später eine leere Verpackung, einen Vertragsschein oder den Chit weiterträgt oder anderswo liegen lässt.
-- \`quest.detailed\`, Fact-Notizen, Erzähler- und Guild-Clerk-Kontext dürfen keine **neue** Rückgabe-/Empfänger-/Ortsbedingung aus technischen Fehlmeldungen ableiten. Stattdessen die unveränderte Vertragsanforderung und die konkret fehlende **Engine-Handlung** benennen. Private Nebenaufträge weiter zulassen.
-- **Alte aktive Lieferungen:** Keine Belege rein aus freier Narration, einem unterschrieben benannten Papier oder einem \`ready_note\` erfinden; falls aus existierenden autorisierten Events eindeutig rekonstruierbar, nur mit deterministischem Nachweis. Sonst eine **einfache legitime Bestätigung durch ursprünglichen Empfänger am ursprünglichen Ziel** anbieten, ohne künstliche neue Rundreisebedingung. Bereits abgeschlossene Verträge nicht rückwirkend aufrollen.
+- `quest.detailed`, Fact-Notizen, Erzähler- und Guild-Clerk-Kontext dürfen keine **neue** Rückgabe-/Empfänger-/Ortsbedingung aus technischen Fehlmeldungen ableiten. Stattdessen die unveränderte Vertragsanforderung und die konkret fehlende **Engine-Handlung** benennen. Private Nebenaufträge weiter zulassen.
+- **Alte aktive Lieferungen:** Keine Belege rein aus freier Narration, einem unterschrieben benannten Papier oder einem `ready_note` erfinden; falls aus existierenden autorisierten Events eindeutig rekonstruierbar, nur mit deterministischem Nachweis. Sonst eine **einfache legitime Bestätigung durch ursprünglichen Empfänger am ursprünglichen Ziel** anbieten, ohne künstliche neue Rundreisebedingung. Bereits abgeschlossene Verträge nicht rückwirkend aufrollen.
 
 **Technische Anforderung D – Mehrortfolgen klein halten:**
-- Ein \`GO→GIVE\` am tatsächlich erreichten Ziel muss in einem kompakten Zug möglich sein. In einer längeren Abfolge \`Shop→Gilde→Shop\` oder \`GO→GIVE→GO\` **keinen späteren Schritt als getan buchen**, während die bedingte Übergabe oder Ankunft noch offen ist.
+- Ein `GO→GIVE` am tatsächlich erreichten Ziel muss in einem kompakten Zug möglich sein. In einer längeren Abfolge `Shop→Gilde→Shop` oder `GO→GIVE→GO` **keinen späteren Schritt als getan buchen**, während die bedingte Übergabe oder Ankunft noch offen ist.
 - Ausgeführte, aber nur **teilweise** erfüllte Schritte klar anzeigen; keine erfundene Komplettierung und keine zusätzlichen Pflichtfortsetzungsturns, wo der bestehende Pacingpfad eindeutig weitergehen kann.
 - Keine neue universelle Sequenz-/Reiseroutenmaschine als „Lieferfix“.
 
 ### 14.2 Rot/Grün-Testmatrix – vor Codefix nachweislich rot
 
-- **D1:** Ursprünglicher Run-3-Auftrag mit \`GET+DELIVER\`: \`quest.ready\` vor später erzeugter, weiterhin getragener Kiste → kein Abschluss/kein falsches READY-HUD.
-- **D2:** Korrekte **direkte** freiwillige \`GIVE\`-Übergabe von Fracht an richtige, anwesende Heilerin am Quarry Camp → genau ein positiver Engine-Beleg und gültiger Turn-in, keine Extra-Rückgabe.
-- **D3:** \`GO→GIVE\` mit tatsächlicher Ankunft, gebundener Zielperson und korrekter Menge → positiver Engine-Beleg, keine Zusatznachricht nötig.
-- **D4:** \`objectMove\` wird **erst im Handler** verweigert → kein scheinbares READY trotz Handler-Ablehnung, Cargo bleibt beim PC.
-- **D5:** \`DROP\` am Gildenboden, falsche Empfängerperson, falscher Ort, bloßes Vorzeigen, erdachter Narrator-Transfer → keine Lieferung und keine Auszahlung.
+- **D1:** Ursprünglicher Run-3-Auftrag mit `GET+DELIVER`: `quest.ready` vor später erzeugter, weiterhin getragener Kiste → kein Abschluss/kein falsches READY-HUD.
+- **D2:** Korrekte **direkte** freiwillige `GIVE`-Übergabe von Fracht an richtige, anwesende Heilerin am Quarry Camp → genau ein positiver Engine-Beleg und gültiger Turn-in, keine Extra-Rückgabe.
+- **D3:** `GO→GIVE` mit tatsächlicher Ankunft, gebundener Zielperson und korrekter Menge → positiver Engine-Beleg, keine Zusatznachricht nötig.
+- **D4:** `objectMove` wird **erst im Handler** verweigert → kein scheinbares READY trotz Handler-Ablehnung, Cargo bleibt beim PC.
+- **D5:** `DROP` am Gildenboden, falsche Empfängerperson, falscher Ort, bloßes Vorzeigen, erdachter Narrator-Transfer → keine Lieferung und keine Auszahlung.
 - **D6:** Gegenstand am vertraglich **erlaubten Ablageort** ohne NPC-Übergabe → korrekt; bloß beliebig am Ziel abgestellt → nicht automatisch korrekt.
 - **D7:** Teilmenge/Stapel, zwei Lieferziele, gemischte Sammel-/Liefer-Quest: nur genügend objektiv nachgewiesene Mengen erfüllen die betroffenen Objectives.
 - **D8:** Vorhandene **gültige** Lieferpfade aus Original-Runs 1 und 2 als konkrete positive Rückwärtskompatibilitätsproben, nicht nur allgemein „Guild-Tests grün“.
-- **D9:** Alte **abgeschlossene** Quests unverändert; aktive Legacy-Lieferung nicht allein wegen \`ready_note\` als bewiesen umetikettieren; echter Reload/Fold, Regenerate/Swipe ohne Doppelkiste, XP, Auszahlung oder Beleg.
+- **D9:** Alte **abgeschlossene** Quests unverändert; aktive Legacy-Lieferung nicht allein wegen `ready_note` als bewiesen umetikettieren; echter Reload/Fold, Regenerate/Swipe ohne Doppelkiste, XP, Auszahlung oder Beleg.
 - **D10:** Markt-/Furrier-Fälle: Ware nur zur Preisprüfung auf den Tresen → **keine** freiwillige Gabe; Cargo explizit zur Übernahme beim autorisierten Empfänger belassen → Gabe zulässig.
-- **D11:** \`GO→GIVE→GO\` mit offener Zwischenbedingung: nur tatsächlich abgeschlossene Teilhandlungen buchen; keine fiktive zweite Reise oder Turn-in.
-- **D12:** \`current_test\`-Guide, V4-A/Legacy, Inventar-Firewall, \`c663\`, Agency/Ownership, Guild/Proof, Live-/Host-Stale-Schutz bleiben grün.
+- **D11:** `GO→GIVE→GO` mit offener Zwischenbedingung: nur tatsächlich abgeschlossene Teilhandlungen buchen; keine fiktive zweite Reise oder Turn-in.
+- **D12:** `current_test`-Guide, V4-A/Legacy, Inventar-Firewall, `c663`, Agency/Ownership, Guild/Proof, Live-/Host-Stale-Schutz bleiben grün.
 
-**Testablauf:** Vor Änderungen gezielte Regressionen gegen \`.58\` rot zeigen und die **einzelne Ursache** dokumentieren. Danach grün; übrige betroffene Suites; **eine abschließende vollständige** \`npm test\`-Suite; \`npm run smoke:st:c\` separat mit wahrheitsgetreuem Fehlstatus. Ein temporärer ST-Hostfehler wie \`AbortReason\` darf nicht als sicher vom Patch unabhängig behauptet werden, ohne Gegenbeleg. Kein neues mechanisches Fixture im **offenen** \`current_test\`-Guide, kein echter Runner-Test als synthetischer 100-Züge-Erfolg etikettieren.
+**Testablauf:** Vor Änderungen gezielte Regressionen gegen `.58` rot zeigen und die **einzelne Ursache** dokumentieren. Danach grün; übrige betroffene Suites; **eine abschließende vollständige** `npm test`-Suite; `npm run smoke:st:c` separat mit wahrheitsgetreuem Fehlstatus. Ein temporärer ST-Hostfehler wie `AbortReason` darf nicht als sicher vom Patch unabhängig behauptet werden, ohne Gegenbeleg. Kein neues mechanisches Fixture im **offenen** `current_test`-Guide, kein echter Runner-Test als synthetischer 100-Züge-Erfolg etikettieren.
 
 ### 14.3 Arbeitsstand schützen: parallel zum laufenden Langrun
 
-**Wichtigster Branch-/Live-Schutz:** Zu Beginn verifizieren, dass der richtige Basis-HEAD \`e6c76b4\` vorliegt. **Implementierung und Tests in einem separaten Worktree/Featurebranch** von diesem Basiscommit durchführen; **keinen Checkout oder Pull im laufenden SillyTavern-Verzeichnis und kein unbeabsichtigtes Überschreiben/Reload des aktuell geladenen Builds \`.58\`**. Den neuen Feature-HEAD mit Code, Regressionen und Dev-Patchnotes pushen; **nicht eigenmächtig** den aktiven Entwicklungsbranch \`claude/c-planner-prototype-2026-10-02-gpt-c666\` umstellen, solange der laufende natürliche Run nicht gesichert und seine Buildbindung dokumentiert ist. Eine solche Worktree-Arbeit ist Vorbereitung/Implementierung, nicht automatisch Freigabe zur Nutzung im aktiven Run. Merge/Cherry-pick/Buildwechsel erst gesondert nach Review und sicherer Run-Archivierung.
+**Wichtigster Branch-/Live-Schutz:** Zu Beginn verifizieren, dass der richtige Basis-HEAD `e6c76b4` vorliegt. **Implementierung und Tests in einem separaten Worktree/Featurebranch** von diesem Basiscommit durchführen; **keinen Checkout oder Pull im laufenden SillyTavern-Verzeichnis und kein unbeabsichtigtes Überschreiben/Reload des aktuell geladenen Builds `.58`**. Den neuen Feature-HEAD mit Code, Regressionen und Dev-Patchnotes pushen; **nicht eigenmächtig** den aktiven Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666` umstellen, solange der laufende natürliche Run nicht gesichert und seine Buildbindung dokumentiert ist. Eine solche Worktree-Arbeit ist Vorbereitung/Implementierung, nicht automatisch Freigabe zur Nutzung im aktiven Run. Merge/Cherry-pick/Buildwechsel erst gesondert nach Review und sicherer Run-Archivierung.
 
-**Technische Patchnotes des Implementierers:** \`avereth-engine/docs/PATCH10B2_DELIVERY_HANDOVER.md\` auf dem Featurebranch plus kompakte Fortschreibung in \`docs/PROTOTYPE_C.md\`. Die Notes enthalten exakt: tatsächlich veränderte Dateien/Events; altes Problem mit E14/E28/E32/E37/E39; positive Engine-Nachweisstruktur und Autorisierungsquelle; Semantik direkter vs. conditional \`GIVE\`; abgegrenzte Legacy-/Savestrategie; echte Rot/Grün-Ergebnisse; vollständige Suite + Smoke; Replay/Host-Nachweise; bekannte Grenzen; Basis-/End-HEAD und Build. **Neuen Build erst für den tatsächlich fertigen Implementierungsstand festsetzen**, nicht beim bloßen Auftrag.
+**Technische Patchnotes des Implementierers:** `avereth-engine/docs/PATCH10B2_DELIVERY_HANDOVER.md` auf dem Featurebranch plus kompakte Fortschreibung in `docs/PROTOTYPE_C.md`. Die Notes enthalten exakt: tatsächlich veränderte Dateien/Events; altes Problem mit E14/E28/E32/E37/E39; positive Engine-Nachweisstruktur und Autorisierungsquelle; Semantik direkter vs. conditional `GIVE`; abgegrenzte Legacy-/Savestrategie; echte Rot/Grün-Ergebnisse; vollständige Suite + Smoke; Replay/Host-Nachweise; bekannte Grenzen; Basis-/End-HEAD und Build. **Neuen Build erst für den tatsächlich fertigen Implementierungsstand festsetzen**, nicht beim bloßen Auftrag.
 
 **Unabhängiger Reviewer (vor Merge):** Muss anhand **Original-Diff und Tests** ausdrücklich bestätigen oder beanstanden:
 1. Kann ein Spieler aus freier Narrator-/Extractor-Aussage einen Nachweis, eine Übergabe oder einen Questabschluss erhalten?
 2. Kann eine reine Drop-/Holder-Änderung fern des Ziels bezahlen?
-3. Tragen direkte und bedingte \`GIVE\` tatsächlich Menge, Empfänger, Ort und die freiwillige Autorisierung korrekt?
-4. Bleibt die Handelsevidenz \`SHOW\` vs. \`GIVE\` geschützt?
+3. Tragen direkte und bedingte `GIVE` tatsächlich Menge, Empfänger, Ort und die freiwillige Autorisierung korrekt?
+4. Bleibt die Handelsevidenz `SHOW` vs. `GIVE` geschützt?
 5. Entstehen Nachweise bei Replay/Regenerate genau einmal, ohne bereits abgeschlossene Quests zu ändern?
 6. Stimmen tatsächlicher Code-Diff, Patchnotes, Red/Green-Nachweise und Testzahlen überein? **Nicht** nur die Notes lesen.
 7. Ist die Änderung minimal, oder wurde eine unnötige allgemeine Quest-/Workflow-Engine gebaut? Kritische Alternativen nennen.
 
-**Dokumentation auf \`main\` nach jedem Meilenstein:** Dieser Abschnitt ist der **vorbereitete Auftrag**, keine Implementierung. Bei Feature-Commit/Ersttests die verifizierten Commits/Builds, bei unabhängiger Notes-/Code-Gegenprüfung Befund und Nachfix, bei Merge auf den Entwicklungsbranch neuen Head und nach echtem Livetest Run-ID/Gameplaywirkung hier aktualisieren. In 01–04 nur bei echtem grundlegendem Meilenstein Kurzverweis; alte Runs und ZIPs unverändert lassen.
+**Dokumentation auf `main` nach jedem Meilenstein:** Dieser Abschnitt ist der **vorbereitete Auftrag**, keine Implementierung. Bei Feature-Commit/Ersttests die verifizierten Commits/Builds, bei unabhängiger Notes-/Code-Gegenprüfung Befund und Nachfix, bei Merge auf den Entwicklungsbranch neuen Head und nach echtem Livetest Run-ID/Gameplaywirkung hier aktualisieren. In 01–04 nur bei echtem grundlegendem Meilenstein Kurzverweis; alte Runs und ZIPs unverändert lassen.
 
 **Strenge Nicht-Ziele:** Kein 10B-3-Kampfstart-/Combat-Truth-/Board-Umbau, kein 10B-4-LLM-Retry, kein Flucht-/Chase-/Monsterdesign, kein neues XP-/Preis-/Skill-/Balancing-System, keine allgemeinen NPC-Home-/Shop-Spawnregeln, keine breite Parser-Neuschreibung. Der gerade laufende natürliche .58-Test wird nicht als Nachweis für den noch **nicht** implementierten 10B-2-Patch ausgegeben.
 

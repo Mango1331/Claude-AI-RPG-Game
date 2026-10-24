@@ -121,10 +121,11 @@ export function callMeta(purpose, ms, answer = null) {
  * One LLM call. The host's call answers a string, or (Patch 8.2, index.js v4Llm on a custom endpoint) an object
  * {content, finish_reason, usage}; both are read the same way, and `call` keeps what was reported (callMeta).
  */
-async function ask(llm, messages, purpose) {
+async function ask(llm, messages, purpose, overrides = {}) {
     const t0 = Date.now();
     try {
-        const answer = await llm({ messages, purpose, ...(LLM[purpose.replace(/_repair$/, '')] || {}) });
+        const base = purpose.replace(/_(?:repair|recovery)$/, '');
+        const answer = await llm({ messages, purpose, ...(LLM[base] || {}), ...overrides });
         const text = answer && typeof answer === 'object' ? answer.content : answer;
         const call = callMeta(purpose, Date.now() - t0, answer);
         if (text === null || text === undefined) return { ok: false, error: 'no answer', ms: call.ms, call };
@@ -178,6 +179,21 @@ export async function planMessage(llm, content, ctx, text, { recent = '' } = {})
         if (second.ok) {
             raw.push(String(second.content).slice(0, 2000));
             p = parsePlan(second.content, vocab, ctx, text);
+        }
+        // 10B-4a: two reasoning-only/empty answers can exhaust the usual 2000-token
+        // budget without returning any JSON. Make one fresh, bounded attempt with
+        // more output room. Never manufacture commands or replay the player's turn.
+        if (!p.commands && !first.content.trim() && second.ok && !second.content.trim()) {
+            const fresh = plannerRequest(vocab, ctx, text, { recent });
+            const messages = [...fresh.messages, { role: 'user', content:
+                'Both previous attempts returned no JSON text. Answer the PLAYER MESSAGE now with exactly one short JSON object {"commands":[...]}. If the player takes no action, return {"commands":[]}. Return no prose.' }];
+            const third = await ask(llm, messages, 'plan_recovery', { maxTokens: 4000 });
+            ms += third.ms;
+            calls.push(third.call);
+            if (third.ok) {
+                raw.push(String(third.content).slice(0, 2000));
+                p = parsePlan(third.content, vocab, ctx, text);
+            }
         }
     }
     return p.commands ? { commands: p.commands, failed: false, error: null, ms, repaired, raw, calls } : { commands: null, failed: true, error: (p.errors || []).join('; ').slice(0, 200) || 'invalid answer', ms, repaired, raw, calls };

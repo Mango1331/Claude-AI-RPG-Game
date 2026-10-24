@@ -54,11 +54,11 @@ Zusätzliche Regressionen in `tests/v4/patch9d.test.js`: echter Combat-Ende→E�
 
 ## Provider-Fixture und Leitfaden (separater Runner-Commit)
 
-Der isolierte Runner erhält ausschließlich auf ausdrückliches `--fixture` eine vorbereitete Figur. Keine Debug-Funktion wird in die Extension eingebaut. `current_test` beschreibt klar die synthetische Vorgeschichte. Eigene Meilensteine verlangen echten E-Levelaufstieg, Klassenangebot, Annahme, beantwortete **#class und #feats**, sowie einen anschließenden Kampfsnapshot mit gewählter Klasse und tatsächlicher Angriffsausführung. Danach speichert/lädt der Runner und vergleicht Klasse und Tatenbuch. Forge-Calls werden als Forge erfasst.
+Der isolierte Runner erhält ausschließlich auf ausdrückliches `--fixture` eine vorbereitete Figur. Keine Debug-Funktion wird in die Extension eingebaut. Der ursprünglich `current_test` genannte Fixture-Guide ist nach abgeschlossener 9D-Abnahme unter `patch9d_fixture` dauerhaft erhalten. `current_test` ist inzwischen der natürliche offene Langzeittest ohne Fixture. Eigene Meilensteine verlangen echten E-Levelaufstieg, Klassenangebot, Annahme, beantwortete **#class und #feats**, sowie einen anschließenden Kampfsnapshot mit gewählter Klasse und tatsächlicher Angriffsausführung. Danach speichert/lädt der Runner und vergleicht Klasse und Tatenbuch. Forge-Calls werden als Forge erfasst.
 
 Start auf einer eingerichteten Testmaschine:
 
-`npm run live:st -- --guide current_test --fixture 9d-rare --seed 7 --headed`
+`npm run live:st -- --guide patch9d_fixture --fixture 9d-rare --seed 7 --headed`
 
 Weitere explizite Profile: `9d-normal`, `9d-extreme`, `9d-defense`, `9d-hybrid`.
 
@@ -99,4 +99,10 @@ Originalexport `20261024-010241Z-current_test.zip`, Build .56 / HEAD `bdda871`, 
 
 **Tests:** Sieben neue Regressionen, eine bestehende Berichtsprüfung erweitert. Gegen die .56-Quellen isoliert reproduziert: sieben betroffene Prüfungen rot (3/10 grün); mit Fix10/10 grün. Angrenzend **132/132**, vollständiger Abschlusslauf **1269/1269**, 0 Fehler, Node24.19.0. Browsercallbacks laufen im VM-Test gegen den ST-Startbildschirm, gespeicherte Identität, fehlende Datei, falschen Chat, getrennte API und echten Fixture-Fold; das ist **kein neuer echter ST-Lauf**.
 
-Build **.57**, Narrator-Vertrag unverändert **.55**. Engine und Runner separat committet. Keine Änderungen an Rarity-Schwellen, Effekten, XP, hohen Rängen oder NPC-KI. Nächste echte Abnahme: `npm run live:st -- --guide current_test --fixture 9d-rare --seed 7 --headed`; insbesondere ohne manuellen Verbindungsschritt starten und den erfolgreichen Abschluss-Reload belegen. Hier fehlen weiterhin ST-Installation/Profil, Browserbinary und Provider-Key; erneuter Providerlauf daher nicht durchgeführt.
+Build **.57**, Narrator-Vertrag unverändert **.55**. Engine und Runner separat committet. Keine Änderungen an Rarity-Schwellen, Effekten, XP, hohen Rängen oder NPC-KI. Nächste echte Abnahme: `npm run live:st -- --guide patch9d_fixture --fixture 9d-rare --seed 7 --headed`; insbesondere ohne manuellen Verbindungsschritt starten und den erfolgreichen Abschluss-Reload belegen. Hier fehlen weiterhin ST-Installation/Profil, Browserbinary und Provider-Key; erneuter Providerlauf daher nicht durchgeführt.
+
+## Abschluss nach echtem .57-Livetest und Übergang zum offenen `current_test`
+
+Der echte Test `20261024-021009Z-current_test.zip` bestand 5/5 Pflichtetappen in 23 Spielerzügen (13:16 min) mit `end:done`, `fixtureReload:true` und Integrität OK. Der Runner startete ohne manuellen API-/Sendeschritt und lud denselben Testchat am Ende erneut. Level 15/E, die natürliche Wahl `Ironbreaker Path` und deren Combat-Wirkung wurden live belegt; die vorausgesetzten Rare-Taten waren ausdrücklich synthetische Fixture-Daten. Das ist eine erfolgreiche Abnahme von 9D F→E/Normal–Rare, keine natürliche Level-1-bis-15-Laufbahn.
+
+Als Vorbereitung auf 10B ist `current_test` danach wieder ein echter, weitgehend ungeleiteter 100-Spielerzüge-Langlauf ab Charaktererstellung. Der alte 9D-Guide bleibt **unverändert** unter `patch9d_fixture` verfügbar; historische Testexporte mit dem Namen `current_test` werden dadurch nicht rückwirkend umgedeutet. Die Engine-Klassenmechanik und Version bleiben `.57`; nur Runner-/Guide-/Testdokumentation wurde angepasst. Neuer Langlauf und erneute vollständige npm-Tests sind zum Zeitpunkt dieser Änderung noch **nicht** ausgeführt.

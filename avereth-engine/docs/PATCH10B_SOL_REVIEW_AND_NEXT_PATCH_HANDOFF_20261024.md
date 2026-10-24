@@ -93,3 +93,20 @@
 **Unabhängiges ChatGPT-Gegenreview:** Der eng begrenzte Quellcodefix, alle Testdeltas und die Reihenfolge in originalem SillyTavern `public/script.js` (ST-1.19-Tag `7e8663cd9c184a550b37238218bdd32c6efc68e9`) wurden erneut gelesen. Kein weiterer Produktfehler im Hotfix festgestellt; keine eigenen Node-/Browser-Messungen behauptet. Umfang und Restrisiken in `06_PATCH10B_MASTERPLAN_UND_REVIEWS.md` auf `main` **§26.2** dokumentiert.
 
 **Für den nächsten Sol-Patch ist `.66` der neue Baseline-Build:** Vor weiterer 10B-3-/4d-Mechanik zuerst den neuen **natürlichen** `current_test` mit unverändertem Guide und tatsächlichem GLM auswerten, insbesondere `extraction.status`, `extract.applied`, Recovery-Latenzen/Nullresultate und einen möglichen `swipe_info[0].extra`-Alt-Pending-Snapshot bei Rückswipe. Einen alten P0 aus Run 5 nicht mehr als ungeklärtes aktuelles Blockerproblem interpretieren; der ursprüngliche Befund und seine Ursache bleiben nachvollziehbar. Keine unbelegte generelle ST-Reload-/Chatwechsel-Zuverlässigkeit aus einem einzigen erfolgreichen Mock-Smoke ableiten.
+
+## I. Verbleibende 10B-Fachpatches für Sol: keine weitere Mini-Patch-Serie
+
+**Planungsupdate vom 24.10.2026, nach Build .66 und unabhängigem Hotfix-Source-Review.** Nutzer führt parallel einen neuen natürlichen current_test durch; **keine neuen Event-/ZIP-Ergebnisse vorwegnehmen**. Nutzer wünscht künftig normale, fachlich abgeschlossene Patchumfänge statt weiterer Kleinstkorrekturen. Diese Dokumentation erteilt **keine** automatische Freigabe zur Produktimplementierung.
+
+**Führender Gesamtindex für alle verbliebenen Fachpatches:** `docs/PATCH10B_REMAINING_WORK_SOL_IMPLEMENTATION_INDEX.md`. Dieser liegt auf dem aktuellen Entwicklungsbranch neben diesem Handoff; auf `main` ist die Anordnung unter `06_PATCH10B_MASTERPLAN_UND_REVIEWS.md` §27 gespiegelt.
+
+**Einzelne ausführbare Fachpläne:**
+- `docs/PATCH10B3_COMBAT_ESCALATION_AND_TRUTH_PLAN.md`: echte Banditendrohung vs. Angriff, zulässige NPC-Ambushes, eine gebuchte Arcane-Bolt-Handlung statt drei erzählte, Memory-/Chronik-Gates und Positiv-/Negativtests. **Ein** zusammenhängender Combat-/Truth-Patch, nicht fünf Mini-Commits.
+- `docs/PATCH10B3_GUILD_BOARD_AUTHORITY_PLAN.md`: offizielle Guild-Listings nur mit Board-/Contractbeleg, private Jobs unabhängig; Runs 2/4, Replay und Regenerate.
+- `docs/PATCH10B4D_NARRATOR_EMPTY_RECOVERY_PLAN.md`: höchstens eine automatische sichere ST-Regen/Swipe für dieselbe gebuchte Spieleraktion; ausschließlich nach nachgewiesenem ST-1.19-Host-Generation-API-Lifecycle, keine angenommene generateRaw-Abkürzung.
+- `docs/PATCH10B_MONSTER_ANATOMY_AND_LOOT_CANDIDATE.md`: nach beiden bisherigen Monsterreviews freies Species-Worldbuilding und 19 Kampfbasis-Profile behalten, kein Hare Antler, kein verpflichtender Species-Katalog. **Designkandidat, noch keine Codefreigabe.**
+- `docs/PATCH10B_CHASE_ESCAPE_PACING_CANDIDATE.md`: natürliche Chase-Absicht an bestehenden `fleeing/chase/escapeRoll` anschließen; kein zweites System und keine globale Speed-Rebalance. **Designkandidat, noch keine Codefreigabe.**
+
+**Separater Kleinstwartungsfall:** 10B-2b F60-2, englische Klauselvarianten einer unzulässig neu erfundenen Behälterrückgabe, belegt in `06` §18.2. Testgetrieben im ohnehin passenden Delivery-Wartungsfenster korrigieren, aber nicht als neues Großprojekt aufblähen.
+
+**Empfohlener Ablauf:** erst den neuen originalen .66-`current_test`-Export und eventuell verbliebene P0-Integrationsprobleme bewerten; dann **einen** Fachpatch nach Spielerwirkung und Evidenz priorisieren, Sol den vollständigen Fachplan + Quellen lesen lassen, Red/Green und ST-Smoke dokumentieren, unabhängig reviewen, danach wieder echten Langlauf. Unabhängig davon bleiben `10B-3`, `10B-4d` und ggf. Designkandidaten sachlich getrennte Änderungen. Alle alten 9D/.57-/10B-1–4c.4-Reviews sind historische Evidenz, nicht neue Freigabe.

@@ -75,6 +75,9 @@ export function createWorldJobs({ active, run, applied, onError = () => {} }) {
     function currentJob() {
         return pending && belongs(pending) ? pending.job : null;
     }
+    function currentId() {
+        return pending && belongs(pending) ? pending.id : -1;
+    }
 
-    return { start, invalidate, currentJob };
+    return { start, invalidate, currentJob, currentId };
 }

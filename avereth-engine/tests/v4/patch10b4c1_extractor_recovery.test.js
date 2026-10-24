@@ -206,3 +206,20 @@ test('10B-4c.1: an engine-booked later turn after a transport abort skips recove
     assert.equal(result.late, true);
     assert.equal(rec(g.chat[id]).events.length, 0);
 });
+
+test('10B-4c.1: raw unprocessed user input does not invalidate a pending host-barrier extraction', async () => {
+    const { g, id } = await turn();
+    let n = 0;
+    const result = await runExtraction(g.chat, id, content, async () => {
+        n++;
+        if (n === 1) return null;
+        // No Engine record yet: the normal ST barrier commits this extraction
+        // before allowing the new input's mechanical resolution.
+        g.chat.push({ mes: 'I walk away.', is_user: true, is_system: false, extra: {} });
+        assert.equal(laterTurns(g.chat, id), false);
+        return VALID;
+    });
+    assert.equal(n, 2);
+    assert.equal(result.applied, true);
+    assert.equal(rec(g.chat[id]).events.filter(e => e.t === 'extract.applied').length, 1);
+});

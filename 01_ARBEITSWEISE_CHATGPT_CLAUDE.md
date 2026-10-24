@@ -17,7 +17,11 @@ Wir entwickeln Avereth Engine, ein persistentes Fantasy-Sandbox-RPG als SillyTav
 
 **Bei einem neuen Chat nur zwei Einstiegsdokumente vollständig lesen:** diese Datei **01** und die kompakte aktuelle Statusübersicht **03** auf `main`. Danach je Auftrag gezielt die maßgeblichen Abschnitte aus **02**, die konkrete Fachspezifikation, betroffene Quellcodepfade und bei Bedarf Originalbelege lesen. **04**, **05**, ältere Abschnitte aus **06**, historische Patchnotes, Übergaben und `docs/PROTOTYPE_C.md` sind Nachschlagequellen, keine vollständige Pflichtlektüre.
 
-Vor technischen Aussagen Entwicklungsbranch, aktuellen HEAD und tatsächlich implementierten Code prüfen; `main` enthält die führende Projektdokumentation, nicht zwingend den aktuellen Produktcode. Bereits unverändert gelesene Dateien im selben Chat nicht routinemäßig erneut laden. **Vor jedem Schreibzugriff die aktuelle Fassung der tatsächlich betroffenen Datei und den Branch prüfen.** Lesetiefe an Aufgabe und Risiko anpassen: ein Bug verlangt betroffene Funktions-, Event-, Persistenz- und Testpfade; kein vollständiges Studium aller Archive.
+Vor technischen Aussagen Entwicklungsbranch, aktuellen HEAD und tatsächlich implementierten Code prüfen; `main` enthält die führende Projektdokumentation, nicht zwingend den aktuellen Produktcode. Bereits gelesene, unveränderte Dateien im selben Chat nicht erneut laden; nach Unterbrechungen zuerst Git-Diff und Änderungen seit dem letzten geprüften Stand ansehen. **Vor Änderungen Branch und aktuelle Fassung der betroffenen Dateien prüfen; erneut lesen nur bei zwischenzeitlichen Änderungen oder fehlendem Kontext.** Lesetiefe an Aufgabe und Risiko anpassen: ein Bug verlangt betroffene Funktions-, Event-, Persistenz- und Testpfade; kein vollständiges Studium aller Archive.
+
+## Aufwand begrenzen
+
+Gezielt mit Dateinamen, Überschriften und Textsuche beginnen; nur die relevanten Abschnitte und ihre nötigen Abhängigkeiten lesen. Unabhängige Suchen bündeln. Die Prüfung erweitern, wenn ein konkreter Widerspruch oder ein Risiko auftaucht, nicht vorsorglich sämtliche Archive laden. Bei reiner Dokumentationspflege genügen Inhalts-, Link- und Diffprüfung; keine Node-/ST-Läufe oder erneute vollständige Codeanalyse. Zusammengehörige Änderungen gesammelt pro betroffenem Branch committen. Keine zusätzliche Auditdatei und keine wiederholten Statusnachträge allein für Dokumentationsarbeit. Zum Abschluss Ergebnis, Commit und echte offene Punkte kurz nennen, den Auftrag nicht nochmals erklären.
 
 ## Prüfung, Tests und Kommunikation
 

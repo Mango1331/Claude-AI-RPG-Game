@@ -19,7 +19,7 @@ Das LLM gestaltet und interpretiert die Welt; die Engine kontrolliert Zahlen, Ak
 |---|---|
 | **Node .66, von Sol ausgeführt** | 1426/1426 gesamt, World-Jobs 19/19. ChatGPT prüfte Diff/Testcode unabhängig, wiederholte diese Läufe dabei nicht. |
 | **Echter ST-1.19-Browser, Mockprovider** | Finaler `smoke:st:c` 21/21, fünf Extractor-Calls; vier aktuelle gespeicherte Story-Records jeweils einmal `extract.applied`. .65-Gegenprobe scheiterte. Erster .66-Versuch 20/21 wegen zweier PageErrors; Ursache offen. |
-| **Natürliche GLM-Runs** | Vier .57-Runs endeten nach 26/25/21/61 Inputs (Tod/leerer Narrator/leerer Planner/leerer Narrator). .65-Run 5 endete nach drei Inputs mit Extractor-`pending`; Ursache in .66 korrigiert. **Noch kein natürlicher .66-Langlauf abgenommen.** |
+| **Natürliche GLM-Runs** | Vier historische .57-Runs endeten nach 26/25/21/61 Inputs. .65-Run 5 blockierte bei `pending` nach 3 Inputs; in .66 adressiert. **Run 6 auf .66: 35/100 natürliche Inputs, 32/32 Story-Extraktionen angewendet, 1 vollständiger Hound-Cull-/Guild-Payout, dann regelkonformer Tod im ersten Dungeon-Encounter** (3 Skelette Lv4/3/2 gegen Mage Lv1). **Kein 100-Züge-Abnahmelauf**, kein neuer Host-Hänger. [Originalreview](testrun_10b/20261024-104654Z-current_test/REVIEW.md). |
 | **F→E-Klassenentwicklung** | Gezielter .57-ST/GLM-Fixture-Lauf: 23 Züge, 5/5, Save/Reload. Level-1–14-Vorgeschichte synthetisch; keine natürlich gespielte Gesamtlaufbahn. |
 | **Kampfsimulator** | Reproduzierbar vorhanden; frühere umfangreiche Messungen durch PC-/NPC-Taktikasymmetrie begrenzt, keine Balancefreigabe. |
 
@@ -27,7 +27,7 @@ Vollständige .66-Testfolge einschließlich Fehlversuch und Save-Prüfung: [Hotf
 
 ## Offen und nächster Schritt
 
-**Freigegeben ist die Auswertung des neuen natürlichen .66-`current_test` mit unverändertem freiem Level-1-Guide**, Ziel 100 Inputs; Tod oder technische Blockade dürfen den Lauf beenden. Build/Commit aus dem Originalexport prüfen; Chat, Engine-Events und Provider-Calls getrennt bewerten. Ein Mock-Smoke belegt keine GLM-Zuverlässigkeit. Lange Wartezeiten, Recovery-Limits, Reload/Chatwechsel und alte `swipe_info.extra`-Snapshots bleiben echte Abnahmepunkte; die sporadischen ST-PageErrors beobachten.
+**Ausgewertet ist der erste natürliche `.66`-Lauf** ([Run 6](testrun_10b/20261024-104654Z-current_test/REVIEW.md)): 35 Inputs, regulärer Charaktertod, Host-/Quest-/Dungeon-Hauptpfad bis dahin positiv. **Nächster Schritt:** weitere unveränderte natürliche `current_test`-Läufe für die 100-Züge-Zuverlässigkeit und andere Startklassen sammeln oder auf ausdrücklichen Auftrag einen bereits getrennt geplanten 10B-Fachpatch priorisieren. Aus einem einzelnen Dungeon-Tod keine globale Balancekorrektur ableiten. Screenshot-/Swipe-Reentry/Reload und früher sporadische PageErrors bleiben gesonderte Testfelder.
 
 **Noch nicht implementiert:** Kampfeskalation/Kampfchronik und Gildenboard-Authority (10B-3), Narrator-Leerantwort-Recovery (10B-4d), kleiner F60-2-Klausel-Restfall. [Fachindex](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/claude/c-planner-prototype-2026-10-02-gpt-c666/avereth-engine/docs/PATCH10B_REMAINING_WORK_SOL_IMPLEMENTATION_INDEX.md) verlinkt die Pläne und Entscheidungspunkte. Monsteranatomie/Loot und Chase sind gesonderte **Designkandidaten ohne Codefreigabe**; Zahlenbalance, Sapienz/Sondereffekte, Worldclock und weitere QoL erst nach Evidenz und Nutzerentscheidung.
 

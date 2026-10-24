@@ -1326,8 +1326,16 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
         // that found its goal true already (done: "already his", "already here") did, and so did a registration that
         // made him a member (the fee paid in a step between; the guard drops such a registration as redundant)
         const need = envx.c && Number.isInteger(c.needs) && !happened.has(c.needs) ? c.needs : null;
-        const unmet = need !== null && !(membership(s) && [...ctx.resolutions, ...(envx.dropped || []).map((x) => x.command || {})]
-            .some((x) => x.seq === need && x.type === 'guild.register'));
+        const redundantRegistration = (envx.dropped || []).some((x) => x.rule === 'redundant'
+            && x.command?.seq === need && x.command.type === 'guild.register');
+        // Paying the already-open canonical fee replaces only its redundant registration request.
+        // The offer handler still validates location, price, selection, funds and existing membership.
+        const registrationPayment = redundantRegistration && c.type === 'offer.accept' && c.offer === REGISTRATION_OFFER
+            && s.offers[c.offer]?.status === 'open' && s.offers[c.offer]?.canon === true
+            && s.offers[c.offer]?.lines?.some((l) => l.service === 'guild_registration');
+        const alreadyRegistered = membership(s) && (redundantRegistration
+            || ctx.resolutions.some((x) => x.seq === need && x.type === 'guild.register' && x.status === 'resolved'));
+        const unmet = need !== null && !registrationPayment && !alreadyRegistered;
         // 4.3.0-c.6.6.51 (live 23.10.2026 11:07: "take the room and sleep until morning" with no price known yet booked the
         // night, told in the room and paid for the next morning): he rests or sleeps in a room he takes in this message
         // only once it is booked, marked by the planner or not. Review of .51: booked is a room or bed the engine granted

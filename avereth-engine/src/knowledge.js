@@ -7,7 +7,7 @@
 //  * memories:  episodic records with participants and witnesses; a character only "remembers" what it witnessed
 //               (Generative Agents: per-agent memory stream, perception-scoped).
 // NPCs never read world truth directly: the context builder only shows them their own knowledge rows.
-import { normText } from './util.js';
+import { normText, hash32 } from './util.js';
 import { sceneHandle } from './v4/scene_handles.js';
 
 // Predicates are normalised so that "state"/"condition" and "status" are the same slot. FUNCTIONAL predicates hold
@@ -87,7 +87,7 @@ export function setFactEvents(state, { s, p, o, visibility = 'public', importanc
         for (const old of current) events.push({ t: 'fact.ended', d: { id: old.id, until: at, reason: `superseded by ${s} ${p} ${o}` } });
     }
     const fact = {
-        id: id || `f.${slugPart(s)}.${slugPart(p)}.t${state.turn}`, s, p, o, since: at, until: null, visibility,
+        id: id || nextFactId(state, s, p), s, p, o, since: at, until: null, visibility,
         importance, hard: !!hard || isTerminalStatus(p, o), source, ...(scope ? { scope } : {}),
     };
     events.push({ t: 'fact.asserted', d: { fact } });
@@ -96,6 +96,15 @@ export function setFactEvents(state, { s, p, o, visibility = 'public', importanc
 
 function slugPart(x) {
     return normText(x).replace(/[^a-z0-9]+/g, '_').slice(0, 24);
+}
+
+// Full identity distinguishes similarly named subjects/predicates; the suffix also preserves A-B-A history.
+// Check occupied IDs even after their facts ended, including a possible hash collision. Old events keep their IDs.
+function nextFactId(state, s, p) {
+    const base = `f.${slugPart(s)}.${slugPart(p)}.${hash32(JSON.stringify([s, p]))}.t${state.turn}`;
+    let id = base;
+    for (let n = 2; Object.hasOwn(state.facts, id); n++) id = `${base}.${n}`;
+    return id;
 }
 
 /** What a character knows/believes (optionally only about given subjects). Returns resolved rows. */

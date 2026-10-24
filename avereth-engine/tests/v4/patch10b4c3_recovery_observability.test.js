@@ -8,7 +8,7 @@ import { rec, setRec } from '../../src/host.js';
 import { planContext, withContentSkills } from '../../src/v4/planner.js';
 import { buildCatalog } from '../../src/v4/catalog.js';
 import { planMessage, prepareGenerationAsync, processReplyAny, runExtraction } from '../../src/v4/runtime.js';
-import { recoveryObservation, recoverySummary } from '../../tools/st_live/live/evaluator.mjs';
+import { evaluate, recoveryObservation, recoverySummary } from '../../tools/st_live/live/evaluator.mjs';
 
 const content = await loadContent();
 const EMPTY_PLAN = { content: ' ', finish_reason: 'length', usage: { completion_tokens: 2000 } };
@@ -152,4 +152,34 @@ test('4c.3: failure during recovery increments attempt count but not misleading 
     assert.equal(summary.extractor.empty, 1);
     assert.equal(summary.planner.zeroCommands, 0);
     assert.equal(summary.extractor.zeroDeltas, 0);
+});
+
+test('4c.3: real evaluation exports recovery totals and warning issues, without changing the turn verdict', async () => {
+    const g = await campaign();
+    const u = g.chat.push({ mes: 'I wait.', is_user: true, is_system: false, extra: {} }) - 1;
+    const reply = g.chat.push({ mes: 'He waits.', is_user: false, is_system: false, extra: {} }) - 1;
+    setRec(g.chat[u], { events: [], plan: { recovery: 'empty', failed: false }, interp: { commands: [] } });
+    setRec(g.chat[reply], { events: [], extraction: { recovery: 'empty', status: 'applied', deltas: 0 } });
+    const report = evaluate(g.chat);
+    assert.equal(report.counts.recovery.planner.zeroCommands, 1);
+    assert.equal(report.counts.recovery.extractor.zeroDeltas, 1);
+    assert.equal(report.issues.filter(x => x.kind === 'planner_recovery_zero_commands').length, 1);
+    assert.equal(report.issues.filter(x => x.kind === 'extractor_recovery_zero_deltas').length, 1);
+    assert.deepEqual(report.turns.at(-1).recovery, {
+        planner: { type: 'empty', zeroCommands: true, failed: false },
+        extractor: { type: 'empty', zeroDeltas: true, failed: false },
+    });
+});
+
+test('4c.3: a system panel between player and reply does not hide the extraction recovery', () => {
+    const chat = [
+        { mes: 'I wait.', is_user: true, is_system: false, extra: {} },
+        { mes: '[SYSTEM // STATUS]', is_user: false, is_system: true, extra: {} },
+        { mes: 'He waits.', is_user: false, is_system: false, extra: {} },
+        { mes: 'I move.', is_user: true, is_system: false, extra: {} },
+    ];
+    setRec(chat[0], { events: [] });
+    setRec(chat[2], { events: [], extraction: { recovery: 'transport', status: 'applied', deltas: 0 } });
+    assert.deepEqual(recoveryObservation(chat, 0).extractor, { type: 'transport', zeroDeltas: true, failed: false });
+    assert.equal(recoveryObservation(chat, 3).extractor, null);
 });

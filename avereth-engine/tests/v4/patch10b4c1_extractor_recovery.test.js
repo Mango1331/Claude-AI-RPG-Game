@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../helpers.js';
 import { Chat4 } from './harness.js';
-import { rec } from '../../src/host.js';
+import { rec, setRec, laterTurns } from '../../src/host.js';
 import { processReplyAny, runExtraction } from '../../src/v4/runtime.js';
 
 const content = await loadContent();
@@ -122,7 +122,12 @@ test('10B-4c.1: a following player turn prevents a late recovery commit', async 
     const result = await runExtraction(g.chat, id, content, async () => {
         n++;
         if (n === 1) return null;
-        g.chat.push({ mes: 'I walk away.', is_user: true, is_system: false, extra: {} });
+        // A later turn exists only after its engine events are booked.
+        // A raw message alone must NOT satisfy laterTurns() in the real host.
+        const later = { mes: 'I walk away.', is_user: true, is_system: false, extra: {} };
+        g.chat.push(later);
+        setRec(later, { events: [{ t: 'turn.begun', d: { turn: 2, input: 'I walk away.' } }] });
+        assert.equal(laterTurns(g.chat, id), true);
         return VALID;
     });
     assert.equal(n, 2);
@@ -142,4 +147,62 @@ test('10B-4c.1: a second extraction attempt on an applied reply makes no request
     assert.equal(second.changed, false);
     assert.equal(n, 2);
     assert.deepEqual(rec(g.chat[id]).events, events);
+});
+
+test('10B-4c.1: changed swipe after transport error skips recovery call entirely', async () => {
+    const { g, id } = await turn();
+    let n = 0;
+    const result = await runExtraction(g.chat, id, content, async () => {
+        n++;
+        g.chat[id].mes = 'A different active swipe.';
+        throw new Error('transport aborted');
+    });
+    assert.equal(n, 1);
+    assert.equal(result.changed, false);
+    assert.equal(rec(g.chat[id]).events.length, 0);
+});
+
+test('10B-4c.1: empty primary followed by edit skips even the normal repair', async () => {
+    const { g, id } = await turn();
+    let n = 0;
+    const result = await runExtraction(g.chat, id, content, async () => {
+        n++;
+        if (n === 1) {
+            g.chat[id].mes = 'The narrator reply was edited before repair.';
+            return EMPTY;
+        }
+        return VALID;
+    });
+    assert.equal(n, 1);
+    assert.equal(result.changed, false);
+    assert.equal(rec(g.chat[id]).events.length, 0);
+});
+
+test('10B-4c.1: edit after two empty outputs skips the third 6000-token request', async () => {
+    const { g, id } = await turn();
+    let n = 0;
+    const result = await runExtraction(g.chat, id, content, async () => {
+        n++;
+        if (n === 2) g.chat[id].mes = 'An edited reply must not get a third attempt.';
+        return EMPTY;
+    });
+    assert.equal(n, 2);
+    assert.equal(result.changed, false);
+    assert.equal(rec(g.chat[id]).events.length, 0);
+});
+
+test('10B-4c.1: an engine-booked later turn after a transport abort skips recovery', async () => {
+    const { g, id } = await turn();
+    let n = 0;
+    const result = await runExtraction(g.chat, id, content, async () => {
+        n++;
+        const later = { mes: 'I walk away.', is_user: true, is_system: false, extra: {} };
+        g.chat.push(later);
+        setRec(later, { events: [{ t: 'turn.begun', d: { turn: 2 } }] });
+        throw new Error('provider disconnected');
+    });
+    assert.equal(n, 1);
+    assert.equal(result.changed, false);
+    assert.equal(result.late, true);
+    assert.equal(rec(g.chat[id]).events.length, 0);
 });

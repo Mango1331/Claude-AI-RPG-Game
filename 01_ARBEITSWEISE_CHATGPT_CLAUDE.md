@@ -1,7 +1,7 @@
 # Avereth Engine / RPG Engine — Arbeitsweise und Chat-Übergabe
 
 **Dokumenttyp:** dauerhafte Projektanweisung und Zusammenarbeit  
-**Stand:** 24. Oktober 2026 · Fassung 6 (offene 10B-Beobachtungsphase, ZIP-/Review-Archiv und unabhängige Designreviews)  
+**Stand:** 24. Oktober 2026 · Fassung 7 (10B-Masterdatei 06 als alleiniger ausführlicher Review- und Patchspeicher; 01–04 künftig nur Kurzstatus)  
 **Geltungsbereich:** ChatGPT-Chats im Projekt „RPG Engine“ sowie Implementierungs- und Review-Aufträge an ChatGPT/Codex und Claude Code  
 **Pflege:** nur bei Änderungen der Arbeitsweise, nicht nach jedem Patch
 
@@ -52,19 +52,13 @@ Die übliche Aufgabenverteilung:
 8. **Legacy-Schutz:** Neue Mechaniken gelten nur unter Regelstand 2 (Kampagnen ab Patch 9A). Jede Mechanikänderung bekommt einen Legacy-Regressionstest; Änderungen, die auch Legacy betreffen (z. B. ganzzahlige Barrier), werden ausdrücklich genannt und begründet.
 9. **Dokumentation:** Technische Patchbeschreibungen liegen im Entwicklungsbranch (`avereth-engine/docs/PATCH*.md`, Kurzfassung in `docs/PROTOTYPE_C.md`). `03` und `04` auf `main` werden nach **jedem Patch, Review-Fix und relevanten echten Livetest zeitnah aktualisiert, auch wenn der Patch noch nicht erfolgreich abgeschlossen ist**. Ein zukünftiger Fixauftrag wird als OFFEN geführt, niemals vor dem Git-Commit als umgesetzt. `01`/`02` nur bei Bedarf. Keine ganze Branch-Merges für Doku.
 
-## 2b. Laufende 10B-Befundsammlung und getrennte Architekturreviews (seit 24.10.2026)
+## 2b. Patch 10B – dauerhafter Dokumentations- und Testprozess (seit 24.10.2026)
 
-**Aktuelle Arbeitsphase:** Nach dem live abgenommenen 9D-F→E-Hauptpfad wird **vor** Patch 10B zunächst gesammelt und gemessen, **ohne** fortlaufend für jeden auffälligen Livetest ungefragt Engine-, Guide- oder Zahlenfixes auszulösen. Der Nutzer startet weitere `current_test`-Runs. Erst mehrere unabhängige Befunde, Code-Reproduktionen oder eine ausdrückliche Freigabe begründen einen Implementierungsauftrag. Der experimentelle Node-Kampfsimulator ist bereits **implementiert** (Dev-Commit `fd20d0d`) und dient als getrenntes Messinstrument, nicht als produktiver Balancepatch.
+**Neue zentrale Hauptquelle:** [`06_PATCH10B_MASTERPLAN_UND_REVIEWS.md`](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) enthält **sämtliche ausführlichen** 10B-Reviews, A/B/C-Arbeitsstände, Monster-Audit + Sol-Gegenreview, Design-Fix-Kandidaten, Optionen, Entscheidungen, spätere Implementierungstests und Abnahme. Diese Inhalte **nicht** parallel ausführlich in 01–04 pflegen. Die vier Projektdateien künftig nur bei einem **größeren Meilenstein oder einer echten Kanon-/Prozessänderung** kurz nachführen; beim gewöhnlichen 10B-Run bleibt 01–04 unverändert.
 
-**Pro Livetest:**
-1. Die **unveränderte, nicht entpackte** ZIP mit der echten Run-ID unter `main/testrun_10b/<Run-ID>/<Run-ID>.zip` aufbewahren; der Nutzer übernimmt bei Bedarf den GitHub-Webupload dieser Binärdatei.
-2. ChatGPT gleicht Spielchat, echte Engine-Events, Planner, Extractor, Narrator, Provider-Calls und Runner-Evaluation ab; hält **Ergebnis, positive Nachweise, Verletzung der Engine-Wahrheit, Reproduktion, Risiken, Priorität und Gegenbeispiele** in `testrun_10b/<Run-ID>/REVIEW.md` fest und committet das Review direkt auf `main`.
-3. Den zentralen Index `testrun_10b/README.md` nachführen, einschließlich ZIP-Status, Build/HEAD und Abschlussgrund. Keine zweite entpackte Kopie ins Git, keine zusätzliche README pro Run nötig.
-4. **Regel für Prioritäten:** P0/P1 sind Review-/Triage-Markierungen, **keine** stillschweigende Patchfreigabe. Über mehrere Runs gleiche Ursachen von ähnlichen Symptomen unterscheiden. Insbesondere Player Agency, Phantom-Quests, Weltzeit, Parser- und Narrator-Ausfälle nicht vorschnell als Kampfbalancing klassifizieren.
+**Run-Belege:** [`testrun_10b/README.md`](testrun_10b/README.md) ist der Index. Pro Run `testrun_10b/<Run-ID>/` mit genau **unveränderter Original-ZIP** und ausführlicher `REVIEW.md`; ChatGPT erstellt Review/Index, Nutzer kann die ZIP direkt über GitHub hochladen. Chat/Events/Calls auswerten, keine reine Narrator-Prosa zur Engine-Wahrheit erklären. Neuen wiederkehrenden Befund in 06 ergänzen; jeden einzelnen Run nicht in 03/04 chronologisch duplizieren.
 
-**Separate Designspur:** Unabhängige Gegenreviews (aktuell Sol zum Monster-Audit) sind **Vorschläge**. Quellenbehauptungen am Code prüfen; belastbare Bugs von Architekturideen trennen, Lösungsoptionen gegeneinander abwägen und in Datei 04 als `OFFEN / Review-Empfehlung` dokumentieren. Noch keine Speziesdatenbank, Monster-Systemneufassung oder Kampf-/Fluchtregel allein aus dem Review umsetzen. Für eine künftige Fixphase kann man gezielte Loot-/Anatomie-Regressionen vorziehen, wenn der Nutzer das freigibt.
-
-**Vor dem großen Patch 10B weiter offen:** Langlaufbelege für mehrere Klassen und organische Progression; belastbare, methodisch faire Kampfsimulationen mit kontrollierten Taktiken/Distanzen; unabhängige Prüfung von Flucht/Verfolgung/Monsterverhalten (Teil C); Entscheidung über konkret belegte Gameplay-/Integrationsfixes; erst danach numerisches Balancing.
+**Aktuelle Phase:** Weitere natürliche freie 100-Turn-`current_test`-Läufe sammeln, Beobachtungen und Simulationen methodisch vergleichen, **keine ungefragten Code-/Balancingfixes**. Sols Monsterreview und Teil C (Verfolgung) sind als ausführliche **Design-Fix-Kandidaten** in 06 hinterlegt, **noch nicht implementierungsfreigegeben**. Eine P0-/P1-Triage-Prio ist keine Codefreigabe.
 
 ## 3. Qualitätsmaßstäbe für Reviews
 
@@ -138,13 +132,13 @@ Wenn ein konkreter Auftrag gewünscht wird, nach Relevanz diese Teile abdecken:
 
 Bei umfangreichen Patches eine **dreifache Prüfung** einplanen: (1) Architektur vor Start, (2) Integrationsreview nach Implementierung, (3) kritischer Final Review gegen tatsächliche Ziele und Overengineering. Eine unabhängige zweite Claude-Sitzung als separaten Vorab-Review anbieten.
 
-## 7. Nutzung in einem neuen Chat (aktuelle Startanweisung)
+## 7. Nutzung in einem neuen Chat (Startanweisung)
 
-Die vier Projekt-MDs `01`–`04` von `main` lesen, dann **den Entwicklungsbranch-HEAD neu prüfen**. Der aktuelle Stand steht **zuoberst** in 03/04; die historischen Chroniken weiter unten **nicht** als gegenwärtigen Auftrag interpretieren.
+Zuerst die Root-Dateien `01`–`04` auf `main` lesen; **für den aktuellen Patch 10B zusätzlich zwingend [`06_PATCH10B_MASTERPLAN_UND_REVIEWS.md`](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) und [`testrun_10b/README.md`](testrun_10b/README.md)**. Vor technischen Aussagen aktuellen Dev-Branch und HEAD selbst abgleichen.
 
-> **Projektfortsetzung Avereth (Stand 24.10.2026):** Das GitHub-Repository `Mango1331/Claude-AI-RPG-Game` verwendet `main` für die vier Projekt-MDs und `testrun_10b`, den Entwicklungsbranch `claude/c-planner-prototype-2026-10-02-gpt-c666` für den produktiven V4-C-Code. Aktuell verifizierter Dev-HEAD `fd20d0d`, Engine-Build `4.3.0-c.6.6.57`; jeweils live neu gegen Git prüfen. **9D F→E Normal/Rare mit einem expliziten synthetischen Fixture live abgenommen; natürliches Klassenwachstum über 100 Züge nicht nachgewiesen.** `current_test` ist nun eine echte offene Level-1-Kampagne ohne Fixture. Zwei echte Runs wurden als `testrun_10b` auf `main` reviewt: `20261024-030002Z` (26 Züge, Mage gestorben nach falscher Eskalation einer Drohung) und `20261024-033325Z` (25 Züge, Narrator leer nach ausgeschöpftem Reasoning-Budget). Beide zeigen funktionierende Gildenlieferung/Bezahlung und separate Integrationsprobleme; **keiner** erfüllt das 100-Züge-Ziel. Sol hat den echten Offline-Combat-Simulator auf Dev `fd20d0d` implementiert; zahlreiche Szenarien/Seeds existieren als Messbasis, aber **10B-Balancewerte sind nicht freigegeben**. Nutzer startet weitere natürliche Runs und übergibt die Original-ZIP; ChatGPT erstellt pro Run `REVIEW.md` auf `main`, der Nutzer lädt die ZIP dort hoch. Das Monster-Audit liegt zur Gegenprüfung durch Sol vor: **19 heterogene Anker sind kein Artenkatalog**, falsche Anatomie-Beute (Hare Antler) ist belegt; Sol empfiehlt zunächst begrenzte Lootkorrekturen, später optionale Merkmale statt verpflichtender Speziesdatenbank. **Nur Reviewstand, keine Implementierungsfreigabe.** Teil C zu Flucht/Verfolgung und umfassendes Balancing folgen nach Evidenz und Nutzerentscheidung. Keine neuen klassischen Fantasy-Völker wie Elfen/Zwerge/Orks ohne ausdrückliche Designentscheidung; Menschen und vielfältige, teils intelligente Monster sind die bestehende Weltprämisse.
+> **Aktueller Übergabekern (24.10.2026):** Patch 9D F→E wurde in gezielter .57-Fixture live abgenommen; die **natürliche 100-Züge-Kampagne** und umfassendes Balancing sind offen. 10B sammelt derzeit echte freie `current_test`-Runs (bisher zwei Mage-Läufe unter 100 Zügen), verwendet einen bereits implementierten Node-Simulator (Dev `fd20d0d`) und archiviert Reviews + Original-ZIPs unter `testrun_10b`. Sol und ChatGPT haben Monster/Loot/Sapienz getrennt geprüft; der repetitive Jagd-/Chase-Fall ist ausdrücklich als **späterer Design-Fix-Kandidat** dokumentiert. **Keine** allgemeine Speziesdatenbank, Klassenerhöhung, neue klassische Fantasyvölker oder Balanceänderung aus den Reviews beschlossen. **Details und neue Befunde ausschließlich in 06 nachführen**, Einzelruns unter `testrun_10b`; auf neuen Git-HEAD prüfen.
 
-Bedingungen für einen neuen Chat: aktuelle Quellen selbst lesen, veraltete Übergabe-Commitstände nicht blind übernehmen, Tests nicht erfinden. Bei reinem Review keine Engine ändern; nach ausdrücklichem Dokumentationsauftrag nur die nötigen Docs auf `main` aktualisieren.
+Ältere Patchstände in 03/04 sind dokumentierte Geschichte, kein aktueller Implementierungsauftrag. Einen Dateizugriff erst nach wirklichem Lesen behaupten.
 
 ## 8. Aktualisierungsregel für diese vier Dateien
 
@@ -153,4 +147,6 @@ Bedingungen für einen neuen Chat: aktuelle Quellen selbst lesen, veraltete Übe
 - `03_AKTUELLER_PROJEKTSTAND.md`: nach jedem Teilpatch, Review-Fix und relevanten echten Livetest (auch Fehltest), mit Datum, Branch, SHA, Build, Testnachweis, Ursache, offenen Punkten und nächsten Schritten.
 - `04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md`: Roadmap mit aktuellem Status (implementiert, Review, Live-Abnahme, freigegebener nächster Auftrag), offene Entscheidungen, Kandidaten und Reviews. **Nach jedem Teilpatch/Fix/Livetest den Status nachführen**, ohne ungeprüfte Fehlerhypothesen oder geplante Änderungen als erledigt auszugeben.
 
-Keines der vier Dokumente ist ein Ersatz für den tatsächlichen Code oder Original-Testlogs. Ihre Aufgabe ist die **verlustarme Wiederaufnahme des Projekts in neuen Chats**.
+Für Patch 10B ist **06 die einzige ausführliche, laufend gepflegte Planungs-/Review-MD**. Die vier Root-Dateien 01–04 werden nicht nach jedem weiteren Testlauf ergänzt, sondern nur bei langfristigen Arbeitsregel-/Designänderungen oder größeren Phase-/Versionsmeilensteinen.
+
+Keines der Dokumente ist ein Ersatz für den tatsächlichen Code oder Original-Testlogs. Ihre Aufgabe ist die **verlustarme Wiederaufnahme des Projekts in neuen Chats**.

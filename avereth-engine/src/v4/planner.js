@@ -708,10 +708,11 @@ export function mapPlan(commands, ctx, content, message, state) {
     // present, keep the GO. No attack is granted; it requires a later decision.
     const firstMain = mechMain[0];
     const earlierGo = firstMain && story.find((c) => c.type === 'go' && (c.seq ?? 0) < (firstMain.seq ?? 0));
-    const attackSkill = firstMain?.type === 'use_skill' && skillOf(content, firstMain.skill, state)?.attack;
+    const attackSkill = firstMain?.type === 'use_skill' && skillOf(content, firstMain.skill || ctx.basic, state)?.attack;
     const target = firstMain?.target;
-    const targetPresent = (ctx.catalog.present || []).some((x) => x.id === target || x.handle === target)
-        || ctx.opponents.some((x) => x.id === target);
+    const targetPresent = (ctx.catalog.present || []).some((x) => [x.id, x.handle, x.name, x.label].includes(target))
+        || ctx.opponents.some((x) => x.id === target || x.label === target)
+        || (typeof target === 'string' && !!namedPeer(state, content, target, firstMain?.quote));
     const unknownTarget = isNew(target) || (typeof target === 'string' && !targetPresent)
         || (target === null && !ctx.opponents.length);
     if (!fight && earlierGo && attackSkill && unknownTarget) {

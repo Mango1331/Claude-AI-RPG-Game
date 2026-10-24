@@ -396,7 +396,7 @@ test('8.1 truth 3 (§9): the extractor\'s catalog lists the dead of the last tur
     assert.doesNotMatch(cat.text, /glimmerdeep_grotto_c1_l1_e1 1/);
 });
 
-test('8.1 truth 4 (§9, live #28 and #30): an empty answer (the length cut) gets one short repair, not the same one again; empty twice: nothing applied, the state kept', async () => {
+test('8.1 truth 4 (§9): an empty answer gets a short repair; two empty outputs may get one fresh bounded recovery, never changing failed state', async () => {
     for (const second of ['', JSON.stringify({ expected: {}, deltas: [] })]) {
         const chat = fx.messages.slice(0, 31).map((m) => structuredClone(m));
         // the reply as it was before its extraction ran (the live record kept the failure of the old repair)
@@ -407,7 +407,13 @@ test('8.1 truth 4 (§9, live #28 and #30): an empty answer (the length cut) gets
         const llm = async ({ messages, purpose }) => { calls.push({ purpose, messages }); return answers.shift(); };
         const before = JSON.stringify(foldChat(chat).state.entities);
         await runExtraction(chat, 30, content, llm);
-        assert.deepEqual(calls.map((c) => c.purpose), ['extract', 'extract_repair'], 'one repair at most');
+        assert.deepEqual(calls.map((c) => c.purpose), second
+            ? ['extract', 'extract_repair']
+            : ['extract', 'extract_repair', 'extract_recovery'], 'one normal repair; one extra only after two empty outputs');
+        if (!second) {
+            assert.equal(calls[2].messages.some((m) => m.role === 'assistant'), false);
+            assert.match(calls[2].messages.at(-1).content, /Both previous attempts returned no JSON text/);
+        }
         const rep = calls[1].messages;
         assert.match(rep.at(-1).content, /Your previous answer was empty: it ran out of room before the JSON\. Answer now with the JSON object alone/);
         assert.ok(!rep.some((m) => m.role === 'assistant'), 'the empty answer is not repeated back');

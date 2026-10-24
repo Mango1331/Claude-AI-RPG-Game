@@ -44,3 +44,11 @@ npm test
 Expected only: **9/9** new target tests and **1421** total Node tests. The existing `patch10b4a_planner_empty.test.js` expectation was also updated, and remains in `npm test`; if it fails, correct based on the actual console log. No ST browser or GLM provider smoke has run here.
 
 **Stop point after local green tests:** perform a natural `current_test` with real provider and selectively test reload/chat-switch with a pending extraction before attempting 10B-4d. Do not fabricate a stateful Narrator auto-regenerate process from Node-only evidence.
+
+## Local .65 validation and legacy telemetry test adjustment (24.10.2026)
+
+**Actual user-run results before the test-only correction:** New `patch10b4c4_review_followups.test.js` **9/9 passed**; full `npm test` **1420/1421 passed**, one failure, zero other failures. The sole red assertion was in the old `tests/v4/patch82.test.js` test **“8.2 telemetry 6: a planner that fails keeps its calls and the turn's cost too; the turn aborts as before”**. It expected `['plan']`, whereas build .65 intentionally makes **`['plan','plan_recovery']`** for a primary transport failure. The old fixture's Planner still fails after the bounded retry; the Engine still aborts safely without booking events.
+
+**Correction:** Commit `59f2b0b` updates that one legacy telemetry assertion, and additionally verifies `plan.recovery === 'transport'` and `plan.repaired === true`. Existing checks for aborted status, zero wait and no booked Engine events remain. **No product, model limit, Host, Runner, schema or build-version change.**
+
+**Next required measurement:** Rerun `node --test tests/v4/patch82.test.js` and `npm test` after pulling the branch. Expected **1421/1421**, but that is **not yet a measured result**. Prior **9/9** new cases are independently green. ST smoke/real provider validation remains open.

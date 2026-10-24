@@ -39,3 +39,20 @@ If recovery again returns no valid commands, the existing abort/notice behavior 
 ## Scope left for later 10B-4
 
 Narrator empty-response recovery needs proof that SillyTavern can safely retry story generation on **the same already-booked player turn**. Extractor aborts need phase-aware failure/arrival handling. The automated Runner's true end reasons should distinguish Planner/Narrator/Extractor/provider failures. These remain separate and are **not implemented by this patch**.
+
+## Independent review and one-line assertion correction (24.10.2026)
+
+**Independent reviewer report (tests actually run by the reviewer, not independently repeated by ChatGPT):**
+
+| Check | Before assertion correction |
+|---|---|
+| New 10B-4a tests on unchanged .60 | **3 passed / 4 failed** |
+| New 10B-4a tests on .61 | **6 passed / 1 failed** |
+| Full `npm test` on .61 | **1344/1345 passed** |
+| `npm run smoke:st:c` | **Blocked before host startup**; no SillyTavern checkout/`AVERETH_ST_DIR` |
+
+The **only .61 failure** is a wrong assertion in `tests/v4/patch10b4a_planner_empty.test.js`: the test expected `/no JSON|no valid|empty|invalid/i`, but the existing parser actually returns `report is not valid JSON`. The underlying path correctly **aborted after exactly three empty responses**, without guessing a command. ChatGPT changed **only the assertion** to `/not valid JSON/i` in commit `75017d0`. **No runtime, event, provider, budget, version or behavior change.**
+
+Additional independent checks reported: a real ten-minute waiting action following successful recovery and its Regenerate path consumed time/events exactly once; invalid recovery JSON, failed repair transport and whitespace-only answers retained the expected bounded behavior. The reviewer found no concrete product-code defect.
+
+**Updated verification status:** The earlier red/green numbers are **before** this assertion-only fix. The corrected **7/7 target run and final full suite have not yet been re-executed or documented**, and **no smoke result exists** from an actual running ST host. Once independently rerun, record exact counts rather than replacing the historical 1344/1345 report by inference. A third attempt with 4,000 output tokens can still be all reasoning; it is a bounded chance, not a guaranteed provider fix.

@@ -51,7 +51,7 @@ test('10B-4a: three empty replies abort without guessed commands or a fourth req
     assert.equal(result.commands, null);
     assert.equal(result.calls.length, 3);
     assert.equal(calls.length, 3);
-    assert.match(result.error, /no JSON|no valid|empty|invalid/i);
+    assert.match(result.error, /not valid JSON/i);
 });
 
 test('10B-4a: the ordinary repair still finishes in two calls and keeps its old budget', async () => {

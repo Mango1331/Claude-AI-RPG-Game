@@ -331,8 +331,19 @@ export async function run(o) {
             if (!r.ok && interrupted) { end = { kind: 'harness', why: `interrupted (Ctrl+C) in turn ${turn}` }; break; }
             if (!r.ok) {
                 await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-problem.png`)));
-                end = { kind: 'ui', why: `turn ${turn}: ${r.problem}` };
-                log(`stopped: ${r.problem}`);
+                // After a Planner abort SillyTavern may create no assistant
+                // message. The Driver then times out waiting for a reply, but
+                // the user record already has the real phase failure.
+                if (r.problem === 'no reply after the message') {
+                    try {
+                        const failedChat = await driver.chat();
+                        const userAt = failedChat.findLastIndex((m) => m.is_user);
+                        const fault = userAt >= 0 ? turnFailure(failedChat, userAt) : null;
+                        if (fault && ['planner_failed', 'interpreter_failed'].includes(fault.kind)) end = failureEnd(fault, turn);
+                    } catch { /* leave this as the original UI failure if the chat cannot be inspected */ }
+                }
+                end = end || { kind: 'ui', why: `turn ${turn}: ${r.problem}` };
+                log(`stopped: ${end.why}`);
                 break;
             }
             chat = await driver.chat();

@@ -37,6 +37,7 @@ Der Nutzer lädt den Originalexport als ZIP in den betreffenden Unterordner auf 
 **Integritätsnachweis für Test 2:** 4.271.133 Bytes, SHA-256 `638d939bee989e32c1d4bbf92a648eaefc81af7fc463e550b377da92fbe85f90`, GitHub-Blob `e9f7bc7fd216c34b985eca4656e8d4a1fdd6a11e`; stimmt mit dem unveränderten ZIP-Original bytegenau überein (lokaler Git-Blob-SHA1 identisch; 24.10.2026).
 
 **Integritätsnachweis für Test 1:** 4.393.062 Bytes, SHA-256 `10e86d8d77ea967918fb13cff8c1054ae1baccc6e77692bd1b83468da12b461c`. Der GitHub-Blob-SHA `e51a0ae040eedd7397ff13a64bc5fb1876b5abbb` stimmt mit dem Git-Blob der ursprünglichen hochgeladenen ZIP bytegenau überein (geprüft am 24.10.2026).
+| [20261024-120700Z-current_test](20261024-120700Z-current_test/) | **.67**, Mage L1→2, GLM-5.3-Flash, offen, ohne Fixture | **100/100** Inputs regulär `done`; 95/95 `extract.applied`, 4 Wolf-Siege, 1 Guild-Cull-Abschluss, Delivery trotz realer Übergabe wegen Cargo-Matching nie gebucht; private Arbeitsangebote ziehen fälschlich Geld ab; Phantom-Listings | [REVIEW.md](20261024-120700Z-current_test/REVIEW.md) | **Original-ZIP noch nicht auf GitHub hochgeladen:** 15.725.734 Bytes, SHA-256 `2d2b0c47e4782e3b3e2002c03bbd78abc5aae46e6c8b6d09ce6922ae21bd7ef4` |
 
 ## Arbeitsweise für weitere Tests
 

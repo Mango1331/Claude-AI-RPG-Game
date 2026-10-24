@@ -6,7 +6,7 @@
 
 - **Repository:** [Mango1331/Claude-AI-RPG-Game](https://github.com/Mango1331/Claude-AI-RPG-Game).
 - **Entwicklungsbranch:** `claude/c-planner-prototype-2026-10-02-gpt-c666`; `main` führt Dokumentation/Archive. Spätere Dokumentationscommits ändern den Produktstand nicht.
-- **Letzter verifizierter Produktcommit:** [`21207207`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/212072073e1026d86763d7784b90275b8487a4a0), Build **4.3.0-c.6.6.68** in `src/util.js`, `manifest.json`, `package.json`. Narrator-Vertrag **.55**.
+- **Letzter verifizierter Produktcommit:** [`5ba222e0`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/5ba222e0964bfae6c7c7939cbbfd1fa9e110a44d), Build **4.3.0-c.6.6.69** in `src/util.js`, `manifest.json`, `package.json`. Narrator-Vertrag **.55**.
 - **Aktiver Pfad:** V4-C/semantischer Planner, Regelstand 2 für neue Kampagnen; Regelstand 1 bleibt Legacy.
 
 Das LLM gestaltet und interpretiert die Welt; die Engine kontrolliert Zahlen, Aktionen und persistenten Zustand. Vorhanden sind Living Dungeons, Gildenquests, Auto-Loot sowie die freigegebenen Patch-9-Grundlagen: Warrior/Mage/Rogue, zwei wählbare Starter-Skills plus Basic Attack, organischer Skill-/Passive-Erwerb, Proficiency, Skill-Evolution und F→E-Klassenentwicklung. Höhere Klassenränge und endgültige Zahlenbalance sind offen. Kanon: [02](02_DESIGN_KANON.md).
@@ -17,6 +17,7 @@ Das LLM gestaltet und interpretiert die Welt; die Engine kontrolliert Zahlen, Ak
 
 | Nachweis | Verifizierter Umfang und Grenze |
 |---|---|
+| **Node/ST .69, von Sol ausgeführt** | **1464/1464 Node**, zwölf neue Planner-Regressionen (auf .68 vier rot/acht grün). Echter ST-1.19-Mock-Smoke **21/21**, fünf Extractor-Calls, keine PageErrors. Kein natürlicher .69-GLM-Lauf. |
 | **Node/ST .68, von Sol ausgeführt** | **1452/1452 Node**, 23 neue 3B-Regressionen (auf .67 elf rot/zwölf grün); echter ST-1.19-Mock-Smoke **21/21**, fünf Extractor-Calls, keine PageErrors; vier aktuelle gespeicherte Story-Records jeweils einmal `extract.applied`. Noch kein natürlicher .68-GLM-Lauf. |
 | **Node .67, von Sol ausgeführt** | **1429/1429**, darunter drei neue XP-Regressionen (vorher 3/3 rot, danach grün). Kein neuer .67-ST-/GLM-Lauf. |
 | **Node .66, von Sol ausgeführt** | 1426/1426 gesamt, World-Jobs 19/19. ChatGPT prüfte Diff/Testcode unabhängig, wiederholte diese Läufe dabei nicht. |
@@ -31,7 +32,7 @@ Vollständige .66-Testfolge einschließlich Fehlversuch und Save-Prüfung: [Hotf
 
 **Neuster echter GLM-Test:** [Run 8 auf `.68`](testrun_10b/20261024-142854Z-current_test/REVIEW.md): **75/100** Inputs, Ende `planner_failed` vor Narrator. **61/61 `extract.applied`**, 961 Engine-Events, Integrität OK, 0 Page-/Serverfehler. Positiv: echter `quest.delivered` und Guild-Payout, echtes Novice-Board, Mage **Level 3 schon in Input 39**, 288 Kampf-XP aus Dreiergegner-Sieg plus 46 Quest-XP, seltene Passive erworben. Kein vollständiger `.68`-100-Züge-Pass.
 
-**Priorität vor erneutem Langlauf:** gezielter Planner-Ownership-/Sequenz-Hotfix: Werkzeug aus dem Workroom wird in einem `take→attempt`-Reparaturvorschlag aufgegriffen, aber `parsePlan` validiert `attempt.tool` weiterhin ausschließlich gegen den Inventarsnapshot **vor** `take` und bricht nach Reparatur ab. Keine Lockerung fremden Besitzes. Danach den bereits vorgesehenen **10B-3A-Kampf-/Chronik-Fachpatch** um den Run-8-Befund erweitern: ein per `dungeon_foe` zurecht abgelehnter Phantomgegner wird im Narrator weiter als reale Gefahr und notwendiger Schlüsselträger geführt, wodurch mehrere sinnlose `ATTACK — TARGET NEEDED` entstehen. P2: privater Queststatus nach Rettung noch aktiv und nicht gebuchte Guild-Bunk-Zahlung wird trotzdem erzählt. **Keine weitere XP- oder HP-/Monster-Balanceänderung.**
+**Planner-Hotfix .69 implementiert:** `take → attempt` wird in Sequenzreihenfolge validiert, tatsächlicher Werkzeugbesitz vor Ausführung bleibt Pflicht. [Technische Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/claude/c-planner-prototype-2026-10-02-gpt-c666/avereth-engine/docs/PATCH10B_PLANNER_TAKE_ATTEMPT.md). 10B-3A mit Phantomgegner/Schlüsselträger und flexibler Zuordnung zu bestehenden Dungeon-Slots ist der nächste vorgesehene Fachpatch, hier nicht begonnen. P2-Punkte Privatquest-Abschluss und erzählte Bunk-Zahlung bleiben offen. Keine weitere XP-/HP-/Monster-Balanceänderung.
 
 **10B-3B im natürlichen Run teilweise positiv:** realer Lieferbeleg und einmalige Guild-Zahlung sowie Tagesboard erfolgreich; private Erwerbsarbeit nicht getestet. `10B-4D` bleibt gesondert offen. Details und Belege nur im verlinkten Run-Review; unveränderte Original-ZIP für Run 8 hier geprüft, Git-Binärupload noch offen.
 

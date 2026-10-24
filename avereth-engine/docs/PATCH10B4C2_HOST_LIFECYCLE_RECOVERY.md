@@ -41,3 +41,7 @@ npm test
 - Patch 10B-3 and the F60-2 wording gap are untouched.
 
 **Sign-off gate:** Locally green targeted/full tests, independent source review and real ST smoke/live evidence when available; then separately evaluate whether 10B-4d (Narrator no-text recovery) can be made safe within ST's generation lifecycle.
+
+## Follow-up .66 (24 October 2026): ST first-swipe initialisation
+
+Run 5 and subsequent real ST probes exposed a lifecycle mismatch not covered by the original fourteen tests: MESSAGE_RECEIVED precedes ST's assignment of swipe zero. The .66 follow-up normalises absent/null swipe IDs to zero in both identity and dedupe comparisons, while preserving actual swipe-change and all other stale guards. Five additional regressions, full-suite and real-ST results, including unsuccessful attempts and remaining swipe_info observations, are recorded separately in `PATCH10B4C2_SWIPE_ZERO_HOTFIX.md`. Earlier verification statements above remain historical.

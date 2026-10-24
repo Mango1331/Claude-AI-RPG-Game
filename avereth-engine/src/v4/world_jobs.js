@@ -22,12 +22,13 @@ export function createWorldJobs({ active, run, applied, onError = () => {} }) {
         if (previous && !previous.signal.aborted) previous.controller.abort();
     }
 
+    // ST 1.19 initialises swipe zero AFTER MESSAGE_RECEIVED; absent/null is that same first swipe.
     function belongs(job) {
         const current = active();
         const msg = job.chat[job.id];
         return pending === job && !job.signal.aborted
             && current?.chatId === job.chatId && current?.chat === job.chat
-            && msg === job.message && msg?.swipe_id === job.swipeId
+            && msg === job.message && (msg?.swipe_id ?? 0) === (job.swipeId ?? 0)
             && rec(msg)?.text_hash === job.hash
             && hash32(msg?.mes ?? '') === job.hash && !laterTurns(job.chat, job.id);
     }
@@ -44,7 +45,7 @@ export function createWorldJobs({ active, run, applied, onError = () => {} }) {
 
         if (pending && pending.chatId === current.chatId && pending.chat === chat
             && pending.id === id && pending.hash === r.text_hash
-            && pending.message === msg && pending.swipeId === msg.swipe_id
+            && pending.message === msg && (pending.swipeId ?? 0) === (msg.swipe_id ?? 0)
             && belongs(pending)) return pending.job;
 
         // Different reply, changed swipe, or new chat: never let an old call

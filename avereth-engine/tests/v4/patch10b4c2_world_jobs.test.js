@@ -282,3 +282,105 @@ test('4c.2: an Engine-booked later turn makes a pending reply ineligible for res
     assert.equal(manager.start(id), null);
     assert.equal(calls, 0);
 });
+
+// ST 1.19 saveReply awaits MESSAGE_RECEIVED before initialising swipe zero.
+// At this point our asynchronous extractor can already be waiting for its provider.
+function initialiseFirstSwipe(message) {
+    message.swipe_id = 0;
+    message.swipes = [message.mes];
+    message.swipe_info = [{
+        send_date: message.send_date,
+        gen_started: message.gen_started,
+        gen_finished: message.gen_finished,
+        extra: structuredClone(message.extra),
+    }];
+}
+
+for (const initial of [undefined, null]) {
+    test(`.66: MESSAGE_RECEIVED starts with swipe ${initial}, then ST initialises zero before extraction returns`, async () => {
+        const { g, id } = await realTurn();
+        const message = g.chat[id];
+        if (initial === null) message.swipe_id = null;
+        else delete message.swipe_id;
+        const provider = deferred();
+        let calls = 0, saves = 0, saved;
+        const manager = createWorldJobs({
+            active: () => ({ chatId: 'A', chat: g.chat }),
+            run: (chat, replyId, { isCurrent }) => runExtraction(chat, replyId, content, async () => {
+                calls++;
+                return provider.promise;
+            }, { isCurrent }),
+            applied: async (_job, _result, isCurrent) => {
+                assert.equal(isCurrent(), true);
+                saves++;
+                saved = JSON.parse(JSON.stringify(g.chat));
+            },
+        });
+        const job = manager.start(id); // MESSAGE_RECEIVED
+        await tick();
+        assert.equal(calls, 1);
+        initialiseFirstSwipe(message); // subsequent saveReply initialisation
+        assert.equal(rec(message).extraction.status, 'pending');
+        assert.equal(message.swipe_info[0].extra.avereth.extraction.status, 'pending');
+        provider.resolve(VALID);
+        const result = await job;
+        assert.equal(result.applied, true);
+        assert.equal(rec(message).extraction.status, 'applied');
+        assert.equal(rec(message).events.filter(e => e.t === 'extract.applied').length, 1);
+        assert.equal(rec(saved[id]).extraction.status, 'applied', 'host save completes after engine commit');
+        assert.equal(saves, 1);
+        assert.equal(manager.start(id), null);
+        assert.equal(calls, 1);
+    });
+}
+
+test('.66: start deduplicates a running job across missing swipe to zero initialisation', async () => {
+    const a = fixture(), x = rig(a);
+    const first = x.manager.start(0);
+    await tick();
+    initialiseFirstSwipe(a.message);
+    const second = x.manager.start(0);
+    x.holds.forEach(hold => hold.resolve({ changed: true }));
+    assert.equal(second, first);
+    assert.equal(x.runs[0].signal.aborted, false);
+    await first;
+    assert.equal(x.runs.length, 1);
+    assert.equal(x.published.length, 1);
+});
+
+test('.66: a real zero-to-one swipe invalidates valid extraction before its engine commit', async () => {
+    const { g, id } = await realTurn();
+    const message = g.chat[id];
+    initialiseFirstSwipe(message);
+    const provider = deferred();
+    let saves = 0;
+    const manager = createWorldJobs({
+        active: () => ({ chatId: 'A', chat: g.chat }),
+        run: (chat, replyId, { isCurrent }) => runExtraction(chat, replyId, content, () => provider.promise, { isCurrent }),
+        applied: () => { saves++; },
+    });
+    const job = manager.start(id);
+    await tick();
+    message.swipe_id = 1; // identical text deliberately: only swipe identity changes
+    provider.resolve(VALID);
+    const result = await job;
+    assert.equal(result.changed, false);
+    assert.equal(rec(message).extraction.status, 'pending');
+    assert.equal(rec(message).events.length, 0);
+    assert.equal(saves, 0);
+});
+
+test('.66: an already initialised swipe zero still commits and saves exactly once', async () => {
+    const { g, id } = await realTurn();
+    initialiseFirstSwipe(g.chat[id]);
+    let calls = 0, saved;
+    const manager = createWorldJobs({
+        active: () => ({ chatId: 'A', chat: g.chat }),
+        run: (chat, replyId, { isCurrent }) => runExtraction(chat, replyId, content, async () => { calls++; return VALID; }, { isCurrent }),
+        applied: () => { saved = JSON.parse(JSON.stringify(g.chat)); },
+    });
+    await manager.start(id);
+    assert.equal(rec(saved[id]).extraction.status, 'applied');
+    assert.equal(manager.start(id), null);
+    assert.equal(calls, 1);
+});

@@ -1,14 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadProductContent } from '../helpers.js';
-import { campaign, say, walk, GO, outcomeOf, WARRENS } from './patch8_lib.js';
+import { campaign, say, walk, GO, outcomeOf, inject, WARRENS } from './patch8_lib.js';
 import { applyWorld } from '../../src/v4/world.js';
 
 const content = await loadProductContent();
+const ASHBRIDGE = 'SYSTEM INITIALIZATION COMPLETE\n`Location: Public roadside verge outside Ashbridge, Duskreach`';
 
 test('Run 9: physically crossing Dungeon gate with extractor arrived:false books floor 1 and engine scouts', async () => {
-    const g = await campaign(content);
-    await walk(g, WARRENS, { prose: 'He arrives at the gate of Mossback Warrens.' });
+    // Run 9 starts at Ashbridge, not the patch8 helper's default Alderwatch.
+    // Mossback admission requires Guild membership; the original player was a Novice.
+    const g = await campaign(content, { greeting: ASHBRIDGE });
+    inject(g, [{ t: 'guild.registered', d: { rank: 'Novice', branch: 'loc.ashbridge', power_rank: 'F' } }]);
+    await walk(g, WARRENS, { text: '*I go to Mossback Warrens*', prose: 'He arrives at the gate of Mossback Warrens.' });
     const s0 = g.state();
     assert.equal(s0.scene.at, WARRENS);
     await say(g, '*I enter the warrens, to where the daylight gives out*', GO({ new: 'into the warrens, to where the daylight gives out' }));

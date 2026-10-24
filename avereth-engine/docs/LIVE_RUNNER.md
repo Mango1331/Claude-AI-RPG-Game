@@ -229,10 +229,13 @@ Fold, Ereignisse und Records bekommt er nie. Einen eigenen Inventar- oder Zustan
 - `required: false` markiert eine Etappe, die nur genommen wird, wenn sie in Reichweite kommt (Wächter, Ebene geräumt).
 - `maxTurns` ist das Budget einer Etappe: Darüber gilt sie im Bericht als „überschritten“, beim Dreifachen endet der Lauf als festgefahren.
 - Mitgeliefert:
-  - **`current_test`: der eine Leitfaden für den jeweils aktuellen Livetest.** Für einen neuen Test wird nur diese Datei angepasst (Charakter im `brief`, Ziele, Fokus, Zuglimit), kein neuer Patch-Leitfaden;
+  - **`current_test`: offener Langzeittest nach 9D.** Kein Fixture, keine festgelegte Klasse oder Skills und keine Quest-/Gilden-Checkliste. Nach normaler Charaktererstellung folgt ein freies Beobachtungsfenster von 100 echten Spielerzügen; der Guide enthält `openRun.minTurns: 100` und den Evaluator-Check `open_run_duration`. Der Spieler wählt seine Ziele selbst. Abbruch bei Tod, echtem Blocker oder Sicherheits-/Zeitlimit; das 100-Züge-Ziel ist kein Beleg für erfolgreiche Quests oder gutes Balancing;
+  - **`patch9d_fixture`: historischer expliziter Level-14-Rare-Klassen-Test**, beim Wechsel von `current_test` erhalten, damit die abgenommenen 9D-Regressionen unverändert ausführbar bleiben (`--guide patch9d_fixture --fixture 9d-rare --seed 7`). Diese Fixture nie für den offenen `current_test` verwenden;
   - `guild_dungeon_loop`: der Grundablauf;
   - `patch_8_dungeon_full` (Patch 8.4.2): die Abnahme einer vollständigen Living-Dungeon-Expedition auf Ebene 1, 60 Züge, elf Pflicht-Etappen (§7). Ein Vertrag außerhalb eines Dungeons zählt nicht; bietet das Board keinen Dungeon-Vertrag, liest der Spieler es am nächsten Morgen erneut und geht sonst ohne Vertrag in einen Dungeon;
   - `patch_8_4`: Gruppenreaktion und Cull-Zahl, mit eigenen Etappen (Patch 8.4.1): `numeric_cull_active` (ein Cull-Vertrag, der seine Zahl nennt; ein reiner Clear-Vertrag zählt nicht; bietet das Board keinen, liest der Spieler es am nächsten Morgen erneut: An einem späteren Tag füllt das Board die Lücken, die andere Abenteurer hinterlassen haben. Der Runner verändert dafür keinen Zustand), `inside_dungeon` (optional), `open_group_attack` (offener Angriff auf ein Mitglied einer Gruppe, die ihn nicht bemerkt hat), dann Kampf, READY und Abgabe.
+
+**Aktueller natürlicher Langlauf:** `npm run live:st -- --guide current_test --headed` (ohne `--fixture`). Dies ist ein echter Provider-/SillyTavern-Test; der Runner legt keinen Charakter und keine Ressourcen vorab fest. `open_run_duration` zählt die tatsächlich gesendeten Spielerzüge nach erfolgreicher Charaktererstellung; nur Laufdauer ist das formale Abschlusskriterium, sonstige Aktivität wird in den vorhandenen Events und Berichten beobachtet. `--max-turns` darf nicht unter dem Beobachtungsfenster liegen. Das erneute Abspielen des alten 9D-Fixtures erfordert stattdessen `patch9d_fixture`.
 
 ## 7. Auswertung
 

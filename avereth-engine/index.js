@@ -286,6 +286,7 @@ function rerender(c, id) {
 async function onMessageReceived(messageId) {
     if (!settings().enabled || !content) return;
     const c = ctx();
+    const chat = c.chat; // stable origin, even if getContext() later points at another chat
     const chatId = c.getCurrentChatId();
     try {
         const recover = settings().recoverReports && typeof c.generateRaw === 'function';
@@ -299,7 +300,7 @@ async function onMessageReceived(messageId) {
         await c.saveChat();
         // MESSAGE_RECEIVED can finish saving after the user switched chats.
         // Never start a world job at the same index in an unrelated chat.
-        if (ctx().chat !== c.chat || ctx().getCurrentChatId() !== chatId) return;
+        if (ctx().chat !== chat || ctx().getCurrentChatId() !== chatId) return;
         if (r.result?.rejected?.length) console.info('[Avereth] rejected report items', r.result.rejected);
         renderDebug();
         if (r.recover) requestReport(Number(messageId));

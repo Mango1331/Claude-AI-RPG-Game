@@ -704,6 +704,20 @@ export function mapPlan(commands, ctx, content, message, state) {
         const others = mech.filter((x) => x.type === 'other' || x.type === 'attempt');
         return { route: 'v4', commands: [...story, ...others].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), notes, free };
     }
+    // Run 9: when he explicitly goes somewhere before attacking a foe not yet
+    // present, keep the GO. No attack is granted; it requires a later decision.
+    const firstMain = mechMain[0];
+    const earlierGo = firstMain && story.find((c) => c.type === 'go' && (c.seq ?? 0) < (firstMain.seq ?? 0));
+    const attackSkill = firstMain?.type === 'use_skill' && skillOf(content, firstMain.skill, state)?.attack;
+    const target = firstMain?.target;
+    const targetPresent = (ctx.catalog.present || []).some((x) => x.id === target || x.handle === target)
+        || ctx.opponents.some((x) => x.id === target);
+    const unknownTarget = isNew(target) || (typeof target === 'string' && !targetPresent)
+        || (target === null && !ctx.opponents.length);
+    if (!fight && earlierGo && attackSkill && unknownTarget) {
+        notes.push(`attack not taken (target not present before GO; choose the attack again after arrival): ${said(firstMain)}`);
+        return { route: 'v4', commands: story.filter((c) => (c.seq ?? 0) < (firstMain.seq ?? 0)), notes, free };
+    }
     if (!fight) for (const c of mech.filter((x) => x.type === 'other' || x.type === 'attempt')) free.push(`${c.type}: ${said(c)}`);
 
     const notTaken = (c, why) => notes.push(`${why}: ${said(c)}`);

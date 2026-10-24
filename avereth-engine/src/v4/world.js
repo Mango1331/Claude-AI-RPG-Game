@@ -634,6 +634,25 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     };
 
     const explicitArrival = fw.accept.some((d) => d.type === 'arrive');
+    // Run 9: the story physically crossed a true Dungeon gate, but arrived:false
+    // left the player on the exterior floor 0. Only override this contradictory
+    // answer for a real GO into a first-floor encounter with explicit crossing prose.
+    const rootEntry = cPath && !s.encounter && !explicitArrival && s.places[s.scene.at]?.dungeon?.real
+        && (auth.gos || []).some((g) => g.to === null && /\b(?:in|into|inside|enter)\b/i.test(g.newName || ''))
+        && livingOf(s, s.scene.at)?.ahead?.turn === s.turn
+        && livingOf(s, s.scene.at)?.ahead?.floor === 1;
+    const crossedGate = /\b(?:stepped|walked|passed|went|moved|slipped|crossed)\b[^.!?\n]{0,70}\b(?:through|past|across)\b[^.!?\n]{0,20}\b(?:gate|threshold|entrance|mouth|doorway)\b/i.test(prose)
+        && /\binside\b/i.test(prose)
+        && !/\b(?:did not|didn't|never|could not|couldn't)\b[^.!?\n]{0,70}\b(?:enter|pass|cross|step)\b/i.test(prose);
+    if (rootEntry && crossedGate && (auth.gos || []).some((g) => expected[String(g.seq)]?.arrived === false)) {
+        const root = s.scene.at;
+        const at = place({ new: { name: /\bmouth tunnel\b/i.test(prose) ? 'Mouth tunnel' : 'Entrance passage', kind: 'interior', parent: root } });
+        if (!at.error && at.id !== root && !wayRefused(at.id, { type: 'expected', seq: 0 })) {
+            arriveThrough(at.id, []);
+            travel.push({ seq: 0, ok: true });
+            corrections.push('DUNGEON ENTRY — Alaric crossed the gate into the first interior part; he is not at the exterior gate. The engine-placed encounter belongs to this part.');
+        }
+    }
     if (!explicitArrival && !s.encounter) {
         let onWay = false; // review of Hotfix 7.2.1: after a leg he reached, one he did not reach ends the way
         for (const [k, type] of Object.entries(outcome.expected_keys || {}).sort((a, b) => Number(a[0]) - Number(b[0]))) {
@@ -898,6 +917,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 // such known moment-to-moment predicates, and never a lasting mark ("lost two fingers", a scar): anything
                 // else said during a fight keeps its lifetime, as everything said outside one (review of 4.2.0)
                 const subject = mapRef(d.s);
+                // An encounter/group reference is not an individual Entity (Run 9).
+                if (typeof subject === 'string' && /^mon\./i.test(subject) && !s.entities[subject]) {
+                    reject(d, 'group_fact', `fact subject ${subject} is not an entity; name a real actor rather than storing a group as an Entity`);
+                    break;
+                }
                 const enc = s.encounter;
                 const combatant = !!enc && typeof subject === 'string' && subject !== 'pc' && !!enc.combatants?.[subject];
                 // "the wolves", "the last wolf", "wolf pack": no one entity, but the kind of the opponents still fighting
@@ -939,6 +963,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 break;
             }
             case 'thread': {
+                // A refused Dungeon foe must not persist as an objective threat in Here.
+                if (d.kind === 'threat' && excludedFoes.some((f) => [f.ref, f.species].filter(Boolean)
+                    .some((name) => normText(d.text).includes(normText(name).split(' ')[0])))) {
+                    reject(d, 'dungeon_foe_thread', 'unbooked Dungeon creatures cannot be stored as a current threat');
+                    const fix = 'The described Dungeon creatures were not booked as present foes. A reported sighting is not a current attackable encounter.';
+                    if (!corrections.includes(fix)) corrections.push(fix);
+                    break;
+                }
                 // Patch 2: an id from the catalog's THREADS updates or resolves that thread (src/threads.js)
                 // Patch 7.2C: no death the engine has not booked, in its text or its resolution; a rumour is someone's claim
                 const rumour = d.kind === 'rumor';

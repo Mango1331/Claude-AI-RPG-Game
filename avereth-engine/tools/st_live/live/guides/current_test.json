@@ -1,66 +1,37 @@
 {
   "id": "current_test",
-  "title": "Patch 9D — explicit Level-14 class-evolution fixture",
-  "fixture": "9d-rare",
-  "brief": "This is an explicitly prepared Level-14 fixture, NOT a natural lifetime run. Creation is already complete: Warrior, Heavy Slash and Guard, one XP before Level 15. The historical feats shown by #feats are synthetic fixture data. Do not create another character. First read #status and #feats. Gain the last XP normally through one safe fight against a single weak hostile animal or a small completed Guild task; never attack an innocent person. After reaching E, wait for the engine's CLASS CHOICE, read #class, compare the alternative directions and their actual numbers. Choose the offensive melee class option outside any fight with the plain sentence: I choose <exact offered name> as my class. #class only displays options; do not invent #class choose/select/evolve commands or #system questions. If that precise choice is refused, report the blocker rather than cycling through variants. After CLASS EVOLVED, send #class and #feats as separate messages. Then use Heavy Slash in one safe fight against a single weak foe and read the actual attack power and cost. Report the class name, quality and the one class trait you observed. No new Skill or Domain is granted by the class name. A postponed choice must remain the same. Do not manipulate state, regenerate, reroll or seek a stronger foe just to finish. Stop after the checks and actual class-trait combat usage. The harness will save/reload and check that the class and feats survive.",
-  "character": {
-    "class": "Warrior",
-    "skills": [
-      "Heavy Slash",
-      "Guard"
-    ]
+  "title": "Open-world long playtest — a real adventurer's life",
+  "openRun": {
+    "minTurns": 100
   },
+  "brief": "Start a genuinely new Avereth campaign at Level 1. Create the character you want, choosing any available base class and two starter skills yourself. Play as an independent adventurer, not as a QA script. Follow interests arising naturally in the story. For example, explore the starting city, consider joining the Adventurers' Guild, choose achievable quests, complete and turn them in, earn and spend real rewards on useful equipment, find a place to sleep, recover, train, travel, form relationships, and gradually level up. These are POSSIBILITIES, not required achievements or a fixed route. Other sensible goals are welcome. Decide whether each risk, contract or purchase is worth it. Retreat or abandon bad plans when sensible. No free money, injected XP, seeded histories, synthetic equipment, compulsory fights, forced farming or state manipulation. Use existing game mechanics and pay attention to their actual outcomes; do not invent accomplishments. Continue naturally through the 100-turn observation window rather than trying to tick off activities or race toward Level 15. Stop only for death, a genuinely blocking failure, or the normal end of the window.",
   "milestones": [
     {
-      "id": "class_rank_e",
-      "goal": "Gain the last XP normally and reach Level 15 / E.",
-      "maxTurns": 10
-    },
-    {
-      "id": "class_offered",
-      "goal": "The engine offers one group of alternative E Classes.",
-      "maxTurns": 2
-    },
-    {
-      "id": "class_accepted",
-      "goal": "Read #class and explicitly choose the offensive melee option by its exact name.",
-      "maxTurns": 4
-    },
-    {
-      "id": "class_verified",
-      "goal": "After CLASS EVOLVED, send #class and #feats separately and read both System panels.",
-      "maxTurns": 4
-    },
-    {
-      "id": "class_trait_used",
-      "goal": "Use Heavy Slash in a safe subsequent fight; inspect the actual cost and raw power with the selected class active.",
+      "id": "creation_complete",
+      "goal": "Create a genuine Level-1 character with your own base class and starter-skill choices.",
       "maxTurns": 8
+    },
+    {
+      "id": "open_run_duration",
+      "goal": "Keep playing freely until the 100th actual player turn, following your own goals. This is an observation window, not an achievement checklist; do not waste turns to reach the count."
     }
   ],
   "focus": [
-    "Explicit fixture test: history is seeded data; the last XP, offer, choice, System panels and combat use are actual runtime operations.",
-    "All options have the same earned Normal/Rare quality; only one is acquired, no ordinary Passive slot is used.",
-    "The root Warrior class and its Favored Stats, known Skills and Passives stay intact.",
-    "No free refill, extra Skill, Legendary class or Domain from the evolution.",
-    "The saved/reloaded selected class, trait and feats must be identical."
+    "Observe whether quests can be accepted, progressed, completed and rewarded consistently, if you naturally pursue them.",
+    "Notice whether guild membership, rest, sleeping in town, travel, earning/spending money and equipment upgrades are useful and intuitive if they arise.",
+    "Watch whether combat, resource use, leveling, training and organic skills/passives feel rewarding rather than repetitive.",
+    "Note meaningful inconsistencies between narrator, inventory, HUD, contracts, money, time, NPC actions and engine decisions.",
+    "Avoid forcing encounters or repeatedly chasing a fleeing animal just to advance a test. Make believable choices and move on when appropriate.",
+    "Keep your messages short and natural. System panels are helpful when needed, not a task to request every turn."
   ],
   "limits": {
-    "maxTurns": 25,
-    "maxMinutes": 90,
+    "maxTurns": 105,
+    "maxMinutes": 360,
     "sameFailure": 3
   },
   "personas": [
-    "Careful mechanics observer; read the two panels after choosing; one weak foe at a time."
-  ],
-  "scripted": [
-    {
-      "say": "#status"
-    },
-    {
-      "say": "#feats"
-    },
-    {
-      "say": "#class"
-    }
+    "independent cautious adventurer: explore, talk to people, assess risks, spend rewards on practical needs",
+    "curious opportunist: pursue interesting work and discoveries, develop your own ambitions",
+    "pragmatic mercenary: value profitable reasonable contracts and gear improvements without reckless fights"
   ]
 }

@@ -1,5 +1,7 @@
 # Avereth Engine – Testrun-Sammlung vor Patch 10B
 
+**Übergeordneter 10B-Plan und die ausführlichen Monster-/Chase-Reviews:** [`06_PATCH10B_MASTERPLAN_UND_REVIEWS.md`](../06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Diese Testarchiv-README führt nur Original-Runs und deren Reviews, nicht die gesamte 10B-Architekturdebatte.
+
 Hier sammeln wir **unveränderte Original-ZIP-Exporte** aus den SillyTavern-Livetests und die dazugehörigen **ausführlichen, unabhängigen Reviews**. Zuerst mehrere Runs beobachten, danach wiederkehrende Fehler und Gameplay-Probleme bewerten. Diese Sammlung ist **kein Implementierungsauftrag**.
 
 ## Ordnerstruktur

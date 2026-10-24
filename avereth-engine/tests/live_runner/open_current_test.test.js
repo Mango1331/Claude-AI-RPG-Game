@@ -18,7 +18,7 @@ test('current_test is an open Level-1 campaign without a seeded fixture or force
     assert.match(g.brief, /Guild/);
     assert.match(g.brief, /sleep/);
     assert.match(g.brief, /equipment/);
-    assert.equal(options(['--guide','current_test'], {}).fixture, undefined);
+    assert.equal(options(['--config','missing','--guide','current_test'], {}).fixture, undefined);
     const old = loadGuide('patch9d_fixture');
     assert.equal(old.fixture, '9d-rare', 'original targeted regression guide is retained');
     assert.deepEqual(old.milestones.map(m => m.id), ['class_rank_e','class_offered','class_accepted','class_verified','class_trait_used']);

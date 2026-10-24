@@ -16,6 +16,7 @@
 import { loadContentPack } from './src/content.js';
 import { onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory, reportRequest, applyReportAnswer } from './src/host.js';
 import { prepareGenerationAsync, processReplyAny, runExtraction, pendingExtraction, campaignRuntime, onEditedV4, perfSummary } from './src/v4/runtime.js';
+import { createWorldJobs } from './src/v4/world_jobs.js';
 import { validateState } from './src/validate.js';
 import { newSeed } from './src/rng.js';
 import { parseSwaps, ENGINE_VERSION, NARRATOR_CONTRACT_REVISION } from './src/util.js';
@@ -33,7 +34,6 @@ let lastContext = null;
 let lastProjection = null;
 let legacyWarned = null;
 let pendingReport = null; // {chatId, id, hash, job}: the report request of the latest reply, while it runs
-let pendingWorld = null; // Runtime V4: {chatId, id, job}: the extraction of the latest reply, while it runs
 let llmPath = null; // Runtime V4: which call the last LLM request used ('custom endpoint' | 'generateRaw')
 let narrationStart = null; // Patch 8.2: {chatId, user, t}: when the engine block of a story turn was handed to SillyTavern
 let generationRequest = 0; // an older async interceptor must never publish into a newer request or chat
@@ -148,20 +148,28 @@ async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500 }) {
     return c.generateRaw({ systemPrompt: system?.content || '', prompt, responseLength: maxTokens });
 }
 
-/** Runtime V4: read the latest reply's world in the background (extractor, firewall, world). World content such as a Guild board is generated only when the player actually asks to perceive it. */
+/** 10B-4c.2: capture the origin chat and active swipe for each world job.
+ * Switched/reloaded chats can only be updated by their OWN newly resumed job.
+ */
+const worldJobs = createWorldJobs({
+    active: () => {
+        const c = ctx();
+        return { chat: c.chat, chatId: c.getCurrentChatId() };
+    },
+    run: (chat, id, { isCurrent, signal }) =>
+        runExtraction(chat, id, content, (req) => v4Llm({ ...req, signal }), { hud: settings().hud, isCurrent }),
+    applied: async ({ id }, result, isCurrent) => {
+        if (!isCurrent()) return;
+        const c = ctx();
+        rerender(c, id);
+        if (!isCurrent()) return;
+        await c.saveChat();
+        if (isCurrent()) renderDebug();
+    },
+    onError: (err) => console.error('[Avereth] world extraction failed', err),
+});
 function startWorld(id) {
-    const c = ctx();
-    const chatId = c.getCurrentChatId();
-    if (pendingWorld?.chatId === chatId && pendingWorld.id === id && pendingWorld.hash === c.chat[id]?.extra?.avereth?.text_hash) return;
-    const hash = c.chat[id]?.extra?.avereth?.text_hash;
-    const job = (async () => {
-        const now = () => ctx();
-        const res = await runExtraction(now().chat, id, content, v4Llm, { hud: settings().hud });
-        if (now().getCurrentChatId() !== chatId) return;
-        if (res.changed) { rerender(now(), id); await now().saveChat(); renderDebug(); }
-    })().catch((err) => console.error('[Avereth] world extraction failed', err));
-    pendingWorld = { chatId, id, hash, job };
-    job.finally(() => { if (pendingWorld?.job === job) pendingWorld = null; });
+    return worldJobs.start(id);
 }
 
 // ------------------------------------------------------------------------------------------ interceptor
@@ -194,11 +202,19 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         // The LLM call itself has a finite timeout; letting a second call overtake it can exceed provider concurrency.
         // Patch 8.2: how long it waited is kept with the turn's record (telemetry)
         let waited = null;
-        if (pendingWorld && pendingWorld.chatId === c.getCurrentChatId() && (!type || type === 'normal') && c.chat.findLastIndex((m) => m.is_user) > pendingWorld.id) {
-            const w0 = Date.now();
-            await pendingWorld.job;
-            if (!isCurrent()) { abort(true); return; }
-            waited = Date.now() - w0;
+        if ((!type || type === 'normal') && campaignRuntime(c.chat) === 'v4') {
+            // The saved reply may still be pending after a page reload, a
+            // disconnected provider, or a chat switch. Resume BEFORE the new
+            // player turn can let closeLatePending() mark it late.
+            const id = pendingExtraction(c.chat);
+            if (id >= 0 && c.chat.findLastIndex((m) => m.is_user) > id) startWorld(id);
+            const job = worldJobs.currentJob();
+            if (job && id >= 0 && c.chat.findLastIndex((m) => m.is_user) > id) {
+                const w0 = Date.now();
+                await job;
+                if (!isCurrent()) { abort(true); return; }
+                waited = Date.now() - w0;
+            }
         }
         const r = await prepareGenerationAsync(c.chat, content, { type, settings: engineSettings(), llm: v4Llm, waited, isCurrent });
         // ST's abort callback is local to this interceptor invocation, not the shared generation AbortController.
@@ -331,6 +347,7 @@ function resumeReport() {
 
 async function onMessageEdited(messageId) {
     generationRequest++;
+    worldJobs.invalidate(); // pending reply or preceding player message may have changed
     if (!settings().enabled) return;
     const c = ctx();
     try {
@@ -341,6 +358,7 @@ async function onMessageEdited(messageId) {
         if (r.refused) toastr.warning(`Avereth Engine: ${r.refused}`);
         await c.saveChat();
         renderDebug();
+        resumeReport(); // if the latest reply is still pending, re-read its current text
     } catch (err) {
         console.error('[Avereth] edit processing failed', err);
         toastr.error(`Avereth Engine: ${err.message}`);
@@ -472,8 +490,21 @@ function mountSettings() {
     c.eventSource.on(ev.MESSAGE_EDITED, onMessageEdited);
     // state is always re-folded from the chat, so these events only refresh the status line; the interceptor sets
     // the engine block before every generation (normal, swipe, regenerate, continue)
-    c.eventSource.on(ev.CHAT_CHANGED, () => { generationRequest++; lastContext = null; lastProjection = null; setPrompt(''); setLoreKeys([]); renderDebug(); resumeReport(); });
-    for (const t of [ev.MESSAGE_DELETED, ev.MESSAGE_SWIPED]) c.eventSource.on(t, () => { generationRequest++; renderDebug(); });
+    c.eventSource.on(ev.CHAT_CHANGED, () => {
+        generationRequest++;
+        worldJobs.invalidate();
+        lastContext = null; lastProjection = null;
+        setPrompt(''); setLoreKeys([]);
+        renderDebug();
+        resumeReport();
+    });
+    for (const t of [ev.MESSAGE_DELETED, ev.MESSAGE_SWIPED]) c.eventSource.on(t, () => {
+        generationRequest++;
+        worldJobs.invalidate();
+        renderDebug();
+        resumeReport();
+    });
     mountSettings();
     renderDebug();
+    resumeReport(); // also recover a pending reply after a full browser reload
 })();

@@ -1,7 +1,7 @@
 # Avereth Engine — Verbindlicher Design-Kanon und Leitplanken
 
 **Dokumenttyp:** langfristige Spiel- und Architekturentscheidungen  
-**Stand:** 24. Oktober 2026 · Fassung 5, redaktioneller 10B-Verweis (Design-Kanon unverändert; 9D-F→E-Hauptpfad inzwischen auf `.57` gezielt live abgenommen; technische Details in 03/06)  
+**Stand:** 25. Oktober 2026 · Fassung 5, redaktioneller 10B-Verweis (Design-Kanon unverändert; 9D-F→E-Hauptpfad inzwischen auf `.57` gezielt live abgenommen; technische Details in 03/06)  
 **Pflege:** nur bei neuen verbindlichen Designentscheidungen  
 **Status-Legende:** **[VERBINDLICH]** = gewolltes Spiel-/Architekturverhalten; **[GEPLANT]** = verbindliches Ziel, aber nicht zwingend implementiert; **[OFFEN]** = noch nicht abschließend beschlossen. Die Implementierung ist gesondert in Datei 03 zu prüfen.
 
@@ -83,7 +83,9 @@
 **[VERBINDLICH]**
 
 - Gildenquests sind freiwillige, konkrete Weltaufträge; **keine verpflichtende Hauptquest** und kein passiver Questzwang.
-- Gerade **Novice-Quests** müssen häufig tatsächlich testbare Spielaktionen anbieten: Monster-Culling, Monster-Clearance, Escort außerhalb der Stadt, Delivery mit Außenreise. Nicht überwiegend abstrakte Papierjobs oder endlose Mystery-Schleifen.
+- Neue Gildenboards im aktiven Regelstand bieten täglich **zwei Monsterjagden, zwei Lieferungen und eine passende Dungeon-Level-Clearance**. Fehlt ein geeigneter, der Gilde bekannter Dungeon, ersetzt eine weitere Jagd diesen Slot. Novice erhält mindestens eine Einstiegsjagd gegen einen schwachen Einzelgegner; die Wahl bleibt frei.
+- Eine neue Board-Lieferung hat genau ein DELIVER-Ziel mit Ware, Menge und eindeutigem Empfänger/Zielort oder ausdrücklich erlaubter Ablage. Keine zusätzlichen GIVE-Ziele, Unterschriften, Behälterrückgaben oder nachträglichen Abschlussbedingungen. Reale Übergabebelege bleiben maßgeblich.
+- Escort entfällt nur aus der automatischen Board-Generierung; spontane Privatquests und die offene Welt behalten die Mechanik. Bereits angenommene Verträge und Legacy-Spielstände behalten ihre Bedingungen.
 - Das bestehende Board-Schema besitzt ein **Tagesangebot** für den Spieler. Alarics sichtbares aktuelles Angebot soll nicht durch nachträglich erfundene andere Abenteurer verschwinden. Hintergrundaufträge und spätere Boardtage können sich entwickeln.
 - **Gildenvertrag/-Slip**: Annahme, Auszahlung, Quest-XP/Promotion und Turn-in unter Engine Authority; Slips spiegeln den verbuchten Status. Ein ausgehandelter oder behaupteter Erfolg ist nicht automatisch Zahlung.
 - **Culling-Zahl [IMPLEMENTIERT Patch 8/8.1; im Livetest weiter zu prüfen]:** Der Auftrag soll bereits am Board eine konkrete Monsteranzahl zeigen, etwa `Cull Wolves (4)`; nach Annahme den Engine-Zähler etwa `2/4`. Der Zähler muss mechanisch sein und auf passende Quest/Ort/Monster referenzieren, nicht nur Erzähltext.

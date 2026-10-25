@@ -1230,3 +1230,8 @@ Zuerst den natürlichen .66-Originalrun auswerten; neue P0-Hostfehler gehen vor.
 ### 29.1 World-State auf Folgeauftrag umgesetzt (.81, 25.10.2026)
 
 Paket C ausdrücklich freigegeben und in `5d5dce1` implementiert. Extractor-Schauplatzbezug (keine Bewegungsvollmacht), vorhandene Arrival-Pfade für Zwischenhalte und antwortlokale Questabhängigkeiten; Sandbox-/NPC-Eigeninitiative bleibt erhalten. [Technische Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/5d5dce125ef34ff2a2812f9cabc2d30ac0b4e522/avereth-engine/docs/PATCH10B_RUN12_WORLD_STATE.md); Abnahme ausschließlich in [03](03_AKTUELLER_PROJEKTSTAND.md). Die frühere Zurückstellung in §29 ist damit überholt. Keine Balance- oder Guideänderung.
+
+
+## 30. Run 13 und freie NPC-Hilfe (.83, 25.10.2026)
+
+Die neue verbindliche Regel steht in [02 §6](02_DESIGN_KANON.md#6-quests-und-gilde); Umsetzung und Abnahme in [PATCH10B_FREE_HELP.md](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b70bd1ff21054396fa274cffd6eea4d10839e33f/avereth-engine/docs/PATCH10B_FREE_HELP.md). Historische Privatquests bleiben kompatibel. [Sols Run-13-Gegenreview](testrun_10b/20261025-081303Z-current_test/SOL_COUNTERREVIEW.md) präzisiert besonders die Ursache der Boardausfälle und trennt weiterhin offene World-/Guild-Befunde von diesem freigegebenen Umbau. Originaldaten und ursprüngliche Review unverändert.

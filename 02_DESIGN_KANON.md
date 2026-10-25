@@ -80,12 +80,16 @@
 
 ## 6. Quests und Gilde
 
+**Verbindliche Entscheidung vom 25.10.2026, ab Build .83:** Neue Kampagnen haben ausschließlich formale **Gildenquests**. NPC-Bitten, Hilfe, private Arbeiten, Rettungen und Gefallen sind gewöhnliche Weltinteraktionen, gespeichert über vorhandene Fakten, Beziehungen, Threads und Erinnerungen. Dafür entstehen keine privaten Questobjekte, Annahmen, Ziele, READY-/COMPLETED-Stufen, Abgaben, Arbeitsnachweise, automatischen Belohnungen oder Privatquest-XP. NPCs bleiben eigenständige Menschen mit Anliegen und Reaktionen.
+
+Ein anwesender NPC darf freiwillig einen glaubwürdigen Geld- oder Sachgegenstand als Dank, Vorschuss oder Bezahlung tatsächlich übergeben. Geld wird über die normale Geldübergabe gebucht; ein formaler Auftrag, Questgeberstatus oder eine Abgabe ist dafür nicht erforderlich. Versprechen sind noch keine Zahlung, wiederholte Erwähnungen keine zweite Übergabe. Beträge, Inventar, Aufenthaltsort und Player Agency bleiben Engine-owned. Formale Gildenquests und ihre Progression bleiben unverändert. Historische Kampagnen behalten ihre bisherigen Privatquests und sind ohne automatische Umschreibung weiter ladbar.
+
 **[VERBINDLICH]**
 
 - Gildenquests sind freiwillige, konkrete Weltaufträge; **keine verpflichtende Hauptquest** und kein passiver Questzwang.
 - Neue Gildenboards im aktiven Regelstand bieten täglich **zwei Monsterjagden, zwei Lieferungen und eine passende Dungeon-Level-Clearance**. Fehlt ein geeigneter, der Gilde bekannter Dungeon, ersetzt eine weitere Jagd diesen Slot. Novice erhält mindestens eine Einstiegsjagd gegen einen schwachen Einzelgegner; die Wahl bleibt frei.
 - Eine neue Board-Lieferung hat genau ein DELIVER-Ziel mit Ware, Menge und eindeutigem Empfänger/Zielort oder ausdrücklich erlaubter Ablage. Keine zusätzlichen GIVE-Ziele, Unterschriften, Behälterrückgaben oder nachträglichen Abschlussbedingungen. Reale Übergabebelege bleiben maßgeblich.
-- Escort entfällt nur aus der automatischen Board-Generierung; spontane Privatquests und die offene Welt behalten die Mechanik. Bereits angenommene Verträge und Legacy-Spielstände behalten ihre Bedingungen.
+- Escort entfällt nur aus der automatischen Board-Generierung; freie NPC-Begleitungen und bestehende Verträge behalten ihre Mechanik. Bereits angenommene Verträge und Legacy-Spielstände behalten ihre Bedingungen.
 - Das bestehende Board-Schema besitzt ein **Tagesangebot** für den Spieler. Alarics sichtbares aktuelles Angebot soll nicht durch nachträglich erfundene andere Abenteurer verschwinden. Hintergrundaufträge und spätere Boardtage können sich entwickeln.
 - **Gildenvertrag/-Slip**: Annahme, Auszahlung, Quest-XP/Promotion und Turn-in unter Engine Authority; Slips spiegeln den verbuchten Status. Ein ausgehandelter oder behaupteter Erfolg ist nicht automatisch Zahlung.
 - **Culling-Zahl [IMPLEMENTIERT Patch 8/8.1; im Livetest weiter zu prüfen]:** Der Auftrag soll bereits am Board eine konkrete Monsteranzahl zeigen, etwa `Cull Wolves (4)`; nach Annahme den Engine-Zähler etwa `2/4`. Der Zähler muss mechanisch sein und auf passende Quest/Ort/Monster referenzieren, nicht nur Erzähltext.

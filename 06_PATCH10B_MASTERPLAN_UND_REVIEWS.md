@@ -12,6 +12,8 @@
 
 **Run 11 (25.10.2026):** [ausführlicher Originalreview](testrun_10b/20261025-020335Z-current_test/REVIEW.md) zu natürlichem .76-100/100-Lauf. Zwei voneinander unabhängige P1: generischer `Recipient at …`-Lieferobjective-Text **und** zu grobe unbekannter-Innenraum→Elternort-Auflösung (E83 nicht am nachgewiesenen Innenraum, E165 wirklich dort; trotzdem kein Receipt) (0 Lieferbelege; 13 `quest_delivery`-Ablehnungen), sowie ungültiger NPC-Fakt nach abgelehntem `person.named`. Positiv: 2/2/1-Board, acht Siege, korrekte drei Guild-Payouts und privater 4-cp-Karrenlohn erst nach Spielerarbeit. Noch kein Gear-Upgrade trotz geänderter Guide-Priorität und 189 cp am Ende. **Nur Reviews/Links, keine Codefreigabe**; vollständige Einzelbelege nicht hier doppeln.
 
+**Run 12 (25.10.2026, .78):** [ausführlicher Originalreview](testrun_10b/20261025-044431Z-current_test/REVIEW.md), 100/100, integrity OK, 1 Einzelsieg, Dungeon Ebene 1, aber Guildboard nach Repair 3/5 → failed; E146 doppelte Goblinmaterialisierung (6 Entities/3 Slot); E200 Trud+vier Goblins und Quest-READY ohne GO am mechanisch aktuellen Schmiedehof. Ausrüstung wird nun gekauft/angelegt, jedoch Starter-Mage-MATK 10 → 0 bei Jagdmesser/Kurzschwert. Keine natürliche Delivery-Abnahme, keine numerische Gruppenbalance-Freigabe. **Nur Review/Index; fachliche Belege nicht hier duplizieren.**
+
 **Pflege ab jetzt:** Hier nur kurze neue Entscheidungen, Statusänderungen und Links zum fachlichen Beleg eintragen; **keine vollständigen Patchnotes oder Einzelrunreviews kopieren**. Aktuellen Status ausschließlich in 03 führen. Vergangene Einträge bleiben als datierte Nachweise unangetastet.
 
 ---

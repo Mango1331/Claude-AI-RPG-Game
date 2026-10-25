@@ -1,7 +1,7 @@
 # Avereth Engine — Verbindlicher Design-Kanon und Leitplanken
 
 **Dokumenttyp:** langfristige Spiel- und Architekturentscheidungen  
-**Stand:** 25. Oktober 2026 · Fassung 5, redaktioneller 10B-Verweis (Design-Kanon unverändert; 9D-F→E-Hauptpfad inzwischen auf `.57` gezielt live abgenommen; technische Details in 03/06)  
+**Stand:** 26. Oktober 2026 · Fassung 6: höherer Spieler-Startwert; technischer Produkt-/Abnahmestand in 03.
 **Pflege:** nur bei neuen verbindlichen Designentscheidungen  
 **Status-Legende:** **[VERBINDLICH]** = gewolltes Spiel-/Architekturverhalten; **[GEPLANT]** = verbindliches Ziel, aber nicht zwingend implementiert; **[OFFEN]** = noch nicht abschließend beschlossen. Die Implementierung ist gesondert in Datei 03 zu prüfen.
 
@@ -66,6 +66,8 @@
 ## 5. Kampf und Progression
 
 **[VERBINDLICH]**
+
+- **Spieler-Startwerte (26.10.2026):** Neue Spielerfiguren starten mit Basiswert 7 in STR, VIT, AGI, INT, PER und WIL. Der bestehende Klassenbonus von +1 auf die beiden Favored Stats bleibt erhalten (nach Klassenwahl 8/8 bevorzugt, übrige Werte 7). Normale Level-ups und freie Punkte bleiben unverändert; menschliche NPCs behalten ihre bisherige Basis 5. Bestehende Spielstände erhalten keine nachträgliche Erhöhung.
 
 - Mechanik ist JS-owned: Reichweiten- und Deckungsbänder, HP/MP/STA, Initiative, Zugordnung, Schadensberechnung und tatsächliche Todes-/Fluchtzustände.
 - Kein stilles Retargeting, wenn der Spieler ausdrücklich einen bereits toten Gegner benennt. Fehlgeschlagene/unerlaubte Aktionen dürfen keinen heimlichen Aufwand oder Ersatzangriff buchen.

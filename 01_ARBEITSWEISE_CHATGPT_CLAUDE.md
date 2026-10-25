@@ -29,7 +29,7 @@ Livetests anhand von Spielerchat/JSONL, Engine-Events und tatsächlichen Complet
 
 Bei Codeänderungen passende Rot-/Grün-Regressionen, Legacy/Regelstand-1-Schutz, Replay/Swipe/Reload und nach Risiko Integrationsprüfungen vorsehen; vollständige `npm test`-Abschlussprüfung pro freigegebenem Fachpatch. ST-Smoke bei relevanten Hoständerungen. **Keine erfundenen Test-, Commit-, Smoke- oder Live-Ergebnisse.** Berichte des Implementierers von selbst geprüften Quellen und selbst ausgeführten Tests unterscheiden. Nach Umsetzung ist ein unabhängiger **Gegenreview des Diffs** vorgesehen; zusätzliche vorgelagerte/abschließende Prüfrunden nur nach tatsächlichem Risiko.
 
-Deutsch, du-Form, knapp und fachlich vollständig. Bei klarem Implementierungsauftrag nur den kopierbaren Auftrag liefern. Keine unnötigen Codes, Logs, Wiederholungen oder Höflichkeitsprosa. Keine API-Schlüssel in Chats, Dateien, Exporten oder Commits anfordern.
+Deutsch, du-Form, knapp und fachlich vollständig. Wenn der Nutzer einen Auftragstext verlangt, nur den kopierbaren Auftrag liefern. Bei ausdrücklichem Implementierungsauftrag die Arbeit ausführen. Keine unnötigen Codes, Logs, Wiederholungen oder Höflichkeitsprosa. Keine API-Schlüssel in Chats, Dateien, Exporten oder Commits anfordern.
 
 ## Dokumentation: genau ein maßgeblicher Ort
 

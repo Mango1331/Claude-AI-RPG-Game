@@ -1,6 +1,8 @@
 # Patch 10B – Privatjobs: Auftragsannahme ≠ Leistung (Fach-Patchnote)
 
-**Status:** GEPLANT / NICHT IMPLEMENTIERT. **Priorität P1.** Separater Fachpatch nach Sols laufender Board-Vereinfachung und Lieferkonsistenz; kein Produktauftrag in diesem Dokument. Basis: natürlicher [Run 10](../testrun_10b/20261024-235637Z-current_test/REVIEW.md), **tatsächlich Build .72**, Produktstand bei Planung auf Dev: `2ca214fe24` (.74). Vor Umsetzung aktuellen Branch-HEAD und Sols Queständerungen neu prüfen.
+**Status:** IMPLEMENTIERT auf dem Entwicklungsbranch, Build **.76**, [Produktcommit `96c75eb`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/96c75ebceb32adb172bb3f8cf2afecd963e2a40c). Node-Suite und echter ST-Mock-Smoke bestanden. Technische Umsetzung, Zahlen und Grenzen einmalig in der [Fach-Patchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/96c75ebceb32adb172bb3f8cf2afecd963e2a40c/avereth-engine/docs/PATCH10B_PRIVATE_JOB_AGENCY.md). Natürlicher GLM-Arbeitsquest-Fall bleibt offen; kein neuer Langlauf gestartet.
+
+**Historische Planungsbasis:** natürlicher [Run 10](../testrun_10b/20261024-235637Z-current_test/REVIEW.md), tatsächlich Build .72; Produktstand bei Planung `2ca214fe24` (.74). Die Umsetzung setzt auf `ebcc010` (.75) auf und erhält dessen Board-/Delivery-Änderungen. Die folgenden Abschnitte bleiben als ursprünglicher Auftrag erhalten.
 
 ## 1. Fehler und reproduzierbare Ausgangslage
 

@@ -1,3 +1,4 @@
+import { privateQuestsOf } from './content.js';
 // Narrative fact report (<avereth>{...}</avereth>) -> validated events.
 // The LLM proposes; the engine disposes. Accepted items become events; everything else is rejected with a reason
 // (kept in the audit log and fed back as a correction note). Engine-owned values (HP, XP, stats, levels, skills,
@@ -752,6 +753,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
         if (!q || !q.title) { reject(q, 'quest needs a title'); continue; }
         const id = questId(state, q.title);
         const cur = state.quests[id];
+        if (!privateQuestsOf(state) && !(cur?.rank || q.rank || cur?.kind === 'guild_contract')) { reject(q, 'private quests are disabled; record ordinary NPC help as facts, memories or threads'); continue; }
         const status = ['offered', 'active', 'completed', 'failed'].includes(q.status) ? q.status : 'offered';
         // joining the Guild is its procedure, not one of its contracts (live run 27.09. 04:11: "Guild registration" went
         // offered -> completed and paid 15 Quest XP)

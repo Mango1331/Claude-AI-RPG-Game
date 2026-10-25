@@ -1,3 +1,4 @@
+import { worldVocab } from './extract.js';
 // Runtime V4 on a chat transcript (docs/RUNTIME_V4_PLAN.md §3): the host side of a V4 campaign. The same message
 // records as V3 (src/host.js): the events of a player message on that message, the events of a reply on its swipe. The
 // LLM calls are the host's; this module gets them as an injected function, so the whole flow runs in the Node tests
@@ -692,8 +693,9 @@ export function extractionRequest(chat, id, content) {
     if (state.encounter || o.kind === 'combat') actions += `\n${chronicleLine(combatChronicle(chat.slice(0, id), messageEvents))}`;
     const expectedKeys = o.expected_keys || {};
     const player = state.last?.input || null;
-    const req = extractorRequest(content.deltaVocab, { catalog: cat.text, actions, player, expectedKeys, reply: msg.mes });
-    return { ...req, hash: r.text_hash, expectedKeys, sceneRequired: (state.meta?.ruleset || 1) >= 2 && !!(o.c || o.auth?.c), ids: { places: cat.places, quests: cat.quests, objects: cat.objects }, catalog: cat.text, actions, player };
+    const vocab = worldVocab(content.deltaVocab, state);
+    const req = extractorRequest(vocab, { catalog: cat.text, actions, player, expectedKeys, reply: msg.mes });
+    return { ...req, vocab, hash: r.text_hash, expectedKeys, sceneRequired: (state.meta?.ruleset || 1) >= 2 && !!(o.c || o.auth?.c), ids: { places: cat.places, quests: cat.quests, objects: cat.objects }, catalog: cat.text, actions, player };
 }
 
 /**
@@ -715,7 +717,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
             && hash32(msg.mes) === req.hash && !laterTurns(chat, id);
     };
     const stale = () => ({ changed: false, ...(laterTurns(chat, id) ? { late: true } : {}) });
-    const vocab = content.deltaVocab;
+    const vocab = req.vocab;
     let ms = 0;
     let parsed = null;
     let repaired = false;

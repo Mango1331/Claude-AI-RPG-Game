@@ -73,6 +73,8 @@ export function startCampaign(content, { seed = newSeed(), firstMessage = '', ru
             facts, knowledge, campaign: content.manifest.id, content_version: content.manifest.version, engine_version: ENGINE_VERSION,
             // Patch 9A: the rules this campaign plays by, for good (src/content.js rulesetOf)
             ruleset,
+            // .83: free NPC help in new campaigns; historical start events keep their original policy.
+            private_quests: false,
             // Patch 7.2: a V4 campaign keeps the path it started on (c: the semantic planner, the product path; a: the
             // interpreter of Runtime V4-A), whatever the setting says later (src/v4/runtime.js campaignPath)
             ...(v4 ? { runtime: 'v4', ...(typeof planner === 'boolean' ? { path: planner ? 'c' : 'a' } : {}), places: v4.places, at: v4.at } : {}),

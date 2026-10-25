@@ -1,3 +1,4 @@
+import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: the CATALOG (docs/RUNTIME_V4_PLAN.md §4.2) the interpreter and the extractor read, built from the state:
 // where Alaric is, who is present, the places, quests, Guild board, offers and objects he may refer to, the open
 // decisions. It has the shape of tests/eval/scenes.json, the scenes P0/S1 measured the interpreter on, and it lists
@@ -212,7 +213,7 @@ export function journeyReady(state, { c = false } = {}) {
     const sources = [
         // 4.3.0-c.6.6: a contract whose outcome is READY has reached its destination; its journey is over (live 07.10.2026:
         // the way back from Thornwick "continued" the delivery journey that had ended at the chapel)
-        ...Object.values(state.quests).filter((q) => q.status === 'active' && (!c || (journeyWork(q) && !q.ready)))
+        ...Object.values(state.quests).filter(q => questVisible(state, q)).filter((q) => q.status === 'active' && (!c || (journeyWork(q) && !q.ready)))
             .map((q) => ({ id: q.id, label: q.title, text: [...(q.details || []).map((x) => (typeof x === 'string' ? x : x?.note)), ...(q.notes || [])].filter(Boolean).join(' ') })),
         ...(c ? [] : Object.values(state.threads || {}).filter((t) => t.status === 'open').map((t) => ({ id: t.id, label: t.text, text: t.text }))),
     ];
@@ -241,7 +242,7 @@ export function journeyReady(state, { c = false } = {}) {
         }
         if (contact) return { id: src.id, label: src.label, contact, companion: !c ? contact : null, why: 'an established journey' };
     }
-    const underway = Object.values(state.quests).filter((q) => q.status === 'active' && !q.ready && q.journey)
+    const underway = Object.values(state.quests).filter(q => questVisible(state, q)).filter((q) => q.status === 'active' && !q.ready && q.journey)
         .sort((a, b) => (b.journey.since ?? 0) - (a.journey.since ?? 0))[0];
     return underway ? { id: underway.id, label: underway.title, contact: null, companion: null, why: 'the contract\'s journey is underway' } : null;
 }
@@ -255,7 +256,7 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
     const at = state.scene.at;
     const present = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && statusOf(state, id) !== 'dead')
         .map((id) => ({ id, handle: sceneHandle(state, content, id), label: personLabel(state, content, id) }));
-    const activeRaw = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered'
+    const activeRaw = Object.values(state.quests).filter(q => questVisible(state, q)).filter((q) => q.status === 'active' || q.status === 'offered'
         || (rulesetOf(state) >= 2 && q.kind === 'private' && q.status === 'completed' && q.work && q.payout_cp !== 0 && !q.payment));
     const quests = activeRaw.map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q, { c }) }));
     // Patch 2: his own goals with a place, and a quest journey; more than one: the engine asks which "I continue" means
@@ -267,7 +268,7 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         : options.length > 1 ? `${options.map(optionText).join(' · ')}; "I continue" without naming one asks which` : undefined;
     const goals = goalLines(state).map((g) => ({ id: g.id, text: `${g.status}: ${g.text}` }));
     const day = today(state);
-    const completed = Object.values(state.quests).filter((q) => q.status === 'completed' && (q.history || []).some((h) => h.status === 'completed' && Math.floor((h.minute ?? 0) / 1440) + 1 === day))
+    const completed = Object.values(state.quests).filter(q => questVisible(state, q)).filter((q) => q.status === 'completed' && (q.history || []).some((h) => h.status === 'completed' && Math.floor((h.minute ?? 0) / 1440) + 1 === day))
         .map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q, { c }) }));
     const hall = hallOf(state, at);
     const town = hall ? settlementOf(state, hall) : null;
@@ -296,7 +297,7 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         ...lyingAt(state, at).map((o) => objectEntry(state, content, o)),
         ...state.scene.present.filter((id) => id !== 'pc').flatMap((id) => heldBy(state, id)).map((o) => objectEntry(state, content, o)),
     ];
-    return {
+    return { privateQuests: privateQuestsOf(state),
         here: { id: at, path: placePath(state, at) },
         time: formatClock(state.clock.minute).split(' (')[0].replace(/^Day/, 'day'),
         alaric: alaricLine(state, content),
@@ -367,7 +368,7 @@ export function extractorCatalog(state, content, opts = {}) {
         && (truth(state, id, 'status')[0]?.since?.turn ?? -1) >= state.turn - 3);
     const deadText = dead.length ? `\nRECENT DEAD (here, killed in the engine's fights; never a creature.new, never alive, never fleeing): ${dead.map((id) => `${id} [${sceneHandle(state, content, id)}] (${personLabel(state, content, id)})`).join(' · ')}` : '';
     return {
-        text: catalogText(c) + deadText + threadText,
+        text: catalogText(c) + deadText + threadText + (!privateQuestsOf(state) ? `\nFREE HELP: only Guild contracts are formal quests. NPC help, agreements and thanks are ordinary world interactions.\nRECENT COIN HANDOVERS (already received; recount with coin.gift repeat_of, never pay again):\n${(state.credits || []).filter(x => x.gift).map(x => `${x.gift.id}: ${x.gift.from}, ${x.cp} cp, ${x.gift.why}; ${x.gift.said}`).join('\n') || 'none'}` : ''),
         places: [...new Set([c.here.id, ...c.places.map((p) => p.id)].filter(Boolean))],
         quests: [...new Set([...c.quests, ...c.board, ...c.completed, ...(c.known || [])].map((q) => q.id))],
         objects: c.objects.map((o) => o.id),

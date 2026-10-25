@@ -1,3 +1,4 @@
+import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: the command handlers (docs/RUNTIME_V4_PLAN.md §4.1, §4.4). The interpreter translated the player's story
 // message into typed commands (src/v4/interpret.js), the agency guard dropped what was no decision (src/v4/agency.js);
 // here the engine checks each command against the state at its step and books it. Every command gets a status:
@@ -168,8 +169,8 @@ function guildHallMeant(s) {
 
 /** The one contract a turn-in or acceptance without a name can mean, or a question. */
 function pickQuest(s, ref, statuses, kind = null) {
-    if (typeof ref === 'string') return { q: s.quests[ref] || null };
-    const pool = Object.values(s.quests).filter((q) => statuses.includes(q.status) && (!kind || q.kind === kind));
+    if (typeof ref === 'string') return { q: s.quests[ref] && questVisible(s, s.quests[ref]) ? s.quests[ref] : null };
+    const pool = Object.values(s.quests).filter(q => questVisible(s, q)).filter((q) => statuses.includes(q.status) && (!kind || q.kind === kind));
     if (ref && typeof ref === 'object' && typeof ref.new === 'string') {
         const hit = pool.filter((q) => normText(q.title) === normText(ref.new));
         return hit.length === 1 ? { q: hit[0] } : { q: null, unknown: ref.new };
@@ -921,7 +922,7 @@ const HANDLERS = {
             && /\b(?:keeping|guarding|watching|working|shift)\b/i.test(l.what))
             && !/\b(?:buy|purchase|hire|pay|rent)\b/i.test(c.quote || '');
         if (!o.canon && (employeeQuote || ambiguousWork) && o.lines.some(l => l.kind === 'service')) {
-            return { status: 'clarify', reason: 'work is not a purchase', line: 'CLARIFY — is the NPC hiring Alaric, or is Alaric buying the NPC’s service? Record employer-paid work as a private job. No money was charged.' };
+            return { status: 'clarify', reason: 'work is not a purchase', line: `CLARIFY — is the NPC hiring Alaric, or is Alaric buying the NPC’s service? ${privateQuestsOf(s) ? 'Record employer-paid work as a private job.' : 'Record the NPC request and terms as ordinary world facts.'} No money was charged.` };
         }
 
         // Prototype C (4.3.0-c.6.6.5): an offer is the other side SELLING to Alaric; agreeing to sell his own things is

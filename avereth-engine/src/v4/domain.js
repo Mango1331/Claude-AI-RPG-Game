@@ -255,7 +255,7 @@ export function applyDomainEvent(state, e) {
             }
             // the engine's own credits to Alaric (a Guild payout, a sale), by place and day: coin the story then shows
             // him pick up there that day is this coin, not new coin (src/v4/world.js coin.gift). His payments are audit.
-            if (d.to === 'pc') state.credits = [...(state.credits || []), { cp: d.cp, at: d.at ?? state.scene?.at ?? null, day: today(state) }].slice(-6);
+            if (d.to === 'pc') state.credits = [...(state.credits || []), { cp: d.cp, at: d.at ?? state.scene?.at ?? null, day: today(state), ...(d.gift ? { gift: { ...clone(d.gift), from: d.from } } : {}) }].slice(-6);
             break;
         // audit only: the record of what was interpreted, resolved, applied or refused
         case 'proof.checked':

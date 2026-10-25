@@ -1,3 +1,4 @@
+import { questVisible } from './content.js';
 import { className } from './v4/class_growth.js';
 // Player HUD (Runtime V3, docs/RUNTIME_V3.md): the Character and World panels the player sees under each reply,
 // rendered from the canonical state and nothing else. It replaces the tracker blocks the narrator used to write
@@ -63,7 +64,7 @@ export function characterRows(state, content) {
     if (weapon) skills.push(`${weapon.skill.name} (weapon)`);
     const equip = Object.values(s.equipment || {}).map((r) => (typeof r === 'string' ? content.items.get(r)?.name || r : r.name));
     const inv = Object.entries(s.inventory || {}).map(([k, q]) => `${itemLabel(state, content, k)}${q > 1 ? ` ×${q}` : ''}`);
-    const quests = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered')
+    const quests = Object.values(state.quests).filter(q => questVisible(state, q)).filter((q) => q.status === 'active' || q.status === 'offered')
         .map((q) => `${q.title} (${[q.status, q.rank, q.giver ? playerLabel(state, q.giver) : null, q.reward ? `reward ${q.reward}` : null].filter(Boolean).join(' · ')})`);
     // Patch 10A.3: keep the expanded sheet scannable as a campaign accumulates gear and contracts.
     const brief = (items, limit, command) => `${list(items.slice(0, limit))}${items.length > limit ? ` · +${items.length - limit} more (${command})` : ''}`;
@@ -125,7 +126,7 @@ export function worldRows(state, content) {
     } else if ((state.pending_combat || []).length) {
         rows.push(['Combat', `${state.pending_combat.map((p) => label(p.by)).join(', ')} committed to attack`]);
     }
-    const quests = Object.values(state.quests).filter((q) => q.status === 'active').map((q) => `${q.title}${state.meta?.runtime === 'v4' && q.kind === 'guild_contract' ? goalText(state, content, q) : ''}`);
+    const quests = Object.values(state.quests).filter(q => questVisible(state, q)).filter((q) => q.status === 'active').map((q) => `${q.title}${state.meta?.runtime === 'v4' && q.kind === 'guild_contract' ? goalText(state, content, q) : ''}`);
     if (quests.length) rows.push(['Active quests', `${list(quests.slice(0, 3))}${quests.length > 3 ? ` · +${quests.length - 3} more (#quests)` : ''}`]);
     // Patch 2: his goals; the hints of this place; a few lasting leads. Everything else is in #journal
     const goals = goalLines(state, { max: 3, ids: false }).map((g) => `${g.status === 'paused' ? '(paused) ' : ''}${g.text}`);

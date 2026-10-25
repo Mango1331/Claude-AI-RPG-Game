@@ -134,6 +134,7 @@ test('the HUD shows only what the player may know: no attitudes, agendas, secret
 test('drift: a narrator that writes wrong coin, HP, STA, quest status or position changes neither the state nor the HUD', () => {
     const chat = [{ is_user: false, is_system: false, mes: FIRST_MESSAGE, swipe_id: 0, swipes: [FIRST_MESSAGE], swipe_info: [{ extra: {} }], extra: {} }];
     processReply(chat, 0, content, { seed: 5 });
+    delete chat[0].extra.avereth.events.find(e => e.t === 'campaign.started').d.private_quests; // historical tracker regression
     const play = (input, reply) => {
         chat.push({ is_user: true, is_system: false, mes: input, extra: {} });
         prepareGeneration(chat, content, { type: 'normal' });

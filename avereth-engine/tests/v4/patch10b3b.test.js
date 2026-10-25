@@ -10,7 +10,7 @@ import { resolveCommands } from '../../src/v4/commands.js';
 import { boardFor } from '../../src/v4/runtime.js';
 import { buildContext } from '../../src/context.js';
 const content = await loadProductContent();
-const base = (await campaign(content)).state();
+const base = (await campaign(content, { legacyPrivateQuests: true })).state();
 const original = JSON.parse(fs.readFileSync(new URL('./fixtures/run7_delivery.json', import.meta.url)));
 function delivery() {
     const s = structuredClone(base), f = structuredClone(original);

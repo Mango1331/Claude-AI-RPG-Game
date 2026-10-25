@@ -1,3 +1,4 @@
+import { privateQuestsOf, questVisible } from './content.js';
 import { chronicleLine } from './v4/combat_truth.js';
 // Context Builder: turns the campaign state into the smallest high-signal prompt block for this turn
 // ("smallest possible set of high-signal tokens", Anthropic context engineering). Sections are prioritised and
@@ -436,7 +437,7 @@ function retrievalItems(state, content, pinnedIds, recentTurns) {
         const txt = propText(state, f, content);
         items.push({ kind: 'fact', text: txt, entities: [f.s, f.o].filter((x) => state.entities[x]), location: isLocationId(state, content, f.s) ? f.s : null, turn: f.since?.turn ?? 0, importance: f.importance ?? 0.5, label: `${f.hard ? 'HARD FACT: ' : ''}${txt}` });
     }
-    for (const q of Object.values(state.quests)) {
+    for (const q of Object.values(state.quests).filter(q => questVisible(state, q))) {
         if (q.status !== 'active' && q.status !== 'offered') continue;
         // a Guild contract says where it ends: its reward is the Guild's to pay at a front desk (delta.js)
         items.push({ kind: 'quest', text: `${q.title} ${q.notes.join(' ')}`, entities: [q.giver].filter(Boolean), quests: [q.id], turn: q.history.at(-1)?.turn ?? 0, importance: 0.8, label: `Quest (${q.status}${q.rank ? `, ${q.rank} Guild contract` : ''}): ${q.title}${q.giver ? ` — from ${anyLabel(state, content, q.giver)}` : ''}${q.reward ? ` — reward: ${q.reward}` : ''}${q.rank && q.status === 'active' ? ' (paid by the Guild when turned in at a front desk, never by its client or other locals)' : ''}${q.notes.length ? ` — ${q.notes.at(-1)}` : ''}` });
@@ -487,7 +488,7 @@ function retrievalQuery(state, content, input, lastReply) {
     for (const e of Object.values(state.entities)) if (e.id !== 'pc' && (e.kind === 'npc' || e.kind === 'location')) consider(nameOf(state, e.id), e.kind === 'npc' ? e.id : null);
     for (const p of Object.values(state.places || {})) consider(p.name);
     for (const l of content.locations.values()) consider(l.name);
-    for (const q of Object.values(state.quests)) if (q.status === 'active' || q.status === 'offered') consider(q.title);
+    for (const q of Object.values(state.quests).filter(q => questVisible(state, q))) if (q.status === 'active' || q.status === 'offered') consider(q.title);
     return { query: input, context: [...names].join(' '), named };
 }
 
@@ -507,7 +508,7 @@ export function retrieveRelevant(state, content, { input = '', lastReply = '', b
     const namedInInput = Object.values(state.entities).filter((e) => e.kind === 'npc' && mentioned(nameOf(state, e.id), inputScan)).map((e) => e.id);
     const focus = {
         entities: [...new Set([...others, ...namedInInput, ...q.named])], location: sceneNode, realm: loc?.realm || null,
-        quests: Object.values(state.quests).filter((x) => x.status === 'active').map((x) => x.id), turn: state.turn,
+        quests: Object.values(state.quests).filter(q => questVisible(state, q)).filter((x) => x.status === 'active').map((x) => x.id), turn: state.turn,
         // present people by name (or an NPC's trade, "the chartmaker"); a nameless creature's look ("low, heavy bulk") is
         // adjectives that would match every other beast: the entity signal already covers it by id
         query: q.query, context: `${q.context} ${others.map((id) => nameOf(state, id)).filter(Boolean).join(' ')}`.trim(), relationStrength: relStrength,
@@ -601,6 +602,7 @@ export function buildContext(state, content, opts = {}) {
     const sections = [];
     const add = (name, text, priority, own = false) => text && sections.push({ name, text, priority, own, tokens: estimateTokens(text) });
 
+    if (!privateQuestsOf(state)) add('help', 'FREE HELP — only Guild contracts are formal quests. NPCs may request help, offer paid work, make promises and react freely. Preserve requests, deeds, relationships and outcomes as ordinary world continuity; no private Quest acceptance, objectives, READY, turn-in, work certificate, automatic reward or Quest XP. A present NPC may voluntarily hand over a credible gift or payment now; promises/recounts are not new money. Already recorded handovers: ' + ((state.credits || []).filter(x => x.gift).map(x => `${x.gift.from}: ${x.cp} cp (${x.gift.why})`).join('; ') || 'none'), 0);
     add('header', `[AVERETH ENGINE — authoritative game state, turn ${state.turn}. Numbers, rolls, positions and knowledge below are binding; narrate, never recalculate.]\n${formatClock(state.clock.minute)} | ${loc ? `${loc.name}${realm && (!v4 || normText(realm) !== normText(loc.name)) ? `, ${realm}` : ''}` : 'unknown location'}${placeSuffix} | mode: ${state.mode}${locStatus !== 'exists' && locStatus !== 'alive' ? ` | LOCATION STATUS: ${String(locStatus).toUpperCase()}` : ''}\nSetting: Western-fantasy medieval material culture with mana/high magic; letters and messengers for distance; no modern technology.`, 0);
     // what Alaric's line carries depends on the turn: items and coin only when trade, loot or items are in play
     const itemScan = `${input} ${lastReply}`;
@@ -640,7 +642,7 @@ export function buildContext(state, content, opts = {}) {
         || state.scene.present.includes(f.s) || mentioned(anyLabel(state, content, f.s), scan)).slice(-6);
     if (pinned.length) add('facts', `ESTABLISHED FACTS (binding; they change only with an in-world cause):\n${pinned.map((f) => `- ${propText(state, f, content)} (since ${day(f.since.minute)}${f.source?.because ? `; cause: ${f.source.because}` : ''})`).join('\n')}`, 0);
 
-    const activeQuests = v4 ? Object.values(state.quests).filter((q) => q.status === 'active'
+    const activeQuests = v4 ? Object.values(state.quests).filter(q => questVisible(state, q)).filter((q) => q.status === 'active'
         || (rulesetOf(state) >= 2 && q.kind === 'private' && q.status === 'completed' && q.work && q.payout_cp !== 0 && !q.payment)) : [];
     // Prototype C (4.3.0-c.6): a hunt is proven by its contract slip, goods by the goods (src/v4/guild.js proofMemory)
     const cTurn = !!(opts.outcome?.auth?.c || opts.outcome?.c);
@@ -742,7 +744,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'named', 'combat', 'guild_authority', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };
@@ -776,7 +778,7 @@ export function reportKeys(state, content, { outcome = null, scan = '' } = {}) {
     if (state.mode === 'creation' || String(outcome?.kind || '').startsWith('creation')) return [];
     if (state.encounter && !outcome?.ended) return COMBAT_KEYS;
     const keys = [...STORY_KEYS];
-    const quests = Object.values(state.quests).some((q) => q.status === 'offered' || q.status === 'active');
+    const quests = Object.values(state.quests).filter(q => questVisible(state, q)).some((q) => q.status === 'offered' || q.status === 'active');
     if (quests || QUEST_RE.test(`${scan} ${state.scene.place || ''}`)) keys.push('quests');
     const s = state.entities.pc?.sheet;
     const dv = s ? deriveCharacter(s, content) : null;

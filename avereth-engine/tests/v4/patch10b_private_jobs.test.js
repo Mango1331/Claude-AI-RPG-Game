@@ -11,7 +11,7 @@ import { scaleCreature } from '../../src/npcgen.js';
 import { processReplyAny, runExtraction } from '../../src/v4/runtime.js';
 
 const content = await loadProductContent();
-const base = (await campaign(content)).state();
+const base = (await campaign(content, { legacyPrivateQuests: true })).state();
 const JOB = 'quest.cart';
 const close = { seq: 3, type: 'quest.close', quest: JOB, status: 'completed', by: 'npc.farmer' };
 const pay = { seq: 4, type: 'coin.gift', from: 'npc.farmer', cp: 3, said: 'three copper', why: 'promised wages for the cart job', job: JOB };
@@ -100,7 +100,7 @@ test('PJ7: progress text and a giver claim alone are not work; unlabelled explic
     assert.equal(r.state.quests[JOB].status, 'active'); assert.equal(r.state.entities.pc.sheet.coin_cp, s.entities.pc.sheet.coin_cp);
 });
 test('PJ8: planner product path retains a private job on the explicitly chosen journey', async () => {
-    const g = await campaign(content), s = scene();
+    const g = await campaign(content, { legacyPrivateQuests: true }), s = scene();
     inject(g, [{ t: 'quest.created', d: { quest: s.quests[JOB] } }, { t: 'place.created', d: { place: s.places.market } }]);
     await say(g, go.quote, go);
     const r = await g.reply('Alaric pushes the cart to Market square.', { expected: arrived, deltas: [] });
@@ -192,7 +192,7 @@ test('PJ15: Legacy keeps its existing semantic private-job completion', () => {
 });
 test('PJ16: a real chosen combat skill counts, a second unexecuted job skill does not', async () => {
     for (const actual of [true, false]) {
-        const g = await campaign(content), s = g.state();
+        const g = await campaign(content, { legacyPrivateQuests: true }), s = g.state();
         const p = scaleCreature(content.anchors.get('wolf'), 1, 'normal', content);
         inject(g, [
             { t: 'quest.created', d: { quest: scene().quests[JOB] } },
@@ -223,7 +223,7 @@ test('PJ17: GO and conditional GIVE finish a private errand only after the real 
     }
 });
 test('PJ18: extraction rerun and switching paid swipes retain exactly one job payout', async () => {
-    const g = await campaign(content), before = g.state();
+    const g = await campaign(content, { legacyPrivateQuests: true }), before = g.state();
     const farmer = { ...scene().entities['npc.farmer'], at: before.scene.at, location: before.scene.location };
     inject(g, [{ t: 'entity.created', d: { entity: farmer } }, { t: 'scene.entered', d: { id: farmer.id, band: 'SHORT', cover: 'none' } },
         { t: 'quest.created', d: { quest: scene().quests[JOB] } }]);

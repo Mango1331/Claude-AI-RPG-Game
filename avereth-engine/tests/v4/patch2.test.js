@@ -389,6 +389,7 @@ test('V3 path: the narrator\'s threads get engine ids; a rewording updates, a re
 test('10: a delivery under way to the town he set off for is one journey, not two options; a goal elsewhere beside it asks', async () => {
     const { g, d } = await setOff();
     const s = structuredClone(g.state());
+    delete s.meta.private_quests; // this regression models the original pre-.83 private delivery
     s.quests['quest.parcel'] = { id: 'quest.parcel', title: 'Carry a sealed parcel to Blackgate', status: 'active', objectives: [{ id: 'o1', verb: 'DELIVER', what: 'sealed parcel', qty: 1, unit: null, where: 'Blackgate', status: 'open' }], journey: { since: 1, at: s.scene.at } };
     s.intents['intent.2'] = { id: 'intent.2', goal: 'reach Blackgate', place: 'loc.blackgate', status: 'active', since: { turn: 1, minute: 0 }, updated: { turn: 1, minute: 0 }, quote: null, why: 'he set off for it' };
     s.intents['intent.1'].status = 'paused';

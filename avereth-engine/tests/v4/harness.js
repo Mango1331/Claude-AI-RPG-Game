@@ -21,10 +21,15 @@ export class Chat4 {
      * @param {{seed?: number, greeting?: string, listings?: object[]|null, boardFails?: boolean}} opts listings: what the
      *   Board generator answers (a fixture's listings, ids removed as the generator never writes ids)
      */
-    constructor(content, { seed = 7, greeting = GREETING, listings = null, boardFails = false } = {}) {
+    constructor(content, { seed = 7, greeting = GREETING, listings = null, boardFails = false, legacyPrivateQuests = false } = {}) {
         this.content = content;
         this.chat = [{ mes: greeting, is_user: false, is_system: false, extra: {} }];
         ensureCampaign(this.chat, content, { seed, runtime: 'v4' });
+        // Rule-1 fixtures replay the old campaign-start format; product campaigns keep the new flag.
+        if (content.start.ruleset === 1 || legacyPrivateQuests) {
+            const start = rec(this.chat[0]).events.find(e => e.t === 'campaign.started');
+            delete start.d.private_quests;
+        }
         this.listings = listings;
         this.boardFails = boardFails;
         this.calls = [];

@@ -1,3 +1,4 @@
+import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: applying the extractor's world deltas (docs/RUNTIME_V4_PLAN.md §5.2). After the narrator's reply the
 // extractor reported, in story order, what the reply established (src/v4/extract.js); the domain/authority firewall
 // removed what the story may not decide (src/v4/firewall.js). Here the engine applies the rest step by step, each delta
@@ -12,7 +13,7 @@ import { resolveCommands } from './commands.js';
 import { transferCargo, deliveryStatus, deliveryObjectives, confirmDelivery, additionalContainerReturn } from './delivery.js';
 import { Dice } from '../rng.js';
 import { applyEvent } from '../state.js';
-import { clone, normText, slug } from '../util.js';
+import { clone, normText, slug, hash32 } from '../util.js';
 import { coinFromWords, coinMentions, numbersIn } from '../economy.js';
 import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver, isGroup, GROUP_WORDS } from '../delta.js';
@@ -244,7 +245,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // 1. authority first: what the story may not decide is never applied
     const excludedFoes = [];
     const fw = firewall(answer.deltas, firewallContext(s, content, chronicle, excludedFoes));
-    const privateMode = cPath && rulesetOf(s) >= 2;
+    const privateMode = cPath && rulesetOf(s) >= 2 && privateQuestsOf(s);
     const acceptanceOnly = privateMode && outcome.resolutions?.length > 0 && outcome.resolutions.every(r => r.type === 'quest.accept');
     const inventedWorkTime = acceptanceOnly && fw.accept.some(d => d.type === 'quest.close' && d.status === 'completed'
         && jobOf(s, d.quest) && !jobOf(s, d.quest).work);
@@ -751,6 +752,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             for (const x of stepFw.corrections) if (!corrections.includes(x)) corrections.push(x);
             continue;
         }
+        const claim = ['quest.detail', 'quest.progress', 'quest.ready', 'quest.close'].includes(d.type) ? questRef(d.quest) : null;
+        if (!privateQuestsOf(s) && (d.type === 'quest.offer' || (claim && !questVisible(s, claim)))) {
+            reject(d, 'private_quests_disabled', 'NPC help uses ordinary facts, threads and memories; only Guild contracts are formal quests');
+            continue;
+        }
         const origin = sceneOf(d);
         const remote = ['person.new', 'creature.new'].includes(d.type) && d.present === false;
         if (cPath && rulesetOf(s) >= 2 && origin != null && !remote
@@ -1120,6 +1126,19 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 break;
             case 'coin.gift': {
                 const from = idOf(d.from);
+                const free = !privateQuestsOf(s);
+                const quote = normText(d.said || '').replace(/[^a-z0-9]+/g, ' ').trim();
+                const giftId = `gift.${tag}.${hash32(`${from || d.from}|${quote}`)}`;
+                if (free && (d.repeat_of != null || (s.credits || []).some(c => c.gift?.id === giftId))) {
+                    reject(d, 'coin_already_received', 'an existing handover or its recount never creates another payment');
+                    break;
+                }
+                if (free && (!quote || !normText(prose).replace(/[^a-z0-9]+/g, ' ').includes(quote)
+                    || coinFromWords(d.said, content) === null
+                    || /\b(?:promis(?:e|es|ed)\s+to\s+|(?:will|would|could|might)\s+|(?:i|he|she|they)['’]ll\s+)(?:give|pay|hand|pass|put|transfer)\b|\b(?:already|previously)\s+(?:gave|paid|handed|passed|put|transferred)\b/i.test(d.said))) {
+                    reject(d, 'coin_evidence', 'a gift needs a quoted current handover with an explicit currency amount; promises, recounts and invented quotes do not pay');
+                    break;
+                }
                 if (from === 'pc') { reject(d, 'coin', 'Alaric does not gift himself coin'); break; }
                 const refusal = coinRefusal(d, from);
                 if (refusal) {
@@ -1129,7 +1148,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     break;
                 }
                 const coin = s.entities.pc.sheet.coin_cp;
-                const cp = evidenced(d.cp, d.said, d);
+                const cp = free ? coinFromWords(d.said, content) : evidenced(d.cp, d.said, d);
+                if (free && cp !== d.cp) emit({ t: 'note', d: { kind: 'amount.corrected', seq: d.seq, type: d.type, reported_cp: d.cp, said: d.said, cp } });
                 if (cp === null) {
                     reject(d, 'coin', `${d.cp} cp is no sum the reply names`);
                     const correction = `Alaric's purse did not change: the ${d.cp} cp from ${String(d.from).slice(0, 60)} in the last reply were not booked (the reply names no such sum).`;
@@ -1140,6 +1160,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 if (wage) { deferSettlement(d, () => finishPayment(d, wage, from, cp), wage.job?.id); break; }
                 grant('envelope.give');
                 emit({ t: 'coin.changed', d: { id: 'pc', value: coin + cp, delta: cp, why: `${from ? entityLabel(s, from) : d.from}: ${String(d.why || 'a gift').slice(0, 80)}` } });
+                if (free) emit({ t: 'transaction.completed', d: { to: 'pc', from: from || String(d.from), cp, at: s.scene.at, gift: { id: giftId, said: String(d.said).slice(0, 300), why: String(d.why || 'a gift').slice(0, 120) } } });
                 break;
             }
             case 'coerce':
@@ -1631,7 +1652,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const took = Object.entries(outcome.expected_keys || {}).some(([k, t]) => t === 'take' && expected[k]?.taken === true)
             || (outcome.resolutions || []).some((r) => r.type === 'take' && r.status === 'resolved') || !!auth.gather;
         if (!took) return { rule: 'pc_inventory', why: 'coin nobody here hands him is his only by his own TAKE or search in PLAYER ACTIONS', fix: 'Alaric took no coin himself' };
-        if ((s.credits || []).some((c) => c.at === s.scene.at && c.day === today(s))) return { rule: 'engine_booked', why: 'the coin the engine paid him here today is already in his purse', fix: 'that coin is what the engine paid him here, already counted in his purse' };
+        if ((s.credits || []).some((c) => !c.gift && c.at === s.scene.at && c.day === today(s))) return { rule: 'engine_booked', why: 'the coin the engine paid him here today is already in his purse', fix: 'that coin is what the engine paid him here, already counted in his purse' };
         return null;
     }
 
@@ -2115,7 +2136,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const employee = !provider && /\b(?:you (?:keep|stand|guard|watch|work)|I (?:want|need) (?:eyes|you)|you(?:'re| are) worth more|(?:pay|hire) you)\b/i.test(prose);
         const work = employee ? d.lines.filter(l => l.kind === 'service' && l.service === 'other'
             && /\b(?:keep(?:ing)?|guard(?:ing)?|watch(?:ing)?|work(?:ing)?|shift)\b/i.test(l.what)) : [];
-        for (const l of work) {
+        if (work.length && !privateQuestsOf(s)) {
+            reject({ ...d, lines: work }, 'work_not_purchase', 'the NPC offers work to Alaric, not a service he buys; record the request/terms as facts');
+        }
+        for (const l of privateQuestsOf(s) ? work : []) {
             const title = String(l.what).slice(0, 80);
             if (!Object.values(s.quests).some(q => q.kind === 'private' && q.giver === seller && q.title === title && ['offered','active'].includes(q.status))) {
                 questOffer({ giver: seller, title, reward_cp: evidenced(l.price_cp, l.said, d), objectives: [l.what], proof: [] });
@@ -2239,6 +2263,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     }
 
     function questOffer(d) {
+        if (!privateQuestsOf(s)) { reject(d, 'private_quests_disabled', 'record the NPC request as ordinary world facts, not a formal quest'); return; }
         const titleAt = normText(prose).indexOf(normText(d.title));
         const around = titleAt < 0 ? '' : prose.slice(Math.max(0, titleAt - 100), titleAt + String(d.title).length + 30);
         if (cPath && /\b(?:official guild|guild contract|on the (?:guild )?board|board listing)\b/i.test(around)) {

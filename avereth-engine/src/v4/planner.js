@@ -1,3 +1,5 @@
+import { commandVocabFor } from './interpret.js';
+import { privateQuestsOf } from '../content.js';
 import { deliveryHandover } from './delivery.js';
 import { jobAction } from './private_jobs.js';
 // Prototype C (docs/PROTOTYPE_C.md; the working hypothesis is docs/ARCHITECTURE_C.md Rev. 3, frozen at 717e2f7 on the
@@ -242,8 +244,11 @@ export const FIGHT_RULES = [
  * Fight mode (a running fight or one committed to): the planner role, rules, types and examples, the fight's rules,
  * with activity.
  */
-export function plannerSystem(vocab, { fight = false } = {}) {
-    const mech = [MECH_RULES, '', 'Commands for that:', MECH_COMMANDS, '', MECH_EXAMPLES].join('\n');
+export function plannerSystem(vocab, { fight = false, privateQuests = true } = {}) {
+    vocab = commandVocabFor(vocab, privateQuests);
+    const rules = privateQuests ? MECH_RULES : MECH_RULES.split('\n').filter(r => !r.startsWith('Private jobs:')).join('\n').replace('except actually supplying requested private-job information', 'except actually supplying requested information');
+    const help = privateQuests ? '' : 'FREE HELP: NPC requests, promises and paid work are ordinary world interactions. Do not create or accept private quests, attach job ids, or invent work/arrival/payment. Concrete actions use normal commands; conversation and agreement alone require no command.';
+    const mech = [rules, help, '', 'Commands for that:', MECH_COMMANDS, '', MECH_EXAMPLES].join('\n');
     if (fight) {
         const story = vocabularyText({ commands: vocab.commands.filter((c) => FIGHT_STORY_TYPES.has(c.type)) });
         return [PLANNER_ROLE, '', mech, '', FIGHT_RULES, '', 'Story commands (the same list):', story, '', 'Answer with {"commands": [...]}; an empty list when the message contains no action of his.', '', PLAIN_FORMAT].join('\n');
@@ -317,8 +322,8 @@ export function planContext(state, content, catalog) {
     // Patch 9C-1: his open learning goals and what a learning activity may name (src/v4/growth.js)
     const learning = rulesetOf(state) >= 2 ? openGoals(state).map((g) => ({ id: g.id, text: goalText(g) })) : [];
     const techniques = rulesetOf(state) >= 2 ? composerFunctions(content) : [];
-    const jobs = rulesetOf(state) >= 2 ? Object.values(state.quests).filter(q => q.kind === 'private' && ['offered', 'active'].includes(q.status)) : [];
-    return { fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
+    const jobs = privateQuestsOf(state) && rulesetOf(state) >= 2 ? Object.values(state.quests).filter(q => q.kind === 'private' && ['offered', 'active'].includes(q.status)) : [];
+    return { privateQuests: privateQuestsOf(state), fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
 }
 
 /** The user message: the interpreter's CATALOG, then skills, opponents, engine facts, RECENT and the message. */
@@ -350,7 +355,7 @@ export function recentText(reply, max = 600) {
 
 /** The messages of a planner call (and of its one repair). */
 export function plannerRequest(vocab, ctx, text, { recent = '', previous = null, errors = null } = {}) {
-    const system = plannerSystem(vocab, { fight: ctx.fight });
+    const system = plannerSystem(vocab, { fight: ctx.fight, privateQuests: ctx.privateQuests });
     const user = plannerUser(ctx, text, { recent });
     const messages = [{ role: 'system', content: system }, { role: 'user', content: user }];
     if (previous !== null && errors) messages.push({ role: 'assistant', content: String(previous) }, { role: 'user', content: repairMessage(errors) });

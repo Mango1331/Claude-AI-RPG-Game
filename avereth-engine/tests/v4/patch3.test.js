@@ -35,7 +35,7 @@ function plannerOn(g) {
 }
 /** The live run up to message `upto` (its recorded records), the planner on. */
 function live(upto) {
-    const g = plannerOn(new Chat4(content, { greeting: fx.messages[0].mes }));
+    const g = plannerOn(new Chat4(content, { legacyPrivateQuests: true, greeting: fx.messages[0].mes }));
     g.chat = fx.messages.slice(0, upto + 1).map((m) => ({ mes: m.mes, is_user: m.is_user, is_system: m.is_system, extra: structuredClone(m.extra || {}) }));
     return g;
 }
@@ -51,7 +51,7 @@ const outcome = (g) => rec(g.chat.findLast((m) => m.is_user))?.events?.findLast(
 const recorded = (i) => fx.messages[i].extra.avereth;
 const pcHeld = (s, re) => Object.values(s.objects).filter((o) => o.holder?.entity === 'pc' && re.test(o.name));
 async function campaign() {
-    const g = plannerOn(new Chat4(content, { greeting: GREETING }));
+    const g = plannerOn(new Chat4(content, { legacyPrivateQuests: true, greeting: GREETING }));
     await g.player('Mage');
     await g.player('Flame Lance + Arcane Burst');
     return g;

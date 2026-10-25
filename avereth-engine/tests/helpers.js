@@ -54,6 +54,8 @@ export class Game {
     constructor(content, { seed = 7, firstMessage = FIRST_MESSAGE, ruleset } = {}) {
         this.content = content;
         this.log = startCampaign(content, { seed, firstMessage, ...(ruleset ? { ruleset } : {}) });
+        // loadContent deliberately models campaigns from before the policy change.
+        if (content.start.ruleset === 1) delete this.log[0].d.private_quests;
         this.state = fold(this.log);
         this.lastInput = '';
         this.lastReply = '';

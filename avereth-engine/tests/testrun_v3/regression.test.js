@@ -30,6 +30,7 @@ const ATTACKERS = {
 function replay() {
     const chat = [aiMsg(fx.greeting)];
     processReply(chat, 0, content, { seed: fx.seed });
+    delete chat[0].extra.avereth.events.find(e => e.t === 'campaign.started').d.private_quests; // original pre-.83 campaign
     const turns = [];
     for (const t of fx.turns) {
         chat.push({ is_user: true, is_system: false, mes: t.input, extra: {} });

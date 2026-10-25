@@ -1,3 +1,4 @@
+import { questVisible } from './content.js';
 // System commands (System #1-#10) answered by the engine from state + content: zero LLM calls, zero story time,
 // no combat Turn advance. Only #assign changes state (an explicitly defined state-changing command, System #1).
 // #system <question> is the one natural-language query; it is passed to the narrator in System-only mode.
@@ -270,7 +271,7 @@ function item(state, content, arg) {
 }
 
 function quests(state, content, arg) {
-    const list = Object.values(state.quests);
+    const list = Object.values(state.quests).filter(q => questVisible(state, q));
     if (arg) {
         const q = list.find((x) => normText(x.title).includes(normText(arg)));
         if (!q) return `[SYSTEM // QUEST]\nNo known Quest "${arg}".`;

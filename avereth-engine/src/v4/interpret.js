@@ -9,6 +9,11 @@ import { O, S, B, I, E, A, N, REF, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 import { coinFromWords } from '../economy.js';
 
+export function commandVocabFor(vocab, privateQuests = true) {
+    return privateQuests ? vocab : { ...vocab, commands: vocab.commands.map(c => c.type === 'quest.accept'
+        ? { ...c, summary: 'Alaric explicitly accepts an official Guild listing; NPC help is ordinary world interaction, never formal acceptance.' } : c) };
+}
+
 export const INTERPRETER_VERSION = 'interp-4.6';
 
 // Contrastive examples from another town, so they never name a catalog id of the current scene. They follow the error
@@ -105,6 +110,7 @@ function holderText(o) {
  */
 export function catalogText(catalog) {
     const L = ['CATALOG'];
+    if (catalog.privateQuests === false) L.push('FREE HELP: only Guild contracts have formal quest actions. NPC requests, agreement and help are ordinary world interactions.');
     const here = catalog.here || {};
     L.push(`HERE: ${here.path || here.name} (${here.id})${catalog.time ? ` · ${catalog.time}` : ''}`);
     L.push(`PRESENT: ${(catalog.present || []).map((p) => `${p.id}${p.handle ? ` [${p.handle}]` : ''} (${p.label})`).join(' · ') || 'nobody besides Alaric'}`);
@@ -230,6 +236,7 @@ export function repairMessage(errors) {
  * @returns {{system: string, user: string, messages: {role, content}[]}}
  */
 export function interpreterRequest(vocab, catalog, text, { previous = null, errors = null } = {}) {
+    vocab = commandVocabFor(vocab, catalog.privateQuests);
     const system = `${interpreterSystem(vocab)}\n\n${PLAIN_FORMAT}`;
     const user = interpreterUser(catalog, text);
     const messages = [{ role: 'system', content: system }, { role: 'user', content: user }];

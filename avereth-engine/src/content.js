@@ -77,6 +77,10 @@ export function indexContent(pack) {
     return c;
 }
 
+// .83: fixed by campaign.started; missing means an unchanged historical campaign.
+export const privateQuestsOf = state => state?.meta?.private_quests !== false;
+export const questVisible = (state, q) => privateQuestsOf(state) || q.kind === 'guild_contract' || (!q.kind && !!q.rank);
+
 /**
  * Patch 9A: the rules a campaign plays by, fixed when it starts (campaign.started ruleset, content/campaign_start.json
  * rulesets). A campaign started before Patch 9A has no ruleset and keeps the legacy one for good: its five Base Classes,

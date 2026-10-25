@@ -70,7 +70,7 @@ test('board: a partial refill counts the existing notices and preserves the begi
 });
 test('board: Legacy still accepts escort listings; spontaneous private escorts remain possible', () => {
     const escort = listing('Escort the wagon', [obj('ESCORT', 'wagon', 1, 'River Ford')]);
-    const s = structuredClone(base); s.meta.ruleset = 1;
+    const s = structuredClone(base); s.meta.ruleset = 1; delete s.meta.private_quests; // pre-.83 campaign format
     assert.equal(parse([escort], s, { ...need, missing: 1 }).listings.length, 1);
     s.meta.ruleset = 2;
     s.entities['npc.driver'] = { id: 'npc.driver', kind: 'npc', name: 'Driver', descriptors: ['driver'], status: 'alive', at: s.scene.at };

@@ -20,8 +20,8 @@ export function simpleBoard(dungeon = 'Old Crown Catacombs') {
         make(`Clear ${dungeon}`, 'DEFEAT', 'restless skeletons', null, `${dungeon}, level 1`)];
 }
 
-export async function campaign(content, { greeting = ALDERWATCH, cls = 'Mage', skills = 'Flame Lance + Focused Ward' } = {}) {
-    const g = new Chat4(content, { greeting });
+export async function campaign(content, { greeting = ALDERWATCH, cls = 'Mage', skills = 'Flame Lance + Focused Ward', legacyPrivateQuests = false } = {}) {
+    const g = new Chat4(content, { greeting, legacyPrivateQuests });
     await g.player(cls);
     await g.player(skills);
     const ask = g.llm;

@@ -1,9 +1,11 @@
+import { privateQuestsOf } from '../content.js';
 // Private work uses the planner's explicit action/job link and engine results.
+// Historical campaigns only. New campaigns use ordinary world help and gifts.
 // The world still judges whether the chosen work accomplished the promised task.
 import { rulesetOf } from '../content.js';
 import { normText } from '../util.js';
 
-export const jobOf = (s, id) => typeof id === 'string' && s.quests[id]?.kind === 'private' ? s.quests[id] : null;
+export const jobOf = (s, id) => privateQuestsOf(s) && typeof id === 'string' && s.quests[id]?.kind === 'private' ? s.quests[id] : null;
 export const jobAction = c => ['go', 'other', 'attempt', 'give', 'use_skill'].includes(c.type)
     || (c.type === 'activity' && ['work', 'craft', 'errand', 'search', 'gather'].includes(c.kind));
 

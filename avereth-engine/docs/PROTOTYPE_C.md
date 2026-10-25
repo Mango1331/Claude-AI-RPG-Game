@@ -2166,3 +2166,7 @@ Dungeon-Slotidentität und lokale Präsenz getrennt; neue Gildenlieferungen spei
 ### World-Fachfix .81 mit Gegenreview-Folgekorrektur .82 (25.10.2026)
 
 Run-12-Paket C umgesetzt: expliziter Schauplatzbezug für neue C-Extraktionen, korrekte Zwischenhalt-/Zielzuordnung und antwortlokale Questabhängigkeiten. Keine neue Bewegung aus Prosa oder pauschale GO-Pflicht für NPCs. Die .82-Korrektur gibt verzögerte Quellen erst nach endgültiger Prüfung für abhängige Questansprüche frei. Protokoll, Tests und Abnahme: [PATCH10B_RUN12_WORLD_STATE.md](PATCH10B_RUN12_WORLD_STATE.md).
+
+### Freie NPC-Hilfe .83 (25.10.2026)
+
+Neue Kampagnen führen nur Gildenquests formal; NPC-Hilfe und freiwillige Zahlungen bleiben normale Weltvorgänge. Altspielstände behalten ihre Semantik. Umsetzung, Grenzen und Abnahme: [PATCH10B_FREE_HELP.md](PATCH10B_FREE_HELP.md).

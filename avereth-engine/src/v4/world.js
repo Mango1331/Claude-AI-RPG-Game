@@ -37,6 +37,7 @@ import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor, templateFor, rulesetOf } from '../content.js';
 import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotForNew, resolvedSlotNamed, slotEntityEvents, syncEvents, insideOf } from './living.js';
+import { crossedDungeonGate, unbookedDungeonThreat } from './run9_evidence.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
@@ -473,7 +474,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             // of the Dungeon's own kinds (its slots' anchors and species) is none of the world's; any other stays
             if (root && livingBefore.has(root) && livingOf(s, root) && (insideOf(s, root) || (s.scene.at === root && dungeonKind(livingOf(s, root), d)))) {
                 const name = s.places[root]?.name || root;
-                excludedFoes.push({ ref: d.ref, species: d.species });
+                excludedFoes.push({ ref: d.ref, species: d.species, count: d.count });
                 reject(d, 'dungeon_foe', `only the engine adds the foes of ${name}: ${d.species || d.ref} is no encounter of this level`);
                 const fix = `The ${d.species || d.ref} of the last reply is no foe here: in ${name} only the engine adds foes (its DUNGEON lines). It is not there as one: nothing of it acts, attacks or can be fought. Its imagined keys add no gate requirement; use the existing Dungeon seal and booked objects.`;
                 if (!corrections.includes(fix)) corrections.push(fix);
@@ -641,9 +642,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         && (auth.gos || []).some((g) => g.to === null && /\b(?:in|into|inside|enter)\b/i.test(g.newName || ''))
         && livingOf(s, s.scene.at)?.ahead?.turn === s.turn
         && livingOf(s, s.scene.at)?.ahead?.floor === 1;
-    const crossedGate = /\b(?:stepped|walked|passed|went|moved|slipped|crossed)\b[^.!?\n]{0,70}\b(?:through|past|across)\b[^.!?\n]{0,20}\b(?:gate|threshold|entrance|mouth|doorway)\b/i.test(prose)
-        && /\binside\b/i.test(prose)
-        && !/\b(?:did not|didn't|never|could not|couldn't)\b[^.!?\n]{0,70}\b(?:enter|pass|cross|step)\b/i.test(prose);
+    // A crossing by someone else, or an almost-crossing, cannot override arrived:false.
+    const crossedGate = rootEntry && crossedDungeonGate(prose);
     if (rootEntry && crossedGate && (auth.gos || []).some((g) => expected[String(g.seq)]?.arrived === false)) {
         const root = s.scene.at;
         const at = place({ new: { name: /\bmouth tunnel\b/i.test(prose) ? 'Mouth tunnel' : 'Entrance passage', kind: 'interior', parent: root } });
@@ -964,8 +964,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             }
             case 'thread': {
                 // A refused Dungeon foe must not persist as an objective threat in Here.
-                if (d.kind === 'threat' && excludedFoes.some((f) => [f.ref, f.species].filter(Boolean)
-                    .some((name) => normText(d.text).includes(normText(name).split(' ')[0])))) {
+                if (d.kind === 'threat' && d.status !== 'resolved' && unbookedDungeonThreat(d.text, excludedFoes)) {
                     reject(d, 'dungeon_foe_thread', 'unbooked Dungeon creatures cannot be stored as a current threat');
                     const fix = 'The described Dungeon creatures were not booked as present foes. A reported sighting is not a current attackable encounter.';
                     if (!corrections.includes(fix)) corrections.push(fix);

@@ -47,7 +47,7 @@
   ],
   "expected": {
     "go": {
-      "summary": "did Alaric physically arrive by the END of this reply, where, and with whom; arrived:true when he has entered the first interior or mouth tunnel of a Dungeon and ends there, even if a deeper room remains ahead; at must name that actual interior as a known place or {new:{name,kind:'interior',parent:Dungeon id}}. arrived:false when he only sees inside, another actor crossed, the crossing is quoted, hypothetical, happened earlier, was interrupted, or Alaric returned outside. Evaluate his final location, not an earlier sentence",
+      "summary": "did he arrive, where, and who came with him; arrived is true only when the reply ends with him at the place (seeing it ahead or passing it is false); evaluate Alaric's final location at the END of this reply: when he enters the first interior or mouth tunnel of a Dungeon and remains there, mark arrived:true even if his deeper destination remains ahead, with at set to the actual interior as a known place or {new:{name,kind:'interior',parent:Dungeon id}}; arrived:false if he only sees inside, another actor crosses, the alleged crossing is quoted, hypothetical, in the past or interrupted, or Alaric returned outside. Passing a place without staying there is not arrival.",
       "shape": {
         "arrived": "true|false",
         "at": "place id, {\"new\": …} or null",

@@ -2163,6 +2163,6 @@ Annahme allein erledigt und bezahlt keinen Privatjob. Bestehende Spielerhandlung
 
 Dungeon-Slotidentität und lokale Präsenz getrennt; neue Gildenlieferungen speichern explizite Empfänger-/Orts-/Übergabesemantik. World-Reisekette bleibt vorbereitet und offen. Umsetzung, Rot/Grün und Abnahme: [PATCH10B_RUN12_DUNGEON_GUILD.md](PATCH10B_RUN12_DUNGEON_GUILD.md).
 
-### World-Fachfix .81 (25.10.2026)
+### World-Fachfix .81 mit Gegenreview-Folgekorrektur .82 (25.10.2026)
 
-Run-12-Paket C umgesetzt: expliziter Schauplatzbezug für neue C-Extraktionen, korrekte Zwischenhalt-/Zielzuordnung und antwortlokale Questabhängigkeiten. Keine neue Bewegung aus Prosa oder pauschale GO-Pflicht für NPCs. Protokoll, Tests und Abnahme: [PATCH10B_RUN12_WORLD_STATE.md](PATCH10B_RUN12_WORLD_STATE.md).
+Run-12-Paket C umgesetzt: expliziter Schauplatzbezug für neue C-Extraktionen, korrekte Zwischenhalt-/Zielzuordnung und antwortlokale Questabhängigkeiten. Keine neue Bewegung aus Prosa oder pauschale GO-Pflicht für NPCs. Die .82-Korrektur gibt verzögerte Quellen erst nach endgültiger Prüfung für abhängige Questansprüche frei. Protokoll, Tests und Abnahme: [PATCH10B_RUN12_WORLD_STATE.md](PATCH10B_RUN12_WORLD_STATE.md).

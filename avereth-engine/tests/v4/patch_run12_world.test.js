@@ -189,3 +189,129 @@ test('a later real arrival permits an independent discovery after an earlier ref
  assert.ok(r.rejected.some(x=>x.seq===1&&x.rule==='scene_context'));
  assert.equal(r.state.scene.at,camp);assert.equal(r.state.quests[q.id].ready,true);
 });
+
+// .82: a source is evidence only after its delayed domain validation succeeds.
+function evidenceScene() {
+ const s=pre(199);
+ s.last.outcome={c:true,auth:{c:true,gos:[]},expected_keys:{}};
+ const template=Object.values(s.quests).find(q=>q.kind==='private'&&q.status==='active');
+ for(const id of ['quest.source','quest.dependent','quest.last']) {
+  s.quests[id]={...clone(template),id,giver:'npc.marta',ready:false,progress:[]};
+  delete s.quests[id].work;
+ }
+ return s;
+}
+const dependent=(seq=2,source='1',quest='quest.dependent')=>({seq,type:'quest.ready',quest,note:'The preceding event supplies the proof',depends_on:[source]});
+function replayResult(s,r) {
+ const replay=clone(s);for(const e of clone(r.events))applyEvent(replay,e);
+ assert.deepEqual(replay,clone(r.state));
+}
+for(const source of ['private-close','guild-ready','wages']) for(const valid of [false,true])
+ test(`final evidence: ${source}, valid=${valid}`,()=>{
+  const s=evidenceScene(),q=s.quests['quest.source'];let first;
+  if(source==='private-close') {
+   if(valid)q.work={turn:s.turn,seq:1,type:'other',quote:'I repair the harness',at:s.scene.at};
+   first={seq:1,type:'quest.close',quest:q.id,status:'completed',by:q.giver};
+  } else if(source==='guild-ready') {
+   q.kind='guild_contract';q.objectives=[{id:'o1',verb:'DELIVER',what:'sealed ledger',qty:1,where:'Priory'}];
+   q.deliveries=valid?[{key:'existing',objective:'o1',object:'ledger',origin:'ledger',qty:1}]:[];
+   first={seq:1,type:'quest.ready',quest:q.id,note:'The ledger arrived'};
+  } else {
+   q.status='completed';q.payout_cp=3;
+   if(valid)q.work={turn:s.turn,seq:1,type:'other',quote:'I repair the harness',at:s.scene.at};
+   first={seq:1,type:'coin.gift',from:q.giver,cp:3,why:'wages',job:q.id};
+  }
+  const r=applyWorld(s,content,{scene:'here',expected:{},deltas:[first,dependent()]},{msg:202});
+  assert.equal(r.state.quests['quest.dependent'].ready,valid);
+  assert.equal(r.rejected.some(x=>x.seq===2&&x.rule==='quest_dependency'),!valid);
+  assert.equal(r.events.filter(e=>e.t==='coin.changed').length,source==='wages'&&valid?1:0);
+  replayResult(s,r);
+ });
+for(const valid of [false,true]) test(`final evidence: transitive progress/close chain, valid=${valid}`,()=>{
+ const s=evidenceScene();
+ if(valid)s.quests['quest.source'].work={turn:s.turn,seq:1,type:'other',quote:'I repair the harness',at:s.scene.at};
+ const r=applyWorld(s,content,{scene:'here',expected:{},deltas:[
+  {seq:1,type:'quest.close',quest:'quest.source',status:'completed',by:'npc.marta'},
+  {seq:2,type:'quest.progress',quest:'quest.dependent',objective:'First task verified',status:'done',depends_on:['1']},
+  {seq:3,type:'quest.close',quest:'quest.dependent',status:'failed',by:'npc.marta',depends_on:['2']},
+  dependent(4,'3','quest.last')
+ ]},{msg:202});
+ assert.equal(r.state.quests['quest.dependent'].progress.some(p=>p.objective==='First task verified'),valid);
+ assert.equal(r.state.quests['quest.dependent'].status,valid?'failed':'active');
+ assert.equal(r.state.quests['quest.last'].ready,valid);
+ replayResult(s,r);
+});
+test('final evidence: successful private close may depend on a validated Guild delivery and still pay once',()=>{
+ const s=evidenceScene(),delivery=s.quests['quest.source'],job=s.quests['quest.dependent'];
+ delivery.kind='guild_contract';delivery.objectives=[{id:'o1',verb:'DELIVER',what:'sealed ledger',qty:1,where:'Priory'}];
+ delivery.deliveries=[{key:'existing',objective:'o1',object:'ledger',origin:'ledger',qty:1}];
+ job.work={turn:s.turn,seq:1,type:'other',quote:'I confirm the receipt',at:s.scene.at};job.payout_cp=3;
+ const r=applyWorld(s,content,{scene:'here',expected:{},deltas:[
+  {seq:1,type:'quest.ready',quest:delivery.id,note:'Delivered'},
+  {seq:2,type:'quest.close',quest:job.id,status:'completed',by:'npc.marta',depends_on:['1']},
+  {seq:3,type:'coin.gift',from:'npc.marta',cp:3,why:'wages',job:job.id},
+  dependent(4,'3','quest.last')
+ ]},{msg:202});
+ assert.equal(r.state.quests[job.id].status,'completed');assert.equal(r.state.quests['quest.last'].ready,true);
+ assert.equal(r.events.filter(e=>e.t==='transaction.completed').length,1);
+ replayResult(s,r);
+});
+for(const sourceSeq of [1,2]) test(`final evidence: hand-over before its purchase offer, source seq=${sourceSeq}`,()=>{
+ const s=evidenceScene();s.entities.pc.sheet.coin_cp=20;
+ const command={seq:1,type:'buy',what:'brass compass',from:'npc.marta',qty:1,max_cp:3,quote:'I buy a brass compass for at most three copper.'};
+ const o=resolveCommands(s,content,[command],e=>applyEvent(s,e),{c:true,msg:201});
+ s.last={...s.last,input:command.quote,outcome:{...o,c:true}};
+ const r=applyWorld(s,content,{scene:'here',expected:{},deltas:[
+  {seq:1,type:'object.new',name:'brass compass',kind:'item',qty:1,holder:'npc.marta'},
+  {seq:2,type:'object.move',object:{new:'brass compass'},to:'pc'},
+  dependent(3,String(sourceSeq)),
+  {seq:4,type:'offer',seller:'npc.marta',lines:[{what:'brass compass',kind:'goods',qty:1,price_cp:3}]},
+  dependent(5,'4','quest.last')
+ ]},{msg:202});
+ assert.ok(r.rejected.some(x=>x.seq===sourceSeq&&x.rule==='engine_booked'));
+ assert.equal(r.state.quests['quest.dependent'].ready,false);
+ assert.equal(r.state.quests['quest.last'].ready,true,'the genuine offer itself remains accepted');
+ assert.equal(Object.values(r.state.objects).filter(o=>o.name==='brass compass'&&o.holder?.entity==='pc').length,1);
+ assert.equal(r.events.filter(e=>e.t==='coin.changed').length,1);
+ replayResult(s,r);
+});
+
+test('final evidence: wages preceding their private close still support a later claim once settled',()=>{
+ const s=evidenceScene(),q=s.quests['quest.source'];q.payout_cp=3;
+ q.work={turn:s.turn,seq:1,type:'other',quote:'I repair the harness',at:s.scene.at};
+ const r=applyWorld(s,content,{scene:'here',expected:{},deltas:[
+  {seq:1,type:'coin.gift',from:q.giver,cp:3,why:'wages',job:q.id},
+  dependent(2,'1'),
+  {seq:3,type:'quest.close',quest:q.id,status:'completed',by:q.giver}
+ ]},{msg:202});
+ assert.equal(r.state.quests['quest.dependent'].ready,true);
+ assert.equal(r.events.filter(e=>e.t==='transaction.completed').length,1);
+ replayResult(s,r);
+});
+test('final evidence: a completion cannot be proven by the wages that require that completion',()=>{
+ const s=evidenceScene(),q=s.quests['quest.source'];q.payout_cp=3;
+ q.work={turn:s.turn,seq:1,type:'other',quote:'I repair the harness',at:s.scene.at};
+ const r=applyWorld(s,content,{scene:'here',expected:{},deltas:[
+  {seq:1,type:'coin.gift',from:q.giver,cp:3,why:'wages',job:q.id},
+  {seq:2,type:'quest.close',quest:q.id,status:'completed',by:q.giver,depends_on:['1']},
+  dependent(3,'2')
+ ]},{msg:202});
+ assert.equal(r.state.quests[q.id].status,'active');assert.equal(r.state.quests['quest.dependent'].ready,false);
+ assert.equal(r.events.filter(e=>e.t==='transaction.completed').length,0);
+ replayResult(s,r);
+});
+test('final evidence: a deferred genuine gift remains evidence when an overpriced offer is not bought',()=>{
+ const s=evidenceScene();s.entities.pc.sheet.coin_cp=20;
+ const c={seq:1,type:'buy',what:'brass compass',from:'npc.marta',qty:1,max_cp:3,quote:'I buy a brass compass for at most three copper.'};
+ const o=resolveCommands(s,content,[c],e=>applyEvent(s,e),{c:true,msg:201});s.last={...s.last,input:c.quote,outcome:{...o,c:true}};
+ const r=applyWorld(s,content,{scene:'here',expected:{},deltas:[
+  {seq:1,type:'object.new',name:'brass compass',kind:'item',qty:1,holder:'npc.marta'},
+  {seq:2,type:'object.move',object:{new:'brass compass'},to:'pc'},
+  dependent(3,'2'),
+  {seq:4,type:'offer',seller:'npc.marta',lines:[{what:'brass compass',kind:'goods',qty:1,price_cp:5}]}
+ ]},{msg:202});
+ assert.equal(r.state.quests['quest.dependent'].ready,true);
+ assert.equal(r.events.filter(e=>e.t==='coin.changed').length,0);
+ assert.equal(Object.values(r.state.objects).filter(o=>o.name==='brass compass'&&o.holder?.entity==='pc').length,1);
+ replayResult(s,r);
+});

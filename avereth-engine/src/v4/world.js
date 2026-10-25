@@ -244,7 +244,6 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // 1. authority first: what the story may not decide is never applied
     const excludedFoes = [];
     const fw = firewall(answer.deltas, firewallContext(s, content, chronicle, excludedFoes));
-    const privateCloses = [], privatePayments = [];
     const privateMode = cPath && rulesetOf(s) >= 2;
     const acceptanceOnly = privateMode && outcome.resolutions?.length > 0 && outcome.resolutions.every(r => r.type === 'quest.accept');
     const inventedWorkTime = acceptanceOnly && fw.accept.some(d => d.type === 'quest.close' && d.status === 'completed'
@@ -253,6 +252,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // Prototype C (4.3.0-c.6.6.3): what of Alaric's the story moved to someone else without his hand-over (quest.ready below)
     const refusedMoves = new Set(fw.reject.filter((x) => x.rule === 'pc_inventory' && x.delta?.type === 'object.move').map((x) => objectRef(x.delta.object)?.id).filter(Boolean));
     const acceptedSteps = new Set();
+    const pendingSteps = new Set(); // queued is not yet accepted evidence
+    const settlements = []; // existing delayed quest checks and wages, plus their dependent claims
+    let blockedJobs = new Set();
+    const pendingSeq = seq => [...pendingSteps].some(d => String(d.seq) === String(seq));
+    const deferSettlement = (d, finish, job = null) => {
+        pendingSteps.add(d);
+        settlements.push({ d, finish, job });
+    };
+    const acceptStep = d => {
+        if (!pendingSteps.has(d) && !rejected.some(x => x.seq === d.seq && x.type === d.type)) acceptedSteps.add(String(d.seq));
+    };
     let refusedScene = false;
     const sceneMatches = ref => {
         if (ref === 'here') return true;
@@ -266,7 +276,6 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         };
         return matches(ref, s.scene.at);
     };
-    const readyClaims = [];
     const readied = []; // the contracts this reply made READY (their open deliveries are told after the deltas)
     corrections.push(...fw.corrections);
     // the other side of a trade the engine books this turn: a sale's buyer, a seller he paid exactly (coin.gift below)
@@ -753,12 +762,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             continue;
         }
         if (cPath && rulesetOf(s) >= 2 && ['quest.ready', 'quest.progress', 'quest.close'].includes(d.type)
-            && ((refusedScene && !d.depends_on?.length) || d.depends_on?.some(seq => !acceptedSteps.has(String(seq))
-                || answer.deltas.filter(source => String(source.seq) === String(seq)).length !== 1))) {
+            && ((refusedScene && !d.depends_on?.length) || d.depends_on?.some(seq => (!acceptedSteps.has(String(seq)) && !pendingSeq(seq))
+                || Number(seq) >= d.seq || answer.deltas.filter(source => String(source.seq) === String(seq)).length !== 1))) {
             reject(d, 'quest_dependency', 'a cited supporting step was not accepted before this quest claim');
             continue;
         }
-        const refusedBefore = rejected.length;
         const atBefore = s.scene.at;
         switch (d.type) {
             case 'time': {
@@ -1129,7 +1137,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     break;
                 }
                 const wage = privateMode ? paymentJob(s, d, from, fw.accept.filter(x => x.type === 'quest.close' && x.status === 'completed').map(x => x.quest)) : null;
-                if (wage) { privatePayments.push({ d, from, cp, ...wage }); break; }
+                if (wage) { deferSettlement(d, () => finishPayment(d, wage, from, cp), wage.job?.id); break; }
                 grant('envelope.give');
                 emit({ t: 'coin.changed', d: { id: 'pc', value: coin + cp, delta: cp, why: `${from ? entityLabel(s, from) : d.from}: ${String(d.why || 'a gift').slice(0, 80)}` } });
                 break;
@@ -1178,34 +1186,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 emit({ t: 'quest.detailed', d: { id: q.id, note: note.slice(0, 200), schedule: d.schedule ? String(d.schedule).slice(0, 80) : null } });
                 break;
             }
-            case 'quest.progress': {
-                const q = questRef(d.quest);
-                if (!q) { reject(d, 'quest', 'unknown quest'); break; }
-                // Patch 7.2C: progress that counts deaths the engine has not booked is no progress
-                const deaths = trueDeaths(String(d.objective));
-                if (deaths.refused.length) { reject(d, 'engine_owned_combat', `quest progress of deaths the engine has not booked (${deaths.refused.map((x) => x.why).join('; ')})`); break; }
-                // Prototype C (4.3.0-c.6.6.6): the same word on the same objective again is no news (one entry each)
-                const said = String(d.objective).slice(0, 160);
-                if (cPath && (q.progress || []).some((p) => progressKey(q, p.objective) === progressKey(q, said) && p.status === d.status)) break;
-                emit({ t: 'quest.progressed', d: { id: q.id, objective: said, status: d.status } });
+            case 'quest.progress':
+            case 'quest.ready':
+            case 'quest.close':
+                if (cPath && rulesetOf(s) >= 2 && d.depends_on?.some(pendingSeq)) deferSettlement(d, () => questClaim(d, true));
+                else questClaim(d);
                 break;
-            }
-            case 'quest.ready': {
-                const q = questRef(d.quest);
-                if (cPath && rulesetOf(s) >= 2 && q?.kind === 'guild_contract' && deliveryObjectives(q).length) readyClaims.push(d);
-                else finishReady(d);
-                break;
-            }
-            case 'quest.close': {
-                const q = questRef(d.quest);
-                if (!q) { reject(d, 'quest', 'unknown quest'); break; }
-                if (q.status !== 'active' && q.status !== 'offered') { reject(d, 'quest', `the quest is ${q.status}`); break; }
-                if (q.kind === 'private' && d.status === 'completed' && q.giver && idOf(d.by) !== q.giver) { reject(d, 'quest', 'private work is closed by its giver'); break; }
-                if (privateMode && q.kind === 'private' && d.status === 'completed') { privateCloses.push({ d, id: q.id }); break; }
-                if (d.status === 'failed') grant('world.failed');
-                emit({ t: 'quest.status', d: { id: q.id, from: q.status, to: d.status, by: idOf(d.by) || null } });
-                break;
-            }
             case 'listing.gone': {
                 // The same reply in which the player reads an official board is not allowed to retroactively take
                 // away its just-published choices. On Prototype C the current-day board stays Alaric's stable choice set;
@@ -1249,10 +1235,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             default:
                 reject(d, 'unknown', `the engine has no handler for ${d.type}`);
         }
-        if (rejected.length === refusedBefore) {
-            acceptedSteps.add(String(d.seq));
-            if (d.type === 'arrive' && s.scene.at !== atBefore) refusedScene = false;
-        }
+        acceptStep(d);
+        if (acceptedSteps.has(String(d.seq)) && d.type === 'arrive' && s.scene.at !== atBefore) refusedScene = false;
     }
     // a hand-over whose offer never came to be (refused) stands as the story told it
     settleDeferred();
@@ -1366,27 +1350,32 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // Settle private work only after this reply's actual arrivals and conditional actions.
     // Completion and wage order in the extractor answer cannot change the result.
     step = { kind: 'engine' };
-    const blockedJobs = privateMode ? recordJobWork(s, emit, outcome, expected, events) : new Set();
-    for (const { d, id } of privateCloses) {
-        step = { kind: 'delta', type: d.type, seq: d.seq, granted: new Set() };
-        const q = s.quests[id];
-        if (!q.work || blockedJobs.has(id)) {
-            reject(d, 'private_work', 'no successful player-authorized work is recorded for this job');
-            corrections.push(`"${q.title}" is still ${q.status}: acceptance or progress text is no performed work. Only the player's actual job actions count; do not invent a journey, working time, completion or wages.`);
-        } else if (['active', 'offered'].includes(q.status)) emit({ t: 'quest.status', d: { id, from: q.status, to: 'completed', by: idOf(d.by) } });
+    blockedJobs = privateMode ? recordJobWork(s, emit, outcome, expected, events) : new Set();
+    // Sources settle before dependants. Wages still wait for this reply's private close,
+    // even when the extractor reported the payment first. Every queued item runs at most once.
+    const waiting = settlements.sort((a, b) => a.d.seq - b.d.seq);
+    while (waiting.length) {
+        const before = waiting.length;
+        for (const entry of [...waiting]) {
+            const { d, finish, job } = entry;
+            if (d.depends_on?.some(pendingSeq)) continue;
+            if (job && waiting.some(x => x.d.type === 'quest.close' && x.d.status === 'completed' && questRef(x.d.quest)?.id === job)) continue;
+            pendingSteps.delete(d);
+            step = { kind: 'delta', type: d.type, seq: d.seq, granted: new Set() };
+            if (d.depends_on?.some(seq => !acceptedSteps.has(String(seq)))) reject(d, 'quest_dependency', 'a cited supporting step failed its final validation');
+            else finish();
+            acceptStep(d);
+            waiting.splice(waiting.indexOf(entry), 1);
+        }
+        if (waiting.length === before) {
+            // Only an unresolvable dependency remains (for example, work closed on proof of its own wages).
+            for (const { d } of waiting.splice(0)) {
+                step = { kind: 'delta', type: d.type, seq: d.seq, granted: new Set() };
+                pendingSteps.delete(d);
+                reject(d, 'quest_dependency', 'the supporting steps cannot be confirmed independently');
+            }
+        }
     }
-    for (const { d, job: q, from, cp, error } of privatePayments) {
-        step = { kind: 'delta', type: d.type, seq: d.seq, granted: new Set() };
-        const why = error || (!q.work || q.status !== 'completed' || blockedJobs.has(q.id) ? 'job is not completed through authorized work'
-            : q.payment ? 'the agreed wages were already paid'
-            : q.giver && from !== q.giver ? 'only this job\'s giver pays its wages'
-            : q.payout_cp != null && q.payout_cp !== cp ? 'payment differs from the agreed job reward' : null);
-        if (why) { reject(d, 'private_payment', why); corrections.push(`No private-job wages were booked: ${why}. Independent genuine gifts remain possible; never rename unpaid wages as a gift.`); continue; }
-        grant('envelope.give');
-        emit({ t: 'coin.changed', d: { id: 'pc', value: s.entities.pc.sheet.coin_cp + cp, delta: cp, why: `Private job: ${q.title}` } });
-        emit({ t: 'transaction.completed', d: { to: 'pc', from, cp, job: q.id, for: q.title, at: s.scene.at } });
-    }
-    for (const d of readyClaims) { step = { kind: 'delta', type: 'quest.ready', seq: d.seq, granted: new Set() }; finishReady(d); }
     step = { kind: 'engine' };
     for (const id of readied) {
         const r = contractReady(s, content, s.quests[id], { c: true });
@@ -1414,6 +1403,57 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     return { events, rejected, corrections, system, opened, state: s, arrivedHall };
 
     // ---------------------------------------------------------------------------------------------- step helpers
+    function questClaim(d, settling = false) {
+        switch (d.type) {
+            case 'quest.progress': {
+                const q = questRef(d.quest);
+                if (!q) { reject(d, 'quest', 'unknown quest'); break; }
+                // Patch 7.2C: progress that counts deaths the engine has not booked is no progress
+                const deaths = trueDeaths(String(d.objective));
+                if (deaths.refused.length) { reject(d, 'engine_owned_combat', `quest progress of deaths the engine has not booked (${deaths.refused.map((x) => x.why).join('; ')})`); break; }
+                // Prototype C (4.3.0-c.6.6.6): the same word on the same objective again is no news (one entry each)
+                const said = String(d.objective).slice(0, 160);
+                if (cPath && (q.progress || []).some((p) => progressKey(q, p.objective) === progressKey(q, said) && p.status === d.status)) break;
+                emit({ t: 'quest.progressed', d: { id: q.id, objective: said, status: d.status } });
+                break;
+            }
+            case 'quest.ready': {
+                const q = questRef(d.quest);
+                if (!settling && cPath && rulesetOf(s) >= 2 && q?.kind === 'guild_contract' && deliveryObjectives(q).length) deferSettlement(d, () => questClaim(d, true));
+                else finishReady(d);
+                break;
+            }
+            case 'quest.close': {
+                const q = questRef(d.quest);
+                if (!q) { reject(d, 'quest', 'unknown quest'); break; }
+                if (q.status !== 'active' && q.status !== 'offered') { reject(d, 'quest', `the quest is ${q.status}`); break; }
+                if (q.kind === 'private' && d.status === 'completed' && q.giver && idOf(d.by) !== q.giver) { reject(d, 'quest', 'private work is closed by its giver'); break; }
+                if (privateMode && q.kind === 'private' && d.status === 'completed') {
+                    if (!settling) deferSettlement(d, () => questClaim(d, true));
+                    else if (!q.work || blockedJobs.has(q.id)) {
+                        reject(d, 'private_work', 'no successful player-authorized work is recorded for this job');
+                        corrections.push(`"${q.title}" is still ${q.status}: acceptance or progress text is no performed work. Only the player's actual job actions count; do not invent a journey, working time, completion or wages.`);
+                    } else emit({ t: 'quest.status', d: { id: q.id, from: q.status, to: 'completed', by: idOf(d.by) } });
+                    break;
+                }
+                if (d.status === 'failed') grant('world.failed');
+                emit({ t: 'quest.status', d: { id: q.id, from: q.status, to: d.status, by: idOf(d.by) || null } });
+                break;
+            }
+        }
+    }
+
+    function finishPayment(d, { job: q, error }, from, cp) {
+        const why = error || (!q.work || q.status !== 'completed' || blockedJobs.has(q.id) ? 'job is not completed through authorized work'
+            : q.payment ? 'the agreed wages were already paid'
+            : q.giver && from !== q.giver ? 'only this job\'s giver pays its wages'
+            : q.payout_cp != null && q.payout_cp !== cp ? 'payment differs from the agreed job reward' : null);
+        if (why) { reject(d, 'private_payment', why); corrections.push(`No private-job wages were booked: ${why}. Independent genuine gifts remain possible; never rename unpaid wages as a gift.`); return; }
+        grant('envelope.give');
+        emit({ t: 'coin.changed', d: { id: 'pc', value: s.entities.pc.sheet.coin_cp + cp, delta: cp, why: `Private job: ${q.title}` } });
+        emit({ t: 'transaction.completed', d: { to: 'pc', from, cp, job: q.id, for: q.title, at: s.scene.at } });
+    }
+
     // All READY paths converge here after delayed acquisitions.
     function finishReady(d) {
         const q = questRef(d.quest);
@@ -1941,7 +1981,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const units = Number.isInteger(d.qty) && d.qty > 0 ? d.qty : 1;
             const g = purchaseOf(d.name, holder.entity, units);
             if (g) { boughtNames.add(normText(d.name)); handedBought(d, g); return; }
-            if (!settling && awaitsPurchase(d.name, holder.entity, units, d.seq)) { deferred.push(d); return; }
+            if (!settling && awaitsPurchase(d.name, holder.entity, units, d.seq)) { pendingSteps.add(d); deferred.push(d); return; }
         }
         const q = d.for_quest ? questRef(d.for_quest) : null;
         // Patch 7: what lies in a container that is still shut (the locked chest) is not in his hands before it opens
@@ -1957,7 +1997,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const fresh = typeof d.object?.new === 'string' ? normText(d.object.new) : null;
         if (fresh && !objectsNew.has(fresh)) {
             if (boughtNames.has(fresh)) { reject(d, 'engine_booked', 'the purchase handed it to him already'); return; }
-            if (!settling && deferred.some((x) => x.type === 'object.new' && normText(x.name) === fresh)) { deferred.push(d); return; }
+            if (!settling && deferred.some((x) => x.type === 'object.new' && normText(x.name) === fresh)) { pendingSteps.add(d); deferred.push(d); return; }
         }
         const o = objectRef(d.object);
         const to = holderOf(d.to);
@@ -1980,7 +2020,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const units = d.qty && d.qty < (o.qty ?? 1) ? d.qty : (o.qty ?? 1);
             const g = purchaseOf(o.name, o.holder.entity, units);
             if (g) { handedBought(d, g); return; }
-            if (!settling && awaitsPurchase(o.name, o.holder.entity, units, d.seq)) { deferred.push(d); return; }
+            if (!settling && awaitsPurchase(o.name, o.holder.entity, units, d.seq)) { pendingSteps.add(d); deferred.push(d); return; }
         }
         // Prototype C (4.3.0-c.6.6.3): the hand-over he set out to make where he went (commands.js give): booked as the story
         // has it change hands, into someone's hands there
@@ -2045,8 +2085,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const was = step;
         for (const x of deferred.splice(0)) {
             step = { kind: 'delta', type: x.type, seq: x.seq ?? 0, granted: new Set() };
+            pendingSteps.delete(x);
             if (x.type === 'object.new') objectNew(x, true);
             else objectMove(x, true);
+            acceptStep(x);
         }
         step = was;
     }

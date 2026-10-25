@@ -48,6 +48,8 @@ Der Nutzer lädt den Originalexport als ZIP in den betreffenden Unterordner auf 
 
 | [20261025-113248Z-current_test](20261025-113248Z-current_test/) | **.85**, Mage L1→2, natürlicher GLM-5.3-Flash, neue Kampagne ohne Privatquests | **22/100** Eingaben, `extractor_failed` nach ungültigem `object.move` und fehlgeschlagenem Repair; zuvor 2 Kämpfe/3 Schildkröten-Siege, Guild-Board **2+2+1 gültig**, Jagd **READY**; daneben T16 `scene_context`/`no_go` | [REVIEW.md](20261025-113248Z-current_test/REVIEW.md), [SOL_COUNTERREVIEW.md](20261025-113248Z-current_test/SOL_COUNTERREVIEW.md) | **Original-ZIP auf `main`, unabhängig CRC-/SHA-geprüft:** `20261025-113248Z-current_test.zip`, **3.500.524 Bytes**, SHA-256 `10edf1719366ca107f9f464014d88234f16189acab6f4ccc3b6b62e41e0946c9`; lokal CRC-geprüft |
 
+| [20261025-124809Z-current_test](20261025-124809Z-current_test/) | **.87**, Mage L1→3, GLM-5.3-Flash, neue Kampagne ohne Privatquests | **100/100**, regulär done, 3 Siege/7 Kills, 3 Gildenjagden READY→COMPLETED und +140 cp; Board 4+1 gültig. **P1:** T97 derselbe Rüstungskauf doppelt -80/-80 cp; T29 falsche Doss-Offerte statt genannter Hessel-Annahme. **P2:** Gear ohne Werte nicht anlegbar; Szenen-/Trade-Kohärenz | [REVIEW.md](20261025-124809Z-current_test/REVIEW.md) | Original-ZIP **im Chat CRC-/SHA-verifiziert, Git-Binärupload offen**: `20261025-124809Z-current_test.zip`, 15.010.159 Bytes, SHA-256 `7a251693c750643116a8e298f248b4c2b3393003009196ba9cdff10afbea3032` |
+
 ## Arbeitsweise für weitere Tests
 
 1. **Test starten:** `current_test` offen spielen lassen; keine erzwungene Questabfolge und keine gezielten Engine-Reparaturen während des Laufs.

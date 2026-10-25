@@ -67,3 +67,10 @@ Die .75-Guide-Priorisierung ist im JSON vorhanden, aber dies ist **kein Nachweis
 5. **Wiederholung** auf einem nachweislich neuen, vollständig technisch grün getesteten Build, im bestehenden offenen 100-Input-Guide. Positive Gegenkontrollen: 2/2/1-Board, echte Novice-Einzeljagd, 3 Guild-Payouts, Privatjob mit Annahme ohne Work und nachträglichem legitimem +4-cp-Payout, 8 Kampf-Siege, `integrity: OK`, kein doppeltes Item/Wage/XP.
 
 **Status:** NUR REVIEW/ARCHIV. Keine Produktänderungen, keine neuen Tests ausgeführt, keine ungefragte Kampfwertfreigabe. Original-ZIP nicht in das öffentliche Git-Repository kopiert; Referenzgröße/Hash oben.
+
+
+## 8. Unabhängiger Sol-Gegenreview (25.10.2026)
+
+Original-ZIP erneut materialisiert, Hash bestätigt, Endzustand mit aktuellem Code gefaltet und die beiden Übergaben gegen `deliveryTarget`/`bookDelivery` geprüft. Wesentliche Befunde bestätigt. Zwei Präzisierungen: **34 XP seit Level 4**, nicht 334; außerdem löst `destination()` vor E83 den noch unbekannten Infirmary-Innenraum bereits auf **Quarry camp** auf. Allein `Recipient→Healer` macht dort den Empfängercheck erfolgreich. Der erste fehlende Beleg ist deshalb nicht technisch allein mit dem falschen Ort erklärt; der Fix muss diese zu grobe Ortsauflösung mit absichern. Keine nachträgliche Behauptung, Alaric sei tatsächlich im Innenraum gewesen.
+
+Technischer Plan, Gegenfälle und Runner-Änderung einmalig im [Run-11-Folgeplan](../../patch_plans_10b/PATCH_RUN11_DELIVERY_AND_FACTS.md). Engine-Fixes noch nicht umgesetzt. Der Guide priorisiert jetzt aktiven Verkauf überschüssiger Kampfbeute und tatsächlichen Kauf/Anlegen sinnvoller Ausrüstung; [Runnercommit `23930fc`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/23930fcf841781d7839bd0b002ddc387b7b01329), Enginebuild bleibt .76. Vorhandene Guide-Tests 4/4 und Vollsuite 1550/1550 grün; kein neuer natürlicher Lauf oder ST-Smoke für diese reine Instruktionsänderung.

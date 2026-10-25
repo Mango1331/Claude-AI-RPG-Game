@@ -267,11 +267,15 @@ export function nextSlot(s, d, floor) {
 export function slotForNew(s, content, d, arrivedAt, prose = '') {
     const root = trueDungeonOf(s, arrivedAt || s.scene.at);
     const x = livingOf(s, root);
-    if (!x || d.present === false) return null;
+    if (!x) return null;
     const floor = floorAt(s, arrivedAt || s.scene.at);
     const slots = x.run.floors[floor]?.slots || [];
-    const known = slots.find((sl) => sl.story_ref && normText(sl.story_ref) === normText(d.ref) && sl.entities.length);
+    const known = slots.find((sl) => (normText(sl.ref) === normText(d.ref) || (sl.story_ref && normText(sl.story_ref) === normText(d.ref))) && sl.entities.length);
     if (known) return resolved(s, known) ? null : { root, floor, slot: known, existing: true };
+    if (d.present === false) {
+        const exact = slots.find(sl => normText(sl.ref) === normText(d.ref) && !sl.taken && !sl.entities.length);
+        return exact ? { root, floor, slot: exact } : null;
+    }
     const free = slots.filter((sl) => !sl.entities.length && !sl.taken);
     const hit = (sl) => ({ root, floor, slot: sl, story_ref: d.ref });
     // Keep normal pacing and the engine's explicit encounter refs.
@@ -310,7 +314,7 @@ export function slotEntityEvents(s, content, hit, ids, at) {
         level: slot.levels[i] ?? slot.levels[0], type, slot: { dungeon: root, cycle: x.cycle, floor, id: slot.id, role: slot.role },
         ...(slot.name && ids.length === 1 ? { name: titled(slot.name.replace(/^the /i, '')), known_name: null } : {}),
     } } }));
-    ev.push({ t: 'dungeon.slot', d: { id: root, cycle: x.cycle, floor, slot: slot.id, set: { entities: ids, at, met_turn: s.turn, ...(hit.story_ref && /^[a-z]+\.[a-z0-9_]+$/i.test(hit.story_ref) && hit.story_ref !== slot.ref ? { story_ref: hit.story_ref } : {}) } } });
+    ev.push({ t: 'dungeon.slot', d: { id: root, cycle: x.cycle, floor, slot: slot.id, set: { entities: ids, at, ...(at ? { met_turn: s.turn } : {}), ...(hit.story_ref && /^[a-z]+\.[a-z0-9_]+$/i.test(hit.story_ref) && hit.story_ref !== slot.ref ? { story_ref: hit.story_ref } : {}) } } });
     return ev;
 }
 

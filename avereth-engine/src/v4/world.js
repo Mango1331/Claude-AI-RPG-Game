@@ -443,7 +443,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             if (named && named.id !== d.anchor && !fits) d = { ...d, anchor: named.id };
         }
         let hit = slot;
-        if (cPath && kind === 'creature' && d.present !== false && !hit) {
+        if (cPath && kind === 'creature' && !hit) {
             const dead = resolvedSlotNamed(s, d);
             if (dead) {
                 reject(d, 'dungeon_slot', `${dead.slot.name || dead.slot.species} of this cycle is already defeated; it stays so until the Dungeon renews`);
@@ -454,11 +454,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             hit = slotForNew(s, content, d, s.scene.at, prose);
             if (hit?.existing) {
                 const ids = hit.slot.entities.filter((id) => s.entities[id]?.status !== 'dead');
+                if (d.present === false) {
+                    if (ids.length) refs.set(normText(d.ref), ids[0]);
+                    if (ids.length > 1) groups.set(normText(d.ref), ids);
+                    return ids;
+                }
                 const here = ids.filter((id) => {
                     if (s.scene.present.includes(id)) return true; // an explicit enter/arrival already moved it
                     const e = s.entities[id];
                     const at = e.left?.at || e.at || hit.slot.at;
-                    if (at !== s.scene.at) {
+                    if (at && at !== s.scene.at) {
                         reject(d, 'dungeon_presence', `${id} remains at ${at || 'its last known room'}; a story reference alone does not move it`);
                         const fix = `${entityLabel(s, id)} was not brought into this room. It remains at its last booked location unless an actual entrance or arrival establishes its movement.`;
                         if (!corrections.includes(fix)) corrections.push(fix);
@@ -467,7 +472,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     emit({ t: 'scene.entered', d: { id, band: d.band || 'MEDIUM' } });
                     return true;
                 });
-                if (here.length === 1) refs.set(normText(d.ref), here[0]);
+                if (here.length) {
+                    if (!hit.slot.at) { grant('dungeon.slot'); for (const e of slotEntityEvents(s, content, hit, ids, s.scene.at)) emit(e); }
+                    for (const id of here) materialise(s, content, dice, emit, id);
+                    refs.set(normText(d.ref), here[0]);
+                    if (here.length > 1) groups.set(normText(d.ref), here);
+                }
                 return here;
             }
             // Patch 8.4.1 (live 22.10.2026 05:43, turn 16: a search's SUCCESS on level 1 of the Old Crown Catacombs, a
@@ -584,14 +594,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             for (let n = count + 1; kind === 'creature' && n < count + 64 && (entries.some((x) => normText(x.ref) === normText(ref)) || (numbered ? takenRef(ref) : absentRef(ref))); n++) ref = `${d.ref} ${n}`;
             entries.push(kind === 'npc'
                 ? { ref, kind: 'npc', name: d.name || undefined, anonymous: !d.name, desc: [...(d.role ? [d.role] : []), ...(d.desc || [])], traits: (d.desc || []).join(', '), band: d.band || undefined }
-                : { ref, kind: 'creature', name: undefined, species: d.species, anchor: d.anchor, desc: d.desc || [], band: d.band || undefined });
+                : { ref, present: d.present !== false, kind: 'creature', name: undefined, species: d.species, anchor: d.anchor, desc: d.desc || [], band: d.band || undefined });
         }
-        const joins = kind === 'creature' && s.encounter && hostileRefs.has(normText(d.ref));
+        const joins = kind === 'creature' && d.present !== false && s.encounter && hostileRefs.has(normText(d.ref));
         if (joins) grant('envelope.fight'); // introduced by this reply: an ambush or a reinforcement is the world's move
         const r = entries.length ? v3({ new: entries, ...(joins ? { combat: entries.map((e) => ({ by: e.ref })) } : {}) }, d) : { events: [], accepted: [] };
         if (joins) joinedByNew.add(normText(d.ref));
         const created = r.events.filter((e) => e.t === 'entity.created').map((e) => e.d.entity.id).filter((id) => !before.has(id));
-        for (const id of created) bornHere.add(id);
+        if (d.present !== false) for (const id of created) bornHere.add(id);
         const known = r.accepted.map((a) => /^known (\S+) \(not duplicated\)$/.exec(a)?.[1]).filter(Boolean);
         const ids = [...again, ...created, ...known];
         // the members of a group keep its name (the ref the story gave them), so a later "the quarry pack" means them; one
@@ -637,7 +647,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (cPath && kind === 'creature' && d.threat === false) for (const id of created) emit({ t: 'entity.updated', d: { id, set: { threat: false } } });
         // Gameplay visibility: once an actual creature is visibly present, lock its deterministic profile immediately.
         // This gives the player a canonical target handle + HP + Range before deciding whether to attack; Initiative still waits for Combat START.
-        if (hit && created.length) { grant('dungeon.slot'); for (const e of slotEntityEvents(s, content, hit, created, s.scene.at)) emit(e); }
+        if (hit && created.length) { grant('dungeon.slot'); for (const e of slotEntityEvents(s, content, hit, created, d.present === false ? null : s.scene.at)) emit(e); }
         if (kind === 'creature' && d.present !== false) for (const id of ids) materialise(s, content, dice, emit, id);
         for (const id of ids) namedHere.add(id);
         return ids;

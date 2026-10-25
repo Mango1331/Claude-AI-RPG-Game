@@ -17,7 +17,7 @@ import { hallOf, settlementOf, realmOf, heldBy, membership, listingsOf, boardKey
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
-export const BOARD_VERSION = 'board-4.9';
+export const BOARD_VERSION = 'board-5.0';
 const QTYPES = ['minor', 'standard', 'dangerous', 'major'];
 const VERBS = ['GO', 'FIND', 'TALK', 'GET', 'GATHER', 'GIVE', 'DELIVER', 'USE', 'REPAIR', 'DEFEND', 'ESCORT', 'ATTACK', 'DEFEAT'];
 
@@ -505,7 +505,8 @@ export function boardNeed(s, content, { rank = null } = {}) {
     return missing > 0 ? { branch, rank: r, missing, day: today(s), have: have.map((q) => q.title) } : null;
 }
 
-const OBJECTIVE = O({ verb: E(VERBS), what: S(), qty: N(I(1)), unit: N(S()), where: N(S()) });
+const DELIVERY = O({ v: I(1, 1), mode: E(['give', 'drop']), recipient_kind: N(E(['name', 'role'])), recipient: N(S()), place: S() });
+const OBJECTIVE = O({ delivery: N(DELIVERY), verb: E(VERBS), what: S(), qty: N(I(1)), unit: N(S()), where: N(S()) });
 const PROOF = O({ kind: E(['object', 'mark']), what: S(), qty: N(I(1)), unit: N(S()), on: N(S()), consume: N({ type: 'boolean' }) });
 
 export function listingSchema(content) {
@@ -537,10 +538,22 @@ function simpleListingWhy(s, content, l, profile, family) {
     if (family === 'delivery') {
         if (os.length !== 1 || os[0].verb !== 'DELIVER') return 'delivery requires exactly one DELIVER objective; no duplicate GIVE or other duties';
         const o = os[0];
-        if (!o.what.trim() || !Number.isInteger(o.qty) || !o.where?.trim()) return 'delivery needs physical goods, an exact quantity and one recipient/place';
-        const where = deliveryWhere(o.where);
-        if (!where || !where.place || (!where.drop && (!where.recipient || genericRecipient(where.recipient))))
-            return 'delivery needs a named person or specific receiving role at Place, or "deposit at Place"; generic Recipient/someone/staff is not an address';
+        if (!o.what.trim() || !Number.isInteger(o.qty) || (!o.delivery && !o.where?.trim())) return 'delivery needs physical goods, an exact quantity and one recipient/place';
+        if (!o.delivery) {
+            // Compatibility for cached pre-descriptor board answers, never existing quests.
+            const where = deliveryWhere(o.where);
+            if (!where) return 'objectives[0].where: missing separator " at "; provide delivery {v:1,mode,recipient_kind,recipient,place} instead of a comma address';
+            if (!where.place || (!where.drop && genericRecipient(where.recipient))) return 'objectives[0].delivery.recipient: name a person or specific role, not generic Recipient/someone/staff';
+            const role = /^(?:the )?(?:healer|midwife|clerk|keeper|physician|doctor|nurse|medic|surgeon|apothecary|quartermaster|warden|priest|priestess|abbot|abbess|brother|sister|ferryman|innkeeper|blacksmith|merchant)$/i;
+            if (!where.drop && !role.test(where.recipient) && !/^[A-Z][a-z'-]+(?: [A-Z][a-z'-]+)?$/.test(where.recipient))
+                return 'objectives[0].delivery: ambiguous free-text receiver; supply explicit recipient_kind name or role';
+            o.delivery = { v: 1, mode: where.drop ? 'drop' : 'give', recipient_kind: where.drop ? null : role.test(where.recipient) ? 'role' : 'name', recipient: where.recipient, place: where.place };
+        }
+        const d = o.delivery;
+        if (!d.place.trim() || (d.mode === 'give' && (!d.recipient_kind || !d.recipient?.trim() || genericRecipient(d.recipient)))
+            || (d.mode === 'drop' && (d.recipient !== null || d.recipient_kind !== null)))
+            return 'objectives[0].delivery: give requires a specific name/role and place; drop requires place with null receiver';
+        o.where = d.mode === 'drop' ? `deposit at ${d.place}` : `${d.recipient} at ${d.place}`;
         const cargo = `${o.qty} × ${o.what}`;
         const drop = /^deposit at /i.test(o.where);
         l.task = drop ? `Deposit ${cargo} at ${o.where.slice(11)}.` : `Deliver ${cargo} to ${o.where}.`;
@@ -600,6 +613,7 @@ export function boardRequest(s, content, need) {
         ...noviceProfile,
         ...(profile ? [
             `- FIXED BOARD: ${profile.hunt} monster hunts, 2 deliveries, ${profile.dungeon} Dungeon clearance. Escort is not generated on this board. When no suitable known Dungeon exists, its slot is a third hunt; never invent a Dungeon to fill the quota. Existing notices count towards these totals on a partial refill.`,
+            '- Each delivery objective MUST include delivery:{v:1,mode:"give",recipient_kind:"name" or "role",recipient:"Fenwick" or "toll clerk",place:"Quarry Gate Toll Station"}. For an expressly permitted drop: mode:"drop", recipient_kind:null, recipient:null. Other objectives use delivery:null. Keep place a precise destination label, with no route directions appended. Name means only that person, role means an appropriate present holder of that role. Unknown destinations and people are permitted; they are encountered naturally.',
             '- Each delivery has exactly one DELIVER objective, concrete physical cargo, integer qty and a specific receiver and exact destination: where "Healer at Quarry Camp Infirmary" or "Gretha at Thornhollow", or "deposit at Receiving Shed". Name a person or a recognizable job role (healer, quartermaster, clerk), never "Recipient", "someone", "staff" or other placeholder. Place must name the ACTUAL destination, not only its parent settlement. A previously unknown interior must be visited before delivery can be confirmed. No GET/GIVE/ESCORT or other objective, signature, return trip, returned container, deadline or additional duty. proof is []. The engine renders task and desired_end_state from this objective; keep its title and client consistent. Travel and obtaining the cargo happen naturally in play; no mandatory ambush.',
             '- Hunts have one DEFEAT objective with an exact quantity and a clear location, plus only optional FIND/GO guidance. proof is []. The target must be an animal or Monster, not people; distinguish living hostile plants from ordinary gardening.',
             ...(need.rank === 'Novice' ? ['- At least one hunt is an introductory single-foe job: qty 1, level 1, qtype minor, one weak ordinary F-rank animal or Monster, no elite/boss or concealed required group. This is an available choice, not a compulsory fight.'] : []),
@@ -608,7 +622,7 @@ export function boardRequest(s, content, need) {
         `- rank is "${need.rank}"; level is the quest level, an integer from ${lo} to ${hi}; qtype is minor, standard, dangerous or major.`,
         `- payout_cp is the Guild's one fixed payout in copper (1 silver = 10 copper)${guide ? `; for ${need.rank} work ${guide[0]}–${guide[1]} cp is usual (a guide, not a limit)` : ''}.`,
         '- A cull names how many its notice asks for: the DEFEAT objective\'s qty (4 wolves; 1 for a single beast). A clearance of a Dungeon level names the level ("level 1") and no number: the level is cleared when its threats are. One listing is one of the two, never both: a cull\'s desired_end_state is that number of them dealt with, not a cleared level or place; a clearance\'s is the level cleared, with no number. Its title says the same: a clearance is titled by what is cleared ("Clear …", "Purge …", "Secure …"), never "Cull" or "Thin", which promise a number.',
-        '- 1 to 4 objectives: {verb, what, qty, unit, where}; verb is one of GO, FIND, TALK, GET, GATHER, GIVE, DELIVER, USE, REPAIR, DEFEND, ESCORT, ATTACK, DEFEAT. These are continuity memories for play, not a rigid checklist the narrator must force in order.',
+        '- 1 to 4 objectives: {verb, what, qty, unit, where, delivery}; verb is one of GO, FIND, TALK, GET, GATHER, GIVE, DELIVER, USE, REPAIR, DEFEND, ESCORT, ATTACK, DEFEAT. These are continuity memories for play, not a rigid checklist the narrator must force in order.',
         '- proof contains 0–2 optional verification examples the Guild could recognize. Prefer [] when return, witnesses or a credible report can establish the outcome naturally. If used, EVERY entry must be an object with all fields present: {"kind":"object"|"mark","what":"...","qty":integer>=1|null,"unit":string|null,"on":string|null,"consume":true|false|null}. These are story guidance, NOT exclusive completion tokens.',
         '- Do not use GO merely as a travel checklist item. Objectives should describe meaningful work/outcomes (find, rescue, repair, defend, escort, investigate through FIND/TALK/GET, defeat, deliver, etc.); travel itself is normally just how play reaches them. Do not invent paperwork solely to make verification possible.',
         '- client is who posted the work (a person, a trade, a hamlet); titles differ from the listings already on the board.',
@@ -702,8 +716,12 @@ export function parseBoard(answer, content, need, s = null) {
     if (!value) return { listings: null, errors: [error || 'no JSON object'] };
     // a listing without its board text is still a listing: the board then shows the desired end state (as before 4.1.2)
     for (const l of Array.isArray(value.listings) ? value.listings : []) if (l && typeof l === 'object' && l.task === undefined) l.task = null;
+    for (const l of Array.isArray(value.listings) ? value.listings : [])
+        for (const o of Array.isArray(l?.objectives) ? l.objectives : [])
+            if (o && typeof o === 'object' && o.delivery === undefined) o.delivery = null;
     const errors = validate(value, listingSchema(content));
     if (errors.length) return { listings: null, errors: errors.slice(0, 8) };
+    for (const l of value.listings) for (const o of l.objectives) if (o.delivery === null) delete o.delivery;
     const [lo, hi] = content.rules.guild.rank_levels[need.rank];
     const ok = [];
     const refused = [];

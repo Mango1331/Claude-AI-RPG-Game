@@ -2158,3 +2158,7 @@ Initial fehlende Swipe-ID wird für Job-Zugehörigkeit und Deduplizierung als `0
 ### Private Arbeitsaufträge (.76, 25.10.2026)
 
 Annahme allein erledigt und bezahlt keinen Privatjob. Bestehende Spielerhandlungen erhalten optional einen geprüften Auftragsbezug; tatsächliche Arbeit und einmalige Bezahlung bleiben über vorhandene Events erhalten. Gemeinsame Arbeit/Reise in einem Input, spätere Auszahlung und unabhängige Geschenke bleiben möglich. Umsetzung, Rot/Grün und Node-/ST-Abnahme einmalig in der [Fach-Patchnote](PATCH10B_PRIVATE_JOB_AGENCY.md).
+
+### Run-12-Fachfix .79 (25.10.2026)
+
+Dungeon-Slotidentität und lokale Präsenz getrennt; neue Gildenlieferungen speichern explizite Empfänger-/Orts-/Übergabesemantik. World-Reisekette bleibt vorbereitet und offen. Umsetzung, Rot/Grün und Abnahme: [PATCH10B_RUN12_DUNGEON_GUILD.md](PATCH10B_RUN12_DUNGEON_GUILD.md).

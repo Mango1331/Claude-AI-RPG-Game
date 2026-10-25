@@ -84,6 +84,13 @@ const structuredWhere = spec => !!spec && (spec.drop || genericRecipient(spec.re
     || RECEIVING_ROLE.test(spec.recipient) || PERSON_NAME.test(spec.recipient));
 const placeName = name => normText(String(name || '')).replace(/^the\s+/, '').trim();
 function destination(s, o) {
+    if (o.delivery?.v === 1) {
+        const label = o.delivery.place;
+        if (s.places[label]) return label;
+        const matches = Object.values(s.places).filter(p => placeName(p.name) === placeName(label)
+            || (s.places[p.parent] && placeName(`${s.places[p.parent].name} ${p.name}`) === placeName(label)));
+        return matches.length === 1 ? matches[0].id : null;
+    }
     if (s.places[o.where]) return o.where;
     const spec = deliveryWhere(o.where);
     if (!structuredWhere(spec)) {
@@ -129,10 +136,18 @@ function dropTarget(s, q, o, to, at) {
 export function deliveryTarget(s, q, o, to, at = s.scene.at, { drop = false, recorded = false } = {}) {
     const dest = destination(s, o);
     if (!dest || !under(s, at, dest)) return false;
-    if (drop) return dropTarget(s, q, o, to, at);
+    if (drop) return o.delivery?.v === 1 ? o.delivery.mode === 'drop' && to.loc === at && at === dest : dropTarget(s, q, o, to, at);
+    if (o.delivery?.v === 1 && o.delivery.mode !== 'give') return false;
     if (!to.entity || to.entity === 'pc' || (!recorded && !s.scene.present.includes(to.entity))) return false;
     const target = s.entities[to.entity];
     if (!target || (!recorded && target.status === 'dead')) return false;
+    if (o.delivery?.v === 1) {
+        if (target.kind !== 'npc') return false;
+        const d = o.delivery;
+        if (d.recipient_kind === 'name') return normText(target.name || '') === normText(d.recipient);
+        const roles = [truth(s, target.id, 'occupation')[0]?.o, ...(target.descriptors || []).slice(0, 3)].filter(Boolean);
+        return d.recipient_kind === 'role' && roles.some(role => contains(role, d.recipient));
+    }
     const spec = deliveryWhere(o.where);
     if (!structuredWhere(spec)) {
         // Preserve exact original receiver checks for historical prose

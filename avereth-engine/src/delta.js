@@ -363,7 +363,7 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
                 events.push({ t: 'entity.updated', d: { id: existing, set: { traits: String(n.traits).slice(0, 240) } } });
                 accepted.push(`${existing} traits: ${String(n.traits).slice(0, 60)}`);
             }
-            if (!present.has(existing) && state.entities[existing].status !== 'dead') {
+            if (n.present !== false && !present.has(existing) && state.entities[existing].status !== 'dead') {
                 events.push({ t: 'scene.entered', d: { id: existing, band: bandOf(n.band), cover: coverOf(n.cover) } });
                 present.add(existing);
             }
@@ -405,8 +405,10 @@ export function reportToEvents(report, state, content, { msg = null, prose = '',
         created.set(id, entity);
         if (kind === 'creature' && isGroup(content, n.name || n.ref)) groupNew.set(id, String(n.ref));
         events.push({ t: 'entity.created', d: { entity } });
-        events.push({ t: 'scene.entered', d: { id, band: bandOf(n.band), cover: coverOf(n.cover) } });
-        present.add(id);
+        if (n.present !== false) {
+            events.push({ t: 'scene.entered', d: { id, band: bandOf(n.band), cover: coverOf(n.cover) } });
+            present.add(id);
+        }
         accepted.push(`new ${kind} ${name || n.ref} (${id})`);
     }
     const UNKNOWN = 'unknown person (introduce new people via "new")';

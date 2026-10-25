@@ -30,7 +30,8 @@ export async function loadContent() {
         const legacy = await readJson('tests/legacy_world.json');
         cached = await loadContentPack(async (name) => {
             const json = await contentFile(name);
-            if (name === 'campaign_start.json') return { ...json, ruleset: 1 };
+            // Historical runs keep their recorded five-point start; live-start tests use loadProductContent.
+            if (name === 'campaign_start.json') return { ...json, ruleset: 1, pc: { ...json.pc, stats: { STR: 5, VIT: 5, AGI: 5, INT: 5, PER: 5, WIL: 5 } } };
             return name === 'lore.json' ? { ...json, locations: [...json.locations, ...legacy.locations], factions: [...json.factions, ...legacy.factions] } : json;
         });
     }

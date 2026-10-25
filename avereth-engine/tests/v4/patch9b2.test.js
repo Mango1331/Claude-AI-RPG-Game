@@ -16,7 +16,9 @@ import { eventKind, ownershipViolation } from '../../src/v4/ownership.js';
 import { defineSkill, learnSkill, skillDefErrors } from '../../src/skills.js';
 import { passiveDefErrors, definePassive, gainPassive, passiveTotals } from '../../src/passives.js';
 
-const content = await loadProductContent();
+// Fixed six-point class actors keep these numeric Skill/Passive examples independent of PC start balancing.
+const content = structuredClone(await loadProductContent());
+content.start.pc.stats = Object.fromEntries(content.rules.stats.map(k => [k, 5]));
 const legacy = await loadContent();
 
 function hero(cls, skills, c = content) {

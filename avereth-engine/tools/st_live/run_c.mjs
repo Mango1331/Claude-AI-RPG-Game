@@ -293,7 +293,7 @@ const checks = {
     keyNotInChatFile: chatText.length > 0 && !chatText.includes(DUMMY_KEY),
     fightOpened: S('burrow').state?.encounter === true && S('burrow').state.foes.length === 3,
     // 1 alias: Flame Lance on B, booked by the engine; A's own reading (kept in the record) was a Basic Attack
-    aliasBooksFlameLance: S('alias').look.pcSteps[0]?.skill === 'mage.flame_lance' && S('alias').look.pcSteps[0]?.target === B && S('alias').state.mp === 72 - 16
+    aliasBooksFlameLance: S('alias').look.pcSteps[0]?.skill === 'mage.flame_lance' && S('alias').look.pcSteps[0]?.target === B && S('alias').state.mp === S('burrow').state.mp - 16
         && S('alias').look.record?.plan?.version === 'plan-c0.1' && S('alias').look.record?.ir?.reason === 'planner'
         && /Alaric: Flame Lance → Barkscorpion B|Flame Lance/.test(engineOf(narratorFor('alias')[0])) && !/Alaric[^\n]*Basic Attack/.test(engineOf(narratorFor('alias')[0])),
     aliasA0WasBasicAttack: S('alias').look.record?.plan?.a0?.skill === 'mage.basic_attack',

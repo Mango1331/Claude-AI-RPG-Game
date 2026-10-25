@@ -137,7 +137,7 @@ test('9C-2c (1): long training of his mind ends in an offered Ordinary Passive; 
 
 // ------------------------------------------------------------------------------------------------ 2./3. rare
 /** A fight against a wolf of this Level that he starts at `start` HP: bolts until it is over; the records of each turn. */
-async function wolfFight(g, { level = 6, start = 44, hp = 80, id = 'mon.wolf' } = {}) {
+async function wolfFight(g, { level = 6, start = Math.ceil(dv(g).maxHp * 0.55), hp = 80, id = 'mon.wolf' } = {}) {
     const p = scaleCreature(content.anchors.get('wolf'), level, 'normal', content);
     inject(g, [
         { t: 'resource.changed', d: { id: 'pc', resource: 'hp', value: start } },
@@ -459,7 +459,7 @@ test('9C-2c (9): shared totals and no candidate of no effect; four slots for an 
     const h = await campaign(content, { cls: 'Mage', skills: 'Arcane Bolt + Arcane Ward' });
     grant(h, unrated('dyn.passive_hide_a', 'Hide A', [{ kind: 'resist', damage_type: 'physical', pct: 10 }]), unrated('dyn.passive_hide_b', 'Hide B', [{ kind: 'resist', damage_type: 'physical', pct: 10 }]), unrated('dyn.passive_hide_c', 'Hide C', [{ kind: 'resist', damage_type: 'physical', pct: 10 }]));
     forge(h, (q) => named(q, 'Ashen Resolve'));
-    await wolfFight(h, { start: 40 });
+    await wolfFight(h, { start: dv(h).maxHp / 2 });
     assert.deepEqual(passiveOffers(h.state())[0].passive.effects, [{ kind: 'stat_bonus', stat: 'DEF', value: 4 }], 'physical resistance is at its 30% total');
     // an NPC holds four at most as well
     const npc = { ...g.state().entities.pc.sheet, passives: {} };
@@ -516,7 +516,7 @@ test('9C-2c (10): the offer\'s Forge name survives a regenerate without a second
     const m = await campaign(content, { cls: 'Mage', skills: 'Arcane Bolt + Arcane Ward' });
     const p = scaleCreature(content.anchors.get('wolf'), 6, 'normal', content);
     inject(m, [
-        { t: 'resource.changed', d: { id: 'pc', resource: 'hp', value: 44 } },
+        { t: 'resource.changed', d: { id: 'pc', resource: 'hp', value: Math.ceil(dv(m).maxHp * 0.55) } },
         { t: 'entity.created', d: { entity: { id: 'mon.wolf', kind: 'creature', name: null, descriptors: ['wolf'], anchor: 'wolf', species: 'wolf', status: 'alive', location: m.state().scene.location, profile: { ...p, max_hp: 80, hp: 80 } } } },
         { t: 'scene.entered', d: { id: 'mon.wolf', band: 'MEDIUM', cover: 'none' } },
         { t: 'scene.awareness', d: { id: 'mon.wolf', level: 'aware' } },

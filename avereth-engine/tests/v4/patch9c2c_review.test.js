@@ -61,9 +61,9 @@ test('.50 R1: an exchange brings HP, MP and STA down to the new maxima in the sa
     inject(g, [{ t: 'resource.changed', d: { id: 'pc', resource: 'hp', value: full.maxHp } }, { t: 'resource.changed', d: { id: 'pc', resource: 'mp', value: full.maxMp } }]);
     assert.deepEqual([sheetOf(g).hp, sheetOf(g).mp], [full.maxHp, full.maxMp]);
     const steps = [
-        ['dyn.passive_thick_blood', 'a', 'DEF', { hp: full.maxHp - 10, mp: full.maxMp }, /Thick Blood is given up for good \(its effects end: HP 100 → 90\)/],
-        ['dyn.passive_conditioned_body', 'b', 'MDEF', { hp: full.maxHp - 20, mp: full.maxMp }, /Conditioned Body is given up for good \(its effects end: HP 90 → 80\)/],
-        ['dyn.passive_deep_wells', 'c', 'ATK', { hp: full.maxHp - 20, mp: full.maxMp - 10 }, /Deep Wells is given up for good \(its effects end: MP 82 → 72\)/],
+        ['dyn.passive_thick_blood', 'a', 'DEF', { hp: full.maxHp - 10, mp: full.maxMp }, new RegExp(`Thick Blood is given up for good \\(its effects end: HP ${full.maxHp} → ${full.maxHp - 10}\\)`)],
+        ['dyn.passive_conditioned_body', 'b', 'MDEF', { hp: full.maxHp - 20, mp: full.maxMp }, new RegExp(`Conditioned Body is given up for good \\(its effects end: HP ${full.maxHp - 10} → ${full.maxHp - 20}\\)`)],
+        ['dyn.passive_deep_wells', 'c', 'ATK', { hp: full.maxHp - 20, mp: full.maxMp - 10 }, new RegExp(`Deep Wells is given up for good \\(its effects end: MP ${full.maxMp} → ${full.maxMp - 10}\\)`)],
     ];
     for (const [old, key, stat, after, line] of steps) {
         const offer = await offered(g, SOURCE(`review.r1_${key}`, [{ kind: 'stat_bonus', stat, value: 6 }]));
@@ -81,7 +81,7 @@ test('.50 R1: an exchange brings HP, MP and STA down to the new maxima in the sa
     inject(g, [{ t: 'resource.changed', d: { id: 'pc', resource: 'hp', value: 30 } }]);
     await accept(g, offer.id, 'dyn.passive_keen_edge');
     assert.ok(!lastUser(g).events.some((e) => e.t === 'resource.changed'));
-    assert.deepEqual([sheetOf(g).hp, dv(g).maxHp], [30, 130]);
+    assert.deepEqual([sheetOf(g).hp, dv(g).maxHp], [30, full.maxHp + 30]);
     assert.deepEqual(validateState(g.state(), content), []);
 });
 

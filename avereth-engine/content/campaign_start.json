@@ -14,7 +14,7 @@
     "age": 18,
     "origin": "Earth",
     "level": 1,
-    "stats": {"STR": 5, "VIT": 5, "AGI": 5, "INT": 5, "PER": 5, "WIL": 5},
+    "stats": {"STR": 7, "VIT": 7, "AGI": 7, "INT": 7, "PER": 7, "WIL": 7},
     "class": null,
     "skills": {},
     "equipment": {"clothing": "simple_travelers_clothes"},

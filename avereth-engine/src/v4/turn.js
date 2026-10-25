@@ -76,7 +76,7 @@ export function playerTurnV4(state, content, text, { msg = null, commands = [], 
     } });
     // Patch 8: the Dungeon he is at, its cycle and its companies, as time has brought them (src/v4/living.js)
     if (c) syncEvents(s, content, emit);
-    const ctx = resolveCommands(s, content, commands, emit, { msg, dice, board, c, dropped });
+    const ctx = resolveCommands(s, content, commands, emit, { msg, dice, board, c, dropped, text });
     if (c) syncEvents(s, content, emit);
     const clarify = ctx.resolutions.find((r) => r.status === 'clarify');
     // Patch 3 (live 18.10.2026: "I settle on the ring of stones for my camp this night and go looking for animals to

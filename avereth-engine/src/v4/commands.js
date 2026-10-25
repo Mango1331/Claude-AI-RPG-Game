@@ -14,7 +14,7 @@ import { privateQuestsOf, questVisible } from '../content.js';
 // reply may change because of a command (auth), what the extractor must answer (expectedKeys) and what waits for the
 // reply (conditionals) go into the turn's outcome; the world applier (src/v4/world.js) reads them from there.
 import { transferCargo, bookDelivery, cargoProvenance } from './delivery.js';
-import { formatCoin } from '../economy.js';
+import { formatCoin, numbersIn } from '../economy.js';
 import { spendsStatPoints, assignHint } from '../commands.js';
 import { resolveCheck } from '../checks.js';
 import { entityLabel, setFactEvents, truth } from '../knowledge.js';
@@ -37,7 +37,7 @@ import { jobAction, jobOf } from './private_jobs.js';
 import { acceptPassive, declinePassive } from './passive_growth.js';
 import { acceptSkill, declineSkill, developmentOffers, skillOffers } from './skill_growth.js';
 import { classOffer, classSelection, acceptClass } from './class_growth.js';
-import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText } from './trade.js';
+import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
 import { dungeonOf, trueDungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed, hiddenWayFinds, linkEvent, otherEnd, linksAt, blockerOf, goesFrom, firstStop } from './dungeon.js';
@@ -242,6 +242,15 @@ function roadLine(s, content, c, ctx, go) {
 const SELLING = /\b(?:sell\w*|sold)\b/i;
 const PART_ONLY = /\b(?:only|just|except|but not|apart from|keep(?:ing)? (?:the|my|back))\b/i;
 const BUYING = /\b(?:buy\w*|bought|purchas\w*|pay(?:s|ing)?|paid)\b/i;
+const independentPayment = c => /\b(?:as an? |extra )(?:tip|donation|gift)\b/i.test(c.quote || '')
+    || /^(?:an? )?(?:tip|donation|gift)(?: for .*)?$/i.test(c.for || '');
+function paymentFor(c, lines) {
+    if (independentPayment(c)) return false;
+    const wanted = keyWords(c.for || '').filter(w => !numbersIn(w).size && !['fit', 'fitted', 'now', 'pair', 'payment'].includes(w));
+    const goods = new Set(keyWords(lines.map(l => l.what).join(' ')));
+    const overlap = wanted.filter(w => goods.has(w)).length;
+    return !!overlap && (overlap === wanted.length || overlap >= 3);
+}
 
 /**
  * Prototype C (4.3.0-c.6.6.5): the bid an offer stored the wrong way round makes, when its lines name things Alaric
@@ -710,6 +719,13 @@ const HANDLERS = {
         return { status: 'resolved', line: `DROPS — ${o.name}${qty ? ` (${qty})` : ''}${off ? ' (taken off first: no longer equipped)' : ''}; it stays here, not his gear until he takes it again.` };
     },
     give(s, content, c, ctx, emit, envx) {
+        const text = envx?.text || (env(ctx).commands || []).map(x => x.quote || '').join(' ');
+        const commerce = /\b(?:pay me|sell\w*|what (?:it|they)(?:'s| is| are) worth)\b/i;
+        const bid = Object.values(s.offers).some(o => o.status === 'open' && o.bid && o.seller === c.to && o.lines.some(l => l.object === c.object));
+        if (envx?.c && rulesetOf(s) >= 2 && (commerce.test(c.quote || '') || (bid && commerce.test(text)))
+            && !/\b(?:as a gift|for free|no payment|do not pay|don't pay)\b/i.test(c.quote || text)) {
+            return { status: 'pending', reason: 'commercial handover needs a sale', line: 'NOT GIVEN AWAY — this handover is for a sale or appraisal. The goods stay Alaric’s until a price is agreed and the sale books both goods and coin.' };
+        }
         const o = objectOf(s, content, c.object);
         if (!o || o.holder?.entity !== 'pc') return { status: 'refused', reason: 'he does not hold it', line: `CANNOT GIVE — he does not hold ${o ? o.name : 'that'}.` };
         // Prototype C (4.3.0-c.6.6.3): "I'll follow you up to hand it over myself": he goes to the one he hands it to, in this
@@ -845,7 +861,9 @@ const HANDLERS = {
             };
         }
         // an open offer of the one he pays: paying it is accepting it
-        const offer = Object.values(s.offers).find((o) => o.status === 'open' && !o.canon && !o.bid && o.seller === c.to && (c.amount_cp === null || c.amount_cp === undefined || pickLines(o).cp === c.amount_cp));
+        const offer = Object.values(s.offers).find((o) => o.status === 'open' && !o.canon && !o.bid && o.seller === c.to
+            && (!ctx.auth.c || rulesetOf(s) < 2 || (!independentPayment(c) && (!c.for || paymentFor(c, o.lines))))
+            && (c.amount_cp === null || c.amount_cp === undefined || pickLines(o).cp === c.amount_cp));
         if (offer) return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: offer.id, lines: null }, ctx, emit);
         if (!present(s, c.to)) return { status: 'refused', reason: 'nobody to pay', line: 'CANNOT PAY — the one he means to pay is not here.' };
         if (c.amount_cp === null || c.amount_cp === undefined) {
@@ -915,6 +933,10 @@ const HANDLERS = {
         if (!o || o.status !== 'open') {
             if (o?.bid && o.status === 'accepted' && ctx.soldInBid?.size) return { status: 'resolved', done: true, line: 'SOLD — with the lot above.' };
             return { status: 'refused', reason: 'no open offer', line: 'CANNOT ACCEPT — there is no such open offer.' };
+        }
+        if (ctx.auth.c && rulesetOf(s) >= 2) {
+            const why = acceptanceWhy(c, o, who(s, o.seller), content.rules.currency);
+            if (why) return { status: 'refused', reason: why, line: `NOT AGREED — ${why}. Nothing changes hands; clarify the party or price.` };
         }
         if (o.bid) return acceptBid(s, content, c, ctx, emit, o);
         const employeeQuote = /\b(?:I(?:'ll| will)? (?:work|guard|watch|keep)|my (?:wage|pay)|hire me)\b/i.test(c.quote || '');
@@ -1337,6 +1359,47 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
     ctx.engineLines = [];
     const ordered = [...commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0));
     ctx.env = { msg: envx.msg ?? s.turn, commands: ordered };
+    // Related commands are alternate descriptions of one trade, not independent coin/goods transfers.
+    // Links exist for this invocation only. Each handler still checks presence, custody, price and funds.
+    const trades = new Map();
+    const selections = new Map();
+    if (envx.c && rulesetOf(s) >= 2) for (const c of ordered.filter(c => ['offer.accept', 'buy', 'sell'].includes(c.type))) {
+        let a = c;
+        if (c.type === 'buy') {
+            const matches = Object.values(s.offers).filter(o => o.status === 'open' && !o.bid && !o.canon && (!c.from || o.seller === c.from))
+                .map(o => ({ o, lines: wantedLines(c.what, o.lines) })).filter(x => x.lines.length);
+            if (matches.length !== 1) continue;
+            a = { ...c, type: 'offer.accept', offer: matches[0].o.id, lines: matches[0].lines.map(l => l.id) };
+        } else if (c.type === 'sell') {
+            const matches = Object.values(s.offers).filter(o => o.status === 'open' && o.bid && (!c.to || o.seller === c.to)
+                && o.lines.some(l => l.object === c.object && (!c.qty || l.qty === c.qty)));
+            if (matches.length !== 1) continue;
+            const o = matches[0];
+            const priced = o.lines.every(l => Number.isInteger(l.price_cp));
+            const whole = o.lines.every(l => ordered.some(x => x.type === 'sell' && x.object === l.object && (!x.qty || x.qty === l.qty)))
+                || /\b(?:all|every\w*|the lot|the whole|them)\b/i.test(c.quote || '');
+            if (!priced && !whole) continue;
+            a = { ...c, type: 'offer.accept', offer: o.id, lines: priced ? o.lines.filter(l => l.object === c.object).map(l => l.id) : null };
+        }
+        const o = s.offers[a.offer];
+        if (!o || o.status !== 'open') continue;
+        const selected = (o.lines || []).filter(l => !a.lines?.length || a.lines.includes(l.id));
+        const key = JSON.stringify([o.id, selected.map(l => l.id).sort(), o.bid ? null : a.qty ?? null]);
+        const group = selections.get(key) || { command: a, offer: o, bought: false, refused: null, sale: !!o.bid };
+        selections.set(key, group); trades.set(c, group);
+        for (const part of ordered) {
+            if (part.type === 'pay' && !o.bid && part.to === o.seller && part.amount_cp === pickLines(o, a.lines, a.qty ?? null).cp
+                && !independentPayment(part)) {
+                if (!part.for) trades.set(part, null); // matching amount/payee alone is not a purpose
+                else if (paymentFor(part, selected)) {
+                    if (trades.has(part) && trades.get(part) !== group) trades.set(part, null);
+                    else trades.set(part, group);
+                }
+            }
+            if (part.type === 'give' && o.bid && part.to === o.seller && selected.some(l => l.object === part.object && (!part.qty || part.qty === l.qty))
+                && !/\b(?:gift|free|no payment)\b/i.test(part.quote || '')) trades.set(part, group);
+        }
+    }
     // 4.3.0-c.6.6.5: what he only laid out or showed (the planner guard took it for no give) stays his; the story may let
     // the other look, weigh and name a price (a bid), nothing more
     const shown = (envx.dropped || []).filter((x) => x.rule === 'shows').map((x) => x.command || {});
@@ -1350,12 +1413,16 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
     const uncertain = new Set();
     const lodged = new Set();
     for (const c of ordered) {
+        const trade = trades.get(c);
         const h = HANDLERS[c.type] || (envx.c && c.type === 'other' ? otherStep : null) || (envx.c && c.type === 'move' ? moveStep : null) || (envx.c && c.type === 'attempt' ? attemptStep : null);
         // Prototype C (4.3.0-c.5): a step the planner marked as building on an earlier one of the message (needs) is not
         // taken when that one did not happen (refused, an open decision, a question, dropped by the agency guard); one
         // that found its goal true already (done: "already his", "already here") did, and so did a registration that
         // made him a member (the fee paid in a step between; the guard drops such a registration as redundant)
-        const need = envx.c && Number.isInteger(c.needs) && !happened.has(c.needs) ? c.needs : null;
+        const tradeNeed = trade?.command.needs;
+        const internalNeed = Number.isInteger(tradeNeed) && ordered.some(x => x.seq === tradeNeed && trades.get(x) === trade);
+        const required = c.needs ?? (!internalNeed ? tradeNeed : null);
+        const need = envx.c && Number.isInteger(required) && !happened.has(required) ? required : null;
         const redundantRegistration = (envx.dropped || []).some((x) => x.rule === 'redundant'
             && x.command?.seq === need && x.command.type === 'guild.register');
         // Paying the already-open canonical fee replaces only its redundant registration request.
@@ -1375,14 +1442,27 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
         const room = rooms.length && !rooms.some((x) => lodged.has(x.seq)) ? rooms.at(-1) : null;
         const quoted = c.quote ? `"${String(c.quote).slice(0, 80)}"` : c.type;
         const booking = (e) => {
-            if (e.t === 'service.granted' && (e.d?.service === 'lodging' || ROOM_WORDS.test(normText(e.d?.what || '')))) lodged.add(c.seq);
+            if (trade && e.t === 'transaction.completed' && (e.d.offer === trade.offer.id || (trade.sale && e.d.from === trade.offer.seller && e.d.to === 'pc'))) trade.bought = true;
+            if (e.t === 'service.granted' && (e.d?.service === 'lodging' || ROOM_WORDS.test(normText(e.d?.what || '')))) {
+                lodged.add(c.seq);
+                if (trade) lodged.add(trade.command.seq);
+            }
             emit(e);
         };
         const waitingGive = envx.c && rulesetOf(s) >= 2 && c.type === 'go' && ctx.conditionals.some(k => k.kind === 'give' && k.seq < c.seq);
+        const saleQuote = trade?.sale ? ordered.filter(x => trades.get(x) === trade).map(x => x.quote || '').join(' ') : '';
+        const appraise = trade?.sale && /\b(?:check|apprais\w*|inspect|worth)\b/i.test(saleQuote)
+            && !/\b(?:deal|accept|agreed|sold)\b/i.test(saleQuote) && !Number.isInteger(trade.command.min_cp) && !Number.isInteger(trade.command.agreed_cp);
         const r = waitingGive ? { status: 'refused', reason: 'handover still conditional', line: 'NOT DONE — the later journey waits for the handover at the first destination.' }
             : room ? { status: 'refused', reason: 'room not booked', line: `NOT DONE — ${quoted}: he would ${c.kind} in the room or bed of step ${room.seq}, and it is not his yet: ${roomWhy(ctx.resolutions.find((x) => x.seq === room.seq))}. He does not ${c.kind} in this reply; tell no ${c.kind === 'sleep' ? 'night' : 'rest'} in it.` }
-            : unmet ? { status: 'refused', reason: `needs step ${c.needs}`, line: `NOT DONE — ${quoted}: it was to follow step ${c.needs}, which did not happen; it does not happen in this reply (someone else's help does not do it for him).` }
+            : unmet ? { status: 'refused', reason: `needs step ${need}`, line: `NOT DONE — ${quoted}: it was to follow step ${need}, which did not happen; it does not happen in this reply (someone else's help does not do it for him).` }
+            : trades.has(c) && !trade ? { status: 'clarify', reason: 'ambiguous trade payment', line: 'NOT PAID — this payment could belong to several trades. Clarify which; no additional coin was booked.' }
+            : trade?.bought ? { status: 'resolved', done: true, line: 'TRADE — the payment and goods above already complete this same transaction; nothing is booked again.' }
+            : trade?.refused ? { status: 'refused', reason: trade.refused, line: 'NOT TRADED — the same trade remains unresolved; no separate payment or gift is made.' }
+            : appraise ? { status: 'pending', reason: 'price still under appraisal', line: 'NOT SOLD — the buyer must finish appraising and name the final price. The goods remain Alaric’s; no gift or payment was booked.' }
+            : trade ? HANDLERS['offer.accept'](s, content, { ...trade.command, seq: c.seq }, ctx, booking)
             : h ? h(s, content, c, ctx, booking, envx) : { status: 'refused', reason: `unknown command ${c.type}`, line: null };
+        if (trade && !trade.bought && !unmet && ['refused', 'pending', 'clarify'].includes(r.status)) trade.refused = r.reason || 'trade unresolved';
         // 4.3.0-c.6.6.3: a step that builds on one the story still decides (a take from someone's keeping) follows it there
         if (!unmet && Number.isInteger(c.needs) && uncertain.has(c.needs) && r.line) r.line = `${r.line} Only once step ${c.needs} has happened in the story; if it does not, this does not happen either.`;
         if (r.uncertain) uncertain.add(c.seq);

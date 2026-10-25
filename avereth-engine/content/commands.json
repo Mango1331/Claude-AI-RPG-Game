@@ -1,5 +1,5 @@
 {
-  "version": "cmd-1.5",
+  "version": "cmd-1.6",
   "note": "Runtime V4 command vocabulary (docs/RUNTIME_V4_PLAN.md §4.1, §4.2). One source for the interpreter prompt, its schema and the validator (src/v4/interpret.js). cmd-0.2 against the P0 draft cmd-0.1-draft (docs/P0_BERICHT.md §5): guild.register no longer teaches the phrase \"I'm here to register\"; quest.turn_in no longer teaches a purpose clause as a turn-in; reading the Guild board is board.read, not 'looking around'; \"register it\" after taking a slip is part of quest.accept. The positive/negative lists document intent for readers and are never put into a prompt: several of them are cases of the evaluation corpus (tests/eval/commands.jsonl). cmd-0.3: GO explicitly includes moving toward a perceived sound, trail or direction (live 28.09. afternoon). cmd-0.4: add journey.continue for clear consent to an already-established escort journey; scene handles are targetable by the deterministic combat parser. cmd-0.5: JOURNEY READY may come from any persisted travel/departure context with a present participant, not only an ESCORT objective. cmd-0.6: explicit present-tense continuation after a persisted journey, current return travel despite 'came from'; witness-signature requests are never Guild turn-ins. cmd-0.7 (review of 4.1.0): offer.accept carries qty, the number of units he takes of one line (\"three flasks\"); an OFFER line may be a lot (\"3 for 9 cp\"); buy and sell count units the same way. cmd-0.8 (live 15.10.2026, 4.3.0-c.6.6.5): a BID in the catalog is someone buying Alaric's things; agreeing to it is offer.accept with that bid, never a purchase; laying things out or showing them to a trader is no give. cmd-1.1 (Patch 9C-1): activity train/study carries what he learns or practises (learn: a KNOWN SKILL id, a LEARNING id, or a new technique strike|bolt|guard|ward|mend), from whom (teacher: a person PRESENT), and the technique's disciplines and aspects (tags, aspects); only when he trains or studies now, never for a wish, a question or a plan to learn. cmd-1.2 (Patch 9C-2b): activity train/study carries material, the OBJECTS id of a manual or primer he studies from (null otherwise); activating a Skill Stone he holds is use with its id. cmd-1.3 (Patch 9C-2c): activity train/study may name a core stat as learn (STR, VIT, AGI, INT, PER, WIL: a lasting quality of himself he trains toward an Ordinary Passive); passive.accept and passive.decline answer a POSSIBLE PASSIVE the engine offers him (replace: the Passive he gives up for it when all his slots are held).",
   "rules": [
     "Only what Alaric himself does or commits to in this message. A deed he narrates in the past tense in this message counts.",
@@ -9,7 +9,7 @@
     "A condition becomes an argument: \"if it's under 5 copper\" → max_cp; \"whatever it costs\" → any_price.",
     "Keep the order of the message: seq 1, 2, 3 … One command per action.",
     "Refer to known things by their id from the CATALOG; for something the catalog does not have use {\"new\": \"<short name>\"}. If several catalog entries fit and the message does not say which, use null where the argument allows it.",
-    "Coin in copper: 1 silver = 10 copper, 1 gold = 100 copper. When an OFFER in the catalog covers what he pays for or takes, use offer.accept.",
+    "Coin in copper: 1 silver = 10 copper, 1 gold = 100 copper. When an OFFER in the catalog covers what he pays for or takes, use offer.accept. Acceptance already includes its payment and handover: never add pay/give for the same trade. Separate tips and independent purchases remain separate.",
     "A BID in the catalog is someone offering to BUY things Alaric holds: when he agrees to it (\"deal\", \"I accept and sell them to her\"), that is offer.accept with the bid's id. Selling his own things is never buy, and never offer.accept of an OFFER (an offer sells to him).",
     "Talking, asking, looking around, walking up to someone in the same room, readying the weapon he already wields: no command. Reading or looking over the Guild's contract board (walking over to it to look at the contracts included) is board.read.",
     "When the CATALOG shows JOURNEY READY, clear present-tense agreement to depart/continue NOW ('we continue', 'I nod and we continue', 'wait, then we continue', 'let's go') is journey.continue, even with a preceding WAIT. Without JOURNEY READY, those words are dialogue only. A current explicit 'I walk back the way I came from' is GO, not a recalled past journey.",
@@ -204,7 +204,7 @@
     },
     {
       "type": "pay",
-      "summary": "Alaric hands over coin to a present person. amount_cp when the message or an open offer names it, else null; for: what it pays for, or null. Use offer.accept when he accepts an open offer.",
+      "summary": "Alaric hands over coin to a present person. amount_cp when the message or an open offer names it, else null; for: what it pays for, or null. Use offer.accept when he accepts an open offer; never pay it again in another command.",
       "args": {
         "to": {
           "ref": "person"
@@ -291,8 +291,10 @@
     },
     {
       "type": "offer.accept",
-      "summary": "Alaric accepts an open offer or bid from the catalog (\"Deal.\", \"I'll take the room\", \"all three\", \"I accept and sell them to her\"). An OFFER sells to him (he pays); a BID buys his things (he is paid). lines: the line ids he takes; null when he takes the whole offer or bid. qty: how many units he takes when he names a number of one line (\"three of the flasks\"); null for the line as offered.",
+      "summary": "Alaric accepts an open offer or bid from the catalog (\"Deal.\", \"I'll take the room\", \"all three\", \"I accept and sell them to her\"). An OFFER sells to him (he pays); a BID buys his things (he is paid). lines: the line ids he takes; null when he takes the whole offer or bid. qty: how many units he takes when he names a number of one line (\"three of the flasks\"); null for the line as offered. party_words: the explicitly named counterparty copied exactly from the PLAYER MESSAGE, else null; agreed_cp: an explicit agreed TOTAL in copper, else null. Never accept a different party or price. A discount request, appraisal or counteroffer is not acceptance of the old price; clarify or leave the negotiation to the story.",
       "args": {
+        "party_words": { "type": "string", "nullable": true },
+        "agreed_cp": { "type": "integer", "min": 0, "nullable": true },
         "offer": {
           "ref": "offer"
         },

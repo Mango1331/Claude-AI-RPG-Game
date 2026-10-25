@@ -11,6 +11,68 @@
 // handed over the whole stack). The command handlers (src/v4/commands.js) and the world applier (src/v4/world.js)
 // both book through here.
 import { itemTraits } from './items.js';
+import { normText } from '../util.js';
+import { coinFromWords, coinMentions } from '../economy.js';
+
+const flat = text => normText(text || '').replace(/[^a-z0-9]+/g, ' ').trim();
+const contains = (text, part) => !!flat(part) && ` ${flat(text)} `.includes(` ${flat(part)} `);
+
+/** Explicit consent constraints, shared by the planner repair and the command handler. No inferred new party. */
+export function acceptanceWhy(c, offer, party, currency) {
+    const addressed = String(c.quote || '').match(/\b(?:[Dd]one|[Dd]eal|[Yy]es|[Ff]ine|[Aa]greed|[Tt]hanks),\s+([A-Z][a-z'-]*(?:\s+[A-Z][a-z'-]*){0,2})(?=[.!?]|$)/);
+    for (const named of [c.party_words, addressed?.[1]].filter(Boolean)) {
+        const label = /^the\s/i.test(named) ? party.split(',').slice(0, 2).join(', ') : party.split(',')[0];
+        if (!contains(label, named.replace(/^the\s+/i, ''))) return `counterparty ${named} is not ${party}`;
+    }
+    const quote = String(c.quote || '');
+    if (/\bdiscount\b|\b\w*(?:pence|copper|silver|gold|percent)\s+off\b|\b(?:knock|take)\b[^.;]{0,25}\boff\b|\bfor less\b/i.test(quote))
+        return 'a requested discount needs an agreed new price; the old offer is not accepted';
+    const lines = (offer.lines || []).filter(l => !c.lines?.length || c.lines.includes(l.id));
+    const total = offer.bid ? (lines.length === offer.lines.length && Number.isInteger(offer.price_cp) ? offer.price_cp : lines.reduce((n, l) => n + (l.price_cp || 0), 0)) : pickLines(offer, c.lines, c.qty ?? null).cp;
+    const mentions = currency ? coinMentions(quote, { rules: { currency } }) : [];
+    const said = currency && mentions.length === 1 ? coinFromWords(quote, { rules: { currency } }) : null;
+    if (Number.isInteger(c.agreed_cp) && said !== null && c.agreed_cp !== said) return 'agreed_cp contradicts the player’s stated price';
+    const agreed = Number.isInteger(c.agreed_cp) ? c.agreed_cp : said;
+    if (agreed !== null && agreed !== undefined && Number.isInteger(total) && agreed !== total)
+        return `agreed price ${agreed} cp differs from this offer's ${total} cp`;
+    if (Number.isInteger(c.max_cp) && total > c.max_cp && !c.any_price) return 'the offer is above his price limit';
+    if (Number.isInteger(c.min_cp) && total < c.min_cp) return 'the bid is below his price limit';
+    return null;
+}
+
+/** Price evidence for trade only. A unit rate is not a lot total; ranges and several rates are unresolved. */
+export function tradePrice(cp, said, qty, content) {
+    const text = String(said || '');
+    if (!text.trim()) return { cp, handled: false };
+    if (/\b(?:between|from)\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\b[^.;]{0,25}\b(?:and|to)\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\b|\b(?:gold|silver|coppers?|cp)\s+or\b|\b(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+or\s+(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+(?:gold|silver|coppers?|cp)\b/i.test(text)) return { cp: null, handled: true };
+    const totals = [...text.matchAll(/((?:[a-z0-9-]+\s+){1,5}(?:gold|silver|coppers?|cp))\s+(?:for\s+)?(?:the\s+)?(?:lot|all|together|total)\b/gi)]
+        .map(m => coinFromWords(m[1], content)).filter(Number.isInteger);
+    if (totals.length) return { cp: totals.length === 1 ? totals[0] : null, handled: true };
+    const rates = [...text.matchAll(/\b(?:gold|silver|coppers?|cp)\s+(?:each\b|per\b|(?:a|an)\s+(?!piece of coin\b))/gi)];
+    if (rates.length) {
+        const mentions = coinMentions(text, content);
+        return { cp: rates.length === 1 && mentions.length === 1 && qty > 0 ? mentions[0] * qty : null, handled: true };
+    }
+    return { cp, handled: false };
+}
+
+/** Known remote services and explicit third-party price advice are information, not this speaker's offer. */
+export function offerAdvice(what, said, party, places, here, prose = '') {
+    const text = String(said || '');
+    const booking = /\bI(?:'ll| will| can)?\s+(?:book|reserve|arrange)\b/i.test(text);
+    if (booking) return false;
+    const spoken = !prose || [...prose.matchAll(/["“]([^"”]+)["”]/g)].some(m => contains(m[1], text));
+    if (spoken && /\b(?:he|she|they)(?:'ll| will| would)\s+(?:give|pay|charge|sell|buy)\b/i.test(text)) return true;
+    const provider = String(what || '').match(/\bby\s+([A-Z][a-z'-]*(?:\s+[A-Z][a-z'-]*){0,2})\b/);
+    if (provider && !contains(party, provider[1])) return true;
+    const local = new Set([here]);
+    let p = (places || []).find(p => p.id === here);
+    while (p?.parent && !local.has(p.parent) && ['interior', 'site'].includes(p.kind)) {
+        p = places.find(x => x.id === p.parent);
+        if (p && ['interior', 'site'].includes(p.kind)) local.add(p.id); else break;
+    }
+    return (places || []).some(p => !local.has(p.id) && contains(what, p.name) && /\b(?:at|in)\b/i.test(what));
+}
 
 /** The price of `units` of an offer line (null: the line as offered), or why it is not sold in that amount. */
 export function linePrice(line, units = null) {
@@ -58,7 +120,10 @@ export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = nu
     for (const p of picks.filter((x) => x.line.kind === 'goods')) {
         // Patch 7.1: exactly the variant offered: the line's profile, fixed when the offer was made (never rolled again)
         const traits = content ? itemTraits(content, { name: p.line.what, kind: 'item' }, s.clock.minute, p.line.profile ?? (p.line.profile === null ? null : undefined)) : {};
-        emit({ t: 'object.created', d: { object: { id: objectId(p.line.what), name: p.line.what, kind: 'item', stack: p.units > 1, qty: p.units, unit: null, ...traits, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'bought', from: offer.seller } } } });
+        const base = objectId(p.line.what);
+        let id = base;
+        for (let n = 2; s.objects[id]; n++) id = `${base}_${n}`;
+        emit({ t: 'object.created', d: { object: { id, name: p.line.what, kind: 'item', stack: p.units > 1, qty: p.units, unit: null, ...traits, holder: { entity: 'pc' }, marks: [], for_quests: [], source: { turn: s.turn, how: 'bought', from: offer.seller } } } });
     }
     for (const p of picks.filter((x) => x.line.kind === 'service' && x.line.service !== 'guild_registration')) {
         // Each bought training line is a separate commitment, even in the same transaction and minute.

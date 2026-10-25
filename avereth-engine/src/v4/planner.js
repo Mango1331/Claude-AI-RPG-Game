@@ -34,6 +34,7 @@ import { openGoals, goalText } from './growth.js';
 import { composerFunctions } from '../skill_composer.js';
 import { disciplineTags, skillAspects, DEFENSE } from '../skills.js';
 import { CORE_STATS } from '../passives.js';
+import { acceptanceWhy } from './trade.js';
 
 export const PLANNER_VERSION = 'plan-c0.1';
 
@@ -59,7 +60,7 @@ export const MECH_RULES = [
     '7b. go.to is the destination, never the way there. A route, path or way he names ("through the forests", "along the river", "not past the waystation", "by the coast road") is how he travels: to is the destination\'s known id (or {"new": "<the destination>"} when it is not known), and the route stays in his words for the story. A route is never a place of its own.',
     '7b-route. A present route choice addressed to a guide ("Up the rocks on the left — we look first") is go when RECENT shows that guide just asked which way to proceed. Copy the known destination id; companions and route wording never become a new destination. A hypothetical route, a question or somebody else choosing remains no go.',
     '7c. In a dungeon (EXITS listed): going through a way is go with the id of the room it leads to, also when he names the door, stair or passage ("I take the stair down"); "back" or "the previous room" is the room he came from (RECENT ROUTE); a known room further on is go with its id (the engine checks the way). Going on into a part nobody has shown yet is go {"new": "<his words>"}. Opening or forcing what blocks a way is attempt on its FEATURES id; looking for another way is activity search.',
-    '8. Several actions in one message: one command each, in his order. Something he does that no command fits: other.',
+    '8. Several actions in one message: one command each, in his order. One trade is one buy/sell/offer.accept, including payment and goods: do not add a pay or give for it. Appraisal (check it and pay what it is worth) is sell with no agreed price, not a free give or acceptance of a provisional bid. A requested discount is a counteroffer, not acceptance of the old price. Never substitute an open offer of another party. Something he does that no command fits: other.',
     '9. quote: the exact words of the message the command rests on, copied as they are (do not correct the spelling).',
     '10. An obstacle or danger listed in FEATURES that he deals with himself is attempt: feature = its id; aim "examine" (he looks it over, tests or studies it), "pass" (gets past, across, over, through or around it) or "disable" (disarms, opens, breaks, removes or makes it harmless); approach = his words for how; stat = what his way takes: AGI (balance, jump, dodge, slip past), STR (climb, lift, force, hold on), VIT (endure), PER (spot the safe way), INT (work out a mechanism), WIL (steel himself), or null; tool = the OBJECTS id of a thing he holds and uses for it, or null; possible = false only when his way plainly cannot work on it as the catalog describes it, else null. Looking for something hidden is activity search, never attempt.',
 ].join('\n');
@@ -323,7 +324,7 @@ export function planContext(state, content, catalog) {
     const learning = rulesetOf(state) >= 2 ? openGoals(state).map((g) => ({ id: g.id, text: goalText(g) })) : [];
     const techniques = rulesetOf(state) >= 2 ? composerFunctions(content) : [];
     const jobs = privateQuestsOf(state) && rulesetOf(state) >= 2 ? Object.values(state.quests).filter(q => q.kind === 'private' && ['offered', 'active'].includes(q.status)) : [];
-    return { privateQuests: privateQuestsOf(state), fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
+    return { tradeChecks: rulesetOf(state) >= 2, privateQuests: privateQuestsOf(state), fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
 }
 
 /** The user message: the interpreter's CATALOG, then skills, opponents, engine facts, RECENT and the message. */
@@ -500,6 +501,14 @@ export function parsePlan(answer, vocab, ctx, message) {
                 errors.push(`${at}: ${slip} is the contract slip (an object), not the contract${(ctx.catalog.quests || []).some((q) => q.id === qid) ? `; the contract is ${qid}` : ''}`);
             }
             if (typeof c.quote === 'string' && !inMessage(message, c.quote)) errors.push(`${at}: quote "${c.quote.slice(0, 60)}" is not in the message (copy his exact words)`);
+            if (type === 'offer.accept' && ctx.tradeChecks && !bad.length) {
+                const offer = (ctx.catalog.offers || []).find(o => o.id === c.offer);
+                if (c.party_words && !inMessage(message, c.party_words)) errors.push(`${at}: party_words must copy the counterparty from the player message`);
+                if (offer) {
+                    const why = acceptanceWhy(c, offer, offer.seller, ctx.currency);
+                    if (why) errors.push(`${at}: ${why}; clarify instead of substituting an offer`);
+                }
+            }
             if (type === 'activity' && !bad.length) errors.push(...learningErrors(c, ctx, at));
             continue;
         }

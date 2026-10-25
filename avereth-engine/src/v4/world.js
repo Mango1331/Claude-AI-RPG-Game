@@ -28,7 +28,7 @@ import {
     progressKey, sameKinds, kindOf,
 } from './domain.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
-import { pickLines, bookPurchase, bookSale, saleUnits, unitsText } from './trade.js';
+import { pickLines, bookPurchase, bookSale, saleUnits, unitsText, tradePrice, offerAdvice } from './trade.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents, setIntentEvents } from './intents.js';
 import { featureNamed, featureEvent, applySpring } from './features.js';
@@ -2131,10 +2131,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
      * - the reply names no sum at all ("presses a few coins into his hand") -> the extractor's number stands: the story
      *   left the amount to the engine's reading, and the booking event keeps it.
      */
-    function evidenced(cp, said, d) {
+    function evidenced(cp, said, d, tradeQty = null) {
         if (typeof said === 'string' && said.trim()) {
             const flatSaid = normText(said).replace(/[^a-z0-9]+/g, ' ').trim();
             const inReply = !prose || normText(prose).replace(/[^a-z0-9]+/g, ' ').includes(flatSaid);
+            if (inReply && tradeQty !== null) {
+                const p = tradePrice(cp, said, tradeQty, content);
+                if (p.handled) {
+                    if (p.cp !== null && p.cp !== cp) emit({ t: 'note', d: { kind: 'amount.corrected', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: String(said).slice(0, 60), cp: p.cp } });
+                    return p.cp;
+                }
+            }
             const v = inReply ? coinFromWords(said, content) : null;
             if (v !== null) {
                 if (v !== cp) emit({ t: 'note', d: { kind: 'amount.corrected', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: String(said).slice(0, 60), cp: v } });
@@ -2204,7 +2211,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         d = { ...d, lines: d.lines.filter(l => !work.includes(l)) };
         if (!d.lines.length) return;
-        const priced = d.lines.map((l) => ({ ...l, price_cp: evidenced(l.price_cp, l.said, d) }));
+        if (cPath && rulesetOf(s) >= 2) {
+            const advice = d.lines.filter(l => offerAdvice(l.kind === 'service' ? l.what : '', l.said, entityLabel(s, seller), l.kind === 'service' ? Object.values(s.places) : [], s.scene.at, prose));
+            if (advice.length) reject({ ...d, lines: advice }, 'offer', 'third-party advice is not this speaker’s binding offer; keep it as information');
+            d = { ...d, lines: d.lines.filter(l => !advice.includes(l)) };
+            if (!d.lines.length) return;
+        }
+        const priced = d.lines.map((l) => ({ ...l, price_cp: evidenced(l.price_cp, l.said, d, cPath && rulesetOf(s) >= 2 ? l.qty ?? 1 : null) }));
         // a price the reply does not say is not offered (review of c.6.6.11); the seller's other lines stand
         const unproven = priced.filter((l, i) => l.price_cp === null && Number.isInteger(d.lines[i].price_cp));
         if (unproven.length) {
@@ -2263,6 +2276,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     function bid(d) {
         const buyer = idOf(d.buyer);
         if (!buyer || buyer === 'pc' || !s.scene.present.includes(buyer)) { reject(d, 'offer', `the buyer ${String(d.buyer).slice(0, 40)} is not present`); return; }
+        if (cPath && rulesetOf(s) >= 2 && offerAdvice('', d.said, entityLabel(s, buyer), [], s.scene.at, prose)) {
+            reject(d, 'offer', 'third-party price advice is not this speaker’s bid'); return;
+        }
         const lines = [];
         for (const l of d.lines || []) {
             const o = objectRef(l.object);
@@ -2273,7 +2289,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             else lines.push({ id: `l${lines.length + 1}`, what: o.name, kind: 'goods', service: null, object: o.id, qty, price_cp: null });
         }
         if (!lines.length || !Number.isInteger(d.price_cp)) { reject(d, 'offer', 'a bid names his things and one price'); return; }
-        const price = evidenced(d.price_cp, d.said, d);
+        const price = evidenced(d.price_cp, d.said, d, cPath && rulesetOf(s) >= 2 ? (lines.length === 1 ? lines[0].qty : 0) : null);
         if (price === null) { reject(d, 'offer', `${d.price_cp} cp is no sum the reply names`); return; }
         for (const old of openOffers(s).filter((x) => x.bid && x.seller === buyer)) emit({ t: 'offer.closed', d: { id: old.id, status: 'expired' } });
         const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;

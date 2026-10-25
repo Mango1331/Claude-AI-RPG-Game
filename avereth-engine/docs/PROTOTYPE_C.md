@@ -2186,3 +2186,7 @@ Präzise Reparaturhilfe für vorhandene neue Objektnamen, mehrdeutige Deklaratio
 ## Run 14: Gildenboard .87
 
 Neue Ruleset-2/C-Boards bieten vorläufig vier Jagden und eine passende Dungeon-Räumung, ohne geeigneten Dungeon fünf Jagden. Bestehende Lieferangebote und das vollständige Delivery-System bleiben erhalten. Technik und Abnahme: [PATCH_RUN14_HUNT_BOARD.md](PATCH_RUN14_HUNT_BOARD.md).
+
+## Run 15: Handelsintegrität .88 (Patch A)
+
+Einmalige Kauf-/Verkaufsbuchung, Zustimmung zu Gegenpartei und Gesamtpreis, mengenrichtige Preisnachweise, Abgrenzung fremder Empfehlungen und kommerzielle Übergaben. Bestehende Transaktionspfade und Saves bleiben erhalten. Gear-Patch B ist offen. Technik, Originalfälle und Abnahme: [PATCH_RUN15_TRADE_INTEGRITY.md](PATCH_RUN15_TRADE_INTEGRITY.md).

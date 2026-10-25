@@ -37,7 +37,7 @@ import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor, templateFor, rulesetOf } from '../content.js';
 import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotForNew, resolvedSlotNamed, slotEntityEvents, syncEvents, insideOf } from './living.js';
-import { crossedDungeonGate, unbookedDungeonThreat } from './run9_evidence.js';
+import { unbookedDungeonThreat } from './run9_evidence.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
@@ -634,25 +634,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         return ids;
     };
 
+    // The extractor's structured expected.arrived/arrive result is authoritative.
+    // Never turn narration of a gate crossing into a room against arrived:false.
     const explicitArrival = fw.accept.some((d) => d.type === 'arrive');
-    // Run 9: the story physically crossed a true Dungeon gate, but arrived:false
-    // left the player on the exterior floor 0. Only override this contradictory
-    // answer for a real GO into a first-floor encounter with explicit crossing prose.
-    const rootEntry = cPath && !s.encounter && !explicitArrival && s.places[s.scene.at]?.dungeon?.real
-        && (auth.gos || []).some((g) => g.to === null && /\b(?:in|into|inside|enter)\b/i.test(g.newName || ''))
-        && livingOf(s, s.scene.at)?.ahead?.turn === s.turn
-        && livingOf(s, s.scene.at)?.ahead?.floor === 1;
-    // A crossing by someone else, or an almost-crossing, cannot override arrived:false.
-    const crossedGate = rootEntry && crossedDungeonGate(prose);
-    if (rootEntry && crossedGate && (auth.gos || []).some((g) => expected[String(g.seq)]?.arrived === false)) {
-        const root = s.scene.at;
-        const at = place({ new: { name: /\bmouth tunnel\b/i.test(prose) ? 'Mouth tunnel' : 'Entrance passage', kind: 'interior', parent: root } });
-        if (!at.error && at.id !== root && !wayRefused(at.id, { type: 'expected', seq: 0 })) {
-            arriveThrough(at.id, []);
-            travel.push({ seq: 0, ok: true });
-            corrections.push('DUNGEON ENTRY — Alaric crossed the gate into the first interior part; he is not at the exterior gate. The engine-placed encounter belongs to this part.');
-        }
-    }
     if (!explicitArrival && !s.encounter) {
         let onWay = false; // review of Hotfix 7.2.1: after a leg he reached, one he did not reach ends the way
         for (const [k, type] of Object.entries(outcome.expected_keys || {}).sort((a, b) => Number(a[0]) - Number(b[0]))) {

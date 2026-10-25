@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { loadProductContent } from '../helpers.js';
 import { campaign, say, walk, GO, outcomeOf, inject, WARRENS } from './patch8_lib.js';
 import { applyWorld } from '../../src/v4/world.js';
-import { crossedDungeonGate, unbookedDungeonThreat } from '../../src/v4/run9_evidence.js';
+import { unbookedDungeonThreat } from '../../src/v4/run9_evidence.js';
 
 const content = await loadProductContent();
 const ASHBRIDGE = 'SYSTEM INITIALIZATION COMPLETE\n`Location: Public roadside verge outside Ashbridge, Duskreach`';
 
-test('Run 9: physically crossing Dungeon gate with extractor arrived:false books floor 1 and engine scouts', async () => {
+test('Run 9: extractor-confirmed Dungeon entry books floor 1 and engine scouts', async () => {
     // Run 9 starts at Ashbridge, not the patch8 helper's default Alderwatch.
     // Mossback admission requires Guild membership; the original player was a Novice.
     const g = await campaign(content, { greeting: ASHBRIDGE });
@@ -20,7 +20,7 @@ test('Run 9: physically crossing Dungeon gate with extractor arrived:false books
     const a = g.state().dungeons[WARRENS]?.ahead;
     assert.equal(a?.floor, 1);
     await g.reply('Alaric stepped through the gate. Inside, the mouth tunnel smelled of earth and smoke.', {
-        expected: { 1: { arrived: false, at: null, with: null } }, deltas: [] });
+        expected: { 1: { arrived: true, at: { new: { name: 'Mouth tunnel', kind: 'interior', parent: WARRENS } }, with: null } }, deltas: [] });
     const s = g.state();
     assert.notEqual(s.scene.at, WARRENS);
     assert.equal(s.places[s.scene.at]?.level, 1);
@@ -50,14 +50,6 @@ test('Run 9: nonexistent mon.* encounter/group is rejected as a fact subject', a
     assert.equal(r.events.some((x) => x.t === 'fact.asserted' && x.d.fact?.s === bad), false);
 });
 
-test('Run 9 review .73: explicit player crossing, not another actor or an incomplete step', () => {
-    assert.equal(crossedDungeonGate('Alaric stepped through the gate. Inside, the mouth tunnel smelled of earth.'), true);
-    assert.equal(crossedDungeonGate('A goblin walked through the gate. Inside, its companions waited. Alaric remained outside.'), false);
-    assert.equal(crossedDungeonGate('Alaric almost stepped through the gate, but stopped outside. Inside were three goblins.'), false);
-    assert.equal(crossedDungeonGate('Alaric stepped through the gate. Inside, goblins waited. He remained outside.'), false);
-    assert.equal(crossedDungeonGate('If Alaric stepped through the gate, he would be inside.'), false);
-    assert.equal(crossedDungeonGate('Alaric walked to the gate. Inside, goblins waited.'), false);
-});
 test('Run 9 review .73: phantom shapes are not equivalent to trader reports', () => {
     const refused = [{ species: 'goblin scout', count: 1 }, { species: 'goblin warrior', count: 1 }, { species: 'goblin', count: 1 }];
     assert.equal(unbookedDungeonThreat('Three goblins in the firelit chamber past the bend', refused), true);
@@ -73,10 +65,14 @@ async function atMossbackGate() {
     assert.equal(g.state().scene.at, WARRENS);
     return g;
 }
-test('Run 9 review .73: false arrival cannot materialise first-floor scouts', async () => {
+test('Run 9 review .74: structured arrived:false always prevents Dungeon entry', async () => {
     for (const prose of [
+        'Alaric stepped through the gate yesterday. Today he remains outside. Inside, someone coughed.',
+        'The guard said, "Alaric stepped through the gate." Inside, someone coughed.',
+        'Alaric stepped through the gate but then walked back out. Inside, someone coughed.',
         'A goblin walked through the gate. Inside, its companions waited. Alaric remained outside.',
         'Alaric almost stepped through the gate, but stopped outside. Inside, a fire burned.',
+        'Alaric stepped through the gate. Inside, the mouth tunnel smelled of earth and smoke.',
     ]) {
         const g = await atMossbackGate();
         await say(g, '*I enter the warrens*', GO({ new: 'into the warrens' }));
@@ -103,4 +99,12 @@ test('Run 9 review .73: rejected goblins do not create a generic local threat th
         const kept = Object.values(g.state().threads || {}).some((x) => x.text === threadText && x.status === 'open');
         assert.equal(kept, !rejected, threadText);
     }
+});
+
+test('Run 9 review .74: GO extraction guidance distinguishes current Dungeon interior from a quoted crossing', () => {
+    const rule = content.deltaVocab.expected.go.summary;
+    assert.match(rule, /END of this reply/);
+    assert.match(rule, /first interior or mouth tunnel/);
+    assert.match(rule, /quoted, hypothetical/);
+    assert.match(rule, /returned outside/);
 });

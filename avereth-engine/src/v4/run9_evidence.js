@@ -1,18 +1,4 @@
-// Narrow evidence tests for Dungeon arrival and objective phantom threats.
-// Only a completed Alaric crossing qualifies; rejected local creatures cannot become threats.
-export function crossedDungeonGate(prose) {
-  const text = String(prose || '');
-  if (!/\binside\b/i.test(text)) return false;
-  if (/\b(?:Alaric|he)\s+(?:remained|stayed|stood|waited|stopped)\s+(?:\w+\s+){0,3}(?:outside|at the gate)\b/i.test(text)
-      || /\b(?:remaining|staying|stayed|stopping|stopped|returned|backed|retreated)\s+outside\b/i.test(text)) return false;
-  return text.split(/(?<=[.!?])\s+|\n+/u).some((sentence) => {
-    const matched = /\bAlaric\s+(?:stepped|walked|strode|went|passed|crossed|moved|slipped|entered)\s+(?:(?:carefully|quietly|slowly|fully|cautiously|directly|boldly)\s+){0,3}(?:(?:through|past|across|into)\s+(?:the\s+)?(?:gate|entrance|threshold|doorway|mouth|tunnel|warrens|dungeon)|inside\b)/i.exec(sentence);
-    if (!matched) return false;
-    return !/\b(?:if|unless|would|could|might|imagine|imagined|pretend|pretended)\b/i.test(sentence.slice(0, matched.index))
-      && !/\b(?:almost|nearly|tried|attempted|imagined|pretended|might|would|could|if|unless|but\s+stopped|but\s+turned\s+back)\b/i.test(sentence);
-  });
-}
-
+// Local threat handling for rejected Dungeon creatures; arrival is always structured.
 export function unbookedDungeonThreat(threadText, refused) {
   if (!Array.isArray(refused) || !refused.length) return false;
   const text = String(threadText || '').toLowerCase();

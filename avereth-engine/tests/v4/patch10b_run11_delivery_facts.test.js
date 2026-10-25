@@ -178,3 +178,22 @@ test('Run11 ruleset 1: legacy GIVE retains physical movement without new receipt
     assert.equal(events.filter(e => e.t === 'object.moved').length, 1);
     assert.equal(events.filter(e => e.t === 'quest.delivered').length, 0);
 });
+
+test('Run11 compatibility: old Quarry Camp healer Brenna target and receipt still work', () => {
+    const s = scene({ where: 'Quarry Camp healer Brenna', role: 'healer' });
+    s.entities['npc.marta'].name = 'Brenna';
+    assert.equal(deliveryTarget(s, s.quests[Q], goal(s), receiver), true);
+    const events = give(s);
+    assert.equal(events.filter(e => e.t === 'quest.delivered').length, 1);
+    assert.equal(deliveryStatus(s.quests[Q], s), null);
+});
+
+test('Run11 compatibility: old prose mentioning a chapel keeper hut is not canonical Role at Place', () => {
+    const s = scene({ where: "chapel keeper's hut at the ruined chapel", role: 'chapel keeper' });
+    s.places.camp.name = 'the ruined chapel';
+    s.quests[Q].desired_end_state = 'Marta receives the bandages at the ruined chapel.';
+    assert.equal(deliveryTarget(s, s.quests[Q], goal(s), receiver), true);
+    const events = give(s);
+    assert.equal(events.filter(e => e.t === 'quest.delivered').length, 1);
+    assert.equal(deliveryStatus(s.quests[Q], s), null);
+});

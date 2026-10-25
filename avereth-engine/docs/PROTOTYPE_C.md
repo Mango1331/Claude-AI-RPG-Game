@@ -2162,3 +2162,7 @@ Annahme allein erledigt und bezahlt keinen Privatjob. Bestehende Spielerhandlung
 ### Run-12-Fachfix .79 (25.10.2026)
 
 Dungeon-Slotidentität und lokale Präsenz getrennt; neue Gildenlieferungen speichern explizite Empfänger-/Orts-/Übergabesemantik. World-Reisekette bleibt vorbereitet und offen. Umsetzung, Rot/Grün und Abnahme: [PATCH10B_RUN12_DUNGEON_GUILD.md](PATCH10B_RUN12_DUNGEON_GUILD.md).
+
+### World-Fachfix .81 (25.10.2026)
+
+Run-12-Paket C umgesetzt: expliziter Schauplatzbezug für neue C-Extraktionen, korrekte Zwischenhalt-/Zielzuordnung und antwortlokale Questabhängigkeiten. Keine neue Bewegung aus Prosa oder pauschale GO-Pflicht für NPCs. Protokoll, Tests und Abnahme: [PATCH10B_RUN12_WORLD_STATE.md](PATCH10B_RUN12_WORLD_STATE.md).

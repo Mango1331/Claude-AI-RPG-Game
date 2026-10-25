@@ -117,7 +117,7 @@ const mock = http.createServer(async (req, res) => {
     } else if (system.startsWith('You read one reply')) {
         purpose = 'extract';
         const t = TURNS.find((x) => x.reply && users.includes(x.reply.slice(0, 60)));
-        text = JSON.stringify(t?.answer || { expected: {}, deltas: [] });
+        text = JSON.stringify({ scene: 'here', ...(t?.answer || { expected: {}, deltas: [] }) });
         delay = 300;
     } else {
         const t = TURNS.find((x) => lastUser.includes(x.player));

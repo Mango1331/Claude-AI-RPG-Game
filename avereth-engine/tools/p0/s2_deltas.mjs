@@ -210,7 +210,9 @@ export function goldAnswer(turn, vocab) {
         else if (t === 'take') expected[k] = { taken: g.taken ?? true };
         else expected[k] = vocab.expected?.[t]?.shape?.taken_anyway !== undefined ? { priced: g.priced ?? false, taken_anyway: g.taken_anyway ?? false } : { priced: g.priced ?? false };
     }
-    return { expected, deltas: (turn.gold.critical || []).map((p, i) => concreteDelta(p, i + 1, vocab, turn.catalog)) };
+    const deltas = (turn.gold.critical || []).map((p, i) => concreteDelta(p, i + 1, vocab, turn.catalog));
+    const sceneContext = vocab.deltas.some(d => d.fields?.depends_on);
+    return { ...(sceneContext ? { scene: 'here' } : {}), expected, deltas: sceneContext ? deltas.map(d => ({ scene: null, ...d })) : deltas };
 }
 
 export function s2MockResponder(turns, vocab, { noBlock = [], badBlock = [] } = {}) {

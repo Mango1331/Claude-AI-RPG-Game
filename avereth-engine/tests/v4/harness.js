@@ -34,7 +34,14 @@ export class Chat4 {
         this.llm = async ({ messages, purpose }) => {
             this.calls.push({ purpose, messages });
             if (purpose.startsWith('interpret')) return JSON.stringify({ commands: this.map(this.commands) });
-            if (purpose.startsWith('extract')) return typeof this.answer === 'string' ? this.answer : JSON.stringify(this.map(this.answer));
+            if (purpose.startsWith('extract')) {
+                // Historical scripted fixtures omit the new context; migrate their wire answer only.
+                let answer = this.answer;
+                if (typeof answer === 'string') {
+                    try { answer = JSON.parse(answer); } catch { return answer; }
+                }
+                return JSON.stringify({ scene: 'here', ...this.map(answer) });
+            }
             if (purpose === 'board') {
                 if (this.boardFails || !this.listings) return 'The board is empty today.';
                 return JSON.stringify({ listings: this.listings.map(generatorListing) });

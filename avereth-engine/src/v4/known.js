@@ -47,11 +47,15 @@ export function reportPlace(s, d, emit, { by = null, place }) {
  * words ({new: …}) or not at all: that place, by its id. Null otherwise.
  * @param {string|number} [seq] the GO whose expected answer this is (else any GO that arrived)
  */
-export function reportedTarget(s, auth, expected, ref, seq = null) {
+export function reportedTarget(s, auth, expected, ref, seq = null, scene = null) {
     if (typeof ref === 'string') return null;
     const gos = (auth.gos || []).filter((g) => g.to && s.places[g.to]?.known === KNOWN.reported && (seq === null || String(g.seq) === String(seq)));
     const go = gos.find((g) => expected?.[String(g.seq)]?.arrived === true);
-    return go ? go.to : null;
+    if (!go) return null;
+    // A separately stated actual scene distinguishes a stop from an alias for the goal.
+    // Older reports without that context retain their existing destination identity.
+    if (scene != null && scene !== 'here' && scene !== go.to) return null;
+    return go.to;
 }
 
 /** The places of the reported kind on the way up from id (itself first). */

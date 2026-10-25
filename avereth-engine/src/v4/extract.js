@@ -9,7 +9,7 @@
 import { O, S, B, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
 
-export const EXTRACTOR_VERSION = 'extract-5.3';
+export const EXTRACTOR_VERSION = 'extract-5.4';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -68,15 +68,16 @@ export function deltaSchema(vocab, ids = {}, expectedKeys = {}) {
         quest: (ids.quests || []).length ? { anyOf: [E(ids.quests), O({ new: S() })] } : O({ new: S() }),
         object: (ids.objects || []).length ? { anyOf: [E(ids.objects), O({ new: S() })] } : O({ new: S() }),
         person: S(),
+        scene: { anyOf: [E(['here']), placeRef(ids.places || [])] },
     };
     const expected = {};
     for (const [k, t] of Object.entries(expectedKeys)) expected[k] = (EXPECTED_SHAPES[t] || (() => O({ done: B() })))(refs);
     const variants = vocab.deltas.map((d) => {
-        const props = { seq: I(1), type: E([d.type]) };
+        const props = { seq: I(1), type: E([d.type]), scene: N(refs.scene) };
         for (const [k, spec] of Object.entries(d.fields)) props[k] = fieldSchema(spec, refs);
         return O(props);
     });
-    return O({ expected: O(expected), deltas: A({ anyOf: variants }) });
+    return O({ scene: N(refs.scene), expected: O(expected), deltas: A({ anyOf: variants }) });
 }
 
 function fieldType(spec) {
@@ -100,6 +101,7 @@ const fieldList = (d) => Object.entries(d.fields).map(([k, spec]) => `${k}:${fie
 // 26 % valid, with them 100 %
 export const FORMAT_RULES = [
     'Fields shown with |null may be omitted when unknown; the engine fills them with null before validation. Other fields are required unless the delta description says otherwise.',
+    'scene is the actual narrative setting at the end of this reply: a place-ref, or "here" ONLY when it is the current engine scene. It never authorizes arrival. Every delta may override scene with a place-ref or "here" (null/omitted inherits the answer scene); use this for earlier scenes in a reply with multiple arrivals. Do not label an unreached camp as here merely because the engine still lists a shop. Local changes need the actual scene; distant reports remain reports. A new scene label creates no place by itself.',
     'string[] is always a JSON array, even when it contains only one value.',
     `place-ref is an exact known place id from the CATALOG, or {"new":{"name":"...","kind":"...","parent":...}}. For a new place, kind must be exactly one of: ${PLACE_KINDS.join(', ')}. Use settlement for a city, town, village or hamlet; site for a building, inn or Guild hall; interior for a room; wilderness for natural outdoor terrain.`,
     'When the CATALOG already contains the place, quest or object, copy its id exactly. Never rewrite an id, invent another id for it, or substitute its title/name.',
@@ -143,7 +145,7 @@ export function extractorSystem(vocab) {
     ].join('\n');
 }
 
-export const EXTRACT_PLAIN_FORMAT = 'Return only one JSON object, no prose before or after it, no code fences: {"expected": {<every key asked>}, "deltas": [{"seq": 1, "type": "<delta>", <required fields; fields marked |null may be omitted when unknown>}]}.';
+export const EXTRACT_PLAIN_FORMAT = 'Return only one JSON object, no prose before or after it, no code fences: {"scene": <place-ref or "here">, "expected": {<every key asked>}, "deltas": [{"seq": 1, "type": "<delta>", <required fields; fields marked |null may be omitted when unknown>}]}.';
 
 export function extractorUser({ catalog, actions, player = null, expectedKeys, vocab, reply }) {
     return [
@@ -189,7 +191,7 @@ function normalizeSoftFields(value, vocab) {
         if (!d || typeof d !== 'object') return d;
         const spec = specs.get(d.type);
         if (!spec) return d;
-        const x = { ...d };
+        const x = { scene: null, ...d };
         for (const [k, f] of Object.entries(spec.fields || {})) if (x[k] === undefined && f.nullable) x[k] = null;
         // Harmless persistence defaults: their omission should not trigger another LLM call.
         if (d.type === 'person.new' && x.desc === undefined) x.desc = [];
@@ -207,10 +209,10 @@ function normalizeSoftFields(value, vocab) {
         if (d.type === 'object.new') x.teaches = softTeaches(x.teaches);
         return x;
     }) : value.deltas;
-    return { ...value, expected: value.expected && typeof value.expected === 'object' ? value.expected : {}, deltas };
+    return { scene: null, ...value, expected: value.expected && typeof value.expected === 'object' ? value.expected : {}, deltas };
 }
 
-export function parseExtraction(answer, vocab, ids, expectedKeys) {
+export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false } = {}) {
     const parsed = extractJsonObject(answer);
     const { error, raw } = parsed;
     const value = normalizeSoftFields(parsed.value, vocab);
@@ -224,5 +226,6 @@ export function parseExtraction(answer, vocab, ids, expectedKeys) {
     const schema = deltaSchema(vocab, ids, Object.fromEntries(Object.entries(expectedKeys || {}).filter(([k]) => !missing.includes(k))));
     const clean = missing.length ? { ...value, expected: Object.fromEntries(Object.entries(exp).filter(([k]) => !missing.includes(k))) } : value;
     const errors = validate(clean, schema);
+    if (sceneRequired && value.scene == null && (Object.values(expectedKeys || {}).includes('go') || (Array.isArray(value.deltas) && value.deltas.some(d => !['time', 'overreach', 'place.reported', 'dungeon'].includes(d?.type))))) errors.push('$.scene: actual narrative setting required for world changes');
     return { value, valid: errors.length === 0, complete: missing.length === 0, errors: [...errors.slice(0, 8), ...missing.map((k) => `expected key "${k}" not answered`)], missing, raw };
 }

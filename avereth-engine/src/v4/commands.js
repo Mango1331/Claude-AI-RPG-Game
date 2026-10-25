@@ -444,6 +444,10 @@ const HANDLERS = {
             const hall = guildHallMeant(s);
             if (hall) c = { ...c, to: hall };
         }
+        if (envx?.c && rulesetOf(s) >= 2 && typeof c.to?.new === 'string') {
+            const p = knownByName(s, c.to.new, s.places[s.scene.at]?.realm || s.scene.location, { reportedOnly: false });
+            if (p) c = { ...c, to: p.id };
+        }
         // Patch 8: at a Dungeon's gate, going "in" (the Dungeon he stands at) is the step past the gate into its first part
         if (envx?.c && typeof c.to === 'string' && c.to === s.scene.at && s.places[c.to]?.dungeon?.real) c = { ...c, to: { new: `the way into ${placeName(s, c.to)}` } };
         // Patch 7: in a dungeon he goes by the ways he knows (src/v4/dungeon.js)

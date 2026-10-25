@@ -233,6 +233,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // is at the Dungeon itself, its way in: never a room of it, never a new place beside it
     const arrivalPlace = (ref) => { const gate = cPath ? entranceOf(s, content, ref) : null; return gate ? { id: gate } : place(ref); };
     const expected = answer.expected || {};
+    const sceneOf = d => cPath && rulesetOf(s) >= 2 ? d?.scene ?? answer.scene : null;
     const tag = msg !== null && msg !== undefined ? msg : s.turn;
 
     // Patch 8: the Living Dungeon he is in, established before the reply's creatures are met (an older campaign's too).
@@ -251,6 +252,20 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     for (const x of fw.reject) { reject(x.delta, x.rule, x.why); refusedArrival(x.delta); }
     // Prototype C (4.3.0-c.6.6.3): what of Alaric's the story moved to someone else without his hand-over (quest.ready below)
     const refusedMoves = new Set(fw.reject.filter((x) => x.rule === 'pc_inventory' && x.delta?.type === 'object.move').map((x) => objectRef(x.delta.object)?.id).filter(Boolean));
+    const acceptedSteps = new Set();
+    let refusedScene = false;
+    const sceneMatches = ref => {
+        if (ref === 'here') return true;
+        if (typeof ref === 'string') return ref === s.scene.at;
+        const matches = (want, id) => {
+            const p = s.places[id];
+            if (typeof want === 'string') return want === id;
+            const n = want?.new;
+            return !!p && !!n && normText(n.name) === normText(p.name)
+                && (!n.kind || n.kind === p.kind) && (!n.parent || matches(n.parent, p.parent));
+        };
+        return matches(ref, s.scene.at);
+    };
     const readyClaims = [];
     const readied = []; // the contracts this reply made READY (their open deliveries are told after the deltas)
     corrections.push(...fw.corrections);
@@ -665,7 +680,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             if (!e || e.arrived !== true) { if (onWay) break; continue; }
             onWay = true;
             const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
-            const at = viaStop(arrivalPlace(reportedTarget(s, auth, expected, e.at, k) || e.at || go?.to || null));
+            const at = viaStop(arrivalPlace(reportedTarget(s, auth, expected, e.at, k, sceneOf()) || e.at || go?.to || null));
             if (!at.error && at.id !== s.scene.at && !wayRefused(at.id, { seq: Number(k), type: 'expected' })) {
                 const party = companions(e.with, { seq: Number(k), type: 'expected' });
                 perceiveAll(s, emit, seeing());
@@ -727,6 +742,24 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             for (const x of stepFw.corrections) if (!corrections.includes(x)) corrections.push(x);
             continue;
         }
+        const origin = sceneOf(d);
+        const remote = ['person.new', 'creature.new'].includes(d.type) && d.present === false;
+        if (cPath && rulesetOf(s) >= 2 && origin != null && !remote
+            && !['time', 'arrive', 'overreach', 'place.reported', 'dungeon'].includes(d.type) && !sceneMatches(origin)) {
+            refusedScene = true;
+            reject(d, 'scene_context', 'the narrative setting is not the location reached at this step');
+            const correction = `Alaric remains at ${placeName(s, s.scene.at)}. The other scene was not reached: its people, objects and quest outcomes were not booked here. Continue from the canonical location; do not invent a completed journey.`;
+            if (!corrections.includes(correction)) corrections.push(correction);
+            continue;
+        }
+        if (cPath && rulesetOf(s) >= 2 && ['quest.ready', 'quest.progress', 'quest.close'].includes(d.type)
+            && ((refusedScene && !d.depends_on?.length) || d.depends_on?.some(seq => !acceptedSteps.has(String(seq))
+                || answer.deltas.filter(source => String(source.seq) === String(seq)).length !== 1))) {
+            reject(d, 'quest_dependency', 'a cited supporting step was not accepted before this quest claim');
+            continue;
+        }
+        const refusedBefore = rejected.length;
+        const atBefore = s.scene.at;
         switch (d.type) {
             case 'time': {
                 if (inventedWorkTime) { reject(d, 'private_work', 'accepting a job does not authorize its narrated working time'); break; }
@@ -741,7 +774,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             }
             case 'arrive': {
                 if (s.encounter) { reject(d, 'combat', 'no travel while combat is ACTIVE'); refusedArrival(d); break; }
-                const ref = reportedTarget(s, auth, expected, d.at) || onward(d.at);
+                const ref = reportedTarget(s, auth, expected, d.at, null, sceneOf(d)) || onward(d.at);
                 const away = leavesHere(ref);
                 const at = viaStop(arrivalPlace(ref));
                 if (at.error) { reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
@@ -756,7 +789,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 // the hall would have been met there). A leg not reported arrived ends his way where he is
                 for (const k of laterLegs(at.id)) {
                     const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
-                    const next = viaStop(arrivalPlace(reportedTarget(s, auth, expected, expected[k].at, k) || expected[k].at || go?.to || null));
+                    const next = viaStop(arrivalPlace(reportedTarget(s, auth, expected, expected[k].at, k, sceneOf()) || expected[k].at || go?.to || null));
                     if (next.error || next.id === s.scene.at || wayRefused(next.id, { seq: k, type: 'expected' })) break;
                     perceiveAll(s, emit, seeing());
                     arriveThrough(next.id, party);
@@ -1216,6 +1249,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             default:
                 reject(d, 'unknown', `the engine has no handler for ${d.type}`);
         }
+        if (rejected.length === refusedBefore) {
+            acceptedSteps.add(String(d.seq));
+            if (d.type === 'arrive' && s.scene.at !== atBefore) refusedScene = false;
+        }
     }
     // a hand-over whose offer never came to be (refused) stands as the story told it
     settleDeferred();
@@ -1241,7 +1278,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (type === 'go' && e.arrived === true && !arrived && !s.encounter) {
             // the arrival the story showed without an arrive delta: where the answer says, else where he set off to
             const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
-            const at = viaStop(arrivalPlace(reportedTarget(s, auth, expected, e.at, k) || e.at || go?.to || null));
+            const at = viaStop(arrivalPlace(reportedTarget(s, auth, expected, e.at, k, sceneOf()) || e.at || go?.to || null));
             if (!at.error && at.id !== s.scene.at && !wayRefused(at.id, { seq: Number(k), type: 'expected' })) {
                 const party = companions(e.with, { seq: Number(k), type: 'expected' });
                 perceiveAll(s, emit, seeing());

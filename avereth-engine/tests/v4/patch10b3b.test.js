@@ -93,7 +93,9 @@ test('3B accepted private work settles through actual employer payment, not a re
     const s=stall(), before=s.entities.pc.sheet.coin_cp;
     const offered=applyWorld(s,content,{expected:{},deltas:[{seq:1,type:'quest.offer',giver:'npc.tam',title:'Morning watch',reward_cp:1,objectives:['Watch the stall until noon'],proof:[]}]},{msg:201,prose:'Tam offers one copper to watch his stall until noon.'});
     const q=Object.values(offered.state.quests).find(q=>q.title==='Morning watch');
-    resolveCommands(offered.state,content,[{seq:1,type:'quest.accept',quest:q.id,quote:'I accept the morning watch.'}],e=>applyEvent(offered.state,e),{c:true,msg:202});
+    const out = resolveCommands(offered.state,content,[{seq:1,type:'quest.accept',quest:q.id,quote:'I accept the morning watch.'},
+        {seq:2,type:'activity',kind:'work',what:'watching the stall',minutes:null,until:'noon',job:q.id,quote:'I watch the stall until noon.'}],e=>applyEvent(offered.state,e),{c:true,msg:202});
+    offered.state.last = { ...offered.state.last, input: 'I accept the morning watch. I watch the stall until noon.', outcome: out };
     const paid=applyWorld(offered.state,content,{expected:{},deltas:[{seq:1,type:'quest.close',quest:q.id,status:'completed',by:'npc.tam'},{seq:2,type:'coin.gift',from:'npc.tam',cp:1,said:'one copper',why:'wage for completed morning watch'}]},{msg:203,prose:'At noon Tam confirms the watch is finished and hands him one copper for his work.'});
     assert.equal(paid.state.quests[q.id].status,'completed');assert.equal(paid.state.entities.pc.sheet.coin_cp,before+1);
     assert.equal(paid.events.filter(e=>e.t==='coin.changed').length,1);assert.ok(!paid.events.some(e=>e.t==='service.granted'));

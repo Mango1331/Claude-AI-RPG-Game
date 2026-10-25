@@ -1,0 +1,314 @@
+{
+  "source": "20261024-235637Z-current_test/chat.jsonl",
+  "build": "4.3.0-c.6.6.72",
+  "user": 97,
+  "reply": 98,
+  "input": "I accept the hour of pushing the cart to market.",
+  "prose": "\"Good man.\" She put his shoulder to the shaft with hers, told the boy to grab the turnips, and on three they heaved. The wheel came out of the rut with a sucking sound, the cart lurched level, and after that it was just the long slow shove up the last stretch of road, her boots slipping, the boy steering the front, turnips rolling off and being chased back twice.\n\nShe talked the whole way, unasked. Dagny, she was called—turnips and late cabbage out of a holding west of the city, husband bad with his back, the boy called Pip and talked about by name at least a dozen times. The bell for market began tolling as they came through the west gate, and they rolled into the square with the stalls already unfolding around them.\n\n\"Made it.\" She straightened, rubbing her shoulder, and dug in her apron. \"Said bread money, so it's bread money.\" She pressed three copper into his palm, still warm from her apron, then paused, squinting at him. \"You're the one who burned the vines off Maretta's south terraces, aren't you? Kessa's cousin's girl saw the smoke from the high rows.\" She didn't wait for confirmation. \"Well. If you've more honest work in you, the Guild's up Copper Street, past the fountain. Everyone knows it.\"\n\nShe turned to her cart and began unloading turnips, and Pip waved once, shy, before hauling a basket after her.",
+  "quest": {
+    "id": "quest.an_hour_of_pushing_the_stuck_cart_to_market",
+    "title": "An hour of pushing the stuck cart to market",
+    "kind": "private",
+    "giver": "npc.npccartwoman",
+    "client": null,
+    "rank": null,
+    "payout_cp": null,
+    "reward": null,
+    "objectives": [
+      {
+        "id": "o1",
+        "what": "Push the mired farm cart free and get it to Glassmere's market before the bell",
+        "status": "open"
+      }
+    ],
+    "proof": [
+      {
+        "id": "p1",
+        "kind": "note",
+        "what": "the cart delivered to market before the bell"
+      }
+    ],
+    "status": "active",
+    "taker": "pc",
+    "history": [
+      {
+        "turn": 39,
+        "minute": 3260,
+        "status": "offered"
+      },
+      {
+        "turn": 40,
+        "minute": 3260,
+        "status": "active",
+        "at": "loc.lower_wall_of_the_south_terraces",
+        "step": 1
+      }
+    ],
+    "details": [],
+    "notes": [],
+    "schedule": {
+      "starts_at": null,
+      "deadline": null
+    },
+    "source": {
+      "giver": "npc.npccartwoman",
+      "turn": 39
+    }
+  },
+  "giver": {
+    "id": "npc.npccartwoman",
+    "kind": "npc",
+    "name": null,
+    "descriptors": [
+      "farmer",
+      "broad woman in a soil-stained apron, swe",
+      "npc.cartwoman"
+    ],
+    "traits": "broad woman in a soil-stained apron, sweat on her forehead, hauling at a stuck cart shaft",
+    "status": "alive",
+    "location": "realm.caelreth",
+    "created": {
+      "turn": 39,
+      "minute": 3260
+    },
+    "source": {
+      "kind": "narration",
+      "msg": 96
+    },
+    "card": {},
+    "template": "commoner"
+  },
+  "scene": {
+    "location": "realm.caelreth",
+    "place": "Lower wall of the south terraces",
+    "at": "loc.lower_wall_of_the_south_terraces",
+    "present": [
+      "pc",
+      "mon.moncrestrangle_vine_lower_wall",
+      "npc.maretta",
+      "mon.monstrangle_vine_corner_mass",
+      "mon.monstrangle_vine_long_spread",
+      "npc.farmer",
+      "npc.npccartwoman"
+    ],
+    "positions": {
+      "mon.moncrestrangle_vine_lower_wall": {
+        "band": "SHORT",
+        "cover": "none"
+      },
+      "npc.maretta": {
+        "band": "SHORT",
+        "cover": "none"
+      },
+      "mon.monstrangle_vine_corner_mass": {
+        "band": "LONG",
+        "cover": "none"
+      },
+      "mon.monstrangle_vine_long_spread": {
+        "band": "LONG",
+        "cover": "none"
+      },
+      "npc.npccartwoman": {
+        "band": "ENGAGED",
+        "cover": "none"
+      }
+    },
+    "awareness": {
+      "mon.moncrestrangle_vine_lower_wall": "aware",
+      "npc.maretta": "aware",
+      "mon.monstrangle_vine_long_spread": "aware",
+      "npc.farmer": "aware",
+      "mon.monstrangle_vine_corner_mass": "aware"
+    },
+    "concealed": [],
+    "history": [
+      "loc.glassmere.verge",
+      "loc.glassmere.gate_square_of_glassmere",
+      "loc.glassmere.guild_hall",
+      "loc.glassmere.shrine_of_the_waystone",
+      "loc.waystone_shrine",
+      "loc.glassmere.guild_hall",
+      "loc.south_terraces_vineyards"
+    ],
+    "relevant": [
+      "npc.maretta",
+      "npc.npccartwoman"
+    ],
+    "threats": []
+  },
+  "places": {
+    "loc.lower_wall_of_the_south_terraces": {
+      "id": "loc.lower_wall_of_the_south_terraces",
+      "name": "Lower wall of the south terraces",
+      "kind": "wilderness",
+      "parent": "realm.caelreth",
+      "realm": "realm.caelreth",
+      "tags": [],
+      "by": "reply",
+      "created": {
+        "turn": 25,
+        "minute": 2347
+      }
+    },
+    "realm.caelreth": {
+      "id": "realm.caelreth",
+      "name": "Caelreth",
+      "kind": "realm",
+      "parent": null,
+      "realm": "realm.caelreth",
+      "tags": [],
+      "by": "content"
+    }
+  },
+  "outcome": {
+    "kind": "v4",
+    "actions": [
+      "1. ACCEPTS — \"An hour of pushing the stuck cart to market\" from the farmer."
+    ],
+    "extra": [],
+    "resolutions": [
+      {
+        "seq": 1,
+        "type": "quest.accept",
+        "status": "resolved",
+        "quote": "I accept the hour of pushing the cart to market."
+      }
+    ],
+    "expected_keys": {},
+    "auth": {
+      "go": null,
+      "gos": [],
+      "roam": false,
+      "take": [],
+      "takeNames": {},
+      "gather": false,
+      "rest": false,
+      "timeCap": 120,
+      "c": true,
+      "booked_min": 0,
+      "recovered": false
+    },
+    "conditionals": [],
+    "booked": {
+      "registration": false,
+      "grants": [],
+      "turnIns": [],
+      "accepted": [
+        "quest.an_hour_of_pushing_the_stuck_cart_to_market"
+      ],
+      "sellers": [],
+      "goods": []
+    },
+    "board": null,
+    "search_checks": [],
+    "check_die": null,
+    "interp_failed": false,
+    "dropped": []
+  },
+  "answer": {
+    "expected": {},
+    "deltas": [
+      {
+        "seq": 1,
+        "type": "person.new",
+        "ref": "npc.pip",
+        "name": "Pip",
+        "role": "child",
+        "desc": [
+          "a boy, Dagny's son, steers the cart front and hauls baskets"
+        ],
+        "armed": null,
+        "present": true,
+        "relevant": false,
+        "threat": false,
+        "at": null,
+        "band": null
+      },
+      {
+        "seq": 2,
+        "type": "fact",
+        "s": "npc.npccartwoman",
+        "p": "named",
+        "o": "Dagny"
+      },
+      {
+        "seq": 3,
+        "type": "arrive",
+        "at": {
+          "new": {
+            "name": "Market square of Glassmere",
+            "kind": "site",
+            "parent": "loc.glassmere"
+          }
+        },
+        "forced_by": null,
+        "with": [
+          "npc.npccartwoman",
+          "npc.pip"
+        ]
+      },
+      {
+        "seq": 4,
+        "type": "time",
+        "minutes": 45
+      },
+      {
+        "seq": 5,
+        "type": "quest.close",
+        "quest": "quest.an_hour_of_pushing_the_stuck_cart_to_market",
+        "status": "completed",
+        "by": "npc.npccartwoman"
+      },
+      {
+        "seq": 6,
+        "type": "coin.gift",
+        "from": "npc.npccartwoman",
+        "cp": 3,
+        "why": "promised bread money for pushing the cart to market",
+        "said": "three copper"
+      },
+      {
+        "seq": 7,
+        "type": "learn",
+        "who": "npc.npccartwoman",
+        "s": "Alaric",
+        "p": "burned the vines off Maretta's south terraces",
+        "o": "Kessa's cousin's girl saw the smoke from the high rows",
+        "how": "inferred"
+      },
+      {
+        "seq": 8,
+        "type": "fact",
+        "s": "npc.npccartwoman",
+        "p": "occupation",
+        "o": "turnip and cabbage farmer"
+      },
+      {
+        "seq": 9,
+        "type": "fact",
+        "s": "npc.npccartwoman",
+        "p": "husband",
+        "o": "bad with his back"
+      },
+      {
+        "seq": 10,
+        "type": "leave",
+        "who": "npc.npccartwoman"
+      },
+      {
+        "seq": 11,
+        "type": "leave",
+        "who": "npc.pip"
+      },
+      {
+        "seq": 12,
+        "type": "thread",
+        "id": "thread.t39.1",
+        "text": "The stuck cart was freed and pushed to market; Dagny paid the promised bread money.",
+        "kind": "promise",
+        "status": "resolved",
+        "resolution": "Cart freed, hauled through the west gate into the market square; Dagny paid three copper."
+      }
+    ]
+  }
+}

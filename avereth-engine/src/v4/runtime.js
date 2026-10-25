@@ -267,6 +267,11 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
         const at = crowd ? clone(before) : before;
         if (crowd) for (const e of crowd.events) applyEvent(at, e);
         const t = playerTurn(at, content, msg.mes, { msg: u, intent: crowd ? crowd.intent : m.intent, c: true });
+        const recorded = t.events.findLast(e => e.t === 'outcome.recorded');
+        if (m.intent.job && recorded && recorded.d.outcome.kind === 'combat') {
+            recorded.d.outcome.job = { job: m.intent.job, seq: m.intent.job_seq, type: 'use_skill', quote: m.intent.job_quote };
+            applyEvent(t.state, recorded);
+        }
         const growth = await withGrowth(t, content, llm, previous);
         return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, ...growth, events: [...(crowd && t.events.length ? crowd.events : []), ...growth.events], command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
     }

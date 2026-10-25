@@ -199,6 +199,8 @@ export function applyDomainEvent(state, e) {
         case 'quest.progressed': {
             const q = state.quests[d.id];
             if (!q) throw new Error(`unknown quest ${d.id}`);
+            // Only the engine's verified action path supplies work, never a world progress delta.
+            if (q.kind === 'private' && d.work) { q.work = clone(d.work); break; }
             // Prototype C (4.3.0-c.6.6.6, live 18.10.2026: "DEFEAT 4 hounds …: open" stored twice): one entry per
             // objective, the latest word on it; the same news again changes nothing. A keeps its list as it was
             const cTurn = state.last?.outcome?.c === true || state.last?.outcome?.auth?.c === true;
@@ -248,6 +250,9 @@ export function applyDomainEvent(state, e) {
             state.decisions = state.decisions.filter((x) => x.id !== d.id);
             break;
         case 'transaction.completed':
+            if (d.job && state.quests[d.job]?.kind === 'private' && !state.quests[d.job].payment) {
+                state.quests[d.job].payment = { cp: d.cp, by: d.from, turn: state.turn, minute: state.clock.minute };
+            }
             // the engine's own credits to Alaric (a Guild payout, a sale), by place and day: coin the story then shows
             // him pick up there that day is this coin, not new coin (src/v4/world.js coin.gift). His payments are audit.
             if (d.to === 'pc') state.credits = [...(state.credits || []), { cp: d.cp, at: d.at ?? state.scene?.at ?? null, day: today(state) }].slice(-6);

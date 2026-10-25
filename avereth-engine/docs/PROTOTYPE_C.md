@@ -2154,3 +2154,7 @@ Technische Details, alle akzeptierten und verworfenen Claude-Punkte: `docs/PATCH
 ### 10B-4c.2 Hotfix (.66, 24.10.2026)
 
 Initial fehlende Swipe-ID wird für Job-Zugehörigkeit und Deduplizierung als `0` behandelt; echte Swipewechsel und übrige Guards bleiben. Ursache, Rot/Grün, vollständige Node-/ST-Ergebnisse und offene Beobachtungen einmalig in der [Hotfixnote](PATCH10B4C2_SWIPE_ZERO_HOTFIX.md).
+
+### Private Arbeitsaufträge (.76, 25.10.2026)
+
+Annahme allein erledigt und bezahlt keinen Privatjob. Bestehende Spielerhandlungen erhalten optional einen geprüften Auftragsbezug; tatsächliche Arbeit und einmalige Bezahlung bleiben über vorhandene Events erhalten. Gemeinsame Arbeit/Reise in einem Input, spätere Auszahlung und unabhängige Geschenke bleiben möglich. Umsetzung, Rot/Grün und Node-/ST-Abnahme einmalig in der [Fach-Patchnote](PATCH10B_PRIVATE_JOB_AGENCY.md).

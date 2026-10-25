@@ -203,11 +203,11 @@ export function attemptEvents(s, content, dice, emit, c) {
     const toolText = tool ? ` With ${tool.name} (${tool.used ? 'used up' : 'it stays his'}): one step easier.` : '';
     if (r.success) {
         emit(changed(s, f, { status: aim === 'pass' ? 'passed' : 'disabled' }, `${aim === 'pass' ? 'passed' : 'made harmless'}: ${words}`));
-        return { status: 'resolved', line: `${aim === 'pass' ? 'GETS PAST' : 'MAKES HARMLESS'} — ${f.name} (${f.id}), "${words}": ${r.text || r.auto}.${toolText} It stays so; tell it as done, no harm.${hidden ? ` ${hidden}` : ''}` };
+        return { status: 'resolved', success: true, line: `${aim === 'pass' ? 'GETS PAST' : 'MAKES HARMLESS'} — ${f.name} (${f.id}), "${words}": ${r.text || r.auto}.${toolText} It stays so; tell it as done, no harm.${hidden ? ` ${hidden}` : ''}` };
     }
     const harm = f.status === 'active' && (f.kind === 'hazard' || f.harm) ? harmEvents(s, content, f, emit) : null;
     emit(changed(s, f, {}, `failed: ${words}`));
-    return { status: 'resolved', line: `FAILS — ${f.name} (${f.id}), "${words}": ${r.text || r.auto}.${toolText} ${aim === 'pass' ? 'He does not get past it' : 'It is not made harmless'}${harm ? `; it hurts him: ${harm}` : '; no harm'}. It stays as it was; another way, a tool or more care may still work. Tell exactly this.${hidden ? ` ${hidden}` : ''}` };
+    return { status: 'resolved', success: false, line: `FAILS — ${f.name} (${f.id}), "${words}": ${r.text || r.auto}.${toolText} ${aim === 'pass' ? 'He does not get past it' : 'It is not made harmless'}${harm ? `; it hurts him: ${harm}` : '; no harm'}. It stays as it was; another way, a tool or more care may still work. Tell exactly this.${hidden ? ` ${hidden}` : ''}` };
 }
 
 /**

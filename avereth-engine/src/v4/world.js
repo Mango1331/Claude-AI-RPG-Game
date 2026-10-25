@@ -38,6 +38,7 @@ import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor, templateFor, rulesetOf } from '../content.js';
 import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotForNew, resolvedSlotNamed, slotEntityEvents, syncEvents, insideOf } from './living.js';
 import { unbookedDungeonThreat } from './run9_evidence.js';
+import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
@@ -242,6 +243,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // 1. authority first: what the story may not decide is never applied
     const excludedFoes = [];
     const fw = firewall(answer.deltas, firewallContext(s, content, chronicle, excludedFoes));
+    const privateCloses = [], privatePayments = [];
+    const privateMode = cPath && rulesetOf(s) >= 2;
+    const acceptanceOnly = privateMode && outcome.resolutions?.length > 0 && outcome.resolutions.every(r => r.type === 'quest.accept');
+    const inventedWorkTime = acceptanceOnly && fw.accept.some(d => d.type === 'quest.close' && d.status === 'completed'
+        && jobOf(s, d.quest) && !jobOf(s, d.quest).work);
     for (const x of fw.reject) { reject(x.delta, x.rule, x.why); refusedArrival(x.delta); }
     // Prototype C (4.3.0-c.6.6.3): what of Alaric's the story moved to someone else without his hand-over (quest.ready below)
     const refusedMoves = new Set(fw.reject.filter((x) => x.rule === 'pc_inventory' && x.delta?.type === 'object.move').map((x) => objectRef(x.delta.object)?.id).filter(Boolean));
@@ -709,6 +715,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         switch (d.type) {
             case 'time': {
+                if (inventedWorkTime) { reject(d, 'private_work', 'accepting a job does not authorize its narrated working time'); break; }
                 const covered = Math.min(bookedLeft, d.minutes);
                 bookedLeft -= covered;
                 const want = d.minutes - covered;
@@ -1064,6 +1071,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     if (!corrections.includes(correction)) corrections.push(correction);
                     break;
                 }
+                const wage = privateMode ? paymentJob(s, d, from, fw.accept.filter(x => x.type === 'quest.close' && x.status === 'completed').map(x => x.quest)) : null;
+                if (wage) { privatePayments.push({ d, from, cp, ...wage }); break; }
                 grant('envelope.give');
                 emit({ t: 'coin.changed', d: { id: 'pc', value: coin + cp, delta: cp, why: `${from ? entityLabel(s, from) : d.from}: ${String(d.why || 'a gift').slice(0, 80)}` } });
                 break;
@@ -1135,6 +1144,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 if (!q) { reject(d, 'quest', 'unknown quest'); break; }
                 if (q.status !== 'active' && q.status !== 'offered') { reject(d, 'quest', `the quest is ${q.status}`); break; }
                 if (q.kind === 'private' && d.status === 'completed' && q.giver && idOf(d.by) !== q.giver) { reject(d, 'quest', 'private work is closed by its giver'); break; }
+                if (privateMode && q.kind === 'private' && d.status === 'completed') { privateCloses.push({ d, id: q.id }); break; }
                 if (d.status === 'failed') grant('world.failed');
                 emit({ t: 'quest.status', d: { id: q.id, from: q.status, to: d.status, by: idOf(d.by) || null } });
                 break;
@@ -1291,6 +1301,29 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             emit({ t: 'object.consumed', d: { id: o.id, by: 'pc', ...(n < (o.qty ?? 1) ? { qty: n } : {}) } });
         }
         emit({ t: 'cmd.completed', d: { seq: k.seq, ok: true, reason: null } });
+    }
+    // Settle private work only after this reply's actual arrivals and conditional actions.
+    // Completion and wage order in the extractor answer cannot change the result.
+    step = { kind: 'engine' };
+    const blockedJobs = privateMode ? recordJobWork(s, emit, outcome, expected, events) : new Set();
+    for (const { d, id } of privateCloses) {
+        step = { kind: 'delta', type: d.type, seq: d.seq, granted: new Set() };
+        const q = s.quests[id];
+        if (!q.work || blockedJobs.has(id)) {
+            reject(d, 'private_work', 'no successful player-authorized work is recorded for this job');
+            corrections.push(`"${q.title}" is still ${q.status}: acceptance or progress text is no performed work. Only the player's actual job actions count; do not invent a journey, working time, completion or wages.`);
+        } else if (['active', 'offered'].includes(q.status)) emit({ t: 'quest.status', d: { id, from: q.status, to: 'completed', by: idOf(d.by) } });
+    }
+    for (const { d, job: q, from, cp, error } of privatePayments) {
+        step = { kind: 'delta', type: d.type, seq: d.seq, granted: new Set() };
+        const why = error || (!q.work || q.status !== 'completed' || blockedJobs.has(q.id) ? 'job is not completed through authorized work'
+            : q.payment ? 'the agreed wages were already paid'
+            : q.giver && from !== q.giver ? 'only this job\'s giver pays its wages'
+            : q.payout_cp != null && q.payout_cp !== cp ? 'payment differs from the agreed job reward' : null);
+        if (why) { reject(d, 'private_payment', why); corrections.push(`No private-job wages were booked: ${why}. Independent genuine gifts remain possible; never rename unpaid wages as a gift.`); continue; }
+        grant('envelope.give');
+        emit({ t: 'coin.changed', d: { id: 'pc', value: s.entities.pc.sheet.coin_cp + cp, delta: cp, why: `Private job: ${q.title}` } });
+        emit({ t: 'transaction.completed', d: { to: 'pc', from, cp, job: q.id, for: q.title, at: s.scene.at } });
     }
     for (const d of readyClaims) { step = { kind: 'delta', type: 'quest.ready', seq: d.seq, granted: new Set() }; finishReady(d); }
     step = { kind: 'engine' };

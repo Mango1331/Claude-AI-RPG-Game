@@ -1,4 +1,5 @@
 import { deliveryHandover } from './delivery.js';
+import { jobAction } from './private_jobs.js';
 // Prototype C (docs/PROTOTYPE_C.md; the working hypothesis is docs/ARCHITECTURE_C.md Rev. 3, frozen at 717e2f7 on the
 // branch chatgpt/narrator-gm-tools-2026-10-02): the semantic planner
 // of a V4 campaign. Behind the setting `planner` (off by default) it replaces the regex reading of free text
@@ -43,8 +44,9 @@ export const MECH_TYPES = ['use_skill', 'ability_world', 'move', 'flee', 'stealt
 export const PLANNER_ROLE = 'You are the intent planner of the Avereth engine. You read one PLAYER MESSAGE and write down the engine actions Alaric himself takes in it. The engine resolves them: it decides every outcome, roll, number and cost, and whether something works at all. You never decide or describe an outcome.';
 
 export const MECH_RULES = [
+    'Private jobs: an actual go, work/craft/search/gather/errand activity, other deed, attempt, give or use_skill may carry optional job: the exact PRIVATE JOBS id whose work Alaric explicitly undertakes. This links intent, not success. Omit job for mere acceptance, questions about terms, unrelated travel/shopping, resting, wishes or future plans. "I push the cart all the way to the market" is one go with job, not a required extra work input. "I accept and start pushing" can contain quest.accept plus that go. Actually giving requested information is an other deed with job; talking about terms is not. Never mark quest.accept itself as work.',
     'Actions with skills, in fights and on things (commands of the same list; the engine decides what is possible now and every outcome):',
-    '1. Only Alaric\'s own deeds in this message. Not an action: a question ("Can I …?"), a wish, a thought, a plan or a condition for later ("if it moves, I\'ll …", "next time …"), a memory, words he speaks (threats too), anything another character does. Such a message gets an empty list.',
+    '1. Only Alaric\'s own deeds in this message. Not an action: a question ("Can I …?"), a wish, a thought, a plan or a condition for later ("if it moves, I\'ll …", "next time …"), a memory, ordinary dialogue or threats (except actually supplying requested private-job information), anything another character does. Such a message gets an empty list.',
     '2. A thing he holds (OBJECTS held by Alaric: a tool, food, a potion) that he uses is the story command use with its id, never a skill: "I use the flint and steel to make a light" → use. Skills: use only the ids under KNOWN SKILLS. Players misspell and paraphrase skills: if exactly one known skill fits what he names or describes, use that skill. If he names a skill Alaric does not know, write {"new": "<the name he used>"}; never put a different skill in its place.',
     '3. An attack that names no skill and hints at none ("I strike the rat", "I hit it", "I shoot at it"): "skill": null; the engine uses his Basic Attack. Use the Basic Attack id only when he says "basic attack".',
     '4. Targets: opponents and people by their id. Resolve labels and parts of labels ("B" for "Cave Rat B"), descriptions against the catalog (wounded, ENGAGED = right in front of him, the farthest, a size or kind), pronouns, ENGINE FACTS and RECENT. A target who is not here: {"new": "<description>"}. An area skill needs no target (null). When he names no target at all, null.',
@@ -314,12 +316,14 @@ export function planContext(state, content, catalog) {
     // Patch 9C-1: his open learning goals and what a learning activity may name (src/v4/growth.js)
     const learning = rulesetOf(state) >= 2 ? openGoals(state).map((g) => ({ id: g.id, text: goalText(g) })) : [];
     const techniques = rulesetOf(state) >= 2 ? composerFunctions(content) : [];
-    return { fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content) };
+    const jobs = rulesetOf(state) >= 2 ? Object.values(state.quests).filter(q => q.kind === 'private' && ['offered', 'active'].includes(q.status)) : [];
+    return { fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
 }
 
 /** The user message: the interpreter's CATALOG, then skills, opponents, engine facts, RECENT and the message. */
 export function plannerUser(ctx, text, { recent = '' } = {}) {
     const L = [catalogText(ctx.catalog)];
+    if (ctx.jobs?.length) L.push('PRIVATE JOBS (optional job on actual work actions only):', ...ctx.jobs.map(q => `- ${q.id}: ${q.title}; ${(q.objectives || []).map(o => o.what).join('; ')}`));
     L.push('KNOWN SKILLS (the only skill ids):');
     for (const s of ctx.skills) L.push(`- ${s.id}: ${s.name} — ${s.text}`);
     if (!ctx.skills.length) L.push('- none');
@@ -424,6 +428,7 @@ export function parsePlan(answer, vocab, ctx, message) {
     if (!value) return { commands: null, errors: [error || 'no JSON object'] };
     if (!Array.isArray(value.commands)) return { commands: null, errors: ['the answer must be {"commands": [...]} (an empty list when he takes no action)'] };
     const errors = [];
+    const jobs = new Map();
     const story = new Map((vocab.commands || []).map((c) => [c.type, c]));
     const schema = interpreterSchema(vocab, ctx.catalog);
     const people = new Set([...ctx.opponents.map((o) => o.id), ...(ctx.catalog.present || []).map((p) => p.id)]);
@@ -450,6 +455,13 @@ export function parsePlan(answer, vocab, ctx, message) {
         const at = `commands[${i}]${c && typeof c === 'object' && c.type ? ` (${c.type})` : ''}`;
         if (!c || typeof c !== 'object' || Array.isArray(c)) { errors.push(`${at}: must be an object`); continue; }
         const type = String(c.type ?? '');
+        if (c.job !== undefined) {
+            const job = c.job; delete c.job;
+            if (job != null) {
+                if (!jobAction(c) || !(ctx.jobs || []).some(q => q.id === job)) errors.push(`${at}: job must name a PRIVATE JOB for an actual work action, never acceptance or unrelated activity`);
+                else jobs.set(c, job);
+            }
+        }
         // A name he explicitly chose identifies an offered alternative even if the planner wrote its group id.
         // This only canonicalizes an already interpreted acceptance; the agency and acquisition guards still run.
         if (type === 'development.accept' && typeof c.quote === 'string' && inMessage(message, c.quote)) {
@@ -527,6 +539,7 @@ export function parsePlan(answer, vocab, ctx, message) {
         }
     }
     errors.push(...amountErrors(value.commands, ctx.currency));
+    for (const [c, job] of jobs) c.job = job;
     if (errors.length) return { commands: null, errors: errors.slice(0, 8) };
     return { commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [] };
 }
@@ -749,7 +762,9 @@ export function mapPlan(commands, ctx, content, message, state) {
     // a step the engine does not take with the main action: visible in a fight, story fiction outside one
     const leaveMove = (why) => { if (!move) return; if (fight) notTaken(move, why); else free.push(`move: ${said(move)}`); };
 
-    const base = (intent) => ({ route: 'v3', intent: { ...intent, ...(notes.length ? { plan_notes: notes } : {}) }, notes, free });
+    const base = (intent) => ({ route: 'v3', intent: { ...intent,
+        ...(main?.job ? { job: main.job, job_seq: main.seq, job_quote: main.quote } : {}),
+        ...(notes.length ? { plan_notes: notes } : {}) }, notes, free });
     if (!main || (main.type === 'stealth' && fight)) {
         if (move && fight) return base({ kind: 'move', dir: move.dir, target: move.target || null });
         if (wait && fight) return base({ kind: 'hold' });

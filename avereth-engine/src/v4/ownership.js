@@ -249,7 +249,7 @@ export const DELTA_WRITES = {
     offer: { writes: ['trade', 'quests'], gates: { 'pc.coin': 'player.buy', 'pc.inventory': 'player.buy' } },
     // 4.3.0-c.6.6.5: a buyer's price for his things; nothing changes hands until his own acceptance
     bid: { writes: ['trade'] },
-    'coin.gift': { writes: [], gates: { 'pc.coin': 'envelope.give' } },
+    'coin.gift': { writes: ['trade', 'quests'], gates: { 'pc.coin': 'envelope.give' } },
     coerce: { writes: [], gates: { 'pc.coin': 'envelope.take', 'pc.inventory': 'envelope.take' } },
     'quest.offer': { writes: ['quests'] },
     'quest.detail': { writes: ['quests'] },

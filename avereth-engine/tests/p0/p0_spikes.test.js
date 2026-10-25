@@ -259,7 +259,7 @@ test('S2 after P0, --vocab v4: the product extractor and its firewall; a forbidd
                 const r = await inner(req);
                 if (!req.messages.some((m) => m.content.includes('Reeve Aldous') && m.content.includes('TURNS IN'))) return r;
                 const v = JSON.parse(r.content);
-                v.deltas.push({ seq: v.deltas.length + 1, type: 'coin.gift', from: 'npc.reeve_aldous', cp: 80, why: 'payment for the Wolf Problem', said: null });
+                v.deltas.push({ seq: v.deltas.length + 1, type: 'coin.gift', from: 'npc.reeve_aldous', cp: 80, why: 'payment for the Wolf Problem', said: null, job: null });
                 return { content: JSON.stringify(v) };
             },
         });

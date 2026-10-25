@@ -141,7 +141,8 @@ function questInfo(state, content, q, { c = false } = {}) {
             c ? proofMemory(state, content, q) : (q.proof || []).length ? `verification example: ${proofText(q)}` : null].filter(Boolean).join(' · ');
     }
     const giver = q.giver && state.entities[q.giver] ? personLabel(state, content, q.giver) : q.giver;
-    return ['private', q.status, giver ? `from ${giver}` : null, q.payout_cp ? `reward ${q.payout_cp} cp` : null].filter(Boolean).join(' · ');
+    return ['private', q.status, giver ? `from ${giver}` : null, q.payout_cp ? `reward ${q.payout_cp} cp` : null,
+        ...(rulesetOf(state) >= 2 ? [q.work ? `engine-recorded job action: ${q.work.quote}` : 'no engine-recorded work', q.payment ? `wages already paid: ${q.payment.cp} cp` : 'wages not paid'] : [])].filter(Boolean).join(' · ');
 }
 
 /** "Guild member, Novice · 30 cp" and HP when hurt. */
@@ -254,7 +255,8 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
     const at = state.scene.at;
     const present = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && statusOf(state, id) !== 'dead')
         .map((id) => ({ id, handle: sceneHandle(state, content, id), label: personLabel(state, content, id) }));
-    const activeRaw = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered');
+    const activeRaw = Object.values(state.quests).filter((q) => q.status === 'active' || q.status === 'offered'
+        || (rulesetOf(state) >= 2 && q.kind === 'private' && q.status === 'completed' && q.work && q.payout_cp !== 0 && !q.payment));
     const quests = activeRaw.map((q) => ({ id: q.id, title: q.title, info: questInfo(state, content, q, { c }) }));
     // Patch 2: his own goals with a place, and a quest journey; more than one: the engine asks which "I continue" means
     const options = continueOptions(state, { c });

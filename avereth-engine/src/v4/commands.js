@@ -32,6 +32,7 @@ import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf
 import { itemEffectOf, rulesetOf } from '../content.js';
 import { learningActivity, stoneActivation } from './growth.js';
 import { effectiveStats } from '../passives.js';
+import { jobAction, jobOf } from './private_jobs.js';
 import { acceptPassive, declinePassive } from './passive_growth.js';
 import { acceptSkill, declineSkill, developmentOffers, skillOffers } from './skill_growth.js';
 import { classOffer, classSelection, acceptClass } from './class_growth.js';
@@ -651,7 +652,7 @@ const HANDLERS = {
                     : envx.c
                         ? 'FAILURE — he finds nothing new this way: say so plainly (no false lead, nothing he wrongly believes, no interchangeable hint); what is there stays as it is, and another place, method or tool may still find it'
                         : 'FAILURE — resolve it concretely as no relevant find, a false lead, danger/complication, or this avenue being exhausted; do not repeat an interchangeable hint';
-            return { status: 'authorized', cap, line: `SEARCHES ${c.what ? `${c.what} ` : ''}${span}. SEARCH CHECK (PER ${check.actor_score} vs ${check.opposition}): ${check.chance}% (d100 ${check.roll}) → ${result}.` };
+            return { status: 'authorized', success: check.success, cap, line: `SEARCHES ${c.what ? `${c.what} ` : ''}${span}. SEARCH CHECK (PER ${check.actor_score} vs ${check.opposition}): ${check.chance}% (d100 ${check.roll}) → ${result}.` };
         }
         return { status: 'authorized', cap, line: `${VERBS[c.kind] || String(c.kind).toUpperCase()} ${c.what ? `${c.what} ` : ''}${span} (at most ${cap} minutes; the story decides how long it takes and what it yields).` };
     },
@@ -1065,7 +1066,7 @@ const HANDLERS = {
         if (q.giver && !present(s, q.giver)) return { status: 'refused', reason: 'the giver is not here', line: `CANNOT ACCEPT — ${who(s, q.giver)}, who offered ${questLine(q)}, is not here.` };
         emit({ t: 'quest.status', d: { id: q.id, from: 'offered', to: 'active', taker: 'pc', at: s.scene.at, step: c.seq } });
         ctx.booked.accepted.push(q.id);
-        return { status: 'resolved', line: `ACCEPTS — ${questLine(q)}${q.giver ? ` from ${who(s, q.giver)}` : ''}.` };
+        return { status: 'resolved', line: `ACCEPTS — ${questLine(q)}${q.giver ? ` from ${who(s, q.giver)}` : ''}. Acceptance alone performs no work or journey and earns no wages. Tell only the agreement unless PLAYER ACTIONS also contains his actual work.` };
     },
     'quest.turn_in'(s, content, c, ctx, emit, envx) {
         const pick = pickQuest(s, c.quest, ['active'], 'guild_contract');
@@ -1381,7 +1382,9 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
         if (!unmet && Number.isInteger(c.needs) && uncertain.has(c.needs) && r.line) r.line = `${r.line} Only once step ${c.needs} has happened in the story; if it does not, this does not happen either.`;
         if (r.uncertain) uncertain.add(c.seq);
         if (r.done || !['refused', 'pending', 'clarify'].includes(r.status)) happened.add(c.seq);
-        ctx.resolutions.push({ seq: c.seq, type: c.type, status: r.status, ...(r.reason ? { reason: r.reason } : {}), ...(r.cap ? { cap: r.cap } : {}), ...(r.condition ? { condition: r.condition } : {}), quote: c.quote ?? null });
+        ctx.resolutions.push({ seq: c.seq, type: c.type, status: r.status, ...(r.reason ? { reason: r.reason } : {}), ...(r.cap ? { cap: r.cap } : {}), ...(r.condition ? { condition: r.condition } : {}), quote: c.quote ?? null,
+            ...(envx.c && rulesetOf(s) >= 2 && c.job && jobAction(c) && jobOf(s, c.job) ? { job: c.job, ...(typeof r.success === 'boolean' ? { work_ok: r.success } : {}) } : {}) });
+        if (ctx.resolutions.at(-1).job && r.line) r.line += ` For "${jobOf(s, c.job).title}": "${String(c.quote || '').slice(0, 200)}" is his chosen work action, not an automatic success or completion.`;
         if (r.line) lines.set(c.seq, r.line);
         if (r.extra) ctx.extra.push(...r.extra);
     }

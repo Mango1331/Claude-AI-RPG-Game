@@ -1074,9 +1074,9 @@ test('patch 7 final 9, 10, 11: of two Dungeon jobs the board takes one; a part a
     assert.equal(p.listings.length, 5, 'one Dungeon clearance in the current 2/2/1 mix');
     assert.ok(parseBoard(answer([L('Cull the quarry rats', 'the old quarry'), ...ordinary.slice(1), L('Cull the marsh rats', 'the marsh')]), content, need, s).errors.length, 'a suitable known Dungeon gets its own slot');
     // two Dungeon jobs: the second refused
-    p = parseBoard(answer([L('Clear the first level of the Mossback Warrens', 'Mossback Warrens, level 1'), L('Scour the Mossback Warrens upper tunnels', 'the first level of the Mossback Warrens'), ...ordinary.slice(0, 3)]), content, need, s);
+    p = parseBoard(answer([L('Clear the first level of the Mossback Warrens', 'Mossback Warrens, level 1'), L('Clear the Mossback Warrens upper tunnels', 'Mossback Warrens, level 1'), ...ordinary.slice(0, 3)]), content, need, s);
     assert.equal(p.listings.filter((l) => /Mossback/.test(l.title)).length, 1);
-    assert.match(p.refused.map((r) => r.why).join(' '), /at most one Dungeon job/);
+    assert.match(p.refused.map((r) => r.why).join(' '), /at most one Dungeon clearance/);
     // above the board's Rank, or no part named in an F–E Dungeon
     p = parseBoard(answer([L('Clear the burrows of the Mossback Warrens', 'Mossback Warrens, level 2'), ...ordinary]), content, need, s);
     assert.match(p.refused.map((r) => r.why).join(' '), /level 2 .*Rank E.*not Novice work/);

@@ -575,6 +575,11 @@ function simpleListingWhy(s, content, l, profile, family) {
 }
 
 /** The Board generator's call (plan §3.2): the missing listings of one branch and rank. */
+function retainedListings(s, need) {
+    return Object.values(s?.quests || {}).filter(q => q.status === 'listed' && q.rank === need.rank
+        && q.source?.branch === need.branch && (need.have || []).includes(q.title));
+}
+
 export function boardRequest(s, content, need) {
     const [lo, hi] = content.rules.guild.rank_levels[need.rank];
     const guide = content.rules.guild.board?.payout_guide_cp?.[need.rank];
@@ -636,13 +641,14 @@ export function boardRequest(s, content, need) {
     const fits = rankFits(content, need.rank);
     const near = nearDungeons(s, need.branch, town?.realm, { guild: true });
     const dungeons = near.map((id) => `${s.places[id].name} (${dungeonText(s, id, { guild: true }).replace(/^a Dungeon: /, '')}${s.places[id].where ? `; ${s.places[id].where}` : ''})`);
-    const up = need.have.some((t) => dungeonNamed(s, near, t));
+    const up = profile ? retainedListings(s, need).some(l => boardFamily(s, content, l) === 'dungeon')
+        : need.have.some(t => dungeonNamed(s, near, t));
     // a Dungeon of mixed Ranks: the work must name its fitting level by number (the check reads "level N")
     const levelRule = near.map((id) => [id, fittingLevels(s, content, need.rank, id)]).filter(([, ns]) => ns?.length)
         .map(([id, ns]) => ` In ${s.places[id].name} that part is ${levelWords(ns)}: write it with its number in the task or an objective's where ("upper galleries" alone names no level).`).join('');
     const user = [
         `BRANCH: ${town?.name || need.branch}${realm ? `, ${realm}` : ''} (${town?.sub || 'settlement'})`,
-        ...(dungeons.length ? [`KNOWN DUNGEONS NEAR THIS BRANCH (the Guild's records): ${dungeons.join(' · ')}. ${up ? 'A Dungeon job is on the board already: write no other work in them.' : `At most one listing may be clearance work in one of them, and only in a part whose danger Rank is ${fits.join(' or ')} (this board's work; ${order.filter((r) => !fits.includes(r)).length ? 'deeper or stronger parts are not this board\'s' : 'any part'}): name the Dungeon exactly as written, the part (a level, a gallery) and its concrete outcome; ${profile ? 'this is the separate Dungeon slot' : 'it counts as one of the culling jobs'}.${levelRule}`}`] : []),
+        ...(dungeons.length ? [`KNOWN DUNGEONS NEAR THIS BRANCH (the Guild's records): ${dungeons.join(' · ')}. ${up ? (profile ? 'A Dungeon clearance is already listed: add no second clearance; numbered hunts in suitable parts remain allowed.' : 'A Dungeon job is on the board already: write no other work in them.') : `At most one listing may be clearance work in one of them, and only in a part whose danger Rank is ${fits.join(' or ')} (this board's work; ${order.filter((r) => !fits.includes(r)).length ? 'deeper or stronger parts are not this board\'s' : 'any part'}): name the Dungeon exactly as written, the part (a level, a gallery) and its concrete outcome; ${profile ? 'this is the separate Dungeon slot, and numbered hunts there do not consume it' : 'it counts as one of the culling jobs'}.${levelRule}`}`] : []),
         `RANK: ${need.rank} · DAY ${need.day}`,
         `ON THE BOARD ALREADY: ${need.have.length ? need.have.join(' | ') : 'nothing'}`,
         `WRITE: ${need.missing} new listing${need.missing > 1 ? 's' : ''}.`,
@@ -728,13 +734,15 @@ export function parseBoard(answer, content, need, s = null) {
     // final review of Patch 7: at most one Dungeon job on a board, the one already up counted (a refill adds none)
     const near = s ? nearDungeons(s, need.branch, s.places[need.branch]?.realm, { guild: true }) : [];
     const profile = boardProfile(s, content, need);
-    let inDungeon = (need.have || []).some((t) => dungeonNamed(s, near, t));
+    let inDungeon = profile ? retainedListings(s, need).some(l => boardFamily(s, content, l) === 'dungeon')
+        : (need.have || []).some(t => dungeonNamed(s, near, t));
     for (const l of value.listings) {
         const text = [l.title, l.task, l.desired_end_state, ...l.objectives.map((o) => `${o.what} ${o.where || ''}`)].join(' \n ').toLowerCase();
         const at = near.length ? dungeonNamed(s, near, text) : null;
+        const limited = profile ? boardFamily(s, content, l) === 'dungeon' : !!at;
         let why = l.rank !== need.rank ? `rank ${l.rank} is not ${need.rank}` : l.level < lo || l.level > hi ? `level ${l.level} outside ${lo}–${hi}` : l.objectives.length > 4 ? 'more than 4 objectives' : l.proof.length > 2 ? 'more than 2 verification examples'
             : need.c && (!s || deliveryRuleset(s) >= 2) && l.objectives.some(nonphysicalDelivery) ? 'DELIVER/GIVE requires physical cargo; use TALK for a spoken message or warning'
-                : at && inDungeon ? 'at most one Dungeon job on this board, and one is there already' : at ? dungeonPartWhy(s, content, need.rank, at, text) || noCullWhy(s, content, need, at, l, text) : null;
+                : limited && inDungeon ? (profile ? 'at most one Dungeon clearance on this board' : 'at most one Dungeon job on this board, and one is there already') : at ? dungeonPartWhy(s, content, need.rank, at, text) || noCullWhy(s, content, need, at, l, text) : null;
         // Patch 8.1 (§3, §10): the Dungeon its work lies in, fixed with the listing (the gate and the count read this)
         if (at) l.dungeon = at;
         if (!why && profile) why = simpleListingWhy(s, content, l, profile, boardFamily(s, content, l));
@@ -744,14 +752,13 @@ export function parseBoard(answer, content, need, s = null) {
         if (why) refused.push({ title: l.title, why });
         else {
             ok.push(l);
-            if (at && ok.length <= need.missing) inDungeon = true;
+            if (limited && ok.length <= need.missing) inDungeon = true;
         }
     }
     const listings = ok.slice(0, need.missing);
     if (profile && listings.length === need.missing
         && need.missing + (need.have || []).length === (content.rules.guild.board?.size ?? 5)) {
-        const retained = Object.values(s.quests || {}).filter(q => q.status === 'listed' && q.rank === need.rank
-            && q.source?.branch === need.branch && (need.have || []).includes(q.title));
+        const retained = retainedListings(s, need);
         const all = [...retained, ...listings];
         const count = kind => all.filter(l => boardFamily(s, content, l) === kind).length;
         if (['hunt', 'delivery', 'dungeon'].some(kind => count(kind) !== profile[kind])) return {

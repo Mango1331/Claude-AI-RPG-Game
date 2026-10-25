@@ -2170,3 +2170,7 @@ Run-12-Paket C umgesetzt: expliziter Schauplatzbezug für neue C-Extraktionen, k
 ### Freie NPC-Hilfe .83 (25.10.2026)
 
 Neue Kampagnen führen nur Gildenquests formal; NPC-Hilfe und freiwillige Zahlungen bleiben normale Weltvorgänge. Altspielstände behalten ihre Semantik. Umsetzung, Grenzen und Abnahme: [PATCH10B_FREE_HELP.md](PATCH10B_FREE_HELP.md).
+
+## Run 13: Guild-Board .84
+
+Nummerierte Jagden in einem Dungeon verbrauchen im festen 2+2+1-Profil nicht mehr die Räumungskategorie. Generator, Teilnachfüllung und Validator verwenden dieselbe Einteilung; historische Profile behalten ihre Grenze. Originalfälle und Abnahme: [PATCH_RUN13_GUILD_BOARD.md](PATCH_RUN13_GUILD_BOARD.md).

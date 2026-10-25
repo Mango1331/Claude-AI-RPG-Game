@@ -283,6 +283,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const counterparts = new Set([...(outcome.booked?.sellers || []), ...s.decisions.filter((x) => x.kind === 'sale' && x.turn === s.turn).map((x) => x.seller || '*')]);
 
     // 2. world deltas in story order, each against the state at its step
+    const blockedPeople = new Set(); // only a rejected person.new and its dependent claims in this reply
     const refs = new Map(); // a delta's ref -> the entity it names (person.new, creature.new of this answer)
     const groups = new Map(); // a creature.new ref with count > 1 -> its individual ids
     const objectsNew = new Map(); // name -> object id, for object.move {new: name} of this answer
@@ -757,6 +758,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             reject(d, 'private_quests_disabled', 'NPC help uses ordinary facts, threads and memories; only Guild contracts are formal quests');
             continue;
         }
+        const people = [d.s, d.who, d.from, d.by].flat().filter(x => typeof x === 'string');
+        const blockedStory = ['memory', 'thread'].includes(d.type) && [...blockedPeople].some(ref => {
+            const name = s.entities[idOf(ref)]?.name;
+            return name && (` ${normText(d.text || '')} `).includes(` ${normText(name)} `);
+        });
+        if (d.type !== 'enter' && d.type !== 'person.new' && (blockedStory || people.some(x => blockedPeople.has(normText(x)) || blockedPeople.has(normText(idOf(x) || ''))))) {
+            reject(d, 'npc_continuity', 'dependent claim about a rejected person reintroduction');
+            continue;
+        }
         const origin = sceneOf(d);
         const remote = ['person.new', 'creature.new'].includes(d.type) && d.present === false;
         if (cPath && rulesetOf(s) >= 2 && origin != null && !remote
@@ -812,6 +822,36 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 break;
             }
             case 'person.new': {
+                if (cPath && rulesetOf(s) >= 2) {
+                    const name = normText(d.name || '');
+                    const explicit = s.entities[d.ref]?.kind === 'npc' ? s.entities[d.ref] : null;
+                    const exact = Object.values(s.entities).filter(e => e.kind === 'npc' && name && normText(e.name || '') === name);
+                    const known = explicit || (exact.length === 1 ? exact[0] : null);
+                    const extensions = Object.values(s.entities).filter(e => e.kind === 'npc' && e.name
+                        && name.startsWith(`${normText(e.name)} `));
+                    const distinct = extensions.length === 1 && d.distinct_from === extensions[0].id;
+                    const refusePerson = (rule, why, ids = []) => {
+                        for (const ref of [d.ref, d.name, ...ids].filter(Boolean)) blockedPeople.add(normText(ref));
+                        reject(d, rule, why);
+                        corrections.push(`${why}. Preserve the known person's recorded history. A fuller name uses person.named; an actual new return uses enter, without requiring Alaric to travel. Do not repeat an already resolved predicament.`);
+                    };
+                    if (!known && extensions.length && !distinct) {
+                        refusePerson('npc_identity', `The name ${d.name} may extend an existing identity; establish the same person with person.named or explicitly distinguish the newcomer with distinct_from`, extensions.map(e => e.id));
+                        break;
+                    }
+                    if (known) {
+                        if (d.name && name !== normText(known.name || '')) {
+                            refusePerson('npc_identity', `${known.id} already exists; use person.named for a controlled name expansion`, [known.id]);
+                            break;
+                        }
+                        refs.set(normText(d.ref), known.id);
+                        if (d.present !== false && !s.scene.present.includes(known.id)) {
+                            refusePerson('npc_continuity', `${known.id} is a known absent person, not a new introduction`, [known.id]);
+                        }
+                        break;
+                    }
+                }
+
                 // Prototype C (4.3.0-c.6): a place's service people stay who they are (live 04.10.2026 16:35: back at
                 // the Guild desk, a third "Guild desk clerk" was stored): an unnamed newcomer in the role of the one
                 // person Alaric left at this place in it is that person. Anyone else unnamed whom nothing else of this
@@ -883,9 +923,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             case 'creature.new':
                 newEntity(d, 'creature');
                 break;
-            case 'enter':
-                v3({ enter: [mapRef(d.who)] }, d);
+            case 'enter': {
+                const who = mapRef(d.who);
+                v3({ enter: [who] }, d);
+                if (s.scene.present.includes(who)) {
+                    for (const ref of [...blockedPeople]) if (idOf(ref) === who) blockedPeople.delete(ref);
+                }
                 break;
+            }
             case 'leave': {
                 const who = mapRef(d.who);
                 perceiveAll(s, emit, seeing());

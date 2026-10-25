@@ -2174,3 +2174,7 @@ Neue Kampagnen führen nur Gildenquests formal; NPC-Hilfe und freiwillige Zahlun
 ## Run 13: Guild-Board .84
 
 Nummerierte Jagden in einem Dungeon verbrauchen im festen 2+2+1-Profil nicht mehr die Räumungskategorie. Generator, Teilnachfüllung und Validator verwenden dieselbe Einteilung; historische Profile behalten ihre Grenze. Originalfälle und Abnahme: [PATCH_RUN13_GUILD_BOARD.md](PATCH_RUN13_GUILD_BOARD.md).
+
+## Run 13: NPC-Kontinuität .85
+
+Gebietsbezogener, begrenzter Rückruf bekannter Personen; keine stille Wiedereinführung abwesender NPCs durch `person.new`, kontrollierte Namenserweiterung und ausdrücklich unterschiedliche Identitäten. Eigenständige Rückkehr bleibt über `enter` möglich, ohne PC-GO. Vertrag .85. Originalnachweise, Regressionen und Grenzen: [PATCH_RUN13_NPC_CONTINUITY.md](PATCH_RUN13_NPC_CONTINUITY.md).

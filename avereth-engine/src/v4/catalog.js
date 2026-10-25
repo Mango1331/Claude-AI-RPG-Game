@@ -4,7 +4,7 @@ import { privateQuestsOf, questVisible } from '../content.js';
 // decisions. It has the shape of tests/eval/scenes.json, the scenes P0/S1 measured the interpreter on, and it lists
 // only ids: every reference in an answer is one of them or {new: …}. guardContext() gives the agency guard
 // (src/v4/agency.js) the same view.
-import { truth, entityLabel, statusOf } from '../knowledge.js';
+import { truth, entityLabel, statusOf, npcContinuity } from '../knowledge.js';
 import { deriveCharacter } from '../derived.js';
 import { formatClock, normText } from '../util.js';
 import { sceneHandle } from './scene_handles.js';
@@ -368,7 +368,7 @@ export function extractorCatalog(state, content, opts = {}) {
         && (truth(state, id, 'status')[0]?.since?.turn ?? -1) >= state.turn - 3);
     const deadText = dead.length ? `\nRECENT DEAD (here, killed in the engine's fights; never a creature.new, never alive, never fleeing): ${dead.map((id) => `${id} [${sceneHandle(state, content, id)}] (${personLabel(state, content, id)})`).join(' · ')}` : '';
     return {
-        text: catalogText(c) + deadText + threadText + (!privateQuestsOf(state) ? `\nFREE HELP: only Guild contracts are formal quests. NPC help, agreements and thanks are ordinary world interactions.\nRECENT COIN HANDOVERS (already received; recount with coin.gift repeat_of, never pay again):\n${(state.credits || []).filter(x => x.gift).map(x => `${x.gift.id}: ${x.gift.from}, ${x.cp} cp, ${x.gift.why}; ${x.gift.said}`).join('\n') || 'none'}` : ''),
+        text: catalogText(c) + deadText + threadText + `\nKNOWN PERSON CONTINUITY (not present; use enter for an actual return, person.named for a fuller name):\n${npcContinuity(state, opts.input || '').map(x => x.text).join('\n') || 'none relevant'}` + (!privateQuestsOf(state) ? `\nFREE HELP: only Guild contracts are formal quests. NPC help, agreements and thanks are ordinary world interactions.\nRECENT COIN HANDOVERS (already received; recount with coin.gift repeat_of, never pay again):\n${(state.credits || []).filter(x => x.gift).map(x => `${x.gift.id}: ${x.gift.from}, ${x.cp} cp, ${x.gift.why}; ${x.gift.said}`).join('\n') || 'none'}` : ''),
         places: [...new Set([c.here.id, ...c.places.map((p) => p.id)].filter(Boolean))],
         quests: [...new Set([...c.quests, ...c.board, ...c.completed, ...(c.known || [])].map((q) => q.id))],
         objects: c.objects.map((o) => o.id),

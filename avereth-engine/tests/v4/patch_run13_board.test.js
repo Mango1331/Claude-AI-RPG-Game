@@ -59,7 +59,7 @@ test('Run 13 board: rank-incompatible floors and nonexistent cull populations re
  const root=s.places['loc.glimmerdeep_grotto'].dungeon;
  root.rank={min:'F',max:'S'};root.levels[99]={min:'S',max:'S'};root.known_by ||= {};
 
- assert.ok(parse(s,ls).refused.some(r=>/level 99/.test(r.why)));
+ assert.ok(parse(s,[ls[4]],{...need(s),missing:1}).refused.some(r=>/level 99/.test(r.why)));
  const bad=original();bad[0].objectives[0].what='ordinary chickens';bad[0].objectives[0].unit=null;
  assert.ok(parse(clone(fixture.states[8]),bad).refused.some(r=>/no cull/.test(r.why)));
 });

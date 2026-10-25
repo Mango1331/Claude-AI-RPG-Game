@@ -13,7 +13,7 @@ import { skillOffers } from './v4/skill_growth.js';
 import { className, classText, classOffer } from './v4/class_growth.js';
 import {
     knowledgeOf, memoriesOf, memoryText, entityLabel, anyLabel, propText, currentFacts, statusOf, pcIdentityFor, truth, lookOf,
-    isMeaningful, PC_NAME_FACT, PC_LOOK_FACT,
+    isMeaningful, PC_NAME_FACT, PC_LOOK_FACT, npcContinuity,
 } from './knowledge.js';
 import { rank, pack, Bm25 } from './retrieval.js';
 import { threadCurrent } from './threads.js';
@@ -622,6 +622,8 @@ export function buildContext(state, content, opts = {}) {
     const presentHead = v4 ? 'ACTIVE SCENE — canonical handles (use these exact handles to distinguish or target actors; card knowledge is authoritative relevant recall, not an exhaustive mind dump):' : 'PRESENT (each NPC knows ONLY what its card lists):';
     if (others.length) add('present', `${presentHead}\n${others.map((id) => npcCard(state, content, id, focusWords)).join('\n')}`, 1);
     else if (state.mode !== 'creation') add('present', v4 ? 'ACTIVE SCENE: nobody besides Alaric.' : 'PRESENT: nobody besides Alaric.', 1);
+    const continuity = v4 && state.mode !== 'creation' ? npcContinuity(state, queryText) : [];
+    if (continuity.length) add('npc_continuity', `KNOWN PEOPLE — narrator continuity, not local presence or shared NPC knowledge. Preserve established history; a new predicament needs a new cause, never replay an old rescue. Use existing identities; fuller names do not create new people:\n${continuity.map(x => x.text).join('\n')}`, 0);
     const absent = state.mode === 'creation' ? [] : namedAbsent(state, normText(queryText));
     if (absent.length) add('named', `NAMED, NOT PRESENT (continuity only; they are elsewhere unless the story brings them in):\n${absent.map((id) => npcCard(state, content, id, focusWords, { absent: true })).join('\n')}`, 2);
     add('combat', combatBlock(state, content), 0);
@@ -744,7 +746,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };

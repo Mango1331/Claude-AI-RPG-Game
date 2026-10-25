@@ -223,3 +223,29 @@ export function propText(state, prop, content = null) {
     const o = String(prop.o).toLowerCase() === 'true' ? '' : anyLabel(state, content, prop.o);
     return `${s} ${String(prop.p).replace(/_/g, ' ')} ${o}`.trim();
 }
+
+/** Bounded narrator/extractor recall, not NPC knowledge or an assertion of current presence. */
+export function npcContinuity(state, scan = '') {
+    const words = text => new Set(normText(text || '').split(/[^a-z0-9]+/).filter(w => w.length >= 4));
+    const places = new Set();
+    for (let id = state.scene.at, seen = new Set(); id && !seen.has(id); id = state.places?.[id]?.parent) {
+        seen.add(id);
+        const p = state.places?.[id];
+        if (p && !['realm', 'region', 'settlement'].includes(p.kind)) for (const w of words(p.name)) places.add(w);
+    }
+    const query = normText(scan);
+    return Object.values(state.entities).filter(e => e.kind === 'npc' && e.name && !state.scene.present.includes(e.id))
+        .map(e => {
+            const name = normText(e.name);
+            const history = state.memories.filter(m => ((m.who || []).includes('pc') || (m.witnesses || []).includes('pc') || (m.seen || []).includes('pc'))
+                && [...(m.who || []), ...(m.about || []), ...(m.witnesses || [])].includes(e.id));
+            const named = (` ${query} `).includes(` ${name} `);
+            const local = history.some(m => [...words(m.place)].some(w => places.has(w)));
+            const last = history.at(-1);
+            const facts = currentFacts(state, f => f.s === e.id && f.visibility !== 'secret'
+                && ['status', 'bindings', 'plans', 'residence'].includes(f.p)).slice(-4);
+            const moment = history.filter(isMeaningful).at(-1);
+            return { id: e.id, score: named ? 2 : local ? 1 : 0,
+                text: `${e.name} [${e.id}] — NOT PRESENT; last witnessed at ${last?.place || 'unknown place'}${last ? ` (minute ${last.minute}, historical)` : ''}. ${facts.map(f => `${f.p}: ${f.o}`).join('; ')}${moment ? `; remembers: ${memoryText(state, moment)}` : ''}` };
+        }).filter(x => x.score).sort((a, b) => b.score - a.score).slice(0, 3);
+}

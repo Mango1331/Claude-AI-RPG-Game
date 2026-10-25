@@ -1235,3 +1235,9 @@ Paket C ausdrücklich freigegeben und in `5d5dce1` implementiert. Extractor-Scha
 ## 30. Run 13 und freie NPC-Hilfe (.83, 25.10.2026)
 
 Die neue verbindliche Regel steht in [02 §6](02_DESIGN_KANON.md#6-quests-und-gilde); Umsetzung und Abnahme in [PATCH10B_FREE_HELP.md](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b70bd1ff21054396fa274cffd6eea4d10839e33f/avereth-engine/docs/PATCH10B_FREE_HELP.md). Historische Privatquests bleiben kompatibel. [Sols Run-13-Gegenreview](testrun_10b/20261025-081303Z-current_test/SOL_COUNTERREVIEW.md) präzisiert besonders die Ursache der Boardausfälle und trennt weiterhin offene World-/Guild-Befunde von diesem freigegebenen Umbau. Originaldaten und ursprüngliche Review unverändert.
+
+
+## 31. Run 14: World-Delta .86 und vorläufiges Jagdboard .87 (25.10.2026)
+
+Verbindliche Boardentscheidung in [02 §6](02_DESIGN_KANON.md#6-quests-und-gilde): automatische neue Lieferangebote vorläufig ausgesetzt, vollständiger Delivery-Code und vorhandene Verträge erhalten. Neue aktuelle Boards 4 Jagden + 1 geeignete Räumung, sonst 5 Jagden. Technische Umsetzung einmalig in [World-Delta](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/claude/c-planner-prototype-2026-10-02-gpt-c666/avereth-engine/docs/PATCH_RUN14_WORLD_DELTAS.md) und [Boarddesign](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/claude/c-planner-prototype-2026-10-02-gpt-c666/avereth-engine/docs/PATCH_RUN14_HUNT_BOARD.md); Abnahme in [03](03_AKTUELLER_PROJEKTSTAND.md). Die vorhandene {new:name}-Referenz bleibt; keine neue Aliasarchitektur, kein Gildenkurier-Modus und kein Handels-/Balancefix. [Originalreview](testrun_10b/20261025-113248Z-current_test/REVIEW.md), [Gegenreview/Plan](testrun_10b/20261025-113248Z-current_test/SOL_COUNTERREVIEW.md) und ZIP unverändert; der frühere optionale Aliasvorschlag wurde anhand der Regressionen verworfen. Testspieler unverändert. Noch kein neuer natürlicher Lauf.
+

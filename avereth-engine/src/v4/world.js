@@ -758,7 +758,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             reject(d, 'private_quests_disabled', 'NPC help uses ordinary facts, threads and memories; only Guild contracts are formal quests');
             continue;
         }
-        const people = [d.s, d.who, d.from, d.by].flat().filter(x => typeof x === 'string');
+        const people = [d.s, d.who, d.from, d.by, d.holder].flat().filter(x => typeof x === 'string');
         const blockedStory = ['memory', 'thread'].includes(d.type) && [...blockedPeople].some(ref => {
             const name = s.entities[idOf(ref)]?.name;
             return name && (` ${normText(d.text || '')} `).includes(` ${normText(name)} `);
@@ -2023,7 +2023,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (typeof ref === 'string') return s.objects[ref] || null;
         if (ref && typeof ref.new === 'string') {
             const id = objectsNew.get(normText(ref.new));
-            if (id) return s.objects[id];
+            if (objectsNew.has(normText(ref.new))) return id ? s.objects[id] : null;
             const here = Object.values(s.objects).filter((o) => normText(o.name) === normText(ref.new) && (o.holder?.loc === s.scene.at || s.scene.present.includes(o.holder?.entity)));
             return here.length === 1 ? here[0] : null;
         }
@@ -2056,11 +2056,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const id = uniqueObjectId(s, tag, d.name);
         if (holder.entity === 'pc' && ((auth.take || []).length || auth.gather)) grant('player.take');
         emit({ t: 'object.created', d: { object: { id, name: String(d.name).slice(0, 80), kind: d.kind, stack: d.kind === 'resource', qty: d.qty ?? 1, unit: d.unit || null, ...itemTraits(content, d, s.clock.minute), holder, marks: [], for_quests: q ? [q.id] : [], ...(box ? { in: box } : d.in && holder.loc ? { in_name: String(d.in).slice(0, 80) } : {}), source: { turn: s.turn, how: holder.entity === 'pc' ? (((auth.take || []).length || auth.gather) ? 'taken' : 'world_gift') : 'story' } } } });
-        objectsNew.set(normText(d.name), id);
+        const key = normText(d.name);
+        objectsNew.set(key, objectsNew.has(key) ? null : id); // duplicate labels are ambiguous, never last-wins
     }
 
     function objectMove(d, settling = false) {
         const fresh = typeof d.object?.new === 'string' ? normText(d.object.new) : null;
+        if (fresh && objectsNew.has(fresh) && !objectsNew.get(fresh)) { reject(d, 'object', 'ambiguous new object name; distinguish the objects'); return; }
         if (fresh && !objectsNew.has(fresh)) {
             if (boughtNames.has(fresh)) { reject(d, 'engine_booked', 'the purchase handed it to him already'); return; }
             if (!settling && deferred.some((x) => x.type === 'object.new' && normText(x.name) === fresh)) { pendingSteps.add(d); deferred.push(d); return; }
@@ -2088,6 +2090,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             if (g) { handedBought(d, g); return; }
             if (!settling && awaitsPurchase(o.name, o.holder.entity, units, d.seq)) { pendingSteps.add(d); deferred.push(d); return; }
         }
+        if (cPath && rulesetOf(s) >= 2 && to.entity === 'pc') {
+            const giver = o.holder?.entity;
+            if (giver === 'pc') { reject(d, 'engine_booked', 'Alaric already holds this object'); return; }
+            if (giver && s.entities[giver]?.kind === 'npc' && (!s.scene.present.includes(giver)
+                || blockedPeople.has(normText(giver)) || blockedPeople.has(normText(s.entities[giver].name || '')))) {
+                reject(d, 'npc_presence', 'an NPC handover needs the giver present at this story step; use enter for an actual arrival');
+                return;
+            }
+        }
         // Prototype C (4.3.0-c.6.6.3): the hand-over he set out to make where he went (commands.js give): booked as the story
         // has it change hands, into someone's hands there
         const handOver = o.holder?.entity === 'pc' && conditionals.find((k) => !k.done && k.kind === 'give' && k.object === o.id);
@@ -2106,6 +2117,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // to him: from where it lies, by his own take; from someone's hands, their gift (the firewall's rules)
         if (to.entity === 'pc') grant(o.holder?.loc ? 'player.take' : 'envelope.give');
         emit({ t: 'object.moved', d: { id: o.id, to, ...(part ? { qty: part, split: `${o.id}_${tag}` } : {}) } });
+        if (fresh && !part) objectsNew.delete(fresh); // this declaration was resolved; a later same-name gift is independent
     }
 
     /**

@@ -695,7 +695,7 @@ export function extractionRequest(chat, id, content) {
     const player = state.last?.input || null;
     const vocab = worldVocab(content.deltaVocab, state);
     const req = extractorRequest(vocab, { catalog: cat.text, actions, player, expectedKeys, reply: msg.mes });
-    return { ...req, vocab, hash: r.text_hash, expectedKeys, sceneRequired: (state.meta?.ruleset || 1) >= 2 && !!(o.c || o.auth?.c), ids: { places: cat.places, quests: cat.quests, objects: cat.objects }, catalog: cat.text, actions, player };
+    return { ...req, vocab, hash: r.text_hash, expectedKeys, startScene: state.scene.at, sceneRequired: (state.meta?.ruleset || 1) >= 2 && !!(o.c || o.auth?.c), ids: { places: cat.places, quests: cat.quests, objects: cat.objects }, catalog: cat.text, actions, player };
 }
 
 /**
@@ -728,7 +728,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
     ms += first.ms;
     const calls = [first.call];
     if (first.ok) {
-        const p1 = parseExtraction(first.content, vocab, req.ids, req.expectedKeys, { sceneRequired: req.sceneRequired });
+        const p1 = parseExtraction(first.content, vocab, req.ids, req.expectedKeys, { sceneRequired: req.sceneRequired, startScene: req.startScene });
         if (p1.valid) parsed = p1;
         else error = p1.errors.join('; ').slice(0, 200);
 
@@ -740,7 +740,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
             calls.push(second.call);
             repaired = true;
             if (second.ok) {
-                const p2 = parseExtraction(second.content, vocab, req.ids, req.expectedKeys, { sceneRequired: req.sceneRequired });
+                const p2 = parseExtraction(second.content, vocab, req.ids, req.expectedKeys, { sceneRequired: req.sceneRequired, startScene: req.startScene });
                 if (p2.valid && (!parsed || p2.complete || p2.missing.length < parsed.missing.length)) parsed = p2;
                 else if (!p2.valid && !parsed) error = p2.errors.join('; ').slice(0, 200);
             } else if (!parsed) error = second.error;
@@ -756,7 +756,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
                 ms += third.ms;
                 calls.push(third.call);
                 if (third.ok) {
-                    const p3 = parseExtraction(third.content, vocab, req.ids, req.expectedKeys, { sceneRequired: req.sceneRequired });
+                    const p3 = parseExtraction(third.content, vocab, req.ids, req.expectedKeys, { sceneRequired: req.sceneRequired, startScene: req.startScene });
                     if (p3.valid) parsed = p3;
                     else error = p3.errors.join('; ').slice(0, 200);
                 } else error = third.error;
@@ -774,7 +774,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
         calls.push(second.call);
         repaired = true;
         if (second.ok) {
-            const p2 = parseExtraction(second.content, vocab, req.ids, req.expectedKeys, { sceneRequired: req.sceneRequired });
+            const p2 = parseExtraction(second.content, vocab, req.ids, req.expectedKeys, { sceneRequired: req.sceneRequired, startScene: req.startScene });
             if (p2.valid) parsed = p2;
             else error = p2.errors.join('; ').slice(0, 200);
         } else error = second.error;

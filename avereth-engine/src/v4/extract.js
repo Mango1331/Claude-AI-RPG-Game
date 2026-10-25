@@ -26,7 +26,7 @@ export function worldVocab(vocab, state) {
     };
 }
 
-export const EXTRACTOR_VERSION = 'extract-5.6';
+export const EXTRACTOR_VERSION = 'extract-5.7';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -123,6 +123,8 @@ export const FORMAT_RULES = [
     `place-ref is an exact known place id from the CATALOG, or {"new":{"name":"...","kind":"...","parent":...}}. For a new place, kind must be exactly one of: ${PLACE_KINDS.join(', ')}. Use settlement for a city, town, village or hamlet; site for a building, inn or Guild hall; interior for a room; wilderness for natural outdoor terrain.`,
     'When the CATALOG already contains the place, quest or object, copy its id exactly. Never rewrite an id, invent another id for it, or substitute its title/name.',
     'quest-ref and object-ref mean the exact matching CATALOG id; use {"new":"..."} only when the thing is genuinely new and that reference type permits it.',
+    'For a newly created object use object.new {name:"bread",holder:"npc.giver",...} then object.move {object:{new:"bread"},to:"pc",...}. object.new has no ref field. Never invent an obj.* id. The new-name reference must identify exactly one earlier created object; otherwise distinguish the actual objects by their established descriptions.',
+    'In a multi-place reply use the existing per-delta scene explicitly for events before the last arrival. Example: enter known npc.giver at the starting place; create bread on that giver there; move {new:"bread"} to pc there; arrive at the authorized destination. present describes co-presence at that step, not only the reply ending. A returning known NPC uses enter, not person.new.',
     'person-ref is a person id from PRESENT or the CATALOG, or the ref of a person.new/creature.new earlier in the same answer.',
     'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0,"said":string|null (the reply\'s words for the price),"effect":"heal"|"restore_mp"|"restore_sta"|null (only for a potion, draught or tonic that restores HP, MP or STA; the engine fixes how much),"teaches":teaches|null}.',
     'teaches is {"source":"stone"|"manual","fn":"strike"|"bolt"|"guard"|"ward"|"mend"|null,"tags":string[]|null,"aspects":string[]|null} or null: only for a Skill Stone, or a manual, primer or treatise, that the reply establishes as teaching a technique. fn: strike (a close weapon or body technique), bolt (a ranged spell), guard (a defensive stance), ward (a magical barrier), mend (a healing); tags (Martial, Precision, Mobility, Defense, Arcane, Control) and aspects (Fire, Ice, Lightning, Water, Earth, Wind, Shadow, Light, Poison, Nature, Blood, Sound) only as the reply states them; null for anything the reply does not say. Never for an ordinary stone, a return stone, a storybook or a letter.',
@@ -229,7 +231,7 @@ function normalizeSoftFields(value, vocab) {
     return { scene: null, ...value, expected: value.expected && typeof value.expected === 'object' ? value.expected : {}, deltas };
 }
 
-export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false } = {}) {
+export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false, startScene = null } = {}) {
     const parsed = extractJsonObject(answer);
     const { error, raw } = parsed;
     const value = normalizeSoftFields(parsed.value, vocab);
@@ -243,6 +245,20 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     const schema = deltaSchema(vocab, ids, Object.fromEntries(Object.entries(expectedKeys || {}).filter(([k]) => !missing.includes(k))));
     const clean = missing.length ? { ...value, expected: Object.fromEntries(Object.entries(exp).filter(([k]) => !missing.includes(k))) } : value;
     const errors = validate(clean, schema);
+    // Schema errors must describe the supported link, never guess which object an invented id meant.
+    for (const [i, d] of (Array.isArray(value.deltas) ? value.deltas : []).entries()) {
+        if (typeof d?.object !== 'string' || (ids?.objects || []).includes(d.object)) continue;
+        const names = value.deltas.filter(x => x?.type === 'object.new' && x.seq < d.seq && typeof x.name === 'string').map(x => x.name);
+        if (names.length) errors.push(`$.deltas[${i}].object: unknown catalog id; object.new has no ref. Use {new:exact earlier name}, e.g. ${JSON.stringify({ new: names[0] })}; never invent an obj.* id`);
+    }
+    // Annotation requirement only: actual scene/arrival authority is still checked in applyWorld.
+    const lastArrival = Array.isArray(value.deltas) ? value.deltas.filter(d => d?.type === 'arrive').sort((a, b) => a.seq - b.seq).at(-1) : null;
+    if (sceneRequired && startScene && lastArrival && JSON.stringify(lastArrival.at) !== JSON.stringify(startScene)) {
+        for (const [i, d] of value.deltas.entries()) if (d.seq < lastArrival.seq && d.scene == null
+            && !['time', 'arrive', 'overreach', 'place.reported', 'dungeon'].includes(d.type)
+            && !(['person.new', 'creature.new'].includes(d.type) && d.present === false))
+            errors.push(`$.deltas[${i}].scene: explicitly name this earlier scene before the later arrival; do not inherit the reply's final scene`);
+    }
     if (sceneRequired && value.scene == null && (Object.values(expectedKeys || {}).includes('go') || (Array.isArray(value.deltas) && value.deltas.some(d => !['time', 'overreach', 'place.reported', 'dungeon'].includes(d?.type))))) errors.push('$.scene: actual narrative setting required for world changes');
     return { value, valid: errors.length === 0, complete: missing.length === 0, errors: [...errors.slice(0, 8), ...missing.map((k) => `expected key "${k}" not answered`)], missing, raw };
 }

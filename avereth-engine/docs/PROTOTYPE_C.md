@@ -2178,3 +2178,7 @@ Nummerierte Jagden in einem Dungeon verbrauchen im festen 2+2+1-Profil nicht meh
 ## Run 13: NPC-Kontinuität .85
 
 Gebietsbezogener, begrenzter Rückruf bekannter Personen; keine stille Wiedereinführung abwesender NPCs durch `person.new`, kontrollierte Namenserweiterung und ausdrücklich unterschiedliche Identitäten. Eigenständige Rückkehr bleibt über `enter` möglich, ohne PC-GO. Vertrag .85. Originalnachweise, Regressionen und Grenzen: [PATCH_RUN13_NPC_CONTINUITY.md](PATCH_RUN13_NPC_CONTINUITY.md).
+
+## Run 14: World-Delta .86
+
+Präzise Reparaturhilfe für vorhandene neue Objektnamen, mehrdeutige Deklarationen abgesichert, zeitliche Szenenannotation vor späterer Ankunft und kanonische Geberpräsenz bei Sachgeschenken. Kein neues Referenzsystem. Technik und Abnahme: [PATCH_RUN14_WORLD_DELTAS.md](PATCH_RUN14_WORLD_DELTAS.md).

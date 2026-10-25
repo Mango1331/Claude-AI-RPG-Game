@@ -46,6 +46,8 @@ Der Nutzer lädt den Originalexport als ZIP in den betreffenden Unterordner auf 
 
 | [20261025-081303Z-current_test](20261025-081303Z-current_test/) | **.82**, Mage L1→2, natürlicher GLM-5.3-Flash, ohne Fixture | **100/100** Inputs, regulär `done`, **3 Siege**; Guild-Board 2× `board.failed`, doppelte Brast-Rettung/-Identität, **36 `scene_context`-Ablehnungen**, Lohn-/Währungsabweichungen und vorzeitig erzählte Dungeon-Gegner | [REVIEW.md](20261025-081303Z-current_test/REVIEW.md) · [Sols Gegenreview](20261025-081303Z-current_test/SOL_COUNTERREVIEW.md) | **Original-ZIP auf `main` vorhanden und unabhängig geprüft:** `20261025-081303Z-current_test.zip`, **15.526.473 Bytes**, SHA-256 `a9ba6491a906af8ea92299c4891a56f4c4f78d560807030fdeabcd17f5ed41bf`; lokal CRC-geprüft |
 
+| [20261025-113248Z-current_test](20261025-113248Z-current_test/) | **.85**, Mage L1→2, natürlicher GLM-5.3-Flash, neue Kampagne ohne Privatquests | **22/100** Eingaben, `extractor_failed` nach ungültigem `object.move` und fehlgeschlagenem Repair; zuvor 2 Kämpfe/3 Schildkröten-Siege, Guild-Board **2+2+1 gültig**, Jagd **READY**; daneben T16 `scene_context`/`no_go` | [REVIEW.md](20261025-113248Z-current_test/REVIEW.md) | **Original-ZIP vom Nutzer noch auf `main` hochzuladen:** `20261025-113248Z-current_test.zip`, **3.500.524 Bytes**, SHA-256 `10edf1719366ca107f9f464014d88234f16189acab6f4ccc3b6b62e41e0946c9`; lokal CRC-geprüft |
+
 ## Arbeitsweise für weitere Tests
 
 1. **Test starten:** `current_test` offen spielen lassen; keine erzwungene Questabfolge und keine gezielten Engine-Reparaturen während des Laufs.

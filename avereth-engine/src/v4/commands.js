@@ -1231,6 +1231,14 @@ const HANDLERS = {
         if (!equipmentSlotKnown(content, slot) || slot !== item.slot) return { status: 'refused', reason: 'wrong equipment slot', line: `CANNOT EQUIP — ${o.name} fits the ${item.slot} slot only. It stays in his pack.` };
         const current = s.entities.pc.sheet.equipment[slot];
         if (o.template) emit({ t: 'item.changed', d: { id: 'pc', item: tpl, qty: -1, why: 'equipped' } });
+        else if ((o.qty ?? 1) > 1) {
+            // Wear one physical unit; its separate identity lets unequip return it without touching the spare units.
+            const base = `${o.id}_equipped`;
+            let id = base;
+            for (let n = 2; s.objects[id]; n++) id = `${base}_${n}`;
+            emit({ t: 'object.moved', d: { id: o.id, qty: 1, split: id, to: { consumed: 'equipped' } } });
+            if (own) Object.assign(item, { id, object: id });
+        }
         else emit({ t: 'object.consumed', d: { id: o.id, by: 'equipped' } });
         if (current) {
             if (typeof current === 'string') emit({ t: 'item.changed', d: { id: 'pc', item: current, qty: 1, why: 'unequipped' } });

@@ -32,3 +32,13 @@ Die neue Angebotseinstufung gilt für neu erfasste Waren im C-/Ruleset-2-Pfad. B
 Die Engine versteht weiterhin keinen beliebigen erfundenen Rüstungsnamen. Für mechanische Ware muss das LLM eine der vorhandenen Kategorien erkennbar benennen; das neue Intent-Feld und der Markttext unterstützen diese Grenze. Namen und Aussehen bleiben frei. Ein vom LLM falsch als gewöhnliche Ware eingestuftes Objekt wird kein Upgrade. Diese semantische Grenze bleibt im nächsten natürlichen Lauf zu prüfen.
 
 Keine Änderungen an XP, Kampfwerten, Dungeon, Board/Delivery, Testspieler oder Narrator-Kartenrevision. Kein natürlicher GLM-Lauf gestartet. Ein ST-Smoke mit Mockprovider belegt den echten Hostpfad, nicht GLMs Angebotsverständnis.
+
+## P2-Gegenreview: ein Stück aus einem Gearstapel anlegen (.90)
+
+Basis `05696b4` (.89). Der neueste Run-15-Gegenreview `PATCH_B_CHATGPT_REVIEW.md` auf `main` ist insgesamt nachvollziehbar; dessen konkrete P2-Hypothese wurde unabhängig reproduziert: Ein Kauf von zwei gleichen Rüstungen erzeugt einen Stapel, und `equip` verbrauchte bisher mangels Menge den gesamten Halter. Der zweite Gegenstand war danach nicht mehr nutzbar. Dies war kein beobachteter Original-Run-Fehler.
+
+Kleine Korrektur ausschließlich im vorhandenen `equip`-Handler: Nach erfolgreicher Besitz-, Profil-, Rang- und Slotprüfung trennt das vorhandene `object.moved {qty:1, split, to:{consumed:'equipped'}}` genau ein Stück ab. Die Ausrüstung verweist auf dessen eigene kollisionsfreie ID. Der Rest bleibt im Inventar; beim Ablegen oder Ersetzen kehrt nur das getragene Stück zurück. Das funktioniert auch für bereits gespeicherte, noch gehaltene Stapel. Einzelstücke, Template-Inventar, Kaufpreise, Buchungsmengen und der Reducer bleiben unverändert. Keine Save-Migration oder neue Event-/Stackmechanik; bereits durch alte fehlerhafte Events verlorene Verfügbarkeit wird nicht rückwirkend rekonstruiert.
+
+Drei zusätzliche Regressionen in der bestehenden Geartestdatei: Kauf von zwei Rüstungen → eines anlegen → ablegen → erneut anlegen mit JSON-Reload/Event-Replay und alternativer Auflösung; bestehender Dreierstapel mit ID-Kollision und anschließendem Ausrüstungswechsel; abgewiesener Slot/Rang ohne Aufteilung. Auf unverändertem .89 **zwei rot / eine grüne Kontrolle**, danach Gear **22/22**. Angrenzende Tests **337/337**, vollständiges `npm test` **1768/1768 grün**.
+
+Build **4.3.0-c.6.6.90**; Protokollversionen und Erzählerkarte unverändert. Kein neuer ST-Smoke erforderlich oder ausgeführt: keine Host-, Prompt- oder Protokolländerung. Die oben dokumentierte .89-ST-Abnahme bleibt ausdrücklich ein Nachweis für .89. Kein natürlicher Lauf gestartet; keine Umsetzung des besprochenen Engine-only-Boards oder Shopdesigns.

@@ -132,3 +132,48 @@ test('gear acquisition and equipment survive event replay, JSON reload and alter
     assert.deepEqual(JSON.parse(JSON.stringify(replay)), JSON.parse(JSON.stringify(e.state)));
     assert.deepEqual(run(b.state, [equip(created(b).id)]).events, e.events);
 });
+
+test('review P2: equip one of two bought armor units, unequip and re-equip without losing the spare', () => {
+    const s = base(), wire = answer(s, 'fine chainmail', true);
+    Object.assign(wire.deltas[0].lines[0], { qty: 2, price_cp: 160, said: 'Both for sixteen silver.' });
+    const r = applyWorld(s, content, wire, { msg: 200, prose: 'Both for sixteen silver.' });
+    const b = run(r.state, [buy(offers(r)[0])]), pile = created(b);
+    assert.equal(pile.qty, 2);
+    const e = run(b.state, [equip(pile.id)]), worn = e.state.entities.pc.sheet.equipment.armor.object;
+    assert.equal(e.state.objects[pile.id].holder.entity, 'pc');
+    assert.equal(e.state.objects[pile.id].qty, 1);
+    assert.notEqual(worn, pile.id);
+    assert.equal(e.state.objects[worn].qty, 1);
+    assert.deepEqual(e.state.objects[worn].profile, pile.profile);
+    const u = run(e.state, [{ type: 'unequip', object: worn, quote: 'I remove the chainmail.' }]);
+    const bagUnits = state => Object.values(state.objects).filter(o => o.name === pile.name && o.holder?.entity === 'pc').reduce((n, o) => n + o.qty, 0);
+    assert.equal(bagUnits(u.state), 2);
+    const again = run(JSON.parse(JSON.stringify(u.state)), [equip(worn)]);
+    assert.equal(bagUnits(again.state), 1);
+    assert.equal(again.state.entities.pc.sheet.equipment.armor.object, worn);
+    const replay = clone(s);
+    for (const ev of JSON.parse(JSON.stringify([...r.events, ...b.events, ...e.events, ...u.events, ...again.events]))) applyEvent(replay, ev);
+    assert.deepEqual(JSON.parse(JSON.stringify(replay)), JSON.parse(JSON.stringify(again.state)));
+    assert.deepEqual(run(b.state, [equip(pile.id)]).events, e.events, 'alternative resolution creates the same unit once');
+});
+test('review P2: an existing stack splits a unit with a collision-free ID and returns it when replaced', () => {
+    const s = base(), profile = itemProfile(content, { name: 'fine chainmail' });
+    s.objects.pile = { id: 'pile', name: 'fine chainmail', kind: 'item', stack: true, qty: 3, profile, holder: { entity: 'pc' } };
+    s.objects.pile_equipped = { id: 'pile_equipped', name: 'previous item', kind: 'item', qty: 1, holder: { consumed: 'used' } };
+    const e = run(s, [equip('pile')]), first = e.state.entities.pc.sheet.equipment.armor.object;
+    assert.equal(e.state.objects.pile.holder.entity, 'pc'); assert.equal(e.state.objects.pile.qty, 2);
+    assert.notEqual(first, 'pile_equipped'); assert.equal(e.state.objects.pile_equipped.name, 'previous item');
+    const next = run(e.state, [equip('pile')]);
+    assert.equal(next.state.objects.pile.qty, 1);
+    assert.equal(next.state.objects[first].holder.entity, 'pc');
+    assert.notEqual(next.state.entities.pc.sheet.equipment.armor.object, first);
+    assert.equal(Object.values(next.state.objects).filter(o => o.name === 'fine chainmail').reduce((n, o) => n + o.qty, 0), 3);
+});
+test('review P2: slot and rank refusals do not split or consume stacked gear', () => {
+    for (const [name, slot] of [['fine chainmail', 'leg'], ['[D] chainmail', null]]) {
+        const s = base(); s.objects.pile = { id: 'pile', name, kind: 'item', stack: true, qty: 2, profile: itemProfile(content, { name }), holder: { entity: 'pc' } };
+        const r = run(s, [equip('pile', slot)]);
+        assert.ok(!r.events.some(e => ['object.moved', 'object.consumed', 'item.equipped'].includes(e.t)));
+        assert.deepEqual(r.state.objects, s.objects);
+    }
+});

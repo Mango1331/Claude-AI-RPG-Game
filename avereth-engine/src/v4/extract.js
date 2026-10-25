@@ -13,7 +13,7 @@ import { extractJsonObject } from './json.js';
 /** Preserve the historical wire vocabulary; new campaigns have only Guild quests. */
 export function worldVocab(vocab, state) {
     if (privateQuestsOf(state)) return vocab;
-    return { ...vocab, version: 'delta-1.5',
+    return { ...vocab, version: 'delta-1.6',
         rules: [...vocab.rules.filter(r => !r.startsWith('Paid work FOR an NPC')),
             'FREE HELP: NPC requests, help, agreements and offered wages are ordinary facts, promises, threads and memories. Never create private quests or job ids. Formal quest deltas concern only existing Guild contracts. Helping earns no automatic Quest XP or payout.',
             'coin.gift is an ACTUAL new handover now, including voluntary thanks, wages, advance or reward from any present NPC. No job or acceptance is required. Promises and conditional/future payments are facts/threads, not coin.gift. In said quote the exact current handover clause INCLUDING the amount and currency, never invent an amount. For a recount of a RECENT COIN HANDOVER set repeat_of to its existing id; it never pays twice. A distinct new gift uses repeat_of:null even for the same giver/amount.'],
@@ -26,7 +26,7 @@ export function worldVocab(vocab, state) {
     };
 }
 
-export const EXTRACTOR_VERSION = 'extract-5.8';
+export const EXTRACTOR_VERSION = 'extract-5.9';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -45,7 +45,7 @@ const EFFECTS = ['heal', 'restore_mp', 'restore_sta'];
 // Patch 9C-2b: what a Skill Stone or a manual teaches, as the story establishes it (the engine checks it against the
 // techniques it can compose, src/v4/items.js skillSource); every field left out is null
 const TEACHES = O({ source: E(['stone', 'manual']), fn: N(S()), tags: N(A(S())), aspects: N(A(S())) });
-const OFFER_LINE = O({ what: S(), kind: E(['goods', 'service']), service: N(E(SERVICES)), qty: I(1), price_cp: I(0), said: N(S()), effect: N(E(EFFECTS)), teaches: N(TEACHES) });
+const OFFER_LINE = O({ what: S(), kind: E(['goods', 'service']), service: N(E(SERVICES)), qty: I(1), price_cp: I(0), said: N(S()), effect: N(E(EFFECTS)), teaches: N(TEACHES), equipment: N(B()) });
 // 4.3.0-c.6.6.5: a bid's line is one of Alaric's things and how many of it the buyer would take
 const bidLine = (refs) => A(O({ object: refs.object, qty: I(1) }), 1);
 
@@ -127,7 +127,8 @@ export const FORMAT_RULES = [
     'For a newly created object use object.new {name:"bread",holder:"npc.giver",...} then object.move {object:{new:"bread"},to:"pc",...}. object.new has no ref field. Never invent an obj.* id. The new-name reference must identify exactly one earlier created object; otherwise distinguish the actual objects by their established descriptions.',
     'In a multi-place reply use the existing per-delta scene explicitly for events before the last arrival. Example: enter known npc.giver at the starting place; create bread on that giver there; move {new:"bread"} to pc there; arrive at the authorized destination. present describes co-presence at that step, not only the reply ending. A returning known NPC uses enter, not person.new.',
     'person-ref is a person id from PRESENT or the CATALOG, or the ref of a person.new/creature.new earlier in the same answer.',
-    'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0,"said":string|null (the reply\'s words for the price),"effect":"heal"|"restore_mp"|"restore_sta"|null (only for a potion, draught or tonic that restores HP, MP or STA; the engine fixes how much),"teaches":teaches|null}.',
+    'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0,"said":string|null (the reply\'s words for the price),"effect":"heal"|"restore_mp"|"restore_sta"|null (only for a potion, draught or tonic that restores HP, MP or STA; the engine fixes how much),"teaches":teaches|null,"equipment":boolean|null}.',
+    'For offer_line.equipment use true for intended combat equipment, false for ordinary/cosmetic merchandise, null if unspecified. This intent supplies no slot or numbers. Use supported categories from GEAR MARKET; separate armor parts have no combat slot. Do not sell ordinary decoration as a combat upgrade.',
     'teaches is {"source":"stone"|"manual","fn":"strike"|"bolt"|"guard"|"ward"|"mend"|null,"tags":string[]|null,"aspects":string[]|null} or null: only for a Skill Stone, or a manual, primer or treatise, that the reply establishes as teaching a technique. fn: strike (a close weapon or body technique), bolt (a ranged spell), guard (a defensive stance), ward (a magical barrier), mend (a healing); tags (Martial, Precision, Mobility, Defense, Arcane, Control) and aspects (Fire, Ice, Lightning, Water, Earth, Wind, Shadow, Light, Poison, Nature, Blood, Sound) only as the reply states them; null for anything the reply does not say. Never for an ordinary stone, a return stone, a storybook or a letter.',
     'bid_line is {"object":object-ref (an exact OBJECTS id of a thing held by Alaric),"qty":integer>=1}.',
     'expected must contain exactly the keys requested below, no other keys.',
@@ -224,7 +225,7 @@ function normalizeSoftFields(value, vocab) {
         }
         if (d.type === 'memory' && x.who === undefined) x.who = [];
         // Patch 3: an offer line's words for its price may be left out like a |null field
-        if (d.type === 'offer' && Array.isArray(x.lines)) x.lines = x.lines.map((l) => (l && typeof l === 'object' ? { ...l, ...(l.said === undefined ? { said: null } : {}), ...(l.effect === undefined ? { effect: null } : {}), teaches: softTeaches(l.teaches) } : l));
+        if (d.type === 'offer' && Array.isArray(x.lines)) x.lines = x.lines.map((l) => (l && typeof l === 'object' ? { ...l, ...(l.said === undefined ? { said: null } : {}), ...(l.effect === undefined ? { effect: null } : {}), teaches: softTeaches(l.teaches), equipment: l.equipment ?? null } : l));
         // Patch 9C-2b: the fields of a teaches the reply does not state are null
         if (d.type === 'object.new') x.teaches = softTeaches(x.teaches);
         return x;

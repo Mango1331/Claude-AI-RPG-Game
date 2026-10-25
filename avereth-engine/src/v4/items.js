@@ -88,6 +88,36 @@ function gearKindOf(content, name) {
     return null;
 }
 
+/** Existing equipment slots only, including supported noncombat clothing/quiver templates. */
+export const equipmentSlotKnown = (content, slot) => [...content.items.values()].some(i => i.slot === slot)
+    || (content.gear?.instances?.gear_kinds || []).some(k => k.slot === slot);
+
+/** An intent flag classifies merchandise; the engine still owns its category, slot and values. */
+export function gearOfferWhy(content, line, profile) {
+    if (line.kind !== 'goods' || line.equipment === false) return null;
+    const head = words(line.what).split(/\b(?:with|of|from)\b/)[0];
+    const accessory = /\b(?:straps?|buckles?|repair kit|polish|oil)\b/.test(head);
+    const part = !accessory && /\b(?:shin guards?|greaves?|bracers?|gauntlets?|helmets?|pauldrons?)\b/.test(head);
+    if (part) return 'that separate armor part has no equipment slot; offer supported whole armor instead';
+    const intended = line.equipment === true || (!accessory && /\b(?:armou?r|weapons?)\b/.test(head));
+    if (intended && profile?.kind !== 'gear') return 'no supported combat equipment kind';
+    if (profile?.kind === 'gear' && !equipmentSlotKnown(content, profile.slot)) return 'no supported equipment slot';
+    return null;
+}
+
+export function gearText(profile) {
+    if (profile === null) return 'ordinary item; no combat stats';
+    if (profile?.kind !== 'gear') return '';
+    const stats = ['atk', 'matk', 'def', 'mdef'].filter(k => profile[k]).map(k => `${k.toUpperCase()} ${profile[k]}`).join(', ');
+    return `${profile.rank} ${profile.slot}: ${stats}`;
+}
+
+/** Same content-derived market vocabulary for narrator, planner and extractor; no new slots or numbers. */
+export function gearMarketText(content) {
+    const kinds = content.gear?.instances?.gear_kinds || [];
+    return `GEAR MARKET — Mechanical equipment uses only these supported categories: ${kinds.map(k => `${k.words.slice(0, 2).join('/')} (${k.slot})`).join('; ')}. Use a recognized kind in a combat equipment offer's name; appearance may vary freely. Only the engine fixes its values. No extra head, leg, hand or jewelry slots or bonuses. Separate armor parts are not whole armor. Ordinary tools, clothes and decoration remain available, explicitly without combat stats.`;
+}
+
 /**
  * The profile a thing gets when it is established, or null for an ordinary thing:
  *   attack  an offensive item of a kind the content knows (item_effects): its own power (standard × quality × Rank),

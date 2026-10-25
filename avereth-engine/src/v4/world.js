@@ -33,7 +33,7 @@ import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.j
 import { reachedEvents, setIntentEvents } from './intents.js';
 import { featureNamed, featureEvent, applySpring } from './features.js';
 import { complexOf, dungeonOf, trueDungeonOf, classified, rankText, linkBetween, sameWay, linksAt, wayBetween, roomByName, roomKnown, markEvents, newLink, linkEvent, levelVia, blockerOf, visited } from './dungeon.js';
-import { itemTraits, useOf, itemProfile, priceAudit } from './items.js';
+import { itemTraits, useOf, itemProfile, priceAudit, gearOfferWhy } from './items.js';
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor, templateFor, rulesetOf } from '../content.js';
@@ -2232,11 +2232,23 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const line = { id: `l${i + 1}`, what: l.what, kind: l.kind, service: l.service ?? null, qty: l.qty ?? 1, price_cp: l.price_cp, ...(l.said !== undefined ? { said: l.said } : {}) };
             // Patch 7.2: a restorative's kind as the extractor gave it (effect), checked by itemProfile (a consumable at all)
             // Patch 9C-2b: a Skill Stone or a manual by what the reply says it teaches (fixed with the line)
-            const profile = line.kind === 'goods' ? itemProfile(content, { name: line.what, effect: l.effect ?? null, teaches: l.teaches ?? null }) : null;
+            let profile = line.kind === 'goods' ? itemProfile(content, { name: line.what, effect: l.effect ?? null, teaches: l.teaches ?? null }) : null;
+            if (cPath && rulesetOf(s) >= 2 && line.kind === 'goods') {
+                const why = gearOfferWhy(content, l, profile);
+                if (why) {
+                    reject({ ...d, lines: [l] }, 'gear_offer', why);
+                    system.push(`NOT OFFERED AS EQUIPMENT — ${line.what}: ${why}. No coin was spent.`);
+                    corrections.push(`${line.what} was not recorded as combat equipment: ${why}. Offer a supported weapon, armor or offhand item; decoration has no combat stats.`);
+                    return null;
+                }
+                if (l.equipment === false && profile?.kind === 'gear') profile = null;
+                line.equipment = profile?.kind === 'gear';
+                if (!profile) return { ...line, profile: null };
+            }
             if (!profile) return line;
             const audit = priceAudit(content, profile, line.price_cp, line.qty);
             return { ...line, profile, ...(audit ? { audit } : {}) };
-        });
+        }).filter(Boolean);
         if (!lines.length) return;
         // the seller's latest price for the same thing stands: an open offer of theirs for it closes (one price at a
         // time, as for a buyer's bid); an unchanged one stays and is not offered twice

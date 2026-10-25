@@ -15,7 +15,7 @@ import {
 import { catalogText } from './interpret.js';
 import { defeatTally, tallyText, readyText, proofMemory, goalText, amountText } from './guild.js';
 import { knownNote, reportedPlaces } from './known.js';
-import { spoiled, profileOf, sourceText } from './items.js';
+import { spoiled, profileOf, sourceText, gearText, gearMarketText } from './items.js';
 import { continueOptions, goalLines } from './intents.js';
 import { featuresAt, featureText } from './features.js';
 import { dungeonOf, roomKnown, exitsFrom, exitText, dungeonText, nearDungeons } from './dungeon.js';
@@ -173,7 +173,7 @@ function objectEntry(state, content, o) {
     const food = o.use === 'food' ? (spoiled(state, o) ? 'food, spoiled' : 'food') : null;
     // Patch 9C-2b: a Skill Stone or a manual, with what it holds or teaches (its fixed profile)
     const source = sourceText(profileOf(content, o)) || null;
-    const notes = [(o.marks || []).length ? `marked: ${o.marks.map((m) => m.text).join('; ')}` : null, food, source].filter(Boolean).join('; ') || undefined;
+    const notes = [(o.marks || []).length ? `marked: ${o.marks.map((m) => m.text).join('; ')}` : null, food, source, gearText(o.profile)].filter(Boolean).join('; ') || undefined;
     return { id: o.id, name: o.name, qty: o.stack || (o.qty ?? 1) > 1 || o.use === 'food' ? o.qty : undefined, unit: o.unit || undefined, holder, state: notes };
 }
 
@@ -290,7 +290,7 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         .map((o) => (o.bid
             // 4.3.0-c.6.6.5: a buyer's bid for his things (he would be paid), by the ids of his things
             ? { id: o.id, seller: personLabel(state, content, o.seller), bid: true, price_cp: o.price_cp, lines: o.lines.map((l) => ({ id: l.id, what: l.what, object: l.object, qty: l.qty, ...(Number.isInteger(l.price_cp) ? { price_cp: l.price_cp } : {}) })) }
-            : { id: o.id, seller: o.gate ? 'the gate' : o.canon ? 'Guild' : personLabel(state, content, o.seller), lines: o.lines.map((l) => ({ id: l.id, what: l.what, price_cp: l.price_cp, ...(l.qty > 1 ? { qty: l.qty } : {}) })) }));
+            : { id: o.id, seller: o.gate ? 'the gate' : o.canon ? 'Guild' : personLabel(state, content, o.seller), lines: o.lines.map((l) => ({ id: l.id, what: l.what, price_cp: l.price_cp, ...(gearText(l.profile) ? { equipment: gearText(l.profile) } : {}), ...(l.qty > 1 ? { qty: l.qty } : {}) })) }));
     const objects = [
         ...heldBy(state, 'pc').map((o) => objectEntry(state, content, o)),
         ...sheetObjects(state, content),
@@ -312,6 +312,7 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         ...(known ? { known: seen } : {}),
         offers,
         objects,
+        ...(c && rulesetOf(state) >= 2 ? { gear_market: gearMarketText(content) } : {}),
         // Patch 6: the obstacles and hazards of this place; hidden ones only for the extractor (it names them by id)
         features: featuresAt(state, at, { hidden: hiddenFeatures }).map((f) => ({ id: f.id, name: f.name, text: `${featureText(f)}${f.hidden ? ' — HIDDEN: Alaric has not found it' : ''}` })),
         // Patch 7: the ways from here (src/v4/dungeon.js); hidden ones only for the extractor

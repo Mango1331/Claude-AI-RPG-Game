@@ -2189,4 +2189,8 @@ Neue Ruleset-2/C-Boards bieten vorläufig vier Jagden und eine passende Dungeon-
 
 ## Run 15: Handelsintegrität .88 (Patch A)
 
-Einmalige Kauf-/Verkaufsbuchung, Zustimmung zu Gegenpartei und Gesamtpreis, mengenrichtige Preisnachweise, Abgrenzung fremder Empfehlungen und kommerzielle Übergaben. Bestehende Transaktionspfade und Saves bleiben erhalten. Gear-Patch B ist offen. Technik, Originalfälle und Abnahme: [PATCH_RUN15_TRADE_INTEGRITY.md](PATCH_RUN15_TRADE_INTEGRITY.md).
+Einmalige Kauf-/Verkaufsbuchung, Zustimmung zu Gegenpartei und Gesamtpreis, mengenrichtige Preisnachweise, Abgrenzung fremder Empfehlungen und kommerzielle Übergaben. Bestehende Transaktionspfade und Saves bleiben erhalten. Der Gegenreview ist in .89 berücksichtigt. Technik, Originalfälle und Abnahme: [PATCH_RUN15_TRADE_INTEGRITY.md](PATCH_RUN15_TRADE_INTEGRITY.md).
+
+## Run 15: Händlerausrüstung .89 (Patch B)
+
+Neue Gearangebote benötigen bestehende Engine-Profile und Slots; gewöhnliche Ware bleibt ohne Kampfwerte. Kauf → Equip und Slotprüfung sind abgesichert. Keine neuen Slots oder Balancewerte. Technik und Abnahme: [PATCH_RUN15_GEAR_MARKET.md](PATCH_RUN15_GEAR_MARKET.md).

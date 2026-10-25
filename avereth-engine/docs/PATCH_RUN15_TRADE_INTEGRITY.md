@@ -54,3 +54,12 @@ Neue Handelsprüfungen sind auf C/Ruleset 2 begrenzt. Vorhandene Events und alte
 Unverändert: Gearprofile und Ausrüstungsslots (**Patch B ist nicht begonnen**), Gildenboard, Delivery, Kampf, XP, Testspieler, Recovery-Budgets und Host-Lifecycle. Keine neue persönliche Erzählerkartenrevision durch Patch A.
 
 Die Prüfung ist kein allgemeiner Beweis beliebiger natürlicher Sprache. Sie verarbeitet die dokumentierten Preisformen und klare Belegwidersprüche; unerkannte oder vom LLM ausgelassene semantische Angaben bleiben ein Risiko für den nächsten natürlichen Lauf. Es gibt bewusst keine automatische Preisverhandlung oder freie Reise aus Prosa. Der ST-Smoke prüft den echten Host mit Mockprovider, nicht GLMs Verständnis der neuen Handelsregeln. Vor Patch B folgt der unabhängige Gegenreview; kein natürlicher Langlauf gestartet.
+
+## Gegenreview übernommen in .89
+
+Basis `a25fd5e` (.88). Das statische Gegenreview `testrun_10b/20261025-124809Z-current_test/PATCH_A_CHATGPT_REVIEW.md` auf `main` wurde unabhängig gegen den Produktpfad geprüft. Beide Befundgruppen sind bestätigt:
+
+- **Zustimmung zu Stückpreisen:** `acceptanceWhy` verwendet nun dieselbe mengenbezogene Preisinterpretation wie die Angebotserfassung. Vier Platten zu einem Kupfer akzeptieren das vorhandene Vier-Kupfer-Los; ein abweichender Stücksatz bleibt ungültig. Eine ausdrücklich angenommene, bereits kanonisch neu bepreiste Rabatt-Offerte funktioniert. Ein bloßer Rabattwunsch akzeptiert weiterhin nicht die alte Offerte.
+- **Benannter fremder Warenanbieter:** Ein Preis für „Hessel sells …“ wird nicht zur bindenden Offerte der Gildenangestellten. Eigene Angebote, dritte Person über den tatsächlichen Verkäufer und ausdrückliche Vermittlung bleiben erlaubt. Keine zusätzliche Anbieter- oder Transaktionsverwaltung.
+
+`patch_run15_trade_review.test.js`: zehn neue Regressionen, auf unverändertem .88 **fünf rot / fünf grüne Kontrollen**, danach **10/10**. Zusammen mit den ursprünglichen Handelsregressionen **55/55**. Zwischenabnahme nach diesen Handelskorrekturen: **1746/1746 Node**. Der abschließend gemeinsam mit Gear-Patch B geprüfte .89-Stand ist in [PATCH_RUN15_GEAR_MARKET.md](PATCH_RUN15_GEAR_MARKET.md) dokumentiert. Die ursprünglichen .88-Abnahmeangaben oben bleiben historische Ergebnisse.

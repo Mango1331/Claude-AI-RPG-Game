@@ -29,7 +29,7 @@ import { shopSearch, findTrades } from './settlement.js';
 import { journeyReady, knownAt } from './catalog.js';
 import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSetsGoal } from './intents.js';
 import { knownByName } from './known.js';
-import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect, namedSource } from './items.js';
+import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect, namedSource, equipmentSlotKnown } from './items.js';
 import { itemEffectOf, rulesetOf } from '../content.js';
 import { learningActivity, stoneActivation } from './growth.js';
 import { effectiveStats } from '../passives.js';
@@ -961,6 +961,9 @@ const HANDLERS = {
         if (pick.clarify) return { status: 'clarify', reason: 'which line?', line: `CLARIFY — ${c.qty} of which: ${pick.clarify.join(' or ')}?` };
         if (pick.error === 'the offer has no such item') return { status: 'refused', reason: 'no such line', line: 'CANNOT ACCEPT — the offer has no such item.' };
         if (pick.error) return { status: 'refused', reason: 'not in that amount', line: `CANNOT BUY ${c.qty} — ${pick.error}.` };
+        if (pick.picks.some(p => p.line.equipment === true && (p.line.profile?.kind !== 'gear' || !equipmentSlotKnown(content, p.line.profile.slot)))) {
+            return { status: 'refused', reason: 'equipment has no supported profile', line: 'CANNOT BUY — this equipment has no supported slot and values. Nothing is charged.' };
+        }
         if (o.gate && s.scene.at !== o.gate) return { status: 'refused', reason: 'not at the gate', line: `CANNOT PAY — the entry fee is paid at the gate of ${placeName(s, o.gate)}.` };
         if (o.canon && !o.gate && !hallOf(s, s.scene.at)) return { status: 'refused', reason: 'not at a Guild hall', line: 'CANNOT PAY — the Guild registers members at a Guild hall.' };
         if (!o.canon && !present(s, o.seller)) return { status: 'refused', reason: 'the seller is not here', line: `CANNOT ACCEPT — ${who(s, o.seller)} is not here.` };
@@ -1209,8 +1212,10 @@ const HANDLERS = {
             const it = typeof already[1] === 'string' ? content.items.get(already[1]) : already[1];
             return { status: 'resolved', reason: 'already equipped', line: `READIES — ${it?.name || c.object.new} is already equipped; drawing/readying it is not an equipment swap.` };
         }
-        const o = objectOf(s, content, c.object);
+        const bought = asked ? (ctx.boughtObjects || []).map(id => s.objects[id]).filter(o => o && normText(o.name) === asked) : [];
+        const o = asked ? (bought.length === 1 ? bought[0] : null) : objectOf(s, content, c.object);
         if (!o || o.holder?.entity !== 'pc') return { status: 'refused', reason: 'he does not hold it', line: 'CANNOT EQUIP — he does not hold that.' };
+        if (o.profile === null) return { status: 'refused', reason: 'ordinary merchandise', line: `CANNOT EQUIP — ${o.name} has no combat equipment values.` };
         // Patch 7.1: a piece of his own (bought, looted, found) is worn with its own values, never those of a template of
         // the same name; a template item of the sheet as before
         let own = !o.template ? profileOf(content, o) : null;
@@ -1223,6 +1228,7 @@ const HANDLERS = {
         const ranked = rankRefusal(content, s.entities.pc.sheet.level, { kind: 'gear', title: o.name, rank: item.rank, requires_rank: item.requires_rank });
         if (ranked) return { status: 'refused', reason: 'rank', line: `CANNOT EQUIP — ${ranked}. It stays in his pack.` };
         const slot = c.slot || item.slot;
+        if (!equipmentSlotKnown(content, slot) || slot !== item.slot) return { status: 'refused', reason: 'wrong equipment slot', line: `CANNOT EQUIP — ${o.name} fits the ${item.slot} slot only. It stays in his pack.` };
         const current = s.entities.pc.sheet.equipment[slot];
         if (o.template) emit({ t: 'item.changed', d: { id: 'pc', item: tpl, qty: -1, why: 'equipped' } });
         else emit({ t: 'object.consumed', d: { id: o.id, by: 'equipped' } });
@@ -1442,6 +1448,7 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
         const room = rooms.length && !rooms.some((x) => lodged.has(x.seq)) ? rooms.at(-1) : null;
         const quoted = c.quote ? `"${String(c.quote).slice(0, 80)}"` : c.type;
         const booking = (e) => {
+            if (e.t === 'object.created' && e.d.object?.source?.how === 'bought' && e.d.object.holder?.entity === 'pc') (ctx.boughtObjects ||= []).push(e.d.object.id);
             if (trade && e.t === 'transaction.completed' && (e.d.offer === trade.offer.id || (trade.sale && e.d.from === trade.offer.seller && e.d.to === 'pc'))) trade.bought = true;
             if (e.t === 'service.granted' && (e.d?.service === 'lodging' || ROOM_WORDS.test(normText(e.d?.what || '')))) {
                 lodged.add(c.seq);

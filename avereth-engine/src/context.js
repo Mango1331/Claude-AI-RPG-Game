@@ -27,7 +27,7 @@ import { objectiveText, proofText as guildProofText, defeatTally, tallyText, rea
 import { envelopeBlock } from './v4/envelope.js';
 import { sceneHandle } from './v4/scene_handles.js';
 import { settlementLife } from './v4/settlement.js';
-import { profileOf, sourceText } from './v4/items.js';
+import { profileOf, sourceText, gearText, gearMarketText } from './v4/items.js';
 
 export const DEFAULT_BUDGET = 1400;
 export const DEFAULT_RULES_BUDGET = 800;
@@ -638,6 +638,14 @@ export function buildContext(state, content, opts = {}) {
     // Prototype C (4.3.0-c.6.6.5): the settlement around Alaric lives (crowd by time of day, everyday trades by size)
     if (v4 && !state.encounter && (opts.outcome?.auth?.c || opts.outcome?.c)) add('settlement', settlementLife(state, content), 1);
 
+    if (v4 && rulesetOf(state) >= 2 && !state.encounter && (opts.outcome?.auth?.c || opts.outcome?.c)
+        && (/\b(?:shop|buy|sell|merchant|smith|blacksmith|gear|equipment|armou?r|weapon|shield)\b/i.test(itemScan)
+            || Object.values(state.offers || {}).some(o => o.status === 'open' && !o.bid && state.scene.present.includes(o.seller) && o.lines.some(l => l.profile?.kind === 'gear')))) {
+        const offers = Object.values(state.offers || {}).filter(o => o.status === 'open' && !o.bid && state.scene.present.includes(o.seller))
+            .flatMap(o => o.lines.filter(l => l.kind === 'goods').map(l => `${l.what}: ${gearText(l.profile) || 'ordinary merchandise'}`)).slice(0, 8);
+        add('gear_market', `${gearMarketText(content)}${offers.length ? `\nRECORDED GOODS: ${offers.join('; ')}` : ''}`, 0);
+    }
+
     // hard facts about the current place, present people and anything named this turn are always shown (binding)
     const scan = normText(queryText);
     const pinned = currentFacts(state, (f) => f.hard && f.visibility !== 'secret').filter((f) => f.s === sceneNode || f.s === state.scene.location
@@ -746,7 +754,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'gear_market', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };

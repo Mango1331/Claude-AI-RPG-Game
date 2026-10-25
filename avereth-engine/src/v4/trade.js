@@ -25,12 +25,17 @@ export function acceptanceWhy(c, offer, party, currency) {
         if (!contains(label, named.replace(/^the\s+/i, ''))) return `counterparty ${named} is not ${party}`;
     }
     const quote = String(c.quote || '');
-    if (/\bdiscount\b|\b\w*(?:pence|copper|silver|gold|percent)\s+off\b|\b(?:knock|take)\b[^.;]{0,25}\boff\b|\bfor less\b/i.test(quote))
-        return 'a requested discount needs an agreed new price; the old offer is not accepted';
     const lines = (offer.lines || []).filter(l => !c.lines?.length || c.lines.includes(l.id));
-    const total = offer.bid ? (lines.length === offer.lines.length && Number.isInteger(offer.price_cp) ? offer.price_cp : lines.reduce((n, l) => n + (l.price_cp || 0), 0)) : pickLines(offer, c.lines, c.qty ?? null).cp;
+    const picked = offer.bid ? null : pickLines(offer, c.lines, c.qty ?? null);
+    const total = offer.bid ? (lines.length === offer.lines.length && Number.isInteger(offer.price_cp) ? offer.price_cp : lines.reduce((n, l) => n + (l.price_cp || 0), 0)) : picked.cp;
+    const qty = offer.bid ? (lines.length === 1 ? lines[0].qty : 0) : (picked.picks?.length === 1 ? picked.picks[0].units : 0);
     const mentions = currency ? coinMentions(quote, { rules: { currency } }) : [];
-    const said = currency && mentions.length === 1 ? coinFromWords(quote, { rules: { currency } }) : null;
+    const price = currency ? tradePrice(null, quote, qty, { rules: { currency } }) : { handled: false };
+    if (price.handled && price.cp === null) return 'the quoted trade price is not unambiguous';
+    const said = price.handled ? price.cp : currency && mentions.length === 1 ? coinFromWords(quote, { rules: { currency } }) : null;
+    const discount = /\bdiscount\b|\b\w*(?:pence|copper|silver|gold|percent)\s+off\b|\b(?:knock|take)\b[^.;]{0,25}\boff\b|\bfor less\b/i.test(quote);
+    const fixedPrice = said === total && /\b(?:agreed|offered|final|new|discount(?:ed)?) price\b/i.test(quote) && /\b(?:accept|deal|take|buy)\b/i.test(quote);
+    if (discount && !fixedPrice) return 'a requested discount needs an agreed new price; the old offer is not accepted';
     if (Number.isInteger(c.agreed_cp) && said !== null && c.agreed_cp !== said) return 'agreed_cp contradicts the player’s stated price';
     const agreed = Number.isInteger(c.agreed_cp) ? c.agreed_cp : said;
     if (agreed !== null && agreed !== undefined && Number.isInteger(total) && agreed !== total)
@@ -63,6 +68,11 @@ export function offerAdvice(what, said, party, places, here, prose = '') {
     if (booking) return false;
     const spoken = !prose || [...prose.matchAll(/["“]([^"”]+)["”]/g)].some(m => contains(m[1], text));
     if (spoken && /\b(?:he|she|they)(?:'ll| will| would)\s+(?:give|pay|charge|sell|buy)\b/i.test(text)) return true;
+    for (const m of text.matchAll(/\b([A-Z][a-z'-]*(?:\s+[A-Z][a-z'-]*){0,2})\s+(?:(?:will|would|can)\s+)?(?:sells?|buys?|charges?|offers?|asks?|pays?)\b/g)) {
+        if (/^(?:I|We|You|He|She|They|It)$/.test(m[1])) continue;
+        const name = party.split(',')[0];
+        if (!contains(name, m[1]) && !contains(m[1], name)) return true;
+    }
     const provider = String(what || '').match(/\bby\s+([A-Z][a-z'-]*(?:\s+[A-Z][a-z'-]*){0,2})\b/);
     if (provider && !contains(party, provider[1])) return true;
     const local = new Set([here]);
@@ -120,6 +130,11 @@ export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = nu
     for (const p of picks.filter((x) => x.line.kind === 'goods')) {
         // Patch 7.1: exactly the variant offered: the line's profile, fixed when the offer was made (never rolled again)
         const traits = content ? itemTraits(content, { name: p.line.what, kind: 'item' }, s.clock.minute, p.line.profile ?? (p.line.profile === null ? null : undefined)) : {};
+        // Explicit ordinary merchandise never acquires combat values later from its name.
+        if (p.line.equipment === false && p.line.profile === null) {
+            traits.profile = null;
+            if (traits.use === 'equipment') traits.use = 'tool';
+        }
         const base = objectId(p.line.what);
         let id = base;
         for (let n = 2; s.objects[id]; n++) id = `${base}_${n}`;

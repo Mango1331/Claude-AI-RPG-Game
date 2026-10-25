@@ -198,6 +198,8 @@ export function concreteDelta(pattern, seq, vocab, catalog) {
         if (k) d[k] = String(c.$any);
     }
     if (pattern.type === 'offer' && c.lines) d.lines = c.lines.map((l) => ({ what: 'item', kind: 'goods', service: null, qty: 1, price_cp: 1, ...said, ...l }));
+    // Current offer intent is nullable; the historical P0 vocabulary stays unchanged.
+    if (vocab.version === 'delta-1.6' && Array.isArray(d.lines)) d.lines = d.lines.map(l => ({ ...l, equipment: l.equipment ?? null }));
     return d;
 }
 

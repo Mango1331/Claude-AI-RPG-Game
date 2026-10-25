@@ -29,6 +29,8 @@ test('new extractor protocol refuses unanchored local claims, but supports old p
  const strict=parseExtraction(JSON.stringify(a),content.deltaVocab,ids,{}, {sceneRequired:true});
  assert.equal(strict.valid,false);
  assert.match(strict.errors.join(' '),/scene/);
+ const scoped=parseExtraction(JSON.stringify({...a,scene:camp}),content.deltaVocab,ids,{}, {sceneRequired:true});
+ assert.equal(scoped.valid,true,scoped.errors.join('; '));
  const malformed=parseExtraction(JSON.stringify({expected:{},deltas:{}}),content.deltaVocab,ids,{}, {sceneRequired:true});
  assert.equal(malformed.valid,false);
 });
@@ -46,7 +48,8 @@ test('original E197-E200: unreached camp introduces no local captives, foes or R
 test('explicit authorized 45-minute intermediate stop is booked, false end arrival stays false',()=>{
  const s=pre(), raw=clone(tail['198'].record.extraction.raw);
  const stop={new:{name:'Pine edge above the camp',kind:'wilderness',parent:'realm.duskreach'}};
- raw.scene=stop;raw.deltas.unshift({seq:0,type:'arrive',at:stop,with:['npc.marta']});
+ raw.scene=stop;raw.deltas=raw.deltas.map(d=>({...d,seq:d.seq+1}));
+ raw.deltas.unshift({seq:1,type:'arrive',at:stop,with:['npc.marta']});
  const r=call(s,raw);
  assert.notEqual(r.state.scene.at,smith);assert.notEqual(r.state.scene.at,camp);
  assert.equal(r.state.clock.minute-s.clock.minute,45);

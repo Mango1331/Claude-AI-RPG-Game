@@ -8,6 +8,8 @@
 - **Frühere Patch-/Implementierungsnachweise:** §§13–26, besonders [§25](#25-konsolidierte-übergabe-an-sol-vor-dem-nächsten-großen-patch-24102026) und [§26](#26-run-5--erster-echter-65-langlauf-extractor-api-fertig-host-bleibt-900-s-pending-24102026). Die passende einzelne technische Patchnote auf Dev ist für Implementierung führend.
 - **Original-Livetests:** [testrun_10b/README.md](testrun_10b/README.md) mit unveränderten ZIPs und jeweils genau einer ausführlichen `REVIEW.md`.
 
+**Neue Fach-Patchnotes nach Run 10 (25.10.2026, PLANUNG):** [Privatjob / Player Agency](patch_plans_10b/PATCH_PRIVATJOB_AGENCY.md) und [Kampfwerte / Gruppengefahr / Flucht](patch_plans_10b/PATCH_KAMPFWERTE_GRUPPEN_FLUCHT.md). Diese beiden **getrennten, noch nicht implementierten** Pläne liegen auf `main`, damit Sols parallel laufende Board-Vereinfachung und Lieferkonsistenz auf Dev nicht verändert werden. Privatjob P1; Kampfkalibrierung P2 nach Messung. Keine neue Code- oder Balancefreigabe durch die Dokumentation.
+
 **Pflege ab jetzt:** Hier nur kurze neue Entscheidungen, Statusänderungen und Links zum fachlichen Beleg eintragen; **keine vollständigen Patchnotes oder Einzelrunreviews kopieren**. Aktuellen Status ausschließlich in 03 führen. Vergangene Einträge bleiben als datierte Nachweise unangetastet.
 
 ---

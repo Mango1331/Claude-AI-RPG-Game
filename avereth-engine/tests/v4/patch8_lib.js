@@ -20,6 +20,14 @@ export function simpleBoard(dungeon = 'Old Crown Catacombs') {
         make(`Clear ${dungeon}`, 'DEFEAT', 'restless skeletons', null, `${dungeon}, level 1`)];
 }
 
+/** Current hunt-only generation; historical simpleBoard fixtures keep their original distribution. */
+export function huntBoard(dungeon = 'Old Crown Catacombs') {
+    return simpleBoard(dungeon).map((l, i) => l.objectives[0].verb !== 'DELIVER' ? l : {
+        ...l, title: `Cull the pasture wolves ${i}`, task: `Cull a wolf at pasture ${i}.`, desired_end_state: `The wolf at pasture ${i} is defeated.`,
+        objectives: [{ verb: 'DEFEAT', what: 'wolf', qty: 1, unit: null, where: `pasture ${i}` }],
+    });
+}
+
 export async function campaign(content, { greeting = ALDERWATCH, cls = 'Mage', skills = 'Flame Lance + Focused Ward', legacyPrivateQuests = false } = {}) {
     const g = new Chat4(content, { greeting, legacyPrivateQuests });
     await g.player(cls);

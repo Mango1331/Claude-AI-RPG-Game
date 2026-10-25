@@ -31,7 +31,7 @@ import { buildCatalog, extractorCatalog, guardContext } from './catalog.js';
 import { interpreterRequest, parseInterpretation, INTERPRETER_VERSION } from './interpret.js';
 import { guardCommands } from './agency.js';
 import { extractorRequest, parseExtraction, EXTRACTOR_VERSION } from './extract.js';
-import { boardRequest, parseBoard, bookBoard, BOARD_VERSION } from './guild.js';
+import { boardRequest, parseBoard, bookBoard, BOARD_VERSION, HUNT_BOARD_PROFILE } from './guild.js';
 import { extractionFailedEvents } from './world.js';
 import { hallOf, settlementOf, membership, boardKey, today, listingsOf, supportedRanks, placeName } from './domain.js';
 import { trueDungeonOf } from './dungeon.js';
@@ -45,7 +45,7 @@ import { classForgeRequest, parseClassForge } from './forge.js';
 import { PLANNER_VERSION, MECH_TYPES, planContext, withContentSkills, plannerRequest, parsePlan, mapPlan, recentText, announcedAbandon } from './planner.js';
 import { crowdCount, personWords, bystanderEvents } from './settlement.js';
 import { combatChronicle, chronicleLine } from './combat_truth.js';
-import { skillOf } from '../content.js';
+import { skillOf, rulesetOf } from '../content.js';
 
 export const RECORD_V4 = 3;
 // 4.3.0-c.6.6.51 (live 23.10.2026 11:07): the planner's reasoning used up its 900 tokens on a message of three steps, in
@@ -456,7 +456,7 @@ export function boardFor(state, content, commands, { c = false } = {}) {
     const size = content.rules.guild.board?.size ?? 5;
     // Prototype C (4.3.0-c.6): a new day's board is a new board: five notices, none of yesterday's (src/v4/commands.js
     // board.read retires those), booked whole or not at all (generateBoard)
-    if (c) return { branch, rank, missing: size, day: today(state), have: [], c: true };
+    if (c) return { branch, rank, missing: size, day: today(state), have: [], c: true, ...(rulesetOf(state) >= 2 ? { profile: HUNT_BOARD_PROFILE } : {}) };
     const have = listingsOf(state, branch, rank);
     const missing = size - have.length;
     return missing > 0 ? { branch, rank, missing, day: today(state), have: have.map((q) => q.title) } : null;

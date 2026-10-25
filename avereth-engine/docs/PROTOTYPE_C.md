@@ -2182,3 +2182,7 @@ Gebietsbezogener, begrenzter Rückruf bekannter Personen; keine stille Wiederein
 ## Run 14: World-Delta .86
 
 Präzise Reparaturhilfe für vorhandene neue Objektnamen, mehrdeutige Deklarationen abgesichert, zeitliche Szenenannotation vor späterer Ankunft und kanonische Geberpräsenz bei Sachgeschenken. Kein neues Referenzsystem. Technik und Abnahme: [PATCH_RUN14_WORLD_DELTAS.md](PATCH_RUN14_WORLD_DELTAS.md).
+
+## Run 14: Gildenboard .87
+
+Neue Ruleset-2/C-Boards bieten vorläufig vier Jagden und eine passende Dungeon-Räumung, ohne geeigneten Dungeon fünf Jagden. Bestehende Lieferangebote und das vollständige Delivery-System bleiben erhalten. Technik und Abnahme: [PATCH_RUN14_HUNT_BOARD.md](PATCH_RUN14_HUNT_BOARD.md).

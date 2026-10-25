@@ -124,7 +124,6 @@ test('3B ambiguous agreement to old work offer asks rather than charging; explic
 test('3B natural job inquiry books real listings once through the product planner path',async()=>{
     const g=await campaign(content); inject(g,[{t:'place.created',d:{place:{id:'loc.alderwatch.test_hall',name:'Guild hall',kind:'interior',parent:g.state().scene.location,tags:['guild_hall']}}},{t:'scene.moved',d:{at:'loc.alderwatch.test_hall',place:'Guild hall'}}]);
     g.listings=Array.from({length:5},(_,i)=>({title:`Cull the wolves at Farm ${i}`,client:`Farmer ${i}`,rank:'Novice',level:1,qtype:'minor',payout_cp:50,task:`Cull one wolf at Farm ${i}.`,desired_end_state:`The wolf at Farm ${i} is defeated.`,objectives:[{verb:'DEFEAT',what:'wolf',qty:1,where:`Farm ${i}`}],proof:[]}));
-    for (const i of [2, 3]) g.listings[i] = { ...g.listings[i], title: `Medicine delivery ${i}`, objectives: [{ verb: 'DELIVER', what: 'sealed medicine parcel', qty: 1, unit: null, where: `Healer at Farm ${i}` }] };
     g.listings[4] = { ...g.listings[4], title: 'Clear Old Crown Catacombs', task: 'Clear level 1. Danger: a group may overwhelm a solo beginner.', objectives: [{ verb: 'DEFEAT', what: 'restless skeletons', qty: null, unit: null, where: 'Old Crown Catacombs, level 1' }] };
     await say(g,'Are there any available jobs?');
     assert.equal(Object.values(g.state().quests).filter(q=>q.kind==='guild_contract'&&q.status==='listed').length,5);

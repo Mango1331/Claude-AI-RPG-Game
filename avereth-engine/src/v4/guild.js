@@ -17,7 +17,8 @@ import { hallOf, settlementOf, realmOf, heldBy, membership, listingsOf, boardKey
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
-export const BOARD_VERSION = 'board-5.0';
+export const BOARD_VERSION = 'board-5.1';
+export const HUNT_BOARD_PROFILE = 'hunt_clear';
 const QTYPES = ['minor', 'standard', 'dangerous', 'major'];
 const VERBS = ['GO', 'FIND', 'TALK', 'GET', 'GATHER', 'GIVE', 'DELIVER', 'USE', 'REPAIR', 'DEFEND', 'ESCORT', 'ATTACK', 'DEFEAT'];
 
@@ -523,7 +524,10 @@ function boardProfile(s, content, need) {
     if (!need.c || deliveryRuleset(s) < 2) return null;
     const dungeons = nearDungeons(s, need.branch, s.places[need.branch]?.realm, { guild: true })
         .filter(id => { const ns = fittingLevels(s, content, need.rank, id); return ns === null || ns.length > 0; });
-    return { dungeons, hunt: dungeons.length ? 2 : 3, delivery: 2, dungeon: dungeons.length ? 1 : 0 };
+    const noDelivery = need.profile === HUNT_BOARD_PROFILE;
+    // Already published deliveries count during a refill, but are never newly generated in this profile.
+    const delivery = noDelivery ? retainedListings(s, need).filter(l => boardFamily(s, content, l) === 'delivery').length : 2;
+    return { dungeons, hunt: (content.rules.guild.board?.size ?? 5) - delivery - (dungeons.length ? 1 : 0), delivery, dungeon: dungeons.length ? 1 : 0, noDelivery };
 }
 
 function boardFamily(s, content, l) {
@@ -536,6 +540,7 @@ function simpleListingWhy(s, content, l, profile, family) {
     const os = l.objectives;
     if (l.proof.length) return 'simple board contracts have no additional proof or signature requirement';
     if (family === 'delivery') {
+        if (profile.noDelivery) return 'new delivery generation is suspended; retain published contracts only';
         if (os.length !== 1 || os[0].verb !== 'DELIVER') return 'delivery requires exactly one DELIVER objective; no duplicate GIVE or other duties';
         const o = os[0];
         if (!o.what.trim() || !Number.isInteger(o.qty) || (!o.delivery && !o.where?.trim())) return 'delivery needs physical goods, an exact quantity and one recipient/place';
@@ -617,9 +622,11 @@ export function boardRequest(s, content, need) {
         '- These examples demonstrate structure only. Do not reuse their people, locations, creatures, objects, circumstances or exact objective sequence.',
         ...noviceProfile,
         ...(profile ? [
-            `- FIXED BOARD: ${profile.hunt} monster hunts, 2 deliveries, ${profile.dungeon} Dungeon clearance. Escort is not generated on this board. When no suitable known Dungeon exists, its slot is a third hunt; never invent a Dungeon to fill the quota. Existing notices count towards these totals on a partial refill.`,
-            '- Each delivery objective MUST include delivery:{v:1,mode:"give",recipient_kind:"name" or "role",recipient:"Fenwick" or "toll clerk",place:"Quarry Gate Toll Station"}. For an expressly permitted drop: mode:"drop", recipient_kind:null, recipient:null. Other objectives use delivery:null. Keep place a precise destination label, with no route directions appended. Name means only that person, role means an appropriate present holder of that role. Unknown destinations and people are permitted; they are encountered naturally.',
-            '- Each delivery has exactly one DELIVER objective, concrete physical cargo, integer qty and a specific receiver and exact destination: where "Healer at Quarry Camp Infirmary" or "Gretha at Thornhollow", or "deposit at Receiving Shed". Name a person or a recognizable job role (healer, quartermaster, clerk), never "Recipient", "someone", "staff" or other placeholder. Place must name the ACTUAL destination, not only its parent settlement. A previously unknown interior must be visited before delivery can be confirmed. No GET/GIVE/ESCORT or other objective, signature, return trip, returned container, deadline or additional duty. proof is []. The engine renders task and desired_end_state from this objective; keep its title and client consistent. Travel and obtaining the cargo happen naturally in play; no mandatory ambush.',
+            `- FIXED BOARD: ${profile.hunt} monster hunts, ${profile.delivery} deliveries, ${profile.dungeon} Dungeon clearance. Escort is not generated on this board. When no suitable known Dungeon exists, its slot is another hunt; never invent a Dungeon to fill the quota. Existing notices count towards these totals on a partial refill.`,
+            ...(profile.noDelivery ? ['- New deliveries are suspended: generate only hunts or the separate Dungeon clearance, never delivery, GIVE, escort or mixed replacement work. Existing delivery notices count in a refill and stay valid; do not create another.'] : [
+                '- Each delivery objective MUST include delivery:{v:1,mode:"give",recipient_kind:"name" or "role",recipient:"Fenwick" or "toll clerk",place:"Quarry Gate Toll Station"}. For an expressly permitted drop: mode:"drop", recipient_kind:null, recipient:null. Other objectives use delivery:null. Keep place a precise destination label, with no route directions appended. Name means only that person, role means an appropriate present holder of that role. Unknown destinations and people are permitted; they are encountered naturally.',
+                '- Each delivery has exactly one DELIVER objective, concrete physical cargo, integer qty and a specific receiver and exact destination: where "Healer at Quarry Camp Infirmary" or "Gretha at Thornhollow", or "deposit at Receiving Shed". Name a person or a recognizable job role (healer, quartermaster, clerk), never "Recipient", "someone", "staff" or other placeholder. Place must name the ACTUAL destination, not only its parent settlement. A previously unknown interior must be visited before delivery can be confirmed. No GET/GIVE/ESCORT or other objective, signature, return trip, returned container, deadline or additional duty. proof is []. The engine renders task and desired_end_state from this objective; keep its title and client consistent. Travel and obtaining the cargo happen naturally in play; no mandatory ambush.',
+            ]),
             '- Hunts have one DEFEAT objective with an exact quantity and a clear location, plus only optional FIND/GO guidance. proof is []. The target must be an animal or Monster, not people; distinguish living hostile plants from ordinary gardening.',
             ...(need.rank === 'Novice' ? ['- At least one hunt is an introductory single-foe job: qty 1, level 1, qtype minor, one weak ordinary F-rank animal or Monster, no elite/boss or concealed required group. This is an available choice, not a compulsory fight.'] : []),
             '- Dungeon clearance has one DEFEAT objective with qty null, where naming the exact known Dungeon and level number. proof is []. Include a short explicit danger/risk warning in task; a rank-compatible floor is not automatically safe for a fresh solo adventurer.',
@@ -631,6 +638,7 @@ export function boardRequest(s, content, need) {
         '- proof contains 0–2 optional verification examples the Guild could recognize. Prefer [] when return, witnesses or a credible report can establish the outcome naturally. If used, EVERY entry must be an object with all fields present: {"kind":"object"|"mark","what":"...","qty":integer>=1|null,"unit":string|null,"on":string|null,"consume":true|false|null}. These are story guidance, NOT exclusive completion tokens.',
         '- Do not use GO merely as a travel checklist item. Objectives should describe meaningful work/outcomes (find, rescue, repair, defend, escort, investigate through FIND/TALK/GET, defeat, deliver, etc.); travel itself is normally just how play reaches them. Do not invent paperwork solely to make verification possible.',
         '- client is who posted the work (a person, a trade, a hamlet); titles differ from the listings already on the board.',
+        ...(profile?.noDelivery ? ['- Only GO/FIND guidance and one DEFEAT objective; delivery:null on these objectives. No delivery, retrieval, repair, escort or service duties.'] : []),
         '',
         'Return only one JSON object, no prose before or after it, no code fences: {"listings": [{"title": "...", "client": "...", "rank": "...", "level": 1, "qtype": "...", "payout_cp": 0, "task": "...", "desired_end_state": "...", "objectives": [...], "proof": [...]}]}. Every field is required; null where a field allows it and does not apply.',
     ].join('\n');
@@ -762,7 +770,7 @@ export function parseBoard(answer, content, need, s = null) {
         const all = [...retained, ...listings];
         const count = kind => all.filter(l => boardFamily(s, content, l) === kind).length;
         if (['hunt', 'delivery', 'dungeon'].some(kind => count(kind) !== profile[kind])) return {
-            listings: null, refused, errors: [`board requires ${profile.hunt} hunts, 2 deliveries and ${profile.dungeon} suitable Dungeon clearance; include existing notices`],
+            listings: null, refused, errors: [`board requires ${profile.hunt} hunts, ${profile.delivery} deliveries and ${profile.dungeon} suitable Dungeon clearance; include existing notices`],
         };
         if (need.rank === 'Novice' && !all.some(l => boardFamily(s, content, l) === 'hunt' && l.level === 1 && l.qtype === 'minor'
             && l.objectives.some(o => o.verb === 'DEFEAT' && o.qty === 1))) return {

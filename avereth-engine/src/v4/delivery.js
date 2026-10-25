@@ -64,15 +64,45 @@ function under(s, at, target) {
     return false;
 }
 
-// Prefer an explicitly named child over its named parent; never guess between sibling places.
+// Explicit Guild destinations keep recipient and place separate; do not mistake a named
+// but still unknown interior for its already-known parent.
+export function deliveryWhere(where) {
+    const text = String(where || '').trim();
+    const deposit = /^deposit\s+at\s+(.+)$/i.exec(text);
+    if (deposit) return { drop: true, recipient: null, place: deposit[1].trim() };
+    const given = /^(.+?)\s+at\s+(.+)$/i.exec(text);
+    return given ? { drop: false, recipient: given[1].trim(), place: given[2].trim() } : null;
+}
+export const genericRecipient = name => /^(?:(?:the|an?)\s+)?(?:recipient|someone|somebody|anyone|person|individual|representative|contact|staff|worker|official|authorized\s+person|responsible\s+person)$/i.test(String(name || '').trim());
+
+const placeName = name => normText(String(name || '')).replace(/^the\s+/, '').trim();
 function destination(s, o) {
     if (s.places[o.where]) return o.where;
-    const choices = Object.values(s.places).filter(p => contains(o.where, p.name));
-    const leaves = choices.filter(p => !choices.some(other => other.id !== p.id && under(s, other.id, p.id)));
-    const best = Math.max(0, ...leaves.map(p => words(p.name).length));
-    const top = leaves.filter(p => words(p.name).length === best);
-    const here = top.filter(p => under(s, s.scene.at, p.id));
-    return top.length === 1 ? top[0].id : here.length === 1 ? here[0].id : null;
+    const target = deliveryWhere(o.where);
+    const place = target ? target.place : o.where;
+    if (!place) return null;
+    const expected = placeName(place);
+    // Accept a place's exact name or its explicit parent+child name (e.g.
+    // "Quarry Camp Infirmary" for "Infirmary" under "Quarry Camp").
+    const matches = Object.values(s.places).filter(p => {
+        if (placeName(p.name) === expected) return true;
+        const parent = s.places[p.parent];
+        return parent && placeName(`${parent.name} ${p.name}`) === expected;
+    });
+    // No choosing a sibling based on the current scene; ambiguity remains unconfirmed.
+    if (target) return matches.length === 1 ? matches[0].id : null;
+    if (matches.length === 1) return matches[0].id;
+    // Old free-form addresses such as "Quarry Depot clerk" are not canonical
+    // "Role at Place" contracts. Keep their proven role+place combinations, but
+    // never interpret an unknown location word ("Infirmary") as an occupation.
+    const oldRoles = new Set(['clerk', 'keeper', 'healer', 'medic', 'nurse', 'doctor',
+        'physician', 'priest', 'brother', 'sister', 'quartermaster', 'warden', 'abbot']);
+    const legacy = Object.values(s.places).filter(p => {
+        if (!contains(place, p.name)) return false;
+        const locationWords = new Set(words(p.name));
+        return words(place).filter(w => !locationWords.has(w)).every(w => oldRoles.has(w));
+    });
+    return legacy.length === 1 ? legacy[0].id : null;
 }
 function dropTarget(s, q, o, to, at) {
     const end = q.desired_end_state || '';
@@ -89,8 +119,11 @@ function dropTarget(s, q, o, to, at) {
         if (matches.length !== 1) return false;
         named.push(matches[0].id);
     }
-    const point = destination(s, { where: end });
-    return !!point && named.includes(point) && at === point && under(s, point, destination(s, o));
+    // The end-state is free narration (with punctuation), not a canonical where field.
+    // Use its already verified exact locative instead of parsing prose as an address.
+    const leaves = named.filter(p => !named.some(other => other !== p && under(s, other, p)));
+    const point = leaves.length === 1 ? leaves[0] : null;
+    return !!point && at === point && under(s, point, destination(s, o));
 }
 export function deliveryTarget(s, q, o, to, at = s.scene.at, { drop = false, recorded = false } = {}) {
     const dest = destination(s, o);
@@ -99,15 +132,23 @@ export function deliveryTarget(s, q, o, to, at = s.scene.at, { drop = false, rec
     if (!to.entity || to.entity === 'pc' || (!recorded && !s.scene.present.includes(to.entity))) return false;
     const target = s.entities[to.entity];
     if (!target || (!recorded && target.status === 'dead')) return false;
-    const terms = `${o.where || ''} ${q.desired_end_state || ''}`;
-    const named = Object.values(s.entities).filter(e => e.kind === 'npc' && e.name && contains(terms, e.name));
-    if (named.length) return named.length === 1 && named[0].id === target.id;
-    const roles = [truth(s, target.id, 'occupation')[0]?.o, target.descriptors?.[0]].filter(Boolean);
-    if (roles.some(role => contains(terms, role))) return true;
-    // A priory can receive through its religious staff. Merely being a visitor at that place is insufficient.
-    const placeWords = new Set(words(s.places[dest].name));
-    const institutionOnly = words(o.where).every(w => placeWords.has(w));
-    return institutionOnly && /\b(?:priory|monastery|abbey|temple|chapel)\b/i.test(s.places[dest].name)
+    if (target.kind !== 'npc') return false;
+    const spec = deliveryWhere(o.where);
+    const recipient = spec && !spec.drop ? spec.recipient : `${o.where || ''} ${q.desired_end_state || ''}`;
+    const generic = spec && genericRecipient(spec.recipient);
+    const named = !generic && Object.values(s.entities).filter(e => e.kind === 'npc' && e.name && contains(recipient, e.name));
+    if (named && named.length) return named.length === 1 && named[0].id === target.id;
+    const roles = [truth(s, target.id, 'occupation')[0]?.o, ...(target.descriptors || []).slice(0, 3)].filter(Boolean);
+    if (!generic && roles.some(role => contains(recipient, role))) return true;
+    // Legacy institutional handovers: a generic "Recipient" may be a responsible
+    // healer at an infirmary, never a visitor or an arbitrary person in the camp.
+    const institution = s.places[dest].name;
+    if (generic && /\b(?:infirmary|hospital|clinic|sickbay|healing ward)\b/i.test(institution))
+        return roles.some(role => /\b(?:healer|healing|medic|physician|nurse|doctor|surgeon|apothecary)\b/i.test(role));
+    // Retain the pre-existing religious-institution exception for older free-text contracts.
+    const placeWords = new Set(words(institution));
+    const institutionOnly = words(spec ? spec.place : o.where).every(w => placeWords.has(w));
+    return institutionOnly && /\b(?:priory|monastery|abbey|temple|chapel)\b/i.test(institution)
         && roles.some(role => /\b(?:monk|nun|brother|sister|priest|priestess|abbot|abbess|warden|cleric)\b/i.test(role));
 }
 

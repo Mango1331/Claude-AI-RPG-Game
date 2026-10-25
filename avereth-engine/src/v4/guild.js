@@ -4,7 +4,7 @@
 // acceptance with its contract slip, the turn-in with the proof check, the payout, Quest XP, the contract count and
 // the promotion. The narrator only tells what the engine booked; the extractor's deltas cannot change any of it.
 import { rulesetOf as deliveryRuleset } from '../content.js';
-import { deliveryStatus, confirmsOnly, nonphysicalDelivery } from './delivery.js';
+import { deliveryStatus, confirmsOnly, nonphysicalDelivery, deliveryWhere, genericRecipient } from './delivery.js';
 import { nearDungeons, dungeonText, rankText, guildRecord, trueDungeonOf } from './dungeon.js';
 import { clearOf, clearDone, clearTarget, cullPopulation, slotNameOf, floorAt } from './living.js';
 import { O, S, I, E, A, N, validate } from './schema.js';
@@ -538,7 +538,9 @@ function simpleListingWhy(s, content, l, profile, family) {
         if (os.length !== 1 || os[0].verb !== 'DELIVER') return 'delivery requires exactly one DELIVER objective; no duplicate GIVE or other duties';
         const o = os[0];
         if (!o.what.trim() || !Number.isInteger(o.qty) || !o.where?.trim()) return 'delivery needs physical goods, an exact quantity and one recipient/place';
-        if (!/^(?:deposit at .+|.+ at .+)$/i.test(o.where.trim())) return 'delivery where must be "Recipient at Place" or "deposit at Place"';
+        const where = deliveryWhere(o.where);
+        if (!where || !where.place || (!where.drop && (!where.recipient || genericRecipient(where.recipient))))
+            return 'delivery needs a named person or specific receiving role at Place, or "deposit at Place"; generic Recipient/someone/staff is not an address';
         const cargo = `${o.qty} × ${o.what}`;
         const drop = /^deposit at /i.test(o.where);
         l.task = drop ? `Deposit ${cargo} at ${o.where.slice(11)}.` : `Deliver ${cargo} to ${o.where}.`;
@@ -598,7 +600,7 @@ export function boardRequest(s, content, need) {
         ...noviceProfile,
         ...(profile ? [
             `- FIXED BOARD: ${profile.hunt} monster hunts, 2 deliveries, ${profile.dungeon} Dungeon clearance. Escort is not generated on this board. When no suitable known Dungeon exists, its slot is a third hunt; never invent a Dungeon to fill the quota. Existing notices count towards these totals on a partial refill.`,
-            '- Each delivery has exactly one DELIVER objective, a concrete physical cargo, integer qty and where "Recipient at Place" or "deposit at Place". No GET/GIVE/ESCORT or other objective beside it, no signature, return trip, returned container, deadline or additional completion duty. proof is []. The engine renders task and desired_end_state from this objective; keep its title and client consistent. Travel and obtaining the cargo happen naturally in play; no mandatory ambush.',
+            '- Each delivery has exactly one DELIVER objective, concrete physical cargo, integer qty and a specific receiver and exact destination: where "Healer at Quarry Camp Infirmary" or "Gretha at Thornhollow", or "deposit at Receiving Shed". Name a person or a recognizable job role (healer, quartermaster, clerk), never "Recipient", "someone", "staff" or other placeholder. Place must name the ACTUAL destination, not only its parent settlement. A previously unknown interior must be visited before delivery can be confirmed. No GET/GIVE/ESCORT or other objective, signature, return trip, returned container, deadline or additional duty. proof is []. The engine renders task and desired_end_state from this objective; keep its title and client consistent. Travel and obtaining the cargo happen naturally in play; no mandatory ambush.',
             '- Hunts have one DEFEAT objective with an exact quantity and a clear location, plus only optional FIND/GO guidance. proof is []. The target must be an animal or Monster, not people; distinguish living hostile plants from ordinary gardening.',
             ...(need.rank === 'Novice' ? ['- At least one hunt is an introductory single-foe job: qty 1, level 1, qtype minor, one weak ordinary F-rank animal or Monster, no elite/boss or concealed required group. This is an available choice, not a compulsory fight.'] : []),
             '- Dungeon clearance has one DEFEAT objective with qty null, where naming the exact known Dungeon and level number. proof is []. Include a short explicit danger/risk warning in task; a rank-compatible floor is not automatically safe for a fresh solo adventurer.',

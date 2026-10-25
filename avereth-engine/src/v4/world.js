@@ -333,6 +333,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         return named.length === 1 ? named[0].id : null;
     };
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
+    // Concrete entity handles must resolve to real entities; ordinary narrative
+    // phrases remain free text. A rejected person.named must not leave a ghost fact.
+    const missingEntityRef = ref => typeof ref === 'string' && /^(?:npc|mon)\./i.test(ref) && !s.entities[ref];
     // Patch 4 (live 18.10.2026: "the two survivors ... calling the rest of the pack in"): a group the story names as a
     // whole, by its ref or as a plural kind or collective; Patch 7.2B: resolved in src/v4/identity.js, which also says
     // whether the delta means all of it (scope)
@@ -909,8 +912,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 // else said during a fight keeps its lifetime, as everything said outside one (review of 4.2.0)
                 const subject = mapRef(d.s);
                 // An encounter/group reference is not an individual Entity (Run 9).
-                if (typeof subject === 'string' && /^mon\./i.test(subject) && !s.entities[subject]) {
-                    reject(d, 'group_fact', `fact subject ${subject} is not an entity; name a real actor rather than storing a group as an Entity`);
+                if (missingEntityRef(subject)) {
+                    reject(d, /^mon\./i.test(subject) ? 'group_fact' : 'entity_fact', `fact subject ${subject} is not a known entity`);
+                    break;
+                }
+                const object = mapRef(d.o);
+                if (missingEntityRef(object)) {
+                    reject(d, 'entity_fact', `fact object ${object} is not a known entity`);
                     break;
                 }
                 const enc = s.encounter;
@@ -921,14 +929,19 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const scoped = (combatant || fighters) && FIGHT_MOMENT.test(normPredicate(d.p)) && !LASTING_MARK.test(String(d.o ?? ''));
                 // Patch 3: a wound of Alaric's lives while he is hurt; at full health it is healed (a scar is no wound)
                 const hurt = !scoped && pcWound(d) ? { hurt: deriveCharacter(s.entities.pc.sheet, content).maxHp } : null;
-                v3({ facts: [{ s: subject, p: d.p, o: mapRef(d.o), ...(scoped ? { scope: { fight: enc.id } } : hurt ? { scope: hurt } : {}) }] }, d);
+                v3({ facts: [{ s: subject, p: d.p, o: object, ...(scoped ? { scope: { fight: enc.id } } : hurt ? { scope: hurt } : {}) }] }, d);
                 break;
             }
-            case 'learn':
-                // who/s are references; o is the literal proposition value. Resolving "Alaric Red" as an entity
-                // turned the name into "pc" in the 28.09. live run.
-                v3({ learn: [{ who: mapRef(d.who), s: mapRef(d.s), p: d.p, o: typeof d.o === 'string' ? d.o : String(d.o), how: d.how }] }, d);
+            case 'learn': {
+                // who/s may be concrete references; o is literal proposition text.
+                const who = mapRef(d.who), subject = mapRef(d.s);
+                if (missingEntityRef(who) || missingEntityRef(subject)) {
+                    reject(d, 'entity_fact', 'learning cannot reference an unknown NPC or creature');
+                    break;
+                }
+                v3({ learn: [{ who, s: subject, p: d.p, o: typeof d.o === 'string' ? d.o : String(d.o), how: d.how }] }, d);
                 break;
+            }
             case 'attitude':
                 v3({ attitude: [{ who: mapRef(d.who), delta: d.delta, why: d.why }] }, d);
                 break;

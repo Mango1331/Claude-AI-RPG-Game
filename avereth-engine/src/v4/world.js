@@ -36,7 +36,7 @@ import { itemTraits, useOf, itemProfile, priceAudit } from './items.js';
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor, templateFor, rulesetOf } from '../content.js';
-import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotForNew, resolvedSlotNamed, slotEntityEvents, syncEvents, insideOf } from './living.js';
+import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotMet, resolved, slotForNew, resolvedSlotNamed, slotEntityEvents, syncEvents, insideOf } from './living.js';
 import { unbookedDungeonThreat } from './run9_evidence.js';
 import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
 
@@ -455,6 +455,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             if (hit?.existing) {
                 const ids = hit.slot.entities.filter((id) => s.entities[id]?.status !== 'dead');
                 if (d.present === false) {
+                    for (const id of ids) namedHere.add(id);
                     if (ids.length) refs.set(normText(d.ref), ids[0]);
                     if (ids.length > 1) groups.set(normText(d.ref), ids);
                     return ids;
@@ -1301,9 +1302,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const x = livingOf(s, trueDungeonOf(s, freshPart));
         const a = [placed, placed.next].filter(Boolean).find((y) => y.floor === floorAt(s, freshPart));
         const sl = a && x.run.floors[a.floor]?.slots.find((y) => y.id === a.slot);
-        if (sl && !sl.entities.length && !sl.taken) {
+        if (sl && !slotMet(sl) && !resolved(s, sl) && !sl.entities.some(id => namedHere.has(id))) {
             step = { kind: 'engine' };
-            const ids = newEntity({ seq: 0, type: 'creature.new', ref: sl.ref, species: sl.species, anchor: sl.anchor, desc: [], count: sl.count, present: true, band: 'MEDIUM', more: true }, 'creature', { slot: { root: x.id, floor: a.floor, slot: sl } });
+            const ids = newEntity({ seq: 0, type: 'creature.new', ref: sl.ref, species: sl.species, anchor: sl.anchor, desc: [], count: sl.count, present: true, band: 'MEDIUM', more: true }, 'creature', { slot: sl.entities.length ? null : { root: x.id, floor: a.floor, slot: sl } });
             if (ids.length) corrections.push(`ENGINE ENCOUNTER — ${sl.name ? sl.name : `${sl.count} ${sl.species}${sl.count > 1 ? 's' : ''}`} ${sl.count > 1 ? 'are' : 'is'} here in ${placeName(s, freshPart)} (the engine placed ${sl.count > 1 ? 'them' : 'it'} for this part of level ${a.floor}): the next reply shows ${sl.count > 1 ? 'them' : 'it'} at once.`);
         }
     }

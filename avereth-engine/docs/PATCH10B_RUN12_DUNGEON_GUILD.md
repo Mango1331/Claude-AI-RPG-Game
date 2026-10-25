@@ -23,3 +23,31 @@ Gezielt 54/54 (vor den vier zusätzlichen Original-/Gegenfällen). Vollsuite fin
 ## Grenzen
 
 Kein natürlicher GLM-Langlauf. Vorhandene beschädigte Run-12-Entities werden nicht gelöscht. World E197–E200 bleibt offen; weder Reisezeitgrenzen noch Arrival-/READY-Regeln geändert. Keine XP-, Monster-, Kampfwert- oder Testspieleränderungen. Ein LLM kann weiterhin falsche Angaben liefern; neue Lieferfelder benötigen natürlichen Provider-Nachweis.
+
+## Bedingter Gegenreview und Folgefix .80 (25.10.2026)
+
+Basis 0f1195d (.79). Beide Reviewhypothesen anhand des Codes und neuer Regressionen geprüft; World bleibt unverändert und offen.
+
+### P1 – Reservierung ist keine tatsächliche Begegnung: bestätigt, Auswirkung präzisiert
+
+nextWaiting verwendete entities.length als Begegnungsnachweis. Dadurch wurde eine entfernte Warband übersprungen; aheadEvents konnte trotz lebender Gegner einen ruhigen Rest der Ebene ankündigen. Die vorhandene Minion-Schranke verhindert jedoch weiterhin, dass ein Guardian vor ungelösten Minions angeboten wird. Eine generelle vorzeitige Boss-/Seal-Freigabe ist dadurch nicht belegt. floorText beschrieb reservierte Gegner als lebende, bereits angetroffene Population; der Extractor verlor die ENGINE-ENCOUNTER-Zeile.
+
+slotMet wertet jetzt die bestehenden Felder at/met_turn aus. nextWaiting und der Extractor-Katalog behalten einen reservierten, ungelösten Encounter als ausstehend. floorText zeigt ihn als "known, not met": die bereits gewonnene Kenntnis bleibt sichtbar, ohne eine Begegnung zu behaupten. Bei verbleibenden bekannten Gegnern behauptet aheadEvents nicht mehr, dass nichts entgegensteht. Guardian-/Boss-Schranken, Pace und Clear-/Credit-Regeln bleiben unverändert.
+
+Die Nachholung nach tatsächlicher Ankunft verwendet die reservierten IDs über den vorhandenen Wiedererkennungspfad. Eine erneute present:false-Meldung derselben Antwort verhindert weiterhin eine erzwungene lokale Einbuchung; dies nutzt das vorhandene antwortlokale namedHere. Kein neues Event, keine zusätzliche Encounter-Verwaltung, keine Save-Migration. E146 erzeugt weiterhin genau drei entfernte Slotgegner.
+
+### P2 – Historische Rollenbeschreibung als Empfangsberechtigung: bestätigt
+
+contains ließ "former granary keeper" und indirekte Rollenverweise genügen. Außerdem konnte ein alter Deskriptor eine abweichende aktuelle occupation überstimmen. Das Faktenmodell besitzt bereits einen funktionalen occupation-Wert, dessen Vorgänger beim Rollenwechsel beendet werden.
+
+Für neue typisierte Rollenverträge gilt jetzt die aktuelle occupation vorrangig; nur ohne sie dient der führende Rollendeskriptor als Fallback. Eine eindeutige Rollenbezeichnung wird verglichen (normalisierte Schreibweise, optionale Artikel); freie beschreibende Sätze und spätere Deskriptoren genügen nicht. Neu eingeführte NPCs funktionieren sowohl über den Rollendeskriptor als auch über das von person.new erzeugte occupation-Faktum. Namen bleiben exklusiv. Ungetypte historische Lieferverträge behalten ihren bisherigen Prüfpfad; Cargo, Mengen, Provenienz, Receipt und Auszahlung wurden nicht verändert.
+
+### Tatsächliche Prüfung
+
+15 neue Tests in tests/v4/patch_run12_review.test.js: auf unverändertem .79 zwölf rot, drei grüne Kontrollfälle; nach Fix 15/15 grün. Geprüft: E146-Reservierung; nächste Begegnung mit und ohne Creature-Delta; wiederholte entfernte Sichtung; erneutes Betreten mit denselben IDs; ungelöste Minions und Seal; reservierter Guardian/Boss; HUD-/Extractor-Text; Auflösung und Fortschritt; JSON-Reload und Event-Replay; ehemalige/verneinte/indirekte Rolle; faktischer Berufswechsel; neuer NPC; Legacy-/Namensempfänger und physischer Lieferreceipt mit Replay.
+
+Angrenzend 168/168, vollständiges npm test 1586/1586. Kritischer Diff und diff --check ohne Befund. Keine Host-, Provider-, Planner- oder Extractor-Schemaänderung; daher für .80 kein erneuter ST-Smoke. Der oben dokumentierte .79-Smoke ist kein neuer .80- oder natürlicher Provider-Nachweis.
+
+### Verbleibende Grenzen
+
+Rollenbezeichnungen müssen eindeutig sein: beliebige Adjektive, Synonyme oder mehrere Berufe in einem freien Satz werden für typisierte Verträge nicht semantisch erraten. Ein irrtümliches aktuelles Rollenfaktum bleibt ein möglicher LLM-Fehler. Historische freie Lieferverträge werden bewusst nicht verschärft. Keine automatische Bereinigung früherer beschädigter Dungeon-Saves. Natürlicher .80-Langlauf und World-Fix stehen weiter aus.

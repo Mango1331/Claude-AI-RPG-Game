@@ -145,8 +145,12 @@ export function deliveryTarget(s, q, o, to, at = s.scene.at, { drop = false, rec
         if (target.kind !== 'npc') return false;
         const d = o.delivery;
         if (d.recipient_kind === 'name') return normText(target.name || '') === normText(d.recipient);
-        const roles = [truth(s, target.id, 'occupation')[0]?.o, ...(target.descriptors || []).slice(0, 3)].filter(Boolean);
-        return d.recipient_kind === 'role' && roles.some(role => contains(role, d.recipient));
+        // Current functional occupation supersedes old introduction text. Without one,
+        // only the leading role descriptor is evidence, never incidental prose.
+        const occupation = truth(s, target.id, 'occupation')[0];
+        const role = occupation ? occupation.o : target.descriptors?.[0];
+        const label = text => normText(String(text || '')).replace(/^(?:the|an?)\s+/, '').trim();
+        return d.recipient_kind === 'role' && !!label(role) && label(role) === label(d.recipient);
     }
     const spec = deliveryWhere(o.where);
     if (!structuredWhere(spec)) {

@@ -243,9 +243,11 @@ const DONE = (s, id) => { const e = s.entities[id]; return !e || e.status === 'd
 export const resolved = (s, sl) => !!sl.taken || (sl.entities.length > 0 && sl.entities.every((id) => DONE(s, id)));
 /** Did Alaric's side resolve it (deaths in his fights, flight from him, surrender to him)? */
 const byPc = (s, sl) => !sl.taken && sl.entities.length > 0 && sl.entities.every((id) => DONE(s, id));
+/** Identity reservation is not an encounter: old materialised slots already have at/met_turn. */
+export const slotMet = sl => !!sl.at || sl.met_turn != null;
 /** The next encounter of a level nobody has met (in order; a guard or boss only once the rest of its level is resolved). */
 function nextWaiting(s, run) {
-    const waiting = run.slots.findIndex((sl) => !sl.entities.length && !sl.taken);
+    const waiting = run.slots.findIndex((sl) => !slotMet(sl) && !resolved(s, sl));
     if (waiting < 0) return null;
     const sl = run.slots[waiting];
     if (sl.role !== 'minion' && run.slots.slice(0, waiting).some((x) => x.role === 'minion' && !resolved(s, x))) return null;
@@ -339,6 +341,8 @@ export function aheadEvents(s, content, { into = false, root: dest = null, floor
         lines.push(`DUNGEON AHEAD (the engine's) — going on into a part of level ${floor} he has not seen: there he meets ${say(n)}${n.role === 'boss' ? ', the master of this Dungeon' : n.role === 'guard' ? `, the guardian of level ${floor}` : ''}. That is where this walk ends; bring exactly these, and the quiet way there is told in passing (a sound, a shadow or old tracks without consequence are no stop).`);
     } else if (n?.quiet) {
         lines.push(`DUNGEON AHEAD (the engine's) — the next part of level ${floor} he goes into holds no foe: a room, a find, a fork or a sign of what lies further; no fight there. Carry the walk to it, not further.`);
+    } else if (x.run.floors[floor]?.slots.some(sl => !resolved(s, sl))) {
+        lines.push(`DUNGEON AHEAD (the engine's) — previously met foes of level ${floor} still stand; no further encounter is placed until the remaining threats allow it. Invent no extra guardian or boss.`);
     } else if (x.run.floors[floor]) {
         lines.push(`DUNGEON AHEAD (the engine's) — level ${floor} holds nothing more that stands against him this cycle${x.run.floors[floor].cleared ? ' (cleared)' : ''}; what he finds there is quiet. Invent no new guardian or boss.`);
     }
@@ -765,6 +769,7 @@ const roleText = (sl) => (sl.role === 'boss' ? 'boss' : sl.role === 'guard' ? 'g
 function slotState(s, sl) {
     if (sl.taken) return 'dealt with by another company';
     if (!sl.entities.length) return 'not met';
+    if (!slotMet(sl) && !resolved(s, sl)) return 'known, not met';
     const n = sl.entities.length;
     const up = sl.entities.filter((id) => !DONE(s, id)).length;
     const dead = sl.entities.filter((id) => s.entities[id]?.status === 'dead').length;
@@ -785,7 +790,7 @@ export function floorText(s, x, n, { all = false } = {}) {
     const bits = [f.cleared ? `CLEARED this cycle${f.cleared.credit === 'pc' ? ' (by him)' : ' (by others)'}` : `${f.slots.filter((sl) => resolved(s, sl) && (all || sl.entities.length)).length} of ${all ? f.slots.length : '?'} threats dealt with`];
     if (all) bits.push(...f.slots.map((sl) => `${slotName(sl)} (${roleText(sl)}): ${slotState(s, sl)}`));
     else if (seen.length) bits.push(...seen.map((sl) => `${slotName(sl)} — ${slotState(s, sl)}`));
-    if (head && (all || head.entities.length) && !f.cleared) bits.push(`its ${roleText(head)} ${resolved(s, head) ? 'is down' : 'still stands'}`);
+    if (head && (all || slotMet(head)) && !f.cleared) bits.push(`its ${roleText(head)} ${resolved(s, head) ? 'is down' : 'still stands'}`);
     return `level ${n} (${rankText(x.floors[n].rank)}): ${bits.join('; ')}`;
 }
 
@@ -886,7 +891,7 @@ export function catalogLines(s, { extractor = false } = {}) {
     if (extractor && x.ahead?.turn === s.turn) {
         for (const a of [x.ahead, x.ahead.next].filter(Boolean)) {
             const sl = x.run.floors[a.floor]?.slots.find((y) => y.id === a.slot);
-            if (sl && !sl.entities.length) L.push(`ENGINE ENCOUNTER (level ${a.floor}): when the reply shows ${sl.name ? titled(sl.name) : `the ${sl.species}${sl.count > 1 ? 's' : ''}`} where he arrives, report creature.new ref "${sl.ref}", species "${sl.species}", anchor "${sl.anchor}", count ${sl.count}`);
+            if (sl && !slotMet(sl) && !resolved(s, sl)) L.push(`ENGINE ENCOUNTER (level ${a.floor}): when the reply shows ${sl.name ? titled(sl.name) : `the ${sl.species}${sl.count > 1 ? 's' : ''}`} where he arrives, report creature.new ref "${sl.ref}", species "${sl.species}", anchor "${sl.anchor}", count ${sl.count}`);
         }
     }
     for (const p of companiesOn(s, x, mine).filter((y) => y.npc)) L.push(`${p.npc} leads ${p.name} (inside on this level)`);

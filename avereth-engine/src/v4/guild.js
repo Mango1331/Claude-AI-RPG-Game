@@ -17,7 +17,7 @@ import { hallOf, settlementOf, realmOf, heldBy, membership, listingsOf, boardKey
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
-export const BOARD_VERSION = 'board-4.8';
+export const BOARD_VERSION = 'board-4.9';
 const QTYPES = ['minor', 'standard', 'dangerous', 'major'];
 const VERBS = ['GO', 'FIND', 'TALK', 'GET', 'GATHER', 'GIVE', 'DELIVER', 'USE', 'REPAIR', 'DEFEND', 'ESCORT', 'ATTACK', 'DEFEAT'];
 
@@ -429,7 +429,7 @@ export function contractReady(s, content, q, { c = false } = {}) {
         // Prototype C (4.3.0-c.6): goods he is to gather or get are the work itself: in his hands at the hall, whatever
         // the story says, and the Guild takes them; a delivery is not done while he still carries what it delivers
         // (4.3.0-c.6.6.2: before the goods, so mixed work checks both)
-        const delivery = deliveryRuleset(s) >= 2 ? deliveryStatus(q) : null;
+        const delivery = deliveryRuleset(s) >= 2 ? deliveryStatus(q, s) : null;
         if (delivery) return delivery;
         const owed = deliveriesOf(q).filter((o) => stillCarried(s, q, o).length);
         if (owed.length && (deliveryRuleset(s) < 2 || !deliveriesOf(q).length)) return { ok: false, mode: 'not_delivered', reason: `he still carries ${owed.map((o) => o.what).join(', ')}: a delivery is done where the goods are handed over`, consume: [] };
@@ -453,7 +453,7 @@ export function contractReady(s, content, q, { c = false } = {}) {
         }
     }
     const legacy = (q.proof || []).length > 0 ? checkProof(s, q) : { ok: false, consume: [] };
-    const mode = (q.ready || (c && deliveryRuleset(s) >= 2 && deliveriesOf(q).length && !deliveryStatus(q))) ? 'story_outcome' : legacy.ok ? 'legacy_verification' : 'not_ready';
+    const mode = (q.ready || (c && deliveryRuleset(s) >= 2 && deliveriesOf(q).length && !deliveryStatus(q, s))) ? 'story_outcome' : legacy.ok ? 'legacy_verification' : 'not_ready';
     if (mode === 'not_ready') return { ok: false, mode, reason: 'the contract outcome has not yet been established as achieved in the world', consume: [] };
     const short = countShort(s, content, q);
     if (short.length && !(q.ready && q.ready_alternative)) {
@@ -517,13 +517,56 @@ export function listingSchema(content) {
     });
 }
 
+// Newly generated V4-C boards use the simple profile; existing contracts and Legacy stay intact.
+function boardProfile(s, content, need) {
+    if (!need.c || deliveryRuleset(s) < 2) return null;
+    const dungeons = nearDungeons(s, need.branch, s.places[need.branch]?.realm, { guild: true })
+        .filter(id => { const ns = fittingLevels(s, content, need.rank, id); return ns === null || ns.length > 0; });
+    return { dungeons, hunt: dungeons.length ? 2 : 3, delivery: 2, dungeon: dungeons.length ? 1 : 0 };
+}
+
+function boardFamily(s, content, l) {
+    if (clearTarget(s, { objectives: huntObjectives(l, content) })) return 'dungeon';
+    if (l.objectives.some(o => o.verb === 'DELIVER')) return 'delivery';
+    return 'hunt';
+}
+
+function simpleListingWhy(s, content, l, profile, family) {
+    const os = l.objectives;
+    if (l.proof.length) return 'simple board contracts have no additional proof or signature requirement';
+    if (family === 'delivery') {
+        if (os.length !== 1 || os[0].verb !== 'DELIVER') return 'delivery requires exactly one DELIVER objective; no duplicate GIVE or other duties';
+        const o = os[0];
+        if (!o.what.trim() || !Number.isInteger(o.qty) || !o.where?.trim()) return 'delivery needs physical goods, an exact quantity and one recipient/place';
+        if (!/^(?:deposit at .+|.+ at .+)$/i.test(o.where.trim())) return 'delivery where must be "Recipient at Place" or "deposit at Place"';
+        const cargo = `${o.qty} × ${o.what}`;
+        const drop = /^deposit at /i.test(o.where);
+        l.task = drop ? `Deposit ${cargo} at ${o.where.slice(11)}.` : `Deliver ${cargo} to ${o.where}.`;
+        l.desired_end_state = drop ? `${cargo} deposited at ${o.where.slice(11)}.` : `${cargo} delivered to ${o.where}.`;
+        return null;
+    }
+    if (os.some(o => !['GO', 'FIND', 'DEFEAT'].includes(o.verb))) return 'automatic board work is a hunt, delivery or Dungeon clearance; no escort or mixed duties';
+    const kills = os.filter(o => o.verb === 'DEFEAT');
+    if (family === 'dungeon') {
+        const target = clearTarget(s, { objectives: huntObjectives(l, content) });
+        if (!profile.dungeons.includes(target.dungeon) || kills.length !== 1 || kills[0].qty !== null) return 'Dungeon clearance needs one known suitable level and no kill quota';
+        const name = s.places[target.dungeon].name;
+        l.task = `Clear level ${target.floor} of ${name}. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.`;
+        l.desired_end_state = `Level ${target.floor} of ${name} is clear.`;
+        return null;
+    }
+    if (kills.length !== 1 || !Number.isInteger(kills[0].qty) || !kills[0].where?.trim() || !isHunt(l, content)) return 'hunt needs one animal/Monster DEFEAT objective with an exact quantity and place';
+    return null;
+}
+
 /** The Board generator's call (plan §3.2): the missing listings of one branch and rank. */
 export function boardRequest(s, content, need) {
     const [lo, hi] = content.rules.guild.rank_levels[need.rank];
     const guide = content.rules.guild.board?.payout_guide_cp?.[need.rank];
     const town = s.places[need.branch];
     const realm = town?.realm && s.places[town.realm] ? s.places[town.realm].name : null;
-    const noviceProfile = need.rank === 'Novice' ? [
+    const profile = boardProfile(s, content, need);
+    const noviceProfile = !profile && need.rank === 'Novice' ? [
         'NOVICE TEST PROFILE:',
         '- Keep Novice work practical and immediately playable. For a fresh five-listing board: at least 2 listings are explicit Monster culling/clearance jobs whose obvious intended route can lead directly to combat; at least 1 is an escort whose route leaves the settlement; at least 1 is a delivery/courier job whose destination leaves the settlement; the fifth is another culling, escort or delivery job.',
         '- Monster culling/clearance names a concrete creature threat and a concrete place/problem to clear, kill, drive off or make safe. Do not disguise both combat slots as open-ended investigations into an unknown culprit.',
@@ -542,7 +585,7 @@ export function boardRequest(s, content, need) {
         'Rules:',
         '- A contract is a concrete request to change a current situation in the world. Build it from: cause (why now), stakeholder/client, current problem, desired end state, 1–4 useful objective memories, and reward. Verification is optional story guidance, not a mandatory token.',
         '- task is what the notice asks the adventurer to do, one imperative sentence the board shows ("Hunt and cull the bog strider colony at the eel-weirs of the Reed Flats so the eel boats can launch safely again."). desired_end_state is the COMPLETE outcome the Guild recognizes when it is reached ("The bog strider colony is culled and the eel boats launch again."). Keep the two apart.',
-        '- desired_end_state is the single semantic completion gate and MUST cover every substantive result the contract actually requires. Never leave required work only in objectives. Example: if the job ESCORTS a cart/driver to a ford AND DELIVERS six casks to a trading yard, the desired end state must include both safe arrival and the casks reaching that yard; arrival in town alone is not completion. Objectives may remember useful route/work detail, but they may not secretly add a required result that desired_end_state omits.',
+        '- desired_end_state is the single semantic completion gate and MUST cover every substantive result the contract actually requires. Never leave required work only in objectives. Objectives may remember useful route/work detail, but may not secretly add required results.',
         hunt,
         ...(need.c && deliveryRuleset(s) >= 2 ? ['- DELIVER/GIVE objectives name physical cargo (a parcel, ledger, written letter), never spoken news, warnings or abstract services. Use TALK for a spoken message or warning; do not invent a cargo object for it.'] : []),
         '- Rank limits scope, risk and complexity — not whether the subject is mundane or fantastical. Low-rank work may involve a manageable Monster, minor magic or a minor ruin, one dangerous animal, or a small clearly defined weak group such as wolves, goblins or feral dogs.',
@@ -553,6 +596,13 @@ export function boardRequest(s, content, need) {
         '- Structural example only: a survey team failed to return from abandoned workings; locate them, rescue survivors if possible, and recover an official seal. What happened is not predetermined by the contract and emerges in play.',
         '- These examples demonstrate structure only. Do not reuse their people, locations, creatures, objects, circumstances or exact objective sequence.',
         ...noviceProfile,
+        ...(profile ? [
+            `- FIXED BOARD: ${profile.hunt} monster hunts, 2 deliveries, ${profile.dungeon} Dungeon clearance. Escort is not generated on this board. When no suitable known Dungeon exists, its slot is a third hunt; never invent a Dungeon to fill the quota. Existing notices count towards these totals on a partial refill.`,
+            '- Each delivery has exactly one DELIVER objective, a concrete physical cargo, integer qty and where "Recipient at Place" or "deposit at Place". No GET/GIVE/ESCORT or other objective beside it, no signature, return trip, returned container, deadline or additional completion duty. proof is []. The engine renders task and desired_end_state from this objective; keep its title and client consistent. Travel and obtaining the cargo happen naturally in play; no mandatory ambush.',
+            '- Hunts have one DEFEAT objective with an exact quantity and a clear location, plus only optional FIND/GO guidance. proof is []. The target must be an animal or Monster, not people; distinguish living hostile plants from ordinary gardening.',
+            ...(need.rank === 'Novice' ? ['- At least one hunt is an introductory single-foe job: qty 1, level 1, qtype minor, one weak ordinary F-rank animal or Monster, no elite/boss or concealed required group. This is an available choice, not a compulsory fight.'] : []),
+            '- Dungeon clearance has one DEFEAT objective with qty null, where naming the exact known Dungeon and level number. proof is []. Include a short explicit danger/risk warning in task; a rank-compatible floor is not automatically safe for a fresh solo adventurer.',
+        ] : []),
         `- rank is "${need.rank}"; level is the quest level, an integer from ${lo} to ${hi}; qtype is minor, standard, dangerous or major.`,
         `- payout_cp is the Guild's one fixed payout in copper (1 silver = 10 copper)${guide ? `; for ${need.rank} work ${guide[0]}–${guide[1]} cp is usual (a guide, not a limit)` : ''}.`,
         '- A cull names how many its notice asks for: the DEFEAT objective\'s qty (4 wolves; 1 for a single beast). A clearance of a Dungeon level names the level ("level 1") and no number: the level is cleared when its threats are. One listing is one of the two, never both: a cull\'s desired_end_state is that number of them dealt with, not a cleared level or place; a clearance\'s is the level cleared, with no number. Its title says the same: a clearance is titled by what is cleared ("Clear …", "Purge …", "Secure …"), never "Cull" or "Thin", which promise a number.',
@@ -576,7 +626,7 @@ export function boardRequest(s, content, need) {
         .map(([id, ns]) => ` In ${s.places[id].name} that part is ${levelWords(ns)}: write it with its number in the task or an objective's where ("upper galleries" alone names no level).`).join('');
     const user = [
         `BRANCH: ${town?.name || need.branch}${realm ? `, ${realm}` : ''} (${town?.sub || 'settlement'})`,
-        ...(dungeons.length ? [`KNOWN DUNGEONS NEAR THIS BRANCH (the Guild's records): ${dungeons.join(' · ')}. ${up ? 'A Dungeon job is on the board already: write no other work in them.' : `At most one listing may be clearance work in one of them, and only in a part whose danger Rank is ${fits.join(' or ')} (this board's work; ${order.filter((r) => !fits.includes(r)).length ? 'deeper or stronger parts are not this board\'s' : 'any part'}): name the Dungeon exactly as written, the part (a level, a gallery) and its concrete outcome; it counts as one of the culling jobs.${levelRule}`}`] : []),
+        ...(dungeons.length ? [`KNOWN DUNGEONS NEAR THIS BRANCH (the Guild's records): ${dungeons.join(' · ')}. ${up ? 'A Dungeon job is on the board already: write no other work in them.' : `At most one listing may be clearance work in one of them, and only in a part whose danger Rank is ${fits.join(' or ')} (this board's work; ${order.filter((r) => !fits.includes(r)).length ? 'deeper or stronger parts are not this board\'s' : 'any part'}): name the Dungeon exactly as written, the part (a level, a gallery) and its concrete outcome; ${profile ? 'this is the separate Dungeon slot' : 'it counts as one of the culling jobs'}.${levelRule}`}`] : []),
         `RANK: ${need.rank} · DAY ${need.day}`,
         `ON THE BOARD ALREADY: ${need.have.length ? need.have.join(' | ') : 'nothing'}`,
         `WRITE: ${need.missing} new listing${need.missing > 1 ? 's' : ''}.`,
@@ -657,15 +707,17 @@ export function parseBoard(answer, content, need, s = null) {
     const refused = [];
     // final review of Patch 7: at most one Dungeon job on a board, the one already up counted (a refill adds none)
     const near = s ? nearDungeons(s, need.branch, s.places[need.branch]?.realm, { guild: true }) : [];
+    const profile = boardProfile(s, content, need);
     let inDungeon = (need.have || []).some((t) => dungeonNamed(s, near, t));
     for (const l of value.listings) {
         const text = [l.title, l.task, l.desired_end_state, ...l.objectives.map((o) => `${o.what} ${o.where || ''}`)].join(' \n ').toLowerCase();
         const at = near.length ? dungeonNamed(s, near, text) : null;
-        const why = l.rank !== need.rank ? `rank ${l.rank} is not ${need.rank}` : l.level < lo || l.level > hi ? `level ${l.level} outside ${lo}–${hi}` : l.objectives.length > 4 ? 'more than 4 objectives' : l.proof.length > 2 ? 'more than 2 verification examples'
+        let why = l.rank !== need.rank ? `rank ${l.rank} is not ${need.rank}` : l.level < lo || l.level > hi ? `level ${l.level} outside ${lo}–${hi}` : l.objectives.length > 4 ? 'more than 4 objectives' : l.proof.length > 2 ? 'more than 2 verification examples'
             : need.c && (!s || deliveryRuleset(s) >= 2) && l.objectives.some(nonphysicalDelivery) ? 'DELIVER/GIVE requires physical cargo; use TALK for a spoken message or warning'
                 : at && inDungeon ? 'at most one Dungeon job on this board, and one is there already' : at ? dungeonPartWhy(s, content, need.rank, at, text) || noCullWhy(s, content, need, at, l, text) : null;
         // Patch 8.1 (§3, §10): the Dungeon its work lies in, fixed with the listing (the gate and the count read this)
         if (at) l.dungeon = at;
+        if (!why && profile) why = simpleListingWhy(s, content, l, profile, boardFamily(s, content, l));
         // Patch 8.4.1 (live 22.10.2026 05:43: "Cull the Burial Gallery Skeletons", a clearance of level 1 with no number):
         // a clearance's title says clearing; a cull's verb would promise a count the contract does not have
         if (at && clearanceListing(l, text)) l.title = l.title.replace(CULL_VERB, 'Clear');
@@ -675,7 +727,22 @@ export function parseBoard(answer, content, need, s = null) {
             if (at && ok.length <= need.missing) inDungeon = true;
         }
     }
-    return { listings: ok.slice(0, need.missing), refused, errors: [] };
+    const listings = ok.slice(0, need.missing);
+    if (profile && listings.length === need.missing
+        && need.missing + (need.have || []).length === (content.rules.guild.board?.size ?? 5)) {
+        const retained = Object.values(s.quests || {}).filter(q => q.status === 'listed' && q.rank === need.rank
+            && q.source?.branch === need.branch && (need.have || []).includes(q.title));
+        const all = [...retained, ...listings];
+        const count = kind => all.filter(l => boardFamily(s, content, l) === kind).length;
+        if (['hunt', 'delivery', 'dungeon'].some(kind => count(kind) !== profile[kind])) return {
+            listings: null, refused, errors: [`board requires ${profile.hunt} hunts, 2 deliveries and ${profile.dungeon} suitable Dungeon clearance; include existing notices`],
+        };
+        if (need.rank === 'Novice' && !all.some(l => boardFamily(s, content, l) === 'hunt' && l.level === 1 && l.qtype === 'minor'
+            && l.objectives.some(o => o.verb === 'DEFEAT' && o.qty === 1))) return {
+            listings: null, refused, errors: ['Novice board needs an introductory single-foe hunt (qty 1, level 1, qtype minor)'],
+        };
+    }
+    return { listings, refused, errors: [] };
 }
 
 const CULL_VERB = /^\s*(?:cull|thin)(?:\s+out)?\b/i;

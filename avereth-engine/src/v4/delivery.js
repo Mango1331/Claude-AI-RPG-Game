@@ -92,13 +92,13 @@ function dropTarget(s, q, o, to, at) {
     const point = destination(s, { where: end });
     return !!point && named.includes(point) && at === point && under(s, point, destination(s, o));
 }
-export function deliveryTarget(s, q, o, to, at = s.scene.at, { drop = false } = {}) {
+export function deliveryTarget(s, q, o, to, at = s.scene.at, { drop = false, recorded = false } = {}) {
     const dest = destination(s, o);
     if (!dest || !under(s, at, dest)) return false;
     if (drop) return dropTarget(s, q, o, to, at);
-    if (!to.entity || to.entity === 'pc' || !s.scene.present.includes(to.entity)) return false;
+    if (!to.entity || to.entity === 'pc' || (!recorded && !s.scene.present.includes(to.entity))) return false;
     const target = s.entities[to.entity];
-    if (!target || target.status === 'dead') return false;
+    if (!target || (!recorded && target.status === 'dead')) return false;
     const terms = `${o.where || ''} ${q.desired_end_state || ''}`;
     const named = Object.values(s.entities).filter(e => e.kind === 'npc' && e.name && contains(terms, e.name));
     if (named.length) return named.length === 1 && named[0].id === target.id;
@@ -111,9 +111,24 @@ export function deliveryTarget(s, q, o, to, at = s.scene.at, { drop = false } = 
         && roles.some(role => /\b(?:monk|nun|brother|sister|priest|priestess|abbot|abbess|warden|cleric)\b/i.test(role));
 }
 
-export function deliveryStatus(q) {
-    const missing = deliveryObjectives(q).filter(o => (q.deliveries || []).filter(r => r.objective === (o.id || o.what))
-        .reduce((n, r) => n + r.qty, 0) < (o.qty ?? 1));
+// Older boards sometimes described one handover as DELIVER plus GIVE. A receipt
+// may prove both descriptions, never two quantities or two independent deliveries.
+function deliveredQuantity(q, o, s) {
+    const direct = (q.deliveries || []).filter(r => r.objective === (o.id || o.what));
+    const aliases = s && deliveryObjectives(q).length === 2 ? (q.deliveries || []).filter(r => {
+        const other = deliveryObjectives(q).find(x => (x.id || x.what) === r.objective);
+        if (!other || other === o || other.verb === o.verb || (other.qty ?? 1) !== (o.qty ?? 1)
+            || (other.unit && o.unit && normText(other.unit) !== normText(o.unit))) return false;
+        const cargo = s.objects[r.object];
+        return !!cargo && cargoMatches(s, q, o, cargo) && cargoMatches(s, q, other, cargo)
+            && deliveryTarget(s, q, o, r.to, r.at, { recorded: true });
+    }) : [];
+    // Direct and alias descriptions of an origin never add to one another.
+    return Math.max(direct.reduce((n, r) => n + r.qty, 0), aliases.reduce((n, r) => n + r.qty, 0));
+}
+
+export function deliveryStatus(q, s = null) {
+    const missing = deliveryObjectives(q).filter(o => deliveredQuantity(q, o, s) < (o.qty ?? 1));
     return missing.length ? {
         ok: false, mode: 'not_delivered',
         reason: `delivery not recorded at the agreed recipient/place: ${missing.map(o => `${o.what} → ${o.where || 'the agreed destination'}`).join('; ')}. The original contract is unchanged; no container return is required unless it was part of that contract`,
@@ -134,6 +149,7 @@ export function confirmDelivery(s, q, emit, quote, seq) {
         || /\b(?:not|never|tomorrow|later|would|could)\b/i.test(quote || '')) return false;
     const allocated = new Map(), pending = [];
     for (const o of deliveryObjectives(q)) {
+        if (deliveredQuantity({ ...q, deliveries: pending.map(e => e.d.receipt) }, o, s) >= (o.qty ?? 1)) continue;
         let left = o.qty ?? 1;
         for (const x of Object.values(s.objects || {})) {
             if (!left || !x.had_pc || !cargoMatches(s, q, o, x) || !deliveryTarget(s, q, o, x.holder)) continue;
@@ -149,7 +165,7 @@ export function confirmDelivery(s, q, emit, quote, seq) {
         if (left) return false;
     }
     pending.forEach(emit);
-    return !deliveryStatus(q);
+    return !deliveryStatus(q, s);
 }
 
 export function cargoProvenance(s, before, { objectId = before.id, qty = before.qty || 1 } = {}) {

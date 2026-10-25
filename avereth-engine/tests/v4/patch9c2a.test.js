@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadContent, loadProductContent, ROOT } from '../helpers.js';
-import { campaign, say, inject, lastUser, outcomeOf } from './patch8_lib.js';
+import { campaign, say, inject, lastUser, outcomeOf, simpleBoard } from './patch8_lib.js';
 import { prepareGenerationAsync, processReplyAny, perfSummary } from '../../src/v4/runtime.js';
 import { rec, foldChat, setRec } from '../../src/host.js';
 import { humanSheet, scaleCreature } from '../../src/npcgen.js';
@@ -289,7 +289,7 @@ test('9C-2a: actual board retry reuses a committed Forge fallback and never rena
     let plans = 0;
     const llm = async (q) => {
         if (q.purpose === 'plan') { plans++; return JSON.stringify({ commands: [{ seq: 1, type: 'board.read', rank: null, quote: 'i read the quest board' }] }); }
-        if (q.purpose === 'board') { boards++; return boards <= 2 ? 'empty' : JSON.stringify(fx.board.swipe); }
+        if (q.purpose === 'board') { boards++; return boards <= 2 ? 'empty' : JSON.stringify({ listings: simpleBoard() }); }
         if (q.purpose.startsWith('forge')) { forges++; return null; }
         return null;
     };

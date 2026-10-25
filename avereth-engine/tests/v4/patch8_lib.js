@@ -9,6 +9,17 @@ export const CATA = 'loc.old_crown_catacombs';
 export const GROTTO = 'loc.glimmerdeep_grotto';
 export const WARRENS = 'loc.mossback_warrens';
 
+/** A current five-notice mock board; callers still choose all actions independently. */
+export function simpleBoard(dungeon = 'Old Crown Catacombs') {
+    const make = (title, verb, what, qty, where) => ({ title, client: 'local residents', rank: 'Novice', level: 1, qtype: 'minor', payout_cp: 30,
+        task: verb === 'DEFEAT' && qty === null ? `Clear level 1 of ${dungeon}. Danger: groups may overwhelm a solo beginner.` : title,
+        desired_end_state: title, objectives: [{ verb, what, qty, unit: null, where }], proof: [] });
+    return [make('Pasture wolf', 'DEFEAT', 'wolf', 1, 'the west pasture'), make('Road beasts', 'DEFEAT', 'feral dogs', 2, 'the old road'),
+        make('Medicine parcel', 'DELIVER', 'sealed medicine parcel', 1, 'Healer at Quarry Camp'),
+        make('Ledger delivery', 'DELIVER', 'sealed ledger', 1, 'Ferryman at River Ford'),
+        make(`Clear ${dungeon}`, 'DEFEAT', 'restless skeletons', null, `${dungeon}, level 1`)];
+}
+
 export async function campaign(content, { greeting = ALDERWATCH, cls = 'Mage', skills = 'Flame Lance + Focused Ward' } = {}) {
     const g = new Chat4(content, { greeting });
     await g.player(cls);

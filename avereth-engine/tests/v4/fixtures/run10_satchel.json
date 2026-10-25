@@ -1,0 +1,208 @@
+{
+  "source": "Run 10, records 103/115; quest and actual delivery, unchanged",
+  "quest": {
+    "id": "quest.carry_the_physicians_satchel_to_thornhollow",
+    "title": "Carry the Physician's Satchel to Thornhollow",
+    "kind": "guild_contract",
+    "client": "Physician Aldric Menn, Glassmere",
+    "giver": null,
+    "rank": "Novice",
+    "level": 1,
+    "qtype": "minor",
+    "payout_cp": 60,
+    "reward": "60 cp",
+    "task": "Deliver the physician's sealed satchel of medicines to the midwife Gretha at Thornhollow hamlet before her fevered patients go without, for no carrier will take the forest road alone this week.",
+    "desired_end_state": "The sealed satchel of medicines is delivered unopened to the midwife Gretha at Thornhollow hamlet.",
+    "objectives": [
+      {
+        "id": "o1",
+        "verb": "DELIVER",
+        "what": "sealed satchel of medicines",
+        "qty": 1,
+        "unit": "satchel",
+        "where": "Thornhollow hamlet, east of Glassmere through the forest road",
+        "status": "open"
+      },
+      {
+        "id": "o2",
+        "verb": "GIVE",
+        "what": "the satchel",
+        "qty": 1,
+        "unit": "satchel",
+        "where": "the midwife Gretha, Thornhollow",
+        "status": "open"
+      }
+    ],
+    "proof": [],
+    "source": {
+      "board": "loc.glassmere.guild_hall",
+      "branch": "loc.glassmere",
+      "listed": {
+        "turn": 43,
+        "minute": 3380,
+        "day": 3
+      }
+    },
+    "schedule": {
+      "starts_at": null,
+      "deadline": null
+    },
+    "status": "active",
+    "taker": "pc",
+    "history": [
+      {
+        "turn": 43,
+        "minute": 3380,
+        "status": "listed"
+      },
+      {
+        "turn": 44,
+        "minute": 3380,
+        "status": "active",
+        "at": "loc.glassmere.guild_hall",
+        "step": 1
+      }
+    ],
+    "details": [
+      {
+        "note": "The sealed satchel is not at the Guild hall: it is at Maerin the physician's house on Lantern Row (narrow street behind the chandler's off the market square, green door). Tell her the Guild sent him f",
+        "schedule": null,
+        "turn": 44
+      },
+      {
+        "note": "Maerin's instructions: the satchel must stay unopened, not be slept on, and be given only to the real Gretha — a heavyset woman with a wart on her left cheek, who will show it herself if asked.",
+        "schedule": null,
+        "turn": 46
+      }
+    ],
+    "notes": [
+      "The sealed satchel is not at the Guild hall: it is at Maerin the physician's house on Lantern Row (narrow street behind the chandler's off the market square, green door). Tell her the Guild sent him f",
+      "Maerin's instructions: the satchel must stay unopened, not be slept on, and be given only to the real Gretha — a heavyset woman with a wart on her left cheek, who will show it herself if asked."
+    ],
+    "deliveries": [
+      {
+        "key": "49:1:obj.t110.sealed_physicians_satchel:o1",
+        "objective": "o1",
+        "object": "obj.t110.sealed_physicians_satchel",
+        "origin": "obj.t110.sealed_physicians_satchel",
+        "capacity": 1,
+        "qty": 1,
+        "to": {
+          "entity": "npc.gretha"
+        },
+        "at": "loc.thornhollow.grethas_cottage",
+        "turn": 49,
+        "seq": 1
+      }
+    ]
+  },
+  "object": {
+    "marks": [],
+    "for_quests": [
+      "quest.carry_the_physicians_satchel_to_thornhollow"
+    ],
+    "id": "obj.t110.sealed_physicians_satchel",
+    "name": "Sealed physician's satchel",
+    "kind": "item",
+    "stack": false,
+    "qty": 1,
+    "unit": null,
+    "use": "tool",
+    "holder": {
+      "entity": "npc.gretha"
+    },
+    "source": {
+      "turn": 46,
+      "how": "story"
+    },
+    "had_pc": true,
+    "delivery_origin": "obj.t110.sealed_physicians_satchel",
+    "delivery_capacity": 1
+  },
+  "recipient": {
+    "id": "npc.gretha",
+    "kind": "npc",
+    "name": "Gretha",
+    "descriptors": [
+      "midwife",
+      "heavyset woman, forearms like a washerwo",
+      "wart below the jawline on her left cheek",
+      "npc.gretha"
+    ],
+    "traits": "heavyset woman, forearms like a washerwoman's, grey hair under a kerchief, flour on one arm, wart below the jawline on her left cheek beside a healed chicken scar",
+    "status": "alive",
+    "location": "loc.thornhollow",
+    "created": {
+      "turn": 48,
+      "minute": 3865
+    },
+    "source": {
+      "kind": "narration",
+      "msg": 114
+    },
+    "card": {},
+    "template": "commoner"
+  },
+  "places": {
+    "loc.thornhollow": {
+      "id": "loc.thornhollow",
+      "name": "Thornhollow",
+      "kind": "settlement",
+      "parent": "realm.caelreth",
+      "realm": "realm.caelreth",
+      "tags": [],
+      "by": "reply",
+      "created": {
+        "turn": 47,
+        "minute": 3865
+      }
+    },
+    "loc.thornhollow.grethas_cottage": {
+      "id": "loc.thornhollow.grethas_cottage",
+      "name": "Gretha's cottage",
+      "kind": "interior",
+      "parent": "loc.thornhollow",
+      "realm": "realm.caelreth",
+      "tags": [],
+      "by": "reply",
+      "created": {
+        "turn": 48,
+        "minute": 3865
+      }
+    }
+  },
+  "scene": {
+    "location": "loc.thornhollow",
+    "place": "Gretha's cottage",
+    "at": "loc.thornhollow.grethas_cottage",
+    "present": [
+      "pc",
+      "npc.gretha"
+    ],
+    "positions": {
+      "npc.gretha": {
+        "band": "ENGAGED",
+        "cover": "none"
+      }
+    },
+    "awareness": {},
+    "concealed": [],
+    "history": [
+      "loc.glassmere.verge",
+      "loc.glassmere.gate_square_of_glassmere",
+      "loc.glassmere.guild_hall",
+      "loc.glassmere.shrine_of_the_waystone",
+      "loc.waystone_shrine",
+      "loc.glassmere.guild_hall",
+      "loc.south_terraces_vineyards",
+      "loc.lower_wall_of_the_south_terraces",
+      "loc.glassmere.guild_hall",
+      "loc.glassmere.maerin_the_physicians_house",
+      "loc.thornhollow"
+    ],
+    "relevant": [
+      "npc.gretha"
+    ],
+    "threats": []
+  }
+}

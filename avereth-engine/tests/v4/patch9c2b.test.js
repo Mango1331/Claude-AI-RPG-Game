@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadContent, loadProductContent, ROOT } from '../helpers.js';
-import { campaign, say, inject, outcomeOf, lastUser } from './patch8_lib.js';
+import { campaign, say, inject, outcomeOf, lastUser, simpleBoard } from './patch8_lib.js';
 import { prepareGenerationAsync } from '../../src/v4/runtime.js';
 import { rec, foldChat } from '../../src/host.js';
 import { humanSheet, scaleCreature } from '../../src/npcgen.js';
@@ -307,7 +307,7 @@ test('9C-2b (6): an actual board retry with a stone activated in the same messag
     let forges = 0;
     const llm = async (q) => {
         if (q.purpose === 'plan') return JSON.stringify({ commands: [{ seq: 1, type: 'use', object: 'obj.stone', qty: null, quote: 'i wake the skill stone' }, { seq: 2, type: 'board.read', rank: null, quote: 'read the quest board' }] });
-        if (q.purpose === 'board') { boards++; return boards <= 2 ? 'empty' : JSON.stringify(fx.board.swipe); }
+        if (q.purpose === 'board') { boards++; return boards <= 2 ? 'empty' : JSON.stringify({ listings: simpleBoard() }); }
         if (q.purpose.startsWith('forge')) { forges++; return forges === 1 ? named(q, 'Ember Seed') : null; }
         return null;
     };

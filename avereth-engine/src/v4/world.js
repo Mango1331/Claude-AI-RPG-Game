@@ -1323,17 +1323,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // All READY paths converge here after delayed acquisitions.
     function finishReady(d) {
         const q = questRef(d.quest);
-        if (cPath && rulesetOf(s) >= 2 && q?.kind === 'guild_contract' && deliveryObjectives(q).length && deliveryStatus(q)) {
+        if (cPath && rulesetOf(s) >= 2 && q?.kind === 'guild_contract' && deliveryObjectives(q).length && deliveryStatus(q, s)) {
             const previousStep = step;
             step = { kind: 'engine' };
             const action = (outcome.resolutions || []).find(r => r.type === 'other' && r.status === 'resolved' && r.quote && String(s.last?.input || '').includes(r.quote));
             if (action) confirmDelivery(s, q, emit, action.quote, action.seq);
             step = previousStep;
         }
-        if (cPath && rulesetOf(s) >= 2 && q?.kind === 'guild_contract' && deliveryObjectives(q).length && deliveryStatus(q)) {
-            reject(d, 'quest_delivery', deliveryStatus(q).reason);
+        if (cPath && rulesetOf(s) >= 2 && q?.kind === 'guild_contract' && deliveryObjectives(q).length && deliveryStatus(q, s)) {
+            reject(d, 'quest_delivery', deliveryStatus(q, s).reason);
             const held = owedObjects(s,q);
-            corrections.push(`"${q.title}" is NOT READY for turn-in yet: ${held.length ? `he still carries ${held.map(o=>o.name).join(', ')}; ` : ''}${deliveryStatus(q).reason}`);
+            corrections.push(`"${q.title}" is NOT READY for turn-in yet: ${held.length ? `he still carries ${held.map(o=>o.name).join(', ')}; ` : ''}${deliveryStatus(q, s).reason}`);
             return;
         }
         if (!q) { reject(d, 'quest', 'unknown quest'); return; }

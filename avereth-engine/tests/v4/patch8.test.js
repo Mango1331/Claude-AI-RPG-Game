@@ -194,7 +194,8 @@ test('patch 8 (4): a cull shows its number on the board ("(4)"), counts "2/4 def
     const need = { branch: 'loc.alderwatch', rank: 'Novice', missing: 1, day: 1, have: [], c: true };
     const answer = JSON.stringify({ listings: [{ title: 'Cull the Wolves', client: 'Hollin farmstead', rank: 'Novice', level: 1, qtype: 'minor', payout_cp: 50, task: 'Cull the wolves taking sheep at Hollin.', desired_end_state: 'The wolves at Hollin are culled.', objectives: [{ verb: 'DEFEAT', what: 'grey wolves', qty: null, unit: null, where: 'Hollin farmstead' }], proof: [] }] });
     const s0 = g.state();
-    const p = parseBoard(answer, content, need, s0);
+    // A historical listing with no quantity still uses the original booking defaults.
+    const p = { listings: JSON.parse(answer).listings };
     const ev = [];
     bookBoard(s0, content, need, p.listings, (e) => { applyEvent(s0, e); ev.push(e); });
     const q = Object.values(s0.quests).find((x) => x.title === 'Cull the Wolves');
@@ -222,7 +223,7 @@ test('patch 8 (5): "Clear Old Crown Catacombs — level 1": the level\'s state d
     register(g);
     hero(g);
     const need = { branch: 'loc.alderwatch', rank: 'Novice', missing: 1, day: 1, have: [], c: true };
-    const answer = JSON.stringify({ listings: [{ title: 'Skeletons in the Upper Galleries', client: 'Temple Wardens of Alderwatch', rank: 'Novice', level: 1, qtype: 'minor', payout_cp: 60, task: 'Cull the restless skeletons of level 1 of the Old Crown Catacombs.', desired_end_state: 'Level 1 of the Old Crown Catacombs is clear.', objectives: [{ verb: 'ATTACK', what: 'restless skeletons', qty: null, unit: null, where: 'Old Crown Catacombs, level 1' }], proof: [] }] });
+    const answer = JSON.stringify({ listings: [{ title: 'Skeletons in the Upper Galleries', client: 'Temple Wardens of Alderwatch', rank: 'Novice', level: 1, qtype: 'minor', payout_cp: 60, task: 'Clear level 1 of the Old Crown Catacombs.', desired_end_state: 'Level 1 of the Old Crown Catacombs is clear.', objectives: [{ verb: 'DEFEAT', what: 'restless skeletons', qty: null, unit: null, where: 'Old Crown Catacombs, level 1' }], proof: [] }] });
     inject(g, []);
     const s0 = g.state();
     const p = parseBoard(answer, content, need, s0);

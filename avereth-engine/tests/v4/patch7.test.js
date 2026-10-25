@@ -889,12 +889,12 @@ test('patch 7 review 11, 14: a Dungeon F–D keeps each level\'s Rank; a Rank th
 test('patch 7 review C3, 15, 16, 17: Ashbridge knows the Mossback Warrens (F–E); the Novice board may put clearance of its F-Rank level there, one listing at most, as an ordinary Guild contract; going there finds the one place, never a copy', async () => {
     const listings = [
         { id: 'L1', title: 'Clear the first level of the Mossback Warrens', client: 'the Ashbridge Guild', rank: 'Novice', level: 4, qtype: 'standard', payout_cp: 60,
-            task: 'Clear the goblin scouts from the first level of the Mossback Warrens.', desired_end_state: 'The goblin scouts of the Mossback Warrens\' first level are dealt with.',
-            objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'goblin scout', qty: 3, unit: null, where: 'Mossback Warrens, level 1' }], proof: [] },
+            task: 'Clear level 1 of the Mossback Warrens. Danger: groups may overwhelm solo adventurers.', desired_end_state: 'The goblin scouts of the Mossback Warrens\' first level are dealt with.',
+            objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'goblin scout', qty: null, unit: null, where: 'Mossback Warrens, level 1' }], proof: [] },
         { id: 'L2', title: 'Cull the quarry rats', client: 'the quarry foreman', rank: 'Novice', level: 2, qtype: 'standard', payout_cp: 40, task: 'Cull the giant rats in the old quarry.', desired_end_state: 'The quarry rats are culled.', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'giant rat', qty: 4, unit: null, where: 'the old quarry' }], proof: [] },
-        { id: 'L3', title: 'Wagon guard to Blackgate', client: 'a wool merchant', rank: 'Novice', level: 3, qtype: 'standard', payout_cp: 70, task: 'Guard a wool wagon on the road to Blackgate.', desired_end_state: 'The wagon reaches Blackgate.', objectives: [{ id: 'o1', verb: 'ESCORT', what: 'the wool wagon', qty: null, unit: null, where: 'Blackgate' }], proof: [] },
-        { id: 'L4', title: 'Letters to the ford', client: 'the Ashbridge post', rank: 'Novice', level: 1, qtype: 'standard', payout_cp: 30, task: 'Carry a satchel of letters to the ferry house at the ford.', desired_end_state: 'The letters are in the ferryman\'s hands.', objectives: [{ id: 'o1', verb: 'DELIVER', what: 'satchel of letters', qty: 1, unit: null, where: 'the ford' }], proof: [] },
-        { id: 'L5', title: 'Drive off the reed wolves', client: 'the reed cutters', rank: 'Novice', level: 5, qtype: 'standard', payout_cp: 60, task: 'Drive the wolves off the reed beds.', desired_end_state: 'The wolves no longer prowl the reed beds.', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'wolf', qty: 2, unit: null, where: 'the reed beds' }], proof: [] },
+        { id: 'L3', title: 'Wool delivery to Blackgate', client: 'a wool merchant', rank: 'Novice', level: 3, qtype: 'standard', payout_cp: 70, task: 'Guard a wool wagon on the road to Blackgate.', desired_end_state: 'The wagon reaches Blackgate.', objectives: [{ id: 'o1', verb: 'DELIVER', what: 'sealed wool parcel', qty: 1, unit: null, where: 'Merchant at Blackgate' }], proof: [] },
+        { id: 'L4', title: 'Letters to the ford', client: 'the Ashbridge post', rank: 'Novice', level: 1, qtype: 'standard', payout_cp: 30, task: 'Carry a satchel of letters to the ferry house at the ford.', desired_end_state: 'The letters are in the ferryman\'s hands.', objectives: [{ id: 'o1', verb: 'DELIVER', what: 'satchel of letters', qty: 1, unit: null, where: 'Ferryman at the ford' }], proof: [] },
+        { id: 'L5', title: 'Drive off the reed wolves', client: 'the reed cutters', rank: 'Novice', level: 1, qtype: 'minor', payout_cp: 60, task: 'Drive the wolves off the reed beds.', desired_end_state: 'The wolves no longer prowl the reed beds.', objectives: [{ id: 'o1', verb: 'DEFEAT', what: 'wolf', qty: 1, unit: null, where: 'the reed beds' }], proof: [] },
     ];
     const g = new Chat4(content, { greeting: GREETING, listings });
     await g.player('Mage');
@@ -1066,13 +1066,13 @@ test('patch 7 final 9, 10, 11: of two Dungeon jobs the board takes one; a part a
     const g = await campaign();
     const s = g.state();
     const need = { branch: 'loc.ashbridge', rank: 'Novice', missing: 5, day: 1, have: [], c: true };
-    const L = (title, where, more = {}) => ({ title, client: 'the Ashbridge Guild', rank: 'Novice', level: 3, qtype: 'standard', payout_cp: 50, task: `${title}.`, desired_end_state: `${title}: done.`, objectives: [{ verb: 'DEFEAT', what: 'goblin', qty: 3, unit: null, where }], proof: [], ...more });
-    const ordinary = [L('Cull the quarry rats', 'the old quarry'), { ...L('Wagon guard to Blackgate', 'Blackgate'), objectives: [{ verb: 'ESCORT', what: 'the wool wagon', qty: null, unit: null, where: 'Blackgate' }] }, { ...L('Letters to the ford', 'the ford'), objectives: [{ verb: 'DELIVER', what: 'satchel of letters', qty: 1, unit: null, where: 'the ford' }] }, L('Drive off the reed wolves', 'the reed beds')];
+    const L = (title, where, more = {}) => ({ title, client: 'the Ashbridge Guild', rank: 'Novice', level: 1, qtype: 'minor', payout_cp: 50, task: `${title}. Danger: groups threaten solo adventurers.`, desired_end_state: `${title}: done.`, objectives: [{ verb: 'DEFEAT', what: 'goblin', qty: where.includes('Mossback') ? null : 1, unit: null, where }], proof: [], ...more });
+    const ordinary = [L('Cull the quarry rats', 'the old quarry'), { ...L('Wool delivery to Blackgate', 'Blackgate'), objectives: [{ verb: 'DELIVER', what: 'sealed wool parcel', qty: 1, unit: null, where: 'Merchant at Blackgate' }] }, { ...L('Letters to the ford', 'the ford'), objectives: [{ verb: 'DELIVER', what: 'satchel of letters', qty: 1, unit: null, where: 'Ferryman at the ford' }] }, L('Drive off the reed wolves', 'the reed beds')];
     const answer = (ls) => JSON.stringify({ listings: ls });
     // a regular mix with one Dungeon job: all five
-    let p = parseBoard(answer([L('Clear the first level of the Mossback Warrens', 'Mossback Warrens, upper tunnels'), ...ordinary]), content, need, s);
-    assert.equal(p.listings.length, 5, 'one Dungeon job in an ordinary mix (its part named in words)');
-    assert.equal(parseBoard(answer([L('Cull the quarry rats', 'the old quarry'), ...ordinary.slice(1), L('Cull the marsh rats', 'the marsh')]), content, need, s).listings.length, 5, 'no Dungeon job: as before');
+    let p = parseBoard(answer([L('Clear the first level of the Mossback Warrens', 'Mossback Warrens, level 1'), ...ordinary]), content, need, s);
+    assert.equal(p.listings.length, 5, 'one Dungeon clearance in the current 2/2/1 mix');
+    assert.ok(parseBoard(answer([L('Cull the quarry rats', 'the old quarry'), ...ordinary.slice(1), L('Cull the marsh rats', 'the marsh')]), content, need, s).errors.length, 'a suitable known Dungeon gets its own slot');
     // two Dungeon jobs: the second refused
     p = parseBoard(answer([L('Clear the first level of the Mossback Warrens', 'Mossback Warrens, level 1'), L('Scour the Mossback Warrens upper tunnels', 'the first level of the Mossback Warrens'), ...ordinary.slice(0, 3)]), content, need, s);
     assert.equal(p.listings.filter((l) => /Mossback/.test(l.title)).length, 1);

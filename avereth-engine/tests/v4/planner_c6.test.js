@@ -730,7 +730,7 @@ test('c.6.5-gpt: journey pacing, complete desired outcomes, awareness and retrea
     const need = { branch: 'loc.redmarch', rank: 'Novice', missing: 5, day: 1, have: [], c: true };
     const board = boardRequest(live(4).state(), content, need).system;
     assert.match(board, /desired_end_state is the single semantic completion gate and MUST cover every substantive result/);
-    assert.match(board, /ESCORTS a cart\/driver to a ford AND DELIVERS six casks to a trading yard/);
+    assert.match(board, /may not secretly add required results/);
 
     const contract = fs.readFileSync(path.join(ROOT, 'content/narrator/Avereth_Narrator_Contract_v4.txt'), 'utf8').replace(/\r\n/g, '\n');
     assert.match(contract, /Do not make Alaric crouch, creep, sneak, hide behind cover, take a concealed firing position/);

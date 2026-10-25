@@ -143,7 +143,7 @@ test('F60-3 an explicit recipient role is not replaced by another institutional 
     run(s, [c]); assert.equal(q.deliveries?.length || 0, 0);
 });
 
-const listing = what => ({ title: 'Courier test', client: 'Brenna', rank: 'Novice', level: 1, qtype: 'minor', payout_cp: 40, task: `Deliver ${what} to Quarry Depot.`, desired_end_state: `${what} reaches Quarry Depot.`, objectives: [{ verb: 'DELIVER', what, qty: 1, unit: null, where: 'Quarry Depot' }], proof: [] });
+const listing = what => ({ title: 'Courier test', client: 'Brenna', rank: 'Novice', level: 1, qtype: 'minor', payout_cp: 40, task: `Deliver ${what} to Brenna at Quarry Depot.`, desired_end_state: `${what} reaches Brenna at Quarry Depot.`, objectives: [{ verb: 'DELIVER', what, qty: 1, unit: null, where: 'Brenna at Quarry Depot' }], proof: [] });
 const board = (s, what) => parseBoard(JSON.stringify({ listings: [listing(what)] }), content, { c: true, rank: 'Novice', missing: 1, branch: s.scene.location, have: [] }, s);
 test('F60-4 unsupported spoken warning is refused at board validation; a written warning is physical', () => {
     const s = scene();
@@ -156,14 +156,15 @@ test('F60-4 no physical cargo always means no physical delivery, even for old ab
         assert.equal(contractReady(s, content, s.quests.q, { c: true }).ok, false, what);
     }
 });
-test('F60-4 physical fantasy objects and ordinary TALK messages keep their existing board semantics', () => {
+test('F60-4 physical fantasy deliveries remain valid; TALK and abstract deliveries retain Legacy board semantics', () => {
     const s = scene();
     for (const what of ['a message crystal', 'a warning stone', 'a written warning']) {
         assert.equal(board(s, what).listings?.length, 1, what);
     }
     const l = listing('a spoken warning about the flood'); l.objectives[0].verb = 'TALK';
-    assert.equal(parseBoard(JSON.stringify({ listings: [l] }), content, { c: true, rank: 'Novice', missing: 1, branch: s.scene.location, have: [] }, s).listings?.length, 1);
+    assert.equal(parseBoard(JSON.stringify({ listings: [l] }), content, { c: true, rank: 'Novice', missing: 1, branch: s.scene.location, have: [] }, s).listings?.length, 0);
     s.meta.ruleset = 1;
+    assert.equal(parseBoard(JSON.stringify({ listings: [l] }), content, { c: true, rank: 'Novice', missing: 1, branch: s.scene.location, have: [] }, s).listings?.length, 1);
     assert.equal(board(s, 'a spoken warning about the flood').listings?.length, 1);
 });
 test('F60-5 an unbound herb crate cannot satisfy a generic crate contract', () => {

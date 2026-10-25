@@ -33,3 +33,5 @@ Vor Implementierung konkrete Schemaform der Schauplatzzuordnung festlegen. Regre
 ## Abnahme und Reihenfolge
 
 A → B → C; C benötigt spätere Freigabe. A/B mit gezielten Rot-/Grünfällen und kompletter Node-Suite. Technische Ergebnisse einmal in der Produktpatchnote, Status knapp in 03; 06 verlinkt diesen Plan. Keine natürlichen Langläufe automatisch starten.
+
+**Umsetzungsstand:** A/B umgesetzt in .79 (`0f1195d`); [technische Ergebnisse](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0f1195d15ebbf92c76b5a62b94645dbdbadf8876/avereth-engine/docs/PATCH10B_RUN12_DUNGEON_GUILD.md). C bleibt Plan und benötigt gesonderte Freigabe.

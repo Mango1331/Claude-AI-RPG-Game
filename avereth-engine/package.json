@@ -13,6 +13,7 @@
     "smoke:st:v4": "node tools/st_live/run_v4.mjs",
     "smoke:st:c": "node tools/st_live/run_c.mjs",
     "live:st": "node tools/st_live/live/run_live.mjs",
+    "live:st:batch": "node tools/st_live/live/batch.mjs",
     "live:st:check": "node tools/st_live/live/run_live.mjs --check",
     "live:st:selftest": "node tools/st_live/live/selftest.mjs",
     "sim:combat": "node tools/sim/combat.mjs"

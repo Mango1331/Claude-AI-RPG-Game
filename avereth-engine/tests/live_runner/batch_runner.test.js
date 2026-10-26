@@ -1,0 +1,140 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { SCENARIOS, scenarioGuide, scenarioMismatch } from '../../tools/st_live/live/scenarios.mjs';
+import { runBatch, launchRun } from '../../tools/st_live/live/batch.mjs';
+import { loadGuide } from '../../tools/st_live/live/guide.mjs';
+import { playerSystemPrompt } from '../../tools/st_live/live/players.mjs';
+import { options } from '../../tools/st_live/live/run_live.mjs';
+
+function temporary(t) {
+    const p = fs.mkdtempSync(path.join(os.tmpdir(), 'avereth-batch-test-'));
+    t.after(() => fs.rmSync(p, { recursive: true, force: true }));
+    return p;
+}
+const arg = (args, name) => args[args.indexOf(name) + 1];
+function archive(args, { end = 'done', actualClass, protection = true, secretHits = 0 } = {}) {
+    const scenario = SCENARIOS.find(s => s.id === arg(args, '--scenario'));
+    const dir = path.join(arg(args, '--runs'), 'test-current_test');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'run.json'), JSON.stringify({ scenario, seed: Number(arg(args, '--seed')), end: { kind: end }, build: 'test-only', git: { commit: 'fixed' }, turns: [{}, {}], protection: { unchanged: protection }, secretHits, ignoredSecret: 'must-not-be-copied' }));
+    fs.writeFileSync(path.join(dir, 'evaluation.json'), JSON.stringify({ character: { class: actualClass || scenario.baseClass.toLowerCase() }, progression: { currentLevel: 2 } }));
+    fs.writeFileSync(path.join(dir, 'report.md'), '# Synthetic controller-test artifact');
+}
+const settings = root => ({ root, args: ['--guide', 'current_test'], seed: 40, maxHours: 1 });
+const fixed = { revision: () => 'fixed' };
+
+test('batch profiles cover exactly three play focuses by all three current classes', () => {
+    assert.equal(SCENARIOS.length, 9);
+    assert.equal(new Set(SCENARIOS.map(s => s.id)).size, 9);
+    for (const focus of ['guild', 'explore', 'dungeon']) assert.deepEqual(SCENARIOS.filter(s => s.focus === focus).map(s => s.baseClass), ['Warrior', 'Mage', 'Rogue']);
+    const original = loadGuide('current_test'), saved = structuredClone(original);
+    for (const s of SCENARIOS) {
+        const g = scenarioGuide(original, s.id), prompt = playerSystemPrompt(g, { username: 'Alaric' });
+        assert.ok(prompt.includes(`Base class for this run: ${s.baseClass}`));
+        assert.ok(prompt.includes(s.goal));
+        assert.ok(g.brief.includes('sell surplus loot'));
+        assert.ok(g.brief.includes('choose your own two starter skills'));
+        assert.deepEqual(g.openRun, original.openRun);
+        assert.deepEqual(g.limits, original.limits);
+        assert.deepEqual(g.milestones.map(m => m.id), original.milestones.map(m => m.id));
+        assert.ok(g.brief.length < 2300);
+    }
+    assert.deepEqual(original, saved);
+    assert.equal(scenarioGuide(original), original);
+});
+
+test('scenario options reject unsupported profiles/fixtures/scripts and keep an ordinary single run unchanged', () => {
+    const base = ['--config', '/nonexistent/avereth-config.json'];
+    assert.equal(options(base, {}).scenario, undefined);
+    assert.equal(options([...base, '--scenario', 'dungeon-rogue'], {}).scenario, 'dungeon-rogue');
+    assert.throws(() => options([...base, '--scenario', '../../x'], {}), /Unknown scenario/);
+    assert.throws(() => options([...base, '--scenario', 'guild-mage', '--fixture', '9d-rare'], {}), /no fixture/);
+    assert.throws(() => options([...base, '--scenario', 'guild-mage', '--player', 'scripted'], {}), /LLM player/);
+    assert.throws(() => scenarioGuide(loadGuide('guild_dungeon_loop'), 'guild-mage'), /natural open-run/);
+});
+
+test('the scenario class is checked against Engine state, never changed to fit the requested label', () => {
+    const s = { creation: { step: 2 }, entities: { pc: { sheet: { class: 'mage' } } } };
+    const profile = { baseClass: 'Warrior' };
+    assert.equal(scenarioMismatch(s, profile), null);
+    s.creation.step = 3;
+    assert.equal(scenarioMismatch(s, profile).kind, 'scenario_mismatch');
+    assert.equal(s.entities.pc.sheet.class, 'mage');
+    assert.equal(scenarioMismatch(s, { baseClass: 'Mage' }), null);
+    assert.equal(scenarioMismatch(s, null), null);
+});
+
+test('nine independent runs execute sequentially after game failures and retain separate numbered archives', async t => {
+    const root = path.join(temporary(t), 'batch'), starts = [];
+    let running = 0, max = 0;
+    const result = await runBatch({ ...settings(root), args: ['--guide', 'current_test', '--stub'] }, { ...fixed, launch: async args => {
+        starts.push(args); max = Math.max(max, ++running);
+        const end = ['extractor_failed', 'defeat', 'done', 'limit'][starts.length % 4];
+        archive(args, { end });
+        await Promise.resolve(); running--;
+        return { code: end === 'done' ? 0 : 2, signal: null };
+    } });
+    assert.equal(result.status, 'completed'); assert.equal(starts.length, 9); assert.equal(max, 1);
+    assert.deepEqual(result.runs.map(r => r.seed), [40, 41, 42, 43, 44, 45, 46, 47, 48]);
+    assert.ok(result.runs.every(r => r.status === 'finished' && r.inputs === 2 && r.level === 2));
+    for (const [i, r] of result.runs.entries()) {
+        assert.ok(r.folder.startsWith(String(i + 1).padStart(3, '0') + '-'));
+        assert.ok(fs.existsSync(path.join(root, r.folder, r.runDir, 'report.md')));
+        assert.equal(arg(starts[i], '--scenario'), SCENARIOS[i].id);
+    }
+    const summary = fs.readFileSync(path.join(root, 'batch.json'), 'utf8');
+    assert.equal(JSON.parse(summary).runs.length, 9); assert.ok(!summary.includes('must-not-be-copied'));
+    assert.equal(result.stub, true);
+    assert.match(fs.readFileSync(path.join(root, 'report.md'), 'utf8'), /nicht neun bestandene/);
+    assert.match(fs.readFileSync(path.join(root, 'report.md'), 'utf8'), /STUB-SELBSTTEST/);
+    await assert.rejects(runBatch(settings(root), fixed), /already exists/);
+});
+
+test('three infrastructure failures stop the series instead of endlessly restarting', async t => {
+    let calls = 0;
+    const result = await runBatch(settings(path.join(temporary(t), 'batch')), { ...fixed, launch: async () => { calls++; return { code: 1 }; } });
+    assert.equal(calls, 3); assert.equal(result.status, 'infrastructure_stop');
+    assert.equal(result.runs.filter(r => r.status === 'pending').length, 6);
+});
+
+test('profile changes and secret-scan findings stop before another campaign starts', async t => {
+    for (const bad of [{ protection: false }, { secretHits: 1 }]) {
+        let calls = 0;
+        const result = await runBatch(settings(path.join(temporary(t), 'batch')), { ...fixed, launch: async args => { calls++; archive(args, bad); return { code: 0 }; } });
+        assert.equal(calls, 1); assert.equal(result.status, 'export_safety_stop');
+    }
+});
+
+test('manual batch cancellation still archives the active result and leaves the remaining profiles unstarted', async t => {
+    const ctl = new AbortController(), root = path.join(temporary(t), 'batch'); let calls = 0;
+    const result = await runBatch(settings(root), { ...fixed, signal: ctl.signal, launch: async args => { calls++; archive(args); ctl.abort(); return { code: 2 }; } });
+    assert.equal(result.status, 'interrupted'); assert.equal(calls, 1);
+    assert.equal(result.runs[0].status, 'finished'); assert.equal(result.runs[1].status, 'pending');
+    assert.equal(JSON.parse(fs.readFileSync(path.join(root, 'batch.json'))).status, 'interrupted');
+});
+
+test('the total time limit asks the active child to stop and waits for its export', async t => {
+    const result = await runBatch({ ...settings(path.join(temporary(t), 'batch')), maxHours: 0.000001 }, { ...fixed, launch: async (args, { signal }) => {
+        await new Promise(resolve => signal.addEventListener('abort', resolve, { once: true }));
+        archive(args); return { code: 2 };
+    } });
+    assert.equal(result.status, 'time_limit'); assert.equal(result.runs[0].status, 'finished'); assert.equal(result.runs[1].status, 'pending');
+});
+
+test('revision changes stop before the next campaign, and a wrong class is never reported as a matching sample', async t => {
+    let rev = 'a';
+    const result = await runBatch(settings(path.join(temporary(t), 'batch')), { revision: () => rev, launch: async args => { archive(args, { actualClass: 'mage' }); rev = 'b'; return { code: 0 }; } });
+    assert.equal(result.status, 'revision_changed'); assert.equal(result.runs[0].end.kind, 'scenario_mismatch');
+    assert.equal(result.runs[1].status, 'pending');
+});
+
+test('a real child process receives graceful IPC cancellation and finishes writing before launchRun returns', { timeout: 5000 }, async t => {
+    const dir = temporary(t), entry = path.join(dir, 'child.mjs'), saved = path.join(dir, 'archived');
+    fs.writeFileSync(entry, `import fs from 'node:fs'; process.on('message', m => { if(m.type==='batch.stop'){ fs.writeFileSync(process.argv[2], 'saved'); process.exit(0); } }); process.send({type:'batch.ready'});`);
+    const ctl = new AbortController();
+    const p = launchRun([saved], { signal: ctl.signal, entry }); ctl.abort();
+    assert.equal((await p).code, 0); assert.equal(fs.readFileSync(saved, 'utf8'), 'saved');
+});

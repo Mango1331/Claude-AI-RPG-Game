@@ -49,6 +49,7 @@ export function buildReport(x) {
     L.push(`# Avereth Live-Test ${runId}`, '');
     if (stub) L.push('> **STUB-SELBSTTEST — kein echter Livetest.** Planner, Extraktor, Board und Erzähler antwortet ein Stub ohne Modell (tools/st_live/live/stub_provider.mjs). Geprüft wird nur der Runner: isolierte Instanz, Schlüsselweg, Logs, Exporte, Bericht.', '');
     L.push('## Kurzfassung', '');
+    if (guide.scenario) L.push(`- **Laufprofil:** ${cell(guide.scenario.id)}; Startklasse ${cell(guide.scenario.baseClass)}, Schwerpunkt ${cell(guide.scenario.focus)}. Freie Entscheidungen innerhalb des Schwerpunkts, keine Fixture.`);
     if (x.fixture) L.push(`- **FIXTURE:** ${cell(x.fixture)}, Seed ${x.seed} — Start Level 14; Vorgeschichte und alte Statzuweisungen sind synthetische Testdaten. Reload: ${x.fixtureReload === true ? 'bestanden' : x.fixtureReload === false ? 'fehlgeschlagen' : 'nicht durchgeführt'}.`);
     L.push(`- **Ergebnis:** ${END_TEXT[end.kind] || end.kind}${end.why ? ` — ${cell(end.why)}` : ''}`);
     L.push(`- **Etappen:** ${req.filter((m) => m.reached).length}/${req.length} Pflicht erreicht${ev.milestones.some((m) => !m.required) ? `, optional: ${ev.milestones.filter((m) => !m.required).map((m) => `${m.id} ${m.reached ? '✔' : '–'}`).join(', ')}` : ''}`);

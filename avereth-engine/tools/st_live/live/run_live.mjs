@@ -25,6 +25,7 @@ import { startServer, freePort } from './server.mjs';
 import { loadPlaywright, launchBrowser, Driver } from './driver.mjs';
 import { llmPlayer, scriptedPlayer, screenText, playerReasoning } from './players.mjs';
 import { loadGuide } from './guide.mjs';
+import { scenarioById, scenarioGuide, scenarioMismatch } from './scenarios.mjs';
 import { evaluate, finished, nextMilestone, turnOutcome, turnFailure, softExtractionFailure, driverFailure, failureEnd, settled, openMilestones } from './evaluator.mjs';
 import { parseCalls } from './calls.mjs';
 import { readChatJsonl, eventsLog, jsonl, secretScan } from './export.mjs';
@@ -72,6 +73,8 @@ export function options(argv = process.argv.slice(2), env = process.env) {
     if (arg('--fixture')) o.fixture = arg('--fixture');
     if (o.fixture && !CLASS_FIXTURES.includes(o.fixture)) throw new Error(`Unknown fixture ${o.fixture}`);
     if (arg('--player')) o.player.type = arg('--player');
+    if (arg('--scenario')) o.scenario = arg('--scenario');
+    if (o.scenario) { scenarioById(o.scenario); if (o.fixture || o.player.type !== 'llm') throw new Error('scenarios require the LLM player and no fixture'); }
     if (arg('--seed')) o.seed = Number(arg('--seed'));
     // A configured default must not silently shorten a guide's explicit open-world observation window.
     // Only the --max-turns CLI flag is a deliberate per-run override of that guide's horizon.
@@ -179,7 +182,7 @@ export async function run(o) {
     const startedAt = Date.now();
     const log = (s) => console.log(`[${new Date().toISOString().slice(11, 19)}] ${s}`);
     const imp = importProfile({ stDir: o.stDir, user: o.stUser, card: o.card, preset: o.preset, dataRoot: o.stData });
-    const guide = loadGuide(o.guide);
+    const guide = scenarioGuide(loadGuide(o.guide), o.scenario);
     if (guide.fixture && !o.fixture) throw new Error(`This explicit fixture guide requires --fixture ${guide.fixture}`);
     if (guide.openRun && o.fixture) throw new Error('current_test is a natural campaign: do not pass --fixture');
     resolveTurnLimit(guide, o);
@@ -230,6 +233,7 @@ export async function run(o) {
         }
         log(`player reasoning: ${playerSetup.reasoning.keys.length ? playerSetup.reasoning.keys.map((k) => `${k}=${JSON.stringify(playerSetup.reasoning.body[k])}`).join(', ') : 'none'} (${playerSetup.reasoning.note})`);
     }
+    if (o.stopRequested?.()) { await stub?.close(); throw new Error('batch stopped before campaign start'); }
     const inst = createInstance({ runId, protect: [imp.st.dir, imp.st.dataRoot, imp.st.userDir], runDir });
     const g = inst.guard;
     g.mkdir(runDir);
@@ -256,7 +260,7 @@ export async function run(o) {
     let firstTurnAt = null;
     const port = await freePort(o.port);
     // Ctrl+C: the first ends the run after the current wait (the run folder is still written), the second at once
-    let interrupted = 0;
+    let interrupted = o.stopRequested?.() ? 1 : 0;
     const onInt = async () => {
         interrupted += 1;
         if (driver) driver.aborted = true;
@@ -383,6 +387,8 @@ export async function run(o) {
             if (guide.openRun?.targetLevel) {
                 const state = foldChat(chat).state;
                 const pc = state.entities?.pc;
+                const mismatch = scenarioMismatch(state, guide.scenario);
+                if (mismatch) { end = mismatch; log(`stopped: ${end.why}`); break; }
                 if (state.creation?.step >= 3 && pc?.status === 'alive' && pc.sheet.hp > 0 && pc.sheet.level < guide.openRun.targetLevel) continue;
             }
             const ev = evaluate(chat, { guide });
@@ -447,7 +453,7 @@ export async function run(o) {
         const ev = evaluate(messages, { guide });
         put('evaluation.json', JSON.stringify({ end, ...ev }, null, 1), 'die Auswertung (Etappen, Kämpfe, Quests, Auffälligkeiten)');
         const driverNotes = [...(driver?.setupNotes || []), ...callErrors.slice(0, 5).map((e) => `server log: ${e}`)];
-        put('run.json', JSON.stringify({ runId, stub: !!stub, seed, fixture: o.fixture || null, fixtureReload, persona, guide: { id: guide.id, chain: guide.chain, files: guide.files.map((f) => path.relative(ENGINE, f)) }, end, timing, preflight: preflightResult, route: imp.route, player: { type: o.player.type, ...playerSetup }, setup, conn, chatId: opened?.chatId || null, turns: turnsLog.map(({ decision, ...t }) => ({ ...t, milestone: decision?.milestone || null })), status: statusLine, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [], notes: driverNotes, stubCalls: stub ? stub.calls : undefined }, null, 1), 'Ablauf des Laufs: Züge, Zeiten, Hinweise, Seitenfehler, Statuszeile');
+        put('run.json', JSON.stringify({ runId, build: buildOf(), git: gitInfo(), scenario: guide.scenario || null, stub: !!stub, seed, fixture: o.fixture || null, fixtureReload, persona, guide: { id: guide.id, chain: guide.chain, files: guide.files.map((f) => path.relative(ENGINE, f)) }, end, timing, preflight: preflightResult, route: imp.route, player: { type: o.player.type, ...playerSetup }, setup, conn, chatId: opened?.chatId || null, turns: turnsLog.map(({ decision, ...t }) => ({ ...t, milestone: decision?.milestone || null })), status: statusLine, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [], notes: driverNotes, stubCalls: stub ? stub.calls : undefined }, null, 1), 'Ablauf des Laufs: Züge, Zeiten, Hinweise, Seitenfehler, Statuszeile');
         put('import.json', JSON.stringify({ ...imp, preset: { ...imp.preset, text: undefined, sha256: imp.preset.text ? sha256(Buffer.from(imp.preset.text)) : null } }, null, 1), 'was aus dem Profil übernommen wurde (ohne Schlüssel)');
 
         const changedRead = changedSince(imp.read);
@@ -466,6 +472,9 @@ export async function run(o) {
         put('report.md', report, 'dieser Bericht');
         const again = secretScan(runDir, secrets, g);
         scan.hits.push(...again.hits);
+        const metaFile = path.join(runDir, 'run.json');
+        const metadata = JSON.parse(fs.readFileSync(metaFile, 'utf8'));
+        g.write(metaFile, JSON.stringify({ ...metadata, protection: { unchanged: protection.unchanged }, secretHits: scan.hits.length }, null, 1));
         if (scan.hits.length) log(`SECRET SCAN: ${scan.hits.length} hit(s) blanked (${scan.hits.map((h) => h.file).join(', ')})`);
         log(`time: ${Math.round(timing.totalMs / 60000)} min in all, ${timing.turns} turns, ${timing.turns ? `${Math.round((timing.gameMs + timing.decideMs) / timing.turns / 1000)} s per turn (game ${Math.round(timing.gameMs / Math.max(1, timing.turns) / 1000)} s, player ${Math.round(timing.decideMs / Math.max(1, timing.turns) / 1000)} s)` : 'no turn'}`);
         log(`result: ${end.kind}${end.why ? ` (${end.why})` : ''}; milestones ${ev.milestones.filter((m) => m.required && m.reached).length}/${ev.milestones.filter((m) => m.required).length}; profile unchanged: ${protection.unchanged}; secret scan: ${scan.hits.length ? 'HITS' : 'clean'}`);
@@ -486,7 +495,14 @@ async function main() {
             if (o.ping) for (const r of await preflight(o, imp, process.env[o.keyEnv])) console.log(`${r.good ? '✔' : '✖'} ${r.what}${r.detail ? ` — ${r.detail}` : ''}`);
             return;
         }
-        const r = await run(o);
+        let stopped = false;
+        const stopMessage = m => { if (m?.type === 'batch.stop') { stopped = true; process.emit('SIGINT'); } };
+        const disconnected = () => stopMessage({ type: 'batch.stop' });
+        if (process.send) {
+            process.on('message', stopMessage); process.on('disconnect', disconnected);
+            process.send({ type: 'batch.ready' });
+        }
+        const r = await run({ ...o, stopRequested: () => stopped });
         process.exit(r.end.kind === 'done' ? 0 : r.end.kind === 'harness' ? 1 : 2);
     } catch (e) {
         console.error(`Fehler: ${e.message}\n(Voraussetzungen prüfen: npm run live:st:check)`);

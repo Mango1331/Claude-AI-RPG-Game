@@ -4,6 +4,46 @@ Werkzeug: `tools/st_live/live/` (ab Build 4.3.0-c.6.6.29). Er spielt einen Livet
 
 **Grundsatz.** Der Runner übernimmt nur die Spielerentscheidungen. Er manipuliert keine Engine-Zustände, setzt keinen Questfortschritt und tötet keine Gegner. Er regeneriert, swipt und editiert keine Nachricht. Dein SillyTavern-Profil wird nur gelesen, nie geschrieben. Der Stub-Selbsttest (§10) prüft nur den Runner und **zählt nicht als Livetest**.
 
+## Neun automatische Kampagnen (Batchmodus)
+
+Mit vorhandener Konfiguration und dem API-Schlüssel in der bisherigen Umgebungsvariable im Ordner `avereth-engine` starten:
+
+```powershell
+npm run live:st:batch
+```
+
+Der Batch startet **nacheinander** je eine neue Level-1-Kampagne für diese neun Profile:
+
+| Schwerpunkt | Klassen |
+|---|---|
+| Offizielle Gildenquests als Hauptbeschäftigung | Warrior, Mage, Rogue |
+| Welterkundung und Entdeckungen als Hauptbeschäftigung | Warrior, Mage, Rogue |
+| Geeignete Dungeons erkunden und räumen | Warrior, Mage, Rogue |
+
+Die Klasse wird dem LLM-Spieler für die normale Charaktererstellung vorgegeben und danach anhand des Enginezustands geprüft. Eine falsche Klasse wird als `scenario_mismatch` dokumentiert, niemals heimlich geändert. Starter-Skills, konkrete Quests, Wege, Kämpfe, Ausrüstung und Taktik bleiben frei. Alle Profile berücksichtigen Vorbereitung, Erholung, Lootverkauf, Gear und Skillentwicklung; Dungeon-Schwerpunkt bedeutet keinen erzwungenen sofortigen Dungeonkampf. Freie Hilfe und Abweichungen bleiben erlaubt. Keine Fixtures oder manipulierten Erfolge.
+
+Der bisherige `current_test` bleibt unverändert. Batchprofile ersetzen nur seine Spielermotivation, wählen die Startklasse und behalten Level 15 als Ziel, den 100-Input-Vergleich sowie die bisherigen Grenzen von 1.000 Eingaben/24 Stunden je Kampagne. Der Batch selbst hat zusätzlich **24 Stunden Gesamtlaufzeit**. Danach wird der aktive Lauf zum geordneten Beenden aufgefordert; ein bereits laufender Modell-/Browser-Wartevorgang kann noch bis zu seiner bestehenden Zeitgrenze dauern. Nicht begonnene Profile bleiben ausdrücklich als `pending` dokumentiert.
+
+Nach Tod, erreichtem Ziel, Einzellauf-Limit oder einem protokollierten Planner-/Extractor-Fehler wird der bestehende Export abgeschlossen, die Instanz beendet und das nächste Profil gestartet. Der fehlgeschlagene Zug wird **nicht** erneut ausgeführt. Drei aufeinanderfolgende Infrastruktur-/Startfehler stoppen die Serie. Ebenso stoppen eine erkannte Profiländerung, ein Geheimnis-Scan-Treffer oder ein anderer Git-HEAD vor dem nächsten Lauf. Während einer Serie den Checkout nicht bearbeiten oder aktualisieren. Ctrl+C beendet die **ganze Serie**, wartet aber auf Export und Cleanup des aktuellen Kindprozesses. Es gibt keinen endlosen Neustartmodus.
+
+Jeder Lauf erhält einen eigenen Node-Prozess, Seed und fortlaufend nummerierten Ordner unter einer neuen `batch-<Zeitstempel>`-Wurzel, etwa `001-guild-warrior/<bisherige Run-ID>/` bis `009-dungeon-rogue/<Run-ID>/`. Chat, Events, Requests, Screenshots und Einzelbericht bleiben im bisherigen Format. `batch.json` und `report.md` in der Batchwurzel fassen die Serie zusammen. Alte Verzeichnisse werden nicht überschrieben. **Batch completed** heißt neun beendete Versuche, nicht neun bestandene Level-15-Läufe.
+
+Weitere Aufrufe:
+
+```powershell
+npm run live:st:batch -- --list
+npm run live:st:batch -- --check
+npm run live:st:batch -- --max-hours 12 --seed 7
+npm run live:st:batch -- --max-turns 200
+npm run live:st -- --guide current_test --scenario explore-rogue
+```
+
+`--seed 7` ergibt Seeds 7–15; ohne festen Startseed wird eine neue Seedfolge gewählt. `--runs <Ordner>`, Browser-, ST- und Profiloptionen funktionieren wie beim Einzellauf. `--max-turns` ist eine ausdrücklich verkürzte Beobachtungsgrenze, kein Ersatz für das Levelziel. `--list` benötigt keine ST-Installation und startet nichts. Ohne `--scenario` bleibt der normale Einzellauf frei in seiner Klassenwahl.
+
+**Technische Abnahme vom 26.10.2026:** Zehn neue Runner-Regressionen für die vollständige Profilmatrix, freie Starter-/Spielentscheidungen, Optionen/Legacy, Engine-Klassenprüfung, neun sequenzielle Exporte nach Spielabbrüchen, Infrastrukturgrenze, Profil-/Geheimnisschutz, Abbruch, Gesamtlaufzeit, Git-Wechsel und tatsächliche IPC-Kindprozesse. Finale vollständige Node-Suite **1.899/1.899**. Ein Zwischenlauf lieferte kein abgeschlossenes Summenprotokoll; die finale Wiederholung wurde mit Exitcode und Testsummen ausdrücklich verifiziert.
+
+Echter **ST1.19-Batch-Selbsttest mit Stubprovider: 9/9 Kampagnen**, jeweils absichtlich auf zwei normale Erstellungseingaben begrenzt. Alle neun Profile mit korrekter Warrior-/Mage-/Rogue-Klasse, getrennten Seeds/Ordnern, Einzelbericht und Abschlussübersicht; alle enden korrekt als `limit`, keine PageErrors, Profiländerungen oder Geheimnis-Treffer. Der Stub unterstützt für diese Probe die drei gewöhnlichen Erstellungsmenüs; das ist keine Fixture. Zusätzlicher tatsächlicher IPC-Abbruch nach Kampagnenstart: Lauf als unterbrochen archiviert, Profil unverändert, Scan sauber. Eine erste Abbruchprobe scheiterte zuvor an der lokal fehlenden Browserpfad-Umgebung; mit korrekter Umgebung funktionierte sie. Diese Proben belegen Prozessführung, Erstellung und Export, **keinen natürlichen GLM-Langlauf und keine neun erfolgreichen Level-15-Läufe**. Engine-Build bleibt `.98`; ausschließlich Runner, Teststub und Dokumentation geändert. Kein neuer `smoke:st:c`, da Engine und Extension-Host unverändert sind.
+
 ## 1. Aufbau
 
 | Teil | Datei | Aufgabe |

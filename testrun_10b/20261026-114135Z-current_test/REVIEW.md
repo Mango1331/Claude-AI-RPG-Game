@@ -17,7 +17,7 @@
 | Ende | **T90 extractor_failed**; letzter World-Reply nicht angewendet |
 | Charakter | Mage **L4**, **636** kumulative XP (**590 Kampf + 46 Quest**), **36 Rest-XP** bei L4 |
 | Kampf | **14 Siege/14 Encounter**, **14** Gegner getötet; kein Tod |
-| Gegnerlevel in Siegen | L1 **7**, L2 **6**, L3 **1**, kein L4–7 |
+| Gegnerlevel in Siegen | L1 **6**, L2 **7**, L3 **1**, kein L4–7 |
 | Gildenabschlüsse | **1**, zweiter Vertrag ACTIVE **0/4** |
 | Geld | **55 cp**: 50 Start –20 Registrierung +25 Guild-Payout |
 | Zustand vor gescheiterter World-Antwort | HP **105/110**, MP **128**, Startergear |

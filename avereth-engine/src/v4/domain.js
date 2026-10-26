@@ -311,6 +311,21 @@ export const settlementOf = (state, id) => lineage(state, id).find((x) => state.
 export const realmOf = (state, id) => lineage(state, id).find((x) => state.places[x].kind === 'realm') || null;
 /** The Guild hall node that contains a place (the hall itself or anything below it), or null. */
 export const hallOf = (state, id) => lineage(state, id).find((x) => (state.places[x].tags || []).includes('guild_hall')) || null;
+/** A Guild destination, not an independent place using the Guild as a landmark. */
+export function guildDestination(state, text, fallback = null) {
+    const words = String(text || '').trim().replace(/^(?:the|a|an)\s+/i, '');
+    const m = words.match(/^(.*?)\bguild(?:\s+(?:hall|house|office|lodge|building|branch|desk|counter|reception))?(?:\s+(?:desk|counter))?(?:\s+(?:in|at|of)\s+(.+))?$/i);
+    if (!m) return null;
+    const prefix = m[1].trim().replace(/^adventurers['’]?$/i, '');
+    if (prefix && !Object.values(state.places || {}).some(p => p.kind === 'settlement' && normText(p.name) === normText(prefix.replace(/['’]s$/, '')))) return null;
+    const qualifier = (m[2] || prefix).replace(/['’]s\s*$/i, '').trim();
+    const towns = Object.values(state.places || {}).filter(p => p.kind === 'settlement' && normText(p.name) === normText(qualifier));
+    if (qualifier && towns.length !== 1) return { error: 'the named Guild settlement is not uniquely known' };
+    const town = qualifier ? towns[0].id : fallback;
+    const id = town && hallOfSettlement(state, town);
+    return id ? { id } : { error: 'Guild halls are engine nodes; there is no branch in this settlement' };
+}
+
 /** The Guild hall of a settlement (the engine's fixed node), or null when it has no branch. */
 export function hallOfSettlement(state, settlement) {
     const id = `${settlement}.guild_hall`;

@@ -2198,3 +2198,7 @@ Neue Gearangebote benötigen bestehende Engine-Profile und Slots; gewöhnliche W
 ## Run 18: Dungeon-Erstkontakt .94
 
 Dungeonpopulation vor der ersten Kreaturprüfung einrichten; kein ungebundener Gesamtrang-Gegner beim erstmaligen Erreichen des Eingangs. Zwei kurze Runnerhinweise präzisieren erneute Annahme und bestätigte Ausführung. Originalfall, Gegenproben, Kompatibilität und Abnahme: [PATCH_RUN18_DUNGEON_ENTRY.md](PATCH_RUN18_DUNGEON_ENTRY.md).
+
+## Run 19 / Build .95 (26.10.2026)
+
+[Handelszustimmung und sichere System-Klärung](PATCH_RUN19_TRADE_CONSENT.md), [Gildenziele und kanonische Orte](PATCH_RUN19_GUILD_PLACES.md). Gemeinsame Abnahme ausschließlich in der Handelspatchnote. Runner, XP und Kampfwerte unverändert.

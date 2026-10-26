@@ -25,7 +25,7 @@ import { firewall, pcWound, pcActIn } from './firewall.js';
 import { stripOwned, wrongClaim, ownershipViolation, stateRegions, effectViolation } from './ownership.js';
 import { mayOpenFight, mayTake, attackCommitted } from './envelope.js';
 import {
-    PLACE_PARENTS, HALL_NAME, hallOf, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE,
+    PLACE_PARENTS, HALL_NAME, guildDestination, hallOf, settlementOf, sameSettlement, placeName, contracts, heldBy, openOffers, membership, isLooseCoin, today, namesKind, SERVICE_ROLE,
     progressKey, sameKinds, kindOf,
 } from './domain.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
@@ -147,12 +147,9 @@ function resolvePlace(s, ref, emit, depth = 0, { c = false, reported = false } =
     const n = ref?.new;
     if (!n || typeof n !== 'object' || !n.name) return { error: 'a place needs an id or {new: {name, kind, parent}}' };
     if (depth > 1) return { error: 'at most one level of new parents' };
-    if (/\bguild\b/i.test(n.name) && /\b(?:hall|house|office|lodge|building)\b/i.test(n.name)) {
-        // the Guild hall is the engine's node: a reply that names it again means that node
-        const town = typeof n.parent === 'string' ? settlementOf(s, n.parent) : settlementOf(s, s.scene.at);
-        const hall = town && `${town}.guild_hall`;
-        return hall && s.places[hall] ? { id: hall } : { error: 'Guild halls are engine nodes; there is no branch in this settlement' };
-    }
+    const town = typeof n.parent === 'string' ? settlementOf(s, n.parent) : settlementOf(s, s.scene.at);
+    const hall = guildDestination(s, n.name, town);
+    if (hall) return hall;
     const parent = n.parent === null || n.parent === undefined ? { id: s.scene.at } : resolvePlace(s, n.parent, emit, depth + 1, { c, reported });
     if (parent.error) return parent;
     let pid = parent.id;

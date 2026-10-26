@@ -17,6 +17,24 @@ import { coinFromWords, coinMentions, coinEvidence } from '../economy.js';
 const flat = text => normText(text || '').replace(/[^a-z0-9]+/g, ' ').trim();
 const contains = (text, part) => !!flat(part) && ` ${flat(text)} `.includes(` ${flat(part)} `);
 
+/** Match separately named prices to selected offer positions, never sum unrelated amounts. */
+function positionPrices(quote, picks, currency) {
+    if (!picks || picks.length < 2) return null;
+    const clauses = quote.split(/\s+(?:and|then)\s+|[;.!?]/i);
+    const seen = new Set();
+    for (const clause of clauses) {
+        const mentions = coinMentions(clause, { rules: { currency } });
+        if (!mentions.length) continue;
+        if (mentions.length !== 1) return null;
+        const named = picks.filter(p => flat(p.line.what).split(' ').filter(w => w.length > 2 && !['the','for','with','and','night'].includes(w)).some(w => contains(clause, w)));
+        if (named.length !== 1 || seen.has(named[0].line.id)) return null;
+        const p = named[0];
+        if (mentions[0] !== p.cp) return false;
+        seen.add(p.line.id);
+    }
+    return seen.size === picks.length ? true : null;
+}
+
 /** Explicit consent constraints, shared by the planner repair and the command handler. No inferred new party. */
 export function acceptanceWhy(c, offer, party, currency) {
     const addressed = String(c.quote || '').match(/\b(?:[Dd]one|[Dd]eal|[Yy]es|[Ff]ine|[Aa]greed|[Tt]hanks),\s+([A-Z][a-z'-]*(?:\s+[A-Z][a-z'-]*){0,2})(?=[.!?]|$)/);
@@ -30,7 +48,9 @@ export function acceptanceWhy(c, offer, party, currency) {
     const total = offer.bid ? (lines.length === offer.lines.length && Number.isInteger(offer.price_cp) ? offer.price_cp : lines.reduce((n, l) => n + (l.price_cp || 0), 0)) : picked.cp;
     const qty = offer.bid ? (lines.length === 1 ? lines[0].qty : 0) : (picked.picks?.length === 1 ? picked.picks[0].units : 0);
     const mentions = currency ? coinMentions(quote, { rules: { currency } }) : [];
-    const price = currency ? tradePrice(null, quote, qty, { rules: { currency } }) : { handled: false };
+    const positions = currency && !offer.bid ? positionPrices(quote, picked.picks, currency) : null;
+    if (positions === false) return 'a stated item price differs from the selected position';
+    const price = positions === true ? { handled: true, cp: total } : currency ? tradePrice(null, quote, qty, { rules: { currency } }) : { handled: false };
     if (price.handled && price.cp === null) return 'the quoted trade price is not unambiguous';
     const said = price.handled ? price.cp : currency && mentions.length === 1 ? coinFromWords(quote, { rules: { currency } }) : null;
     const discount = /\bdiscount\b|\b\w*(?:pence|copper|silver|gold|percent)\s+off\b|\b(?:knock|take)\b[^.;]{0,25}\boff\b|\bfor less\b/i.test(quote);

@@ -60,6 +60,7 @@ export const MECH_RULES = [
     '7b. go.to is the destination, never the way there. A route, path or way he names ("through the forests", "along the river", "not past the waystation", "by the coast road") is how he travels: to is the destination\'s known id (or {"new": "<the destination>"} when it is not known), and the route stays in his words for the story. A route is never a place of its own.',
     '7b-route. A present route choice addressed to a guide ("Up the rocks on the left — we look first") is go when RECENT shows that guide just asked which way to proceed. Copy the known destination id; companions and route wording never become a new destination. A hypothetical route, a question or somebody else choosing remains no go.',
     '7c. In a dungeon (EXITS listed): going through a way is go with the id of the room it leads to, also when he names the door, stair or passage ("I take the stair down"); "back" or "the previous room" is the room he came from (RECENT ROUTE); a known room further on is go with its id (the engine checks the way). Going on into a part nobody has shown yet is go {"new": "<his words>"}. Opening or forcing what blocks a way is attempt on its FEATURES id; looking for another way is activity search.',
+    '8-trade. Select only positions bought and paid for now. A bed paid now and breakfast taken/paid tomorrow are separate transactions: accept only the bed now. Copy the payment clause as its quote. For separate current item prices, keep each price with its item; do not replace them with an invented total. A later meal is not prepaid merely because he mentions it.',
     '8. Several actions in one message: one command each, in his order. One trade is one buy/sell/offer.accept, including payment and goods: do not add a pay or give for it. Appraisal (check it and pay what it is worth) is sell with no agreed price, not a free give or acceptance of a provisional bid. A requested discount is a counteroffer, not acceptance of the old price. Never substitute an open offer of another party. Something he does that no command fits: other.',
     '8a. A present decision to turn in for the night, spend the night sleeping, or go to bed is activity sleep (until morning when he means overnight). Buying a room is separate and does not itself book sleep. Merely finding/asking for a bed, mentioning a purpose to rest, or saying "I wake at dawn" is not an unperformed sleep action. Never infer sleep from narrator prose; the engine checks lodging and recovery.',
     '9. quote: the exact words of the message the command rests on, copied as they are (do not correct the spelling).',
@@ -437,6 +438,7 @@ export function parsePlan(answer, vocab, ctx, message) {
     if (!Array.isArray(value.commands)) return { commands: null, errors: ['the answer must be {"commands": [...]} (an empty list when he takes no action)'] };
     const errors = [];
     const jobs = new Map();
+    const tradeErrors = [];
     const story = new Map((vocab.commands || []).map((c) => [c.type, c]));
     const schema = interpreterSchema(vocab, ctx.catalog);
     const people = new Set([...ctx.opponents.map((o) => o.id), ...(ctx.catalog.present || []).map((p) => p.id)]);
@@ -507,7 +509,11 @@ export function parsePlan(answer, vocab, ctx, message) {
                 if (c.party_words && !inMessage(message, c.party_words)) errors.push(`${at}: party_words must copy the counterparty from the player message`);
                 if (offer) {
                     const why = acceptanceWhy(c, offer, offer.seller, ctx.currency);
-                    if (why) errors.push(`${at}: ${why}; clarify instead of substituting an offer`);
+                    if (why) {
+                        const error = `${at}: ${why}; clarify instead of substituting an offer`;
+                        errors.push(error);
+                        tradeErrors.push(error);
+                    }
                 }
             }
             if (type === 'activity' && !bad.length) errors.push(...learningErrors(c, ctx, at));
@@ -556,7 +562,7 @@ export function parsePlan(answer, vocab, ctx, message) {
     }
     errors.push(...amountErrors(value.commands, ctx.currency));
     for (const [c, job] of jobs) c.job = job;
-    if (errors.length) return { commands: null, errors: errors.slice(0, 8) };
+    if (errors.length) return { commands: null, errors: errors.slice(0, 8), tradeConflict: tradeErrors.length === errors.length && !ctx.fight };
     return { commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [] };
 }
 

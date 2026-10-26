@@ -21,7 +21,7 @@ import { entityLabel, setFactEvents, truth } from '../knowledge.js';
 import { normText, slug, formatClock, hash32 } from '../util.js';
 import { deriveCharacter } from '../derived.js';
 import {
-    placeName, hallOf, hallOfSettlement, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin, listedToday,
+    placeName, hallOf, hallOfSettlement, guildDestination, settlementOf, sameSettlement, heldBy, membership, today, contracts, listingsOf, boardKey, isLooseCoin, listedToday,
 } from './domain.js';
 import { sameWant, keyWords, wantedLines } from './world.js';
 import { LOOT_WORDS, lootedHere } from './loot.js';
@@ -450,9 +450,10 @@ const HANDLERS = {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT GO — not while the fight runs.' };
         // "the guild building", "back to the guild": the Guild hall is an engine node, never a new place to invent
         // (live 30.09.2026 14:56: the narrator made a "Guild desk" of it where no payout is possible)
-        if (c.to && typeof c.to === 'object' && /\bguild\b/i.test(String(c.to.new || ''))) {
-            const hall = guildHallMeant(s);
-            if (hall) c = { ...c, to: hall };
+        if (typeof c.to?.new === 'string') {
+            const destination = guildDestination(s, c.to.new, settlementOf(s, guildHallMeant(s)));
+            if (destination?.error) return { status: 'refused', reason: destination.error, line: `CANNOT GO — ${destination.error}.` };
+            if (destination) c = { ...c, to: destination.id };
         }
         if (envx?.c && rulesetOf(s) >= 2 && typeof c.to?.new === 'string') {
             const p = knownByName(s, c.to.new, s.places[s.scene.at]?.realm || s.scene.location, { reportedOnly: false });

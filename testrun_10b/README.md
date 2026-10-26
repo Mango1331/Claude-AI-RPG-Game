@@ -6,6 +6,8 @@ Hier sammeln wir **unveränderte Original-ZIP-Exporte** aus den SillyTavern-Live
 
 **Unverbindlicher Themen-Querblick (26.10.2026):** [Erste Balance-Eindrücke aus den bisherigen Runs – XP ×2, Startwerte 7, Levelkurve, Gruppen, Gear und Skills](BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md). **Hypothesen und Beobachtungen, kein Designbeschluss und keine Patchfreigabe.**
 
+**Unverbindlicher Inhaltsentwurf:** [Sol – Entwicklung innerhalb von F und Übergang zu E](ENTWURF_F_RANG_PROGRESSION_UND_E_UEBERGANG.md): Ausrüstung, Skills, Formeln, Preise und separat weltgebundene Gegnergefahr. Zahlenbeispiele zur Diskussion, kein Patchauftrag.
+
 ## Ordnerstruktur
 
 ```text

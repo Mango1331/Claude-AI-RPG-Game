@@ -209,7 +209,7 @@ Bei der späteren Auswertung besonders **produktive Spielzüge vs. verlorene Ver
 
 ### Ungeklärter technischer Endabbruch ist kein Balanceereignis
 
-Die letzte Erzählerantwort behauptete **4/4 Bog Striders**, obwohl die Engine **3/4** registrierte. Der Extractor versuchte daraufhin vorzeitig `quest.ready`, danach bekam der Repair **keine Modellantwort** und der Host abortierte nach ca. 125 s. Es wurde **kein** vierter Kill oder Questabschluss gebucht. Der Status meldet zudem **ein nicht näher ausgewiesenes Integritätsproblem**. Beides separat im Run-Review dokumentiert; daraus keine XP-, Skill- oder Mobwertänderung folgern. Die Engine-Guards schützen hier zumindest gegen die frei erfundene Questvollendung.
+Die letzte Erzählerantwort behauptete **4/4 Bog Striders**, obwohl die Engine **3/4** registrierte. Der Extractor schlug vorzeitig `quest.ready` vor, sein erster JSON-Plan scheiterte aber **nachweislich an der fehlenden `scene` beim früheren `thread` vor der `arrive`-Aktion** – nicht am READY-Vorschlag als protokolliertem Repair-Grund. Der anschließende Repair bekam **keine Modellantwort** und der Host abortierte nach ca. 125 s. Es wurde **kein** vierter Kill oder Questabschluss gebucht. Der Status meldet zudem **ein nicht näher ausgewiesenes Integritätsproblem**. Beides separat im Run-Review dokumentiert; daraus keine XP-, Skill- oder Mobwertänderung folgern. Die Engine-Guards schützen hier zumindest gegen die frei erfundene Questvollendung.
 
 ### Aktualisierte unverbindliche Tendenz
 

@@ -22,7 +22,7 @@
 
 **T252-Extraktor / Szenen:**
 
-- Originalreihenfolge `thread(seq=1, scene=null)`, `arrive(seq=2, at=Eel-Weirs)` bei finaler Szene Eel-Weirs → vorhandener präziser Fehler an `$.deltas[1].scene` (Index wie im Original), Repair-Auftrag benennt Ausgangsszene; ein danach korrekt annotierter Thread + Ankunft werden chronologisch verarbeitet. Die fachlich gültige Reihenfolge darf nicht automatisch umsortiert werden.
+- Originalfall: `thread` an **`deltas[1]`** mit fehlender `scene` vor einer späteren `arrive`-Aktion bei finaler Szene Eel-Weirs → präziser Fehler `$.deltas[1].scene`. Der Repair-Auftrag muss die vorherige Szene benennen; ein anschließend korrekt annotierter Thread mit gültiger späterer Ankunft wird chronologisch verarbeitet. Die reale Zahl und Sequenz der übrigen Deltas aus dem ZIP beibehalten, statt eine künstliche Zwei-Delta-Originalform zu behaupten.
 - Dieselben Deltas mit expliziter vorheriger `scene` → gültige Ankunft und Thread; ohne Ankunft keine fiktive Ortsänderung; bei verweigerter Ankunft kein lokaler Fakten-Commit am unerreichten Ziel.
 - Reparatur einer *anderen* ungültigen Deltazeile darf gültige erwartete Reiseantworten nicht löschen. Eine valide, aber in `expected` unvollständige Extraktion behält die bestehende Semantik teilweiser Vollständigkeit; nicht pauschal alle Deltas verlieren.
 

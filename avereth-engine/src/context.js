@@ -21,7 +21,7 @@ import { goalLines } from './v4/intents.js';
 import { featuresAt, featureText } from './v4/features.js';
 import { dungeonOf, trueDungeonOf, dungeonText, nearDungeons, exitsFrom, exitText, roomLabel, wayBetween } from './v4/dungeon.js';
 import { contextLines as livingLines } from './v4/living.js';
-import { settlementOf, realmOf, hallOf, listedToday } from './v4/domain.js';
+import { settlementOf, realmOf, hallOf, listedToday, lineage } from './v4/domain.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
 import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText, proofMemory } from './v4/guild.js';
 import { envelopeBlock } from './v4/envelope.js';
@@ -638,6 +638,13 @@ export function buildContext(state, content, opts = {}) {
     // Prototype C (4.3.0-c.6.6.5): the settlement around Alaric lives (crowd by time of day, everyday trades by size)
     if (v4 && !state.encounter && (opts.outcome?.auth?.c || opts.outcome?.c)) add('settlement', settlementLife(state, content), 1);
 
+    if (v4 && state.meta.f_progression && !state.encounter) {
+        const relevant = new Set([...lineage(state, state.scene.at), ...(opts.outcome?.auth?.gos || []).map(g => g.to),
+            ...Object.values(state.quests).filter(q => q.status === 'active' && q.hunt).map(q => q.hunt.at)]);
+        const populations = Object.values(state.places).filter(p => p.population && relevant.has(p.id)).slice(0, 6);
+        if (populations.length) add('world_populations', `ESTABLISHED WORLD POPULATIONS — fixed independently of Alaric; do not rescale, rename or replace them to make a contract easy. New individuals there use this supported kind, not unrelated weak wildlife. No mandatory attack or automatic spawn.\n${populations.map(p => `${p.name}: ${p.population.species}, body-plan ${p.population.anchor}, individual levels ${p.population.levels.join('-')}; count and risk follow the actual encounter/contract, not his level.`).join('\n')}`, 0);
+    }
+
     if (v4 && rulesetOf(state) >= 2 && !state.encounter && (opts.outcome?.auth?.c || opts.outcome?.c)
         && (/\b(?:shop|buy|sell|merchant|smith|blacksmith|gear|equipment|armou?r|weapon|shield)\b/i.test(itemScan)
             || Object.values(state.offers || {}).some(o => o.status === 'open' && !o.bid && state.scene.present.includes(o.seller) && o.lines.some(l => l.profile?.kind === 'gear')))) {
@@ -754,7 +761,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'gear_market', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
+    const order = ['header', 'pc', 'creation', 'present', 'settlement', 'world_populations', 'gear_market', 'npc_continuity', 'named', 'combat', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     return { text, sections: final.map(({ name, tokens }) => ({ name, tokens })), dropped: sections.filter((s) => !kept.has(s)).map((s) => s.name), tokens: estimateTokens(text) };

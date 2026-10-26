@@ -126,7 +126,7 @@ export function catalogText(catalog) {
     if ((catalog.known || []).length) L.push(`KNOWN CONTRACTS (listed on a Guild board elsewhere; taken only at that board's Guild hall, if still listed): ${catalog.known.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
     const sells = (catalog.offers || []).filter((o) => !o.bid);
     const bids = (catalog.offers || []).filter((o) => o.bid);
-    if (sells.length) L.push(`OFFERS: ${sells.map((o) => `${o.id} (${o.seller}: ${o.lines.map((l) => `${l.id} ${l.what} ${l.qty > 1 ? `${l.qty} for ${l.price_cp} cp` : `${l.price_cp} cp`}${l.equipment ? `; ${l.equipment}` : ''}`).join(', ')})`).join(' · ')}`);
+    if (sells.length) L.push(`OFFERS: ${sells.map((o) => `${o.id} (${o.seller}: ${o.lines.map((l) => `${l.id} ${l.what} ${l.qty > 1 ? `${l.qty} for ${l.price_cp} cp` : `${l.price_cp} cp`}${l.equipment ? `; ${l.equipment}` : ''}${l.source ? `; ${l.source}` : ''}`).join(', ')})`).join(' · ')}`);
     // 4.3.0-c.6.6.5: what a buyer would pay Alaric for his things (accepting it sells them)
     if (bids.length) L.push(`BIDS (someone would BUY these things of Alaric's; accepting sells them): ${bids.map((o) => `${o.id} (${o.seller} pays ${o.price_cp} cp for: ${o.lines.map((l) => `${l.id} ${l.object} ×${l.qty}${Number.isInteger(l.price_cp) ? ` ${l.price_cp} cp` : ''}`).join(', ')})`).join(' · ')}`);
     if ((catalog.objects || []).length) L.push(`OBJECTS: ${catalog.objects.map((o) => `${o.id} (${o.name}${o.qty ? `, ${o.qty}${o.unit ? ` ${o.unit}` : ''}` : ''}, ${holderText(o)})`).join(' · ')}`);

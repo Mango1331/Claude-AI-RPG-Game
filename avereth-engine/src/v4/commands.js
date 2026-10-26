@@ -29,7 +29,7 @@ import { shopSearch, findTrades } from './settlement.js';
 import { journeyReady, knownAt } from './catalog.js';
 import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSetsGoal } from './intents.js';
 import { knownByName } from './known.js';
-import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect, namedSource, equipmentSlotKnown } from './items.js';
+import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect, namedSource, equipmentSlotKnown, offerCard } from './items.js';
 import { itemEffectOf, rulesetOf } from '../content.js';
 import { learningActivity, stoneActivation, trainingOfferWhy } from './growth.js';
 import { effectiveStats } from '../passives.js';
@@ -44,7 +44,7 @@ import { dungeonOf, trueDungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed
 import { livingOf, establishEvents, gateCheck, gateOfferEvents, gateOfferId, gateCard, namesGate, aheadEvents, insideOf, returnStone, sealRefusal, floorAt, gatherEvents } from './living.js';
 import {
     REGISTRATION_OFFER, feeOf, openRegistration, registerEvents, rankCanon, acceptContract, completeContract, abandonContract, contractReady, objectiveText,
-    promotion, takenByOthers, bookBoard, isHunt, trophyText, proofTerms, handoverTerms, goalText,
+    promotion, takenByOthers, bookBoard, isHunt, trophyText, proofTerms, handoverTerms, goalText, openGuildManuals,
 } from './guild.js';
 
 const VERBS = { rest: 'RESTS', sleep: 'SLEEPS', wait: 'WAITS', work: 'WORKS', train: 'TRAINS', study: 'STUDIES', craft: 'CRAFTS', search: 'SEARCHES', gather: 'GATHERS', errand: 'RUNS ERRANDS' };
@@ -396,7 +396,7 @@ function livingGo(s, content, c, ctx, emit, { known, nav, envx }) {
 function boardCard(s, content, rank, branch, listed) {
     return [
         `SYSTEM — GUILD BOARD · ${rank} · ${placeName(s, branch)}`,
-        ...listed.map((q) => `${q.title}${goalText(s, content, q, { board: true })} · ${q.rank || rank} · client: ${q.client || 'unspecified'} · reward: ${cpText(q.payout_cp, content)} · ${String(q.task || q.desired_end_state || objectiveText(q)).replace(/\s+/g, ' ').slice(0, 120)}`),
+        ...listed.map((q) => `${q.title}${goalText(s, content, q, { board: true })} · ${q.rank || rank}${s.meta.f_progression ? ` · recommended level ${q.level}` : ''} · client: ${q.client || 'unspecified'} · reward: ${cpText(q.payout_cp, content)} · ${String(q.task || q.desired_end_state || objectiveText(q)).replace(/\s+/g, ' ').slice(0, 120)}`),
     ];
 }
 
@@ -890,7 +890,8 @@ const HANDLERS = {
         return { status: 'resolved', line: `PAYS — ${cpText(c.amount_cp, content)} to ${who(s, c.to)}${c.for ? ` for ${c.for}` : ''}.` };
     },
     buy(s, content, c, ctx, emit) {
-        const offers = Object.values(s.offers).filter((o) => o.status === 'open' && !o.canon && !o.bid && present(s, o.seller) && (!c.from || o.seller === c.from));
+        const offers = Object.values(s.offers).filter((o) => o.status === 'open' && !o.bid
+            && (o.canon ? o.stock === 'manuals' && hallOf(s, o.at) === hallOf(s, s.scene.at) : present(s, o.seller)) && (!c.from || o.seller === c.from));
         const match = offers.map((o) => ({ o, lines: wantedLines(c.what, o.lines) })).find((x) => x.lines.length);
         // an offer lists it: buying is accepting that line, in the number he names and within the limit he set
         if (match) return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: match.o.id, lines: match.lines.map((l) => l.id), qty: c.qty ?? null }, ctx, emit);
@@ -979,6 +980,8 @@ const HANDLERS = {
         }
         if (o.gate && s.scene.at !== o.gate) return { status: 'refused', reason: 'not at the gate', line: `CANNOT PAY — the entry fee is paid at the gate of ${placeName(s, o.gate)}.` };
         if (o.canon && !o.gate && !hallOf(s, s.scene.at)) return { status: 'refused', reason: 'not at a Guild hall', line: 'CANNOT PAY — the Guild registers members at a Guild hall.' };
+        if (o.stock === 'manuals' && hallOf(s, o.at) !== hallOf(s, s.scene.at)) return { status: 'refused', reason: 'another Guild hall', line: 'CANNOT BUY — this stock is at another Guild hall.' };
+        if (o.stock === 'manuals' && !present(s, o.seller)) return { status: 'refused', reason: 'the clerk is not here', line: 'CANNOT BUY — this offer\'s clerk is not here.' };
         if (!o.canon && !present(s, o.seller)) return { status: 'refused', reason: 'the seller is not here', line: `CANNOT ACCEPT — ${who(s, o.seller)} is not here.` };
         const price = pick.cp;
         // a limit he set ("if it's no more than 6 copper") holds for what he actually buys
@@ -1181,6 +1184,11 @@ const HANDLERS = {
         if (!hall) return { status: 'refused', reason: 'no Guild board here', line: envx.c ? 'NO BOARD HERE — the Guild\'s contract board hangs inside a Guild hall and he is not in one; he sees no listing this turn.' : 'CANNOT READ — the Guild board is in the Guild hall.' };
         const branch = settlementOf(s, hall);
         const rank = c.rank || membership(s)?.rank || 'Novice';
+        if (!ahead && envx.c && s.meta.f_progression) {
+            openGuildManuals(s, content, emit, hall);
+            const stock = Object.values(s.offers).find(o => o.stock === 'manuals' && o.status === 'open' && o.at === hall);
+            if (stock) ctx.engineLines.push(...offerCard(s, content, stock));
+        }
         // Prototype C (4.3.0-c.6): Alaric's five offers are his slice of the Guild's work: other adventurers have their
         // own and take none of his; the board turns over with the day instead (below)
         if (envx.dice && !envx.c) takenByOthers(s, content, branch, rank, envx.dice, emit);

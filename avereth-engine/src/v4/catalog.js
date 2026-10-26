@@ -132,6 +132,7 @@ function questInfo(state, content, q, { c = false } = {}) {
     if (q.kind === 'guild_contract') {
         const progress = (q.progress || []).slice(-3).map((p) => `${p.objective}: ${p.status}`).join('; ');
         return ['Guild contract', q.status, q.rank, q.payout_cp !== null && q.payout_cp !== undefined ? `${q.payout_cp} cp` : null,
+            q.hunt && state.places[q.hunt.at]?.population ? `target population: ${state.places[q.hunt.at].population.species} at ${q.hunt.at} (${state.places[q.hunt.at].name}), body-plan ${state.places[q.hunt.at].population.anchor}, levels ${state.places[q.hunt.at].population.levels.join('-')}; kills elsewhere are not this contract` : null,
             c && goalText(state, content, q) ? `goal${goalText(state, content, q).replace(/^ — | \(/, ': ').replace(/\)$/, '')}` : null,
             q.desired_end_state ? `desired outcome: ${q.desired_end_state}` : null,
             (q.objectives || []).length ? `job memory: ${objectiveText(q)}` : null,
@@ -290,7 +291,7 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
         .map((o) => (o.bid
             // 4.3.0-c.6.6.5: a buyer's bid for his things (he would be paid), by the ids of his things
             ? { id: o.id, seller: personLabel(state, content, o.seller), bid: true, price_cp: o.price_cp, lines: o.lines.map((l) => ({ id: l.id, what: l.what, object: l.object, qty: l.qty, ...(Number.isInteger(l.price_cp) ? { price_cp: l.price_cp } : {}) })) }
-            : { id: o.id, seller: o.gate ? 'the gate' : o.canon ? 'Guild' : personLabel(state, content, o.seller), lines: o.lines.map((l) => ({ id: l.id, what: l.what, price_cp: l.price_cp, ...(gearText(l.profile) ? { equipment: gearText(l.profile) } : {}), ...(l.qty > 1 ? { qty: l.qty } : {}) })) }));
+            : { id: o.id, seller: o.gate ? 'the gate' : o.canon ? 'Guild' : personLabel(state, content, o.seller), lines: o.lines.map((l) => ({ id: l.id, what: l.what, price_cp: l.price_cp, ...(gearText(l.profile) ? { equipment: gearText(l.profile) } : {}), ...(sourceText(l.profile) ? { source: sourceText(l.profile) } : {}), ...(l.qty > 1 ? { qty: l.qty } : {}) })) }));
     const objects = [
         ...heldBy(state, 'pc').map((o) => objectEntry(state, content, o)),
         ...sheetObjects(state, content),

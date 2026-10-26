@@ -112,10 +112,28 @@ export function gearText(profile) {
     return `${profile.rank} ${profile.slot}: ${stats}`;
 }
 
+/** Player-visible confirmed offers. A price is for the stated lot; comparisons use the actual equipped snapshot. */
+export function offerCard(state, content, offer) {
+    const seller = offer.canon ? 'Guild' : state.entities[offer.seller]?.name || 'merchant';
+    const clean = text => String(text).replace(/[<>`\n\r]/g, ' ');
+    return offer.lines.map(l => {
+        const p = l.profile;
+        const equipped = p?.kind === 'gear' && state.entities.pc.sheet.equipment[p.slot];
+        const current = typeof equipped === 'string' ? content.items.get(equipped) : equipped;
+        const compare = current ? ['atk', 'matk', 'def', 'mdef'].filter(k => p[k] || current[k]).map(k => {
+            const d = (p[k] || 0) - (current[k] || 0);
+            return `${k.toUpperCase()} equipped ${current[k] || 0}, ${d >= 0 ? '+' : ''}${d}`;
+        }).join('; ') : '';
+        const info = gearText(p) || sourceText(p) || (p?.kind === 'restore' ? `${p.amount} ${p.resource.toUpperCase()}` : 'ordinary merchandise');
+        return clean(`SHOP — ${seller}: ${l.what} · ${l.qty ?? 1} for ${l.price_cp} cp${l.kind === 'service' ? ` · ${l.service || 'service'}` : ` · ${info}`}${compare ? ` · vs ${compare}` : ''}${p?.value_cp ? ` · value guide ~${p.value_cp} cp each (not the asking price)` : ''}`);
+    });
+}
+
 /** Same content-derived market vocabulary for narrator, planner and extractor; no new slots or numbers. */
 export function gearMarketText(content) {
     const kinds = content.gear?.instances?.gear_kinds || [];
-    return `GEAR MARKET — Mechanical equipment uses only these supported categories: ${kinds.map(k => `${k.words.slice(0, 2).join('/')} (${k.slot})`).join('; ')}. Use a recognized kind in a combat equipment offer's name; appearance may vary freely. Only the engine fixes its values. No extra head, leg, hand or jewelry slots or bonuses. Separate armor parts are not whole armor. Ordinary tools, clothes and decoration remain available, explicitly without combat stats.`;
+    const staff = ['common', 'fine', 'superior', 'exceptional'].map(q => `${q} ${itemProfile(content, { name: `${q} staff` })?.matk ?? '?'}`).join(', ');
+    return `GEAR MARKET — Mechanical equipment uses only these supported categories: ${kinds.map(k => `${k.words.slice(0, 2).join('/')} (${k.slot})`).join('; ')}. Use a recognized kind in a combat equipment offer's name; appearance may vary freely. Only the engine fixes its values. No extra head, leg, hand or jewelry slots or bonuses. Separate armor parts are not whole armor. Ordinary tools, clothes and decoration remain available, explicitly without combat stats. F staff MATK by actual quality: ${staff}; starter staff MATK 10. For requested upgrades, a suitable specialist may offer genuinely finer/superior/exceptional supported ware; do not keep offering common gear under expensive material names. If no upgrade is available, say so. Copper/silver cores and higher prices alone grant no stats. Keep the named quality and price stable; armour/offhand, consumables and supported Skill manuals are other voluntary improvements.`;
 }
 
 /**

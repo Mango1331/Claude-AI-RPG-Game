@@ -139,6 +139,7 @@
       }
     },
     "effect_note": "Patch 9B-1: the factor of a numeric non-damage effect (DEF/MDEF bonus, Barrier HP), the total of its level, applied once and rounded half up; never ranges, strikes, durations or percentages",
+    "cost_rounding_note": "New F-progression campaigns (.96): percentage reductions are combined and rounded half up once. If mastery would otherwise save nothing on an effective P1 cost above 1, save one resource point instead. No new reduction below an effective cost of 1; no Power or PP changes. Historical campaigns keep the old calculation.",
     "promotion_progress_note": "PP of one promotion by the Skill's Complexity (C1, C2, C3), the same for every promotion up to P5",
     "promotion_progress": {
       "1": 75,
@@ -232,6 +233,7 @@
     }
   },
   "growth": {
+    "guild_manual_cp": 120,
     "src": "Patch 9C-1 (docs/PATCH9C1_SKILL_ACQUISITION_TRAINING.md): provisional numbers of Skill acquisition and training under ruleset 2 (src/v4/growth.js); Learning Progress needed is proficiency.learning_progress by Complexity",
     "max_active": 3,
     "lp_per_hour": {

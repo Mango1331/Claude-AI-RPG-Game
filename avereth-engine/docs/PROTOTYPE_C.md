@@ -2202,3 +2202,7 @@ Dungeonpopulation vor der ersten Kreaturprüfung einrichten; kein ungebundener G
 ## Run 19 / Build .95 (26.10.2026)
 
 [Handelszustimmung und sichere System-Klärung](PATCH_RUN19_TRADE_CONSENT.md), [Gildenziele und kanonische Orte](PATCH_RUN19_GUILD_PLACES.md). Gemeinsame Abnahme ausschließlich in der Handelspatchnote. Runner, XP und Kampfwerte unverändert.
+
+## F-Rang-Progression / Build .96 (26.10.2026)
+
+Neue Kampagnen: weltgebundene Jagdpopulationen über F, sichtbare Shopwerte, kaufbare C1-Primer und wirksame erste Proficiency-Kostenersparnis. Entscheidungen, Kompatibilität und Abnahme ausschließlich in [PATCH_F_RANK_WORLD_PROGRESSION.md](PATCH_F_RANK_WORLD_PROGRESSION.md). Kein E-Ausbau, keine zusätzlichen Gearslots oder XP-/Startwertbuffs.

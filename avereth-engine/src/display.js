@@ -12,6 +12,8 @@ import { damagePreview, combatTargets, targetLabel } from './combat.js';
 import { sceneHandle, tacticalHere } from './v4/scene_handles.js';
 import { livingOf, gateCard } from './v4/living.js';
 import { skillOf } from './content.js';
+import { offerCard } from './v4/items.js';
+import { hallOf } from './v4/domain.js';
 
 const sys = (text) => `\`${text}\``;
 // a combatant by its target label (from the board of that step, which outlives the fight), anyone else as the player knows them
@@ -253,6 +255,14 @@ export function worldPanel(state, content, reply = {}) {
     // Patch 8.1 (§4): the reply that brings him to a Living Dungeon's gate shows its System card (once, on arrival)
     const at = reply.state && reply.events?.findLast((e) => e.t === 'scene.moved')?.d.at;
     if (at && at === reply.state.scene.at && livingOf(reply.state, at)) lines.push(...gateCard(reply.state, content, at).map(sys));
+    const market = reply.state || state;
+    if (!market.encounter && (!reply.events?.length || reply.events.some(e => ['offer.created', 'scene.moved'].includes(e.t)))) {
+        const hall = hallOf(market, market.scene.at);
+        for (const offer of Object.values(market.offers || {}).filter(o => o.status === 'open' && !o.bid && !o.gate
+            && (o.canon ? hall && hallOf(market, o.at) === hall : market.scene.present.includes(o.seller))).slice(-6)) {
+            lines.push(...offerCard(market, content, offer).map(sys));
+        }
+    }
     return lines.join('\n');
 }
 

@@ -161,10 +161,10 @@ function skillKind(skill) {
 }
 
 /** What an action costs him now (its Proficiency's cost factor), or null. */
-function skillCostOf(skill, known, content, mods = null) {
+function skillCostOf(skill, known, content, mods = null, meaningfulMastery = false) {
     if (!skill.cost || !skill.cost.amount) return null;
     // Patch 9B-2: the cost the fight books, his Passives' reductions too
-    return { resource: skill.cost.resource, amount: skillCostAmount(content, skill, known?.prof || 1, mods) };
+    return { resource: skill.cost.resource, amount: skillCostAmount(content, skill, known?.prof || 1, mods, meaningfulMastery) };
 }
 
 /** A few words of what a defense or utility does (from its effects; the full text is #skill). */
@@ -216,7 +216,7 @@ function combatHud(state, content) {
     // cost, defenses and utilities with cost and a short effect; one he cannot pay now stays listed, marked
     const known = Object.entries(pc.fixed.actions || {}).map(([sid, v]) => [skillOf(content, sid, state), v]).filter(([s]) => s);
     const skillRow = (kind) => known.filter(([s]) => skillKind(s) === kind).map(([s, v]) => {
-        const cost = skillCostOf(s, v, content, pc.fixed.passive?.cost);
+        const cost = skillCostOf(s, v, content, pc.fixed.passive?.cost, state.meta.f_progression === true);
         const short = cost && Number(pc.current[cost.resource] ?? 0) < cost.amount ? cost.resource.toUpperCase()
             : s.ammo && pc.fixed.weapon_family === 'bow' && (pc.current.ammo?.[s.ammo.item] || 0) < s.ammo.qty ? 'arrows' : null;
         const bits = [cost ? `${cost.amount} ${cost.resource.toUpperCase()}` : null, s.ammo && pc.fixed.weapon_family === 'bow' ? `${s.ammo.qty} arrow` : null, kind === 'attack' ? null : effectShort(s)].filter(Boolean).join(', ');

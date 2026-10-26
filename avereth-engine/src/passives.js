@@ -315,9 +315,13 @@ export function passiveEffects(p) {
  * Proficiency's cost factor and the reduction applied together and rounded once (half up). Without reductions exactly
  * the cost of before.
  */
-export function skillCostAmount(content, skill, prof, mods = null) {
+export function skillCostAmount(content, skill, prof, mods = null, meaningfulMastery = false) {
     if (!skill?.cost) return 0;
     const f = content.rules.proficiency.levels[String(prof || 1)]?.cost ?? 1;
     const pct = costReductionPct(content, mods, skill);
-    return pct ? roundHalfUp(num(skill.cost.amount * f * (1 - pct / 100))) : roundHalfUp(skill.cost.amount * f);
+    const amount = pct ? roundHalfUp(num(skill.cost.amount * f * (1 - pct / 100))) : roundHalfUp(skill.cost.amount * f);
+    // Mastery must not disappear at a half-point boundary (Bolt P2: 9.5 rounded back to 10).
+    // Preserve percentage reductions and one final rounding; only compensate a completely lost mastery discount.
+    const unmastered = roundHalfUp(skill.cost.amount * (1 - pct / 100));
+    return meaningfulMastery && f < 1 && unmastered > 1 && amount >= unmastered ? unmastered - 1 : amount;
 }

@@ -27,7 +27,7 @@ import { buildContext } from './context.js';
 import { targetQuestion } from './display.js';
 import { parseCoin } from './economy.js';
 import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, roundHalfUp, ENGINE_VERSION } from './util.js';
-import { seedPlaces } from './v4/domain.js';
+import { seedPlaces, lineage, populationAt } from './v4/domain.js';
 import { rankAt, dungeonOf } from './v4/dungeon.js';
 import { syncEvents, levelSpan } from './v4/living.js';
 import { attackTargetHere, tacticalHere, areaCaught, approachedBy, sideOf, burstCaught } from './v4/scene_handles.js';
@@ -75,6 +75,7 @@ export function startCampaign(content, { seed = newSeed(), firstMessage = '', ru
             ruleset,
             // .83: free NPC help in new campaigns; historical start events keep their original policy.
             private_quests: false,
+            ...(v4 && ruleset >= 2 && planner !== false ? { f_progression: true } : {}),
             // Patch 7.2: a V4 campaign keeps the path it started on (c: the semantic planner, the product path; a: the
             // interpreter of Runtime V4-A), whatever the setting says later (src/v4/runtime.js campaignPath)
             ...(v4 ? { runtime: 'v4', ...(typeof planner === 'boolean' ? { path: planner ? 'c' : 'a' } : {}), places: v4.places, at: v4.at } : {}),
@@ -216,7 +217,7 @@ function selfRestore(s, content, act, emit) {
     const known = sheet.skills[skill.id];
     const nothing = (why) => ({ kind: 'note', text: `${why}. Nothing was spent or restored.`, notice: `${why} (nothing spent, nothing restored)` });
     if (!known) return nothing(`Alaric does not know ${skill.name}`);
-    const amount = skillCostAmount(content, skill, known.prof, passiveTotals(sheet, content).cost);
+    const amount = skillCostAmount(content, skill, known.prof, passiveTotals(sheet, content).cost, s.meta.f_progression === true);
     const res = skill.cost?.resource;
     if (amount && Number(sheet[res] || 0) < amount) return nothing(`Alaric lacks ${res.toUpperCase()} for ${skill.name} (${sheet[res] || 0} < ${amount})`);
     const dv = deriveCharacter(sheet, content);
@@ -244,7 +245,7 @@ function worldUse(s, content, act, dice, emit) {
     const skill = skillOf(content, act.skill, s);
     const known = actionsOf(sheet, content, rulesetOf(s), s)[skill?.id]; // Patch 9A: a weapon attack too
     if (!skill || !known) return { kind: 'note', text: `Alaric does not know ${skill?.name || act.skill}. Nothing was spent or rolled.`, notice: `Alaric does not know ${skill?.name || act.skill} (nothing spent, nothing rolled)` };
-    const amount = skillCostAmount(content, skill, known.prof, passiveTotals(sheet, content).cost); // Patch 9B-2: his Passives too
+    const amount = skillCostAmount(content, skill, known.prof, passiveTotals(sheet, content).cost, s.meta.f_progression === true); // Patch 9B-2: his Passives too
     const res = skill.cost?.resource;
     if (amount && Number(sheet[res] || 0) < amount) return { kind: 'note', text: `Alaric lacks ${res.toUpperCase()} for ${skill.name} (${sheet[res] || 0} < ${amount}). Nothing was spent or rolled.`, notice: `${skill.name}: not enough ${res.toUpperCase()} (${sheet[res] || 0} < ${amount}; nothing spent, nothing rolled)` };
     // arrows as in a fight (src/combat.js): only a bow shoots them, only what he carries
@@ -367,19 +368,24 @@ export function materialise(s, content, dice, emit, id) {
     if (e.kind === 'creature') {
         const anchor = content.anchors.get(e.anchor) || anchorFor(content, [e.species, ...(e.descriptors || [])].join(' '));
         if (!anchor) throw new Error(`creature ${id} has no valid body-plan anchor`);
-        const area = truth(s, s.scene.location, 'danger')[0]?.o || 'unknown';
         // final review of Patch 7: in a true Dungeon, a level of the band of the Rank established where it is met (that
         // level's, else the Dungeon's own), drawn once; its own level, an ordinary ruin or the open land as before.
         // Never Alaric's level
-        const at = e.met_at || e.left?.at || s.scene.at;
+        const at = e.met_at || e.left?.at || (s.meta.f_progression && e.at) || s.scene.at;
+        const local = s.meta.f_progression ? lineage(s, at).map(p => truth(s, p, 'danger')[0]?.o).find(Boolean) : null;
+        const area = local || truth(s, s.scene.location, 'danger')[0]?.o
+            || (s.meta.f_progression && lineage(s, at).some(p => s.places[p].kind === 'wilderness') ? 'wilderness' : 'unknown');
+        const population = s.meta.f_progression && !dungeonOf(s, at) ? populationAt(s, at, e, content) : null;
         const rank = !e.level ? rankAt(s, at) : null;
         const lo = rank && content.rules.ranks.bands.find((b) => b.rank === rank.min);
         const hi = rank && content.rules.ranks.bands.find((b) => b.rank === rank.max);
         // Patch 8: in a Living Dungeon, an ordinary foe of a level is drawn from that level's own window (its Rank band's
         // lower part, fixed when the Dungeon was established: src/v4/living.js), never across the whole band
         const span = !e.level && rank ? levelSpan(s, at) : null;
-        const level = e.level || (span ? dice.int(span[0], span[1], 'creature level') : lo && hi ? dice.int(lo.min, hi.max, 'creature level') : chooseCreatureLevel(area, content, dice));
-        emit({ t: 'entity.updated', d: { id, set: { profile: scaleCreature(anchor, level, e.type || 'normal', content, e.variation || null), ...(dungeonOf(s, at) && !e.met_at ? { met_at: at } : {}) } } });
+        const band = span || population?.population.levels;
+        const level = e.level || (band ? dice.int(band[0], band[1], 'creature level') : lo && hi ? dice.int(lo.min, hi.max, 'creature level') : chooseCreatureLevel(area, content, dice));
+        const belongs = population && level >= band[0] && level <= band[1];
+        emit({ t: 'entity.updated', d: { id, set: { profile: scaleCreature(anchor, level, e.type || 'normal', content, e.variation || null), ...(belongs ? { population_at: population.id } : {}), ...(dungeonOf(s, at) && !e.met_at ? { met_at: at } : {}) } } });
         return;
     }
     const words = [...(e.descriptors || []), e.traits || ''].join(' ');

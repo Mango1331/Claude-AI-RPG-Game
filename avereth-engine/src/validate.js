@@ -160,6 +160,13 @@ export function validateState(state, content) {
         const onBoard = new Set(Object.values(state.guild?.boards || {}).flatMap((b) => b.listings || []));
         for (const q of Object.values(state.quests)) if (q.status === 'listed' && !onBoard.has(q.id)) p.push(`listed ${q.id} is on no board`);
         for (const o of Object.values(state.offers || {})) if (!['open', 'accepted', 'declined', 'expired'].includes(o.status)) p.push(`offer ${o.id} status ${o.status}`);
+        for (const place of Object.values(state.places)) if (place.population) {
+            const pop = place.population;
+            if (!content.anchors.has(pop.anchor) || typeof pop.species !== 'string' || !pop.species.trim()
+                || !Array.isArray(pop.levels) || pop.levels.length !== 2 || !pop.levels.every(Number.isInteger)
+                || pop.levels[0] < 1 || pop.levels[1] > 14 || pop.levels[0] > pop.levels[1]) p.push(`invalid F population at ${place.id}`);
+        }
+        for (const q of Object.values(state.quests)) if (q.hunt && !state.places[q.hunt.at]?.population) p.push(`quest ${q.id} has no hunting population`);
     }
     if (!isInt(state.rng.n) || state.rng.n < 0) p.push(`rng counter ${state.rng.n}`);
     return p;

@@ -461,7 +461,7 @@ export function boardFor(state, content, commands, { c = false } = {}) {
     const size = content.rules.guild.board?.size ?? 5;
     // Prototype C (4.3.0-c.6): a new day's board is a new board: five notices, none of yesterday's (src/v4/commands.js
     // board.read retires those), booked whole or not at all (generateBoard)
-    if (c) return { branch, rank, missing: size, day: today(state), have: [], c: true, ...(rulesetOf(state) >= 2 ? { profile: HUNT_BOARD_PROFILE } : {}) };
+    if (c) return { branch, rank, missing: size, day: today(state), have: [], c: true, ...(rulesetOf(state) >= 2 ? { profile: HUNT_BOARD_PROFILE, ...(state.meta.f_progression && rank === 'Novice' ? { progression: true } : {}) } : {}) };
     const have = listingsOf(state, branch, rank);
     const missing = size - have.length;
     return missing > 0 ? { branch, rank, missing, day: today(state), have: have.map((q) => q.title) } : null;

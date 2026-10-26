@@ -299,6 +299,13 @@ export function lineage(state, id) {
     return out;
 }
 
+/** A population fixed at a small hunting site; other species there keep their own world context. No spawning. */
+export function populationAt(state, at, entity, content) {
+    return lineage(state, at).map(id => state.places[id]).find(p => p.population
+        && p.population.anchor === (entity.anchor || entity.profile?.anchor)
+        && namesKind(p.population.species, entity.species, entity.anchor || entity.profile?.anchor, sameKinds(content))) || null;
+}
+
 export const pathNames = (state, id) => lineage(state, id).map((x) => state.places[x].name);
 
 /** "Veyrhold › Redmarch › Adventurers' Guild hall": root first, as the catalog and the engine block write it. */

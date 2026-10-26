@@ -3,7 +3,7 @@
 // board and its listings (from the Board generator, validated and booked before the narrator describes them), the
 // acceptance with its contract slip, the turn-in with the proof check, the payout, Quest XP, the contract count and
 // the promotion. The narrator only tells what the engine booked; the extractor's deltas cannot change any of it.
-import { rulesetOf as deliveryRuleset } from '../content.js';
+import { rulesetOf as deliveryRuleset, anchorFor } from '../content.js';
 import { deliveryStatus, confirmsOnly, nonphysicalDelivery, deliveryWhere, genericRecipient } from './delivery.js';
 import { nearDungeons, dungeonText, rankText, guildRecord, trueDungeonOf } from './dungeon.js';
 import { clearOf, clearDone, clearTarget, cullPopulation, slotNameOf, floorAt } from './living.js';
@@ -13,11 +13,12 @@ import { setFactEvents, perceivers, knows, truth, PC_NAME_FACT } from '../knowle
 import { awardXp, questXp } from '../progression.js';
 import { rankOf, rankIndex } from '../derived.js';
 import { slug, normText, hash32 } from '../util.js';
+import { itemProfile } from './items.js';
 import { hallOf, settlementOf, realmOf, heldBy, membership, listingsOf, boardKey, today, contracts, supportedRanks, placeName, namesKind, namesPeople, peopleNamed, sameKinds, namesYoung } from './domain.js';
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
-export const BOARD_VERSION = 'board-5.1';
+export const BOARD_VERSION = 'board-5.2';
 export const HUNT_BOARD_PROFILE = 'hunt_clear';
 const QTYPES = ['minor', 'standard', 'dangerous', 'major'];
 const VERBS = ['GO', 'FIND', 'TALK', 'GET', 'GATHER', 'GIVE', 'DELIVER', 'USE', 'REPAIR', 'DEFEND', 'ESCORT', 'ATTACK', 'DEFEAT'];
@@ -201,6 +202,8 @@ export function defeatTally(s, content, q) {
  * land of the branch that posted it. A being with no known place counts (an older campaign's).
  */
 function areaOf(s, q) {
+    // New world-bound hunts count this population, never an arbitrary weak member of its broad body plan elsewhere.
+    if (q.hunt) return e => e.population_at === q.hunt.at;
     const clear = clearOf(s, q);
     const where = (e) => e.met_at || e.left?.at || e.at || e.location || null;
     if (clear) return (e) => { const p = where(e); return !p || !s.places[p] || trueDungeonOf(s, p) === clear.dungeon; };
@@ -515,8 +518,57 @@ export function listingSchema(content) {
         listings: A(O({
             title: S(), client: S(), rank: E(ranksOf(content)), level: I(1, 104), qtype: E(QTYPES), payout_cp: I(0),
             task: N(S()), desired_end_state: S(), objectives: A(OBJECTIVE, 1), proof: A(PROOF),
+            habitat: N(O({ species: S(), anchor: E([...content.anchors.keys()]), min_level: I(1, 14), max_level: I(1, 14) })),
         })),
     });
+}
+
+const progressive = (s, need) => !!s?.meta?.f_progression && need.c && need.progression && need.rank === 'Novice';
+const F_WINDOWS = [[1, 1], [1, 3], [4, 7], [8, 11], [12, 14]];
+
+/** Identity is local to the branch's land; an ambiguous or already incompatible place is never overwritten. */
+function habitatPlace(s, need, where) {
+    const realm = realmOf(s, need.branch);
+    return Object.values(s.places).filter(p => normText(p.name) === normText(where) && realmOf(s, p.id) === realm);
+}
+function habitatWhy(s, content, need, l) {
+    const h = l.habitat;
+    if (!h) return 'habitat: a world hunt needs its population (species, anchor, min_level, max_level)';
+    const o = l.objectives.find(o => o.verb === 'DEFEAT');
+    if (!o.where?.trim() || !h.species.trim()) return 'habitat needs a species and a precise DEFEAT destination in where';
+    if (!namesKind(o.what, h.species, h.anchor, sameKinds(content))) return 'habitat.species/anchor does not match the hunted kind';
+    if (!F_WINDOWS.some(([a, b]) => a === h.min_level && b === h.max_level) || l.level < h.min_level || l.level > h.max_level)
+        return 'habitat level window must be 1-1, 1-3, 4-7, 8-11 or 12-14 and contain the quest recommendation';
+    const anchor = content.anchors.get(h.anchor);
+    const named = anchorFor(content, h.species);
+    if (named && named.id !== h.anchor) return 'habitat.anchor contradicts the named species body plan';
+    if (l.level === 1 && o.qty === 1 && l.qtype === 'minor' && (h.max_level !== 1 || anchor.hp > 35 || anchor.atk > 10))
+        return 'introductory habitat needs a weak ordinary level-1 individual (max HP 35, ATK 10)';
+    const places = habitatPlace(s, need, o.where);
+    if (places.length > 1) return 'habitat.place is ambiguous in this land';
+    const p = places[0];
+    if (p && (trueDungeonOf(s, p.id) || ['realm', 'region', 'settlement', 'district'].includes(p.kind))) return 'habitat must be a small hunting site, not a whole region, town or Dungeon';
+    if (p?.population && (normText(p.population.species) !== normText(h.species) || p.population.anchor !== h.anchor
+        || p.population.levels[0] !== h.min_level || p.population.levels[1] !== h.max_level)) return 'habitat conflicts with an established population';
+    if (p && !p.population && Object.values(s.entities).some(e => (e.at === p.id || e.met_at === p.id) && (e.profile || e.sheet)))
+        return 'habitat already has established individuals; do not relabel its population';
+    return null;
+}
+
+/** Ordinary reusable primers, through the existing canonical offer/purchase path; no free Skill or extra lesson ledger. */
+export function openGuildManuals(s, content, emit, hall) {
+    if (!s.meta.f_progression || deliveryRuleset(s) < 2) return;
+    const seller = deskStaff(s)[0];
+    if (!seller) return; // Use an actual present clerk; narration of the purchase follows normal seller deduplication.
+    const id = `offer.manuals.${slug(hall)}`;
+    if (s.offers[id]?.status === 'open' && s.offers[id].seller === seller) return;
+    if (s.offers[id]?.status === 'open') emit({ t: 'offer.closed', d: { id, status: 'expired' } });
+    const lines = ['strike', 'bolt', 'guard', 'ward', 'mend'].map(fn => {
+        const what = `Primer of ${fn[0].toUpperCase() + fn.slice(1)}`;
+        const profile = itemProfile(content, { name: what, kind: 'document', teaches: { source: 'manual', fn, tags: null, aspects: null } });
+        return { id: fn, what, kind: 'goods', qty: 1, price_cp: content.rules.growth.guild_manual_cp ?? 120, profile };
+    });
+    emit({ t: 'offer.created', d: { offer: { id, seller, at: hall, status: 'open', canon: true, stock: 'manuals', turn: s.turn, lines } } });
 }
 
 // Newly generated V4-C boards use the simple profile; existing contracts and Legacy stay intact.
@@ -621,6 +673,12 @@ export function boardRequest(s, content, need) {
         '- Structural example only: a survey team failed to return from abandoned workings; locate them, rescue survivors if possible, and recover an official seal. What happened is not predetermined by the contract and emerges in play.',
         '- These examples demonstrate structure only. Do not reuse their people, locations, creatures, objects, circumstances or exact objective sequence.',
         ...noviceProfile,
+        ...(progressive(s, need) ? [
+            '- F WORLD PROGRESSION: The full board offers voluntary choices across F, never scaled to the player: one weak introductory level-1 hunt, at least one hunt at levels 4-7, and one at 8-14. Prefer separate 8-11 and 12-14 hunts when four outdoor notices fit. Keep the 4-hunt/1-clearance or 5-hunt distribution. Do not inflate group sizes for high levels.',
+            '- For every non-Dungeon hunt add habitat:{species:"the actual creature kind",anchor:"one supported body-plan id",min_level:4,max_level:7}. Allowed fixed population windows: 1-1 (intro), 1-3, 4-7, 8-11, 12-14. The quest level lies inside that window. This describes a world population, NOT a change to existing creatures or a spawn instruction. Other listings use habitat:null.',
+            `- Supported body-plan ids: ${[...content.anchors.keys()].join(', ')}. The DEFEAT objective where is the one canonical hunting-site label (no duplicate place field in habitat); use the same species/kind. A weak introduction has one ordinary level-1 animal/Monster, anchor HP <=35 and ATK <=10, no hidden group/elite/boss.`,
+            '- Established populations below are binding. New sites and species names are welcome, but never rename, move or upscale a known population. Do not locate several incompatible populations at the same small site. Clearly warn of stronger groups and high-F work; availability never means safe for the reader.',
+        ] : []),
         ...(profile ? [
             `- FIXED BOARD: ${profile.hunt} monster hunts, ${profile.delivery} deliveries, ${profile.dungeon} Dungeon clearance. Escort is not generated on this board. When no suitable known Dungeon exists, its slot is another hunt; never invent a Dungeon to fill the quota. Existing notices count towards these totals on a partial refill.`,
             ...(profile.noDelivery ? ['- New deliveries are suspended: generate only hunts or the separate Dungeon clearance, never delivery, GIVE, escort or mixed replacement work. Existing delivery notices count in a refill and stay valid; do not create another.'] : [
@@ -640,7 +698,7 @@ export function boardRequest(s, content, need) {
         '- client is who posted the work (a person, a trade, a hamlet); titles differ from the listings already on the board.',
         ...(profile?.noDelivery ? ['- Only GO/FIND guidance and one DEFEAT objective; delivery:null on these objectives. No delivery, retrieval, repair, escort or service duties.'] : []),
         '',
-        'Return only one JSON object, no prose before or after it, no code fences: {"listings": [{"title": "...", "client": "...", "rank": "...", "level": 1, "qtype": "...", "payout_cp": 0, "task": "...", "desired_end_state": "...", "objectives": [...], "proof": [...]}]}. Every field is required; null where a field allows it and does not apply.',
+        'Return only one JSON object, no prose before or after it, no code fences: {"listings": [{"title": "...", "client": "...", "rank": "...", "level": 1, "qtype": "...", "payout_cp": 0, "task": "...", "desired_end_state": "...", "objectives": [...], "proof": [...], "habitat": null}]}. Every field is required; null where a field allows it and does not apply.',
     ].join('\n');
     // review of Patch 7: the known Dungeons near this branch, by their names (the same places on every board); work
     // there is clearance of a part whose Rank this board's work fits (a Novice board: the F-Rank part), one listing
@@ -656,6 +714,7 @@ export function boardRequest(s, content, need) {
         .map(([id, ns]) => ` In ${s.places[id].name} that part is ${levelWords(ns)}: write it with its number in the task or an objective's where ("upper galleries" alone names no level).`).join('');
     const user = [
         `BRANCH: ${town?.name || need.branch}${realm ? `, ${realm}` : ''} (${town?.sub || 'settlement'})`,
+        ...(progressive(s, need) ? [`ESTABLISHED HUNTING SITES: ${Object.values(s.places).filter(p => p.population && realmOf(s, p.id) === realmOf(s, need.branch)).slice(-20).map(p => `${p.name}: ${p.population.species}, anchor ${p.population.anchor}, levels ${p.population.levels.join('-')}`).join(' | ') || 'none yet; new sites may be established by these contracts'}`] : []),
         ...(dungeons.length ? [`KNOWN DUNGEONS NEAR THIS BRANCH (the Guild's records): ${dungeons.join(' · ')}. ${up ? (profile ? 'A Dungeon clearance is already listed: add no second clearance; numbered hunts in suitable parts remain allowed.' : 'A Dungeon job is on the board already: write no other work in them.') : `At most one listing may be clearance work in one of them, and only in a part whose danger Rank is ${fits.join(' or ')} (this board's work; ${order.filter((r) => !fits.includes(r)).length ? 'deeper or stronger parts are not this board\'s' : 'any part'}): name the Dungeon exactly as written, the part (a level, a gallery) and its concrete outcome; ${profile ? 'this is the separate Dungeon slot, and numbered hunts there do not consume it' : 'it counts as one of the culling jobs'}.${levelRule}`}`] : []),
         `RANK: ${need.rank} · DAY ${need.day}`,
         `ON THE BOARD ALREADY: ${need.have.length ? need.have.join(' | ') : 'nothing'}`,
@@ -730,6 +789,7 @@ export function parseBoard(answer, content, need, s = null) {
     if (!value) return { listings: null, errors: [error || 'no JSON object'] };
     // a listing without its board text is still a listing: the board then shows the desired end state (as before 4.1.2)
     for (const l of Array.isArray(value.listings) ? value.listings : []) if (l && typeof l === 'object' && l.task === undefined) l.task = null;
+    for (const l of Array.isArray(value.listings) ? value.listings : []) if (l && typeof l === 'object' && l.habitat === undefined) l.habitat = null;
     for (const l of Array.isArray(value.listings) ? value.listings : [])
         for (const o of Array.isArray(l?.objectives) ? l.objectives : [])
             if (o && typeof o === 'object' && o.delivery === undefined) o.delivery = null;
@@ -754,6 +814,11 @@ export function parseBoard(answer, content, need, s = null) {
         // Patch 8.1 (§3, §10): the Dungeon its work lies in, fixed with the listing (the gate and the count read this)
         if (at) l.dungeon = at;
         if (!why && profile) why = simpleListingWhy(s, content, l, profile, boardFamily(s, content, l));
+        if (!why && progressive(s, need) && boardFamily(s, content, l) === 'hunt' && !at) why = habitatWhy(s, content, need, l);
+        if (!why && l.habitat && (!progressive(s, need) || at || boardFamily(s, content, l) !== 'hunt')) why = 'habitat is only for a new world-bound outdoor F hunt';
+        if (!why && l.habitat && ok.some(x => x.habitat && normText(x.objectives.find(o => o.verb === 'DEFEAT')?.where) === normText(l.objectives.find(o => o.verb === 'DEFEAT')?.where)
+            && (normText(x.habitat.species) !== normText(l.habitat.species) || x.habitat.anchor !== l.habitat.anchor
+                || x.habitat.min_level !== l.habitat.min_level || x.habitat.max_level !== l.habitat.max_level))) why = 'habitat conflicts with another notice in this board';
         // Patch 8.4.1 (live 22.10.2026 05:43: "Cull the Burial Gallery Skeletons", a clearance of level 1 with no number):
         // a clearance's title says clearing; a cull's verb would promise a count the contract does not have
         if (at && clearanceListing(l, text)) l.title = l.title.replace(CULL_VERB, 'Clear');
@@ -775,6 +840,10 @@ export function parseBoard(answer, content, need, s = null) {
         if (need.rank === 'Novice' && !all.some(l => boardFamily(s, content, l) === 'hunt' && l.level === 1 && l.qtype === 'minor'
             && l.objectives.some(o => o.verb === 'DEFEAT' && o.qty === 1))) return {
             listings: null, refused, errors: ['Novice board needs an introductory single-foe hunt (qty 1, level 1, qtype minor)'],
+        };
+        if (progressive(s, need) && (!all.some(l => boardFamily(s, content, l) === 'hunt' && l.level >= 4 && l.level <= 7)
+            || !all.some(l => boardFamily(s, content, l) === 'hunt' && l.level >= 8 && l.level <= 14))) return {
+            listings: null, refused, errors: ['F board needs voluntary mid-F (4-7) and upper-F (8-14) hunts as well as its introductory hunt; preserve the 4+1/5 family'],
         };
     }
     return { listings, refused, errors: [] };
@@ -944,6 +1013,20 @@ export function bookBoard(s, content, need, listings, emit) {
             schedule: { starts_at: null, deadline: null }, status: 'listed', taker: null, history: [{ turn: s.turn, minute: s.clock.minute, status: 'listed' }],
             details: [], notes: [], ...(guide && (l.payout_cp < guide[0] || l.payout_cp > guide[1]) ? { audit: [`payout ${l.payout_cp} cp outside the guide ${guide[0]}–${guide[1]} cp`] } : {}),
         };
+        if (progressive(s, need) && l.habitat) {
+            const h = l.habitat;
+            const where = l.objectives.find(o => o.verb === 'DEFEAT').where.trim();
+            let p = habitatPlace(s, need, where)[0];
+            const population = { anchor: h.anchor, species: h.species.trim(), levels: [h.min_level, h.max_level] };
+            if (!p) {
+                const parent = realmOf(s, need.branch) || need.branch;
+                let pid = `${parent}.${slug(where)}`;
+                for (let i = 2; s.places[pid]; i++) pid = `${parent}.${slug(where)}_${i}`;
+                p = { id: pid, name: where, kind: 'site', parent, realm: realmOf(s, need.branch), tags: [], known: 'reported', reports: [], by: 'guild', created: { turn: s.turn, minute: s.clock.minute }, population };
+                emit({ t: 'place.created', d: { place: p } });
+            } else if (!p.population) emit({ t: 'place.updated', d: { id: p.id, set: { population } } });
+            quest.hunt = { at: p.id };
+        }
         // Patch 8: a level of a Dungeon to clear, booked with the contract (src/v4/living.js)
         const clear = need.c ? clearTarget(s, quest) : null;
         if (clear) quest.clear = clear;

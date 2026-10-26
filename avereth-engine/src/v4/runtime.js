@@ -134,7 +134,9 @@ async function ask(llm, messages, purpose, overrides = {}) {
         return { ok: true, content: String(text), ms: call.ms, call };
     } catch (err) {
         const ms = Date.now() - t0;
-        return { ok: false, error: String(err?.message || err).slice(0, 200), ms, call: { purpose, ms, error: true } };
+        const kind = ({ LLM_TIMEOUT: 'timeout', LLM_CANCELLED: 'cancelled', LLM_PROVIDER: 'provider' })[err?.code]
+            || (err?.name === 'AbortError' ? 'aborted' : 'transport');
+        return { ok: false, error: String(err?.message || err).slice(0, 200), ms, call: { purpose, ms, error: true, error_kind: kind } };
     }
 }
 
@@ -739,7 +741,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
 
         if (!(p1.valid && p1.complete)) {
             if (!current()) return stale();
-            const rep = extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player, expectedKeys: req.expectedKeys, reply: chat[id].mes }, { previous: first.content, errors: p1.errors });
+            const rep = extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player, expectedKeys: req.expectedKeys, reply: chat[id].mes, startScene: req.startScene }, { previous: first.content, errors: p1.errors });
             const second = await ask(llm, rep.messages, 'extract_repair');
             ms += second.ms;
             calls.push(second.call);

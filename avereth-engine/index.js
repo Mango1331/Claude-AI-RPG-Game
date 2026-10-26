@@ -122,10 +122,11 @@ async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500, signal = n
     if (c.mainApi === 'openai' && oai?.chat_completion_source === 'custom' && typeof c.getRequestHeaders === 'function') {
         llmPath = 'custom endpoint';
         const ctl = new AbortController();
+        let timedOut = false;
         const abortWithWorld = () => ctl.abort();
         if (signal?.aborted) ctl.abort();
         else signal?.addEventListener('abort', abortWithWorld, { once: true });
-        const timer = setTimeout(() => ctl.abort(), LLM_TIMEOUT_MS);
+        const timer = setTimeout(() => { timedOut = true; ctl.abort(); }, LLM_TIMEOUT_MS);
         try {
             const body = {
                 chat_completion_source: 'custom', custom_url: oai.custom_url, model: oai.custom_model, messages, max_tokens: maxTokens, temperature, stream: false,
@@ -134,11 +135,15 @@ async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500, signal = n
             };
             const res = await fetch('/api/backends/chat-completions/generate', { method: 'POST', headers: c.getRequestHeaders(), body: JSON.stringify(body), signal: ctl.signal });
             const json = await res.json().catch(() => null);
-            if (!res.ok || !json || json.error || !json.choices) throw new Error(`the LLM call failed (HTTP ${res.status}${json?.error?.message ? `: ${String(json.error.message).slice(0, 120)}` : ''})`);
+            if (!res.ok || !json || json.error || !json.choices) throw Object.assign(new Error(`the LLM call failed (HTTP ${res.status}${json?.error?.message ? `: ${String(json.error.message).slice(0, 120)}` : ''})`), { code: 'LLM_PROVIDER' });
             const m = json.choices[0]?.message || {};
             const text = typeof m.content === 'string' ? m.content : Array.isArray(m.content) ? m.content.map((x) => x?.text || '').join('') : '';
             // Patch 8.2: why the answer ended and the provider's token counts go along as telemetry (runtime.js callMeta)
             return { content: text, finish_reason: json.choices[0]?.finish_reason ?? null, usage: json.usage ?? null };
+        } catch (error) {
+            if (signal?.aborted) throw Object.assign(new Error('LLM request cancelled by caller'), { code: 'LLM_CANCELLED' });
+            if (timedOut) throw Object.assign(new Error(`LLM request timed out after ${LLM_TIMEOUT_MS} ms`), { code: 'LLM_TIMEOUT' });
+            throw error;
         } finally {
             clearTimeout(timer);
             signal?.removeEventListener('abort', abortWithWorld);

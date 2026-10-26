@@ -187,7 +187,7 @@ export function extractorUser({ catalog, actions, player = null, expectedKeys, v
 }
 
 /** The messages of an extractor call, and of its one repair (the invalid answer and the errors appended). */
-export function extractorRequest(vocab, { catalog, actions, player = null, expectedKeys, reply }, { previous = null, errors = null } = {}) {
+export function extractorRequest(vocab, { catalog, actions, player = null, expectedKeys, reply, startScene = null }, { previous = null, errors = null } = {}) {
     const system = `${extractorSystem(vocab)}\n\n${EXTRACT_PLAIN_FORMAT}`;
     const user = extractorUser({ catalog, actions, player, expectedKeys, vocab, reply });
     const messages = [{ role: 'system', content: system }, { role: 'user', content: user }];
@@ -197,6 +197,7 @@ export function extractorRequest(vocab, { catalog, actions, player = null, expec
         messages.push({ role: 'user', content: 'Your previous answer was empty: it ran out of room before the JSON. Answer now with the JSON object alone, at once and short: report only what the reply plainly establishes, leave out anything you are unsure of (an empty deltas list is a valid answer). Do not deliberate.' });
     } else if (previous !== null && errors) {
         messages.push({ role: 'assistant', content: String(previous) }, { role: 'user', content: `Your answer was not valid: ${errors.slice(0, 8).join('; ')}. Answer again with only the corrected JSON object, nothing else.` });
+        if (startScene && errors.some(e => /\.scene\b/.test(e))) messages.at(-1).content += ` Engine starting scene: ${JSON.stringify(startScene)}. Annotate earlier deltas with their actual scene before the later arrival (including any actual intermediate stop); the final scene is not retroactive. Preserve valid expected answers and independent deltas. Never invent or reorder arrivals to bypass the error.`;
     }
     return { system, user, messages };
 }

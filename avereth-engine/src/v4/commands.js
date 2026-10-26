@@ -451,7 +451,14 @@ const HANDLERS = {
         // "the guild building", "back to the guild": the Guild hall is an engine node, never a new place to invent
         // (live 30.09.2026 14:56: the narrator made a "Guild desk" of it where no payout is possible)
         if (typeof c.to?.new === 'string') {
-            const destination = guildDestination(s, c.to.new, settlementOf(s, guildHallMeant(s)));
+            // A preceding destination qualifies this Hall even if that GO was refused as "already here".
+            // It is reference context only: arrival and turn-in remain conditional on the actual route.
+            const previous = (ctx.env?.commands || []).filter(x => x.type === 'go' && x.seq < c.seq).at(-1);
+            const target = typeof previous?.to === 'string' ? previous.to : typeof previous?.to?.new === 'string'
+                ? knownByName(s, previous.to.new, s.places[s.scene.at]?.realm || s.scene.location, { reportedOnly: false })?.id : null;
+            const town = target && settlementOf(s, target)
+                || (/^(?:i\s+)?(?:enter|step|walk)\b/i.test(String(c.quote || '').trim()) ? settlementOf(s, s.scene.at) : null);
+            const destination = guildDestination(s, c.to.new, town || settlementOf(s, guildHallMeant(s)));
             if (destination?.error) return { status: 'refused', reason: destination.error, line: `CANNOT GO — ${destination.error}.` };
             if (destination) c = { ...c, to: destination.id };
         }

@@ -20,7 +20,7 @@ import { normText } from '../util.js';
 import { spendsStatPoints, assignHint } from '../commands.js';
 import { mentionedSkills } from '../intent.js';
 import { activeHostiles } from '../combat.js';
-import { sceneHandle, tacticalHere, areaCaught, approachedBy, burstAim } from './scene_handles.js';
+import { attackTargetHere, sceneHandle, tacticalHere, areaCaught, approachedBy, burstAim } from './scene_handles.js';
 import { itemEffectOf, rulesetOf, skillOf } from '../content.js';
 import { actionsOf, weaponAttackOf, weaponAttackNamed } from '../derived.js';
 import { restoreOf } from './items.js';
@@ -835,7 +835,9 @@ export function mapPlan(commands, ctx, content, message, state) {
     if (typeof main.target === 'string') {
         // livetest 21.10.2026 ("*i Basic Attack D*", D dead, C the planner's target): the handle he names is the target
         const other = def.attack ? namedPeer(state, content, main.target, main.quote) : null;
-        if (other?.dead) return base({ kind: 'no_target', skill, ref: other.handle, dead: true });
+        const chosen = other?.id || main.target;
+        if (def.attack && state && !attackTargetHere(state, chosen)) return base({ kind: 'no_target', skill,
+            ref: other?.handle || sceneHandle(state, content, chosen, { c: true }), dead: state.entities[chosen]?.status === 'dead' });
         if (other) return base(asAction(other.id, 'handle'));
         return base(asAction(main.target, 'planner'));
     }
@@ -881,7 +883,8 @@ function namedPeer(state, content, target, quote) {
     const mine = split(sceneHandle(state, content, target, { c: true }));
     if (!mine) return null;
     const q = String(quote).replace(/[*_]/g, ' ');
-    const names = (h) => flat(q).includes(flat(h[0])) || (h[2] !== 'I' && new RegExp(`(?:^|[^A-Za-z'])${h[2]}(?=\\s*(?:$|[.,;:!?]|\\s(?:and|then|with|again|before|after|first|now)\\b))`).test(q.trim()));
+    const names = (h) => new RegExp(`(?:^|[^\\p{L}\\p{N}])${flat(h[0]).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?=$|[^\\p{L}\\p{N}])`, 'u').test(flat(q))
+        || (h[2] !== 'I' && new RegExp(`(?:^|[^A-Za-z'])${h[2]}(?=\\s*(?:$|[.,;:!?]|\\s(?:and|then|with|again|before|after|first|now)\\b))`).test(q.trim()));
     if (names(mine)) return null;
     const peers = Object.values(state.entities).filter((e) => e.id !== target && (e.kind === 'creature' || e.kind === 'npc'))
         .map((e) => [e, split(sceneHandle(state, content, e.id, { c: true }))]).filter(([, h]) => h && flat(h[1]) === flat(mine[1]) && names(h));

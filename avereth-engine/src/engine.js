@@ -30,7 +30,7 @@ import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, ro
 import { seedPlaces } from './v4/domain.js';
 import { rankAt, dungeonOf } from './v4/dungeon.js';
 import { syncEvents, levelSpan } from './v4/living.js';
-import { tacticalHere, areaCaught, approachedBy, sideOf, burstCaught } from './v4/scene_handles.js';
+import { attackTargetHere, tacticalHere, areaCaught, approachedBy, sideOf, burstCaught } from './v4/scene_handles.js';
 import { lootEvents } from './v4/loot.js';
 import { groupJoiners } from './v4/group_combat.js';
 import { featureEvent } from './v4/features.js';
@@ -99,7 +99,10 @@ export function playerTurn(state, content, input, { msg = null, intent: parsed =
     };
     const text = String(input ?? '');
     // the act the message's Intent IR read (src/ir.js), else read here: the same parse of the same state
-    const intent = parsed || parseIntent(text, s, content);
+    let intent = parsed || parseIntent(text, s, content);
+    if (c && intent.kind === 'attack' && !attackTargetHere(s, intent.target)) intent = {
+        kind: 'no_target', skill: intent.skill, ref: entityLabel(s, intent.target), dead: s.entities[intent.target]?.status === 'dead',
+    };
     if (intent.kind === 'command') {
         const r = runCommands(s, content, text);
         for (const e of r.events) emit(e);

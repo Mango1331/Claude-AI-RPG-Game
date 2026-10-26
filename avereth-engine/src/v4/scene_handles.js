@@ -5,6 +5,13 @@ import { truth, lookOf } from '../knowledge.js';
 import { normText } from '../util.js';
 
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+/** A strike needs a living local actor, or a still active combatant of the current encounter. */
+export function attackTargetHere(state, id) {
+    const e = state.entities?.[id], c = state.encounter?.combatants?.[id];
+    return !!e && ['npc', 'creature'].includes(e.kind) && e.status !== 'dead'
+        && (c ? !c.current.defeated && !c.current.escaped : !!state.scene?.present?.includes(id));
+}
+
 const titleCase = (s) => String(s || '').replace(/^(?:the|a|an)\s+/i, '').trim()
     .replace(/(^|[\s-])(\p{Ll})/gu, (_, a, b) => a + b.toUpperCase());
 

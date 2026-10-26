@@ -138,7 +138,10 @@ function sentences(message) {
     let start = 0;
     for (let i = 0; i <= src.length; i++) {
         const ch = src[i];
-        const end = i === src.length || '.!?*"\n'.includes(ch);
+        // A question after a dash does not turn an independent preceding deed into a question.
+        const end = i === src.length || '.!?*"\n'.includes(ch)
+            || (ch === '-' && /^(?:i|we)\b/.test(flat(src.slice(start, i)))
+                && (QUESTION_START.test(flat(src.slice(i + 1))) || /^(?:what|where|who|how)'s\b/.test(flat(src.slice(i + 1)))));
         if (!end) continue;
         const raw = src.slice(start, ch === '?' || ch === '!' || ch === '.' ? i + 1 : i);
         const text = flat(raw);

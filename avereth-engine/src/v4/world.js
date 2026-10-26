@@ -133,6 +133,13 @@ export function firewallContext(s, content, chronicle = null, excludedFoes = [])
 }
 
 // ------------------------------------------------------------------------------------------------ places
+/** The same parent normalization for place creation and read-only scene matching. */
+function placeParent(s, kind, id, c) {
+    const parents = [...(PLACE_PARENTS[kind] || []), ...(c && kind === 'interior' ? ['wilderness'] : []), ...(c && kind === 'site' ? ['realm'] : [])];
+    for (let i = 0; i < 6 && id && !parents.includes(s.places[id]?.kind); i++) id = s.places[id]?.parent;
+    return id;
+}
+
 /** Resolve a place ref; {new: {name, kind, parent}} creates it (the same name under the same parent is the same place). */
 function resolvePlace(s, ref, emit, depth = 0, { c = false, reported = false } = {}) {
     if (typeof ref === 'string') return s.places[ref] ? { id: ref } : { error: `unknown place ${ref}` };
@@ -152,8 +159,7 @@ function resolvePlace(s, ref, emit, depth = 0, { c = false, reported = false } =
     // the town lies in the realm or region, not in the site). Prototype C (4.3.0-c.6): the wild has insides too, a den,
     // a cave, a chamber (live 04.10.2026 16:35: "Boar den chamber" refused in the Root-Hollow)
     // (4.3.0-c.6.6) and a site out in the open (a waystation on the road, a ford) lies in the realm itself
-    const parents = [...(PLACE_PARENTS[n.kind] || []), ...(c && n.kind === 'interior' ? ['wilderness'] : []), ...(c && n.kind === 'site' ? ['realm'] : [])];
-    for (let i = 0; i < 6 && pid && !parents.includes(s.places[pid]?.kind); i++) pid = s.places[pid]?.parent;
+    pid = placeParent(s, n.kind, pid, c);
     if (!pid) return { error: `a ${n.kind} cannot lie in ${placeName(s, parent.id)}` };
     // Patch 7: a room of a dungeon lies in the dungeon, not in the room he stood in when the story named it, and is
     // known there by its name (and level): the same name in another dungeon is another room; two rooms of that name
@@ -272,8 +278,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const p = s.places[id];
             if (typeof want === 'string') return want === id;
             const n = want?.new;
-            return !!p && !!n && normText(n.name) === normText(p.name)
-                && (!n.kind || n.kind === p.kind) && (!n.parent || matches(n.parent, p.parent));
+            if (!p || !n || normText(n.name) !== normText(p.name) || (n.kind && n.kind !== p.kind)) return false;
+            if (!n.parent) return true;
+            const parents = typeof n.parent === 'string' ? [n.parent]
+                : Object.keys(s.places).filter(id => matches(n.parent, id));
+            return parents.length === 1 && placeParent(s, n.kind || p.kind, parents[0], cPath) === p.parent;
         };
         return matches(ref, s.scene.at);
     };

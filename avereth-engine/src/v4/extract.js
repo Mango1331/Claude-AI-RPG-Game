@@ -26,7 +26,7 @@ export function worldVocab(vocab, state) {
     };
 }
 
-export const EXTRACTOR_VERSION = 'extract-5.9';
+export const EXTRACTOR_VERSION = 'extract-5.10';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -126,6 +126,7 @@ export const FORMAT_RULES = [
     'quest-ref and object-ref mean the exact matching CATALOG id; use {"new":"..."} only when the thing is genuinely new and that reference type permits it.',
     'For a newly created object use object.new {name:"bread",holder:"npc.giver",...} then object.move {object:{new:"bread"},to:"pc",...}. object.new has no ref field. Never invent an obj.* id. The new-name reference must identify exactly one earlier created object; otherwise distinguish the actual objects by their established descriptions.',
     'In a multi-place reply use the existing per-delta scene explicitly for events before the last arrival. Example: enter known npc.giver at the starting place; create bread on that giver there; move {new:"bread"} to pc there; arrive at the authorized destination. present describes co-presence at that step, not only the reply ending. A returning known NPC uses enter, not person.new.',
+    'Chronology: when the reply establishes arrival and then meets local people or creatures, emit arrive BEFORE their present:true introductions, with increasing seq. A destination scene label never makes an earlier introduction local. Remote sightings use present:false. In a repair correct both missing scene fields and event order to match the REPLY; never invent an arrival or sort every arrival to the front.',
     'person-ref is a person id from PRESENT or the CATALOG, or the ref of a person.new/creature.new earlier in the same answer.',
     'offer_line is {"what":string,"kind":"goods"|"service","service":"lodging"|"bath"|"laundry"|"meal"|"healing"|"training"|"other"|null,"qty":integer>=1,"price_cp":integer>=0,"said":string|null (the reply\'s words for the price),"effect":"heal"|"restore_mp"|"restore_sta"|null (only for a potion, draught or tonic that restores HP, MP or STA; the engine fixes how much),"teaches":teaches|null,"equipment":boolean|null}.',
     'For offer_line.equipment use true for intended combat equipment, false for ordinary/cosmetic merchandise, null if unspecified. This intent supplies no slot or numbers. Use supported categories from GEAR MARKET; separate armor parts have no combat slot. Do not sell ordinary decoration as a combat upgrade.',
@@ -260,6 +261,22 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
             && !['time', 'arrive', 'overreach', 'place.reported', 'dungeon'].includes(d.type)
             && !(['person.new', 'creature.new'].includes(d.type) && d.present === false))
             errors.push(`$.deltas[${i}].scene: explicitly name this earlier scene before the later arrival; do not inherit the reply's final scene`);
+    }
+    if (sceneRequired && startScene && Array.isArray(value.deltas)) {
+        // Only an explicit same destination reference is evidence of an ordering mistake.
+        // This requests the existing repair; it never moves an event or grants an arrival.
+        const key = ref => ref?.new ? JSON.stringify([ref.new.name, ref.new.kind, key(ref.new.parent)]) : ref;
+        const ordered = value.deltas.map((d, i) => ({ d, i })).filter(x => x.d && typeof x.d === 'object').sort((a, b) => a.d.seq - b.d.seq);
+        let current = key(startScene);
+        for (const [i, entry] of ordered.entries()) {
+            const { d } = entry;
+            if (d.type === 'arrive') { current = key(d.at); continue; }
+            if (!['person.new', 'creature.new', 'enter'].includes(d.type) || d.present === false) continue;
+            const scene = d.scene ?? value.scene, at = key(scene);
+            if (scene == null || scene === 'here' || at === current) continue;
+            if (ordered.slice(i + 1).some(x => x.d.type === 'arrive' && key(x.d.at) === at))
+                errors.push(`$.deltas[${entry.i}]: arrival must come before this local introduction in the REPLY's order; correct scene and seq. A remote sighting is not a local entry (new people/creatures use present:false)`);
+        }
     }
     if (sceneRequired && value.scene == null && (Object.values(expectedKeys || {}).includes('go') || (Array.isArray(value.deltas) && value.deltas.some(d => !['time', 'overreach', 'place.reported', 'dungeon'].includes(d?.type))))) errors.push('$.scene: actual narrative setting required for world changes');
     return { value, valid: errors.length === 0, complete: missing.length === 0, errors: [...errors.slice(0, 8), ...missing.map((k) => `expected key "${k}" not answered`)], missing, raw };

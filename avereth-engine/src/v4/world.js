@@ -38,7 +38,7 @@ import { itemTraits, useOf, itemProfile, priceAudit, gearOfferWhy } from './item
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor, templateFor, rulesetOf } from '../content.js';
-import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotMet, resolved, slotForNew, resolvedSlotNamed, slotEntityEvents, syncEvents, insideOf } from './living.js';
+import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotMet, resolved, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
 import { unbookedDungeonThreat } from './run9_evidence.js';
 import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
 
@@ -244,9 +244,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const sceneOf = d => cPath && rulesetOf(s) >= 2 ? d?.scene ?? answer.scene : null;
     const tag = msg !== null && msg !== undefined ? msg : s.turn;
 
-    // Patch 8: the Living Dungeon he is in, established before the reply's creatures are met (an older campaign's too).
-    // Patch 8.4.1: the ones that stood before this reply are those whose rules the narrator was given for it
+    // Preserve the historical Rule-1 first-contact exception; Rule 2 checks every reached Dungeon.
     const livingBefore = new Set(Object.keys(s.dungeons || {}));
+    // Establish the Dungeon already reached; arrivals later in this reply are handled before their creatures below.
     if (cPath) syncEvents(s, content, emit);
 
     // 1. authority first: what the story may not decide is never applied
@@ -480,6 +480,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         let hit = slot;
         if (cPath && kind === 'creature' && !hit) {
+            // An earlier arrival/classification in this reply may have reached a fresh Dungeon.
+            // Fix its population before slot matching or combat materialisation, including at its gate.
+            const dungeon = trueDungeonOf(s, s.scene.at);
+            if (rulesetOf(s) >= 2 && dungeon && !livingOf(s, dungeon)) {
+                const previousStep = step;
+                step = { kind: 'engine' };
+                for (const e of establishEvents(s, content, dungeon)) emit(e);
+                step = previousStep;
+            }
             const dead = resolvedSlotNamed(s, d);
             if (dead) {
                 reject(d, 'dungeon_slot', `${dead.slot.name || dead.slot.species} of this cycle is already defeated; it stays so until the Dungeon renews`);
@@ -522,13 +531,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             // 2): inside a Living Dungeon only the engine adds the foes (its encounters, placed ahead and filled here). A
             // creature the reply brings there that fills none is no foe of the world: no entity, so no fight, no XP, no
             // loot and no progress. One the story shows as no foe (threat: false: a bat, rats in the dust) stays a
-            // creature as before, and so does every creature outside a Living Dungeon. A Dungeon an older campaign is in
-            // that this very reply establishes (Patch 8 (7)) was not one its narrator had the rules of: not yet.
+            // creature as before, and so does every creature outside a Living Dungeon.
             const root = !hit && d.threat !== false ? trueDungeonOf(s, s.scene.at) : null;
             // 4.3.0-c.6.6.53 (live 23.10.2026 20:56: the entry not read, three goblins of the Mossback Warrens the next
             // reply brought before its gate were booked at Level 5, outside its encounters): at its root too, a creature
             // of the Dungeon's own kinds (its slots' anchors and species) is none of the world's; any other stays
-            if (root && livingBefore.has(root) && livingOf(s, root) && (insideOf(s, root) || (s.scene.at === root && dungeonKind(livingOf(s, root), d)))) {
+            if (root && (rulesetOf(s) >= 2 || livingBefore.has(root)) && livingOf(s, root) && (insideOf(s, root) || (s.scene.at === root && dungeonKind(livingOf(s, root), d)))) {
                 const name = s.places[root]?.name || root;
                 excludedFoes.push({ ref: d.ref, species: d.species, count: d.count });
                 reject(d, 'dungeon_foe', `only the engine adds the foes of ${name}: ${d.species || d.ref} is no encounter of this level`);

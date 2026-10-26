@@ -2194,3 +2194,7 @@ Einmalige Kauf-/Verkaufsbuchung, Zustimmung zu Gegenpartei und Gesamtpreis, meng
 ## Run 15: Händlerausrüstung .89 (Patch B)
 
 Neue Gearangebote benötigen bestehende Engine-Profile und Slots; gewöhnliche Ware bleibt ohne Kampfwerte. Kauf → Equip und Slotprüfung sind abgesichert. Keine neuen Slots oder Balancewerte. Gegenreview-Folgekorrektur .90 trennt beim Anlegen genau ein Stück aus einem Gearstapel ab. Technik und Abnahme: [PATCH_RUN15_GEAR_MARKET.md](PATCH_RUN15_GEAR_MARKET.md).
+
+## Run 18: Dungeon-Erstkontakt .94
+
+Dungeonpopulation vor der ersten Kreaturprüfung einrichten; kein ungebundener Gesamtrang-Gegner beim erstmaligen Erreichen des Eingangs. Zwei kurze Runnerhinweise präzisieren erneute Annahme und bestätigte Ausführung. Originalfall, Gegenproben, Kompatibilität und Abnahme: [PATCH_RUN18_DUNGEON_ENTRY.md](PATCH_RUN18_DUNGEON_ENTRY.md).

@@ -88,6 +88,8 @@ export const PLAYER_MECHANICS = [
     '- Trade with a present, identified merchant: ask for concrete goods, quantities and prices, then accept an actual offer you can afford. Sell only surplus you still hold. "No open offer" means obtain an offer; saying you already paid or repeatedly pushing the goods does not create a sale. Check that purchases and equipping were recorded before relying on them.',
     '- To recover overnight, obtain lodging if required, then actually sleep until morning. Looking for a bed or saying you wake at dawn does not perform sleep. Check time and HP/MP if the result is doubtful.',
     '- Choose Guild contracts from the actual engine board or quest panel. Turn in achieved contracts at a Guild hall. Check learned skills and development offers before buying training; improving a known skill differs from learning a new one.',
+    '- After fixing a missing prerequisite, explicitly perform the previously refused action again. Guild registration does not automatically accept a contract; verify that it is ACTIVE before travelling for it.',
+    '- Allowed, pending, conditional or announced actions are not completed actions. When travel narration conflicts with the System, use the confirmed current location.',
     '- After a refusal, address its stated cause: place, presence, offer, price, ownership, target or timing. If the same cause persists without changed conditions, check once or try another sensible opportunity. Record contradictions in observations and continue when possible; three failed attempts at one optional purchase are not a campaign blocker.',
 ].join('\n');
 

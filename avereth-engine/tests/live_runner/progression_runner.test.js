@@ -110,6 +110,8 @@ test('player requests include authority and recovery guidance while keeping the 
     assert.match(system, /no open offer/i);
     assert.match(system, /sleep.*morning/i);
     assert.match(system, /Guild hall/i);
+    assert.match(system, /registration does not automatically accept a contract/);
+    assert.match(system, /Allowed, pending, conditional or announced actions are not completed actions/);
     assert.doesNotMatch(system, /front desk.*different locations/i);
     assert.match(sent[0].messages.at(-1).content, /NEXT DECISION.*JSON/);
     assert.ok(sent[0].messages.at(-1).content.includes(view.messages[0].text));

@@ -68,7 +68,7 @@ XP-Schwelle bleibt nach `src/progression.js` `L×100`, damit vom Start L1 bis L1
 
 ### P2 – Skills entwickeln sich wesentlich langsamer als Level
 
-- Trotz **30 Encounters** hat der Mage nur sechs ausgewiesene `skill.progress`-Vergaben, alle für `Arcane Bolt` mit je **18 PP**, davon fünf? **genau sechs**: T11, 25, 48, 152, 156, 165. Er erreicht **P2/33 PP**, `Arcane Ward` bleibt ohne bestätigte PP-Nutzung, **keine neue Fähigkeit, Passive oder Skill-Evolution**.
+- Trotz **30 Encounters** hat der Mage nur sechs ausgewiesene `skill.progress`-Vergaben, alle für `Arcane Bolt` mit je **18 PP**, **genau sechs**: T11, T25, T48, T152, T156 und T165. Er erreicht **P2/33 PP**, `Arcane Ward` bleibt ohne bestätigte PP-Nutzung, **keine neue Fähigkeit, Passive oder Skill-Evolution**.
 - `growth.noted` dokumentiert vereinzelte Muster, aber keine offenen `development`-Angebote. Ein nicht bedeutsamer/trivialer Kampf darf nach Kanon keine PP geben; die vielen späteren schwachen F-Gegner könnten also **regelkonform** keine zusätzliche Proficiency auslösen. Die Klasse hat zwei gewählte Skills, aber der Player nutzt fast ausschließlich einen; ohne Ward-Anwendung fehlt für manche Growth-Pfade jede Grundlage.
 - **Hypothese:** Das Spiel kann im Bereich L5–L10 numerisch stark werden, während sein Fähigkeitenrepertoire weitgehend identisch mit L1 bleibt. Das ist *noch keine* Verletzung der organischen Growth-Regeln; Spielerauswahl und Seltenheit bedeutsamer Kämpfe müssen getrennt geprüft werden.
 
@@ -77,6 +77,12 @@ XP-Schwelle bleibt nach `src/progression.js` `L×100`, damit vom Start L1 bis L1
 - **30/30 Siege** darf nicht als „Kämpfe zu leicht“ gelesen werden. T25 endet bei **23 HP**, T48 bei **1 HP**, und der Spieler musste bei mehreren Nachfolgeschritten bewusst Recovery organisieren.
 - Zugleich sind späte Level-1-Gegner für den L8-Mage mit INT33, starkem Einzelziel-Zauber und Ambush-Mechanik trivial. Daraus lässt sich eine mögliche **Differenz zwischen großen frühen Gruppen und schwachen späteren Solo-Quests** ableiten; noch **keine allgemeine Monster-Nerf- oder AoE-Freigabe**.
 - Die früher als Kandidat diskutierten **frühen AoEs** für Mage und Warrior wären gerade bei sechs Rooks/fünf Goblins taktisch wertvoll; ein AoE darf nicht allein wegen dieser zwei Begegnungen zur zwingenden Startskill-Wahl werden. Das Mage-Angebot `Arcane Burst` ist bereits ein am PC zentrierter **ENGAGED-AoE**; der diskutierte Ersatz wäre ein technisch andersartiger **Fernbereichs-AoE**.
+
+### P2 – tatsächliches Novice-Board bleibt trotz Level 8 auf niedrigen Empfehlungsleveln
+
+Der Event-Export zeigt **35 erzeugte Guild-Questangebote**, **alle mit `rank=Novice` und `level=1, 2 oder 3`** (12×Level 1, 16×Level 2, 7×Level 3). Selbst nach dem tatsächlichen Level-8-Aufstieg wurden weitere Novice-Quests des gleichen unteren Bandes angeboten und angenommen. **Die Engine-Konfiguration erlaubt für Novice ausdrücklich Level 1–14**, während die formale Beförderung auf Proven neben fünf abgeschlossenen Novice-Kontrakten bereits **Power Rank E = Level 15** verlangt (`guild.js:promotion`). Zehn abgeschlossene Novice-Verträge reichen deshalb bei PC-Level 8 **nicht** zur höheren Guild-Rank-Freigabe.
+
+**Einordnung:** Eine automatische Erhöhung des PC-Levels oder eine künstliche XP-Nerf-/Buff-Regel wäre eine schlechte Antwort. Der Nutzer soll freiwillig passende Aufgaben wählen; die generierten Boards **könnten** jedoch die vorhandene L4–14-Spanne zu wenig nutzen und dem Spieler dadurch vor allem triviale, aber zeitraubende Kills anbieten. Das ist ein **beobachtetes Auswahlmuster in genau einer natürlichen Generationsreihe**, keine bewiesene harte Level-3-Codegrenze, keine Verpflichtung zur Skalierung mit dem Spieler und **keine Designfreigabe**. Vor einem Patch andere Runs und Board-Prompts prüfen: Gibt es nach Spielzeit/Guild-Erfolg oder ausdrücklich gewünschter schwierigeren F-Rang-Arbeit höhere Novice-Angebote? Eine eventuelle künftige Verbesserung sollte **mehr Auswahl innerhalb des bestehenden Welt-/Rangbandes** schaffen, nicht bereits materialisierte Gegner an das PC-Level anpassen.
 
 ### P2 – Statusintegrität nicht ignorieren
 

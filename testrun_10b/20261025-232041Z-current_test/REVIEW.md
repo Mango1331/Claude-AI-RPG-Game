@@ -1,5 +1,7 @@
 # Avereth – unabhängiger Gegenreview des natürlichen Laufs .91
 
+> **Gegenreview-Korrektur (Sol, 26.10.2026):** Die Bewertung von **T35 und T52** in diesem ursprünglichen Review ist unvollständig bzw. falsch. T35 ist ein echter Ortsidentitätsfehler; in T52 ersetzt die Engine das korrekt gewählte Ziel H durch den abwesenden Gegner C (**P1**). T58 erfordert neben der fehlenden Szenenannotation eine richtige **Ankunftsreihenfolge**; ein reiner Feld-Fix genügt nicht. Die korrigierte Analyse und Prioritäten stehen in [SOL_COUNTERREVIEW.md](SOL_COUNTERREVIEW.md). Die ursprünglichen Beobachtungen bleiben aus Gründen der Review-Nachvollziehbarkeit stehen.
+
 **Run:** `20261025-232041Z-current_test` · **Original-ZIP:** `20261025-232041Z-current_test.zip` · **SHA-256:** `3202d7de4bb80178abb9e249d7f14ca3d80f4558433537b07a2ee23359683ad0`
 
 **Produkt:** `4.3.0-c.6.6.91`, Commit `b55a897af686cb165f5812e4f0dd4287288565ff`, ST 1.19, Ruleset 2, Pfad C, GLM-5.3-Flash. Quellen: Original `chat.jsonl`, `avereth-events.json`, `player.jsonl`, `chat-completions.jsonl`, `calls.json`, `evaluation.json`, `run.json`, `report.md` und gezielt verifizierter Produktcode. Keine unabhängige Testausführung, keine Produktänderung.

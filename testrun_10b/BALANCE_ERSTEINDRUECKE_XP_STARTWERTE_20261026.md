@@ -168,3 +168,58 @@ Nach Nutzerangabe läuft **der erste natürliche Test mit 250 Inputs**, bislang 
 Bei der späteren Auswertung besonders **produktive Spielzüge vs. verlorene Verwaltungs-/LLM-/Engine-Missverständnis-Züge** unterscheiden. Hilfreich wären: XP/Level über Spielzüge, Charakteraktivität, echte Questzahlungen, Kampfgegner-/Gruppendichte, legitime Risikoentscheidungen, Skillwahl/-einsatz und gebuchter Loot/Shop/Equip. Die XP-×2- und Stats-7-Entscheidungen bleiben bis dahin unverändert und werden weiter beobachtet.
 
 **Keine Designkanon-, Runner- oder Produktcodeänderung durch diesen Nachtrag.**
+
+
+## Nachtrag: Run 20 – 252 Inputs auf .95, erste belastbarere Früh-/Mittelspiel-Daten (26.10.2026)
+
+**UNVERBINDLICHE neue Beobachtungen und Balancehypothesen, keine neue Designregel/XP-/Stat-/Skillentscheidung und keine Patchfreigabe.** Vollständiger Original-/Engine-Review: [`20261026-063907Z-current_test/REVIEW.md`](20261026-063907Z-current_test/REVIEW.md). Dieser Run ist länger als alle bisherigen, aber **kein kontrolliertes A/B-Experiment**. Original ZIP (41.435.082 Bytes, SHA-256 `058e1a02ede73b17aabc939b1b4fbab8471b8182a3c8c51a3bdbaa6566a5a307`) im Chat CRC-geprüft; separater Git-Binärupload nicht bestätigt.
+
+### Neue Messpunkte statt intuitiver Turnzahl
+
+- **252 echte Spielerinputs, L8 und 324 aktuelle XP**, insgesamt **3.124 kumulierte XP**; **30/30 Kämpfe gewonnen, 44 echte Kills, zehn abgeschlossene offizielle Gildenquests**. Kein Tod, Abschluss durch T252-Extractor-Reparatur-Transportabbruch. Level 15 also nicht erreicht.
+- L2 T25, L3 T33, L4 T48, L5 T110, L6 T152, L7 T167, L8 T215. **Checkpoint T100: L4, 358/400 XP**. L5 nur zehn Eingaben später, danach Dauer und XP-Quellen sehr unterschiedlich. Die Einordnung „noch nicht Level 10 nach ~250 Inputs“ wird dadurch bestätigt, aber kein Modell allgemeiner Levelgeschwindigkeit.
+- **XP pro 50 Inputs:** 614 / 344 / 484 / **1.056** / 602 (plus 24 auf T251). Die starke Spitze **T151–200** entstand vor allem durch Dungeonmonster und einen wertvollen Clearance-Auftrag: Zwei Zweiergegner-Encounters **168+216 XP**, Warden **252 XP**, Dungeonabgabe **270 XP**. Langsameres Leveln in den übrigen Fenstern war daher nicht nur Eingabeverschwendung, sondern auch unterschiedliche **Qualität/Höhe der gewählten Gegner und offiziellen Aufgaben**.
+- **XP-Quellen:** **1.636 Kampf-XP (52,4 %)** und **1.488 Quest-XP (47,6 %)**. Beide tragen wesentlich bei; weder Kampf noch Gildenabgabe ist numerisch entbehrlich. Der Charakter verdient insgesamt **29,75 % der 10.500 XP bis L15**. Ein gedankenloses Fortschreiben der ersten 252 Züge würde die dynamischen Gegner-, Quest- und Spielentscheidungen ignorieren. **„Effektive Abenteuerzüge“ sind nicht objektiv nachgezählt**; soziale Gespräche, Reise, Einkauf, Schlaf und Training können sinnvolles Gameplay sein und sind nicht per se „verschwendet“.
+- Für eine verlässlichere Turn-Prognose brauchen wir eine zusätzliche Phase mit **Level-8–12-relevanten** Gegnern und geeigneten Quests sowie Zeit- und Risikoaufwand. Der 1.000-Input-Rahmen ist mit diesem einen Datenpunkt weder widerlegt noch bestätigt.
+
+### Entscheidender neuer Befund: Gildenboard kann unterhalb des tatsächlichen Spielerlevels stecken bleiben
+
+**Alle 35 in dieser Kampagne generierten Guild-Angebote waren Novice, Level 1–3:** 12× L1, 16× L2, 7× L3. Das aktuelle Regelwerk erlaubt für die Novice-Stufe aber **Level 1–14**. Die Aufnahme in „Proven“ verlangt mindestens fünf erledigte Novice-Verträge **und** den E-Powerrang des Spielers, erst ab Level 15; der L8-Spieler mit zehn Erfolgen bleibt also zu Recht Novice.
+
+**Hypothese mit mittlerer Wichtigkeit:** Die bisherige Board-Erzeugung bietet fast nur niedrigstufige F-Rang-Arbeit an, obwohl das F-/Novice-Band noch bis L14 reicht. Das könnte zu einem **vermeidbar zähen Mittelspiel** führen: immer mehr triviale 24-XP-Monster und niedrig empfohlene Quests bei immer höheren Schwellen von 700/800/900 XP. Ohne neue anspruchsvollere **F-Rang**-Angebote wird die XP-Verdopplung zunehmend weniger spürbar. **Aber:** Das ist ein einzelfallbezogenes Generations-/Auswahlmuster und **keine harte Codegrenze Level 3**. Vor einer Änderung prüfen, ob Spielerbitten nach schwererer F-Rang-Arbeit, andere Branches und Board-Neugenerierungen höhere L4–14-Aufträge erzeugen. Ein sinnvolles späteres Designziel könnte größere **vielfältige Auswahl innerhalb des bestehenden festen Rangbands** statt PC-Level-Skalierung sein. Das würde die Freiheit und Gebietsstärke erhalten und stärkere Fortschritte nur gegen stärkere Gefahr ermöglichen.
+
+### Gruppen: nicht zu leicht trotz 30/30
+
+- **Sechs Owlbeak Rooks (T20–25):** Nach Sieg noch **23 HP/16 MP**. **Fünf Goblins (T42–48):** nach Sieg **1 HP**. Der Magier hatte die aktuellen stärkeren Basisstats und XP×2, erhielt trotzdem schwere Ressourcenverluste. **Ein eindeutiges Gegenargument gegen „30 Siege = viel zu leicht“.**
+- Gleichzeitig halfen konzentrierte Einzelzielzauber, taktische Angriffe und anschließende echte Rast, sodass alle Kämpfe überstanden wurden. Das kann gute risikobehaftete Spielbarkeit sein, keine Fehlkalibrierung.
+- **Rückbezug auf die AoE-Idee:** Der Spieler wählte **Arcane Bolt + Arcane Ward** statt Arcane Burst und benutzte fast nur Bolt. Das bereits vorhandene Mage-AoE ist **nahkampfbasiert**; ein optionaler Fern-AoE und ein Warrior-Cleave könnten bei Gruppen helfen, aber nur, wenn sie nicht zum erzwungenen Starterpick werden. Ein AoE sollte gegen ein Einzelziel nicht pauschal stärker sein als der passende Single-Target-Skill. **Wichtige neue Erkenntnis:** 6er- und 5er-Encounters sind in den Logs **echte Gruppen-Encounters**, daher lässt sich der hypothetische Flächenschadennutzen später mit identischen historischen Gegner-/Runden-Setups gezielt simulieren. Eine AoE-Fähigkeit ersetzt nicht Erkundung, Risikoentscheidung, Cover, Ressourcen oder Rückzug.
+- **Separates Risiko, spekulativ:** Ein Fern-AoE kann mehrere Gegner **vor deren ersten Aktionen** treffen. Ein früher solcher Skill könnte den gefährlichen Gruppenteil *stärker als erwartet* entschärfen, während ein ENGAGED-Warrior-Cleave erst nach der Annäherung wirkt. Beides sollte nicht blind dieselbe Rohpower/Mana-/Staminakosten erhalten. Der Fern-AoE benötigt nach aktuellem Code außerdem eine eigene definierte Zielcluster-/Geometrie-Lösung; `caster_engaged` allein genügt nicht.
+
+### Höhere Startwerte + XP: bestätigte Spielbarkeit, aber nicht isolierte Wirkung
+
+- L8 hat **140 HP Maximum**, **380 MP Maximum** und **INT 33**, nach normalen Levelups und überwiegend INT/WIL-Zuweisungen. L8 gegen einen Bog Strider mit **24 HP**: `Arcane Bolt` erzeugt 77,875 Rohpower und im Ambush **105 Schaden**. Das zeigt ein starkes Übergewicht gegen **Level-1-Fauna**, nicht notwendigerweise gegen hochrangige Gegner.
+- Die bis L8 ungebremste F-Rang-Einzelzielstärke könnte einen Teil der Schwierigkeit aus den repetitiven Novizenjagden nehmen. Statt sofort Startstats/XP zurückzunehmen zuerst den **Gegnerlevel-/Gefahr-/Auftragsmix** bei höheren eigenen Leveln bewerten.
+- Die zwei nur sehr knapp gewonnenen Frühgruppenkämpfe zeigen andererseits, dass `7` als Basis nicht automatisch sicher oder trivial bedeutet. Vor einer Balanceänderung lieber einen vergleichbaren Warrior/Rogue-Start und eine echte L8–12-Kampagne abwarten.
+
+### Gear und Skills sind möglicherweise der engere Progressionsengpass
+
+- Der Spieler zahlte **90 cp (Willowwood Staff + Tonic)**, später **240 cp (Ashwood Staff)** und **120 cp (Walking Boots)**. Der ausgerüstete Mage-Waffenbonus ist **MATK 6**, der ursprünglich ausgerüstete Starterstab hatte **MATK 10**. Das ist trotz erfolgreicher Käufe/Equip **keine echte Waffenverbesserung**, eher ein **Downgrade**. Boots wurden gekauft, aber nie eindeutig ausgerüstet. Am Ende **711 cp** Bargeld und Starterrobes. **Folgerung:** Der Spieler kann im Verlauf reich werden und neue Dinge kaufen, ohne seine Leistungsfähigkeit sinnvoll zu erhöhen. Die Problemursache könnte im Produktangebot, der Item-Werbewirkung, der Anzeige oder in seiner Entscheidungslogik liegen; nicht allein fehlendes Gold oder XP.
+- Trotz **30 Encounters** nur **sechs gültige PP-Fortschrittsbuchungen**, alle für Bolt (P1→P2/33 PP), **kein neuer Skill und keine Passive**. Das kann **regelkonform** sein: PP gibt es nur bei ernsthafter Nutzung gegen echte Herausforderung, ein einfaches L1-Monster im Endgame soll keine Farmquelle für Skill-Power sein. Der Charakter wählt außerdem ständig denselben Skill; Arcane Ward scheint praktisch keine Progression zu erhalten. **Spielgefühl-Risiko:** Level 8, viel stärkerer Schaden, aber dasselbe Fähigkeitsspektrum wie am Start. Nicht ohne Prüfung die PP-Bedingungen senken; erst Ursachen für fehlende echte neue Skills/Growth-Angebote und Zugänglichkeit von Training beobachten.
+- Eine höhere XP-Kurve zusammen mit **zu wenig ansteigendem Questlevel, Gear-Nutzen und Skillwachstum** könnte eine numerische, aber monoton spielende Figur erzeugen. Das ist **derzeit eine Designhypothese**, noch keine nachgewiesene Fehlbalance.
+
+### Ungeklärter technischer Endabbruch ist kein Balanceereignis
+
+Die letzte Erzählerantwort behauptete **4/4 Bog Striders**, obwohl die Engine **3/4** registrierte. Der Extractor versuchte daraufhin vorzeitig `quest.ready`, danach bekam der Repair **keine Modellantwort** und der Host abortierte nach ca. 125 s. Es wurde **kein** vierter Kill oder Questabschluss gebucht. Der Status meldet zudem **ein nicht näher ausgewiesenes Integritätsproblem**. Beides separat im Run-Review dokumentiert; daraus keine XP-, Skill- oder Mobwertänderung folgern. Die Engine-Guards schützen hier zumindest gegen die frei erfundene Questvollendung.
+
+### Aktualisierte unverbindliche Tendenz
+
+| Offene Frage | Meine erste Neigung nach Run 20 | Belastbarkeit |
+|---|---|---|
+| **XP ×2 weiterhin behalten?** | **Ja, vorerst.** XP steigen bei höherwertigem Dungeon deutlich; schwache Novice-Monster und Verwaltungs-/World-Umwege bremsen dennoch | Mittel |
+| **Startstats 7 weiterhin behalten?** | **Ja.** Zwei tatsächliche Gruppenkämpfe waren trotz Boost fast tödlich | Mittel für diese Mage-Erfahrung; niedrig über andere Klassen |
+| **Sind frühe Gruppen zu stark?** | **Teilweise sehr riskant**, aber nicht global unangemessen: 6er/5er erfolgreich bei Rest-HP23/1 | Mittel für die konkreten Encounter; niedrig für breite Balance |
+| **AoE Mage/Warrior früh anbieten?** | **Interessante taktische Option**, kein unmittelbarer Grund zur Pflicht- oder Overpower-Variante | Niedrig–mittel |
+| **Wird L15 in 1.000 Eingaben erreichbar?** | **Offen.** L8 nach 252 und wechselnde XP-Fenster erlauben keine seriöse Turn-Prognose | Niedrig |
+| **Was könnte Progression am stärksten bremsen?** | Nicht allein XP: **Novice-Auftragsauswahl 1–3 trotz Level 8**, wenig sinnvolle Gear-Upgrades, kaum organische neue Skills | Mittel für beobachtete Symptome; Ursachen offen |
+
+**Handlungsentscheidung: keine.** Weder die existierende ×2-XP-/Stats7-Entscheidung noch die sechs Starter-Skills oder das Guild-System werden aufgrund dieses Dokuments verändert. Längere Läufe und gezielte Gegenproben vor Design- oder Codefreigabe.

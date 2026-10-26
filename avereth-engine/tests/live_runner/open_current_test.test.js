@@ -14,9 +14,9 @@ test('current_test is an open Level-1 campaign without a seeded fixture or force
     assert.deepEqual(guideErrors(g), []);
     assert.equal(g.fixture, undefined);
     assert.equal(g.character, undefined);
-    assert.deepEqual(g.milestones.map(m => m.id), ['creation_complete', 'open_run_duration']);
-    assert.equal(g.openRun.minTurns, 100);
-    assert.ok(g.limits.maxTurns >= g.openRun.minTurns);
+    assert.deepEqual(g.milestones.map(m => m.id), ['creation_complete', 'open_run_level']);
+    assert.equal(g.openRun.targetLevel, 15);
+    assert.ok(g.limits.maxTurns >= g.openRun.checkpointTurns);
     assert.doesNotMatch(g.brief, /one XP before|synthetic fixture data|choose the offensive melee/i);
     assert.match(g.brief, /Guild/);
     assert.match(g.brief, /sleep/);
@@ -27,10 +27,10 @@ test('current_test is an open Level-1 campaign without a seeded fixture or force
     assert.deepEqual(old.milestones.map(m => m.id), ['class_rank_e','class_offered','class_accepted','class_verified','class_trait_used']);
 });
 
-test('open observation window cannot complete at character creation, a quest or 99 player inputs', async () => {
+test('legacy open observation window cannot complete at character creation, a quest or 99 player inputs', async () => {
     const c = await loadProductContent();
     const g = await campaign(c, { cls: 'Warrior', skills: 'Heavy Slash + Guard' });
-    const guide = loadGuide('current_test');
+    const guide = { ...loadGuide('current_test'), openRun: { minTurns: 100 }, milestones: [{ id: 'creation_complete', goal: 'Create a character' }, { id: 'open_run_duration', goal: 'Observe 100 inputs' }] };
     let ev = evaluate(g.chat, { guide });
     assert.equal(ev.reached.creation_complete !== undefined, true);
     assert.equal(finished(ev), false);
@@ -51,12 +51,12 @@ test('open observation window cannot complete at character creation, a quest or 
 
 test('invalid open-run guides cannot set impossible horizons or require fixtures', () => {
     const base = loadGuide('current_test');
-    assert.match(guideErrors({ ...base, openRun: { minTurns: 200 } }).join(' '), /exceeds maxTurns/);
+    assert.match(guideErrors({ ...base, openRun: { minTurns: 2000 } }).join(' '), /exceeds maxTurns/);
     assert.match(guideErrors({ ...base, fixture: '9d-rare' }).join(' '), /cannot require a synthetic fixture/);
     assert.match(guideErrors({ ...base, openRun: { minTurns: 0 } }).join(' '), /positive integer/);
 });
 
-test('legacy live.config.json maxTurns=40 cannot silently truncate the 100-turn current_test', () => {
+test('legacy live.config.json maxTurns=40 cannot silently truncate the Level-15 current_test', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'avereth-open-guide-'));
     const cfg = path.join(dir, 'live.config.json');
     try {
@@ -65,14 +65,16 @@ test('legacy live.config.json maxTurns=40 cannot silently truncate the 100-turn 
         assert.equal(local.maxTurns, 40);
         assert.equal(local.maxTurnsExplicit, false);
         const open = loadGuide('current_test');
-        assert.equal(resolveTurnLimit(open, local), 105, 'open guide keeps its own safe observation horizon');
+        assert.equal(resolveTurnLimit(open, local), 1000, 'open guide keeps its own safe observation horizon');
         const legacy = loadGuide('guild_dungeon_loop');
         assert.equal(resolveTurnLimit(legacy, local), 40, 'other guides retain their configured limits');
         const explicit = options(['--config', cfg, '--guide', 'current_test', '--max-turns', '120'], {});
         assert.equal(explicit.maxTurnsExplicit, true);
         assert.equal(resolveTurnLimit(loadGuide('current_test'), explicit), 120);
         const tooShort = options(['--config', cfg, '--guide', 'current_test', '--max-turns', '99'], {});
-        assert.throws(() => resolveTurnLimit(loadGuide('current_test'), tooShort), /at least 100 turns/);
+        const durationGuide = { ...loadGuide('current_test'), openRun: { minTurns: 100 } };
+        assert.throws(() => resolveTurnLimit(durationGuide, tooShort), /at least 100 turns/);
+        assert.equal(resolveTurnLimit(loadGuide('current_test'), tooShort), 99, 'an explicit safety cap need not reach the comparison checkpoint');
     } finally {
         fs.rmSync(dir, { recursive: true, force: true });
     }

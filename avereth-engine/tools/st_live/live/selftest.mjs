@@ -89,6 +89,16 @@ const report4 = fs.readFileSync(path.join(r4.runDir, 'report.md'), 'utf8');
 const calls4 = JSON.parse(fs.readFileSync(path.join(r4.runDir, 'calls.json'), 'utf8'));
 const players4 = fs.readFileSync(path.join(r4.runDir, 'player.jsonl'), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
 
+// The natural level guide: a deliberate four-input cap must be a limit, never Level-15 success.
+const guide5 = path.join(base, 'guide-level-cap.json');
+g.write(guide5, JSON.stringify({ id: 'selftest_level_cap', extends: 'current_test', openRun: { targetLevel: 15, checkpointTurns: 4 },
+    scripted: [{ say: 'Mage' }, { say: 'Flame Lance + Blink' }, { say: 'I look around the roadside.' }, { say: '#status' }] }));
+const o5 = options(['--stub', '--st', ST, '--st-data', data, '--runs', path.join(base, 'runs'), '--player', 'scripted', '--guide', guide5, '--max-turns', '4'], { ...process.env, AVERETH_LIVE_API_KEY: '' });
+o5.configFile = null;
+const r5 = await run(o5);
+const evaluation5 = JSON.parse(fs.readFileSync(path.join(r5.runDir, 'evaluation.json'), 'utf8'));
+const report5 = fs.readFileSync(path.join(r5.runDir, 'report.md'), 'utf8');
+
 // ------------------------------------------------------------------------------------------------ checks
 const has = (f) => fs.existsSync(path.join(r.runDir, f));
 const read = (f) => (has(f) ? fs.readFileSync(path.join(r.runDir, f), 'utf8') : '');
@@ -103,6 +113,9 @@ const game = r.stub.calls.filter((c) => c.role !== 'player');
 const steerOf = (c) => JSON.stringify(c.steer || {});
 const roles = new Set(calls.map((c) => c.role));
 const checks = {
+    levelGuideStopsAtExplicitCap: r5.end.kind === 'limit' && r5.turnsLog.length === 4 && evaluation5.progression?.currentLevel === 1 && !evaluation5.reached.open_run_level,
+    levelGuideCheckpointAndReport: evaluation5.progression?.checkpoint?.turn === 4 && /Progressionsziel:\*\* Level 15; tatsächlich Level 1/.test(report5) && /Vergleich nach 4 Eingaben/.test(report5),
+    levelGuideProfileUntouched: r5.protection.unchanged && r5.scan.hits.length === 0,
     profileUntouched: treeDiff(profileBefore, treeStat(data)).same && r.protection.unchanged,
     stCheckoutUntouched: treeDiff(stBefore, treeStat(ST, { skip: ['node_modules', '.git'] })).same,
     secretsNotRead: !imp.read?.some((x) => /secrets\.json$/.test(x.file)) && !imp.read?.some((x) => /[\\/]chats[\\/]/.test(x.file)),
@@ -146,7 +159,11 @@ const checks = {
     playerReasoningInReport: run1.player?.reasoning?.source === 'profile' && run1.player?.probe?.ok === true && /\| Spieler-Reasoning \(wirksam\) \| `reasoning_effort`="low", `clear_thinking`=true — [^|]*Probe: angenommen[^|]*max\. 3000 Tokens \|/.test(report),
     proxyPlayerWithoutReasoning: r3.stub.calls.filter((c) => c.role === 'player').length >= 2 && r3.stub.calls.filter((c) => c.role === 'player').every((c) => steerOf(c) === '{}'),
     // what the player sees: the HUD of the newest reply as its own section, no runner notice
-    playerSeesTheHud: players.slice(3).length >= 1 && players.slice(3).every((p) => { const [msgs, hud = ''] = p.screen.split('[YOUR CHARACTER AND THE WORLD'); return /HP 80\/80/.test(hud) && /World — Day 1/.test(hud) && !/World — Day 1/.test(msgs); }),
+    playerSeesTheHud: players.slice(3).length >= 1 && players.slice(3).every((p) => {
+        const [msgs, hud = ''] = p.screen.split('[YOUR CHARACTER AND THE WORLD');
+        const hp = evaluation.turns.find((t) => t.turn === p.about_turn)?.hp;
+        return Number.isFinite(hp) && hud.includes(`HP ${hp}/${hp}`) && /World — Day 1/.test(hud) && !/World — Day 1/.test(msgs);
+    }),
     runnerToastsNotForThePlayer: (run1.toasts || []).every((t) => t.origin === 'runner' || t.origin === 'game') && (run1.toasts || []).filter((t) => t.origin === 'runner').every((t) => !players.some((p) => p.screen.includes(String(t.text || '').slice(0, 40)))),
     observationsMapped: players.every((p) => p.about_turn === p.turn - 1),
     // the empty narrator reply

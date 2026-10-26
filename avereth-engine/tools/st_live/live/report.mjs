@@ -55,6 +55,13 @@ export function buildReport(x) {
     // Patch 8.4.2: what is open, and why: not reached (a blocker, the limit) or not performed (out of this run's reach)
     const open = req.filter((m) => !m.reached);
     if (open.length) L.push(`- **Offen:** ${open.map((m) => (m.unavailable ? `${m.id} (**nicht durchgeführt**: ${cell(m.unavailable)})` : `${m.id} (nicht erreicht)`)).join(' · ')}`);
+    if (ev.progression) {
+        const p = ev.progression, c = p.checkpoint;
+        L.push(`- **Progressionsziel:** Level ${p.targetLevel}; tatsächlich Level ${p.currentLevel ?? 'unbekannt'}. Sicherheitsgrenzen: ${guide.limits.maxTurns} Eingaben / ${guide.limits.maxMinutes} Minuten. Ein Limitabbruch erfüllt das Ziel nicht.`);
+        if (p.checkpointTurns) L.push(c
+            ? `- **Vergleich nach ${c.turn} Eingaben:** Level ${c.level}, ${c.xp} XP seit Levelaufstieg, ${c.coin_cp} cp, HP ${c.hp}, MP ${c.mp}; Ort ${cell(c.place)}. Ausrüstung und Skills stehen in evaluation.json → progression.checkpoint.`
+            : `- **Vergleich nach ${p.checkpointTurns} Eingaben:** noch nicht erreicht.`);
+    }
     // Patch 9A: the campaign's ruleset (2: Warrior, Mage, Rogue; 1: the five legacy classes) and the character it made
     if (ev.character?.ruleset) L.push(`- **Charakter:** ${ev.character.class ? `${cell(ev.character.class)}${ev.character.skills.length ? ` (${ev.character.skills.map(cell).join(', ')})` : ''}` : 'nicht erstellt'} · Regelstand ${ev.character.ruleset}${ev.character.ruleset >= 2 ? ' (Warrior, Mage, Rogue)' : ' (Legacy, fünf Klassen)'}`);
     if (ev.dungeon) L.push(`- **Ziel-Dungeon:** ${cell(ev.dungeon.name || ev.dungeon.root)}, Ebene ${ev.dungeon.floor}${ev.dungeon.quest ? ` (Vertrag ${ev.dungeon.quest})` : ' (ohne Dungeon-Vertrag: der erste betretene)'}`);

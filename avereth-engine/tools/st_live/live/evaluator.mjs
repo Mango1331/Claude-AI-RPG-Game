@@ -30,6 +30,7 @@ export const CHECKS = {
 
     creation_complete: 'the character is created (creation.completed)',
     open_run_duration: 'genuine open campaign reached the guide’s observation turn target after character creation',
+    open_run_level: 'the naturally created player character reached the guide’s target level in recorded engine state',
     guild_registered: 'registered with the Guild (guild.registered)',
     board_shown: 'a Guild board was shown (board.shown)',
     dungeon_quest_active: 'a contract with a Dungeon became his (quest.status → active, quest.dungeon set)',
@@ -572,6 +573,8 @@ export function evaluate(chat, { guide = null } = {}) {
 
     // the turns: the player's message, what came back, where he was and how he stood at the end of it
     const turns = [];
+    let finalState = null;
+    let checkpoint = null;
     const users = chat.map((m, i) => (m.is_user ? i : -1)).filter((i) => i >= 0);
     for (const [k, u] of users.entries()) {
         const end = users[k + 1] ?? chat.length;
@@ -580,7 +583,13 @@ export function evaluate(chat, { guide = null } = {}) {
         const reply = replies.find((m) => !m.is_user && !m.is_system);
         const x = reply ? rec(reply) : null;
         const s = foldChat(chat, end).state;
+        finalState = s;
         const pc = s.entities?.pc;
+        if (guide?.openRun?.checkpointTurns === k + 1) {
+            checkpoint = { turn: k + 1, level: pc?.sheet?.level ?? null, xp: pc?.sheet?.xp ?? null, coin_cp: pc?.sheet?.coin_cp ?? null,
+                hp: pc?.sheet?.hp ?? null, mp: pc?.sheet?.mp ?? null, place: s.scene?.at ?? null,
+                equipment: structuredClone(pc?.sheet?.equipment || {}), skills: structuredClone(pc?.sheet?.skills || {}) };
+        }
         turns.push({
             turn: k + 1, at: u, input: chat[u].mes, route: r?.route || null, system: replies.some((m) => m.is_system),
             place: s.scene?.at || null, placeName: s.scene?.at ? placeName(s, s.scene.at) : null, hp: pc?.current?.hp ?? pc?.sheet?.hp ?? null, mp: pc?.current?.mp ?? pc?.sheet?.mp ?? null, level: pc?.sheet?.level ?? null, encounter: !!s.encounter,
@@ -617,13 +626,21 @@ export function evaluate(chat, { guide = null } = {}) {
     if (guide?.openRun && reached.creation_complete && turn >= guide.openRun.minTurns) {
         hit('open_run_duration', chat.length - 1, { playerTurns: turn });
     }
+    const targetLevel = guide?.openRun?.targetLevel;
+    const pc = finalState?.entities?.pc;
+    const progression = targetLevel ? { targetLevel, currentLevel: pc?.sheet?.level ?? null, checkpointTurns: guide.openRun.checkpointTurns ?? null, checkpoint } : null;
+    if (targetLevel && reached.creation_complete && pc?.sheet?.level >= targetLevel && pc.status === 'alive' && pc.sheet.hp > 0 && !defeat) {
+        const first = turns.find(t => t.level >= targetLevel);
+        const at = first ? (users[turns.indexOf(first) + 1] ?? chat.length) - 1 : chat.length - 1;
+        hit('open_run_level', at, { level: pc.sheet.level });
+    }
     const list = (guide?.milestones || Object.keys(CHECKS).map((id) => ({ id, check: id, required: false }))).map((ms) => {
         const check = ms.check || ms.id;
         if (reached[check]) return { ...reached[check], id: ms.id, check, required: ms.required !== false, goal: ms.goal || CHECKS[check], reached: true };
         return { id: ms.id, check, required: ms.required !== false, goal: ms.goal || CHECKS[check], reached: false, ...(unavailable[check] ? { unavailable: unavailable[check] } : {}) };
     });
     const dungeon = root ? { root, name: placeName(foldChat(chat, chat.length).state, root), floor: level, quest: mine?.id || null } : null;
-    return { milestones: list, reached, encounters, quests: Object.values(quests), defeat, issues, counts, turns, dungeon, character, growth };
+    return { milestones: list, reached, encounters, quests: Object.values(quests), defeat, issues, counts, turns, dungeon, character, growth, progression };
 }
 
 const escapeRe = (t) => String(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

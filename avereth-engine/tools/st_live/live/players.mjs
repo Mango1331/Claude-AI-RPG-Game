@@ -69,7 +69,7 @@ export const PLAYER_ROLE = [
     '- a System command, when a game mechanic needs one (below).',
     'It never holds: inner thoughts, reflections or feelings; descriptions of the place, the mood or the scene; what an action does or will do; what other characters say, do or decide; things, skills or successes the screen has not confirmed; out-of-character requests to the narrator.',
     'Say what you try. Whether it works and what follows is for the game to decide.',
-    'Write in English, in the first person. If the game misunderstands you, rephrase or try another way, as a player would; never ask for a new reply.',
+    'Write in English, in the first person. If an action fails, read the reason and fix the missing condition; rephrase only when the action itself was misunderstood. Never ask for a new reply.',
     'LENGTH: usually one short sentence or one short line of speech. Longer only when a combined action or a conversation needs it. Never a paragraph of story.',
     'Not like this: I steady my breathing, remembering everything that brought me here. My fingers tighten around my staff as I consider the danger ahead…',
     'Like this: I cast Flame Lance at the closest skeleton.',
@@ -77,9 +77,21 @@ export const PLAYER_ROLE = [
 export const PLAYER_COMMANDS = [
     'SYSTEM COMMANDS are real game mechanics. A command is a message of its own: only the command, nothing else in it.',
     '- After a level-up the HUD shows Free Stat Points. They are spent only with #assign, several stats in one command: #assign WIL 2 INT 2 VIT 1. Words like "I put two points into INT" change nothing. Look at the System answer or the HUD afterwards to see that it worked.',
-    '- When you are unsure what you carry or wear: #bag, #equipment. When unsure of your values: #status. #help lists every command.',
-    '- Use them when they help, not before every small step. Never use an item the HUD or #bag has not shown you.',
+    '- When unsure of possessions, equipment, values, contracts or skills: #bag, #equipment, #status, #quests, #quest <title>, #skills, #skill <name>. #audit explains recorded changes; #help lists commands.',
+    '- Use panels when they help, not before every small step. Use confirmed possessions; a combined purchase and use must be conditional on the purchase succeeding.',
 ].join('\n');
+
+export const PLAYER_MECHANICS = [
+    'AVERETH PLAYING CONVENTIONS — choose your own adventures and natural wording:',
+    '- The newest System result is authoritative for actions, location, money, inventory, quests and growth. An explicitly older HUD does not override it. Narrator dialogue suggests opportunities; it cannot confirm a purchase, reward, arrival or unlock against that result. If confirmation is unclear, inspect a relevant panel once.',
+    '- State what you do now, naming the intended destination, person, item or current combat target clearly. A city is not its Guild hall or shop. Reach the required place; travel and a related interaction on arrival may share one message, conditional on arrival.',
+    '- Trade with a present, identified merchant: ask for concrete goods, quantities and prices, then accept an actual offer you can afford. Sell only surplus you still hold. "No open offer" means obtain an offer; saying you already paid or repeatedly pushing the goods does not create a sale. Check that purchases and equipping were recorded before relying on them.',
+    '- To recover overnight, obtain lodging if required, then actually sleep until morning. Looking for a bed or saying you wake at dawn does not perform sleep. Check time and HP/MP if the result is doubtful.',
+    '- Choose Guild contracts from the actual engine board or quest panel. Turn in achieved contracts at a Guild hall. Check learned skills and development offers before buying training; improving a known skill differs from learning a new one.',
+    '- After a refusal, address its stated cause: place, presence, offer, price, ownership, target or timing. If the same cause persists without changed conditions, check once or try another sensible opportunity. Record contradictions in observations and continue when possible; three failed attempts at one optional purchase are not a campaign blocker.',
+].join('\n');
+
+const NEXT_DECISION = 'NEXT DECISION: use the newest System result; do not assume an unconfirmed success. Return decision JSON, with your action only in "message".';
 
 export function playerSystemPrompt(guide, { username, persona }) {
     const ms = guide.milestones.map((m, i) => `${i + 1}. ${m.id}: ${m.goal}${m.required === false ? ' (if it comes within reach)' : ''}`).join('\n');
@@ -91,6 +103,7 @@ export function playerSystemPrompt(guide, { username, persona }) {
         PLAYER_ROLE.replace(/\{name\}/g, username),
         '',
         PLAYER_COMMANDS,
+        PLAYER_MECHANICS,
         '',
         `THE TEST: ${guide.brief}`,
         '',
@@ -98,7 +111,7 @@ export function playerSystemPrompt(guide, { username, persona }) {
         focus,
         persona ? `\nYOUR STYLE THIS RUN (a player's style, never a writer's): ${persona}` : '',
         '',
-        `STOP only when a real blocker makes the rest of the test meaningless: the game cannot go on, the same failure ${guide.limits.sameFailure} times in a row whatever you try, or ${username} is dead. Small problems (an odd reply, a misunderstanding, a detour) are no reason to stop: work around them and note them. When the last milestone is done, stop with stop_reason "done".`,
+        `STOP only when a real blocker makes the rest of the test meaningless: the game cannot go on, the same failure ${guide.limits.sameFailure} times in a row prevents any meaningful play despite alternatives, or ${username} is dead. Small problems (an odd reply, a misunderstanding, a detour) are no reason to stop: work around them and note them. When the last milestone is done, stop with stop_reason "done".`,
         '',
         'DECIDE QUICKLY: read the newest message and the HUD, take the next step toward your milestone, answer. Do not plan far ahead or weigh many options.',
         'ANSWER with one JSON object only. "message" goes to the game; the other fields are your test notes, which the game never sees:',
@@ -120,7 +133,7 @@ export function notesText(notes, { recent = 6 } = {}) {
 }
 
 export function playerTurnPrompt(view, notes, { turn, maxTurns, recent = 6 } = {}) {
-    return `TURN ${turn} of at most ${maxTurns}.\n\nYOUR NOTES SO FAR:\n${notesText(notes, { recent })}\n\nTHE SCREEN NOW (the newest at the bottom):\n\n${screenText(view)}`;
+    return `TURN ${turn} of at most ${maxTurns}.\n\nYOUR NOTES SO FAR:\n${notesText(notes, { recent })}\n\nTHE SCREEN NOW (the newest at the bottom):\n\n${screenText(view)}\n\n${NEXT_DECISION}`;
 }
 
 /** The smallest prompt: the newest messages and the HUD, the milestone at hand, the last notes (after a reasoning loop). */
@@ -131,6 +144,7 @@ function shortTurnPrompt(view, notes, { turn, maxTurns, milestone, minimal = fal
         milestone ? `YOUR MILESTONE NOW: ${milestone}` : '',
         minimal ? '' : `YOUR LAST NOTES:\n${notesText(notes, { recent: 3 })}`,
         `THE SCREEN NOW:\n\n${screenText(newest, { maxChars: minimal ? 1500 : 3000, hudChars: minimal ? 1200 : 2500 })}`,
+        NEXT_DECISION,
     ].filter(Boolean).join('\n\n');
 }
 

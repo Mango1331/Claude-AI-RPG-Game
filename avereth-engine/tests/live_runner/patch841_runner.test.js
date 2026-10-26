@@ -55,12 +55,12 @@ test('8.4.1 A1/A2: the player is the player character: short actions, speech, co
     assert.ok(p.includes('I examine the doorway for traps. If I find nothing suspicious, I carefully open it.'));
     assert.match(p, /never holds: inner thoughts, reflections or feelings; descriptions of the place, the mood or the scene; what an action does or will do; what other characters say, do or decide; things, skills or successes the screen has not confirmed; out-of-character requests/);
     assert.match(p, /LENGTH: usually one short sentence or one short line of speech/);
-    assert.match(p, /Write in English, in the first person\. If the game misunderstands you, rephrase or try another way, as a player would; never ask for a new reply\./);
+    assert.match(p, /Write in English, in the first person\. If an action fails, read the reason and fix the missing condition/);
     assert.match(p, /Not like this: I steady my breathing/);
     // A4: the commands
     assert.match(p, /A command is a message of its own: only the command, nothing else in it/);
     assert.match(p, /spent only with #assign, several stats in one command: #assign WIL 2 INT 2 VIT 1\. Words like "I put two points into INT" change nothing\. Look at the System answer or the HUD afterwards/);
-    assert.match(p, /#bag, #equipment[\s\S]*#status[\s\S]*not before every small step\. Never use an item the HUD or #bag has not shown you/);
+    assert.match(p, /#bag, #equipment[\s\S]*#status[\s\S]*not before every small step\. Use confirmed possessions/);
     // A3: decide quickly; short notes
     assert.match(p, /DECIDE QUICKLY/);
     assert.match(p, /at most two short sentences; \\?"\\?" when nothing new; no thoughts, no repetition/);

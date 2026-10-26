@@ -378,6 +378,13 @@ export async function run(o) {
                 log(`stopped: ${end.why}`);
                 break;
             }
+            // Level-goal runs need only current creation/life/level here. The full historical
+            // evaluation, including the comparison checkpoint, is exported when the run ends.
+            if (guide.openRun?.targetLevel) {
+                const state = foldChat(chat).state;
+                const pc = state.entities?.pc;
+                if (state.creation?.step >= 3 && pc?.status === 'alive' && pc.sheet.hp > 0 && pc.sheet.level < guide.openRun.targetLevel) continue;
+            }
             const ev = evaluate(chat, { guide });
             if (ev.defeat) { await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-defeat.png`))); end = { kind: 'defeat', why: `turn ${ev.defeat.turn}: ${ev.defeat.why}` }; break; }
             if (finished(ev)) {

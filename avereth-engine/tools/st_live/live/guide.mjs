@@ -39,9 +39,14 @@ export function guideErrors(g) {
     }
     if (!(g.milestones || []).some((m) => m.required !== false)) errors.push('no required milestone (a run would never be done)');
     if (g.openRun) {
-        if (!Number.isInteger(g.openRun.minTurns) || g.openRun.minTurns < 1) errors.push('openRun.minTurns must be a positive integer');
+        const levelGoal = g.openRun.targetLevel != null;
+        if (levelGoal && g.openRun.minTurns != null) errors.push('open-run needs exactly one completion goal: targetLevel or minTurns');
+        const field = levelGoal ? 'targetLevel' : 'minTurns';
+        if (!Number.isInteger(g.openRun[field]) || g.openRun[field] < 1) errors.push(`openRun.${field} must be a positive integer`);
+        if (g.openRun.checkpointTurns != null && (!Number.isInteger(g.openRun.checkpointTurns) || g.openRun.checkpointTurns < 1)) errors.push('openRun.checkpointTurns must be a positive integer');
         if (g.fixture) errors.push('an open-run guide cannot require a synthetic fixture');
-        if (!g.milestones?.some((m) => (m.check || m.id) === 'open_run_duration' && m.required !== false)) errors.push('open-run guide needs the required open_run_duration milestone');
+        const check = levelGoal ? 'open_run_level' : 'open_run_duration';
+        if (!g.milestones?.some((m) => (m.check || m.id) === check && m.required !== false)) errors.push(`open-run guide needs the required ${check} milestone`);
         if (g.limits?.maxTurns && g.openRun.minTurns > g.limits.maxTurns) errors.push('openRun.minTurns exceeds maxTurns');
     }
     for (const [i, st] of (g.scripted || []).entries()) {

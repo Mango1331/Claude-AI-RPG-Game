@@ -4,6 +4,8 @@
 
 Hier sammeln wir **unveränderte Original-ZIP-Exporte** aus den SillyTavern-Livetests und die dazugehörigen **ausführlichen, unabhängigen Reviews**. Zuerst mehrere Runs beobachten, danach wiederkehrende Fehler und Gameplay-Probleme bewerten. Diese Sammlung ist **kein Implementierungsauftrag**.
 
+**Unverbindlicher Themen-Querblick (26.10.2026):** [Erste Balance-Eindrücke aus den bisherigen Runs – XP ×2, Startwerte 7, Levelkurve, Gruppen, Gear und Skills](BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md). **Hypothesen und Beobachtungen, kein Designbeschluss und keine Patchfreigabe.**
+
 ## Ordnerstruktur
 
 ```text

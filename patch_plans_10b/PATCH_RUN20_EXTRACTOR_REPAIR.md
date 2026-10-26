@@ -1,6 +1,8 @@
 # Run 20 – Extractor-Szenenchronologie, Repair-Abbruch und gebuchte Wahrheit
 
-**Status:** Technischer Fachpatchplan, NICHT implementiert, keine Balancefreigabe. **Bezug:** Run `20261026-063907Z-current_test`, T251/T252, Build `.95` (`681c2b4`). Stand 26.10.2026. Die [Run-20-REVIEW](../testrun_10b/20261026-063907Z-current_test/REVIEW.md) und [Sols Gegenbefund](../testrun_10b/BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md) sind die Beobachtungsquellen. Der Originalexport ist im Review mit SHA/CRC belegt; auf `main` liegt die ZIP nicht nachweislich vor.
+**Umsetzungsstand 26.10.2026:** In `.97` gezielt umgesetzt: früher Szenenbezug im Repair und getrennte Timeout-/Cancellation-/Providerdiagnostik. Kein zusätzlicher Call nach Repair-Transportfehler; sichtbarer sicherer Abbruch bleibt. Der 3/4-Kill-Guard bleibt unverändert. Die historische Providerursache ist nicht bewiesen. Produktcommit [`b51a6f1`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b51a6f1d44415a00a71162bcec0b0c0b46349ac3); zehn Regressionen10/10, Vollsuite1881/1881, echter ST-Mock-Smoke21/21. Details/Abnahme einmalig in der [Produktpatchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b51a6f1d44415a00a71162bcec0b0c0b46349ac3/avereth-engine/docs/PATCH_RUN20_TECHNICAL.md).
+
+**Ursprüngliche Spezifikation (historisch, vor Implementierung):** Technischer Fachpatchplan, NICHT implementiert, keine Balancefreigabe. **Bezug:** Run `20261026-063907Z-current_test`, T251/T252, Build `.95` (`681c2b4`). Stand 26.10.2026. Die [Run-20-REVIEW](../testrun_10b/20261026-063907Z-current_test/REVIEW.md) und [Sols Gegenbefund](../testrun_10b/BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md) sind die Beobachtungsquellen. Der Originalexport ist im Review mit SHA/CRC belegt; auf `main` liegt die ZIP nicht nachweislich vor.
 
 ## Befund und gesicherte Abgrenzung
 

@@ -1,6 +1,8 @@
 # Run 20 – `repriced`: einheitlicher Angebotsstatus und State-Integrität
 
-**Status:** Kleiner eigenständiger technischer Fachpatchplan, NICHT implementiert. **Basis:** `.95` (`681c2b4`), Run `20261026-063907Z-current_test`, T236/E472; [Originalreview](../testrun_10b/20261026-063907Z-current_test/REVIEW.md) und [Sols Gegenprüfung](../testrun_10b/BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md). Keine Preis-/Balancemaßnahme.
+**Umsetzungsstand 26.10.2026:** In `.97` umgesetzt: `repriced` ist ein gültiger terminaler Angebotsstatus. Nur offene Angebote bleiben annehmbar; Handelsereignisse und historische Saves werden nicht umgeschrieben. Produktcommit [`b51a6f1`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b51a6f1d44415a00a71162bcec0b0c0b46349ac3); zehn Regressionen10/10, Vollsuite1881/1881, echter ST-Mock-Smoke21/21. Details/Abnahme einmalig in der [Produktpatchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b51a6f1d44415a00a71162bcec0b0c0b46349ac3/avereth-engine/docs/PATCH_RUN20_TECHNICAL.md).
+
+**Ursprüngliche Spezifikation (historisch, vor Implementierung):** Kleiner eigenständiger technischer Fachpatchplan, NICHT implementiert. **Basis:** `.95` (`681c2b4`), Run `20261026-063907Z-current_test`, T236/E472; [Originalreview](../testrun_10b/20261026-063907Z-current_test/REVIEW.md) und [Sols Gegenprüfung](../testrun_10b/BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md). Keine Preis-/Balancemaßnahme.
 
 ## Belegter Widerspruch
 

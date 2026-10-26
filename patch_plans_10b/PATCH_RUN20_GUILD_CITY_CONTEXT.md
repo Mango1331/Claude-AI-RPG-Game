@@ -1,6 +1,8 @@
 # Run 20 – Guild-Zielauflösung mit ausdrücklichem Stadtbezug (T203)
 
-**Status:** Technischer Fachpatchplan, NICHT implementiert. **Bezug:** Run `20261026-063907Z-current_test`, T203, Produktbasis `.95` (`681c2b4`); [Run-20-Review](../testrun_10b/20261026-063907Z-current_test/REVIEW.md), [Sols Gegenprüfung](../testrun_10b/BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md). Unabhängig von Scaling, Gildenbalance und Questvergütung.
+**Umsetzungsstand 26.10.2026:** In `.97` umgesetzt: vorheriges strukturiertes GO-Ziel bindet die nachfolgende Hallenreferenz an die genannte Stadt; kein Fernreise-/Auszahlungsfallback nach Alderwatch. Tatsächliche Ankunft bleibt erforderlich. Produktcommit [`b51a6f1`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b51a6f1d44415a00a71162bcec0b0c0b46349ac3); zehn Regressionen10/10, Vollsuite1881/1881, echter ST-Mock-Smoke21/21. Details/Abnahme einmalig in der [Produktpatchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b51a6f1d44415a00a71162bcec0b0c0b46349ac3/avereth-engine/docs/PATCH_RUN20_TECHNICAL.md).
+
+**Ursprüngliche Spezifikation (historisch, vor Implementierung):** Technischer Fachpatchplan, NICHT implementiert. **Bezug:** Run `20261026-063907Z-current_test`, T203, Produktbasis `.95` (`681c2b4`); [Run-20-Review](../testrun_10b/20261026-063907Z-current_test/REVIEW.md), [Sols Gegenprüfung](../testrun_10b/BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md). Unabhängig von Scaling, Gildenbalance und Questvergütung.
 
 ## Reproduzierter Fehler und Codeursache
 

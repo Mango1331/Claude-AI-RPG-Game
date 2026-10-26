@@ -28,7 +28,7 @@ import { targetQuestion } from './display.js';
 import { parseCoin } from './economy.js';
 import { clone, hash32, normText, uniq, hasTrackerBlocks, stripTrackerBlocks, roundHalfUp, ENGINE_VERSION } from './util.js';
 import { seedPlaces, lineage, populationAt } from './v4/domain.js';
-import { rankAt, dungeonOf } from './v4/dungeon.js';
+import { rankAt, dungeonOf, trueDungeonOf } from './v4/dungeon.js';
 import { syncEvents, levelSpan } from './v4/living.js';
 import { attackTargetHere, tacticalHere, areaCaught, approachedBy, sideOf, burstCaught } from './v4/scene_handles.js';
 import { lootEvents } from './v4/loot.js';
@@ -375,7 +375,8 @@ export function materialise(s, content, dice, emit, id) {
         const local = s.meta.f_progression ? lineage(s, at).map(p => truth(s, p, 'danger')[0]?.o).find(Boolean) : null;
         const area = local || truth(s, s.scene.location, 'danger')[0]?.o
             || (s.meta.f_progression && lineage(s, at).some(p => s.places[p].kind === 'wilderness') ? 'wilderness' : 'unknown');
-        const population = s.meta.f_progression && !dungeonOf(s, at) ? populationAt(s, at, e, content) : null;
+        // Room-by-room navigation (a den inside a hunting site) is not a true Dungeon population.
+        const population = s.meta.f_progression && !trueDungeonOf(s, at) ? populationAt(s, at, e, content) : null;
         const rank = !e.level ? rankAt(s, at) : null;
         const lo = rank && content.rules.ranks.bands.find((b) => b.rank === rank.min);
         const hi = rank && content.rules.ranks.bands.find((b) => b.rank === rank.max);

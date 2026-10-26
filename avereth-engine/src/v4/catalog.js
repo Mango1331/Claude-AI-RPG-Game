@@ -91,6 +91,9 @@ export function catalogPlaces(state, extra = [], { hidden = false } = {}) {
     // Patch 7: the ways from here first, so a long list of the land does not hide them; and the land outside the
     // dungeon (its realm too: the way out of a ruin in the wilds)
     for (const e of exitsFrom(state, at, { hidden })) add(e.to);
+    // Active hunting sites are named by id in QUESTS, even after a visit removes them from reportedPlaces.
+    // Keep those same ids valid for Planner/Extractor references; add still enforces room visibility.
+    for (const q of contracts(state)) if (q.status === 'active' && q.hunt?.at) add(q.hunt.at);
     const outside = mine && state.places[mine]?.parent;
     if (outside && state.places[outside] && !ids.includes(outside)) ids.push(outside);
     const here = state.places[at];

@@ -22,7 +22,7 @@
 //
 // Pure functions of the state; nothing here calls an LLM, and nothing is booked in a legacy campaign.
 import { rulesetOf, skillOf, npcTemplate } from '../content.js';
-import { affinityFor, defineSkill, learnSkill, fightQualifies, practiceProgress, skillDefErrors } from '../skills.js';
+import { affinityFor, defineSkill, learnSkill, fightQualifies, practiceProgress, skillDefErrors, disciplineTags } from '../skills.js';
 import { composeSkill, composeTags, composeAspects, composerFunctions, techniqueSignature, acquiredTechnique, techniqueOf } from '../skill_composer.js';
 import { applyEvent } from '../state.js';
 import { truth, entityLabel } from '../knowledge.js';
@@ -128,6 +128,26 @@ export function teacherTags(state, content, id) {
         if (sk && !sk.basic) for (const t of sk.tags || []) tags.add(t);
     }
     return [...tags];
+}
+
+/** Mechanical lessons need the same qualified teacher as learning; physical sources are separate goods. */
+export function trainingOfferWhy(state, content, teacher, line) {
+    if (line.kind !== 'service' || line.service !== 'training') return null;
+    if (line.teaches || /\bskill\s*stone\b/i.test(line.what || ''))
+        return 'a Skill Stone or manual must be a separately priced goods line; a training service creates no item';
+    const can = teacherTags(state, content, teacher);
+    if (!can.length) return 'the teacher has no established combat training or teaching discipline';
+    const words = value => normText(value).replace(/[^a-z0-9]+/g, ' ').trim();
+    const named = value => ` ${words(line.what || '')} `.includes(` ${words(value)} `);
+    const required = new Set(disciplineTags(content).filter(named));
+    const functions = composerFunctions(content);
+    for (const skill of [...content.skills.values(), ...Object.values(state.skill_defs || {})])
+        if (skill.name && !functions.includes(normText(skill.name)) && named(skill.name))
+            for (const tag of techniqueOf(skill)?.tags || []) required.add(tag);
+    for (const fn of functions.filter(named))
+        for (const tag of composeTags(content, fn, null, can).tags || []) required.add(tag);
+    if ([...required].some(tag => !can.includes(tag))) return `the teacher cannot teach the offered disciplines (${[...required].join(', ')})`;
+    return null;
 }
 
 /**

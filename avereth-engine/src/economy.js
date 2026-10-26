@@ -66,50 +66,39 @@ function numberOf(words) {
     return total || null;
 }
 
-/**
- * The coin an amount in words names, in copper: "two silver" -> 20, "a silver and five coppers" -> 15. Null when the
- * words name no amount of the currency (or a part of a coin: "half a silver").
- */
-export function coinFromWords(text, content) {
-    const cps = content.rules.currency.copper_per_silver;
-    const spg = content.rules.currency.silver_per_gold;
-    const t = String(text ?? '').toLowerCase().replace(/(\d)\s*(cp|c|s|g)\b/g, '$1 $2').replace(/[-–]/g, ' ').replace(/[^a-z0-9 ]+/g, ' ');
-    if (/\bhalf\b/.test(t)) return null;
-    const unit = /\b(gold|golds|g|silver|silvers|s|copper|coppers|cp|c)\b/;
-    const tokens = t.split(/\s+/).filter(Boolean);
-    let total = 0;
-    let found = false;
-    let i = 0;
-    while (i < tokens.length) {
-        if (!unit.test(tokens[i])) { i++; continue; }
-        // the number words right before the unit ("twenty five copper", "a silver")
+/** Numeric/word amounts share one tokenizer; apostrophes inside words are never currency separators. */
+export function coinEvidence(text, content) {
+    const clean = String(text ?? '').toLowerCase().replace(/[‘’‛′]/g, "'")
+        .replace(/(\d)\s*(cp|c|s|g)\b/g, '$1 $2').replace(/[-–—]/g, ' ');
+    const tokens = [...clean.matchAll(/[a-z0-9]+(?:'[a-z0-9]+)*/g)].map(m => ({ word: m[0], start: m.index, end: m.index + m[0].length }));
+    const parts = [];
+    const currency = content.rules.currency;
+    for (let i = 0; i < tokens.length; i++) {
+        if (!/^(?:gold|golds|g|silver|silvers|s|copper|coppers|cp|c)$/.test(tokens[i].word)) continue;
         let j = i;
-        while (j > 0 && (/^\d+$/.test(tokens[j - 1]) || SMALL[tokens[j - 1]] !== undefined || ['hundred', 'and'].includes(tokens[j - 1]))) j--;
-        while (j < i && tokens[j] === 'and') j++;
-        const n = numberOf(tokens.slice(j, i));
-        if (n === null) return null;
-        const u = tokens[i][0];
-        total += u === 'g' ? n * cps * spg : u === 's' ? n * cps : n;
-        found = true;
-        i++;
+        while (j > 0 && (/^\d+$/.test(tokens[j - 1].word) || SMALL[tokens[j - 1].word] !== undefined || ['hundred', 'and'].includes(tokens[j - 1].word))) j--;
+        while (j < i && tokens[j].word === 'and') j++;
+        const n = numberOf(tokens.slice(j, i).map(t => t.word));
+        if (n === null) continue; // a gold necklace or a person's initial names no price
+        const unit = tokens[i].word[0];
+        const factor = unit === 'g' ? currency.copper_per_silver * currency.silver_per_gold : unit === 's' ? currency.copper_per_silver : 1;
+        parts.push({ cp: n * factor, unit, start: tokens[j].start, end: tokens[i].end });
     }
-    return found ? total : null;
+    const cp = parts.length && !tokens.some(t => t.word === 'half') ? parts.reduce((n, p) => n + p.cp, 0) : null;
+    // "one silver and five copper" is one sum; two prices with intervening prose are not.
+    const compound = cp !== null && new Set(parts.map(p => p.unit)).size === parts.length
+        && parts.every((p, i) => !i || /^[\s,]*(?:and\s*)?$/.test(clean.slice(parts[i - 1].end, p.start)));
+    return { cp, mentions: parts.map(p => p.cp), compound };
 }
 
-/** Every amount of coin a text names, one per mention ("Twelve coppers ..., two silver to take it" -> [12, 20]). */
+/** "two silver" -> 20; "a silver and five coppers" -> 15; no stated whole-coin amount -> null. */
+export function coinFromWords(text, content) {
+    return coinEvidence(text, content).cp;
+}
+
+/** Every explicit amount, including abbreviations; components of a mixed-currency sum stay separate. */
 export function coinMentions(text, content) {
-    const t = String(text ?? '').toLowerCase().replace(/(\d)\s*(cp|c|s|g)\b/g, '$1 $2').replace(/[-–]/g, ' ').replace(/[^a-z0-9 ]+/g, ' ');
-    const tokens = t.split(/\s+/).filter(Boolean);
-    const out = [];
-    for (let i = 0; i < tokens.length; i++) {
-        if (!/^(?:gold|golds|silver|silvers|copper|coppers|cp)$/.test(tokens[i])) continue;
-        let j = i;
-        while (j > 0 && (/^\d+$/.test(tokens[j - 1]) || SMALL[tokens[j - 1]] !== undefined || tokens[j - 1] === 'hundred')) j--;
-        if (j === i) continue;
-        const v = coinFromWords(tokens.slice(j, i + 1).join(' '), content);
-        if (v !== null) out.push(v);
-    }
-    return out;
+    return coinEvidence(text, content).mentions;
 }
 
 /** Every number a text says, in digits or words ("two", "twelve", "twenty five", "200"). */

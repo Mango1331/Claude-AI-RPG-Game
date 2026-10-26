@@ -1,0 +1,37 @@
+# Run 17 – Beträge, Kauf-Folgeaktionen und Unterricht (.93)
+
+Basis: `.92` / `7a00e8febaf0e5f1974353985c496d17d2137920`. Produkt **4.3.0-c.6.6.93**, Extractor **extract-5.11**. [Originalexport und Review](https://github.com/Mango1331/Claude-AI-RPG-Game/tree/main/testrun_10b/20261026-012245Z-current_test) bleiben unverändert. Keine weitere Balanceänderung und kein natürlicher GLM-Lauf durch diesen Patch.
+
+## Korrekturen
+
+**Beträge – T56/T57 und zusätzliche Preiszustimmungs-Sonde.** Die Engine machte aus dem korrekt extrahierten 50-Kupfer-Angebot 60, weil `coinFromWords` das Possessiv `one's` als `one s` las. Daneben konnten Zustimmungstexte mit gemischten Währungen oder Kurzformen bei `agreed_cp:null` an der Preisprüfung vorbeigehen. `economy.js:coinEvidence` ist jetzt die gemeinsame Tokenisierung für `coinFromWords`, `coinMentions` und kommerzielle Preisprüfung: Wortapostrophe bleiben Teil eines Wortes, Währungstokens benötigen einen tatsächlichen Betrag. `1s`, `1 s`, ausgeschriebene Währungen und Währungsumrechnung bleiben unterstützt. Eine zusammenhängende Summe verschiedener Einheiten zählt als ein Preis, auch bei Stückpreisen; mehrere unabhängige Preise bleiben ungeklärt. `acceptanceWhy` prüft weiterhin den tatsächlichen angebotenen Gesamtpreis. Keine automatische Zustimmung bei einer echten Preisabweichung.
+
+**Kaufen und anschließend benutzen – Original-T57.** Der Agency-Guard darf eine neue Objektbenennung nach einer vorherigen Kaufentscheidung zum Handler durchlassen. Das gewährt weder Besitz noch Benutzung: `use` sucht erst an seinem tatsächlichen Ausführungsschritt unter den in diesem Zug erfolgreich gekauften und noch gehaltenen Objekten. Genau eine passende vollständige Wortfolge identifiziert den Gegenstand; Mehrdeutigkeit verlangt Klärung. Anschließend laufen sämtliche bestehenden Mengen-, Rang-, Verbrauchs- und Wirkungsprüfungen. Ein gescheiterter Kauf, eine vorgezogene Benutzung oder ein bloßer Wunsch erzeugt keinen Gegenstand und keine Wirkung. Der ursprüngliche bestätigte Kauf für 50 cp mit anschließendem Trinken bucht einmal −50 cp und +25 MP. Noch auf eine spätere Preisentscheidung wartende Käufe werden hierdurch nicht vorzeitig konsumiert.
+
+**Unterricht – T45/T46.** Eine als `service:training` gespeicherte Zeile erzeugte nur eine Zusage, obwohl sie einen Stein und Unterricht versprach; ihr Lehrer war ein untrainierter Commoner. Die bestehende Kompetenzprüfung `teacherTags` wird jetzt vor Veröffentlichung und vor Annahme eines mechanischen Unterrichtsangebots genutzt. Explizite Disziplinen, bekannte Skillnamen und Composer-Funktionen des Angebots müssen zum Lehrer passen. Generische Funktionen verwenden weiterhin ihre zulässigen Composer-Tags, nicht automatisch die gleichnamige Starter-Variante. Das konkrete Lernziel und seine Fortschrittsregeln bleiben in `learningActivity`.
+
+Physische Lernquellen mit `teaches` dürfen nicht als bloße Trainingsdienstleistung verkauft werden; der ursprüngliche Skill-Stone-Kombinationstext wird auch bei schon gespeicherten Angeboten erkannt. Ohne getrennte echte Preise wird die Kombination nicht künstlich in Waren und Dienstleistungen zerlegt. Gültige Lehrer können Unterricht verkaufen, Händler separat bepreiste Steine/Manuals; nichts davon gewährt automatisch einen Skill oder PP. Gewöhnlicher Unterricht ohne Engine-Fortschritt bleibt über `service:other` möglich. Die Prüfung gilt im C-/Ruleset-2-Pfad und schreibt alte Angebote oder bereits getätigte Zahlungen nicht um.
+
+**NPC-Angriff – T37.** Die Originalerzählung „Then it sprang … coming at him“ wurde trotz tatsächlich angreifendem Hound verworfen. `attackCommitted` ergänzt die Vergangenheitsformen `sprang`/`sprung` im bestehenden positiven Angriffsnachweis. Akteurszuordnung, Evidenzbezug, Zitat-, Negations- und Rückblicksschutz bleiben bestehen; keine neue Konfliktverwaltung.
+
+**Schlaf – bewusst keine nachträgliche Buchung.** Die frühere tatsächliche Schlafaktivität T33 funktioniert. T47 autorisiert lediglich die Suche/Reise zu einem Bett, T48 behauptet das Aufwachen. Daraus wird keine Nacht, Zahlung oder MP-Regeneration erfunden. Der Planner wird kurz präzisiert: eine gegenwärtige Entscheidung wie „I turn in for the night“ ist `activity:sleep`, bei gemeinter Übernachtung bis morgens. Bett suchen, nach einem Zimmer fragen und rückblickendes Aufwachen bleiben davon getrennt. Vorhandene Zimmerpreis-, Reihenfolge- und Regenerationsmechaniken bleiben maßgeblich.
+
+## Abnahme
+
+`tests/v4/patch_run17.test.js`: **25 neue Regressionen**, auf unverändertem `.92` **17 rot / 8 grüne Kontrollen**, danach vollständig grün. Die Fixture enthält den Original-Eventpräfix und ausgewählte Antworten, keine Modell-Reasoning-Texte. Preisveröffentlichung und Kauf/Benutzung werden getrennt geprüft; für die Verbraucherregressionen wird auch auf `.92` gezielt ein korrektes 50-cp-Angebot vorgegeben, damit der Preisfehler den Besitzfehler nicht verdeckt.
+
+- Originalangebot 50/30, Apostrophvarianten, Kurzformen, gemischte Beträge, Stückpreise und echte Preisabweichungen.
+- Kauf→Benutzung, fehlende Mittel, falsche Reihenfolge, mehrdeutige Ware, bloßer Wunsch und doppelte Benutzung. Event-Replay, JSON-Reload und Regenerate ohne erneuten Planner-Aufruf, zweite Zahlung oder zweiten Verbrauch.
+- Unqualifizierter beziehungsweise fachlich ungeeigneter Lehrer vor Angebot und Zahlung; qualifizierter Unterricht plus getrennt gekaufter Stein; gewöhnliche Dienstleistungen und Ruleset 1.
+- Original-Hound-Angriff sowie andere Akteure, neutrale Prosa, Zitate, Negationen und hypothetische/vergangene Angriffe.
+- Explizite Übernachtung mit vorhandener Erholung; keine rückwirkende Nacht aus den originalen T47/T48-Aussagen. Die vorhandenen `.51`-Zimmerpreisregressionen bleiben erhalten.
+
+**Abschließende Ergebnisse:** Angrenzende Economy-/Agency-/Trade-/Growth-/Lodging-Fälle **123/123**; vollständiges **`npm test`: 1814/1814**, keine ausgelassenen Tests. Echter **ST 1.19 / Chromium / Mockprovider**, **`npm run smoke:st:c`: 21/21**, fünf Extractor-Aufrufe, keine PageErrors; vier gespeicherte aktuelle Story-Replies jeweils `applied` und genau ein `extract.applied`. Installierte Engine-Quellen stimmen mit dem finalen Produktcode überein.
+
+Ein erster Smoke auf einem Zwischenstand erreichte 20/21 mit `Unexpected token I / Internal S… is not valid JSON` und `AbortReason @ openai.js:4565`; er gilt nicht als bestanden. Ein späterer Zwischenstand und der endgültige Code bestanden vollständig. Die Ursache des anfänglichen Hostfehlers bleibt offen. Ein Node-Zwischenlauf ohne Abschlusszusammenfassung wurde ebenfalls nicht als Abnahme gewertet; maßgeblich ist der vollständige Schlusslauf oben.
+
+## Grenzen
+
+Erzählfehler dürfen weiterhin auftreten. Erfundenen Gildenaufträgen wird keine Mechanik nachgereicht; bestehendes Board und Ablehnung unbekannter Verträge bleiben erhalten. Allgemeine Erzähltexte werden weder zu lückenlos beweisbaren Verträgen noch zu einem neuen Belohnungs-/Fortschrittssystem. Qualifikation und klar bezeichnete Unterrichtsthemen werden geprüft, nicht jede denkbare Bedeutung freier Prosa.
+
+Keine neuen Eventtypen, Save-Migrationen, Gearslots, XP-/Kampfwerte oder zusätzlichen Modellversuche. Bereits gespeicherte Events werden unverändert gefaltet, alte Fehlzahlungen nicht rückwirkend erstattet. Narrator-Karte weiterhin Revision `.85`; Testspieler-Leitfaden unverändert. Natürliche Modellqualität und die Wirkung der präzisierten Schlafanweisung sind erst in einem weiteren GLM-Lauf belegt.

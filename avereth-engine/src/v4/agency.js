@@ -352,13 +352,13 @@ export function guardCommands(message, commands, context = {}, { language = true
         if (otherActor(evidence, context)) { drop(c, 'npc_actor', 'the evidence is what someone else does'); continue; }
         const goesToHall = kept.some((k) => k.type === 'go' && (halls.has(idOf(k.to)) || /guild/i.test(String(k.to?.new ?? ''))));
         if (GUILD_ACTS.has(type) && PURPOSE.test(text) && !context.inGuildHall && !goesToHall) { drop(c, 'purpose', 'the evidence names the purpose of a later visit to a Guild hall, not an act here'); continue; }
-        if (stateCheck(c)) continue;
+        if (stateCheck(c, text)) continue;
         kept.push(c);
     }
     return { kept, dropped };
 
     /** The state checks; true when the command was dropped. */
-    function stateCheck(c) {
+    function stateCheck(c, evidence = c.quote || '') {
         if (!state) return false;
         const type = String(c.type || '');
         if (HELD_ACTS.has(type)) {
@@ -368,7 +368,10 @@ export function guardCommands(message, commands, context = {}, { language = true
             const takenNow = (id && kept.some((k) => k.type === 'take' && idOf(k.object) === id))
                 // Patch 3: a thing he takes in this very message under new words ("cut some meat out ... and eat it")
                 || (!id && typeof c.object?.new === 'string' && kept.some((k) => k.type === 'take' && typeof k.object?.new === 'string' && sameWant(c.object.new, k.object.new)));
-            if (!MONEY.test(String(name ?? '')) && !MONEY.test(String(c.quote ?? '')) && !takenNow) {
+            // The consumer checks the actual bought objects after the preceding purchase resolves.
+            const purchaseFirst = type === 'use' && !id && !WISH.test(evidence)
+                && kept.some(k => k.type === 'offer.accept' || k.type === 'buy');
+            if (!MONEY.test(String(name ?? '')) && !MONEY.test(String(c.quote ?? '')) && !takenNow && !purchaseFirst) {
                 if (id && objects.has(id) && !objects.get(id).held) { drop(c, 'not_held', `Alaric does not hold ${objects.get(id).name || id}`); return true; }
                 if (!id && c.object && typeof c.object === 'object' && type !== 'equip') { drop(c, 'not_held', `Alaric holds nothing like "${String(c.object.new ?? '').slice(0, 40)}"`); return true; }
             }

@@ -15,6 +15,7 @@ import { Dice } from '../rng.js';
 import { applyEvent } from '../state.js';
 import { clone, normText, slug, hash32 } from '../util.js';
 import { coinFromWords, coinMentions, numbersIn } from '../economy.js';
+import { trainingOfferWhy } from './growth.js';
 import { deriveCharacter } from '../derived.js';
 import { reportToEvents, makeResolver, isGroup, GROUP_WORDS } from '../delta.js';
 import { sceneHandle } from './scene_handles.js';
@@ -2221,6 +2222,15 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         d = { ...d, lines: d.lines.filter(l => !work.includes(l)) };
         if (!d.lines.length) return;
         if (cPath && rulesetOf(s) >= 2) {
+            const unsupported = d.lines.filter(l => trainingOfferWhy(s, content, seller, l));
+            for (const line of unsupported) {
+                const why = trainingOfferWhy(s, content, seller, line);
+                reject({ ...d, lines: [line] }, 'training_offer', why);
+                system.push(`NOT OFFERED — ${line.what}: ${why}. No payment or progress is booked.`);
+                corrections.push(`No executable training offer was recorded for ${line.what}: ${why}. Only engine-booked learning is gained.`);
+            }
+            d = { ...d, lines: d.lines.filter(l => !unsupported.includes(l)) };
+            if (!d.lines.length) return;
             const advice = d.lines.filter(l => offerAdvice(l.kind === 'service' ? l.what : '', l.said, entityLabel(s, seller), l.kind === 'service' ? Object.values(s.places) : [], s.scene.at, prose));
             if (advice.length) reject({ ...d, lines: advice }, 'offer', 'third-party advice is not this speaker’s binding offer; keep it as information');
             d = { ...d, lines: d.lines.filter(l => !advice.includes(l)) };

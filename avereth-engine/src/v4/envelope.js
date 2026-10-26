@@ -154,7 +154,7 @@ export function attackCommitted(prose, evidence = null, labels = [], others = []
     const actors = [...mentions(labels, true), ...mentions(others, false)];
     // This is positive, local evidence, not a default permission based on an extractor label.
     // One attack may have an unusual weapon/body; it still needs a directed action by this actor.
-    const action = /\b(?:attacks?|attacked|lung\w*|pounc\w*|charg\w*|rush\w*|surg\w*|ambush\w*|strik\w*|struck|stabs?|stabbed|swings?|swung|shoots?|shot|looses?|fired|fires|launch\w*|leaps?|springs?|bites?|snaps? at|comes? at|are on him|opens? fire|straight at him|both of them committed|comes? down[^.!?;]{0,40} at|claws first[^.!?;]{0,60} at|(?:hurls?|hurled|drives?|drove|brings?)\b[^.!?;]{0,45}\b(?:knife|blade|sword|axe|spear|stone|boulder|fist|claw)s?\b(?:[^.!?;]{0,25}\bdown)?|slams? into|rams? into|spews?[^.!?;]{0,40} toward|tears? toward)\b/g;
+    const action = /\b(?:attacks?|attacked|lung\w*|pounc\w*|charg\w*|rush\w*|surg\w*|ambush\w*|strik\w*|struck|stabs?|stabbed|swings?|swung|shoots?|shot|looses?|fired|fires|launch\w*|leaps?|springs?|sprang|sprung|bites?|snaps? at|comes? at|are on him|opens? fire|straight at him|both of them committed|comes? down[^.!?;]{0,40} at|claws first[^.!?;]{0,60} at|(?:hurls?|hurled|drives?|drove|brings?)\b[^.!?;]{0,45}\b(?:knife|blade|sword|axe|spear|stone|boulder|fist|claw)s?\b(?:[^.!?;]{0,25}\bdown)?|slams? into|rams? into|spews?[^.!?;]{0,40} toward|tears? toward)\b/g;
     let previous = null;
     const clauses = prose.replace(/"[^"\n]*"|“[^”\n]*”/g, '').split(/[.!?;\n]+/).map(normText);
     for (const clause of clauses) {

@@ -31,7 +31,7 @@ import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSet
 import { knownByName } from './known.js';
 import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect, namedSource, equipmentSlotKnown } from './items.js';
 import { itemEffectOf, rulesetOf } from '../content.js';
-import { learningActivity, stoneActivation } from './growth.js';
+import { learningActivity, stoneActivation, trainingOfferWhy } from './growth.js';
 import { effectiveStats } from '../passives.js';
 import { jobAction, jobOf } from './private_jobs.js';
 import { acceptPassive, declinePassive } from './passive_growth.js';
@@ -746,6 +746,14 @@ const HANDLERS = {
         return { status: 'resolved', line: `GIVES — ${o.name}${qty ? ` (${qty})` : ''} to ${who(s, c.to)}.` };
     },
     use(s, content, c, ctx, emit, envx) {
+        if (envx?.c && typeof c.object?.new === 'string') {
+            const words = text => normText(text).replace(/[^a-z0-9]+/g, ' ').trim();
+            const asked = words(c.object.new);
+            const bought = asked ? (ctx.boughtObjects || []).map(id => s.objects[id])
+                .filter(o => o?.holder?.entity === 'pc' && o.qty > 0 && ` ${words(o.name)} `.includes(` ${asked} `)) : [];
+            if (bought.length > 1) return { status: 'clarify', reason: 'which bought item?', line: 'CANNOT USE — more than one bought item matches; name which. None is consumed.' };
+            if (bought.length === 1) c = { ...c, object: bought[0].id };
+        }
         // Patch 3: a thing he takes in this very message ("cut some meat out ... cook it and eat it") is used once the
         // story has him take it (the world applier books it then); never before it is his
         if (c.object && typeof c.object === 'object' && typeof c.object.new === 'string') {
@@ -961,6 +969,10 @@ const HANDLERS = {
         if (pick.clarify) return { status: 'clarify', reason: 'which line?', line: `CLARIFY — ${c.qty} of which: ${pick.clarify.join(' or ')}?` };
         if (pick.error === 'the offer has no such item') return { status: 'refused', reason: 'no such line', line: 'CANNOT ACCEPT — the offer has no such item.' };
         if (pick.error) return { status: 'refused', reason: 'not in that amount', line: `CANNOT BUY ${c.qty} — ${pick.error}.` };
+        if (ctx.auth.c && rulesetOf(s) >= 2) {
+            const why = pick.picks.map(p => trainingOfferWhy(s, content, o.seller, p.line)).find(Boolean);
+            if (why) return { status: 'refused', reason: why, line: `CANNOT BUY TRAINING — ${why}. Nothing is charged or granted.` };
+        }
         if (pick.picks.some(p => p.line.equipment === true && (p.line.profile?.kind !== 'gear' || !equipmentSlotKnown(content, p.line.profile.slot)))) {
             return { status: 'refused', reason: 'equipment has no supported profile', line: 'CANNOT BUY — this equipment has no supported slot and values. Nothing is charged.' };
         }

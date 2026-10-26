@@ -12,7 +12,7 @@
 // both book through here.
 import { itemTraits } from './items.js';
 import { normText } from '../util.js';
-import { coinFromWords, coinMentions } from '../economy.js';
+import { coinFromWords, coinMentions, coinEvidence } from '../economy.js';
 
 const flat = text => normText(text || '').replace(/[^a-z0-9]+/g, ' ').trim();
 const contains = (text, part) => !!flat(part) && ` ${flat(text)} `.includes(` ${flat(part)} `);
@@ -54,10 +54,12 @@ export function tradePrice(cp, said, qty, content) {
         .map(m => coinFromWords(m[1], content)).filter(Number.isInteger);
     if (totals.length) return { cp: totals.length === 1 ? totals[0] : null, handled: true };
     const rates = [...text.matchAll(/\b(?:gold|silver|coppers?|cp)\s+(?:each\b|per\b|(?:a|an)\s+(?!piece of coin\b))/gi)];
+    const evidence = coinEvidence(text, content);
     if (rates.length) {
-        const mentions = coinMentions(text, content);
-        return { cp: rates.length === 1 && mentions.length === 1 && qty > 0 ? mentions[0] * qty : null, handled: true };
+        return { cp: rates.length === 1 && evidence.compound && qty > 0 ? evidence.cp * qty : null, handled: true };
     }
+    if (evidence.mentions.length > 1 || (evidence.mentions.length && evidence.cp === null))
+        return { cp: evidence.compound ? evidence.cp : null, handled: true };
     return { cp, handled: false };
 }
 

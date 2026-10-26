@@ -4,6 +4,8 @@
 
 **Zusammengeführt mit [GPTs unabhängiger Scaling-Studie](scaling_gpt.md), gelesen auf `main` / `056a9e5`.** Sinnvolle Ergänzungen stehen in den Fachabschnitten; Übereinstimmung, Abweichungen und meine korrigierte Gewichtung sind in §10 festgehalten. Die GPT-Originalstudie bleibt unverändert. Weder deren noch meine Zahlen sind damit freigegeben.
 
+**Späterer ausdrücklicher Umsetzungsauftrag (26.10.2026):** Ausgewählte F-Teile sind in Build`.96` implementiert und technisch abgenommen; maßgeblich ist allein die [F-Progressionspatchnote](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/f50ca4e7cbc59530b902e8cc73e338d1db79496e/avereth-engine/docs/PATCH_F_RANK_WORLD_PROGRESSION.md). Die untenstehenden größeren Waffen-/Preisbereiche, Dungeonspreizung und E-Vorschläge bleiben Diskussion. Keine pauschale Freigabe dieses gesamten Entwurfs.
+
 ## 1. Ziel und vorhandene Grundlage
 
 F soll sich über seine gesamte Spanne interessant entwickeln: neue Handlungsmöglichkeiten, bessere Beherrschung, brauchbare Anschaffungen und zunehmend anspruchsvolle freiwillig gewählte Abenteuer. E soll daran anschließen, ohne dass Level 15 alte Techniken und Ausrüstung schlagartig wertlos macht. Keine festen Skillbäume, keine vorgeschriebene Ausrüstung und keine automatisch am Spielerlevel ausgerichtete Welt.

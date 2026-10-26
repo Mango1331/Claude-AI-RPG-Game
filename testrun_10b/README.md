@@ -8,6 +8,8 @@ Hier sammeln wir **unveränderte Original-ZIP-Exporte** aus den SillyTavern-Live
 
 **Unverbindlicher Inhaltsentwurf:** [Sol – Entwicklung innerhalb von F und Übergang zu E](ENTWURF_F_RANG_PROGRESSION_UND_E_UEBERGANG.md): Ausrüstung, Skills, Formeln, Preise und separat weltgebundene Gegnergefahr. Zahlenbeispiele zur Diskussion, kein Patchauftrag.
 
+**Unabhängige Vergleichsstudie:** [GPT – F→E-Scaling: Monster, Weltgefahr, NPCs, Spieler, Spells, Ausrüstung, Preise, Loot, Gilde und Dungeons](scaling_gpt.md). Ausführliche Statusprüfung und Vorschläge, **unverbindlich, nicht implementiert**.
+
 ## Ordnerstruktur
 
 ```text

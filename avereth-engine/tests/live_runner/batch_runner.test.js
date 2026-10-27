@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { spawn } from 'node:child_process';
+import { PassThrough } from 'node:stream';
 import { SCENARIOS, scenarioGuide, scenarioMismatch } from '../../tools/st_live/live/scenarios.mjs';
 import { runBatch, launchRun } from '../../tools/st_live/live/batch.mjs';
 import { loadGuide } from '../../tools/st_live/live/guide.mjs';
@@ -137,4 +139,55 @@ test('a real child process receives graceful IPC cancellation and finishes writi
     const ctl = new AbortController();
     const p = launchRun([saved], { signal: ctl.signal, entry }); ctl.abort();
     assert.equal((await p).code, 0); assert.equal(fs.readFileSync(saved, 'utf8'), 'saved');
+});
+
+test('batch children use pipes instead of inherited Windows console handles and still forward both output streams', { timeout: 5000 }, async t => {
+    const entry = path.join(temporary(t), 'console.mjs');
+    fs.writeFileSync(entry, `console.log('child stdout'); console.error('child stderr');`);
+    const stdout = new PassThrough(), stderr = new PassThrough();
+    let out = '', err = '', spawned;
+    stdout.on('data', d => { out += d; }); stderr.on('data', d => { err += d; });
+    const exit = await launchRun([], { entry, stdout, stderr, spawnImpl: (exe, args, options) => {
+        spawned = options;
+        return spawn(exe, args, options);
+    } });
+    assert.equal(exit.code, 0);
+    assert.deepEqual(spawned?.stdio, ['ignore', 'pipe', 'pipe', 'ipc']);
+    assert.equal(spawned.detached, true); // keep Ctrl+C away from the child; IPC asks it to export
+    assert.match(out, /child stdout/); assert.match(err, /child stderr/);
+    assert.equal(stdout.writableEnded, false); assert.equal(stderr.writableEnded, false);
+});
+
+test('an early child failure preserves bounded, redacted stderr in the batch archive without claiming a game result', { timeout: 5000 }, async t => {
+    const dir = temporary(t), entry = path.join(dir, 'fail.mjs'), root = path.join(dir, 'batch');
+    const secret = 'synthetic-test-secret-123456789';
+    fs.writeFileSync(entry, `process.stderr.write('x'.repeat(12000)); process.stderr.write('\\nSTART FAILURE ' + ${JSON.stringify(secret.slice(0, 12))}); setTimeout(() => { process.stderr.write(${JSON.stringify(secret.slice(12))} + ' Bearer abcdefghijklmnopqrstuvwxyz\\n'); process.exitCode = 1; }, 5);`);
+    const result = await runBatch({ ...settings(root), secrets: [secret] }, { ...fixed, launch: (args, options) =>
+        launchRun(args, { ...options, entry, stdout: new PassThrough(), stderr: new PassThrough() }) });
+    assert.equal(result.status, 'infrastructure_stop');
+    assert.equal(result.runs.filter(r => r.status === 'finished').length, 3);
+    for (const r of result.runs.slice(0, 3)) {
+        assert.equal(r.end.kind, 'no_result'); assert.equal(r.exit.code, 1);
+        assert.match(r.exit.stderr, /START FAILURE <redacted>/);
+        assert.ok(r.exit.stderr.length <= 4000);
+        assert.match(r.end.why, /exit 1/); assert.match(r.end.why, /START FAILURE/);
+    }
+    const saved = fs.readFileSync(path.join(root, 'batch.json'), 'utf8');
+    assert.ok(!saved.includes(secret)); assert.ok(!saved.includes('abcdefghijklmnopqrstuvwxyz'));
+});
+
+test('native child spawn errors retain their cause instead of disappearing behind no_result', { timeout: 5000 }, async t => {
+    const exit = await launchRun([], { spawnImpl: (_exe, args, options) =>
+        spawn(path.join(temporary(t), 'missing-node-executable'), args, options) });
+    assert.equal(exit.signal, 'spawn_error'); assert.equal(exit.code, 1);
+    assert.match(exit.error, /ENOENT/);
+});
+
+test('the uploaded Windows fail-fast code remains visible when no run.json could be written', async t => {
+    const root = path.join(temporary(t), 'batch');
+    const result = await runBatch(settings(root), { ...fixed,
+        launch: async () => ({ code: 3221226505, signal: null }) });
+    assert.equal(result.status, 'infrastructure_stop');
+    assert.match(result.runs[0].end.why, /3221226505.*0xc0000409/i);
+    assert.match(fs.readFileSync(path.join(root, 'report.md'), 'utf8'), /0xc0000409/i);
 });

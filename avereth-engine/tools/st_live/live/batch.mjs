@@ -8,29 +8,53 @@ import { importProfile } from './import_profile.mjs';
 import { Guard, stamp } from './lib.mjs';
 import { loadGuide } from './guide.mjs';
 import { SCENARIOS, scenarioGuide } from './scenarios.mjs';
+import { CREDENTIAL_PATTERNS } from './export.mjs';
 
 const RUNNER = fileURLToPath(new URL('./run_live.mjs', import.meta.url));
 const INFRA = new Set(['harness', 'ui', 'missing', 'no_result', 'process_error', 'scenario_metadata_mismatch']);
 
 /** IPC permits graceful Ctrl+C on Windows too; child.kill(SIGINT) would terminate there without export. */
-export function launchRun(args, { signal, entry = RUNNER } = {}) {
+export function launchRun(args, { signal, entry = RUNNER, secrets = [], spawnImpl = spawn, stdout = process.stdout, stderr = process.stderr } = {}) {
     if (signal?.aborted) return Promise.resolve({ code: null, signal: 'cancelled' });
     return new Promise(resolve => {
-        const child = spawn(process.execPath, [entry, ...args], { stdio: ['ignore', 'inherit', 'inherit', 'ipc'], detached: true, windowsHide: true });
-        let ready = false, sent = false;
+        // Keep the detached child independent of the parent's Windows console handles.
+        // Pipes also keep startup failures visible while IPC still controls graceful stopping.
+        let child;
+        try { child = spawnImpl(process.execPath, [entry, ...args], { stdio: ['ignore', 'pipe', 'pipe', 'ipc'], detached: true, windowsHide: true }); }
+        catch (error) { resolve({ code: 1, signal: 'spawn_error', error: diagnostic(error.message, secrets) }); return; }
+        let ready = false, sent = false, failure = null, tail = '';
+        child.stdout?.pipe(stdout, { end: false });
+        child.stderr?.setEncoding('utf8');
+        child.stderr?.on('data', text => { tail = (tail + text).slice(-8192); });
+        child.stderr?.pipe(stderr, { end: false });
         const stop = () => {
             if (ready && !sent && child.connected) { sent = true; child.send({ type: 'batch.stop' }, () => {}); }
         };
         child.on('message', m => { if (m?.type === 'batch.ready') { ready = true; if (signal?.aborted) stop(); } });
         signal?.addEventListener('abort', stop, { once: true });
-        child.once('error', () => { signal?.removeEventListener('abort', stop); resolve({ code: 1, signal: 'spawn_error' }); });
-        child.once('close', (code, sig) => { signal?.removeEventListener('abort', stop); resolve({ code, signal: sig }); });
+        child.once('error', error => { failure = diagnostic(error.message, secrets); });
+        child.once('close', (code, sig) => {
+            signal?.removeEventListener('abort', stop);
+            resolve({ code: failure ? 1 : code, signal: failure ? 'spawn_error' : sig,
+                ...(failure ? { error: failure } : {}), ...(tail ? { stderr: diagnostic(tail, secrets) } : {}) });
+        });
     });
+}
+
+function diagnostic(text, secrets) {
+    for (const secret of secrets.filter(s => typeof s === 'string' && s.length >= 6)) text = text.split(secret).join('<redacted>');
+    for (const { kind, re } of CREDENTIAL_PATTERNS) text = text.replace(re, `<redacted ${kind}>`);
+    return text.slice(-4000);
+}
+
+function exitReason(exit) {
+    const hex = Number.isInteger(exit.code) && (exit.code > 255 || exit.code < 0) ? ` (0x${(exit.code >>> 0).toString(16)})` : '';
+    return [`exit ${exit.code ?? 'unknown'}${hex}`, exit.signal, exit.error, exit.stderr].filter(Boolean).join('; ');
 }
 
 function readResult(parent, job, exit) {
     const dirs = fs.readdirSync(parent, { withFileTypes: true }).filter(e => e.isDirectory() && fs.existsSync(path.join(parent, e.name, 'run.json')));
-    if (dirs.length !== 1) return { end: { kind: 'no_result', why: `expected one archived run, found ${dirs.length}` }, exit };
+    if (dirs.length !== 1) return { end: { kind: 'no_result', why: `expected one archived run, found ${dirs.length}; ${exitReason(exit)}` }, exit };
     const dir = path.join(parent, dirs[0].name);
     try {
         const r = JSON.parse(fs.readFileSync(path.join(dir, 'run.json'), 'utf8'));
@@ -57,10 +81,11 @@ function persist(g, root, batch) {
         `Status: **${batch.status}**. Serie abgeschlossen bedeutet, dass die Läufe beendet sind; es bedeutet nicht neun bestandene Level-15-Abnahmen.`, '',
         '| Nr. | Profil | Seed | Eingaben | Level | Ende | Originalbericht |', '|---|---|---:|---:|---:|---|---|',
         ...batch.runs.map(r => `| ${r.index} | ${r.id} | ${r.seed} | ${r.inputs ?? '–'} | ${r.level ?? '–'} | ${cell(r.end?.kind || r.status)} | ${r.runDir ? `[report.md](${r.folder}/${r.runDir}/report.md)` : '–'} |`), '',
+        ...batch.runs.filter(r => r.end?.kind === 'no_result').map(r => `- ${r.id}: ${cell(r.end.why)}`), '',
     ].join('\n'));
 }
 
-export async function runBatch({ root, args = [], seed = Math.floor(Math.random() * 2 ** 31), maxHours = 24, forbidden = [] }, { launch = launchRun, signal, revision = () => gitInfo()?.commit } = {}) {
+export async function runBatch({ root, args = [], seed = Math.floor(Math.random() * 2 ** 31), maxHours = 24, forbidden = [], secrets = [] }, { launch = launchRun, signal, revision = () => gitInfo()?.commit } = {}) {
     if (!Number.isFinite(maxHours) || maxHours <= 0) throw new Error('--max-hours must be positive');
     if (!Number.isInteger(seed) || seed < 0 || seed > 0x7fffffff) throw new Error('batch seed must be an integer from 0 to 2147483647');
     const g = new Guard([root], { forbidden });
@@ -82,7 +107,7 @@ export async function runBatch({ root, args = [], seed = Math.floor(Math.random(
             const parent = path.join(root, job.folder);
             g.mkdir(parent); job.status = 'running'; persist(g, root, batch);
             console.log(`\nBatch ${job.index}/9: ${job.id}, seed ${job.seed}`);
-            const exit = await launch([...args, '--scenario', job.id, '--seed', String(job.seed), '--runs', parent], { signal: ctl.signal });
+            const exit = await launch([...args, '--scenario', job.id, '--seed', String(job.seed), '--runs', parent], { signal: ctl.signal, secrets });
             Object.assign(job, readResult(parent, job, exit), { status: 'finished' });
             if (job.profileUnchanged === false || job.secretHits > 0) { batch.status = 'export_safety_stop'; persist(g, root, batch); break; }
             infra = INFRA.has(job.end.kind) ? infra + 1 : 0;
@@ -120,7 +145,8 @@ async function main() {
     const ctl = new AbortController(), stop = () => { console.log('Stopping the batch; waiting for the active run to export and clean up.'); ctl.abort(); };
     process.on('SIGINT', stop); process.on('SIGTERM', stop);
     try {
-        const result = await runBatch({ root, args: pass, seed: o.seed ?? undefined, maxHours, forbidden: [imp.st.dir, imp.st.dataRoot] }, { signal: ctl.signal });
+        const secrets = [process.env[o.keyEnv], o.player.keyEnv && process.env[o.player.keyEnv]].filter(Boolean);
+        const result = await runBatch({ root, args: pass, seed: o.seed ?? undefined, maxHours, forbidden: [imp.st.dir, imp.st.dataRoot], secrets }, { signal: ctl.signal });
         console.log(`Batch ${result.status}: ${root}`);
         process.exitCode = result.status === 'completed' ? 0 : 2;
     } finally { process.off('SIGINT', stop); process.off('SIGTERM', stop); }

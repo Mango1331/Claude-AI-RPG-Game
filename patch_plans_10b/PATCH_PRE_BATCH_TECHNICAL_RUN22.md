@@ -1,8 +1,13 @@
 # Vorbatch-Patch: vertiefte Ursachenanalyse und überarbeiteter Fachplan
 
-**Sol, 26.10.2026 — ausschließlich Analyse und Patchplanung.** Kein Produktcode, keine Tests und keine Runnerregeln geändert; keine neue technische Abnahme behauptet. Dieser Text ersetzt den früheren A–E-Plan als Planungsgrundlage. Dessen [Originalfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/6007e8e3b6771a9ed716a98b2d64b4f4ee9cdb52/patch_plans_10b/PATCH_PRE_BATCH_TECHNICAL_RUN22.md) bleibt in Git erhalten. Implementierung und Batchstart sind nachgelagerte Schritte.
+**Ursachenanalyse: Sol, 26.10.2026; Umsetzungsnachtrag 27.10.2026.** Die Analysephase änderte keinen Produktcode. Nach ausdrücklichem Implementierungsauftrag wurde das Fachpaket einschließlich des folgenden Gegenfeedbacks umgesetzt. Die frühere A–E-Fassung bleibt [in Git erhalten](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/6007e8e3b6771a9ed716a98b2d64b4f4ee9cdb52/patch_plans_10b/PATCH_PRE_BATCH_TECHNICAL_RUN22.md).
 
 **Geprüfter Stand:** `main` auf `6007e8e3`; Entwicklung auf `37c4be931b52600c28583e79528f362a74023924` (Runner-only), Produkt weiterhin **.98 / `c1ed54b`**. Sämtliche folgenden Codezeilen beziehen sich auf diesen Entwicklungsstand, nicht auf spätere Änderungen.
+
+
+**Umgesetzt als .99:** [Produktcommit `15ebbc1`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/15ebbc1475974c05e9fa9527500175122cc331dc); [maßgebliche technische Patchnote mit echten Tests und Grenzen](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/15ebbc1475974c05e9fa9527500175122cc331dc/avereth-engine/docs/PATCH_PRE_BATCH_RUN22.md). 28 neue Regressionen (21 rot/sieben Kontrollen auf .98), final 1.927/1.927 Node und ST-Smoke 21/21. Natürliche GLM-/Batch-Abnahme offen. Die folgenden Abschnitte erhalten die Herleitung; Umsetzungsabweichungen stehen hier kurz und ausführlich ausschließlich in der Patchnote.
+
+**GPT-Gegenfeedback übernommen:** Expected-only-Ankunft und zusätzliche Expected-Etappen nach expliziter erster Ankunft werden zeitlich eingeordnet; mehrdeutiges `here` ersetzt keinen Nachweis; Kaufwünsche werden nicht durch ein gemeinsames Namenswort identifiziert; die bloße Eltern-Kind-Raumbeziehung begründet auch bei frischer Zahlung keinen Zimmerzutritt. Alle vier Punkte besitzen Regressionen.
 
 ## 1. Ergebnis und belastbare Prüfgrundlage
 
@@ -92,11 +97,7 @@ Das bedeutet keine Reise in Leerlaufschritten: Normale GO-Reisen bleiben kompakt
 
 Für Call 203 wurden ausschließlich die fehlenden zeitlichen `scene`-Angaben ergänzt; `parseExtraction` meldet danach **valid**. Auf dem originalen Vorzustand bleiben Marktbesuche verboten, aber **Hetta's side room wird tatsächlich erreicht**, obwohl der Spieler nur wartet und nach Preisen fragt. Entfernt man als einzige Gegenänderung die alten `services`, bleiben auch dieser Raum und alle Reisen verboten. Das gültige JSON ist folglich noch kein belastbarer Agency-Nachweis.
 
-**Empfehlung:** Die alte 24-Stunden-Berechtigung entfernen. Die bestehende Komfortregel auf **den einmaligen unmittelbaren Zimmerbezug aus einer tatsächlich in diesem Turn gebuchten Unterkunft** begrenzen; danach ist wieder ein gewähltes GO beziehungsweise vorhandener ausdrücklicher Zimmernutzungspfad nötig. Aktuelle `service.granted`-/Turn-/Buchungsdaten verwenden, keinen neuen dauerhaften Raumrechte-Ledger. Bloße Preisfrage, altes bezahltes Zimmer, ausstehender Kauf oder `wait` reichen nicht.
-
-Die Prüfung muss am jeweiligen Delta-Schritt stattfinden: Eine erst früher **in dieser Antwort** erfüllte Kaufentscheidung darf berücksichtigt werden. Der initiale Firewall-Durchlauf darf eine solche kontextabhängige Ankunft nicht endgültig vor der späteren Step-Prüfung verwerfen; statische Verbote bleiben bestehen. Nur den betroffenen Arrive-Pfad angleichen, nicht sämtliche Firewallregeln neu ordnen.
-
-**Bewusste Grenze:** Das heutige Unterkunftsangebot bindet keinen exakten Raum. Ein current-turn-Nachweis allein beweist deshalb nicht semantisch, dass jeder Nebenraum das gekaufte Zimmer ist. Die Komfortausnahme darf nicht zu einer allgemeinen Erlaubnis für Büros/Läden/mehrere weitere Räume werden; bei uneindeutigem Ziel normaler GO-Weg. Die strengere Alternative wäre, auch für den ersten Zimmerbezug immer GO zu verlangen. Sie ist einfacher, entfernt aber bewusst den bestehenden Komfort aus `c664.test.js`; das ist keine unbemerkt vorzunehmende Nebenänderung.
+**Umgesetzte Präzisierung nach Gegenfeedback:** Die 24-Stunden-Ausnahme gilt nur noch für historische Rule-1-Kampagnen. Aktuelle Unterkunftsangebote binden keinen exakten Raum; eine frische Zahlung kann deshalb ebenfalls keinen beliebigen Nebenraum legitimieren. In Ruleset 2 ist ohne eindeutige vorhandene Bindung ein ausdrücklicher GO beziehungsweise eine tatsächlich autorisierte Bewegung erforderlich. Der bisher erwogene aktuelle-Buchung-Komfort wurde nicht übernommen, weil er denselben Identitätsmangel behalten hätte. Kein neues Raumrechte-System, keine rückwirkende Umschreibung von Services oder Events. Alte/frische Buchung und gültiger gewählter Raumwechsel sind getrennt geprüft.
 
 ### 3.3 Syntaxfehler und zurückzuweisende Weltbehauptungen getrennt behandeln
 

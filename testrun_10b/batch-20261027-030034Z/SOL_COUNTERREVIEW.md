@@ -1,6 +1,6 @@
 # Sol – Gegenreview und Ursachenplanung zum ersten .100-Batch
 
-Stand: 27.10.2026. **Analyse und Umsetzungsvorschlag, keine Produktänderung.** Der vertiefte Codeaudit in §11 präzisiert die Ursachen und ersetzt den früheren Patchzuschnitt aus §8/§10. Dieser Bericht ergänzt die unveränderte [GPT-Review](REVIEW.md). Er ersetzt weder die Originaldaten noch eine spätere technische Abnahme.
+Stand: 27.10.2026. **Analyse und Umsetzungsvorschlag, keine Produktänderung.** Der vertiefte Codeaudit in §11 präzisiert die Ursachen und ersetzt den früheren Patchzuschnitt aus §8/§10. §12 enthält die abschließende Feedbackprüfung und noch unbeschlossene Designvereinfachungen. Dieser Bericht ergänzt die unveränderte [GPT-Review](REVIEW.md). Er ersetzt weder die Originaldaten noch eine spätere technische Abnahme.
 
 ## 1. Quellen, Methode und belastbares Gesamturteil
 
@@ -497,6 +497,123 @@ Die vorhandenen Tests sind nicht nutzlos: `patch_prebatch99` deckt frühere Gesc
 Kein neues Testframework nötig. Bestehende Fixtures und Helfer reichen; die erwähnten Sonden als Rot-/Grün-Regressionen übernehmen. Node-Tests belegen Determinismus, echte ST-Abnahme belegt Hostlebenszyklus, natürlicher Batch belegt die Modellinteraktion. Keine der drei Ebenen ersetzt die anderen.
 
 **Abschließende Bewertung:** Die Kernarchitektur bleibt tragfähig. Der World-Applier hat aber eine echte gewachsene Inkonsistenz bei Ortsvergleich und Ausführungszeitpunkten; zusätzlich gibt es beim Verkauf zwei verschieden starke Wahrheitsquellen und bei Jagden eine vermeidbare doppelte Erfüllungsbestätigung. Diese begrenzten Zuständigkeiten zusammenzuführen hat belegten Nutzen. Ein weiterer Satz Spezialfilter für einzelne Namen, Orte oder Formulierungen wäre dagegen erneut Symptombehandlung.
+
+
+## 12. Abschließender Review: Feedback und bewusste Vereinfachungen
+
+**27.10.2026; weiterhin Analyse, keine Implementierung.** Grundlage: Feedback `Chatgpt Feedback(20261027-064620).md`, aktueller Entwicklungs-HEAD unverändert `54b6e08` / `.100`, gezielte Prüfung der gemeinsamen Codepfade und Originaldaten. Dieser Abschnitt ergänzt §11 um die ausdrücklich gewünschte Prüfung möglicher Designverluste. **Die vorgeschlagenen Designänderungen sind Empfehlungen, noch keine verbindlichen Beschlüsse.** Keine Änderung von Kanon, Guides, Produkt oder Tests.
+
+### 12.1 Ergebnis der Feedbackprüfung
+
+| Feedback | Ergebnis am Code |
+|---|---|
+| Ortsauflösung muss den aktuellen Arbeitszustand verwenden | Übernommen. Ein späteres Delta muss einen zuvor in derselben Antwort angelegten Ort erkennen können. Keine einzige Auflösung gegen den unveränderlichen Ausgangszustand cachen. |
+| Parser nicht zu einer zweiten World-Engine machen | Übernommen. Gemeinsame reine Ortsregeln, aber strukturelle Prüfung im Parser und endgültige Zulässigkeit im Schrittzustand. Kein vollständiger paralleler World-Simulator für Repair. |
+| Transit nicht einfach ans Ende verschieben | Bestätigt. Das würde frühere Geschenke retten, aber Straßenereignisse falsch einordnen. §12.2 bietet einen einfacheren Weg, diese implizite Reihenfolge gar nicht mehr rekonstruieren zu müssen. |
+| Verkaufslos vor der ersten Buchung vollständig prüfen | Übernommen. Käufer, tatsächliches Gebot, Zustimmung, Mengen, Besitz und Ereignisort gehören zusammen. Späterer Käuferabgang darf einen schon gültigen Handel nicht rückwirkend entwerten. |
+| `isHunt()` reicht nicht als automatische Abschlussregel | Ausdrücklich bestätigt. Lesende Sonde: DEFEAT-Wölfe plus GO, plus DEFEND-Brücke oder sogar plus FIND-Silberidol ergibt jeweils `isHunt:true`. Auch das engere `pureCull` lässt FIND zu; nicht blind übernehmen. |
+| End-to-End-Wirkungen statt nur Helper-Rückgaben | Übernommen. Besitz, Geld, Ort, Status und Replay sind die entscheidenden Ergebnisse. |
+
+Die im Feedback genannten „Rot-/Grün-Sonden“ waren tatsächlich lesende Fehlerreproduktionen und funktionierende Gegenkontrollen auf demselben unveränderten Produktstand. Eine reparierte grüne Implementierung oder neue Regressionstests liegen noch nicht vor.
+
+### 12.2 Größter Vereinfachungsgewinn: eine ausdrückliche Bewegungsquelle
+
+**Bevorzugte Alternative zum aufwendigeren Zusammenführen aller impliziten Reisewege:** Neue Extractorberichte buchen Bewegungen ausschließlich über das vorhandene `arrive`-Delta. `expected.arrived` kann zunächst eine Konsistenz-/Ergebnisangabe bleiben, aber kein eigenständiges Bewegungsrecht. Zeitablauf allein bewegt den Spieler ebenfalls nicht mehr.
+
+Das erhält normale Reisen, mehrere Etappen, Straßenbegegnungen, Zwischenhalte, Gefangennahmen und NPC-Eigeninitiative. Der Spieler formuliert weiterhin natürlich; die strengere Regel betrifft das interne Extractorprotokoll. Für eine noch nicht beendete Reise kann `arrive` den bereits vorhandenen Reichs-/Straßenort oder einen tatsächlichen Zwischenhalt nennen, obwohl das endgültige Reiseziel noch nicht erreicht ist.
+
+**Konkrete Gegenprüfung:** Auf dem Fixturezustand aus §11 wurde dieselbe Apfelübergabe mit anschließendem GO Richtung Glassmere verwendet. Bericht: Geschenk am Ausgangsort, Reisezeit, explizites `arrive` am Reichsstraßenort, dort Einführung der Weberin Nella; `expected.arrived:false` für Glassmere. Der bestehende Code verarbeitet das korrekt: Apfel beim PC, Nella lokal auf der Straße, keine Ablehnungen. Kein neues Bewegungsevent erforderlich.
+
+**Kosten anhand der sechs Runs:** Von 62 gespeicherten Berichten mit mindestens einem `expected.arrived:true` enthalten 58 bereits ein `arrive`; vier nicht. Die vier Expected-only-Berichte müssten unter dem neuen Vertrag repariert werden. Außerdem existieren zwei Berichte mit negativem Expected, ohne Arrival-Delta, aber gebuchter Ortsbewegung. Das ist eine Bestandsaufnahme, keine prognostizierte Erfolgsquote nach Promptänderung. Drei Berichte enthalten mehrere Arrival-Deltas; mehrgliedrige Bewegung ist also bereits ausdrückbar.
+
+**Was tatsächlich entfällt:**
+
+- Expected-Ankunft vor, während und nach der Deltaliste.
+- `laterLegs` als Quelle zusätzlich vermuteter Bewegungen.
+- Vorweggenommener Transit allein aus Minuten und GO-Ziel.
+- Der fehlerhafte JSON-Stringvergleich zur Suche einer impliziten Ankunftsgrenze.
+
+**Was bleibt:** gemeinsame reine Ortsauflösung; bestehende `arriveThrough`, Fallenstopps, Gate-/Siegelprüfung, Autorisierung, Begleitung und Slotbindung. Auch `reportedTarget` darf Expected nicht heimlich wieder bewegungswirksam machen. Bekannte Ziele müssen über die gemeinsame Identitätsauflösung wiedererkannt werden.
+
+**Verlust:** Bisher automatisch ergänzte, vom Extractor nicht gemeldete Bewegungen werden nicht mehr geraten. Fehlendes `arrive` bei positiver Ankunftsmeldung ist ein präziser Repairfall; widersprüchliche Angaben werden geklärt, nicht nach Belieben priorisiert. Ein tatsächlich unklarer Bericht darf stehenbleiben/abgewiesen werden. Keine Ankunft aus Prosa und kein Erfinden einer Fahrt durch den Repair.
+
+**Bewertung:** Hoher technischer Nutzen, geringer Verlust echter Spielmöglichkeiten. Ich bevorzuge diese Variante gegenüber einer immer raffinierteren Rekonstruktion impliziter Reisegrenzen. Die Umstellung braucht eine explizite Protokollrevision und Gegenproben, keinen zweiten dauerhaft betriebenen Bewegungsmodus.
+
+### 12.3 Handel: einmaliges Einverständnis statt mitreisender Kaufvollmacht
+
+§11.4 vereinheitlicht bereits den Verkauf über geprüfte Gebote. Zusätzlich empfehle ich für neue Handlungen:
+
+- Ein vorhandenes bestätigtes Angebot kann wie bisher unmittelbar angenommen werden.
+- Eine bedingte Kauf-/Verkaufszustimmung darf höchstens während der aktuellen Antwort und am betreffenden Handelsort gelten.
+- Sie darf nicht über weitere Spielerzüge oder Reisen hinweg später irgendein passendes Angebot automatisch bezahlen.
+- Noch unbekannte Preise werden als Angebot gezeigt; nach Ablauf des aktuellen Versuchs braucht es eine neue ausdrückliche Annahme.
+- Warenwünsche und Erinnerungen dürfen bleiben, erzeugen aber keine fortbestehende Zahlungsberechtigung.
+
+**Codebegründung:** `commands.buy` speichert `decision.opened`; `world.offerLines` sucht auch ältere passende Entscheidungen; `arrive` verschiebt frische Entscheidungen pauschal an den neuen Ort. Dazu kommen Abläufe zum Verdrängen alter Zusagen, Mengenabgleich und Abfangen fremder Zimmer. Diese Komplexität schützt vor einer absichtlich weitreichenden Komfortfunktion.
+
+**Verlust:** „Wenn irgendwann später ein passendes Zimmer auftaucht, kaufe es noch aufgrund meines früheren Limits“ entfällt. Ein automatisch erfüllbarer aktueller Kauf mit bekanntem/neu genanntem Preis bleibt möglich, soweit Partei, Ware und Ort eindeutig sind. Es braucht keine pauschal vorgeschriebene zweite Eingabe bei jedem Handel.
+
+**Nutzen:** Engere Lebensdauer der Autorisierung; weniger veraltete und ortsfremde Käufe. `world.sale` verliert seine parallele Auszahlung aus `expected.sold`. `bookSale` und Gebotsannahme verwenden dieselben vollständigen Vorbedingungen.
+
+In den sechs Runs wurden keine Mindestpreis-Verkaufszusagen oder bedingten Käufe mit explizitem Limit in den Userrecords gefunden. Daraus folgt nur, dass diese Komfortfunktion hier keinen belegten Nutzen geliefert hat; nicht, dass sie in allen früheren Runs ungenutzt war.
+
+**Bewertung:** Empfohlen. Etwas weniger Automatik ist hier günstiger als dauerhaft offene Zahlungszusagen. Bereits ausgeführte historische Transaktionen bleiben unverändert. Offene alte Zusagen bei der nächsten Verarbeitung explizit auslaufen lassen; keine stillschweigende Save-Umschreibung.
+
+### 12.4 Neue Gildenjagden: ein mechanischer Auftrag, keine zweite Erfolgsbeschreibung
+
+Für das aktuelle automatische Board empfehle ich eine engere Form als nur „`isHunt` und voller Counter“:
+
+- Genau ein quantitatives DEFEAT-Ziel mit fester Population beziehungsweise Dungeon-Zuordnung und Menge.
+- Der Zielort gehört zum Ziel; zusätzliche GO-/FIND-Vertragsobjektive sind dafür nicht erforderlich.
+- Task und mechanischer Endzustand werden aus diesen Daten erzeugt; zusätzliche Konsequenzen wie „die Boote fahren wieder“ sind Atmosphäre, keine zweite Abschlussbedingung.
+- Engine-Nachweise nach der festgelegten Zählregel entscheiden die Abgabefähigkeit.
+- Eine nur erzählte alternative Erfüllung bei zu geringer Zahl ersetzt diesen Nachweis nicht.
+- Annahme, ausdrücklich gewünschte Abgabe am Gildenort, einmalige Auszahlung und XP bleiben erforderlich.
+
+Die Gilde darf also weiterhin erklären, warum Wölfe ein Problem sind. Der Auftrag ist aber „besiege drei passende Wölfe“, nicht zusätzlich eine unbestimmte Versicherung, dass künftig kein Schaden mehr entsteht.
+
+**Technischer Anschluss:** `simpleListingWhy` erlaubt heute GO/FIND/DEFEAT; `bookBoard` speichert einen weiteren freien `desired_end_state`. Für Dungeon-Culls werden Task und Endzustand bereits teilweise in `cullTask/cullEndState` aus den Zahlen hergestellt. Dieses bestehende Prinzip lässt sich für neue Outdoor-Zähljagden verwenden. `contractReady`, `readyText` und `slipMarks` haben bereits einen gemeinsamen Prüfweg.
+
+**Verlust:** Offizielle neue Jagdverträge honorieren keine bloß erzählte kreative Ersatzlösung, die der festgelegte Engine-Nachweis nicht abbildet. Solche Lösungen und freiwillige NPC-Reaktionen bleiben in der freien Welt möglich. Eine bereits mechanisch erfasste Vertreibung darf nur dann zählen, wenn sie zur ausdrücklich veröffentlichten Zählregel gehört.
+
+**Kompatibilität:** Das neue Vertragsprofil muss bei Veröffentlichung eindeutig erkennbar gespeichert sein; vorhandene Mischaufträge, ältere FIND-/DEFEND-Ziele und Delivery dürfen nicht nachträglich umgedeutet werden. Eine kleine Profilkennzeichnung genügt, kein neues Questframework.
+
+**Bewertung:** Empfohlen als bewusste Designentscheidung. Das entfernt eine ganze LLM-Abhängigkeit und macht die Erfolgsmeldung überprüfbar. Der Ablaufdefekt bei bedingter Abgabe bleibt für historische Verträge separat korrekt zu behandeln; bloß die neue Jagdregel kaschiert ihn nicht ausreichend.
+
+### 12.5 Weitere Vereinfachungen: Nutzen gegen tatsächlichen Verlust
+
+| Möglichkeit | Technischer Gewinn und Verlust | Urteil |
+|---|---|---|
+| Neue feine Schauplätze nur persistieren, wenn sie mechanisch wichtig sind | Weniger neue Ortsidentitäten für Theke, Sitzbank oder dekorative Wegbiegung. Solche Details bleiben erzählbar. Dungeonräume, gesonderte Händlerorte, Habitat-Unterorte und relevante Hindernisse behalten ihren Ort. | Sinnvolle knappe Modellanweisung, keine Zusammenlegung bestehender Orte und kein pauschales neues Granularitätssystem. |
+| Ganzes Gildenboard deterministisch generieren; LLM nur Flavor | Würde Generatorfehler stark reduzieren. Es fehlt aber ein vollständiger Ersatz für generative Habitat-/Spezies-/Ortsvorschläge; diese Weltinformation wird derzeit in `bookBoard` etabliert. Ein bloßer Fünfzeiler ist das nicht. | Jetzt nicht nötig. Erst nur Vertragsmechanik/Endtext aus den strukturierten Zielen ableiten. |
+| Alle Shops auf feste Kataloge und Preise reduzieren | Einfachere Waren-/Preiszuordnung; weniger individuelle Händler, Verhandlung und generative Ausrüstung. Bestehende Profile und Angebote funktionieren bereits vielfach. | Für den aktuellen Root-Fix nicht gerechtfertigt. Keine neuen Gearslots, aber auch kein ungefragter Komplettumbau der Wirtschaft. |
+| Eine einzige Handlung/ein einziger Schauplatz je Spielerzug | Weniger Chronologie, aber mehr Leerlauf und schlechtere natürliche Bedienung. | Nicht empfohlen. Der vorhandene geordnete Deltaweg kann mehrere Orte verarbeiten. |
+| Abgabe immer erst in einer gesonderten Eingabe nach Ankunft | Entfernt einen bedingten Ablauf, kostet regelmäßig Interaktion; bei reinen Zähljagden ist Bereitschaft schon vor Ankunft mechanisch feststellbar. | Kein lohnender Standardverlust. Autorisierte Rückreise plus Abgabe erhalten. |
+| Narrative Geschenke nur noch nach extra Spielerannahme | Weniger freie NPC-Transfers, aber erheblicher Verlust lebendiger Reaktionen; bereits vorhandene Präsenz- und Einmaligkeitsprüfung reicht grundsätzlich. | Nicht empfohlen. Geld-/Sachgeschenke und Hilfe erhalten. |
+| Unbekannte JSON-Felder/ungültige Deltas pauschal wegwerfen | Weniger formale Abbrüche, aber verlorene Identitäts- und Chronologieabhängigkeiten. | Nicht empfohlen. Fehlende harmlose nullable-Felder werden heute schon in `normalizeSoftFields` ergänzt. |
+| Alte Privatquest-/Delivery-/V3-Pfade sofort löschen | Weniger Quelltext, aber neue Save-/Regressionrisiken und kein unmittelbarer Nachweis, dass dadurch diese Fehler verschwinden. | Nicht im Stabilisierungspatch. Neue Berichte eng halten, alte Events weiterhin folden. |
+
+Ein großer Teil der teuren Komplexität ist Komfort bei **unvollständigen oder widersprüchlichen technischen Berichten**, nicht notwendige Freiheit des Spielers. Deshalb zuerst solche automatischen Ergänzungen zurücknehmen, bevor wir Erkundung, NPC-Eigeninitiative oder Mehrfachhandlungen einschränken.
+
+### 12.6 Forschungsabgleich: was Formatkontrolle und Retries tatsächlich leisten
+
+Die aktuelle [NVIDIA-Dokumentation zu GLM-5.3-Flash](https://docs.nvidia.com/nim/large-language-models/latest/get-started/advanced/get-started-glm-5.3-flash.html#control-reasoning) bestätigt weiterhin: Reasoning zählt zum Ausgabelimit und kann bei diesem Serving nicht abgeschaltet werden; `low` ist eine unterstützte Einstellung. Das beweist weiterhin nicht die wirksame Konfiguration unseres konkreten Proxyservers.
+
+[Z.ai Structured Output](https://docs.z.ai/guides/capabilities/struct-output) zeigt JSON-Mode und zusätzliche Schema-/Geschäftslogikvalidierung. Eine formal gültige Antwort löst weder widersprüchliche Preise noch eine falsche zeitliche Zuordnung. Ein anderer Transportmodus oder ein größeres Budget ersetzt deshalb B/C nicht.
+
+Die [AWS Builders’ Library zu sicheren Retries](https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/) begründet die Trennung von erneutem Versuch und erneutem Seiteneffekt. Avereth hat mit Replyidentität, Text-Hash, Turn-Grenze, ausgewähltem Kandidaten und Record-Commit bereits wesentliche Voraussetzungen. Daraus folgt hier **kein** Bedarf für eine neue Transaktionsdatenbank oder ein weiteres Idempotenzsystem. Die bestehende Grenze muss bei jeder Recovery erhalten bleiben.
+
+Ein separat konfigurierbares, nach Messung zuverlässigeres Modell für strukturierte Aufgaben wäre bei weiter hohen Ausfallraten eine mögliche betriebliche Vereinfachung gegenüber immer mehr Recoveryzweigen. Modellwechsel und Wirkung sind hier nicht getestet oder beschlossen; Narratorqualität und tatsächlich übertragene Requestparameter müssen getrennt bewertet werden.
+
+### 12.7 Abschließende Empfehlung für die Entscheidung
+
+- **A beibehalten:** kleine begrenzte Recovery nach Fehlerart; wirksame Providerparameter messen, Narrator-Regenerate im echten ST absichern.
+- **B vereinfachen:** gemeinsame Ortsinterpretation bleibt notwendig; bevorzugt ausdrückliche `arrive`-Deltas statt ausgefeilter Rekonstruktion impliziter Bewegungen. Zwischenhalte und kompakte Reisen erhalten.
+- **C begrenzen:** ein geprüftes Gebot pro Verkauf, kurzlebige aktuelle Handelszustimmung, neue Gildenjagden mit eindeutigem mechanischem Zählziel. Historische Verträge und tatsächlich autorisierte Abgaben korrekt behandeln.
+
+Diese Variante greift die belegten Fehlerklassen an und entfernt zugleich Ursachen weiterer Sonderfälle. Sie ist kein Versprechen, dass ein LLM nie mehr falsche Weltinformationen liefert. Der Gewinn ist: dieselbe bestätigte Handlung hat weniger konkurrierende Darstellungen, weniger überholte Voraussetzungen und eine eindeutige Buchungsstelle.
+
+**Vor der Umsetzung festzuziehen sind nur die echten Designverluste:** keine automatisch ergänzte Bewegung ohne Arrival-Delta, keine fortbestehende Kaufvollmacht über spätere Züge/Orte und keine allein erzählte Ersatz-Erfüllung neuer Zähljagden. Alles andere bleibt ein technischer Konsistenzfix. Weitere grundsätzliche Reviewrunden sind auf Basis dieser Befunde nicht nötig; danach sollte die Umsetzung an den bereits konkret beschriebenen Rot-/Grün-Fällen gemessen werden.
 
 ## Code- und Quellenwegweiser
 

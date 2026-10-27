@@ -173,8 +173,8 @@ const checks = {
     ownCommandAndOlderHud: (() => { const p = players4.find((x) => x.turn === 5)?.screen || ''; return /\[YOU\]\n#status\n/.test(p) && /the HUD of an EARLIER reply, NOT updated since: the System answer above is newer/.test(p); })()
         && /the HUD under the newest reply/.test(players4.find((x) => x.turn === 4)?.screen || ''),
     emptyNarratorStops: r4.end.kind === 'narrator_empty' && r4.end.turn === 5 && r4.turnsLog.length === 5 && /finish_reason "length"/.test(r4.end.why) && /characters of reasoning, 0 of text/.test(r4.end.why),
-    emptyNarratorNoSwipe: calls4.filter((c) => c.role === 'narrator' && c.turn === 5).length === 1 && r4.stub.calls.filter((c) => c.role === 'narrator').length === calls4.filter((c) => c.role === 'narrator').length,
-    emptyNarratorReported: /Ergebnis:\*\* abgebrochen: leere Erzählerantwort in einem Story-Zug \(kein Swipe, kein Regenerieren\)/.test(report4) && fs.existsSync(path.join(r4.runDir, 'screens', 'turn-005-narrator_empty.png')) && run4.turns[4]?.outcome === 'narrator_empty',
+    emptyNarratorOneHostRecovery: calls4.filter((c) => c.role === 'narrator' && c.turn === 5).length === 2 && r4.stub.calls.filter((c) => c.role === 'narrator').length === calls4.filter((c) => c.role === 'narrator').length,
+    emptyNarratorReported: /Ergebnis:\*\* abgebrochen: leere Erzählerantwort in einem Story-Zug/.test(report4) && /Narrator-Recovery: 1 gespeicherte Versuchsmarkierungen/.test(report4) && fs.existsSync(path.join(r4.runDir, 'screens', 'turn-005-narrator_empty.png')) && run4.turns[4]?.outcome === 'narrator_empty',
     emptyNarratorDataKept: ['chat.jsonl', 'calls.json', 'chat-completions.jsonl', 'evaluation.json'].every((f) => fs.existsSync(path.join(r4.runDir, f))) && r4.scan.hits.length === 0 && r4.protection.unchanged,
     cleanCampaignChats: [r, r2, r3, r4].every((x) => {
         const msgs = fs.readFileSync(path.join(x.runDir, 'chat.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l)).filter((m) => 'mes' in m);

@@ -12,6 +12,7 @@ import { CREDENTIAL_PATTERNS } from './export.mjs';
 
 const RUNNER = fileURLToPath(new URL('./run_live.mjs', import.meta.url));
 const INFRA = new Set(['harness', 'ui', 'missing', 'no_result', 'process_error', 'scenario_metadata_mismatch']);
+const BATCH_SCENARIOS = [...new Set(SCENARIOS.map(s => s.baseClass))].flatMap(c => SCENARIOS.filter(s => s.baseClass === c));
 
 /** IPC permits graceful Ctrl+C on Windows too; child.kill(SIGINT) would terminate there without export. */
 export function launchRun(args, { signal, entry = RUNNER, secrets = [], spawnImpl = spawn, stdout = process.stdout, stderr = process.stderr } = {}) {
@@ -92,7 +93,8 @@ export async function runBatch({ root, args = [], seed = Math.floor(Math.random(
     if (fs.existsSync(root)) throw new Error(`batch folder already exists: ${root}`);
     g.mkdir(root);
     const startRevision = revision();
-    const batch = { startedAt: new Date().toISOString(), status: 'running', git: startRevision, stub: args.includes('--stub'), maxHours, runs: SCENARIOS.map((s, i) => ({ index: i + 1, id: s.id, baseClass: s.baseClass, focus: s.focus, seed: (seed + i) % 0x80000000, folder: `${String(i + 1).padStart(3, '0')}-${s.id}`, status: 'pending' })) };
+    // Assign seeds in the historical canonical order before alternating execution.
+    const batch = { startedAt: new Date().toISOString(), status: 'running', git: startRevision, stub: args.includes('--stub'), maxHours, runs: BATCH_SCENARIOS.map((s, i) => ({ index: i + 1, id: s.id, baseClass: s.baseClass, focus: s.focus, seed: (seed + SCENARIOS.indexOf(s)) % 0x80000000, folder: `${String(i + 1).padStart(3, '0')}-${s.id}`, status: 'pending' })) };
     const ctl = new AbortController();
     const cancel = () => ctl.abort('interrupted');
     signal?.addEventListener('abort', cancel, { once: true });
@@ -126,7 +128,7 @@ export async function runBatch({ root, args = [], seed = Math.floor(Math.random(
 
 async function main() {
     const argv = process.argv.slice(2);
-    if (argv.includes('--list')) { console.log(SCENARIOS.map((s, i) => `${i + 1}. ${s.id}`).join('\n')); return; }
+    if (argv.includes('--list')) { console.log(BATCH_SCENARIOS.map((s, i) => `${i + 1}. ${s.id}`).join('\n')); return; }
     const j = argv.indexOf('--max-hours');
     const maxHours = j < 0 ? 24 : Number(argv[j + 1]);
     const args = argv.filter((_v, i) => j < 0 || (i !== j && i !== j + 1));

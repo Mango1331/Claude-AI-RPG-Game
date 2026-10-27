@@ -16,6 +16,8 @@ import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { V4_OUTPUT_LINE } from '../../src/context.js';
 import { ENGINE_VERSION } from '../../src/util.js';
+import { Driver } from './live/driver.mjs';
+import { screenText } from './live/players.mjs';
 
 const require = createRequire(import.meta.url);
 let chromium;
@@ -241,10 +243,23 @@ try {
         const s = foldChat ? foldChat(ctx.chat).state : null;
         return s ? { mp: s.entities.pc.sheet.mp, encounter: !!s.encounter, foes: s.encounter ? Object.values(s.encounter.combatants).filter((c) => c.side === 'hostile').map((c) => ({ id: c.id, hp: c.current.hp })) : [] } : null;
     });
+    // Exercise the exact natural-run driver, including automatic Host recovery.
+    const driver = new Driver(page, { turnTimeoutMs: 60000 });
+    let delayedRecoverySave = false;
+    if (process.env.AVERETH_SMOKE_EMPTY_NARRATOR === '1') {
+        await page.route('**/api/chats/save', async route => {
+            const j = route.request().postDataJSON(), chat = j?.chat || [];
+            const user = chat.findLast(m => m.is_user), reply = chat.findLast(m => !m.is_user && !m.is_system);
+            if (!delayedRecoverySave && user?.extra?.avereth?.narrator_recovery && reply?.extra?.avereth?.narration?.empty) {
+                delayedRecoverySave = true;
+                await page.waitForTimeout(2200); // longer than the natural Driver's quiet period
+            }
+            await route.continue();
+        });
+    }
     async function send(text) {
-        await page.evaluate((t) => { $('#send_textarea').val(t).trigger('input'); $('#send_but').trigger('click'); }, text);
-        await page.waitForTimeout(400);
-        await idle();
+        const r = await driver.send(text);
+        if (!r.ok) throw new Error(`Runner send failed: ${r.problem}`);
     }
 
     await send('Mage');
@@ -253,7 +268,9 @@ try {
     const steps = {};
     for (const t of TURNS) {
         await send(t.player);
-        steps[t.key] = { look: await look(t.player), state: await fold(), plans: calls.filter((c) => c.purpose === 'plan').length };
+        const view = await driver.view();
+        steps[t.key] = { look: await look(t.player), state: await fold(), plans: calls.filter((c) => c.purpose === 'plan').length,
+            screen: screenText(view), visible: view.messages.at(-1) };
         if (t.key === 'world') {
             // swipe the world use's reply: the plan of the message is reused, nothing is planned or rolled again
             await page.evaluate(() => { document.querySelector('#chat .last_mes .swipe_right')?.click(); });
@@ -265,7 +282,7 @@ try {
     const status = await page.evaluate(() => document.getElementById('avereth_status')?.textContent || '');
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
     await page.waitForTimeout(800);
-    result = { toggle, greeting, afterCreation, steps, status };
+    result = { toggle, greeting, afterCreation, steps, status, delayedRecoverySave };
 } finally {
     await browser.close();
     st.kill();
@@ -283,11 +300,16 @@ const narr = calls.filter((c) => c.purpose === 'narrator');
 const engineOf = (c) => String(c?.messages?.find((m) => String(m.content).startsWith('[AVERETH ENGINE'))?.content || '');
 const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((t) => t.key === key).player));
 const checks = {
-    ...(process.env.AVERETH_SMOKE_EMPTY_NARRATOR === '1' ? { emptyNarratorRecoveredOnce: narratorFor('burrow').length === 2 && narratorFor('burrow').filter(c => c.empty).length === 1 } : {}),
+    ...(process.env.AVERETH_SMOKE_EMPTY_NARRATOR === '1' ? {
+        emptyNarratorRecoveredOnce: narratorFor('burrow').length === 2 && narratorFor('burrow').filter(c => c.empty).length === 1,
+        runnerWaitsForDelayedRecoverySave: result.delayedRecoverySave && !!S('burrow').state.encounter,
+    } : {}),
     campaignV4AtGreeting: greeting.some((e) => e.t === 'campaign.started' && e.runtime === 'v4'),
     plannerOnByDefault: toggle.before.exists && toggle.before.checked && toggle.before.setting === true,
     campaignPinnedToC: greeting.some((e) => e.t === 'campaign.started' && e.path === 'c'),
     creationWithoutPlanner: afterCreation === 0,
+    runnerSeparatesVisibleEngine: !!S('burrow').visible.engine && !S('burrow').visible.text.includes(S('burrow').visible.engine)
+        && S('burrow').screen.includes('[ENGINE RESULT]') && S('burrow').screen.includes('[NARRATOR'),
     // one planner call per free-text message, none for the question back and none for the swipe
     onePlanPerMessage: plans.length === TURNS.length && !calls.some((c) => c.purpose === 'interpret'),
     // every reply read once (the swiped one too): the barrier and the extractor as in Runtime V4

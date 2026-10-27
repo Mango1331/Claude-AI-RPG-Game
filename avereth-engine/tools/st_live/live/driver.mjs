@@ -73,6 +73,14 @@ export class Driver {
         this.log = log;
         this.pageErrors = [];
         this.toastsSeen = 0;
+        // Host recovery awaits saveChat before starting regenerate. UI "idle"
+        // during that request is not the end of the turn. Track network only;
+        // none of these request bodies/records reach the player.
+        this.pendingSaves = new Set();
+        page.on('request', r => {
+            if (r.method() === 'POST' && /\/api\/(?:chats|chats\/group)\/save(?:\?|$)/.test(r.url())) this.pendingSaves.add(r);
+        });
+        for (const event of ['requestfinished', 'requestfailed']) page.on(event, r => this.pendingSaves.delete(r));
         this.setupNotes = [];
         // Patch 8.4.1 (live 22.10.2026 05:43: the notice of the runner's own chat rename reached the player, who took it
         // for an oddity of the game): the time spans of the runner's own actions in the page; a notice that comes in one
@@ -254,7 +262,7 @@ export class Driver {
             if (last.dialogs) return { ok: false, problem: 'a dialog opened', dialogs: await this.openDialogs(), ms: Date.now() - t0 };
             const answered = last.len > last.lastUser + 1;
             if (answered && !replyAt) replyAt = Date.now();
-            const done = !last.busy && last.extraction !== 'pending';
+            const done = !last.busy && last.extraction !== 'pending' && this.pendingSaves.size === 0;
             if (done) quietSince = quietSince ?? Date.now(); else quietSince = null;
             if (done && answered && Date.now() - quietSince >= this.quietMs) break;
             if (done && !answered && Date.now() - quietSince >= 20000) return { ok: false, problem: 'no reply after the message', ms: Date.now() - t0 };
@@ -279,9 +287,12 @@ export class Driver {
             const chat = SillyTavern.getContext().chat;
             // SillyTavern prefixes the classes of a message's HTML with "custom-" (its sanitizer)
             const huds = (el) => [...el.querySelectorAll('.mes_text details.avereth-hud, .mes_text details.custom-avereth-hud')];
+            const panels = (el) => [...el.querySelectorAll('.mes_text .avereth-system-panel, .mes_text .custom-avereth-system-panel')];
             const textOf = (el) => {
                 let t = (el.querySelector('.mes_text')?.innerText || '');
-                for (const d of huds(el)) { const x = d.innerText || ''; if (x) t = t.replace(x, ''); }
+                // Strip one occurrence per rendered panel; identical prose stays.
+                // This reads the page without removing or rewriting its DOM nodes.
+                for (const d of [...panels(el), ...huds(el)]) { const x = d.innerText || ''; if (x) t = t.replace(x, ''); }
                 return t.replace(/\n{3,}/g, '\n\n').trim();
             };
             const users = els.map((el, i) => (el.getAttribute('is_user') === 'true' ? i : -1)).filter((i) => i >= 0);
@@ -293,6 +304,7 @@ export class Driver {
                 return {
                     mesid: Number(el.getAttribute('mesid')), user, system: el.getAttribute('is_system') === 'true',
                     name: (el.querySelector('.name_text')?.innerText || '').trim(), text: user ? own(el) : textOf(el),
+                    ...(!user ? { engine: panels(el).map(d => (d.innerText || '').trim()).filter(Boolean).join('\n\n') } : {}),
                 };
             });
             const newest = [...els].reverse().find((el) => huds(el).length);

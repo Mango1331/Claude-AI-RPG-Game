@@ -361,7 +361,8 @@ export async function run(o) {
             chat = await driver.chat();
             if (!(chat[0]?.extra?.avereth?.events || []).some((e) => e.t === 'campaign.started')) { end = { kind: 'ui', why: `the engine started no campaign, neither at the greeting nor with the message of turn ${turn}` }; break; }
             // Patch 8.4.1: a story turn needs the narrator's story; a command's System answer or the engine's own one is
-            // a turn of its own kind. No swipe, no regeneration: the run ends there, its data kept
+            // a turn of its own kind. The Driver has waited for Host recovery;
+            // the runner itself starts no swipe/regenerate and preserves terminal failures.
             const userAt = chat.findLastIndex((m) => m.is_user);
             const outcome = turnOutcome(chat, userAt);
             const fault = turnFailure(chat, userAt);

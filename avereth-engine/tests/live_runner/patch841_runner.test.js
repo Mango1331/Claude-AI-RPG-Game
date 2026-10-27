@@ -256,7 +256,7 @@ test('8.4.1 the report: the player\'s effective reasoning fields, each turn\'s a
         protection: { unchanged: true, changedRead: [], tree: { same: true, added: [], removed: [], changed: [] }, files: 10 },
         playerSetup: { reasoning: { body: { reasoning_effort: 'low', clear_thinking: true }, keys: ['reasoning_effort', 'clear_thinking'], source: 'profile', note: 'as the game\'s own requests carry them' }, probe: { ok: true, finish: 'stop', reasoningChars: 120 }, dropped: null }, playerMaxTokens: 3000,
     });
-    assert.match(r, /- \*\*Ergebnis:\*\* abgebrochen: leere Erzählerantwort in einem Story-Zug \(kein Swipe, kein Regenerieren\) — turn 17: .*finish_reason "length" after 4096 completion tokens/);
+    assert.match(r, /- \*\*Ergebnis:\*\* abgebrochen: leere Erzählerantwort in einem Story-Zug — turn 17: .*finish_reason "length" after 4096 completion tokens/);
     assert.match(r, /\| Spieler-Reasoning \(wirksam\) \| `reasoning_effort`="low", `clear_thinking`=true — as the game's own requests carry them · Probe: angenommen \(finish stop, Reasoning 120 Zeichen\) · max\. 3000 Tokens \|/);
     assert.match(r, /\| 1 \| turn 1 \| Engine \(Menü\/Rückfrage\) \|/);
     assert.match(r, /\| 3 \| turn 3 \| Erzähler \|/);

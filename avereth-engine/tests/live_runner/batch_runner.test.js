@@ -103,12 +103,12 @@ test('six independent runs execute sequentially after game failures and retain s
         return { code: end === 'done' ? 0 : 2, signal: null };
     } });
     assert.equal(result.status, 'completed'); assert.equal(starts.length, 6); assert.equal(max, 1);
-    assert.deepEqual(result.runs.map(r => r.seed), [40, 41, 42, 43, 44, 45]);
+    assert.deepEqual(result.runs.map(r => r.seed), [40, 43, 41, 44, 42, 45]);
     assert.ok(result.runs.every(r => r.status === 'finished' && r.inputs === 2 && r.level === 2));
     for (const [i, r] of result.runs.entries()) {
         assert.ok(r.folder.startsWith(String(i + 1).padStart(3, '0') + '-'));
         assert.ok(fs.existsSync(path.join(root, r.folder, r.runDir, 'report.md')));
-        assert.equal(arg(starts[i], '--scenario'), SCENARIOS[i].id);
+        assert.equal(arg(starts[i], '--scenario'), r.id);
     }
     const summary = fs.readFileSync(path.join(root, 'batch.json'), 'utf8');
     assert.equal(JSON.parse(summary).runs.length, 6); assert.ok(!summary.includes('must-not-be-copied'));

@@ -113,11 +113,13 @@ test('4c.3: independent runner observation flags zero-results but not a definite
     setRec(chat[0], { events: [], plan: { failed: false, recovery: 'empty' }, interp: { commands: [] } });
     setRec(chat[1], { events: [], extraction: { status: 'applied', recovery: 'transport', deltas: 0 } });
     assert.deepEqual(recoveryObservation(chat, 0), {
+        narrator: null,
         planner: { type: 'empty', zeroCommands: true, failed: false },
         extractor: { type: 'transport', zeroDeltas: true, failed: false },
     });
     const summary = recoverySummary(chat);
     assert.deepEqual(summary, {
+        narrator: { markedAttempts: 0, withStory: 0, empty: 0, missing: 0, applied: 0 },
         planner: { empty: 1, transport: 0, zeroCommands: 1 },
         extractor: { empty: 0, transport: 1, zeroDeltas: 1 },
     });
@@ -130,7 +132,7 @@ test('4c.3: no recovered record and normal repair cannot inflate recovery counts
     ];
     setRec(chat[0], { events: [], plan: { repaired: true }, interp: { commands: [] } });
     setRec(chat[1], { events: [], extraction: { status: 'applied', repaired: true, deltas: 0 } });
-    assert.deepEqual(recoveryObservation(chat, 0), { planner: null, extractor: null });
+    assert.deepEqual(recoveryObservation(chat, 0), { planner: null, extractor: null, narrator: null });
     assert.equal(recoverySummary(chat).extractor.zeroDeltas, 0);
     assert.equal(recoverySummary(chat).planner.zeroCommands, 0);
 });
@@ -166,6 +168,7 @@ test('4c.3: real evaluation exports recovery totals and warning issues, without 
     assert.equal(report.issues.filter(x => x.kind === 'planner_recovery_zero_commands').length, 1);
     assert.equal(report.issues.filter(x => x.kind === 'extractor_recovery_zero_deltas').length, 1);
     assert.deepEqual(report.turns.at(-1).recovery, {
+        narrator: null,
         planner: { type: 'empty', zeroCommands: true, failed: false },
         extractor: { type: 'empty', zeroDeltas: true, failed: false },
     });

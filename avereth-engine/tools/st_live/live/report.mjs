@@ -18,7 +18,7 @@ const END_TEXT = {
     limit: 'abgebrochen: Limit erreicht',
     ui: 'abgebrochen: unerwarteter UI-Zustand',
     harness: 'abgebrochen: Fehler im Runner',
-    narrator_empty: 'abgebrochen: leere Erzählerantwort in einem Story-Zug (kein Swipe, kein Regenerieren)',
+    narrator_empty: 'abgebrochen: leere Erzählerantwort in einem Story-Zug',
     incomplete: '**unvollständig**: nicht alle Pflicht-Etappen von der Engine nachgewiesen',
     fixture_reload_failed: '**Fixture-Reload fehlgeschlagen**: Mechanik-Etappen erreicht, Persistenzprüfung nicht bestanden',
 };
@@ -41,6 +41,20 @@ export function timingOutliers(turns, calls) {
 /** A soft failure keeps the run going; it is not proof that world facts were preserved. */
 export const countSoftExtractorFailures = (turnsLog) =>
     (turnsLog || []).filter((t) => t.outcome === 'extractor_failed_soft').length;
+
+/** Distinguish first-answer quality from extra model calls; scripted players have no attempt field. */
+export function playerOutputStats(rows) {
+    const calls = rows.filter(r => Number.isInteger(r.attempt));
+    const first = calls.filter(r => r.attempt === 0);
+    const turns = new Set(first.map(r => r.turn));
+    const decided = new Set(calls.filter(r => r.decision).map(r => r.turn));
+    return {
+        firstAnswers: first.length,
+        invalidFirst: first.filter(r => r.cause === 'invalid_json').length,
+        extraCalls: calls.filter(r => r.attempt > 0).length,
+        failedDecisions: [...turns].filter(t => !decided.has(t)).length,
+    };
+}
 
 export function buildReport(x) {
     const { runId, stub, guide, player, end, ev, calls, setup, imp, git, build, st, browser, turnsLog, playerLog, driverNotes, toasts, pageErrors, serverErrors, protection, scan, files, startedAt, endedAt, instanceKept } = x;
@@ -69,6 +83,10 @@ export function buildReport(x) {
     L.push(`- **Leitfaden:** ${guide.chain.join(' → ')} („${guide.title || guide.id}“)`);
     L.push(`- **Spieler:** ${player.type === 'llm' ? `LLM ${player.model} (${player.endpoint}, Temperatur ${player.temperature})${player.persona ? `, Stil: ${player.persona}` : ''}` : `regelbasiert (${player.steps} Schritte)`}`);
     L.push(`- **Züge:** ${turnsLog.length} · **Dauer:** ${dur(endedAt - startedAt)} · **LLM-Aufrufe der Engine/des Erzählers:** ${calls.length}`);
+    if (ev.coverage) {
+        const c = ev.coverage;
+        L.push(`- **Beobachtete Abdeckung:** ${c.visitedPlaces.length} unterschiedliche gebuchte Reiseziele · ${ev.encounters.length} Kämpfe · ${c.sales.length} Verkäufe (${c.sales.reduce((n, s) => n + s.cp, 0)} cp Umsatz, ohne Questzahlungen/Geschenke) · ${c.equipmentChanges.length} Ausrüstungswechsel · ${c.skillChanges.length} Skill-Erwerbe/Evolutionen/Proficiency-Aufstiege. Keine zusätzlichen Erfolgsbedingungen.`);
+    }
     const nIssues = ev.issues.length + pageErrors.length + toasts.filter((t) => t.kind === 'error' || t.kind === 'warning').length + turnsLog.filter((t) => !t.ok).length;
     L.push(`- **Auffälligkeiten:** ${nIssues}${ev.defeat ? ` · **Niederlage** in Zug ${ev.defeat.turn}: ${ev.defeat.why}` : ''}`);
     L.push(`- **Profil unverändert:** ${protection.unchanged ? 'ja' : '**nein**'} · **Geheimnis-Scan:** ${scan.hits.length ? `**${scan.hits.length} Treffer, geschwärzt**` : 'sauber'}`);
@@ -161,6 +179,10 @@ export function buildReport(x) {
     const recovery = ev.counts.recovery || {};
     const plan = recovery.planner || {}, extract = recovery.extractor || {};
     L.push(`Recovery-Beobachtung: Planner leer ${plan.empty || 0}, Transport ${plan.transport || 0}, davon erfolgreich mit 0 Commands ${plan.zeroCommands || 0}; Extractor leer ${extract.empty || 0}, Transport ${extract.transport || 0}, davon angewendet mit 0 Deltas ${extract.zeroDeltas || 0}. Null-Ergebnisse sind Prüfhinweise, keine bewiesenen Spielweltfehler.`, '');
+    const narr = recovery.narrator || {};
+    L.push(`Narrator-Recovery: ${narr.markedAttempts || 0} gespeicherte Versuchsmarkierungen (kein Nachweis gestarteter Provideraufrufe); danach ${narr.withStory || 0} mit Erzähltext, ${narr.empty || 0} leer, ${narr.missing || 0} ohne Antwort; ${narr.applied || 0} mit Erzähltext und angewendeter Extraktion.`, '');
+    const output = playerOutputStats(playerLog);
+    if (output.firstAnswers) L.push(`Spieler-JSON: ${output.invalidFirst}/${output.firstAnswers} Erstantworten ungültig (${(100 * output.invalidFirst / output.firstAnswers).toFixed(1)} %); ${output.extraCalls} Zusatzanfragen; ${output.failedDecisions} Entscheidungen ohne brauchbare Antwort.`, '');
 
     L.push('## Performance', '', '| Rolle | Aufrufe | Reparaturen | Median | p90 | Prompt-Tokens (Median) | davon Cache | Antwort-Tokens (Median) | Reasoning (Median) | finish_reason | leer |', '|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|');
     const st2 = callStats(calls);

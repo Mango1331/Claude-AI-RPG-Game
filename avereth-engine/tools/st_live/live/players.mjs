@@ -52,7 +52,10 @@ export function parseDecision(text) {
  */
 export function screenText(view, { maxChars = 4000, hudChars = 3000 } = {}) {
     const who = (m) => (m.user ? 'YOU' : m.system ? `SYSTEM${m.name ? ` (${m.name})` : ''}` : `NARRATOR${m.name ? ` (${m.name})` : ''}`);
-    const parts = view.messages.map((m) => `[${who(m)}]\n${clip(m.text, maxChars) || '(no text)'}`);
+    const parts = view.messages.flatMap((m) => [
+        ...(m.engine ? [`[ENGINE RESULT]\n${clip(m.engine, maxChars)}`] : []),
+        ...((m.text || !m.engine) ? [`[${who(m)}]\n${clip(m.text, maxChars) || '(no text)'}`] : []),
+    ]);
     // Patch 8.4.2: a HUD older than the System answer below it is said to be so (that answer is the newer state)
     if (view.hud) parts.push(`${view.hudStale ? '[YOUR CHARACTER AND THE WORLD — the HUD of an EARLIER reply, NOT updated since: the System answer above is newer and what it says counts]' : '[YOUR CHARACTER AND THE WORLD — the HUD under the newest reply]'}\n${clip(view.hud, hudChars)}`);
     if (view.toasts?.length) parts.push(`[NOTICES ON SCREEN]\n${view.toasts.map((t) => `- (${t.kind}) ${clip(t.text, 400)}`).join('\n')}`);
@@ -62,6 +65,7 @@ export function screenText(view, { maxChars = 4000, hudChars = 3000 } = {}) {
 // Patch 8.4.1 (live 22.10.2026 05:43: the player's messages grew from 98 to almost 1,000 characters of story, his notes
 // to 1,000 per turn, and his prompt from 1.6k to 6.9k tokens): the player is the player character, not the narrator
 export const PLAYER_ROLE = [
+    'Your entire response is one JSON object. Only the value of "message" is sent to the game. Examples below illustrate that value.',
     'YOUR MESSAGE to the game says only:',
     '- what {name} does now, concretely: I cast Flame Lance at the closest skeleton.',
     '- what {name} says to someone: "I\'m looking for a dungeon contract suitable for a novice mage. What do you have available?"',
@@ -72,7 +76,6 @@ export const PLAYER_ROLE = [
     'Write in English, in the first person. If an action fails, read the reason and fix the missing condition; rephrase only when the action itself was misunderstood. Never ask for a new reply.',
     'LENGTH: usually one short sentence or one short line of speech. Longer only when a combined action or a conversation needs it. Never a paragraph of story.',
     'Not like this: I steady my breathing, remembering everything that brought me here. My fingers tighten around my staff as I consider the danger ahead…',
-    'Like this: I cast Flame Lance at the closest skeleton.',
 ].join('\n');
 export const PLAYER_COMMANDS = [
     'SYSTEM COMMANDS are real game mechanics. A command is a message of its own: only the command, nothing else in it.',
@@ -83,11 +86,11 @@ export const PLAYER_COMMANDS = [
 
 export const PLAYER_MECHANICS = [
     'AVERETH PLAYING CONVENTIONS — choose your own adventures and natural wording:',
-    '- The newest System result is authoritative for actions, location, money, inventory, quests and growth. An explicitly older HUD does not override it. Narrator dialogue suggests opportunities; it cannot confirm a purchase, reward, arrival or unlock against that result. If confirmation is unclear, inspect a relevant panel once.',
+    '- The newest System result, including ENGINE RESULT, is authoritative for actions, location, money, inventory, quests and growth. An older HUD does not override it. Narration suggests opportunities; it cannot confirm purchase, reward, arrival or unlock against that result. If unclear, inspect a relevant panel once.',
     '- State what you do now, naming the intended destination, person, item or current combat target clearly. A city is not its Guild hall or shop. Reach the required place; travel and a related interaction on arrival may share one message, conditional on arrival.',
-    '- Trade with a present, identified merchant: ask for concrete goods, quantities and prices, then accept an actual offer you can afford. Sell only surplus you still hold. "No open offer" means obtain an offer; saying you already paid or repeatedly pushing the goods does not create a sale. Check that purchases and equipping were recorded before relying on them.',
+    '- Trade with a present, identified merchant: name goods and quantities, then accept the confirmed offer and total price you can afford. Sell only held surplus. "No open offer" means obtain an offer, not assert payment. Perform each new purchase explicitly; earlier consent is not permanent. Check recorded purchases and equipping before relying on them.',
     '- To recover overnight, obtain lodging if required, then actually sleep until morning. Looking for a bed or saying you wake at dawn does not perform sleep. Check time and HP/MP if the result is doubtful.',
-    '- Choose Guild contracts from the actual engine board or quest panel. Turn in achieved contracts at a Guild hall. Check learned skills and development offers before buying training; improving a known skill differs from learning a new one.',
+    '- Choose Guild contracts from the engine board or quest panel. For count hunts, use the recorded count/READY, then turn in at a Guild hall; narrated extra proof is not a new condition. Check skills and development offers before buying training; improving a known skill differs from learning a new one.',
     '- After fixing a missing prerequisite, explicitly perform the previously refused action again. Guild registration does not automatically accept a contract; verify that it is ACTIVE before travelling for it.',
     '- Allowed, pending, conditional or announced actions are not completed actions. When travel narration conflicts with the System, use the confirmed current location.',
     '- After a refusal, address its stated cause: place, presence, offer, price, ownership, target or timing. If the same cause persists without changed conditions, check once or try another sensible opportunity. Record contradictions in observations and continue when possible; three failed attempts at one optional purchase are not a campaign blocker.',
@@ -116,8 +119,8 @@ export function playerSystemPrompt(guide, { username, persona }) {
         `STOP only when a real blocker makes the rest of the test meaningless: the game cannot go on, the same failure ${guide.limits.sameFailure} times in a row prevents any meaningful play despite alternatives, or ${username} is dead. Small problems (an odd reply, a misunderstanding, a detour) are no reason to stop: work around them and note them. When the last milestone is done, stop with stop_reason "done".`,
         '',
         'DECIDE QUICKLY: read the newest message and the HUD, take the next step toward your milestone, answer. Do not plan far ahead or weigh many options.',
-        'ANSWER with one JSON object only. "message" goes to the game; the other fields are your test notes, which the game never sees:',
-        '{"message": "<your next message>", "milestone": "<the id of the milestone you work on>", "intent": "<what you try, one short sentence>", "stop": false, "stop_reason": null, "observations": "<only what is new since your last turn and worth a tester\'s attention (an oddity, a contradiction between the story and the HUD, how enemies behaved), at most two short sentences; \"\" when nothing new; no thoughts, no repetition>"}',
+        'Example only: choose your own action and current milestone. Notes: intent is one sentence; observations are new oddities or contradictions, at most two short sentences; "" when nothing new; no thoughts, no repetition.',
+        '{"message":"I offer the merchant two wolf pelts and ask his price.","milestone":"open_run_level","intent":"Sell surplus loot","stop":false,"stop_reason":null,"observations":""}',
     ].filter((x) => x !== '').join('\n');
 }
 

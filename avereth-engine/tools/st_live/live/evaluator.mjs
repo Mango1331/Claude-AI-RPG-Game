@@ -201,7 +201,7 @@ function recordCalls(r) {
  * A failed recovery is counted as attempted, but never as a zero-result success.
  */
 export function recoveryObservation(chat, u) {
-    if (!chat?.[u]?.is_user) return { planner: null, extractor: null };
+    if (!chat?.[u]?.is_user) return { planner: null, extractor: null, narrator: null };
     const user = rec(chat[u]);
     const end = chat.findIndex((m, i) => i > u && m.is_user);
     const reply = chat.slice(u + 1, end < 0 ? chat.length : end)
@@ -211,6 +211,12 @@ export function recoveryObservation(chat, u) {
     const ex = replyRecord?.extraction;
     const validType = x => x === 'empty' || x === 'transport';
     return {
+        // A marker is saved before generate(); it is not proof of a provider call.
+        narrator: Number.isInteger(user?.narrator_recovery?.attempts) && user.narrator_recovery.attempts > 0 ? {
+            markedAttempts: user.narrator_recovery.attempts,
+            story: !reply ? 'missing' : replyRecord?.narration?.empty || !String(reply.mes || '').trim() ? 'empty' : 'present',
+            extraction: replyRecord?.extraction?.status ?? null,
+        } : null,
         planner: validType(pl?.recovery) ? {
             type: pl.recovery,
             zeroCommands: !pl.failed && Array.isArray(user?.interp?.commands) && user.interp.commands.length === 0,
@@ -227,12 +233,19 @@ export function recoveryObservation(chat, u) {
 /** Count only recorded recovery attempts, not plain JSON repairs or guessed recovery. */
 export function recoverySummary(chat) {
     const summary = {
+        narrator: { markedAttempts: 0, withStory: 0, empty: 0, missing: 0, applied: 0 },
         planner: { empty: 0, transport: 0, zeroCommands: 0 },
         extractor: { empty: 0, transport: 0, zeroDeltas: 0 },
     };
     for (let i = 0; i < chat.length; i++) {
         if (!chat[i]?.is_user) continue;
         const o = recoveryObservation(chat, i);
+        if (o.narrator) {
+            const n = o.narrator;
+            summary.narrator.markedAttempts += n.markedAttempts;
+            summary.narrator[n.story === 'present' ? 'withStory' : n.story]++;
+            if (n.story === 'present' && n.extraction === 'applied') summary.narrator.applied++;
+        }
         if (o.planner) {
             summary.planner[o.planner.type]++;
             if (o.planner.zeroCommands) summary.planner.zeroCommands++;
@@ -276,11 +289,32 @@ export function evaluate(chat, { guide = null } = {}) {
     let evolvedClass = null;
     const growth = { noted: [], offers: [], accepted: null, signatures: {} };
     const skillNames = {};
+    // Observations only; no success gates and no data passed to the player.
+    const coverage = { visitedPlaces: [], sales: [], equipmentChanges: [], skillChanges: [] };
+    const visited = new Set();
+    let created = false;
 
     for (let i = 0; i < chat.length; i++) {
         const m = chat[i];
         const r = rec(m);
         const ev = r?.events || [];
+        for (const e of messageEvents(m)) {
+            const d = e.d || {}, at = { at: i, turn: turnAt[i] };
+            if (e.t === 'creation.completed') created = true;
+            if (e.t === 'scene.moved' && d.at && !visited.has(d.at)) {
+                visited.add(d.at); coverage.visitedPlaces.push({ ...at, id: d.at });
+            }
+            if (e.t === 'transaction.completed' && d.to === 'pc' && d.from && d.from !== 'guild' && !d.gift && !d.job && Number.isInteger(d.cp))
+                coverage.sales.push({ ...at, buyer: d.from, cp: d.cp, what: d.for ?? null });
+            if (created && e.t === 'item.equipped' && d.id === 'pc')
+                coverage.equipmentChanges.push({ ...at, slot: d.slot, item: d.item });
+            if (created && d.id === 'pc') {
+                if (e.t === 'skill.learned') coverage.skillChanges.push({ ...at, kind: 'learned', skill: d.skill });
+                if (e.t === 'skill.evolved') coverage.skillChanges.push({ ...at, kind: 'evolved', from: d.from, skill: d.to });
+                if (e.t === 'skill.progress' && d.to?.prof > d.from?.prof)
+                    coverage.skillChanges.push({ ...at, kind: 'proficiency', skill: d.skill, from: d.from.prof, to: d.to.prof });
+            }
+        }
         counts.events += ev.length;
         for (const e of ev) {
             if (e.t === 'level.up' && e.d.id === 'pc' && e.d.rank === 'E') hit('class_rank_e', i);
@@ -640,7 +674,7 @@ export function evaluate(chat, { guide = null } = {}) {
         return { id: ms.id, check, required: ms.required !== false, goal: ms.goal || CHECKS[check], reached: false, ...(unavailable[check] ? { unavailable: unavailable[check] } : {}) };
     });
     const dungeon = root ? { root, name: placeName(foldChat(chat, chat.length).state, root), floor: level, quest: mine?.id || null } : null;
-    return { milestones: list, reached, encounters, quests: Object.values(quests), defeat, issues, counts, turns, dungeon, character, growth, progression };
+    return { milestones: list, reached, encounters, quests: Object.values(quests), defeat, issues, counts, turns, dungeon, character, growth, progression, coverage };
 }
 
 const escapeRe = (t) => String(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

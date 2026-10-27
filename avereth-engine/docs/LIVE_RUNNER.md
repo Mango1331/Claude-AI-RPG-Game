@@ -12,7 +12,7 @@ Mit vorhandener Konfiguration und dem API-Schlüssel in der bisherigen Umgebungs
 npm run live:st:batch -- --headed
 ```
 
-Der Batch startet **nacheinander** je eine neue Level-1-Kampagne für diese sechs Profile:
+Der Batch startet **nacheinander** je eine neue Level-1-Kampagne für diese sechs Profile; Guild und Explore wechseln je Klasse ab (Warrior, Mage, Rogue):
 
 | Schwerpunkt | Klassen |
 |---|---|
@@ -39,7 +39,7 @@ npm run live:st:batch -- --max-turns 200
 npm run live:st -- --guide current_test --scenario explore-rogue
 ```
 
-`--seed 7` ergibt Seeds 7–12; ohne festen Startseed wird eine neue Seedfolge gewählt. `--runs <Ordner>`, Browser-, ST- und Profiloptionen funktionieren wie beim Einzellauf. `--headed` zeigt den isolierten Browser. `--max-turns` ist eine ausdrücklich verkürzte Beobachtungsgrenze, kein Ersatz für das Levelziel. `--list` benötigt keine ST-Installation und startet nichts. Ohne `--scenario` bleibt der normale Einzellauf frei in seiner Klassenwahl.
+`--seed 7` erhält die bisherige Szenariozuordnung (Guild Warrior/Mage/Rogue: 7/8/9, Explore Warrior/Mage/Rogue: 10/11/12); ausgeführt wird jetzt 7/10/8/11/9/12. Der Seed garantiert keine identischen GLM-Spielverläufe; ohne festen Startseed wird eine neue Seedfolge gewählt. `--runs <Ordner>`, Browser-, ST- und Profiloptionen funktionieren wie beim Einzellauf. `--headed` zeigt den isolierten Browser. `--max-turns` ist eine ausdrücklich verkürzte Beobachtungsgrenze, kein Ersatz für das Levelziel. `--list` benötigt keine ST-Installation und startet nichts. Ohne `--scenario` bleibt der normale Einzellauf frei in seiner Klassenwahl.
 
 **Umstellung vom 27.10.2026:** Ein laufender Neuner-Batch wird nicht umgeschrieben. Auf Wunsch nach dem sechsten Lauf mit Strg+C geordnet beenden und Export/Cleanup abwarten; erst danach den Checkout aktualisieren. Neue Batches verwenden sechs Profile. Konsole und Bericht leiten ihre Gesamtzahl aus der Profilmatrix ab. Die folgende Abnahmehistorie bezieht sich noch auf die damaligen neun Profile.
 
@@ -194,7 +194,7 @@ Beim Start zwei Eigenheiten von SillyTavern 1.19:
 Ein Zug ist zu Ende, wenn diese drei Bedingungen erfüllt sind:
 - Die Generierung ist beendet.
 - Die neueste Antwort ist vom Extraktor gelesen: Der HUD zeigt dann den gebuchten Stand.
-- Die Seite blieb 1,5 s ruhig.
+- Die Seite blieb 1,5 s ruhig, ohne laufende Chat-Speicherrequests.
 
 Abgebrochen und dokumentiert, mit Bildschirmfoto in `screens/`, wird bei:
 - einem offenen Dialog;
@@ -202,7 +202,7 @@ Abgebrochen und dokumentiert, mit Bildschirmfoto in `screens/`, wird bei:
 - keiner Antwort nach 20 s Ruhe;
 - einer Zug-Zeit über `turnTimeoutSec` (Standard 900 s).
 
-Es gibt kein stilles Wiederholen, keinen Swipe und kein Regenerieren.
+Der Runner wiederholt keine Spielereingabe und startet selbst keine Regeneration. Die einmalige Host-Recovery einer leeren Narratorantwort seit .101 wird abgewartet, einschließlich laufender Chat-Speicherrequests. Erst der endgültige Zustand beendet den Zug.
 
 **Ergebnis eines Zugs** (Patch 8.4.1, `evaluator.mjs turnOutcome`). Nach jedem Senden ordnet der Runner ein, was zurückkam:
 
@@ -424,7 +424,7 @@ Geprüft wird:
 - Alle Exporte sind da, jeder Aufruf hat Rolle, Zeit, Modell und Tokens, der Erzähler bekommt Vertrag und Engine-Block ohne Streaming.
 - Der Spieler sah nur Seitentext, den HUD als eigenen Abschnitt, keinen Hinweis des Runners; seine Beobachtungen gehören zum Zug davor.
 - Die Requests des Spielers tragen dieselben Reasoning-Felder wie die des Spiels, der Bericht nennt sie; auf dem Proxy-Weg (Quelle `openai`) trägt er keine.
-- `#status` ist ein System-Zug, kein leerer; die leere Erzählerantwort in Zug 4 beendet den Lauf (`narrator_empty`) ohne zweiten Erzähleraufruf, mit Grund, Bildschirmfoto und allen Exporten.
+- `#status` ist ein System-Zug, kein leerer. Der dauerhaft leere Testzug endet nach genau einem Host-Regenerate (zwei Narratoraufrufe) als `narrator_empty`, mit Versuchsmarkierung, Grund, Bildschirmfoto und Exporten. Der Runner sendet die Spielerhandlung nicht erneut.
 - Der Bericht kennzeichnet den Stub, der Scan ist sauber.
 - Patch 9A: Die neue Kampagne spielt nach Regelstand 2, der Mage des Leitfadens (Flame Lance + Blink) bleibt gültig, der Bericht nennt beides.
 - Es gibt keine Seiten- und keine Serverfehler.
@@ -446,7 +446,7 @@ Die Bausteine ohne SillyTavern testen `tests/live_runner/*.test.js`, Teil von `n
 - **Reverse Proxy.** SillyTavern schickt das Proxy-Passwort vom Browser im Request an seinen Server (so arbeitet SillyTavern selbst); in der isolierten Instanz ist das der Schlüssel aus der Umgebungsvariable. Er steht während des Laufs in der `settings.json` der Instanz und wird am Ende dort geleert und mit der Instanz gelöscht.
 - **Karte und Lorebook** kommen aus diesem Build: Getestet wird der Build, nicht der Stand deines Profils. Abweichungen nennt der Bericht.
 - **Streaming ist aus** (§4).
-- **Kein Swipe, kein Regenerieren.** Diese Wege testet weiter `npm run smoke:st:c`. Eine leere Erzählerantwort beendet den Lauf (§5).
+- **Keine Runner-Regeneration.** Die seit .101 vorhandene einmalige Host-Recovery wird abgewartet und ausgewertet; scheitert sie ebenfalls, endet der Lauf. Manuelle Swipes prüft weiterhin `npm run smoke:st:c`.
 - **Spielerregeln.** Ob das Modell die Regeln für Länge und Rolle einhält, zeigt erst ein echter Lauf; der Runner fragt eine zu lange Nachricht nur einmal nach.
 - **ST-Start.** SillyTavern baut pro Instanz sein Frontend neu (etwa 20–60 s beim Start).
 - **Regelbasierter Spieler.** Seine `until`-Ausdrücke prüfen nur Text. Für einen echten Lauf ist der LLM-Spieler gedacht.
@@ -456,3 +456,20 @@ Die Bausteine ohne SillyTavern testen `tests/live_runner/*.test.js`, Teil von `n
 Grundlage waren die unveränderten Originalexporte der Runs `20261025-124809Z` (.87), `20261025-232041Z` (.91) und `20261026-012245Z` (.92), jeweils ZIP-CRC geprüft. Beispiele: .87 T83–89 behauptet einen nicht gebuchten Rüstungskauf; .91 T23–33 wiederholt die Lootübergabe und setzt eine nicht gebuchte Reise zur Herberge voraus; .92 T47–53 übernimmt erzählten Schlaf und ein Phantom-Board. Diese Fälle begründen Bedienhinweise, keine nachträgliche Umwertung tatsächlicher Enginefehler. In .92 lieferten zudem 32 Spieler-Versuche zunächst kein gültiges Entscheidungs-JSON; die kurze Erinnerung direkt nach dem Bildschirm verlangt daher ausdrücklich das Entscheidungsobjekt. Ob dies echte GLM-Antworten verbessert, muss ein neuer natürlicher Lauf zeigen.
 
 Die vorhandene Progressionsanleitung wurde gekürzt und um den gemeinsamen Bedienabschnitt ergänzt. Spielerziele und Aktionen bleiben frei; der Runner erhält keine neuen Eingriffs- oder Spielrechte. Engine-Build **.93**, Regeln, XP, Preise, persönliche Karte und Testarchive bleiben unverändert. Technische Abnahme: neun neue Regressionen auf unveränderter .93 **acht rot/eine grüne Kontrolle**, danach **9/9**; gesamte Runner-Tests **106/106**, vollständiges `npm test` **1.823/1.823**. Echter SillyTavern-1.19-Runner-Selbsttest mit Stub-Provider **51/51**, einschließlich vier tatsächlicher Eingaben im neuen Level-Guide, korrektem Limitabbruch, gespeichertem Vergleichsstand und unverändertem Profil. Kein natürlicher GLM-Lauf und kein neuer `smoke:st:c` (Engine/Host unverändert). Der erste Runner-Selbsttest war **50/51**: eine historische Prüfung erwartete noch HP 80/80 statt des seit .91 korrekten HP 90/90. Sie vergleicht jetzt sichtbare HP mit dem verbuchten Stand. Die historischen Auswertungen aller drei Original-Runs sind mit ihrem bisherigen Guide unverändert; nur das additive Feld `progression` kommt hinzu. Die vollständige Spieler-Systemanweisung ohne Persona wurde von 8.693 auf 7.267 Zeichen gekürzt. Ob weniger JSON-Reparaturen oder Fehlversuche entstehen, ist noch nicht live nachgewiesen.
+
+
+### Runner-Nachtrag vom 27.10.2026 für den nächsten Sechserbatch
+
+**Basis:** Engine `.101` (`c9e3fa5`); ausschließlich Runner, Regressionen und diese Dokumentation. Kein neuer Engine-Build, keine Kartenrevision, keine Balance- oder Spielmechanikänderung. Ein laufender Batch bleibt unberührt: erst nach dessen Ende den eigenen Checkout aktualisieren; der vorhandene Git-HEAD-Schutz bleibt aktiv.
+
+- `Driver.view()` liest sichtbare `.avereth-system-panel`/`.custom-avereth-system-panel` getrennt aus. `screenText()` zeigt **ENGINE RESULT**, danach **NARRATOR** je Nachricht in unveränderter Chronologie und zuletzt den HUD. Engine- und Prosaabschnitt haben getrennte Textgrenzen. Die DOM-Knoten und der Chat bleiben unverändert, die Ausgabe erscheint nicht doppelt; keine versteckten Records werden dem Spieler gezeigt.
+- Die gesamte Spielerantwort ist Entscheidungs-JSON; nur `message` wird ans Spiel gesendet. Ein konkretes Beispiel ersetzt den Platzhalterblock. Die bestehenden Hinweise zu aktuellem Kaufwunsch, vollständigem Verkaufslos/Preis und Engine-Zähljagden sind präzisiert. Ziele, Klasse im Einzellauf, Quests, Routen, Gear, Skills und Taktik bleiben frei; die sechs Batchprofile und das Level-15-Ziel bleiben bestehen.
+- `recoveryObservation`/`recoverySummary` ergänzen Narrator-Markierungen und den danach gespeicherten Zustand: Erzähltext vorhanden/leer/fehlend und Extractorstatus. Ein Marker steht bereits vor `save()`/`generate()` und beweist keinen Provideraufruf. Der Bericht trennt diese Ergebnisse und entfernt die pauschale Behauptung „kein Regenerieren“. Spieler-JSON wird nach ungültigen **Erstantworten**, Zusatzanfragen und endgültig gescheiterten Entscheidungen ausgewertet; 52/284 aus Batch 1 bezeichnete alle Anfragen, keine Erstantwortquote.
+- `evaluation.json → coverage` enthält unterschiedliche gebuchte Reiseziele nach Orts-ID, Verkaufstransaktionen samt Umsatz, Ausrüstungswechsel und neue Skills/Evolutionen/Proficiency-Aufstiege nach Erstellung. NPC-Geschenke, Gilden- und historische Privatjobzahlungen sind keine Verkäufe; bloße Coin-Zugänge zählen nicht. Stale Swipe-Records werden über `messageEvents` ausgeschlossen. Kämpfe stehen bereits in `encounters`. Die Kurzfassung nennt die Summen; keine dieser Kennzahlen wird zur zusätzlichen Spielerpflicht oder Erfolgsbedingung. Keine zusätzliche Fold-Schleife.
+- Batchreihenfolge: Guild Warrior → Explore Warrior → Guild Mage → Explore Mage → Guild Rogue → Explore Rogue. Die kanonische Seedzuordnung pro Szenario bleibt vor dem Umsortieren erhalten; CLI, nummerierte Ordner und Bericht folgen der Ausführungsreihenfolge. Gesamtlaufzeit, IPC-Abbruch, Export-/Profilschutz und Fehlergrenzen bleiben erhalten.
+
+**Reproduzierter Wartefehler:** Der normale Driver konnte eine leere Erstantwort während `saveChat()` bereits als beendet ansehen. Im echten ST1.19-Smoke wurde die Recovery-Speicherung gezielt um 2,2 Sekunden verzögert, länger als die 1,5-Sekunden-Ruheprüfung: ohne Speicherbarriere folgte „busy before sending“. `Driver.send()` wartet jetzt zusätzlich laufende POST-Requests an die Chat-Speicherendpunkte ab; `requestfinished`/`requestfailed` geben die Barriere frei. Keine neue Retry-Schleife oder Engine-Zustandsquelle. Der C-Smoke sendet seine normalen Eingaben jetzt über denselben Driver wie der natürliche Runner.
+
+**Abnahme (selbst ausgeführt):** Elf neue Regressionen auf unveränderter `.101` **11 rot**, danach **11/11**; angrenzende Runner-/Recovery-Prüfungen **144/144**, finale vollständige `npm test`-Suite **1.995/1.995**. Historische Assertions wurden nur um das additive Narrator-Feld beziehungsweise die korrigierte Berichtsaussage erweitert. Echter ST1.19-C-Smoke mit dem natürlichen Driver: Standard **22/22**, leere Erstantwort plus verzögerte Recovery-Speicherung final **24/24**, jeweils fünf Extraktionen und keine PageErrors. Die Speicherprobe scheiterte vor der Wartebarriere mit „busy before sending“. Erster Lauf mit Barriere **23/24** wegen eines ST-`AbortReason`-PageErrors; unverändert wiederholt **24/24**. Keine zusätzliche Produktkorrektur dafür. Isolierter echter ST-Runner-Selbsttest mit Stub **51/51** über fünf Läufe, einschließlich genau eines Host-Regenerate bei dauerhaft leerer Antwort, Export-/Profilschutz und Level-Guide-Limit. Kein natürlicher GLM-/Windows-Abnahmenachweis. Spieler-Systemprompt ohne Persona: **7.639 → 7.603 Zeichen**, kein wachsendes Bedienhandbuch.
+
+Der nächste natürliche Batch prüft die Wirkung auf Formatquote, Erkundungsprofil und tatsächliches Gameplay; Mocktests belegen diese Wirkung nicht. Alten und neuen Batch anhand des gespeicherten **Git-Commits** unterscheiden: Beide verwenden weiterhin Engine-Build `.101`.

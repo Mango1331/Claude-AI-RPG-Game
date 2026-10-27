@@ -12,7 +12,7 @@ import { CREDENTIAL_PATTERNS } from './export.mjs';
 
 const RUNNER = fileURLToPath(new URL('./run_live.mjs', import.meta.url));
 const INFRA = new Set(['harness', 'ui', 'missing', 'no_result', 'process_error', 'scenario_metadata_mismatch']);
-const BATCH_SCENARIOS = [...new Set(SCENARIOS.map(s => s.baseClass))].flatMap(c => SCENARIOS.filter(s => s.baseClass === c));
+const BATCH_SCENARIOS = SCENARIOS.filter(s => s.focus === 'guild');
 
 /** IPC permits graceful Ctrl+C on Windows too; child.kill(SIGINT) would terminate there without export. */
 export function launchRun(args, { signal, entry = RUNNER, secrets = [], spawnImpl = spawn, stdout = process.stdout, stderr = process.stderr } = {}) {
@@ -93,7 +93,7 @@ export async function runBatch({ root, args = [], seed = Math.floor(Math.random(
     if (fs.existsSync(root)) throw new Error(`batch folder already exists: ${root}`);
     g.mkdir(root);
     const startRevision = revision();
-    // Assign seeds in the historical canonical order before alternating execution.
+    // Keep the historical Guild seed assignment: Warrior, Mage, Rogue.
     const batch = { startedAt: new Date().toISOString(), status: 'running', git: startRevision, stub: args.includes('--stub'), maxHours, runs: BATCH_SCENARIOS.map((s, i) => ({ index: i + 1, id: s.id, baseClass: s.baseClass, focus: s.focus, seed: (seed + SCENARIOS.indexOf(s)) % 0x80000000, folder: `${String(i + 1).padStart(3, '0')}-${s.id}`, status: 'pending' })) };
     const ctl = new AbortController();
     const cancel = () => ctl.abort('interrupted');

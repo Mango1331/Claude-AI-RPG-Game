@@ -20,6 +20,17 @@ import { coinFromWords, coinMentions, coinEvidence } from '../economy.js';
 const flat = text => normText(text || '').replace(/[^a-z0-9]+/g, ' ').trim();
 const contains = (text, part) => !!flat(part) && ` ${flat(text)} `.includes(` ${flat(part)} `);
 
+/** In a sale-only exchange, goods prices must not silently become PC purchases.
+ * A separate, current purchase request permits a real offer, including same-named goods.
+ */
+export function saleOfferLines(state, seller, lines) {
+    if (!Array.isArray(lines)) return [];
+    const current = (state.decisions || []).filter(d => d.turn === state.turn && d.at === state.scene.at && d.seller === seller);
+    if (!current.some(d => d.kind === 'sale' && state.objects[d.object]?.holder?.entity === 'pc')) return [];
+    return lines.filter(l => (l.kind || 'goods') === 'goods'
+        && !current.some(d => d.kind === 'purchase' && purchaseLines(d.what, [l]).length));
+}
+
 /** Match separately named prices to selected offer positions, never sum unrelated amounts. */
 function positionPrices(quote, picks, currency) {
     if (!picks || picks.length < 2) return null;

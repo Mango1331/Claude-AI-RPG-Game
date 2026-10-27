@@ -10,6 +10,8 @@ import { privateQuestsOf } from '../content.js';
 // valid answer decides the domain/authority firewall (src/v4/firewall.js), not this module.
 import { O, S, B, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
+import { saleOfferLines } from './trade.js';
+import { normText } from '../util.js';
 
 /** Preserve the historical wire vocabulary; new campaigns have only Guild quests. */
 export function worldVocab(vocab, state) {
@@ -27,7 +29,7 @@ export function worldVocab(vocab, state) {
     };
 }
 
-export const EXTRACTOR_VERSION = 'extract-5.13';
+export const EXTRACTOR_VERSION = 'extract-5.14';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -291,6 +293,18 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     const schema = deltaSchema(vocab, ids, Object.fromEntries(Object.entries(expectedKeys || {}).filter(([k]) => !missing.includes(k))));
     const clean = missing.length ? { ...value, expected: Object.fromEntries(Object.entries(exp).filter(([k]) => !missing.includes(k))) } : value;
     const errors = validate(clean, schema);
+    let stepAt = startScene;
+    if (!errors.length && sceneRequired && state?.meta?.ruleset >= 2) for (const [i, d] of value.deltas.entries()) {
+        if (d?.type === 'arrive') stepAt = placeKey(state, d.at, content);
+        if (d?.type === 'offer' && saleOfferLines(state, d.seller, d.lines || []).length)
+            errors.push(`$.deltas[${i}]: these are current PC sale goods; use bid with buyer, held object ids and price_cp, not offer/seller`);
+        if (d?.type === 'person.new' && d.present !== false) {
+            const exact = Object.values(state.entities).filter(e => e.kind === 'npc' && d.name && normText(e.name || e.known_name || '') === normText(d.name));
+            const known = state.entities[d.ref] || (exact.length === 1 ? exact[0] : null);
+            if (known?.kind === 'npc' && !state.scene.present.includes(known.id) && known.at !== stepAt)
+                errors.push(`$.deltas[${i}]: ${known.id} is known, last at ${known.at || 'an unknown place'}; preserve identity/history. Report an actual newly established local arrival as enter, otherwise present:false. Do not repeat an old predicament or infer presence merely from the PC’s arrival.`);
+        }
+    }
     // Schema errors must describe the supported link, never guess which object an invented id meant.
     for (const [i, d] of (Array.isArray(value.deltas) ? value.deltas : []).entries()) {
         if (typeof d?.object !== 'string' || (ids?.objects || []).includes(d.object)) continue;

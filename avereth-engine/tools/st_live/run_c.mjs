@@ -130,6 +130,10 @@ const mock = http.createServer(async (req, res) => {
     }
     if (process.env.AVERETH_SMOKE_EMPTY_NARRATOR === '1' && purpose === 'narrator' && lastUser.includes(TURNS[0].player) && narrated.get('burrow') === 1) text = '';
     calls.push({ empty: !text.trim(), purpose, at: Date.now(), auth: req.headers.authorization || null, stream: !!j.stream, temperature: j.temperature, maxTokens: j.max_tokens, model: j.model, messages: msgs, lastUser });
+    if (process.env.AVERETH_SMOKE_PROVIDER_ERROR === '1' && purpose === 'narrator' && lastUser.includes(TURNS[0].player) && narrated.get('burrow') === 1) {
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: { message: 'An unexpected error has occurred.', type: 'server_error', code: 'internal_server_error' } })); return;
+    }
     if (delay) await sleep(delay);
     if (j.stream) {
         res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', connection: 'keep-alive' });
@@ -300,6 +304,9 @@ const narr = calls.filter((c) => c.purpose === 'narrator');
 const engineOf = (c) => String(c?.messages?.find((m) => String(m.content).startsWith('[AVERETH ENGINE'))?.content || '');
 const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((t) => t.key === key).player));
 const checks = {
+    ...(process.env.AVERETH_SMOKE_PROVIDER_ERROR === '1' ? {
+        transientProviderRecoveredOnce: narratorFor('burrow').length === 2 && S('burrow').look.record?.events?.filter(e => e.t === 'turn.begun').length === 1,
+    } : {}),
     ...(process.env.AVERETH_SMOKE_EMPTY_NARRATOR === '1' ? {
         emptyNarratorRecoveredOnce: narratorFor('burrow').length === 2 && narratorFor('burrow').filter(c => c.empty).length === 1,
         runnerWaitsForDelayedRecoverySave: result.delayedRecoverySave && !!S('burrow').state.encounter,
@@ -313,7 +320,7 @@ const checks = {
     // one planner call per free-text message, none for the question back and none for the swipe
     onePlanPerMessage: plans.length === TURNS.length && !calls.some((c) => c.purpose === 'interpret'),
     // every reply read once (the swiped one too): the barrier and the extractor as in Runtime V4
-    extractPerReply: calls.filter((c) => c.purpose === 'extract').length === narr.filter(c => !c.empty).length,
+    extractPerReply: calls.filter((c) => c.purpose === 'extract').length === narr.filter(c => !c.empty).length - (process.env.AVERETH_SMOKE_PROVIDER_ERROR === '1' ? 1 : 0),
     planCallParams: plans.every((c) => !c.stream && c.model === 'mock-narrator' && c.temperature === 0.1 && c.maxTokens === 2000),
     fightPromptInFight: plans.slice(1).every((c) => String(c.messages[0].content).startsWith('You are the intent planner')) && String(plans[0].messages[0].content).startsWith('You are the command interpreter'),
     keyAddedBySillyTavern: calls.length > 0 && calls.every((c) => c.auth === `Bearer ${DUMMY_KEY}`),

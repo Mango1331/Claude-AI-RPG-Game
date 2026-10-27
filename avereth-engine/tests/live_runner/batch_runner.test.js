@@ -92,7 +92,7 @@ test('the scenario class is checked against Engine state, never changed to fit t
     assert.equal(scenarioMismatch(s, null), null);
 });
 
-test('six independent runs execute sequentially after game failures and retain separate numbered archives', async t => {
+test('three Guild runs execute sequentially after game failures and retain separate numbered archives', async t => {
     const root = path.join(temporary(t), 'batch'), starts = [];
     let running = 0, max = 0;
     const result = await runBatch({ ...settings(root), args: ['--guide', 'current_test', '--stub'] }, { ...fixed, launch: async args => {
@@ -102,8 +102,8 @@ test('six independent runs execute sequentially after game failures and retain s
         await Promise.resolve(); running--;
         return { code: end === 'done' ? 0 : 2, signal: null };
     } });
-    assert.equal(result.status, 'completed'); assert.equal(starts.length, 6); assert.equal(max, 1);
-    assert.deepEqual(result.runs.map(r => r.seed), [40, 43, 41, 44, 42, 45]);
+    assert.equal(result.status, 'completed'); assert.equal(starts.length, 3); assert.equal(max, 1); assert.ok(result.runs.every(r => r.focus === 'guild'));
+    assert.deepEqual(result.runs.map(r => r.seed), [40, 41, 42]);
     assert.ok(result.runs.every(r => r.status === 'finished' && r.inputs === 2 && r.level === 2));
     for (const [i, r] of result.runs.entries()) {
         assert.ok(r.folder.startsWith(String(i + 1).padStart(3, '0') + '-'));
@@ -111,9 +111,9 @@ test('six independent runs execute sequentially after game failures and retain s
         assert.equal(arg(starts[i], '--scenario'), r.id);
     }
     const summary = fs.readFileSync(path.join(root, 'batch.json'), 'utf8');
-    assert.equal(JSON.parse(summary).runs.length, 6); assert.ok(!summary.includes('must-not-be-copied'));
+    assert.equal(JSON.parse(summary).runs.length, 3); assert.ok(!summary.includes('must-not-be-copied'));
     assert.equal(result.stub, true);
-    assert.match(fs.readFileSync(path.join(root, 'report.md'), 'utf8'), /nicht 6 bestandene/);
+    assert.match(fs.readFileSync(path.join(root, 'report.md'), 'utf8'), /nicht 3 bestandene/);
     assert.match(fs.readFileSync(path.join(root, 'report.md'), 'utf8'), /STUB-SELBSTTEST/);
     await assert.rejects(runBatch(settings(root), fixed), /already exists/);
 });
@@ -122,7 +122,7 @@ test('three infrastructure failures stop the series instead of endlessly restart
     let calls = 0;
     const result = await runBatch(settings(path.join(temporary(t), 'batch')), { ...fixed, launch: async () => { calls++; return { code: 1 }; } });
     assert.equal(calls, 3); assert.equal(result.status, 'infrastructure_stop');
-    assert.equal(result.runs.filter(r => r.status === 'pending').length, 3);
+    assert.equal(result.runs.filter(r => r.status === 'pending').length, 0);
 });
 
 test('profile changes and secret-scan findings stop before another campaign starts', async t => {

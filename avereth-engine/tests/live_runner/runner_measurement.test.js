@@ -87,7 +87,7 @@ test('player JSON example is concrete while mechanics remain natural and freely 
     assert.ok(text.length < 8500, 'do not grow another long manual');
 });
 
-test('batch alternates focus while retaining the canonical seed for each scenario', async t => {
+test('batch selects all three Guild classes and retains their canonical seeds', async t => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'avereth-runner-measure-'));
     t.after(() => fs.rmSync(root, { recursive: true, force: true }));
     const arg = (args, key) => args[args.indexOf(key) + 1];
@@ -98,8 +98,8 @@ test('batch alternates focus while retaining the canonical seed for each scenari
         fs.writeFileSync(path.join(dir, 'evaluation.json'), JSON.stringify({ character: { class: scenario.baseClass.toLowerCase() } }));
         return { code: 2 };
     } });
-    assert.deepEqual(r.runs.map(x => x.id), ['guild-warrior', 'explore-warrior', 'guild-mage', 'explore-mage', 'guild-rogue', 'explore-rogue']);
-    assert.deepEqual(r.runs.map(x => x.seed), [40, 43, 41, 44, 42, 45]);
+    assert.deepEqual(r.runs.map(x => x.id), ['guild-warrior', 'guild-mage', 'guild-rogue']);
+    assert.deepEqual(r.runs.map(x => x.seed), [40, 41, 42]);
 });
 
 test('coverage counts committed visits, sales and growth rather than narrative or other income', async () => {

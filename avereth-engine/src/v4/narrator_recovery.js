@@ -1,6 +1,22 @@
-// One host regenerate for an empty story, after ST releases its generation lock.
+// One shared retry budget for a transient provider error or an empty story.
 // The existing user record is reused; no player input or Engine turn is resent.
 import { rec, setRec } from '../host.js';
+
+/** Retry one explicit transient server response inside the existing ST generation.
+ * The host owns identity checks and the shared one-attempt marker. No input is resent to the Engine.
+ */
+export async function narratorProviderResponse(send, { signal, isCurrent, mark, save }) {
+    const first = await send();
+    if (signal?.aborted || !isCurrent()) return first;
+    const error = await first.clone().json().then(x => x?.error).catch(() => null);
+    const transient = [429, 500, 502, 503, 504].includes(first.status)
+        || (first.ok && ['server_error', 'internal_server_error', 'temporarily_unavailable'].includes(error?.code || error?.type));
+    if (!transient || signal?.aborted || !isCurrent()) return first;
+    mark({ attempts: 1, reason: 'provider', status: first.status });
+    await save();
+    if (signal?.aborted || !isCurrent()) return first;
+    return send();
+}
 export function createNarratorRecovery({ active, save, generate, schedule = fn => setTimeout(fn, 0), failed = () => {} }) {
     let pending = null;
     function current(job) {

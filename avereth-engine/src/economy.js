@@ -82,7 +82,19 @@ export function coinEvidence(text, content) {
         if (n === null) continue; // a gold necklace or a person's initial names no price
         const unit = tokens[i].word[0];
         const factor = unit === 'g' ? currency.copper_per_silver * currency.silver_per_gold : unit === 's' ? currency.copper_per_silver : 1;
-        parts.push({ cp: n * factor, unit, start: tokens[j].start, end: tokens[i].end });
+        let amount = n * factor, end = tokens[i].end;
+        // Common silver shorthand: "one silver eight" = one silver + eight copper.
+        // Never silently ignore a dangling numeric suffix or invent its unit elsewhere.
+        const next = tokens[i + 1], after = tokens[i + 2];
+        if (next && (/^\d+$/.test(next.word) || (SMALL[next.word] !== undefined && !['a', 'an'].includes(next.word)))
+            && !/^(?:gold|golds|silver|silvers|copper|coppers|cp|c|s|g)$/.test(after?.word || '')) {
+            const lower = numberOf([next.word]);
+            const boundary = !after || /[,;.!?]/.test(clean.slice(next.end, after.start)) || /^(?:for|each|yes|done|please)$/.test(after.word);
+            if (unit !== 's' || lower === null || lower >= currency.copper_per_silver || !boundary)
+                return { cp: null, mentions: [amount], compound: false };
+            amount += lower; end = next.end;
+        }
+        parts.push({ cp: amount, unit, start: tokens[j].start, end });
     }
     const cp = parts.length && !tokens.some(t => t.word === 'half') ? parts.reduce((n, p) => n + p.cp, 0) : null;
     // "one silver and five copper" is one sum; two prices with intervening prose are not.

@@ -31,7 +31,7 @@ import {
     progressKey, sameKinds, kindOf,
 } from './domain.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
-import { pickLines, bookPurchase, bookSale, saleUnits, unitsText, tradePrice, offerAdvice, purchaseLines, samePurchaseRequest } from './trade.js';
+import { pickLines, bookPurchase, bookSale, saleUnits, unitsText, tradePrice, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines } from './trade.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents, setIntentEvents } from './intents.js';
 import { featureNamed, featureEvent, applySpring } from './features.js';
@@ -867,7 +867,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                         }
                         refs.set(normText(d.ref), known.id);
                         if (d.present !== false && !s.scene.present.includes(known.id)) {
-                            refusePerson('npc_continuity', `${known.id} is a known absent person, not a new introduction`, [known.id]);
+                            if (known.at === s.scene.at && statusOf(s, known.id) !== 'dead')
+                                v3({ enter: [known.id] }, d);
+                            else refusePerson('npc_continuity', `${known.id} is a known absent person, not a new introduction`, [known.id]);
                         }
                         break;
                     }
@@ -948,6 +950,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const who = mapRef(d.who);
                 v3({ enter: [who] }, d);
                 if (s.scene.present.includes(who)) {
+                    if (s.entities[who]?.kind === 'npc' && s.entities[who].at !== s.scene.at)
+                        emit({ t: 'entity.updated', d: { id: who, set: { at: s.scene.at } } });
                     for (const ref of [...blockedPeople]) if (idOf(ref) === who) blockedPeople.delete(ref);
                 }
                 break;
@@ -2277,6 +2281,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             d = { ...d, lines: d.lines.filter(l => !advice.includes(l)) };
             if (!d.lines.length) return;
         }
+        const reversed = cPath && rulesetOf(s) >= 2 ? saleOfferLines(s, seller, d.lines) : [];
+        if (reversed.length) {
+            reject({ ...d, lines: reversed }, 'trade_direction', 'this is a current sale-only exchange; report a buyer’s bid, not a PC purchase offer');
+            corrections.push('No purchase was offered for the PC’s sale goods. Quote the buyer’s price as a bid against the held object ids. Nothing has changed hands.');
+            d = { ...d, lines: d.lines.filter(l => !reversed.includes(l)) };
+            if (!d.lines.length) return;
+        }
         const priced = d.lines.map((l) => ({ ...l, price_cp: evidenced(l.price_cp, l.said, d, cPath && rulesetOf(s) >= 2 ? l.qty ?? 1 : null) }));
         // a price the reply does not say is not offered (review of c.6.6.11); the seller's other lines stand
         const unproven = priced.filter((l, i) => l.price_cp === null && Number.isInteger(d.lines[i].price_cp));
@@ -2355,7 +2366,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
      * Prototype C (4.3.0-c.6.6.5): someone names what they would pay Alaric for things he holds (live 15.10.2026: "eight
      * silver for the lot" became an offer to SELL him his own parts). The bid names his things by id and the units of
      * each, and one price for all of them; nothing changes hands until his own acceptance (commands.js offer.accept).
-     * The buyer's latest bid stands: an earlier open one of theirs closes.
+     * A changed bid replaces an overlapping lot; independent goods keep their bids.
      */
     function bid(d) {
         const buyer = idOf(d.buyer);
@@ -2377,7 +2388,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (!lines.length || !Number.isInteger(d.price_cp)) { reject(d, 'offer', 'a bid names his things and one price'); return; }
         const price = evidenced(d.price_cp, d.said, d, cPath && rulesetOf(s) >= 2 ? (lines.length === 1 ? lines[0].qty : 0) : null);
         if (price === null) { reject(d, 'offer', `${d.price_cp} cp is no sum the reply names`); return; }
-        for (const old of openOffers(s).filter((x) => x.bid && x.seller === buyer)) emit({ t: 'offer.closed', d: { id: old.id, status: 'expired' } });
+        // A changed price replaces the entire overlapping lot, never an unrelated bid.
+        for (const old of openOffers(s).filter(x => x.bid && x.seller === buyer
+            && x.lines.some(l => lines.some(n => n.object === l.object)))) emit({ t: 'offer.closed', d: { id: old.id, status: 'expired' } });
         const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
         emit({ t: 'offer.created', d: { offer: { id, seller: buyer, bid: true, at: s.scene.at, status: 'open', canon: false, turn: s.turn, price_cp: price, lines } } });
         counterparts.add(buyer);

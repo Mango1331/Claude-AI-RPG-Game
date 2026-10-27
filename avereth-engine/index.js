@@ -14,9 +14,9 @@
 //   * Lore Bridge           -> the current realm and location as World Info scan text (never part of the prompt), so
 //                              the narrator card's lorebook (lorebook/, docs/LOREBOOK.md) activates the right entries
 import { loadContentPack } from './src/content.js';
-import { onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory, reportRequest, applyReportAnswer } from './src/host.js';
+import { onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory, reportRequest, applyReportAnswer, rec, setRec } from './src/host.js';
 import { prepareGenerationAsync, processReplyAny, runExtraction, pendingExtraction, campaignRuntime, onEditedV4, perfSummary } from './src/v4/runtime.js';
-import { createNarratorRecovery } from './src/v4/narrator_recovery.js';
+import { createNarratorRecovery, narratorProviderResponse } from './src/v4/narrator_recovery.js';
 import { createWorldJobs } from './src/v4/world_jobs.js';
 import { validateState } from './src/validate.js';
 import { newSeed } from './src/rng.js';
@@ -37,6 +37,7 @@ let legacyWarned = null;
 let pendingReport = null; // {chatId, id, hash, job}: the report request of the latest reply, while it runs
 let llmPath = null; // Runtime V4: which call the last LLM request used ('custom endpoint' | 'generateRaw')
 let narrationStart = null; // Patch 8.2: {chatId, user, t}: when the engine block of a story turn was handed to SillyTavern
+let narratorRequest = null;
 let generationRequest = 0; // an older async interceptor must never publish into a newer request or chat
 
 function ctx() {
@@ -298,6 +299,27 @@ const narratorRecovery = createNarratorRecovery({
     failed: error => toastr.warning(`Avereth: narrator recovery failed (${error.message}); regenerate manually.`),
 });
 
+// ST 1.19 exposes request-ready but no structured generation-error event.
+// Observe only its exact non-streaming Narrator request; all other fetches are untouched.
+const hostFetch = globalThis.fetch.bind(globalThis);
+globalThis.fetch = function (url, options) {
+    const job = narratorRequest;
+    if (!job || !String(url).endsWith('/api/backends/chat-completions/generate') || options?.body !== job.body)
+        return hostFetch(url, options);
+    narratorRequest = null;
+    return narratorProviderResponse(() => hostFetch(url, options), {
+        signal: options.signal,
+        isCurrent: () => {
+            const c = ctx();
+            return settings().enabled && settings().recoverReports && c.chat === job.chat && c.getCurrentChatId() === job.chatId
+                && generationRequest === job.epoch && c.chat[job.u] === job.user && job.user.mes === job.input
+                && rec(job.user) === job.record && c.chat.length === job.length;
+        },
+        mark: data => { setRec(job.user, { ...job.record, narrator_recovery: data }); job.record = rec(job.user); },
+        save: () => ctx().saveChat(),
+    });
+};
+
 async function onMessageReceived(messageId) {
     if (!settings().enabled || !content) return;
     const c = ctx();
@@ -523,6 +545,15 @@ function mountSettings() {
     const ev = c.eventTypes || c.event_types;
     c.eventSource.on(ev.MESSAGE_RECEIVED, onMessageReceived);
     c.eventSource.on(ev.GENERATION_ENDED, () => narratorRecovery.finish());
+    c.eventSource.on(ev.CHAT_COMPLETION_SETTINGS_READY, data => {
+        narratorRequest = null;
+        const a = ctx(), u = a.chat.findLastIndex(m => m.is_user), user = a.chat[u], record = rec(user);
+        if (data.stream || a.groupId || !settings().enabled || !settings().recoverReports || !record?.events?.length
+            || record.narrator_recovery || narrationStart?.chatId !== a.getCurrentChatId() || narrationStart?.user !== u
+            || !(data.messages || []).some(m => String(m.content).includes('[AVERETH ENGINE'))) return;
+        narratorRequest = { body: JSON.stringify(data), chat: a.chat, chatId: a.getCurrentChatId(), epoch: generationRequest,
+            u, user, input: user.mes, record, length: a.chat.length };
+    });
     c.eventSource.on(ev.GENERATION_STOPPED, () => narratorRecovery.invalidate());
     c.eventSource.on(ev.MESSAGE_EDITED, onMessageEdited);
     // state is always re-folded from the chat, so these events only refresh the status line; the interceptor sets

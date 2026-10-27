@@ -506,7 +506,10 @@ export function parsePlan(answer, vocab, ctx, message) {
             if (typeof c.quote === 'string' && !inMessage(message, c.quote)) errors.push(`${at}: quote "${c.quote.slice(0, 60)}" is not in the message (copy his exact words)`);
             if (type === 'offer.accept' && ctx.tradeChecks && !bad.length) {
                 const offer = (ctx.catalog.offers || []).find(o => o.id === c.offer);
-                if (c.party_words && !inMessage(message, c.party_words)) errors.push(`${at}: party_words must copy the counterparty from the player message`);
+                if (c.party_words && !inMessage(message, c.party_words)) {
+                    const why = `${at}: party_words must copy the counterparty from the player message`;
+                    errors.push(why); tradeErrors.push(why);
+                }
                 if (offer) {
                     const why = acceptanceWhy(c, offer, offer.seller, ctx.currency);
                     if (why) {

@@ -1,6 +1,6 @@
 # Sol – Gegenreview und Ursachenplanung zum ersten .100-Batch
 
-Stand: 27.10.2026. **Analyse und Umsetzungsvorschlag, keine Produktänderung.** Dieser Bericht ergänzt die unveränderte [GPT-Review](REVIEW.md). Er ersetzt weder die Originaldaten noch eine spätere technische Abnahme.
+Stand: 27.10.2026. **Analyse und Umsetzungsvorschlag, keine Produktänderung.** Der vertiefte Codeaudit in §11 präzisiert die Ursachen und ersetzt den früheren Patchzuschnitt aus §8/§10. Dieser Bericht ergänzt die unveränderte [GPT-Review](REVIEW.md). Er ersetzt weder die Originaldaten noch eine spätere technische Abnahme.
 
 ## 1. Quellen, Methode und belastbares Gesamturteil
 
@@ -354,6 +354,149 @@ Vor einem weiteren großen Batch Paket A und B beheben; für aussagekräftige Ex
 - **Erzählfreiheit bleibt:** Unbekannte Unterorte, autonome NPCs, Hilfsangebote und außergewöhnliche Kreaturen sind erlaubt. Ihre kanonischen Beziehungen müssen eindeutig sein, bevor davon Kampfwerte, Zugang oder Belohnungen abhängen.
 
 Das ist ein begrenzter Zuverlässigkeitspatch mit drei Fachbereichen, kein Anlass für einen vollständigen Architekturumbau. Ein restliches Risiko falscher Modellinterpretation bleibt; die Engine muss dann sicher ablehnen und der Runner dies sichtbar dokumentieren können.
+
+
+## 11. Vertiefter Codeaudit: gemeinsame Ursachen und korrigierter Patchzuschnitt
+
+**Nachtrag vom 27.10.2026, auf ausdrücklichen Analyseauftrag.** Entwicklungs-HEAD erneut geprüft: `54b6e086734d719db35b12aab901e2f666229101` / Produkt `.100`; `main` vor diesem Nachtrag `aafa7d5`. Keine Produktänderung, neue Testdatei, Testsuite oder Provideranfrage. Die unten bezeichneten Sonden rufen vorhandene Produktfunktionen auf privaten Zustandskopien auf. Sie sind reproduzierte Codefehler, aber keine nachträglich erfundenen Ereignisse der sechs Originalruns.
+
+**Korrektur meiner ersten Einschätzung:** Die bisherigen Pakete A–C beheben belegte Ursachen, reichen aber nicht für die wiederkehrende Fehlerklasse. Insbesondere „erst korrekte Szenen liefern, dann World vertrauen“ aus §6.4 ist zu weitgehend: Auch vollständig schema-valide, eindeutig annotierte Antworten werden im aktuellen World-Ablauf teilweise falsch verarbeitet. Nicht alle Ortsfehler sind Extractorfehler.
+
+### 11.1 Der vollständige Ablauf und seine tatsächlichen Autoritätsgrenzen
+
+`playerTurnV4 → resolveCommands` bucht unmittelbare Enginehandlungen und speichert unerledigte, autorisierte Handlungen in `outcome.expected_keys`, `auth`, `conditionals` beziehungsweise `decisions`. Der Narrator sieht diesen Ausgangszustand und schildert die Weltreaktion. Danach folgen `runExtraction → parseExtraction → applyExtraction → replyTurnV4 → applyWorld`. Erst dessen Eventliste kommt mit `setRec` auf den Reply; `foldChat` rekonstruiert daraus HUD und Folgezustand.
+
+Daran ist vieles richtig: begrenzte Autorisierung, Verarbeitung auf einer Kopie, ein ausgewählter Extractorkandidat, ein Commit, deterministischer Replay. Die Fehler entstehen überwiegend **vor** diesem Commit, nicht weil mehrere unabhängige Speicher denselben Kauf oder dieselbe Quest auszahlen.
+
+Innerhalb von `applyWorld` gibt es jedoch mehrere Ausführungszeitpunkte: erwartete Ankünfte vor der Deltaliste, erwartete Ankünfte während der Liste, vorgezogenen Transit, explizite `arrive`-Deltas, nachgeholte Ankünfte und am Ende ausgewertete `expected.sell`. Questabgaben laufen bereits im Arrival-Callback, während bestimmte Questnachweise erst später abschließend geprüft werden. Aufgeschobene Objektübergaben werden ebenfalls später gegen den dann aktuellen Zustand verarbeitet. Diese Verteilung ist ein begrenztes strukturelles Problem, nicht bloß eine fehlende Formulierung im Prompt.
+
+### 11.2 Ortsidentität: gleiche Bedeutung, unterschiedliche Ergebnisse
+
+Betroffene Stellen: `extract.js:sceneKey/sceneIssues` (246ff.), `world.js:resolvePlace` (143ff.), `arrivalPlace` (236), `sceneMatches` (270ff.) und der Vergleich vor `applyExpected` (777).
+
+Die Funktionen verwenden unterschiedliche Bedeutungen von „derselbe Ort“:
+
+- Erzeugung normalisiert Eltern, Gildenorte und bekannte Namen.
+- Ankunft kennt zusätzlich kanonische Dungeoneingänge.
+- Szenenprüfung vergleicht Namen, Kind und Eltern mit eigener Logik.
+- Chronologiediagnose kennt keinen vollständigen kanonischen Zustand.
+- Der Übergang während der Deltaliste vergleicht sogar `JSON.stringify(ref)`.
+
+**Lesende Sonde, vollständig durch `parseExtraction` und `applyWorld`:** Ausgangszustand aus `tests/v4/fixtures/run22_prebatch.json`, autorisierter GO von Alderwatch-Gildenhalle nach Alderwatch, bestätigte Expected-Ankunft. Vor der Reise eine lokale Thread-Meldung, danach der Händler Vel am Ziel. Nur die Darstellung seiner Szene wurde variiert.
+
+| Darstellung derselben Zielszene | Parser | Endort | Vel lokal etabliert |
+|---|---|---|---|
+| Genau dasselbe strukturierte Ortsobjekt wie Expected | gültig, vollständig, keine Szenenwarnung | Alderwatch | ja |
+| Bereits bekannte ID `loc.alderwatch` | identisch gültig | Alderwatch | nein, `scene_context` |
+| Dasselbe Objekt, nur JSON-Felder anders angeordnet | identisch gültig | Alderwatch | nein, `scene_context` |
+
+Nicht die NPC-Identität ist hier falsch: Die Ankunft wird in zwei Varianten erst **nach** dessen Delta nachgeholt. Damit ist eine konkrete, allgemeine Fehlerklasse belegt. Noch eine Alias-Regex würde sie nicht lösen.
+
+**Empfehlung:** Eine gemeinsame, nebenwirkungsfreie Ortsauflösung beziehungsweise Vergleichsgrundlage in den vorhandenen Ortsfunktionen verwenden. Bekannte Referenzen ergeben dieselbe ID; eindeutig neue Referenzen erhalten eine stabile Bedeutung aus Name, Kind und kanonischem Elternort, unabhängig von JSON-Feldreihenfolge. Die tatsächliche Ortserzeugung bleibt am autorisierten Ereignis. Ein bloßer Vergleich darf keine Orte anlegen. Mehrdeutigkeit bleibt eine Ablehnung, keine globale Zusammenführung gleicher Namen.
+
+Darin die bisherigen Habitat- und Gatekorrekturen mitführen: ausdrücklich belegte Habitat-Vorfahren auch über mehrere Unterorte erhalten; kanonische Eingänge in Ankunft, Szenenprüfung und Zugang gleich behandeln. Keine pauschale Zulassung aller Parent-Kombinationen, keine Bindung beliebiger Tiere an die aktive Quest und keine Verschmelzung von Innenraum und Dungeongate.
+
+### 11.3 Chronologie: korrekte Ereignisse werden zum falschen Zeitpunkt geprüft
+
+**Sonde Transit:** Derselbe archivierte Ausgangszustand, autorisierter GO nach Glassmere; die Antwort enthält ausdrücklich ein Geschenk des anwesenden Schreibers an der alten Gildenhalle, danach 60 Minuten Reise, `arrived:false`. Beide Geschenk-Deltas tragen korrekt die alte Orts-ID. Parser: gültig und vollständig, keine Szenenwarnung.
+
+Trotzdem setzt der Transitblock in `world.js` (724–769) den Spieler **vor der gesamten Deltaliste** auf die Reichsstraße. Anschließend werden `object.new` und `object.move` wegen falscher Szene verworfen. Das Geschenk fehlt. Ein sinnvolles Spielerverhalten wird dadurch unabhängig von der Extractorqualität beschädigt.
+
+**Empfehlung:** Die vorhandenen autorisierten Reiseübergänge in derselben Reihenfolge anwenden wie die lokalen Ereignisse. Die bestehenden `implicitArrivals` und `arriveThrough/arrive` reichen als Grundlage; der Transit benötigt keinen zweiten vorgezogenen Ablauf.
+
+- Startortsereignisse vor Abreise bleiben am Startort.
+- Explizite Ankünfte behalten ihre Position.
+- Expected-Ankünfte werden nur an einer eindeutig bestimmbaren Grenze eingeordnet.
+- Ein bereits autorisierter, zeitlich belegter Transit erfolgt nach früheren Startortsereignissen beziehungsweise vor eindeutig zugehörigen Straßenereignissen.
+- Bei unbestimmbarer Reihenfolge gezielt diagnostizieren, nicht vorsorglich zuerst reisen.
+
+`scene` beschreibt weiterhin den Ereignisort, autorisiert aber keine Bewegung. Keine neuen Pflichtzüge für gewöhnliche Reisen. Nachholungen und aufgeschobene Übergaben dürfen ihre fachlichen Voraussetzungen nicht stillschweigend vom ursprünglichen Ereignisort auf den Endort übertragen.
+
+Ein generischer Scheduler oder eine neue persistente Reise-State-Maschine wäre dafür unverhältnismäßig. Die begrenzte Zusammenführung gehört in den vorhandenen World-Ablauf.
+
+### 11.4 Verkauf: zwei unterschiedlich abgesicherte Wege
+
+Normaler Gebotsweg: `world.bid → offer.created → commands.acceptBid → trade.bidSale → bookSale`. Käuferanwesenheit, Waren und Gebot werden geprüft; die Auszahlung verwendet den gebundenen Preis.
+
+Der zweite Weg: `commands.sell` eröffnet eine Mindestpreis-Zusage; `world.sale` (2441ff.) liest am Antwortende `expected.sold/price_cp`, prüft Mindestpreis und noch gehaltene Menge und ruft `bookSale` auf. Er verlangt dort weder ein passendes tatsächlich gebuchtes Gebot noch einen Nachweis des Handelszeitpunkts. `bookSale` (trade.js:254ff.) vertraut seinem Aufrufer. Im Gegensatz dazu validiert `bookPurchase` selbst erneut das aktuelle Angebot.
+
+**Schema-valide Sonden mit der realen Chitinplatte aus demselben Fixture und einem anfangs anwesenden Käufer:**
+
+| Antwort bei autorisiertem Verkauf ab mindestens 5 Kupfer | Tatsächliches Ergebnis |
+|---|---|
+| Gültiges `bid` über 3 Kupfer, Prosa lehnt 5 ab, widersprechendes `expected.sold:true, price_cp:5` | Gebot über 3 angelegt, trotzdem 5 ausgezahlt und Ware übertragen |
+| Käufer verlässt die Szene ohne Handel; widersprechendes `expected.sold:true` | 5 ausgezahlt, Käufer beim Buchungszeitpunkt abwesend |
+| Käufer nimmt für 5 an | 5 ausgezahlt, korrekte Kontrolle |
+
+Die ersten beiden Fälle enthalten bewusst widersprüchliche Modellberichte. Sie belegen, dass die Engine diese Widersprüche zwischen ihren Eingabekanälen nicht abfängt. Sie sind **kein Nachweis**, dass jeder Verkauf der Originalruns falsch war.
+
+**Empfehlung:** Für neue Extraktionen den vorhandenen `bid`-Pfad auch für vorher autorisierte Mindestpreisverkäufe nutzen. Ein passendes Gebot kann bei bereits ausreichender Spielerzusage im selben Zug angenommen werden; ohne solche Zusage bleibt die spätere ausdrückliche Annahme erforderlich. Käufer, konkretes Los, Menge, Preis und Ort stammen dann aus demselben geprüften Handelsereignis. `expected.sold` darf keine davon abweichende zweite Buchungsquelle sein.
+
+Die gemeinsamen Verkaufsprüfungen an der bestehenden Buchungsgrenze konsistent verwenden. Insbesondere vor jedem ersten Transfer sämtliche Lospositionen prüfen; keine Teilübertragung mit anschließender voller Auszahlung. Bestehende Kauf-, Gebots-, Teilmengen- und Provenienzfunktionen wiederverwenden, keine zweite Handelsengine.
+
+**Nicht ausreichend:** nur am Antwortende Käuferanwesenheit ergänzen. „Kauf, dann Abgang“ ist legitim; „Abgang, dann behaupteter Kauf“ nicht. Die Prüfung gehört zum Handelsereignis. Ebenso darf ein ortsgebundenes Angebot nicht allein deshalb mitreisen, weil die allgemeine Entscheidungs-Mitnahme in `arrive` eine frische Entscheidung an den neuen Ort schreibt.
+
+Die Umstellung ist eine Änderung des neuen Extraktionsvertrags und muss entsprechende Kontrollfälle erhalten. Alte gespeicherte Transaktionen werden beim Replay nicht neu interpretiert.
+
+### 11.5 Questabgabe: korrekte Zählung, zusätzliche Story-Bestätigung, verfrühter Abschlussversuch
+
+`guild.contractReady` (428ff.) prüft Dungeonräumung und moderne Liefernachweise bereits mechanisch. Gewöhnliche Jagden brauchen dagegen zusätzlich `q.ready` oder den Legacy-Nachweis; erst danach wird `countShort` geprüft.
+
+Originalbeleg Guild Mage: nach m33 beziehungsweise m163 sind 1/1 Wolf beziehungsweise 4/4 Strider mechanisch gezählt. `contractReady(...,{c:true})` liefert zu diesem Zeitpunkt trotzdem `not_ready`. Die jeweils folgende Originalantwort setzt die Bereitschaft dann richtig. **Das belegt die zusätzliche Abhängigkeit, aber an diesen beiden Stellen keinen dauerhaften Live-Block.** Die sieben nicht angerechneten Strider bleiben das eigenständige Herkunftsproblem.
+
+**Sonde auf dem Originalzustand nach m163:** GO zur Gildenhalle plus ausdrücklich autorisierte Abgabe des 4/4-Auftrags. Zwei gültige Antworten, beide ohne Parser-/World-Ablehnungen:
+
+- `quest.ready` vor `arrive`: COMPLETED, genau 80 Kupfer.
+- `arrive` vor `quest.ready`: am Ende READY und an der richtigen Halle, aber weiterhin ACTIVE, keine Zahlung.
+
+Ursache: `arrive` (2032ff.) markiert die bedingte Abgabe bereits als erledigt und ruft `completeContract` auf, bevor die spätere Bereitschaft vorliegt. Der danach richtige Zustand löst keinen weiteren Versuch aus.
+
+**Zwei zusammengehörige Korrekturen:**
+
+1. Bereits ausdrücklich autorisierte Abgaben anhand des endgültig bestätigten Nachweises **am passenden Ereignisort** ausführen. „Nachweis in derselben Antwort noch ausstehend“ ist kein bereits abgeschlossener Fehlversuch. Vorhandene `conditionals` weiterverwenden; nach Nachweisprüfung erneut prüfen, solange die Hallenbedingung tatsächlich besteht. Am Antwortende offene Handlungen eindeutig ausweisen. Keine automatische spätere Auszahlung ohne Auftrag, keine Auszahlung erst nach erneutem Verlassen der Halle.
+2. Für eindeutig quantitative neue Jagdverträge erwägen, Erfüllbarkeit unmittelbar aus dem bestehenden `defeatTally` abzuleiten, wie bei der Dungeonräumung. HUD, `#quest`, Narratorkontext und Abgabe müssen dieselbe Prüfung verwenden. Keine zweite mitlaufende Killliste.
+
+Punkt 2 ist eine **begrenzte fachliche Vereinfachung**, nicht bloß die Korrektur eines Tippfehlers: Sie darf nur für entsprechend definierte Zähljagden gelten. Historische Mischaufträge, explizite weitere Ziele, alternative Vertreibung und Delivery behalten ihre Nachweise. Die bestehenden Tests in `planner_c6.test.js` verlangen ausdrücklich eine zusätzliche `quest.ready`-Anweisung; bei der Vereinfachung diese Semantik bewusst ändern, nicht versehentlich alte Regeln wegtesten. Kein generelles „volle Zahl bedeutet jede Quest abgeschlossen“.
+
+### 11.6 Recovery bleibt notwendig, löst aber eine andere Ursache
+
+Die drei reproduzierten World-Sonden passieren nach erfolgreicher Schema-Validierung. Größere Tokenbudgets oder weitere Modellaufrufe beseitigen sie nicht. Umgekehrt behebt die World-Korrektur keine vollständig leeren Providerantworten.
+
+Paket A aus §4 bleibt sinnvoll, mit den inzwischen übernommenen Feedback-Präzisierungen:
+
+- `ask` erhält Abbruch- und Providerstatus strukturiert; `index.js` darf HTTP-Status und Retry-Eignung nicht nur in einen gekürzten Fehlertext packen.
+- Nutzer-/Jobabbruch, Authentifizierungsfehler und dauerhaft unzulässige Requests nicht wiederholen. Bei temporärer Ratebegrenzung/Providerstörung nur begrenzt und innerhalb des Gesamtzeitbudgets reagieren.
+- Schema-Repair, leere Ausgabe und Transportfehler unterscheiden; maximal drei Calls, letztem nichtleeren Kandidaten eine echte Korrekturchance geben.
+- Veraltete Jobs niemals fortsetzen oder committen. Einen gültigen Kandidaten auswählen, keine Antworten zusammenkleben.
+- Automatisches Narrator-Regenerate separat im echten ST nachweisen. Kein erneutes Senden des Spielerinputs, keine wiederholte Engineausführung.
+
+Die bereits vorhandenen diagnostischen Szenenchecks sollen dieselbe Ortsbedeutung wie World verwenden. **Nicht jede fachliche Ablehnung an das Modell zum „Reparieren“ zurückgeben:** fehlender Questkill, verschlossene Ebene oder unautorisierter Inventartransfer sind korrekte Entscheidungen, keine Aufforderung, einen passenden Bericht zu erfinden.
+
+### 11.7 Überarbeiteter Fachzuschnitt statt weiterer Einzelfixes
+
+Diese Tabelle ersetzt die Umsetzungsempfehlung aus §8/§10; die dortigen Originalfälle und Gegenfälle bleiben Abnahmematerial.
+
+| Paket | Verbindlicher technischer Kern des Vorschlags | Nutzen / Risiko |
+|---|---|---|
+| A – Ausgabe und Recovery | Fehlerklassen und begrenzte Kandidatenauswahl; wirksame Providerkonfiguration messen; Narrator-Regenerate separat absichern | Verhindert vermeidbare technische Runenden. Mittlerer Aufwand, Host-/Doppelcommit-Risiko gezielt prüfen. |
+| B – Ortsidentität und Ereignisfolge | Eine konsistente Ortsbedeutung; Habitat-Vorfahren und Gateidentität; autorisierte Expected-/explizite Ankunft und Transit geordnet im bestehenden World-Ablauf | Behebt falsche Herkunft, Szenenverlust und Zeitpunktfehler gemeinsam. Mittlerer bis erhöhter Prüfaufwand, weil viele funktionierende Reiseformen betroffen sind. |
+| C – Nachweise und Buchung autorisierter Handlungen | Verkauf über denselben geprüften Gebotsnachweis; Questabgabe erst mit tatsächlich feststehender Bereitschaft am richtigen Ort; quantitative Jagdvereinfachung ausdrücklich abgrenzen | Schließt widersprüchliche Buchungspfade und reduziert unnötige LLM-Abhängigkeit. Mittlerer Aufwand; alte Verträge, Mengen und Zahlungsidempotenz schützen. |
+
+A kann unabhängig vorbereitet werden. B sollte vor C umgesetzt werden, damit C keine neue eigene Orts-/Zeitlogik erhält. Innerhalb C bleiben Handel und Gilde klar getrennte Fachfunktionen; keine universelle Transaktions- oder Questmaschine. Eine gemeinsame Produktabnahme ist sinnvoll, keine Serie vorsorglicher Minipatches zwischen Langläufen.
+
+### 11.8 Wenige aussagekräftige zusätzliche Integrationsprüfungen
+
+Die vorhandenen Tests sind nicht nutzlos: `patch_prebatch99` deckt frühere Geschenke, Zwischenhalte, mehrgliedrige Reisen, verweigerte Bewegung und Runtime-Commit bereits ab. Was fehlt, ist vor allem **Variation derselben Bedeutung über mehrere Pfade**.
+
+1. **Ortsdarstellung:** dieselbe bekannte ID, gleichbedeutendes Ortsobjekt und vertauschte JSON-Felder ergeben denselben Zustand. Kontextgebundene Gate-Aliase ebenso; zwei wirklich verschiedene Orte ausdrücklich nicht.
+2. **Zeitliche Folge:** Geschenk vor erfolgreicher Ankunft und vor noch nicht beendeter Reise; Geschenk nach tatsächlicher Ankunft; unbestimmtes `here` bleibt unbestimmt. Beliebige Delta-Umsortierung ist ausdrücklich keine Gleichwertigkeit.
+3. **Verkauf:** direkte Gebotsannahme und passende vorherige Mindestpreis-Zusage liefern dieselben Waren-/Geldänderungen. Gegenfälle: niedrigeres Gebot, anderer Käufer, unvollständiges Los, Käuferabgang vor Handel. Positiv: gültiger Handel vor späterem Abgang.
+4. **Gilde:** korrekte Population → Materialisierung → Kampf → vollständige Zählung → Rückreise → verlangte Abgabe. Bereitschaft vor beziehungsweise nach Ankunft darf eine sonst erfüllbare Abgabe nicht zufällig verlieren. Zu wenige Kills, Fremdpopulation, fehlender Auftrag oder falsche Halle zahlen weiterhin nichts.
+5. **End-to-End:** einige Originalantwortketten durch `runExtraction/applyExtraction` statt nur durch Einzelhandler; anschließender Fold, Reload und Swipe. Coins, Besitz, Queststatus, Population und Szene müssen identisch rekonstruierbar sein; je Antwort genau ein Commit.
+
+Kein neues Testframework nötig. Bestehende Fixtures und Helfer reichen; die erwähnten Sonden als Rot-/Grün-Regressionen übernehmen. Node-Tests belegen Determinismus, echte ST-Abnahme belegt Hostlebenszyklus, natürlicher Batch belegt die Modellinteraktion. Keine der drei Ebenen ersetzt die anderen.
+
+**Abschließende Bewertung:** Die Kernarchitektur bleibt tragfähig. Der World-Applier hat aber eine echte gewachsene Inkonsistenz bei Ortsvergleich und Ausführungszeitpunkten; zusätzlich gibt es beim Verkauf zwei verschieden starke Wahrheitsquellen und bei Jagden eine vermeidbare doppelte Erfüllungsbestätigung. Diese begrenzten Zuständigkeiten zusammenzuführen hat belegten Nutzen. Ein weiterer Satz Spezialfilter für einzelne Namen, Orte oder Formulierungen wäre dagegen erneut Symptombehandlung.
 
 ## Code- und Quellenwegweiser
 

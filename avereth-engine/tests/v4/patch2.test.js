@@ -150,12 +150,12 @@ test('3-5: setting off for the reported Dungeon is his goal; a camp, a cave, a f
     assert.notEqual(s.scene.at, d.id, 'setting off moves him nowhere: the story decides how far he gets');
 });
 
-test('7: arriving at the Dungeon under other words is the same place; the goal is done; nothing of the report is checked off as true', async () => {
+test('7: arrival names the reported Dungeon id despite different prose; the goal is done; nothing of the report is checked off as true', async () => {
     const { g, d } = await setOff();
     await say(g, '*I continue my journey*', { type: 'journey.continue', quote: 'I continue my journey' });
     await g.reply('A bowl-shaped valley opens, its grass unnaturally green; a dark cleft breathes cold air.', {
-        expected: { 1: { arrived: true, at: { new: { name: 'Dungeon valley with the dark cleft', kind: 'wilderness', parent: 'realm.duskreach' } }, with: null } },
-        deltas: [{ seq: 1, type: 'arrive', at: { new: { name: 'Dungeon valley with the dark cleft', kind: 'wilderness', parent: 'realm.duskreach' } }, forced_by: null, with: null }],
+        expected: { 1: { arrived: true, at: d.id, with: null } },
+        deltas: [{ seq: 1, type: 'arrive', at: d.id, forced_by: null, with: null }],
     });
     const s = g.state();
     assert.equal(s.scene.at, d.id, 'the same place id');

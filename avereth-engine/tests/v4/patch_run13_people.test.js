@@ -32,7 +32,12 @@ test('Run 13 people: original E176 cannot recreate the departed rescuer subject 
  const r=call(s,f.replies[176].answer,f.replies[176].prose);
  assert.ok(!r.state.scene.present.includes('npc.brast'));
  assert.equal(truth(r.state,'npc.brast','status')[0].o,before);
- assert.ok(r.events.some(e=>e.t==='delta.rejected'&&e.d.rule==='npc_continuity'));
+ assert.ok(r.events.some(e=>e.t==='delta.rejected'&&['npc_continuity','scene_context','arrival_evidence'].includes(e.d.rule)));
+ // Isolate identity continuity after a genuinely local report, without relying on the arrival rejection.
+ const local=clone(f.replies[176].answer);local.expected={};local.scene=s.scene.at;
+ for(const d of local.deltas)if(d.scene)d.scene=s.scene.at;
+ const checked=call(s,local,f.replies[176].prose);
+ assert.ok(checked.events.some(e=>e.t==='delta.rejected'&&e.d.rule==='npc_continuity'));
  assert.ok(!r.events.some(e=>e.t==='memory.recorded'&&(e.d.memory.who||[]).includes('npc.brast')));
 });
 test('Run 13 people: original E196 full-name reintroduction does not create a duplicate',()=>{

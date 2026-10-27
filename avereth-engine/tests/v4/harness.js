@@ -1,6 +1,7 @@
 // Runtime V4 test harness: a chat transcript played through the product's host path (src/v4/runtime.js) the way the
 // SillyTavern extension plays it (index.js), with the three LLM calls scripted: the interpreter answers the commands a
 // test gives it, the extractor the answer a test gives it, the Board generator the listings of a fixture.
+import { samePlace } from '../../src/v4/place_refs.js';
 import { ensureCampaign, foldChat, rec } from '../../src/host.js';
 import { prepareGenerationAsync, processReplyAny, runExtraction } from '../../src/v4/runtime.js';
 
@@ -47,7 +48,7 @@ export class Chat4 {
                 if (typeof answer === 'string') {
                     try { answer = JSON.parse(answer); } catch { return answer; }
                 }
-                return JSON.stringify({ scene: 'here', ...this.map(answer) });
+                return JSON.stringify(this.wireAnswer({ scene: 'here', ...this.map(answer) }));
             }
             if (purpose === 'board') {
                 if (this.boardFails || !this.listings) return 'The board is empty today.';
@@ -55,6 +56,34 @@ export class Chat4 {
             }
             return null;
         };
+    }
+
+    /** Old scripted fixtures expressed arrival through Expected. Translate that wire format to 5.13;
+     * archived events are never rewritten. Tests of malformed current responses call runtime directly. */
+    wireAnswer(answer) {
+        const s = this.state();
+        if ((s.meta.ruleset || 1) < 2 || !(s.last?.outcome?.c || s.last?.outcome?.auth?.c)) return answer;
+        const a = structuredClone(answer);
+        const ds = a.deltas || [];
+        if (ds.some(d => d.type === 'arrive')) return a;
+        for (const [seq, e] of Object.entries(a.expected || {})) {
+            if (e?.arrived === true && !e.at) e.at = s.last?.outcome?.auth?.gos?.find(g => String(g.seq) === seq)?.to || null;
+            if (e?.arrived !== true || !e.at || ds.some(d => d.type === 'arrive' && samePlace(s, d.at, e.at, this.content))) continue;
+            let index = ds.findIndex(d => d.scene != null && d.scene !== 'here' && samePlace(s, d.scene, e.at, this.content));
+            if (index < 0) {
+                index = ds.some(d => d.scene === s.scene.at || d.type === 'arrive') ? ds.length : 0;
+            }
+            const route = ds.findLastIndex(d => d.type === 'passage' && samePlace(s, d.to, e.at, this.content));
+            if (route >= 0) index = Math.max(index, route + 1);
+            for (const d of ds.slice(0, index)) if (d.scene == null) d.scene = s.scene.at;
+            ds.splice(index, 0, { type: 'arrive', at: e.at, with: e.with ?? null, forced_by: null });
+        }
+        // Only number inserted historical arrivals; preserve seq-based dependencies otherwise.
+        if (ds.some(d => d.seq === undefined)) {
+            const renumber = new Map(ds.filter(d => d.seq !== undefined).map(d => [d.seq, ds.indexOf(d) + 1]));
+            a.deltas = ds.map((d, i) => ({ ...d, seq: i + 1, ...(d.depends_on ? { depends_on: d.depends_on.map(x => renumber.get(x) ?? x) } : {}) }));
+        }
+        return a;
     }
 
     /** Replace a fixture's listing ids by the ids the engine booked (deep). */

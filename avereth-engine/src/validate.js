@@ -167,6 +167,9 @@ export function validateState(state, content) {
                 || pop.levels[0] < 1 || pop.levels[1] > 14 || pop.levels[0] > pop.levels[1]) p.push(`invalid F population at ${place.id}`);
         }
         for (const q of Object.values(state.quests)) if (q.hunt && !state.places[q.hunt.at]?.population) p.push(`quest ${q.id} has no hunting population`);
+        for (const q of Object.values(state.quests)) if (q.count_rule != null && (q.kind !== 'guild_contract'
+            || !['killed', 'killed_or_fled'].includes(q.count_rule) || q.objectives?.length !== 1
+            || q.objectives[0].verb !== 'DEFEAT' || !isInt(q.objectives[0].qty) || q.objectives[0].qty < 1)) p.push(`quest ${q.id} has invalid fixed count rule`);
     }
     if (!isInt(state.rng.n) || state.rng.n < 0) p.push(`rng counter ${state.rng.n}`);
     return p;

@@ -41,11 +41,11 @@ test('Run20 original five-delta response needs the earlier thread scene; repair 
  const fixed=structuredClone(f.answer726);fixed.deltas[1].scene=q.startScene;
  assert.equal(parseExtraction(JSON.stringify(fixed),q.vocab,q.ids,q.expectedKeys,q).valid,true);
 });
-test('Run20 schema error followed by repair timeout stops after two calls, with typed failure and no world commit',async()=>{
+test('Run20 schema error followed by repair timeout retries once, then stops after three calls, with typed failure and no world commit',async()=>{
  const legacy=await loadContent(),g=new Chat4(legacy);await g.player('Mage');await g.player('Flame Lance and Arcane Ward');await g.player('I wait.');
  const id=g.chat.push({mes:'The innkeeper nods.',is_user:false,is_system:false,extra:{}})-1;processReplyAny(g.chat,id,legacy);
  let calls=0;await runExtraction(g.chat,id,legacy,async()=>{if(++calls===1)return 'invalid JSON';throw Object.assign(new Error('LLM request timed out after 120000 ms'),{code:'LLM_TIMEOUT'});});
- const r=rec(g.chat[id]);assert.equal(calls,2);assert.equal(r.extraction.status,'failed');assert.equal(r.extraction.llm[1].error_kind,'timeout');assert.equal(r.events.some(e=>e.t==='extract.applied'),false);
+ const r=rec(g.chat[id]);assert.equal(calls,3);assert.equal(r.extraction.status,'failed');assert.equal(r.extraction.llm[1].error_kind,'timeout');assert.equal(r.extraction.llm[2].error_kind,'timeout');assert.equal(r.events.some(e=>e.t==='extract.applied'),false);
 });
 test('Run20 T252 corrected annotation permits arrival but still refuses the invented fourth kill',()=>{
  const a=structuredClone(f.answer726);a.deltas[1].scene=f.extraction.startScene;

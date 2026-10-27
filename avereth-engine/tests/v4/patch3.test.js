@@ -250,7 +250,7 @@ test('mechanical facts: Alaric\'s HP and gear are no free facts; a wound at full
         { seq: 4, type: 'fact', s: 'pc', p: 'has_scar', o: 'an old scar across his chin' },
     ] });
     let s = g.state();
-    assert.deepEqual(r.record.events.filter((e) => e.t === 'delta.rejected').map((e) => e.d.item.seq), [1, 2, 3]);
+    assert.deepEqual(r.record.events.filter((e) => e.t === 'delta.rejected').map((e) => e.d.item.seq), [2, 3, 4]);
     assert.ok(currentFacts(s, (f) => f.s === 'pc' && /scar/.test(f.p)).length, 'a scar stays');
     // hurt: the wound is a fact while he is hurt, and healed with his HP
     const sheet = g.chat.findLast((m) => m.extra?.avereth?.events).extra.avereth.events;

@@ -1,0 +1,69 @@
+{
+  "source": "batch-20261027-030034Z original chat-completions.jsonl; content only, no reasoning",
+  "runs": [
+    {
+      "run": "001-guild-warrior",
+      "turn": 32,
+      "calls": [
+        {
+          "call": 92,
+          "text": "",
+          "error": null
+        },
+        {
+          "call": 93,
+          "text": "{\"scene\": \"loc.ashbridge.guild_hall\", \"expected\": {}, \"deltas\": [{\"seq\": 1, \"type\": \"fact\", \"s\": \"quest.cull_the_marsh_cats_prowling_the_tannery_yards\", \"p\": \"turn_in_refused\", \"o\": \"the Guild seal does not show ready; the rolls have not closed the contract, so no clerk can pay against it yet\"}, {\"seq\": 2, \"type\": \"offer\", \"seller\": \"npc.npcguild_clerk_ashbridge\", \"lines\": [{\"what\": \"send a runner to soak-row for Hessa Vull's word; if the yards are quiet and satisfied, the contract closes and the 25 copper waits at any desk by morning\", \"kind\": \"service\", \"service\": \"other\", \"qty\": 1, \"price_cp\": 0, \"said\": \"it costs you nothing but a night's patience\", \"effect\": null, \"teaches\": null, \"equipment\": null}]}], \"thread\": [{\"id\": null, \"text\": \"The clerk offers to send a runner with the afternoon post to get Hessa Vull's word; if the yards are quiet, the marsh-cat contract closes and the 25 copper is payable by morning\", \"kind\": \"promise\", \"status\": \"open\", \"resolution\": null}]}",
+          "error": null
+        }
+      ]
+    },
+    {
+      "run": "003-guild-rogue",
+      "turn": 5,
+      "calls": [
+        {
+          "call": 10,
+          "text": "",
+          "error": null
+        },
+        {
+          "call": 11,
+          "text": "{\"scene\":\"here\",\"expected\":{},\"deltas\":[{\"seq\":1,\"type\":\"time\",\"minutes\":5},{\"seq\":2,\"type\":\"learn\",\"who\":\"npc.npcclerk_ashbridge\",\"s\":\"pc\",\"p\":\"name\",\"o\":\"Alaric Red\",\"how\":\"witnessed\"},{\"seq\":3,\"type\":\"person.new\",\"ref\":\"npc.scarred_man\",\"name\":null,\"role\":\"lounger\",\"desc\":[\"scarred man at the Guild benches\",\"drinking ale\",\"was sharpening a blade\"],\"armed\":null,\"present\":true,\"relevant\":false,\"threat\":false,\"at\":\"here\",\"band\":null},{\"seq\":4,\"type\":\"aware\",\"who\":\"npc.scarred_man\",\"level\":\"aware\",\"evidence\":\"stopped sharpening and was watching the counter over the rim of his ale\"}]}",
+          "error": null
+        }
+      ]
+    },
+    {
+      "run": "004-explore-warrior",
+      "turn": 32,
+      "calls": [
+        {
+          "call": 81,
+          "text": "",
+          "error": null
+        },
+        {
+          "call": 82,
+          "text": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "run": "005-explore-mage",
+      "turn": 20,
+      "calls": [
+        {
+          "call": 58,
+          "text": "{\"scene\": \"here\", \"expected\": {}, \"deltas\": [\n{\"seq\": 1, \"type\": \"place\", \"note\": \"new chamber seen\"},\n{\"seq\": 2, \"type\": \"creature.new\", \"ref\": \"gob.lookout.stone\", \"species\": \"goblin\", \"anchor\": \"goblin\", \"desc\": [\"knee-high to a man and a half, green-grey muddy skin\", \"perched on a flat-topped stone gnawing, horn slung at hip\", \"lookout\"], \"count\": 1, \"present\": false, \"band\": \"LONG\", \"threat\": true},\n{\"seq\": 3, \"type\": \"creature.new\", \"ref\": \"gob.lookout.fire\", \"species\": \"goblin\", \"anchor\": \"goblin\", \"desc\": [\"knee-high, green-grey muddy skin\", \"crouches by the fire turning a spit with a dog-sized haunch\", \"wears a boiled-leather shoulder piece\", \"lookout\"], \"count\": 1, \"present\": false, \"band\": \"LONG\", \"threat\": true},\n{\"seq\": 4, \"type\": \"aware\", \"who\": \"gob.lookout.stone\", \"level\": \"unaware\", \"evidence\": \"Neither had looked toward the tunnel mouth.\"},\n{\"seq\": 5, \"type\": \"aware\", \"who\": \"gob.lookout.fire\", \"level\": \"unaware\", \"evidence\": \"Neither had looked toward the tunnel mouth.\"},\n{\"seq\": 6, \"type\": \"fact\", \"s\": \"loc.mossback_warrens.mossback_warrens_mouth_gallery\", \"p\": \"beyond_bend\", \"o\": \"an oval fire chamber with a bark-and-bone warning cord, a wicker cage with a mossback turtle shell clan sign, and a low smoky fire pit\"},\n{\"seq\": 7, \"type\": \"fact\", \"s\": \"loc.mossback_warrens.mossback_warrens_mouth_gallery\", \"p\": \"hauled_trail\", \"o\": \"a scuffed trail leads from the fire chamber's far end toward a side passage, as if something was hauled out not long ago; the dragging sound has stopped\"},\n{\"seq\": 8, \"type\": \"passage\", \"from\": {\"new\": {\"name\": \"goblin fire chamber\", \"kind\": \"interior\", \"parent\": \"loc.mossback_warrens\"}}, \"to\": {\"new\": {\"name\": \"side passage beyond the fire chamber\", \"kind\": \"interior\", \"parent\": null}}, \"name\": \"side passage at the chamber's far end\", \"hidden\": null, \"one_way\": null, \"dir\": null, \"feature\": null},\n{\"seq\": 9, \"type\": \"thread\", \"id\": null, \"text\": \"Something was dragged out of the goblin fire chamber toward a side passage not long ago; the dragging sound has stopped.\", \"kind\": \"sign\", \"status\": \"open\"}\n]}",
+          "error": null
+        },
+        {
+          "call": 59,
+          "text": "",
+          "error": null
+        }
+      ]
+    }
+  ]
+}

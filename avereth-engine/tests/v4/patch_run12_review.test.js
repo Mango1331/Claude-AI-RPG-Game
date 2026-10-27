@@ -24,6 +24,8 @@ function actualArrival(s, { repeat = false, name = 'Actual warband chamber' } = 
     for (const e of a.events) applyEvent(copy, e);
     const at = { new: { name, kind: 'interior', parent: root } };
     const deltas = repeat ? [{ ...original.raw.deltas.find(d => d.type === 'creature.new'), present: repeat !== 'distant' }] : [];
+    deltas.unshift({type: 'arrive', at, with: null, forced_by: null});
+    deltas.forEach((d, i) => d.seq = i + 1);
     return { before: copy, result: world(copy, { expected: { 1: { arrived: true, at, with: null } }, deltas }) };
 }
 

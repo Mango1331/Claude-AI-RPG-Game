@@ -484,6 +484,7 @@ export function entryLine(s, root, line) {
 export function entranceOf(s, content, ref) {
     const name = normText(typeof ref === 'string' ? s.places?.[ref]?.name || '' : ref?.new?.name || ref?.new || '');
     if (!name || (typeof ref === 'string' && (!s.places?.[ref] || s.places[ref].visited || s.places[ref].level))) return null;
+    const matches = [];
     for (const p of Object.values(s.places || {}).filter((x) => x.dungeon?.real)) {
         if (typeof ref === 'string' && ref !== p.id && s.places[ref]?.parent !== p.id) continue;
         const x = livingOf(s, p.id);
@@ -493,10 +494,12 @@ export function entranceOf(s, content, ref) {
         const isGate = gate.some((g) => name.includes(normText(g)));
         const namesIt = name.includes(own) && where.some((w) => name.split(' ').includes(w));
         const under = typeof ref === 'string' ? s.places[ref]?.parent === p.id : ref?.new?.parent === p.id;
-        if (isGate && (name.includes(own) || under)) return p.id;
-        if (namesIt) return p.id;
+        const parent = typeof ref === 'string' ? s.places[ref]?.parent : ref?.new?.parent;
+        const realm = typeof parent === 'string' ? s.places[parent]?.realm || (s.places[parent]?.kind === 'realm' ? parent : null) : null;
+        const exactGate = gate.some(g => name === normText(g));
+        if ((isGate && (name.includes(own) || under)) || namesIt || (exactGate && realm && realm === p.realm)) matches.push(p.id);
     }
-    return null;
+    return matches.length === 1 ? matches[0] : null;
 }
 
 /** Why an arrival into a room of a sealed level is refused (its level above not cleared), else null. */

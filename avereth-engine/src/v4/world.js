@@ -1,3 +1,4 @@
+import { placeParent, placeIdentity, samePlace } from './place_refs.js';
 import { sceneIssues, localSceneDelta } from './extract.js';
 import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: applying the extractor's world deltas (docs/RUNTIME_V4_PLAN.md §5.2). After the narrator's reply the
@@ -131,13 +132,6 @@ export function firewallContext(s, content, chronicle = null, excludedFoes = [])
 }
 
 // ------------------------------------------------------------------------------------------------ places
-/** The same parent normalization for place creation and read-only scene matching. */
-function placeParent(s, kind, id, c) {
-    const parents = [...(PLACE_PARENTS[kind] || []), ...(c && kind === 'interior' ? ['wilderness'] : []), ...(c && kind === 'site' ? ['realm'] : [])];
-    for (let i = 0; i < 6 && id && !parents.includes(s.places[id]?.kind); i++) id = s.places[id]?.parent;
-    return id;
-}
-
 /** Resolve a place ref; {new: {name, kind, parent}} creates it (the same name under the same parent is the same place). */
 function resolvePlace(s, ref, emit, depth = 0, { c = false, reported = false } = {}) {
     if (typeof ref === 'string') return s.places[ref] ? { id: ref } : { error: `unknown place ${ref}` };
@@ -166,11 +160,8 @@ function resolvePlace(s, ref, emit, depth = 0, { c = false, reported = false } =
         if (room?.ambiguous) return { error: `more than one room "${String(n.name).slice(0, 60)}" in ${s.places[dun].name}: name it by its id` };
         if (room) return { id: room.id };
     }
-    // (in a dungeon its rooms by name and level above, not by the parent alone)
-    const same = dun ? null : Object.values(s.places).find((p) => p.parent === pid && normText(p.name) === normText(n.name))
-        // Patch 2: a place known by report is that place wherever the new mention puts it in this realm
-        || knownByName(s, n.name, p0(s, pid), { reportedOnly: !reported });
-    if (same) return { id: same.id };
+    const same = placeIdentity(s, { new: { ...n, parent: pid } }, null, { c, reported });
+    if (same) return { id: same };
     let id = `${pid.startsWith('loc.') ? pid : 'loc'}.${slug(n.name) || 'place'}`;
     for (let k = 2; s.places[id]; k++) id = `${pid.startsWith('loc.') ? pid : 'loc'}.${slug(n.name)}_${k}`;
     const p = s.places[pid];
@@ -230,12 +221,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const auth = outcome.auth || {};
     // Prototype C: the turn the planner read (a story turn: auth.c; a V3-routed one: the outcome's c)
     const cPath = !!(auth.c || outcome.c);
+    const explicitTravel = cPath && rulesetOf(s) >= 2;
     const place = (ref) => resolvePlace(s, ref, emit, 0, { c: cPath });
     // Patch 8 (13A): an arrival at a Dungeon's gate by any of its names (the ruined chapel above the Old Crown Catacombs)
     // is at the Dungeon itself, its way in: never a room of it, never a new place beside it
     const arrivalPlace = (ref) => { const gate = cPath ? entranceOf(s, content, ref) : null; return gate ? { id: gate } : place(ref); };
     const expected = answer.expected || {};
-    const chronology = new Map(cPath && rulesetOf(s) >= 2 ? sceneIssues(answer, s.scene.at).map(x => [answer.deltas[x.index], x.why]) : []);
+    const chronology = new Map(cPath && rulesetOf(s) >= 2 ? sceneIssues(answer, s.scene.at, s, content, explicitTravel).map(x => [answer.deltas[x.index], x.why]) : []);
     const sceneOf = d => cPath && rulesetOf(s) >= 2 ? d?.scene ?? answer.scene : null;
     const tag = msg !== null && msg !== undefined ? msg : s.turn;
 
@@ -267,21 +259,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (!pendingSteps.has(d) && !rejected.some(x => x.seq === d.seq && x.type === d.type)) acceptedSteps.add(String(d.seq));
     };
     let refusedScene = false;
-    const sceneMatches = ref => {
-        if (ref === 'here') return true;
-        if (typeof ref === 'string') return ref === s.scene.at;
-        const matches = (want, id) => {
-            const p = s.places[id];
-            if (typeof want === 'string') return want === id;
-            const n = want?.new;
-            if (!p || !n || normText(n.name) !== normText(p.name) || (n.kind && n.kind !== p.kind)) return false;
-            if (!n.parent) return true;
-            const parents = typeof n.parent === 'string' ? [n.parent]
-                : Object.keys(s.places).filter(id => matches(n.parent, id));
-            return parents.length === 1 && placeParent(s, n.kind || p.kind, parents[0], cPath) === p.parent;
-        };
-        return matches(ref, s.scene.at);
-    };
+    const sceneMatches = ref => ref === 'here' || samePlace(s, ref, s.scene.at, content);
     const readied = []; // the contracts this reply made READY (their open deliveries are told after the deltas)
     corrections.push(...fw.corrections);
     // the other side of a trade the engine books this turn: a sale's buyer, a seller he paid exactly (coin.gift below)
@@ -693,11 +671,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         return ids;
     };
 
-    // The extractor's structured expected.arrived/arrive result is authoritative.
-    // Never turn narration of a gate crossing into a room against arrived:false.
+    // New C reports move only through explicit arrive deltas.
+    // Historical non-C/Ruleset-1 reports retain their previous Expected interpretation.
     const explicitArrival = fw.accept.some((d) => d.type === 'arrive');
     const implicitArrivals = [];
-    if (!explicitArrival && !s.encounter) {
+    if (!explicitTravel && !explicitArrival && !s.encounter) {
         let onWay = false; // review of Hotfix 7.2.1: after a leg he reached, one he did not reach ends the way
         for (const [k, type] of Object.entries(outcome.expected_keys || {}).sort((a, b) => Number(a[0]) - Number(b[0]))) {
             if (type !== 'go') continue;
@@ -739,7 +717,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const arrivesAnyway = explicitArrival || Object.entries(outcome.expected_keys || {}).some(([k, type]) => type === 'go' && expected[k]?.arrived === true);
     let transit = null;
     // Patch 7: inside a dungeon he is where he was until the story has him arrive somewhere (no road to put him on)
-    if (cPath && !arrivesAnyway && !s.encounter && !dungeonOf(s, startAt) && auth.timeCap > content.rules.time.default_cap_min
+    if (!explicitTravel && cPath && !arrivesAnyway && !s.encounter && !dungeonOf(s, startAt) && auth.timeCap > content.rules.time.default_cap_min
         && roadMinutes >= content.rules.time.engine_clock.go_min_elsewhere
         && (auth.gos || []).length > 0 && s.scene.at === startAt) {
         const destination = (auth.gos || []).at(-1);
@@ -834,25 +812,25 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             }
             case 'arrive': {
                 if (s.encounter) { reject(d, 'combat', 'no travel while combat is ACTIVE'); refusedArrival(d); break; }
-                const ref = reportedTarget(s, auth, expected, d.at, null, sceneOf(d)) || onward(d.at);
+                const ref = explicitTravel ? d.at : reportedTarget(s, auth, expected, d.at, null, sceneOf(d)) || onward(d.at);
                 const away = leavesHere(ref);
                 const at = viaStop(arrivalPlace(ref));
                 if (at.error) { reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
-                if (at.id === s.scene.at) { travel.push({ seq: d.seq, ok: true }); break; }
+                if (at.id === s.scene.at && !(explicitTravel && s.places[at.id]?.kind === 'realm' && auth.gos?.length)) { travel.push({ seq: d.seq, ok: true }); break; }
                 if (wayRefused(at.id, d, { forced: !!String(d.forced_by || '').trim() })) { travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 const party = companions(d.with, d);
                 perceiveAll(s, emit, seeing());
                 arriveThrough(at.id, party);
-                // Hotfix 7.2.1: the arrive delta answers one leg of his GOs; a later leg the answer reports arrived as well
-                // takes him on at its chronological boundary (legacy: immediately; road → Alderwatch →
-                // Guild hall, both arrived, one arrive delta for Alderwatch: he stayed in the street, and the clerk of
-                // the hall would have been met there). A leg not reported arrived ends his way where he is
-                if (cPath && rulesetOf(s) >= 2) {
-                    implicitArrivals.length = 0;
-                    for (const k of laterLegs(at.id)) {
-                        if (!answer.deltas.some(x => x.type === 'arrive' && x.seq > d.seq)) implicitArrivals.push({ k, e: expected[k] });
+                if (explicitTravel && s.places[at.id]?.kind === 'realm') {
+                    const go = auth.gos?.at(-1);
+                    if (go?.newName && !go.to && !go.journey && !go.intent) {
+                        const quote = (outcome.resolutions || []).find(r => r.seq === go.seq)?.quote || null;
+                        grant('player.goal');
+                        setIntentEvents(s, { goal: `find ${go.newName}`, seek: go.newName, quote, why: 'he set off to find it' }).events.forEach(emit);
                     }
-                } else {
+                }
+                // Historical non-C/Ruleset-1 reports retain their Expected follow-up legs.
+                if (!explicitTravel) {
                     for (const k of laterLegs(at.id)) {
                         const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
                         const next = viaStop(arrivalPlace(reportedTarget(s, auth, expected, expected[k].at, k, sceneOf()) || expected[k].at || go?.to || null));
@@ -1370,7 +1348,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     for (const [k, type] of Object.entries(outcome.expected_keys || {})) {
         const e = expected[k];
         if (!e) continue;
-        if (type === 'go' && e.arrived === true && !arrived && !s.encounter) {
+        if (explicitTravel && type === 'go' && e.arrived === true && !answer.deltas.some(d => d.type === 'arrive' && samePlace(s, d.at, e.at, content))) {
+            reject({ seq: Number(k), type: 'expected' }, 'arrival_evidence', 'reported arrival has no corresponding arrive delta; movement was not booked');
+            corrections.push('An arrival was reported without its arrive event. Use the confirmed location; no implicit travel was booked.');
+        }
+        if (!explicitTravel && type === 'go' && e.arrived === true && !arrived && !s.encounter) {
             // the arrival the story showed without an arrive delta: where the answer says, else where he set off to
             const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
             const at = viaStop(arrivalPlace(reportedTarget(s, auth, expected, e.at, k, sceneOf()) || e.at || go?.to || null));
@@ -1392,7 +1374,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if ((type === 'buy' || type === 'pay') && e.priced === true) {
             for (const dec of s.decisions.filter((x) => x.seq === Number(k) && x.turn === s.turn && !x.priced)) emit({ t: 'decision.opened', d: { decision: { ...dec, priced: true } } });
         }
-        if (type === 'sell') sale(k, e);
+        if (type === 'sell' && !explicitTravel) sale(k, e);
+        if (type === 'sell' && explicitTravel && e.sold && !events.some(x => x.t === 'transaction.completed' && x.d.to === 'pc')) {
+            reject({ seq: Number(k), type: 'expected' }, 'sale_evidence', 'a sale summary cannot pay without an accepted matching bid');
+        }
     }
 
     // Patch 5: a goal with no place (seek) is done where the extractor reports the GO for it arrived: the place the story
@@ -1439,6 +1424,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const ids = newEntity({ seq: 0, type: 'creature.new', ref: sl.ref, species: sl.species, anchor: sl.anchor, desc: [], count: sl.count, present: true, band: 'MEDIUM', more: true }, 'creature', { slot: sl.entities.length ? null : { root: x.id, floor: a.floor, slot: sl } });
             if (ids.length) corrections.push(`ENGINE ENCOUNTER — ${sl.name ? sl.name : `${sl.count} ${sl.species}${sl.count > 1 ? 's' : ''}`} ${sl.count > 1 ? 'are' : 'is'} here in ${placeName(s, freshPart)} (the engine placed ${sl.count > 1 ? 'them' : 'it'} for this part of level ${a.floor}): the next reply shows ${sl.count > 1 ? 'them' : 'it'} at once.`);
         }
+    }
+
+    if (explicitTravel) {
+        step = { kind: 'engine' };
+        for (const dec of s.decisions.filter(x => ['purchase', 'sale'].includes(x.kind)))
+            emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } });
     }
 
     // 4. what waited for the reply and did not happen
@@ -1495,6 +1486,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     }
 
     step = { kind: 'conditional' };
+    // Deferred READY/proof checks now settled: retry only the player's still-current desk handover.
+    for (const k of conditionals.filter(x => !x.done && x.kind === 'turn_in' && hallOf(s, s.scene.at) === x.hall)) {
+        const q = s.quests[k.quest];
+        const r = q?.status === 'active' ? completeContract(s, content, q, emit, { step: k.seq, c: cPath }) : { ok: false, reason: 'the contract is no longer active' };
+        k.done = true;
+        emit({ t: 'cmd.completed', d: { seq: k.seq, ok: r.ok, reason: r.reason ?? null } });
+        if (!r.ok) system.push(`TURN-IN REFUSED — ${q?.title || k.quest}: ${r.reason}`);
+    }
     // a trap of a place he did not get into does not spring (no expiry of his GO for it: the GO stands as it went)
     for (const c of conditionals.filter((x) => !x.done && x.kind !== 'spring')) emit({ t: 'cmd.expired', d: { seq: c.seq, reason: 'the condition did not happen in this reply' } });
 
@@ -1602,9 +1601,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // only when the story says how the outcome was reached otherwise (alternative); trophies are no count
         const short = q.kind === 'guild_contract' ? countShort(s, content, q) : [];
         const alternative = String(d.alternative || '').trim();
-        if (short.length && !alternative) {
+        if (short.length && (!alternative || q.count_rule)) {
             reject(d, 'quest_count', `the engine counts ${tallyText(short)} defeated; trophies or a claimed number do not make the count`);
-            const correction = `"${q.title}" is still IN PROGRESS: the engine counts ${tallyText(short)} defeated. It is ready only when the story establishes that the outcome was reached otherwise (the rest driven off for good, the colony broken).`;
+            const correction = `"${q.title}" is still IN PROGRESS: the engine counts ${tallyText(short)} defeated. ${q.count_rule ? 'This fixed hunt requires its published engine count; narrative alternatives do not complete it.' : 'It is ready only when the story establishes that the outcome was reached otherwise (the rest driven off for good, the colony broken).'}`;
             if (!corrections.includes(correction)) corrections.push(correction);
             return;
         }
@@ -2018,23 +2017,30 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // a decision belongs to the place it was opened at: leaving it closes it; one opened in this very turn goes
         // with him ("look for an inn to sleep": the room is bought where he arrives)
         for (const dec of s.decisions.filter((x) => x.at && x.at !== id && x.kind !== 'registration')) {
-            if (dec.turn === s.turn) emit({ t: 'decision.opened', d: { decision: { ...dec, at: id } } });
+            if ((!explicitTravel || !['purchase', 'sale'].includes(dec.kind)) && dec.turn === s.turn) emit({ t: 'decision.opened', d: { decision: { ...dec, at: id } } });
+            else if (explicitTravel && dec.turn === s.turn && dec.destination && (dec.destination.to === id || (!dec.destination.to && normText(dec.destination.name) === normText(s.places[id]?.name || '')))) emit({ t: 'decision.opened', d: { decision: { ...dec, at: id } } });
+            else if (explicitTravel && dec.destination && dec.turn === s.turn) continue;
             else emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } });
         }
         // Patch 6 (review of 32c7d2c): the hidden trap his GO rolled for springs now that he is in (src/v4/features.js)
         for (const k of conditionals.filter((x) => !x.done && x.kind === 'spring' && x.at === id)) {
             k.done = true;
+            grant('conditional');
             applySpring(s, content, emit, k);
+        }
+        for (const dec of s.decisions.filter(x => explicitTravel && x.kind === 'purchase' && x.turn === s.turn && !x.at && x.destination?.name)) {
+            if (normText(dec.destination.name) === normText(s.places[id]?.name || '')) emit({ t: 'decision.opened', d: { decision: { ...dec, at: id } } });
         }
         const hall = hallOf(s, id);
         if (hall) {
             arrivedHall = hall;
             for (const k of conditionals.filter((x) => !x.done && x.condition === 'arrive_guild_hall')) {
                 // Prototype C (4.3.0-c.5): a contract taken or a board read at its own hall waits for that hall
-                if ((k.kind === 'accept' || k.kind === 'board') && k.hall !== hall) continue;
+                if (k.hall && k.hall !== hall) continue;
+                const q = s.quests[k.quest];
+                if (k.kind === 'turn_in' && q?.status === 'active' && !contractReady(s, content, q, { c: cPath }).ok) continue;
                 k.done = true;
                 grant('conditional');
-                const q = s.quests[k.quest];
                 if (k.kind === 'accept') {
                     const ok = q?.status === 'listed';
                     if (ok) acceptContract(s, content, q, emit, { step: k.seq });
@@ -2312,7 +2318,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
         emit({ t: 'offer.created', d: { offer: { id, seller, at: s.scene.at, status: 'open', canon: false, turn: s.turn, lines } } });
         // a purchase Alaric agreed to in advance, within his limit (buy with max_cp or any_price), in the number he named
-        const requests = s.decisions.filter((x) => x.kind === 'purchase' && (x.max_cp !== null || x.any_price) && x.at === s.scene.at && (!x.seller || x.seller === seller)).sort((a, b) => b.turn - a.turn || (b.seq || 0) - (a.seq || 0));
+        const requests = s.decisions.filter((x) => (!explicitTravel || x.turn === s.turn) && x.kind === 'purchase' && (x.max_cp !== null || x.any_price) && x.at === s.scene.at && (!x.seller || x.seller === seller)).sort((a, b) => b.turn - a.turn || (b.seq || 0) - (a.seq || 0));
         const handled = [];
         for (const dec of requests) {
             if (handled.some(d => samePurchaseRequest(dec, d, seller))) {
@@ -2321,6 +2327,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             }
             handled.push(dec);
             const o = s.offers[id];
+            if (!dec.seller) {
+                const candidates = fw.accept.filter(x => x.type === 'offer' && x.lines?.some(l => purchaseLines(dec.what, [l]).length));
+                if (new Set(candidates.map(x => String(x.seller))).size > 1) continue;
+            }
             if (o.status !== 'open') continue;
             const lines = cPath && rulesetOf(s) >= 2 ? purchaseLines(dec.what, o.lines) : wantedLines(dec.what, o.lines);
             if (!lines.length) continue;
@@ -2358,7 +2368,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const o = objectRef(l.object);
             if (!o || o.holder?.entity !== 'pc') { reject(d, 'offer', `a bid is for things Alaric holds (${JSON.stringify(l.object).slice(0, 60)} is not his)`); return; }
             const have = lines.find((x) => x.object === o.id);
-            const qty = Math.min((have?.qty || 0) + (Number.isInteger(l.qty) && l.qty > 0 ? l.qty : (o.qty ?? 1)), o.qty ?? 1);
+            let qty = (have?.qty || 0) + (Number.isInteger(l.qty) && l.qty > 0 ? l.qty : (o.qty ?? 1));
+            if (!explicitTravel) qty = Math.min(qty, o.qty ?? 1);
+            if (qty > (o.qty ?? 1)) { reject(d, 'offer', 'the bid exceeds the held quantity'); return; }
             if (have) have.qty = qty;
             else lines.push({ id: `l${lines.length + 1}`, what: o.name, kind: 'goods', service: null, object: o.id, qty, price_cp: null });
         }
@@ -2369,6 +2381,22 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
         emit({ t: 'offer.created', d: { offer: { id, seller: buyer, bid: true, at: s.scene.at, status: 'open', canon: false, turn: s.turn, price_cp: price, lines } } });
         counterparts.add(buyer);
+        if (explicitTravel) {
+            const consents = lines.map(l => s.decisions.find(x => x.kind === 'sale' && x.turn === s.turn && x.at === s.scene.at
+                && (!x.seller || x.seller === buyer) && x.object === l.object && x.qty === l.qty && Number.isInteger(x.min_cp)));
+            const ambiguous = fw.accept.filter(x => x.type === 'bid' && x.lines?.some(l => lines.some(y => y.object === l.object)));
+            if (consents.some(x => !x) || (consents.some(x => !x.seller) && new Set(ambiguous.map(x => String(x.buyer))).size > 1)
+                || price < consents.reduce((sum, x) => sum + x.min_cp, 0)) return;
+            grant('player.sell');
+            const result = bookSale(s, emit, { offer: s.offers[id], buyer, cp: price, what: lines.map(l => unitsText(l.what, l.qty)).join(', '),
+                items: lines.map(l => ({ ref: l.object, units: l.qty, splitId: `${l.object}_${tag}_${d.seq}` })) });
+            if (result.error) { reject(d, 'sale', result.error); return; }
+            emit({ t: 'offer.closed', d: { id, status: 'accepted' } });
+            for (const dec of consents) {
+                emit({ t: 'decision.closed', d: { id: dec.id, status: 'sold' } });
+                emit({ t: 'cmd.completed', d: { seq: dec.seq, ok: true } });
+            }
+        }
     }
 
     function coerce(d) {
@@ -2455,7 +2483,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             emit({ t: 'decision.closed', d: { id: dec.id, status: 'not_held' } });
             return;
         }
-        bookSale(s, emit, { ref: dec.object, units: n.units, buyer, cp: price, what: unitsText(dec.what, n.units), splitId: `${dec.object}_${tag}` });
+        const booked = bookSale(s, emit, { ref: dec.object, units: n.units, buyer, cp: price, what: unitsText(dec.what, n.units), splitId: `${dec.object}_${tag}` });
+        if (booked.error) { system.push(`NOT SOLD — ${dec.what}: ${booked.error}`); return; }
         emit({ t: 'decision.closed', d: { id: dec.id, status: 'sold' } });
         emit({ t: 'cmd.completed', d: { seq: dec.seq, ok: true } });
     }

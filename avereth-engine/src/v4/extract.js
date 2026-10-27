@@ -1,3 +1,4 @@
+import { placeKey } from './place_refs.js';
 import { privateQuestsOf } from '../content.js';
 // Runtime V4: the world-delta extractor (docs/RUNTIME_V4_PLAN.md §5, D2 = A). After every story reply a separate call
 // reads the reply and reports, as typed deltas in story order, what it established in the world; the engine answers
@@ -26,7 +27,7 @@ export function worldVocab(vocab, state) {
     };
 }
 
-export const EXTRACTOR_VERSION = 'extract-5.12';
+export const EXTRACTOR_VERSION = 'extract-5.13';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -119,6 +120,8 @@ const fieldList = (d) => Object.entries(d.fields).map(([k, spec]) => `${k}:${fie
 export const FORMAT_RULES = [
     'Fields shown with |null may be omitted when unknown; the engine fills them with null before validation. Other fields are required unless the delta description says otherwise.',
     'scene is the actual narrative setting at the end of this reply: a place-ref, or "here" ONLY when it is the current engine scene. It never authorizes arrival. Every delta may override scene with a place-ref or "here" (null/omitted inherits the answer scene); use this for earlier scenes in a reply with multiple arrivals. Do not label an unreached camp as here merely because the engine still lists a shop. Local changes need the actual scene; distant reports remain reports. A new scene label creates no place by itself.',
+    'TRAVEL: Every actual arrival, including a road or intermediate stop, MUST have its own arrive delta in chronological order. expected.arrived:true requires that matching arrive; expected, time and scene never move Alaric. Local introductions and exchanges follow the arrival at their scene; actions before departure keep the earlier scene. Down means another Dungeon FLOOR, not a sloping passage on the same floor.',
+    'SALES: Report an actual buyer price with bid (buyer, exact item ids and quantities, price, said). expected.sold is only a summary, never an independent payment. A current minimum-price instruction can accept a matching bid; a promise or appraisal is not an actual final bid.',
     'Trade evidence: offer/bid said quotes the actual commercial clause, including who offers, unit/lot price and conditions. Third-party price advice is fact/place.reported, not an offer or bid of the speaker. Price ranges, possible future prices and unaccepted discounts are not fixed prices. For a unit rate compute the total for the declared units; for a lot keep its total. Never invent a seller commitment from a recommendation.',
     'string[] is always a JSON array, even when it contains only one value.',
     `place-ref is an exact known place id from the CATALOG, or {"new":{"name":"...","kind":"...","parent":...}}. For a new place, kind must be exactly one of: ${PLACE_KINDS.join(', ')}. Use settlement for a city, town, village or hamlet; site for a building, inn or Guild hall; interior for a room; wilderness for natural outdoor terrain.`,
@@ -243,12 +246,16 @@ function normalizeSoftFields(value, vocab) {
  */
 export const localSceneDelta = d => !['time', 'arrive', 'overreach', 'place.reported', 'dungeon'].includes(d.type)
     && !(['person.new', 'creature.new'].includes(d.type) && d.present === false);
-const sceneKey = ref => ref?.new ? JSON.stringify([ref.new.name, ref.new.kind, sceneKey(ref.new.parent)]) : ref;
-export function sceneIssues(value, startScene) {
+export function sceneIssues(value, startScene, state = null, content = null, explicitArrivals = false) {
+    const sceneKey = ref => placeKey(state, ref, content);
     const issues = [];
     const ordered = (Array.isArray(value.deltas) ? value.deltas : []).map((d, i) => ({d, i})).filter(x => x.d && typeof x.d === 'object').sort((a, b) => a.d.seq - b.d.seq);
     const arrivals = ordered.filter(x => x.d.type === 'arrive');
     const last = arrivals.at(-1)?.d;
+    if (explicitArrivals) for (const [seq, e] of Object.entries(value.expected || {})) {
+        if (e?.arrived === true && !arrivals.some(x => sceneKey(x.d.at) === sceneKey(e.at)))
+            issues.push({ index: -1, seq: Number(seq), why: `expected.${seq}.arrived:true requires a corresponding arrive delta in story order; expected and scene cannot move the player` });
+    }
     const implicitMove = !last && Object.values(value.expected || {}).some(e => e?.arrived === true
         && sceneKey(e.at ?? value.scene) !== sceneKey(startScene));
     const implicit = implicitMove && ordered.some(x => localSceneDelta(x.d)
@@ -270,7 +277,7 @@ export function sceneIssues(value, startScene) {
     return issues;
 }
 
-export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false, startScene = null } = {}) {
+export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false, startScene = null, state = null, content = null, explicitArrivals = sceneRequired } = {}) {
     const parsed = extractJsonObject(answer);
     const { error, raw } = parsed;
     const value = normalizeSoftFields(parsed.value, vocab);
@@ -291,5 +298,5 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         if (names.length) errors.push(`$.deltas[${i}].object: unknown catalog id; object.new has no ref. Use {new:exact earlier name}, e.g. ${JSON.stringify({ new: names[0] })}; never invent an obj.* id`);
     }
     if (sceneRequired && value.scene == null && (Object.values(expectedKeys || {}).includes('go') || (Array.isArray(value.deltas) && value.deltas.some(d => !['time', 'overreach', 'place.reported', 'dungeon'].includes(d?.type))))) errors.push('$.scene: actual narrative setting required for world changes');
-    return { value, issues: sceneRequired && startScene ? sceneIssues(value, startScene) : [], valid: errors.length === 0, complete: missing.length === 0, errors: [...errors.slice(0, 8), ...missing.map((k) => `expected key "${k}" not answered`)], missing, raw };
+    return { value, issues: sceneRequired && startScene ? sceneIssues(value, startScene, state, content, explicitArrivals) : [], valid: errors.length === 0, complete: missing.length === 0, errors: [...errors.slice(0, 8), ...missing.map((k) => `expected key "${k}" not answered`)], missing, raw };
 }

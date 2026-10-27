@@ -453,7 +453,7 @@ test('patch 6 review 1: a hidden trap at a place he sets off for does not spring
     await scores({ moderate: NEVER }, async () => {
         const { g, at } = await tower([feature('tripwire at the doorway', 'hazard', { hidden: true, trigger: 'enter', stat: 'AGI', difficulty: 'moderate' })]);
         await say(g, '*I walk off down the road*', { type: 'go', to: 'loc.ashbridge', quote: 'I walk off down the road' });
-        await g.reply('He walks back toward Ashbridge for an hour, then stops on the road.', { expected: { 1: { arrived: false, at: null, with: null } }, deltas: [{ seq: 1, type: 'time', minutes: 60 }] });
+        await g.reply('He walks back toward Ashbridge for an hour, then stops on the road.', { expected: { 1: { arrived: false, at: null, with: null } }, deltas: [{ seq: 1, type: 'arrive', at: 'realm.duskreach', with: null, forced_by: null }, { seq: 2, type: 'time', minutes: 60 }] });
         const before = g.state();
         const wire = featNamed(before, /tripwire/);
         await say(g, '*I head back to the watchtower*', { type: 'go', to: at, quote: 'I head back to the watchtower' });

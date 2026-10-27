@@ -138,6 +138,7 @@ function questInfo(state, content, q, { c = false } = {}) {
         return ['Guild contract', q.status, q.rank, q.payout_cp !== null && q.payout_cp !== undefined ? `${q.payout_cp} cp` : null,
             q.hunt && state.places[q.hunt.at]?.population ? `target population: ${state.places[q.hunt.at].population.species} at ${q.hunt.at} (${state.places[q.hunt.at].name}), body-plan ${state.places[q.hunt.at].population.anchor}, levels ${state.places[q.hunt.at].population.levels.join('-')}; kills elsewhere are not this contract` : null,
             c && goalText(state, content, q) ? `goal${goalText(state, content, q).replace(/^ — | \(/, ': ').replace(/\)$/, '')}` : null,
+            q.count_rule ? `fixed count rule: ${q.count_rule}; no narrative second condition or substitute; turn in explicitly at the Guild` : null,
             q.desired_end_state ? `desired outcome: ${q.desired_end_state}` : null,
             (q.objectives || []).length ? `job memory: ${objectiveText(q)}` : null,
             progress ? `progress: ${progress}` : null,
@@ -374,7 +375,7 @@ export function extractorCatalog(state, content, opts = {}) {
         && (truth(state, id, 'status')[0]?.since?.turn ?? -1) >= state.turn - 3);
     const deadText = dead.length ? `\nRECENT DEAD (here, killed in the engine's fights; never a creature.new, never alive, never fleeing): ${dead.map((id) => `${id} [${sceneHandle(state, content, id)}] (${personLabel(state, content, id)})`).join(' · ')}` : '';
     return {
-        text: catalogText(c) + deadText + threadText + `\nKNOWN PERSON CONTINUITY (not present; use enter for an actual return, person.named for a fuller name):\n${npcContinuity(state, opts.input || '').map(x => x.text).join('\n') || 'none relevant'}` + (!privateQuestsOf(state) ? `\nFREE HELP: only Guild contracts are formal quests. NPC help, agreements and thanks are ordinary world interactions.\nRECENT COIN HANDOVERS (already received; recount with coin.gift repeat_of, never pay again):\n${(state.credits || []).filter(x => x.gift).map(x => `${x.gift.id}: ${x.gift.from}, ${x.cp} cp, ${x.gift.why}; ${x.gift.said}`).join('\n') || 'none'}` : ''),
+        text: catalogText(c) + `\nPLACE ANCESTRY: ${[c.here, ...c.places].map(x => state.places[x.id]).filter(Boolean).map(p => `${p.id} [${p.kind}, parent:${p.parent || 'none'}${p.population ? `, population:${p.population.species}, ${p.population.anchor}, levels ${p.population.levels.join('-')}` : ''}]`).join(' · ')}` + deadText + threadText + `\nKNOWN PERSON CONTINUITY (not present; use enter for an actual return, person.named for a fuller name):\n${npcContinuity(state, opts.input || '').map(x => x.text).join('\n') || 'none relevant'}` + (!privateQuestsOf(state) ? `\nFREE HELP: only Guild contracts are formal quests. NPC help, agreements and thanks are ordinary world interactions.\nRECENT COIN HANDOVERS (already received; recount with coin.gift repeat_of, never pay again):\n${(state.credits || []).filter(x => x.gift).map(x => `${x.gift.id}: ${x.gift.from}, ${x.cp} cp, ${x.gift.why}; ${x.gift.said}`).join('\n') || 'none'}` : ''),
         places: [...new Set([c.here.id, ...c.places.map((p) => p.id)].filter(Boolean))],
         quests: [...new Set([...c.quests, ...c.board, ...c.completed, ...(c.known || [])].map((q) => q.id))],
         objects: c.objects.map((o) => o.id),

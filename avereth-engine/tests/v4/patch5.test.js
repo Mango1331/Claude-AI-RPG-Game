@@ -38,6 +38,17 @@ async function campaign(c = content, greeting = GREETING) {
         g.purposes.push(req.purpose);
         return req.purpose.startsWith('plan') ? g.plans.shift() ?? null : ask(req);
     };
+    // These historical road scenarios used elapsed time as an implicit arrival.
+    // Their scripted extractor now explicitly reports reaching the realm's road.
+    const reply = g.reply.bind(g);
+    g.reply = async (prose, answer) => {
+        const a = structuredClone(answer), state = g.state();
+        if (a && Object.values(a.expected || {}).some(e => e.arrived === false) && !a.deltas.some(d => d.type === 'arrive')
+            && a.deltas.some(d => d.type === 'time' && d.minutes >= 60) && state.last?.outcome?.auth?.gos?.length && !state.encounter) {
+            a.deltas = [{ type: 'arrive', at: 'realm.duskreach', with: null, forced_by: null }, ...a.deltas].map((d, i) => ({ ...d, seq: i + 1 }));
+        }
+        return reply(prose, a);
+    };
     return g;
 }
 /** A player message the planner reads as these commands. */
@@ -128,7 +139,7 @@ test('patch 5 (2, 4): a day on the road books its minutes once, puts him on the 
     const r = await g.reply('He walks east all day and camps by the road at dusk.', { expected: NOT_THERE, deltas: [{ seq: 1, type: 'time', minutes: 480 }, { seq: 2, type: 'recover', who: 'pc', hp: 20, sta: null }] });
     const s = g.state();
     assert.equal(s.clock.minute - before.clock.minute, 480, 'the narrated day, once');
-    assert.deepEqual([s.scene.at, s.scene.place], ['realm.duskreach', 'On the way to Blackgate']);
+    assert.deepEqual([s.scene.at, s.scene.place], ['realm.duskreach', 'Duskreach']);
     assert.notEqual(s.places['loc.blackgate'].known, 'visited');
     assert.equal(goal(s, 'loc.blackgate').status, 'active');
     assert.deepEqual([s.entities.pc.sheet.hp, s.entities.pc.sheet.mp], [40, 20], 'travel is no rest');
@@ -251,7 +262,7 @@ test('patch 5 (9): a leg that may bring an interruption: three bandits step onto
         await g.reply('Three armed bandits step onto the road. "Toll," says the first.', { expected: NOT_THERE, deltas: [{ seq: 1, type: 'time', minutes: 90 }, bandit('first bandit', 2), bandit('second bandit', 3), bandit('third bandit', 4)] });
         const s = g.state();
         assert.equal(s.scene.at, 'realm.duskreach');
-        assert.match(s.scene.place, /On the way to Blackgate/);
+        assert.match(s.scene.place, /Duskreach/);
         assert.equal(goal(s, 'loc.blackgate').status, 'active');
         assert.equal(s.scene.present.filter((id) => s.entities[id]?.kind === 'npc').length, 3);
         assert.equal(s.encounter, null, 'a demand is no fight');
@@ -342,7 +353,7 @@ test('patch 5 (16, 17): four wolves on the road, two attack: the others stay in 
         assert.ok(fight.every((id) => s.entities[id].status === 'dead'));
         assert.ok(rest.every((id) => s.entities[id].status !== 'dead' && s.scene.present.includes(id)), 'the two that hung back are still there');
         assert.equal(goal(s, 'loc.blackgate').status, 'active');
-        assert.deepEqual([s.scene.at, s.scene.place], ['realm.duskreach', 'On the way to Blackgate']);
+        assert.deepEqual([s.scene.at, s.scene.place], ['realm.duskreach', 'Duskreach']);
         const xp = s.entities.pc.sheet.xp;
         const loot = Object.keys(s.objects).length;
         await say(g, '*I continue my journey*', CONTINUE);

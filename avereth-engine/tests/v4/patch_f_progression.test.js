@@ -64,7 +64,7 @@ test('F progression: new Rule-2 V4 campaigns persist the policy; Rule1 does not'
 });
 test('F progression: live board requests select world progression without changing the 5-notice family', () => {
     const s = state(), n = boardFor(s, c, [{ seq: 1, type: 'board.read', rank: 'Novice' }], { c: true });
-    assert.equal(n.profile, 'hunt_clear'); assert.equal(n.progression, true);
+    assert.equal(n.profile, 'count_hunt_clear'); assert.equal(n.progression, true);
     const r = boardRequest(s, c, n);
     assert.match(r.system, /habitat/); assert.match(r.system, /12.{0,8}14/);
     const before = r.messages;

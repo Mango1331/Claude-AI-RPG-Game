@@ -215,7 +215,7 @@ export const DELTA_WRITES = {
     // hall, which take a listing off its board and show the board
     // Patch 2: and reaches a goal of his there (player.goal: the place his own goal leads to)
     // Patch 8: and counts a new part of a Living Dungeon toward its level (dungeons)
-    arrive: { writes: ['pc.location', 'scene', 'entities', 'places', 'quests', 'trade', 'knowledge', 'facts', 'memory', 'objects'], gates: { dungeons: 'dungeon.part', intents: 'player.goal', 'quest.status': 'conditional', 'pc.coin': 'conditional', 'pc.progress': 'conditional', 'pc.inventory': 'conditional', 'guild.standing': 'conditional', 'guild.board': 'conditional' } },
+    arrive: { writes: ['features', 'pc.location', 'scene', 'entities', 'places', 'quests', 'trade', 'knowledge', 'facts', 'memory', 'objects'], gates: { 'pc.vitals': 'conditional', dungeons: 'dungeon.part', intents: 'player.goal', 'quest.status': 'conditional', 'pc.coin': 'conditional', 'pc.progress': 'conditional', 'pc.inventory': 'conditional', 'guild.standing': 'conditional', 'guild.board': 'conditional' } },
     'person.new': { writes: ['entities', 'scene', 'facts', 'places', 'knowledge'] },
     'person.named': { writes: ['entities'] },
     // Patch 8: a creature of the encounter the engine placed ahead is that slot's individual (dungeons)
@@ -248,7 +248,7 @@ export const DELTA_WRITES = {
     // Offers may describe NPC employment (an offered private quest), or a purchase within his agreed limit.
     offer: { writes: ['trade', 'quests'], gates: { 'pc.coin': 'player.buy', 'pc.inventory': 'player.buy' } },
     // 4.3.0-c.6.6.5: a buyer's price for his things; nothing changes hands until his own acceptance
-    bid: { writes: ['trade'] },
+    bid: { writes: ['trade', 'objects'], gates: { 'pc.coin': 'player.sell', 'pc.inventory': 'player.sell' } },
     'coin.gift': { writes: ['trade', 'quests'], gates: { 'pc.coin': 'envelope.give' } },
     coerce: { writes: [], gates: { 'pc.coin': 'envelope.take', 'pc.inventory': 'envelope.take' } },
     'quest.offer': { writes: ['quests'] },

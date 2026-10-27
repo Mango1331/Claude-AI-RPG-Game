@@ -18,8 +18,9 @@ import { hallOf, settlementOf, realmOf, heldBy, membership, listingsOf, boardKey
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
-export const BOARD_VERSION = 'board-5.3';
-export const HUNT_BOARD_PROFILE = 'hunt_clear';
+export const BOARD_VERSION = 'board-5.4';
+export const HUNT_BOARD_PROFILE = 'hunt_clear'; // cached historical board answers
+export const COUNT_BOARD_PROFILE = 'count_hunt_clear';
 const QTYPES = ['minor', 'standard', 'dangerous', 'major'];
 const VERBS = ['GO', 'FIND', 'TALK', 'GET', 'GATHER', 'GIVE', 'DELIVER', 'USE', 'REPAIR', 'DEFEND', 'ESCORT', 'ATTACK', 'DEFEAT'];
 
@@ -176,7 +177,7 @@ export function defeatTally(s, content, q) {
     const status = (e) => truth(s, e.id, 'status')[0];
     const beings = Object.values(s.entities).filter((e) => e.kind === 'creature' || e.kind === 'npc');
     const dead = beings.filter((e) => status(e)?.o === 'dead' && (status(e).since?.turn ?? 0) >= since);
-    const fled = drivesOff(content, q) ? beings.filter((e) => status(e)?.o !== 'dead' && e.fled && (e.fled.turn ?? 0) >= since) : [];
+    const fled = (q.count_rule ? q.count_rule === 'killed_or_fled' : drivesOff(content, q)) ? beings.filter((e) => status(e)?.o !== 'dead' && e.fled && (e.fled.turn ?? 0) >= since) : [];
     const same = sameKinds(content);
     // Patch 8: where a death counts for this contract: in the Dungeon (and level) it names, else in its branch's land
     // (wolves along the way to the den are the same hunt; a wolf of another realm is not). Only beings met in his own
@@ -429,6 +430,13 @@ export function contractReady(s, content, q, { c = false } = {}) {
     // Patch 8: a contract to clear a level of a Dungeon is done when he cleared it (the engine's level state, his credit)
     const clear = c ? clearDone(s, q) : null;
     if (clear) return clear.ok ? { ok: true, mode: 'dungeon_clear', reason: null, consume: [] } : { ok: false, mode: 'not_cleared', reason: `${clear.name}, level ${clear.floor}: ${clear.text}; the Guild pays for the level cleared`, consume: [] };
+    if (c && q.count_rule) {
+        const os = q.objectives || [];
+        if (!['killed', 'killed_or_fled'].includes(q.count_rule) || os.length !== 1 || os[0].verb !== 'DEFEAT' || !Number.isInteger(os[0].qty) || os[0].qty <= 0)
+            return { ok: false, mode: 'invalid_contract', reason: 'invalid fixed hunt contract', consume: [] };
+        const short = countShort(s, content, q);
+        return { ok: !short.length, mode: short.length ? 'count_short' : 'engine_count', reason: short.length ? `the engine counts ${tallyText(short)}` : null, consume: [] };
+    }
     if (c) {
         // Prototype C (4.3.0-c.6): goods he is to gather or get are the work itself: in his hands at the hall, whatever
         // the story says, and the Guild takes them; a delivery is not done while he still carries what it delivers
@@ -577,10 +585,10 @@ function boardProfile(s, content, need) {
     if (!need.c || deliveryRuleset(s) < 2) return null;
     const dungeons = nearDungeons(s, need.branch, s.places[need.branch]?.realm, { guild: true })
         .filter(id => { const ns = fittingLevels(s, content, need.rank, id); return ns === null || ns.length > 0; });
-    const noDelivery = need.profile === HUNT_BOARD_PROFILE;
+    const noDelivery = [HUNT_BOARD_PROFILE, COUNT_BOARD_PROFILE].includes(need.profile);
     // Already published deliveries count during a refill, but are never newly generated in this profile.
     const delivery = noDelivery ? retainedListings(s, need).filter(l => boardFamily(s, content, l) === 'delivery').length : 2;
-    return { dungeons, hunt: (content.rules.guild.board?.size ?? 5) - delivery - (dungeons.length ? 1 : 0), delivery, dungeon: dungeons.length ? 1 : 0, noDelivery };
+    return { dungeons, hunt: (content.rules.guild.board?.size ?? 5) - delivery - (dungeons.length ? 1 : 0), delivery, dungeon: dungeons.length ? 1 : 0, noDelivery, countOnly: need.profile === COUNT_BOARD_PROFILE };
 }
 
 function boardFamily(s, content, l) {
@@ -628,6 +636,7 @@ function simpleListingWhy(s, content, l, profile, family) {
         l.desired_end_state = `Level ${target.floor} of ${name} is clear.`;
         return null;
     }
+    if (profile.countOnly && (os.length !== 1 || os[0].verb !== 'DEFEAT')) return 'new hunt needs exactly one numeric DEFEAT objective; put its destination in where, no separate GO/FIND duties';
     if (kills.length !== 1 || !Number.isInteger(kills[0].qty) || !kills[0].where?.trim() || !isHunt(l, content)) return 'hunt needs one animal/Monster DEFEAT objective with an exact quantity and place';
     return null;
 }
@@ -698,7 +707,7 @@ export function boardRequest(s, content, need) {
         '- proof contains 0–2 optional verification examples the Guild could recognize. Prefer [] when return, witnesses or a credible report can establish the outcome naturally. If used, EVERY entry must be an object with all fields present: {"kind":"object"|"mark","what":"...","qty":integer>=1|null,"unit":string|null,"on":string|null,"consume":true|false|null}. These are story guidance, NOT exclusive completion tokens.',
         '- Do not use GO merely as a travel checklist item. Objectives should describe meaningful work/outcomes (find, rescue, repair, defend, escort, investigate through FIND/TALK/GET, defeat, deliver, etc.); travel itself is normally just how play reaches them. Do not invent paperwork solely to make verification possible.',
         '- client is who posted the work (a person, a trade, a hamlet); titles differ from the listings already on the board.',
-        ...(profile?.noDelivery ? ['- Only GO/FIND guidance and one DEFEAT objective; delivery:null on these objectives. No delivery, retrieval, repair, escort or service duties.'] : []),
+        ...(profile?.countOnly ? ['- Each numbered hunt has EXACTLY ONE DEFEAT objective with integer qty and destination in where, delivery:null. No GO/FIND objectives or additional duties. Engine-recorded kills of that population count; flight and narrative alternatives do not. Task and end state are generated from this objective.'] : profile?.noDelivery ? ['- Only GO/FIND guidance and one DEFEAT objective; delivery:null on these objectives. No delivery, retrieval, repair, escort or service duties.'] : []),
         '',
         'Return only one JSON object, no prose before or after it, no code fences: {"listings": [{"title": "...", "client": "...", "rank": "...", "level": 1, "qtype": "...", "payout_cp": 0, "task": "...", "desired_end_state": "...", "objectives": [...], "proof": [...], "habitat": null}]}. Every field is required; null where a field allows it and does not apply.',
     ].join('\n');
@@ -1040,6 +1049,14 @@ export function bookBoard(s, content, need, listings, emit) {
             if (floors?.length === 1) quest.floor = floors[0];
             quest.desired_end_state = cullEndState(s, content, quest);
             quest.task = cullTask(s, content, quest);
+        }
+        if (need.profile === COUNT_BOARD_PROFILE && !clear && quest.objectives.length === 1
+            && quest.objectives[0].verb === 'DEFEAT' && Number.isInteger(quest.objectives[0].qty)) {
+            quest.count_rule = 'killed';
+            quest.source.profile = COUNT_BOARD_PROFILE;
+            const o = quest.objectives[0];
+            quest.task = `Kill ${o.qty} ${o.what} at ${o.where}. Only engine-recorded kills of this population count. Return to the Guild to claim payment.`;
+            quest.desired_end_state = `${o.qty} ${o.what} killed at ${o.where}.`;
         }
         emit({ t: 'quest.created', d: { quest } });
         ids.push(id);

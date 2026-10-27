@@ -31,7 +31,7 @@ import { buildCatalog, extractorCatalog, guardContext } from './catalog.js';
 import { interpreterRequest, parseInterpretation, INTERPRETER_VERSION } from './interpret.js';
 import { guardCommands } from './agency.js';
 import { extractorRequest, parseExtraction, EXTRACTOR_VERSION } from './extract.js';
-import { boardRequest, parseBoard, bookBoard, BOARD_VERSION, HUNT_BOARD_PROFILE } from './guild.js';
+import { boardRequest, parseBoard, bookBoard, BOARD_VERSION, COUNT_BOARD_PROFILE } from './guild.js';
 import { extractionFailedEvents } from './world.js';
 import { hallOf, settlementOf, membership, boardKey, today, listingsOf, supportedRanks, placeName } from './domain.js';
 import { trueDungeonOf } from './dungeon.js';
@@ -130,13 +130,15 @@ async function ask(llm, messages, purpose, overrides = {}) {
         const answer = await llm({ messages, purpose, ...(LLM[base] || {}), ...overrides });
         const text = answer && typeof answer === 'object' ? answer.content : answer;
         const call = callMeta(purpose, Date.now() - t0, answer);
-        if (text === null || text === undefined) return { ok: false, error: 'no answer', ms: call.ms, call };
+        if (text === null || text === undefined) return { ok: false, retryable: true, error: 'no answer', ms: call.ms, call };
         return { ok: true, content: String(text), ms: call.ms, call };
     } catch (err) {
         const ms = Date.now() - t0;
         const kind = ({ LLM_TIMEOUT: 'timeout', LLM_CANCELLED: 'cancelled', LLM_PROVIDER: 'provider' })[err?.code]
             || (err?.name === 'AbortError' ? 'aborted' : 'transport');
-        return { ok: false, error: String(err?.message || err).slice(0, 200), ms, call: { purpose, ms, error: true, error_kind: kind } };
+        const status = Number(err?.status) || null;
+        const retryable = !['cancelled', 'aborted'].includes(kind) && (kind !== 'provider' || status === 408 || status === 429 || status >= 500);
+        return { ok: false, retryable, error: String(err?.message || err).slice(0, 200), ms, call: { purpose, ms, error: true, error_kind: kind, ...(status ? { status } : {}) } };
     }
 }
 
@@ -171,6 +173,7 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
     let ms = first.ms;
     const calls = [first.call];
     if (!first.ok) {
+        if (!first.retryable) return { commands: null, failed: true, error: first.error, ms, repaired: false, raw: [], calls };
         // 10B-4c.4: unlike a malformed JSON answer, a transport failure has
         // supplied no Planner evidence. Give the same untouched request just
         // ONE more chance. No normal repair after that retry, no fourth call.
@@ -463,7 +466,7 @@ export function boardFor(state, content, commands, { c = false } = {}) {
     const size = content.rules.guild.board?.size ?? 5;
     // Prototype C (4.3.0-c.6): a new day's board is a new board: five notices, none of yesterday's (src/v4/commands.js
     // board.read retires those), booked whole or not at all (generateBoard)
-    if (c) return { branch, rank, missing: size, day: today(state), have: [], c: true, ...(rulesetOf(state) >= 2 ? { profile: HUNT_BOARD_PROFILE, ...(state.meta.f_progression && rank === 'Novice' ? { progression: true } : {}) } : {}) };
+    if (c) return { branch, rank, missing: size, day: today(state), have: [], c: true, ...(rulesetOf(state) >= 2 ? { profile: COUNT_BOARD_PROFILE, ...(state.meta.f_progression && rank === 'Novice' ? { progression: true } : {}) } : {}) };
     const have = listingsOf(state, branch, rank);
     const missing = size - have.length;
     return missing > 0 ? { branch, rank, missing, day: today(state), have: have.map((q) => q.title) } : null;
@@ -702,11 +705,11 @@ export function extractionRequest(chat, id, content) {
     const player = state.last?.input || null;
     const vocab = worldVocab(content.deltaVocab, state);
     const req = extractorRequest(vocab, { catalog: cat.text, actions, player, expectedKeys, reply: msg.mes });
-    return { ...req, vocab, hash: r.text_hash, expectedKeys, startScene: state.scene.at, sceneRequired: (state.meta?.ruleset || 1) >= 2 && !!(o.c || o.auth?.c), ids: { places: cat.places, quests: cat.quests, objects: cat.objects }, catalog: cat.text, actions, player };
+    return { ...req, vocab, hash: r.text_hash, expectedKeys, state, startScene: state.scene.at, sceneRequired: (state.meta?.ruleset || 1) >= 2 && !!(o.c || o.auth?.c), ids: { places: cat.places, quests: cat.quests, objects: cat.objects }, catalog: cat.text, actions, player };
 }
 
 /**
- * Read reply id with the extractor: exactly one primary call and at most one repair, then commit whatever valid
+ * Read reply id with the extractor: at most three calls and one transport retry, then commit whatever valid
  * persistence we have. A reply that changed meanwhile, or a later turn already resolved, is left alone.
  * @returns {{changed: boolean, applied?: boolean, failed?: string, late?: boolean}}
  */
@@ -731,60 +734,53 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
     let recovery = null;
     let error = null;
 
-    const first = await ask(llm, req.messages, 'extract');
-    ms += first.ms;
-    const calls = [first.call];
-    if (first.ok) {
-        const p1 = parseExtraction(first.content, vocab, req.ids, req.expectedKeys, { sceneRequired: req.sceneRequired, startScene: req.startScene });
-        if (p1.valid) parsed = p1;
-        else error = p1.errors.join('; ').slice(0, 200);
-
-        if (!(p1.valid && p1.complete && !p1.issues?.length)) {
-            if (!current()) return stale();
-            const rep = extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player, expectedKeys: req.expectedKeys, reply: chat[id].mes, startScene: req.startScene }, { previous: first.content, errors: [...p1.errors, ...(p1.issues || []).map(x => x.why)] });
-            const second = await ask(llm, rep.messages, 'extract_repair');
-            ms += second.ms;
-            calls.push(second.call);
-            repaired = true;
-            if (second.ok) {
-                const p2 = parseExtraction(second.content, vocab, req.ids, req.expectedKeys, { sceneRequired: req.sceneRequired, startScene: req.startScene });
-                if (p2.valid && (!parsed || ((p2.issues?.length || 0) <= (parsed.issues?.length || 0) && (p2.complete || p2.missing.length < parsed.missing.length)))) parsed = p2;
-                else if (!p2.valid && !parsed) error = p2.errors.join('; ').slice(0, 200);
-            } else if (!parsed) error = second.error;
-
-            // 10B-4c.1: two reasoning-only/empty answers have no JSON to
-            // repair. Allow ONE fresh, larger attempt, never a fourth call.
-            if (!parsed && !first.content.trim() && second.ok && !second.content.trim()) {
-                const fresh = [...req.messages, { role: 'user', content:
-                    'Both previous attempts returned no JSON text. Return one short JSON object now, with the requested expected keys and only verified deltas. Empty deltas are allowed. No prose or reasoning.' }];
-                if (!current()) return stale();
-                recovery = 'empty';
-                const third = await ask(llm, fresh, 'extract_recovery', { maxTokens: 6000 });
-                ms += third.ms;
-                calls.push(third.call);
-                if (third.ok) {
-                    const p3 = parseExtraction(third.content, vocab, req.ids, req.expectedKeys, { sceneRequired: req.sceneRequired, startScene: req.startScene });
-                    if (p3.valid) parsed = p3;
-                    else error = p3.errors.join('; ').slice(0, 200);
-                } else error = third.error;
-            }
-        }
-    } else {
-        // 10B-4c.1: a transport timeout/AbortError leaves no extractor
-        // evidence to repair. Retry the SAME untouched request exactly once.
-        // No events are committed until the validated result below is applied.
-        error = first.error;
+    const calls = [];
+    let candidate = null;
+    let transportFailures = 0;
+    let invalidAnswers = 0;
+    let emptyAnswers = 0;
+    let messages = req.messages;
+    let purpose = 'extract';
+    let overrides = {};
+    for (let attempt = 0; attempt < 3; attempt++) {
         if (!current()) return stale();
-        recovery = 'transport';
-        const second = await ask(llm, req.messages, 'extract_recovery');
-        ms += second.ms;
-        calls.push(second.call);
+        const response = await ask(llm, messages, purpose, overrides);
+        calls.push(response.call);
+        ms += response.ms;
+        if (!current()) return stale();
+        if (!response.ok && response.error !== 'no answer') {
+            error = response.error;
+            if (!response.retryable || ++transportFailures > 1) break;
+            recovery = 'transport';
+        } else if (!response.content?.trim()) {
+            emptyAnswers++;
+            error = 'no JSON text in extractor response';
+            recovery = 'empty';
+        } else {
+            const p = parseExtraction(response.content, vocab, req.ids, req.expectedKeys,
+                { sceneRequired: req.sceneRequired, startScene: req.startScene, state: req.state, content, explicitArrivals: req.sceneRequired });
+            if (p.valid && (!parsed || ((p.issues?.length || 0) <= (parsed.issues?.length || 0)
+                && (p.complete || p.missing.length < parsed.missing.length)))) parsed = p;
+            if (p.valid && p.complete && !p.issues?.length) break;
+            error = [...p.errors, ...(p.issues || []).map(x => x.why)].join('; ').slice(0, 200);
+            candidate = { text: response.content, errors: [...p.errors, ...(p.issues || []).map(x => x.why)] };
+            // Two actual invalid answers exhausted the ordinary schema repair.
+            // An empty/transport answer never discards the last repairable candidate.
+            if (++invalidAnswers >= 2) break;
+        }
+        if (attempt === 2) break;
         repaired = true;
-        if (second.ok) {
-            const p2 = parseExtraction(second.content, vocab, req.ids, req.expectedKeys, { sceneRequired: req.sceneRequired, startScene: req.startScene });
-            if (p2.valid) parsed = p2;
-            else error = p2.errors.join('; ').slice(0, 200);
-        } else error = second.error;
+        if (candidate) {
+            messages = extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player,
+                expectedKeys: req.expectedKeys, reply: chat[id].mes, startScene: req.startScene },
+            { previous: candidate.text, errors: candidate.errors }).messages;
+            purpose = 'extract_repair';
+            overrides = {};
+        } else {
+            messages = emptyAnswers > 1 ? [...req.messages, { role: 'user', content: 'Both previous attempts returned no JSON text. Return one short JSON object now; include required expected keys and only verified deltas. No prose.' }] : emptyAnswers === 1 ? extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player, expectedKeys: req.expectedKeys, reply: chat[id].mes, startScene: req.startScene }, { previous: '', errors: ['no JSON text'] }).messages : req.messages;
+            purpose = transportFailures || emptyAnswers > 1 ? 'extract_recovery' : 'extract_repair';
+            overrides = emptyAnswers > 1 ? { maxTokens: 6000 } : {};
+        }
     }
 
     if (!isCurrent()) return { changed: false, cancelled: true };

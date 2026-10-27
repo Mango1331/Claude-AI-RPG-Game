@@ -41,9 +41,10 @@ const TURNS = [
     { key: 'burrow', player: 'I climb down into the old burrow.', plan: plan({ type: 'go', to: { new: 'the old burrow' }, quote: 'I climb down into the old burrow' }),
         reply: 'Alaric lowers himself into the burrow. The air is dry and smells of resin. Three barkscorpions skitter out of the dark and rush at him, pincers raised.',
         answer: { expected: { 1: { arrived: true, at: { new: { name: 'the old burrow', kind: 'wilderness', parent: 'loc.alderwatch' } }, with: null } }, deltas: [
-            { seq: 1, type: 'creature.new', ref: 'barkscorpion', species: 'barkscorpion', anchor: 'arthropod', desc: ['bark-plated'], count: 3, present: true, band: 'SHORT', stronger: null },
+            { seq: 1, type: 'arrive', at: { new: { name: 'the old burrow', kind: 'wilderness', parent: 'loc.alderwatch' } }, with: null, forced_by: null },
+            { seq: 2, type: 'creature.new', ref: 'barkscorpion', species: 'barkscorpion', anchor: 'arthropod', desc: ['bark-plated'], count: 3, present: true, band: 'SHORT', stronger: null },
             // Patch 7.2B (delta-0.98): the whole group attacks, said with scope all and the reply's own words
-            { seq: 2, type: 'hostile', by: ['barkscorpion'], scope: 'all', evidence: 'Three barkscorpions skitter out of the dark and rush at him' },
+            { seq: 3, type: 'hostile', by: ['barkscorpion'], scope: 'all', evidence: 'Three barkscorpions skitter out of the dark and rush at him' },
         ] } },
     { key: 'alias', player: 'I Fire Lance Barkscorpion B', plan: plan({ type: 'use_skill', skill: 'mage.flame_lance', target: B, quote: 'I Fire Lance Barkscorpion B' }),
         reply: 'A lance of flame leaves Alaric\'s palm and bores into Barkscorpion B. Its bark plates blacken and split.' },
@@ -125,7 +126,8 @@ const mock = http.createServer(async (req, res) => {
         narrated.set(t?.key, n);
         text = t ? (n > 1 && t.swipe ? t.swipe : t.reply || 'The world waits.') : 'The world waits.';
     }
-    calls.push({ purpose, at: Date.now(), auth: req.headers.authorization || null, stream: !!j.stream, temperature: j.temperature, maxTokens: j.max_tokens, model: j.model, messages: msgs, lastUser });
+    if (process.env.AVERETH_SMOKE_EMPTY_NARRATOR === '1' && purpose === 'narrator' && lastUser.includes(TURNS[0].player) && narrated.get('burrow') === 1) text = '';
+    calls.push({ empty: !text.trim(), purpose, at: Date.now(), auth: req.headers.authorization || null, stream: !!j.stream, temperature: j.temperature, maxTokens: j.max_tokens, model: j.model, messages: msgs, lastUser });
     if (delay) await sleep(delay);
     if (j.stream) {
         res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', connection: 'keep-alive' });
@@ -207,13 +209,16 @@ try {
         return chat[i]?.extra?.avereth?.extraction?.status || null;
     });
     const idle = async () => {
+        let quiet = null;
         for (let i = 0; i < 600; i++) {
             const busy = await page.evaluate(() => getComputedStyle(document.querySelector('#mes_stop')).display !== 'none');
-            if (!busy) break;
-            await page.waitForTimeout(50);
+            if (busy || (await extraction()) === 'pending') quiet = null;
+            else quiet ??= Date.now();
+            // A bounded Narrator regenerate may start just after GENERATION_ENDED/saveChat.
+            if (quiet !== null && Date.now() - quiet >= 1000) return;
+            await page.waitForTimeout(100);
         }
-        for (let i = 0; i < 300; i++) { if ((await extraction()) !== 'pending') break; await page.waitForTimeout(100); }
-        await page.waitForTimeout(600);
+        throw new Error('SillyTavern did not finish generation/extraction');
     };
     /** The player message (by its text) and the message after it: records, panel, display. */
     const look = (text) => page.evaluate((t) => {
@@ -278,6 +283,7 @@ const narr = calls.filter((c) => c.purpose === 'narrator');
 const engineOf = (c) => String(c?.messages?.find((m) => String(m.content).startsWith('[AVERETH ENGINE'))?.content || '');
 const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((t) => t.key === key).player));
 const checks = {
+    ...(process.env.AVERETH_SMOKE_EMPTY_NARRATOR === '1' ? { emptyNarratorRecoveredOnce: narratorFor('burrow').length === 2 && narratorFor('burrow').filter(c => c.empty).length === 1 } : {}),
     campaignV4AtGreeting: greeting.some((e) => e.t === 'campaign.started' && e.runtime === 'v4'),
     plannerOnByDefault: toggle.before.exists && toggle.before.checked && toggle.before.setting === true,
     campaignPinnedToC: greeting.some((e) => e.t === 'campaign.started' && e.path === 'c'),
@@ -285,7 +291,7 @@ const checks = {
     // one planner call per free-text message, none for the question back and none for the swipe
     onePlanPerMessage: plans.length === TURNS.length && !calls.some((c) => c.purpose === 'interpret'),
     // every reply read once (the swiped one too): the barrier and the extractor as in Runtime V4
-    extractPerReply: calls.filter((c) => c.purpose === 'extract').length === narr.length,
+    extractPerReply: calls.filter((c) => c.purpose === 'extract').length === narr.filter(c => !c.empty).length,
     planCallParams: plans.every((c) => !c.stream && c.model === 'mock-narrator' && c.temperature === 0.1 && c.maxTokens === 2000),
     fightPromptInFight: plans.slice(1).every((c) => String(c.messages[0].content).startsWith('You are the intent planner')) && String(plans[0].messages[0].content).startsWith('You are the command interpreter'),
     keyAddedBySillyTavern: calls.length > 0 && calls.every((c) => c.auth === `Bearer ${DUMMY_KEY}`),

@@ -99,6 +99,7 @@ test('Run16 same name under a different valid parent is not the current scene', 
     arrived.places['realm.other'] = { id: 'realm.other', name: 'Other', kind: 'realm', parent: null };
     a.scene.new.parent = 'realm.other';
     a.deltas = a.deltas.filter(d => d.type === 'person.new');
+    a.expected = {}; // this reply only tests the mismatching local scene, not a new arrival
     const r = applyWorld(arrived, content, a, { msg: 72 });
     assert.ok(r.rejected.every(x => x.rule === 'scene_context'));
     assert.ok(!r.events.some(e => e.t === 'scene.entered'));

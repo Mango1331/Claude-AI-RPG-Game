@@ -19,7 +19,7 @@ const parse=(s,ls,n=need(s))=>parseBoard(JSON.stringify({listings:ls}),c,n,s);
 
 test('Run14 board: live V4-C requests select the new profile, while A/Ruleset1 remain legacy',()=>{
  const s=state(),cmds=[{seq:1,type:'board.read',rank:'Novice'}];
- assert.equal(boardFor(s,c,cmds,{c:true}).profile,'hunt_clear');
+ assert.equal(boardFor(s,c,cmds,{c:true}).profile,'count_hunt_clear');
  assert.equal(boardFor(s,c,cmds,{c:false}).profile,undefined);
  s.meta.ruleset=1;assert.equal(boardFor(s,c,cmds,{c:true}).profile,undefined);
 });
@@ -48,8 +48,8 @@ test('Run14 board: unsuitable dungeon floor and unavailable cull population rema
 });
 test('Run14 board: generator and one repair obey the same profile',async()=>{
  const s=state(),n=boardFor(s,c,[{seq:1,type:'board.read',rank:'Novice'}],{c:true}),calls=[];
- const r=await generateBoard(async req=>{calls.push(req);return JSON.stringify({listings:calls.length===1?old():board()});},s,c,n);
- assert.equal(calls.length,2);assert.equal(r.listings.length,5);assert.equal(r.profile,'hunt_clear');
+ const r=await generateBoard(async req=>{calls.push(req);return JSON.stringify({listings:calls.length===1?old():board().map(l=>({...l,objectives:l.objectives.filter(o=>o.verb==='DEFEAT')}))});},s,c,n);
+ assert.equal(calls.length,2);assert.equal(r.listings.length,5);assert.equal(r.profile,'count_hunt_clear');
  assert.match(calls[1].messages.at(-1).content,/suspended|valid listing/);
  let count=0;const failed=await generateBoard(async()=>{count++;return JSON.stringify({listings:old()});},s,c,n);
  assert.equal(count,2);assert.equal(failed.listings.length,0);assert.ok(failed.failed);

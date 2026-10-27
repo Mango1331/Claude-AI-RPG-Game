@@ -708,7 +708,7 @@ test('patch 7 (5, 8, 9): a room he walks into that no way was shown to is joined
     // a guard room down a stair from the guard room: not the same room
     const guard = idOf(s, 'Guard room');
     await walk(g, corridor, { text: '*I go back*', prose: 'The corridor.' });
-    await walk(g, guard, { text: '*I go into the guard room*', prose: 'A stair goes down to the guard room of the lower floor.', deltas: [way(room('Guard room'), { name: 'stair down', dir: 'down' })] });
+    await walk(g, guard, { text: '*I go into the guard room*', prose: 'A stair goes down to the guard room of the lower floor.', deltas: [{ seq: 1, type: 'arrive', at: guard, with: null, forced_by: null }, way(room('Guard room'), { name: 'stair down', dir: 'down' }, 2)] });
     s = g.state();
     const guards = byName(s, 'Guard room');
     assert.equal(guards.length, 2, 'two guard rooms, one per floor');

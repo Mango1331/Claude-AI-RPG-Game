@@ -289,7 +289,8 @@ function acceptBid(s, content, c, ctx, emit, o) {
         return { status: 'refused', reason: sale.stale ? 'no longer held' : 'part of a lot', line: `NOT SOLD — ${sale.error}. Nothing changes hands; the buyer may name a new price.` };
     }
     const what = bidText(sale.lines);
-    bookSale(s, emit, { items: sale.lines.map((l) => ({ ref: l.object, units: l.qty, splitId: `${l.object}_t${s.turn}` })), buyer: o.seller, cp: sale.cp, what });
+    const booked = bookSale(s, emit, { offer: o, items: sale.lines.map((l) => ({ ref: l.object, units: l.qty, splitId: `${l.object}_t${s.turn}` })), buyer: o.seller, cp: sale.cp, what });
+    if (booked.error) return { status: 'refused', reason: booked.error, line: `NOT SOLD — ${booked.error}.` };
     ctx.soldInBid = new Set([...(ctx.soldInBid || []), ...sale.lines.map((l) => l.object)]);
     // the buyer paid him exactly the price: coin from her in the reply is this coin, never a gift (world.js coin.gift)
     ctx.booked.sellers.push(o.seller);
@@ -972,7 +973,11 @@ const HANDLERS = {
             // an offer stored the wrong way round whose lines name exactly his own things ("mudwyrm parts: 2 skins, 2
             // fangs … the lot") is the buyer's price for them; anything else is a question, never a purchase
             const lot = bidOfOffer(s, o);
-            if (lot) return acceptBid(s, content, { ...c, lines: null }, ctx, emit, { ...o, bid: true, lines: lot.lines, price_cp: lot.price_cp });
+            if (lot) {
+                const bid = { ...o, bid: true, lines: lot.lines, price_cp: lot.price_cp };
+                emit({ t: 'offer.created', d: { offer: bid } });
+                return acceptBid(s, content, { ...c, lines: null }, ctx, emit, bid);
+            }
             return { status: 'clarify', reason: 'buy or sell?', line: `CLARIFY — ${who(s, o.seller)}'s open offer sells ${picksText(pickLines(o).picks || [])} to Alaric; he speaks of selling. Does he buy that, or sell his own things (which, and for what price)?` };
         }
         // the lines he takes, in the number he names (review of 4.1.0: "three flasks" became one flask for one price)
@@ -1487,7 +1492,19 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
             const request = { kind: 'purchase', what: c.what, seller: c.from || null, at: s.scene.at, qty: c.qty || null };
             for (const d of s.decisions.filter(d => samePurchaseRequest(d, request, trade?.offer.seller))) emit({ t: 'decision.closed', d: { id: d.id, status: 'expired' } });
         }
-        const r = afterTravel ? { status: 'refused', reason: 'arrival pending', line: `NOT DONE — ${quoted}: the earlier journey has not arrived yet. Perform this action after confirmed arrival; no local check, payment or activity time was booked.` }
+        let destinationBuy = null;
+        if (afterTravel && !unmet && c.type === 'buy') {
+            const go = ctx.auth.gos.at(-1);
+            // Existing destination or its explicit new name, never a portable unlimited permission.
+            if ((go.to || go.newName) && (Number.isInteger(c.max_cp) || c.any_price)) {
+                emit({ t: 'decision.opened', d: { decision: { id: `dec.t${s.turn}.${c.seq}`, kind: 'purchase', what: c.what,
+                    seller: c.from || null, at: go.to || null, destination: { to: go.to || null, name: go.newName || null },
+                    turn: s.turn, max_cp: c.max_cp ?? null, any_price: !!c.any_price, qty: c.qty || null, seq: c.seq } } });
+                ctx.expectedKeys[String(c.seq)] = 'buy';
+                destinationBuy = { status: 'conditional', condition: 'arrive_and_price', line: `BUYS AT DESTINATION — ${c.what}, only after confirmed arrival and an unambiguous seller/offer within ${c.any_price ? 'his agreed price' : `${c.max_cp} cp`}. Otherwise only show the offer.` };
+            }
+        }
+        const r = destinationBuy || (afterTravel ? { status: 'refused', reason: 'arrival pending', line: `NOT DONE — ${quoted}: the earlier journey has not arrived yet. Perform this action after confirmed arrival; no local check, payment or activity time was booked.` }
             : waitingGive ? { status: 'refused', reason: 'handover still conditional', line: 'NOT DONE — the later journey waits for the handover at the first destination.' }
             : room ? { status: 'refused', reason: 'room not booked', line: `NOT DONE — ${quoted}: he would ${c.kind} in the room or bed of step ${room.seq}, and it is not his yet: ${roomWhy(ctx.resolutions.find((x) => x.seq === room.seq))}. He does not ${c.kind} in this reply; tell no ${c.kind === 'sleep' ? 'night' : 'rest'} in it.` }
             : unmet ? { status: 'refused', reason: `needs step ${need}`, line: `NOT DONE — ${quoted}: it was to follow step ${need}, which did not happen; it does not happen in this reply (someone else's help does not do it for him).` }
@@ -1496,7 +1513,7 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
             : trade?.refused ? { status: 'refused', reason: trade.refused, line: 'NOT TRADED — the same trade remains unresolved; no separate payment or gift is made.' }
             : appraise ? { status: 'pending', reason: 'price still under appraisal', line: 'NOT SOLD — the buyer must finish appraising and name the final price. The goods remain Alaric’s; no gift or payment was booked.' }
             : trade ? HANDLERS['offer.accept'](s, content, { ...trade.command, seq: c.seq }, ctx, booking)
-            : h ? h(s, content, c, ctx, booking, envx) : { status: 'refused', reason: `unknown command ${c.type}`, line: null };
+            : h ? h(s, content, c, ctx, booking, envx) : { status: 'refused', reason: `unknown command ${c.type}`, line: null });
         if (trade && !trade.bought && !unmet && ['refused', 'pending', 'clarify'].includes(r.status)) trade.refused = r.reason || 'trade unresolved';
         // 4.3.0-c.6.6.3: a step that builds on one the story still decides (a take from someone's keeping) follows it there
         if (!unmet && Number.isInteger(c.needs) && uncertain.has(c.needs) && r.line) r.line = `${r.line} Only once step ${c.needs} has happened in the story; if it does not, this does not happen either.`;

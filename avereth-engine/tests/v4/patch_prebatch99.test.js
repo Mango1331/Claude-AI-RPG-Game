@@ -288,7 +288,7 @@ test('99 failed travel plus ambiguous here does not create a local person', () =
     const r = world(f.wait, a, s);
     assert.equal(events(r, 'entity.created').length, 0);
 });
-test('99 expected-only arrival preserves the earlier departure gift and then arrives', () => {
+test('101 explicit arrival preserves the earlier departure gift and then arrives', () => {
     const s = offerState(),
         start = s.scene.at,
         seller = s.offers[accept.offer].seller,
@@ -339,6 +339,7 @@ test('99 expected-only arrival preserves the earlier departure gift and then arr
             scene: start
         }]
     };
+    a.deltas.push({seq: 3, type: 'arrive', at: to, with: null, forced_by: null});
     const r = applyWorld(s, content, a, {
         msg: 501,
         prose: 'The keeper gives Alaric a copper button. Then Alaric leaves and reaches the town square.'
@@ -666,7 +667,7 @@ test('99 GO also blocks immediate offer acceptance at the departure point', () =
     assert.equal(events(r, 'transaction.completed').length, 0);
     assert.equal(r.ctx.resolutions[1].reason, 'arrival pending');
 });
-test('99 explicit first leg does not advance an expected-only second leg before a gift there', () => {
+test('101 second explicit arrival follows the gift at the intermediate stop', () => {
     const s = offerState(),
         start = s.scene.at,
         mid = 'loc.alderwatch',
@@ -727,6 +728,7 @@ test('99 explicit first leg does not advance an expected-only second leg before 
             scene: mid
         }]
     };
+    a.deltas.push({seq: 4, type: 'arrive', at: start, with: null, forced_by: null});
     const r = applyWorld(s, content, a, {
         msg: 503,
         prose: 'The keeper walks to the square with Alaric and gives him a brass pin. Alaric then returns to the Guild hall.'
@@ -795,7 +797,7 @@ test('99 review: ambiguous here in an Expected-only arrival never establishes th
         msg: 504,
         prose: 'Alaric reaches the square. Only there does he meet Nessa the porter.'
     });
-    assert.equal(r.state.scene.at, to);
+    assert.equal(r.state.scene.at, from);
     assert.equal(events(r, 'entity.created').length, 0,
         'unclear timing is locally rejected, never guessed at A or B');
     assert.ok(r.rejected.some(x => x.type === 'person.new' && x.rule === 'scene_context'));
@@ -805,7 +807,7 @@ test('99 review: ambiguous here in an Expected-only arrival never establishes th
     assert.deepEqual(replay, r.state);
     assert.notEqual(from, to);
 });
-test('99 review: an explicit destination scene places the Expected-only NPC at the destination', () => {
+test('101 review: a destination scene cannot substitute for the missing arrival', () => {
     const {
         s,
         to,
@@ -816,19 +818,18 @@ test('99 review: an explicit destination scene places the Expected-only NPC at t
         prose: 'Alaric reaches the square and meets Nessa there.'
     });
     const created = events(r, 'entity.created');
-    assert.equal(created.length, 1);
-    const npc = r.state.entities[created[0].d.entity.id];
-    assert.equal(r.state.scene.at, to);
-    assert.equal(npc.location, to);
-    assert.ok(r.state.scene.present.includes(npc.id));
+    assert.equal(created.length, 0);
+    assert.notEqual(r.state.scene.at, to);
+    assert.ok(r.rejected.some(x => x.rule === 'arrival_evidence'));
 });
-test('99 review: explicit departure scene preserves an earlier NPC before the Expected-only arrival', () => {
+test('101 review: explicit departure scene preserves an earlier NPC before arrival', () => {
     const {
         s,
         from,
         to,
         answer
     } = expectedOnlyPerson(f.wait.state.scene.at);
+    answer.deltas.push({seq: 2, type: 'arrive', at: to, with: null, forced_by: null});
     const r = applyWorld(s, content, answer, {
         msg: 504,
         prose: 'Nessa speaks to him in the hall. He then goes to the square.'
@@ -886,8 +887,8 @@ test('99 review: one runtime repair resolves here to B without first committing 
                     with: null
                 }
             },
-            deltas: [{
-                seq: 1,
+            deltas: [...(calls > 1 ? [{seq: 1, type: 'arrive', at: to, with: null, forced_by: null}] : []), {
+                seq: calls > 1 ? 2 : 1,
                 type: 'person.new',
                 ref: 'arrival_witness',
                 name: 'Nessa',

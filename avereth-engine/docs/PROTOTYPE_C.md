@@ -2211,3 +2211,7 @@ Neue Kampagnen: weltgebundene Jagdpopulationen über F, sichtbare Shopwerte, kau
 ## Vorbatch-Fachpaket .99 — 27.10.2026
 
 Gemeinsame Handelsbuchung und aktuelle Zustimmung/Verfügbarkeit, zeitlich gebundene World-Ausführung mit lokalen Szenenablehnungen und konsistente Board-Eignungsinformation/Repair. Technische Änderungen, Gegenfeedback, echte Abnahme und Grenzen ausschließlich in [PATCH_PRE_BATCH_RUN22.md](PATCH_PRE_BATCH_RUN22.md). Keine Balance- oder Runneränderung.
+
+## 27.10.2026 – Batch-1-Fachpaket .101
+
+Recovery, explizite chronologische Ankunft, gemeinsame Ortsidentität, geprüfter Verkaufsweg und neue mechanische Zähljagden: [technische Patchnote mit Abnahme und Grenzen](PATCH_BATCH1_WORLD_CONTRACTS.md). Keine Balance- oder Testspieleränderung; natürliche Batch-Abnahme folgt separat.

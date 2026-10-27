@@ -191,6 +191,7 @@ export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = nu
     if (selection.error || selection.clarify || selection.picks.length !== picks.length || selection.cp !== cp)
         return { error: selection.error || 'selection or price changed' };
     offer = live; picks = selection.picks;
+    if (consent?.kind === 'purchase' && rulesetOf(s) >= 2 && (consent.turn !== s.turn || !purchaseDecisionMatches(consent, offer, picks))) return { error: 'purchase consent is stale or mismatched' };
     if (consent && !consent.any_price && Number.isInteger(consent.max_cp) && cp > consent.max_cp) return { error: 'above his price limit' };
     if (content && picks.some(p => p.line.equipment === true && (p.line.profile?.kind !== 'gear' || !equipmentSlotKnown(content, p.line.profile.slot)))) return { error: 'equipment has no supported profile' };
     if (content && rulesetOf(s) >= 2) {
@@ -251,7 +252,23 @@ export function saleUnits(s, ref, qty = null) {
  * one thing. The coin is the engine's credit to him (transaction.completed to "pc"): coin the story shows him pick up
  * there afterwards is this coin, not new coin (src/v4/world.js coin.gift).
  */
-export function bookSale(s, emit, { items = null, ref, units, buyer, cp, what, splitId }) {
+export function bookSale(s, emit, { items = null, ref, units, buyer, cp, what, splitId, offer = null }) {
+    if (!buyer || buyer === 'pc' || !s.scene.present.includes(buyer) || s.entities[buyer]?.status === 'dead') return { error: 'the buyer is not present' };
+    if (!Number.isInteger(cp) || cp < 0) return { error: 'invalid sale price' };
+    const lot = items || [{ ref, units, splitId }];
+    if (!lot.length || new Set(lot.map(it => it.ref)).size !== lot.length) return { error: 'empty or duplicate sale lines' };
+    for (const it of lot) {
+        if (!Number.isInteger(it.units) || it.units <= 0 || heldUnits(s, it.ref) < it.units) return { error: 'the complete lot is no longer held' };
+        const o = s.objects[it.ref];
+        if (o && it.units < (o.qty ?? 1) && (!it.splitId || s.objects[it.splitId])) return { error: 'invalid stack split' };
+    }
+    if (offer) {
+        const live = s.offers[offer.id];
+        if (!live || live.status !== 'open' || !live.bid || live.seller !== buyer || live.at !== s.scene.at) return { error: 'the bid is no longer available here' };
+        const ids = live.lines.filter(l => lot.some(it => it.ref === l.object && it.units === l.qty)).map(l => l.id);
+        const selection = bidSale(s, live, ids);
+        if (selection.error || ids.length !== lot.length || selection.cp !== cp) return { error: selection.error || 'the lot or price differs from the bid' };
+    }
     for (const it of items || [{ ref, units, splitId }]) {
         const o = s.objects[it.ref];
         if (o?.holder?.entity === 'pc') {
@@ -260,7 +277,8 @@ export function bookSale(s, emit, { items = null, ref, units, buyer, cp, what, s
         } else if (String(it.ref).startsWith('item.')) emit({ t: 'item.changed', d: { id: 'pc', item: String(it.ref).slice(5), qty: -it.units, why: 'sold' } });
     }
     emit({ t: 'coin.changed', d: { id: 'pc', value: s.entities.pc.sheet.coin_cp + cp, delta: cp, why: `sold ${what}` } });
-    emit({ t: 'transaction.completed', d: { to: 'pc', from: buyer, cp, for: what, at: s.scene.at } });
+    emit({ t: 'transaction.completed', d: { to: 'pc', from: buyer, cp, for: what, at: s.scene.at, ...(offer ? { offer: offer.id } : {}) } });
+    return { ok: true };
 }
 
 /**

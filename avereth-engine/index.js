@@ -16,6 +16,7 @@
 import { loadContentPack } from './src/content.js';
 import { onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory, reportRequest, applyReportAnswer } from './src/host.js';
 import { prepareGenerationAsync, processReplyAny, runExtraction, pendingExtraction, campaignRuntime, onEditedV4, perfSummary } from './src/v4/runtime.js';
+import { createNarratorRecovery } from './src/v4/narrator_recovery.js';
 import { createWorldJobs } from './src/v4/world_jobs.js';
 import { validateState } from './src/validate.js';
 import { newSeed } from './src/rng.js';
@@ -135,7 +136,7 @@ async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500, signal = n
             };
             const res = await fetch('/api/backends/chat-completions/generate', { method: 'POST', headers: c.getRequestHeaders(), body: JSON.stringify(body), signal: ctl.signal });
             const json = await res.json().catch(() => null);
-            if (!res.ok || !json || json.error || !json.choices) throw Object.assign(new Error(`the LLM call failed (HTTP ${res.status}${json?.error?.message ? `: ${String(json.error.message).slice(0, 120)}` : ''})`), { code: 'LLM_PROVIDER' });
+            if (!res.ok || !json || json.error || !json.choices) throw Object.assign(new Error(`the LLM call failed (HTTP ${res.status}${json?.error?.message ? `: ${String(json.error.message).slice(0, 120)}` : ''})`), { code: 'LLM_PROVIDER', status: res.status });
             const m = json.choices[0]?.message || {};
             const text = typeof m.content === 'string' ? m.content : Array.isArray(m.content) ? m.content.map((x) => x?.text || '').join('') : '';
             // Patch 8.2: why the answer ended and the provider's token counts go along as telemetry (runtime.js callMeta)
@@ -151,7 +152,7 @@ async function v4Llm({ messages, temperature = 0.1, maxTokens = 2500, signal = n
     }
     llmPath = 'generateRaw';
     if (typeof c.generateRaw !== 'function') throw new Error('SillyTavern offers no generateRaw');
-    if (signal?.aborted) throw new Error('world extraction cancelled');
+    if (signal?.aborted) throw Object.assign(new Error('world extraction cancelled'), { code: 'LLM_CANCELLED' });
     // generateRaw takes one prompt: a repair's earlier answer and error list follow the request as text
     const [system, ...rest] = messages;
     const prompt = rest.map((m) => (m.role === 'assistant' ? `YOUR PREVIOUS ANSWER:\n${m.content}` : m.content)).join('\n\n');
@@ -288,6 +289,15 @@ function rerender(c, id) {
     }
 }
 
+const narratorRecovery = createNarratorRecovery({
+    active: () => { const c = ctx(); return { chat: c.chat, chatId: c.getCurrentChatId(), epoch: generationRequest,
+        enabled: settings().enabled && settings().recoverReports && typeof c.generate === 'function', group: c.groupId,
+        busy: !!document.querySelector('#mes_stop')?.offsetParent }; },
+    save: () => ctx().saveChat(),
+    generate: type => ctx().generate(type),
+    failed: error => toastr.warning(`Avereth: narrator recovery failed (${error.message}); regenerate manually.`),
+});
+
 async function onMessageReceived(messageId) {
     if (!settings().enabled || !content) return;
     const c = ctx();
@@ -311,7 +321,10 @@ async function onMessageReceived(messageId) {
         if (r.recover) requestReport(Number(messageId));
         if (r.extract) startWorld(Number(messageId));
         // Patch 8.2: a reply without story text is not read (runtime.js processReplyAny); the System block says so too
-        if (r.empty) toastr.warning('Avereth Engine: the narrator returned no story text. Swipe or regenerate the reply.');
+        if (r.empty) {
+            if (narratorRecovery.queue(Number(messageId))) narratorRecovery.finish();
+            else toastr.warning('Avereth Engine: the narrator returned no story text after recovery. Swipe or regenerate the reply.');
+        }
     } catch (err) {
         console.error('[Avereth] reply processing failed', err);
         toastr.error(`Avereth Engine: ${err.message}`);
@@ -365,6 +378,7 @@ function resumeReport() {
 
 async function onMessageEdited(messageId) {
     generationRequest++;
+    narratorRecovery.invalidate();
     worldJobs.invalidate(); // pending reply or preceding player message may have changed
     if (!settings().enabled) return;
     const c = ctx();
@@ -508,11 +522,14 @@ function mountSettings() {
     const c = ctx();
     const ev = c.eventTypes || c.event_types;
     c.eventSource.on(ev.MESSAGE_RECEIVED, onMessageReceived);
+    c.eventSource.on(ev.GENERATION_ENDED, () => narratorRecovery.finish());
+    c.eventSource.on(ev.GENERATION_STOPPED, () => narratorRecovery.invalidate());
     c.eventSource.on(ev.MESSAGE_EDITED, onMessageEdited);
     // state is always re-folded from the chat, so these events only refresh the status line; the interceptor sets
     // the engine block before every generation (normal, swipe, regenerate, continue)
     c.eventSource.on(ev.CHAT_CHANGED, () => {
         generationRequest++;
+        narratorRecovery.invalidate();
         worldJobs.invalidate();
         lastContext = null; lastProjection = null;
         setPrompt(''); setLoreKeys([]);
@@ -521,6 +538,7 @@ function mountSettings() {
     });
     for (const t of [ev.MESSAGE_DELETED, ev.MESSAGE_SWIPED]) c.eventSource.on(t, () => {
         generationRequest++;
+        narratorRecovery.invalidate();
         worldJobs.invalidate();
         renderDebug();
         resumeReport();

@@ -1,6 +1,7 @@
 # Erstes .100-Neunfach-Batch — sechs tatsächlich gestartete Kampagnen
 
 - **Primäre fachliche Auswertung:** [REVIEW.md](REVIEW.md) — unabhängige Analyse aller sechs Kampagnen, Abbruchursachen, Original-LLM-Responses, Gilden-Killcounter, Szenenprobleme und getrennte technische Folgepakete.
+- **Technische Gegenprüfung von Sol:** [SOL_COUNTERREVIEW.md](SOL_COUNTERREVIEW.md) — Originaldaten, Provider-/Recovery-Ursachen, Habitat- und Dungeonfehler, drei begrenzte Fachpakete sowie Gameplay- und Runnerbewertung; keine Implementierung.
 - **Reproduktion und Quellbindung:** [BATCH_INDEX.json](BATCH_INDEX.json) — Maschinenindex mit Seeds, Abbrüchen und Fundstellen.
 - **Originalquelle:** \`batch-20261027-030034Z.zip\` vom Nutzer bereitgestellt; **SHA-256 aebd2b67c353b3ed6c6a57887fff1d42885462af84e8262b6a97715db7a5fe3f**, 38.267.753 Bytes, 98 ZIP-Einträge einschließlich Verzeichnisse, ZIP-CRC vollständig bestanden.
 - **Git-Produktstand:** \`cadd5315862a\` auf \`claude/c-planner-prototype-2026-10-02-gpt-c666\` (Build 4.3.0-c.6.6.100); alle sechs echten GLM-5.3-Flash-Läufe ohne Fixture oder Stub.

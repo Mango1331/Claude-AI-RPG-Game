@@ -25,9 +25,11 @@ const contains = (text, part) => !!flat(part) && ` ${flat(text)} `.includes(` ${
  */
 export function saleOfferLines(state, seller, lines) {
     if (!Array.isArray(lines)) return [];
-    const current = (state.decisions || []).filter(d => d.turn === state.turn && d.at === state.scene.at && d.seller === seller);
-    if (!current.some(d => d.kind === 'sale' && state.objects[d.object]?.holder?.entity === 'pc')) return [];
+    const current = (state.decisions || []).filter(d => d.turn === state.turn && d.at === state.scene.at && (!d.seller || d.seller === seller));
+    const sales = current.filter(d => d.kind === 'sale' && state.objects[d.object]?.holder?.entity === 'pc');
+    if (!sales.length) return [];
     return lines.filter(l => (l.kind || 'goods') === 'goods'
+        && sales.some(d => d.seller === seller || (state.scene.present.includes(seller) && purchaseLines(state.objects[d.object].name, [l]).length))
         && !current.some(d => d.kind === 'purchase' && purchaseLines(d.what, [l]).length));
 }
 

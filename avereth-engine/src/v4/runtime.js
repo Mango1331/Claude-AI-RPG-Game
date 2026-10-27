@@ -193,7 +193,7 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
     let p = parsePlan(first.content, vocab, ctx, text);
     let repaired = false;
     let recovery = null;
-    let consentClarify = false;
+    let consentClarify = !!p.tradeConflict;
     if (!p.commands) {
         if (!isCurrent()) return { commands: null, failed: true, error: 'stale request', ms, repaired: false, raw, calls };
         const rep = plannerRequest(vocab, ctx, text, { recent, previous: first.content, errors: p.errors });
@@ -204,7 +204,7 @@ export async function planMessage(llm, content, ctx, text, { recent = '', isCurr
         if (second.ok) {
             raw.push(String(second.content).slice(0, 2000));
             p = parsePlan(second.content, vocab, ctx, text);
-            consentClarify = !!p.tradeConflict;
+            consentClarify ||= !!p.tradeConflict;
         }
         // 10B-4a: two reasoning-only/empty answers can exhaust the usual 2000-token
         // budget without returning any JSON. Make one fresh, bounded attempt with

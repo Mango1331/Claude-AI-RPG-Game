@@ -9,8 +9,11 @@ export async function narratorProviderResponse(send, { signal, isCurrent, mark, 
     const first = await send();
     if (signal?.aborted || !isCurrent()) return first;
     const error = await first.clone().json().then(x => x?.error).catch(() => null);
-    const transient = [429, 500, 502, 503, 504].includes(first.status)
-        || (first.ok && ['server_error', 'internal_server_error', 'temporarily_unavailable'].includes(error?.code || error?.type));
+    const kinds = [error?.code, error?.type];
+    const permanent = kinds.some(kind => ['invalid_api_key', 'authentication_error', 'permission_error', 'permission_denied',
+        'invalid_request_error', 'context_length_exceeded', 'model_not_found', 'insufficient_quota'].includes(kind));
+    const transient = !permanent && ([429, 500, 502, 503, 504].includes(first.status)
+        || (first.ok && kinds.some(kind => ['server_error', 'internal_server_error', 'temporarily_unavailable'].includes(kind))));
     if (!transient || signal?.aborted || !isCurrent()) return first;
     mark({ attempts: 1, reason: 'provider', status: first.status });
     await save();

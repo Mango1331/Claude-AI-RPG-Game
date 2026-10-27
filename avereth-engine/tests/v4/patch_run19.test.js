@@ -77,8 +77,8 @@ test('Run19 new Hall aliases and real interiors, but no fabricated branch',()=>{
  const x=f.cases[75],r=applyWorld(before(x.i+1),content,x.answer,{msg:x.i+1,prose:x.prose});assert.equal(r.events.some(e=>e.t==='coin.changed'&&e.d.delta===90),false);assert.equal(r.state.scene.at,'loc.marrowbridge');
 });
 
-test('Run19 trade conflict followed by malformed repair stays a hard failure',async()=>{
- const r=await act([f.cases[89].plans[0],{commands:[{type:'made.up'}]}]);assert.equal(r.result.action,'abort');assert.equal(r.record.plan.failed,true);assert.equal(r.record.events.length,0);
+test('Run19 pure trade conflict survives malformed repair as a side-effect-free clarification',async()=>{
+ const r=await act([f.cases[89].plans[0],{commands:[{type:'made.up'}]}]);assert.equal(r.result.action,'panels');assert.equal(r.record.plan.failed,false);assert.equal(r.record.events.length,0);assert.match(r.result.panels.join('\n'),/CLARIFY/);assert.equal(r.calls,2);
 });
 test('Run19 a trade conflict cannot conceal another invalid command',async()=>{
  const p=structuredClone(f.cases[89].plans[0]);p.commands.push({seq:4,type:'made.up'});
@@ -96,6 +96,6 @@ test('Run19 positional evidence respects quantities and counterparty',()=>{
  assert.ok(acceptanceWhy({lines:['l1','l2'],qty:2,quote:'Two copper for the bed and a copper for the soup.'},o,'Widow Hale',content.rules.currency));
 });
 
-test('Run19 a transport failure after trade repair is not a clarification',async()=>{
- const r=await act([f.cases[89].plans[0],new Error('provider unavailable')]);assert.equal(r.result.action,'abort');assert.equal(r.record.plan.failed,true);assert.equal(r.record.events.length,0);
+test('Run19 pure trade conflict survives a repair transport failure without executing the rejected plan',async()=>{
+ const r=await act([f.cases[89].plans[0],new Error('provider unavailable')]);assert.equal(r.result.action,'panels');assert.equal(r.record.plan.failed,false);assert.equal(r.record.events.length,0);assert.match(r.result.panels.join('\n'),/CLARIFY/);assert.equal(r.calls,2);
 });

@@ -35,6 +35,10 @@ Frühere ausführliche Zeilen mit SHA-256-/Git-Blob-Prüfungen und allen technis
 
 - [Batch vom 27.10.2026, Build .100](batch-20261027-030034Z/README.md): **sechs gestartet**, fünf autonome technische Abbrüche, sechster manuell gestoppt. [GPT-Review](batch-20261027-030034Z/REVIEW.md), [unabhängiger Gegenreview mit .101-Patchplanung](batch-20261027-030034Z/SOL_COUNTERREVIEW.md), [Laufindex](batch-20261027-030034Z/BATCH_INDEX.json). Die Original-Batch-ZIP liegt **laut aktuellem main-Dateibaum nicht** in diesem Ordner; archivierte Textdateien sind kein Ersatz für den Export.
 
+## Batch 2 (.101) – fünf regulär ausgewertete Runs
+
+[**Batch-2-Review, Ordner batch-20261027-073917Z**](batch-20261027-073917Z/REVIEW.md) · [Lauf- und Quellenindex](batch-20261027-073917Z/README.md). Guild-Warrior und Guild-Rogue jeweils 150 Eingaben bis Level 7/8, Guild-Mage regulärer Tod T99, Explore-Warrior Narrator-Providerfehler T87, Explore-Mage Planner-/Handelsfehler T123. **Nur die ersten fünf beurteilt; Run 6 durch Nutzer manuell abgebrochen und ausdrücklich ausgeschlossen.** Original-ZIP als Upload vollständig CRC-/SHA-geprüft, **nicht als Binärdatei auf main archiviert**. Build .101 / c9e3fa5, 609 bewertete Eingaben, zwei technische Endabbrüche.
+
 ## Umgang mit neuen Runs
 
 - Unveränderte ZIP im nach der Original-Run-ID benannten Ordner sichern. Format und Hash bei Übertragung prüfen; niemals vorhandene Originaldateien oder Reviews still überschreiben.

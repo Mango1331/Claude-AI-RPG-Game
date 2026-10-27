@@ -123,7 +123,10 @@ test('Run21 T90 original response applies once through runtime, reload and a new
     const req = extractionRequest(g.chat, id, content);
     assert.ok(req.ids.places.includes(site));
     let calls = 0;
-    const llm = async () => { calls++; return JSON.stringify(f.t90.answer263); };
+    // The new GO barrier does not ask for an outcome for the unperformed search.
+    const answer = copy(f.t90.answer263);
+    answer.expected = Object.fromEntries(Object.entries(answer.expected).filter(([k]) => req.expectedKeys[k]));
+    const llm = async () => { calls++; return JSON.stringify(answer); };
     assert.equal((await runExtraction(g.chat, id, content, llm)).applied, true);
     assert.equal(calls, 1, 'the original first response needs no repair');
     assert.equal(rec(g.chat[id]).events.filter(e => e.t === 'extract.applied').length, 1);
@@ -138,7 +141,7 @@ test('Run21 T90 original response applies once through runtime, reload and a new
     reload[id].extra = {};
     assert.equal(foldChat(reload).state.scene.at, f.t90.state.scene.at, 'old swipe arrival is absent');
     processReplyAny(reload, id, content);
-    const other = await runExtraction(reload, id, content, async () => JSON.stringify({ scene: 'here', expected: { 1: { done: false, minutes: 0 }, 2: { arrived: false, at: null, with: null }, 3: { done: false, minutes: 0 }, 4: { done: false, minutes: 0 } }, deltas: [] }));
+    const other = await runExtraction(reload, id, content, async () => JSON.stringify({ scene: 'here', expected: { 1: { done: false, minutes: 0 }, 2: { arrived: false, at: null, with: null } }, deltas: [] }));
     assert.equal(other.applied, true);
     assert.equal(foldChat(reload).state.scene.at, f.t90.state.scene.at);
     reload[id].swipe_id = 0; reload[id].mes = f.t90.prose; reload[id].extra = original;

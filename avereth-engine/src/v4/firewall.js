@@ -377,9 +377,9 @@ export function firewall(deltas, ctx = {}) {
                 break;
             }
             case 'arrive': {
+                if (ctx.lodgedHere && ctx.roomOfHere?.(d.at)) break;
                 // Prototype C (4.3.0-c.6.6.4): going up to the room he has just paid for here is part of that booking
                 // (live 15.10.2026: "a proper room" bought, the reply took him up, no_go kept him in the taproom)
-                if (ctx.lodgedHere && ctx.roomOfHere?.(d.at)) break;
                 if (!auth.go && !auth.roam && !text(d.forced_by).trim()) {
                     no(d, 'no_go', 'Alaric arrives somewhere only after his own travel/roaming action or an explicit external involuntary cause', 'Alaric did not voluntarily travel in the last reply, and no external event moved him; he remains where he was.');
                     continue;

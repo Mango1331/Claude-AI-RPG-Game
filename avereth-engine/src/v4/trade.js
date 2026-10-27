@@ -10,8 +10,11 @@
 // (review of 4.1.0: three flasks bought for the price of one, ten herbs sold while he held one, a partial sale that
 // handed over the whole stack). The command handlers (src/v4/commands.js) and the world applier (src/v4/world.js)
 // both book through here.
-import { itemTraits } from './items.js';
+import { itemTraits, equipmentSlotKnown } from './items.js';
 import { normText } from '../util.js';
+import { hallOf } from './domain.js';
+import { rulesetOf } from '../content.js';
+import { trainingOfferWhy } from './growth.js';
 import { coinFromWords, coinMentions, coinEvidence } from '../economy.js';
 
 const flat = text => normText(text || '').replace(/[^a-z0-9]+/g, ' ').trim();
@@ -122,6 +125,7 @@ export function linePrice(line, units = null) {
  * @returns {{picks: {line, units, cp}[], cp: number} | {clarify: string[]} | {error: string}}
  */
 export function pickLines(offer, lineIds = null, units = null) {
+    if (lineIds?.some(id => !offer.lines.some(l => l.id === id))) return { error: 'the offer has no such item' };
     const lines = Array.isArray(lineIds) && lineIds.length ? offer.lines.filter((l) => lineIds.includes(l.id)) : offer.lines;
     if (!lines.length) return { error: 'the offer has no such item' };
     if (units && lines.length > 1) return { clarify: lines.map((l) => l.what) };
@@ -138,14 +142,63 @@ export function pickLines(offer, lineIds = null, units = null) {
 export const unitsText = (what, units) => (units > 1 ? `${units} ${what}` : what);
 export const picksText = (picks) => picks.map((p) => unitsText(p.line.what, p.units)).join(', ');
 
+/** Current availability, shared by views, catalog and the final purchase boundary. */
+export function offerAvailability(s, o) {
+    if (!o || o.status !== 'open') return 'no open offer';
+    if (o.gate) return s.scene.at === o.gate ? null : 'not at the gate';
+    if (o.canon && !hallOf(s, s.scene.at)) return 'not at a Guild hall';
+    if (o.stock === 'manuals' && hallOf(s, o.at) !== hallOf(s, s.scene.at)) return 'another Guild hall';
+    if (!o.canon && o.at && o.at !== s.scene.at) return 'another offer location';
+    if ((!o.canon || o.stock === 'manuals') && !s.scene.present.includes(o.seller)) return 'the seller is not here';
+    return null;
+}
+
+const requestWords = value => flat(value).split(' ').filter(w => !['a','an','the','for','of','with','and','some','please'].includes(w)).map(w => w.replace(/s$/, '')).sort();
+/** A shared generic noun is not consent. Extra offered detail is allowed, conflicting modifiers are not. */
+export function purchaseLines(want, lines) {
+    const words = requestWords(want);
+    if (!words.length) return [];
+    const exact = lines.filter(l => { const other = requestWords(l.what); return words.every(w => other.includes(w)); });
+    if (exact.length === 1) return exact;
+    if (exact.length) return []; // several distinct products need an explicit selection
+    const parts = String(want).split(/\s+and\s+/i);
+    if (parts.length < 2) return [];
+    const picks = parts.map(part => purchaseLines(part, lines));
+    return picks.every(p => p.length === 1) ? [...new Set(picks.flat())] : [];
+}
+export function samePurchaseRequest(a, b, seller = null) {
+    return a.kind === 'purchase' && b.kind === 'purchase' && a.at === b.at
+        && (a.seller || seller) === (b.seller || seller) && (a.qty ?? null) === (b.qty ?? null)
+        && JSON.stringify(requestWords(a.what)) === JSON.stringify(requestWords(b.what));
+}
+export function purchaseDecisionMatches(d, offer, picks) {
+    if (d.kind !== 'purchase' || d.at !== offer.at || (d.seller && d.seller !== offer.seller)) return false;
+    const lines = purchaseLines(d.what, offer.lines);
+    return lines.length === picks.length && lines.every(l => picks.some(p => p.line.id === l.id && (d.qty == null || d.qty === p.units)));
+}
+
 /**
  * Book a purchase: the coin leaves Alaric, the goods come to him in the units bought, a service is granted. The
- * caller closes the offer and the decisions it answers.
+ * booker closes the live offer atomically with its effects; callers close only matching decisions.
  * @param {{offer: object, picks: object[], cp: number, objectId: (name: string) => string, content?: object}} p objectId:
  *   the id of a goods object Alaric receives; content: the goods' behaviour (Patch 3, src/v4/items.js)
  */
-export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = null }) {
+export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = null, consent = null }) {
+    const live = s.offers[offer.id];
+    const unavailable = offerAvailability(s, live);
+    if (unavailable) return { error: unavailable };
+    const selection = pickLines(live, picks.map(p => p.line.id), picks.length === 1 ? picks[0].units : null);
+    if (selection.error || selection.clarify || selection.picks.length !== picks.length || selection.cp !== cp)
+        return { error: selection.error || 'selection or price changed' };
+    offer = live; picks = selection.picks;
+    if (consent && !consent.any_price && Number.isInteger(consent.max_cp) && cp > consent.max_cp) return { error: 'above his price limit' };
+    if (content && picks.some(p => p.line.equipment === true && (p.line.profile?.kind !== 'gear' || !equipmentSlotKnown(content, p.line.profile.slot)))) return { error: 'equipment has no supported profile' };
+    if (content && rulesetOf(s) >= 2) {
+        const why = picks.map(p => trainingOfferWhy(s, content, offer.seller, p.line)).find(Boolean);
+        if (why) return { error: why };
+    }
     const coin = s.entities.pc.sheet.coin_cp;
+    if (!Number.isInteger(cp) || cp < 0 || coin < cp) return { error: 'not enough coin' };
     const counted = picks.some((p) => p.units !== (Number(p.line.qty) || 1));
     emit({ t: 'transaction.completed', d: { offer: offer.id, lines: picks.map((p) => p.line.id), ...(counted ? { units: picks.map((p) => p.units) } : {}), cp, seller: offer.seller } });
     emit({ t: 'coin.changed', d: { id: 'pc', value: coin - cp, delta: -cp, why: picksText(picks) } });
@@ -167,6 +220,8 @@ export function bookPurchase(s, emit, { offer, picks, cp, objectId, content = nu
         const id = p.line.service === 'training' ? `svc:${s.turn}:${s.clock.minute}:${offer.seller}:${offer.id}:${p.line.id}` : null;
         emit({ t: 'service.granted', d: { ...(id ? { id } : {}), service: p.line.service || 'other', what: p.line.what, by: offer.seller, at: s.scene.at, turn: s.turn } });
     }
+    emit({ t: 'offer.closed', d: { id: offer.id, status: 'accepted' } });
+    return { picks, cp };
 }
 
 /** How many units of a catalog thing Alaric holds: a V4 object he holds, or a sheet item "item.<template>". */

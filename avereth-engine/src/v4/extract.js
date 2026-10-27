@@ -26,7 +26,7 @@ export function worldVocab(vocab, state) {
     };
 }
 
-export const EXTRACTOR_VERSION = 'extract-5.11';
+export const EXTRACTOR_VERSION = 'extract-5.12';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 
@@ -176,11 +176,13 @@ export function extractorUser({ catalog, actions, player = null, expectedKeys, v
         '',
         // what the player wrote (live run 28.09.2026: "*i sign the card*" read as overreach without it)
         ...(player ? [`PLAYER MESSAGE (what the player wrote Alaric saying and doing):\n${String(player).slice(0, 1500)}`, ''] : []),
-        `PLAYER ACTIONS (already booked):\n${actions || 'none'}`,
+        `PLAYER ACTIONS (each status is binding: booked actions are done; authorized/conditional actions are not yet completed):\n${actions || 'none'}`,
         '',
         expectedText(vocab, expectedKeys),
         '',
         `REPLY:\n${reply}`,
+        '',
+        'TRAVEL CHRONOLOGY: expected.arrived answers whether the final chosen destination was reached. If the reply actually stops at an intermediate place on an authorized journey, report its existing arrive BEFORE local events there, even if final arrived is false. Scene labels alone do not move anyone. Annotate events before the final arrival with their earlier scene; never invent travel for a question or WAIT.',
         '',
         'QUEST OUTCOME CHECK: Before answering, compare this reply with every active Guild contract\'s desired end state in the CATALOG. If one is clearly achieved in this reply, quest.ready is required even when arrival/facts/memory are also reported; fact or memory alone is not enough.',
     ].join('\n');
@@ -236,6 +238,35 @@ function normalizeSoftFields(value, vocab) {
     return { scene: null, ...value, expected: value.expected && typeof value.expected === 'object' ? value.expected : {}, deltas };
 }
 
+/** Local semantic diagnostics, also enforced by World against its actually reached state.
+ * These are not malformed JSON; one repair may clarify them without losing independent information.
+ */
+export const localSceneDelta = d => !['time', 'arrive', 'overreach', 'place.reported', 'dungeon'].includes(d.type)
+    && !(['person.new', 'creature.new'].includes(d.type) && d.present === false);
+const sceneKey = ref => ref?.new ? JSON.stringify([ref.new.name, ref.new.kind, sceneKey(ref.new.parent)]) : ref;
+export function sceneIssues(value, startScene) {
+    const issues = [];
+    const ordered = (Array.isArray(value.deltas) ? value.deltas : []).map((d, i) => ({d, i})).filter(x => x.d && typeof x.d === 'object').sort((a, b) => a.d.seq - b.d.seq);
+    const arrivals = ordered.filter(x => x.d.type === 'arrive');
+    const last = arrivals.at(-1)?.d;
+    const implicit = !last && Object.values(value.expected || {}).some(e => e?.arrived === true)
+        && ordered.some(x => localSceneDelta(x.d) && sceneKey(x.d.scene) === sceneKey(startScene))
+        && sceneKey(value.scene) !== sceneKey(startScene);
+    for (const {d, i} of ordered) {
+        if (!localSceneDelta(d)) continue;
+        if ((d.scene == null || d.scene === 'here') && ((last && d.seq < last.seq && sceneKey(last.at) !== sceneKey(startScene)) || implicit)) {
+            issues.push({index: i, seq: d.seq, why: `$.deltas[${i}].scene: explicitly name this earlier scene before the later arrival; here/final scene does not establish chronology`});
+            continue;
+        }
+        const at = sceneKey(d.scene ?? value.scene);
+        if (!['person.new', 'creature.new', 'enter'].includes(d.type) || at === sceneKey(startScene)) continue;
+        const prior = arrivals.some(x => x.d.seq < d.seq && sceneKey(x.d.at) === at);
+        if (!prior && arrivals.some(x => x.d.seq > d.seq && sceneKey(x.d.at) === at))
+            issues.push({index:i, seq:d.seq, why:`$.deltas[${i}]: arrival must come before this local introduction in the REPLY's order; correct scene and seq; remote sightings use present:false`});
+    }
+    return issues;
+}
+
 export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false, startScene = null } = {}) {
     const parsed = extractJsonObject(answer);
     const { error, raw } = parsed;
@@ -256,30 +287,6 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         const names = value.deltas.filter(x => x?.type === 'object.new' && x.seq < d.seq && typeof x.name === 'string').map(x => x.name);
         if (names.length) errors.push(`$.deltas[${i}].object: unknown catalog id; object.new has no ref. Use {new:exact earlier name}, e.g. ${JSON.stringify({ new: names[0] })}; never invent an obj.* id`);
     }
-    // Annotation requirement only: actual scene/arrival authority is still checked in applyWorld.
-    const lastArrival = Array.isArray(value.deltas) ? value.deltas.filter(d => d?.type === 'arrive').sort((a, b) => a.seq - b.seq).at(-1) : null;
-    if (sceneRequired && startScene && lastArrival && JSON.stringify(lastArrival.at) !== JSON.stringify(startScene)) {
-        for (const [i, d] of value.deltas.entries()) if (d.seq < lastArrival.seq && d.scene == null
-            && !['time', 'arrive', 'overreach', 'place.reported', 'dungeon'].includes(d.type)
-            && !(['person.new', 'creature.new'].includes(d.type) && d.present === false))
-            errors.push(`$.deltas[${i}].scene: explicitly name this earlier scene before the later arrival; do not inherit the reply's final scene`);
-    }
-    if (sceneRequired && startScene && Array.isArray(value.deltas)) {
-        // Only an explicit same destination reference is evidence of an ordering mistake.
-        // This requests the existing repair; it never moves an event or grants an arrival.
-        const key = ref => ref?.new ? JSON.stringify([ref.new.name, ref.new.kind, key(ref.new.parent)]) : ref;
-        const ordered = value.deltas.map((d, i) => ({ d, i })).filter(x => x.d && typeof x.d === 'object').sort((a, b) => a.d.seq - b.d.seq);
-        let current = key(startScene);
-        for (const [i, entry] of ordered.entries()) {
-            const { d } = entry;
-            if (d.type === 'arrive') { current = key(d.at); continue; }
-            if (!['person.new', 'creature.new', 'enter'].includes(d.type) || d.present === false) continue;
-            const scene = d.scene ?? value.scene, at = key(scene);
-            if (scene == null || scene === 'here' || at === current) continue;
-            if (ordered.slice(i + 1).some(x => x.d.type === 'arrive' && key(x.d.at) === at))
-                errors.push(`$.deltas[${entry.i}]: arrival must come before this local introduction in the REPLY's order; correct scene and seq. A remote sighting is not a local entry (new people/creatures use present:false)`);
-        }
-    }
     if (sceneRequired && value.scene == null && (Object.values(expectedKeys || {}).includes('go') || (Array.isArray(value.deltas) && value.deltas.some(d => !['time', 'overreach', 'place.reported', 'dungeon'].includes(d?.type))))) errors.push('$.scene: actual narrative setting required for world changes');
-    return { value, valid: errors.length === 0, complete: missing.length === 0, errors: [...errors.slice(0, 8), ...missing.map((k) => `expected key "${k}" not answered`)], missing, raw };
+    return { value, issues: sceneRequired && startScene ? sceneIssues(value, startScene) : [], valid: errors.length === 0, complete: missing.length === 0, errors: [...errors.slice(0, 8), ...missing.map((k) => `expected key "${k}" not answered`)], missing, raw };
 }

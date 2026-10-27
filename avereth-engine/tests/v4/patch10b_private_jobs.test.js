@@ -116,7 +116,7 @@ test('PJ9: original Run-10 acceptance and extractor answer cannot book the inven
     const money = s.entities.pc.sheet.coin_cp, minute = s.clock.minute;
     // Replay the four original mechanical claims; unrelated family facts/people
     // need the rest of the historical world and are outside this job regression.
-    const answer = { ...f.answer, deltas: f.answer.deltas.filter(d => ['arrive', 'time', 'quest.close', 'coin.gift'].includes(d.type)) };
+    const answer = { ...f.answer, deltas: f.answer.deltas.filter(d => ['arrive', 'time', 'quest.close', 'coin.gift'].includes(d.type)).map(d => d.type === 'arrive' ? d : { ...d, scene: f.scene.at }) };
     const r = applyWorld(s, content, answer, { msg: f.reply, prose: f.prose });
     assert.equal(r.state.scene.at, f.scene.at);
     assert.equal(r.state.quests[f.quest.id].status, 'active');

@@ -46,7 +46,8 @@ test('Run14: unchanged new-name reference is sufficient for the complete origina
 });
 test('Run14: prefix events cannot silently inherit the final scene in a multi-place reply',()=>{
  const a=corrected();for(const d of a.deltas)delete d.scene;
- const p=parse(a);assert.equal(p.valid,false);assert.match(p.errors.join(' '),/earlier scene/);
+ const p=parse(a);assert.equal(p.valid,true);assert.match(p.issues.map(x=>x.why).join(' '),/earlier scene/);
+ const r=applyWorld(before(),content,p.value,{msg:44});assert.equal(gifts(r).length,0);
 });
 test('Run14: actual repair request provides precise linking and chronological-scene guidance',async()=>{
  const chat=pending(),calls=[];await runExtraction(chat,44,content,async req=>{

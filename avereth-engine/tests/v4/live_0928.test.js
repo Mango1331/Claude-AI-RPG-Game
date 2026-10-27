@@ -153,7 +153,7 @@ test('t3: the elided quote of a clear payment stands: 20 cp once, Guild Rank Nov
     const req = extractionRequest(g.chat, id, content);
     const user = req.messages[1].content;
     assert.match(user, /PLAYER MESSAGE \(what the player wrote Alaric saying and doing\):\nMy name is Alaric Red \*i say and push 2 silver over the counter as i pay the fee\*/);
-    assert.match(user, /PLAYER ACTIONS \(already booked\):\n1\. PAYS — the Guild registration fee, 20 cp/);
+    assert.match(user, /PLAYER ACTIONS \(each status[^\n]*\):\n1\. PAYS — the Guild registration fee, 20 cp/);
     assert.ok(user.indexOf('PLAYER MESSAGE') < user.indexOf('PLAYER ACTIONS'));
     // what a faithful reader of that request reports: the clerk heard his name; the card "F-Rank, Lumenford branch"
     g.queue.extract.push(JSON.stringify({ expected: {}, deltas: [

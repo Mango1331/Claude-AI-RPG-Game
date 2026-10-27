@@ -163,5 +163,5 @@ test('8.4.1 board: a clearance of a level is titled by clearing, never "Cull"; a
     assert.equal(q.listings[0]?.title ?? q.refused?.[0]?.title, 'Cull the Burial Gallery Skeletons');
     const req = boardRequest(foldChat(fx.messages, 9).state, content, NEED);
     assert.match(req.messages[0].content, /a clearance is titled by what is cleared \("Clear …", "Purge …", "Secure …"\), never "Cull" or "Thin"/);
-    assert.equal(BOARD_VERSION, 'board-5.2');
+    assert.equal(BOARD_VERSION, 'board-5.3');
 });

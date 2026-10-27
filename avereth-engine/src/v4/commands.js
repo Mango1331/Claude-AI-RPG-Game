@@ -31,13 +31,13 @@ import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSet
 import { knownByName } from './known.js';
 import { useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect, namedSource, equipmentSlotKnown, offerCard } from './items.js';
 import { itemEffectOf, rulesetOf } from '../content.js';
-import { learningActivity, stoneActivation, trainingOfferWhy } from './growth.js';
+import { learningActivity, stoneActivation } from './growth.js';
 import { effectiveStats } from '../passives.js';
 import { jobAction, jobOf } from './private_jobs.js';
 import { acceptPassive, declinePassive } from './passive_growth.js';
 import { acceptSkill, declineSkill, developmentOffers, skillOffers } from './skill_growth.js';
 import { classOffer, classSelection, acceptClass } from './class_growth.js';
-import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy } from './trade.js';
+import { pickLines, bookPurchase, picksText, saleUnits, unitsText, bookSale, bidSale, bidText, acceptanceWhy, offerAvailability, purchaseLines, samePurchaseRequest, purchaseDecisionMatches } from './trade.js';
 import { approachedBy, sceneHandle } from './scene_handles.js';
 import { attemptEvents, pendingSpring, searchedBefore, searchFinds, featureEvent, featureNamed, keyOf, placeState, featuresAt } from './features.js';
 import { dungeonOf, trueDungeonOf, isRoom, roomKnown, wayBetween, knownRoomNamed, hiddenWayFinds, linkEvent, otherEnd, linksAt, blockerOf, goesFrom, firstStop } from './dungeon.js';
@@ -898,8 +898,10 @@ const HANDLERS = {
     },
     buy(s, content, c, ctx, emit) {
         const offers = Object.values(s.offers).filter((o) => o.status === 'open' && !o.bid
-            && (o.canon ? o.stock === 'manuals' && hallOf(s, o.at) === hallOf(s, s.scene.at) : present(s, o.seller)) && (!c.from || o.seller === c.from));
-        const match = offers.map((o) => ({ o, lines: wantedLines(c.what, o.lines) })).find((x) => x.lines.length);
+            && !offerAvailability(s, o) && (!o.canon || o.stock === 'manuals') && (!c.from || o.seller === c.from));
+        const matches = offers.map((o) => ({ o, lines: purchaseLines(c.what, o.lines) })).filter((x) => x.lines.length);
+        if (matches.length > 1) return { status: 'clarify', reason: 'which offer?', line: 'CLARIFY — several sellers or offers match; select the seller and offer before buying.' };
+        const match = matches[0];
         // an offer lists it: buying is accepting that line, in the number he names and within the limit he set
         if (match) return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: match.o.id, lines: match.lines.map((l) => l.id), qty: c.qty ?? null }, ctx, emit);
         const limit = c.max_cp !== null && c.max_cp !== undefined;
@@ -978,28 +980,12 @@ const HANDLERS = {
         if (pick.clarify) return { status: 'clarify', reason: 'which line?', line: `CLARIFY — ${c.qty} of which: ${pick.clarify.join(' or ')}?` };
         if (pick.error === 'the offer has no such item') return { status: 'refused', reason: 'no such line', line: 'CANNOT ACCEPT — the offer has no such item.' };
         if (pick.error) return { status: 'refused', reason: 'not in that amount', line: `CANNOT BUY ${c.qty} — ${pick.error}.` };
-        if (ctx.auth.c && rulesetOf(s) >= 2) {
-            const why = pick.picks.map(p => trainingOfferWhy(s, content, o.seller, p.line)).find(Boolean);
-            if (why) return { status: 'refused', reason: why, line: `CANNOT BUY TRAINING — ${why}. Nothing is charged or granted.` };
-        }
-        if (pick.picks.some(p => p.line.equipment === true && (p.line.profile?.kind !== 'gear' || !equipmentSlotKnown(content, p.line.profile.slot)))) {
-            return { status: 'refused', reason: 'equipment has no supported profile', line: 'CANNOT BUY — this equipment has no supported slot and values. Nothing is charged.' };
-        }
-        if (o.gate && s.scene.at !== o.gate) return { status: 'refused', reason: 'not at the gate', line: `CANNOT PAY — the entry fee is paid at the gate of ${placeName(s, o.gate)}.` };
-        if (o.canon && !o.gate && !hallOf(s, s.scene.at)) return { status: 'refused', reason: 'not at a Guild hall', line: 'CANNOT PAY — the Guild registers members at a Guild hall.' };
-        if (o.stock === 'manuals' && hallOf(s, o.at) !== hallOf(s, s.scene.at)) return { status: 'refused', reason: 'another Guild hall', line: 'CANNOT BUY — this stock is at another Guild hall.' };
-        if (o.stock === 'manuals' && !present(s, o.seller)) return { status: 'refused', reason: 'the clerk is not here', line: 'CANNOT BUY — this offer\'s clerk is not here.' };
-        if (!o.canon && !present(s, o.seller)) return { status: 'refused', reason: 'the seller is not here', line: `CANNOT ACCEPT — ${who(s, o.seller)} is not here.` };
         const price = pick.cp;
-        // a limit he set ("if it's no more than 6 copper") holds for what he actually buys
-        if (c.max_cp !== null && c.max_cp !== undefined && !c.any_price && price > c.max_cp) {
-            return { status: 'refused', reason: 'above his limit', line: `DOES NOT BUY — ${picksText(pick.picks)} costs ${cpText(price, content)}, more than the ${c.max_cp} cp he allows.` };
+        const booked = bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (what) => `obj.t${env(ctx).msg}.${slug(what)}`, content, consent: c });
+        if (booked.error) {
+            const why = booked.error === 'above his price limit' ? `${picksText(pick.picks)} costs ${cpText(price, content)}, more than the ${c.max_cp} cp he allows` : booked.error;
+            return { status: 'refused', reason: booked.error, line: `NOT BOUGHT — ${why}. Nothing changes hands.` };
         }
-        const coin = s.entities.pc.sheet.coin_cp;
-        // Patch 3 (live 18.10.2026: refused at a misread price, the story raised the price to "two gold" to explain it):
-        // the price stays the one the seller named; the story does not change it to fit
-        if (coin < price) return { status: 'refused', reason: 'not enough coin', line: `CANNOT PAY — ${cpText(price, content)} needed, he has ${coin} cp. The price stays as ${who(s, o.seller)} named it; nothing is bought, and the story does not change the price to explain it.` };
-        bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (what) => `obj.t${env(ctx).msg}.${slug(what)}`, content });
         const reg = pick.picks.some((p) => p.line.service === 'guild_registration');
         // Patch 8: the gate's fee paid: he may pass the gate (src/v4/living.js), until he is out again
         if (o.gate) emit({ t: 'dungeon.pass', d: { id: o.gate, pass: { turn: s.turn, cp: price } } });
@@ -1017,8 +1003,7 @@ const HANDLERS = {
         }
         // the seller was paid exactly the price: coin from the seller in the reply (change) is not a gift
         if (!o.canon) ctx.booked.sellers.push(o.seller);
-        emit({ t: 'offer.closed', d: { id: o.id, status: 'accepted' } });
-        for (const d of s.decisions.filter((x) => x.offer === o.id || (reg && x.kind === 'registration') || (x.kind === 'purchase' && x.seller === o.seller) || (x.kind === 'purchase' && !x.seller && x.at === s.scene.at))) emit({ t: 'decision.closed', d: { id: d.id, status: 'accepted' } });
+        for (const d of s.decisions.filter((x) => x.offer === o.id || (reg && x.kind === 'registration') || purchaseDecisionMatches(x, o, pick.picks))) emit({ t: 'decision.closed', d: { id: d.id, status: 'accepted' } });
         if (o.gate) return { status: 'resolved', line: `PAYS — the entry fee of ${placeName(s, o.gate)}, ${cpText(price, content)}: he may pass the gate (until he comes out again).` };
         if (reg) return { status: 'resolved', line: `PAYS — the Guild registration fee, ${price} cp: registered at Guild Rank ${content.rules.guild.ranks[0]}; the crystal reads his Power Rank: ${power} (his measured strength, a separate scale from the Guild's ranks); he receives his Guild plate.` };
         return { status: 'resolved', line: `ACCEPTS the offer — ${picksText(pick.picks)} for ${cpText(price, content)}; he pays ${who(s, o.seller)}.` };
@@ -1409,7 +1394,7 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
         let a = c;
         if (c.type === 'buy') {
             const matches = Object.values(s.offers).filter(o => o.status === 'open' && !o.bid && !o.canon && (!c.from || o.seller === c.from))
-                .map(o => ({ o, lines: wantedLines(c.what, o.lines) })).filter(x => x.lines.length);
+                .map(o => ({ o, lines: purchaseLines(c.what, o.lines) })).filter(x => x.lines.length);
             if (matches.length !== 1) continue;
             a = { ...c, type: 'offer.accept', offer: matches[0].o.id, lines: matches[0].lines.map(l => l.id) };
         } else if (c.type === 'sell') {
@@ -1496,7 +1481,14 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
         const saleQuote = trade?.sale ? ordered.filter(x => trades.get(x) === trade).map(x => x.quote || '').join(' ') : '';
         const appraise = trade?.sale && /\b(?:check|apprais\w*|inspect|worth)\b/i.test(saleQuote)
             && !/\b(?:deal|accept|agreed|sold)\b/i.test(saleQuote) && !Number.isInteger(trade.command.min_cp) && !Number.isInteger(trade.command.agreed_cp);
-        const r = waitingGive ? { status: 'refused', reason: 'handover still conditional', line: 'NOT DONE — the later journey waits for the handover at the first destination.' }
+        const afterTravel = envx.c && rulesetOf(s) >= 2 && ctx.auth.gos.length > 0
+            && ['activity', 'attempt', 'take', 'use', 'buy', 'offer.accept', 'sell', 'pay', 'equip', 'unequip'].includes(c.type);
+        if (!afterTravel && !unmet && c.type === 'buy') {
+            const request = { kind: 'purchase', what: c.what, seller: c.from || null, at: s.scene.at, qty: c.qty || null };
+            for (const d of s.decisions.filter(d => samePurchaseRequest(d, request, trade?.offer.seller))) emit({ t: 'decision.closed', d: { id: d.id, status: 'expired' } });
+        }
+        const r = afterTravel ? { status: 'refused', reason: 'arrival pending', line: `NOT DONE — ${quoted}: the earlier journey has not arrived yet. Perform this action after confirmed arrival; no local check, payment or activity time was booked.` }
+            : waitingGive ? { status: 'refused', reason: 'handover still conditional', line: 'NOT DONE — the later journey waits for the handover at the first destination.' }
             : room ? { status: 'refused', reason: 'room not booked', line: `NOT DONE — ${quoted}: he would ${c.kind} in the room or bed of step ${room.seq}, and it is not his yet: ${roomWhy(ctx.resolutions.find((x) => x.seq === room.seq))}. He does not ${c.kind} in this reply; tell no ${c.kind === 'sleep' ? 'night' : 'rest'} in it.` }
             : unmet ? { status: 'refused', reason: `needs step ${need}`, line: `NOT DONE — ${quoted}: it was to follow step ${need}, which did not happen; it does not happen in this reply (someone else's help does not do it for him).` }
             : trades.has(c) && !trade ? { status: 'clarify', reason: 'ambiguous trade payment', line: 'NOT PAID — this payment could belong to several trades. Clarify which; no additional coin was booked.' }

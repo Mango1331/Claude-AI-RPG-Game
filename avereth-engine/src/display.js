@@ -1,3 +1,4 @@
+import { offerAvailability } from './v4/trade.js';
 // What the player sees of the mechanics: a System block at the top of a reply, rendered from the engine's own records,
 // so the numbers on screen are exactly the numbers that were rolled and applied (Initiative, Turn order, every roll,
 // HP before - damage = HP after, everyone's HP and distance, Alaric's resources, checks, and what the reply changed:
@@ -13,7 +14,6 @@ import { sceneHandle, tacticalHere } from './v4/scene_handles.js';
 import { livingOf, gateCard } from './v4/living.js';
 import { skillOf } from './content.js';
 import { offerCard } from './v4/items.js';
-import { hallOf } from './v4/domain.js';
 
 const sys = (text) => `\`${text}\``;
 // a combatant by its target label (from the board of that step, which outlives the fight), anyone else as the player knows them
@@ -256,10 +256,9 @@ export function worldPanel(state, content, reply = {}) {
     const at = reply.state && reply.events?.findLast((e) => e.t === 'scene.moved')?.d.at;
     if (at && at === reply.state.scene.at && livingOf(reply.state, at)) lines.push(...gateCard(reply.state, content, at).map(sys));
     const market = reply.state || state;
-    if (!market.encounter && (!reply.events?.length || reply.events.some(e => ['offer.created', 'scene.moved'].includes(e.t)))) {
-        const hall = hallOf(market, market.scene.at);
+    if (!market.encounter && (!reply.events?.length || reply.events.some(e => ['offer.created', 'scene.moved', 'scene.entered', 'scene.left'].includes(e.t)))) {
         for (const offer of Object.values(market.offers || {}).filter(o => o.status === 'open' && !o.bid && !o.gate
-            && (o.canon ? hall && hallOf(market, o.at) === hall : market.scene.present.includes(o.seller))).slice(-6)) {
+            && !offerAvailability(market, o)).slice(-6)) {
             lines.push(...offerCard(market, content, offer).map(sys));
         }
     }

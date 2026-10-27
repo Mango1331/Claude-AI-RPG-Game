@@ -108,8 +108,10 @@ test('Run16 T58 original and annotation-only repair report the premature local i
         a.deltas.find(d => d.type === 'quest.detail').scene = structuredClone(a.scene);
         for (const d of a.deltas) if (d.type === 'creature.new') d.scene = structuredClone(a.scene);
         const p = parse(a);
-        assert.equal(p.valid, false);
-        assert.match(p.errors.join(' '), /arrival.*before|before.*arrival/i);
+        assert.equal(p.valid, true);
+        assert.match(p.issues.map(x => x.why).join(' '), /arrival.*before|before.*arrival/i);
+        const r = applyWorld(before(116), content, p.value, { msg: 116, prose: f.t58.text });
+        assert.equal(created(r).length, 0, 'premature introductions remain rejected');
     }
 });
 test('Run16 correctly ordered T58 introduces three creatures exactly once, with replay and reload', () => {

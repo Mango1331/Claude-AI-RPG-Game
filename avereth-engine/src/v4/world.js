@@ -1,3 +1,4 @@
+import { sceneIssues, localSceneDelta } from './extract.js';
 import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: applying the extractor's world deltas (docs/RUNTIME_V4_PLAN.md §5.2). After the narrator's reply the
 // extractor reported, in story order, what the reply established (src/v4/extract.js); the domain/authority firewall
@@ -29,7 +30,7 @@ import {
     progressKey, sameKinds, kindOf,
 } from './domain.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
-import { pickLines, bookPurchase, bookSale, saleUnits, unitsText, tradePrice, offerAdvice } from './trade.js';
+import { pickLines, bookPurchase, bookSale, saleUnits, unitsText, tradePrice, offerAdvice, purchaseLines, samePurchaseRequest } from './trade.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents, setIntentEvents } from './intents.js';
 import { featureNamed, featureEvent, applySpring } from './features.js';
@@ -104,14 +105,10 @@ export function firewallContext(s, content, chronicle = null, excludedFoes = [])
         booked: o.booked || { registration: false, grants: [], turnIns: [], accepted: [] },
         auth: { go: !!(auth.gos || []).length || !!auth.go, roam: !!auth.roam, take: !!(auth.take || []).length, gather: !!auth.gather, forced: false },
         heldByPc: (ref) => s.objects?.[ref]?.holder?.entity === 'pc' || (typeof ref === 'string' && ref.startsWith('item.') && !!s.entities.pc.sheet.inventory[ref.slice(5)]),
-        // Prototype C (4.3.0-c.6.6.4): lodging he paid for at this very place in the last day, and a room inside it
-        lodgedHere: (s.services || []).some((x) => x.service === 'lodging' && x.at === s.scene.at && s.clock.minute - (x.minute ?? 0) <= 24 * 60),
-        roomOfHere: (ref) => {
-            const n = ref && typeof ref === 'object' ? ref.new : null;
-            if (n && typeof n === 'object') return n.parent === s.scene.at && (!n.kind || ['interior', 'room', 'site'].includes(n.kind));
-            return typeof ref === 'string' && s.places[ref]?.parent === s.scene.at;
-        },
         // Prototype C (4.3.0-c.6.6.3): what he set out to hand over where he went in this turn (commands.js give)
+        // Historical Rule-1 lodging semantics only; current campaigns require an authorized room move.
+        lodgedHere: rulesetOf(s) < 2 && (s.services || []).some(x => x.service === 'lodging' && x.at === s.scene.at && s.clock.minute - (x.minute ?? 0) <= 1440),
+        roomOfHere: ref => ref?.new ? ref.new.parent === s.scene.at && (!ref.new.kind || ['interior', 'room', 'site'].includes(ref.new.kind)) : typeof ref === 'string' && s.places[ref]?.parent === s.scene.at,
         handingOver: (ref) => (o.conditionals || []).some((k) => k.kind === 'give' && (k.object === ref || normText(s.objects?.[k.object]?.name || '') === normText(ref))),
         isGuildContractRef: (ref) => {
             if (typeof ref !== 'string') return false;
@@ -228,7 +225,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     };
     // the arrivals of this reply in story order, applied or refused (an escort's readiness, quest.ready below)
     const travel = [];
-    const refusedArrival = (d) => { if (d?.type === 'arrive') travel.push({ seq: d.seq ?? 0, ok: false, away: leavesHere(d.at) }); };
+    const refusedArrival = (d) => { if (d?.type === 'arrive') { travel.push({ seq: d.seq ?? 0, ok: false, away: leavesHere(d.at) }); } };
     const outcome = s.last?.outcome || {};
     const auth = outcome.auth || {};
     // Prototype C: the turn the planner read (a story turn: auth.c; a V3-routed one: the outcome's c)
@@ -238,6 +235,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // is at the Dungeon itself, its way in: never a room of it, never a new place beside it
     const arrivalPlace = (ref) => { const gate = cPath ? entranceOf(s, content, ref) : null; return gate ? { id: gate } : place(ref); };
     const expected = answer.expected || {};
+    const chronology = new Map(cPath && rulesetOf(s) >= 2 ? sceneIssues(answer, s.scene.at).map(x => [answer.deltas[x.index], x.why]) : []);
     const sceneOf = d => cPath && rulesetOf(s) >= 2 ? d?.scene ?? answer.scene : null;
     const tag = msg !== null && msg !== undefined ? msg : s.turn;
 
@@ -698,6 +696,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // The extractor's structured expected.arrived/arrive result is authoritative.
     // Never turn narration of a gate crossing into a room against arrived:false.
     const explicitArrival = fw.accept.some((d) => d.type === 'arrive');
+    const implicitArrivals = [];
     if (!explicitArrival && !s.encounter) {
         let onWay = false; // review of Hotfix 7.2.1: after a leg he reached, one he did not reach ends the way
         for (const [k, type] of Object.entries(outcome.expected_keys || {}).sort((a, b) => Number(a[0]) - Number(b[0]))) {
@@ -705,16 +704,27 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             const e = expected[k];
             if (!e || e.arrived !== true) { if (onWay) break; continue; }
             onWay = true;
-            const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
-            const at = viaStop(arrivalPlace(reportedTarget(s, auth, expected, e.at, k, sceneOf()) || e.at || go?.to || null));
-            if (!at.error && at.id !== s.scene.at && !wayRefused(at.id, { seq: Number(k), type: 'expected' })) {
-                const party = companions(e.with, { seq: Number(k), type: 'expected' });
-                perceiveAll(s, emit, seeing());
-                arriveThrough(at.id, party);
-                travel.push({ seq: 0, ok: true });
-            }
+            implicitArrivals.push({k, e});
         }
     }
+    const applyExpected = () => {
+        const next = implicitArrivals.shift();
+        if (!next) return;
+        const previousStep = step;
+        step = { kind: 'engine' };
+        const { k, e } = next;
+        const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
+        const at = viaStop(arrivalPlace(reportedTarget(s, auth, expected, e.at, k, sceneOf()) || e.at || go?.to || null));
+        if (!at.error && at.id !== s.scene.at && !wayRefused(at.id, { seq: Number(k), type: 'expected' })) {
+            const party = companions(e.with, { seq: Number(k), type: 'expected' });
+            perceiveAll(s, emit, seeing());
+            arriveThrough(at.id, party);
+            travel.push({ seq: 0, ok: true });
+        }
+        step = previousStep;
+    };
+    const hasEarlierScene = !explicitArrival && (answer.deltas || []).some(d => localSceneDelta(d) && d.scene != null && sceneMatches(d.scene));
+    if (!hasEarlierScene) while (implicitArrivals.length) applyExpected();
 
     // Prototype C: an unfinished GO can take hours without reaching where it was going: the extractor rightly reports no
     // arrival at a lighthouse only seen from the road, yet Alaric is no longer in the Guild hall he set off from (live
@@ -760,6 +770,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     }
 
     for (const d of [...fw.accept].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0))) {
+        const nextScene = d.scene ?? answer.scene;
+        if (implicitArrivals.length && d.type !== 'arrive' && nextScene != null && nextScene !== 'here') {
+            const next = implicitArrivals[0];
+            const ref = next?.e.at || (auth.gos || []).find(g => String(g.seq) === String(next?.k))?.to;
+            if (next && JSON.stringify(ref) === JSON.stringify(nextScene)) applyExpected();
+        }
         step = { kind: 'delta', type: d.type, seq: d.seq ?? 0, granted: new Set() };
         // Authority is checked again at the actual story step: earlier deltas may have changed its context.
         const stepFw = firewall([d], firewallContext(s, content, chronicle, excludedFoes));
@@ -780,6 +796,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         });
         if (d.type !== 'enter' && d.type !== 'person.new' && (blockedStory || people.some(x => blockedPeople.has(normText(x)) || blockedPeople.has(normText(idOf(x) || ''))))) {
             reject(d, 'npc_continuity', 'dependent claim about a rejected person reintroduction');
+            continue;
+        }
+        if (cPath && rulesetOf(s) >= 2 && localSceneDelta(d) && (chronology.has(d) || ((travel.filter(x => x.seq < d.seq).sort((a, b) => a.seq - b.seq).at(-1)?.ok === false) && (d.scene == null || d.scene === 'here')))) {
+            refusedScene = true;
+            reject(d, 'scene_context', chronology.get(d) || 'ambiguous local scene after an unconfirmed arrival; here is not evidence');
             continue;
         }
         const origin = sceneOf(d);
@@ -817,21 +838,28 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const away = leavesHere(ref);
                 const at = viaStop(arrivalPlace(ref));
                 if (at.error) { reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
-                if (at.id === s.scene.at) break;
+                if (at.id === s.scene.at) { travel.push({ seq: d.seq, ok: true }); break; }
                 if (wayRefused(at.id, d, { forced: !!String(d.forced_by || '').trim() })) { travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 const party = companions(d.with, d);
                 perceiveAll(s, emit, seeing());
                 arriveThrough(at.id, party);
                 // Hotfix 7.2.1: the arrive delta answers one leg of his GOs; a later leg the answer reports arrived as well
-                // takes him on, before the rest of the answer is applied there (live 20.10.2026: road → Alderwatch →
+                // takes him on at its chronological boundary (legacy: immediately; road → Alderwatch →
                 // Guild hall, both arrived, one arrive delta for Alderwatch: he stayed in the street, and the clerk of
                 // the hall would have been met there). A leg not reported arrived ends his way where he is
-                for (const k of laterLegs(at.id)) {
-                    const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
-                    const next = viaStop(arrivalPlace(reportedTarget(s, auth, expected, expected[k].at, k, sceneOf()) || expected[k].at || go?.to || null));
-                    if (next.error || next.id === s.scene.at || wayRefused(next.id, { seq: k, type: 'expected' })) break;
-                    perceiveAll(s, emit, seeing());
-                    arriveThrough(next.id, party);
+                if (cPath && rulesetOf(s) >= 2) {
+                    implicitArrivals.length = 0;
+                    for (const k of laterLegs(at.id)) {
+                        if (!answer.deltas.some(x => x.type === 'arrive' && x.seq > d.seq)) implicitArrivals.push({ k, e: expected[k] });
+                    }
+                } else {
+                    for (const k of laterLegs(at.id)) {
+                        const go = (auth.gos || []).find((g) => String(g.seq) === String(k));
+                        const next = viaStop(arrivalPlace(reportedTarget(s, auth, expected, expected[k].at, k, sceneOf()) || expected[k].at || go?.to || null));
+                        if (next.error || next.id === s.scene.at || wayRefused(next.id, { seq: k, type: 'expected' })) break;
+                        perceiveAll(s, emit, seeing());
+                        arriveThrough(next.id, party);
+                    }
                 }
                 travel.push({ seq: d.seq ?? 0, ok: true });
                 break;
@@ -1335,6 +1363,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     }
 
     // Resolve delayed acquisition before checking this reply's delivery claims.
+    while (implicitArrivals.length) applyExpected();
+
     // 3. what the extractor answered about the player's commands
     step = { kind: 'expected' };
     for (const [k, type] of Object.entries(outcome.expected_keys || {})) {
@@ -2282,9 +2312,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const id = `offer.t${tag}.${Object.keys(s.offers).length + 1}`;
         emit({ t: 'offer.created', d: { offer: { id, seller, at: s.scene.at, status: 'open', canon: false, turn: s.turn, lines } } });
         // a purchase Alaric agreed to in advance, within his limit (buy with max_cp or any_price), in the number he named
-        for (const dec of s.decisions.filter((x) => x.kind === 'purchase' && (x.max_cp !== null || x.any_price) && x.at === s.scene.at && (!x.seller || x.seller === seller))) {
+        const requests = s.decisions.filter((x) => x.kind === 'purchase' && (x.max_cp !== null || x.any_price) && x.at === s.scene.at && (!x.seller || x.seller === seller)).sort((a, b) => b.turn - a.turn || (b.seq || 0) - (a.seq || 0));
+        const handled = [];
+        for (const dec of requests) {
+            if (handled.some(d => samePurchaseRequest(dec, d, seller))) {
+                emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } });
+                continue;
+            }
+            handled.push(dec);
             const o = s.offers[id];
-            const lines = wantedLines(dec.what, o.lines);
+            if (o.status !== 'open') continue;
+            const lines = cPath && rulesetOf(s) >= 2 ? purchaseLines(dec.what, o.lines) : wantedLines(dec.what, o.lines);
             if (!lines.length) continue;
             const pick = pickLines(o, lines.map((l) => l.id), dec.qty ?? null);
             if (pick.clarify || pick.error) { system.push(`NOT BOUGHT — ${pick.error || `which of ${pick.clarify.join(' or ')} he wants ${dec.qty} of is open`}`); continue; }
@@ -2294,10 +2332,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             if (!dec.any_price && price > dec.max_cp) { system.push(`NOT BOUGHT — ${what}: ${price} cp is above his limit of ${dec.max_cp} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'too_expensive' } }); continue; }
             if (coin < price) { system.push(`NOT BOUGHT — ${price} cp needed, he has ${coin} cp`); emit({ t: 'decision.closed', d: { id: dec.id, status: 'no_coin' } }); continue; }
             grant('player.buy');
-            bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (name) => uniqueObjectId(s, tag, name), content });
+            const booked = bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (name) => uniqueObjectId(s, tag, name), content, consent: dec });
+            if (booked.error) { system.push(`NOT BOUGHT — ${booked.error}`); continue; }
             for (const p of pick.picks.filter((x) => x.line.kind === 'goods')) bought.push({ what: p.line.what, units: p.units, seller, left: p.units });
             counterparts.add(seller);
-            emit({ t: 'offer.closed', d: { id, status: 'accepted' } });
             emit({ t: 'decision.closed', d: { id: dec.id, status: 'accepted' } });
             emit({ t: 'cmd.completed', d: { seq: dec.seq, ok: true } });
         }

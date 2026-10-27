@@ -486,7 +486,7 @@ export async function generateBoard(llm, state, content, need) {
         const n = p.listings?.length;
         const short = need.c && p.listings && n < need.missing ? [`${n} valid listing${n === 1 ? '' : 's'} of the ${need.missing} asked for${p.refused.length ? `; refused: ${p.refused.map((r) => `"${r.title}" (${r.why})`).join(', ')}` : ''}; write all ${need.missing}`] : null;
         if (p.listings && p.listings.length && !short) return { ...need, listings: p.listings, refused: p.refused, ms, calls, version: BOARD_VERSION };
-        last = { answer: a.content, errors: short || (p.errors.length ? p.errors : ['no valid listing']) };
+        last = { answer: a.content, errors: [...(short || (p.errors.length ? p.errors : ['no valid listing'])), ...(!short ? (p.refused || []).map(r => `${r.title}: ${r.why}`) : [])].slice(0, 12) };
     }
     return { ...need, listings: [], failed: (last?.errors || ['failed']).join('; ').slice(0, 200), ms, calls, version: BOARD_VERSION };
 }
@@ -739,16 +739,16 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
         if (p1.valid) parsed = p1;
         else error = p1.errors.join('; ').slice(0, 200);
 
-        if (!(p1.valid && p1.complete)) {
+        if (!(p1.valid && p1.complete && !p1.issues?.length)) {
             if (!current()) return stale();
-            const rep = extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player, expectedKeys: req.expectedKeys, reply: chat[id].mes, startScene: req.startScene }, { previous: first.content, errors: p1.errors });
+            const rep = extractorRequest(vocab, { catalog: req.catalog, actions: req.actions, player: req.player, expectedKeys: req.expectedKeys, reply: chat[id].mes, startScene: req.startScene }, { previous: first.content, errors: [...p1.errors, ...(p1.issues || []).map(x => x.why)] });
             const second = await ask(llm, rep.messages, 'extract_repair');
             ms += second.ms;
             calls.push(second.call);
             repaired = true;
             if (second.ok) {
                 const p2 = parseExtraction(second.content, vocab, req.ids, req.expectedKeys, { sceneRequired: req.sceneRequired, startScene: req.startScene });
-                if (p2.valid && (!parsed || p2.complete || p2.missing.length < parsed.missing.length)) parsed = p2;
+                if (p2.valid && (!parsed || ((p2.issues?.length || 0) <= (parsed.issues?.length || 0) && (p2.complete || p2.missing.length < parsed.missing.length)))) parsed = p2;
                 else if (!p2.valid && !parsed) error = p2.errors.join('; ').slice(0, 200);
             } else if (!parsed) error = second.error;
 

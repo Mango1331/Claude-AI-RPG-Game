@@ -2206,3 +2206,8 @@ Dungeonpopulation vor der ersten Kreaturprüfung einrichten; kein ungebundener G
 ## F-Rang-Progression / Build .96 (26.10.2026)
 
 Neue Kampagnen: weltgebundene Jagdpopulationen über F, sichtbare Shopwerte, kaufbare C1-Primer und wirksame erste Proficiency-Kostenersparnis. Entscheidungen, Kompatibilität und Abnahme ausschließlich in [PATCH_F_RANK_WORLD_PROGRESSION.md](PATCH_F_RANK_WORLD_PROGRESSION.md). Kein E-Ausbau, keine zusätzlichen Gearslots oder XP-/Startwertbuffs.
+
+
+## Vorbatch-Fachpaket .99 — 27.10.2026
+
+Gemeinsame Handelsbuchung und aktuelle Zustimmung/Verfügbarkeit, zeitlich gebundene World-Ausführung mit lokalen Szenenablehnungen und konsistente Board-Eignungsinformation/Repair. Technische Änderungen, Gegenfeedback, echte Abnahme und Grenzen ausschließlich in [PATCH_PRE_BATCH_RUN22.md](PATCH_PRE_BATCH_RUN22.md). Keine Balance- oder Runneränderung.

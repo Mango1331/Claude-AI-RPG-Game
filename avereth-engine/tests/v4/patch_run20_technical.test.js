@@ -34,8 +34,9 @@ test('Run20 repriced is terminal and replay-valid, unknown statuses still fail',
 });
 test('Run20 original five-delta response needs the earlier thread scene; repair names the starting place',()=>{
  const q=f.extraction,p=parseExtraction(JSON.stringify(f.answer726),q.vocab,q.ids,q.expectedKeys,q);
- assert.ok(p.errors.some(e=>e.startsWith('$.deltas[1].scene')));
- const rep=extractorRequest(q.vocab,{catalog:'',actions:'',expectedKeys:q.expectedKeys,reply:'The earlier event happens before arrival.',startScene:q.startScene},{previous:JSON.stringify(f.answer726),errors:p.errors});
+ assert.equal(p.valid,true);assert.ok(p.issues.some(e=>e.why.startsWith('$.deltas[1].scene')));
+ const bad=applyWorld(structuredClone(f.state252),c,p.value,{msg:505,prose:f.prose252});assert.ok(bad.rejected.some(x=>x.type==='thread'&&x.rule==='scene_context'));
+ const rep=extractorRequest(q.vocab,{catalog:'',actions:'',expectedKeys:q.expectedKeys,reply:'The earlier event happens before arrival.',startScene:q.startScene},{previous:JSON.stringify(f.answer726),errors:p.issues.map(x=>x.why)});
  assert.ok(rep.messages.at(-1).content.includes(q.startScene));
  const fixed=structuredClone(f.answer726);fixed.deltas[1].scene=q.startScene;
  assert.equal(parseExtraction(JSON.stringify(fixed),q.vocab,q.ids,q.expectedKeys,q).valid,true);

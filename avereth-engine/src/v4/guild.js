@@ -18,7 +18,7 @@ import { hallOf, settlementOf, realmOf, heldBy, membership, listingsOf, boardKey
 
 export const REGISTRATION_OFFER = 'offer.registration';
 export const PLATE_ID = 'obj.guild_plate';
-export const BOARD_VERSION = 'board-5.2';
+export const BOARD_VERSION = 'board-5.3';
 export const HUNT_BOARD_PROFILE = 'hunt_clear';
 const QTYPES = ['minor', 'standard', 'dangerous', 'major'];
 const VERBS = ['GO', 'FIND', 'TALK', 'GET', 'GATHER', 'GIVE', 'DELIVER', 'USE', 'REPAIR', 'DEFEND', 'ESCORT', 'ATTACK', 'DEFEAT'];
@@ -531,6 +531,7 @@ function habitatPlace(s, need, where) {
     const realm = realmOf(s, need.branch);
     return Object.values(s.places).filter(p => normText(p.name) === normText(where) && realmOf(s, p.id) === realm);
 }
+const introAnchor = a => !!a && a.hp <= 35 && a.atk <= 10;
 function habitatWhy(s, content, need, l) {
     const h = l.habitat;
     if (!h) return 'habitat: a world hunt needs its population (species, anchor, min_level, max_level)';
@@ -542,7 +543,7 @@ function habitatWhy(s, content, need, l) {
     const anchor = content.anchors.get(h.anchor);
     const named = anchorFor(content, h.species);
     if (named && named.id !== h.anchor) return 'habitat.anchor contradicts the named species body plan';
-    if (l.level === 1 && o.qty === 1 && l.qtype === 'minor' && (h.max_level !== 1 || anchor.hp > 35 || anchor.atk > 10))
+    if (l.level === 1 && o.qty === 1 && l.qtype === 'minor' && (h.max_level !== 1 || !introAnchor(anchor)))
         return 'introductory habitat needs a weak ordinary level-1 individual (max HP 35, ATK 10)';
     const places = habitatPlace(s, need, o.where);
     if (places.length > 1) return 'habitat.place is ambiguous in this land';
@@ -676,6 +677,7 @@ export function boardRequest(s, content, need) {
         ...(progressive(s, need) ? [
             '- F WORLD PROGRESSION: The full board offers voluntary choices across F, never scaled to the player: one weak introductory level-1 hunt, at least one hunt at levels 4-7, and one at 8-14. Prefer separate 8-11 and 12-14 hunts when four outdoor notices fit. Keep the 4-hunt/1-clearance or 5-hunt distribution. Do not inflate group sizes for high levels.',
             '- For every non-Dungeon hunt add habitat:{species:"the actual creature kind",anchor:"one supported body-plan id",min_level:4,max_level:7}. Allowed fixed population windows: 1-1 (intro), 1-3, 4-7, 8-11, 12-14. The quest level lies inside that window. This describes a world population, NOT a change to existing creatures or a spawn instruction. Other listings use habitat:null.',
+            `- Intro eligible body-plan ids (ordinary level 1, calculated from Content): ${[...content.anchors.values()].filter(introAnchor).map(a => a.id).join(', ')}. Species names must still fit their body plan.`,
             `- Supported body-plan ids: ${[...content.anchors.keys()].join(', ')}. The DEFEAT objective where is the one canonical hunting-site label (no duplicate place field in habitat); use the same species/kind. A weak introduction has one ordinary level-1 animal/Monster, anchor HP <=35 and ATK <=10, no hidden group/elite/boss.`,
             '- Established populations below are binding. New sites and species names are welcome, but never rename, move or upscale a known population. Do not locate several incompatible populations at the same small site. Clearly warn of stronger groups and high-F work; availability never means safe for the reader.',
         ] : []),

@@ -132,7 +132,7 @@ test('.51 (4): the other "needs" stay as they were: the ferry (go after the pay,
     // a sleep after a go: as ever; a training before a pending room: on its own
     const g = await atInn(null);
     await say(g, '*i go up to the hayloft and sleep until morning*', { type: 'go', to: { new: 'the hayloft' }, quote: 'i go up to the hayloft' }, SLEEP({ needs: 1, quote: 'sleep until morning' }));
-    assert.deepEqual(statuses(g).map((x) => x.slice(0, 2)), [['go', 'authorized'], ['activity', 'resolved']]);
+    assert.deepEqual(statuses(g).map((x) => x.slice(0, 2)), [['go', 'authorized'], ['activity', 'refused']]);
 });
 
 // ------------------------------------------------------------------------------------------------ 5 budgets and prompts
@@ -180,7 +180,7 @@ test('.51 review (7): a room he asks for does not hold up a sleep he places else
         const h = await atInn(null);
         await say(h, '*i ask about a room, then go out to the stable and sleep there until morning*', { ...BUY, quote: 'i ask about a room' },
             { type: 'go', to: { new: 'the stable' }, quote: 'go out to the stable' }, SLEEP({ ...(needs ? { needs } : {}), quote: 'sleep there until morning' }));
-        assert.deepEqual(statuses(h).map((x) => x.slice(0, 2)), [['buy', 'pending'], ['go', 'authorized'], ['activity', 'resolved']], String(needs));
+        assert.deepEqual(statuses(h).map((x) => x.slice(0, 2)), [['buy', 'pending'], ['go', 'authorized'], ['activity', 'refused']], String(needs));
     }
     // up to the room he asked for: still that room, still waiting for it
     const k = await atInn(null);

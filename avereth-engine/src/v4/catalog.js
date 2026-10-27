@@ -1,3 +1,4 @@
+import { offerAvailability } from './trade.js';
 import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: the CATALOG (docs/RUNTIME_V4_PLAN.md §4.2) the interpreter and the extractor read, built from the state:
 // where Alaric is, who is present, the places, quests, Guild board, offers and objects he may refer to, the open
@@ -290,7 +291,7 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
             seen.push({ id: q.id, title: q.title, info: `Guild contract · ${q.rank} · no longer on the board (posted on day ${q.source?.listed?.day}; the Guild renews its board every day)` });
         }
     }
-    const offers = openOffers(state).filter((o) => o.gate ? state.scene.at === o.gate : o.canon ? (!o.at || hallOf(state, o.at) === hall) : state.scene.present.includes(o.seller))
+    const offers = openOffers(state).filter((o) => !offerAvailability(state, o))
         .map((o) => (o.bid
             // 4.3.0-c.6.6.5: a buyer's bid for his things (he would be paid), by the ids of his things
             ? { id: o.id, seller: personLabel(state, content, o.seller), bid: true, price_cp: o.price_cp, lines: o.lines.map((l) => ({ id: l.id, what: l.what, object: l.object, qty: l.qty, ...(Number.isInteger(l.price_cp) ? { price_cp: l.price_cp } : {}) })) }

@@ -21,7 +21,7 @@ test('the extractor prompt states every rule and every constraint the validator 
     const { messages } = extractorRequest(vocab, { catalog: 'CATALOG\nHERE: x', actions: '1. GOES — to the Guild hall.', expectedKeys: { 1: 'go' }, reply: 'He walks in.' });
     assert.equal(messages.length, 2);
     assert.ok(messages[0].content.endsWith(EXTRACT_PLAIN_FORMAT));
-    assert.match(messages[1].content, /PLAYER ACTIONS \(already booked\):\n1\. GOES/);
+    assert.match(messages[1].content, /PLAYER ACTIONS \(each status[^\n]*\):\n1\. GOES/);
     // c.6.6: the go question also says that seeing or passing a place is no arrival
     assert.match(messages[1].content, /"1" \(go: did he arrive, where, and who came with him; arrived is true only when the reply ends with him at the place/);
 });
@@ -85,7 +85,7 @@ test('soft-world extractor protects PC commitments while recording NPC/world age
     const player = '*i sign the card*';
     const { messages } = extractorRequest(vocab, { catalog: 'CATALOG', actions: 'NOTHING TO BOOK — Alaric decides nothing the engine resolves.', player, expectedKeys: {}, reply: 'He signs the card.' });
     const user = messages[1].content;
-    assert.match(user, /PLAYER MESSAGE \(what the player wrote Alaric saying and doing\):\n\*i sign the card\*\n\nPLAYER ACTIONS \(already booked\):\nNOTHING TO BOOK/);
+    assert.match(user, /PLAYER MESSAGE \(what the player wrote Alaric saying and doing\):\n\*i sign the card\*\n\nPLAYER ACTIONS \(each status[^\n]*\):\nNOTHING TO BOOK/);
     const sys = messages[0].content;
     assert.match(sys, /Overreach is only for meaningful voluntary PC commitments/);
     assert.match(sys, /Ordinary world causality is not overreach/);

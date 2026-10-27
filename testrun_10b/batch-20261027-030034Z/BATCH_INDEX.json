@@ -1,0 +1,186 @@
+{
+  "schema": "avereth-batch-observation-index-v1",
+  "analysis_date": "2026-10-27",
+  "batch": "batch-20261027-030034Z",
+  "source_archive": {
+    "filename": "batch-20261027-030034Z.zip",
+    "sha256": "aebd2b67c353b3ed6c6a57887fff1d42885462af84e8262b6a97715db7a5fe3f",
+    "size_bytes": 38267753,
+    "zip_entries": 98,
+    "crc_ok": true,
+    "uploaded_to_github": false
+  },
+  "product": {
+    "build": "4.3.0-c.6.6.100",
+    "git": "cadd5315862a",
+    "model": "zai-org/GLM-5.3-Flash",
+    "stub": false,
+    "fixture": false
+  },
+  "batch_end": "interrupted",
+  "max_hours": 36,
+  "planned_runs": 9,
+  "started_runs": 6,
+  "autonomous_technical_stops": 5,
+  "manual_stops": 1,
+  "never_started": [
+    "dungeon-warrior",
+    "dungeon-mage",
+    "dungeon-rogue"
+  ],
+  "summary": {
+    "inputs": 232,
+    "model_calls": 649,
+    "engine_events": 2999,
+    "rejected_deltas": 168
+  },
+  "runs": [
+    {
+      "index": 1,
+      "id": "guild-warrior",
+      "seed": 1348926322,
+      "turns": 32,
+      "level": 2,
+      "recorded_end": "extractor_failed",
+      "end_turn": 32,
+      "core_failure": "top-level thread outside extractor schema",
+      "evidence": {
+        "event_message": 64,
+        "completions": [
+          92,
+          93
+        ]
+      },
+      "total_calls": 93,
+      "engine_events": 397,
+      "delta_rejected": 21,
+      "encounters": 2,
+      "guild_completions": 0,
+      "source_subdir": "001-guild-warrior/20261027-030034Z-current_test"
+    },
+    {
+      "index": 2,
+      "id": "guild-mage",
+      "seed": 1348926323,
+      "turns": 96,
+      "level": 5,
+      "recorded_end": "narrator_empty",
+      "end_turn": 96,
+      "core_failure": "Narrator length 8192 tokens, 35293 reasoning chars, 0 text",
+      "evidence": {
+        "completion": 265
+      },
+      "total_calls": 265,
+      "engine_events": 1242,
+      "delta_rejected": 58,
+      "encounters": 11,
+      "guild_completions": 2,
+      "source_subdir": "002-guild-mage/20261027-032730Z-current_test"
+    },
+    {
+      "index": 3,
+      "id": "guild-rogue",
+      "seed": 1348926324,
+      "turns": 5,
+      "level": 1,
+      "recorded_end": "extractor_failed",
+      "end_turn": 5,
+      "core_failure": "person.new.at=\"here\" invalid schema",
+      "evidence": {
+        "event_message": 10,
+        "completions": [
+          10,
+          11
+        ]
+      },
+      "total_calls": 11,
+      "engine_events": 57,
+      "delta_rejected": 2,
+      "encounters": 0,
+      "guild_completions": 0,
+      "source_subdir": "003-guild-rogue/20261027-043011Z-current_test"
+    },
+    {
+      "index": 4,
+      "id": "explore-warrior",
+      "seed": 1348926325,
+      "turns": 47,
+      "level": 1,
+      "recorded_end": "narrator_empty",
+      "end_turn": 47,
+      "core_failure": "Narrator length 8192 tokens, 33701 reasoning chars, 0 text",
+      "evidence": {
+        "end_turn": 47,
+        "scene_rejection_messages": [
+          16,
+          18,
+          24,
+          26,
+          36,
+          44,
+          46,
+          56,
+          70,
+          76,
+          90
+        ]
+      },
+      "total_calls": 132,
+      "engine_events": 610,
+      "delta_rejected": 71,
+      "scene_context_rejected": 42,
+      "encounters": 0,
+      "guild_completions": 0,
+      "source_subdir": "004-explore-warrior/20261027-043306Z-current_test"
+    },
+    {
+      "index": 5,
+      "id": "explore-mage",
+      "seed": 1348926326,
+      "turns": 20,
+      "level": 1,
+      "recorded_end": "extractor_failed",
+      "end_turn": 20,
+      "core_failure": "unknown delta type \"place\"; repair length 4000, no JSON",
+      "evidence": {
+        "event_message": 40,
+        "completions": [
+          58,
+          59
+        ]
+      },
+      "total_calls": 59,
+      "engine_events": 307,
+      "delta_rejected": 7,
+      "encounters": 1,
+      "guild_completions": 1,
+      "source_subdir": "005-explore-mage/20261027-050329Z-current_test"
+    },
+    {
+      "index": 6,
+      "id": "explore-rogue",
+      "seed": 1348926327,
+      "turns": 32,
+      "level": 2,
+      "recorded_end": "harness",
+      "batch_end": "process_error",
+      "end_turn": 32,
+      "manual_interruption": true,
+      "core_failure": "manually interrupted Ctrl+C in turn 32; NOT an autonomous failure",
+      "evidence": {
+        "event_messages": [
+          32,
+          52,
+          56
+        ],
+        "completion_pending": 89
+      },
+      "total_calls": 89,
+      "engine_events": 386,
+      "delta_rejected": 9,
+      "encounters": 2,
+      "guild_completions": 0,
+      "source_subdir": "006-explore-rogue/20261027-052209Z-current_test"
+    }
+  ]
+}

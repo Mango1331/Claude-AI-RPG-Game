@@ -1,7 +1,7 @@
 # Avereth Engine — Verbindlicher Design-Kanon und Leitplanken
 
 **Dokumenttyp:** langfristige Spiel- und Architekturentscheidungen  
-**Stand:** 26. Oktober 2026 · Fassung 6: höherer Spieler-Startwert; technischer Produkt-/Abnahmestand in 03.
+**Stand:** 27. Oktober 2026 · Fassung 7: explizite Ankünfte, aktuelle Handelszustimmung und mechanische Zähljagden; Produkt-/Abnahmestand in 03.
 **Pflege:** nur bei neuen verbindlichen Designentscheidungen  
 **Status-Legende:** **[VERBINDLICH]** = gewolltes Spiel-/Architekturverhalten; **[GEPLANT]** = verbindliches Ziel, aber nicht zwingend implementiert; **[OFFEN]** = noch nicht abschließend beschlossen. Die Implementierung ist gesondert in Datei 03 zu prüfen.
 
@@ -32,6 +32,10 @@
 - **Extractor + Validator/Firewall:** nach der Geschichte neu etablierte *Weltfakten* erkennen und typisiert als Events übernehmen, ohne Engine-Zustand oder freiwillige PC-Commitments zu überschreiben.
 - **Knowledge Firewall:** Spielerziel im ungesprochenen Text ist nicht automatisch Wissen für NPCs. Jeder NPC hat eigene Perspektive und legitime Informationsquellen.
 - **Replay:** Event-Log ist Wahrheit; `fold(events)` konstruiert deterministisch den Zustand. Swipe, Regenerate und Änderungen dürfen keine „zweite Realität“ oder doppelte Belohnung erzeugen.
+
+**Ab .101 verbindlich für neue Ruleset-2/V4-C-Berichte:** Bewegung wird ausschließlich über explizite, chronologisch eingeordnete und autorisierte `arrive`-Deltas gebucht. Schauplatzlabel, Expected-Zusammenfassung und Reisezeit sind keine zusätzliche Bewegungsberechtigung. Das erlaubt weiterhin kompakte Reisen mit Zwischenhalten innerhalb einer Antwort; bestehende Gate-, Forced-Movement- und Agency-Prüfungen gelten. Alte gespeicherte Events werden unverändert wiedergegeben.
+
+**Handelszustimmung ab .101:** Voraus erteilte Kauf-/Verkaufszusagen gelten für die aktuelle Antwort, den konkreten Vorgang und Ort. Sie bleiben nicht als allgemeine Vollmacht offen. Reise plus bedingter Kauf in derselben Eingabe bleibt nach bestätigter Ankunft mit eindeutigem Händler, Angebot und eingehaltenem Preislimit möglich. Ohne passende aktuelle Zustimmung bleibt ein Angebot zur ausdrücklichen späteren Annahme offen.
 
 **[VERBINDLICH]** SillyTavern ist die aktuelle Host-Umgebung; spätere Portierung z. B. nach CraftRPG ist denkbar. Keine Abhängigkeit von einzelnen proprietären Sprachmodellfähigkeiten erzwingen. Das in den letzten Tests benutzte GLM-Modell ist **austauschbare Laufzeitkomponente**, kein Weltkanon.
 
@@ -98,6 +102,7 @@ Ein anwesender NPC darf freiwillig einen glaubwürdigen Geld- oder Sachgegenstan
 - Escort entfällt nur aus der automatischen Board-Generierung; freie NPC-Begleitungen und bestehende Verträge behalten ihre Mechanik. Bereits angenommene Verträge und Legacy-Spielstände behalten ihre Bedingungen.
 - Das bestehende Board-Schema besitzt ein **Tagesangebot** für den Spieler. Alarics sichtbares aktuelles Angebot soll nicht durch nachträglich erfundene andere Abenteurer verschwinden. Hintergrundaufträge und spätere Boardtage können sich entwickeln.
 - **Gildenvertrag/-Slip**: Annahme, Auszahlung, Quest-XP/Promotion und Turn-in unter Engine Authority; Slips spiegeln den verbuchten Status. Ein ausgehandelter oder behaupteter Erfolg ist nicht automatisch Zahlung.
+- **Neue automatische Jagden ab .101:** Genau ein quantitatives DEFEAT-Ziel; veröffentlichte Aufgabe, Zielpopulation und gespeicherte Zählregel bestimmen den Erfolg. Aktueller Standard zählt tatsächliche Kills (`killed`), keine Flucht und keinen erzählten Ersatzerfolg. Keine zusätzliche Story-READY-Bedingung; ausdrückliche Gildenabgabe bleibt erforderlich. Historische Mischverträge, Delivery und Dungeon-Clearance behalten ihre bisherigen Nachweise. Die 4+1-/5-Verteilung und Belohnungen bleiben unverändert.
 - **Culling-Zahl [IMPLEMENTIERT Patch 8/8.1; im Livetest weiter zu prüfen]:** Der Auftrag soll bereits am Board eine konkrete Monsteranzahl zeigen, etwa `Cull Wolves (4)`; nach Annahme den Engine-Zähler etwa `2/4`. Der Zähler muss mechanisch sein und auf passende Quest/Ort/Monster referenzieren, nicht nur Erzähltext.
 - **Dungeon-Clear [IMPLEMENTIERT Patch 8; vollständiger GLM-Livetest offen]:** Etwa `Clear Old Crown Catacombs — Level 1`. Keine willkürliche Killzahl, wenn entscheidend ist, dass die Ebene tatsächlich cleared ist.
 - **Keine Trophäenbeweise für Monsterjagden.** Andersartige Quests dürfen andere natürliche Formen der Bestätigung benötigen.

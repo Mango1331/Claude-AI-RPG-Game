@@ -1,4 +1,4 @@
-// Nine independent, sequential campaigns. Each child finishes its existing export/cleanup before the next starts.
+// Independent, sequential campaigns. Each child finishes its existing export/cleanup before the next starts.
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
@@ -76,9 +76,9 @@ function persist(g, root, batch) {
     g.write(temp, JSON.stringify(batch, null, 2));
     fs.renameSync(g.check(temp), g.check(path.join(root, 'batch.json')));
     g.write(path.join(root, 'report.md'), [
-        '# Avereth – neun natürliche Testkampagnen', '',
+        `# Avereth – ${batch.runs.length} natürliche Testkampagnen`, '',
         ...(batch.stub ? ['> STUB-SELBSTTEST mit Mockprovider, kein natürlicher Livetest.', ''] : []),
-        `Status: **${batch.status}**. Serie abgeschlossen bedeutet, dass die Läufe beendet sind; es bedeutet nicht neun bestandene Level-15-Abnahmen.`, '',
+        `Status: **${batch.status}**. Serie abgeschlossen bedeutet, dass die Läufe beendet sind; es bedeutet nicht ${batch.runs.length} bestandene Level-15-Abnahmen.`, '',
         '| Nr. | Profil | Seed | Eingaben | Level | Ende | Originalbericht |', '|---|---|---:|---:|---:|---|---|',
         ...batch.runs.map(r => `| ${r.index} | ${r.id} | ${r.seed} | ${r.inputs ?? '–'} | ${r.level ?? '–'} | ${cell(r.end?.kind || r.status)} | ${r.runDir ? `[report.md](${r.folder}/${r.runDir}/report.md)` : '–'} |`), '',
         ...batch.runs.filter(r => r.end?.kind === 'no_result').map(r => `- ${r.id}: ${cell(r.end.why)}`), '',
@@ -106,7 +106,7 @@ export async function runBatch({ root, args = [], seed = Math.floor(Math.random(
             if (revision() !== startRevision) { batch.status = 'revision_changed'; break; }
             const parent = path.join(root, job.folder);
             g.mkdir(parent); job.status = 'running'; persist(g, root, batch);
-            console.log(`\nBatch ${job.index}/9: ${job.id}, seed ${job.seed}`);
+            console.log(`\nBatch ${job.index}/${batch.runs.length}: ${job.id}, seed ${job.seed}`);
             const exit = await launch([...args, '--scenario', job.id, '--seed', String(job.seed), '--runs', parent], { signal: ctl.signal, secrets });
             Object.assign(job, readResult(parent, job, exit), { status: 'finished' });
             if (job.profileUnchanged === false || job.secretHits > 0) { batch.status = 'export_safety_stop'; persist(g, root, batch); break; }

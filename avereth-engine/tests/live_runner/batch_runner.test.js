@@ -28,10 +28,11 @@ function archive(args, { end = 'done', actualClass, protection = true, secretHit
 const settings = root => ({ root, args: ['--guide', 'current_test'], seed: 40, maxHours: 1 });
 const fixed = { revision: () => 'fixed' };
 
-test('batch profiles cover exactly three play focuses by all three current classes', () => {
-    assert.equal(SCENARIOS.length, 9);
-    assert.equal(new Set(SCENARIOS.map(s => s.id)).size, 9);
-    for (const focus of ['guild', 'explore', 'dungeon']) assert.deepEqual(SCENARIOS.filter(s => s.focus === focus).map(s => s.baseClass), ['Warrior', 'Mage', 'Rogue']);
+test('batch profiles cover Guild and exploration by all three current classes, with no separate Dungeon runs', () => {
+    assert.equal(SCENARIOS.length, 6);
+    assert.equal(new Set(SCENARIOS.map(s => s.id)).size, 6);
+    assert.deepEqual(SCENARIOS.map(s => s.focus), ['guild', 'guild', 'guild', 'explore', 'explore', 'explore']);
+    for (const focus of ['guild', 'explore']) assert.deepEqual(SCENARIOS.filter(s => s.focus === focus).map(s => s.baseClass), ['Warrior', 'Mage', 'Rogue']);
     const original = loadGuide('current_test'), saved = structuredClone(original);
     for (const s of SCENARIOS) {
         const g = scenarioGuide(original, s.id), prompt = playerSystemPrompt(g, { username: 'Alaric' });
@@ -48,10 +49,32 @@ test('batch profiles cover exactly three play focuses by all three current class
     assert.equal(scenarioGuide(original), original);
 });
 
+test('exploration prompts pursue travel and independent income rather than the ordinary Guild progression route', () => {
+    const original = loadGuide('current_test');
+    for (const s of SCENARIOS.filter(s => s.focus === 'explore')) {
+        const g = scenarioGuide(original, s.id), prompt = playerSystemPrompt(g, { username: 'Alaric' });
+        assert.match(prompt, /between cities, villages and wilderness/i);
+        assert.match(prompt, /suitable wild.monster fights/i);
+        assert.match(prompt, /outside the Guild/i);
+        assert.match(prompt, /paid work/i);
+        assert.match(prompt, /selling loot/i);
+        assert.match(prompt, /trading/i);
+        assert.match(prompt, /Guild registration and contracts are not your progression route/i);
+        assert.ok(!g.brief.includes('Guild contracts and suitable fights may fund'));
+        assert.ok(!g.brief.includes('Make becoming a capable Guild adventurer'));
+        assert.ok(g.brief.includes('incidental help and detours remain welcome'));
+    }
+    for (const s of SCENARIOS.filter(s => s.focus === 'guild')) {
+        assert.ok(scenarioGuide(original, s.id).brief.includes('Make official Guild contracts your main occupation'));
+    }
+    assert.ok(original.brief.includes('Make becoming a capable Guild adventurer'));
+});
+
 test('scenario options reject unsupported profiles/fixtures/scripts and keep an ordinary single run unchanged', () => {
     const base = ['--config', '/nonexistent/avereth-config.json'];
     assert.equal(options(base, {}).scenario, undefined);
-    assert.equal(options([...base, '--scenario', 'dungeon-rogue'], {}).scenario, 'dungeon-rogue');
+    assert.equal(options([...base, '--scenario', 'explore-rogue'], {}).scenario, 'explore-rogue');
+    assert.throws(() => options([...base, '--scenario', 'dungeon-rogue'], {}), /Unknown scenario/);
     assert.throws(() => options([...base, '--scenario', '../../x'], {}), /Unknown scenario/);
     assert.throws(() => options([...base, '--scenario', 'guild-mage', '--fixture', '9d-rare'], {}), /no fixture/);
     assert.throws(() => options([...base, '--scenario', 'guild-mage', '--player', 'scripted'], {}), /LLM player/);
@@ -69,7 +92,7 @@ test('the scenario class is checked against Engine state, never changed to fit t
     assert.equal(scenarioMismatch(s, null), null);
 });
 
-test('nine independent runs execute sequentially after game failures and retain separate numbered archives', async t => {
+test('six independent runs execute sequentially after game failures and retain separate numbered archives', async t => {
     const root = path.join(temporary(t), 'batch'), starts = [];
     let running = 0, max = 0;
     const result = await runBatch({ ...settings(root), args: ['--guide', 'current_test', '--stub'] }, { ...fixed, launch: async args => {
@@ -79,8 +102,8 @@ test('nine independent runs execute sequentially after game failures and retain 
         await Promise.resolve(); running--;
         return { code: end === 'done' ? 0 : 2, signal: null };
     } });
-    assert.equal(result.status, 'completed'); assert.equal(starts.length, 9); assert.equal(max, 1);
-    assert.deepEqual(result.runs.map(r => r.seed), [40, 41, 42, 43, 44, 45, 46, 47, 48]);
+    assert.equal(result.status, 'completed'); assert.equal(starts.length, 6); assert.equal(max, 1);
+    assert.deepEqual(result.runs.map(r => r.seed), [40, 41, 42, 43, 44, 45]);
     assert.ok(result.runs.every(r => r.status === 'finished' && r.inputs === 2 && r.level === 2));
     for (const [i, r] of result.runs.entries()) {
         assert.ok(r.folder.startsWith(String(i + 1).padStart(3, '0') + '-'));
@@ -88,9 +111,9 @@ test('nine independent runs execute sequentially after game failures and retain 
         assert.equal(arg(starts[i], '--scenario'), SCENARIOS[i].id);
     }
     const summary = fs.readFileSync(path.join(root, 'batch.json'), 'utf8');
-    assert.equal(JSON.parse(summary).runs.length, 9); assert.ok(!summary.includes('must-not-be-copied'));
+    assert.equal(JSON.parse(summary).runs.length, 6); assert.ok(!summary.includes('must-not-be-copied'));
     assert.equal(result.stub, true);
-    assert.match(fs.readFileSync(path.join(root, 'report.md'), 'utf8'), /nicht neun bestandene/);
+    assert.match(fs.readFileSync(path.join(root, 'report.md'), 'utf8'), /nicht 6 bestandene/);
     assert.match(fs.readFileSync(path.join(root, 'report.md'), 'utf8'), /STUB-SELBSTTEST/);
     await assert.rejects(runBatch(settings(root), fixed), /already exists/);
 });
@@ -99,7 +122,7 @@ test('three infrastructure failures stop the series instead of endlessly restart
     let calls = 0;
     const result = await runBatch(settings(path.join(temporary(t), 'batch')), { ...fixed, launch: async () => { calls++; return { code: 1 }; } });
     assert.equal(calls, 3); assert.equal(result.status, 'infrastructure_stop');
-    assert.equal(result.runs.filter(r => r.status === 'pending').length, 6);
+    assert.equal(result.runs.filter(r => r.status === 'pending').length, 3);
 });
 
 test('profile changes and secret-scan findings stop before another campaign starts', async t => {

@@ -4,29 +4,30 @@ Werkzeug: `tools/st_live/live/` (ab Build 4.3.0-c.6.6.29). Er spielt einen Livet
 
 **Grundsatz.** Der Runner übernimmt nur die Spielerentscheidungen. Er manipuliert keine Engine-Zustände, setzt keinen Questfortschritt und tötet keine Gegner. Er regeneriert, swipt und editiert keine Nachricht. Dein SillyTavern-Profil wird nur gelesen, nie geschrieben. Der Stub-Selbsttest (§10) prüft nur den Runner und **zählt nicht als Livetest**.
 
-## Neun automatische Kampagnen (Batchmodus)
+## Sechs automatische Kampagnen (Batchmodus)
 
 Mit vorhandener Konfiguration und dem API-Schlüssel in der bisherigen Umgebungsvariable im Ordner `avereth-engine` starten:
 
 ```powershell
-npm run live:st:batch
+npm run live:st:batch -- --headed
 ```
 
-Der Batch startet **nacheinander** je eine neue Level-1-Kampagne für diese neun Profile:
+Der Batch startet **nacheinander** je eine neue Level-1-Kampagne für diese sechs Profile:
 
 | Schwerpunkt | Klassen |
 |---|---|
 | Offizielle Gildenquests als Hauptbeschäftigung | Warrior, Mage, Rogue |
 | Welterkundung und Entdeckungen als Hauptbeschäftigung | Warrior, Mage, Rogue |
-| Geeignete Dungeons erkunden und räumen | Warrior, Mage, Rogue |
 
-Die Klasse wird dem LLM-Spieler für die normale Charaktererstellung vorgegeben und danach anhand des Enginezustands geprüft. Eine falsche Klasse wird als `scenario_mismatch` dokumentiert, niemals heimlich geändert. Starter-Skills, konkrete Quests, Wege, Kämpfe, Ausrüstung und Taktik bleiben frei. Alle Profile berücksichtigen Vorbereitung, Erholung, Lootverkauf, Gear und Skillentwicklung; Dungeon-Schwerpunkt bedeutet keinen erzwungenen sofortigen Dungeonkampf. Freie Hilfe und Abweichungen bleiben erlaubt. Keine Fixtures oder manipulierten Erfolge.
+Die Klasse wird dem LLM-Spieler für die normale Charaktererstellung vorgegeben und danach anhand des Enginezustands geprüft. Eine falsche Klasse wird als `scenario_mismatch` dokumentiert, niemals heimlich geändert. Starter-Skills, konkrete Quests, Wege, Kämpfe, Ausrüstung und Taktik bleiben frei. Alle Profile berücksichtigen Vorbereitung, Erholung, Lootverkauf, Gear und Skillentwicklung. Freie Hilfe und Abweichungen bleiben erlaubt. Keine Fixtures oder manipulierten Erfolge.
+
+**Erkundung ist ein eigenständiger Spielstil:** Reisen zwischen Städten, Dörfern und Wildnis, Entdeckungen und geeignete Kämpfe unterwegs. Geld soll außerhalb der Gilde etwa durch Lootverkauf, bezahlte Arbeit, Handel oder andere glaubwürdige Gelegenheiten entstehen. Gildenregistrierung und Boards sind kein routinemäßiger Start oder Fortschrittsweg. Ziele und Erwerbsquellen bleiben frei; beiläufige Hilfe und natürlich entdeckte passende Dungeons sind erlaubt. Die drei besonderen Dungeonprofile entfallen; die drei Guildprofile und der normale Einzellauf behalten ihre bisherigen Anweisungen.
 
 Der bisherige `current_test` bleibt unverändert. Batchprofile ersetzen nur seine Spielermotivation, wählen die Startklasse und behalten Level 15 als Ziel, den 100-Input-Vergleich sowie die bisherigen Grenzen von 1.000 Eingaben/24 Stunden je Kampagne. Der Batch selbst hat zusätzlich **24 Stunden Gesamtlaufzeit**. Danach wird der aktive Lauf zum geordneten Beenden aufgefordert; ein bereits laufender Modell-/Browser-Wartevorgang kann noch bis zu seiner bestehenden Zeitgrenze dauern. Nicht begonnene Profile bleiben ausdrücklich als `pending` dokumentiert.
 
 Nach Tod, erreichtem Ziel, Einzellauf-Limit oder einem protokollierten Planner-/Extractor-Fehler wird der bestehende Export abgeschlossen, die Instanz beendet und das nächste Profil gestartet. Der fehlgeschlagene Zug wird **nicht** erneut ausgeführt. Drei aufeinanderfolgende Infrastruktur-/Startfehler stoppen die Serie. Ebenso stoppen eine erkannte Profiländerung, ein Geheimnis-Scan-Treffer oder ein anderer Git-HEAD vor dem nächsten Lauf. Während einer Serie den Checkout nicht bearbeiten oder aktualisieren. Ctrl+C beendet die **ganze Serie**, wartet aber auf Export und Cleanup des aktuellen Kindprozesses. Es gibt keinen endlosen Neustartmodus.
 
-Jeder Lauf erhält einen eigenen Node-Prozess, Seed und fortlaufend nummerierten Ordner unter einer neuen `batch-<Zeitstempel>`-Wurzel, etwa `001-guild-warrior/<bisherige Run-ID>/` bis `009-dungeon-rogue/<Run-ID>/`. Chat, Events, Requests, Screenshots und Einzelbericht bleiben im bisherigen Format. `batch.json` und `report.md` in der Batchwurzel fassen die Serie zusammen. Alte Verzeichnisse werden nicht überschrieben. **Batch completed** heißt neun beendete Versuche, nicht neun bestandene Level-15-Läufe.
+Jeder Lauf erhält einen eigenen Node-Prozess, Seed und fortlaufend nummerierten Ordner unter einer neuen `batch-<Zeitstempel>`-Wurzel, etwa `001-guild-warrior/<bisherige Run-ID>/` bis `006-explore-rogue/<Run-ID>/`. Chat, Events, Requests, Screenshots und Einzelbericht bleiben im bisherigen Format. `batch.json` und `report.md` in der Batchwurzel fassen die Serie zusammen. Alte Verzeichnisse werden nicht überschrieben. **Batch completed** heißt sechs beendete Versuche, nicht sechs bestandene Level-15-Läufe.
 
 Weitere Aufrufe:
 
@@ -38,7 +39,11 @@ npm run live:st:batch -- --max-turns 200
 npm run live:st -- --guide current_test --scenario explore-rogue
 ```
 
-`--seed 7` ergibt Seeds 7–15; ohne festen Startseed wird eine neue Seedfolge gewählt. `--runs <Ordner>`, Browser-, ST- und Profiloptionen funktionieren wie beim Einzellauf. `--max-turns` ist eine ausdrücklich verkürzte Beobachtungsgrenze, kein Ersatz für das Levelziel. `--list` benötigt keine ST-Installation und startet nichts. Ohne `--scenario` bleibt der normale Einzellauf frei in seiner Klassenwahl.
+`--seed 7` ergibt Seeds 7–12; ohne festen Startseed wird eine neue Seedfolge gewählt. `--runs <Ordner>`, Browser-, ST- und Profiloptionen funktionieren wie beim Einzellauf. `--headed` zeigt den isolierten Browser. `--max-turns` ist eine ausdrücklich verkürzte Beobachtungsgrenze, kein Ersatz für das Levelziel. `--list` benötigt keine ST-Installation und startet nichts. Ohne `--scenario` bleibt der normale Einzellauf frei in seiner Klassenwahl.
+
+**Umstellung vom 27.10.2026:** Ein laufender Neuner-Batch wird nicht umgeschrieben. Auf Wunsch nach dem sechsten Lauf mit Strg+C geordnet beenden und Export/Cleanup abwarten; erst danach den Checkout aktualisieren. Neue Batches verwenden sechs Profile. Konsole und Bericht leiten ihre Gesamtzahl aus der Profilmatrix ab. Die folgende Abnahmehistorie bezieht sich noch auf die damaligen neun Profile.
+
+**Abnahme der Sechsermatrix:** Angepasste Profil-/Exportregressionen und eine neue Prüfung der Erkundungsmotivation: auf dem alten Neuner-Runner fünf rot/zehn grüne Kontrollen, danach Batchtests **15/15**, angrenzende Progressions-/Einzellauftests zusammen **28/28**, gesamte Node-Suite **1.937/1.937**. `--list` zeigt exakt sechs Profile. Kein neuer ST-Smoke: Host, Prozessstart, IPC und Engine sind unverändert. Die Wirkung der neuen Erkundungsanweisung bleibt im nächsten natürlichen Batch zu prüfen. Engine-Build bleibt `.100`.
 
 **Technische Abnahme vom 26.10.2026:** Zehn neue Runner-Regressionen für die vollständige Profilmatrix, freie Starter-/Spielentscheidungen, Optionen/Legacy, Engine-Klassenprüfung, neun sequenzielle Exporte nach Spielabbrüchen, Infrastrukturgrenze, Profil-/Geheimnisschutz, Abbruch, Gesamtlaufzeit, Git-Wechsel und tatsächliche IPC-Kindprozesse. Finale vollständige Node-Suite **1.899/1.899**. Ein Zwischenlauf lieferte kein abgeschlossenes Summenprotokoll; die finale Wiederholung wurde mit Exitcode und Testsummen ausdrücklich verifiziert.
 

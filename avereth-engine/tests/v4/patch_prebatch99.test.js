@@ -734,3 +734,178 @@ test('99 explicit first leg does not advance an expected-only second leg before 
     assert.equal(r.state.scene.at, start);
     assert.ok(Object.values(r.state.objects).some(o => o.name === 'brass pin' && o.holder.entity === 'pc'));
 });
+
+// .99 independent review: an explicit deictic "here" is not a temporal anchor for an Expected-only journey.
+function expectedOnlyPerson(scene, arrived = true) {
+    const s = copy(f.wait.state);
+    const from = s.scene.at,
+        to = 'loc.alderwatch';
+    s.last.outcome = {
+        c: true,
+        auth: {
+            c: true,
+            gos: [{
+                seq: 1,
+                to
+            }],
+            timeCap: 120
+        },
+        expected_keys: {
+            1: 'go'
+        }
+    };
+    const answer = {
+        scene: arrived ? to : from,
+        expected: {
+            1: {
+                arrived,
+                at: arrived ? to : null,
+                with: null
+            }
+        },
+        deltas: [{
+            seq: 1,
+            type: 'person.new',
+            ref: 'arrival_witness',
+            name: 'Nessa',
+            role: 'porter',
+            desc: ['a porter by the gate'],
+            present: true,
+            scene,
+            band: 'SHORT'
+        }, ]
+    };
+    return {
+        s,
+        from,
+        to,
+        answer
+    };
+}
+test('99 review: ambiguous here in an Expected-only arrival never establishes the destination NPC at departure', () => {
+    const {
+        s,
+        from,
+        to,
+        answer
+    } = expectedOnlyPerson('here');
+    const p = parse(s, answer);
+    assert.equal(p.valid, true, p.errors.join('; '));
+    const r = applyWorld(s, content, p.value, {
+        msg: 504,
+        prose: 'Alaric reaches the square. Only there does he meet Nessa the porter.'
+    });
+    assert.equal(r.state.scene.at, to);
+    assert.equal(events(r, 'entity.created').length, 0,
+        'unclear timing is locally rejected, never guessed at A or B');
+    assert.ok(r.rejected.some(x => x.type === 'person.new' && x.rule === 'scene_context'));
+    assert.ok(p.issues.some(x => x.seq === 1));
+    const replay = copy(s);
+    for (const e of JSON.parse(JSON.stringify(r.events))) applyEvent(replay, e);
+    assert.deepEqual(replay, r.state);
+    assert.notEqual(from, to);
+});
+test('99 review: an explicit destination scene places the Expected-only NPC at the destination', () => {
+    const {
+        s,
+        to,
+        answer
+    } = expectedOnlyPerson('loc.alderwatch');
+    const r = applyWorld(s, content, answer, {
+        msg: 504,
+        prose: 'Alaric reaches the square and meets Nessa there.'
+    });
+    const created = events(r, 'entity.created');
+    assert.equal(created.length, 1);
+    const npc = r.state.entities[created[0].d.entity.id];
+    assert.equal(r.state.scene.at, to);
+    assert.equal(npc.location, to);
+    assert.ok(r.state.scene.present.includes(npc.id));
+});
+test('99 review: explicit departure scene preserves an earlier NPC before the Expected-only arrival', () => {
+    const {
+        s,
+        from,
+        to,
+        answer
+    } = expectedOnlyPerson(f.wait.state.scene.at);
+    const r = applyWorld(s, content, answer, {
+        msg: 504,
+        prose: 'Nessa speaks to him in the hall. He then goes to the square.'
+    });
+    const created = events(r, 'entity.created');
+    assert.equal(created.length, 1);
+    assert.equal(r.state.entities[created[0].d.entity.id].at, from);
+    assert.equal(r.state.scene.at, to);
+    assert.ok(!r.state.scene.present.includes(created[0].d.entity.id));
+});
+test('99 review: here remains valid for spontaneous local arrivals when the journey did not arrive', () => {
+    const {
+        s,
+        from,
+        answer
+    } = expectedOnlyPerson('here', false);
+    const r = applyWorld(s, content, answer, {
+        msg: 504,
+        prose: 'Alaric remains in the hall. Nessa walks in to speak to him.'
+    });
+    assert.equal(r.state.scene.at, from);
+    assert.equal(events(r, 'entity.created').length, 1);
+});
+test('99 review: one runtime repair resolves here to B without first committing the NPC at A', async () => {
+    const g = await campaign(content);
+    const from = g.state().scene.at;
+    await say(g, 'I go to the receiving house.', {
+        type: 'go',
+        to: {
+            new: 'the receiving house'
+        }
+    });
+    const to = {
+        new: {
+            name: 'Receiving house',
+            kind: 'site',
+            parent: from
+        }
+    };
+    const id = g.chat.push({
+        mes: 'Alaric reaches the receiving house and meets Nessa there.',
+        is_user: false,
+        extra: {}
+    }) - 1;
+    processReplyAny(g.chat, id, content);
+    let calls = 0;
+    const result = await runExtraction(g.chat, id, content, async () => {
+        const scene = calls++ === 0 ? 'here' : copy(to);
+        return JSON.stringify({
+            scene: to,
+            expected: {
+                1: {
+                    arrived: true,
+                    at: to,
+                    with: null
+                }
+            },
+            deltas: [{
+                seq: 1,
+                type: 'person.new',
+                ref: 'arrival_witness',
+                name: 'Nessa',
+                role: 'porter',
+                desc: [],
+                present: true,
+                scene,
+                band: 'SHORT'
+            }, ]
+        });
+    });
+    assert.equal(result.applied, true);
+    assert.equal(calls, 2);
+    const state = g.state(),
+        created = rec(g.chat[id]).events.filter(e => e.t === 'entity.created');
+    assert.equal(created.length, 1);
+    assert.notEqual(state.scene.at, from);
+    assert.equal(state.places[state.scene.at].name, 'Receiving house');
+    assert.ok(state.scene.present.includes(created[0].d.entity.id));
+    assert.deepEqual(foldChat(JSON.parse(JSON.stringify(g.chat))).state, state);
+});

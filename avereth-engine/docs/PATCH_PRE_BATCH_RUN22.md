@@ -67,3 +67,15 @@ Keine neuen Eventtypen oder Save-Migration. Extractor **5.12**, Board **5.3**; C
 Kein natürlicher GLM-/Level-15-Lauf und kein Neunfach-Batch durch diesen Patch gestartet. Ein realer Modelllauf bleibt nötig, um die Häufigkeit neuer Vorschlags-/Repairfehler zu beurteilen. Strengere freie Warenzuordnung kann eine Nachfrage beziehungsweise explizite Offer-/Line-Auswahl verlangen; eine allgemeine semantische Synonymerkennung wird nicht behauptet. Nicht zeitlich eindeutig annotierte lokale Behauptungen können weiterhin verworfen werden.
 
 XP, Startstats, Kampf-/Monsterwerte, F-/E-Balance, Skills/PP, Preise, Gearslots, Dungeonpopulation, formale Questregeln und Testspieler-/Batchstrategie sind unverändert.
+
+## Gegenreview-Folgekorrektur .100 — 27.10.2026
+
+Der zusätzliche `here`-/Expected-only-Befund ist unabhängig reproduziert. Bei autorisierter Reise A→B, `expected.arrived:true`, finalem Schauplatz B und einer lokalen NPC-Einführung mit `scene:"here"` erkannte `.99` keine Mehrdeutigkeit. World behielt wegen `here` zunächst A bei, registrierte den NPC dort und erreichte anschließend B. Die frühere positive Geschenkregression mit ausdrücklichem `scene:A` erfasste diesen Fall nicht.
+
+**Gezielte Korrektur:** `sceneIssues()` erkennt einen gemeldeten impliziten Ortswechsel unabhängig davon, ob ein anderes Delta ausdrücklich den Ausgangsort nennt. Ein explizites `here` ist in diesem Fall kein eindeutiger zeitlicher Ortsbeleg und wird als lokale Chronologiediagnose gemeldet. Dieselbe vorhandene Diagnose erreicht Repair und World. Der bestehende eine Repair darf den Zielort klären; andernfalls wird nur die unklare lokale Aussage verworfen. Die bestätigte Endankunft bleibt möglich. Keine Bewegung aus Prosa und kein stilles Umdeuten von `here` in A oder B.
+
+Fünf zusätzliche Regressionen in der bestehenden Testdatei: Gegen `.99` **zwei rot/drei grün**, danach **5/5**. Geprüft sind der Originalverdacht mit Event-Replay, eindeutiger Zielort, ausdrücklich früherer Ausgangsort, spontane lokale NPC-Ankunft bei nicht erreichter Reise sowie der vollständige Runtime-Repair, der genau einen NPC am Ziel bucht. Alte Tests und Originalfixtures bleiben erhalten; der World-Ablauf wurde für diese Folgekorrektur nicht umgebaut.
+
+Abnahme auf `.100`: Zielmatrix **33/33**, angrenzende World-/Extractor-Suites im ersten Lauf **83/83**, finale vollständige Node-Suite **1.932/1.932**. Echter ST1.19-Smoke mit Mockprovider **21/21**, fünf Extractor-Aufrufe, keine PageErrors; vier gespeicherte Story-Records jeweils `applied` und genau ein `extract.applied`. Der Smoke für diese Folgekorrektur bestand im ersten Lauf. Diff-/Whitespace-Prüfung ohne Befund.
+
+Build **4.3.0-c.6.6.100**; Extractor **5.12**, Board **5.3**, Narrator-Vertrag **.85** unverändert. Keine neuen Eventtypen, keine Save-Migration und keine Änderungen an Balance, Handel oder Batchrunner. Das übrige Gegenreview bestätigt die Fachrichtung von `.99`; der vorher dokumentierte intermittierende ST-Abort bleibt eine offene Beobachtung, kein nachgewiesener Anlass für einen zusätzlichen Infrastrukturpatch. Natürliche GLM-/Batch-Abnahme weiterhin offen.

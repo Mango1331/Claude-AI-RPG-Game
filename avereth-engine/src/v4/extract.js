@@ -249,12 +249,15 @@ export function sceneIssues(value, startScene) {
     const ordered = (Array.isArray(value.deltas) ? value.deltas : []).map((d, i) => ({d, i})).filter(x => x.d && typeof x.d === 'object').sort((a, b) => a.d.seq - b.d.seq);
     const arrivals = ordered.filter(x => x.d.type === 'arrive');
     const last = arrivals.at(-1)?.d;
-    const implicit = !last && Object.values(value.expected || {}).some(e => e?.arrived === true)
-        && ordered.some(x => localSceneDelta(x.d) && sceneKey(x.d.scene) === sceneKey(startScene))
-        && sceneKey(value.scene) !== sceneKey(startScene);
+    const implicitMove = !last && Object.values(value.expected || {}).some(e => e?.arrived === true
+        && sceneKey(e.at ?? value.scene) !== sceneKey(startScene));
+    const implicit = implicitMove && ordered.some(x => localSceneDelta(x.d)
+        && sceneKey(x.d.scene) === sceneKey(startScene));
     for (const {d, i} of ordered) {
         if (!localSceneDelta(d)) continue;
-        if ((d.scene == null || d.scene === 'here') && ((last && d.seq < last.seq && sceneKey(last.at) !== sceneKey(startScene)) || implicit)) {
+        // In an Expected-only move, explicit "here" does not identify either temporal scene.
+        if ((d.scene === 'here' && implicitMove) || ((d.scene == null || d.scene === 'here')
+            && ((last && d.seq < last.seq && sceneKey(last.at) !== sceneKey(startScene)) || implicit))) {
             issues.push({index: i, seq: d.seq, why: `$.deltas[${i}].scene: explicitly name this earlier scene before the later arrival; here/final scene does not establish chronology`});
             continue;
         }

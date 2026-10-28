@@ -441,7 +441,22 @@ export function evaluate(chat, { guide = null } = {}) {
                     if (sq) Object.assign(q, { title: sq.title, dungeon: sq.dungeon || null, floor: sq.floor ?? null, task: sq.task, end_state: sq.desired_end_state });
                     if (d.to === 'active' && (d.taker || 'pc') === 'pc' && (sq?.dungeon || q.dungeon)) { hit('dungeon_quest_active', i, { quest: d.id, title: q.title }); q.mine = q.mine ?? i; }
                     if (d.to === 'completed') {
-                        q.payout = ev.filter((x) => x.t === 'coin.changed' && x.d?.delta > 0 && /payout/i.test(x.d.why || '')).reduce((a, x) => a + x.d.delta, 0);
+                        const payments = ev.filter(x => x.t === 'transaction.completed' && x.d?.quest === d.id && x.d.from === 'guild' && x.d.to === 'pc');
+                        const xp = ev.filter(x => x.t === 'xp.changed' && x.d?.quest === d.id && x.d.id === 'pc');
+                        const single = new Set(ev.filter(x => x.t === 'quest.status' && x.d?.to === 'completed').map(x => x.d.id)).size === 1;
+                        if (payments.length || xp.length) {
+                            q.payout = payments.reduce((n, x) => n + x.d.cp, 0);
+                            q.xp = xp.reduce((n, x) => n + x.d.amount, 0);
+                            q.payout_attribution = 'quest_id';
+                        } else if (single) {
+                            q.payout = ev.filter(x => x.t === 'coin.changed' && x.d?.delta > 0 && /payout/i.test(x.d.why || '')).reduce((n, x) => n + x.d.delta, 0);
+                            q.xp = ev.filter(x => x.t === 'xp.changed' && /^Quest XP:/.test(x.d?.reason || '')).reduce((n, x) => n + x.d.amount, 0);
+                            q.payout_attribution = 'legacy_single';
+                        } else {
+                            q.payout = q.xp = null;
+                            q.payout_attribution = 'ambiguous';
+                            issue(i, 'payout_attribution', `${q.title || d.id}: completed, but this legacy record does not identify its individual payout or Quest XP`);
+                        }
                         q.payout_cp = after?.quests?.[d.id]?.payout_cp ?? null;
                         q.atHall = !!(after?.scene?.at && hallOf(after, after.scene.at));
                     }
@@ -602,7 +617,7 @@ export function evaluate(chat, { guide = null } = {}) {
     if (mine?.ready != null) hit('dungeon_quest_ready', mine.ready, { quest: mine.id, title: mine.title });
     const done = mine?.statuses.find((y) => y.to === 'completed');
     if (done && mine.payout > 0 && mine.atHall && (mine.payout_cp == null || mine.payout === mine.payout_cp)) hit('dungeon_quest_completed', done.at, { quest: mine.id, title: mine.title, payout: mine.payout });
-    else if (done) issue(done.at, 'turn_in', `${mine.title}: turned in ${mine.atHall ? 'at a Guild hall' : 'outside a Guild hall'}, payout ${mine.payout ?? 0} cp booked${mine.payout_cp != null ? ` for a contract of ${mine.payout_cp} cp` : ''}`);
+    else if (done && mine.payout_attribution !== 'ambiguous') issue(done.at, 'turn_in', `${mine.title}: turned in ${mine.atHall ? 'at a Guild hall' : 'outside a Guild hall'}, payout ${mine.payout ?? 0} cp booked${mine.payout_cp != null ? ` for a contract of ${mine.payout_cp} cp` : ''}`);
     if (boardSeen && !dungeonListed) for (const id of ['dungeon_quest_active', 'dungeon_quest_ready', 'dungeon_quest_completed']) unavailable[id] = 'the board he read offered no Dungeon contract';
 
     // the turns: the player's message, what came back, where he was and how he stood at the end of it

@@ -100,8 +100,21 @@ function deskStaff(s) {
 // ------------------------------------------------------------------------------------------------ contracts
 const slipId = (q) => `obj.slip.${q.id.replace(/^quest\./, '')}`;
 
+/** One active PC clearance per canonical Dungeon/floor. Existing active contracts are never revoked. */
+export function activeClearConflict(s, q) {
+    if (deliveryRuleset(s) < 2 || q.kind !== 'guild_contract') return null;
+    const target = clearOf(s, q);
+    return target && Object.values(s.quests).find(other => {
+        if (other.id === q.id || other.kind !== 'guild_contract' || other.status !== 'active' || (other.taker || 'pc') !== 'pc') return false;
+        const c = clearOf(s, other);
+        return c?.dungeon === target.dungeon && Number(c.floor) === Number(target.floor);
+    });
+}
+
 /** Accept a listed contract at its hall: active, the clerk logs it, Alaric receives its contract slip. */
 export function acceptContract(s, content, q, emit, { step } = {}) {
+    const conflict = activeClearConflict(s, q);
+    if (conflict) return { ok: false, reason: `he already holds the active contract ${conflict.id} for this Dungeon and level` };
     emit({ t: 'quest.status', d: { id: q.id, from: q.status, to: 'active', taker: 'pc', at: s.scene.at, step } });
     const b = s.guild.boards[boardKey(q.source?.branch, q.rank)];
     if (b?.listings?.includes(q.id)) emit({ t: 'board.refreshed', d: { key: boardKey(q.source.branch, q.rank), branch: q.source.branch, rank: q.rank, day: b.day, listings: b.listings.filter((x) => x !== q.id) } });
@@ -109,6 +122,7 @@ export function acceptContract(s, content, q, emit, { step } = {}) {
         emit({ t: 'object.created', d: { object: { id: slipId(q), name: `Guild contract slip: ${q.title}`, kind: 'document', stack: false, qty: 1, unit: null, holder: { entity: 'pc' }, marks: [], for_quests: [q.id], source: { turn: s.turn, how: 'guild' } } } });
     }
     recordFact(s, emit, { p: 'accepted_contract', o: q.title, id: `f.pc.accepted.${q.id}` });
+    return { ok: true };
 }
 
 /**
@@ -233,7 +247,7 @@ export function goalText(s, content, q, { board = false } = {}) {
     const clear = clearOf(s, q);
     if (clear) {
         const name = s.places[clear.dungeon]?.name || clear.dungeon;
-        if (board || q.status !== 'active') return ` — Clear ${name}, level ${clear.floor}`;
+        if (board || q.status !== 'active') return ` — Clear ${name}, level ${clear.floor}${q.status === 'listed' && activeClearConflict(s, q) ? ' — ALREADY ACTIVE under another contract; cannot take a second one' : ''}`;
         return ` — Clear ${name}, level ${clear.floor}: ${clearDone(s, q).text}`;
     }
     const kills = (q.objectives || []).filter((o) => o.verb === 'DEFEAT' && Number.isInteger(o.qty) && o.qty > 0);
@@ -488,10 +502,11 @@ export function completeContract(s, content, q, emit, { step, c = false } = {}) 
     if (pay) {
         emit({ t: 'coin.changed', d: { id: 'pc', value: sheet.coin_cp + pay, delta: pay, why: `Guild payout: ${q.title}` } });
         // the engine's credit, by place: the payout the clerk counts out on the counter is this coin (src/v4/world.js)
-        emit({ t: 'transaction.completed', d: { to: 'pc', from: 'guild', cp: pay, for: q.title, at: s.scene.at } });
+        emit({ t: 'transaction.completed', d: { to: 'pc', from: 'guild', cp: pay, for: q.title, quest: q.id, at: s.scene.at } });
     }
     const xp = q.level ? questXp(q.level, q.qtype || 'standard', content) : 0;
-    if (xp) awardXp(s.entities.pc.sheet, xp, content, `Quest XP: ${q.title}`).forEach(emit);
+    if (xp) awardXp(s.entities.pc.sheet, xp, content, `Quest XP: ${q.title}`).forEach(e =>
+        emit(e.t === 'xp.changed' ? { ...e, d: { ...e.d, quest: q.id } } : e));
     emit({ t: 'quest.status', d: { id: q.id, from: q.status, to: 'completed', at: s.scene.at, step } });
     recordFact(s, emit, { p: 'completed_contract', o: q.title, id: `f.pc.completed.${q.id}` });
     return { ok: true, pay, xp, ready: !!q.ready, verification: q.ready_note || null };

@@ -31,7 +31,7 @@ import {
     progressKey, sameKinds, kindOf,
 } from './domain.js';
 import { completeContract, contractReady, owedObjects, abandonContract, acceptContract, REGISTRATION_OFFER, countShort, tallyText, isHunt, statusCorrection, slipMarks } from './guild.js';
-import { pickLines, bookPurchase, bookSale, saleUnits, unitsText, tradePrice, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines } from './trade.js';
+import { pickLines, bookPurchase, bookSale, saleUnits, unitsText, tradePrice, offerAdvice, purchaseLines, samePurchaseRequest, saleOfferLines, offerAvailability } from './trade.js';
 import { reportPlace, knownByName, reportedTarget, visitEvents } from './known.js';
 import { reachedEvents, setIntentEvents } from './intents.js';
 import { featureNamed, featureEvent, applySpring } from './features.js';
@@ -1327,6 +1327,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 reject(d, 'unknown', `the engine has no handler for ${d.type}`);
         }
         acceptStep(d);
+        if (acceptedSteps.has(String(d.seq)) && ['arrive', 'enter', 'person.new'].includes(d.type)) settleCanonicalPurchases();
         if (acceptedSteps.has(String(d.seq)) && d.type === 'arrive' && s.scene.at !== atBefore) refusedScene = false;
     }
     // a hand-over whose offer never came to be (refused) stands as the story told it
@@ -1432,6 +1433,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
 
     if (explicitTravel) {
         step = { kind: 'engine' };
+        for (const { dec, why } of settleCanonicalPurchases()) {
+            const notice = `NOT BOUGHT — ${dec.what}: ${why}. No purchase was booked; establish a present seller and valid offer within the accepted price/funds, then repeat the purchase.`;
+            system.push(notice); corrections.push(notice);
+        }
         for (const dec of s.decisions.filter(x => ['purchase', 'sale'].includes(x.kind)))
             emit({ t: 'decision.closed', d: { id: dec.id, status: 'expired' } });
     }
@@ -2046,12 +2051,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 k.done = true;
                 grant('conditional');
                 if (k.kind === 'accept') {
-                    const ok = q?.status === 'listed';
-                    if (ok) acceptContract(s, content, q, emit, { step: k.seq });
-                    emit({ t: 'cmd.completed', d: { seq: k.seq, ok, reason: ok ? null : 'the contract is no longer on the board' } });
+                    const accepted = q?.status === 'listed' ? acceptContract(s, content, q, emit, { step: k.seq })
+                        : { ok: false, reason: 'the contract is no longer on the board' };
+                    const { ok, reason } = accepted;
+                    emit({ t: 'cmd.completed', d: { seq: k.seq, ok, reason: ok ? null : reason } });
                     if (!ok) {
-                        system.push(`NOT ACCEPTED — ${q?.title || k.quest}: it is no longer on the board`);
-                        corrections.push(`"${q?.title || k.quest}" was not taken: it is no longer on the board; he holds no slip for it.`);
+                        const why = q?.status === 'listed' ? reason : 'it is no longer on the board';
+                        system.push(`NOT ACCEPTED — ${q?.title || k.quest}: ${why}`);
+                        corrections.push(`"${q?.title || k.quest}" was not taken: ${why}; he holds no slip for it.`);
                     }
                     continue;
                 }
@@ -2213,6 +2220,41 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (near.length !== 1) return null;
         emit({ t: 'note', d: { kind: 'amount.corrected', seq: d?.seq ?? 0, type: d?.type ?? null, reported_cp: cp, said: null, cp: near[0], why: 'one coin unit off the amount the reply states' } });
         return near[0];
+    }
+
+    /** Fulfil current consent against known stock at the chronological shop visit, not from priced:true. */
+    function settleCanonicalPurchases() {
+        const missing = [];
+        if (!explicitTravel || !cPath || rulesetOf(s) < 2) return missing;
+        const was = step;
+        step = { kind: 'conditional' };
+        try {
+            for (const dec of s.decisions.filter(x => x.kind === 'purchase' && x.turn === s.turn)) {
+                if (!Number.isInteger(dec.max_cp) && !dec.any_price) {
+                    missing.push({ dec, why: 'no agreed price or price limit' }); continue;
+                }
+                const matches = Object.values(s.offers).filter(o => o.canon && o.stock === 'manuals'
+                    && o.status === 'open' && o.at === dec.at && o.at === s.scene.at && (!dec.seller || dec.seller === o.seller))
+                    .map(o => ({ o, lines: purchaseLines(dec.what, o.lines) })).filter(x => x.lines.length);
+                const match = matches.length === 1 ? matches[0] : null;
+                let why = match ? offerAvailability(s, match.o) : 'no single valid canonical offer at the reached shop';
+                const pick = match && !why ? pickLines(match.o, match.lines.map(l => l.id), dec.qty ?? null) : null;
+                if (pick) why = pick.error || (pick.clarify ? 'the quantity or goods need clarification' : null);
+                if (pick && !why) {
+                    why = bookPurchase(s, emit, { offer: match.o, picks: pick.picks, cp: pick.cp, content, consent: dec,
+                        objectId: name => uniqueObjectId(s, tag, name) }).error || null;
+                    if (!why) {
+                        for (const p of pick.picks) bought.push({ what: p.line.what, units: p.units, seller: match.o.seller, left: p.units });
+                        counterparts.add(match.o.seller);
+                        emit({ t: 'decision.closed', d: { id: dec.id, status: 'accepted' } });
+                        emit({ t: 'cmd.completed', d: { seq: dec.seq, ok: true } });
+                        continue;
+                    }
+                }
+                missing.push({ dec, why });
+            }
+        } finally { step = was; }
+        return missing;
     }
 
     /** An offer, and then the hand-overs that waited for it: refused when its purchase booked them, else as told. */

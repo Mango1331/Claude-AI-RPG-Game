@@ -1092,8 +1092,10 @@ const HANDLERS = {
             if (!there && (!hall || settlementOf(s, hall) !== q.source?.branch)) {
                 return { status: 'refused', reason: 'not at the Guild hall of that board', line: `CANNOT ACCEPT — ${questLine(q)} is taken at the Guild hall of ${s.places[q.source?.branch]?.name || 'its branch'}.` };
             }
-            if (!there) acceptContract(s, content, q, emit, { step: c.seq });
-            else ctx.conditionals.push({ seq: c.seq, kind: 'accept', quest: q.id, condition: 'arrive_guild_hall', hall: there });
+            if (!there) {
+                const accepted = acceptContract(s, content, q, emit, { step: c.seq });
+                if (!accepted.ok) return { status: 'refused', reason: accepted.reason, line: `CANNOT ACCEPT — ${questLine(q)}: ${accepted.reason}.` };
+            } else ctx.conditionals.push({ seq: c.seq, kind: 'accept', quest: q.id, condition: 'arrive_guild_hall', hall: there });
             ctx.booked.accepted.push(q.id);
             ctx.booked.grants.push('contract slip');
             // a hunt is proven by trophies of the kills at a Guild hall (live 30.09.2026 14:56: the clerk made a local

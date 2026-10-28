@@ -233,6 +233,21 @@ Zusätzliche LLM-Aufrufe, Kosten, Save/Reload/Swipe, Geheimnisgrenzen und Replay
 
 **Analyseauftrag angelegt, keine Implementierungsfreigabe:** [Monsterökologie, Sapienz, Sonderfähigkeiten – Forschungs- und Analyseauftrag](recherche/ANALYSEAUFTRAG_MONSTERDESIGN_20261028.md). Externe Designmuster zu Habitat/Verhalten, freien Arten auf vorhandenen Kampankern, anatomisch korrektem Loot, intelligenten Monsterkulturen und **mechanisch echten** Spezialfähigkeiten prüfen. Historischen GPT-/Sol-Monsteraudit §§5–7 im [10B-Archiv](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0ebf4496f185a69ebac235a337ab9dd2e2b470c7/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md#5-monster--lore-audit-von-chatgpt--rekonstruierte-vollständige-analyse) kritisch als Ausgangslage verwenden, nicht wiederholen. M-D/M-C bleiben **unverbindliche Hypothesen**. Keine Code-/Content-/Runner-/Batchänderung.
 
+**Ergebnis (28.10.2026, Claude, keine Freigabe):** [Fachanalyse Monsterdesign](recherche/MONSTERDESIGN_ANALYSE_20261028.md) auf Code-Stand .109.
+- **Ankermodell bestätigt:** Das „Reskin“-Prinzip aus PF2 trägt freie Arten auf wenigen Ankern; ein Bestiarium (M-A) ist nicht nötig.
+- **Neu belegte Lücken:**
+  - Geweih ohne `only_if` (Hase/Hirschkuh/Ziege) besteht in .109 weiter.
+  - Humanoide werfen Waffen unabhängig von gezeigter Bewaffnung ab.
+  - Dieselbe Art kann verschiedene Anker erhalten.
+  - Kreaturen haben im Kampf `sapient: false`; als Person erhielten sie menschliche Vorlagen.
+  - Für Gegner gibt es keinen ausführbaren Statuseffekt, kein Element und keine Immunität.
+  - Core-#7/#8-Texte versprechen Elite-/Boss-Fähigkeiten ohne Code.
+- **Drei priorisierte Pakete:**
+  1. **A „Glaubwürdige Körper“** (M-D+: Spezialbeute und Waffen nur mit Beleg, Artkonsistenz per Abfrage, kein neues Feld).
+  2. **C „Sapienz, Lage, Populationen“** (`sapient` mit Beleg, Lagehinweise statt Moralzahl, `place.population` über Jagdorte hinaus).
+  3. **B „Ausführbare Signaturen und Bosse“** (Gift, angekündigter Recharge-Angriff, eine Resistenz oder Schwäche, Flug, Bossphasen); erst nach Main/Minor und F→E-Scaling.
+- Acht offene Nutzerentscheidungen stehen in der Fachanalyse §7.
+
 ## 8. Pflege
 
 Nur echte neue oder bewusst zurückgestellte Ideen hier eintragen, mit Status und Nachweislink. Historische Patchberichte nicht wieder kopieren; tiefe Analysen in laufenden Fachdateien. **Jetzt Vorrang für technische Fehler, natürliche Sechserbatch-Abnahme und F→E-Scaling.**

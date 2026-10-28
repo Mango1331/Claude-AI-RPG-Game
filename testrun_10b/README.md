@@ -60,6 +60,10 @@ Frühere ausführliche Zeilen mit SHA-256-/Git-Blob-Prüfungen und allen technis
 
 [**GPT-ZIP-Review**](batch-20261028-111133Z/REVIEW.md). **230 Inputs**: Warrior **80/L6, regelgebuchter Tod** gegen drei E-Goblins Lv15–17 nach Level-1-Auftrag und tatsächlichem Floor-2-Abstieg; Mage **150/L8, reguläres Inputlimit mit offenem Kampf**; Rogue **0 Inputs, manuell Ctrl+C vor Start**. **Zwei natürliche Guild-Registrierungen erfolgreich** (je einmal kanonisch 20 cp, Novice), keine zweite Charaktererstellung. **11 Guild-Abschlüsse**, keine fatalen Planner-/World-Fehler. **P1-Prüfkandidat:** Mage T143 bezahlt 8 cp für Unterkunft ohne Zimmerbuchung und bei T145 nochmals 8 cp für die eine gebuchte Nacht. Dungeon-Floor-/Gefahrenkommunikation getrennt prüfen; **keine neue .112-Regression behauptet**. Original-ZIP 36,83 MiB CRC/SHA-geprüft, **nicht auf main**. Keine Produktänderung.
 
+## Batch 8 (.113) – Warrior-T22-Provider-429, Mage manuell gestoppt
+
+[**Original-ZIP-Review**](batch-20261028-134108Z/REVIEW.md). Build `.113` (`55c547f`): Warrior **22 Inputs/L1**, **UI no reply** bei T22 **nach ausdrücklich belegtem Provider-429 `model_switching_limit_exceeded`** beim Narrator; Planner erfolgreich, der letzte Heavy Slash wegen Abstand SHORT statt ENGAGED mechanisch nicht ausgeführt. Bis dahin eine erfolgreiche Guild-Registrierung und ein abgeschlossener Contract, `integrity: OK`. **61 Engine-Modellaufrufe**, alle auf GLM-5.3-Flash; **kein Modellwechsel durch den Run dokumentiert**. Mage **0 Inputs/Ctrl+C**, Rogue **nicht gestartet**. ZIP 3,64 MiB, CRC/SHA-geprüft, **nicht auf main**. Kein Produktfix.
+
 ## Umgang mit neuen Runs
 
 - Unveränderte ZIP im nach der Original-Run-ID benannten Ordner sichern. Format und Hash bei Übertragung prüfen; niemals vorhandene Originaldateien oder Reviews still überschreiben.

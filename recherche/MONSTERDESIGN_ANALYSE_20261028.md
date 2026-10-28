@@ -463,7 +463,7 @@ Je Fall: Welt und Lore · Engine heute [CODE] · Engine mit den Paketen [EMPFEHL
 
 ## 7. Offene Nutzerentscheidungen
 
-**Weiterhin offen:** Die acht nachstehenden Fragen sind nicht durch den späteren Gegenreview entschieden; ergänzende Optionen und Abnahmefragen stehen in [§10.6](#106-offene-entscheidungs--und-abnahmefragen-fur-spatere-umsetzungen).
+**Weiterhin offen:** Die acht nachstehenden Fragen sind nicht durch den späteren Gegenreview entschieden; ergänzende Optionen und Abnahmefragen stehen in §10.6.
 
 1. **Unbekannte Anatomie:** „Grundertrag ja, Spezialbeute nein“ (Empfehlung) oder „gar keine Beute ohne Beleg“?
 2. **Hase und ähnliche Kleintiere:** dem nächstkleinen Anker zuordnen (Empfehlung `rat`) oder einen neuen Kleinwild-Anker schaffen? Ein neuer Anker ist nur nötig, wenn Zahlen oder Beute dort falsch wären.

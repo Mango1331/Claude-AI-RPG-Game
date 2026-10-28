@@ -44,3 +44,14 @@ Ein abgelehnter Beleg wirkt wie in `.107`: kein Ortswechsel, Firewall-Regel `no_
 - „him/he“ in drei Wörtern Abstand kann sich auf eine andere Person beziehen.
 - Ein ungewöhnlich formulierter echter Ortswechsel oder ein Ziel unter anderem Namen kann abgelehnt werden. Alaric bleibt dann am Ort, und die Korrektur sagt es.
 - Ein mit „to“ eingeleiteter Infinitiv („dragged him to see the captain“) gilt als genanntes Ziel.
+
+## Gegenreview-Fix .109 — 28.10.2026
+
+Zwei von Sol über `applyWorld()` reproduzierte Freigabelücken aus .108 behoben:
+
+- „Alaric watched guards drag the cart …“ bewegt Alaric nicht mehr. Der bloße Drei-Wörter-Abstand ist ersetzt: Alaric muss unmittelbar als Objekt der Bewegung oder als Subjekt einer passiven/intransitiven Bewegungsform verbunden sein. Auxiliar-/Adverbfolgen wie „He was forcibly carried“ bleiben möglich. Aktives „Alaric dragged the cart“ und „Alaric helped drag the merchant“ reichen nicht.
+- „south gate“ erlaubt keine Ankunft an „North Gate“, ebenso wenig „north tower“. Die Prüfung vergleicht Namen je Alternative und verlangt übereinstimmende Namensbestandteile statt eines beliebigen gemeinsamen Wortes. Ein unqualifizierter Kopf bleibt möglich („ditch“ für „Roadside ditch“); zusätzliche unterscheidende Wörter müssen passen. „Old/New“ bleiben dabei bedeutungstragend. Umgebende Ortsnamen zählen nur als vollständig erzähltes Ziel.
+
+**Abnahme:** 12 neue World-/Replay-Regressionen in `patch_protect109.test.js`; auf unverändertem .108 **6 rot, 6 positive Kontrollen grün**, danach 12/12. Angrenzende .107/.108- und Patch-7-Prüfung 83/83; abschließendes `npm test -- --test-concurrency=4` **2159/2159 grün**, einschließlich unverändertem Run-12-Graben. Serialisiertes Event-Replay ist in allen neuen Fällen identisch. Kein neuer ST-Smoke: geändert sind ausschließlich die reine Belegfunktion, Regressionen, Buildnummern und diese Note; Host und Protokolle unverändert. Die .108-Smokes oben bleiben historische Ergebnisse, keine .109-Smoke-Abnahme.
+
+Die Funktion bleibt ein begrenzter wörtlicher Filter. Pronomen können mehrdeutig bleiben; ungewöhnliche echte Bewegungsformen können zurückgewiesen werden. Kein allgemeines Sprachverständnis, keine automatische Reise aus Prosa, keine Kampf-/Balanceänderung, keine Änderung der Erzählerkarte und kein natürlicher Batch gestartet.

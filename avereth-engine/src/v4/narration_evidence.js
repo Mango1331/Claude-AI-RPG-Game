@@ -80,12 +80,12 @@ const SETS_OFF = /^(?:grabb?\w*|seiz\w*|snatch\w*|arrest\w*|captur\w*|pull\w*|pu
 const DIRECTION = /^(?:into|to|toward|towards|through|down|out|across|away|off|onto|over|under|along|up|downstream|overboard)$/;
 const DESTINATION = /^(?:to|into|onto|toward|towards)$/;
 const STOP = new Set([',', 'and', 'but', 'while', 'where', 'as', 'before', 'after', 'when', 'until', 'then', 'so', 'with']);
-const FILLER = new Set(['the', 'and', 'his', 'her', 'its', 'their', 'this', 'that', 'from', 'with', 'old', 'new', 'some', 'one']);
+const FILLER = new Set(['the', 'and', 'his', 'her', 'its', 'their', 'this', 'that', 'from', 'with', 'some', 'one']);
 const content = (words) => words.filter((w) => w.length > 2 && !FILLER.has(w)).map((w) => (w.length > 3 ? w.replace(/s$/, '') : w));
 
 /**
  * An involuntary relocation of Alaric the reply narrates (arrive.forced_by, Builds .107/.108): a narrated event whose
- * moving word has Alaric next to it (him, he, himself or his name, within three words), and whose destination, where
+ * moving word binds Alaric as its object or an intransitive/passive subject, and whose destination, where
  * the sentence tells one ("… to the gap in the rocks"), is the arrival's place.
  * @param {{self?: string[], target?: string[], above?: string[]}} who self: Alaric's names; target: the arrival's own
  *   names; above: its enclosing places (a told destination may name only these)
@@ -95,11 +95,23 @@ export function forcedRelocation(prose, quote, { self = ['alaric'], target = [],
     if (!ev.ok) return ev;
     const w = [...ev.quote, ...ev.rest];
     const own = new Set(['him', 'he', 'himself', ...self.flatMap((x) => flat(x).split(' ')).filter((x) => x.length > 2)]);
-    const near = (k) => w.slice(Math.max(0, k - 3), k + 4).some((x) => own.has(x));
+    // An object immediately after the verb, or a subject joined only by
+    // auxiliaries/adverbs. Mere proximity also matched spectators and helpers.
+    const object = k => own.has(w[k + 1]) && w[k + 1] !== 'he';
+    const subject = (k, passive) => {
+        for (let j = Math.max(0,k-4); j < k; j++) {
+            if (!own.has(w[j])) continue;
+            const bridge = w.slice(j+1,k);
+            if (!bridge.every(x => /^(?:was|were|is|are|be|been|being|had|has|have)$/.test(x) || /ly$/.test(x))) continue;
+            if (!passive || bridge.some(x => /^(?:was|were|is|are|be|been|being)$/.test(x))) return true;
+        }
+        return false;
+    };
+    const falls = /^(?:fall|falls|falling|fell|fallen|plung\w*|tumbl\w*|slid|slide\w*|slip\w*)$/;
     const opens = (t, k) => SETS_OFF.test(t) && (!/^(?:gave|give|gives)$/.test(t) || w[k + 1] === 'way');
     if (!ev.quote.some((t, k) => MOVES.test(t) || opens(t, k))) return { ok: false, why: 'it names no relocation' };
-    const moved = w.some((t, k) => MOVES.test(t) && near(k))
-        || w.some((t, k) => opens(t, k) && near(k) && w.slice(k + 1).some((x) => DIRECTION.test(x)));
+    const moved = w.some((t, k) => (MOVES.test(t) && (object(k) || subject(k, true) || (falls.test(t) && subject(k, false)))))
+        || w.some((t, k) => opens(t, k) && (object(k) || (falls.test(t) && subject(k, false))) && w.slice(k + 1).some((x) => DIRECTION.test(x)));
     if (!moved) return { ok: false, why: 'it does not move Alaric himself' };
     // where the sentence tells a destination, it is the arrival's place (or only a place around it)
     const told = [];
@@ -109,9 +121,15 @@ export function forcedRelocation(prose, quote, { self = ['alaric'], target = [],
         for (let j = k + 1; j < w.length && !STOP.has(w[j]); j++) phrase.push(w[j]);
         if (content(phrase).length) told.push(content(phrase));
     }
-    const mine = new Set(content(target.flatMap((x) => flat(x).split(' '))));
-    const around = new Set(content(above.flatMap((x) => flat(x).split(' '))));
-    if (told.length && mine.size && !told.some((p) => p.some((x) => mine.has(x)) || p.every((x) => around.has(x))))
+    const names = target.map(x => content(flat(x).split(' '))).filter(x => x.length);
+    const enclosing = above.map(x => content(flat(x).split(' '))).filter(x => x.length);
+    // Match the recorded name or an unqualified head (ditch for roadside ditch).
+    // Extra distinguishing words must agree: south gate cannot match north gate.
+    // An enclosing place is evidence only when it is the entire told destination.
+    const matches = p => names.some(name => name.every(x => p.includes(x))
+        || (p.includes(name.at(-1)) && p.every(x => name.includes(x))))
+        || enclosing.some(name => name.every(x => p.includes(x)) && p.every(x => name.includes(x)));
+    if (told.length && names.length && !told.every(matches))
         return { ok: false, why: 'the destination it tells is not the place of the arrival' };
     return { ok: true };
 }

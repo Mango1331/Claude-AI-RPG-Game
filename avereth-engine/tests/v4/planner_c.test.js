@@ -261,7 +261,7 @@ test('"I Flame Lance the cracked floor": A asks which scorpion; the planner path
     const bad = await k.say('I Flame Lance Barkscorpion B',
         cmds({ type: 'ability_world', skill: 'mage.flame_lance', target: B, target_words: 'Barkscorpion B', goal: null, quote: 'I Flame Lance Barkscorpion B' }),
         cmds({ type: 'ability_world', skill: 'mage.flame_lance', target: B, target_words: 'Barkscorpion B', goal: null, quote: 'I Flame Lance Barkscorpion B' }));
-    assert.equal(bad.action, 'abort', 'invalid twice: the planner failed, nothing was booked');
+    assert.equal(bad.action, 'not_executed', 'invalid twice: the planner failed, nothing was booked');
     assert.equal(k.last().interp.failed, true);
 });
 
@@ -308,7 +308,7 @@ test('unknown skills are refused, never replaced: an invented name, a skill of t
     const r = await k.say('I cast Fireball at Barkscorpion B',
         cmds({ type: 'use_skill', skill: 'mage.fireball', target: B, quote: 'I cast Fireball at Barkscorpion B' }),
         cmds({ type: 'use_skill', skill: 'mage.fireball', target: B, quote: 'I cast Fireball at Barkscorpion B' }));
-    assert.equal(r.action, 'abort');
+    assert.equal(r.action, 'not_executed');
     assert.match(k.calls.filter((c) => c.purpose === 'plan_repair')[0].messages.at(-1).content, /skill must be an id from KNOWN SKILLS/);
 });
 
@@ -403,7 +403,7 @@ test('swipe and regenerate reuse the plan of the message: no second planner call
 test('a failed planner is not cached: the turn aborts with a notice, Regenerate plans again', async () => {
     const g = await fight();
     const r = await g.say('I Flame Lance Barkscorpion C', 'no json here', 'still none');
-    assert.equal(r.action, 'abort');
+    assert.equal(r.action, 'not_executed');
     assert.match(r.notice, /planner failed/);
     assert.deepEqual(g.last().events, []);
     g.plans = [cmds({ type: 'use_skill', skill: 'mage.flame_lance', target: C, quote: 'I Flame Lance Barkscorpion C' })];

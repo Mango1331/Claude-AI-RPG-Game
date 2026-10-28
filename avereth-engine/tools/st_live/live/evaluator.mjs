@@ -133,7 +133,16 @@ export function turnFailure(chat, u) {
  * No heuristic NLP: absent/legacy data and any world event stay hard.
  */
 export function softExtractionFailure(chat, u, fault) {
+    if (['planner_failed','extractor_failed'].includes(fault?.kind)) {
+        const target = rec(chat[fault.at]);
+        const marker = target?.continuation?.kind;
+        if ((fault.kind === 'planner_failed' && marker === 'planner_not_executed' && messageEvents(chat[u]).length === 0)
+            || (fault.kind === 'extractor_failed' && marker === 'world_not_applied' && target.extraction?.error_kind === 'model')) {
+            return foldChat(chat).errors.length === 0;
+        }
+    }
     if (fault?.kind !== 'extractor_failed') return false;
+    if (rec(chat[fault.at])?.extraction?.error_kind && rec(chat[fault.at]).extraction.error_kind !== 'model') return false;
     const record = rec(chat[u]);
     if (!Array.isArray(record?.interp?.commands) || record.interp.commands.length) return false;
     const events = messageEvents(chat[u]);
@@ -272,7 +281,7 @@ export function evaluate(chat, { guide = null } = {}) {
     const quests = {};
     const encounters = [];
     const issues = [];
-    const counts = { rejected: {}, panels: Object.fromEntries(Object.keys(PANEL_MARKS).map((k) => [k, 0])), events: 0, recovery: recoverySummary(chat) };
+    const counts = { modelFailures: {planner:0,world:0}, rejected: {}, panels: Object.fromEntries(Object.keys(PANEL_MARKS).map((k) => [k, 0])), events: 0, recovery: recoverySummary(chat) };
     let defeat = null;
     let inside = false;
     const issue = (i, kind, text) => issues.push({ at: i, turn: turnAt[i], kind, text });
@@ -333,6 +342,7 @@ export function evaluate(chat, { guide = null } = {}) {
         // the record's telemetry
         if (!m.is_user && !m.is_system && r) {
             if (r.narration?.empty) issue(i, 'empty_reply', 'the narrator\'s reply was empty (no extraction; the player saw the notice)');
+            if (r.extraction?.status === 'failed') counts.modelFailures.world++;
             if (r.extraction?.status === 'failed') issue(i, 'extraction_failed', `the extractor failed${r.extraction.error ? `: ${r.extraction.error}` : ''}`);
             if (r.extraction?.status === 'late') issue(i, 'extraction_late', 'the extraction came late');
             if (r.extraction?.repaired) issue(i, 'extraction_repaired', 'the extractor\'s first answer needed a repair');
@@ -349,6 +359,7 @@ export function evaluate(chat, { guide = null } = {}) {
             if (!assigned) issue(i, 'stat_words', `the player spent Stat Points in words, not with #assign; nothing was assigned (for review: did the story tell them as done?)`);
         }
         if (m.is_user && r) {
+            if (r.plan?.failed || r.interp?.failed) counts.modelFailures.planner++;
             if (r.plan?.failed || r.interp?.failed) issue(i, 'planner_failed', `the planner failed${r.plan?.error ? `: ${r.plan.error}` : ''}`);
             if (r.plan?.repaired || r.interp?.repaired) issue(i, 'planner_repaired', 'the planner\'s first answer needed a repair');
             if (['empty', 'transport'].includes(r.plan?.recovery)) {

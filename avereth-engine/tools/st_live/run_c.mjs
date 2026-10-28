@@ -96,6 +96,7 @@ fs.writeFileSync(secretsFile, JSON.stringify({ api_key_custom: [{ id: 'smoke', v
 
 // ------------------------------------------------------------------------------------------------ mock provider
 const calls = [];
+let probeMode = false;
 const narrated = new Map();
 const mock = http.createServer(async (req, res) => {
     if (req.url.endsWith('/models')) { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ object: 'list', data: [{ id: 'mock-narrator', object: 'model' }] })); return; }
@@ -129,7 +130,9 @@ const mock = http.createServer(async (req, res) => {
         text = t ? (n > 1 && t.swipe ? t.swipe : t.reply || 'The world waits.') : 'The world waits.';
     }
     if (process.env.AVERETH_SMOKE_EMPTY_NARRATOR === '1' && purpose === 'narrator' && lastUser.includes(TURNS[0].player) && narrated.get('burrow') === 1) text = '';
-    calls.push({ empty: !text.trim(), purpose, at: Date.now(), auth: req.headers.authorization || null, stream: !!j.stream, temperature: j.temperature, maxTokens: j.max_tokens, model: j.model, messages: msgs, lastUser });
+    const probe = probeMode;
+    if (probe && ((purpose === 'plan' && users.includes('FAILSOFT_PLANNER')) || purpose === 'extract')) text='{bad';
+    calls.push({ probe, empty: !text.trim(), purpose, at: Date.now(), auth: req.headers.authorization || null, stream: !!j.stream, temperature: j.temperature, maxTokens: j.max_tokens, model: j.model, messages: msgs, lastUser });
     if (process.env.AVERETH_SMOKE_PROVIDER_ERROR === '1' && purpose === 'narrator' && lastUser.includes(TURNS[0].player) && narrated.get('burrow') === 1) {
         res.writeHead(200, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ error: { message: 'An unexpected error has occurred.', type: 'server_error', code: 'internal_server_error' } })); return;
@@ -160,9 +163,11 @@ for (let i = 0; i < 120 && !/listening on/.test(stOut); i++) await sleep(500);
 const browser = await chromium.launch();
 const page = await browser.newPage();
 const pageErrors = [];
+const injectedSaveErrors = [];
+let injectingSaveFailure = false;
 const keyInBrowser = [];
 page.on('pageerror', (e) => pageErrors.push(`${e.message} ${String(e.stack || '').split('\n').slice(1, 4).join(' ')}`));
-page.on('console', (m) => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) pageErrors.push(`${m.text()} @ ${m.location()?.url?.split('/').pop()}:${m.location()?.lineNumber}`); });
+page.on('console', (m) => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) (injectingSaveFailure ? injectedSaveErrors : pageErrors).push(`${m.text()} @ ${m.location()?.url?.split('/').pop()}:${m.location()?.lineNumber}`); });
 page.on('request', (r) => { if (`${JSON.stringify(r.headers())}\n${r.postData() || ''}`.includes(DUMMY_KEY)) keyInBrowser.push(r.url()); });
 page.on('response', async (r) => {
     try { if (/\/api\//.test(r.url()) && (await r.text()).includes(DUMMY_KEY)) keyInBrowser.push(`response ${r.url()}`); } catch { /* bodies of redirects and aborted requests */ }
@@ -270,6 +275,38 @@ try {
     await send('Flame Lance + Arcane Burst');
     const afterCreation = calls.filter((c) => c.purpose === 'plan').length;
     const steps = {};
+    let failsoft=null;
+    if (process.env.AVERETH_SMOKE_FAILSOFT === '1') {
+        probeMode=true;
+        const before=await fold();
+        await send('FAILSOFT_PLANNER I consider my next action.');
+        const state=await fold();
+        const visible=await driver.view();
+        const saved=await driver.verifySaved(await driver.chat());
+        const noBooking=await page.evaluate(()=>{const c=SillyTavern.getContext(),u=c.chat.findLast(m=>m.is_user);return !u.is_system && u.extra.avereth.events.length===0 && u.extra.avereth.continuation?.kind==='planner_not_executed';});
+        await send('FAILSOFT_WORLD I wait quietly.');
+        const world=await page.evaluate(()=>{const c=SillyTavern.getContext(),m=c.chat.findLast(m=>!m.is_user&&!m.is_system);return m.extra.avereth.extraction.status==='failed' && m.extra.avereth.continuation?.kind==='world_not_applied';});
+        // ST's real save API resolves even for this injected HTTP 500. The
+        // fixture is a System note only; no Engine event or game value changes.
+        injectingSaveFailure=true;
+        await page.route('**/api/chats/save',route=>route.fulfill({status:500,contentType:'application/json',body:'{"error":"injected_smoke_save_failure"}'}));
+        const saveFault=await page.evaluate(async()=>{
+            const c=SillyTavern.getContext();
+            const {verifySavedChat}=await import('/scripts/extensions/third-party/avereth-engine/src/v4/continuation.js');
+            c.chat.push({mes:'Synthetic persistence probe',is_user:false,is_system:true,extra:{}});
+            try {
+                await c.saveChat();
+                let rejected=false;
+                try { await verifySavedChat(c,c.chat.length-1,()=>true); } catch { rejected=true; }
+                return {resolved:true,rejected};
+            } finally { c.chat.pop(); }
+        });
+        await page.unroute('**/api/chats/save');
+        injectingSaveFailure=false;
+        await page.evaluate(async()=>{await SillyTavern.getContext().saveChat();});
+        probeMode=false;
+        failsoft={saveFault,noBooking,saved,world,visible:JSON.stringify(visible).includes('NOT EXECUTED'),noDuplicateCombat:before.mp===state.mp};
+    }
     for (const t of TURNS) {
         await send(t.player);
         const view = await driver.view();
@@ -286,7 +323,7 @@ try {
     const status = await page.evaluate(() => document.getElementById('avereth_status')?.textContent || '');
     await page.evaluate(async () => { await SillyTavern.getContext().saveChat(); });
     await page.waitForTimeout(800);
-    result = { toggle, greeting, afterCreation, steps, status, delayedRecoverySave };
+    result = { toggle, greeting, afterCreation, steps, status, delayedRecoverySave, failsoft };
 } finally {
     await browser.close();
     st.kill();
@@ -299,11 +336,13 @@ const chatDir = path.join(USER, 'chats', CARD);
 const chatText = fs.existsSync(chatDir) ? fs.readdirSync(chatDir).map((f) => fs.readFileSync(path.join(chatDir, f), 'utf8')).join('\n') : '';
 const { toggle, greeting, afterCreation, steps, status } = result;
 const S = (k) => steps[k] || {};
-const plans = calls.filter((c) => c.purpose === 'plan');
-const narr = calls.filter((c) => c.purpose === 'narrator');
+const normalCalls=calls.filter(c=>!c.probe);
+const plans = normalCalls.filter((c) => c.purpose === 'plan');
+const narr = normalCalls.filter((c) => c.purpose === 'narrator');
 const engineOf = (c) => String(c?.messages?.find((m) => String(m.content).startsWith('[AVERETH ENGINE'))?.content || '');
 const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((t) => t.key === key).player));
 const checks = {
+    ...(process.env.AVERETH_SMOKE_FAILSOFT === '1' ? {failsoftPlannerVisible:result.failsoft?.visible && result.failsoft?.noBooking,failsoftSaved:result.failsoft?.saved,failsoftWorldTerminal:result.failsoft?.world,failsoftNoDuplicateCombat:result.failsoft?.noDuplicateCombat,failsoftDetectsSwallowedSave:result.failsoft?.saveFault?.resolved && result.failsoft?.saveFault?.rejected} : {}),
     ...(process.env.AVERETH_SMOKE_PROVIDER_ERROR === '1' ? {
         transientProviderRecoveredOnce: narratorFor('burrow').length === 2 && S('burrow').look.record?.events?.filter(e => e.t === 'turn.begun').length === 1,
     } : {}),
@@ -320,7 +359,7 @@ const checks = {
     // one planner call per free-text message, none for the question back and none for the swipe
     onePlanPerMessage: plans.length === TURNS.length && !calls.some((c) => c.purpose === 'interpret'),
     // every reply read once (the swiped one too): the barrier and the extractor as in Runtime V4
-    extractPerReply: calls.filter((c) => c.purpose === 'extract').length === narr.filter(c => !c.empty).length - (process.env.AVERETH_SMOKE_PROVIDER_ERROR === '1' ? 1 : 0),
+    extractPerReply: normalCalls.filter((c) => c.purpose === 'extract').length === narr.filter(c => !c.empty).length - (process.env.AVERETH_SMOKE_PROVIDER_ERROR === '1' ? 1 : 0),
     planCallParams: plans.every((c) => !c.stream && c.model === 'mock-narrator' && c.temperature === 0.1 && c.maxTokens === 2000),
     fightPromptInFight: plans.slice(1).every((c) => String(c.messages[0].content).startsWith('You are the intent planner')) && String(plans[0].messages[0].content).startsWith('You are the command interpreter'),
     keyAddedBySillyTavern: calls.length > 0 && calls.every((c) => c.auth === `Bearer ${DUMMY_KEY}`),
@@ -350,7 +389,7 @@ const checks = {
     statusLine: status.includes(`Avereth Engine ${ENGINE_VERSION}`) && /runtime v4 \(LLM: custom endpoint\)/.test(status) && /integrity: OK/.test(status),
     noPageErrors: pageErrors.length === 0,
 };
-fs.writeFileSync(path.join(HERE, 'result.json'), JSON.stringify({ checks, toggle, steps, status, calls: calls.map((c) => ({ purpose: c.purpose, stream: c.stream, temperature: c.temperature, max_tokens: c.maxTokens, auth: c.auth ? 'Bearer <dummy>' : null, n: c.messages.length, lastUser: c.lastUser.slice(-80) })), keyInBrowser, pageErrors }, null, 1));
+fs.writeFileSync(path.join(HERE, 'result.json'), JSON.stringify({ checks, toggle, steps, status, calls: calls.map((c) => ({ purpose: c.purpose, stream: c.stream, temperature: c.temperature, max_tokens: c.maxTokens, auth: c.auth ? 'Bearer <dummy>' : null, n: c.messages.length, lastUser: c.lastUser.slice(-80) })), keyInBrowser, pageErrors, injectedSaveErrors }, null, 1));
 fs.writeFileSync(path.join(HERE, 'planner_alias_request.json'), JSON.stringify(plans[1]?.messages || [], null, 1));
 fs.writeFileSync(path.join(HERE, 'narrator_world_request.json'), JSON.stringify(narratorFor('world')[0]?.messages || [], null, 1));
 console.log(JSON.stringify(checks, null, 1));

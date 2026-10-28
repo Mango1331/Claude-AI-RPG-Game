@@ -26,7 +26,8 @@ function openSale() {
 
 test('Batch2 review A: sale without a named buyer rejects a reversed offer for the held object', () => {
     const x = openSale();
-    assert.equal(parsed(x).valid, false);
+    assert.equal(parsed(x).valid, true);
+    assert.ok(parsed(x).issues.length);
     const r = run(x);
     assert.ok(r.rejected.some(d => d.rule === 'trade_direction'));
     assert.ok(!r.events.some(e => e.t === 'offer.created'));
@@ -96,7 +97,7 @@ for (const reverse of [false, true]) test(`Batch2 review C: arrival then enter t
     x.answer.deltas = [{ ...arrival, seq: 1 }, { seq: 2, type: 'enter', who: known, scene: intro.scene }, { ...intro, seq: 3 }];
     if (reverse) x.answer.deltas.reverse();
     const p = parsed(x);
-    assert.equal(p.valid, true, p.errors.join(';'));
+    assert.equal(p.valid, true, p.issues.map(x=>x.why).join(';'));
     const r = run(x);
     assert.ok(r.state.scene.present.includes(known));
     assert.equal(r.state.entities[known].at, r.state.scene.at);
@@ -111,7 +112,8 @@ test('Batch2 review C: a later enter cannot justify an earlier contradictory int
     const intro = x.answer.deltas.find(d => d.type === 'person.new' && d.name === 'Corlin');
     const arrival = x.answer.deltas.find(d => d.type === 'arrive');
     x.answer.deltas = [{ ...arrival, seq: 1 }, { ...intro, seq: 2 }, { seq: 3, type: 'enter', who: 'npc.npcraftcamp_aproned', scene: intro.scene }];
-    assert.equal(parsed(x).valid, false);
+    assert.equal(parsed(x).valid, true);
+    assert.ok(parsed(x).issues.length);
 });
 
 for (const [name, status, error, count] of [

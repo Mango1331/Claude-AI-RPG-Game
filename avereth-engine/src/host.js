@@ -145,9 +145,12 @@ export function turnBlock(chat, u, content, settings = {}) {
     const { state, errors } = foldChat(chat, u + 1);
     const p = lastReplyIndex(chat, u);
     const prev = p >= 0 ? rec(chat[p]) : null;
+    const previousInput = chat.slice(0,u).findLast(m => m.is_user);
+    const notExecuted = rec(previousInput)?.continuation?.kind === 'planner_not_executed'
+        ? [`PREVIOUS INPUT NOT EXECUTED: ${String(previousInput.mes).slice(0,180)}. It caused no action, travel, payment or combat round. Resolve only the current input now.`] : [];
     const context = turnContext(state, content, {
         input: chat[u].mes,
-        corrections: prev && !prev.system_answer ? prev.corrections || [] : [],
+        corrections: [...notExecuted, ...(prev && !prev.system_answer ? prev.corrections || [] : [])],
         lastReply: p >= 0 ? chat[p].mes : '',
         chronicle: state.meta?.runtime === 'v4' && (state.encounter || state.last?.outcome?.kind === 'combat') ? combatChronicle(chat.slice(0, u + 1), messageEvents) : null,
         budget: settings.budget,

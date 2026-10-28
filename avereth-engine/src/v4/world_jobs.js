@@ -8,10 +8,11 @@ import { hash32 } from '../util.js';
  *   active: () => { chat: object[], chatId: string|null },
  *   run: (chat: object[], id: number, opts: {isCurrent: () => boolean, signal: AbortSignal}) => Promise<object>,
  *   applied: (job: object, result: object, isCurrent: () => boolean) => Promise<void>|void,
+ *   failed?: (job: object, error: unknown, isCurrent: () => boolean) => Promise<object>|object,
  *   onError?: (err: unknown) => void
  * }} dependencies
  */
-export function createWorldJobs({ active, run, applied, onError = () => {} }) {
+export function createWorldJobs({ active, run, applied, failed = null, onError = () => {} }) {
     let pending = null;
 
     // A chat switch (including away-and-back to the same ID) invalidates
@@ -59,13 +60,25 @@ export function createWorldJobs({ active, run, applied, onError = () => {} }) {
         };
         pending = job;
         const isCurrent = () => belongs(job);
+        let committed = null;
         job.job = Promise.resolve().then(async () => {
             if (!isCurrent()) return { changed: false, cancelled: true };
             const result = await run(chat, id, { isCurrent, signal: controller.signal });
+            committed = result;
             if (isCurrent() && result?.changed) await applied(job, result, isCurrent);
             return result;
-        }).catch((error) => {
-            if (isCurrent()) onError(error);
+        }).catch(async (error) => {
+            if (!isCurrent()) return {changed:false, cancelled:true};
+            onError(error);
+            if (committed?.changed) return {...committed, persistenceFailed:true, error};
+            if (failed && rec(job.message)?.extraction?.status === 'pending') {
+                const result = await failed(job, error, isCurrent);
+                if (isCurrent() && result?.changed) {
+                    try { await applied(job, result, isCurrent); }
+                    catch (saveError) { onError(saveError); return {...result, persistenceFailed:true, error:saveError}; }
+                }
+                return result;
+            }
             return { changed: false, error };
         }).finally(() => {
             if (pending === job) pending = null;

@@ -30,7 +30,7 @@ test('Batch2 C386: two independent bids from Corr coexist; overlapping lots repl
 });
 
 test('Batch2 C394/T122: a reversed sale offer is repaired/rejected, cannot debit the PC or create a bought tooth',()=>{
- const x=f['005_121']; const p=parsed(x);assert.equal(p.valid,false);assert.match(p.errors.join(';'),/use bid/);
+ const x=f['005_121']; const p=parsed(x);assert.equal(p.valid,true);assert.match(p.issues.map(x=>x.why).join(';'),/use bid/);
  const r=run(x);assert.ok(r.rejected.some(e=>e.rule==='trade_direction'));
  assert.ok(!r.events.some(e=>e.t==='offer.created'));
  const t=playerTurnV4(r.state,content,f['005_122'].player,{c:true,commands:[{seq:1,type:'offer.accept',offer:'offer.t242.8',lines:['l1'],agreed_cp:20,quote:'Tooth at two silver — yes.'}]}).state;
@@ -56,7 +56,7 @@ test('Batch2 T123 original two Planner answers produce a playable clarification 
 });
 
 for(const key of ['004_24','005_26']) test(`Batch2 ${key}: original reintroduction requests repair, explicit arrival preserves identity and history`,()=>{
- const x=clone(f[key]), p=parsed(x);assert.equal(p.valid,false);assert.match(p.errors.join(';'),/known.*last at/);
+ const x=clone(f[key]), p=parsed(x);assert.equal(p.valid,true);assert.match(p.issues.map(x=>x.why).join(';'),/known.*last at/);
  const d=x.answer.deltas.find(d=>d.type==='person.new'&&d.name);const known=Object.values(x.state.entities).find(e=>e.name===d.name||e.known_name===d.name);
  assert.ok(known);assert.notEqual(known.at,d.at);
  const oldFacts=clone(x.state.facts);x.answer.deltas=x.answer.deltas.map(a=>a===d?{seq:a.seq,type:'enter',who:known.id,scene:a.scene}:a);

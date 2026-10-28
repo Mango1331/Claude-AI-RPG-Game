@@ -1,3 +1,5 @@
+import { loadContentPack } from '../../../src/content.js';
+import { validateState } from '../../../src/validate.js';
 import { foldChat } from '../../../src/host.js';
 import { makeClassFixture, CLASS_FIXTURES } from './class_fixture.mjs';
 // Automated live test in a real SillyTavern (docs/LIVE_RUNNER.md): the player's own SillyTavern program on an
@@ -255,6 +257,8 @@ export async function run(o) {
     let chat = null;
     let fixtureReload = null;
     let slow = [];
+    let modelStalls = 0;
+    let validationContent = null;
     let statusLine = '';
     let toasts = [];
     let firstTurnAt = null;
@@ -358,6 +362,7 @@ export async function run(o) {
                 log(`stopped: ${end.why}`);
                 break;
             }
+            const priorChat = chat;
             chat = await driver.chat();
             if (!(chat[0]?.extra?.avereth?.events || []).some((e) => e.t === 'campaign.started')) { end = { kind: 'ui', why: `the engine started no campaign, neither at the greeting nor with the message of turn ${turn}` }; break; }
             // Patch 8.4.1: a story turn needs the narrator's story; a command's System answer or the engine's own one is
@@ -366,17 +371,31 @@ export async function run(o) {
             const userAt = chat.findLastIndex((m) => m.is_user);
             const outcome = turnOutcome(chat, userAt);
             const fault = turnFailure(chat, userAt);
-            const soft = softExtractionFailure(chat, userAt, fault);
-            turnsLog.at(-1).outcome = soft ? 'extractor_failed_soft' : fault?.kind || outcome.kind;
+            let soft = softExtractionFailure(chat, userAt, fault);
+            if (soft) {
+                validationContent ||= await loadContentPack(async name => JSON.parse(fs.readFileSync(path.join(ENGINE,'content',name),'utf8')));
+                if (validateState(foldChat(chat).state,validationContent).length) {
+                    end={kind:'integrity_failed',why:`turn ${turn}: failed state validation before continuation`,turn}; break;
+                }
+                let saved=false;
+                try { saved=await driver.verifySaved(chat); } catch { /* unverified is a hard stop */ }
+                if (!saved) { end={kind:'persistence_failed',why:`turn ${turn}: completed records were not confirmed on disk`,turn}; break; }
+            }
+            turnsLog.at(-1).outcome = soft ? 'soft_continued' : fault?.kind || outcome.kind;
             if (soft) {
                 // A purely conversational turn had nothing mechanical to apply.
                 // Its failure is preserved in chat/evaluation; the runner can
                 // continue observing real play instead of truncating 100 turns.
                 turnsLog.at(-1).softFailure = fault.reason || 'Extractor failed without expected mechanical effects';
-                log(`turn ${turn}: soft Extractor failure; continue observation (the Engine still records FAILED_CORRECTION)`);
+                const meaningful = c => { const s=foldChat(c || []).state; return JSON.stringify([s.scene,s.entities?.pc?.sheet,s.quests,s.objects]); };
+                modelStalls = meaningful(priorChat) === meaningful(chat) ? modelStalls+1 : 0;
+                turnsLog.at(-1).unresolvedActions=Object.keys(foldChat(chat).state.last?.outcome?.expected_keys || {});
+                if (fault.kind === 'planner_failed') turnsLog.at(-1).unresolvedActions=null;
+                log(`turn ${turn}: safe continuation after ${fault.kind}; original failure retained`);
+                if (modelStalls >= 3) { end={kind:'repeated_model_failure',why:'three model failures without mechanical progress',turn}; break; }
             }
-            // Never continue after unrecorded travel, GIVE, combat or any other
-            // expected world change; no swipe/regeneration, original evidence kept.
+            // Continue only on a sealed failure with verified saved records; never replay an action.
+            if (!fault && outcome.kind === 'story') modelStalls=0;
             if (fault && !soft) {
                 await driver.screenshot(g.check(path.join(runDir, 'screens', `turn-${String(turn).padStart(3, '0')}-${fault.kind}.png`)));
                 end = failureEnd(fault, turn);
@@ -454,7 +473,7 @@ export async function run(o) {
         const ev = evaluate(messages, { guide });
         put('evaluation.json', JSON.stringify({ end, ...ev }, null, 1), 'die Auswertung (Etappen, Kämpfe, Quests, Auffälligkeiten)');
         const driverNotes = [...(driver?.setupNotes || []), ...callErrors.slice(0, 5).map((e) => `server log: ${e}`)];
-        put('run.json', JSON.stringify({ runId, build: buildOf(), git: gitInfo(), scenario: guide.scenario || null, stub: !!stub, seed, fixture: o.fixture || null, fixtureReload, persona, guide: { id: guide.id, chain: guide.chain, files: guide.files.map((f) => path.relative(ENGINE, f)) }, end, timing, preflight: preflightResult, route: imp.route, player: { type: o.player.type, ...playerSetup }, setup, conn, chatId: opened?.chatId || null, turns: turnsLog.map(({ decision, ...t }) => ({ ...t, milestone: decision?.milestone || null })), status: statusLine, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [], notes: driverNotes, stubCalls: stub ? stub.calls : undefined }, null, 1), 'Ablauf des Laufs: Züge, Zeiten, Hinweise, Seitenfehler, Statuszeile');
+        put('run.json', JSON.stringify({ runId, build: buildOf(), git: gitInfo(), scenario: guide.scenario || null, stub: !!stub, seed, fixture: o.fixture || null, fixtureReload, persona, guide: { id: guide.id, chain: guide.chain, files: guide.files.map((f) => path.relative(ENGINE, f)) }, end, timing, preflight: preflightResult, route: imp.route, player: { type: o.player.type, ...playerSetup }, setup, conn, chatId: opened?.chatId || null, safeContinuations: turnsLog.filter(t=>t.outcome === 'soft_continued').length, turns: turnsLog.map(({ decision, ...t }) => ({ ...t, milestone: decision?.milestone || null })), status: statusLine, toasts, pageErrors: driver?.pageErrors || [], serverErrors: server?.errors || [], notes: driverNotes, stubCalls: stub ? stub.calls : undefined }, null, 1), 'Ablauf des Laufs: Züge, Zeiten, Hinweise, Seitenfehler, Statuszeile');
         put('import.json', JSON.stringify({ ...imp, preset: { ...imp.preset, text: undefined, sha256: imp.preset.text ? sha256(Buffer.from(imp.preset.text)) : null } }, null, 1), 'was aus dem Profil übernommen wurde (ohne Schlüssel)');
 
         const changedRead = changedSince(imp.read);

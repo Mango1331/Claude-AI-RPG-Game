@@ -15,8 +15,9 @@
 //                              the narrator card's lorebook (lorebook/, docs/LOREBOOK.md) activates the right entries
 import { loadContentPack } from './src/content.js';
 import { onEdited, foldChat, ensureCampaign, hasCampaign, projectPromptHistory, reportRequest, applyReportAnswer, rec, setRec } from './src/host.js';
-import { prepareGenerationAsync, processReplyAny, runExtraction, pendingExtraction, campaignRuntime, onEditedV4, perfSummary } from './src/v4/runtime.js';
+import { prepareGenerationAsync, processReplyAny, runExtraction, applyExtraction, pendingExtraction, campaignRuntime, onEditedV4, perfSummary } from './src/v4/runtime.js';
 import { createNarratorRecovery, narratorProviderResponse } from './src/v4/narrator_recovery.js';
+import { verifySavedChat } from './src/v4/continuation.js';
 import { createWorldJobs } from './src/v4/world_jobs.js';
 import { validateState } from './src/validate.js';
 import { newSeed } from './src/rng.js';
@@ -34,6 +35,7 @@ let content = null;
 let lastContext = null;
 let lastProjection = null;
 let legacyWarned = null;
+let worldSaveBlocked = null;
 let pendingReport = null; // {chatId, id, hash, job}: the report request of the latest reply, while it runs
 let llmPath = null; // Runtime V4: which call the last LLM request used ('custom endpoint' | 'generateRaw')
 let narrationStart = null; // Patch 8.2: {chatId, user, t}: when the engine block of a story turn was handed to SillyTavern
@@ -108,6 +110,7 @@ function postPanel(text) {
     };
     c.chat.push(message);
     c.addOneMessage(message);
+    return message;
 }
 
 // ------------------------------------------------------------------------------------------ Runtime V4 LLM calls
@@ -170,12 +173,19 @@ const worldJobs = createWorldJobs({
     },
     run: (chat, id, { isCurrent, signal }) =>
         runExtraction(chat, id, content, (req) => v4Llm({ ...req, signal }), { hud: settings().hud, isCurrent }),
+    failed: ({chat, id, hash}, error, isCurrent) => isCurrent()
+        ? applyExtraction(chat,id,content,null,{hash,error:String(error?.message || error),errorKind:'engine',hud:settings().hud})
+        : {changed:false},
     applied: async ({ id }, result, isCurrent) => {
         if (!isCurrent()) return;
         const c = ctx();
-        rerender(c, id);
+        try { rerender(c, id); } catch (error) { console.error('[Avereth] display failed',error); }
         if (!isCurrent()) return;
         await c.saveChat();
+        if (rec(c.chat[id])?.continuation) {
+            try { await verifySavedChat(c,id,isCurrent); }
+            catch (error) { if (isCurrent()) worldSaveBlocked={chat:c.chat,id}; throw error; }
+        }
         if (isCurrent()) renderDebug();
     },
     onError: (err) => console.error('[Avereth] world extraction failed', err),
@@ -226,10 +236,15 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
             // next turn even when pendingExtraction() already became -1.
             if (job && c.chat.findLastIndex((m) => m.is_user) > worldJobs.currentId()) {
                 const w0 = Date.now();
-                await job;
+                const completed = await job;
+                if (completed?.persistenceFailed) throw new Error('World records could not be saved safely; no new turn was started.');
                 if (!isCurrent()) { abort(true); return; }
                 waited = Date.now() - w0;
             }
+        }
+        if (worldSaveBlocked?.chat === c.chat) {
+            await verifySavedChat(c,worldSaveBlocked.id,isCurrent);
+            worldSaveBlocked=null;
         }
         const r = await prepareGenerationAsync(c.chat, content, { type, settings: engineSettings(), llm: v4Llm, waited, isCurrent });
         // ST's abort callback is local to this interceptor invocation, not the shared generation AbortController.
@@ -240,6 +255,19 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
             // 'clear': quiet/impersonate generations get no engine block; 'none': no campaign or no player message yet
             setPrompt('');
             if (r.dirty) await c.saveChat();
+            return;
+        }
+        if (r.action === 'not_executed') {
+            abort(true);
+            setPrompt('');
+            const existing=c.chat.find(m => m.extra?.avereth_notice_for === r.index);
+            if (!existing) {
+                const notice=postPanel(r.notice);
+                notice.extra.avereth_notice_for=r.index;
+            }
+            await c.saveChat();
+            await verifySavedChat(c,c.chat.length-1,isCurrent);
+            renderDebug();
             return;
         }
         if (r.action === 'abort') {
@@ -269,6 +297,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
         renderDebug();
     } catch (err) {
         if (!isCurrent()) { abort(true); return; }
+        abort(true);
         console.error('[Avereth] interceptor failed', err);
         toastr.error(`Avereth Engine: ${err.message}`);
         setPrompt('');

@@ -95,7 +95,7 @@ test('patch 7.2A: a planner failure on a C campaign aborts with a notice, never 
     g.chat.push({ mes: '*i wait*', is_user: true, is_system: false, extra: {} });
     g.plans = ['not json at all', 'still not json'];
     const r = await prepareGenerationAsync(g.chat, content, { type: 'normal', settings: { planner: true }, llm: g.llm });
-    assert.equal(r.action, 'abort');
+    assert.equal(r.action, 'not_executed');
     assert.match(r.notice, /planner failed/);
     assert.equal(interpreted(g), 0, 'no hidden fallback');
     // sent again: planned again, then a swipe of the reply reuses the record (no second planner call)

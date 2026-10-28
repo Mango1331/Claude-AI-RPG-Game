@@ -2215,3 +2215,7 @@ Gemeinsame Handelsbuchung und aktuelle Zustimmung/Verfügbarkeit, zeitlich gebun
 ## 27.10.2026 – Batch-1-Fachpaket .101
 
 Recovery, explizite chronologische Ankunft, gemeinsame Ortsidentität, geprüfter Verkaufsweg und neue mechanische Zähljagden: [technische Patchnote mit Abnahme und Grenzen](PATCH_BATCH1_WORLD_CONTRACTS.md). Keine Balance- oder Testspieleränderung; natürliche Batch-Abnahme folgt separat.
+
+## 28.10.2026 — .105: sichere Modellfehlerfortsetzung (Teil 1)
+
+Lokale Extractor-Semantikhinweise, sichtbare Planner-Nichtausführung, geschützte Narrator-Korrekturen und kontrollierte Runner-Fortsetzung mit Save-Readback. Geld, Kampf und World-Autorität bleiben geschützt. [Technik, Tests und Grenzen](PATCH_FAILSOFT_CONTINUATION.md). Teil 2 nicht umgesetzt.

@@ -126,7 +126,7 @@ test('8.2 telemetry 6: a planner that fails keeps its calls and the turn\'s cost
     g.chat.push({ mes: '*i wait a moment*', is_user: true, is_system: false, extra: {} });
     g.plans = [null];
     const r = await prepareGenerationAsync(g.chat, content, { type: 'normal', settings: { planner: true }, llm: g.llm, waited: 0 });
-    assert.equal(r.action, 'abort');
+    assert.equal(r.action, 'not_executed');
     const x = lastUser(g);
     assert.equal(x.interp.failed, true);
     assert.deepEqual(x.plan.llm.map((c) => c.purpose), ['plan', 'plan_recovery'], 'one bounded retry after first transport failure');

@@ -108,7 +108,7 @@ test('10B-4a: exhausted recovery on the host aborts without booking a turn', asy
         type: 'normal', settings: { planner: true },
         llm: async () => { calls++; return EMPTY; },
     });
-    assert.equal(r.action, 'abort');
+    assert.equal(r.action, 'not_executed');
     assert.match(r.notice, /planner failed/);
     assert.deepEqual(rec(g.chat.at(-1)).events, []);
     assert.equal(calls, 3);

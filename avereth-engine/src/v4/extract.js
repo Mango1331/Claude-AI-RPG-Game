@@ -293,6 +293,7 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     const schema = deltaSchema(vocab, ids, Object.fromEntries(Object.entries(expectedKeys || {}).filter(([k]) => !missing.includes(k))));
     const clean = missing.length ? { ...value, expected: Object.fromEntries(Object.entries(exp).filter(([k]) => !missing.includes(k))) } : value;
     const errors = validate(clean, schema);
+    const semanticIssues = [];
     let stepAt = startScene;
     const entered = new Map();
     if (!errors.length && sceneRequired && state?.meta?.ruleset >= 2) for (const { d, i } of value.deltas.map((d, i) => ({ d, i })).sort((a, b) => a.d.seq - b.d.seq)) {
@@ -301,12 +302,12 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         if (d?.type === 'enter' && state.entities[d.who]?.kind === 'npc'
             && placeKey(state, d.scene ?? value.scene, content) === stepAt) entered.set(d.who, stepAt);
         if (d?.type === 'offer' && saleOfferLines(state, d.seller, d.lines || []).length)
-            errors.push(`$.deltas[${i}]: these are current PC sale goods; use bid with buyer, held object ids and price_cp, not offer/seller`);
+            semanticIssues.push({index:i, seq:d.seq, why:`$.deltas[${i}]: these are current PC sale goods; use bid with buyer, held object ids and price_cp, not offer/seller`});
         if (d?.type === 'person.new' && d.present !== false) {
             const exact = Object.values(state.entities).filter(e => e.kind === 'npc' && d.name && normText(e.name || e.known_name || '') === normText(d.name));
             const known = state.entities[d.ref] || (exact.length === 1 ? exact[0] : null);
             if (known?.kind === 'npc' && !state.scene.present.includes(known.id) && known.at !== stepAt && entered.get(known.id) !== stepAt)
-                errors.push(`$.deltas[${i}]: ${known.id} is known, last at ${known.at || 'an unknown place'}; preserve identity/history. Report an actual newly established local arrival as enter, otherwise present:false. Do not repeat an old predicament or infer presence merely from the PC’s arrival.`);
+                semanticIssues.push({index:i, seq:d.seq, why:`$.deltas[${i}]: ${known.id} is known, last at ${known.at || 'an unknown place'}; preserve identity/history. Report an actual newly established local arrival as enter, otherwise present:false. Do not repeat an old predicament or infer presence merely from the PC’s arrival.`});
         }
     }
     // Schema errors must describe the supported link, never guess which object an invented id meant.
@@ -316,5 +317,5 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         if (names.length) errors.push(`$.deltas[${i}].object: unknown catalog id; object.new has no ref. Use {new:exact earlier name}, e.g. ${JSON.stringify({ new: names[0] })}; never invent an obj.* id`);
     }
     if (sceneRequired && value.scene == null && (Object.values(expectedKeys || {}).includes('go') || (Array.isArray(value.deltas) && value.deltas.some(d => !['time', 'overreach', 'place.reported', 'dungeon'].includes(d?.type))))) errors.push('$.scene: actual narrative setting required for world changes');
-    return { value, issues: sceneRequired && startScene ? sceneIssues(value, startScene, state, content, explicitArrivals) : [], valid: errors.length === 0, complete: missing.length === 0, errors: [...errors.slice(0, 8), ...missing.map((k) => `expected key "${k}" not answered`)], missing, raw };
+    return { value, issues: [...semanticIssues, ...(sceneRequired && startScene ? sceneIssues(value, startScene, state, content, explicitArrivals) : [])], valid: errors.length === 0, complete: missing.length === 0, errors: [...errors.slice(0, 8), ...missing.map((k) => `expected key "${k}" not answered`)], missing, raw };
 }

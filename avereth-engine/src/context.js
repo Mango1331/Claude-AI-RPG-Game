@@ -742,7 +742,7 @@ export function buildContext(state, content, opts = {}) {
     // Its own allowance, like the rules and the output line: it displaces no retrieved section (memories, lore)
     if (v4 && !opts.systemQuery && opts.envelope !== false) add('envelope', envelopeBlock(state, content, { c: !!(opts.outcome?.auth?.c || opts.outcome?.c) }), 0, true);
     if (v4) add('chronicle', chronicleLine(opts.chronicle), 0, true);
-    if (opts.corrections && opts.corrections.length) add('corrections', `CORRECTIONS (the previous reply conflicted with the engine; keep the engine's version):\n${opts.corrections.map((c) => `- ${c}`).join('\n')}`, 1);
+    if (opts.corrections && opts.corrections.length) add('corrections', `CORRECTIONS (the previous reply conflicted with the engine; keep the engine's version):\n${opts.corrections.slice(0, 4).map((c) => `- ${String(c).slice(0, 400)}`).join('\n')}`, 0, true);
     if (opts.systemQuery) {
         add('resolved', `SYSTEM QUERY (#system): ${opts.systemQuery}\nAnswer ONLY as the System (neutral, private, computer-like): no narration, no NPC reactions, story time and combat stay frozen. Use the state above, Core rules and player-known content; show formulas and arithmetic when useful; say INSUFFICIENT INFORMATION when data is missing. Never reveal hidden NPC data.`, 0);
     } else if (state.meta?.runtime === 'v4') {

@@ -138,7 +138,7 @@ async function ask(llm, messages, purpose, overrides = {}) {
             || (err?.name === 'AbortError' ? 'aborted' : 'transport');
         const status = Number(err?.status) || null;
         const retryable = !['cancelled', 'aborted'].includes(kind) && (kind !== 'provider' || status === 408 || status === 429 || status >= 500);
-        return { ok: false, retryable, error: String(err?.message || err).slice(0, 200), ms, call: { purpose, ms, error: true, error_kind: kind, ...(status ? { status } : {}) } };
+        return { ok: false, retryable, error: String(err?.message || err).slice(0, 200), ms, call: { purpose, ms, error: true, error_kind: kind, ...(!err?.code && err?.name !== 'AbortError' ? {unclassified:true} : {}), ...(status ? { status } : {}) } };
     }
 }
 
@@ -569,10 +569,12 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
             if (!current()) return stale();
             r.perf = turnPerf(r, t0, f0, waited);
             if (r.interp?.failed) {
+                const hard = (r.plan?.llm || []).some(x => x.error && (x.unclassified || ['unknown','cancelled','aborted'].includes(x.error_kind) || (x.error_kind === 'provider' && x.status < 500 && ![408,429].includes(x.status))));
+                if (!hard) r.continuation = {kind:'planner_not_executed', reason:'model'};
                 commit();
                 return {
-                    action: 'abort', dirty: true,
-                    notice: `Avereth Engine: planner failed${r.interp.error ? ` (${r.interp.error})` : ''}. Regenerate or send the message again; no story turn was generated.`,
+                    action: hard ? 'abort' : 'not_executed', dirty: true, index:u,
+                    notice: 'NOT EXECUTED — planner failed: the engine could not safely understand this input. No action, time or combat round was booked. Decide again or regenerate this input.',
                 };
             }
             dirty = true;
@@ -784,11 +786,12 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', is
     }
 
     if (!isCurrent()) return { changed: false, cancelled: true };
-    return applyExtraction(chat, id, content, parsed, { hash: req.hash, ms, repaired, recovery, error, hud, calls });
+    const hard = calls.some(x => x.error && (x.unclassified || ['unknown','cancelled','aborted'].includes(x.error_kind) || (x.error_kind === 'provider' && x.status < 500 && ![408,429].includes(x.status))));
+    return applyExtraction(chat, id, content, parsed, { hash: req.hash, ms, repaired, recovery, error, hud, calls, errorKind:hard ? 'provider' : 'model' });
 }
 
 /** Commit an extractor result (or its failure) to reply id; refused when the reply changed or a later turn began. */
-export function applyExtraction(chat, id, content, parsed, { hash, ms = null, repaired = false, recovery = null, error = null, hud = 'closed', calls = [] } = {}) {
+export function applyExtraction(chat, id, content, parsed, { hash, ms = null, repaired = false, recovery = null, error = null, hud = 'closed', calls = [], errorKind = 'model' } = {}) {
     const msg = chat[id];
     const r = rec(msg);
     if (!msg || !r || r.extraction?.status !== 'pending' || r.text_hash !== hash || hash32(msg.mes) !== hash) return { changed: false };
@@ -796,8 +799,8 @@ export function applyExtraction(chat, id, content, parsed, { hash, ms = null, re
     const { state } = foldChat(chat, id);
     if (!parsed?.valid) {
         const events = extractionFailedEvents(error || 'no valid answer', ms);
-        const view = display(msg, content, state, { failed: `the extractor gave no valid answer (${String(error || 'no answer').slice(0, 80)})`, state }, hud);
-        setRec(msg, { ...r, events, extraction: { status: 'failed', version: EXTRACTOR_VERSION, ms, repaired, ...(recovery ? { recovery } : {}), error: String(error || '').slice(0, 200), ...(calls.length ? { llm: calls } : {}) }, corrections: [FAILED_CORRECTION, ...(stillAt(state) ? [stillAt(state)] : [])], ...view });
+        const view = errorKind === 'engine' ? {} : display(msg, content, state, { failed: `the extractor gave no valid answer (${String(error || 'no answer').slice(0, 80)})`, state }, hud);
+        setRec(msg, { ...r, events, ...(errorKind === 'model' ? {continuation:{kind:'world_not_applied', reason: 'model'}} : {}), extraction: { status: 'failed', error_kind:errorKind, version: EXTRACTOR_VERSION, ms, repaired, ...(recovery ? { recovery } : {}), error: String(error || '').slice(0, 200), ...(calls.length ? { llm: calls } : {}) }, corrections: [FAILED_CORRECTION, ...(stillAt(state) ? [stillAt(state)] : [])], ...view });
         return { changed: true, applied: false, failed: error || 'no valid answer' };
     }
     const res = replyTurnV4(state, content, parsed.value, { msg: id, prose: msg.mes, ms, repaired, chronicle: state.encounter || state.last?.outcome?.kind === 'combat' ? combatChronicle(chat.slice(0, id), messageEvents) : null });

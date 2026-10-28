@@ -129,7 +129,7 @@ test('live #24 "turn the slip back in": the live raw plans stay invalid (fail-cl
     const xp = g.state().entities.pc.sheet.xp;
     // the live answers: the slip as the quest, twice; nothing booked, as before
     const r = await g.live(24);
-    assert.equal(r.action, 'abort');
+    assert.equal(r.action, 'not_executed');
     assert.equal(g.last().interp.failed, true);
     assert.match(g.calls.filter((c) => c.purpose === 'plan_repair').at(-1).messages.at(-1).content,
         /obj\.slip\.wolves_on_the_salt_road is the contract slip \(an object\), not the contract; the contract is quest\.wolves_on_the_salt_road/);

@@ -42,7 +42,7 @@ test('Run19 original T89 two invalid scopes become a safe panel, with no booking
  assert.equal(r.calls,2);assert.deepEqual(foldChat(JSON.parse(JSON.stringify(r.chat))).state,r.state);
 });
 test('Run19 malformed plans still abort rather than becoming a success panel',async()=>{
- const r=await act([{commands:[{type:'made.up'}]}]);assert.equal(r.result.action,'abort');assert.equal(r.record.plan.failed,true);assert.equal(r.record.events.length,0);
+ const r=await act([{commands:[{type:'made.up'}]}]);assert.equal(r.result.action,'not_executed');assert.equal(r.record.plan.failed,true);assert.equal(r.record.events.length,0);
 });
 test('Run19 bed only now: two copper, no prepaid breakfast, dependent sleep works',async()=>{
  const p=structuredClone(f.cases[89].plans[0]);p.commands[0].lines=['l1'];p.commands[0].agreed_cp=2;
@@ -82,7 +82,7 @@ test('Run19 pure trade conflict survives malformed repair as a side-effect-free 
 });
 test('Run19 a trade conflict cannot conceal another invalid command',async()=>{
  const p=structuredClone(f.cases[89].plans[0]);p.commands.push({seq:4,type:'made.up'});
- const r=await act([p]);assert.equal(r.result.action,'abort');assert.equal(r.record.plan.failed,true);
+ const r=await act([p]);assert.equal(r.result.action,'not_executed');assert.equal(r.record.plan.failed,true);
 });
 test('Run19 true Guild interiors keep their Hall ancestor and anonymous return still works',()=>{
  const s=before(177);const r=run(s,[{seq:1,type:'go',to:{new:'the Guild hall'},quote:'I go to the Guild hall'}]);assert.equal(r.auth.gos[0].to,'loc.asterhall.guild_hall');

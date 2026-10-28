@@ -77,6 +77,9 @@ export class Driver {
         // during that request is not the end of the turn. Track network only;
         // none of these request bodies/records reach the player.
         this.pendingSaves = new Set();
+        this.saveFailures = [];
+        page.on('response', r => { if (/\/api\/(?:chats|chats\/group)\/save(?:\?|$)/.test(r.url()) && !r.ok()) this.saveFailures.push({status:r.status()}); });
+        page.on('requestfailed', r => { if (this.pendingSaves.has(r)) this.saveFailures.push({network:true}); });
         page.on('request', r => {
             if (r.method() === 'POST' && /\/api\/(?:chats|chats\/group)\/save(?:\?|$)/.test(r.url())) this.pendingSaves.add(r);
         });
@@ -246,6 +249,7 @@ export class Driver {
         const p = this.page;
         const t0 = Date.now();
         const before = await this.probe();
+        const failuresBefore = this.saveFailures.length;
         if (before.busy) return { ok: false, problem: 'busy before sending', ms: 0 };
         if (!before.online || before.online === 'no_connection') return { ok: false, problem: 'API disconnected before sending; no message entered', ms: 0 };
         if (!before.chatId || (this.testChat && (before.chatId !== this.testChat.chatId || before.avatar !== this.testChat.avatar))) return { ok: false, problem: 'wrong test chat before sending; no message entered', ms: 0 };
@@ -270,6 +274,7 @@ export class Driver {
         }
         const ms = Date.now() - t0;
         if (ms >= this.turnTimeoutMs) return { ok: false, problem: `the turn did not end within ${Math.round(this.turnTimeoutMs / 1000)} s (busy ${last?.busy}, extraction ${last?.extraction})`, extraction: last?.extraction ?? null, ms };
+        if (this.saveFailures.length > failuresBefore) return {ok:false,problem:'chat persistence failed',ms};
         await p.waitForTimeout(600); // the HUD re-renders after the extraction
         return { ok: true, ms, replyMs: replyAt ? replyAt - t0 : null };
     }
@@ -316,6 +321,20 @@ export class Driver {
         const toasts = all.slice(this.toastsSeen).filter((t) => t.origin !== 'runner');
         this.toastsSeen = all.length;
         return { messages, hud, hudStale: hudStale(messages, hudMesid), toasts };
+    }
+
+    async verifySaved(chat) {
+        const identity=await this.identity();
+        this.requireTestChat(identity);
+        const saved=await this.page.evaluate(async expected => {
+            const c=SillyTavern.getContext();
+            const r=await fetch('/api/chats/get',{method:'POST',headers:c.getRequestHeaders(),body:JSON.stringify({ch_name:expected.card,file_name:expected.chatId,avatar_url:expected.avatar})});
+            if (!r.ok) throw new Error('saved chat readback failed');
+            return (await r.json()).slice(1);
+        },identity);
+        this.requireTestChat(await this.identity(),identity);
+        const {savedPrefixMatches}=await import('../../../src/v4/continuation.js');
+        return savedPrefixMatches(chat,saved,chat.length-1);
     }
 
     /** Every notice since the page opened, each with its origin: the runner's own action ("runner") or the game. */

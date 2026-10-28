@@ -293,7 +293,7 @@ test('9C-1 G: a goal made ready outside a regular turn (the reply path) becomes 
     g.chat.push({ mes: '*i stretch*', is_user: true, is_system: false, extra: {} });
     g.plans = ['not json', 'still not json'];
     const failed = await prepareGenerationAsync(g.chat, content, { type: 'normal', settings: { planner: true }, llm: g.llm });
-    assert.equal(failed.action, 'abort');
+    assert.equal(failed.action, 'not_executed');
     assert.equal(goalOf(g).status, 'ready');
     g.chat.pop();
     await say(g, '*i stretch and look at the sky*');

@@ -47,6 +47,11 @@ Frühere ausführliche Zeilen mit SHA-256-/Git-Blob-Prüfungen und allen technis
 
 [**Batch-4-Review und Fail-soft-Einordnung**](batch-20261028-022553Z/REVIEW.md) · [Quellenindex](batch-20261028-022553Z/README.md). Warrior 137 Inputs/L7 Planner-Abbruch bei Stückpreisen/Quote, Mage 46/L5 Extractor-Abbruch nach unautorisierter Gasthaus-Szene und ungültigen Place-Refs, Rogue 29/L2 mechanischer Tod gegen vier L6/7-Wölfe. **212 Inputs, 617 LLM-Aufrufe, 2.998 Events, 107 Rejections**. Original-ZIP 35,5 MB CRC/SHA-geprüft, **nicht auf main**; keine Produktänderungen.
 
+
+## Batch 5 (.106) – zwei vollständige 250-Input-Runs, Rogue bewusst gestoppt
+
+[**GPT-Originalreview**](batch-20261028-051913Z/REVIEW.md). Warrior 250/L7, Mage 250/L10, zusammen **500 natürliche Inputs, 39 Kämpfe und 15 Gildenabschlüsse**, beide regulär am 250-Input-Limit. Rogue 0 Inputs: **manueller Ctrl+C-Stopp**, kein technischer Rogue-Fehler. **Startbuild ist .106 (75a4366), nicht .109**; kein Livebeleg für .107–.109 oder L15. Original-ZIP (78,05 MiB) CRC/SHA-geprüft, **nicht auf main**. Keine Produktänderungen.
+
 ## Umgang mit neuen Runs
 
 - Unveränderte ZIP im nach der Original-Run-ID benannten Ordner sichern. Format und Hash bei Übertragung prüfen; niemals vorhandene Originaldateien oder Reviews still überschreiben.

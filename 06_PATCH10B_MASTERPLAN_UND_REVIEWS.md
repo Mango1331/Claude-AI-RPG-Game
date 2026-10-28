@@ -1,6 +1,6 @@
 # Avereth Engine – 10B: kompakter Technik-/Scaling- und Quellenindex
 
-**Stand:** 27.10.2026. **Kein paralleler aktueller Projektstand.** Aktuelle Engineversion, Testnachweise und unmittelbare Arbeitsschritte nur in [03](03_AKTUELLER_PROJEKTSTAND.md). Bindende Spielregeln [02](02_DESIGN_KANON.md); neue oder später zurückgestellte Ideen [04](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md).
+**Stand:** 28.10.2026. **Kein paralleler aktueller Projektstand.** Aktuelle Engineversion, Testnachweise und unmittelbare Arbeitsschritte nur in [03](03_AKTUELLER_PROJEKTSTAND.md). Bindende Spielregeln [02](02_DESIGN_KANON.md); neue oder später zurückgestellte Ideen [04](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md).
 
 **Vollständiges ursprüngliches 10B-Journal (ca. 224 KB, §§0–32, sämtliche Reviewketten, Rot-/Grün-Vorüberlegungen und datierte Statusmeldungen):** [unveränderter main-Stand 0ebf449](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0ebf4496f185a69ebac235a337ab9dd2e2b470c7/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md). Die Kürzung beseitigt Wiederholungen, keine historischen Belege. **Alle dortigen „offen“-/„nächster Schritt“-Aussagen sind zeitgebunden und nicht als heute gültiger Patchauftrag zu übernehmen.**
 
@@ -12,6 +12,7 @@
 |---|---|---|
 | **A: Natürliche Langläufe** | Engine-/Runner-Fehler, vollständige Turns, Abschlussgründe, wiederholte Blockaden, echte Geld-/XP-/Loot-/Quest-Ereignisse, Wiedereinladung/Replay; Tod ≠ automatisch Balancebug | [Runindex](testrun_10b/README.md), [Sechserbatch](testrun_10b/batch-20261027-030034Z/REVIEW.md) |
 | **B: Kampfsimulator** | Belegbare Taktik-/Kit-/Range-Parität vor jeder numerischen Klassenbewertung; ursprüngliche PC/NPC-Asymmetrie macht ältere Ergebnisse nicht allgemein gültig | [historische Methodik und Simulation](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0ebf4496f185a69ebac235a337ab9dd2e2b470c7/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md#3-b--kampfsimulator-erste-ergebnisse-methodische-leitplanken), [Balance-Eindrücke](testrun_10b/BALANCE_ERSTEINDRUECKE_XP_STARTWERTE_20261026.md) |
+| **Kampfaktionsökonomie (geplant)** | Ein Main + ein ausdrücklich berechtigter Minor pro eigenem Turn; Code-/Replay-/Bewegungs-/NPC-/PP-Analyse mit Umsetzungs- und Abnahmeplan. Noch keine Produktänderung; laufenden .104-Batch als Vergleich erhalten | [Fachplan](patch_plans_10b/PATCH_COMBAT_MAIN_MINOR_ACTIONS.md) |
 | **Scaling F→E** | Gemeinsam Monster/NPC/PC/Skills/Spells/Gear/Preise/Questbelohnungen/Regionen/Feindlevel bewerten, nicht isoliert XP erhöhen | [GPT-Audit](testrun_10b/scaling_gpt.md), [Sols Entwurf](testrun_10b/ENTWURF_F_RANG_PROGRESSION_UND_E_UEBERGANG.md) |
 | **Provider und Recovery** | Reasoning-only/Length, Schemafehler und echte Transportprobleme strikt trennen; maximal begrenzte Wiederholung ohne doppelte Commits; echte GLM-Abnahme fehlt auch nach Mock-Smokes | [Patch .101](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/c9e3fa58bb57894e839ddd0df6db0f62a661d4a6/avereth-engine/docs/PATCH_BATCH1_WORLD_CONTRACTS.md), [Sols Gegenreview](testrun_10b/batch-20261027-030034Z/SOL_COUNTERREVIEW.md) |
 

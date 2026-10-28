@@ -1,6 +1,6 @@
 # GPT-Review – Batch vom 28.10.2026, abgebrochener Warrior-Start (.110)
 
-**Status:** Analyse des Originalexports und gezielte technische Prüfempfehlung. **Kein Patch, keine technische Implementierungsfreigabe, keine Produkt-/Runner-/Contentänderung.**
+**Status:** Analyse des Originalexports und gezielte technische Prüfempfehlung. **Kein Patch, keine technische Implementierungsfreigabe, keine Produkt-/Runner-/Contentänderung.** **Nachtrag §6:** Sols .106/.110-Gegenprüfung spricht für bereits vorhandene Fehler; eine neue .110-Regression ist nicht belegt.
 
 ## 1. Originalquelle und Abbruch
 
@@ -34,7 +34,7 @@
 
 Auf Runner-Turn **5** nimmt der Extractor die vom Narrator frei erfundene blockierende Charaktererstellung als **`fact.asserted`** auf: Subjekt `npc.npcglassmere_clerk`, Prädikat `interface`, Inhalt sinngemäß **`CHARACTER CREATION STEP 1/2 blocks everything: Alaric must choose a Base Class ...`**. Dieser Fakt wird später durch die normalen Retrieval-/Relevant-Facts-Prompts erneut dem Narrator angezeigt. Es ist somit **nicht nur ein einmaliger Prosa-Fehler**, sondern ein persistierter falscher Weltfakt mit selbstverstärkender Rückkopplung.
 
-Die Norm im ursprünglichen .110-Narratorprompt lautet ausdrücklich, **System-/Mechanikautorität** komme allein vom Engineblock. Schon Turn 3 enthielt im Engineblock klar: **`CHARACTER CREATION is complete (the System handled it; its menu at the start of the chat is closed)`**. Zugleich bleibt der ursprüngliche First-Message-Text `CHARACTER CREATION — STEP 1/2` als historischer Chatanfang sichtbar. Die korrekte Autorität wurde also **mindestens einmal ausdrücklich geliefert**, später dennoch durch die erfundene aktuelle Blockade unterlaufen. Eine bloße Prompt-Wortlauterweiterung darf nicht als alleiniger Sicherheitsfix gelten.
+Die Norm im ursprünglichen .110-Narratorprompt lautet ausdrücklich, **System-/Mechanikautorität** komme allein vom Engineblock. Schon Turn 3 enthielt im Engineblock klar: **`CHARACTER CREATION is complete (the System handled it; its menu at the start of the chat is closed)`**. Zugleich bleibt der ursprüngliche First-Message-Text `CHARACTER CREATION — STEP 1/2` als historischer Chatanfang sichtbar. **Sols spätere Promptprüfung präzisiert:** Die tatsächlichen Antworten zur abgeschlossenen Klassen- und Skillwahl fehlen im gelieferten Narrator-Kontext; die Klarstellung zur abgeschlossenen Charaktererstellung wird nur im ersten Storyzug eingeblendet. Dies begünstigt die Verwechslung, beweist aber deren Entstehung nicht allein. Eine bloße Prompt-Wortlauterweiterung oder ein allgemeiner Prosa-/Negationsfilter ist kein hinreichender Sicherheitsfix.
 
 ### 2.2 Kein erworbenes Cleave oder Bull's Stamina
 
@@ -74,6 +74,49 @@ Turn 14 (Engine-Turn 13) meldet **zwei Befehle**: `pay` 20 cp an die vorhandene 
 
 ## 5. Priorität, Abhängigkeiten und Fazit
 
-**P1-Kandidat als enges Bündel von drei Ursachen:** (1) glaubwürdiger Guildhall-Übergang/Planner-Interpretation, (2) Schutz gegen die Persistenz **aktiver, bereits falscher Engine-Menüs**, (3) Kopplung registrierungsgebundener Zahlung an ihre Gegenleistung. **Nicht** als globales World-Architektur-Redesign, Guild-Feature-Ausbau oder Skillbalancing-Patch beginnen. Der neue Befund besteht **auf .110** (Commit `da933e9`), ist somit nicht durch die früheren .107–.109 NPC-Anwesenheits-Gegenreviews erklärt. Ob er neue Regression oder älterer, bisher nicht ausgelöster Ablauf ist, benötigt zusätzliche Vergleichstests.
+**P1-Kandidat für bereits auf .106 nachweisbare Lücken (keine neue .110-Regression) als enges Bündel von drei Ursachen:** (1) glaubwürdiger Guildhall-Übergang/Planner-Interpretation, (2) Schutz gegen die Persistenz **aktiver, bereits falscher Engine-Menüs**, (3) Kopplung registrierungsgebundener Zahlung an ihre Gegenleistung. **Nicht** als globales World-Architektur-Redesign, Guild-Feature-Ausbau oder Skillbalancing-Patch beginnen. Der natürliche Fehlerverlauf tritt auf **.110** (Commit `da933e9`) auf. Sols isolierter Vergleich der gespeicherten Antworten mit **.106** zeigt bei den geprüften Reports und Kommandos identische Ergebnisse, einschließlich derselben fehlerhaften Gebühr ohne Registrierung. Die Ursache ist damit in den untersuchten Pfaden **bereits älter**, nicht als neuer .110-Fehler nachgewiesen; ein identischer natürlicher LLM-Verlauf auf .106 ist damit nicht bewiesen.
 
 **Schluss:** Die Engine schützt Skills, Klasse, amtliche Guildmitgliedschaft und viele Weltfakten; der Narrator und einige Persistenz-/Zahlungsgrenzen lassen aber einen festgefahrenen Einstieg zu. Der Spielerabbruch vermeidet einen langen, nicht repräsentativen Guild-/Progressionstest. Die unterbrochene Eingabe ist **manuell** und kein Provider-/Planner-Absturz. **Keine Fixfreigabe**, erst technische Ursachenprüfung und rot→grün-Gegenproben.
+
+---
+
+## 6. Sols .106/.110-Gegenprüfung und korrigierte Einordnung (28.10.2026)
+
+**Grundlage:** Der vom Nutzer übermittelte unabhängige Gegenreview von Sol zum selben Original-ZIP. Seine Funktionssonden werden hier **als Sols Befunde**, nicht als von GPT neu ausgeführter natürlicher Run dokumentiert. GPT hat ergänzend die Git-Dateistände der beiden Builds geprüft. In diesem Runordner liegt zum Zeitpunkt des Nachtrags kein gesondertes Sol-Review als Git-Datei; keine solche Quelle vortäuschen.
+
+### 6.1 Was der Gegenvergleich belegt
+
+- **Extractor:** Alle **11 gespeicherten Extractor-Antworten** erzeugten laut Sol bei Verarbeitung auf den ursprünglichen passenden Vorzuständen mit .106 und .110 **identische Ergebnisse**.
+- **Kommandos:** Auch die **sechs geprüften Kommandoabläufe** waren gleich. Entscheidend: Die ausdrücklich zweckgebundene Registrierungsgebühr wurde **bereits auf .106** ohne erfolgreiche Guild-Registrierung als allgemeine Zahlung gebucht.
+- **Zusätzliche unabhängige Git-Gegenprüfung:** Die vollständigen Blob-SHAs von **avereth-engine/src/v4/commands.js** (65d2509edf62b2503917e3687e06a76307ac6b0a) und **avereth-engine/src/v4/planner.js** (10533371097541cd258768ea371b151c546304da) sind bei Commit 75a4366 (.106) und da933e9 (.110) jeweils **identisch**. Manche World-/Firewall-Dateien änderten sich; die gegenprüften gespeicherten Antworten zeigten nach Sols Sonden keine abweichenden Buchungsergebnisse.
+- **Grenze:** Kein Nachweis, dass .106 bei einem neu gestarteten **natürlichen** GLM-Run dieselben Erzähltexte erzeugt hätte. Die Sonde isoliert nur, wie dieselben vorhandenen Antworten von der jeweiligen Engine verarbeitet werden. Sie belegt keine allgemeine Gleichwertigkeit der Builds.
+
+**Korrektur der Prioritätsbezeichnung:** Es handelt sich um **P1-Bestandsfehler**, die ein neuer Testverlauf sichtbar gemacht hat, nicht um einen durch .110 verursachten neuen Code-Regressionsfall.
+
+### 6.2 Ursachen und Folgen getrennt halten
+
+| Problem | Nach Gegenreview belastbare Einordnung |
+|---|---|
+| Erneute Charaktererstellung samt Cleave / Bull's Stamina | Narrator erfindet ungültige aktuelle Systemoptionen; Engine bucht weder zweite Klasse noch die Skills. |
+| Falscher Character-Creation-Fakt der Clerk | **Persistenz-/Autoritätslücke:** Ein unzutreffender Systemstatus wird als gewöhnlicher NPC-Fakt angenommen und später unter RELEVANT wieder angeboten. |
+| Guild-Counter erzählt, Hallenort nie erreicht | **Planner-/World-Verknüpfung:** Notwendiger Weg in die Halle fehlt. Die Engine verweigert Registrierung am Stadtort **zu Recht**, die Erzählung widerspricht dem Ortszustand. |
+| 20 cp für Anmeldung abgezogen, Mitgliedschaft verweigert | **Bestätigter älterer Buchungsfehler:** zweckgebundene Zahlung fällt in den freien Payment-Pfad; auch auf .106 reproduzierbar. |
+| Manueller Turn-15-Stopp | Bewusste Testentscheidung, kein Provider- oder Engineabsturz. |
+
+### 6.3 Promptbefund und begrenzte Gegenmaßnahmen
+
+**Konkreter Kontextbefund von Sol:** Der später an den Narrator gelieferte Verlauf enthält noch die ursprüngliche First Message mit offener Character Creation; die tatsächlichen erfolgreichen Klassen-/Skill-Auswahlantworten fehlen. Der klare Abschlusshinweis wird nur im ersten Storyzug geliefert. Das begünstigt eine falsche Fortsetzung des historischen Menüs. Der daraufhin gespeicherte falsche NPC-Fakt stabilisiert den Fehler zusätzlich.
+
+**Vorläufiger Maßnahmenrahmen, keine Implementierungsfreigabe:**
+
+1. **Zuerst Zahlung atomar an Guild-Registrierung binden.** Für eine Anmeldung bestimmte 20 cp dürfen nicht ohne gültigen Guildhall-/Registrierungsweg als freie Zahlung verschwinden. Eine **ausdrücklich unabhängige** Schenkung oder ein Trinkgeld bleibt zulässig. Vorhandenes Registration-Offer und Bookings nutzen statt neue Wirtschaftsarchitektur.
+2. **Kontext plus Persistenz zielgenau härten.** Abgeschlossene Erstellung als aktuellen autoritativen Status erkennbar halten und eine gegenteilige aktuelle Behauptung nicht als World-Fakt persistieren. Historischen Chattext, eine legitime NPC-Meinung und gegenwärtige Systemautorität unterscheiden. **Keine allgemeinen Regex-Verbote für Systemvokabular oder pauschalen Negations-/Präsenzfilter** ergänzen.
+3. **Hallenbewegung erfassen, ohne sie zu erzwingen.** Das wirkliche Hingehen zum bekannten Schalter kann eine GO-Aktion erfordern. Eine **bloße Frage** nach Anmeldung, eine Wegbeschreibung oder ein Schild belegen weder Eintritt noch bereits erklärte Mitgliedschaft.
+
+**Gezielte Regressionen:** (a) Zweckgebundene Zahlung in falscher Location: kein Geldverlust; (b) selbstständiges freiwilliges Trinkgeld: weiterhin möglich; (c) tatsächlicher Halleneintritt mit anschließender Registrierung: genau eine offizielle Zahlung und ein Guild-Registered-Event; (d) Schild sehen / nur nach dem Weg fragen: keine Phantomankunft; (e) Narrator behauptet erneut offene Charaktererstellung nach creation.completed: kein kanonischer Fakt, keine neuen Skills; (f) gesamte originale Turn-3–14-Kette mit ausdrücklich falschen Narratorantworten; (g) bisherige Sicherheits-/Befehlsregressionen unverändert grün.
+
+### 6.4 Abgrenzung von den .109-NPC-Präsenzfehlern
+
+Die zuvor durch Sol im separaten .106→.109-Batch gefundenen **fünf zusätzlichen NPC-Präsenzablehnungen** sind eine andersartige, **tatsächliche Folge neuer Guards**. Im vorliegenden .110-Guild-Run geht es dagegen um **ältere Buchungs- und Narrator-Kontextlücken**. Nicht als eine gemeinsame neue Regression behandeln, nicht mit global lockereren Orts-/Geldregeln oder noch mehr pauschalen Prosa-Wortlisten reagieren.
+
+**Ergebnis:** GPT-Befund zum Fehler selbst bestätigt, **Kausal-/Versionszuordnung ausdrücklich korrigiert**. Nichts beschlossen oder implementiert. Engine, Runner, Content und Original-ZIP bleiben unberührt.

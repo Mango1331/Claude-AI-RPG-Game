@@ -118,6 +118,7 @@ export const CONTRACT_RULES = [
 export const HANDOVER_RULES = [
     'Handing over (story commands):',
     '- When RECENT shows someone asking Alaric for a particular thing and he now holds out, offers or produces exactly that thing for them, that is give {object, to}, even without the word "give": the hand-over is what he does. The object is the one he names, by its OBJECTS id; never another object in its place.',
+    '- Separate movement from registration: RECENT shows the Guild entrance, HERE is the city, and PLACES names its Guild hall. "I approach the front counter and ask the clerk how I can register with the Guild" means GO to that hall; the question is dialogue, not guild.register or pay. Seeing a sign or asking where the hall is means no GO. After confirmed arrival, "register me" is guild.register; agreeing to the canonical fee is its offer.accept.',
     '- For active delivery cargo: explicitly leaving it for the agreed recipient on their receiving counter is GIVE to that recipient; preserve object, quantity and their catalog ID. Merely showing it for inspection, pricing or verification is not GIVE. A shop owner and their assistant are different people; resolve the actual recipient shown, never invent an absent owner.',
     '- No give when he only shows, looks at or examines it, keeps it ("but I don\'t hand it over"), only asks whether they need it, or produces a different thing than the one asked for (then the story lets them answer).',
     '- Saying why he came ("I\'m here to deliver this crate", "I have your delivery") is words, no give: the thing changes hands when he hands it over, holds it out or sets it down for them, or when they reach for it and he lets them.',
@@ -484,6 +485,10 @@ export function parsePlan(answer, vocab, ctx, message) {
             else if (named.length > 1) errors.push(`${at}: choose exactly one offered class name`);
             else if (options.length && /\bas my class\b/.test(words(c.quote)) && /^(?:dec\.)?class\./.test(c.offer || '')) errors.push(`${at}: that class name is not an offered option`);
         }
+        // An information question is not consent. Let the existing bounded repair recover any omitted GO;
+        // never manufacture a destination or registration on behalf of the player.
+        if (type === 'guild.register' && /\bhow (?:I|we) (?:can |could |do |would |should )?(?:register|join|sign up)\b/i.test(c.quote || ''))
+            errors.push(`${at}: this is an information question, not registration consent; preserve actual approach as GO to the known Guild hall, and leave the question as dialogue`);
         if (story.has(type)) {
             // a story command: the interpreter's own schema, missing nullable arguments as null (as parseInterpretation)
             for (const [k, spec] of Object.entries(story.get(type).args || {})) if (spec.nullable && c[k] === undefined) c[k] = null;

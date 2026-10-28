@@ -41,7 +41,7 @@ export const COMMITMENTS = new Set(['pay', 'buy', 'sell', 'give', 'drop', 'use',
 /** The verbs that express a command's own act (for the negation and plan checks, not for recognising commands). */
 export const LEMMAS = {
     'journey.continue': ['ready', 'go', 'leave', 'depart', 'set off', 'continue'],
-    go: ['go', 'goes', 'going', 'went', 'head', 'heading', 'walk', 'walking', 'travel', 'travelling', 'traveling', 'ride', 'riding', 'return', 'returning', 'be at', 'set off', 'leave', 'leaving'],
+    go: ['approach', 'go', 'goes', 'going', 'went', 'head', 'heading', 'walk', 'walking', 'travel', 'travelling', 'traveling', 'ride', 'riding', 'return', 'returning', 'be at', 'set off', 'leave', 'leaving'],
     activity: ['sleep', 'sleeping', 'rest', 'resting', 'wait', 'waiting', 'work', 'working', 'train', 'training', 'gather', 'gathering', 'search', 'searching', 'study', 'studying', 'craft', 'crafting', 'learn', 'learning', 'practise', 'practising', 'practice', 'practicing', 'drill', 'drilling'],
     take: ['take', 'taking', 'pick up', 'picking up', 'grab', 'grabbing', 'pocket', 'collect', 'collecting'],
     drop: ['drop', 'dropping', 'put down', 'set down', 'leave', 'leaving'],

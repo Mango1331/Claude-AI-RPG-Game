@@ -293,6 +293,15 @@ export function firewall(deltas, ctx = {}) {
             case 'fact': {
                 const p = words(d.p).replace(/\s+/g, '_');
                 const factText = `${words(d.s)} ${words(d.p)} ${words(d.o)}`;
+                // Engine interface state is not an NPC fact. Match the menu's machine heading, not prose about
+                // studying, remembering a class, or somebody's belief. The original erroneous delta used p=interface.
+                if (ctx.creationComplete && (p === 'character_creation' || p === 'creation_state'
+                    || (p === 'interface' && /^character creation step \d/.test(words(d.o))))) {
+                    no(d, 'engine_owned_fact', 'character creation is complete; only engine events own its menu state',
+                        'Character creation is complete. Keep the existing class and Skills; no new starter menu is open.');
+                    continue;
+                }
+
                 const guildQuestState = !!ctx.isGuildContractRef?.(text(d.s))
                     || !!ctx.guildContractForObject?.(text(d.s))
                     || namesContract(factText)

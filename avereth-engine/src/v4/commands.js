@@ -855,13 +855,21 @@ const HANDLERS = {
         const reg = s.offers[REGISTRATION_OFFER];
         const fee = feeOf(content);
         const theFee = c.amount_cp === null || c.amount_cp === undefined || c.amount_cp === fee;
-        if (reg?.status === 'open' && hallOf(s, s.scene.at) && theFee) {
+        // Registration-purpose money belongs to the canonical service, never the ordinary cash fallback.
+        const asksRegistration = (env(ctx).commands || []).some(x => x.type === 'guild.register');
+        const registrationFee = !independentPayment(c) && (/\b(?:regist\w*|membership|guild fee)\b/i.test(c.for || '')
+            || ((asksRegistration || reg?.status === 'open') && (!c.for || /^(?:the )?fee$/i.test(c.for))));
+        if (ctx.auth.c && rulesetOf(s) >= 2 && registrationFee) {
+            if (membership(s)) return { status: 'refused', reason: 'already a member', line: 'NOT PAID — already registered; no second registration fee.' };
+            if (!hallOf(s, s.scene.at)) return { status: 'refused', reason: 'not at a Guild hall', line: 'NOT PAID — registration requires arrival inside a Guild hall; the registration fee stays with Alaric.' };
+        }
+        if (reg?.status === 'open' && hallOf(s, s.scene.at) && theFee && !independentPayment(c) && (!c.for || registrationFee)) {
             return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: REGISTRATION_OFFER, lines: null }, ctx, emit);
         }
         // "Here are the 2 silver, register me": the fee of a registration this message asks for (or names) is the Guild's
         // canon fee, paid at the desk; never an ordinary payment to the clerk
         const asks = (env(ctx).commands || []).some((x) => x.type === 'guild.register') || /\b(?:regist\w*|membership|guild)\b/i.test(c.for || '');
-        if (asks && theFee && hallOf(s, s.scene.at) && !membership(s)) {
+        if (asks && registrationFee && theFee && hallOf(s, s.scene.at) && !membership(s)) {
             openRegistration(s, content, emit);
             return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: REGISTRATION_OFFER, lines: null }, ctx, emit);
         }

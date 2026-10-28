@@ -96,6 +96,7 @@ export function firewallContext(s, content, chronicle = null, excludedFoes = [])
         combatClaim: combatTruth(s, content, chronicle, excludedFoes),
         // Hotfix 7.2.1: his Guild standing (a fact claiming a registration the engine has not booked is refused)
         pcRegistered: !!s.guild?.membership,
+        creationComplete: s.mode !== 'creation' && s.creation?.step === 3,
         pcHurt: (s.entities.pc?.sheet?.hp ?? 0) < deriveCharacter(s.entities.pc.sheet, content).maxHp,
         actedOn: (p) => {
             const done = new Set((o.resolutions || []).filter((r) => !['refused', 'clarify'].includes(r.status)).map((r) => r.type));

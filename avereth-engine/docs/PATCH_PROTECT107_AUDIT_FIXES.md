@@ -108,3 +108,19 @@ Sonst bleibt die Meldung allgemein (`notExecutedCause`).
 - Ein Erzählsatz ohne Ausschlusswort, der eine abwesende Person nur beschreibt („Brast lived in Ashbridge“), kann über den Satz-Rückfall noch als Anwesenheit gelten. Das ist bewusst in Kauf genommen, damit legitime Rückkehrer nicht verschwinden.
 - Umgekehrt kann eine ungewöhnlich formulierte echte Verlagerung abgelehnt werden. Alaric bleibt dann am Ort, die nächste Korrektur sagt es.
 - Der natürliche Batch zeigt, wie oft `npc_presence` und `no_go` mit unerzähltem `forced_by` vorkommen und ob dadurch legitime Szenen fehlen.
+
+## Gezielter Anwesenheitsfix .110 — 28.10.2026
+
+Basis `.109` / `96fa3ed`. Freigabe: gezielter Folgefix nach Original-/Gegenreview von Batch `20261028-051913Z` (lief auf `.106`). Geändert ist nur die NPC-Belegfunktion, kein Host, Schema, Prompt, Reise-, Handels- oder Kampfsystem.
+
+**Ursache und Änderung:** Der Satz-Rückfall prüfte ganze Sätze; „Marta was behind the bar, ... a rhythm that never paused“ scheiterte an der Verneinung eines anderen Vorgangs. Nach erfolgloser Satzprüfung werden jetzt auch durch Satzzeichen getrennte Teilsätze gegen die **ursprüngliche Prosa** geprüft. Jeder akzeptierte Teilsatz muss die bekannte Identität selbst nennen. Erinnerte, berichtete und bedingte Sätze bleiben auch bei nachgestellter Einordnung ausgeschlossen. Außerdem wird ausschließlich für die Personenidentität das Genitiv-s vor `voice` normalisiert: „Osser's voice“ und „Osser’s voice“ können den Sprecher belegen; ein erwähnter Wagen oder anderes Eigentum ist dadurch kein Beleg für dessen Besitzer. Die wörtliche Zitatprüfung sowie `forcedRelocation()` bleiben unverändert.
+
+**Abnahme:**
+
+- 18 neue Regressionen in `patch_protect110.test.js`: auf unveränderter `.109` **5 rot / 13 Kontrollen grün**, danach **18/18**. Enthalten sind die unveränderte Originalprosa Warrior T51/Mage T79, ein zu langes Belegzitat, beide Apostrophformen sowie Verneinung, Bedingung, Erinnerung, Hörensagen, fremder Akteur, Besitz und uneindeutige Person. Ereignisse sind serialisiert replaybar; erneute Verarbeitung vom vorherigen Zustand ist identisch.
+- Zusätzlich beide vollständigen Original-Extractorantworten auf ihren tatsächlichen Original-Vorzuständen separat mit `applyWorld()` geprüft: keine Ablehnungen, `validateState` leer, serialisiertes Replay identisch, Eingabezustand unverändert. Dies ist eine technische Wiederholung vorhandener Antworten, kein neuer GLM-Lauf.
+- Abgleich aller **431** gespeicherten gültigen Extraktionen gegen ihre jeweils ursprünglichen Vorzustände: Warrior **217 ohne neue Ablehnung** gegenüber `.106`; Mage **214 mit noch drei abweichenden Replies** (T132/T144/T247). T51 und T79 werden einschließlich abhängiger Deltas wieder akzeptiert. Kein alternativer vollständiger Kampagnenverlauf simuliert.
+- Vollständiges `npm test -- --test-concurrency=4`: **2177/2177 grün**.
+- Echter **ST-1.19-Smoke mit Mock-Provider** (`npm run smoke:st:c`): **22/22**, fünf Extractor-Aufrufe, `extractPerReply`/`fightOpened` erfolgreich, keine PageErrors; Status `.110`. Kein natürlicher Batch gestartet.
+
+**Bewusste Grenze:** Nicht alle fünf Gegenreview-Fälle sind gelöst. T132/T247 nennen Osser nur über uneindeutige Arbeiter-/Werkzeugbeschreibungen; T144 nennt ihn im Ruf, die folgende Ankunft bleibt unbenannt. Der enge Filter lehnt solche Identitätsverknüpfungen weiterhin ab; auch die davon abhängige Stew-Übergabe T144 bleibt betroffen. Kein automatisches Zusammenführen von Arbeitern, kein satzübergreifender Pronomeninterpreter. Das ist ein verbleibender Informationsverlust, kein als behoben gemeldeter Fall. Die tatsächliche Nähe an einer Tür (T79) wird weiterhin nach dem vorhandenen Szenenmodell ausgewertet; keine neue Innen-/Außenpositionslogik. Weitere ungewöhnliche Formulierungen bleiben möglich. Keine Kartenaktualisierung nötig; nächste natürliche Batches können `.110` prüfen.

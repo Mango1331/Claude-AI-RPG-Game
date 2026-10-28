@@ -143,7 +143,9 @@ export function forcedRelocation(prose, quote, { self = ['alaric'], target = [],
 export function narratedPresence(prose, quote, labels) {
     const ev = narratedEvent(prose, quote);
     if (!ev.ok) return ev;
-    const q = flat(quote);
+    // Build .110: the audible voice can identify its owner ("Osser's voice"), but an owned cart or portrait cannot.
+    // Keep this local to person evidence; forced movement and literal quote validation retain their normalization.
+    const q = flat(expand(quote).replace(/'s(?=\s+voice\b)/g, ''));
     const words = new Set(q.split(' '));
     const named = labels.map(flat).filter((l) => l && l.split(' ').length <= 3)
         .filter((l) => l.split(' ').filter((w) => w.length > 2 && !['the', 'and'].includes(w)).every((w) => words.has(w)) && l.split(' ').some((w) => w.length > 2));
@@ -163,6 +165,15 @@ export function presenceInReply(prose, evidence, labels) {
     if (own.ok) return own;
     for (const sentence of narrationOnly(prose).split(/[.!?…\n|]+/)) {
         if (tokens(sentence).filter((t) => t !== ',').length >= 3 && narratedPresence(prose, sentence, labels).ok) return { ok: true };
+        // Build .110, original batch 5 T51: "Marta was behind the bar, ... a rhythm that never paused".
+        // A separate clause's negation must not erase an actual named presence. Validate each candidate against the
+        // ORIGINAL prose, so leading conditions, recollections and hearsay still frame it; never validate a detached
+        // fragment as a new story. A fragment without the person's identity cannot establish their presence either.
+        // Do not detach an apparently actual clause from a remembered/reported/conditional framing after it either.
+        if (RECALLED.test(flat(sentence)) || HEARSAY.test(flat(sentence)) || UNREAL.test(flat(sentence))) continue;
+        for (const clause of sentence.split(/[,;:\u2013\u2014]/)) {
+            if (narratedPresence(prose, clause, labels).ok) return { ok: true };
+        }
     }
     return own;
 }

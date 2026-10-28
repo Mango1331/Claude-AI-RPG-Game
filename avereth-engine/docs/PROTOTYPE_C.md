@@ -2227,3 +2227,7 @@ Gemeinsamer Speicherblock für Planner/World, harte Behandlung unbekannter Fehle
 ## 28.10.2026 — .107: Schutzpatch nach technischem Audit
 
 Unfreiwillige Ortswechsel nur mit wörtlich erzählter Verlagerung; bekannte abwesende Personen kommen nur per erzählter Ankunft, nie über `position`/`aware`; eine abgelehnte Namenserweiterung sperrt nicht die anwesende Person; Persistenzsperre chat-gebunden; drei Preisformulierungen; NOT EXECUTED mit tatsächlich festgestelltem Grund. [Umsetzung, Rot/Grün und Grenzen](PATCH_PROTECT107_AUDIT_FIXES.md). Keine Combat-/Balanceänderung.
+
+## 28.10.2026 — .108: Belegprüfung für unfreiwillige Ortswechsel
+
+Nur Bewegungen Alarics selbst, zum Ziel von `arrive.at`; Auslöser (grabbed, arrested, portal) nur mit erzählter Richtung; Rede in einfachen Anführungszeichen, satzweite Erinnerung und Kurzformen (`'ll`, `n't`, `'d` als had/would) erkannt. [Umsetzung und Abnahme](PATCH_PROTECT108_FORCED_EVIDENCE.md).

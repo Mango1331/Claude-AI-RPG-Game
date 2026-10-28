@@ -243,9 +243,19 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // only on a narrated clause of the reply that shows it happening (src/v4/narration_evidence.js); else the arrive
     // has no cause and the firewall's GO rule applies to it. The extractor's delta itself stays as it reported it.
     const unprovenForced = new Map();
+    // Build .108: it moves Alaric himself, and a destination the sentence tells is the arrival's place (its own name; an
+    // enclosing place only when that is all the story names): the places' recorded names, no reading of the story
+    const placeNames = (ref) => {
+        let id = typeof ref === 'string' ? (ref === 'here' ? s.scene.at : ref) : typeof ref?.new?.parent === 'string' ? ref.new.parent : null;
+        const target = typeof ref === 'string' ? [s.places[id]?.name] : [ref?.new?.name];
+        if (typeof ref === 'string') id = s.places[id]?.parent;
+        const above = [];
+        for (let i = 0; id && s.places[id] && i < 6; i++, id = s.places[id].parent) above.push(s.places[id].name);
+        return { target: target.filter(Boolean), above: above.filter(Boolean) };
+    };
     if (cPath) for (const d of Array.isArray(answer.deltas) ? answer.deltas : []) {
         if (d?.type !== 'arrive' || !String(d.forced_by || '').trim()) continue;
-        const ev = forcedRelocation(prose, d.forced_by);
+        const ev = forcedRelocation(prose, d.forced_by, { self: [s.entities.pc?.name, 'Alaric'].filter(Boolean), ...placeNames(d.at) });
         if (!ev.ok) unprovenForced.set(d, ev.why);
     }
     const fw = firewall(answer.deltas, { ...firewallContext(s, content, chronicle, excludedFoes), unprovenForced });

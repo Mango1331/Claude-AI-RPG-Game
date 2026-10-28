@@ -54,7 +54,7 @@ Frühere ausführliche Zeilen mit SHA-256-/Git-Blob-Prüfungen und allen technis
 
 ## Batch 6 (.110) – früher Warrior-Abbruch wegen Guild-/Charaktererstellungs-Drift
 
-[**GPT-Originalreview**](batch-20261028-101151Z/REVIEW.md). Build **.110** (`da933e9`), Warrior 15 Runner-Inputs einschließlich manuell abgebrochenem letztem Input. Klasse und **Heavy Slash/Guard sind korrekt gebucht**; `Cleave`/`Bull's Stamina` **nicht**. Player nur in `loc.glassmere`, Guildhall nie erreicht; Narrator erfindet zweite Charaktererstellung und Mitgliedschaft, falscher Interface-Fakt wird gespeichert. Beim erneuten Registrierungsversuch **20 cp tatsächlich abgezogen**, während Registrierung abgelehnt bleibt. **P1-Regressionskandidat**, kein Codefix. ZIP 2,1 MB, CRC/SHA-geprüft und **nicht auf main**.
+[**GPT-Review mit Sols .106/.110-Gegenprüfung (§6)**](batch-20261028-101151Z/REVIEW.md). Build **.110** (`da933e9`), Warrior 15 Runner-Inputs einschließlich manuell abgebrochenem letztem Input. Warrior mit **Heavy Slash/Guard korrekt gebucht**, `Cleave`/`Bull's Stamina` **nicht**. Player blieb in `loc.glassmere`; Guildhall nicht erreicht, erneute Charaktererstellung nur erzählt, falscher Interface-Fakt persistiert. **20 cp zweckgebunden bezahlt, obwohl Mitgliedschaft abgelehnt**. Sol prüfte 11 Extractorantworten und sechs Kommandoabläufe isoliert mit .106/.110: **identische Resultate, Zahlungslücke bereits auf .106**. **P1-Bestandsfehler, keine neue .110-Regression nachgewiesen.** ZIP 2,1 MB, CRC/SHA-geprüft, **nicht auf main**; keine Implementierung.
 
 ## Umgang mit neuen Runs
 

@@ -64,6 +64,10 @@ Frühere ausführliche Zeilen mit SHA-256-/Git-Blob-Prüfungen und allen technis
 
 [**Original-ZIP-Review**](batch-20261028-134108Z/REVIEW.md). Build `.113` (`55c547f`): Warrior **22 Inputs/L1**, **UI no reply** bei T22 **nach ausdrücklich belegtem Provider-429 `model_switching_limit_exceeded`** beim Narrator; Planner erfolgreich, der letzte Heavy Slash wegen Abstand SHORT statt ENGAGED mechanisch nicht ausgeführt. Bis dahin eine erfolgreiche Guild-Registrierung und ein abgeschlossener Contract, `integrity: OK`. **61 Engine-Modellaufrufe**, alle auf GLM-5.3-Flash; **kein Modellwechsel durch den Run dokumentiert**. Mage **0 Inputs/Ctrl+C**, Rogue **nicht gestartet**. ZIP 3,64 MiB, CRC/SHA-geprüft, **nicht auf main**. Kein Produktfix.
 
+## Batch 9 (.113) – Warrior 150/L9, Mage 77/L5 Tod, Rogue manuell gestoppt
+
+[**GPT-ZIP-Review**](batch-20261028-140431Z/REVIEW.md). **227 Inputs** auf .113 (55c547f): Warrior **150/L9, reguläres Inputlimit**, 14/14 Siege und vier Guildjobs; Mage **77/L5, regelgebuchter Tod**, sechs Siege und drei Guildjobs; Rogue **0 Inputs, manuell Ctrl+C**. Zwei korrekte Guild-Registrierungen, natürliche ENTERED-Level-1-Anzeigen und Mage dungeon.cleared floor 1/cycle 1 mit PC-Credit 2 Slots, andere Gruppe 1. **Finanzieller Prüfkandidat:** Warrior T77/T80 kauft dasselbe Hospizbett für dieselbe Nacht zweimal zu je 1 cp; einmaliger Schlaf T81. LLM-Spieler wiederholt ausdrückliche Buchung; **keine bewiesene .113-Regression**. Mage T51 zeigt [object Object] bei abwesendem Verkäufer (P2). Keine fatalen Modell-/Hostfehler. Original-ZIP 35,1 MiB CRC/SHA-geprüft, nicht auf main. Keine Produktänderung.
+
 ## Umgang mit neuen Runs
 
 - Unveränderte ZIP im nach der Original-Run-ID benannten Ordner sichern. Format und Hash bei Übertragung prüfen; niemals vorhandene Originaldateien oder Reviews still überschreiben.

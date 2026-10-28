@@ -244,6 +244,18 @@ const PART_ONLY = /\b(?:only|just|except|but not|apart from|keep(?:ing)? (?:the|
 const BUYING = /\b(?:buy\w*|bought|purchas\w*|pay(?:s|ing)?|paid)\b/i;
 const independentPayment = c => /\b(?:as an? |extra )(?:tip|donation|gift)\b/i.test(c.quote || '')
     || /^(?:an? )?(?:tip|donation|gift)(?: for .*)?$/i.test(c.for || '');
+// A missing optional `for` must not erase an explicit purpose in the player's own payment clause.
+function registrationPaymentWords(c, text = '') {
+    let quote = String(c.quote || '').trim();
+    const raw = String(text || ''), at = quote ? raw.toLowerCase().indexOf(quote.toLowerCase()) : -1;
+    if (at >= 0) {
+        const tail = raw.slice(at + quote.length);
+        // Only the immediately following purpose belongs to a shortened quote; never scan another action's words.
+        if (/^[\s,]*(?:for|towards?|to)\b/i.test(tail)) quote += tail.split(/[.;!?]|\bthen\b/i)[0];
+    }
+    quote = quote.split(/[.;!?]|\b(?:then|ask(?:s|ing)?)\b/i)[0];
+    return /\b(?:for|towards?|to (?:finish|complete|finali[sz]e))\s+(?:(?:my|the|our|guild)\s+){0,3}(?:registration|membership)\b|\bto (?:register|join the guild)\b/i.test(quote);
+}
 function paymentFor(c, lines) {
     if (independentPayment(c)) return false;
     const wanted = keyWords(c.for || '').filter(w => !numbersIn(w).size && !['fit', 'fitted', 'now', 'pair', 'payment'].includes(w));
@@ -856,7 +868,8 @@ const HANDLERS = {
         const fee = feeOf(content);
         const theFee = c.amount_cp === null || c.amount_cp === undefined || c.amount_cp === fee;
         // Registration-purpose money belongs to the canonical service, never the ordinary cash fallback.
-        const asksRegistration = (env(ctx).commands || []).some(x => x.type === 'guild.register');
+        const explicitPurpose = !c.for && registrationPaymentWords(c, env(ctx).text);
+        const asksRegistration = explicitPurpose || (env(ctx).commands || []).some(x => x.type === 'guild.register');
         const registrationFee = !independentPayment(c) && (/\b(?:regist\w*|membership|guild fee)\b/i.test(c.for || '')
             || ((asksRegistration || reg?.status === 'open') && (!c.for || /^(?:the )?fee$/i.test(c.for))));
         if (ctx.auth.c && rulesetOf(s) >= 2 && registrationFee) {
@@ -868,7 +881,7 @@ const HANDLERS = {
         }
         // "Here are the 2 silver, register me": the fee of a registration this message asks for (or names) is the Guild's
         // canon fee, paid at the desk; never an ordinary payment to the clerk
-        const asks = (env(ctx).commands || []).some((x) => x.type === 'guild.register') || /\b(?:regist\w*|membership|guild)\b/i.test(c.for || '');
+        const asks = asksRegistration || /\b(?:regist\w*|membership|guild)\b/i.test(c.for || '');
         if (asks && registrationFee && theFee && hallOf(s, s.scene.at) && !membership(s)) {
             openRegistration(s, content, emit);
             return HANDLERS['offer.accept'](s, content, { ...c, type: 'offer.accept', offer: REGISTRATION_OFFER, lines: null }, ctx, emit);
@@ -1400,7 +1413,7 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
     if (envx.c) ctx.auth.c = true;
     ctx.engineLines = [];
     const ordered = [...commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0));
-    ctx.env = { msg: envx.msg ?? s.turn, commands: ordered };
+    ctx.env = { msg: envx.msg ?? s.turn, commands: ordered, text: envx.text || '' };
     // Related commands are alternate descriptions of one trade, not independent coin/goods transfers.
     // Links exist for this invocation only. Each handler still checks presence, custody, price and funds.
     const trades = new Map();

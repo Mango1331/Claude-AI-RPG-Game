@@ -11,7 +11,7 @@ import {buildContext} from '../../src/context.js';
 const content=await loadProductContent();
 const chat=JSON.parse(fs.readFileSync(new URL('./fixtures/batch6_guild_start.json',import.meta.url)));
 function before(turn) {const s=emptyState();let t=0;for(const m of chat){if(m.is_user)t++;if(t===turn)return s;for(const e of m.events)applyEvent(s,e);}throw Error('turn');}
-function run(s,cs){const events=[],emit=e=>{events.push(e);applyEvent(s,e);};const ctx=resolveCommands(s,content,cs,emit,{c:true});return {ctx,events};}
+function run(s,cs,text){const events=[],emit=e=>{events.push(e);applyEvent(s,e);};const ctx=resolveCommands(s,content,cs,emit,{c:true,text});return {ctx,events};}
 const fee={seq:1,type:'pay',to:'npc.npcglassmere_clerk',amount_cp:20,for:'registration',quote:'hand the clerk two silver to finish my registration'};
 const reg={seq:2,type:'guild.register',quote:'register me'};
 for(const cs of [[fee,reg],[reg,{...fee,seq:3}],[fee]])test('111 registration fee outside hall preserves coin '+cs.map(c=>c.type).join('/'),()=>{const s=before(14);run(s,cs);assert.equal(s.entities.pc.sheet.coin_cp,50);assert.equal(s.guild.membership,null);});
@@ -52,4 +52,32 @@ test('111 explicit commitment remains valid and ordinary interface fiction stays
  const s=before(14);assert.ok(parse(s,[{seq:1,type:'guild.register',quote:'Register me now'}],'Register me now').commands);
  const r=applyWorld(s,content,{scene:'here',expected:{},deltas:[{seq:1,type:'fact',s:'npc.npcglassmere_clerk',p:'interface',o:'She described the training college interface.'}]},{prose:'The clerk described a college.'});
  assert.ok(r.events.some(e=>e.t==='fact.asserted'&&e.d.fact.p==='interface'));
+});
+for(const shortened of [false,true])test('112 missing for cannot turn an explicit registration fee into free cash, shortened quote='+shortened,()=>{
+ const s=before(14),text='I pay the clerk two silver for my registration.';
+ const r=run(s,[{...fee,for:null,quote:shortened?'I pay the clerk two silver':text}],text);
+ assert.equal(s.entities.pc.sheet.coin_cp,50);assert.equal(s.guild.membership,null);
+ assert.ok(!r.events.some(e=>e.t==='transaction.completed'||e.t==='coin.changed'));
+});
+test('112 missing purpose at an actual hall uses the canonical service once',()=>{
+ const s=before(14);s.scene.at='loc.glassmere.guild_hall';
+ const text='I pay the clerk two silver to finish my registration.';
+ const r=run(s,[{...fee,for:null,quote:'I pay the clerk two silver'}],text);
+ assert.equal(s.entities.pc.sheet.coin_cp,30);assert.ok(s.guild.membership);
+ assert.equal(r.events.filter(e=>e.t==='guild.registered').length,1);
+});
+test('112 a separate registration question does not change an ordinary payment',()=>{
+ const s=before(14),text='I pay the clerk two silver for bread, then ask about registration.';
+ run(s,[{...fee,for:null,quote:'I pay the clerk two silver for bread'}],text);
+ assert.equal(s.entities.pc.sheet.coin_cp,30);assert.equal(s.guild.membership,null);
+});
+test('112 an explicit independent gift remains independent even when registration is mentioned',()=>{
+ const s=before(14),text='I give the clerk two silver as a gift for helping with my registration.';
+ run(s,[{...fee,for:null,quote:text}],text);
+ assert.equal(s.entities.pc.sheet.coin_cp,30);assert.equal(s.guild.membership,null);
+});
+test('112 a full quote with a later how-to-register question does not repurpose bread money',()=>{
+ const s=before(14),text='I pay the clerk two silver for bread, then ask how to register.';
+ run(s,[{...fee,for:null,quote:text}],text);
+ assert.equal(s.entities.pc.sheet.coin_cp,30);assert.equal(s.guild.membership,null);
 });

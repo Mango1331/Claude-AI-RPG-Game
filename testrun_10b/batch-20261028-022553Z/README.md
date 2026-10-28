@@ -2,6 +2,8 @@
 
 **[Ausführliche unabhängige Review](REVIEW.md)** – Schwerpunkt auf technischen Endfehlern, genauer Originalursache und Auswirkungen auf die geplante kontrollierte Fail-soft-Fortsetzung.
 
+**[Sols Gegenprüfung der Originale und Codepfade](SOL_COUNTERREVIEW.md):** reproduzierter Stück-/Gesamtpreiswiderspruch, aus dem tatsächlichen Narrator-Kontext verdrängte Korrekturen, präzisierte C130/C131-Schemaursachen sowie echtes C2-Skilllernen und der abgewiesene Manual-Kauf T89. Keine Produktänderung.
+
 | Profil | Run-ID | Inputs | Level | Ende |
 |---|---|---:|---:|---|
 | Guild-Warrior | 20261028-022553Z-current_test | **137** | **7** | Plannerfehler bei Stückpreisen/Zitaten im Verkauf |

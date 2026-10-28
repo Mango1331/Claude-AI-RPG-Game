@@ -1,0 +1,445 @@
+{
+ "source": "Batch4 Warrior T137/C403-C404, catalog/plan context reconstructed from original event fold; corrected is a control, not a live success",
+ "ctx": {
+  "tradeChecks": true,
+  "privateQuests": false,
+  "fight": false,
+  "skills": [
+   {
+    "id": "warrior.basic_attack",
+    "name": "Basic Attack",
+    "text": "attack · single target · reaches ENGAGED · 5 STA"
+   },
+   {
+    "id": "warrior.heavy_slash",
+    "name": "Heavy Slash",
+    "text": "attack · single target · reaches ENGAGED · 7 STA"
+   },
+   {
+    "id": "warrior.guard",
+    "name": "Guard",
+    "text": "not an attack · temp def · 5 STA"
+   },
+   {
+    "id": "dyn.guarded_iron_strike",
+    "name": "Ironward Riposte",
+    "text": "attack · single target · reaches ENGAGED · 8 STA"
+   }
+  ],
+  "known": [
+   "warrior.basic_attack",
+   "warrior.heavy_slash",
+   "warrior.guard",
+   "dyn.guarded_iron_strike"
+  ],
+  "basic": "warrior.basic_attack",
+  "weapon": null,
+  "opponents": [],
+  "facts": [],
+  "route": [
+   {
+    "id": "loc.flat_rock_shelf_above_the_downstream_pool",
+    "name": "flat rock shelf above the downstream pool",
+    "kind": "site"
+   },
+   {
+    "id": "loc.brackhollow",
+    "name": "Brackhollow",
+    "kind": "settlement"
+   },
+   {
+    "id": "loc.glassmere",
+    "name": "Glassmere",
+    "kind": "settlement"
+   },
+   {
+    "id": "realm.caelreth.the_gorse_breaks_beside_the_caelreth_drover_road",
+    "name": "the gorse breaks beside the Caelreth Drover Road",
+    "kind": "site"
+   },
+   {
+    "id": "loc.wolf_kill_clearing_in_the_gorse_breaks",
+    "name": "wolf kill clearing in the gorse breaks",
+    "kind": "wilderness"
+   },
+   {
+    "id": "loc.track_junction_below_the_wolf_hollow",
+    "name": "track junction below the wolf hollow",
+    "kind": "wilderness"
+   },
+   {
+    "id": "loc.fields_edge_above_the_drover_road",
+    "name": "field's edge above the Drover Road",
+    "kind": "wilderness"
+   },
+   {
+    "id": "loc.stone_farmhouse_by_the_drover_road",
+    "name": "stone farmhouse by the Drover Road",
+    "kind": "site"
+   },
+   {
+    "id": "realm.caelreth.the_gorse_breaks_beside_the_caelreth_drover_road",
+    "name": "the gorse breaks beside the Caelreth Drover Road",
+    "kind": "site"
+   },
+   {
+    "id": "loc.wolf_kill_clearing_in_the_gorse_breaks",
+    "name": "wolf kill clearing in the gorse breaks",
+    "kind": "wilderness"
+   }
+  ],
+  "catalog": {
+   "privateQuests": false,
+   "here": {
+    "id": "loc.glassmere.guild_hall",
+    "path": "Caelreth › Glassmere › Adventurers' Guild hall"
+   },
+   "time": "day 5, 10:50",
+   "alaric": "Guild member, Novice · 306 cp · HP 175/225",
+   "present": [
+    {
+     "id": "npc.npcglassmere_clerk",
+     "handle": "Npc.npcglassmere_clerk",
+     "label": "npc.npcglassmere_clerk, clerk behind the near desk at the Guild hall"
+    },
+    {
+     "id": "npc.npcgorse_fang_buyer",
+     "handle": "Merchant",
+     "label": "merchant, broad-shouldered man in a trader's apron who sets up by the Guild hall hearth most mornings"
+    }
+   ],
+   "places": [
+    {
+     "id": "loc.glassmere",
+     "name": "Glassmere, city in Caelreth"
+    },
+    {
+     "id": "loc.glassmere.verge",
+     "name": "public roadside verge outside Glassmere (in Glassmere)"
+    },
+    {
+     "id": "loc.glassmere.the_wethers_rest",
+     "name": "the Wether's Rest (in Glassmere)"
+    },
+    {
+     "id": "loc.glassmere.wennas",
+     "name": "Wenna's (in Glassmere)"
+    },
+    {
+     "id": "loc.asterhall",
+     "name": "Asterhall, capital in Caelreth"
+    },
+    {
+     "id": "loc.brackhollow",
+     "name": "Brackhollow, settlement in Caelreth"
+    },
+    {
+     "id": "loc.glimmerdeep_grotto",
+     "name": "Glimmerdeep Grotto (a Dungeon: crystal caverns: glittering grottos of mana-fed crystal, crystal beetles and mineral slimes; Rank F; level 1: F; a Glassmere academy of magic holds the cleft and lets registered adventurers cull its outer grottos; what they kill and the free crystal there is theirs, the deep galleries the academy's; a cleft in the hills a morning's walk north of Glassmere, where the stream runs out of the rock)"
+    },
+    {
+     "id": "loc.the_ford_over_the_wether",
+     "name": "the ford over the Wether — known only by report (told: on the south road to Glassmere, about two hours down from Brackhollow); not seen yet"
+    },
+    {
+     "id": "loc.stone_bridge_on_the_glassmere_road",
+     "name": "stone bridge on the Glassmere road — known only by report (told: on the south road, after the ford over the Wether); not seen yet"
+    },
+    {
+     "id": "loc.the_mill_yard_at_brackhollow.the_hollow_cup",
+     "name": "the Hollow Cup — known only by report (told, miller: down the lane); not seen yet"
+    },
+    {
+     "id": "realm.caelreth.the_eel_weirs_of_the_reed_flats",
+     "name": "the eel-weirs of the Reed Flats — known only by report (told); not seen yet"
+    }
+   ],
+   "quests": [],
+   "goals": [],
+   "completed": [
+    {
+     "id": "quest.thin_the_grey_wolves_of_the_gorse_breaks",
+     "title": "Thin the Grey Wolves of the Gorse Breaks",
+     "info": "Guild contract · completed · Novice · 90 cp · target population: grey wolf at realm.caelreth.the_gorse_breaks_beside_the_caelreth_drover_road (the gorse breaks beside the Caelreth Drover Road), body-plan wolf, levels 4-7; kills elsewhere are not this contract · goal: 4 · fixed count rule: killed; no narrative second condition or substitute; turn in explicitly at the Guild · desired outcome: 4 grey wolf killed at the gorse breaks beside the Caelreth Drover Road. · job memory: DEFEAT 4 grey wolf at the gorse breaks beside the Caelreth Drover Road · progress: defeat grey wolf: open · READY FOR TURN-IN: the listed proof is in hand (no fixed verification listed) · proof: the contract slip, its Guild seal showing READY now; no trophies are required"
+    }
+   ],
+   "board_label": "Novice board of this hall",
+   "board": [],
+   "known": [
+    {
+     "id": "quest.cull_the_marsh_serpent_at_brackhollow_millrace",
+     "title": "Cull the Marsh Serpent at Brackhollow Millrace",
+     "info": "Guild contract · Novice · no longer on the board (posted on day 4; the Guild renews its board every day)"
+    },
+    {
+     "id": "quest.cull_the_mudwyrs_at_the_reed_flats_eel_weirs",
+     "title": "Cull the Mudwyrs at the Reed Flats Eel-Weirs",
+     "info": "Guild contract · Novice · no longer on the board (posted on day 4; the Guild renews its board every day)"
+    },
+    {
+     "id": "quest.hunt_the_pale_stag_of_the_charwood_kiln_clearings_3",
+     "title": "Hunt the Pale Stag of the Charwood Kiln Clearings",
+     "info": "Guild contract · Novice · no longer on the board (posted on day 4; the Guild renews its board every day)"
+    },
+    {
+     "id": "quest.clear_glimmerdeep_grotto_level_1_3",
+     "title": "Clear Glimmerdeep Grotto Level 1",
+     "info": "Guild contract · Novice · no longer on the board (posted on day 4; the Guild renews its board every day)"
+    }
+   ],
+   "offers": [
+    {
+     "id": "offer.manuals.locglassmereguild_hall",
+     "seller": "Guild",
+     "lines": [
+      {
+       "id": "strike",
+       "what": "Primer of Strike",
+       "price_cp": 120,
+       "source": "manual · F · teaches strike"
+      },
+      {
+       "id": "bolt",
+       "what": "Primer of Bolt",
+       "price_cp": 120,
+       "source": "manual · F · teaches bolt"
+      },
+      {
+       "id": "guard",
+       "what": "Primer of Guard",
+       "price_cp": 120,
+       "source": "manual · F · teaches guard"
+      },
+      {
+       "id": "ward",
+       "what": "Primer of Ward",
+       "price_cp": 120,
+       "source": "manual · F · teaches ward"
+      },
+      {
+       "id": "mend",
+       "what": "Primer of Mend",
+       "price_cp": 120,
+       "source": "manual · F · teaches mend"
+      }
+     ]
+    }
+   ],
+   "objects": [
+    {
+     "id": "obj.guild_plate",
+     "name": "Guild plate",
+     "state": "marked: Novice stamp"
+    },
+    {
+     "id": "obj.loot.marsh_serpent.skin.f",
+     "name": "F-Rank Marsh Serpent Skin",
+     "qty": 3
+    },
+    {
+     "id": "obj.loot.marsh_serpent.fang.f",
+     "name": "F-Rank Marsh Serpent Fang",
+     "qty": 4
+    },
+    {
+     "id": "obj.t28.empty_bucket",
+     "name": "empty bucket"
+    },
+    {
+     "id": "obj.t43.tin_lantern_with_shuttered_door",
+     "name": "tin lantern with shuttered door",
+     "state": "ordinary item; no combat stats"
+    },
+    {
+     "id": "obj.t43.flask_of_lamp_oil_a_days_burn",
+     "name": "flask of lamp oil, a day's burn",
+     "state": "ordinary item; no combat stats"
+    },
+    {
+     "id": "obj.t43.flint_and_steel_with_a_striker",
+     "name": "flint and steel with a striker",
+     "state": "ordinary item; no combat stats"
+    },
+    {
+     "id": "obj.t43.rations_salt_pork_hard_biscuit_dried_apple_per_day",
+     "name": "rations (salt pork, hard biscuit, dried apple), per day",
+     "qty": 2,
+     "unit": "portion",
+     "state": "food; ordinary item; no combat stats"
+    },
+    {
+     "id": "obj.loot.crystal_beetle.chitin.f",
+     "name": "F-Rank Crystal Beetle Chitin Plate",
+     "qty": 7
+    },
+    {
+     "id": "obj.loot.crystal_beetle.venom.f",
+     "name": "F-Rank Crystal Beetle Venom Gland",
+     "qty": 2
+    },
+    {
+     "id": "obj.loot.quartz_ooze.gel.f",
+     "name": "F-Rank Quartz Ooze Gel",
+     "qty": 2
+    },
+    {
+     "id": "obj.loot.strangle_vine.chitin.f",
+     "name": "F-Rank Strangle-vine Chitin Plate",
+     "qty": 5
+    },
+    {
+     "id": "obj.loot.strangle_vine.venom.f",
+     "name": "F-Rank Strangle-vine Venom Gland",
+     "qty": 1
+    },
+    {
+     "id": "obj.loot.grey_wolf.pelt.f",
+     "name": "F-Rank Grey Wolf Pelt",
+     "qty": 4
+    },
+    {
+     "id": "obj.loot.grey_wolf.fang.f",
+     "name": "F-Rank Grey Wolf Fang",
+     "qty": 9
+    },
+    {
+     "id": "item.simple_travelers_clothes",
+     "name": "Simple Traveler's Clothes",
+     "state": "equipped: clothing"
+    },
+    {
+     "id": "item.starter_longsword_r2",
+     "name": "Starter Longsword",
+     "state": "equipped: weapon"
+    },
+    {
+     "id": "item.starter_heavy_armor",
+     "name": "Starter Heavy Armor",
+     "state": "equipped: armor"
+    },
+    {
+     "id": "item.small_pouch",
+     "name": "Small Pouch"
+    }
+   ],
+   "gear_market": "GEAR MARKET — Mechanical equipment uses only these supported categories: staff/wand (weapon); shield/buckler (offhand); plate armor/plate armour (armor); robes/robe (armor); sword/longsword (weapon). Use a recognized kind in a combat equipment offer's name; appearance may vary freely. Only the engine fixes its values. No extra head, leg, hand or jewelry slots or bonuses. Separate armor parts are not whole armor. Ordinary tools, clothes and decoration remain available, explicitly without combat stats. F staff MATK by actual quality: common 6, fine 8, superior 10, exceptional 12; starter staff MATK 10. For requested upgrades, a suitable specialist may offer genuinely finer/superior/exceptional supported ware; do not keep offering common gear under expensive material names. If no upgrade is available, say so. Copper/silver cores and higher prices alone grant no stats. Keep the named quality and price stable; armour/offhand, consumables and supported Skill manuals are other voluntary improvements.",
+   "features": [],
+   "exits": [],
+   "dungeon": [],
+   "open": []
+  },
+  "cls": "warrior",
+  "learning": [],
+  "techniques": [
+   "strike",
+   "bolt",
+   "guard",
+   "ward",
+   "mend"
+  ],
+  "disciplines": [
+   "Arcane",
+   "Control",
+   "Defense",
+   "Martial",
+   "Mobility",
+   "Precision"
+  ],
+  "aspects": [
+   "Fire",
+   "Ice",
+   "Lightning",
+   "Water",
+   "Earth",
+   "Wind",
+   "Shadow",
+   "Light",
+   "Poison",
+   "Nature",
+   "Blood",
+   "Sound"
+  ],
+  "jobs": [],
+  "contentSkills": {},
+  "currency": {
+   "src": "Core #22, Lore #15",
+   "copper_per_silver": 10,
+   "silver_per_gold": 10
+  }
+ },
+ "message": "I lay out four grey wolf pelts and nine fangs and accept your price — two copper a pelt, a copper apiece for the fangs.",
+ "plans": [
+  {
+   "n": 403,
+   "plan": {
+    "commands": [
+     {
+      "seq": 1,
+      "type": "sell",
+      "object": "obj.loot.grey_wolf.pelt.f",
+      "qty": 4,
+      "to": "npc.npcgorse_fang_buyer",
+      "min_cp": 2,
+      "quote": "I lay out four grey wolf pelts and accept your price — two copper a pelt"
+     },
+     {
+      "seq": 2,
+      "type": "sell",
+      "object": "obj.loot.grey_wolf.fang.f",
+      "qty": 9,
+      "to": "npc.npcgorse_fang_buyer",
+      "min_cp": 1,
+      "quote": "nine fangs and accept your price — a copper apiece for the fangs"
+     }
+    ]
+   }
+  },
+  {
+   "n": 404,
+   "plan": {
+    "commands": [
+     {
+      "seq": 1,
+      "type": "sell",
+      "object": "obj.loot.grey_wolf.pelt.f",
+      "qty": 4,
+      "to": "npc.npcgorse_fang_buyer",
+      "min_cp": 2,
+      "quote": "I lay out four grey wolf pelts and accept your price — two copper a pelt"
+     },
+     {
+      "seq": 2,
+      "type": "sell",
+      "object": "obj.loot.grey_wolf.fang.f",
+      "qty": 9,
+      "to": "npc.npcgorse_fang_buyer",
+      "min_cp": 1,
+      "quote": "I lay out four grey wolf pelts and nine fangs and accept your price — two copper a pelt, a copper apiece for the fangs."
+     }
+    ]
+   }
+  }
+ ],
+ "corrected": {
+  "commands": [
+   {
+    "seq": 1,
+    "type": "sell",
+    "object": "obj.loot.grey_wolf.pelt.f",
+    "qty": 4,
+    "to": "npc.npcgorse_fang_buyer",
+    "min_cp": 8,
+    "quote": "two copper a pelt"
+   },
+   {
+    "seq": 2,
+    "type": "sell",
+    "object": "obj.loot.grey_wolf.fang.f",
+    "qty": 9,
+    "to": "npc.npcgorse_fang_buyer",
+    "min_cp": 9,
+    "quote": "a copper apiece for the fangs"
+   }
+  ]
+ }
+}

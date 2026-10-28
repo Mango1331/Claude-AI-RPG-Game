@@ -2219,3 +2219,7 @@ Recovery, explizite chronologische Ankunft, gemeinsame Ortsidentität, geprüfte
 ## 28.10.2026 — .105: sichere Modellfehlerfortsetzung (Teil 1)
 
 Lokale Extractor-Semantikhinweise, sichtbare Planner-Nichtausführung, geschützte Narrator-Korrekturen und kontrollierte Runner-Fortsetzung mit Save-Readback. Geld, Kampf und World-Autorität bleiben geschützt. [Technik, Tests und Grenzen](PATCH_FAILSOFT_CONTINUATION.md). Teil 2 nicht umgesetzt.
+
+## 28.10.2026 — .106: Fail-soft Gegenreview und Teil 2
+
+Gemeinsamer Speicherblock für Planner/World, harte Behandlung unbekannter Fehlercodes; einheitliche Handels-Preisgrenzen mit Mengenbezug, präzise Ortsreferenz-Reparatur und getrennte Angebots-IDs. [Umsetzung, Regressionen und Abnahme](PATCH_FAILSOFT_PART2_AND_REVIEW.md). Keine Combat-/Balanceänderung.

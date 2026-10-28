@@ -983,7 +983,7 @@ const HANDLERS = {
         // the lines he takes, in the number he names (review of 4.1.0: "three flasks" became one flask for one price)
         const pick = pickLines(o, c.lines, c.qty ?? null);
         if (pick.clarify) return { status: 'clarify', reason: 'which line?', line: `CLARIFY — ${c.qty} of which: ${pick.clarify.join(' or ')}?` };
-        if (pick.error === 'the offer has no such item') return { status: 'refused', reason: 'no such line', line: 'CANNOT ACCEPT — the offer has no such item.' };
+        if (pick.error === 'the offer has no such item') return { status: 'refused', reason: 'no such line', line: `CANNOT ACCEPT — the offer has no such item. Available positions: ${o.lines.map(l => `${l.id}: ${l.what}`).join('; ')}. Nothing was bought.` };
         if (pick.error) return { status: 'refused', reason: 'not in that amount', line: `CANNOT BUY ${c.qty} — ${pick.error}.` };
         const price = pick.cp;
         const booked = bookPurchase(s, emit, { offer: o, picks: pick.picks, cp: price, objectId: (what) => `obj.t${env(ctx).msg}.${slug(what)}`, content, consent: c });

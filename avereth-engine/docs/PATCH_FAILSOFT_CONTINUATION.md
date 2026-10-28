@@ -27,3 +27,7 @@ Bei formal kaputtem Extractorbericht können weiterhin unabhängige World-Inform
 - Vollständige Node-Suite: **2078/2078 grün**, `npm test -- --test-concurrency=4`. Die begrenzte Testparallelität ist nur ein Aufrufparameter, keine geänderte Produktkonfiguration.
 - Echter ST-1.19-Browser-Smoke mit geskriptetem Provider: Standard **22/22 grün**, fünf reguläre Extractor-Aufrufe. Erweiterter Fehler-Smoke **27/27 grün**: sichtbare Nichtausführung mit erhaltenem Spielerinput; gespeicherter Fehlerrecord; terminaler Extractorfehler; keine doppelte Kampfbuchung; absichtlicher Save-HTTP-500 wird trotz erfülltem ST-Promise durch Readback erkannt. Der erwartete ST-Savefehler wird separat als injizierter Fehler protokolliert, nicht als normaler fehlerfreier Save ausgegeben.
 - Kein natürlicher GLM-Langlauf gestartet. Preise, Place-Ref-Repair und Angebotszeilen aus Teil 2, Kampfökonomie, Balance, Testspielerstrategie und Narrator-Vertragsrevision unverändert. Keine Aktualisierung der persönlichen Karte erforderlich.
+
+## Folgeprüfung .106
+
+Zwei im Gegenreview bestätigte Grenzen (Planner-Speicherblock und unbekannte Exception-Codes) sind mit Teil 2 korrigiert. [Aktueller Umsetzungs- und Abnahmenachweis](PATCH_FAILSOFT_PART2_AND_REVIEW.md); die obigen .105-Ergebnisse bleiben historisch erhalten.

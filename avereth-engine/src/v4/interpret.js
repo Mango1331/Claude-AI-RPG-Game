@@ -1,3 +1,4 @@
+import { tradePrice } from './trade.js';
 // Runtime V4: the command interpreter call (docs/RUNTIME_V4_PLAN.md §4.2). The player's story message becomes typed
 // commands for Alaric; the engine checks and books them. Prompt, schema and validator come from one vocabulary
 // (content/commands.json). The call itself is the host's (index.js, generateRaw); this module builds it and reads
@@ -126,7 +127,7 @@ export function catalogText(catalog) {
     if ((catalog.known || []).length) L.push(`KNOWN CONTRACTS (listed on a Guild board elsewhere; taken only at that board's Guild hall, if still listed): ${catalog.known.map((q) => `${q.id} (${q.title} · ${q.info})`).join(' · ')}`);
     const sells = (catalog.offers || []).filter((o) => !o.bid);
     const bids = (catalog.offers || []).filter((o) => o.bid);
-    if (sells.length) L.push(`OFFERS: ${sells.map((o) => `${o.id} (${o.seller}: ${o.lines.map((l) => `${l.id} ${l.what} ${l.qty > 1 ? `${l.qty} for ${l.price_cp} cp` : `${l.price_cp} cp`}${l.equipment ? `; ${l.equipment}` : ''}${l.source ? `; ${l.source}` : ''}`).join(', ')})`).join(' · ')}`);
+    if (sells.length) L.push(`OFFERS: ${sells.map((o) => `${o.id} (${o.seller}: ${o.lines.map((l) => `${`line_id=${JSON.stringify(l.id)}; item=${JSON.stringify(l.what)}; `}${l.qty > 1 ? `${l.qty} for ${l.price_cp} cp` : `${l.price_cp} cp`}${l.equipment ? `; ${l.equipment}` : ''}${l.source ? `; ${l.source}` : ''}`).join(', ')})`).join(' · ')}`);
     // 4.3.0-c.6.6.5: what a buyer would pay Alaric for his things (accepting it sells them)
     if (bids.length) L.push(`BIDS (someone would BUY these things of Alaric's; accepting sells them): ${bids.map((o) => `${o.id} (${o.seller} pays ${o.price_cp} cp for: ${o.lines.map((l) => `${l.id} ${l.object} ×${l.qty}${Number.isInteger(l.price_cp) ? ` ${l.price_cp} cp` : ''}`).join(', ')})`).join(' · ')}`);
     if ((catalog.objects || []).length) L.push(`OBJECTS: ${catalog.objects.map((o) => `${o.id} (${o.name}${o.qty ? `, ${o.qty}${o.unit ? ` ${o.unit}` : ''}` : ''}, ${holderText(o)})`).join(' · ')}`);
@@ -198,13 +199,21 @@ export function interpreterSchema(vocab, catalog) {
 // Patch 3: a sum the player names is the sum he names (the engine reads "two silver" itself): a command whose amount
 // differs from his own words goes back to the one repair call with both numbers, never replaced here
 const AMOUNT_FIELDS = { pay: 'amount_cp', buy: 'max_cp', sell: 'min_cp' };
-export function amountErrors(commands, currency) {
+export function amountErrors(commands, currency, catalog = {}) {
     const errors = [];
     for (const c of commands || []) {
         const f = AMOUNT_FIELDS[c?.type];
         if (!f || !Number.isInteger(c[f]) || typeof c.quote !== 'string' || !currency) continue;
-        const v = coinFromWords(c.quote, { rules: { currency } });
-        if (v !== null && v !== c[f]) errors.push(`${c.type} seq ${c.seq}: ${f} ${c[f]} is not what his words "${c.quote.slice(0, 60)}" say: ${v} cp (1 silver = ${currency.copper_per_silver} copper, 1 gold = ${currency.copper_per_silver * currency.silver_per_gold} copper)`);
+        const content = { rules: { currency } };
+        const object = (catalog.objects || []).find(o => o.id === c.object);
+        const units = c.qty ?? (c.type === 'sell' ? (object ? object.qty ?? 1 : null) : 1);
+        const price = c.type === 'pay' ? {handled:false} : tradePrice(null,c.quote,units,content);
+        if (price.handled && price.cp === null) {
+            errors.push(`${c.type} seq ${c.seq}: ambiguous price or quantity in this quote. Copy only this item's exact price clause; ${f} is the TOTAL for the selected quantity, not a unit rate.`);
+            continue;
+        }
+        const v = price.handled ? price.cp : coinFromWords(c.quote, content);
+        if (v !== null && v !== c[f]) errors.push(`${c.type} seq ${c.seq}: ${f} ${c[f]} is not what his words "${c.quote.slice(0, 60)}" say: ${v} cp total for qty ${units ?? "unknown"} (1 silver = ${currency.copper_per_silver} copper, 1 gold = ${currency.copper_per_silver * currency.silver_per_gold} copper)`);
     }
     return errors;
 }
@@ -222,7 +231,7 @@ export function parseInterpretation(answer, vocab, catalog, { currency = null } 
     }
     const errors = validate(value, interpreterSchema(vocab, catalog));
     if (errors.length) return { commands: null, errors: errors.slice(0, 8), raw };
-    const sums = amountErrors(value.commands, currency);
+    const sums = amountErrors(value.commands, currency, catalog);
     if (sums.length) return { commands: null, errors: sums.slice(0, 8), raw };
     return { commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [], raw };
 }

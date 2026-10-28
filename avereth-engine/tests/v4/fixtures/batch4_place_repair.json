@@ -1,0 +1,59 @@
+{
+  "source": "Batch4 Mage original C130/C131; reports and catalog refs only, no synthetic arrival",
+  "ids": {
+    "places": [
+      "loc.glassmere.guild_hall",
+      "realm.caelreth.the_howling_gorse_gorse_downs",
+      "loc.glassmere",
+      "loc.glassmere.verge",
+      "loc.asterhall",
+      "loc.glimmerdeep_grotto",
+      "loc.asterhall.tanners_row",
+      "realm.caelreth.the_flooded_lower_pits_of_greymarl_quarry",
+      "realm.caelreth.the_old_barrow_thicket_above_the_millbrook_road",
+      "realm.caelreth"
+    ],
+    "quests": [
+      "quest.cull_the_grey_wolves_of_the_howling_gorse",
+      "quest.slay_the_bog_strider_at_the_reed_flats_eel_weirs",
+      "quest.purge_the_mineral_slimes_of_greymarl_quarrys_flooded_lower_pits",
+      "quest.hunt_the_barrow_boar_of_the_old_barrow_thicket",
+      "quest.clear_level_1_of_glimmerdeep_grotto",
+      "quest.thin_the_howling_gorse_wolves",
+      "quest.cull_the_bog_strider_at_the_reed_flats_eel_weirs",
+      "quest.thin_the_grey_wolf_pack_of_the_howling_gorse",
+      "quest.drain_the_mineral_slimes_in_greymarl_quarrys_lower_pits",
+      "quest.cull_the_barrow_boars_of_the_old_barrow_thicket",
+      "quest.cull_the_grey_wolves_at_the_howling_gorse",
+      "quest.cull_the_quarry_slimes",
+      "quest.cull_the_old_barrow_boar",
+      "quest.clear_glimmerdeep_grotto_level_1"
+    ],
+    "objects": [
+      "obj.guild_plate",
+      "obj.loot.bog_strider.venom.f",
+      "obj.loot.grey_wolf.pelt.f",
+      "obj.slip.cull_the_grey_wolves_of_the_howling_gorse",
+      "item.simple_travelers_clothes",
+      "item.starter_arcane_staff_r2",
+      "item.starter_light_robes",
+      "item.small_pouch",
+      "obj.loot.bog_strider.chitin.f",
+      "obj.loot.grey_wolf.fang.f"
+    ]
+  },
+  "expectedKeys": {
+    "1": "buy"
+  },
+  "startScene": "loc.glassmere.guild_hall",
+  "answers": [
+    {
+      "call": 130,
+      "text": "{\"scene\": {\"new\": {\"name\": \"shared room above the inn\", \"kind\": \"interior\", \"parent\": {\"new\": {\"name\": \"inn by the Guild hall\", \"kind\": \"site\", \"parent\": \"loc.glassmere\"}}}}, \"expected\": {\"1\": {\"priced\": true, \"taken_anyway\": false}}, \"deltas\": [{\"seq\": 1, \"type\": \"arrive\", \"at\": {\"new\": {\"name\": \"inn by the Guild hall\", \"kind\": \"site\", \"parent\": \"loc.glassmere\"}}, \"with\": []}, {\"seq\": 2, \"type\": \"person.new\", \"ref\": \"npc.innkeeper\", \"name\": null, \"role\": \"innkeeper\", \"desc\": [\"woman who took the coins into her apron pocket\", \"led him up to the shared room\"], \"armed\": null, \"present\": true, \"relevant\": true, \"threat\": false, \"at\": {\"new\": \"inn by the Guild hall\"}, \"band\": \"ENGAGED\"}, {\"seq\": 3, \"type\": \"offer\", \"seller\": \"npc.innkeeper\", \"lines\": [{\"what\": \"bed with supper and breakfast\", \"kind\": \"service\", \"service\": \"lodging\", \"qty\": 1, \"price_cp\": 6, \"said\": \"Six, then.\", \"effect\": null, \"teaches\": null, \"equipment\": null}]}, {\"seq\": 4, \"type\": \"fact\", \"s\": \"npc.innkeeper\", \"p\": \"breakfast\", \"o\": \"bread, cheese and small beer on the table downstairs before he is down; first bell when the baker's boy knocks\"}, {\"seq\": 5, \"type\": \"fact\", \"s\": \"npc.innkeeper\", \"p\": \"gate_bell\", \"o\": \"the gate bell rings at dawn\"}, {\"seq\": 6, \"type\": \"arrive\", \"at\": {\"new\": {\"name\": \"shared room above the inn\", \"kind\": \"interior\", \"parent\": {\"new\": \"inn by the Guild hall\"}}}, \"with\": [\"npc.innkeeper\"]}, {\"seq\": 7, \"type\": \"time\", \"minutes\": 40}]}"
+    },
+    {
+      "call": 131,
+      "text": "{\"scene\": {\"new\": \"shared room above the inn\"}, \"expected\": {\"1\": {\"priced\": true, \"taken_anyway\": false}}, \"deltas\": [{\"seq\": 1, \"type\": \"arrive\", \"at\": {\"new\": {\"name\": \"inn by the Guild hall\", \"kind\": \"site\", \"parent\": \"loc.glassmere\"}}, \"with\": [], \"scene\": \"loc.glassmere.guild_hall\"}, {\"seq\": 2, \"type\": \"person.new\", \"ref\": \"npc.innkeeper\", \"name\": null, \"role\": \"innkeeper\", \"desc\": [\"woman who took the coins into her apron pocket\", \"led him up to the shared room\"], \"armed\": null, \"present\": true, \"relevant\": true, \"threat\": false, \"at\": null, \"band\": \"ENGAGED\", \"scene\": {\"new\": \"inn by the Guild hall\"}}, {\"seq\": 3, \"type\": \"offer\", \"seller\": \"npc.innkeeper\", \"lines\": [{\"what\": \"bed with supper and breakfast\", \"kind\": \"service\", \"service\": \"lodging\", \"qty\": 1, \"price_cp\": 6, \"said\": \"Six, then.\", \"effect\": null, \"teaches\": null, \"equipment\": null}], \"scene\": {\"new\": \"inn by the Guild hall\"}}, {\"seq\": 4, \"type\": \"fact\", \"s\": \"npc.innkeeper\", \"p\": \"breakfast\", \"o\": \"bread, cheese and small beer on the table downstairs before he is down; first bell when the baker's boy knocks\", \"scene\": {\"new\": \"inn by the Guild hall\"}}, {\"seq\": 5, \"type\": \"fact\", \"s\": \"npc.innkeeper\", \"p\": \"gate_bell\", \"o\": \"the gate bell rings at dawn\", \"scene\": {\"new\": \"inn by the Guild hall\"}}, {\"seq\": 6, \"type\": \"arrive\", \"at\": {\"new\": {\"name\": \"shared room above the inn\", \"kind\": \"interior\", \"parent\": {\"new\": \"inn by the Guild hall\"}}}, \"with\": [\"npc.innkeeper\"], \"scene\": {\"new\": \"inn by the Guild hall\"}}, {\"seq\": 7, \"type\": \"time\", \"minutes\": 40, \"scene\": {\"new\": \"shared room above the inn\"}}]}"
+    }
+  ]
+}

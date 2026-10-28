@@ -35,7 +35,7 @@ let content = null;
 let lastContext = null;
 let lastProjection = null;
 let legacyWarned = null;
-let worldSaveBlocked = null;
+let persistenceBlocked = null;
 let pendingReport = null; // {chatId, id, hash, job}: the report request of the latest reply, while it runs
 let llmPath = null; // Runtime V4: which call the last LLM request used ('custom endpoint' | 'generateRaw')
 let narrationStart = null; // Patch 8.2: {chatId, user, t}: when the engine block of a story turn was handed to SillyTavern
@@ -181,10 +181,12 @@ const worldJobs = createWorldJobs({
         const c = ctx();
         try { rerender(c, id); } catch (error) { console.error('[Avereth] display failed',error); }
         if (!isCurrent()) return;
-        await c.saveChat();
-        if (rec(c.chat[id])?.continuation) {
-            try { await verifySavedChat(c,id,isCurrent); }
-            catch (error) { if (isCurrent()) worldSaveBlocked={chat:c.chat,id}; throw error; }
+        try {
+            await c.saveChat();
+            if (rec(c.chat[id])?.continuation) await verifySavedChat(c,id,isCurrent);
+        } catch (error) {
+            if (isCurrent()) persistenceBlocked={chat:c.chat,id};
+            throw error;
         }
         if (isCurrent()) renderDebug();
     },
@@ -242,9 +244,9 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
                 waited = Date.now() - w0;
             }
         }
-        if (worldSaveBlocked?.chat === c.chat) {
-            await verifySavedChat(c,worldSaveBlocked.id,isCurrent);
-            worldSaveBlocked=null;
+        if (persistenceBlocked?.chat === c.chat) {
+            await verifySavedChat(c,persistenceBlocked.id,isCurrent);
+            persistenceBlocked=null;
         }
         const r = await prepareGenerationAsync(c.chat, content, { type, settings: engineSettings(), llm: v4Llm, waited, isCurrent });
         // ST's abort callback is local to this interceptor invocation, not the shared generation AbortController.
@@ -265,8 +267,14 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
                 const notice=postPanel(r.notice);
                 notice.extra.avereth_notice_for=r.index;
             }
-            await c.saveChat();
-            await verifySavedChat(c,c.chat.length-1,isCurrent);
+            const end=c.chat.length-1;
+            try {
+                await c.saveChat();
+                await verifySavedChat(c,end,isCurrent);
+            } catch (error) {
+                if (isCurrent()) persistenceBlocked={chat:c.chat,id:end};
+                throw error;
+            }
             renderDebug();
             return;
         }

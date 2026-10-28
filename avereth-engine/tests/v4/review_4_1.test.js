@@ -202,7 +202,7 @@ test('purchase: an offer line may be a lot ("three for nine"); a part of it only
     assert.equal(pickLines(s.offers['offer.w'], null, 2).clarify.length, 2);
     const which = play(s, [accept({ lines: null, qty: 2 })]);
     assert.equal(which.ctx.resolutions[0].status, 'clarify');
-    assert.match(buildCatalog(s, content).offers[0].lines.map((l) => catalogText({ here: {}, offers: [{ id: 'offer.w', seller: 'x', lines: [l] }] })).join(), /l1 water flask 3 for 9 cp/);
+    assert.match(buildCatalog(s, content).offers[0].lines.map((l) => catalogText({ here: {}, offers: [{ id: 'offer.w', seller: 'x', lines: [l] }] })).join(), /line_id="l1"; item="water flask"; 3 for 9 cp/);
 });
 
 test('purchase: a purchase agreed in advance (a limit, no price yet) books the number he named when the reply names the price', () => {

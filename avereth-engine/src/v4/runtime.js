@@ -138,7 +138,7 @@ async function ask(llm, messages, purpose, overrides = {}) {
             || (err?.name === 'AbortError' ? 'aborted' : 'transport');
         const status = Number(err?.status) || null;
         const retryable = !['cancelled', 'aborted'].includes(kind) && (kind !== 'provider' || status === 408 || status === 429 || status >= 500);
-        return { ok: false, retryable, error: String(err?.message || err).slice(0, 200), ms, call: { purpose, ms, error: true, error_kind: kind, ...(!err?.code && err?.name !== 'AbortError' ? {unclassified:true} : {}), ...(status ? { status } : {}) } };
+        return { ok: false, retryable, error: String(err?.message || err).slice(0, 200), ms, call: { purpose, ms, error: true, error_kind: kind, ...(!['LLM_TIMEOUT','LLM_PROVIDER','LLM_CANCELLED'].includes(err?.code) && err?.name !== 'AbortError' ? {unclassified:true} : {}), ...(status ? { status } : {}) } };
     }
 }
 

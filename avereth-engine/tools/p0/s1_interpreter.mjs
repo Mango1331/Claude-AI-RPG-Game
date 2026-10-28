@@ -111,7 +111,7 @@ export function goldAnswer(vocab, kase) {
 }
 
 export function s1MockResponder(cases, scenes, vocab, { wrong = [], invalid = [], user = interpreterUser } = {}) {
-    const byUser = new Map(cases.map((c) => [user(scenes[c.scene], c.text), c]));
+    const byUser = new Map(cases.flatMap(c => [[user(scenes[c.scene], c.text), c], [v4.interpreterUser(scenes[c.scene], c.text), c]]));
     return async (req) => {
         const users = req.messages.filter((m) => m.role === 'user');
         const c = byUser.get(users[0]?.content);

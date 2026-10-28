@@ -204,6 +204,7 @@ export function extractorRequest(vocab, { catalog, actions, player = null, expec
         messages.push({ role: 'user', content: 'Your previous answer was empty: it ran out of room before the JSON. Answer now with the JSON object alone, at once and short: report only what the reply plainly establishes, leave out anything you are unsure of (an empty deltas list is a valid answer). Do not deliberate.' });
     } else if (previous !== null && errors) {
         messages.push({ role: 'assistant', content: String(previous) }, { role: 'user', content: `Your answer was not valid: ${errors.slice(0, 8).join('; ')}. Answer again with only the corrected JSON object, nothing else.` });
+        if (errors.some(e => /Place reference|\.(?:at|scene):/.test(e))) messages.at(-1).content += ' Place references must be a known id or {"new":{"name":"exact name","kind":"interior","parent":"known id or full new-parent object"}}. Preserve already valid scene and expected fields. Correct only invalid references and actual story chronology; never invent travel.';
         if (startScene && errors.some(e => /\.scene\b/.test(e))) messages.at(-1).content += ` Engine starting scene: ${JSON.stringify(startScene)}. Annotate earlier deltas with their actual scene before the later arrival (including any actual intermediate stop); the final scene is not retroactive. Preserve valid expected answers and independent deltas. Never invent or reorder arrivals to bypass the error.`;
     }
     return { system, user, messages };
@@ -294,6 +295,18 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     const clean = missing.length ? { ...value, expected: Object.fromEntries(Object.entries(exp).filter(([k]) => !missing.includes(k))) } : value;
     const errors = validate(clean, schema);
     const semanticIssues = [];
+    let placeHintAdded = false;
+    for (const [errorIndex,error] of [...errors].entries()) {
+        const match = /^\$\.deltas\[(\d+)\]/.exec(error);
+        const d = match ? value.deltas[Number(match[1])] : null;
+        const spec = vocab.deltas.find(x => x.type === d?.type);
+        const fields = spec ? Object.entries(spec.fields).filter(([key, field]) => field.ref === 'place' && error.includes(`.${key}:`)).map(([key]) => key) : [];
+        if (/^\$\.scene:/.test(error) || error.includes('.scene:') || fields.length) {
+            if (placeHintAdded) continue;
+            placeHintAdded = true;
+            errors[errorIndex] += `; Place reference at ${match ? `deltas[${match[1]}].${fields[0] || 'scene'}` : 'scene'}: use a known place id or {"new":{"name":"exact name","kind":"interior","parent":"known parent id"}}; a new parent uses the same full shape. No {"new":"name"} shorthand. Preserve already valid scene and expected fields; never invent an arrival.`;
+        }
+    }
     let stepAt = startScene;
     const entered = new Map();
     if (!errors.length && sceneRequired && state?.meta?.ruleset >= 2) for (const { d, i } of value.deltas.map((d, i) => ({ d, i })).sort((a, b) => a.d.seq - b.d.seq)) {

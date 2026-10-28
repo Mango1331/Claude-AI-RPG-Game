@@ -89,9 +89,10 @@ export function tradePrice(cp, said, qty, content) {
     const totals = [...text.matchAll(/((?:[a-z0-9-]+\s+){1,5}(?:gold|silver|coppers?|cp))\s+(?:for\s+)?(?:the\s+)?(?:lot|all|together|total)\b/gi)]
         .map(m => coinFromWords(m[1], content)).filter(Number.isInteger);
     if (totals.length) return { cp: totals.length === 1 ? totals[0] : null, handled: true };
-    const rates = [...text.matchAll(/\b(?:gold|silver|coppers?|cp)\s+(?:each\b|per\b|(?:a|an)\s+(?!piece of coin\b))/gi)];
+    const rates = [...text.matchAll(/\b(?:gold|silver|coppers?|cp)\s+(?:each\b|apiece\b|per\b|(?:a|an)\s+(?!piece of coin\b))/gi)];
     const evidence = coinEvidence(text, content);
     if (rates.length) {
+        if (/\b(?:if|unless|depending|provided)\b/i.test(text.slice(rates[0].index))) return {cp:null,handled:true};
         return { cp: rates.length === 1 && evidence.compound && qty > 0 ? evidence.cp * qty : null, handled: true };
     }
     if (evidence.mentions.length > 1 || (evidence.mentions.length && evidence.cp === null))

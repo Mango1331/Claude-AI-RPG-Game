@@ -51,7 +51,7 @@ test('8.1 gate 1: at the gate the gate\'s own fee is on offer at once (before he
     assert.equal(ev.filter((e) => e.t === 'offer.created' && e.d.offer.id === GATE_OFFER).length, 1);
     assert.equal(ev.find((e) => e.t === 'offer.created').d.offer.lines[0].price_cp, 10);
     const cat = extractorCatalog(g.state(), content, { c: true });
-    assert.match(cat.text, /OFFERS: offer\.gate\.glimmerdeep_grotto \(the gate: l1 Entry to Glimmerdeep Grotto 10 cp\)/);
+    assert.match(cat.text, /OFFERS: offer\.gate\.glimmerdeep_grotto \(the gate: line_id="l1"; item="Entry to Glimmerdeep Grotto"; 10 cp\)/);
     // idempotent: the next turn at the gate creates none
     await g.reply('The watchman waits.', { expected: {}, deltas: [] });
     await say(g, '*i wait*');

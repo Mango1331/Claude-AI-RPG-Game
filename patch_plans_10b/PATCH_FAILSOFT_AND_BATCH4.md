@@ -1,6 +1,8 @@
 # Fachplan: sichere Fortsetzung und Batch-4-Ursachen
 
-**Stand: 28.10.2026. Analyse und Umsetzungsspezifikation, noch nicht implementiert.** Basis: Produkt `.104`, `b9ffa2c1bfe7c6e00c760d5a115f9d53eec95016`. Zwei Umsetzungsschritte innerhalb eines Fachvorhabens; kein neues NPC-, Quest-, Transaktions- oder Recovery-Framework. Combat Main/Minor bleibt ein separater Patch.
+**Stand: 28.10.2026. Analyse und Umsetzungsspezifikation. **Schritt 1 ist als .105 implementiert und technisch abgenommen; Schritt 2 bleibt offen.**** Basis: Produkt `.104`, `b9ffa2c1bfe7c6e00c760d5a115f9d53eec95016`. Zwei Umsetzungsschritte innerhalb eines Fachvorhabens; kein neues NPC-, Quest-, Transaktions- oder Recovery-Framework. Combat Main/Minor bleibt ein separater Patch.
+
+Umsetzungsnachweis: [Teil 1 / .105](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/f44bebc2bf4a1245a2c8c4e8140e7a86f0b7a420/avereth-engine/docs/PATCH_FAILSOFT_CONTINUATION.md) — 2078/2078 Node, echter ST-Mock-Smoke Standard 22/22 und erweitert 27/27. Noch kein natürlicher .105-Lauf. Die folgenden Ursachen-/Planungsabschnitte dokumentieren die Grundlage auf .104.
 
 Quellen: [Batch-4-Originalprüfung](../testrun_10b/batch-20261028-022553Z/SOL_COUNTERREVIEW.md), [GPT-Review](../testrun_10b/batch-20261028-022553Z/REVIEW.md), Nutzerfeedback `Chatgpt Feedback(20261028-042126).md`, aktuelle Produktquellen und vorhandene Batch-2-/Host-Regressionen. Das Batch-4-ZIP wurde zuvor vollständig auf CRC/Hash geprüft und für die Gegenreview ausgewertet; Originalrequests und Zustandsfaltungen sind Grundlage, Reviews allein kein Beweis.
 

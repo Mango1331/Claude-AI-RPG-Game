@@ -1,3 +1,4 @@
+import { trueDungeonOf } from './v4/dungeon.js';
 import { offerAvailability } from './v4/trade.js';
 // What the player sees of the mechanics: a System block at the top of a reply, rendered from the engine's own records,
 // so the numbers on screen are exactly the numbers that were rolled and applied (Initiative, Turn order, every roll,
@@ -11,7 +12,7 @@ import { formatCoin } from './economy.js';
 import { bandIndex, itemLabel } from './util.js';
 import { damagePreview, combatTargets, targetLabel } from './combat.js';
 import { sceneHandle, tacticalHere } from './v4/scene_handles.js';
-import { livingOf, gateCard } from './v4/living.js';
+import { livingOf, gateCard, floorAt } from './v4/living.js';
 import { skillOf } from './content.js';
 import { offerCard } from './v4/items.js';
 
@@ -255,6 +256,15 @@ export function worldPanel(state, content, reply = {}) {
     // Patch 8.1 (§4): the reply that brings him to a Living Dungeon's gate shows its System card (once, on arrival)
     const at = reply.state && reply.events?.findLast((e) => e.t === 'scene.moved')?.d.at;
     if (at && at === reply.state.scene.at && livingOf(reply.state, at)) lines.push(...gateCard(reply.state, content, at).map(sys));
+    if (at && at === reply.state.scene.at) {
+        const root = trueDungeonOf(reply.state, at), dungeon = livingOf(reply.state, root);
+        const floor = floorAt(reply.state, at), priorRoot = trueDungeonOf(state, state.scene.at);
+        if (dungeon && floor > 0 && (root !== priorRoot || floor !== floorAt(state, state.scene.at))) {
+            const rank = dungeon.floors[floor]?.rank;
+            const span = rank ? (rank.min === rank.max ? rank.min : `${rank.min}–${rank.max}`) : null;
+            lines.push(sys(`ENTERED — ${dungeon.name}, Level ${floor}${span ? ` · Rank ${span}` : ''}`));
+        }
+    }
     const market = reply.state || state;
     if (!market.encounter && (!reply.events?.length || reply.events.some(e => ['offer.created', 'scene.moved', 'scene.entered', 'scene.left'].includes(e.t)))) {
         for (const offer of Object.values(market.offers || {}).filter(o => o.status === 'open' && !o.bid && !o.gate

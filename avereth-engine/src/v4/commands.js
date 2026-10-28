@@ -256,6 +256,10 @@ function registrationPaymentWords(c, text = '') {
     quote = quote.split(/[.;!?]|\b(?:then|ask(?:s|ing)?)\b/i)[0];
     return /\b(?:for|towards?|to (?:finish|complete|finali[sz]e))\s+(?:(?:my|the|our|guild)\s+){0,3}(?:registration|membership)\b|\bto (?:register|join the guild)\b/i.test(quote);
 }
+function expirePurchaseRequest(s, c, emit, seller = null) {
+    const request = {kind:'purchase', what:c.what, seller:c.from || null, at:s.scene.at, qty:c.qty || null};
+    for (const d of s.decisions.filter(d => samePurchaseRequest(d, request, seller))) emit({t:'decision.closed', d:{id:d.id, status:'expired'}});
+}
 function paymentFor(c, lines) {
     if (independentPayment(c)) return false;
     const wanted = keyWords(c.for || '').filter(w => !numbersIn(w).size && !['fit', 'fitted', 'now', 'pair', 'payment'].includes(w));
@@ -898,6 +902,20 @@ const HANDLERS = {
                 line: `NOT PAID — ${offered} is not the Guild's registration fee (${feeWords(fee)}, one-time): nothing is paid, his coin stays ${cpText(s.entities.pc.sheet.coin_cp, content)}. Let the clerk name the fee; he has not paid it.`,
             };
         }
+        // A purchase-purpose payment must buy its goods/service, never fall through to a free cash transfer.
+        // Reuse existing offers and purchase decisions; a room is already an engine-booked service.
+        const settlingDebt = /\b(?:debt|repay|repayment|reimburse)\b/i.test(`${c.for || ''} ${c.quote || ''}`);
+        const purchase = ctx.auth.c && rulesetOf(s) >= 2 && !independentPayment(c) && !settlingDebt && (
+            ROOM_WORDS.test(c.for || c.quote || '') || /\b(?:buy|purchase|offered|quoted)\b/i.test(c.quote || '')
+            || (c.for && (s.decisions.some(d => d.kind === 'purchase' && d.at === s.scene.at && (!d.seller || d.seller === c.to) && paymentFor(c, [{what:d.what}]))
+                || Object.values(s.offers).some(o => !o.canon && !o.bid && o.seller === c.to && o.at === s.scene.at && paymentFor(c, o.lines)))));
+        if (purchase) {
+            if (!present(s, c.to)) return { status: 'refused', reason: 'nobody to pay', line: 'CANNOT BUY — the seller is not here; nothing was paid.' };
+            if (!c.for) return { status: 'clarify', reason: 'purchase purpose missing', line: 'NOT PAID — which offered goods or service is this payment for? Nothing changes hands.' };
+            const buy = {...c, type:'buy', what:c.for, from:c.to, qty:null, max_cp:c.amount_cp ?? null, any_price:false};
+            expirePurchaseRequest(s, buy, emit);
+            return HANDLERS.buy(s, content, buy, ctx, emit);
+        }
         // an open offer of the one he pays: paying it is accepting it
         const offer = Object.values(s.offers).find((o) => o.status === 'open' && !o.canon && !o.bid && o.seller === c.to
             && (!ctx.auth.c || rulesetOf(s) < 2 || (!independentPayment(c) && (!c.for || paymentFor(c, o.lines))))
@@ -1511,10 +1529,7 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
             && !/\b(?:deal|accept|agreed|sold)\b/i.test(saleQuote) && !Number.isInteger(trade.command.min_cp) && !Number.isInteger(trade.command.agreed_cp);
         const afterTravel = envx.c && rulesetOf(s) >= 2 && ctx.auth.gos.length > 0
             && ['activity', 'attempt', 'take', 'use', 'buy', 'offer.accept', 'sell', 'pay', 'equip', 'unequip'].includes(c.type);
-        if (!afterTravel && !unmet && c.type === 'buy') {
-            const request = { kind: 'purchase', what: c.what, seller: c.from || null, at: s.scene.at, qty: c.qty || null };
-            for (const d of s.decisions.filter(d => samePurchaseRequest(d, request, trade?.offer.seller))) emit({ t: 'decision.closed', d: { id: d.id, status: 'expired' } });
-        }
+        if (!afterTravel && !unmet && c.type === 'buy') expirePurchaseRequest(s, c, emit, trade?.offer.seller);
         let destinationBuy = null;
         if (afterTravel && !unmet && c.type === 'buy') {
             const go = ctx.auth.gos.at(-1);

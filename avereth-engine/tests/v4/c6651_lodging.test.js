@@ -191,20 +191,22 @@ test('.51 review (7): a room he asks for does not hold up a sleep he places else
 
 test('.51 review (8): only a room or bed booked for him lets him sleep in it: a payment "for the room" that books none, or a part of its price, is no booking', async () => {
     const PAY = (cp, words) => ({ type: 'pay', to: 'npc.keeper', amount_cp: cp, for: 'the room', quote: `I pay the innkeeper ${words}` });
-    // no room on offer: a plain payment for it
+    // No room on offer: purchase consent waits; it is not an independent gift.
     const g = await atInn(null);
     const coin = sheet(g).coin_cp;
     const minute = g.state().clock.minute;
     await say(g, 'I pay the innkeeper four copper for the room and sleep until morning.', PAY(4, 'four copper for the room'), SLEEP());
-    assert.deepEqual(statuses(g), [['pay', 'resolved', null], ['activity', 'refused', 'room not booked']]);
-    assert.match(outcomeOf(g).actions[1], /it is not his yet: what it paid books no room or bed for him \(a payment, not a booking\)\. He does not sleep in this reply/);
-    assert.equal(sheet(g).coin_cp, coin - 4, 'the payment itself stands');
+    assert.deepEqual(statuses(g), [['pay', 'conditional', null], ['activity', 'refused', 'room not booked']]);
+    assert.match(outcomeOf(g).actions[1], /it is not his yet: its price is still to be named, nothing is paid for it yet\. He does not sleep in this reply/);
+    assert.equal(sheet(g).coin_cp, coin, 'no money leaves without the room booking');
     assert.equal(lodging(g).length, 0);
     assert.equal(g.state().clock.minute, minute);
     // a part of the price of the room on offer (2 of 4 cp)
     const h = await atInn(4);
     await say(h, 'I pay the innkeeper two copper toward the room and sleep until morning.', PAY(2, 'two copper toward the room'), SLEEP());
-    assert.deepEqual(statuses(h), [['pay', 'resolved', null], ['activity', 'refused', 'room not booked']]);
+    assert.equal(statuses(h)[0][1], 'refused');
+    assert.equal(sheet(h).coin_cp, coin, 'a too-low purchase limit is no free payment');
+    assert.deepEqual(statuses(h)[1], ['activity', 'refused', 'room not booked']);
     assert.equal(lodging(h).length, 0);
     assert.ok(openOffer(h), 'the room is still on offer');
     // its whole price: the room is booked, he sleeps in it

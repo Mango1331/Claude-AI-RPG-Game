@@ -248,6 +248,8 @@ Zusätzliche LLM-Aufrufe, Kosten, Save/Reload/Swipe, Geheimnisgrenzen und Replay
   3. **B „Ausführbare Signaturen und Bosse“** (Gift, angekündigter Recharge-Angriff, eine Resistenz oder Schwäche, Flug, Bossphasen); erst nach Main/Minor und F→E-Scaling.
 - Acht offene Nutzerentscheidungen stehen in der Fachanalyse §7.
 
+**GPT-Gegenreview und Nutzerüberlegung zur Ausrüstung (nur Bewertungen, 28.10.2026):** Die [Fachanalyse, neuer §10](recherche/MONSTERDESIGN_ANALYSE_20261028.md) ergänzt rollenabhängige **Standard-Loadouts** (etwa Goblin-Kämpfer/Dolch, Späher/Bogen, Schamane/Fokus) als mögliche Vereinfachung: **Besitz, eingesetzter Kampf-Angriff und verwertbarer Loot getrennt**, keine Phantomwaffen und kein pauschaler „alle Goblins haben Dolche“-Zwang. Weiterer Vorbehalt: kein globaler Art→Anker-Lock, Paket A nicht automatisch balance-neutral, C-Sapienz/Lage/Populationen getrennt planen, B-Fähigkeiten nur mit Enginewirkung und taktischen Gegenmöglichkeiten; Körperteil als Beute erzwingt nicht automatisch einen Kampfeffekt. **Nichts davon ist entschieden oder implementierungsfreigegeben.**
+
 ## 8. Pflege
 
 Nur echte neue oder bewusst zurückgestellte Ideen hier eintragen, mit Status und Nachweislink. Historische Patchberichte nicht wieder kopieren; tiefe Analysen in laufenden Fachdateien. **Jetzt Vorrang für technische Fehler, natürliche Sechserbatch-Abnahme und F→E-Scaling.**

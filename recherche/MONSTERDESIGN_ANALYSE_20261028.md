@@ -371,6 +371,8 @@ Je Fall: Welt und Lore · Engine heute [CODE] · Engine mit den Paketen [EMPFEHL
 
 ## 6. Designpakete (höchstens drei, priorisiert)
 
+**Späterer, nicht verbindlicher Gegenreview:** GPTs Bewertungsnachtrag in [§10](#10-gpt-gegenreview-und-ausruestungsoptionen-28102026) präzisiert insbesondere Rollen-/Standardausrüstung, Art-gegen-Kampfrolle, Balancefolgen und die Trennung von C1/C2/C3. Er ersetzt **keine** der offenen Nutzerentscheidungen.
+
 ### Paket A – „Glaubwürdige Körper“: Anatomie, Ausrüstung, Artkonsistenz · **Priorität 1**
 
 - **Inhalt:**
@@ -461,6 +463,8 @@ Je Fall: Welt und Lore · Engine heute [CODE] · Engine mit den Paketen [EMPFEHL
 
 ## 7. Offene Nutzerentscheidungen
 
+**Weiterhin offen:** Die acht nachstehenden Fragen sind nicht durch den späteren Gegenreview entschieden; ergänzende Optionen und Abnahmefragen stehen in [§10.6](#106-offene-entscheidungs--und-abnahmefragen-fur-spatere-umsetzungen).
+
 1. **Unbekannte Anatomie:** „Grundertrag ja, Spezialbeute nein“ (Empfehlung) oder „gar keine Beute ohne Beleg“?
 2. **Hase und ähnliche Kleintiere:** dem nächstkleinen Anker zuordnen (Empfehlung `rat`) oder einen neuen Kleinwild-Anker schaffen? Ein neuer Anker ist nur nötig, wenn Zahlen oder Beute dort falsch wären.
 3. **Sapiente Monster:** Ankerwerte plus `sapient` (Empfehlung) oder eigene, nicht menschliche Personvorlagen je Monsterkultur?
@@ -527,3 +531,88 @@ Je Fall: Welt und Lore · Engine heute [CODE] · Engine mit den Paketen [EMPFEHL
 - **[Mech 1999]** *Alpha status, dominance, and division of labor in wolf packs*, Can. J. Zool. 77: [USGS](https://pubs.usgs.gov/publication/1001725), [PDF wolf.org](https://www.wolf.org/wp-content/uploads/2013/09/267alphastatus_english.pdf)
 - **[Ydenberg & Dill 1986]** *The economics of fleeing from predators*, Adv. Study Behav. 16, zitiert und erläutert in [Cooper & Blumstein 2014](https://sites.lifesci.ucla.edu/eeb-blumstein/wp-content/uploads/sites/104/2017/08/CooperBlumstein_2014_BehavEcol.pdf)
 - **[Britannica, AMNH]** [Britannica – Antler](https://www.britannica.com/science/antler), [AMNH – Horns and antlers](https://www.amnh.org/explore/news-blogs/news-posts/horns-and-antlers-what-s-the-difference)
+---
+
+## 10. GPT-Gegenreview und Ausruestungsoptionen (28.10.2026)
+
+**Status:** Kritische Bewertung von GPT nach Claudes Analyse und anschließender Diskussion über rollenabhängige Standardausrüstung. **Weder Nutzerentscheidung noch Kanon, Patchfreigabe, fertige technische Spezifikation oder neuer Testnachweis.** Die ursprüngliche Analyse (§§0–9) bleibt als selbstständige Position erhalten. Diese Gegenbewertung präzisiert Widersprüche und hält Optionen für spätere Implementierungsentscheidungen fest. Grundlage ist der von GPT nachgelesene .109-Code; die externen Beispiele und Quellen sind in §3 und §9 dokumentiert.
+
+### 10.1 Gemeinsamer Befund: Das Fundament behalten
+
+- **Bestätigt:** Die 19 heterogenen Anker, freie `species`, individuelle Entitäten, Dungeon-Slots und Jagdpopulationen bilden ein gutes Fundament. Es besteht kein belegter Bedarf an einem vollständigen neuen Bestiarium oder einer zweiten Arten-Datenbank. Das PF2-Reskin-Prinzip ist dafür eine Designinspiration, **kein Nachweis**, dass alle aktuellen Schnittstellen schon korrekt funktionieren.
+- **Bestätigt am .109-Code:** Geweih ohne geeignete anatomische Bedingung; zufälliges Goblin-/Oger-Waffenloot ohne Besitznachweis; `creatureCombatant().fixed.sapient=false`; Kreaturen nutzen die einfache Ankerattacke statt eines ausführbaren Skill-/Statusbaukastens. Eine wiederkehrende **Art** kann mit unterschiedlichen Ankern materialisiert werden; ob und wie häufig dies im natürlichen Spiel passiert, ist noch nicht gemessen.
+- **Einordnung:** Paket A verbessert Konsistenz, Paket C soziale und ökologische Glaubwürdigkeit, Paket B die **tatsächliche spielerische Unterschiedlichkeit** von Gegnern. Neue Artennamen allein erzeugen keine neuen Kampfmöglichkeiten.
+- **Nicht ohne Zusatzprüfung behaupten:** Die Core-#7/#8-Texte sind in den Content-Dateien vorhanden, aber es ist vor einer Änderung zu klären, ob und auf welchem Weg sie den aktuellen Narrator erreichen. Nicht allein aus dem Text auf aktuell ausgespielte Bossfähigkeiten schließen.
+
+### 10.2 Paket A – Körper, Ausrüstung und Loot: präzisierter Designvorschlag
+
+**A1 – Anatomie (grundsätzlich Zustimmung, später zu konkretisieren):** Bei unbekannter Anatomie spricht viel für **plausiblen allgemeinen Ertrag, aber keine unbelegten Spezialorgane**. Ein Hase oder eine Hirschkuh erhält kein Geweih; bei einer Ziege sind Hörner und Geweihe nicht austauschbar. Positive Evidenz kann aus **zuverlässigem etabliertem Artwissen, bestätigter Beschreibung oder mechanisch festgestellter Eigenschaft** stammen, nicht bloß aus zufällig im Satz erwähnten Wörtern. Ein starres „kein Wort Geweih in jeder Begegnung → auch ein echter Hirsch ohne Geweih“ wäre ein bewusst zu prüfender Falsch-Negativ-Fall. Kein Zwang zu anatomischer Vollsimulation.
+
+**A2 – Neue Option: feste, aber rollenabhängige Standardausrüstung bei typischen humanoiden Monstern.** Bei einem gewöhnlichen Kampfprofil könnte **vor der ersten mechanischen Begegnung** die typische Ausrüstung einmalig festgelegt und danach persistiert werden. Der Narrator gestaltet Erscheinungsbild und glaubhafte Ausnahmen; die Engine bestimmt Besitz, Kampfprofil und Loot. Das dürfte weniger unzuverlässige Extraktion benötigen als das nachträgliche Erraten der Waffe aus jeder Kampferzählung. Es ist **eine zu prüfende Vereinfachung, noch keine beschlossene Umstellung**.
+
+| Rolle – nur beispielhaft | Möglicher typischer Besitz | Mechanische Folge / Grenze |
+|---|---|---|
+| Gewöhnlicher Goblin-Kämpfer | Einfacher Dolch oder Kurzschwert | Ein realer Nahkampfangriff; nicht jeder biologische Goblin erhält automatisch einen Dolch |
+| Goblin-Späher | Kurzbogen, ggf. Dolch | Echter Fernkampf **nur**, wenn die Engine für diese Kreatur einen passenden Angriff ausführen kann; zwei Waffen sind noch kein fertiges Waffenwechsel-/Multi-Attack-System |
+| Goblin-Schamane | Stab oder Ritualfokus | Ein Fokus ist nicht zwangsläufig ein physischer Waffenbonus; magische Ankerattacke und getragenes Objekt getrennt prüfen |
+| Goblin-Häuptling | Individuell geeignete Waffe/Rüstung | Höherer Rang bedeutet nicht automatisch ein bestimmtes Ausrüstungsschema |
+| Unbewaffneter Goblin | Keine Waffe | Kein zufälliger Dolchdrop, unbewaffneter Angriff bleibt möglich |
+| Wolf, Hase, Waldgeist etc. | Keine humanoide Standardwaffe | Anatomische/sonstige Beute separat und mit Beleg behandeln |
+
+**Drei zwingend zu trennende Zustände:** (1) *Besitz* – die Waffe ist wirklich beim Wesen; (2) *Einsatz* – welche tatsächlich autorisierte Attacke benutzt es; (3) *Verwertbarkeit nach Tod* – ob das physisch vorhandene Stück als brauchbarer Gegenstand erbeutet wird. Eine Zufallsquote kann weiterhin **Verwertbarkeit**, nicht erst rückwirkend **Besitz**, entscheiden. Eine besessene Waffe muss nicht in jeder Kampfrunde benutzt werden; der verwendete Angriff darf umgekehrt nicht von der Ausrüstung abweichen, wenn er mechanisch auf ihr beruht.
+
+- Eine **Standardrolle** kann beim Materialisieren die verlässliche Voreinstellung liefern. Erzählte Ausnahmen („unbewaffnet“, „führt einen Speer“, „hat einen gestohlenen Bogen“) benötigen einen **rechtzeitigen belegten Zustandsweg**; keine retroaktive Umdeutung eines fixierten Kampfsnapshots.
+- **`weaponFamily(content, desc)` allein reicht nicht als Besitzerkennung:** Die Beschreibung könnte etwa Alarics Schwert, eine herumliegende Waffe oder ein Gerücht erwähnen. Auch Waffentyp, Qualität, ATK, Reichweite und tatsächlicher Besitz sind damit nicht automatisch validiert.
+- Vor Umsetzung Varianten gegeneinander prüfen: **A)** reine feste Rolle mit einer feststehenden Hauptwaffe (kleinste Lösung); **B)** kleiner optionaler Ausrüstungssnapshot je Kreatur, mit bestätigten Abweichungen; **C)** vollwertige `npc`-ähnliche Ausrüstung für alle Kreaturen (wahrscheinlich überdimensioniert). Bestehende `profile`, `entity.updated`, Kampf- und Lootpfade bevorzugen; **kein neuer Pflichtinventar-Simulator**.
+- **Wichtiger Realitätscheck des .109-Codes:** `creatureCombatant()` übernimmt eine einzelne Ankerattacke; `loot.js` erzeugt humanoide Zufallswaffen derzeit unabhängig davon. Ein Standardbogen beim Späher würde deshalb **noch keinen Fernkampf auslösen**. Kampf- und Lootseite müssen zusammen geplant werden; bloß die Lootquote zu fixieren wäre unzureichend.
+
+**A3 – Artkonsistenz ohne starres Artengefängnis:** Bestehende Individuen, Dungeon-Slots und belegte Profile wiederverwenden. Für eine wiederkehrende gewöhnliche Art kann ein bereits bewährter Anker **bevorzugt** werden. Aber `goblin` und `goblin_shaman` zeigen, dass Anker teils **Kampfrollen** statt Biologie abbilden: Dieselbe biologische Art darf rechtmäßig mehrere Rollen, Größen oder Varianten besitzen. Kein globales „erstes Exemplar fixiert für immer den einzigen Anker“ und kein kampagnenweiter Lock-in einer fehlerhaften Erstzuordnung. Bei tatsächlichen Konflikten zwischen gleichnamigen Arten/Varianten muss die Engine klären oder unterscheiden, nicht still verschmelzen.
+
+**A4 – Auswirkungen nicht beschönigen:** Anatomie- und Gearkorrekturen können die **Lootmengen, das Einkommen, Preise/Angebote, Kampfwerte, Reichweiten und XP-Referenzen** beeinflussen. Bereits gebuchte Alt-Events dürfen nicht umgeschrieben werden; künftige Lootereignisse alter Kampagnen können aber anders aussehen. Daher „kleiner Eingriff“ statt „balance-neutral“ und später Vergleich mit kontrollierten positiven/negativen Kämpfen und Wirtschaftsdaten.
+
+### 10.3 Paket C – Sapienz, situatives Verhalten und Populationen trennen
+
+- **Sapienz als enger eigener Teil (C1) erscheint sinnvoll.** Kreatur bleibt auf ihrem bestätigten Ankerwert, kann aber bei ausreichendem **kanonischem Beleg** als sapient gelten. Sapienz/Sprachfähigkeit/Training/Verhandlungsmöglichkeit/Feindseligkeit/Moral sind **verschiedene Dimensionen**; weder ein Klassen-NPC-Blatt noch ein aggressives Temperament folgt automatisch aus Intelligenz. Vor neuer Schemaerweiterung `creature.new`, Entität, `creatureCombatant`, `npcDecide`, Reaktionen und Replay als durchgehenden Pfad prüfen. Auch negative Beispiele (gewöhnliches Wildschwein, magisch imitierende Stimme, bloßer Werkzeugfund) brauchen Schutz.
+- **Lagehinweise (C2):** Verluste in einem Rudel, bedrohter Nachwuchs, freier Fluchtweg oder verwundeter Anführer können den Narrator kausal informieren. Keine feste Moralzahl, kein automatisches „bei 50 % Verlust muss jeder Wolf fliehen“. Bloße Prosa darf aber auch keinen schon gebuchten `flee`-/`retreat`-State ersetzen: Der vorhandene Intent-/Combat-/Chase-Pfad muss die tatsächliche Entscheidung abbilden. Auch das Vorschlagsmodell „nur Narratorhinweis“ ist **eine Hypothese**, die beim natürlichen Spiel auf Wirkung und Zuverlässigkeit geprüft werden muss.
+- **Regionale Populationen (C3) sind ein eigenständiges, größeres Feature**, nicht automatisch Teil einer kleinen Sapienzkorrektur. Eine bekannte **lokale Gruppe** (z. B. eine bestimmte Wolfsfamilie) ist nicht dasselbe wie die gesamte **regionale Artpopulation** (alle Wölfe im Wald). `place.population` heute an Jagdorten genügt nicht als Beleg für eine universelle Ökologie. Eine erste Beobachtung darf nicht zwangsläufig die Gesamtzahl einer Art in einer Region festschreiben. Migration, Tod, Regeneration und zeitliche Gültigkeit wären sonst ungeklärte Folgen; keine neue Nahrungsketten-/Ökosystem-Simulation.
+- Populationsdaten und höhere Gefahr außerhalb von Jagdorten **nicht gleichsetzen**: Dass Level-Fenster heute teilweise konservativ sind, wird nicht automatisch durch das Anlegen einer Population gelöst. Das muss später **zusammen** mit F→E-Gebiets- und Gegnerangeboten beurteilt werden.
+
+**Bewertete Trennung:** C1 (eng belegte Sapienz) zunächst separat prüfbar; C2 (Lagesignale) in Verbindung mit Chase/Intent; C3 (Regionen/Population) eher als späterer Welt-/Encounter-Fachbereich. Keine dieser Komponenten gilt als beschlossen.
+
+### 10.4 Paket B – Kampfsignaturen, Gegenmittel und Bossphasen
+
+- **Größter potenzieller Gameplay-Nutzen:** Fähigkeiten machen Gegner taktisch verschieden, statt nur HP/ATK und Namen zu variieren. Aber kein großer gleichzeitiger Gift-/Flug-/Element-/Resistenz-/Boss-Systemumbau. Wenn später freigegeben, zunächst **einen** nachweisbar nützlichen, reproduzierbaren Signaturtyp einschließlich Gegenmaßnahmen und Replay prüfen.
+- Die in §6 formulierte Regel **„Was als Beute existiert, existiert auch im Kampf“** ist als generelles Gesetz **zu stark**. Eine anatomisch belegte Giftdrüse kann alchemistische Beute sein, ohne dass das Wesen im konkreten Kampf einen Giftangriff einsetzt. Eine getragene Waffe kann unbenutzt bleiben. Umgekehrt kann ein magischer Angriff existieren, ohne ein bestimmtes erbeutbares Körperteil vorauszusetzen. **Bessere Bewertungsregel:** *Beute braucht belegten Besitz/Anatomie; mechanisch wirksame Fähigkeit braucht einen tatsächlich ausführbaren und gebuchten Engine-Effekt. Gemeinsame Evidenz dort, wo die Lore sie tatsächlich verknüpft.*
+- Signaturen benötigen erkennbare **Gegenentscheidungen**, nicht nur zusätzlichen Schaden: Atemangriff kündigen, Deckung/Distanz/Schutz prüfen; Gift nur mit definierter Dauer, Gegenmittel-/Heil-/Ablaufregel; Resistenzen nur mit sinnvollen Möglichkeiten des Spielers, nicht als frühe Immunitätsfalle. Keine Pflicht, alle neuen Effekte schon im F-Rang allgemein verfügbar zu machen.
+- **Bossphasen** dürfen in der Zukunft Zustände, angekündigte Signaturen oder Bedingungen ändern, ohne dem Boss zusätzliche freie Attacken zu geben. Phasen-Trigger und Aktionen sauber trennen: „im eigenen Turn“ ist der vorsichtige Ansatz, aber ein außerplanmäßiges Schadensereignis würde die Main/Minor-Regel trotz anderer Bezeichnung umgehen. **Zusatzaktionen** erfordern eine eigene ausdrückliche Designentscheidung.
+- Reihenfolge bleibt eine **Abwägung**, keine Freigabe: B kann nach Main/Minor und zumindest repräsentativen Scalingvergleichen als kleiner Test interessanter sein als eine vollständige regionale Populationsmechanik. Aktuelle Fertigstellung der F→E-Balance ist keine logisch absolute Voraussetzung für jeden isolierten Signaturprototyp, seine endgültige Balance dagegen schon.
+
+### 10.5 Zusammengeführte Bewertung der Paketfolge
+
+| Arbeitsgebiet | Gegenreview – vorläufiger Nutzen | Offene Grenze / Abhängigkeit |
+|---|---|---|
+| **A1 Anatomie / A2 Standard-Loadouts und Phantomloot** | Hoher Glaubwürdigkeits- und Integritätsnutzen; rollenbasierter Default könnte Extraktionsaufwand reduzieren | Kein beschlossener Loadout-Katalog; Eigentum, Combat-Attacke, Loot und Wirtschaft gemeinsam prüfen |
+| **A3 Wiedererkennung** | Sinnvoll gegen zufälligen Ankerwechsel wiederkehrender Wesen | Kein unveränderbarer `species → anchor`-Eintrag; Kampfrollen/Varianten erlauben |
+| **C1 Sapienz** | Gezielte mechanische und soziale Konsistenz | Belege, echte Consumer, nicht automatisch neue menschliche NPCs |
+| **C2 Lage/Flucht** | Bessere Reaktion auf Ereignisse und glaubwürdiges Verhalten | Narrator-Intent versus gebuchter Combatzustand und Chase |
+| **C3 Regionale Bestände** | Langfristig lebendigere Welt und verankerte Begegnungen | Größer, eigenständig, F→E-/ROAD-AHEAD-Abhängigkeit; keine Ökosimulation |
+| **B Signaturen/Bossphasen** | Vermutlich größter taktischer Mehrwert | Main/Minor, Gegenmittel, Ressourcen-/Schadenbalance, konsistentes Save/Replay |
+
+**Vorläufige Arbeitsrichtung für eine spätere Planungsrunde (nicht beschlossen):** A1/A2 eng untersuchen, dann ggf. C1 oder einen sehr kleinen B-Prototyp gegeneinander nach konkretem Nutzen priorisieren. C3 nicht zwangsläufig an C1 hängen. Keine Implementierung aus dieser Reihenfolge ableiten.
+
+### 10.6 Offene Entscheidungs- und Abnahmefragen für spätere Umsetzungen
+
+1. **Typische Loadouts:** Welche Rollen erhalten überhaupt feste Standardausrüstung (Goblin-Kämpfer, Späher, Schamane usw.)? Sind Varianten optional, und an welchem **einmaligen, replayfähigen Zeitpunkt** wird die Ausrüstung festgelegt?
+2. **Wie erkennen wir die Rolle?** Bereits bestätigte Art/Anker/Quest-/Dungeonrolle verwenden oder einen validierten, eng begrenzten Rollenhinweis? Nicht aus beliebigen Erwähnungen in `desc` auf Besitzer und Waffen schließen.
+3. **Was bedeutet „hat einen Bogen“ mechanisch?** Nur Loot-/Besitzfakt, tatsächlicher Fernangriff oder mehrere verfügbare Waffen? Wie wird eine Abweichung rechtzeitig bestätigt und bei Regenerate/Swipe/Reload stabil gehalten?
+4. **Wann droppt Ausrüstung?** Alles tatsächlich Getragene garantiert, oder nur eine deterministisch ausgewürfelte **noch brauchbare Teilmenge**? Welche Rüstungsstücke und Gegenstandswerte werden nicht nachträglich erfunden?
+5. **Artkonsistenz:** Wann ist eine Art dieselbe, wann Schamane/Späher/Variante und wann unklare Homonymie? Was geschieht nach früher falscher Zuordnung?
+6. **Anatomiebelege:** Welche festen bekannten Körpermerkmale dürfen ohne erneute Wortnennung gelten, und was bleibt bei neuen Fantasiearten unsicher?
+7. **Sapienz:** Reichen bestehende Daten und der `npcDecide`-Consumer oder braucht es wirklich ein neues bestätigtes Feld? Wie gehen wir mit neutralen und feindlichen sapienten Monstern um?
+8. **Population:** Wann nur vorhandene Gruppe merken, wann eine echte Orts-/Regionalpopulation etablieren und wie verändert die sich ohne Dauer-Simulation?
+9. **Erste Signatur und Fairness:** Welche Fähigkeit verändert tatsächlich Spielerentscheidungen, ist sichtbar konterbar und benötigt die wenigsten neuen Primitive?
+10. **Risiko- und Wirtschaftsvergleich:** Auswirkungen auf Loot-cp, Shop/Upgrades, Startklassen, F-/E-Gegner, Klassenparität und tatsächliche Spielerentscheidungen mit sinnvollen negativen Gegenfällen messen.
+
+**Spätere Mindestgegenproben, keine jetzt ausgeführten Tests:** unbewaffneter Goblin ohne Dolchdrop; Späher mit **wirklich** ausführbarem Bogenangriff und bestätigtem Bogenbesitz; `desc` erwähnt nur Alarics Schwert (kein Monsterwaffenloot); Waffe im Kampf unbenutzt, aber tatsächlich getragen; zufällig zerstörtes statt nie existierendes Gear; zwei Rollen derselben Art mit verschiedenen passenden Ankern; bekannte Kreatur behält ihren fixierten Kampfzustand; sapienter neutraler Goblin versus nichtsapientes Wildschwein; Giftdrüse ohne Kampf-Gift sowie ein gebuchter Giftangriff mit nachvollziehbaren Effekten; Bossphase exakt einmal ohne Gratisaktion; plausible Spezialbeute, Loot- und Geldvergleich; Wiederholung identisch nach Save/Reload/Swipe.
+
+**Endstatus:** Dokumentation des Reviews – **keine acht bisherigen offenen Entscheidungen aus §7 beantwortet, keine neuen Regeln beschlossen, keine Produktdatei oder Testlauf geändert**.

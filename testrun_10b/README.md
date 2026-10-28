@@ -52,6 +52,10 @@ Frühere ausführliche Zeilen mit SHA-256-/Git-Blob-Prüfungen und allen technis
 
 [**GPT-Review mit korrigierter Errata**](batch-20261028-051913Z/REVIEW.md). [**Sols Gegenreview / Abgleich .106→.109**](batch-20261028-051913Z/SOL_COUNTERREVIEW.md). Warrior 250/L7, Mage 250/L10, zusammen **500 natürliche Inputs, 39 Kämpfe und 15 Gildenabschlüsse**, beide regulär am 250-Input-Limit. Rogue 0 Inputs: **manueller Ctrl+C-Stopp**, kein technischer Rogue-Fehler. **Startbuild ist .106 (75a4366), nicht .109**; kein Livebeleg für .107–.109 oder L15. **Mage erwirbt 1 Rare-Passive (Boar-Tempered Grit)**; die vier leeren Extractorantworten wurden repariert, **terminales Fail-soft nicht genutzt**. Sols .109-Sonde findet **fünf zusätzliche NPC-Anwesenheits-Fehlablehnungen** (P1-Kandidat, noch kein Fix). Original-ZIP (78,05 MiB) CRC/SHA-geprüft, **nicht auf main**. Keine Produktänderungen.
 
+## Batch 6 (.110) – früher Warrior-Abbruch wegen Guild-/Charaktererstellungs-Drift
+
+[**GPT-Originalreview**](batch-20261028-101151Z/REVIEW.md). Build **.110** (`da933e9`), Warrior 15 Runner-Inputs einschließlich manuell abgebrochenem letztem Input. Klasse und **Heavy Slash/Guard sind korrekt gebucht**; `Cleave`/`Bull's Stamina` **nicht**. Player nur in `loc.glassmere`, Guildhall nie erreicht; Narrator erfindet zweite Charaktererstellung und Mitgliedschaft, falscher Interface-Fakt wird gespeichert. Beim erneuten Registrierungsversuch **20 cp tatsächlich abgezogen**, während Registrierung abgelehnt bleibt. **P1-Regressionskandidat**, kein Codefix. ZIP 2,1 MB, CRC/SHA-geprüft und **nicht auf main**.
+
 ## Umgang mit neuen Runs
 
 - Unveränderte ZIP im nach der Original-Run-ID benannten Ordner sichern. Format und Hash bei Übertragung prüfen; niemals vorhandene Originaldateien oder Reviews still überschreiben.

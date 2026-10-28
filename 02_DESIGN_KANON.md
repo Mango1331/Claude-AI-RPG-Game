@@ -1,7 +1,7 @@
 # Avereth Engine — Verbindlicher Design-Kanon und Leitplanken
 
 **Dokumenttyp:** langfristige Spiel- und Architekturentscheidungen  
-**Stand:** 27. Oktober 2026 · Fassung 7: explizite Ankünfte, aktuelle Handelszustimmung und mechanische Zähljagden; Produkt-/Abnahmestand in 03.
+**Stand:** 28. Oktober 2026 · Fassung 8: zusätzlich eindeutige aktive Dungeon-Clear-Verträge; Produkt-/Abnahmestand in 03.
 **Pflege:** nur bei neuen verbindlichen Designentscheidungen  
 **Status-Legende:** **[VERBINDLICH]** = gewolltes Spiel-/Architekturverhalten; **[GEPLANT]** = verbindliches Ziel, aber nicht zwingend implementiert; **[OFFEN]** = noch nicht abschließend beschlossen. Die Implementierung ist gesondert in Datei 03 zu prüfen.
 
@@ -105,6 +105,7 @@ Ein anwesender NPC darf freiwillig einen glaubwürdigen Geld- oder Sachgegenstan
 - **Neue automatische Jagden ab .101:** Genau ein quantitatives DEFEAT-Ziel; veröffentlichte Aufgabe, Zielpopulation und gespeicherte Zählregel bestimmen den Erfolg. Aktueller Standard zählt tatsächliche Kills (`killed`), keine Flucht und keinen erzählten Ersatzerfolg. Keine zusätzliche Story-READY-Bedingung; ausdrückliche Gildenabgabe bleibt erforderlich. Historische Mischverträge, Delivery und Dungeon-Clearance behalten ihre bisherigen Nachweise. Die 4+1-/5-Verteilung und Belohnungen bleiben unverändert.
 - **Culling-Zahl [IMPLEMENTIERT Patch 8/8.1; im Livetest weiter zu prüfen]:** Der Auftrag soll bereits am Board eine konkrete Monsteranzahl zeigen, etwa `Cull Wolves (4)`; nach Annahme den Engine-Zähler etwa `2/4`. Der Zähler muss mechanisch sein und auf passende Quest/Ort/Monster referenzieren, nicht nur Erzähltext.
 - **Dungeon-Clear [IMPLEMENTIERT Patch 8; vollständiger GLM-Livetest offen]:** Etwa `Clear Old Crown Catacombs — Level 1`. Keine willkürliche Killzahl, wenn entscheidend ist, dass die Ebene tatsächlich cleared ist.
+- **Verbindlich ab .104 (28.10.2026), Ruleset 2:** Alaric darf höchstens einen aktiven Gilden-Räumungsauftrag pro kanonischer Dungeon-ID und Etage gleichzeitig besitzen, unabhängig von Titel, Filiale und Ausschreibungstag. Auch bedingte Annahmen nach Ankunft und mehrere Annahmen im selben Zug beachten diese Grenze. Nach Abschluss oder Aufgabe darf ein neuer Vertrag angenommen werden; für ihn zählt erst eine nach seiner Annahme nachgewiesene PC-Räumung. Bereits gespeicherte aktive Altverträge werden nicht rückwirkend entwertet. Andere Etagen und Nicht-Clear-Aufträge bleiben unabhängig; Ruleset 1 behält sein Verhalten. Keine zusätzliche Verbrauchsbuchhaltung für Clears. [Umsetzung und Grenzen](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/b9ffa2c1bfe7c6e00c760d5a115f9d53eec95016/avereth-engine/docs/PATCH_BATCH3_GUILD_CLEAR_AND_CANON_PURCHASES.md).
 - **Keine Trophäenbeweise für Monsterjagden.** Andersartige Quests dürfen andere natürliche Formen der Bestätigung benötigen.
 - Escort und Delivery haben tatsächliche Reise und potentiell kausal glaubwürdige Hindernisse, nicht automatisch Wetter-/Hochwasser-Standardszenarien oder erzwungene Kämpfe.
 - NPC-Zeit, NPC-Interessen und Konkurrenz dürfen Weltzustände verändern, aber keine zuvor autorisierten und noch gültigen Spielerentscheidungen ausradieren.

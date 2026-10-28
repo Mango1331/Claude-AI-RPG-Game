@@ -50,7 +50,7 @@ Frühere ausführliche Zeilen mit SHA-256-/Git-Blob-Prüfungen und allen technis
 
 ## Batch 5 (.106) – zwei vollständige 250-Input-Runs, Rogue bewusst gestoppt
 
-[**GPT-Originalreview**](batch-20261028-051913Z/REVIEW.md). Warrior 250/L7, Mage 250/L10, zusammen **500 natürliche Inputs, 39 Kämpfe und 15 Gildenabschlüsse**, beide regulär am 250-Input-Limit. Rogue 0 Inputs: **manueller Ctrl+C-Stopp**, kein technischer Rogue-Fehler. **Startbuild ist .106 (75a4366), nicht .109**; kein Livebeleg für .107–.109 oder L15. Original-ZIP (78,05 MiB) CRC/SHA-geprüft, **nicht auf main**. Keine Produktänderungen.
+[**GPT-Originalreview**](batch-20261028-051913Z/REVIEW.md). [**Sols Gegenreview / Abgleich .106→.109**](batch-20261028-051913Z/SOL_COUNTERREVIEW.md). Warrior 250/L7, Mage 250/L10, zusammen **500 natürliche Inputs, 39 Kämpfe und 15 Gildenabschlüsse**, beide regulär am 250-Input-Limit. Rogue 0 Inputs: **manueller Ctrl+C-Stopp**, kein technischer Rogue-Fehler. **Startbuild ist .106 (75a4366), nicht .109**; kein Livebeleg für .107–.109 oder L15. Original-ZIP (78,05 MiB) CRC/SHA-geprüft, **nicht auf main**. Keine Produktänderungen.
 
 ## Umgang mit neuen Runs
 

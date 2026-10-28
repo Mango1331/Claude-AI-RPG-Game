@@ -229,6 +229,10 @@ Nutzer berichtet: **im .26-Livetest wiederholt stundenlang im Dungeon gerastet, 
 
 Zusätzliche LLM-Aufrufe, Kosten, Save/Reload/Swipe, Geheimnisgrenzen und Replay-Sicherheit bleiben jeweils eigene Abnahmekriterien.
 
+### 7b. Vertiefende externe Recherche A – Monsterökologie und Creature-Design (28.10.2026)
+
+**Analyseauftrag angelegt, keine Implementierungsfreigabe:** [Monsterökologie, Sapienz, Sonderfähigkeiten – Forschungs- und Analyseauftrag](recherche/ANALYSEAUFTRAG_MONSTERDESIGN_20261028.md). Externe Designmuster zu Habitat/Verhalten, freien Arten auf vorhandenen Kampankern, anatomisch korrektem Loot, intelligenten Monsterkulturen und **mechanisch echten** Spezialfähigkeiten prüfen. Historischen GPT-/Sol-Monsteraudit §§5–7 im [10B-Archiv](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0ebf4496f185a69ebac235a337ab9dd2e2b470c7/06_PATCH10B_MASTERPLAN_UND_REVIEWS.md#5-monster--lore-audit-von-chatgpt--rekonstruierte-vollständige-analyse) kritisch als Ausgangslage verwenden, nicht wiederholen. M-D/M-C bleiben **unverbindliche Hypothesen**. Keine Code-/Content-/Runner-/Batchänderung.
+
 ## 8. Pflege
 
 Nur echte neue oder bewusst zurückgestellte Ideen hier eintragen, mit Status und Nachweislink. Historische Patchberichte nicht wieder kopieren; tiefe Analysen in laufenden Fachdateien. **Jetzt Vorrang für technische Fehler, natürliche Sechserbatch-Abnahme und F→E-Scaling.**

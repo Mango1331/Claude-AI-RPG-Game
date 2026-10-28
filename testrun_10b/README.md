@@ -56,6 +56,10 @@ Frühere ausführliche Zeilen mit SHA-256-/Git-Blob-Prüfungen und allen technis
 
 [**GPT-Review mit Sols .106/.110-Gegenprüfung (§6)**](batch-20261028-101151Z/REVIEW.md). Build **.110** (`da933e9`), Warrior 15 Runner-Inputs einschließlich manuell abgebrochenem letztem Input. Warrior mit **Heavy Slash/Guard korrekt gebucht**, `Cleave`/`Bull's Stamina` **nicht**. Player blieb in `loc.glassmere`; Guildhall nicht erreicht, erneute Charaktererstellung nur erzählt, falscher Interface-Fakt persistiert. **20 cp zweckgebunden bezahlt, obwohl Mitgliedschaft abgelehnt**. Sol prüfte 11 Extractorantworten und sechs Kommandoabläufe isoliert mit .106/.110: **identische Resultate, Zahlungslücke bereits auf .106**. **P1-Bestandsfehler, keine neue .110-Regression nachgewiesen.** ZIP 2,1 MB, CRC/SHA-geprüft, **nicht auf main**; keine Implementierung.
 
+## Batch 7 (.112) – Warrior-Tod, Mage-Limit, Rogue manuell gestoppt
+
+[**GPT-ZIP-Review**](batch-20261028-111133Z/REVIEW.md). **230 Inputs**: Warrior **80/L6, regelgebuchter Tod** gegen drei E-Goblins Lv15–17 nach Level-1-Auftrag und tatsächlichem Floor-2-Abstieg; Mage **150/L8, reguläres Inputlimit mit offenem Kampf**; Rogue **0 Inputs, manuell Ctrl+C vor Start**. **Zwei natürliche Guild-Registrierungen erfolgreich** (je einmal kanonisch 20 cp, Novice), keine zweite Charaktererstellung. **11 Guild-Abschlüsse**, keine fatalen Planner-/World-Fehler. **P1-Prüfkandidat:** Mage T143 bezahlt 8 cp für Unterkunft ohne Zimmerbuchung und bei T145 nochmals 8 cp für die eine gebuchte Nacht. Dungeon-Floor-/Gefahrenkommunikation getrennt prüfen; **keine neue .112-Regression behauptet**. Original-ZIP 36,83 MiB CRC/SHA-geprüft, **nicht auf main**. Keine Produktänderung.
+
 ## Umgang mit neuen Runs
 
 - Unveränderte ZIP im nach der Original-Run-ID benannten Ordner sichern. Format und Hash bei Übertragung prüfen; niemals vorhandene Originaldateien oder Reviews still überschreiben.

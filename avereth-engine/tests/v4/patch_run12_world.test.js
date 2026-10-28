@@ -167,7 +167,11 @@ test('a refused voluntary arrival cannot make its scene valid; real forced reloc
  const deltas=[{seq:1,type:'arrive',at:target},{seq:2,type:'person.new',ref:'npc.helper',name:'Helper',role:'traveller',present:true,desc:[]}];
  const no=call(s,{scene:target,expected:{},deltas});
  assert.equal(no.state.scene.at,smith);assert.equal(no.events.filter(e=>e.t==='entity.created').length,0);
- const yes=call(s,{scene:target,expected:{},deltas:[{...deltas[0],forced_by:'a flood carries him into the ditch'},deltas[1]]});
+ // Build .107: the involuntary relocation is narrated by the reply, not only named in forced_by
+ const flood={...deltas[0],forced_by:'a flood carries him into the ditch'};
+ const unnarrated=call(s,{scene:target,expected:{},deltas:[flood,deltas[1]]});
+ assert.equal(unnarrated.state.scene.at,smith);
+ const yes=applyWorld(s,content,{scene:target,expected:{},deltas:[flood,deltas[1]]},{msg:200,prose:'The bank gives way. A flood carries him into the ditch, and a traveller hauls him out of the water.'});
  assert.notEqual(yes.state.scene.at,smith);assert.ok(yes.state.scene.present.includes('npc.helper'));
 });
 test('facts about Goblins leaving do not move canonical entities',()=>{

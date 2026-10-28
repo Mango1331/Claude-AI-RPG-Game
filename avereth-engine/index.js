@@ -36,6 +36,9 @@ let lastContext = null;
 let lastProjection = null;
 let legacyWarned = null;
 let persistenceBlocked = null;
+// Build .107 (audit of .106): SillyTavern 1.19 keeps one chat array for every chat and refills it in place, so the
+// block names its chat and record: another chat is never blocked or released by it
+const blockPersistence = (c, id) => { persistenceBlocked = { chat: c.chat, chatId: c.getCurrentChatId(), id, message: c.chat[id] }; };
 let pendingReport = null; // {chatId, id, hash, job}: the report request of the latest reply, while it runs
 let llmPath = null; // Runtime V4: which call the last LLM request used ('custom endpoint' | 'generateRaw')
 let narrationStart = null; // Patch 8.2: {chatId, user, t}: when the engine block of a story turn was handed to SillyTavern
@@ -185,7 +188,7 @@ const worldJobs = createWorldJobs({
             await c.saveChat();
             if (rec(c.chat[id])?.continuation) await verifySavedChat(c,id,isCurrent);
         } catch (error) {
-            if (isCurrent()) persistenceBlocked={chat:c.chat,id};
+            if (isCurrent()) blockPersistence(c, id);
             throw error;
         }
         if (isCurrent()) renderDebug();
@@ -244,9 +247,13 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
                 waited = Date.now() - w0;
             }
         }
-        if (persistenceBlocked?.chat === c.chat) {
-            await verifySavedChat(c,persistenceBlocked.id,isCurrent);
-            persistenceBlocked=null;
+        const blocked = persistenceBlocked;
+        if (blocked && blocked.chat === c.chat && blocked.chatId === c.getCurrentChatId()) {
+            // the same records still in memory: exactly they must be on disk. A chat opened again since was read
+            // from disk (its unsaved records are gone from memory too): its records up to there are checked as they are
+            const end = c.chat[blocked.id] === blocked.message ? blocked.id : Math.min(blocked.id, c.chat.length - 1);
+            await verifySavedChat(c, end, isCurrent);
+            if (persistenceBlocked === blocked) persistenceBlocked = null;
         }
         const r = await prepareGenerationAsync(c.chat, content, { type, settings: engineSettings(), llm: v4Llm, waited, isCurrent });
         // ST's abort callback is local to this interceptor invocation, not the shared generation AbortController.
@@ -272,7 +279,7 @@ globalThis.averethInterceptor = async function (chat, contextSize, abort, type) 
                 await c.saveChat();
                 await verifySavedChat(c,end,isCurrent);
             } catch (error) {
-                if (isCurrent()) persistenceBlocked={chat:c.chat,id:end};
+                if (isCurrent()) blockPersistence(c, end);
                 throw error;
             }
             renderDebug();

@@ -213,7 +213,10 @@ export function amountErrors(commands, currency, catalog = {}) {
             continue;
         }
         const v = price.handled ? price.cp : coinFromWords(c.quote, content);
-        if (v !== null && v !== c[f]) errors.push(`${c.type} seq ${c.seq}: ${f} ${c[f]} is not what his words "${c.quote.slice(0, 60)}" say: ${v} cp total for qty ${units ?? "unknown"} (1 silver = ${currency.copper_per_silver} copper, 1 gold = ${currency.copper_per_silver * currency.silver_per_gold} copper)`);
+        // Build .107 (audit of .106: "2 cp total for qty 1" steered the repair to a wrong limit): without a qty of his
+        // command the hint names the rate for one unit and asks for the quantity, never asserting one unit is meant
+        const basis = c.qty != null ? `${v} cp total for qty ${c.qty}` : c.type === 'sell' && object ? `${v} cp total for his held stack of ${units}` : `${v} cp for one unit at his rate`;
+        if (v !== null && v !== c[f]) errors.push(`${c.type} seq ${c.seq}: ${f} ${c[f]} is not what his words "${c.quote.slice(0, 60)}" say: ${basis}. ${f} is the TOTAL for the selected quantity; if he means several units, set qty to that number (1 silver = ${currency.copper_per_silver} copper, 1 gold = ${currency.copper_per_silver * currency.silver_per_gold} copper)`);
     }
     return errors;
 }

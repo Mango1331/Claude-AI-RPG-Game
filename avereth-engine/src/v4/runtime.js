@@ -574,7 +574,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
                 commit();
                 return {
                     action: hard ? 'abort' : 'not_executed', dirty: true, index:u,
-                    notice: 'NOT EXECUTED — planner failed: the engine could not safely understand this input. No action, time or combat round was booked. Decide again or regenerate this input.',
+                    notice: `NOT EXECUTED — planner failed${notExecutedCause(r) ? ` (${notExecutedCause(r)})` : ''}: the engine could not safely understand this input. No action, time or combat round was booked. Decide again or regenerate this input.`,
                 };
             }
             dirty = true;
@@ -632,6 +632,21 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
     }
     const { state, errors, context } = turnBlock(chat, u, content, settings);
     return { action: 'context', context, loreKeys: loreKeys(state, content), dirty, errors };
+}
+
+/**
+ * Build .107 (audit of .106: the NOT EXECUTED notice gave no reason, so the player said the same again): the cause the
+ * planner's own validation recorded, in a few player-facing words; null when none of these was found (never a guess,
+ * never provider details).
+ */
+export function notExecutedCause(r) {
+    const text = String(r?.plan?.error || r?.interp?.error || '');
+    if (/is not what his words .* say|ambiguous price or quantity/.test(text)) return 'price or quantity unclear';
+    if (/quote .* is not in the message|quote must be his exact words|must copy the counterparty/.test(text)) return 'the action could not be matched to the exact words';
+    if (/target must be an id|is a creature or person: use use_skill/.test(text)) return 'the target is unclear';
+    const calls = r?.plan?.llm || r?.interp?.llm || [];
+    if (calls.length && calls.every((x) => x.error)) return 'the planner received no answer';
+    return null;
 }
 
 // Include event payloads, not just their count: a swipe or an extraction can replace an equal-sized record.

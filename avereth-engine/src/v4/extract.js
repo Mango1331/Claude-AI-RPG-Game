@@ -16,7 +16,7 @@ import { normText } from '../util.js';
 /** Preserve the historical wire vocabulary; new campaigns have only Guild quests. */
 export function worldVocab(vocab, state) {
     if (privateQuestsOf(state)) return vocab;
-    return { ...vocab, version: 'delta-1.6',
+    return { ...vocab, version: 'delta-1.7',
         rules: [...vocab.rules.filter(r => !r.startsWith('Paid work FOR an NPC')),
             'FREE HELP: NPC requests, help, agreements and offered wages are ordinary facts, promises, threads and memories. Never create private quests or job ids. Formal quest deltas concern only existing Guild contracts. Helping earns no automatic Quest XP or payout.',
             'coin.gift is an ACTUAL new handover now, including voluntary thanks, wages, advance or reward from any present NPC. No job or acceptance is required. Promises and conditional/future payments are facts/threads, not coin.gift. In said quote the exact current handover clause INCLUDING the amount and currency, never invent an amount. For a recount of a RECENT COIN HANDOVER set repeat_of to its existing id; it never pays twice. A distinct new gift uses repeat_of:null even for the same giver/amount.'],
@@ -29,7 +29,7 @@ export function worldVocab(vocab, state) {
     };
 }
 
-export const EXTRACTOR_VERSION = 'extract-5.15';
+export const EXTRACTOR_VERSION = 'extract-5.16';
 export const PLACE_KINDS = ['realm', 'region', 'wilderness', 'settlement', 'district', 'site', 'interior'];
 const SERVICES = ['lodging', 'bath', 'laundry', 'meal', 'healing', 'training', 'other'];
 

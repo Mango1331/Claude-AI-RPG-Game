@@ -2223,3 +2223,7 @@ Lokale Extractor-Semantikhinweise, sichtbare Planner-Nichtausführung, geschütz
 ## 28.10.2026 — .106: Fail-soft Gegenreview und Teil 2
 
 Gemeinsamer Speicherblock für Planner/World, harte Behandlung unbekannter Fehlercodes; einheitliche Handels-Preisgrenzen mit Mengenbezug, präzise Ortsreferenz-Reparatur und getrennte Angebots-IDs. [Umsetzung, Regressionen und Abnahme](PATCH_FAILSOFT_PART2_AND_REVIEW.md). Keine Combat-/Balanceänderung.
+
+## 28.10.2026 — .107: Schutzpatch nach technischem Audit
+
+Unfreiwillige Ortswechsel nur mit wörtlich erzählter Verlagerung; bekannte abwesende Personen kommen nur per erzählter Ankunft, nie über `position`/`aware`; eine abgelehnte Namenserweiterung sperrt nicht die anwesende Person; Persistenzsperre chat-gebunden; drei Preisformulierungen; NOT EXECUTED mit tatsächlich festgestelltem Grund. [Umsetzung, Rot/Grün und Grenzen](PATCH_PROTECT107_AUDIT_FIXES.md). Keine Combat-/Balanceänderung.

@@ -89,7 +89,8 @@ export function tradePrice(cp, said, qty, content) {
     const totals = [...text.matchAll(/((?:[a-z0-9-]+\s+){1,5}(?:gold|silver|coppers?|cp))\s+(?:for\s+)?(?:the\s+)?(?:lot|all|together|total)\b/gi)]
         .map(m => coinFromWords(m[1], content)).filter(Number.isInteger);
     if (totals.length) return { cp: totals.length === 1 ? totals[0] : null, handled: true };
-    const rates = [...text.matchAll(/\b(?:gold|silver|coppers?|cp)\s+(?:each\b|apiece\b|per\b|(?:a|an)\s+(?!piece of coin\b))/gi)];
+    // Build .107: "two silver a fair deal" judges the price; it is no rate per unit
+    const rates = [...text.matchAll(/\b(?:gold|silver|coppers?|cp)\s+(?:each\b|apiece\b|per\b|(?:a|an)\s+(?!piece of coin\b|(?:fair|good|great|decent|reasonable|honest|fine|square|bargain|steal|deal|price|sum|total)\b))/gi)];
     const evidence = coinEvidence(text, content);
     if (rates.length) {
         if (/\b(?:if|unless|depending|provided)\b/i.test(text.slice(rates[0].index))) return {cp:null,handled:true};

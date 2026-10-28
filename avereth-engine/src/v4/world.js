@@ -43,6 +43,7 @@ import { anchorFor, templateFor, rulesetOf } from '../content.js';
 import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotMet, resolved, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
 import { unbookedDungeonThreat } from './run9_evidence.js';
 import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
+import { forcedRelocation, presenceInReply } from './narration_evidence.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
@@ -238,7 +239,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
 
     // 1. authority first: what the story may not decide is never applied
     const excludedFoes = [];
-    const fw = firewall(answer.deltas, firewallContext(s, content, chronicle, excludedFoes));
+    // Build .107 (audit of .106: any non-empty forced_by moved Alaric without a GO): an involuntary relocation stands
+    // only on a narrated clause of the reply that shows it happening (src/v4/narration_evidence.js); else the arrive
+    // has no cause and the firewall's GO rule applies to it. The extractor's delta itself stays as it reported it.
+    const unprovenForced = new Map();
+    if (cPath) for (const d of Array.isArray(answer.deltas) ? answer.deltas : []) {
+        if (d?.type !== 'arrive' || !String(d.forced_by || '').trim()) continue;
+        const ev = forcedRelocation(prose, d.forced_by);
+        if (!ev.ok) unprovenForced.set(d, ev.why);
+    }
+    const fw = firewall(answer.deltas, { ...firewallContext(s, content, chronicle, excludedFoes), unprovenForced });
     const privateMode = cPath && rulesetOf(s) >= 2 && privateQuestsOf(s);
     const acceptanceOnly = privateMode && outcome.resolutions?.length > 0 && outcome.resolutions.every(r => r.type === 'quest.accept');
     const inventedWorkTime = acceptanceOnly && fw.accept.some(d => d.type === 'quest.close' && d.status === 'completed'
@@ -342,6 +352,21 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         return named.length === 1 ? named[0].id : null;
     };
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
+    // Build .107 (audit of .106: enter, position and aware brought any known living person into the scene, also one
+    // last seen in another town): a known person who is neither here nor recorded at this place arrives only by enter
+    // with a narrated clause of the reply; NPCs travel on their own, so no distance rule. Creatures keep their rules
+    // (a returning beast, reinforcements); Ruleset 1 and V3 are unchanged.
+    const absentKnown = (id) => cPath && rulesetOf(s) >= 2 && id !== 'pc' && s.entities[id]?.kind === 'npc'
+        && !s.scene.present.includes(id) && s.entities[id].at !== s.scene.at && statusOf(s, id) !== 'dead';
+    const personLabels = (id) => {
+        const e = s.entities[id] || {};
+        return [e.name, e.known_name, truth(s, id, 'occupation')[0]?.o, e.role, ...(e.descriptors || [])].filter((x) => typeof x === 'string' && x.trim());
+    };
+    const notBroughtIn = (d, ids) => {
+        const away = ids.filter(absentKnown);
+        if (away.length) reject({ ...d, who: away.length === ids.length ? d.who : away }, 'npc_presence', `${away.join(', ')} ${away.length > 1 ? 'are' : 'is'} not in the scene; ${d.type} describes someone present (an arrival is enter with the reply's words for it)`);
+        return ids.filter((id) => !away.includes(id));
+    };
     // Concrete entity handles must resolve to real entities; ordinary narrative
     // phrases remain free text. A rejected person.named must not leave a ghost fact.
     const missingEntityRef = ref => typeof ref === 'string' && /^(?:npc|mon)\./i.test(ref) && !s.entities[ref];
@@ -756,7 +781,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         step = { kind: 'delta', type: d.type, seq: d.seq ?? 0, granted: new Set() };
         // Authority is checked again at the actual story step: earlier deltas may have changed its context.
-        const stepFw = firewall([d], firewallContext(s, content, chronicle, excludedFoes));
+        const stepFw = firewall([d], { ...firewallContext(s, content, chronicle, excludedFoes), unprovenForced });
         if (!stepFw.accept.length) {
             for (const x of stepFw.reject) { reject(x.delta, x.rule, x.why); refusedArrival(x.delta); }
             for (const x of stepFw.corrections) if (!corrections.includes(x)) corrections.push(x);
@@ -768,9 +793,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             continue;
         }
         const people = [d.s, d.who, d.from, d.by, d.holder].flat().filter(x => typeof x === 'string');
+        // Build .107: a story line naming a present person is that person's (a refused name of theirs blocks no memory)
         const blockedStory = ['memory', 'thread'].includes(d.type) && [...blockedPeople].some(ref => {
-            const name = s.entities[idOf(ref)]?.name;
-            return name && (` ${normText(d.text || '')} `).includes(` ${normText(name)} `);
+            const id = idOf(ref);
+            const name = s.entities[id]?.name;
+            return name && !s.scene.present.includes(id) && (` ${normText(d.text || '')} `).includes(` ${normText(name)} `);
         });
         if (d.type !== 'enter' && d.type !== 'person.new' && (blockedStory || people.some(x => blockedPeople.has(normText(x)) || blockedPeople.has(normText(idOf(x) || ''))))) {
             reject(d, 'npc_continuity', 'dependent claim about a rejected person reintroduction');
@@ -817,7 +844,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const at = viaStop(arrivalPlace(ref));
                 if (at.error) { reject(d, 'place', at.error); travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 if (at.id === s.scene.at && !(explicitTravel && s.places[at.id]?.kind === 'realm' && auth.gos?.length)) { travel.push({ seq: d.seq, ok: true }); break; }
-                if (wayRefused(at.id, d, { forced: !!String(d.forced_by || '').trim() })) { travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
+                if (wayRefused(at.id, d, { forced: !!String(d.forced_by || '').trim() && !unprovenForced.has(d) })) { travel.push({ seq: d.seq ?? 0, ok: false, away }); break; }
                 const party = companions(d.with, d);
                 perceiveAll(s, emit, seeing());
                 arriveThrough(at.id, party);
@@ -851,8 +878,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     const extensions = Object.values(s.entities).filter(e => e.kind === 'npc' && e.name
                         && name.startsWith(`${normText(e.name)} `));
                     const distinct = extensions.length === 1 && d.distinct_from === extensions[0].id;
+                    // Build .107: only the refused reference is blocked, and the known person only while absent (a
+                    // refused reintroduction must not make them here); a present person keeps their own claims of this reply
+                    const here = (id) => !!s.entities[id] && s.scene.present.includes(id);
                     const refusePerson = (rule, why, ids = []) => {
-                        for (const ref of [d.ref, d.name, ...ids].filter(Boolean)) blockedPeople.add(normText(ref));
+                        for (const ref of [d.ref, d.name, ...ids].filter((x) => x && !here(x))) blockedPeople.add(normText(ref));
                         reject(d, rule, why);
                         corrections.push(`${why}. Preserve the known person's recorded history. A fuller name uses person.named; an actual new return uses enter, without requiring Alaric to travel. Do not repeat an already resolved predicament.`);
                     };
@@ -948,6 +978,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 break;
             case 'enter': {
                 const who = mapRef(d.who);
+                if (absentKnown(who)) {
+                    const ev = presenceInReply(prose, d.evidence, personLabels(who));
+                    if (!ev.ok) {
+                        blockedPeople.add(normText(who));
+                        reject(d, 'npc_presence', `${who} is a known person elsewhere; the reply does not narrate their arrival here: ${ev.why}`);
+                        const correction = `${entityLabel(s, who)} was not booked as present: the last reply did not establish their arrival here. They may arrive when the story shows it; until then they are not in the scene.`;
+                        if (!corrections.includes(correction)) corrections.push(correction);
+                        break;
+                    }
+                }
                 v3({ enter: [who] }, d);
                 if (s.scene.present.includes(who)) {
                     if (s.entities[who]?.kind === 'npc' && s.entities[who].at !== s.scene.at)
@@ -972,7 +1012,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 // Patch 7.2B: a group's ref moves all of it only with scope all
                 const r = whoOf(d, d.who);
                 if (r.kind === 'unclear') break;
-                v3({ position: r.ids.map((who) => ({ who, band: d.band, cover: d.cover || undefined, ...(d.cluster ? { cluster: d.cluster } : {}) })) }, d);
+                const ids = notBroughtIn(d, r.ids);
+                if (!ids.length) break;
+                v3({ position: ids.map((who) => ({ who, band: d.band, cover: d.cover || undefined, ...(d.cluster ? { cluster: d.cluster } : {}) })) }, d);
                 break;
             }
             case 'aware':
@@ -980,7 +1022,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 // unaware reached only the first of the two small kobolds); its own Ambush awareness, not perception's
                 // Patch 4: one that fought him (or watched his fight) a short while ago has not lost track of him because the
                 // story says so: no Ambush from it (rules.combat.wary_min); his own stealth check is the engine's way
-                const whos = whoOf(d, d.who).ids; // Patch 7.2B: a group only with scope all
+                const whos = notBroughtIn(d, whoOf(d, d.who).ids); // Patch 7.2B: a group only with scope all
                 if (!whos.length) break;
                 const wary = d.level === 'unaware' ? whos.filter((who) => { const w = s.entities[who]?.wary; return !!w && s.clock.minute - (w.minute ?? 0) < (content.rules.combat?.wary_min ?? 360); }) : [];
                 if (wary.length) {

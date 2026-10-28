@@ -80,6 +80,9 @@ export function coinEvidence(text, content) {
         while (j < i && tokens[j].word === 'and') j++;
         const n = numberOf(tokens.slice(j, i).map(t => t.word));
         if (n === null) continue; // a gold necklace or a person's initial names no price
+        // Build .107 (audit of .106: "five silver and not a copper less" read as two prices): "not a (single) copper"
+        // names no sum of its own; it insists on the other one
+        if (tokens[j - 1]?.word === 'not' || (tokens[j - 1]?.word === 'single' && tokens[j - 3]?.word === 'not')) continue;
         const unit = tokens[i].word[0];
         const factor = unit === 'g' ? currency.copper_per_silver * currency.silver_per_gold : unit === 's' ? currency.copper_per_silver : 1;
         let amount = n * factor, end = tokens[i].end;
@@ -89,7 +92,8 @@ export function coinEvidence(text, content) {
         if (next && (/^\d+$/.test(next.word) || (SMALL[next.word] !== undefined && !['a', 'an'].includes(next.word)))
             && !/^(?:gold|golds|silver|silvers|copper|coppers|cp|c|s|g)$/.test(after?.word || '')) {
             const lower = numberOf([next.word]);
-            const boundary = !after || /[,;.!?]/.test(clean.slice(next.end, after.start)) || /^(?:for|each|yes|done|please)$/.test(after.word);
+            // Build .107: "one silver five a night" is the same shorthand before a rate
+            const boundary = !after || /[,;.!?]/.test(clean.slice(next.end, after.start)) || /^(?:for|each|yes|done|please|a|an|per|apiece)$/.test(after.word);
             if (unit !== 's' || lower === null || lower >= currency.copper_per_silver || !boundary)
                 return { cp: null, mentions: [amount], compound: false };
             amount += lower; end = next.end;
